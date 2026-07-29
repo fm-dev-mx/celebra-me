@@ -248,24 +248,32 @@ describe('InvitationEditorSectionSchemas.gallery', () => {
 
 describe('InvitationEditorSectionSchemas.envelope', () => {
 	it('accepts premium envelope fields from published content', () => {
+		const TEASER = 'Sample teaser';
+		const COVER_EDITION = 'Sample edition';
+		const GUEST_LABEL = 'Sample guest label';
 		const value = {
 			disabled: false,
 			sealStyle: 'wax',
 			sealIcon: 'monogram',
 			sealInitials: 'LL',
 			sealVariant: 'premium-rose',
-			microcopy: 'Toca para abrir',
-			documentLabel: 'Baby Shower',
-			cardLabel: 'Baby Shower',
-			envelopeName: 'Leah Lexa',
-			cardName: 'Leah',
-			cardSecondaryName: 'Lexa',
-			cardTagline: 'Una celebracin celestial',
-			guestLabel: 'Con cariño para:',
-			guestNameFallback: 'Familia invitada',
-			stampText: 'Leah Lexa',
+			microcopy: 'Sample microcopy',
+			documentLabel: 'Sample document',
+			cardLabel: 'Sample card',
+			envelopeName: 'Honoree',
+			cardName: 'Honoree',
+			cardSecondaryName: 'Family',
+			cardTagline: 'Sample tagline',
+			guestLabel: GUEST_LABEL,
+			guestNameFallback: 'Sample guest fallback',
+			stampText: 'Honoree',
 			stampYear: '2026',
-			tooltipText: 'Abrir invitación',
+			tooltipText: 'Open invitation',
+			teaserDetails: TEASER,
+			revealVariant: 'editorial-cover',
+			coverEdition: COVER_EDITION,
+			coverVolume: 'Vol. I',
+			coverIssue: 'Núm. 1',
 			closedPalette: {
 				primary: 'surfacePrimary',
 				accent: 'actionAccent',
@@ -278,10 +286,13 @@ describe('InvitationEditorSectionSchemas.envelope', () => {
 		if (result.success) {
 			expect(result.data.sealStyle).toBe('wax');
 			expect(result.data.sealVariant).toBe('premium-rose');
-			expect(result.data.cardSecondaryName).toBe('Lexa');
-			expect(result.data.guestLabel).toBe('Con cariño para:');
+			expect(result.data.cardSecondaryName).toBe(value.cardSecondaryName);
+			expect(result.data.guestLabel).toBe(GUEST_LABEL);
 			expect(result.data.closedPalette?.primary).toBe('surfacePrimary');
 			expect(result.data.sealColor).toBe('roseGold');
+			expect(result.data.teaserDetails).toBe(TEASER);
+			expect(result.data.revealVariant).toBe('editorial-cover');
+			expect(result.data.coverEdition).toBe(COVER_EDITION);
 		}
 	});
 
@@ -561,5 +572,109 @@ describe('InvitationEditorSectionSchemas.itinerary (optional items)', () => {
 		const value = { title: 'Programa' };
 		const result = InvitationEditorSectionSchemas.itinerary.safeParse(value);
 		expect(result.success).toBe(true);
+	});
+});
+
+describe('InvitationEditorSectionSchemas — managed identity field allowlist', () => {
+	const uploaded = (assetId: string) => ({ type: 'uploaded' as const, assetId });
+
+	it('accepts synthetic payloads that exercise premium managed identity fields', () => {
+		const main = InvitationEditorSectionSchemas.main.safeParse({
+			title: 'Sample celebration',
+			hero: {
+				name: 'Honoree',
+				label: 'Sample occasion',
+				date: '2026-09-11T20:00:00.000Z',
+				backgroundImage: uploaded('550e8400-e29b-41d4-a716-446655440010'),
+				backgroundImageMobile: uploaded('550e8400-e29b-41d4-a716-446655440011'),
+				focalPoint: '68% 42%',
+				focalPointMobile: '50% 26%',
+				focalPointTablet: '62% 40%',
+				focalPointDesktop: '72% 42%',
+			},
+		});
+		expect(main.success).toBe(true);
+		if (main.success) {
+			expect(main.data.hero).toHaveProperty('focalPoint');
+			expect(main.data.hero).toHaveProperty('focalPointDesktop');
+		}
+
+		const family = InvitationEditorSectionSchemas.family.safeParse({
+			presentation: 'with-photo',
+			featuredImage: uploaded('550e8400-e29b-41d4-a716-446655440012'),
+			focalPoint: '50% 58%',
+			sectionMessage: 'Sample family message',
+		});
+		expect(family.success).toBe(true);
+		if (family.success) {
+			expect(family.data).toHaveProperty('focalPoint');
+		}
+
+		const rsvp = InvitationEditorSectionSchemas.rsvp.safeParse({
+			title: 'Sample RSVP title',
+			subcopy: 'Sample RSVP subcopy',
+			guestCap: 6,
+			accessMode: 'hybrid',
+			confirmationMode: 'api',
+			confirmationMessage: 'Sample confirmation',
+			calendar: {
+				title: 'Sample calendar title',
+				description: 'Sample calendar description',
+				startsAt: '2026-09-12T02:00:00.000Z',
+			},
+			personalizedAccess: {
+				title: 'Sample access title',
+				subtitle: 'Sample access subtitle',
+				footerText: 'Sample access footer',
+			},
+		});
+		expect(rsvp.success).toBe(true);
+		if (rsvp.success) {
+			expect(rsvp.data.accessMode).toBe('hybrid');
+			expect(rsvp.data).toHaveProperty('calendar');
+			expect(rsvp.data).toHaveProperty('personalizedAccess');
+		}
+
+		const messages = InvitationEditorSectionSchemas.messages.safeParse({
+			thankYou: {
+				message: 'Sample thank-you message',
+				closingName: 'Honoree',
+				closingPhrase: 'Sample closing',
+				date: '2026-09-11',
+				image: uploaded('550e8400-e29b-41d4-a716-446655440013'),
+				focalPoint: '48% 22%',
+			},
+		});
+		expect(messages.success).toBe(true);
+		if (messages.success) {
+			expect(messages.data.thankYou).toHaveProperty('closingPhrase');
+		}
+
+		const sharing = InvitationEditorSectionSchemas.sharing.safeParse({
+			ogDescription: 'Sample og description',
+			ogImage: uploaded('550e8400-e29b-41d4-a716-446655440010'),
+		});
+		expect(sharing.success).toBe(true);
+		if (sharing.success) {
+			expect(sharing.data).toHaveProperty('ogImage');
+		}
+	});
+
+	it('still rejects unknown keys on expanded sections', () => {
+		expect(
+			InvitationEditorSectionSchemas.envelope.safeParse({ mystery: true }).success,
+		).toBe(false);
+		expect(
+			InvitationEditorSectionSchemas.sharing.safeParse({
+				ogDescription: 'x',
+				extra: true,
+			}).success,
+		).toBe(false);
+		expect(
+			InvitationEditorSectionSchemas.rsvp.safeParse({
+				title: 'x',
+				unknownRsvpField: true,
+			}).success,
+		).toBe(false);
 	});
 });

@@ -254,4 +254,26 @@ describe('createPublicationComparison', () => {
 			}).changedSections,
 		).toEqual([]);
 	});
+
+	it('treats omitted and empty optional collections as equivalent', () => {
+		const comparison = createPublicationComparison({
+			draftProjection: {
+				content: {
+					envelope: { microcopy: 'Abrir' },
+					location: { introEyebrow: 'Fecha' },
+				},
+			},
+			publishedProjection: {
+				content: {
+					envelope: { microcopy: 'Abrir' },
+					itinerary: { items: [], title: 'Itinerario' },
+					gallery: { items: [], title: 'Galería', eyebrow: 'Galería' },
+					location: { introEyebrow: 'Fecha', indicationsHeading: '' },
+				},
+			},
+		});
+
+		expect(comparison.changedPaths).toEqual([]);
+		expect(comparison.changedSections).toEqual([]);
+	});
 });

@@ -1762,9 +1762,8 @@ describe('publishDraft', () => {
 		await publishDraft('proj-1');
 
 		const publishedContent = mockUpsertPublished.mock.calls[0][0].content;
-		// Gallery comes from demo (no draft gallery), no uploaded refs
-		const gallery = publishedContent.gallery;
-		expect(gallery).toEqual(MINIMAL_DEMO_ENTRY.data.gallery);
+		// Client invites omit empty optional galleries when the draft never set one.
+		expect(publishedContent.gallery).toBeUndefined();
 	});
 
 	// ─── Phase 4: Snapshot integrity hardening tests ───

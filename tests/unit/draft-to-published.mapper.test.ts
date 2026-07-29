@@ -624,6 +624,26 @@ describe('mapDraftToPublished', () => {
 		});
 	});
 
+	it('preserves thankYou closingPhrase when provided in draft', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				thankYou: {
+					message: 'Gracias a todos',
+					closingName: 'Ana Sofia',
+					closingPhrase: 'Con cariño',
+				},
+			},
+		});
+
+		expect(result.thankYou).toMatchObject({
+			message: 'Gracias a todos',
+			closingName: 'Ana Sofia',
+			closingPhrase: 'Con cariño',
+		});
+	});
+
 	it('preserves thankYou focalPoint in image-only branch when provided in draft', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
@@ -798,8 +818,8 @@ describe('mapDraftToPublished', () => {
 		expect(result.thankYou).toBeUndefined();
 		expect(result.quote).toEqual({ text: '' });
 		expect(result.location).toBeUndefined();
-		expect(result.gallery).toEqual({ items: [] });
-		expect(result.itinerary).toEqual({ items: [] });
+		expect(result.gallery).toBeUndefined();
+		expect(result.itinerary).toBeUndefined();
 	});
 
 	it('publishes location.venues when present, preferring it over legacy ceremony/reception', () => {
@@ -1168,8 +1188,8 @@ describe('mapDraftToPublished', () => {
 		const result = mapDraftToPublished(baseInput);
 
 		expect(result.envelope).toMatchObject({ disabled: true });
-		expect(result.gallery).toEqual({ items: [] });
-		expect(result.itinerary).toEqual({ items: [] });
+		expect(result.gallery).toBeUndefined();
+		expect(result.itinerary).toBeUndefined();
 	});
 
 	it('uses neutral countdown text for non-demo invitations', () => {
@@ -1364,6 +1384,49 @@ describe('mapDraftToPublished', () => {
 				{ image: 'gallery01', caption: 'Primer recuerdo' },
 			],
 		});
+	});
+
+	it('materializes demo gallery and itinerary when client draft omits them', () => {
+		const demoGallery = {
+			title: 'Galería demo',
+			items: [{ image: 'gallery01', caption: 'Demo' }],
+		};
+		const demoItinerary = {
+			title: 'Programa demo',
+			items: [{ iconName: 'Calendar', label: 'Inicio', time: '18:00' }],
+		};
+		const result = mapDraftToPublished({
+			...baseInput,
+			isDemo: true,
+			demoContent: {
+				...baseDemoContent,
+				gallery: demoGallery,
+				itinerary: demoItinerary,
+			},
+			draftContent: {
+				...baseInput.draftContent,
+			},
+		});
+
+		expect(result.gallery).toEqual(demoGallery);
+		expect(result.itinerary).toEqual(demoItinerary);
+	});
+
+	it('passes through present-but-empty client gallery/itinerary shells', () => {
+		const emptyGallery = { title: 'Galería', items: [] as [] };
+		const emptyItinerary = { title: 'Itinerario', items: [] as [] };
+		const result = mapDraftToPublished({
+			...baseInput,
+			isDemo: false,
+			draftContent: {
+				...baseInput.draftContent,
+				gallery: emptyGallery,
+				itinerary: emptyItinerary,
+			},
+		});
+
+		expect(result.gallery).toEqual(emptyGallery);
+		expect(result.itinerary).toEqual(emptyItinerary);
 	});
 
 	it('preserves gallery eyebrow from draft content', () => {

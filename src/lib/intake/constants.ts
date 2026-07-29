@@ -21,6 +21,10 @@ export const ENVELOPE_TEXT_FIELDS = [
 	'guestLabel',
 	'guestNameFallback',
 	'sealInitials',
+	'teaserDetails',
+	'coverEdition',
+	'coverVolume',
+	'coverIssue',
 ] as const;
 
 export const ALLOWED_MIME_TYPES = ['image/webp', 'image/jpeg', 'image/png'];

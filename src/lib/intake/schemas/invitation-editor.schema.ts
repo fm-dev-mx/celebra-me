@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { INVITATION_RENDER_SECTION_KEYS } from '@/lib/theme/theme-contract';
+import { INVITATION_RENDER_SECTION_KEYS, THEME_PRESETS } from '@/lib/theme/theme-contract';
 import { INVITATION_STATUSES } from '@/lib/intake/types';
 import {
 	focalPointSchema,
@@ -59,6 +59,11 @@ export const InvitationEditorSectionSchemas = {
 			backgroundImageDesktop: editableAssetSchema.optional(),
 			backgroundImageMobile: editableAssetSchema.optional(),
 			portrait: editableAssetSchema.optional(),
+			variant: z.enum(THEME_PRESETS).optional(),
+			focalPoint: focalPointSchema.optional(),
+			focalPointMobile: focalPointSchema.optional(),
+			focalPointTablet: focalPointSchema.optional(),
+			focalPointDesktop: focalPointSchema.optional(),
 		}),
 	}),
 	family: familyDraftSchema,
@@ -87,7 +92,25 @@ export const InvitationEditorSectionSchemas = {
 			subcopy: optionalText(1000),
 			confirmationDeadline: optionalText(60),
 			responseMessages: rsvpResponseMessagesSchema,
+			accessMode: z.enum(['personalized-only', 'hybrid']).optional(),
+			personalizedAccess: z
+				.object({
+					title: optionalText(200),
+					subtitle: optionalText(500),
+					footerText: optionalText(500),
+				})
+				.strict()
+				.optional(),
+			calendar: z
+				.object({
+					title: optionalText(200),
+					description: optionalText(1000),
+					startsAt: optionalText(60),
+				})
+				.strict()
+				.optional(),
 		})
+		.strict()
 		.superRefine((value, context) => {
 			if (
 				(value.confirmationMode === 'whatsapp' || value.confirmationMode === 'both') &&
@@ -113,6 +136,7 @@ export const InvitationEditorSectionSchemas = {
 			.object({
 				message: optionalText(2000),
 				closingName: optionalText(200),
+				closingPhrase: optionalText(200),
 				date: optionalText(40),
 				image: editableAssetSchema.optional(),
 				focalPoint: focalPointSchema.optional(),
@@ -137,11 +161,14 @@ export const InvitationEditorSectionSchemas = {
 	publication: z.object({
 		sectionOrder: z.array(z.enum(INVITATION_RENDER_SECTION_KEYS)),
 	}),
-	sharing: z.object({
-		invitation: optionalText(500),
-		reminder: optionalText(500),
-		ogDescription: optionalText(200),
-	}),
+	sharing: z
+		.object({
+			invitation: optionalText(500),
+			reminder: optionalText(500),
+			ogDescription: optionalText(200),
+			ogImage: editableAssetSchema.optional(),
+		})
+		.strict(),
 } satisfies Record<InvitationEditorSectionKey, z.ZodType>;
 
 export const SaveInvitationEditorSectionSchema = z.object({

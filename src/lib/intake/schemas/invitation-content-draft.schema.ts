@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { INVITATION_RENDER_SECTION_KEYS } from '@/lib/theme/theme-contract';
+import { INVITATION_RENDER_SECTION_KEYS, THEME_PRESETS } from '@/lib/theme/theme-contract';
 import {
 	focalPointSchema,
 	overlayAnchorSchema,
@@ -48,6 +48,11 @@ export const InvitationContentDraftContentSchema = z
 				backgroundImageDesktop: editableAssetSchema.optional(),
 				backgroundImageMobile: editableAssetSchema.optional(),
 				portrait: editableAssetSchema.optional(),
+				variant: z.enum(THEME_PRESETS).optional(),
+				focalPoint: focalPointSchema.optional(),
+				focalPointMobile: focalPointSchema.optional(),
+				focalPointTablet: focalPointSchema.optional(),
+				focalPointDesktop: focalPointSchema.optional(),
 			})
 			.optional(),
 		quote: z
@@ -60,6 +65,7 @@ export const InvitationContentDraftContentSchema = z
 			.object({
 				message: optionalText(2000),
 				closingName: optionalText(200),
+				closingPhrase: optionalText(200),
 				date: optionalText(40),
 				image: editableAssetSchema.optional(),
 				focalPoint: focalPointSchema.optional(),
@@ -105,6 +111,23 @@ export const InvitationContentDraftContentSchema = z
 				subcopy: optionalText(1000),
 				confirmationDeadline: optionalText(60),
 				responseMessages: rsvpResponseMessagesSchema,
+				accessMode: z.enum(['personalized-only', 'hybrid']).optional(),
+				personalizedAccess: z
+					.object({
+						title: optionalText(200),
+						subtitle: optionalText(500),
+						footerText: optionalText(500),
+					})
+					.strict()
+					.optional(),
+				calendar: z
+					.object({
+						title: optionalText(200),
+						description: optionalText(1000),
+						startsAt: optionalText(60),
+					})
+					.strict()
+					.optional(),
 			})
 			.optional(),
 		envelope: envelopeSchema.optional(),
@@ -127,6 +150,7 @@ export const InvitationContentDraftContentSchema = z
 				invitation: optionalText(500),
 				reminder: optionalText(500),
 				ogDescription: optionalText(200),
+				ogImage: editableAssetSchema.optional(),
 			})
 			.optional(),
 	})

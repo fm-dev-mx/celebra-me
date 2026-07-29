@@ -40,6 +40,7 @@ export const venueSchema = z
 		appleMapsUrl: optionalUrl,
 		wazeUrl: optionalUrl,
 		image: editableAssetSchema.optional(),
+		focalPoint: focalPointSchema.optional(),
 		coordinates: z
 			.object({
 				lat: z.number().min(-90).max(90),
@@ -194,6 +195,11 @@ export const envelopeSchema = z
 		stampText: z.string().max(60).optional(),
 		stampYear: z.string().max(10).optional(),
 		tooltipText: z.string().max(100).optional(),
+		teaserDetails: z.string().trim().max(500).optional(),
+		revealVariant: z.enum(['celestial-blue', 'editorial-cover']).optional(),
+		coverEdition: z.string().trim().max(80).optional(),
+		coverVolume: z.string().trim().max(40).optional(),
+		coverIssue: z.string().trim().max(40).optional(),
 		closedPalette: z
 			.object({
 				primary: ColorTokenSchema.optional(),

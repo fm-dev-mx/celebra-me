@@ -598,6 +598,8 @@ function mapThankYouSection(
 	const overlayFields: Record<string, unknown> = {};
 	if (draftThankYou?.focalPoint !== undefined)
 		overlayFields.focalPoint = draftThankYou.focalPoint;
+	if (draftThankYou?.closingPhrase !== undefined)
+		overlayFields.closingPhrase = draftThankYou.closingPhrase;
 	if (draftThankYou?.overlayAnchor !== undefined)
 		overlayFields.overlayAnchor = draftThankYou.overlayAnchor;
 	if (draftThankYou?.overlaySafeArea !== undefined)
@@ -607,7 +609,7 @@ function mapThankYouSection(
 			message,
 			closingName: str(draftThankYou?.closingName) || demoStr(ctx, demoThankYou?.closingName),
 			image: draftThankYou?.image ?? demoValue(ctx, demoThankYou?.image),
-			...clientPriorFields(ctx, priorThankYou, ['date']),
+			...clientPriorFields(ctx, priorThankYou, ['date', 'closingPhrase']),
 			...overlayFields,
 		};
 	}
@@ -763,8 +765,14 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 		),
 		family: familySection ?? (ctx.isDemo ? demoContent.family : undefined),
 		location: locationSection ?? (ctx.isDemo ? demoContent.location : undefined),
-		gallery: draftContent.gallery ?? (ctx.isDemo ? demoContent.gallery : { items: [] }),
-		itinerary: draftContent.itinerary ?? (ctx.isDemo ? demoContent.itinerary : { items: [] }),
+		// Omit empty optional collections for client invites so publish does not
+		// invent sections the editor never edited (preflight noise / false drift).
+		gallery:
+			draftContent.gallery ??
+			(ctx.isDemo ? demoContent.gallery : undefined),
+		itinerary:
+			draftContent.itinerary ??
+			(ctx.isDemo ? demoContent.itinerary : undefined),
 		countdown: mapCountdownFromDraft(
 			draftContent.countdown,
 			demoContent.countdown as Record<string, unknown> | undefined,
