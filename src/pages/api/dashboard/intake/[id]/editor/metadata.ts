@@ -9,9 +9,13 @@ import { createRuntimeMutationCommandContext } from '@/lib/server/runtime-mutati
 export const PATCH: APIRoute = async ({ request, cookies, params }) => {
 	try {
 		const session = await requireEditorMutationAccess(request, cookies);
-		const commandContext = await createRuntimeMutationCommandContext(session, 'editor');
 		const parsed = await validateBodyOrRespond(request, UpdateInvitationEditorMetadataSchema);
 		if (parsed instanceof Response) return parsed;
+		const commandContext = await createRuntimeMutationCommandContext(
+			session,
+			'editor',
+			parsed.operationId,
+		);
 		return jsonResponse(
 			await saveInvitationEditorMetadata(
 				requireInvitationId(params.id),

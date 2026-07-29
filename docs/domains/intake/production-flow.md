@@ -303,6 +303,12 @@ metadata hash and therefore do not invalidate a confirmation.
 - Republication requires an editable `draft` again; it increments the published version.
 - Concurrent or stale publication returns 409. Reload; never force the timestamp or update tables
   independently.
+- Publication is durable before managed-provenance invalidation. If invalidation or its receipt
+  fails, the response is `partial`; replay uses the publication idempotency row, repairs provenance,
+  and appends a linked `replayed` outcome without publishing a new version.
+- Public metadata saves that must reopen a draft and restore-from-published run in narrow atomic
+  RPCs. Their invitation, draft, published-version preconditions and append-only receipt commit in
+  the same transaction, and the same operation ID returns the stored result on retry.
 
 ## 8. Migrations and deployment
 
@@ -355,8 +361,8 @@ IDs for each test.
   or drop a compatibility object without production-consumer evidence.
 - A failed atomic publication leaves the previous published snapshot available. Reload state,
   capture the error marker and IDs, correct the draft or dependency, and retry.
-- Suspect partial state only when writes bypassed the RPC or an older deployment was used. Compare
-  invitation status, draft status/timestamp, published version/timestamp, and RSVP event linkage.
+- A `partial` publication outcome means the public version committed but ancillary provenance did
+  not. Retry the same confirmation; do not publish a replacement merely to repair provenance.
 - If malformed stored content is detected, preserve the published row and logs, remove it from
   public caching, repair through a reviewed draft/republish or forward data migration, and verify
   the prior public version remains recoverable.

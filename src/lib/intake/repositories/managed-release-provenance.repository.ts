@@ -12,6 +12,9 @@ export async function clearManagedProjectionAncestor(invitationId: string): Prom
 		body: {
 			managed_projection: null,
 			applied_draft_updated_at: null,
+			applied_operation_id: null,
+			applied_published_version: null,
+			applied_published_projection_hash: null,
 		},
 		useServiceRole: true,
 		prefer: 'return=minimal',

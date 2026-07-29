@@ -177,6 +177,7 @@ export const SaveInvitationEditorSectionSchema = z.object({
 });
 
 export const UpdateInvitationEditorMetadataSchema = z.object({
+	operationId: z.uuid(),
 	expectedUpdatedAt: z.string().min(1),
 	value: z.object({
 		title: z.string().trim().min(1, 'El título es obligatorio.').max(200),

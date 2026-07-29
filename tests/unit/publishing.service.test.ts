@@ -42,6 +42,17 @@ jest.mock('@/lib/intake/repositories/managed-release-provenance.repository', () 
 	clearManagedProjectionAncestor: jest.fn().mockResolvedValue(undefined),
 }));
 
+jest.mock('@/lib/intake/services/mutation-operation.service', () => ({
+	ensurePartialMutationParent: jest.fn().mockResolvedValue(undefined),
+	recordInvitationMutationOutcome: jest.fn(async (input) => ({
+		operationId: input.context.operationId,
+		status: input.status,
+		durableMutation: input.status === 'applied' || input.status === 'partial',
+		completedSteps: input.completedSteps ?? [],
+		result: input.result,
+	})),
+}));
+
 jest.mock('@/lib/assets/asset-registry', () => {
 	const actual = jest.requireActual('@/lib/assets/asset-registry');
 	const eventSlugs = new Set([
@@ -88,6 +99,10 @@ import {
 	replayAtomicPublication,
 } from '@/lib/intake/repositories/publication.repository';
 import { clearManagedProjectionAncestor } from '@/lib/intake/repositories/managed-release-provenance.repository';
+import {
+	ensurePartialMutationParent,
+	recordInvitationMutationOutcome,
+} from '@/lib/intake/services/mutation-operation.service';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { mapDraftToPublished } from '@/lib/intake/mappers/draft-to-published.mapper';
 import { mapNestedToDraftContent } from '@/lib/intake/services/draft-content-mapper';
@@ -111,6 +126,14 @@ const KNOWN_EVENT_SLUGS = new Set([
 	'demo-xv-editorial',
 	'demo-xv-jewelry-box',
 ]);
+const COMMAND_CONTEXT = {
+	operationId: VALID_UUID_1,
+	environment: 'local' as const,
+	projectRef: 'local-test',
+	actorId: VALID_UUID_2,
+	actorType: 'admin' as const,
+	origin: 'editor' as const,
+};
 
 const MINIMAL_DEMO_ENTRY = buildEventDemoEntry(
 	{
@@ -335,6 +358,59 @@ beforeEach(() => {
 });
 
 describe('publishDraft', () => {
+	it('reports partial when publication commits but provenance invalidation fails', async () => {
+		mockGetProject.mockResolvedValue(baseProject as never);
+		mockFindDraft.mockResolvedValue(validDraft as never);
+		mockFindPublishedBySlugAndEventType.mockResolvedValue(null);
+		mockUpsertPublished.mockResolvedValue(publishedRow as never);
+		mockUpdateProject.mockResolvedValue(baseProject as never);
+		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as never);
+		mockClearManagedProjection.mockRejectedValueOnce(new Error('provenance unavailable'));
+
+		const result = await publishDraft('proj-1', undefined, COMMAND_CONTEXT);
+
+		expect(result.outcome).toMatchObject({
+			operationId: VALID_UUID_1,
+			status: 'partial',
+			completedSteps: ['publication_committed'],
+		});
+		expect(recordInvitationMutationOutcome).toHaveBeenCalledWith(
+			expect.objectContaining({ status: 'partial', commandKind: 'publish_invitation' }),
+		);
+	});
+
+	it('replays publication and repairs provenance without publishing again', async () => {
+		mockGetProject.mockResolvedValue(baseProject as never);
+		mockFindDraft.mockResolvedValue(approvedDraft as never);
+		mockReplayAtomic.mockResolvedValue({
+			draft: approvedDraft,
+			publishedContent: {
+				id: publishedRow.id,
+				slug: publishedRow.slug,
+				eventType: publishedRow.eventType,
+				version: publishedRow.version,
+				publishedAt: publishedRow.publishedAt,
+			},
+			idempotent: true,
+		});
+		const preflight = {
+			draftRevision: validDraft.updatedAt,
+			publishedVersion: null,
+			publicMetadataHash: 'a'.repeat(32),
+			projectionHash: 'b'.repeat(32),
+			idempotencyKey: VALID_UUID_1,
+		};
+
+		const result = await publishDraft('proj-1', preflight, COMMAND_CONTEXT);
+
+		expect(mockCommitAtomic).not.toHaveBeenCalled();
+		expect(ensurePartialMutationParent).toHaveBeenCalledWith(
+			expect.objectContaining({ context: COMMAND_CONTEXT }),
+		);
+		expect(mockClearManagedProjection).toHaveBeenCalledWith('proj-1');
+		expect(result.outcome?.status).toBe('replayed');
+	});
+
 	it('creates a canonical preflight that groups an envelope edit under its editor section', async () => {
 		const rominaProject = { ...baseProject, slug: 'romina' };
 		mockGetProject.mockResolvedValue(rominaProject as never);

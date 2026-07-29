@@ -4,6 +4,7 @@ import { requireEditorMutationAccess, requireInvitationId } from '@/lib/intake/e
 import { getInvitationEditorContext } from '@/lib/intake/services/invitation-editor.service';
 import { publishDraft } from '@/lib/intake/services/publishing.service';
 import { errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
+import { createRuntimeMutationCommandContext } from '@/lib/server/runtime-mutation-context';
 
 const PublishPreflightSchema = z.object({
 	draftRevision: z.string().min(1),
@@ -15,15 +16,18 @@ const PublishPreflightSchema = z.object({
 
 export const POST: APIRoute = async ({ request, cookies, params }) => {
 	try {
-		await requireEditorMutationAccess(request, cookies);
+		const session = await requireEditorMutationAccess(request, cookies);
 		const invitationId = requireInvitationId(params.id);
+		const preflight = PublishPreflightSchema.parse(await request.json());
 		const result = await publishDraft(
 			invitationId,
-			PublishPreflightSchema.parse(await request.json()),
+			preflight,
+			await createRuntimeMutationCommandContext(session, 'editor', preflight.idempotencyKey),
 		);
 		const response = jsonResponse({
 			publishedContent: result.publishedContent,
 			idempotent: result.idempotent ?? false,
+			outcome: result.outcome,
 			context: await getInvitationEditorContext(invitationId),
 		});
 		response.headers.set('Cache-Control', 'no-store, private');

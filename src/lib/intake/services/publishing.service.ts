@@ -42,6 +42,12 @@ import {
 	MAX_OUTPUT_DIMENSION,
 	OUTPUT_MIME_TYPE,
 } from '@/lib/intake/services/asset-policy';
+import type { InvitationMutationCommandContext } from '@/lib/intake/mutations/command-context';
+import { createMutationOutcome, type MutationOutcome } from '@/lib/intake/mutations/outcome';
+import {
+	ensurePartialMutationParent,
+	recordInvitationMutationOutcome,
+} from '@/lib/intake/services/mutation-operation.service';
 
 export interface PublishResult {
 	draft: InvitationContentDraft;
@@ -53,6 +59,78 @@ export interface PublishResult {
 		publishedAt: string;
 	};
 	idempotent?: boolean;
+	outcome?: MutationOutcome;
+}
+
+async function finalizePublicationProvenance(input: {
+	invitationId: string;
+	result: PublishResult;
+	context?: InvitationMutationCommandContext;
+	replayed?: boolean;
+}): Promise<PublishResult> {
+	const completedSteps = ['publication_committed'];
+	try {
+		await clearManagedProjectionAncestor(input.invitationId);
+		completedSteps.push('managed_provenance_invalidated');
+	} catch (error) {
+		if (!input.context) {
+			return {
+				...input.result,
+				outcome: createMutationOutcome({
+					operationId: randomUUID(),
+					status: 'partial',
+					completedSteps,
+					error,
+				}),
+			};
+		}
+		try {
+			await recordInvitationMutationOutcome({
+				context: input.context,
+				invitationId: input.invitationId,
+				commandKind: 'publish_invitation',
+				status: 'partial',
+				completedSteps,
+				result: { publishedVersion: input.result.publishedContent.version },
+				error,
+			});
+		} catch {
+			// The publication idempotency record still permits deterministic reconciliation.
+		}
+		return {
+			...input.result,
+			outcome: createMutationOutcome({
+				operationId: input.context.operationId,
+				status: 'partial',
+				completedSteps,
+				error,
+			}),
+		};
+	}
+
+	if (!input.context) return input.result;
+	const status = input.replayed ? 'replayed' : 'applied';
+	try {
+		const outcome = await recordInvitationMutationOutcome({
+			context: input.context,
+			invitationId: input.invitationId,
+			commandKind: 'publish_invitation',
+			status,
+			completedSteps,
+			result: { publishedVersion: input.result.publishedContent.version },
+		});
+		return { ...input.result, outcome };
+	} catch (error) {
+		return {
+			...input.result,
+			outcome: createMutationOutcome({
+				operationId: input.context.operationId,
+				status: 'partial',
+				completedSteps,
+				error,
+			}),
+		};
+	}
 }
 
 export interface PublicationPreflight {
@@ -538,6 +616,7 @@ function assertCountdownHasTiming(content: Record<string, unknown>): void {
 export async function publishDraft(
 	invitationId: string,
 	preflight?: PublishPreflightInput,
+	commandContext?: InvitationMutationCommandContext,
 ): Promise<PublishResult> {
 	const invitation = await findInvitationById(invitationId);
 	if (!invitation) {
@@ -550,7 +629,7 @@ export async function publishDraft(
 	}
 
 	if (draft.status !== 'draft' && preflight) {
-		return replayAtomicPublication({
+		const replayed = await replayAtomicPublication({
 			invitationId,
 			draftId: draft.id,
 			expectedDraftUpdatedAt: preflight.draftRevision,
@@ -558,6 +637,28 @@ export async function publishDraft(
 			publicMetadataHash: preflight.publicMetadataHash,
 			projectionHash: preflight.projectionHash,
 			idempotencyKey: preflight.idempotencyKey,
+		});
+		if (commandContext) {
+			await ensurePartialMutationParent({
+				context: commandContext,
+				invitationId,
+				commandKind: 'publish_invitation',
+				completedSteps: ['publication_committed'],
+				result: { publishedVersion: replayed.publishedContent.version },
+			});
+		}
+		const replayContext = commandContext
+			? {
+					...commandContext,
+					operationId: randomUUID(),
+					retryOfOperationId: commandContext.operationId,
+				}
+			: undefined;
+		return finalizePublicationProvenance({
+			invitationId,
+			result: replayed,
+			context: replayContext,
+			replayed: true,
 		});
 	}
 
@@ -625,13 +726,9 @@ export async function publishDraft(
 		content: publishedContent,
 	});
 
-	// Editor publish supersedes the last managed ancestor; clear it so the next
-	// invitation:update merges against published content instead of stale projection.
-	try {
-		await clearManagedProjectionAncestor(invitationId);
-	} catch {
-		// Provenance may be absent for non-managed invitations; never fail publish.
-	}
-
-	return result;
+	return finalizePublicationProvenance({
+		invitationId,
+		result,
+		context: commandContext,
+	});
 }

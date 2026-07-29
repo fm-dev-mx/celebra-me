@@ -5,6 +5,7 @@ import {
 	type MutationOutcomeStatus,
 } from '@/lib/intake/mutations/outcome';
 import { appendMutationOperationReceipt } from '@/lib/intake/repositories/mutation-operation.repository';
+import { findMutationOperationReceipt } from '@/lib/intake/repositories/mutation-operation.repository';
 
 export async function recordInvitationMutationOutcome<Result>(input: {
 	context: InvitationMutationCommandContext;
@@ -50,4 +51,25 @@ export async function recordInvitationMutationOutcome<Result>(input: {
 	});
 
 	return outcome;
+}
+
+/** Ensure a durable parent exists before appending a retry/replay receipt. */
+export async function ensurePartialMutationParent(input: {
+	context: InvitationMutationCommandContext;
+	invitationId?: string | null;
+	commandKind: string;
+	completedSteps: string[];
+	result?: Record<string, unknown>;
+}): Promise<void> {
+	const existing = await findMutationOperationReceipt(input.context.operationId);
+	if (existing) return;
+	await recordInvitationMutationOutcome({
+		context: input.context,
+		invitationId: input.invitationId,
+		commandKind: input.commandKind,
+		status: 'partial',
+		completedSteps: input.completedSteps,
+		result: input.result,
+		error: new Error('downstream_receipt_missing_after_durable_mutation'),
+	});
 }

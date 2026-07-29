@@ -18,6 +18,11 @@ jest.mock('@/lib/intake/repositories/published-invitation-content.repository', (
 	findPublishedByInvitationId: jest.fn(),
 }));
 
+jest.mock('@/lib/intake/repositories/editor-atomic.repository', () => ({
+	saveInvitationMetadataAtomic: jest.fn(),
+	restoreInvitationFromPublishedAtomic: jest.fn(),
+}));
+
 jest.mock('@/lib/rsvp/repositories/event.repository', () => ({
 	findEventByInvitationIdService: jest.fn(),
 	findEventBySlugService: jest.fn(),
@@ -36,6 +41,10 @@ import {
 	upsertDraft,
 } from '@/lib/intake/repositories/invitation-content-draft.repository';
 import { findPublishedByInvitationId } from '@/lib/intake/repositories/published-invitation-content.repository';
+import {
+	restoreInvitationFromPublishedAtomic,
+	saveInvitationMetadataAtomic,
+} from '@/lib/intake/repositories/editor-atomic.repository';
 import {
 	findEventByInvitationIdService,
 	findEventBySlugService,
@@ -142,6 +151,15 @@ const demoContent = {
 	},
 };
 
+const COMMAND_CONTEXT = {
+	operationId: '11111111-1111-4111-8111-111111111111',
+	environment: 'local' as const,
+	projectRef: 'local-test',
+	actorId: '22222222-2222-4222-8222-222222222222',
+	actorType: 'admin' as const,
+	origin: 'editor' as const,
+};
+
 beforeEach(() => {
 	jest.clearAllMocks();
 	(findInvitationById as jest.Mock).mockResolvedValue(invitation);
@@ -151,6 +169,22 @@ beforeEach(() => {
 	(findPublishedByInvitationId as jest.Mock).mockResolvedValue(published);
 	(findEventByInvitationIdService as jest.Mock).mockResolvedValue(null);
 	(findEventBySlugService as jest.Mock).mockResolvedValue(null);
+	(saveInvitationMetadataAtomic as jest.Mock).mockResolvedValue({
+		invitationUpdatedAt: '2026-05-30T03:00:00Z',
+		draftId: draft.id,
+		draftUpdatedAt: draft.updatedAt,
+		draftStatus: draft.status,
+		idempotent: false,
+	});
+	(restoreInvitationFromPublishedAtomic as jest.Mock).mockResolvedValue({
+		invitationUpdatedAt: '2026-05-30T03:00:00Z',
+		draftId: draft.id,
+		draftUpdatedAt: '2026-05-30T03:00:00Z',
+		draftStatus: 'draft',
+		publishedId: published.id,
+		publishedVersion: published.version,
+		idempotent: false,
+	});
 	(upsertDraft as jest.Mock).mockResolvedValue(null);
 	(getCollection as jest.Mock).mockResolvedValue([
 		{
@@ -709,27 +743,27 @@ describe('saveInvitationEditorMetadata', () => {
 	};
 
 	it('reopens an approved draft when public title or slug changes', async () => {
-		(updateInvitationConditionally as jest.Mock).mockResolvedValue({
-			...invitation,
-			title: metadata.title,
-			slug: metadata.slug,
-			updatedAt: '2026-05-30T03:00:00Z',
-		});
-		(updateDraftContentConditionally as jest.Mock).mockResolvedValue({
-			...draft,
-			status: 'draft',
-			updatedAt: '2026-05-30T03:00:00Z',
+		(saveInvitationMetadataAtomic as jest.Mock).mockResolvedValue({
+			invitationUpdatedAt: '2026-05-30T03:00:00Z',
+			draftId: draft.id,
+			draftUpdatedAt: '2026-05-30T03:00:00Z',
+			draftStatus: 'draft',
+			idempotent: false,
 		});
 
 		const result = await saveInvitationEditorMetadata('proj-1', {
 			expectedUpdatedAt: invitation.updatedAt,
 			value: metadata,
-		});
+		}, COMMAND_CONTEXT);
 
-		expect(updateDraftContentConditionally).toHaveBeenCalledWith('draft-1', draft.updatedAt, {
-			content: draft.content,
-			status: 'draft',
-		});
+		expect(saveInvitationMetadataAtomic).toHaveBeenCalledWith(
+			expect.objectContaining({
+				expectedDraftUpdatedAt: draft.updatedAt,
+				reopenDraft: true,
+				draftContent: draft.content,
+				context: COMMAND_CONTEXT,
+			}),
+		);
 		expect(result.draftStatus).toBe('draft');
 		expect(result.publication.hasUnpublishedChanges).toBe(true);
 	});
@@ -743,10 +777,12 @@ describe('saveInvitationEditorMetadata', () => {
 				slug: invitation.slug,
 				clientName: 'Romina',
 			},
-		});
+		}, COMMAND_CONTEXT);
 
 		expect(updateDraftContentConditionally).not.toHaveBeenCalled();
-		expect(upsertDraft).not.toHaveBeenCalled();
+		expect(saveInvitationMetadataAtomic).toHaveBeenCalledWith(
+			expect.objectContaining({ reopenDraft: false, draftContent: null }),
+		);
 		expect(result.draftStatus).toBe('approved');
 		expect(result.publication.hasUnpublishedChanges).toBe(false);
 	});
@@ -1120,23 +1156,18 @@ describe('restoreInvitationEditorFromPublished', () => {
 		await restoreInvitationEditorFromPublished('proj-1', {
 			expectedDraftUpdatedAt: draft.updatedAt,
 			expectedInvitationUpdatedAt: invitation.updatedAt,
-		});
+		}, COMMAND_CONTEXT);
 
-		expect(updateInvitationConditionally).toHaveBeenCalledWith('proj-1', invitation.updatedAt, {
-			title: published.content.title,
-			slug: published.slug,
-		});
-
-		expect(updateDraftContentConditionally).toHaveBeenCalledWith(
-			'draft-1',
-			draft.updatedAt,
+		expect(restoreInvitationFromPublishedAtomic).toHaveBeenCalledWith(
 			expect.objectContaining({
-				status: 'draft',
-				content: expect.objectContaining({
+				expectedPublishedId: published.id,
+				expectedPublishedVersion: published.version,
+				draftContent: expect.objectContaining({
 					title: published.content.title,
 					description: published.content.description,
 					gallery: published.content.gallery,
 				}),
+				context: COMMAND_CONTEXT,
 			}),
 		);
 	});
@@ -1148,7 +1179,7 @@ describe('restoreInvitationEditorFromPublished', () => {
 			restoreInvitationEditorFromPublished('proj-1', {
 				expectedDraftUpdatedAt: draft.updatedAt,
 				expectedInvitationUpdatedAt: invitation.updatedAt,
-			}),
+			}, COMMAND_CONTEXT),
 		).rejects.toMatchObject({ status: 404 });
 	});
 });

@@ -41,7 +41,7 @@ export const GET: APIRoute = async ({ request, params }) => {
 
 export const POST: APIRoute = async ({ request, cookies, params }) => {
 	try {
-		await requireAdminMutationAccess(request, cookies, 'intake:draft');
+		const session = await requireAdminMutationAccess(request, cookies, 'intake:draft');
 
 		const { id } = params;
 		if (!id) throw new ApiError(400, 'bad_request', 'Invitation ID is required.');
@@ -51,13 +51,15 @@ export const POST: APIRoute = async ({ request, cookies, params }) => {
 
 		if (parsed.action === 'publish') {
 			const preflight = await getPublicationPreflight(id);
+			const idempotencyKey = crypto.randomUUID();
 			const result = await publishDraft(id, {
 				...preflight,
-				idempotencyKey: crypto.randomUUID(),
-			});
+				idempotencyKey,
+			}, await createRuntimeMutationCommandContext(session, 'legacy_dashboard', idempotencyKey));
 			return jsonResponse({
 				draft: toInvitationContentDraftDTO(result.draft),
 				publishedContent: result.publishedContent,
+				outcome: result.outcome,
 			});
 		}
 		if (parsed.action === 'revise') {

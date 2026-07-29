@@ -4,6 +4,7 @@ import { getInvitationEditorContext } from '@/lib/intake/services/invitation-edi
 import { publishDraft } from '@/lib/intake/services/publishing.service';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { createMockRequest } from '../helpers/api-mocks';
+import { createRuntimeMutationCommandContext } from '@/lib/server/runtime-mutation-context';
 
 jest.mock('@/lib/intake/editor-api', () => ({
 	requireEditorMutationAccess: jest.fn(),
@@ -18,6 +19,10 @@ jest.mock('@/lib/intake/services/publishing.service', () => ({
 	publishDraft: jest.fn(),
 }));
 
+jest.mock('@/lib/server/runtime-mutation-context', () => ({
+	createRuntimeMutationCommandContext: jest.fn(),
+}));
+
 const payload = {
 	draftRevision: '2026-07-18T00:00:00.000Z',
 	publishedVersion: 1,
@@ -27,6 +32,13 @@ const payload = {
 };
 
 describe('/api/dashboard/intake/[id]/editor/publish', () => {
+	beforeEach(() => {
+		(requireEditorMutationAccess as jest.Mock).mockResolvedValue({ userId: 'admin-1' });
+		(createRuntimeMutationCommandContext as jest.Mock).mockResolvedValue({
+			operationId: payload.idempotencyKey,
+			environment: 'local',
+		});
+	});
 	it('never caches a successful publication response', async () => {
 		(publishDraft as jest.Mock).mockResolvedValue({ publishedContent: { version: 2 } });
 		(getInvitationEditorContext as jest.Mock).mockResolvedValue({

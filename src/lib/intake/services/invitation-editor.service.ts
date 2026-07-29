@@ -1,12 +1,7 @@
-import {
-	findDraftByInvitationId,
-	updateDraftContentConditionally,
-	upsertDraft,
-} from '@/lib/intake/repositories/invitation-content-draft.repository';
+import { findDraftByInvitationId } from '@/lib/intake/repositories/invitation-content-draft.repository';
 import {
 	findInvitationById,
 	findInvitationBySlug,
-	updateInvitationConditionally,
 } from '@/lib/intake/repositories/invitation.repository';
 import { findPublishedByInvitationId } from '@/lib/intake/repositories/published-invitation-content.repository';
 import type { InvitationEditorSectionKey } from '@/lib/intake/schemas/invitation-editor.schema';
@@ -34,6 +29,11 @@ import {
 } from '@/lib/intake/services/draft-mutation.service';
 import type { InvitationMutationCommandContext } from '@/lib/intake/mutations/command-context';
 import { recordInvitationMutationOutcome } from '@/lib/intake/services/mutation-operation.service';
+import {
+	restoreInvitationFromPublishedAtomic,
+	saveInvitationMetadataAtomic,
+} from '@/lib/intake/repositories/editor-atomic.repository';
+import { createMutationOutcome } from '@/lib/intake/mutations/outcome';
 
 type PublicationState = {
 	hasPublishedContent: boolean;
@@ -221,7 +221,7 @@ export async function saveInvitationEditorSection(
 	}
 }
 
-// eslint-disable-next-line complexity -- Command classifies precondition, metadata, draft-reopen, and durable receipt boundaries explicitly.
+// eslint-disable-next-line complexity -- Atomic command derives public-change, draft-reopen, and replay response state.
 export async function saveInvitationEditorMetadata(
 	invitationId: string,
 	input: {
@@ -236,7 +236,7 @@ export async function saveInvitationEditorMetadata(
 			photosReceived: boolean;
 		};
 	},
-	commandContext?: InvitationMutationCommandContext,
+	commandContext: InvitationMutationCommandContext,
 ) {
 	const [currentInvitation, draft, published] = await Promise.all([
 		findInvitationById(invitationId),
@@ -260,102 +260,61 @@ export async function saveInvitationEditorMetadata(
 		}
 	}
 
-	let savedInvitation: Invitation | null;
-	try {
-		savedInvitation = await updateInvitationConditionally(
-			invitationId,
-			input.expectedUpdatedAt,
-			input.value,
-		);
-	} catch (error) {
-		if (commandContext) {
-			await recordInvitationMutationOutcome({
-				context: commandContext,
-				invitationId,
-				commandKind: 'save_editor_metadata',
-				status: 'not_applied',
-				expectedState: { invitationUpdatedAt: input.expectedUpdatedAt },
-				error,
-			});
-		}
-		throw error;
-	}
-	if (!savedInvitation) {
-		if (commandContext) {
-			await recordInvitationMutationOutcome({
-				context: commandContext,
-				invitationId,
-				commandKind: 'save_editor_metadata',
-				status: 'not_applied',
-				expectedState: { invitationUpdatedAt: input.expectedUpdatedAt },
-				error: new Error('invitation_revision_conflict'),
-			});
-		}
-		throw new ApiError(
-			409,
-			'conflict',
-			'Otra persona guardó cambios antes que tú. Recarga los datos para continuar.',
-		);
-	}
-
 	// Title and slug are resolved from the invitation record when publishing.
 	// Reopen (or seed) a draft only when either public value actually changed;
 	// contact-only metadata must not create a misleading pending-publication state.
-	let publicationDraft = draft;
-	try {
-		if (published && changesPublicMetadata && draft?.status !== 'draft') {
-			const content = draft?.content ?? mapNestedToDraftContent(published.content);
-			publicationDraft = draft
-				? await updateDraftContentConditionally(draft.id, draft.updatedAt, {
-						content,
-						status: 'draft',
-					})
-				: await upsertDraft({ invitationId, submissionId: null, content });
-			if (!publicationDraft) {
-				throw new ApiError(
-					409,
-					'conflict',
-					'Otra persona guardó cambios antes que tú. Recarga los datos para continuar.',
-				);
+	const reopenDraft = Boolean(published && changesPublicMetadata && draft?.status !== 'draft');
+	const draftContent = reopenDraft
+		? (draft?.content ?? mapNestedToDraftContent(published!.content))
+		: null;
+	const atomic = await saveInvitationMetadataAtomic({
+		invitationId,
+		expectedInvitationUpdatedAt: input.expectedUpdatedAt,
+		expectedDraftUpdatedAt: reopenDraft ? (draft?.updatedAt ?? null) : null,
+		metadata: input.value,
+		reopenDraft,
+		draftContent,
+		context: commandContext,
+	});
+	const savedInvitation: Invitation = {
+		...currentInvitation,
+		...input.value,
+		updatedAt: atomic.invitationUpdatedAt,
+	};
+	const publicationDraft: InvitationContentDraft | null = atomic.draftId
+		? {
+				...(draft ?? {
+					id: atomic.draftId,
+					invitationId,
+					submissionId: null,
+					createdAt: atomic.draftUpdatedAt!,
+				}),
+				id: atomic.draftId,
+				content: draftContent ?? draft?.content ?? {},
+				status: atomic.draftStatus!,
+				updatedAt: atomic.draftUpdatedAt!,
 			}
-		}
-	} catch (error) {
-		if (commandContext) {
-			await recordInvitationMutationOutcome({
-				context: commandContext,
-				invitationId,
-				commandKind: 'save_editor_metadata',
-				status: 'partial',
-				completedSteps: ['invitation_metadata_saved'],
-				expectedState: { invitationUpdatedAt: input.expectedUpdatedAt },
-				result: { invitationUpdatedAt: savedInvitation.updatedAt },
-				error,
-			});
-		}
-		throw error;
-	}
-
-	const mutation = commandContext
-		? await recordInvitationMutationOutcome({
-				context: commandContext,
-				invitationId,
-				commandKind: 'save_editor_metadata',
-				status: 'applied',
-				completedSteps: [
-					'invitation_metadata_saved',
-					...(publicationDraft !== draft ? ['draft_reopened'] : []),
-				],
-				expectedState: { invitationUpdatedAt: input.expectedUpdatedAt },
-				result: { invitationUpdatedAt: savedInvitation.updatedAt },
-			})
-		: undefined;
+		: null;
+	const completedSteps = [
+		'invitation_metadata_saved',
+		...(reopenDraft ? ['draft_reopened'] : []),
+	];
+	const mutation = createMutationOutcome({
+		operationId: commandContext.operationId,
+		status: atomic.idempotent ? 'replayed' : 'applied',
+		completedSteps,
+		result: { invitationUpdatedAt: atomic.invitationUpdatedAt },
+		...(atomic.idempotent
+			? { replayedFromOperationId: commandContext.operationId }
+			: {}),
+	});
 
 	return {
 		invitation: savedInvitation,
 		draftUpdatedAt: publicationDraft?.updatedAt ?? null,
 		draftStatus: publicationDraft?.status ?? null,
 		publication: createPublicationState(publicationDraft, published),
-		...(mutation ? { mutation } : {}),
+		mutation,
 	};
 }
 
@@ -407,8 +366,9 @@ export async function restoreInvitationEditorFromPublished(
 	invitationId: string,
 	input: {
 		expectedDraftUpdatedAt: string | null;
-		expectedInvitationUpdatedAt: string;
+		 expectedInvitationUpdatedAt: string;
 	},
+	commandContext: InvitationMutationCommandContext,
 ) {
 	const [invitation, draft, published] = await Promise.all([
 		findInvitationById(invitationId),
@@ -432,35 +392,34 @@ export async function restoreInvitationEditorFromPublished(
 		);
 	}
 
-	const publishedTitle =
-		typeof published.content.title === 'string' ? published.content.title : invitation.title;
-	const savedInvitation = await updateInvitationConditionally(
-		invitationId,
-		input.expectedInvitationUpdatedAt,
-		{ title: publishedTitle, slug: published.slug },
-	);
-	if (!savedInvitation) {
-		throw new ApiError(
-			409,
-			'conflict',
-			'Otra persona guardó cambios antes que tú. Recarga los datos para continuar.',
-		);
-	}
-
 	const content = mapNestedToDraftContent(published.content);
-	const savedDraft = draft
-		? await updateDraftContentConditionally(draft.id, input.expectedDraftUpdatedAt!, {
-				content,
-				status: 'draft',
-			})
-		: await upsertDraft({ invitationId, submissionId: null, content });
-
-	if (!savedDraft) {
-		throw new ApiError(
-			409,
-			'conflict',
-			'Otra persona guardó cambios antes que tú. Recarga los datos para continuar.',
-		);
-	}
-	return savedDraft;
+	const atomic = await restoreInvitationFromPublishedAtomic({
+		invitationId,
+		expectedInvitationUpdatedAt: input.expectedInvitationUpdatedAt,
+		expectedDraftUpdatedAt: input.expectedDraftUpdatedAt,
+		expectedPublishedId: published.id,
+		expectedPublishedVersion: published.version,
+		draftContent: content,
+		context: commandContext,
+	});
+	return {
+		...(draft ?? {
+			id: atomic.draftId!,
+			invitationId,
+			submissionId: null,
+			createdAt: atomic.draftUpdatedAt!,
+		}),
+		id: atomic.draftId!,
+		content,
+		status: 'draft' as const,
+		updatedAt: atomic.draftUpdatedAt!,
+		mutation: createMutationOutcome({
+			operationId: commandContext.operationId,
+			status: atomic.idempotent ? 'replayed' : 'applied',
+			completedSteps: ['invitation_metadata_restored', 'draft_restored'],
+			...(atomic.idempotent
+				? { replayedFromOperationId: commandContext.operationId }
+				: {}),
+		}),
+	};
 }
