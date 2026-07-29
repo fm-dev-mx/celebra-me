@@ -531,7 +531,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 
 	const ownerUserId = value(args, '--owner-user-id');
 	let reports: StageReport[] = [];
-	let targetPlans: TargetPlanData[] = [];
+	let targetPlans: TargetPlanData[];
 	const targetResults: TargetApplyResultData[] = [];
 	const executionPlans = new Map<InvitationUpdateTarget, OperationalPlan>();
 	let packageInput;
@@ -642,18 +642,9 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 	let confirmationPackage: InvitationPackageData = packageInput.packageData;
 
 	let localResult: LocalApplyResult | undefined;
-	let isZeroDrift = false;
-	let plannedOperations = 0;
-	let planData: OperationalPlanData = {
-		invitation: slug,
-		targets,
-		isZeroDrift: true,
-		plannedOperations: 0,
-		expectedDatabaseWrites: { inserts: 0, updates: 0, deletes: 0 },
-		expectedStorageMutations: { uploads: 0, overwrites: 0, moves: 0, deletes: 0 },
-		actions: [],
-		targetPlans: [],
-	};
+	let isZeroDrift: boolean;
+	let plannedOperations: number;
+	let planData: OperationalPlanData;
 	let selectionPassDone = Boolean(fileFieldSelections);
 
 	// ── PREFLIGHT INSPECTION PHASE FOR ALL SELECTED TARGETS ─────────────────────

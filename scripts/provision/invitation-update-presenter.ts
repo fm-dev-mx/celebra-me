@@ -4,6 +4,7 @@
  * Formats status reports, dry-run plans, apply confirmations, and execution results
  * into clear, user-friendly Spanish terminal output without raw object dumps.
  */
+/* eslint-disable max-lines */
 
 import type { FunctionalChange } from './invitation-update-plan.ts';
 

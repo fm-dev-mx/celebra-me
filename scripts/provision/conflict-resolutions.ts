@@ -96,7 +96,7 @@ export function suggestConflictResolutionsFile(
 
 /** Top-level content key for a functional change field path (e.g. `rsvp.title` → `rsvp`). */
 export function fieldPathRoot(fieldPath: string): string {
-	const match = /^([^.\[]+)/.exec(fieldPath);
+	const match = /^([^.[]+)/.exec(fieldPath);
 	return match?.[1] ?? fieldPath;
 }
 
