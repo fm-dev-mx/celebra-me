@@ -77,6 +77,24 @@ describe('requireAdminRateLimit', () => {
 		).resolves.not.toThrow();
 	});
 
+	it('registers password-reset admin operation and allows it', async () => {
+		const request = new Request(
+			'https://example.com/api/dashboard/admin/users/reset-password',
+			{ headers: { 'x-forwarded-for': '10.0.0.1' } },
+		);
+
+		await expect(
+			requireAdminRateLimit(request, 'admin:users:reset_password'),
+		).resolves.not.toThrow();
+		expect(mockCheckRateLimit).toHaveBeenCalledWith(
+			expect.objectContaining({
+				entityId: 'admin:users:reset_password:hashed-ip',
+				maxHits: 5,
+				windowSec: 60,
+			}),
+		);
+	});
+
 	it('throws for unregistered operation keys', async () => {
 		const request = new Request('https://example.com/api/dashboard', {
 			headers: { 'x-forwarded-for': '10.0.0.1' },
