@@ -73,9 +73,7 @@ describe('CreateUserModal', () => {
 		expect(screen.getByDisplayValue('ximena_meza')).toBeInTheDocument();
 		expect(screen.getByLabelText('Contraseña temporal')).toHaveValue('ximenameza2026');
 		expect(
-			screen.getByText(
-				/Esta contraseña no se volverá a mostrar después de cerrar este modal\./,
-			),
+			screen.getByText(/No se volverá a mostrar después de cerrar este modal/),
 		).toBeInTheDocument();
 	});
 });
