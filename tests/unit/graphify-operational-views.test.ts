@@ -323,8 +323,7 @@ describe('requireFreshGraph', () => {
 		expect(error!.message).toContain('Graphify raw graph is stale.');
 		expect(error!.message).toContain('Raw graph commit: oldcommit');
 		expect(error!.message).toContain('Current HEAD: newcommit');
-		expect(error!.message).toContain('graphify extract .');
-		expect(error!.message).toContain('graphify cluster-only .');
+		expect(error!.message).toContain('pnpm ops graphify-refresh');
 		expect(error!.message).toContain('pnpm ops graphify-views');
 	});
 
