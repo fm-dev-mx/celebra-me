@@ -1,6 +1,7 @@
 import { GET as getUsers, POST as createUser } from '@/pages/api/dashboard/admin/users';
 import { PATCH as updateUserRole } from '@/pages/api/dashboard/admin/users/[userId]/role';
 import { PATCH as updateUserMembership } from '@/pages/api/dashboard/admin/users/[userId]/memberships';
+import { PATCH as updateUserLoginAlias } from '@/pages/api/dashboard/admin/users/[userId]/login-alias';
 import {
 	requireAdminMutationAccess,
 	requireAdminStrongSession,
@@ -10,6 +11,7 @@ import {
 	changeUserRoleAdmin,
 	createAdminUser,
 	updateUserEventMembershipAdmin,
+	updateUserLoginAliasAdmin,
 } from '@/lib/rsvp/services/user-admin.service';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { createMockRequest } from '../helpers/api-mocks';
@@ -40,6 +42,7 @@ jest.mock('@/lib/rsvp/services/user-admin.service', () => ({
 	changeUserRoleAdmin: jest.fn(),
 	createAdminUser: jest.fn(),
 	updateUserEventMembershipAdmin: jest.fn(),
+	updateUserLoginAliasAdmin: jest.fn(),
 }));
 
 jest.mock('@/lib/rsvp/security/admin-protection', () => ({
@@ -59,6 +62,9 @@ const changeUserRoleAdminMock = changeUserRoleAdmin as jest.MockedFunction<
 const createAdminUserMock = createAdminUser as jest.MockedFunction<typeof createAdminUser>;
 const updateUserEventMembershipAdminMock = updateUserEventMembershipAdmin as jest.MockedFunction<
 	typeof updateUserEventMembershipAdmin
+>;
+const updateUserLoginAliasAdminMock = updateUserLoginAliasAdmin as jest.MockedFunction<
+	typeof updateUserLoginAliasAdmin
 >;
 
 function createMockUrl(searchParams?: Record<string, string>): URL {
@@ -431,6 +437,68 @@ describe('Admin Users API', () => {
 				membershipRole: 'manager',
 				changedAt: '2026-04-01T00:00:00.000Z',
 			});
+		});
+	});
+
+	describe('PATCH /api/dashboard/admin/users/[userId]/login-alias', () => {
+		it('updates a managed login alias', async () => {
+			requireAdminMutationAccessMock.mockResolvedValue({
+				userId: VALID_ADMIN_ID,
+				email: 'admin@test.com',
+				accessToken: 'token',
+				role: 'super_admin',
+				isSuperAdmin: true,
+			});
+			updateUserLoginAliasAdminMock.mockResolvedValue({
+				item: {
+					id: VALID_USER_ID,
+					email: 'abril_becerra',
+					role: 'host_client',
+					createdAt: '2026-04-01T00:00:00.000Z',
+					assignedEvents: [],
+				},
+			});
+
+			const request = createMockRequest({ loginAlias: 'abril_becerra' });
+			const response = await updateUserLoginAlias({
+				params: { userId: VALID_USER_ID },
+				request,
+				cookies: {},
+			} as never);
+
+			expect(response.status).toBe(200);
+			expect(requireAdminMutationAccessMock).toHaveBeenCalledWith(
+				request,
+				{},
+				'admin:users:update_login_alias',
+			);
+			expect(updateUserLoginAliasAdminMock).toHaveBeenCalledWith({
+				userId: VALID_USER_ID,
+				loginAlias: 'abril_becerra',
+				actorUserId: VALID_ADMIN_ID,
+			});
+			const body = await response.json();
+			expect(body.item.email).toBe('abril_becerra');
+		});
+
+		it('rejects an invalid login alias body', async () => {
+			requireAdminMutationAccessMock.mockResolvedValue({
+				userId: VALID_ADMIN_ID,
+				email: 'admin@test.com',
+				accessToken: 'token',
+				role: 'super_admin',
+				isSuperAdmin: true,
+			});
+
+			const request = createMockRequest({ loginAlias: 'AB' });
+			const response = await updateUserLoginAlias({
+				params: { userId: VALID_USER_ID },
+				request,
+				cookies: {},
+			} as never);
+
+			expect(response.status).toBe(400);
+			expect(updateUserLoginAliasAdminMock).not.toHaveBeenCalled();
 		});
 	});
 });

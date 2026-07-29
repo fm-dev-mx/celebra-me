@@ -22,9 +22,13 @@ export function isValidEmail(email: string): boolean {
 	return EMAIL_PATTERN.test(normalize(email));
 }
 
+export function isValidLoginAlias(alias: string): boolean {
+	return LOGIN_ALIAS_PATTERN.test(normalize(alias).toLowerCase());
+}
+
 export function isValidLoginIdentifier(identifier: string): boolean {
 	const value = normalize(identifier).toLowerCase();
-	return EMAIL_PATTERN.test(value) || LOGIN_ALIAS_PATTERN.test(value);
+	return EMAIL_PATTERN.test(value) || isValidLoginAlias(value);
 }
 
 export function getMethodHelpText(method: AuthMethod): string {

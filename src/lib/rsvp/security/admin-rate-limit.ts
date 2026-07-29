@@ -29,6 +29,8 @@ const RATE_LIMITS: Record<string, RateLimitConfig> = {
 	'admin:user-membership': { maxHits: 10, windowSec: 60 }, // 10 req/min
 	// Password resets are privileged credential mutations.
 	'admin:users:reset_password': { maxHits: 5, windowSec: 60 }, // 5 req/min
+	// Login-alias remaps are privileged credential mutations.
+	'admin:users:update_login_alias': { maxHits: 5, windowSec: 60 }, // 5 req/min
 
 	// Claim code operations follow the same operational profile.
 	'claimcodes:list': { maxHits: 60, windowSec: 60 },

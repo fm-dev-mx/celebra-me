@@ -1,24 +1,42 @@
-import { createAdminUser, generateTemporaryPassword } from '@/lib/rsvp/services/user-admin.service';
+import {
+	createAdminUser,
+	generateTemporaryPassword,
+	updateUserLoginAliasAdmin,
+} from '@/lib/rsvp/services/user-admin.service';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import {
+	adminUpdateManagedLoginAlias,
 	createAuthUserByAdmin,
 	findAuthUserByEmail,
 	findAuthUserByLoginIdentifier,
+	getAuthUserAdminById,
 } from '@/lib/rsvp/auth/auth-api';
-import { upsertUserRoleService } from '@/lib/rsvp/repositories/role-membership.repository';
+import {
+	findAppUserRoleByUserIdService,
+	listEventMembershipsService,
+	upsertUserRoleService,
+} from '@/lib/rsvp/repositories/role-membership.repository';
+import { listAllEventsService } from '@/lib/rsvp/repositories/event.repository';
 import { logAdminAction } from '@/lib/rsvp/services/audit-logger.service';
 
 jest.mock('@/lib/rsvp/auth/auth-api', () => ({
 	createAuthUserByAdmin: jest.fn(),
+	adminUpdateManagedLoginAlias: jest.fn(),
 	findAuthUserByEmail: jest.fn(),
 	findAuthUserByLoginIdentifier: jest.fn(),
+	getAuthUserAdminById: jest.fn(),
 	listAuthUsers: jest.fn(),
 }));
 
 jest.mock('@/lib/rsvp/repositories/role-membership.repository', () => ({
 	findAppUserRoleByUserIdService: jest.fn(),
 	listUserRolesService: jest.fn(),
+	listEventMembershipsService: jest.fn(),
 	upsertUserRoleService: jest.fn(),
+}));
+
+jest.mock('@/lib/rsvp/repositories/event.repository', () => ({
+	listAllEventsService: jest.fn(),
 }));
 
 jest.mock('@/lib/rsvp/services/audit-logger.service', () => ({
@@ -28,11 +46,26 @@ jest.mock('@/lib/rsvp/services/audit-logger.service', () => ({
 const createAuthUserByAdminMock = createAuthUserByAdmin as jest.MockedFunction<
 	typeof createAuthUserByAdmin
 >;
+const adminUpdateManagedLoginAliasMock = adminUpdateManagedLoginAlias as jest.MockedFunction<
+	typeof adminUpdateManagedLoginAlias
+>;
 const findAuthUserByEmailMock = findAuthUserByEmail as jest.MockedFunction<
 	typeof findAuthUserByEmail
 >;
 const findAuthUserByLoginIdentifierMock = findAuthUserByLoginIdentifier as jest.MockedFunction<
 	typeof findAuthUserByLoginIdentifier
+>;
+const getAuthUserAdminByIdMock = getAuthUserAdminById as jest.MockedFunction<
+	typeof getAuthUserAdminById
+>;
+const findAppUserRoleByUserIdServiceMock = findAppUserRoleByUserIdService as jest.MockedFunction<
+	typeof findAppUserRoleByUserIdService
+>;
+const listEventMembershipsServiceMock = listEventMembershipsService as jest.MockedFunction<
+	typeof listEventMembershipsService
+>;
+const listAllEventsServiceMock = listAllEventsService as jest.MockedFunction<
+	typeof listAllEventsService
 >;
 const upsertUserRoleServiceMock = upsertUserRoleService as jest.MockedFunction<
 	typeof upsertUserRoleService
@@ -195,5 +228,148 @@ describe('rsvp user admin service', () => {
 		});
 		expect(result.item.email).toBe('ximena_meza');
 		expect(result.credentials.temporaryPassword).toBeDefined();
+	});
+
+	describe('updateUserLoginAliasAdmin', () => {
+		beforeEach(() => {
+			listEventMembershipsServiceMock.mockResolvedValue([]);
+			listAllEventsServiceMock.mockResolvedValue([]);
+			findAppUserRoleByUserIdServiceMock.mockResolvedValue({
+				userId: 'user-host',
+				role: 'host_client',
+				createdAt: '2026-04-01T00:00:00.000Z',
+				updatedAt: '2026-04-01T00:00:00.000Z',
+			});
+		});
+
+		it('renames a managed host login alias', async () => {
+			getAuthUserAdminByIdMock.mockResolvedValue({
+				id: 'user-host',
+				email: 'abril_michelle_becerra_rea@clientes.celebra.invalid',
+				created_at: '2026-04-01T00:00:00.000Z',
+				user_metadata: { login_alias: 'abril_michelle_becerra_rea' },
+				app_metadata: {},
+			});
+			findAuthUserByLoginIdentifierMock.mockResolvedValue(null);
+			findAuthUserByEmailMock.mockResolvedValue(null);
+			adminUpdateManagedLoginAliasMock.mockResolvedValue({
+				id: 'user-host',
+				email: 'abril_becerra@clientes.celebra.invalid',
+				login_alias: 'abril_becerra',
+				created_at: '2026-04-01T00:00:00.000Z',
+			});
+
+			const result = await updateUserLoginAliasAdmin({
+				userId: 'user-host',
+				loginAlias: ' Abril_Becerra ',
+				actorUserId: 'admin-1',
+			});
+
+			expect(adminUpdateManagedLoginAliasMock).toHaveBeenCalledWith({
+				userId: 'user-host',
+				email: 'abril_becerra@clientes.celebra.invalid',
+				loginAlias: 'abril_becerra',
+			});
+			expect(result.item.email).toBe('abril_becerra');
+			expect(logAdminActionMock).toHaveBeenCalledWith(
+				expect.objectContaining({
+					action: 'update_user_login_alias',
+					oldData: { loginAlias: 'abril_michelle_becerra_rea' },
+					newData: { loginAlias: 'abril_becerra' },
+				}),
+			);
+		});
+
+		it('is a no-op when the alias is unchanged', async () => {
+			getAuthUserAdminByIdMock.mockResolvedValue({
+				id: 'user-host',
+				email: 'abril_becerra@clientes.celebra.invalid',
+				created_at: '2026-04-01T00:00:00.000Z',
+				user_metadata: { login_alias: 'abril_becerra' },
+				app_metadata: {},
+			});
+
+			const result = await updateUserLoginAliasAdmin({
+				userId: 'user-host',
+				loginAlias: 'abril_becerra',
+				actorUserId: 'admin-1',
+			});
+
+			expect(adminUpdateManagedLoginAliasMock).not.toHaveBeenCalled();
+			expect(result.item.email).toBe('abril_becerra');
+			expect(logAdminActionMock).not.toHaveBeenCalled();
+		});
+
+		it('rejects real-email users', async () => {
+			getAuthUserAdminByIdMock.mockResolvedValue({
+				id: 'user-email',
+				email: 'cliente@ejemplo.com',
+				created_at: '2026-04-01T00:00:00.000Z',
+				user_metadata: {},
+				app_metadata: {},
+			});
+
+			await expect(
+				updateUserLoginAliasAdmin({
+					userId: 'user-email',
+					loginAlias: 'nuevo_alias',
+					actorUserId: 'admin-1',
+				}),
+			).rejects.toMatchObject<Partial<ApiError>>({
+				status: 400,
+				code: 'bad_request',
+			});
+			expect(adminUpdateManagedLoginAliasMock).not.toHaveBeenCalled();
+		});
+
+		it('rejects real-email users even when login_alias metadata is present', async () => {
+			getAuthUserAdminByIdMock.mockResolvedValue({
+				id: 'user-email',
+				email: 'cliente@ejemplo.com',
+				created_at: '2026-04-01T00:00:00.000Z',
+				user_metadata: { login_alias: 'cliente_ejemplo' },
+				app_metadata: {},
+			});
+
+			await expect(
+				updateUserLoginAliasAdmin({
+					userId: 'user-email',
+					loginAlias: 'nuevo_alias',
+					actorUserId: 'admin-1',
+				}),
+			).rejects.toMatchObject<Partial<ApiError>>({
+				status: 400,
+				code: 'bad_request',
+			});
+			expect(adminUpdateManagedLoginAliasMock).not.toHaveBeenCalled();
+		});
+
+		it('rejects alias collisions', async () => {
+			getAuthUserAdminByIdMock.mockResolvedValue({
+				id: 'user-host',
+				email: 'abril_becerra@clientes.celebra.invalid',
+				created_at: '2026-04-01T00:00:00.000Z',
+				user_metadata: { login_alias: 'abril_becerra' },
+				app_metadata: {},
+			});
+			findAuthUserByLoginIdentifierMock.mockResolvedValue({
+				id: 'other-user',
+				email: 'alba_quinones@clientes.celebra.invalid',
+				login_alias: 'alba_quinones',
+			});
+			findAuthUserByEmailMock.mockResolvedValue(null);
+
+			await expect(
+				updateUserLoginAliasAdmin({
+					userId: 'user-host',
+					loginAlias: 'alba_quinones',
+					actorUserId: 'admin-1',
+				}),
+			).rejects.toMatchObject<Partial<ApiError>>({
+				status: 409,
+				code: 'conflict',
+			});
+			expect(adminUpdateManagedLoginAliasMock).not.toHaveBeenCalled();
+		});
 	});
 });

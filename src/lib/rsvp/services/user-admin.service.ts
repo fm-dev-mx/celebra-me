@@ -10,8 +10,10 @@ import type { AppUserRole } from '@/interfaces/auth/session.interface';
 import {
 	createAuthUserByAdmin,
 	adminResetAuthUserPassword,
+	adminUpdateManagedLoginAlias,
 	findAuthUserByEmail,
 	findAuthUserByLoginIdentifier,
+	getAuthUserAdminById,
 	listAuthUsers,
 } from '@/lib/rsvp/auth/auth-api';
 import type { UserAssignedEventDTO, UserListItemDTO } from '@/lib/dashboard/dto/users';
@@ -22,6 +24,7 @@ import { sanitize } from '@/lib/rsvp/core/utils';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import {
 	assertValidEmail,
+	isValidLoginAlias,
 	normalizeEmail,
 	normalizeLoginIdentifier,
 } from '@/lib/rsvp/security/auth-security';
@@ -386,6 +389,160 @@ export async function resetUserPasswordAdmin(input: {
 		userId: authUser.id,
 		credentials: {
 			temporaryPassword,
+		},
+	};
+}
+
+function isManagedHostEmail(email?: string): boolean {
+	return (email || '').trim().toLowerCase().endsWith(`@${GENERATED_LOGIN_DOMAIN}`);
+}
+
+function resolveCurrentManagedAlias(input: {
+	email?: string;
+	loginAlias?: string;
+}): string | null {
+	if (!isManagedHostEmail(input.email)) return null;
+	const alias = input.loginAlias?.trim().toLowerCase();
+	if (alias && isValidLoginAlias(alias)) return alias;
+	const email = (input.email || '').trim().toLowerCase();
+	const suffix = `@${GENERATED_LOGIN_DOMAIN}`;
+	const localPart = email.slice(0, -suffix.length);
+	return isValidLoginAlias(localPart) ? localPart : null;
+}
+
+async function buildAssignedEventsForUser(userId: string): Promise<UserAssignedEventDTO[]> {
+	const [memberships, events] = await Promise.all([
+		listEventMembershipsService(),
+		listAllEventsService(),
+	]);
+	const eventMap = new Map(
+		events.map((event) => [
+			event.id,
+			{ eventId: event.id, title: event.title, slug: event.slug },
+		]),
+	);
+	return memberships
+		.filter((membership) => membership.userId === userId)
+		.map((membership) => {
+			const event = eventMap.get(membership.eventId);
+			if (!event) return null;
+			return {
+				...event,
+				membershipRole: membership.membershipRole,
+			};
+		})
+		.filter((value): value is UserAssignedEventDTO => Boolean(value))
+		.sort((left, right) => left.title.localeCompare(right.title, 'es-MX'));
+}
+
+export async function updateUserLoginAliasAdmin(input: {
+	userId: string;
+	loginAlias: string;
+	actorUserId: string;
+}): Promise<{ item: UserListItemDTO }> {
+	const userId = sanitize(input.userId, 120);
+	if (!userId) {
+		throw new ApiError(400, 'bad_request', 'userId es requerido.');
+	}
+
+	const requestedAlias = normalizeLoginIdentifier(input.loginAlias);
+	if (!isValidLoginAlias(requestedAlias)) {
+		throw new ApiError(400, 'bad_request', 'El usuario de acceso es inválido.');
+	}
+
+	const existingAuth = await getAuthUserAdminById(userId);
+	const existingMappedAlias =
+		typeof existingAuth.user_metadata?.login_alias === 'string'
+			? existingAuth.user_metadata.login_alias.trim().toLowerCase()
+			: undefined;
+
+	if (!isManagedHostEmail(existingAuth.email)) {
+		throw new ApiError(
+			400,
+			'bad_request',
+			'Solo se puede editar el usuario de acceso de cuentas administradas (sin correo real).',
+		);
+	}
+
+	const previousAlias = resolveCurrentManagedAlias({
+		email: existingAuth.email,
+		loginAlias: existingMappedAlias,
+	});
+	if (!previousAlias) {
+		throw new ApiError(
+			400,
+			'bad_request',
+			'Solo se puede editar el usuario de acceso de cuentas administradas (sin correo real).',
+		);
+	}
+
+	if (previousAlias === requestedAlias) {
+		const [roleRecord, assignedEvents] = await Promise.all([
+			findAppUserRoleByUserIdService(userId),
+			buildAssignedEventsForUser(userId),
+		]);
+
+		return {
+			item: {
+				id: userId,
+				email: previousAlias,
+				role: roleRecord?.role ?? 'host_client',
+				createdAt: existingAuth.created_at || new Date().toISOString(),
+				assignedEvents,
+			},
+		};
+	}
+
+	const targetEmail = buildManagedLoginEmail(requestedAlias);
+	const [existingByIdentifier, existingByEmail] = await Promise.all([
+		findAuthUserByLoginIdentifier({ identifier: requestedAlias }),
+		findAuthUserByEmail({ email: targetEmail }),
+	]);
+	if (
+		(existingByIdentifier && existingByIdentifier.id !== userId) ||
+		(existingByEmail && existingByEmail.id !== userId)
+	) {
+		throw new ApiError(
+			409,
+			'conflict',
+			'Ya existe un usuario con este usuario de acceso.',
+		);
+	}
+
+	const updatedAuth = await adminUpdateManagedLoginAlias({
+		userId,
+		email: targetEmail,
+		loginAlias: requestedAlias,
+	});
+
+	await logAdminAction({
+		actorId: sanitize(input.actorUserId, 120),
+		action: 'update_user_login_alias',
+		targetTable: 'auth.users',
+		targetId: userId,
+		oldData: {
+			loginAlias: previousAlias,
+		},
+		newData: {
+			loginAlias: requestedAlias,
+		},
+	});
+
+	const [roleRecord, assignedEvents] = await Promise.all([
+		findAppUserRoleByUserIdService(userId),
+		buildAssignedEventsForUser(userId),
+	]);
+
+	return {
+		item: {
+			id: updatedAuth.id,
+			email: sanitize(
+				updatedAuth.login_alias || requestedAlias,
+				320,
+			),
+			role: roleRecord?.role ?? 'host_client',
+			createdAt: updatedAuth.created_at || existingAuth.created_at || new Date().toISOString(),
+			assignedEvents,
 		},
 	};
 }

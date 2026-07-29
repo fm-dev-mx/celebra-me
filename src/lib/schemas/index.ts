@@ -294,6 +294,18 @@ export const ResetUserPasswordSchema = z.object({
 	userId: UuidSchema,
 });
 
+export const UpdateUserLoginAliasSchema = z.object({
+	loginAlias: z
+		.string()
+		.trim()
+		.min(3, { message: 'El usuario de acceso es inválido.' })
+		.max(60, { message: 'El usuario de acceso es inválido.' })
+		.transform((value) => value.toLowerCase())
+		.refine((value) => ADMIN_LOGIN_ALIAS_PATTERN.test(value), {
+			message: 'El usuario de acceso es inválido.',
+		}),
+});
+
 export type ChangePasswordInput = z.infer<typeof ChangePasswordSchema>;
 export type ResetUserPasswordInput = z.infer<typeof ResetUserPasswordSchema>;
 

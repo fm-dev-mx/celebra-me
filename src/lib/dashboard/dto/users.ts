@@ -57,6 +57,10 @@ export interface UpdateUserEventMembershipDTO {
 	membershipRole?: 'owner' | 'manager';
 }
 
+export interface UpdateUserLoginAliasDTO {
+	loginAlias: string;
+}
+
 export interface UserEventMembershipChangeResponse {
 	userId: string;
 	eventId: string;

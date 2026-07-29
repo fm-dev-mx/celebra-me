@@ -8,7 +8,9 @@ import type {
 	UpdateUserRoleDTO,
 	UserRoleChangeResponse,
 	UpdateUserEventMembershipDTO,
+	UpdateUserLoginAliasDTO,
 	UserEventMembershipChangeResponse,
+	UserListItemDTO,
 } from './dto/users';
 import type {
 	CreateClaimCodeDTO,
@@ -101,6 +103,17 @@ export class AdminApi {
 			credentials: { temporaryPassword: string };
 		}>('/api/dashboard/admin/users/reset-password', { userId });
 		return this.handleResponse(result);
+	}
+
+	async updateUserLoginAlias(
+		userId: string,
+		payload: UpdateUserLoginAliasDTO,
+	): Promise<UserListItemDTO> {
+		const result = await dashboardApi.patch<{ item: UserListItemDTO }>(
+			`/api/dashboard/admin/users/${encodeURIComponent(userId)}/login-alias`,
+			payload,
+		);
+		return this.handleResponse(result).item;
 	}
 
 	// Claim Codes

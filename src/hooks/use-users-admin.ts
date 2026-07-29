@@ -73,6 +73,10 @@ export function useUsersAdmin() {
 		[items, loadUsers],
 	);
 
+	const clearError = useCallback(() => {
+		setError('');
+	}, []);
+
 	const openCreateModal = useCallback(() => {
 		setError('');
 		setCreatedUser(null);
@@ -152,6 +156,28 @@ export function useUsersAdmin() {
 		[items, loadUsers],
 	);
 
+	const updateUserLoginAlias = useCallback(
+		async (userId: string, loginAlias: string): Promise<UserListItemDTO | null> => {
+			setUpdatingUserId(userId);
+			setError('');
+			try {
+				const item = await adminApi.updateUserLoginAlias(userId, { loginAlias });
+				await loadUsers();
+				return item;
+			} catch (err) {
+				setError(
+					err instanceof Error
+						? err.message
+						: 'No se pudo actualizar el usuario de acceso.',
+				);
+				return null;
+			} finally {
+				setUpdatingUserId(null);
+			}
+		},
+		[loadUsers],
+	);
+
 	return {
 		items,
 		events,
@@ -162,10 +188,12 @@ export function useUsersAdmin() {
 		creating,
 		createdUser,
 		updateUserRole,
+		clearError,
 		openCreateModal,
 		closeCreateModal,
 		createUser,
 		resetUserPassword,
+		updateUserLoginAlias,
 		updateUserEventMembership,
 		reloadUsers: loadAdminData,
 	};

@@ -43,15 +43,24 @@ pnpm invitation:update -- --slug <slug> --targets local,preview --source-dir <pa
 pnpm invitation:update -- --slug <slug> --targets production --package <path> --dry-run
 ```
 
-Inspect `pnpm invitation:update -- --help` and
-[`docs/domains/intake/production-flow.md`](../../docs/domains/intake/production-flow.md) before
-composing a real invocation.
-
 Interactive apply (TTY) offers selective content apply: all changes, by section, or field-by-field.
 Deselected paths keep the destination value. Non-interactive selective apply uses
 `--field-selections <file.json>` with `{ "resolutions": { "<path>": "package"|"target" } }`
 (merged with `--conflict-resolutions`; conflict choices win on overlap). Use `--verbose` for full
 field values and plan IDs.
+
+Host login alias remaps on Local are **not** part of `invitation:update`. Use:
+
+```bash
+pnpm tsx scripts/provision/rekey-local-host-login.ts --slug <slug>          # dry-run
+pnpm tsx scripts/provision/rekey-local-host-login.ts --slug <slug> --apply
+```
+
+Password resets go through the dashboard admin reset-password flow, not this CLI.
+
+Inspect `pnpm invitation:update -- --help` and
+[`docs/domains/intake/production-flow.md`](../../docs/domains/intake/production-flow.md) before
+composing a real invocation.
 
 - Newly created resources may be removed during compensation. Pre-existing resources must never be
   deleted by cleanup. If an overwritten pre-existing resource cannot be restored automatically, the

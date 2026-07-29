@@ -273,6 +273,7 @@ export async function createAuthUserByAdmin(input: {
 type AuthAdminUserRecord = {
 	id: string;
 	email?: string;
+	created_at?: string;
 	user_metadata?: Record<string, unknown>;
 	app_metadata?: Record<string, unknown>;
 };
@@ -313,6 +314,39 @@ async function updateAuthUserAdmin(input: {
 		method: 'PUT',
 		useServiceRole: true,
 		body,
+	});
+	const user = 'user' in response ? response.user : response;
+	if (!user || !user.id) {
+		throw new Error('Supabase auth error: update user id was not returned.');
+	}
+	return mapAuthAdminUser(user);
+}
+
+/**
+ * Remap a managed host's Auth email + user_metadata.login_alias without changing password.
+ * Preserves existing app_metadata (including must_change_password).
+ */
+export async function adminUpdateManagedLoginAlias(input: {
+	userId: string;
+	email: string;
+	loginAlias: string;
+}): Promise<AuthAdminUser> {
+	const existingUser = await getAuthUserAdminById(input.userId);
+	const response = await authRequest<CreateAuthUserResponse>({
+		path: `admin/users/${input.userId}`,
+		method: 'PUT',
+		useServiceRole: true,
+		body: {
+			email: input.email,
+			email_confirm: true,
+			user_metadata: {
+				...(existingUser.user_metadata || {}),
+				login_alias: input.loginAlias,
+			},
+			app_metadata: {
+				...(existingUser.app_metadata || {}),
+			},
+		},
 	});
 	const user = 'user' in response ? response.user : response;
 	if (!user || !user.id) {
