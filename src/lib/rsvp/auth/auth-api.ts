@@ -6,7 +6,7 @@ import {
 
 interface AuthApiOptions {
 	path: string;
-	method?: 'GET' | 'POST';
+	method?: 'GET' | 'POST' | 'PUT';
 	body?: unknown;
 	authToken?: string;
 	useServiceRole?: boolean;
@@ -258,6 +258,9 @@ export async function createAuthUserByAdmin(input: {
 						login_alias: input.loginAlias,
 					}
 				: undefined,
+			app_metadata: {
+				must_change_password: true,
+			},
 		},
 	});
 	const user = 'user' in response ? response.user : response;
@@ -266,3 +269,91 @@ export async function createAuthUserByAdmin(input: {
 	}
 	return mapAuthAdminUser(user);
 }
+
+type AuthAdminUserRecord = {
+	id: string;
+	email?: string;
+	user_metadata?: Record<string, unknown>;
+	app_metadata?: Record<string, unknown>;
+};
+
+export async function getAuthUserAdminById(userId: string): Promise<AuthAdminUserRecord> {
+	const user = await authRequest<AuthAdminUserRecord>({
+		path: `admin/users/${userId}`,
+		method: 'GET',
+		useServiceRole: true,
+	});
+	if (!user?.id) {
+		throw new Error('Supabase auth error: user was not returned.');
+	}
+	return user;
+}
+
+async function updateAuthUserAdmin(input: {
+	userId: string;
+	password?: string;
+	mustChangePassword: boolean;
+}): Promise<AuthAdminUser> {
+	const existingUser = await getAuthUserAdminById(input.userId);
+	const body: {
+		password?: string;
+		app_metadata: Record<string, unknown>;
+	} = {
+		app_metadata: {
+			...(existingUser.app_metadata || {}),
+			must_change_password: input.mustChangePassword,
+		},
+	};
+	if (input.password !== undefined) {
+		body.password = input.password;
+	}
+
+	const response = await authRequest<CreateAuthUserResponse>({
+		path: `admin/users/${input.userId}`,
+		method: 'PUT',
+		useServiceRole: true,
+		body,
+	});
+	const user = 'user' in response ? response.user : response;
+	if (!user || !user.id) {
+		throw new Error('Supabase auth error: update user id was not returned.');
+	}
+	return mapAuthAdminUser(user);
+}
+
+export async function adminResetAuthUserPassword(input: {
+	userId: string;
+	password: string;
+	mustChangePassword?: boolean;
+}): Promise<AuthAdminUser> {
+	return updateAuthUserAdmin({
+		userId: input.userId,
+		password: input.password,
+		mustChangePassword: input.mustChangePassword ?? true,
+	});
+}
+
+export async function updateUserPasswordUserAuth(input: {
+	accessToken: string;
+	password: string;
+}): Promise<{ id: string; email?: string }> {
+	return authRequest<{ id: string; email?: string }>({
+		path: 'user',
+		method: 'PUT',
+		authToken: input.accessToken,
+		body: {
+			password: input.password,
+		},
+	});
+}
+
+export async function adminSetUserMustChangePassword(input: {
+	userId: string;
+	mustChangePassword: boolean;
+}): Promise<AuthAdminUser> {
+	return updateAuthUserAdmin({
+		userId: input.userId,
+		mustChangePassword: input.mustChangePassword,
+	});
+}
+

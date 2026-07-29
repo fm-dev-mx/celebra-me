@@ -271,6 +271,32 @@ export const RegisterSchema = z.object({
 export type LoginInput = z.infer<typeof LoginSchema>;
 export type RegisterInput = z.infer<typeof RegisterSchema>;
 
+export const ChangePasswordSchema = z
+	.object({
+		currentPassword: z
+			.string()
+			.min(1, { message: 'La contraseña actual es requerida' })
+			.max(200),
+		newPassword: z
+			.string()
+			.min(8, { message: 'La nueva contraseña debe tener al menos 8 caracteres' })
+			.max(200),
+		confirmPassword: z
+			.string()
+			.min(1, { message: 'La confirmación de contraseña es requerida' }),
+	})
+	.refine((data) => data.newPassword === data.confirmPassword, {
+		message: 'Las contraseñas no coinciden',
+		path: ['confirmPassword'],
+	});
+
+export const ResetUserPasswordSchema = z.object({
+	userId: UuidSchema,
+});
+
+export type ChangePasswordInput = z.infer<typeof ChangePasswordSchema>;
+export type ResetUserPasswordInput = z.infer<typeof ResetUserPasswordSchema>;
+
 // =============================================================================
 // Contact Form Schema
 // =============================================================================

@@ -183,7 +183,13 @@ function resolveAuthenticatedRedirect(
 	pathname: string,
 	role: string | null,
 	hasAdminStrongAuth: boolean,
+	mustChangePassword = false,
 ) {
+	if (mustChangePassword) {
+		if (pathname === '/dashboard/cambiar-contrasena') return null;
+		return '/dashboard/cambiar-contrasena';
+	}
+
 	if (pathname === '/login') {
 		if (role === 'super_admin') {
 			return hasAdminStrongAuth ? '/dashboard/admin' : '/dashboard/mfa-setup';
@@ -282,6 +288,7 @@ function buildSessionFromUser(
 	user: NonNullable<Awaited<ReturnType<typeof getSupabaseUserByAccessToken>>>,
 	accessToken: string,
 	role: ReturnType<typeof normalizeAppRole>,
+	mustChangePassword = false,
 ): SessionContext {
 	const resolvedEmail = typeof user.email === 'string' ? user.email.trim().slice(0, 320) : '';
 	return {
@@ -290,6 +297,7 @@ function buildSessionFromUser(
 		accessToken,
 		role,
 		isSuperAdmin: role === 'super_admin',
+		mustChangePassword,
 		amr: user.amr,
 	};
 }
@@ -317,6 +325,15 @@ function computeMfaBypass(
 	};
 }
 
+function handleUnauthenticatedResponse(
+	url: URL,
+	isApiRoute: boolean,
+	redirect: (path: string) => Response,
+): Response | null {
+	if (isApiRoute) return null;
+	return url.pathname === '/login' ? null : privateRedirect(redirect, '/login');
+}
+
 async function handleProtectedAuthRequest(
 	url: URL,
 	cookies: CookieStore,
@@ -342,19 +359,30 @@ async function handleProtectedAuthRequest(
 
 	const { accessToken, refreshToken, user } = await resolveAuthenticatedUser(cookies);
 	if (!user) {
-		if (isApiRoute) return null;
-		return url.pathname === '/login' ? null : privateRedirect(redirect, '/login');
+		return handleUnauthenticatedResponse(url, isApiRoute, redirect);
 	}
 
 	const authContext = resolveAuthContext(cookies, request, user, accessToken);
 	if (!authContext.role) {
 		clearPrimaryAuthCookies(cookies);
-		if (isApiRoute) return null;
-		return privateRedirect(redirect, '/login');
+		return handleUnauthenticatedResponse(url, isApiRoute, redirect);
 	}
 
 	const trustCookie = cookies.get('sb-trust-device')?.value || '';
 	const { effectiveAdminStrongAuth } = computeMfaBypass(authContext, user.email);
+	const mustChangePassword = user.app_metadata?.must_change_password === true;
+
+	if (mustChangePassword && isApiRoute) {
+		const response = errorResponse(
+			new ApiError(
+				403,
+				'password_change_required',
+				'Es necesario cambiar la contraseña temporal para continuar.',
+			),
+		);
+		response.headers.set('Cache-Control', 'no-store, private');
+		return response;
+	}
 
 	if (authContext.role === 'super_admin' && !effectiveAdminStrongAuth) {
 		applyMfaSetupCookies(cookies, accessToken, refreshToken);
@@ -365,13 +393,19 @@ async function handleProtectedAuthRequest(
 			url.pathname,
 			authContext.role,
 			effectiveAdminStrongAuth,
+			mustChangePassword,
 		);
 		if (redirectTarget) return privateRedirect(redirect, redirectTarget);
 	}
 
 	syncPostAuthCookies(cookies, authContext, trustCookie, now);
 
-	locals.session = buildSessionFromUser(user, accessToken, authContext.role);
+	locals.session = buildSessionFromUser(
+		user,
+		accessToken,
+		authContext.role,
+		mustChangePassword,
+	);
 	locals.hasAdminStrongAuth = effectiveAdminStrongAuth;
 	if (!isApiRoute && !isPreviewRoute(url.pathname)) {
 		locals.csrfToken = setCsrfToken(cookies);

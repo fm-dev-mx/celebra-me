@@ -17,7 +17,14 @@ export interface AuthRegisterPayload {
 	claimCode: string;
 }
 
+export interface AuthChangePasswordPayload {
+	currentPassword: string;
+	newPassword: string;
+	confirmPassword: string;
+}
+
 export interface AuthResponse {
+	ok?: boolean;
 	message?: string;
 	error?: {
 		message?: string;
@@ -75,6 +82,22 @@ class AuthBridgeApi {
 
 		if (!response.ok) {
 			throw new Error(getErrorMessage(data, 'Unable to register.'));
+		}
+
+		return data;
+	}
+
+	async changePassword(payload: AuthChangePasswordPayload): Promise<AuthResponse> {
+		const response = await fetch('/api/auth/change-password', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(payload),
+		});
+
+		const data = await parseJsonSafe(response);
+
+		if (!response.ok || data.ok === false) {
+			throw new Error(getErrorMessage(data, 'No se pudo cambiar la contraseña.'));
 		}
 
 		return data;

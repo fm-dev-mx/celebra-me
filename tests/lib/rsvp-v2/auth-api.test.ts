@@ -136,6 +136,9 @@ describe('rsvp authApi', () => {
 					user_metadata: {
 						login_alias: 'ximena_meza',
 					},
+					app_metadata: {
+						must_change_password: true,
+					},
 				}),
 			}),
 		);

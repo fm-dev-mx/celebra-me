@@ -127,6 +127,31 @@ export function useUsersAdmin() {
 		[loadUsers],
 	);
 
+	const resetUserPassword = useCallback(
+		async (userId: string): Promise<CreatedUserCredentialsDTO | null> => {
+			const targetUser = items.find((u) => u.id === userId);
+			setUpdatingUserId(userId);
+			setError('');
+			try {
+				const result = await adminApi.resetUserPassword(userId);
+				const credentials: CreatedUserCredentialsDTO = {
+					email: targetUser?.email || userId,
+					role: targetUser?.role || 'host_client',
+					temporaryPassword: result.credentials.temporaryPassword,
+				};
+				setCreatedUser(credentials);
+				await loadUsers();
+				return credentials;
+			} catch (err) {
+				setError(err instanceof Error ? err.message : 'No se pudo restablecer la contraseña.');
+				return null;
+			} finally {
+				setUpdatingUserId(null);
+			}
+		},
+		[items, loadUsers],
+	);
+
 	return {
 		items,
 		events,
@@ -140,6 +165,7 @@ export function useUsersAdmin() {
 		openCreateModal,
 		closeCreateModal,
 		createUser,
+		resetUserPassword,
 		updateUserEventMembership,
 		reloadUsers: loadAdminData,
 	};

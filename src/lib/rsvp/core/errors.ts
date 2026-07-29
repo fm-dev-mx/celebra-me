@@ -19,7 +19,10 @@ export type ApiErrorCode =
 	| 'unsafe_target'
 	| 'missing_in_prod'
 	| 'stale_production_content'
-	| 'upgrade_required';
+	| 'upgrade_required'
+	| 'password_change_required'
+	| 'password_update_failed'
+	| 'metadata_update_failed';
 
 export class ApiError extends Error {
 	readonly status: number;

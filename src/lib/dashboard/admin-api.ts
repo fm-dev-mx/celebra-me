@@ -93,6 +93,16 @@ export class AdminApi {
 		return this.handleResponse(result).item;
 	}
 
+	async resetUserPassword(
+		userId: string,
+	): Promise<{ userId: string; credentials: { temporaryPassword: string } }> {
+		const result = await dashboardApi.post<{
+			userId: string;
+			credentials: { temporaryPassword: string };
+		}>('/api/dashboard/admin/users/reset-password', { userId });
+		return this.handleResponse(result);
+	}
+
 	// Claim Codes
 	async listClaimCodes(
 		eventId?: string,

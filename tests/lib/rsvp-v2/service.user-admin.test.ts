@@ -44,9 +44,16 @@ describe('rsvp user admin service', () => {
 		jest.clearAllMocks();
 	});
 
-	it('generates simple temporary passwords from the provided seed', () => {
-		expect(generateTemporaryPassword('ximena_meza')).toBe('ximenameza2026');
-		expect(generateTemporaryPassword()).toBe('celebra2026');
+	it('generates secure temporary passwords with required entropy and character classes', () => {
+		const pwd1 = generateTemporaryPassword();
+		const pwd2 = generateTemporaryPassword();
+		expect(pwd1.length).toBeGreaterThanOrEqual(16);
+		expect(pwd2.length).toBeGreaterThanOrEqual(16);
+		expect(pwd1).not.toBe(pwd2);
+		expect(pwd1).toMatch(/[A-Z]/);
+		expect(pwd1).toMatch(/[a-z]/);
+		expect(pwd1).toMatch(/[0-9]/);
+		expect(pwd1).toMatch(/[!@#$%^&*()_+-=]/);
 	});
 
 	it('creates a new admin-managed user without persisting the password', async () => {
@@ -74,7 +81,7 @@ describe('rsvp user admin service', () => {
 		});
 		expect(createAuthUserByAdminMock).toHaveBeenCalledWith({
 			email: 'new-client@test.com',
-			password: 'newclienttes2026',
+			password: expect.any(String),
 			loginAlias: undefined,
 		});
 		expect(upsertUserRoleServiceMock).toHaveBeenCalledWith({
@@ -88,7 +95,7 @@ describe('rsvp user admin service', () => {
 			createdAt: '2026-04-01T00:00:00.000Z',
 			assignedEvents: [],
 		});
-		expect(result.credentials.temporaryPassword).toBe('newclienttes2026');
+		expect(result.credentials.temporaryPassword).toBeDefined();
 		expect(logAdminActionMock).toHaveBeenCalledWith(
 			expect.objectContaining({
 				action: 'create_user',
@@ -148,7 +155,7 @@ describe('rsvp user admin service', () => {
 		});
 		expect(createAuthUserByAdminMock).toHaveBeenCalledWith({
 			email: expect.stringMatching(/@clientes\.celebra\.invalid$/),
-			password: expect.stringMatching(/^cliente[a-z0-9]{1,8}2026$/),
+			password: expect.any(String),
 			loginAlias: expect.stringMatching(/^cliente-[a-f0-9]{8}$/),
 		});
 		expect(result.item.email).toMatch(/^cliente-[a-f0-9]{8}$/);
@@ -181,13 +188,13 @@ describe('rsvp user admin service', () => {
 		});
 		expect(createAuthUserByAdminMock).toHaveBeenCalledWith({
 			email: expect.stringMatching(/@clientes\.celebra\.invalid$/),
-			password: 'ximenameza2026',
+			password: expect.any(String),
 			loginAlias: 'ximena_meza',
 		});
 		expect(findAuthUserByEmailMock).toHaveBeenCalledWith({
 			email: 'ximena_meza@clientes.celebra.invalid',
 		});
 		expect(result.item.email).toBe('ximena_meza');
-		expect(result.credentials.temporaryPassword).toBe('ximenameza2026');
+		expect(result.credentials.temporaryPassword).toBeDefined();
 	});
 });

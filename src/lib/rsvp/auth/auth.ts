@@ -13,13 +13,19 @@ export interface HostSession {
 export interface SessionContext extends HostSession {
 	role: AppUserRole | null;
 	isSuperAdmin: boolean;
+	mustChangePassword?: boolean;
 	amr?: Array<{ method?: string }>;
 }
 
 export interface SupabaseAuthUser {
 	id: string;
 	email?: string;
-	app_metadata?: { role?: string };
+	app_metadata?: {
+		role?: string;
+		must_change_password?: boolean;
+		[key: string]: unknown;
+	};
+	user_metadata?: Record<string, unknown>;
 	amr?: Array<{ method?: string }>;
 }
 
@@ -168,6 +174,7 @@ export async function getSessionDebugSnapshotFromRequest(
 			accessToken,
 			role,
 			isSuperAdmin: isSuperAdminRole(role),
+			mustChangePassword: user.app_metadata?.must_change_password === true,
 			amr: user.amr,
 		},
 	};

@@ -1,0 +1,91 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import Logo from '@/components/ui/Logo.astro';
+import '@/styles/auth.scss';
+import '@styles/auth/_login.scss';
+import ChangePasswordBehavior from '@/components/behavior/ChangePasswordBehavior';
+
+const session = Astro.locals.session;
+const mustChange = session?.mustChangePassword === true;
+---
+
+<Layout
+	title="Cambiar contraseña — Celebra.me"
+	description="Actualiza tu contraseña de acceso"
+	hideHeader={true}
+	className="theme-preset--auth-dark"
+>
+	<section class="auth-shell" data-variant="dark">
+		<header class="auth-local-header">
+			<a class="auth-brand" href="/" aria-label="Volver al inicio de Celebra.me">
+				<Logo variant="white" class="auth-brand__logo" altText="Celebra.me" />
+				<span class="auth-brand__caption">Seguridad de la cuenta</span>
+			</a>
+		</header>
+
+		<article class="auth-card auth-card--narrow" aria-labelledby="change-password-title">
+			<div class="auth-copy">
+				{mustChange ? (
+					<p class="auth-kicker">Paso obligatorio de seguridad</p>
+					<h1 id="change-password-title">Crea tu contraseña personal</h1>
+					<p>Estás utilizando una contraseña temporal. Por tu seguridad, debes definir una nueva contraseña antes de ingresar a tu panel.</p>
+				) : (
+					<p class="auth-kicker">Seguridad de la cuenta</p>
+					<h1 id="change-password-title">Cambiar contraseña</h1>
+					<p>Actualiza tu contraseña de acceso a Celebra.me.</p>
+				)}
+			</div>
+
+			<form id="change-password-form" class="auth-form" novalidate>
+				<div class="auth-field">
+					<label for="current-password">Contraseña actual</label>
+					<input
+						id="current-password"
+						name="currentPassword"
+						type="password"
+						autocomplete="current-password"
+						placeholder="Ingresa tu contraseña actual"
+					/>
+					<p id="current-password-error" class="field-error" aria-live="polite"></p>
+				</div>
+
+				<div class="auth-field">
+					<label for="new-password">Nueva contraseña</label>
+					<input
+						id="new-password"
+						name="newPassword"
+						type="password"
+						autocomplete="new-password"
+						placeholder="Mínimo 8 caracteres"
+					/>
+					<p id="new-password-error" class="field-error" aria-live="polite"></p>
+				</div>
+
+				<div class="auth-field">
+					<label for="confirm-password">Confirmar nueva contraseña</label>
+					<input
+						id="confirm-password"
+						name="confirmPassword"
+						type="password"
+						autocomplete="new-password"
+						placeholder="Repite tu nueva contraseña"
+					/>
+					<p id="confirm-password-error" class="field-error" aria-live="polite"></p>
+				</div>
+
+				<div class="auth-actions">
+					<button id="change-password-submit" type="submit" class="auth-submit">
+						Guardar contraseña
+					</button>
+					<button id="logout-btn" type="button" class="auth-secondary">
+						Cerrar sesión
+					</button>
+				</div>
+
+				<p id="auth-status" class="auth-status" role="status" aria-live="polite" tabindex="-1"></p>
+			</form>
+		</article>
+	</section>
+
+	<ChangePasswordBehavior client:only="react" />
+</Layout>

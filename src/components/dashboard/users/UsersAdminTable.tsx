@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { AppUserRole } from '@/interfaces/auth/session.interface';
 import { ErrorBoundary } from '@/components/dashboard/ErrorBoundary';
 import { useUsersAdmin } from '@/hooks/use-users-admin';
 import CreateUserModal from '@/components/dashboard/users/CreateUserModal';
+import DashboardModalPortal from '@/components/dashboard/DashboardModalPortal';
+import type { UserListItemDTO } from '@/lib/dashboard/dto/users';
 
 const UsersAdminTable: React.FC = () => {
 	const {
@@ -19,7 +21,10 @@ const UsersAdminTable: React.FC = () => {
 		openCreateModal,
 		closeCreateModal,
 		createUser,
+		resetUserPassword,
 	} = useUsersAdmin();
+
+	const [confirmResetUser, setConfirmResetUser] = useState<UserListItemDTO | null>(null);
 
 	return (
 		<div className="dashboard-card">
@@ -37,6 +42,7 @@ const UsersAdminTable: React.FC = () => {
 						<th>Acceso</th>
 						<th>Rol</th>
 						<th>Eventos asignados</th>
+						<th>Acciones</th>
 						<th>Creado</th>
 					</tr>
 				</thead>
@@ -122,17 +128,72 @@ const UsersAdminTable: React.FC = () => {
 									</div>
 								</div>
 							</td>
+							<td>
+								<button
+									type="button"
+									className="btn-secondary btn--compact"
+									onClick={() => setConfirmResetUser(item)}
+									disabled={loading || updatingUserId === item.id}
+									aria-label={`Restablecer contraseña de ${item.email}`}
+								>
+									Restablecer contraseña
+								</button>
+							</td>
 							<td>{new Date(item.createdAt).toLocaleString('es-MX')}</td>
 						</tr>
 					))}
 					{items.length === 0 && !loading && (
 						<tr>
-							<td colSpan={4}>No hay usuarios registrados.</td>
+							<td colSpan={5}>No hay usuarios registrados.</td>
 						</tr>
 					)}
 				</tbody>
 			</table>
-			{createModalOpen && (
+			{confirmResetUser && (
+				<DashboardModalPortal>
+					<div
+						className="dashboard-modal-backdrop"
+						role="dialog"
+						aria-modal="true"
+						onClick={() => setConfirmResetUser(null)}
+					>
+						<div
+							className="dashboard-modal"
+							onClick={(event) => event.stopPropagation()}
+						>
+							<h3>Restablecer contraseña</h3>
+							<p className="dashboard-modal__description">
+								¿Deseas restablecer la contraseña de{' '}
+								<strong>{confirmResetUser.email}</strong>? Se generará una nueva
+								contraseña temporal. La contraseña actual se reemplazará y se le
+								solicitará al cliente crear su propia contraseña en su próximo inicio
+								de sesión.
+							</p>
+							<div className="dashboard-modal__actions dashboard-modal__actions--full">
+								<button
+									type="button"
+									className="btn-secondary"
+									onClick={() => setConfirmResetUser(null)}
+								>
+									Cancelar
+								</button>
+								<button
+									type="button"
+									className="btn-primary"
+									onClick={async () => {
+										const userToReset = confirmResetUser;
+										setConfirmResetUser(null);
+										await resetUserPassword(userToReset.id);
+									}}
+								>
+									Sí, restablecer
+								</button>
+							</div>
+						</div>
+					</div>
+				</DashboardModalPortal>
+			)}
+			{(createModalOpen || createdUser) && (
 				<CreateUserModal
 					busy={creating}
 					error={error}

@@ -9,6 +9,7 @@ import {
 import type { AppUserRole } from '@/interfaces/auth/session.interface';
 import {
 	createAuthUserByAdmin,
+	adminResetAuthUserPassword,
 	findAuthUserByEmail,
 	findAuthUserByLoginIdentifier,
 	listAuthUsers,
@@ -16,7 +17,7 @@ import {
 import type { UserAssignedEventDTO, UserListItemDTO } from '@/lib/dashboard/dto/users';
 import { listAllEventsService } from '@/lib/rsvp/repositories/event.repository';
 import { logAdminAction } from '@/lib/rsvp/services/audit-logger.service';
-import { randomBytes } from 'node:crypto';
+import { randomBytes, randomInt } from 'node:crypto';
 import { sanitize } from '@/lib/rsvp/core/utils';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import {
@@ -109,13 +110,38 @@ export async function changeUserRoleAdmin(input: {
 	};
 }
 
-export function generateTemporaryPassword(seed?: string): string {
-	const normalized = sanitize(seed, 60)
-		.toLowerCase()
-		.replace(/[^a-z0-9]+/g, '')
-		.slice(0, 12);
-	const base = normalized || 'celebra';
-	return `${base}2026`;
+export function generateTemporaryPassword(): string {
+	const uppercase = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+	const lowercase = 'abcdefghijkmnopqrstuvwxyz';
+	const digits = '23456789';
+	const symbols = '!@#$%^&*()_+-=';
+
+	const getChar = (chars: string) => chars[randomInt(0, chars.length)];
+
+	const required = [
+		getChar(uppercase),
+		getChar(uppercase),
+		getChar(lowercase),
+		getChar(lowercase),
+		getChar(digits),
+		getChar(digits),
+		getChar(symbols),
+		getChar(symbols),
+	];
+
+	const allChars = uppercase + lowercase + digits + symbols;
+	for (let i = 0; i < 8; i += 1) {
+		required.push(getChar(allChars));
+	}
+
+	for (let i = required.length - 1; i > 0; i -= 1) {
+		const j = randomInt(0, i + 1);
+		const temp = required[i];
+		required[i] = required[j];
+		required[j] = temp;
+	}
+
+	return required.join('');
 }
 
 function generateManagedLoginAlias(): string {
@@ -196,7 +222,7 @@ export async function createAdminUser(input: {
 		visibleLogin = loginAlias;
 	}
 
-	const temporaryPassword = generateTemporaryPassword(loginAlias || authEmail);
+	const temporaryPassword = generateTemporaryPassword();
 	const authUser = await createAuthUserByAdmin({
 		email: authEmail,
 		password: temporaryPassword,
@@ -226,6 +252,7 @@ export async function createAdminUser(input: {
 			email: item.email,
 			role: item.role,
 			createdAt: item.createdAt,
+			must_change_password: true,
 		},
 	});
 
@@ -236,6 +263,48 @@ export async function createAdminUser(input: {
 		},
 	};
 }
+
+export async function resetUserPasswordAdmin(input: {
+	userId: string;
+	actorUserId: string;
+}): Promise<{
+	userId: string;
+	credentials: {
+		temporaryPassword: string;
+	};
+}> {
+	const userId = sanitize(input.userId, 120);
+	if (!userId) {
+		throw new ApiError(400, 'bad_request', 'userId es requerido.');
+	}
+
+	const temporaryPassword = generateTemporaryPassword();
+	const authUser = await adminResetAuthUserPassword({
+		userId,
+		password: temporaryPassword,
+		mustChangePassword: true,
+	});
+
+	await logAdminAction({
+		actorId: sanitize(input.actorUserId, 120),
+		action: 'reset_user_password',
+		targetTable: 'auth.users',
+		targetId: userId,
+		oldData: null,
+		newData: {
+			userId,
+			must_change_password: true,
+		},
+	});
+
+	return {
+		userId: authUser.id,
+		credentials: {
+			temporaryPassword,
+		},
+	};
+}
+
 
 export async function updateUserEventMembershipAdmin(input: {
 	userId: string;
