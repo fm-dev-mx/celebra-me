@@ -20,6 +20,7 @@ const SCRIPTS = {
 		runtime: 'node',
 	},
 	'adopt-legacy-events': { script: 'adopt-legacy-events.mjs', runtime: 'node' },
+	'worktree-status': { script: 'agent/worktree-status.ts', runtime: 'tsx' },
 };
 
 const args = process.argv.slice(2);
