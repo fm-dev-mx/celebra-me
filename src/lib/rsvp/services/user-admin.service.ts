@@ -18,8 +18,11 @@ import {
 } from '@/lib/rsvp/auth/auth-api';
 import type { UserAssignedEventDTO, UserListItemDTO } from '@/lib/dashboard/dto/users';
 import { listAllEventsService } from '@/lib/rsvp/repositories/event.repository';
-import { logAdminAction } from '@/lib/rsvp/services/audit-logger.service';
-import { randomBytes, randomInt } from 'node:crypto';
+import {
+	logAdminAction,
+	logAdminActionStrict,
+} from '@/lib/rsvp/services/audit-logger.service';
+import { createHash, createHmac, randomBytes, randomInt } from 'node:crypto';
 import { sanitize } from '@/lib/rsvp/core/utils';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import {
@@ -28,8 +31,19 @@ import {
 	normalizeEmail,
 	normalizeLoginIdentifier,
 } from '@/lib/rsvp/security/auth-security';
+import {
+	buildManagedHostEmail,
+	HOST_LOGIN_DOMAIN,
+	isManagedHostEmail,
+	normalizeHostLoginAlias,
+} from '@/lib/auth/login-alias';
+import type { InvitationMutationCommandContext } from '@/lib/intake/mutations/command-context';
+import { createMutationOutcome, type MutationOutcome } from '@/lib/intake/mutations/outcome';
+import { recordInvitationMutationOutcome } from '@/lib/intake/services/mutation-operation.service';
+import { findMutationOperationReceipt } from '@/lib/intake/repositories/mutation-operation.repository';
+import { getSupabaseServiceRoleKey } from '@/lib/server/supabase-credentials';
 
-const GENERATED_LOGIN_DOMAIN = 'clientes.celebra.invalid';
+const GENERATED_LOGIN_DOMAIN = HOST_LOGIN_DOMAIN;
 
 export async function listAdminUsers(input?: {
 	page?: number;
@@ -232,24 +246,81 @@ export function generateTemporaryPassword(): string {
 	return `${word}-${digits}${symbol}`;
 }
 
+export function deriveTemporaryPasswordForOperation(
+	operationId: string,
+	secret = getSupabaseServiceRoleKey(),
+): string {
+	const digest = createHmac('sha256', secret)
+		.update(`celebra-me:password-reset:${operationId}`)
+		.digest();
+	const raw = TEMP_PASSWORD_WORDS[digest.readUInt16BE(0) % TEMP_PASSWORD_WORDS.length]!;
+	const word = raw.charAt(0).toUpperCase() + raw.slice(1);
+	const digits = String(digest.readUInt16BE(2) % 10_000).padStart(4, '0');
+	const symbol = TEMP_PASSWORD_SYMBOLS[digest[4]! % TEMP_PASSWORD_SYMBOLS.length]!;
+	return `${word}-${digits}${symbol}`;
+}
+
+async function recordIdentityMutation(input: {
+	context: InvitationMutationCommandContext;
+	commandKind: 'admin_password_reset' | 'admin_login_alias_update';
+	status: 'not_applied' | 'applied' | 'partial' | 'replayed';
+	completedSteps: string[];
+	userId: string;
+	inputHash?: string;
+	error?: unknown;
+}): Promise<boolean> {
+	try {
+		await recordInvitationMutationOutcome({
+			context: input.context,
+			invitationId: null,
+			commandKind: input.commandKind,
+			status: input.status,
+			completedSteps: input.completedSteps,
+			inputHashes: input.inputHash ? { mutationValueHash: input.inputHash } : {},
+			expectedState: { targetUserId: input.userId },
+			result: { targetUserId: input.userId },
+			error: input.error,
+		});
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+async function ensureRetryParentReceipt(input: {
+	context: InvitationMutationCommandContext;
+	rootOperationId: string;
+	commandKind: 'admin_password_reset' | 'admin_login_alias_update';
+	completedSteps: string[];
+	userId: string;
+	inputHash?: string;
+}): Promise<Awaited<ReturnType<typeof findMutationOperationReceipt>>> {
+	let parent = await findMutationOperationReceipt(input.rootOperationId);
+	if (!parent && input.context.operationId !== input.rootOperationId) {
+		await recordIdentityMutation({
+			context: { ...input.context, operationId: input.rootOperationId, retryOfOperationId: undefined },
+			commandKind: input.commandKind,
+			status: 'partial',
+			completedSteps: input.completedSteps,
+			userId: input.userId,
+			inputHash: input.inputHash,
+			error: new Error('External mutation succeeded before its receipt was persisted.'),
+		});
+		parent = await findMutationOperationReceipt(input.rootOperationId);
+	}
+	return parent;
+}
+
 function generateManagedLoginAlias(): string {
 	return `cliente-${randomBytes(4).toString('hex')}`;
 }
 
-function normalizeManagedLoginAlias(value: string): string {
-	return sanitize(value, 60)
-		.toLowerCase()
-		.replace(/[^a-z0-9._-]+/g, '-')
-		.replace(/^[._-]+|[._-]+$/g, '')
-		.slice(0, 40);
-}
-
 function buildManagedLoginEmail(alias: string): string {
-	return `${alias}@${GENERATED_LOGIN_DOMAIN}`;
+	return buildManagedHostEmail(alias);
 }
 
 async function reserveManagedLoginAlias(seed?: string): Promise<string> {
-	const normalizedSeed = normalizeManagedLoginAlias(seed || '');
+	const normalizedSeed = normalizeHostLoginAlias(seed || '');
 	const candidates = normalizedSeed
 		? [normalizedSeed, `${normalizedSeed}-${randomBytes(2).toString('hex')}`]
 		: [generateManagedLoginAlias()];
@@ -355,46 +426,131 @@ export async function createAdminUser(input: {
 export async function resetUserPasswordAdmin(input: {
 	userId: string;
 	actorUserId: string;
+ credentialOperationId: string;
+	commandContext: InvitationMutationCommandContext;
 }): Promise<{
 	userId: string;
-	credentials: {
+	credentials?: {
 		temporaryPassword: string;
 	};
+	outcome: MutationOutcome;
 }> {
 	const userId = sanitize(input.userId, 120);
 	if (!userId) {
 		throw new ApiError(400, 'bad_request', 'userId es requerido.');
 	}
 
-	const temporaryPassword = generateTemporaryPassword();
-	const authUser = await adminResetAuthUserPassword({
-		userId,
-		password: temporaryPassword,
-		mustChangePassword: true,
-	});
-
-	await logAdminAction({
-		actorId: sanitize(input.actorUserId, 120),
-		action: 'reset_user_password',
-		targetTable: 'auth.users',
-		targetId: userId,
-		oldData: null,
-		newData: {
+	const rootOperationId = input.credentialOperationId;
+	const temporaryPassword = deriveTemporaryPasswordForOperation(rootOperationId);
+	const completedSteps: string[] = [];
+	let authAlreadyApplied: boolean;
+	try {
+		const existingAuth = await getAuthUserAdminById(userId);
+		authAlreadyApplied =
+			existingAuth.user_metadata?.password_reset_operation_id === rootOperationId;
+		if (!authAlreadyApplied) {
+			await adminResetAuthUserPassword({
+				userId,
+				password: temporaryPassword,
+				mustChangePassword: true,
+				operationId: rootOperationId,
+			});
+		}
+		completedSteps.push('auth_password_updated');
+	} catch (error) {
+		await recordIdentityMutation({
+			context: input.commandContext,
+			commandKind: 'admin_password_reset',
+			status: 'not_applied',
+			completedSteps,
 			userId,
-			must_change_password: true,
-		},
+			error,
+		});
+		return {
+			userId,
+			outcome: createMutationOutcome({
+				operationId: input.commandContext.operationId,
+				status: 'not_applied',
+				completedSteps,
+				error,
+			}),
+		};
+	}
+
+	const parentReceipt = await ensureRetryParentReceipt({
+		context: input.commandContext,
+		rootOperationId,
+		commandKind: 'admin_password_reset',
+		completedSteps,
+		userId,
 	});
+	try {
+		if (!parentReceipt?.completedSteps.includes('audit_logged')) {
+			await logAdminActionStrict({
+				actorId: sanitize(input.actorUserId, 120),
+				action: 'reset_user_password',
+				targetTable: 'auth.users',
+				targetId: userId,
+				oldData: null,
+				newData: {
+					userId,
+					must_change_password: true,
+					operationId: rootOperationId,
+				},
+			});
+		}
+		completedSteps.push('audit_logged');
+	} catch (error) {
+		await recordIdentityMutation({
+			context: input.commandContext,
+			commandKind: 'admin_password_reset',
+			status: 'partial',
+			completedSteps,
+			userId,
+			error,
+		});
+		return {
+			userId,
+			credentials: { temporaryPassword },
+			outcome: createMutationOutcome({
+				operationId: input.commandContext.operationId,
+				status: 'partial',
+				completedSteps,
+				error,
+			}),
+		};
+	}
 
+	const status = authAlreadyApplied ? 'replayed' : 'applied';
+	const receiptPersisted = await recordIdentityMutation({
+		context: input.commandContext,
+		commandKind: 'admin_password_reset',
+		status,
+		completedSteps,
+		userId,
+	});
+	if (!receiptPersisted) {
+		return {
+			userId,
+			credentials: { temporaryPassword },
+			outcome: createMutationOutcome({
+				operationId: input.commandContext.operationId,
+				status: 'partial',
+				completedSteps,
+				error: new Error('Password changed but its operation receipt could not be persisted.'),
+			}),
+		};
+	}
 	return {
-		userId: authUser.id,
-		credentials: {
-			temporaryPassword,
-		},
+		userId,
+		credentials: { temporaryPassword },
+		outcome: createMutationOutcome({
+			operationId: input.commandContext.operationId,
+			status,
+			completedSteps,
+			...(status === 'replayed' ? { replayedFromOperationId: rootOperationId } : {}),
+		}),
 	};
-}
-
-function isManagedHostEmail(email?: string): boolean {
-	return (email || '').trim().toLowerCase().endsWith(`@${GENERATED_LOGIN_DOMAIN}`);
 }
 
 function resolveCurrentManagedAlias(input: {
@@ -435,11 +591,14 @@ async function buildAssignedEventsForUser(userId: string): Promise<UserAssignedE
 		.sort((left, right) => left.title.localeCompare(right.title, 'es-MX'));
 }
 
+// eslint-disable-next-line complexity -- External Auth, collision, audit, receipt, and replay boundaries require explicit outcome branches.
 export async function updateUserLoginAliasAdmin(input: {
 	userId: string;
 	loginAlias: string;
 	actorUserId: string;
-}): Promise<{ item: UserListItemDTO }> {
+	aliasOperationId: string;
+	commandContext: InvitationMutationCommandContext;
+}): Promise<{ item?: UserListItemDTO; outcome: MutationOutcome }> {
 	const userId = sanitize(input.userId, 120);
 	if (!userId) {
 		throw new ApiError(400, 'bad_request', 'userId es requerido.');
@@ -449,12 +608,18 @@ export async function updateUserLoginAliasAdmin(input: {
 	if (!isValidLoginAlias(requestedAlias)) {
 		throw new ApiError(400, 'bad_request', 'El usuario de acceso es inválido.');
 	}
+	const aliasHash = createHash('sha256').update(requestedAlias).digest('hex');
+	const completedSteps: string[] = [];
 
 	const existingAuth = await getAuthUserAdminById(userId);
 	const existingMappedAlias =
 		typeof existingAuth.user_metadata?.login_alias === 'string'
 			? existingAuth.user_metadata.login_alias.trim().toLowerCase()
 			: undefined;
+	const existingOperationId =
+		typeof existingAuth.user_metadata?.login_alias_operation_id === 'string'
+			? existingAuth.user_metadata.login_alias_operation_id
+			: null;
 
 	if (!isManagedHostEmail(existingAuth.email)) {
 		throw new ApiError(
@@ -476,74 +641,138 @@ export async function updateUserLoginAliasAdmin(input: {
 		);
 	}
 
-	if (previousAlias === requestedAlias) {
+	const targetEmail = buildManagedLoginEmail(requestedAlias);
+	const authAlreadyApplied =
+		previousAlias === requestedAlias && existingOperationId === input.aliasOperationId;
+	let updatedAuth = existingAuth;
+	try {
+		if (!authAlreadyApplied) {
+			const [existingByIdentifier, existingByEmail] = await Promise.all([
+				findAuthUserByLoginIdentifier({ identifier: requestedAlias }),
+				findAuthUserByEmail({ email: targetEmail }),
+			]);
+			if (
+				(existingByIdentifier && existingByIdentifier.id !== userId) ||
+				(existingByEmail && existingByEmail.id !== userId)
+			) {
+				throw new ApiError(
+					409,
+					'conflict',
+					'Ya existe un usuario con este usuario de acceso.',
+				);
+			}
+			updatedAuth = await adminUpdateManagedLoginAlias({
+				userId,
+				email: targetEmail,
+				loginAlias: requestedAlias,
+				operationId: input.aliasOperationId,
+			});
+		}
+		completedSteps.push('auth_alias_updated');
+	} catch (error) {
+		await recordIdentityMutation({
+			context: input.commandContext,
+			commandKind: 'admin_login_alias_update',
+			status: 'not_applied',
+			completedSteps,
+			userId,
+			inputHash: aliasHash,
+			error,
+		});
+		return {
+			outcome: createMutationOutcome({
+				operationId: input.commandContext.operationId,
+				status: 'not_applied',
+				completedSteps,
+				error,
+			}),
+		};
+	}
+
+	const parentReceipt = await ensureRetryParentReceipt({
+		context: input.commandContext,
+		rootOperationId: input.aliasOperationId,
+		commandKind: 'admin_login_alias_update',
+		completedSteps,
+		userId,
+		inputHash: aliasHash,
+	});
+	try {
+		if (!parentReceipt?.completedSteps.includes('audit_logged')) {
+			await logAdminActionStrict({
+				actorId: sanitize(input.actorUserId, 120),
+				action: 'update_user_login_alias',
+				targetTable: 'auth.users',
+				targetId: userId,
+				oldData: { loginAlias: previousAlias },
+				newData: { loginAlias: requestedAlias, operationId: input.aliasOperationId },
+			});
+		}
+		completedSteps.push('audit_logged');
+	} catch (error) {
+		await recordIdentityMutation({
+			context: input.commandContext,
+			commandKind: 'admin_login_alias_update',
+			status: 'partial',
+			completedSteps,
+			userId,
+			inputHash: aliasHash,
+			error,
+		});
 		const [roleRecord, assignedEvents] = await Promise.all([
 			findAppUserRoleByUserIdService(userId),
 			buildAssignedEventsForUser(userId),
 		]);
-
 		return {
 			item: {
 				id: userId,
-				email: previousAlias,
+				email: requestedAlias,
 				role: roleRecord?.role ?? 'host_client',
-				createdAt: existingAuth.created_at || new Date().toISOString(),
+				createdAt: updatedAuth.created_at || existingAuth.created_at || new Date().toISOString(),
 				assignedEvents,
 			},
+			outcome: createMutationOutcome({
+				operationId: input.commandContext.operationId,
+				status: 'partial',
+				completedSteps,
+				error,
+			}),
 		};
 	}
-
-	const targetEmail = buildManagedLoginEmail(requestedAlias);
-	const [existingByIdentifier, existingByEmail] = await Promise.all([
-		findAuthUserByLoginIdentifier({ identifier: requestedAlias }),
-		findAuthUserByEmail({ email: targetEmail }),
-	]);
-	if (
-		(existingByIdentifier && existingByIdentifier.id !== userId) ||
-		(existingByEmail && existingByEmail.id !== userId)
-	) {
-		throw new ApiError(
-			409,
-			'conflict',
-			'Ya existe un usuario con este usuario de acceso.',
-		);
-	}
-
-	const updatedAuth = await adminUpdateManagedLoginAlias({
-		userId,
-		email: targetEmail,
-		loginAlias: requestedAlias,
-	});
-
-	await logAdminAction({
-		actorId: sanitize(input.actorUserId, 120),
-		action: 'update_user_login_alias',
-		targetTable: 'auth.users',
-		targetId: userId,
-		oldData: {
-			loginAlias: previousAlias,
-		},
-		newData: {
-			loginAlias: requestedAlias,
-		},
-	});
 
 	const [roleRecord, assignedEvents] = await Promise.all([
 		findAppUserRoleByUserIdService(userId),
 		buildAssignedEventsForUser(userId),
 	]);
 
-	return {
-		item: {
+	const item: UserListItemDTO = {
 			id: updatedAuth.id,
-			email: sanitize(
-				updatedAuth.login_alias || requestedAlias,
-				320,
-			),
+			email: requestedAlias,
 			role: roleRecord?.role ?? 'host_client',
 			createdAt: updatedAuth.created_at || existingAuth.created_at || new Date().toISOString(),
 			assignedEvents,
-		},
+	};
+	const status = authAlreadyApplied ? 'replayed' : 'applied';
+	const receiptPersisted = await recordIdentityMutation({
+		context: input.commandContext,
+		commandKind: 'admin_login_alias_update',
+		status,
+		completedSteps,
+		userId,
+		inputHash: aliasHash,
+	});
+	return {
+		item,
+		outcome: createMutationOutcome({
+			operationId: input.commandContext.operationId,
+			status: receiptPersisted ? status : 'partial',
+			completedSteps,
+			...(!receiptPersisted
+				? { error: new Error('Alias changed but its operation receipt could not be persisted.') }
+				: status === 'replayed'
+					? { replayedFromOperationId: input.aliasOperationId }
+					: {}),
+		}),
 	};
 }
 

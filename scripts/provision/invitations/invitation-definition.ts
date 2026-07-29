@@ -9,6 +9,12 @@
  * credentials, or owner UUIDs.
  */
 
+import {
+	HOST_LOGIN_ALIAS_MAX_LENGTH,
+	HOST_LOGIN_ALIAS_PATTERN,
+	isCanonicalHostLoginAlias,
+} from '../../../src/lib/auth/login-alias.ts';
+
 export interface InvitationAssetSpec {
 	key: string;
 	relativePath: string;
@@ -37,8 +43,7 @@ export interface InvitationEventTiming {
 }
 
 /** Host Auth login local-part: `{alias}@clientes.celebra.invalid`. Independent of slug. */
-export const HOST_LOGIN_ALIAS_PATTERN = /^[a-z0-9]+(?:_[a-z0-9]+)*$/;
-export const HOST_LOGIN_ALIAS_MAX_LENGTH = 64;
+export { HOST_LOGIN_ALIAS_MAX_LENGTH, HOST_LOGIN_ALIAS_PATTERN };
 
 export interface InvitationDefinition<K extends string = string> {
 	slug: string;
@@ -95,11 +100,10 @@ export function defineInvitation<K extends string = string>(
 	if (
 		!definition.hostLoginAlias ||
 		typeof definition.hostLoginAlias !== 'string' ||
-		definition.hostLoginAlias.length > HOST_LOGIN_ALIAS_MAX_LENGTH ||
-		!HOST_LOGIN_ALIAS_PATTERN.test(definition.hostLoginAlias)
+		!isCanonicalHostLoginAlias(definition.hostLoginAlias)
 	) {
 		throw new Error(
-			'Invitation definition requires hostLoginAlias: lowercase [a-z0-9_] segments, max 64 chars.',
+			'Invitation definition requires canonical hostLoginAlias: lowercase [a-z0-9_] segments, 3-60 chars.',
 		);
 	}
 	if (!definition.eventType || typeof definition.eventType !== 'string') {

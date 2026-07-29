@@ -25,6 +25,42 @@ export interface AppendMutationOperationReceiptInput {
 	retryOfOperationId?: string;
 }
 
+export interface MutationOperationReceiptRow {
+	operationId: string;
+	status: MutationOutcomeStatus;
+	commandKind: string;
+	completedSteps: string[];
+	retryOfOperationId: string | null;
+}
+
+export async function findMutationOperationReceipt(
+	operationId: string,
+): Promise<MutationOperationReceiptRow | null> {
+	const rows = await supabaseRestRequest<
+		Array<{
+			operation_id: string;
+			status: MutationOutcomeStatus;
+			command_kind: string;
+			completed_steps: string[];
+			retry_of_operation_id: string | null;
+		}>
+	>({
+		pathWithQuery: `invitation_mutation_operation_receipts?operation_id=eq.${encodeURIComponent(operationId)}&select=operation_id,status,command_kind,completed_steps,retry_of_operation_id&limit=1`,
+		method: 'GET',
+		useServiceRole: true,
+	});
+	const row = rows[0];
+	return row
+		? {
+				operationId: row.operation_id,
+				status: row.status,
+				commandKind: row.command_kind,
+				completedSteps: row.completed_steps ?? [],
+				retryOfOperationId: row.retry_of_operation_id,
+			}
+		: null;
+}
+
 /** Append a final, immutable operation outcome. Receipts are never updated in place. */
 export async function appendMutationOperationReceipt(
 	input: AppendMutationOperationReceiptInput,

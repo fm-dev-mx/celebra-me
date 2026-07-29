@@ -5,8 +5,10 @@
 import { z } from 'zod';
 import { RSVP_GUEST_CAP_TECHNICAL_MAX, rsvpGuestCapSchema } from '@/lib/rsvp/guest-cap';
 import { EVENT_TYPES } from '@/lib/theme/theme-contract';
-
-const ADMIN_LOGIN_ALIAS_PATTERN = /^[a-z0-9._-]{3,60}$/;
+import {
+	isCanonicalHostLoginAlias,
+	normalizeHostLoginAlias,
+} from '@/lib/auth/login-alias';
 
 // =============================================================================
 // Common Schemas
@@ -127,7 +129,7 @@ export const CreateUserSchema = z
 		(input) =>
 			input.email === '' ||
 			EmailSchema.safeParse(input.email).success ||
-			ADMIN_LOGIN_ALIAS_PATTERN.test(input.email),
+			isCanonicalHostLoginAlias(normalizeHostLoginAlias(input.email)),
 		{
 			path: ['email'],
 			message: 'Must be a valid email address or login alias',
@@ -292,6 +294,9 @@ export const ChangePasswordSchema = z
 
 export const ResetUserPasswordSchema = z.object({
 	userId: UuidSchema,
+	operationId: UuidSchema,
+	credentialOperationId: UuidSchema,
+	retryOfOperationId: UuidSchema.optional(),
 });
 
 export const UpdateUserLoginAliasSchema = z.object({
@@ -300,10 +305,13 @@ export const UpdateUserLoginAliasSchema = z.object({
 		.trim()
 		.min(3, { message: 'El usuario de acceso es inválido.' })
 		.max(60, { message: 'El usuario de acceso es inválido.' })
-		.transform((value) => value.toLowerCase())
-		.refine((value) => ADMIN_LOGIN_ALIAS_PATTERN.test(value), {
+		.transform(normalizeHostLoginAlias)
+		.refine(isCanonicalHostLoginAlias, {
 			message: 'El usuario de acceso es inválido.',
 		}),
+	operationId: UuidSchema,
+	aliasOperationId: UuidSchema,
+	retryOfOperationId: UuidSchema.optional(),
 });
 
 export type ChangePasswordInput = z.infer<typeof ChangePasswordSchema>;

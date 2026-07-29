@@ -35,8 +35,14 @@ import type {
 	InvitationPublicationPreflightDTO,
 } from './dto/intake';
 import type { InvitationEditorSectionKey } from '@/lib/intake/schemas/invitation-editor.schema';
+import type { MutationOutcome } from '@/lib/intake/mutations/outcome';
 
 export class AdminApi {
+	private readonly passwordMutationRoots = new Map<string, string>();
+	private readonly aliasMutationRoots = new Map<string, string>();
+	private readonly metadataMutationRoots = new Map<string, string>();
+	private readonly restoreMutationRoots = new Map<string, string>();
+
 	private handleResponse<T>(result: ApiResult<T>): T {
 		if (!result.ok) {
 			throw new ApiError(
@@ -97,23 +103,58 @@ export class AdminApi {
 
 	async resetUserPassword(
 		userId: string,
-	): Promise<{ userId: string; credentials: { temporaryPassword: string } }> {
+	): Promise<{
+		userId: string;
+		credentials?: { temporaryPassword: string };
+		outcome: MutationOutcome;
+	}> {
+		const existingRoot = this.passwordMutationRoots.get(userId);
+		const credentialOperationId = existingRoot ?? crypto.randomUUID();
+		const operationId = existingRoot ? crypto.randomUUID() : credentialOperationId;
+		this.passwordMutationRoots.set(userId, credentialOperationId);
 		const result = await dashboardApi.post<{
 			userId: string;
-			credentials: { temporaryPassword: string };
-		}>('/api/dashboard/admin/users/reset-password', { userId });
-		return this.handleResponse(result);
+			credentials?: { temporaryPassword: string };
+			outcome: MutationOutcome;
+		}>('/api/dashboard/admin/users/reset-password', {
+			userId,
+			operationId,
+			credentialOperationId,
+			...(existingRoot ? { retryOfOperationId: credentialOperationId } : {}),
+		});
+		const response = this.handleResponse(result);
+		if (response.outcome.status === 'applied' || response.outcome.status === 'replayed') {
+			this.passwordMutationRoots.delete(userId);
+		}
+		return response;
 	}
 
 	async updateUserLoginAlias(
 		userId: string,
 		payload: UpdateUserLoginAliasDTO,
-	): Promise<UserListItemDTO> {
-		const result = await dashboardApi.patch<{ item: UserListItemDTO }>(
+	): Promise<{ item?: UserListItemDTO; outcome: MutationOutcome }> {
+		const key = `${userId}:${payload.loginAlias}`;
+		const existingRoot = this.aliasMutationRoots.get(key);
+		const aliasOperationId = existingRoot ?? crypto.randomUUID();
+		const operationId = existingRoot ? crypto.randomUUID() : aliasOperationId;
+		this.aliasMutationRoots.set(key, aliasOperationId);
+		const result = await dashboardApi.patch<{
+			item?: UserListItemDTO;
+			outcome: MutationOutcome;
+		}>(
 			`/api/dashboard/admin/users/${encodeURIComponent(userId)}/login-alias`,
-			payload,
+			{
+				...payload,
+				operationId,
+				aliasOperationId,
+				...(existingRoot ? { retryOfOperationId: aliasOperationId } : {}),
+			},
 		);
-		return this.handleResponse(result).item;
+		const response = this.handleResponse(result);
+		if (response.outcome.status === 'applied' || response.outcome.status === 'replayed') {
+			this.aliasMutationRoots.delete(key);
+		}
+		return response;
 	}
 
 	// Claim Codes
@@ -358,13 +399,21 @@ export class AdminApi {
 		draftStatus: InvitationEditorContextDTO['draftStatus'];
 		publication: InvitationEditorContextDTO['publication'];
 	}> {
+		const mutationKey = `${invitationId}:${payload.expectedUpdatedAt}`;
+		const operationId = this.metadataMutationRoots.get(mutationKey) ?? crypto.randomUUID();
+		this.metadataMutationRoots.set(mutationKey, operationId);
 		const result = await dashboardApi.patch<{
 			invitation: InvitationEditorContextDTO['invitation'];
 			draftUpdatedAt: string | null;
 			draftStatus: InvitationEditorContextDTO['draftStatus'];
 			publication: InvitationEditorContextDTO['publication'];
-		}>(`/api/dashboard/intake/${encodeURIComponent(invitationId)}/editor/metadata`, payload);
-		return this.handleResponse(result);
+		}>(`/api/dashboard/intake/${encodeURIComponent(invitationId)}/editor/metadata`, {
+			...payload,
+			operationId,
+		});
+		const response = this.handleResponse(result);
+		this.metadataMutationRoots.delete(mutationKey);
+		return response;
 	}
 
 	async updateInvitationEditorSection(
@@ -408,11 +457,16 @@ export class AdminApi {
 			expectedInvitationUpdatedAt: string;
 		},
 	): Promise<{ context: InvitationEditorContextDTO }> {
+		const mutationKey = `${invitationId}:${payload.expectedInvitationUpdatedAt}:${payload.expectedDraftUpdatedAt ?? 'none'}`;
+		const operationId = this.restoreMutationRoots.get(mutationKey) ?? crypto.randomUUID();
+		this.restoreMutationRoots.set(mutationKey, operationId);
 		const result = await dashboardApi.post<{ context: InvitationEditorContextDTO }>(
 			`/api/dashboard/intake/${encodeURIComponent(invitationId)}/editor/restore-published`,
-			payload,
+			{ ...payload, operationId },
 		);
-		return this.handleResponse(result);
+		const response = this.handleResponse(result);
+		this.restoreMutationRoots.delete(mutationKey);
+		return response;
 	}
 
 	async reconcileInvitationEditorRsvp(

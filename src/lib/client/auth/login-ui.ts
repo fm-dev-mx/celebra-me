@@ -1,3 +1,7 @@
+import {
+	isCanonicalHostLoginAlias,
+} from '@/lib/auth/login-alias';
+
 export type AuthMethod = 'password' | 'magic_link';
 export type AuthPanel = 'login' | 'register';
 
@@ -12,7 +16,6 @@ export interface RegisterFormState extends LoginFormState {
 }
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const LOGIN_ALIAS_PATTERN = /^[a-z0-9._-]{3,60}$/;
 
 function normalize(value: string): string {
 	return value.trim();
@@ -23,7 +26,7 @@ export function isValidEmail(email: string): boolean {
 }
 
 export function isValidLoginAlias(alias: string): boolean {
-	return LOGIN_ALIAS_PATTERN.test(normalize(alias).toLowerCase());
+	return isCanonicalHostLoginAlias(normalize(alias).toLowerCase());
 }
 
 export function isValidLoginIdentifier(identifier: string): boolean {

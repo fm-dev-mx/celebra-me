@@ -7,11 +7,12 @@
 import { randomBytes, randomUUID } from 'node:crypto';
 import { runPsql, sqlLiteral } from '../db/db-workflow-lib.ts';
 import {
-	HOST_LOGIN_ALIAS_MAX_LENGTH,
-	HOST_LOGIN_ALIAS_PATTERN,
-} from './invitations/invitation-definition.ts';
+	buildManagedHostEmail,
+	HOST_LOGIN_DOMAIN,
+	parseHostLoginAlias,
+} from '../../src/lib/auth/login-alias.ts';
 
-export const INVITATION_HOST_EMAIL_DOMAIN = 'clientes.celebra.invalid';
+export const INVITATION_HOST_EMAIL_DOMAIN = HOST_LOGIN_DOMAIN;
 
 export type HostOwnerAction =
 	'OWNER_PRESERVE' | 'OWNER_EXPLICIT' | 'OWNER_REUSE' | 'OWNER_CREATE_PLANNED' | 'OWNER_CONFLICT';
@@ -31,24 +32,17 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3
 
 /** Normalize a host login alias to the canonical local-part form. */
 export function normalizeHostLoginAlias(alias: string): string {
-	const normalized = alias
-		.trim()
-		.toLowerCase()
-		.normalize('NFD')
-		.replace(/\p{M}/gu, '')
-		.replace(/[^a-z0-9]+/g, '_')
-		.replace(/^_+|_+$/g, '')
-		.slice(0, HOST_LOGIN_ALIAS_MAX_LENGTH);
-	if (!normalized || !HOST_LOGIN_ALIAS_PATTERN.test(normalized)) {
+	try {
+		return parseHostLoginAlias(alias);
+	} catch {
 		throw new Error(`Cannot build invitation host email: invalid hostLoginAlias "${alias}".`);
 	}
-	return normalized;
 }
 
 /** Canonical technical host email for a managed invitation hostLoginAlias. */
 export function buildInvitationHostEmail(hostLoginAlias: string): string {
 	const alias = normalizeHostLoginAlias(hostLoginAlias);
-	return `${alias}@${INVITATION_HOST_EMAIL_DOMAIN}`;
+	return buildManagedHostEmail(alias);
 }
 
 export function planInvitationHostOwner(input: {

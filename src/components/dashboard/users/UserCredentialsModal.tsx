@@ -2,6 +2,7 @@ import React, { useEffect, useState, type SyntheticEvent } from 'react';
 import DashboardModalPortal from '@/components/dashboard/DashboardModalPortal';
 import type { UserListItemDTO } from '@/lib/dashboard/dto/users';
 import { isValidLoginAlias } from '@/lib/client/auth/login-ui';
+import { normalizeHostLoginAlias } from '@/lib/auth/login-alias';
 
 function isManagedAccessDisplay(access: string): boolean {
 	return Boolean(access) && !access.includes('@');
@@ -39,15 +40,15 @@ const UserCredentialsModal: React.FC<UserCredentialsModalProps> = ({
 		event.preventDefault();
 		if (busy || !canEditAlias) return;
 
-		const trimmed = loginAlias.trim().toLowerCase();
-		if (!isValidLoginAlias(trimmed)) {
+		const normalized = normalizeHostLoginAlias(loginAlias);
+		if (!isValidLoginAlias(loginAlias)) {
 			setLocalError(
-				'El usuario de acceso debe tener entre 3 y 60 caracteres (a-z, 0-9, . _ -).',
+				'El usuario de acceso debe tener entre 3 y 60 caracteres (letras, números y guion bajo).',
 			);
 			return;
 		}
 		setLocalError('');
-		await onSaveLoginAlias(trimmed);
+		await onSaveLoginAlias(normalized);
 	};
 
 	const handleResetPassword = async () => {

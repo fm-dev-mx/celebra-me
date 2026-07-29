@@ -4,6 +4,7 @@ import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
 import { errorResponse, forbidden, jsonResponse } from '@/lib/rsvp/core/http';
 import { updateUserLoginAliasAdmin } from '@/lib/rsvp/services/user-admin.service';
 import { UpdateUserLoginAliasSchema, UuidSchema } from '@/lib/schemas';
+import { createRuntimeMutationCommandContext } from '@/lib/server/runtime-mutation-context';
 
 export const PATCH: APIRoute = async ({ request, params, cookies }) => {
 	try {
@@ -26,9 +27,16 @@ export const PATCH: APIRoute = async ({ request, params, cookies }) => {
 			userId,
 			loginAlias: parsed.loginAlias,
 			actorUserId: session.userId,
+			aliasOperationId: parsed.aliasOperationId,
+			commandContext: await createRuntimeMutationCommandContext(
+				session,
+				'system',
+				parsed.operationId,
+				parsed.retryOfOperationId,
+			),
 		});
 
-		return jsonResponse(result, 200);
+		return jsonResponse(result, result.outcome.status === 'not_applied' ? 424 : result.outcome.status === 'partial' ? 207 : 200);
 	} catch (error) {
 		return errorResponse(error);
 	}

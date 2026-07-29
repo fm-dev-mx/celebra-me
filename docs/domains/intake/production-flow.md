@@ -63,6 +63,10 @@ and append a durable outcome. A deterministic plan ID maps to the operation ID; 
 synchronized apply records `replayed`. Definitions initialize identity metadata, but managed updates
 preserve target title/slug/client metadata, existing owner, and administrative login alias.
 
+The canonical alias is lowercase, 3–60 characters, and consists of alphanumeric segments separated
+by single underscores. Accents, whitespace, and punctuation normalize to that form before initial
+seeding. A real-email Auth identity is never converted to a managed alias.
+
 Runtime mutations fail closed unless deployment environment, API project, Storage endpoint, and
 service credential identify the same explicit Local, Preview, or Production project. Operator CLI
 targets are explicit; an arbitrary cloud project is `unknown`, never inferred as Production.

@@ -138,6 +138,9 @@ export function useUsersAdmin() {
 			setError('');
 			try {
 				const result = await adminApi.resetUserPassword(userId);
+				if (!result.credentials) {
+					throw new Error('No se generó una contraseña porque el cambio no fue aplicado.');
+				}
 				const credentials: CreatedUserCredentialsDTO = {
 					email: targetUser?.email || userId,
 					role: targetUser?.role || 'host_client',
@@ -161,7 +164,9 @@ export function useUsersAdmin() {
 			setUpdatingUserId(userId);
 			setError('');
 			try {
-				const item = await adminApi.updateUserLoginAlias(userId, { loginAlias });
+				const result = await adminApi.updateUserLoginAlias(userId, { loginAlias });
+				const item = result.item;
+				if (!item) throw new Error('El usuario de acceso no fue modificado.');
 				await loadUsers();
 				return item;
 			} catch (err) {

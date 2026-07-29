@@ -2,17 +2,21 @@ import { ApiError } from '@/lib/rsvp/core/errors';
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import { sanitize } from '@/lib/rsvp/core/utils';
 import { getEnv } from '@/lib/server/env';
+import {
+	isCanonicalHostLoginAlias,
+	normalizeHostLoginAlias,
+} from '@/lib/auth/login-alias';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const CLAIM_CODE_PATTERN = /^[A-Za-z0-9_-]{6,128}$/;
-const LOGIN_ALIAS_PATTERN = /^[a-z0-9._-]{3,60}$/;
 
 export function normalizeEmail(value: unknown): string {
 	return sanitize(value, 320).toLowerCase();
 }
 
 export function normalizeLoginIdentifier(value: unknown): string {
-	return sanitize(value, 320).toLowerCase();
+	const normalized = sanitize(value, 320).toLowerCase();
+	return normalized.includes('@') ? normalized : normalizeHostLoginAlias(normalized);
 }
 
 export function sanitizePassword(value: unknown): string {
@@ -34,7 +38,7 @@ export function assertValidEmail(email: string): void {
 }
 
 export function isValidLoginAlias(value: string): boolean {
-	return LOGIN_ALIAS_PATTERN.test(value);
+	return isCanonicalHostLoginAlias(value);
 }
 
 export function assertValidLoginIdentifier(identifier: string): void {

@@ -294,11 +294,13 @@ async function updateAuthUserAdmin(input: {
 	userId: string;
 	password?: string;
 	mustChangePassword: boolean;
+	passwordResetOperationId?: string;
 }): Promise<AuthAdminUser> {
 	const existingUser = await getAuthUserAdminById(input.userId);
 	const body: {
 		password?: string;
 		app_metadata: Record<string, unknown>;
+		user_metadata?: Record<string, unknown>;
 	} = {
 		app_metadata: {
 			...(existingUser.app_metadata || {}),
@@ -307,6 +309,12 @@ async function updateAuthUserAdmin(input: {
 	};
 	if (input.password !== undefined) {
 		body.password = input.password;
+	}
+	if (input.passwordResetOperationId) {
+		body.user_metadata = {
+			...(existingUser.user_metadata || {}),
+			password_reset_operation_id: input.passwordResetOperationId,
+		};
 	}
 
 	const response = await authRequest<CreateAuthUserResponse>({
@@ -330,6 +338,7 @@ export async function adminUpdateManagedLoginAlias(input: {
 	userId: string;
 	email: string;
 	loginAlias: string;
+	operationId?: string;
 }): Promise<AuthAdminUser> {
 	const existingUser = await getAuthUserAdminById(input.userId);
 	const response = await authRequest<CreateAuthUserResponse>({
@@ -342,6 +351,7 @@ export async function adminUpdateManagedLoginAlias(input: {
 			user_metadata: {
 				...(existingUser.user_metadata || {}),
 				login_alias: input.loginAlias,
+				...(input.operationId ? { login_alias_operation_id: input.operationId } : {}),
 			},
 			app_metadata: {
 				...(existingUser.app_metadata || {}),
@@ -359,11 +369,13 @@ export async function adminResetAuthUserPassword(input: {
 	userId: string;
 	password: string;
 	mustChangePassword?: boolean;
+	operationId?: string;
 }): Promise<AuthAdminUser> {
 	return updateAuthUserAdmin({
 		userId: input.userId,
 		password: input.password,
 		mustChangePassword: input.mustChangePassword ?? true,
+		passwordResetOperationId: input.operationId,
 	});
 }
 

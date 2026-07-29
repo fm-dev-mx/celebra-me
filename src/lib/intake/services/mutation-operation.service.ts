@@ -8,7 +8,7 @@ import { appendMutationOperationReceipt } from '@/lib/intake/repositories/mutati
 
 export async function recordInvitationMutationOutcome<Result>(input: {
 	context: InvitationMutationCommandContext;
-	invitationId: string;
+	invitationId?: string | null;
 	commandKind: string;
 	status: MutationOutcomeStatus;
 	completedSteps?: string[];

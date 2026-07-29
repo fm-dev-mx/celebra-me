@@ -15,6 +15,7 @@ import {
 } from '@/lib/rsvp/services/user-admin.service';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { createMockRequest } from '../helpers/api-mocks';
+import { createRuntimeMutationCommandContext } from '@/lib/server/runtime-mutation-context';
 
 // Mock funciones de seguridad admin
 jest.mock('@/lib/rsvp/security/admin-rate-limit', () => ({
@@ -45,6 +46,10 @@ jest.mock('@/lib/rsvp/services/user-admin.service', () => ({
 	updateUserLoginAliasAdmin: jest.fn(),
 }));
 
+jest.mock('@/lib/server/runtime-mutation-context', () => ({
+	createRuntimeMutationCommandContext: jest.fn(),
+}));
+
 jest.mock('@/lib/rsvp/security/admin-protection', () => ({
 	canChangeUserRole: jest.fn().mockResolvedValue({ allowed: true }),
 }));
@@ -66,6 +71,10 @@ const updateUserEventMembershipAdminMock = updateUserEventMembershipAdmin as jes
 const updateUserLoginAliasAdminMock = updateUserLoginAliasAdmin as jest.MockedFunction<
 	typeof updateUserLoginAliasAdmin
 >;
+const createRuntimeMutationCommandContextMock =
+	createRuntimeMutationCommandContext as jest.MockedFunction<
+		typeof createRuntimeMutationCommandContext
+	>;
 
 function createMockUrl(searchParams?: Record<string, string>): URL {
 	const url = new URL('http://localhost/api/dashboard/admin/users');
@@ -79,6 +88,15 @@ function createMockUrl(searchParams?: Record<string, string>): URL {
 
 const VALID_USER_ID = '550e8400-e29b-41d4-a716-446655440000';
 const VALID_ADMIN_ID = '550e8400-e29b-41d4-a716-446655440001';
+const VALID_OPERATION_ID = '550e8400-e29b-41d4-a716-446655440002';
+const COMMAND_CONTEXT = {
+	operationId: VALID_OPERATION_ID,
+	environment: 'local',
+	projectRef: 'celebra-me-rsvp',
+	actorId: VALID_ADMIN_ID,
+	actorType: 'admin',
+	origin: 'system',
+} as const;
 
 describe('Admin Users API', () => {
 	beforeEach(() => {
@@ -90,6 +108,7 @@ describe('Admin Users API', () => {
 			role: 'super_admin',
 			isSuperAdmin: true,
 		});
+		createRuntimeMutationCommandContextMock.mockResolvedValue(COMMAND_CONTEXT);
 	});
 
 	describe('GET /api/dashboard/admin/users', () => {
@@ -457,9 +476,19 @@ describe('Admin Users API', () => {
 					createdAt: '2026-04-01T00:00:00.000Z',
 					assignedEvents: [],
 				},
+				outcome: {
+					operationId: VALID_OPERATION_ID,
+					status: 'applied',
+					durableMutation: true,
+					completedSteps: ['auth_alias_updated', 'audit_logged'],
+				},
 			});
 
-			const request = createMockRequest({ loginAlias: 'abril_becerra' });
+			const request = createMockRequest({
+				loginAlias: 'abril_becerra',
+				operationId: VALID_OPERATION_ID,
+				aliasOperationId: VALID_OPERATION_ID,
+			});
 			const response = await updateUserLoginAlias({
 				params: { userId: VALID_USER_ID },
 				request,
@@ -476,6 +505,8 @@ describe('Admin Users API', () => {
 				userId: VALID_USER_ID,
 				loginAlias: 'abril_becerra',
 				actorUserId: VALID_ADMIN_ID,
+				aliasOperationId: VALID_OPERATION_ID,
+				commandContext: COMMAND_CONTEXT,
 			});
 			const body = await response.json();
 			expect(body.item.email).toBe('abril_becerra');
@@ -490,7 +521,11 @@ describe('Admin Users API', () => {
 				isSuperAdmin: true,
 			});
 
-			const request = createMockRequest({ loginAlias: 'AB' });
+			const request = createMockRequest({
+				loginAlias: 'AB',
+				operationId: VALID_OPERATION_ID,
+				aliasOperationId: VALID_OPERATION_ID,
+			});
 			const response = await updateUserLoginAlias({
 				params: { userId: VALID_USER_ID },
 				request,

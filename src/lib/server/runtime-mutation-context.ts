@@ -7,7 +7,8 @@ import { assertRuntimeMutationEnvironment } from '@/lib/server/runtime-mutation-
 export async function createRuntimeMutationCommandContext(
 	session: SessionContext,
 	origin: Extract<MutationOrigin, 'editor' | 'legacy_dashboard' | 'system'>,
-	operationId = randomUUID(),
+	operationId: string = randomUUID(),
+	retryOfOperationId?: string,
 ): Promise<InvitationMutationCommandContext> {
 	const identity = await assertRuntimeMutationEnvironment();
 	return {
@@ -17,5 +18,6 @@ export async function createRuntimeMutationCommandContext(
 		actorId: session.userId,
 		actorType: session.isSuperAdmin ? 'admin' : 'host',
 		origin,
+		...(retryOfOperationId ? { retryOfOperationId } : {}),
 	};
 }

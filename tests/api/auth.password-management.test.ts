@@ -6,16 +6,33 @@ import * as authorization from '@/lib/rsvp/auth/authorization';
 import * as auth from '@/lib/rsvp/auth/auth';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { createMockRequest } from '../helpers/api-mocks';
+import * as mutationOperationService from '@/lib/intake/services/mutation-operation.service';
+import * as mutationOperationRepository from '@/lib/intake/repositories/mutation-operation.repository';
+import * as runtimeMutationContext from '@/lib/server/runtime-mutation-context';
 
 jest.mock('@/lib/rsvp/auth/auth-api', () => ({
 	signInWithPassword: jest.fn(),
 	updateUserPasswordUserAuth: jest.fn(),
 	adminSetUserMustChangePassword: jest.fn(),
 	adminResetAuthUserPassword: jest.fn(),
+	getAuthUserAdminById: jest.fn(),
 }));
 
 jest.mock('@/lib/rsvp/services/audit-logger.service', () => ({
 	logAdminAction: jest.fn(),
+	logAdminActionStrict: jest.fn(),
+}));
+
+jest.mock('@/lib/intake/services/mutation-operation.service', () => ({
+	recordInvitationMutationOutcome: jest.fn(),
+}));
+
+jest.mock('@/lib/intake/repositories/mutation-operation.repository', () => ({
+	findMutationOperationReceipt: jest.fn(),
+}));
+
+jest.mock('@/lib/server/runtime-mutation-context', () => ({
+	createRuntimeMutationCommandContext: jest.fn(),
 }));
 
 jest.mock('@/lib/rsvp/auth/authorization', () => ({
@@ -39,12 +56,52 @@ describe('Password Management & Recovery', () => {
 	const adminResetAuthUserPasswordMock = authApi.adminResetAuthUserPassword as jest.MockedFunction<
 		typeof authApi.adminResetAuthUserPassword
 	>;
+	const getAuthUserAdminByIdMock = authApi.getAuthUserAdminById as jest.MockedFunction<
+		typeof authApi.getAuthUserAdminById
+	>;
+	const recordInvitationMutationOutcomeMock =
+		mutationOperationService.recordInvitationMutationOutcome as jest.MockedFunction<
+			typeof mutationOperationService.recordInvitationMutationOutcome
+		>;
+	const findMutationOperationReceiptMock =
+		mutationOperationRepository.findMutationOperationReceipt as jest.MockedFunction<
+			typeof mutationOperationRepository.findMutationOperationReceipt
+		>;
+	const createRuntimeMutationCommandContextMock =
+		runtimeMutationContext.createRuntimeMutationCommandContext as jest.MockedFunction<
+			typeof runtimeMutationContext.createRuntimeMutationCommandContext
+		>;
 	const requireAdminMutationAccessMock = authorization.requireAdminMutationAccess as jest.MockedFunction<
 		typeof authorization.requireAdminMutationAccess
 	>;
 	const requireSessionContextMock = auth.requireSessionContext as jest.MockedFunction<
 		typeof auth.requireSessionContext
 	>;
+
+	beforeEach(() => {
+		process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-secret';
+		getAuthUserAdminByIdMock.mockResolvedValue({
+			id: '550e8400-e29b-41d4-a716-446655440000',
+			email: 'client@example.com',
+			user_metadata: {},
+			app_metadata: {},
+		});
+		findMutationOperationReceiptMock.mockResolvedValue(null);
+		recordInvitationMutationOutcomeMock.mockResolvedValue({
+			operationId: '550e8400-e29b-41d4-a716-446655440002',
+			status: 'applied',
+			durableMutation: true,
+			completedSteps: [],
+		});
+		createRuntimeMutationCommandContextMock.mockResolvedValue({
+			operationId: '550e8400-e29b-41d4-a716-446655440002',
+			environment: 'local',
+			projectRef: 'celebra-me-rsvp',
+			actorId: 'super-admin-1',
+			actorType: 'admin',
+			origin: 'system',
+		});
+	});
 
 	afterEach(() => {
 		jest.clearAllMocks();
@@ -86,7 +143,11 @@ describe('Password Management & Recovery', () => {
 
 			const response = await resetPasswordAdmin({
 				request: createMockRequest(
-					{ userId: '550e8400-e29b-41d4-a716-446655440000' },
+					{
+						userId: '550e8400-e29b-41d4-a716-446655440000',
+						operationId: '550e8400-e29b-41d4-a716-446655440002',
+						credentialOperationId: '550e8400-e29b-41d4-a716-446655440002',
+					},
 					{ Origin: 'http://localhost:4321', Host: 'localhost:4321' },
 					'http://localhost:4321/api/dashboard/admin/users/reset-password',
 				),
@@ -95,7 +156,7 @@ describe('Password Management & Recovery', () => {
 
 			expect(response.status).toBe(200);
 			const body = await response.json();
-			expect(body.userId).toBe('target-user-1');
+			expect(body.userId).toBe('550e8400-e29b-41d4-a716-446655440000');
 			expect(body.credentials.temporaryPassword).toBeDefined();
 			expect(body.credentials.temporaryPassword).toMatch(
 				/^[A-Z][a-z]+-\d{4}[!@#$%*]$/,
@@ -104,6 +165,7 @@ describe('Password Management & Recovery', () => {
 				expect.objectContaining({
 					userId: '550e8400-e29b-41d4-a716-446655440000',
 					mustChangePassword: true,
+					operationId: '550e8400-e29b-41d4-a716-446655440002',
 				}),
 			);
 		});
@@ -115,7 +177,11 @@ describe('Password Management & Recovery', () => {
 
 			const response = await resetPasswordAdmin({
 				request: createMockRequest(
-					{ userId: '550e8400-e29b-41d4-a716-446655440000' },
+					{
+						userId: '550e8400-e29b-41d4-a716-446655440000',
+						operationId: '550e8400-e29b-41d4-a716-446655440002',
+						credentialOperationId: '550e8400-e29b-41d4-a716-446655440002',
+					},
 					{ Origin: 'http://localhost:4321', Host: 'localhost:4321' },
 					'http://localhost:4321/api/dashboard/admin/users/reset-password',
 				),
