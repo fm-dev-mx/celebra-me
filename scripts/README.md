@@ -22,15 +22,15 @@ owns the command inventory.
 
 ## Available Ops Commands
 
-| Command                     | Canonical Script               | Purpose                                                                                                                 |
-| --------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
-| `pnpm ops check-links`      | `scripts/check-links.mjs`      | validate relative links inside changed Markdown files                                                                   |
+| Command                     | Canonical Script               | Purpose                                                                                                                                                                                               |
+| --------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm ops check-links`      | `scripts/check-links.mjs`      | validate relative links inside changed Markdown files                                                                                                                                                 |
 | `pnpm ops optimize-assets`  | `scripts/optimize-assets.mjs`  | **Legacy one-shot** (hardcoded demo WebP copy). Not the managed invitation asset pipeline — use invitation preparation asset protocol + `normalizeInvitationImage` / provision release normalization. |
-| `pnpm ops validate-schema`  | `scripts/validate-schema.mjs`  | compare centralized theme-contract variants against modular section-theme selectors and documented base-style fallbacks |
-| `pnpm ops validate-commits` | `scripts/validate-commits.mjs` | replay commitlint and commit-audit checks across a commit range                                                         |
-| `pnpm ops graphify-views`   | `scripts/graphify/entry.ts`    | generate Graphify operational domain and community reports                                                              |
-| `pnpm ops graphify-refresh` | `scripts/graphify/refresh.ts`  | regenerate, cluster, promote, fingerprint, and validate the canonical Graphify snapshot                                 |
-| `pnpm ops new-invitation`   | `scripts/new-invitation.mjs`   | disabled fail-closed guard; real/client invitations are DB-published content                                            |
+| `pnpm ops validate-schema`  | `scripts/validate-schema.mjs`  | compare centralized theme-contract variants against modular section-theme selectors and documented base-style fallbacks                                                                               |
+| `pnpm ops validate-commits` | `scripts/validate-commits.mjs` | replay commitlint and commit-audit checks across a commit range                                                                                                                                       |
+| `pnpm ops graphify-views`   | `scripts/graphify/entry.ts`    | generate Graphify operational domain and community reports                                                                                                                                            |
+| `pnpm ops graphify-refresh` | `scripts/graphify/refresh.ts`  | regenerate, cluster, promote, fingerprint, and validate the canonical Graphify snapshot                                                                                                               |
+| `pnpm ops new-invitation`   | `scripts/new-invitation.mjs`   | disabled fail-closed guard; real/client invitations are DB-published content                                                                                                                          |
 
 ## Invitation Provisioning & Promotion Commands
 
@@ -55,27 +55,27 @@ execute the same retained plans. Any blocked selected target aborts the complete
 
 ## Database Command Inventory
 
-| Command                                    | Owner          | Purpose                                                                         |
-| ------------------------------------------ | -------------- | ------------------------------------------------------------------------------- |
-| `pnpm db:push`                             | `package.json` | blocked fail-closed replacement for ambiguous raw Supabase push                 |
-| `pnpm db:prod:backup`                      | `scripts/db/`  | read-only production data dump                                                  |
-| `pnpm db:prod:backup:critical`             | `scripts/db/`  | complete read-only Production DB/Auth/Storage recovery set                      |
-| `pnpm db:backup:create-disposable-fixture` | `scripts/db/`  | synthetic complete recovery set for a disposable drill                          |
-| `pnpm db:restore:verify-disposable`        | `scripts/db/`  | rebuild, restore, and verify a complete set in disposable-test only             |
-| `pnpm db:contract:verify`                  | `scripts/db/`  | read-only required mutation schema/privilege contract verification              |
-| `pnpm db:prod:audit`                       | `scripts/db/`  | read-only production migration history & schema audit                           |
-| `pnpm db:branch:parity`                    | `scripts/db/`  | read-only branch migration identity/content + DB-sensitive detection (`--json`) |
-| `pnpm db:branch:diagnose`                  | `scripts/db/`  | read-only branch-lane diagnosis from structured evidence (`--evidence-json`)    |
-| `pnpm db:branch:remediate-disposable`      | `scripts/db/`  | verify then rebuild disposable-test only (`--verify-only` / `--execute`)        |
-| `pnpm db:prod:migrate`                     | `scripts/db/`  | apply reviewed migrations to production (with preflight checks & backup)        |
-| `pnpm db:preview:migrate`                  | `scripts/db/`  | apply pending migrations to Preview (`PREVIEW_DB_URL`)                          |
-| `pnpm db:preview:audit`                    | `scripts/db/`  | read-only Preview schema drift audit (`PREVIEW_DB_URL`)                         |
-| `pnpm db:disposable:reset`                 | `scripts/db/`  | reset isolated disposable test environment container                            |
-| `pnpm db:disposable:phase3-concurrency`    | `scripts/db/`  | run system concurrency/stale-plan scenarios against disposable-test             |
-| `pnpm db:validate:pipeline`                | `scripts/db/`  | full database validation pipeline (baseline, latest, pgTAP, application flows)  |
-| `pnpm db:local:restore-from-dump`          | `scripts/db/`  | import production dump into persistent local database                           |
-| `pnpm db:sql:lint -- --file <path>`        | `scripts/db/`  | lint a manifest-bearing production SQL patch                                    |
-| `pnpm db:prod:patch -- --file <path>`      | `scripts/db/`  | dry-run-only production patch entrypoint                                        |
+| Command                                    | Owner          | Purpose                                                                            |
+| ------------------------------------------ | -------------- | ---------------------------------------------------------------------------------- |
+| `pnpm db:push`                             | `package.json` | blocked fail-closed replacement for ambiguous raw Supabase push                    |
+| `pnpm db:prod:backup`                      | `scripts/db/`  | read-only production data dump                                                     |
+| `pnpm db:prod:backup:critical`             | `scripts/db/`  | complete read-only Production DB/Auth/Storage set (Phase 3 or predecessor profile) |
+| `pnpm db:backup:create-disposable-fixture` | `scripts/db/`  | synthetic complete recovery set for a disposable drill                             |
+| `pnpm db:restore:verify-disposable`        | `scripts/db/`  | rebuild, restore, and verify a complete set in disposable-test only                |
+| `pnpm db:contract:verify`                  | `scripts/db/`  | read-only required mutation schema/privilege contract verification                 |
+| `pnpm db:prod:audit`                       | `scripts/db/`  | read-only production migration history & schema audit                              |
+| `pnpm db:branch:parity`                    | `scripts/db/`  | read-only branch migration identity/content + DB-sensitive detection (`--json`)    |
+| `pnpm db:branch:diagnose`                  | `scripts/db/`  | read-only branch-lane diagnosis from structured evidence (`--evidence-json`)       |
+| `pnpm db:branch:remediate-disposable`      | `scripts/db/`  | verify then rebuild disposable-test only (`--verify-only` / `--execute`)           |
+| `pnpm db:prod:migrate`                     | `scripts/db/`  | apply reviewed migrations to production (with preflight checks & backup)           |
+| `pnpm db:preview:migrate`                  | `scripts/db/`  | apply pending migrations to Preview (`PREVIEW_DB_URL`)                             |
+| `pnpm db:preview:audit`                    | `scripts/db/`  | read-only Preview schema drift audit (`PREVIEW_DB_URL`)                            |
+| `pnpm db:disposable:reset`                 | `scripts/db/`  | reset isolated disposable test environment container                               |
+| `pnpm db:disposable:phase3-concurrency`    | `scripts/db/`  | run system concurrency/stale-plan scenarios against disposable-test                |
+| `pnpm db:validate:pipeline`                | `scripts/db/`  | full database validation pipeline (baseline, latest, pgTAP, application flows)     |
+| `pnpm db:local:restore-from-dump`          | `scripts/db/`  | import production dump into persistent local database                              |
+| `pnpm db:sql:lint -- --file <path>`        | `scripts/db/`  | lint a manifest-bearing production SQL patch                                       |
+| `pnpm db:prod:patch -- --file <path>`      | `scripts/db/`  | dry-run-only production patch entrypoint                                           |
 
 Behavior and safety rules live in [`docs/database-workflow.md`](../docs/database-workflow.md) and
 the [manual SQL manifest](../.agent/rules/manual-sql-manifest.md).
