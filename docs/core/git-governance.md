@@ -91,7 +91,7 @@ To navigate between worktrees efficiently in PowerShell, add the following funct
 PowerShell profile (`$PROFILE`):
 
 ```powershell
-function wt ($lane) {
+function lane ($lane) {
   switch ($lane) {
     "main" { Set-Location "D:\code\celebra-me" }
     "dev"  { Set-Location "D:\code\celebra-me\.worktrees\dev-lane" }
