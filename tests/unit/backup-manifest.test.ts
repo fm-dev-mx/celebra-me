@@ -26,6 +26,15 @@ function fixture(): CriticalBackupManifest {
 describe('critical backup manifest', () => {
 	it('validates a complete backup set', () =>
 		expect(() => validateCriticalBackupManifest(fixture())).not.toThrow());
+
+	it('allows a truthful disposable fixture only when the caller opts in', () => {
+		const manifest = fixture();
+		manifest.environment = 'disposable-test';
+		expect(() => validateCriticalBackupManifest(manifest)).toThrow(/environment/);
+		expect(() =>
+			validateCriticalBackupManifest(manifest, { allowDisposableTest: true }),
+		).not.toThrow();
+	});
 	it('rejects a missing critical artifact', () => {
 		const manifest = fixture();
 		manifest.artifacts.pop();

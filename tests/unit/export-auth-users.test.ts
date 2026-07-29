@@ -4,7 +4,11 @@
  * Validates the Auth dump SQL format as a pure unit test without database access.
  */
 
-import { generateAuthDump, type AuthUser, type AuthIdentity } from '../../scripts/db/export-auth-users';
+import {
+	generateAuthDump,
+	type AuthUser,
+	type AuthIdentity,
+} from '../../scripts/db/export-auth-users';
 
 describe('export-auth-users SQL generator', () => {
 	const sampleUser: AuthUser = {
@@ -45,7 +49,21 @@ describe('export-auth-users SQL generator', () => {
 
 	it('uses local-controlled password (not production hash)', () => {
 		const sql = generateAuthDump([sampleUser], []);
-		expect(sql).toContain("'local-only-no-production-hash'");
+		expect(sql).toContain("crypt('local-only-no-production-hash', gen_salt('bf'))");
+	});
+
+	it('preserves soft-deleted Auth users for relationship reconstruction', () => {
+		const sql = generateAuthDump([{ ...sampleUser, deleted_at: '2026-02-01T00:00:00Z' }], []);
+		expect(sql).toContain('deleted_at');
+		expect(sql).toContain("'2026-02-01T00:00:00Z'::timestamptz");
+	});
+
+	it('emits valid no-op SQL when Auth users and identities are empty', () => {
+		const sql = generateAuthDump([], []);
+		expect(sql).not.toContain('INSERT INTO auth.users');
+		expect(sql).not.toContain('INSERT INTO auth.identities');
+		expect(sql).toContain('No Auth users were present');
+		expect(sql).toContain('No Auth identities were present');
 	});
 
 	it('preserves email and metadata', () => {
@@ -74,5 +92,4 @@ describe('export-auth-users SQL generator', () => {
 		// The query parameters should be blanked out empty strings: '', '', '', ''
 		expect(sql).toContain(`'', '', '', ''`);
 	});
-
 });

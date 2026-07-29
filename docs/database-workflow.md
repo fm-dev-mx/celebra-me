@@ -22,10 +22,14 @@ Local -> Production: allowed only for reviewed migrations.
 ## Production backup and recovery authority
 
 The repository owner (or explicitly delegated Production operator) owns backup creation, access,
-restore authorization, and drills. Targets are RPO ≤ 15 minutes and RTO ≤ 4 hours. Repository access
-on 2026-07-29 did not expose a trustworthy control-plane statement for the Production Supabase plan,
-PITR enablement, retention, or last successful platform backup. These remain unverified and must not
-be claimed; the operator must verify and record dashboard posture before a Production change.
+restore authorization, and drills. Targets are RPO ≤ 15 minutes and RTO ≤ 4 hours. Read-only
+control-plane inspection on 2026-07-29 verified that the owning Supabase organization is on the Free
+plan. Supabase documents automated daily backups only for Pro, Team, and Enterprise and PITR as an
+add-on for those plans; Free projects are directed to maintain their own off-site exports. Therefore
+no managed backup, PITR retention window, or latest managed recovery point is claimed for
+Production. The RPO target is **not satisfied/proven** until the operator enables a qualifying
+platform capability or configures and monitors an independent schedule of sufficient frequency. See
+[Supabase Database Backups](https://supabase.com/docs/guides/platform/backups).
 
 The independent critical set comprises the public database (including invitation, RSVP, publication,
 provenance, and operation receipts), Auth reconstruction data, Storage metadata, and actual critical
@@ -33,26 +37,39 @@ Storage object bytes. A DB dump or `storage.objects` rows alone are incomplete. 
 encrypted, access-restricted storage outside Git, retaining 30 daily and 12 monthly recovery points
 pending a verified stronger platform policy.
 
-Every set uses the SHA-256 manifest in `scripts/db/backup-manifest.ts`. Create one with
-`pnpm db:backup:create-manifest -- --output=<path> --database=<file> --auth=<file>
---storage-metadata=<file> --storage-objects=<file>`, then verify with
-`pnpm db:backup:verify-manifest -- --manifest=<path>`; missing, empty/truncated, size-mismatched, or
-checksum-mismatched artifacts fail closed. An external schedule is required if verified PITR cannot
-meet RPO, but none is claimed configured while platform posture and a sanctioned encrypted
-destination are unavailable.
+`pnpm db:prod:backup:critical` captures the complete set read-only, verifies Production DB/API/
+Storage/credential identity, downloads actual object bytes, rejects a changing capture window, and
+writes a SHA-256 manifest only after all checks pass. It requires `PROD_DB_URL`,
+`PROD_SUPABASE_URL`, and `PROD_SUPABASE_SERVICE_ROLE_KEY` from the shell or approved ignored secret
+files. Incomplete output is removed. `pnpm db:backup:verify-manifest -- --manifest=<path>` rejects
+missing, empty/truncated, size-mismatched, or checksum-mismatched artifacts.
 
-Restores are disposable-only, never Production. After loading all four artifact classes, run
-`pnpm db:restore:verify-disposable -- --manifest=<path> --target-db-url=<disposable-url>`. The
-verifier rejects hosted targets, checks critical counts and orphan guest/audit/event relationships,
-and records elapsed time. Manifest success is not recovery proof; a complete timed drill remains
-Goal 4 evidence.
+The command is an implementation, not a scheduler or secure destination. No independent Production
+schedule, latest successful independent backup, off-machine destination, encryption-at-rest policy,
+retention enforcement, monitoring, or failure alert is currently verified. The declared retention
+intent is 30 daily and 12 monthly recovery points, but it is not operationally guaranteed. Never
+place `.backups/` in Git, application logs, or CI artifacts.
+
+Restores are disposable-only, never Production. Run
+`pnpm db:restore:verify-disposable -- --manifest=<path> --target-db-url=<disposable-url> --report=<path> --storage-root=<new-empty-path>`.
+The workflow rebuilds all migrations, restores public/Auth/Storage metadata, materializes and
+re-hashes actual object bytes, compares deterministic critical-table and business-state
+fingerprints, checks RSVP/ownership/orphan/uniqueness/phone invariants, and writes
+restore/verification/total timings. A synthetic complete set can be created with
+`pnpm db:backup:create-disposable-fixture -- --output-dir=<path>`.
+
+The 2026-07-29 disposable drill restored 67 migrations, 19 critical table fingerprints, Auth
+reconstruction rows, and one actual Storage object in 7,113 ms (5,744 ms restore + 1,369 ms
+verification), with every invariant at zero. This proves the RTO ≤4 hours for the synthetic
+fixture—not Production RPO, production-scale duration, or a current Production recovery point.
 
 ## Production Reconciliation Status (point-in-time)
 
 - **Reconciliation Complete**: Production migration-history reconciliation is complete.
-- The repository currently contains **64** versioned migration files. Never infer hosted status or
-  pending counts from this number; obtain current Production state with the read-only
-  `pnpm db:prod:audit` workflow.
+- The repository contained **67** versioned migration files at the 2026-07-29 audit. Production and
+  Preview each reported 65 applied migrations and lacked `20260729140514` and `20260729152113`.
+  Never infer current hosted status from these recorded counts; rerun the read-only audit and
+  `pnpm db:contract:verify -- --target <production|preview>`.
 - **Migration Ownership**: All schema changes must be introduced through versioned migrations in
   `supabase/migrations/`. Direct production SQL is prohibited as a normal workflow.
 - **One-Time Recovery Tool**: `scripts/db/reconcile-prod-baseline.ts` was a one-time recovery tool
@@ -214,10 +231,12 @@ Resumable evidence (SHAs/hashes only; no credentials):
 Stale fingerprints invalidate automatically and re-run affected checks.
 
 Complete remote audits via `pnpm db:local:audit` / `db:preview:audit` / `db:prod:audit` when
-credentials resolve. Production guest/RSVP backup coverage uses `pnpm db:prod:backup` /
-`.backups/prod/` — require a fresh pre-migration dump based on migrate risk (state immediately
-before mutation), not merely calendar-day age; `pnpm db:prod:migrate` already creates that
-pre-migration backup. Preview is never a Production backup.
+credentials resolve. Production migration safety uses a fresh `pnpm db:prod:backup` public-data dump
+immediately before mutation. After applying migrations and verifying the application schema
+contract, `pnpm db:prod:migrate` creates `pnpm db:prod:backup:critical` as the complete DB/Auth/
+Storage recovery point. This order is intentionally non-circular when pending migrations create the
+receipt/provenance objects required by the complete integrity snapshot. Preview is never a
+Production backup.
 
 ### Blocked refresh aliases
 
@@ -266,10 +285,20 @@ import. The unresolved preserve-local enhancement remains tracked in
 - Use before migration windows or whenever a manual protected backup is needed.
 - Backups contain real customer data and must not be committed.
 
+`pnpm db:prod:backup:critical`
+
+- Reads Production only and creates the complete public/Auth/Storage metadata/object-byte set.
+- Requires a hosted schema that passes the Phase 3 recovery contract.
+- Verifies project identity, capture-window coherence, object size/hash, manifest completeness, and
+  critical business integrity before success.
+- Writes sensitive artifacts only under ignored `.backups/prod/`; an operator must move them to a
+  sanctioned encrypted, access-restricted destination and apply retention.
+
 `pnpm db:prod:migrate`
 
 - Runs `pnpm type-check`, `pnpm test`, `pnpm build`, and `supabase migration list`.
-- Creates a production backup first.
+- Creates a public-data backup first and a complete critical recovery set after contract
+  verification.
 - Applies pending Supabase migrations only.
 - Mutates production and requires explicit confirmation.
 - This is the only approved production mutation workflow.

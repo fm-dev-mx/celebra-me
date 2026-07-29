@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readFileSync, statSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
+import type { RecoveryIntegritySnapshot } from './recovery-integrity.ts';
 
 export const CRITICAL_BACKUP_KINDS = [
 	'database',
@@ -20,9 +21,11 @@ export interface BackupArtifactManifest {
 export interface CriticalBackupManifest {
 	version: 1;
 	createdAt: string;
-	environment: 'production';
+	environment: 'production' | 'disposable-test';
 	projectRef: string;
 	artifacts: BackupArtifactManifest[];
+	integrity?: RecoveryIntegritySnapshot;
+	sourceEnvironment?: 'production' | 'disposable-test';
 }
 
 export function hashFile(path: string): string {
@@ -43,10 +46,14 @@ export function createArtifactManifest(
 
 export function validateCriticalBackupManifest(
 	manifest: CriticalBackupManifest,
-	options: { requireCompleteSet?: boolean } = {},
+	options: { requireCompleteSet?: boolean; allowDisposableTest?: boolean } = {},
 ): void {
-	if (manifest.version !== 1 || manifest.environment !== 'production') {
-		throw new Error('Unsupported or non-production backup manifest.');
+	if (
+		manifest.version !== 1 ||
+		(manifest.environment !== 'production' &&
+			!(options.allowDisposableTest && manifest.environment === 'disposable-test'))
+	) {
+		throw new Error('Unsupported or unauthorized backup manifest environment.');
 	}
 	if (options.requireCompleteSet !== false) {
 		for (const kind of CRITICAL_BACKUP_KINDS) {

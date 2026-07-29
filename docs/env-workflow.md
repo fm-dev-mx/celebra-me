@@ -46,8 +46,10 @@ shell, Vercel, or gitignored secret paths documented by the owning workflow.
   packages and invitation definitions must contain semantic asset references, never those values.
 - **Platform-provided app/runtime:** Vercel supplies `VERCEL`, `VERCEL_ENV`, and
   `VERCEL_GIT_COMMIT_REF`. They are typed for app/runtime use but omitted from the local template.
-- **Production-only shell variables:** `PROD_DB_URL` is a Postgres connection string only. It must
-  never be accepted where a Supabase REST/API URL is required.
+- **Production-only shell variables:** `PROD_DB_URL` is a Postgres connection string only;
+  `PROD_SUPABASE_URL` and `PROD_SUPABASE_SERVICE_ROLE_KEY` are the independently verified API and
+  Storage inputs for the complete critical backup. They come only from the operator shell or
+  approved ignored secret files and are intentionally absent from `.env.example` and app typing.
 - **Test-only:** `PLAYWRIGHT_*`, audit run IDs, test fixture variables.
 - **Stale/manual-only:** `DATABASE_URL` and `RSVP_TOKEN_SECRET` are not active runtime inputs. Keep
   them out of templates unless a future workflow reintroduces them intentionally.
@@ -57,10 +59,10 @@ shell, Vercel, or gitignored secret paths documented by the owning workflow.
 The deterministic env contract test uses these explicit lists to reconcile the secret-free template
 with app/runtime typing:
 
-| Contract category           | Variables                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Relationship                                          |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
+| Contract category           | Variables                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Relationship                                          |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
 | `operational-script-only`   | `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `LOCAL_SUPER_ADMIN_PASSWORD`, `RSVP_ADMIN_PASSWORD`, `RSVP_ADMIN_USER`, `PLAYWRIGHT_BASE_URL`, `PLAYWRIGHT_APPROVED_PREVIEW_DEPLOYMENT_HOST`, `PLAYWRIGHT_PREVIEW_SUPABASE_URL`, `PLAYWRIGHT_HOST_LOGIN`, `PLAYWRIGHT_HOST_PASSWORD`, `VERCEL_AUTOMATION_BYPASS_SECRET`, `PLAYWRIGHT_PREVIEW_INVITATION_ID`, `PLAYWRIGHT_ALLOW_PREVIEW_PUBLICATION`, `PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING`, `PLAYWRIGHT_PREVIEW_DEBUG_ARTIFACTS` | Present in `.env.example`; omitted from typing.       |
-| `platform-provided-runtime` | `VERCEL`, `VERCEL_ENV`, `VERCEL_GIT_COMMIT_REF`                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Present in app/runtime typing; omitted from template. |
+| `platform-provided-runtime` | `VERCEL`, `VERCEL_ENV`, `VERCEL_GIT_COMMIT_REF`                                                                                                                                                                                                                                                                                                                                                                                                                                           | Present in app/runtime typing; omitted from template. |
 
 The Cloudinary variables are server-only operational inputs for trusted provisioning scripts. Never
 create `PUBLIC_CLOUDINARY_*` equivalents or place real Cloudinary values in tracked files.
@@ -77,6 +79,9 @@ create `PUBLIC_CLOUDINARY_*` equivalents or place real Cloudinary values in trac
   `--confirm-overwrite <target>:<slug>:<package-hash>` token.
 - `PUBLIC_*` variables must be browser-safe.
 - `PROD_DB_URL` is only for Postgres workflows such as backups, refreshes, and reviewed migrations.
+- `PROD_SUPABASE_URL` and `PROD_SUPABASE_SERVICE_ROLE_KEY` are accepted only by the read-only
+  complete critical backup workflow. DB/API/Storage/credential project refs must agree with the
+  allowlisted Production identity before any request.
 - Logs may show variable names, source filenames, presence/absence, and local/remote classification.
   They must not show full URLs, keys, passwords, raw tokens, or DB connection strings.
 - Examples should use local placeholders unless explicitly marked shell-only.
@@ -156,6 +161,7 @@ The diagnostics serializer accepts only an explicit allowlist of finite counters
 rejects strings and unknown fields so request bodies, URLs, headers, cookies, tokens, login values,
 and CSRF values cannot be attached. All Preview output paths remain below the ignored
 `output/playwright/` root.
+
 
 ## Cleanup Notes
 

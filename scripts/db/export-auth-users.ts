@@ -87,13 +87,6 @@ export function generateAuthDump(users: AuthUser[], identities: AuthIdentity[]):
 	lines.push('');
 
 	lines.push('-- auth.users (local-controlled passwords)');
-	lines.push('INSERT INTO auth.users (');
-	lines.push('  instance_id, id, aud, role, email, encrypted_password,');
-	lines.push('  email_confirmed_at, raw_app_meta_data, raw_user_meta_data,');
-	lines.push('  is_super_admin, phone, phone_confirmed_at, banned_until,');
-	lines.push('  is_sso_user, is_anonymous, created_at, updated_at,');
-	lines.push('  confirmation_token, recovery_token, email_change_token_new, email_change');
-	lines.push(') VALUES');
 	const userValues = users.map((u, i) => {
 		const prefix = '  (';
 		const suffix = i === users.length - 1 ? ')' : '),';
@@ -104,7 +97,7 @@ export function generateAuthDump(users: AuthUser[], identities: AuthIdentity[]):
 			`${sqlLiteral(u.aud)},`,
 			`${sqlLiteral(u.role)},`,
 			`${sqlLiteral(u.email)},`,
-			`'local-only-no-production-hash',`, // local-controlled password
+			`crypt('local-only-no-production-hash', gen_salt('bf')),`,
 			`${u.email_confirmed_at ? `'${u.email_confirmed_at}'::timestamptz` : 'NULL'},`,
 			`${jsonLiteral(u.raw_app_meta_data)},`,
 			`${jsonLiteral(u.raw_user_meta_data)},`,
@@ -112,6 +105,7 @@ export function generateAuthDump(users: AuthUser[], identities: AuthIdentity[]):
 			`${sqlLiteral(u.phone)},`,
 			`${u.phone_confirmed_at ? `'${u.phone_confirmed_at}'::timestamptz` : 'NULL'},`,
 			`${u.banned_until ? `'${u.banned_until}'::timestamptz` : 'NULL'},`,
+			`${u.deleted_at ? `'${u.deleted_at}'::timestamptz` : 'NULL'},`,
 			`${u.is_sso_user ? 'true' : 'false'},`,
 			`${u.is_anonymous ? 'true' : 'false'},`,
 			`'${u.created_at}'::timestamptz,`,
@@ -123,14 +117,22 @@ export function generateAuthDump(users: AuthUser[], identities: AuthIdentity[]):
 			suffix,
 		].join(' ');
 	});
-	lines.push(...userValues);
-	lines.push('ON CONFLICT (id) DO NOTHING;');
+	if (userValues.length > 0) {
+		lines.push('INSERT INTO auth.users (');
+		lines.push('  instance_id, id, aud, role, email, encrypted_password,');
+		lines.push('  email_confirmed_at, raw_app_meta_data, raw_user_meta_data,');
+		lines.push('  is_super_admin, phone, phone_confirmed_at, banned_until,');
+		lines.push('  deleted_at, is_sso_user, is_anonymous, created_at, updated_at,');
+		lines.push('  confirmation_token, recovery_token, email_change_token_new, email_change');
+		lines.push(') VALUES');
+		lines.push(...userValues);
+		lines.push('ON CONFLICT (id) DO NOTHING;');
+	} else {
+		lines.push('  -- No Auth users were present in the backup source.');
+	}
 	lines.push('');
 
 	lines.push('-- auth.identities');
-	lines.push('INSERT INTO auth.identities (');
-	lines.push('  id, user_id, identity_data, provider, provider_id, last_sign_in_at, created_at, updated_at');
-	lines.push(') VALUES');
 	const idValues = identities.map((id, i) => {
 		const prefix = '  (';
 		const suffix = i === identities.length - 1 ? ')' : '),';
@@ -147,8 +149,17 @@ export function generateAuthDump(users: AuthUser[], identities: AuthIdentity[]):
 			suffix,
 		].join(' ');
 	});
-	lines.push(...idValues);
-	lines.push('ON CONFLICT (id) DO NOTHING;');
+	if (idValues.length > 0) {
+		lines.push('INSERT INTO auth.identities (');
+		lines.push(
+			'  id, user_id, identity_data, provider, provider_id, last_sign_in_at, created_at, updated_at',
+		);
+		lines.push(') VALUES');
+		lines.push(...idValues);
+		lines.push('ON CONFLICT (id) DO NOTHING;');
+	} else {
+		lines.push('  -- No Auth identities were present in the backup source.');
+	}
 	lines.push('');
 
 	return lines.join('\n');
@@ -168,13 +179,18 @@ function main(): void {
 	console.info(`  Output: ${outPath}`);
 
 	// Import psql execution
-	const usersResult = spawnSync('psql', [
-		'--set', 'ON_ERROR_STOP=1',
-		'--no-align',
-		'--tuples-only',
-		'--no-psqlrc',
-		'--dbname', prodDbUrl,
-		'--command', `
+	const usersResult = spawnSync(
+		'psql',
+		[
+			'--set',
+			'ON_ERROR_STOP=1',
+			'--no-align',
+			'--tuples-only',
+			'--no-psqlrc',
+			'--dbname',
+			prodDbUrl,
+			'--command',
+			`
 select coalesce(json_agg(sub), '[]'::json)::text from (
   select
     id, aud, role, email,
@@ -187,24 +203,30 @@ select coalesce(json_agg(sub), '[]'::json)::text from (
     is_sso_user, is_anonymous,
     created_at, updated_at
   from auth.users
-  where deleted_at is null
   order by created_at
 ) sub;
 `,
-	], { encoding: 'utf8', stdio: 'pipe' });
+		],
+		{ encoding: 'utf8', stdio: 'pipe' },
+	);
 
 	if (usersResult.status !== 0) {
 		console.error(`Failed to query auth.users: ${usersResult.stderr}`);
 		process.exit(1);
 	}
 
-	const identitiesResult = spawnSync('psql', [
-		'--set', 'ON_ERROR_STOP=1',
-		'--no-align',
-		'--tuples-only',
-		'--no-psqlrc',
-		'--dbname', prodDbUrl,
-		'--command', `
+	const identitiesResult = spawnSync(
+		'psql',
+		[
+			'--set',
+			'ON_ERROR_STOP=1',
+			'--no-align',
+			'--tuples-only',
+			'--no-psqlrc',
+			'--dbname',
+			prodDbUrl,
+			'--command',
+			`
 select coalesce(json_agg(sub), '[]'::json)::text from (
   select
     id, user_id, identity_data,
@@ -214,7 +236,9 @@ select coalesce(json_agg(sub), '[]'::json)::text from (
   order by created_at
 ) sub;
 `,
-	], { encoding: 'utf8', stdio: 'pipe' });
+		],
+		{ encoding: 'utf8', stdio: 'pipe' },
+	);
 
 	if (identitiesResult.status !== 0) {
 		console.error(`Failed to query auth.identities: ${identitiesResult.stderr}`);
@@ -234,13 +258,17 @@ select coalesce(json_agg(sub), '[]'::json)::text from (
 	console.log('');
 	console.log('Auth fields transformed:');
 	console.log('  - encrypted_password → local-controlled hash (no production passwords copied)');
-	console.log('  - confirmation_token, recovery_token, email_change_token_new, email_change → blanked');
+	console.log(
+		'  - confirmation_token, recovery_token, email_change_token_new, email_change → blanked',
+	);
 	console.log('Auth fields preserved exactly:');
 	console.log('  - id (UUID), aud, role, email, raw_app_meta_data, raw_user_meta_data');
 	console.log('  - is_super_admin, phone, is_sso_user, is_anonymous, created_at, updated_at');
 	console.log('Auth fields excluded:');
 	console.log('  - confirmed_at (generated column, auto-computed)');
-	console.log('  - auth.sessions, auth.refresh_tokens, auth.mfa_*, auth.oauth_*, auth.flow_state, auth.audit_log_entries');
+	console.log(
+		'  - auth.sessions, auth.refresh_tokens, auth.mfa_*, auth.oauth_*, auth.flow_state, auth.audit_log_entries',
+	);
 }
 
 const isMain = process.argv[1]?.endsWith('export-auth-users.ts');
