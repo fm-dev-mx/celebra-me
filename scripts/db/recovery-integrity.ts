@@ -30,13 +30,19 @@ export interface RecoveryTableFingerprint {
 
 export interface RecoveryIntegritySnapshot {
 	version: 1;
+	/** Omitted by legacy Phase 3 manifests. */
+	profile?: RecoveryIntegrityProfile;
 	capturedAt: string;
 	migrationCount: number;
+	/** Omitted by legacy Phase 3 manifests. */
+	migrationVersions?: string[];
 	migrationSha256: string;
 	tables: Record<string, RecoveryTableFingerprint>;
 	businessStateSha256: string;
 	invariants: Record<string, number>;
 }
+
+export type RecoveryIntegrityProfile = 'phase3' | 'pre-phase3';
 
 export interface RecoveryIntegrityComparison {
 	ok: boolean;
@@ -55,8 +61,13 @@ function psqlCopy(dbUrl: string, sql: string): string {
 			'--command',
 			`COPY (${sql}) TO STDOUT`,
 		],
-		{ redact: [dbUrl] },
+		{ redact: [dbUrl], throwOnError: false },
 	);
+	if (result.status !== 0) {
+		throw new Error(
+			`Recovery integrity query failed with process status ${String(result.status)}.`,
+		);
+	}
 	return result.stdout;
 }
 
@@ -90,26 +101,33 @@ function sqlLiteral(value: string): string {
 
 function fingerprintTable(dbUrl: string, schema: string, table: string): RecoveryTableFingerprint {
 	const qualified = `${quoteIdentifier(schema)}.${quoteIdentifier(table)}`;
+	let source = qualified;
+	let orderBy: string;
 	if (schema === 'auth' && table === 'users') {
-		const output = psqlCopy(
-			dbUrl,
-			`select row_to_json(t)::text from (
+		source = `(
 			  select id, aud, role, email, email_confirmed_at, raw_app_meta_data,
 			         raw_user_meta_data, is_super_admin, phone, phone_confirmed_at,
 			         banned_until, deleted_at, is_sso_user, is_anonymous, created_at, updated_at
-			  from auth.users order by id
-			) t`,
-		);
-		const rows = output.length === 0 ? [] : output.trimEnd().split(/\r?\n/);
-		return { rowCount: rows.length, sha256: sha256(output) };
+			  from auth.users
+			)`;
+		orderBy = 't.id';
+	} else {
+		orderBy = getPrimaryKeyOrder(dbUrl, schema, table);
 	}
-	const orderBy = getPrimaryKeyOrder(dbUrl, schema, table);
-	const output = psqlCopy(
-		dbUrl,
-		`select row_to_json(t)::text from ${qualified} t order by ${orderBy}`,
+	return parseSingleJson<RecoveryTableFingerprint>(
+		psqlCopy(
+			dbUrl,
+			`select json_build_object(
+		  'rowCount', count(*),
+		  'sha256', encode(digest(
+		    coalesce(string_agg(to_jsonb(t)::text, E'\\n' order by ${orderBy}), '') ||
+		    case when count(*) > 0 then E'\\n' else '' end,
+		    'sha256'
+		  ), 'hex')
+		)::text from ${source} t`,
+		),
+		`${schema}.${table} fingerprint`,
 	);
-	const rows = output.length === 0 ? [] : output.trimEnd().split(/\r?\n/);
-	return { rowCount: rows.length, sha256: sha256(output) };
 }
 
 const INVARIANT_SQL = `
@@ -132,7 +150,12 @@ select json_build_object(
   'duplicateClaimKeys', (select count(*) from (select event_id, code_key from public.event_claim_codes where deleted_at is null group by event_id, code_key having count(*) > 1) duplicates)
 )::text`;
 
-const BUSINESS_STATE_SQL = `
+function businessStateSql(profile: RecoveryIntegrityProfile): string {
+	const receiptState =
+		profile === 'phase3'
+			? ",\n  'receiptStatuses', (select coalesce(json_object_agg(status, total), '{}'::json) from (select status, count(*) total from public.invitation_mutation_operation_receipts group by status order by status) s)"
+			: '';
+	return `
 select json_build_object(
   'guestStatuses', (select coalesce(json_object_agg(attendance_status, total), '{}'::json) from (select attendance_status, count(*) total from public.guest_invitations group by attendance_status order by attendance_status) s),
   'guestAttendeeTotal', (select coalesce(sum(attendee_count), 0) from public.guest_invitations),
@@ -142,13 +165,19 @@ select json_build_object(
   'eventSoftDeleted', (select count(*) from public.events where deleted_at is not null),
   'membershipSoftDeleted', (select count(*) from public.event_memberships where deleted_at is not null),
   'claimCodeSoftDeleted', (select count(*) from public.event_claim_codes where deleted_at is not null),
-  'publishedVersions', (select coalesce(json_object_agg(event_type || '/' || slug, version), '{}'::json) from public.published_invitation_content),
-  'receiptStatuses', (select coalesce(json_object_agg(status, total), '{}'::json) from (select status, count(*) total from public.invitation_mutation_operation_receipts group by status order by status) s)
+  'publishedVersions', (select coalesce(json_object_agg(event_type || '/' || slug, version), '{}'::json) from public.published_invitation_content)${receiptState}
 )::text`;
+}
 
-export function captureRecoveryIntegrity(dbUrl: string): RecoveryIntegritySnapshot {
+export function captureRecoveryIntegrity(
+	dbUrl: string,
+	options: { profile?: RecoveryIntegrityProfile } = {},
+): RecoveryIntegritySnapshot {
+	const profile = options.profile ?? 'phase3';
 	const tables: Record<string, RecoveryTableFingerprint> = {};
 	for (const { schema, table } of CRITICAL_RECOVERY_TABLES) {
+		if (profile === 'pre-phase3' && table === 'invitation_mutation_operation_receipts')
+			continue;
 		tables[`${schema}.${table}`] = fingerprintTable(dbUrl, schema, table);
 	}
 	const migrations = psqlCopy(
@@ -159,11 +188,14 @@ export function captureRecoveryIntegrity(dbUrl: string): RecoveryIntegritySnapsh
 		psqlCopy(dbUrl, INVARIANT_SQL),
 		'invariant evidence',
 	);
-	const businessState = psqlCopy(dbUrl, BUSINESS_STATE_SQL);
+	const migrationVersions = migrations.length === 0 ? [] : migrations.trimEnd().split(/\r?\n/);
+	const businessState = psqlCopy(dbUrl, businessStateSql(profile));
 	return {
 		version: 1,
+		profile,
 		capturedAt: new Date().toISOString(),
-		migrationCount: migrations.length === 0 ? 0 : migrations.trimEnd().split(/\r?\n/).length,
+		migrationCount: migrationVersions.length,
+		migrationVersions,
 		migrationSha256: sha256(migrations),
 		tables,
 		businessStateSha256: sha256(businessState),
@@ -177,6 +209,12 @@ export function compareRecoveryIntegrity(
 	options: { requireValidInvariants?: boolean } = {},
 ): RecoveryIntegrityComparison {
 	const failures: string[] = [];
+	const expectedProfile = expected.profile ?? 'phase3';
+	const actualProfile = actual.profile ?? 'phase3';
+	if (actualProfile !== expectedProfile)
+		failures.push(
+			`Recovery integrity profile mismatch: expected ${expectedProfile}, got ${actualProfile}.`,
+		);
 	if (actual.migrationCount !== expected.migrationCount)
 		failures.push(
 			`Migration count mismatch: expected ${expected.migrationCount}, got ${actual.migrationCount}.`,

@@ -8,7 +8,7 @@
  *   2. Local codebase validation (`pnpm type-check`, `pnpm test`, `pnpm build`)
  *   3. Production schema audit (`audit-db.ts --target production`)
  *   4. Dry-run push and allowlist matching (`--allowlist` or `EXPECTED_MIGRATIONS`)
- *   5. Automatic pre-migration public-data dump (`.backups/prod/...`)
+ *   5. Complete pre-migration critical recovery point (`.backups/prod/...`)
  *   6. Interactive user confirmation (`MIGRATE <hostname>` or `CONFIRM_PROD_MIGRATION="MIGRATE <hostname>"`)
  *   7. Migration application (`supabase db push --db-url <url> --yes`)
  *   8. Post-migration schema/application contract verification
@@ -156,15 +156,18 @@ async function main(): Promise<void> {
 		console.info('✅ Dry-run matches the explicit expected migrations allowlist exactly.\n');
 	}
 
-	// 5. Pre-migration database backup. The current hosted schema may predate the receipt and
-	// provenance objects required by the complete Phase 3 integrity contract, so the legacy public
-	// dump is the only non-circular precondition for the migrations that create those objects.
-	console.info('5. Creating a read-only pre-migration public-data dump...');
-	runCommand('npx', ['tsx', 'scripts/db/backup-prod.ts'], {
-		env: { ...process.env, PROD_DB_URL: prodDbUrl },
-		redact: [prodDbUrl],
-	});
-	console.info('✅ Pre-migration public-data dump completed.\n');
+	// 5. Complete pre-migration recovery point. The explicit profile captures the current
+	// predecessor schema without requiring the receipt table introduced by this migration set.
+	console.info('5. Creating a complete read-only pre-migration critical recovery point...');
+	runCommand(
+		'npx',
+		['tsx', 'scripts/db/backup-critical-production.ts', '--integrity-profile=pre-phase3'],
+		{
+			env: { ...process.env, PROD_DB_URL: prodDbUrl },
+			redact: [prodDbUrl],
+		},
+	);
+	console.info('✅ Complete pre-migration critical recovery point verified.\n');
 
 	// 6. Explicit User Confirmation
 	console.info('6. Prompting for explicit production migration confirmation...');

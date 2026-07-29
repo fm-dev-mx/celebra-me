@@ -17,6 +17,17 @@ export interface StorageObjectArchive {
 	objects: StorageObjectArchiveEntry[];
 }
 
+export function classifyStorageDownloadFailure(
+	body: string,
+): 'not_found' | 'invalid_request' | 'unknown' {
+	const normalized = body.toLowerCase();
+	if (normalized.includes('not found') || normalized.includes('not_found')) return 'not_found';
+	if (normalized.includes('invalid') || normalized.includes('bad request')) {
+		return 'invalid_request';
+	}
+	return 'unknown';
+}
+
 export interface MaterializedStorageObject {
 	bucketId: string;
 	name: string;

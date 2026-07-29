@@ -6,8 +6,10 @@ import {
 function snapshot(): RecoveryIntegritySnapshot {
 	return {
 		version: 1,
+		profile: 'phase3',
 		capturedAt: '2026-07-29T12:00:00.000Z',
 		migrationCount: 67,
+		migrationVersions: ['20260729152113'],
 		migrationSha256: 'a'.repeat(64),
 		tables: {
 			'public.guest_invitations': { rowCount: 3, sha256: 'b'.repeat(64) },
@@ -50,5 +52,14 @@ describe('recovery integrity comparison', () => {
 		expect(
 			compareRecoveryIntegrity(expected, actual, { requireValidInvariants: false }),
 		).toEqual({ ok: true, failures: [] });
+	});
+
+	it('rejects a recovery snapshot captured under a different schema profile', () => {
+		const expected = snapshot();
+		const actual = structuredClone(expected);
+		actual.profile = 'pre-phase3';
+		expect(compareRecoveryIntegrity(expected, actual).failures).toEqual([
+			'Recovery integrity profile mismatch: expected phase3, got pre-phase3.',
+		]);
 	});
 });

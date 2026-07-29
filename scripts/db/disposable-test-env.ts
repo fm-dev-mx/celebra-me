@@ -12,7 +12,7 @@
  *
  * Usage:
  *   tsx scripts/db/disposable-test-env.ts start
- *   tsx scripts/db/disposable-test-env.ts reset [--baseline]
+ *   tsx scripts/db/disposable-test-env.ts reset [--baseline|--max-version=<version>]
  *   tsx scripts/db/disposable-test-env.ts run-tests
  *   tsx scripts/db/disposable-test-env.ts run-application-flow
  *   tsx scripts/db/disposable-test-env.ts run-concurrency-test
@@ -84,7 +84,7 @@ function printUsage(): void {
 	console.info(`
 Usage:
   tsx scripts/db/disposable-test-env.ts start      Create and start the disposable container
-  tsx scripts/db/disposable-test-env.ts reset [--baseline] Reset the disposable database (destructive)
+  tsx scripts/db/disposable-test-env.ts reset [--baseline|--max-version=<version>] Reset the disposable database (destructive)
   tsx scripts/db/disposable-test-env.ts run-tests   Run pgTAP and migration tests
   tsx scripts/db/disposable-test-env.ts run-application-flow  Run the real service retry flow through PostgREST
   tsx scripts/db/disposable-test-env.ts run-concurrency-test  Prove same-key publication contention publishes once
@@ -438,6 +438,16 @@ export function cmdReset(): void {
 	}
 
 	const isBaseline = process.argv.includes('--baseline');
+	const maxVersionArgument = process.argv.find((argument) =>
+		argument.startsWith('--max-version='),
+	);
+	const maxVersion = maxVersionArgument?.slice('--max-version='.length);
+	if (isBaseline && maxVersion) {
+		fail('Use either --baseline or --max-version, not both.');
+	}
+	if (maxVersion && !/^\d{14}$/.test(maxVersion)) {
+		fail('Disposable reset --max-version must be a 14-digit migration version.');
+	}
 	const applyArgs = [
 		'-y',
 		'tsx',
@@ -447,6 +457,8 @@ export function cmdReset(): void {
 	];
 	if (isBaseline) {
 		applyArgs.push('--max-version', BASELINE_CUTOFF_VERSION);
+	} else if (maxVersion) {
+		applyArgs.push('--max-version', maxVersion);
 	}
 	const applyResult = runCommand('npx', applyArgs);
 	if (applyResult.status !== 0) {

@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, resolve } from 'node:path';
 import {
@@ -19,6 +20,7 @@ import {
 } from './db-target-config.ts';
 import { captureRecoveryIntegrity, compareRecoveryIntegrity } from './recovery-integrity.ts';
 import {
+	classifyStorageDownloadFailure,
 	createStorageObjectArchiveEntry,
 	writeStorageObjectArchive,
 	type StorageObjectArchive,
@@ -39,10 +41,31 @@ interface StorageInventoryRow {
 	declaredSha256: string | null;
 }
 
+function runBackupCommand(
+	command: string,
+	args: string[],
+	options: { redact?: string[] } = {},
+): ReturnType<typeof runCommand> {
+	const result = runCommand(command, args, { ...options, throwOnError: false });
+	if (result.status !== 0) {
+		throw new Error(`Critical backup subprocess failed with status ${String(result.status)}.`);
+	}
+	return result;
+}
+
 let incompleteOutputDir: string | null = null;
 
+const integrityProfileArgument = process.argv.find((argument) =>
+	argument.startsWith('--integrity-profile='),
+);
+const integrityProfileValue = integrityProfileArgument?.slice('--integrity-profile='.length);
+if (integrityProfileValue && !['phase3', 'pre-phase3'].includes(integrityProfileValue)) {
+	throw new Error('Unsupported critical backup integrity profile.');
+}
+const integrityProfile = integrityProfileValue === 'pre-phase3' ? 'pre-phase3' : 'phase3';
+
 function queryJson<T>(dbUrl: string, sql: string): T {
-	const result = runCommand(
+	const result = runBackupCommand(
 		'psql',
 		[
 			'--set',
@@ -66,6 +89,10 @@ function parseNumeric(value: number | string | null): number | null {
 	if (value === null) return null;
 	const parsed = Number(value);
 	return Number.isFinite(parsed) ? parsed : null;
+}
+
+function storageObjectRef(bucketId: string, name: string): string {
+	return createHash('sha256').update(`${bucketId}/${name}`).digest('hex').slice(0, 16);
 }
 
 async function main(): Promise<void> {
@@ -114,9 +141,19 @@ async function main(): Promise<void> {
 	console.info('- Environment identity: verified Production project');
 	console.info('- Output: ignored, access-restricted local backup directory');
 
-	const before = captureRecoveryIntegrity(prodDbUrl);
+	const before = captureRecoveryIntegrity(prodDbUrl, { profile: integrityProfile });
+	if (integrityProfile === 'pre-phase3') {
+		const requiredPredecessor = '20260727180000';
+		const phase3Versions = ['20260729140514', '20260729152113'];
+		if (!before.migrationVersions?.includes(requiredPredecessor)) {
+			throw new Error('Pre-Phase-3 backup requires the reviewed predecessor migration.');
+		}
+		if (phase3Versions.some((version) => before.migrationVersions?.includes(version))) {
+			throw new Error('Pre-Phase-3 backup refuses a partially or fully migrated source.');
+		}
+	}
 
-	runCommand(
+	runBackupCommand(
 		'pg_dump',
 		[
 			'--data-only',
@@ -151,7 +188,7 @@ async function main(): Promise<void> {
 	);
 	writeFileSync(authPath, generateAuthDump(users, identities), { mode: 0o600 });
 
-	runCommand(
+	runBackupCommand(
 		'pg_dump',
 		[
 			'--data-only',
@@ -186,7 +223,18 @@ async function main(): Promise<void> {
 		     union all
 		     select o.bucket_id, o.name, o.metadata->>'mimetype',
 		            nullif(o.metadata->>'size', '')::bigint, null::text, 1
-		     from storage.objects o where o.bucket_id = 'invitation-assets'
+		     from storage.objects o
+		     where o.bucket_id = 'invitation-assets'
+		       and (
+		         exists (
+		           select 1 from public.published_invitation_content p
+		           where p.content::text like '%' || o.name || '%'
+		         )
+		         or exists (
+		           select 1 from public.invitation_content_drafts d
+		           where d.content::text like '%' || o.name || '%'
+		         )
+		       )
 		   ) candidates
 		   order by bucket_id, object_name, priority
 		 ) source;`,
@@ -197,9 +245,10 @@ async function main(): Promise<void> {
 		objects: [],
 	};
 	for (const object of inventory) {
+		const objectRef = storageObjectRef(object.bucketId, object.name);
 		const encodedPath = object.name.split('/').map(encodeURIComponent).join('/');
 		const response = await fetch(
-			`${prodSupabaseUrl.replace(/\/$/, '')}/storage/v1/object/authenticated/${encodeURIComponent(object.bucketId)}/${encodedPath}`,
+			`${prodSupabaseUrl.replace(/\/$/, '')}/storage/v1/object/public/${encodeURIComponent(object.bucketId)}/${encodedPath}`,
 			{
 				headers: {
 					Authorization: `Bearer ${prodServiceRole}`,
@@ -208,8 +257,9 @@ async function main(): Promise<void> {
 			},
 		);
 		if (!response.ok) {
+			const failureCategory = classifyStorageDownloadFailure(await response.text());
 			throw new Error(
-				`Critical Storage object download failed (${response.status}) for ${object.bucketId}/${object.name}.`,
+				`Critical Storage object download failed (${response.status}, ${failureCategory}, ref ${objectRef}).`,
 			);
 		}
 		const content = new Uint8Array(await response.arrayBuffer());
@@ -221,18 +271,16 @@ async function main(): Promise<void> {
 		);
 		const declaredBytes = parseNumeric(object.declaredBytes);
 		if (declaredBytes !== null && declaredBytes !== entry.bytes) {
-			throw new Error(`Storage object size mismatch for ${object.bucketId}/${object.name}.`);
+			throw new Error(`Storage object size mismatch (ref ${objectRef}).`);
 		}
 		if (object.declaredSha256 && object.declaredSha256 !== entry.sha256) {
-			throw new Error(
-				`Storage object checksum mismatch for ${object.bucketId}/${object.name}.`,
-			);
+			throw new Error(`Storage object checksum mismatch (ref ${objectRef}).`);
 		}
 		archive.objects.push(entry);
 	}
 	writeStorageObjectArchive(storageObjectsPath, archive);
 
-	const after = captureRecoveryIntegrity(prodDbUrl);
+	const after = captureRecoveryIntegrity(prodDbUrl, { profile: integrityProfile });
 	const coherence = compareRecoveryIntegrity(before, after, { requireValidInvariants: false });
 	if (!coherence.ok) {
 		throw new Error(
@@ -263,6 +311,7 @@ async function main(): Promise<void> {
 	console.info(`- Auth identities: ${identities.length}`);
 	console.info(`- Storage objects: ${archive.objects.length}`);
 	console.info(`- Critical tables: ${Object.keys(after.tables).length}`);
+	console.info(`- Integrity profile: ${after.profile}`);
 	incompleteOutputDir = null;
 }
 

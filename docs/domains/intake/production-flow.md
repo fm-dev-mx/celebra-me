@@ -316,8 +316,8 @@ metadata hash and therefore do not invalidate a confirmation.
 Required order:
 
 1. Validate migrations in the disposable/local environment.
-2. Create the pre-migration public-data backup and apply required migrations through the authorized
-   Production workflow.
+2. Create and disposable-restore the complete pre-migration DB/Auth/Storage recovery point, then
+   apply required migrations through the authorized Production workflow.
 3. Verify the RPC signature, execute grants, tables/columns, constraints, bucket limit, and
    migration history.
 4. Create and verify the complete post-migration critical DB/Auth/Storage recovery set.

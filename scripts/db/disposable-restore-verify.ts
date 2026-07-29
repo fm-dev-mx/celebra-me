@@ -137,7 +137,19 @@ function parseJsonRows<T>(sql: string): T[] {
 const restoreStartedAtMs = Date.now();
 const restoreStartedAt = new Date(restoreStartedAtMs).toISOString();
 
-runCommand('npx', ['-y', 'tsx', 'scripts/db/disposable-test-env.ts', 'reset']);
+const sourceLatestMigration =
+	manifest.integrity.migrationVersions?.at(-1) ??
+	(manifest.integrity.migrationCount === 67 ? '20260729152113' : undefined);
+if (!sourceLatestMigration) {
+	throw new Error('Recovery integrity snapshot has no source migration version.');
+}
+runCommand('npx', [
+	'-y',
+	'tsx',
+	'scripts/db/disposable-test-env.ts',
+	'reset',
+	`--max-version=${sourceLatestMigration}`,
+]);
 clearRestoredData();
 runPsql(requiredArtifact('auth'), true);
 runPsql(requiredArtifact('database'), true);
@@ -191,7 +203,9 @@ if (storageFailures.length > 0) {
 	throw new Error(`Critical Storage recovery failed:\n${storageFailures.join('\n')}`);
 }
 
-const actualIntegrity = captureRecoveryIntegrity(targetDbUrl);
+const actualIntegrity = captureRecoveryIntegrity(targetDbUrl, {
+	profile: manifest.integrity.profile ?? 'phase3',
+});
 const comparison = compareRecoveryIntegrity(manifest.integrity, actualIntegrity);
 if (!comparison.ok) {
 	throw new Error(`Disposable recovery integrity failed:\n${comparison.failures.join('\n')}`);

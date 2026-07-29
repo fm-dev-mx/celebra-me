@@ -24,6 +24,11 @@ const values = new Map(
 );
 const sourceDbUrl = values.get('source-db-url') ?? DISPOSABLE_DB_URL;
 const outputDir = resolve(values.get('output-dir') ?? `.tmp/recovery-drill/backup-${timestamp()}`);
+const integrityProfileValue = values.get('integrity-profile') ?? 'phase3';
+if (integrityProfileValue !== 'phase3' && integrityProfileValue !== 'pre-phase3') {
+	throw new Error('Synthetic recovery backup integrity profile is unsupported.');
+}
+const integrityProfile = integrityProfileValue;
 const sourceTarget = classifyDbTarget(sourceDbUrl);
 if (sourceTarget.target !== 'disposable-test') {
 	throw new Error(
@@ -39,6 +44,34 @@ const objectContent = Buffer.from(
 );
 const objectHash = createHash('sha256').update(objectContent).digest('hex');
 const objectPath = 'f0000000-0000-0000-0000-000000000001/hero.webp';
+
+const phase3ReceiptFixtureSql =
+	integrityProfile === 'phase3'
+		? `
+insert into public.invitation_mutation_operation_receipts (id, operation_id, invitation_id, environment, project_ref, actor_id, actor_type, origin, command_kind, input_hashes, expected_state, status, completed_steps, result, sanitized_error, created_at)
+values ('83000000-0000-0000-0000-000000000001', '83100000-0000-0000-0000-000000000001', 'f0000000-0000-0000-0000-000000000002', 'production', ${sqlLiteral(SUPABASE_PROJECT_REFS.production)}, null, 'system', 'recovery', 'recovery_fixture', '{"input":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}'::jsonb, '{"revision":"fixture"}'::jsonb, 'partial', array['database'], '{"recoverable":true}'::jsonb, '{"code":"STORAGE_PENDING"}'::jsonb, '2026-07-29T12:08:00Z')
+on conflict do nothing;
+
+insert into public.invitation_mutation_operation_receipts (id, operation_id, invitation_id, environment, project_ref, actor_id, actor_type, origin, command_kind, input_hashes, expected_state, status, completed_steps, result, sanitized_error, retry_of_operation_id, created_at)
+values ('83000000-0000-0000-0000-000000000002', '83100000-0000-0000-0000-000000000002', 'f0000000-0000-0000-0000-000000000002', 'production', ${sqlLiteral(SUPABASE_PROJECT_REFS.production)}, null, 'system', 'recovery', 'recovery_fixture', '{"input":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}'::jsonb, '{"revision":"fixture"}'::jsonb, 'replayed', array['database','storage'], '{"recovered":true}'::jsonb, '{}'::jsonb, '83100000-0000-0000-0000-000000000001', '2026-07-29T12:09:00Z')
+on conflict do nothing;
+`
+		: '';
+
+const provenanceFixtureSql =
+	integrityProfile === 'phase3'
+		? `
+insert into public.managed_invitation_release_provenance (invitation_id, definition_slug, release_schema_version, source_hash, package_hash, metadata_hash, projection_hash, asset_manifest_hash, applied_at, managed_projection, applied_draft_updated_at, applied_operation_id)
+select 'f0000000-0000-0000-0000-000000000002', 'fixture-definition', '1', repeat('a', 64), repeat('b', 64), repeat('c', 64), repeat('d', 64), repeat('e', 64), '2026-07-29T12:09:00Z', content, updated_at, '83100000-0000-0000-0000-000000000002'
+from public.invitation_content_drafts where id = 'c0000000-0000-0000-0000-000000000002'
+on conflict (invitation_id) do update set applied_at = excluded.applied_at;
+`
+		: `
+insert into public.managed_invitation_release_provenance (invitation_id, definition_slug, release_schema_version, source_hash, package_hash, metadata_hash, projection_hash, asset_manifest_hash, applied_at, managed_projection)
+select 'f0000000-0000-0000-0000-000000000002', 'fixture-definition', '1', repeat('a', 64), repeat('b', 64), repeat('c', 64), repeat('d', 64), repeat('e', 64), '2026-07-29T12:09:00Z', content
+from public.invitation_content_drafts where id = 'c0000000-0000-0000-0000-000000000002'
+on conflict (invitation_id) do update set applied_at = excluded.applied_at;
+`;
 
 const fixtureSql = `
 update public.guest_invitations
@@ -77,18 +110,8 @@ insert into public.rsvp_channel_log (channel_event_id, rsvp_id, channel, action,
 values ('fixture-channel-1', 'fixture-rsvp-1', 'whatsapp', 'clicked', '2026-07-29T12:07:00Z')
 on conflict (channel_event_id) do nothing;
 
-insert into public.invitation_mutation_operation_receipts (id, operation_id, invitation_id, environment, project_ref, actor_id, actor_type, origin, command_kind, input_hashes, expected_state, status, completed_steps, result, sanitized_error, created_at)
-values ('83000000-0000-0000-0000-000000000001', '83100000-0000-0000-0000-000000000001', 'f0000000-0000-0000-0000-000000000002', 'production', ${sqlLiteral(SUPABASE_PROJECT_REFS.production)}, null, 'system', 'recovery', 'recovery_fixture', '{"input":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}'::jsonb, '{"revision":"fixture"}'::jsonb, 'partial', array['database'], '{"recoverable":true}'::jsonb, '{"code":"STORAGE_PENDING"}'::jsonb, '2026-07-29T12:08:00Z')
-on conflict do nothing;
-
-insert into public.invitation_mutation_operation_receipts (id, operation_id, invitation_id, environment, project_ref, actor_id, actor_type, origin, command_kind, input_hashes, expected_state, status, completed_steps, result, sanitized_error, retry_of_operation_id, created_at)
-values ('83000000-0000-0000-0000-000000000002', '83100000-0000-0000-0000-000000000002', 'f0000000-0000-0000-0000-000000000002', 'production', ${sqlLiteral(SUPABASE_PROJECT_REFS.production)}, null, 'system', 'recovery', 'recovery_fixture', '{"input":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}'::jsonb, '{"revision":"fixture"}'::jsonb, 'replayed', array['database','storage'], '{"recovered":true}'::jsonb, '{}'::jsonb, '83100000-0000-0000-0000-000000000001', '2026-07-29T12:09:00Z')
-on conflict do nothing;
-
-insert into public.managed_invitation_release_provenance (invitation_id, definition_slug, release_schema_version, source_hash, package_hash, metadata_hash, projection_hash, asset_manifest_hash, applied_at, managed_projection, applied_draft_updated_at, applied_operation_id)
-select 'f0000000-0000-0000-0000-000000000002', 'fixture-definition', '1', repeat('a', 64), repeat('b', 64), repeat('c', 64), repeat('d', 64), repeat('e', 64), '2026-07-29T12:09:00Z', content, updated_at, '83100000-0000-0000-0000-000000000002'
-from public.invitation_content_drafts where id = 'c0000000-0000-0000-0000-000000000002'
-on conflict (invitation_id) do update set applied_at = excluded.applied_at;
+${phase3ReceiptFixtureSql}
+${provenanceFixtureSql}
 
 insert into auth.identities (id, provider_id, user_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
 values ('84000000-0000-0000-0000-000000000001', 'test-client@celebra-me.test', 'a0000000-0000-0000-0000-000000000002', '{"sub":"a0000000-0000-0000-0000-000000000002","email":"test-client@celebra-me.test"}'::jsonb, 'email', '2026-07-29T12:00:00Z', '2026-07-29T12:00:00Z', '2026-07-29T12:00:00Z')
@@ -114,7 +137,9 @@ function runPsql(sqlOrFile: string, isFile = false): void {
 }
 
 mkdirSync(outputDir, { recursive: true });
-runCommand('npx', ['-y', 'tsx', 'scripts/db/disposable-test-env.ts', 'reset']);
+const resetArgs = ['-y', 'tsx', 'scripts/db/disposable-test-env.ts', 'reset'];
+if (integrityProfile === 'pre-phase3') resetArgs.push('--max-version=20260727180000');
+runCommand('npx', resetArgs);
 runPsql(fixtureSql);
 
 const databasePath = resolve(outputDir, 'database.sql');
@@ -152,7 +177,7 @@ const storageArchive: StorageObjectArchive = {
 };
 writeStorageObjectArchive(storageObjectsPath, storageArchive);
 
-const integrity = captureRecoveryIntegrity(sourceDbUrl);
+const integrity = captureRecoveryIntegrity(sourceDbUrl, { profile: integrityProfile });
 const manifest: CriticalBackupManifest = {
 	version: 1,
 	createdAt: new Date().toISOString(),
@@ -174,3 +199,4 @@ console.info('Synthetic critical backup set created and verified.');
 console.info(`- Manifest: ${manifestPath}`);
 console.info(`- Critical tables: ${Object.keys(integrity.tables).length}`);
 console.info(`- Storage objects: ${storageArchive.objects.length}`);
+console.info(`- Integrity profile: ${integrity.profile}`);

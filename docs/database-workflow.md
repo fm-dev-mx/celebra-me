@@ -44,11 +44,22 @@ writes a SHA-256 manifest only after all checks pass. It requires `PROD_DB_URL`,
 files. Incomplete output is removed. `pnpm db:backup:verify-manifest -- --manifest=<path>` rejects
 missing, empty/truncated, size-mismatched, or checksum-mismatched artifacts.
 
-The command is an implementation, not a scheduler or secure destination. No independent Production
-schedule, latest successful independent backup, off-machine destination, encryption-at-rest policy,
-retention enforcement, monitoring, or failure alert is currently verified. The declared retention
-intent is 30 daily and 12 monthly recovery points, but it is not operationally guaranteed. Never
-place `.backups/` in Git, application logs, or CI artifacts.
+For the `20260729140514`/`20260729152113` cutover, pass `-- --integrity-profile=pre-phase3` before
+migration. This profile records the exact hosted migration list, fingerprints the 18 critical tables
+available in the predecessor schema, and does not pretend the not-yet-created receipt table exists.
+Required Storage bytes are active Supabase-backed invitation assets plus objects referenced by
+published or draft content; stale, unreferenced `storage.objects` metadata is preserved in the
+metadata dump but is not misclassified as a required binary. The disposable restore rebuilds only
+through the manifest's last migration, so the pre-migration recovery point is tested against its
+real schema rather than today's latest schema.
+
+The command is an implementation, not a scheduler or off-site destination. A one-time complete
+pre-migration recovery point was verified on 2026-07-29 and retained outside Git with Windows EFS
+AES-256 encryption restricted to the current operator account. It has no EFS recovery certificate
+and is not off-machine. No independent Production schedule, off-machine destination, retention
+enforcement, monitoring, or failure alert is currently verified. The declared retention intent is 30
+daily and 12 monthly recovery points, but it is not operationally guaranteed. Never place
+`.backups/` in Git, application logs, or CI artifacts.
 
 Restores are disposable-only, never Production. Run
 `pnpm db:restore:verify-disposable -- --manifest=<path> --target-db-url=<disposable-url> --report=<path> --storage-root=<new-empty-path>`.
@@ -58,10 +69,12 @@ fingerprints, checks RSVP/ownership/orphan/uniqueness/phone invariants, and writ
 restore/verification/total timings. A synthetic complete set can be created with
 `pnpm db:backup:create-disposable-fixture -- --output-dir=<path>`.
 
-The 2026-07-29 disposable drill restored 67 migrations, 19 critical table fingerprints, Auth
-reconstruction rows, and one actual Storage object in 7,113 ms (5,744 ms restore + 1,369 ms
-verification), with every invariant at zero. This proves the RTO ≤4 hours for the synthetic
-fixture—not Production RPO, production-scale duration, or a current Production recovery point.
+The 2026-07-29 Production-derived pre-migration drill restored 65 migrations, 18 applicable critical
+table fingerprints, 17 Auth users and identities, and 43 required Storage objects in 7,359 ms, with
+every relationship/business invariant at zero and all object hashes matching. The disposable
+database was reset to synthetic data and materialized Production-derived files were removed
+afterward. This demonstrates RTO ≤4 hours for the current Production data scale and proves the
+one-time recovery point; it does not prove an ongoing Production RPO.
 
 ## Production Reconciliation Status (point-in-time)
 
@@ -231,12 +244,11 @@ Resumable evidence (SHAs/hashes only; no credentials):
 Stale fingerprints invalidate automatically and re-run affected checks.
 
 Complete remote audits via `pnpm db:local:audit` / `db:preview:audit` / `db:prod:audit` when
-credentials resolve. Production migration safety uses a fresh `pnpm db:prod:backup` public-data dump
-immediately before mutation. After applying migrations and verifying the application schema
-contract, `pnpm db:prod:migrate` creates `pnpm db:prod:backup:critical` as the complete DB/Auth/
-Storage recovery point. This order is intentionally non-circular when pending migrations create the
-receipt/provenance objects required by the complete integrity snapshot. Preview is never a
-Production backup.
+credentials resolve. Production migration safety creates a complete DB/Auth/Storage recovery point
+with the explicit predecessor integrity profile immediately before mutation. After applying
+migrations and verifying the application schema contract, `pnpm db:prod:migrate` creates the
+complete Phase 3 recovery point again under the current profile. Preview is never a Production
+backup.
 
 ### Blocked refresh aliases
 
@@ -288,7 +300,8 @@ import. The unresolved preserve-local enhancement remains tracked in
 `pnpm db:prod:backup:critical`
 
 - Reads Production only and creates the complete public/Auth/Storage metadata/object-byte set.
-- Requires a hosted schema that passes the Phase 3 recovery contract.
+- Defaults to the Phase 3 recovery contract; `-- --integrity-profile=pre-phase3` is the guarded
+  predecessor mode for the two-migration cutover only.
 - Verifies project identity, capture-window coherence, object size/hash, manifest completeness, and
   critical business integrity before success.
 - Writes sensitive artifacts only under ignored `.backups/prod/`; an operator must move them to a
@@ -297,8 +310,8 @@ import. The unresolved preserve-local enhancement remains tracked in
 `pnpm db:prod:migrate`
 
 - Runs `pnpm type-check`, `pnpm test`, `pnpm build`, and `supabase migration list`.
-- Creates a public-data backup first and a complete critical recovery set after contract
-  verification.
+- Creates and verifies a complete predecessor-profile recovery point first, then creates a complete
+  Phase 3 recovery set after contract verification.
 - Applies pending Supabase migrations only.
 - Mutates production and requires explicit confirmation.
 - This is the only approved production mutation workflow.
