@@ -38,6 +38,23 @@ Four distinct database targets exist:
 Unknown targets cause an immediate abort. The guard script `scripts/db/db-guard.ts` enforces these
 boundaries through classification, identity verification, and per-target policy checks.
 
+### Worktree Location Grants No Database Privilege
+
+Worktree directory location (e.g. `.worktrees/val-lane`, `.worktrees/dev-lane`, or root `celebra-me`) **never** grants implicit database mutation privileges.
+
+```text
+Environment authorization =
+task scope
++ target environment
++ operation risk
++ existing repository safety rules
+```
+
+Being inside `.worktrees/val-lane` does not grant Preview or Production mutation permission. Operational access to Preview requires explicit task authorization, target classification, and standard guard checks.
+
+---
+
+
 ## Production Status & Governance
 
 - **Reconciliation Complete**: Production migration-history reconciliation is 100% complete.

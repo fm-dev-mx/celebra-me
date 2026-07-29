@@ -74,6 +74,30 @@ current task.
 
 ---
 
+## Three-Lane Worktree Structure & Path Privilege Invariant
+
+The repository operates with three native Git worktree lanes:
+- **Integration Lane**: canonical root worktree (`celebra-me`, trunk `develop`).
+- **Development Lane**: persistent reusable worktree (`.worktrees/dev-lane`) using ephemeral task branches.
+- **Validation Lane**: persistent reusable worktree (`.worktrees/val-lane`) using ephemeral task branches.
+
+### Path Authorization Invariant
+
+Being located inside `.worktrees/dev-lane` or `.worktrees/val-lane` **does not grant** Git write permissions or environment/database mutation authority.
+
+```text
+Environment authorization =
+task scope
++ target environment
++ operation risk
++ existing repository safety rules
+```
+
+Worktree path is an isolation directory, not an authorization token. Agents inside any lane remain bound by task-scoped authorization for Git writes, database mutations, and remote operational calls.
+
+---
+
+
 ## Agent Session Workflow
 
 ### Start Task

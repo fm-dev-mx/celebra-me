@@ -125,7 +125,8 @@ One owner per concern. Other files may link here; they must not redefine the sam
 | Optional Graphify ops policy        | `.agent/rules/graphify-ops.md`                       | Host/global Graphify skills, `graphify-out/`   |
 | Agent operating procedure           | `.agent/rules/workflow.md`                           | Human branch/release policy docs               |
 | Git authorization / worktree safety | `.agent/rules/git-safety.md`                         | Commit-message style docs                      |
-| Human branch, commit, promotion     | `docs/core/git-governance.md`                        | Agent workflow rules                           |
+| Human branch, worktrees, promotion  | `docs/core/git-governance.md`                        | Agent workflow rules                           |
+
 | Release checkpoints / version tags  | `docs/core/release-process.md`                       | Per-invitation notes                           |
 | Product release history             | `CHANGELOG.md` (`[Unreleased]` → versioned)          | Migrations, invitation ops notes               |
 | Invitation identity requirements    | `docs/core/invitation-creation-contract.md`          | Runbook, agent workflow, safety rule           |

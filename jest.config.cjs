@@ -80,6 +80,7 @@ module.exports = {
 
 	coverageDirectory: '<rootDir>/coverage',
 	coverageReporters: ['text', 'lcov'],
+	modulePathIgnorePatterns: ['<rootDir>/.worktrees/'],
 
 	...(strictRsvpCoverage
 		? {
@@ -104,5 +105,11 @@ module.exports = {
 			}
 		: {}),
 
-	testPathIgnorePatterns: ['/node_modules/', '/dist/', '/\\.vercel/', '/tests/e2e/'],
+	testPathIgnorePatterns: [
+		'/node_modules/',
+		'/dist/',
+		'/\\.vercel/',
+		'/\\.worktrees/',
+		'/tests/e2e/',
+	],
 };

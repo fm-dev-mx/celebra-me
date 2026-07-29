@@ -63,20 +63,30 @@ test.describe.serial('Authenticated external Preview', () => {
 		await page.goto(`/dashboard/invitaciones/${encodeURIComponent(preview.fixtureId)}/editar`);
 		await expect(page.getByRole('heading', { name: PREVIEW_FIXTURE_TITLE })).toBeVisible();
 
-		const preflight = await readPublicationPreflight(page, preview.fixtureId);
-		expect(Array.isArray(preflight.changedPaths)).toBe(true);
-		expect(preflight.projectionHash).toMatch(/^[a-f0-9]{32}$/);
+		if (context.draftStatus === 'draft') {
+			const preflight = await readPublicationPreflight(page, preview.fixtureId);
+			expect(Array.isArray(preflight.changedPaths)).toBe(true);
+			expect(preflight.projectionHash).toMatch(/^[a-f0-9]{32}$/);
+			if (context.publication.hasPublishedContent) {
+				expect(preflight.changedPaths).toEqual([]);
+			}
+		} else {
+			expect(context.draftStatus).toBe('approved');
+			expect(context.publication.hasPublishedContent).toBe(true);
+			expect(context.publication.hasUnpublishedChanges).toBe(false);
+		}
 
 		if (context.publication.hasPublishedContent) {
 			await expect(page.getByText('La versión pública está actualizada')).toBeVisible();
-			expect(preflight.changedPaths).toEqual([]);
 			const publicResponse = await page.request.get(
 				`/${PREVIEW_FIXTURE_EVENT_TYPE}/${PREVIEW_FIXTURE_SLUG}`,
 			);
 			expect(publicResponse.status()).toBe(200);
 		}
 
-		await page.getByRole('button', { name: 'Cerrar sesión' }).click();
+		const logoutButton = page.getByRole('button', { name: 'Cerrar sesión' });
+		await logoutButton.focus();
+		await page.keyboard.press('Enter');
 		await expect(page).toHaveURL(/\/login$/);
 		await expect(page.locator('#login-submit')).toBeVisible();
 

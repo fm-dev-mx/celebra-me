@@ -14,6 +14,7 @@ export default [
 		ignores: [
 			'dist/',
 			'node_modules/',
+			'.worktrees/',
 			'.opencode/',
 			'.agent/tmp/',
 			'.astro/',

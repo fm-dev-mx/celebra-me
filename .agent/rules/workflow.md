@@ -44,10 +44,13 @@ authorization and worktree preservation live in [`git-safety.md`](git-safety.md)
 
 ## Agent-Specific Git Rules
 
+- Operate within the designated persistent worktree lane (`celebra-me` root for Integration, `.worktrees/dev-lane` for Development, `.worktrees/val-lane` for Validation) on ephemeral task branches.
+- Worktree path location grants no environment privileges (`path ≠ privilege`).
 - Work on the current branch. Do not create, switch, merge, rebase, delete, or clean branches unless
   the user explicitly requests that exact operation.
 - Do not stage, commit, stash, discard, or rewrite worktree/history state without current-task
   authorization under `git-safety.md`.
+
 - Never force-push or rewrite shared history autonomously.
 - Branch cleanup, release tagging, production promotion, and rollback are separate tasks requiring
   explicit authorization.

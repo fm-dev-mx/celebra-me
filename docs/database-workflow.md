@@ -98,10 +98,14 @@ Production or download an object more than once within one recovery operation.
 ## Production Reconciliation Status (point-in-time)
 
 - **Reconciliation Complete**: Production migration-history reconciliation is complete.
-- The repository contained **67** versioned migration files at the 2026-07-29 audit. Production and
-  Preview each reported 65 applied migrations and lacked `20260729140514` and `20260729152113`.
-  Never infer current hosted status from these recorded counts; rerun the read-only audit and
-  `pnpm db:contract:verify -- --target <production|preview>`.
+- **Phase 3 hosted alignment complete (2026-07-29)**: Preview was migrated and verified first, then
+  Production was migrated through the guarded canonical workflow. Both environments reported all
+  **67** repository migrations with `20260729152113` latest. The hosted contract verifier passed for
+  both targets, including atomic Editor RPCs, managed baseline fields, append-only mutation
+  receipts, and revocation of `service_role` writes to guest confirmations and guest audit/history.
+- The Production cutover used verified EFS-encrypted pre/post DB/Auth/Storage recovery points and
+  preserved migration-before-code ordering. Never infer future hosted status from this point-in-time
+  record; rerun the read-only audit and `pnpm db:contract:verify -- --target <production|preview>`.
 - **Migration Ownership**: All schema changes must be introduced through versioned migrations in
   `supabase/migrations/`. Direct production SQL is prohibited as a normal workflow.
 - **One-Time Recovery Tool**: `scripts/db/reconcile-prod-baseline.ts` was a one-time recovery tool

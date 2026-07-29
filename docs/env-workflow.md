@@ -29,6 +29,19 @@ issues, logs, and chat.
 Production must never be inferred from `.env` or `.env.local`. Production-only values belong in the
 shell, Vercel, or gitignored secret paths documented by the owning workflow.
 
+## Validation Role of Preview vs Local Default
+
+- **Local Default**: Local development (`SUPABASE_URL=http://127.0.0.1:54321`) is the default target across all worktree lanes (`celebra-me` root, `.worktrees/dev-lane`, `.worktrees/val-lane`) for normal development, unit testing, component/SCSS iteration, and disposable destructive migration reconstruction.
+- **Preview Validation Role**: Preview (`PREVIEW_DB_URL`, Vercel Preview deployments) is an explicit pre-Production validation environment reserved for workflows requiring broader hosted verification, including:
+  - Hosted SSR and Vercel edge/runtime behavior,
+  - Supabase Auth and MFA flows,
+  - Invitation publication and provisioning preflights,
+  - Storage asset host resolution,
+  - Hosted database migration sanity audits (`pnpm db:preview:audit`),
+  - Representative Preview E2E test suites (`pnpm test:e2e:preview`).
+- **Worktree Authorization Invariant**: Worktree path location grants no environment privilege (`path ≠ privilege`). Being inside `.worktrees/val-lane` does not grant automatic Preview or Production mutation permission. Environment access is determined strictly by task scope, target environment, operation risk, and existing repository safety rules.
+
+
 ## Variable Categories
 
 - **Public client-safe (`PUBLIC_*`):** Anything prefixed `PUBLIC_` can reach the browser. Never

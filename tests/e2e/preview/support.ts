@@ -38,6 +38,7 @@ export interface EditorContext {
 	};
 	content: Record<string, unknown>;
 	draftUpdatedAt: string | null;
+	draftStatus: 'draft' | 'reviewed' | 'approved' | null;
 	publication: {
 		hasPublishedContent: boolean;
 		version: number | null;

@@ -341,6 +341,13 @@ RPC signatures, grants, append-only receipt restrictions, and guest-table privil
 before dependent application code is deployed. The Preview migration workflow performs the same
 check for Preview.
 
+The 2026-07-29 Phase 3 cutover completed this order: Preview and Production both reported 67/67
+migrations with `20260729152113` latest, and both hosted mutation-contract verifiers passed. Direct
+hosted privilege inspection also confirmed that `service_role` has no `INSERT`, `UPDATE`, or
+`DELETE` privilege on `guest_invitations` or `guest_invitation_audit`; invitation mutation receipts
+remain select/insert-only and protected by their append-only trigger. Treat this as point-in-time
+evidence and rerun the canonical audit and contract verifier before a future dependent deployment.
+
 Production migration state is never inferred from files or local state. If it was not checked with
 authorized production access, report it as **unverified/pending**. Do not apply production
 migrations without explicit authorization.
