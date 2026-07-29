@@ -157,6 +157,7 @@ export const InvitationContentDraftContentSchema = z
 	.catchall(z.unknown());
 
 export const UpdateDraftContentSchema = z.object({
+	expectedUpdatedAt: z.string().min(1),
 	content: InvitationContentDraftContentSchema,
 });
 

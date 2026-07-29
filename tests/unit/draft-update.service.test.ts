@@ -1,7 +1,11 @@
 jest.mock('@/lib/intake/repositories/invitation-content-draft.repository', () => ({
 	findDraftByInvitationId: jest.fn(),
-	updateDraftContent: jest.fn(),
+	updateDraftContentConditionally: jest.fn(),
 	updateDraftStatus: jest.fn(),
+}));
+
+jest.mock('@/lib/intake/repositories/published-invitation-content.repository', () => ({
+	findPublishedByInvitationId: jest.fn(),
 }));
 
 import {
@@ -10,15 +14,21 @@ import {
 } from '@/lib/intake/services/draft-generation.service';
 import {
 	findDraftByInvitationId,
-	updateDraftContent,
+	updateDraftContentConditionally,
 	updateDraftStatus,
 } from '@/lib/intake/repositories/invitation-content-draft.repository';
+import { findPublishedByInvitationId } from '@/lib/intake/repositories/published-invitation-content.repository';
 
 const mockFindDraft = findDraftByInvitationId as jest.MockedFunction<
 	typeof findDraftByInvitationId
 >;
-const mockUpdateDraft = updateDraftContent as jest.MockedFunction<typeof updateDraftContent>;
+const mockUpdateDraft = updateDraftContentConditionally as jest.MockedFunction<
+	typeof updateDraftContentConditionally
+>;
 const mockUpdateDraftStatus = updateDraftStatus as jest.MockedFunction<typeof updateDraftStatus>;
+const mockFindPublished = findPublishedByInvitationId as jest.MockedFunction<
+	typeof findPublishedByInvitationId
+>;
 
 const existingDraft = {
 	id: 'draft-1',
@@ -37,6 +47,7 @@ const reviewedDraft = {
 
 beforeEach(() => {
 	jest.clearAllMocks();
+	mockFindPublished.mockResolvedValue(null);
 });
 
 describe('createDraftRevision', () => {
@@ -69,16 +80,27 @@ describe('updateDraftContentByInvitation', () => {
 			content: { title: 'Updated' },
 		});
 
-		const result = await updateDraftContentByInvitation('proj-1', { title: 'Updated' });
+		const result = await updateDraftContentByInvitation('proj-1', {
+			expectedUpdatedAt: existingDraft.updatedAt,
+			content: { title: 'Updated' },
+		});
 
 		expect(result.content.title).toBe('Updated');
-		expect(mockUpdateDraft).toHaveBeenCalledWith('draft-1', { title: 'Updated' });
+		expect(mockUpdateDraft).toHaveBeenCalledWith('draft-1', existingDraft.updatedAt, {
+			content: { title: 'Updated' },
+			status: 'draft',
+		});
 	});
 
 	it('rejects when no draft exists', async () => {
 		mockFindDraft.mockResolvedValue(null);
 
-		await expect(updateDraftContentByInvitation('proj-1', {})).rejects.toMatchObject({
+		await expect(
+			updateDraftContentByInvitation('proj-1', {
+				expectedUpdatedAt: existingDraft.updatedAt,
+				content: {},
+			}),
+		).rejects.toMatchObject({
 			status: 404,
 			code: 'not_found',
 		});
@@ -88,7 +110,12 @@ describe('updateDraftContentByInvitation', () => {
 	it('rejects when draft status is reviewed', async () => {
 		mockFindDraft.mockResolvedValue(reviewedDraft);
 
-		await expect(updateDraftContentByInvitation('proj-1', {})).rejects.toMatchObject({
+		await expect(
+			updateDraftContentByInvitation('proj-1', {
+				expectedUpdatedAt: existingDraft.updatedAt,
+				content: {},
+			}),
+		).rejects.toMatchObject({
 			status: 422,
 			code: 'invalid_draft_status',
 		});
@@ -98,7 +125,12 @@ describe('updateDraftContentByInvitation', () => {
 	it('rejects when draft status is approved', async () => {
 		mockFindDraft.mockResolvedValue({ ...existingDraft, status: 'approved' });
 
-		await expect(updateDraftContentByInvitation('proj-1', {})).rejects.toMatchObject({
+		await expect(
+			updateDraftContentByInvitation('proj-1', {
+				expectedUpdatedAt: existingDraft.updatedAt,
+				content: {},
+			}),
+		).rejects.toMatchObject({
 			status: 422,
 			code: 'invalid_draft_status',
 		});
@@ -116,15 +148,24 @@ describe('updateDraftContentByInvitation', () => {
 			},
 		};
 		mockFindDraft.mockResolvedValue(draftWithFullContent);
-		mockUpdateDraft.mockImplementation(async (_id, merged) => merged as never);
+		mockUpdateDraft.mockImplementation(async (_id, _expected, input) => ({
+			...draftWithFullContent,
+			content: input.content,
+		}));
 
-		await updateDraftContentByInvitation('proj-1', { title: 'Updated Title' });
+		await updateDraftContentByInvitation('proj-1', {
+			expectedUpdatedAt: existingDraft.updatedAt,
+			content: { title: 'Updated Title' },
+		});
 
-		expect(mockUpdateDraft).toHaveBeenCalledWith('draft-1', {
-			title: 'Updated Title',
-			description: 'Original Description',
-			hero: { name: 'Ana', label: 'XV Anos' },
-			location: { ceremony: { venueName: 'Iglesia' } },
+		expect(mockUpdateDraft).toHaveBeenCalledWith('draft-1', existingDraft.updatedAt, {
+			content: {
+				title: 'Updated Title',
+				description: 'Original Description',
+				hero: { name: 'Ana', label: 'XV Anos' },
+				location: { ceremony: { venueName: 'Iglesia' } },
+			},
+			status: 'draft',
 		});
 	});
 
@@ -143,21 +184,28 @@ describe('updateDraftContentByInvitation', () => {
 			},
 		};
 		mockFindDraft.mockResolvedValue(draftWithFullContent);
-		mockUpdateDraft.mockImplementation(async (_id, merged) => merged as never);
+		mockUpdateDraft.mockImplementation(async (_id, _expected, input) => ({
+			...draftWithFullContent,
+			content: input.content,
+		}));
 
 		await updateDraftContentByInvitation('proj-1', {
-			hero: { name: 'Ana Maria' },
+			expectedUpdatedAt: existingDraft.updatedAt,
+			content: { hero: { name: 'Ana Maria' } },
 		});
 
-		expect(mockUpdateDraft).toHaveBeenCalledWith('draft-1', {
-			hero: {
-				name: 'Ana Maria',
-				secondaryName: 'Sofia',
-				label: 'XV Anos',
-				nickname: 'Anita',
-				date: '2027-11-20',
+		expect(mockUpdateDraft).toHaveBeenCalledWith('draft-1', existingDraft.updatedAt, {
+			content: {
+				hero: {
+					name: 'Ana Maria',
+					secondaryName: 'Sofia',
+					label: 'XV Anos',
+					nickname: 'Anita',
+					date: '2027-11-20',
+				},
+				family: { fatherName: 'Fernando', motherName: 'Maria' },
 			},
-			family: { fatherName: 'Fernando', motherName: 'Maria' },
+			status: 'draft',
 		});
 	});
 
@@ -171,14 +219,35 @@ describe('updateDraftContentByInvitation', () => {
 			},
 		};
 		mockFindDraft.mockResolvedValue(draftWithFullContent);
-		mockUpdateDraft.mockImplementation(async (_id, merged) => merged as never);
+		mockUpdateDraft.mockImplementation(async (_id, _expected, input) => ({
+			...draftWithFullContent,
+			content: input.content,
+		}));
 
-		await updateDraftContentByInvitation('proj-1', {});
-
-		expect(mockUpdateDraft).toHaveBeenCalledWith('draft-1', {
-			title: 'Original Title',
-			description: 'Original Description',
-			hero: { name: 'Ana' },
+		await updateDraftContentByInvitation('proj-1', {
+			expectedUpdatedAt: existingDraft.updatedAt,
+			content: {},
 		});
+
+		expect(mockUpdateDraft).toHaveBeenCalledWith('draft-1', existingDraft.updatedAt, {
+			content: {
+				title: 'Original Title',
+				description: 'Original Description',
+				hero: { name: 'Ana' },
+			},
+			status: 'draft',
+		});
+	});
+
+	it('returns an explicit conflict for a stale compatibility-path save', async () => {
+		mockFindDraft.mockResolvedValue(existingDraft);
+		mockUpdateDraft.mockResolvedValue(null);
+
+		await expect(
+			updateDraftContentByInvitation('proj-1', {
+				expectedUpdatedAt: '2026-05-28T13:00:00Z',
+				content: { title: 'Stale' },
+			}),
+		).rejects.toMatchObject({ status: 409, code: 'conflict' });
 	});
 });

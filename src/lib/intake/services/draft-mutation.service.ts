@@ -17,6 +17,7 @@ import { InvitationContentDraftContentSchema } from '@/lib/intake/schemas/invita
 import { applySectionValue } from '@/lib/intake/services/section-content-mapper';
 import type { InvitationContentDraft } from '@/lib/intake/types';
 import { ApiError } from '@/lib/rsvp/core/errors';
+import { mergeOverlay } from '@/lib/shared/data-utils';
 
 export type DraftMutationActor = 'editor' | 'cli' | 'agent';
 
@@ -72,6 +73,7 @@ function validateResultingContent(content: Record<string, unknown>): Record<stri
 export type DraftMutationPatch =
 	| { kind: 'section'; section: InvitationEditorSectionKey; value: unknown }
 	| { kind: 'fields'; fields: Array<{ path: string; value: unknown }> }
+	| { kind: 'overlay'; content: Record<string, unknown> }
 	| { kind: 'document'; content: Record<string, unknown> };
 
 export interface ApplyDraftMutationInput {
@@ -140,6 +142,8 @@ export async function applyDraftMutation(
 		for (const field of input.patch.fields) {
 			setPathValue(nextContent, field.path, field.value);
 		}
+	} else if (input.patch.kind === 'overlay') {
+		nextContent = mergeOverlay(baseline, input.patch.content);
 	} else {
 		nextContent = cloneContent(input.patch.content);
 	}

@@ -13,6 +13,7 @@ import { shouldSkipCsrfValidation, validateCsrfToken } from '@/lib/rsvp/security
 import { getEnv } from '@/lib/server/env';
 import { isDevMfaBypassEnabled } from '@/lib/server/dev-mfa-bypass';
 import { isPreviewMfaBypassEnabled } from '@/lib/server/preview-mfa-bypass';
+import { assertRuntimeMutationEnvironment } from '@/lib/server/runtime-mutation-environment';
 
 function hasEffectiveAdminStrongAuth(session: SessionContext): boolean {
 	if (session.isSuperAdmin && isDevMfaBypassEnabled()) return true;
@@ -103,6 +104,7 @@ export async function requireAdminMutationAccess(
 	if (!shouldSkipCsrfValidation(new URL(request.url).pathname)) {
 		validateCsrfToken(request, cookies);
 	}
+	await assertRuntimeMutationEnvironment();
 	return session;
 }
 

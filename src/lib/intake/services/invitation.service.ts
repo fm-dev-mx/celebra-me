@@ -5,6 +5,7 @@ import {
 	findInvitationById,
 	findInvitationBySlug,
 	updateInvitation,
+	updateInvitationConditionally,
 	assignInvitationOwner,
 } from '@/lib/intake/repositories/invitation.repository';
 import { DEMO_PRESET_CATALOG, findDemoPreset } from '@/lib/intake/demo-preset-catalog';
@@ -25,6 +26,9 @@ import {
 	upsertDraft,
 } from '@/lib/intake/repositories/invitation-content-draft.repository';
 import { ApiError } from '@/lib/rsvp/core/errors';
+import type { UpdateInvitationInput } from '@/lib/intake/schemas/invitation.schema';
+import type { InvitationMutationCommandContext } from '@/lib/intake/mutations/command-context';
+import { recordInvitationMutationOutcome } from '@/lib/intake/services/mutation-operation.service';
 
 export function toEnrichedInvitationDTO(
 	invitation: Invitation,
@@ -327,5 +331,56 @@ export async function assignInvitationOwnerService(
 			'conflict',
 			'La invitación fue modificada por otro usuario. Recarga e intenta de nuevo.',
 		);
+	return updated;
+}
+
+export async function updateInvitationMetadataConditionally(
+	invitationId: string,
+	input: { expectedUpdatedAt: string; value: UpdateInvitationInput },
+	commandContext?: InvitationMutationCommandContext,
+): Promise<Invitation> {
+	const current = await findInvitationById(invitationId);
+	if (!current) throw new ApiError(404, 'not_found', 'Invitación no encontrada.');
+
+	if (input.value.slug) {
+		const matching = await findInvitationBySlug(input.value.slug);
+		if (matching && matching.id !== invitationId) {
+			throw new ApiError(409, 'conflict', 'Este slug ya está en uso.');
+		}
+	}
+
+	const updated = await updateInvitationConditionally(
+		invitationId,
+		input.expectedUpdatedAt,
+		input.value,
+	);
+	if (!updated) {
+		if (commandContext) {
+			await recordInvitationMutationOutcome({
+				context: commandContext,
+				invitationId,
+				commandKind: 'save_legacy_metadata',
+				status: 'not_applied',
+				expectedState: { invitationUpdatedAt: input.expectedUpdatedAt },
+				error: new Error('invitation_revision_conflict'),
+			});
+		}
+		throw new ApiError(
+			409,
+			'conflict',
+			'Otra persona guardó cambios antes que tú. Recarga los datos para continuar.',
+		);
+	}
+	if (commandContext) {
+		await recordInvitationMutationOutcome({
+			context: commandContext,
+			invitationId,
+			commandKind: 'save_legacy_metadata',
+			status: 'applied',
+			completedSteps: ['invitation_metadata_saved'],
+			expectedState: { invitationUpdatedAt: input.expectedUpdatedAt },
+			result: { invitationUpdatedAt: updated.updatedAt },
+		});
+	}
 	return updated;
 }

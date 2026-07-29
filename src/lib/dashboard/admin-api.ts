@@ -189,10 +189,11 @@ export class AdminApi {
 	async updateInvitation(
 		invitationId: string,
 		payload: UpdateInvitationDTO,
+		expectedUpdatedAt: string,
 	): Promise<InvitationDetailResponse['item']> {
 		const result = await dashboardApi.patch<{ item: InvitationDetailResponse['item'] }>(
 			`/api/dashboard/intake/${encodeURIComponent(invitationId)}`,
-			payload,
+			{ expectedUpdatedAt, value: payload },
 		);
 		return this.handleResponse(result).item;
 	}
@@ -294,10 +295,11 @@ export class AdminApi {
 	async updateDraftContent(
 		invitationId: string,
 		content: Record<string, unknown>,
+		expectedUpdatedAt: string,
 	): Promise<DraftResponse> {
 		const result = await dashboardApi.patch<DraftResponse>(
 			`/api/dashboard/intake/${encodeURIComponent(invitationId)}/draft`,
-			{ content },
+			{ content, expectedUpdatedAt },
 		);
 		return this.handleResponse(result);
 	}

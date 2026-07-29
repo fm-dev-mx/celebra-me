@@ -61,7 +61,15 @@ export function useInvitationAdmin() {
 	const updateInvitation = useCallback(
 		async (invitationId: string, payload: UpdateInvitationDTO) => {
 			try {
-				const item = await adminApi.updateInvitation(invitationId, payload);
+				const baseline =
+					currentInvitation?.id === invitationId
+						? currentInvitation
+						: (await adminApi.getInvitation(invitationId)).item;
+				const item = await adminApi.updateInvitation(
+					invitationId,
+					payload,
+					baseline.updatedAt,
+				);
 				setCurrentInvitation(item);
 				await loadInvitations();
 				return item;
@@ -72,7 +80,7 @@ export function useInvitationAdmin() {
 				);
 			}
 		},
-		[loadInvitations],
+		[currentInvitation, loadInvitations],
 	);
 
 	const duplicateInvitationFromDemo = useCallback(
@@ -233,7 +241,16 @@ export function useInvitationAdmin() {
 			setSaving(true);
 			setError('');
 			try {
-				const result = await adminApi.updateDraftContent(invitationId, content);
+				const baseline =
+					currentDraft?.invitationId === invitationId
+						? currentDraft
+						: (await adminApi.getDraft(invitationId)).draft;
+				if (!baseline) throw new Error('No se encontró un borrador para guardar.');
+				const result = await adminApi.updateDraftContent(
+					invitationId,
+					content,
+					baseline.updatedAt,
+				);
 				setCurrentDraft(result.draft);
 				return result.draft;
 			} catch (err) {
@@ -247,7 +264,7 @@ export function useInvitationAdmin() {
 				setSaving(false);
 			}
 		},
-		[],
+		[currentDraft],
 	);
 
 	const publishDraftAction = useCallback(async (invitationId: string) => {

@@ -56,6 +56,26 @@ complete apply phase across all targets.
 
 ### Package freshness (definition vs `--package`)
 
+Local and hosted execution are adapters behind the same immutable plan/apply lifecycle in
+`invitation-lifecycle-execution.ts`. Both verify target identity, execute the confirmed plan,
+publish through the canonical boundary, update latest managed provenance only after verification,
+and append a durable outcome. A deterministic plan ID maps to the operation ID; an already-
+synchronized apply records `replayed`. Definitions initialize identity metadata, but managed updates
+preserve target title/slug/client metadata, existing owner, and administrative login alias.
+
+Runtime mutations fail closed unless deployment environment, API project, Storage endpoint, and
+service credential identify the same explicit Local, Preview, or Production project. Operator CLI
+targets are explicit; an arbitrary cloud project is `unknown`, never inferred as Production.
+
+Invitation tooling has read-only service-role access to guest confirmation and guest-audit tables.
+RSVP changes remain behind RSVP services/RPCs. Permanent deletion uses the protected lifecycle RPC,
+and managed compensation refuses to delete events containing guests or claim codes.
+
+Phase 1 deliberately defers structural deletion, asset pruning, stale baseline repair, Auth
+password/alias partial-success internals, final alias normalization, publication/provenance partial
+repair, asset orphan recovery, metadata reopen/restore atomicity, CI command correction, and
+remaining mechanism-specific regression coverage to Goal 3.
+
 - `--source-dir` (or no package path) builds from the **current** managed definition.
 - `--package <path>` is an immutable snapshot. After any definition/content change (copy, seal,
   sections, assets), **regenerate** the package before Preview/Production apply.

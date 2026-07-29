@@ -15,6 +15,7 @@ interface Props {
 		slug: string | null;
 		status: InvitationStatus;
 		photosReceived: boolean;
+		updatedAt: string;
 	};
 }
 
@@ -41,6 +42,7 @@ const InvitationMetadataForm: FC<Props> = ({ invitation }) => {
 	const [saving, setSaving] = useState(false);
 	const [saveError, setSaveError] = useState('');
 	const [saveSuccess, setSaveSuccess] = useState(false);
+	const [expectedUpdatedAt, setExpectedUpdatedAt] = useState(invitation.updatedAt);
 
 	const allowedStatuses = ALLOWED_TRANSITIONS[invitation.status] ?? [];
 	const canChangeStatus = allowedStatuses.length > 0;
@@ -67,17 +69,29 @@ const InvitationMetadataForm: FC<Props> = ({ invitation }) => {
 				return;
 			}
 
-			await adminApi.updateInvitation(
+			const updated = await adminApi.updateInvitation(
 				invitation.id,
 				payload as Parameters<typeof adminApi.updateInvitation>[1],
+				expectedUpdatedAt,
 			);
+			setExpectedUpdatedAt(updated.updatedAt);
 			setSaveSuccess(true);
 		} catch (err) {
 			setSaveError(toErrorMessage(err, 'Error al guardar los cambios.'));
 		} finally {
 			setSaving(false);
 		}
-	}, [title, clientName, clientWhatsapp, clientEmail, slug, status, photosReceived, invitation]);
+	}, [
+		title,
+		clientName,
+		clientWhatsapp,
+		clientEmail,
+		slug,
+		status,
+		photosReceived,
+		invitation,
+		expectedUpdatedAt,
+	]);
 
 	return (
 		<div className="invitation-metadata-form">

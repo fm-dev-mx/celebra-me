@@ -46,6 +46,11 @@ export const UpdateInvitationSchema = z.object({
 	photosReceived: z.boolean().optional(),
 });
 
+export const UpdateInvitationCommandSchema = z.object({
+	expectedUpdatedAt: z.string().min(1),
+	value: UpdateInvitationSchema,
+});
+
 export const DuplicateDemoSchema = z.object({
 	title: z.string().min(1, 'El título es obligatorio.').max(200).trim(),
 	clientName: z.string().max(200).trim().optional().default(''),
@@ -55,4 +60,5 @@ export const DuplicateDemoSchema = z.object({
 
 export type CreateInvitationInput = z.infer<typeof CreateInvitationSchema>;
 export type UpdateInvitationInput = z.infer<typeof UpdateInvitationSchema>;
+export type UpdateInvitationCommandInput = z.infer<typeof UpdateInvitationCommandSchema>;
 export type DuplicateDemoInput = z.infer<typeof DuplicateDemoSchema>;

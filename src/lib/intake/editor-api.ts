@@ -1,9 +1,12 @@
 import { getCollection } from 'astro:content';
 import type { AstroCookies } from 'astro';
-import { requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
+import {
+	requireAdminMutationAccess,
+	requireAdminStrongSession,
+} from '@/lib/rsvp/auth/authorization';
+import type { SessionContext } from '@/lib/rsvp/auth/auth';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { requireAdminRateLimit } from '@/lib/rsvp/security/admin-rate-limit';
-import { shouldSkipCsrfValidation, validateCsrfToken } from '@/lib/rsvp/security/csrf';
 import { getContentEntrySlug } from '@/lib/content/events';
 
 export function requireInvitationId(id: string | undefined): string {
@@ -19,12 +22,8 @@ export async function requireEditorReadAccess(request: Request): Promise<void> {
 export async function requireEditorMutationAccess(
 	request: Request,
 	cookies: AstroCookies,
-): Promise<void> {
-	await requireAdminRateLimit(request, 'intake:draft');
-	await requireAdminStrongSession(request);
-	if (!shouldSkipCsrfValidation(new URL(request.url).pathname)) {
-		validateCsrfToken(request, cookies);
-	}
+): Promise<SessionContext> {
+	return requireAdminMutationAccess(request, cookies, 'intake:draft');
 }
 
 export async function loadDemoContent(previewSlug: string): Promise<Record<string, unknown>> {

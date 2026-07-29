@@ -8,18 +8,19 @@ import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import { errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
 import { ApiError } from '@/lib/rsvp/core/errors';
-import {
-	findInvitationById,
-	updateInvitation,
-} from '@/lib/intake/repositories/invitation.repository';
+import { findInvitationById } from '@/lib/intake/repositories/invitation.repository';
 import { getIntakeRequestsByInvitationId } from '@/lib/intake/services/intake-request.service';
 import { getSubmissionByRequestId } from '@/lib/intake/services/intake-submission.service';
-import { UpdateInvitationSchema } from '@/lib/intake/schemas/invitation.schema';
+import { UpdateInvitationCommandSchema } from '@/lib/intake/schemas/invitation.schema';
 import { findEventByInvitationIdService } from '@/lib/rsvp/repositories/event.repository';
 import { toIntakeRequestDTO, toIntakeSubmissionDTO } from '@/lib/dashboard/dto/intake-mapper';
 import { findPublishedByInvitationId } from '@/lib/intake/repositories/published-invitation-content.repository';
-import { toEnrichedInvitationDTO } from '@/lib/intake/services/invitation.service';
+import {
+	toEnrichedInvitationDTO,
+	updateInvitationMetadataConditionally,
+} from '@/lib/intake/services/invitation.service';
 import { hasRsvpContent } from '@/lib/intake/utils';
+import { createRuntimeMutationCommandContext } from '@/lib/server/runtime-mutation-context';
 
 export const GET: APIRoute = async ({ request, params }) => {
 	try {
@@ -94,15 +95,19 @@ export const GET: APIRoute = async ({ request, params }) => {
 
 export const PATCH: APIRoute = async ({ request, cookies, params }) => {
 	try {
-		await requireAdminMutationAccess(request, cookies, 'intake:update');
+		const session = await requireAdminMutationAccess(request, cookies, 'intake:update');
+		const commandContext = await createRuntimeMutationCommandContext(
+			session,
+			'legacy_dashboard',
+		);
 
 		const { id } = params;
 		if (!id) throw new ApiError(400, 'bad_request', 'Invitation ID is required.');
 
-		const parsed = await validateBodyOrRespond(request, UpdateInvitationSchema);
+		const parsed = await validateBodyOrRespond(request, UpdateInvitationCommandSchema);
 		if (parsed instanceof Response) return parsed;
 
-		const invitation = await updateInvitation(id, parsed);
+		const invitation = await updateInvitationMetadataConditionally(id, parsed, commandContext);
 		const [requests, publishedContent, event] = await Promise.all([
 			getIntakeRequestsByInvitationId(id, 'client'),
 			findPublishedByInvitationId(id),

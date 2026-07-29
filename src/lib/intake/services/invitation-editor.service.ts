@@ -32,6 +32,8 @@ import {
 	applyDraftMutation,
 	DraftRevisionConflictError,
 } from '@/lib/intake/services/draft-mutation.service';
+import type { InvitationMutationCommandContext } from '@/lib/intake/mutations/command-context';
+import { recordInvitationMutationOutcome } from '@/lib/intake/services/mutation-operation.service';
 
 type PublicationState = {
 	hasPublishedContent: boolean;
@@ -150,8 +152,10 @@ export async function saveInvitationEditorSection(
 	invitationId: string,
 	section: InvitationEditorSectionKey,
 	input: { expectedUpdatedAt: string; value: unknown },
+	commandContext?: InvitationMutationCommandContext,
 ) {
 	const published = await findPublishedByInvitationId(invitationId);
+	let draftSaved = false;
 
 	try {
 		const result = await applyDraftMutation({
@@ -161,7 +165,19 @@ export async function saveInvitationEditorSection(
 			actor: 'editor',
 			skipDocumentSchema: true,
 		});
+		draftSaved = true;
 
+		const mutation = commandContext
+			? await recordInvitationMutationOutcome({
+					context: commandContext,
+					invitationId,
+					commandKind: 'save_editor_section',
+					status: 'applied',
+					completedSteps: ['draft_saved'],
+					expectedState: { draftUpdatedAt: input.expectedUpdatedAt },
+					result: { section, draftUpdatedAt: result.draftUpdatedAt },
+				})
+			: undefined;
 		return {
 			section,
 			value: input.value,
@@ -172,8 +188,27 @@ export async function saveInvitationEditorSection(
 				publishedAt: published?.publishedAt ?? null,
 				hasUnpublishedChanges: true,
 			},
+			...(mutation ? { mutation } : {}),
 		};
 	} catch (error) {
+		if (commandContext && !draftSaved) {
+			await recordInvitationMutationOutcome({
+				context: commandContext,
+				invitationId,
+				commandKind: 'save_editor_section',
+				status: 'not_applied',
+				expectedState: { draftUpdatedAt: input.expectedUpdatedAt },
+				error,
+			});
+		}
+		if (commandContext && draftSaved) {
+			throw new ApiError(
+				503,
+				'internal_error',
+				'El borrador se guardó, pero no se pudo registrar el resultado de la operación.',
+				{ operationId: commandContext.operationId, status: 'partial' },
+			);
+		}
 		if (error instanceof DraftRevisionConflictError) {
 			throw new ApiError(
 				409,
@@ -186,6 +221,7 @@ export async function saveInvitationEditorSection(
 	}
 }
 
+// eslint-disable-next-line complexity -- Command classifies precondition, metadata, draft-reopen, and durable receipt boundaries explicitly.
 export async function saveInvitationEditorMetadata(
 	invitationId: string,
 	input: {
@@ -200,6 +236,7 @@ export async function saveInvitationEditorMetadata(
 			photosReceived: boolean;
 		};
 	},
+	commandContext?: InvitationMutationCommandContext,
 ) {
 	const [currentInvitation, draft, published] = await Promise.all([
 		findInvitationById(invitationId),
@@ -223,12 +260,37 @@ export async function saveInvitationEditorMetadata(
 		}
 	}
 
-	const savedInvitation = await updateInvitationConditionally(
-		invitationId,
-		input.expectedUpdatedAt,
-		input.value,
-	);
+	let savedInvitation: Invitation | null;
+	try {
+		savedInvitation = await updateInvitationConditionally(
+			invitationId,
+			input.expectedUpdatedAt,
+			input.value,
+		);
+	} catch (error) {
+		if (commandContext) {
+			await recordInvitationMutationOutcome({
+				context: commandContext,
+				invitationId,
+				commandKind: 'save_editor_metadata',
+				status: 'not_applied',
+				expectedState: { invitationUpdatedAt: input.expectedUpdatedAt },
+				error,
+			});
+		}
+		throw error;
+	}
 	if (!savedInvitation) {
+		if (commandContext) {
+			await recordInvitationMutationOutcome({
+				context: commandContext,
+				invitationId,
+				commandKind: 'save_editor_metadata',
+				status: 'not_applied',
+				expectedState: { invitationUpdatedAt: input.expectedUpdatedAt },
+				error: new Error('invitation_revision_conflict'),
+			});
+		}
 		throw new ApiError(
 			409,
 			'conflict',
@@ -240,28 +302,60 @@ export async function saveInvitationEditorMetadata(
 	// Reopen (or seed) a draft only when either public value actually changed;
 	// contact-only metadata must not create a misleading pending-publication state.
 	let publicationDraft = draft;
-	if (published && changesPublicMetadata && draft?.status !== 'draft') {
-		const content = draft?.content ?? mapNestedToDraftContent(published.content);
-		publicationDraft = draft
-			? await updateDraftContentConditionally(draft.id, draft.updatedAt, {
-					content,
-					status: 'draft',
-				})
-			: await upsertDraft({ invitationId, submissionId: null, content });
-		if (!publicationDraft) {
-			throw new ApiError(
-				409,
-				'conflict',
-				'Otra persona guardó cambios antes que tú. Recarga los datos para continuar.',
-			);
+	try {
+		if (published && changesPublicMetadata && draft?.status !== 'draft') {
+			const content = draft?.content ?? mapNestedToDraftContent(published.content);
+			publicationDraft = draft
+				? await updateDraftContentConditionally(draft.id, draft.updatedAt, {
+						content,
+						status: 'draft',
+					})
+				: await upsertDraft({ invitationId, submissionId: null, content });
+			if (!publicationDraft) {
+				throw new ApiError(
+					409,
+					'conflict',
+					'Otra persona guardó cambios antes que tú. Recarga los datos para continuar.',
+				);
+			}
 		}
+	} catch (error) {
+		if (commandContext) {
+			await recordInvitationMutationOutcome({
+				context: commandContext,
+				invitationId,
+				commandKind: 'save_editor_metadata',
+				status: 'partial',
+				completedSteps: ['invitation_metadata_saved'],
+				expectedState: { invitationUpdatedAt: input.expectedUpdatedAt },
+				result: { invitationUpdatedAt: savedInvitation.updatedAt },
+				error,
+			});
+		}
+		throw error;
 	}
+
+	const mutation = commandContext
+		? await recordInvitationMutationOutcome({
+				context: commandContext,
+				invitationId,
+				commandKind: 'save_editor_metadata',
+				status: 'applied',
+				completedSteps: [
+					'invitation_metadata_saved',
+					...(publicationDraft !== draft ? ['draft_reopened'] : []),
+				],
+				expectedState: { invitationUpdatedAt: input.expectedUpdatedAt },
+				result: { invitationUpdatedAt: savedInvitation.updatedAt },
+			})
+		: undefined;
 
 	return {
 		invitation: savedInvitation,
 		draftUpdatedAt: publicationDraft?.updatedAt ?? null,
 		draftStatus: publicationDraft?.status ?? null,
 		publication: createPublicationState(publicationDraft, published),
+		...(mutation ? { mutation } : {}),
 	};
 }
 

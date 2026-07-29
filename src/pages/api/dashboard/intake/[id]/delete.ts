@@ -2,14 +2,19 @@ import type { APIRoute } from 'astro';
 import { requireAdminMutationAccess } from '@/lib/rsvp/auth/authorization';
 import { errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
 import { ApiError } from '@/lib/rsvp/core/errors';
-import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
-
-const RSVP_HISTORY_MESSAGE =
-	'No se puede eliminar definitivamente esta invitación porque tiene actividad RSVP asociada. Puedes mantenerla archivada para conservar el historial.';
+import {
+	mutateInvitationLifecycle,
+	type InvitationLifecycleAction,
+} from '@/lib/intake/services/invitation-lifecycle.service';
+import { createRuntimeMutationCommandContext } from '@/lib/server/runtime-mutation-context';
 
 export const POST: APIRoute = async ({ request, params, cookies }) => {
 	try {
-		await requireAdminMutationAccess(request, cookies, 'intake:delete');
+		const session = await requireAdminMutationAccess(request, cookies, 'intake:delete');
+		const commandContext = await createRuntimeMutationCommandContext(
+			session,
+			'legacy_dashboard',
+		);
 
 		const invitationId = params.id;
 		if (!invitationId) {
@@ -17,26 +22,8 @@ export const POST: APIRoute = async ({ request, params, cookies }) => {
 		}
 
 		const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
-		const action = body.action as string;
-
-		const ACTIONS: Record<string, { rpc: string; notFound: string }> = {
-			archive: {
-				rpc: 'archive_invitation',
-				notFound: 'Invitación no encontrada o ya archivada.',
-			},
-			restore: {
-				rpc: 'restore_invitation',
-				notFound: 'Invitación no encontrada en archivadas.',
-			},
-			permanent_delete: {
-				rpc: 'permanently_delete_invitation',
-				notFound: 'Invitación no encontrada en archivadas.',
-			},
-		};
-
-		const config = ACTIONS[action];
-
-		if (!config) {
+		const action = body.action;
+		if (!['archive', 'restore', 'permanent_delete'].includes(String(action))) {
 			throw new ApiError(
 				400,
 				'bad_request',
@@ -44,23 +31,13 @@ export const POST: APIRoute = async ({ request, params, cookies }) => {
 			);
 		}
 
-		const result = await supabaseRestRequest<unknown>({
-			pathWithQuery: `rpc/${config.rpc}`,
-			method: 'POST',
-			useServiceRole: true,
-			body: { p_invitation_id: invitationId },
-		});
-
-		if (result === 'blocked_rsvp_history') {
-			throw new ApiError(409, 'conflict', RSVP_HISTORY_MESSAGE);
-		}
-
-		const isSuccess = action === 'permanent_delete' ? result === 'deleted' : result === true;
-		if (!isSuccess) {
-			throw new ApiError(404, 'not_found', config.notFound);
-		}
-
-		return jsonResponse({ success: true });
+		return jsonResponse(
+			await mutateInvitationLifecycle(
+				invitationId,
+				action as InvitationLifecycleAction,
+				commandContext,
+			),
+		);
 	} catch (error) {
 		return errorResponse(error);
 	}

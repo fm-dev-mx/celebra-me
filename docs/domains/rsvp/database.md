@@ -89,6 +89,12 @@ controlled incident response.
 See `docs/database-workflow.md` for the complete operational workflow including local development,
 production backups, and migration procedures.
 
+Invitation administration does not own guest confirmations. Its runtime service-role credential has
+SELECT only on `guest_invitations` and `guest_invitation_audit`; mutations are explicitly revoked.
+RSVP-specific authenticated RLS paths and RPCs remain authoritative. Invitation permanent deletion
+is service-owned and its RPC blocks events with guests, claim codes, or memberships; managed
+compensation also preflights guests and claim codes before removing an operation-created event.
+
 ## Active URL Patterns Backed By The Schema
 
 - direct invite URL: `/{eventType}/{slug}?invite={inviteId}`

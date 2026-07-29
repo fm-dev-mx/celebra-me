@@ -19,6 +19,7 @@ import {
 	DraftActionSchema,
 	UpdateDraftContentSchema,
 } from '@/lib/intake/schemas/invitation-content-draft.schema';
+import { createRuntimeMutationCommandContext } from '@/lib/server/runtime-mutation-context';
 
 export const GET: APIRoute = async ({ request, params }) => {
 	try {
@@ -74,7 +75,11 @@ export const POST: APIRoute = async ({ request, cookies, params }) => {
 
 export const PATCH: APIRoute = async ({ request, cookies, params }) => {
 	try {
-		await requireAdminMutationAccess(request, cookies, 'intake:draft');
+		const session = await requireAdminMutationAccess(request, cookies, 'intake:draft');
+		const commandContext = await createRuntimeMutationCommandContext(
+			session,
+			'legacy_dashboard',
+		);
 
 		const { id } = params;
 		if (!id) throw new ApiError(400, 'bad_request', 'Invitation ID is required.');
@@ -84,7 +89,11 @@ export const PATCH: APIRoute = async ({ request, cookies, params }) => {
 
 		const draft = await updateDraftContentByInvitation(
 			id,
-			parsed.content as Record<string, unknown>,
+			{
+				expectedUpdatedAt: parsed.expectedUpdatedAt,
+				content: parsed.content as Record<string, unknown>,
+			},
+			commandContext,
 		);
 
 		return jsonResponse({ draft: toInvitationContentDraftDTO(draft) });
