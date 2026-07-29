@@ -26,6 +26,7 @@ const allowedHydratedComponents = new Set([
 	'DashboardUserMenu',
 	'MfaSetupBehavior',
 	'LoginFlowBehavior',
+	'ChangePasswordBehavior',
 	'RSVP',
 	'InvitationList',
 	'InvitationDetail',
