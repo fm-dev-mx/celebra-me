@@ -150,8 +150,8 @@ describe('Managed Invitation Lifecycle Automated Matrix', () => {
 			};
 
 			const formatted = formatDryRunPlan(planData);
-			expect(formatted).toContain('📌 Entorno: local');
-			expect(formatted).toContain('📌 Entorno: preview');
+			expect(formatted).toContain('Entorno: local');
+			expect(formatted).toContain('Entorno: preview');
 			expect(formatted).toContain('NO EVALUADO');
 			expect(formatted).toContain('No se realizó una inspección remota');
 			expect(formatted).not.toContain('preview\n  Estado       : SIN CAMBIOS');
@@ -188,9 +188,9 @@ describe('Managed Invitation Lifecycle Automated Matrix', () => {
 				targetResults,
 			});
 
-			expect(resultOutput).toContain('📌 Entorno: local');
+			expect(resultOutput).toContain('Entorno: local');
 			expect(resultOutput).toContain('CAMBIOS APLICADOS');
-			expect(resultOutput).toContain('📌 Entorno: preview');
+			expect(resultOutput).toContain('Entorno: preview');
 			expect(resultOutput).toContain('NO EVALUADO');
 		});
 	});

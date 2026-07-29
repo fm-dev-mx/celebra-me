@@ -47,6 +47,12 @@ Inspect `pnpm invitation:update -- --help` and
 [`docs/domains/intake/production-flow.md`](../../docs/domains/intake/production-flow.md) before
 composing a real invocation.
 
+Interactive apply (TTY) offers selective content apply: all changes, by section, or field-by-field.
+Deselected paths keep the destination value. Non-interactive selective apply uses
+`--field-selections <file.json>` with `{ "resolutions": { "<path>": "package"|"target" } }`
+(merged with `--conflict-resolutions`; conflict choices win on overlap). Use `--verbose` for full
+field values and plan IDs.
+
 - Newly created resources may be removed during compensation. Pre-existing resources must never be
   deleted by cleanup. If an overwritten pre-existing resource cannot be restored automatically, the
   result requires manual review.

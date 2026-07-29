@@ -55,8 +55,10 @@ import { ProductionPreflightError, runProductionPreflight } from './production-p
 import type { OperationalPlan } from './invitation-update-plan.ts';
 import {
 	loadConflictResolutionsFile,
+	mergePathPolicies,
 	suggestConflictResolutionsFile,
 } from './conflict-resolutions.ts';
+import { promptFieldSelection } from './invitation-update-field-selection.ts';
 import {
 	MergeConflictError,
 	listDriftConflicts,
@@ -188,6 +190,8 @@ Options:
   --confirm-scope              Coordinated release scope confirmation required for non-interactive Production apply
   --confirm-destructive        Destructive operations acknowledgement required for non-interactive apply when plan contains deletions or overwrites
   --conflict-resolutions <path> JSON { "resolutions": { "<path>": "package"|"target" } } (required when apply has merge conflicts)
+  --field-selections <path>    JSON { "resolutions": { "<path>": "package"|"target" } } selective apply (deselected paths keep target)
+  --verbose                    Show full field values and plan IDs in terminal output
   --json                       Format output as JSON
   --owner-user-id <uuid>       Optional override/assertion; new invites default to a dedicated host ({hostLoginAlias}@clientes.celebra.invalid)
   --adoption-plan              Read-only plan for the isolated Production legacy adoption
@@ -205,6 +209,8 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 	checkUnknownFlags(args);
 	const json = args.includes('--json');
 	const nonInteractive = args.includes('--non-interactive');
+	const verbose = args.includes('--verbose');
+	const presenterOptions = { verbose };
 	const isTTY = Boolean(process.stdout.isTTY);
 
 	if (args.includes('--help') || args.includes('-h')) {
@@ -436,10 +442,15 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 		rawScope === 'content-and-assets' || rawScope === 'assets-only' ? rawScope : 'content-only';
 
 	const conflictResolutionsPath = value(args, '--conflict-resolutions');
+	const fieldSelectionsPath = value(args, '--field-selections');
 	let conflictResolutions: ConflictResolutions | undefined;
-	if (conflictResolutionsPath) {
-		conflictResolutions = loadConflictResolutionsFile(conflictResolutionsPath);
-	}
+	const fileConflictResolutions = conflictResolutionsPath
+		? loadConflictResolutionsFile(conflictResolutionsPath)
+		: undefined;
+	const fileFieldSelections = fieldSelectionsPath
+		? loadConflictResolutionsFile(fieldSelectionsPath, 'selección de campos')
+		: undefined;
+	conflictResolutions = mergePathPolicies(fileFieldSelections, fileConflictResolutions);
 
 	const rawAssetPolicy =
 		value(args, '--asset-policy') ?? (updateScope === 'content-only' ? 'preserve' : 'missing');
@@ -519,8 +530,8 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 	getInvitationDefinition(slug);
 
 	const ownerUserId = value(args, '--owner-user-id');
-	const reports: StageReport[] = [];
-	const targetPlans: TargetPlanData[] = [];
+	let reports: StageReport[] = [];
+	let targetPlans: TargetPlanData[] = [];
 	const targetResults: TargetApplyResultData[] = [];
 	const executionPlans = new Map<InvitationUpdateTarget, OperationalPlan>();
 	let packageInput;
@@ -621,7 +632,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 					),
 				);
 			} else {
-				console.error(formatDryRunPlan(blockedPlan));
+				console.error(formatDryRunPlan(blockedPlan, presenterOptions));
 			}
 		}
 		process.exitCode = 1;
@@ -631,8 +642,27 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 	let confirmationPackage: InvitationPackageData = packageInput.packageData;
 
 	let localResult: LocalApplyResult | undefined;
+	let isZeroDrift = false;
+	let plannedOperations = 0;
+	let planData: OperationalPlanData = {
+		invitation: slug,
+		targets,
+		isZeroDrift: true,
+		plannedOperations: 0,
+		expectedDatabaseWrites: { inserts: 0, updates: 0, deletes: 0 },
+		expectedStorageMutations: { uploads: 0, overwrites: 0, moves: 0, deletes: 0 },
+		actions: [],
+		targetPlans: [],
+	};
+	let selectionPassDone = Boolean(fileFieldSelections);
 
 	// ── PREFLIGHT INSPECTION PHASE FOR ALL SELECTED TARGETS ─────────────────────
+	planning: while (true) {
+		reports = [];
+		targetPlans = [];
+		executionPlans.clear();
+		localResult = undefined;
+
 	for (const target of targets) {
 		if (target === 'local') {
 			try {
@@ -881,11 +911,11 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 		}
 	}
 
-	const isZeroDrift = targetPlans.every((tp) => tp.status === 'SIN CAMBIOS');
-	const plannedOperations = targetPlans.reduce((sum, tp) => sum + tp.plannedOperations, 0);
+	isZeroDrift = targetPlans.every((tp) => tp.status === 'SIN CAMBIOS');
+	plannedOperations = targetPlans.reduce((sum, tp) => sum + tp.plannedOperations, 0);
 
 	// Operational plan for presentation
-	const planData: OperationalPlanData = {
+	planData = {
 		planId: localResult?.plan?.planId,
 		invitation: slug,
 		targets,
@@ -914,6 +944,28 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 		targetPlans,
 	};
 
+		const hasBlockedTarget = targetPlans.some(
+			(tp) => tp.status === 'BLOQUEADO' || tp.status === 'NO EVALUADO',
+		);
+		if (
+			!selectionPassDone &&
+			isTTY &&
+			!nonInteractive &&
+			!json &&
+			!isZeroDrift &&
+			!hasBlockedTarget &&
+			(planData.functionalChanges?.length ?? 0) > 0
+		) {
+			selectionPassDone = true;
+			const selectedPolicy = await promptFieldSelection({ plan: planData });
+			if (selectedPolicy) {
+				conflictResolutions = mergePathPolicies(selectedPolicy, conflictResolutions);
+				continue planning;
+			}
+		}
+		break;
+	}
+
 	// ── HANDLE DRY-RUN MODE ──────────────────────────────────────────────────
 	if (dryRun) {
 		const allConflicts = collectPlanConflicts(targetPlans);
@@ -939,7 +991,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 				),
 			);
 		} else {
-			console.log(formatDryRunPlan(planData));
+			console.log(formatDryRunPlan(planData, presenterOptions));
 			if (suggestedResolutions) {
 				console.log('');
 				console.log(
@@ -1101,7 +1153,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 				console.log(
 					'\nPublicar en Producción sincronizará esta misma versión en:\n\n  • Local\n  • Preview\n  • Producción\n\nProducción se ejecutará únicamente después de validar y procesar correctamente Local y Preview.\n',
 				);
-				console.log(formatApplyConfirmation(planData));
+				console.log(formatApplyConfirmation(planData, presenterOptions));
 
 				const scopeConfirmed = await confirm({
 					message: `¿Aceptas la publicación coordinada en Local, Preview y Producción para "${slug}"?`,
@@ -1248,7 +1300,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 				}
 			}
 		} else if (isTTY && !nonInteractive) {
-			console.log(formatApplyConfirmation(planData));
+			console.log(formatApplyConfirmation(planData, presenterOptions));
 			const confirmed = await confirm({
 				message: `¿Aplicar la actualización administrada de "${slug}" en ${targets.join(', ')}?`,
 				default: false,

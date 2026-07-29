@@ -54,6 +54,8 @@ const VALID_FLAGS = new Set([
 	'--confirm-scope',
 	'--confirm-destructive',
 	'--conflict-resolutions',
+	'--field-selections',
+	'--verbose',
 	'--help',
 	'-h',
 ]);
@@ -82,6 +84,7 @@ export function checkUnknownFlags(args: string[]): void {
 					'--asset-policy',
 					'--update-scope',
 					'--conflict-resolutions',
+					'--field-selections',
 				].includes(arg)
 			) {
 				i++;

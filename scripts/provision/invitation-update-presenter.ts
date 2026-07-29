@@ -182,7 +182,7 @@ export function formatStatusReport(data: StatusReportData): string {
 	}
 
 	for (const def of data.definitions) {
-		lines.push(`📌 ${colors.bold(def.title)} (${colors.dim(def.slug)})`);
+		lines.push(`${colors.bold(def.title)} (${colors.dim(def.slug)})`);
 		lines.push(`   Definición Canónica : Encontrada (Creada: ${def.createdAt.slice(0, 10)})`);
 
 		for (const target of data.filters.targets) {
@@ -295,6 +295,75 @@ export function consolidateTargetFunctionalChanges(
 	}
 
 	return Array.from(map.values());
+}
+
+export interface PresenterOptions {
+	/** Show full field values and plan IDs. Default false for interactive UX. */
+	verbose?: boolean;
+}
+
+interface SectionChangeSummary {
+	section: string;
+	total: number;
+	updates: number;
+	inserts: number;
+	deletes: number;
+	moves: number;
+	storage: number;
+}
+
+function summarizeFunctionalChangesBySection(
+	changes?: OperationalPlanData['functionalChanges'],
+): SectionChangeSummary[] {
+	if (!changes || changes.length === 0) return [];
+	const map = new Map<string, SectionChangeSummary>();
+	for (const change of changes) {
+		const section = change.section || 'Otros';
+		const entry = map.get(section) ?? {
+			section,
+			total: 0,
+			updates: 0,
+			inserts: 0,
+			deletes: 0,
+			moves: 0,
+			storage: 0,
+		};
+		entry.total += 1;
+		if (change.scope === 'storage') entry.storage += 1;
+		else if (change.operation === 'update') entry.updates += 1;
+		else if (change.operation === 'insert') entry.inserts += 1;
+		else if (change.operation === 'delete') entry.deletes += 1;
+		else if (change.operation === 'move') entry.moves += 1;
+		map.set(section, entry);
+	}
+	return Array.from(map.values()).sort((a, b) => a.section.localeCompare(b.section));
+}
+
+export function formatFunctionalChangesSummary(
+	changes?: OperationalPlanData['functionalChanges'],
+): string[] {
+	const summaries = summarizeFunctionalChangesBySection(changes);
+	if (summaries.length === 0) return [];
+	const lines: string[] = [];
+	lines.push(colors.bold(`Cambios de contenido · ${changes?.length ?? 0}`));
+	lines.push('');
+	for (const summary of summaries) {
+		const parts: string[] = [];
+		if (summary.updates) parts.push(`${summary.updates} act.`);
+		if (summary.inserts) parts.push(`${summary.inserts} altas`);
+		if (summary.deletes) parts.push(`${summary.deletes} bajas`);
+		if (summary.moves) parts.push(`${summary.moves} orden`);
+		if (summary.storage) parts.push(`${summary.storage} storage`);
+		lines.push(`  • ${summary.section} (${summary.total}: ${parts.join(', ')})`);
+	}
+	lines.push('');
+	lines.push(
+		colors.dim(
+			'Nota: altas/bajas de campos son diffs de contenido, no borrados de filas. El impacto físico está abajo.',
+		),
+	);
+	lines.push('');
+	return lines;
 }
 
 // eslint-disable-next-line complexity -- Formats all functional change categories for CLI output.
@@ -420,6 +489,29 @@ export function formatFunctionalChanges(
 	return lines;
 }
 
+function formatContentChanges(
+	changes: OperationalPlanData['functionalChanges'] | undefined,
+	options?: PresenterOptions,
+): string[] {
+	if (!changes || changes.length === 0) return [];
+	if (options?.verbose) return formatFunctionalChanges(changes);
+	return formatFunctionalChangesSummary(changes);
+}
+
+function formatPhysicalImpact(
+	label: string,
+	plannedOperations: number,
+	writes: { inserts: number; updates: number; deletes: number },
+	storage: { uploads: number; overwrites: number; moves?: number; deletes: number },
+): string[] {
+	return [
+		colors.bold(label),
+		`  • Operaciones lógicas : ${plannedOperations}`,
+		`  • Impacto en BD       : ${formatDbWrites(writes)}`,
+		`  • Impacto en Storage  : ${formatStorageMutations(storage)}`,
+	];
+}
+
 function resolveStatusColor(status: TargetPlanData['status']): string {
 	switch (status) {
 		case 'CAMBIOS APLICADOS':
@@ -439,7 +531,7 @@ function resolveStatusColor(status: TargetPlanData['status']): string {
 }
 
 // eslint-disable-next-line complexity -- Per-target lifecycle states require distinct truthful presentation branches.
-export function formatDryRunPlan(plan: OperationalPlanData): string {
+export function formatDryRunPlan(plan: OperationalPlanData, options?: PresenterOptions): string {
 	const lines: string[] = [];
 	lines.push(colors.bold(colors.cyan('=== Plan de Simulación (Dry-Run) ===')));
 	lines.push('');
@@ -449,8 +541,8 @@ export function formatDryRunPlan(plan: OperationalPlanData): string {
 
 	if (plan.targetPlans && plan.targetPlans.length > 0) {
 		for (const tp of plan.targetPlans) {
-			lines.push(colors.bold(`📌 Entorno: ${tp.target}`));
-			if (tp.planId) {
+			lines.push(colors.bold(`Entorno: ${tp.target}`));
+			if (options?.verbose && tp.planId) {
 				lines.push(`  ID de Plan   : ${colors.dim(tp.planId)}`);
 			}
 			lines.push(`  Estado       : ${resolveStatusColor(tp.status)}`);
@@ -462,15 +554,17 @@ export function formatDryRunPlan(plan: OperationalPlanData): string {
 				lines.push(colors.bold('  Conflictos de merge (paquete vs destino):'));
 				for (const conflict of tp.mergeConflicts) {
 					lines.push(`    • ${conflict.path}`);
-					lines.push(
-						`        Ancestro : ${JSON.stringify(conflict.previousCanonicalValue ?? null)}`,
-					);
-					lines.push(
-						`        Paquete  : ${JSON.stringify(conflict.packageValue ?? null)}`,
-					);
-					lines.push(
-						`        Destino  : ${JSON.stringify(conflict.targetValue ?? null)}`,
-					);
+					if (options?.verbose) {
+						lines.push(
+							`        Ancestro : ${JSON.stringify(conflict.previousCanonicalValue ?? null)}`,
+						);
+						lines.push(
+							`        Paquete  : ${JSON.stringify(conflict.packageValue ?? null)}`,
+						);
+						lines.push(
+							`        Destino  : ${JSON.stringify(conflict.targetValue ?? null)}`,
+						);
+					}
 				}
 				lines.push(
 					colors.dim(
@@ -481,23 +575,23 @@ export function formatDryRunPlan(plan: OperationalPlanData): string {
 			lines.push('');
 
 			if (tp.status === 'CAMBIOS PENDIENTES' || tp.status === 'SIN CAMBIOS') {
-				const functionalLines = formatFunctionalChanges(tp.functionalChanges);
+				const functionalLines = formatContentChanges(tp.functionalChanges, options);
 				if (functionalLines.length > 0) {
 					lines.push(...functionalLines.map((l) => `  ${l}`));
 				}
-				lines.push(`  Resumen Técnico de Operaciones (${tp.target}):`);
-				lines.push(`    • Operaciones totales : ${tp.plannedOperations}`);
 				lines.push(
-					`    • Escrituras DB est.  : ${formatDbWrites(tp.expectedDatabaseWrites)}`,
-				);
-				lines.push(
-					`    • Mutaciones Storage  : ${formatStorageMutations(tp.expectedStorageMutations)}`,
+					...formatPhysicalImpact(
+						`  Impacto en BD/Storage (${tp.target}):`,
+						tp.plannedOperations,
+						tp.expectedDatabaseWrites,
+						tp.expectedStorageMutations,
+					).map((line) => (line.startsWith('  ') ? line : `  ${line}`)),
 				);
 				lines.push('');
 			}
 		}
 	} else {
-		if (plan.planId) {
+		if (options?.verbose && plan.planId) {
 			lines.push(`ID de Plan   : ${colors.dim(plan.planId)}`);
 		}
 		lines.push(
@@ -509,16 +603,18 @@ export function formatDryRunPlan(plan: OperationalPlanData): string {
 		);
 		lines.push('');
 
-		const functionalLines = formatFunctionalChanges(plan.functionalChanges);
+		const functionalLines = formatContentChanges(plan.functionalChanges, options);
 		if (functionalLines.length > 0) {
 			lines.push(...functionalLines);
 		}
 
-		lines.push(colors.bold('Resumen Técnico de Operaciones:'));
-		lines.push(`  • Operaciones totales : ${plan.plannedOperations}`);
-		lines.push(`  • Escrituras DB est.  : ${formatDbWrites(plan.expectedDatabaseWrites)}`);
 		lines.push(
-			`  • Mutaciones Storage  : ${formatStorageMutations(plan.expectedStorageMutations)}`,
+			...formatPhysicalImpact(
+				'Impacto en BD/Storage:',
+				plan.plannedOperations,
+				plan.expectedDatabaseWrites,
+				plan.expectedStorageMutations,
+			),
 		);
 		lines.push('');
 
@@ -555,7 +651,10 @@ export function formatDryRunPlan(plan: OperationalPlanData): string {
 	return lines.join('\n');
 }
 
-export function formatApplyConfirmation(plan: OperationalPlanData): string {
+export function formatApplyConfirmation(
+	plan: OperationalPlanData,
+	options?: PresenterOptions,
+): string {
 	const lines: string[] = [];
 	lines.push(colors.bold(colors.yellow('=== Confirmación de Aplicación ===')));
 	lines.push('');
@@ -566,28 +665,36 @@ export function formatApplyConfirmation(plan: OperationalPlanData): string {
 		for (const target of plan.targetPlans.filter(
 			(candidate) => candidate.status === 'CAMBIOS PENDIENTES',
 		)) {
-			lines.push(colors.bold(`📌 Entorno: ${target.target}`));
-			lines.push(`  ID de Plan   : ${colors.dim(target.planId ?? 'NO DISPONIBLE')}`);
+			lines.push(colors.bold(`Entorno: ${target.target}`));
+			if (options?.verbose) {
+				lines.push(`  ID de Plan   : ${colors.dim(target.planId ?? 'NO DISPONIBLE')}`);
+			}
 			lines.push(
-				...formatFunctionalChanges(target.functionalChanges).map((line) => `  ${line}`),
+				...formatContentChanges(target.functionalChanges, options).map((line) => `  ${line}`),
 			);
-			lines.push(`  Operaciones lógicas : ${target.plannedOperations}`);
-			lines.push(`  Escrituras DB est.  : ${formatDbWrites(target.expectedDatabaseWrites)}`);
 			lines.push(
-				`  Mutaciones Storage  : ${formatStorageMutations(target.expectedStorageMutations)}`,
+				...formatPhysicalImpact(
+					'  Impacto en BD/Storage:',
+					target.plannedOperations,
+					target.expectedDatabaseWrites,
+					target.expectedStorageMutations,
+				),
 			);
 			lines.push('');
 		}
 	} else {
-		if (plan.planId) lines.push(`ID de Plan Planificado: ${colors.dim(plan.planId)}`);
+		if (options?.verbose && plan.planId) {
+			lines.push(`ID de Plan Planificado: ${colors.dim(plan.planId)}`);
+		}
 		lines.push('');
-		lines.push(...formatFunctionalChanges(plan.functionalChanges));
-		lines.push(`  - Operaciones lógicas a ejecutar : ${plan.plannedOperations}`);
+		lines.push(...formatContentChanges(plan.functionalChanges, options));
 		lines.push(
-			`  - Escrituras DB estimadas        : ${formatDbWrites(plan.expectedDatabaseWrites)}`,
-		);
-		lines.push(
-			`  - Mutaciones en Supabase Storage : ${formatStorageMutations(plan.expectedStorageMutations)}`,
+			...formatPhysicalImpact(
+				'Impacto en BD/Storage:',
+				plan.plannedOperations,
+				plan.expectedDatabaseWrites,
+				plan.expectedStorageMutations,
+			),
 		);
 	}
 	lines.push('');
@@ -655,7 +762,7 @@ export function formatApplyResult(result: ApplyResultData): string {
 
 	if (result.targetResults && result.targetResults.length > 0) {
 		for (const tr of result.targetResults) {
-			lines.push(colors.bold(`📌 Entorno: ${tr.target}`));
+			lines.push(colors.bold(`Entorno: ${tr.target}`));
 			if (tr.planId) {
 				lines.push(`  ID de Plan   : ${colors.dim(tr.planId)}`);
 			}

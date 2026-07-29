@@ -190,11 +190,15 @@ describe('managed lifecycle executable contracts', () => {
 				actions: [],
 			})),
 		};
-		const output = formatApplyConfirmation(data);
-		expect(output).toContain('Entorno: local');
-		expect(output).toContain('local-plan');
-		expect(output).toContain('Entorno: preview');
-		expect(output).toContain('preview-plan');
+		const compact = formatApplyConfirmation(data);
+		expect(compact).toContain('Entorno: local');
+		expect(compact).toContain('Entorno: preview');
+		expect(compact).toContain('Impacto en BD/Storage');
+		expect(compact).not.toContain('local-plan');
+
+		const verbose = formatApplyConfirmation(data, { verbose: true });
+		expect(verbose).toContain('local-plan');
+		expect(verbose).toContain('preview-plan');
 	});
 
 	describe('engine result boundary', () => {

@@ -62,11 +62,59 @@ describe('Managed Invitation CLI Dispatcher & Presenter Contracts', () => {
 
 		expect(planFormatted).toContain('Plan de Simulación (Dry-Run)');
 		expect(planFormatted).toContain('Sin cambios requeridos');
+		expect(planFormatted).toContain('Impacto en BD/Storage');
 		expect(planFormatted).toContain('1 inserción');
 		expect(planFormatted).toContain('2 actualizaciones');
 		expect(planFormatted).toContain('1 subida');
 		expect(planFormatted).toContain('2 sobrescrituras');
 		expect(planFormatted).toContain('Ninguna modificación fue realizada');
+	});
+
+	it('formats compact content summary by section and expands with verbose', () => {
+		const plan = {
+			invitation: 'abril-michelle-becerra-rea',
+			targets: ['local'],
+			isZeroDrift: false,
+			plannedOperations: 1,
+			expectedDatabaseWrites: { inserts: 0, updates: 1, deletes: 0 },
+			expectedStorageMutations: { uploads: 0, overwrites: 0, deletes: 0 },
+			actions: [],
+			functionalChanges: [
+				{
+					section: 'Sharing',
+					entity: 'Invitation',
+					label: 'Sharing — Invitation',
+					operation: 'insert' as const,
+					field: 'sharing.invitation',
+					newValue: '«hola»',
+					scope: 'database' as const,
+					technicalWriteCount: 1,
+				},
+				{
+					section: 'Sharing',
+					entity: 'Reminder',
+					label: 'Sharing — Reminder',
+					operation: 'update' as const,
+					field: 'sharing.reminder',
+					previousValue: '«old»',
+					newValue: '«new»',
+					scope: 'database' as const,
+					technicalWriteCount: 1,
+				},
+			],
+			planId: 'abc123',
+		};
+		const compact = formatDryRunPlan(plan);
+		expect(compact).toContain('Cambios de contenido · 2');
+		expect(compact).toContain('Sharing (2:');
+		expect(compact).toContain('altas/bajas de campos');
+		expect(compact).not.toContain('ID de Plan');
+		expect(compact).not.toContain('INSERCIONES');
+
+		const verbose = formatDryRunPlan(plan, { verbose: true });
+		expect(verbose).toContain('ID de Plan');
+		expect(verbose).toContain('INSERCIONES · 1');
+		expect(verbose).toContain('ACTUALIZACIONES · 1');
 	});
 
 	it('formats apply result separating completed logical operations from physical writes', () => {

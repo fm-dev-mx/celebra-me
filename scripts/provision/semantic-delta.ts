@@ -148,6 +148,28 @@ export type ConflictResolutionChoice = 'package' | 'target';
 
 export type ConflictResolutions = Record<string, ConflictResolutionChoice>;
 
+/**
+ * Resolve path policy for a leaf path.
+ * Exact match wins; otherwise the longest matching ancestor prefix wins
+ * (e.g. policy on `sharing` applies to `sharing.invitation`).
+ */
+export function resolvePathPolicy(
+	path: string,
+	resolutions: ConflictResolutions,
+): ConflictResolutionChoice | undefined {
+	if (resolutions[path]) return resolutions[path];
+	let best: { prefix: string; choice: ConflictResolutionChoice } | undefined;
+	for (const [key, choice] of Object.entries(resolutions)) {
+		if (!key || key === path) continue;
+		const isPrefix = path.startsWith(`${key}.`) || path.startsWith(`${key}[`);
+		if (!isPrefix) continue;
+		if (!best || key.length > best.prefix.length) {
+			best = { prefix: key, choice };
+		}
+	}
+	return best?.choice;
+}
+
 export class MergeConflictError extends Error {
 	readonly code = 'merge_conflict';
 	readonly deltas: SemanticFieldDelta[];
@@ -269,19 +291,32 @@ export function apply3WaySemanticPatch(params: {
 				appliedValue: targetVal,
 			});
 		} else if (isPrevTargetSame || prevVal === undefined) {
-			// Target matches previous canonical -> safe to apply current canonical value
-			deltas.push({
-				path,
-				previousCanonicalValue: prevVal,
-				currentCanonicalValue: currVal,
-				currentTargetValue: targetVal,
-				isAssetField: isAsset,
-				status: 'APPLY',
-				appliedValue: currVal,
-			});
-			setNestedValue(patchedContent, path, currVal);
+			// Target matches previous canonical -> safe to apply, unless path policy keeps target
+			const safeResolution = resolvePathPolicy(path, resolutions);
+			if (safeResolution === 'target') {
+				deltas.push({
+					path,
+					previousCanonicalValue: prevVal,
+					currentCanonicalValue: currVal,
+					currentTargetValue: targetVal,
+					isAssetField: isAsset,
+					status: 'ALREADY_APPLIED',
+					appliedValue: targetVal,
+				});
+			} else {
+				deltas.push({
+					path,
+					previousCanonicalValue: prevVal,
+					currentCanonicalValue: currVal,
+					currentTargetValue: targetVal,
+					isAssetField: isAsset,
+					status: 'APPLY',
+					appliedValue: currVal,
+				});
+				setNestedValue(patchedContent, path, currVal);
+			}
 		} else {
-			const resolution = resolutions[path];
+			const resolution = resolvePathPolicy(path, resolutions);
 			if (resolution === 'package') {
 				deltas.push({
 					path,

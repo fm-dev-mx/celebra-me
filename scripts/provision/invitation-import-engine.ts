@@ -63,6 +63,7 @@ import {
 	type ConflictResolutions,
 	type UpdateScope,
 } from './semantic-delta.ts';
+import { sortPathPolicy } from './conflict-resolutions.ts';
 
 export interface ImportEngineOptions {
 	packagePath?: string;
@@ -1236,7 +1237,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		.update(
 			JSON.stringify({
 				actions: actions.map(({ resource, name, action }) => ({ resource, name, action })),
-				conflictResolutions: options.conflictResolutions ?? null,
+				conflictResolutions: sortPathPolicy(options.conflictResolutions),
 			}),
 		)
 		.digest('hex');

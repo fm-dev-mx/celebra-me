@@ -95,7 +95,7 @@ describe('apply3WaySemanticPatch', () => {
 		expect(result.patchedContent.gallery).toEqual({ items: [{ alt: 'Managed alt' }] });
 	});
 
-	it('keeps the target value when an explicit target choice is supplied', () => {
+	it('keeps the target value when an explicit target choice is supplied for a conflict', () => {
 		const result = apply3WaySemanticPatch({
 			previousCanonical: { envelope: { tooltipText: 'Abrir' } },
 			currentCanonical: { envelope: { tooltipText: 'ABRIR' } },
@@ -106,6 +106,53 @@ describe('apply3WaySemanticPatch', () => {
 
 		expect(result.blocked).toBe(false);
 		expect(result.patchedContent.envelope).toEqual({ tooltipText: '' });
+	});
+
+	it('keeps the target on a safe APPLY path when path policy selects target', () => {
+		const result = apply3WaySemanticPatch({
+			previousCanonical: { hero: { subtitle: 'Old' }, thankYou: { phrase: 'Gracias' } },
+			currentCanonical: { hero: { subtitle: 'New' }, thankYou: { phrase: 'Con gratitud' } },
+			currentTarget: { hero: { subtitle: 'Old' }, thankYou: { phrase: 'Gracias' } },
+			scope: 'content-only',
+			resolutions: { 'thankYou.phrase': 'target' },
+		});
+
+		expect(result.blocked).toBe(false);
+		expect(result.patchedContent).toEqual({
+			hero: { subtitle: 'New' },
+			thankYou: { phrase: 'Gracias' },
+		});
+		expect(
+			result.deltas.find((delta) => delta.path === 'thankYou.phrase')?.status,
+		).toBe('ALREADY_APPLIED');
+		expect(
+			result.deltas.find((delta) => delta.path === 'hero.subtitle')?.status,
+		).toBe('APPLY');
+	});
+
+	it('honors section-prefix path policy for selective apply', () => {
+		const result = apply3WaySemanticPatch({
+			previousCanonical: {
+				sharing: { invitation: 'Old invite', reminder: 'Old reminder' },
+				hero: { title: 'Old' },
+			},
+			currentCanonical: {
+				sharing: { invitation: 'New invite', reminder: 'New reminder' },
+				hero: { title: 'New' },
+			},
+			currentTarget: {
+				sharing: { invitation: 'Old invite', reminder: 'Old reminder' },
+				hero: { title: 'Old' },
+			},
+			scope: 'content-only',
+			resolutions: { sharing: 'target' },
+		});
+
+		expect(result.blocked).toBe(false);
+		expect(result.patchedContent).toEqual({
+			sharing: { invitation: 'Old invite', reminder: 'Old reminder' },
+			hero: { title: 'New' },
+		});
 	});
 
 	it('stays blocked when only some drift paths are resolved', () => {

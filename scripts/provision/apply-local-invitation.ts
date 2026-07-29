@@ -61,6 +61,7 @@ import {
 	type UpdateScope,
 } from './semantic-delta.ts';
 import type { AssetPolicy } from './asset-reconciliation.ts';
+import { fingerprintPathPolicy } from './conflict-resolutions.ts';
 
 interface ApplyLocalOptions {
 	slug: string;
@@ -653,9 +654,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		projectRef: 'persistent-local',
 		changes: functionalChanges,
 		preconditions: targetPreconditions,
-		operationFingerprint: options.conflictResolutions
-			? JSON.stringify(options.conflictResolutions)
-			: undefined,
+		operationFingerprint: fingerprintPathPolicy(options.conflictResolutions),
 	});
 
 	const currentPlan: OperationalPlan = {
