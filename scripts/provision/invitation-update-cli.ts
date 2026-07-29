@@ -664,6 +664,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 					apply: false,
 					updateScope,
 					assetPolicy,
+					pruneAssets,
 					conflictResolutions,
 				});
 				executionPlans.set('local', localResult.plan);
@@ -1352,6 +1353,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 						plan: localResult?.plan,
 						updateScope,
 						assetPolicy,
+						pruneAssets,
 						conflictResolutions,
 					});
 					reports.push({

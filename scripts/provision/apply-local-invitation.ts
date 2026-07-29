@@ -27,8 +27,9 @@ import {
 } from '../../src/lib/intake/services/publication-diff.service.ts';
 import { checkTargetDivergenceConflict } from './promotion-comparison.ts';
 import {
+	isRecoverableManagedPartial,
 	resolveManagedMergeBaseline,
-	resolvePublicationTimestamp,
+	type ManagedBaselineReceiptEvidence,
 } from './managed-merge-baseline.ts';
 import { getInvitationDefinition } from './invitations/registry.ts';
 import {
@@ -64,8 +65,15 @@ import {
 	type ConflictResolutions,
 	type UpdateScope,
 } from './semantic-delta.ts';
-import type { AssetPolicy } from './asset-reconciliation.ts';
+import {
+	collectUploadedAssetIds,
+	reconcileAssets,
+	type AssetPolicy,
+	type ObservedStorageState,
+	type TargetAssetRecord,
+} from './asset-reconciliation.ts';
 import { fingerprintPathPolicy } from './conflict-resolutions.ts';
+import { assertManagedContentSchema } from './managed-content-validation.ts';
 
 interface ApplyLocalOptions {
 	slug: string;
@@ -76,6 +84,7 @@ interface ApplyLocalOptions {
 	plan?: OperationalPlan;
 	updateScope?: UpdateScope;
 	assetPolicy?: AssetPolicy;
+	pruneAssets?: boolean;
 	conflictResolutions?: ConflictResolutions;
 }
 
@@ -333,9 +342,50 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		: { data: null };
 	const { data: existingProvenance } = await supabase
 		.from('managed_invitation_release_provenance')
-		.select('invitation_id, managed_projection, applied_at')
+		.select(
+			'invitation_id, managed_projection, applied_draft_updated_at, applied_operation_id, applied_published_version, applied_published_projection_hash',
+		)
 		.eq('invitation_id', invitationId)
 		.maybeSingle();
+	const appliedOperationId =
+		typeof existingProvenance?.applied_operation_id === 'string'
+			? existingProvenance.applied_operation_id
+			: null;
+	const { data: appliedReceiptRow } = appliedOperationId
+		? await supabase
+				.from('invitation_mutation_operation_receipts')
+				.select('operation_id, status, command_kind, origin, completed_steps')
+				.eq('operation_id', appliedOperationId)
+				.maybeSingle()
+		: { data: null };
+	const { data: latestReceiptRow } = await supabase
+		.from('invitation_mutation_operation_receipts')
+		.select('operation_id, status, command_kind, origin, completed_steps, input_hashes')
+		.eq('invitation_id', invitationId)
+		.order('created_at', { ascending: false })
+		.limit(1)
+		.maybeSingle();
+	const toReceiptEvidence = (
+		row: Record<string, unknown> | null,
+	): ManagedBaselineReceiptEvidence | null =>
+		row && typeof row.operation_id === 'string' && typeof row.status === 'string'
+			? {
+					operationId: row.operation_id,
+					status: row.status as ManagedBaselineReceiptEvidence['status'],
+					commandKind: String(row.command_kind ?? ''),
+					origin: typeof row.origin === 'string' ? row.origin : undefined,
+					completedSteps: Array.isArray(row.completed_steps)
+						? row.completed_steps.filter((step): step is string => typeof step === 'string')
+						: [],
+					inputHashes:
+						row.input_hashes && typeof row.input_hashes === 'object'
+							? (row.input_hashes as Record<string, unknown>)
+							: undefined,
+				}
+			: null;
+	const latestReceiptEvidence = toReceiptEvidence(
+		latestReceiptRow as Record<string, unknown> | null,
+	);
 
 	// Build asset map with uploaded references
 	const assetMap = {} as UploadedAssetMap;
@@ -346,7 +396,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	const { data: existingAssetRows } = await supabase
 		.from('invitation_assets')
 		.select(
-			'id, display_name, default_alt_text, storage_path, mime_type, file_size, width, height, validation_version, original_mime_type, original_file_size, provider, provider_public_id, provider_version, secure_url, sha256, provider_metadata',
+			'id, invitation_id, display_name, default_alt_text, storage_path, mime_type, file_size, width, height, validation_version, original_mime_type, original_file_size, provider, provider_public_id, provider_version, secure_url, sha256, provider_metadata, managed_by_definition_slug, managed_source_key, managed_sha256, managed_operation_id',
 		)
 		.eq('invitation_id', invitationId)
 		.is('deleted_at', null);
@@ -498,16 +548,43 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		existingDraft?.content &&
 		(updateScope === 'content-only' || updateScope === 'assets-only')
 	) {
+		const recoveringPartial = isRecoverableManagedPartial(latestReceiptEvidence, {
+			sourceHash: release.sourceHash,
+			packageHash,
+		});
 		const prevCanonical = resolveManagedMergeBaseline({
 			managedProjection: existingProvenance?.managed_projection as
 				Record<string, unknown> | null | undefined,
-			managedAppliedAt:
-				typeof existingProvenance?.applied_at === 'string'
-					? existingProvenance.applied_at
+			appliedDraftUpdatedAt:
+				typeof existingProvenance?.applied_draft_updated_at === 'string'
+					? existingProvenance.applied_draft_updated_at
 					: null,
-			publishedContent: existingPub?.content as Record<string, unknown> | undefined,
-			publishedAt: resolvePublicationTimestamp(existingPub),
-			draftContent: existingDraft.content as Record<string, unknown>,
+			appliedOperationId,
+			appliedPublishedVersion:
+				typeof existingProvenance?.applied_published_version === 'number'
+					? existingProvenance.applied_published_version
+					: null,
+			appliedPublishedProjectionHash:
+				typeof existingProvenance?.applied_published_projection_hash === 'string'
+					? existingProvenance.applied_published_projection_hash
+					: null,
+			currentDraftUpdatedAt: recoveringPartial
+				? existingProvenance?.applied_draft_updated_at as string
+				:
+				typeof existingDraft.updated_at === 'string' ? existingDraft.updated_at : null,
+			currentPublishedVersion: recoveringPartial
+				? existingProvenance?.applied_published_version as number
+				:
+				typeof existingPub?.version === 'number' ? existingPub.version : null,
+			currentPublishedProjectionHash: recoveringPartial
+				? existingProvenance?.applied_published_projection_hash as string
+				: existingPub?.content
+				? hashPublicationProjection(existingPub.content as Record<string, unknown>)
+				: null,
+			appliedReceipt: toReceiptEvidence(appliedReceiptRow as Record<string, unknown> | null),
+			latestMutationReceipt: recoveringPartial
+				? toReceiptEvidence(appliedReceiptRow as Record<string, unknown> | null)
+				: latestReceiptEvidence,
 		});
 		const patchRes = apply3WaySemanticPatch({
 			previousCanonical: prevCanonical,
@@ -526,6 +603,105 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		proposedContent = patchRes.patchedContent;
 	} else {
 		proposedContent = packageCanonicalContent;
+	}
+	assertManagedContentSchema(proposedContent);
+	const observedStorage: Record<string, ObservedStorageState> = {};
+	for (const state of currentAssetStates) {
+		observedStorage[String(state.storagePath)] = {
+			present: typeof state.storageHash === 'string',
+			sha256: typeof state.storageHash === 'string' ? state.storageHash : null,
+		};
+	}
+	for (const row of (existingAssetRows ?? []) as Array<Record<string, unknown>>) {
+		const storageIdentity = String(row.provider_public_id || row.storage_path);
+		if (observedStorage[storageIdentity]) continue;
+		const assetUrl =
+			row.provider === 'cloudinary'
+				? String(row.secure_url ?? '')
+				: `${env.apiUrl}/storage/v1/object/public/${BUCKET}/${String(row.storage_path)}`;
+		let present = false;
+		let sha256: string | null = null;
+		try {
+			const response = await fetch(assetUrl);
+			present = response.ok;
+			if (present) {
+				sha256 = createHash('sha256')
+					.update(new Uint8Array(await response.arrayBuffer()))
+					.digest('hex');
+			}
+		} catch {
+			// An unreadable object is observed as absent; pruning retains target-owned rows.
+		}
+		observedStorage[storageIdentity] = { present, sha256 };
+	}
+	const canonicalAssets = normalizedPhotos.map((asset) => ({
+		key: asset.key,
+		displayName: asset.displayName,
+		defaultAltText: asset.alt,
+		bucket: BUCKET,
+		storagePath: `managed/${slug}/${asset.key}.webp`,
+		mimeType: asset.mimeType,
+		width: asset.width,
+		height: asset.height,
+		fileSize: asset.fileSize,
+		validationVersion: asset.validationVersion,
+		originalMimeType: asset.originalMimeType,
+		originalFileSize: asset.originalFileSize,
+		sha256: asset.sha256,
+		dataBase64: asset.dataBase64,
+	}));
+	const targetAssetRecords: TargetAssetRecord[] = (
+		(existingAssetRows ?? []) as Array<Record<string, unknown>>
+	).map((row) => ({
+		id: String(row.id),
+		invitationId: String(row.invitation_id),
+		displayName: String(row.display_name),
+		storagePath: String(row.storage_path),
+		bucket: String(row.bucket ?? BUCKET),
+		mimeType: String(row.mime_type),
+		fileSize: typeof row.file_size === 'number' ? row.file_size : null,
+		width: typeof row.width === 'number' ? row.width : null,
+		height: typeof row.height === 'number' ? row.height : null,
+		validationVersion: Number(row.validation_version ?? 0),
+		provider: typeof row.provider === 'string' ? row.provider : null,
+		providerPublicId:
+			typeof row.provider_public_id === 'string' ? row.provider_public_id : null,
+		secureUrl: typeof row.secure_url === 'string' ? row.secure_url : null,
+		managedByDefinitionSlug:
+			typeof row.managed_by_definition_slug === 'string'
+				? row.managed_by_definition_slug
+				: null,
+		managedSourceKey:
+			typeof row.managed_source_key === 'string' ? row.managed_source_key : null,
+		managedSha256: typeof row.managed_sha256 === 'string' ? row.managed_sha256 : null,
+		managedOperationId:
+			typeof row.managed_operation_id === 'string' ? row.managed_operation_id : null,
+	}));
+	const assetReconciliation = reconcileAssets({
+		canonicalAssets,
+		targetDbAssets: targetAssetRecords,
+		observedStorage,
+		policy: options.assetPolicy ?? 'missing',
+		pruneAssets: options.pruneAssets ?? false,
+		definitionSlug: release.slug,
+		targetInvitationId: invitationId,
+		referencedAssetIds: collectUploadedAssetIds(proposedContent),
+	});
+	if (assetReconciliation.blocked) {
+		throw new Error(assetReconciliation.blockReason ?? 'Asset reconciliation is blocked.');
+	}
+	const assetsToPrune = assetReconciliation.unreferencedAssets.filter(
+		(asset) =>
+			asset.plannedAction === 'PRUNE_STORAGE_AND_METADATA' ||
+			asset.plannedAction === 'PRUNE_METADATA',
+	);
+	for (const asset of assetReconciliation.unreferencedAssets) {
+		assetActions.push({
+			resource: 'invitation_assets',
+			name: asset.displayName,
+			action: asset.plannedAction.startsWith('PRUNE_') ? 'delete' : 'reuse',
+			detail: asset.reason,
+		});
 	}
 	const isInvitationIdentical = Boolean(
 		existingInv &&
@@ -706,13 +882,31 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		targetEnvironment: 'local',
 		verifiedProjectRef: 'persistent-local',
 		functionalChanges,
-		physicalDatabaseOps: { inserts: estInserts, updates: estUpdates, deletes: 0 },
-		storageOps: { uploads: estUploads, overwrites: estOverwrites, moves: 0, deletes: 0 },
+		physicalDatabaseOps: { inserts: estInserts, updates: estUpdates, deletes: assetsToPrune.length },
+		storageOps: {
+			uploads: estUploads,
+			overwrites: estOverwrites,
+			moves: 0,
+			deletes: assetsToPrune.filter((asset) => asset.plannedAction === 'PRUNE_STORAGE_AND_METADATA').length,
+		},
 		targetPreconditions,
 		sensitivityClassification: 'public',
 		executionStatus: isZeroDrift ? 'IN_SYNC' : 'PLANNED',
 	};
 	const constructedPlan = options.plan ?? currentPlan;
+	const rootOperationId = operationIdFromPlanId(constructedPlan.planId);
+	const retryParentOperationId = isRecoverableManagedPartial(latestReceiptEvidence, {
+		sourceHash: release.sourceHash,
+		packageHash,
+	})
+		? latestReceiptEvidence!.operationId
+		: undefined;
+	const activeOperationId = retryParentOperationId
+		? deriveDeterministicUuid(
+				'managed-retry',
+				`${rootOperationId}:${retryParentOperationId}`,
+			)
+		: rootOperationId;
 
 	if (isApply && options.plan) {
 		const precheck = verifyPlanPreconditions(options.plan, {
@@ -739,7 +933,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	if (!isApply || isZeroDrift) {
 		if (isApply && isZeroDrift) {
 			const { error } = await supabase.from('invitation_mutation_operation_receipts').insert({
-				operation_id: operationIdFromPlanId(constructedPlan.planId),
+				operation_id: rootOperationId,
 				invitation_id: invitationId,
 				environment: 'local',
 				project_ref: SUPABASE_PROJECT_REFS.local,
@@ -766,11 +960,11 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			completedOperations: 0,
 			databaseInserts: estInserts,
 			databaseUpdates: estUpdates,
-			databaseDeletes: 0,
+			databaseDeletes: assetsToPrune.length,
 			storageUploads: estUploads,
 			storageOverwrites: estOverwrites,
 			storageMoves: 0,
-			storageDeletes: 0,
+			storageDeletes: assetsToPrune.filter((asset) => asset.plannedAction === 'PRUNE_STORAGE_AND_METADATA').length,
 			actions,
 			functionalChanges,
 			plan: constructedPlan,
@@ -841,6 +1035,8 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		);
 		if (resource?.isPreExisting) resource.wasOverwritten = true;
 	};
+	let mutationStarted = false;
+	const completedSteps = ['target_verified'];
 
 	try {
 		// 1. Ensure Invitation Record
@@ -866,6 +1062,8 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 				.update(invMetadata)
 				.eq('id', invitationId);
 			if (error) throw error;
+			mutationStarted = true;
+			completedSteps.push('invitation_metadata_saved');
 			markOverwritten('invitation', invitationId);
 		} else if (!existingInv) {
 			const { error } = await supabase
@@ -895,6 +1093,10 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 					mimeType: norm.mimeType,
 					dryRun: false,
 				});
+				if (cRes.action === 'UPLOAD') {
+					mutationStarted = true;
+					completedSteps.push(`asset_uploaded:${norm.key}`);
+				}
 
 				const isIdentical =
 					Boolean(existing) &&
@@ -929,6 +1131,10 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 						secure_url: cRes.secureUrl,
 						sha256: norm.sha256,
 						provider_metadata: cRes.metadata,
+						managed_by_definition_slug: release.slug,
+						managed_source_key: norm.key,
+						managed_sha256: norm.sha256,
+						managed_operation_id: activeOperationId,
 					};
 
 					if (existing) {
@@ -949,6 +1155,8 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 							isPreExisting: false,
 						});
 					}
+					mutationStarted = true;
+					completedSteps.push(`asset_metadata_saved:${norm.key}`);
 				}
 			} else {
 				const storagePath =
@@ -976,20 +1184,27 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 					Number(existing.original_file_size) === norm.originalFileSize;
 
 				if (!isIdentical) {
-					const { error: uploadError } = await supabase.storage
-						.from(BUCKET)
-						.upload(storagePath, norm.bytes, {
-							contentType: norm.mimeType,
-							upsert: true,
-						});
-					if (uploadError) throw uploadError;
-					if (existing) markOverwritten('storage_object', storagePath);
-					if (!existing)
-						trackedResources.push({
-							type: 'storage_object',
-							id: storagePath,
-							isPreExisting: false,
-						});
+					const binaryAlreadyMatches = storageHash === norm.imageHash;
+					if (!binaryAlreadyMatches) {
+						const { error: uploadError } = await supabase.storage
+							.from(BUCKET)
+							.upload(storagePath, norm.bytes, {
+								contentType: norm.mimeType,
+								upsert: true,
+							});
+						if (uploadError) throw uploadError;
+						mutationStarted = true;
+						completedSteps.push(`asset_uploaded:${norm.key}`);
+						if (existing) markOverwritten('storage_object', storagePath);
+						if (!existing)
+							trackedResources.push({
+								type: 'storage_object',
+								id: storagePath,
+								isPreExisting: false,
+							});
+					} else if (!existing) {
+						completedSteps.push(`asset_orphan_adopted:${norm.key}`);
+					}
 
 					const assetMetadata = {
 						invitation_id: invitationId,
@@ -1007,6 +1222,10 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 						provider: 'supabase',
 						provider_public_id: storagePath,
 						sha256: norm.sha256,
+						managed_by_definition_slug: release.slug,
+						managed_source_key: norm.key,
+						managed_sha256: norm.sha256,
+						managed_operation_id: activeOperationId,
 					};
 
 					if (existing) {
@@ -1015,6 +1234,8 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 							.update(assetMetadata)
 							.eq('id', assetRef.assetId);
 						if (error) throw error;
+						mutationStarted = true;
+						completedSteps.push(`asset_metadata_saved:${norm.key}`);
 						markOverwritten('invitation_asset', assetRef.assetId);
 					} else {
 						const { error } = await supabase
@@ -1082,6 +1303,41 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 					id: newId,
 					isPreExisting: false,
 				});
+			}
+		}
+
+		// 3b. Apply only reviewed, ownership-safe prune actions after the resulting
+		// draft is durable. Missing Storage objects converge through metadata-only cleanup.
+		for (const planned of assetsToPrune) {
+			const record = targetAssetRecords.find((asset) => asset.id === planned.targetAssetId);
+			if (!record || record.managedByDefinitionSlug !== release.slug) {
+				throw new Error('Managed asset ownership changed after planning.');
+			}
+			if (planned.plannedAction === 'PRUNE_STORAGE_AND_METADATA') {
+				const { error: removeError } = await supabase.storage
+					.from(record.bucket)
+					.remove([record.storagePath]);
+				if (removeError) throw removeError;
+				mutationStarted = true;
+				completedSteps.push(`asset_storage_pruned:${record.id}`);
+				const verifyUrl = `${env.apiUrl}/storage/v1/object/public/${record.bucket}/${record.storagePath}`;
+				if (await isReachable(verifyUrl)) {
+					throw new Error(`Storage prune verification failed for managed asset ${record.id}.`);
+				}
+			}
+			const { data: prunedRow, error: pruneMetadataError } = await supabase
+				.from('invitation_assets')
+				.update({ deleted_at: new Date().toISOString() })
+				.eq('id', record.id)
+				.eq('invitation_id', invitationId)
+				.eq('managed_by_definition_slug', release.slug)
+				.is('deleted_at', null)
+				.select('id')
+				.maybeSingle();
+			if (pruneMetadataError) throw pruneMetadataError;
+			if (prunedRow) {
+				mutationStarted = true;
+				completedSteps.push(`asset_metadata_pruned:${record.id}`);
 			}
 		}
 
@@ -1327,6 +1583,9 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 				asset_manifest_hash: release.assetManifestHash,
 				managed_projection: proposedContent,
 				applied_draft_updated_at: appliedDraftUpdatedAt,
+				applied_operation_id: activeOperationId,
+				applied_published_version: finalVersion,
+				applied_published_projection_hash: hashPublicationProjection(proposedContent),
 				applied_at: new Date().toISOString(),
 			});
 		if (provenanceError) throw provenanceError;
@@ -1342,7 +1601,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		const { error: receiptError } = await supabase
 			.from('invitation_mutation_operation_receipts')
 			.insert({
-				operation_id: operationIdFromPlanId(constructedPlan.planId),
+				operation_id: activeOperationId,
 				invitation_id: invitationId,
 				environment: 'local',
 				project_ref: SUPABASE_PROJECT_REFS.local,
@@ -1353,12 +1612,13 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 				expected_state: constructedPlan.targetPreconditions,
 				status: 'applied',
 				completed_steps: [
-					'target_verified',
+					...completedSteps,
 					'content_applied',
 					'published',
 					'provenance_recorded',
 				],
 				result: { planId: constructedPlan.planId, publishedVersion: finalVersion },
+				retry_of_operation_id: retryParentOperationId ?? null,
 			});
 		if (receiptError) throw receiptError;
 
@@ -1374,11 +1634,11 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			completedOperations: plannedOperations,
 			databaseInserts: estInserts,
 			databaseUpdates: estUpdates,
-			databaseDeletes: 0,
+			databaseDeletes: assetsToPrune.length,
 			storageUploads: estUploads,
 			storageOverwrites: estOverwrites,
 			storageMoves: 0,
-			storageDeletes: 0,
+			storageDeletes: assetsToPrune.filter((asset) => asset.plannedAction === 'PRUNE_STORAGE_AND_METADATA').length,
 			actions,
 			functionalChanges,
 			plan: constructedPlan,
@@ -1390,6 +1650,37 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			},
 		};
 	} catch (err) {
+		if (mutationStarted) {
+			const { error: partialReceiptError } = await supabase
+				.from('invitation_mutation_operation_receipts')
+				.insert({
+					operation_id: activeOperationId,
+					invitation_id: invitationId,
+					environment: 'local',
+					project_ref: SUPABASE_PROJECT_REFS.local,
+					actor_type: 'operator',
+					origin: 'managed_cli_local',
+					command_kind: 'managed_invitation_apply',
+					input_hashes: { sourceHash: release.sourceHash, packageHash },
+					expected_state: constructedPlan.targetPreconditions,
+					status: 'partial',
+					completed_steps: completedSteps,
+					result: { planId: constructedPlan.planId },
+					retry_of_operation_id: retryParentOperationId ?? null,
+					sanitized_error: { message: 'managed_apply_failed_after_durable_mutation' },
+				});
+			if (partialReceiptError && partialReceiptError.code !== '23505') {
+				console.error('Unable to record partial managed operation receipt.');
+			}
+			const detailedError = new Error(
+				`[ERROR — ESTADO PARCIAL REANUDABLE] ${err instanceof Error ? err.message : String(err)}`,
+				{ cause: err },
+			);
+			(detailedError as unknown as Record<string, unknown>).recoveryStatus =
+				'ERROR — ESTADO PARCIAL REANUDABLE';
+			(detailedError as unknown as Record<string, unknown>).completedSteps = completedSteps;
+			throw detailedError;
+		}
 		const mutatedResources = trackedResources.filter(
 			(resource) => !resource.isPreExisting || resource.wasOverwritten,
 		);

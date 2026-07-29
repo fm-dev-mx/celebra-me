@@ -221,4 +221,113 @@ describe('apply3WaySemanticPatch', () => {
 		});
 		expect(listDriftConflicts(result.deltas)).toEqual([]);
 	});
+
+	it.each([
+		['package-only addition', {}, { hero: { label: 'Paquete' } }, {}, { hero: { label: 'Paquete' } }],
+		['target-only addition', {}, {}, { hero: { label: 'Destino' } }, { hero: { label: 'Destino' } }],
+		[
+			'identical concurrent addition',
+			{},
+			{ hero: { label: 'Igual' } },
+			{ hero: { label: 'Igual' } },
+			{ hero: { label: 'Igual' } },
+		],
+	] as const)('%s', (_name, previousCanonical, currentCanonical, currentTarget, expected) => {
+		const result = apply3WaySemanticPatch({
+			previousCanonical,
+			currentCanonical,
+			currentTarget,
+			scope: 'content-only',
+		});
+		expect(result.blocked).toBe(false);
+		expect(result.patchedContent).toEqual(expected);
+	});
+
+	it('reports differing concurrent additions as explicit drift', () => {
+		const result = apply3WaySemanticPatch({
+			previousCanonical: {},
+			currentCanonical: { hero: { label: 'Paquete' } },
+			currentTarget: { hero: { label: 'Destino' } },
+			scope: 'content-only',
+		});
+		expect(result.blocked).toBe(true);
+		expect(result.deltas).toEqual(
+			expect.arrayContaining([expect.objectContaining({ path: 'hero', status: 'DRIFT' })]),
+		);
+	});
+
+	it('structurally deletes a package-owned property without writing undefined', () => {
+		const result = apply3WaySemanticPatch({
+			previousCanonical: { hero: { label: 'Remove', name: 'Keep' } },
+			currentCanonical: { hero: { name: 'Keep' } },
+			currentTarget: { hero: { label: 'Remove', name: 'Keep' } },
+			scope: 'content-only',
+		});
+		expect(result.blocked).toBe(false);
+		expect(result.patchedContent).toEqual({ hero: { name: 'Keep' } });
+		expect(result.operations).toContainEqual({ kind: 'remove', path: ['hero', 'label'] });
+		expect(Object.hasOwn(result.patchedContent.hero as object, 'label')).toBe(false);
+	});
+
+	it('preserves explicit null as distinct from structural deletion', () => {
+		const result = apply3WaySemanticPatch({
+			previousCanonical: { hero: { label: 'Remove' } },
+			currentCanonical: { hero: { label: null } },
+			currentTarget: { hero: { label: 'Remove' } },
+			scope: 'content-only',
+		});
+		expect(result.patchedContent).toEqual({ hero: { label: null } });
+		expect(result.operations).toContainEqual({
+			kind: 'replace',
+			path: ['hero', 'label'],
+			value: null,
+		});
+	});
+
+	it('deletes a complete optional section structurally', () => {
+		const result = apply3WaySemanticPatch({
+			previousCanonical: { quote: { text: 'Antes' }, hero: { name: 'Ana' } },
+			currentCanonical: { hero: { name: 'Ana' } },
+			currentTarget: { quote: { text: 'Antes' }, hero: { name: 'Ana' } },
+			scope: 'content-only',
+		});
+		expect(result.patchedContent).toEqual({ hero: { name: 'Ana' } });
+		expect(result.operations).toContainEqual({ kind: 'remove', path: ['quote'] });
+	});
+
+	it.each([
+		[
+			'object-array contraction',
+			[{ id: 'a' }, { id: 'b' }, { id: 'c' }],
+			[{ id: 'a' }, { id: 'c' }],
+		],
+		['primitive-array contraction', ['a', 'b', 'c'], ['a', 'c']],
+	] as const)('%s uses an explicit remove operation', (_name, previousItems, currentItems) => {
+		const result = apply3WaySemanticPatch({
+			previousCanonical: { gallery: { items: previousItems } },
+			currentCanonical: { gallery: { items: currentItems } },
+			currentTarget: { gallery: { items: previousItems } },
+			scope: 'content-only',
+		});
+		expect(result.blocked).toBe(false);
+		expect((result.patchedContent.gallery as { items: unknown[] }).items).toEqual(currentItems);
+		expect(result.operations).toContainEqual({
+			kind: 'remove',
+			path: ['gallery', 'items', 1],
+		});
+	});
+
+	it('reports target modification versus package deletion as drift', () => {
+		const result = apply3WaySemanticPatch({
+			previousCanonical: { quote: { text: 'Base' } },
+			currentCanonical: {},
+			currentTarget: { quote: { text: 'Editado' } },
+			scope: 'content-only',
+		});
+		expect(result.blocked).toBe(true);
+		expect(result.patchedContent).toEqual({ quote: { text: 'Editado' } });
+		expect(result.deltas).toContainEqual(
+			expect.objectContaining({ path: 'quote', operation: 'remove', status: 'DRIFT' }),
+		);
+	});
 });

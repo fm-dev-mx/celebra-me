@@ -188,6 +188,7 @@ describe('asset-reconciliation engine', () => {
 	it('retains UNREFERENCED assets by default and prunes only with pruneAssets option', () => {
 		const unreferencedRecord: TargetAssetRecord = {
 			id: '99999999-9999-9999-9999-999999999999',
+			invitationId: '3d14155c-5c1e-4b47-a87a-0aa8af25e795',
 			displayName: 'Old Photo',
 			storagePath: 'managed/romina-rios-chaparro/old.webp',
 			bucket: 'invitation-assets',
@@ -196,6 +197,11 @@ describe('asset-reconciliation engine', () => {
 			width: 500,
 			height: 500,
 			validationVersion: 1,
+			provider: 'supabase',
+			managedByDefinitionSlug: 'romina-rios-chaparro',
+			managedSourceKey: 'old-photo',
+			managedSha256: 'c'.repeat(64),
+			managedOperationId: '11111111-1111-4111-8111-111111111111',
 		};
 
 		const resultRetain = reconcileAssets({
@@ -223,13 +229,115 @@ describe('asset-reconciliation engine', () => {
 					present: true,
 					sha256: mockCanonicalAsset.sha256,
 				},
+				'managed/romina-rios-chaparro/old.webp': {
+					present: true,
+					sha256: 'c'.repeat(64),
+				},
 			},
 			policy: 'missing',
 			pruneAssets: true,
+			definitionSlug: 'romina-rios-chaparro',
+			targetInvitationId: '3d14155c-5c1e-4b47-a87a-0aa8af25e795',
+			referencedAssetIds: new Set(),
 		});
 
 		expect(resultPrune.summary.unreferenced).toBe(1);
 		expect(resultPrune.summary.plannedDeletes).toBe(1);
-		expect(resultPrune.unreferencedAssets[0]?.plannedAction).toBe('PRUNE');
+		expect(resultPrune.unreferencedAssets[0]?.plannedAction).toBe(
+			'PRUNE_STORAGE_AND_METADATA',
+		);
+	});
+
+	it('preserves unmanaged assets even when pruning is requested', () => {
+		const unmanaged: TargetAssetRecord = {
+			...mockTargetDbRecord,
+			id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+			displayName: 'Host upload',
+			storagePath: 'invitations/host-owned.webp',
+			invitationId: '3d14155c-5c1e-4b47-a87a-0aa8af25e795',
+			managedByDefinitionSlug: null,
+		};
+		const result = reconcileAssets({
+			canonicalAssets: [mockCanonicalAsset],
+			targetDbAssets: [mockTargetDbRecord, unmanaged],
+			observedStorage: {
+				[mockTargetDbRecord.storagePath]: { present: true, sha256: mockCanonicalAsset.sha256 },
+				[unmanaged.storagePath]: { present: true, sha256: 'd'.repeat(64) },
+			},
+			policy: 'missing',
+			pruneAssets: true,
+			definitionSlug: 'romina-rios-chaparro',
+			targetInvitationId: '3d14155c-5c1e-4b47-a87a-0aa8af25e795',
+		});
+		expect(result.unreferencedAssets).toContainEqual(
+			expect.objectContaining({
+				targetAssetId: unmanaged.id,
+				classification: 'TARGET_OWNED',
+				plannedAction: 'RETAIN',
+			}),
+		);
+	});
+
+	it('prunes stale managed metadata without scheduling a Storage delete', () => {
+		const stale: TargetAssetRecord = {
+			...mockTargetDbRecord,
+			id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+			invitationId: '3d14155c-5c1e-4b47-a87a-0aa8af25e795',
+			displayName: 'Stale',
+			storagePath: 'managed/romina-rios-chaparro/stale.webp',
+			managedByDefinitionSlug: 'romina-rios-chaparro',
+			managedSourceKey: 'stale',
+			managedSha256: 'e'.repeat(64),
+			managedOperationId: '11111111-1111-4111-8111-111111111111',
+		};
+		const result = reconcileAssets({
+			canonicalAssets: [mockCanonicalAsset],
+			targetDbAssets: [mockTargetDbRecord, stale],
+			observedStorage: {
+				[mockTargetDbRecord.storagePath]: { present: true, sha256: mockCanonicalAsset.sha256 },
+				[stale.storagePath]: { present: false, sha256: null },
+			},
+			pruneAssets: true,
+			definitionSlug: 'romina-rios-chaparro',
+			targetInvitationId: stale.invitationId,
+		});
+		expect(result.unreferencedAssets).toContainEqual(
+			expect.objectContaining({
+				targetAssetId: stale.id,
+				classification: 'STALE_METADATA',
+				plannedAction: 'PRUNE_METADATA',
+			}),
+		);
+	});
+
+	it('retains a managed asset still referenced by resulting content', () => {
+		const referenced: TargetAssetRecord = {
+			...mockTargetDbRecord,
+			id: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+			invitationId: '3d14155c-5c1e-4b47-a87a-0aa8af25e795',
+			displayName: 'Referenced old asset',
+			managedByDefinitionSlug: 'romina-rios-chaparro',
+			managedSourceKey: 'old',
+			managedSha256: 'f'.repeat(64),
+			managedOperationId: '11111111-1111-4111-8111-111111111111',
+		};
+		const result = reconcileAssets({
+			canonicalAssets: [mockCanonicalAsset],
+			targetDbAssets: [mockTargetDbRecord, referenced],
+			observedStorage: {
+				[mockTargetDbRecord.storagePath]: { present: true, sha256: mockCanonicalAsset.sha256 },
+			},
+			pruneAssets: true,
+			definitionSlug: 'romina-rios-chaparro',
+			targetInvitationId: referenced.invitationId,
+			referencedAssetIds: new Set([referenced.id]),
+		});
+		expect(result.unreferencedAssets).toContainEqual(
+			expect.objectContaining({
+				targetAssetId: referenced.id,
+				classification: 'STILL_REFERENCED',
+				plannedAction: 'RETAIN',
+			}),
+		);
 	});
 });

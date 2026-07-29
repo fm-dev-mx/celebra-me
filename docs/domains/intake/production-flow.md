@@ -75,10 +75,18 @@ Invitation tooling has read-only service-role access to guest confirmation and g
 RSVP changes remain behind RSVP services/RPCs. Permanent deletion uses the protected lifecycle RPC,
 and managed compensation refuses to delete events containing guests or claim codes.
 
-Phase 1 deliberately defers structural deletion, asset pruning, stale baseline repair, Auth
-password/alias partial-success internals, final alias normalization, publication/provenance partial
-repair, asset orphan recovery, metadata reopen/restore atomicity, CI command correction, and
-remaining mechanism-specific regression coverage to Goal 3.
+Managed reconciliation uses explicit add/replace/remove operations. A package-only deletion may
+remove baseline-owned content; target-only changes are preserved; divergent additions, changes, or
+delete-vs-edit races become explicit drift. Automatic merge requires provenance plus its applied
+receipt, exact draft revision, and exact published version/hash. Missing, legacy, partial, or stale
+evidence fails closed, except a matching partial managed operation may enter the supported resume
+path and is still reconciled against the prior verified ancestor.
+
+`--prune-assets` removes only assets explicitly owned by the same definition, absent from the
+package, and unreferenced by the resulting content. The reviewed plan records Storage and metadata
+deletes. Missing objects converge through metadata-only cleanup; target-owned assets are retained.
+Retries verify destination and SHA-256, adopt matching orphan uploads, and append a linked operation
+receipt instead of blindly uploading or deleting again.
 
 - `--source-dir` (or no package path) builds from the **current** managed definition.
 - `--package <path>` is an immutable snapshot. After any definition/content change (copy, seal,

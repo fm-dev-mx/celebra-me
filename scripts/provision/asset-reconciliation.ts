@@ -6,7 +6,10 @@ export type AssetClassification =
 	| 'MISSING'
 	| 'CONTENT_MISMATCH'
 	| 'INVALID'
-	| 'UNREFERENCED';
+	| 'UNREFERENCED'
+	| 'TARGET_OWNED'
+	| 'STILL_REFERENCED'
+	| 'STALE_METADATA';
 
 export type PlannedAssetAction =
 	| 'REUSE'
@@ -14,13 +17,15 @@ export type PlannedAssetAction =
 	| 'UPLOAD'
 	| 'OVERWRITE'
 	| 'RETAIN'
-	| 'PRUNE'
+	| 'PRUNE_STORAGE_AND_METADATA'
+	| 'PRUNE_METADATA'
 	| 'BLOCK';
 
 export type AssetPolicy = 'verify' | 'missing' | 'sync' | 'preserve';
 
 export interface TargetAssetRecord {
 	id: string;
+	invitationId?: string;
 	displayName: string;
 	storagePath: string;
 	bucket: string;
@@ -38,6 +43,10 @@ export interface TargetAssetRecord {
 	secureUrl?: string | null;
 	sha256?: string | null;
 	providerMetadata?: Record<string, unknown> | null;
+	managedByDefinitionSlug?: string | null;
+	managedSourceKey?: string | null;
+	managedSha256?: string | null;
+	managedOperationId?: string | null;
 }
 
 export interface ObservedStorageState {
@@ -93,6 +102,25 @@ export interface AssetReconciliationOptions {
 	observedStorage: Record<string, ObservedStorageState>;
 	policy?: AssetPolicy;
 	pruneAssets?: boolean;
+	definitionSlug?: string;
+	targetInvitationId?: string;
+	referencedAssetIds?: ReadonlySet<string>;
+}
+
+export function collectUploadedAssetIds(content: unknown): Set<string> {
+	const ids = new Set<string>();
+	const visit = (value: unknown): void => {
+		if (!value || typeof value !== 'object') return;
+		if (Array.isArray(value)) {
+			value.forEach(visit);
+			return;
+		}
+		const record = value as Record<string, unknown>;
+		if (record.type === 'uploaded' && typeof record.assetId === 'string') ids.add(record.assetId);
+		Object.values(record).forEach(visit);
+	};
+	visit(content);
+	return ids;
 }
 
 export function parseAssetPolicy(raw?: string): AssetPolicy {
@@ -316,23 +344,79 @@ function reconcileCanonicalAsset(
 	return reconcileBinaryPresentHashMismatch(canonical, dbRecord, storageState, targetPath, policy);
 }
 
+// eslint-disable-next-line complexity -- Prune classification enumerates ownership, identity, reference, provider, and DB/Storage asymmetry gates.
 function reconcileUnreferencedAssets(
 	canonicalAssets: InvitationPackageAsset[],
 	targetDbAssets: TargetAssetRecord[],
 	observedStorage: Record<string, ObservedStorageState>,
 	pruneAssets: boolean,
-): { unreferencedAssets: ReconciledAsset[]; deletesCount: number } {
-	const canonicalDisplayNames = new Set(canonicalAssets.map((a) => a.displayName));
+	definitionSlug?: string,
+	targetInvitationId?: string,
+	referencedAssetIds: ReadonlySet<string> = new Set(),
+): { unreferencedAssets: ReconciledAsset[]; deletesCount: number; blockedReason?: string } {
+	const canonicalKeys = new Set(canonicalAssets.map((asset) => asset.key));
+	const canonicalDisplayNames = new Set(canonicalAssets.map((asset) => asset.displayName));
+	const canonicalPaths = new Set(canonicalAssets.map((asset) => asset.storagePath));
 	const unreferencedAssets: ReconciledAsset[] = [];
 	let deletesCount = 0;
+	if (pruneAssets && (!definitionSlug || !targetInvitationId)) {
+		return {
+			unreferencedAssets,
+			deletesCount,
+			blockedReason: 'Asset pruning requires verified definition and target invitation identity.',
+		};
+	}
 
 	for (const dbRecord of targetDbAssets) {
-		if (!canonicalDisplayNames.has(dbRecord.displayName)) {
-			const storageState = observedStorage[dbRecord.storagePath] ?? { present: true, sha256: null };
-			const plannedAction: PlannedAssetAction = pruneAssets ? 'PRUNE' : 'RETAIN';
-			if (pruneAssets) deletesCount++;
+		const matchesCanonicalAsset =
+			canonicalDisplayNames.has(dbRecord.displayName) ||
+			canonicalPaths.has(dbRecord.storagePath) ||
+			Boolean(dbRecord.managedSourceKey && canonicalKeys.has(dbRecord.managedSourceKey));
+		if (matchesCanonicalAsset) continue;
+		const managedByThisDefinition =
+			Boolean(definitionSlug) && dbRecord.managedByDefinitionSlug === definitionSlug;
+		const storageState = observedStorage[dbRecord.providerPublicId || dbRecord.storagePath] ?? {
+			present: false,
+			sha256: null,
+		};
+		const targetMatches = !dbRecord.invitationId || dbRecord.invitationId === targetInvitationId;
+		const stillReferenced = referencedAssetIds.has(dbRecord.id);
+		let classification: AssetClassification = 'UNREFERENCED';
+		let plannedAction: PlannedAssetAction = 'RETAIN';
+		let reasonCode = 'ASSET_UNREFERENCED_RETAIN';
+		let reason = `El archivo "${dbRecord.displayName}" se conservará.`;
 
-			unreferencedAssets.push({
+		if (!managedByThisDefinition) {
+			classification = 'TARGET_OWNED';
+			reasonCode = 'ASSET_TARGET_OWNED_RETAIN';
+			reason = `El archivo "${dbRecord.displayName}" no pertenece a esta definición administrada.`;
+		} else if (!targetMatches) {
+			classification = 'INVALID';
+			plannedAction = 'BLOCK';
+			reasonCode = 'ASSET_TARGET_IDENTITY_MISMATCH';
+			reason = `El archivo "${dbRecord.displayName}" pertenece a otra invitación.`;
+		} else if (stillReferenced) {
+			classification = 'STILL_REFERENCED';
+			reasonCode = 'ASSET_STILL_REFERENCED_RETAIN';
+			reason = `El archivo "${dbRecord.displayName}" sigue referenciado por el estado resultante.`;
+		} else if (pruneAssets && dbRecord.provider && dbRecord.provider !== 'supabase') {
+			classification = 'INVALID';
+			plannedAction = 'BLOCK';
+			reasonCode = 'ASSET_PROVIDER_PRUNE_UNSUPPORTED';
+			reason = `El proveedor de "${dbRecord.displayName}" no admite poda administrada automática.`;
+		} else if (pruneAssets) {
+			plannedAction = storageState.present ? 'PRUNE_STORAGE_AND_METADATA' : 'PRUNE_METADATA';
+			classification = storageState.present ? 'UNREFERENCED' : 'STALE_METADATA';
+			reasonCode = storageState.present
+				? 'ASSET_MANAGED_UNREFERENCED_PRUNE'
+				: 'ASSET_STALE_METADATA_PRUNE';
+			reason = storageState.present
+				? `El archivo administrado "${dbRecord.displayName}" no está referenciado y se eliminará de Storage y DB.`
+				: `Los metadatos administrados de "${dbRecord.displayName}" apuntan a un objeto ausente y se eliminarán.`;
+			deletesCount++;
+		}
+
+		unreferencedAssets.push({
 				key: dbRecord.storagePath.split('/').at(-1)?.replace(/\.[^.]+$/, '') ?? dbRecord.displayName,
 				displayName: dbRecord.displayName,
 				canonicalHash: '',
@@ -340,22 +424,25 @@ function reconcileUnreferencedAssets(
 				canonicalMimeType: dbRecord.mimeType,
 				targetStoragePath: dbRecord.storagePath,
 				targetAssetId: dbRecord.id,
-				classification: 'UNREFERENCED',
+				classification,
 				plannedAction,
-				reasonCode: pruneAssets ? 'ASSET_UNREFERENCED_PRUNE' : 'ASSET_UNREFERENCED_RETAIN',
-				reason: pruneAssets
-					? `El archivo "${dbRecord.displayName}" no pertenece al paquete canónico y se eliminará con --prune-assets.`
-					: `El archivo "${dbRecord.displayName}" no pertenece al paquete canónico y se conservará.`,
+				reasonCode,
+				reason,
 				observedHash: storageState.sha256,
 				observedSize: dbRecord.fileSize,
 			});
-		}
 	}
-	return { unreferencedAssets, deletesCount };
+	const blocked = unreferencedAssets.find((asset) => asset.plannedAction === 'BLOCK');
+	return {
+		unreferencedAssets,
+		deletesCount,
+		blockedReason: blocked?.reason,
+	};
 }
 
 function reconcileCanonicalList(
 	canonicalAssets: InvitationPackageAsset[],
+	targetDbByManagedKey: Map<string, TargetAssetRecord>,
 	targetDbByDisplayName: Map<string, TargetAssetRecord>,
 	targetDbByPath: Map<string, TargetAssetRecord>,
 	observedStorage: Record<string, ObservedStorageState>,
@@ -368,7 +455,9 @@ function reconcileCanonicalList(
 
 	for (const canonical of canonicalAssets) {
 		const dbRecord =
-			targetDbByDisplayName.get(canonical.displayName) ?? targetDbByPath.get(canonical.storagePath);
+			targetDbByManagedKey.get(canonical.key) ??
+			targetDbByDisplayName.get(canonical.displayName) ??
+			targetDbByPath.get(canonical.storagePath);
 		const targetPath = dbRecord?.storagePath ?? canonical.storagePath;
 		const storageState = observedStorage[targetPath] ?? observedStorage[canonical.storagePath] ?? {
 			present: false,
@@ -408,24 +497,35 @@ export function reconcileAssets(
 
 	const targetDbByDisplayName = new Map<string, TargetAssetRecord>();
 	const targetDbByPath = new Map<string, TargetAssetRecord>();
+	const targetDbByManagedKey = new Map<string, TargetAssetRecord>();
 	for (const record of targetDbAssets) {
 		targetDbByDisplayName.set(record.displayName, record);
 		targetDbByPath.set(record.storagePath, record);
+		if (
+			record.managedSourceKey &&
+			(!options.definitionSlug || record.managedByDefinitionSlug === options.definitionSlug)
+		) {
+			targetDbByManagedKey.set(record.managedSourceKey, record);
+		}
 	}
 
 	const { reconciledAssets, isBlocked, overallBlockReason, counts } = reconcileCanonicalList(
 		canonicalAssets,
+		targetDbByManagedKey,
 		targetDbByDisplayName,
 		targetDbByPath,
 		observedStorage,
 		policy,
 	);
 
-	const { unreferencedAssets, deletesCount } = reconcileUnreferencedAssets(
+	const { unreferencedAssets, deletesCount, blockedReason } = reconcileUnreferencedAssets(
 		canonicalAssets,
 		targetDbAssets,
 		observedStorage,
 		pruneAssets,
+		options.definitionSlug,
+		options.targetInvitationId,
+		options.referencedAssetIds,
 	);
 
 	return {
@@ -447,7 +547,7 @@ export function reconcileAssets(
 			plannedReuses: counts.reuses,
 			plannedDeletes: deletesCount,
 		},
-		blocked: isBlocked,
-		blockReason: overallBlockReason,
+		blocked: isBlocked || Boolean(blockedReason),
+		blockReason: overallBlockReason ?? blockedReason,
 	};
 }

@@ -35,6 +35,9 @@ metadata, owner, and login alias are seeds that become target-owned. Drafts/asse
 published content is publication-owned, event linkage is invitation-managed, and guest
 confirmations/audit are RSVP-owned.
 
+Structural reconciliation distinguishes absent, `null`, unchanged, and removed values. Managed
+assets carry explicit definition/key/hash/operation ownership; only reviewed, unreferenced assets
+with matching ownership are pruneable.
 Auth password and managed-alias operations mark external success with an operation ID so downstream
 audit/receipt repair cannot silently repeat the Auth mutation.
 

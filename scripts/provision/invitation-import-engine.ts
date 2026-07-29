@@ -37,8 +37,9 @@ import {
 	buildResourceActions,
 } from './promotion-comparison.ts';
 import {
+	isRecoverableManagedPartial,
 	resolveManagedMergeBaseline,
-	resolvePublicationTimestamp,
+	type ManagedBaselineReceiptEvidence,
 } from './managed-merge-baseline.ts';
 import { materializeAssetReferences } from './normalized-invitation-release.ts';
 import type { UploadedAssetMap } from './invitations/invitation-definition.ts';
@@ -52,6 +53,7 @@ import {
 } from './invitation-update-plan.ts';
 import {
 	reconcileAssets,
+	collectUploadedAssetIds,
 	type AssetPolicy,
 	type TargetAssetRecord,
 	type ObservedStorageState,
@@ -66,6 +68,7 @@ import {
 import { operationIdFromPlanId } from '../../src/lib/intake/mutations/outcome.ts';
 import { sortPathPolicy } from './conflict-resolutions.ts';
 import { verifySupabaseApiCredential } from './supabase-credential-verification.ts';
+import { assertManagedContentSchema } from './managed-content-validation.ts';
 
 export interface ImportEngineOptions {
 	packagePath?: string;
@@ -88,6 +91,10 @@ export interface ResourcePlanAction {
 	name: string;
 	action: 'create' | 'replace' | 'reuse' | 'skip' | 'delete';
 	detail: string;
+}
+
+function sqlTextArray(values: readonly string[]): string {
+	return `array[${values.map((value) => sqlLiteral(value)).join(',')}]::text[]`;
 }
 
 export interface ImportEngineResult {
@@ -282,6 +289,7 @@ function resolveTargetIdentity(
 	});
 }
 
+// eslint-disable-next-line complexity -- Maps nullable provider and Phase 2 ownership columns from an untyped psql row.
 function fetchTargetDbAssets(
 	targetDbUrl?: string,
 	targetInvitationId?: string,
@@ -289,7 +297,7 @@ function fetchTargetDbAssets(
 	const targetDbAssets: TargetAssetRecord[] = [];
 	if (!targetDbUrl || !targetInvitationId) return targetDbAssets;
 
-	const assetsQuery = `select id::text, display_name, storage_path, bucket, mime_type, width, height, file_size, validation_version, original_mime_type, original_file_size, default_alt_text, provider, provider_public_id, provider_version, secure_url, sha256, provider_metadata from public.invitation_assets where invitation_id = '${targetInvitationId}'::uuid and deleted_at is null`;
+	const assetsQuery = `select id::text, invitation_id::text, display_name, storage_path, bucket, mime_type, width, height, file_size, validation_version, original_mime_type, original_file_size, default_alt_text, provider, provider_public_id, provider_version, secure_url, sha256, provider_metadata, managed_by_definition_slug, managed_source_key, managed_sha256, managed_operation_id::text from public.invitation_assets where invitation_id = '${targetInvitationId}'::uuid and deleted_at is null`;
 	const assetsResult = runPsql(`select json_agg(t) from (${assetsQuery}) t;`, targetDbUrl, {
 		tuplesOnly: true,
 		throwOnError: false,
@@ -298,6 +306,7 @@ function fetchTargetDbAssets(
 		if (typeof row.storage_path === 'string') {
 			targetDbAssets.push({
 				id: row.id as string,
+				invitationId: row.invitation_id as string,
 				displayName: row.display_name as string,
 				storagePath: row.storage_path as string,
 				bucket: (row.bucket as string) ?? 'invitation-assets',
@@ -316,6 +325,10 @@ function fetchTargetDbAssets(
 				secureUrl: (row.secure_url as string) ?? null,
 				sha256: (row.sha256 as string) ?? null,
 				providerMetadata: (row.provider_metadata as Record<string, unknown>) ?? null,
+				managedByDefinitionSlug: (row.managed_by_definition_slug as string) ?? null,
+				managedSourceKey: (row.managed_source_key as string) ?? null,
+				managedSha256: (row.managed_sha256 as string) ?? null,
+				managedOperationId: (row.managed_operation_id as string) ?? null,
 			});
 		}
 	}
@@ -386,10 +399,12 @@ async function scanAssetStatus(
 	targetInvitationId?: string,
 	policy: AssetPolicy = 'missing',
 	pruneAssets = false,
+	definitionSlug?: string,
+	resultingContent?: Record<string, unknown>,
 ): Promise<{
 	assetsToUpload: InvitationPackageAsset[];
 	assetsToUpsertDbOnly: InvitationPackageAsset[];
-	assetsToDelete: TargetAssetRecord[];
+	assetsToDelete: Array<{ record: TargetAssetRecord; deleteStorage: boolean }>;
 	assetActions: ResourcePlanAction[];
 	verifiedAssetHashes: Record<string, string>;
 	assetStateHash: string;
@@ -408,6 +423,9 @@ async function scanAssetStatus(
 		observedStorage,
 		policy,
 		pruneAssets,
+		definitionSlug,
+		targetInvitationId,
+		referencedAssetIds: collectUploadedAssetIds(resultingContent),
 	});
 
 	if (reconciliation.blocked) {
@@ -419,7 +437,7 @@ async function scanAssetStatus(
 
 	const assetsToUpload: InvitationPackageAsset[] = [];
 	const assetsToUpsertDbOnly: InvitationPackageAsset[] = [];
-	const assetsToDelete: TargetAssetRecord[] = [];
+	const assetsToDelete: Array<{ record: TargetAssetRecord; deleteStorage: boolean }> = [];
 	const assetActions: ResourcePlanAction[] = [];
 
 	const canonicalMap = new Map(assets.map((a) => [a.key, a]));
@@ -455,16 +473,27 @@ async function scanAssetStatus(
 	}
 
 	for (const item of reconciliation.unreferencedAssets) {
-		if (item.plannedAction === 'PRUNE') {
+		if (
+			item.plannedAction === 'PRUNE_STORAGE_AND_METADATA' ||
+			item.plannedAction === 'PRUNE_METADATA'
+		) {
 			const targetRecord = targetDbAssets.find(
 				(r) => r.storagePath === item.targetStoragePath,
 			);
-			if (targetRecord) assetsToDelete.push(targetRecord);
+			if (targetRecord) {
+				assetsToDelete.push({
+					record: targetRecord,
+					deleteStorage: item.plannedAction === 'PRUNE_STORAGE_AND_METADATA',
+				});
+			}
 			assetActions.push({
 				resource: 'invitation_assets',
 				name: item.displayName,
 				action: 'delete',
-				detail: `Delete unreferenced asset with --prune-assets`,
+				detail:
+					item.plannedAction === 'PRUNE_STORAGE_AND_METADATA'
+						? 'Delete reviewed managed asset from Storage and DB'
+						: 'Delete stale managed DB metadata for missing Storage object',
 			});
 		}
 	}
@@ -543,6 +572,61 @@ async function uploadAndVerifyAssets(
 	return { verifiedAssetHashes, uploadedCount };
 }
 
+async function pruneHostedManagedAssets(input: {
+	deletions: Array<{ record: TargetAssetRecord; deleteStorage: boolean }>;
+	targetDbUrl: string;
+	targetSupabaseUrl: string;
+	targetInvitationId: string;
+	definitionSlug: string;
+	serviceRoleKey?: string;
+}): Promise<{ databaseDeletes: number; storageDeletes: number }> {
+	let databaseDeletes = 0;
+	let storageDeletes = 0;
+	for (const deletion of input.deletions) {
+		const { record } = deletion;
+		if (deletion.deleteStorage) {
+			if (!input.serviceRoleKey) {
+				throw new Error('Managed asset pruning requires the verified target Storage credential.');
+			}
+			const storagePath = record.providerPublicId || record.storagePath;
+			const objectUrl = `${input.targetSupabaseUrl.replace(/\/+$/, '')}/storage/v1/object/${record.bucket}/${storagePath}`;
+			const response = await fetch(objectUrl, {
+				method: 'DELETE',
+				headers: {
+					Authorization: `Bearer ${input.serviceRoleKey}`,
+					apikey: input.serviceRoleKey,
+				},
+			});
+			if (!response.ok && response.status !== 404) {
+				throw new Error(`Managed Storage prune failed for asset ${record.id} (HTTP ${response.status}).`);
+			}
+			const verify = await fetch(
+				`${input.targetSupabaseUrl.replace(/\/+$/, '')}/storage/v1/object/public/${record.bucket}/${storagePath}`,
+			);
+			if (verify.ok) throw new Error(`Managed Storage prune could not verify deletion for asset ${record.id}.`);
+			storageDeletes++;
+		}
+
+		const escapedAssetId = `%${record.id}%`;
+		const deleteResult = runPsql(
+			`update public.invitation_assets set deleted_at = coalesce(deleted_at, now()), updated_at = now() where id = ${sqlLiteral(record.id)}::uuid and invitation_id = ${sqlLiteral(input.targetInvitationId)}::uuid and managed_by_definition_slug = ${sqlLiteral(input.definitionSlug)} and deleted_at is null and not exists (select 1 from public.invitation_content_drafts where invitation_project_id = ${sqlLiteral(input.targetInvitationId)}::uuid and deleted_at is null and content::text like ${sqlLiteral(escapedAssetId)}) and not exists (select 1 from public.published_invitation_content where invitation_project_id = ${sqlLiteral(input.targetInvitationId)}::uuid and deleted_at is null and content::text like ${sqlLiteral(escapedAssetId)});`,
+			input.targetDbUrl,
+		);
+		if (!deleteResult.stdout.includes('UPDATE 1')) {
+			const alreadyDeleted = runPsql(
+				`select exists (select 1 from public.invitation_assets where id = ${sqlLiteral(record.id)}::uuid and deleted_at is not null);`,
+				input.targetDbUrl,
+				{ tuplesOnly: true },
+			).stdout.trim();
+			if (alreadyDeleted !== 't') {
+				throw new Error(`Managed asset metadata prune was blocked for asset ${record.id}.`);
+			}
+		}
+		databaseDeletes++;
+	}
+	return { databaseDeletes, storageDeletes };
+}
+
 interface DatabaseUpsertParams {
 	targetDbUrl: string;
 	targetInvitationId: string;
@@ -562,6 +646,7 @@ interface DatabaseUpsertParams {
 	shouldPublish: boolean;
 	shouldUpsertEvent: boolean;
 	assetRefs: UploadedAssetMap;
+	operationId: string;
 }
 
 /** Revalidates the draft revision immediately before an apply phase can write. */
@@ -594,13 +679,15 @@ function upsertAssetRows(
 	targetInvitationId: string,
 	assets: InvitationPackageAsset[],
 	assetRefs: UploadedAssetMap,
+	definitionSlug: string,
+	operationId: string,
 ): number {
 	let count = 0;
 	for (const pAsset of assets) {
 		const assetId = assetRefs[pAsset.key]?.assetId;
 		if (!assetId)
 			throw new Error(`Missing target asset UUID for semantic key "${pAsset.key}".`);
-		const assetSql = `insert into public.invitation_assets (id, invitation_id, display_name, default_alt_text, bucket, storage_path, mime_type, width, height, file_size, validation_version, original_mime_type, original_file_size) values ('${assetId}'::uuid, '${targetInvitationId}'::uuid, ${sqlLiteral(pAsset.displayName)}, ${pAsset.defaultAltText ? sqlLiteral(pAsset.defaultAltText) : 'null'}, ${sqlLiteral(pAsset.bucket)}, ${sqlLiteral(pAsset.storagePath)}, ${sqlLiteral(pAsset.mimeType)}, ${pAsset.width ?? 'null'}, ${pAsset.height ?? 'null'}, ${pAsset.fileSize ?? 'null'}, ${pAsset.validationVersion}, ${pAsset.originalMimeType ? sqlLiteral(pAsset.originalMimeType) : 'null'}, ${pAsset.originalFileSize ?? 'null'}) on conflict (bucket, storage_path) do update set display_name = excluded.display_name, default_alt_text = excluded.default_alt_text, mime_type = excluded.mime_type, width = excluded.width, height = excluded.height, file_size = excluded.file_size, validation_version = excluded.validation_version, original_mime_type = excluded.original_mime_type, original_file_size = excluded.original_file_size, deleted_at = null, updated_at = now();`;
+		const assetSql = `insert into public.invitation_assets (id, invitation_id, display_name, default_alt_text, bucket, storage_path, mime_type, width, height, file_size, validation_version, original_mime_type, original_file_size, sha256, managed_by_definition_slug, managed_source_key, managed_sha256, managed_operation_id) values ('${assetId}'::uuid, '${targetInvitationId}'::uuid, ${sqlLiteral(pAsset.displayName)}, ${pAsset.defaultAltText ? sqlLiteral(pAsset.defaultAltText) : 'null'}, ${sqlLiteral(pAsset.bucket)}, ${sqlLiteral(pAsset.storagePath)}, ${sqlLiteral(pAsset.mimeType)}, ${pAsset.width ?? 'null'}, ${pAsset.height ?? 'null'}, ${pAsset.fileSize ?? 'null'}, ${pAsset.validationVersion}, ${pAsset.originalMimeType ? sqlLiteral(pAsset.originalMimeType) : 'null'}, ${pAsset.originalFileSize ?? 'null'}, ${sqlLiteral(pAsset.sha256)}, ${sqlLiteral(definitionSlug)}, ${sqlLiteral(pAsset.key)}, ${sqlLiteral(pAsset.sha256)}, ${sqlLiteral(operationId)}::uuid) on conflict (bucket, storage_path) do update set display_name = excluded.display_name, default_alt_text = excluded.default_alt_text, mime_type = excluded.mime_type, width = excluded.width, height = excluded.height, file_size = excluded.file_size, validation_version = excluded.validation_version, original_mime_type = excluded.original_mime_type, original_file_size = excluded.original_file_size, sha256 = excluded.sha256, managed_by_definition_slug = excluded.managed_by_definition_slug, managed_source_key = excluded.managed_source_key, managed_sha256 = excluded.managed_sha256, managed_operation_id = excluded.managed_operation_id, deleted_at = null, updated_at = now();`;
 		runPsql(assetSql, targetDbUrl);
 		count++;
 	}
@@ -692,6 +779,8 @@ function executeDatabaseUpserts(params: DatabaseUpsertParams): number {
 			targetInvitationId,
 			assetsForDbUpsert,
 			params.assetRefs,
+			params.pkg.sourceSlug,
+			params.operationId,
 		);
 	}
 
@@ -754,11 +843,34 @@ interface TargetScanResult {
 	existingEvent: Record<string, unknown> | null;
 	existingMember: Record<string, unknown> | null;
 	managedProjection: Record<string, unknown> | null;
-	managedAppliedAt: string | null;
+	appliedDraftUpdatedAt: string | null;
+	appliedOperationId: string | null;
+	appliedPublishedVersion: number | null;
+	appliedPublishedProjectionHash: string | null;
+	appliedReceipt: ManagedBaselineReceiptEvidence | null;
+	latestMutationReceipt: ManagedBaselineReceiptEvidence | null;
 	targetInvitationId: string;
 	pubQuery: string;
 }
 
+function parseReceiptEvidence(value: Record<string, unknown> | null): ManagedBaselineReceiptEvidence | null {
+	if (!value || typeof value.operation_id !== 'string' || typeof value.status !== 'string') return null;
+	return {
+		operationId: value.operation_id,
+		status: value.status as ManagedBaselineReceiptEvidence['status'],
+		commandKind: String(value.command_kind ?? ''),
+		origin: typeof value.origin === 'string' ? value.origin : undefined,
+		completedSteps: Array.isArray(value.completed_steps)
+			? value.completed_steps.filter((step): step is string => typeof step === 'string')
+			: [],
+		inputHashes:
+			value.input_hashes && typeof value.input_hashes === 'object'
+				? (value.input_hashes as Record<string, unknown>)
+				: undefined,
+	};
+}
+
+// eslint-disable-next-line complexity -- Scan classifies independently nullable DB/provenance evidence before any mutation.
 function scanTargetState(
 	targetDbUrl: string,
 	slug: string,
@@ -790,7 +902,7 @@ function scanTargetState(
 	const existingPub = pubResult.stdout.trim() ? parsePsqlJson(pubResult.stdout) : null;
 
 	const provenanceResult = runPsql(
-		`select row_to_json(t) from (select managed_projection, applied_draft_updated_at, applied_at from public.managed_invitation_release_provenance where invitation_id = '${targetInvitationId}'::uuid) t;`,
+		`select row_to_json(t) from (select managed_projection, applied_draft_updated_at, applied_operation_id, applied_published_version, applied_published_projection_hash from public.managed_invitation_release_provenance where invitation_id = '${targetInvitationId}'::uuid) t;`,
 		targetDbUrl,
 		{ tuplesOnly: true, throwOnError: false },
 	);
@@ -802,8 +914,28 @@ function scanTargetState(
 		typeof existingProvenance.managed_projection === 'object'
 			? (existingProvenance.managed_projection as Record<string, unknown>)
 			: null;
-	const managedAppliedAt =
-		typeof existingProvenance?.applied_at === 'string' ? existingProvenance.applied_at : null;
+	const appliedOperationId =
+		typeof existingProvenance?.applied_operation_id === 'string'
+			? existingProvenance.applied_operation_id
+			: null;
+	const appliedReceiptResult = appliedOperationId
+		? runPsql(
+				`select row_to_json(t) from (select operation_id, status, command_kind, origin, completed_steps, input_hashes from public.invitation_mutation_operation_receipts where operation_id = ${sqlLiteral(appliedOperationId)}::uuid) t;`,
+				targetDbUrl,
+				{ tuplesOnly: true, throwOnError: false },
+			)
+		: null;
+	const latestReceiptResult = runPsql(
+		`select row_to_json(t) from (select operation_id, status, command_kind, origin, completed_steps, input_hashes from public.invitation_mutation_operation_receipts where invitation_id = '${targetInvitationId}'::uuid order by created_at desc, id desc limit 1) t;`,
+		targetDbUrl,
+		{ tuplesOnly: true, throwOnError: false },
+	);
+	const appliedReceipt = parseReceiptEvidence(
+		appliedReceiptResult?.stdout.trim() ? parsePsqlJson(appliedReceiptResult.stdout) : null,
+	);
+	const latestMutationReceipt = parseReceiptEvidence(
+		latestReceiptResult.stdout.trim() ? parsePsqlJson(latestReceiptResult.stdout) : null,
+	);
 
 	const eventResult = runPsql(
 		`select row_to_json(t) from (select id, owner_user_id, slug, event_type, title, status, invitation_project_id from public.events where slug = ${sqlLiteral(slug)} and deleted_at is null limit 1) t;`,
@@ -832,7 +964,21 @@ function scanTargetState(
 		existingEvent,
 		existingMember,
 		managedProjection,
-		managedAppliedAt,
+		appliedDraftUpdatedAt:
+			typeof existingProvenance?.applied_draft_updated_at === 'string'
+				? existingProvenance.applied_draft_updated_at
+				: null,
+		appliedOperationId,
+		appliedPublishedVersion:
+			typeof existingProvenance?.applied_published_version === 'number'
+				? existingProvenance.applied_published_version
+				: null,
+		appliedPublishedProjectionHash:
+			typeof existingProvenance?.applied_published_projection_hash === 'string'
+				? existingProvenance.applied_published_projection_hash
+				: null,
+		appliedReceipt,
+		latestMutationReceipt,
 		targetInvitationId,
 		pubQuery,
 	};
@@ -858,6 +1004,7 @@ function verifyPostPublication(pubQuery: string, targetDbUrl: string, route: str
 	return (verifyPubRow.version as number) || 1;
 }
 
+// eslint-disable-next-line complexity -- Reconciliation classifies baseline recovery, scope, schema, and target drift gates.
 function analyzeTargetDrift(
 	pkg: InvitationPackageData,
 	targetStorageUrl: string,
@@ -895,12 +1042,35 @@ function analyzeTargetDrift(
 		scanned.existingDraft?.content &&
 		(updateScope === 'content-only' || updateScope === 'assets-only')
 	) {
+		const recoveringPartial = isRecoverableManagedPartial(scanned.latestMutationReceipt, {
+			sourceHash: pkg.sourceHash,
+			packageHash: pkg.packageHash,
+		});
 		const prevCanonical = resolveManagedMergeBaseline({
 			managedProjection: scanned.managedProjection,
-			managedAppliedAt: scanned.managedAppliedAt,
-			publishedContent: scanned.existingPub?.content as Record<string, unknown> | undefined,
-			publishedAt: resolvePublicationTimestamp(scanned.existingPub),
-			draftContent: scanned.existingDraft.content as Record<string, unknown>,
+			appliedDraftUpdatedAt: scanned.appliedDraftUpdatedAt,
+			appliedOperationId: scanned.appliedOperationId,
+			appliedPublishedVersion: scanned.appliedPublishedVersion,
+			appliedPublishedProjectionHash: scanned.appliedPublishedProjectionHash,
+			currentDraftUpdatedAt: recoveringPartial
+				? scanned.appliedDraftUpdatedAt
+				:
+				typeof scanned.existingDraft.updated_at === 'string'
+					? scanned.existingDraft.updated_at
+					: null,
+			currentPublishedVersion: recoveringPartial
+				? scanned.appliedPublishedVersion
+				:
+				typeof scanned.existingPub?.version === 'number' ? scanned.existingPub.version : null,
+			currentPublishedProjectionHash: recoveringPartial
+				? scanned.appliedPublishedProjectionHash
+				: scanned.existingPub?.content
+				? hashPublicationProjection(scanned.existingPub.content as Record<string, unknown>)
+				: null,
+			appliedReceipt: scanned.appliedReceipt,
+			latestMutationReceipt: recoveringPartial
+				? scanned.appliedReceipt
+				: scanned.latestMutationReceipt,
 		});
 		const patchRes = apply3WaySemanticPatch({
 			previousCanonical: prevCanonical,
@@ -925,6 +1095,8 @@ function analyzeTargetDrift(
 			assetRefs,
 		) as Record<string, unknown>;
 	}
+	assertManagedContentSchema(targetDraftContent);
+	assertManagedContentSchema(targetPublishedContent);
 
 	checkTargetDivergenceConflict(
 		slug,
@@ -975,6 +1147,7 @@ function analyzeTargetDrift(
 		isDraftIdentical,
 		isPubIdentical,
 		isEventAndMemberIdentical,
+		latestMutationReceipt: scanned.latestMutationReceipt,
 	};
 }
 
@@ -1157,6 +1330,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 	const {
 		assetsToUpload,
 		assetsToUpsertDbOnly,
+		assetsToDelete,
 		assetActions,
 		verifiedAssetHashes,
 		assetStateHash,
@@ -1167,6 +1341,8 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		drift.targetInvitationId,
 		assetPolicy,
 		options.pruneAssets ?? false,
+		pkg.sourceSlug,
+		drift.targetDraftContent,
 	);
 	const actions = buildResourceActions({
 		slug: drift.slug,
@@ -1183,7 +1359,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		isEventAndMemberIdentical: drift.isEventAndMemberIdentical,
 	});
 	const hasManagedChanges = actions.some(
-		(action) => action.action === 'create' || action.action === 'replace',
+		(action) => action.action === 'create' || action.action === 'replace' || action.action === 'delete',
 	);
 	const provenanceExists =
 		runPsql(
@@ -1235,7 +1411,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 	}
 
 	const plannedMutations = actions.filter(
-		(act) => act.action === 'create' || act.action === 'replace',
+		(act) => act.action === 'create' || act.action === 'replace' || act.action === 'delete',
 	).length;
 	const isZeroDrift = plannedMutations === 0;
 	const targetVersion = drift.existingPub ? (drift.existingPub.version as number) : 1;
@@ -1300,7 +1476,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			updates:
 				databaseActions.filter((action) => action.action === 'replace').length +
 				assetDbActions.filter((action) => action.action === 'replace').length,
-			deletes: 0,
+			deletes: assetsToDelete.length,
 		},
 		storageOps: {
 			uploads: assetActions.filter((action) => action.action === 'create').length,
@@ -1308,7 +1484,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 				assetsToUpload.length -
 				assetActions.filter((action) => action.action === 'create').length,
 			moves: 0,
-			deletes: 0,
+			deletes: assetsToDelete.filter((asset) => asset.deleteStorage).length,
 		},
 		targetPreconditions,
 		sensitivityClassification: 'public',
@@ -1339,11 +1515,25 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		}
 	}
 	const executionPlan = options.plan ?? currentPlan;
+	const rootOperationId = operationIdFromPlanId(executionPlan.planId);
+	const retryParentOperationId = isRecoverableManagedPartial(drift.latestMutationReceipt, {
+		sourceHash: pkg.sourceHash,
+		packageHash: pkg.packageHash,
+	})
+		? drift.latestMutationReceipt!.operationId
+		: undefined;
+	const activeOperationId = retryParentOperationId
+		? operationIdFromPlanId(
+				createHash('md5')
+					.update(`${rootOperationId}:${retryParentOperationId}:managed-retry`)
+					.digest('hex'),
+			)
+		: rootOperationId;
 
 	if (dryRun || isZeroDrift) {
 		if (!dryRun && isZeroDrift) {
 			runPsql(
-				`insert into public.invitation_mutation_operation_receipts (operation_id, invitation_id, environment, project_ref, actor_type, origin, command_kind, input_hashes, expected_state, status, completed_steps, result) values ('${operationIdFromPlanId(executionPlan.planId)}'::uuid, '${drift.targetInvitationId}'::uuid, ${sqlLiteral(expectedTarget)}, ${sqlLiteral(projectRef)}, 'operator', 'managed_cli_hosted', 'managed_invitation_apply', ${sqlLiteral(JSON.stringify({ sourceHash: pkg.sourceHash, packageHash: pkg.packageHash }))}::jsonb, ${sqlLiteral(JSON.stringify(executionPlan.targetPreconditions))}::jsonb, 'replayed', array['target_verified','existing_result_reused'], ${sqlLiteral(JSON.stringify({ planId: executionPlan.planId, publishedVersion: targetVersion }))}::jsonb) on conflict (operation_id) do nothing;`,
+				`insert into public.invitation_mutation_operation_receipts (operation_id, invitation_id, environment, project_ref, actor_type, origin, command_kind, input_hashes, expected_state, status, completed_steps, result, retry_of_operation_id) values ('${activeOperationId}'::uuid, '${drift.targetInvitationId}'::uuid, ${sqlLiteral(expectedTarget)}, ${sqlLiteral(projectRef)}, 'operator', 'managed_cli_hosted', 'managed_invitation_apply', ${sqlLiteral(JSON.stringify({ sourceHash: pkg.sourceHash, packageHash: pkg.packageHash }))}::jsonb, ${sqlLiteral(JSON.stringify(executionPlan.targetPreconditions))}::jsonb, 'replayed', array['target_verified','existing_result_reused'], ${sqlLiteral(JSON.stringify({ planId: executionPlan.planId, publishedVersion: targetVersion }))}::jsonb, ${retryParentOperationId ? `'${retryParentOperationId}'::uuid` : 'null'}) on conflict (operation_id) do nothing;`,
 				targetDbUrl,
 			);
 		}
@@ -1493,6 +1683,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 	let executedMutations = 0;
 	let completedDatabaseWrites = { inserts: 0, updates: 0, deletes: 0 };
 	let completedStorageMutations = { uploads: 0, overwrites: 0, moves: 0, deletes: 0 };
+	const completedSteps = ['target_verified'];
 	try {
 		assertDraftRevisionUnchanged(targetDbUrl, drift.existingDraft);
 		if (expectedTarget === 'preview') {
@@ -1510,7 +1701,10 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			}
 		}
 		const serviceRoleKey = serviceRoleKeyForHost;
-		if (!serviceRoleKey && assetsToUpload.length > 0) {
+		if (
+			!serviceRoleKey &&
+			(assetsToUpload.length > 0 || assetsToDelete.some((asset) => asset.deleteStorage))
+		) {
 			throw new Error(
 				expectedTarget === 'preview'
 					? 'Preview Storage uploads require PREVIEW_SUPABASE_SERVICE_ROLE_KEY or SUPABASE_SERVICE_ROLE_KEY in Preview secret files.'
@@ -1535,6 +1729,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 				moves: 0,
 				deletes: 0,
 			};
+			completedSteps.push('assets_uploaded_and_verified');
 		}
 		mutationStarted = true;
 		markPlannedOverwrites([
@@ -1567,13 +1762,31 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			shouldPublish: !drift.isPubIdentical || !drift.existingPub,
 			shouldUpsertEvent: !drift.isEventAndMemberIdentical,
 			assetRefs,
+			operationId: activeOperationId,
 		});
 		executedMutations += dbMutations;
 		completedDatabaseWrites = {
 			inserts: executionPlan.physicalDatabaseOps.inserts - (provenanceExists ? 0 : 1),
 			updates: executionPlan.physicalDatabaseOps.updates - (provenanceExists ? 1 : 0),
-			deletes: executionPlan.physicalDatabaseOps.deletes,
+			deletes: 0,
 		};
+		completedSteps.push('database_state_applied');
+
+		if (assetsToDelete.length > 0) {
+			const pruned = await pruneHostedManagedAssets({
+				deletions: assetsToDelete,
+				targetDbUrl,
+				targetSupabaseUrl,
+				targetInvitationId: drift.targetInvitationId,
+				definitionSlug: pkg.sourceSlug,
+				serviceRoleKey,
+			});
+			executedMutations += pruned.databaseDeletes + pruned.storageDeletes;
+			completedDatabaseWrites.deletes += pruned.databaseDeletes;
+			completedStorageMutations.deletes += pruned.storageDeletes;
+			if (pruned.storageDeletes > 0) completedSteps.push('managed_asset_storage_pruned');
+			completedSteps.push('managed_asset_metadata_pruned');
+		}
 
 		if (updateScope === 'content-only') {
 			const postApplyAssetFingerprint = computeTargetAssetFingerprint(
@@ -1591,6 +1804,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			!drift.isPubIdentical || !drift.existingPub
 				? verifyPostPublication(drift.pubQuery, targetDbUrl, drift.route)
 				: targetVersion;
+		completedSteps.push('published');
 		const finalAssetRefs = resolveTargetAssetRefs(
 			pkg,
 			targetDbUrl,
@@ -1621,6 +1835,8 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			finalDrift.targetInvitationId,
 			assetPolicy,
 			options.pruneAssets ?? false,
+			pkg.sourceSlug,
+			finalDrift.targetDraftContent,
 		);
 		if (
 			!finalDrift.isInvMetadataIdentical ||
@@ -1628,7 +1844,8 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			!finalDrift.isPubIdentical ||
 			!finalDrift.isEventAndMemberIdentical ||
 			finalAssets.assetsToUpload.length > 0 ||
-			finalAssets.assetsToUpsertDbOnly.length > 0
+			finalAssets.assetsToUpsertDbOnly.length > 0 ||
+			finalAssets.assetsToDelete.length > 0
 		) {
 			throw new Error(
 				'Final target verification failed; managed-release provenance was not recorded.',
@@ -1642,14 +1859,15 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			.digest('hex');
 		markResourceOverwritten('managed_invitation_release_provenance', drift.targetInvitationId);
 		runPsql(
-			`insert into public.managed_invitation_release_provenance (invitation_id, definition_slug, release_schema_version, source_hash, package_hash, metadata_hash, projection_hash, asset_manifest_hash, managed_projection, applied_draft_updated_at, applied_at) values ('${drift.targetInvitationId}'::uuid, ${sqlLiteral(pkg.sourceSlug)}, ${sqlLiteral(pkg.schemaVersion)}, ${sqlLiteral(pkg.sourceHash)}, ${sqlLiteral(pkg.packageHash)}, ${sqlLiteral(pkg.metadataHash)}, ${sqlLiteral(provenanceProjectionHash)}, ${sqlLiteral(pkg.assetManifestHash)}, ${sqlLiteral(JSON.stringify(drift.targetDraftContent))}::jsonb, (select updated_at from public.invitation_content_drafts where invitation_project_id = '${drift.targetInvitationId}'::uuid and deleted_at is null limit 1), now()) on conflict (invitation_id) do update set definition_slug = excluded.definition_slug, release_schema_version = excluded.release_schema_version, source_hash = excluded.source_hash, package_hash = excluded.package_hash, metadata_hash = excluded.metadata_hash, projection_hash = excluded.projection_hash, asset_manifest_hash = excluded.asset_manifest_hash, managed_projection = excluded.managed_projection, applied_draft_updated_at = excluded.applied_draft_updated_at, applied_at = excluded.applied_at;`,
+			`insert into public.managed_invitation_release_provenance (invitation_id, definition_slug, release_schema_version, source_hash, package_hash, metadata_hash, projection_hash, asset_manifest_hash, managed_projection, applied_draft_updated_at, applied_operation_id, applied_published_version, applied_published_projection_hash, applied_at) values ('${drift.targetInvitationId}'::uuid, ${sqlLiteral(pkg.sourceSlug)}, ${sqlLiteral(pkg.schemaVersion)}, ${sqlLiteral(pkg.sourceHash)}, ${sqlLiteral(pkg.packageHash)}, ${sqlLiteral(pkg.metadataHash)}, ${sqlLiteral(provenanceProjectionHash)}, ${sqlLiteral(pkg.assetManifestHash)}, ${sqlLiteral(JSON.stringify(drift.targetDraftContent))}::jsonb, (select updated_at from public.invitation_content_drafts where invitation_project_id = '${drift.targetInvitationId}'::uuid and deleted_at is null limit 1), '${activeOperationId}'::uuid, ${finalPublishedVersion}, ${sqlLiteral(hashPublicationProjection(drift.targetPublishedContent))}, now()) on conflict (invitation_id) do update set definition_slug = excluded.definition_slug, release_schema_version = excluded.release_schema_version, source_hash = excluded.source_hash, package_hash = excluded.package_hash, metadata_hash = excluded.metadata_hash, projection_hash = excluded.projection_hash, asset_manifest_hash = excluded.asset_manifest_hash, managed_projection = excluded.managed_projection, applied_draft_updated_at = excluded.applied_draft_updated_at, applied_operation_id = excluded.applied_operation_id, applied_published_version = excluded.applied_published_version, applied_published_projection_hash = excluded.applied_published_projection_hash, applied_at = excluded.applied_at;`,
 			targetDbUrl,
 		);
+		completedSteps.push('provenance_recorded');
 		executedMutations++;
 		if (provenanceExists) completedDatabaseWrites.updates++;
 		else completedDatabaseWrites.inserts++;
 		runPsql(
-			`insert into public.invitation_mutation_operation_receipts (operation_id, invitation_id, environment, project_ref, actor_type, origin, command_kind, input_hashes, expected_state, status, completed_steps, result) values ('${operationIdFromPlanId(executionPlan.planId)}'::uuid, '${drift.targetInvitationId}'::uuid, ${sqlLiteral(expectedTarget)}, ${sqlLiteral(projectRef)}, 'operator', 'managed_cli_hosted', 'managed_invitation_apply', ${sqlLiteral(JSON.stringify({ sourceHash: pkg.sourceHash, packageHash: pkg.packageHash }))}::jsonb, ${sqlLiteral(JSON.stringify(executionPlan.targetPreconditions))}::jsonb, 'applied', array['target_verified','content_applied','published','provenance_recorded'], ${sqlLiteral(JSON.stringify({ planId: executionPlan.planId, publishedVersion: finalPublishedVersion }))}::jsonb);`,
+			`insert into public.invitation_mutation_operation_receipts (operation_id, invitation_id, environment, project_ref, actor_type, origin, command_kind, input_hashes, expected_state, status, completed_steps, result, retry_of_operation_id) values ('${activeOperationId}'::uuid, '${drift.targetInvitationId}'::uuid, ${sqlLiteral(expectedTarget)}, ${sqlLiteral(projectRef)}, 'operator', 'managed_cli_hosted', 'managed_invitation_apply', ${sqlLiteral(JSON.stringify({ sourceHash: pkg.sourceHash, packageHash: pkg.packageHash }))}::jsonb, ${sqlLiteral(JSON.stringify(executionPlan.targetPreconditions))}::jsonb, 'applied', ${sqlTextArray(completedSteps)}, ${sqlLiteral(JSON.stringify({ planId: executionPlan.planId, publishedVersion: finalPublishedVersion }))}::jsonb, ${retryParentOperationId ? `'${retryParentOperationId}'::uuid` : 'null'});`,
 			targetDbUrl,
 		);
 		return {
@@ -1681,26 +1899,22 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 	} catch (err) {
 		const message = err instanceof Error ? err.message : String(err);
 		console.error(`\x1b[31m[Import Engine Failure]\x1b[0m ${redactCredentials(message)}`);
-		const serviceRoleKeyForCleanup =
-			options.serviceRoleKey ||
-			(expectedTarget === 'preview'
-				? getSecretFromEnvOrFiles('PREVIEW_SUPABASE_SERVICE_ROLE_KEY', PREVIEW_SECRET_FILES)
-				: getSecretFromEnvOrFiles('PROD_SUPABASE_SERVICE_ROLE_KEY', PROD_SECRET_FILES)) ||
-			getSecretFromEnvOrFiles(
-				'SUPABASE_SERVICE_ROLE_KEY',
-				expectedTarget === 'preview' ? PREVIEW_SECRET_FILES : PROD_SECRET_FILES,
-			);
-		const cleanupResult = await cleanupHostedPsqlResources(
-			targetDbUrl,
-			drift.slug,
-			trackedResources,
-			undefined,
-			serviceRoleKeyForCleanup
-				? { supabaseUrl: targetSupabaseUrl, serviceRoleKey: serviceRoleKeyForCleanup }
-				: undefined,
-		);
-		const recoveryStatus =
-			cleanupResult.status === 'CAMBIOS_REVERTIDOS'
+		if (mutationStarted) {
+			try {
+				runPsql(
+					`insert into public.invitation_mutation_operation_receipts (operation_id, invitation_id, environment, project_ref, actor_type, origin, command_kind, input_hashes, expected_state, status, completed_steps, result, sanitized_error, retry_of_operation_id) values ('${activeOperationId}'::uuid, '${drift.targetInvitationId}'::uuid, ${sqlLiteral(expectedTarget)}, ${sqlLiteral(projectRef)}, 'operator', 'managed_cli_hosted', 'managed_invitation_apply', ${sqlLiteral(JSON.stringify({ sourceHash: pkg.sourceHash, packageHash: pkg.packageHash }))}::jsonb, ${sqlLiteral(JSON.stringify(executionPlan.targetPreconditions))}::jsonb, 'partial', ${sqlTextArray(completedSteps)}, ${sqlLiteral(JSON.stringify({ planId: executionPlan.planId }))}::jsonb, ${sqlLiteral(JSON.stringify({ message: redactCredentials(message) }))}::jsonb, ${retryParentOperationId ? `'${retryParentOperationId}'::uuid` : 'null'}) on conflict (operation_id) do nothing;`,
+					targetDbUrl,
+				);
+			} catch {
+				// Preserve the original mutation failure; missing receipt is surfaced by baseline verification.
+			}
+		}
+		const cleanupResult = mutationStarted
+			? null
+			: await cleanupHostedPsqlResources(targetDbUrl, drift.slug, trackedResources);
+		const recoveryStatus = mutationStarted
+			? 'ERROR — ESTADO PARCIAL RECUPERABLE'
+			: cleanupResult?.status === 'CAMBIOS_REVERTIDOS'
 				? 'ERROR — CAMBIOS REVERTIDOS'
 				: 'ERROR — REQUIERE REVISIÓN';
 		const wrapped = new Error(`[${recoveryStatus}] ${message}`, { cause: err });
