@@ -60,6 +60,7 @@ execute the same retained plans. Any blocked selected target aborts the complete
 | `pnpm db:push`                             | `package.json` | blocked fail-closed replacement for ambiguous raw Supabase push                    |
 | `pnpm db:prod:backup`                      | `scripts/db/`  | read-only production data dump                                                     |
 | `pnpm db:prod:backup:critical`             | `scripts/db/`  | complete read-only Production DB/Auth/Storage set (Phase 3 or predecessor profile) |
+| `pnpm db:prod:backup:daily`                | `scripts/db/`  | scheduled local critical backup, EFS/report verification, metrics, and retention   |
 | `pnpm db:backup:create-disposable-fixture` | `scripts/db/`  | synthetic complete recovery set for a disposable drill                             |
 | `pnpm db:restore:verify-disposable`        | `scripts/db/`  | rebuild, restore, and verify a complete set in disposable-test only                |
 | `pnpm db:contract:verify`                  | `scripts/db/`  | read-only required mutation schema/privilege contract verification                 |

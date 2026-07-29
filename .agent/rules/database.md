@@ -120,6 +120,9 @@ boundaries through classification, identity verification, and per-target policy 
   reviewed production path.
 - Need a production backup? Use `PROD_DB_URL=... pnpm db:prod:backup`; keep output gitignored. The
   guard verifies the target is a Supabase cloud host before proceeding.
+- Need the Free-plan daily recovery point? Run `pnpm db:prod:backup:daily` from the authorized
+  Windows operator account. Windows Task Scheduler may invoke it once every 24 hours; it must never
+  run through CI, Vercel, Supabase scheduled compute, or application infrastructure.
 - Need to reset a database for tests? Use `tsx scripts/db/disposable-test-env.ts reset`. The guard
   allows all operations on the disposable-test target.
 - Need a manual production SQL patch? Require the [`manual SQL manifest`](manual-sql-manifest.md),

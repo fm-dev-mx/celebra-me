@@ -49,7 +49,9 @@ shell, Vercel, or gitignored secret paths documented by the owning workflow.
 - **Production-only shell variables:** `PROD_DB_URL` is a Postgres connection string only;
   `PROD_SUPABASE_URL` and `PROD_SUPABASE_SERVICE_ROLE_KEY` are the independently verified API and
   Storage inputs for the complete critical backup. They come only from the operator shell or
-  approved ignored secret files and are intentionally absent from `.env.example` and app typing.
+  approved ignored secret files and are intentionally absent from `.env.example` and app typing. The
+  local daily backup task resolves the same ignored sources under the interactive operator account;
+  credentials are never copied into the scheduled-task definition.
 - **Test-only:** `PLAYWRIGHT_*`, audit run IDs, test fixture variables. The canonical local E2E
   server is isolated by default; `PLAYWRIGHT_REUSE_EXISTING_SERVER=true` is an explicit opt-in.
 - **Stale/manual-only:** `DATABASE_URL` and `RSVP_TOKEN_SECRET` are not active runtime inputs. Keep
@@ -83,6 +85,8 @@ create `PUBLIC_CLOUDINARY_*` equivalents or place real Cloudinary values in trac
 - `PROD_SUPABASE_URL` and `PROD_SUPABASE_SERVICE_ROLE_KEY` are accepted only by the read-only
   complete critical backup workflow. DB/API/Storage/credential project refs must agree with the
   allowlisted Production identity before any request.
+- Production backup secrets remain local operational inputs. They must not be added to Vercel, CI,
+  Supabase jobs, application runtime variables, or Task Scheduler arguments.
 - Logs may show variable names, source filenames, presence/absence, and local/remote classification.
   They must not show full URLs, keys, passwords, raw tokens, or DB connection strings.
 - Examples should use local placeholders unless explicitly marked shell-only.

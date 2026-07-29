@@ -22,20 +22,19 @@ Local -> Production: allowed only for reviewed migrations.
 ## Production backup and recovery authority
 
 The repository owner (or explicitly delegated Production operator) owns backup creation, access,
-restore authorization, and drills. Targets are RPO ≤ 15 minutes and RTO ≤ 4 hours. Read-only
-control-plane inspection on 2026-07-29 verified that the owning Supabase organization is on the Free
-plan. Supabase documents automated daily backups only for Pro, Team, and Enterprise and PITR as an
-add-on for those plans; Free projects are directed to maintain their own off-site exports. Therefore
-no managed backup, PITR retention window, or latest managed recovery point is claimed for
-Production. The RPO target is **not satisfied/proven** until the operator enables a qualifying
-platform capability or configures and monitors an independent schedule of sufficient frequency. See
+restore authorization, and drills. While Production remains on the Supabase Free plan, the temporary
+targets are catastrophic-loss RPO ≤24 hours and RTO ≤4 hours. Every planned Production mutation also
+requires a complete verified recovery point immediately before the mutation and another after schema
+contract verification. Supabase documents managed daily backups only for Pro, Team, and Enterprise;
+Free projects must maintain their own exports. No managed backup, PITR, hosted backup service, or
+off-machine recovery point is claimed. See
 [Supabase Database Backups](https://supabase.com/docs/guides/platform/backups).
 
 The independent critical set comprises the public database (including invitation, RSVP, publication,
 provenance, and operation receipts), Auth reconstruction data, Storage metadata, and actual critical
 Storage object bytes. A DB dump or `storage.objects` rows alone are incomplete. Artifacts stay in
-encrypted, access-restricted storage outside Git, retaining 30 daily and 12 monthly recovery points
-pending a verified stronger platform policy.
+encrypted, access-restricted local storage outside Git, retaining the newest 30 daily recovery
+points plus one point from each of the newest 12 older calendar months.
 
 `pnpm db:prod:backup:critical` captures the complete set read-only, verifies Production DB/API/
 Storage/credential identity, downloads actual object bytes, rejects a changing capture window, and
@@ -43,6 +42,15 @@ writes a SHA-256 manifest only after all checks pass. It requires `PROD_DB_URL`,
 `PROD_SUPABASE_URL`, and `PROD_SUPABASE_SERVICE_ROLE_KEY` from the shell or approved ignored secret
 files. Incomplete output is removed. `pnpm db:backup:verify-manifest -- --manifest=<path>` rejects
 missing, empty/truncated, size-mismatched, or checksum-mismatched artifacts.
+
+`pnpm db:prod:backup:daily` is the canonical unattended command for the local operator machine's OS
+scheduler. It runs the same critical capture once, verifies the manifest and Windows EFS encryption,
+applies retention, and writes an encrypted JSON report under `.backups/prod/reports/`. The report
+records start/end/recovery-point timestamps, outcome, duration, bytes for database, Auth, Storage
+metadata, and Storage object bytes, total downloaded bytes, total backup size, a 30-run monthly
+egress estimate, manifest verification, retention results, and the retained path. A nonzero exit is
+a failed backup. The command is intentionally absent from CI, builds, deployments, application code,
+and ordinary development/test workflows.
 
 For the `20260729140514`/`20260729152113` cutover, pass `-- --integrity-profile=pre-phase3` before
 migration. This profile records the exact hosted migration list, fingerprints the 18 critical tables
@@ -53,13 +61,14 @@ metadata dump but is not misclassified as a required binary. The disposable rest
 through the manifest's last migration, so the pre-migration recovery point is tested against its
 real schema rather than today's latest schema.
 
-The command is an implementation, not a scheduler or off-site destination. A one-time complete
-pre-migration recovery point was verified on 2026-07-29 and retained outside Git with Windows EFS
-AES-256 encryption restricted to the current operator account. It has no EFS recovery certificate
-and is not off-machine. No independent Production schedule, off-machine destination, retention
-enforcement, monitoring, or failure alert is currently verified. The declared retention intent is 30
-daily and 12 monthly recovery points, but it is not operationally guaranteed. Never place
-`.backups/` in Git, application logs, or CI artifacts.
+Windows Task Scheduler owns the once-per-24-hours trigger; the repository owns capture, validation,
+reporting, exit status, and retention. The operator must review the newest report and the age of the
+latest valid point after a missed or failed run. The local directory is protected with Windows EFS
+AES-256 encryption restricted to the operator account. There is no EFS recovery certificate and the
+backup remains on the same machine as the operator workflow. This protects against logical/data
+failure and accidental disclosure at rest, but **is not an independent disaster-recovery failure
+domain**: machine loss, disk loss, or EFS-key loss can destroy both the operating workflow and its
+backups. Never place `.backups/` in Git, application logs, or CI artifacts.
 
 Restores are disposable-only, never Production. Run
 `pnpm db:restore:verify-disposable -- --manifest=<path> --target-db-url=<disposable-url> --report=<path> --storage-root=<new-empty-path>`.
@@ -74,7 +83,17 @@ table fingerprints, 17 Auth users and identities, and 43 required Storage object
 every relationship/business invariant at zero and all object hashes matching. The disposable
 database was reset to synthetic data and materialized Production-derived files were removed
 afterward. This demonstrates RTO ≤4 hours for the current Production data scale and proves the
-one-time recovery point; it does not prove an ongoing Production RPO.
+one-time recovery point. The daily OS schedule and newest successful report establish ongoing RPO
+evidence; the operator must treat a latest-valid-backup age over 24 hours as a blocking incident.
+
+### Free-tier recovery monitoring
+
+Use current provider dashboards for volatile quota limits rather than copying numeric limits here.
+At least once per backup review, record or inspect Supabase uncached egress, Storage usage, database
+size, downloaded bytes per recovery point, projected monthly backup egress, age of the latest valid
+backup, date of the latest successful restore drill, and restore duration. Measure real daily runs
+before considering incremental Storage capture. Backups never route through Vercel and must not poll
+Production or download an object more than once within one recovery operation.
 
 ## Production Reconciliation Status (point-in-time)
 
@@ -304,8 +323,15 @@ import. The unresolved preserve-local enhancement remains tracked in
   predecessor mode for the two-migration cutover only.
 - Verifies project identity, capture-window coherence, object size/hash, manifest completeness, and
   critical business integrity before success.
-- Writes sensitive artifacts only under ignored `.backups/prod/`; an operator must move them to a
-  sanctioned encrypted, access-restricted destination and apply retention.
+- Creates and verifies an EFS-encrypted directory under ignored `.backups/prod/`.
+- Does not schedule itself or route artifacts through any hosted system.
+
+`pnpm db:prod:backup:daily`
+
+- Is the deterministic once-per-24-hours entrypoint for Windows Task Scheduler.
+- Runs one complete critical backup, verifies manifest/checksums and EFS encryption, records byte
+  and duration metrics, and applies 30-daily/12-monthly local retention.
+- Returns nonzero on capture, integrity, encryption, reporting, or retention failure.
 
 `pnpm db:prod:migrate`
 

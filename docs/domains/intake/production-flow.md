@@ -324,6 +324,12 @@ Required order:
 5. Deploy application code that depends on those migrations.
 6. Run the production smoke tests below and inspect Vercel/Supabase logs.
 
+On the Free plan, both Production recovery points run only on the authorized local operator machine
+and must be Windows EFS encrypted. The daily local OS schedule targets catastrophic-loss RPO ≤24
+hours; the planned-mutation pre/post points are additional gates. Same-machine EFS is not an
+independent disaster-recovery failure domain. No backup job runs in Vercel, CI, Supabase scheduled
+compute, Edge Functions, or application code.
+
 Application code must not be deployed before its required database migration. In particular,
 reviewed atomic publication requires `20260717193000_publication_preflight_integrity.sql` (after
 `20260715210301_atomic_invitation_publication.sql`), and asset metadata gating requires

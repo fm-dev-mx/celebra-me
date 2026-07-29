@@ -71,6 +71,9 @@ Alba Rosa Quiñones client invitation, premium motion system, and preview infras
 
 ### Changed
 
+- **Free-tier Production recovery**: local Windows EFS critical backups support unattended daily
+  reporting, category byte metrics, checksum verification, and 30-daily/12-monthly retention.
+
 ## [0.14.0-beta.1]
 
 Envelope seal system, new talent packs, and Celestial Blue evolution since `v0.13.0-beta.1`.
