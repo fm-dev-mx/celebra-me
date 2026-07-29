@@ -1,2 +1,4 @@
 #!/bin/sh
-cmd.exe /c "pnpm commitlint --edit \"$1\""
+# Invoke commitlint directly. Routing through `cmd.exe /c "..."` breaks because
+# Windows cmd treats `/C` inside `.git/COMMIT_EDITMSG` as another /C switch.
+pnpm commitlint --edit "$1"
