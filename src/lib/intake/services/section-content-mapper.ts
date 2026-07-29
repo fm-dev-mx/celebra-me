@@ -46,22 +46,27 @@ function valuesEqual(left: unknown, right: unknown): boolean {
 	);
 }
 
+/** structuredClone cannot clone `undefined` (Jest/jsdom may surface this as a JSON SyntaxError). */
+function cloneValue<T>(value: T): T {
+	return value === undefined ? value : structuredClone(value);
+}
+
 /**
  * Build a section payload that keeps baseline field identity for untouched paths
  * and only overlays fields that actually changed in the editor.
  */
 export function mergeSectionSaveValue(baselineValue: unknown, currentValue: unknown): unknown {
 	if (valuesEqual(baselineValue, currentValue)) {
-		return baselineValue === undefined ? currentValue : structuredClone(baselineValue);
+		return baselineValue === undefined ? currentValue : cloneValue(baselineValue);
 	}
 	if (Array.isArray(baselineValue) || Array.isArray(currentValue)) {
-		return structuredClone(currentValue);
+		return cloneValue(currentValue);
 	}
 	if (!isPlainObject(baselineValue) || !isPlainObject(currentValue)) {
-		return structuredClone(currentValue);
+		return cloneValue(currentValue);
 	}
 
-	const result: Record<string, unknown> = structuredClone(baselineValue);
+	const result: Record<string, unknown> = cloneValue(baselineValue);
 	const keys = new Set([...Object.keys(baselineValue), ...Object.keys(currentValue)]);
 	for (const key of keys) {
 		const baselineChild = baselineValue[key];
@@ -71,11 +76,11 @@ export function mergeSectionSaveValue(baselineValue: unknown, currentValue: unkn
 			continue;
 		}
 		if (!(key in baselineValue)) {
-			result[key] = structuredClone(currentChild);
+			result[key] = cloneValue(currentChild);
 			continue;
 		}
 		if (valuesEqual(baselineChild, currentChild)) {
-			result[key] = structuredClone(baselineChild);
+			result[key] = cloneValue(baselineChild);
 			continue;
 		}
 		result[key] = mergeSectionSaveValue(baselineChild, currentChild) as unknown;

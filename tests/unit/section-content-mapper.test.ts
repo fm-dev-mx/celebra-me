@@ -106,6 +106,23 @@ describe('buildSectionSaveValue', () => {
 		);
 	});
 
+	it('clones location sections that include undefined eventTiming without throwing', () => {
+		const locationBaseline = {
+			introLede: 'Guarda la ruta y llega con calma.',
+			eventTiming: undefined,
+		};
+		const locationCurrent = {
+			introLede: 'Nueva descripción de ruta.',
+			eventTiming: undefined,
+		};
+
+		expect(() => mergeSectionSaveValue(locationBaseline, locationCurrent)).not.toThrow();
+		expect(mergeSectionSaveValue(locationBaseline, locationCurrent)).toEqual({
+			introLede: 'Nueva descripción de ruta.',
+			eventTiming: undefined,
+		});
+	});
+
 	it('overlays a nested hero leaf while preserving sibling hero fields', () => {
 		const HERO_LABEL = 'Sample occasion';
 		const FOCAL = '68% 42%';
