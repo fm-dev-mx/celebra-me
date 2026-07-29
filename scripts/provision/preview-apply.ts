@@ -9,7 +9,7 @@ import type { OperationalPlan } from './invitation-update-plan.ts';
 import { createPendingPreviewApprovalArtifact } from './preview-approval-service.ts';
 
 import type { AssetPolicy } from './asset-reconciliation.ts';
-import type { UpdateScope } from './semantic-delta.ts';
+import type { ConflictResolutions, UpdateScope } from './semantic-delta.ts';
 
 export async function runPreviewApply(input: {
 	packageData: InvitationPackageData;
@@ -18,6 +18,7 @@ export async function runPreviewApply(input: {
 	assetPolicy?: AssetPolicy;
 	pruneAssets?: boolean;
 	updateScope?: UpdateScope;
+	conflictResolutions?: ConflictResolutions;
 	runEngine?: (options: ImportEngineOptions) => Promise<ImportEngineResult>;
 	createPendingApproval?: typeof createPendingPreviewApprovalArtifact;
 }): Promise<ImportEngineResult & { plan: OperationalPlan }> {
@@ -30,6 +31,7 @@ export async function runPreviewApply(input: {
 		assetPolicy: input.assetPolicy,
 		pruneAssets: input.pruneAssets,
 		updateScope: input.updateScope,
+		conflictResolutions: input.conflictResolutions,
 	});
 	assertEngineResult(result, input.plan.planId, 'Preview', true);
 	(input.createPendingApproval ?? createPendingPreviewApprovalArtifact)({

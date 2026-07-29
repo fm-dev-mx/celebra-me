@@ -53,6 +53,47 @@ import { establishPreviewProvenanceBaseline } from './preview-provenance-baselin
 import { runPreviewApply } from './preview-apply.ts';
 import { ProductionPreflightError, runProductionPreflight } from './production-preflight.ts';
 import type { OperationalPlan } from './invitation-update-plan.ts';
+import {
+	loadConflictResolutionsFile,
+	suggestConflictResolutionsFile,
+} from './conflict-resolutions.ts';
+import {
+	MergeConflictError,
+	listDriftConflicts,
+	type ConflictResolutions,
+} from './semantic-delta.ts';
+
+function mergeConflictsFromError(error: unknown): TargetPlanData['mergeConflicts'] {
+	let current: unknown = error;
+	while (current) {
+		if (current instanceof MergeConflictError) {
+			return listDriftConflicts(current.deltas).map((delta) => ({
+				path: delta.path,
+				previousCanonicalValue: delta.previousCanonicalValue,
+				packageValue: delta.currentCanonicalValue,
+				targetValue: delta.currentTargetValue,
+			}));
+		}
+		if (current instanceof Error && 'cause' in current && current.cause) {
+			current = current.cause;
+			continue;
+		}
+		break;
+	}
+	return undefined;
+}
+
+function collectPlanConflicts(targetPlans: TargetPlanData[]): NonNullable<
+	TargetPlanData['mergeConflicts']
+> {
+	const byPath = new Map<string, NonNullable<TargetPlanData['mergeConflicts']>[number]>();
+	for (const plan of targetPlans) {
+		for (const conflict of plan.mergeConflicts ?? []) {
+			byPath.set(conflict.path, conflict);
+		}
+	}
+	return Array.from(byPath.values());
+}
 
 type StageStatus =
 	| 'UPDATED'
@@ -146,6 +187,7 @@ Options:
   --confirm-slug <slug>        Exact invitation slug confirmation required for non-interactive Production apply
   --confirm-scope              Coordinated release scope confirmation required for non-interactive Production apply
   --confirm-destructive        Destructive operations acknowledgement required for non-interactive apply when plan contains deletions or overwrites
+  --conflict-resolutions <path> JSON { "resolutions": { "<path>": "package"|"target" } } (required when apply has merge conflicts)
   --json                       Format output as JSON
   --owner-user-id <uuid>       Optional override/assertion; new invites default to a dedicated host (slug@clientes.celebra.invalid)
   --adoption-plan              Read-only plan for the isolated Production legacy adoption
@@ -393,6 +435,12 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 	const updateScope: UpdateScope =
 		rawScope === 'content-and-assets' || rawScope === 'assets-only' ? rawScope : 'content-only';
 
+	const conflictResolutionsPath = value(args, '--conflict-resolutions');
+	let conflictResolutions: ConflictResolutions | undefined;
+	if (conflictResolutionsPath) {
+		conflictResolutions = loadConflictResolutionsFile(conflictResolutionsPath);
+	}
+
 	const rawAssetPolicy =
 		value(args, '--asset-policy') ?? (updateScope === 'content-only' ? 'preserve' : 'missing');
 	const pruneAssets = args.includes('--prune-assets');
@@ -595,6 +643,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 					apply: false,
 					updateScope,
 					assetPolicy,
+					conflictResolutions,
 				});
 				executionPlans.set('local', localResult.plan);
 				targetPlans.push({
@@ -641,6 +690,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 					target: 'local',
 					status: 'BLOQUEADO',
 					reason: errMsg,
+					mergeConflicts: mergeConflictsFromError(error),
 					plannedOperations: 0,
 					expectedDatabaseWrites: { inserts: 0, updates: 0, deletes: 0 },
 					expectedStorageMutations: { uploads: 0, overwrites: 0, moves: 0, deletes: 0 },
@@ -691,6 +741,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 								assetPolicy,
 								pruneAssets,
 								updateScope,
+								conflictResolutions,
 							}
 						: {
 								packageData: confirmationPackage,
@@ -700,6 +751,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 								assetPolicy,
 								pruneAssets,
 								updateScope,
+								conflictResolutions,
 							};
 					const result = await runImportEngine(engineOptions);
 					assertEngineResult(result, undefined, 'Preview', false);
@@ -743,6 +795,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 						target: 'preview',
 						status: 'BLOQUEADO',
 						reason: previewReason,
+						mergeConflicts: mergeConflictsFromError(error),
 						plannedOperations: 0,
 						expectedDatabaseWrites: { inserts: 0, updates: 0, deletes: 0 },
 						expectedStorageMutations: {
@@ -763,6 +816,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 					assetPolicy,
 					pruneAssets,
 					updateScope,
+					conflictResolutions,
 					getProductionDbUrl: getProdDbUrl,
 				});
 				executionPlans.set('production', engineResult.plan);
@@ -813,6 +867,11 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 					target: 'production',
 					status: 'BLOQUEADO',
 					reason: preflightError.safeReason,
+					mergeConflicts: mergeConflictsFromError(
+						preflightError.technicalCause instanceof Error
+							? preflightError.technicalCause
+							: error,
+					),
 					plannedOperations: 0,
 					expectedDatabaseWrites: { inserts: 0, updates: 0, deletes: 0 },
 					expectedStorageMutations: { uploads: 0, overwrites: 0, moves: 0, deletes: 0 },
@@ -857,6 +916,9 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 
 	// ── HANDLE DRY-RUN MODE ──────────────────────────────────────────────────
 	if (dryRun) {
+		const allConflicts = collectPlanConflicts(targetPlans);
+		const suggestedResolutions =
+			allConflicts.length > 0 ? suggestConflictResolutionsFile(allConflicts) : undefined;
 		if (json) {
 			const status = reports.some((report) => report.status === 'BLOCKED')
 				? 'BLOCKED'
@@ -864,10 +926,27 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 					? 'IN_SYNC'
 					: 'SKIPPED';
 			console.log(
-				JSON.stringify({ invitation: slug, reports, plan: planData, status }, null, 2),
+				JSON.stringify(
+					{
+						invitation: slug,
+						reports,
+						plan: planData,
+						status,
+						suggestedConflictResolutions: suggestedResolutions,
+					},
+					null,
+					2,
+				),
 			);
 		} else {
 			console.log(formatDryRunPlan(planData));
+			if (suggestedResolutions) {
+				console.log('');
+				console.log(
+					'Resoluciones sugeridas (guarde en un archivo y use --conflict-resolutions):',
+				);
+				console.log(JSON.stringify(suggestedResolutions, null, 2));
+			}
 		}
 		if (targetPlans.some((tp) => tp.status === 'BLOQUEADO' || tp.status === 'NO EVALUADO')) {
 			process.exitCode = 1;
@@ -877,6 +956,22 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 
 	// ── HANDLE APPLY MODE ────────────────────────────────────────────────────
 	if (apply) {
+		// Merge conflicts require an explicit --conflict-resolutions file before apply
+		const planConflicts = collectPlanConflicts(targetPlans);
+		const onlyMergeBlocks =
+			planConflicts.length > 0 &&
+			targetPlans
+				.filter((tp) => tp.status === 'BLOQUEADO' || tp.status === 'NO EVALUADO')
+				.every((tp) => (tp.mergeConflicts?.length ?? 0) > 0);
+		if (onlyMergeBlocks && !conflictResolutions) {
+			console.error(
+				'Hay conflictos de merge. Proporcione --conflict-resolutions <archivo.json> con elecciones "package" o "target" por path.',
+			);
+			console.log(JSON.stringify(suggestConflictResolutionsFile(planConflicts), null, 2));
+			process.exitCode = 1;
+			return;
+		}
+
 		// Mandatory Preflight Block Check BEFORE any mutation or confirmation prompt
 		const blockedTarget = targetPlans.find(
 			(tp) => tp.status === 'BLOQUEADO' || tp.status === 'NO EVALUADO',
@@ -1214,6 +1309,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 						plan: localResult?.plan,
 						updateScope,
 						assetPolicy,
+						conflictResolutions,
 					});
 					reports.push({
 						stage: 'apply',
@@ -1290,6 +1386,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 						assetPolicy,
 						pruneAssets,
 						updateScope,
+						conflictResolutions,
 					});
 					reports.push({
 						stage: 'promote',
@@ -1366,6 +1463,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 					assetPolicy,
 					pruneAssets,
 					updateScope,
+					conflictResolutions,
 				});
 				assertEngineResult(result, targetPlan.planId, 'Producción', true);
 				reports.push({

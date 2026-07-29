@@ -228,6 +228,12 @@ export interface TargetPlanData {
 	actions: Array<{ resource: string; name: string; action: string; detail: string }>;
 	functionalChanges?: OperationalPlanData['functionalChanges'];
 	publishedVersion?: number;
+	mergeConflicts?: Array<{
+		path: string;
+		previousCanonicalValue: unknown;
+		packageValue: unknown;
+		targetValue: unknown;
+	}>;
 }
 
 export interface OperationalPlanData {
@@ -450,6 +456,27 @@ export function formatDryRunPlan(plan: OperationalPlanData): string {
 			lines.push(`  Estado       : ${resolveStatusColor(tp.status)}`);
 			if (tp.reason) {
 				lines.push(`  Motivo       : ${tp.reason}`);
+			}
+			if (tp.mergeConflicts && tp.mergeConflicts.length > 0) {
+				lines.push('');
+				lines.push(colors.bold('  Conflictos de merge (paquete vs destino):'));
+				for (const conflict of tp.mergeConflicts) {
+					lines.push(`    • ${conflict.path}`);
+					lines.push(
+						`        Ancestro : ${JSON.stringify(conflict.previousCanonicalValue ?? null)}`,
+					);
+					lines.push(
+						`        Paquete  : ${JSON.stringify(conflict.packageValue ?? null)}`,
+					);
+					lines.push(
+						`        Destino  : ${JSON.stringify(conflict.targetValue ?? null)}`,
+					);
+				}
+				lines.push(
+					colors.dim(
+						'    Resuelva con --conflict-resolutions <archivo.json> ({ "resolutions": { "<path>": "package"|"target" } }).',
+					),
+				);
 			}
 			lines.push('');
 

@@ -144,6 +144,21 @@ function setNestedValue(obj: Record<string, unknown>, path: string, val: unknown
 	current[lastToken] = val;
 }
 
+export type ConflictResolutionChoice = 'package' | 'target';
+
+export type ConflictResolutions = Record<string, ConflictResolutionChoice>;
+
+export class MergeConflictError extends Error {
+	readonly code = 'merge_conflict';
+	readonly deltas: SemanticFieldDelta[];
+
+	constructor(message: string, deltas: SemanticFieldDelta[]) {
+		super(message);
+		this.name = 'MergeConflictError';
+		this.deltas = deltas;
+	}
+}
+
 /**
  * Performs a 3-way semantic patch calculation between:
  * 1. Previous canonical release
@@ -156,8 +171,16 @@ export function apply3WaySemanticPatch(params: {
 	currentTarget: Record<string, unknown>;
 	scope: UpdateScope;
 	targetName?: string;
+	resolutions?: ConflictResolutions;
 }): SemanticPatchResult {
-	const { previousCanonical, currentCanonical, currentTarget, scope, targetName = 'target' } = params;
+	const {
+		previousCanonical,
+		currentCanonical,
+		currentTarget,
+		scope,
+		targetName = 'target',
+		resolutions = {},
+	} = params;
 
 	const prevMap = flattenContentPaths(previousCanonical);
 	const currMap = flattenContentPaths(currentCanonical);
@@ -185,7 +208,10 @@ export function apply3WaySemanticPatch(params: {
 		const isCurrTargetSame = canonicalJsonString(currVal) === canonicalJsonString(targetVal);
 		const isPrevTargetSame = canonicalJsonString(prevVal) === canonicalJsonString(targetVal);
 
-		const isAsset = isAssetFieldPath(path, currVal) || isAssetFieldPath(path, targetVal) || isAssetFieldPath(path, prevVal);
+		const isAsset =
+			isAssetFieldPath(path, currVal) ||
+			isAssetFieldPath(path, targetVal) ||
+			isAssetFieldPath(path, prevVal);
 
 		if (isPrevCurrSame) {
 			// No change in release delta for this path
@@ -255,6 +281,32 @@ export function apply3WaySemanticPatch(params: {
 			});
 			setNestedValue(patchedContent, path, currVal);
 		} else {
+			const resolution = resolutions[path];
+			if (resolution === 'package') {
+				deltas.push({
+					path,
+					previousCanonicalValue: prevVal,
+					currentCanonicalValue: currVal,
+					currentTargetValue: targetVal,
+					isAssetField: isAsset,
+					status: 'APPLY',
+					appliedValue: currVal,
+				});
+				setNestedValue(patchedContent, path, currVal);
+				continue;
+			}
+			if (resolution === 'target') {
+				deltas.push({
+					path,
+					previousCanonicalValue: prevVal,
+					currentCanonicalValue: currVal,
+					currentTargetValue: targetVal,
+					isAssetField: isAsset,
+					status: 'ALREADY_APPLIED',
+					appliedValue: targetVal,
+				});
+				continue;
+			}
 			// Target matches neither previous nor current -> Target Drift!
 			deltas.push({
 				path,
@@ -279,3 +331,8 @@ export function apply3WaySemanticPatch(params: {
 		blockReason,
 	};
 }
+
+export function listDriftConflicts(deltas: SemanticFieldDelta[]): SemanticFieldDelta[] {
+	return deltas.filter((delta) => delta.status === 'DRIFT');
+}
+

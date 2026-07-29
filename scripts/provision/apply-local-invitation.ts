@@ -26,7 +26,7 @@ import {
 	hashPublicationProjection,
 } from '../../src/lib/intake/services/publication-diff.service.ts';
 import { checkTargetDivergenceConflict } from './promotion-comparison.ts';
-import { resolveManagedMergeBaseline } from './managed-merge-baseline.ts';
+import { resolveManagedMergeBaseline, resolvePublicationTimestamp } from './managed-merge-baseline.ts';
 import { getInvitationDefinition } from './invitations/registry.ts';
 import {
 	buildNormalizedInvitationRelease,
@@ -51,7 +51,12 @@ import {
 	type OperationalPlan,
 } from './invitation-update-plan.ts';
 
-import { apply3WaySemanticPatch, type UpdateScope } from './semantic-delta.ts';
+import {
+	apply3WaySemanticPatch,
+	MergeConflictError,
+	type ConflictResolutions,
+	type UpdateScope,
+} from './semantic-delta.ts';
 import type { AssetPolicy } from './asset-reconciliation.ts';
 
 interface ApplyLocalOptions {
@@ -63,6 +68,7 @@ interface ApplyLocalOptions {
 	plan?: OperationalPlan;
 	updateScope?: UpdateScope;
 	assetPolicy?: AssetPolicy;
+	conflictResolutions?: ConflictResolutions;
 }
 
 export interface LocalApplyResult {
@@ -249,7 +255,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 
 	const { data: existingPub } = await supabase
 		.from('published_invitation_content')
-		.select('version, content')
+		.select('version, content, published_at, updated_at')
 		.eq('invitation_project_id', invitationId)
 		.is('deleted_at', null)
 		.order('version', { ascending: false })
@@ -272,7 +278,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		: { data: null };
 	const { data: existingProvenance } = await supabase
 		.from('managed_invitation_release_provenance')
-		.select('invitation_id, managed_projection')
+		.select('invitation_id, managed_projection, applied_at')
 		.eq('invitation_id', invitationId)
 		.maybeSingle();
 
@@ -442,7 +448,12 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 				| Record<string, unknown>
 				| null
 				| undefined,
+			managedAppliedAt:
+				typeof existingProvenance?.applied_at === 'string'
+					? existingProvenance.applied_at
+					: null,
 			publishedContent: existingPub?.content as Record<string, unknown> | undefined,
+			publishedAt: resolvePublicationTimestamp(existingPub),
 			draftContent: existingDraft.content as Record<string, unknown>,
 		});
 		const patchRes = apply3WaySemanticPatch({
@@ -451,15 +462,12 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			currentTarget: existingDraft.content as Record<string, unknown>,
 			scope: updateScope,
 			targetName: slug,
+			resolutions: options.conflictResolutions,
 		});
 		if (patchRes.blocked) {
-			const driftPaths = patchRes.deltas
-				.filter((delta) => delta.status === 'DRIFT' || delta.status === 'BLOCKED_BY_SCOPE')
-				.map((delta) => delta.path);
-			throw new Error(
-				driftPaths.length > 0
-					? `${patchRes.blockReason ?? 'Asset preservation violation detected.'} conflicting paths: ${driftPaths.join(', ')}`
-					: (patchRes.blockReason ?? 'Asset preservation violation detected.'),
+			throw new MergeConflictError(
+				patchRes.blockReason ?? 'Asset preservation violation detected.',
+				patchRes.deltas,
 			);
 		}
 		proposedContent = patchRes.patchedContent;
@@ -641,6 +649,9 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		projectRef: 'persistent-local',
 		changes: functionalChanges,
 		preconditions: targetPreconditions,
+		operationFingerprint: options.conflictResolutions
+			? JSON.stringify(options.conflictResolutions)
+			: undefined,
 	});
 
 	const currentPlan: OperationalPlan = {

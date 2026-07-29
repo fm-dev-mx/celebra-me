@@ -36,7 +36,7 @@ import {
 	checkTargetDivergenceConflict,
 	buildResourceActions,
 } from './promotion-comparison.ts';
-import { resolveManagedMergeBaseline } from './managed-merge-baseline.ts';
+import { resolveManagedMergeBaseline, resolvePublicationTimestamp } from './managed-merge-baseline.ts';
 import { materializeAssetReferences } from './normalized-invitation-release.ts';
 import type { UploadedAssetMap } from './invitations/invitation-definition.ts';
 import { cleanupHostedPsqlResources, type TrackedResource } from './managed-invitation-cleanup.ts';
@@ -54,7 +54,12 @@ import {
 	type ObservedStorageState,
 	type AssetReconciliationResult,
 } from './asset-reconciliation.ts';
-import { apply3WaySemanticPatch, type UpdateScope } from './semantic-delta.ts';
+import {
+	apply3WaySemanticPatch,
+	MergeConflictError,
+	type ConflictResolutions,
+	type UpdateScope,
+} from './semantic-delta.ts';
 
 export interface ImportEngineOptions {
 	packagePath?: string;
@@ -69,6 +74,7 @@ export interface ImportEngineOptions {
 	assetPolicy?: AssetPolicy;
 	pruneAssets?: boolean;
 	updateScope?: UpdateScope;
+	conflictResolutions?: ConflictResolutions;
 }
 
 export interface ResourcePlanAction {
@@ -727,6 +733,7 @@ interface TargetScanResult {
 	existingEvent: Record<string, unknown> | null;
 	existingMember: Record<string, unknown> | null;
 	managedProjection: Record<string, unknown> | null;
+	managedAppliedAt: string | null;
 	targetInvitationId: string;
 	pubQuery: string;
 }
@@ -754,7 +761,7 @@ function scanTargetState(
 	);
 	const existingDraft = draftResult.stdout.trim() ? parsePsqlJson(draftResult.stdout) : null;
 
-	const pubQuery = `select version, updated_at, content from public.published_invitation_content where slug = ${sqlLiteral(slug)} and event_type = ${sqlLiteral(eventType)} and deleted_at is null order by version desc limit 1`;
+	const pubQuery = `select version, updated_at, published_at, content from public.published_invitation_content where slug = ${sqlLiteral(slug)} and event_type = ${sqlLiteral(eventType)} and deleted_at is null order by version desc limit 1`;
 	const pubResult = runPsql(`select row_to_json(t) from (${pubQuery}) t;`, targetDbUrl, {
 		tuplesOnly: true,
 		throwOnError: false,
@@ -762,7 +769,7 @@ function scanTargetState(
 	const existingPub = pubResult.stdout.trim() ? parsePsqlJson(pubResult.stdout) : null;
 
 	const provenanceResult = runPsql(
-		`select row_to_json(t) from (select managed_projection, applied_draft_updated_at from public.managed_invitation_release_provenance where invitation_id = '${targetInvitationId}'::uuid) t;`,
+		`select row_to_json(t) from (select managed_projection, applied_draft_updated_at, applied_at from public.managed_invitation_release_provenance where invitation_id = '${targetInvitationId}'::uuid) t;`,
 		targetDbUrl,
 		{ tuplesOnly: true, throwOnError: false },
 	);
@@ -774,6 +781,8 @@ function scanTargetState(
 		typeof existingProvenance.managed_projection === 'object'
 			? (existingProvenance.managed_projection as Record<string, unknown>)
 			: null;
+	const managedAppliedAt =
+		typeof existingProvenance?.applied_at === 'string' ? existingProvenance.applied_at : null;
 
 	const eventResult = runPsql(
 		`select row_to_json(t) from (select id, owner_user_id, slug, event_type, title, status, invitation_project_id from public.events where slug = ${sqlLiteral(slug)} and deleted_at is null limit 1) t;`,
@@ -802,6 +811,7 @@ function scanTargetState(
 		existingEvent,
 		existingMember,
 		managedProjection,
+		managedAppliedAt,
 		targetInvitationId,
 		pubQuery,
 	};
@@ -836,6 +846,7 @@ function analyzeTargetDrift(
 	existingInvitation: Record<string, unknown> | null,
 	updateScope: UpdateScope = 'content-only',
 	preferredInvitationId?: string,
+	conflictResolutions?: ConflictResolutions,
 ) {
 	const slug = pkg.invitation.slug;
 	const eventType = pkg.invitation.eventType;
@@ -863,7 +874,9 @@ function analyzeTargetDrift(
 	) {
 		const prevCanonical = resolveManagedMergeBaseline({
 			managedProjection: scanned.managedProjection,
+			managedAppliedAt: scanned.managedAppliedAt,
 			publishedContent: scanned.existingPub?.content as Record<string, unknown> | undefined,
+			publishedAt: resolvePublicationTimestamp(scanned.existingPub),
 			draftContent: scanned.existingDraft.content as Record<string, unknown>,
 		});
 		const patchRes = apply3WaySemanticPatch({
@@ -872,9 +885,13 @@ function analyzeTargetDrift(
 			currentTarget: scanned.existingDraft.content as Record<string, unknown>,
 			scope: updateScope,
 			targetName: slug,
+			resolutions: conflictResolutions,
 		});
 		if (patchRes.blocked) {
-			throw new Error(patchRes.blockReason ?? 'Asset preservation violation detected.');
+			throw new MergeConflictError(
+				patchRes.blockReason ?? 'Asset preservation violation detected.',
+				patchRes.deltas,
+			);
 		}
 		targetDraftContent = patchRes.patchedContent;
 		targetPublishedContent = patchRes.patchedContent;
@@ -1098,6 +1115,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		identity.existingInvitation,
 		updateScope,
 		initialScan.targetInvitationId,
+		options.conflictResolutions,
 	);
 	const {
 		assetsToUpload,
@@ -1206,9 +1224,10 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 	};
 	const operationFingerprint = createHash('sha256')
 		.update(
-			JSON.stringify(
-				actions.map(({ resource, name, action }) => ({ resource, name, action })),
-			),
+			JSON.stringify({
+				actions: actions.map(({ resource, name, action }) => ({ resource, name, action })),
+				conflictResolutions: options.conflictResolutions ?? null,
+			}),
 		)
 		.digest('hex');
 	const planId = computePlanId({
@@ -1549,6 +1568,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			postApplyInvitation,
 			updateScope,
 			drift.targetInvitationId,
+			options.conflictResolutions,
 		);
 		const finalAssets = await scanAssetStatus(
 			pkg.assets,

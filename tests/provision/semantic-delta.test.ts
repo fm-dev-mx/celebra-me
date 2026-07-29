@@ -3,7 +3,10 @@
  */
 
 import { describe, expect, it } from '@jest/globals';
-import { apply3WaySemanticPatch } from '../../scripts/provision/semantic-delta.ts';
+import {
+	apply3WaySemanticPatch,
+	listDriftConflicts,
+} from '../../scripts/provision/semantic-delta.ts';
 
 describe('apply3WaySemanticPatch', () => {
 	it('merges non-overlapping content changes onto the target', () => {
@@ -66,5 +69,109 @@ describe('apply3WaySemanticPatch', () => {
 			.map((delta) => delta.path);
 		expect(driftPaths).toContain('gallery.items[0].alt');
 		expect(result.patchedContent.gallery).toEqual({ items: [{ alt: 'Host alt' }] });
+	});
+
+	it('resolves overlapping edits when an explicit package choice is supplied', () => {
+		const previousCanonical = {
+			gallery: { items: [{ alt: 'Original alt' }] },
+		};
+		const currentCanonical = {
+			gallery: { items: [{ alt: 'Managed alt' }] },
+		};
+		const currentTarget = {
+			gallery: { items: [{ alt: 'Host alt' }] },
+		};
+
+		const result = apply3WaySemanticPatch({
+			previousCanonical,
+			currentCanonical,
+			currentTarget,
+			scope: 'content-only',
+			targetName: 'local',
+			resolutions: { 'gallery.items[0].alt': 'package' },
+		});
+
+		expect(result.blocked).toBe(false);
+		expect(result.patchedContent.gallery).toEqual({ items: [{ alt: 'Managed alt' }] });
+	});
+
+	it('keeps the target value when an explicit target choice is supplied', () => {
+		const result = apply3WaySemanticPatch({
+			previousCanonical: { envelope: { tooltipText: 'Abrir' } },
+			currentCanonical: { envelope: { tooltipText: 'ABRIR' } },
+			currentTarget: { envelope: { tooltipText: '' } },
+			scope: 'content-only',
+			resolutions: { 'envelope.tooltipText': 'target' },
+		});
+
+		expect(result.blocked).toBe(false);
+		expect(result.patchedContent.envelope).toEqual({ tooltipText: '' });
+	});
+
+	it('stays blocked when only some drift paths are resolved', () => {
+		const result = apply3WaySemanticPatch({
+			previousCanonical: {
+				envelope: { tooltipText: 'A', microcopy: 'B' },
+				hero: { name: 'Old' },
+			},
+			currentCanonical: {
+				envelope: { tooltipText: 'PKG', microcopy: 'PKG-B' },
+				hero: { name: 'Pkg' },
+			},
+			currentTarget: {
+				envelope: { tooltipText: 'Host', microcopy: 'Host-B' },
+				hero: { name: 'Host' },
+			},
+			scope: 'content-only',
+			resolutions: { 'envelope.tooltipText': 'package' },
+		});
+
+		expect(result.blocked).toBe(true);
+		expect(listDriftConflicts(result.deltas).map((d) => d.path).sort()).toEqual([
+			'envelope.microcopy',
+			'hero.name',
+		]);
+		expect(result.patchedContent.envelope).toMatchObject({ tooltipText: 'PKG' });
+	});
+
+	it('does not unblock when a resolution path does not match a conflict', () => {
+		const result = apply3WaySemanticPatch({
+			previousCanonical: { envelope: { tooltipText: 'A' } },
+			currentCanonical: { envelope: { tooltipText: 'PKG' } },
+			currentTarget: { envelope: { tooltipText: 'Host' } },
+			scope: 'content-only',
+			resolutions: { 'envelope.missingField': 'package' },
+		});
+
+		expect(result.blocked).toBe(true);
+		expect(listDriftConflicts(result.deltas).map((d) => d.path)).toEqual([
+			'envelope.tooltipText',
+		]);
+	});
+
+	it('unblocks when mixed package/target resolutions cover every drift path', () => {
+		const result = apply3WaySemanticPatch({
+			previousCanonical: {
+				envelope: { tooltipText: 'A', microcopy: 'B' },
+			},
+			currentCanonical: {
+				envelope: { tooltipText: 'PKG', microcopy: 'PKG-B' },
+			},
+			currentTarget: {
+				envelope: { tooltipText: 'Host', microcopy: 'Host-B' },
+			},
+			scope: 'content-only',
+			resolutions: {
+				'envelope.tooltipText': 'package',
+				'envelope.microcopy': 'target',
+			},
+		});
+
+		expect(result.blocked).toBe(false);
+		expect(result.patchedContent.envelope).toEqual({
+			tooltipText: 'PKG',
+			microcopy: 'Host-B',
+		});
+		expect(listDriftConflicts(result.deltas)).toEqual([]);
 	});
 });
