@@ -5,6 +5,7 @@
 | Parameter                         | Value                                                        |
 | --------------------------------- | ------------------------------------------------------------ |
 | **Invitation Slug**               | `abril-michelle-becerra-rea`                                 |
+| **Host Login Alias**              | `abril_becerra`                                              |
 | **Event Type**                    | `xv` (Quinceañera)                                           |
 | **Current Managed Status**        | `Registrada`                                                 |
 | **Local Environment Status**      | `STABILIZED & VERIFIED` (refine pass Local `v8`, 2026-07-25) |

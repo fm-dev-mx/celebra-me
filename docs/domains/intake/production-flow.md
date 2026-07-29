@@ -48,11 +48,11 @@ publication does not require a pre-existing Preview approval artifact (recorded 
 evidence if present). Non-interactive production publication requires `--confirm-slug <slug>`,
 `--confirm-scope`, and `--confirm-destructive` (when destructive changes exist). Existing target
 invitations resolve and preserve their owner by slug. New target invitations ensure a dedicated Auth
-host from the invitation slug (`*@clientes.celebra.invalid`) before plan/apply; `--owner-user-id` is
-an optional override/assertion, not required on the happy path. Dry-run reports owner action as
-`OWNER_REUSE`, `OWNER_CREATE_PLANNED`, or `OWNER_CONFLICT` (blocked). Every selected target is
-inspected and planned before any mutation; a blocked or unevaluated target aborts the complete apply
-phase across all targets.
+host from the definition `hostLoginAlias` (`{alias}@clientes.celebra.invalid`) before plan/apply;
+`--owner-user-id` is an optional override/assertion, not required on the happy path. Dry-run reports
+owner action as `OWNER_REUSE`, `OWNER_CREATE_PLANNED`, or `OWNER_CONFLICT` (blocked). Every selected
+target is inspected and planned before any mutation; a blocked or unevaluated target aborts the
+complete apply phase across all targets.
 
 ### Package freshness (definition vs `--package`)
 

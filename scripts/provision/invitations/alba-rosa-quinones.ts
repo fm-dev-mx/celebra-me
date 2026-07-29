@@ -340,6 +340,7 @@ export const albaInvitation: InvitationDefinition<AlbaAssetKey> = defineInvitati
 	eventType: ALBA_EVENT.eventType,
 	title: ALBA_EVENT.title,
 	clientName: 'Lucero Ramírez',
+	hostLoginAlias: 'alba_quinones',
 	clientEmail: '',
 	clientWhatsapp: '',
 	photosReceived: true,

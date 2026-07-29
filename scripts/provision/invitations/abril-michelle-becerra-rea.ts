@@ -440,6 +440,7 @@ export const abrilInvitation: InvitationDefinition<AbrilAssetKey> = defineInvita
 	eventType: ABRIL_EVENT.eventType,
 	title: ABRIL_EVENT.title,
 	clientName: 'Abril Michelle Becerra Rea',
+	hostLoginAlias: 'abril_becerra',
 	clientEmail: '',
 	clientWhatsapp: '',
 	photosReceived: true,

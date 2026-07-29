@@ -21,6 +21,17 @@ Every managed digital invitation must define:
 
 - **Display Name** (`title`): Spanish human-readable title (e.g. `Romina Ríos Chaparro`).
 - **Canonical Slug** (`slug`): Lowercase hyphenated unique identifier (e.g. `romina-rios-chaparro`).
+  Slug drives public URLs, assets, and storage paths. It is **not** the host login.
+- **Host Login Alias** (`hostLoginAlias`): Short unique Auth login for the dedicated host. Technical
+  email is `{hostLoginAlias}@clientes.celebra.invalid`. Alias is independent of slug.
+  - **Preferred form:** `{primer_nombre}_{primer_apellido}` from the celebrant/honoree (not the
+    commercial purchaser), ASCII lowercase, underscores only (e.g. `abril_becerra`,
+    `alba_quinones`).
+  - **Collision 1:** append segundo apellido → `abril_becerra_rea`.
+  - **Collision 2:** numeric suffix `_2`, `_3`, … if still taken or no second surname.
+  - Legacy aliases may retain a fuller form (e.g. `romina_rios_chaparro`) until intentionally
+    remapped. Remapping an existing Auth host is a separate Admin update; updates preserve
+    `created_by` and do not auto-rekey email.
 - **Event Type** (`eventType`): Supported event type from live `EVENT_TYPES` (e.g. `xv`, `boda`,
   `cumple`, `baby-shower`, `bautizo`, `primera-comunion`).
 - **Theme Preset** (`themeId`): A valid theme preset from `THEME_PRESETS` (e.g. `enchanted-rose`,
@@ -30,9 +41,9 @@ Every managed digital invitation must define:
 - **Client Details**: Client name, client email, client WhatsApp number, and photo reception status.
 - **Owner Policy**:
   - **All targets**: Preserve the existing invitation owner on updates.
-  - **New creates**: Ensure a dedicated Auth host per slug
-    (`{slug_with_underscores}@clientes.celebra.invalid`). UUID may differ per environment; do not
-    copy Local UUIDs across projects. Dry-run reports `OWNER_REUSE` | `OWNER_CREATE_PLANNED` |
+  - **New creates**: Ensure a dedicated Auth host from `hostLoginAlias`
+    (`{hostLoginAlias}@clientes.celebra.invalid`). UUID may differ per environment; do not copy
+    Local UUIDs across projects. Dry-run reports `OWNER_REUSE` | `OWNER_CREATE_PLANNED` |
     `OWNER_CONFLICT`.
   - **Override**: `--owner-user-id <UUID>` is optional assertion/override only; happy path does not
     require a manually discovered owner. Preview admin / shared operator accounts are not the

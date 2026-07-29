@@ -328,6 +328,7 @@ export const rominaInvitation: InvitationDefinition<RominaAssetKey> = defineInvi
 	eventType: ROMINA_EVENT.eventType,
 	title: ROMINA_EVENT.title,
 	clientName: 'Romina Ríos Chaparro',
+	hostLoginAlias: 'romina_rios_chaparro',
 	clientEmail: '',
 	clientWhatsapp: '',
 	photosReceived: true,

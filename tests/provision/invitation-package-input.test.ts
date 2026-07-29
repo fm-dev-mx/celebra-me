@@ -33,6 +33,7 @@ function validPackage(overrides?: Partial<InvitationPackageData>): InvitationPac
 			visualProfileId: 'profile',
 			kind: 'client',
 			clientName: 'Fixture',
+			hostLoginAlias: 'fixture',
 			clientEmail: '',
 			clientWhatsapp: '',
 			photosReceived: true,

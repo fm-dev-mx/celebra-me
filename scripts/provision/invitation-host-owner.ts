@@ -1,11 +1,15 @@
 /**
  * Invitation host ownership — plan and ensure a dedicated Auth host per client invitation.
  *
- * UUID is per environment. Identity is semantic: canonical technical email from slug.
+ * UUID is per environment. Identity is semantic: canonical technical email from hostLoginAlias.
  */
 
 import { randomBytes, randomUUID } from 'node:crypto';
 import { runPsql, sqlLiteral } from '../db/db-workflow-lib.ts';
+import {
+	HOST_LOGIN_ALIAS_MAX_LENGTH,
+	HOST_LOGIN_ALIAS_PATTERN,
+} from './invitations/invitation-definition.ts';
 
 export const INVITATION_HOST_EMAIL_DOMAIN = 'clientes.celebra.invalid';
 
@@ -16,6 +20,7 @@ export interface HostOwnerPlan {
 	action: HostOwnerAction;
 	slug: string;
 	hostEmail: string;
+	hostLoginAlias: string;
 	ownerUserId: string | null;
 	plannedOwnerUserId: string | null;
 	conflictSlug?: string;
@@ -24,22 +29,31 @@ export interface HostOwnerPlan {
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-/** Canonical technical host email for a managed invitation slug. */
-export function buildInvitationHostEmail(slug: string): string {
-	const alias = slug
+/** Normalize a host login alias to the canonical local-part form. */
+export function normalizeHostLoginAlias(alias: string): string {
+	const normalized = alias
 		.trim()
 		.toLowerCase()
+		.normalize('NFD')
+		.replace(/\p{M}/gu, '')
 		.replace(/[^a-z0-9]+/g, '_')
 		.replace(/^_+|_+$/g, '')
-		.slice(0, 64);
-	if (!alias) {
-		throw new Error('Cannot build invitation host email: slug produced an empty alias.');
+		.slice(0, HOST_LOGIN_ALIAS_MAX_LENGTH);
+	if (!normalized || !HOST_LOGIN_ALIAS_PATTERN.test(normalized)) {
+		throw new Error(`Cannot build invitation host email: invalid hostLoginAlias "${alias}".`);
 	}
+	return normalized;
+}
+
+/** Canonical technical host email for a managed invitation hostLoginAlias. */
+export function buildInvitationHostEmail(hostLoginAlias: string): string {
+	const alias = normalizeHostLoginAlias(hostLoginAlias);
 	return `${alias}@${INVITATION_HOST_EMAIL_DOMAIN}`;
 }
 
 export function planInvitationHostOwner(input: {
 	slug: string;
+	hostLoginAlias: string;
 	existingOwnerUserId?: string | null;
 	explicitOwnerId?: string;
 	hostEmail?: string;
@@ -52,7 +66,8 @@ export function planInvitationHostOwner(input: {
 	/** Preferred UUID when planning a create (plan→apply stability). */
 	preferredCreateOwnerId?: string;
 }): HostOwnerPlan {
-	const hostEmail = input.hostEmail ?? buildInvitationHostEmail(input.slug);
+	const hostLoginAlias = normalizeHostLoginAlias(input.hostLoginAlias);
+	const hostEmail = input.hostEmail ?? buildInvitationHostEmail(hostLoginAlias);
 	const existingOwner = input.existingOwnerUserId?.trim() || null;
 
 	if (existingOwner) {
@@ -61,6 +76,7 @@ export function planInvitationHostOwner(input: {
 				action: 'OWNER_CONFLICT',
 				slug: input.slug,
 				hostEmail,
+				hostLoginAlias,
 				ownerUserId: existingOwner,
 				plannedOwnerUserId: null,
 				detail: `--owner-user-id does not match the existing target owner for "${input.slug}".`,
@@ -70,6 +86,7 @@ export function planInvitationHostOwner(input: {
 			action: 'OWNER_PRESERVE',
 			slug: input.slug,
 			hostEmail,
+			hostLoginAlias,
 			ownerUserId: existingOwner,
 			plannedOwnerUserId: existingOwner,
 			detail: `Preserve existing owner for "${input.slug}".`,
@@ -82,6 +99,7 @@ export function planInvitationHostOwner(input: {
 				action: 'OWNER_CONFLICT',
 				slug: input.slug,
 				hostEmail,
+				hostLoginAlias,
 				ownerUserId: null,
 				plannedOwnerUserId: null,
 				detail: `--owner-user-id is not a valid UUID.`,
@@ -92,6 +110,7 @@ export function planInvitationHostOwner(input: {
 				action: 'OWNER_CONFLICT',
 				slug: input.slug,
 				hostEmail,
+				hostLoginAlias,
 				ownerUserId: null,
 				plannedOwnerUserId: null,
 				detail: `Target owner UUID "${input.explicitOwnerId}" does not exist in target auth.users table.`,
@@ -101,6 +120,7 @@ export function planInvitationHostOwner(input: {
 			action: 'OWNER_EXPLICIT',
 			slug: input.slug,
 			hostEmail,
+			hostLoginAlias,
 			ownerUserId: input.explicitOwnerId,
 			plannedOwnerUserId: input.explicitOwnerId,
 			detail: `Use explicit --owner-user-id for new invitation "${input.slug}".`,
@@ -114,6 +134,7 @@ export function planInvitationHostOwner(input: {
 				action: 'OWNER_CONFLICT',
 				slug: input.slug,
 				hostEmail,
+				hostLoginAlias,
 				ownerUserId: hostUserId,
 				plannedOwnerUserId: null,
 				conflictSlug: input.hostOwnsOtherSlug,
@@ -124,6 +145,7 @@ export function planInvitationHostOwner(input: {
 			action: 'OWNER_REUSE',
 			slug: input.slug,
 			hostEmail,
+			hostLoginAlias,
 			ownerUserId: hostUserId,
 			plannedOwnerUserId: hostUserId,
 			detail: `Reuse existing Auth host "${hostEmail}" for "${input.slug}".`,
@@ -139,6 +161,7 @@ export function planInvitationHostOwner(input: {
 		action: 'OWNER_CREATE_PLANNED',
 		slug: input.slug,
 		hostEmail,
+		hostLoginAlias,
 		ownerUserId: null,
 		plannedOwnerUserId,
 		detail: `Create dedicated Auth host "${hostEmail}" for "${input.slug}".`,
@@ -260,8 +283,77 @@ export async function createInvitationHostAuthUser(input: {
 	return createdId;
 }
 
+/**
+ * Remap an existing host Auth email + login_alias without changing invitation ownership UUIDs.
+ * Does not print secrets. Fails if the target email is already used by another user.
+ */
+export async function updateInvitationHostLogin(input: {
+	supabaseUrl: string;
+	serviceRoleKey: string;
+	targetDbUrl: string;
+	userId: string;
+	newHostLoginAlias: string;
+}): Promise<{ userId: string; hostEmail: string; hostLoginAlias: string }> {
+	const hostLoginAlias = normalizeHostLoginAlias(input.newHostLoginAlias);
+	const hostEmail = buildInvitationHostEmail(hostLoginAlias);
+	const existingForEmail = findAuthUserIdByEmail(input.targetDbUrl, hostEmail);
+	if (existingForEmail && existingForEmail !== input.userId) {
+		throw new Error(
+			`Cannot rekey host login: email "${hostEmail}" already belongs to another Auth user.`,
+		);
+	}
+
+	const getUrl = `${input.supabaseUrl.replace(/\/+$/, '')}/auth/v1/admin/users/${input.userId}`;
+	const existingResponse = await fetch(getUrl, {
+		method: 'GET',
+		headers: {
+			apikey: input.serviceRoleKey,
+			Authorization: `Bearer ${input.serviceRoleKey}`,
+		},
+	});
+	if (!existingResponse.ok) {
+		const body = await existingResponse.text().catch(() => '');
+		throw new Error(
+			`Failed to load invitation host Auth user (HTTP ${existingResponse.status}): ${body.slice(0, 200)}`,
+		);
+	}
+	const existingUser = (await existingResponse.json()) as {
+		id?: string;
+		user_metadata?: Record<string, unknown>;
+	};
+	if (!existingUser.id) {
+		throw new Error('Failed to load invitation host Auth user: missing id in response.');
+	}
+
+	const updateResponse = await fetch(getUrl, {
+		method: 'PUT',
+		headers: {
+			apikey: input.serviceRoleKey,
+			Authorization: `Bearer ${input.serviceRoleKey}`,
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({
+			email: hostEmail,
+			email_confirm: true,
+			user_metadata: {
+				...(existingUser.user_metadata || {}),
+				login_alias: hostLoginAlias,
+			},
+		}),
+	});
+	if (!updateResponse.ok) {
+		const body = await updateResponse.text().catch(() => '');
+		throw new Error(
+			`Failed to update invitation host login (HTTP ${updateResponse.status}): ${body.slice(0, 200)}`,
+		);
+	}
+
+	return { userId: input.userId, hostEmail, hostLoginAlias };
+}
+
 export async function resolveAndEnsureInvitationHostOwner(input: {
 	slug: string;
+	hostLoginAlias: string;
 	displayName: string;
 	targetDbUrl: string;
 	supabaseUrl: string;
@@ -271,8 +363,8 @@ export async function resolveAndEnsureInvitationHostOwner(input: {
 	preferredCreateOwnerId?: string;
 	dryRun: boolean;
 }): Promise<HostOwnerPlan & { ownerUserId: string }> {
-	const hostEmail = buildInvitationHostEmail(input.slug);
-	const loginAlias = hostEmail.split('@')[0]!;
+	const hostLoginAlias = normalizeHostLoginAlias(input.hostLoginAlias);
+	const hostEmail = buildInvitationHostEmail(hostLoginAlias);
 	const existingHostUserId = findAuthUserIdByEmail(input.targetDbUrl, hostEmail);
 	const hostOwnsOtherSlug = existingHostUserId
 		? findOtherActiveInvitationSlugOwnedBy(input.targetDbUrl, existingHostUserId, input.slug)
@@ -284,6 +376,7 @@ export async function resolveAndEnsureInvitationHostOwner(input: {
 
 	const plan = planInvitationHostOwner({
 		slug: input.slug,
+		hostLoginAlias,
 		existingOwnerUserId: input.existingOwnerUserId,
 		explicitOwnerId: input.explicitOwnerId,
 		hostEmail,
@@ -314,7 +407,7 @@ export async function resolveAndEnsureInvitationHostOwner(input: {
 				serviceRoleKey: input.serviceRoleKey,
 				userId: ownerUserId,
 				email: hostEmail,
-				loginAlias,
+				loginAlias: hostLoginAlias,
 			});
 		}
 		ensureHostClientRole(input.targetDbUrl, ownerUserId);

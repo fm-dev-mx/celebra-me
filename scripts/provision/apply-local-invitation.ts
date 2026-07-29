@@ -26,7 +26,10 @@ import {
 	hashPublicationProjection,
 } from '../../src/lib/intake/services/publication-diff.service.ts';
 import { checkTargetDivergenceConflict } from './promotion-comparison.ts';
-import { resolveManagedMergeBaseline, resolvePublicationTimestamp } from './managed-merge-baseline.ts';
+import {
+	resolveManagedMergeBaseline,
+	resolvePublicationTimestamp,
+} from './managed-merge-baseline.ts';
 import { getInvitationDefinition } from './invitations/registry.ts';
 import {
 	buildNormalizedInvitationRelease,
@@ -105,6 +108,7 @@ export interface LocalApplyResult {
 
 async function resolveLocalOwner(options: {
 	slug: string;
+	hostLoginAlias: string;
 	displayName: string;
 	explicitOwnerId?: string;
 	apiUrl: string;
@@ -115,6 +119,7 @@ async function resolveLocalOwner(options: {
 }): Promise<string> {
 	const hostPlan = await resolveAndEnsureInvitationHostOwner({
 		slug: options.slug,
+		hostLoginAlias: options.hostLoginAlias,
 		displayName: options.displayName,
 		targetDbUrl: options.dbUrl,
 		supabaseUrl: options.apiUrl,
@@ -234,6 +239,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 
 	const ownerUserId = await resolveLocalOwner({
 		slug,
+		hostLoginAlias: definition.hostLoginAlias,
 		displayName: definition.clientName || definition.title,
 		explicitOwnerId,
 		apiUrl: env.apiUrl,
@@ -445,9 +451,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	) {
 		const prevCanonical = resolveManagedMergeBaseline({
 			managedProjection: existingProvenance?.managed_projection as
-				| Record<string, unknown>
-				| null
-				| undefined,
+				Record<string, unknown> | null | undefined,
 			managedAppliedAt:
 				typeof existingProvenance?.applied_at === 'string'
 					? existingProvenance.applied_at

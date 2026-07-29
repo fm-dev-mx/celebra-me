@@ -42,6 +42,7 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 				eventType: 'xv',
 				title: 'Test Title',
 				clientName: 'Client Name',
+				hostLoginAlias: 'client_name',
 				baseDemoId: 'demo-xv-premiere-floral',
 				themeId: 'premiere-floral',
 				visualProfileId: 'test-invitation',
@@ -50,11 +51,14 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 					timeZone: 'America/Chihuahua',
 					startsAtUtc: '2026-08-14T23:00:00.000Z',
 				},
-				assets: [{ key: 'hero', relativePath: 'hero.jpg', displayName: 'Hero', alt: 'Alt' }],
+				assets: [
+					{ key: 'hero', relativePath: 'hero.jpg', displayName: 'Hero', alt: 'Alt' },
+				],
 				buildPublishedContent: (assets) => ({ hero: { image: assets.hero } }),
 			});
 
 			expect(def.slug).toBe('test-invitation');
+			expect(def.hostLoginAlias).toBe('client_name');
 			expect(def.eventType).toBe('xv');
 			expect(def.assets).toHaveLength(1);
 		});
@@ -67,6 +71,7 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 					eventType: 'xv',
 					title: 'Title',
 					clientName: 'Client',
+					hostLoginAlias: 'client',
 					baseDemoId: 'demo',
 					themeId: 'theme',
 					visualProfileId: 'profile',
@@ -77,13 +82,48 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 			).toThrow(/non-empty string slug/);
 		});
 
+		it('throws on invalid hostLoginAlias', () => {
+			expect(() =>
+				defineInvitation({
+					slug: 'test-invitation',
+					createdAt: '2026-07-20T00:00:00.000Z',
+					eventType: 'xv',
+					title: 'Title',
+					clientName: 'Client',
+					hostLoginAlias: 'Bad Alias!',
+					baseDemoId: 'demo',
+					themeId: 'theme',
+					visualProfileId: 'profile',
+					eventTiming: { localDateTime: '', timeZone: '', startsAtUtc: '' },
+					assets: [],
+					buildPublishedContent: () => ({}),
+				}),
+			).toThrow(/hostLoginAlias/);
+		});
+
 		it('rejects environment-local asset references in content', () => {
 			expect(() =>
 				defineInvitation({
-					slug: 'unsafe-reference', createdAt: '2026-07-20T00:00:00.000Z', eventType: 'xv', title: 'Title', clientName: 'Client', baseDemoId: 'demo', themeId: 'theme', visualProfileId: 'profile',
+					slug: 'unsafe-reference',
+					createdAt: '2026-07-20T00:00:00.000Z',
+					eventType: 'xv',
+					title: 'Title',
+					clientName: 'Client',
+					hostLoginAlias: 'client',
+					baseDemoId: 'demo',
+					themeId: 'theme',
+					visualProfileId: 'profile',
 					eventTiming: { localDateTime: '', timeZone: '', startsAtUtc: '' },
-					assets: [{ key: 'hero', relativePath: 'hero.jpg', displayName: 'Hero', alt: 'Alt' }],
-					buildPublishedContent: () => ({ hero: { type: 'uploaded', assetId: '00000000-0000-4000-8000-000000000001', src: 'http://127.0.0.1:54321/storage/v1/object/public/invitation-assets/hero.webp' } }),
+					assets: [
+						{ key: 'hero', relativePath: 'hero.jpg', displayName: 'Hero', alt: 'Alt' },
+					],
+					buildPublishedContent: () => ({
+						hero: {
+							type: 'uploaded',
+							assetId: '00000000-0000-4000-8000-000000000001',
+							src: 'http://127.0.0.1:54321/storage/v1/object/public/invitation-assets/hero.webp',
+						},
+					}),
 				}),
 			).toThrow(/semantic key/i);
 		});
@@ -94,7 +134,17 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 			const resolved = getInvitationDefinition('romina-rios-chaparro');
 			expect(resolved).toBe(rominaInvitation);
 			expect(resolved.slug).toBe('romina-rios-chaparro');
+			expect(resolved.hostLoginAlias).toBe('romina_rios_chaparro');
 			expect(resolved.eventType).toBe('xv');
+		});
+
+		it('exposes short host login aliases for Abril and Alba', () => {
+			expect(getInvitationDefinition('abril-michelle-becerra-rea').hostLoginAlias).toBe(
+				'abril_becerra',
+			);
+			expect(getInvitationDefinition('alba-rosa-quinones').hostLoginAlias).toBe(
+				'alba_quinones',
+			);
 		});
 
 		it('lists all registered invitation definitions', () => {

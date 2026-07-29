@@ -10,12 +10,21 @@ import { abrilInvitation } from './abril-michelle-becerra-rea.ts';
 import { rominaInvitation } from './romina-rios-chaparro.ts';
 
 const registry = new Map<string, InvitationDefinition>();
+const hostLoginAliases = new Map<string, string>();
 
 function registerInvitation(definition: InvitationDefinition): void {
 	if (registry.has(definition.slug)) {
 		throw new Error(`Duplicate invitation slug registration: "${definition.slug}".`);
 	}
+	const alias = definition.hostLoginAlias;
+	const ownerSlug = hostLoginAliases.get(alias);
+	if (ownerSlug) {
+		throw new Error(
+			`Duplicate hostLoginAlias "${alias}" for "${definition.slug}" (already used by "${ownerSlug}").`,
+		);
+	}
 	registry.set(definition.slug, definition);
+	hostLoginAliases.set(alias, definition.slug);
 }
 
 // Register canonical invitations

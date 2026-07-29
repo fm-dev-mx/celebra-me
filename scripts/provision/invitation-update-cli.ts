@@ -83,9 +83,9 @@ function mergeConflictsFromError(error: unknown): TargetPlanData['mergeConflicts
 	return undefined;
 }
 
-function collectPlanConflicts(targetPlans: TargetPlanData[]): NonNullable<
-	TargetPlanData['mergeConflicts']
-> {
+function collectPlanConflicts(
+	targetPlans: TargetPlanData[],
+): NonNullable<TargetPlanData['mergeConflicts']> {
 	const byPath = new Map<string, NonNullable<TargetPlanData['mergeConflicts']>[number]>();
 	for (const plan of targetPlans) {
 		for (const conflict of plan.mergeConflicts ?? []) {
@@ -189,7 +189,7 @@ Options:
   --confirm-destructive        Destructive operations acknowledgement required for non-interactive apply when plan contains deletions or overwrites
   --conflict-resolutions <path> JSON { "resolutions": { "<path>": "package"|"target" } } (required when apply has merge conflicts)
   --json                       Format output as JSON
-  --owner-user-id <uuid>       Optional override/assertion; new invites default to a dedicated host (slug@clientes.celebra.invalid)
+  --owner-user-id <uuid>       Optional override/assertion; new invites default to a dedicated host ({hostLoginAlias}@clientes.celebra.invalid)
   --adoption-plan              Read-only plan for the isolated Production legacy adoption
   --adoption-apply             Apply the isolated Production legacy adoption after exact confirmation
   --approval-artifact <path>   Exact approved Preview artifact required for legacy adoption

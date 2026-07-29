@@ -52,6 +52,7 @@ export interface NormalizedInvitationRelease {
 		themeId: string;
 		visualProfileId: string;
 		clientName: string;
+		hostLoginAlias: string;
 		clientEmail: string;
 		clientWhatsapp: string;
 		photosReceived: boolean;
@@ -270,6 +271,7 @@ export async function buildNormalizedInvitationRelease(options: {
 		themeId: definition.themeId,
 		visualProfileId: definition.visualProfileId,
 		clientName: definition.clientName,
+		hostLoginAlias: definition.hostLoginAlias,
 		clientEmail: definition.clientEmail ?? '',
 		clientWhatsapp: definition.clientWhatsapp ?? '',
 		photosReceived: definition.photosReceived ?? true,

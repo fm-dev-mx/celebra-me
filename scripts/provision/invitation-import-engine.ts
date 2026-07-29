@@ -36,7 +36,10 @@ import {
 	checkTargetDivergenceConflict,
 	buildResourceActions,
 } from './promotion-comparison.ts';
-import { resolveManagedMergeBaseline, resolvePublicationTimestamp } from './managed-merge-baseline.ts';
+import {
+	resolveManagedMergeBaseline,
+	resolvePublicationTimestamp,
+} from './managed-merge-baseline.ts';
 import { materializeAssetReferences } from './normalized-invitation-release.ts';
 import type { UploadedAssetMap } from './invitations/invitation-definition.ts';
 import { cleanupHostedPsqlResources, type TrackedResource } from './managed-invitation-cleanup.ts';
@@ -1064,8 +1067,15 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 				getSecretFromEnvOrFiles('SUPABASE_SERVICE_ROLE_KEY', PREVIEW_SECRET_FILES)
 			: getSecretFromEnvOrFiles('PROD_SUPABASE_SERVICE_ROLE_KEY', PROD_SECRET_FILES) ||
 				getSecretFromEnvOrFiles('SUPABASE_SERVICE_ROLE_KEY', PROD_SECRET_FILES));
+	const hostLoginAlias = pkg.invitation.hostLoginAlias;
+	if (!hostLoginAlias || typeof hostLoginAlias !== 'string') {
+		throw new Error(
+			`Package for "${pkg.invitation.slug}" is missing invitation.hostLoginAlias; regenerate the package from the current managed definition.`,
+		);
+	}
 	const hostOwnerPlan = await resolveAndEnsureInvitationHostOwner({
 		slug: pkg.invitation.slug,
+		hostLoginAlias,
 		displayName: pkg.invitation.clientName || pkg.invitation.title,
 		targetDbUrl,
 		supabaseUrl: targetSupabaseUrl,
