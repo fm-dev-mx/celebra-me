@@ -18,6 +18,23 @@ Celebra-me follows these guiding principles:
 - **Explicit boundaries** UI code, route orchestration, and server-only logic stay separated.
 - **Deploy safety first** Architecture must remain compatible with Astro and Vercel constraints.
 
+### Invitation mutation boundary
+
+Invitation writes use a lightweight ports-and-adapters boundary. Routes and UI collect validated
+commands; `src/lib/intake/services/**` owns preconditions, orchestration, operation identity, and
+outcome classification; repositories and the Local/hosted/Storage/Auth adapters own persistence. The
+Editor and managed CLI share validation, ownership, environment identity, publication, asset, and
+outcome contracts while retaining optimistic revisions for interactive saves and baseline-aware
+three-way merge for managed releases. The atomic publication RPC remains the publication unit.
+
+Material outcomes use `not_applied`, `applied`, `partial`, or `replayed` and append an immutable
+`invitation_mutation_operation_receipts` row. Latest managed provenance is the reconciliation
+baseline, not a journal. Field authority is executable in `src/lib/intake/mutations/ownership.ts`:
+definitions manage event type, base demo, theme, kind, and snapshot; title, route slug, client
+metadata, owner, and login alias are seeds that become target-owned. Drafts/assets are reconciled,
+published content is publication-owned, event linkage is invitation-managed, and guest
+confirmations/audit are RSVP-owned.
+
 ---
 
 ## 2) Astro Execution Model

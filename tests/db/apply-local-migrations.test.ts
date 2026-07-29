@@ -4,9 +4,12 @@ import { classifyDbTarget } from '../../scripts/db/db-guard.ts';
 
 describe('apply-local-migrations adapter and safety guards', () => {
 	it('rejects remote, Preview, Production, or pooler URLs', () => {
-		const previewUrl = 'postgresql://postgres:pass@db.example-preview.supabase.co:5432/postgres';
-		const prodUrl = 'postgresql://postgres:pass@db.example-prod.supabase.co:5432/postgres';
-		const poolerUrl = 'postgresql://postgres:pass@aws-0-us-west-1.pooler.supabase.com:6543/postgres';
+		const previewUrl =
+			'postgresql://postgres:pass@db.example-preview.supabase.co:5432/postgres';
+		const prodUrl =
+			'postgresql://postgres:pass@db.ineitkdkyrxqyressllp.supabase.co:5432/postgres';
+		const poolerUrl =
+			'postgresql://postgres:pass@aws-0-us-west-1.pooler.supabase.com:6543/postgres';
 
 		expect(classifyDbTarget(previewUrl).target).not.toBe('persistent-local');
 		expect(classifyDbTarget(prodUrl).target).toBe('production');
@@ -23,7 +26,9 @@ describe('apply-local-migrations adapter and safety guards', () => {
 
 		expect(() => verifyPersistentLocalTarget(remoteUrl)).toThrow('process.exit called');
 		expect(spyError).toHaveBeenCalledWith(
-			expect.stringContaining('Target database is evaluated as "production" instead of persistent-local'),
+			expect.stringContaining(
+				'Target database is evaluated as "unknown" instead of persistent-local',
+			),
 		);
 
 		spyError.mockRestore();
