@@ -51,8 +51,8 @@ import {
 import { EDITOR_SECTION_PRESENTATION, INVITATION_STATUS_LABELS } from '@/lib/intake/labels';
 import {
 	applySectionToBaseline,
+	buildSectionSaveValue,
 	getDirtySectionKey,
-	getSectionValue,
 } from '@/lib/intake/services/section-content-mapper';
 import { supportsXareniPresentationOptions } from '@/lib/invitation/presentation-options';
 import {
@@ -209,7 +209,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 		try {
 			const result = await editor.saveSection(
 				section,
-				getSectionValue(content, section),
+				buildSectionSaveValue(contentBaseline, content, section),
 				expectedUpdatedAt,
 			);
 			updateContentBaseline(section, content);

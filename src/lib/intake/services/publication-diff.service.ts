@@ -1,5 +1,8 @@
 import { createHash } from 'node:crypto';
 import { getEditorSectionForPublishedPath } from '@/lib/intake/invitation-section-registry';
+import { canonicalizePublicationValue } from '@/lib/intake/services/publication-canonicalize';
+
+export { canonicalizePublicationValue } from '@/lib/intake/services/publication-canonicalize';
 
 /**
  * Generates a 32-character MD5 hex digest for publication optimistic concurrency control.
@@ -103,27 +106,6 @@ function toPostgresJsonbText(value: unknown): string {
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
 	return !!value && typeof value === 'object' && !Array.isArray(value);
-}
-
-/** Normalizes values that are equivalent in the published contract. */
-export function canonicalizePublicationValue(value: unknown): unknown {
-	if (value === null || value === undefined || value === '') return undefined;
-	if (typeof value === 'string') return value.trim() || undefined;
-	if (Array.isArray(value)) {
-		return value.map(canonicalizePublicationValue).filter((item) => item !== undefined);
-	}
-	if (!isPlainObject(value)) return value;
-
-	const result: Record<string, unknown> = {};
-	for (const key of Object.keys(value).sort()) {
-		// Internal editor notes are never part of the public published contract.
-		if (key === 'photoNotes') continue;
-		// Uploaded URLs are derived when a snapshot is frozen and do not change its meaning.
-		if (key === 'src' && value.type === 'uploaded') continue;
-		const normalized = canonicalizePublicationValue(value[key]);
-		if (normalized !== undefined) result[key] = normalized;
-	}
-	return Object.keys(result).length > 0 ? result : undefined;
 }
 
 function valuesEqual(left: unknown, right: unknown): boolean {

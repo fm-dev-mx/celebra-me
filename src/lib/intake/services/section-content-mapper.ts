@@ -1,5 +1,6 @@
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import type { InvitationEditorSectionKey } from '@/lib/intake/schemas/invitation-editor.schema';
+import { canonicalizePublicationValue } from '@/lib/intake/services/publication-canonicalize';
 
 const DIRTY_KEY_TO_SECTION: Partial<Record<keyof DraftContent, InvitationEditorSectionKey>> = {
 	title: 'main',
@@ -32,6 +33,66 @@ export function getSectionValue(
 	}
 	if (section === 'publication') return { sectionOrder: content.sectionOrder ?? [] };
 	return content[section as keyof DraftContent] ?? {};
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+	return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
+function valuesEqual(left: unknown, right: unknown): boolean {
+	return (
+		JSON.stringify(canonicalizePublicationValue(left) ?? null) ===
+		JSON.stringify(canonicalizePublicationValue(right) ?? null)
+	);
+}
+
+/**
+ * Build a section payload that keeps baseline field identity for untouched paths
+ * and only overlays fields that actually changed in the editor.
+ */
+export function mergeSectionSaveValue(baselineValue: unknown, currentValue: unknown): unknown {
+	if (valuesEqual(baselineValue, currentValue)) {
+		return baselineValue === undefined ? currentValue : structuredClone(baselineValue);
+	}
+	if (Array.isArray(baselineValue) || Array.isArray(currentValue)) {
+		return structuredClone(currentValue);
+	}
+	if (!isPlainObject(baselineValue) || !isPlainObject(currentValue)) {
+		return structuredClone(currentValue);
+	}
+
+	const result: Record<string, unknown> = structuredClone(baselineValue);
+	const keys = new Set([...Object.keys(baselineValue), ...Object.keys(currentValue)]);
+	for (const key of keys) {
+		const baselineChild = baselineValue[key];
+		const currentChild = currentValue[key];
+		if (!(key in currentValue)) {
+			delete result[key];
+			continue;
+		}
+		if (!(key in baselineValue)) {
+			result[key] = structuredClone(currentChild);
+			continue;
+		}
+		if (valuesEqual(baselineChild, currentChild)) {
+			result[key] = structuredClone(baselineChild);
+			continue;
+		}
+		result[key] = mergeSectionSaveValue(baselineChild, currentChild) as unknown;
+	}
+	return result;
+}
+
+/** Section save value with only editor-changed fields overlaid on the baseline section. */
+export function buildSectionSaveValue(
+	baselineContent: DraftContent,
+	currentContent: DraftContent,
+	section: InvitationEditorSectionKey,
+): unknown {
+	return mergeSectionSaveValue(
+		getSectionValue(baselineContent, section),
+		getSectionValue(currentContent, section),
+	);
 }
 
 export function applySectionValue(
