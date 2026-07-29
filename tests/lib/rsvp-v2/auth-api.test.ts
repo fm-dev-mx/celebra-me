@@ -1,4 +1,6 @@
 import {
+	adminResetAuthUserPassword,
+	adminSetUserMustChangePassword,
 	createAuthUserByAdmin,
 	findAuthUserByEmail,
 	findAuthUserByLoginIdentifier,
@@ -148,5 +150,100 @@ describe('rsvp authApi', () => {
 			created_at: '2026-04-01T00:00:00.000Z',
 			login_alias: 'ximena_meza',
 		});
+	});
+
+	it('preserves unrelated app_metadata when resetting password and clearing must_change_password', async () => {
+		const existingUser = {
+			id: 'u-existing',
+			email: 'existing@test.com',
+			app_metadata: {
+				role: 'host_client',
+				custom_flag: 'keep-me',
+				must_change_password: false,
+			},
+		};
+
+		global.fetch = jest
+			.fn()
+			.mockResolvedValueOnce({
+				ok: true,
+				json: async () => existingUser,
+			})
+			.mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({
+					user: {
+						id: 'u-existing',
+						email: 'existing@test.com',
+						app_metadata: {
+							role: 'host_client',
+							custom_flag: 'keep-me',
+							must_change_password: true,
+						},
+					},
+				}),
+			})
+			.mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({
+					...existingUser,
+					app_metadata: {
+						role: 'host_client',
+						custom_flag: 'keep-me',
+						must_change_password: true,
+					},
+				}),
+			})
+			.mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({
+					user: {
+						id: 'u-existing',
+						email: 'existing@test.com',
+					},
+				}),
+			}) as typeof fetch;
+
+		await adminResetAuthUserPassword({
+			userId: 'u-existing',
+			password: 'TempSecurePass!234',
+			mustChangePassword: true,
+		});
+
+		expect(global.fetch).toHaveBeenNthCalledWith(
+			2,
+			'https://project.supabase.co/auth/v1/admin/users/u-existing',
+			expect.objectContaining({
+				method: 'PUT',
+				body: JSON.stringify({
+					app_metadata: {
+						role: 'host_client',
+						custom_flag: 'keep-me',
+						must_change_password: true,
+					},
+					password: 'TempSecurePass!234',
+				}),
+			}),
+		);
+
+		await adminSetUserMustChangePassword({
+			userId: 'u-existing',
+			mustChangePassword: false,
+		});
+
+		expect(global.fetch).toHaveBeenNthCalledWith(
+			4,
+			'https://project.supabase.co/auth/v1/admin/users/u-existing',
+			expect.objectContaining({
+				method: 'PUT',
+				body: JSON.stringify({
+					app_metadata: {
+						role: 'host_client',
+						custom_flag: 'keep-me',
+						must_change_password: false,
+					},
+				}),
+			}),
+		);
 	});
 });

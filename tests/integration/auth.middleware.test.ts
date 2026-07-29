@@ -8,6 +8,7 @@ interface TestLocals {
 		role: string;
 		isSuperAdmin: boolean;
 		accessToken: string;
+		mustChangePassword?: boolean;
 	};
 	hasAdminStrongAuth?: boolean;
 }
@@ -179,6 +180,77 @@ describe('Middleware: Authentication & Authorization', () => {
 		expect(context.locals.session!.isSuperAdmin).toBe(false);
 		expect(context.locals.session!.accessToken).toBe('valid-token');
 		expect(context.locals.hasAdminStrongAuth).toBe(false);
+	});
+
+	it('redirects users with must_change_password away from protected pages', async () => {
+		const context = createContext('/dashboard/invitados');
+		mockCookies.get.mockReturnValue({ value: 'valid-token' });
+		mockSupabaseResponse({
+			id: 'user-1',
+			email: 'host@test.com',
+			app_metadata: { role: 'host_client', must_change_password: true },
+			amr: [{ method: 'password' }],
+		});
+
+		await middleware(context as unknown as APIContext, mockNext);
+		expect(mockRedirect).toHaveBeenCalledWith('/dashboard/cambiar-contrasena');
+		expect(mockNext).not.toHaveBeenCalled();
+	});
+
+	it('allows the change-password page when must_change_password is required', async () => {
+		const context = createContext('/dashboard/cambiar-contrasena');
+		mockCookies.get.mockReturnValue({ value: 'valid-token' });
+		mockSupabaseResponse({
+			id: 'user-1',
+			email: 'host@test.com',
+			app_metadata: { role: 'host_client', must_change_password: true },
+			amr: [{ method: 'password' }],
+		});
+
+		await middleware(context as unknown as APIContext, mockNext);
+		expect(mockNext).toHaveBeenCalled();
+		expect(mockRedirect).not.toHaveBeenCalled();
+		expect(context.locals.session?.mustChangePassword).toBe(true);
+	});
+
+	it('rejects protected dashboard APIs when must_change_password is required', async () => {
+		const context = createContext('/api/dashboard/guests');
+		mockCookies.get.mockReturnValue({ value: 'valid-token' });
+		mockSupabaseResponse({
+			id: 'user-1',
+			email: 'host@test.com',
+			app_metadata: { role: 'host_client', must_change_password: true },
+			amr: [{ method: 'password' }],
+		});
+
+		const response = await middleware(context as unknown as APIContext, mockNext);
+		expect(response).toBeInstanceOf(Response);
+		if (!(response instanceof Response)) throw new Error('Expected an API error response.');
+		expect(response.status).toBe(403);
+		expect(await response.json()).toEqual({
+			success: false,
+			error: {
+				code: 'password_change_required',
+				message: 'Es necesario cambiar la contraseña temporal para continuar.',
+			},
+		});
+		expect(mockNext).not.toHaveBeenCalled();
+	});
+
+	it('allows dashboard access for legacy users without must_change_password', async () => {
+		const context = createContext('/dashboard/invitados');
+		mockCookies.get.mockReturnValue({ value: 'valid-token' });
+		mockSupabaseResponse({
+			id: 'legacy-1',
+			email: 'legacy@test.com',
+			app_metadata: { role: 'host_client' },
+			amr: [{ method: 'password' }],
+		});
+
+		await middleware(context as unknown as APIContext, mockNext);
+		expect(mockNext).toHaveBeenCalled();
+		expect(mockRedirect).not.toHaveBeenCalled();
+		expect(context.locals.session?.mustChangePassword).toBe(false);
 	});
 
 	it('redirects superadmin without MFA (aal1) to MFA setup', async () => {

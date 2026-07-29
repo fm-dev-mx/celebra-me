@@ -245,5 +245,89 @@ describe('Password Management & Recovery', () => {
 			const body = await response.json();
 			expect(body.error.message).toBe('Las contraseñas no coinciden');
 		});
+
+		it('fails closed when password updates but must_change_password cleanup fails', async () => {
+			requireSessionContextMock.mockResolvedValue({
+				userId: 'user-123',
+				email: 'client@example.com',
+				accessToken: 'current-token',
+				role: 'host_client',
+				isSuperAdmin: false,
+				mustChangePassword: true,
+			});
+
+			signInWithPasswordMock.mockResolvedValue({
+				access_token: 'valid-current-token',
+				refresh_token: 'refresh-token',
+				user: { id: 'user-123', email: 'client@example.com' },
+			});
+			updateUserPasswordUserAuthMock.mockResolvedValue({
+				id: 'user-123',
+				email: 'client@example.com',
+			});
+			adminSetUserMustChangePasswordMock.mockRejectedValue(
+				new Error('Supabase auth error (500).'),
+			);
+
+			const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+			const response = await changePassword({
+				request: createMockRequest(
+					{
+						currentPassword: 'CurrentTempPass123!',
+						newPassword: 'NewSecurePassword2026!',
+						confirmPassword: 'NewSecurePassword2026!',
+					},
+					{ Origin: 'http://localhost:4321', Host: 'localhost:4321' },
+					'http://localhost:4321/api/auth/change-password',
+				),
+				url: new URL('http://localhost:4321/api/auth/change-password'),
+			} as never);
+
+			expect(response.status).toBe(500);
+			const body = await response.json();
+			expect(body.error.code).toBe('metadata_update_failed');
+			expect(body.error.message).toContain('desbloquear');
+			expect(JSON.stringify(body)).not.toMatch(/CurrentTempPass|NewSecurePassword/);
+			expect(updateUserPasswordUserAuthMock).toHaveBeenCalled();
+			expect(adminSetUserMustChangePasswordMock).toHaveBeenCalledWith({
+				userId: 'user-123',
+				mustChangePassword: false,
+			});
+			// No unlock re-auth / session cookies after partial failure.
+			expect(signInWithPasswordMock).toHaveBeenCalledTimes(1);
+
+			consoleErrorSpy.mockRestore();
+		});
+
+		it('does not mutate credentials when current password verification fails', async () => {
+			requireSessionContextMock.mockResolvedValue({
+				userId: 'user-123',
+				email: 'client@example.com',
+				accessToken: 'current-token',
+				role: 'host_client',
+				isSuperAdmin: false,
+				mustChangePassword: true,
+			});
+
+			signInWithPasswordMock.mockRejectedValue(new Error('Supabase auth error (401).'));
+
+			const response = await changePassword({
+				request: createMockRequest(
+					{
+						currentPassword: 'WrongPassword!',
+						newPassword: 'NewSecurePassword2026!',
+						confirmPassword: 'NewSecurePassword2026!',
+					},
+					{ Origin: 'http://localhost:4321', Host: 'localhost:4321' },
+					'http://localhost:4321/api/auth/change-password',
+				),
+				url: new URL('http://localhost:4321/api/auth/change-password'),
+			} as never);
+
+			expect(response.status).toBe(401);
+			expect(updateUserPasswordUserAuthMock).not.toHaveBeenCalled();
+			expect(adminSetUserMustChangePasswordMock).not.toHaveBeenCalled();
+		});
 	});
 });
