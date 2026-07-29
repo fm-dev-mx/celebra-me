@@ -92,4 +92,20 @@ describe('export-auth-users SQL generator', () => {
 		// The query parameters should be blanked out empty strings: '', '', '', ''
 		expect(sql).toContain(`'', '', '', ''`);
 	});
+
+	it('preserves nullable Auth boolean state exactly', () => {
+		const sql = generateAuthDump(
+			[
+				{
+					...sampleUser,
+					is_super_admin: null,
+					is_sso_user: null,
+					is_anonymous: null,
+				},
+			],
+			[],
+		);
+		const valuesLine = sql.split('\n').find((line) => line.trimStart().startsWith('('));
+		expect(valuesLine).toContain("'{}'::jsonb, NULL, NULL, NULL, NULL, NULL, NULL, NULL,");
+	});
 });

@@ -44,13 +44,13 @@ export interface AuthUser {
 	email_confirmed_at: string | null;
 	raw_app_meta_data: unknown;
 	raw_user_meta_data: unknown;
-	is_super_admin: boolean;
+	is_super_admin: boolean | null;
 	phone: string | null;
 	phone_confirmed_at: string | null;
 	banned_until: string | null;
 	deleted_at: string | null;
-	is_sso_user: boolean;
-	is_anonymous: boolean;
+	is_sso_user: boolean | null;
+	is_anonymous: boolean | null;
 	created_at: string;
 	updated_at: string;
 }
@@ -101,13 +101,13 @@ export function generateAuthDump(users: AuthUser[], identities: AuthIdentity[]):
 			`${u.email_confirmed_at ? `'${u.email_confirmed_at}'::timestamptz` : 'NULL'},`,
 			`${jsonLiteral(u.raw_app_meta_data)},`,
 			`${jsonLiteral(u.raw_user_meta_data)},`,
-			`${u.is_super_admin ? 'true' : 'false'},`,
+			`${u.is_super_admin === null ? 'NULL' : u.is_super_admin ? 'true' : 'false'},`,
 			`${sqlLiteral(u.phone)},`,
 			`${u.phone_confirmed_at ? `'${u.phone_confirmed_at}'::timestamptz` : 'NULL'},`,
 			`${u.banned_until ? `'${u.banned_until}'::timestamptz` : 'NULL'},`,
 			`${u.deleted_at ? `'${u.deleted_at}'::timestamptz` : 'NULL'},`,
-			`${u.is_sso_user ? 'true' : 'false'},`,
-			`${u.is_anonymous ? 'true' : 'false'},`,
+			`${u.is_sso_user === null ? 'NULL' : u.is_sso_user ? 'true' : 'false'},`,
+			`${u.is_anonymous === null ? 'NULL' : u.is_anonymous ? 'true' : 'false'},`,
 			`'${u.created_at}'::timestamptz,`,
 			`'${u.updated_at}'::timestamptz,`,
 			`'',`,
