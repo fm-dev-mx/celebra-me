@@ -340,6 +340,40 @@ optional elements produce warnings, not errors.
 </section>
 ```
 
+## Agent proportional use
+
+Screenshot CLI interactive defaults (`critical-qa`, invitation 3-viewport profile) are convenient for
+humans running a full visual audit. Agents must follow the **visual evidence** rules in
+[`.agent/rules/gatekeeper.md`](../../.agent/rules/gatekeeper.md) §5.3 and choose the smallest
+sufficient capture.
+
+Recommended agent patterns (server already on `http://localhost:4321`):
+
+```bash
+# One section, one primary mobile viewport
+pnpm screenshot:invite \
+  --url=/xv/<slug> \
+  --sections=hero \
+  --viewport=mobile-standard \
+  --section-extent=viewport
+
+# Reveal states only (closed / letter / open subset)
+pnpm screenshot:invite \
+  --url=/boda/<demo-or-slug> \
+  --set=reveal-only \
+  --viewport=mobile-standard
+
+# Full critical-qa only when reveal+open composition is in scope (still prefer one viewport first)
+pnpm screenshot:invite \
+  --url=/boda/<demo-or-slug> \
+  --target=critical-qa \
+  --viewport=mobile-standard
+```
+
+Do not load every PNG into agent context. Prefer `report.json`, then open only failing or disputed
+artifacts. Broaden viewports or `all-sections` only after a failed/inconclusive minimum pass or when
+a brief / domain doc explicitly requires it.
+
 ## Requirements
 
 - Node.js >= 22.12.0

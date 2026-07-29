@@ -377,6 +377,34 @@ tier C for production-sensitive changes.
 The pre-push hook intentionally remains lean (commit-message validation only); do not move tests or
 type-checks into pre-push.
 
+### 5.3 Visual evidence (screenshots and browser proof)
+
+Choose the evidence class **before** launching screenshot or browser tools. This section owns
+proportional visual validation; [`scripts/screenshot/README.md`](../../scripts/screenshot/README.md)
+owns tool mechanics and flags.
+
+| Change class | Evidence class | Minimum sufficient proof |
+| --- | --- | --- |
+| Material layout, reveal, hero, or section composition | **Required** | Same route; primary viewport (`mobile-standard` unless desktop-only); smallest target (`--sections=<id>`, `--set=reveal-only`, or a single affected step); reuse an already-running `pnpm dev` |
+| Reference-driven redesign closing an approved brief | **Required** (scoped) | Viewports listed in the brief — not an automatic five-viewport or full interactive default |
+| Work under [`docs/domains/theme/section-intersections.md`](../../docs/domains/theme/section-intersections.md) | **Required** | Follow that domain matrix only for intersection work; **do not** generalize it to all UI |
+| Copy-only, token/color without layout, docs, backend | **Unnecessary** | Skip screenshots |
+| Selector presence, overflow, or simple DOM checks | **Replaceable** | Browser snapshot, CDP/`getBoundingClientRect`, or a focused Playwright assert |
+| Habitual `full-qa` / `all-sections` / full profile / all invitations | **Reducible** | Prefer one viewport; widen only after a failed or inconclusive minimum pass, or when the owner asks for a full audit |
+
+Rules:
+
+- Default capture when screenshots are justified: **one route × one viewport × smallest target**.
+  Use full `critical-qa` / multi-viewport / `all-sections` only when reveal+open composition is in
+  scope, a brief/domain doc requires it, or the minimum pass failed.
+- Do not `Read` screenshot binaries en masse. Cite artifact paths; open only images needed for a
+  Pass/Fail call. Prefer `report.json` for coverage metadata.
+- Reuse an existing server; do not start parallel full screenshot batches against a cold Vite
+  optimize-dep without need.
+- Preserve full visual proof when risk justifies it (invitation ship QA, section-intersection
+  acceptance, reference-driven acceptance). Do not weaken required coverage for those cases.
+- Name the validation tier (A/B/C) and any visual-evidence skips in the closing report.
+
 ---
 
 ## 6) Output Contract

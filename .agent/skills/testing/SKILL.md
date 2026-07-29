@@ -65,11 +65,20 @@ tests/
 | `pnpm test -- --coverage` | Coverage report                                 |
 | `pnpm build`              | Build validation                                |
 
-Select the proportional tier from `.agent/rules/gatekeeper.md`. Do not follow
-`pnpm validate:changed` with `pnpm test:changed`; the former already runs Jest `--findRelatedTests`
-for changed source files. Reserve the full test suite and build for the contracts and release
-checkpoints that require them. When unrelated user-owned changes are in the working tree, validate
-explicit task files instead of widening the run to all changed files.
+Select the proportional tier from `.agent/rules/gatekeeper.md` and **name that tier (A/B/C) plus
+intentional skips** in the closing report. Do not run `pnpm ci`, full `pnpm test`, or `pnpm build`
+for tier A/B work unless risk escalates. Prefer `pnpm type-check` or focused domain checks over a
+full Astro build when only contracts/types need proof (`pnpm build` already re-runs type-check).
+
+Do not follow `pnpm validate:changed` with `pnpm test:changed`; the former already runs Jest
+`--findRelatedTests` for changed source files. Reserve the full test suite and build for the
+contracts and release checkpoints that require them. When unrelated user-owned changes are in the
+working tree, validate explicit task files instead of widening the run to all changed files.
+
+For screenshots and browser proof, follow gatekeeper §5.3 (Visual evidence) and
+[`scripts/screenshot/README.md`](../../../scripts/screenshot/README.md) agent recipes. Do not
+generalize the five-viewport matrix in `docs/domains/theme/section-intersections.md` to unrelated
+UI work.
 
 ## Test File Conventions
 

@@ -12,8 +12,10 @@ created: 2026-07-02
 purpose: Mobile-first quality review — visual consistency, proofreading, links, accessibility
 responsibilities:
     - Compare reference-driven UI changes against recorded baseline and acceptance evidence
-    - Run Playwright screenshot sequences (05-shot: closed page, closed reveal, card, open reveal, hero-to-footer)
-    - Verify visual consistency across viewports (mobile-first)
+    - Run the minimum screenshot or browser evidence required by gatekeeper visual-evidence rules
+      (`.agent/rules/gatekeeper.md` §5.3); full 05-shot / multi-viewport only when the defect class,
+      brief, or domain doc requires it
+    - Verify visual consistency across the viewports required for the task (mobile-first)
     - Proofread all visible copy for spelling, register, and brand compliance
     - Check all links, RSVP flow, and navigation paths
     - Verify accessibility (WCAG 2.1 AA): alt text, labels, contrast, semantics

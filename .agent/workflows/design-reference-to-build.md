@@ -143,8 +143,11 @@ remain executable through explicit component/section references in any compatibl
    `Pass`/`Fail`/`Blocked` status, affected viewport/section, expected result, actual result,
    evidence, and a remediation or blocking reason.
 3. Apply the `frontend-design` Visual Critique / Polish Checklist.
-4. Verify accessibility and the relevant screenshot sequence using
-   [`scripts/screenshot/README.md`](../../scripts/screenshot/README.md).
+4. Verify accessibility and the **minimum** visual evidence required by
+   [`.agent/rules/gatekeeper.md`](../rules/gatekeeper.md) §5.3 (Visual evidence). Use
+   [`scripts/screenshot/README.md`](../../scripts/screenshot/README.md) for flags and capture
+   mechanics; do not default to the interactive CLI’s full `critical-qa` / multi-viewport set unless
+   the brief or gatekeeper matrix requires it.
 5. QA returns pass, fail, or blocked; it may request a bounded revision but must not redefine the
    approved creative direction.
 6. Use the validation tier owned by `gatekeeper.md`; do not copy its command matrix here.
