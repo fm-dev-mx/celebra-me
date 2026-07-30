@@ -14,6 +14,7 @@ import { resolve } from 'node:path';
 import {
 	DEPRECATED_DOT_WORKTREES_SEGMENTS,
 	detectWorktreeLane,
+	findRepoRoot,
 	getExternalWorktreeRoot,
 	listExpectedLanePaths,
 } from '../shared/worktree-lane';
@@ -406,9 +407,7 @@ function printDiagnosisCategory(
 // ─── Main ──────────────────────────────────────────────────────────────────────
 
 function getLanePath(cwd: string): string {
-	const repoRoot = resolve(cwd.split('celebra-me-worktrees')[0] ?? cwd, 'celebra-me');
-	if (existsSync(resolve(repoRoot, 'package.json'))) return repoRoot;
-	return resolve(cwd, '..', '..');
+	return findRepoRoot(cwd);
 }
 
 function printDiagnosticHeader(lane: ReturnType<typeof detectWorktreeLane>, cwd: string): void {

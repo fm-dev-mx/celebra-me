@@ -14,6 +14,7 @@
  * but does not treat those directories as active canonical lanes.
  */
 
+import { execSync } from 'node:child_process';
 import { basename, dirname, resolve } from 'node:path';
 
 export type WorktreeLaneId = 'integration' | 'dev-local' | 'dev-preview' | 'dev-extra' | 'unknown';
@@ -90,6 +91,24 @@ export function getExpectedLanePath(lane: WorktreeLaneDefinition, repoRoot: stri
 	if (!lane.segment) return resolve(repoRoot);
 	const externalRoot = getExternalWorktreeRoot(repoRoot);
 	return resolve(externalRoot, lane.segment);
+}
+
+/**
+ * Resolve the true repository root regardless of which worktree we run from.
+ * Uses `git rev-parse --git-common-dir` which returns the main repo's `.git`
+ * directory even when running from a linked worktree.
+ */
+export function findRepoRoot(cwd?: string): string {
+	try {
+		const commonDir = execSync('git rev-parse --git-common-dir', {
+			cwd: cwd ?? process.cwd(),
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'ignore'],
+		}).trim();
+		return resolve(cwd ?? process.cwd(), commonDir, '..');
+	} catch {
+		return resolve(cwd ?? process.cwd());
+	}
 }
 
 // ─── Detection helpers (extracted for complexity limits) ───────────────────────

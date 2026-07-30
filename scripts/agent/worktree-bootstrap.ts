@@ -17,6 +17,7 @@ import { resolve } from 'node:path';
 import {
 	DEPRECATED_DOT_WORKTREES_SEGMENTS,
 	detectWorktreeLane,
+	findRepoRoot,
 	getExternalWorktreeRoot,
 } from '../shared/worktree-lane';
 
@@ -280,11 +281,7 @@ function main(): void {
 		laneIndex !== -1 && args[laneIndex + 1] ? resolve(args[laneIndex + 1]!) : null;
 
 	const cwd = explicitLanePath ?? process.cwd();
-	const repoRoot = resolve(cwd, '..', '..', 'celebra-me');
-	const actualRepoRoot = existsSync(resolve(repoRoot, 'package.json'))
-		? repoRoot
-		: resolve(cwd, '..', '..');
-
+	const actualRepoRoot = findRepoRoot(cwd);
 	const lane = detectWorktreeLane(cwd, actualRepoRoot);
 
 	console.log('\n=== Worktree Bootstrap ===\n');

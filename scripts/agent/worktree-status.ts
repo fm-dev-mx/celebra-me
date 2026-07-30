@@ -1,7 +1,7 @@
 import { execSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { LEGACY_WORKTREE_SEGMENTS, listExpectedLanePaths } from '../shared/worktree-lane';
+import { LEGACY_WORKTREE_SEGMENTS, findRepoRoot, listExpectedLanePaths } from '../shared/worktree-lane';
 
 interface LaneConfig {
 	name: string;
@@ -10,7 +10,7 @@ interface LaneConfig {
 	defaultBranch: string;
 }
 
-const REPO_ROOT = resolve(process.cwd());
+const REPO_ROOT = findRepoRoot();
 
 const LANES: LaneConfig[] = listExpectedLanePaths(REPO_ROOT).map((lane) => ({
 	name: lane.displayName,
