@@ -74,20 +74,22 @@ current task.
 
 ---
 
-## Three-Lane Worktree Structure & Path Privilege Invariant
+## Four-Lane Worktree Structure & Path Privilege Invariant
 
-The repository operates with three native Git worktree lanes:
+The repository operates with four native Git worktree lanes:
 
-- **Integration Lane**: canonical root worktree (`celebra-me`, trunk `develop`).
-- **Development Lane**: persistent reusable worktree (`.worktrees/dev-lane`) using ephemeral task
-  branches.
-- **Validation Lane**: persistent reusable worktree (`.worktrees/val-lane`) using ephemeral task
-  branches.
+- **Integration**: canonical root worktree (`celebra-me`, trunk `develop`). Runtime default: Local.
+- **dev-local**: persistent reusable worktree (`.worktrees/dev-local`) using ephemeral task
+  branches. Runtime default: Local.
+- **dev-preview**: persistent reusable worktree (`.worktrees/dev-preview`) using ephemeral task
+  branches. Runtime default: Preview Supabase via `.env.preview.local`.
+- **dev-extra**: persistent reusable worktree (`.worktrees/dev-extra`) using ephemeral task
+  branches. Runtime default: Local.
 
 ### Path Authorization Invariant
 
-Being located inside `.worktrees/dev-lane` or `.worktrees/val-lane` **does not grant** Git write
-permissions or environment/database mutation authority.
+Being located inside `.worktrees/dev-local`, `.worktrees/dev-preview`, or `.worktrees/dev-extra`
+**does not grant** Git write permissions or environment/database mutation authority.
 
 ```text
 Environment authorization =
@@ -97,8 +99,9 @@ task scope
 + existing repository safety rules
 ```
 
-Worktree path is an isolation directory, not an authorization token. Agents inside any lane remain
-bound by task-scoped authorization for Git writes, database mutations, and remote operational calls.
+Worktree path is an isolation directory, not an authorization token. Preview runtime connectivity on
+`dev-preview` is not Preview administrative privilege. Agents inside any lane remain bound by
+task-scoped authorization for Git writes, database mutations, and remote operational calls.
 
 ### Multi-Agent Lane Ownership & Preflight
 

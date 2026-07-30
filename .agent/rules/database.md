@@ -40,7 +40,9 @@ boundaries through classification, identity verification, and per-target policy 
 
 ### Worktree Location Grants No Database Privilege
 
-Worktree directory location (e.g. `.worktrees/val-lane`, `.worktrees/dev-lane`, or root `celebra-me`) **never** grants implicit database mutation privileges.
+Worktree directory location (e.g. `.worktrees/dev-preview`, `.worktrees/dev-local`,
+`.worktrees/dev-extra`, or root `celebra-me`) **never** grants implicit database mutation
+privileges.
 
 ```text
 Environment authorization =
@@ -50,10 +52,11 @@ task scope
 + existing repository safety rules
 ```
 
-Being inside `.worktrees/val-lane` does not grant Preview or Production mutation permission. Operational access to Preview requires explicit task authorization, target classification, and standard guard checks.
+Being inside `.worktrees/dev-preview` does not grant Preview or Production mutation permission even
+when that lane's application runtime targets Preview Supabase. Operational access to Preview
+requires explicit task authorization, target classification, and standard guard checks.
 
 ---
-
 
 ## Production Status & Governance
 

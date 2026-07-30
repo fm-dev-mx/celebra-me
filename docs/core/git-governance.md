@@ -13,15 +13,17 @@ tiers are owned by [`.agent/rules/gatekeeper.md`](../../.agent/rules/gatekeeper.
 rules are owned by [`.agent/rules/workflow.md`](../../.agent/rules/workflow.md).
 
 The repository uses a **linear two-branch workflow** with annotated tags for releases and a
-**three-lane worktree model**:
+**four-lane worktree model**:
 
 - `develop` is the active trunk for daily development. Direct commits are allowed.
 - `main` is the protected production branch, updated only via fast-forward from `develop`.
-- Persistent native Git worktrees (`celebra-me` root, `.worktrees/dev-lane`, `.worktrees/val-lane`)
-  isolate work across Integration, Development, and Validation lanes.
-- Ephemeral task branches (`feat/*`, `fix/*`, `candidate/*`) are checked out in Development and
-  Validation lanes. Permanent lane branches are forbidden.
+- Persistent native Git worktrees (`celebra-me` root, `.worktrees/dev-local`,
+  `.worktrees/dev-preview`, `.worktrees/dev-extra`) isolate Integration and three development lanes.
+- Ephemeral task branches (`feat/*`, `fix/*`, `candidate/*`) are checked out in development lanes.
+  Permanent lane branches are forbidden.
 - Worktree location grants no environment privilege (`path ≠ privilege`).
+- Runtime defaults: Integration / `dev-local` / `dev-extra` → Local Supabase; `dev-preview` →
+  Preview Supabase via `.env.preview.local`. Runtime connectivity is not mutation authorization.
 - Annotated tags (`vX.Y.Z`) mark versions/checkpoints.
 - Release history is documented in `CHANGELOG.md`. Layered changelog policy (system vs invitation vs
   database) is owned by [`release-process.md`](release-process.md).
@@ -33,36 +35,45 @@ but commits are no longer staged or created through a dedicated governance runne
 The goal is to keep hard gates narrow and objective while still giving developers useful feedback
 about commit hygiene.
 
-## Three-Lane Worktree Model
+## Four-Lane Worktree Model
 
-Celebra-me uses native Git worktrees to establish three persistent, reusable operational lanes:
+Celebra-me uses native Git worktrees to establish four persistent, reusable operational lanes:
 
-1. **Integration Lane** (`celebra-me` root): The canonical worktree operating on `develop`. Used for
-   integration, release preparation, and trunk operations.
-2. **Development Lane** (`.worktrees/dev-lane`): Persistent reusable worktree for independent
-   feature and fix development on ephemeral task branches. Uses Local by default.
-3. **Validation Lane** (`.worktrees/val-lane`): Persistent reusable worktree for task or candidate
-   branches requiring broader validation (Local default; Preview when explicitly authorized).
+1. **Integration** (`celebra-me` root): Canonical worktree on `develop`. Integration, release
+   preparation, trunk operations. Runtime default: Local.
+2. **dev-local** (`.worktrees/dev-local`): Primary feature/fix development on ephemeral task
+   branches. Runtime default: Local.
+3. **dev-preview** (`.worktrees/dev-preview`): Preview development and hosted-validation affinity
+   lane on ephemeral task branches. Runtime default: Preview Supabase via `.env.preview.local`.
+   Preferred lane for authorized Preview operations; path still grants no mutation privilege.
+4. **dev-extra** (`.worktrees/dev-extra`): Additional parallel Local development lane on ephemeral
+   task branches. Runtime default: Local.
+
+Lane-specific operational cards (facts only; policy stays centralized):
+[`docs/core/worktrees/`](worktrees/).
 
 ### Core Invariants
 
-- **Worktrees are persistent**: Directory locations (`celebra-me` root, `.worktrees/dev-lane`,
-  `.worktrees/val-lane`) remain on disk. `.worktrees/` is gitignored.
-- **Task branches are ephemeral**: Development and Validation lanes operate on normal task-scoped
-  branches (`feat/*`, `fix/*`, `candidate/*`). Creating permanent branches like `dev-lane`,
-  `val-lane`, `lane-a`, or `lane-b` is strictly forbidden.
-- **Worktree location does NOT grant environment authorization**: Being inside `.worktrees/val-lane`
-  does not give permission to mutate Preview or Production databases. Environment access is
-  determined solely by explicit task scope, target environment, operation risk, and safety rules.
-- **Preview is a validation environment**: Preview is used for pre-Production validation flows
-  (hosted SSR, Supabase Auth, invitation publication, provisioning, asset URLs, hosted DB
-  integration, migration sanity validation, Preview E2E), not as a routine development target.
+- **Worktrees are persistent**: Directory locations remain on disk. `.worktrees/` is gitignored.
+- **Task branches are ephemeral**: Development lanes operate on normal task-scoped branches
+  (`feat/*`, `fix/*`, `candidate/*`). Creating permanent branches like `dev-local`, `dev-preview`,
+  `dev-lane`, or `val-lane` is strictly forbidden.
+- **Worktree location does NOT grant environment authorization**: Being inside
+  `.worktrees/dev-preview` does not give permission to mutate Preview or Production databases.
+  Environment access is determined solely by explicit task scope, target environment, operation
+  risk, and safety rules.
+- **Runtime defaults are lane-specific**: Local lanes load `.env` / `.env.local`. The Preview lane
+  overlays `.env.preview.local` and sets `CELEBRA_RUNTIME_TARGET=preview`. See
+  [`docs/env-workflow.md`](../env-workflow.md).
+- **Preview remains a validation environment for mutations**: Preview migrations, syncs, invitation
+  updates, and E2E provision/publish still require explicit authorization and existing guards.
 - **Production remains explicitly restricted**: Production mutations require explicit approval and
   must follow the fast-forward promotion workflow from `develop`.
 
 ### Canonical Lane Lifecycle
 
-Every task assigned to a Development or Validation lane follows this lifecycle:
+Every task assigned to a development lane (`dev-local`, `dev-preview`, `dev-extra`) follows this
+lifecycle:
 
 1. **Assign Task**: Verify that the targeted lane is idle (in `detached HEAD`) and clean. Create the
    task branch explicitly from `develop`:
@@ -91,23 +102,39 @@ To navigate between worktrees efficiently in PowerShell, add the following funct
 PowerShell profile (`$PROFILE`):
 
 ```powershell
-function lane ($lane) {
-  switch ($lane) {
-    "main" { Set-Location "D:\code\celebra-me" }
-    "dev"  { Set-Location "D:\code\celebra-me\.worktrees\dev-lane" }
-    "val"  { Set-Location "D:\code\celebra-me\.worktrees\val-lane" }
-    default { git worktree list }
+function lane {
+  param(
+    [ValidateSet('main', 'local', 'preview', 'extra')]
+    [string]$Name = 'main'
+  )
+
+  $root = 'D:\code\celebra-me'
+  $paths = @{
+    main    = $root
+    local   = "$root\.worktrees\dev-local"
+    preview = "$root\.worktrees\dev-preview"
+    extra   = "$root\.worktrees\dev-extra"
   }
+
+  Set-Location $paths[$Name]
+  git status -sb
 }
 ```
 
+Install / verify:
+
+1. Open `$PROFILE` (`notepad $PROFILE` or your editor).
+2. Paste the `lane` function above (update `$root` if your clone path differs).
+3. Reload: `. $PROFILE`
+4. Verify: `Get-Command lane`, then `lane preview` and confirm `pwd` / `git status -sb`.
+
 _Note: Agents do not use shell functions and must always specify explicit working directory paths
-(`Cwd`)._
+(`cwd`)._
 
 ### Worktree Inspection Tooling
 
-Inspect the state, active branch, detached HEAD, clean/dirty status, and alignment with `develop`
-across all three lanes at any time:
+Inspect the state, active branch, detached HEAD, clean/dirty status, runtime default, and alignment
+with `develop` across all four lanes at any time:
 
 ```bash
 pnpm ops worktree-status
@@ -121,9 +148,11 @@ variables, or database state.
 To support concurrent work across worktrees without friction or collision:
 
 - **Server Ports**: Astro/Vite automatically increments development server ports (e.g. `4321` for
-  main root, `4322` for `dev-lane`, `4323` for `val-lane`).
-- **Local Database**: All local worktrees safely share the persistent Local Supabase instance
+  Integration, then the next free ports for other lanes).
+- **Local Database**: Local-runtime worktrees share the persistent Local Supabase instance
   (`127.0.0.1:54322`).
+- **Preview runtime**: `dev-preview` talks to the hosted Preview Supabase project by default; it
+  does not share Local DB application state.
 - **Disposable Test Database**: Ephemeral test operations spin up the disposable container
   (`127.0.0.1:54332`) on demand without affecting persistent local state.
 - **Preview Mutations**: Concurrent Preview mutations and Vercel Preview deployments must be

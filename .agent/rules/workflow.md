@@ -73,11 +73,12 @@ Cloudinary, Preview/Production endpoints):
 ## Agent-Specific Git Rules
 
 - Operate within the designated persistent worktree lane (`celebra-me` root for Integration,
-  `.worktrees/dev-lane` for Development, `.worktrees/val-lane` for Validation) on ephemeral task
+  `.worktrees/dev-local`, `.worktrees/dev-preview`, or `.worktrees/dev-extra`) on ephemeral task
   branches.
 - Task branches must be created explicitly from `develop`: `git switch -c <task-branch> develop`.
   Never create task branches from detached HEAD.
-- Worktree path location grants no environment privileges (`path ≠ privilege`).
+- Worktree path location grants no environment privileges (`path ≠ privilege`). Preview runtime on
+  `dev-preview` does not authorize Preview or Production mutations.
 - Work on the current branch. Do not create, switch, merge, rebase, delete, or clean branches unless
   the user explicitly requests that exact operation.
 - Do not stage, commit, stash, discard, or rewrite worktree/history state without current-task

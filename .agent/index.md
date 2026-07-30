@@ -92,9 +92,9 @@ state and never has authority over these definitions.
 
 ## Available Templates (Invitation)
 
-| Template             | File                                                  | Purpose                                              |
-| -------------------- | ----------------------------------------------------- | ---------------------------------------------------- |
-| `preparation-state`  | `.agent/templates/invitation/preparation-state.md`    | Canonical per-slug state under `docs/invitations/`   |
+| Template            | File                                               | Purpose                                            |
+| ------------------- | -------------------------------------------------- | -------------------------------------------------- |
+| `preparation-state` | `.agent/templates/invitation/preparation-state.md` | Canonical per-slug state under `docs/invitations/` |
 
 ## Available Workflows
 
@@ -126,7 +126,7 @@ One owner per concern. Other files may link here; they must not redefine the sam
 | Agent operating procedure           | `.agent/rules/workflow.md`                           | Human branch/release policy docs               |
 | Git authorization / worktree safety | `.agent/rules/git-safety.md`                         | Commit-message style docs                      |
 | Human branch, worktrees, promotion  | `docs/core/git-governance.md`                        | Agent workflow rules                           |
-
+| Per-worktree operational cards      | `docs/core/worktrees/`                               | Env/DB/Git policy SSOTs (cards link only)      |
 | Release checkpoints / version tags  | `docs/core/release-process.md`                       | Per-invitation notes                           |
 | Product release history             | `CHANGELOG.md` (`[Unreleased]` → versioned)          | Migrations, invitation ops notes               |
 | Invitation identity requirements    | `docs/core/invitation-creation-contract.md`          | Runbook, agent workflow, safety rule           |
@@ -179,8 +179,8 @@ Load in this order for managed invitation work; do not copy semantics across lay
 5. **Executable CLI** — `pnpm invitation:update -- --help` and live provision scripts
    (flags/behavior).
 
-Technical Local/Preview/Production readiness remains owned by the CLI/`invitation-readiness.ts`
-and is independent from preparation readiness.
+Technical Local/Preview/Production readiness remains owned by the CLI/`invitation-readiness.ts` and
+is independent from preparation readiness.
 
 ## Canonical Docs
 
@@ -190,6 +190,7 @@ and is independent from preparation readiness.
 - `docs/core/architecture.md`
 - `docs/core/content-schema.md`
 - `docs/core/git-governance.md`
+- `docs/core/worktrees/` (lane operational cards)
 - `docs/core/agent-interaction.md`
 - `docs/core/invitation-creation-contract.md`
 - `docs/core/invitation-preparation-contract.md`
@@ -248,27 +249,27 @@ Every task loads `AGENTS.md`, `.agent/rules/gatekeeper.md`, and `.agent/rules/gi
 Consult this matrix to choose only the additions required by the task; do not reread base
 prerequisites that are already loaded.
 
-| Task type                         | Add                                                                                           |
-| --------------------------------- | --------------------------------------------------------------------------------------------- |
-| Visual or UI work                 | `.agent/rules/agent-routing.md` plus the relevant design or theme skill                       |
-| Architecture coupling / risk-hub leads | `.agent/rules/graphify-ops.md` (+ `graphify-ops` skill only when that rule triggers)     |
-| Reference-driven visual redesign  | `design-reference-to-build`, `frontend-design`, and the design-reference brief                |
-| Backend or data work              | `backend-engineering`, relevant domain docs, and API/database rules                           |
-| Documentation or governance drift | `documentation-governance` and `.agent/workflows/system-doc-alignment.md`                     |
-| Testing or regression work        | `testing` and affected domain docs                                                            |
-| Browser automation on invitations | `docs/domains/invitations/reveal-gate-automation.md` before scripting any reveal interaction  |
-| Supabase or database work         | `.agent/rules/database.md`, `supabase`, `supabase-postgres`, and `docs/database-workflow.md`  |
-| Planning                          | `.agent/workflows/plan-authoring.md`; add `.agent/plans/README.md` only for tracked plans     |
-| Commit governance                 | `commit-planner` and `docs/core/git-governance.md`                                            |
-| Staged review before commit       | `staged-code-review` then `staged-code-review-apply`                                          |
-| Release / branch lane             | `branch-lane` (orchestrator) + `docs/core/release-process.md` / `docs/core/git-governance.md` |
-| Branch-lane DB-sensitive routing  | `database-parity` (auto-invoked) + `docs/database-workflow.md` / `.agent/rules/database.md`   |
-| Stash / branch housekeeping       | `git-stash-branch-cleanup`                                                                    |
-| Real invitation preparation       | `invitation-preparation` workflow + `client-invitation-audit`                             |
-| Real invitation implementation    | `client-invitation-audit` two-lane spec, then `managed-invitation-lifecycle` to apply     |
-| Demo date / transform consistency | `demo-content-consistency`                                                                    |
-| Manual production SQL authoring   | `production-sql-patches` and `.agent/rules/manual-sql-manifest.md`                            |
-| Creative or marketing production  | `.agent/briefs/celebra-me.md` and the relevant creative template                              |
-| Framework API uncertainty         | Relevant skill plus Context7/docs MCP against `package.json` versions                         |
-| Visual polish / anti-slop review  | `frontend-design` registers + structural bans + critique checklist (not external SSOT)        |
-| Invitation hero composition       | `frontend-design` Hero Composition Contract + Lane A profile essence / focals                 |
+| Task type                              | Add                                                                                           |
+| -------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Visual or UI work                      | `.agent/rules/agent-routing.md` plus the relevant design or theme skill                       |
+| Architecture coupling / risk-hub leads | `.agent/rules/graphify-ops.md` (+ `graphify-ops` skill only when that rule triggers)          |
+| Reference-driven visual redesign       | `design-reference-to-build`, `frontend-design`, and the design-reference brief                |
+| Backend or data work                   | `backend-engineering`, relevant domain docs, and API/database rules                           |
+| Documentation or governance drift      | `documentation-governance` and `.agent/workflows/system-doc-alignment.md`                     |
+| Testing or regression work             | `testing` and affected domain docs                                                            |
+| Browser automation on invitations      | `docs/domains/invitations/reveal-gate-automation.md` before scripting any reveal interaction  |
+| Supabase or database work              | `.agent/rules/database.md`, `supabase`, `supabase-postgres`, and `docs/database-workflow.md`  |
+| Planning                               | `.agent/workflows/plan-authoring.md`; add `.agent/plans/README.md` only for tracked plans     |
+| Commit governance                      | `commit-planner` and `docs/core/git-governance.md`                                            |
+| Staged review before commit            | `staged-code-review` then `staged-code-review-apply`                                          |
+| Release / branch lane                  | `branch-lane` (orchestrator) + `docs/core/release-process.md` / `docs/core/git-governance.md` |
+| Branch-lane DB-sensitive routing       | `database-parity` (auto-invoked) + `docs/database-workflow.md` / `.agent/rules/database.md`   |
+| Stash / branch housekeeping            | `git-stash-branch-cleanup`                                                                    |
+| Real invitation preparation            | `invitation-preparation` workflow + `client-invitation-audit`                                 |
+| Real invitation implementation         | `client-invitation-audit` two-lane spec, then `managed-invitation-lifecycle` to apply         |
+| Demo date / transform consistency      | `demo-content-consistency`                                                                    |
+| Manual production SQL authoring        | `production-sql-patches` and `.agent/rules/manual-sql-manifest.md`                            |
+| Creative or marketing production       | `.agent/briefs/celebra-me.md` and the relevant creative template                              |
+| Framework API uncertainty              | Relevant skill plus Context7/docs MCP against `package.json` versions                         |
+| Visual polish / anti-slop review       | `frontend-design` registers + structural bans + critique checklist (not external SSOT)        |
+| Invitation hero composition            | `frontend-design` Hero Composition Contract + Lane A profile essence / focals                 |

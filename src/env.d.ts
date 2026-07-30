@@ -34,6 +34,8 @@ interface ImportMetaEnv {
 	readonly DEV_MFA_BYPASS: string;
 	readonly PREVIEW_MFA_BYPASS: string;
 	readonly PREVIEW_ADMIN_EMAILS: string;
+	/** Local-process runtime target: `local` | `preview`. Never forges Vercel identity. */
+	readonly CELEBRA_RUNTIME_TARGET: string;
 	readonly VERCEL: string;
 	readonly VERCEL_ENV: string;
 	readonly VERCEL_GIT_COMMIT_REF: string;
