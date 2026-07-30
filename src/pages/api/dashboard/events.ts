@@ -35,6 +35,7 @@ export const GET: APIRoute = async ({ request }) => {
 				hostUserId: sessionSnapshot.context.userId,
 				hostAccessToken: sessionSnapshot.context.accessToken,
 				requestedSlug,
+				isSuperAdmin: sessionSnapshot.context.isSuperAdmin,
 			});
 			const debug = {
 				...result.debug,
@@ -72,6 +73,7 @@ export const GET: APIRoute = async ({ request }) => {
 			const events = await listHostEvents({
 				hostUserId: sessionSnapshot.context.userId,
 				hostAccessToken: sessionSnapshot.context.accessToken,
+				isSuperAdmin: sessionSnapshot.context.isSuperAdmin,
 			});
 			payload = {
 				items: events.map((event) => ({

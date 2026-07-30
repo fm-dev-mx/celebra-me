@@ -70,6 +70,35 @@ describe('GET /api/dashboard/events', () => {
 		expect(response.status).toBe(200);
 		expect(body.items).toHaveLength(1);
 		expect(body.items[0].id).toBe('evt-1');
+		expect(listHostEventsMock).toHaveBeenCalledWith({
+			hostUserId: 'host-1',
+			hostAccessToken: 'token',
+			isSuperAdmin: false,
+		});
+	});
+
+	it('passes isSuperAdmin to listHostEvents for admin sessions', async () => {
+		getSessionDebugSnapshotFromRequestMock.mockResolvedValue({
+			hasAccessToken: true,
+			tokenSource: 'cookie',
+			reason: 'session_role_resolved',
+			context: {
+				userId: 'admin-1',
+				email: 'admin@test.com',
+				accessToken: 'token',
+				role: 'super_admin',
+				isSuperAdmin: true,
+			},
+		});
+		listHostEventsMock.mockResolvedValue([]);
+
+		const response = await GET({ request: createMockRequest() } as never);
+		expect(response.status).toBe(200);
+		expect(listHostEventsMock).toHaveBeenCalledWith({
+			hostUserId: 'admin-1',
+			hostAccessToken: 'token',
+			isSuperAdmin: true,
+		});
 	});
 
 	it('returns debug payload when debug mode is enabled', async () => {

@@ -44,6 +44,9 @@ describe('rsvp service branches', () => {
 	const findEventsForHostMock = eventRepo.findEventsForHost as jest.MockedFunction<
 		typeof eventRepo.findEventsForHost
 	>;
+	const listAllEventsServiceMock = eventRepo.listAllEventsService as jest.MockedFunction<
+		typeof eventRepo.listAllEventsService
+	>;
 	const findGuestsByEventMock = guestRepo.findGuestsByEvent as jest.MockedFunction<
 		typeof guestRepo.findGuestsByEvent
 	>;
@@ -496,6 +499,57 @@ describe('rsvp service branches', () => {
 		]);
 		expect(findEventByIdMock).toHaveBeenCalledWith('evt-member', 'token');
 		expect(findEventByIdServiceMock).toHaveBeenCalledWith('evt-member');
+	});
+
+	it('listHostEvents uses listAllEventsService for super_admin and skips host-scoped queries', async () => {
+		listAllEventsServiceMock.mockResolvedValue([
+			{
+				...baseEvent,
+				id: 'evt-all-1',
+				title: 'All Events One',
+				createdAt: '2026-04-03T10:00:00.000Z',
+			},
+			{
+				...baseEvent,
+				id: 'evt-all-2',
+				title: 'All Events Two',
+				createdAt: '2026-04-01T10:00:00.000Z',
+			},
+		]);
+
+		const result = await listHostEvents({
+			hostUserId: 'admin-1',
+			hostAccessToken: 'token',
+			isSuperAdmin: true,
+		});
+
+		expect(result.map((event) => event.id)).toEqual(['evt-all-1', 'evt-all-2']);
+		expect(listAllEventsServiceMock).toHaveBeenCalledTimes(1);
+		expect(findEventsByOwnerMock).not.toHaveBeenCalled();
+		expect(findEventsForHostMock).not.toHaveBeenCalled();
+		expect(listMembershipsForHostMock).not.toHaveBeenCalled();
+	});
+
+	it('listHostEventsWithDebug marks super_admin session when listing all events', async () => {
+		listAllEventsServiceMock.mockResolvedValue([
+			{
+				...baseEvent,
+				id: 'evt-all-1',
+			},
+		]);
+
+		const result = await listHostEventsWithDebug({
+			hostUserId: 'admin-1',
+			hostAccessToken: 'token',
+			isSuperAdmin: true,
+			requestedSlug: 'fixture-event',
+		});
+
+		expect(result.events).toHaveLength(1);
+		expect(result.debug.session.isSuperAdmin).toBe(true);
+		expect(result.debug.session.role).toBe('super_admin');
+		expect(result.debug.visibleEvents).toHaveLength(1);
+		expect(findEventBySlugServiceMock).toHaveBeenCalledWith('fixture-event');
 	});
 
 	it('listHostEventsWithDebug reports requested slug diagnostics and unresolved memberships', async () => {

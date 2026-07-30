@@ -4,6 +4,7 @@ import {
 	findEventsByOwner,
 	findEventsForHost,
 	findEventBySlugService,
+	listAllEventsService,
 	updateEventService,
 } from '@/lib/rsvp/repositories/event.repository';
 import { listMembershipsForHost } from '@/lib/rsvp/repositories/role-membership.repository';
@@ -23,6 +24,44 @@ function toDashboardEventItem(event: EventRecord): DashboardEventListItem {
 		slug: event.slug,
 		eventType: event.eventType,
 		status: event.status,
+	};
+}
+
+async function listAllEventsForSuperAdmin(input: {
+	hostUserId: string;
+	requestedSlug: string;
+}): Promise<{ events: EventRecord[]; debug: DashboardEventListDebug }> {
+	const events = await listAllEventsService();
+	const requestedSlugEvent = input.requestedSlug
+		? await findEventBySlugService(input.requestedSlug)
+		: null;
+	return {
+		events,
+		debug: {
+			session: {
+				hasAccessToken: true,
+				tokenSource: 'cookie',
+				reason: 'session_role_resolved',
+				userId: input.hostUserId,
+				email: null,
+				role: 'super_admin',
+				isSuperAdmin: true,
+			},
+			ownerEvents: [],
+			visibleEvents: events.map(toDashboardEventItem),
+			memberships: [],
+			membershipResolvedEvents: [],
+			unresolvedMembershipEventIds: [],
+			requestedSlugCheck: input.requestedSlug
+				? {
+						requestedSlug: input.requestedSlug,
+						slugExistsInDb: Boolean(requestedSlugEvent),
+						eventId: requestedSlugEvent?.id || null,
+						ownerUserId: requestedSlugEvent?.ownerUserId || null,
+						title: requestedSlugEvent?.title || null,
+					}
+				: null,
+		},
 	};
 }
 
@@ -63,6 +102,7 @@ export async function updateEventAdmin(input: {
 export async function listHostEvents(input: {
 	hostUserId: string;
 	hostAccessToken: string;
+	isSuperAdmin?: boolean;
 }): Promise<EventRecord[]> {
 	const result = await listHostEventsWithDebug(input);
 	return result.events;
@@ -72,8 +112,17 @@ export async function listHostEventsWithDebug(input: {
 	hostUserId: string;
 	hostAccessToken: string;
 	requestedSlug?: string;
+	isSuperAdmin?: boolean;
 }): Promise<{ events: EventRecord[]; debug: DashboardEventListDebug }> {
 	const requestedSlug = sanitize(input.requestedSlug || '', 120);
+
+	if (input.isSuperAdmin) {
+		return listAllEventsForSuperAdmin({
+			hostUserId: input.hostUserId,
+			requestedSlug,
+		});
+	}
+
 	const [ownerEvents, visibleEvents, memberships, requestedSlugEvent] = await Promise.all([
 		findEventsByOwner(input.hostUserId, input.hostAccessToken),
 		findEventsForHost(input.hostAccessToken),
