@@ -30,15 +30,15 @@ describe('Phase 3 operational contracts', () => {
 		const firstCriticalBackup = workflow.indexOf(
 			"'scripts/db/daily-critical-production-backup.ts'",
 		);
-		const preMigrationProfile = workflow.indexOf("'--integrity-profile=pre-phase3'");
 		const migration = workflow.indexOf('// 7. DB Push execution');
 		const contract = workflow.indexOf("'scripts/db/verify-mutation-schema-contract.ts'");
 		const postMigrationBackup = workflow.lastIndexOf(
 			"'scripts/db/backup-critical-production.ts'",
 		);
 		expect(firstCriticalBackup).toBeGreaterThan(0);
-		expect(preMigrationProfile).toBeGreaterThan(firstCriticalBackup);
-		expect(migration).toBeGreaterThan(preMigrationProfile);
+		// Phase 3 is fully applied in Production; the stale pre-phase3 profile must not return.
+		expect(workflow).not.toContain('--integrity-profile=pre-phase3');
+		expect(migration).toBeGreaterThan(firstCriticalBackup);
 		expect(contract).toBeGreaterThan(migration);
 		expect(postMigrationBackup).toBeGreaterThan(contract);
 		expect(postMigrationBackup).toBeGreaterThan(firstCriticalBackup);

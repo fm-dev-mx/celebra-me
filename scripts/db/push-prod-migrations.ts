@@ -156,17 +156,14 @@ async function main(): Promise<void> {
 		console.info('✅ Dry-run matches the explicit expected migrations allowlist exactly.\n');
 	}
 
-	// 5. Complete pre-migration recovery point. The explicit profile captures the current
-	// predecessor schema without requiring the receipt table introduced by this migration set.
+	// 5. Complete pre-migration recovery point. Production completed Phase 3
+	// (20260729140514/20260729152113), so the standard profile applies: the receipt table
+	// exists and must be part of the integrity fingerprint.
 	console.info('5. Creating a complete read-only pre-migration critical recovery point...');
-	runCommand(
-		'npx',
-		['tsx', 'scripts/db/daily-critical-production-backup.ts', '--integrity-profile=pre-phase3'],
-		{
-			env: { ...process.env, PROD_DB_URL: prodDbUrl },
-			redact: [prodDbUrl],
-		},
-	);
+	runCommand('npx', ['tsx', 'scripts/db/daily-critical-production-backup.ts'], {
+		env: { ...process.env, PROD_DB_URL: prodDbUrl },
+		redact: [prodDbUrl],
+	});
 	console.info('✅ Complete pre-migration critical recovery point verified.\n');
 
 	// 6. Explicit User Confirmation
