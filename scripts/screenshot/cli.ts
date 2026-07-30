@@ -17,7 +17,6 @@ import {
 	type ScreenshotJob,
 	type PageType,
 	type CaptureTarget,
-	DEFAULT_BASE_URL,
 	DEFAULT_STORAGE_STATE_PATH,
 } from './types.js';
 import {
@@ -29,6 +28,8 @@ import {
 	resolveOutputDir,
 	loadScreenshotConfig,
 	getDefaultCriticalSelectors,
+	resolveScreenshotBaseUrl,
+	resolveScreenshotLaneContext,
 } from './utils.js';
 import { runInteractiveFlow } from './interactive.js';
 import { runScreenshotJob } from './runner.js';
@@ -126,17 +127,22 @@ function buildJobFromCli(options: CliOptions): ScreenshotJob | null {
 			'✕ No URL provided. Use --url=<url> or run without flags for interactive mode.',
 		);
 		console.error('  Examples:');
-		console.error(
-			'    pnpm screenshot:invite --url=http://localhost:4321/boda/demo-boda-jewelry-box-wedding',
-		);
-		console.error('    pnpm screenshot --url=http://localhost:4321/dashboard');
+		console.error('    pnpm screenshot:invite --url=/boda/demo-boda-jewelry-box-wedding');
+		console.error(`    pnpm screenshot --url=${resolveScreenshotBaseUrl()}/dashboard`);
 		process.exit(1);
 	}
 
 	validateCliOptions(options);
 
-	const baseUrl = options.baseUrl ?? DEFAULT_BASE_URL;
+	const laneContext = resolveScreenshotLaneContext({
+		explicitBaseUrl: options.baseUrl,
+	});
+	const baseUrl = laneContext.baseUrl;
 	const resolvedUrl = resolveUrl(url, baseUrl);
+	console.log(
+		`  Lane:    ${laneContext.displayName} (${laneContext.laneId}) → ${baseUrl}` +
+			(laneContext.portSource !== 'lane' ? ` [${laneContext.portSource}]` : ''),
+	);
 
 	// Determine page type
 	let pageType: PageType;
@@ -226,7 +232,14 @@ async function runConfigJobs(options: CliOptions): Promise<{ failed: number }> {
 	}
 
 	for (const page of pages) {
-		const baseUrl = config.baseUrl ?? options.baseUrl ?? DEFAULT_BASE_URL;
+		const laneContext = resolveScreenshotLaneContext({
+			explicitBaseUrl: config.baseUrl ?? options.baseUrl,
+		});
+		const baseUrl = laneContext.baseUrl;
+		console.log(
+			`  Lane:    ${laneContext.displayName} (${laneContext.laneId}) → ${baseUrl}` +
+				(laneContext.portSource !== 'lane' ? ` [${laneContext.portSource}]` : ''),
+		);
 		const profile =
 			page.profile ?? config.defaultViewportProfile ?? getDefaultProfile(page.pageType);
 		const viewports = resolveViewports(profile, page.viewports);

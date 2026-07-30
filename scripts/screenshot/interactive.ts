@@ -16,7 +16,6 @@ import {
 	type ScreenshotMode,
 	type CaptureTarget,
 	type SectionExtent,
-	DEFAULT_BASE_URL,
 	KNOWN_SECTIONS,
 } from './types.js';
 import {
@@ -27,6 +26,7 @@ import {
 	formatViewport,
 	getDefaultCriticalSelectors,
 	getViewportProfileSummary,
+	resolveScreenshotLaneContext,
 } from './utils.js';
 import {
 	discoverAllInvitations,
@@ -257,13 +257,14 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | ScreenshotJo
 		resolvedUrls = [{ name: createPageSlug(urlInput), url: urlInput }];
 	}
 
-	// Base URL resolution
-	let baseUrl = DEFAULT_BASE_URL;
+	// Base URL resolution (lane-aware: Integration/dev-local 4321, dev-extra 4322, dev-preview 4323)
+	const laneContext = resolveScreenshotLaneContext();
+	let baseUrl = laneContext.baseUrl;
 	const hasRelativeRoute = resolvedUrls.some((item) => !/^https?:\/\//i.test(item.url.trim()));
 	if (hasRelativeRoute) {
 		baseUrl = await input({
-			message: 'Base URL:',
-			default: DEFAULT_BASE_URL,
+			message: `Base URL [${laneContext.displayName} → :${laneContext.port}]:`,
+			default: laneContext.baseUrl,
 		});
 	}
 

@@ -196,6 +196,16 @@ export interface CaptureResult {
 	mtimeMs?: number;
 	strategy?: 'direct' | 'stitched';
 	verificationStatus?: 'passed' | 'failed';
+	/**
+	 * Document-space CSS bounding box for section fragments used by
+	 * `section-composite` (scrollY + getBoundingClientRect).
+	 */
+	documentBounds?: {
+		x: number;
+		y: number;
+		width: number;
+		height: number;
+	};
 }
 
 export type ValidationStatus = 'passed' | 'warning' | 'failed';
@@ -245,10 +255,14 @@ export interface ConsoleErrorReport {
 export interface ViewportManifestReport {
 	name: string;
 	files: number;
+	/** Required planned captures for this viewport (SSOT from resolveCapturePlan). */
 	expected: number;
 	status: ValidationStatus;
+	/** Total planned tasks including optional. */
+	plannedTotal?: number;
 	requiredExpected?: number;
 	requiredVerified?: number;
+	optionalExpected?: number;
 	optionalGenerated?: number;
 	optionalOmitted?: number;
 	missingRequiredTaskIds?: string[];
@@ -286,6 +300,11 @@ export interface ViewportRunReport {
 	fallback?: 'native-full-page';
 	stitchFailures?: string[];
 	blankBottomValidations?: BlankBottomValidation[];
+	/** Required capture-task failures for this viewport. */
+	captureFailures?: string[];
+	/** Post-capture validation failures (selectors, dimensions, coverage). */
+	validationFailures?: string[];
+	/** Union of capture + validation failures (backward-compatible). */
 	failures: string[];
 	consoleErrors: ConsoleErrorReport[];
 	requestFailures: RequestFailureReport[];
@@ -303,14 +322,29 @@ export interface ScreenshotRunReport {
 	detailedWarnings?: ScreenshotWarning[];
 	notices?: string[];
 	blankBottomValidations?: BlankBottomValidation[];
+	captureFailures?: string[];
+	validationFailures?: string[];
+	manifestFailures?: string[];
+	/** Union of blocking failure messages. */
 	failures: string[];
 }
 
 /** Overall job result */
 export interface JobResult {
 	total: number;
+	/** Successful required capture tasks. */
 	succeeded: number;
+	/**
+	 * Blocking failure count (capture + validation + manifest).
+	 * Used for process exit code.
+	 */
 	failed: number;
+	captureFailed?: number;
+	validationFailed?: number;
+	manifestFailed?: number;
+	blockingErrors?: number;
+	warningCount?: number;
+	noticeCount?: number;
 	captures: CaptureResult[];
 	outputDir: string;
 	durationMs: number;
@@ -553,6 +587,11 @@ export const KNOWN_SECTIONS: KnownSection[] = [
 // Defaults
 // ---------------------------------------------------------------------------
 
+/**
+ * Fallback base URL for Integration / `dev-local` (port 4321).
+ * Prefer {@link resolveScreenshotBaseUrl} so `dev-extra` / `dev-preview` lanes
+ * bind to their stable ports (4322 / 4323).
+ */
 export const DEFAULT_BASE_URL = 'http://localhost:4321';
 export const DEFAULT_STORAGE_STATE_PATH = 'playwright/.auth/user.json';
 export const DEFAULT_NAVIGATION_TIMEOUT = 15_000;

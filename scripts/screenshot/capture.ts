@@ -30,7 +30,7 @@ import {
 	formatExtension,
 	getAboveFoldCriticalSelector,
 	getDefaultHideSelectors,
-	getDocumentHeight,
+	getOperationalToolbarSelectors,
 	intersectRectWithViewport,
 	playwrightFormatOptions,
 	verifyPhysicalPng,
@@ -61,8 +61,57 @@ export interface CaptureTask {
 	viewportOnly?: boolean;
 }
 
+export type PlannedCaptureTask = { id: string; required: boolean };
+
+export interface CapturePlanResult {
+	results: CaptureResult[];
+	plannedCount: number;
+	plannedTasks: PlannedCaptureTask[];
+}
+
 export function getPlannedCaptureLabel(id: string): string {
 	return id.replace(/^\d+-/, '');
+}
+
+/** Required unless explicitly optional or unsupported. */
+export function isCaptureTaskRequired(task: Pick<CaptureTask, 'requirement'>): boolean {
+	return task.requirement !== 'optional' && task.requirement !== 'unsupported';
+}
+
+export function plannedTasksFromCapturePlan(tasks: CaptureTask[]): PlannedCaptureTask[] {
+	return tasks.map((task) => ({
+		id: task.id,
+		required: isCaptureTaskRequired(task),
+	}));
+}
+
+export function withTaskIdentity(
+	result: CaptureResult,
+	task: Pick<CaptureTask, 'id' | 'label' | 'requirement'>,
+): CaptureResult {
+	return {
+		...result,
+		id: task.id,
+		label: result.label || task.label,
+		isOptional: task.requirement === 'optional',
+	};
+}
+
+export function buildTaskFailureResult(
+	task: Pick<CaptureTask, 'id' | 'label' | 'requirement'>,
+	outputPath: string,
+	viewportName: string,
+	error: string,
+): CaptureResult {
+	return {
+		id: task.id,
+		path: outputPath,
+		viewportName,
+		label: task.label,
+		success: false,
+		error,
+		isOptional: task.requirement === 'optional',
+	};
 }
 
 /**
@@ -134,12 +183,13 @@ export async function ensureInvitationOpenForCapture(
 
 		const revealOk = opts.hasReveal ? await checkRevealIsOpen(page) : true;
 		const contentOk = await assertInvitationContentReady(page);
-		if (revealOk && contentOk) {
+		const clearOk = opts.hasReveal ? await assertRevealDoesNotOccludeInvitation(page) : true;
+		if (revealOk && contentOk && clearOk) {
 			console.log('  ✓ Invitation open and section content ready');
 			return true;
 		}
 		console.warn(
-			`  ⚠ Open assert failed (revealOpen=${revealOk}, contentReady=${contentOk})` +
+			`  ⚠ Open assert failed (revealOpen=${revealOk}, contentReady=${contentOk}, revealClear=${clearOk})` +
 				(attempt < maxAttempts ? '; retrying…' : ''),
 		);
 	}
@@ -160,40 +210,295 @@ export function listOrderedSectionCapturePaths(paths: string[]): string[] {
 		});
 }
 
+/** Parse `10-{order}-{id}` from a section capture filename. */
+export function parseSectionCaptureIdentity(filePath: string): {
+	order: number;
+	sectionId: string;
+} | null {
+	const match = path.basename(filePath).match(/^10-(\d+)-(.+)\.[^.]+$/);
+	if (!match) return null;
+	return { order: Number(match[1]), sectionId: match[2] };
+}
+
+/** Document-space fragment for geometry-aware section-composite. */
+export interface SectionCompositeFragment {
+	file: string;
+	/** Document Y of the section top (CSS px). */
+	docTop: number;
+	/** Layout box height (CSS px). */
+	docHeight: number;
+	/** Stable paint order when tops are equal (DOM/section order). */
+	order: number;
+	sectionId?: string;
+}
+
+export interface DocumentCompositePlacement {
+	file: string;
+	/** Offset from composite origin (CSS px). */
+	cssTop: number;
+	cssHeight: number;
+	order: number;
+	sectionId?: string;
+}
+
+export interface DocumentCompositeLayout {
+	originTop: number;
+	canvasCssHeight: number;
+	placements: DocumentCompositePlacement[];
+}
+
+/** Contiguous document-space strip covering [topY, bottomY). */
+export interface DocumentCaptureStrip {
+	/** Absolute document Y of the strip top (CSS px). */
+	docY: number;
+	/** Strip height in CSS px. */
+	height: number;
+}
+
+export interface DocumentCaptureStripPlan {
+	originTop: number;
+	totalHeight: number;
+	strips: DocumentCaptureStrip[];
+}
+
 /**
- * Vertically composite section PNG captures into a single full-page artifact.
+ * Partition a document Y range into contiguous strips with no gaps, overlaps,
+ * missing rows, or duplicated rows. Heights are integers in CSS pixels.
  */
-export async function compositeSectionCapturePngs(
-	sectionPaths: string[],
-	outputPath: string,
-): Promise<{ width: number; height: number; sectionCount: number }> {
-	const ordered = listOrderedSectionCapturePaths(sectionPaths);
-	if (ordered.length === 0) {
+export function planDocumentCaptureStrips(input: {
+	topY: number;
+	bottomY: number;
+	maxStripHeight: number;
+}): DocumentCaptureStripPlan {
+	const originTop = Math.floor(input.topY);
+	const end = Math.ceil(input.bottomY);
+	if (!(end > originTop)) {
 		throw new Error(
-			'COMPOSITE_FULL_PAGE_FAILED: No ordered section capture paths to composite.',
+			`COMPOSITE_FULL_PAGE_FAILED: Invalid document capture range [${input.topY}, ${input.bottomY}).`,
 		);
 	}
+	const maxStripHeight = Math.max(1, Math.floor(input.maxStripHeight));
+	const totalHeight = end - originTop;
+	const strips: DocumentCaptureStrip[] = [];
+	let y = originTop;
+	while (y < end) {
+		const height = Math.min(maxStripHeight, end - y);
+		strips.push({ docY: y, height });
+		y += height;
+	}
 
-	const tiles: Array<{ file: string; width: number; height: number }> = [];
-	for (const file of ordered) {
-		const meta = await sharp(file).metadata();
-		if (!meta.width || !meta.height) {
-			throw new Error(`COMPOSITE_FULL_PAGE_FAILED: Could not read dimensions for ${file}`);
+	assertContinuousDocumentStrips(strips, originTop, end);
+	return { originTop, totalHeight, strips };
+}
+
+/** Verify strip plan is a partition of [originTop, end). */
+export function assertContinuousDocumentStrips(
+	strips: DocumentCaptureStrip[],
+	originTop: number,
+	end: number,
+): void {
+	if (strips.length === 0) {
+		throw new Error('COMPOSITE_FULL_PAGE_FAILED: No document capture strips planned.');
+	}
+	if (strips[0].docY !== originTop) {
+		throw new Error(
+			`COMPOSITE_FULL_PAGE_FAILED: First strip docY ${strips[0].docY} != origin ${originTop}.`,
+		);
+	}
+	let cursor = originTop;
+	for (const strip of strips) {
+		if (strip.docY !== cursor) {
+			throw new Error(
+				`COMPOSITE_FULL_PAGE_FAILED: Strip gap/overlap at docY=${strip.docY} (expected ${cursor}).`,
+			);
 		}
-		tiles.push({ file, width: meta.width, height: meta.height });
+		if (!(strip.height > 0)) {
+			throw new Error(
+				`COMPOSITE_FULL_PAGE_FAILED: Non-positive strip height at ${strip.docY}.`,
+			);
+		}
+		cursor += strip.height;
+	}
+	if (cursor !== end) {
+		throw new Error(
+			`COMPOSITE_FULL_PAGE_FAILED: Strip coverage ended at ${cursor}, expected ${end}.`,
+		);
+	}
+}
+
+/**
+ * Capture range from the first invitation section top to the bottom of the
+ * final section. Overlaps shrink the span; positive gaps are included.
+ */
+export function resolveInvitationDocumentCaptureRange(
+	sections: Array<{ docTop: number; docHeight: number }>,
+): { topY: number; bottomY: number; totalHeight: number } {
+	if (sections.length === 0) {
+		throw new Error('COMPOSITE_FULL_PAGE_FAILED: No invitation sections for document range.');
+	}
+	const topY = Math.min(...sections.map((s) => s.docTop));
+	const bottomY = Math.max(...sections.map((s) => s.docTop + s.docHeight));
+	const originTop = Math.floor(topY);
+	const end = Math.ceil(bottomY);
+	return { topY, bottomY, totalHeight: end - originTop };
+}
+
+export interface DocumentStripPhysicalPlacement {
+	docY: number;
+	cssHeight: number;
+	physicalTop: number;
+	physicalHeight: number;
+}
+
+/**
+ * Map a CSS strip plan to device-pixel canvas placements. Tops/heights use
+ * half-open document intervals mapped through DPR so adjacent strips abut
+ * (no missing or duplicated physical rows).
+ */
+export function planDocumentStripPhysicalPlacement(
+	plan: DocumentCaptureStripPlan,
+	deviceScaleFactor: number,
+): { canvasHeight: number; placements: DocumentStripPhysicalPlacement[] } {
+	const dpr = deviceScaleFactor > 0 ? deviceScaleFactor : 1;
+	const originPhys = Math.round(plan.originTop * dpr);
+	const endPhys = Math.round((plan.originTop + plan.totalHeight) * dpr);
+	const placements = plan.strips.map((strip) => {
+		const stripStartPhys = Math.round(strip.docY * dpr);
+		const stripEndPhys = Math.round((strip.docY + strip.height) * dpr);
+		return {
+			docY: strip.docY,
+			cssHeight: strip.height,
+			physicalTop: stripStartPhys - originPhys,
+			physicalHeight: Math.max(1, stripEndPhys - stripStartPhys),
+		};
+	});
+	const canvasHeight = Math.max(1, endPhys - originPhys);
+	assertContinuousPhysicalStripPlacements(placements, canvasHeight);
+	return { canvasHeight, placements };
+}
+
+/** Verify physical strip rows form a continuous partition of the canvas. */
+export function assertContinuousPhysicalStripPlacements(
+	placements: Array<{ physicalTop: number; physicalHeight: number }>,
+	canvasHeight: number,
+): void {
+	if (placements.length === 0) {
+		throw new Error('COMPOSITE_FULL_PAGE_FAILED: No physical strip placements.');
+	}
+	let cursor = 0;
+	for (const placement of placements) {
+		if (placement.physicalTop !== cursor) {
+			throw new Error(
+				`COMPOSITE_FULL_PAGE_FAILED: Physical strip gap/overlap at top=${placement.physicalTop} (expected ${cursor}).`,
+			);
+		}
+		if (!(placement.physicalHeight > 0)) {
+			throw new Error(
+				`COMPOSITE_FULL_PAGE_FAILED: Non-positive physical strip height at top=${placement.physicalTop}.`,
+			);
+		}
+		cursor += placement.physicalHeight;
+	}
+	if (cursor !== canvasHeight) {
+		throw new Error(
+			`COMPOSITE_FULL_PAGE_FAILED: Physical coverage ended at ${cursor}, expected canvas ${canvasHeight}.`,
+		);
+	}
+}
+
+/**
+ * Place section fragments using document coordinates so overlaps and gaps are
+ * preserved. Canvas height is last.bottom − first.top, not the sum of PNG heights.
+ * Paint order is document-top ascending, then section order (later paints on top).
+ *
+ * Note: `05-invitation-full-page` uses document-space page strips, not these
+ * section PNG fragments. This layout remains for deterministic geometry tests
+ * and any non-full-page callers.
+ */
+export function computeDocumentCompositeLayout(
+	fragments: SectionCompositeFragment[],
+): DocumentCompositeLayout {
+	if (fragments.length === 0) {
+		throw new Error('COMPOSITE_FULL_PAGE_FAILED: No section fragments to layout.');
+	}
+	for (const fragment of fragments) {
+		if (!(fragment.docHeight > 0)) {
+			throw new Error(`COMPOSITE_FULL_PAGE_FAILED: Invalid docHeight for ${fragment.file}`);
+		}
+	}
+
+	const sorted = [...fragments].sort(
+		(a, b) => a.docTop - b.docTop || a.order - b.order || a.file.localeCompare(b.file),
+	);
+	const originTop = sorted[0].docTop;
+	const bottom = Math.max(...sorted.map((f) => f.docTop + f.docHeight));
+	const canvasCssHeight = Math.max(1, Math.ceil(bottom - originTop));
+
+	return {
+		originTop,
+		canvasCssHeight,
+		placements: sorted.map((f) => ({
+			file: f.file,
+			cssTop: f.docTop - originTop,
+			cssHeight: f.docHeight,
+			order: f.order,
+			sectionId: f.sectionId,
+		})),
+	};
+}
+
+/**
+ * Vertically composite section PNG captures into a single full-page artifact.
+ *
+ * When fragments include document geometry, placements use document offsets
+ * (overlaps/gaps preserved). Plain path arrays fall back to contiguous stacking
+ * for legacy callers.
+ */
+export async function compositeSectionCapturePngs(
+	sectionPathsOrFragments: string[] | SectionCompositeFragment[],
+	outputPath: string,
+	options: { deviceScaleFactor?: number } = {},
+): Promise<{ width: number; height: number; sectionCount: number; cssHeight: number }> {
+	const fragments = await normalizeCompositeFragments(sectionPathsOrFragments);
+	const layout = computeDocumentCompositeLayout(fragments);
+	const dpr =
+		options.deviceScaleFactor && options.deviceScaleFactor > 0 ? options.deviceScaleFactor : 1;
+
+	const tiles: Array<{
+		file: string;
+		width: number;
+		height: number;
+		physicalTop: number;
+	}> = [];
+
+	for (const placement of layout.placements) {
+		const meta = await sharp(placement.file).metadata();
+		if (!meta.width || !meta.height) {
+			throw new Error(
+				`COMPOSITE_FULL_PAGE_FAILED: Could not read dimensions for ${placement.file}`,
+			);
+		}
+		tiles.push({
+			file: placement.file,
+			width: meta.width,
+			height: meta.height,
+			physicalTop: Math.round(placement.cssTop * dpr),
+		});
 	}
 
 	const canvasWidth = tiles.reduce((max, t) => Math.max(max, t.width), 0);
-	const canvasHeight = tiles.reduce((sum, t) => sum + t.height, 0);
+	const docCanvasHeight = Math.max(1, Math.round(layout.canvasCssHeight * dpr));
+	const contentBottom = tiles.reduce((max, t) => Math.max(max, t.physicalTop + t.height), 0);
+	const canvasHeight = Math.max(docCanvasHeight, contentBottom);
+
 	const composites = await Promise.all(
-		tiles.map(async (t, idx) => {
+		tiles.map(async (t) => {
 			let input = sharp(t.file);
 			if (t.width !== canvasWidth) {
 				input = input.resize({ width: canvasWidth });
 			}
 			const buf = await input.toBuffer();
-			const top = tiles.slice(0, idx).reduce((sum, p) => sum + p.height, 0);
-			return { input: buf, top, left: 0 };
+			return { input: buf, top: t.physicalTop, left: 0 };
 		}),
 	);
 
@@ -210,7 +515,53 @@ export async function compositeSectionCapturePngs(
 		.png()
 		.toFile(outputPath);
 
-	return { width: canvasWidth, height: canvasHeight, sectionCount: tiles.length };
+	return {
+		width: canvasWidth,
+		height: canvasHeight,
+		sectionCount: tiles.length,
+		cssHeight: layout.canvasCssHeight,
+	};
+}
+
+async function normalizeCompositeFragments(
+	sectionPathsOrFragments: string[] | SectionCompositeFragment[],
+): Promise<SectionCompositeFragment[]> {
+	if (sectionPathsOrFragments.length === 0) {
+		throw new Error(
+			'COMPOSITE_FULL_PAGE_FAILED: No ordered section capture paths to composite.',
+		);
+	}
+
+	if (typeof sectionPathsOrFragments[0] !== 'string') {
+		return sectionPathsOrFragments as SectionCompositeFragment[];
+	}
+
+	const paths = listOrderedSectionCapturePaths(sectionPathsOrFragments as string[]);
+	if (paths.length === 0) {
+		throw new Error(
+			'COMPOSITE_FULL_PAGE_FAILED: No ordered section capture paths to composite.',
+		);
+	}
+
+	// Legacy path-only API: treat fragments as contiguous stacked boxes.
+	let cursor = 0;
+	const fragments: SectionCompositeFragment[] = [];
+	for (const file of paths) {
+		const meta = await sharp(file).metadata();
+		if (!meta.width || !meta.height) {
+			throw new Error(`COMPOSITE_FULL_PAGE_FAILED: Could not read dimensions for ${file}`);
+		}
+		const identity = parseSectionCaptureIdentity(file);
+		fragments.push({
+			file,
+			docTop: cursor,
+			docHeight: meta.height,
+			order: identity?.order ?? fragments.length + 1,
+			sectionId: identity?.sectionId,
+		});
+		cursor += meta.height;
+	}
+	return fragments;
 }
 
 // eslint-disable-next-line complexity
@@ -1357,6 +1708,7 @@ export async function hideFixedOverlaysForCapture(page: Page): Promise<() => Pro
 		return document.documentElement.hasAttribute('data-screenshot-overlay-hidden');
 	});
 	if (!alreadyInjected) {
+		const toolbarSelectors = getOperationalToolbarSelectors().join(',\n      ');
 		await page.addStyleTag({
 			content: `
       html.screenshot-hide-overlays .header-base,
@@ -1364,7 +1716,10 @@ export async function hideFixedOverlaysForCapture(page: Page): Promise<() => Pro
       html.screenshot-hide-overlays .back-to-top,
       html.screenshot-hide-overlays .scroll-to-top,
       html.screenshot-hide-overlays .action-icon--scroll,
-      html.screenshot-hide-overlays .action-icon--fixed-bottom-right {
+      html.screenshot-hide-overlays .action-icon--fixed-bottom-right,
+      html.screenshot-hide-overlays :is(
+        ${toolbarSelectors}
+      ) {
         visibility: hidden !important;
         pointer-events: none !important;
       }
@@ -1750,6 +2105,18 @@ export async function captureElement(
 		});
 		await page.waitForTimeout(200);
 
+		const documentBounds = await locator
+			.evaluate((element) => {
+				const rect = element.getBoundingClientRect();
+				return {
+					x: Math.floor(rect.left + window.scrollX),
+					y: Math.floor(rect.top + window.scrollY),
+					width: Math.ceil(rect.width),
+					height: Math.ceil(rect.height),
+				};
+			})
+			.catch(() => undefined);
+
 		const restoreOverlays = hideOverlays ? await hideFixedOverlaysForCapture(page) : null;
 		try {
 			if (sectionExtent === 'viewport') {
@@ -1779,6 +2146,7 @@ export async function captureElement(
 			viewportName: '',
 			label,
 			success: true,
+			...(documentBounds ? { documentBounds } : {}),
 		};
 	} catch (err) {
 		console.warn(`  ⚠ Could not capture element "${selector}": ${err}`);
@@ -2103,52 +2471,96 @@ async function validateDistinctReveal(results: CaptureResult[]): Promise<void> {
 }
 
 /**
- * Segmented tile stitch for `05-invitation-full-page`.
- * Scrolls viewport tiles from topY→bottomY and composites with sharp.
+ * Document-space full-page raster for `05-invitation-full-page`.
+ *
+ * Captures contiguous page clips by absolute document Y (CDP
+ * captureBeyondViewport) so a strip can span multiple sections and preserve
+ * cross-section overflow/transforms. Does not use standalone `10-*` element
+ * screenshots as raster sources. Scroll position stays fixed after lazy-load
+ * so every strip reflects the same stable page state.
  */
-async function captureInvitationStitchedFullPage(
+export async function captureInvitationDocumentSpaceFullPage(
 	page: Page,
 	outputPath: string,
 	format: OutputFormat,
 	topY: number,
 	bottomY: number,
 	viewportWidth: number,
-): Promise<boolean> {
+	options: { deviceScaleFactor?: number } = {},
+): Promise<{ cssHeight: number; stripCount: number; width: number; height: number }> {
 	const initialViewport = page.viewportSize() ?? { width: viewportWidth, height: 844 };
-	const tmpDir = path.join(path.dirname(outputPath), `.stitch-invitation-${Date.now()}`);
+	const dpr =
+		options.deviceScaleFactor && options.deviceScaleFactor > 0
+			? options.deviceScaleFactor
+			: (await page.evaluate(() => window.devicePixelRatio)) || 1;
+
+	const plan = planDocumentCaptureStrips({
+		topY,
+		bottomY,
+		maxStripHeight: initialViewport.height,
+	});
+	const physical = planDocumentStripPhysicalPlacement(plan, dpr);
+
+	const tmpDir = path.join(path.dirname(outputPath), `.doc-strips-${Date.now()}`);
 	await fs.promises.mkdir(tmpDir, { recursive: true });
 
+	const restoreOverlays = await hideFixedOverlaysForCapture(page);
+	const cdp = await page.context().newCDPSession(page);
 	try {
-		const restoreOverlays = await hideFixedOverlaysForCapture(page);
-		const capturedTiles: Array<{ file: string; width: number; height: number }> = [];
+		// Stable scroll origin for the entire strip set (lazy-load already ran).
+		await page.evaluate(() => {
+			window.scrollTo(0, 0);
+			document.documentElement.scrollTop = 0;
+			document.body.scrollTop = 0;
+		});
+		await page.waitForTimeout(50);
 
-		const tileSize = initialViewport.height;
-		let yOffset = topY;
-		let tileIdx = 0;
+		const captured: Array<{
+			file: string;
+			width: number;
+			height: number;
+			physicalTop: number;
+			physicalHeight: number;
+		}> = [];
 
-		while (yOffset < bottomY) {
-			const currentTileHeight = Math.min(tileSize, bottomY - yOffset);
-			const tileFile = path.join(tmpDir, `tile-${tileIdx}.png`);
+		const cdpFormat = format === 'jpeg' ? 'jpeg' : 'png';
 
-			await page.evaluate((y) => window.scrollTo(0, y), yOffset);
-			await page.waitForTimeout(100);
+		for (let i = 0; i < plan.strips.length; i++) {
+			const strip = plan.strips[i];
+			const placement = physical.placements[i];
+			const tileFile = path.join(tmpDir, `strip-${String(i).padStart(3, '0')}.png`);
 
-			await page.screenshot({
-				path: tileFile,
-				clip: { x: 0, y: 0, width: initialViewport.width, height: currentTileHeight },
-				...playwrightFormatOptions(format),
+			const { data } = await cdp.send('Page.captureScreenshot', {
+				format: cdpFormat,
+				...(cdpFormat === 'jpeg' ? { quality: 90 } : {}),
+				fromSurface: true,
+				captureBeyondViewport: true,
+				clip: {
+					x: 0,
+					y: strip.docY,
+					width: initialViewport.width,
+					height: strip.height,
+					// CDP scale is relative to CSS px; set to DPR for device-pixel output.
+					scale: dpr,
+				},
 			});
 
-			const meta = await sharp(tileFile).metadata();
-			if (meta.width && meta.height) {
-				capturedTiles.push({ file: tileFile, width: meta.width, height: meta.height });
-			}
-			yOffset += currentTileHeight;
-			tileIdx++;
-		}
+			await fs.promises.writeFile(tileFile, Buffer.from(data, 'base64'));
 
-		await page.evaluate(() => window.scrollTo(0, 0));
-		await restoreOverlays();
+			const meta = await sharp(tileFile).metadata();
+			if (!meta.width || !meta.height) {
+				throw new Error(
+					`COMPOSITE_FULL_PAGE_FAILED: Could not read strip dimensions at docY=${strip.docY}`,
+				);
+			}
+			captured.push({
+				file: tileFile,
+				width: meta.width,
+				height: meta.height,
+				physicalTop: placement.physicalTop,
+				physicalHeight: placement.physicalHeight,
+			});
+		}
 
 		const currentViewport = page.viewportSize();
 		if (
@@ -2157,27 +2569,37 @@ async function captureInvitationStitchedFullPage(
 			currentViewport.height !== initialViewport.height
 		) {
 			throw new Error(
-				`VIEWPORT_MUTATED_DURING_CAPTURE: Viewport mutated during tile capture (${initialViewport.width}x${initialViewport.height} -> ${currentViewport?.width}x${currentViewport?.height})`,
+				`VIEWPORT_MUTATED_DURING_CAPTURE: Viewport mutated during document-space capture (${initialViewport.width}x${initialViewport.height} -> ${currentViewport?.width}x${currentViewport?.height})`,
 			);
 		}
 
-		if (capturedTiles.length === 0) return false;
+		if (captured.length === 0) {
+			throw new Error('COMPOSITE_FULL_PAGE_FAILED: No document strips captured.');
+		}
 
-		const canvasWidth = capturedTiles.reduce((max, t) => Math.max(max, t.width), 0);
-		const canvasHeight = capturedTiles.reduce((sum, t) => sum + t.height, 0);
+		const canvasWidth = Math.max(1, Math.round(initialViewport.width * dpr));
+		const canvasHeight = physical.canvasHeight;
 
 		const composites = await Promise.all(
-			capturedTiles.map(async (t, idx) => {
-				let input = sharp(t.file);
-				if (t.width !== canvasWidth) {
-					input = input.resize({ width: canvasWidth });
+			captured.map(async (t) => {
+				let pipeline = sharp(t.file);
+				if (t.width !== canvasWidth || t.height !== t.physicalHeight) {
+					pipeline = pipeline.resize({
+						width: canvasWidth,
+						height: t.physicalHeight,
+						fit: 'fill',
+					});
 				}
-				const buf = await input.toBuffer();
-				const top = capturedTiles.slice(0, idx).reduce((sum, p) => sum + p.height, 0);
-				return { input: buf, top, left: 0 };
+				const buf = await pipeline.toBuffer();
+				return {
+					input: buf,
+					top: t.physicalTop,
+					left: 0,
+				};
 			}),
 		);
 
+		await fs.promises.mkdir(path.dirname(outputPath), { recursive: true });
 		await sharp({
 			create: {
 				width: canvasWidth,
@@ -2190,12 +2612,16 @@ async function captureInvitationStitchedFullPage(
 			.png()
 			.toFile(outputPath);
 
+		return {
+			cssHeight: plan.totalHeight,
+			stripCount: captured.length,
+			width: canvasWidth,
+			height: canvasHeight,
+		};
+	} finally {
+		await cdp.detach().catch(() => {});
+		await restoreOverlays();
 		await fs.promises.rm(tmpDir, { recursive: true, force: true }).catch(() => {});
-		return true;
-	} catch (err) {
-		console.warn(`  ⚠ Segmented capture failed: ${err}`);
-		await fs.promises.rm(tmpDir, { recursive: true, force: true }).catch(() => {});
-		throw err;
 	}
 }
 
@@ -2214,144 +2640,60 @@ function assertCompleteInvitationInventory(inventory: InvitationSectionInventory
 	}
 }
 
-async function collectSectionPathsForComposite(
-	page: Page,
+/**
+ * Soft sanity check: full-page hero strip vs same-run standalone `10-*` hero.
+ * Blank region fails hard; visual MAE mismatch warns only (document-space page
+ * clips can legitimately differ from element screenshots at overflow edges).
+ */
+async function verifyDocumentSpaceHeroAgainstStandalone(
+	fullPagePath: string,
 	priorResults: CaptureResult[],
-	tempSectionDir: string,
-	format: OutputFormat,
-): Promise<string[]> {
-	const priorPaths = listOrderedSectionCapturePaths(
+	deviceScaleFactor: number,
+	captureOriginTop: number,
+): Promise<void> {
+	const heroPath = listOrderedSectionCapturePaths(
 		priorResults.filter((r) => r.success).map((r) => r.path),
+	).find((p) => /[/\\]10-\d+-hero\./.test(p.replace(/\\/g, '/')));
+	if (!heroPath) return;
+
+	const heroResult = priorResults.find(
+		(r) => path.normalize(r.path) === path.normalize(heroPath),
 	);
-	if (priorPaths.length > 0) return priorPaths;
+	const heroBounds = heroResult?.documentBounds ?? { y: captureOriginTop, height: 0 };
+	const heroMeta = await sharp(heroPath).metadata();
+	const cssHeight =
+		heroBounds.height > 0
+			? heroBounds.height
+			: (heroMeta.height || 0) / Math.max(1, deviceScaleFactor);
+	if (!(cssHeight > 0)) return;
 
-	const inventory = await deriveSectionInventory(page);
-	assertCompleteInvitationInventory(inventory);
-	await fs.promises.mkdir(tempSectionDir, { recursive: true });
-
-	const capturedPaths: string[] = [];
-	for (const sec of inventory.sections) {
-		const orderStr = String(sec.order).padStart(2, '0');
-		const sectionFile = path.join(
-			tempSectionDir,
-			`10-${orderStr}-${sec.id}.${formatExtension(format)}`,
-		);
-		const captured = await captureElement(page, sec.selector, sectionFile, format, {
-			sectionExtent: 'full',
-		});
-		if (!captured) {
-			throw new Error(
-				`FULL_PAGE_CAPTURE_FAILED: Could not capture section "${sec.id}" for composite.`,
-			);
-		}
-		capturedPaths.push(sectionFile);
-	}
-	return listOrderedSectionCapturePaths(capturedPaths);
-}
-
-async function verifyCompositeInvitationFullPage(
-	tempPath: string,
-	sectionPaths: string[],
-	viewportName: string,
-	initialViewport: { width: number; height: number },
-	deviceScaleFactor: number,
-	sectionCount: number,
-	expectedCssHeight: number,
-): Promise<void> {
-	const physCheck = await verifyPhysicalPng({
-		filePath: tempPath,
-		expectedCssWidth: initialViewport.width,
-		expectedCssHeight,
-		viewportCssHeight: initialViewport.height,
+	const cropCheck = await verifySectionCropInclusion({
+		fullPagePath,
+		sectionId: 'hero',
+		sectionBounds: { y: heroBounds.y, height: cssHeight },
+		topY: captureOriginTop,
 		deviceScaleFactor,
+		standalonePath: heroPath,
 	});
-	if (!physCheck.valid) {
-		await fs.promises.rm(tempPath, { force: true }).catch(() => {});
-		throw new Error(
-			`${physCheck.errorCode ?? 'FULL_PAGE_DIMENSION_MISMATCH'}: ${physCheck.error}`,
-		);
+	if (cropCheck.warning) {
+		console.warn(`  ⚠ ${cropCheck.warning}`);
 	}
-
-	const heroPath = sectionPaths.find((p) => /[/\\]10-\d+-hero\./.test(p.replace(/\\/g, '/')));
-	if (heroPath) {
-		const heroMeta = await sharp(heroPath).metadata();
-		const heroHeight = heroMeta.height || 0;
-		if (heroHeight > 0) {
-			const cropCheck = await verifySectionCropInclusion({
-				fullPagePath: tempPath,
-				sectionId: 'hero',
-				sectionBounds: { y: 0, height: heroHeight / deviceScaleFactor },
-				topY: 0,
-				deviceScaleFactor,
-				standalonePath: heroPath,
-			});
-			if (cropCheck.warning) {
-				console.warn(`  ⚠ ${cropCheck.warning}`);
-			}
-			if (!cropCheck.valid) {
-				await fs.promises.rm(tempPath, { force: true }).catch(() => {});
-				throw new Error(
-					`${cropCheck.errorCode ?? 'SECTION_CAPTURE_MISMATCH'}: ${cropCheck.error}`,
-				);
-			}
+	if (!cropCheck.valid) {
+		const isHeroMae =
+			cropCheck.errorCode === 'SECTION_CAPTURE_MISMATCH' &&
+			/does not match standalone hero/i.test(cropCheck.error ?? '');
+		if (isHeroMae) {
+			console.warn(`  ⚠ ${cropCheck.error}`);
+			return;
 		}
+		throw new Error(`${cropCheck.errorCode ?? 'SECTION_CAPTURE_MISMATCH'}: ${cropCheck.error}`);
 	}
-
-	console.log(
-		`  ✓ Captured: 05-invitation-full-page (${viewportName}) [${sectionCount} section(s), ${expectedCssHeight}px, strategy: section-composite]`,
-	);
-}
-
-async function captureInvitationOpenTileFallback(
-	page: Page,
-	tempPath: string,
-	format: OutputFormat,
-	viewportName: string,
-	initialViewport: { width: number; height: number },
-	deviceScaleFactor: number,
-): Promise<void> {
-	const inventory = await deriveSectionInventory(page);
-	const topY = inventory.sections.length > 0 ? inventory.topY : 0;
-	const bottomY =
-		inventory.sections.length > 0 ? inventory.bottomY : await getDocumentHeight(page);
-	const expectedCssHeight = Math.max(100, Math.ceil(bottomY - topY));
-	const stitchedSuccess = await captureInvitationStitchedFullPage(
-		page,
-		tempPath,
-		format,
-		topY,
-		bottomY,
-		initialViewport.width,
-	);
-	if (!stitchedSuccess) {
-		throw new Error(
-			`FULL_PAGE_CAPTURE_FAILED: Segmented capture strategy failed for ${viewportName}.`,
-		);
-	}
-	const physCheck = await verifyPhysicalPng({
-		filePath: tempPath,
-		expectedCssWidth: initialViewport.width,
-		expectedCssHeight,
-		viewportCssHeight: initialViewport.height,
-		deviceScaleFactor,
-	});
-	if (!physCheck.valid) {
-		await fs.promises.rm(tempPath, { force: true }).catch(() => {});
-		throw new Error(
-			`${physCheck.errorCode ?? 'FULL_PAGE_DIMENSION_MISMATCH'}: ${physCheck.error}`,
-		);
-	}
-	console.log(
-		`  ✓ Captured: 05-invitation-full-page (${viewportName}) [strategy: stitched tile fallback]`,
-	);
 }
 
 /**
- * Capture the 05-invitation-full-page screenshot.
- *
- * Preferred strategy: vertically composite same-run `10-*` section PNGs (source of truth).
- * If none exist (full-page-only target), capture each inventory section to temp then composite.
- * Last resort: viewport tile stitch.
+ * Capture the 05-invitation-full-page screenshot from document-space page strips.
+ * Standalone `10-*` section captures remain QA artifacts only and are not raster
+ * sources for this composite.
  */
 async function captureInvitationOpen(
 	page: Page,
@@ -2373,7 +2715,6 @@ async function captureInvitationOpen(
 		outputDir,
 		`.tmp-${runId}-${viewportName}-05-invitation-full-page.${formatExtension(format)}`,
 	);
-	const tempSectionDir = path.join(outputDir, `.tmp-sections-${runId}-${viewportName}`);
 
 	try {
 		await scrollForLazyLoad(page);
@@ -2385,43 +2726,61 @@ async function captureInvitationOpen(
 		await waitForImages(page);
 		await waitForHeroReady(page);
 
-		const sectionPaths = await collectSectionPathsForComposite(
-			page,
-			priorResults,
-			tempSectionDir,
-			format,
+		const inventory = await deriveSectionInventory(page);
+		assertCompleteInvitationInventory(inventory);
+		if (inventory.sections.length === 0) {
+			throw new Error('FULL_PAGE_CAPTURE_FAILED: No invitation sections found in DOM.');
+		}
+
+		const range = resolveInvitationDocumentCaptureRange(
+			inventory.sections.map((sec) => ({
+				docTop: sec.bounds.y,
+				docHeight: sec.bounds.height,
+			})),
 		);
+
 		const initialViewport = page.viewportSize() ?? { width: 390, height: 844 };
 		const deviceScaleFactor = (await page.evaluate(() => window.devicePixelRatio)) || 2;
 
-		if (sectionPaths.length > 0) {
-			const composite = await compositeSectionCapturePngs(sectionPaths, tempPath);
-			const expectedCssHeight = Math.max(
-				100,
-				Math.ceil(composite.height / deviceScaleFactor),
-			);
-			await verifyCompositeInvitationFullPage(
-				tempPath,
-				sectionPaths,
-				viewportName,
-				initialViewport,
-				deviceScaleFactor,
-				composite.sectionCount,
-				expectedCssHeight,
-			);
-		} else {
-			await captureInvitationOpenTileFallback(
-				page,
-				tempPath,
-				format,
-				viewportName,
-				initialViewport,
-				deviceScaleFactor,
+		const capture = await captureInvitationDocumentSpaceFullPage(
+			page,
+			tempPath,
+			format,
+			range.topY,
+			range.bottomY,
+			initialViewport.width,
+			{ deviceScaleFactor },
+		);
+
+		const expectedCssHeight = Math.max(100, capture.cssHeight);
+		const physCheck = await verifyPhysicalPng({
+			filePath: tempPath,
+			expectedCssWidth: initialViewport.width,
+			expectedCssHeight,
+			viewportCssHeight: initialViewport.height,
+			deviceScaleFactor,
+		});
+		if (!physCheck.valid) {
+			await fs.promises.rm(tempPath, { force: true }).catch(() => {});
+			throw new Error(
+				`${physCheck.errorCode ?? 'FULL_PAGE_DIMENSION_MISMATCH'}: ${physCheck.error}`,
 			);
 		}
 
+		await verifyDocumentSpaceHeroAgainstStandalone(
+			tempPath,
+			priorResults,
+			deviceScaleFactor,
+			Math.floor(range.topY),
+		);
+
+		console.log(
+			`  ✓ Captured: 05-invitation-full-page (${viewportName}) [${inventory.sections.length} section(s), ${expectedCssHeight}px, ${capture.stripCount} strip(s), strategy: document-space]`,
+		);
+
 		const published = await publishArtifactAtomically(tempPath, fullOpenPath);
 		results.push({
+			id: '05-invitation-full-page',
 			path: published.path,
 			viewportName,
 			label: 'Full invitation (open)',
@@ -2442,14 +2801,13 @@ async function captureInvitationOpen(
 			);
 		}
 		results.push({
+			id: '05-invitation-full-page',
 			path: fullOpenPath,
 			viewportName,
 			label: 'Full invitation (open)',
 			success: false,
 			error: String(err),
 		});
-	} finally {
-		await fs.promises.rm(tempSectionDir, { recursive: true, force: true }).catch(() => {});
 	}
 
 	return results;
@@ -2472,7 +2830,7 @@ export async function captureInvitationScreenshots(
 	job: ScreenshotJob,
 	outputDir: string,
 	viewportName: string,
-): Promise<{ results: CaptureResult[]; plannedCount: number }> {
+): Promise<CapturePlanResult> {
 	const results: CaptureResult[] = [];
 	const format = job.outputFormat;
 	const timings: Array<{ phase: string; ms: number }> = [];
@@ -2481,6 +2839,22 @@ export async function captureInvitationScreenshots(
 		return () => {
 			timings.push({ phase, ms: Date.now() - elapsed });
 		};
+	};
+
+	const record = (task: CaptureTask, result: CaptureResult) => {
+		results.push(
+			withTaskIdentity(
+				{
+					...result,
+					viewportName,
+					label: result.label || task.label,
+				},
+				task,
+			),
+		);
+	};
+	const recordFail = (task: CaptureTask, taskPath: string, error: string) => {
+		results.push(buildTaskFailureResult(task, taskPath, viewportName, error));
 	};
 
 	// 3. Keep track of reveal status
@@ -2512,15 +2886,20 @@ export async function captureInvitationScreenshots(
 
 	// 1. Resolve capture plan
 	const tasks = await resolveCapturePlan(page, job);
+	const plannedTasks = plannedTasksFromCapturePlan(tasks);
 	// plannedCount excludes optional captures so the manifest expected-vs-files
 	// comparison only covers required content QA tasks.
-	const plannedCount = tasks.filter((t) => t.requirement !== 'optional').length;
+	const plannedCount = plannedTasks.filter((t) => t.required).length;
 
 	// 2. Print capture plan to console
 	console.log('  Planned captures:');
 	for (const t of tasks) {
-		console.log(`    - ${viewportName} / ${getPlannedCaptureLabel(t.id)}`);
+		const optionalTag = t.requirement === 'optional' ? ' (optional)' : '';
+		console.log(`    - ${viewportName} / ${getPlannedCaptureLabel(t.id)}${optionalTag}`);
 	}
+	console.log(
+		`  Required planned: ${plannedCount}; total planned: ${tasks.length} (optional: ${tasks.length - plannedCount})`,
+	);
 
 	// Open for sections/05 via query-param only (retry once).
 	const ensureOpenState = async (): Promise<boolean> => {
@@ -2578,18 +2957,10 @@ export async function captureInvitationScreenshots(
 					const result = t.viewportOnly
 						? await captureViewport(page, taskPath, format)
 						: await captureFullPage(page, taskPath, format);
-					result.viewportName = viewportName;
-					result.label = t.label;
-					results.push(result);
+					record(t, result);
 					console.log(`  ✓ Captured: ${t.id} (${viewportName})`);
 				} catch (err) {
-					results.push({
-						path: taskPath,
-						viewportName,
-						label: t.label,
-						success: false,
-						error: String(err),
-					});
+					recordFail(t, taskPath, String(err));
 				}
 			} else if (t.invitationStep === 'reveal-closed') {
 				await ensureClosedState();
@@ -2598,22 +2969,17 @@ export async function captureInvitationScreenshots(
 				if (revealSelector) {
 					const result = await captureElement(page, revealSelector, taskPath, format);
 					if (result) {
-						result.viewportName = viewportName;
-						result.label = t.label;
-						results.push(result);
+						record(t, result);
 						console.log(`  ✓ Captured: ${t.id} (${viewportName})`);
 						captured = true;
 					}
 				}
 				if (!captured) {
-					results.push({
-						path: taskPath,
-						viewportName,
-						label: t.label,
-						success: false,
-						isOptional: true,
-						error: 'Reveal closed element not found or could not be captured.',
-					});
+					recordFail(
+						t,
+						taskPath,
+						'Reveal closed element not found or could not be captured.',
+					);
 				}
 			} else if (t.invitationStep === 'reveal-letter-open') {
 				const letterReady = await ensureLetterState();
@@ -2631,9 +2997,7 @@ export async function captureInvitationScreenshots(
 							},
 						);
 						if (result) {
-							result.viewportName = viewportName;
-							result.label = t.label;
-							results.push(result);
+							record(t, result);
 							console.log(`  ✓ Captured: ${t.id} (${viewportName})`);
 							captured = true;
 						}
@@ -2651,9 +3015,7 @@ export async function captureInvitationScreenshots(
 								},
 							);
 							if (result) {
-								result.viewportName = viewportName;
-								result.label = t.label;
-								results.push(result);
+								record(t, result);
 								console.log(`  ✓ Captured: ${t.id} (${viewportName})`);
 								captured = true;
 							}
@@ -2661,14 +3023,11 @@ export async function captureInvitationScreenshots(
 					}
 				}
 				if (!captured) {
-					results.push({
-						path: taskPath,
-						viewportName,
-						label: t.label,
-						success: false,
-						isOptional: true,
-						error: 'Reveal letter element not found or could not be captured.',
-					});
+					recordFail(
+						t,
+						taskPath,
+						'Reveal letter element not found or could not be captured.',
+					);
 				}
 			} else if (t.invitationStep === 'reveal-open') {
 				const letterReady = await ensureLetterState();
@@ -2678,23 +3037,18 @@ export async function captureInvitationScreenshots(
 					if (revealSelector) {
 						const result = await captureElement(page, revealSelector, taskPath, format);
 						if (result) {
-							result.viewportName = viewportName;
-							result.label = t.label;
-							results.push(result);
+							record(t, result);
 							console.log(`  ✓ Captured: ${t.id} (${viewportName})`);
 							captured = true;
 						}
 					}
 				}
 				if (!captured) {
-					results.push({
-						path: taskPath,
-						viewportName,
-						label: t.label,
-						success: false,
-						isOptional: true,
-						error: 'Reveal section open element not found or could not be captured.',
-					});
+					recordFail(
+						t,
+						taskPath,
+						'Reveal section open element not found or could not be captured.',
+					);
 				}
 			} else if (t.invitationStep === 'full-open') {
 				const isOpen = await ensureOpenState();
@@ -2708,13 +3062,19 @@ export async function captureInvitationScreenshots(
 							`  ⚠ Removed stale 05-invitation-full-page for ${viewportName} so a previous run cannot be mistaken for a fresh capture.`,
 						);
 					}
-					results.push({
-						path: taskPath,
-						viewportName,
-						label: t.label,
-						success: false,
-						error: 'Reveal did not open; skipping full-page capture.',
-					});
+					recordFail(t, taskPath, 'Reveal did not open; skipping full-page capture.');
+				} else if (
+					revealCapabilities.hasReveal &&
+					!(await assertRevealDoesNotOccludeInvitation(page))
+				) {
+					console.warn(
+						'  ⚠ Reveal still occludes invitation; skipping 05-invitation-full-page',
+					);
+					recordFail(
+						t,
+						taskPath,
+						'Reveal still occludes invitation; skipping full-page capture.',
+					);
 				} else {
 					// Viewport-cropped standalones must not feed the 05 composite;
 					// empty prior forces temp re-capture at sectionExtent: 'full'.
@@ -2727,17 +3087,14 @@ export async function captureInvitationScreenshots(
 					);
 					if (fullOpenResult.length > 0) {
 						for (const r of fullOpenResult) {
-							r.viewportName = viewportName;
-							results.push(r);
+							record(t, r);
 						}
 					} else {
-						results.push({
-							path: taskPath,
-							viewportName,
-							label: t.label,
-							success: false,
-							error: 'Full open invitation target not found or could not be captured.',
-						});
+						recordFail(
+							t,
+							taskPath,
+							'Full open invitation target not found or could not be captured.',
+						);
 					}
 				}
 			}
@@ -2750,13 +3107,20 @@ export async function captureInvitationScreenshots(
 					);
 					sectionOpenFailedLogged = true;
 				}
-				results.push({
-					path: taskPath,
-					viewportName,
-					label: t.label,
-					success: false,
-					error: 'Reveal did not open; skipping section captures.',
-				});
+				recordFail(t, taskPath, 'Reveal did not open; skipping section captures.');
+			} else if (
+				revealCapabilities.hasReveal &&
+				!(await assertRevealDoesNotOccludeInvitation(page))
+			) {
+				if (!sectionOpenFailedLogged) {
+					console.warn('  ⚠ Reveal still occludes invitation; skipping section captures');
+					sectionOpenFailedLogged = true;
+				}
+				recordFail(
+					t,
+					taskPath,
+					'Reveal still occludes invitation; skipping section captures.',
+				);
 			} else {
 				const captured = await captureSectionElement(
 					page,
@@ -2767,7 +3131,7 @@ export async function captureInvitationScreenshots(
 					job.sectionExtent,
 				);
 				if (captured) {
-					results.push(captured);
+					record(t, captured);
 					console.log(`  ✓ Captured: ${t.id} (${viewportName})`);
 				} else {
 					const isVisible = await page
@@ -2779,13 +3143,7 @@ export async function captureInvitationScreenshots(
 						? `Element "${t.selector}" could not be captured.`
 						: 'Element is hidden — skipped.';
 					console.log(`  ℹ ${t.id} — ${isVisible ? 'failed' : 'hidden'}`);
-					results.push({
-						path: taskPath,
-						viewportName,
-						label: t.label,
-						success: false,
-						error: failMsg,
-					});
+					recordFail(t, taskPath, failMsg);
 				}
 			}
 		}
@@ -2793,10 +3151,6 @@ export async function captureInvitationScreenshots(
 	}
 
 	await validateDistinctReveal(results);
-
-	// =============================================================================
-	// Section Capture — extracted for complexity reduction
-	// =============================================================================
 
 	/**
 	 * Capture a section/critical element with fast visibility check.
@@ -2835,7 +3189,7 @@ export async function captureInvitationScreenshots(
 		}
 	}
 
-	return { results, plannedCount };
+	return { results, plannedCount, plannedTasks };
 }
 
 // =============================================================================
@@ -2856,9 +3210,25 @@ export async function captureGeneralPageScreenshots(
 	job: ScreenshotJob,
 	outputDir: string,
 	viewportName: string,
-): Promise<{ results: CaptureResult[]; plannedCount: number }> {
+): Promise<CapturePlanResult> {
 	const results: CaptureResult[] = [];
 	const format = job.outputFormat;
+
+	const record = (task: CaptureTask, result: CaptureResult) => {
+		results.push(
+			withTaskIdentity(
+				{
+					...result,
+					viewportName,
+					label: result.label || task.label,
+				},
+				task,
+			),
+		);
+	};
+	const recordFail = (task: CaptureTask, taskPath: string, error: string) => {
+		results.push(buildTaskFailureResult(task, taskPath, viewportName, error));
+	};
 
 	// Navigate
 	const pageUrl = buildScreenshotUrl(job.url);
@@ -2873,15 +3243,20 @@ export async function captureGeneralPageScreenshots(
 
 	// Resolve capture plan
 	const tasks = await resolveCapturePlan(page, job);
+	const plannedTasks = plannedTasksFromCapturePlan(tasks);
 	// plannedCount excludes optional captures so the manifest expected-vs-files
 	// comparison only covers required content QA tasks.
-	const plannedCount = tasks.filter((t) => t.requirement !== 'optional').length;
+	const plannedCount = plannedTasks.filter((t) => t.required).length;
 
 	// Print capture plan to console
 	console.log('  Planned captures:');
 	for (const t of tasks) {
-		console.log(`    - ${viewportName} / ${getPlannedCaptureLabel(t.id)}`);
+		const optionalTag = t.requirement === 'optional' ? ' (optional)' : '';
+		console.log(`    - ${viewportName} / ${getPlannedCaptureLabel(t.id)}${optionalTag}`);
 	}
+	console.log(
+		`  Required planned: ${plannedCount}; total planned: ${tasks.length} (optional: ${tasks.length - plannedCount})`,
+	);
 
 	for (const t of tasks) {
 		const taskPath = await buildScreenshotPath(outputDir, viewportName, t.id, format);
@@ -2892,19 +3267,11 @@ export async function captureGeneralPageScreenshots(
 					getAboveFoldCriticalSelector(job.pageType),
 				);
 				const result = await captureViewport(page, taskPath, format);
-				result.viewportName = viewportName;
-				result.label = t.label;
-				results.push(result);
+				record(t, result);
 				console.log(`  ✓ Captured: ${t.id} (${viewportName})`);
 			} catch (err) {
 				console.warn(`  ✕ Failed to capture viewport: ${err}`);
-				results.push({
-					path: taskPath,
-					viewportName,
-					label: t.label,
-					success: false,
-					error: String(err),
-				});
+				recordFail(t, taskPath, String(err));
 			}
 		} else if (t.type === 'full-page') {
 			try {
@@ -2916,19 +3283,11 @@ export async function captureGeneralPageScreenshots(
 				const result = useStitch
 					? await captureLandingStitchedFullPage(page, taskPath, format)
 					: await captureFullPage(page, taskPath, format);
-				result.viewportName = viewportName;
-				result.label = t.label;
-				results.push(result);
+				record(t, result);
 				console.log(`  ✓ Captured: ${t.id} (${viewportName})`);
 			} catch (err) {
 				console.warn(`  ✕ Failed to capture full page: ${err}`);
-				results.push({
-					path: taskPath,
-					viewportName,
-					label: t.label,
-					success: false,
-					error: String(err),
-				});
+				recordFail(t, taskPath, String(err));
 			}
 		} else {
 			// Element captures (header, main, footer, critical, section)
@@ -2944,24 +3303,16 @@ export async function captureGeneralPageScreenshots(
 			});
 
 			if (result) {
-				result.viewportName = viewportName;
-				result.label = t.label;
-				results.push(result);
+				record(t, result);
 				console.log(`  ✓ Captured: ${t.id} (${viewportName})`);
 			} else {
 				console.warn(`  ✕ Failed to capture element: ${t.id} (${t.selector})`);
-				results.push({
-					path: taskPath,
-					viewportName,
-					label: t.label,
-					success: false,
-					error: `Element "${t.selector}" could not be captured.`,
-				});
+				recordFail(t, taskPath, `Element "${t.selector}" could not be captured.`);
 			}
 		}
 	}
 
-	return { results, plannedCount };
+	return { results, plannedCount, plannedTasks };
 }
 
 // =============================================================================
@@ -2972,65 +3323,166 @@ export async function captureGeneralPageScreenshots(
 // Helpers
 // =============================================================================
 
+/** DOM probe for unit-tested reveal-open evaluation (browser gathers, Node asserts). */
+export interface RevealOpenDomProbe {
+	hasRevealSection: boolean;
+	previewState: string;
+	revealState: string;
+	wrapperRevealState: string;
+	hasPreviewOpenedClass: boolean;
+	hasOpenClass: boolean;
+	hasRevealedClass: boolean;
+	triggerExpanded: boolean;
+	openContentLaidOut: boolean;
+}
+
+/**
+ * Deterministic reveal-open evaluation from DOM probes.
+ * Uses `data-preview-state` (envelope/editorial contract) and wrapper reveal state.
+ * Does not treat letter visibility or inverted `envelope-open` as open.
+ */
+export function evaluateRevealIsOpen(probe: RevealOpenDomProbe): boolean {
+	if (!probe.hasRevealSection) {
+		return probe.openContentLaidOut;
+	}
+	if (probe.previewState === 'opened' || probe.previewState === 'open') return true;
+	if (
+		probe.revealState === 'open' ||
+		probe.revealState === 'revealed' ||
+		probe.revealState === 'preview-opened'
+	) {
+		return true;
+	}
+	if (probe.hasPreviewOpenedClass || probe.hasOpenClass || probe.hasRevealedClass) return true;
+	if (probe.wrapperRevealState === 'revealed' || probe.wrapperRevealState === 'preview-opened') {
+		return true;
+	}
+	if (probe.triggerExpanded) return true;
+	return false;
+}
+
+/** DOM probe for unit-tested reveal occlusion checks. */
+export interface RevealOcclusionDomProbe {
+	present: boolean;
+	hidden: boolean;
+	display: string;
+	visibility: string;
+	opacity: number;
+	width: number;
+	height: number;
+	intersectsViewport: boolean;
+}
+
+/** True when the reveal does not visually cover the invitation viewport. */
+export function evaluateRevealDoesNotOcclude(probe: RevealOcclusionDomProbe): boolean {
+	if (!probe.present) return true;
+	if (probe.hidden) return true;
+	if (probe.display === 'none' || probe.visibility === 'hidden' || probe.opacity <= 0.01) {
+		return true;
+	}
+	if (probe.width <= 0 || probe.height <= 0) return true;
+	return !probe.intersectsViewport;
+}
+
 /**
  * Check if the reveal section appears to be in an "open" state.
- * Looks for data attributes, CSS classes, or visible card/letter content.
+ * Looks for data-preview-state, data-reveal-state, CSS classes, and wrapper state.
  */
-async function checkRevealIsOpen(page: Page): Promise<boolean> {
+export async function checkRevealIsOpen(page: Page): Promise<boolean> {
 	try {
-		// eslint-disable-next-line complexity -- Supports standard envelope, editorial cover, and legacy reveal states.
-		const result = await page.evaluate(() => {
-			const section = document.querySelector('[data-screenshot="reveal-section"]');
-			if (!section) {
-				const openContent = document.querySelector(
-					'[data-screenshot="invitation-open-content"]',
-				);
-				if (openContent) {
-					const style = window.getComputedStyle(openContent);
-					const box = openContent.getBoundingClientRect();
-					return (
-						style.display !== 'none' &&
-						style.visibility !== 'hidden' &&
-						Number.parseFloat(style.opacity || '1') > 0.01 &&
-						box.width > 0 &&
-						box.height > 0
-					);
-				}
-				return false;
-			}
-
-			// Check data attribute (supports both 'open' and 'preview-opened')
-			const state = section.getAttribute('data-reveal-state') || '';
-			if (state === 'open' || state === 'revealed' || state === 'preview-opened') return true;
-
-			// Check class (supports is-preview-opened for screenshot mode)
-			if (section.classList.contains('is-preview-opened')) return true;
-			if (section.classList.contains('open') || section.classList.contains('revealed'))
-				return true;
-
-			// Check aria-expanded on trigger
-			const trigger = document.querySelector('[data-screenshot="reveal-trigger"]');
-			if (trigger?.getAttribute('aria-expanded') === 'true') return true;
-
-			// Check if the letter/card is actually visible in the layout
-			const letter = document.querySelector('[data-screenshot="reveal-letter"]');
-			if (letter) {
-				const style = window.getComputedStyle(letter);
-				const box = letter.getBoundingClientRect();
+		const probe = await page.evaluate((): RevealOpenDomProbe => {
+			const isLaidOut = (el: Element | null): boolean => {
+				if (!el) return false;
+				const style = window.getComputedStyle(el);
+				const box = el.getBoundingClientRect();
 				return (
 					style.display !== 'none' &&
 					style.visibility !== 'hidden' &&
-					style.opacity !== '0' &&
-					box.height > 0 &&
-					box.width > 0
+					Number.parseFloat(style.opacity || '1') > 0.01 &&
+					box.width > 0 &&
+					box.height > 0
 				);
+			};
+
+			const section = document.querySelector('[data-screenshot="reveal-section"]');
+			const openContent = document.querySelector(
+				'[data-screenshot="invitation-open-content"]',
+			);
+			if (!section) {
+				return {
+					hasRevealSection: false,
+					previewState: '',
+					revealState: '',
+					wrapperRevealState: '',
+					hasPreviewOpenedClass: false,
+					hasOpenClass: false,
+					hasRevealedClass: false,
+					triggerExpanded: false,
+					openContentLaidOut: isLaidOut(openContent),
+				};
 			}
 
-			// Fallback: check html class
-			// NOTE: "envelope-open" class is present when the envelope renderer has completed its open animation.
-			return document.documentElement.classList.contains('envelope-open') === false;
+			const wrapper = section.closest('.event-theme-wrapper');
+			const trigger = document.querySelector('[data-screenshot="reveal-trigger"]');
+			return {
+				hasRevealSection: true,
+				previewState: section.getAttribute('data-preview-state') || '',
+				revealState: section.getAttribute('data-reveal-state') || '',
+				wrapperRevealState: wrapper?.getAttribute('data-reveal-state') || '',
+				hasPreviewOpenedClass: section.classList.contains('is-preview-opened'),
+				hasOpenClass: section.classList.contains('open'),
+				hasRevealedClass: section.classList.contains('revealed'),
+				triggerExpanded: trigger?.getAttribute('aria-expanded') === 'true',
+				openContentLaidOut: isLaidOut(openContent),
+			};
 		});
-		return result;
+		return evaluateRevealIsOpen(probe);
+	} catch {
+		return false;
+	}
+}
+
+/**
+ * After audit normalization, verify the reveal no longer covers the invitation.
+ */
+export async function assertRevealDoesNotOccludeInvitation(page: Page): Promise<boolean> {
+	try {
+		const probe = await page.evaluate((): RevealOcclusionDomProbe => {
+			const reveal = document.querySelector(
+				'[data-screenshot="reveal-section"], ds-envelope-reveal, ds-editorial-cover',
+			);
+			if (!reveal) {
+				return {
+					present: false,
+					hidden: true,
+					display: 'none',
+					visibility: 'hidden',
+					opacity: 0,
+					width: 0,
+					height: 0,
+					intersectsViewport: false,
+				};
+			}
+			const el = reveal as HTMLElement;
+			const style = window.getComputedStyle(el);
+			const box = el.getBoundingClientRect();
+			const intersectsViewport =
+				box.bottom > 0 &&
+				box.top < window.innerHeight &&
+				box.right > 0 &&
+				box.left < window.innerWidth;
+			return {
+				present: true,
+				hidden: Boolean(el.hidden) || el.hasAttribute('hidden'),
+				display: style.display,
+				visibility: style.visibility,
+				opacity: Number.parseFloat(style.opacity || '1'),
+				width: box.width,
+				height: box.height,
+				intersectsViewport,
+			};
+		});
+		return evaluateRevealDoesNotOcclude(probe);
 	} catch {
 		return false;
 	}

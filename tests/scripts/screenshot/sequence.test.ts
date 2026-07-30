@@ -117,6 +117,22 @@ describe('Screenshot workflow sequence & capability contracts', () => {
 		expect(validationWithBlankTail.trailingBlankSpaceDetected).toBe(true);
 	});
 
+	it('plans optional reveal steps distinctly from required captures', async () => {
+		const tasks = await resolveCapturePlan(
+			mockPageWithEnvelope as unknown as import('playwright').Page,
+			baseJob,
+		);
+		expect(tasks.find((t) => t.id === '02-reveal-closed')?.requirement).toBe('optional');
+		expect(tasks.find((t) => t.id === '03-reveal-letter-open')?.requirement).toBe('optional');
+		expect(tasks.find((t) => t.id === '04-reveal-transition-open')?.requirement).toBe(
+			'optional',
+		);
+		expect(tasks.find((t) => t.id === '01-initial-closed-viewport')?.requirement).toBe(
+			'required',
+		);
+		expect(tasks.find((t) => t.id === '05-invitation-full-page')?.requirement).toBe('required');
+	});
+
 	it('marks manifest status as failed when generated files are fewer than planned required tasks', () => {
 		const [viewport] = resolveViewports('invitation', ['mobile-narrow']);
 		const manifest = buildCurrentRunManifest({
@@ -133,6 +149,51 @@ describe('Screenshot workflow sequence & capability contracts', () => {
 		expect(manifest[0].status).toBe('failed');
 		expect(manifest[0].files).toBe(3);
 		expect(manifest[0].expected).toBe(5);
+	});
+
+	it('does not fail when planned tasks include optional extras beyond required expected', () => {
+		const [viewport] = resolveViewports('invitation', ['mobile-narrow']);
+		const manifest = buildCurrentRunManifest({
+			viewports: [viewport],
+			perViewportPlanned: { 'mobile-narrow': 2 },
+			target: 'critical-qa',
+			perViewportPlannedTasks: {
+				'mobile-narrow': [
+					{ id: '01-initial-closed-viewport', required: true },
+					{ id: '02-reveal-closed', required: false },
+					{ id: '05-invitation-full-page', required: true },
+				],
+			},
+			captures: [
+				{
+					id: '01-initial-closed-viewport',
+					path: 'a.png',
+					viewportName: 'mobile-narrow',
+					label: '01',
+					success: true,
+				},
+				{
+					id: '02-reveal-closed',
+					path: 'b.png',
+					viewportName: 'mobile-narrow',
+					label: '02',
+					success: true,
+					isOptional: true,
+				},
+				{
+					id: '05-invitation-full-page',
+					path: 'c.png',
+					viewportName: 'mobile-narrow',
+					label: '05',
+					success: true,
+				},
+			],
+		});
+
+		expect(manifest[0].status).toBe('passed');
+		expect(manifest[0].expected).toBe(2);
+		expect(manifest[0].files).toBe(3);
+		expect(manifest[0].plannedTotal).toBe(3);
 	});
 
 	let tempDir: string;

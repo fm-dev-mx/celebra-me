@@ -1,10 +1,15 @@
 import {
 	buildScreenshotUrl,
 	clearEnvelopeOpenedKeys,
+	evaluateRevealDoesNotOcclude,
+	evaluateRevealIsOpen,
 	isRevealLetterLaidOut,
 	isSameScreenshotNavigationUrl,
+	plannedTasksFromCapturePlan,
 	shouldSkipInvitationOpenCapture,
 	waitForRevealLetterLaidOut,
+	withTaskIdentity,
+	type CaptureTask,
 } from '../../../scripts/screenshot/capture';
 
 describe('screenshot reveal open reliability', () => {
@@ -112,5 +117,149 @@ describe('screenshot reveal open reliability', () => {
 			waitForFunction: jest.fn(async () => true),
 		};
 		await expect(waitForRevealLetterLaidOut(page as never)).resolves.toBe(true);
+	});
+
+	it('evaluates reveal open from data-preview-state and wrapper contract', () => {
+		expect(
+			evaluateRevealIsOpen({
+				hasRevealSection: true,
+				previewState: 'opened',
+				revealState: '',
+				wrapperRevealState: '',
+				hasPreviewOpenedClass: false,
+				hasOpenClass: false,
+				hasRevealedClass: false,
+				triggerExpanded: false,
+				openContentLaidOut: true,
+			}),
+		).toBe(true);
+
+		expect(
+			evaluateRevealIsOpen({
+				hasRevealSection: true,
+				previewState: '',
+				revealState: '',
+				wrapperRevealState: 'preview-opened',
+				hasPreviewOpenedClass: false,
+				hasOpenClass: false,
+				hasRevealedClass: false,
+				triggerExpanded: false,
+				openContentLaidOut: true,
+			}),
+		).toBe(true);
+
+		expect(
+			evaluateRevealIsOpen({
+				hasRevealSection: true,
+				previewState: '',
+				revealState: '',
+				wrapperRevealState: '',
+				hasPreviewOpenedClass: false,
+				hasOpenClass: false,
+				hasRevealedClass: false,
+				triggerExpanded: false,
+				openContentLaidOut: true,
+			}),
+		).toBe(false);
+	});
+
+	it('does not treat inverted envelope-open absence as open', () => {
+		// Closed envelope without open markers must fail closed (previous bug returned true).
+		expect(
+			evaluateRevealIsOpen({
+				hasRevealSection: true,
+				previewState: 'closed',
+				revealState: '',
+				wrapperRevealState: '',
+				hasPreviewOpenedClass: false,
+				hasOpenClass: false,
+				hasRevealedClass: false,
+				triggerExpanded: false,
+				openContentLaidOut: true,
+			}),
+		).toBe(false);
+	});
+
+	it('requires a non-occluding reveal before open-section captures', () => {
+		expect(
+			evaluateRevealDoesNotOcclude({
+				present: true,
+				hidden: false,
+				display: 'flex',
+				visibility: 'visible',
+				opacity: 1,
+				width: 390,
+				height: 844,
+				intersectsViewport: true,
+			}),
+		).toBe(false);
+
+		expect(
+			evaluateRevealDoesNotOcclude({
+				present: true,
+				hidden: false,
+				display: 'none',
+				visibility: 'visible',
+				opacity: 1,
+				width: 390,
+				height: 844,
+				intersectsViewport: true,
+			}),
+		).toBe(true);
+
+		expect(
+			evaluateRevealDoesNotOcclude({
+				present: true,
+				hidden: true,
+				display: 'flex',
+				visibility: 'visible',
+				opacity: 1,
+				width: 390,
+				height: 844,
+				intersectsViewport: true,
+			}),
+		).toBe(true);
+	});
+
+	it('propagates plan task identity and optional flag onto capture results', () => {
+		const optionalTask: CaptureTask = {
+			id: '02-reveal-closed',
+			label: 'Reveal closed',
+			type: 'invitation-step',
+			requirement: 'optional',
+		};
+		const requiredTask: CaptureTask = {
+			id: '10-01-hero',
+			label: 'Hero',
+			type: 'section',
+			requirement: 'required',
+		};
+
+		expect(
+			withTaskIdentity(
+				{ path: 'a.png', viewportName: 'mobile-narrow', label: '', success: true },
+				optionalTask,
+			),
+		).toMatchObject({
+			id: '02-reveal-closed',
+			isOptional: true,
+			success: true,
+		});
+
+		expect(
+			withTaskIdentity(
+				{ path: 'b.png', viewportName: 'mobile-narrow', label: '', success: true },
+				requiredTask,
+			),
+		).toMatchObject({
+			id: '10-01-hero',
+			isOptional: false,
+			success: true,
+		});
+
+		expect(plannedTasksFromCapturePlan([optionalTask, requiredTask])).toEqual([
+			{ id: '02-reveal-closed', required: false },
+			{ id: '10-01-hero', required: true },
+		]);
 	});
 });

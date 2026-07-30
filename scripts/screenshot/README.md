@@ -21,11 +21,26 @@ dashboard, login, and custom routes.
 pnpm screenshot
 
 # Direct — invitation (flags) — VERIFIED
+# Relative routes use the lane-aware base URL (see Lane ports below)
 pnpm screenshot:invite --url=/boda/demo-boda-jewelry-box-wedding
 
 # Direct — general page (flags) — VERIFIED for landing
-pnpm screenshot --url=http://localhost:4321/
+pnpm screenshot --url=/
 ```
+
+## Lane ports (default base URL)
+
+`pnpm screenshot` detects the current worktree lane and targets the same Astro port as `pnpm dev`:
+
+| Lane                          | Worktree                             | Default base URL        |
+| ----------------------------- | ------------------------------------ | ----------------------- |
+| Integration (`develop` trunk) | repo root                            | `http://localhost:4321` |
+| `dev-local`                   | `…/celebra-me-worktrees/dev-local`   | `http://localhost:4321` |
+| `dev-extra`                   | `…/celebra-me-worktrees/dev-extra`   | `http://localhost:4322` |
+| `dev-preview`                 | `…/celebra-me-worktrees/dev-preview` | `http://localhost:4323` |
+
+Overrides (in order): `--base-url=…` / config `baseUrl`, then `ASTRO_PORT`, then the lane table.
+Absolute `--url=http://…` values are left unchanged.
 
 ## Default Mode
 
@@ -342,8 +357,8 @@ optional elements produce warnings, not errors.
 
 ## Agent proportional use
 
-Screenshot CLI interactive defaults (`critical-qa`, invitation 3-viewport profile) are convenient for
-humans running a full visual audit. Agents must follow the **visual evidence** rules in
+Screenshot CLI interactive defaults (`critical-qa`, invitation 3-viewport profile) are convenient
+for humans running a full visual audit. Agents must follow the **visual evidence** rules in
 [`.agent/rules/gatekeeper.md`](../../.agent/rules/gatekeeper.md) §5.3 and choose the smallest
 sufficient capture.
 

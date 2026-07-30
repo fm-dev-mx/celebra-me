@@ -8,9 +8,15 @@ import {
 	writeScreenshotReport,
 	getDefaultCriticalSelectors,
 	getDefaultHideSelectors,
+	getOperationalToolbarSelectors,
 	getExpectedCaptureCount,
 	buildCurrentRunManifest,
 	classifyConsoleError,
+	dedupeScreenshotNotices,
+	computeScreenshotBlockingErrors,
+	shouldExitScreenshotNonZero,
+	resolveScreenshotBaseUrl,
+	resolveScreenshotLaneContext,
 	getViewportProfileSummary,
 	intersectRectWithViewport,
 } from '../../../scripts/screenshot/utils';
@@ -149,9 +155,211 @@ describe('screenshot CLI utilities', () => {
 		});
 	});
 
-	it('provides default audit overlay selectors for consent normalization', () => {
+	it('provides default audit overlay selectors for consent and operational toolbars', () => {
 		expect(getDefaultHideSelectors()).toContain('[data-consent-banner]');
 		expect(getDefaultHideSelectors()).toContain('[aria-label*="cookie" i]');
+		expect(getDefaultHideSelectors()).toEqual(
+			expect.arrayContaining(getOperationalToolbarSelectors()),
+		);
+		expect(getOperationalToolbarSelectors()).toContain('astro-dev-toolbar');
+		expect(getOperationalToolbarSelectors()).toContain('#vercel-live-feedback');
+		expect(getOperationalToolbarSelectors()).toContain('[data-vercel-toolbar]');
+	});
+
+	it('deduplicates identical run-level notices while preserving unique ones', () => {
+		expect(
+			dedupeScreenshotNotices([
+				'Audit normalization: overlays',
+				'Audit normalization: overlays',
+				'Optional capture omitted: letter',
+				'Audit normalization: overlays',
+			]),
+		).toEqual(['Audit normalization: overlays', 'Optional capture omitted: letter']);
+	});
+
+	it('computes blocking errors and exit-code semantics without conflating successful captures', () => {
+		expect(
+			computeScreenshotBlockingErrors({
+				captureFailed: 0,
+				validationFailed: 0,
+				manifestFailed: 3,
+			}),
+		).toBe(3);
+		expect(
+			computeScreenshotBlockingErrors({
+				captureFailed: 0,
+				validationFailed: 0,
+				manifestFailed: 0,
+			}),
+		).toBe(0);
+		expect(shouldExitScreenshotNonZero(0)).toBe(false);
+		expect(shouldExitScreenshotNonZero(1)).toBe(true);
+	});
+
+	it('resolves screenshot base URL from the worktree lane port table', () => {
+		expect(
+			resolveScreenshotLaneContext({
+				cwd: 'D:/code/celebra-me-worktrees/dev-extra',
+			}),
+		).toMatchObject({
+			laneId: 'dev-extra',
+			port: 4322,
+			baseUrl: 'http://localhost:4322',
+			portSource: 'lane',
+		});
+		expect(resolveScreenshotBaseUrl({ cwd: 'D:/code/celebra-me-worktrees/dev-local' })).toBe(
+			'http://localhost:4321',
+		);
+		expect(resolveScreenshotBaseUrl({ cwd: 'D:/code/celebra-me-worktrees/dev-preview' })).toBe(
+			'http://localhost:4323',
+		);
+		expect(resolveScreenshotBaseUrl({ cwd: 'D:/code/celebra-me' })).toBe(
+			'http://localhost:4321',
+		);
+	});
+
+	it('lets ASTRO_PORT and explicit base URL override the lane table', () => {
+		expect(
+			resolveScreenshotLaneContext({
+				cwd: 'D:/code/celebra-me-worktrees/dev-extra',
+				env: { ASTRO_PORT: '4390' },
+			}),
+		).toMatchObject({
+			port: 4390,
+			baseUrl: 'http://localhost:4390',
+			portSource: 'astro-port',
+		});
+		expect(
+			resolveScreenshotLaneContext({
+				cwd: 'D:/code/celebra-me-worktrees/dev-extra',
+				explicitBaseUrl: 'http://127.0.0.1:9999/',
+			}),
+		).toMatchObject({
+			baseUrl: 'http://127.0.0.1:9999',
+			portSource: 'explicit',
+		});
+	});
+
+	it('treats invitation critical-qa expected counts as plan-driven (not a static 5+critical)', () => {
+		expect(
+			getExpectedCaptureCount({
+				pageType: 'invitation',
+				mode: 'audit',
+				target: 'critical-qa',
+				criticalSelectors: getDefaultCriticalSelectors('invitation'),
+			}),
+		).toBe(0);
+	});
+
+	it('passes manifest when all required tasks succeed even if optional files also exist', () => {
+		const [mobileNarrow] = resolveViewports('invitation', ['mobile-narrow']);
+		const manifest = buildCurrentRunManifest({
+			viewports: [mobileNarrow],
+			perViewportPlanned: { 'mobile-narrow': 11 },
+			target: 'critical-qa',
+			perViewportPlannedTasks: {
+				'mobile-narrow': [
+					{ id: '01-initial-closed-viewport', required: true },
+					{ id: '02-reveal-closed', required: false },
+					{ id: '03-reveal-letter-open', required: false },
+					{ id: '04-reveal-transition-open', required: false },
+					{ id: '10-01-hero', required: true },
+					{ id: '05-invitation-full-page', required: true },
+				],
+			},
+			captures: [
+				{
+					id: '01-initial-closed-viewport',
+					path: 'a/01.png',
+					viewportName: 'mobile-narrow',
+					label: 'Initial',
+					success: true,
+				},
+				{
+					id: '02-reveal-closed',
+					path: 'a/02.png',
+					viewportName: 'mobile-narrow',
+					label: 'Closed',
+					success: true,
+					isOptional: true,
+				},
+				{
+					id: '03-reveal-letter-open',
+					path: 'a/03.png',
+					viewportName: 'mobile-narrow',
+					label: 'Letter',
+					success: true,
+					isOptional: true,
+				},
+				{
+					id: '04-reveal-transition-open',
+					path: 'a/04.png',
+					viewportName: 'mobile-narrow',
+					label: 'Transition',
+					success: true,
+					isOptional: true,
+				},
+				{
+					id: '10-01-hero',
+					path: 'a/10-01-hero.png',
+					viewportName: 'mobile-narrow',
+					label: 'Hero',
+					success: true,
+				},
+				{
+					id: '05-invitation-full-page',
+					path: 'a/05.png',
+					viewportName: 'mobile-narrow',
+					label: 'Full',
+					success: true,
+				},
+			],
+		});
+
+		expect(manifest[0].status).toBe('passed');
+		expect(manifest[0].expected).toBe(3);
+		expect(manifest[0].files).toBe(6);
+		expect(manifest[0].requiredExpected).toBe(3);
+		expect(manifest[0].requiredVerified).toBe(3);
+		expect(manifest[0].optionalGenerated).toBe(3);
+		expect(manifest[0].missingRequiredTaskIds).toEqual([]);
+	});
+
+	it('fails manifest only when required planned task ids are missing', () => {
+		const [mobileNarrow] = resolveViewports('invitation', ['mobile-narrow']);
+		const manifest = buildCurrentRunManifest({
+			viewports: [mobileNarrow],
+			perViewportPlanned: { 'mobile-narrow': 2 },
+			target: 'critical-qa',
+			perViewportPlannedTasks: {
+				'mobile-narrow': [
+					{ id: '01-initial-closed-viewport', required: true },
+					{ id: '05-invitation-full-page', required: true },
+					{ id: '02-reveal-closed', required: false },
+				],
+			},
+			captures: [
+				{
+					id: '01-initial-closed-viewport',
+					path: 'a/01.png',
+					viewportName: 'mobile-narrow',
+					label: 'Initial',
+					success: true,
+				},
+				{
+					id: '02-reveal-closed',
+					path: 'a/02.png',
+					viewportName: 'mobile-narrow',
+					label: 'Closed',
+					success: true,
+					isOptional: true,
+				},
+			],
+		});
+
+		expect(manifest[0].status).toBe('failed');
+		expect(manifest[0].missingRequiredTaskIds).toEqual(['05-invitation-full-page']);
+		expect(manifest[0].optionalGenerated).toBe(1);
 	});
 
 	it('loads simple screenshot configs with mode and page critical selectors', () => {

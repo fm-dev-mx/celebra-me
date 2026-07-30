@@ -25,6 +25,8 @@ import {
 	writeScreenshotReport,
 	buildCurrentRunManifest,
 	classifyConsoleError,
+	dedupeScreenshotNotices,
+	computeScreenshotBlockingErrors,
 	validateBlankBottom,
 	getFileArtifactMeta,
 	removeLegacyInvitationFullOpenArtifacts,
@@ -34,12 +36,13 @@ import {
 	createContext,
 	captureInvitationScreenshots,
 	captureGeneralPageScreenshots,
+	type PlannedCaptureTask,
 } from './capture.js';
 
 interface SingleViewportCaptureResult {
 	captures: CaptureResult[];
 	plannedCaptures: number;
-	plannedTasks?: Array<{ id: string; required: boolean }>;
+	plannedTasks: PlannedCaptureTask[];
 	report: ViewportRunReport;
 }
 
@@ -70,7 +73,7 @@ async function captureSingleViewport(
 	});
 
 	try {
-		const { results, plannedCount } = await (job.pageType === 'invitation'
+		const { results, plannedCount, plannedTasks } = await (job.pageType === 'invitation'
 			? captureInvitationScreenshots(page, job, outputDir, viewport.name)
 			: captureGeneralPageScreenshots(page, job, outputDir, viewport.name));
 
@@ -99,25 +102,23 @@ async function captureSingleViewport(
 		}
 
 		// Log summary for this viewport
-		const succeeded = results.filter((r) => r.success).length;
-		const failed = viewportReport.failures.length;
+		const succeeded = results.filter((r) => r.success && !r.isOptional).length;
+		const captureFailed = viewportReport.captureFailures?.length ?? 0;
+		const validationFailed = viewportReport.validationFailures?.length ?? 0;
 		const warningsCount =
 			viewportReport.warnings.length + (viewportReport.detailedWarnings?.length ?? 0);
 		const noticesCount = viewportReport.notices?.length ?? 0;
-		const blockingErrorsCount = viewportReport.failures.filter(
-			(f) => f.includes('blocking') || f.includes('Critical'),
-		).length;
-		let summaryParts = `Done: ${succeeded} captured`;
-		if (failed > 0) summaryParts += `, ${failed} failed`;
+		let summaryParts = `Done: ${succeeded} required captured`;
+		if (captureFailed > 0) summaryParts += `, ${captureFailed} capture failed`;
+		if (validationFailed > 0) summaryParts += `, ${validationFailed} validation failed`;
 		if (warningsCount > 0) summaryParts += `, ${warningsCount} warning(s)`;
 		if (noticesCount > 0) summaryParts += `, ${noticesCount} notice(s)`;
-		if (blockingErrorsCount > 0) summaryParts += `, ${blockingErrorsCount} blocking error(s)`;
 		console.log(`  ─── ${summaryParts} ───`);
 
 		return {
 			captures: results,
 			plannedCaptures: plannedCount,
-			plannedTasks: results.map((r) => ({ id: r.id ?? '', required: !r.isOptional })),
+			plannedTasks,
 			report: viewportReport,
 		};
 	} catch (err) {
@@ -135,6 +136,8 @@ async function captureSingleViewport(
 				outputFiles: [],
 				criticalSelectors: [],
 				warnings: [],
+				captureFailures: [String(err)],
+				validationFailures: [],
 				failures: [String(err)],
 				consoleErrors: consoleErrors.map(classifyConsoleError),
 				requestFailures,
@@ -167,6 +170,7 @@ export async function runScreenshotJob(job: ScreenshotJob): Promise<JobResult> {
 	console.log('╚══════════════════════════════════════════════════════╝');
 	console.log('');
 	console.log(`  Page:    ${job.url}`);
+	console.log(`  Base:    ${job.baseUrl}`);
 	console.log(`  Slug:    ${pageSlug}`);
 	console.log(`  Type:    ${job.pageType}`);
 	console.log(`  Mode:    ${job.mode}`);
@@ -199,6 +203,10 @@ export async function runScreenshotJob(job: ScreenshotJob): Promise<JobResult> {
 			total: 0,
 			succeeded: 0,
 			failed: 1, // blocking runtime error
+			captureFailed: 1,
+			validationFailed: 0,
+			manifestFailed: 0,
+			blockingErrors: 1,
 			captures: [],
 			outputDir,
 			durationMs: Date.now() - startTime,
@@ -207,7 +215,7 @@ export async function runScreenshotJob(job: ScreenshotJob): Promise<JobResult> {
 
 	// ── 3. Capture each viewport ──────────────────────────────────────────
 	const perViewportPlanned: Record<string, number> = {};
-	const perViewportPlannedTasks: Record<string, Array<{ id: string; required: boolean }>> = {};
+	const perViewportPlannedTasks: Record<string, PlannedCaptureTask[]> = {};
 
 	try {
 		for (let i = 0; i < job.viewports.length; i++) {
@@ -220,13 +228,45 @@ export async function runScreenshotJob(job: ScreenshotJob): Promise<JobResult> {
 			allCaptures.push(...result.captures);
 			viewportReports.push(result.report);
 			perViewportPlanned[viewport.name] = result.plannedCaptures;
-			perViewportPlannedTasks[viewport.name] = result.plannedTasks ?? [];
+			perViewportPlannedTasks[viewport.name] = result.plannedTasks;
 		}
 	} finally {
 		await browser.close();
 	}
 
-	// ── 4. Current-run manifest ──────────────────────────────────────────
+	return finalizeScreenshotJobResult({
+		job,
+		startedAt,
+		startTime,
+		outputDir,
+		allCaptures,
+		viewportReports,
+		perViewportPlanned,
+		perViewportPlannedTasks,
+	});
+}
+
+async function finalizeScreenshotJobResult(input: {
+	job: ScreenshotJob;
+	startedAt: string;
+	startTime: number;
+	outputDir: string;
+	allCaptures: CaptureResult[];
+	viewportReports: ViewportRunReport[];
+	perViewportPlanned: Record<string, number>;
+	perViewportPlannedTasks: Record<string, PlannedCaptureTask[]>;
+}): Promise<JobResult> {
+	const {
+		job,
+		startedAt,
+		startTime,
+		outputDir,
+		allCaptures,
+		viewportReports,
+		perViewportPlanned,
+		perViewportPlannedTasks,
+	} = input;
+
 	const manifest = buildCurrentRunManifest({
 		viewports: job.viewports,
 		captures: allCaptures,
@@ -236,17 +276,27 @@ export async function runScreenshotJob(job: ScreenshotJob): Promise<JobResult> {
 	});
 	const manifestFiles = manifest.reduce((sum, vp) => sum + vp.files, 0);
 
-	// ── 5. Compile results ────────────────────────────────────────────────
 	const durationMs = Date.now() - startTime;
-	const succeeded = allCaptures.filter((r) => r.success).length;
-	const captureFailed = allCaptures.filter((r) => !r.success).length;
+	const requiredCaptures = allCaptures.filter((r) => !r.isOptional);
+	const succeeded = requiredCaptures.filter((r) => r.success).length;
+	const captureFailureMessages = requiredCaptures
+		.filter((r) => !r.success)
+		.map((r) => `${r.viewportName}/${r.id ?? r.label}: ${r.error ?? 'capture failed'}`);
+	const captureFailed = captureFailureMessages.length;
+
+	const validationFailureMessages = viewportReports.flatMap(
+		(report) => report.validationFailures ?? [],
+	);
+	const validationFailed = validationFailureMessages.length;
+
 	const warnings = viewportReports.flatMap((report) => report.warnings);
 	const detailedWarnings = viewportReports.flatMap((report) => report.detailedWarnings ?? []);
-	const notices = viewportReports.flatMap((report) => report.notices ?? []);
+	const notices = dedupeScreenshotNotices(
+		viewportReports.flatMap((report) => report.notices ?? []),
+	);
 	const blankBottomValidations = viewportReports.flatMap(
 		(report) => report.blankBottomValidations ?? [],
 	);
-	const failures = viewportReports.flatMap((report) => report.failures);
 	const fallbacks = viewportReports.flatMap((report) =>
 		report.fallback ? [report.fallback] : [],
 	);
@@ -255,13 +305,19 @@ export async function runScreenshotJob(job: ScreenshotJob): Promise<JobResult> {
 		.filter((viewportManifest) => viewportManifest.status === 'failed')
 		.map(
 			(viewportManifest) =>
-				`Manifest failed for ${viewportManifest.name}: generated ${viewportManifest.files} of expected ${viewportManifest.expected} capture(s).`,
+				`Manifest failed for ${viewportManifest.name}: verified ${viewportManifest.requiredVerified ?? 0} of ${viewportManifest.requiredExpected ?? viewportManifest.expected} required capture(s)` +
+				(viewportManifest.missingRequiredTaskIds?.length
+					? ` (missing: ${viewportManifest.missingRequiredTaskIds.join(', ')})`
+					: '') +
+				`.`,
 		);
-	const failed = failures.length + manifestFailures.length;
-	const blockingErrors = Math.max(0, failures.length - captureFailed) + manifestFailures.length;
-
-	// Separate required vs optional captures for unambiguous summary reporting.
-	const requiredCaptures = allCaptures.filter((r) => !r.isOptional);
+	const manifestFailed = manifestFailures.length;
+	const blockingErrors = computeScreenshotBlockingErrors({
+		captureFailed,
+		validationFailed,
+		manifestFailed,
+	});
+	const failed = blockingErrors;
 	const optionalOmitted = allCaptures.filter((r) => r.isOptional && !r.success).length;
 
 	const reportStatus: ScreenshotRunReport['status'] =
@@ -279,45 +335,101 @@ export async function runScreenshotJob(job: ScreenshotJob): Promise<JobResult> {
 		detailedWarnings,
 		notices,
 		blankBottomValidations,
-		failures: [...failures, ...manifestFailures],
+		captureFailures: captureFailureMessages,
+		validationFailures: validationFailureMessages,
+		manifestFailures,
+		failures: [...captureFailureMessages, ...validationFailureMessages, ...manifestFailures],
 		...(fallbacks.length > 0 ? { fallback: fallbacks[0], stitchFailures } : {}),
 	};
 	const reportPath = await writeScreenshotReport(outputDir, report);
 
-	// Summary
+	printScreenshotJobSummary({
+		requiredCount: requiredCaptures.length,
+		succeeded,
+		captureFailed,
+		validationFailed,
+		manifestFailed,
+		optionalOmitted,
+		warnings,
+		notices,
+		detailedWarnings,
+		blockingErrors,
+		durationMs,
+		outputDir,
+		reportPath,
+		manifest,
+		manifestFiles,
+	});
+
+	return {
+		total: requiredCaptures.length,
+		succeeded,
+		failed,
+		captureFailed,
+		validationFailed,
+		manifestFailed,
+		blockingErrors,
+		warningCount: warnings.length,
+		noticeCount: notices.length,
+		captures: allCaptures,
+		outputDir,
+		durationMs,
+		report,
+	};
+}
+
+function printScreenshotJobSummary(input: {
+	requiredCount: number;
+	succeeded: number;
+	captureFailed: number;
+	validationFailed: number;
+	manifestFailed: number;
+	optionalOmitted: number;
+	warnings: string[];
+	notices: string[];
+	detailedWarnings: ScreenshotWarning[];
+	blockingErrors: number;
+	durationMs: number;
+	outputDir: string;
+	reportPath: string;
+	manifest: ReturnType<typeof buildCurrentRunManifest>;
+	manifestFiles: number;
+}): void {
 	console.log('');
 	console.log('═'.repeat(56));
 	console.log('📊  RESULTS');
 	console.log('═'.repeat(56));
-	console.log(`  Required captures: ${requiredCaptures.length}`);
-	console.log(`  Successful:        ${requiredCaptures.filter((r) => r.success).length}`);
-	console.log(`  Failed:            ${failed}`);
-	if (optionalOmitted > 0) {
-		console.log(`  Optional omitted:  ${optionalOmitted} (see notices)`);
+	console.log(`  Required captures: ${input.requiredCount}`);
+	console.log(`  Successful:        ${input.succeeded}`);
+	console.log(`  Capture failures:  ${input.captureFailed}`);
+	console.log(`  Validation failures: ${input.validationFailed}`);
+	console.log(`  Manifest failures: ${input.manifestFailed}`);
+	if (input.optionalOmitted > 0) {
+		console.log(`  Optional omitted:  ${input.optionalOmitted} (see notices)`);
 	}
-	console.log(`  Warnings:        ${warnings.length}`);
-	console.log(`  Notices:         ${notices.length}`);
-	console.log(`  Blocking errors: ${blockingErrors}`);
-	console.log(`  Duration:        ${formatDuration(durationMs)}`);
-	console.log(`  Output:          ${outputDir}/`);
-	console.log(`  Report:          ${reportPath}`);
+	console.log(`  Warnings:        ${input.warnings.length}`);
+	console.log(`  Notices:         ${input.notices.length}`);
+	console.log(`  Blocking errors: ${input.blockingErrors}`);
+	console.log(`  Duration:        ${formatDuration(input.durationMs)}`);
+	console.log(`  Output:          ${input.outputDir}/`);
+	console.log(`  Report:          ${input.reportPath}`);
 	console.log('');
 
-	if (notices.length > 0) {
+	if (input.notices.length > 0) {
 		console.log('═'.repeat(56));
 		console.log('ℹ️  INFO / NOTICES');
 		console.log('═'.repeat(56));
-		for (const n of notices) {
+		for (const n of input.notices) {
 			console.log(`  ℹ  ${n}`);
 		}
 		console.log('');
 	}
 
-	if (detailedWarnings.length > 0) {
+	if (input.detailedWarnings.length > 0) {
 		console.log('═'.repeat(56));
 		console.log('⚠️  WARNINGS');
 		console.log('═'.repeat(56));
-		for (const w of detailedWarnings) {
+		for (const w of input.detailedWarnings) {
 			const typeStr = w.expected ? 'Expected' : 'UNEXPECTED';
 			const vpStr = w.viewport ? ` [${w.viewport}]` : '';
 			console.log(`  ⚠ [${typeStr}]${vpStr}: ${w.message}`);
@@ -325,26 +437,23 @@ export async function runScreenshotJob(job: ScreenshotJob): Promise<JobResult> {
 		console.log('');
 	}
 
-	// Current-run manifest
-	if (manifest.length > 0) {
+	if (input.manifest.length > 0) {
 		console.log('  📁 Current-run manifest:');
-		for (const vp of manifest) {
+		for (const vp of input.manifest) {
 			const status = vp.status !== 'passed' ? ' ⚠' : '';
-			console.log(`    ${vp.name}/  (${vp.files} files, expected ${vp.expected})${status}`);
+			const requiredStr =
+				vp.requiredExpected !== undefined
+					? `${vp.requiredVerified ?? 0}/${vp.requiredExpected} required`
+					: `${vp.files} files, expected ${vp.expected}`;
+			const optionalStr =
+				vp.optionalExpected !== undefined
+					? `, ${vp.optionalGenerated ?? 0}/${vp.optionalExpected} optional`
+					: '';
+			console.log(`    ${vp.name}/  (${requiredStr}${optionalStr})${status}`);
 		}
-		console.log(`    Total generated this run: ${manifestFiles} files`);
+		console.log(`    Total generated this run: ${input.manifestFiles} files`);
 		console.log('');
 	}
-
-	return {
-		total: allCaptures.length,
-		succeeded,
-		failed,
-		captures: allCaptures,
-		outputDir,
-		durationMs,
-		report,
-	};
 }
 
 // =============================================================================
@@ -368,7 +477,8 @@ async function buildViewportReport({
 }): Promise<ViewportRunReport> {
 	const warnings: string[] = [];
 	const notices: string[] = [];
-	const captureFailures: string[] = [];
+	const taskCaptureFailures: string[] = [];
+	const validationFailures: string[] = [];
 	const documentHeight = await getDocumentHeight(page);
 	const fallback = results.find((result) => result.fallback)?.fallback;
 	const stitchFailures = results.flatMap((result) => result.stitchFailures ?? []);
@@ -400,7 +510,7 @@ async function buildViewportReport({
 		if (file.hash) {
 			const currentMeta = await getFileArtifactMeta(file.path).catch(() => undefined);
 			if (!currentMeta || currentMeta.hash !== file.hash) {
-				captureFailures.push(
+				validationFailures.push(
 					`FULL_PAGE_ARTIFACT_OVERWRITTEN: Artifact ${file.path} was overwritten or modified after verification.`,
 				);
 			}
@@ -415,7 +525,9 @@ async function buildViewportReport({
 					`Optional capture "${result.label}" omitted: ${result.error ?? 'not supported'}`,
 				);
 			} else {
-				captureFailures.push(`${result.label}: ${result.error ?? 'capture failed'}`);
+				taskCaptureFailures.push(
+					`${result.id ?? result.label}: ${result.error ?? 'capture failed'}`,
+				);
 			}
 		}
 	}
@@ -438,7 +550,7 @@ async function buildViewportReport({
 		notices,
 		viewport.name,
 	);
-	captureFailures.push(...blockingErrors);
+	validationFailures.push(...blockingErrors);
 	const classifiedConsoleErrors = consoleErrors.map(classifyConsoleError);
 
 	const auditNormalizations = await readAuditNormalizations(page);
@@ -447,10 +559,10 @@ async function buildViewportReport({
 		notices.push(msg);
 	}
 
-	appendExpectedOutputFailures(captureFailures, job, results, outputFiles);
+	appendExpectedOutputFailures(validationFailures, job, results, outputFiles);
 
 	// Physical dimension check on full-page captures — fail if viewport-sized on multi-viewport page
-	appendFullPageDimensionFailures(captureFailures, outputFiles, documentHeight, viewport);
+	appendFullPageDimensionFailures(validationFailures, outputFiles, documentHeight, viewport);
 
 	if (documentHeight < viewport.height) {
 		warnings.push(
@@ -462,8 +574,10 @@ async function buildViewportReport({
 
 	if (job.pageType === 'invitation') {
 		const inventory = await deriveSectionInventory(page);
-		sectionCoverage = buildSectionCoverage(inventory, results, captureFailures);
+		sectionCoverage = buildSectionCoverage(inventory, results, validationFailures);
 	}
+
+	const failures = [...taskCaptureFailures, ...validationFailures];
 
 	return {
 		name: viewport.name,
@@ -480,7 +594,9 @@ async function buildViewportReport({
 		...(fallback ? { fallback } : {}),
 		...(stitchFailures.length > 0 ? { stitchFailures } : {}),
 		blankBottomValidations,
-		failures: captureFailures,
+		captureFailures: taskCaptureFailures,
+		validationFailures,
+		failures,
 		consoleErrors: classifiedConsoleErrors,
 		requestFailures,
 	};

@@ -6,6 +6,11 @@ import * as path from 'node:path';
 import * as syncFs from 'node:fs';
 import * as fs from 'node:fs/promises';
 import {
+	detectWorktreeLane,
+	getWorktreeDevServerPort,
+	type WorktreeLaneId,
+} from '../shared/worktree-lane.ts';
+import {
 	type PageType,
 	type Viewport,
 	type ViewportProfileType,
@@ -21,7 +26,6 @@ import {
 	type CaptureTarget,
 	type SectionExtent,
 	VIEWPORT_PROFILES,
-	DEFAULT_BASE_URL,
 } from './types.js';
 export {
 	calculateImageHash,
@@ -268,6 +272,83 @@ function setShortOption(options: CliOptions, key: string, value: string): void {
 // URL resolution
 // ---------------------------------------------------------------------------
 
+export interface ScreenshotLaneContext {
+	laneId: WorktreeLaneId;
+	displayName: string;
+	port: number;
+	baseUrl: string;
+	/** True when base URL came from ASTRO_PORT / explicit override rather than lane table. */
+	portSource: 'lane' | 'astro-port' | 'explicit';
+}
+
+/**
+ * Resolve the default screenshot base URL for the current worktree lane.
+ *
+ * Ports match Astro `server.port` / `getWorktreeDevServerPort`:
+ * - Integration (`develop` trunk) / `dev-local` → 4321
+ * - `dev-extra` → 4322
+ * - `dev-preview` → 4323
+ *
+ * `ASTRO_PORT` overrides the lane table (same contract as `astro.config.mjs`).
+ * Explicit `--base-url` / config `baseUrl` should be passed via `explicitBaseUrl`.
+ */
+export function resolveScreenshotBaseUrl(options?: {
+	cwd?: string;
+	env?: NodeJS.ProcessEnv;
+	explicitBaseUrl?: string;
+}): string {
+	return resolveScreenshotLaneContext(options).baseUrl;
+}
+
+export function resolveScreenshotLaneContext(options?: {
+	cwd?: string;
+	env?: NodeJS.ProcessEnv;
+	explicitBaseUrl?: string;
+}): ScreenshotLaneContext {
+	const explicit = options?.explicitBaseUrl?.trim();
+	if (explicit) {
+		const normalized = explicit.replace(/\/+$/, '');
+		let port = 0;
+		try {
+			const parsed = Number(new URL(normalized).port);
+			if (Number.isFinite(parsed) && parsed > 0) {
+				port = parsed;
+			}
+		} catch {
+			// Non-URL explicit values keep port 0.
+		}
+		return {
+			laneId: 'unknown',
+			displayName: 'Explicit base URL',
+			port,
+			baseUrl: normalized,
+			portSource: 'explicit',
+		};
+	}
+
+	const env = options?.env ?? process.env;
+	const astroPort = Number(env.ASTRO_PORT ?? '');
+	if (Number.isFinite(astroPort) && astroPort > 0) {
+		return {
+			laneId: detectWorktreeLane(options?.cwd ?? process.cwd()).id,
+			displayName: `ASTRO_PORT override (${astroPort})`,
+			port: astroPort,
+			baseUrl: `http://localhost:${astroPort}`,
+			portSource: 'astro-port',
+		};
+	}
+
+	const lane = detectWorktreeLane(options?.cwd ?? process.cwd());
+	const port = getWorktreeDevServerPort(lane.id);
+	return {
+		laneId: lane.id,
+		displayName: lane.displayName,
+		port,
+		baseUrl: `http://localhost:${port}`,
+		portSource: 'lane',
+	};
+}
+
 /**
  * Resolve a user-provided URL or route to a full URL.
  * If the input starts with http:// or https://, return as-is.
@@ -276,7 +357,7 @@ function setShortOption(options: CliOptions, key: string, value: string): void {
  * Handles MSYS/git-bash path expansion on Windows where
  * --url=/boda/... gets converted to C:/Program Files/Git/boda/...
  */
-export function resolveUrl(input: string, baseUrl: string = DEFAULT_BASE_URL): string {
+export function resolveUrl(input: string, baseUrl: string = resolveScreenshotBaseUrl()): string {
 	const trimmed = input.trim();
 	if (/^https?:\/\//i.test(trimmed)) {
 		return trimmed;
@@ -492,6 +573,22 @@ export function getAboveFoldCriticalSelector(pageType: PageType): string {
 	return 'main, [data-screenshot="main"], body';
 }
 
+/**
+ * Operational toolbars injected by local/preview hosts.
+ * Hidden only under screenshot/audit capture CSS — never product UI.
+ */
+export function getOperationalToolbarSelectors(): string[] {
+	return [
+		'astro-dev-toolbar',
+		'astro-dev-overlay',
+		'#vercel-live-feedback',
+		'vercel-live-feedback',
+		'[data-vercel-toolbar]',
+		'[data-vercel-toolbar-rel]',
+		'#__vercel_toolbar',
+	];
+}
+
 export function getDefaultHideSelectors(): string[] {
 	return [
 		'[data-consent-banner]',
@@ -503,6 +600,7 @@ export function getDefaultHideSelectors(): string[] {
 		'[aria-label*="cookie" i]',
 		'[aria-label*="cookies" i]',
 		'[aria-label*="consent" i]',
+		...getOperationalToolbarSelectors(),
 	];
 }
 
@@ -516,6 +614,11 @@ export async function getDocumentHeight(page: import('playwright').Page): Promis
 	}
 }
 
+/**
+ * Static estimate for non-dynamic page targets only.
+ * Invitation critical-qa / all-sections are plan-driven at runtime via
+ * `resolveCapturePlan` — do not use this for invitation manifest expectations.
+ */
 export function getExpectedCaptureCount(input: {
 	pageType: PageType;
 	mode: ScreenshotMode;
@@ -533,16 +636,14 @@ export function getExpectedCaptureCount(input: {
 		if (input.target === 'full-page') {
 			return 2; // initial-full-page + invitation-full-open
 		}
-		if (input.target === 'critical-qa') {
-			return 5 + criticalCount; // closed, reveal-closed, letter-open, reveal-open, full-open
-		}
-		if (input.target === 'all-sections') {
-			return 0; // dynamic — resolved at runtime from actual page sections
+		// critical-qa / all-sections: section inventory is runtime SSOT
+		if (input.target === 'critical-qa' || input.target === 'all-sections') {
+			return 0;
 		}
 		if (input.target === 'single-section') {
 			return 1;
 		}
-		return 5;
+		return 0;
 	}
 
 	// General Page
@@ -562,6 +663,31 @@ export function getExpectedCaptureCount(input: {
 	return 2;
 }
 
+export function dedupeScreenshotNotices(notices: string[]): string[] {
+	const seen = new Set<string>();
+	const out: string[] = [];
+	for (const notice of notices) {
+		const key = notice.trim();
+		if (!key || seen.has(key)) continue;
+		seen.add(key);
+		out.push(notice);
+	}
+	return out;
+}
+
+/** Blocking failures that must drive a non-zero CLI exit. */
+export function computeScreenshotBlockingErrors(input: {
+	captureFailed: number;
+	validationFailed: number;
+	manifestFailed: number;
+}): number {
+	return input.captureFailed + input.validationFailed + input.manifestFailed;
+}
+
+export function shouldExitScreenshotNonZero(blockingErrors: number): boolean {
+	return blockingErrors > 0;
+}
+
 export function buildCurrentRunManifest(input: {
 	viewports: Viewport[];
 	captures: CaptureResult[];
@@ -576,13 +702,7 @@ export function buildCurrentRunManifest(input: {
 			);
 			const successfulCaptures = perViewport.filter((c) => c.success);
 			const successfulIds = new Set(
-				successfulCaptures.flatMap((c) => {
-					const ids = [c.id].filter((x): x is string => Boolean(x));
-					if (c.path?.includes('full-page') || c.label?.includes('Full page')) {
-						ids.push('05-invitation-full-page');
-					}
-					return ids;
-				}),
+				successfulCaptures.map((c) => c.id).filter((id): id is string => Boolean(id)),
 			);
 
 			const plannedTasks = input.perViewportPlannedTasks?.[viewport.name] ?? [];
@@ -592,44 +712,44 @@ export function buildCurrentRunManifest(input: {
 			const missingRequiredTaskIds: string[] = [];
 			if (requiredTasks.length > 0) {
 				for (const task of requiredTasks) {
-					if (!successfulIds.has(task.id)) {
-						missingRequiredTaskIds.push(task.id);
+					if (!task.id || !successfulIds.has(task.id)) {
+						missingRequiredTaskIds.push(task.id || '(missing-task-id)');
 					}
-				}
-			} else if (plannedTasks.length > 0) {
-				if (
-					(input.target === 'critical-qa' || input.target === 'full-page') &&
-					!successfulIds.has('05-invitation-full-page')
-				) {
-					missingRequiredTaskIds.push('05-invitation-full-page');
 				}
 			}
 
 			const files = successfulCaptures.length;
-			const planned = input.perViewportPlanned[viewport.name] ?? 0;
+			const plannedRequired =
+				requiredTasks.length > 0
+					? requiredTasks.length
+					: (input.perViewportPlanned[viewport.name] ?? 0);
 			const expectsOutput =
 				input.target === 'critical-qa' ||
 				input.target === 'full-page' ||
 				input.target === 'all-sections' ||
 				input.target === 'single-section';
 
+			// Pass when every required planned task succeeded. Optional extras may
+			// increase `files` above `expected` without failing the run.
 			const isPassed =
 				expectsOutput &&
-				planned > 0 &&
+				plannedRequired > 0 &&
 				missingRequiredTaskIds.length === 0 &&
-				files >= planned;
+				(requiredTasks.length > 0 || files >= plannedRequired);
 
 			const manifestItem: ViewportManifestReport = {
 				name: viewport.name,
 				files,
-				expected: planned,
+				expected: plannedRequired,
 				status: isPassed ? 'passed' : 'failed',
 			};
 
 			if (plannedTasks.length > 0) {
+				manifestItem.plannedTotal = plannedTasks.length;
 				manifestItem.requiredExpected = requiredTasks.length;
 				manifestItem.requiredVerified =
 					requiredTasks.length - missingRequiredTaskIds.length;
+				manifestItem.optionalExpected = optionalTasks.length;
 				manifestItem.optionalGenerated = optionalTasks.filter((t) =>
 					successfulIds.has(t.id),
 				).length;
