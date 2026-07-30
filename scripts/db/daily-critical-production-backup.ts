@@ -85,7 +85,14 @@ try {
 	prepareEncryptedLocalDirectory(backupRoot);
 	const backupArgs = ['tsx', 'scripts/db/backup-critical-production.ts'];
 	const result = runCommand('npx', backupArgs, { throwOnError: false });
-	if (result.status !== 0) throw new Error('Critical backup failed.');
+	if (result.status !== 0) {
+		const detail = [result.stderr, result.stdout].filter(Boolean).join('\n').trim();
+		throw new Error(
+			detail
+				? `Critical backup failed.\n${detail}`
+				: `Critical backup failed with status ${String(result.status)}.`,
+		);
+	}
 	const marker = result.stdout
 		.split(/\r?\n/)
 		.find((line) => line.startsWith('CRITICAL_BACKUP_MANIFEST='));
