@@ -19,7 +19,7 @@
  *   - Direct SQL is prohibited; all schema changes must use versioned migrations.
  *
  * Credentials:
- *   - PROD_DB_URL env variable or PROD_SECRET_FILES (.env.production.local, .env.prod.local, .secrets/prod-db-url, .tmp/secrets/prod-db-url).
+ *   - PROD_DB_URL env variable or PROD_SECRET_FILES (.env.production.local).
  */
 
 import {

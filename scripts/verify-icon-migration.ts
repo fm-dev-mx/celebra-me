@@ -72,7 +72,6 @@ function requireRemoteServiceRoleConfirmation(supabaseUrl: string, scriptName: s
 }
 
 loadEnvFile('.env.production.local');
-loadEnvFile('.env.prod.local');
 loadEnvFile('.env.local');
 loadEnvFile('.env');
 

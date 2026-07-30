@@ -7,9 +7,6 @@
  *   - Environment variable: PREVIEW_DB_URL
  *   - Secret files (PREVIEW_SECRET_FILES):
  *       .env.preview.local
- *       .env.preview
- *       .secrets/preview-db-url
- *       .tmp/secrets/preview-db-url
  *
  * Behavior & Scope:
  *   - Target: preview

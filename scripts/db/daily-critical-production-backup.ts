@@ -28,7 +28,7 @@ interface DailyBackupReport {
 	retainedBackupPath: string | null;
 	retention: { daily: number; monthly: number; removed: number } | null;
 	failureCode: 'critical_backup_failed' | null;
-	integrityProfile: 'phase3' | 'pre-phase3';
+	integrityProfile: 'phase3';
 }
 
 const backupRoot = resolve('.backups', 'prod');
@@ -37,14 +37,9 @@ const startedAt = new Date();
 const reportPath = resolve(reportRoot, `daily-backup-${timestamp()}.json`);
 const dailyRetention = 30;
 const monthlyRetention = 12;
-const integrityProfileArgument = process.argv.find((argument) =>
-	argument.startsWith('--integrity-profile='),
-);
-const integrityProfileValue = integrityProfileArgument?.slice('--integrity-profile='.length);
-if (integrityProfileValue && !['phase3', 'pre-phase3'].includes(integrityProfileValue)) {
-	throw new Error('Unsupported daily backup integrity profile.');
-}
-const integrityProfile = integrityProfileValue === 'pre-phase3' ? 'pre-phase3' : 'phase3';
+// Production completed Phase 3; backups always capture the standard phase3 integrity profile.
+// Restore-side tooling still reads the profile stored in each retained backup manifest.
+const integrityProfile = 'phase3' as const;
 
 function directorySize(path: string): number {
 	return statSync(path).isFile()
@@ -89,9 +84,6 @@ try {
 	mkdirSync(backupRoot, { recursive: true });
 	prepareEncryptedLocalDirectory(backupRoot);
 	const backupArgs = ['tsx', 'scripts/db/backup-critical-production.ts'];
-	if (integrityProfile === 'pre-phase3') {
-		backupArgs.push('--integrity-profile=pre-phase3');
-	}
 	const result = runCommand('npx', backupArgs, { throwOnError: false });
 	if (result.status !== 0) throw new Error('Critical backup failed.');
 	const marker = result.stdout

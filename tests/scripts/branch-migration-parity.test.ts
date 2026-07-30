@@ -425,7 +425,7 @@ describe('finding status mapping for interrupted paths', () => {
 			cause: 'PREVIEW_DB_URL not resolved.',
 			impact: 'Preview audit Skipped until credentials exist.',
 			owner: 'human',
-			remediation: 'Set PREVIEW_DB_URL or .secrets/preview-db-url, then resume branch-lane.',
+			remediation: 'Set PREVIEW_DB_URL or .env.preview.local, then resume branch-lane.',
 			nextStep: 'Add credentials, re-invoke branch-lane.',
 		});
 		expect(finding.status).toBe('Needs manual action');

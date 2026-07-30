@@ -777,7 +777,7 @@ describe('missing credentials and nine-section report', () => {
 	it('maps missing credentials to Needs manual action with exact locations', () => {
 		const finding = createMissingCredentialsFinding({
 			target: 'preview',
-			secretLocations: ['.env.preview.local', '.secrets/preview-db-url'],
+			secretLocations: ['.env.preview.local'],
 		});
 		expect(finding.status).toBe('Needs manual action');
 		expect(finding.remediation).toContain('.env.preview.local');

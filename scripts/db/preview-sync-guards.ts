@@ -166,19 +166,9 @@ export function ensureHostProfile(dbUrl: string, userId: string): void {
 // URL Resolution
 // ---------------------------------------------------------------------------
 
-const PREVIEW_SECRET_FILES_CONFIG = [
-	'.env.preview.local',
-	'.env.preview',
-	'.secrets/preview-supabase-url',
-	'.tmp/secrets/preview-supabase-url',
-] as const;
+const PREVIEW_SECRET_FILES_CONFIG = ['.env.preview.local'] as const;
 
-const SERVICE_ROLE_SECRET_FILES = [
-	'.env.preview.local',
-	'.env.preview',
-	'.secrets/preview-supabase-service-role-key',
-	'.tmp/secrets/preview-supabase-service-role-key',
-] as const;
+const SERVICE_ROLE_SECRET_FILES = ['.env.preview.local'] as const;
 
 export function getPreviewSupabaseUrl(): string {
 	const fromEnv = getPreviewSecret('PREVIEW_SUPABASE_URL', PREVIEW_SECRET_FILES_CONFIG);
@@ -196,8 +186,7 @@ export function getPreviewSupabaseUrl(): string {
 	}
 
 	fail(
-		'PREVIEW_SUPABASE_URL is required. Set it in the environment or one of these gitignored files: ' +
-			'.env.preview.local, .env.preview, .secrets/preview-supabase-url, .tmp/secrets/preview-supabase-url',
+		'PREVIEW_SUPABASE_URL is required. Set it in the environment or in gitignored .env.preview.local',
 	);
 }
 
@@ -206,7 +195,7 @@ export function getPreviewServiceRoleKey(): string {
 	if (!key) {
 		throw new Error(
 			'PREVIEW_SUPABASE_SERVICE_ROLE_KEY is required for Storage operations. ' +
-				'Set it in environment or .secrets/preview-supabase-service-role-key',
+				'Set it in environment or .env.preview.local',
 		);
 	}
 	return key;

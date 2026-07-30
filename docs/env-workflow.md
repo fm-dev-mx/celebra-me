@@ -23,7 +23,10 @@ issues, logs, and chat.
 - `.env`: ignored local values only.
 - `.env.local`: ignored local overrides only; never point it at production.
 - `.env.*.local`: ignored, machine-specific or one-off local files.
-- `.secrets/` and `.tmp/secrets/`: ignored secret paths for operational values.
+- `.env.preview.local` / `.env.production.local`: the **single canonical secret file** per hosted
+  target for operational DB workflows (environment variables take precedence). Do not keep parallel
+  copies under `.secrets/` or `.tmp/secrets/`.
+- `.secrets/`: reserved for non-DB script-owned fallbacks only (e.g. `.secrets/cloudinary.env`).
 - Shell/Vercel environment: production and deployment values.
 
 Production must never be inferred from `.env` or `.env.local`. Production-only values belong in the
@@ -94,8 +97,8 @@ execution:
   It never forges Vercel identity and is not mutation authorization.
 - **Preview-only operational:** `PREVIEW_DB_URL`, `PREVIEW_SUPABASE_URL`, and
   `PREVIEW_SUPABASE_SERVICE_ROLE_KEY` are used by Preview DB workflows and never by Production. They
-  live in `.env.preview.local` / `.secrets/` (see `.env.preview.local.example`), not ordinary Local
-  `.env.local` files.
+  live in `.env.preview.local` (see `.env.preview.local.example`), not ordinary Local `.env.local`
+  files.
 - **Operational script-only:** Command confirmations (e.g. `CONFIRM_REMOTE_SERVICE_ROLE`), DB
   workflow inputs, one-off script filters, and Cloudinary provisioning credentials. These can use
   script-owned local file loaders and are intentionally omitted from `ImportMetaEnv`.
@@ -178,7 +181,7 @@ create `PUBLIC_CLOUDINARY_*` equivalents or place real Cloudinary values in trac
 
 | Worktree      | Primary runtime files                                                  | Preview ops file                                   | Notes                   |
 | ------------- | ---------------------------------------------------------------------- | -------------------------------------------------- | ----------------------- |
-| Integration   | `.env.local` (Local)                                                   | optional `.env.preview.local` / `.secrets` for ops | Local default           |
+| Integration   | `.env.local` (Local)                                                   | optional `.env.preview.local` for ops              | Local default           |
 | `dev-local`   | `.env.local` (Local)                                                   | usually absent                                     | Local default           |
 | `dev-preview` | `.env.local` (non-Supabase shared) + **required** `.env.preview.local` | same file holds `PREVIEW_*` ops keys               | Preview runtime default |
 | `dev-extra`   | `.env.local` (Local)                                                   | usually absent                                     | Local default           |

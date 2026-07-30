@@ -59,15 +59,6 @@ function runBackupCommand(
 
 let incompleteOutputDir: string | null = null;
 
-const integrityProfileArgument = process.argv.find((argument) =>
-	argument.startsWith('--integrity-profile='),
-);
-const integrityProfileValue = integrityProfileArgument?.slice('--integrity-profile='.length);
-if (integrityProfileValue && !['phase3', 'pre-phase3'].includes(integrityProfileValue)) {
-	throw new Error('Unsupported critical backup integrity profile.');
-}
-const integrityProfile = integrityProfileValue === 'pre-phase3' ? 'pre-phase3' : 'phase3';
-
 function queryJson<T>(dbUrl: string, sql: string): T {
 	const result = runBackupCommand(
 		'psql',
@@ -146,17 +137,7 @@ async function main(): Promise<void> {
 	console.info('- Environment identity: verified Production project');
 	console.info('- Output: ignored, access-restricted local backup directory');
 
-	const before = captureRecoveryIntegrity(prodDbUrl, { profile: integrityProfile });
-	if (integrityProfile === 'pre-phase3') {
-		const requiredPredecessor = '20260727180000';
-		const phase3Versions = ['20260729140514', '20260729152113'];
-		if (!before.migrationVersions?.includes(requiredPredecessor)) {
-			throw new Error('Pre-Phase-3 backup requires the reviewed predecessor migration.');
-		}
-		if (phase3Versions.some((version) => before.migrationVersions?.includes(version))) {
-			throw new Error('Pre-Phase-3 backup refuses a partially or fully migrated source.');
-		}
-	}
+	const before = captureRecoveryIntegrity(prodDbUrl);
 
 	runBackupCommand(
 		'pg_dump',
@@ -285,7 +266,7 @@ async function main(): Promise<void> {
 	}
 	writeStorageObjectArchive(storageObjectsPath, archive);
 
-	const after = captureRecoveryIntegrity(prodDbUrl, { profile: integrityProfile });
+	const after = captureRecoveryIntegrity(prodDbUrl);
 	const coherence = compareRecoveryIntegrity(before, after, { requireValidInvariants: false });
 	if (!coherence.ok) {
 		throw new Error(

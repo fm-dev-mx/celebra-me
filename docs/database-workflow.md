@@ -52,13 +52,15 @@ egress estimate, manifest verification, retention results, and the retained path
 a failed backup. The command is intentionally absent from CI, builds, deployments, application code,
 and ordinary development/test workflows.
 
-For the `20260729140514`/`20260729152113` cutover, pass `-- --integrity-profile=pre-phase3` before
-migration. This profile records the exact hosted migration list, fingerprints the 18 critical tables
-available in the predecessor schema, and does not pretend the not-yet-created receipt table exists.
-Required Storage bytes are active Supabase-backed invitation assets plus objects referenced by
-published or draft content; stale, unreferenced `storage.objects` metadata is preserved in the
-metadata dump but is not misclassified as a required binary. The disposable restore rebuilds only
-through the manifest's last migration, so the pre-migration recovery point is tested against its
+Production completed the `20260729140514`/`20260729152113` cutover, so backup **creation** always
+captures the standard `phase3` integrity profile; the legacy `--integrity-profile=pre-phase3`
+creation flag was removed. Restore-side tooling (`disposable-restore-verify`,
+`create-disposable-recovery-backup` drills) still reads the profile stored in each retained backup
+manifest, so historical `pre-phase3` recovery points remain restorable and verifiable until they age
+out of retention. Required Storage bytes are active Supabase-backed invitation assets plus objects
+referenced by published or draft content; stale, unreferenced `storage.objects` metadata is
+preserved in the metadata dump but is not misclassified as a required binary. The disposable restore
+rebuilds only through the manifest's last migration, so each recovery point is tested against its
 real schema rather than today's latest schema.
 
 Windows Task Scheduler owns the once-per-24-hours trigger; the repository owns capture, validation,
@@ -131,11 +133,10 @@ categories, and precedence notes.
 - Local DB workflow scripts require PostgreSQL client tools. `psql` must be installed and available
   on PATH; verify with `psql --version`.
 - `.env.local` must not point to production during normal development.
-- Production credentials must come from shell environment variables or gitignored secret files such
-  as `.env.production.local`, `.env.prod.local`, `.secrets/prod-db-url`, or
-  `.tmp/secrets/prod-db-url`.
-- Preview credentials must come from `PREVIEW_DB_URL` or gitignored secret files such as
-  `.env.preview.local`, `.env.preview`, `.secrets/preview-db-url`, or `.tmp/secrets/preview-db-url`.
+- Production credentials must come from shell environment variables or the single canonical
+  gitignored secret file `.env.production.local` (template: `.env.production.local.example`).
+- Preview credentials must come from `PREVIEW_DB_URL` or the single canonical gitignored secret file
+  `.env.preview.local` (template: `.env.preview.local.example`).
   On the `dev-preview` worktree, `.env.preview.local` also supplies the Preview **application**
   runtime (`SUPABASE_*` / `PUBLIC_SUPABASE_*`) via lane bootstrap; that runtime overlay does not
   authorize `db:preview:*` or `invitation:update` mutations.
@@ -188,8 +189,8 @@ PROVISIONED & HOSTED-VALIDATED
 
 - **Status & Parity**: Ephemeral Preview database environment is provisioned and hosted-validated.
   Dedicated Supabase Preview project is used for Vercel Preview deployments from `develop`.
-- **Supported Credentials**: `PREVIEW_DB_URL` environment variable or secret files
-  (`.env.preview.local`, `.env.preview`, `.secrets/preview-db-url`, `.tmp/secrets/preview-db-url`).
+- **Supported Credentials**: `PREVIEW_DB_URL` environment variable or the canonical secret file
+  `.env.preview.local`.
 - **Target Classification**: `scripts/db/db-guard.ts` classifies targets matching `PREVIEW_DB_URL`
   as `preview`.
 - **Migration Command**: `pnpm db:preview:migrate` applies pending migrations to `PREVIEW_DB_URL`.
@@ -337,8 +338,8 @@ import. The unresolved preserve-local enhancement remains tracked in
 `pnpm db:prod:backup:critical`
 
 - Reads Production only and creates the complete public/Auth/Storage metadata/object-byte set.
-- Defaults to the Phase 3 recovery contract; `-- --integrity-profile=pre-phase3` is the guarded
-  predecessor mode for the two-migration cutover only.
+- Always captures the Phase 3 recovery contract (the legacy pre-cutover profile flag was removed;
+  retained pre-cutover backups stay restorable via the profile stored in their manifests).
 - Verifies project identity, capture-window coherence, object size/hash, manifest completeness, and
   critical business integrity before success.
 - Creates and verifies an EFS-encrypted directory under ignored `.backups/prod/`.

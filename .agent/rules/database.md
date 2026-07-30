@@ -94,12 +94,8 @@ task authorization, target classification, and standard guard checks.
 - **Preview Status**: `PROVISIONED & HOSTED-VALIDATED`
 - **Hosted Project**: Dedicated Supabase Preview project used by Vercel Preview deployments from
   `develop`.
-- **Credentials & Secret Resolution**: Credentials come from `PREVIEW_DB_URL` environment variable
-  or gitignored secret files:
-  - `.env.preview.local`
-  - `.env.preview`
-  - `.secrets/preview-db-url`
-  - `.tmp/secrets/preview-db-url`
+- **Credentials & Secret Resolution**: Credentials come from the `PREVIEW_DB_URL` environment
+  variable or the single canonical gitignored secret file `.env.preview.local`.
 - **Audit Workflow (`pnpm db:preview:audit`)**: Reads Preview migration and schema state,
   reconstructs the canonical disposable reference database (`127.0.0.1:54332`), and compares Preview
   against the canonical reference without mutating Preview or persistent local. Returns exit code
@@ -228,8 +224,8 @@ persistent-local database was preserved.
 - Production is strictly read-only unless the user explicitly authorizes a separate production
   deployment goal with `pnpm db:prod:migrate`.
 - Unknown database targets must cause an immediate abort of the operation.
-- Dumps and credentials must never enter Git. They are stored under `.tmp/`, `.backups/`, and
-  `.secrets/` which are all gitignored.
+- Dumps and credentials must never enter Git. Dumps live under gitignored `.tmp/` and `.backups/`;
+  hosted DB credentials live only in gitignored `.env.preview.local` / `.env.production.local`.
 - Before any database operation, classify the target using `pnpm db:guard:classify --db-url <url>`.
 - Do not connect to production unless the user explicitly asks for that exact production operation.
 - Do not execute manual production SQL from `scripts/manual/production-patches/` or `scripts/sql/`.

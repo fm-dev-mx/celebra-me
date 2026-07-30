@@ -96,22 +96,13 @@ export function validateEnvironmentUrlsPreflight(input: {
 // ---------------------------------------------------------------------------
 // Secret File Paths
 // ---------------------------------------------------------------------------
+// Single source of truth: environment variables take precedence, then the one
+// canonical gitignored env file per hosted target (see the .example templates).
+// Do not reintroduce parallel secret copies (.secrets/, .tmp/secrets/, .env.prod.local).
 
-export const PREVIEW_SECRET_FILES = [
-	'.env.preview.local',
-	'.env.preview',
-	'.secrets/preview-db-url',
-	'.tmp/secrets/preview-db-url',
-	'.secrets/preview-supabase-service-role-key',
-	'.tmp/secrets/preview-supabase-service-role-key',
-] as const;
+export const PREVIEW_SECRET_FILES = ['.env.preview.local'] as const;
 
-export const PROD_SECRET_FILES = [
-	'.env.production.local',
-	'.env.prod.local',
-	'.secrets/prod-db-url',
-	'.tmp/secrets/prod-db-url',
-] as const;
+export const PROD_SECRET_FILES = ['.env.production.local'] as const;
 
 // ---------------------------------------------------------------------------
 // Static Target Configurations

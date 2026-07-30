@@ -31,7 +31,7 @@ This is independent of Vercel Preview deployments (`VERCEL_ENV=preview`).
 - `.env.local` — shared non-remote defaults (Local URL placeholders OK; Preview URLs must not live
   here)
 - **Required:** `.env.preview.local` with matching Preview `SUPABASE_*` / `PUBLIC_SUPABASE_*`
-- Optional ops keys in the same file or `.secrets/`: `PREVIEW_DB_URL`, `PREVIEW_SUPABASE_*`
+- Optional ops keys in the same file: `PREVIEW_DB_URL`, `PREVIEW_SUPABASE_*`
 - Optional: `.env.e2e.local` for Preview Playwright
 
 ## Common operations

@@ -80,11 +80,9 @@ describe('Database Pipeline Safety & Hardening Regression Tests', () => {
 			);
 		});
 
-		it('uses documented secret files for PREVIEW and PROD', () => {
-			expect(PREVIEW_SECRET_FILES).toContain('.env.preview');
-			expect(PREVIEW_SECRET_FILES).toContain('.env.preview.local');
-			expect(PROD_SECRET_FILES).toContain('.env.production.local');
-			expect(PROD_SECRET_FILES).toContain('.env.prod.local');
+		it('uses the single canonical secret file per hosted target', () => {
+			expect(PREVIEW_SECRET_FILES).toEqual(['.env.preview.local']);
+			expect(PROD_SECRET_FILES).toEqual(['.env.production.local']);
 		});
 	});
 

@@ -22,7 +22,7 @@ Local Supabase (`CELEBRA_RUNTIME_TARGET=local`).
 ## Environment files
 
 - Required for app: `.env.local` with Local `SUPABASE_*` / `PUBLIC_SUPABASE_*`
-- Optional Preview ops: `.env.preview.local` and/or `.secrets/preview-*`
+- Optional Preview ops: `.env.preview.local`
 - Optional Preview E2E: `.env.e2e.local`
 - Never put Production credentials in ordinary `.env.local`
 
