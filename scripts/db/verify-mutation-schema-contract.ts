@@ -75,6 +75,16 @@ const result = runCommand(
 		    select p.prosrc ~* 'from\\s+public\\.invitations[\\s\\S]{0,160}archived_at\\s+is\\s+null\\s+for\\s+update'
 		    from pg_proc p where p.oid = 'public.restore_invitation_from_published_atomic(uuid,uuid,timestamptz,timestamptz,uuid,integer,jsonb,text,text,uuid,text,text)'::regprocedure
 		  ),
+		  'submitRsvpRpc', to_regprocedure('public.submit_guest_rsvp_public(text,uuid,text,text,text,integer,text,integer,text,text,text)') is not null,
+		  'trackViewRpc', to_regprocedure('public.track_guest_invitation_view_public(text,integer)') is not null,
+		  'serviceRoleSubmitRsvpExecute', coalesce(has_function_privilege('service_role', to_regprocedure('public.submit_guest_rsvp_public(text,uuid,text,text,text,integer,text,integer,text,text,text)'), 'EXECUTE'), false),
+		  'serviceRoleTrackViewExecute', coalesce(has_function_privilege('service_role', to_regprocedure('public.track_guest_invitation_view_public(text,integer)'), 'EXECUTE'), false),
+		  'anonSubmitRsvpExecute', coalesce(has_function_privilege('anon', to_regprocedure('public.submit_guest_rsvp_public(text,uuid,text,text,text,integer,text,integer,text,text,text)'), 'EXECUTE'), false),
+		  'authenticatedSubmitRsvpExecute', coalesce(has_function_privilege('authenticated', to_regprocedure('public.submit_guest_rsvp_public(text,uuid,text,text,text,integer,text,integer,text,text,text)'), 'EXECUTE'), false),
+		  'anonTrackViewExecute', coalesce(has_function_privilege('anon', to_regprocedure('public.track_guest_invitation_view_public(text,integer)'), 'EXECUTE'), false),
+		  'authenticatedTrackViewExecute', coalesce(has_function_privilege('authenticated', to_regprocedure('public.track_guest_invitation_view_public(text,integer)'), 'EXECUTE'), false),
+		  'publicGuestRpcMigration', exists(select 1 from supabase_migrations.schema_migrations where version = '20260730113000'),
+		  'publicGuestRpcCommentAuditFixMigration', exists(select 1 from supabase_migrations.schema_migrations where version = '20260730164613'),
 		  'receiptOperationIdUnique', exists(
 		    select 1 from pg_indexes
 		    where schemaname = 'public'
@@ -95,8 +105,12 @@ const expectedTrue = [
 	'phase2Columns',
 	'metadataRpc',
 	'restoreRpc',
+	'submitRsvpRpc',
+	'trackViewRpc',
 	'serviceRoleMetadataExecute',
 	'serviceRoleRestoreExecute',
+	'serviceRoleSubmitRsvpExecute',
+	'serviceRoleTrackViewExecute',
 	'receiptSelect',
 	'receiptInsert',
 	'metadataRpcSerializesInvitation',
@@ -105,6 +119,8 @@ const expectedTrue = [
 	'phase1Migration',
 	'phase2Migration',
 	'receiptLockMigration',
+	'publicGuestRpcMigration',
+	'publicGuestRpcCommentAuditFixMigration',
 ];
 const expectedFalse = [
 	'authenticatedMetadataExecute',
@@ -116,6 +132,10 @@ const expectedFalse = [
 	'receiptDelete',
 	'metadataRpcLocksReceipts',
 	'restoreRpcLocksReceipts',
+	'anonSubmitRsvpExecute',
+	'authenticatedSubmitRsvpExecute',
+	'anonTrackViewExecute',
+	'authenticatedTrackViewExecute',
 ];
 const failures = [
 	...expectedTrue.filter((key) => evidence[key] !== true).map((key) => `${key}=false`),

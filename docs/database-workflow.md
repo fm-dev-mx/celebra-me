@@ -106,6 +106,13 @@ Production or download an object more than once within one recovery operation.
 - **Receipt-lock serialization (`20260730101500`)**: Atomic metadata/restore RPCs serialize on the
   invitation row and must not row-lock append-only receipts. Promote that migration through Local →
   Preview → Production; never grant receipt `UPDATE` via the dashboard to silence `42501`.
+- **Public Guest RSVP Atomic RPCs (`20260730113000`, fix `20260730164613`)**: Public guest RSVP
+  submission, guest auto-creation, and view telemetry tracking use dedicated `SECURITY DEFINER` RPCs
+  (`submit_guest_rsvp_public` and `track_guest_invitation_view_public`). `p_guest_comment` is an
+  absolute SET when provided; `status_changed` audit is owned by `trg_guest_invitations_emit_audit`.
+  Direct `INSERT`, `UPDATE`, and `DELETE` on protected guest tables remain revoked from
+  `service_role`. Telemetry updates degrade gracefully on error so view-tracking issues never break
+  the primary public invitation experience. Promote Local → Preview → Production.
 - The Production cutover used verified EFS-encrypted pre/post DB/Auth/Storage recovery points and
   preserved migration-before-code ordering. Never infer future hosted status from this point-in-time
   record; rerun the read-only audit and `pnpm db:contract:verify -- --target <production|preview>`.
