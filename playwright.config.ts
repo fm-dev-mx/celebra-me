@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import { LOCAL_SUPABASE_URL } from './scripts/shared/celebra-runtime-env';
 import { resolvePlaywrightRuntimeEnvironment } from './scripts/playwright/preview-environment';
 
 // Intentionally does not load `.env.e2e.local`. That file is for Preview harness configs
@@ -12,6 +13,11 @@ if (runtime.isVercelPreview) {
 		'Protected Vercel Preview targets must use test:e2e:preview:public or test:e2e:preview.',
 	);
 }
+
+// Canonical CI / local `test:e2e:ci` has no `.env.local`. Astro bootstrap fail-closes without a
+// Local Supabase identity, so supply deterministic Local URL stubs when the shell is unset.
+const localSupabaseUrl = process.env.SUPABASE_URL?.trim() || LOCAL_SUPABASE_URL;
+const localPublicSupabaseUrl = process.env.PUBLIC_SUPABASE_URL?.trim() || LOCAL_SUPABASE_URL;
 
 export default defineConfig({
 	testDir: './tests/e2e',
@@ -42,7 +48,14 @@ export default defineConfig({
 				// Astro 7 auto-backgrounds `astro dev` when it detects an agent runtime. Playwright
 				// must own a foreground process or it reports an early exit and leaves a detached
 				// Windows server behind. This environment marker suppresses that auto-detection.
-				env: { ASTRO_DEV_BACKGROUND: '1' },
+				// Spread process.env: Playwright replaces the child env when `env` is set.
+				env: {
+					...process.env,
+					ASTRO_DEV_BACKGROUND: '1',
+					SUPABASE_URL: localSupabaseUrl,
+					PUBLIC_SUPABASE_URL: localPublicSupabaseUrl,
+					CELEBRA_RUNTIME_TARGET: process.env.CELEBRA_RUNTIME_TARGET?.trim() || 'local',
+				},
 				reuseExistingServer: process.env.PLAYWRIGHT_REUSE_EXISTING_SERVER === 'true',
 				timeout: 120_000,
 			},

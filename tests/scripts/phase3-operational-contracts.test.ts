@@ -9,7 +9,10 @@ function read(relativePath: string): string {
 describe('Phase 3 operational contracts', () => {
 	it('keeps canonical Playwright in the foreground and isolated by default', () => {
 		const config = read('playwright.config.ts');
-		expect(config).toContain("env: { ASTRO_DEV_BACKGROUND: '1' }");
+		expect(config).toContain("ASTRO_DEV_BACKGROUND: '1'");
+		expect(config).toContain('SUPABASE_URL: localSupabaseUrl');
+		expect(config).toContain('PUBLIC_SUPABASE_URL: localPublicSupabaseUrl');
+		expect(config).toContain('LOCAL_SUPABASE_URL');
 		expect(config).toContain(
 			"reuseExistingServer: process.env.PLAYWRIGHT_REUSE_EXISTING_SERVER === 'true'",
 		);
