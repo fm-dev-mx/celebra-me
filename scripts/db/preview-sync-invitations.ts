@@ -17,11 +17,16 @@
  *   - Does NOT create Auth users
  *   - Does NOT prune Preview-only records automatically
  *   - Never prints credentials in output
+ *   - Never copies guests/claims/Auth/intake/commercial (EXCLUDED_TABLES)
+ *   - TRUNCATE events CASCADE resets Preview RSVP children; re-provision fixtures after apply
+ *
+ * This is a Production→Preview content regression mirror, never a promotion path.
+ * Contract: docs/core/content-parity-rsvp-isolation.md
  */
 
 import { fail, redactDbUrl, getProdDbUrl, runPsql } from './db-workflow-lib.ts';
 import { PREVIEW_SECRET_FILES, getSecretFromEnvOrFiles as getPreviewSecret } from './db-guard.ts';
-import { EXCLUDED_TABLES } from './db-target-config.ts';
+import { CONTENT_MIRROR_TABLES, EXCLUDED_TABLES } from './db-target-config.ts';
 import {
 	assertProductionIsProd,
 	assertPreviewIsPreview,
@@ -63,12 +68,8 @@ const PREVIEW_EXPECTED_REF = 'iwipdvisoyerfdytuhwi';
 const PROD_STORAGE_PATTERN =
 	/https:\/\/ineitkdkyrxqyressllp\.supabase\.co\/storage\/v1\/object\/public\/invitation-assets\//g;
 
-const MIRROR_TABLES = [
-	'invitations',
-	'invitation_content_drafts',
-	'published_invitation_content',
-	'invitation_assets',
-] as const;
+/** Invitation-facing tables upserted before the events shell remap (excludes events). */
+const MIRROR_TABLES = CONTENT_MIRROR_TABLES.filter((table) => table !== 'events');
 
 // ---------------------------------------------------------------------------
 // CLI Arguments
@@ -368,12 +369,17 @@ function buildPhases(
 				const prodEvents = queryTableJson(prodCtx.dbUrl, 'events', 'id');
 				console.info(`   Production events: ${prodEvents.length} rows`);
 
+				const rsvpResetNote =
+					'Preview events replaced via TRUNCATE CASCADE; RSVP children reset — re-run gated Preview fixture provisioning if needed';
 				if (options.dryRun) {
 					console.info(`   [dry-run] Would remap ${prodEvents.length} events`);
+					console.info(`   [dry-run] ${rsvpResetNote}`);
+					report.detectedDrift.push(rsvpResetNote);
 					return;
 				}
 
-				// Truncate and reinsert events with remapped owner_user_id
+				// Truncate CASCADE resets Preview RSVP children (guests/claims/memberships).
+				// Re-provision synthetic Preview fixtures after apply — never copy Production PII.
 				truncateTable(previewCtx.dbUrl, 'events');
 				const remappedEvents = prodEvents.map((row) => ({
 					...row,
@@ -381,6 +387,7 @@ function buildPhases(
 				}));
 				upsertFromJson(previewCtx.dbUrl, 'events', remappedEvents, 'id');
 				report.created['events'] = prodEvents.length;
+				report.detectedDrift.push(rsvpResetNote);
 
 				// Collect mirrored event IDs for membership reconciliation
 				const mirroredEventIds = prodEvents.map((r) => r.id as string).filter(Boolean);

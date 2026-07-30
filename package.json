@@ -82,6 +82,7 @@
         "agent:git-safety:start": "node scripts/agent/git-safety.mjs start",
         "validate:event-parity": "tsx scripts/validate-event-parity.ts --allowMissingDb",
         "invitation:update": "tsx scripts/provision/invitation-update-cli.ts",
+        "invitation:content-parity": "tsx scripts/provision/content-parity-cli.ts",
         "screenshot": "tsx scripts/screenshot/cli.ts",
         "screenshot:interactive": "tsx scripts/screenshot/cli.ts --interactive",
         "screenshot:invite": "tsx scripts/screenshot/cli.ts --type=invitation",

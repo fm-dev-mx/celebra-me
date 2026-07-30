@@ -4,8 +4,10 @@
 authorization boundaries).
 
 **Does not own:** schema ERD or entity semantics — those live in
-[`docs/domains/database/overview.md`](domains/database/overview.md). See the Ownership Matrix in
-[`.agent/index.md`](../.agent/index.md).
+[`docs/domains/database/overview.md`](domains/database/overview.md). Content promote/mirror vs RSVP
+isolation lives in
+[`docs/core/content-parity-rsvp-isolation.md`](core/content-parity-rsvp-isolation.md). See the
+Ownership Matrix in [`.agent/index.md`](../.agent/index.md).
 
 ## Principle
 
@@ -156,20 +158,24 @@ Disposable PostgreSQL: 127.0.0.1:54332
 
 ## Canonical Invitation Promotion Workflow
 
-The promotion of an invitation follows a strict, safe, and reproducible pipeline:
+Managed invitation promotion follows the contract in
+[`docs/core/content-parity-rsvp-isolation.md`](core/content-parity-rsvp-isolation.md):
 
 ```text
-Definition -> normalized release -> Local -> immutable package -> Preview approval -> Production continuation
+Definition → normalized release → Local → immutable package → Preview → Production
 ```
 
-### Distinction: Promotion vs. Production-to-Preview Mirror
+### Distinction: Promote vs Mirror vs Restore
 
-- **Invitation update (`pnpm invitation:update`)**: Moves an immutable, versioned invitation package
-  from Local -> Preview -> Production. Preview is a validation environment only; Production NEVER
-  imports directly from the Preview DB or Storage.
-- **Production-to-Preview Mirror (`pnpm db:preview:sync-invitations`)**: An independent, separate
-  tool that mirrors published invitations from Production -> Preview for regression testing. It
-  remains unchanged.
+| Mechanism | Role | Direction |
+| --- | --- | --- |
+| `pnpm invitation:update` | **Promote** managed content | Local → Preview → Production |
+| `pnpm db:preview:sync-invitations` | **Mirror** invitation-facing content for regression | Production → Preview only |
+| `pnpm db:local:restore-from-dump` | **Restore** debugging dump (may include PII) | Production backup → Local |
+| `pnpm invitation:content-parity` | Read-only **semantic** content parity check | Compares Local/Preview/Production |
+
+Production never imports from the Preview DB or Preview Storage. Mirror is never promotion.
+Credential presence, worktree path, runtime target, and UI banners do not authorize mutations.
 
 ### Commands
 
@@ -179,6 +185,11 @@ Definition -> normalized release -> Local -> immutable package -> Preview approv
    pnpm invitation:update -- --slug <slug> --targets local,preview --source-dir <path> --apply
    pnpm invitation:update -- --slug <slug> --targets production --dry-run
    pnpm invitation:update -- --slug <slug> --targets production --apply
+   ```
+
+2. **Semantic content parity (read-only)**:
+   ```bash
+   pnpm invitation:content-parity -- --slug <slug> --event-type <type> --envs local,preview,production
    ```
 
 ## Preview Environment Workflow
@@ -199,6 +210,10 @@ PROVISIONED & HOSTED-VALIDATED
   - `--dry-run`: report what would change without mutating.
   - `--apply`: execute the sync (requires `PROD_DB_URL`, `PREVIEW_DB_URL`, `PREVIEW_SUPABASE_URL`,
     `PREVIEW_SUPABASE_SERVICE_ROLE_KEY`).
+  Policy, excluded PII tables, and the Preview RSVP reset caused by `TRUNCATE events CASCADE` are
+  owned by [`content-parity-rsvp-isolation.md`](core/content-parity-rsvp-isolation.md). After apply,
+  re-run gated synthetic fixture provisioning (`pnpm test:e2e:preview:provision`) when Preview RSVP
+  E2E needs those fixtures. Stale Preview-only invitation candidates are reported, not auto-pruned.
 - **Audit Command**: `pnpm db:preview:audit` performs read-only schema drift audit against
   `PREVIEW_DB_URL` by comparing hosted Preview against a canonical disposable local reconstruction
   (`127.0.0.1:54332`). The audit reports the live remote/pending counts; documentation does not
@@ -398,28 +413,24 @@ pnpm db:local:validate
 ```
 
 `pnpm db:prod:backup` reads production `public` data and writes a timestamped dump under
-`.backups/prod/`. It does not mutate production. `pnpm db:local:restore-from-dump` imports the dump
-into the persistent-local database using a staging schema, with `INSERT...WHERE NOT EXISTS`
-semantics — existing local data is preserved, not overwritten.
+`.backups/prod/`. It does not mutate production.
+
+`pnpm db:local:restore-from-dump` is an intentional **PII-bearing debugging exception**, not content
+synchronization. It may import unsanitized Production guests, intake, commercial data, and optional
+Auth/Storage dumps. “Non-destructive” means no `db reset` and no overwrite of existing primary keys
+(`INSERT … WHERE NOT EXISTS`) — not that the import is free of PII risk. Restored Local data must
+never seed Preview. Artifacts remain under gitignored `.backups/` / `.tmp/`. Full contract:
+[`content-parity-rsvp-isolation.md`](core/content-parity-rsvp-isolation.md).
 
 If schema drift is detected during staging import, the script stops and reports the failure. Do not
 patch around drift manually; add or apply the missing migration locally.
 
 ### Refresh local while preserving local-only data
 
-There is no dedicated runnable preserve-refresh command yet. The current restore script is
-non-destructive: it imports through a staging schema and inserts rows that do not already exist. Use
-the supported backup/restore path:
-
-```bash
-PROD_DB_URL=... pnpm db:prod:backup
-pnpm db:local:restore-from-dump --dump <path-to-dump>
-pnpm db:local:validate
-```
-
-Existing local rows are preserved rather than overwritten. Schema drift or incompatible data stops
-the import. The broader preserve-bundle workflow is still blocked pending a guarded implementation;
-see `.agent/plans/active/preserve-local-refresh-workflow.md`.
+There is no dedicated runnable preserve-refresh command yet. Use the supported backup/restore path
+above. Existing local primary keys are preserved rather than overwritten. Schema drift or
+incompatible data stops the import. The broader preserve-bundle workflow remains blocked pending a
+guarded implementation; see `.agent/plans/active/preserve-local-refresh-workflow.md`.
 
 ### Preserve local WIP before refresh
 

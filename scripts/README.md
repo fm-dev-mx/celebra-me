@@ -37,6 +37,7 @@ owns the command inventory.
 | Command                  | Canonical Script                             | Purpose                                                                                                                                                                          |
 | ------------------------ | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `pnpm invitation:update` | `scripts/provision/invitation-update-cli.ts` | Define, plan, apply, package, promote, approve, and continue managed invitations from an exact package, with per-target independent plans, semantic diffs, and truthful recovery |
+| `pnpm invitation:content-parity` | `scripts/provision/content-parity-cli.ts` | Read-only semantic content parity across Local/Preview/Production (excludes RSVP/PII by construction) |
 
 The CLI resolves source/package input through `invitation-package-input.ts`, retains one immutable
 plan per target, and delegates mutation ordering/result synthesis to

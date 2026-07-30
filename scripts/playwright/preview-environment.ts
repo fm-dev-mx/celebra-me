@@ -9,6 +9,7 @@ export const PREVIEW_SUPABASE_PROJECT_REF = 'iwipdvisoyerfdytuhwi';
 export const PRODUCTION_SUPABASE_PROJECT_REF = 'ineitkdkyrxqyressllp';
 export const PREVIEW_DRAFT_RATE_LIMIT_MAX_REQUESTS = 9;
 export const PREVIEW_DRAFT_RATE_LIMIT_WINDOW_MS = 60_000;
+/** Deterministic Preview synthetic fixture. Re-provision after `db:preview:sync-invitations` (events CASCADE reset). */
 export const PREVIEW_FIXTURE_SLUG = 'e2e-preview-publication';
 export const PREVIEW_FIXTURE_TITLE = 'Fixture E2E de publicación Preview';
 export const PREVIEW_FIXTURE_DEMO_ID = 'demo-xv-jewelry-box';

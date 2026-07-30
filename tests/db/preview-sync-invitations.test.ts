@@ -10,7 +10,7 @@
 import { classifyDbTarget } from '@/../scripts/db/db-target-config';
 import { getSecretFromEnvOrFiles, PREVIEW_SECRET_FILES } from '@/../scripts/db/db-guard';
 import { extractSupabaseProjectRef } from '@/../scripts/db/db-target-config';
-import { EXCLUDED_TABLES } from '@/../scripts/db/db-target-config';
+import { CONTENT_MIRROR_TABLES, EXCLUDED_TABLES } from '@/../scripts/db/db-target-config';
 
 // Mock psql-dependent modules
 jest.mock('@/../scripts/db/db-workflow-lib', () => ({
@@ -159,6 +159,19 @@ describe('Excluded tables are defined', () => {
 		expect(EXCLUDED_TABLES).not.toContain('invitations');
 		expect(EXCLUDED_TABLES).not.toContain('events');
 		expect(EXCLUDED_TABLES).not.toContain('published_invitation_content');
+	});
+
+	it('keeps Production→Preview mirror tables invitation-facing only', () => {
+		expect([...CONTENT_MIRROR_TABLES]).toEqual([
+			'invitations',
+			'invitation_content_drafts',
+			'published_invitation_content',
+			'invitation_assets',
+			'events',
+		]);
+		for (const excluded of EXCLUDED_TABLES) {
+			expect(CONTENT_MIRROR_TABLES).not.toContain(excluded);
+		}
 	});
 });
 

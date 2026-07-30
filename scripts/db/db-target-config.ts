@@ -435,3 +435,15 @@ export const EXCLUDED_TABLES = [
 	'commercial_attribution_identity',
 	'commercial_analytics',
 ] as const;
+
+/**
+ * Invitation-facing tables eligible for Production→Preview content mirror.
+ * Never include EXCLUDED_TABLES. See docs/core/content-parity-rsvp-isolation.md.
+ */
+export const CONTENT_MIRROR_TABLES = [
+	'invitations',
+	'invitation_content_drafts',
+	'published_invitation_content',
+	'invitation_assets',
+	'events',
+] as const;

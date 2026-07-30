@@ -1,10 +1,17 @@
 /**
  * local-restore-from-dump.ts — Restore Persistent Local DB from a Production Dump
  *
- * Safely imports production-derived data into the persistent local database WITHOUT
- * running `db reset` or deleting Docker volumes.
+ * Intentionally imports production-derived data (including real PII) into the
+ * persistent local database WITHOUT running `db reset` or deleting Docker volumes.
  *
- * The restore process (all operations non-destructive against persistent-local):
+ * This is a debugging exception — not content synchronization or promotion.
+ * Restored Local data must never be used to seed Preview.
+ * Contract: docs/core/content-parity-rsvp-isolation.md
+ *
+ * "Non-destructive" here means: no db reset / no PK overwrite (INSERT WHERE NOT EXISTS).
+ * It does NOT mean the import is free of PII risk.
+ *
+ * The restore process:
  *   1. Validate dump file integrity (non-empty, contains SQL)
  *   2. Verify the target is a persistent-local host/port
  *   3. Import into a staging schema (transaction-wrapped)
@@ -17,7 +24,7 @@
  *  10. Remove staging schema and temporary dumps
  *
  * NO sanitization — exact production values, IDs, timestamps, and relationships
- * are preserved.
+ * are preserved (guests, intake, commercial, optional Auth/Storage dumps).
  *
  * Usage:
  *   tsx scripts/db/local-restore-from-dump.ts --dump <path> [--keep-dump] [--dry-run]
