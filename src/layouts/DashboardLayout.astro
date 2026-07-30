@@ -3,6 +3,7 @@ import '@/styles/dashboard.scss';
 import DashboardSidebar from '@/components/dashboard/shell/DashboardSidebar.astro';
 import { toDisplayRole } from '@/lib/rsvp/auth/roles';
 import type { DashboardNavItem } from '@/interfaces/dashboard/admin.interface';
+import { resolveDashboardEnvBanner } from '@/lib/server/dashboard-env-banner';
 import { isNavItemActive } from '@/utils/dashboard';
 
 interface Props {
@@ -11,10 +12,12 @@ interface Props {
 
 const { title } = Astro.props as Props;
 
-// Non-production banner
-const isPreviewEnv = process.env.VERCEL_ENV === 'preview';
-const isPreviewBypassActive = isPreviewEnv && process.env.PREVIEW_MFA_BYPASS === 'true';
-const isLocalEnv = process.env.VERCEL_ENV === undefined || process.env.VERCEL_ENV === 'development';
+const envBanner = resolveDashboardEnvBanner({
+	vercelEnv: process.env.VERCEL_ENV,
+	celebraRuntimeTarget: process.env.CELEBRA_RUNTIME_TARGET,
+	supabaseUrl: process.env.SUPABASE_URL ?? process.env.PUBLIC_SUPABASE_URL,
+	previewMfaBypass: process.env.PREVIEW_MFA_BYPASS,
+});
 
 // Middleware enforces the authenticated session and stores it in
 // Astro.locals.session. The layout reads from locals (not request cookies)
@@ -87,15 +90,8 @@ const currentSectionLabel = navItems.find((item) => isNavItemActive(item, Astro.
 						<h1>{currentSectionLabel}</h1>
 					</div>
 				</header>
-				{isPreviewBypassActive && (
-					<div class="dashboard-env-banner dashboard-env-banner--preview">
-						⚠️ ENTORNO PREVIEW — MFA desactivado
-					</div>
-				)}
-				{isLocalEnv && (
-					<div class="dashboard-env-banner dashboard-env-banner--local">
-						🧪 ENTORNO LOCAL
-					</div>
+				{envBanner && (
+					<div class={`dashboard-env-banner ${envBanner.className}`}>{envBanner.label}</div>
 				)}
 				<main class="dashboard-main">
 					<slot />
