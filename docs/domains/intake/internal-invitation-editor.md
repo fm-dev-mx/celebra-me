@@ -12,10 +12,15 @@ current boundary.
   persisted.
 - Draft content is sparse. Preview and publication compute effective content by merging draft data
   with the prior published snapshot; approved demo fallback is limited to demo invitations.
+- Both preview and publication remap effective draft content through `mapDraftToPublished` with
+  `priorPublishedContent` so non-editable published fields (for example interludes, `sectionStyles`,
+  `visualProfileId`, `thankYou.date`, and `thankYou.closingPhrase`) survive the rematerialization
+  the same way on each path.
 - Saving a section replaces that section object. Every editable field therefore must exist in the
   editor schema, draft schema, both mapping directions, preview, publication, adapter, and renderer.
-- Interludes are published content but are not dashboard-editable section values. Republishing must
-  preserve them.
+- Interludes, section styles, visual profile identity, and thank-you closing date/phrase are
+  published content that are not dashboard-editable section values. Republishing and internal
+  preview must preserve them from the prior published snapshot.
 
 ## Publication boundary
 

@@ -502,4 +502,86 @@ describe('content mapping behavior', () => {
 
 		expect(mockFindAssets).toHaveBeenCalledWith(invitation.id);
 	});
+
+	it('preserves prior-published thankYou variant, date, and visualProfileId in preview mapping', async () => {
+		const invitation = makeProject({
+			kind: 'client',
+			slug: 'alba-rosa-quinones',
+			themeId: 'luxury-hacienda',
+			snapshot: {
+				...demoPreset,
+				id: 'demo-cumple-luxury-hacienda',
+				eventType: 'cumple',
+				themeId: 'luxury-hacienda',
+				previewSlug: 'demo-cumple-luxury-hacienda',
+			},
+			eventType: 'cumple',
+			title: '70 años de Alba Rosa Quiñónez López',
+		});
+
+		const editableDraft = {
+			title: '70 años de Alba Rosa Quiñónez López',
+			description: 'Celebración',
+			hero: {
+				name: 'Alba Rosa Quiñónez López',
+				secondaryName: '',
+				label: '70 AÑOS',
+				nickname: '',
+				date: '2026-09-12T20:00:00.000Z',
+			},
+			thankYou: {
+				message: 'Gracias por acompañarme en esta celebración.',
+				closingName: 'Alba Rosa',
+			},
+		} satisfies Parameters<typeof buildDraftPreviewPageContext>[1];
+
+		const priorPublishedContent = {
+			visualProfileId: 'alba-rosa-quinones',
+			sectionStyles: {
+				thankYou: { variant: 'editorial-magazine' },
+			},
+			thankYou: {
+				message: 'Prior thank-you message',
+				closingName: 'Alba Rosa',
+				closingPhrase: 'Con cariño',
+				date: '12 de septiembre de 2026',
+			},
+		};
+
+		const withoutPrior = await buildDraftPreviewPageContext(invitation, editableDraft, {});
+		expect(withoutPrior.ok).toBe(true);
+		const contentWithoutPrior = mockAdaptDbEvent.mock.calls.at(-1)?.[0].content as Record<
+			string,
+			unknown
+		>;
+		expect(contentWithoutPrior.visualProfileId).toBeUndefined();
+		expect(contentWithoutPrior.sectionStyles).toBeUndefined();
+		expect(
+			(contentWithoutPrior.thankYou as Record<string, unknown> | undefined)?.date,
+		).toBeUndefined();
+
+		const withPrior = await buildDraftPreviewPageContext(
+			invitation,
+			editableDraft,
+			{},
+			{
+				priorPublishedContent,
+			},
+		);
+		expect(withPrior.ok).toBe(true);
+		const contentWithPrior = mockAdaptDbEvent.mock.calls.at(-1)?.[0].content as Record<
+			string,
+			unknown
+		>;
+		expect(contentWithPrior.visualProfileId).toBe('alba-rosa-quinones');
+		expect(contentWithPrior.sectionStyles).toEqual({
+			thankYou: { variant: 'editorial-magazine' },
+		});
+		expect(contentWithPrior.thankYou).toMatchObject({
+			message: 'Gracias por acompañarme en esta celebración.',
+			closingName: 'Alba Rosa',
+			closingPhrase: 'Con cariño',
+			date: '12 de septiembre de 2026',
+		});
+	});
 });

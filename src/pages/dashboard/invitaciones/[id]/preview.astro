@@ -74,7 +74,10 @@ const demoEntryForSlug = (slug: string) =>
 async function tryBuildContext(
 	content: Record<string, unknown>,
 	label: string,
-	assetLookupSlug?: string,
+	options: {
+		assetLookupSlug?: string;
+		priorPublishedContent?: Record<string, unknown> | null;
+	} = {},
 ): Promise<InvitationPageContext | null> {
 	if (!invitation) return null;
 
@@ -84,7 +87,8 @@ async function tryBuildContext(
 			: {};
 
 	const result = await buildDraftPreviewPageContext(invitation, content, demoContent, {
-		assetLookupSlug,
+		assetLookupSlug: options.assetLookupSlug,
+		priorPublishedContent: options.priorPublishedContent,
 	});
 	if (!result.ok) return null;
 
@@ -124,14 +128,16 @@ if (!revisionMismatch && hasAnyContent && invitation) {
 	pageCtx = await tryBuildContext(
 		effectiveContent as unknown as Record<string, unknown>,
 		previewLabel,
-		publishedAssetLookupSlug,
+		{
+			assetLookupSlug: publishedAssetLookupSlug,
+			priorPublishedContent: published?.content,
+		},
 	);
 	if (!pageCtx && published?.content && !requestedRevision) {
-		pageCtx = await tryBuildContext(
-			published.content,
-			'Versión pública',
-			publishedAssetLookupSlug,
-		);
+		pageCtx = await tryBuildContext(published.content, 'Versión pública', {
+			assetLookupSlug: publishedAssetLookupSlug,
+			priorPublishedContent: published.content,
+		});
 		if (pageCtx) {
 			previewWarning = 'El borrador actual tiene errores. Mostrando la versión pública.';
 		}
@@ -142,7 +148,9 @@ if (!revisionMismatch && hasAnyContent && invitation) {
 }
 
 if (!pageCtx && !errorMessage && invitation && !revisionMismatch) {
-	pageCtx = await tryBuildContext({}, 'Vacío');
+	pageCtx = await tryBuildContext({}, 'Vacío', {
+		priorPublishedContent: published?.content,
+	});
 	if (!pageCtx) {
 		errorMessage =
 			'No se pudo generar la vista previa con el contenido disponible. Revisa los datos en el editor.';

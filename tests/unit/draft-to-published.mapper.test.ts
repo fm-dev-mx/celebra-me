@@ -644,6 +644,34 @@ describe('mapDraftToPublished', () => {
 		});
 	});
 
+	it('preserves thankYou.date from priorPublishedContent when draft omits it', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			priorPublishedContent: {
+				thankYou: {
+					message: 'Prior message',
+					closingName: 'Prior Name',
+					closingPhrase: 'Con cariño',
+					date: '12 de septiembre de 2026',
+				},
+			},
+			draftContent: {
+				...baseInput.draftContent,
+				thankYou: {
+					message: 'Gracias a todos',
+					closingName: 'Ana Sofia',
+				},
+			},
+		});
+
+		expect(result.thankYou).toMatchObject({
+			message: 'Gracias a todos',
+			closingName: 'Ana Sofia',
+			date: '12 de septiembre de 2026',
+			closingPhrase: 'Con cariño',
+		});
+	});
+
 	it('preserves thankYou focalPoint in image-only branch when provided in draft', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
