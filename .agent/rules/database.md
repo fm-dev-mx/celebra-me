@@ -85,11 +85,20 @@ task authorization, target classification, and standard guard checks.
   2. Local codebase validation (`pnpm type-check`, `pnpm test`, `pnpm build`)
   3. Read-only production schema audit (`pnpm db:prod:audit`)
   4. Dry-run push and allowlist matching (`--allowlist` or `EXPECTED_MIGRATIONS`)
+  4b. Migration / deployment compatibility (`CELEBRA_TARGET_RELEASE_SHA`, rollout phases in
+     `supabase/migration-rollout-registry.json`; SSOT
+     `scripts/db/migration-deployment-compatibility.ts`)
   5. Automatic pre-migration backup (`.backups/prod/...`)
   6. Interactive prompt requiring `MIGRATE <hostname>` or
      `CONFIRM_PROD_MIGRATION="MIGRATE <hostname>"`
   7. Migration application (`supabase db push --db-url <url> --yes`)
   8. Post-migration schema verification (`supabase_migrations.schema_migrations` audit)
+- **Hosted identity vs environment selection**: Selecting Preview/Production and having credentials
+  is not authorization. Hosted migrate fails closed without an authorized target-release SHA.
+  Contract-phase migrations also require deployed-app evidence
+  (`CELEBRA_DEPLOYED_APP_SHA` / `CELEBRA_DEPLOYED_APP_CAPABILITIES`). Local is not gated by hosted
+  deployment identity. See `docs/database-workflow.md` → Migration / Deployment Compatibility
+  Contract.
 
 ## Preview Environment Status & Rules
 
@@ -104,7 +113,8 @@ task authorization, target classification, and standard guard checks.
   remote/pending migration counts from the audit; never freeze a hosted pending total in this rule.
 - **Separation of Operations**: Migration (`pnpm db:preview:migrate`), seed, and audit
   (`pnpm db:preview:audit`) are separate operations. `pnpm db:preview:migrate` applies migrations
-  only; it does not automatically seed or audit.
+  only after dry-run, optional allowlist, and the compatibility contract; it does not automatically
+  seed or audit.
 - **Failure Handling**: When Preview credentials are missing/unconfigured, `pnpm db:preview:migrate`
   and `pnpm db:preview:audit` fail closed with exit code `1`.
 - **Content promote / mirror / RSVP isolation**: Follow

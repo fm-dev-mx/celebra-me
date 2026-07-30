@@ -110,13 +110,16 @@ Production or download an object more than once within one recovery operation.
 - **Receipt-lock serialization (`20260730101500`)**: Atomic metadata/restore RPCs serialize on the
   invitation row and must not row-lock append-only receipts. Promote that migration through Local →
   Preview → Production; never grant receipt `UPDATE` via the dashboard to silence `42501`.
-- **Public Guest RSVP Atomic RPCs (`20260730113000`, fix `20260730164613`)**: Public guest RSVP
-  submission, guest auto-creation, and view telemetry tracking use dedicated `SECURITY DEFINER` RPCs
-  (`submit_guest_rsvp_public` and `track_guest_invitation_view_public`). `p_guest_comment` is an
-  absolute SET when provided; `status_changed` audit is owned by `trg_guest_invitations_emit_audit`.
-  Direct `INSERT`, `UPDATE`, and `DELETE` on protected guest tables remain revoked from
-  `service_role`. Telemetry updates degrade gracefully on error so view-tracking issues never break
-  the primary public invitation experience. Promote Local → Preview → Production.
+- **Public Guest RSVP Atomic RPCs (`20260730113000`, fix `20260730164613`, portable pgcrypto
+  `20260730220544`)**: Public guest RSVP submission, guest auto-creation, and view telemetry
+  tracking use dedicated `SECURITY DEFINER` RPCs (`submit_guest_rsvp_public` and
+  `track_guest_invitation_view_public`). Hybrid create qualifies `extensions.gen_random_bytes`
+  under `search_path=public` (hosted Supabase does not expose unqualified `gen_random_bytes` in
+  `public`). `p_guest_comment` is an absolute SET when provided; `status_changed` audit is owned by
+  `trg_guest_invitations_emit_audit`. Direct `INSERT`, `UPDATE`, and `DELETE` on protected guest
+  tables remain revoked from `service_role`. Telemetry updates degrade gracefully on error so
+  view-tracking issues never break the primary public invitation experience. Promote Local →
+  Preview → Production.
 - The Production cutover used verified EFS-encrypted pre/post DB/Auth/Storage recovery points and
   preserved migration-before-code ordering. Never infer future hosted status from this point-in-time
   record; rerun the read-only audit and `pnpm db:contract:verify -- --target <production|preview>`.
@@ -204,7 +207,10 @@ PROVISIONED & HOSTED-VALIDATED
   `.env.preview.local`.
 - **Target Classification**: `scripts/db/db-guard.ts` classifies targets matching `PREVIEW_DB_URL`
   as `preview`.
-- **Migration Command**: `pnpm db:preview:migrate` applies pending migrations to `PREVIEW_DB_URL`.
+- **Migration Command**: `pnpm db:preview:migrate` applies pending migrations to `PREVIEW_DB_URL`
+  after dry-run, optional allowlist (`EXPECTED_MIGRATIONS` / `--allowlist`), and the Migration /
+  Deployment Compatibility Contract (see below). Hosted Preview fails closed without
+  `CELEBRA_TARGET_RELEASE_SHA`.
 - **Invitation Sync Command**: `pnpm db:preview:sync-invitations` mirrors invitation-facing data
   from Production to Preview:
   - `--dry-run`: report what would change without mutating.
@@ -302,6 +308,44 @@ with the explicit predecessor integrity profile immediately before mutation. Aft
 migrations and verifying the application schema contract, `pnpm db:prod:migrate` creates the
 complete Phase 3 recovery point again under the current profile. Preview is never a Production
 backup.
+
+### Migration / Deployment Compatibility Contract
+
+SSOT: `scripts/db/migration-deployment-compatibility.ts` +
+`supabase/migration-rollout-registry.json`. Wired into `pnpm db:preview:migrate` and
+`pnpm db:prod:migrate` (does not replace allowlist, dry-run, backup, or contract verification).
+
+Hosted Preview/Production require an authorized **target release** Git identity:
+
+```bash
+CELEBRA_TARGET_RELEASE_SHA=<git-sha> EXPECTED_MIGRATIONS=<versions> pnpm db:preview:migrate
+CELEBRA_TARGET_RELEASE_SHA=<git-sha> EXPECTED_MIGRATIONS=<versions> pnpm db:prod:migrate
+```
+
+Membership is proven from Git contents (`candidate ∈ <TARGET_RELEASE_SHA>:supabase/migrations/`),
+not filename chronology. Branch name, worktree path, UI banner, and credential presence alone
+never authorize hosted mutation. Missing `CELEBRA_TARGET_RELEASE_SHA` fails closed on hosted
+targets. Local / disposable remain free to develop against repository `HEAD`.
+
+Rollout phases (registry metadata; annotate only migrations that participate in sequencing):
+
+| Phase | Meaning | Hosted rule |
+| --- | --- | --- |
+| `expand` | Adds capability compatible with the currently deployed app | May run before target deployment when release membership + DB deps hold |
+| `neutral` | Does not invalidate current or target app contracts | Normal guarded path + membership |
+| `contract` | Removes/restricts behavior an older app relies on | Blocked until `CELEBRA_DEPLOYED_APP_SHA` + required `CELEBRA_DEPLOYED_APP_CAPABILITIES` prove the replacement path is deployed |
+
+Safe RSVP-class sequencing:
+
+```text
+EXPAND (RPC / portable capability)
+→ deploy + verify replacement application
+→ CONTRACT (revoke legacy direct DML paths)
+```
+
+When the deployed application requires a DB capability the database (including pending candidates)
+does not provide, the gate reports `ENVIRONMENT NOT READY` rather than treating the environment as
+healthy.
 
 ### Blocked refresh aliases
 

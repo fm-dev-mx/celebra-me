@@ -90,6 +90,11 @@ const result = runCommand(
 		  'authenticatedTrackViewExecute', coalesce(has_function_privilege('authenticated', to_regprocedure('public.track_guest_invitation_view_public(text,integer)'), 'EXECUTE'), false),
 		  'publicGuestRpcMigration', exists(select 1 from supabase_migrations.schema_migrations where version = '20260730113000'),
 		  'publicGuestRpcCommentAuditFixMigration', exists(select 1 from supabase_migrations.schema_migrations where version = '20260730164613'),
+		  'publicGuestRpcPgcryptoQualifyMigration', exists(select 1 from supabase_migrations.schema_migrations where version = '20260730220544'),
+		  'submitRsvpUsesExtensionsGenRandomBytes', (
+		    select p.prosrc ~* 'extensions\\.gen_random_bytes\\s*\\('
+		    from pg_proc p where p.oid = 'public.submit_guest_rsvp_public(text,uuid,text,text,text,integer,text,integer,text,text,text)'::regprocedure
+		  ),
 		  'receiptOperationIdUnique', exists(
 		    select 1 from pg_indexes
 		    where schemaname = 'public'
@@ -128,6 +133,8 @@ const expectedTrue = [
 	'receiptLockMigration',
 	'publicGuestRpcMigration',
 	'publicGuestRpcCommentAuditFixMigration',
+	'publicGuestRpcPgcryptoQualifyMigration',
+	'submitRsvpUsesExtensionsGenRandomBytes',
 ];
 const expectedFalse = [
 	'authenticatedMetadataExecute',

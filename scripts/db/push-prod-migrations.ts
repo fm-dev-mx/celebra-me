@@ -8,11 +8,16 @@
  *   2. Local codebase validation (`pnpm type-check`, `pnpm test`, `pnpm build`)
  *   3. Production schema audit (`audit-db.ts --target production`)
  *   4. Dry-run push and allowlist matching (`--allowlist` or `EXPECTED_MIGRATIONS`)
+ *   4b. Migration / deployment compatibility (target-release membership, rollout phases)
  *   5. Complete pre-migration critical recovery point (`.backups/prod/...`)
  *   6. Interactive user confirmation (`MIGRATE <hostname>` or `CONFIRM_PROD_MIGRATION="MIGRATE <hostname>"`)
  *   7. Migration application (`supabase db push --db-url <url> --yes`)
  *   8. Post-migration schema/application contract verification
  *   9. Complete post-migration critical backup (DB, Auth, Storage metadata/bytes)
+ *
+ * Hosted identity (fail closed):
+ *   - CELEBRA_TARGET_RELEASE_SHA — authorized target release Git tree
+ *   - CELEBRA_DEPLOYED_APP_SHA / CELEBRA_DEPLOYED_APP_CAPABILITIES — required for contract phases
  *
  * Current Production Status:
  *   - Hosted reconciliation state must be established by the current read-only audit.
@@ -22,6 +27,7 @@
  *   - PROD_DB_URL env variable or PROD_SECRET_FILES (.env.production.local).
  */
 
+import { runHostedMigrationCompatibilityGate } from './hosted-migration-compatibility-gate.ts';
 import {
 	assertProductionDbUrl,
 	fail,
@@ -155,6 +161,26 @@ async function main(): Promise<void> {
 		}
 		console.info('✅ Dry-run matches the explicit expected migrations allowlist exactly.\n');
 	}
+
+	console.info('4b. Evaluating migration / deployment compatibility contract...');
+	const appliedResult = runPsql(
+		'select version from supabase_migrations.schema_migrations order by version',
+		prodDbUrl,
+	);
+	const dbAppliedVersions = appliedResult.stdout
+		.split(/\r?\n/)
+		.map((v) => v.trim())
+		.filter(Boolean);
+	runHostedMigrationCompatibilityGate({
+		target: 'production',
+		candidateVersions:
+			dryRunVersions.length > 0
+				? dryRunVersions
+				: expectedVersions.filter((v) => v !== 'none'),
+		dbAppliedVersions,
+		fail,
+	});
+	console.info('');
 
 	// 5. Complete pre-migration recovery point. Production completed Phase 3
 	// (20260729140514/20260729152113), so the standard profile applies: the receipt table

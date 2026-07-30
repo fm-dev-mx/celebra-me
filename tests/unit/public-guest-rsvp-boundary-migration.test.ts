@@ -12,6 +12,13 @@ const followupMigration = readFileSync(
 	),
 	'utf8',
 );
+const pgcryptoMigration = readFileSync(
+	resolve(
+		process.cwd(),
+		'supabase/migrations/20260730220544_public_guest_rsvp_rpc_pgcrypto_qualify.sql',
+	),
+	'utf8',
+);
 const isolationMigration = readFileSync(
 	resolve(
 		process.cwd(),
@@ -64,5 +71,15 @@ describe('public guest RSVP mutation boundary migration', () => {
 		expect(followupMigration).toContain('Absolute comment ownership');
 		expect(followupMigration).toContain('Audit is owned by trg_guest_invitations_emit_audit');
 		expect(followupMigration).not.toMatch(/insert into public\.guest_invitation_audit/i);
+	});
+
+	it('qualifies extensions.gen_random_bytes under search_path=public for hybrid create', () => {
+		expect(pgcryptoMigration).toMatch(
+			/security definer[\s\S]*?set search_path = 'public'/i,
+		);
+		expect(pgcryptoMigration).toContain('extensions.gen_random_bytes(6)');
+		expect(pgcryptoMigration).not.toMatch(
+			/encode\(\s*gen_random_bytes\s*\(\s*6\s*\)\s*,\s*'hex'\s*\)/,
+		);
 	});
 });

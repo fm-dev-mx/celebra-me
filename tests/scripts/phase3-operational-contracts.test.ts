@@ -30,6 +30,7 @@ describe('Phase 3 operational contracts', () => {
 		const firstCriticalBackup = workflow.indexOf(
 			"'scripts/db/daily-critical-production-backup.ts'",
 		);
+		const compatibility = workflow.indexOf('runHostedMigrationCompatibilityGate');
 		const migration = workflow.indexOf('// 7. DB Push execution');
 		const contract = workflow.indexOf("'scripts/db/verify-mutation-schema-contract.ts'");
 		const postMigrationBackup = workflow.lastIndexOf(
@@ -38,10 +39,19 @@ describe('Phase 3 operational contracts', () => {
 		expect(firstCriticalBackup).toBeGreaterThan(0);
 		// Phase 3 is fully applied in Production; the stale pre-phase3 profile must not return.
 		expect(workflow).not.toContain('--integrity-profile=pre-phase3');
+		expect(compatibility).toBeGreaterThan(0);
+		expect(compatibility).toBeLessThan(firstCriticalBackup);
 		expect(migration).toBeGreaterThan(firstCriticalBackup);
 		expect(contract).toBeGreaterThan(migration);
 		expect(postMigrationBackup).toBeGreaterThan(contract);
 		expect(postMigrationBackup).toBeGreaterThan(firstCriticalBackup);
+	});
+
+	it('wires Preview migrate through dry-run and the compatibility gate', () => {
+		const workflow = read('scripts/db/push-preview-migrations.ts');
+		expect(workflow).toContain("['db', 'push', '--db-url', previewDbUrl, '--dry-run']");
+		expect(workflow).toContain('runHostedMigrationCompatibilityGate');
+		expect(workflow).toContain("'scripts/db/verify-mutation-schema-contract.ts'");
 	});
 
 	it('removes incomplete critical backup output and never logs service credentials', () => {

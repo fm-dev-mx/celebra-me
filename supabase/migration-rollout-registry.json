@@ -1,0 +1,35 @@
+{
+	"$schemaComment": "Migration / deployment compatibility registry. SSOT for expand|neutral|contract phases. Docs: docs/database-workflow.md",
+	"migrations": {
+		"20260730113000": {
+			"phase": "expand",
+			"provides": ["public_guest_rsvp_rpc"],
+			"notes": "Creates SECURITY DEFINER public RSVP RPCs. Historical outage paired this with DML revoke before app cutover."
+		},
+		"20260730164613": {
+			"phase": "neutral",
+			"requiresDbCapabilities": ["public_guest_rsvp_rpc"],
+			"provides": ["public_guest_rsvp_rpc_comment_audit_fix"]
+		},
+		"20260730220544": {
+			"phase": "expand",
+			"requiresDbCapabilities": ["public_guest_rsvp_rpc"],
+			"provides": ["public_guest_rsvp_rpc_pgcrypto_portable"],
+			"notes": "Qualifies extensions.gen_random_bytes for hybrid create under search_path=public."
+		},
+		"__historical_rsvp_dml_revoke__": {
+			"phase": "contract",
+			"requiresDeployedAppCapabilities": ["public_guest_rsvp_rpc_client"],
+			"revokes": ["direct_guest_service_role_dml"],
+			"notes": "Synthetic registry entry modeling the revoke-before-RPC-app outage class for regression tests."
+		}
+	},
+	"appCapabilities": {
+		"public_guest_rsvp_rpc_client": {
+			"requiresDbCapabilities": ["public_guest_rsvp_rpc"]
+		},
+		"direct_guest_service_role_dml_client": {
+			"requiresDbCapabilities": []
+		}
+	}
+}
