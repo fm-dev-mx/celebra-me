@@ -27,6 +27,7 @@ Local Supabase.
 ## Common operations
 
 - Parallel Local feature/fix work, Local `pnpm dev`
+- Dev URL: `http://localhost:4322/` (stable lane port; do not use `:4321` while `dev-local` is up)
 
 ## Restrictions
 

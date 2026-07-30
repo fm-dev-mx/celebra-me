@@ -68,6 +68,26 @@ export const WORKTREE_LANES: readonly WorktreeLaneDefinition[] = Object.freeze([
 ]);
 
 /**
+ * Stable Astro/Vite ports per lane so parallel worktrees do not share :4321 and
+ * then 403 `/@fs/` asset requests that encode another worktree's absolute path.
+ *
+ * Override with PORT or ASTRO_PORT when needed (tests, one-off binds).
+ */
+export const WORKTREE_DEV_SERVER_PORTS: Readonly<Record<WorktreeLaneId, number>> = Object.freeze({
+	integration: 4321,
+	'dev-local': 4321,
+	'dev-extra': 4322,
+	'dev-preview': 4323,
+	// 4399: never collide with canonical lanes (4321/4322/4323) or typical 4324
+	// fallbacks; surface the non-canonical cwd via detectWorktreeLane callers.
+	unknown: 4399,
+});
+
+export function getWorktreeDevServerPort(laneId: WorktreeLaneId): number {
+	return WORKTREE_DEV_SERVER_PORTS[laneId] ?? WORKTREE_DEV_SERVER_PORTS.unknown;
+}
+
+/**
  * Returns the canonical external worktree root path based on the repo root.
  * Convention: sibling directory named `<repo-dir-name>-worktrees`.
  * Example: `D:\code\celebra-me` → `D:\code\celebra-me-worktrees`

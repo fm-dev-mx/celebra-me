@@ -153,8 +153,10 @@ variables, or database state.
 
 To support concurrent work across worktrees without friction or collision:
 
-- **Server Ports**: Astro/Vite automatically increments development server ports (e.g. `4321` for
-  Integration, then the next free ports for other lanes).
+- **Server Ports**: Astro binds a stable lane port (`4321` Integration/`dev-local`, `4322`
+  `dev-extra`, `4323` `dev-preview`) with `strictPort`, so parallel worktrees do not silently share
+  `:4321` and then 403 absolute `/@fs/` asset paths from another lane. Override with `PORT` /
+  `ASTRO_PORT` when needed.
 - **Local Database**: Local-runtime worktrees share the persistent Local Supabase instance
   (`127.0.0.1:54322`).
 - **Preview runtime**: `dev-preview` talks to the hosted Preview Supabase project by default; it

@@ -7,6 +7,7 @@ import react from '@astrojs/react';
 import vercel from '@astrojs/vercel';
 import { fileURLToPath } from 'url';
 import { bootstrapCelebraRuntimeEnv } from './scripts/shared/celebra-runtime-env.ts';
+import { getWorktreeDevServerPort } from './scripts/shared/worktree-lane.ts';
 
 const isBuildCommand = process.argv.includes('build');
 const isVercel = process.env.VERCEL === '1' || Boolean(process.env.VERCEL_ENV);
@@ -17,6 +18,14 @@ const isVercel = process.env.VERCEL === '1' || Boolean(process.env.VERCEL_ENV);
 const runtimeBootstrap = bootstrapCelebraRuntimeEnv({
 	validate: !isVercel && !isBuildCommand,
 });
+
+// ASTRO_PORT is the supported Celebra-level override; PORT is reserved for the
+// Astro CLI (`astro dev --port`) and would silently fight server.port here.
+const astroPort = Number(process.env.ASTRO_PORT ?? '');
+const devServerPort =
+	Number.isFinite(astroPort) && astroPort > 0
+		? astroPort
+		: getWorktreeDevServerPort(runtimeBootstrap.lane.id);
 
 const supabasePublicUrl = process.env.PUBLIC_SUPABASE_URL;
 const supabaseStoragePathname = '/storage/v1/object/public/invitation-assets/**';
@@ -50,10 +59,13 @@ export default defineConfig({
 	// The base URL for the site.
 	site:
 		process.env.NODE_ENV === 'development'
-			? 'http://127.0.0.1:4321'
+			? `http://127.0.0.1:${devServerPort}`
 			: process.env.BASE_URL || 'https://www.celebra-me.com',
 
 	integrations: [react(), sitemap(), robotsTxt()],
+	server: {
+		port: devServerPort,
+	},
 	image: {
 		remotePatterns: [
 			{
@@ -74,6 +86,11 @@ export default defineConfig({
 	},
 	vite: {
 		envPrefix: ['PUBLIC_', 'VITE_'],
+		server: {
+			// Fail closed on lane port collisions instead of silently binding the next
+			// free port (which makes browsers keep hitting another worktree on :4321).
+			strictPort: true,
+		},
 		ssr: {
 			// Vercel's serverless loader cannot safely load sanitize-html's runtime graph:
 			// bare requires in its bundled CommonJS entrypoint are not traced into the

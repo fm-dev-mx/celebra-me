@@ -16,8 +16,10 @@ import {
 } from '../../scripts/shared/celebra-runtime-env';
 import {
 	detectWorktreeLane,
+	getWorktreeDevServerPort,
 	LEGACY_WORKTREE_SEGMENTS,
 	listExpectedLanePaths,
+	WORKTREE_DEV_SERVER_PORTS,
 } from '../../scripts/shared/worktree-lane';
 
 describe('worktree lane detection', () => {
@@ -45,6 +47,20 @@ describe('worktree lane detection', () => {
 			'dev-extra',
 		]);
 		expect(lanes.find((lane) => lane.id === 'dev-preview')?.runtimeDefault).toBe('preview');
+	});
+
+	it('assigns stable non-colliding Astro ports for parallel Local lanes', () => {
+		expect(getWorktreeDevServerPort('integration')).toBe(4321);
+		expect(getWorktreeDevServerPort('dev-local')).toBe(4321);
+		expect(getWorktreeDevServerPort('dev-extra')).toBe(4322);
+		expect(getWorktreeDevServerPort('dev-preview')).toBe(4323);
+		// Lanes that can run in parallel must not share a port. `integration` and
+		// `dev-local` intentionally share 4321 (the root repo and its main worktree
+		// are the same Local runtime); `unknown` is a non-canonical cwd fallback.
+		const parallelPorts = (['dev-local', 'dev-extra', 'dev-preview'] as const).map(
+			(lane) => WORKTREE_DEV_SERVER_PORTS[lane],
+		);
+		expect(new Set(parallelPorts).size).toBe(parallelPorts.length);
 	});
 });
 
