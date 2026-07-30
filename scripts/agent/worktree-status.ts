@@ -1,32 +1,23 @@
 import { execSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { LEGACY_WORKTREE_SEGMENTS, listExpectedLanePaths } from '../shared/worktree-lane';
 
 interface LaneConfig {
 	name: string;
 	path: string;
+	runtimeDefault: 'local' | 'preview';
 	defaultBranch: string;
 }
 
 const REPO_ROOT = resolve(process.cwd());
 
-const LANES: LaneConfig[] = [
-	{
-		name: 'Integration Lane',
-		path: REPO_ROOT,
-		defaultBranch: 'develop',
-	},
-	{
-		name: 'Development Lane',
-		path: resolve(REPO_ROOT, '.worktrees', 'dev-lane'),
-		defaultBranch: 'ephemeral',
-	},
-	{
-		name: 'Validation Lane',
-		path: resolve(REPO_ROOT, '.worktrees', 'val-lane'),
-		defaultBranch: 'ephemeral',
-	},
-];
+const LANES: LaneConfig[] = listExpectedLanePaths(REPO_ROOT).map((lane) => ({
+	name: lane.displayName,
+	path: lane.path,
+	runtimeDefault: lane.runtimeDefault,
+	defaultBranch: lane.id === 'integration' ? 'develop' : 'ephemeral',
+}));
 
 function runGit(args: string[], cwd: string): string {
 	try {
@@ -74,6 +65,7 @@ function inspectLane(lane: LaneConfig) {
 			headSha: 'N/A',
 			status: 'Directory missing',
 			relation: 'N/A',
+			runtimeDefault: lane.runtimeDefault,
 		};
 	}
 
@@ -98,12 +90,13 @@ function inspectLane(lane: LaneConfig) {
 		headSha,
 		status: statusSummary,
 		relation,
+		runtimeDefault: lane.runtimeDefault,
 	};
 }
 
 function main() {
 	console.log('\n=============================================================');
-	console.log(' Celebra-me Three-Lane Worktree Status (Read-Only)');
+	console.log(' Celebra-me Four-Lane Worktree Status (Read-Only)');
 	console.log('=============================================================\n');
 
 	for (const lane of LANES) {
@@ -116,7 +109,19 @@ function main() {
 			console.log(`   Branch:   ${info.branch}`);
 			console.log(`   HEAD:     ${info.headSha}`);
 			console.log(`   State:    ${info.status}`);
+			console.log(`   Runtime:  ${info.runtimeDefault} default`);
 			console.log(`   Develop:  ${info.relation}`);
+		}
+		console.log('');
+	}
+
+	const legacyPresent = LEGACY_WORKTREE_SEGMENTS.filter((segment) =>
+		existsSync(resolve(REPO_ROOT, '.worktrees', segment)),
+	);
+	if (legacyPresent.length > 0) {
+		console.log('⚠️  Legacy worktree directories still present (should be migrated):');
+		for (const segment of legacyPresent) {
+			console.log(`   - ${resolve(REPO_ROOT, '.worktrees', segment)}`);
 		}
 		console.log('');
 	}

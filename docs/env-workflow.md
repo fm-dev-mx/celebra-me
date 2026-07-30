@@ -31,13 +31,18 @@ shell, Vercel, or gitignored secret paths documented by the owning workflow.
 
 ## Validation Role of Preview vs Local Default
 
-- **Local Default**: Local development (`SUPABASE_URL=http://127.0.0.1:54321`) is the default target
-  across all worktree lanes (`celebra-me` root, `.worktrees/dev-lane`, `.worktrees/val-lane`) for
-  normal development, unit testing, component/SCSS iteration, and disposable destructive migration
-  reconstruction.
-- **Preview Validation Role**: Preview (`PREVIEW_DB_URL`, Vercel Preview deployments) is an explicit
-  pre-Production validation environment reserved for workflows requiring broader hosted
-  verification, including:
+- **Local Default (Integration, `dev-local`, `dev-extra`)**: Local development
+  (`SUPABASE_URL=http://127.0.0.1:54321`) is the default application runtime for Integration and the
+  Local development lanes. Use it for normal development, unit testing, component/SCSS iteration,
+  and disposable destructive migration reconstruction.
+- **Preview Runtime Default (`dev-preview`)**: `.worktrees/dev-preview` intentionally runs local
+  Astro against the dedicated Preview Supabase project. Application runtime values come from
+  `.env.preview.local` (overlay) and set `CELEBRA_RUNTIME_TARGET=preview`. This is **runtime
+  connectivity only** — it does not authorize Preview DB migrations, syncs, invitation updates, or
+  E2E provision/publish.
+- **Preview Validation / Ops Role**: Preview (`PREVIEW_DB_URL`, Vercel Preview deployments, Preview
+  E2E) remains the hosted validation environment for workflows requiring broader verification,
+  including:
   - Hosted SSR and Vercel edge/runtime behavior,
   - Supabase Auth and MFA flows,
   - Invitation publication and provisioning preflights,
@@ -45,7 +50,7 @@ shell, Vercel, or gitignored secret paths documented by the owning workflow.
   - Hosted database migration sanity audits (`pnpm db:preview:audit`),
   - Representative Preview E2E test suites (`pnpm test:e2e:preview`).
 - **Worktree Authorization Invariant**: Worktree path location grants no environment privilege
-  (`path ≠ privilege`). Being inside `.worktrees/val-lane` does not grant automatic Preview or
+  (`path ≠ privilege`). Being inside `.worktrees/dev-preview` does not grant automatic Preview or
   Production mutation permission. Environment access is determined strictly by task scope, target
   environment, operation risk, and existing repository safety rules.
 
@@ -80,9 +85,17 @@ execution:
 - **Server-only app/runtime:** Read at runtime from `process.env`, normally through
   `src/lib/server/env.ts`. Includes credentials, API keys, deployment metadata, and internal URLs.
 - **Preview-only app/runtime:** `PREVIEW_MFA_BYPASS` and `PREVIEW_ADMIN_EMAILS` support the guarded
-  Preview MFA bypass. Never enable them in Production.
+  Preview MFA bypass on Vercel Preview deployments. Never enable them in Production. Local Preview
+  runtime (`CELEBRA_RUNTIME_TARGET=preview`) uses `DEV_MFA_BYPASS` instead—it now activates when
+  `DEV_MFA_BYPASS=true` + `NODE_ENV=development` + `CELEBRA_RUNTIME_TARGET=preview` + remote
+  Supabase URL, provided the process is not on Vercel.
+- **Lane runtime target:** `CELEBRA_RUNTIME_TARGET` is `local` or `preview` for local Astro
+  processes. Lane detection sets it automatically; shell override is allowed for intentional tests.
+  It never forges Vercel identity and is not mutation authorization.
 - **Preview-only operational:** `PREVIEW_DB_URL`, `PREVIEW_SUPABASE_URL`, and
-  `PREVIEW_SUPABASE_SERVICE_ROLE_KEY` are used by Preview DB workflows and never by Production.
+  `PREVIEW_SUPABASE_SERVICE_ROLE_KEY` are used by Preview DB workflows and never by Production. They
+  live in `.env.preview.local` / `.secrets/` (see `.env.preview.local.example`), not ordinary Local
+  `.env.local` files.
 - **Operational script-only:** Command confirmations (e.g. `CONFIRM_REMOTE_SERVICE_ROLE`), DB
   workflow inputs, one-off script filters, and Cloudinary provisioning credentials. These can use
   script-owned local file loaders and are intentionally omitted from `ImportMetaEnv`.
@@ -137,21 +150,39 @@ create `PUBLIC_CLOUDINARY_*` equivalents or place real Cloudinary values in trac
 
 ## Current Precedence
 
-- Astro/Vite bootstrap loads supported local env files through Vite `loadEnv` in `astro.config.mjs`
-  before app runtime modules access environment values. The bootstrap propagates those loaded values
-  into `process.env`.
+- Astro/Vite bootstrap runs `scripts/shared/celebra-runtime-env.ts` from `astro.config.mjs` before
+  app runtime modules access environment values.
+- Lane detection (`scripts/shared/worktree-lane.ts`) selects the runtime default:
+  - Integration / `dev-local` / `dev-extra` → Local
+  - `dev-preview` → Preview
+- File loading for local processes (`NODE_ENV=development`, non-Vercel):
+  1. Vite `loadEnv` merges `.env`, `.env.local`, `.env.[mode]`, `.env.[mode].local`
+  2. Preview lane additionally overlays `.env.preview.local` (required) for Preview runtime keys
+  3. Allowlisted keys from files override inherited shell values
+  4. `CELEBRA_RUNTIME_TARGET` is set from the lane default unless already present
 - `src/lib/server/env.ts#getEnv` reads `process.env` only. It never reads `.env` files directly and
   has no test-mode filesystem behavior.
-- Shell/Vercel values remain authoritative in Production and CI. In explicit local development, the
-  `astro.config.mjs` allowlist permits intended local values to override inherited shell values;
-  other loaded values only fill missing `process.env` entries.
+- Shell/Vercel values remain authoritative on Vercel and in CI. Local lane bootstrap validates that
+  `SUPABASE_URL` and `PUBLIC_SUPABASE_URL` match the intended Local or Preview project and rejects
+  mixed or Production targets for ordinary development lanes.
 - DB workflow scripts centralize local app env loading in `scripts/db/db-workflow-lib.ts`, with
-  `.env.local`/`.env` merged and `process.env` overriding file values.
+  `.env.local`/`.env` merged and `process.env` overriding file values. Local DB workflows refuse
+  remote Supabase URLs inside `.env.local`.
 - Cloudinary provisioning has its own operational loader: existing `process.env` values win, then
   missing values may be filled from `.env.local`, `.env`, and `.secrets/cloudinary.env` in that
   order.
 - Older operational scripts still load env files locally and are guarded case-by-case. Broad
   precedence normalization is intentionally deferred to avoid changing deployment behavior.
+
+### Per-worktree `.env*` expectations
+
+| Worktree      | Primary runtime files                                                  | Preview ops file                                   | Notes                   |
+| ------------- | ---------------------------------------------------------------------- | -------------------------------------------------- | ----------------------- |
+| Integration   | `.env.local` (Local)                                                   | optional `.env.preview.local` / `.secrets` for ops | Local default           |
+| `dev-local`   | `.env.local` (Local)                                                   | usually absent                                     | Local default           |
+| `dev-preview` | `.env.local` (non-Supabase shared) + **required** `.env.preview.local` | same file holds `PREVIEW_*` ops keys               | Preview runtime default |
+| `dev-extra`   | `.env.local` (Local)                                                   | usually absent                                     | Local default           |
+| Preview E2E   | `.env.e2e.local`                                                       | —                                                  | Hosted Playwright only  |
 
 ## External Vercel Preview E2E
 

@@ -16,6 +16,7 @@ describe('runtime mutation environment guard', () => {
 		resetRuntimeMutationEnvironmentCacheForTests();
 		process.env = { ...originalEnv };
 		delete process.env.VERCEL_ENV;
+		delete process.env.CELEBRA_RUNTIME_TARGET;
 	});
 
 	afterEach(() => {
@@ -57,6 +58,37 @@ describe('runtime mutation environment guard', () => {
 		process.env.SUPABASE_SERVICE_ROLE_KEY = jwtForProject(SUPABASE_PROJECT_REFS.preview);
 
 		await expect(assertRuntimeMutationEnvironment()).rejects.toThrow(/ambiguous/);
+	});
+
+	it('accepts explicit local Preview runtime without VERCEL_ENV', async () => {
+		process.env.CELEBRA_RUNTIME_TARGET = 'preview';
+		process.env.SUPABASE_URL = `https://${SUPABASE_PROJECT_REFS.preview}.supabase.co`;
+		process.env.SUPABASE_SERVICE_ROLE_KEY = jwtForProject(SUPABASE_PROJECT_REFS.preview);
+
+		await expect(assertRuntimeMutationEnvironment()).resolves.toMatchObject({
+			environment: 'preview',
+			projectRef: SUPABASE_PROJECT_REFS.preview,
+		});
+	});
+
+	it('rejects CELEBRA_RUNTIME_TARGET=preview against a non-Preview project', async () => {
+		process.env.CELEBRA_RUNTIME_TARGET = 'preview';
+		process.env.SUPABASE_URL = 'http://127.0.0.1:54321';
+		process.env.SUPABASE_SERVICE_ROLE_KEY = 'opaque-local-key';
+
+		await expect(assertRuntimeMutationEnvironment()).rejects.toThrow(
+			/Preview Supabase project/,
+		);
+	});
+
+	it('rejects CELEBRA_RUNTIME_TARGET=preview against Production Supabase', async () => {
+		process.env.CELEBRA_RUNTIME_TARGET = 'preview';
+		process.env.SUPABASE_URL = `https://${SUPABASE_PROJECT_REFS.production}.supabase.co`;
+		process.env.SUPABASE_SERVICE_ROLE_KEY = jwtForProject(SUPABASE_PROJECT_REFS.production);
+
+		await expect(assertRuntimeMutationEnvironment()).rejects.toThrow(
+			/Preview Supabase project/,
+		);
 	});
 
 	it('rejects Production runtime configured with Preview Supabase', async () => {

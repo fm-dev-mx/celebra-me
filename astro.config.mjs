@@ -6,79 +6,19 @@ import robotsTxt from 'astro-robots-txt'; // Automatic robots.txt generation for
 import react from '@astrojs/react';
 import vercel from '@astrojs/vercel';
 import { fileURLToPath } from 'url';
-import { loadEnv } from 'vite';
+import { bootstrapCelebraRuntimeEnv } from './scripts/shared/celebra-runtime-env.ts';
 
-const env = loadEnv(process.env.NODE_ENV || 'development', process.cwd(), '');
 const isBuildCommand = process.argv.includes('build');
+const isVercel = process.env.VERCEL === '1' || Boolean(process.env.VERCEL_ENV);
 
-/**
- * Allowlist of project-owned environment variables that local .env may
- * override in development.  This prevents stale terminal/CI exports from
- * shadowing the intended local configuration.
- *
- * Only applied when NODE_ENV is explicitly 'development' so that platform
- * variables (Vercel, CI runners) remain authoritative during production
- * builds and deployments.
- *
- * Non-allowlisted non-prefixed vars are still propagated from .env but
- * only when unset — preserving the original safety guard for everything
- * not on this list.
- */
-const LOCAL_OVERRIDE_KEYS = new Set([
-	'SUPABASE_URL',
-	'SUPABASE_ANON_KEY',
-	'SUPABASE_SERVICE_ROLE_KEY',
-	'PUBLIC_SUPABASE_URL',
-	'PUBLIC_SUPABASE_ANON_KEY',
-	'BASE_URL',
-	'NODE_ENV',
-	'TRUST_DEVICE_SECRET',
-	'TRUST_DEVICE_MAX_AGE_DAYS',
-	'RSVP_CLAIM_CODE_PEPPER',
-	'INTAKE_TOKEN_ENCRYPTION_KEY',
-	'UPSTASH_REDIS_REST_URL',
-	'UPSTASH_REDIS_REST_TOKEN',
-	'RSVP_V2_DISTRIBUTED_RATELIMIT',
-	'SUPER_ADMIN_EMAILS',
-	'RSVP_ADMIN_USER',
-	'RSVP_ADMIN_PASSWORD',
-	'LOCAL_SUPER_ADMIN_PASSWORD',
-	'REQUIRE_FRESH_MFA_FOR_ADMIN',
-	'DEV_MFA_BYPASS',
-	'PREVIEW_MFA_BYPASS',
-	'PREVIEW_ADMIN_EMAILS',
-	'VERCEL_AUTOMATION_BYPASS_SECRET',
-	'GMAIL_USER',
-	'GMAIL_PASS',
-	'CONTACT_FORM_RECIPIENT_EMAIL',
-	'CONTACT_WHATSAPP',
-	'PUBLIC_GOOGLE_ANALYTICS_ID',
-	'PUBLIC_GA_MEASUREMENT_ID',
-	'PUBLIC_META_PIXEL_ID',
-	'PUBLIC_META_PIXEL_ENABLED',
-	'META_CAPI_DELIVERY_MODE',
-	'META_CAPI_ACCESS_TOKEN',
-	'META_TEST_EVENT_CODE',
-]);
+// Lane-aware env bootstrap: Local lanes use .env/.env.local; Preview lane overlays
+// .env.preview.local and sets CELEBRA_RUNTIME_TARGET. Validation is fail-closed for
+// local development processes; Vercel platform env remains authoritative on deploy.
+const runtimeBootstrap = bootstrapCelebraRuntimeEnv({
+	validate: !isVercel && !isBuildCommand,
+});
 
-const isLocalDev = process.env.NODE_ENV === 'development';
-
-// Propagate .env vars to process.env so server-only code (env.ts, auth-api)
-// can read them without a filesystem fallback. Vite 7+ does not do this
-// automatically for non-prefixed vars.
-for (const [key, value] of Object.entries(env)) {
-	if (isLocalDev && LOCAL_OVERRIDE_KEYS.has(key)) {
-		// Local development: allow .env to override inherited shell values
-		// so terminal/CI exports cannot shadow the intended configuration.
-		process.env[key] = value;
-	} else if (process.env[key] === undefined) {
-		// Production / CI or non-allowlisted key: preserve platform env vars,
-		// fill in gaps from .env only when unset.
-		process.env[key] = value;
-	}
-}
-
-const supabasePublicUrl = process.env.PUBLIC_SUPABASE_URL ?? env.PUBLIC_SUPABASE_URL;
+const supabasePublicUrl = process.env.PUBLIC_SUPABASE_URL;
 const supabaseStoragePathname = '/storage/v1/object/public/invitation-assets/**';
 const supabaseStorageRemotePattern = supabasePublicUrl
 	? (() => {
@@ -99,6 +39,12 @@ const externalImageDomains = [
 	PROD_SUPABASE_HOST,
 	...(supabaseStorageRemotePattern ? [supabaseStorageRemotePattern.hostname] : []),
 ];
+
+if (process.env.CELEBRA_ENV_BOOTSTRAP_LOG === '1') {
+	console.info(
+		`[celebra-env] lane=${runtimeBootstrap.lane.id} target=${runtimeBootstrap.target} source=${runtimeBootstrap.source}`,
+	);
+}
 
 export default defineConfig({
 	// The base URL for the site.

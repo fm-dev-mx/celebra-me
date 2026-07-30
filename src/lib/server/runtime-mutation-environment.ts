@@ -1,3 +1,10 @@
+/**
+ * Runtime mutation environment guard.
+ *
+ * Distinguishes Local runtime, local Preview runtime (CELEBRA_RUNTIME_TARGET),
+ * Vercel Preview, and Production. Worktree path alone is never authorization.
+ */
+
 import {
 	SUPABASE_PROJECT_REFS,
 	assertMutationEnvironmentIdentity,
@@ -18,9 +25,28 @@ function inferRuntimeEnvironment(apiUrl: string): InvitationMutationEnvironment 
 	if (vercelEnvironment === 'preview') return 'preview';
 
 	const apiRef = extractApiProjectRef(apiUrl);
+	const celebraTarget = getEnv('CELEBRA_RUNTIME_TARGET').trim().toLowerCase();
+
+	if (celebraTarget === 'preview') {
+		if (apiRef !== SUPABASE_PROJECT_REFS.preview) {
+			throw new Error(
+				'CELEBRA_RUNTIME_TARGET=preview requires the dedicated Preview Supabase project.',
+			);
+		}
+		return 'preview';
+	}
+
+	if (celebraTarget === 'local') {
+		if (apiRef !== SUPABASE_PROJECT_REFS.local) {
+			throw new Error('CELEBRA_RUNTIME_TARGET=local requires Local Supabase.');
+		}
+		return 'local';
+	}
+
 	if (apiRef === SUPABASE_PROJECT_REFS.local && !vercelEnvironment) return 'local';
+
 	throw new Error(
-		'Runtime mutation environment is ambiguous. Local execution must use Local Supabase, and deployed execution must declare VERCEL_ENV.',
+		'Runtime mutation environment is ambiguous. Local execution must use Local Supabase with CELEBRA_RUNTIME_TARGET=local (or omit it), Preview runtime must set CELEBRA_RUNTIME_TARGET=preview against the Preview project, and deployed execution must declare VERCEL_ENV.',
 	);
 }
 

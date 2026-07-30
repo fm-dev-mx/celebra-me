@@ -255,7 +255,7 @@ export function assertNoProdCredentialsInLocalEnv(): void {
 	});
 	if (unsafe) {
 		fail(
-			'Refusing to run because .env.local appears to contain production Supabase credentials.',
+			'Refusing to run because .env.local contains remote Supabase credentials. Local DB workflows require Local Supabase URLs. Preview runtime credentials belong in .env.preview.local; Production credentials belong in shell or approved secret files — never in ordinary development-lane .env.local.',
 		);
 	}
 }
