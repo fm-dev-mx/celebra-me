@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import GuestDashboardApp from '@/components/dashboard/guests/GuestDashboardApp';
+import { GUEST_DASHBOARD_SESSION_INVALID_MESSAGE } from '@/lib/dashboard/guest-dashboard-events-errors';
 
 class MockEventSource {
 	addEventListener = jest.fn();
@@ -34,7 +35,7 @@ describe('GuestDashboardApp auth states', () => {
 		render(<GuestDashboardApp initialEventId="" />);
 
 		await waitFor(() => {
-			expect(screen.getByText('No autorizado.')).toBeInTheDocument();
+			expect(screen.getByText(GUEST_DASHBOARD_SESSION_INVALID_MESSAGE)).toBeInTheDocument();
 		});
 	});
 });

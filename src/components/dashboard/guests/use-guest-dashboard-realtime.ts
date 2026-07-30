@@ -16,6 +16,10 @@ import {
 	buildShareMessageDateContext,
 	type ShareMessageDateContext,
 } from '@/lib/rsvp/services/shared/share-message-date';
+import {
+	getEventLoadFailureMessage,
+	resolveEventsLoadError,
+} from '@/lib/dashboard/guest-dashboard-events-errors';
 
 interface HostEventItem {
 	id: string;
@@ -50,17 +54,6 @@ interface UseGuestDashboardRealtimeOptions {
 
 const DASHBOARD_POLLING_INTERVAL_MS = 25000; // 25 seconds is a safe, stable interval for Serverless tasks.
 
-function getEventLoadFailureMessage(error: unknown, fallback: string): string {
-	if (error && typeof error === 'object' && 'details' in error) {
-		const debugReason = (error as { details?: { debug?: { reason?: string } } }).details?.debug
-			?.reason;
-		if (debugReason === 'missing_access_token' || debugReason === 'invalid_supabase_user') {
-			return 'El dashboard no esta autenticando al usuario esperado o la sesion no es valida.';
-		}
-	}
-	return error instanceof Error ? error.message : fallback;
-}
-
 function resolvePreferredEventId(initialEventId: string, hostEvents: HostEventItem[]) {
 	const storedEventId = window.localStorage.getItem('rsvp-dashboard-event-id') || '';
 	const candidates = [initialEventId, storedEventId, hostEvents[0]?.id || ''].filter(Boolean);
@@ -71,32 +64,6 @@ function resolvePreferredEventId(initialEventId: string, hostEvents: HostEventIt
 function shouldLogDashboardDebug(): boolean {
 	if (typeof window === 'undefined') return false;
 	return new URLSearchParams(window.location.search).get('debug') === '1';
-}
-
-function resolveEventsLoadError(
-	initialEventId: string,
-	hostEvents: HostEventItem[],
-	debug: DashboardEventListDebug | null,
-) {
-	if (hostEvents.length === 0) {
-		if (debug?.session.reason !== 'session_role_resolved') {
-			return 'El dashboard no esta autenticando al usuario esperado o la sesion no es valida.';
-		}
-		if (debug?.memberships.length && debug.unresolvedMembershipEventIds.length) {
-			return 'La cuenta tiene membresias, pero el dashboard no puede resolver sus eventos. Revisa RLS o migraciones en Supabase.';
-		}
-		if (debug?.requestedSlugCheck?.slugExistsInDb === false) {
-			return `El evento ${debug.requestedSlugCheck.requestedSlug} no existe en la base activa. Revisa la sincronizacion de la tabla events.`;
-		}
-		if (debug?.requestedSlugCheck?.slugExistsInDb) {
-			return 'La sesion actual no tiene ownership ni membership sobre el evento solicitado.';
-		}
-		return 'No hay eventos asignados a esta cuenta. Si la invitación existe en contenido, falta sincronizar la tabla events o la membresía del host.';
-	}
-	if (initialEventId && !hostEvents.some((event) => event.id === initialEventId)) {
-		return 'El evento solicitado no esta disponible para esta cuenta o no existe en la base sincronizada.';
-	}
-	return '';
 }
 
 export const useGuestDashboardRealtime = ({

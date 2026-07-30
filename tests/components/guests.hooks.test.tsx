@@ -3,6 +3,10 @@ import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface'
 import { useGuestDashboardActions } from '@/components/dashboard/guests/use-guest-dashboard-actions';
 import { useGuestDashboardRealtime } from '@/components/dashboard/guests/use-guest-dashboard-realtime';
 import { guestsApi } from '@/lib/dashboard/guests-api';
+import {
+	GUEST_DASHBOARD_NO_EVENTS_MESSAGE,
+	GUEST_DASHBOARD_SESSION_INVALID_MESSAGE,
+} from '@/lib/dashboard/guest-dashboard-events-errors';
 import { makeGuest } from '@tests/helpers/guest-factory';
 import type { ReminderSettings } from '@/lib/rsvp/services/shared/share-message-defaults';
 import {
@@ -161,6 +165,28 @@ describe('active guest dashboard hooks', () => {
 			message: 'Invitado Created Guest correctamente.',
 			type: 'success',
 		});
+	});
+
+	it('does not claim session failure when empty events arrive without debug', async () => {
+		mockedGuestsApi.listEvents.mockResolvedValue({
+			items: [],
+		});
+
+		const { result } = renderHook(() =>
+			useGuestDashboardRealtime({
+				initialEventId: '',
+				search: '',
+				status: 'all',
+				delivery: 'all',
+			}),
+		);
+
+		await waitFor(() => {
+			expect(result.current.error).toBe(GUEST_DASHBOARD_NO_EVENTS_MESSAGE);
+		});
+
+		expect(result.current.error).not.toBe(GUEST_DASHBOARD_SESSION_INVALID_MESSAGE);
+		expect(mockedGuestsApi.list).not.toHaveBeenCalled();
 	});
 
 	it('shows a sync warning when the host has no visible events', async () => {
@@ -558,7 +584,9 @@ describe('active guest dashboard hooks', () => {
 	});
 
 	describe('reminder flow', () => {
-		function makeReminderGuest(overrides: Partial<DashboardGuestItem> = {}): DashboardGuestItem {
+		function makeReminderGuest(
+			overrides: Partial<DashboardGuestItem> = {},
+		): DashboardGuestItem {
 			return makeGuest({
 				deliveryStatus: 'shared',
 				attendanceStatus: 'pending',
