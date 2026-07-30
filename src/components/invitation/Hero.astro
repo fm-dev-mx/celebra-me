@@ -55,6 +55,9 @@ const displayLabel = label && (label.toLowerCase().trim() === 'xv edition' || la
 	? 'CAPÍTULO XV'
 	: label;
 
+// Birthday age lockups ("70 AÑOS") render as a two-level composition when styled;
+// without profile overrides the spans stay inline and read as a single label.
+const ageLockupMatch = displayLabel ? displayLabel.trim().match(/^(\d+)\s+(AÑOS)$/iu) : null;
 
 const resolveImage = (image: ImageMetadata | ImageAsset): ImageMetadata =>
 	'src' in image ? (image.src as ImageMetadata) : image;
@@ -143,7 +146,22 @@ const fpDesktop = focalPointDesktop || fpDefault;
 			</div>
 
 			<div class="invitation-hero__content">
-				{displayLabel && <span class="invitation-hero__label">{displayLabel}</span>}
+				{displayLabel &&
+					(ageLockupMatch ? (
+						<span
+							class="invitation-hero__label invitation-hero__label--age-lockup"
+							aria-label={displayLabel}
+						>
+							<span class="invitation-hero__label-age" aria-hidden="true">
+								{ageLockupMatch[1]}
+							</span>
+							<span class="invitation-hero__label-unit" aria-hidden="true">
+								{ageLockupMatch[2]}
+							</span>
+						</span>
+					) : (
+						<span class="invitation-hero__label">{displayLabel}</span>
+					))}
 
 				<div class="invitation-hero__title-wrapper">
 					<h1 class="invitation-hero__title">
@@ -156,12 +174,14 @@ const fpDesktop = focalPointDesktop || fpDefault;
 								</span>
 							))}
 						</span>
-						{surnames.map((surname) => (
-							<Fragment>
+						{surnames.length > 0 && (
+							<>
 								<br />
-								<span class="invitation-hero__title-line invitation-hero__title-line--surname">{surname}</span>
-							</Fragment>
-						))}
+								<span class="invitation-hero__title-line invitation-hero__title-line--surname">
+									{surnames.join(' ')}
+								</span>
+							</>
+						)}
 						{secondaryName && (
 							<>
 								<br />
