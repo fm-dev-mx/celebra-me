@@ -154,6 +154,57 @@ async function main(): Promise<void> {
 			evidence: { winners: 1, staleRejections: 1, receipts: 1 },
 		});
 
+		const idempotentRevision = JSON.parse(
+			runPsql(
+				`select json_build_object('invitationUpdatedAt', i.updated_at, 'draftUpdatedAt', d.updated_at)::text from public.invitations i join public.invitation_content_drafts d on d.invitation_project_id = i.id where i.id = '${invitationId}';`,
+			),
+		) as { invitationUpdatedAt: string; draftUpdatedAt: string };
+		const sharedOperationId = randomUUID();
+		const idempotentMetadataRpc = (title: string) =>
+			`select public.save_invitation_metadata_atomic(
+			  '${sharedOperationId}', '${invitationId}', '${idempotentRevision.invitationUpdatedAt}', '${idempotentRevision.draftUpdatedAt}',
+			  ${sqlLiteral(JSON.stringify({ title, slug, status: 'in_production', clientName: '', clientEmail: '', clientWhatsapp: '', photosReceived: false }))}::jsonb,
+			  false, null, 'local', 'celebra-me-rsvp', null, 'system', 'editor'
+			)::text;`;
+		const sharedOperationResults = await Promise.allSettled([
+			runConcurrentPsql(idempotentMetadataRpc('Shared Operation Winner')),
+			runConcurrentPsql(idempotentMetadataRpc('Shared Operation Winner')),
+		]);
+		const sharedSuccesses = sharedOperationResults.filter(
+			(result): result is PromiseFulfilledResult<string> => result.status === 'fulfilled',
+		);
+		assert(
+			sharedSuccesses.length === 2,
+			'Concurrent same-operation_id metadata retries did not both succeed.',
+		);
+		const sharedPayloads = sharedSuccesses.map(
+			(result) =>
+				JSON.parse(result.value) as {
+					idempotent?: boolean;
+				},
+		);
+		assert(
+			sharedPayloads.filter((payload) => payload.idempotent === true).length === 1 &&
+				sharedPayloads.filter((payload) => payload.idempotent === false).length === 1,
+			'Concurrent same-operation_id metadata did not yield one apply and one replay.',
+		);
+		assert(
+			runPsql(
+				`select count(*) from public.invitation_mutation_operation_receipts where operation_id = '${sharedOperationId}'`,
+			) === '1',
+			'Concurrent same-operation_id metadata created duplicate receipts.',
+		);
+		assert(
+			runPsql(`select title from public.invitations where id = '${invitationId}'`) ===
+				'Shared Operation Winner',
+			'Concurrent same-operation_id metadata reapplied a divergent mutation.',
+		);
+		evidence.push({
+			name: 'same_operation_id_metadata_idempotency',
+			result: 'pass',
+			evidence: { successes: 2, receipts: 1, applied: 1, replayed: 1 },
+		});
+
 		const expectedDraftRevision = runPsql(
 			`select updated_at::text from public.invitation_content_drafts where id = '${draftId}';`,
 		);

@@ -40,9 +40,8 @@ boundaries through classification, identity verification, and per-target policy 
 
 ### Worktree Location Grants No Database Privilege
 
-Worktree directory location (e.g. `dev-preview`, `dev-local`,
-`dev-extra`, or root `celebra-me`) **never** grants implicit database mutation
-privileges.
+Worktree directory location (e.g. `dev-preview`, `dev-local`, `dev-extra`, or root `celebra-me`)
+**never** grants implicit database mutation privileges.
 
 ```text
 Environment authorization =
@@ -52,9 +51,9 @@ task scope
 + existing repository safety rules
 ```
 
-Being inside `dev-preview` does not grant Preview or Production mutation permission even
-when that lane's application runtime targets Preview Supabase. Operational access to Preview
-requires explicit task authorization, target classification, and standard guard checks.
+Being inside `dev-preview` does not grant Preview or Production mutation permission even when that
+lane's application runtime targets Preview Supabase. Operational access to Preview requires explicit
+task authorization, target classification, and standard guard checks.
 
 ---
 
@@ -63,9 +62,15 @@ requires explicit task authorization, target classification, and standard guard 
 - **Reconciliation Complete**: Production migration-history reconciliation is 100% complete.
 - **Hosted migration state**: Never freeze an applied/pending count in active guidance. Obtain the
   current state with the read-only Production audit before any migration decision.
-- **Pending Migrations**: Zero (`0`) production migrations are pending.
+- **Pending Migrations**: Do not freeze a hosted pending count here. After adding
+  `20260730101500_mutation_receipt_lock_serialization.sql`, Preview/Production remain pending until
+  authorized guarded migrate + `pnpm db:contract:verify` for each target.
 - **Migration Ownership**: All schema changes must be introduced through versioned migrations under
-  `supabase/migrations/`.
+  `supabase/migrations/` and promoted Local → Preview → Production through the guarded workflows. Do
+  not repair schema or privilege drift with manual Supabase dashboard SQL/grants.
+- **Mutation receipt ledger**: `invitation_mutation_operation_receipts` is append-only
+  (`service_role`: `SELECT`+`INSERT`, never `UPDATE`/`DELETE`). Atomic invitation mutations
+  serialize on the target invitation row; do not add receipt row locks that would require `UPDATE`.
 - **No Direct Production SQL**: Direct production SQL execution is not part of the normal workflow.
   Emergency patch files must contain the manifest required by
   [`manual-sql-manifest.md`](manual-sql-manifest.md) and stop at `pnpm db:prod:patch` (dry-run lint

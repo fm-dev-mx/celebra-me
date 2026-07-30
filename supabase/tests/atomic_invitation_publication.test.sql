@@ -1,5 +1,5 @@
 begin;
-select plan(49);
+select plan(61);
 
 insert into auth.users (id, aud, role, email, created_at, updated_at)
 values ('10000000-0000-0000-0000-000000000001', 'authenticated', 'authenticated', 'atomic-publish@example.test', now(), now());
@@ -87,6 +87,38 @@ select ok(not has_table_privilege('service_role', 'public.invitation_mutation_op
 select ok(not has_table_privilege('service_role', 'public.invitation_mutation_operation_receipts', 'DELETE'), 'service role cannot delete mutation receipts');
 select ok(position('guest_invitations' in pg_get_functiondef('public.save_invitation_metadata_atomic(uuid,uuid,timestamptz,timestamptz,jsonb,boolean,jsonb,text,text,uuid,text,text)'::regprocedure)) = 0, 'metadata RPC does not touch guest confirmation tables');
 select ok(position('guest_invitations' in pg_get_functiondef('public.restore_invitation_from_published_atomic(uuid,uuid,timestamptz,timestamptz,uuid,integer,jsonb,text,text,uuid,text,text)'::regprocedure)) = 0, 'restore RPC does not touch guest confirmation tables');
+select ok(
+  not (
+    select p.prosrc ~* 'from\s+public\.invitation_mutation_operation_receipts[\s\S]{0,160}\mfor\s+(share|update|no\s+key\s+update|key\s+share)\M'
+    from pg_proc p
+    where p.oid = 'public.save_invitation_metadata_atomic(uuid,uuid,timestamptz,timestamptz,jsonb,boolean,jsonb,text,text,uuid,text,text)'::regprocedure
+  ),
+  'metadata RPC does not row-lock append-only receipts'
+);
+select ok(
+  not (
+    select p.prosrc ~* 'from\s+public\.invitation_mutation_operation_receipts[\s\S]{0,160}\mfor\s+(share|update|no\s+key\s+update|key\s+share)\M'
+    from pg_proc p
+    where p.oid = 'public.restore_invitation_from_published_atomic(uuid,uuid,timestamptz,timestamptz,uuid,integer,jsonb,text,text,uuid,text,text)'::regprocedure
+  ),
+  'restore RPC does not row-lock append-only receipts'
+);
+select ok(
+  (
+    select p.prosrc ~* 'from\s+public\.invitations[\s\S]{0,160}archived_at\s+is\s+null\s+for\s+update'
+    from pg_proc p
+    where p.oid = 'public.save_invitation_metadata_atomic(uuid,uuid,timestamptz,timestamptz,jsonb,boolean,jsonb,text,text,uuid,text,text)'::regprocedure
+  ),
+  'metadata RPC serializes on the invitation row'
+);
+select ok(
+  (
+    select p.prosrc ~* 'from\s+public\.invitations[\s\S]{0,160}archived_at\s+is\s+null\s+for\s+update'
+    from pg_proc p
+    where p.oid = 'public.restore_invitation_from_published_atomic(uuid,uuid,timestamptz,timestamptz,uuid,integer,jsonb,text,text,uuid,text,text)'::regprocedure
+  ),
+  'restore RPC serializes on the invitation row'
+);
 
 insert into public.invitations (id, slug, title, event_type, status, base_demo_id, theme_id, snapshot, created_by, kind)
 values ('20000000-0000-0000-0000-000000000003', 'editor-atomic', 'Título anterior', 'xv', 'published', 'demo-xv-jewelry-box', 'jewelry-box', '{}'::jsonb, '10000000-0000-0000-0000-000000000001', 'client');
@@ -117,10 +149,45 @@ select is((select public.save_invitation_metadata_atomic(
   '10000000-0000-0000-0000-000000000001', 'admin', 'editor'
 ) ->> 'idempotent' from editor_atomic_baseline), 'true', 'metadata retry returns stored result');
 select is((select count(*) from public.invitation_mutation_operation_receipts where operation_id='60000000-0000-0000-0000-000000000003'), 1::bigint, 'metadata replay remains one append-only receipt');
+select is((select title from public.invitations where id='20000000-0000-0000-0000-000000000003'), 'Título editado', 'metadata replay does not reapply the mutation');
 select throws_like(
   $$select public.save_invitation_metadata_atomic('60000000-0000-0000-0000-000000000004','20000000-0000-0000-0000-000000000003',(select invitation_updated_at - interval '1 second' from editor_atomic_baseline),null,'{"title":"Stale","slug":"stale","status":"published","clientName":"","clientEmail":"","clientWhatsapp":"","photosReceived":false}',false,null,'local','local-test','10000000-0000-0000-0000-000000000001','admin','editor')$$,
   '%editor_stale_invitation%', 'stale metadata invitation revision rolls back'
 );
+select is((select count(*) from public.invitation_mutation_operation_receipts where operation_id='60000000-0000-0000-0000-000000000004'), 0::bigint, 'failed metadata mutation leaves no successful receipt');
+select throws_like(
+  $$select public.save_invitation_metadata_atomic('60000000-0000-0000-0000-00000000000a','aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',now(),null,'{"title":"Missing","slug":"missing","status":"published","clientName":"","clientEmail":"","clientWhatsapp":"","photosReceived":false}',false,null,'local','local-test','10000000-0000-0000-0000-000000000001','admin','editor')$$,
+  '%editor_invitation_not_found%', 'missing invitation is rejected before receipt creation'
+);
+select is((select count(*) from public.invitation_mutation_operation_receipts where operation_id='60000000-0000-0000-0000-00000000000a'), 0::bigint, 'missing invitation leaves no receipt');
+select throws_like(
+  $$update public.invitation_mutation_operation_receipts set status='replayed' where operation_id='60000000-0000-0000-0000-000000000003'$$,
+  '%append-only%', 'direct receipt UPDATE remains rejected'
+);
+select throws_like(
+  $$delete from public.invitation_mutation_operation_receipts where operation_id='60000000-0000-0000-0000-000000000003'$$,
+  '%append-only%', 'direct receipt DELETE remains rejected'
+);
+select lives_ok(
+  $$
+  do $role$
+  begin
+    perform set_config('role', 'service_role', true);
+    perform public.save_invitation_metadata_atomic(
+      '60000000-0000-0000-0000-000000000005',
+      '20000000-0000-0000-0000-000000000003',
+      (select updated_at from public.invitations where id='20000000-0000-0000-0000-000000000003'),
+      null,
+      '{"title":"Título secuencial","slug":"editor-editado","status":"published","clientName":"Cliente","clientEmail":"","clientWhatsapp":"","photosReceived":true}'::jsonb,
+      false, null, 'local', 'local-test',
+      '10000000-0000-0000-0000-000000000001', 'admin', 'editor'
+    );
+  end
+  $role$;
+  $$,
+  'service_role metadata save succeeds with SELECT+INSERT receipt privileges'
+);
+select is((select title from public.invitations where id='20000000-0000-0000-0000-000000000003'), 'Título secuencial', 'legitimate sequential metadata mutation persists');
 
 create temporary table restore_atomic_baseline as
 select i.updated_at as invitation_updated_at, d.updated_at as draft_updated_at

@@ -55,10 +55,35 @@ const result = runCommand(
 		  'serviceRoleGuestInsert', has_table_privilege('service_role', 'public.guest_invitations', 'INSERT'),
 		  'serviceRoleGuestUpdate', has_table_privilege('service_role', 'public.guest_invitations', 'UPDATE'),
 		  'serviceRoleGuestDelete', has_table_privilege('service_role', 'public.guest_invitations', 'DELETE'),
+		  'receiptSelect', coalesce(has_table_privilege('service_role', to_regclass('public.invitation_mutation_operation_receipts'), 'SELECT'), false),
+		  'receiptInsert', coalesce(has_table_privilege('service_role', to_regclass('public.invitation_mutation_operation_receipts'), 'INSERT'), false),
 		  'receiptUpdate', coalesce(has_table_privilege('service_role', to_regclass('public.invitation_mutation_operation_receipts'), 'UPDATE'), false),
 		  'receiptDelete', coalesce(has_table_privilege('service_role', to_regclass('public.invitation_mutation_operation_receipts'), 'DELETE'), false),
+		  'metadataRpcLocksReceipts', (
+		    select p.prosrc ~* 'from\\s+public\\.invitation_mutation_operation_receipts[\\s\\S]{0,160}\\mfor\\s+(share|update|no\\s+key\\s+update|key\\s+share)\\M'
+		    from pg_proc p where p.oid = 'public.save_invitation_metadata_atomic(uuid,uuid,timestamptz,timestamptz,jsonb,boolean,jsonb,text,text,uuid,text,text)'::regprocedure
+		  ),
+		  'restoreRpcLocksReceipts', (
+		    select p.prosrc ~* 'from\\s+public\\.invitation_mutation_operation_receipts[\\s\\S]{0,160}\\mfor\\s+(share|update|no\\s+key\\s+update|key\\s+share)\\M'
+		    from pg_proc p where p.oid = 'public.restore_invitation_from_published_atomic(uuid,uuid,timestamptz,timestamptz,uuid,integer,jsonb,text,text,uuid,text,text)'::regprocedure
+		  ),
+		  'metadataRpcSerializesInvitation', (
+		    select p.prosrc ~* 'from\\s+public\\.invitations[\\s\\S]{0,160}archived_at\\s+is\\s+null\\s+for\\s+update'
+		    from pg_proc p where p.oid = 'public.save_invitation_metadata_atomic(uuid,uuid,timestamptz,timestamptz,jsonb,boolean,jsonb,text,text,uuid,text,text)'::regprocedure
+		  ),
+		  'restoreRpcSerializesInvitation', (
+		    select p.prosrc ~* 'from\\s+public\\.invitations[\\s\\S]{0,160}archived_at\\s+is\\s+null\\s+for\\s+update'
+		    from pg_proc p where p.oid = 'public.restore_invitation_from_published_atomic(uuid,uuid,timestamptz,timestamptz,uuid,integer,jsonb,text,text,uuid,text,text)'::regprocedure
+		  ),
+		  'receiptOperationIdUnique', exists(
+		    select 1 from pg_indexes
+		    where schemaname = 'public'
+		      and tablename = 'invitation_mutation_operation_receipts'
+		      and indexdef ilike '%unique%operation_id%'
+		  ),
 		  'phase1Migration', exists(select 1 from supabase_migrations.schema_migrations where version = '20260729140514'),
-		  'phase2Migration', exists(select 1 from supabase_migrations.schema_migrations where version = '20260729152113')
+		  'phase2Migration', exists(select 1 from supabase_migrations.schema_migrations where version = '20260729152113'),
+		  'receiptLockMigration', exists(select 1 from supabase_migrations.schema_migrations where version = '20260730101500')
 		)::text;`,
 	],
 	{ redact: [dbUrl] },
@@ -72,8 +97,14 @@ const expectedTrue = [
 	'restoreRpc',
 	'serviceRoleMetadataExecute',
 	'serviceRoleRestoreExecute',
+	'receiptSelect',
+	'receiptInsert',
+	'metadataRpcSerializesInvitation',
+	'restoreRpcSerializesInvitation',
+	'receiptOperationIdUnique',
 	'phase1Migration',
 	'phase2Migration',
+	'receiptLockMigration',
 ];
 const expectedFalse = [
 	'authenticatedMetadataExecute',
@@ -83,6 +114,8 @@ const expectedFalse = [
 	'serviceRoleGuestDelete',
 	'receiptUpdate',
 	'receiptDelete',
+	'metadataRpcLocksReceipts',
+	'restoreRpcLocksReceipts',
 ];
 const failures = [
 	...expectedTrue.filter((key) => evidence[key] !== true).map((key) => `${key}=false`),

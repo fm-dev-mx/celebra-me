@@ -308,8 +308,10 @@ metadata hash and therefore do not invalidate a confirmation.
   fails, the response is `partial`; replay uses the publication idempotency row, repairs provenance,
   and appends a linked `replayed` outcome without publishing a new version.
 - Public metadata saves that must reopen a draft and restore-from-published run in narrow atomic
-  RPCs. Their invitation, draft, published-version preconditions and append-only receipt commit in
-  the same transaction, and the same operation ID returns the stored result on retry.
+  RPCs (`save_invitation_metadata_atomic`, `restore_invitation_from_published_atomic`). They follow
+  the managed-mutation receipt contract in [`docs/core/architecture.md`](../../core/architecture.md)
+  (invitation-row serialization, append-only receipts, `operation_id` replay). The Editor and
+  `pnpm invitation:update` share that contract where applicable.
 
 ## 8. Migrations and deployment
 
@@ -334,19 +336,22 @@ Application code must not be deployed before its required database migration. In
 reviewed atomic publication requires `20260717193000_publication_preflight_integrity.sql` (after
 `20260715210301_atomic_invitation_publication.sql`), and asset metadata gating requires
 `20260715210512_invitation_asset_delivery_gate.sql`. Append-only operation history and resumable
-metadata/restore operations additionally require `20260729140514` and `20260729152113`.
+metadata/restore operations additionally require `20260729140514`, `20260729152113`, and the
+receipt-lock serialization fix `20260730101500`.
 
 After migration, `pnpm db:contract:verify -- --target production` must confirm the tables, columns,
-RPC signatures, grants, append-only receipt restrictions, and guest-table privilege revocations
-before dependent application code is deployed. The Preview migration workflow performs the same
-check for Preview.
+RPC signatures, grants, append-only receipt contract, invitation-row serialization, and guest-table
+privilege revocations before dependent application code is deployed. Preview uses the same check.
+Schema fixes ship only as versioned migrations and promote Local → Preview → Production.
 
 The 2026-07-29 Phase 3 cutover completed this order: Preview and Production both reported 67/67
 migrations with `20260729152113` latest, and both hosted mutation-contract verifiers passed. Direct
 hosted privilege inspection also confirmed that `service_role` has no `INSERT`, `UPDATE`, or
 `DELETE` privilege on `guest_invitations` or `guest_invitation_audit`; invitation mutation receipts
 remain select/insert-only and protected by their append-only trigger. Treat this as point-in-time
-evidence and rerun the canonical audit and contract verifier before a future dependent deployment.
+evidence. The later receipt-lock serialization migration (`20260730101500`) must be audited and
+promoted through the same Local → Preview → Production process before dependent runtime reliance;
+rerun the canonical audit and contract verifier before a future dependent deployment.
 
 Production migration state is never inferred from files or local state. If it was not checked with
 authorized production access, report it as **unverified/pending**. Do not apply production

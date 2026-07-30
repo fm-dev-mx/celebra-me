@@ -96,7 +96,9 @@ is service-owned and its RPC blocks events with guests, claim codes, or membersh
 compensation also preflights guests and claim codes before removing an operation-created event. The
 Phase 2 editor RPCs touch only `invitations`, `invitation_content_drafts`,
 `published_invitation_content` (read/lock for restore), and append-only mutation receipts. They have
-service-role-only execute grants and no guest-table grants.
+service-role-only execute grants and no guest-table grants. Mutation receipts are an immutable
+idempotency ledger (`SELECT`+`INSERT` only); RPCs serialize on the invitation row and must not take
+`FOR SHARE`/`FOR UPDATE` locks on receipt rows.
 
 The complete disposable recovery drill in `docs/database-workflow.md` fingerprints guest rows and
 audit history deterministically and verifies event/invitation/owner links, memberships, claim codes,

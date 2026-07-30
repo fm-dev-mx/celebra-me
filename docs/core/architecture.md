@@ -28,19 +28,30 @@ outcome contracts while retaining optimistic revisions for interactive saves and
 three-way merge for managed releases. The atomic publication RPC remains the publication unit.
 
 Material outcomes use `not_applied`, `applied`, `partial`, or `replayed` and append an immutable
-`invitation_mutation_operation_receipts` row. Latest managed provenance is the reconciliation
-baseline, not a journal. Field authority is executable in `src/lib/intake/mutations/ownership.ts`:
-definitions manage event type, base demo, theme, kind, and snapshot; title, route slug, client
-metadata, owner, and login alias are seeds that become target-owned. Drafts/assets are reconciled,
-published content is publication-owned, event linkage is invitation-managed, and guest
-confirmations/audit are RSVP-owned.
+`invitation_mutation_operation_receipts` row. That table is the immutable/idempotency ledger for
+managed invitation mutations: `service_role` may `SELECT` and `INSERT` only (never `UPDATE` or
+`DELETE`), and a defensive trigger rejects in-place mutation. Atomic mutation RPCs serialize on the
+mutable invitation row (`SELECT … FOR UPDATE`), then read receipts without row locks; PostgreSQL row
+locks on the receipt table would require `UPDATE` and must not be used. Canonical transaction order
+is: acquire invitation serialization → read receipt by `operation_id` → return the stored result on
+retry → otherwise mutate → insert exactly one receipt → commit. Unique `operation_id` is the final
+duplicate-receipt defense. Latest managed provenance is the reconciliation baseline, not a journal.
+Field authority is executable in `src/lib/intake/mutations/ownership.ts`: definitions manage event
+type, base demo, theme, kind, and snapshot; title, route slug, client metadata, owner, and login
+alias are seeds that become target-owned. Drafts/assets are reconciled, published content is
+publication-owned, event linkage is invitation-managed, and guest confirmations/audit are
+RSVP-owned.
 
 Structural reconciliation distinguishes absent, `null`, unchanged, and removed values. Managed
 assets carry explicit definition/key/hash/operation ownership; only reviewed, unreferenced assets
 with matching ownership are pruneable. Editor metadata-reopen and restore-from-published use
-dedicated atomic RPCs with revision/version checks and receipts. Auth password and managed-alias
-operations mark external success with an operation ID so downstream audit/receipt repair cannot
-silently repeat the Auth mutation.
+dedicated atomic RPCs with revision/version checks and receipts. The Editor and
+`pnpm invitation:update` share the same managed-mutation contract (validation, ownership,
+environment identity, publication, assets, and operation outcomes) where those paths apply. Auth
+password and managed-alias operations mark external success with an operation ID so downstream
+audit/receipt repair cannot silently repeat the Auth mutation. Database corrections for this
+contract ship only as versioned migrations under `supabase/migrations/` and promote through Local →
+Preview → Production; do not apply manual dashboard grants.
 
 ---
 

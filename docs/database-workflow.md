@@ -103,11 +103,15 @@ Production or download an object more than once within one recovery operation.
   **67** repository migrations with `20260729152113` latest. The hosted contract verifier passed for
   both targets, including atomic Editor RPCs, managed baseline fields, append-only mutation
   receipts, and revocation of `service_role` writes to guest confirmations and guest audit/history.
+- **Receipt-lock serialization (`20260730101500`)**: Atomic metadata/restore RPCs serialize on the
+  invitation row and must not row-lock append-only receipts. Promote that migration through Local →
+  Preview → Production; never grant receipt `UPDATE` via the dashboard to silence `42501`.
 - The Production cutover used verified EFS-encrypted pre/post DB/Auth/Storage recovery points and
   preserved migration-before-code ordering. Never infer future hosted status from this point-in-time
   record; rerun the read-only audit and `pnpm db:contract:verify -- --target <production|preview>`.
 - **Migration Ownership**: All schema changes must be introduced through versioned migrations in
-  `supabase/migrations/`. Direct production SQL is prohibited as a normal workflow.
+  `supabase/migrations/` and promoted Local → Preview → Production. Direct production SQL and manual
+  dashboard privilege repairs are prohibited as a normal workflow.
 - **One-Time Recovery Tool**: `scripts/db/reconcile-prod-baseline.ts` was a one-time recovery tool
   and is no longer part of the repository.
 
