@@ -86,6 +86,7 @@ Usage:
   tsx scripts/db/disposable-test-env.ts start      Create and start the disposable container
   tsx scripts/db/disposable-test-env.ts reset [--baseline|--max-version=<version>] Reset the disposable database (destructive)
   tsx scripts/db/disposable-test-env.ts run-tests   Run pgTAP and migration tests
+  tsx scripts/db/disposable-test-env.ts run-rsvp-db-contracts  Reset disposable DB, start PostgREST, run public RSVP Jest contracts
   tsx scripts/db/disposable-test-env.ts run-application-flow  Run the real service retry flow through PostgREST
   tsx scripts/db/disposable-test-env.ts run-concurrency-test  Prove same-key publication contention publishes once
   tsx scripts/db/disposable-test-env.ts run-phase3-concurrency-test  Exercise Editor/managed/publication/asset contention
@@ -484,6 +485,27 @@ export function cmdReset(): void {
 			console.info('Seed data applied.');
 		}
 	}
+
+	// Public RSVP RPCs use unqualified gen_random_bytes() with search_path=public.
+	// Supabase installs pgcrypto in `extensions`; expose a public wrapper for disposable parity.
+	console.info('Ensuring public.gen_random_bytes wrapper for pgcrypto (extensions schema)...');
+	const pgcryptoWrapper = runCommand(
+		'psql',
+		['--set', 'ON_ERROR_STOP=1', '--dbname', DISPOSABLE_DB_URL],
+		{
+			input: `
+create extension if not exists pgcrypto with schema extensions;
+create or replace function public.gen_random_bytes(integer)
+returns bytea
+language sql
+stable
+as $fn$ select extensions.gen_random_bytes($1) $fn$;
+`,
+		},
+	);
+	if (pgcryptoWrapper.status !== 0) {
+		fail(`pgcrypto public wrapper failure: ${pgcryptoWrapper.stderr}`);
+	}
 }
 
 function cmdRunTests(): void {
@@ -504,6 +526,25 @@ function cmdRunTests(): void {
 	runCommand('psql', ['--set', 'ON_ERROR_STOP=1', '--dbname', DISPOSABLE_DB_URL], {
 		input: 'CREATE EXTENSION IF NOT EXISTS pgtap;',
 	});
+
+	console.info('Ensuring public.gen_random_bytes wrapper for pgcrypto (extensions schema)...');
+	const pgcryptoWrapper = runCommand(
+		'psql',
+		['--set', 'ON_ERROR_STOP=1', '--dbname', DISPOSABLE_DB_URL],
+		{
+			input: `
+create extension if not exists pgcrypto with schema extensions;
+create or replace function public.gen_random_bytes(integer)
+returns bytea
+language sql
+stable
+as $fn$ select extensions.gen_random_bytes($1) $fn$;
+`,
+		},
+	);
+	if (pgcryptoWrapper.status !== 0) {
+		fail(`pgcrypto public wrapper failure: ${pgcryptoWrapper.stderr}`);
+	}
 
 	console.info('Running pgTAP tests...');
 	const result = runCommand('psql', [
@@ -611,6 +652,70 @@ async function cmdRunApplicationFlow(): Promise<void> {
 	}
 }
 
+/**
+ * Provision disposable Postgres + PostgREST and run the public RSVP Jest DB/HTTP contracts.
+ * These suites are excluded from the generic no-DB Jest phase and must not silently skip.
+ */
+async function cmdRunRsvpDbContracts(): Promise<void> {
+	console.info('=== Disposable Test Environment: Public RSVP DB/HTTP Contracts ===\n');
+
+	if (!isDisposableDbReady()) {
+		console.info('Disposable database not ready; starting container...');
+		cmdStart();
+	}
+	if (!isDisposableDbReady()) {
+		fail('Public RSVP DB contracts require a reachable disposable database on port 54332.');
+	}
+
+	console.info('Resetting disposable database to apply canonical migrations + seed...');
+	cmdReset();
+
+	console.info('Starting disposable PostgREST...');
+	await startPostgrest();
+
+	const disposableApi = `http://127.0.0.1:${DISPOSABLE_PORTS.api}`;
+	const demoAnonKey =
+		'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
+	const demoServiceRoleKey =
+		'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU';
+
+	console.info('Running public RSVP Jest DB/HTTP contract suites...');
+	const result = runCommand(
+		'pnpm',
+		[
+			'exec',
+			'jest',
+			'--runInBand',
+			'--config',
+			'jest.rsvp-db-contracts.config.cjs',
+			'tests/db/public-guest-rsvp-db-boundary.test.ts',
+			'tests/db/public-rsvp-http-wiring-db.test.ts',
+		],
+		{
+			throwOnError: false,
+			env: {
+				...process.env,
+				CELEBRA_RSVP_DB_CONTRACTS: '1',
+				SUPABASE_URL: disposableApi,
+				PUBLIC_SUPABASE_URL: disposableApi,
+				SUPABASE_ANON_KEY: demoAnonKey,
+				SUPABASE_SERVICE_ROLE_KEY: demoServiceRoleKey,
+			},
+		},
+	);
+	console.info(result.stdout || '');
+	if (result.status !== 0) {
+		const cleanStderr = redactCredentials(result.stderr);
+		const cleanStdout = redactCredentials(result.stdout);
+		console.error('RSVP DB contract stderr:', cleanStderr || '(none)');
+		console.error('RSVP DB contract stdout:', cleanStdout || '(none)');
+		fail(
+			`Public RSVP DB/HTTP contract failure: ${cleanStderr || cleanStdout || `exit code ${result.status}`}`,
+		);
+	}
+	console.info('Public RSVP DB/HTTP contracts passed.');
+}
+
 function cmdRunConcurrencyTest(): void {
 	console.info('=== Disposable Test Environment: Concurrent Publication ===\n');
 	const result = runCommand('npx', ['-y', 'tsx', 'scripts/db/publication-concurrency-test.ts']);
@@ -706,6 +811,9 @@ async function main(): Promise<void> {
 			break;
 		case 'run-tests':
 			cmdRunTests();
+			break;
+		case 'run-rsvp-db-contracts':
+			await cmdRunRsvpDbContracts();
 			break;
 		case 'run-application-flow':
 			await cmdRunApplicationFlow();

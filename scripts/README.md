@@ -73,6 +73,7 @@ execute the same retained plans. Any blocked selected target aborts the complete
 | `pnpm db:preview:migrate`                  | `scripts/db/`  | apply pending migrations to Preview (`PREVIEW_DB_URL`)                             |
 | `pnpm db:preview:audit`                    | `scripts/db/`  | read-only Preview schema drift audit (`PREVIEW_DB_URL`)                            |
 | `pnpm db:disposable:reset`                 | `scripts/db/`  | reset isolated disposable test environment container                               |
+| `pnpm test:db:rsvp-contracts`              | `scripts/db/`  | reset disposable DB, start PostgREST, run public RSVP Jest DB/HTTP contracts         |
 | `pnpm db:disposable:phase3-concurrency`    | `scripts/db/`  | run system concurrency/stale-plan scenarios against disposable-test                |
 | `pnpm db:validate:pipeline`                | `scripts/db/`  | full database validation pipeline (baseline, latest, pgTAP, application flows)     |
 | `pnpm db:local:restore-from-dump`          | `scripts/db/`  | import production dump into persistent local database                              |

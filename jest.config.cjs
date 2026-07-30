@@ -111,5 +111,8 @@ module.exports = {
 		'/\\.vercel/',
 		'/\\.worktrees/',
 		'/tests/e2e/',
+		// Disposable PostgreSQL/PostgREST contracts — run via `pnpm test:db:rsvp-contracts`.
+		'/tests/db/public-guest-rsvp-db-boundary\\.test\\.ts$',
+		'/tests/db/public-rsvp-http-wiring-db\\.test\\.ts$',
 	],
 };

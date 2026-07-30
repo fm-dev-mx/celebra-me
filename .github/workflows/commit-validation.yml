@@ -113,3 +113,6 @@ jobs:
 
             - name: Required validation suite
               run: pnpm run ci
+
+            - name: Public RSVP disposable DB/HTTP contracts
+              run: pnpm test:db:rsvp-contracts

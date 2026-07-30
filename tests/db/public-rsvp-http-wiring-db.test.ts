@@ -1,11 +1,18 @@
 import http from 'node:http';
-import { resolveDbUrl } from '../../scripts/db/db-target-config.ts';
+import { DISPOSABLE_TEST, resolveDbUrl } from '../../scripts/db/db-target-config.ts';
 import { runCommand } from '../../scripts/db/db-workflow-lib.ts';
 
-// Real HTTP fetch implementation using node:http to reach local PostgREST/Supabase
+/**
+ * HTTP → service → RPC wiring contracts against disposable PostgREST.
+ * Executed only by `pnpm test:db:rsvp-contracts` (excluded from no-DB Jest).
+ */
 function realHttpFetch(urlStr: string | URL, options: any = {}): Promise<any> {
 	return new Promise((resolve, reject) => {
-		const url = typeof urlStr === 'string' ? new URL(urlStr) : urlStr;
+		const url = typeof urlStr === 'string' ? new URL(urlStr) : new URL(urlStr.toString());
+		// Disposable PostgREST serves the API at `/` (not Kong's `/rest/v1` prefix).
+		if (url.pathname.startsWith('/rest/v1/')) {
+			url.pathname = url.pathname.slice('/rest/v1'.length);
+		}
 		const req = http.request(
 			{
 				hostname: url.hostname,
@@ -37,9 +44,9 @@ function realHttpFetch(urlStr: string | URL, options: any = {}): Promise<any> {
 	});
 }
 
-// Set up local environment variables before loading API routes
-process.env.SUPABASE_URL = process.env.SUPABASE_URL || 'http://127.0.0.1:54321';
-process.env.PUBLIC_SUPABASE_URL = process.env.PUBLIC_SUPABASE_URL || 'http://127.0.0.1:54321';
+const disposableApi = `http://127.0.0.1:${DISPOSABLE_TEST.apiPort}`;
+process.env.SUPABASE_URL = process.env.SUPABASE_URL || disposableApi;
+process.env.PUBLIC_SUPABASE_URL = process.env.PUBLIC_SUPABASE_URL || disposableApi;
 process.env.SUPABASE_ANON_KEY =
 	process.env.SUPABASE_ANON_KEY ||
 	'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
@@ -50,16 +57,21 @@ process.env.SUPABASE_SERVICE_ROLE_KEY =
 import { POST as rsvpPost } from '../../src/pages/api/invitacion/[inviteId]/rsvp.ts';
 import { POST as viewPost } from '../../src/pages/api/invitacion/[inviteId]/view.ts';
 
-const dbUrl = resolveDbUrl('persistent-local');
+const dbUrl = resolveDbUrl('disposable-test');
+const harnessEnabled = process.env.CELEBRA_RSVP_DB_CONTRACTS === '1';
 
 describe('public rsvp & view HTTP API wiring (real DB)', () => {
-	if (!dbUrl) {
-		it.skip('skips real DB tests when persistent-local DB is unavailable', () => {});
+	if (!harnessEnabled) {
+		it('must run through the disposable RSVP DB contract harness', () => {
+			throw new Error(
+				'Public RSVP HTTP wiring contracts require CELEBRA_RSVP_DB_CONTRACTS=1 ' +
+					`(pnpm test:db:rsvp-contracts). Expected disposable PostgREST on port ${DISPOSABLE_TEST.apiPort}.`,
+			);
+		});
 		return;
 	}
 
 	beforeEach(() => {
-		// Use realHttpFetch to route API repository calls to local Supabase PostgREST
 		global.fetch = realHttpFetch as any;
 	});
 
@@ -90,16 +102,18 @@ describe('public rsvp & view HTTP API wiring (real DB)', () => {
 	const testEventId = '66666666-6666-6666-6666-666666666666';
 
 	beforeAll(() => {
-		// Seed dummy user, event, and guest invitations in clean database
-		runSql(
-			"insert into auth.users (id, email) values ('00000000-0000-0000-0000-000000000000', 'httpdb@example.com') on conflict (id) do nothing;",
+		const seedUser = runSql(
+			"insert into auth.users (id, aud, role, email, created_at, updated_at) values ('00000000-0000-0000-0000-000000000010', 'authenticated', 'authenticated', 'httpdb@example.com', now(), now()) on conflict (id) do nothing;",
 		);
-		runSql(
-			`insert into public.events (id, owner_user_id, slug, event_type, title, status) values ('${testEventId}', '00000000-0000-0000-0000-000000000000', 'http-test-event', 'boda', 'HTTP Test Event', 'published') on conflict (id) do nothing;`,
+		expect(seedUser.status).toBe(0);
+		const seedEvent = runSql(
+			`insert into public.events (id, owner_user_id, slug, event_type, title, status) values ('${testEventId}', '00000000-0000-0000-0000-000000000010', 'http-test-event', 'boda', 'HTTP Test Event', 'published') on conflict (id) do nothing;`,
 		);
-		runSql(
+		expect(seedEvent.status).toBe(0);
+		const seedGuest = runSql(
 			`insert into public.guest_invitations (id, event_id, invite_id, full_name, max_allowed_attendees, attendance_status, attendee_count, short_id) values ('${testGuestId}', '${testEventId}', '${testInviteId}', 'Juan Perez HTTP', 4, 'pending', 0, 'short456') on conflict (id) do update set attendance_status = 'pending', attendee_count = 0;`,
 		);
+		expect(seedGuest.status).toBe(0);
 	});
 
 	it('submits RSVP via HTTP API route and atomically updates DB without 42501 permission error', async () => {
@@ -125,14 +139,12 @@ describe('public rsvp & view HTTP API wiring (real DB)', () => {
 		expect(json.data.attendeeCount).toBe(2);
 		expect(json.data.inviteId).toBe(testInviteId);
 
-		// Reverify database row updated correctly
 		const dbCheck = runSql(
 			`select attendance_status, attendee_count from public.guest_invitations where invite_id = '${testInviteId}';`,
 		);
 		expect(dbCheck.status).toBe(0);
 		expect(dbCheck.stdout).toContain('confirmed|2');
 
-		// Reverify guest audit log inserted
 		const auditCheck = runSql(
 			`select count(*) from public.guest_invitation_audit where guest_invitation_id = '${testGuestId}' and event_type = 'status_changed';`,
 		);
@@ -158,7 +170,6 @@ describe('public rsvp & view HTTP API wiring (real DB)', () => {
 		const json = await response.json();
 		expect(json.message).toBe('View recorded.');
 
-		// Reverify database telemetry fields updated
 		const dbCheck = runSql(
 			`select is_viewed, view_percentage from public.guest_invitations where invite_id = '${testInviteId}';`,
 		);

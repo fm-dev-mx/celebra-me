@@ -140,6 +140,9 @@ function main(): void {
 	// 8. Run application DB flow tests
 	console.info('Step 8: Running application DB flows and integration tests...');
 
+	console.info('   - Running public RSVP DB/HTTP Jest contracts...');
+	runDisposableTestCommand('run-rsvp-db-contracts');
+
 	console.info('   - Running retry and publication flow...');
 	runDisposableTestCommand('run-application-flow');
 
