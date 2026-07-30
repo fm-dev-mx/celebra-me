@@ -191,7 +191,9 @@ configuration. The default `playwright.config.ts` used by `pnpm test:e2e:ci` / `
 not load that file, so a local Preview harness cannot redirect the canonical CI suite. Existing
 shell or CI variables take precedence; the file fills only missing values in Preview configs. The
 file is ignored by the existing `.env.*.local` rule and must never be copied into Vercel runtime
-environment variables.
+environment variables. Canonical `webServer` startup supplies Local Supabase URL stubs
+(`http://127.0.0.1:54321`) when `SUPABASE_URL` / `PUBLIC_SUPABASE_URL` are unset so Astro's
+fail-closed lane bootstrap can start without a checked-in `.env.local`.
 
 Required for authenticated Preview runs:
 
