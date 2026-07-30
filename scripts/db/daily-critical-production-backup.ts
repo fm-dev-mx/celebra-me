@@ -136,11 +136,15 @@ try {
 		failureCode: null,
 		integrityProfile,
 	};
-} catch {
+} catch (error: unknown) {
 	const endedAt = new Date();
 	report.endedAt = endedAt.toISOString();
 	report.durationMs = endedAt.getTime() - startedAt.getTime();
 	writeReport(report);
+	console.error(
+		'Daily critical backup failed:',
+		error instanceof Error ? error.message : String(error),
+	);
 	process.exit(1);
 }
 
