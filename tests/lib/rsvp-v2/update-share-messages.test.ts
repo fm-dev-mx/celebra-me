@@ -75,7 +75,7 @@ describe('updateShareMessages', () => {
 		).rejects.toThrow(ApiError);
 	});
 
-	it('updates published content with new share messages', async () => {
+	it('updates published sharing and increments version for cache/version semantics', async () => {
 		mockFindEventById.mockResolvedValue({
 			id: 'evt-1',
 			invitationId: 'inv-1',
@@ -90,15 +90,32 @@ describe('updateShareMessages', () => {
 		} as never);
 		mockUpdateSnapshot.mockResolvedValue(undefined as never);
 
+		const before = Date.now();
 		const result = await updateShareMessages({
 			eventId: 'evt-1',
 			hostAccessToken: 'token',
 			shareMessages: { invitation: 'New invitation', reminder: 'New reminder' },
 		});
+		const after = Date.now();
 
 		expect(mockUpdateSnapshot).toHaveBeenCalledWith(
-			expect.objectContaining({ id: 'pub-1', version: 1 }),
+			expect.objectContaining({
+				id: 'pub-1',
+				version: 2,
+				content: expect.objectContaining({
+					sharing: expect.objectContaining({
+						shareMessages: {
+							invitation: 'New invitation',
+							reminder: 'New reminder',
+						},
+					}),
+				}),
+			}),
 		);
+		const publishedAt = mockUpdateSnapshot.mock.calls[0]?.[0]?.publishedAt;
+		expect(typeof publishedAt).toBe('string');
+		expect(new Date(publishedAt as string).getTime()).toBeGreaterThanOrEqual(before);
+		expect(new Date(publishedAt as string).getTime()).toBeLessThanOrEqual(after);
 		expect(result.shareMessages).toEqual({
 			invitation: 'New invitation',
 			reminder: 'New reminder',

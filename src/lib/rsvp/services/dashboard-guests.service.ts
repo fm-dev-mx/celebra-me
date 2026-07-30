@@ -696,11 +696,15 @@ export async function updateShareMessages(input: {
 	}
 	content.sharing = nextSharing;
 
+	// Narrow publication exception: bump version + published_at (content-parity-rsvp-isolation.md).
+	const nextVersion = published.version + 1;
+	const nextPublishedAt = new Date().toISOString();
+
 	await updatePublishedContentSnapshot({
 		id: published.id,
 		content,
-		version: published.version,
-		publishedAt: published.publishedAt,
+		version: nextVersion,
+		publishedAt: nextPublishedAt,
 	});
 
 	return {
