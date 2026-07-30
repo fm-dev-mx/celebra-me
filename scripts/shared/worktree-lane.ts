@@ -31,9 +31,6 @@ export interface WorktreeLaneDefinition {
 export const LEGACY_WORKTREE_SEGMENTS = Object.freeze([
 	'dev-lane',
 	'val-lane',
-	'dev-local',
-	'dev-preview',
-	'dev-extra',
 ]);
 
 /** Names of lanes that are still in the old `.worktrees/` location and need migration. */
