@@ -20,6 +20,7 @@ node_modules/
 
 # --- LOGS & DIAGNOSTICS -------------------------------------------------------
 # Application and test logs
+.archive-gitignored
 logs/
 *.log
 cookies.txt

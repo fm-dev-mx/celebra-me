@@ -40,5 +40,9 @@
         "**/dist",
         "**/.astro",
         "**/.vercel"
-    ]
+    ],
+
+    "scm.repositories.selectionMode": "single",
+    "scm.repositories.explorer": true,
+    "git.detectWorktrees": true
 }
