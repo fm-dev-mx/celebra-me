@@ -137,8 +137,9 @@ live tree.
 - MFA is part of the elevated dashboard/session surface.
 - Public invitation APIs do not expose cross-event listings. Personalized APIs remain invite-scoped,
   and hybrid public RSVP is limited to event-scoped submission only.
-- Some repository operations still use `useServiceRole: true` inside the service layer; that remains
-  a documented implementation tradeoff, not the desired long-term target.
+- Public guest reads use the server-only service role. Guest view and RSVP mutations cross
+  service-role-only, scope-validating RPCs; the service role has no direct guest-table write grants.
+  Authenticated dashboard mutations continue through host-scoped RLS.
 
 ## Historical Note
 

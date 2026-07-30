@@ -83,7 +83,11 @@ describe('updateShareMessages', () => {
 		mockFindPublished.mockResolvedValue({
 			id: 'pub-1',
 			content: {
-				sharing: { shareMessages: { invitation: 'Old', reminder: 'Old reminder' } },
+				hero: { title: 'Contenido publicado' },
+				sharing: {
+					ogImage: { type: 'internal', key: 'sharing-og' },
+					shareMessages: { invitation: 'Old', reminder: 'Old reminder' },
+				},
 			},
 			version: 1,
 			publishedAt: '2026-01-01T00:00:00.000Z',
@@ -112,6 +116,16 @@ describe('updateShareMessages', () => {
 				}),
 			}),
 		);
+		expect(mockUpdateSnapshot.mock.calls[0][0].content).toEqual({
+			hero: { title: 'Contenido publicado' },
+			sharing: {
+				ogImage: { type: 'internal', key: 'sharing-og' },
+				shareMessages: {
+					invitation: 'New invitation',
+					reminder: 'New reminder',
+				},
+			},
+		});
 		const publishedAt = mockUpdateSnapshot.mock.calls[0]?.[0]?.publishedAt;
 		expect(typeof publishedAt).toBe('string');
 		expect(new Date(publishedAt as string).getTime()).toBeGreaterThanOrEqual(before);

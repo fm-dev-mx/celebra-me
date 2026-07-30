@@ -1,5 +1,5 @@
 begin;
-select plan(61);
+select plan(101);
 
 insert into auth.users (id, aud, role, email, created_at, updated_at)
 values ('10000000-0000-0000-0000-000000000001', 'authenticated', 'authenticated', 'atomic-publish@example.test', now(), now());
@@ -187,6 +187,7 @@ select lives_ok(
   $$,
   'service_role metadata save succeeds with SELECT+INSERT receipt privileges'
 );
+reset role;
 select is((select title from public.invitations where id='20000000-0000-0000-0000-000000000003'), 'Título secuencial', 'legitimate sequential metadata mutation persists');
 
 create temporary table restore_atomic_baseline as
@@ -216,5 +217,109 @@ select throws_like(
   $$select public.restore_invitation_from_published_atomic('70000000-0000-0000-0000-000000000004','20000000-0000-0000-0000-000000000003',(select updated_at from public.invitations where id='20000000-0000-0000-0000-000000000003'),(select updated_at from public.invitation_content_drafts where id='30000000-0000-0000-0000-000000000003'),'50000000-0000-0000-0000-000000000003',1,'{}','local','local-test','10000000-0000-0000-0000-000000000001','admin','editor')$$,
   '%editor_stale_published%', 'restore rejects a changed published version'
 );
+
+select has_function('public', 'track_guest_invitation_view_public', array['text','integer'], 'guest view RPC exists');
+select has_function('public', 'submit_guest_rsvp_public', array['text','uuid','text','text','text','integer','text','integer','text','text','text'], 'public RSVP RPC exists');
+select ok(has_function_privilege('service_role', 'public.track_guest_invitation_view_public(text,integer)', 'EXECUTE'), 'service role can record guest views');
+select ok(has_function_privilege('service_role', 'public.submit_guest_rsvp_public(text,uuid,text,text,text,integer,text,integer,text,text,text)', 'EXECUTE'), 'service role can submit public RSVP');
+select ok(not has_function_privilege('anon', 'public.track_guest_invitation_view_public(text,integer)', 'EXECUTE'), 'anon cannot execute guest view RPC');
+select ok(not has_function_privilege('anon', 'public.submit_guest_rsvp_public(text,uuid,text,text,text,integer,text,integer,text,text,text)', 'EXECUTE'), 'anon cannot execute public RSVP RPC');
+select ok(not has_function_privilege('authenticated', 'public.track_guest_invitation_view_public(text,integer)', 'EXECUTE'), 'authenticated cannot execute guest view RPC directly');
+select ok(not has_function_privilege('authenticated', 'public.submit_guest_rsvp_public(text,uuid,text,text,text,integer,text,integer,text,text,text)', 'EXECUTE'), 'authenticated cannot execute public RSVP RPC directly');
+select ok((select prosecdef from pg_proc where oid='public.track_guest_invitation_view_public(text,integer)'::regprocedure), 'guest view RPC is security definer');
+select ok((select prosecdef from pg_proc where oid='public.submit_guest_rsvp_public(text,uuid,text,text,text,integer,text,integer,text,text,text)'::regprocedure), 'public RSVP RPC is security definer');
+select ok((select relrowsecurity from pg_class where oid='public.guest_invitations'::regclass), 'guest RLS remains enabled');
+select ok((select relforcerowsecurity from pg_class where oid='public.guest_invitations'::regclass), 'guest RLS remains forced');
+select ok(not has_table_privilege('anon', 'public.guest_invitations', 'SELECT'), 'anon cannot select guest rows');
+select ok(not has_table_privilege('anon', 'public.guest_invitations', 'INSERT'), 'anon cannot insert guest rows');
+select ok(not has_table_privilege('anon', 'public.guest_invitations', 'UPDATE'), 'anon cannot update guest rows');
+select ok(not has_table_privilege('anon', 'public.guest_invitations', 'DELETE'), 'anon cannot delete guest rows');
+
+insert into public.events (id, owner_user_id, slug, event_type, title, status, invitation_project_id)
+values (
+  '80000000-0000-0000-0000-000000000003',
+  '10000000-0000-0000-0000-000000000001',
+  'editor-rsvp-boundary',
+  'xv',
+  'RSVP boundary',
+  'published',
+  '20000000-0000-0000-0000-000000000003'
+);
+insert into public.guest_invitations (
+  id, invite_id, event_id, full_name, phone, country_code, max_allowed_attendees, short_id
+) values (
+  '90000000-0000-0000-0000-000000000003',
+  '91000000-0000-0000-0000-000000000003',
+  '80000000-0000-0000-0000-000000000003',
+  'Invitado de prueba',
+  '6680000003',
+  '+52',
+  4,
+  'BOUND003'
+);
+
+select lives_ok(
+  $$select public.track_guest_invitation_view_public('91000000-0000-0000-0000-000000000003', 65)$$,
+  'authorized guest view succeeds through RPC'
+);
+select is((select view_percentage from public.guest_invitations where id='90000000-0000-0000-0000-000000000003'), 65, 'view RPC stores progress');
+select isnt((select first_viewed_at from public.guest_invitations where id='90000000-0000-0000-0000-000000000003'), null, 'view RPC stores first view');
+select lives_ok(
+  $$select public.submit_guest_rsvp_public('91000000-0000-0000-0000-000000000003',null,null,null,null,null,'confirmed',3,'Asistiremos','link',null)$$,
+  'authorized invite RSVP succeeds through RPC'
+);
+select is((select attendance_status from public.guest_invitations where id='90000000-0000-0000-0000-000000000003'), 'confirmed', 'invite RSVP stores confirmation');
+select is((select attendee_count from public.guest_invitations where id='90000000-0000-0000-0000-000000000003'), 3, 'invite RSVP stores attendee count');
+select lives_ok(
+  $$select public.submit_guest_rsvp_public('91000000-0000-0000-0000-000000000003',null,null,null,null,null,'declined',3,'Ya no podremos asistir','link',null)$$,
+  'decline cancellation succeeds through the same RPC'
+);
+select is((select attendance_status from public.guest_invitations where id='90000000-0000-0000-0000-000000000003'), 'declined', 'decline updates RSVP status');
+select is((select attendee_count from public.guest_invitations where id='90000000-0000-0000-0000-000000000003'), 0, 'decline forces attendee count to zero');
+select lives_ok(
+  $$select public.submit_guest_rsvp_public(null,'80000000-0000-0000-0000-000000000003','Invitado público','6680000004','+52',2,'confirmed',2,'Confirmado','generic_link','BOUND004')$$,
+  'hybrid RSVP creates a guest through RPC'
+);
+select is((select count(*) from public.guest_invitations where event_id='80000000-0000-0000-0000-000000000003' and phone='6680000004'), 1::bigint, 'hybrid RSVP creates one canonical phone row');
+select lives_ok(
+  $$select public.submit_guest_rsvp_public(null,'80000000-0000-0000-0000-000000000003','Invitado público','6680000004','+52',2,'declined',0,'Cambio','generic_link','IGNORED1')$$,
+  'hybrid RSVP changes the existing guest through RPC'
+);
+select is((select attendance_status from public.guest_invitations where event_id='80000000-0000-0000-0000-000000000003' and phone='6680000004'), 'declined', 'hybrid RSVP updates instead of duplicating');
+select throws_like(
+  $$select public.submit_guest_rsvp_public('ffffffff-ffff-ffff-ffff-ffffffffffff',null,null,null,null,null,'confirmed',1,'','link',null)$$,
+  '%guest_invitation_not_found%',
+  'unknown invite remains denied'
+);
+select throws_like(
+  $$select public.submit_guest_rsvp_public('91000000-0000-0000-0000-000000000003',null,null,null,null,null,'pending',1,'','link',null)$$,
+  '%invalid_attendance_status%',
+  'invalid RSVP state remains denied'
+);
+select throws_like(
+  $$select public.submit_guest_rsvp_public(null,'ffffffff-ffff-ffff-ffff-ffffffffffff','Invitado','6680000005','+52',2,'confirmed',1,'','generic_link','BOUND005')$$,
+  '%violates foreign key constraint%',
+  'unknown public event remains denied'
+);
+select ok((select count(*) > 0 from public.guest_invitation_audit where guest_invitation_id='90000000-0000-0000-0000-000000000003' and event_type='viewed'), 'view RPC preserves audit trigger');
+select ok((select count(*) > 0 from public.guest_invitation_audit where guest_invitation_id='90000000-0000-0000-0000-000000000003' and event_type='status_changed'), 'RSVP RPC preserves audit trigger');
+
+-- Idempotent retry of the same confirmed invite RSVP
+select lives_ok(
+  $$select public.submit_guest_rsvp_public('91000000-0000-0000-0000-000000000003',null,null,null,null,null,'confirmed',2,'Reintento','link',null)$$,
+  'confirmed RSVP retry succeeds'
+);
+select is((select count(*) from public.guest_invitations where invite_id='91000000-0000-0000-0000-000000000003'), 1::bigint, 'confirmed RSVP retry does not duplicate the guest');
+select is((select attendance_status from public.guest_invitations where invite_id='91000000-0000-0000-0000-000000000003'), 'confirmed', 'confirmed RSVP retry keeps attendance status');
+
+-- Failed capacity mutation must not partially write comment/status
+select throws_like(
+  $$select public.submit_guest_rsvp_public('91000000-0000-0000-0000-000000000003',null,null,null,null,null,'confirmed',99,'No debe persistir','link',null)$$,
+  '%attendee_count_exceeds_limit%',
+  'over-capacity RSVP is rejected'
+);
+select is((select guest_comment from public.guest_invitations where invite_id='91000000-0000-0000-0000-000000000003'), 'Reintento', 'failed capacity mutation does not overwrite guest comment');
+select is((select attendee_count from public.guest_invitations where invite_id='91000000-0000-0000-0000-000000000003'), 2, 'failed capacity mutation does not overwrite attendee count');
+
 select * from finish();
 rollback;

@@ -1,14 +1,14 @@
 # Content Parity and RSVP Isolation Contract
 
-**Owns:** the operational contract between invitation **content parity** and **RSVP/PII
-isolation** across Local, Preview, and Production.
+**Owns:** the operational contract between invitation **content parity** and **RSVP/PII isolation**
+across Local, Preview, and Production.
 
 **Does not own:** schema ERD, env variable inventory, invitation identity fields, or CLI flag
 semantics. Those remain in `docs/domains/database/overview.md`, `docs/env-workflow.md`,
 `docs/core/invitation-creation-contract.md`, and live CLI help.
 
-Executable comparison: `pnpm invitation:content-parity` /
-`scripts/provision/content-parity.ts` (reuses `promotion-comparison.ts` canonicalization).
+Executable comparison: `pnpm invitation:content-parity` / `scripts/provision/content-parity.ts`
+(reuses `promotion-comparison.ts` canonicalization).
 
 ---
 
@@ -34,12 +34,12 @@ Content parity is **semantic**, not raw database equality.
 
 ## Flows (terminology)
 
-| Term | Meaning | Direction | Command |
-| --- | --- | --- | --- |
-| **Promote** | Managed invitation content release | Local → Preview → Production | `pnpm invitation:update` |
-| **Mirror** | Invitation-facing content regression copy | Production → Preview only | `pnpm db:preview:sync-invitations` |
-| **Restore** | Debugging import of a Production dump into Local | Production backup → Local | `pnpm db:local:restore-from-dump` |
-| **RSVP mutation** | Guest/claim/attendance/view/delivery writes | Within one environment | Authenticated RSVP/dashboard services |
+| Term              | Meaning                                          | Direction                    | Command                               |
+| ----------------- | ------------------------------------------------ | ---------------------------- | ------------------------------------- |
+| **Promote**       | Managed invitation content release               | Local → Preview → Production | `pnpm invitation:update`              |
+| **Mirror**        | Invitation-facing content regression copy        | Production → Preview only    | `pnpm db:preview:sync-invitations`    |
+| **Restore**       | Debugging import of a Production dump into Local | Production backup → Local    | `pnpm db:local:restore-from-dump`     |
+| **RSVP mutation** | Guest/claim/attendance/view/delivery writes      | Within one environment       | Authenticated RSVP/dashboard services |
 
 Production never imports content from the Preview database or Preview Storage. Mirror is never a
 promotion path.
@@ -63,10 +63,12 @@ environment. This contract does not migrate editor-native content into the manag
 
 ### RSVP
 
-Canonical writers: authenticated RSVP and dashboard operational services. Content promotion,
-mirroring, parity verification, and invitation tooling must not insert, update, or delete guests or
-claim codes. Invitation tooling may synchronize only an environment-local `events` shell and owner
-membership for non-demo client invitations.
+Canonical writers: authorized public RSVP APIs through service-role-only, scope-validating RSVP
+RPCs, plus authenticated dashboard operational services through host RLS. The service role has
+`SELECT` but no direct `INSERT`, `UPDATE`, or `DELETE` privilege on guest or guest-audit tables.
+Content promotion, mirroring, parity verification, and invitation tooling must not insert, update,
+or delete guests or claim codes. Invitation tooling may synchronize only an environment-local
+`events` shell and owner membership for non-demo client invitations.
 
 ### Explicit publication exception — host share messages
 
@@ -95,18 +97,18 @@ canonicalization (see `scripts/provision/promotion-comparison.ts`):
 
 ### Legitimate environment-specific differences (excluded from equality)
 
-Primary keys and Auth user IDs, Storage hosts/URLs, asset UUIDs, `version` / timestamps,
-provenance and mutation/publication receipts, owner FKs, draft `submission_id`, Preview admin
-ownership remaps, and any RSVP/PII/operational tables listed below.
+Primary keys and Auth user IDs, Storage hosts/URLs, asset UUIDs, `version` / timestamps, provenance
+and mutation/publication receipts, owner FKs, draft `submission_id`, Preview admin ownership remaps,
+and any RSVP/PII/operational tables listed below.
 
 ---
 
 ## `events` boundary
 
-| Class | Fields / relations |
-| --- | --- |
+| Class                   | Fields / relations                                                                                                             |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | Synchronized projection | `slug`, `event_type`, `title` (from invitation), `invitation_project_id` link; required for published **non-demo** client RSVP |
-| Environment-local | `id`, `owner_user_id`, status/timestamps, soft-delete, `event_memberships`, guests, claims, and all RSVP descendants |
+| Environment-local       | `id`, `owner_user_id`, status/timestamps, soft-delete, `event_memberships`, guests, claims, and all RSVP descendants           |
 
 Static demos (`event-demos` / `is_demo`) remain content-only by default and must **not** receive
 persistent `events` rows unless a separate product contract explicitly requires one. Hybrid/public
@@ -150,12 +152,12 @@ provisioning path (`pnpm test:e2e:preview:provision` and
 
 ## Local / Preview synthetic RSVP
 
-| Environment | RSVP data |
-| --- | --- |
-| Disposable / unit | `supabase/test/seed-test-data.sql` (synthetic) |
+| Environment       | RSVP data                                                |
+| ----------------- | -------------------------------------------------------- |
+| Disposable / unit | `supabase/test/seed-test-data.sql` (synthetic)           |
 | Local interactive | Environment-local synthetic guests on local event shells |
-| Preview | Synthetic fixtures / E2E provisioning only |
-| Production | Real operational guest data only |
+| Preview           | Synthetic fixtures / E2E provisioning only               |
+| Production        | Real operational guest data only                         |
 
 ---
 
@@ -168,8 +170,8 @@ Production PII (guests, intake, commercial, optional Auth/Storage dumps) with no
 - Restored Local data must **never** be used to seed Preview.
 - Backup artifacts stay under gitignored `.backups/` / `.tmp/` with existing access and retention
   controls.
-- “Non-destructive” means the restore avoids `db reset` and does not overwrite existing primary
-  keys — it does **not** mean the import is free of PII risk.
+- “Non-destructive” means the restore avoids `db reset` and does not overwrite existing primary keys
+  — it does **not** mean the import is free of PII risk.
 
 No other downward full Production-data path is approved. Blocked refresh aliases remain fail-closed.
 
@@ -186,12 +188,12 @@ the repository’s guarded operation confirmations. See `docs/env-workflow.md` a
 
 ## Legacy / fail-closed paths
 
-| Path | Status |
-| --- | --- |
-| `pnpm ops adopt-legacy-events` | Fail-closed / disabled — not a supported mutation path |
-| `pnpm ops optimize-assets` | Legacy demo helper — not the managed asset pipeline |
-| `pnpm db:local:refresh-from-prod*` | Fail-closed — use backup + restore-from-dump |
-| Manual production SQL patches | Lint-only via `pnpm db:prod:patch` unless separately authorized |
+| Path                               | Status                                                          |
+| ---------------------------------- | --------------------------------------------------------------- |
+| `pnpm ops adopt-legacy-events`     | Fail-closed / disabled — not a supported mutation path          |
+| `pnpm ops optimize-assets`         | Legacy demo helper — not the managed asset pipeline             |
+| `pnpm db:local:refresh-from-prod*` | Fail-closed — use backup + restore-from-dump                    |
+| Manual production SQL patches      | Lint-only via `pnpm db:prod:patch` unless separately authorized |
 
 ---
 
@@ -199,6 +201,8 @@ the repository’s guarded operation confirmations. See `docs/env-workflow.md` a
 
 - Database ops procedures: [`docs/database-workflow.md`](../database-workflow.md)
 - Env sources / lane connectivity: [`docs/env-workflow.md`](../env-workflow.md)
-- Invitation production runbook: [`docs/domains/intake/production-flow.md`](../domains/intake/production-flow.md)
+- Invitation production runbook:
+  [`docs/domains/intake/production-flow.md`](../domains/intake/production-flow.md)
 - Agent DB safety: [`.agent/rules/database.md`](../../.agent/rules/database.md)
-- Managed lifecycle procedure: [`.agent/workflows/managed-invitation-lifecycle.md`](../../.agent/workflows/managed-invitation-lifecycle.md)
+- Managed lifecycle procedure:
+  [`.agent/workflows/managed-invitation-lifecycle.md`](../../.agent/workflows/managed-invitation-lifecycle.md)

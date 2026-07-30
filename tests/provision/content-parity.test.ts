@@ -83,8 +83,7 @@ describe('semantic parity comparison', () => {
 		const preview = clientSnapshot({
 			publishedContent: {
 				hero: { name: 'Ana' },
-				image:
-					'https://preview.example/storage/v1/object/public/invitation-assets/client/hero.webp',
+				image: 'https://preview.example/storage/v1/object/public/invitation-assets/client/hero.webp',
 			},
 		});
 
@@ -113,6 +112,30 @@ describe('semantic parity comparison', () => {
 				}),
 			]),
 		);
+	});
+
+	it('treats sharing-only projection changes as meaningful published drift', () => {
+		const local = clientSnapshot({
+			publishedContent: {
+				hero: { name: 'Ana' },
+				sharing: { shareMessages: { invitation: 'Mensaje local' } },
+			},
+		});
+		const production = clientSnapshot({
+			publishedContent: {
+				hero: { name: 'Ana' },
+				sharing: { shareMessages: { invitation: 'Mensaje publicado' } },
+			},
+		});
+
+		expect(
+			compareSemanticInvitationSnapshots('local', local, 'production', production),
+		).toEqual([
+			expect.objectContaining({
+				entity: 'published_invitation_content',
+				field: 'content',
+			}),
+		]);
 	});
 
 	it('requires environment-local events projection for non-demo clients', () => {
@@ -159,16 +182,11 @@ describe('semantic parity comparison', () => {
 			},
 		};
 
-		expect(
-			compareSemanticInvitationSnapshots('local', demo, 'preview', { ...demo }),
-		).toEqual([]);
-
-		const drifts = compareSemanticInvitationSnapshots(
-			'local',
-			demo,
-			'preview',
-			demoWithEvent,
+		expect(compareSemanticInvitationSnapshots('local', demo, 'preview', { ...demo })).toEqual(
+			[],
 		);
+
+		const drifts = compareSemanticInvitationSnapshots('local', demo, 'preview', demoWithEvent);
 		expect(drifts.some((d) => d.entity === 'events')).toBe(true);
 	});
 

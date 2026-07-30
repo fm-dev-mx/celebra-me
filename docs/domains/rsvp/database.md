@@ -38,8 +38,8 @@ Current tables documented by the live code and migrations include:
 ## Migration Baseline
 
 Schema history lives in `supabase/migrations/`. Do not freeze applied/pending hosted migration
-counts in this document — obtain live state with `pnpm db:local:audit` /
-`pnpm db:preview:audit` / `pnpm db:prod:audit`. Content promote/mirror vs RSVP isolation:
+counts in this document — obtain live state with `pnpm db:local:audit` / `pnpm db:preview:audit` /
+`pnpm db:prod:audit`. Content promote/mirror vs RSVP isolation:
 [`docs/core/content-parity-rsvp-isolation.md`](../../core/content-parity-rsvp-isolation.md).
 
 Do not patch production with ad-hoc SQL outside a migration unless the change is part of a
@@ -161,14 +161,14 @@ for backward compatibility and marked with `[DEPRECATED]` in their comments:
 - RLS is enabled for all tables except Supabase Auth tables.
 - All SECURITY DEFINER functions have been hardened with `SET search_path = 'public'` (migration
   37).
-- Public guest flows run through server APIs. Personalized reads remain invite-scoped, and public
-  RSVP writes are event-scoped only for events that enable hybrid access.
+- Public guest flows run through server APIs. Personalized reads remain invite-scoped. View,
+  personalized RSVP/decline, and hybrid event writes use service-role-only `SECURITY DEFINER` RPCs
+  that validate the invite or published non-demo client event; browser roles cannot execute them.
 - Elevated dashboard operations depend on authenticated session state plus repository-level auth and
   MFA safeguards.
-- Service-role access is still used by the repository layer (documented tradeoff). Server-side code
-  uses `useServiceRole: true` for all database operations, meaning RLS provides no defense-in-depth
-  if a server endpoint is compromised. Future work should introduce per-operation auth checks in
-  service code.
+- Service-role reads remain server-only. Direct service-role guest and guest-audit writes are
+  revoked; narrow RSVP RPC execution is the only privileged public mutation boundary. Authenticated
+  dashboard guest operations continue through host-scoped RLS.
 
 ## Environment Variables
 
