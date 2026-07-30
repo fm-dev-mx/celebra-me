@@ -9,8 +9,12 @@ CLI help. See [`.agent/index.md`](../index.md).
 
 Use this workflow to apply the canonical invitation production runbook to managed, versioned
 invitation updates. Operational policy and lifecycle semantics live in
-[`docs/domains/intake/production-flow.md`](../../docs/domains/intake/production-flow.md). Executable
-CLI behavior lives in `scripts/provision/invitation-update-cli.ts` and its imported services.
+[`docs/domains/intake/production-flow.md`](../../docs/domains/intake/production-flow.md). Content
+promote vs Preview mirror vs RSVP isolation:
+[`docs/core/content-parity-rsvp-isolation.md`](../../docs/core/content-parity-rsvp-isolation.md).
+Executable CLI behavior lives in `scripts/provision/invitation-update-cli.ts` and its imported
+services. Managed promotion is always Local → Preview → Production; `pnpm db:preview:sync-invitations`
+is a separate regression mirror.
 
 **Preparation prerequisite:** New client invitations should complete
 [`.agent/workflows/invitation-preparation.md`](./invitation-preparation.md) until preparation

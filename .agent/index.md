@@ -143,6 +143,7 @@ One owner per concern. Other files may link here; they must not redefine the sam
 | Branch↔DB parity handoff            | `.agent/skills/database-parity`                      | `branch-lane` (orchestrates; no DB ops logic)  |
 | Database schema overview            | `docs/domains/database/overview.md`                  | Ops runbooks                                   |
 | Environment variable hierarchy      | `docs/env-workflow.md`                               | Database workflow                              |
+| Content parity ↔ RSVP isolation     | `docs/core/content-parity-rsvp-isolation.md`         | Ops runbooks (link only; do not redefine)      |
 | Brand / voice                       | `.agent/briefs/celebra-me.md`                        | Root PRODUCT/DESIGN markdown files (forbidden) |
 | Visual design intent                | `.agent/skills/frontend-design`                      | External design installs as SSOT               |
 | Theme tokens / SCSS architecture    | `docs/domains/theme/` + `theme-architecture` skill   | Brand brief alone                              |
@@ -194,6 +195,7 @@ is independent from preparation readiness.
 - `docs/core/agent-interaction.md`
 - `docs/core/invitation-creation-contract.md`
 - `docs/core/invitation-preparation-contract.md`
+- `docs/core/content-parity-rsvp-isolation.md`
 - `docs/core/release-process.md`
 - `docs/core/sensitive-data-guide.md`
 
@@ -259,6 +261,7 @@ prerequisites that are already loaded.
 | Testing or regression work             | `testing` and affected domain docs                                                            |
 | Browser automation on invitations      | `docs/domains/invitations/reveal-gate-automation.md` before scripting any reveal interaction  |
 | Supabase or database work              | `.agent/rules/database.md`, `supabase`, `supabase-postgres`, and `docs/database-workflow.md`  |
+| Content parity / RSVP isolation        | `docs/core/content-parity-rsvp-isolation.md` (+ database/env docs link only)                  |
 | Planning                               | `.agent/workflows/plan-authoring.md`; add `.agent/plans/README.md` only for tracked plans     |
 | Commit governance                      | `commit-planner` and `docs/core/git-governance.md`                                            |
 | Staged review before commit            | `staged-code-review` then `staged-code-review-apply`                                          |

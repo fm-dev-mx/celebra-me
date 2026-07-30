@@ -14,8 +14,9 @@ before creating, editing, publishing, or validating an invitation. Content struc
 [`docs/core/invitation-creation-contract.md`](../../docs/core/invitation-creation-contract.md).
 Preparation semantics (classifications, placeholders, preparation readiness) live in
 [`docs/core/invitation-preparation-contract.md`](../../docs/core/invitation-preparation-contract.md)
-and `.agent/workflows/invitation-preparation.md`. Do not begin invitation-specific implementation
-while preparation readiness is `NOT_READY`.
+and `.agent/workflows/invitation-preparation.md`. Content promote/mirror vs RSVP isolation lives in
+[`docs/core/content-parity-rsvp-isolation.md`](../../docs/core/content-parity-rsvp-isolation.md). Do
+not begin invitation-specific implementation while preparation readiness is `NOT_READY`.
 
 Obsolete one-shot: `pnpm ops optimize-assets` / `scripts/optimize-assets.mjs` is a hardcoded legacy
 demo helper — **not** the managed invitation asset pipeline. Use preparation asset protocol +
@@ -65,6 +66,9 @@ The agent-specific constraints are:
 - Never prune assets, overwrite pre-existing resources, or claim successful rollback without
   explicit evidence and authorization.
 - Never mutate Preview or Production without authorization for that exact target and operation.
+  Worktree path, runtime target, environment banner, and credential presence are not authorization.
+- Do not treat Production→Preview content mirror as promotion. Do not copy Production RSVP/PII into
+  Preview. After a Preview mirror apply, re-provision synthetic fixtures if RSVP E2E needs them.
 
 ## Scope and cleanup
 

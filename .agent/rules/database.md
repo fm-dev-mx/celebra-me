@@ -11,6 +11,8 @@ all production database work as high risk.
 - [`manual-sql-manifest.md`](manual-sql-manifest.md) defines the required manifest for manual
   production SQL patch files.
 - [`docs/database-workflow.md`](../../docs/database-workflow.md) is the full human runbook.
+- [`docs/core/content-parity-rsvp-isolation.md`](../../docs/core/content-parity-rsvp-isolation.md)
+  owns content promote/mirror/parity vs RSVP isolation (do not redefine here).
 - [`scripts/README.md`](../../scripts/README.md) is command inventory and ownership only.
 
 ## Scope Boundary
@@ -98,22 +100,20 @@ task authorization, target classification, and standard guard checks.
   variable or the single canonical gitignored secret file `.env.preview.local`.
 - **Audit Workflow (`pnpm db:preview:audit`)**: Reads Preview migration and schema state,
   reconstructs the canonical disposable reference database (`127.0.0.1:54332`), and compares Preview
-  against the canonical reference without mutating Preview or persistent local. Returns exit code
-  `0` for an uninitialized Preview database with 0 remote and 59 pending migrations.
+  against the canonical reference without mutating Preview or persistent local. Report the live
+  remote/pending migration counts from the audit; never freeze a hosted pending total in this rule.
 - **Separation of Operations**: Migration (`pnpm db:preview:migrate`), seed, and audit
   (`pnpm db:preview:audit`) are separate operations. `pnpm db:preview:migrate` applies migrations
   only; it does not automatically seed or audit.
 - **Failure Handling**: When Preview credentials are missing/unconfigured, `pnpm db:preview:migrate`
   and `pnpm db:preview:audit` fail closed with exit code `1`.
-- **Data Isolation**: Preview must use isolated synthetic test data (e.g.
-  `supabase/test/seed-test-data.sql`) and separate credentials for non-invitation operational data.
-- **Invitation Content Exception**: Preview MAY mirror invitation-facing production content for
-  regression testing. The controlled workflow (`pnpm db:preview:sync-invitations`) handles ownership
-  remapping, Storage URL rewriting, and exclusion of prohibited data categories. See
-  `docs/database-workflow.md` for the full policy.
-- **No Production Data Copy**: Production Auth users, guest data, RSVP records, tracking,
-  commercial, and other private operational data must NEVER be copied into Preview. See
-  `docs/database-workflow.md` for the complete exclusion list.
+- **Content promote / mirror / RSVP isolation**: Follow
+  [`docs/core/content-parity-rsvp-isolation.md`](../../docs/core/content-parity-rsvp-isolation.md).
+  `pnpm db:preview:sync-invitations` is a Production→Preview **content regression mirror** (not
+  promotion). It excludes RSVP/PII tables and replaces Preview `events` via `TRUNCATE CASCADE`,
+  which resets Preview RSVP children — re-provision gated synthetic fixtures afterward.
+- **No Production PII Copy**: Production Auth users, guest data, RSVP records, tracking, commercial,
+  and other private operational data must NEVER be copied into Preview.
 
 ## Current Contract
 
@@ -133,9 +133,11 @@ task authorization, target classification, and standard guard checks.
 ## Decision Tree
 
 - Need local development data? Use `pnpm db:prod:backup` + `pnpm db:local:restore-from-dump` (see
-  `docs/database-workflow.md`). Production may only be read for approved refreshes/backups.
-  `pnpm db:local:refresh-from-prod` and `pnpm db:local:refresh-from-prod-preserve-local` are blocked
-  — they run `supabase db reset` which destroys the persistent-local database.
+  `docs/database-workflow.md` and the PII exception in
+  `docs/core/content-parity-rsvp-isolation.md`). Restore may import real Production PII and must
+  never seed Preview. `pnpm db:local:refresh-from-prod` and
+  `pnpm db:local:refresh-from-prod-preserve-local` are blocked — they run `supabase db reset` which
+  destroys the persistent-local database.
 - Need a schema change? Create a migration, test it on the disposable environment
   (`tsx scripts/db/disposable-test-env.ts run-tests`), and use `pnpm db:prod:migrate` for the
   reviewed production path.

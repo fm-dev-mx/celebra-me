@@ -5,8 +5,10 @@
 **Owns:** current Supabase/Postgres schema overview, entity relationships, and major data flows.
 
 **Does not own:** migration/ops procedures — those live in
-[`docs/database-workflow.md`](../../database-workflow.md). See the Ownership Matrix in
-[`.agent/index.md`](../../../.agent/index.md).
+[`docs/database-workflow.md`](../../database-workflow.md). Content promote/mirror vs RSVP isolation
+lives in
+[`docs/core/content-parity-rsvp-isolation.md`](../../core/content-parity-rsvp-isolation.md). See the
+Ownership Matrix in [`.agent/index.md`](../../../.agent/index.md).
 
 This document describes the current Celebra-me Supabase/Postgres schema, entity relationships, and
 major data flows.

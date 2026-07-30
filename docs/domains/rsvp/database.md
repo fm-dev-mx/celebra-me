@@ -37,49 +37,10 @@ Current tables documented by the live code and migrations include:
 
 ## Migration Baseline
 
-All 39 migrations under `supabase/migrations/`:
-
-| #   | File                                                    | Purpose                                                                           |
-| --- | ------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| 1   | `20260215000100_rsvp_init.sql`                          | Initial RSVP tables                                                               |
-| 2   | `20260215000200_rsvp_hardening.sql`                     | Constraints, FKs, RLS lock-down                                                   |
-| 3   | `20260215000300_rsvp_v2_core.sql`                       | host_profiles, events, guest_invitations                                          |
-| 4   | `20260215000400_rsvp_v2_rls.sql`                        | RLS for v2 tables                                                                 |
-| 5   | `20260215000500_rsvp_v2_audit_atomicity.sql`            | Audit trigger + policy                                                            |
-| 6   | `20260215000600_rsvp_v2_auth_claims_membership.sql`     | app_user_roles, event_memberships, event_claim_codes                              |
-| 7   | `20260215000700_rsvp_v2_claim_code_global_unique.sql`   | code_key column, unique index                                                     |
-| 8   | `20260215000800_superadmin_hardening.sql`               | audit_logs, JWT sync, superadmin RLS                                              |
-| 9   | `20260215000900_claim_code_atomic_rpc.sql`              | redeem_claim_code (SELECT FOR UPDATE)                                             |
-| 10  | `20260216095500_add_manual_entry_source.sql`            | Extend RSVP source constraint                                                     |
-| 11  | `20260216133000_make_phone_nullable.sql`                | phone nullable in guest_invitations                                               |
-| 12  | `20260220000000_add_soft_delete.sql`                    | Soft delete for events, guests, etc.                                              |
-| 13  | `20260221000000_add_soft_delete_columns.sql`            | Columns-only soft delete (idempotent)                                             |
-| 14  | `20260225000000_dashboard_optimization.sql`             | email, tags, metadata; upsert_guests_v1                                           |
-| 15  | `20260226000000_add_short_id.sql`                       | short_id, generate_short_id function                                              |
-| 16  | `20260226000001_touch_schema.sql`                       | COMMENT TOAST for PostgREST cache                                                 |
-| 17  | `20260401000100_add_generic_rsvp_sources.sql`           | entry_source, last_response_source                                                |
-| 18  | `20260402000100_reconcile_event_slug_parity.sql`        | One-time demo slug rename + guest merge                                           |
-| 19  | `20260402010100_rsvp_engagement_standardization.sql`    | guest_message→guest_comment, is_viewed                                            |
-| 20  | `20260521000001_normalize_phone_format.sql`             | +52 phone normalization                                                           |
-| 21  | `20260521000002_fix_upsert_guests_phone_column.sql`     | Fix phone column reference                                                        |
-| 22  | `20260522000001_make_bulk_guests_create_only.sql`       | Bulk import create-only                                                           |
-| 23  | `20260523000001_add_country_code.sql`                   | country_code, phone split                                                         |
-| 24  | `20260524000000_soft_delete_unique_constraint.sql`      | Partial unique index (event_id, country_code, phone)                              |
-| 25  | `20260525000000_add_guest_branding_flag.sql`            | hide_celebra_me_branding                                                          |
-| 26  | `20260528000000_intake_core.sql`                        | invitation_projects, intake_requests, intake_submissions                          |
-| 27  | `20260528000001_intake_drafts.sql`                      | invitation_content_drafts                                                         |
-| 28  | `20260528000002_published_invitation_content.sql`       | published_invitation_content                                                      |
-| 29  | `20260528000003_published_content_event_type_index.sql` | Composite index (slug, event_type)                                                |
-| 30  | `20260529000000_published_content_unique_route_key.sql` | UNIQUE (event_type, slug)                                                         |
-| 31  | `20260530000000_cleanup_published_content_indexes.sql`  | Drop redundant indexes                                                            |
-| 32  | `20260530000001_intake_token_ciphertext.sql`            | token_ciphertext for admin recovery                                               |
-| 33  | `20260531000000_add_events_invitation_project_id.sql`   | invitation_project_id FK on events                                                |
-| 34  | `20260531000001_add_intake_request_origin.sql`          | origin column on intake_requests                                                  |
-| 35  | `20260601000000_intake_soft_delete.sql`                 | Soft delete for intake tables                                                     |
-| 36  | `20260601000001_invitations_domain.sql`                 | Rename invitation_projects→invitations; archive RPCs                              |
-| 37  | `20260601000002_corrective_security.sql`                | SECURITY DEFINER search_path hardening                                            |
-| 38  | `20260601000003_corrective_security_followup.sql`       | Hardening follow-up: ALTER FUNCTION, upsert_guests_v1 REVOKE, explicit signatures |
-| 39  | `20260602000000_invitation_assets.sql`                  | Invitation Asset Library metadata table and Storage bucket policies               |
+Schema history lives in `supabase/migrations/`. Do not freeze applied/pending hosted migration
+counts in this document — obtain live state with `pnpm db:local:audit` /
+`pnpm db:preview:audit` / `pnpm db:prod:audit`. Content promote/mirror vs RSVP isolation:
+[`docs/core/content-parity-rsvp-isolation.md`](../../core/content-parity-rsvp-isolation.md).
 
 Do not patch production with ad-hoc SQL outside a migration unless the change is part of a
 controlled incident response.

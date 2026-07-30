@@ -27,6 +27,11 @@ The public read path validates stored JSON against the same canonical schema bef
 Invalid stored content resolves to the controlled invitation-unavailable state and is not publicly
 cached.
 
+Host share-message edits from the guests dashboard are an explicit narrow exception documented in
+[`docs/core/content-parity-rsvp-isolation.md`](../../core/content-parity-rsvp-isolation.md): they
+patch published `sharing` only and increment `version` / `published_at`. They are not a general
+publish bypass.
+
 ## Canonical contracts
 
 - Content and section ordering: [`../../core/content-schema.md`](../../core/content-schema.md)

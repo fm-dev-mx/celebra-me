@@ -12,8 +12,10 @@ procedure:
 [`.agent/workflows/managed-invitation-lifecycle.md`](../../../.agent/workflows/managed-invitation-lifecycle.md).
 Safety constraints:
 [`.agent/rules/invitation-production.md`](../../../.agent/rules/invitation-production.md). Content
-shape: [`docs/core/content-schema.md`](../../core/content-schema.md). Architecture:
-[`docs/core/architecture.md`](../../core/architecture.md). Authority chain:
+shape: [`docs/core/content-schema.md`](../../core/content-schema.md). Content promote/mirror vs RSVP
+isolation:
+[`docs/core/content-parity-rsvp-isolation.md`](../../core/content-parity-rsvp-isolation.md).
+Architecture: [`docs/core/architecture.md`](../../core/architecture.md). Authority chain:
 [`.agent/index.md`](../../../.agent/index.md).
 
 ## Roles and responsibility

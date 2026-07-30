@@ -54,8 +54,11 @@ shell, Vercel, or gitignored secret paths documented by the owning workflow.
   - Representative Preview E2E test suites (`pnpm test:e2e:preview`).
 - **Worktree Authorization Invariant**: Worktree path location grants no environment privilege
   (`path ≠ privilege`). Being inside a development worktree does not grant automatic Preview or
-  Production mutation permission. Environment access is determined strictly by task scope, target
-  environment, operation risk, and existing repository safety rules.
+  Production mutation permission. Runtime target (`CELEBRA_RUNTIME_TARGET`), UI environment banners,
+  and credential presence also do not authorize mutations. Environment access is determined
+  strictly by task scope, target environment, operation risk, and existing repository safety rules.
+  Content promote/mirror vs RSVP isolation:
+  [`docs/core/content-parity-rsvp-isolation.md`](core/content-parity-rsvp-isolation.md).
 
 ## Credential Preflight and Fail-Fast Taxonomy
 
