@@ -35,7 +35,7 @@ shell, Vercel, or gitignored secret paths documented by the owning workflow.
   (`SUPABASE_URL=http://127.0.0.1:54321`) is the default application runtime for Integration and the
   Local development lanes. Use it for normal development, unit testing, component/SCSS iteration,
   and disposable destructive migration reconstruction.
-- **Preview Runtime Default (`dev-preview`)**: `.worktrees/dev-preview` intentionally runs local
+- **Preview Runtime Default (`dev-preview`)**: `dev-preview` (canonical external worktree) intentionally runs local
   Astro against the dedicated Preview Supabase project. Application runtime values come from
   `.env.preview.local` (overlay) and set `CELEBRA_RUNTIME_TARGET=preview`. This is **runtime
   connectivity only** — it does not authorize Preview DB migrations, syncs, invitation updates, or
@@ -50,7 +50,7 @@ shell, Vercel, or gitignored secret paths documented by the owning workflow.
   - Hosted database migration sanity audits (`pnpm db:preview:audit`),
   - Representative Preview E2E test suites (`pnpm test:e2e:preview`).
 - **Worktree Authorization Invariant**: Worktree path location grants no environment privilege
-  (`path ≠ privilege`). Being inside `.worktrees/dev-preview` does not grant automatic Preview or
+  (`path ≠ privilege`). Being inside a development worktree does not grant automatic Preview or
   Production mutation permission. Environment access is determined strictly by task scope, target
   environment, operation risk, and existing repository safety rules.
 

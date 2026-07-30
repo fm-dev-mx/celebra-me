@@ -73,7 +73,7 @@ Cloudinary, Preview/Production endpoints):
 ## Agent-Specific Git Rules
 
 - Operate within the designated persistent worktree lane (`celebra-me` root for Integration,
-  `.worktrees/dev-local`, `.worktrees/dev-preview`, or `.worktrees/dev-extra`) on ephemeral task
+  `dev-local`, `dev-preview`, or `dev-extra`) on ephemeral task
   branches.
 - Task branches must be created explicitly from `develop`: `git switch -c <task-branch> develop`.
   Never create task branches from detached HEAD.

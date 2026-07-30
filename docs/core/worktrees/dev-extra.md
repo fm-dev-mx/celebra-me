@@ -1,6 +1,6 @@
 # dev-extra worktree
 
-**Path:** `D:\code\celebra-me\.worktrees\dev-extra`  
+**Path:** `D:\code\celebra-me-worktrees\dev-extra`  
 **Policy SSOTs:** [`git-governance.md`](../git-governance.md),
 [`env-workflow.md`](../../env-workflow.md),
 [`.agent/rules/git-safety.md`](../../../.agent/rules/git-safety.md)

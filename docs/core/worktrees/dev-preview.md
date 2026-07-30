@@ -1,6 +1,6 @@
 # dev-preview worktree
 
-**Path:** `D:\code\celebra-me\.worktrees\dev-preview`  
+**Path:** `D:\code\celebra-me-worktrees\dev-preview`  
 **Policy SSOTs:** [`git-governance.md`](../git-governance.md),
 [`env-workflow.md`](../../env-workflow.md), [`database-workflow.md`](../../database-workflow.md),
 [`.agent/rules/database.md`](../../../.agent/rules/database.md)

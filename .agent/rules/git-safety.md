@@ -79,16 +79,16 @@ current task.
 The repository operates with four native Git worktree lanes:
 
 - **Integration**: canonical root worktree (`celebra-me`, trunk `develop`). Runtime default: Local.
-- **dev-local**: persistent reusable worktree (`.worktrees/dev-local`) using ephemeral task
+- **dev-local**: persistent reusable worktree (`D:\code\celebra-me-worktrees\dev-local`) using ephemeral task
   branches. Runtime default: Local.
-- **dev-preview**: persistent reusable worktree (`.worktrees/dev-preview`) using ephemeral task
+- **dev-preview**: persistent reusable worktree (`D:\code\celebra-me-worktrees\dev-preview`) using ephemeral task
   branches. Runtime default: Preview Supabase via `.env.preview.local`.
-- **dev-extra**: persistent reusable worktree (`.worktrees/dev-extra`) using ephemeral task
+- **dev-extra**: persistent reusable worktree (`D:\code\celebra-me-worktrees\dev-extra`) using ephemeral task
   branches. Runtime default: Local.
 
 ### Path Authorization Invariant
 
-Being located inside `.worktrees/dev-local`, `.worktrees/dev-preview`, or `.worktrees/dev-extra`
+Being located inside a development worktree (`dev-local`, `dev-preview`, or `dev-extra`)
 **does not grant** Git write permissions or environment/database mutation authority.
 
 ```text

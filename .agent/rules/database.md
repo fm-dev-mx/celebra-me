@@ -40,8 +40,8 @@ boundaries through classification, identity verification, and per-target policy 
 
 ### Worktree Location Grants No Database Privilege
 
-Worktree directory location (e.g. `.worktrees/dev-preview`, `.worktrees/dev-local`,
-`.worktrees/dev-extra`, or root `celebra-me`) **never** grants implicit database mutation
+Worktree directory location (e.g. `dev-preview`, `dev-local`,
+`dev-extra`, or root `celebra-me`) **never** grants implicit database mutation
 privileges.
 
 ```text
@@ -52,7 +52,7 @@ task scope
 + existing repository safety rules
 ```
 
-Being inside `.worktrees/dev-preview` does not grant Preview or Production mutation permission even
+Being inside `dev-preview` does not grant Preview or Production mutation permission even
 when that lane's application runtime targets Preview Supabase. Operational access to Preview
 requires explicit task authorization, target classification, and standard guard checks.
 
