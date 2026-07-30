@@ -1,9 +1,20 @@
 /**
  * Persistent worktree lane detection for Celebra-me.
  * Path/lane identity is never authorization for mutations.
+ *
+ * Canonical layout:
+ *   D:\code\
+ *   ├── celebra-me\               (repo root / Integration lane)
+ *   └── celebra-me-worktrees\     (external worktree root)
+ *       ├── dev-local\
+ *       ├── dev-preview\
+ *       └── dev-extra\
+ *
+ * The old `.worktrees/` layout is detected as legacy and tooling warns about it
+ * but does not treat those directories as active canonical lanes.
  */
 
-import { basename, resolve } from 'node:path';
+import { basename, dirname, resolve } from 'node:path';
 
 export type WorktreeLaneId = 'integration' | 'dev-local' | 'dev-preview' | 'dev-extra' | 'unknown';
 
@@ -11,38 +22,129 @@ export interface WorktreeLaneDefinition {
 	id: WorktreeLaneId;
 	displayName: string;
 	runtimeDefault: 'local' | 'preview';
-	relativePath: string | null;
+	/** Segment name under the external worktree root (null for Integration). */
+	segment: string | null;
 }
+
+/** Segment names for legacy `.worktrees/` directories that tooling warns about. */
+export const LEGACY_WORKTREE_SEGMENTS = Object.freeze([
+	'dev-lane',
+	'val-lane',
+	'dev-local',
+	'dev-preview',
+	'dev-extra',
+]);
+
+/** Names of lanes that are still in the old `.worktrees/` location and need migration. */
+export const DEPRECATED_DOT_WORKTREES_SEGMENTS = Object.freeze([
+	'dev-local',
+	'dev-preview',
+	'dev-extra',
+]);
 
 export const WORKTREE_LANES: readonly WorktreeLaneDefinition[] = Object.freeze([
 	{
 		id: 'integration',
 		displayName: 'Integration',
 		runtimeDefault: 'local',
-		relativePath: null,
+		segment: null,
 	},
 	{
 		id: 'dev-local',
 		displayName: 'Development Local',
 		runtimeDefault: 'local',
-		relativePath: '.worktrees/dev-local',
+		segment: 'dev-local',
 	},
 	{
 		id: 'dev-preview',
 		displayName: 'Development Preview',
 		runtimeDefault: 'preview',
-		relativePath: '.worktrees/dev-preview',
+		segment: 'dev-preview',
 	},
 	{
 		id: 'dev-extra',
 		displayName: 'Development Extra',
 		runtimeDefault: 'local',
-		relativePath: '.worktrees/dev-extra',
+		segment: 'dev-extra',
 	},
 ]);
 
-/** Legacy path segments that tooling must not treat as active lanes. */
-export const LEGACY_WORKTREE_SEGMENTS = Object.freeze(['dev-lane', 'val-lane']);
+/**
+ * Returns the canonical external worktree root path based on the repo root.
+ * Convention: sibling directory named `<repo-dir-name>-worktrees`.
+ * Example: `D:\code\celebra-me` → `D:\code\celebra-me-worktrees`
+ */
+export function getExternalWorktreeRoot(repoRoot: string): string {
+	const resolved = resolve(repoRoot).replaceAll('\\', '/');
+	const parent = dirname(resolved);
+	const dirName = basename(resolved);
+	return resolve(parent, `${dirName}-worktrees`);
+}
+
+/**
+ * Returns the canonical lane path for a lane definition.
+ * Integration returns the repo root; development lanes return paths under
+ * the external worktree root.
+ */
+export function getExpectedLanePath(lane: WorktreeLaneDefinition, repoRoot: string): string {
+	if (!lane.segment) return resolve(repoRoot);
+	const externalRoot = getExternalWorktreeRoot(repoRoot);
+	return resolve(externalRoot, lane.segment);
+}
+
+// ─── Detection helpers (extracted for complexity limits) ───────────────────────
+
+function detectExternalPath(lower: string, externalRoots: string[]): WorktreeLaneDefinition | null {
+	// Check if cwd directly contains any expected segment under celebre-me-worktrees
+	const worktreesDirPattern = /celebra-me-worktrees/i;
+	if (worktreesDirPattern.test(lower)) {
+		for (const lane of WORKTREE_LANES) {
+			if (!lane.segment) continue;
+			const seg = lane.segment.toLowerCase();
+			if (
+				lower.includes(`/celebra-me-worktrees/${seg}`) ||
+				lower.endsWith(`/celebra-me-worktrees/${seg}`)
+			) {
+				return lane;
+			}
+		}
+	}
+	// Specific external root match
+	for (const ext of externalRoots) {
+		const extNormalized = ext.replaceAll('\\', '/');
+		for (const lane of WORKTREE_LANES) {
+			if (!lane.segment) continue;
+			const expected = `${extNormalized}/${lane.segment}`.toLowerCase();
+			if (lower === expected || lower.startsWith(expected + '/')) {
+				return lane;
+			}
+		}
+	}
+	return null;
+}
+
+function detectOldDotWorktrees(lower: string): WorktreeLaneDefinition | null {
+	for (const lane of WORKTREE_LANES) {
+		if (!lane.segment) continue;
+		const marker = `/.worktrees/${lane.segment}`.toLowerCase();
+		if (lower.includes(marker) || lower.endsWith(`.worktrees/${lane.segment}`)) {
+			return lane;
+		}
+	}
+	// Check legacy-only segments (not in WORKTREE_LANES)
+	for (const legacy of LEGACY_WORKTREE_SEGMENTS) {
+		const marker = `/.worktrees/${legacy}`.toLowerCase();
+		if (lower.includes(marker)) {
+			return {
+				id: 'unknown' as WorktreeLaneId,
+				displayName: `Legacy worktree (${legacy})`,
+				runtimeDefault: 'local' as const,
+				segment: `.worktrees/${legacy}`,
+			};
+		}
+	}
+	return null;
+}
 
 export function detectWorktreeLane(
 	cwd = process.cwd(),
@@ -51,46 +153,43 @@ export function detectWorktreeLane(
 	const normalized = resolve(cwd).replaceAll('\\', '/');
 	const lower = normalized.toLowerCase();
 
-	for (const lane of WORKTREE_LANES) {
-		if (!lane.relativePath) continue;
-		const marker = `/${lane.relativePath.replaceAll('\\', '/')}`.toLowerCase();
-		if (lower.includes(marker) || lower.endsWith(marker.slice(1))) {
-			return lane;
-		}
+	// Check if exactly the repo root (Integration lane)
+	const root = repoRootHint ? resolve(repoRootHint).replaceAll('\\', '/') : null;
+	if (root && lower === root.toLowerCase()) {
+		return WORKTREE_LANES[0]!;
 	}
 
-	for (const legacy of LEGACY_WORKTREE_SEGMENTS) {
-		const marker = `/.worktrees/${legacy}`.toLowerCase();
-		if (lower.includes(marker)) {
-			return {
-				id: 'unknown',
-				displayName: `Legacy worktree (${legacy})`,
-				runtimeDefault: 'local',
-				relativePath: `.worktrees/${legacy}`,
-			};
-		}
+	// Build external root candidates
+	const externalRoots: string[] = [];
+	if (root) {
+		externalRoots.push(getExternalWorktreeRoot(root).replaceAll('\\', '/').toLowerCase());
 	}
 
-	if (repoRootHint) {
-		const root = resolve(repoRootHint).replaceAll('\\', '/').toLowerCase();
-		if (lower === root) {
-			return WORKTREE_LANES[0]!;
-		}
-	}
+	// Check canonical external paths
+	const externalMatch = detectExternalPath(lower, externalRoots);
+	if (externalMatch) return externalMatch;
 
-	const worktreesIdx = lower.split('/').lastIndexOf('.worktrees');
-	if (worktreesIdx === -1) {
-		const leaf = basename(normalized);
-		if (leaf.toLowerCase() === 'celebra-me' || repoRootHint) {
-			return WORKTREE_LANES[0]!;
-		}
+	// Check old .worktrees/ layout (legacy)
+	const dotWorktreesMatch = detectOldDotWorktrees(lower);
+	if (dotWorktreesMatch) return dotWorktreesMatch;
+
+	// Fallback: Integration lane guess by basename
+	if (root && lower === root.toLowerCase()) {
+		return WORKTREE_LANES[0]!;
+	}
+	const leaf = basename(normalized);
+	if (
+		leaf.toLowerCase() === 'celebra-me' ||
+		leaf === basename(resolve(normalized, '..', '..', 'package.json'))
+	) {
+		return WORKTREE_LANES[0]!;
 	}
 
 	return {
 		id: 'unknown',
 		displayName: 'Unknown worktree',
 		runtimeDefault: 'local',
-		relativePath: null,
+		segment: null,
 	};
 }
 
@@ -100,11 +199,10 @@ export function listExpectedLanePaths(repoRoot: string): Array<{
 	runtimeDefault: 'local' | 'preview';
 	path: string;
 }> {
-	const root = resolve(repoRoot);
 	return WORKTREE_LANES.map((lane) => ({
 		id: lane.id,
 		displayName: lane.displayName,
 		runtimeDefault: lane.runtimeDefault,
-		path: lane.relativePath ? resolve(root, ...lane.relativePath.split('/')) : root,
+		path: getExpectedLanePath(lane, repoRoot),
 	}));
 }
