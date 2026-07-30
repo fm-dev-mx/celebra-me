@@ -21,7 +21,6 @@
 				rgb(var(--color-surface-dark-rgb) / 75%) 75%,
 				rgb(var(--color-surface-dark-rgb) / 95%) 100%
 			);
-		opacity: 100%;
 	}
 
 	.invitation-hero__content {
@@ -95,16 +94,16 @@
 
 	.invitation-hero__label {
 		color: var(--hero-label-color);
-		letter-spacing: 0.5em;
-		font-weight: 400;
-		font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+		letter-spacing: var(--hero-label-tracking, 0.5em);
+		font-weight: var(--hero-label-weight, 400);
+		font-size: var(--hero-label-size, clamp(0.9rem, 2.5vw, 1.1rem));
+		line-height: var(--hero-label-line-height, 1.4);
 		text-shadow: 0 2px 8px rgb(0 0 0 / 40%);
 		margin-bottom: 1.25rem;
-		opacity: 85%;
 
 		@media (width <= 480px) {
-			font-size: 0.8rem;
-			letter-spacing: 0.35em;
+			font-size: var(--hero-label-size, clamp(0.8rem, 4vw, 0.9rem));
+			letter-spacing: var(--hero-label-tracking, 0.35em);
 			margin-bottom: 0.75rem;
 		}
 	}
@@ -243,7 +242,7 @@
 		}
 
 		.invitation-hero__label {
-			letter-spacing: 0.4em;
+			letter-spacing: var(--hero-label-tracking, 0.4em);
 		}
 	}
 }

@@ -52,6 +52,8 @@ describe('Alba Rosa Quiñónez local invitation content', () => {
 		expect(profile).toContain('--alba-ivory');
 		expect(profile).toContain('--alba-sage');
 		expect(profile).toContain('Neutral editorial palette');
+		expect(profile).toContain('.invitation-hero__label-age');
+		expect(profile).toContain('.invitation-hero__label-unit');
 	});
 
 	it('has WebP release sources for every declared asset', () => {
