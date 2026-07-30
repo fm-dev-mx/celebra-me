@@ -138,7 +138,7 @@ test.describe('shared envelope reveal interaction', () => {
 			.toBe(true);
 	});
 
-	test('keeps Alba Rosa’s reveal, countdown, and map hierarchy senior-friendly', async ({
+	test('@extended keeps Alba Rosa’s reveal, countdown, and map hierarchy senior-friendly', async ({
 		page,
 	}) => {
 		await page.goto('/cumple/alba-rosa-quinones?skipEnvelope=true', {

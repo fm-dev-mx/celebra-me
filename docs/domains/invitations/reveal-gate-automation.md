@@ -271,9 +271,12 @@ a real defect.
 ## Verification
 
 Canonical CI includes a stable subset of `tests/e2e/envelope-reveal-interaction.spec.ts`: real
-open/reveal, Enter/Space keyboard behavior, focus transfer, reduced motion, representative shared
-invitation behavior, and the Alba-specific regression. Expensive matrix/focus-ring variants are
-tagged `@extended` and remain available outside `pnpm test:e2e:ci`.
+open/reveal, Enter/Space keyboard behavior, focus transfer, and reduced motion on static demos.
+Expensive matrix/focus-ring variants, representative invitation matrix cases, and the Alba Rosa
+managed-invitation regression (DB-published content required) are tagged `@extended` and remain
+available outside `pnpm test:e2e:ci` on Local/Preview environments that can resolve published
+invitations. The Alba `FALTAN` countdown copy contract stays asserted in
+`tests/content/alba-rosa-quinones-payload.test.ts`.
 
 On Windows, run canonical E2E with no pre-existing listener on port 4321. The default Playwright
 config supplies `ASTRO_DEV_BACKGROUND=1`, keeping Astro in the foreground so Playwright owns and
