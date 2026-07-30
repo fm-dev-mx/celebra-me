@@ -148,6 +148,7 @@ describe('Alba Rosa Quiñónez provision contract', () => {
 		expect(typeof thankYou.message).toBe('string');
 		expect((thankYou.message as string).length).toBeGreaterThan(0);
 		expect(typeof thankYou.closingName).toBe('string');
+		expect(thankYou.date).toBe('12 de septiembre de 2026');
 
 		const family = asRecord(content.family);
 		expect(family.presentation).toBe('with-photo');

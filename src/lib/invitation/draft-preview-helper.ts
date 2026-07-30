@@ -97,7 +97,11 @@ export async function buildDraftPreviewPageContext(
 	invitation: Invitation,
 	draftContent: DraftContent,
 	demoContent: Record<string, unknown>,
-	options: { assetLookupSlug?: string } = {},
+	options: {
+		assetLookupSlug?: string;
+		/** Same prior snapshot publish uses — restores non-editable managed fields in preview. */
+		priorPublishedContent?: Record<string, unknown> | null;
+	} = {},
 ): Promise<DraftPreviewResult> {
 	try {
 		const snapshot = invitation.snapshot;
@@ -126,6 +130,7 @@ export async function buildDraftPreviewPageContext(
 			assetSlug: assetLookupSlug,
 			draftContent: resolvedContent as DraftContent,
 			demoContent,
+			priorPublishedContent: options.priorPublishedContent ?? undefined,
 			isDemo: invitation.kind === 'demo',
 		});
 

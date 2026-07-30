@@ -141,9 +141,15 @@ digital invitations.
 ## 11. Thank You (`thankYou`)
 
 - **Purpose**: Closing gratitude message to guests.
-- **Required Inputs**: `title` (string), `message` (string).
-- **Optional Inputs**: `image`, `variant`, `showThankYouBranding`.
-- **Rendering & Omission**: Optional closing fold.
+- **Required Inputs**: `message` (string), `closingName` (string).
+- **Optional Inputs**: `closingPhrase`, `date` (editorial closing-date display string; not derived
+  from `eventTiming`), `image`, `focalPoint`, `overlayAnchor`, `overlaySafeArea`. Section variant
+  comes from `sectionStyles.thankYou.variant`, not from the thankYou object.
+- **Rendering & Omission**: Optional closing fold. `closingPhrase` is consumed by the invitation
+  footer; `date` renders as the Thank You closing-date line when present.
+- **Editing**: Managed invitations own `date` / `closingPhrase` / section variant via the provision
+  package and `pnpm invitation:update`. The dashboard Agradecimiento card edits message, firma, and
+  image only; preview and publish preserve the remaining prior-published fields.
 
 ---
 
