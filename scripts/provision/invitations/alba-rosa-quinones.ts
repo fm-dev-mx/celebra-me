@@ -1,5 +1,5 @@
 /**
- * alba-rosa-quinones.ts — Managed invitation definition for Alba Rosa Quiñones López (70 años)
+ * alba-rosa-quinones.ts — Managed invitation definition for Alba Rosa Quiñónez López (70 años)
  *
  * Base: demo-cumple-luxury-hacienda / luxury-hacienda
  * Prep SoT: docs/invitations/alba-rosa-quinones.md
@@ -19,12 +19,12 @@ export const ALBA_EVENT = {
 	baseDemoId: 'demo-cumple-luxury-hacienda',
 	themeId: 'luxury-hacienda',
 	visualProfileId: 'alba-rosa-quinones',
-	title: '70 años de Alba Rosa Quiñones López',
-	localDateTime: '2026-09-11T20:00',
+	title: '70 años de Alba Rosa Quiñónez López',
+	localDateTime: '2026-09-12T20:00',
 	timeZone: 'America/Mexico_City',
-	startsAtUtc: '2026-09-12T02:00:00.000Z',
+	startsAtUtc: '2026-09-13T02:00:00.000Z',
 	// Hero dates are formatted as floating event-local values in UTC.
-	heroDate: '2026-09-11T20:00:00.000Z',
+	heroDate: '2026-09-12T20:00:00.000Z',
 } as const;
 
 const venueAddress = 'Supermanzana km 6, Los Mochis, Sinaloa';
@@ -128,7 +128,7 @@ export function buildAlbaPublishedContent(
 		visualProfileId: ALBA_EVENT.visualProfileId,
 		title: ALBA_EVENT.title,
 		description:
-			'Acompáñenos a celebrar los 70 años de Alba Rosa Quiñones López el 11 de septiembre de 2026 en Canta Luna Campestre, Los Mochis.',
+			'Acompáñenos a celebrar los 70 años de Alba Rosa Quiñónez López el 12 de septiembre de 2026 en Canta Luna Campestre, Los Mochis.',
 		theme: { preset: ALBA_EVENT.themeId },
 		eventTiming: {
 			localDateTime: ALBA_EVENT.localDateTime,
@@ -165,7 +165,7 @@ export function buildAlbaPublishedContent(
 		},
 		_assetSlug: ALBA_EVENT.assetSlug,
 		hero: {
-			name: 'Alba Rosa Quiñones López',
+			name: 'Alba Rosa Quiñónez López',
 			// Occasion marker only — time/venue live in Location (Hero: 70 AÑOS → name → date).
 			label: '70 AÑOS',
 			date: ALBA_EVENT.heroDate,
@@ -184,7 +184,7 @@ export function buildAlbaPublishedContent(
 			envelopeName: 'Alba Rosa',
 			teaserDetails: '70 AÑOS',
 			cardName: 'Alba Rosa',
-			cardSecondaryName: 'Quiñones López',
+			cardSecondaryName: 'Quiñónez López',
 			guestPlacement: 'outside-envelope',
 			showCardAction: false,
 			sealStyle: 'monogram',
@@ -205,13 +205,13 @@ export function buildAlbaPublishedContent(
 		},
 		location: {
 			visibility: 'public',
-			introEyebrow: '11 DE SEPTIEMBRE DE 2026',
+			introEyebrow: '12 DE SEPTIEMBRE DE 2026',
 			reception: {
 				venueEvent: 'Celebración',
 				venueName: 'Canta Luna Campestre',
 				address: venueAddress,
 				city: 'Los Mochis, Sinaloa',
-				date: '11 de septiembre de 2026',
+				date: '12 de septiembre de 2026',
 				time: '8:00 p. m.',
 				mapUrl: mapsSearchUrl,
 				googleMapsUrl: mapsSearchUrl,
@@ -296,7 +296,7 @@ export function buildAlbaPublishedContent(
 			calendar: {
 				title: '70 años de Alba Rosa',
 				description:
-					'Celebración de los 70 años de Alba Rosa Quiñones López. Canta Luna Campestre, Supermanzana km 6, Los Mochis, Sinaloa. Inicia a las 8:00 p. m.',
+					'Celebración de los 70 años de Alba Rosa Quiñónez López. Canta Luna Campestre, Supermanzana km 6, Los Mochis, Sinaloa. Inicia a las 8:00 p. m.',
 				startsAt: ALBA_EVENT.startsAtUtc,
 			},
 			personalizedAccess: {
@@ -320,14 +320,14 @@ export function buildAlbaPublishedContent(
 				'Gracias por acompañarme en esta celebración. Su presencia hará de esta noche un recuerdo inolvidable.',
 			closingName: 'Alba Rosa',
 			closingPhrase: 'Con cariño',
-			date: '11 de septiembre de 2026',
+			date: '12 de septiembre de 2026',
 			image: assets['thank-you'],
 			// Tighter face-forward crop for intimate finale (not a second Hero).
 			focalPoint: '48% 22%',
 		},
 		sharing: {
 			ogImage: assets['hero-desktop'],
-			ogDescription: 'Invitación a los 70 años de Alba Rosa Quiñones López',
+			ogDescription: 'Invitación a los 70 años de Alba Rosa Quiñónez López',
 			whatsappTemplate:
 				'Hola {name}, le compartimos la invitación para los 70 años de Alba Rosa: {inviteUrl}',
 		},

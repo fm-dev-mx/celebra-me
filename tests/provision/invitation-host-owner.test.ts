@@ -19,7 +19,7 @@ describe('invitation host owner planning', () => {
 	});
 
 	it('normalizes accents and separators in hostLoginAlias', () => {
-		expect(normalizeHostLoginAlias('Alba-Quiñones')).toBe('alba_quinones');
+		expect(normalizeHostLoginAlias('Alba-Quiñónez')).toBe('alba_quinonez');
 	});
 
 	it('preserves an existing invitation owner', () => {

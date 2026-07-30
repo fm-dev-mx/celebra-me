@@ -30,7 +30,7 @@ function buildTestAssets(): AlbaAssetMap {
 	) as AlbaAssetMap;
 }
 
-describe('Alba Rosa Quiñones local invitation content', () => {
+describe('Alba Rosa Quiñónez local invitation content', () => {
 	it('uses a consistent luxury-hacienda catalog entry', () => {
 		const preset = findDemoPreset(ALBA_EVENT.baseDemoId);
 		expect(preset).toMatchObject({
@@ -70,7 +70,7 @@ describe('Alba Rosa Quiñones local invitation content', () => {
 		const serialized = JSON.stringify(content);
 		expect(serialized).not.toMatch(/\[\[PENDIENTE:/);
 		expect(content.hero).toMatchObject({
-			date: '2026-09-11T20:00:00.000Z',
+			date: '2026-09-12T20:00:00.000Z',
 			label: '70 AÑOS',
 		});
 		expect(content.hero).not.toHaveProperty('nickname');
@@ -78,7 +78,7 @@ describe('Alba Rosa Quiñones local invitation content', () => {
 			cardLabel: '70 AÑOS',
 			envelopeName: 'Alba Rosa',
 			cardName: 'Alba Rosa',
-			cardSecondaryName: 'Quiñones López',
+			cardSecondaryName: 'Quiñónez López',
 			guestPlacement: 'outside-envelope',
 			showCardAction: false,
 			sealInitials: 'A·R',
@@ -103,7 +103,7 @@ describe('Alba Rosa Quiñones local invitation content', () => {
 			title: 'FALTAN',
 		});
 		expect(content.location).toMatchObject({
-			introEyebrow: '11 DE SEPTIEMBRE DE 2026',
+			introEyebrow: '12 DE SEPTIEMBRE DE 2026',
 			reception: {
 				venueName: 'Canta Luna Campestre',
 				coordinates: { lat: 25.833891, lng: -109.052681, zoom: 15 },

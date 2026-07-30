@@ -271,9 +271,11 @@ a real defect.
 ## Verification
 
 Canonical CI includes a stable subset of `tests/e2e/envelope-reveal-interaction.spec.ts`: real
-open/reveal, Enter/Space keyboard behavior, focus transfer, reduced motion, representative shared
-invitation behavior, and the Alba-specific regression. Expensive matrix/focus-ring variants are
-tagged `@extended` and remain available outside `pnpm test:e2e:ci`.
+open/reveal, Enter/Space keyboard behavior, focus transfer, reduced motion, and representative
+shared invitation behavior. The Alba-specific regression is DB-backed and tagged `@extended`,
+excluded from `pnpm test:e2e:ci` but covered in the extended suite via `pnpm test:e2e`. Expensive
+matrix/focus-ring variants are also tagged `@extended` and remain available outside
+`pnpm test:e2e:ci`.
 
 On Windows, run canonical E2E with no pre-existing listener on port 4321. The default Playwright
 config supplies `ASTRO_DEV_BACKGROUND=1`, keeping Astro in the foreground so Playwright owns and

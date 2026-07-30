@@ -3,7 +3,7 @@
 @use '@fontsource-variable/cormorant-garamond/wght-italic.css' as cormorant-garamond-italic;
 @use '@fontsource/pinyon-script/400.css' as pinyon-script;
 
-// Alba Rosa Quiñones — Lane A profile on luxury-hacienda.
+// Alba Rosa Quiñónez — Lane A profile on luxury-hacienda.
 // Neutral editorial palette: photography carries color; UI stays luminous neutrals.
 // 3-band rhythm: light editorial → pause cream → coherent ink (pass → RSVP).
 
@@ -470,15 +470,15 @@ html:has(.event--alba-rosa-quinones) body {
 
 			&::before {
 				content: '70 AÑOS';
-				font-size: clamp(1.05rem, 3.5cqw, 1.16rem);
+				font-size: clamp(1.15rem, 4cqw, 1.35rem);
 				letter-spacing: 0.12em;
 				line-height: 1.35;
-				color: var(--alba-charcoal);
-				opacity: 85%;
+				color: var(--alba-gold);
+				opacity: 100%;
 			}
 
 			&::after {
-				content: '11 · SEP · 2026';
+				content: '12 · SEP · 2026';
 				margin-top: 0.38rem;
 				font-size: clamp(0.7rem, 7cqw, 0.85rem);
 				letter-spacing: 0.2em;
@@ -652,10 +652,10 @@ html:has(.event--alba-rosa-quinones) body {
 
 		.invitation-reveal-card__label {
 			margin: 0 0 0.65rem;
-			color: rgb(107 92 59);
+			color: var(--alba-gold);
 			font-family: var(--font-label, sans-serif);
-			font-size: clamp(1rem, 3.2vw, 1.2rem);
-			font-weight: 600;
+			font-size: clamp(1.1rem, 3.8vw, 1.35rem);
+			font-weight: 700;
 			letter-spacing: 0.16em;
 			text-transform: uppercase;
 			opacity: 100%;
@@ -840,9 +840,9 @@ html:has(.event--alba-rosa-quinones) body {
 		.invitation-hero__label {
 			font-family: var(--font-label, sans-serif);
 			letter-spacing: 0.24em;
-			color: var(--alba-champagne);
-			font-size: clamp(0.85rem, 2.2vw, 1.02rem);
-			font-weight: 600;
+			color: var(--alba-gold);
+			font-size: clamp(1rem, 2.8vw, 1.25rem);
+			font-weight: 700;
 			text-transform: uppercase;
 			opacity: 100%;
 			margin-bottom: 0.85rem;
@@ -854,7 +854,7 @@ html:has(.event--alba-rosa-quinones) body {
 			display: none;
 		}
 
-		// 2. Headline: Alba Rosa Quiñones López
+		// 2. Headline: Alba Rosa Quiñónez López
 		.invitation-hero__title {
 			font-family: var(--font-display);
 			font-style: normal;
@@ -913,7 +913,7 @@ html:has(.event--alba-rosa-quinones) body {
 			}
 		}
 
-		// 3. Date: 11 DE SEPTIEMBRE DE 2026
+		// 3. Date: 12 DE SEPTIEMBRE DE 2026
 		.invitation-hero__date {
 			font-family: var(--font-label, sans-serif);
 			font-size: clamp(0.76rem, 1.8vw, 0.88rem);

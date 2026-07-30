@@ -30,8 +30,8 @@ describe('canonical managed host alias', () => {
 	});
 
 	it('builds and recognizes only the technical managed domain', () => {
-		expect(buildManagedHostEmail('Álba Quiñones')).toBe(
-			'alba_quinones@clientes.celebra.invalid',
+		expect(buildManagedHostEmail('Álba Quiñónez')).toBe(
+			'alba_quinonez@clientes.celebra.invalid',
 		);
 		expect(isManagedHostEmail('ALBA_QUINONES@clientes.celebra.invalid')).toBe(true);
 		expect(isManagedHostEmail('alba@example.com')).toBe(false);
