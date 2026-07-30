@@ -516,6 +516,19 @@ export async function confirmProductionAction(
 	targetDescription: string,
 	requiredConfirmation: string,
 ): Promise<void> {
+	const envConfirmation = process.env.CONFIRM_PROD_MIGRATION?.trim();
+	if (envConfirmation) {
+		if (envConfirmation !== requiredConfirmation) {
+			fail(
+				`CONFIRM_PROD_MIGRATION mismatched. Expected "${requiredConfirmation}", received "${envConfirmation}". Aborting.`,
+			);
+		}
+		console.info(
+			`\n✅ Production confirmation accepted via CONFIRM_PROD_MIGRATION for ${targetDescription}.`,
+		);
+		return;
+	}
+
 	console.info(`\n⚠️  WARNING: You are about to perform an action against ${targetDescription}.`);
 	console.info(`To proceed, type "${requiredConfirmation}":`);
 	const inputStr = await promptUser('> ');
