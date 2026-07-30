@@ -1,7 +1,7 @@
 import { submitGuestRsvpByInviteId } from '@/lib/rsvp/services/rsvp-submission.service';
 import {
 	findGuestByInviteIdPublic,
-	updateGuestByInviteIdPublic,
+	submitGuestRsvpPublicRpc,
 } from '@/lib/rsvp/repositories/guest.repository';
 
 jest.mock('@/lib/rsvp/repositories/guest.repository');
@@ -9,8 +9,8 @@ jest.mock('@/lib/rsvp/repositories/guest.repository');
 const findGuestByInviteIdPublicMock = findGuestByInviteIdPublic as jest.MockedFunction<
 	typeof findGuestByInviteIdPublic
 >;
-const updateGuestByInviteIdPublicMock = updateGuestByInviteIdPublic as jest.MockedFunction<
-	typeof updateGuestByInviteIdPublic
+const submitGuestRsvpPublicRpcMock = submitGuestRsvpPublicRpc as jest.MockedFunction<
+	typeof submitGuestRsvpPublicRpc
 >;
 
 describe('rsvp service limits', () => {
@@ -36,7 +36,7 @@ describe('rsvp service limits', () => {
 			createdAt: new Date().toISOString(),
 			updatedAt: new Date().toISOString(),
 		});
-		updateGuestByInviteIdPublicMock.mockResolvedValue({
+		submitGuestRsvpPublicRpcMock.mockResolvedValue({
 			id: 'guest-1',
 			inviteId: 'invite-1',
 			eventId: 'evt-1',

@@ -1,12 +1,10 @@
 import {
-	createGuestInvitation,
 	findGuestByInviteIdPublic,
 	findGuestByPhonePublic,
-	updateGuestById,
-	updateGuestByInviteIdPublic,
+	submitGuestRsvpPublicRpc,
+	trackGuestInvitationViewPublicRpc,
 } from '@/lib/rsvp/repositories/guest.repository';
 import { generateShortId } from '@/lib/server/ids';
-import type { UpdateGuestInput } from '@/lib/rsvp/repositories/shared/rows';
 import type {
 	AttendanceStatus,
 	EntrySource,
@@ -120,29 +118,10 @@ export async function resolveRsvpTarget(identity: RsvpIdentity): Promise<Resolve
 	}
 }
 
-export async function persistRsvpResponse(
-	target: ResolvedRsvpTarget,
+function validateRsvpPayload(
 	payload: GuestRSVPSubmitDTO,
-	responseSource: ResponseSource,
-): Promise<{
-	attendanceStatus: AttendanceStatus;
-	attendeeCount: number;
-	respondedAt: string;
-	inviteId: string;
-	guestId: string;
-	entrySource: EntrySource;
-}> {
-	let invitation = target.invitation;
-	if (!invitation && target.createInput) {
-		invitation = await createGuestInvitation({
-			...target.createInput,
-			shortId: generateShortId(8),
-		});
-	}
-	if (!invitation) {
-		throw new ApiError(500, 'internal_error', 'Unable to resolve RSVP target.');
-	}
-
+	maxAllowed: number,
+): { attendanceStatus: AttendanceStatus; attendeeCount: number } {
 	const attendanceStatus = payload.attendanceStatus;
 	if (attendanceStatus !== 'confirmed' && attendanceStatus !== 'declined') {
 		throw new ApiError(400, 'bad_request', 'Attendance status is invalid.');
@@ -157,7 +136,7 @@ export async function persistRsvpResponse(
 			'Confirmed attendance requires at least 1 attendee.',
 		);
 	}
-	const maxAllowedAttendees = resolveGuestCap(invitation.maxAllowedAttendees).maxTotalAttendees;
+	const maxAllowedAttendees = resolveGuestCap(maxAllowed).maxTotalAttendees;
 	if (attendeeCount > maxAllowedAttendees) {
 		throw new ApiError(
 			400,
@@ -166,40 +145,69 @@ export async function persistRsvpResponse(
 		);
 	}
 
-	const respondedAt = new Date().toISOString();
+	return { attendanceStatus, attendeeCount };
+}
+
+export async function persistRsvpResponse(
+	target: ResolvedRsvpTarget,
+	payload: GuestRSVPSubmitDTO,
+	responseSource: ResponseSource,
+): Promise<{
+	attendanceStatus: AttendanceStatus;
+	attendeeCount: number;
+	respondedAt: string;
+	inviteId: string;
+	guestId: string;
+	entrySource: EntrySource;
+}> {
+	const maxAllowed =
+		target.invitation?.maxAllowedAttendees ?? target.createInput?.maxAllowedAttendees;
+	if (maxAllowed === undefined) {
+		throw new ApiError(500, 'internal_error', 'Unable to resolve RSVP target.');
+	}
+
+	const { attendanceStatus, attendeeCount } = validateRsvpPayload(payload, maxAllowed);
 	const sanitizedNewMessage = sanitize(payload.guestComment, MAX_GUEST_COMMENT_LEN);
-	const finalGuestComment = !sanitizedNewMessage
-		? invitation.guestComment
-		: appendGuestMessage(invitation.guestComment, sanitizedNewMessage);
-	const updateBody: UpdateGuestInput = {
-		guestId: invitation.id,
-		attendanceStatus,
-		attendeeCount,
-		guestComment: finalGuestComment,
-		respondedAt,
-		lastResponseSource: responseSource,
-	};
-	const updated =
-		responseSource === 'link'
-			? await updateGuestByInviteIdPublic(invitation.inviteId, {
-					attendance_status: updateBody.attendanceStatus,
-					attendee_count: updateBody.attendeeCount,
-					guest_comment: updateBody.guestComment,
-					responded_at: updateBody.respondedAt,
-					last_response_source: updateBody.lastResponseSource,
+	// Absolute comment for RPC SET semantics; null keeps existing DB value.
+	const guestCommentAbsolute = !sanitizedNewMessage
+		? null
+		: appendGuestMessage(target.invitation?.guestComment ?? '', sanitizedNewMessage);
+
+	try {
+		const updated = target.invitation
+			? await submitGuestRsvpPublicRpc({
+					inviteId: target.invitation.inviteId,
+					attendanceStatus,
+					attendeeCount,
+					guestComment: guestCommentAbsolute,
+					responseSource,
 				})
-			: await updateGuestById(updateBody);
+			: await submitGuestRsvpPublicRpc({
+					eventId: target.createInput.eventId,
+					fullName: target.createInput.fullName,
+					phone: target.createInput.phone,
+					countryCode: target.createInput.countryCode,
+					maxAllowedAttendees: target.createInput.maxAllowedAttendees,
+					shortId: generateShortId(8),
+					attendanceStatus,
+					attendeeCount,
+					guestComment: guestCommentAbsolute,
+					responseSource,
+				});
 
-	console.info(`[rsvp] Success: RSVP submitted for invite ${updated.inviteId}`);
+		console.info(`[rsvp] Success: RSVP submitted for invite ${updated.inviteId}`);
 
-	return {
-		attendanceStatus: updated.attendanceStatus,
-		attendeeCount: updated.attendeeCount,
-		respondedAt: updated.respondedAt ?? respondedAt,
-		inviteId: updated.inviteId,
-		guestId: updated.id,
-		entrySource: updated.entrySource ?? 'dashboard',
-	};
+		return {
+			attendanceStatus: updated.attendanceStatus ?? attendanceStatus,
+			attendeeCount: updated.attendeeCount ?? attendeeCount,
+			respondedAt: updated.respondedAt ?? new Date().toISOString(),
+			inviteId: updated.inviteId,
+			guestId: updated.id,
+			entrySource: updated.entrySource ?? 'generic_public',
+		};
+	} catch (error) {
+		throw mapSupabaseErrorToApiError(error);
+	}
 }
 
 export async function submitGuestRsvpByInviteId(
@@ -246,19 +254,15 @@ export async function trackInvitationView(
 	inviteId: string,
 	viewPercentage?: number,
 ): Promise<void> {
-	const invitation = await findGuestByInviteIdPublic(sanitize(inviteId, 64));
-	if (!invitation) throw new ApiError(404, 'not_found', 'Invitation not found.');
+	const cleanInviteId = sanitize(inviteId, 64);
+	if (!cleanInviteId) return;
 
-	const now = new Date().toISOString();
-	const nextPercentage =
-		viewPercentage !== undefined
-			? Math.max(invitation.viewPercentage, Math.min(100, Math.trunc(viewPercentage)))
-			: invitation.viewPercentage;
-
-	await updateGuestByInviteIdPublic(inviteId, {
-		first_viewed_at: invitation.firstViewedAt ?? now,
-		last_viewed_at: now,
-		is_viewed: true,
-		view_percentage: nextPercentage,
-	});
+	try {
+		await trackGuestInvitationViewPublicRpc(cleanInviteId, viewPercentage);
+	} catch (error) {
+		console.warn('[telemetry] Non-critical view tracking failed:', {
+			inviteId: cleanInviteId,
+			error: error instanceof Error ? error.message : String(error),
+		});
+	}
 }

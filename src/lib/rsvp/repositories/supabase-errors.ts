@@ -3,7 +3,7 @@
  * Converts Supabase REST API errors to user-friendly ApiError instances
  */
 
-import { ApiError } from '@/lib/rsvp/core/errors';
+import { ApiError, type ApiErrorCode } from '@/lib/rsvp/core/errors';
 
 export interface SupabaseErrorResponse {
 	message?: string;
@@ -28,6 +28,42 @@ const CONSTRAINT_MAP: Record<
 	},
 };
 
+const PUBLIC_RSVP_RPC_ERROR_MAP: Record<
+	string,
+	{ httpStatus: number; code: ApiErrorCode; userMessage: string; errorCode: string }
+> = {
+	invalid_attendance_status: {
+		httpStatus: 400,
+		code: 'bad_request',
+		userMessage: 'El estado de asistencia no es válido.',
+		errorCode: 'invalid_attendance_status',
+	},
+	guest_invitation_not_found: {
+		httpStatus: 404,
+		code: 'not_found',
+		userMessage: 'Invitation not found.',
+		errorCode: 'guest_invitation_not_found',
+	},
+	attendee_count_exceeds_limit: {
+		httpStatus: 400,
+		code: 'bad_request',
+		userMessage: 'El número de asistentes excede el límite de la invitación.',
+		errorCode: 'attendee_count_exceeds_limit',
+	},
+	full_name_required: {
+		httpStatus: 400,
+		code: 'bad_request',
+		userMessage: 'El nombre completo es obligatorio.',
+		errorCode: 'full_name_required',
+	},
+	missing_rsvp_target_identity: {
+		httpStatus: 400,
+		code: 'bad_request',
+		userMessage: 'No se pudo identificar la invitación para el RSVP.',
+		errorCode: 'missing_rsvp_target_identity',
+	},
+};
+
 function extractConstraintName(errorMessage: string): string | null {
 	const constraintMatch = errorMessage.match(/constraint "([^"]+)"/);
 	if (constraintMatch) return constraintMatch[1];
@@ -37,6 +73,16 @@ function extractConstraintName(errorMessage: string): string | null {
 	);
 	if (duplicateKeyMatch) return duplicateKeyMatch[1];
 
+	return null;
+}
+
+function matchPublicRsvpRpcError(errorMessage: string) {
+	const normalized = errorMessage.trim();
+	for (const [token, mapping] of Object.entries(PUBLIC_RSVP_RPC_ERROR_MAP)) {
+		if (normalized === token || normalized.includes(token)) {
+			return mapping;
+		}
+	}
 	return null;
 }
 
@@ -61,6 +107,9 @@ function parseSupabaseError(error: unknown): SupabaseErrorResponse | null {
 }
 
 export function mapSupabaseErrorToApiError(error: unknown): ApiError {
+	if (error instanceof ApiError) {
+		return error;
+	}
 	const supabaseError = parseSupabaseError(error);
 	const errorMessage =
 		supabaseError?.message || (error instanceof Error ? error.message : String(error));
@@ -74,6 +123,13 @@ export function mapSupabaseErrorToApiError(error: unknown): ApiError {
 				errorCode: mapping.errorCode,
 			});
 		}
+	}
+
+	const rpcMapping = matchPublicRsvpRpcError(errorMessage);
+	if (rpcMapping) {
+		return new ApiError(rpcMapping.httpStatus, rpcMapping.code, rpcMapping.userMessage, {
+			errorCode: rpcMapping.errorCode,
+		});
 	}
 
 	if (errorMessage.includes('23505')) {

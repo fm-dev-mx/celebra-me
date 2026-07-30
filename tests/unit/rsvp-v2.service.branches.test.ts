@@ -66,6 +66,13 @@ describe('rsvp service branches', () => {
 	const updateGuestByIdMock = guestRepo.updateGuestById as jest.MockedFunction<
 		typeof guestRepo.updateGuestById
 	>;
+	const submitGuestRsvpPublicRpcMock = guestRepo.submitGuestRsvpPublicRpc as jest.MockedFunction<
+		typeof guestRepo.submitGuestRsvpPublicRpc
+	>;
+	const trackGuestInvitationViewPublicRpcMock =
+		guestRepo.trackGuestInvitationViewPublicRpc as jest.MockedFunction<
+			typeof guestRepo.trackGuestInvitationViewPublicRpc
+		>;
 	const softDeleteGuestByIdMock = guestRepo.softDeleteGuestById as jest.MockedFunction<
 		typeof guestRepo.softDeleteGuestById
 	>;
@@ -332,7 +339,7 @@ describe('rsvp service branches', () => {
 
 	it('submitGuestRsvpByPublicEvent updates the matching guest when the phone already exists', async () => {
 		findGuestByPhonePublicMock.mockResolvedValue(baseGuest);
-		updateGuestByIdMock.mockResolvedValue({
+		submitGuestRsvpPublicRpcMock.mockResolvedValue({
 			...baseGuest,
 			attendanceStatus: 'confirmed',
 			attendeeCount: 2,
@@ -356,12 +363,13 @@ describe('rsvp service branches', () => {
 
 		expect(findGuestByPhonePublicMock).toHaveBeenCalledWith('evt-1', '+52', '6680000000');
 		expect(createGuestInvitationMock).not.toHaveBeenCalled();
-		expect(updateGuestByIdMock).toHaveBeenCalledWith(
+		expect(submitGuestRsvpPublicRpcMock).toHaveBeenCalledWith(
 			expect.objectContaining({
-				guestId: 'guest-1',
+				inviteId: 'invite-1',
 				attendanceStatus: 'confirmed',
 				attendeeCount: 2,
-				lastResponseSource: 'generic_link',
+				guestComment: 'Nos vemos',
+				responseSource: 'generic_link',
 			}),
 		);
 		expect(result.entrySource).toBe('dashboard');
@@ -369,16 +377,7 @@ describe('rsvp service branches', () => {
 
 	it('submitGuestRsvpByPublicEvent creates a generic public guest when the phone is new', async () => {
 		findGuestByPhonePublicMock.mockResolvedValue(null);
-		createGuestInvitationMock.mockResolvedValue({
-			...baseGuest,
-			id: 'guest-2',
-			inviteId: 'invite-2',
-			fullName: 'Mariana Soto',
-			phone: '6681112233',
-			maxAllowedAttendees: 3,
-			entrySource: 'generic_public',
-		});
-		updateGuestByIdMock.mockResolvedValue({
+		submitGuestRsvpPublicRpcMock.mockResolvedValue({
 			...baseGuest,
 			id: 'guest-2',
 			inviteId: 'invite-2',
@@ -405,28 +404,27 @@ describe('rsvp service branches', () => {
 			},
 		});
 
-		expect(createGuestInvitationMock).toHaveBeenCalledWith(
+		expect(createGuestInvitationMock).not.toHaveBeenCalled();
+		expect(submitGuestRsvpPublicRpcMock).toHaveBeenCalledWith(
 			expect.objectContaining({
 				eventId: 'evt-1',
 				fullName: 'Mariana Soto',
 				phone: '6681112233',
 				countryCode: '+52',
 				maxAllowedAttendees: 3,
-				entrySource: 'generic_public',
-			}),
-		);
-		expect(updateGuestByIdMock).toHaveBeenCalledWith(
-			expect.objectContaining({
-				guestId: 'guest-2',
-				lastResponseSource: 'generic_link',
+				attendanceStatus: 'confirmed',
+				attendeeCount: 3,
+				guestComment: 'Ahí estaremos',
+				responseSource: 'generic_link',
 			}),
 		);
 		expect(result.entrySource).toBe('generic_public');
 	});
 
-	it('trackInvitationView throws not_found on missing invite', async () => {
-		findGuestByInviteIdPublicMock.mockResolvedValue(null);
-		await expect(trackInvitationView('missing')).rejects.toMatchObject({ status: 404 });
+	it('trackInvitationView degrades gracefully when track RPC fails', async () => {
+		trackGuestInvitationViewPublicRpcMock.mockRejectedValue(new Error('rpc failed'));
+		await expect(trackInvitationView('missing')).resolves.toBeUndefined();
+		expect(trackGuestInvitationViewPublicRpcMock).toHaveBeenCalledWith('missing', undefined);
 	});
 
 	it('claimEventForUser validates claim states via atomic RPC', async () => {

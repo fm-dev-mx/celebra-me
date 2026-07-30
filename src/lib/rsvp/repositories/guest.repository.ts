@@ -1,4 +1,8 @@
-import type { GuestInvitationRecord } from '@/interfaces/rsvp/domain.interface';
+import type {
+	AttendanceStatus,
+	GuestInvitationRecord,
+	ResponseSource,
+} from '@/interfaces/rsvp/domain.interface';
 import {
 	type CreateGuestInput,
 	type GuestFilters,
@@ -14,6 +18,7 @@ import {
 	deleteByQuery,
 } from '@/lib/rsvp/repositories/shared/operations';
 import { normalizeOptionalPhonePair } from '@/lib/rsvp/core/utils';
+import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 
 const TABLE = 'guest_invitations';
 const ACTIVE_GUEST_FILTER = 'deleted_at=is.null';
@@ -135,15 +140,11 @@ export async function findGuestsByEvent(
 
 export async function createGuestInvitation(
 	input: CreateGuestInput,
-	hostAccessToken?: string,
+	hostAccessToken: string,
 ): Promise<GuestInvitationRecord> {
-	return insertSingle(
-		TABLE,
-		GUEST_COLUMNS,
-		buildGuestInsertBody(input),
-		toGuestRecord,
-		hostAccessToken ? { authToken: hostAccessToken } : { useServiceRole: true },
-	);
+	return insertSingle(TABLE, GUEST_COLUMNS, buildGuestInsertBody(input), toGuestRecord, {
+		authToken: hostAccessToken,
+	});
 }
 
 export async function findGuestById(
@@ -161,7 +162,7 @@ export async function findGuestById(
 
 export async function updateGuestById(
 	input: UpdateGuestInput,
-	hostAccessToken?: string,
+	hostAccessToken: string,
 ): Promise<GuestInvitationRecord> {
 	return updateGuestRecord(
 		`id=eq.${encodeURIComponent(input.guestId)}`,
@@ -240,9 +241,77 @@ export async function findGuestByPhoneAuth(
 	);
 }
 
+export async function submitGuestRsvpPublicRpc(input: {
+	inviteId?: string | null;
+	eventId?: string | null;
+	fullName?: string | null;
+	phone?: string | null;
+	countryCode?: string | null;
+	maxAllowedAttendees?: number | null;
+	attendanceStatus: AttendanceStatus;
+	attendeeCount: number;
+	guestComment?: string | null;
+	responseSource?: ResponseSource;
+	shortId?: string | null;
+}): Promise<GuestInvitationRecord> {
+	const rows = await supabaseRestRequest<Array<{ invite_id: string }> | { invite_id: string }>({
+		pathWithQuery: 'rpc/submit_guest_rsvp_public',
+		method: 'POST',
+		useServiceRole: true,
+		body: {
+			p_invite_id: input.inviteId ?? null,
+			p_event_id: input.eventId ?? null,
+			p_full_name: input.fullName ?? null,
+			p_phone: input.phone ?? null,
+			p_country_code: input.countryCode ?? null,
+			p_max_allowed_attendees: input.maxAllowedAttendees ?? null,
+			p_attendance_status: input.attendanceStatus,
+			p_attendee_count: input.attendeeCount,
+			p_guest_comment: input.guestComment ?? null,
+			p_response_source: input.responseSource ?? 'link',
+			p_short_id: input.shortId ?? null,
+		},
+	});
+
+	const row = Array.isArray(rows) ? rows[0] : rows;
+	if (!row?.invite_id) {
+		throw new Error('No se pudo guardar la respuesta de la invitación.');
+	}
+
+	const guest = await findGuestByInviteIdPublic(row.invite_id);
+	if (!guest) {
+		throw new Error('No se pudo guardar la respuesta de la invitación.');
+	}
+	return guest;
+}
+
+export async function trackGuestInvitationViewPublicRpc(
+	inviteId: string,
+	viewPercentage?: number,
+): Promise<boolean> {
+	return await supabaseRestRequest<boolean>({
+		pathWithQuery: 'rpc/track_guest_invitation_view_public',
+		method: 'POST',
+		useServiceRole: true,
+		body: {
+			p_invite_id: inviteId,
+			p_view_percentage: viewPercentage ?? null,
+		},
+	});
+}
+
 export async function updateGuestByInviteIdPublic(
 	inviteId: string,
 	body: Record<string, unknown>,
 ): Promise<GuestInvitationRecord> {
-	return updateGuestRecord(`invite_id=eq.${encodeURIComponent(inviteId)}`, body);
+	if (!body.attendance_status) {
+		throw new Error('Failed to update guest_invitations');
+	}
+	return submitGuestRsvpPublicRpc({
+		inviteId,
+		attendanceStatus: body.attendance_status as AttendanceStatus,
+		attendeeCount: (body.attendee_count as number) ?? 1,
+		guestComment: (body.guest_comment as string) ?? null,
+		responseSource: (body.last_response_source as ResponseSource) ?? 'link',
+	});
 }

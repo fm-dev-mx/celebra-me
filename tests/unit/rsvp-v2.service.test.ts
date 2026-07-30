@@ -1,7 +1,7 @@
 import { submitGuestRsvpByInviteId } from '@/lib/rsvp/services/rsvp-submission.service';
 import {
 	findGuestByInviteIdPublic,
-	updateGuestByInviteIdPublic,
+	submitGuestRsvpPublicRpc,
 } from '@/lib/rsvp/repositories/guest.repository';
 import type { GuestInvitationRecord } from '@/interfaces/rsvp/domain.interface';
 
@@ -10,8 +10,8 @@ jest.mock('@/lib/rsvp/repositories/guest.repository');
 const findGuestByInviteIdPublicMock = findGuestByInviteIdPublic as jest.MockedFunction<
 	typeof findGuestByInviteIdPublic
 >;
-const updateGuestByInviteIdPublicMock = updateGuestByInviteIdPublic as jest.MockedFunction<
-	typeof updateGuestByInviteIdPublic
+const submitGuestRsvpPublicRpcMock = submitGuestRsvpPublicRpc as jest.MockedFunction<
+	typeof submitGuestRsvpPublicRpc
 >;
 
 function makeGuestRecord(overrides: Partial<GuestInvitationRecord> = {}): GuestInvitationRecord {
@@ -47,7 +47,7 @@ describe('rsvp service unit', () => {
 
 	it('persists declined RSVP with attendee_count forced to 0', async () => {
 		findGuestByInviteIdPublicMock.mockResolvedValue(makeGuestRecord());
-		updateGuestByInviteIdPublicMock.mockResolvedValue(
+		submitGuestRsvpPublicRpcMock.mockResolvedValue(
 			makeGuestRecord({
 				attendanceStatus: 'declined',
 				attendeeCount: 0,
@@ -72,7 +72,7 @@ describe('rsvp service unit', () => {
 			findGuestByInviteIdPublicMock.mockResolvedValue(
 				makeGuestRecord({ guestComment: 'Anterior mensaje' }),
 			);
-			updateGuestByInviteIdPublicMock.mockResolvedValue(
+			submitGuestRsvpPublicRpcMock.mockResolvedValue(
 				makeGuestRecord({
 					attendanceStatus: 'confirmed',
 					attendeeCount: 2,
@@ -88,18 +88,19 @@ describe('rsvp service unit', () => {
 				guestComment: '',
 			});
 
-			const updateArg = updateGuestByInviteIdPublicMock.mock.calls[0][1] as Record<
-				string,
-				unknown
-			>;
-			expect(updateArg.guest_comment).toBe('Anterior mensaje');
+			expect(submitGuestRsvpPublicRpcMock).toHaveBeenCalledWith(
+				expect.objectContaining({
+					inviteId: 'invite-1',
+					guestComment: null,
+				}),
+			);
 		});
 
 		it('keeps existing message when new payload has whitespace-only guestComment', async () => {
 			findGuestByInviteIdPublicMock.mockResolvedValue(
 				makeGuestRecord({ guestComment: 'Anterior mensaje' }),
 			);
-			updateGuestByInviteIdPublicMock.mockResolvedValue(
+			submitGuestRsvpPublicRpcMock.mockResolvedValue(
 				makeGuestRecord({
 					attendanceStatus: 'confirmed',
 					attendeeCount: 2,
@@ -115,18 +116,19 @@ describe('rsvp service unit', () => {
 				guestComment: '   ',
 			});
 
-			const updateArg = updateGuestByInviteIdPublicMock.mock.calls[0][1] as Record<
-				string,
-				unknown
-			>;
-			expect(updateArg.guest_comment).toBe('Anterior mensaje');
+			expect(submitGuestRsvpPublicRpcMock).toHaveBeenCalledWith(
+				expect.objectContaining({
+					inviteId: 'invite-1',
+					guestComment: null,
+				}),
+			);
 		});
 
-		it('appends new message to existing guestComment', async () => {
+		it('passes absolute appended comment for RPC SET ownership', async () => {
 			findGuestByInviteIdPublicMock.mockResolvedValue(
 				makeGuestRecord({ guestComment: 'Anterior mensaje' }),
 			);
-			updateGuestByInviteIdPublicMock.mockResolvedValue(
+			submitGuestRsvpPublicRpcMock.mockResolvedValue(
 				makeGuestRecord({
 					attendanceStatus: 'confirmed',
 					attendeeCount: 2,
@@ -141,13 +143,10 @@ describe('rsvp service unit', () => {
 				guestComment: 'Nuevo mensaje',
 			});
 
-			const updateArg = updateGuestByInviteIdPublicMock.mock.calls[0][1] as Record<
-				string,
-				unknown
-			>;
-			const comment = updateArg.guest_comment as string;
-			expect(comment).toContain('Anterior mensaje');
-			expect(comment).toContain('Nuevo mensaje');
+			const call = submitGuestRsvpPublicRpcMock.mock.calls[0][0];
+			expect(call.inviteId).toBe('invite-1');
+			expect(call.guestComment).toContain('Anterior mensaje');
+			expect(call.guestComment).toContain('Nuevo mensaje');
 		});
 	});
 });

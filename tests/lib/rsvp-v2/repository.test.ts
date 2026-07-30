@@ -115,6 +115,14 @@ describe('rsvp repository', () => {
 				delivery_status: 'shared',
 			}),
 		]);
+		supabaseRestRequestMock.mockResolvedValueOnce([
+			makeGuestRow({
+				attendance_status: 'confirmed',
+				attendee_count: 2,
+				guest_comment: 'ok',
+				delivery_status: 'shared',
+			}),
+		]);
 		const updated = await updateGuestByInviteIdPublic('invite-1', {
 			attendance_status: 'confirmed',
 		});
