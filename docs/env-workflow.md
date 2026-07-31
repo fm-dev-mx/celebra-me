@@ -223,9 +223,25 @@ Public and authenticated read-only commands require the provisioning, publicatio
 to be present and exactly `false`. Missing flags fail closed before Deployment Protection bypass or
 application authentication.
 
-`PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING=true` authorizes the idempotent Preview fixture
-command (`pnpm test:e2e:preview:provision`): create or reconcile slug `e2e-preview-publication`,
-copy demo-derived content, and run publication preflight. It does **not** publish.
+`PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING=true` authorizes the Playwright fixture reconcile
+command (`pnpm test:e2e:preview:provision`): verify slug `e2e-preview-publication`, copy
+demo-derived content, and run publication preflight. It does **not** publish and does **not** create
+the invitation row.
+
+Greenfield / fixture-missing Preview bootstrap is owned by the Preview-only CLI:
+
+```bash
+# dry-run
+pnpm invitation:preview-fixture --dry-run
+
+# apply (automated scope)
+CELEBRA_TASK_SCOPE=preview:e2e-preview-publication:e2e-fixture pnpm invitation:preview-fixture --apply
+```
+
+That command creates or verifies the canonical fixture owned by `preview@preview.com` using Preview
+DB credentials and existing Preview write-auth guards. It never targets Production and does not
+restore Dashboard/API managed creation. After apply, copy the printed UUID to
+`PLAYWRIGHT_PREVIEW_INVITATION_ID`, then run `pnpm test:e2e:preview:provision`.
 
 `PLAYWRIGHT_ALLOW_PREVIEW_PUBLICATION=true` separately authorizes fixture-only publication through
 `pnpm test:e2e:preview:publish`. Provisioning requires publication to remain `false` and contains no
@@ -234,10 +250,10 @@ the canonical fixture slug, the dedicated Preview account, and the verified Prev
 Neither flag authorizes Production operations.
 
 Run public smoke checks with `pnpm test:e2e:preview:public` and authenticated checks with
-`pnpm test:e2e:preview`. Run fixture provisioning only after explicit owner approval with
-`pnpm test:e2e:preview:provision`, then copy the printed non-secret fixture UUID to
-`PLAYWRIGHT_PREVIEW_INVITATION_ID` in `.env.e2e.local`. Run publication only as the separate
-`pnpm test:e2e:preview:publish` command after explicit authorization.
+`pnpm test:e2e:preview`. Run fixture bootstrap with `pnpm invitation:preview-fixture --apply` after
+explicit Preview task scope, then reconcile content with `pnpm test:e2e:preview:provision`. Run
+publication only as the separate `pnpm test:e2e:preview:publish` command after explicit
+authorization.
 
 The Deployment Protection secret is sent only during a single same-origin health request that asks
 Vercel to establish its bypass cookie. It is never configured as a global browser header, so

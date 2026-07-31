@@ -366,7 +366,7 @@ Celebra-me includes a dedicated RSVP and guest-management module for:
 - `GET /api/dashboard/admin/users`
 - `PATCH /api/dashboard/admin/users/:userId/role`
 - `GET /api/dashboard/intake`
-- `POST /api/dashboard/intake`
+- `POST /api/dashboard/intake` (rejected for client creation; managed CLI only)
 - `GET /api/dashboard/intake/:id`
 - `POST /api/dashboard/intake/:id/request`
 - `POST /api/dashboard/intake/:id/request/regenerate-token`

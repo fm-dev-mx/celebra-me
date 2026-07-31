@@ -193,6 +193,18 @@ bypass this workflow. Demo showroom rows continue to sync via list load (`synchr
 Low-level `createInvitation` repository/service primitives remain for demos, provision, and tests —
 not for Dashboard-managed client creates. Do not create client records through manual SQL.
 
+Preview E2E publication fixture bootstrap (slug `e2e-preview-publication`) is separate from managed
+client creation: use `pnpm invitation:preview-fixture --apply` (Preview-only; Production rejected),
+then `pnpm test:e2e:preview:provision` for content reconcile. That path does not restore Dashboard
+create.
+
+## 3a. Managed observability (read-only)
+
+Canonical status entrypoint: `pnpm dbs` (detail) and `pnpm dbs --compact` (CONTENT + SCHEMA).
+Compact mode composes `dbs-status` content vocabulary and `classifySchemaLifecycle` — it does not
+introduce a parallel divergence model and never mutates. Optional post-commit/merge/rewrite hooks
+may print compact status; they never block Git. Opt out with `CELEBRA_SKIP_MANAGED_STATUS=1`.
+
 ## 4. Edit content
 
 The editor sections are `main`, `family`, `location`, `countdown`, `itinerary`, `rsvp`, `music`,

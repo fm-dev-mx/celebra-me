@@ -99,9 +99,23 @@ The single canonical repository command for inspecting environment status and ma
 state across Local, Preview, and Production is:
 
 ```bash
-pnpm dbs              # General 3-environment matrix view (includes schema lifecycle)
-pnpm dbs <slug>       # Per-invitation cross-environment status
+pnpm dbs                 # General 3-environment matrix view (includes schema lifecycle)
+pnpm dbs <slug>          # Per-invitation cross-environment status
+pnpm dbs --compact       # Compact CONTENT + SCHEMA (connectivity CONTENT; fast)
+pnpm dbs --compact <slug># Compact package-hash CONTENT + SCHEMA for one invitation
+pnpm dbs --compact --aggregate-content  # Worst-of all definitions (slower)
 ```
+
+Compact output uses existing classifiers only (`dbs-status` content vocabulary +
+`classifySchemaLifecycle`). It is strictly read-only and never migrates, reconciles, updates, or
+promotes. Unavailable remotes degrade to `UNREACHABLE` / `CREDENTIALS_REQUIRED` / `UNVERIFIED`
+without noisy failure for expected gaps. Default `--compact` CONTENT is connectivity-derived for
+speed; pass a slug for `MATCH_CANONICAL` / `BEHIND_CANONICAL` / `DIVERGED` package-hash truth.
+
+Optional non-blocking Git hooks (`post-commit`, `post-merge`, `post-rewrite`) may print compact
+status with a strict per-query timeout. They never block Git success. Temporary opt-out:
+`CELEBRA_SKIP_MANAGED_STATUS=1`. Blocking husky gates (`pre-commit`, `pre-push`, `commit-msg`) do
+not run database/network status.
 
 ### PowerShell Helper
 

@@ -225,8 +225,10 @@ erDiagram
 
 ### Invitation Creation
 
-Admin → dashboard → `POST /api/dashboard/intake` → `createInvitation()` → writes `invitations` row
-with `kind: 'demo' | 'client'`.
+Managed client invitations are created only through the definition registry +
+`pnpm invitation:update` (Local/Preview) and owner-only `pnpm invitation:promote` (Production).
+`POST /api/dashboard/intake` and Dashboard duplicate reject client creation (`403`).
+Demo rows are synchronized by `synchronizeDemoInvitations`, not by Dashboard create.
 
 ### Internal Admin Editing
 

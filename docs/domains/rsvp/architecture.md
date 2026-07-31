@@ -72,7 +72,7 @@ short code is available and emits the short URL when `shortId` exists.
 
 - `GET /api/captura/:token` — resolve intake request from raw token
 - `POST /api/captura/:token` — submit intake block data
-- `GET|POST /api/dashboard/intake` — list/create invitation projects
+- `GET /api/dashboard/intake` — list invitation projects (`POST` create is rejected; use managed CLI)
 - `GET /api/dashboard/intake/:id` — get project details
 - `POST /api/dashboard/intake/:id/request` — create intake request
 - `POST /api/dashboard/intake/:id/request/regenerate-token` — regenerate token

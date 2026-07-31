@@ -1,19 +1,19 @@
 ---
-title: Goal 2 Closure — Canonical Creation & Managed Contract Consolidation
+title: Canonical Creation & Managed Contract Consolidation — Closure
 status: final
 created: 2026-07-31
 updated: 2026-07-31
 related_docs:
-  - .agent/plans/active/canonical-invitation-contract-audit.md
+  - .agent/plans/archived/canonical-invitation-contract-audit.md
   - docs/core/content-parity-rsvp-isolation.md
   - docs/domains/intake/production-flow.md
   - docs/database-workflow.md
 supersedes: []
 ---
 
-# Goal 2 Closure Report
+# Canonical Creation & Managed Contract Consolidation — Closure Report
 
-Authority: `.agent/plans/active/canonical-invitation-contract-audit.md` §F.
+Authority: `.agent/plans/archived/canonical-invitation-contract-audit.md` §F.
 
 ## 1. Files changed (responsibility)
 
@@ -121,9 +121,11 @@ Gates:
 - `pnpm agent:git-safety:check` — pass
 - `git diff --check` — pass
 
-E2E Preview provision fixture no longer POSTs Dashboard create; requires pre-existing `e2e-preview-publication` fixture (deferred full fixture provision CLI → Goal 3 if needed).
+E2E Preview provision fixture no longer POSTs Dashboard create; requires pre-existing `e2e-preview-publication` fixture (deferred full fixture provision CLI if needed).
 
-## 9. Deferred to Goal 3
+## 9. Deferred follow-on
+
+Tracked under `.agent/plans/active/managed-observability.md`:
 
 - Compact Git/DB observability status composing `dbs-status` / classifiers (no new parallel classifier; not in husky)
 - Optional Preview fixture provision script replacing retired Dashboard POST for greenfield Preview E2E bootstrap

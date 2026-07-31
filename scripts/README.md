@@ -22,26 +22,28 @@ owns the command inventory.
 
 ## Available Ops Commands
 
-| Command                     | Canonical Script               | Purpose                                                                               |
-| --------------------------- | ------------------------------ | ------------------------------------------------------------------------------------- |
-| `pnpm ops check-links`      | `scripts/check-links.mjs`      | validate relative links inside changed Markdown files                                 |
-| `pnpm ops validate-schema`  | `scripts/validate-schema.mjs`  | compare theme-contract variants against modular section-theme selectors                |
-| `pnpm ops validate-commits` | `scripts/validate-commits.mjs` | replay commitlint and commit-audit checks across a commit range                       |
-| `pnpm ops graphify-views`   | `scripts/graphify/entry.ts`    | generate Graphify operational domain and community reports                            |
+| Command                     | Canonical Script               | Purpose                                                                              |
+| --------------------------- | ------------------------------ | ------------------------------------------------------------------------------------ |
+| `pnpm ops check-links`      | `scripts/check-links.mjs`      | validate relative links inside changed Markdown files                                |
+| `pnpm ops validate-schema`  | `scripts/validate-schema.mjs`  | compare theme-contract variants against modular section-theme selectors              |
+| `pnpm ops validate-commits` | `scripts/validate-commits.mjs` | replay commitlint and commit-audit checks across a commit range                      |
+| `pnpm ops graphify-views`   | `scripts/graphify/entry.ts`    | generate Graphify operational domain and community reports                           |
 | `pnpm ops graphify-refresh` | `scripts/graphify/refresh.ts`  | rebuild, cluster, promote, fingerprint, and validate the canonical Graphify snapshot |
 
-Removed one-shot commands (`optimize-assets`, `new-invitation`, `adopt-legacy-events`, `ops dbs`) are
-no longer registered. Use `pnpm dbs` and `pnpm invitation:*` for invitation operations.
+Removed one-shot commands (`optimize-assets`, `new-invitation`, `adopt-legacy-events`, `ops dbs`)
+are no longer registered. Use `pnpm dbs` and `pnpm invitation:*` for invitation operations.
 
 ## Invitation Provisioning & Promotion Commands
 
-| Command                          | Canonical Script                                | Purpose                                                                                    |
-| -------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `pnpm dbs`                       | `scripts/provision/dbs-cli.ts`                  | Read-only Local/Preview/Production status matrix (managed invitations + schema lifecycle)  |
-| `pnpm invitation:update`         | `scripts/provision/invitation-update-cli.ts`    | Define, plan, apply, package, and approve managed invitations for Local/Preview            |
-| `pnpm invitation:reconcile`      | `scripts/provision/invitation-reconcile-cli.ts` | Guided Local/Preview managed divergence reconciliation                                     |
-| `pnpm invitation:content-parity` | `scripts/provision/content-parity-cli.ts`       | Read-only semantic content parity across environments (excludes RSVP/PII)                  |
-| `pnpm invitation:promote`        | `scripts/provision/invitation-promote-cli.ts`   | Owner-only Production managed-content promotion from an exact Preview-approved release     |
+| Command                           | Canonical Script                                | Purpose                                                                                   |
+| --------------------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `pnpm dbs`                        | `scripts/provision/dbs-cli.ts`                  | Read-only Local/Preview/Production status matrix (managed invitations + schema lifecycle) |
+| `pnpm dbs --compact`              | `scripts/provision/managed-status.ts`           | Compact CONTENT + SCHEMA composing existing classifiers (Git-hook friendly)               |
+| `pnpm invitation:update`          | `scripts/provision/invitation-update-cli.ts`    | Define, plan, apply, package, and approve managed invitations for Local/Preview           |
+| `pnpm invitation:reconcile`       | `scripts/provision/invitation-reconcile-cli.ts` | Guided Local/Preview managed divergence reconciliation                                    |
+| `pnpm invitation:content-parity`  | `scripts/provision/content-parity-cli.ts`       | Read-only semantic content parity across environments (excludes RSVP/PII)                 |
+| `pnpm invitation:promote`         | `scripts/provision/invitation-promote-cli.ts`   | Owner-only Production managed-content promotion from an exact Preview-approved release    |
+| `pnpm invitation:preview-fixture` | `scripts/provision/preview-e2e-fixture-cli.ts`  | Preview-only E2E fixture bootstrap for `e2e-preview-publication` (not Dashboard create)   |
 
 The CLI resolves source/package input through `invitation-package-input.ts`, retains one immutable
 plan per target, and delegates mutation ordering/result synthesis to
@@ -77,7 +79,7 @@ selected target aborts the complete mutation phase.
 | `pnpm db:preview:migrate`                  | `scripts/db/`  | apply pending migrations to Preview (`PREVIEW_DB_URL`)                             |
 | `pnpm db:preview:audit`                    | `scripts/db/`  | read-only Preview schema drift audit (`PREVIEW_DB_URL`)                            |
 | `pnpm db:disposable:reset`                 | `scripts/db/`  | reset isolated disposable test environment container                               |
-| `pnpm test:db:rsvp-contracts`              | `scripts/db/`  | reset disposable DB, start PostgREST, run public RSVP Jest DB/HTTP contracts         |
+| `pnpm test:db:rsvp-contracts`              | `scripts/db/`  | reset disposable DB, start PostgREST, run public RSVP Jest DB/HTTP contracts       |
 | `pnpm db:disposable:phase3-concurrency`    | `scripts/db/`  | run system concurrency/stale-plan scenarios against disposable-test                |
 | `pnpm db:validate:pipeline`                | `scripts/db/`  | full database validation pipeline (baseline, latest, pgTAP, application flows)     |
 | `pnpm db:local:restore-from-dump`          | `scripts/db/`  | import production dump into persistent local database                              |

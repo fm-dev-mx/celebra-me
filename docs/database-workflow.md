@@ -174,9 +174,11 @@ Definition → normalized release → Local → immutable package → Preview �
 | --- | --- | --- |
 | `pnpm invitation:update` | **Update** managed content on Local and/or Preview | Definition → Local / Preview |
 | `pnpm invitation:promote` | **Promote** managed content to Production (owner-only) | Approved package → Production |
+| `pnpm invitation:preview-fixture` | **Bootstrap** Preview E2E publication fixture (Preview-only) | Creates/verifies `e2e-preview-publication` |
 | `pnpm db:preview:sync-invitations` | **Mirror** invitation-facing content for regression | Production → Preview only |
 | `pnpm db:local:restore-from-dump` | **Restore** debugging dump (may include PII) | Production backup → Local |
 | `pnpm invitation:content-parity` | Read-only **semantic** content parity check | Compares Local/Preview/Production |
+| `pnpm dbs` / `pnpm dbs --compact` | Read-only managed **status** (content + schema classifiers) | Local / Preview / Production |
 
 Production never imports from the Preview DB or Preview Storage. Mirror is never promotion.
 `invitation:update` rejects Production mutation targets; use `invitation:promote` for Production.
@@ -224,7 +226,8 @@ PROVISIONED & HOSTED-VALIDATED
     `PREVIEW_SUPABASE_SERVICE_ROLE_KEY`).
   Policy, excluded PII tables, and the Preview RSVP reset caused by `TRUNCATE events CASCADE` are
   owned by [`content-parity-rsvp-isolation.md`](core/content-parity-rsvp-isolation.md). After apply,
-  re-run gated synthetic fixture provisioning (`pnpm test:e2e:preview:provision`) when Preview RSVP
+  re-run Preview E2E fixture bootstrap (`pnpm invitation:preview-fixture --apply`) then gated
+  content reconcile (`pnpm test:e2e:preview:provision`) when Preview RSVP
   E2E needs those fixtures. Stale Preview-only invitation candidates are reported, not auto-pruned.
 - **Audit Command**: `pnpm db:preview:audit` performs read-only schema drift audit against
   `PREVIEW_DB_URL` by comparing hosted Preview against a canonical disposable local reconstruction

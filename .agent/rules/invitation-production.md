@@ -117,7 +117,7 @@ execution-boundary separation.
 
 ### Production read surfaces
 
-- **Safe Agent (and Owner) read:** managed status/`dbs`, `invitation:update --status`
+- **Safe Agent (and Owner) read:** `pnpm dbs` / `pnpm dbs --compact`, `invitation:update --status`
   (including `--targets all|production`), `invitation:content-parity`, and
   `invitation:promote --dry-run` / preflight. These are redacted / summary-oriented and do not
   authorize privileged DDL inspection or PII dumps.
