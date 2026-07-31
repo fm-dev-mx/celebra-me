@@ -34,6 +34,11 @@ import {
 	saveInvitationMetadataAtomic,
 } from '@/lib/intake/repositories/editor-atomic.repository';
 import { createMutationOutcome } from '@/lib/intake/mutations/outcome';
+import {
+	EditorEnvironmentMismatchError,
+	resolveEditorDivergence,
+	type EditorDivergenceDTO,
+} from '@/lib/intake/services/editor-divergence.service';
 
 type PublicationState = {
 	hasPublishedContent: boolean;
@@ -58,6 +63,7 @@ export interface InvitationEditorContext {
 	rsvpLink: RsvpLinkState;
 	contentSource: ContentSource;
 	sectionStates: Record<string, SectionSource>;
+	divergence: EditorDivergenceDTO;
 }
 
 function hydrateEditableContent(
@@ -98,6 +104,17 @@ function resolveContentSource(sectionStates: Record<string, ContentSource>): Con
 	return result;
 }
 
+function resolveEditorDivergenceOrThrow(slug: string | null): EditorDivergenceDTO {
+	try {
+		return resolveEditorDivergence({ slug });
+	} catch (error) {
+		if (error instanceof EditorEnvironmentMismatchError) {
+			throw new ApiError(409, 'unsafe_target', error.message);
+		}
+		throw error;
+	}
+}
+
 export async function getInvitationEditorContext(
 	invitationId: string,
 ): Promise<InvitationEditorContext> {
@@ -130,6 +147,8 @@ export async function getInvitationEditorContext(
 		hasRsvpContent(draft?.content as Record<string, unknown> | undefined) ||
 		hasRsvpContent(published?.content);
 
+	const divergence = resolveEditorDivergenceOrThrow(invitation.slug);
+
 	return {
 		invitation: { ...invitation, rsvpSectionHasContent },
 		assetLookupSlug,
@@ -145,6 +164,7 @@ export async function getInvitationEditorContext(
 				: { status: 'missing', eventId: null },
 		contentSource,
 		sectionStates,
+		divergence,
 	};
 }
 

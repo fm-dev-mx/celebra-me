@@ -59,6 +59,7 @@ import {
 	getPublicationFeedback,
 	type PublicationFeedback,
 } from '@/lib/intake/publication-feedback';
+import EditorDivergenceBanner from '@/components/intake/EditorDivergenceBanner';
 
 interface Props {
 	initialContext: InvitationEditorContextDTO;
@@ -768,6 +769,14 @@ export default function InvitationEditor({ initialContext }: Props) {
 								: 'La versión pública está actualizada'}
 						</span>
 					</div>
+					<EditorDivergenceBanner
+						divergenceState={editor.context.divergence?.state}
+						targetEnvironment={editor.context.divergence?.targetEnvironment}
+						affectedFieldCount={editor.context.divergence?.affectedFieldCount}
+						affectedSectionCount={editor.context.divergence?.affectedSectionCount}
+						affectedSections={editor.context.divergence?.affectedSections}
+						isReleaseBlocked={editor.context.divergence?.isReleaseBlocked}
+					/>
 				</div>
 				{noDraftWarning && (
 					<p className="invitation-editor__warning invitation-editor__warning--guard">

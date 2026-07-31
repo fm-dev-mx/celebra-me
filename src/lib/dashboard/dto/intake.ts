@@ -168,6 +168,19 @@ export interface InvitationEditorContextDTO {
 	};
 	contentSource: 'draft' | 'published' | 'demo' | 'empty' | 'mixed';
 	sectionStates: Record<string, 'draft' | 'published' | 'demo' | 'empty'>;
+	divergence: {
+		state:
+			| 'CLEAN'
+			| 'DIVERGED'
+			| 'RECONCILIATION_REQUIRED'
+			| 'SOURCE_UPDATE_REQUIRED'
+			| 'DEFERRED';
+		targetEnvironment: 'local' | 'preview' | 'production';
+		affectedFieldCount: number;
+		affectedSections: string[];
+		affectedSectionCount: number;
+		isReleaseBlocked: boolean;
+	};
 }
 
 export type InvitationEditorMetadata = Pick<

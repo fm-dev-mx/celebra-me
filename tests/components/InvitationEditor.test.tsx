@@ -93,6 +93,14 @@ function createContext(
 			photoNotes: 'empty',
 			sectionOrder: 'draft',
 		},
+		divergence: {
+			state: 'CLEAN',
+			targetEnvironment: 'local',
+			affectedFieldCount: 0,
+			affectedSections: [],
+			affectedSectionCount: 0,
+			isReleaseBlocked: false,
+		},
 		...overrides,
 	};
 }
@@ -195,6 +203,31 @@ describe('getCriticalSections', () => {
 });
 
 describe('InvitationEditor', () => {
+	it('hides divergence banner when server state is CLEAN', () => {
+		mockContext = createContext();
+		render(<InvitationEditor initialContext={mockContext} />);
+		expect(screen.queryByTestId('editor-divergence-banner')).not.toBeInTheDocument();
+	});
+
+	it('shows Spanish divergence warning from server contract', () => {
+		mockContext = createContext({
+			divergence: {
+				state: 'RECONCILIATION_REQUIRED',
+				targetEnvironment: 'local',
+				affectedFieldCount: 3,
+				affectedSections: ['hero', 'theme'],
+				affectedSectionCount: 2,
+				isReleaseBlocked: true,
+			},
+		});
+		render(<InvitationEditor initialContext={mockContext} />);
+		const banner = screen.getByTestId('editor-divergence-banner');
+		expect(banner).toHaveTextContent('Cambios pendientes de reconciliar (LOCAL)');
+		expect(banner).toHaveTextContent('3 campo(s) modificados en 2 sección(es)');
+		expect(banner).toHaveTextContent('El lanzamiento está bloqueado');
+		expect(banner).toHaveAttribute('data-release-blocked', 'true');
+	});
+
 	it('renders the exact server preflight summary without client-side sections', async () => {
 		mockContext = createContext({
 			content: {

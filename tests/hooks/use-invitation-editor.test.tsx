@@ -57,6 +57,14 @@ const mockContext: InvitationEditorContextDTO = {
 	rsvpLink: { status: 'missing', eventId: null },
 	contentSource: 'draft',
 	sectionStates: {},
+	divergence: {
+		state: 'CLEAN',
+		targetEnvironment: 'local',
+		affectedFieldCount: 0,
+		affectedSections: [],
+		affectedSectionCount: 0,
+		isReleaseBlocked: false,
+	},
 };
 
 const sectionSaveResponse: InvitationEditorSectionSaveResponse = {
