@@ -58,7 +58,21 @@ export interface CompactManagedStatus {
 	/** Slug used for CONTENT, or null when CONTENT is connectivity-/aggregate-derived. */
 	contentSlug: string | null;
 	contentMode: 'slug' | 'aggregate' | 'connectivity';
+	/** Per-environment corpus interpretation, available only for aggregate content mode. */
+	aggregateSummary?: Record<TargetEnv, AggregateContentSummary>;
 	readOnly: true;
+}
+
+export interface AggregateContentSummary {
+	classification:
+		| 'ALL_ALIGNED'
+		| 'DRAFT_DIVERGENCE_ONLY'
+		| 'BEHIND_OR_CONFLICTED'
+		| 'UNVERIFIABLE'
+		| 'NO_DEFINITIONS';
+	total: number;
+	aligned: number;
+	draftDiverged: number;
 }
 
 function schemaFromEnv(envStatus: EnvTargetStatus): CompactEnvSchemaStatus {
@@ -117,6 +131,29 @@ function worstContent(
 	right: CompactEnvContentStatus,
 ): CompactEnvContentStatus {
 	return CONTENT_SEVERITY[right.status] > CONTENT_SEVERITY[left.status] ? right : left;
+}
+
+function summarizeAggregateContent(statuses: CompactEnvContentStatus[]): AggregateContentSummary {
+	const total = statuses.length;
+	const aligned = statuses.filter((status) => status.status === 'MATCH_CANONICAL').length;
+	const draftDiverged = statuses.filter((status) => status.status === 'DIVERGED').length;
+	if (total === 0) {
+		return { classification: 'NO_DEFINITIONS', total, aligned, draftDiverged };
+	}
+	if (
+		statuses.some((status) =>
+			['CREDENTIALS_REQUIRED', 'UNREACHABLE', 'UNVERIFIED'].includes(status.status),
+		)
+	) {
+		return { classification: 'UNVERIFIABLE', total, aligned, draftDiverged };
+	}
+	if (aligned === total) {
+		return { classification: 'ALL_ALIGNED', total, aligned, draftDiverged };
+	}
+	if (aligned + draftDiverged === total && draftDiverged > 0) {
+		return { classification: 'DRAFT_DIVERGENCE_ONLY', total, aligned, draftDiverged };
+	}
+	return { classification: 'BEHIND_OR_CONFLICTED', total, aligned, draftDiverged };
 }
 
 /**
@@ -187,9 +224,24 @@ export async function evaluateCompactManagedStatus(options?: {
 	};
 
 	if (definitions.length === 0) {
-		return { content, schema, contentSlug: null, contentMode: 'aggregate', readOnly: true };
+		const aggregateSummary = Object.fromEntries(
+			ENVS.map((env) => [env, summarizeAggregateContent([])]),
+		) as Record<TargetEnv, AggregateContentSummary>;
+		return {
+			content,
+			schema,
+			contentSlug: null,
+			contentMode: 'aggregate',
+			aggregateSummary,
+			readOnly: true,
+		};
 	}
 
+	const aggregateEntries = {
+		local: [] as CompactEnvContentStatus[],
+		preview: [] as CompactEnvContentStatus[],
+		production: [] as CompactEnvContentStatus[],
+	};
 	let first = true;
 	for (const definition of definitions) {
 		const invitation = await withStatusProbeTimeout(perQueryTimeout, () =>
@@ -197,12 +249,25 @@ export async function evaluateCompactManagedStatus(options?: {
 		);
 		for (const env of ENVS) {
 			const next = contentFromTarget(invitation.environments[env]);
+			aggregateEntries[env].push(next);
 			content[env] = first ? next : worstContent(content[env], next);
 		}
 		first = false;
 	}
 
-	return { content, schema, contentSlug: null, contentMode: 'aggregate', readOnly: true };
+	const aggregateSummary = {
+		local: summarizeAggregateContent(aggregateEntries.local),
+		preview: summarizeAggregateContent(aggregateEntries.preview),
+		production: summarizeAggregateContent(aggregateEntries.production),
+	};
+	return {
+		content,
+		schema,
+		contentSlug: null,
+		contentMode: 'aggregate',
+		aggregateSummary,
+		readOnly: true,
+	};
 }
 
 function padLabel(label: string, width = 12): string {
@@ -224,6 +289,15 @@ export function formatCompactManagedStatus(status: CompactManagedStatus): string
 	lines.push('', 'SCHEMA');
 	for (const env of ENVS) {
 		lines.push(`${padLabel(envLabel(env))}${status.schema[env].status}`);
+	}
+	if (status.aggregateSummary) {
+		lines.push('', 'CORPUS');
+		for (const env of ENVS) {
+			const summary = status.aggregateSummary[env];
+			lines.push(
+				`${padLabel(envLabel(env))}${summary.classification} (${summary.aligned}/${summary.total} aligned; ${summary.draftDiverged} draft divergence)`,
+			);
+		}
 	}
 	return `${lines.join('\n')}\n`;
 }

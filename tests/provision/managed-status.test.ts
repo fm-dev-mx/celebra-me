@@ -180,6 +180,43 @@ describe('managed-status compact composition', () => {
 		expect(status.content.local.status).toBe('DIVERGED');
 		expect(status.content.preview.status).toBe('BEHIND_CANONICAL');
 		expect(status.content.production.status).toBe('MATCH_CANONICAL');
+		expect(status.aggregateSummary).toMatchObject({
+			local: {
+				classification: 'DRAFT_DIVERGENCE_ONLY',
+				total: 2,
+				aligned: 1,
+				draftDiverged: 1,
+			},
+			preview: { classification: 'BEHIND_OR_CONFLICTED', total: 2, aligned: 1 },
+			production: { classification: 'ALL_ALIGNED', total: 2, aligned: 2 },
+		});
+		expect(formatCompactManagedStatus(status)).toContain('DRAFT_DIVERGENCE_ONLY');
+	});
+
+	it('does not report aggregate alignment when any environment is unverifiable', async () => {
+		mockedGeneral.mockReturnValue({
+			environments: {
+				local: envStatus('local', 'CURRENT'),
+				preview: envStatus('preview', 'UNVERIFIED'),
+				production: envStatus('production', 'CURRENT'),
+			},
+			totalDefinitionsCount: 1,
+		});
+		mockedList.mockReturnValue([{ slug: 'a' } as never]);
+		mockedInvitation.mockResolvedValue({
+			slug: 'a',
+			title: 'A',
+			eventType: 'xv',
+			environments: {
+				local: invitationTarget('local', 'MATCH_CANONICAL'),
+				preview: invitationTarget('preview', 'UNVERIFIED'),
+				production: invitationTarget('production', 'MATCH_CANONICAL'),
+			},
+		});
+
+		const status = await evaluateCompactManagedStatus({ aggregateContent: true });
+		expect(status.aggregateSummary?.preview.classification).toBe('UNVERIFIABLE');
+		expect(formatCompactManagedStatus(status)).toContain('UNVERIFIABLE');
 	});
 
 	it('keeps safe runner non-throwing when probes fail', async () => {

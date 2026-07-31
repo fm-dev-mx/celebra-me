@@ -411,6 +411,7 @@ function evaluateSingleTargetStatus(
 	);
 
 	let status: StatusVocabulary = 'UNVERIFIED';
+	let detail = `Active invitation resolved (${invId})`;
 	if (provHash && canonicalHash) {
 		if (provHash !== canonicalHash) {
 			status = 'BEHIND_CANONICAL';
@@ -421,6 +422,10 @@ function evaluateSingleTargetStatus(
 		}
 	} else if (provHash && isDiverged) {
 		status = 'DIVERGED';
+	} else if (!canonicalHash) {
+		detail = `Active invitation resolved (${invId}); canonical package hash unavailable — not a proven MATCH`;
+	} else if (!provHash) {
+		detail = `Active invitation resolved (${invId}); managed provenance package hash missing — not a proven MATCH`;
 	}
 
 	return {
@@ -435,7 +440,7 @@ function evaluateSingleTargetStatus(
 		publishedVersion: pubVer ? Number(pubVer) : null,
 		publishedAt: pubAt || null,
 		assetCount,
-		detail: `Active invitation resolved (${invId})`,
+		detail,
 	};
 }
 
