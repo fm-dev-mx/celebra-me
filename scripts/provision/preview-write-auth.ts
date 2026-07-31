@@ -8,11 +8,9 @@
  * Authorization model:
  *  - Human (interactive): caller confirms separately, then passes isInteractive.
  *  - Automation (canonical): CELEBRA_TASK_SCOPE="preview:<slug>:<operation>".
- *  - Deprecated compatibility only: CELEBRA_PREVIEW_WRITE_AUTH and CLI
- *    `--preview-write-auth`. Prefer CELEBRA_TASK_SCOPE; do not document the
- *    legacy flag as the primary operator contract.
  *  - Lane/worktree/branch/environment identity alone IS NOT AUTHORIZATION.
  *  - Production credentials are never inputs to this mechanism.
+ *  - Production promotion uses invitation:promote owner confirmation, not this API.
  */
 
 export interface PreviewWriteAuthInput {
@@ -20,6 +18,7 @@ export interface PreviewWriteAuthInput {
 	targets: ('local' | 'preview' | 'production')[];
 	apply?: boolean;
 	isInteractive?: boolean;
+	/** Explicit scope token for tests or callers that already resolved CELEBRA_TASK_SCOPE. */
 	authToken?: string;
 	operation?: string;
 }
@@ -47,13 +46,11 @@ export function verifyPreviewWriteAuthorization(input: PreviewWriteAuthInput): P
 	}
 
 	// Automated / non-interactive writes require an explicit task-scoped assertion.
-	const token =
-		process.env.CELEBRA_TASK_SCOPE ?? authToken ?? process.env.CELEBRA_PREVIEW_WRITE_AUTH;
+	const token = process.env.CELEBRA_TASK_SCOPE ?? authToken;
 	if (!token || typeof token !== 'string') {
 		throw new Error(
 			`PREVIEW_WRITE_AUTH_REQUIRED: Automated Preview mutation for "${slug}" requires an explicit task scope. ` +
 				`Set CELEBRA_TASK_SCOPE="preview:${slug}:${operation}". ` +
-				`Deprecated compatibility only: CELEBRA_PREVIEW_WRITE_AUTH or --preview-write-auth. ` +
 				`Lane, worktree, or environment variables alone are insufficient authorization.`,
 		);
 	}

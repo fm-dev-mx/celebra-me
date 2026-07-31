@@ -49,7 +49,6 @@ Usage:
 
 The decisions file contains managed semantic deltas and decisions. Production and --targets all are rejected.
 Preview apply requires CELEBRA_TASK_SCOPE=preview:<slug>:apply.
---preview-write-auth is a deprecated compatibility fallback only.
 `);
 		return;
 	}
@@ -110,7 +109,6 @@ Preview apply requires CELEBRA_TASK_SCOPE=preview:<slug>:apply.
 			targets,
 			apply: true,
 			isInteractive,
-			authToken: value(argv, '--preview-write-auth'),
 			operation: 'apply',
 		});
 		const targetDbUrl = getSecretFromEnvOrFiles('PREVIEW_DB_URL', PREVIEW_SECRET_FILES);

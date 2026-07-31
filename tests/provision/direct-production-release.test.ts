@@ -31,18 +31,15 @@ describe('Direct Production Publication with Coordinated Local and Preview Synch
 			expect(parseTargets('local,preview')).toEqual(['local', 'preview']);
 		});
 
-		it('accepts new non-interactive confirmation flags', () => {
+		it('accepts non-interactive destructive confirmation flag', () => {
 			expect(() =>
 				checkUnknownFlags([
 					'--slug',
 					'romina-rios-chaparro',
 					'--targets',
-					'production',
+					'local,preview',
 					'--apply',
 					'--non-interactive',
-					'--confirm-slug',
-					'romina-rios-chaparro',
-					'--confirm-scope',
 					'--confirm-destructive',
 				]),
 			).not.toThrow();

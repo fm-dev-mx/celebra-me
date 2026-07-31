@@ -33,7 +33,7 @@ export function parseMutationTargets(raw: string | undefined): InvitationUpdateT
 	const targets = parseTargets(raw);
 	if (targets.includes('production')) {
 		throw new Error(
-			'PRODUCTION_PROMOTION_REQUIRED: Direct Production mutation via invitation:update is prohibited. Use the guided Production promotion workflow for production releases.',
+			'PRODUCTION_PROMOTION_REQUIRED: Direct Production mutation via invitation:update is prohibited. Use pnpm invitation:promote for owner-only Production releases.',
 		);
 	}
 	return targets;
@@ -57,7 +57,7 @@ export function validateUpdateOptions(input: {
 
 	if (input.targets && input.targets.includes('production') && input.isMutation !== false) {
 		throw new Error(
-			'PRODUCTION_PROMOTION_REQUIRED: Direct Production mutation via invitation:update is prohibited. Use the guided Production promotion workflow for production releases.',
+			'PRODUCTION_PROMOTION_REQUIRED: Direct Production mutation via invitation:update is prohibited. Use pnpm invitation:promote for owner-only Production releases.',
 		);
 	}
 }
@@ -67,7 +67,6 @@ const VALID_FLAGS = new Set([
 	'--targets',
 	'--slug',
 	'--rekey-from',
-	'--preview-write-auth',
 	'--source-dir',
 	'--dry-run',
 	'--apply',
@@ -91,8 +90,6 @@ const VALID_FLAGS = new Set([
 	'--include-demos',
 	'--artifact',
 	'--evidence',
-	'--confirm-slug',
-	'--confirm-scope',
 	'--confirm-destructive',
 	'--conflict-resolutions',
 	'--field-selections',
@@ -115,7 +112,6 @@ export function checkUnknownFlags(args: string[]): void {
 					'--targets',
 					'--slug',
 					'--rekey-from',
-					'--preview-write-auth',
 					'--source-dir',
 					'--owner-user-id',
 					'--package',
@@ -123,7 +119,6 @@ export function checkUnknownFlags(args: string[]): void {
 					'--adoption-manifest',
 					'--artifact',
 					'--evidence',
-					'--confirm-slug',
 					'--asset-policy',
 					'--update-scope',
 					'--conflict-resolutions',
