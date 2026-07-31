@@ -74,6 +74,7 @@
         "test:db:rsvp-contracts": "tsx scripts/db/disposable-test-env.ts run-rsvp-db-contracts",
         "test:db:managed-contracts": "tsx scripts/db/disposable-test-env.ts run-managed-db-contracts",
         "db:disposable:phase3-concurrency": "tsx scripts/db/disposable-test-env.ts run-phase3-concurrency-test",
+        "lane:sync": "tsx scripts/agent/lane-sync.ts",
         "db:validate:pipeline": "tsx scripts/db/validate-pipeline.ts",
         "db:local:refresh-from-prod-preserve-local": "echo 'BLOCKED: pnpm db:local:refresh-from-prod-preserve-local runs supabase db reset. Use pnpm db:prod:backup + pnpm db:local:restore-from-dump instead.' && exit 1",
         "db:prod:patch": "tsx scripts/db/run-prod-patch.ts",

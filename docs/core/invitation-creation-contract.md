@@ -117,6 +117,21 @@ status with a strict per-query timeout. They never block Git success. Temporary 
 `CELEBRA_SKIP_MANAGED_STATUS=1`. Blocking husky gates (`pre-commit`, `pre-push`, `commit-msg`) do
 not run database/network status.
 
+**Hooks vs lane sync:** `post-rewrite` is not a reliable semantic equivalent of “lane
+synchronized”. A rebase that fast-forwards or rewrites nothing may produce no hook output.
+Use the canonical lane-sync command for deterministic observability after aligning with
+`develop`:
+
+```bash
+pnpm lane:sync            # fetch + rebase onto origin/develop, then dbs --compact
+pnpm lane:sync -- --ff-only
+pnpm lane:sync -- --skip-status
+```
+
+`pnpm lane:sync` never fails the Git synchronization step because remote managed status is
+unavailable; status remains read-only and bounded. Opt-out via `--skip-status` or
+`CELEBRA_SKIP_MANAGED_STATUS=1`.
+
 ### PowerShell Helper
 
 Developers and operators can define a thin human helper in their PowerShell `$PROFILE`:

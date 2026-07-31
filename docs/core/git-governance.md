@@ -137,6 +137,22 @@ Install / verify:
 _Note: Agents do not use shell functions and must always specify explicit working directory paths
 (`cwd`)._
 
+### Lane synchronization observability
+
+Git hooks (`post-commit`, `post-merge`, `post-rewrite`) may print `pnpm dbs --compact` as
+fail-open observability. They are **not** a reliable “lane synchronized” signal: a rebase that
+effectively fast-forwards or performs no meaningful rewrite may produce no managed-status output.
+
+Canonical deterministic path after aligning a lane with `develop`:
+
+```bash
+pnpm lane:sync
+```
+
+This fetches `origin/develop`, rebases (or `--ff-only` merges) the current branch, then always
+runs compact managed status unless `CELEBRA_SKIP_MANAGED_STATUS=1` or `--skip-status` is set.
+Remote DB unavailability never fails the Git synchronization step.
+
 ### Worktree Inspection Tooling
 
 Inspect the state, active branch, detached HEAD, clean/dirty status, runtime default, and alignment
