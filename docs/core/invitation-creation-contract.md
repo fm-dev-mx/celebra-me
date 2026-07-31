@@ -88,3 +88,41 @@ approval, and recovery.
    `public.managed_invitation_release_provenance`.
 8. **Preview Approval Binding**: Production deployment requires an approved Preview artifact that
    matches exact source/package hashes and plan ID when the runbook requires that gate.
+
+---
+
+## 3. Environment Observability & Identity Rekey Boundaries
+
+### Unified Status Command (`dbs`)
+
+The single canonical repository command for inspecting environment status and managed invitation
+state across Local, Preview, and Production is:
+
+```bash
+pnpm dbs              # General 3-environment matrix view
+pnpm dbs <slug>       # Per-invitation cross-environment status
+pnpm ops dbs <slug>   # Registered alias via ops dispatcher
+```
+
+### PowerShell Helper
+
+Developers and operators can define a thin human helper in their PowerShell `$PROFILE`:
+
+```powershell
+function dbs {
+    param([Parameter(ValueFromRemainingArguments=$true)][string[]]$Args)
+    pnpm dbs @Args
+}
+```
+
+The PowerShell helper delegates directly to `pnpm dbs` without containing DB or status business
+logic.
+
+### Rekey Target Semantics
+
+- Identity rekeying (`--rekey-from <old-slug>`) is supported only on the **local** target
+  environment.
+- Any attempt to execute `--rekey-from` against Preview or Production targets fails closed
+  immediately with `IDENTITY_REKEY_UNSUPPORTED_TARGET`.
+- Rekeying preserves the invitation UUID, event ownership, and RSVP records while updating the
+  canonical slug and release provenance.
