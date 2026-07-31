@@ -73,6 +73,7 @@
         "db:disposable:test": "tsx scripts/db/disposable-test-env.ts run-tests",
         "test:db:rsvp-contracts": "tsx scripts/db/disposable-test-env.ts run-rsvp-db-contracts",
         "test:db:managed-contracts": "tsx scripts/db/disposable-test-env.ts run-managed-db-contracts",
+        "test:managed:regression": "jest --runTestsByPath tests/provision/managed-invitation-regression.test.ts",
         "db:disposable:phase3-concurrency": "tsx scripts/db/disposable-test-env.ts run-phase3-concurrency-test",
         "lane:sync": "tsx scripts/agent/lane-sync.ts",
         "db:validate:pipeline": "tsx scripts/db/validate-pipeline.ts",
@@ -93,6 +94,7 @@
         "screenshot": "tsx scripts/screenshot/cli.ts",
         "screenshot:interactive": "tsx scripts/screenshot/cli.ts --interactive",
         "screenshot:invite": "tsx scripts/screenshot/cli.ts --type=invitation",
+        "screenshot:managed:regression": "tsx scripts/screenshot/cli.ts --config=scripts/screenshot/managed-invitations.config.json",
         "db:local:restore-from-dump": "tsx scripts/db/local-restore-from-dump.ts",
         "db:prod:export-auth": "tsx scripts/db/db-guard.ts check --target production --operation export-auth --db-url \"${PROD_DB_URL}\" && tsx scripts/db/export-auth-users.ts",
         "db:prod:export-storage": "tsx scripts/db/db-guard.ts check --target production --operation export-storage --db-url \"${PROD_DB_URL}\" && tsx scripts/db/export-storage.ts"

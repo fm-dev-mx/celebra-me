@@ -58,6 +58,26 @@ describe('related Jest source selection', () => {
 		expect(relatedTestSources).not.toContain('src/lib/example.test.ts');
 	});
 
+	it('routes shared invitation rendering changes to the managed regression sweep only', () => {
+		const result = evaluateModuleScript<{
+			rendering: boolean;
+			backend: boolean;
+			docs: boolean;
+		}>(`
+			import { requiresManagedInvitationRegression } from ${JSON.stringify(VALIDATION_RUNNER_MODULE)};
+			process.stdout.write(JSON.stringify({
+				rendering: requiresManagedInvitationRegression([
+					'src/components/invitation/Hero.astro',
+					'src/styles/invitation-profiles/abril-michelle-becerra-rea.scss',
+				]),
+				backend: requiresManagedInvitationRegression(['src/pages/api/health.ts']),
+				docs: requiresManagedInvitationRegression(['docs/domains/database/overview.md']),
+			}));
+		`);
+
+		expect(result).toEqual({ rendering: true, backend: false, docs: false });
+	});
+
 	it('keeps Prettier advisory while related Jest failures remain blocking', () => {
 		const result = evaluateModuleScript<{ status: number; calls: string[][] }>(`
 			import { runValidation } from ${JSON.stringify(VALIDATION_RUNNER_MODULE)};

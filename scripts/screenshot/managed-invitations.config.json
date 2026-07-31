@@ -1,0 +1,32 @@
+{
+	"outputDir": "output/screenshots/managed-regression",
+	"pages": [
+		{
+			"name": "alba-rosa-quinonez",
+			"pageType": "invitation",
+			"route": "/cumple/alba-rosa-quinonez",
+			"target": "all-sections",
+			"sectionCapture": "known",
+			"revealHandling": "force-open",
+			"viewports": ["mobile-standard"]
+		},
+		{
+			"name": "abril-michelle-becerra-rea",
+			"pageType": "invitation",
+			"route": "/xv/abril-michelle-becerra-rea",
+			"target": "all-sections",
+			"sectionCapture": "known",
+			"revealHandling": "force-open",
+			"viewports": ["mobile-standard"]
+		},
+		{
+			"name": "romina-rios-chaparro",
+			"pageType": "invitation",
+			"route": "/xv/romina-rios-chaparro",
+			"target": "all-sections",
+			"sectionCapture": "known",
+			"revealHandling": "force-open",
+			"viewports": ["mobile-standard"]
+		}
+	]
+}

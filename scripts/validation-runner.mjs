@@ -12,6 +12,15 @@ const PATTERNS = {
 	prettier: /\.(?:ts|tsx|js|jsx|mjs|cjs|astro|json|md|yml|yaml|scss|css)$/u,
 };
 
+const MANAGED_INVITATION_RENDERING_SURFACES = [
+	/^src\/components\/invitation\//u,
+	/^src\/lib\/(?:adapters|invitation)\//u,
+	/^src\/lib\/intake\/(?:schemas\/|services\/section-content-mapper(?:\.ts)?$)/u,
+	/^src\/styles\/(?:invitation|invitation-profiles|themes\/sections)\//u,
+	/^scripts\/provision\/invitations\//u,
+	/^tests\/provision\/managed-invitation-regression\.test\.ts$/u,
+];
+
 function runCommand(name, command, args) {
 	console.log(`\n→ ${name}`);
 	const result = spawnSync(command, args, {
@@ -29,6 +38,14 @@ function uniqueRelevantFiles(files) {
 	return [...new Set(files)].filter((file) => !IGNORE_FILES.test(file));
 }
 
+export function requiresManagedInvitationRegression(files) {
+	return files
+		.map((file) => file.replaceAll('\\', '/'))
+		.some((file) =>
+			MANAGED_INVITATION_RENDERING_SURFACES.some((pattern) => pattern.test(file)),
+		);
+}
+
 export function buildValidationPlan(files, pathExists) {
 	const relevantFiles = uniqueRelevantFiles(files);
 	const filter = (pattern) => relevantFiles.filter((file) => pattern.test(file));
@@ -39,6 +56,7 @@ export function buildValidationPlan(files, pathExists) {
 		stylesheetFiles: filter(PATTERNS.stylesheet),
 		prettierFiles: filter(PATTERNS.prettier),
 		relatedTestSources: getRelatedTestSourceFiles(relevantFiles, pathExists),
+		requiresManagedInvitationRegression: requiresManagedInvitationRegression(relevantFiles),
 	};
 }
 
@@ -118,6 +136,17 @@ export function runValidation({
 		if (code !== 0) return fail('jest-related', code);
 	} else {
 		console.log(`\n→ Jest related tests: no ${scopeDescription} source files, skipping.`);
+	}
+
+	if (plan.requiresManagedInvitationRegression) {
+		const code = runStep('Managed invitation render regression sweep', 'pnpm', [
+			'test:managed:regression',
+		]);
+		if (code !== 0) return fail('managed-invitation-regression', code);
+	} else {
+		console.log(
+			`\n→ Managed invitation regression: no shared invitation rendering changes, skipping.`,
+		);
 	}
 
 	console.log(`\n✓ validate:${scope} passed.`);
