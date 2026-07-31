@@ -85,3 +85,43 @@ export function resolveManagedHostAlias(
 export function isRsvpOwnedField(field: InvitationOwnedField): boolean {
 	return INVITATION_FIELD_OWNERSHIP[field] === 'rsvp_owned';
 }
+
+const PATH_OWNERSHIP_ALIASES: Record<string, InvitationOwnedField> = {
+	rsvp: 'guestConfirmations',
+	published: 'publishedContent',
+};
+
+const RESIDUAL_INFRASTRUCTURE_PREFIXES = [
+	'invitationId',
+	'eventId',
+	'storageHost',
+	'cdnUrl',
+	'receiptId',
+	'createdAt',
+	'updatedAt',
+	'deletedAt',
+	'appliedAt',
+	'guestCount',
+] as const;
+
+function ownershipKeyForPath(path: string): InvitationOwnedField | undefined {
+	const topLevel = path.split(/[.[\]]/, 1)[0];
+	if (!topLevel) return undefined;
+	const key = PATH_OWNERSHIP_ALIASES[topLevel] ?? topLevel;
+	return key in INVITATION_FIELD_OWNERSHIP ? (key as InvitationOwnedField) : undefined;
+}
+
+/** True when a semantic path is definition-managed or managed-reconciled (not target/RSVP/infra). */
+export function isManagedInvitationPath(path: string): boolean {
+	const ownershipKey = ownershipKeyForPath(path);
+	if (
+		ownershipKey &&
+		INVITATION_FIELD_OWNERSHIP[ownershipKey] !== 'definition_managed' &&
+		INVITATION_FIELD_OWNERSHIP[ownershipKey] !== 'managed_reconciled'
+	) {
+		return false;
+	}
+	return !RESIDUAL_INFRASTRUCTURE_PREFIXES.some(
+		(prefix) => path === prefix || path.startsWith(`${prefix}.`),
+	);
+}

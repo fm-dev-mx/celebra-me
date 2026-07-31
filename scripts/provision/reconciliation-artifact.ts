@@ -1,7 +1,8 @@
 /**
  * reconciliation-artifact.ts — Durable Redacted Reconciliation Artifact Persistence
  *
- * Persists machine-readable reconciliation artifacts under `.agent/plans/active/reconciliation-<slug>-<env>.json`.
+ * Persists machine-readable reconciliation artifacts under
+ * `.agent/runtime/reconciliation/reconciliation-<slug>-<env>.json`.
  *
  * Safety:
  *  - Redacts passwords, secret role keys, database connection strings, credentials, and guest PII.
@@ -36,7 +37,7 @@ export function getReconciliationArtifactPath(
 	projectRoot?: string,
 ): string {
 	const root = projectRoot ?? process.cwd();
-	return join(root, '.agent', 'plans', 'active', `reconciliation-${slug}-${target}.json`);
+	return join(root, '.agent', 'runtime', 'reconciliation', `reconciliation-${slug}-${target}.json`);
 }
 
 function sanitizeValue(value: unknown): unknown {

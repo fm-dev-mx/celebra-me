@@ -24,7 +24,12 @@ export function parseTargets(raw: string | undefined): InvitationUpdateTarget[] 
 }
 
 export function parseMutationTargets(raw: string | undefined): InvitationUpdateTarget[] {
-	if (!raw || raw === 'all') return ['local', 'preview'];
+	if (!raw) return [];
+	if (raw === 'all') {
+		throw new Error(
+			'MUTATION_TARGETS_EXPLICIT_REQUIRED: --targets all is read-only only. Use --targets local,preview for invitation:update mutations.',
+		);
+	}
 	const targets = parseTargets(raw);
 	if (targets.includes('production')) {
 		throw new Error(
@@ -110,6 +115,7 @@ export function checkUnknownFlags(args: string[]): void {
 					'--targets',
 					'--slug',
 					'--rekey-from',
+					'--preview-write-auth',
 					'--source-dir',
 					'--owner-user-id',
 					'--package',

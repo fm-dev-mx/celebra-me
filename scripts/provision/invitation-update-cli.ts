@@ -20,11 +20,13 @@ import { parseAssetPolicy } from './asset-reconciliation.ts';
 import type { UpdateScope } from './semantic-delta.ts';
 import {
 	buildStatusReport,
+	parseMutationTargets,
 	parseTargets,
 	checkUnknownFlags,
 	validateUpdateOptions,
 	type InvitationUpdateTarget,
 } from './invitation-update-options.ts';
+import { verifyPreviewWriteAuthorization } from './preview-write-auth.ts';
 import { readFastInvitationInventory } from './invitation-status-inventory.ts';
 import { evaluateInvitationReadiness } from './invitation-readiness.ts';
 import { LOCAL_DB_URL, redactCredentials } from '../db/db-target-config.ts';
@@ -168,8 +170,7 @@ invitation:update — Unified managed invitation update/release CLI
 Usage:
   pnpm invitation:update                                             Interactive wizard (TTY only)
   pnpm invitation:update --status [--slug <slug>] [--targets <targets>] [--json]
-  pnpm invitation:update --slug <slug> --targets <targets> --dry-run|--apply [--non-interactive] [--source-dir <dir>|--package <path>]
-  pnpm invitation:update --slug <slug> --targets production --source-dir <dir>|--package <path> --apply --non-interactive --confirm-slug <slug> --confirm-scope [--confirm-destructive]
+  pnpm invitation:update --slug <slug> --targets local|preview|local,preview --dry-run|--apply [--non-interactive] [--source-dir <dir>|--package <path>]
   pnpm invitation:update --artifact <path> --evidence <path> --apply
   pnpm invitation:update --adoption-plan --slug romina-rios-chaparro --targets production --package <path> --approval-artifact <path> [--adoption-manifest <path>] [--json]
   pnpm invitation:update --adoption-apply --slug romina-rios-chaparro --targets production --package <path> --approval-artifact <path> --adoption-manifest <path> [--json]
@@ -179,7 +180,8 @@ Options:
   --asset-policy <policy>     Asset handling policy: verify, missing (default), sync
   --prune-assets               Enable explicit removal of unreferenced managed assets (requires confirmation)
   --status                     Read-only inventory status check
-  --targets <targets>          Target environments: local, preview, production, all (production expands to local -> preview -> production)
+  --targets <targets>          Mutations: local, preview, local,preview. --targets all and Production mutations are rejected.
+                               Status only: local, preview, production, all (all includes Production read-only).
   --slug <slug>                Invitation slug (e.g. romina-rios-chaparro)
   --source-dir <dir>           Directory containing source assets (optional if assets exist in DB/Storage)
   --package <path>             Immutable package; mutually exclusive with --source-dir
@@ -187,6 +189,7 @@ Options:
   --dry-run                    Simulate changes without performing writes
   --apply                      Perform actual database and storage updates
   --non-interactive            Skip interactive prompts for non-TTY execution
+  --preview-write-auth <scope> DEPRECATED compatibility fallback for Preview apply. Canonical: CELEBRA_TASK_SCOPE=preview:<slug>:apply.
   --confirm-slug <slug>        Exact invitation slug confirmation required for non-interactive Production apply
   --confirm-scope              Coordinated release scope confirmation required for non-interactive Production apply
   --confirm-destructive        Destructive operations acknowledgement required for non-interactive apply when plan contains deletions or overwrites
@@ -372,23 +375,6 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 						})),
 				});
 			}
-			if (targets.length === 0) {
-				targets = parseTargets(
-					await select({
-						message: 'Selecciona el entorno de destino',
-						choices: [
-							{ name: 'Local (127.0.0.1:54322)', value: 'local' },
-							{ name: 'Preview', value: 'preview' },
-							{
-								name: 'Producción (Sincronización Local → Preview → Producción)',
-								value: 'production',
-							},
-							{ name: 'Local y Preview', value: 'local,preview' },
-						],
-					}),
-				);
-			}
-
 			const operation = await select({
 				message: 'Selecciona la operación a realizar',
 				choices: [
@@ -401,6 +387,29 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 			if (operation === 'status') statusMode = true;
 			else if (operation === 'dry-run') dryRun = true;
 			else if (operation === 'apply') apply = true;
+
+			if (targets.length === 0) {
+				const choices =
+					statusMode
+						? [
+								{ name: 'Local (127.0.0.1:54322)', value: 'local' },
+								{ name: 'Preview', value: 'preview' },
+								{ name: 'Producción (solo lectura)', value: 'production' },
+								{ name: 'Todos los entornos (solo lectura)', value: 'all' },
+							]
+						: [
+								{ name: 'Local (127.0.0.1:54322)', value: 'local' },
+								{ name: 'Preview', value: 'preview' },
+								{ name: 'Local y Preview', value: 'local,preview' },
+							];
+				const selected = await select({
+					message: 'Selecciona el entorno de destino',
+					choices,
+				});
+				targets = statusMode
+					? parseTargets(selected)
+					: parseMutationTargets(selected);
+			}
 
 			if (!statusMode) {
 				const scopeChoice = await select({
@@ -464,7 +473,12 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 		targets = ['local'];
 	}
 
-	validateUpdateOptions({ slug, targets, rekeyFrom });
+	const requestedTargets = value(args, '--targets') ?? targets.join(',');
+	targets = statusMode ? parseTargets(requestedTargets) : parseMutationTargets(requestedTargets);
+	if (targets.length === 0 && (slug || statusMode)) {
+		targets = ['local'];
+	}
+	validateUpdateOptions({ slug, targets, rekeyFrom, isMutation: !statusMode });
 
 	if (statusMode) {
 		const statusReportOptions = {
@@ -532,6 +546,28 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 	}
 
 	getInvitationDefinition(slug);
+	verifyPreviewWriteAuthorization({
+		slug,
+		targets,
+		apply,
+		isInteractive: !nonInteractive && isTTY,
+		authToken: value(args, '--preview-write-auth'),
+		operation: 'apply',
+	});
+	if (apply && targets.includes('preview') && isTTY && !nonInteractive) {
+		const previewConfirmed = await confirm({
+			message: `¿Confirma la escritura administrada en Preview para "${slug}"?`,
+			default: false,
+		});
+		if (!previewConfirmed) {
+			throw new Error('PREVIEW_WRITE_CANCELLED: El operador canceló la escritura en Preview.');
+		}
+	}
+	if (targets.includes('production')) {
+		throw new Error(
+			'PRODUCTION_PROMOTION_REQUIRED: Direct Production mutation via invitation:update is prohibited. Use the guided Production promotion workflow for production releases.',
+		);
+	}
 
 	const ownerUserId = value(args, '--owner-user-id');
 	let reports: StageReport[] = [];

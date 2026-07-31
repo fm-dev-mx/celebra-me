@@ -21,6 +21,7 @@
  *  - operational receipts
  */
 
+import { isManagedInvitationPath } from '../../src/lib/intake/mutations/ownership.ts';
 import type { SemanticDelta } from './semantic-delta.ts';
 
 export type ReconciliationState =
@@ -71,36 +72,12 @@ export interface ManagedDivergenceSummary {
 	blockerReason?: string;
 }
 
-/**
- * Filter out non-managed, environment-local, or infrastructure-owned fields from semantic deltas.
- */
+/** Filter non-managed fields using the invitation ownership source of truth. */
 export function filterManagedDivergenceDeltas(
 	deltas: Array<Partial<SemanticDelta> & { path: string }>,
 ): ManagedFieldDiff[] {
-	const excludedPrefixes = [
-		'invitationId',
-		'eventId',
-		'ownerUserId',
-		'createdAt',
-		'updatedAt',
-		'deletedAt',
-		'appliedAt',
-		'storageHost',
-		'cdnUrl',
-		'receiptId',
-		'clientName',
-		'guestCount',
-		'rsvp',
-	];
-
 	return deltas
-		.filter((delta) => {
-			const path = delta.path;
-			for (const prefix of excludedPrefixes) {
-				if (path === prefix || path.startsWith(`${prefix}.`)) return false;
-			}
-			return true;
-		})
+		.filter((delta) => isManagedInvitationPath(delta.path))
 		.map((delta) => {
 			const parts = delta.path.split('.');
 			const section = parts.length > 1 ? parts[0]! : 'general';

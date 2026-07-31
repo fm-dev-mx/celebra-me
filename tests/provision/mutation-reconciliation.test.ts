@@ -1,7 +1,7 @@
 /**
- * goal3-mutation-reconciliation.test.ts
+ * mutation-reconciliation.test.ts
  *
- * Comprehensive behavioral test suite for Goal 3:
+ * Behavioral coverage for invitation mutation + managed reconciliation:
  *  1. Production Mutation Restriction (PRODUCTION_PROMOTION_REQUIRED)
  *  2. Preview Write Scoped Authorization (PREVIEW_WRITE_AUTH_REQUIRED)
  *  3. Editor Boundary & Managed Divergence Calculation
@@ -26,15 +26,15 @@ import { formatAdaptiveReconciliationSummary } from '../../scripts/provision/rec
 import { runGuidedReconciliation } from '../../scripts/provision/reconciliation-cli.ts';
 import type { SemanticDelta } from '../../scripts/provision/semantic-delta.ts';
 
-describe('Goal 3: Mutation Surface & Target Restriction (PRODUCTION_PROMOTION_REQUIRED)', () => {
+describe('Mutation Surface & Target Restriction (PRODUCTION_PROMOTION_REQUIRED)', () => {
 	it('accepts local, preview, and local+preview targets for mutation paths', () => {
 		expect(parseMutationTargets('local')).toEqual(['local']);
 		expect(parseMutationTargets('preview')).toEqual(['preview']);
 		expect(parseMutationTargets('local,preview')).toEqual(['local', 'preview']);
 	});
 
-	it('omits production when expanding "all" for mutation targets', () => {
-		expect(parseMutationTargets('all')).toEqual(['local', 'preview']);
+	it('rejects "all" for mutation targets with explicit local,preview guidance', () => {
+		expect(() => parseMutationTargets('all')).toThrow('local,preview');
 	});
 
 	it('fails closed before mutation when production is explicitly targeted', () => {
@@ -52,6 +52,7 @@ describe('Goal 3: Mutation Surface & Target Restriction (PRODUCTION_PROMOTION_RE
 	});
 
 	it('preserves read-only production target inspection for status commands', () => {
+		expect(parseTargets('all')).toEqual(['local', 'preview', 'production']);
 		const statusTargets = parseTargets('production');
 		expect(statusTargets).toEqual(['local', 'preview', 'production']);
 		expect(() =>
@@ -64,7 +65,7 @@ describe('Goal 3: Mutation Surface & Target Restriction (PRODUCTION_PROMOTION_RE
 	});
 });
 
-describe('Goal 3: Preview Write Scoped Authorization (PREVIEW_WRITE_AUTH_REQUIRED)', () => {
+describe('Preview Write Scoped Authorization (PREVIEW_WRITE_AUTH_REQUIRED)', () => {
 	it('authorizes interactive human Preview write', () => {
 		const result = verifyPreviewWriteAuthorization({
 			slug: 'romina-rios-chaparro',
@@ -84,7 +85,25 @@ describe('Goal 3: Preview Write Scoped Authorization (PREVIEW_WRITE_AUTH_REQUIRE
 				apply: true,
 				isInteractive: false,
 			}),
-		).toThrow('PREVIEW_WRITE_AUTH_REQUIRED');
+		).toThrow(/PREVIEW_WRITE_AUTH_REQUIRED[\s\S]*CELEBRA_TASK_SCOPE/);
+	});
+
+	it('accepts CELEBRA_TASK_SCOPE as the canonical Preview task assertion', () => {
+		const previous = process.env.CELEBRA_TASK_SCOPE;
+		process.env.CELEBRA_TASK_SCOPE = 'preview:romina-rios-chaparro:apply';
+		try {
+			const result = verifyPreviewWriteAuthorization({
+				slug: 'romina-rios-chaparro',
+				targets: ['preview'],
+				apply: true,
+				isInteractive: false,
+			});
+			expect(result.authorized).toBe(true);
+			expect(result.actor).toBe('automated_scoped_token');
+		} finally {
+			if (previous === undefined) delete process.env.CELEBRA_TASK_SCOPE;
+			else process.env.CELEBRA_TASK_SCOPE = previous;
+		}
 	});
 
 	it('fails closed when token is bound to wrong invitation slug or operation', () => {
@@ -128,7 +147,7 @@ function createMockDelta(partial: Partial<SemanticDelta> & { path: string }): Se
 	};
 }
 
-describe('Goal 3: Managed Divergence Calculation & Exclusion Guardrails', () => {
+describe('Managed Divergence Calculation & Exclusion Guardrails', () => {
 	it('calculates managed divergence and excludes environment-local/target-owned fields', () => {
 		const rawDeltas: SemanticDelta[] = [
 			createMockDelta({
@@ -144,7 +163,7 @@ describe('Goal 3: Managed Divergence Calculation & Exclusion Guardrails', () => 
 				currentTargetValue: 'uuid-local-2',
 			}),
 			createMockDelta({
-				path: 'rsvp.guestCount',
+				path: 'guestConfirmations.guestCount',
 				previousCanonicalValue: 10,
 				currentCanonicalValue: 10,
 				currentTargetValue: 15,
@@ -155,6 +174,15 @@ describe('Goal 3: Managed Divergence Calculation & Exclusion Guardrails', () => 
 		expect(diffs).toHaveLength(1);
 		expect(diffs[0]?.path).toBe('details.ceremony.address');
 		expect(diffs[0]?.section).toBe('details');
+	});
+
+	it('excludes RSVP and publication-owned paths from the ownership SSOT', () => {
+		const diffs = filterManagedDivergenceDeltas([
+			createMockDelta({ path: 'guestConfirmations.total', currentTargetValue: 2 }),
+			createMockDelta({ path: 'publishedContent.version', currentTargetValue: 2 }),
+			createMockDelta({ path: 'draftContent.details.title', currentTargetValue: 'Actualizado' }),
+		]);
+		expect(diffs.map((diff) => diff.path)).toEqual(['draftContent.details.title']);
 	});
 
 	it('computes CLEAN state when zero managed diffs exist', () => {
@@ -187,7 +215,7 @@ describe('Goal 3: Managed Divergence Calculation & Exclusion Guardrails', () => 
 	});
 });
 
-describe('Goal 3: Guided Reconciliation Outcomes & Artifact Persistence', () => {
+describe('Guided Reconciliation Outcomes & Artifact Persistence', () => {
 	const mockDeltas: SemanticDelta[] = [
 		createMockDelta({
 			path: 'details.ceremony.address',
@@ -270,13 +298,16 @@ describe('Goal 3: Guided Reconciliation Outcomes & Artifact Persistence', () => 
 		});
 
 		expect(artifactPath).toContain('reconciliation-romina-rios-chaparro-preview.json');
+		expect(artifactPath).toContain('.agent');
+		expect(artifactPath).toContain('runtime');
+		expect(artifactPath).toContain('reconciliation');
 		const loaded = loadReconciliationArtifact('romina-rios-chaparro', 'preview');
 		expect(loaded).toBeDefined();
 		expect(loaded?.invitationSlug).toBe('romina-rios-chaparro');
 	});
 });
 
-describe('Goal 3: Adaptive UX Presentation Thresholds', () => {
+describe('Adaptive UX Presentation Thresholds', () => {
 	it('formats small diff (<=10 paths) as direct field list', () => {
 		const diffs: ManagedFieldDiff[] = [
 			{ path: 'theme.color', section: 'theme', canonicalValue: '#1', environmentValue: '#2' },

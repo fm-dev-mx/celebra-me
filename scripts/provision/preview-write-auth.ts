@@ -1,13 +1,18 @@
 /**
- * preview-write-auth.ts — Scoped Preview Write Authorization Engine
+ * preview-write-auth.ts — Task-Scoped Preview Write Authorization Assertion
  *
- * Enforces strict capability authorization before writing to Preview target.
+ * Asserts the operator-provided task scope before writing to Preview. This is
+ * operational coordination, not cryptographic security: strong enforcement
+ * depends on separating credentials and execution boundaries.
  *
- * Capability Model:
- *  - Human (Interactive): Authorized via explicit interactive prompt/confirmation.
- *  - Automated Agent (Non-interactive): Requires explicit scoped authorization token
- *    (e.g., CELEBRA_PREVIEW_WRITE_AUTH="preview:<slug>:apply").
+ * Authorization model:
+ *  - Human (interactive): caller confirms separately, then passes isInteractive.
+ *  - Automation (canonical): CELEBRA_TASK_SCOPE="preview:<slug>:<operation>".
+ *  - Deprecated compatibility only: CELEBRA_PREVIEW_WRITE_AUTH and CLI
+ *    `--preview-write-auth`. Prefer CELEBRA_TASK_SCOPE; do not document the
+ *    legacy flag as the primary operator contract.
  *  - Lane/worktree/branch/environment identity alone IS NOT AUTHORIZATION.
+ *  - Production credentials are never inputs to this mechanism.
  */
 
 export interface PreviewWriteAuthInput {
@@ -41,12 +46,14 @@ export function verifyPreviewWriteAuthorization(input: PreviewWriteAuthInput): P
 		};
 	}
 
-	// Automated / Non-interactive mode requires explicit scoped token
-	const token = authToken ?? process.env.CELEBRA_PREVIEW_WRITE_AUTH;
+	// Automated / non-interactive writes require an explicit task-scoped assertion.
+	const token =
+		process.env.CELEBRA_TASK_SCOPE ?? authToken ?? process.env.CELEBRA_PREVIEW_WRITE_AUTH;
 	if (!token || typeof token !== 'string') {
 		throw new Error(
-			`PREVIEW_WRITE_AUTH_REQUIRED: Automated Preview mutation for "${slug}" requires explicit scoped authorization. ` +
-				`Set CELEBRA_PREVIEW_WRITE_AUTH="preview:${slug}:${operation}" or pass --preview-write-auth. ` +
+			`PREVIEW_WRITE_AUTH_REQUIRED: Automated Preview mutation for "${slug}" requires an explicit task scope. ` +
+				`Set CELEBRA_TASK_SCOPE="preview:${slug}:${operation}". ` +
+				`Deprecated compatibility only: CELEBRA_PREVIEW_WRITE_AUTH or --preview-write-auth. ` +
 				`Lane, worktree, or environment variables alone are insufficient authorization.`,
 		);
 	}

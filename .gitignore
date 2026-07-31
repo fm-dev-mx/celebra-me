@@ -98,6 +98,9 @@ astro/types.d.ts
 !.agent/tmp/handoffs/
 .agent/tmp/handoffs/**
 !.agent/tmp/handoffs/README.md
+!.agent/runtime/
+.agent/runtime/**
+!.agent/runtime/README.md
 .agent/cache/
 .agent/plans/tmp/
 .agent/plans/drafts/
