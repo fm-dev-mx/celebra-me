@@ -135,7 +135,7 @@ Keep celestial thank-you signature override aligned (already safe) so it does no
 
 **Files**
 
-- [`src/lib/invitation/interlude-observer.ts`](src/lib/invitation/interlude-observer.ts) — remove parallax scroll listeners / offset writes
+- `src/lib/invitation/interlude-observer.ts` (deleted) — remove parallax scroll listeners / offset writes
 - [`src/styles/invitation/_interlude.scss`](src/styles/invitation/_interlude.scss) — keep pending hide on `__media` only via `:not(.is-visible)`; stop competing transform on `__image` for parallax
 
 **Change:** Delete parallax path (animation-motion ban). Interlude reveal = opacity + single translate on `__media`.
