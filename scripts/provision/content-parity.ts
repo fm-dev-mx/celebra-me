@@ -52,6 +52,8 @@ export interface SemanticInvitationSnapshot {
 	isDemo: boolean;
 	assets: SemanticAssetDigest[];
 	eventProjection: SemanticEventProjection | null;
+	identityConflict?: boolean;
+	matchingIds?: string[];
 }
 
 export interface ContentParityDrift {
@@ -252,6 +254,17 @@ export function compareSemanticInvitationSnapshots(
 		assertNoExcludedEntity(entity);
 		drifts.push({ entity, field, environments: pair, left: l, right: r, detail });
 	};
+
+	if (left.identityConflict || right.identityConflict) {
+		push(
+			'invitation',
+			'identity',
+			left.matchingIds ?? (left.identityConflict ? 'IDENTITY_CONFLICT' : left.slug),
+			right.matchingIds ?? (right.identityConflict ? 'IDENTITY_CONFLICT' : right.slug),
+			'IDENTITY_CONFLICT: Multiple active invitation records exist for slug in target environment.',
+		);
+		return drifts;
+	}
 
 	compareScalarFields(left, right, push);
 	compareCanonicalContent(left, right, push);

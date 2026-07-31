@@ -9,11 +9,7 @@
  */
 
 import { getProdDbUrl, runPsql, sqlLiteral } from '../db/db-workflow-lib.ts';
-import {
-	PREVIEW_SECRET_FILES,
-	getSecretFromEnvOrFiles,
-	LOCAL_DB_URL,
-} from '../db/db-guard.ts';
+import { PREVIEW_SECRET_FILES, getSecretFromEnvOrFiles, LOCAL_DB_URL } from '../db/db-guard.ts';
 import {
 	buildSemanticInvitationSnapshot,
 	compareAcrossEnvironments,
@@ -126,16 +122,14 @@ function loadSnapshot(
 		return null;
 	}
 
-	const invitation = queryJson(
+	const matchingRows = queryJsonArray(
 		dbUrl,
 		`select id, slug, event_type, kind, base_demo_id, theme_id, snapshot
 		 from public.invitations
 		 where slug = ${sqlLiteral(slug)}
 		   and event_type = ${sqlLiteral(eventType)}
-		   and archived_at is null
-		 order by created_at desc
-		 limit 1`,
-	) as {
+		   and archived_at is null`,
+	) as Array<{
 		id: string;
 		slug: string;
 		event_type: string;
@@ -143,12 +137,36 @@ function loadSnapshot(
 		base_demo_id?: string | null;
 		theme_id?: string | null;
 		snapshot?: unknown;
-	} | null;
+	}>;
 
-	if (!invitation) {
-		console.warn(`[${env}] no invitation found for ${eventType}/${slug}`);
+	if (matchingRows.length === 0) {
+		console.warn(`[${env}] NOT_PRESENT: no invitation found for ${eventType}/${slug}`);
 		return null;
 	}
+
+	if (matchingRows.length > 1) {
+		const matchingIds = matchingRows.map((r) => r.id);
+		console.error(
+			`[${env}] IDENTITY_CONFLICT: ${matchingRows.length} active invitations found for ${eventType}/${slug} (${matchingIds.join(', ')})`,
+		);
+		return {
+			slug,
+			eventType,
+			kind: 'conflict',
+			baseDemoId: null,
+			themeId: null,
+			snapshot: null,
+			draftContent: null,
+			publishedContent: null,
+			isDemo: false,
+			assets: [],
+			eventProjection: null,
+			identityConflict: true,
+			matchingIds,
+		};
+	}
+
+	const invitation = matchingRows[0]!;
 
 	const invitationIdSql = `${sqlLiteral(invitation.id)}::uuid`;
 

@@ -95,6 +95,16 @@ canonicalization (see `scripts/provision/promotion-comparison.ts`):
 - Client RSVP **projection**: linked non-demo `(event_type, slug)` event existence (not event UUID,
   owner, memberships, timestamps, or guests)
 
+### Identity ambiguity & duplicate protection
+
+Before comparing semantic content, parity evaluation verifies that exactly **one** active logical
+invitation matches the target slug in each evaluated environment. If multiple active invitation
+records or ambiguous identity mappings exist for a slug:
+
+- Parity evaluation immediately flags `IDENTITY_CONFLICT`.
+- Parity check fails (`ok: false`) and returns `IDENTITY_CONFLICT` drift details.
+- A target with an identity conflict can **never** report `MATCH_CANONICAL` or `PASS`.
+
 ### Legitimate environment-specific differences (excluded from equality)
 
 Primary keys and Auth user IDs, Storage hosts/URLs, asset UUIDs, `version` / timestamps, provenance

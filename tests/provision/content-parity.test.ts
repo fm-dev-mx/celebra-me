@@ -196,4 +196,27 @@ describe('semantic parity comparison', () => {
 		const b = clientSnapshot();
 		expect(compareSemanticInvitationSnapshots('local', a, 'production', b)).toEqual([]);
 	});
+
+	it('fails parity check and reports IDENTITY_CONFLICT when identity ambiguity exists', () => {
+		const normal = clientSnapshot();
+		const conflicted = clientSnapshot({
+			identityConflict: true,
+			matchingIds: ['id-1', 'id-2'],
+		});
+
+		const result = compareAcrossEnvironments('client-slug', 'xv', {
+			local: conflicted,
+			preview: normal,
+		});
+
+		expect(result.ok).toBe(false);
+		expect(result.drifts).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					entity: 'invitation',
+					field: 'identity',
+				}),
+			]),
+		);
+	});
 });
