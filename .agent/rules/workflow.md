@@ -1,106 +1,19 @@
 # Agent Workflow Rules — Celebra-me
 
-**Status:** Active **Last Updated:** 2026-07-25
-
-This document owns the operating procedure for agents. Human branch, commit, release, and promotion
-policy lives in [`docs/core/git-governance.md`](../../docs/core/git-governance.md). Git
-authorization and worktree preservation live in [`git-safety.md`](git-safety.md).
+This document defines the core 7-step operating procedure for agents.
 
 ## Operating Procedure
 
-1. **Load governance:** read `AGENTS.md`, `gatekeeper.md`, and `git-safety.md`. Consult
-   `.agent/index.md` only when discovery is needed, then load only the relevant domain rule,
-   workflow, skill, and canonical doc. Do not reread prerequisites already loaded for the task.
-2. **Inspect state & preflight lane:** establish worktree path, current branch / detached state,
-   working-tree cleanliness, task ownership, and target environment. Verify
-   `1 task = 1 branch = 1 worktree`. Claim a lane only if idle and clean, or already assigned to the
-   current task. Treat all pre-existing worktree state as user-owned.
-3. **Set scope:** state the requested outcome, allowed files, non-goals, safety boundaries, and
-   verification path. Use conversation-scoped planning unless the tracked-plan threshold is met.
-4. **Implement narrowly:** edit only authorized files. Do not opportunistically clean unrelated
-   changes or alter the index.
-5. **Verify proportionally:** use the validation tier owned by `gatekeeper.md`; run narrower domain
-   checks when they provide stronger evidence.
-6. **Check preservation:** compare HEAD and staged state with the session baseline. Unexpected drift
-   is a blocker; report it instead of repairing it automatically.
-7. **Report:** list files changed, validations and skips, remaining risks, worktree status, and
-   whether any Git write or production action occurred.
+1. **Load Governance:** Read mandatory bootstrap rules (`gatekeeper.md`, `git-safety.md`). Consult `.agent/routing-matrix.yaml` (or `.agent/index.md`) for domain-specific context additions.
+2. **Preflight Lane State:** Verify worktree path, current branch alignment, clean working tree, and target environment using `pnpm ops worktree-status`. Claim a lane only if idle and clean.
+3. **Set Scope:** State requested outcome, allowed file boundaries, non-goals, and verification path.
+4. **Implement Narrowly:** Edit only authorized files within scope. Do not clean unrelated working tree changes.
+5. **Verify Proportionally:** Run the Gatekeeper validation tier matching the change scope (Tier A: `validate:changed`, Tier B: `type-check`, Tier C: `pnpm run ci`).
+6. **Preserve Session State:** Verify session baseline preservation with `pnpm agent:git-safety:check`. Report any unexpected drift.
+7. **Report:** List modified files, validation results, remaining risks, worktree status, and whether Git writes or remote DB operations occurred.
 
-## Credential and Access Fail-Fast Rules
+## Proportional Execution & Tooling Rules
 
-When an operational step requires external access or credentials (Supabase Auth/DB, Vercel,
-Cloudinary, Preview/Production endpoints):
-
-1. **Preflight Access**: Check for required credentials/access before attempting dependent
-   operational commands.
-2. **Fail-Fast Classification**:
-   - **Required Access Missing** → `Environmental Blocker`: Stop immediately. Report required
-     environment variables or configuration (`Needs manual action`). Do not retry or attempt
-     speculative `.env` edits.
-   - **Credential Present but Rejected** → `Authentication Diagnosis`: Perform one bounded
-     diagnostic pass (verify URL, project ref, or credentials format). If unresolved, stop and
-     report.
-   - **Valid Access + Technical Error** → `Technical Diagnosis`: Proceed with normal technical
-     diagnosis.
-3. **Strict Prohibitions**:
-   - Do **not** repeatedly rerun failing access-dependent commands without new evidence.
-   - Do **not** guess or invent secret values or environment variables.
-   - Do **not** make speculative edits to `.env`, `.env.local`, or configuration files to bypass
-     access failures.
-   - Do **not** expose secret values in logs, reports, or prompts.
-   - Do **not** copy credentials between environments or use Production as a fallback when Preview
-     access is missing.
-   - Credential availability **never** grants operation authorization.
-
-## Proportional Execution
-
-- Reuse evidence gathered earlier in the task. Do not repeat the same repository scan, diff audit,
-  or central-file read unless state changed or the prior result is insufficient.
-- Before retrying a project CLI with different flags, inspect its documented contract or `--help`.
-- Discover an external tool or MCP server once per session, then reuse its schema. Batch independent
-  reads and browser inspections when the runtime supports it.
-- For a bounded visual refinement, implement one explicit hypothesis, verify one representative
-  mobile viewport immediately, then broaden QA. Run focused checks during iteration and the complete
-  required validation tier once when the milestone closes. Follow gatekeeper §5.3 for screenshot
-  scope; do not generalize section-intersection five-viewport proof to unrelated UI.
-- Prefer direct file reads and `rg` for known modules or invitation paths before launching a broad
-  explore/subagent sweep.
-- In the final report, name the Gatekeeper tier used (A/B/C), visual-evidence choices or skips, and
-  whether Graphify was unused (default) or authorized under `graphify-ops`.
-- Do not launch a subagent after already performing the same central investigation. Delegate only
-  independent work that meets every criterion in `agent-routing.md`.
-
-## Agent-Specific Git Rules
-
-- Operate within the designated persistent worktree lane (`celebra-me` root for Integration,
-  `dev-local`, `dev-preview`, or `dev-extra`) on ephemeral task
-  branches.
-- Task branches must be created explicitly from `develop`: `git switch -c <task-branch> develop`.
-  Never create task branches from detached HEAD.
-- Worktree path location grants no environment privileges (`path ≠ privilege`). Preview runtime on
-  `dev-preview` does not authorize Preview or Production mutations.
-- Work on the current branch. Do not create, switch, merge, rebase, delete, or clean branches unless
-  the user explicitly requests that exact operation.
-- Do not stage, commit, stash, discard, or rewrite worktree/history state without current-task
-  authorization under `git-safety.md`.
-- Never force-push or rewrite shared history autonomously.
-- Branch cleanup, release tagging, production promotion, and rollback are separate tasks requiring
-  explicit authorization.
-- A documented command, environment override, rollback snippet, or plan does not grant permission to
-  execute it.
-
-## Planning Boundary
-
-Use conversation-scoped planning by default. Create or update a repository-tracked plan only when
-the work is multi-session, high risk, or explicitly requested by the repository owner. The tracked
-plan contract lives in `.agent/plans/README.md`.
-
-## Ownership Boundaries
-
-| Owner                         | Responsibility                                      |
-| ----------------------------- | --------------------------------------------------- |
-| `AGENTS.md`                   | entry point, authority order, and non-negotiables   |
-| `.agent/rules/git-safety.md`  | Git authorization and baseline workflow             |
-| `.agent/rules/gatekeeper.md`  | review/remediation rules and validation tiers       |
-| `docs/core/git-governance.md` | human branch, commit, release, and promotion policy |
-| `.agent/plans/README.md`      | durable tracked-plan format and lifecycle           |
+- **Reusable Evidence:** Do not repeat identical file reads or repository searches within the same session.
+- **Fail-Fast Credential Access:** If required credentials or environment variables are missing, classify as an `Environmental Blocker` and halt immediately. Do not attempt speculative `.env` edits or guess secrets.
+- **Subagent Delegation:** Delegate to subagents only when work is self-contained, has explicit file boundaries, clear verification criteria, and justifies handoff overhead per `.agent/rules/agent-routing.md`.

@@ -83,6 +83,27 @@ superseded_by:
 | `.agent/skills/`    | Reusable agent execution guidance                           |
 | `.agent/workflows/` | Repeatable procedures                                       |
 
+## Proportional Goal Protocol & Goal Handoff Contracts
+
+Celebra-me uses a proportional 3-tier goal scaling model for complex or multi-step work:
+
+- **Tier 1 (Simple Task — 1 Goal):** Single-file fix, copy edit, localized bug. Executed directly with conversation-scoped planning.
+- **Tier 2 (Moderate Task — 2 Goals):** Multi-file feature or refactor. Goal 1: Design Spec & Plan $\rightarrow$ Goal 2: Implementation & Verification.
+- **Tier 3 (Systemic Task — 3 Goals):** System architecture, database overhaul, or operating model migration. Goal 1: Read-Only Audit $\rightarrow$ Goal 2: Target Architecture & Design Spec $\rightarrow$ Goal 3: Surgical Implementation & Verification.
+
+### Goal Handoff Contract
+
+When work spans multiple dependent goals, each goal produces a compact **Goal Handoff Contract** to pass verified facts to downstream goals without repeating discovery:
+
+1. **Observed Facts:** Empirical data, code snippets, file paths, line numbers.
+2. **Derived Conclusions:** Analysis of observed facts.
+3. **Decisions Made & Unresolved Decisions:** Accepted design choices; open questions carried forward.
+4. **Affected Surfaces:** Files, contracts, scripts, docs touched or audited.
+5. **Remaining Risks & Constraints:** Invariants that downstream goals must preserve.
+6. **Explicit Input for Next Goal:** Direct facts & boundaries so Goal $N+1$ proceeds without re-auditing.
+
+Handoffs live in conversational output by default, and in `.agent/plans/active/` for multi-session tracked work.
+
 ## Loop Engineering
 
 Plans should be written as executable loops, not static documents.

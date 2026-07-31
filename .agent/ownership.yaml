@@ -1,0 +1,193 @@
+# Celebra-me — System Ownership Matrix (SSOT)
+#
+# This file is the single authoritative source of truth (SSOT) mapping system aspects
+# to their canonical owner files. Managed by Goal 3 operating model migration.
+---
+version: "1.0.0"
+updated: "2026-07-30"
+
+ownership:
+  - aspect: "Agent discovery & active inventory"
+    owner: ".agent/ownership.yaml"
+    non_owners:
+      - "Archived plans"
+      - "Point-in-time reports"
+
+  - aspect: "Context routing matrix"
+    owner: ".agent/routing-matrix.yaml"
+    non_owners:
+      - "Narrative docs tables"
+
+  - aspect: "Validation tiers & review contract"
+    owner: ".agent/rules/gatekeeper.md"
+    non_owners:
+      - "docs/core/git-governance.md"
+      - "Workflows"
+
+  - aspect: "Optional Graphify ops policy"
+    owner: ".agent/rules/graphify-ops.md"
+    non_owners:
+      - "Host/global Graphify skills"
+      - "graphify-out/"
+
+  - aspect: "Agent operating procedure"
+    owner: ".agent/rules/workflow.md"
+    non_owners:
+      - "Human branch/release policy docs"
+
+  - aspect: "Git authorization & worktree safety"
+    owner: ".agent/rules/git-safety.md"
+    non_owners:
+      - "Commit-message style docs"
+
+  - aspect: "Human branch, worktrees, promotion"
+    owner: "docs/core/git-governance.md"
+    non_owners:
+      - "Agent workflow rules"
+
+  - aspect: "Per-worktree operational cards"
+    owner: "docs/core/worktrees/"
+    non_owners:
+      - "Env/DB/Git policy SSOTs (cards link only)"
+
+  - aspect: "Release checkpoints & version tags"
+    owner: "docs/core/release-process.md"
+    non_owners:
+      - "Per-invitation notes"
+
+  - aspect: "Product release history"
+    owner: "CHANGELOG.md"
+    non_owners:
+      - "Migrations"
+      - "Invitation ops notes"
+
+  - aspect: "Invitation identity requirements"
+    owner: "docs/core/invitation-creation-contract.md"
+    non_owners:
+      - "Runbook"
+      - "Agent workflow"
+      - "Safety rule"
+
+  - aspect: "Invitation preparation semantics"
+    owner: "docs/core/invitation-preparation-contract.md"
+    non_owners:
+      - "Per-invite Markdown"
+      - "Publication readiness"
+
+  - aspect: "Invitation preparation procedure"
+    owner: ".agent/workflows/invitation-preparation.md"
+    non_owners:
+      - "Creation contract"
+      - "Managed lifecycle"
+
+  - aspect: "Event-type prep completeness (exec)"
+    owner: "src/lib/invitation-preparation/"
+    non_owners:
+      - "Narrative docs alone"
+
+  - aspect: "Invitation production runbook"
+    owner: "docs/domains/intake/production-flow.md"
+    non_owners:
+      - "Creation contract"
+      - "Agent workflow"
+
+  - aspect: "Agent invitation procedure"
+    owner: ".agent/workflows/managed-invitation-lifecycle.md"
+    non_owners:
+      - "Runbook semantics"
+      - "CLI flag copies"
+
+  - aspect: "Invitation agent safety constraints"
+    owner: ".agent/rules/invitation-production.md"
+    non_owners:
+      - "Runbook steps"
+      - "Creation field lists"
+
+  - aspect: "Reveal-gate automation / bypass"
+    owner: "docs/domains/invitations/reveal-gate-automation.md"
+    non_owners:
+      - "Screenshot README"
+      - "Motion tokens doc"
+
+  - aspect: "Theme/preset runtime authority"
+    owner: ".agent/rules/invitation-preset-source-of-truth.md"
+    non_owners:
+      - "Snapshots"
+      - "Published JSON alone"
+
+  - aspect: "Schema / content shape"
+    owner: "docs/core/content-schema.md"
+    non_owners:
+      - "Invitation ops notes"
+
+  - aspect: "Database operations"
+    owner: "docs/database-workflow.md"
+    non_owners:
+      - "Schema overview ERD"
+
+  - aspect: "Branch<->DB parity handoff"
+    owner: ".agent/skills/database-parity/SKILL.md"
+    non_owners:
+      - "branch-lane (orchestrates; no DB ops logic)"
+
+  - aspect: "Database schema overview"
+    owner: "docs/domains/database/overview.md"
+    non_owners:
+      - "Ops runbooks"
+
+  - aspect: "Environment variable hierarchy"
+    owner: "docs/env-workflow.md"
+    non_owners:
+      - "Database workflow"
+
+  - aspect: "Content parity <-> RSVP isolation"
+    owner: "docs/core/content-parity-rsvp-isolation.md"
+    non_owners:
+      - "Ops runbooks (link only)"
+
+  - aspect: "Brand / voice"
+    owner: ".agent/briefs/celebra-me.md"
+    non_owners:
+      - "Root PRODUCT/DESIGN markdown files (forbidden)"
+
+  - aspect: "Visual design intent"
+    owner: ".agent/skills/frontend-design/SKILL.md"
+    non_owners:
+      - "External design installs as SSOT"
+
+  - aspect: "Theme tokens / SCSS architecture"
+    owner: "docs/domains/theme/architecture.md"
+    non_owners:
+      - "Brand brief alone"
+
+  - aspect: "Per-client invitation state"
+    owner: "docs/invitations/"
+    non_owners:
+      - ".agent/plans/"
+      - "System CHANGELOG dumps"
+
+  - aspect: "Schema history"
+    owner: "supabase/migrations/"
+    non_owners:
+      - "Full migration lists in CHANGELOG"
+
+  - aspect: "Canonical skills"
+    owner: ".agent/skills/"
+    non_owners:
+      - ".agents/"
+      - "Global Hermes skills"
+
+  - aspect: "Available commands"
+    owner: "package.json"
+    non_owners:
+      - "Copied command tables in stale docs"
+
+  - aspect: "Worktree topology & ports (exec)"
+    owner: "scripts/shared/worktree-lane.ts"
+    non_owners:
+      - "Prose cards overriding TS code"
+
+  - aspect: "Runtime target resolution (exec)"
+    owner: "scripts/shared/celebra-runtime-env.ts"
+    non_owners:
+      - "Ad-hoc .env overrides"

@@ -352,27 +352,12 @@ contracts, type flow, schemas, adapters, render assembly, or routing. It is not 
 documentation, copy-only, asset-only, or SCSS-only changes. Prefer focused domain validation when it
 proves the changed contract more directly.
 
-**C) Final pre-push / pre-deploy confidence (full validation, do not skip):**
-
 ```sh
-pnpm type-check
-pnpm validate:structure
-pnpm lint
-pnpm lint:styles
-pnpm validate:ui-governance
-pnpm validate:event-parity
-pnpm validate:no-pii
-pnpm test
-pnpm test:e2e:ci
-pnpm build
+pnpm run ci                  # Canonical package.json script alias for full pipeline Tier C
 pnpm agent:git-safety:check
 ```
 
-`pnpm run ci` is the canonical full-pipeline equivalent of tier C. It runs `pnpm build:app`
-(`astro build`) after its earlier type-check to avoid duplicating the check. `pnpm ci:quick` runs
-`astro check`, deterministic structure validation, and a scoped ESLint pass and is for fast feedback
-only; it is **safe in CI** (it does not depend on local Git staging state) but **must not** replace
-tier C for production-sensitive changes.
+`pnpm run ci` is the canonical full-pipeline equivalent of Tier C. It runs `pnpm type-check`, `pnpm validate:structure`, `pnpm lint`, `pnpm lint:styles`, `pnpm validate:ui-governance`, `pnpm validate:event-parity`, `pnpm validate:no-pii`, `pnpm test`, `pnpm test:e2e:ci`, and `pnpm build:app`. Use `pnpm ci:quick` for fast feedback only.
 
 The pre-push hook intentionally remains lean (commit-message validation only); do not move tests or
 type-checks into pre-push.
