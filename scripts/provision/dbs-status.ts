@@ -19,16 +19,36 @@ import {
 	PROJECT_ROOT,
 } from '../db/db-workflow-lib.ts';
 import { LOCAL_DB_URL, classifyDbTarget, redactDbUrl } from '../db/db-guard.ts';
+import { evaluateMigrationHistoryParity, fetchRemoteMigrationVersions } from '../db/audit-db.ts';
 import {
-	evaluateMigrationHistoryParity,
-	fetchRemoteMigrationVersions,
-} from '../db/audit-db.ts';
-import { classifySchemaLifecycle, type SchemaLifecycleState } from '../db/schema-lifecycle-state.ts';
+	classifySchemaLifecycle,
+	type SchemaLifecycleState,
+} from '../db/schema-lifecycle-state.ts';
 import { listInvitationDefinitions, getInvitationDefinition } from './invitations/registry.ts';
 import { buildNormalizedInvitationRelease } from './normalized-invitation-release.ts';
 import { serializeInvitationPackage } from './invitation-package.ts';
 import { existsSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
+
+/** Per-psql wall clock used by compact/Git-hook probes when set. */
+let statusProbeTimeoutMs: number | undefined;
+
+export function withStatusProbeTimeout<T>(timeoutMs: number | undefined, run: () => T): T {
+	const previous = statusProbeTimeoutMs;
+	statusProbeTimeoutMs = timeoutMs;
+	try {
+		return run();
+	} finally {
+		statusProbeTimeoutMs = previous;
+	}
+}
+
+function psqlOptions(extra: { tuplesOnly?: boolean; throwOnError?: boolean } = {}) {
+	return {
+		...extra,
+		...(typeof statusProbeTimeoutMs === 'number' ? { timeoutMs: statusProbeTimeoutMs } : {}),
+	};
+}
 
 export type StatusVocabulary =
 	| 'MATCH_CANONICAL'
@@ -108,7 +128,7 @@ export function resolveDbUrlForEnv(env: TargetEnv): { dbUrl: string | null; erro
 }
 
 function testConnectivity(dbUrl: string): boolean {
-	const res = runPsql('select 1;', dbUrl, { tuplesOnly: true, throwOnError: false });
+	const res = runPsql('select 1;', dbUrl, psqlOptions({ tuplesOnly: true, throwOnError: false }));
 	return res.status === 0 && res.stdout.trim() === '1';
 }
 
@@ -119,7 +139,7 @@ function countActiveManagedInvitations(dbUrl: string): {
 	const res = runPsql(
 		`select count(*), count(distinct slug) from public.invitations where archived_at is null;`,
 		dbUrl,
-		{ tuplesOnly: true, throwOnError: false },
+		psqlOptions({ tuplesOnly: true, throwOnError: false }),
 	);
 	if (res.status !== 0 || !res.stdout.trim()) return { activeCount: 0, conflictsCount: 0 };
 	const [totalStr, distinctStr] = res.stdout
@@ -285,7 +305,7 @@ function evaluateSingleTargetStatus(
 	const matchRes = runPsql(
 		`select id::text, slug, created_at::text from public.invitations where slug = ${sqlLiteral(slug)} and archived_at is null;`,
 		dbUrl,
-		{ tuplesOnly: true, throwOnError: false },
+		psqlOptions({ tuplesOnly: true, throwOnError: false }),
 	);
 	if (matchRes.status !== 0) {
 		return {
@@ -346,7 +366,7 @@ function evaluateSingleTargetStatus(
 	const provRes = runPsql(
 		`select definition_slug, package_hash, applied_at::text from public.managed_invitation_release_provenance where invitation_id = ${sqlLiteral(invId!)}::uuid;`,
 		dbUrl,
-		{ tuplesOnly: true, throwOnError: false },
+		psqlOptions({ tuplesOnly: true, throwOnError: false }),
 	);
 	const [provSlug, provHash, provApplied] = provRes.stdout
 		.trim()
@@ -357,7 +377,7 @@ function evaluateSingleTargetStatus(
 	const pubRes = runPsql(
 		`select version::text, published_at::text from public.published_invitation_content where invitation_project_id = ${sqlLiteral(invId!)}::uuid order by version desc limit 1;`,
 		dbUrl,
-		{ tuplesOnly: true, throwOnError: false },
+		psqlOptions({ tuplesOnly: true, throwOnError: false }),
 	);
 	const [pubVer, pubAt] = pubRes.stdout
 		.trim()
@@ -368,7 +388,7 @@ function evaluateSingleTargetStatus(
 	const draftRes = runPsql(
 		`select status, updated_at::text from public.invitation_content_drafts where invitation_project_id = ${sqlLiteral(invId!)}::uuid and deleted_at is null limit 1;`,
 		dbUrl,
-		{ tuplesOnly: true, throwOnError: false },
+		psqlOptions({ tuplesOnly: true, throwOnError: false }),
 	);
 	const [draftStatus, draftUpdatedAt] = draftRes.stdout
 		.trim()
@@ -379,7 +399,7 @@ function evaluateSingleTargetStatus(
 	const assetRes = runPsql(
 		`select count(*) from public.invitation_assets where invitation_id = ${sqlLiteral(invId!)}::uuid and deleted_at is null;`,
 		dbUrl,
-		{ tuplesOnly: true, throwOnError: false },
+		psqlOptions({ tuplesOnly: true, throwOnError: false }),
 	);
 	const assetCount = Number(assetRes.stdout.trim() || '0');
 

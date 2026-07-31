@@ -46,6 +46,8 @@ interface RunOptions {
 	inherit?: boolean;
 	redact?: string[];
 	throwOnError?: boolean;
+	/** Hard wall-clock timeout for spawnSync (ms). */
+	timeoutMs?: number;
 }
 
 export function quoteIdentifier(identifier: string): string {
@@ -294,6 +296,9 @@ export function runCommand(
 		shell: useShell,
 		encoding: 'utf8',
 		stdio: options.inherit ? 'inherit' : 'pipe',
+		...(typeof options.timeoutMs === 'number' && options.timeoutMs > 0
+			? { timeout: options.timeoutMs, killSignal: 'SIGKILL' as const }
+			: {}),
 	};
 
 	const result = spawnSync(cmdToSpawn, argsToSpawn, spawnOptions);

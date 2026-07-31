@@ -4,13 +4,31 @@
  * Usage:
  *   pnpm dbs                   # General 3-environment matrix view
  *   pnpm dbs <slug>            # Per-invitation detailed cross-environment status
+ *   pnpm dbs --compact         # Compact CONTENT + SCHEMA (connectivity CONTENT; fast)
+ *   pnpm dbs --compact <slug>  # Compact CONTENT + SCHEMA for one invitation
+ *   pnpm dbs --compact --aggregate-content  # Worst-of all definitions (slower)
  *   pnpm dbs --json            # JSON output
  */
 
 import { evaluateGeneralStatus, evaluateInvitationStatus } from './dbs-status.ts';
+import {
+	MANAGED_STATUS_DEFAULT_TIMEOUT_MS,
+	runCompactManagedStatusSafe,
+} from './managed-status.ts';
 
 function pad(str: string, width: number): string {
 	return str.padEnd(width, ' ');
+}
+
+function readTimeoutMs(args: string[]): number {
+	const idx = args.indexOf('--timeout-ms');
+	if (idx === -1) return MANAGED_STATUS_DEFAULT_TIMEOUT_MS;
+	const raw = args[idx + 1];
+	const parsed = Number(raw);
+	if (!Number.isFinite(parsed) || parsed < 500 || parsed > 60_000) {
+		throw new Error('--timeout-ms must be a number between 500 and 60000.');
+	}
+	return Math.floor(parsed);
 }
 
 function formatGeneralView(jsonMode: boolean): void {
@@ -110,12 +128,51 @@ async function formatInvitationView(slug: string, jsonMode: boolean): Promise<vo
 	}
 }
 
+async function formatCompactView(
+	slug: string | undefined,
+	jsonMode: boolean,
+	timeoutMs: number,
+	aggregateContent: boolean,
+): Promise<void> {
+	if (jsonMode) {
+		const result = await runCompactManagedStatusSafe({ slug, timeoutMs, aggregateContent });
+		if (!result.ok) {
+			console.log(
+				JSON.stringify({ ok: false, error: result.text.trim(), readOnly: true }, null, 2),
+			);
+			process.exit(0);
+		}
+		console.log(JSON.stringify(result.status, null, 2));
+		return;
+	}
+
+	const result = await runCompactManagedStatusSafe({ slug, timeoutMs, aggregateContent });
+	process.stdout.write(result.text);
+	if (!result.ok) {
+		process.exit(0);
+	}
+}
+
 async function main(): Promise<void> {
 	const args = process.argv.slice(2);
 	const jsonMode = args.includes('--json');
-	const nonFlagArgs = args.filter((a) => !a.startsWith('-'));
+	const compactMode = args.includes('--compact');
+	const aggregateContent = args.includes('--aggregate-content');
+	const timeoutMs = readTimeoutMs(args);
+	const timeoutIdx = args.indexOf('--timeout-ms');
+	const timeoutValue = timeoutIdx === -1 ? undefined : args[timeoutIdx + 1];
+	const slug = args.find(
+		(arg, index) =>
+			!arg.startsWith('-') &&
+			arg !== timeoutValue &&
+			!(timeoutIdx !== -1 && index === timeoutIdx + 1),
+	);
 
-	const slug = nonFlagArgs[0];
+	if (compactMode) {
+		await formatCompactView(slug, jsonMode, timeoutMs, aggregateContent);
+		return;
+	}
+
 	if (slug) {
 		await formatInvitationView(slug, jsonMode);
 	} else {
@@ -124,6 +181,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((err) => {
-	console.error(err);
+	console.error(err instanceof Error ? err.message : err);
 	process.exitCode = 1;
 });

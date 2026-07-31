@@ -1,0 +1,10 @@
+#!/bin/sh
+# Read-only managed invitation status after commit. Never blocks Git success.
+# Opt out: CELEBRA_SKIP_MANAGED_STATUS=1
+
+if [ "$CELEBRA_SKIP_MANAGED_STATUS" = "1" ] || [ "$CELEBRA_SKIP_MANAGED_STATUS" = "true" ]; then
+  exit 0
+fi
+
+node scripts/provision/managed-status-git-hook.mjs || true
+exit 0
