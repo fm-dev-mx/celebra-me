@@ -50,8 +50,9 @@ test('provisions or verifies the deterministic Preview-only publication fixture'
 		throw new Error(
 			[
 				`Preview publication fixture "${PREVIEW_FIXTURE_SLUG}" is missing.`,
-				'Dashboard POST /api/dashboard/intake no longer creates client invitations.',
-				'Provision the fixture via managed invitation tooling or a prior approved Preview seed,',
+				'Dashboard POST /api/dashboard/intake does not create client invitations.',
+				'Bootstrap with: pnpm invitation:preview-fixture --apply',
+				'(CELEBRA_TASK_SCOPE=preview:e2e-preview-publication:e2e-fixture),',
 				'then re-run pnpm test:e2e:preview:provision.',
 			].join(' '),
 		);
