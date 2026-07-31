@@ -80,3 +80,48 @@ until runtime and production evidence supports removal.
 
 Report changed files, validation and visual-QA evidence, cache behavior, migration status, remaining
 risks, deletion candidates, `git status --short`, and whether anything was staged or committed.
+
+## Actor capability matrix (SSOT)
+
+This matrix is the SSOT for Agent vs Owner operational capabilities. Preview task scope is an
+operational assertion, not cryptographic security; strong control depends on credential and
+execution-boundary separation.
+
+| Capability | Agent | Owner |
+| --- | --- | --- |
+| Canonical invitation source | Edit with task authorization | Approve and own |
+| Disposable test DB | Run guarded tests | Run |
+| Persistent Local managed mutation | Yes via managed lifecycle (`invitation:update --targets local`) | Yes |
+| Persistent Local raw/ad-hoc DB mutation | Never (unsupported agent workflow) | Exceptional only |
+| Preview managed mutation | Yes with explicit Preview task scope | Yes |
+| Preview raw DB mutation | Never | Guarded schema workflow only |
+| Production read — safe surfaces | `pnpm dbs`; `invitation:update --status`; `invitation:content-parity` (read-only summaries / semantic compare) | Same safe surfaces |
+| Production read — privileged DB audit | Never (`db:prod:audit`, backups, Auth/Storage export) | Owner-only guarded `db:prod:*` audit/backup/export |
+| Production invitation mutation | Never via `invitation:update` or `invitation:reconcile` | Future `invitation:promote` only |
+| Production schema / promotion | Never | `db:*:migrate` / approved promotion workflow |
+| Reconciliation | Plan and apply Local/Preview managed decisions | Authorize Preview scope and source updates |
+| Schema operations | Never auto-run from invitation workflows | Use separate guarded `db:*:migrate` workflows |
+
+### Production read surfaces
+
+- **Safe Agent (and Owner) read:** managed status/`dbs`, `invitation:update --status`
+  (including `--targets all|production`), and `invitation:content-parity`. These are redacted /
+  summary-oriented and do not authorize privileged DDL inspection or PII dumps.
+- **Owner-only privileged DB audit:** `pnpm db:prod:audit`, `db:prod:backup*`,
+  `db:prod:export-auth`, `db:prod:export-storage`, and any direct Production `psql`/service-role
+  inspection. Agents must not run these unless the owner explicitly authorizes that exact
+  privileged read.
+
+## Schema lifecycle contract
+
+Canonical schema authority is `supabase/migrations/*`. Lifecycle order:
+
+```text
+versioned migration → Disposable → Persistent Local → Preview → human-controlled Production migration
+```
+
+Schema drift states: `CURRENT` | `BEHIND` | `SCHEMA_DRIFT` | `UNVERIFIED`
+(`scripts/db/schema-lifecycle-state.ts`). Do not reuse invitation reconciliation decisions
+(`KEEP_ENVIRONMENT`, etc.) for schema. Invitation workflows must never auto-run migrations; a future
+`invitation:promote` preflight that detects incompatible schema must return
+`SCHEMA_INCOMPATIBLE` / `OWNER_ACTION_REQUIRED` and stop.

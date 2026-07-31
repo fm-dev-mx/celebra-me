@@ -19,7 +19,7 @@ Con el tooling actual:
 
 ```bash
 # 1. Dry-run (no muta)
-pnpm invitation:update -- --slug alba-rosa-quinonez --targets production --dry-run --non-interactive --json
+pnpm invitation:update -- --slug alba-rosa-quinonez --targets local,preview --dry-run --non-interactive --json
 
 # 2. Guardar resoluciones sugeridas del JSON (suggestedConflictResolutions)
 #    o construir manualmente, por ejemplo:
@@ -40,10 +40,10 @@ Valores:
 
 ```bash
 # 3. Volver a planificar con resoluciones (sigue dry-run)
-pnpm invitation:update -- --slug alba-rosa-quinonez --targets production --dry-run --non-interactive --conflict-resolutions .tmp/alba-resolutions.json --json
+pnpm invitation:update -- --slug alba-rosa-quinonez --targets local,preview --dry-run --non-interactive --conflict-resolutions .tmp/alba-resolutions.json --json
 
 # 4. Apply solo con autorización explícita del owner y confirmaciones Production
-pnpm invitation:update -- --slug alba-rosa-quinonez --targets production --apply --non-interactive --conflict-resolutions .tmp/alba-resolutions.json --confirm-slug alba-rosa-quinonez --confirm-scope --confirm-destructive
+pnpm invitation:update -- --slug alba-rosa-quinonez --targets local,preview --apply --non-interactive --conflict-resolutions .tmp/alba-resolutions.json --confirm-destructive
 ```
 
 ## Verificación post-apply

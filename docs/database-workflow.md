@@ -186,8 +186,6 @@ Credential presence, worktree path, runtime target, and UI banners do not author
    ```bash
    pnpm invitation:update -- --slug <slug> --targets local,preview --source-dir <path> --dry-run
    pnpm invitation:update -- --slug <slug> --targets local,preview --source-dir <path> --apply
-   pnpm invitation:update -- --slug <slug> --targets production --dry-run
-   pnpm invitation:update -- --slug <slug> --targets production --apply
    ```
 
 2. **Semantic content parity (read-only)**:

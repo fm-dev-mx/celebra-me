@@ -38,17 +38,13 @@ Version-controlled invitations (e.g. Romina) are defined as single TypeScript fi
 `scripts/provision/invitations/<slug>.ts`.
 
 ```text
-Define -> Plan -> Update Local -> Package -> Promote Preview -> Approve -> Production
-  (or Direct Production Publication: Coordinated Local -> Preview -> Production)
+Define -> Plan -> Update Local -> Package -> Promote Preview -> Approve -> Owner-controlled Production promotion
 ```
 
 Use
 `pnpm invitation:update -- --slug <slug> --targets <targets> --source-dir <path> --dry-run|--apply`.
-Selecting `production` (or `all`) automatically expands the target pipeline to
-`Local -> Preview -> Production` sequentially, with Production executing last. Direct Production
-publication does not require a pre-existing Preview approval artifact (recorded as optional audit
-evidence if present). Non-interactive production publication requires `--confirm-slug <slug>`,
-`--confirm-scope`, and `--confirm-destructive` (when destructive changes exist). Existing target
+`invitation:update` mutation targets are `local`, `preview`, or `local,preview`; `all` is status-only
+and Production mutation is rejected. Existing target
 invitations resolve and preserve their owner by slug. New target invitations ensure a dedicated Auth
 host from the definition `hostLoginAlias` (`{alias}@clientes.celebra.invalid`) before plan/apply;
 `--owner-user-id` is an optional override/assertion, not required on the happy path. Dry-run reports
