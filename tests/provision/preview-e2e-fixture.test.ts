@@ -165,4 +165,56 @@ describe('preview-e2e-fixture', () => {
 		expect(again.action).toBe('already_present');
 		expect(again.invitationId).toBe(created.invitationId);
 	});
+
+	it('rejects missing Preview credentials before mutation', () => {
+		expect(() => resolvePreviewFixtureDbUrl({})).toThrow(/PREVIEW_E2E_FIXTURE_CREDENTIALS/);
+		expect(mockedPsql).not.toHaveBeenCalled();
+	});
+
+	it('rejects missing task scope before mutation', () => {
+		mockedClassify.mockReturnValue({
+			target: 'preview',
+			reason: 'preview host',
+		} as never);
+		mockedAuth.mockImplementationOnce(() => {
+			throw new Error(
+				'PREVIEW_WRITE_AUTH_REQUIRED: Automated Preview mutation requires CELEBRA_TASK_SCOPE.',
+			);
+		});
+
+		expect(() =>
+			ensurePreviewE2eFixture({
+				apply: true,
+				env: { PREVIEW_DB_URL: PREVIEW_URL },
+			}),
+		).toThrow(/PREVIEW_WRITE_AUTH_REQUIRED/);
+		expect(mockedPsql).not.toHaveBeenCalled();
+	});
+
+	it('surfaces provisioning failure without reporting success', () => {
+		mockedClassify.mockReturnValue({
+			target: 'preview',
+			reason: 'preview host',
+		} as never);
+		mockedAuth.mockReturnValue({
+			authorized: true,
+			actor: 'automated_scoped_token',
+		});
+		// loadActiveFixture → absent
+		mockedPsql.mockReturnValueOnce({ status: 0, stdout: '', stderr: '' });
+		// createFixtureRow insert failure
+		mockedPsql.mockReturnValueOnce({
+			status: 1,
+			stdout: '',
+			stderr: 'insert failed',
+		});
+
+		expect(() =>
+			ensurePreviewE2eFixture({
+				apply: true,
+				authToken: `preview:${PREVIEW_FIXTURE_SLUG}:e2e-fixture`,
+				env: { PREVIEW_DB_URL: PREVIEW_URL },
+			}),
+		).toThrow(/PREVIEW_E2E_FIXTURE_CREATE_FAILED/);
+	});
 });

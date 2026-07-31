@@ -21,7 +21,10 @@ function main() {
 
 	const here = dirname(fileURLToPath(import.meta.url));
 	const cli = resolve(here, 'dbs-cli.ts');
-	const tsxCli = resolve(here, '../../node_modules/tsx/dist/cli.mjs');
+	// Optional override lets tests prove child-process failure still exits 0 (Git non-blocking).
+	const tsxCli =
+		process.env.CELEBRA_MANAGED_STATUS_HOOK_SCRIPT?.trim() ||
+		resolve(here, '../../node_modules/tsx/dist/cli.mjs');
 	const child = spawn(process.execPath, [tsxCli, cli, '--compact', '--timeout-ms', '2500'], {
 		cwd: resolve(here, '../..'),
 		env: {

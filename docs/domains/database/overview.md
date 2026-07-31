@@ -227,8 +227,8 @@ erDiagram
 
 Managed client invitations are created only through the definition registry +
 `pnpm invitation:update` (Local/Preview) and owner-only `pnpm invitation:promote` (Production).
-`POST /api/dashboard/intake` and Dashboard duplicate reject client creation (`403`).
-Demo rows are synchronized by `synchronizeDemoInvitations`, not by Dashboard create.
+`POST /api/dashboard/intake` and Dashboard duplicate reject client creation (`403`). Demo rows are
+synchronized by `synchronizeDemoInvitations`, not by Dashboard create.
 
 ### Internal Admin Editing
 
@@ -290,12 +290,19 @@ Admin clicks "Restaurar" → `restore_invitation()` RPC:
 - Restores all soft-deleted children
 - Restores event status to 'published' if published content exists
 
-### Demo Duplication
+### Client creation and duplication (Dashboard)
 
-Admin clicks "Duplicar desde demo" → `duplicateInvitationFromDemo()`:
+Dashboard HTTP create and duplicate are rejected. Client invitations are provisioned only through
+canonical/internal managed workflows (definition registry + provision CLIs), not Dashboard UI/API:
 
-1. Creates new `invitations` row with `kind='client'` and `source_invitation_id` pointing to source
-2. Copies demo content into a new `invitation_content_drafts` row
+| Surface                                         | Behavior                                                                              |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `POST /api/dashboard/invitation`                | 403 `canonical_creation_required` (`via: 'create'`)                                   |
+| `POST /api/dashboard/invitation/[id]/duplicate` | 403 `canonical_creation_required` (`via: 'duplicate'`)                                |
+| Managed create / Preview E2E fixture            | Canonical scripts (`invitation:update`, `invitation:preview-fixture`, import engines) |
+
+`duplicateInvitationFromDemo()` may still exist as an internal service primitive, but it is not an
+active Dashboard workflow and must not be invoked for managed client creation.
 
 ## Index Strategy
 

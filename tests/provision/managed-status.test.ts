@@ -190,4 +190,43 @@ describe('managed-status compact composition', () => {
 		expect(result.ok).toBe(false);
 		if (!result.ok) expect(result.text).toMatch(/unavailable/i);
 	});
+
+	it('reuses schema BEHIND and SCHEMA_DRIFT from the general classifier', async () => {
+		mockedGeneral.mockReturnValue({
+			environments: {
+				local: envStatus('local', 'BEHIND'),
+				preview: envStatus('preview', 'SCHEMA_DRIFT'),
+				production: envStatus('production', 'CURRENT'),
+			},
+			totalDefinitionsCount: 0,
+		});
+
+		const status = await evaluateCompactManagedStatus();
+		expect(status.schema.local.status).toBe('BEHIND');
+		expect(status.schema.preview.status).toBe('SCHEMA_DRIFT');
+		expect(status.schema.production.status).toBe('CURRENT');
+		expect(formatCompactManagedStatus(status)).toContain('BEHIND');
+		expect(formatCompactManagedStatus(status)).toContain('SCHEMA_DRIFT');
+	});
+
+	it('bounds completion when invitation probes never resolve', async () => {
+		mockedGeneral.mockReturnValue({
+			environments: {
+				local: envStatus('local', 'CURRENT'),
+				preview: envStatus('preview', 'CURRENT'),
+				production: envStatus('production', 'CURRENT'),
+			},
+			totalDefinitionsCount: 1,
+		});
+		mockedInvitation.mockImplementation(() => new Promise(() => undefined));
+
+		const result = await runCompactManagedStatusSafe({
+			slug: 'romina-rios-chaparro',
+			timeoutMs: 80,
+		});
+		expect(result.ok).toBe(false);
+		if (!result.ok) {
+			expect(result.text).toMatch(/timed out/i);
+		}
+	});
 });

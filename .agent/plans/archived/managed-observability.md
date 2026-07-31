@@ -1,6 +1,6 @@
 ---
 title: Managed Observability & Preview Fixture Bootstrap
-status: completed
+status: final
 created: 2026-07-31
 updated: 2026-07-31
 related_docs:
@@ -36,6 +36,6 @@ Baseline: `c99b7cfb`.
 
 ## External limitations
 
-- Authenticated Preview E2E against live Preview was not executed in this session (requires
-  Preview credentials + task scope + Deployment Protection). Fixture CLI contract is unit-tested.
+- Authenticated Preview E2E against live Preview was not executed in this session (requires Preview
+  credentials + task scope + Deployment Protection). Fixture CLI contract is unit-tested.
 - Vercel production deploy verification not run (owner-gated).
