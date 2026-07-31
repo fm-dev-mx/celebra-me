@@ -75,12 +75,13 @@ task authorization, target classification, and standard guard checks.
   serialize on the target invitation row; do not add receipt row locks that would require `UPDATE`.
 - **No Direct Production SQL**: Direct production SQL execution is not part of the normal workflow.
   Emergency patch files must contain the manifest required by
-  [`manual-sql-manifest.md`](manual-sql-manifest.md) and stop at `pnpm db:prod:patch` (dry-run lint
-  only).
+  [`manual-sql-manifest.md`](manual-sql-manifest.md). Prefer `pnpm db:prod:patch -- --dry-run`
+  first; owner-only `--apply` is specialized maintenance, not a substitute for versioned migrations
+  or `invitation:promote`.
 - **One-Time Recovery Tool Removed**: `scripts/db/reconcile-prod-baseline.ts` was a one-time
   recovery tool and is no longer part of the repository.
 - **Production Migration Safety Workflow**: `pnpm db:prod:migrate` is the only approved production
-  mutation path and requires the exact safety workflow:
+  **schema** mutation path and requires the exact safety workflow:
   1. Target guard check (`db-guard.ts check --target production --operation migrate`)
   2. Local codebase validation (`pnpm type-check`, `pnpm test`, `pnpm build`)
   3. Read-only production schema audit (`pnpm db:prod:audit`)
@@ -131,14 +132,18 @@ task authorization, target classification, and standard guard checks.
 - `pnpm db:local:reset` is blocked. Use `pnpm db:disposable:reset` for destructive tests.
 - `pnpm db:local:migrate` applies pending migrations to persistent-local transactionally without
   resetting.
-- `pnpm db:prod:migrate` is the only implemented production mutation workflow.
+- `pnpm db:prod:migrate` is the approved production **schema** mutation workflow.
+- `pnpm invitation:promote` is the approved production **managed-content** promotion workflow
+  (owner-only; separate from schema migrate).
 - `pnpm db:preview:migrate` applies pending migrations to Preview (`PREVIEW_DB_URL`).
-- `pnpm db:prod:patch -- --file <path>` is dry-run lint only. It never connects to the database and
-  never executes SQL.
+- `pnpm db:prod:patch` disposition is `RESTRICT_OWNER_ONLY` / `KEEP_SPECIALIZED`: `--dry-run` is
+  lint-only; `--apply` is owner-confirmed specialized maintenance and must not bypass
+  `db:prod:migrate` or `invitation:promote`.
 - Production patch files must include the manifest required by
   [`manual-sql-manifest.md`](manual-sql-manifest.md).
 - Non-manifest SQL patch files are historical records only and must not be copied as templates.
-- `pnpm ops adopt-legacy-events` is disabled because it can mutate data with the service role.
+- Removed one-shot ops commands (`adopt-legacy-events`, `new-invitation`, `optimize-assets`) are no
+  longer registered.
 
 ## Decision Tree
 
@@ -159,9 +164,10 @@ task authorization, target classification, and standard guard checks.
 - Need to reset a database for tests? Use `tsx scripts/db/disposable-test-env.ts reset`. The guard
   allows all operations on the disposable-test target.
 - Need a manual production SQL patch? Require the [`manual SQL manifest`](manual-sql-manifest.md),
-  then stop at `pnpm db:prod:patch -- --file <path>`. That command is lint-only.
-- Asked to run `pnpm db:push`, `pnpm db:local:reset`, raw `supabase db push --linked`, or
-  `pnpm ops adopt-legacy-events`? Do not run it. Report that the path is blocked.
+  run `pnpm db:prod:patch -- --dry-run --file <path>`, and only use owner-confirmed `--apply` for
+  specialized maintenance that cannot yet be a versioned migration.
+- Asked to run `pnpm db:push`, `pnpm db:local:reset`, raw `supabase db push --linked`, or removed
+  one-shot ops commands? Do not run them. Report that the path is blocked.
 - Unsure whether a command could touch production or destroy persistent local? Run the guard check:
   `tsx scripts/db/db-guard.ts check --target <target> --operation "<op>"`. Fail closed and ask for a
   narrower, explicit operation.
@@ -234,16 +240,18 @@ persistent-local database was preserved.
 - Destructive tests (reset, schema drops, truncate, migration rollback) must use the disposable test
   environment (`pnpm db:disposable:reset`).
 - Production is strictly read-only unless the user explicitly authorizes a separate production
-  deployment goal with `pnpm db:prod:migrate`.
+  schema goal with `pnpm db:prod:migrate` or managed-content promotion with
+  `pnpm invitation:promote`.
 - Unknown database targets must cause an immediate abort of the operation.
 - Dumps and credentials must never enter Git. Dumps live under gitignored `.tmp/` and `.backups/`;
   hosted DB credentials live only in gitignored `.env.preview.local` / `.env.production.local`.
 - Before any database operation, classify the target using `pnpm db:guard:classify --db-url <url>`.
 - Do not connect to production unless the user explicitly asks for that exact production operation.
-- Do not execute manual production SQL from `scripts/manual/production-patches/` or `scripts/sql/`.
+- Do not execute manual production SQL from `scripts/manual/production-patches/` or `scripts/sql/`
+  without the owner-only `db:prod:patch` workflow.
 - Do not run `supabase db push --linked`.
-- For production patches, stop at `pnpm db:prod:patch -- --file <path>` until a reviewed execution
-  harness exists.
+- For production patches, prefer versioned migrations; use `pnpm db:prod:patch` only as specialized
+  owner maintenance (`RESTRICT_OWNER_ONLY`).
 - Prefer fail-closed behavior over preserving old command compatibility.
 - `pnpm run ci` must never reset or modify the persistent local database.
 - The sentinel must survive the full validation pipeline.

@@ -12,12 +12,13 @@ invitation updates. Operational policy and lifecycle semantics live in
 [`docs/domains/intake/production-flow.md`](../../docs/domains/intake/production-flow.md). Content
 promote vs Preview mirror vs RSVP isolation:
 [`docs/core/content-parity-rsvp-isolation.md`](../../docs/core/content-parity-rsvp-isolation.md).
-Executable CLI behavior lives in `scripts/provision/invitation-update-cli.ts` and its imported
-services. Capability boundaries (Agent vs Owner, managed vs raw, Preview task scope, schema
-separation) are SSOT in [`.agent/rules/invitation-production.md`](../rules/invitation-production.md);
+Executable CLI behavior lives in `scripts/provision/invitation-update-cli.ts`,
+`invitation-reconcile-cli.ts`, and `invitation-promote-cli.ts` plus imported services. Capability
+boundaries (Agent vs Owner, managed vs raw, Preview task scope, schema separation) are SSOT in
+[`.agent/rules/invitation-production.md`](../rules/invitation-production.md);
 do not restate the matrix here. Managed Local/Preview updates use `invitation:update`;
-reconciliation uses `invitation:reconcile`; Production promotion is a future owner-only workflow.
-`pnpm db:preview:sync-invitations` is a separate regression mirror.
+reconciliation uses `invitation:reconcile`; Production promotion uses owner-only
+`pnpm invitation:promote`. `pnpm db:preview:sync-invitations` is a separate regression mirror.
 
 **Preparation prerequisite:** New client invitations should complete
 [`.agent/workflows/invitation-preparation.md`](./invitation-preparation.md) until preparation
@@ -32,8 +33,8 @@ at `docs/invitations/<slug>.md`. This lifecycle workflow does not own preparatio
    package integrity, asset policy, and every target result.
 4. Treat an unavailable or failed inspection as blocked or unevaluated, never as no change.
 5. Do not apply until all required preflights pass and the user has authorized the exact mutation
-   scope. Preview requires explicit task scope / interactive confirmation. Production mutation is
-   not part of `invitation:update` (future owner promotion only).
+   scope. Preview requires explicit task scope / interactive confirmation. Production mutation uses
+   owner-only `pnpm invitation:promote`, not `invitation:update`.
 6. Execute only the retained, confirmed plan; any source, package, project, invitation, or asset
    drift requires a new dry run.
 7. Verify database, Storage, and published state, then report one explicit result per selected
@@ -48,6 +49,8 @@ semantics from this workflow into other docs.
 pnpm invitation:update -- --help
 pnpm invitation:update -- --slug <slug> --targets local --source-dir <path> --dry-run
 pnpm invitation:update -- --slug <slug> --targets local,preview --source-dir <path> --apply
+pnpm invitation:promote -- --slug <slug> --package <path> --dry-run
+pnpm invitation:promote -- --slug <slug> --package <path> --apply --backup-manifest <path>
 ```
 
 Interactive apply (TTY) offers selective content apply: all changes, by section, or field-by-field.

@@ -69,6 +69,10 @@ Alba Rosa Quiñones client invitation, premium motion system, and preview infras
 
 ### Added
 
+- **Owner-only Production invitation promotion**: `pnpm invitation:promote` promotes an exact
+  Preview-approved managed package after schema `CURRENT`, critical backup evidence, and owner
+  confirmation; `invitation:update` no longer mutates Production.
+
 ### Changed
 
 - **Free-tier Production recovery**: local Windows EFS critical backups support unattended daily

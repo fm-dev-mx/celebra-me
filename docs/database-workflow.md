@@ -426,12 +426,18 @@ import. The unresolved preserve-local enhancement remains tracked in
 - Blocks unsafe production-patch patterns including unscoped `UPDATE`/`DELETE`, `TRUNCATE`, broad
   `DROP`, `ALTER TABLE`, RLS policy changes, `SECURITY DEFINER`, and `CASCADE`.
 
-`pnpm db:prod:patch -- --file <path>`
+`pnpm db:prod:patch -- --dry-run --file <path>`
 
-- Dry-run lint only.
-- Does not open a database connection and does not execute SQL.
-- Exists so production patches have one fail-closed entrypoint while the full execution harness is
-  still intentionally deferred.
+- Owner-facing lint entrypoint for reviewed manual SQL patches.
+- Does not open a database connection and does not execute SQL in dry-run mode.
+
+`pnpm db:prod:patch -- --apply --owner-user-id <UUID> --file <path>`
+
+- **Disposition: `RESTRICT_OWNER_ONLY` / `KEEP_SPECIALIZED`.**
+- Narrow owner-only maintenance for reviewed patches that cannot yet be expressed as versioned
+  `supabase/migrations/*`. Not a bypass for `db:prod:migrate` or `invitation:promote`.
+- Requires owner confirmation (`PATCH <owner-uuid> <file>` / `CONFIRM_PROD_MIGRATION`) and never
+  auto-runs schema migrations.
 
 ## Workflows
 
@@ -567,8 +573,9 @@ blocked.
   database.
 - Do not delete persistent Docker volumes (`supabase_db_celebra-me-rsvp`).
 - Do not run `docker compose down -v` for the persistent Supabase project.
-- Do not run `pnpm ops adopt-legacy-events`; it is disabled because it can create invitations and
-  patch events with the service role.
+- Do not run removed one-shot ops commands (`adopt-legacy-events`, `new-invitation`,
+  `optimize-assets`); they are no longer registered. Use managed invitation workflows and reviewed
+  versioned migrations / specialized owner patches instead.
 - Do not run ad-hoc `supabase db push --linked` outside the approved migration workflow.
 - Do not run `supabase link` casually.
 

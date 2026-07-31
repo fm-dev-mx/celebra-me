@@ -99,9 +99,8 @@ The single canonical repository command for inspecting environment status and ma
 state across Local, Preview, and Production is:
 
 ```bash
-pnpm dbs              # General 3-environment matrix view
+pnpm dbs              # General 3-environment matrix view (includes schema lifecycle)
 pnpm dbs <slug>       # Per-invitation cross-environment status
-pnpm ops dbs <slug>   # Registered alias via ops dispatcher
 ```
 
 ### PowerShell Helper

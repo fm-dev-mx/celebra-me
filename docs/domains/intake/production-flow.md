@@ -38,13 +38,24 @@ Version-controlled invitations (e.g. Romina) are defined as single TypeScript fi
 `scripts/provision/invitations/<slug>.ts`.
 
 ```text
-Define -> Plan -> Update Local -> Package -> Promote Preview -> Approve -> Owner-controlled Production promotion
+Define -> Plan -> Update Local -> Package -> Promote Preview -> Approve -> Owner invitation:promote
 ```
 
 Use
 `pnpm invitation:update -- --slug <slug> --targets <targets> --source-dir <path> --dry-run|--apply`.
 `invitation:update` mutation targets are `local`, `preview`, or `local,preview`; `all` is status-only
-and Production mutation is rejected. Existing target
+and Production mutation is rejected. Production managed-content promotion is owner-only:
+
+```bash
+pnpm invitation:promote -- --slug <slug> --package <path> --dry-run
+pnpm invitation:promote -- --slug <slug> --package <path> --apply --backup-manifest <path>
+```
+
+Promotion requires an exact Preview-approved release identity, schema compatibility (`CURRENT`),
+verified critical backup evidence (`pnpm db:prod:backup:critical`), semantic comparison against
+current Production (target-owned state preserved; unresolved managed divergence blocks), explicit
+owner confirmation, managed import/publication apply, and mandatory post-apply verification.
+Existing target
 invitations resolve and preserve their owner by slug. New target invitations ensure a dedicated Auth
 host from the definition `hostLoginAlias` (`{alias}@clientes.celebra.invalid`) before plan/apply;
 `--owner-user-id` is an optional override/assertion, not required on the happy path. Dry-run reports

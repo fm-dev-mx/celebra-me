@@ -18,9 +18,9 @@ and `.agent/workflows/invitation-preparation.md`. Content promote/mirror vs RSVP
 [`docs/core/content-parity-rsvp-isolation.md`](../../docs/core/content-parity-rsvp-isolation.md). Do
 not begin invitation-specific implementation while preparation readiness is `NOT_READY`.
 
-Obsolete one-shot: `pnpm ops optimize-assets` / `scripts/optimize-assets.mjs` is a hardcoded legacy
-demo helper — **not** the managed invitation asset pipeline. Use preparation asset protocol +
-`normalizeInvitationImage` / provision release normalization instead.
+Obsolete one-shot tooling (`ops optimize-assets`, `ops new-invitation`, `ops adopt-legacy-events`,
+`reorganize-cloudinary-assets.ts`) has been removed. Use preparation asset protocol +
+`normalizeInvitationImage` / provision release normalization for managed assets.
 
 ## Required preflight
 
@@ -93,24 +93,31 @@ execution-boundary separation.
 | Disposable test DB | Run guarded tests | Run |
 | Persistent Local managed mutation | Yes via managed lifecycle (`invitation:update --targets local`) | Yes |
 | Persistent Local raw/ad-hoc DB mutation | Never (unsupported agent workflow) | Exceptional only |
-| Preview managed mutation | Yes with explicit Preview task scope | Yes |
+| Preview managed mutation | Yes with explicit Preview task scope (`CELEBRA_TASK_SCOPE`) | Yes |
 | Preview raw DB mutation | Never | Guarded schema workflow only |
-| Production read — safe surfaces | `pnpm dbs`; `invitation:update --status`; `invitation:content-parity` (read-only summaries / semantic compare) | Same safe surfaces |
+| Production read — safe surfaces | `pnpm dbs`; `invitation:update --status`; `invitation:content-parity`; `invitation:promote --dry-run` (read-only preflight) | Same safe surfaces |
 | Production read — privileged DB audit | Never (`db:prod:audit`, backups, Auth/Storage export) | Owner-only guarded `db:prod:*` audit/backup/export |
-| Production invitation mutation | Never via `invitation:update` or `invitation:reconcile` | Future `invitation:promote` only |
-| Production schema / promotion | Never | `db:*:migrate` / approved promotion workflow |
+| Production invitation mutation | Never via `invitation:update` or `invitation:reconcile` | Owner-only `pnpm invitation:promote --apply` |
+| Production schema / migration | Never | Owner-only `db:prod:migrate` (separate from content promotion) |
+| Production specialized SQL patch | Never (`db:prod:patch --apply`) | Owner-only specialized maintenance (`RESTRICT_OWNER_ONLY`) |
 | Reconciliation | Plan and apply Local/Preview managed decisions | Authorize Preview scope and source updates |
 | Schema operations | Never auto-run from invitation workflows | Use separate guarded `db:*:migrate` workflows |
 
 ### Production read surfaces
 
 - **Safe Agent (and Owner) read:** managed status/`dbs`, `invitation:update --status`
-  (including `--targets all|production`), and `invitation:content-parity`. These are redacted /
-  summary-oriented and do not authorize privileged DDL inspection or PII dumps.
+  (including `--targets all|production`), `invitation:content-parity`, and
+  `invitation:promote --dry-run` / preflight. These are redacted / summary-oriented and do not
+  authorize privileged DDL inspection or PII dumps.
 - **Owner-only privileged DB audit:** `pnpm db:prod:audit`, `db:prod:backup*`,
   `db:prod:export-auth`, `db:prod:export-storage`, and any direct Production `psql`/service-role
   inspection. Agents must not run these unless the owner explicitly authorizes that exact
   privileged read.
+- **Owner-only Production content promotion:** `pnpm invitation:promote --apply` requires exact
+  Preview approval, schema `CURRENT`, verified critical backup evidence
+  (`pnpm db:prod:backup:critical`), and interactive owner confirmation
+  (`PROMOTE <slug> <packageHash>` or matching `CONFIRM_PROD_MIGRATION`). Agents must not execute
+  `--apply`.
 
 ## Schema lifecycle contract
 
@@ -121,7 +128,10 @@ versioned migration → Disposable → Persistent Local → Preview → human-co
 ```
 
 Schema drift states: `CURRENT` | `BEHIND` | `SCHEMA_DRIFT` | `UNVERIFIED`
-(`scripts/db/schema-lifecycle-state.ts`). Do not reuse invitation reconciliation decisions
-(`KEEP_ENVIRONMENT`, etc.) for schema. Invitation workflows must never auto-run migrations; a future
-`invitation:promote` preflight that detects incompatible schema must return
-`SCHEMA_INCOMPATIBLE` / `OWNER_ACTION_REQUIRED` and stop.
+(`scripts/db/schema-lifecycle-state.ts`, surfaced by `db:*:audit` and `pnpm dbs`). Do not reuse
+invitation reconciliation decisions (`KEEP_ENVIRONMENT`, etc.) for schema. Invitation workflows
+must never auto-run migrations; `invitation:promote` preflight that detects incompatible schema
+returns `SCHEMA_INCOMPATIBLE` / `OWNER_ACTION_REQUIRED` and stops.
+
+Disposable operations are available to **both Agent and Owner** under the guarded disposable-test
+workflows.

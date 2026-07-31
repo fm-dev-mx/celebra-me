@@ -196,14 +196,19 @@ the repository’s guarded operation confirmations. See `docs/env-workflow.md` a
 
 ---
 
-## Legacy / fail-closed paths
+## Legacy / specialized paths
 
 | Path                               | Status                                                          |
 | ---------------------------------- | --------------------------------------------------------------- |
-| `pnpm ops adopt-legacy-events`     | Fail-closed / disabled — not a supported mutation path          |
-| `pnpm ops optimize-assets`         | Legacy demo helper — not the managed asset pipeline             |
+| `pnpm ops adopt-legacy-events`     | **REMOVED** — no longer registered                              |
+| `pnpm ops optimize-assets`         | **REMOVED** — no longer registered                              |
+| `pnpm ops new-invitation`          | **REMOVED** — no longer registered                              |
+| `pnpm ops dbs`                     | **REMOVED** alias — use canonical `pnpm dbs`                    |
+| Legacy Production adoption flags   | `MAINTENANCE_ONLY` Romina one-shot via `invitation:update --adoption-*` |
+| `--preview-provenance`             | `KEEP_SPECIALIZED` Preview baseline helper                      |
 | `pnpm db:local:refresh-from-prod*` | Fail-closed — use backup + restore-from-dump                    |
-| Manual production SQL patches      | Lint-only via `pnpm db:prod:patch` unless separately authorized |
+| Manual production SQL patches      | `RESTRICT_OWNER_ONLY` via `pnpm db:prod:patch`                  |
+| `pnpm invitation:promote`          | Canonical owner-only Production managed-content promotion       |
 
 ---
 
