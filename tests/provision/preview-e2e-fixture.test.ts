@@ -41,6 +41,7 @@ import { runPsql } from '../../scripts/db/db-workflow-lib.ts';
 import { verifyPreviewWriteAuthorization } from '../../scripts/provision/preview-write-auth.ts';
 import {
 	ensurePreviewE2eFixture,
+	PREVIEW_E2E_FIXTURE_POSTCONDITION,
 	resolvePreviewFixtureDbUrl,
 } from '../../scripts/provision/preview-e2e-fixture.ts';
 import {
@@ -109,6 +110,12 @@ describe('preview-e2e-fixture', () => {
 		mockedPsql.mockReturnValueOnce({ status: 0, stdout: '', stderr: '' });
 		// draft insert
 		mockedPsql.mockReturnValueOnce({ status: 0, stdout: '', stderr: '' });
+		// published content lookup (missing)
+		mockedPsql.mockReturnValueOnce({ status: 0, stdout: '', stderr: '' });
+		// published content copy from canonical demo
+		mockedPsql.mockReturnValueOnce({ status: 0, stdout: '', stderr: '' });
+		// published content postcondition verification
+		mockedPsql.mockReturnValueOnce({ status: 0, stdout: 'published-id', stderr: '' });
 		// verify load
 		mockedPsql.mockReturnValueOnce({
 			status: 0,
@@ -132,7 +139,11 @@ describe('preview-e2e-fixture', () => {
 			env: { PREVIEW_DB_URL: PREVIEW_URL },
 		});
 		expect(created.action).toBe('created');
+		expect(created.postcondition).toBe(PREVIEW_E2E_FIXTURE_POSTCONDITION);
 		expect(mockedAuth).toHaveBeenCalled();
+		expect(
+			mockedPsql.mock.calls.some(([sql]) => String(sql).includes('demo-xv-jewelry-box')),
+		).toBe(true);
 
 		mockedPsql.mockReset();
 		mockedPsql
@@ -151,9 +162,22 @@ describe('preview-e2e-fixture', () => {
 				}),
 				stderr: '',
 			})
+			// draft lookup (present)
 			.mockReturnValueOnce({
 				status: 0,
 				stdout: 'draft-id',
+				stderr: '',
+			})
+			// draft update to force divergence marker
+			.mockReturnValueOnce({
+				status: 0,
+				stdout: '',
+				stderr: '',
+			})
+			// published content lookup (present)
+			.mockReturnValueOnce({
+				status: 0,
+				stdout: 'published-id',
 				stderr: '',
 			});
 
@@ -164,6 +188,7 @@ describe('preview-e2e-fixture', () => {
 		});
 		expect(again.action).toBe('already_present');
 		expect(again.invitationId).toBe(created.invitationId);
+		expect(again.postcondition).toBe(PREVIEW_E2E_FIXTURE_POSTCONDITION);
 	});
 
 	it('rejects missing Preview credentials before mutation', () => {

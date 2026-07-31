@@ -25,6 +25,8 @@ import { resolvePreviewAdminUser, PREVIEW_ADMIN_EMAIL } from '../db/preview-sync
 import { verifyPreviewWriteAuthorization } from './preview-write-auth.ts';
 
 export const PREVIEW_E2E_FIXTURE_OPERATION = 'e2e-fixture';
+/** The fixture remains publishable without letting E2E mutate real invitation content. */
+export const PREVIEW_E2E_FIXTURE_POSTCONDITION = 'published_with_draft_divergence';
 
 function deriveDeterministicUuid(namespace: string, seed: string): string {
 	const hash = createHash('sha256').update(`celebra-me:${namespace}:${seed}`).digest('hex');
@@ -37,6 +39,7 @@ export interface PreviewE2eFixtureResult {
 	slug: string;
 	ownerUserId: string;
 	dbUrlRedacted: string;
+	postcondition: typeof PREVIEW_E2E_FIXTURE_POSTCONDITION;
 }
 
 export function resolvePreviewFixtureDbUrl(env: NodeJS.ProcessEnv = process.env): string {
@@ -129,6 +132,11 @@ function assertCanonicalExisting(
 }
 
 function ensureDraft(dbUrl: string, invitationId: string, apply: boolean): void {
+	/** Intentional divergence marker vs demo-derived published content. */
+	const divergentDraft = JSON.stringify({
+		title: PREVIEW_FIXTURE_TITLE,
+		_e2eFixtureDraftMarker: 'unpublished-divergence',
+	});
 	const existing = runPsql(
 		`select id::text from public.invitation_content_drafts
 		 where invitation_project_id = ${sqlLiteral(invitationId)}::uuid and deleted_at is null
@@ -136,19 +144,76 @@ function ensureDraft(dbUrl: string, invitationId: string, apply: boolean): void 
 		dbUrl,
 		{ tuplesOnly: true, throwOnError: false },
 	).stdout.trim();
-	if (existing) return;
 	if (!apply) return;
+	if (existing) {
+		const update = runPsql(
+			`update public.invitation_content_drafts
+			 set content = ${sqlLiteral(divergentDraft)}::jsonb,
+			     status = 'draft',
+			     updated_at = now()
+			 where id = ${sqlLiteral(existing)}::uuid;`,
+			dbUrl,
+			{ tuplesOnly: true, throwOnError: false },
+		);
+		if (update.status !== 0) {
+			throw new Error(
+				`PREVIEW_E2E_FIXTURE_DRAFT_FAILED: Could not refresh divergent draft for ${PREVIEW_FIXTURE_SLUG}.`,
+			);
+		}
+		return;
+	}
 	const draftId = randomUUID();
-	const content = JSON.stringify({ title: PREVIEW_FIXTURE_TITLE });
 	const insert = runPsql(
 		`insert into public.invitation_content_drafts (id, invitation_project_id, submission_id, content, status)
-		 values (${sqlLiteral(draftId)}::uuid, ${sqlLiteral(invitationId)}::uuid, null, ${sqlLiteral(content)}::jsonb, 'draft');`,
+		 values (${sqlLiteral(draftId)}::uuid, ${sqlLiteral(invitationId)}::uuid, null, ${sqlLiteral(divergentDraft)}::jsonb, 'draft');`,
 		dbUrl,
 		{ tuplesOnly: true, throwOnError: false },
 	);
 	if (insert.status !== 0) {
 		throw new Error(
 			`PREVIEW_E2E_FIXTURE_DRAFT_FAILED: Could not create draft for ${PREVIEW_FIXTURE_SLUG}.`,
+		);
+	}
+}
+
+function hasPublishedContent(dbUrl: string, invitationId: string): boolean {
+	return Boolean(
+		runPsql(
+			`select id::text from public.published_invitation_content
+			 where invitation_project_id = ${sqlLiteral(invitationId)}::uuid and deleted_at is null
+			 limit 1;`,
+			dbUrl,
+			{ tuplesOnly: true, throwOnError: false },
+		).stdout.trim(),
+	);
+}
+
+function ensurePublishedContent(dbUrl: string, invitationId: string, apply: boolean): void {
+	if (hasPublishedContent(dbUrl, invitationId)) return;
+	if (!apply) return;
+
+	const insert = runPsql(
+		`insert into public.published_invitation_content (
+			invitation_project_id, slug, event_type, is_demo, content, version
+		)
+		select
+			${sqlLiteral(invitationId)}::uuid,
+			${sqlLiteral(PREVIEW_FIXTURE_SLUG)},
+			${sqlLiteral(PREVIEW_FIXTURE_EVENT_TYPE)},
+			false,
+			content,
+			1
+		from public.published_invitation_content
+		where event_type = ${sqlLiteral(PREVIEW_FIXTURE_EVENT_TYPE)}
+			and slug = ${sqlLiteral(PREVIEW_FIXTURE_DEMO_ID)}
+			and deleted_at is null
+		on conflict (event_type, slug) do nothing;`,
+		dbUrl,
+		{ tuplesOnly: true, throwOnError: false },
+	);
+	if (insert.status !== 0 || !hasPublishedContent(dbUrl, invitationId)) {
+		throw new Error(
+			`PREVIEW_E2E_FIXTURE_PUBLICATION_FAILED: Could not create published content for ${PREVIEW_FIXTURE_SLUG}.`,
 		);
 	}
 }
@@ -223,12 +288,14 @@ export function ensurePreviewE2eFixture(options: {
 	if (existing) {
 		assertCanonicalExisting(existing, ownerUserId);
 		ensureDraft(dbUrl, existing.id, apply);
+		ensurePublishedContent(dbUrl, existing.id, apply);
 		return {
 			action: apply ? 'already_present' : 'dry_run_present',
 			invitationId: existing.id,
 			slug: PREVIEW_FIXTURE_SLUG,
 			ownerUserId,
 			dbUrlRedacted: redactDbUrl(dbUrl),
+			postcondition: PREVIEW_E2E_FIXTURE_POSTCONDITION,
 		};
 	}
 
@@ -246,6 +313,7 @@ export function ensurePreviewE2eFixture(options: {
 			slug: PREVIEW_FIXTURE_SLUG,
 			ownerUserId,
 			dbUrlRedacted: redactDbUrl(dbUrl),
+			postcondition: PREVIEW_E2E_FIXTURE_POSTCONDITION,
 		};
 	}
 
@@ -257,6 +325,7 @@ export function ensurePreviewE2eFixture(options: {
 		themeId: preset.themeId,
 	});
 	ensureDraft(dbUrl, invitationId, true);
+	ensurePublishedContent(dbUrl, invitationId, true);
 
 	const verified = loadActiveFixture(dbUrl);
 	if (!verified) {
@@ -272,5 +341,6 @@ export function ensurePreviewE2eFixture(options: {
 		slug: PREVIEW_FIXTURE_SLUG,
 		ownerUserId,
 		dbUrlRedacted: redactDbUrl(dbUrl),
+		postcondition: PREVIEW_E2E_FIXTURE_POSTCONDITION,
 	};
 }

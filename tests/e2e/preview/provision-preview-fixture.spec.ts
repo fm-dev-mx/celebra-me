@@ -104,7 +104,10 @@ test('provisions or verifies the deterministic Preview-only publication fixture'
 
 	await draftRateLimiter.beforeRequest();
 	const baselinePreflight = await readPublicationPreflight(page, fixture.id);
-	expect(Array.isArray(baselinePreflight.changedPaths)).toBe(true);
+	// Postcondition: published public version exists with intentional draft divergence.
+	// Proven without a third editor read (rate-limit contract: two readEditorContext calls).
+	expect(fixtureContext.publication.hasPublishedContent).toBe(true);
+	expect(baselinePreflight.changedPaths.length).toBeGreaterThan(0);
 	expect(baselinePreflight.projectionHash).toMatch(/^[a-f0-9]{32}$/);
 
 	const detailResponse = await page.request.get(

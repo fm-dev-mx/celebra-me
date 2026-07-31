@@ -63,26 +63,19 @@ test.describe.serial('Authenticated external Preview', () => {
 		await page.goto(`/dashboard/invitaciones/${encodeURIComponent(preview.fixtureId)}/editar`);
 		await expect(page.getByRole('heading', { name: PREVIEW_FIXTURE_TITLE })).toBeVisible();
 
-		if (context.draftStatus === 'draft') {
-			const preflight = await readPublicationPreflight(page, preview.fixtureId);
-			expect(Array.isArray(preflight.changedPaths)).toBe(true);
-			expect(preflight.projectionHash).toMatch(/^[a-f0-9]{32}$/);
-			if (context.publication.hasPublishedContent) {
-				expect(preflight.changedPaths).toEqual([]);
-			}
-		} else {
-			expect(context.draftStatus).toBe('approved');
-			expect(context.publication.hasPublishedContent).toBe(true);
-			expect(context.publication.hasUnpublishedChanges).toBe(false);
-		}
-
-		if (context.publication.hasPublishedContent) {
-			await expect(page.getByText('La versión pública está actualizada')).toBeVisible();
-			const publicResponse = await page.request.get(
-				`/${PREVIEW_FIXTURE_EVENT_TYPE}/${PREVIEW_FIXTURE_SLUG}`,
-			);
-			expect(publicResponse.status()).toBe(200);
-		}
+		// Fixture bootstrap guarantees a public demo-derived version plus an editable draft.
+		// The intentional divergence makes publication flows testable without mutating customer data.
+		expect(context.draftStatus).toBe('draft');
+		expect(context.publication.hasPublishedContent).toBe(true);
+		expect(context.publication.hasUnpublishedChanges).toBe(true);
+		const preflight = await readPublicationPreflight(page, preview.fixtureId);
+		expect(preflight.changedPaths.length).toBeGreaterThan(0);
+		expect(preflight.projectionHash).toMatch(/^[a-f0-9]{32}$/);
+		await expect(page.getByText('Hay cambios sin publicar')).toBeVisible();
+		const publicResponse = await page.request.get(
+			`/${PREVIEW_FIXTURE_EVENT_TYPE}/${PREVIEW_FIXTURE_SLUG}`,
+		);
+		expect(publicResponse.status()).toBe(200);
 
 		const logoutButton = page.getByRole('button', { name: 'Cerrar sesión' });
 		await logoutButton.focus();
@@ -107,11 +100,9 @@ test.describe.serial('Authenticated external Preview', () => {
 			const { context } = await assertFixtureGuards(page);
 
 			const before = await readPublicationPreflight(page, preview.fixtureId);
-			if (context.publication.hasPublishedContent) {
-				expect(before.changedPaths).toEqual([]);
-			} else {
-				expect(before.changedPaths.length).toBeGreaterThan(0);
-			}
+			// Fixture postcondition is published content + intentional unpublished draft divergence.
+			expect(context.publication.hasPublishedContent).toBe(true);
+			expect(before.changedPaths.length).toBeGreaterThan(0);
 			const idempotencyKey = randomUUID();
 			const publicationInput = { ...before, idempotencyKey };
 
@@ -125,7 +116,7 @@ test.describe.serial('Authenticated external Preview', () => {
 				publicationInput,
 				'Synthetic fixture publication',
 			);
-			expect(typeof result.idempotent).toBe('boolean');
+			expect(result.idempotent).toBe(false);
 			expect(result.publishedContent.version).toBeGreaterThan(before.publishedVersion ?? 0);
 
 			const replay = await mutateJson<{
@@ -138,7 +129,7 @@ test.describe.serial('Authenticated external Preview', () => {
 				publicationInput,
 				'Synthetic fixture publication replay',
 			);
-			expect(replay.idempotent).toBe(result.idempotent);
+			expect(replay.idempotent).toBe(true);
 			expect(replay.publishedContent.version).toBe(result.publishedContent.version);
 
 			const publicResponse = await page.request.get(
