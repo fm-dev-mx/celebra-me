@@ -31,6 +31,7 @@ import {
 	classifyDbTarget,
 } from './db-workflow-lib.ts';
 import { cmdStart, isDisposableDbReady } from './disposable-test-env.ts';
+import { classifySchemaLifecycle } from './schema-lifecycle-state.ts';
 
 const MIGRATIONS_DIR = resolve(PROJECT_ROOT, 'supabase', 'migrations');
 
@@ -385,7 +386,15 @@ export function fetchRemoteMigrationVersions(
 function runMigrationsAudit(
 	target: string,
 	dbUrl: string,
-): { remoteVersions: string[]; extraRemoteCount: number } {
+): {
+	remoteVersions: string[];
+	extraRemoteCount: number;
+	pendingLocal: string[];
+	extraRemote: string[];
+	isReordered: boolean;
+	hasDivergentHistory: boolean;
+	parityErrors: string[];
+} {
 	const localMigrationFiles = readdirSync(MIGRATIONS_DIR)
 		.filter((f) => f.endsWith('.sql'))
 		.sort();
@@ -450,7 +459,15 @@ function runMigrationsAudit(
 		);
 	}
 
-	return { remoteVersions, extraRemoteCount: parity.extraRemote.length };
+	return {
+		remoteVersions,
+		extraRemoteCount: parity.extraRemote.length,
+		pendingLocal: parity.pendingLocal,
+		extraRemote: parity.extraRemote,
+		isReordered: parity.isReordered,
+		hasDivergentHistory: parity.hasDivergentHistory,
+		parityErrors: parity.errors,
+	};
 }
 
 function checkTables(
@@ -710,17 +727,39 @@ function main(): void {
 
 	// --- 1. MIGRATIONS AUDIT ---
 	console.log('--- 1. Migrations Audit ---');
-	const { extraRemoteCount } = runMigrationsAudit(target, dbUrl);
+	const migrationAudit = runMigrationsAudit(target, dbUrl);
 
 	// --- 2. SCHEMA DRIFT COMPARISON & FINGERPRINT ---
 	console.log('\n--- 2. Schema Comparison & Fingerprint ---');
-	const errors = runSchemaAudit(target, dbUrl, extraRemoteCount);
+	const errors = runSchemaAudit(target, dbUrl, migrationAudit.extraRemoteCount);
 
-	if (errors > 0) {
-		console.error(`❌ AUDIT FAILED: Unexplained schema drift or history divergence detected.`);
+	const finalLifecycle = classifySchemaLifecycle({
+		pendingMigrations: migrationAudit.pendingLocal,
+		extraMigrations: migrationAudit.extraRemote,
+		mismatchedMigrations:
+			migrationAudit.isReordered || migrationAudit.hasDivergentHistory
+				? migrationAudit.extraRemote.length > 0
+					? migrationAudit.extraRemote
+					: ['divergent-history']
+				: [],
+		auditErrors: [
+			...migrationAudit.parityErrors.filter((e) => !e.startsWith('Pending local migrations')),
+			...(errors > migrationAudit.extraRemoteCount
+				? [`schema-object-errors:${errors - migrationAudit.extraRemoteCount}`]
+				: []),
+		],
+		verified: true,
+	});
+	console.log(`Final schema lifecycle state: ${finalLifecycle}`);
+
+	if (errors > 0 || finalLifecycle === 'SCHEMA_DRIFT') {
+		console.error(`❌ AUDIT FAILED: Unexplained schema drift or history divergence detected (${finalLifecycle}).`);
+		process.exit(1);
+	} else if (finalLifecycle === 'BEHIND') {
+		console.error(`❌ AUDIT FAILED: Target schema is BEHIND expected migrations.`);
 		process.exit(1);
 	} else {
-		console.log(`✅ AUDIT PASSED: Schema state is verified and clean.`);
+		console.log(`✅ AUDIT PASSED: Schema state is verified and clean (${finalLifecycle}).`);
 		process.exit(0);
 	}
 }

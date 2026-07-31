@@ -31,6 +31,10 @@ let mockGetProdDbUrl: jest.Mock;
 jest.mock('../../scripts/db/db-workflow-lib', () => ({
 	runPsql: (...args: unknown[]) => mockRunPsql(...args),
 	getProdDbUrl: (...args: unknown[]) => mockGetProdDbUrl(...args),
+	fail: (message: string) => {
+		console.error(message);
+		process.exit(1);
+	},
 }));
 
 let exitCode: number | null;
@@ -48,6 +52,8 @@ beforeEach(() => {
 	// Clear env vars that could interfere with tests
 	delete process.env.SUPABASE_URL;
 	delete process.env.PROD_DB_URL;
+	delete process.env.CONFIRM_PROD_MIGRATION;
+	delete process.env.CELEBRA_TASK_SCOPE;
 
 	jest.spyOn(process, 'exit').mockImplementation(((code?: number) => {
 		exitCode = code ?? null;
@@ -185,7 +191,10 @@ describe('run-prod-patch orchestration', () => {
 	describe('successful execution path', () => {
 		it('calls runPsql exactly once with session config + SQL', () => {
 			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
-			setEnv({ SUPABASE_URL: VALID_SUPABASE_URL });
+			setEnv({
+				SUPABASE_URL: VALID_SUPABASE_URL,
+				CONFIRM_PROD_MIGRATION: `PATCH ${VALID_UUID} ${TEST_PATCH_PATH}`,
+			});
 			importRunner();
 
 			// The runner does not call process.exit(0) on success — it falls
@@ -207,7 +216,10 @@ describe('run-prod-patch orchestration', () => {
 
 		it('places owner config before URL config before patch SQL', () => {
 			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
-			setEnv({ SUPABASE_URL: VALID_SUPABASE_URL });
+			setEnv({
+				SUPABASE_URL: VALID_SUPABASE_URL,
+				CONFIRM_PROD_MIGRATION: `PATCH ${VALID_UUID} ${TEST_PATCH_PATH}`,
+			});
 			importRunner();
 
 			const [sqlArg] = mockRunPsql.mock.calls[0];
@@ -222,12 +234,23 @@ describe('run-prod-patch orchestration', () => {
 
 		it('escapes single quotes in UUID and URL values', () => {
 			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
-			setEnv({ SUPABASE_URL: VALID_SUPABASE_URL });
+			setEnv({
+				SUPABASE_URL: VALID_SUPABASE_URL,
+				CONFIRM_PROD_MIGRATION: `PATCH ${VALID_UUID} ${TEST_PATCH_PATH}`,
+			});
 			importRunner();
 
 			const [sqlArg] = mockRunPsql.mock.calls[0];
 			expect(sqlArg).toContain(`'${VALID_UUID}'`);
 			expect(sqlArg).toContain(`'${VALID_SUPABASE_URL}'`);
+		});
+
+		it('exits 1 when CONFIRM_PROD_MIGRATION is missing', () => {
+			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
+			setEnv({ SUPABASE_URL: VALID_SUPABASE_URL });
+			importRunner();
+			expect(exitCode).toBe(1);
+			expect(mockRunPsql).not.toHaveBeenCalled();
 		});
 	});
 
@@ -236,7 +259,10 @@ describe('run-prod-patch orchestration', () => {
 			mockRunPsql.mockReturnValue({ status: 1, stdout: '', stderr: 'connection failed' });
 
 			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
-			setEnv({ SUPABASE_URL: VALID_SUPABASE_URL });
+			setEnv({
+				SUPABASE_URL: VALID_SUPABASE_URL,
+				CONFIRM_PROD_MIGRATION: `PATCH ${VALID_UUID} ${TEST_PATCH_PATH}`,
+			});
 			importRunner();
 
 			expect(exitCode).toBe(1);

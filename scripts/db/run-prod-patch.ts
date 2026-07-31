@@ -7,7 +7,17 @@ import {
 	validateOwnerUserId,
 	assertSameSupabaseProject,
 } from './sql-safety.ts';
-import { runPsql, getProdDbUrl } from './db-workflow-lib.ts';
+import { fail, getProdDbUrl, runPsql } from './db-workflow-lib.ts';
+
+/**
+ * db:prod:patch disposition: RESTRICT_OWNER_ONLY / KEEP_SPECIALIZED
+ *
+ * Narrow owner-only path for reviewed manual SQL patches that cannot yet be
+ * expressed as versioned supabase/migrations/*. Not a bypass for
+ * invitation:promote or db:prod:migrate. Default operator mode is lint-only
+ * (--dry-run). --apply requires CONFIRM_PROD_MIGRATION matching the exact
+ * challenge and never auto-migrates schema.
+ */
 
 const dryRun = process.argv.includes('--dry-run');
 const apply = process.argv.includes('--apply');
@@ -16,7 +26,37 @@ const ownerUserId = argValue('--owner-user-id');
 
 function printUsage(): void {
 	console.error('Usage: pnpm db:prod:patch -- --dry-run --file <production-patch.sql>');
-	console.error('       pnpm db:prod:patch -- --apply --owner-user-id <UUID> --file <production-patch.sql>');
+	console.error(
+		'       pnpm db:prod:patch -- --apply --owner-user-id <UUID> --file <production-patch.sql>',
+	);
+	console.error(
+		'Owner-only specialized maintenance. Prefer supabase/migrations + db:prod:migrate for schema and invitation:promote for managed content.',
+	);
+	console.error(
+		'Apply requires CONFIRM_PROD_MIGRATION="PATCH <owner-uuid> <file>" after reviewing --dry-run output.',
+	);
+}
+
+function assertOwnerPatchConfirmation(requiredConfirmation: string): void {
+	if (process.env.CELEBRA_TASK_SCOPE) {
+		fail(
+			'CELEBRA_TASK_SCOPE is Preview automation only and does not authorize db:prod:patch --apply.',
+		);
+	}
+	const envConfirmation = process.env.CONFIRM_PROD_MIGRATION?.trim();
+	if (!envConfirmation) {
+		fail(
+			`CONFIRMATION_REQUIRED: set CONFIRM_PROD_MIGRATION="${requiredConfirmation}" after reviewing the dry-run. There is no agent non-interactive Production patch mode.`,
+		);
+	}
+	if (envConfirmation !== requiredConfirmation) {
+		fail(
+			`CONFIRM_PROD_MIGRATION mismatched. Expected "${requiredConfirmation}", received "${envConfirmation}". Aborting.`,
+		);
+	}
+	console.info(
+		`\n✅ Production confirmation accepted via CONFIRM_PROD_MIGRATION for patch apply.`,
+	);
 }
 
 // ── Mode validation ──────────────────────────────────────────────────────
@@ -62,12 +102,14 @@ if (!result.ok) {
 if (dryRun) {
 	console.info(`Production patch dry-run passed lint: ${path}`);
 	console.info('No database connection was opened and no SQL was executed.');
+	console.info(
+		'Disposition: RESTRICT_OWNER_ONLY specialized maintenance — not invitation:promote and not db:prod:migrate.',
+	);
 	process.exit(0);
 }
 
-// ── --apply mode ─────────────────────────────────────────────────────────
+// ── --apply mode (owner-only) ────────────────────────────────────────────
 
-// 1. Validate owner UUID before connecting
 let validatedOwnerId: string;
 try {
 	validatedOwnerId = validateOwnerUserId(ownerUserId);
@@ -77,7 +119,6 @@ try {
 	process.exit(1);
 }
 
-// 2. Validate SUPABASE_URL from environment — must be HTTPS, not postgresql://
 const rawSupabaseUrl = process.env.SUPABASE_URL || '';
 if (!rawSupabaseUrl) {
 	console.error('SUPABASE_URL environment variable is required for --apply.');
@@ -86,7 +127,7 @@ if (!rawSupabaseUrl) {
 if (rawSupabaseUrl.startsWith('postgresql://')) {
 	console.error(
 		'SUPABASE_URL must be the Supabase API URL (https://<project>.supabase.co), not a PostgreSQL connection string. ' +
-		'Set PROD_DB_URL for the database connection string.',
+			'Set PROD_DB_URL for the database connection string.',
 	);
 	process.exit(1);
 }
@@ -99,10 +140,8 @@ try {
 	process.exit(1);
 }
 
-// 3. Obtain the production database URL
 const { url: dbUrl } = getProdDbUrl();
 
-// 4. Verify SUPABASE_URL and PROD_DB_URL reference the same project
 try {
 	assertSameSupabaseProject(normalizedUrl, dbUrl);
 } catch (error: unknown) {
@@ -111,13 +150,12 @@ try {
 	process.exit(1);
 }
 
-// 5. Build session config prefix with both values (session scope so they
-//    persist across the BEGIN/COMMIT transaction in the patch SQL).
+assertOwnerPatchConfirmation(`PATCH ${validatedOwnerId} ${file}`);
+
 const ownerConfig = `SELECT set_config('app.owner_user_id', '${validatedOwnerId.replace(/'/g, "''")}', false);\n`;
 const urlConfig = `SELECT set_config('app.supabase_project_url', '${normalizedUrl.replace(/'/g, "''")}', false);\n`;
 const fullSql = ownerConfig + urlConfig + sql;
 
-// 6. Execute — redact both URLs from output
 const execResult = runPsql(fullSql, dbUrl, [normalizedUrl, dbUrl]);
 
 if (execResult.status !== 0) {

@@ -71,6 +71,13 @@ function formatGeneralView(jsonMode: boolean): void {
 		pad(String(envs.production.identityConflictsCount), colW);
 	console.log(conflictsRow);
 
+	const schemaRow =
+		pad('Schema', 18) +
+		pad(envs.local.schemaLifecycle ?? 'UNVERIFIED', colW) +
+		pad(envs.preview.schemaLifecycle ?? 'UNVERIFIED', colW) +
+		pad(envs.production.schemaLifecycle ?? 'UNVERIFIED', colW);
+	console.log(schemaRow);
+
 	console.log('\nDefinitions in repo:', summary.totalDefinitionsCount);
 }
 

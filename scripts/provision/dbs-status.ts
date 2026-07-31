@@ -6,6 +6,8 @@
  *
  * Vocabulary:
  *   MATCH_CANONICAL, BEHIND_CANONICAL, DIVERGED, IDENTITY_CONFLICT, NOT_PRESENT, UNREACHABLE, CREDENTIALS_REQUIRED, UNVERIFIED
+ *
+ * Schema lifecycle (separate vocabulary): CURRENT | BEHIND | SCHEMA_DRIFT | UNVERIFIED
  */
 
 import {
@@ -14,11 +16,19 @@ import {
 	getSecretFromEnvOrFiles,
 	PREVIEW_SECRET_FILES,
 	getProdDbUrl,
+	PROJECT_ROOT,
 } from '../db/db-workflow-lib.ts';
 import { LOCAL_DB_URL, classifyDbTarget, redactDbUrl } from '../db/db-guard.ts';
+import {
+	evaluateMigrationHistoryParity,
+	fetchRemoteMigrationVersions,
+} from '../db/audit-db.ts';
+import { classifySchemaLifecycle, type SchemaLifecycleState } from '../db/schema-lifecycle-state.ts';
 import { listInvitationDefinitions, getInvitationDefinition } from './invitations/registry.ts';
 import { buildNormalizedInvitationRelease } from './normalized-invitation-release.ts';
 import { serializeInvitationPackage } from './invitation-package.ts';
+import { existsSync, readdirSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 export type StatusVocabulary =
 	| 'MATCH_CANONICAL'
@@ -40,6 +50,9 @@ export interface EnvTargetStatus {
 	targetClassification: string;
 	activeManagedCount: number;
 	identityConflictsCount: number;
+	schemaLifecycle?: SchemaLifecycleState;
+	migrationHead?: string | null;
+	pendingMigrationsCount?: number;
 	errorDetail?: string;
 }
 
@@ -121,6 +134,51 @@ function countActiveManagedInvitations(dbUrl: string): {
 	};
 }
 
+function listExpectedMigrationVersions(): string[] {
+	const migrationsDir = resolve(PROJECT_ROOT, 'supabase', 'migrations');
+	if (!existsSync(migrationsDir)) return [];
+	return readdirSync(migrationsDir)
+		.filter((f) => f.endsWith('.sql'))
+		.sort()
+		.map((f) => f.split('_')[0]!)
+		.filter(Boolean);
+}
+
+function evaluateSchemaLifecycleForUrl(dbUrl: string): {
+	schemaLifecycle: SchemaLifecycleState;
+	migrationHead: string | null;
+	pendingMigrationsCount: number;
+} {
+	try {
+		const expected = listExpectedMigrationVersions();
+		const remote = fetchRemoteMigrationVersions(dbUrl);
+		const parity = evaluateMigrationHistoryParity(expected, remote.remoteVersions);
+		const schemaLifecycle = classifySchemaLifecycle({
+			pendingMigrations: parity.pendingLocal,
+			extraMigrations: parity.extraRemote,
+			mismatchedMigrations:
+				parity.isReordered || parity.hasDivergentHistory
+					? parity.extraRemote.length > 0
+						? parity.extraRemote
+						: ['divergent-history']
+					: [],
+			auditErrors: parity.errors.filter((e) => !e.startsWith('Pending local migrations')),
+			verified: true,
+		});
+		return {
+			schemaLifecycle,
+			migrationHead: remote.remoteVersions.at(-1) ?? null,
+			pendingMigrationsCount: parity.pendingLocal.length,
+		};
+	} catch {
+		return {
+			schemaLifecycle: 'UNVERIFIED',
+			migrationHead: null,
+			pendingMigrationsCount: 0,
+		};
+	}
+}
+
 export function getGeneralEnvStatus(env: TargetEnv): EnvTargetStatus {
 	const { dbUrl, error } = resolveDbUrlForEnv(env);
 	if (!dbUrl) {
@@ -132,6 +190,7 @@ export function getGeneralEnvStatus(env: TargetEnv): EnvTargetStatus {
 			targetClassification: 'unknown',
 			activeManagedCount: 0,
 			identityConflictsCount: 0,
+			schemaLifecycle: 'UNVERIFIED',
 			errorDetail: error,
 		};
 	}
@@ -147,11 +206,13 @@ export function getGeneralEnvStatus(env: TargetEnv): EnvTargetStatus {
 			targetClassification: classification.target,
 			activeManagedCount: 0,
 			identityConflictsCount: 0,
+			schemaLifecycle: 'UNVERIFIED',
 			errorDetail: 'Database connection check failed or timed out',
 		};
 	}
 
 	const { activeCount, conflictsCount } = countActiveManagedInvitations(dbUrl);
+	const schema = evaluateSchemaLifecycleForUrl(dbUrl);
 
 	return {
 		environment: env,
@@ -161,6 +222,9 @@ export function getGeneralEnvStatus(env: TargetEnv): EnvTargetStatus {
 		targetClassification: classification.target,
 		activeManagedCount: activeCount,
 		identityConflictsCount: conflictsCount,
+		schemaLifecycle: schema.schemaLifecycle,
+		migrationHead: schema.migrationHead,
+		pendingMigrationsCount: schema.pendingMigrationsCount,
 	};
 }
 
@@ -176,6 +240,7 @@ export function evaluateGeneralStatus(): GeneralStatusSummary {
 	};
 }
 
+// eslint-disable-next-line complexity -- Per-environment status has many fail-closed branches.
 function evaluateSingleTargetStatus(
 	env: TargetEnv,
 	slug: string,
