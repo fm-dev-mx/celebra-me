@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
 
 function runGit(args, { allowFailure = false } = {}) {
 	const result = spawnSync('git', args, {
@@ -66,7 +67,7 @@ function getChangedFilesInWorkingTree() {
 		runGit(['diff', '--cached', '--name-only', '--diff-filter=ACMR']).stdout,
 	);
 	const untracked = parseFileList(runGit(['ls-files', '--others', '--exclude-standard']).stdout);
-	return unique([...tracked, ...staged, ...untracked]);
+	return unique([...tracked, ...staged, ...untracked]).filter((file) => existsSync(file));
 }
 
 /**
