@@ -129,11 +129,6 @@ function listSkillFiles(root) {
 		.sort();
 }
 
-function collectIndexSkillReferences(content) {
-	const section = content.match(/## Available Skills\s+([\s\S]*?)(?=\n## |\s*$)/u)?.[1] ?? '';
-	return [...section.matchAll(/^\|\s*`([^`]+)`\s*\|/gmu)].map((match) => match[1]);
-}
-
 function collectIndexMarkdownPaths(content) {
 	const references = new Set();
 	for (const match of content.matchAll(/\[[^\]]+\]\(([^)]+\.md(?:#[^)]*)?)\)/gu)) {
@@ -260,20 +255,13 @@ function validateRoles(root, skillNames) {
 	return errors;
 }
 
-function validateIndex(root, skillNames) {
+function validateIndex(root) {
 	const errors = [];
 	const indexFile = path.join(root, '.agent', 'index.md');
 	if (!existsSync(indexFile)) {
 		errors.push('.agent/index.md: file is missing.');
 	} else {
 		const indexContent = readFileSync(indexFile, 'utf8');
-		for (const reference of collectIndexSkillReferences(indexContent)) {
-			if (!skillNames.has(reference)) {
-				errors.push(
-					`.agent/index.md: skill "${reference}" does not resolve under .agent/skills.`,
-				);
-			}
-		}
 		for (const reference of collectIndexMarkdownPaths(indexContent)) {
 			const resolved = resolveIndexPath(root, indexFile, reference);
 			if (!existsSync(resolved) || !statSync(resolved).isFile()) {
@@ -351,14 +339,144 @@ function validateCanonicalCiInvocation(root) {
 	return errors;
 }
 
+function validateOwnershipYaml(root) {
+	const errors = [];
+	const file = path.join(root, '.agent', 'ownership.yaml');
+	if (!existsSync(file)) {
+		errors.push('.agent/ownership.yaml: file is missing.');
+		return errors;
+	}
+	const content = readFileSync(file, 'utf8');
+	if (!content.trim()) {
+		errors.push('.agent/ownership.yaml: file is empty.');
+		return errors;
+	}
+	const seenAspects = new Set();
+	const aspectMatches = [...content.matchAll(/-\s+aspect:\s*["']?([^"'\r\n]+)["']?/g)];
+	const ownerMatches = [...content.matchAll(/\s+owner:\s*["']?([^"'\r\n]+)["']?/g)];
+
+	if (aspectMatches.length === 0) {
+		errors.push('.agent/ownership.yaml: no ownership entries found.');
+	}
+
+	for (let i = 0; i < aspectMatches.length; i++) {
+		const aspect = aspectMatches[i][1].trim();
+		const owner = ownerMatches[i]?.[1]?.trim();
+
+		if (seenAspects.has(aspect.toLowerCase())) {
+			errors.push(`.agent/ownership.yaml: duplicate ownership aspect "${aspect}".`);
+		}
+		seenAspects.add(aspect.toLowerCase());
+
+		if (!owner) {
+			errors.push(`.agent/ownership.yaml: aspect "${aspect}" is missing owner.`);
+			continue;
+		}
+
+		const resolvedOwner = path.resolve(root, owner);
+		if (!existsSync(resolvedOwner)) {
+			errors.push(`.agent/ownership.yaml: owner path "${owner}" does not resolve on disk.`);
+		}
+	}
+	return errors;
+}
+
+function checkRoutingMatrixItem(root, section, item, skillNames) {
+	if (section === 'rules') {
+		if (!existsSync(path.resolve(root, item))) {
+			return `.agent/routing-matrix.yaml: referenced rule "${item}" does not exist.`;
+		}
+	} else if (section === 'skills') {
+		if (!skillNames.has(item)) {
+			return `.agent/routing-matrix.yaml: referenced skill "${item}" does not resolve under .agent/skills.`;
+		}
+	} else if (['workflows', 'docs', 'briefs'].includes(section)) {
+		if (!existsSync(path.resolve(root, item))) {
+			const label = section === 'workflows' ? 'workflow' : section.slice(0, -1);
+			return `.agent/routing-matrix.yaml: referenced ${label} "${item}" does not exist.`;
+		}
+	}
+	return null;
+}
+
+function validateRoutingMatrixYaml(root, skillNames) {
+	const errors = [];
+	const file = path.join(root, '.agent', 'routing-matrix.yaml');
+	if (!existsSync(file)) {
+		errors.push('.agent/routing-matrix.yaml: file is missing.');
+		return errors;
+	}
+	const content = readFileSync(file, 'utf8');
+	const lines = content.split(/\r?\n/);
+	let currentSection = null;
+
+	for (const line of lines) {
+		const trimmed = line.trim();
+		if (!trimmed || trimmed.startsWith('#') || trimmed === '---') continue;
+
+		if (trimmed === 'bootstrap:' || trimmed === 'routes:') {
+			currentSection = trimmed.slice(0, -1);
+			continue;
+		}
+
+		const sectionMatch = trimmed.match(/^(rules|skills|workflows|docs|briefs):$/);
+		if (sectionMatch) {
+			currentSection = sectionMatch[1];
+			continue;
+		}
+
+		const listMatch = trimmed.match(/^-\s*["']?([^"'\r\n]+)["']?$/);
+		if (listMatch && currentSection) {
+			const err = checkRoutingMatrixItem(root, currentSection, listMatch[1].trim(), skillNames);
+			if (err) errors.push(err);
+		}
+	}
+
+	return errors;
+}
+
+function detectOrphanedGuidance(root, skillNames) {
+	const errors = [];
+	const matrixFile = path.join(root, '.agent', 'routing-matrix.yaml');
+	if (!existsSync(matrixFile)) return errors;
+	const matrixContent = readFileSync(matrixFile, 'utf8');
+
+	for (const skillName of skillNames) {
+		if (!matrixContent.includes(`"${skillName}"`) && !matrixContent.includes(`'${skillName}'`) && !matrixContent.includes(`- ${skillName}`)) {
+			errors.push(`.agent/skills/${skillName}: skill is not referenced in .agent/routing-matrix.yaml.`);
+		}
+	}
+
+	const ruleFiles = listFiles(path.join(root, '.agent', 'rules'), (name) => name.endsWith('.md'));
+	for (const ruleFile of ruleFiles) {
+		const relativeRule = normalizePath(path.relative(root, ruleFile));
+		if (!matrixContent.includes(relativeRule)) {
+			errors.push(`${relativeRule}: rule is not referenced in .agent/routing-matrix.yaml.`);
+		}
+	}
+
+	const workflowFiles = listFiles(path.join(root, '.agent', 'workflows'), (name) => name.endsWith('.md'));
+	for (const wfFile of workflowFiles) {
+		const relativeWf = normalizePath(path.relative(root, wfFile));
+		if (!matrixContent.includes(relativeWf)) {
+			errors.push(`${relativeWf}: workflow is not referenced in .agent/routing-matrix.yaml.`);
+		}
+	}
+
+	return errors;
+}
+
 export function validateStructure({ root = process.cwd(), trackedFiles } = {}) {
 	const skills = validateSkills(root);
 	return [
 		...skills.errors,
 		...validateRoles(root, skills.skillNames),
-		...validateIndex(root, skills.skillNames),
+		...validateIndex(root),
 		...validateActivePlans(root),
 		...validateCanonicalCiInvocation(root),
+		...validateOwnershipYaml(root),
+		...validateRoutingMatrixYaml(root, skills.skillNames),
+		...detectOrphanedGuidance(root, skills.skillNames),
 		...validateTrackedFiles(root, trackedFiles ?? getTrackedFiles(root)),
 	].sort();
 }

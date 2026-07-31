@@ -57,6 +57,25 @@ function createFixture(skillDomain = 'quality') {
 	);
 	writeFixtureFile(
 		root,
+		'.agent/ownership.yaml',
+		['- aspect: "testing"', '  owner: "AGENTS.md"'].join('\n'),
+	);
+	writeFixtureFile(root, '.agent/rules/gatekeeper.md', '# Gatekeeper\n');
+	writeFixtureFile(
+		root,
+		'.agent/routing-matrix.yaml',
+		[
+			'bootstrap:',
+			'  rules:',
+			'    - ".agent/rules/gatekeeper.md"',
+			'routes:',
+			'  - task_type: "testing"',
+			'    skills:',
+			'      - "testing"',
+		].join('\n'),
+	);
+	writeFixtureFile(
+		root,
 		'.agent/plans/active/current.md',
 		['---', 'title: Current', 'status: active', '---', '# Current'].join('\n'),
 	);

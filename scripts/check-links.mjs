@@ -1,13 +1,38 @@
 #!/usr/bin/env node
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 
 import { getChangedFiles } from './shared-changed-files.mjs';
 
-const markdownFiles = getChangedFiles().filter((file) => file.endsWith('.md'));
+function listMarkdownFilesRecursively(dir) {
+	if (!existsSync(dir)) return [];
+	return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+		const target = path.join(dir, entry.name);
+		if (entry.isDirectory()) return listMarkdownFilesRecursively(target);
+		return entry.isFile() && entry.name.endsWith('.md') ? [target] : [];
+	});
+}
+
+const checkAll = process.argv.includes('--all');
+let markdownFiles;
+
+if (checkAll) {
+	const root = process.cwd();
+	markdownFiles = [
+		...['AGENTS.md', 'README.md', 'CHANGELOG.md']
+			.map((f) => path.join(root, f))
+			.filter((f) => existsSync(f))
+			.map((f) => path.relative(root, f)),
+		...['.agent', 'docs'].flatMap((dir) =>
+			listMarkdownFilesRecursively(path.join(root, dir)).map((f) => path.relative(root, f)),
+		),
+	];
+} else {
+	markdownFiles = getChangedFiles().filter((file) => file.endsWith('.md'));
+}
 
 if (markdownFiles.length === 0) {
-	console.log('No changed Markdown files to validate.');
+	console.log('No Markdown files to validate.');
 	process.exit(0);
 }
 
@@ -56,6 +81,8 @@ if (failures.length > 0) {
 }
 
 const label = markdownFiles.length === 1 ? 'file' : 'files';
+const modeLabel = checkAll ? '' : 'changed ';
 console.log(
-	`Checked ${markdownFiles.length} changed Markdown ${label}; all relative links resolved.`,
+	`Checked ${markdownFiles.length} ${modeLabel}Markdown ${label}; all relative links resolved.`,
 );
+
