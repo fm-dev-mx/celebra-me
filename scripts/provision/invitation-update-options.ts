@@ -23,10 +23,22 @@ export function parseTargets(raw: string | undefined): InvitationUpdateTarget[] 
 	);
 }
 
+export function parseMutationTargets(raw: string | undefined): InvitationUpdateTarget[] {
+	if (!raw || raw === 'all') return ['local', 'preview'];
+	const targets = parseTargets(raw);
+	if (targets.includes('production')) {
+		throw new Error(
+			'PRODUCTION_PROMOTION_REQUIRED: Direct Production mutation via invitation:update is prohibited. Use the guided Production promotion workflow for production releases.',
+		);
+	}
+	return targets;
+}
+
 export function validateUpdateOptions(input: {
 	slug?: string;
 	targets?: InvitationUpdateTarget[];
 	rekeyFrom?: string;
+	isMutation?: boolean;
 }): void {
 	if (
 		input.rekeyFrom &&
@@ -37,6 +49,12 @@ export function validateUpdateOptions(input: {
 			'IDENTITY_REKEY_UNSUPPORTED_TARGET: Identity rekey (--rekey-from) is supported only for the local target environment. Preview and Production rekey operations are unsupported.',
 		);
 	}
+
+	if (input.targets && input.targets.includes('production') && input.isMutation !== false) {
+		throw new Error(
+			'PRODUCTION_PROMOTION_REQUIRED: Direct Production mutation via invitation:update is prohibited. Use the guided Production promotion workflow for production releases.',
+		);
+	}
 }
 
 const VALID_FLAGS = new Set([
@@ -44,6 +62,7 @@ const VALID_FLAGS = new Set([
 	'--targets',
 	'--slug',
 	'--rekey-from',
+	'--preview-write-auth',
 	'--source-dir',
 	'--dry-run',
 	'--apply',
