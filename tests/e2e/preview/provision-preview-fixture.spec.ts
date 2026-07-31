@@ -4,9 +4,7 @@ import {
 	assertExpectedPreviewAccountEmail,
 	assertExpectedPreviewAccountRole,
 	PREVIEW_FIXTURE_DEMO_ID,
-	PREVIEW_FIXTURE_EVENT_TYPE,
 	PREVIEW_FIXTURE_SLUG,
-	PREVIEW_FIXTURE_TITLE,
 	PreviewRequestWindowLimiter,
 	selectCanonicalPreviewFixture,
 } from '../../../scripts/playwright/preview-environment';
@@ -47,24 +45,16 @@ test('provisions or verifies the deterministic Preview-only publication fixture'
 	);
 	expect(demos).toHaveLength(1);
 
-	let fixture = selectCanonicalPreviewFixture(inventory) as InvitationSummary | undefined;
+	const fixture = selectCanonicalPreviewFixture(inventory) as InvitationSummary | undefined;
 	if (!fixture) {
-		const created = await mutateJson<{ item: InvitationSummary }>(
-			page,
-			'/api/dashboard/intake',
-			'POST',
-			{
-				title: PREVIEW_FIXTURE_TITLE,
-				slug: PREVIEW_FIXTURE_SLUG,
-				eventType: PREVIEW_FIXTURE_EVENT_TYPE,
-				baseDemoId: PREVIEW_FIXTURE_DEMO_ID,
-				clientName: '',
-				clientEmail: '',
-				clientWhatsapp: '',
-			},
-			'Synthetic fixture creation',
+		throw new Error(
+			[
+				`Preview publication fixture "${PREVIEW_FIXTURE_SLUG}" is missing.`,
+				'Dashboard POST /api/dashboard/intake no longer creates client invitations.',
+				'Provision the fixture via managed invitation tooling or a prior approved Preview seed,',
+				'then re-run pnpm test:e2e:preview:provision.',
+			].join(' '),
 		);
-		fixture = created.item;
 	}
 	assertCanonicalPreviewFixture(fixture, session.userId);
 

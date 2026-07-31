@@ -42,16 +42,6 @@ export interface InvitationListResponse {
 	items: InvitationDTO[];
 }
 
-export interface CreateInvitationDTO {
-	title: string;
-	slug?: string | null;
-	eventType: string;
-	baseDemoId: string;
-	clientName?: string;
-	clientEmail?: string;
-	clientWhatsapp?: string;
-}
-
 export interface UpdateInvitationDTO {
 	title?: string;
 	slug?: string | null;

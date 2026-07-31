@@ -84,6 +84,26 @@ export default function GalleryEditor({
 		<div className="invitation-editor__gallery">
 			<div className="invitation-editor__field-grid">
 				<label className="invitation-editor__field">
+					<span>Presentación</span>
+					<select
+						value={value.presentation ?? 'standard'}
+						onChange={(event) => {
+							const presentation = event.target.value as 'standard' | 'pet-keepsake';
+							onChange({
+								...value,
+								presentation,
+								items:
+									presentation === 'pet-keepsake'
+										? value.items.map(({ layoutRole: _layoutRole, ...item }) => item)
+										: value.items,
+							});
+						}}
+					>
+						<option value="standard">Estándar</option>
+						<option value="pet-keepsake">Recuerdo de mascota</option>
+					</select>
+				</label>
+				<label className="invitation-editor__field">
 					<span>Etiqueta superior</span>
 					<input
 						value={value.eyebrow ?? ''}

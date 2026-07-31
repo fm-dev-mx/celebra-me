@@ -22,7 +22,6 @@ import type { ClaimCodeDTO } from '@/interfaces/rsvp/domain.interface';
 import type {
 	InvitationListResponse,
 	InvitationDetailResponse,
-	CreateInvitationDTO,
 	UpdateInvitationDTO,
 	IntakeRequestCreateResponse,
 	CreateIntakeRequestDTO,
@@ -210,16 +209,6 @@ export class AdminApi {
 		return this.handleResponse(result);
 	}
 
-	async createInvitation(
-		payload: CreateInvitationDTO,
-	): Promise<InvitationDetailResponse['item']> {
-		const result = await dashboardApi.post<{ item: InvitationDetailResponse['item'] }>(
-			'/api/dashboard/intake',
-			payload,
-		);
-		return this.handleResponse(result).item;
-	}
-
 	async getInvitation(invitationId: string): Promise<InvitationDetailResponse> {
 		const result = await dashboardApi.get<InvitationDetailResponse>(
 			`/api/dashboard/intake/${encodeURIComponent(invitationId)}`,
@@ -235,20 +224,6 @@ export class AdminApi {
 		const result = await dashboardApi.patch<{ item: InvitationDetailResponse['item'] }>(
 			`/api/dashboard/intake/${encodeURIComponent(invitationId)}`,
 			{ expectedUpdatedAt, value: payload },
-		);
-		return this.handleResponse(result).item;
-	}
-
-	async duplicateInvitationFromDemo(
-		invitationId: string,
-		payload: Pick<
-			CreateInvitationDTO,
-			'title' | 'clientName' | 'clientEmail' | 'clientWhatsapp'
-		>,
-	): Promise<InvitationDetailResponse['item']> {
-		const result = await dashboardApi.post<{ item: InvitationDetailResponse['item'] }>(
-			`/api/dashboard/intake/${encodeURIComponent(invitationId)}/duplicate`,
-			payload,
 		);
 		return this.handleResponse(result).item;
 	}

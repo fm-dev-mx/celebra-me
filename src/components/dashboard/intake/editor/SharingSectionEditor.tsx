@@ -1,6 +1,9 @@
 import Field from '@/components/dashboard/intake/editor/Field';
 import SectionCard from '@/components/dashboard/intake/editor/SectionCard';
 import TextArea from '@/components/dashboard/intake/editor/TextArea';
+import ImageAssetField from '@/components/dashboard/intake/editor/ImageAssetField';
+import type { AssetField } from '@/lib/assets/asset-source';
+import type { AssetItem } from '@/lib/intake/use-asset-library';
 import {
 	DEFAULT_INVITATION_MESSAGE,
 	DEFAULT_REMINDER_MESSAGE,
@@ -14,6 +17,7 @@ interface SharingValue {
 	ogDescription?: string;
 	invitation?: string;
 	reminder?: string;
+	ogImage?: AssetField;
 }
 
 interface Props {
@@ -31,6 +35,9 @@ interface Props {
 	success?: string;
 	sourceBadge?: { source: string; label: string };
 	visible?: boolean;
+	assetLookupSlug?: string;
+	assets?: AssetItem[];
+	onOpenAssetPicker: () => void;
 }
 
 export default function SharingSectionEditor({
@@ -43,6 +50,9 @@ export default function SharingSectionEditor({
 	success,
 	sourceBadge,
 	visible,
+	assetLookupSlug,
+	assets,
+	onOpenAssetPicker,
 }: Props) {
 	return (
 		<SectionCard
@@ -66,6 +76,14 @@ export default function SharingSectionEditor({
 				Este texto aparece en la tarjeta de vista previa cuando compartes la invitación por
 				WhatsApp u otras redes.
 			</p>
+			<ImageAssetField
+				label="Imagen para vista previa al compartir"
+				description="Se muestra en la tarjeta de WhatsApp y redes sociales."
+				value={sharing.ogImage}
+				assetLookupSlug={assetLookupSlug}
+				assets={assets}
+				onOpenLibrary={onOpenAssetPicker}
+			/>
 			<TextArea
 				label="Mensaje de invitación"
 				value={sharing.invitation ?? ''}

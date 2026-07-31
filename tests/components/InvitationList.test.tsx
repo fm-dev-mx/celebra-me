@@ -14,11 +14,9 @@ function makeMockAdmin(overrides: Record<string, unknown> = {}) {
 		items: [] as InvitationDTO[],
 		loading: false,
 		error: '',
-		createInvitation: jest.fn(),
 		archiveInvitation: jest.fn(),
 		restoreInvitation: jest.fn(),
 		permanentlyDeleteInvitation: jest.fn(),
-		duplicateInvitationFromDemo: jest.fn(),
 		...overrides,
 	};
 }
@@ -124,7 +122,7 @@ describe('InvitationList', () => {
 		expect(moreButton).toHaveAttribute('aria-expanded', 'false');
 
 		fireEvent.click(moreButton);
-		expect(screen.getByText('Duplicar')).toBeInTheDocument();
+		expect(screen.queryByText('Duplicar')).not.toBeInTheDocument();
 		expect(screen.getByText('Copiar enlace público')).toBeInTheDocument();
 		expect(screen.getByText('Archivar')).toBeInTheDocument();
 	});
@@ -210,13 +208,15 @@ describe('InvitationList', () => {
 		expect(screen.getByText('XV Sofía')).toBeInTheDocument();
 	});
 
-	it('shows creation CTA in empty state', () => {
+	it('shows managed-creation guidance in empty state', () => {
 		mockUseInvitationAdmin.mockReturnValue(makeMockAdmin({ items: [] }));
 
 		render(<InvitationList />);
 
-		const createLinks = screen.getAllByRole('link', { name: 'Nueva invitación' });
-		expect(createLinks.length).toBeGreaterThanOrEqual(1);
+		expect(
+			screen.getByText(/flujo administrado \(pnpm invitation:update\)/i),
+		).toBeInTheDocument();
+		expect(screen.queryByRole('link', { name: 'Nueva invitación' })).not.toBeInTheDocument();
 	});
 
 	it('shows tab buttons', () => {

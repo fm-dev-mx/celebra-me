@@ -1,11 +1,17 @@
 ---
-import '@/styles/intake.scss';
 import DashboardLayout from '@/layouts/DashboardLayout.astro';
-import CreateInvitationFlow from '@/components/dashboard/intake/CreateInvitationFlow';
 ---
 
-<DashboardLayout title="Nueva invitación">
-	<div class="intake-page-body">
-		<CreateInvitationFlow client:load />
-	</div>
+<DashboardLayout title="Creación administrada">
+	<section class="intake-create-retired">
+		<h1>Creación desde el panel retirada</h1>
+		<p>
+			Las invitaciones de cliente se crean con el flujo administrado
+			(<code>scripts/provision/invitations</code> y
+			<code>pnpm invitation:update</code> / <code>pnpm invitation:promote</code>).
+		</p>
+		<p>
+			<a href="/dashboard/invitaciones">Volver a invitaciones</a>
+		</p>
+	</section>
 </DashboardLayout>

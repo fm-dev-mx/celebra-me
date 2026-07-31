@@ -81,6 +81,18 @@ until runtime and production evidence supports removal.
 Report changed files, validation and visual-QA evidence, cache behavior, migration status, remaining
 risks, deletion candidates, `git status --short`, and whether anything was staged or committed.
 
+## Agent application identity
+
+Local and Preview agent browser/Editor access uses real `super_admin` product identities only:
+
+- **Local:** `pnpm db:local:bootstrap-admin` (first `SUPER_ADMIN_EMAILS` entry).
+- **Preview:** `preview@preview.com` (see `docs/database-workflow.md` agent identity table and
+  `docs/env-workflow.md` Playwright Preview auth).
+
+Do not authenticate agents with `service_role`, invent agent-only app permissions, or grant
+Production application access. Production managed promotion remains owner-only via
+`pnpm invitation:promote`.
+
 ## Actor capability matrix (SSOT)
 
 This matrix is the SSOT for Agent vs Owner operational capabilities. Preview task scope is an

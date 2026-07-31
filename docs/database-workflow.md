@@ -168,27 +168,35 @@ Managed invitation promotion follows the contract in
 Definition → normalized release → Local → immutable package → Preview → Production
 ```
 
-### Distinction: Promote vs Mirror vs Restore
+### Distinction: Update vs Promote vs Mirror vs Restore
 
 | Mechanism | Role | Direction |
 | --- | --- | --- |
-| `pnpm invitation:update` | **Promote** managed content | Local → Preview → Production |
+| `pnpm invitation:update` | **Update** managed content on Local and/or Preview | Definition → Local / Preview |
+| `pnpm invitation:promote` | **Promote** managed content to Production (owner-only) | Approved package → Production |
 | `pnpm db:preview:sync-invitations` | **Mirror** invitation-facing content for regression | Production → Preview only |
 | `pnpm db:local:restore-from-dump` | **Restore** debugging dump (may include PII) | Production backup → Local |
 | `pnpm invitation:content-parity` | Read-only **semantic** content parity check | Compares Local/Preview/Production |
 
 Production never imports from the Preview DB or Preview Storage. Mirror is never promotion.
+`invitation:update` rejects Production mutation targets; use `invitation:promote` for Production.
 Credential presence, worktree path, runtime target, and UI banners do not authorize mutations.
 
 ### Commands
 
-1. **Plan/update a managed definition**:
+1. **Plan/update a managed definition (Local / Preview)**:
    ```bash
    pnpm invitation:update -- --slug <slug> --targets local,preview --source-dir <path> --dry-run
    pnpm invitation:update -- --slug <slug> --targets local,preview --source-dir <path> --apply
    ```
 
-2. **Semantic content parity (read-only)**:
+2. **Promote to Production (owner-only)**:
+   ```bash
+   pnpm invitation:promote -- --slug <slug> --package <path> --dry-run
+   pnpm invitation:promote -- --slug <slug> --package <path> --apply --backup-manifest <path>
+   ```
+
+3. **Semantic content parity (read-only)**:
    ```bash
    pnpm invitation:content-parity -- --slug <slug> --event-type <type> --envs local,preview,production
    ```
@@ -372,6 +380,21 @@ import. The unresolved preserve-local enhancement remains tracked in
 - Ensures `auth.users.raw_app_meta_data.role = 'super_admin'`, upserts
   `public.app_user_roles.role = 'super_admin'`, and verifies password login.
 - Use for initial local setup or to repair the local admin without resetting the database.
+
+### Agent application identities (Local / Preview)
+
+Agents must authenticate through normal product roles. Do not use browser `service_role`, arbitrary
+DB privileges, Production access, or agent-only authorization bypasses invented for tooling.
+
+| Environment | Identity | Role | Provision / repair | Used for |
+| --- | --- | --- | --- | --- |
+| **Local** | First `SUPER_ADMIN_EMAILS` entry via `pnpm db:local:bootstrap-admin` | `super_admin` | `db:local:bootstrap-admin`, `db:local:validate` | Login, Editor, RLS admin flows, local authenticated E2E (`PLAYWRIGHT_HOST_*`) |
+| **Preview** | `preview@preview.com` | `super_admin` | Preview mirror ownership remap; MFA bypass only via `PREVIEW_MFA_BYPASS` gates | Login, Editor, authenticated Preview E2E |
+| **Production** | Owner-only operators | N/A for agents | — | Agents: dry-run / read-only; `--apply` promote is owner-only |
+
+CLI provision scripts may use `service_role` in trusted server context only; that is not an application
+login substitute. Host invitation flows continue to use real `host_client` users from
+`invitation-host-owner`.
 
 `pnpm db:local:validate`
 

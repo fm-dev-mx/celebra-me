@@ -330,6 +330,7 @@ function mapLocationFromDraft(
 	const demoLocation = demoContent?.location as Record<string, unknown> | undefined;
 	if (draftLocation.visibility) result.visibility = draftLocation.visibility;
 	if (draftLocation.presentation) result.presentation = draftLocation.presentation;
+	if (draftLocation.presentationOptions) result.presentationOptions = draftLocation.presentationOptions;
 
 	if (draftLocation.venues && Array.isArray(draftLocation.venues)) {
 		const mappedVenues = draftLocation.venues
@@ -432,10 +433,6 @@ function buildHeroFromDraft(
 	const result: Record<string, unknown> = {
 		...clientPriorFields(ctx, priorHero, [
 			'variant',
-			'focalPoint',
-			'focalPointMobile',
-			'focalPointTablet',
-			'focalPointDesktop',
 		]),
 		name: str(draftHero.name) || demoStr(ctx, demoName as string) || invitationTitle,
 		secondaryName:
@@ -452,6 +449,16 @@ function buildHeroFromDraft(
 			draftHero.backgroundImageMobile ?? (ctx.isDemo ? demoBackgroundImageMobile : undefined),
 		portrait: draftHero.portrait ?? (ctx.isDemo ? demoPortrait : undefined),
 	};
+	for (const field of [
+		'focalPoint',
+		'focalPointMobile',
+		'focalPointTablet',
+		'focalPointDesktop',
+		'presentation',
+	] as const) {
+		if (draftHero[field] !== undefined) result[field] = draftHero[field];
+		else if (!ctx.isDemo && priorHero?.[field] !== undefined) result[field] = priorHero[field];
+	}
 
 	if (ctx.isDemo && demoVariant) {
 		result.variant = demoVariant as string;
@@ -496,6 +503,28 @@ function resolveRsvpResponseMessages(
 	return draftRsvp.responseMessages ?? fromDemo;
 }
 
+function resolveRsvpGuestCap(
+	draftRsvp: NonNullable<DraftContent['rsvp']>,
+	demo: Record<string, unknown>,
+	ctx: PublishCtx,
+): number | undefined {
+	if (typeof draftRsvp.guestCap === 'number') return draftRsvp.guestCap;
+	return ctx.isDemo ? (demo.guestCap as number | undefined) : undefined;
+}
+
+function resolveRsvpAccessMode(
+	draftRsvp: NonNullable<DraftContent['rsvp']>,
+	demo: Record<string, unknown>,
+	priorRsvp: Record<string, unknown> | undefined,
+	ctx: PublishCtx,
+): string {
+	return (
+		str(draftRsvp.accessMode) ||
+		(ctx.isDemo ? str(demo.accessMode) : str(priorRsvp?.accessMode)) ||
+		'personalized-only'
+	);
+}
+
 function mapRsvpSection(
 	draftRsvp: DraftContent['rsvp'],
 	demoRsvp: Record<string, unknown> | undefined,
@@ -504,40 +533,32 @@ function mapRsvpSection(
 ): Record<string, unknown> | undefined {
 	if (!isNonEmptyObject(draftRsvp)) return undefined;
 	const demo = demoRsvp || {};
-	const responseMessages = resolveRsvpResponseMessages(draftRsvp, demoRsvp, ctx);
 	const whatsappPhone = str(draftRsvp.whatsappPhone) || demoStr(ctx, demo.whatsappPhone);
-	const guestCap =
-		typeof draftRsvp.guestCap === 'number'
-			? draftRsvp.guestCap
-			: ctx.isDemo
-				? (demo.guestCap as number | undefined)
-				: undefined;
-	const confirmationMode =
-		str(draftRsvp.confirmationMode) || demoStr(ctx, demo.confirmationMode) || 'api';
-	const title = str(draftRsvp.title) || demoStr(ctx, demo.title);
-	const confirmationMessage =
-		str(draftRsvp.confirmationMessage) || demoStr(ctx, demo.confirmationMessage);
-	const accessMode =
-		(ctx.isDemo ? str(demo.accessMode) : str(priorRsvp?.accessMode)) || 'personalized-only';
-	const whatsappConfig = whatsappPhone
-		? { phone: whatsappPhone }
-		: ctx.isDemo
-			? demo.whatsappConfig
-			: undefined;
-	const subcopy = str(draftRsvp.subcopy) || demoStr(ctx, demo.subcopy);
+	const responseMessages = resolveRsvpResponseMessages(draftRsvp, demoRsvp, ctx);
 	const confirmationDeadline =
 		str(draftRsvp.confirmationDeadline) || demoStr(ctx, demo.confirmationDeadline);
 	return {
-		title,
-		guestCap,
-		confirmationMessage,
-		confirmationMode,
-		accessMode,
-		whatsappConfig,
-		subcopy,
+		title: str(draftRsvp.title) || demoStr(ctx, demo.title),
+		guestCap: resolveRsvpGuestCap(draftRsvp, demo, ctx),
+		confirmationMessage:
+			str(draftRsvp.confirmationMessage) || demoStr(ctx, demo.confirmationMessage),
+		confirmationMode:
+			str(draftRsvp.confirmationMode) || demoStr(ctx, demo.confirmationMode) || 'api',
+		accessMode: resolveRsvpAccessMode(draftRsvp, demo, priorRsvp, ctx),
+		whatsappConfig: whatsappPhone
+			? { phone: whatsappPhone }
+			: ctx.isDemo
+				? demo.whatsappConfig
+				: undefined,
+		subcopy: str(draftRsvp.subcopy) || demoStr(ctx, demo.subcopy),
 		...(confirmationDeadline ? { confirmationDeadline } : {}),
 		...(responseMessages ? { responseMessages } : {}),
-		...clientPriorFields(ctx, priorRsvp, ['personalizedAccess']),
+		...(draftRsvp.personalizedAccess
+			? { personalizedAccess: draftRsvp.personalizedAccess }
+			: clientPriorFields(ctx, priorRsvp, ['personalizedAccess'])),
+		...(draftRsvp.calendar
+			? { calendar: draftRsvp.calendar }
+			: clientPriorFields(ctx, priorRsvp, ['calendar'])),
 	};
 }
 
@@ -607,6 +628,7 @@ function mapThankYouSection(
 		overlayFields.overlayAnchor = draftThankYou.overlayAnchor;
 	if (draftThankYou.overlaySafeArea !== undefined)
 		overlayFields.overlaySafeArea = draftThankYou.overlaySafeArea;
+	if (draftThankYou.date !== undefined) overlayFields.date = draftThankYou.date;
 	if (message) {
 		return {
 			message,
@@ -669,7 +691,7 @@ function mapSharingFromDraft(
 	const shareMessages = invitation ? { invitation, reminder } : undefined;
 
 	const whatsappTemplate = demoValue(ctx, demoSharing?.whatsappTemplate);
-	const ogImage = demoValue(ctx, demoSharing?.ogImage);
+	const ogImage = draftMessages.ogImage ?? demoValue(ctx, demoSharing?.ogImage);
 	const ogDescription = str(draftMessages.ogDescription);
 	const result: Record<string, unknown> = clientPriorFields(ctx, priorSharing);
 

@@ -1,4 +1,9 @@
 import type { EventType } from '@/lib/theme/theme-contract';
+import {
+	EDITOR_SECTION_PRESENTATION,
+	PUBLIC_SECTION_DEFINITIONS,
+	CONFIG_SECTION_DEFINITIONS,
+} from '@/lib/intake/invitation-section-registry';
 import type {
 	InvitationStatus,
 	IntakeSubmissionStatus,
@@ -6,18 +11,20 @@ import type {
 	IntakeBlockType,
 } from '@/lib/intake/types';
 
+export { EDITOR_SECTION_PRESENTATION };
+
 export const SECTION_LABELS: Record<string, string> = {
 	Hero: 'Datos principales / Hero',
-	countdown: 'Cuenta regresiva',
-	family: 'Familia',
-	gallery: 'Galería',
-	itinerary: 'Itinerario',
-	location: 'Fecha y ubicaciones',
-	rsvp: 'Confirmación de asistencia',
-	music: 'Música de fondo',
-	gifts: 'Regalos',
-	quote: 'Mensajes especiales',
-	thankYou: 'Agradecimiento',
+	countdown: PUBLIC_SECTION_DEFINITIONS.countdown.label,
+	family: PUBLIC_SECTION_DEFINITIONS.family.label,
+	gallery: PUBLIC_SECTION_DEFINITIONS.gallery.label,
+	itinerary: PUBLIC_SECTION_DEFINITIONS.itinerary.label,
+	location: PUBLIC_SECTION_DEFINITIONS.location.label,
+	rsvp: PUBLIC_SECTION_DEFINITIONS.rsvp.label,
+	music: CONFIG_SECTION_DEFINITIONS.music.label,
+	gifts: PUBLIC_SECTION_DEFINITIONS.gifts.label,
+	quote: PUBLIC_SECTION_DEFINITIONS.quote.label,
+	thankYou: PUBLIC_SECTION_DEFINITIONS.thankYou.label,
 	photoNotes: 'Notas de fotografías',
 };
 
@@ -171,25 +178,6 @@ export const GIFT_TYPE_LABELS: Record<string, string> = {
 	bank: 'Transferencia bancaria',
 	paypal: 'PayPal',
 	cash: 'Efectivo',
-};
-
-export const EDITOR_SECTION_PRESENTATION: Record<string, { id: string; label: string }> = {
-	title: { id: 'main', label: 'Datos principales' },
-	description: { id: 'main', label: 'Datos principales' },
-	hero: { id: 'main', label: 'Datos principales' },
-	countdown: { id: 'countdown', label: 'Cuenta regresiva' },
-	family: { id: 'family', label: 'Personas principales' },
-	location: { id: 'location', label: 'Fecha y ubicaciones' },
-	itinerary: { id: 'itinerary', label: 'Programa' },
-	rsvp: { id: 'rsvp', label: 'Confirmación de asistencia' },
-	music: { id: 'music', label: 'Música' },
-	gifts: { id: 'gifts', label: 'Mesa de regalos' },
-	quote: { id: 'messages', label: 'Mensajes especiales' },
-	thankYou: { id: 'messages', label: 'Mensajes especiales' },
-	gallery: { id: 'gallery', label: 'Galería' },
-	photoNotes: { id: 'gallery', label: 'Galería' },
-	sectionOrder: { id: 'publication', label: 'Publicación' },
-	sharing: { id: 'sharing', label: 'Plantillas de mensaje' },
 };
 
 type FieldGroup = 'hero' | 'family';

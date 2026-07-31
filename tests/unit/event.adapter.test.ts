@@ -164,6 +164,7 @@ describe('adaptEvent', () => {
 						type: 'external',
 						src: '/images/custom-portrait.webp',
 					},
+					presentation: { portraitEnabled: true },
 				},
 			},
 		} as Parameters<typeof adaptEvent>[0];
@@ -228,6 +229,18 @@ describe('adaptEvent', () => {
 
 		expect(viewModel.hero.backgroundImageMobile).toBeDefined();
 		expect(viewModel.hero.backgroundImageMobile?.src).toBe('/images/mobile-bg.webp');
+	});
+
+	it('honors sectionStyles.showFlourishes when presentationOptions is absent', () => {
+		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-editorial-magazine.json');
+		const event = {
+			id: 'event-demos/xv/demo-xv-editorial-magazine',
+			data: fixture,
+		} as Parameters<typeof adaptEvent>[0];
+
+		const viewModel = adaptEvent(event);
+
+		expect(viewModel.sections.location?.showFlourishes).toBe(false);
 	});
 
 	it('preserves thank-you overlay composition metadata', () => {
@@ -428,8 +441,8 @@ describe('adaptEvent', () => {
 		);
 	});
 
-	describe('location theme defaults', () => {
-		it('applies enchanted-rose defaults when location intro fields are missing', () => {
+	describe('location presentation defaults', () => {
+		it('does not inject enchanted-rose location copy when intro fields are missing', () => {
 			const fixture = loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json');
 			const location = { ...fixture.location };
 			delete location.introEyebrow;
@@ -446,12 +459,10 @@ describe('adaptEvent', () => {
 
 			const viewModel = adaptEvent(event);
 
-			expect(viewModel.sections.location?.introEyebrow).toBe('El camino al palacio');
-			expect(viewModel.sections.location?.introHeading).toBe('Ubicación');
-			expect(viewModel.sections.location?.introLede).toBe(
-				'Guarda la ruta y llega con calma a una noche entre rosas, música y luz de velas.',
-			);
-			expect(viewModel.sections.location?.indicationsHeading).toBe('Detalles adicionales');
+			expect(viewModel.sections.location?.introEyebrow).toBeUndefined();
+			expect(viewModel.sections.location?.introHeading).toBeUndefined();
+			expect(viewModel.sections.location?.introLede).toBeUndefined();
+			expect(viewModel.sections.location?.indicationsHeading).toBe('');
 		});
 
 		it('does not override explicit intro fields with theme defaults', () => {
@@ -729,7 +740,7 @@ describe('adaptEvent', () => {
 			expect(viewModel.sections.location?.reception?.venueName).toBe('Salón Legacy');
 		});
 
-		it('backward-compatibility: published snapshot without intro fields uses theme defaults', () => {
+		it('backward-compatibility: published snapshot without intro fields stays without injected theme copy', () => {
 			const event = {
 				id: 'events/ayrin-samantha-lerma-castro',
 				data: {
@@ -762,12 +773,10 @@ describe('adaptEvent', () => {
 
 			const viewModel = adaptEvent(event);
 
-			expect(viewModel.sections.location?.introEyebrow).toBe('El camino al palacio');
-			expect(viewModel.sections.location?.introHeading).toBe('Ubicación');
-			expect(viewModel.sections.location?.introLede).toBe(
-				'Guarda la ruta y llega con calma a una noche entre rosas, música y luz de velas.',
-			);
-			expect(viewModel.sections.location?.indicationsHeading).toBe('Detalles adicionales');
+			expect(viewModel.sections.location?.introEyebrow).toBeUndefined();
+			expect(viewModel.sections.location?.introHeading).toBeUndefined();
+			expect(viewModel.sections.location?.introLede).toBeUndefined();
+			expect(viewModel.sections.location?.indicationsHeading).toBe('');
 		});
 	});
 });

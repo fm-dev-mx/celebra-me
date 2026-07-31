@@ -10,6 +10,7 @@ import { MEXICO_TIME_ZONE_OPTIONS } from '@/lib/intake/constants';
 import { venueLabel } from '@/lib/intake/utils';
 import type { EventTiming } from '@/lib/time/event-time';
 import type { LocationPresentation } from '@/lib/invitation/presentation-options';
+import type { IndicationStyleVariant } from '@/lib/theme/theme-contract';
 
 interface VenueData {
 	venueName?: string;
@@ -35,10 +36,13 @@ interface VenueEntryData extends VenueData {
 interface DraftIndication {
 	iconName: IconName;
 	text: string;
+	styleVariant?: IndicationStyleVariant;
 }
 
 interface LocationData {
+	visibility?: 'public' | 'after-rsvp';
 	presentation?: LocationPresentation;
+	presentationOptions?: { showFlourishes?: boolean };
 	introEyebrow?: string;
 	introHeading?: string;
 	introLede?: string;
@@ -222,7 +226,10 @@ export default function LocationSectionEditor({
 
 	const addIndication = () => {
 		onUpdateLocation({
-			indications: [...indications, { iconName: DEFAULT_ICON, text: '' }],
+			indications: [
+				...indications,
+				{ iconName: DEFAULT_ICON, text: '', styleVariant: 'default' },
+			],
 		});
 	};
 
@@ -239,6 +246,35 @@ export default function LocationSectionEditor({
 		>
 			<div className="invitation-editor__section-group">
 				<h3>Texto de la sección</h3>
+				<label className="invitation-editor__field">
+					<span>Visibilidad de ubicaciones</span>
+					<select
+						value={location.visibility ?? 'public'}
+						onChange={(event) =>
+							onUpdateLocation({
+								visibility: event.target.value as 'public' | 'after-rsvp',
+							})
+						}
+					>
+						<option value="public">Pública</option>
+						<option value="after-rsvp">Después de confirmar asistencia</option>
+					</select>
+				</label>
+				<label className="invitation-editor__check">
+					<input
+						type="checkbox"
+						checked={location.presentationOptions?.showFlourishes ?? true}
+						onChange={(event) =>
+							onUpdateLocation({
+								presentationOptions: {
+									...location.presentationOptions,
+									showFlourishes: event.target.checked,
+								},
+							})
+						}
+					/>
+					<span>Mostrar adornos en las tarjetas de ubicación</span>
+				</label>
 				<label className="invitation-editor__field">
 					<span>Presentación</span>
 					<select
@@ -481,6 +517,20 @@ export default function LocationSectionEditor({
 											})
 										}
 									/>
+									<label className="invitation-editor__field">
+										<span>Estilo</span>
+										<select
+											value={indication.styleVariant ?? 'default'}
+											onChange={(event) =>
+												updateIndication(index, {
+													styleVariant: event.target.value as IndicationStyleVariant,
+												})
+											}
+										>
+											<option value="default">Predeterminado</option>
+											<option value="reserved">Reservado</option>
+										</select>
+									</label>
 									<label className="invitation-editor__field">
 										<span>Texto</span>
 										<input

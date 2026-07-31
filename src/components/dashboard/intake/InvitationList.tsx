@@ -5,7 +5,6 @@ import StatusBadge from '@/components/dashboard/StatusBadge';
 import EmptyState from '@/components/dashboard/EmptyState';
 import OverflowMenu from '@/components/dashboard/intake/OverflowMenu';
 import ConfirmModal from '@/components/dashboard/intake/ConfirmModal';
-import ModalShell from '@/components/dashboard/ModalShell';
 import type { InvitationDTO } from '@/lib/dashboard/dto/intake';
 import { resolveDisplayInfo, hasInconsistency } from '@/lib/intake/display-status';
 import { getPublicSlug } from '@/lib/intake/slug';
@@ -109,7 +108,6 @@ interface InvitationTableRowProps {
 	onArchive: (invitation: InvitationDTO) => void;
 	onRestore: (invitation: InvitationDTO) => void;
 	onPermanentDelete: (invitation: InvitationDTO) => void;
-	onDuplicateOpen: (invitation: InvitationDTO) => void;
 }
 
 const InvitationTableRow: FC<InvitationTableRowProps> = ({
@@ -117,7 +115,6 @@ const InvitationTableRow: FC<InvitationTableRowProps> = ({
 	onArchive,
 	onRestore,
 	onPermanentDelete,
-	onDuplicateOpen,
 }) => {
 	const displayInfo = resolveDisplayInfo(invitation);
 	const publishedUrl = publicUrl(invitation);
@@ -181,11 +178,6 @@ const InvitationTableRow: FC<InvitationTableRowProps> = ({
 					<OverflowMenu
 						items={[
 							{
-								label: 'Duplicar',
-								hidden: !isDemo || !isActive,
-								onClick: () => onDuplicateOpen(invitation),
-							},
-							{
 								label: 'Copiar enlace público',
 								hidden: !publishedUrl || !isActive,
 								onClick: copyPublicLink,
@@ -226,42 +218,18 @@ const InvitationTableRow: FC<InvitationTableRowProps> = ({
 	);
 };
 
-const EMPTY_STATE_MESSAGES: Record<FilterTab, { message: string; action?: boolean }> = {
-	all: {
-		message: 'No hay invitaciones activas. Crea una nueva invitación para comenzar.',
-		action: true,
-	},
-	clients: { message: 'No hay invitaciones de clientes activas.', action: true },
-	demos: { message: 'No hay demos disponibles.', action: false },
-	drafts: { message: 'No hay borradores.', action: false },
-	waiting_for_client: {
-		message: 'No hay invitaciones esperando respuesta del cliente.',
-		action: false,
-	},
-	capture_received: {
-		message: 'No hay capturas recibidas pendientes de revisión.',
-		action: false,
-	},
-	in_review: { message: 'No hay invitaciones en revisión.', action: false },
-	published: { message: 'No hay invitaciones publicadas.', action: false },
-	archived: { message: 'No hay invitaciones archivadas.', action: false },
-	needs_attention: { message: 'No hay invitaciones que requieran atención.', action: false },
-};
-
-const EmptyStateWithAction: FC<{ tab: FilterTab }> = ({ tab }) => {
-	const info = EMPTY_STATE_MESSAGES[tab];
-	return (
-		<EmptyState
-			message={info.message}
-			action={
-				info.action ? (
-					<a href="/dashboard/invitaciones/nueva" className="intake-list__create-btn">
-						Nueva invitación
-					</a>
-				) : undefined
-			}
-		/>
-	);
+const EMPTY_STATE_MESSAGES: Record<FilterTab, string> = {
+	all: 'No hay invitaciones activas. Las invitaciones de cliente se crean con el flujo administrado (pnpm invitation:update).',
+	clients:
+		'No hay invitaciones de clientes activas. Use el flujo administrado para crear nuevas.',
+	demos: 'No hay demos disponibles.',
+	drafts: 'No hay borradores.',
+	waiting_for_client: 'No hay invitaciones esperando respuesta del cliente.',
+	capture_received: 'No hay capturas recibidas pendientes de revisión.',
+	in_review: 'No hay invitaciones en revisión.',
+	published: 'No hay invitaciones publicadas.',
+	archived: 'No hay invitaciones archivadas.',
+	needs_attention: 'No hay invitaciones que requieran atención.',
 };
 
 const InvitationList: FC = () => {
@@ -272,7 +240,6 @@ const InvitationList: FC = () => {
 		archiveInvitation,
 		restoreInvitation,
 		permanentlyDeleteInvitation,
-		duplicateInvitationFromDemo,
 	} = useInvitationAdmin();
 	const [actionError, setActionError] = useState('');
 	const [activeTab, setActiveTab] = useState<FilterTab>('all');
@@ -294,11 +261,6 @@ const InvitationList: FC = () => {
 	const [confirmState, setConfirmState] = useState<{
 		type: 'archive' | 'restore' | 'delete';
 		invitation: InvitationDTO;
-	} | null>(null);
-
-	const [duplicateTarget, setDuplicateTarget] = useState<{
-		invitation: InvitationDTO;
-		title: string;
 	} | null>(null);
 
 	const tabFiltered = useMemo(() => {
@@ -347,10 +309,6 @@ const InvitationList: FC = () => {
 		setConfirmState({ type: 'delete', invitation });
 	};
 
-	const handleDuplicateOpen = (invitation: InvitationDTO) => {
-		setDuplicateTarget({ invitation, title: `${invitation.title} - copia` });
-	};
-
 	const executeConfirm = async () => {
 		if (!confirmState) return;
 		const { type, invitation } = confirmState;
@@ -374,29 +332,16 @@ const InvitationList: FC = () => {
 		setConfirmState(null);
 	};
 
-	const handleDuplicateConfirm = async () => {
-		if (!duplicateTarget?.title.trim()) return;
-		await runAction(async () => {
-			const created = await duplicateInvitationFromDemo(duplicateTarget.invitation.id, {
-				title: duplicateTarget.title.trim(),
-			});
-			window.location.href = `/dashboard/invitaciones/${created.id}/editar`;
-		}, 'No se pudo duplicar el demo.');
-		setDuplicateTarget(null);
-	};
-
 	return (
 		<div className="intake-list">
 			<header className="intake-list__header">
 				<div>
 					<h2 className="intake-list__title">Producción de invitaciones</h2>
 					<p className="intake-list__subtitle">
-						Administra invitaciones y demos editables desde un solo lugar.
+						Administra invitaciones y demos editables. Las nuevas invitaciones de cliente
+						se crean con el flujo administrado.
 					</p>
 				</div>
-				<a href="/dashboard/invitaciones/nueva" className="intake-list__create-btn">
-					Nueva invitación
-				</a>
 			</header>
 
 			{error && <p className="intake-list__error">{error}</p>}
@@ -470,7 +415,7 @@ const InvitationList: FC = () => {
 					))}
 				</div>
 			) : filteredItems.length === 0 ? (
-				<EmptyStateWithAction tab={activeTab} />
+				<EmptyState message={EMPTY_STATE_MESSAGES[activeTab]} />
 			) : (
 				<div className="intake-list__table-wrap">
 					<table className="intake-list__table">
@@ -491,7 +436,6 @@ const InvitationList: FC = () => {
 									onArchive={handleArchive}
 									onRestore={handleRestore}
 									onPermanentDelete={handlePermanentDelete}
-									onDuplicateOpen={handleDuplicateOpen}
 								/>
 							))}
 						</tbody>
@@ -533,48 +477,6 @@ const InvitationList: FC = () => {
 						/>
 					);
 				})()}
-
-			{duplicateTarget && (
-				<ModalShell title="Duplicar demo" onClose={() => setDuplicateTarget(null)}>
-					<div className="confirm-modal__body">
-						<p className="confirm-modal__message">
-							Nueva invitación a partir de "{duplicateTarget.invitation.title}"
-						</p>
-						<div className="intake-field create-flow__field-spacing">
-							<label className="intake-field__label" htmlFor="dup-title">
-								Título de la nueva invitación
-							</label>
-							<input
-								id="dup-title"
-								className="intake-field__input"
-								value={duplicateTarget.title}
-								onChange={(e) =>
-									setDuplicateTarget((prev) =>
-										prev ? { ...prev, title: e.target.value } : null,
-									)
-								}
-							/>
-						</div>
-					</div>
-					<div className="confirm-modal__actions">
-						<button
-							type="button"
-							className="btn-secondary"
-							onClick={() => setDuplicateTarget(null)}
-						>
-							Cancelar
-						</button>
-						<button
-							type="button"
-							className="btn-primary"
-							disabled={!duplicateTarget.title.trim()}
-							onClick={handleDuplicateConfirm}
-						>
-							Duplicar
-						</button>
-					</div>
-				</ModalShell>
-			)}
 		</div>
 	);
 };

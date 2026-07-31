@@ -13,6 +13,7 @@ import {
 	THEME_PRESETS,
 	type ItineraryVariant,
 	type ThemePreset,
+	themeSupportsPortrait,
 } from '@/lib/theme/theme-contract';
 import { getContentEntrySlug, type EventContentEntry } from '@/lib/content/events';
 import type {
@@ -29,27 +30,13 @@ import { buildOpeningViewModel } from '@/lib/invitation/reveal-card';
 import { DEFAULT_BRANDING_VISIBILITY } from '@/lib/adapters/branding';
 import { resolveCountdownTarget } from '@/lib/time/event-time';
 import { COUNTDOWN_DEFAULTS } from '@/lib/intake/constants';
-import { resolveXareniSealColor, XARENI_ASSET_SLUG } from '@/lib/invitation/presentation-options';
-
-const LOCATION_THEME_DEFAULTS: Partial<
-	Record<
-		ThemePreset,
-		{
-			introEyebrow: string;
-			introHeading: string;
-			introLede: string;
-			indicationsHeading: string;
-		}
-	>
-> = {
-	'enchanted-rose': {
-		introEyebrow: 'El camino al palacio',
-		introHeading: 'Ubicación',
-		introLede:
-			'Guarda la ruta y llega con calma a una noche entre rosas, música y luz de velas.',
-		indicationsHeading: 'Detalles adicionales',
-	},
-};
+import {
+	resolveItineraryPresentation,
+	resolveLocationShowFlourishes,
+	resolvePortraitEnabled,
+	resolveXareniSealColor,
+	XARENI_ASSET_SLUG,
+} from '@/lib/invitation/presentation-options';
 
 interface AdaptationContext {
 	data: EventContentEntry['data'];
@@ -184,15 +171,6 @@ function sectionVariant(
 	return pickVariant(`sectionStyles.${section}.variant`, candidate, THEME_PRESETS, fallback);
 }
 
-function itineraryVariant(candidate: string | undefined, fallback: ThemePreset): ItineraryVariant {
-	return pickVariant<ItineraryVariant>(
-		'sectionStyles.itinerary.variant',
-		candidate,
-		ITINERARY_VARIANTS,
-		fallback,
-	);
-}
-
 function buildHero(context: AdaptationContext): HeroViewModel {
 	const { data, eventSlug, normalizedPreset } = context;
 	const preset = pickVariant(
@@ -213,13 +191,18 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 			? { src: resolveAssetSrc(eventSlug, data.hero.backgroundImageDesktop) }
 			: undefined,
 		backgroundImageMobile: resolveAsset(eventSlug, data.hero.backgroundImageMobile, data.title),
-		portrait: resolveAsset(eventSlug, data.hero.portrait, data.title),
+		portrait: resolvePortraitEnabled(
+			data.hero.presentation,
+			themeSupportsPortrait(preset),
+		)
+			? resolveAsset(eventSlug, data.hero.portrait, data.title)
+			: undefined,
 		variant: preset,
 		focalPoint: data.hero.focalPoint,
 		focalPointMobile: data.hero.focalPointMobile,
 		focalPointTablet: data.hero.focalPointTablet,
 		focalPointDesktop: data.hero.focalPointDesktop,
-		scrollLabel: preset === 'enchanted-rose' ? 'Continúa' : undefined,
+		scrollLabel: data.hero.scrollLabel,
 	};
 }
 
@@ -404,11 +387,6 @@ function buildLocationSectionData(context: AdaptationContext) {
 	const { data, eventSlug, normalizedPreset } = context;
 	if (!data.location) return undefined;
 
-	const themeDefaults =
-		normalizedPreset === 'enchanted-rose'
-			? LOCATION_THEME_DEFAULTS['enchanted-rose']
-			: undefined;
-
 	const rawVenues = data.location.venues;
 	const venues: VenueEntry[] | undefined = rawVenues?.map((v: VenueEntryInput) =>
 		toVenueEntry(v, eventSlug, data.title),
@@ -429,12 +407,15 @@ function buildLocationSectionData(context: AdaptationContext) {
 			data.sectionStyles?.location?.variant,
 			normalizedPreset,
 		),
-		showFlourishes: data.sectionStyles?.location?.showFlourishes,
-		introEyebrow: data.location.introEyebrow ?? themeDefaults?.introEyebrow,
-		introHeading: data.location.introHeading ?? themeDefaults?.introHeading,
-		introLede: data.location.introLede ?? themeDefaults?.introLede,
-		indicationsHeading:
-			data.location.indicationsHeading ?? themeDefaults?.indicationsHeading ?? '',
+		showFlourishes: resolveLocationShowFlourishes({
+			showFlourishes:
+				data.location.presentationOptions?.showFlourishes ??
+				data.sectionStyles?.location?.showFlourishes,
+		}),
+		introEyebrow: data.location.introEyebrow,
+		introHeading: data.location.introHeading,
+		introLede: data.location.introLede,
+		indicationsHeading: data.location.indicationsHeading ?? '',
 	};
 }
 
@@ -499,13 +480,25 @@ function buildGallerySectionData(context: AdaptationContext) {
 	};
 }
 
-function buildItinerarySectionData(context: AdaptationContext) {
+function buildItinerarySectionData(
+	context: AdaptationContext,
+): (EventContentEntry['data']['itinerary'] & { variant: ItineraryVariant }) | undefined {
 	const { data, normalizedPreset } = context;
 	if (!data.itinerary) return undefined;
 
+	const presentationBehavior = resolveItineraryPresentation(data.itinerary.presentation);
+	const fromStyles = data.sectionStyles?.itinerary?.variant;
 	return {
 		...data.itinerary,
-		variant: itineraryVariant(data.sectionStyles?.itinerary?.variant, normalizedPreset),
+		variant:
+			presentationBehavior === 'timeline-paper'
+				? 'timeline-paper'
+				: pickVariant(
+						'sectionStyles.itinerary.variant',
+						fromStyles,
+						ITINERARY_VARIANTS,
+						normalizedPreset as ItineraryVariant,
+					),
 	};
 }
 

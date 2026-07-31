@@ -243,9 +243,9 @@ describe('DraftEditor', () => {
 		expect(
 			screen.getByRole('heading', { name: 'Confirmación de asistencia' }),
 		).toBeInTheDocument();
-		expect(screen.getByRole('heading', { name: 'Música de fondo' })).toBeInTheDocument();
-		expect(screen.getByRole('heading', { name: 'Regalos' })).toBeInTheDocument();
-		expect(screen.getByRole('heading', { name: 'Mensajes especiales' })).toBeInTheDocument();
+		expect(screen.getByRole('heading', { name: 'Música' })).toBeInTheDocument();
+		expect(screen.getByRole('heading', { name: 'Mesa de regalos' })).toBeInTheDocument();
+		expect(screen.getByRole('heading', { name: 'Frase' })).toBeInTheDocument();
 		expect(screen.getByRole('heading', { name: 'Notas de fotografías' })).toBeInTheDocument();
 	});
 });

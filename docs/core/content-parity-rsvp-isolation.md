@@ -36,10 +36,15 @@ Content parity is **semantic**, not raw database equality.
 
 | Term              | Meaning                                          | Direction                    | Command                               |
 | ----------------- | ------------------------------------------------ | ---------------------------- | ------------------------------------- |
-| **Promote**       | Managed invitation content release               | Local → Preview → Production | `pnpm invitation:update`              |
+| **Update**        | Managed invitation apply to Local and/or Preview | Definition → Local / Preview | `pnpm invitation:update`              |
+| **Promote**       | Owner-only managed content release to Production | Approved package → Production | `pnpm invitation:promote`            |
 | **Mirror**        | Invitation-facing content regression copy        | Production → Preview only    | `pnpm db:preview:sync-invitations`    |
 | **Restore**       | Debugging import of a Production dump into Local | Production backup → Local    | `pnpm db:local:restore-from-dump`     |
 | **RSVP mutation** | Guest/claim/attendance/view/delivery writes      | Within one environment       | Authenticated RSVP/dashboard services |
+
+Canonical workflow: managed creation via definition registry → Local/Preview with
+`pnpm invitation:update` → Production only with `pnpm invitation:promote`.
+`invitation:update` rejects Production mutation targets.
 
 Production never imports content from the Preview database or Preview Storage. Mirror is never a
 promotion path.
@@ -51,10 +56,10 @@ promotion path.
 ### Managed invitations
 
 Canonical writers: `scripts/provision/invitations/<slug>.ts`, the immutable package/provenance
-model, and `pnpm invitation:update`. Independent editor edits against the same managed published
-state are target divergence; existing managed reconciliation/merge behavior remains the intentional
-resolution path. Editor changes must not silently become a second source of truth for a managed
-slug.
+model, `pnpm invitation:update` (Local/Preview), and owner-only `pnpm invitation:promote`
+(Production). Independent editor edits against the same managed published state are target
+divergence; existing managed reconciliation/merge behavior remains the intentional resolution path.
+Editor changes must not silently become a second source of truth for a managed slug.
 
 ### Editor-native invitations
 

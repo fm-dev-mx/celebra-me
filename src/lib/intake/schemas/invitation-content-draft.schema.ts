@@ -48,6 +48,10 @@ export const InvitationContentDraftContentSchema = z
 				backgroundImageDesktop: editableAssetSchema.optional(),
 				backgroundImageMobile: editableAssetSchema.optional(),
 				portrait: editableAssetSchema.optional(),
+				presentation: z
+					.object({ portraitEnabled: z.boolean().optional() })
+					.strict()
+					.optional(),
 				variant: z.enum(THEME_PRESETS).optional(),
 				focalPoint: focalPointSchema.optional(),
 				focalPointMobile: focalPointSchema.optional(),
@@ -84,6 +88,10 @@ export const InvitationContentDraftContentSchema = z
 			.object({
 				visibility: z.enum(['public', 'after-rsvp']).optional(),
 				presentation: z.enum(LOCATION_PRESENTATIONS).optional(),
+				presentationOptions: z
+					.object({ showFlourishes: z.boolean().optional() })
+					.strict()
+					.optional(),
 				introEyebrow: optionalText(200),
 				introHeading: optionalText(200),
 				introLede: optionalText(1000),

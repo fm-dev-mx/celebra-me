@@ -8,6 +8,7 @@ import type { AssetField } from '@/lib/assets/asset-source';
 import type { AssetItem } from '@/lib/intake/use-asset-library';
 import { getFieldLabel } from '@/lib/intake/labels';
 import { themeSupportsPortrait } from '@/lib/theme/theme-contract';
+import { resolvePortraitEnabled } from '@/lib/invitation/presentation-options';
 
 interface HeroData {
 	name?: string;
@@ -16,8 +17,14 @@ interface HeroData {
 	nickname?: string;
 	date?: string;
 	backgroundImage?: AssetField;
+	backgroundImageDesktop?: AssetField;
 	backgroundImageMobile?: AssetField;
 	portrait?: AssetField;
+	presentation?: { portraitEnabled?: boolean };
+	focalPoint?: string;
+	focalPointMobile?: string;
+	focalPointTablet?: string;
+	focalPointDesktop?: string;
 }
 
 interface Props {
@@ -33,7 +40,11 @@ interface Props {
 	onUpdateContent: <K extends keyof DraftContent>(key: K, value: DraftContent[K]) => void;
 	onUpdateHero: (patch: Partial<HeroData>) => void;
 	onOpenAssetPicker: (
-		field: 'hero.backgroundImage' | 'hero.backgroundImageMobile' | 'hero.portrait',
+		field:
+			| 'hero.backgroundImage'
+			| 'hero.backgroundImageDesktop'
+			| 'hero.backgroundImageMobile'
+			| 'hero.portrait',
 	) => void;
 	assetLookupSlug?: string;
 	assets?: AssetItem[];
@@ -57,7 +68,7 @@ export default function MainSectionEditor({
 	assets,
 	visible = true,
 }: Props) {
-	const supportsPortrait = themeSupportsPortrait(themeId);
+	const portraitEnabled = resolvePortraitEnabled(main.presentation, themeSupportsPortrait(themeId));
 	return (
 		<SectionCard
 			id="main"
@@ -75,6 +86,10 @@ export default function MainSectionEditor({
 					value={content.title ?? ''}
 					onChange={(value) => onUpdateContent('title', value)}
 				/>
+				<Field label="Punto focal" value={main.focalPoint ?? ''} onChange={(value) => onUpdateHero({ focalPoint: value || undefined })} />
+				<Field label="Punto focal móvil" value={main.focalPointMobile ?? ''} onChange={(value) => onUpdateHero({ focalPointMobile: value || undefined })} />
+				<Field label="Punto focal tableta" value={main.focalPointTablet ?? ''} onChange={(value) => onUpdateHero({ focalPointTablet: value || undefined })} />
+				<Field label="Punto focal escritorio" value={main.focalPointDesktop ?? ''} onChange={(value) => onUpdateHero({ focalPointDesktop: value || undefined })} />
 				<Field
 					label={getFieldLabel('hero', 'name', eventType)}
 					value={main.name ?? ''}
@@ -117,6 +132,14 @@ export default function MainSectionEditor({
 							onOpenLibrary={() => onOpenAssetPicker('hero.backgroundImage')}
 						/>
 						<ImageAssetField
+							label="Fondo alterno para escritorio"
+							description="Opcional. Se usa en pantallas grandes cuando el diseño lo admite."
+							value={main.backgroundImageDesktop}
+							assetLookupSlug={assetLookupSlug}
+							assets={assets}
+							onOpenLibrary={() => onOpenAssetPicker('hero.backgroundImageDesktop')}
+						/>
+						<ImageAssetField
 							label="Fondo para móvil"
 							description="Opcional. Si no eliges una imagen móvil, se usará la imagen de escritorio."
 							value={main.backgroundImageMobile}
@@ -124,7 +147,7 @@ export default function MainSectionEditor({
 							assets={assets}
 							onOpenLibrary={() => onOpenAssetPicker('hero.backgroundImageMobile')}
 						/>
-						{supportsPortrait && (
+						{(portraitEnabled || main.portrait) && (
 							<ImageAssetField
 								label="Foto principal"
 								description="Se usa para destacar a la quinceañera en diseños o secciones que separan fondo y persona. Algunos diseños pueden no mostrar esta foto por separado."
@@ -137,6 +160,18 @@ export default function MainSectionEditor({
 							/>
 						)}
 					</div>
+					<label className="invitation-editor__check">
+						<input
+							type="checkbox"
+							checked={portraitEnabled}
+							onChange={(event) =>
+								onUpdateHero({
+									presentation: { ...main.presentation, portraitEnabled: event.target.checked },
+								})
+							}
+						/>
+						<span>Mostrar retrato principal cuando el diseño lo permita</span>
+					</label>
 				</div>
 			)}
 			<TextArea

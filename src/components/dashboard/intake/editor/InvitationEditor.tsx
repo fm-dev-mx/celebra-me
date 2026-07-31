@@ -24,6 +24,7 @@ import ConfirmModal from '@/components/dashboard/intake/ConfirmModal';
 import AssetPicker from '@/components/dashboard/intake/editor/AssetPicker';
 import AssetLibraryPanel from '@/components/dashboard/intake/editor/AssetLibraryPanel';
 import ImageAssetField from '@/components/dashboard/intake/editor/ImageAssetField';
+import OverlaySafeAreaFields from '@/components/dashboard/intake/editor/OverlaySafeAreaFields';
 import type {
 	InvitationEditorContextDTO,
 	InvitationEditorMetadata,
@@ -67,10 +68,12 @@ interface Props {
 
 type PickerField =
 	| 'hero.backgroundImage'
+	| 'hero.backgroundImageDesktop'
 	| 'hero.backgroundImageMobile'
 	| 'hero.portrait'
 	| 'family.featuredImage'
 	| 'thankYou.image'
+	| 'sharing.ogImage'
 	| `location.${string}.image`;
 
 const SOURCE_LABELS: Record<string, string> = {
@@ -684,11 +687,13 @@ export default function InvitationEditor({ initialContext }: Props) {
 		return (ref: { type: 'uploaded'; assetId: string }) =>
 			({
 				'hero.backgroundImage': () => updateHero({ backgroundImage: ref }),
+				'hero.backgroundImageDesktop': () => updateHero({ backgroundImageDesktop: ref }),
 				'hero.backgroundImageMobile': () => updateHero({ backgroundImageMobile: ref }),
 				'hero.portrait': () => updateHero({ portrait: ref }),
 				'family.featuredImage': () => updateFamily({ featuredImage: ref }),
 				'thankYou.image': () =>
 					updateContent('thankYou', { ...messages.thankYou, image: ref }),
+				'sharing.ogImage': () => updateContent('sharing', { ...sharing, ogImage: ref }),
 				'location.ceremony.image': () => {
 					const venue = location.ceremony ?? {};
 					updateLocation({ ceremony: { ...venue, image: ref } });
@@ -698,7 +703,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 					updateLocation({ reception: { ...venue, image: ref } });
 				},
 			}) as Record<string, () => void>;
-	}, [updateHero, updateFamily, updateContent, updateLocation, location, messages]);
+	}, [updateHero, updateFamily, updateContent, updateLocation, location, messages, sharing]);
 
 	const handleAssetSelect = (assetId: string) => {
 		const ref = { type: 'uploaded' as const, assetId };
@@ -1145,6 +1150,18 @@ export default function InvitationEditor({ initialContext }: Props) {
 								})
 							}
 						/>
+						<div className="invitation-editor__field-grid">
+							<Field label="Frase de cierre" value={messages.thankYou.closingPhrase ?? ''} onChange={(value) => updateContent('thankYou', { ...messages.thankYou, closingPhrase: value })} />
+							<Field label="Fecha visible" value={messages.thankYou.date ?? ''} onChange={(value) => updateContent('thankYou', { ...messages.thankYou, date: value })} />
+							<Field label="Punto focal" value={messages.thankYou.focalPoint ?? ''} onChange={(value) => updateContent('thankYou', { ...messages.thankYou, focalPoint: value || undefined })} />
+							<label className="invitation-editor__field"><span>Ancla del texto</span><select value={messages.thankYou.overlayAnchor ?? ''} onChange={(event) => updateContent('thankYou', { ...messages.thankYou, overlayAnchor: (event.target.value || undefined) as 'left' | 'right' | 'top' | 'bottom' | undefined })}><option value="">Automática</option><option value="left">Izquierda</option><option value="right">Derecha</option><option value="top">Arriba</option><option value="bottom">Abajo</option></select></label>
+						</div>
+						<OverlaySafeAreaFields
+							value={messages.thankYou.overlaySafeArea}
+							onChange={(overlaySafeArea) =>
+								updateContent('thankYou', { ...messages.thankYou, overlaySafeArea })
+							}
+						/>
 						{invitationId && (
 							<ImageAssetField
 								label="Imagen de agradecimiento"
@@ -1220,6 +1237,9 @@ export default function InvitationEditor({ initialContext }: Props) {
 						success={success.sharing}
 						sourceBadge={sectionSource('sharing')}
 						visible={activeEditorCardId === 'sharing'}
+						assetLookupSlug={assetLookupSlug}
+						assets={editorAssets}
+						onOpenAssetPicker={() => setPickerField('sharing.ogImage')}
 					/>
 
 					<SectionCard

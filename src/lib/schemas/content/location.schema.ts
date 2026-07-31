@@ -56,6 +56,12 @@ export type VenueEntryInput = z.infer<typeof venueEntrySchema>;
 export const locationSchema = z.object({
 	visibility: z.enum(['public', 'after-rsvp']).default('public'),
 	presentation: z.enum(LOCATION_PRESENTATIONS).optional(),
+	presentationOptions: z
+		.object({
+			showFlourishes: z.boolean().optional(),
+		})
+		.strict()
+		.optional(),
 	introEyebrow: z.string().optional(),
 	introHeading: z.string().optional(),
 	introLede: z.string().optional(),

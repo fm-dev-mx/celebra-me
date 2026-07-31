@@ -7,12 +7,12 @@ import { requireAdminRateLimit } from '@/lib/rsvp/security/admin-rate-limit';
 import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
 import { errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
 import {
+	assertCreateInvitationPreset,
 	getEnrichedInvitationList,
-	createInvitation,
 	synchronizeDemoInvitations,
 } from '@/lib/intake/services/invitation.service';
+import { rejectDashboardClientInvitationCreation } from '@/lib/intake/services/dashboard-client-creation-policy';
 import { CreateInvitationSchema } from '@/lib/intake/schemas/invitation.schema';
-import { toInvitationDTO } from '@/lib/dashboard/dto/intake-mapper';
 
 export const GET: APIRoute = async ({ request }) => {
 	try {
@@ -31,23 +31,17 @@ export const GET: APIRoute = async ({ request }) => {
 
 export const POST: APIRoute = async ({ request, cookies }) => {
 	try {
-		const session = await requireAdminMutationAccess(request, cookies, 'intake:create');
+		await requireAdminMutationAccess(request, cookies, 'intake:create');
 
 		const parsed = await validateBodyOrRespond(request, CreateInvitationSchema);
 		if (parsed instanceof Response) return parsed;
 
-		const invitation = await createInvitation({
-			title: parsed.title,
+		// Preserve preset invariant errors, then deny Dashboard client creation.
+		assertCreateInvitationPreset({
 			eventType: parsed.eventType,
 			baseDemoId: parsed.baseDemoId,
-			slug: parsed.slug,
-			clientName: parsed.clientName,
-			clientEmail: parsed.clientEmail,
-			clientWhatsapp: parsed.clientWhatsapp,
-			createdBy: session.userId,
 		});
-
-		return jsonResponse({ item: toInvitationDTO(invitation) }, 201);
+		rejectDashboardClientInvitationCreation({ via: 'create' });
 	} catch (error) {
 		return errorResponse(error);
 	}

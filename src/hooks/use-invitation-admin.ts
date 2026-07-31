@@ -5,7 +5,6 @@ import type {
 	IntakeRequestDTO,
 	IntakeSubmissionDTO,
 	InvitationContentDraftDTO,
-	CreateInvitationDTO,
 	UpdateInvitationDTO,
 	CreateIntakeRequestDTO,
 } from '@/lib/dashboard/dto/intake';
@@ -42,22 +41,6 @@ export function useInvitationAdmin() {
 		void loadInvitations();
 	}, [loadInvitations]);
 
-	const createInvitation = useCallback(
-		async (payload: CreateInvitationDTO) => {
-			try {
-				const item = await adminApi.createInvitation(payload);
-				await loadInvitations();
-				return item;
-			} catch (err) {
-				throw new Error(
-					err instanceof Error ? err.message : 'Error al crear el invitación.',
-					{ cause: err },
-				);
-			}
-		},
-		[loadInvitations],
-	);
-
 	const updateInvitation = useCallback(
 		async (invitationId: string, payload: UpdateInvitationDTO) => {
 			try {
@@ -81,21 +64,6 @@ export function useInvitationAdmin() {
 			}
 		},
 		[currentInvitation, loadInvitations],
-	);
-
-	const duplicateInvitationFromDemo = useCallback(
-		async (
-			invitationId: string,
-			payload: Pick<
-				CreateInvitationDTO,
-				'title' | 'clientName' | 'clientEmail' | 'clientWhatsapp'
-			>,
-		) => {
-			const item = await adminApi.duplicateInvitationFromDemo(invitationId, payload);
-			await loadInvitations();
-			return item;
-		},
-		[loadInvitations],
 	);
 
 	const loadInvitationDetail = useCallback(async (invitationId: string) => {
@@ -336,9 +304,7 @@ export function useInvitationAdmin() {
 		currentDraft,
 		rawToken,
 		setRawToken,
-		createInvitation,
 		updateInvitation,
-		duplicateInvitationFromDemo,
 		loadInvitationDetail,
 		createIntakeRequest,
 		regenerateToken,

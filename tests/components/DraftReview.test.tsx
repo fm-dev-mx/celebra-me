@@ -178,7 +178,7 @@ describe('DraftReview', () => {
 		mockCurrentDraft = makeDraftContent();
 		render(<DraftReview invitationId="proj-1" />);
 
-		expect(screen.getByText('Música de fondo')).toBeInTheDocument();
+		expect(screen.getByText('Música')).toBeInTheDocument();
 		expect(screen.getByText('Nuvole Bianche')).toBeInTheDocument();
 	});
 
@@ -186,8 +186,7 @@ describe('DraftReview', () => {
 		mockCurrentDraft = makeDraftContent();
 		render(<DraftReview invitationId="proj-1" />);
 
-		expect(screen.getByText('Regalos')).toBeInTheDocument();
-		expect(screen.getByText('Mesa de regalos')).toBeInTheDocument();
+		expect(screen.getAllByText('Mesa de regalos').length).toBeGreaterThanOrEqual(1);
 		expect(screen.getByText('Transferencia')).toBeInTheDocument();
 		expect(screen.getByText('Lluvia de Sobres')).toBeInTheDocument();
 	});
@@ -240,9 +239,8 @@ describe('DraftReview', () => {
 		mockCurrentDraft = makeDraftContent();
 		render(<DraftReview invitationId="proj-1" />);
 
-		expect(screen.getByText('Mensajes especiales')).toBeInTheDocument();
+		expect(screen.getByText('Frase')).toBeInTheDocument();
 		expect(screen.getByText('Entre rosas y luz de velas')).toBeInTheDocument();
-		expect(screen.getByText('Agradecimiento')).toBeInTheDocument();
 		expect(screen.getByText('Gracias por compartir esta noche')).toBeInTheDocument();
 	});
 

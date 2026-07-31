@@ -18,6 +18,8 @@ import type { RsvpResponseMessages } from '@/lib/invitation/rsvp-messages';
 import type { CountdownTargetSource } from '@/lib/time/event-time';
 import type {
 	FamilyPresentation,
+	GalleryPresentation,
+	GalleryLayoutRole,
 	LocationPresentation,
 } from '@/lib/invitation/presentation-options';
 import type { z } from 'zod';
@@ -268,13 +270,14 @@ export interface InvitationViewModel {
 				image: ImageAsset;
 				alt?: string;
 				caption?: string;
+				layoutRole?: GalleryLayoutRole;
 				focalPoint?: string;
 				focalPointMobile?: string;
 				focalPointTablet?: string;
 				focalPointDesktop?: string;
 			}>;
 			variant: GalleryVariant;
-			presentation?: 'pet-keepsake';
+			presentation?: GalleryPresentation;
 		};
 		itinerary?: {
 			title: string;

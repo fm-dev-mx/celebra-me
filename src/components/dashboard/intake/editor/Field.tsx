@@ -10,6 +10,7 @@ interface Props {
 	maxLength?: number;
 	min?: number;
 	max?: number;
+	step?: number | string;
 }
 
 export default function Field({
@@ -22,6 +23,7 @@ export default function Field({
 	maxLength,
 	min,
 	max,
+	step,
 }: Props) {
 	return (
 		<label className="invitation-editor__field">
@@ -36,6 +38,7 @@ export default function Field({
 				maxLength={maxLength}
 				min={min}
 				max={max}
+				step={step}
 				onChange={(event) => onChange(event.target.value)}
 			/>
 		</label>

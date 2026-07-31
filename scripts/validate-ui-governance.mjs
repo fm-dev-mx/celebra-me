@@ -12,7 +12,6 @@ const allowedHydratedComponents = new Set([
 	'ClaimCodesApp',
 	'EventsAdminTable',
 	'UsersAdminTable',
-	'CreateInvitationFlow',
 	'InvitationEditor',
 	'ContentSyncPanel',
 	// Commercial CRM islands — SalesWorkspace drives lead reconciliation, order creation,

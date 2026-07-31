@@ -13,6 +13,9 @@ interface RsvpValue {
 	whatsappPhone?: string;
 	subcopy?: string;
 	confirmationDeadline?: string;
+	accessMode?: 'personalized-only' | 'hybrid';
+	personalizedAccess?: { title?: string; subtitle?: string; footerText?: string };
+	calendar?: { title?: string; description?: string; startsAt?: string };
 	responseMessages?: {
 		confirmed?: { title?: string; subtitle?: string };
 		declined?: { title?: string; subtitle?: string };
@@ -99,6 +102,20 @@ export default function RsvpSectionEditor({
 						onChange={(value) => updateRsvp({ whatsappPhone: value })}
 					/>
 				)}
+				<label className="invitation-editor__field">
+					<span>Acceso de invitados</span>
+					<select
+						value={rsvp.accessMode ?? 'personalized-only'}
+						onChange={(event) =>
+							updateRsvp({
+								accessMode: event.target.value as 'personalized-only' | 'hybrid',
+							})
+						}
+					>
+						<option value="personalized-only">Solo acceso personalizado</option>
+						<option value="hybrid">Acceso personalizado y público</option>
+					</select>
+				</label>
 			</div>
 			<TextArea
 				label="Mensaje de confirmación"
@@ -126,6 +143,17 @@ export default function RsvpSectionEditor({
 				Disponible como {'{rsvpDeadline}'} y {'{rsvpDeadlineText}'} en los mensajes para
 				compartir.
 			</p>
+			<details className="invitation-editor__row-details">
+				<summary>Acceso personalizado y calendario</summary>
+				<div className="invitation-editor__stack">
+					<Field label="Título de acceso" value={rsvp.personalizedAccess?.title ?? ''} onChange={(value) => updateRsvp({ personalizedAccess: { ...rsvp.personalizedAccess, title: value } })} />
+					<TextArea label="Texto de acceso" value={rsvp.personalizedAccess?.subtitle ?? ''} onChange={(value) => updateRsvp({ personalizedAccess: { ...rsvp.personalizedAccess, subtitle: value } })} />
+					<TextArea label="Texto final de acceso" value={rsvp.personalizedAccess?.footerText ?? ''} onChange={(value) => updateRsvp({ personalizedAccess: { ...rsvp.personalizedAccess, footerText: value } })} />
+					<Field label="Título del calendario" value={rsvp.calendar?.title ?? ''} onChange={(value) => updateRsvp({ calendar: { ...rsvp.calendar, title: value } })} />
+					<TextArea label="Descripción del calendario" value={rsvp.calendar?.description ?? ''} onChange={(value) => updateRsvp({ calendar: { ...rsvp.calendar, description: value } })} />
+					<Field label="Inicio del calendario" value={rsvp.calendar?.startsAt ?? ''} onChange={(value) => updateRsvp({ calendar: { ...rsvp.calendar, startsAt: value } })} />
+				</div>
+			</details>
 			<details className="invitation-editor__row-details">
 				<summary>Mensajes de respuesta</summary>
 				<div className="invitation-editor__stack">

@@ -39,3 +39,24 @@ it('returns a stable API validation error for a preset/event-type mismatch', asy
 	});
 	expect(createInvitationRecord).not.toHaveBeenCalled();
 });
+
+it('rejects Dashboard client creation even when the body is valid', async () => {
+	const response = await POST({
+		request: createMockRequest({
+			title: 'Cliente de prueba',
+			eventType: 'xv',
+			baseDemoId: 'demo-xv-jewelry-box',
+			slug: 'cliente-prueba',
+		}),
+		cookies: {},
+	} as never);
+
+	expect(response.status).toBe(403);
+	expect(await response.json()).toMatchObject({
+		error: {
+			code: 'forbidden',
+			details: { reason: 'canonical_creation_required', via: 'create' },
+		},
+	});
+	expect(createInvitationRecord).not.toHaveBeenCalled();
+});

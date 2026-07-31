@@ -41,6 +41,24 @@ export default function ItineraryEditor({ value, onChange }: Props) {
 		<div>
 			<div className="invitation-editor__field-grid">
 				<label className="invitation-editor__field">
+					<span>Presentación</span>
+					<select
+						value={value.presentation?.behavior ?? 'standard'}
+						onChange={(event) =>
+							onChange({
+								...value,
+								presentation: {
+									...value.presentation,
+									behavior: event.target.value as 'standard' | 'timeline-paper',
+								},
+							})
+						}
+					>
+						<option value="standard">Predeterminada</option>
+						<option value="timeline-paper">Línea de tiempo en papel</option>
+					</select>
+				</label>
+				<label className="invitation-editor__field">
 					<span>Título del programa</span>
 					<input
 						value={value.title ?? ''}

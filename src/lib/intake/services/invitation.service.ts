@@ -139,16 +139,10 @@ export async function getEnrichedInvitationList(
 	});
 }
 
-export async function createInvitation(input: {
-	title: string;
+export function assertCreateInvitationPreset(input: {
 	eventType: string;
 	baseDemoId: string;
-	slug?: string | null;
-	clientName?: string;
-	clientEmail?: string;
-	clientWhatsapp?: string;
-	createdBy?: string | null;
-}): Promise<Invitation> {
+}): NonNullable<ReturnType<typeof findDemoPreset>> {
 	const preset = findDemoPreset(input.baseDemoId);
 	if (
 		!preset ||
@@ -178,6 +172,21 @@ export async function createInvitation(input: {
 			},
 		);
 	}
+
+	return preset;
+}
+
+export async function createInvitation(input: {
+	title: string;
+	eventType: string;
+	baseDemoId: string;
+	slug?: string | null;
+	clientName?: string;
+	clientEmail?: string;
+	clientWhatsapp?: string;
+	createdBy?: string | null;
+}): Promise<Invitation> {
+	const preset = assertCreateInvitationPreset(input);
 
 	return createInvitationRecord({
 		title: input.title,

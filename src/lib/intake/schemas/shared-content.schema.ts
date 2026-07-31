@@ -7,7 +7,13 @@ import {
 import { ICON_NAMES_TUPLE } from '@/lib/icons/icon-catalog';
 import { giftItemSchema } from '@/lib/intake/schemas/intake-block.schema';
 import { THEME_PRESETS, INDICATION_STYLE_VARIANTS } from '@/lib/theme/theme-contract';
-import { XARENI_SEAL_COLORS } from '@/lib/invitation/presentation-options';
+import {
+	XARENI_SEAL_COLORS,
+	GALLERY_LAYOUT_ROLES,
+	GALLERY_PRESENTATIONS,
+	ITINERARY_PRESENTATION_BEHAVIORS,
+	assertSupportedGalleryPresentation,
+} from '@/lib/invitation/presentation-options';
 
 export const optionalText = (max = 2000) => z.string().trim().max(max).optional();
 export const optionalUrl = z
@@ -68,12 +74,12 @@ export const gallerySchema = z
 		title: optionalText(200),
 		subtitle: optionalText(500),
 		variant: z.union([z.enum(THEME_PRESETS), z.literal('single')]).optional(),
-		presentation: z.enum(['pet-keepsake']).optional(),
+		presentation: z.enum(GALLERY_PRESENTATIONS).optional(),
 		items: z.array(
 			z
 				.object({
 					key: optionalText(120),
-					layoutRole: z.enum(['feature', 'wide', 'standard']).optional(),
+					layoutRole: z.enum(GALLERY_LAYOUT_ROLES).optional(),
 					aspectRatio: optionalText(32),
 					image: editableAssetSchema,
 					alt: optionalText(500),
@@ -86,7 +92,18 @@ export const gallerySchema = z
 				.strict(),
 		),
 	})
-	.strict();
+	.strict()
+	.superRefine((gallery, context) => {
+		try {
+			assertSupportedGalleryPresentation(gallery.presentation, gallery.items);
+		} catch (error) {
+			context.addIssue({
+				code: 'custom',
+				path: ['presentation'],
+				message: error instanceof Error ? error.message : 'Presentación de galería no compatible.',
+			});
+		}
+	});
 
 export const draftIndicationSchema = z
 	.object({
@@ -100,6 +117,12 @@ export const itinerarySchema = z
 	.object({
 		title: optionalText(200),
 		subtitle: optionalText(500),
+		presentation: z
+			.object({
+				behavior: z.enum(ITINERARY_PRESENTATION_BEHAVIORS).optional(),
+			})
+			.strict()
+			.optional(),
 		items: z
 			.array(
 				z

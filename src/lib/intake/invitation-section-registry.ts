@@ -282,6 +282,25 @@ export function getEditorSectionById(sectionId: string): EditorSectionDefinition
 	);
 }
 
+export const EDITOR_SECTION_PRESENTATION: Record<string, { id: string; label: string }> = {
+	title: { id: 'main', label: 'Datos principales' },
+	description: { id: 'main', label: 'Datos principales' },
+	hero: { id: 'main', label: PUBLIC_SECTION_DEFINITIONS.hero.label },
+	countdown: { id: 'countdown', label: PUBLIC_SECTION_DEFINITIONS.countdown.label },
+	family: { id: 'family', label: PUBLIC_SECTION_DEFINITIONS.family.label },
+	location: { id: 'location', label: PUBLIC_SECTION_DEFINITIONS.location.label },
+	itinerary: { id: 'itinerary', label: PUBLIC_SECTION_DEFINITIONS.itinerary.label },
+	rsvp: { id: 'rsvp', label: PUBLIC_SECTION_DEFINITIONS.rsvp.label },
+	music: { id: 'music', label: CONFIG_SECTION_DEFINITIONS.music.label },
+	gifts: { id: 'gifts', label: PUBLIC_SECTION_DEFINITIONS.gifts.label },
+	quote: { id: 'messages', label: PUBLIC_SECTION_DEFINITIONS.quote.label },
+	thankYou: { id: 'messages', label: PUBLIC_SECTION_DEFINITIONS.thankYou.label },
+	gallery: { id: 'gallery', label: PUBLIC_SECTION_DEFINITIONS.gallery.label },
+	photoNotes: { id: 'gallery', label: PUBLIC_SECTION_DEFINITIONS.gallery.label },
+	sectionOrder: { id: 'publication', label: CONFIG_SECTION_DEFINITIONS.publication.label },
+	sharing: { id: 'sharing', label: CONFIG_SECTION_DEFINITIONS.sharing.label },
+};
+
 /** Maps a published projection path back to its canonical editor presentation. */
 export function getEditorSectionForPublishedPath(
 	path: string,

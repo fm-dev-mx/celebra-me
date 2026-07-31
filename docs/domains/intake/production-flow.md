@@ -22,8 +22,8 @@ Architecture: [`docs/core/architecture.md`](../../core/architecture.md). Authori
 
 | Concern                     | System                                                      | Agent/developer                                 | Designer                       | Manual/production operator                 |
 | --------------------------- | ----------------------------------------------------------- | ----------------------------------------------- | ------------------------------ | ------------------------------------------ |
-| Validate creation input     | Zod API schema and service invariant                        | Select and verify compatible preset             | —                              | —                                          |
-| Create invitation and draft | Dashboard API and repositories                              | Use the dashboard; inspect failures             | —                              | —                                          |
+| Validate managed definition | Definition registry + CLI dry-run invariants | Author/verify definition + preset match | — | — |
+| Create managed invitation   | Definition registry + `invitation:update` / `invitation:promote` | Inspect dry-run/apply reports                   | Dry-run / Local+Preview apply  | Owner-only Production promote              |
 | Write content               | Editor schemas and optimistic locking                       | Enter accurate Spanish copy and structured data | Review narrative and hierarchy | Confirm client facts                       |
 | Prepare assets              | Server decode, normalize, resize, WebP conversion, metadata | Upload through the editor; never bypass policy  | Choose crop and focal point    | Review mobile crops                        |
 | Preview                     | Internal SSR preview                                        | Exercise all content states                     | Approve visual direction       | Verify links and client facts              |
@@ -38,7 +38,7 @@ Version-controlled invitations (e.g. Romina) are defined as single TypeScript fi
 `scripts/provision/invitations/<slug>.ts`.
 
 ```text
-Define -> Plan -> Update Local -> Package -> Promote Preview -> Approve -> Owner invitation:promote
+Define -> Plan -> Update Local -> Package -> Update Preview -> Approve -> Owner invitation:promote
 ```
 
 Use
@@ -139,10 +139,11 @@ Before creating a record, collect:
   reception, itinerary, gallery, gifts, music, quote, thank-you message, envelope, map providers,
   WhatsApp templates, personalized passes, location gating, and sharing metadata.
 
-Choose the event type from `EVENT_TYPES` and the editor preset from `DEMO_PRESET_CATALOG`. The
-preset's `eventType` must match the invitation event type. `createInvitation()` rejects a missing,
-invalid, or incompatible base demo before calling the create repository, so validation failures must
-not persist an invitation.
+Choose the event type from `EVENT_TYPES` and a compatible editor preset from
+`DEMO_PRESET_CATALOG` (or the managed definition's `baseDemoId`). The preset's `eventType` must
+match the invitation event type. Managed definitions are validated by the provision CLI /
+`invitation:update` dry-run before apply. Low-level `createInvitation()` still enforces the same
+preset invariant for demos, tests, and internal callers — not for Dashboard client creates.
 
 Choose slug roles independently:
 
@@ -169,21 +170,28 @@ validates the intentionally different routable, editor-selectable, and showroom 
 
 ## 3. Create the invitation
 
-1. Open `/dashboard/invitaciones` and choose **Nueva invitación**, or go directly to
-   `/dashboard/invitaciones/nueva`.
-2. Select event type and a compatible base demo, then enter title, client details, and optional
-   route slug.
-3. The API `POST /api/dashboard/intake` validates with `CreateInvitationSchema` and calls
-   `createInvitation()`.
-4. The service re-resolves the preset, enforces the event-type invariant, takes the catalog theme,
-   and only then calls `createInvitationRecord()`.
-5. Creation returns the invitation and the UI opens `/dashboard/invitaciones/{id}/editar`. Demo
-   duplication creates a client invitation and seeds a minimal draft containing the title; it does
-   not copy the full demo into the production DB.
+Managed client invitations are created only through the canonical managed workflow — not through
+the Dashboard “Nueva invitación” UI or `POST /api/dashboard/intake`.
 
-Expected initial state is a client invitation plus an editable draft. A 422 response means the
-request is invalid; a conflict means a slug or concurrent state changed. Do not retry validation
-errors unchanged and do not create records through manual SQL.
+```text
+managed creation → scripts/provision/invitations/<slug>.ts (registry)
+Local / Preview updates → pnpm invitation:update
+Production promotion → pnpm invitation:promote (owner-only)
+```
+
+1. Ensure preparation readiness (`docs/invitations/<slug>.md`) and register the definition under
+   `scripts/provision/invitations/`.
+2. Apply Local (and Preview when ready) with `pnpm invitation:update` using `--dry-run` then
+   `--apply`. The engines resolve host owner, assets, draft/published content, and provenance.
+3. Promote Production only with `pnpm invitation:promote` after Preview approval, schema `CURRENT`,
+   and a verified critical backup. Do not use `invitation:update --targets production`.
+4. Open the Editor from `/dashboard/invitaciones/{id}/editar` for environment overrides; those edits
+   are divergence against the managed package and must be reconciled deliberately.
+
+`POST /api/dashboard/intake` and Dashboard demo-duplicate reject client creation so the API cannot
+bypass this workflow. Demo showroom rows continue to sync via list load (`synchronizeDemoInvitations`).
+Low-level `createInvitation` repository/service primitives remain for demos, provision, and tests —
+not for Dashboard-managed client creates. Do not create client records through manual SQL.
 
 ## 4. Edit content
 
@@ -371,8 +379,11 @@ migrations without explicit authorization.
 Capture URL, timestamp, response status, cache header, published version, and relevant log request
 IDs for each test.
 
-1. Create a valid invitation and confirm its draft/editor route.
-2. Attempt an incompatible preset/event type; expect 422 and no new record.
+1. Open a managed invitation Editor route and confirm draft/editor access for the Local or Preview
+   agent identity (`super_admin`).
+2. Assert `POST /api/dashboard/intake` and demo-duplicate return 403
+   `canonical_creation_required` (managed create cannot bypass via Dashboard). Optionally validate an
+   invalid managed definition with `invitation:update --dry-run`.
 3. Upload a valid JPEG/PNG/WebP and verify normalized WebP metadata.
 4. Upload a spoofed, undersized, oversized, or corrupt image; expect 422 and no asset row.
 5. Publish a valid new invitation and verify invitation, RSVP event, snapshot, and draft state.

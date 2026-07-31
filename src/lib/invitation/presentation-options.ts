@@ -4,11 +4,29 @@ export const XARENI_SEAL_COLORS = ['roseGold', 'champagne', 'blush', 'mauve', 'd
 
 export const FAMILY_PRESENTATIONS = ['with-photo', 'text-only'] as const;
 export const LOCATION_PRESENTATIONS = ['simple', 'with-map', 'with-photo'] as const;
+export const GALLERY_PRESENTATIONS = ['standard', 'pet-keepsake'] as const;
+export const GALLERY_LAYOUT_ROLES = ['feature', 'wide', 'standard'] as const;
+export const ITINERARY_PRESENTATION_BEHAVIORS = ['standard', 'timeline-paper'] as const;
 
 export type XareniSealColor = (typeof XARENI_SEAL_COLORS)[number];
 export type FamilyPresentation = (typeof FAMILY_PRESENTATIONS)[number];
 export type LocationPresentation = (typeof LOCATION_PRESENTATIONS)[number];
 export type LocationMediaMode = 'none' | 'map' | 'image';
+export type GalleryPresentation = (typeof GALLERY_PRESENTATIONS)[number];
+export type GalleryLayoutRole = (typeof GALLERY_LAYOUT_ROLES)[number];
+export type ItineraryPresentationBehavior = (typeof ITINERARY_PRESENTATION_BEHAVIORS)[number];
+
+export interface LocationPresentationOptions {
+	showFlourishes?: boolean;
+}
+
+export interface HeroPresentationOptions {
+	portraitEnabled?: boolean;
+}
+
+export interface ItineraryPresentationOptions {
+	behavior?: ItineraryPresentationBehavior;
+}
 
 export const XARENI_SEAL_COLOR_LABELS: Record<XareniSealColor, string> = {
 	roseGold: 'Oro rosado',
@@ -60,4 +78,32 @@ export function resolveLocationMediaMode(
 	}
 	if (media.hasCoordinates) return 'map';
 	return media.hasImage ? 'image' : 'none';
+}
+
+export function resolveLocationShowFlourishes(options: LocationPresentationOptions | undefined): boolean {
+	return options?.showFlourishes ?? true;
+}
+
+export function resolvePortraitEnabled(
+	options: HeroPresentationOptions | undefined,
+	themeOffersPortrait: boolean,
+): boolean {
+	return options?.portraitEnabled ?? themeOffersPortrait;
+}
+
+export function resolveItineraryPresentation(
+	options: ItineraryPresentationOptions | undefined,
+): ItineraryPresentationBehavior {
+	return options?.behavior ?? 'standard';
+}
+
+export function assertSupportedGalleryPresentation(
+	presentation: GalleryPresentation | undefined,
+	items: ReadonlyArray<{ layoutRole?: GalleryLayoutRole }>,
+): void {
+	if (presentation === 'pet-keepsake' && items.some((item) => item.layoutRole !== undefined)) {
+		throw new Error(
+			'[Presentation] pet-keepsake gallery does not support per-item layout roles.',
+		);
+	}
 }
