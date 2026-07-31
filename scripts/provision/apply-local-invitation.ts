@@ -74,6 +74,10 @@ import {
 } from './asset-reconciliation.ts';
 import { fingerprintPathPolicy } from './conflict-resolutions.ts';
 import { assertManagedContentSchema } from './managed-content-validation.ts';
+import {
+	decideRekeyIdentity,
+	resolveIdentityWithoutRekey,
+} from './managed-identity-guards.ts';
 
 interface ApplyLocalOptions {
 	slug: string;
@@ -245,12 +249,6 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	const rekeyFrom = options.rekeyFrom?.trim();
 
 	if (rekeyFrom) {
-		if (rekeyFrom === slug) {
-			throw new Error(
-				`IDENTITY_CONFLICT: Cannot rekey invitation "${slug}" to its own current slug.`,
-			);
-		}
-
 		const { data: invByOldSlug } = await supabase
 			.from('invitations')
 			.select(
@@ -260,31 +258,37 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			.is('archived_at', null)
 			.maybeSingle();
 
-		if (!invByOldSlug || !invByOldSlug.id) {
-			throw new Error(
-				`IDENTITY_NOT_FOUND: Cannot rekey from "${rekeyFrom}". No active invitation found matching slug "${rekeyFrom}".`,
-			);
-		}
+		const { data: collisionInv } = invByOldSlug?.id
+			? await supabase
+					.from('invitations')
+					.select('id, slug')
+					.eq('slug', slug)
+					.neq('id', invByOldSlug.id)
+					.is('archived_at', null)
+					.maybeSingle()
+			: { data: null };
 
-		const { data: collisionInv } = await supabase
-			.from('invitations')
-			.select('id')
-			.eq('slug', slug)
-			.neq('id', invByOldSlug.id)
-			.is('archived_at', null)
-			.maybeSingle();
-
-		if (collisionInv && collisionInv.id) {
-			throw new Error(
-				`IDENTITY_CONFLICT: Target slug "${slug}" is already assigned to another active invitation (${collisionInv.id}).`,
-			);
+		const decision = decideRekeyIdentity({
+			slug,
+			rekeyFrom,
+			sourceByOldSlug: invByOldSlug?.id
+				? { id: String(invByOldSlug.id), slug: String(invByOldSlug.slug) }
+				: null,
+			collisionByTargetSlug: collisionInv?.id
+				? { id: String(collisionInv.id), slug: String(collisionInv.slug ?? slug) }
+				: null,
+		});
+		if (!decision.ok) {
+			throw new Error(decision.message);
 		}
 
 		existingInv = invByOldSlug;
 		console.log(
-			`[IDENTITY_REKEY] Rekeying invitation ${invByOldSlug.id}: "${rekeyFrom}" -> "${slug}"`,
+			`[IDENTITY_REKEY] Rekeying invitation ${decision.invitationId}: "${rekeyFrom}" -> "${slug}"`,
 		);
 	} else {
+		const invitationSelect =
+			'id, slug, title, event_type, status, base_demo_id, theme_id, kind, snapshot, client_name, client_email, client_whatsapp, photos_received, created_by';
 		const { data: existingProvenanceLink } = await supabase
 			.from('managed_invitation_release_provenance')
 			.select('invitation_id')
@@ -292,35 +296,36 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			.maybeSingle();
 		const { data: invBySlug } = await supabase
 			.from('invitations')
-			.select(
-				'id, slug, title, event_type, status, base_demo_id, theme_id, kind, snapshot, client_name, client_email, client_whatsapp, photos_received, created_by',
-			)
+			.select(invitationSelect)
 			.eq('slug', slug)
 			.is('archived_at', null)
 			.maybeSingle();
 
-		if (
-			existingProvenanceLink?.invitation_id &&
-			invBySlug?.id &&
-			existingProvenanceLink.invitation_id !== invBySlug.id
-		) {
-			throw new Error(
-				`IDENTITY_CONFLICT: Ambiguous identity lineage for slug "${slug}". Provenance links to invitation ${existingProvenanceLink.invitation_id}, but active invitation slug matches ${invBySlug.id}.`,
-			);
+		const decision = resolveIdentityWithoutRekey({
+			slug,
+			provenanceInvitationId: existingProvenanceLink?.invitation_id
+				? String(existingProvenanceLink.invitation_id)
+				: null,
+			invitationBySlug: invBySlug?.id
+				? { id: String(invBySlug.id), slug: String(invBySlug.slug) }
+				: null,
+		});
+		if (!decision.ok) {
+			throw new Error(decision.message);
 		}
 
-		if (existingProvenanceLink?.invitation_id) {
+		if (decision.mode === 'provenance' && decision.invitationId) {
 			const { data: invByProv } = await supabase
 				.from('invitations')
-				.select(
-					'id, slug, title, event_type, status, base_demo_id, theme_id, kind, snapshot, client_name, client_email, client_whatsapp, photos_received, created_by',
-				)
-				.eq('id', existingProvenanceLink.invitation_id)
+				.select(invitationSelect)
+				.eq('id', decision.invitationId)
 				.is('archived_at', null)
 				.maybeSingle();
 			existingInv = invByProv;
-		} else {
+		} else if (decision.mode === 'slug') {
 			existingInv = invBySlug;
+		} else {
+			existingInv = null;
 		}
 	}
 

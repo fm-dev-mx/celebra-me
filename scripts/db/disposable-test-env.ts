@@ -87,6 +87,7 @@ Usage:
   tsx scripts/db/disposable-test-env.ts reset [--baseline|--max-version=<version>] Reset the disposable database (destructive)
   tsx scripts/db/disposable-test-env.ts run-tests   Run pgTAP and migration tests
   tsx scripts/db/disposable-test-env.ts run-rsvp-db-contracts  Reset disposable DB, start PostgREST, run public RSVP Jest contracts
+  tsx scripts/db/disposable-test-env.ts run-managed-db-contracts  Reset disposable DB, run managed rekey Jest contracts
   tsx scripts/db/disposable-test-env.ts run-application-flow  Run the real service retry flow through PostgREST
   tsx scripts/db/disposable-test-env.ts run-concurrency-test  Prove same-key publication contention publishes once
   tsx scripts/db/disposable-test-env.ts run-phase3-concurrency-test  Exercise Editor/managed/publication/asset contention
@@ -652,23 +653,27 @@ async function cmdRunApplicationFlow(): Promise<void> {
 	}
 }
 
+function ensureDisposableReset(failMessage: string): void {
+	if (!isDisposableDbReady()) {
+		console.info('Disposable database not ready; starting container...');
+		cmdStart();
+	}
+	if (!isDisposableDbReady()) {
+		fail(failMessage);
+	}
+	console.info('Resetting disposable database to apply canonical migrations + seed...');
+	cmdReset();
+}
+
 /**
  * Provision disposable Postgres + PostgREST and run the public RSVP Jest DB/HTTP contracts.
  * These suites are excluded from the generic no-DB Jest phase and must not silently skip.
  */
 async function cmdRunRsvpDbContracts(): Promise<void> {
 	console.info('=== Disposable Test Environment: Public RSVP DB/HTTP Contracts ===\n');
-
-	if (!isDisposableDbReady()) {
-		console.info('Disposable database not ready; starting container...');
-		cmdStart();
-	}
-	if (!isDisposableDbReady()) {
-		fail('Public RSVP DB contracts require a reachable disposable database on port 54332.');
-	}
-
-	console.info('Resetting disposable database to apply canonical migrations + seed...');
-	cmdReset();
+	ensureDisposableReset(
+		'Public RSVP DB contracts require a reachable disposable database on port 54332.',
+	);
 
 	console.info('Starting disposable PostgREST...');
 	await startPostgrest();
@@ -714,6 +719,49 @@ async function cmdRunRsvpDbContracts(): Promise<void> {
 		);
 	}
 	console.info('Public RSVP DB/HTTP contracts passed.');
+}
+
+/**
+ * Provision disposable Postgres and run managed-lifecycle rekey Jest contracts.
+ * These suites are excluded from the generic no-DB Jest phase and must not silently skip.
+ */
+function cmdRunManagedDbContracts(): void {
+	console.info('=== Disposable Test Environment: Managed DB Contracts ===\n');
+	ensureDisposableReset(
+		'Managed DB contracts require a reachable disposable database on port 54332. ' +
+			'Setup failed before product assertions (start Docker / pnpm db:disposable:start).',
+	);
+
+	console.info('Running managed rekey Jest DB contract suites...');
+	const result = runCommand(
+		'pnpm',
+		[
+			'exec',
+			'jest',
+			'--runInBand',
+			'--config',
+			'jest.managed-db-contracts.config.cjs',
+			'tests/provision/goal2-rekey-disposable-integration.test.ts',
+		],
+		{
+			throwOnError: false,
+			env: {
+				...process.env,
+				CELEBRA_MANAGED_DB_CONTRACTS: '1',
+			},
+		},
+	);
+	console.info(result.stdout || '');
+	if (result.status !== 0) {
+		const cleanStderr = redactCredentials(result.stderr);
+		const cleanStdout = redactCredentials(result.stdout);
+		console.error('Managed DB contract stderr:', cleanStderr || '(none)');
+		console.error('Managed DB contract stdout:', cleanStdout || '(none)');
+		fail(
+			`Managed DB contract failure: ${cleanStderr || cleanStdout || `exit code ${result.status}`}`,
+		);
+	}
+	console.info('Managed DB contracts passed.');
 }
 
 function cmdRunConcurrencyTest(): void {
@@ -814,6 +862,9 @@ async function main(): Promise<void> {
 			break;
 		case 'run-rsvp-db-contracts':
 			await cmdRunRsvpDbContracts();
+			break;
+		case 'run-managed-db-contracts':
+			cmdRunManagedDbContracts();
 			break;
 		case 'run-application-flow':
 			await cmdRunApplicationFlow();

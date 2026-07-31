@@ -116,3 +116,6 @@ jobs:
 
             - name: Public RSVP disposable DB/HTTP contracts
               run: pnpm test:db:rsvp-contracts
+
+            - name: Managed disposable DB contracts
+              run: pnpm test:db:managed-contracts

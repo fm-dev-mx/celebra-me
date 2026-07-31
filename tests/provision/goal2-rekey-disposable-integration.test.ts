@@ -2,18 +2,23 @@
  * goal2-rekey-disposable-integration.test.ts
  *
  * Direct behavioral integration tests for Goal 2 identity rekey against disposable DB (127.0.0.1:54332).
+ * Executed only by `pnpm test:db:managed-contracts` (excluded from hermetic `pnpm test`).
  *
  * Scenarios:
  *  - Test A: Successful APPLY rekey (UUID preserved, event linkage preserved, target-owned state preserved, RSVP state preserved, provenance updated)
  *  - Test B: Idempotent re-run of APPLY rekey (cardinality remains 1, zero duplicated resources)
  *  - Test C: Destination identity collision abort (aborts before writes, leaves DB snapshot untouched)
  *  - Test D: Partial external failure recovery & safe retry (recovery integration, cardinality = 1)
+ *  - Test E: IDENTITY_NOT_FOUND when --rekey-from slug is absent
  */
 
 import { describe, expect, it, beforeEach } from '@jest/globals';
 import { runPsql } from '../../scripts/db/db-workflow-lib.ts';
-import { DISPOSABLE_DB_URL } from '../../scripts/db/db-target-config.ts';
+import { DISPOSABLE_DB_URL, DISPOSABLE_TEST } from '../../scripts/db/db-target-config.ts';
 import { isRecoverableManagedPartial } from '../../scripts/provision/managed-merge-baseline.ts';
+import { decideRekeyIdentity } from '../../scripts/provision/managed-identity-guards.ts';
+
+const harnessEnabled = process.env.CELEBRA_MANAGED_DB_CONTRACTS === '1';
 
 const INVITATION_UUID = '11111111-2222-3333-4444-555555555555';
 const EVENT_UUID = '22222222-3333-4444-5555-666666666666';
@@ -96,6 +101,16 @@ function resetAndSeedDisposableDb(): void {
 }
 
 describe('Goal 2: Applied Rekey Integration Suite (Disposable DB)', () => {
+	if (!harnessEnabled) {
+		it('must run through the disposable managed DB contract harness', () => {
+			throw new Error(
+				'Managed DB rekey contracts require CELEBRA_MANAGED_DB_CONTRACTS=1 ' +
+					`(pnpm test:db:managed-contracts). Expected disposable DB on port ${DISPOSABLE_TEST.dbPort}.`,
+			);
+		});
+		return;
+	}
+
 	beforeEach(() => {
 		resetAndSeedDisposableDb();
 	});
@@ -211,14 +226,16 @@ describe('Goal 2: Applied Rekey Integration Suite (Disposable DB)', () => {
 		`);
 		expect(targetCollision).toBe(COLLISION_UUID);
 
-		// Collision guard triggers: no mutation is executed
-		const attemptMutation = () => {
-			if (targetCollision) {
-				throw new Error('IDENTITY_CONFLICT: Target slug "alba-rosa-quinonez" is already assigned to another active invitation.');
-			}
-		};
-
-		expect(attemptMutation).toThrow('IDENTITY_CONFLICT');
+		const decision = decideRekeyIdentity({
+			slug: 'alba-rosa-quinonez',
+			rekeyFrom: 'alba-rosa-old',
+			sourceByOldSlug: { id: INVITATION_UUID, slug: 'alba-rosa-old' },
+			collisionByTargetSlug: { id: targetCollision, slug: 'alba-rosa-quinonez' },
+		});
+		expect(decision.ok).toBe(false);
+		if (!decision.ok) {
+			expect(decision.code).toBe('IDENTITY_CONFLICT');
+		}
 
 		// Assert DB snapshot remains completely unchanged
 		const oldSlugInv = queryDb(`SELECT id::text FROM public.invitations WHERE slug = 'alba-rosa-old';`);
@@ -272,5 +289,26 @@ describe('Goal 2: Applied Rekey Integration Suite (Disposable DB)', () => {
 
 		const provSlug = queryDb(`SELECT definition_slug FROM public.managed_invitation_release_provenance WHERE invitation_id = '${INVITATION_UUID}';`);
 		expect(provSlug).toBe('alba-rosa-quinonez');
+	});
+
+	it('Test E — IDENTITY_NOT_FOUND when --rekey-from slug is absent (no fuzzy fallback)', () => {
+		const missingSlug = queryDb(
+			`SELECT id::text FROM public.invitations WHERE slug = 'non-existent-old-identity-slug-999' AND archived_at IS NULL;`,
+		);
+		expect(missingSlug).toBe('');
+
+		const decision = decideRekeyIdentity({
+			slug: 'alba-rosa-quinonez',
+			rekeyFrom: 'non-existent-old-identity-slug-999',
+			sourceByOldSlug: null,
+			collisionByTargetSlug: null,
+		});
+		expect(decision.ok).toBe(false);
+		if (!decision.ok) {
+			expect(decision.code).toBe('IDENTITY_NOT_FOUND');
+		}
+
+		const oldSlugInv = queryDb(`SELECT id::text FROM public.invitations WHERE slug = 'alba-rosa-old';`);
+		expect(oldSlugInv).toBe(INVITATION_UUID);
 	});
 });
