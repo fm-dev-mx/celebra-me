@@ -119,8 +119,7 @@ the following state:
 **Lane Invariants:**
 
 - `1 active task = 1 branch = 1 worktree`
-- An agent can claim a lane only if it is **idle (detached HEAD)** and **clean**, or already
-  assigned to the **current task**.
+- An agent can claim a lane only if it is **idle (clean persistent lane branch aligned with develop, or detached HEAD on develop)** and **clean**, or already assigned to the **current task**.
 - If a lane is occupied by another active task or contains pre-existing/unrelated dirty changes:
   **STOP** — do not switch, stash, reset, clean, overwrite, or repurpose the lane. Use another
   available lane or report the conflict to the user.

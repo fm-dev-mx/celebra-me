@@ -1,9 +1,8 @@
 # dev-extra worktree
 
 **Path:** `D:\code\celebra-me-worktrees\dev-extra`  
-**Policy SSOTs:** [`git-governance.md`](../git-governance.md),
-[`env-workflow.md`](../../env-workflow.md),
-[`.agent/rules/git-safety.md`](../../../.agent/rules/git-safety.md)
+**Executable SSOT:** [`scripts/shared/worktree-lane.ts`](../../../scripts/shared/worktree-lane.ts)  
+**Policy SSOTs:** [`git-governance.md`](../git-governance.md), [`env-workflow.md`](../../env-workflow.md), [`.agent/rules/git-safety.md`](../../../.agent/rules/git-safety.md)
 
 ## Purpose
 
@@ -11,13 +10,13 @@ Additional parallel Local development lane when `dev-local` is occupied.
 
 ## Runtime default
 
-Local Supabase.
+Local Supabase (`CELEBRA_RUNTIME_TARGET=local`).
 
 ## Idle / active state
 
-- Idle: detached at `develop`, clean
-- Active: ephemeral branch from `develop`
-- Release: detach to `develop`
+- Idle: Clean persistent branch `dev-extra` (or `git switch --detach develop`), aligned with `develop`
+- Active: Ephemeral branch from `develop`
+- Release: Merge to `develop`; reset lane branch after integration
 
 ## Environment files
 

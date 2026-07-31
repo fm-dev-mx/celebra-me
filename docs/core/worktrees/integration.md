@@ -1,9 +1,8 @@
 # Integration worktree
 
 **Path:** `D:\code\celebra-me` (repository root)  
-**Policy SSOTs:** [`git-governance.md`](../git-governance.md),
-[`env-workflow.md`](../../env-workflow.md), [`database-workflow.md`](../../database-workflow.md),
-[`.agent/rules/git-safety.md`](../../../.agent/rules/git-safety.md)
+**Executable SSOT:** [`scripts/shared/worktree-lane.ts`](../../../scripts/shared/worktree-lane.ts)  
+**Policy SSOTs:** [`git-governance.md`](../git-governance.md), [`env-workflow.md`](../../env-workflow.md), [`database-workflow.md`](../../database-workflow.md), [`.agent/rules/git-safety.md`](../../../.agent/rules/git-safety.md)
 
 ## Purpose
 
