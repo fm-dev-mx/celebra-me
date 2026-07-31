@@ -7,6 +7,8 @@ import IntakeSummary from '@/components/intake/IntakeSummary';
 import { INTAKE_BLOCK_COMPONENTS } from '@/components/intake/block-components';
 import { ErrorBoundary } from '@/components/dashboard/ErrorBoundary';
 
+import EditorDivergenceBanner from '@/components/intake/EditorDivergenceBanner';
+
 interface Props {
 	mode?: 'client' | 'admin';
 	token?: string;
@@ -17,6 +19,11 @@ interface Props {
 	isLocked: boolean;
 	invitationTitle: string;
 	eventType: EventType;
+	divergenceState?: 'CLEAN' | 'DIVERGED' | 'RECONCILIATION_REQUIRED' | 'SOURCE_UPDATE_REQUIRED' | 'DEFERRED';
+	targetEnvironment?: string;
+	affectedFieldCount?: number;
+	affectedSectionCount?: number;
+	isReleaseBlocked?: boolean;
 }
 
 const IntakeForm: FC<Props> = ({
@@ -29,6 +36,11 @@ const IntakeForm: FC<Props> = ({
 	isLocked,
 	invitationTitle,
 	eventType,
+	divergenceState,
+	targetEnvironment,
+	affectedFieldCount,
+	affectedSectionCount,
+	isReleaseBlocked,
 }) => {
 	const form = useIntakeForm({
 		token,
@@ -84,6 +96,14 @@ const IntakeForm: FC<Props> = ({
 					{mode === 'admin' ? 'Edición interna' : 'Captura de información'}
 				</p>
 			</header>
+
+			<EditorDivergenceBanner
+				divergenceState={divergenceState}
+				targetEnvironment={targetEnvironment}
+				affectedFieldCount={affectedFieldCount}
+				affectedSectionCount={affectedSectionCount}
+				isReleaseBlocked={isReleaseBlocked}
+			/>
 
 			<ErrorBoundary fallback={formFallback}>
 				{form.saved && (
