@@ -77,6 +77,7 @@ import { assertManagedContentSchema } from './managed-content-validation.ts';
 
 interface ApplyLocalOptions {
 	slug: string;
+	rekeyFrom?: string;
 	sourceDir?: string;
 	ownerUserId?: string;
 	apply?: boolean;
@@ -240,21 +241,88 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	const normalizedPhotos = release.assets.map((asset) => ({ ...asset, imageHash: asset.sha256 }));
 
 	// Check existing invitation
-	const { data: existingProvenanceLink } = await supabase
-		.from('managed_invitation_release_provenance')
-		.select('invitation_id')
-		.eq('definition_slug', slug)
-		.maybeSingle();
-	let existingInvitationQuery = supabase
-		.from('invitations')
-		.select(
-			'id, slug, title, event_type, status, base_demo_id, theme_id, kind, snapshot, client_name, client_email, client_whatsapp, photos_received, created_by',
-		)
-		.is('archived_at', null);
-	existingInvitationQuery = existingProvenanceLink?.invitation_id
-		? existingInvitationQuery.eq('id', existingProvenanceLink.invitation_id)
-		: existingInvitationQuery.eq('slug', slug);
-	const { data: existingInv } = await existingInvitationQuery.maybeSingle();
+	let existingInv: Record<string, unknown> | null;
+	const rekeyFrom = options.rekeyFrom?.trim();
+
+	if (rekeyFrom) {
+		if (rekeyFrom === slug) {
+			throw new Error(
+				`IDENTITY_CONFLICT: Cannot rekey invitation "${slug}" to its own current slug.`,
+			);
+		}
+
+		const { data: invByOldSlug } = await supabase
+			.from('invitations')
+			.select(
+				'id, slug, title, event_type, status, base_demo_id, theme_id, kind, snapshot, client_name, client_email, client_whatsapp, photos_received, created_by',
+			)
+			.eq('slug', rekeyFrom)
+			.is('archived_at', null)
+			.maybeSingle();
+
+		if (!invByOldSlug || !invByOldSlug.id) {
+			throw new Error(
+				`IDENTITY_NOT_FOUND: Cannot rekey from "${rekeyFrom}". No active invitation found matching slug "${rekeyFrom}".`,
+			);
+		}
+
+		const { data: collisionInv } = await supabase
+			.from('invitations')
+			.select('id')
+			.eq('slug', slug)
+			.neq('id', invByOldSlug.id)
+			.is('archived_at', null)
+			.maybeSingle();
+
+		if (collisionInv && collisionInv.id) {
+			throw new Error(
+				`IDENTITY_CONFLICT: Target slug "${slug}" is already assigned to another active invitation (${collisionInv.id}).`,
+			);
+		}
+
+		existingInv = invByOldSlug;
+		console.log(
+			`[IDENTITY_REKEY] Rekeying invitation ${invByOldSlug.id}: "${rekeyFrom}" -> "${slug}"`,
+		);
+	} else {
+		const { data: existingProvenanceLink } = await supabase
+			.from('managed_invitation_release_provenance')
+			.select('invitation_id')
+			.eq('definition_slug', slug)
+			.maybeSingle();
+		const { data: invBySlug } = await supabase
+			.from('invitations')
+			.select(
+				'id, slug, title, event_type, status, base_demo_id, theme_id, kind, snapshot, client_name, client_email, client_whatsapp, photos_received, created_by',
+			)
+			.eq('slug', slug)
+			.is('archived_at', null)
+			.maybeSingle();
+
+		if (
+			existingProvenanceLink?.invitation_id &&
+			invBySlug?.id &&
+			existingProvenanceLink.invitation_id !== invBySlug.id
+		) {
+			throw new Error(
+				`IDENTITY_CONFLICT: Ambiguous identity lineage for slug "${slug}". Provenance links to invitation ${existingProvenanceLink.invitation_id}, but active invitation slug matches ${invBySlug.id}.`,
+			);
+		}
+
+		if (existingProvenanceLink?.invitation_id) {
+			const { data: invByProv } = await supabase
+				.from('invitations')
+				.select(
+					'id, slug, title, event_type, status, base_demo_id, theme_id, kind, snapshot, client_name, client_email, client_whatsapp, photos_received, created_by',
+				)
+				.eq('id', existingProvenanceLink.invitation_id)
+				.is('archived_at', null)
+				.maybeSingle();
+			existingInv = invByProv;
+		} else {
+			existingInv = invBySlug;
+		}
+	}
 
 	await verifySupabaseApiCredential({
 		apiUrl: env.apiUrl,
@@ -273,7 +341,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		apply: isApply,
 		existingOwnerUserId: existingInv?.created_by ? String(existingInv.created_by) : null,
 	});
-	const targetMetadata = resolveManagedInvitationMetadata(
+	const resolvedMetadata = resolveManagedInvitationMetadata(
 		{
 			title: definition.title,
 			slug: definition.slug,
@@ -304,6 +372,11 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 				}
 			: null,
 	);
+	// Explicit --rekey-from overrides seed-owned slug preservation so the invitation
+	// moves to the definition slug while keeping the same invitation UUID.
+	const targetMetadata = rekeyFrom
+		? { ...resolvedMetadata, slug: definition.slug }
+		: resolvedMetadata;
 	const targetSlug = targetMetadata.slug;
 	const route = `/${definition.eventType}/${targetSlug}`;
 
@@ -319,7 +392,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 
 	const { data: existingPub } = await supabase
 		.from('published_invitation_content')
-		.select('version, content, published_at, updated_at')
+		.select('id, version, content, published_at, updated_at, slug')
 		.eq('invitation_project_id', invitationId)
 		.is('deleted_at', null)
 		.order('version', { ascending: false })
@@ -327,8 +400,8 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		.maybeSingle();
 	const { data: existingEvent } = await supabase
 		.from('events')
-		.select('id, owner_user_id, event_type, title, status, invitation_project_id')
-		.eq('slug', targetSlug)
+		.select('id, owner_user_id, event_type, title, status, invitation_project_id, slug')
+		.eq('invitation_project_id', invitationId)
 		.is('deleted_at', null)
 		.maybeSingle();
 	const { data: existingMembership } = existingEvent?.id
@@ -375,7 +448,9 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 					commandKind: String(row.command_kind ?? ''),
 					origin: typeof row.origin === 'string' ? row.origin : undefined,
 					completedSteps: Array.isArray(row.completed_steps)
-						? row.completed_steps.filter((step): step is string => typeof step === 'string')
+						? row.completed_steps.filter(
+								(step): step is string => typeof step === 'string',
+							)
 						: [],
 					inputHashes:
 						row.input_hashes && typeof row.input_hashes === 'object'
@@ -401,17 +476,15 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		.eq('invitation_id', invitationId)
 		.is('deleted_at', null);
 
+	const assetRows = Array.isArray(existingAssetRows) ? existingAssetRows : [];
 	const existingAssetsByPath = new Map(
-		((existingAssetRows ?? []) as Array<Record<string, unknown>>).map((r) => [
+		(assetRows as Array<Record<string, unknown>>).map((r) => [
 			(r.provider_public_id as string) || (r.storage_path as string),
 			r,
 		]),
 	);
 	const existingAssetsByDisplayName = new Map(
-		((existingAssetRows ?? []) as Array<Record<string, unknown>>).map((r) => [
-			r.display_name as string,
-			r,
-		]),
+		(assetRows as Array<Record<string, unknown>>).map((r) => [r.display_name as string, r]),
 	);
 
 	for (const norm of normalizedPhotos) {
@@ -569,18 +642,20 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 					? existingProvenance.applied_published_projection_hash
 					: null,
 			currentDraftUpdatedAt: recoveringPartial
-				? existingProvenance?.applied_draft_updated_at as string
-				:
-				typeof existingDraft.updated_at === 'string' ? existingDraft.updated_at : null,
+				? (existingProvenance?.applied_draft_updated_at as string)
+				: typeof existingDraft.updated_at === 'string'
+					? existingDraft.updated_at
+					: null,
 			currentPublishedVersion: recoveringPartial
-				? existingProvenance?.applied_published_version as number
-				:
-				typeof existingPub?.version === 'number' ? existingPub.version : null,
+				? (existingProvenance?.applied_published_version as number)
+				: typeof existingPub?.version === 'number'
+					? existingPub.version
+					: null,
 			currentPublishedProjectionHash: recoveringPartial
-				? existingProvenance?.applied_published_projection_hash as string
+				? (existingProvenance?.applied_published_projection_hash as string)
 				: existingPub?.content
-				? hashPublicationProjection(existingPub.content as Record<string, unknown>)
-				: null,
+					? hashPublicationProjection(existingPub.content as Record<string, unknown>)
+					: null,
 			appliedReceipt: toReceiptEvidence(appliedReceiptRow as Record<string, unknown> | null),
 			latestMutationReceipt: recoveringPartial
 				? toReceiptEvidence(appliedReceiptRow as Record<string, unknown> | null)
@@ -612,7 +687,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			sha256: typeof state.storageHash === 'string' ? state.storageHash : null,
 		};
 	}
-	for (const row of (existingAssetRows ?? []) as Array<Record<string, unknown>>) {
+	for (const row of assetRows as Array<Record<string, unknown>>) {
 		const storageIdentity = String(row.provider_public_id || row.storage_path);
 		if (observedStorage[storageIdentity]) continue;
 		const assetUrl =
@@ -651,7 +726,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		dataBase64: asset.dataBase64,
 	}));
 	const targetAssetRecords: TargetAssetRecord[] = (
-		(existingAssetRows ?? []) as Array<Record<string, unknown>>
+		assetRows as Array<Record<string, unknown>>
 	).map((row) => ({
 		id: String(row.id),
 		invitationId: String(row.invitation_id),
@@ -705,6 +780,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	}
 	const isInvitationIdentical = Boolean(
 		existingInv &&
+		existingInv.slug === targetSlug &&
 		existingInv.event_type === definition.eventType &&
 		existingInv.base_demo_id === definition.baseDemoId &&
 		existingInv.theme_id === definition.themeId &&
@@ -713,6 +789,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	);
 	const isEventIdentical = Boolean(
 		existingEvent &&
+		existingEvent.slug === targetSlug &&
 		existingEvent.owner_user_id === ownerUserId &&
 		existingEvent.event_type === definition.eventType &&
 		existingEvent.invitation_project_id === invitationId,
@@ -882,12 +959,18 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		targetEnvironment: 'local',
 		verifiedProjectRef: 'persistent-local',
 		functionalChanges,
-		physicalDatabaseOps: { inserts: estInserts, updates: estUpdates, deletes: assetsToPrune.length },
+		physicalDatabaseOps: {
+			inserts: estInserts,
+			updates: estUpdates,
+			deletes: assetsToPrune.length,
+		},
 		storageOps: {
 			uploads: estUploads,
 			overwrites: estOverwrites,
 			moves: 0,
-			deletes: assetsToPrune.filter((asset) => asset.plannedAction === 'PRUNE_STORAGE_AND_METADATA').length,
+			deletes: assetsToPrune.filter(
+				(asset) => asset.plannedAction === 'PRUNE_STORAGE_AND_METADATA',
+			).length,
 		},
 		targetPreconditions,
 		sensitivityClassification: 'public',
@@ -902,10 +985,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		? latestReceiptEvidence!.operationId
 		: undefined;
 	const activeOperationId = retryParentOperationId
-		? deriveDeterministicUuid(
-				'managed-retry',
-				`${rootOperationId}:${retryParentOperationId}`,
-			)
+		? deriveDeterministicUuid('managed-retry', `${rootOperationId}:${retryParentOperationId}`)
 		: rootOperationId;
 
 	if (isApply && options.plan) {
@@ -964,7 +1044,9 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			storageUploads: estUploads,
 			storageOverwrites: estOverwrites,
 			storageMoves: 0,
-			storageDeletes: assetsToPrune.filter((asset) => asset.plannedAction === 'PRUNE_STORAGE_AND_METADATA').length,
+			storageDeletes: assetsToPrune.filter(
+				(asset) => asset.plannedAction === 'PRUNE_STORAGE_AND_METADATA',
+			).length,
 			actions,
 			functionalChanges,
 			plan: constructedPlan,
@@ -1041,6 +1123,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	try {
 		// 1. Ensure Invitation Record
 		const invMetadata = {
+			slug: targetSlug,
 			title: targetMetadata.title,
 			event_type: definition.eventType,
 			status: targetMetadata.status,
@@ -1068,7 +1151,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		} else if (!existingInv) {
 			const { error } = await supabase
 				.from('invitations')
-				.insert({ id: invitationId, slug: targetSlug, ...invMetadata });
+				.insert({ id: invitationId, ...invMetadata });
 			if (error) throw error;
 			trackedResources.push({ type: 'invitation', id: invitationId, isPreExisting: false });
 		}
@@ -1322,7 +1405,9 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 				completedSteps.push(`asset_storage_pruned:${record.id}`);
 				const verifyUrl = `${env.apiUrl}/storage/v1/object/public/${record.bucket}/${record.storagePath}`;
 				if (await isReachable(verifyUrl)) {
-					throw new Error(`Storage prune verification failed for managed asset ${record.id}.`);
+					throw new Error(
+						`Storage prune verification failed for managed asset ${record.id}.`,
+					);
 				}
 			}
 			const { data: prunedRow, error: pruneMetadataError } = await supabase
@@ -1391,6 +1476,16 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			if (pubError) throw pubError;
 			if (existingPub) markOverwritten('published_invitation_content', invitationId);
 			finalVersion = pubResult?.publishedContent?.version ?? targetVersion;
+		} else if (rekeyFrom && existingPub && existingPub.slug !== targetSlug) {
+			// Pure identity rekey: keep published version/content, sync route slug only.
+			const { error: publishedSlugError } = await supabase
+				.from('published_invitation_content')
+				.update({ slug: targetSlug })
+				.eq('id', existingPub.id as string);
+			if (publishedSlugError) throw publishedSlugError;
+			mutationStarted = true;
+			completedSteps.push('published_slug_rekeyed');
+			markOverwritten('published_invitation_content', invitationId);
 		}
 
 		// 5. Upsert Event and Membership
@@ -1424,6 +1519,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			const { error: eventError } = await supabase
 				.from('events')
 				.update({
+					slug: targetSlug,
 					event_type: definition.eventType,
 					invitation_project_id: invitationId,
 				})
@@ -1638,7 +1734,9 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			storageUploads: estUploads,
 			storageOverwrites: estOverwrites,
 			storageMoves: 0,
-			storageDeletes: assetsToPrune.filter((asset) => asset.plannedAction === 'PRUNE_STORAGE_AND_METADATA').length,
+			storageDeletes: assetsToPrune.filter(
+				(asset) => asset.plannedAction === 'PRUNE_STORAGE_AND_METADATA',
+			).length,
 			actions,
 			functionalChanges,
 			plan: constructedPlan,

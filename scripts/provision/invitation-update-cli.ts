@@ -22,6 +22,7 @@ import {
 	buildStatusReport,
 	parseTargets,
 	checkUnknownFlags,
+	validateUpdateOptions,
 	type InvitationUpdateTarget,
 } from './invitation-update-options.ts';
 import { readFastInvitationInventory } from './invitation-status-inventory.ts';
@@ -345,6 +346,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 	}
 
 	let slug = value(args, '--slug');
+	const rekeyFrom = value(args, '--rekey-from');
 	let targets = parseTargets(value(args, '--targets'));
 	const sourceDir = value(args, '--source-dir');
 	const packagePath = value(args, '--package');
@@ -461,6 +463,8 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 	if (targets.length === 0 && (slug || statusMode)) {
 		targets = ['local'];
 	}
+
+	validateUpdateOptions({ slug, targets, rekeyFrom });
 
 	if (statusMode) {
 		const statusReportOptions = {
@@ -654,170 +658,258 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 		executionPlans.clear();
 		localResult = undefined;
 
-	for (const target of targets) {
-		if (target === 'local') {
-			try {
-				localResult = await applyLocalInvitation({
-					slug,
-					sourceDir,
-					ownerUserId,
-					apply: false,
-					updateScope,
-					assetPolicy,
-					pruneAssets,
-					conflictResolutions,
-				});
-				executionPlans.set('local', localResult.plan);
-				targetPlans.push({
-					target: 'local',
-					planId: localResult.plan?.planId,
-					status: localResult.isZeroDrift ? 'SIN CAMBIOS' : 'CAMBIOS PENDIENTES',
-					plannedOperations: localResult.plannedOperations,
-					expectedDatabaseWrites: {
-						inserts: localResult.databaseInserts,
-						updates: localResult.databaseUpdates,
-						deletes: localResult.databaseDeletes,
-					},
-					expectedStorageMutations: {
-						uploads: localResult.storageUploads,
-						overwrites: localResult.storageOverwrites,
-						moves: localResult.storageMoves,
-						deletes: localResult.storageDeletes,
-					},
-					actions: localResult.actions,
-					functionalChanges: localResult.functionalChanges,
-					publishedVersion: localResult.publishedVersion,
-				});
-				reports.push({
-					stage: 'plan',
-					environment: 'local',
-					status: localResult.isZeroDrift ? 'IN_SYNC' : 'SKIPPED',
-					plannedOperations: localResult.plannedOperations,
-					completedOperations: 0,
-					databaseInserts: localResult.databaseInserts,
-					databaseUpdates: localResult.databaseUpdates,
-					databaseDeletes: localResult.databaseDeletes,
-					storageUploads: localResult.storageUploads,
-					storageOverwrites: localResult.storageOverwrites,
-					storageMoves: localResult.storageMoves,
-					storageDeletes: localResult.storageDeletes,
-					assetCounts: assetCounts(localResult.actions),
-					publishedVersion: localResult.publishedVersion,
-				});
-			} catch (error) {
-				const errMsg = sanitizeMessage(
-					error instanceof Error ? error.message : String(error),
-				);
-				targetPlans.push({
-					target: 'local',
-					status: 'BLOQUEADO',
-					reason: errMsg,
-					mergeConflicts: mergeConflictsFromError(error),
-					plannedOperations: 0,
-					expectedDatabaseWrites: { inserts: 0, updates: 0, deletes: 0 },
-					expectedStorageMutations: { uploads: 0, overwrites: 0, moves: 0, deletes: 0 },
-					actions: [],
-				});
-				reports.push({
-					stage: 'plan',
-					environment: 'local',
-					status: 'BLOCKED',
-					reasonCode: 'LOCAL_PLAN_BLOCKED',
-					reason: errMsg,
-				});
-			}
-		} else if (target === 'preview') {
-			let targetDbUrl: string | undefined;
-			try {
-				targetDbUrl = getSecretFromEnvOrFiles('PREVIEW_DB_URL', PREVIEW_SECRET_FILES);
-			} catch {
-				targetDbUrl = undefined;
-			}
-
-			if (!targetDbUrl) {
-				reports.push({
-					stage: 'plan',
-					environment: 'preview',
-					status: 'BLOCKED',
-					reasonCode: 'PREVIEW_CREDENTIALS_UNAVAILABLE',
-					reason: 'Credenciales de preview no configuradas.',
-					remainingAction: 'Configurar credenciales de preview y reejecutar el comando.',
-				});
-				targetPlans.push({
-					target: 'preview',
-					status: 'BLOQUEADO',
-					reason: 'No se realizó una inspección remota (credenciales de preview no configuradas).',
-					plannedOperations: 0,
-					expectedDatabaseWrites: { inserts: 0, updates: 0, deletes: 0 },
-					expectedStorageMutations: { uploads: 0, overwrites: 0, moves: 0, deletes: 0 },
-					actions: [],
-				});
-			} else {
+		for (const target of targets) {
+			if (target === 'local') {
 				try {
-					const engineOptions = resolvedPackage
-						? {
-								packagePath: resolvedPackage,
-								target: 'preview' as const,
-								targetDbUrl,
-								dryRun: true,
-								assetPolicy,
-								pruneAssets,
-								updateScope,
-								conflictResolutions,
-							}
-						: {
-								packageData: confirmationPackage,
-								target: 'preview' as const,
-								targetDbUrl,
-								dryRun: true,
-								assetPolicy,
-								pruneAssets,
-								updateScope,
-								conflictResolutions,
-							};
-					const result = await runImportEngine(engineOptions);
-					assertEngineResult(result, undefined, 'Preview', false);
-					executionPlans.set('preview', result.plan);
+					localResult = await applyLocalInvitation({
+						slug,
+						rekeyFrom,
+						sourceDir,
+						ownerUserId,
+						apply: false,
+						updateScope,
+						assetPolicy,
+						pruneAssets,
+						conflictResolutions,
+					});
+					executionPlans.set('local', localResult.plan);
+					targetPlans.push({
+						target: 'local',
+						planId: localResult.plan?.planId,
+						status: localResult.isZeroDrift ? 'SIN CAMBIOS' : 'CAMBIOS PENDIENTES',
+						plannedOperations: localResult.plannedOperations,
+						expectedDatabaseWrites: {
+							inserts: localResult.databaseInserts,
+							updates: localResult.databaseUpdates,
+							deletes: localResult.databaseDeletes,
+						},
+						expectedStorageMutations: {
+							uploads: localResult.storageUploads,
+							overwrites: localResult.storageOverwrites,
+							moves: localResult.storageMoves,
+							deletes: localResult.storageDeletes,
+						},
+						actions: localResult.actions,
+						functionalChanges: localResult.functionalChanges,
+						publishedVersion: localResult.publishedVersion,
+					});
 					reports.push({
 						stage: 'plan',
-						environment: 'preview',
-						status: result.isZeroDrift ? 'IN_SYNC' : 'SKIPPED',
-						plannedOperations: result.plannedMutations,
+						environment: 'local',
+						status: localResult.isZeroDrift ? 'IN_SYNC' : 'SKIPPED',
+						plannedOperations: localResult.plannedOperations,
 						completedOperations: 0,
-						assetCounts: assetCounts(result.actions),
-						publishedVersion: result.publishedVersion,
-						packageHash: result.packageHash,
-					});
-					targetPlans.push({
-						target: 'preview',
-						planId: result.plan.planId,
-						status: result.isZeroDrift ? 'SIN CAMBIOS' : 'CAMBIOS PENDIENTES',
-						plannedOperations: result.plannedMutations,
-						expectedDatabaseWrites: result.plan.physicalDatabaseOps,
-						expectedStorageMutations: result.plan.storageOps,
-						actions: result.actions,
-						functionalChanges: result.functionalChanges,
-						publishedVersion: result.publishedVersion,
+						databaseInserts: localResult.databaseInserts,
+						databaseUpdates: localResult.databaseUpdates,
+						databaseDeletes: localResult.databaseDeletes,
+						storageUploads: localResult.storageUploads,
+						storageOverwrites: localResult.storageOverwrites,
+						storageMoves: localResult.storageMoves,
+						storageDeletes: localResult.storageDeletes,
+						assetCounts: assetCounts(localResult.actions),
+						publishedVersion: localResult.publishedVersion,
 					});
 				} catch (error) {
 					const errMsg = sanitizeMessage(
 						error instanceof Error ? error.message : String(error),
 					);
-					const previewReason =
-						'No fue posible inspeccionar Preview de forma segura. Revise credenciales, identidad del proyecto, conectividad y estado remoto antes de volver a planificar.';
+					targetPlans.push({
+						target: 'local',
+						status: 'BLOQUEADO',
+						reason: errMsg,
+						mergeConflicts: mergeConflictsFromError(error),
+						plannedOperations: 0,
+						expectedDatabaseWrites: { inserts: 0, updates: 0, deletes: 0 },
+						expectedStorageMutations: {
+							uploads: 0,
+							overwrites: 0,
+							moves: 0,
+							deletes: 0,
+						},
+						actions: [],
+					});
+					reports.push({
+						stage: 'plan',
+						environment: 'local',
+						status: 'BLOCKED',
+						reasonCode: 'LOCAL_PLAN_BLOCKED',
+						reason: errMsg,
+					});
+				}
+			} else if (target === 'preview') {
+				let targetDbUrl: string | undefined;
+				try {
+					targetDbUrl = getSecretFromEnvOrFiles('PREVIEW_DB_URL', PREVIEW_SECRET_FILES);
+				} catch {
+					targetDbUrl = undefined;
+				}
+
+				if (!targetDbUrl) {
 					reports.push({
 						stage: 'plan',
 						environment: 'preview',
 						status: 'BLOCKED',
-						reasonCode: 'PREVIEW_PLAN_BLOCKED',
-						reason: previewReason,
-						remainingAction: `Detalle técnico sanitizado: ${errMsg}`,
+						reasonCode: 'PREVIEW_CREDENTIALS_UNAVAILABLE',
+						reason: 'Credenciales de preview no configuradas.',
+						remainingAction:
+							'Configurar credenciales de preview y reejecutar el comando.',
 					});
 					targetPlans.push({
 						target: 'preview',
 						status: 'BLOQUEADO',
-						reason: previewReason,
-						mergeConflicts: mergeConflictsFromError(error),
+						reason: 'No se realizó una inspección remota (credenciales de preview no configuradas).',
+						plannedOperations: 0,
+						expectedDatabaseWrites: { inserts: 0, updates: 0, deletes: 0 },
+						expectedStorageMutations: {
+							uploads: 0,
+							overwrites: 0,
+							moves: 0,
+							deletes: 0,
+						},
+						actions: [],
+					});
+				} else {
+					try {
+						const engineOptions = resolvedPackage
+							? {
+									packagePath: resolvedPackage,
+									target: 'preview' as const,
+									targetDbUrl,
+									dryRun: true,
+									assetPolicy,
+									pruneAssets,
+									updateScope,
+									conflictResolutions,
+								}
+							: {
+									packageData: confirmationPackage,
+									target: 'preview' as const,
+									targetDbUrl,
+									dryRun: true,
+									assetPolicy,
+									pruneAssets,
+									updateScope,
+									conflictResolutions,
+								};
+						const result = await runImportEngine(engineOptions);
+						assertEngineResult(result, undefined, 'Preview', false);
+						executionPlans.set('preview', result.plan);
+						reports.push({
+							stage: 'plan',
+							environment: 'preview',
+							status: result.isZeroDrift ? 'IN_SYNC' : 'SKIPPED',
+							plannedOperations: result.plannedMutations,
+							completedOperations: 0,
+							assetCounts: assetCounts(result.actions),
+							publishedVersion: result.publishedVersion,
+							packageHash: result.packageHash,
+						});
+						targetPlans.push({
+							target: 'preview',
+							planId: result.plan.planId,
+							status: result.isZeroDrift ? 'SIN CAMBIOS' : 'CAMBIOS PENDIENTES',
+							plannedOperations: result.plannedMutations,
+							expectedDatabaseWrites: result.plan.physicalDatabaseOps,
+							expectedStorageMutations: result.plan.storageOps,
+							actions: result.actions,
+							functionalChanges: result.functionalChanges,
+							publishedVersion: result.publishedVersion,
+						});
+					} catch (error) {
+						const errMsg = sanitizeMessage(
+							error instanceof Error ? error.message : String(error),
+						);
+						const previewReason =
+							'No fue posible inspeccionar Preview de forma segura. Revise credenciales, identidad del proyecto, conectividad y estado remoto antes de volver a planificar.';
+						reports.push({
+							stage: 'plan',
+							environment: 'preview',
+							status: 'BLOCKED',
+							reasonCode: 'PREVIEW_PLAN_BLOCKED',
+							reason: previewReason,
+							remainingAction: `Detalle técnico sanitizado: ${errMsg}`,
+						});
+						targetPlans.push({
+							target: 'preview',
+							status: 'BLOQUEADO',
+							reason: previewReason,
+							mergeConflicts: mergeConflictsFromError(error),
+							plannedOperations: 0,
+							expectedDatabaseWrites: { inserts: 0, updates: 0, deletes: 0 },
+							expectedStorageMutations: {
+								uploads: 0,
+								overwrites: 0,
+								moves: 0,
+								deletes: 0,
+							},
+							actions: [],
+						});
+					}
+				}
+			} else if (target === 'production') {
+				try {
+					const { engineResult } = await runProductionPreflight({
+						packageData: confirmationPackage,
+						ownerUserId,
+						assetPolicy,
+						pruneAssets,
+						updateScope,
+						conflictResolutions,
+						getProductionDbUrl: getProdDbUrl,
+					});
+					executionPlans.set('production', engineResult.plan);
+					reports.push({
+						stage: 'plan',
+						environment: 'production',
+						status: engineResult.isZeroDrift ? 'IN_SYNC' : 'SKIPPED',
+						plannedOperations: engineResult.plannedMutations,
+						completedOperations: 0,
+						assetCounts: assetCounts(engineResult.actions),
+						publishedVersion: engineResult.publishedVersion,
+						packageHash: engineResult.packageHash,
+					});
+					targetPlans.push({
+						target: 'production',
+						planId: engineResult.plan.planId,
+						status: engineResult.isZeroDrift ? 'SIN CAMBIOS' : 'CAMBIOS PENDIENTES',
+						plannedOperations: engineResult.plannedMutations,
+						expectedDatabaseWrites: engineResult.plan.physicalDatabaseOps,
+						expectedStorageMutations: engineResult.plan.storageOps,
+						actions: engineResult.actions,
+						functionalChanges: engineResult.functionalChanges,
+						publishedVersion: engineResult.publishedVersion,
+					});
+				} catch (error) {
+					const preflightError =
+						error instanceof ProductionPreflightError
+							? error
+							: new ProductionPreflightError(
+									'PRODUCTION_PLAN_BLOCKED',
+									'No fue posible verificar de forma segura el proyecto y el estado de Producción. Revise las credenciales, la identidad de Database y Storage, y vuelva a ejecutar el preflight.',
+									error,
+								);
+					const technicalDetail = sanitizeMessage(
+						preflightError.technicalCause instanceof Error
+							? preflightError.technicalCause.message
+							: String(preflightError.technicalCause),
+					);
+					reports.push({
+						stage: 'plan',
+						environment: 'production',
+						status: 'BLOCKED',
+						reasonCode: preflightError.code,
+						reason: preflightError.safeReason,
+						remainingAction: `Detalle técnico sanitizado: ${technicalDetail}`,
+					});
+					targetPlans.push({
+						target: 'production',
+						status: 'BLOQUEADO',
+						reason: preflightError.safeReason,
+						mergeConflicts: mergeConflictsFromError(
+							preflightError.technicalCause instanceof Error
+								? preflightError.technicalCause
+								: error,
+						),
 						plannedOperations: 0,
 						expectedDatabaseWrites: { inserts: 0, updates: 0, deletes: 0 },
 						expectedStorageMutations: {
@@ -830,111 +922,55 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 					});
 				}
 			}
-		} else if (target === 'production') {
-			try {
-				const { engineResult } = await runProductionPreflight({
-					packageData: confirmationPackage,
-					ownerUserId,
-					assetPolicy,
-					pruneAssets,
-					updateScope,
-					conflictResolutions,
-					getProductionDbUrl: getProdDbUrl,
-				});
-				executionPlans.set('production', engineResult.plan);
-				reports.push({
-					stage: 'plan',
-					environment: 'production',
-					status: engineResult.isZeroDrift ? 'IN_SYNC' : 'SKIPPED',
-					plannedOperations: engineResult.plannedMutations,
-					completedOperations: 0,
-					assetCounts: assetCounts(engineResult.actions),
-					publishedVersion: engineResult.publishedVersion,
-					packageHash: engineResult.packageHash,
-				});
-				targetPlans.push({
-					target: 'production',
-					planId: engineResult.plan.planId,
-					status: engineResult.isZeroDrift ? 'SIN CAMBIOS' : 'CAMBIOS PENDIENTES',
-					plannedOperations: engineResult.plannedMutations,
-					expectedDatabaseWrites: engineResult.plan.physicalDatabaseOps,
-					expectedStorageMutations: engineResult.plan.storageOps,
-					actions: engineResult.actions,
-					functionalChanges: engineResult.functionalChanges,
-					publishedVersion: engineResult.publishedVersion,
-				});
-			} catch (error) {
-				const preflightError =
-					error instanceof ProductionPreflightError
-						? error
-						: new ProductionPreflightError(
-								'PRODUCTION_PLAN_BLOCKED',
-								'No fue posible verificar de forma segura el proyecto y el estado de Producción. Revise las credenciales, la identidad de Database y Storage, y vuelva a ejecutar el preflight.',
-								error,
-							);
-				const technicalDetail = sanitizeMessage(
-					preflightError.technicalCause instanceof Error
-						? preflightError.technicalCause.message
-						: String(preflightError.technicalCause),
-				);
-				reports.push({
-					stage: 'plan',
-					environment: 'production',
-					status: 'BLOCKED',
-					reasonCode: preflightError.code,
-					reason: preflightError.safeReason,
-					remainingAction: `Detalle técnico sanitizado: ${technicalDetail}`,
-				});
-				targetPlans.push({
-					target: 'production',
-					status: 'BLOQUEADO',
-					reason: preflightError.safeReason,
-					mergeConflicts: mergeConflictsFromError(
-						preflightError.technicalCause instanceof Error
-							? preflightError.technicalCause
-							: error,
-					),
-					plannedOperations: 0,
-					expectedDatabaseWrites: { inserts: 0, updates: 0, deletes: 0 },
-					expectedStorageMutations: { uploads: 0, overwrites: 0, moves: 0, deletes: 0 },
-					actions: [],
-				});
-			}
 		}
-	}
 
-	isZeroDrift = targetPlans.every((tp) => tp.status === 'SIN CAMBIOS');
-	plannedOperations = targetPlans.reduce((sum, tp) => sum + tp.plannedOperations, 0);
+		isZeroDrift = targetPlans.every((tp) => tp.status === 'SIN CAMBIOS');
+		plannedOperations = targetPlans.reduce((sum, tp) => sum + tp.plannedOperations, 0);
 
-	// Operational plan for presentation
-	planData = {
-		planId: localResult?.plan?.planId,
-		invitation: slug,
-		targets,
-		isZeroDrift,
-		plannedOperations,
-		expectedDatabaseWrites: {
-			inserts: targetPlans.reduce((sum, tp) => sum + tp.expectedDatabaseWrites.inserts, 0),
-			updates: targetPlans.reduce((sum, tp) => sum + tp.expectedDatabaseWrites.updates, 0),
-			deletes: targetPlans.reduce((sum, tp) => sum + tp.expectedDatabaseWrites.deletes, 0),
-		},
-		expectedStorageMutations: {
-			uploads: targetPlans.reduce((sum, tp) => sum + tp.expectedStorageMutations.uploads, 0),
-			overwrites: targetPlans.reduce(
-				(sum, tp) => sum + tp.expectedStorageMutations.overwrites,
-				0,
-			),
-			moves: targetPlans.reduce(
-				(sum, tp) => sum + (tp.expectedStorageMutations.moves ?? 0),
-				0,
-			),
-			deletes: targetPlans.reduce((sum, tp) => sum + tp.expectedStorageMutations.deletes, 0),
-		},
-		actions: localResult ? localResult.actions : [],
-		functionalChanges: consolidateTargetFunctionalChanges(targetPlans),
-		publishedVersion: localResult?.publishedVersion,
-		targetPlans,
-	};
+		// Operational plan for presentation
+		planData = {
+			planId: localResult?.plan?.planId,
+			invitation: slug,
+			targets,
+			isZeroDrift,
+			plannedOperations,
+			expectedDatabaseWrites: {
+				inserts: targetPlans.reduce(
+					(sum, tp) => sum + tp.expectedDatabaseWrites.inserts,
+					0,
+				),
+				updates: targetPlans.reduce(
+					(sum, tp) => sum + tp.expectedDatabaseWrites.updates,
+					0,
+				),
+				deletes: targetPlans.reduce(
+					(sum, tp) => sum + tp.expectedDatabaseWrites.deletes,
+					0,
+				),
+			},
+			expectedStorageMutations: {
+				uploads: targetPlans.reduce(
+					(sum, tp) => sum + tp.expectedStorageMutations.uploads,
+					0,
+				),
+				overwrites: targetPlans.reduce(
+					(sum, tp) => sum + tp.expectedStorageMutations.overwrites,
+					0,
+				),
+				moves: targetPlans.reduce(
+					(sum, tp) => sum + (tp.expectedStorageMutations.moves ?? 0),
+					0,
+				),
+				deletes: targetPlans.reduce(
+					(sum, tp) => sum + tp.expectedStorageMutations.deletes,
+					0,
+				),
+			},
+			actions: localResult ? localResult.actions : [],
+			functionalChanges: consolidateTargetFunctionalChanges(targetPlans),
+			publishedVersion: localResult?.publishedVersion,
+			targetPlans,
+		};
 
 		const hasBlockedTarget = targetPlans.some(
 			(tp) => tp.status === 'BLOQUEADO' || tp.status === 'NO EVALUADO',
@@ -1347,6 +1383,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 				if (target === 'local') {
 					const executedLocal = await applyLocalInvitation({
 						slug,
+						rekeyFrom,
 						sourceDir,
 						ownerUserId,
 						apply: true,

@@ -134,10 +134,6 @@ async function rekeySlug(input: {
 		),
 	);
 
-	if (currentEmail === targetEmail) {
-		console.log(`OK: "${input.slug}" already uses ${targetAlias}`);
-		return;
-	}
 	if (existingTargetOwner && existingTargetOwner !== resolved.userId) {
 		throw new Error(
 			`Target email "${targetEmail}" already belongs to another Auth user (${existingTargetOwner}).`,
@@ -148,14 +144,18 @@ async function rekeySlug(input: {
 		return;
 	}
 
-	const result = await updateInvitationHostLogin({
-		supabaseUrl: input.apiUrl,
-		serviceRoleKey: input.serviceRoleKey,
-		targetDbUrl: input.dbUrl,
-		userId: resolved.userId,
-		newHostLoginAlias: targetAlias,
-	});
-	console.log(`Remapped "${input.slug}" → ${result.hostLoginAlias} (${result.hostEmail})`);
+	if (currentEmail !== targetEmail) {
+		const result = await updateInvitationHostLogin({
+			supabaseUrl: input.apiUrl,
+			serviceRoleKey: input.serviceRoleKey,
+			targetDbUrl: input.dbUrl,
+			userId: resolved.userId,
+			newHostLoginAlias: targetAlias,
+		});
+		console.log(`Remapped "${input.slug}" → ${result.hostLoginAlias} (${result.hostEmail})`);
+	} else {
+		console.log(`OK: "${input.slug}" already uses ${targetAlias}`);
+	}
 }
 
 async function main(): Promise<void> {

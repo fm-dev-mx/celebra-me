@@ -23,10 +23,27 @@ export function parseTargets(raw: string | undefined): InvitationUpdateTarget[] 
 	);
 }
 
+export function validateUpdateOptions(input: {
+	slug?: string;
+	targets?: InvitationUpdateTarget[];
+	rekeyFrom?: string;
+}): void {
+	if (
+		input.rekeyFrom &&
+		input.targets &&
+		(input.targets.includes('preview') || input.targets.includes('production'))
+	) {
+		throw new Error(
+			'IDENTITY_REKEY_UNSUPPORTED_TARGET: Identity rekey (--rekey-from) is supported only for the local target environment. Preview and Production rekey operations are unsupported.',
+		);
+	}
+}
+
 const VALID_FLAGS = new Set([
 	'--status',
 	'--targets',
 	'--slug',
+	'--rekey-from',
 	'--source-dir',
 	'--dry-run',
 	'--apply',
@@ -73,6 +90,7 @@ export function checkUnknownFlags(args: string[]): void {
 				[
 					'--targets',
 					'--slug',
+					'--rekey-from',
 					'--source-dir',
 					'--owner-user-id',
 					'--package',
