@@ -22,28 +22,32 @@ owns the command inventory.
 
 ## Available Ops Commands
 
-| Command                     | Canonical Script               | Purpose                                                                                                                                                                                               |
-| --------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pnpm ops check-links`      | `scripts/check-links.mjs`      | validate relative links inside changed Markdown files                                                                                                                                                 |
-| `pnpm ops optimize-assets`  | `scripts/optimize-assets.mjs`  | **Legacy one-shot** (hardcoded demo WebP copy). Not the managed invitation asset pipeline — use invitation preparation asset protocol + `normalizeInvitationImage` / provision release normalization. |
-| `pnpm ops validate-schema`  | `scripts/validate-schema.mjs`  | compare centralized theme-contract variants against modular section-theme selectors and documented base-style fallbacks                                                                               |
-| `pnpm ops validate-commits` | `scripts/validate-commits.mjs` | replay commitlint and commit-audit checks across a commit range                                                                                                                                       |
-| `pnpm ops graphify-views`   | `scripts/graphify/entry.ts`    | generate Graphify operational domain and community reports                                                                                                                                            |
-| `pnpm ops graphify-refresh` | `scripts/graphify/refresh.ts`  | regenerate, cluster, promote, fingerprint, and validate the canonical Graphify snapshot                                                                                                               |
-| `pnpm ops new-invitation`   | `scripts/new-invitation.mjs`   | disabled fail-closed guard; real/client invitations are DB-published content                                                                                                                          |
+| Command                     | Canonical Script               | Purpose                                                                               |
+| --------------------------- | ------------------------------ | ------------------------------------------------------------------------------------- |
+| `pnpm ops check-links`      | `scripts/check-links.mjs`      | validate relative links inside changed Markdown files                                 |
+| `pnpm ops validate-schema`  | `scripts/validate-schema.mjs`  | compare theme-contract variants against modular section-theme selectors                |
+| `pnpm ops validate-commits` | `scripts/validate-commits.mjs` | replay commitlint and commit-audit checks across a commit range                       |
+| `pnpm ops graphify-views`   | `scripts/graphify/entry.ts`    | generate Graphify operational domain and community reports                            |
+| `pnpm ops graphify-refresh` | `scripts/graphify/refresh.ts`  | rebuild, cluster, promote, fingerprint, and validate the canonical Graphify snapshot |
+
+Removed one-shot commands (`optimize-assets`, `new-invitation`, `adopt-legacy-events`, `ops dbs`) are
+no longer registered. Use `pnpm dbs` and `pnpm invitation:*` for invitation operations.
 
 ## Invitation Provisioning & Promotion Commands
 
-| Command                  | Canonical Script                             | Purpose                                                                                                                                                                          |
-| ------------------------ | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pnpm invitation:update` | `scripts/provision/invitation-update-cli.ts` | Define, plan, apply, package, promote, approve, and continue managed invitations from an exact package, with per-target independent plans, semantic diffs, and truthful recovery |
-| `pnpm invitation:content-parity` | `scripts/provision/content-parity-cli.ts` | Read-only semantic content parity across Local/Preview/Production (excludes RSVP/PII by construction) |
+| Command                          | Canonical Script                                | Purpose                                                                                    |
+| -------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `pnpm dbs`                       | `scripts/provision/dbs-cli.ts`                  | Read-only Local/Preview/Production status matrix (managed invitations + schema lifecycle)  |
+| `pnpm invitation:update`         | `scripts/provision/invitation-update-cli.ts`    | Define, plan, apply, package, and approve managed invitations for Local/Preview            |
+| `pnpm invitation:reconcile`      | `scripts/provision/invitation-reconcile-cli.ts` | Guided Local/Preview managed divergence reconciliation                                     |
+| `pnpm invitation:content-parity` | `scripts/provision/content-parity-cli.ts`       | Read-only semantic content parity across environments (excludes RSVP/PII)                  |
+| `pnpm invitation:promote`        | `scripts/provision/invitation-promote-cli.ts`   | Owner-only Production managed-content promotion from an exact Preview-approved release     |
 
 The CLI resolves source/package input through `invitation-package-input.ts`, retains one immutable
 plan per target, and delegates mutation ordering/result synthesis to
-`invitation-lifecycle-execution.ts`. Preview apply and Production read-only preflight use the shared
-`preview-apply.ts` and `production-preflight.ts` adapters, so interactive and non-interactive modes
-execute the same retained plans. Any blocked selected target aborts the complete mutation phase.
+`invitation-lifecycle-execution.ts`. Preview apply uses `preview-apply.ts`. Production promotion
+uses `invitation-promote.ts` + `production-preflight.ts` + the managed import engine. Any blocked
+selected target aborts the complete mutation phase.
 
 ## Validation Commands
 

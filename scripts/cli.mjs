@@ -6,24 +6,21 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Centralized mapping of available ops commands
+// Centralized mapping of available ops commands.
+// Invitation lifecycle commands are first-class package.json scripts (invitation:* / dbs).
 const SCRIPTS = {
-	'optimize-assets': { script: 'optimize-assets.mjs', runtime: 'node' },
 	'check-links': { script: 'check-links.mjs', runtime: 'node' },
 	'validate-schema': { script: 'validate-schema.mjs', runtime: 'node' },
 	'validate-commits': { script: 'validate-commits.mjs', runtime: 'node' },
 	'graphify-views': { script: 'graphify/entry.ts', runtime: 'tsx' },
 	'graphify-refresh': { script: 'graphify/refresh.ts', runtime: 'tsx' },
-	'new-invitation': { script: 'new-invitation.mjs', runtime: 'node' },
 	'data-audit-events-invitations': {
 		script: 'data-audit-events-invitations.mjs',
 		runtime: 'node',
 	},
-	'adopt-legacy-events': { script: 'adopt-legacy-events.mjs', runtime: 'node' },
 	'worktree-status': { script: 'agent/worktree-status.ts', runtime: 'tsx' },
 	'worktree-bootstrap': { script: 'agent/worktree-bootstrap.ts', runtime: 'tsx' },
 	'worktree-doctor': { script: 'agent/worktree-doctor.ts', runtime: 'tsx' },
-	dbs: { script: 'provision/dbs-cli.ts', runtime: 'tsx' },
 };
 
 const args = process.argv.slice(2);
@@ -39,6 +36,13 @@ ${Object.keys(SCRIPTS)
 	.map((c) => `  - ${c}`)
 	.join('\n')}
 
+Canonical invitation / environment status commands (not via ops):
+  - pnpm dbs
+  - pnpm invitation:update
+  - pnpm invitation:reconcile
+  - pnpm invitation:content-parity
+  - pnpm invitation:promote
+
 Global Options:
   --help, -h     Show this help message
   --dry-run      Run command without mutating state / side-effects
@@ -49,6 +53,22 @@ Run \`pnpm ops <command> --help\` for specific command info.
 }
 
 const command = args[0];
+if (command === 'dbs') {
+	console.error(
+		'Removed alias: use `pnpm dbs` (canonical). `pnpm ops dbs` is no longer registered.',
+	);
+	process.exit(1);
+}
+if (
+	command === 'optimize-assets' ||
+	command === 'new-invitation' ||
+	command === 'adopt-legacy-events'
+) {
+	console.error(
+		`Removed command: pnpm ops ${command}. This one-shot/legacy path is no longer registered.`,
+	);
+	process.exit(1);
+}
 if (!SCRIPTS[command]) {
 	console.error(`❌ Unknown command: ${command}`);
 	console.log(`Use 'pnpm ops --help' to see available commands.`);
