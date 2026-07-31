@@ -1,15 +1,13 @@
 # Reconciliación Alba Rosa — conflictos de merge managed vs editor
 
-Guía operativa (solo lectura hasta autorización explícita) para
-`alba-rosa-quinones` cuando `pnpm invitation:update` reporta
-`Conflicto de derivación` / conflictos de merge.
+Guía operativa (solo lectura hasta autorización explícita) para `alba-rosa-quinonez` cuando
+`pnpm invitation:update` reporta `Conflicto de derivación` / conflictos de merge.
 
 ## Contexto
 
-Tras un apply managed, el editor puede publicar cambios en Production.
-El ancestro `managed_projection` puede quedar desfasado; el merge 3-way
-marca `DRIFT` en paths donde el paquete y el destino (editor) divergieron
-del ancestro.
+Tras un apply managed, el editor puede publicar cambios en Production. El ancestro
+`managed_projection` puede quedar desfasado; el merge 3-way marca `DRIFT` en paths donde el paquete
+y el destino (editor) divergieron del ancestro.
 
 Con el tooling actual:
 
@@ -21,7 +19,7 @@ Con el tooling actual:
 
 ```bash
 # 1. Dry-run (no muta)
-pnpm invitation:update -- --slug alba-rosa-quinones --targets production --dry-run --non-interactive --json
+pnpm invitation:update -- --slug alba-rosa-quinonez --targets production --dry-run --non-interactive --json
 
 # 2. Guardar resoluciones sugeridas del JSON (suggestedConflictResolutions)
 #    o construir manualmente, por ejemplo:
@@ -42,18 +40,18 @@ Valores:
 
 ```bash
 # 3. Volver a planificar con resoluciones (sigue dry-run)
-pnpm invitation:update -- --slug alba-rosa-quinones --targets production --dry-run --non-interactive --conflict-resolutions .tmp/alba-resolutions.json --json
+pnpm invitation:update -- --slug alba-rosa-quinonez --targets production --dry-run --non-interactive --conflict-resolutions .tmp/alba-resolutions.json --json
 
 # 4. Apply solo con autorización explícita del owner y confirmaciones Production
-pnpm invitation:update -- --slug alba-rosa-quinones --targets production --apply --non-interactive --conflict-resolutions .tmp/alba-resolutions.json --confirm-slug alba-rosa-quinones --confirm-scope --confirm-destructive
+pnpm invitation:update -- --slug alba-rosa-quinonez --targets production --apply --non-interactive --conflict-resolutions .tmp/alba-resolutions.json --confirm-slug alba-rosa-quinonez --confirm-scope --confirm-destructive
 ```
 
 ## Verificación post-apply
 
 - Provenance `managed_projection` alineado con el contenido aplicado.
 - Draft y published coherentes con las elecciones.
-- Un publish desde el editor limpia el ancestro managed (`managed_projection = null`)
-  para el siguiente ciclo de merge.
+- Un publish desde el editor limpia el ancestro managed (`managed_projection = null`) para el
+  siguiente ciclo de merge.
 
 ## No hacer
 

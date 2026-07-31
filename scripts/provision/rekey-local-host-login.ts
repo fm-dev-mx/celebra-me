@@ -24,7 +24,7 @@ import {
 import { getInvitationDefinition, listInvitationDefinitions } from './invitations/registry.ts';
 import { resolveLocalEnv } from './local-provision-env.ts';
 
-const SHORT_ALIAS_SLUGS = ['abril-michelle-becerra-rea', 'alba-rosa-quinones'] as const;
+const SHORT_ALIAS_SLUGS = ['abril-michelle-becerra-rea', 'alba-rosa-quinonez'] as const;
 
 function legacyAliasFromSlug(slug: string): string {
 	return slug

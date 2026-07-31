@@ -34,7 +34,7 @@ const INTERSECTION_PROFILES: Readonly<Record<string, IntersectionProfile>> = {
 		'interlude-after-itinerary': { family: 'overlap', source: 'itinerary' },
 		'interlude-after-rsvp': { family: 'atmospheric-blend', source: 'rsvp' },
 	},
-	'alba-rosa-quinones': {
+	'alba-rosa-quinonez': {
 		// Quiet pause after the dark hero before warm Location
 		countdown: { family: 'atmospheric-blend', source: 'hero' },
 		location: { family: 'atmospheric-blend', source: 'countdown' },

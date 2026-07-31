@@ -1,8 +1,8 @@
 /**
- * alba-rosa-quinones.ts — Managed invitation definition for Alba Rosa Quiñónez López (70 años)
+ * alba-rosa-quinonez.ts — Managed invitation definition for Alba Rosa Quiñónez López (70 años)
  *
  * Base: demo-cumple-luxury-hacienda / luxury-hacienda
- * Prep SoT: docs/invitations/alba-rosa-quinones.md
+ * Prep SoT: docs/invitations/alba-rosa-quinonez.md
  */
 
 import { defineInvitation } from './invitation-definition.ts';
@@ -14,11 +14,11 @@ import type {
 
 export const ALBA_EVENT = {
 	eventType: 'cumple',
-	slug: 'alba-rosa-quinones',
-	assetSlug: 'alba-rosa-quinones',
+	slug: 'alba-rosa-quinonez',
+	assetSlug: 'alba-rosa-quinonez',
 	baseDemoId: 'demo-cumple-luxury-hacienda',
 	themeId: 'luxury-hacienda',
-	visualProfileId: 'alba-rosa-quinones',
+	visualProfileId: 'alba-rosa-quinonez',
 	title: '70 años de Alba Rosa Quiñónez López',
 	localDateTime: '2026-09-12T20:00',
 	timeZone: 'America/Mexico_City',
@@ -340,7 +340,7 @@ export const albaInvitation: InvitationDefinition<AlbaAssetKey> = defineInvitati
 	eventType: ALBA_EVENT.eventType,
 	title: ALBA_EVENT.title,
 	clientName: 'Lucero Ramírez',
-	hostLoginAlias: 'alba_quinones',
+	hostLoginAlias: 'alba_quinonez',
 	clientEmail: '',
 	clientWhatsapp: '',
 	photosReceived: true,

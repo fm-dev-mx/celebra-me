@@ -8,14 +8,14 @@ import {
 	ALBA_EVENT,
 	buildAlbaPublishedContent,
 	type AlbaAssetMap,
-} from '../../scripts/provision/invitations/alba-rosa-quinones.ts';
+} from '../../scripts/provision/invitations/alba-rosa-quinonez.ts';
 
 const albaProfilePath = path.join(
 	process.cwd(),
-	'src/styles/invitation-profiles/alba-rosa-quinones.scss',
+	'src/styles/invitation-profiles/alba-rosa-quinonez.scss',
 );
 
-const albaAssetDir = path.join(process.cwd(), 'src/assets/invitations/alba-rosa-quinones');
+const albaAssetDir = path.join(process.cwd(), 'src/assets/invitations/alba-rosa-quinonez');
 
 function buildTestAssets(): AlbaAssetMap {
 	return Object.fromEntries(
@@ -59,7 +59,7 @@ describe('Alba Rosa Quiñónez provision contract', () => {
 
 	it('ships a Lane A profile scoped to the invitation event class', () => {
 		const profile = fs.readFileSync(albaProfilePath, 'utf8');
-		expect(profile).toContain('.event--alba-rosa-quinones.theme-preset--luxury-hacienda');
+		expect(profile).toContain('.event--alba-rosa-quinonez.theme-preset--luxury-hacienda');
 		expect(profile).toContain('--alba-ivory');
 		expect(profile).toContain('.invitation-hero__label-age');
 		expect(profile).toContain('.invitation-hero__label-unit');

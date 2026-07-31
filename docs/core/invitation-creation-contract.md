@@ -26,7 +26,7 @@ Every managed digital invitation must define:
   email is `{hostLoginAlias}@clientes.celebra.invalid`. Alias is independent of slug.
   - **Preferred form:** `{primer_nombre}_{primer_apellido}` from the celebrant/honoree (not the
     commercial purchaser), ASCII lowercase, underscores only (e.g. `abril_becerra`,
-    `alba_quinones`).
+    `alba_quinonez`).
   - **Collision 1:** append segundo apellido → `abril_becerra_rea`.
   - **Collision 2:** numeric suffix `_2`, `_3`, … if still taken or no second surname.
   - Legacy aliases may retain a fuller form (e.g. `romina_rios_chaparro`) until intentionally

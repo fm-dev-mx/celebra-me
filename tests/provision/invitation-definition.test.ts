@@ -142,8 +142,8 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 			expect(getInvitationDefinition('abril-michelle-becerra-rea').hostLoginAlias).toBe(
 				'abril_becerra',
 			);
-			expect(getInvitationDefinition('alba-rosa-quinones').hostLoginAlias).toBe(
-				'alba_quinones',
+			expect(getInvitationDefinition('alba-rosa-quinonez').hostLoginAlias).toBe(
+				'alba_quinonez',
 			);
 		});
 

@@ -13,8 +13,8 @@ describe('invitation host owner planning', () => {
 		expect(buildInvitationHostEmail('abril_becerra')).toBe(
 			'abril_becerra@clientes.celebra.invalid',
 		);
-		expect(buildInvitationHostEmail('alba_quinones')).toBe(
-			'alba_quinones@clientes.celebra.invalid',
+		expect(buildInvitationHostEmail('alba_quinonez')).toBe(
+			'alba_quinonez@clientes.celebra.invalid',
 		);
 	});
 

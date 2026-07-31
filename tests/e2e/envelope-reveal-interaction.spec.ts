@@ -141,7 +141,7 @@ test.describe('shared envelope reveal interaction', () => {
 	test('@extended keeps Alba Rosa’s reveal, countdown, and map hierarchy senior-friendly', async ({
 		page,
 	}) => {
-		await page.goto('/cumple/alba-rosa-quinones?skipEnvelope=true', {
+		await page.goto('/cumple/alba-rosa-quinonez?skipEnvelope=true', {
 			waitUntil: 'domcontentloaded',
 		});
 
@@ -168,7 +168,7 @@ test.describe('shared envelope reveal interaction', () => {
 				.toBe(true);
 		}
 
-		await page.goto('/cumple/alba-rosa-quinones?screenshot=1&reveal=letter', {
+		await page.goto('/cumple/alba-rosa-quinonez?screenshot=1&reveal=letter', {
 			waitUntil: 'domcontentloaded',
 		});
 		await expect(page.locator('.invitation-reveal-card__action')).toHaveCount(0);

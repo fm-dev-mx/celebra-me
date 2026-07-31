@@ -16,7 +16,9 @@ describe('invitation intersection profiles', () => {
 	});
 
 	it('maps Celestial bridges and climaxes explicitly', () => {
-		expect(resolveRenderPlanIntersection('demo-xv-celestial-blue', 'interlude-after-family')).toEqual({
+		expect(
+			resolveRenderPlanIntersection('demo-xv-celestial-blue', 'interlude-after-family'),
+		).toEqual({
 			family: 'overlap',
 			source: 'family',
 		});
@@ -24,15 +26,21 @@ describe('invitation intersection profiles', () => {
 			family: 'atmospheric-blend',
 			source: 'interlude-after-family',
 		});
-		expect(resolveRenderPlanIntersection('demo-xv-celestial-blue', 'interlude-after-location')).toEqual({
+		expect(
+			resolveRenderPlanIntersection('demo-xv-celestial-blue', 'interlude-after-location'),
+		).toEqual({
 			family: 'arch',
 			source: 'location',
 		});
-		expect(resolveRenderPlanIntersection('demo-xv-celestial-blue', 'interlude-after-itinerary')).toEqual({
+		expect(
+			resolveRenderPlanIntersection('demo-xv-celestial-blue', 'interlude-after-itinerary'),
+		).toEqual({
 			family: 'overlap',
 			source: 'itinerary',
 		});
-		expect(resolveRenderPlanIntersection('demo-xv-celestial-blue', 'interlude-after-rsvp')).toEqual({
+		expect(
+			resolveRenderPlanIntersection('demo-xv-celestial-blue', 'interlude-after-rsvp'),
+		).toEqual({
 			family: 'atmospheric-blend',
 			source: 'rsvp',
 		});
@@ -46,27 +54,27 @@ describe('invitation intersection profiles', () => {
 	});
 
 	it('maps Alba Rosa pause dividers and the RSVP diagonal cut', () => {
-		expect(resolveRenderPlanIntersection('alba-rosa-quinones', 'countdown')).toEqual({
+		expect(resolveRenderPlanIntersection('alba-rosa-quinonez', 'countdown')).toEqual({
 			family: 'atmospheric-blend',
 			source: 'hero',
 		});
-		expect(resolveRenderPlanIntersection('alba-rosa-quinones', 'location')).toEqual({
+		expect(resolveRenderPlanIntersection('alba-rosa-quinonez', 'location')).toEqual({
 			family: 'atmospheric-blend',
 			source: 'countdown',
 		});
-		expect(resolveRenderPlanIntersection('alba-rosa-quinones', 'gifts')).toEqual({
+		expect(resolveRenderPlanIntersection('alba-rosa-quinonez', 'gifts')).toEqual({
 			family: 'atmospheric-blend',
 			source: 'gallery',
 		});
-		expect(resolveRenderPlanIntersection('alba-rosa-quinones', 'personalized-access')).toEqual({
+		expect(resolveRenderPlanIntersection('alba-rosa-quinonez', 'personalized-access')).toEqual({
 			family: 'atmospheric-blend',
 			source: 'gifts',
 		});
-		expect(resolveRenderPlanIntersection('alba-rosa-quinones', 'rsvp')).toEqual({
+		expect(resolveRenderPlanIntersection('alba-rosa-quinonez', 'rsvp')).toEqual({
 			family: 'overlap',
 			source: 'personalized-access',
 		});
-		expect(resolveRenderPlanIntersection('alba-rosa-quinones', 'gallery')).toEqual({
+		expect(resolveRenderPlanIntersection('alba-rosa-quinonez', 'gallery')).toEqual({
 			family: 'overlap',
 			source: 'interlude-after-location',
 		});

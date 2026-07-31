@@ -531,14 +531,14 @@ describe('rsvp user admin service', () => {
 			});
 			findAuthUserByLoginIdentifierMock.mockResolvedValue({
 				id: 'other-user',
-				email: 'alba_quinones@clientes.celebra.invalid',
-				login_alias: 'alba_quinones',
+				email: 'alba_quinonez@clientes.celebra.invalid',
+				login_alias: 'alba_quinonez',
 			});
 			findAuthUserByEmailMock.mockResolvedValue(null);
 
 			const result = await updateUserLoginAliasAdmin({
 				userId: 'user-host',
-				loginAlias: 'alba_quinones',
+				loginAlias: 'alba_quinonez',
 				actorUserId: 'admin-1',
 				aliasOperationId: OPERATION_ID,
 				commandContext: COMMAND_CONTEXT,

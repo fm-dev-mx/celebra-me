@@ -506,7 +506,7 @@ describe('content mapping behavior', () => {
 	it('preserves prior-published thankYou variant, date, and visualProfileId in preview mapping', async () => {
 		const invitation = makeProject({
 			kind: 'client',
-			slug: 'alba-rosa-quinones',
+			slug: 'alba-rosa-quinonez',
 			themeId: 'luxury-hacienda',
 			snapshot: {
 				...demoPreset,
@@ -536,7 +536,7 @@ describe('content mapping behavior', () => {
 		} satisfies Parameters<typeof buildDraftPreviewPageContext>[1];
 
 		const priorPublishedContent = {
-			visualProfileId: 'alba-rosa-quinones',
+			visualProfileId: 'alba-rosa-quinonez',
 			sectionStyles: {
 				thankYou: { variant: 'editorial-magazine' },
 			},
@@ -573,7 +573,7 @@ describe('content mapping behavior', () => {
 			string,
 			unknown
 		>;
-		expect(contentWithPrior.visualProfileId).toBe('alba-rosa-quinones');
+		expect(contentWithPrior.visualProfileId).toBe('alba-rosa-quinonez');
 		expect(contentWithPrior.sectionStyles).toEqual({
 			thankYou: { variant: 'editorial-magazine' },
 		});

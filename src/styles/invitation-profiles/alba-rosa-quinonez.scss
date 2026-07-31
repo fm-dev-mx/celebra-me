@@ -7,14 +7,14 @@
 // Neutral editorial palette: photography carries color; UI stays luminous neutrals.
 // 3-band rhythm: light editorial → pause cream → coherent ink (pass → RSVP).
 
-html:has(.event--alba-rosa-quinones),
-html:has(.event--alba-rosa-quinones) body {
+html:has(.event--alba-rosa-quinonez),
+html:has(.event--alba-rosa-quinonez) body {
 	scrollbar-gutter: auto;
 
 	@include mixins.hide-scrollbar;
 }
 
-.event--alba-rosa-quinones.theme-preset--luxury-hacienda {
+.event--alba-rosa-quinonez.theme-preset--luxury-hacienda {
 	// ==========================================================================
 	// 1. NEUTRAL EDITORIAL PALETTE (3-band cohesion — older-reader legibility)
 	// Light ivory/cream, one pause cream, one cool-neutral ink family. Champagne accent-only.

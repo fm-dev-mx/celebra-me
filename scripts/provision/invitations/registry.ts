@@ -5,7 +5,7 @@
  */
 
 import type { InvitationDefinition } from './invitation-definition.ts';
-import { albaInvitation } from './alba-rosa-quinones.ts';
+import { albaInvitation } from './alba-rosa-quinonez.ts';
 import { abrilInvitation } from './abril-michelle-becerra-rea.ts';
 import { rominaInvitation } from './romina-rios-chaparro.ts';
 

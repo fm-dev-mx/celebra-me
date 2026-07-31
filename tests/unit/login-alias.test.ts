@@ -33,7 +33,7 @@ describe('canonical managed host alias', () => {
 		expect(buildManagedHostEmail('Álba Quiñónez')).toBe(
 			'alba_quinonez@clientes.celebra.invalid',
 		);
-		expect(isManagedHostEmail('ALBA_QUINONES@clientes.celebra.invalid')).toBe(true);
+		expect(isManagedHostEmail('alba_quinonez@clientes.celebra.invalid')).toBe(true);
 		expect(isManagedHostEmail('alba@example.com')).toBe(false);
 	});
 });

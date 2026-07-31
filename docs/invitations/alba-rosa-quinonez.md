@@ -1,8 +1,7 @@
-# Canonical Invitation Preparation State — `alba-rosa-quinones`
+# Canonical Invitation Preparation State — `alba-rosa-quinonez`
 
-> Schema owner: `docs/core/invitation-preparation-contract.md`  
-> Executable evaluation: `src/lib/invitation-preparation/`  
-> Workflow: `.agent/workflows/invitation-preparation.md`
+> Schema owner: `docs/core/invitation-preparation-contract.md` Executable evaluation:
+> `src/lib/invitation-preparation/` Workflow: `.agent/workflows/invitation-preparation.md`
 
 ---
 
@@ -10,8 +9,8 @@
 
 | Parameter              | Value                                            |
 | ---------------------- | ------------------------------------------------ |
-| **Slug**               | `alba-rosa-quinones`                             |
-| **Host Login Alias**   | `alba_quinones`                                  |
+| **Slug**               | `alba-rosa-quinonez`                             |
+| **Host Login Alias**   | `alba_quinonez`                                  |
 | **Event Type**         | `cumple`                                         |
 | **Preparation Status** | `READY_FOR_IMPLEMENTATION` (implemented locally) |
 
@@ -36,7 +35,7 @@ by `pnpm invitation:update --status` / `invitation-readiness.ts`.
 
 | field                 | value                                                                                                        | classification               | source                               | notes                                                                            |
 | --------------------- | ------------------------------------------------------------------------------------------------------------ | ---------------------------- | ------------------------------------ | -------------------------------------------------------------------------------- |
-| slug                  | alba-rosa-quinones                                                                                           | verified                     | owner 2026-07-28                     | Confirmed                                                                        |
+| slug                  | alba-rosa-quinonez                                                                                           | verified                     | owner 2026-07-28                     | Confirmed                                                                        |
 | celebrantName         | Alba Rosa Quiñónez López                                                                                     | owner override               | client correction 2026-07-29         | Corrected from WhatsApp source per client request (con Z)                        |
 | eventLabel            | 70 Años                                                                                                      | inferred                     | age + demo pattern                   |                                                                                  |
 | eventDate             | 2026-09-12                                                                                                   | owner override               | client correction 2026-07-29         | Client corrected from 2026-09-11; earlier WhatsApp source superseded             |
@@ -87,7 +86,7 @@ Contract maturity for this event type: `undefined`
 - Source photos are client-approved provisional-resolution originals; delivery WebPs preserve their
   available detail without enlarging deterministic derivatives.
 
-Deterministic question: **Is the available information sufficient to prepare this invitation?**  
+Deterministic question: **Is the available information sufficient to prepare this invitation?**
 Answer: `yes`.
 
 ---
@@ -104,7 +103,7 @@ Answer: `yes`.
 
 | id                     | category              | issue                   | evidence                        | options | recommendation                                                | status                  |
 | ---------------------- | --------------------- | ----------------------- | ------------------------------- | ------- | ------------------------------------------------------------- | ----------------------- |
-| slug                   | other-blocking        | Canonical slug          | owner                           | —       | `alba-rosa-quinones`                                          | **resolved**            |
+| slug                   | other-blocking        | Canonical slug          | owner                           | —       | `alba-rosa-quinonez`                                          | **resolved**            |
 | venueAddress           | missing-client-facts  | Venue name + address    | owner                           | —       | Canta Luna Campestre / Supermanzana km 6, Los Mochis, Sinaloa | **resolved**            |
 | giftsLegendCopy        | ambiguous-data        | Adapt legend            | owner “Adaptar”                 | —       | Singular birthday adaptation applied                          | **resolved**            |
 | sectionOrder           | demo-design-decisions | Sections                | owner “ok”                      | —       | hero → location → gallery → gifts → rsvp → thankYou           | **resolved**            |
@@ -192,7 +191,7 @@ the same garden session count as one hero role.
 | Field                | Value                                                                |
 | -------------------- | -------------------------------------------------------------------- |
 | Authoritative source | `…\Fotos Sra Alba Rosa\00000059-PHOTO-2026-07-17-10-12-32.jpg`       |
-| Derivative           | `src/assets/invitations/alba-rosa-quinones/family.webp`              |
+| Derivative           | `src/assets/invitations/alba-rosa-quinonez/family.webp`              |
 | Dims / weight        | 994×1280 / ~228 KB WebP q88                                          |
 | Processing           | rotate + inside resize **without enlargement**; no AI reconstruction |
 
@@ -286,15 +285,15 @@ Role-aware WebP transfer-weight **targets** (guidance):
 
 | Area                 | State                                                                                                                                                                                                                                                                                  |
 | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Managed definition   | `scripts/provision/invitations/alba-rosa-quinones.ts` (registered)                                                                                                                                                                                                                     |
-| Release assets       | `src/assets/invitations/alba-rosa-quinones/*.webp` (hero×2, thank-you, family, gallery×4)                                                                                                                                                                                              |
-| Lane A profile       | `src/styles/invitation-profiles/alba-rosa-quinones.scss` — Neutral Editorial                                                                                                                                                                                                           |
+| Managed definition   | `scripts/provision/invitations/alba-rosa-quinonez.ts` (registered)                                                                                                                                                                                                                     |
+| Release assets       | `src/assets/invitations/alba-rosa-quinonez/*.webp` (hero×2, thank-you, family, gallery×4)                                                                                                                                                                                              |
+| Lane A profile       | `src/styles/invitation-profiles/alba-rosa-quinonez.scss` — Neutral Editorial                                                                                                                                                                                                           |
 | Shared quality fixes | `Hero.astro` / `EditorialMagazineHero.astro` direct-deliver managed WebPs and cap static optimization at native width; `Family.astro` OptimizedImage 960×1280@q84                                                                                                                      |
-| Focused test         | `tests/content/alba-rosa-quinones-payload.test.ts` — **content golden** (exact Spanish / soft-match intentional). Editor schema, section-save, publish, and provision contract suites must not assert this wording; see `.agent/skills/testing/SKILL.md` → Invitation Copy Assertions. |
+| Focused test         | `tests/content/alba-rosa-quinonez-payload.test.ts` — **content golden** (exact Spanish / soft-match intentional). Editor schema, section-save, publish, and provision contract suites must not assert this wording; see `.agent/skills/testing/SKILL.md` → Invitation Copy Assertions. |
 | Local apply          | Public v4 applied and verified; final content-and-assets dry-run is `SIN CAMBIOS`                                                                                                                                                                                                      |
 | Validation           | `validate:changed`, `type-check`, `validate:structure`, and `validate:event-parity` pass (35 test suites / 292 tests)                                                                                                                                                                  |
-| Preview / Production | Untouched — see [alba-rosa-quinones-merge-conflicts.md](./alba-rosa-quinones-merge-conflicts.md) for merge-conflict resolution when promoting                                                                                                                                          |
-| Route                | `/cumple/alba-rosa-quinones` (local)                                                                                                                                                                                                                                                   |
+| Preview / Production | Untouched — see [alba-rosa-quinonez-merge-conflicts.md](./alba-rosa-quinonez-merge-conflicts.md) for merge-conflict resolution when promoting                                                                                                                                          |
+| Route                | `/cumple/alba-rosa-quinonez` (local)                                                                                                                                                                                                                                                   |
 
 ### Editorial Redesign Record (2026-07-28 — final responsive Local pass)
 
@@ -316,7 +315,7 @@ Role-aware WebP transfer-weight **targets** (guidance):
 
 ### Neutral TOP PREMIUM Refinement (2026-07-28 — implemented final state)
 
-Implemented in `src/styles/invitation-profiles/alba-rosa-quinones.scss` and
+Implemented in `src/styles/invitation-profiles/alba-rosa-quinonez.scss` and
 `src/lib/invitation/intersection-profiles.ts` only. No shared components, presets, or other
 invitations were modified.
 
@@ -339,7 +338,7 @@ invitations were modified.
 ### Final Reveal, 70th Anniversary & Senior-Friendly Refinement Record (2026-07-28 — final state)
 
 Implemented focused visual, leitmotif, hierarchy, and senior-friendly usability refinements for
-local invitation `/cumple/alba-rosa-quinones` only. The shared Location renderer now retains an
+local invitation `/cumple/alba-rosa-quinonez` only. The shared Location renderer now retains an
 eyebrow-only header and uses the concise `Google Maps` label; no presets or unrelated invitation
 profiles were modified.
 
@@ -359,8 +358,8 @@ profiles were modified.
 
 ### High-Impact Visual Refinement (2026-07-30 — implemented)
 
-Lane A only: `src/styles/invitation-profiles/alba-rosa-quinones.scss`, Location `introEyebrow` in
-`scripts/provision/invitations/alba-rosa-quinones.ts`, focused content test, and this document. No
+Lane A only: `src/styles/invitation-profiles/alba-rosa-quinonez.scss`, Location `introEyebrow` in
+`scripts/provision/invitations/alba-rosa-quinonez.ts`, focused content test, and this document. No
 shared presets, components, intersection-profile map changes, or new abstractions.
 
 | Dimension             | Final state                                                                                                                                                                                                                                                                                                                                                  |
