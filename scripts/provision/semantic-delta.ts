@@ -25,6 +25,8 @@ export interface SemanticFieldDelta {
 	appliedValue: unknown;
 }
 
+export type SemanticDelta = SemanticFieldDelta;
+
 export interface SemanticPatchResult {
 	patchedContent: Record<string, unknown>;
 	operations: StructuralOperation[];
