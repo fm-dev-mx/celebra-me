@@ -59,12 +59,11 @@ export function resolveEditorManagedEnvironment(input?: {
 	const url =
 		input?.supabaseUrl ??
 		process.env.PUBLIC_SUPABASE_URL ??
-		process.env.SUPABASE_URL ??
-		process.env.DATABASE_URL;
+		process.env.SUPABASE_URL;
 	const resolved = classifySupabaseUrl(url);
 	if (resolved === 'unverified') {
 		// Jest unit suites often omit Supabase URL; default local only under test.
-		if (process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID) {
+		if (process.env.NODE_ENV === 'test') {
 			return 'local';
 		}
 		throw new EditorEnvironmentMismatchError(
