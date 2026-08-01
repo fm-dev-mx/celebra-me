@@ -4,35 +4,21 @@ import {
 	isResolvedClassification,
 } from '@/lib/invitation-preparation/classification';
 
-export const FIELD_REQUIREMENTS = ['required', 'conditional', 'recommended', 'optional'] as const;
-export type FieldRequirement = (typeof FIELD_REQUIREMENTS)[number];
+export {
+	FIELD_REQUIREMENTS,
+	type FieldRequirement,
+	CONTRACT_MATURITIES,
+	type ContractMaturity,
+	type CompletenessFieldDefinition,
+	type EventTypeCompletenessContract,
+} from './event-completeness-types';
 
-export const CONTRACT_MATURITIES = ['evidence-backed', 'partial', 'undefined'] as const;
-export type ContractMaturity = (typeof CONTRACT_MATURITIES)[number];
-
-export interface CompletenessFieldDefinition {
-	id: string;
-	label: string;
-	requirement: FieldRequirement;
-	/** Human-readable condition when requirement is conditional. */
-	condition?: string;
-	/**
-	 * When true, unresolved missing/ambiguous/requires_owner_decision blocks
-	 * READY_WITH_PLACEHOLDERS and READY_FOR_IMPLEMENTATION.
-	 */
-	blockingWhenUnresolved: boolean;
-	/** Non-blocking fields may use a controlled [[PENDIENTE:...]] placeholder. */
-	allowsPlaceholder: boolean;
-	evidenceNotes?: string;
-}
-
-export interface EventTypeCompletenessContract {
-	eventType: EventType;
-	maturity: ContractMaturity;
-	summary: string;
-	gaps?: string[];
-	fields: readonly CompletenessFieldDefinition[];
-}
+import type {
+	CompletenessFieldDefinition,
+	ContractMaturity,
+	EventTypeCompletenessContract,
+	FieldRequirement,
+} from './event-completeness-types';
 
 const XV_FIELDS: readonly CompletenessFieldDefinition[] = [
 	{
