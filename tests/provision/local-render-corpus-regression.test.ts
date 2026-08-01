@@ -18,6 +18,7 @@ import {
 	resolveCorpusPublishedContent,
 } from '../../scripts/provision/local-render-corpus/content.ts';
 import { buildCorpusScreenshotConfig } from '../../scripts/provision/local-render-corpus/screenshot-pages.ts';
+import { listInvitationDefinitions } from '../../scripts/provision/invitations/registry.ts';
 
 const SECTION_KEYS = [
 	'quote',
@@ -71,6 +72,16 @@ describe('local render corpus regression sweep', () => {
 			'ximena-meza-trasvina',
 			'gerardo-sesenta',
 		]);
+	});
+
+	it('requires published canonical definitions to stay inside the Production corpus', () => {
+		const corpusSlugs = new Set(corpus.map((entry) => entry.slug));
+		const definitions = listInvitationDefinitions();
+		expect(
+			definitions
+				.filter((definition) => definition.lifecycle === 'published')
+				.every((definition) => corpusSlugs.has(definition.slug)),
+		).toBe(true);
 	});
 
 	it('excludes demos, preview e2e fixtures, and stale rekey twins', () => {

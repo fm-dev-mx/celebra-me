@@ -15,15 +15,15 @@ promote vs Preview mirror vs RSVP isolation:
 Executable CLI behavior lives in `scripts/provision/invitation-update-cli.ts`,
 `invitation-reconcile-cli.ts`, and `invitation-promote-cli.ts` plus imported services. Capability
 boundaries (Agent vs Owner, managed vs raw, Preview task scope, schema separation) are SSOT in
-[`.agent/rules/invitation-production.md`](../rules/invitation-production.md);
-do not restate the matrix here. Managed Local/Preview updates use `invitation:update`;
-reconciliation uses `invitation:reconcile`; Production promotion uses owner-only
-`pnpm invitation:promote`. `pnpm db:preview:sync-invitations` is a separate regression mirror.
+[`.agent/rules/invitation-production.md`](../rules/invitation-production.md); do not restate the
+matrix here. Managed Local/Preview updates use `invitation:update`; reconciliation uses
+`invitation:reconcile`; Production promotion uses owner-only `pnpm invitation:promote`.
+`pnpm db:preview:sync-invitations` is a separate regression mirror.
 
 **Preparation prerequisite:** New client invitations should complete
 [`.agent/workflows/invitation-preparation.md`](./invitation-preparation.md) until preparation
-readiness is `READY_WITH_PLACEHOLDERS` or `READY_FOR_IMPLEMENTATION`. Durable preparation state lives
-at `docs/invitations/<slug>.md`. This lifecycle workflow does not own preparation semantics.
+readiness is `READY_WITH_PLACEHOLDERS` or `READY_FOR_IMPLEMENTATION`. Durable preparation state
+lives at `docs/invitations/<slug>.md`. This lifecycle workflow does not own preparation semantics.
 
 ## Procedure
 
@@ -40,6 +40,13 @@ at `docs/invitations/<slug>.md`. This lifecycle workflow does not own preparatio
 7. Verify database, Storage, and published state, then report one explicit result per selected
    target. Claim rollback only when all completed mutations were restored and verified.
 
+The definition's `lifecycle` and `deliveryScope` are part of managed intent. Keep `lifecycle` as
+`in_progress` while absence or partial promotion is intentional, and change it to `published` when
+Production alignment becomes the expected steady state. Do not infer authority from timestamps. The
+reconciliation common ancestor is the version-compatible `managed_projection` proven by the matching
+completed managed-apply receipt; missing or incompatible baseline evidence requires operator
+reconciliation, not a two-way overwrite.
+
 ## Commands
 
 Illustrative only. Flags and target expansion follow the live CLI and runbook — never copy flag
@@ -55,9 +62,9 @@ pnpm invitation:promote -- --slug <slug> --package <path> --apply --backup-manif
 
 Interactive apply (TTY) offers selective content apply: all changes, by section, or field-by-field.
 Deselected paths keep the destination value. Non-interactive selective apply uses
-`--field-selections <file.json>` with `{ "resolutions": { "<path>": "package"|"target" } }`
-(merged with `--conflict-resolutions`; conflict choices win on overlap). Use `--verbose` for full
-field values and plan IDs.
+`--field-selections <file.json>` with `{ "resolutions": { "<path>": "package"|"target" } }` (merged
+with `--conflict-resolutions`; conflict choices win on overlap). Use `--verbose` for full field
+values and plan IDs.
 
 Host login alias remaps on Local are **not** part of `invitation:update`. Use:
 

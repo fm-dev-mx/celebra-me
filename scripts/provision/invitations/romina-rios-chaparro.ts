@@ -325,6 +325,8 @@ export function buildRominaPublishedContent(
 export const rominaInvitation: InvitationDefinition<RominaAssetKey> = defineInvitation({
 	slug: ROMINA_EVENT.slug,
 	createdAt: '2026-07-20T00:00:00.000Z',
+	lifecycle: 'published',
+	deliveryScope: 'content-and-assets',
 	eventType: ROMINA_EVENT.eventType,
 	title: ROMINA_EVENT.title,
 	clientName: 'Romina Ríos Chaparro',

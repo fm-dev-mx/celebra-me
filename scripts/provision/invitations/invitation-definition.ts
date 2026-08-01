@@ -42,12 +42,19 @@ export interface InvitationEventTiming {
 	startsAtUtc: string;
 }
 
+export type InvitationLifecycle = 'in_progress' | 'published';
+export type InvitationDeliveryScope = 'content-only' | 'content-and-assets' | 'assets-only';
+
 /** Host Auth login local-part: `{alias}@clientes.celebra.invalid`. Independent of slug. */
 export { HOST_LOGIN_ALIAS_MAX_LENGTH, HOST_LOGIN_ALIAS_PATTERN };
 
 export interface InvitationDefinition<K extends string = string> {
 	slug: string;
 	createdAt: string;
+	/** Explicit delivery lifecycle. Observability must never infer this from age or placement. */
+	lifecycle: InvitationLifecycle;
+	/** Maximum managed scope authorized by the canonical definition. */
+	deliveryScope: InvitationDeliveryScope;
 	eventType: string;
 	title: string;
 	clientName: string;
@@ -114,6 +121,16 @@ export function defineInvitation<K extends string = string>(
 	}
 	if (!Number.isFinite(Date.parse(definition.createdAt)) || !definition.createdAt.endsWith('Z')) {
 		throw new Error('Invitation definition requires a canonical UTC createdAt timestamp.');
+	}
+	if (definition.lifecycle !== 'in_progress' && definition.lifecycle !== 'published') {
+		throw new Error('Invitation definition requires an explicit lifecycle.');
+	}
+	if (
+		definition.deliveryScope !== 'content-only' &&
+		definition.deliveryScope !== 'content-and-assets' &&
+		definition.deliveryScope !== 'assets-only'
+	) {
+		throw new Error('Invitation definition requires an explicit managed delivery scope.');
 	}
 	if (!Array.isArray(definition.assets)) {
 		throw new Error('Invitation definition requires an assets array.');

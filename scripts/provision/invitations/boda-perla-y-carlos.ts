@@ -32,8 +32,7 @@ const CHURCH_MAPS_URL = 'https://maps.app.goo.gl/tFWKx2UKMoKcvxth8';
 const SALON_MAPS_URL = 'https://maps.app.goo.gl/AzBTTezpCmPdUb136';
 
 const ceremonyAddress = 'Sta. Irene, Centro, 43000 Huejutla de Reyes, Hgo.';
-const receptionAddress =
-	'Avenida parque industrial col. tepoztequito s/n, Huejutla de Reyes, Hgo.';
+const receptionAddress = 'Avenida parque industrial col. tepoztequito s/n, Huejutla de Reyes, Hgo.';
 
 export const PERLA_ASSET_SPECS = [
 	{
@@ -232,8 +231,7 @@ export function buildPerlaPublishedContent(
 			guestCap: 8,
 			accessMode: 'hybrid',
 			confirmationMode: 'api',
-			confirmationMessage:
-				'Gracias por acompañarnos. Su confirmación quedó registrada.',
+			confirmationMessage: 'Gracias por acompañarnos. Su confirmación quedó registrada.',
 			responseMessages: {
 				confirmed: {
 					title: '¡Gracias por confirmar, {guestName}!',
@@ -275,6 +273,8 @@ export function buildPerlaPublishedContent(
 export const perlaInvitation: InvitationDefinition<PerlaAssetKey> = defineInvitation({
 	slug: PERLA_EVENT.slug,
 	createdAt: '2026-07-31T12:00:00.000Z',
+	lifecycle: 'in_progress',
+	deliveryScope: 'content-and-assets',
 	eventType: PERLA_EVENT.eventType,
 	title: PERLA_EVENT.title,
 	clientName: 'Daniela Medina',

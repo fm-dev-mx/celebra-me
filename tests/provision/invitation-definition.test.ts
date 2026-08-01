@@ -39,6 +39,8 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 			const def = defineInvitation({
 				slug: 'test-invitation',
 				createdAt: '2026-07-20T00:00:00.000Z',
+				lifecycle: 'in_progress',
+				deliveryScope: 'content-and-assets',
 				eventType: 'xv',
 				title: 'Test Title',
 				clientName: 'Client Name',
@@ -68,6 +70,8 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 				defineInvitation({
 					slug: '',
 					createdAt: '2026-07-20T00:00:00.000Z',
+					lifecycle: 'in_progress',
+					deliveryScope: 'content-and-assets',
 					eventType: 'xv',
 					title: 'Title',
 					clientName: 'Client',
@@ -87,6 +91,8 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 				defineInvitation({
 					slug: 'test-invitation',
 					createdAt: '2026-07-20T00:00:00.000Z',
+					lifecycle: 'in_progress',
+					deliveryScope: 'content-and-assets',
 					eventType: 'xv',
 					title: 'Title',
 					clientName: 'Client',
@@ -106,6 +112,8 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 				defineInvitation({
 					slug: 'unsafe-reference',
 					createdAt: '2026-07-20T00:00:00.000Z',
+					lifecycle: 'in_progress',
+					deliveryScope: 'content-and-assets',
 					eventType: 'xv',
 					title: 'Title',
 					clientName: 'Client',
