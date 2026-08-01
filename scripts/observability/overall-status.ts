@@ -93,14 +93,17 @@ function isLocalAttention(
 }
 
 function isRemoteAttention(environments: readonly EnvironmentHealthRow[]): boolean {
-	return environments.some(
-		(env) =>
-			env.environment !== 'local' &&
-			(env.connection !== 'ok' ||
-				env.renderEffectiveParity === 'PUBLISHED_MISMATCH' ||
-				env.renderEffectiveParity === 'BEHIND_OR_CONFLICTED' ||
-				env.renderEffectiveParity === 'PARTIAL_PRESENCE'),
-	);
+	return environments.some((env) => {
+		if (env.environment === 'local') return false;
+		// Summary / scoped probes leave remotes as unverified — do not penalize overall status.
+		if (env.connection === 'unverified') return false;
+		return (
+			env.connection !== 'ok' ||
+			env.renderEffectiveParity === 'PUBLISHED_MISMATCH' ||
+			env.renderEffectiveParity === 'BEHIND_OR_CONFLICTED' ||
+			env.renderEffectiveParity === 'PARTIAL_PRESENCE'
+		);
+	});
 }
 
 function evidenceUnverified(

@@ -1,11 +1,15 @@
 /**
  * Environment matrix health for Local / Preview / Production.
  * Asset inventory is corpus-level (see snapshot.assets), not per-environment.
+ *
+ * Prefer a precomputed `GeneralStatusSummary` so schema/connectivity are not
+ * re-probed after migration-health already consumed the same pass.
  */
 
 import {
 	evaluateGeneralStatus,
 	withStatusProbeTimeout,
+	type GeneralStatusSummary,
 	type TargetEnv,
 } from '../provision/dbs-status.ts';
 import { EXPECTED_LOCAL_RENDER_CORPUS_SIZE } from '../provision/local-render-corpus/registry.ts';
@@ -69,15 +73,39 @@ function renderParityForEnv(
 	return 'BEHIND_OR_CONFLICTED';
 }
 
+function stubUnprobedEnv(env: TargetEnv): EnvironmentHealthRow {
+	return {
+		environment: env,
+		connection: 'unverified',
+		runtimeIdentity: 'unknown',
+		schemaLifecycle: 'UNVERIFIED',
+		activeInvitationRows: 0,
+		supportedCorpusPresence: `0/${EXPECTED_LOCAL_RENDER_CORPUS_SIZE}`,
+		renderEffectiveParity: 'UNVERIFIABLE',
+		detail: 'Not probed in this observability scope',
+	};
+}
+
 export function buildEnvironmentHealth(input: {
 	invitations: readonly InvitationHealthRow[];
 	probeTimeoutMs?: number;
+	generalStatus?: GeneralStatusSummary;
+	/** Environments to include as live probes; others are stubbed as unprobed. */
+	environments?: readonly TargetEnv[];
 }): EnvironmentHealthRow[] {
 	const timeout = input.probeTimeoutMs ?? 2_000;
-	const general = withStatusProbeTimeout(timeout, () => evaluateGeneralStatus());
-	const envs: TargetEnv[] = ['local', 'preview', 'production'];
+	const probeEnvs: TargetEnv[] = input.environments
+		? [...input.environments]
+		: ['local', 'preview', 'production'];
+	const general =
+		input.generalStatus ?? withStatusProbeTimeout(timeout, () => evaluateGeneralStatus());
+	const allEnvs: TargetEnv[] = ['local', 'preview', 'production'];
 
-	return envs.map((env) => {
+	return allEnvs.map((env) => {
+		if (!probeEnvs.includes(env)) {
+			return stubUnprobedEnv(env);
+		}
+
 		const status = general.environments[env];
 		const presence = countCorpusPresence(input.invitations, env);
 		const connection = connectionFromGeneral(status);

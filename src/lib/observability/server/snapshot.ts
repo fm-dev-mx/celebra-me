@@ -2,6 +2,9 @@
  * Server-only snapshot builder wrapper.
  * Isolates scripts/ Node imports from client islands and runs aggregation in a
  * child process so synchronous probes cannot stall the Astro/Vite event loop.
+ *
+ * Concurrency: at most one aggregation at a time (queue). Summary uses a shorter
+ * timeout than detail because it is Local-scoped.
  */
 
 import { spawn } from 'node:child_process';
@@ -10,64 +13,66 @@ import { ApiError } from '@/lib/rsvp/core/errors';
 import type { ObservabilitySnapshot, ObservabilitySummaryPayload } from '@/lib/observability/types';
 
 const SNAPSHOT_SCRIPT = resolve(process.cwd(), 'scripts/observability/print-snapshot.ts');
-const SNAPSHOT_TIMEOUT_MS = 300_000;
+const SUMMARY_TIMEOUT_MS = 60_000;
+const DETAIL_TIMEOUT_MS = 300_000;
+const MAX_STDOUT_BYTES = 8 * 1024 * 1024;
 
-export async function buildObservabilitySummaryPayload(options?: {
-	probeTimeoutMs?: number;
-}): Promise<ObservabilitySummaryPayload> {
-	const probeTimeoutMs = options?.probeTimeoutMs ?? 2_000;
+type QueueJob<T> = {
+	run: () => Promise<T>;
+	resolve: (value: T) => void;
+	reject: (error: unknown) => void;
+};
+
+const queue: QueueJob<unknown>[] = [];
+let busy = false;
+
+async function withAggregationLock<T>(run: () => Promise<T>): Promise<T> {
+	return await new Promise<T>((resolvePromise, rejectPromise) => {
+		queue.push({
+			run: run as () => Promise<unknown>,
+			resolve: resolvePromise as (value: unknown) => void,
+			reject: rejectPromise,
+		});
+		void drainQueue();
+	});
+}
+
+async function drainQueue(): Promise<void> {
+	if (busy) return;
+	const next = queue.shift();
+	if (!next) return;
+	busy = true;
 	try {
-		const { buildObservabilitySummary } = await import('../../../../scripts/observability/snapshot.ts');
-		return await buildObservabilitySummary({ probeTimeoutMs });
-	} catch {
-		// Fallback to full snapshot wrapper mapped to summary if direct import fails
-		const full = await buildObservabilitySnapshot();
-		return {
-			schemaVersion: 1,
-			generatedAt: full.generatedAt,
-			overallStatus: full.overallStatus,
-			source: full.source,
-			summary: {
-				migrations: {
-					hasPending: (full.migrations.find((m) => m.environment === 'local')?.pending.length ?? 0) > 0,
-					pendingCount: Array.isArray(full.migrations.find((m) => m.environment === 'local')?.pending)
-						? (full.migrations.find((m) => m.environment === 'local')?.pending as string[]).length
-						: 0,
-					localLifecycle: full.migrations.find((m) => m.environment === 'local')?.schemaLifecycle ?? 'UNVERIFIED',
-				},
-				invitations: {
-					totalCount: full.invitations.length,
-					alignedCount: full.invitations.filter((i) => i.environments.local.status === 'MATCH_CANONICAL' || i.environments.local.status === 'MATCH_REFERENCE').length,
-					divergedCount: full.invitations.filter((i) => i.environments.local.status === 'DIVERGED' || i.environments.local.status === 'DIVERGED_FROM_REFERENCE').length,
-					behindCount: full.invitations.filter((i) => i.environments.local.status === 'BEHIND_CANONICAL').length,
-					issueSlugs: full.invitations.filter((i) => i.environments.local.status !== 'MATCH_CANONICAL' && i.environments.local.status !== 'MATCH_REFERENCE').map((i) => i.slug),
-				},
-				validation: {
-					regressionFreshness: full.validation.regression.freshness,
-					screenshotsFreshness: full.validation.screenshots.freshness,
-				},
-			},
-			categorizedCommands: full.recommendedCommands.map((cmd) => ({
-				...cmd,
-				category: cmd.id.includes('dbs') ? 'DIAGNOSE' : cmd.id.includes('test') ? 'VALIDATE' : cmd.id.includes('promote') ? 'PROMOTE' : 'REPAIR',
-			})),
-			degradedNotes: full.degradedNotes,
-		};
+		const value = await next.run();
+		next.resolve(value);
+	} catch (error) {
+		next.reject(error);
+	} finally {
+		busy = false;
+		void drainQueue();
 	}
 }
 
-export async function buildObservabilitySnapshot(): Promise<ObservabilitySnapshot> {
-	return await new Promise((resolvePromise, reject) => {
-		const child = spawn(process.execPath, ['--import', 'tsx', SNAPSHOT_SCRIPT], {
-			cwd: process.cwd(),
-			env: process.env,
-			stdio: ['ignore', 'pipe', 'pipe'],
-			windowsHide: true,
-		});
+function runSnapshotChild<T extends { schemaVersion: 1 }>(options: {
+	mode: 'summary' | 'detail';
+	timeoutMs: number;
+}): Promise<T> {
+	return new Promise((resolvePromise, reject) => {
+		const child = spawn(
+			process.execPath,
+			['--import', 'tsx', SNAPSHOT_SCRIPT, `--mode=${options.mode}`],
+			{
+				cwd: process.cwd(),
+				env: process.env,
+				stdio: ['ignore', 'pipe', 'pipe'],
+				windowsHide: true,
+			},
+		);
 
 		let stdout = '';
 		let stderr = '';
 		let settled = false;
+		let stdoutTruncated = false;
 
 		const timer = setTimeout(() => {
 			if (settled) return;
@@ -80,11 +85,17 @@ export async function buildObservabilitySnapshot(): Promise<ObservabilitySnapsho
 					'La agregación de observabilidad excedió el tiempo límite.',
 				),
 			);
-		}, SNAPSHOT_TIMEOUT_MS);
+		}, options.timeoutMs);
 
 		child.stdout.setEncoding('utf8');
 		child.stderr.setEncoding('utf8');
 		child.stdout.on('data', (chunk: string) => {
+			if (stdoutTruncated) return;
+			if (stdout.length + chunk.length > MAX_STDOUT_BYTES) {
+				stdoutTruncated = true;
+				stdout = stdout.slice(0, MAX_STDOUT_BYTES);
+				return;
+			}
 			stdout += chunk;
 		});
 		child.stderr.on('data', (chunk: string) => {
@@ -111,6 +122,17 @@ export async function buildObservabilitySnapshot(): Promise<ObservabilitySnapsho
 			settled = true;
 			clearTimeout(timer);
 
+			if (stdoutTruncated) {
+				reject(
+					new ApiError(
+						500,
+						'internal_error',
+						'La agregación de observabilidad excedió el tamaño máximo de salida.',
+					),
+				);
+				return;
+			}
+
 			if (code !== 0) {
 				reject(
 					new ApiError(
@@ -124,7 +146,7 @@ export async function buildObservabilitySnapshot(): Promise<ObservabilitySnapsho
 			}
 
 			try {
-				const parsed = JSON.parse(stdout) as ObservabilitySnapshot;
+				const parsed = JSON.parse(stdout) as T;
 				if (!parsed || typeof parsed !== 'object' || parsed.schemaVersion !== 1) {
 					throw new Error('invalid_snapshot_shape');
 				}
@@ -140,4 +162,22 @@ export async function buildObservabilitySnapshot(): Promise<ObservabilitySnapsho
 			}
 		});
 	});
+}
+
+export async function buildObservabilitySummaryPayload(): Promise<ObservabilitySummaryPayload> {
+	return await withAggregationLock(() =>
+		runSnapshotChild<ObservabilitySummaryPayload>({
+			mode: 'summary',
+			timeoutMs: SUMMARY_TIMEOUT_MS,
+		}),
+	);
+}
+
+export async function buildObservabilitySnapshot(): Promise<ObservabilitySnapshot> {
+	return await withAggregationLock(() =>
+		runSnapshotChild<ObservabilitySnapshot>({
+			mode: 'detail',
+			timeoutMs: DETAIL_TIMEOUT_MS,
+		}),
+	);
 }

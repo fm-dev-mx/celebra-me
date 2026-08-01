@@ -73,8 +73,15 @@ export interface EnvTargetStatus {
 	schemaLifecycle?: SchemaLifecycleState;
 	migrationHead?: string | null;
 	pendingMigrationsCount?: number;
+	/** Pending migration version identities (shared with observability migration health). */
+	pendingMigrations?: string[];
+	/** Count of migration versions applied on the remote target. */
+	appliedMigrationCount?: number | null;
 	errorDetail?: string;
 }
+
+/** Unit separator — does not appear in invitation slugs, hashes, or ISO timestamps. */
+const BATCH_FIELD_SEP = '\u001f';
 
 export interface GeneralStatusSummary {
 	environments: Record<TargetEnv, EnvTargetStatus>;
@@ -168,6 +175,8 @@ function evaluateSchemaLifecycleForUrl(dbUrl: string): {
 	schemaLifecycle: SchemaLifecycleState;
 	migrationHead: string | null;
 	pendingMigrationsCount: number;
+	pendingMigrations: string[];
+	appliedMigrationCount: number | null;
 } {
 	try {
 		const expected = listExpectedMigrationVersions();
@@ -189,12 +198,16 @@ function evaluateSchemaLifecycleForUrl(dbUrl: string): {
 			schemaLifecycle,
 			migrationHead: remote.remoteVersions.at(-1) ?? null,
 			pendingMigrationsCount: parity.pendingLocal.length,
+			pendingMigrations: parity.pendingLocal,
+			appliedMigrationCount: remote.remoteVersions.length,
 		};
 	} catch {
 		return {
 			schemaLifecycle: 'UNVERIFIED',
 			migrationHead: null,
 			pendingMigrationsCount: 0,
+			pendingMigrations: [],
+			appliedMigrationCount: null,
 		};
 	}
 }
@@ -245,17 +258,48 @@ export function getGeneralEnvStatus(env: TargetEnv): EnvTargetStatus {
 		schemaLifecycle: schema.schemaLifecycle,
 		migrationHead: schema.migrationHead,
 		pendingMigrationsCount: schema.pendingMigrationsCount,
+		pendingMigrations: schema.pendingMigrations,
+		appliedMigrationCount: schema.appliedMigrationCount,
 	};
 }
 
-export function evaluateGeneralStatus(): GeneralStatusSummary {
-	const local = getGeneralEnvStatus('local');
-	const preview = getGeneralEnvStatus('preview');
-	const production = getGeneralEnvStatus('production');
+function unprobedGeneralEnv(env: TargetEnv): EnvTargetStatus {
+	return {
+		environment: env,
+		configured: false,
+		reachable: false,
+		dbUrlRedacted: '(not probed)',
+		targetClassification: 'unknown',
+		activeManagedCount: 0,
+		identityConflictsCount: 0,
+		schemaLifecycle: 'UNVERIFIED',
+		pendingMigrations: [],
+		appliedMigrationCount: null,
+		errorDetail: 'Not probed in this observability scope',
+	};
+}
+
+export function evaluateGeneralStatus(options?: {
+	environments?: readonly TargetEnv[];
+}): GeneralStatusSummary {
+	const probeEnvs: TargetEnv[] = options?.environments
+		? [...options.environments]
+		: ['local', 'preview', 'production'];
 	const definitions = listInvitationDefinitions();
+	const environments = {
+		local: probeEnvs.includes('local')
+			? getGeneralEnvStatus('local')
+			: unprobedGeneralEnv('local'),
+		preview: probeEnvs.includes('preview')
+			? getGeneralEnvStatus('preview')
+			: unprobedGeneralEnv('preview'),
+		production: probeEnvs.includes('production')
+			? getGeneralEnvStatus('production')
+			: unprobedGeneralEnv('production'),
+	};
 
 	return {
-		environments: { local, preview, production },
+		environments,
 		totalDefinitionsCount: definitions.length,
 	};
 }
@@ -532,8 +576,8 @@ function parseBatchOutput(stdout: string): Map<string, BatchInvitationRowData[]>
 	const rowsBySlug = new Map<string, BatchInvitationRowData[]>();
 	const lines = stdout.trim().split('\n').filter(Boolean);
 	for (const line of lines) {
-		const parts = line.split('|').map((s) => s.trim());
-		if (parts.length < 11 || !parts[0]) continue;
+		const parts = line.split(BATCH_FIELD_SEP);
+		if (parts.length < 10 || !parts[0]) continue;
 		const [
 			slug,
 			invId,
@@ -545,8 +589,17 @@ function parseBatchOutput(stdout: string): Map<string, BatchInvitationRowData[]>
 			draftStatus,
 			draftUpdatedAt,
 			assetCountStr,
-			pubContent,
+			pubContentB64,
 		] = parts;
+
+		let pubContent: string | null = null;
+		if (pubContentB64) {
+			try {
+				pubContent = Buffer.from(pubContentB64, 'base64').toString('utf8');
+			} catch {
+				pubContent = null;
+			}
+		}
 
 		const rowData: BatchInvitationRowData = {
 			invId: invId || '',
@@ -555,7 +608,7 @@ function parseBatchOutput(stdout: string): Map<string, BatchInvitationRowData[]>
 			provApplied: provApplied || null,
 			pubVersion: pubVer ? Number(pubVer) : null,
 			pubAt: pubAt || null,
-			pubContent: pubContent || null,
+			pubContent,
 			draftStatus: draftStatus || null,
 			draftUpdatedAt: draftUpdatedAt || null,
 			assetCount: Number(assetCountStr || '0'),
@@ -568,33 +621,97 @@ function parseBatchOutput(stdout: string): Map<string, BatchInvitationRowData[]>
 	return rowsBySlug;
 }
 
+export type BatchTargetStatusOptions = {
+	/** Restrict the scan to these slugs (observability corpus). Empty → no rows. */
+	slugs: readonly string[];
+	/**
+	 * When true, include base64-encoded published JSON for legacy Local reference compares.
+	 * Never enable for Preview/Production — content stays on the remote DB.
+	 */
+	includePublishedContent?: boolean;
+};
+
+/**
+ * Batched per-invitation status for a target env.
+ * Always slug-filtered; never scans the full active invitation inventory.
+ */
 export function evaluateBatchTargetStatuses(
 	env: TargetEnv,
 	canonicalHashes: Map<string, string | null>,
+	options: BatchTargetStatusOptions,
 ): Map<string, PerInvitationTargetStatus & { publishedContent?: string | null }> {
-	const result = new Map<string, PerInvitationTargetStatus & { publishedContent?: string | null }>();
-	const { dbUrl } = resolveDbUrlForEnv(env);
-	if (!dbUrl || !testConnectivity(dbUrl)) {
+	const result = new Map<
+		string,
+		PerInvitationTargetStatus & { publishedContent?: string | null }
+	>();
+	const slugs = [...new Set(options.slugs.map((s) => s.trim()).filter(Boolean))];
+	if (slugs.length === 0) return result;
+
+	const emptyStatus = (
+		status: 'CREDENTIALS_REQUIRED' | 'UNREACHABLE',
+		detail: string,
+	): PerInvitationTargetStatus & { publishedContent?: string | null } => ({
+		environment: env,
+		status,
+		activeMatchCount: 0,
+		resolvedId: null,
+		resolvedSlug: null,
+		provenanceDefinitionSlug: null,
+		provenancePackageHash: null,
+		provenanceAppliedAt: null,
+		publishedVersion: null,
+		publishedAt: null,
+		assetCount: 0,
+		detail,
+	});
+
+	const { dbUrl, error } = resolveDbUrlForEnv(env);
+	if (!dbUrl) {
+		for (const slug of slugs) {
+			result.set(
+				slug,
+				emptyStatus('CREDENTIALS_REQUIRED', error || 'Credentials not configured'),
+			);
+		}
+		return result;
+	}
+	if (!testConnectivity(dbUrl)) {
+		for (const slug of slugs) {
+			result.set(
+				slug,
+				emptyStatus('UNREACHABLE', 'Database connection check failed or timed out'),
+			);
+		}
 		return result;
 	}
 
+	const slugList = slugs.map((s) => sqlLiteral(s)).join(', ');
+	const includeContent = Boolean(options.includePublishedContent);
+	const contentExpr = includeContent
+		? `COALESCE(encode(convert_to(COALESCE(pub.content::text, ''), 'UTF8'), 'base64'), '')`
+		: `''`;
+
 	const batchSql = `
 SELECT
-  i.slug,
-  i.id::text,
-  COALESCE(p.definition_slug, ''),
-  COALESCE(p.package_hash, ''),
-  COALESCE(p.applied_at::text, ''),
-  COALESCE(pub.version::text, ''),
-  COALESCE(pub.published_at::text, ''),
-  COALESCE(d.status, ''),
-  COALESCE(d.updated_at::text, ''),
-  COALESCE(a.asset_count, 0)::text,
-  replace(replace(COALESCE(pub.content::text, ''), E'\r', ''), E'\n', ' ')
+  concat_ws(
+    chr(31),
+    i.slug,
+    i.id::text,
+    COALESCE(p.definition_slug, ''),
+    COALESCE(p.package_hash, ''),
+    COALESCE(p.applied_at::text, ''),
+    COALESCE(pub.version::text, ''),
+    COALESCE(pub.published_at::text, ''),
+    COALESCE(d.status, ''),
+    COALESCE(d.updated_at::text, ''),
+    COALESCE(a.asset_count, 0)::text,
+    ${contentExpr}
+  )
 FROM public.invitations i
 LEFT JOIN public.managed_invitation_release_provenance p ON p.invitation_id = i.id
 LEFT JOIN LATERAL (
-  SELECT version, published_at, content FROM public.published_invitation_content
+  SELECT version, published_at${includeContent ? ', content' : ''}
+  FROM public.published_invitation_content
   WHERE invitation_project_id = i.id ORDER BY version DESC LIMIT 1
 ) pub ON true
 LEFT JOIN LATERAL (
@@ -605,16 +722,42 @@ LEFT JOIN LATERAL (
   SELECT COUNT(*) AS asset_count FROM public.invitation_assets
   WHERE invitation_id = i.id AND deleted_at IS NULL
 ) a ON true
-WHERE i.archived_at IS NULL;
+WHERE i.archived_at IS NULL
+  AND i.slug IN (${slugList});
 `.trim();
 
-	const batchRes = runPsql(batchSql, dbUrl, psqlOptions({ tuplesOnly: true, throwOnError: false }));
-	if (batchRes.status !== 0 || !batchRes.stdout.trim()) {
+	const batchRes = runPsql(
+		batchSql,
+		dbUrl,
+		psqlOptions({ tuplesOnly: true, throwOnError: false }),
+	);
+	if (batchRes.status !== 0) {
+		for (const slug of slugs) {
+			result.set(slug, emptyStatus('UNREACHABLE', 'Batched invitation status query failed'));
+		}
 		return result;
 	}
 
 	const rowsBySlug = parseBatchOutput(batchRes.stdout);
-	for (const [slug, rows] of rowsBySlug.entries()) {
+	for (const slug of slugs) {
+		const rows = rowsBySlug.get(slug);
+		if (!rows || rows.length === 0) {
+			result.set(slug, {
+				environment: env,
+				status: 'NOT_PRESENT',
+				activeMatchCount: 0,
+				resolvedId: null,
+				resolvedSlug: null,
+				provenanceDefinitionSlug: null,
+				provenancePackageHash: null,
+				provenanceAppliedAt: null,
+				publishedVersion: null,
+				publishedAt: null,
+				assetCount: 0,
+				detail: `NOT_PRESENT: no active invitation found for slug "${slug}"`,
+			});
+			continue;
+		}
 		const canonicalHash = canonicalHashes.get(slug) ?? null;
 		result.set(slug, resolveBatchRowStatus(env, slug, rows, canonicalHash));
 	}

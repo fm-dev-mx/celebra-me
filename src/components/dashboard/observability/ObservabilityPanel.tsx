@@ -66,7 +66,11 @@ function formatPending(pending: string[] | '—'): string {
 }
 
 function StatusBadge({ value }: { value: string }) {
-	const label = STATUS_CELL_LABELS[value] ?? FRESHNESS_LABELS[value as EvidenceFreshness] ?? ASSET_LABELS[value as AssetHealthState] ?? value;
+	const label =
+		STATUS_CELL_LABELS[value] ??
+		FRESHNESS_LABELS[value as EvidenceFreshness] ??
+		ASSET_LABELS[value as AssetHealthState] ??
+		value;
 	return (
 		<span className="observability__badge" title={value}>
 			{label}
@@ -121,7 +125,8 @@ function SectionAttention({
 					2. Invitaciones que requieren atención ({issueSlugs.length})
 				</h2>
 				<p className="observability__muted">
-					Las siguientes invitaciones requieren sincronización de paquete o revisión de contenido:
+					Las siguientes invitaciones requieren sincronización de paquete o revisión de
+					contenido:
 				</p>
 				<ul className="observability__note-list">
 					{issueSlugs.map((slug) => (
@@ -143,13 +148,18 @@ function SectionAttention({
 				2. Invitaciones que requieren atención (0)
 			</h2>
 			<p className="observability__muted">
-				✓ Las {totalCount} invitaciones del corpus local coinciden con la definición canónica.
+				✓ Las {totalCount} invitaciones del corpus local coinciden con la definición
+				canónica.
 			</p>
 		</section>
 	);
 }
 
-function SectionEvidencia({ validation }: { validation: ObservabilitySummaryPayload['summary']['validation'] }) {
+function SectionEvidencia({
+	validation,
+}: {
+	validation: ObservabilitySummaryPayload['summary']['validation'];
+}) {
 	return (
 		<section className="observability__section" aria-label="Sección 3: Evidencia de validación">
 			<h2>3. Evidencia de validación</h2>
@@ -159,14 +169,18 @@ function SectionEvidencia({ validation }: { validation: ObservabilitySummaryPayl
 					<p className="observability__card-text">
 						Frescura: <StatusBadge value={validation.regressionFreshness} />
 					</p>
-					<p className="observability__muted">Comando: <code>pnpm test:local-render-corpus</code></p>
+					<p className="observability__muted">
+						Comando: <code>pnpm test:local-render-corpus</code>
+					</p>
 				</div>
 				<div className="observability__card">
 					<h3>Capturas Visuales</h3>
 					<p className="observability__card-text">
 						Frescura: <StatusBadge value={validation.screenshotsFreshness} />
 					</p>
-					<p className="observability__muted">Comando: <code>pnpm screenshot:local-render-corpus</code></p>
+					<p className="observability__muted">
+						Comando: <code>pnpm screenshot:local-render-corpus</code>
+					</p>
 				</div>
 			</div>
 		</section>
@@ -237,7 +251,12 @@ function CategorizedCommands({
 					<div key={cat}>
 						<h3 className="observability__category-title">{CATEGORY_LABELS[cat]}</h3>
 						{cmds.map((cmd) => (
-							<CommandItem key={cmd.id} cmd={cmd} copiedId={copiedId} onCopy={onCopy} />
+							<CommandItem
+								key={cmd.id}
+								cmd={cmd}
+								copiedId={copiedId}
+								onCopy={onCopy}
+							/>
 						))}
 					</div>
 				);
@@ -285,13 +304,17 @@ function DetailMatrix({ snapshot }: { snapshot: ObservabilitySnapshot }) {
 							<tr>
 								<th scope="row">Filas activas</th>
 								{snapshot.environments.map((env) => (
-									<td key={`${env.environment}-rows`}>{env.activeInvitationRows}</td>
+									<td key={`${env.environment}-rows`}>
+										{env.activeInvitationRows}
+									</td>
 								))}
 							</tr>
 							<tr>
 								<th scope="row">Corpus soportado</th>
 								{snapshot.environments.map((env) => (
-									<td key={`${env.environment}-corpus`}>{env.supportedCorpusPresence}</td>
+									<td key={`${env.environment}-corpus`}>
+										{env.supportedCorpusPresence}
+									</td>
 								))}
 							</tr>
 							<tr>
@@ -344,7 +367,9 @@ function DetailMatrix({ snapshot }: { snapshot: ObservabilitySnapshot }) {
 											<StatusBadge value={row.environments.preview.status} />
 										</td>
 										<td>
-											<StatusBadge value={row.environments.production.status} />
+											<StatusBadge
+												value={row.environments.production.status}
+											/>
 										</td>
 										<td>
 											<StatusBadge value={asset?.status ?? 'UNVERIFIED'} />
@@ -375,7 +400,9 @@ function DetailMatrix({ snapshot }: { snapshot: ObservabilitySnapshot }) {
 									<td>
 										{row.environment === 'repository'
 											? 'Repositorio'
-											: ENV_LABELS[row.environment as keyof typeof ENV_LABELS] ?? row.environment}
+											: (ENV_LABELS[
+													row.environment as keyof typeof ENV_LABELS
+												] ?? row.environment)}
 									</td>
 									<td>{row.appliedCount ?? '—'}</td>
 									<td>{formatPending(row.pending)}</td>
@@ -420,7 +447,8 @@ function SectionDiagnostico({
 				<div>
 					<h3>Matriz Detallada del Corpus</h3>
 					<p className="observability__muted">
-						Inspecciona la matriz de {totalCount} invitaciones, estados de entorno y migraciones.
+						Inspecciona la matriz de {totalCount} invitaciones, estados de entorno y
+						migraciones.
 					</p>
 				</div>
 				<button
@@ -555,10 +583,13 @@ export default function ObservabilityPanel({ initialSummary = null }: Observabil
 		setError(null);
 		const result = await dashboardApi.get<ObservabilitySummaryPayload>(
 			'/api/dashboard/observabilidad?mode=summary',
-			{ timeoutMs: 300_000 },
+			{ timeoutMs: 60_000 },
 		);
 		if (!result.ok) {
-			setError(result.message || 'No se pudo actualizar el estado. Se conservan los datos de la última lectura.');
+			setError(
+				result.message ||
+					'No se pudo actualizar el estado. Se conservan los datos de la última lectura.',
+			);
 			setLoading(false);
 			return;
 		}
@@ -618,7 +649,11 @@ export default function ObservabilityPanel({ initialSummary = null }: Observabil
 				<div>
 					<p className="observability__eyebrow">Solo lectura · entorno Local</p>
 					<h1>Observabilidad operacional</h1>
-					<HeaderMeta overallStatus={overallStatus} source={source} generatedAt={generatedAt} />
+					<HeaderMeta
+						overallStatus={overallStatus}
+						source={source}
+						generatedAt={generatedAt}
+					/>
 				</div>
 				<div className="observability__actions">
 					<button
