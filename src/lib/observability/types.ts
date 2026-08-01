@@ -1,140 +1,131 @@
-/**
- * Browser-safe observability types for dashboard islands.
- * Keep free of scripts/ Node imports. Server SSOT: scripts/observability/types.ts
- */
+/** Browser-safe observability snapshot v3 contract. */
+export type ObservabilityEnvironment = 'local' | 'preview' | 'production';
+export type OperationalStatus = 'HEALTHY' | 'ATTENTION' | 'BLOCKED' | 'UNVERIFIED';
+export type DeliveryStatus = 'ALIGNED' | 'IN_PROGRESS' | 'ACTION_REQUIRED' | 'UNVERIFIED';
+export type SnapshotFreshness = 'FRESH' | 'STALE' | 'PARTIAL';
+export type CoverageStatus = 'AVAILABLE' | 'UNAVAILABLE' | 'NOT_PROBED';
+export type InvitationLifecycle = 'in_progress' | 'published';
+export type ComparisonOutcome =
+	'APPLY' | 'ALREADY_APPLIED' | 'DRIFT' | 'DELIVERY_SCOPE_BLOCKED' | 'UNVERIFIED';
+export type SemanticDetailStatus = 'AVAILABLE' | 'DETAIL_UNAVAILABLE';
+export type ObservabilityImpact = 'OPERATIONAL' | 'DELIVERY';
 
-export type OverallStatus = 'HEALTHY' | 'ATTENTION' | 'BLOCKED' | 'UNVERIFIED';
-
-export type EvidenceFreshness = 'PASS' | 'FAIL' | 'STALE' | 'NOT_RUN' | 'INVALID';
-
-export type SchemaLifecycleState = 'CURRENT' | 'BEHIND' | 'SCHEMA_DRIFT' | 'UNVERIFIED' | 'SOURCE';
-
-export type ValidationEvidenceType = 'regression' | 'screenshots';
-
-export type ObservabilityIssueSeverity = 'blocking' | 'warning' | 'unverified';
-export type ObservabilityIssueDomain =
-	'environment' | 'invitation' | 'migration' | 'asset' | 'validation' | 'source' | 'data_quality';
-export type ObservabilityIssueCode =
-	| 'DATA_INTEGRITY'
-	| 'SOURCE_UNVERIFIED'
-	| 'SOURCE_DIRTY'
-	| 'PROBE_DEGRADED'
-	| 'ENV_CONNECTION'
-	| 'ENV_SCHEMA'
-	| 'ENV_PARITY'
-	| 'INVITATION_MISSING'
+export type ObservabilityReasonCode =
+	| 'ENVIRONMENT_UNAVAILABLE'
+	| 'ENVIRONMENT_IDENTITY_CONFLICT'
+	| 'SCHEMA_BEHIND'
+	| 'SCHEMA_DRIFT'
+	| 'SCHEMA_UNAVAILABLE'
+	| 'AUTHORITATIVE_COUNT_MISMATCH'
 	| 'INVITATION_IDENTITY_CONFLICT'
-	| 'INVITATION_BEHIND'
-	| 'INVITATION_DIVERGED'
-	| 'INVITATION_UNVERIFIED'
-	| 'MIGRATION_BEHIND'
-	| 'MIGRATION_DRIFT'
-	| 'MIGRATION_UNVERIFIED'
-	| 'ASSET_MISSING'
-	| 'ASSET_PARTIAL'
-	| 'ASSET_UNVERIFIED'
-	| 'VALIDATION_FAILED'
-	| 'VALIDATION_STALE'
-	| 'VALIDATION_NOT_RUN'
-	| 'VALIDATION_INVALID'
+	| 'INVITATION_MISSING'
+	| 'CANONICAL_INVALID'
+	| 'DRAFT_INVALID'
+	| 'BASELINE_UNAVAILABLE'
+	| 'BASELINE_VERSION_INCOMPATIBLE'
+	| 'MANAGED_DRIFT'
+	| 'DELIVERY_SCOPE_BLOCKED'
+	| 'LIFECYCLE_SEQUENCE_INVALID'
+	| 'LIFECYCLE_METADATA_STALE'
+	| 'REQUIRED_PUBLISHED_ASSET_MISSING'
+	| 'UNPUBLISHED_ASSET_PENDING'
+	| 'ASSET_IDENTITY_UNVERIFIED'
+	| 'CANONICAL_CHANGE_PENDING'
+	| 'VALID_DRAFT_PENDING'
+	| 'PARTIAL_PROMOTION'
+	| 'DETAIL_BUDGET_EXCEEDED'
 	| 'SNAPSHOT_REFRESH_FAILED';
-export type ObservabilityHealthDomain =
-	'environments' | 'invitations' | 'migrations' | 'assets' | 'validations';
-export interface ObservabilityHealthCounts {
-	total: number;
-	ok: number;
-	warning: number;
-	blocking: number;
-	unverified: number;
+
+export type ObservabilityNextStep =
+	| 'NONE'
+	| 'RETRY_PROBE'
+	| 'AUDIT_SCHEMA'
+	| 'RESOLVE_IDENTITY'
+	| 'VERIFY_BASELINE'
+	| 'RECONCILE_MANAGED_CONTENT'
+	| 'APPLY_LOCAL'
+	| 'PROMOTE_PREVIEW'
+	| 'PROMOTE_PRODUCTION'
+	| 'FIX_CANONICAL_DEFINITION'
+	| 'UPDATE_LIFECYCLE_METADATA'
+	| 'PROVIDE_REQUIRED_ASSET'
+	| 'VERIFY_ASSET_EVIDENCE';
+
+export interface EnvironmentCoverage {
+	environment: ObservabilityEnvironment;
+	status: CoverageStatus;
+	reasonCode?: ObservabilityReasonCode;
 }
-export interface ObservabilityIssue {
-	id: string;
-	code: ObservabilityIssueCode;
-	severity: ObservabilityIssueSeverity;
-	domain: ObservabilityIssueDomain;
-	scope: string;
-	title: string;
-	description: string;
-	environment?: 'local' | 'preview' | 'production';
+
+export interface ComparisonSummary {
+	environment: ObservabilityEnvironment;
+	outcome: ComparisonOutcome;
+	detailStatus: SemanticDetailStatus;
+	affectedFieldCount: number;
+	affectedSectionCount: number;
+	semanticPaths: string[];
+}
+
+export interface InvitationSummary {
+	slug: string;
+	lifecycle: InvitationLifecycle;
+	operationalStatus: OperationalStatus;
+	deliveryStatus: DeliveryStatus;
+	comparisons: ComparisonSummary[];
+}
+
+export interface ObservabilitySignal {
+	impact: ObservabilityImpact;
+	reasonCode: ObservabilityReasonCode;
+	nextStep: ObservabilityNextStep;
+	operationalStatus: OperationalStatus;
+	deliveryStatus: DeliveryStatus;
+	detailStatus: SemanticDetailStatus;
+	affectedFieldCount: number;
+	affectedSectionCount: number;
+	semanticPaths: string[];
+	environment?: ObservabilityEnvironment;
 	slug?: string;
-	actionIds: string[];
-}
-export interface ObservabilityAction {
-	id: string;
-	label: string;
-	command: string;
-	reason: string;
-}
-export interface ValidationEvidenceSummary {
-	type: ValidationEvidenceType;
-	freshness: EvidenceFreshness;
-	completedAt: string | null;
-	passed: number | null;
-	total: number | null;
+	lifecycle?: InvitationLifecycle;
+	comparisonOutcome?: ComparisonOutcome;
 }
 
-export interface ObservabilitySourceState {
-	branch: string | null;
-	commitSha: string | null;
-	workingTreeDirty: boolean | null;
-	degraded: boolean;
-	detail?: string;
-}
-
-export type CommandCategory = 'DIAGNOSE' | 'VALIDATE' | 'REPAIR' | 'PROMOTE';
-
-export interface CategorizedCommand {
-	id: string;
-	label: string;
-	command: string;
-	reason: string;
-	category: CommandCategory;
-}
-
-/** Local-scoped SSR / refresh payload (schema v1). */
-export interface ObservabilitySummaryPayload {
-	schemaVersion: 1;
-	generatedAt: string;
-	overallStatus: OverallStatus;
-	source: ObservabilitySourceState;
-	summary: {
-		migrations: {
-			hasPending: boolean;
-			pendingCount: number;
-			localLifecycle: SchemaLifecycleState;
-		};
-		invitations: {
-			totalCount: number;
-			alignedCount: number;
-			divergedCount: number;
-			behindCount: number;
-			issueSlugs: string[];
-		};
-		validation: {
-			regressionFreshness: EvidenceFreshness;
-			screenshotsFreshness: EvidenceFreshness;
-		};
+export interface EnvironmentSummary {
+	environment: ObservabilityEnvironment;
+	operationalStatus: OperationalStatus;
+	deliveryStatus: DeliveryStatus;
+	coverage: CoverageStatus;
+	counts: {
+		invitations: number;
+		issues: number;
+		workItems: number;
 	};
-	categorizedCommands: CategorizedCommand[];
-	degradedNotes: string[];
 }
 
-/** Anomaly-first detail payload for the browser (schema v2). */
 export interface ObservabilitySnapshot {
-	schemaVersion: 2;
+	schemaVersion: 3;
 	generatedAt: string;
-	overallStatus: OverallStatus;
-	cache: {
-		state: 'fresh' | 'stale-fallback';
-		refreshAfter: string;
+	freshness: SnapshotFreshness;
+	operationalStatus: OperationalStatus;
+	deliveryStatus: DeliveryStatus;
+	coverage: EnvironmentCoverage[];
+	cache: { refreshAfter: string };
+	issues: ObservabilitySignal[];
+	workItems: ObservabilitySignal[];
+	environmentSummaries: EnvironmentSummary[];
+	invitationSummaries: InvitationSummary[];
+}
+
+export interface ObservabilitySummaryPayload {
+	schemaVersion: 3;
+	generatedAt: string;
+	freshness: SnapshotFreshness;
+	operationalStatus: OperationalStatus;
+	deliveryStatus: DeliveryStatus;
+	coverage: EnvironmentCoverage[];
+	counts: {
+		invitations: number;
+		issues: number;
+		workItems: number;
 	};
-	source: {
-		branch: string | null;
-		commitShaShort: string | null;
-		workingTreeDirty: boolean | null;
-	};
-	health: Record<ObservabilityHealthDomain, ObservabilityHealthCounts>;
-	issues: ObservabilityIssue[];
-	validationEvidence: ValidationEvidenceSummary[];
-	recommendedActions: ObservabilityAction[];
 }

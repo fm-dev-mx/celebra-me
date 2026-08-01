@@ -1,349 +1,829 @@
-/**
- * Aggregated Local-first observability snapshot (read-only).
- *
- * `probeScope: 'local'` (summary): Local DB + FS evidence only — no Preview/Production hits.
- * `probeScope: 'all'` (detail): full multi-environment matrix, projected to public issues.
- */
-
-import { existsSync, readFileSync } from 'node:fs';
+/** Snapshot v3 assembly: read-only evidence collection plus deterministic aggregation. */
+import { listInvitationDefinitions } from '../provision/invitations/registry.ts';
 import {
-	EXPECTED_LOCAL_RENDER_CORPUS_SIZE,
-	listLocalRenderCorpus,
-} from '../provision/local-render-corpus/registry.ts';
-import { MANAGED_STATUS_PER_QUERY_TIMEOUT_MS } from '../provision/managed-status.ts';
-import { evaluateGeneralStatus, type TargetEnv } from '../provision/dbs-status.ts';
-import { evaluateAssetHealth } from './asset-health.ts';
-import { buildEnvironmentHealth } from './environment-health.ts';
-import { computeObservabilityFingerprints } from './fingerprints.ts';
-import { evaluateInvitationHealth } from './invitation-health.ts';
-import { evaluateMigrationHealth } from './migration-health.ts';
-import { computeOverallStatus } from './overall-status.ts';
-import { buildPublicObservabilitySnapshot } from './public-snapshot.ts';
-import { buildRecommendedCommands } from './recommended-commands.ts';
-import { readObservabilitySourceState } from './source-state.ts';
+	getInvitationAssetSourceDir,
+	type InvitationDefinition,
+	type InvitationLifecycle,
+} from '../provision/invitations/invitation-definition.ts';
+import { listLocalRenderCorpus } from '../provision/local-render-corpus/registry.ts';
+import { buildNormalizedInvitationRelease } from '../provision/normalized-invitation-release.ts';
+import { serializeInvitationPackage } from '../provision/invitation-package.ts';
+import type { TargetEnv } from '../provision/dbs-status.ts';
 import {
-	classifyValidationFreshness,
-	readValidationEvidenceSnapshot,
-	validationEvidenceAbsolutePath,
-} from './validation-evidence.ts';
+	ObservabilityInvocationBudget,
+	readEnvironmentDatabaseProjection,
+	readMigrationProjection,
+	type EnvironmentDatabaseProjection,
+	type MigrationProjection,
+} from './database-projection.ts';
+import {
+	reconcileInvitationDelivery,
+	type CanonicalDeliveryInput,
+	type DeliveryReconciliationResult,
+} from './delivery-reconciliation.ts';
+import {
+	aggregateDeliveryStatus,
+	aggregateOperationalStatus,
+	comparisonToDeliveryStatus,
+} from './overall-status.ts';
+import { finalizeObservabilitySnapshot } from './public-snapshot.ts';
 import type {
-	CommandCategory,
-	ObservabilityFingerprints,
-	ObservabilityMatrixSnapshot,
+	ComparisonSummary,
+	DeliveryStatus,
+	EnvironmentCoverage,
+	EnvironmentSummary,
+	InvitationSummary,
+	ObservabilityEnvironment,
+	ObservabilityNextStep,
+	ObservabilityReasonCode,
+	ObservabilitySignal,
 	ObservabilitySnapshot,
-	ObservabilitySourceState,
 	ObservabilitySummaryPayload,
-	ValidationEvidenceType,
-	ValidationEvidenceView,
+	OperationalStatus,
 } from './types.ts';
 
 export type ObservabilityProbeScope = 'local' | 'all';
+const ENVIRONMENTS: readonly ObservabilityEnvironment[] = ['local', 'preview', 'production'];
+const PROBE_TIMEOUT_MS = 4_000;
+const REFRESH_TTL_MS = 60_000;
 
-function viewEvidence(
-	type: ValidationEvidenceType,
-	fingerprints: ObservabilityFingerprints,
-	source: ObservabilitySourceState,
-): ValidationEvidenceView {
-	const snapshot = readValidationEvidenceSnapshot(type);
-	if (snapshot) {
-		return {
-			validationType: type,
-			freshness: classifyValidationFreshness(snapshot, fingerprints, source),
-			snapshot,
-		};
-	}
-
-	const abs = validationEvidenceAbsolutePath(type);
-	if (!existsSync(abs)) {
-		return { validationType: type, freshness: 'NOT_RUN', snapshot: null };
-	}
-
-	try {
-		JSON.parse(readFileSync(abs, 'utf8'));
-		return {
-			validationType: type,
-			freshness: 'INVALID',
-			snapshot: null,
-			detail: 'Snapshot present but unsupported or incomplete',
-		};
-	} catch {
-		return {
-			validationType: type,
-			freshness: 'INVALID',
-			snapshot: null,
-			detail: 'Snapshot file malformed',
-		};
-	}
+export interface CanonicalObservation extends CanonicalDeliveryInput {
+	requiredAssetKeys: string[];
 }
 
-function probeEnvironmentsForScope(scope: ObservabilityProbeScope): readonly TargetEnv[] {
-	return scope === 'local' ? (['local'] as const) : (['local', 'preview', 'production'] as const);
+export interface SnapshotEvidence {
+	generatedAt: string;
+	probeScope: ObservabilityProbeScope;
+	canonical: CanonicalObservation[];
+	canonicalFailures: Array<{ slug: string; lifecycle: InvitationLifecycle }>;
+	legacy: Array<{ slug: string; remoteParity: 'required' | 'excluded' }>;
+	projections: Record<ObservabilityEnvironment, EnvironmentDatabaseProjection>;
+	migrations: Record<ObservabilityEnvironment, MigrationProjection>;
 }
 
-export function categorizeCommand(id: string): CommandCategory {
-	if (id.includes('dbs') || id.includes('status')) return 'DIAGNOSE';
-	if (
-		id.includes('test') ||
-		id.includes('screenshot') ||
-		id.includes('regression') ||
-		id.includes('validate')
-	) {
-		return 'VALIDATE';
-	}
-	if (id.includes('promote')) return 'PROMOTE';
-	return 'REPAIR';
-}
-
-async function assembleObservabilityMatrix(options?: {
-	probeTimeoutMs?: number;
-	probeScope?: ObservabilityProbeScope;
-}): Promise<ObservabilityMatrixSnapshot> {
-	const probeTimeoutMs = options?.probeTimeoutMs ?? MANAGED_STATUS_PER_QUERY_TIMEOUT_MS;
-	const probeScope: ObservabilityProbeScope = options?.probeScope ?? 'all';
-	const probeEnvs = probeEnvironmentsForScope(probeScope);
-	const degradedNotes: string[] = [];
-	const generatedAt = new Date().toISOString();
-	const source = readObservabilitySourceState();
-	if (source.degraded) {
-		degradedNotes.push(source.detail ?? 'Git source identity degraded');
-	}
-	if (probeScope === 'local') {
-		degradedNotes.push(
-			'Summary scope: Local probes only (Preview/Production deferred to detail)',
-		);
-	}
-
-	const fingerprints = computeObservabilityFingerprints();
-	const corpus = listLocalRenderCorpus();
-	const corpusComplete = corpus.length === EXPECTED_LOCAL_RENDER_CORPUS_SIZE;
-
-	if (!corpusComplete) {
-		degradedNotes.push(
-			`Corpus size ${corpus.length} !== expected ${EXPECTED_LOCAL_RENDER_CORPUS_SIZE}`,
-		);
-	}
-
-	let invitations = [] as Awaited<ReturnType<typeof evaluateInvitationHealth>>;
-	let migrations = [] as ReturnType<typeof evaluateMigrationHealth>;
-	let generalStatus: ReturnType<typeof evaluateGeneralStatus> | undefined;
-
-	const [invitationResult, generalResult] = await Promise.all([
-		(async () => {
-			try {
-				return {
-					ok: true as const,
-					value: await evaluateInvitationHealth({
-						probeTimeoutMs,
-						environments: probeEnvs,
-					}),
-				};
-			} catch (error) {
-				return {
-					ok: false as const,
-					error: error instanceof Error ? error.message.slice(0, 120) : 'unknown',
-				};
-			}
-		})(),
-		(async () => {
-			try {
-				return {
-					ok: true as const,
-					value: evaluateGeneralStatus({ environments: probeEnvs }),
-				};
-			} catch (error) {
-				return {
-					ok: false as const,
-					error: error instanceof Error ? error.message.slice(0, 120) : 'unknown',
-				};
-			}
-		})(),
-	]);
-
-	if (invitationResult.ok) {
-		invitations = invitationResult.value;
-	} else {
-		degradedNotes.push(`Invitation matrix degraded: ${invitationResult.error}`);
-	}
-
-	if (generalResult.ok) {
-		generalStatus = generalResult.value;
-		try {
-			migrations = evaluateMigrationHealth(generalStatus, { environments: probeEnvs });
-		} catch (error) {
-			degradedNotes.push(
-				`Migration health degraded: ${error instanceof Error ? error.message.slice(0, 120) : 'unknown'}`,
-			);
-		}
-	} else {
-		degradedNotes.push(`Environment/migration probes degraded: ${generalResult.error}`);
-		try {
-			migrations = evaluateMigrationHealth(undefined, { environments: probeEnvs });
-		} catch (error) {
-			degradedNotes.push(
-				`Migration health degraded: ${error instanceof Error ? error.message.slice(0, 120) : 'unknown'}`,
-			);
-		}
-	}
-
-	const dbAssetCountBySlug = new Map<string, number | null>();
-	for (const row of invitations) {
-		dbAssetCountBySlug.set(row.slug, row.environments.local.assetCount);
-	}
-
-	let assets = [] as ReturnType<typeof evaluateAssetHealth>;
-	try {
-		assets = evaluateAssetHealth(dbAssetCountBySlug);
-	} catch (error) {
-		degradedNotes.push(
-			`Asset health degraded: ${error instanceof Error ? error.message.slice(0, 120) : 'unknown'}`,
-		);
-	}
-
-	let environments = [] as ReturnType<typeof buildEnvironmentHealth>;
-	try {
-		environments = buildEnvironmentHealth({
-			invitations,
-			probeTimeoutMs,
-			generalStatus,
-			environments: probeEnvs,
-		});
-	} catch (error) {
-		degradedNotes.push(
-			`Environment matrix degraded: ${error instanceof Error ? error.message.slice(0, 120) : 'unknown'}`,
-		);
-	}
-
-	const regression = viewEvidence('regression', fingerprints, source);
-	const screenshots = viewEvidence('screenshots', fingerprints, source);
-
-	const overallStatus = computeOverallStatus({
-		environments,
-		invitations,
-		migrations,
-		assets,
-		regression,
-		screenshots,
-		corpusComplete,
-	});
-
-	const recommendedCommands = buildRecommendedCommands({
-		overallStatus,
-		environments,
-		invitations,
-		migrations,
-		assets,
-		regression,
-		screenshots,
-	});
-
+function emptyComparison(
+	environment: ObservabilityEnvironment,
+	outcome: ComparisonSummary['outcome'] = 'UNVERIFIED',
+): ComparisonSummary {
 	return {
-		schemaVersion: 1,
-		generatedAt,
-		overallStatus,
-		source,
-		fingerprints,
-		validation: { regression, screenshots },
-		migrations,
-		assets,
-		invitations,
-		environments,
-		recommendedCommands,
-		degradedNotes,
+		environment,
+		outcome,
+		detailStatus: outcome === 'UNVERIFIED' ? 'DETAIL_UNAVAILABLE' : 'AVAILABLE',
+		affectedFieldCount: 0,
+		affectedSectionCount: 0,
+		semanticPaths: [],
 	};
 }
 
-/**
- * Detail aggregation: multi-env matrix projected to anomaly-first public snapshot (schema v2).
- */
+function signal(input: {
+	impact: ObservabilitySignal['impact'];
+	reasonCode: ObservabilityReasonCode;
+	nextStep: ObservabilityNextStep;
+	operationalStatus?: OperationalStatus;
+	deliveryStatus?: DeliveryStatus;
+	environment?: ObservabilityEnvironment;
+	slug?: string;
+	lifecycle?: InvitationLifecycle;
+	comparison?: ComparisonSummary;
+}): ObservabilitySignal {
+	return {
+		impact: input.impact,
+		reasonCode: input.reasonCode,
+		nextStep: input.nextStep,
+		operationalStatus: input.operationalStatus ?? 'HEALTHY',
+		deliveryStatus: input.deliveryStatus ?? 'ALIGNED',
+		detailStatus: input.comparison?.detailStatus ?? 'AVAILABLE',
+		affectedFieldCount: input.comparison?.affectedFieldCount ?? 0,
+		affectedSectionCount: input.comparison?.affectedSectionCount ?? 0,
+		semanticPaths: input.comparison?.semanticPaths ?? [],
+		...(input.environment ? { environment: input.environment } : {}),
+		...(input.slug ? { slug: input.slug } : {}),
+		...(input.lifecycle ? { lifecycle: input.lifecycle } : {}),
+		...(input.comparison ? { comparisonOutcome: input.comparison.outcome } : {}),
+	};
+}
+
+function expectedTarget(environment: ObservabilityEnvironment): string {
+	return environment === 'local' ? 'persistent-local' : environment;
+}
+
+function coverageFor(
+	environment: ObservabilityEnvironment,
+	probeScope: ObservabilityProbeScope,
+	projection: EnvironmentDatabaseProjection,
+	migration: MigrationProjection,
+): EnvironmentCoverage {
+	if (probeScope === 'local' && environment !== 'local') {
+		return {
+			environment,
+			status: 'NOT_PROBED',
+			reasonCode: 'ENVIRONMENT_UNAVAILABLE',
+		};
+	}
+	if (!projection.reachable) {
+		return { environment, status: 'UNAVAILABLE', reasonCode: 'ENVIRONMENT_UNAVAILABLE' };
+	}
+	if (!migration.available) {
+		return { environment, status: 'UNAVAILABLE', reasonCode: 'SCHEMA_UNAVAILABLE' };
+	}
+	return { environment, status: 'AVAILABLE' };
+}
+
+function signalFromReconciliation(input: {
+	result: DeliveryReconciliationResult;
+	environment: ObservabilityEnvironment;
+	slug: string;
+	lifecycle: InvitationLifecycle;
+	work: boolean;
+}): ObservabilitySignal | null {
+	const reasonCode = input.work ? input.result.workReasonCode : input.result.issueReasonCode;
+	if (!reasonCode) return null;
+	return signal({
+		impact:
+			reasonCode === 'DRAFT_INVALID' || reasonCode === 'INVITATION_IDENTITY_CONFLICT'
+				? 'OPERATIONAL'
+				: 'DELIVERY',
+		reasonCode,
+		nextStep: input.result.nextStep,
+		operationalStatus: input.result.operationalStatus,
+		deliveryStatus: input.result.deliveryStatus,
+		environment: input.environment,
+		slug: input.slug,
+		lifecycle: input.lifecycle,
+		comparison: input.result.comparison,
+	});
+}
+
+function environmentBaseSignals(
+	evidence: SnapshotEvidence,
+	coverage: readonly EnvironmentCoverage[],
+): ObservabilitySignal[] {
+	const issues: ObservabilitySignal[] = [];
+	for (const environment of ENVIRONMENTS) {
+		const coverageRow = coverage.find((item) => item.environment === environment)!;
+		if (coverageRow.status === 'NOT_PROBED') continue;
+		const projection = evidence.projections[environment];
+		const migration = evidence.migrations[environment];
+		if (coverageRow.status === 'UNAVAILABLE') {
+			issues.push(
+				signal({
+					impact: 'OPERATIONAL',
+					reasonCode: coverageRow.reasonCode!,
+					nextStep:
+						coverageRow.reasonCode === 'SCHEMA_UNAVAILABLE'
+							? 'AUDIT_SCHEMA'
+							: 'RETRY_PROBE',
+					operationalStatus: 'UNVERIFIED',
+					deliveryStatus: 'UNVERIFIED',
+					environment,
+				}),
+			);
+		}
+		if (
+			projection.reachable &&
+			projection.targetClassification !== expectedTarget(environment)
+		) {
+			issues.push(
+				signal({
+					impact: 'OPERATIONAL',
+					reasonCode: 'ENVIRONMENT_IDENTITY_CONFLICT',
+					nextStep: 'RESOLVE_IDENTITY',
+					operationalStatus: 'BLOCKED',
+					deliveryStatus: 'UNVERIFIED',
+					environment,
+				}),
+			);
+		}
+		if (projection.identityConflictsCount > 0) {
+			issues.push(
+				signal({
+					impact: 'OPERATIONAL',
+					reasonCode: 'AUTHORITATIVE_COUNT_MISMATCH',
+					nextStep: 'RESOLVE_IDENTITY',
+					operationalStatus: 'BLOCKED',
+					deliveryStatus: 'UNVERIFIED',
+					environment,
+				}),
+			);
+		}
+		if (migration.available && migration.schemaLifecycle !== 'CURRENT') {
+			const reasonCode =
+				migration.schemaLifecycle === 'SCHEMA_DRIFT' ? 'SCHEMA_DRIFT' : 'SCHEMA_BEHIND';
+			issues.push(
+				signal({
+					impact: 'OPERATIONAL',
+					reasonCode,
+					nextStep: 'AUDIT_SCHEMA',
+					operationalStatus: reasonCode === 'SCHEMA_DRIFT' ? 'BLOCKED' : 'ATTENTION',
+					environment,
+				}),
+			);
+		}
+	}
+	return issues;
+}
+
+function rowsFor(
+	projection: EnvironmentDatabaseProjection,
+	slug: string,
+): EnvironmentDatabaseProjection['rows'] {
+	return projection.rows.filter((row) => row.slug === slug);
+}
+
+interface CanonicalEvaluationState {
+	issues: ObservabilitySignal[];
+	workItems: ObservabilitySignal[];
+	comparisons: ComparisonSummary[];
+	operationalStatuses: OperationalStatus[];
+	deliveryStatuses: DeliveryStatus[];
+}
+
+function appendAssetSignals(input: {
+	canonical: CanonicalObservation;
+	environment: ObservabilityEnvironment;
+	row: EnvironmentDatabaseProjection['rows'][number];
+	state: CanonicalEvaluationState;
+}): void {
+	const missingRequiredAssets = input.canonical.requiredAssetKeys.filter(
+		(key) => !input.row.managedAssetKeys.includes(key),
+	);
+	if (missingRequiredAssets.length === 0) return;
+	const published = input.row.publishedVersion !== null;
+	const unkeyedAssetCount = Math.max(0, input.row.assetCount - input.row.managedAssetKeys.length);
+	const definitelyMissingCount = Math.max(0, missingRequiredAssets.length - unkeyedAssetCount);
+	if (definitelyMissingCount === 0) {
+		const evidenceSignal = signal({
+			impact: published ? 'OPERATIONAL' : 'DELIVERY',
+			reasonCode: 'ASSET_IDENTITY_UNVERIFIED',
+			nextStep: 'VERIFY_ASSET_EVIDENCE',
+			operationalStatus: published ? 'UNVERIFIED' : 'HEALTHY',
+			deliveryStatus: published ? 'ALIGNED' : 'UNVERIFIED',
+			environment: input.environment,
+			slug: input.canonical.slug,
+			lifecycle: input.canonical.lifecycle,
+		});
+		evidenceSignal.affectedFieldCount = missingRequiredAssets.length;
+		evidenceSignal.affectedSectionCount = 1;
+		input.state.issues.push(evidenceSignal);
+		if (published) input.state.operationalStatuses.push('UNVERIFIED');
+		else input.state.deliveryStatuses.push('UNVERIFIED');
+		return;
+	}
+	const assetSignal = signal({
+		impact: published ? 'OPERATIONAL' : 'DELIVERY',
+		reasonCode: published ? 'REQUIRED_PUBLISHED_ASSET_MISSING' : 'UNPUBLISHED_ASSET_PENDING',
+		nextStep: 'PROVIDE_REQUIRED_ASSET',
+		operationalStatus: published ? 'BLOCKED' : 'HEALTHY',
+		deliveryStatus: published ? 'ALIGNED' : 'IN_PROGRESS',
+		environment: input.environment,
+		slug: input.canonical.slug,
+		lifecycle: input.canonical.lifecycle,
+	});
+	assetSignal.affectedFieldCount = definitelyMissingCount;
+	assetSignal.affectedSectionCount = 1;
+	if (published) {
+		input.state.issues.push(assetSignal);
+		input.state.operationalStatuses.push('BLOCKED');
+		return;
+	}
+	input.state.workItems.push(assetSignal);
+	input.state.deliveryStatuses.push('IN_PROGRESS');
+}
+
+function appendPresenceSignals(input: {
+	canonical: CanonicalObservation;
+	coverage: readonly EnvironmentCoverage[];
+	rowsByEnvironment: ReadonlyMap<ObservabilityEnvironment, EnvironmentDatabaseProjection['rows']>;
+	state: CanonicalEvaluationState;
+}): void {
+	const allCovered = input.coverage.every((item) => item.status === 'AVAILABLE');
+	const absentEverywhere =
+		allCovered &&
+		ENVIRONMENTS.every(
+			(environment) => (input.rowsByEnvironment.get(environment) ?? []).length === 0,
+		);
+	if (absentEverywhere) {
+		input.state.comparisons.length = 0;
+		input.state.operationalStatuses.length = 0;
+		input.state.deliveryStatuses.length = 0;
+		if (input.canonical.lifecycle === 'in_progress') {
+			for (const environment of ENVIRONMENTS) {
+				input.state.comparisons.push(emptyComparison(environment, 'APPLY'));
+				input.state.deliveryStatuses.push('IN_PROGRESS');
+			}
+			input.state.operationalStatuses.push('HEALTHY');
+			input.state.workItems.push(
+				signal({
+					impact: 'DELIVERY',
+					reasonCode: 'VALID_DRAFT_PENDING',
+					nextStep: 'APPLY_LOCAL',
+					deliveryStatus: 'IN_PROGRESS',
+					slug: input.canonical.slug,
+					lifecycle: input.canonical.lifecycle,
+				}),
+			);
+			return;
+		}
+		for (const environment of ENVIRONMENTS) {
+			input.state.comparisons.push(emptyComparison(environment));
+		}
+		input.state.operationalStatuses.push('BLOCKED');
+		input.state.deliveryStatuses.push('UNVERIFIED');
+		input.state.issues.push(
+			signal({
+				impact: 'OPERATIONAL',
+				reasonCode: 'INVITATION_MISSING',
+				nextStep: 'VERIFY_BASELINE',
+				operationalStatus: 'BLOCKED',
+				deliveryStatus: 'UNVERIFIED',
+				slug: input.canonical.slug,
+				lifecycle: input.canonical.lifecycle,
+			}),
+		);
+		return;
+	}
+
+	for (const environment of ENVIRONMENTS) {
+		const coverageRow = input.coverage.find((item) => item.environment === environment)!;
+		if (coverageRow.status !== 'AVAILABLE') continue;
+		if ((input.rowsByEnvironment.get(environment) ?? []).length > 0) continue;
+		const inProgress = input.canonical.lifecycle === 'in_progress';
+		const comparison = emptyComparison(environment, inProgress ? 'APPLY' : 'UNVERIFIED');
+		input.state.comparisons.push(comparison);
+		if (inProgress) {
+			input.state.deliveryStatuses.push('IN_PROGRESS');
+			input.state.workItems.push(
+				signal({
+					impact: 'DELIVERY',
+					reasonCode: 'CANONICAL_CHANGE_PENDING',
+					nextStep:
+						environment === 'local'
+							? 'APPLY_LOCAL'
+							: environment === 'preview'
+								? 'PROMOTE_PREVIEW'
+								: 'PROMOTE_PRODUCTION',
+					deliveryStatus: 'IN_PROGRESS',
+					environment,
+					slug: input.canonical.slug,
+					lifecycle: input.canonical.lifecycle,
+					comparison,
+				}),
+			);
+			continue;
+		}
+		input.state.operationalStatuses.push('BLOCKED');
+		input.state.deliveryStatuses.push('UNVERIFIED');
+		input.state.issues.push(
+			signal({
+				impact: 'OPERATIONAL',
+				reasonCode: 'INVITATION_MISSING',
+				nextStep: 'VERIFY_BASELINE',
+				operationalStatus: 'BLOCKED',
+				deliveryStatus: 'UNVERIFIED',
+				environment,
+				slug: input.canonical.slug,
+				lifecycle: input.canonical.lifecycle,
+				comparison,
+			}),
+		);
+	}
+}
+
+function appendLifecycleSignals(
+	canonical: CanonicalObservation,
+	state: CanonicalEvaluationState,
+): void {
+	const byEnvironment = new Map(
+		state.comparisons.map((comparison) => [comparison.environment, comparison]),
+	);
+	const localOutcome = byEnvironment.get('local')?.outcome;
+	const previewOutcome = byEnvironment.get('preview')?.outcome;
+	const productionOutcome = byEnvironment.get('production')?.outcome;
+	const previewAligned = previewOutcome === 'ALREADY_APPLIED';
+	const productionAligned = productionOutcome === 'ALREADY_APPLIED';
+	const previewAheadOfLocal = previewAligned && localOutcome === 'APPLY';
+	const productionAheadOfPreview = productionAligned && previewOutcome === 'APPLY';
+	if (previewAheadOfLocal || productionAheadOfPreview) {
+		state.issues.push(
+			signal({
+				impact: 'DELIVERY',
+				reasonCode: 'LIFECYCLE_SEQUENCE_INVALID',
+				nextStep: 'RECONCILE_MANAGED_CONTENT',
+				deliveryStatus: 'ACTION_REQUIRED',
+				environment: previewAheadOfLocal ? 'preview' : 'production',
+				slug: canonical.slug,
+				lifecycle: canonical.lifecycle,
+			}),
+		);
+		state.deliveryStatuses.push('ACTION_REQUIRED');
+	} else if (
+		state.comparisons.some((comparison) => comparison.outcome === 'ALREADY_APPLIED') &&
+		state.comparisons.some((comparison) => comparison.outcome === 'APPLY')
+	) {
+		state.workItems.push(
+			signal({
+				impact: 'DELIVERY',
+				reasonCode: 'PARTIAL_PROMOTION',
+				nextStep: previewAligned ? 'PROMOTE_PRODUCTION' : 'PROMOTE_PREVIEW',
+				deliveryStatus: 'IN_PROGRESS',
+				slug: canonical.slug,
+				lifecycle: canonical.lifecycle,
+			}),
+		);
+	}
+	if (canonical.lifecycle !== 'in_progress' || !productionAligned) return;
+	state.issues.push(
+		signal({
+			impact: 'DELIVERY',
+			reasonCode: 'LIFECYCLE_METADATA_STALE',
+			nextStep: 'UPDATE_LIFECYCLE_METADATA',
+			deliveryStatus: 'ACTION_REQUIRED',
+			slug: canonical.slug,
+			lifecycle: canonical.lifecycle,
+		}),
+	);
+	state.deliveryStatuses.push('ACTION_REQUIRED');
+}
+
+function evaluateCanonicalInvitation(
+	canonical: CanonicalObservation,
+	evidence: SnapshotEvidence,
+	coverage: readonly EnvironmentCoverage[],
+): {
+	summary: InvitationSummary;
+	issues: ObservabilitySignal[];
+	workItems: ObservabilitySignal[];
+} {
+	const issues: ObservabilitySignal[] = [];
+	const workItems: ObservabilitySignal[] = [];
+	const comparisons: ComparisonSummary[] = [];
+	const operationalStatuses: OperationalStatus[] = [];
+	const deliveryStatuses: DeliveryStatus[] = [];
+	const state: CanonicalEvaluationState = {
+		issues,
+		workItems,
+		comparisons,
+		operationalStatuses,
+		deliveryStatuses,
+	};
+	const rowsByEnvironment = new Map<
+		ObservabilityEnvironment,
+		EnvironmentDatabaseProjection['rows']
+	>();
+
+	for (const environment of ENVIRONMENTS) {
+		const coverageRow = coverage.find((item) => item.environment === environment)!;
+		if (coverageRow.status === 'NOT_PROBED') continue;
+		const rows = rowsFor(evidence.projections[environment], canonical.slug);
+		rowsByEnvironment.set(environment, rows);
+		if (coverageRow.status !== 'AVAILABLE') {
+			comparisons.push(emptyComparison(environment));
+			operationalStatuses.push('UNVERIFIED');
+			deliveryStatuses.push('UNVERIFIED');
+			continue;
+		}
+		if (rows.length > 1) {
+			const comparison = emptyComparison(environment);
+			comparisons.push(comparison);
+			operationalStatuses.push('BLOCKED');
+			deliveryStatuses.push('UNVERIFIED');
+			issues.push(
+				signal({
+					impact: 'OPERATIONAL',
+					reasonCode: 'INVITATION_IDENTITY_CONFLICT',
+					nextStep: 'RESOLVE_IDENTITY',
+					operationalStatus: 'BLOCKED',
+					deliveryStatus: 'UNVERIFIED',
+					environment,
+					slug: canonical.slug,
+					lifecycle: canonical.lifecycle,
+					comparison,
+				}),
+			);
+			continue;
+		}
+		if (rows.length === 0) continue;
+
+		const result = reconcileInvitationDelivery({
+			environment,
+			canonical,
+			row: rows[0]!,
+		});
+		comparisons.push(result.comparison);
+		operationalStatuses.push(result.operationalStatus);
+		deliveryStatuses.push(result.deliveryStatus);
+		const issue = signalFromReconciliation({
+			result,
+			environment,
+			slug: canonical.slug,
+			lifecycle: canonical.lifecycle,
+			work: false,
+		});
+		if (issue) issues.push(issue);
+		const work = signalFromReconciliation({
+			result,
+			environment,
+			slug: canonical.slug,
+			lifecycle: canonical.lifecycle,
+			work: true,
+		});
+		if (work) workItems.push(work);
+
+		appendAssetSignals({ canonical, environment, row: rows[0]!, state });
+	}
+
+	appendPresenceSignals({ canonical, coverage, rowsByEnvironment, state });
+	appendLifecycleSignals(canonical, state);
+
+	return {
+		summary: {
+			slug: canonical.slug,
+			lifecycle: canonical.lifecycle,
+			operationalStatus: aggregateOperationalStatus(operationalStatuses),
+			deliveryStatus: aggregateDeliveryStatus(deliveryStatuses),
+			comparisons,
+		},
+		issues,
+		workItems,
+	};
+}
+
+function evaluateLegacyInvitations(
+	evidence: SnapshotEvidence,
+	coverage: readonly EnvironmentCoverage[],
+): { summaries: InvitationSummary[]; issues: ObservabilitySignal[] } {
+	const summaries: InvitationSummary[] = [];
+	const issues: ObservabilitySignal[] = [];
+	for (const entry of evidence.legacy) {
+		const operationalStatuses: OperationalStatus[] = [];
+		for (const environment of ENVIRONMENTS) {
+			if (entry.remoteParity === 'excluded' && environment !== 'local') continue;
+			const coverageRow = coverage.find((item) => item.environment === environment)!;
+			if (coverageRow.status !== 'AVAILABLE') continue;
+			const rows = rowsFor(evidence.projections[environment], entry.slug);
+			if (rows.length === 1) {
+				operationalStatuses.push('HEALTHY');
+				continue;
+			}
+			const identityConflict = rows.length > 1;
+			operationalStatuses.push('BLOCKED');
+			issues.push(
+				signal({
+					impact: 'OPERATIONAL',
+					reasonCode: identityConflict
+						? 'INVITATION_IDENTITY_CONFLICT'
+						: 'INVITATION_MISSING',
+					nextStep: identityConflict ? 'RESOLVE_IDENTITY' : 'VERIFY_BASELINE',
+					operationalStatus: 'BLOCKED',
+					environment,
+					slug: entry.slug,
+					lifecycle: 'published',
+				}),
+			);
+		}
+		summaries.push({
+			slug: entry.slug,
+			lifecycle: 'published',
+			operationalStatus: aggregateOperationalStatus(operationalStatuses),
+			deliveryStatus: 'ALIGNED',
+			comparisons: [],
+		});
+	}
+	return { summaries, issues };
+}
+
+export function assembleSnapshotFromEvidence(evidence: SnapshotEvidence): ObservabilitySnapshot {
+	const coverage = ENVIRONMENTS.map((environment) =>
+		coverageFor(
+			environment,
+			evidence.probeScope,
+			evidence.projections[environment],
+			evidence.migrations[environment],
+		),
+	);
+	const issues = environmentBaseSignals(evidence, coverage);
+	const workItems: ObservabilitySignal[] = [];
+	const invitationSummaries: InvitationSummary[] = [];
+
+	for (const failure of evidence.canonicalFailures) {
+		issues.push(
+			signal({
+				impact: 'OPERATIONAL',
+				reasonCode: 'CANONICAL_INVALID',
+				nextStep: 'FIX_CANONICAL_DEFINITION',
+				operationalStatus: 'BLOCKED',
+				deliveryStatus: 'UNVERIFIED',
+				slug: failure.slug,
+				lifecycle: failure.lifecycle,
+			}),
+		);
+		invitationSummaries.push({
+			slug: failure.slug,
+			lifecycle: failure.lifecycle,
+			operationalStatus: 'BLOCKED',
+			deliveryStatus: 'UNVERIFIED',
+			comparisons: [],
+		});
+	}
+
+	for (const canonical of evidence.canonical) {
+		const result = evaluateCanonicalInvitation(canonical, evidence, coverage);
+		invitationSummaries.push(result.summary);
+		issues.push(...result.issues);
+		workItems.push(...result.workItems);
+	}
+	const legacy = evaluateLegacyInvitations(evidence, coverage);
+	invitationSummaries.push(...legacy.summaries);
+	issues.push(...legacy.issues);
+
+	const environmentSummaries: EnvironmentSummary[] = ENVIRONMENTS.map((environment) => {
+		const coverageRow = coverage.find((item) => item.environment === environment)!;
+		const scopedIssues = issues.filter((item) => item.environment === environment);
+		const scopedWork = workItems.filter((item) => item.environment === environment);
+		const comparisonStatuses = invitationSummaries.flatMap((summary) =>
+			summary.comparisons
+				.filter((comparison) => comparison.environment === environment)
+				.map((comparison) => comparisonToDeliveryStatus(comparison)),
+		);
+		return {
+			environment,
+			operationalStatus:
+				coverageRow.status === 'NOT_PROBED'
+					? 'UNVERIFIED'
+					: aggregateOperationalStatus(
+							scopedIssues.map((item) => item.operationalStatus),
+						),
+			deliveryStatus:
+				coverageRow.status === 'NOT_PROBED'
+					? 'UNVERIFIED'
+					: aggregateDeliveryStatus([
+							...comparisonStatuses,
+							...scopedIssues.map((item) => item.deliveryStatus),
+							...scopedWork.map((item) => item.deliveryStatus),
+						]),
+			coverage: coverageRow.status,
+			counts: {
+				invitations: evidence.projections[environment].activeInvitationRows,
+				issues: scopedIssues.length,
+				workItems: scopedWork.length,
+			},
+		};
+	});
+
+	const aggregateEnvironments = environmentSummaries.filter(
+		(summary) => summary.coverage !== 'NOT_PROBED',
+	);
+	const operationalStatus = aggregateOperationalStatus([
+		...aggregateEnvironments.map((summary) => summary.operationalStatus),
+		...invitationSummaries.map((summary) => summary.operationalStatus),
+		...issues.filter((item) => !item.environment).map((item) => item.operationalStatus),
+	]);
+	const deliveryStatus = aggregateDeliveryStatus([
+		...aggregateEnvironments.map((summary) => summary.deliveryStatus),
+		...invitationSummaries.map((summary) => summary.deliveryStatus),
+		...issues.filter((item) => !item.environment).map((item) => item.deliveryStatus),
+	]);
+	const freshness = coverage.every((item) => item.status === 'AVAILABLE') ? 'FRESH' : 'PARTIAL';
+
+	return finalizeObservabilitySnapshot({
+		generatedAt: evidence.generatedAt,
+		freshness,
+		operationalStatus,
+		deliveryStatus,
+		coverage,
+		cache: {
+			refreshAfter: new Date(
+				new Date(evidence.generatedAt).getTime() + REFRESH_TTL_MS,
+			).toISOString(),
+		},
+		issues,
+		workItems,
+		environmentSummaries,
+		invitationSummaries,
+	});
+}
+
+function unprobedEnvironment(environment: TargetEnv): EnvironmentDatabaseProjection {
+	return {
+		environment,
+		configured: false,
+		reachable: false,
+		targetClassification: 'unknown',
+		activeInvitationRows: 0,
+		identityConflictsCount: 0,
+		rows: [],
+		failure: 'credentials_required',
+	};
+}
+
+function unprobedMigration(environment: TargetEnv): MigrationProjection {
+	return {
+		environment,
+		available: false,
+		schemaLifecycle: 'UNVERIFIED',
+		appliedCount: null,
+		pendingCount: 0,
+	};
+}
+
+async function buildCanonicalObservations(): Promise<{
+	canonical: CanonicalObservation[];
+	failures: Array<{ slug: string; lifecycle: InvitationLifecycle }>;
+}> {
+	const canonical: CanonicalObservation[] = [];
+	const failures: Array<{ slug: string; lifecycle: InvitationLifecycle }> = [];
+	await Promise.all(
+		listInvitationDefinitions().map(async (definition: InvitationDefinition) => {
+			try {
+				const release = await buildNormalizedInvitationRelease({
+					slug: definition.slug,
+					sourceDir: getInvitationAssetSourceDir(definition),
+				});
+				canonical.push({
+					slug: definition.slug,
+					lifecycle: definition.lifecycle,
+					deliveryScope: definition.deliveryScope,
+					packageHash: serializeInvitationPackage(release).packageHash,
+					managedContent: release.draftContent,
+					requiredAssetKeys: definition.assets.map((asset) => asset.key).sort(),
+				});
+			} catch {
+				failures.push({ slug: definition.slug, lifecycle: definition.lifecycle });
+			}
+		}),
+	);
+	canonical.sort((left, right) => left.slug.localeCompare(right.slug));
+	failures.sort((left, right) => left.slug.localeCompare(right.slug));
+	return { canonical, failures };
+}
+
+async function collectSnapshotEvidence(
+	probeScope: ObservabilityProbeScope,
+): Promise<SnapshotEvidence> {
+	const generatedAt = new Date().toISOString();
+	const built = await buildCanonicalObservations();
+	const legacy = listLocalRenderCorpus()
+		.filter((entry) => entry.classification === 'legacy')
+		.map((entry) => ({ slug: entry.slug, remoteParity: entry.remoteParity }));
+	const slugs = [
+		...new Set([
+			...built.canonical.map((item) => item.slug),
+			...legacy.map((item) => item.slug),
+		]),
+	];
+	const budget = new ObservabilityInvocationBudget();
+	const projections = {} as Record<ObservabilityEnvironment, EnvironmentDatabaseProjection>;
+	const migrations = {} as Record<ObservabilityEnvironment, MigrationProjection>;
+	for (const environment of ENVIRONMENTS) {
+		if (probeScope === 'local' && environment !== 'local') {
+			projections[environment] = unprobedEnvironment(environment);
+			migrations[environment] = unprobedMigration(environment);
+			continue;
+		}
+		projections[environment] = readEnvironmentDatabaseProjection({
+			environment,
+			slugs,
+			timeoutMs: PROBE_TIMEOUT_MS,
+			budget,
+		});
+		migrations[environment] = readMigrationProjection({
+			environment,
+			timeoutMs: PROBE_TIMEOUT_MS,
+			budget,
+		});
+	}
+	return {
+		generatedAt,
+		probeScope,
+		canonical: built.canonical,
+		canonicalFailures: built.failures,
+		legacy,
+		projections,
+		migrations,
+	};
+}
+
 export async function buildObservabilitySnapshot(options?: {
-	probeTimeoutMs?: number;
 	probeScope?: ObservabilityProbeScope;
 }): Promise<ObservabilitySnapshot> {
-	const matrix = await assembleObservabilityMatrix({
-		...options,
-		probeScope: options?.probeScope ?? 'all',
-	});
-	return buildPublicObservabilitySnapshot({
-		generatedAt: matrix.generatedAt,
-		overallStatus: matrix.overallStatus,
-		source: matrix.source,
-		migrations: matrix.migrations,
-		assets: matrix.assets,
-		invitations: matrix.invitations,
-		environments: matrix.environments,
-		regression: matrix.validation.regression,
-		screenshots: matrix.validation.screenshots,
-		degraded: matrix.degradedNotes.length > 0,
-	});
+	return assembleSnapshotFromEvidence(
+		await collectSnapshotEvidence(options?.probeScope ?? 'all'),
+	);
 }
 
-function projectSnapshotToSummary(
-	snapshot: ObservabilityMatrixSnapshot,
-): ObservabilitySummaryPayload {
-	const alignedCount = snapshot.invitations.filter(
-		(i) =>
-			i.environments.local.status === 'MATCH_CANONICAL' ||
-			i.environments.local.status === 'MATCH_REFERENCE',
-	).length;
-	const divergedCount = snapshot.invitations.filter(
-		(i) =>
-			i.environments.local.status === 'DIVERGED' ||
-			i.environments.local.status === 'DIVERGED_FROM_REFERENCE',
-	).length;
-	const behindCount = snapshot.invitations.filter(
-		(i) => i.environments.local.status === 'BEHIND_CANONICAL',
-	).length;
-	const issueSlugs = snapshot.invitations
-		.filter(
-			(i) =>
-				i.environments.local.status !== 'MATCH_CANONICAL' &&
-				i.environments.local.status !== 'MATCH_REFERENCE',
-		)
-		.map((i) => i.slug);
-
-	const localMigration = snapshot.migrations.find((m) => m.environment === 'local');
-	const pendingCount = Array.isArray(localMigration?.pending) ? localMigration.pending.length : 0;
-
+export async function buildObservabilitySummary(): Promise<ObservabilitySummaryPayload> {
+	const snapshot = await buildObservabilitySnapshot({ probeScope: 'local' });
 	return {
-		schemaVersion: 1,
+		schemaVersion: 3,
 		generatedAt: snapshot.generatedAt,
-		overallStatus: snapshot.overallStatus,
-		source: snapshot.source,
-		summary: {
-			migrations: {
-				hasPending: pendingCount > 0,
-				pendingCount,
-				localLifecycle: localMigration?.schemaLifecycle ?? 'UNVERIFIED',
-			},
-			invitations: {
-				totalCount: snapshot.invitations.length,
-				alignedCount,
-				divergedCount,
-				behindCount,
-				issueSlugs,
-			},
-			validation: {
-				regressionFreshness: snapshot.validation.regression.freshness,
-				screenshotsFreshness: snapshot.validation.screenshots.freshness,
-			},
+		freshness: snapshot.freshness,
+		operationalStatus: snapshot.operationalStatus,
+		deliveryStatus: snapshot.deliveryStatus,
+		coverage: snapshot.coverage,
+		counts: {
+			invitations: snapshot.invitationSummaries.length,
+			issues: snapshot.issues.length,
+			workItems: snapshot.workItems.length,
 		},
-		categorizedCommands: snapshot.recommendedCommands.map((cmd) => ({
-			...cmd,
-			category: categorizeCommand(cmd.id),
-		})),
-		degradedNotes: snapshot.degradedNotes,
 	};
-}
-
-/**
- * Lightweight-wire summary. Compute is Local-scoped (no Preview/Production DB probes).
- */
-export async function buildObservabilitySummary(options?: {
-	probeTimeoutMs?: number;
-}): Promise<ObservabilitySummaryPayload> {
-	const matrix = await assembleObservabilityMatrix({
-		...options,
-		probeScope: 'local',
-	});
-	return projectSnapshotToSummary(matrix);
 }

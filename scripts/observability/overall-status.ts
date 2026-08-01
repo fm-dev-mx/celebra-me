@@ -1,172 +1,54 @@
-/**
- * Normalized overall observability health.
- * Never HEALTHY when required evidence is unreachable, stale, invalid, or absent.
- * Local-first: Preview/Production probe gaps degrade to ATTENTION, not Local BLOCKED.
- */
+/** Shared deterministic aggregation for invitation, environment, and global summaries. */
+import type { DeliveryStatus, OperationalStatus } from './types.ts';
 
-import type {
-	AssetHealthRow,
-	EnvironmentHealthRow,
-	EvidenceFreshness,
-	InvitationHealthRow,
-	MigrationEnvHealth,
-	OverallStatus,
-	ValidationEvidenceView,
-} from './types.ts';
+const OPERATIONAL_PRECEDENCE: Record<OperationalStatus, number> = {
+	HEALTHY: 0,
+	ATTENTION: 1,
+	UNVERIFIED: 2,
+	BLOCKED: 3,
+};
 
-function evidenceBlocksHealthy(freshness: EvidenceFreshness): boolean {
-	return freshness !== 'PASS';
-}
+const DELIVERY_PRECEDENCE: Record<DeliveryStatus, number> = {
+	ALIGNED: 0,
+	IN_PROGRESS: 1,
+	UNVERIFIED: 2,
+	ACTION_REQUIRED: 3,
+};
 
-function isBlocked(input: {
-	localEnv: EnvironmentHealthRow | undefined;
-	localMigration: MigrationEnvHealth | undefined;
-	invitations: readonly InvitationHealthRow[];
-	assets: readonly AssetHealthRow[];
-	corpusComplete: boolean;
-	evidenceFail: boolean;
-}): boolean {
-	const localConnectionBad =
-		input.localEnv?.connection === 'unreachable' ||
-		input.localEnv?.connection === 'credentials_required';
-	const localSchemaDrift = input.localMigration?.schemaLifecycle === 'SCHEMA_DRIFT';
-	const missingLocalCorpus = input.invitations.some(
-		(row) => row.environments.local.status === 'NOT_PRESENT',
-	);
-	const localIdentityConflict = input.invitations.some(
-		(row) => row.environments.local.status === 'IDENTITY_CONFLICT',
-	);
-	const missingRequiredAssets = input.assets.some(
-		(a) =>
-			a.status === 'MISSING' &&
-			(a.assetStrategy === 'VERSIONED_MANAGED_ASSET' ||
-				a.assetStrategy === 'VERSIONED_LOCAL_ASSET'),
-	);
-
-	return (
-		localConnectionBad ||
-		localSchemaDrift ||
-		missingLocalCorpus ||
-		!input.corpusComplete ||
-		localIdentityConflict ||
-		missingRequiredAssets ||
-		input.evidenceFail
-	);
-}
-
-function isLocalUnverified(
-	localEnv: EnvironmentHealthRow | undefined,
-	localMigration: MigrationEnvHealth | undefined,
-	invitations: readonly InvitationHealthRow[],
-	assets: readonly AssetHealthRow[],
-): boolean {
-	return (
-		localEnv?.connection === 'unverified' ||
-		localMigration?.schemaLifecycle === 'UNVERIFIED' ||
-		localEnv?.renderEffectiveParity === 'UNVERIFIABLE' ||
-		invitations.some((row) => row.environments.local.status === 'UNVERIFIED') ||
-		assets.some((a) => a.status === 'UNVERIFIED')
-	);
-}
-
-function isLocalAttention(
-	localEnv: EnvironmentHealthRow | undefined,
-	localMigration: MigrationEnvHealth | undefined,
-	invitations: readonly InvitationHealthRow[],
-	assets: readonly AssetHealthRow[],
-): boolean {
-	const parityAttention =
-		localEnv?.renderEffectiveParity === 'DRAFT_DIVERGENCE_ONLY' ||
-		localEnv?.renderEffectiveParity === 'PUBLISHED_MISMATCH' ||
-		localEnv?.renderEffectiveParity === 'PARTIAL_PRESENCE' ||
-		localEnv?.renderEffectiveParity === 'BEHIND_OR_CONFLICTED';
-	const inviteAttention = invitations.some((row) => {
-		const s = row.environments.local.status;
-		return s === 'BEHIND_CANONICAL' || s === 'DIVERGED' || s === 'DIVERGED_FROM_REFERENCE';
-	});
-	return (
-		localMigration?.schemaLifecycle === 'BEHIND' ||
-		parityAttention ||
-		inviteAttention ||
-		assets.some((a) => a.status === 'PARTIAL' || a.status === 'MISSING')
-	);
-}
-
-function isRemoteAttention(environments: readonly EnvironmentHealthRow[]): boolean {
-	return environments.some((env) => {
-		if (env.environment === 'local') return false;
-		// Summary / scoped probes leave remotes as unverified — do not penalize overall status.
-		if (env.connection === 'unverified') return false;
-		return (
-			env.connection !== 'ok' ||
-			env.renderEffectiveParity === 'PUBLISHED_MISMATCH' ||
-			env.renderEffectiveParity === 'BEHIND_OR_CONFLICTED' ||
-			env.renderEffectiveParity === 'PARTIAL_PRESENCE'
-		);
-	});
-}
-
-function evidenceUnverified(
-	regression: ValidationEvidenceView,
-	screenshots: ValidationEvidenceView,
-): boolean {
-	return (
-		regression.freshness === 'NOT_RUN' ||
-		screenshots.freshness === 'NOT_RUN' ||
-		regression.freshness === 'INVALID' ||
-		screenshots.freshness === 'INVALID'
-	);
-}
-
-export function computeOverallStatus(input: {
-	environments: readonly EnvironmentHealthRow[];
-	invitations: readonly InvitationHealthRow[];
-	migrations: readonly MigrationEnvHealth[];
-	assets: readonly AssetHealthRow[];
-	regression: ValidationEvidenceView;
-	screenshots: ValidationEvidenceView;
-	corpusComplete: boolean;
-}): OverallStatus {
-	const { invitations, migrations, assets, regression, screenshots } = input;
-	const localEnv = input.environments.find((env) => env.environment === 'local');
-	const localMigration = migrations.find((m) => m.environment === 'local');
-	const evidenceFail = regression.freshness === 'FAIL' || screenshots.freshness === 'FAIL';
-	const evidenceMissingOrBad =
-		evidenceBlocksHealthy(regression.freshness) || evidenceBlocksHealthy(screenshots.freshness);
-
-	if (
-		isBlocked({
-			localEnv,
-			localMigration,
-			invitations,
-			assets,
-			corpusComplete: input.corpusComplete,
-			evidenceFail,
-		})
-	) {
-		return 'BLOCKED';
+function aggregateByPrecedence<T extends string>(
+	statuses: readonly T[],
+	precedence: Readonly<Record<T, number>>,
+	fallback: T,
+): T {
+	let result = fallback;
+	for (const status of statuses) {
+		if (precedence[status] > precedence[result]) result = status;
 	}
+	return result;
+}
 
-	const localUnverified = isLocalUnverified(localEnv, localMigration, invitations, assets);
-	const localAttention = isLocalAttention(localEnv, localMigration, invitations, assets);
-	const remoteAttention = isRemoteAttention(input.environments);
+export function aggregateOperationalStatus(
+	statuses: readonly OperationalStatus[],
+): OperationalStatus {
+	return aggregateByPrecedence(statuses, OPERATIONAL_PRECEDENCE, 'HEALTHY');
+}
 
-	if (evidenceMissingOrBad) {
-		if (evidenceUnverified(regression, screenshots) || localUnverified) return 'UNVERIFIED';
-		return 'ATTENTION';
+export function aggregateDeliveryStatus(statuses: readonly DeliveryStatus[]): DeliveryStatus {
+	return aggregateByPrecedence(statuses, DELIVERY_PRECEDENCE, 'ALIGNED');
+}
+
+export function comparisonToDeliveryStatus(input: {
+	outcome: 'APPLY' | 'ALREADY_APPLIED' | 'DRIFT' | 'DELIVERY_SCOPE_BLOCKED' | 'UNVERIFIED';
+}): DeliveryStatus {
+	switch (input.outcome) {
+		case 'ALREADY_APPLIED':
+			return 'ALIGNED';
+		case 'APPLY':
+			return 'IN_PROGRESS';
+		case 'DRIFT':
+		case 'DELIVERY_SCOPE_BLOCKED':
+			return 'ACTION_REQUIRED';
+		case 'UNVERIFIED':
+			return 'UNVERIFIED';
 	}
-
-	if (localUnverified) return 'UNVERIFIED';
-	if (localAttention || remoteAttention) return 'ATTENTION';
-
-	if (
-		regression.freshness === 'PASS' &&
-		screenshots.freshness === 'PASS' &&
-		localEnv?.renderEffectiveParity === 'ALL_ALIGNED' &&
-		(localMigration?.schemaLifecycle === 'CURRENT' || !localMigration)
-	) {
-		return 'HEALTHY';
-	}
-
-	return 'ATTENTION';
 }

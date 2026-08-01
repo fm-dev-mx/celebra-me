@@ -2,126 +2,67 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, jest } from '@jest/globals';
 import ObservabilityPanel from '@/components/dashboard/observability/ObservabilityPanel';
 import { dashboardApi } from '@/lib/dashboard/api-client';
-import type { ObservabilitySnapshot } from '@/lib/observability/types';
+import { buildObservabilitySnapshotFixture } from '../../helpers/observability-snapshot-fixture';
 
-jest.mock('@/lib/dashboard/api-client', () => ({
-	dashboardApi: { get: jest.fn() },
-}));
-
+jest.mock('@/lib/dashboard/api-client', () => ({ dashboardApi: { get: jest.fn() } }));
 const mockGet = dashboardApi.get as jest.MockedFunction<typeof dashboardApi.get>;
 
-function payload(): ObservabilitySnapshot {
-	return {
-		schemaVersion: 2,
-		generatedAt: '2026-08-01T12:00:00.000Z',
-		overallStatus: 'ATTENTION',
-		cache: { state: 'fresh', refreshAfter: '2099-08-01T12:01:00.000Z' },
-		source: { branch: 'dev-local', commitShaShort: 'abcdef1234', workingTreeDirty: false },
-		health: {
-			environments: { total: 3, ok: 2, warning: 0, blocking: 0, unverified: 1 },
-			invitations: { total: 13, ok: 12, warning: 1, blocking: 0, unverified: 0 },
-			migrations: { total: 3, ok: 3, warning: 0, blocking: 0, unverified: 0 },
-			assets: { total: 13, ok: 13, warning: 0, blocking: 0, unverified: 0 },
-			validations: { total: 2, ok: 2, warning: 0, blocking: 0, unverified: 0 },
-		},
-		issues: [
+function payload() {
+	return buildObservabilitySnapshotFixture({
+		deliveryStatus: 'IN_PROGRESS',
+		cache: { refreshAfter: '2099-08-01T12:01:00.000Z' },
+		workItems: [
 			{
-				id: 'invitation_behind:sample',
-				code: 'INVITATION_BEHIND',
-				severity: 'warning',
-				domain: 'invitation',
-				scope: 'sample',
+				impact: 'DELIVERY',
+				reasonCode: 'CANONICAL_CHANGE_PENDING',
+				nextStep: 'PROMOTE_PREVIEW',
+				operationalStatus: 'HEALTHY',
+				deliveryStatus: 'IN_PROGRESS',
+				detailStatus: 'AVAILABLE',
+				affectedFieldCount: 1,
+				affectedSectionCount: 1,
+				semanticPaths: ['hero.title'],
+				environment: 'preview',
 				slug: 'sample',
-				title: 'La invitación está detrás de la fuente canónica',
-				description: 'Revise la comparación antes de publicar.',
-				actionIds: ['inspect:sample'],
+				lifecycle: 'published',
+				comparisonOutcome: 'APPLY',
 			},
 		],
-		validationEvidence: [
+		environmentSummaries: ['local', 'preview', 'production'].map((environment) => ({
+			environment: environment as 'local' | 'preview' | 'production',
+			operationalStatus: 'HEALTHY' as const,
+			deliveryStatus:
+				environment === 'local' ? ('ALIGNED' as const) : ('IN_PROGRESS' as const),
+			coverage: 'AVAILABLE' as const,
+			counts: { invitations: 1, issues: 0, workItems: environment === 'preview' ? 1 : 0 },
+		})),
+		invitationSummaries: [
 			{
-				type: 'regression',
-				freshness: 'PASS',
-				completedAt: '2026-08-01T12:00:00.000Z',
-				passed: 13,
-				total: 13,
-			},
-			{
-				type: 'screenshots',
-				freshness: 'PASS',
-				completedAt: '2026-08-01T12:00:00.000Z',
-				passed: 13,
-				total: 13,
-			},
-		],
-		recommendedActions: [
-			{
-				id: 'inspect:sample',
-				label: 'Inspeccionar invitación',
-				command: 'pnpm dbs --compact sample',
-				reason: 'Diagnóstico de sólo lectura.',
+				slug: 'sample',
+				lifecycle: 'published',
+				operationalStatus: 'HEALTHY',
+				deliveryStatus: 'IN_PROGRESS',
+				comparisons: [],
 			},
 		],
-	};
+	});
 }
 
 describe('ObservabilityPanel', () => {
-	it('renders anomalies before compact healthy coverage', async () => {
-		mockGet.mockImplementation(async (path) => {
-			if (String(path).includes('mode=detail')) {
-				return { ok: true, status: 200, data: payload() };
-			}
-			return {
-				ok: true,
-				status: 200,
-				data: {
-					schemaVersion: 1,
-					generatedAt: '2026-08-01T12:00:00.000Z',
-					overallStatus: 'ATTENTION',
-					source: {
-						branch: 'dev-local',
-						commitSha: 'abcdef1234',
-						workingTreeDirty: false,
-						degraded: false,
-					},
-					summary: {
-						migrations: {
-							hasPending: false,
-							pendingCount: 0,
-							localLifecycle: 'CURRENT',
-						},
-						invitations: {
-							totalCount: 13,
-							alignedCount: 12,
-							divergedCount: 0,
-							behindCount: 1,
-							issueSlugs: ['sample'],
-						},
-						validation: {
-							regressionFreshness: 'PASS',
-							screenshotsFreshness: 'PASS',
-						},
-					},
-					categorizedCommands: [],
-					degradedNotes: [],
-				},
-			};
-		});
+	it('renders operational health separately from delivery work', async () => {
+		mockGet.mockResolvedValue({ ok: true, status: 200, data: payload() } as never);
 		render(<ObservabilityPanel />);
 		expect(screen.getByRole('status')).toHaveTextContent('Comprobando señales operacionales');
 		await waitFor(() =>
-			expect(screen.getByRole('heading', { name: 'Atención requerida' })).toBeInTheDocument(),
+			expect(screen.getByRole('heading', { name: 'Trabajo de entrega' })).toBeInTheDocument(),
 		);
-		expect(
-			screen.getByText('La invitación está detrás de la fuente canónica'),
-		).toBeInTheDocument();
-		expect(screen.getByText('12')).toBeInTheDocument();
-		expect(screen.queryByRole('table')).not.toBeInTheDocument();
-		expect(
-			screen.getByRole('button', { name: 'Actualización disponible en breve' }),
-		).toBeDisabled();
+		expect(screen.getByText('Salud: Saludable')).toBeInTheDocument();
+		expect(screen.getByText('Entrega: En progreso')).toBeInTheDocument();
+		expect(screen.getByText('Hay un cambio canónico pendiente')).toBeInTheDocument();
+		expect(screen.getByText('No hay incidencias confirmadas.')).toBeInTheDocument();
 		expect(mockGet).toHaveBeenCalledWith(
 			'/api/dashboard/observabilidad?mode=detail',
-			expect.objectContaining({ timeoutMs: 300_000 }),
+			expect.objectContaining({ timeoutMs: 30_000 }),
 		);
 	});
 

@@ -75,6 +75,8 @@ Alba Rosa Quiñones client invitation, premium motion system, and preview infras
 
 ### Changed
 
+- **Observabilidad Local v3**: salud operacional y progreso de entrega separados, con evidencias
+  tipadas y proyección acotada por entorno.
 - **Free-tier Production recovery**: local Windows EFS critical backups support unattended daily
   reporting, category byte metrics, checksum verification, and 30-daily/12-monthly retention.
 

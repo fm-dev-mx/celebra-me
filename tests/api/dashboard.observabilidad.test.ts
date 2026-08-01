@@ -30,6 +30,10 @@ import {
 	OBSERVABILITY_RATE_LIMIT_OPERATION,
 } from '@/pages/api/dashboard/observabilidad/index';
 import type { ObservabilitySnapshot, ObservabilitySummaryPayload } from '@/lib/observability/types';
+import {
+	buildObservabilitySnapshotFixture,
+	buildObservabilitySummaryFixture,
+} from '../helpers/observability-snapshot-fixture';
 
 const mockAccess = requireLocalObservabilityAccess as jest.MockedFunction<
 	typeof requireLocalObservabilityAccess
@@ -43,80 +47,58 @@ const mockSummary = buildObservabilitySummaryPayload as jest.MockedFunction<
 const mockCheckRateLimit = checkRateLimit as jest.MockedFunction<typeof checkRateLimit>;
 
 function minimalSnapshot(): ObservabilitySnapshot {
-	return {
-		schemaVersion: 2,
+	return buildObservabilitySnapshotFixture({
 		generatedAt: '2026-07-31T12:00:00.000Z',
-		overallStatus: 'UNVERIFIED',
-		cache: { state: 'fresh', refreshAfter: '2026-07-31T12:01:00.000Z' },
-		source: {
-			branch: 'dev-local',
-			commitShaShort: 'abcdef1',
-			workingTreeDirty: false,
-		},
-		health: {
-			environments: { total: 0, ok: 0, warning: 0, blocking: 0, unverified: 0 },
-			invitations: { total: 0, ok: 0, warning: 0, blocking: 0, unverified: 0 },
-			migrations: { total: 0, ok: 0, warning: 0, blocking: 0, unverified: 0 },
-			assets: { total: 0, ok: 0, warning: 0, blocking: 0, unverified: 0 },
-			validations: { total: 2, ok: 0, warning: 0, blocking: 0, unverified: 2 },
-		},
+		freshness: 'PARTIAL',
+		operationalStatus: 'UNVERIFIED',
+		deliveryStatus: 'UNVERIFIED',
+		coverage: [
+			{ environment: 'local', status: 'AVAILABLE' },
+			{
+				environment: 'preview',
+				status: 'UNAVAILABLE',
+				reasonCode: 'ENVIRONMENT_UNAVAILABLE',
+			},
+			{
+				environment: 'production',
+				status: 'UNAVAILABLE',
+				reasonCode: 'ENVIRONMENT_UNAVAILABLE',
+			},
+		],
+		cache: { refreshAfter: '2026-07-31T12:01:00.000Z' },
 		issues: [
 			{
-				id: 'probe_degraded:aggregation',
-				code: 'PROBE_DEGRADED',
-				severity: 'unverified',
-				domain: 'data_quality',
-				scope: 'Agregación',
-				title: 'Señal degradada',
-				description: 'La cobertura es incompleta.',
-				actionIds: [],
+				impact: 'OPERATIONAL',
+				reasonCode: 'ENVIRONMENT_UNAVAILABLE',
+				nextStep: 'RETRY_PROBE',
+				operationalStatus: 'UNVERIFIED',
+				deliveryStatus: 'UNVERIFIED',
+				detailStatus: 'DETAIL_UNAVAILABLE',
+				affectedFieldCount: 0,
+				affectedSectionCount: 0,
+				semanticPaths: [],
+				environment: 'preview',
 			},
 		],
-		validationEvidence: [
-			{
-				type: 'regression',
-				freshness: 'NOT_RUN',
-				completedAt: null,
-				passed: null,
-				total: null,
-			},
-			{
-				type: 'screenshots',
-				freshness: 'NOT_RUN',
-				completedAt: null,
-				passed: null,
-				total: null,
-			},
-		],
-		recommendedActions: [],
-	};
+		environmentSummaries: ['local', 'preview', 'production'].map((environment) => ({
+			environment: environment as 'local' | 'preview' | 'production',
+			operationalStatus: environment === 'local' ? 'HEALTHY' : 'UNVERIFIED',
+			deliveryStatus: environment === 'local' ? 'ALIGNED' : 'UNVERIFIED',
+			coverage: environment === 'local' ? 'AVAILABLE' : 'UNAVAILABLE',
+			counts: { invitations: 0, issues: environment === 'preview' ? 1 : 0, workItems: 0 },
+		})),
+	});
 }
 
 function minimalSummary(): ObservabilitySummaryPayload {
-	return {
-		schemaVersion: 1,
+	return buildObservabilitySummaryFixture({
 		generatedAt: '2026-07-31T12:00:00.000Z',
-		overallStatus: 'UNVERIFIED',
-		source: {
-			branch: 'dev-local',
-			commitSha: 'abc',
-			workingTreeDirty: false,
-			degraded: false,
-		},
-		summary: {
-			migrations: { hasPending: false, pendingCount: 0, localLifecycle: 'UNVERIFIED' },
-			invitations: {
-				totalCount: 13,
-				alignedCount: 13,
-				divergedCount: 0,
-				behindCount: 0,
-				issueSlugs: [],
-			},
-			validation: { regressionFreshness: 'NOT_RUN', screenshotsFreshness: 'NOT_RUN' },
-		},
-		categorizedCommands: [],
-		degradedNotes: ['Invitation matrix degraded: probe timeout'],
-	};
+		freshness: 'PARTIAL',
+		operationalStatus: 'UNVERIFIED',
+		deliveryStatus: 'UNVERIFIED',
+		coverage: minimalSnapshot().coverage,
+		counts: { invitations: 13, issues: 1, workItems: 0 },
+	});
 }
 
 describe('GET /api/dashboard/observabilidad', () => {
@@ -145,8 +127,8 @@ describe('GET /api/dashboard/observabilidad', () => {
 		expect(response.status).toBe(200);
 		expect(response.headers.get('Cache-Control')).toContain('no-store');
 		const body = (await response.json()) as ObservabilitySummaryPayload;
-		expect(body.schemaVersion).toBe(1);
-		expect(body.degradedNotes.length).toBeGreaterThan(0);
+		expect(body.schemaVersion).toBe(3);
+		expect(body.freshness).toBe('PARTIAL');
 		const serialized = JSON.stringify(body);
 		expect(serialized).not.toMatch(/postgres:\/\//i);
 		expect(serialized).not.toMatch(/service_role/i);
@@ -171,7 +153,7 @@ describe('GET /api/dashboard/observabilidad', () => {
 		} as never);
 		expect(response.status).toBe(200);
 		const body = (await response.json()) as ObservabilitySnapshot;
-		expect(body.schemaVersion).toBe(2);
+		expect(body.schemaVersion).toBe(3);
 		expect(body.issues.length).toBeGreaterThan(0);
 		const serialized = JSON.stringify(body);
 		expect(serialized).not.toMatch(/postgres:\/\//i);

@@ -3,46 +3,38 @@
  */
 
 import { describe, expect, it, jest } from '@jest/globals';
-import type { ObservabilitySnapshot } from '@/lib/observability/types';
+import { buildObservabilitySnapshotFixture } from '../helpers/observability-snapshot-fixture';
 
 describe('observability browser payload contract', () => {
 	it('sanitized snapshot shape omits credentials and absolute paths', () => {
-		const sample: ObservabilitySnapshot = {
-			schemaVersion: 2,
+		const sample = buildObservabilitySnapshotFixture({
 			generatedAt: '2026-07-31T12:00:00.000Z',
-			overallStatus: 'UNVERIFIED',
-			cache: { state: 'fresh', refreshAfter: '2026-07-31T12:01:00.000Z' },
-			source: {
-				branch: 'feat/x',
-				commitShaShort: 'abcdef1',
-				workingTreeDirty: false,
-			},
-			health: {
-				environments: { total: 0, ok: 0, warning: 0, blocking: 0, unverified: 0 },
-				invitations: { total: 0, ok: 0, warning: 0, blocking: 0, unverified: 0 },
-				migrations: { total: 0, ok: 0, warning: 0, blocking: 0, unverified: 0 },
-				assets: { total: 0, ok: 0, warning: 0, blocking: 0, unverified: 0 },
-				validations: { total: 2, ok: 0, warning: 0, blocking: 0, unverified: 2 },
-			},
-			issues: [],
-			validationEvidence: [
+			freshness: 'PARTIAL',
+			operationalStatus: 'UNVERIFIED',
+			deliveryStatus: 'UNVERIFIED',
+			coverage: [
+				{ environment: 'local', status: 'AVAILABLE' },
 				{
-					type: 'regression',
-					freshness: 'NOT_RUN',
-					completedAt: null,
-					passed: null,
-					total: null,
+					environment: 'preview',
+					status: 'NOT_PROBED',
+					reasonCode: 'ENVIRONMENT_UNAVAILABLE',
 				},
 				{
-					type: 'screenshots',
-					freshness: 'NOT_RUN',
-					completedAt: null,
-					passed: null,
-					total: null,
+					environment: 'production',
+					status: 'NOT_PROBED',
+					reasonCode: 'ENVIRONMENT_UNAVAILABLE',
 				},
 			],
-			recommendedActions: [],
-		};
+			cache: { refreshAfter: '2026-07-31T12:01:00.000Z' },
+			environmentSummaries: ['local', 'preview', 'production'].map((environment) => ({
+				environment: environment as 'local' | 'preview' | 'production',
+				operationalStatus: 'UNVERIFIED' as const,
+				deliveryStatus: 'UNVERIFIED' as const,
+				coverage:
+					environment === 'local' ? ('AVAILABLE' as const) : ('NOT_PROBED' as const),
+				counts: { invitations: 0, issues: 0, workItems: 0 },
+			})),
+		});
 
 		const serialized = JSON.stringify(sample);
 		expect(serialized).not.toMatch(/postgres:\/\//i);

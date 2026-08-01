@@ -11,13 +11,16 @@ import { spawn } from 'node:child_process';
 import { resolve } from 'node:path';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import type { ObservabilitySnapshot, ObservabilitySummaryPayload } from '@/lib/observability/types';
-import { ObservabilitySnapshotSchema } from '@/lib/observability/schema';
+import {
+	ObservabilitySnapshotSchema,
+	ObservabilitySummarySchema,
+} from '@/lib/observability/schema';
 import { createObservabilitySnapshotCache } from './snapshot-cache';
 
 const SNAPSHOT_SCRIPT = resolve(process.cwd(), 'scripts/observability/print-snapshot.ts');
-const SUMMARY_TIMEOUT_MS = 60_000;
-const DETAIL_TIMEOUT_MS = 300_000;
-const MAX_STDOUT_BYTES = 1024 * 1024;
+export const OBSERVABILITY_SUMMARY_TIMEOUT_MS = 30_000;
+export const OBSERVABILITY_DETAIL_TIMEOUT_MS = 30_000;
+export const OBSERVABILITY_MAX_STDOUT_BYTES = 1024 * 1024;
 
 type QueueJob<T> = {
 	run: () => Promise<T>;
@@ -72,7 +75,6 @@ function runSnapshotChild(options: {
 		);
 
 		let stdout = '';
-		let stderr = '';
 		let settled = false;
 		let stdoutTruncated = false;
 
@@ -93,19 +95,16 @@ function runSnapshotChild(options: {
 		child.stderr.setEncoding('utf8');
 		child.stdout.on('data', (chunk: string) => {
 			if (stdoutTruncated) return;
-			if (stdout.length + chunk.length > MAX_STDOUT_BYTES) {
+			if (stdout.length + chunk.length > OBSERVABILITY_MAX_STDOUT_BYTES) {
 				stdoutTruncated = true;
-				stdout = stdout.slice(0, MAX_STDOUT_BYTES);
+				stdout = stdout.slice(0, OBSERVABILITY_MAX_STDOUT_BYTES);
 				return;
 			}
 			stdout += chunk;
 		});
-		child.stderr.on('data', (chunk: string) => {
-			stderr += chunk;
-			if (stderr.length > 4_000) stderr = stderr.slice(-4_000);
-		});
+		child.stderr.resume();
 
-		child.on('error', (error) => {
+		child.on('error', () => {
 			if (settled) return;
 			settled = true;
 			clearTimeout(timer);
@@ -114,7 +113,6 @@ function runSnapshotChild(options: {
 					500,
 					'internal_error',
 					'No se pudo iniciar la agregación de observabilidad.',
-					{ reason: error.message.slice(0, 120) },
 				),
 			);
 		});
@@ -169,7 +167,7 @@ function runSnapshotChild(options: {
 async function buildUncachedObservabilitySnapshot(): Promise<ObservabilitySnapshot> {
 	const parsed = await runSnapshotChild({
 		mode: 'detail',
-		timeoutMs: DETAIL_TIMEOUT_MS,
+		timeoutMs: OBSERVABILITY_DETAIL_TIMEOUT_MS,
 	});
 	return ObservabilitySnapshotSchema.parse(parsed);
 }
@@ -182,23 +180,9 @@ export async function buildObservabilitySummaryPayload(): Promise<ObservabilityS
 	return await withAggregationLock(async () => {
 		const parsed = await runSnapshotChild({
 			mode: 'summary',
-			timeoutMs: SUMMARY_TIMEOUT_MS,
+			timeoutMs: OBSERVABILITY_SUMMARY_TIMEOUT_MS,
 		});
-		const candidate = parsed as ObservabilitySummaryPayload;
-		if (
-			!candidate ||
-			typeof candidate !== 'object' ||
-			candidate.schemaVersion !== 1 ||
-			typeof candidate.generatedAt !== 'string' ||
-			!candidate.summary
-		) {
-			throw new ApiError(
-				500,
-				'internal_error',
-				'La agregación de observabilidad devolvió un resultado inválido.',
-			);
-		}
-		return candidate;
+		return ObservabilitySummarySchema.parse(parsed);
 	});
 }
 

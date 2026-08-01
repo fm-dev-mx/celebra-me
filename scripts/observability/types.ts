@@ -5,37 +5,7 @@
  * Prefer short redacted detail strings only.
  */
 
-export type OverallStatus = 'HEALTHY' | 'ATTENTION' | 'BLOCKED' | 'UNVERIFIED';
-
 export type EvidenceFreshness = 'PASS' | 'FAIL' | 'STALE' | 'NOT_RUN' | 'INVALID';
-
-export type CanonicalContentState =
-	| 'MATCH_CANONICAL'
-	| 'BEHIND_CANONICAL'
-	| 'DIVERGED'
-	| 'NOT_PRESENT'
-	| 'UNVERIFIED'
-	| 'IDENTITY_CONFLICT';
-
-export type LegacyContentState =
-	'MATCH_REFERENCE' | 'DIVERGED_FROM_REFERENCE' | 'NOT_PRESENT' | 'UNVERIFIED';
-
-/** Connectivity / probe outcomes that are not content classifications. */
-export type ProbeConnectivityState = 'UNREACHABLE' | 'CREDENTIALS_REQUIRED';
-
-export type InvitationEnvContentState =
-	CanonicalContentState | LegacyContentState | ProbeConnectivityState;
-
-export type AssetHealthState = 'OK' | 'PARTIAL' | 'MISSING' | 'REMOTE_REFERENCE' | 'UNVERIFIED';
-
-export type CorpusAssetStrategy =
-	'VERSIONED_MANAGED_ASSET' | 'VERSIONED_LOCAL_ASSET' | 'HYBRID_VERSIONED_AND_REMOTE';
-
-export type ReferenceClassification = 'CANONICAL_MANAGED' | 'LOCAL_CORPUS_REFERENCE';
-
-export type ObservabilityTargetEnv = 'local' | 'preview' | 'production' | 'repository';
-
-export type SchemaLifecycleState = 'CURRENT' | 'BEHIND' | 'SCHEMA_DRIFT' | 'UNVERIFIED' | 'SOURCE';
 
 export type ValidationEvidenceType = 'regression' | 'screenshots';
 
@@ -87,229 +57,135 @@ export interface ValidationEvidenceView {
 	detail?: string;
 }
 
-export interface MigrationEnvHealth {
-	environment: ObservabilityTargetEnv;
-	appliedCount: number | null;
-	/** Pending migration version identities; `"—"` for repository SOURCE row. */
-	pending: string[] | '—';
-	schemaLifecycle: SchemaLifecycleState;
-	reachable: boolean;
-	configured: boolean;
-	detail?: string;
+export type ObservabilityEnvironment = 'local' | 'preview' | 'production';
+export type OperationalStatus = 'HEALTHY' | 'ATTENTION' | 'BLOCKED' | 'UNVERIFIED';
+export type DeliveryStatus = 'ALIGNED' | 'IN_PROGRESS' | 'ACTION_REQUIRED' | 'UNVERIFIED';
+export type SnapshotFreshness = 'FRESH' | 'STALE' | 'PARTIAL';
+export type CoverageStatus = 'AVAILABLE' | 'UNAVAILABLE' | 'NOT_PROBED';
+export type InvitationLifecycle = 'in_progress' | 'published';
+export type ComparisonOutcome =
+	'APPLY' | 'ALREADY_APPLIED' | 'DRIFT' | 'DELIVERY_SCOPE_BLOCKED' | 'UNVERIFIED';
+export type SemanticDetailStatus = 'AVAILABLE' | 'DETAIL_UNAVAILABLE';
+export type ObservabilityImpact = 'OPERATIONAL' | 'DELIVERY';
+
+export type ObservabilityReasonCode =
+	| 'ENVIRONMENT_UNAVAILABLE'
+	| 'ENVIRONMENT_IDENTITY_CONFLICT'
+	| 'SCHEMA_BEHIND'
+	| 'SCHEMA_DRIFT'
+	| 'SCHEMA_UNAVAILABLE'
+	| 'AUTHORITATIVE_COUNT_MISMATCH'
+	| 'INVITATION_IDENTITY_CONFLICT'
+	| 'INVITATION_MISSING'
+	| 'CANONICAL_INVALID'
+	| 'DRAFT_INVALID'
+	| 'BASELINE_UNAVAILABLE'
+	| 'BASELINE_VERSION_INCOMPATIBLE'
+	| 'MANAGED_DRIFT'
+	| 'DELIVERY_SCOPE_BLOCKED'
+	| 'LIFECYCLE_SEQUENCE_INVALID'
+	| 'LIFECYCLE_METADATA_STALE'
+	| 'REQUIRED_PUBLISHED_ASSET_MISSING'
+	| 'UNPUBLISHED_ASSET_PENDING'
+	| 'ASSET_IDENTITY_UNVERIFIED'
+	| 'CANONICAL_CHANGE_PENDING'
+	| 'VALID_DRAFT_PENDING'
+	| 'PARTIAL_PROMOTION'
+	| 'DETAIL_BUDGET_EXCEEDED'
+	| 'SNAPSHOT_REFRESH_FAILED';
+
+export type ObservabilityNextStep =
+	| 'NONE'
+	| 'RETRY_PROBE'
+	| 'AUDIT_SCHEMA'
+	| 'RESOLVE_IDENTITY'
+	| 'VERIFY_BASELINE'
+	| 'RECONCILE_MANAGED_CONTENT'
+	| 'APPLY_LOCAL'
+	| 'PROMOTE_PREVIEW'
+	| 'PROMOTE_PRODUCTION'
+	| 'FIX_CANONICAL_DEFINITION'
+	| 'UPDATE_LIFECYCLE_METADATA'
+	| 'PROVIDE_REQUIRED_ASSET'
+	| 'VERIFY_ASSET_EVIDENCE';
+
+export interface EnvironmentCoverage {
+	environment: ObservabilityEnvironment;
+	status: CoverageStatus;
+	reasonCode?: ObservabilityReasonCode;
 }
 
-export interface AssetHealthRow {
+export interface ComparisonSummary {
+	environment: ObservabilityEnvironment;
+	outcome: ComparisonOutcome;
+	detailStatus: SemanticDetailStatus;
+	affectedFieldCount: number;
+	affectedSectionCount: number;
+	semanticPaths: string[];
+}
+
+export interface InvitationSummary {
 	slug: string;
-	assetStrategy: CorpusAssetStrategy;
-	status: AssetHealthState;
-	localFileCount: number;
-	remoteMediaReferenceCount: number;
-	localAssetKeyReferenceCount: number;
-	/** DB invitation_assets count when a status probe provided it; otherwise null. */
-	dbAssetCount: number | null;
-	detail?: string;
+	lifecycle: InvitationLifecycle;
+	operationalStatus: OperationalStatus;
+	deliveryStatus: DeliveryStatus;
+	comparisons: ComparisonSummary[];
 }
 
-export interface InvitationEnvStatusRow {
-	environment: 'local' | 'preview' | 'production';
-	status: InvitationEnvContentState;
-	publishedVersion: number | null;
-	assetCount: number;
-	detail?: string;
+export interface ObservabilitySignal {
+	impact: ObservabilityImpact;
+	reasonCode: ObservabilityReasonCode;
+	nextStep: ObservabilityNextStep;
+	operationalStatus: OperationalStatus;
+	deliveryStatus: DeliveryStatus;
+	detailStatus: SemanticDetailStatus;
+	affectedFieldCount: number;
+	affectedSectionCount: number;
+	semanticPaths: string[];
+	environment?: ObservabilityEnvironment;
+	slug?: string;
+	lifecycle?: InvitationLifecycle;
+	comparisonOutcome?: ComparisonOutcome;
 }
 
-export interface InvitationHealthRow {
-	slug: string;
-	eventType: string;
-	referenceClassification: ReferenceClassification;
-	themeId: string | null;
-	visualProfileId: string | null;
-	assetStrategy: CorpusAssetStrategy;
-	publicRoute: string;
-	environments: Record<'local' | 'preview' | 'production', InvitationEnvStatusRow>;
-	recommendedCommand: string | null;
-	failureCause: string | null;
+export interface EnvironmentSummary {
+	environment: ObservabilityEnvironment;
+	operationalStatus: OperationalStatus;
+	deliveryStatus: DeliveryStatus;
+	coverage: CoverageStatus;
+	counts: {
+		invitations: number;
+		issues: number;
+		workItems: number;
+	};
 }
 
-export interface EnvironmentHealthRow {
-	environment: 'local' | 'preview' | 'production';
-	connection: 'ok' | 'unreachable' | 'credentials_required' | 'unverified';
-	runtimeIdentity: string;
-	schemaLifecycle: SchemaLifecycleState;
-	/**
-	 * Active non-archived invitation rows in the target DB (clients + demos).
-	 * Not the Local Render Corpus size.
-	 */
-	activeInvitationRows: number;
-	/** Corpus slugs present in this env, e.g. `"11/13"`. */
-	supportedCorpusPresence: string;
-	renderEffectiveParity:
-		| 'ALL_ALIGNED'
-		| 'DRAFT_DIVERGENCE_ONLY'
-		| 'PUBLISHED_MISMATCH'
-		| 'BEHIND_OR_CONFLICTED'
-		| 'PARTIAL_PRESENCE'
-		| 'UNVERIFIABLE'
-		| 'MISSING';
-	detail?: string;
-}
-
-export interface RecommendedCommand {
-	id: string;
-	label: string;
-	command: string;
-	/** Why this command is suggested (short, non-PII). */
-	reason: string;
-}
-
-export type CommandCategory = 'DIAGNOSE' | 'VALIDATE' | 'REPAIR' | 'PROMOTE';
-
-export interface CategorizedCommand {
-	id: string;
-	label: string;
-	command: string;
-	reason: string;
-	category: CommandCategory;
+export interface ObservabilitySnapshot {
+	schemaVersion: 3;
+	generatedAt: string;
+	freshness: SnapshotFreshness;
+	operationalStatus: OperationalStatus;
+	deliveryStatus: DeliveryStatus;
+	coverage: EnvironmentCoverage[];
+	cache: {
+		refreshAfter: string;
+	};
+	issues: ObservabilitySignal[];
+	workItems: ObservabilitySignal[];
+	environmentSummaries: EnvironmentSummary[];
+	invitationSummaries: InvitationSummary[];
 }
 
 export interface ObservabilitySummaryPayload {
-	schemaVersion: 1;
+	schemaVersion: 3;
 	generatedAt: string;
-	overallStatus: OverallStatus;
-	source: ObservabilitySourceState;
-	summary: {
-		migrations: {
-			hasPending: boolean;
-			pendingCount: number;
-			localLifecycle: SchemaLifecycleState;
-		};
-		invitations: {
-			totalCount: number;
-			alignedCount: number;
-			divergedCount: number;
-			behindCount: number;
-			issueSlugs: string[];
-		};
-		validation: {
-			regressionFreshness: EvidenceFreshness;
-			screenshotsFreshness: EvidenceFreshness;
-		};
+	freshness: SnapshotFreshness;
+	operationalStatus: OperationalStatus;
+	deliveryStatus: DeliveryStatus;
+	coverage: EnvironmentCoverage[];
+	counts: {
+		invitations: number;
+		issues: number;
+		workItems: number;
 	};
-	categorizedCommands: CategorizedCommand[];
-	degradedNotes: string[];
-}
-
-/**
- * Internal multi-env matrix assembled before public/summary projection.
- * Never sent to the browser as-is.
- */
-export interface ObservabilityMatrixSnapshot {
-	schemaVersion: 1;
-	generatedAt: string;
-	overallStatus: OverallStatus;
-	source: ObservabilitySourceState;
-	fingerprints: ObservabilityFingerprints;
-	validation: {
-		regression: ValidationEvidenceView;
-		screenshots: ValidationEvidenceView;
-	};
-	migrations: MigrationEnvHealth[];
-	assets: AssetHealthRow[];
-	invitations: InvitationHealthRow[];
-	environments: EnvironmentHealthRow[];
-	recommendedCommands: RecommendedCommand[];
-	/** Short non-PII notes when probes degraded. */
-	degradedNotes: string[];
-}
-
-export type ObservabilityIssueSeverity = 'blocking' | 'warning' | 'unverified';
-
-export type ObservabilityIssueDomain =
-	'environment' | 'invitation' | 'migration' | 'asset' | 'validation' | 'source' | 'data_quality';
-
-export type ObservabilityIssueCode =
-	| 'DATA_INTEGRITY'
-	| 'SOURCE_UNVERIFIED'
-	| 'SOURCE_DIRTY'
-	| 'PROBE_DEGRADED'
-	| 'ENV_CONNECTION'
-	| 'ENV_SCHEMA'
-	| 'ENV_PARITY'
-	| 'INVITATION_MISSING'
-	| 'INVITATION_IDENTITY_CONFLICT'
-	| 'INVITATION_BEHIND'
-	| 'INVITATION_DIVERGED'
-	| 'INVITATION_UNVERIFIED'
-	| 'MIGRATION_BEHIND'
-	| 'MIGRATION_DRIFT'
-	| 'MIGRATION_UNVERIFIED'
-	| 'ASSET_MISSING'
-	| 'ASSET_PARTIAL'
-	| 'ASSET_UNVERIFIED'
-	| 'VALIDATION_FAILED'
-	| 'VALIDATION_STALE'
-	| 'VALIDATION_NOT_RUN'
-	| 'VALIDATION_INVALID'
-	| 'SNAPSHOT_REFRESH_FAILED';
-
-export type ObservabilityHealthDomain =
-	'environments' | 'invitations' | 'migrations' | 'assets' | 'validations';
-
-export interface ObservabilityHealthCounts {
-	total: number;
-	ok: number;
-	warning: number;
-	blocking: number;
-	unverified: number;
-}
-
-export interface ObservabilityIssue {
-	id: string;
-	code: ObservabilityIssueCode;
-	severity: ObservabilityIssueSeverity;
-	domain: ObservabilityIssueDomain;
-	scope: string;
-	title: string;
-	description: string;
-	environment?: 'local' | 'preview' | 'production';
-	slug?: string;
-	actionIds: string[];
-}
-
-export interface ObservabilityAction {
-	id: string;
-	label: string;
-	command: string;
-	reason: string;
-}
-
-export interface ValidationEvidenceSummary {
-	type: ValidationEvidenceType;
-	freshness: EvidenceFreshness;
-	completedAt: string | null;
-	passed: number | null;
-	total: number | null;
-}
-
-/**
- * Browser-safe anomaly-first detail snapshot. Omits credentials, absolute paths,
- * resolved UUIDs, dbUrlRedacted, healthy row inventories, and raw error stacks.
- */
-export interface ObservabilitySnapshot {
-	schemaVersion: 2;
-	generatedAt: string;
-	overallStatus: OverallStatus;
-	cache: {
-		state: 'fresh' | 'stale-fallback';
-		refreshAfter: string;
-	};
-	source: {
-		branch: string | null;
-		commitShaShort: string | null;
-		workingTreeDirty: boolean | null;
-	};
-	health: Record<ObservabilityHealthDomain, ObservabilityHealthCounts>;
-	issues: ObservabilityIssue[];
-	validationEvidence: ValidationEvidenceSummary[];
-	recommendedActions: ObservabilityAction[];
 }

@@ -21,6 +21,38 @@ Production -> Local: allowed for read-only refreshes and backups.
 Local -> Production: allowed only for reviewed migrations.
 ```
 
+## Observability projection decision
+
+The Local-only observability dashboard reads each environment through one slug-filtered batch query
+plus one migration-history query. Reconciliation stays in TypeScript and uses the durable managed
+provenance/receipt baseline. All database sessions are read-only and share a hard six-invocation
+budget across Local, Preview, and Production.
+
+The current projection deliberately remains application-owned SQL rather than a database view. A
+view would not reduce the one content invocation per environment, would add an independently
+grantable object, and could broaden access to draft or managed-projection JSON. Introduce a view
+only after measurement demonstrates a material query-plan or contract benefit. Any future view must
+have explicit grants and invoker semantics where supported; any materialized view must also define
+refresh ownership, maximum staleness, and failure behavior. See
+[`docs/core/observability-dashboard.md`](core/observability-dashboard.md) for the wire and resource
+contract.
+
+## Required-database availability preflight
+
+Tasks that claim cross-environment integrity, parity, reconciliation, deployment readiness, or live
+database state must first verify only the targets they depend on:
+
+```bash
+pnpm db:availability:verify -- --targets local,preview,production
+```
+
+The preflight verifies target identity, bounded reachability, and server-enforced read-only mode. A
+failure is evidence of `CREDENTIALS_REQUIRED`, `IDENTITY_CONFLICT`, `UNREACHABLE`, or
+`READ_ONLY_ENFORCEMENT_FAILED`; it is never equivalent to an empty database or no pending change.
+Dependent work stops until evidence becomes available. The observability dashboard remains usable
+and reports the same condition as typed unverified coverage, because reporting unavailable state is
+its job rather than a reason to conceal the snapshot.
+
 ## Production backup and recovery authority
 
 The repository owner (or explicitly delegated Production operator) owns backup creation, access,
@@ -113,13 +145,13 @@ Production or download an object more than once within one recovery operation.
 - **Public Guest RSVP Atomic RPCs (`20260730113000`, fix `20260730164613`, portable pgcrypto
   `20260730220544`)**: Public guest RSVP submission, guest auto-creation, and view telemetry
   tracking use dedicated `SECURITY DEFINER` RPCs (`submit_guest_rsvp_public` and
-  `track_guest_invitation_view_public`). Hybrid create qualifies `extensions.gen_random_bytes`
-  under `search_path=public` (hosted Supabase does not expose unqualified `gen_random_bytes` in
-  `public`). `p_guest_comment` is an absolute SET when provided; `status_changed` audit is owned by
+  `track_guest_invitation_view_public`). Hybrid create qualifies `extensions.gen_random_bytes` under
+  `search_path=public` (hosted Supabase does not expose unqualified `gen_random_bytes` in `public`).
+  `p_guest_comment` is an absolute SET when provided; `status_changed` audit is owned by
   `trg_guest_invitations_emit_audit`. Direct `INSERT`, `UPDATE`, and `DELETE` on protected guest
   tables remain revoked from `service_role`. Telemetry updates degrade gracefully on error so
-  view-tracking issues never break the primary public invitation experience. Promote Local →
-  Preview → Production.
+  view-tracking issues never break the primary public invitation experience. Promote Local → Preview
+  → Production.
 - The Production cutover used verified EFS-encrypted pre/post DB/Auth/Storage recovery points and
   preserved migration-before-code ordering. Never infer future hosted status from this point-in-time
   record; rerun the read-only audit and `pnpm db:contract:verify -- --target <production|preview>`.
@@ -141,10 +173,10 @@ categories, and precedence notes.
 - Production credentials must come from shell environment variables or the single canonical
   gitignored secret file `.env.production.local` (template: `.env.production.local.example`).
 - Preview credentials must come from `PREVIEW_DB_URL` or the single canonical gitignored secret file
-  `.env.preview.local` (template: `.env.preview.local.example`).
-  On the `dev-preview` worktree, `.env.preview.local` also supplies the Preview **application**
-  runtime (`SUPABASE_*` / `PUBLIC_SUPABASE_*`) via lane bootstrap; that runtime overlay does not
-  authorize `db:preview:*` or `invitation:update` mutations.
+  `.env.preview.local` (template: `.env.preview.local.example`). On the `dev-preview` worktree,
+  `.env.preview.local` also supplies the Preview **application** runtime (`SUPABASE_*` /
+  `PUBLIC_SUPABASE_*`) via lane bootstrap; that runtime overlay does not authorize `db:preview:*` or
+  `invitation:update` mutations.
 - `.tmp/` and `.backups/` are never committed.
 - Never print or paste a full production or preview connection string in logs, docs, issues, or
   chat.
@@ -170,15 +202,15 @@ Definition → normalized release → Local → immutable package → Preview �
 
 ### Distinction: Update vs Promote vs Mirror vs Restore
 
-| Mechanism | Role | Direction |
-| --- | --- | --- |
-| `pnpm invitation:update` | **Update** managed content on Local and/or Preview | Definition → Local / Preview |
-| `pnpm invitation:promote` | **Promote** managed content to Production (owner-only) | Approved package → Production |
-| `pnpm invitation:preview-fixture` | **Bootstrap** Preview E2E publication fixture (Preview-only) | Creates/verifies `e2e-preview-publication` |
-| `pnpm db:preview:sync-invitations` | **Mirror** invitation-facing content for regression | Production → Preview only |
-| `pnpm db:local:restore-from-dump` | **Restore** debugging dump (may include PII) | Production backup → Local |
-| `pnpm invitation:content-parity` | Read-only **semantic** content parity check | Compares Local/Preview/Production |
-| `pnpm dbs` / `pnpm dbs --compact` | Read-only managed **status** (content + schema classifiers) | Local / Preview / Production |
+| Mechanism                          | Role                                                         | Direction                                  |
+| ---------------------------------- | ------------------------------------------------------------ | ------------------------------------------ |
+| `pnpm invitation:update`           | **Update** managed content on Local and/or Preview           | Definition → Local / Preview               |
+| `pnpm invitation:promote`          | **Promote** managed content to Production (owner-only)       | Approved package → Production              |
+| `pnpm invitation:preview-fixture`  | **Bootstrap** Preview E2E publication fixture (Preview-only) | Creates/verifies `e2e-preview-publication` |
+| `pnpm db:preview:sync-invitations` | **Mirror** invitation-facing content for regression          | Production → Preview only                  |
+| `pnpm db:local:restore-from-dump`  | **Restore** debugging dump (may include PII)                 | Production backup → Local                  |
+| `pnpm invitation:content-parity`   | Read-only **semantic** content parity check                  | Compares Local/Preview/Production          |
+| `pnpm dbs` / `pnpm dbs --compact`  | Read-only managed **status** (content + schema classifiers)  | Local / Preview / Production               |
 
 Production never imports from the Preview DB or Preview Storage. Mirror is never promotion.
 `invitation:update` rejects Production mutation targets; use `invitation:promote` for Production.
@@ -187,12 +219,14 @@ Credential presence, worktree path, runtime target, and UI banners do not author
 ### Commands
 
 1. **Plan/update a managed definition (Local / Preview)**:
+
    ```bash
    pnpm invitation:update -- --slug <slug> --targets local,preview --source-dir <path> --dry-run
    pnpm invitation:update -- --slug <slug> --targets local,preview --source-dir <path> --apply
    ```
 
 2. **Promote to Production (owner-only)**:
+
    ```bash
    pnpm invitation:promote -- --slug <slug> --package <path> --dry-run
    pnpm invitation:promote -- --slug <slug> --package <path> --apply --backup-manifest <path>
@@ -223,12 +257,12 @@ PROVISIONED & HOSTED-VALIDATED
   from Production to Preview:
   - `--dry-run`: report what would change without mutating.
   - `--apply`: execute the sync (requires `PROD_DB_URL`, `PREVIEW_DB_URL`, `PREVIEW_SUPABASE_URL`,
-    `PREVIEW_SUPABASE_SERVICE_ROLE_KEY`).
-  Policy, excluded PII tables, and the Preview RSVP reset caused by `TRUNCATE events CASCADE` are
-  owned by [`content-parity-rsvp-isolation.md`](core/content-parity-rsvp-isolation.md). After apply,
-  re-run Preview E2E fixture bootstrap (`pnpm invitation:preview-fixture --apply`) then gated
-  content reconcile (`pnpm test:e2e:preview:provision`) when Preview RSVP
-  E2E needs those fixtures. Stale Preview-only invitation candidates are reported, not auto-pruned.
+    `PREVIEW_SUPABASE_SERVICE_ROLE_KEY`). Policy, excluded PII tables, and the Preview RSVP reset
+    caused by `TRUNCATE events CASCADE` are owned by
+    [`content-parity-rsvp-isolation.md`](core/content-parity-rsvp-isolation.md). After apply, re-run
+    Preview E2E fixture bootstrap (`pnpm invitation:preview-fixture --apply`) then gated content
+    reconcile (`pnpm test:e2e:preview:provision`) when Preview RSVP E2E needs those fixtures. Stale
+    Preview-only invitation candidates are reported, not auto-pruned.
 - **Audit Command**: `pnpm db:preview:audit` performs read-only schema drift audit against
   `PREVIEW_DB_URL` by comparing hosted Preview against a canonical disposable local reconstruction
   (`127.0.0.1:54332`). The audit reports the live remote/pending counts; documentation does not
@@ -332,17 +366,17 @@ CELEBRA_TARGET_RELEASE_SHA=<git-sha> EXPECTED_MIGRATIONS=<versions> pnpm db:prod
 ```
 
 Membership is proven from Git contents (`candidate ∈ <TARGET_RELEASE_SHA>:supabase/migrations/`),
-not filename chronology. Branch name, worktree path, UI banner, and credential presence alone
-never authorize hosted mutation. Missing `CELEBRA_TARGET_RELEASE_SHA` fails closed on hosted
-targets. Local / disposable remain free to develop against repository `HEAD`.
+not filename chronology. Branch name, worktree path, UI banner, and credential presence alone never
+authorize hosted mutation. Missing `CELEBRA_TARGET_RELEASE_SHA` fails closed on hosted targets.
+Local / disposable remain free to develop against repository `HEAD`.
 
 Rollout phases (registry metadata; annotate only migrations that participate in sequencing):
 
-| Phase | Meaning | Hosted rule |
-| --- | --- | --- |
-| `expand` | Adds capability compatible with the currently deployed app | May run before target deployment when release membership + DB deps hold |
-| `neutral` | Does not invalidate current or target app contracts | Normal guarded path + membership |
-| `contract` | Removes/restricts behavior an older app relies on | Blocked until `CELEBRA_DEPLOYED_APP_SHA` + required `CELEBRA_DEPLOYED_APP_CAPABILITIES` prove the replacement path is deployed |
+| Phase      | Meaning                                                    | Hosted rule                                                                                                                    |
+| ---------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `expand`   | Adds capability compatible with the currently deployed app | May run before target deployment when release membership + DB deps hold                                                        |
+| `neutral`  | Does not invalidate current or target app contracts        | Normal guarded path + membership                                                                                               |
+| `contract` | Removes/restricts behavior an older app relies on          | Blocked until `CELEBRA_DEPLOYED_APP_SHA` + required `CELEBRA_DEPLOYED_APP_CAPABILITIES` prove the replacement path is deployed |
 
 Safe RSVP-class sequencing:
 
@@ -389,14 +423,14 @@ import. The unresolved preserve-local enhancement remains tracked in
 Agents must authenticate through normal product roles. Do not use browser `service_role`, arbitrary
 DB privileges, Production access, or agent-only authorization bypasses invented for tooling.
 
-| Environment | Identity | Role | Provision / repair | Used for |
-| --- | --- | --- | --- | --- |
-| **Local** | First `SUPER_ADMIN_EMAILS` entry via `pnpm db:local:bootstrap-admin` | `super_admin` | `db:local:bootstrap-admin`, `db:local:validate` | Login, Editor, RLS admin flows, local authenticated E2E (`PLAYWRIGHT_HOST_*`) |
-| **Preview** | `preview@preview.com` | `super_admin` | Preview mirror ownership remap; MFA bypass only via `PREVIEW_MFA_BYPASS` gates | Login, Editor, authenticated Preview E2E |
-| **Production** | Owner-only operators | N/A for agents | — | Agents: dry-run / read-only; `--apply` promote is owner-only |
+| Environment    | Identity                                                             | Role           | Provision / repair                                                             | Used for                                                                      |
+| -------------- | -------------------------------------------------------------------- | -------------- | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| **Local**      | First `SUPER_ADMIN_EMAILS` entry via `pnpm db:local:bootstrap-admin` | `super_admin`  | `db:local:bootstrap-admin`, `db:local:validate`                                | Login, Editor, RLS admin flows, local authenticated E2E (`PLAYWRIGHT_HOST_*`) |
+| **Preview**    | `preview@preview.com`                                                | `super_admin`  | Preview mirror ownership remap; MFA bypass only via `PREVIEW_MFA_BYPASS` gates | Login, Editor, authenticated Preview E2E                                      |
+| **Production** | Owner-only operators                                                 | N/A for agents | —                                                                              | Agents: dry-run / read-only; `--apply` promote is owner-only                  |
 
-CLI provision scripts may use `service_role` in trusted server context only; that is not an application
-login substitute. Host invitation flows continue to use real `host_client` users from
+CLI provision scripts may use `service_role` in trusted server context only; that is not an
+application login substitute. Host invitation flows continue to use real `host_client` users from
 `invitation-host-owner`.
 
 `pnpm db:local:validate`
