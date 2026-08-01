@@ -35,10 +35,11 @@ Consumed by:
 
 - Local bootstrap — `pnpm invitation:local-corpus`
 - Deterministic regression — `pnpm test:managed:regression` / `pnpm test:local-render-corpus`
-- Screenshot completeness — `pnpm screenshot:managed:regression` (`--corpus`)
+- Screenshot completeness — `pnpm screenshot:local-render-corpus` (`--corpus`)
 - Changed-path routing — `requiresManagedInvitationRegression` in `scripts/validation-runner.mjs`
+- Local observability dashboard — `/dashboard/observabilidad` (read-only; rows derived from this SSOT)
 
-Do not maintain independent slug lists in Jest, screenshot JSON, or seed scripts.
+Do not maintain independent slug lists in Jest, screenshot JSON, seed scripts, or dashboard UI.
 
 ---
 
@@ -73,6 +74,13 @@ pnpm exec tsx scripts/provision/local-render-corpus/verify-local-routes.ts
 ```
 
 Failures name the exact invitation slug.
+
+Both commands write an uncommitted validation evidence snapshot under
+`.tmp/observability/validation/` (`regression.json` / `screenshots.json`) for the Local
+observability dashboard. Snapshot write failures never convert a failed validation into a pass.
+Freshness uses `inputFingerprint` + `corpusFingerprint` (not commit SHA alone).
+
+See [`observability-dashboard.md`](./observability-dashboard.md).
 
 ---
 

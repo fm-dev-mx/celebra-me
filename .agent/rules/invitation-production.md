@@ -67,6 +67,14 @@ The agent-specific constraints are:
   explicit evidence and authorization.
 - Never mutate Preview or Production without authorization for that exact target and operation.
   Worktree path, runtime target, environment banner, and credential presence are not authorization.
+
+### Local observability dashboard
+
+`/dashboard/observabilidad` is observational only (Local runtime + admin strong session). It does
+not authorize writes. CLI workflows remain authoritative for mutations. Stale regression or
+screenshot evidence requires running the owning command (`pnpm test:local-render-corpus` /
+`pnpm screenshot:local-render-corpus`), not dashboard refresh. See
+[`docs/core/observability-dashboard.md`](../../docs/core/observability-dashboard.md).
 - Do not treat Production→Preview content mirror as promotion. Do not copy Production RSVP/PII into
   Preview. After a Preview mirror apply, re-provision synthetic fixtures if RSVP E2E needs them.
 
