@@ -258,4 +258,41 @@ describe('observability overall status', () => {
 			}),
 		).toBe('ATTENTION');
 	});
+
+	it('HEALTHY when remotes are unprobed summary stubs and Local is aligned', () => {
+		const unprobed = (environment: 'preview' | 'production'): EnvironmentHealthRow => ({
+			environment,
+			connection: 'unverified',
+			runtimeIdentity: 'unknown',
+			schemaLifecycle: 'UNVERIFIED',
+			activeInvitationRows: 0,
+			supportedCorpusPresence: '0/13',
+			renderEffectiveParity: 'UNVERIFIABLE',
+			detail: 'Not probed in this observability scope',
+		});
+		expect(
+			computeOverallStatus({
+				environments: [healthyEnv('local'), unprobed('preview'), unprobed('production')],
+				invitations: [healthyInvite('x')],
+				migrations: migrationsOk.filter(
+					(m) => m.environment === 'repository' || m.environment === 'local',
+				),
+				assets: [{ ...healthyAsset('x'), status: 'OK' }],
+				regression: emptyEvidence('PASS'),
+				screenshots: emptyEvidence('PASS'),
+				corpusComplete: true,
+			}),
+		).toBe('HEALTHY');
+	});
+});
+
+describe('observability command categorization', () => {
+	it('maps recommended command ids to operator categories', async () => {
+		const { categorizeCommand } = await import('../../scripts/observability/snapshot.ts');
+		expect(categorizeCommand('dbs-status')).toBe('DIAGNOSE');
+		expect(categorizeCommand('regression-evidence')).toBe('VALIDATE');
+		expect(categorizeCommand('screenshot-evidence')).toBe('VALIDATE');
+		expect(categorizeCommand('invite-promote-x')).toBe('PROMOTE');
+		expect(categorizeCommand('invitation-local-corpus')).toBe('REPAIR');
+	});
 });

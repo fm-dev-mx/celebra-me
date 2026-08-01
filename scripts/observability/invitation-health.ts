@@ -6,9 +6,11 @@
 import { runPsql, sqlLiteral } from '../db/db-workflow-lib.ts';
 import { hashPublicationProjection } from '../../src/lib/intake/services/publication-diff.service.ts';
 import {
+	evaluateBatchTargetStatuses,
 	evaluateSingleTargetStatus,
 	resolveDbUrlForEnv,
 	withStatusProbeTimeout,
+	type PerInvitationTargetStatus,
 	type TargetEnv,
 	type StatusVocabulary,
 } from '../provision/dbs-status.ts';
@@ -211,10 +213,21 @@ function recommendedCommandForRow(
 async function evaluateCanonicalEntry(
 	entry: LocalRenderCorpusEntry,
 	probeTimeoutMs: number,
+	probeEnvs: readonly TargetEnv[] = ENVS,
 ): Promise<InvitationHealthRow> {
 	const packageHash = await resolveCanonicalPackageHash(entry.slug);
 	const environments = {} as InvitationHealthRow['environments'];
 	for (const env of ENVS) {
+		if (!probeEnvs.includes(env)) {
+			environments[env] = {
+				environment: env,
+				status: 'UNVERIFIED',
+				publishedVersion: null,
+				assetCount: 0,
+				detail: 'Not probed in this observability scope',
+			};
+			continue;
+		}
 		const probe = withStatusProbeTimeout(probeTimeoutMs, () =>
 			evaluateSingleTargetStatus(env, entry.slug, packageHash),
 		);
@@ -247,10 +260,21 @@ function resolveLegacyReferenceHash(entry: LocalRenderCorpusEntry): string | nul
 async function evaluateLegacyEntry(
 	entry: LocalRenderCorpusEntry,
 	probeTimeoutMs: number,
+	probeEnvs: readonly TargetEnv[] = ENVS,
 ): Promise<InvitationHealthRow> {
 	const referenceHash = resolveLegacyReferenceHash(entry);
 	const environments = {} as InvitationHealthRow['environments'];
 	for (const env of ENVS) {
+		if (!probeEnvs.includes(env)) {
+			environments[env] = {
+				environment: env,
+				status: 'UNVERIFIED',
+				publishedVersion: null,
+				assetCount: 0,
+				detail: 'Not probed in this observability scope',
+			};
+			continue;
+		}
 		const probe = withStatusProbeTimeout(probeTimeoutMs, () =>
 			evaluateSingleTargetStatus(env, entry.slug, null),
 		);
@@ -298,19 +322,175 @@ function failedRow(entry: LocalRenderCorpusEntry, message: string): InvitationHe
 	};
 }
 
+type BatchRow = PerInvitationTargetStatus & { publishedContent?: string | null };
+type BatchStatusMap = Map<TargetEnv, Map<string, BatchRow>>;
+
+function skippedEnv(environment: TargetEnv): InvitationEnvStatusRow {
+	return {
+		environment,
+		status: 'UNVERIFIED',
+		publishedVersion: null,
+		assetCount: 0,
+		detail: 'Not probed in this observability scope',
+	};
+}
+
+function classifyLegacyBatchStatus(
+	env: TargetEnv,
+	entry: LocalRenderCorpusEntry,
+	batchStatus: BatchRow,
+): InvitationEnvStatusRow {
+	const connectivity = mapConnectivity(batchStatus.status);
+	if (
+		connectivity ||
+		batchStatus.status === 'NOT_PRESENT' ||
+		batchStatus.status === 'IDENTITY_CONFLICT'
+	) {
+		return {
+			environment: env,
+			status: connectivity ?? batchStatus.status,
+			publishedVersion: batchStatus.publishedVersion,
+			assetCount: batchStatus.assetCount,
+			detail: redactDetail(batchStatus.detail),
+		};
+	}
+	if (env !== 'local') {
+		return {
+			environment: env,
+			status: 'UNVERIFIED',
+			publishedVersion: batchStatus.publishedVersion,
+			assetCount: batchStatus.assetCount,
+			detail: 'Legacy presence-only on remote (reference compare is Local-only)',
+		};
+	}
+
+	const refHash = resolveLegacyReferenceHash(entry);
+	if (!refHash || !batchStatus.publishedContent) {
+		return {
+			environment: env,
+			status: 'UNVERIFIED',
+			publishedVersion: batchStatus.publishedVersion,
+			assetCount: batchStatus.assetCount,
+			detail: redactDetail(batchStatus.detail),
+		};
+	}
+
+	try {
+		const contentJson = JSON.parse(batchStatus.publishedContent);
+		const pubHash = hashPublicationProjection(contentJson);
+		const legStatus: LegacyContentState =
+			pubHash === refHash ? 'MATCH_REFERENCE' : 'DIVERGED_FROM_REFERENCE';
+		return {
+			environment: env,
+			status: legStatus,
+			publishedVersion: batchStatus.publishedVersion,
+			assetCount: batchStatus.assetCount,
+			detail:
+				legStatus === 'MATCH_REFERENCE'
+					? 'Published content matches Local corpus fixture reference'
+					: 'Published content diverged from Local corpus fixture reference',
+		};
+	} catch {
+		return {
+			environment: env,
+			status: 'UNVERIFIED',
+			publishedVersion: batchStatus.publishedVersion,
+			assetCount: batchStatus.assetCount,
+			detail: redactDetail(batchStatus.detail),
+		};
+	}
+}
+
+/** Returns null when a probed env is missing from the batch map (caller should fallback). */
+function classifyEntryFromBatch(
+	entry: LocalRenderCorpusEntry,
+	probeEnvs: readonly TargetEnv[],
+	batchResults: BatchStatusMap,
+): InvitationHealthRow['environments'] | null {
+	const envs = {} as InvitationHealthRow['environments'];
+	for (const env of ENVS) {
+		if (!probeEnvs.includes(env)) {
+			envs[env] = skippedEnv(env);
+			continue;
+		}
+		const batchStatus = batchResults.get(env)?.get(entry.slug);
+		if (!batchStatus) return null;
+
+		if (entry.classification === 'legacy') {
+			envs[env] = classifyLegacyBatchStatus(env, entry, batchStatus);
+		} else {
+			envs[env] = {
+				environment: env,
+				status: batchStatus.status,
+				publishedVersion: batchStatus.publishedVersion,
+				assetCount: batchStatus.assetCount,
+				detail: redactDetail(batchStatus.detail),
+			};
+		}
+	}
+	return envs;
+}
+
 export async function evaluateInvitationHealth(options?: {
 	probeTimeoutMs?: number;
+	/** Environments to probe. Summary path uses `['local']` only. */
+	environments?: readonly TargetEnv[];
 }): Promise<InvitationHealthRow[]> {
 	const timeout = options?.probeTimeoutMs ?? 2_000;
+	const probeEnvs: TargetEnv[] = options?.environments ? [...options.environments] : [...ENVS];
 	const corpus = listLocalRenderCorpus();
+	const corpusSlugs = corpus.map((entry) => entry.slug);
 
-	// Parallel per invitation; keep env probes sequential inside each row to limit psql fan-out.
+	const canonicalHashes = new Map<string, string | null>();
+	await Promise.all(
+		corpus.map(async (entry) => {
+			if (entry.classification === 'canonical') {
+				const hash = await resolveCanonicalPackageHash(entry.slug);
+				canonicalHashes.set(entry.slug, hash);
+			}
+		}),
+	);
+
+	const batchResults = new Map<TargetEnv, ReturnType<typeof evaluateBatchTargetStatuses>>();
+	for (const env of probeEnvs) {
+		batchResults.set(
+			env,
+			withStatusProbeTimeout(timeout, () =>
+				evaluateBatchTargetStatuses(env, canonicalHashes, {
+					slugs: corpusSlugs,
+					// Published JSON is only needed for Local legacy reference hashing.
+					includePublishedContent: env === 'local',
+				}),
+			),
+		);
+	}
+
 	const settled = await Promise.allSettled(
-		corpus.map((entry) =>
-			entry.classification === 'canonical'
-				? evaluateCanonicalEntry(entry, timeout)
-				: evaluateLegacyEntry(entry, timeout),
-		),
+		corpus.map(async (entry) => {
+			const classified = classifyEntryFromBatch(entry, probeEnvs, batchResults);
+			if (!classified) {
+				return entry.classification === 'canonical'
+					? await evaluateCanonicalEntry(entry, timeout, probeEnvs)
+					: await evaluateLegacyEntry(entry, timeout, probeEnvs);
+			}
+
+			const { command, failureCause } = recommendedCommandForRow(entry, classified);
+			return {
+				slug: entry.slug,
+				eventType: entry.eventType,
+				referenceClassification:
+					entry.classification === 'canonical'
+						? ('CANONICAL_MANAGED' as const)
+						: ('LOCAL_CORPUS_REFERENCE' as const),
+				themeId: entry.themeId ?? null,
+				visualProfileId: entry.visualProfileId ?? null,
+				assetStrategy: entry.assetStrategy,
+				publicRoute: corpusPublicRoute(entry),
+				environments: classified,
+				recommendedCommand: command,
+				failureCause,
+			};
+		}),
 	);
 
 	return settled.map((result, index) => {
