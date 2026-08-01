@@ -32,12 +32,19 @@ describe('reveal gate automation contract', () => {
 	it('routes every real Reveal control through the canonical requestOpen path', () => {
 		expect(componentSource).toContain('const requestOpen = () =>');
 		expect(componentSource).toContain("querySelectorAll<HTMLButtonElement>('[data-envelope-open]')");
-		expect(componentSource).toContain('setClosedControlsDisabled(true);');
+		expect(componentSource).toContain('setControlsDisabled(true);');
 		expect(componentSource).not.toContain('data-envelope-open-letter');
 		expect(componentSource).toContain('focusRevealedDestination');
 	});
 
-	it('keeps closed and letter CTA visibility mutually exclusive in shared styles', () => {
+	it('enforces that InvitationRevealCard is presentation-only', () => {
+		const cardSource = readSource('src/components/invitation/InvitationRevealCard.astro');
+		expect(cardSource).not.toContain('data-envelope-open');
+		expect(cardSource).not.toContain('showAction');
+		expect(cardSource).not.toContain('invitation-reveal-card__action');
+	});
+
+	it('keeps envelope focus accessibility styles intact', () => {
 		const envelopeStyles = readSource('src/styles/invitation/_envelope-reveal.scss');
 		expect(envelopeStyles).toContain('.envelope-wrapper.is-letter-held');
 		expect(envelopeStyles).toContain('.envelope-wrapper.is-preview-opened');
