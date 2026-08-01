@@ -65,7 +65,8 @@ const NEXT_STEP_LABELS: Record<ObservabilityNextStep, string> = {
 	RETRY_PROBE: 'Vuelva a intentar la comprobación.',
 	AUDIT_SCHEMA: 'Ejecute la auditoría protegida del esquema.',
 	RESOLVE_IDENTITY: 'Resuelva la identidad antes de continuar.',
-	VERIFY_BASELINE: 'Verifique o adopte el baseline administrado.',
+	VERIFY_BASELINE:
+		'Compruebe la procedencia y la versión normalizada; adopte solo con evidencia revisada.',
 	RECONCILE_MANAGED_CONTENT: 'Use el flujo de reconciliación administrada.',
 	APPLY_LOCAL: 'Aplique primero en Local.',
 	PROMOTE_PREVIEW: 'Promueva el cambio a Preview.',
@@ -73,15 +74,59 @@ const NEXT_STEP_LABELS: Record<ObservabilityNextStep, string> = {
 	FIX_CANONICAL_DEFINITION: 'Corrija la definición mediante el contrato existente.',
 	UPDATE_LIFECYCLE_METADATA: 'Actualice el ciclo de vida canónico.',
 	PROVIDE_REQUIRED_ASSET: 'Proporcione el asset mediante el flujo administrado.',
-	VERIFY_ASSET_EVIDENCE: 'Verifique o adopte la identidad administrada de los assets.',
+	VERIFY_ASSET_EVIDENCE:
+		'Compruebe la clave semántica administrada; adopte solo con evidencia revisada.',
+};
+
+const REASON_CAUSES: Partial<Record<ObservabilityReasonCode, string>> = {
+	BASELINE_UNAVAILABLE:
+		'No existe una línea base administrada con procedencia completa para comparar este entorno.',
+	BASELINE_VERSION_INCOMPATIBLE:
+		'La línea base se generó con una versión de normalización distinta a la vigente.',
+	ASSET_IDENTITY_UNVERIFIED:
+		'Hay assets administrados, pero su identidad semántica estable no está demostrada.',
+	DETAIL_BUDGET_EXCEEDED:
+		'El detalle excede el límite seguro; el resultado de alto nivel se conserva cuando es conocido.',
+	CANONICAL_CHANGE_PENDING: 'El cambio canónico válido aún no se ha entregado a este entorno.',
+	PARTIAL_PROMOTION: 'La secuencia de promoción tiene una siguiente etapa permitida pendiente.',
 };
 
 function formatDate(value: string): string {
 	return new Date(value).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
 }
 
-function signalKey(item: ObservabilitySignal, index: number): string {
-	return `${item.reasonCode}:${item.environment ?? 'global'}:${item.slug ?? 'global'}:${index}`;
+function actionType(nextStep: ObservabilityNextStep): string {
+	if (nextStep === 'VERIFY_BASELINE' || nextStep === 'VERIFY_ASSET_EVIDENCE') return 'Adopción';
+	if (nextStep === 'RECONCILE_MANAGED_CONTENT') return 'Reconciliación';
+	if (nextStep === 'APPLY_LOCAL' || nextStep.startsWith('PROMOTE_')) return 'Promoción';
+	return 'Diagnóstico';
+}
+
+interface SignalGroup {
+	key: string;
+	item: ObservabilitySignal;
+	slugs: string[];
+}
+
+function groupSignals(items: ObservabilitySignal[]): SignalGroup[] {
+	const groups = new Map<string, SignalGroup>();
+	for (const item of items) {
+		const key = [
+			item.reasonCode,
+			item.environment ?? 'global',
+			item.impact,
+			item.nextStep,
+			item.comparisonOutcome ?? item.deliveryStatus,
+			item.operationalStatus,
+		].join(':');
+		const group = groups.get(key) ?? { key, item, slugs: [] };
+		if (item.slug && !group.slugs.includes(item.slug)) group.slugs.push(item.slug);
+		groups.set(key, group);
+	}
+	return [...groups.values()].map((group) => ({
+		...group,
+		slugs: [...group.slugs].sort(),
+	}));
 }
 
 function refreshLabel(loading: boolean, canRefresh: boolean): string {
@@ -90,39 +135,121 @@ function refreshLabel(loading: boolean, canRefresh: boolean): string {
 	return 'Actualización disponible en breve';
 }
 
+function refreshAnnouncement(loading: boolean, snapshot: ObservabilitySnapshot | null): string {
+	if (loading) return 'Actualizando el estado operacional.';
+	return snapshot ? 'Estado operacional actualizado.' : '';
+}
+
+function adoptionGuidance(item: ObservabilitySignal): string | null {
+	if (
+		item.reasonCode !== 'BASELINE_UNAVAILABLE' &&
+		item.reasonCode !== 'ASSET_IDENTITY_UNVERIFIED'
+	) {
+		return null;
+	}
+	return 'La reconstrucción histórica no está disponible. Producción es solo una candidata administrativa: el manifiesto consolidado requiere revisión, dry-run y aprobación exacta; no se ha escrito ningún cambio. La adopción resolvería esta evidencia, pero el trabajo canónico pendiente seguiría visible.';
+}
+
 function SignalList({ items, empty }: { items: ObservabilitySignal[]; empty: string }) {
 	if (items.length === 0) return <p className="observability__empty">{empty}</p>;
 	return (
 		<ul className="observability__issues">
-			{items.map((item, index) => (
-				<li key={signalKey(item, index)} className="observability__issue">
-					<div className="observability__issue-meta">
-						<span className="dashboard-badge">
-							{item.impact === 'OPERATIONAL' ? 'Operacional' : 'Entrega'}
-						</span>
-						{item.environment ? (
-							<span>{ENVIRONMENT_LABELS[item.environment]}</span>
+			{groupSignals(items).map(({ key, item, slugs }) => {
+				const cause = REASON_CAUSES[item.reasonCode];
+				const guidance = adoptionGuidance(item);
+				return (
+					<li key={key} className="observability__issue">
+						<div className="observability__issue-meta">
+							<span className="dashboard-badge">
+								{item.impact === 'OPERATIONAL' ? 'Operacional' : 'Entrega'}
+							</span>
+							<span>{actionType(item.nextStep)}</span>
+							{item.environment ? (
+								<span>{ENVIRONMENT_LABELS[item.environment]}</span>
+							) : null}
+						</div>
+						<h3>{REASON_LABELS[item.reasonCode]}</h3>
+						<dl className="observability__condition">
+							{cause ? (
+								<div>
+									<dt>Problema</dt>
+									<dd>{cause}</dd>
+								</div>
+							) : null}
+							<div>
+								<dt>Impacto</dt>
+								<dd>
+									{item.impact === 'OPERATIONAL'
+										? 'La salud operacional no puede confirmarse hasta resolver la evidencia.'
+										: 'El trabajo de entrega permanece separado de la salud operacional.'}
+								</dd>
+							</div>
+							<div>
+								<dt>Alcance afectado</dt>
+								<dd>
+									{slugs.length > 0
+										? `${slugs.length} ${slugs.length === 1 ? 'invitación' : 'invitaciones'}: ${slugs.slice(0, 5).join(', ')}`
+										: 'Secuencia de entrega aplicable a la invitación indicada.'}
+								</dd>
+							</div>
+							<div>
+								<dt>Acción recomendada</dt>
+								<dd>{NEXT_STEP_LABELS[item.nextStep]}</dd>
+							</div>
+						</dl>
+						{guidance ? (
+							<p className="observability__adoption-guidance">{guidance}</p>
 						) : null}
-						{item.slug ? <span>{item.slug}</span> : null}
-					</div>
-					<h3>{REASON_LABELS[item.reasonCode]}</h3>
-					<p>{NEXT_STEP_LABELS[item.nextStep]}</p>
-					{item.affectedFieldCount > 0 ? (
-						<span>
-							{item.affectedFieldCount} campos · {item.affectedSectionCount} secciones
-						</span>
-					) : null}
-				</li>
-			))}
+						{slugs.length > 5 ? (
+							<details className="observability__context">
+								<summary>Ver {slugs.length - 5} invitaciones más</summary>
+								<p>{slugs.slice(5).join(', ')}</p>
+							</details>
+						) : null}
+						{item.affectedFieldCount > 0 ? (
+							<span>
+								{item.affectedFieldCount} campos · {item.affectedSectionCount}{' '}
+								secciones
+							</span>
+						) : null}
+						{item.semanticPaths.length > 0 ? (
+							<details className="observability__context">
+								<summary>Ver detalle semántico</summary>
+								<p>{item.semanticPaths.join(', ')}</p>
+							</details>
+						) : null}
+					</li>
+				);
+			})}
 		</ul>
 	);
 }
 
-interface ObservabilityPanelProps {
-	initialSummary?: ObservabilitySummaryPayload | null;
+function ObservabilityCoverage({ snapshot }: { snapshot: ObservabilitySnapshot }) {
+	return (
+		<section className="observability__section" aria-labelledby="observability-coverage-title">
+			<h2 id="observability-coverage-title">Cobertura por entorno</h2>
+			<dl className="observability__coverage">
+				{snapshot.environmentSummaries.map((item) => (
+					<div key={item.environment}>
+						<dt>{ENVIRONMENT_LABELS[item.environment]}</dt>
+						<dd>{item.coverage === 'AVAILABLE' ? 'Disponible' : 'No disponible'}</dd>
+						<span>
+							{OPERATIONAL_LABELS[item.operationalStatus]} ·{' '}
+							{DELIVERY_LABELS[item.deliveryStatus]}
+						</span>
+						<span>
+							{item.counts.invitations} invitaciones · {item.counts.issues}{' '}
+							incidencias
+						</span>
+					</div>
+				))}
+			</dl>
+		</section>
+	);
 }
 
-export default function ObservabilityPanel({ initialSummary = null }: ObservabilityPanelProps) {
+function useObservabilitySnapshot() {
 	const [snapshot, setSnapshot] = useState<ObservabilitySnapshot | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [canRefresh, setCanRefresh] = useState(true);
@@ -144,7 +271,6 @@ export default function ObservabilityPanel({ initialSummary = null }: Observabil
 		setCanRefresh(false);
 		setLoading(false);
 	}, []);
-
 	useEffect(() => void loadDetail(), [loadDetail]);
 	useEffect(() => {
 		if (!snapshot || canRefresh) return;
@@ -152,6 +278,15 @@ export default function ObservabilityPanel({ initialSummary = null }: Observabil
 		const timer = window.setTimeout(() => setCanRefresh(true), delay);
 		return () => window.clearTimeout(timer);
 	}, [canRefresh, snapshot]);
+	return { snapshot, loading, canRefresh, error, loadDetail };
+}
+
+interface ObservabilityPanelProps {
+	initialSummary?: ObservabilitySummaryPayload | null;
+}
+
+export default function ObservabilityPanel({ initialSummary = null }: ObservabilityPanelProps) {
+	const { snapshot, loading, canRefresh, error, loadDetail } = useObservabilitySnapshot();
 
 	const operationalStatus = snapshot?.operationalStatus ?? initialSummary?.operationalStatus;
 	const deliveryStatus = snapshot?.deliveryStatus ?? initialSummary?.deliveryStatus;
@@ -186,6 +321,9 @@ export default function ObservabilityPanel({ initialSummary = null }: Observabil
 					<span>{error}</span>
 				</div>
 			) : null}
+			<p className="observability__announcer" aria-live="polite">
+				{refreshAnnouncement(loading, snapshot)}
+			</p>
 			{loading && !snapshot ? (
 				<div className="observability__loading" role="status">
 					<strong>Comprobando señales operacionales…</strong>
@@ -208,8 +346,9 @@ export default function ObservabilityPanel({ initialSummary = null }: Observabil
 							<h2 id="observability-summary-title">Estado del sistema</h2>
 							{counts ? (
 								<p>
-									{counts.issues} incidencias y {counts.workItems} trabajos
-									esperados en {counts.invitations} invitaciones.
+									Atención requerida: {counts.issues}. Trabajo de entrega
+									esperado: {counts.workItems}. Invitaciones observadas:{' '}
+									{counts.invitations}.
 								</p>
 							) : null}
 						</div>
@@ -253,32 +392,7 @@ export default function ObservabilityPanel({ initialSummary = null }: Observabil
 						/>
 					</section>
 
-					<section
-						className="observability__section"
-						aria-labelledby="observability-coverage-title"
-					>
-						<h2 id="observability-coverage-title">Cobertura por entorno</h2>
-						<dl className="observability__coverage">
-							{snapshot.environmentSummaries.map((item) => (
-								<div key={item.environment}>
-									<dt>{ENVIRONMENT_LABELS[item.environment]}</dt>
-									<dd>
-										{item.coverage === 'AVAILABLE'
-											? 'Disponible'
-											: 'No disponible'}
-									</dd>
-									<span>
-										{OPERATIONAL_LABELS[item.operationalStatus]} ·{' '}
-										{DELIVERY_LABELS[item.deliveryStatus]}
-									</span>
-									<span>
-										{item.counts.invitations} invitaciones ·{' '}
-										{item.counts.issues} incidencias
-									</span>
-								</div>
-							))}
-						</dl>
-					</section>
+					<ObservabilityCoverage snapshot={snapshot} />
 				</>
 			) : null}
 		</section>

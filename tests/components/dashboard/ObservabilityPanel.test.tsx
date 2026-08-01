@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, jest } from '@jest/globals';
 import ObservabilityPanel from '@/components/dashboard/observability/ObservabilityPanel';
 import { dashboardApi } from '@/lib/dashboard/api-client';
-import { buildObservabilitySnapshotFixture } from '../../helpers/observability-snapshot-fixture';
+import { buildObservabilitySnapshotFixture } from '@tests/helpers/observability-snapshot-fixture';
 
 jest.mock('@/lib/dashboard/api-client', () => ({ dashboardApi: { get: jest.fn() } }));
 const mockGet = dashboardApi.get as jest.MockedFunction<typeof dashboardApi.get>;
@@ -77,5 +77,83 @@ describe('ObservabilityPanel', () => {
 		await waitFor(() =>
 			expect(screen.getByRole('alert')).toHaveTextContent('Tiempo de espera agotado.'),
 		);
+	});
+
+	it('groups equivalent environment-specific signals while preserving their slugs', async () => {
+		const data = payload();
+		data.issues = [
+			{
+				impact: 'OPERATIONAL',
+				reasonCode: 'ASSET_IDENTITY_UNVERIFIED',
+				nextStep: 'VERIFY_ASSET_EVIDENCE',
+				operationalStatus: 'UNVERIFIED',
+				deliveryStatus: 'ALIGNED',
+				detailStatus: 'AVAILABLE',
+				affectedFieldCount: 1,
+				affectedSectionCount: 1,
+				semanticPaths: [],
+				environment: 'preview',
+				slug: 'alfa',
+				lifecycle: 'published',
+			},
+			{
+				impact: 'OPERATIONAL',
+				reasonCode: 'ASSET_IDENTITY_UNVERIFIED',
+				nextStep: 'VERIFY_ASSET_EVIDENCE',
+				operationalStatus: 'UNVERIFIED',
+				deliveryStatus: 'ALIGNED',
+				detailStatus: 'AVAILABLE',
+				affectedFieldCount: 1,
+				affectedSectionCount: 1,
+				semanticPaths: [],
+				environment: 'preview',
+				slug: 'beta',
+				lifecycle: 'published',
+			},
+		];
+		mockGet.mockResolvedValue({ ok: true, status: 200, data } as never);
+		render(<ObservabilityPanel />);
+		await waitFor(() =>
+			expect(screen.getByText('2 invitaciones: alfa, beta')).toBeInTheDocument(),
+		);
+		expect(
+			screen.getAllByRole('heading', {
+				name: 'No se pudo verificar la identidad de los assets existentes',
+			}),
+		).toHaveLength(1);
+		expect(screen.getAllByText('Acción recomendada').length).toBeGreaterThan(0);
+		expect(
+			screen.getByText(/Producción es solo una candidata administrativa/),
+		).toBeInTheDocument();
+		expect(screen.getByText(/no se ha escrito ningún cambio/)).toBeInTheDocument();
+	});
+
+	it('keeps otherwise equivalent Preview and Producción signals separate', async () => {
+		const data = payload();
+		data.issues = ['preview', 'production'].map((environment) => ({
+			impact: 'OPERATIONAL' as const,
+			reasonCode: 'ASSET_IDENTITY_UNVERIFIED' as const,
+			nextStep: 'VERIFY_ASSET_EVIDENCE' as const,
+			operationalStatus: 'UNVERIFIED' as const,
+			deliveryStatus: 'ALIGNED' as const,
+			detailStatus: 'AVAILABLE' as const,
+			affectedFieldCount: 1,
+			affectedSectionCount: 1,
+			semanticPaths: [],
+			environment: environment as 'preview' | 'production',
+			slug: 'sample',
+			lifecycle: 'published' as const,
+		}));
+		mockGet.mockResolvedValue({ ok: true, status: 200, data } as never);
+		render(<ObservabilityPanel />);
+		await waitFor(() =>
+			expect(
+				screen.getAllByRole('heading', {
+					name: 'No se pudo verificar la identidad de los assets existentes',
+				}),
+			).toHaveLength(2),
+		);
+		expect(screen.getAllByText('Preview').length).toBeGreaterThanOrEqual(2);
+		expect(screen.getAllByText('Producción').length).toBeGreaterThanOrEqual(2);
 	});
 });
