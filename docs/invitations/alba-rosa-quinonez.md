@@ -12,9 +12,13 @@
 | **Slug**               | `alba-rosa-quinonez`                             |
 | **Host Login Alias**   | `alba_quinonez`                                  |
 | **Event Type**         | `cumple`                                         |
-| **Preparation Status** | `READY_FOR_IMPLEMENTATION` (implemented locally) |
+| **Preparation Status** | `READY_WITH_PLACEHOLDERS` (implemented locally; provisional source resolution) |
 
-**Preparation Readiness:** `READY_FOR_IMPLEMENTATION`
+**Preparation Readiness:** `READY_WITH_PLACEHOLDERS`
+
+> Helper alignment (`evaluatePreparationReadiness` / `summarizeAssetQuality`): assigned roles remain
+> `provisional-whatsapp` / non-production ceiling — must not be documented as
+> `READY_FOR_IMPLEMENTATION` until production-ready assets exist.
 
 Technical Local/Preview/Production readiness is **out of scope** for this document and remains owned
 by `pnpm invitation:update --status` / `invitation-readiness.ts`.
@@ -23,11 +27,11 @@ by `pnpm invitation:update --status` / `invitation-readiness.ts`.
 
 ## Sources
 
-| Source                         | Reference                                                                                                                    | Notes                                    |
-| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
-| WhatsApp / conversation        | `C:\Users\fmdevmx\OneDrive\Documentos\Projects\celebra-me\Clientes\cumple alba-rosa\WhatsApp Chat - Lucero Ramirez Cliente\` | Facts/preferences only — never photo SoT |
-| Photograph / assets root       | `C:\Users\fmdevmx\OneDrive\Documentos\Projects\celebra-me\Clientes\cumple alba-rosa\Fotos Sra Alba Rosa`                     | Authoritative photo source (8 JPEGs)     |
-| Other authoritative references | Gift-legend screenshot `00000074-PHOTO-…jpg` in WA export                                                                    | Reference only; adapted copy below       |
+| Source                         | Reference                                              | Notes                                                      |
+| ------------------------------ | ------------------------------------------------------ | ---------------------------------------------------------- |
+| WhatsApp / conversation        | `source:wa-export` (opaque; session holds real path)   | Facts/preferences only — never photo SoT                   |
+| Photograph / assets root       | `source:hr-photos` (opaque; session holds real path)   | Authoritative photo source (8 JPEGs)                       |
+| Other authoritative references | Gift-legend screenshot filename in WA export (session) | Reference only; adapted copy below                         |
 
 ---
 
@@ -52,7 +56,7 @@ by `pnpm invitation:update --status` / `invitation-readiness.ts`.
 | themePreset           | luxury-hacienda                                                                                              | inferred                     | catalog                              |                                                                                  |
 | clientColors          | neutros: beige, cremita, blanco                                                                              | verified                     | WA 13/07/26                          |                                                                                  |
 | stylePreference       | sencillo, sobrio, entendible (invitados mayores)                                                             | verified                     | WA                                   |                                                                                  |
-| sourceAssetPath       | `...\Fotos Sra Alba Rosa`                                                                                    | verified                     | owner                                |                                                                                  |
+| sourceAssetPath       | `source:hr-photos`                                                                                           | verified                     | owner                                | Opaque label; session holds real path                                            |
 | primaryPhotoIntent    | Garden denim seated portrait (`d40988d8-…JPG`)                                                               | verified                     | WA + inventory                       |                                                                                  |
 | photoPipelineDecision | Use folder sources; high-quality WebP via normalize (q84); exclude unusable                                  | verified                     | owner 2026-07-28                     | Preserve originals; no aggressive recompress                                     |
 | familyNames           | —                                                                                                            | not_applicable               | —                                    | Names unverified; minimal family photo + phrase only                             |
@@ -67,18 +71,18 @@ by `pnpm invitation:update --status` / `invitation-readiness.ts`.
 
 ## Event Completeness
 
-Contract maturity for this event type: `undefined`
+Contract maturity for this event type: `partial`
 
 | requirement | fields                                                      | status        |
 | ----------- | ----------------------------------------------------------- | ------------- |
-| required    | slug, celebrantName, eventDate, baseDemoId, sourceAssetPath | all satisfied |
+| required    | slug, celebrantName, eventDate, eventTime, baseDemoId, sourceAssetPath, sectionOrder, primaryVenueName, primaryVenueAddress, rsvpConfirmationMode | all satisfied |
 | conditional | —                                                           | —             |
-| recommended | —                                                           | —             |
-| optional    | —                                                           | —             |
+| recommended | eventLabel, timeZone                                        | satisfied / inferred |
+| optional    | dressCode, gifts, musicUrl, clientColors                    | resolved / N/A |
 
 ### Missing blockers
 
-- None for undefined `cumple` minima.
+- None for partial `cumple` contract.
 
 ### Non-blocking gaps
 
@@ -152,8 +156,7 @@ Answer: `yes`.
 
 ## Photograph Inventory
 
-Source path:
-`C:\Users\fmdevmx\OneDrive\Documentos\Projects\celebra-me\Clientes\cumple alba-rosa\Fotos Sra Alba Rosa`
+Source label: `source:hr-photos` (opaque; absolute client path is session-only per prep info-hygiene)
 
 ### Final photo-role map (unique by section — 2026-07-28)
 
@@ -190,7 +193,7 @@ the same garden session count as one hero role.
 
 | Field                | Value                                                                |
 | -------------------- | -------------------------------------------------------------------- |
-| Authoritative source | `…\Fotos Sra Alba Rosa\00000059-PHOTO-2026-07-17-10-12-32.jpg`       |
+| Authoritative source | `source:hr-photos` / `00000059-PHOTO-2026-07-17-10-12-32.jpg` (session path) |
 | Derivative           | `src/assets/invitations/alba-rosa-quinonez/family.webp`              |
 | Dims / weight        | 994×1280 / ~228 KB WebP q88                                          |
 | Processing           | rotate + inside resize **without enlargement**; no AI reconstruction |
@@ -250,7 +253,7 @@ otro lote.
 
 | Decision                   | Detail                                                                                                                                                 |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Source of truth            | Folder `Fotos Sra Alba Rosa` (not WhatsApp chat attachments)                                                                                           |
+| Source of truth            | `source:hr-photos` folder (not WhatsApp chat attachments)                                                                                              |
 | Quality class              | `provisional-whatsapp` / mobile-compressed — max ~2.6 MP; most files 95–309 KB                                                                         |
 | Owner directive            | Optimize to WebP **without perceptible quality loss**                                                                                                  |
 | What “optimize” means here | Preserve JPEG originals untouched; repair baked UI only outside the subject; WebP without enlargement; avoid cover/attention crops unless art-directed |
@@ -272,7 +275,8 @@ Role-aware WebP transfer-weight **targets** (guidance):
 
 ## Implementation Constraints
 
-- Preparation readiness is `READY_FOR_IMPLEMENTATION`.
+- Preparation readiness is `READY_WITH_PLACEHOLDERS` (provisional source resolution remains;
+  helper-aligned — not `READY_FOR_IMPLEMENTATION`).
 - Lane A: client neutrals with muted sage/champagne micro-accents, legend-only gifts, family minimal
   close on luxury-hacienda.
 - Lane B: only if a change also improves `demo-cumple-luxury-hacienda`.
@@ -385,4 +389,5 @@ shared presets, components, intersection-profile map changes, or new abstraction
 | 2026-07-28 | `READY_WITH_PLACEHOLDERS`  | Owner resolved facts; RSVP locked to `api`+`hybrid`                                        |
 | 2026-07-28 | `READY_WITH_PLACEHOLDERS`  | Implemented locally; provisional source resolution remains                                 |
 | 2026-07-28 | `READY_WITH_PLACEHOLDERS`  | Quality audit: chrome crop, no-upscale, Palette 1 for owner eval                           |
-| 2026-07-28 | `READY_FOR_IMPLEMENTATION` | No placeholders remain; dedicated Hero and Family assets verified for Local implementation |
+| 2026-07-28 | `READY_FOR_IMPLEMENTATION` | **Invalid (corrected 2026-07-31):** provisional inventory cannot clear full readiness |
+| 2026-07-31 | `READY_WITH_PLACEHOLDERS`  | Goal 2 hygiene + helper alignment; opaque Sources; provisional ceiling restored      |

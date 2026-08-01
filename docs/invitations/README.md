@@ -14,10 +14,20 @@ docs/invitations/<slug>.md
 | Markdown template | `.agent/templates/invitation/preparation-state.md` |
 | Preparation orchestration | `.agent/workflows/invitation-preparation.md` |
 | Analysis skill | `.agent/skills/client-invitation-audit` |
-| Executable evaluation | `src/lib/invitation-preparation/` |
+| Executable evaluation (**prepReadiness SSOT**) | `src/lib/invitation-preparation/` |
 | Cross-cutting architecture / runbooks | `docs/core/`, `docs/domains/` — **not** these files |
 
 Invitation-specific notes may guide their named invitation but must not redefine system contracts.
+**prepReadiness** in each file must match `evaluatePreparationReadiness` — never hand-promote to
+`READY_FOR_IMPLEMENTATION` while assets remain provisional.
+
+## Info-hygiene
+
+Persist opaque source labels and classified event facts only. Do **not** commit absolute
+machine/`Clientes` paths, WhatsApp chat-folder titles, raw chat exports, photo dumps, or
+credential-bearing / payroll / portal URLs. See preparation-contract §4.1.
+
+Automated gate: `pnpm validate:invitation-preparation` (Markdown prepReadiness ↔ helpers + hygiene).
 
 Historical companion files (asset reports, copy audits, finalization notes) may exist beside the
 canonical `<slug>.md`. Prefer consolidating durable preparation decisions into `<slug>.md`.
