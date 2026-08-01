@@ -83,7 +83,10 @@ following agree:
 
 The baseline changes only after a completed managed apply records new provenance and its receipt.
 Current timestamps are opaque concurrency tokens, not evidence that “newer is canonical.” Missing,
-legacy, or version-incompatible provenance produces typed `UNVERIFIED` delivery evidence.
+legacy, or version-incompatible provenance produces typed `UNVERIFIED` delivery evidence. An empty
+object, an empty normalized document, or an equivalent structurally empty projection is not a
+baseline. Metadata-only verification can establish only a non-empty stored projection; detailed
+reconciliation reuses the same authority path and rejects an empty loaded document.
 
 `scripts/observability/delivery-reconciliation.ts` uses the shared semantic three-way reconciler and
 ownership map:
@@ -104,6 +107,42 @@ Optional assets never degrade operational health. When enough asset rows exist b
 managed semantic keys, the dashboard reports `ASSET_IDENTITY_UNVERIFIED`; it does not mislabel
 existing binaries as missing. Published evidence of that form makes operational health `UNVERIFIED`,
 while unpublished evidence makes delivery `UNVERIFIED`.
+
+The batch projection uses only the managed asset `id` and semantic `key` for reconciliation. Storage
+paths, buckets, provider URLs, hashes, and environment-specific identifiers are neither queried as
+semantic identity nor included in the public snapshot.
+
+## Legacy administrative baseline preparation
+
+`pnpm invitation:legacy-baseline-adoption` is the only preparation path for legacy invitations whose
+historical managed baseline cannot be proved. It is deliberately separate from the prior Romina-only
+content-changing maintenance command: this flow is metadata-only and stops after inspection,
+manifest generation, and dry-run.
+
+The command creates one consolidated manifest for Abril and Romina. Each entry records a Production
+candidate fingerprint, the shared normalization/contract version, managed scope, semantic asset
+keys, cross-environment comparison summaries, exclusions, unresolved ambiguity, and the
+deterministic expected snapshot transition. It never stores raw invitation content, field values,
+URLs, storage paths, UUIDs, database identifiers, credentials, or database errors in the manifest.
+
+Production is marked `production_administrative_adoption`: an explicitly reviewed initial
+checkpoint, never reconstructed historical truth. An entry is eligible only after schema,
+client/owner, published/draft, complete-scope, and unambiguous semantic-asset validation. A valid
+delivery sequence may retain canonical delivery work; unexplained or contradictory environment
+evidence remains `UNVERIFIED` and blocks only that entry.
+
+```sh
+# generate the local review artifact (no remote write)
+pnpm invitation:legacy-baseline-adoption -- --out .agent/tmp/adoptions/legacy-baseline-adoption-manifest.json --json
+
+# re-inspect all sources and dry-run the exact artifact (writes: 0)
+pnpm invitation:legacy-baseline-adoption -- --manifest .agent/tmp/adoptions/legacy-baseline-adoption-manifest.json --dry-run --json
+```
+
+The manifest includes the future apply command bound to its exact fingerprint. During this goal that
+command is intentionally rejected with `APPLY_DISABLED`; no approval artifact or executable write
+authorization is generated. Any relevant canonical, Production, scope, normalization, or
+semantic-asset change changes the entry fingerprint and makes dry-run return `STALE_MANIFEST`.
 
 ## Database projection audit
 
@@ -141,6 +180,14 @@ Agents may use the snapshot for diagnosis and planning. They must still follow d
 invitation-production authorization. `HEALTHY`, `IN_PROGRESS`, or a suggested next step grants no
 mutation privilege.
 
+## Operator presentation
+
+The panel keeps operational attention and expected delivery work in separate sections. It groups
+only records with the same reason, environment, impact/classification, and remediation path. Each
+group states the problem, practical impact, affected invitation scope, and next safe action; it
+shows up to five slugs and progressively discloses the rest. Semantic paths are similarly hidden
+until requested. Preview and Production are never grouped together.
+
 ## Implementation map
 
 - DB evidence and budget: `scripts/observability/database-projection.ts`
@@ -151,3 +198,5 @@ mutation privilege.
 - child process/cache: `src/lib/observability/server/snapshot.ts`,
   `src/lib/observability/server/snapshot-cache.ts`
 - UI: `src/components/dashboard/observability/ObservabilityPanel.tsx`
+- legacy-adoption inspection and manifest: `scripts/provision/legacy-baseline-adoption.ts`,
+  `scripts/provision/legacy-baseline-adoption-cli.ts`
