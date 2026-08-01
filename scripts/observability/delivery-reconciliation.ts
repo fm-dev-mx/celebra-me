@@ -3,8 +3,7 @@ import { eventContentSchema } from '../../src/lib/schemas/content/base-event.sch
 import { isManagedInvitationPath } from '../../src/lib/intake/mutations/ownership.ts';
 import {
 	ManagedBaselineError,
-	resolveManagedBaselineArtifact,
-	verifyManagedBaselineIdentity,
+	resolveVerifiedManagedBaseline,
 	type ManagedMergeBaselineInput,
 } from '../provision/managed-merge-baseline.ts';
 import {
@@ -149,36 +148,6 @@ function knownResult(comparison: ComparisonSummary): DeliveryReconciliationResul
 	return result;
 }
 
-function verifyBaseline(input: ManagedMergeBaselineInput): ObservabilityReasonCode | null {
-	try {
-		verifyManagedBaselineIdentity(input, RELEASE_SCHEMA_VERSION);
-		return null;
-	} catch (error) {
-		return error instanceof ManagedBaselineError
-			? baselineReason(error)
-			: 'BASELINE_UNAVAILABLE';
-	}
-}
-
-function resolveBaseline(input: ManagedMergeBaselineInput): {
-	baseline?: Record<string, unknown>;
-	reasonCode?: ObservabilityReasonCode;
-} {
-	try {
-		return {
-			baseline: resolveManagedBaselineArtifact(input, RELEASE_SCHEMA_VERSION)
-				.managedProjection,
-		};
-	} catch (error) {
-		return {
-			reasonCode:
-				error instanceof ManagedBaselineError
-					? baselineReason(error)
-					: 'BASELINE_UNAVAILABLE',
-		};
-	}
-}
-
 function baselineInputFor(row: InvitationDatabaseProjection): ManagedMergeBaselineInput {
 	return {
 		managedProjection: row.provenance.managedProjection,
@@ -233,8 +202,17 @@ export function reconcileInvitationDelivery(input: {
 	}
 
 	const baselineInput = baselineInputFor(row);
-	const baselineFailure = verifyBaseline(baselineInput);
-	if (baselineFailure) return unavailable(environment, baselineFailure, 'VERIFY_BASELINE');
+	try {
+		resolveVerifiedManagedBaseline(baselineInput, RELEASE_SCHEMA_VERSION, {
+			requireProjection: row.detailRequired && !row.detailBudgetExceeded,
+		});
+	} catch (error) {
+		return unavailable(
+			environment,
+			error instanceof ManagedBaselineError ? baselineReason(error) : 'BASELINE_UNAVAILABLE',
+			'VERIFY_BASELINE',
+		);
+	}
 
 	if (!row.detailRequired) {
 		const outcome =
@@ -249,27 +227,34 @@ export function reconcileInvitationDelivery(input: {
 		});
 	}
 
-	if (row.detailBudgetExceeded || !row.draftContent || !row.provenance.managedProjection) {
+	if (row.detailBudgetExceeded) {
+		const outcome =
+			row.provenance.packageHash === input.canonical.packageHash ? 'UNVERIFIED' : 'APPLY';
+		const comparison: ComparisonSummary = {
+			environment,
+			outcome,
+			detailStatus: 'DETAIL_UNAVAILABLE',
+			affectedFieldCount: 0,
+			affectedSectionCount: 0,
+			semanticPaths: [],
+		};
+		return outcome === 'APPLY'
+			? knownResult(comparison)
+			: unavailable(environment, 'DETAIL_BUDGET_EXCEEDED', 'RECONCILE_MANAGED_CONTENT');
+	}
+	if (!row.draftContent || !row.provenance.managedProjection) {
 		return unavailable(environment, 'DETAIL_BUDGET_EXCEEDED', 'RECONCILE_MANAGED_CONTENT');
 	}
 	if (!eventContentSchema.safeParse(row.draftContent).success) {
 		return unavailable(environment, 'DRAFT_INVALID', 'FIX_CANONICAL_DEFINITION', 'AVAILABLE');
 	}
 
-	const baselineResult = resolveBaseline(baselineInput);
-	if (!baselineResult.baseline) {
-		return unavailable(
-			environment,
-			baselineResult.reasonCode ?? 'BASELINE_UNAVAILABLE',
-			'VERIFY_BASELINE',
-		);
-	}
 	return knownResult(
 		detailedComparison({
 			environment,
 			canonical,
 			row,
-			baseline: baselineResult.baseline,
+			baseline: row.provenance.managedProjection,
 		}),
 	);
 }

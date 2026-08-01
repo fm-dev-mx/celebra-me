@@ -311,12 +311,7 @@ WITH target_rows AS (
 	    FILTER (WHERE a.managed_source_key IS NOT NULL) AS keys,
       jsonb_agg(jsonb_build_object(
         'id', a.id,
-        'key', a.managed_source_key,
-        'provider', a.provider,
-        'secureUrl', a.secure_url,
-        'bucket', a.bucket,
-        'storagePath', a.storage_path,
-        'managedSha256', a.managed_sha256
+        'key', a.managed_source_key
       ) ORDER BY a.managed_source_key) FILTER (WHERE a.managed_source_key IS NOT NULL) AS items
     FROM public.invitation_assets a
     WHERE a.invitation_id = i.id AND a.deleted_at IS NULL
@@ -354,7 +349,11 @@ SELECT jsonb_build_object(
         'definitionSlug', definition_slug,
         'releaseSchemaVersion', release_schema_version,
         'packageHash', package_hash,
-		'hasManagedProjection', managed_projection IS NOT NULL,
+		'hasManagedProjection', (
+			managed_projection IS NOT NULL
+			AND jsonb_typeof(managed_projection) = 'object'
+			AND managed_projection <> '{}'::jsonb
+		),
         'managedProjectionBase64', CASE
           WHEN detail_required AND detail_bytes <= ${OBSERVABILITY_DETAIL_BUDGET_BYTES}
           THEN encode(convert_to(managed_projection::text, 'UTF8'), 'base64') ELSE NULL END,

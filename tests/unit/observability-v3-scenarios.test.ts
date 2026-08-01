@@ -517,6 +517,23 @@ describe('observability v3 three-way detail', () => {
 		});
 	});
 
+	it('preserves a pending apply classification when only detail is over budget', () => {
+		const result = reconcileInvitationDelivery({
+			environment: 'preview',
+			canonical: canonical(),
+			row: row('apply', { detailRequired: true, detailBudgetExceeded: true }),
+		});
+		expect(result).toMatchObject({
+			comparison: {
+				outcome: 'APPLY',
+				detailStatus: 'DETAIL_UNAVAILABLE',
+				semanticPaths: [],
+			},
+			workReasonCode: 'CANONICAL_CHANGE_PENDING',
+		});
+		expect(result).not.toHaveProperty('issueReasonCode');
+	});
+
 	it('excludes unmanaged paths before publishing semantic evidence', () => {
 		const base = {
 			operation: 'replace' as const,

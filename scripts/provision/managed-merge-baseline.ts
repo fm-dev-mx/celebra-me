@@ -67,6 +67,22 @@ export class ManagedBaselineError extends Error {
 	}
 }
 
+/**
+ * A baseline must contain a normalized managed document, not merely a JSON
+ * container.  PostgreSQL treats `{}` as present, so truthiness is not a
+ * sufficient authority check here.
+ */
+function isStructurallyEmpty(value: unknown): boolean {
+	if (value === null || value === undefined) return true;
+	if (typeof value === 'string') return value.trim().length === 0;
+	if (Array.isArray(value)) return value.length === 0 || value.every(isStructurallyEmpty);
+	if (typeof value === 'object') {
+		const entries = Object.values(value as Record<string, unknown>);
+		return entries.length === 0 || entries.every(isStructurallyEmpty);
+	}
+	return false;
+}
+
 function fail(
 	classification: Exclude<ManagedBaselineClassification, 'verified_current'>,
 	message: string,
@@ -86,7 +102,9 @@ function hasCompleteProvenanceIdentity(input: ManagedMergeBaselineInput): boolea
 function receiptProvesManagedApply(receipt: ManagedBaselineReceiptEvidence): boolean {
 	const finalStatus = receipt.status === 'applied' || receipt.status === 'replayed';
 	return (
-		receipt.commandKind === 'managed_invitation_apply' &&
+		(receipt.commandKind === 'managed_invitation_apply' ||
+			receipt.commandKind === 'managed_baseline_reconstruction' ||
+			receipt.commandKind === 'managed_baseline_adoption') &&
 		finalStatus &&
 		Boolean(receipt.completedSteps?.includes('provenance_recorded'))
 	);
@@ -103,10 +121,17 @@ function resolveManagedBaselineCore(
 	input: ManagedMergeBaselineInput,
 	expectedNormalizationVersion?: string,
 ): Record<string, unknown> {
-	if (!input.managedProjection && !input.hasManagedProjection) {
+	const hasManagedProjection =
+		input.hasManagedProjection ?? !isStructurallyEmpty(input.managedProjection);
+	if (
+		!hasManagedProjection ||
+		(input.managedProjection !== null &&
+			input.managedProjection !== undefined &&
+			isStructurallyEmpty(input.managedProjection))
+	) {
 		return fail(
 			'missing_provenance',
-			'No managed projection exists; use adoption or operator reconciliation.',
+			'No non-empty managed projection exists; use adoption or operator reconciliation.',
 		);
 	}
 	if (!hasCompleteProvenanceIdentity(input)) {
@@ -133,24 +158,21 @@ function resolveManagedBaselineCore(
 	return input.managedProjection ?? {};
 }
 
-export function verifyManagedBaselineIdentity(
-	input: ManagedMergeBaselineInput,
-	expectedNormalizationVersion: string,
-): { normalizationVersion: string } {
-	resolveManagedBaselineCore(input, expectedNormalizationVersion);
-	return { normalizationVersion: input.releaseSchemaVersion! };
-}
-
 /**
- * Resolve the durable previous canonical artifact without consulting current environment content.
- * It changes only after a completed managed apply records provenance and its durable receipt.
+ * The sole baseline authority path.  Metadata-only callers may omit the
+ * projection content, but any supplied projection must be a real normalized
+ * document.  Content callers receive the same verified artifact.
  */
-export function resolveManagedBaselineArtifact(
+export function resolveVerifiedManagedBaseline(
 	input: ManagedMergeBaselineInput,
 	expectedNormalizationVersion: string,
-): ManagedBaselineArtifact {
+	options: { requireProjection: boolean },
+): ManagedBaselineArtifact | { normalizationVersion: string } {
 	const managedProjection = resolveManagedBaselineCore(input, expectedNormalizationVersion);
-	if (!input.managedProjection) {
+	if (!options.requireProjection) {
+		return { normalizationVersion: input.releaseSchemaVersion! };
+	}
+	if (!input.managedProjection || isStructurallyEmpty(input.managedProjection)) {
 		return fail(
 			'missing_provenance',
 			'Managed projection content was not loaded for reconciliation.',
