@@ -36,9 +36,7 @@ import {
 	getProdDbUrl,
 	requireProductionConfirmation,
 } from '../db/db-workflow-lib.ts';
-import {
-	finalizePreviewApprovalArtifact,
-} from './preview-approval-service.ts';
+import { finalizePreviewApprovalArtifact } from './preview-approval-service.ts';
 import {
 	formatStatusReport,
 	formatDryRunPlan,
@@ -172,7 +170,8 @@ Usage:
   pnpm invitation:update --artifact <path> --evidence <path> --apply
   pnpm invitation:update --adoption-plan --slug romina-rios-chaparro --targets production --package <path> --approval-artifact <path> [--adoption-manifest <path>] [--json]
   pnpm invitation:update --adoption-apply --slug romina-rios-chaparro --targets production --package <path> --approval-artifact <path> --adoption-manifest <path> [--json]
-  pnpm invitation:update --preview-provenance --slug romina-rios-chaparro --targets preview --package <path> --approval-artifact <path> --dry-run|--apply [--json]
+  pnpm invitation:update --preview-provenance --slug <slug> --targets preview --package <path> --dry-run [--json]
+  pnpm invitation:update --preview-provenance --slug <slug> --targets preview --package <path> --approval-artifact <path> --apply [--json]
 
 Options:
   --asset-policy <policy>     Asset handling policy: verify, missing (default), sync
@@ -232,14 +231,14 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 		if (
 			args.includes('--status') ||
 			(!apply && !args.includes('--dry-run')) ||
-			slug !== 'romina-rios-chaparro' ||
+			!slug ||
 			targets.length !== 1 ||
 			targets[0] !== 'preview' ||
 			!packagePath ||
-			!approvalArtifactPath
+			(apply && !approvalArtifactPath)
 		) {
 			throw new Error(
-				'La baseline de provenance requiere Preview, Romina, paquete, aprobación y --dry-run o --apply.',
+				'La reconstrucción de baseline requiere Preview, slug, paquete, aprobación y --dry-run o --apply.',
 			);
 		}
 		const result = await establishPreviewProvenanceBaseline({
@@ -250,7 +249,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 		if (json) console.log(JSON.stringify(result, null, 2));
 		else
 			console.log(
-				`Provenance de Preview: ${result.status === 'BASELINED' ? 'registrada' : result.status === 'IN_SYNC' ? 'ya verificada' : 'planificada'}.`,
+				`Provenance de Preview: ${result.status === 'BASELINED' ? 'registrada' : result.status === 'IN_SYNC' ? 'ya verificada' : result.status === 'EVIDENCE_UNAVAILABLE' ? 'sin evidencia suficiente' : 'planificada'}.`,
 			);
 		return;
 	}
@@ -387,26 +386,23 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 			else if (operation === 'apply') apply = true;
 
 			if (targets.length === 0) {
-				const choices =
-					statusMode
-						? [
-								{ name: 'Local (127.0.0.1:54322)', value: 'local' },
-								{ name: 'Preview', value: 'preview' },
-								{ name: 'Producción (solo lectura)', value: 'production' },
-								{ name: 'Todos los entornos (solo lectura)', value: 'all' },
-							]
-						: [
-								{ name: 'Local (127.0.0.1:54322)', value: 'local' },
-								{ name: 'Preview', value: 'preview' },
-								{ name: 'Local y Preview', value: 'local,preview' },
-							];
+				const choices = statusMode
+					? [
+							{ name: 'Local (127.0.0.1:54322)', value: 'local' },
+							{ name: 'Preview', value: 'preview' },
+							{ name: 'Producción (solo lectura)', value: 'production' },
+							{ name: 'Todos los entornos (solo lectura)', value: 'all' },
+						]
+					: [
+							{ name: 'Local (127.0.0.1:54322)', value: 'local' },
+							{ name: 'Preview', value: 'preview' },
+							{ name: 'Local y Preview', value: 'local,preview' },
+						];
 				const selected = await select({
 					message: 'Selecciona el entorno de destino',
 					choices,
 				});
-				targets = statusMode
-					? parseTargets(selected)
-					: parseMutationTargets(selected);
+				targets = statusMode ? parseTargets(selected) : parseMutationTargets(selected);
 			}
 
 			if (!statusMode) {
@@ -557,7 +553,9 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 			default: false,
 		});
 		if (!previewConfirmed) {
-			throw new Error('PREVIEW_WRITE_CANCELLED: El operador canceló la escritura en Preview.');
+			throw new Error(
+				'PREVIEW_WRITE_CANCELLED: El operador canceló la escritura en Preview.',
+			);
 		}
 	}
 
