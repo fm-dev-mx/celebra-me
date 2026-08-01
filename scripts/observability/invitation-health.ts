@@ -6,6 +6,7 @@
 import { runPsql, sqlLiteral } from '../db/db-workflow-lib.ts';
 import { hashPublicationProjection } from '../../src/lib/intake/services/publication-diff.service.ts';
 import {
+	evaluateBatchTargetStatuses,
 	evaluateSingleTargetStatus,
 	resolveDbUrlForEnv,
 	withStatusProbeTimeout,
@@ -304,14 +305,114 @@ export async function evaluateInvitationHealth(options?: {
 	const timeout = options?.probeTimeoutMs ?? 2_000;
 	const corpus = listLocalRenderCorpus();
 
-	// Parallel per invitation; keep env probes sequential inside each row to limit psql fan-out.
-	const settled = await Promise.allSettled(
-		corpus.map((entry) =>
-			entry.classification === 'canonical'
-				? evaluateCanonicalEntry(entry, timeout)
-				: evaluateLegacyEntry(entry, timeout),
-		),
+	const canonicalHashes = new Map<string, string | null>();
+	await Promise.all(
+		corpus.map(async (entry) => {
+			if (entry.classification === 'canonical') {
+				const hash = await resolveCanonicalPackageHash(entry.slug);
+				canonicalHashes.set(entry.slug, hash);
+			}
+		}),
 	);
+
+	const batchResults = {
+		local: withStatusProbeTimeout(timeout, () => evaluateBatchTargetStatuses('local', canonicalHashes)),
+		preview: withStatusProbeTimeout(timeout, () => evaluateBatchTargetStatuses('preview', canonicalHashes)),
+		production: withStatusProbeTimeout(timeout, () => evaluateBatchTargetStatuses('production', canonicalHashes)),
+	};
+
+	const settled = await Promise.allSettled(
+		corpus.map(async (entry) => {
+			const envs = {} as InvitationHealthRow['environments'];
+			let hasAllBatchEnvs = true;
+			for (const env of ENVS) {
+				const batchStatus = batchResults[env].get(entry.slug);
+				if (batchStatus) {
+					if (entry.classification === 'legacy') {
+						const refHash = resolveLegacyReferenceHash(entry);
+						if (env !== 'local') {
+							envs[env] = {
+								environment: env,
+								status: 'UNVERIFIED',
+								publishedVersion: batchStatus.publishedVersion,
+								assetCount: batchStatus.assetCount,
+								detail: 'Legacy presence-only on remote (reference compare is Local-only)',
+							};
+						} else if (refHash && batchStatus.publishedContent) {
+							try {
+								const contentJson = JSON.parse(batchStatus.publishedContent);
+								const pubHash = hashPublicationProjection(contentJson);
+								const legStatus: LegacyContentState =
+									pubHash === refHash ? 'MATCH_REFERENCE' : 'DIVERGED_FROM_REFERENCE';
+								envs[env] = {
+									environment: env,
+									status: legStatus,
+									publishedVersion: batchStatus.publishedVersion,
+									assetCount: batchStatus.assetCount,
+									detail:
+										legStatus === 'MATCH_REFERENCE'
+											? 'Published content matches Local corpus fixture reference'
+											: 'Published content diverged from Local corpus fixture reference',
+								};
+							} catch {
+								envs[env] = {
+									environment: env,
+									status: 'UNVERIFIED',
+									publishedVersion: batchStatus.publishedVersion,
+									assetCount: batchStatus.assetCount,
+									detail: redactDetail(batchStatus.detail),
+								};
+							}
+						} else {
+							envs[env] = {
+								environment: env,
+								status: 'UNVERIFIED',
+								publishedVersion: batchStatus.publishedVersion,
+								assetCount: batchStatus.assetCount,
+								detail: redactDetail(batchStatus.detail),
+							};
+						}
+					} else {
+						envs[env] = {
+							environment: env,
+							status: batchStatus.status,
+							publishedVersion: batchStatus.publishedVersion,
+							assetCount: batchStatus.assetCount,
+							detail: redactDetail(batchStatus.detail),
+						};
+					}
+				} else {
+					hasAllBatchEnvs = false;
+				}
+			}
+
+			if (!hasAllBatchEnvs) {
+				const fallback =
+					entry.classification === 'canonical'
+						? await evaluateCanonicalEntry(entry, timeout)
+						: await evaluateLegacyEntry(entry, timeout);
+				return fallback;
+			}
+
+			const { command, failureCause } = recommendedCommandForRow(entry, envs);
+			return {
+				slug: entry.slug,
+				eventType: entry.eventType,
+				referenceClassification:
+					entry.classification === 'canonical'
+						? ('CANONICAL_MANAGED' as const)
+						: ('LOCAL_CORPUS_REFERENCE' as const),
+				themeId: entry.themeId ?? null,
+				visualProfileId: entry.visualProfileId ?? null,
+				assetStrategy: entry.assetStrategy,
+				publicRoute: corpusPublicRoute(entry),
+				environments: envs,
+				recommendedCommand: command,
+				failureCause,
+			};
+		}),
+	);
+
 
 	return settled.map((result, index) => {
 		const entry = corpus[index]!;
@@ -322,6 +423,7 @@ export async function evaluateInvitationHealth(options?: {
 		);
 	});
 }
+
 
 /** Local corpus presence count for an environment (supported clients only). */
 export function countCorpusPresence(

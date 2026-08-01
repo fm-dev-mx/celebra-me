@@ -449,6 +449,179 @@ export function evaluateSingleTargetStatus(
 	};
 }
 
+interface BatchInvitationRowData {
+	invId: string;
+	provSlug: string | null;
+	provHash: string | null;
+	provApplied: string | null;
+	pubVersion: number | null;
+	pubAt: string | null;
+	pubContent: string | null;
+	draftStatus: string | null;
+	draftUpdatedAt: string | null;
+	assetCount: number;
+}
+
+function resolveBatchRowStatus(
+	env: TargetEnv,
+	slug: string,
+	rows: BatchInvitationRowData[],
+	canonicalHash: string | null,
+): PerInvitationTargetStatus & { publishedContent?: string | null } {
+	if (rows.length > 1) {
+		return {
+			environment: env,
+			status: 'IDENTITY_CONFLICT',
+			activeMatchCount: rows.length,
+			resolvedId: null,
+			resolvedSlug: slug,
+			provenanceDefinitionSlug: null,
+			provenancePackageHash: null,
+			provenanceAppliedAt: null,
+			publishedVersion: null,
+			publishedAt: null,
+			assetCount: 0,
+			detail: `IDENTITY_CONFLICT: ${rows.length} active invitations found`,
+		};
+	}
+
+	const row = rows[0]!;
+	const isDiverged = Boolean(
+		row.draftStatus === 'draft' &&
+		row.draftUpdatedAt &&
+		row.pubAt &&
+		new Date(row.draftUpdatedAt).getTime() > new Date(row.pubAt).getTime(),
+	);
+
+	let status: StatusVocabulary = 'UNVERIFIED';
+	let detail = `Active invitation resolved (${row.invId})`;
+	if (row.provHash && canonicalHash) {
+		if (row.provHash !== canonicalHash) {
+			status = 'BEHIND_CANONICAL';
+		} else if (isDiverged) {
+			status = 'DIVERGED';
+		} else {
+			status = 'MATCH_CANONICAL';
+		}
+	} else if (row.provHash && isDiverged) {
+		status = 'DIVERGED';
+	} else if (!canonicalHash) {
+		detail = `Active invitation resolved (${row.invId}); canonical package hash unavailable — not a proven MATCH`;
+	} else if (!row.provHash) {
+		detail = `Active invitation resolved (${row.invId}); managed provenance package hash missing — not a proven MATCH`;
+	}
+
+	return {
+		environment: env,
+		status,
+		activeMatchCount: 1,
+		resolvedId: row.invId,
+		resolvedSlug: slug,
+		provenanceDefinitionSlug: row.provSlug,
+		provenancePackageHash: row.provHash,
+		provenanceAppliedAt: row.provApplied,
+		publishedVersion: row.pubVersion,
+		publishedAt: row.pubAt,
+		assetCount: row.assetCount,
+		detail,
+		publishedContent: row.pubContent,
+	};
+}
+
+function parseBatchOutput(stdout: string): Map<string, BatchInvitationRowData[]> {
+	const rowsBySlug = new Map<string, BatchInvitationRowData[]>();
+	const lines = stdout.trim().split('\n').filter(Boolean);
+	for (const line of lines) {
+		const parts = line.split('|').map((s) => s.trim());
+		if (parts.length < 11 || !parts[0]) continue;
+		const [
+			slug,
+			invId,
+			provSlug,
+			provHash,
+			provApplied,
+			pubVer,
+			pubAt,
+			draftStatus,
+			draftUpdatedAt,
+			assetCountStr,
+			pubContent,
+		] = parts;
+
+		const rowData: BatchInvitationRowData = {
+			invId: invId || '',
+			provSlug: provSlug || null,
+			provHash: provHash || null,
+			provApplied: provApplied || null,
+			pubVersion: pubVer ? Number(pubVer) : null,
+			pubAt: pubAt || null,
+			pubContent: pubContent || null,
+			draftStatus: draftStatus || null,
+			draftUpdatedAt: draftUpdatedAt || null,
+			assetCount: Number(assetCountStr || '0'),
+		};
+
+		const existing = rowsBySlug.get(slug) ?? [];
+		existing.push(rowData);
+		rowsBySlug.set(slug, existing);
+	}
+	return rowsBySlug;
+}
+
+export function evaluateBatchTargetStatuses(
+	env: TargetEnv,
+	canonicalHashes: Map<string, string | null>,
+): Map<string, PerInvitationTargetStatus & { publishedContent?: string | null }> {
+	const result = new Map<string, PerInvitationTargetStatus & { publishedContent?: string | null }>();
+	const { dbUrl } = resolveDbUrlForEnv(env);
+	if (!dbUrl || !testConnectivity(dbUrl)) {
+		return result;
+	}
+
+	const batchSql = `
+SELECT
+  i.slug,
+  i.id::text,
+  COALESCE(p.definition_slug, ''),
+  COALESCE(p.package_hash, ''),
+  COALESCE(p.applied_at::text, ''),
+  COALESCE(pub.version::text, ''),
+  COALESCE(pub.published_at::text, ''),
+  COALESCE(d.status, ''),
+  COALESCE(d.updated_at::text, ''),
+  COALESCE(a.asset_count, 0)::text,
+  replace(replace(COALESCE(pub.content::text, ''), E'\r', ''), E'\n', ' ')
+FROM public.invitations i
+LEFT JOIN public.managed_invitation_release_provenance p ON p.invitation_id = i.id
+LEFT JOIN LATERAL (
+  SELECT version, published_at, content FROM public.published_invitation_content
+  WHERE invitation_project_id = i.id ORDER BY version DESC LIMIT 1
+) pub ON true
+LEFT JOIN LATERAL (
+  SELECT status, updated_at FROM public.invitation_content_drafts
+  WHERE invitation_project_id = i.id AND deleted_at IS NULL LIMIT 1
+) d ON true
+LEFT JOIN LATERAL (
+  SELECT COUNT(*) AS asset_count FROM public.invitation_assets
+  WHERE invitation_id = i.id AND deleted_at IS NULL
+) a ON true
+WHERE i.archived_at IS NULL;
+`.trim();
+
+	const batchRes = runPsql(batchSql, dbUrl, psqlOptions({ tuplesOnly: true, throwOnError: false }));
+	if (batchRes.status !== 0 || !batchRes.stdout.trim()) {
+		return result;
+	}
+
+	const rowsBySlug = parseBatchOutput(batchRes.stdout);
+	for (const [slug, rows] of rowsBySlug.entries()) {
+		const canonicalHash = canonicalHashes.get(slug) ?? null;
+		result.set(slug, resolveBatchRowStatus(env, slug, rows, canonicalHash));
+	}
+
+	return result;
+}
+
 export async function evaluateInvitationStatus(slug: string): Promise<PerInvitationStatusSummary> {
 	const definition = getInvitationDefinition(slug);
 	const envs: TargetEnv[] = ['local', 'preview', 'production'];
