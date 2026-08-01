@@ -18,6 +18,7 @@ authorizes remote mutation.
 | Runtime       | Approved persistent-Local only                                                        |
 | Authorization | Authenticated `super_admin` with strong session (MFA / trusted device / Local bypass) |
 | Rate limit    | `admin:observabilidad` (30 req/min)                                                   |
+| Concurrency   | One aggregation child process at a time (queued)                                      |
 | Interaction   | Read-only                                                                             |
 | Refresh       | Initial load + manual **Actualizar estado** only                                      |
 | Polling       | None                                                                                  |
@@ -42,11 +43,32 @@ Worktree path alone is never authorization. There is no alternate env-flag overr
 
 ---
 
+## Summary vs detail (compute contract)
+
+| Mode      | Wire size                 | Probe scope                             | Timeout | When                        |
+| --------- | ------------------------- | --------------------------------------- | ------- | --------------------------- |
+| `summary` | Small payload (&lt; 3 KB) | **Local only** + FS validation evidence | 60s     | SSR + **Actualizar estado** |
+| `detail`  | Full matrix               | Local + Preview + Production            | 300s    | **Ver detalle completo**    |
+
+Summary is lightweight in **both** wire size and remote DB cost: it does not open Preview/Production
+connections. Overall status for summary ignores unprobed remote stubs (`connection: unverified`).
+
+Both modes run in an isolated child process (`scripts/observability/print-snapshot.ts`) so sync
+`psql` / `execSync` probes cannot stall the Astro event loop.
+
+---
+
 ## Observed environments
 
-Local, Preview, and Production — connection, runtime identity, schema lifecycle, active invitation
-rows (all non-archived), supported corpus presence (13 Local Render Corpus clients), and
-render-effective parity.
+**Detail mode:** Local, Preview, and Production — connection, runtime identity, schema lifecycle,
+active invitation rows (all non-archived), supported corpus presence (13 Local Render Corpus
+clients), and render-effective parity.
+
+**Summary mode:** Local probes only. Preview/Production cells are marked unprobed until detail runs.
+
+Invitation batch SQL is always restricted to Local Render Corpus slugs. Published JSON content is
+fetched only for Local (base64-encoded) to support legacy reference hashing — never pulled from
+Preview/Production into the probe process.
 
 **Asset health** is corpus-level evidence (repository inventory + fixture metadata + Local DB asset
 counts). It is not presented as an independently verified per-environment remote asset audit.
@@ -66,21 +88,26 @@ Evidence freshness: `PASS` | `FAIL` | `STALE` | `NOT_RUN` | `INVALID`
 
 ---
 
-## Validation evidence
+## Validation evidence (optional for load; required for HEALTHY)
 
 | Item        | Location                                         | Owning command                        |
 | ----------- | ------------------------------------------------ | ------------------------------------- |
 | Regression  | `.tmp/observability/validation/regression.json`  | `pnpm test:local-render-corpus`       |
 | Screenshots | `.tmp/observability/validation/screenshots.json` | `pnpm screenshot:local-render-corpus` |
 
+These CLIs are **operator evidence writers**, not runtime dependencies of the dashboard route:
+
+- Refresh **never** runs tests, screenshots, Playwright, migrations, or promotes.
+- Missing evidence → freshness `NOT_RUN` (page still loads); overall cannot be `HEALTHY`.
+- PNG artifacts under `output/screenshots/` are not read by the dashboard — only the JSON evidence
+  file is.
+- No GitHub workflow invokes `pnpm screenshot:local-render-corpus`.
+
 Snapshots are generated artifacts (gitignored via `.tmp/`). Schema version `1`. Freshness matches
 `inputFingerprint` + `corpusFingerprint` against current registry/fixtures/test inputs.
 
 Regression totals (`total` / `passed` / `failed` / `failures[]`) are taken from Jest’s JSON report
 for the corpus suite. Snapshot write failures never convert a failed validation into a pass.
-
-Dashboard refresh **never** runs tests, screenshots, migrations,
-`invitation:update|reconcile|promote`, asset uploads/downloads, or database writes.
 
 ---
 
@@ -96,25 +123,36 @@ Dashboard refresh **never** runs tests, screenshots, migrations,
 
 ## Implementation & type boundary
 
-- Aggregation (Node-only): `scripts/observability/snapshot.ts` → `buildObservabilitySnapshot()` & `buildObservabilitySummary()`
-- Batched Database Probes: `scripts/provision/dbs-status.ts` → `evaluateBatchTargetStatuses()` (1 batched SQL query per target environment instead of 234 individual `psql` child processes).
-- Runtime gate: `src/lib/observability/runtime-gate.ts` (enforces persistent-Local execution only; redirects to 404 on Vercel platform runtimes).
+- Aggregation (Node-only): `scripts/observability/snapshot.ts` →
+  `buildObservabilitySnapshot({ probeScope })` & `buildObservabilitySummary()` (always
+  `probeScope: 'local'`).
+- Shared env pass: one `evaluateGeneralStatus({ environments })` feeds both migration-health and
+  environment-health.
+- Batched Database Probes: `scripts/provision/dbs-status.ts` →
+  `evaluateBatchTargetStatuses(env, hashes, { slugs, includePublishedContent })` — corpus slug
+  filter + unit-separator fields; content only when `includePublishedContent` (Local).
+- Runtime gate: `src/lib/observability/runtime-gate.ts`.
 - Dual Payload Contracts:
-  - `ObservabilitySummaryPayload`: Lightweight summary payload (< 3 KB) evaluated during Astro SSR and passed via props for immediate rendering. Served by `GET /api/dashboard/observabilidad?mode=summary`.
-  - `ObservabilitySnapshot`: Full detailed matrix snapshot served on demand by `GET /api/dashboard/observabilidad?mode=detail`.
+  - `ObservabilitySummaryPayload`: small wire payload; Local-scoped compute; SSR + `?mode=summary`.
+  - `ObservabilitySnapshot`: full multi-env matrix; `?mode=detail`.
 - Browser types: `src/lib/observability/types.ts` (duplicated, free of `scripts/` / Node imports).
-- Server snapshot wrapper: `src/lib/observability/server/snapshot.ts`.
-- UI island: `ObservabilityPanel` (4-tier visual hierarchy: Resumen, Invitaciones con atención requerida, Evidencia, Diagnóstico & comandos categorizados).
+- Server snapshot wrapper: `src/lib/observability/server/snapshot.ts` (child process + queue mutex).
+- UI island: `ObservabilityPanel`.
 
 The mirrored type files are intentional: consolidating them into one module would risk pulling
 Node-only scripts into the client bundle. Keep the separation.
 
 ## Deployment & Runtime Binary Contract
 
-The dashboard is explicitly gated for **Local operator environments only**. It will not run on hosted Vercel function runtimes:
-- `isLocalObservabilityRuntime()` detects `VERCEL=1` or `VERCEL_ENV=production|preview` and causes Astro SSR to redirect to `/404`.
-- API route `/api/dashboard/observabilidad` rejects requests with a 404 error outside Local environments.
-- This gate ensures Vercel deployments do not attempt to invoke non-existent local binaries (`psql`), execute filesystem subprocesses, or time out on serverless cold starts.
+The dashboard is explicitly gated for **Local operator environments only**. It will not run on
+hosted Vercel function runtimes:
+
+- `isLocalObservabilityRuntime()` detects `VERCEL=1` or `VERCEL_ENV=production|preview` and causes
+  Astro SSR to redirect to `/404`.
+- API route `/api/dashboard/observabilidad` rejects requests with a 404 error outside Local
+  environments.
+- This gate ensures Vercel deployments do not attempt to invoke non-existent local binaries
+  (`psql`), execute filesystem subprocesses, or time out on serverless cold starts.
 
 ## Known limitations
 
@@ -122,3 +160,5 @@ The dashboard is explicitly gated for **Local operator environments only**. It w
 - Asset health uses repository inventory + fixture metadata + Local DB counts — not bulk binary
   download.
 - Environment / invitation / evidence failures degrade independently inside a `200` snapshot.
+- SSR page load bypasses the API rate limiter (still Local + strong session gated); API refreshes
+  are rate-limited and serialized through the aggregation mutex.
