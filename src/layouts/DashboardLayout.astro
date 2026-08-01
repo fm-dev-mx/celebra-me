@@ -5,6 +5,10 @@ import { toDisplayRole } from '@/lib/rsvp/auth/roles';
 import type { DashboardNavItem } from '@/interfaces/dashboard/admin.interface';
 import { resolveDashboardEnvBanner } from '@/lib/server/dashboard-env-banner';
 import { isNavItemActive } from '@/utils/dashboard';
+import {
+	isLocalObservabilityRuntime,
+	readObservabilityRuntimeEnv,
+} from '@/lib/observability/runtime-gate';
 
 interface Props {
 	title: string;
@@ -18,6 +22,8 @@ const envBanner = resolveDashboardEnvBanner({
 	supabaseUrl: process.env.SUPABASE_URL ?? process.env.PUBLIC_SUPABASE_URL,
 	previewMfaBypass: process.env.PREVIEW_MFA_BYPASS,
 });
+
+const showObservabilityNav = isLocalObservabilityRuntime(readObservabilityRuntimeEnv());
 
 // Middleware enforces the authenticated session and stores it in
 // Astro.locals.session. The layout reads from locals (not request cookies)
@@ -37,6 +43,9 @@ const { csrfToken } = Astro.locals;
 const navItems: DashboardNavItem[] = [
 	{ label: 'Invitados', href: '/dashboard/invitados' },
 	{ label: 'Administración', href: '/dashboard/admin', adminOnly: true },
+	...(showObservabilityNav
+		? [{ label: 'Observabilidad', href: '/dashboard/observabilidad', adminOnly: true }]
+		: []),
 	{ label: 'Publicación de demos', href: '/dashboard/admin/content-sync', adminOnly: true },
 	{ label: 'Códigos de acceso', href: '/dashboard/claimcodes', adminOnly: true },
 	{ label: 'Producción de invitaciones', href: '/dashboard/invitaciones', adminOnly: true },
