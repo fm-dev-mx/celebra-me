@@ -34,7 +34,7 @@ import {
 import { runInteractiveFlow } from './interactive.js';
 import { runScreenshotJob } from './runner.js';
 import { buildCorpusScreenshotConfig } from '../provision/local-render-corpus/screenshot-pages.ts';
-import { tryWriteValidationEvidence } from '../observability/write-regression-evidence.ts';
+import { tryWriteValidationEvidence } from '../observability/validation-evidence.ts';
 
 // ── Entry point ──────────────────────────────────────────────────────────
 
@@ -254,9 +254,7 @@ function buildJobFromCli(options: CliOptions): ScreenshotJob | null {
 }
 
 // eslint-disable-next-line complexity -- Config defaults are resolved in one place for predictable batch jobs.
-async function runConfigJobs(
-	options: CliOptions,
-): Promise<{ failed: number; totalPages: number }> {
+async function runConfigJobs(options: CliOptions): Promise<{ failed: number; totalPages: number }> {
 	if (!options.corpus && !options.config) return { failed: 0, totalPages: 0 };
 
 	const config = options.corpus

@@ -1,5 +1,6 @@
 /**
  * Environment matrix health for Local / Preview / Production.
+ * Asset inventory is corpus-level (see snapshot.assets), not per-environment.
  */
 
 import {
@@ -9,12 +10,7 @@ import {
 } from '../provision/dbs-status.ts';
 import { EXPECTED_LOCAL_RENDER_CORPUS_SIZE } from '../provision/local-render-corpus/registry.ts';
 import { countCorpusPresence } from './invitation-health.ts';
-import type {
-	AssetHealthRow,
-	EnvironmentHealthRow,
-	InvitationHealthRow,
-	SchemaLifecycleState,
-} from './types.ts';
+import type { EnvironmentHealthRow, InvitationHealthRow, SchemaLifecycleState } from './types.ts';
 
 function connectionFromGeneral(input: {
 	configured: boolean;
@@ -23,24 +19,6 @@ function connectionFromGeneral(input: {
 	if (!input.configured) return 'credentials_required';
 	if (!input.reachable) return 'unreachable';
 	return 'ok';
-}
-
-function summarizeAssets(assets: readonly AssetHealthRow[]): EnvironmentHealthRow['assetHealthSummary'] {
-	const summary = {
-		ok: 0,
-		partial: 0,
-		missing: 0,
-		remoteReference: 0,
-		unverified: 0,
-	};
-	for (const row of assets) {
-		if (row.status === 'OK') summary.ok += 1;
-		else if (row.status === 'PARTIAL') summary.partial += 1;
-		else if (row.status === 'MISSING') summary.missing += 1;
-		else if (row.status === 'REMOTE_REFERENCE') summary.remoteReference += 1;
-		else summary.unverified += 1;
-	}
-	return summary;
 }
 
 function renderParityForEnv(
@@ -78,7 +56,10 @@ function renderParityForEnv(
 	).length;
 	const unverifiable = statuses.filter((s) => s === 'UNVERIFIED').length;
 
-	if (unverifiable > 0 && aligned + draftOnly + publishedMismatch + unverifiable === statuses.length) {
+	if (
+		unverifiable > 0 &&
+		aligned + draftOnly + publishedMismatch + unverifiable === statuses.length
+	) {
 		if (aligned === 0 && draftOnly === 0 && publishedMismatch === 0) return 'UNVERIFIABLE';
 	}
 	if (aligned === statuses.length) return 'ALL_ALIGNED';
@@ -90,12 +71,10 @@ function renderParityForEnv(
 
 export function buildEnvironmentHealth(input: {
 	invitations: readonly InvitationHealthRow[];
-	assets: readonly AssetHealthRow[];
 	probeTimeoutMs?: number;
 }): EnvironmentHealthRow[] {
 	const timeout = input.probeTimeoutMs ?? 2_000;
 	const general = withStatusProbeTimeout(timeout, () => evaluateGeneralStatus());
-	const assetSummary = summarizeAssets(input.assets);
 	const envs: TargetEnv[] = ['local', 'preview', 'production'];
 
 	return envs.map((env) => {
@@ -117,7 +96,6 @@ export function buildEnvironmentHealth(input: {
 				status.reachable,
 				status.configured,
 			),
-			assetHealthSummary: assetSummary,
 			detail:
 				status.errorDetail?.slice(0, 160) ??
 				(status.identityConflictsCount > 0

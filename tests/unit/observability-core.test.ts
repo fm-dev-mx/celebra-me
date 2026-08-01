@@ -56,7 +56,11 @@ describe('observability validation freshness', () => {
 
 	it('STALE when input fingerprint changes', () => {
 		expect(
-			classifyValidationFreshness(baseSnapshot(), { ...fingerprints, inputFingerprint: 'other' }, source),
+			classifyValidationFreshness(
+				baseSnapshot(),
+				{ ...fingerprints, inputFingerprint: 'other' },
+				source,
+			),
 		).toBe('STALE');
 	});
 
@@ -76,7 +80,11 @@ describe('observability validation freshness', () => {
 
 	it('FAIL when latest run failed', () => {
 		expect(
-			classifyValidationFreshness(baseSnapshot({ status: 'fail', failed: 1, passed: 12 }), fingerprints, source),
+			classifyValidationFreshness(
+				baseSnapshot({ status: 'fail', failed: 1, passed: 12 }),
+				fingerprints,
+				source,
+			),
 		).toBe('FAIL');
 	});
 
@@ -116,7 +124,6 @@ describe('observability overall status', () => {
 		activeInvitationRows: 20,
 		supportedCorpusPresence: '13/13',
 		renderEffectiveParity: 'ALL_ALIGNED',
-		assetHealthSummary: { ok: 13, partial: 0, missing: 0, remoteReference: 0, unverified: 0 },
 	});
 
 	const healthyInvite = (slug: string): InvitationHealthRow => ({
@@ -201,7 +208,11 @@ describe('observability overall status', () => {
 		invite.environments.local.status = 'NOT_PRESENT';
 		expect(
 			computeOverallStatus({
-				environments: [healthyEnv('local'), healthyEnv('preview'), healthyEnv('production')],
+				environments: [
+					healthyEnv('local'),
+					healthyEnv('preview'),
+					healthyEnv('production'),
+				],
 				invitations: [invite],
 				migrations: migrationsOk,
 				assets: [healthyAsset('missing-one')],
@@ -215,7 +226,11 @@ describe('observability overall status', () => {
 	it('UNVERIFIED when evidence not run', () => {
 		expect(
 			computeOverallStatus({
-				environments: [healthyEnv('local'), healthyEnv('preview'), healthyEnv('production')],
+				environments: [
+					healthyEnv('local'),
+					healthyEnv('preview'),
+					healthyEnv('production'),
+				],
 				invitations: [healthyInvite('x')],
 				migrations: migrationsOk,
 				assets: [{ ...healthyAsset('x'), status: 'OK' }],
@@ -229,7 +244,11 @@ describe('observability overall status', () => {
 	it('ATTENTION when evidence stale but environments ok', () => {
 		expect(
 			computeOverallStatus({
-				environments: [healthyEnv('local'), healthyEnv('preview'), healthyEnv('production')],
+				environments: [
+					healthyEnv('local'),
+					healthyEnv('preview'),
+					healthyEnv('production'),
+				],
 				invitations: [healthyInvite('x')],
 				migrations: migrationsOk,
 				assets: [{ ...healthyAsset('x'), status: 'OK' }],

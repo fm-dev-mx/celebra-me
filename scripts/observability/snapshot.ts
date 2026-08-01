@@ -93,7 +93,10 @@ export async function buildObservabilitySnapshot(options?: {
 	const [invitationResult, migrationResult] = await Promise.all([
 		(async () => {
 			try {
-				return { ok: true as const, value: await evaluateInvitationHealth({ probeTimeoutMs }) };
+				return {
+					ok: true as const,
+					value: await evaluateInvitationHealth({ probeTimeoutMs }),
+				};
 			} catch (error) {
 				return {
 					ok: false as const,
@@ -143,7 +146,6 @@ export async function buildObservabilitySnapshot(options?: {
 	try {
 		environments = buildEnvironmentHealth({
 			invitations,
-			assets,
 			probeTimeoutMs,
 		});
 	} catch (error) {

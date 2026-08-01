@@ -8,7 +8,10 @@ import {
 } from '@/lib/rsvp/auth/auth';
 import { hasMfaEvidence } from '@/lib/rsvp/auth/auth-mfa-evidence';
 import { verifyTrustedDeviceToken } from '@/lib/rsvp/security/trusted-device';
-import { requireAdminRateLimit } from '@/lib/rsvp/security/admin-rate-limit';
+import {
+	requireAdminRateLimit,
+	type AdminRateLimitOperation,
+} from '@/lib/rsvp/security/admin-rate-limit';
 import { shouldSkipCsrfValidation, validateCsrfToken } from '@/lib/rsvp/security/csrf';
 import { getEnv } from '@/lib/server/env';
 import { isDevMfaBypassEnabled } from '@/lib/server/dev-mfa-bypass';
@@ -97,7 +100,7 @@ export async function requireAdminStrongSession(request: Request): Promise<Sessi
 export async function requireAdminMutationAccess(
 	request: Request,
 	cookies: AstroCookies,
-	rateLimitKey: string,
+	rateLimitKey: AdminRateLimitOperation,
 ): Promise<SessionContext> {
 	await requireAdminRateLimit(request, rateLimitKey);
 	const session = await requireAdminStrongSession(request);

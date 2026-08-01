@@ -4,7 +4,12 @@ jest.mock('@/lib/rsvp/security/rate-limit-provider', () => ({
 }));
 
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
-import { requireAdminRateLimit } from '@/lib/rsvp/security/admin-rate-limit';
+import {
+	ADMIN_RATE_LIMIT_OPERATIONS,
+	requireAdminRateLimit,
+} from '@/lib/rsvp/security/admin-rate-limit';
+import { OBSERVABILITY_RATE_LIMIT_OPERATION } from '@/pages/api/dashboard/observabilidad/index';
+import { ApiError } from '@/lib/rsvp/core/errors';
 
 const mockCheckRateLimit = checkRateLimit as jest.MockedFunction<typeof checkRateLimit>;
 
@@ -49,10 +54,9 @@ describe('requireAdminRateLimit', () => {
 	});
 
 	it('registers all commercial Sales Workspace operation keys and allows them', async () => {
-		const request = new Request(
-			'https://example.com/api/dashboard/commercial',
-			{ headers: { 'x-forwarded-for': '10.0.0.1' } },
-		);
+		const request = new Request('https://example.com/api/dashboard/commercial', {
+			headers: { 'x-forwarded-for': '10.0.0.1' },
+		});
 
 		await expect(
 			requireAdminRateLimit(request, 'commercial:customers:create'),
@@ -95,13 +99,38 @@ describe('requireAdminRateLimit', () => {
 		);
 	});
 
-	it('throws for unregistered operation keys', async () => {
+	it('registers observability dashboard operation and allows it', async () => {
+		const request = new Request('https://example.com/api/dashboard/observabilidad', {
+			headers: { 'x-forwarded-for': '10.0.0.1' },
+		});
+
+		expect(ADMIN_RATE_LIMIT_OPERATIONS).toContain(OBSERVABILITY_RATE_LIMIT_OPERATION);
+		await expect(
+			requireAdminRateLimit(request, OBSERVABILITY_RATE_LIMIT_OPERATION, 'user-1'),
+		).resolves.not.toThrow();
+		expect(mockCheckRateLimit).toHaveBeenCalledWith(
+			expect.objectContaining({
+				entityId: 'admin:observabilidad:user-1',
+				maxHits: 30,
+				windowSec: 60,
+			}),
+		);
+	});
+
+	it('throws a controlled ApiError for unregistered operation keys', async () => {
 		const request = new Request('https://example.com/api/dashboard', {
 			headers: { 'x-forwarded-for': '10.0.0.1' },
 		});
 
 		await expect(
 			requireAdminRateLimit(request, 'commercial:unknown' as never),
-		).rejects.toThrow('Missing rate-limit configuration for operation: commercial:unknown');
+		).rejects.toBeInstanceOf(ApiError);
+		await expect(
+			requireAdminRateLimit(request, 'commercial:unknown' as never),
+		).rejects.toMatchObject({
+			status: 500,
+			code: 'internal_error',
+			message: 'Missing rate-limit configuration for operation: commercial:unknown',
+		});
 	});
 });

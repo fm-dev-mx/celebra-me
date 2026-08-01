@@ -18,25 +18,18 @@ export type CanonicalContentState =
 	| 'IDENTITY_CONFLICT';
 
 export type LegacyContentState =
-	| 'MATCH_REFERENCE'
-	| 'DIVERGED_FROM_REFERENCE'
-	| 'NOT_PRESENT'
-	| 'UNVERIFIED';
+	'MATCH_REFERENCE' | 'DIVERGED_FROM_REFERENCE' | 'NOT_PRESENT' | 'UNVERIFIED';
 
 /** Connectivity / probe outcomes that are not content classifications. */
 export type ProbeConnectivityState = 'UNREACHABLE' | 'CREDENTIALS_REQUIRED';
 
 export type InvitationEnvContentState =
-	| CanonicalContentState
-	| LegacyContentState
-	| ProbeConnectivityState;
+	CanonicalContentState | LegacyContentState | ProbeConnectivityState;
 
 export type AssetHealthState = 'OK' | 'PARTIAL' | 'MISSING' | 'REMOTE_REFERENCE' | 'UNVERIFIED';
 
 export type CorpusAssetStrategy =
-	| 'VERSIONED_MANAGED_ASSET'
-	| 'VERSIONED_LOCAL_ASSET'
-	| 'HYBRID_VERSIONED_AND_REMOTE';
+	'VERSIONED_MANAGED_ASSET' | 'VERSIONED_LOCAL_ASSET' | 'HYBRID_VERSIONED_AND_REMOTE';
 
 export type ReferenceClassification = 'CANONICAL_MANAGED' | 'LOCAL_CORPUS_REFERENCE';
 
@@ -158,13 +151,6 @@ export interface EnvironmentHealthRow {
 		| 'PARTIAL_PRESENCE'
 		| 'UNVERIFIABLE'
 		| 'MISSING';
-	assetHealthSummary: {
-		ok: number;
-		partial: number;
-		missing: number;
-		remoteReference: number;
-		unverified: number;
-	};
 	detail?: string;
 }
 

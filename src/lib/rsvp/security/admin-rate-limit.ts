@@ -10,8 +10,9 @@ interface RateLimitConfig {
 	windowSec: number;
 }
 
-// Limits by operation category.
-const RATE_LIMITS: Record<string, RateLimitConfig> = {
+// Limits by operation category. Keep keys explicit (not Record<string,...>) so
+// missing registrations fail TypeScript at call sites.
+const RATE_LIMITS = {
 	// Listing operations are the least restrictive.
 	'admin:list': { maxHits: 60, windowSec: 60 }, // 60 req/min
 
@@ -32,6 +33,9 @@ const RATE_LIMITS: Record<string, RateLimitConfig> = {
 	// Login-alias remaps are privileged credential mutations.
 	'admin:users:update_login_alias': { maxHits: 5, windowSec: 60 }, // 5 req/min
 
+	// Local-only observability dashboard (manual refresh, read-only probes).
+	'admin:observabilidad': { maxHits: 30, windowSec: 60 }, // 30 req/min
+
 	// Claim code operations follow the same operational profile.
 	'claimcodes:list': { maxHits: 60, windowSec: 60 },
 	'claimcodes:create': { maxHits: 20, windowSec: 60 },
@@ -41,6 +45,8 @@ const RATE_LIMITS: Record<string, RateLimitConfig> = {
 	'intake:list': { maxHits: 60, windowSec: 60 },
 	'intake:create': { maxHits: 20, windowSec: 60 },
 	'intake:update': { maxHits: 30, windowSec: 60 },
+	'intake:edit': { maxHits: 30, windowSec: 60 },
+	'intake:assign-owner': { maxHits: 10, windowSec: 60 },
 	'intake:request': { maxHits: 10, windowSec: 60 },
 	'intake:regenerate': { maxHits: 5, windowSec: 60 },
 	'intake:revoke': { maxHits: 5, windowSec: 60 },
@@ -65,7 +71,12 @@ const RATE_LIMITS: Record<string, RateLimitConfig> = {
 	'commercial:meta-conversions:process': { maxHits: 20, windowSec: 60 }, // 20 req/min
 	'commercial:meta-conversions:requeue': { maxHits: 10, windowSec: 60 }, // 10 req/min
 	'commercial:classifications:write': { maxHits: 20, windowSec: 60 }, // 20 req/min
-};
+} as const satisfies Record<string, RateLimitConfig>;
+
+export type AdminRateLimitOperation = keyof typeof RATE_LIMITS;
+
+/** Canonical registered admin rate-limit operation keys (for contract tests). */
+export const ADMIN_RATE_LIMIT_OPERATIONS = Object.keys(RATE_LIMITS) as AdminRateLimitOperation[];
 
 /**
  * Extracts the request IP while accounting for proxy headers.
@@ -74,7 +85,7 @@ function extractClientIp(request: Request): string {
 	// Vercel forwards the original IP through x-forwarded-for.
 	const forwarded = request.headers.get('x-forwarded-for');
 	if (forwarded) {
-		return forwarded.split(',')[0].trim();
+		return forwarded.split(',')[0]!.trim();
 	}
 
 	const realIp = request.headers.get('x-real-ip');
@@ -91,12 +102,17 @@ function extractClientIp(request: Request): string {
  */
 export async function requireAdminRateLimit(
 	request: Request,
-	operation: keyof typeof RATE_LIMITS,
+	operation: AdminRateLimitOperation,
 	userId?: string,
 ): Promise<void> {
 	const config = RATE_LIMITS[operation];
 	if (!config) {
-		throw new Error(`Missing rate-limit configuration for operation: ${operation}`);
+		// Fail closed with a controlled API error (not an opaque 500 from Error).
+		throw new ApiError(
+			500,
+			'internal_error',
+			`Missing rate-limit configuration for operation: ${String(operation)}`,
+		);
 	}
 
 	const ip = extractClientIp(request);

@@ -97,7 +97,8 @@ export default function ObservabilityPanel() {
 									data-status={snapshot.overallStatus}
 									aria-label={`Estado general: ${OVERALL_LABELS[snapshot.overallStatus]} (${snapshot.overallStatus})`}
 								>
-									{OVERALL_LABELS[snapshot.overallStatus]} ({snapshot.overallStatus})
+									{OVERALL_LABELS[snapshot.overallStatus]} (
+									{snapshot.overallStatus})
 								</span>
 							</span>
 							<span>Rama: {snapshot.source.branch ?? '—'}</span>
@@ -186,7 +187,9 @@ export default function ObservabilityPanel() {
 									<tr>
 										<th scope="row">Identidad runtime</th>
 										{snapshot.environments.map((env) => (
-											<td key={`${env.environment}-id`}>{env.runtimeIdentity}</td>
+											<td key={`${env.environment}-id`}>
+												{env.runtimeIdentity}
+											</td>
 										))}
 									</tr>
 									<tr>
@@ -221,23 +224,50 @@ export default function ObservabilityPanel() {
 											</td>
 										))}
 									</tr>
-									<tr>
-										<th scope="row">Assets (resumen)</th>
-										{snapshot.environments.map((env) => (
-											<td key={`${env.environment}-assets`}>
-												OK {env.assetHealthSummary.ok} · Falt.{' '}
-												{env.assetHealthSummary.missing} · Rem.{' '}
-												{env.assetHealthSummary.remoteReference}
-											</td>
-										))}
-									</tr>
 								</tbody>
 							</table>
 						</div>
 						<p className="observability__muted">
-							Las filas activas incluyen demos y clientes; el corpus soportado son los 13
-							clientes del Local Render Corpus.
+							Las filas activas incluyen demos y clientes; el corpus soportado son los
+							13 clientes del Local Render Corpus. La salud de assets es evidencia a
+							nivel corpus (inventario Local/repositorio), no una verificación
+							independiente por entorno remoto.
 						</p>
+					</section>
+
+					<section
+						className="observability__section"
+						aria-label="Salud de assets del corpus"
+					>
+						<h2>Assets del corpus (inventario Local)</h2>
+						<div className="observability__table-wrap">
+							<table className="observability__table">
+								<thead>
+									<tr>
+										<th scope="col">Invitación</th>
+										<th scope="col">Estrategia</th>
+										<th scope="col">Estado</th>
+										<th scope="col">Archivos locales</th>
+										<th scope="col">Refs remotas</th>
+									</tr>
+								</thead>
+								<tbody>
+									{snapshot.assets.map((row) => (
+										<tr key={row.slug}>
+											<td>{row.slug}</td>
+											<td>
+												<StatusBadge value={row.assetStrategy} />
+											</td>
+											<td>
+												<StatusBadge value={ASSET_LABELS[row.status]} />
+											</td>
+											<td>{row.localFileCount}</td>
+											<td>{row.remoteMediaReferenceCount}</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
+						</div>
 					</section>
 
 					<section className="observability__section" aria-label="Matriz de invitaciones">
@@ -268,13 +298,19 @@ export default function ObservabilityPanel() {
 													</span>
 												</td>
 												<td>
-													<StatusBadge value={row.referenceClassification} />
+													<StatusBadge
+														value={row.referenceClassification}
+													/>
 												</td>
 												<td>
-													<StatusBadge value={row.environments.local.status} />
+													<StatusBadge
+														value={row.environments.local.status}
+													/>
 												</td>
 												<td>
-													<StatusBadge value={row.environments.preview.status} />
+													<StatusBadge
+														value={row.environments.preview.status}
+													/>
 												</td>
 												<td>
 													<StatusBadge
@@ -330,7 +366,10 @@ export default function ObservabilityPanel() {
 						</div>
 					</section>
 
-					<section className="observability__section" aria-label="Evidencia de validación">
+					<section
+						className="observability__section"
+						aria-label="Evidencia de validación"
+					>
 						<h2>Evidencia de validación</h2>
 						<div className="observability__table-wrap">
 							<table className="observability__table">
@@ -353,7 +392,9 @@ export default function ObservabilityPanel() {
 										<tr key={view.validationType}>
 											<td>{view.validationType}</td>
 											<td>
-												<StatusBadge value={FRESHNESS_LABELS[view.freshness]} />
+												<StatusBadge
+													value={FRESHNESS_LABELS[view.freshness]}
+												/>
 											</td>
 											<td>
 												<code>
