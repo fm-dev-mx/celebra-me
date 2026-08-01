@@ -51,6 +51,7 @@
         "db:local:bootstrap-admin": "tsx scripts/db/bootstrap-local-admin.ts",
         "db:local:reset-ready": "echo 'BLOCKED: db:local:reset runs supabase db reset which is destructive. Use pnpm db:prod:backup + pnpm db:local:restore-from-dump instead.' && exit 1",
         "db:local:validate": "tsx scripts/db/validate-local-db.ts",
+        "db:availability:verify": "tsx scripts/db/verify-required-database-availability.ts",
         "db:prod:backup": "tsx scripts/db/db-guard.ts check --target production --operation backup && tsx scripts/db/backup-prod.ts",
         "db:prod:backup:critical": "tsx scripts/db/db-guard.ts check --target production --operation backup && tsx scripts/db/backup-critical-production.ts",
         "db:prod:backup:daily": "tsx scripts/db/db-guard.ts check --target production --operation backup && tsx scripts/db/daily-critical-production-backup.ts",
