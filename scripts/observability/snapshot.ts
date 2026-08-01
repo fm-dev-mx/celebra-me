@@ -14,7 +14,7 @@ import { computeObservabilityFingerprints } from './fingerprints.ts';
 import { evaluateInvitationHealth } from './invitation-health.ts';
 import { evaluateMigrationHealth } from './migration-health.ts';
 import { computeOverallStatus } from './overall-status.ts';
-import { buildRecommendedCommands } from './recommended-commands.ts';
+import { buildPublicObservabilitySnapshot } from './public-snapshot.ts';
 import { readObservabilitySourceState } from './source-state.ts';
 import {
 	classifyValidationFreshness,
@@ -87,7 +87,8 @@ export async function buildObservabilitySnapshot(options?: {
 		);
 	}
 
-	let invitations = [] as Awaited<ReturnType<typeof evaluateInvitationHealth>>;
+	let invitationBatch: Awaited<ReturnType<typeof evaluateInvitationHealth>> | null = null;
+	let invitations = [] as Awaited<ReturnType<typeof evaluateInvitationHealth>>['invitations'];
 	let migrations = [] as ReturnType<typeof evaluateMigrationHealth>;
 
 	const [invitationResult, migrationResult] = await Promise.all([
@@ -117,7 +118,8 @@ export async function buildObservabilitySnapshot(options?: {
 	]);
 
 	if (invitationResult.ok) {
-		invitations = invitationResult.value;
+		invitationBatch = invitationResult.value;
+		invitations = invitationResult.value.invitations;
 	} else {
 		degradedNotes.push(`Invitation matrix degraded: ${invitationResult.error}`);
 	}
@@ -144,9 +146,11 @@ export async function buildObservabilitySnapshot(options?: {
 
 	let environments = [] as ReturnType<typeof buildEnvironmentHealth>;
 	try {
+		if (!invitationBatch) throw new Error('invitation_batch_unavailable');
 		environments = buildEnvironmentHealth({
 			invitations,
-			probeTimeoutMs,
+			environmentStats: invitationBatch.environmentStats,
+			migrations,
 		});
 	} catch (error) {
 		degradedNotes.push(
@@ -167,28 +171,16 @@ export async function buildObservabilitySnapshot(options?: {
 		corpusComplete,
 	});
 
-	const recommendedCommands = buildRecommendedCommands({
-		overallStatus,
-		environments,
-		invitations,
-		migrations,
-		assets,
-		regression,
-		screenshots,
-	});
-
-	return {
-		schemaVersion: 1,
+	return buildPublicObservabilitySnapshot({
 		generatedAt,
 		overallStatus,
 		source,
-		fingerprints,
-		validation: { regression, screenshots },
 		migrations,
 		assets,
 		invitations,
 		environments,
-		recommendedCommands,
-		degradedNotes,
-	};
+		regression,
+		screenshots,
+		degraded: degradedNotes.length > 0,
+	});
 }

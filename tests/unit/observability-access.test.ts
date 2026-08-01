@@ -8,30 +8,40 @@ import type { ObservabilitySnapshot } from '@/lib/observability/types';
 describe('observability browser payload contract', () => {
 	it('sanitized snapshot shape omits credentials and absolute paths', () => {
 		const sample: ObservabilitySnapshot = {
-			schemaVersion: 1,
+			schemaVersion: 2,
 			generatedAt: '2026-07-31T12:00:00.000Z',
 			overallStatus: 'UNVERIFIED',
+			cache: { state: 'fresh', refreshAfter: '2026-07-31T12:01:00.000Z' },
 			source: {
 				branch: 'feat/x',
-				commitSha: 'abc',
+				commitShaShort: 'abcdef1',
 				workingTreeDirty: false,
-				degraded: false,
 			},
-			fingerprints: { corpusFingerprint: 'a', inputFingerprint: 'b' },
-			validation: {
-				regression: { validationType: 'regression', freshness: 'NOT_RUN', snapshot: null },
-				screenshots: {
-					validationType: 'screenshots',
+			health: {
+				environments: { total: 0, ok: 0, warning: 0, blocking: 0, unverified: 0 },
+				invitations: { total: 0, ok: 0, warning: 0, blocking: 0, unverified: 0 },
+				migrations: { total: 0, ok: 0, warning: 0, blocking: 0, unverified: 0 },
+				assets: { total: 0, ok: 0, warning: 0, blocking: 0, unverified: 0 },
+				validations: { total: 2, ok: 0, warning: 0, blocking: 0, unverified: 2 },
+			},
+			issues: [],
+			validationEvidence: [
+				{
+					type: 'regression',
 					freshness: 'NOT_RUN',
-					snapshot: null,
+					completedAt: null,
+					passed: null,
+					total: null,
 				},
-			},
-			migrations: [],
-			assets: [],
-			invitations: [],
-			environments: [],
-			recommendedCommands: [],
-			degradedNotes: [],
+				{
+					type: 'screenshots',
+					freshness: 'NOT_RUN',
+					completedAt: null,
+					passed: null,
+					total: null,
+				},
+			],
+			recommendedActions: [],
 		};
 
 		const serialized = JSON.stringify(sample);

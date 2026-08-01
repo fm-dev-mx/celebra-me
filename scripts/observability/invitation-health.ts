@@ -1,17 +1,11 @@
 /**
- * Per-invitation health for the Local Render Corpus (canonical + legacy).
- * Failure-isolated: one classifier failure must not suppress other rows.
+ * Batched per-environment health for the Local Render Corpus.
+ * One psql process per configured environment replaces per-slug probe fan-out.
  */
 
 import { runPsql, sqlLiteral } from '../db/db-workflow-lib.ts';
 import { hashPublicationProjection } from '../../src/lib/intake/services/publication-diff.service.ts';
-import {
-	evaluateSingleTargetStatus,
-	resolveDbUrlForEnv,
-	withStatusProbeTimeout,
-	type TargetEnv,
-	type StatusVocabulary,
-} from '../provision/dbs-status.ts';
+import { resolveDbUrlForEnv, type TargetEnv } from '../provision/dbs-status.ts';
 import { buildNormalizedInvitationRelease } from '../provision/normalized-invitation-release.ts';
 import { serializeInvitationPackage } from '../provision/invitation-package.ts';
 import {
@@ -24,306 +18,337 @@ import type {
 	InvitationEnvContentState,
 	InvitationEnvStatusRow,
 	InvitationHealthRow,
-	LegacyContentState,
 	ReferenceClassification,
 } from './types.ts';
 
 const ENVS: TargetEnv[] = ['local', 'preview', 'production'];
 
-function redactDetail(message: string): string {
-	return message
-		.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '[id]')
-		.replace(/:[^:@/]+@/g, ':***@')
-		.slice(0, 160);
+interface BatchRow {
+	slug: string;
+	activeCount: number;
+	resolvedId: string | null;
+	provenanceHash: string | null;
+	publishedVersion: number | null;
+	publishedAt: string | null;
+	publishedContent: Record<string, unknown> | null;
+	draftStatus: string | null;
+	draftUpdatedAt: string | null;
+	assetCount: number;
 }
 
-function mapConnectivity(status: StatusVocabulary): InvitationEnvContentState | null {
-	if (
-		status === 'NOT_PRESENT' ||
-		status === 'IDENTITY_CONFLICT' ||
-		status === 'UNREACHABLE' ||
-		status === 'CREDENTIALS_REQUIRED'
-	) {
-		return status;
+export interface BatchEnvironmentStats {
+	environment: TargetEnv;
+	configured: boolean;
+	reachable: boolean;
+	activeInvitationRows: number;
+	identityConflictsCount: number;
+}
+
+export interface InvitationHealthBatch {
+	invitations: InvitationHealthRow[];
+	environmentStats: Record<TargetEnv, BatchEnvironmentStats>;
+	probeCount: number;
+}
+
+interface BatchPayload {
+	activeInvitationRows: number;
+	rows: BatchRow[];
+}
+
+function safeText(value: unknown): string | null {
+	return typeof value === 'string' ? value.slice(0, 160) : null;
+}
+
+function normalizePayload(value: unknown): BatchPayload | null {
+	if (!value || typeof value !== 'object') return null;
+	const record = value as Record<string, unknown>;
+	if (!Array.isArray(record.rows) || !Number.isInteger(record.activeInvitationRows)) return null;
+	const rows: BatchRow[] = [];
+	for (const valueRow of record.rows) {
+		if (!valueRow || typeof valueRow !== 'object') return null;
+		const row = valueRow as Record<string, unknown>;
+		if (typeof row.slug !== 'string' || !Number.isInteger(row.activeCount)) return null;
+		rows.push({
+			slug: row.slug,
+			activeCount: Number(row.activeCount),
+			resolvedId: safeText(row.resolvedId),
+			provenanceHash: safeText(row.provenanceHash),
+			publishedVersion: Number.isInteger(row.publishedVersion)
+				? Number(row.publishedVersion)
+				: null,
+			publishedAt: safeText(row.publishedAt),
+			publishedContent:
+				row.publishedContent && typeof row.publishedContent === 'object'
+					? (row.publishedContent as Record<string, unknown>)
+					: null,
+			draftStatus: safeText(row.draftStatus),
+			draftUpdatedAt: safeText(row.draftUpdatedAt),
+			assetCount: Number.isInteger(row.assetCount) ? Number(row.assetCount) : 0,
+		});
 	}
-	return null;
+	return { activeInvitationRows: Number(record.activeInvitationRows), rows };
 }
 
-function fetchPublishedProjectionHash(env: TargetEnv, invitationId: string): string | null {
+function buildBatchSql(
+	entries: readonly LocalRenderCorpusEntry[],
+	includeContent: boolean,
+): string {
+	const wanted = entries.map((entry) => `(${sqlLiteral(entry.slug)})`).join(',\n');
+	const legacySlugs = entries
+		.filter((entry) => entry.classification === 'legacy')
+		.map((entry) => sqlLiteral(entry.slug));
+	const contentProjection =
+		includeContent && legacySlugs.length > 0
+			? `case when m.slug in (${legacySlugs.join(', ')}) then pub.content else null::jsonb end`
+			: 'null::jsonb';
+	return `
+with wanted(slug) as (values ${wanted}),
+matches as (
+  select w.slug,
+         count(i.id)::int as active_count,
+         (array_agg(i.id::text order by i.created_at) filter (where i.id is not null))[1] as resolved_id
+    from wanted w
+    left join public.invitations i on i.slug = w.slug and i.archived_at is null
+   group by w.slug
+),
+rows as (
+  select m.slug,
+         m.active_count,
+         case when m.active_count = 1 then m.resolved_id else null end as resolved_id,
+         prov.package_hash as provenance_hash,
+         pub.version as published_version,
+         pub.published_at,
+         ${contentProjection} as published_content,
+         draft.status as draft_status,
+         draft.updated_at as draft_updated_at,
+         coalesce(assets.asset_count, 0)::int as asset_count
+    from matches m
+    left join lateral (
+      select package_hash
+        from public.managed_invitation_release_provenance
+       where invitation_id = m.resolved_id::uuid and m.active_count = 1
+       limit 1
+    ) prov on true
+    left join lateral (
+      select version, published_at, content
+        from public.published_invitation_content
+       where invitation_project_id = m.resolved_id::uuid and m.active_count = 1
+       order by version desc limit 1
+    ) pub on true
+    left join lateral (
+      select status, updated_at
+        from public.invitation_content_drafts
+       where invitation_project_id = m.resolved_id::uuid and m.active_count = 1 and deleted_at is null
+       limit 1
+    ) draft on true
+    left join lateral (
+      select count(*)::int as asset_count
+        from public.invitation_assets
+       where invitation_id = m.resolved_id::uuid and m.active_count = 1 and deleted_at is null
+    ) assets on true
+)
+select json_build_object(
+  'activeInvitationRows', (select count(*)::int from public.invitations where archived_at is null),
+  'rows', coalesce(json_agg(json_build_object(
+    'slug', slug,
+    'activeCount', active_count,
+    'resolvedId', resolved_id,
+    'provenanceHash', provenance_hash,
+    'publishedVersion', published_version,
+    'publishedAt', published_at,
+    'publishedContent', published_content,
+    'draftStatus', draft_status,
+    'draftUpdatedAt', draft_updated_at,
+    'assetCount', asset_count
+  ) order by slug), '[]'::json)
+) from rows;`;
+}
+
+function probeEnvironment(
+	env: TargetEnv,
+	entries: readonly LocalRenderCorpusEntry[],
+	timeoutMs: number,
+): { payload: BatchPayload | null; stats: BatchEnvironmentStats } {
 	const { dbUrl } = resolveDbUrlForEnv(env);
-	if (!dbUrl) return null;
-	const res = runPsql(
-		`select content::text from public.published_invitation_content where invitation_project_id = ${sqlLiteral(invitationId)}::uuid order by version desc limit 1;`,
-		dbUrl,
-		{ tuplesOnly: true, throwOnError: false, timeoutMs: 4_000 },
-	);
-	if (res.status !== 0 || !res.stdout.trim()) return null;
-	try {
-		const content = JSON.parse(res.stdout.trim()) as Record<string, unknown>;
-		return hashPublicationProjection(content);
-	} catch {
-		return null;
-	}
-}
-
-async function resolveCanonicalPackageHash(slug: string): Promise<string | null> {
-	try {
-		const release = await buildNormalizedInvitationRelease({ slug });
-		return serializeInvitationPackage(release).packageHash;
-	} catch {
-		return null;
-	}
-}
-
-function classifyCanonicalEnv(
-	probe: ReturnType<typeof evaluateSingleTargetStatus>,
-): InvitationEnvStatusRow {
-	const connectivity = mapConnectivity(probe.status);
-	const status: InvitationEnvContentState =
-		connectivity ??
-		(probe.status === 'MATCH_CANONICAL' ||
-		probe.status === 'BEHIND_CANONICAL' ||
-		probe.status === 'DIVERGED' ||
-		probe.status === 'UNVERIFIED'
-			? probe.status
-			: 'UNVERIFIED');
-
-	return {
-		environment: probe.environment,
-		status,
-		publishedVersion: probe.publishedVersion,
-		assetCount: probe.assetCount,
-		detail: redactDetail(probe.detail),
-	};
-}
-
-function classifyLegacyEnv(
-	probe: ReturnType<typeof evaluateSingleTargetStatus>,
-	referenceHash: string | null,
-): InvitationEnvStatusRow {
-	const connectivity = mapConnectivity(probe.status);
-	if (connectivity) {
+	if (!dbUrl) {
 		return {
-			environment: probe.environment,
-			status: connectivity,
-			publishedVersion: probe.publishedVersion,
-			assetCount: probe.assetCount,
-			detail: redactDetail(probe.detail),
+			payload: null,
+			stats: {
+				environment: env,
+				configured: false,
+				reachable: false,
+				activeInvitationRows: 0,
+				identityConflictsCount: 0,
+			},
 		};
 	}
-
-	if (!probe.resolvedId) {
-		return {
-			environment: probe.environment,
-			status: 'UNVERIFIED',
-			publishedVersion: probe.publishedVersion,
-			assetCount: probe.assetCount,
-			detail: 'Present without resolvable identity',
-		};
-	}
-
-	// Reference-relative MATCH/DIVERGED is Local-only. Remotes are presence-only.
-	if (probe.environment !== 'local') {
-		return {
-			environment: probe.environment,
-			status: 'UNVERIFIED',
-			publishedVersion: probe.publishedVersion,
-			assetCount: probe.assetCount,
-			detail: 'Legacy presence-only on remote (reference compare is Local-only)',
-		};
-	}
-
-	if (!referenceHash) {
-		return {
-			environment: probe.environment,
-			status: 'UNVERIFIED',
-			publishedVersion: probe.publishedVersion,
-			assetCount: probe.assetCount,
-			detail: 'Reference fixture hash unavailable',
-		};
-	}
-
-	const publishedHash = fetchPublishedProjectionHash(probe.environment, probe.resolvedId);
-	if (!publishedHash) {
-		return {
-			environment: probe.environment,
-			status: 'UNVERIFIED',
-			publishedVersion: probe.publishedVersion,
-			assetCount: probe.assetCount,
-			detail: 'Published content hash unavailable',
-		};
-	}
-
-	const status: LegacyContentState =
-		publishedHash === referenceHash ? 'MATCH_REFERENCE' : 'DIVERGED_FROM_REFERENCE';
-
-	return {
-		environment: probe.environment,
-		status,
-		publishedVersion: probe.publishedVersion,
-		assetCount: probe.assetCount,
-		detail:
-			status === 'MATCH_REFERENCE'
-				? 'Published content matches Local corpus fixture reference'
-				: 'Published content diverged from Local corpus fixture reference',
-	};
-}
-
-function recommendedCommandForRow(
-	entry: LocalRenderCorpusEntry,
-	envs: InvitationHealthRow['environments'],
-): { command: string | null; failureCause: string | null } {
-	const local = envs.local.status;
-	if (local === 'NOT_PRESENT') {
-		return {
-			command: `pnpm invitation:local-corpus --dry-run --slug ${entry.slug}`,
-			failureCause: 'Missing from Local corpus',
-		};
-	}
-	if (local === 'IDENTITY_CONFLICT') {
-		return {
-			command: `pnpm dbs --compact ${entry.slug}`,
-			failureCause: 'Identity conflict in Local',
-		};
-	}
-	if (entry.classification === 'canonical') {
-		if (local === 'BEHIND_CANONICAL' || local === 'DIVERGED') {
-			return {
-				command: `pnpm dbs --compact ${entry.slug}`,
-				failureCause: local,
-			};
-		}
-	} else if (local === 'DIVERGED_FROM_REFERENCE') {
-		return {
-			command: `pnpm invitation:local-corpus --dry-run --slug ${entry.slug}`,
-			failureCause: 'Local diverged from corpus fixture reference',
-		};
-	}
-	if (envs.production.status === 'BEHIND_CANONICAL') {
-		return {
-			command: `pnpm invitation:content-parity -- --slug ${entry.slug} --event-type ${entry.eventType}`,
-			failureCause: 'Production behind canonical (do not invitation:update Production)',
-		};
-	}
-	return { command: null, failureCause: null };
-}
-
-async function evaluateCanonicalEntry(
-	entry: LocalRenderCorpusEntry,
-	probeTimeoutMs: number,
-): Promise<InvitationHealthRow> {
-	const packageHash = await resolveCanonicalPackageHash(entry.slug);
-	const environments = {} as InvitationHealthRow['environments'];
-	for (const env of ENVS) {
-		const probe = withStatusProbeTimeout(probeTimeoutMs, () =>
-			evaluateSingleTargetStatus(env, entry.slug, packageHash),
-		);
-		environments[env] = classifyCanonicalEnv(probe);
-	}
-	const { command, failureCause } = recommendedCommandForRow(entry, environments);
-	return {
-		slug: entry.slug,
-		eventType: entry.eventType,
-		referenceClassification: 'CANONICAL_MANAGED',
-		themeId: entry.themeId ?? null,
-		visualProfileId: entry.visualProfileId ?? null,
-		assetStrategy: entry.assetStrategy,
-		publicRoute: corpusPublicRoute(entry),
-		environments,
-		recommendedCommand: command,
-		failureCause,
-	};
-}
-
-function resolveLegacyReferenceHash(entry: LocalRenderCorpusEntry): string | null {
-	try {
-		const fixture = loadLegacyCorpusFixture(entry);
-		return hashPublicationProjection(fixture.publishedContent);
-	} catch {
-		return null;
-	}
-}
-
-async function evaluateLegacyEntry(
-	entry: LocalRenderCorpusEntry,
-	probeTimeoutMs: number,
-): Promise<InvitationHealthRow> {
-	const referenceHash = resolveLegacyReferenceHash(entry);
-	const environments = {} as InvitationHealthRow['environments'];
-	for (const env of ENVS) {
-		const probe = withStatusProbeTimeout(probeTimeoutMs, () =>
-			evaluateSingleTargetStatus(env, entry.slug, null),
-		);
-		environments[env] = classifyLegacyEnv(probe, referenceHash);
-	}
-	const { command, failureCause } = recommendedCommandForRow(entry, environments);
-	return {
-		slug: entry.slug,
-		eventType: entry.eventType,
-		referenceClassification: 'LOCAL_CORPUS_REFERENCE' satisfies ReferenceClassification,
-		themeId: entry.themeId ?? null,
-		visualProfileId: entry.visualProfileId ?? null,
-		assetStrategy: entry.assetStrategy,
-		publicRoute: corpusPublicRoute(entry),
-		environments,
-		recommendedCommand: command,
-		failureCause,
-	};
-}
-
-function failedRow(entry: LocalRenderCorpusEntry, message: string): InvitationHealthRow {
-	const unverified = (environment: TargetEnv): InvitationEnvStatusRow => ({
-		environment,
-		status: 'UNVERIFIED',
-		publishedVersion: null,
-		assetCount: 0,
-		detail: redactDetail(message),
+	const result = runPsql(buildBatchSql(entries, env === 'local'), dbUrl, {
+		tuplesOnly: true,
+		throwOnError: false,
+		timeoutMs,
 	});
+	if (result.status !== 0) {
+		return {
+			payload: null,
+			stats: {
+				environment: env,
+				configured: true,
+				reachable: false,
+				activeInvitationRows: 0,
+				identityConflictsCount: 0,
+			},
+		};
+	}
+	try {
+		const payload = normalizePayload(JSON.parse(result.stdout.trim()));
+		if (!payload) throw new Error('invalid_batch_payload');
+		return {
+			payload,
+			stats: {
+				environment: env,
+				configured: true,
+				reachable: true,
+				activeInvitationRows: payload.activeInvitationRows,
+				identityConflictsCount: payload.rows.filter((row) => row.activeCount > 1).length,
+			},
+		};
+	} catch {
+		return {
+			payload: null,
+			stats: {
+				environment: env,
+				configured: true,
+				reachable: false,
+				activeInvitationRows: 0,
+				identityConflictsCount: 0,
+			},
+		};
+	}
+}
+
+async function canonicalHashes(
+	entries: readonly LocalRenderCorpusEntry[],
+): Promise<Map<string, string | null>> {
+	const pairs = await Promise.all(
+		entries.map(async (entry) => {
+			if (entry.classification !== 'canonical') return [entry.slug, null] as const;
+			try {
+				const release = await buildNormalizedInvitationRelease({ slug: entry.slug });
+				return [entry.slug, serializeInvitationPackage(release).packageHash] as const;
+			} catch {
+				return [entry.slug, null] as const;
+			}
+		}),
+	);
+	return new Map(pairs);
+}
+
+function legacyReferenceHash(entry: LocalRenderCorpusEntry): string | null {
+	try {
+		return hashPublicationProjection(loadLegacyCorpusFixture(entry).publishedContent);
+	} catch {
+		return null;
+	}
+}
+
+// eslint-disable-next-line complexity -- Fail-closed mapping covers every environment/content state.
+function classifyRow(
+	env: TargetEnv,
+	entry: LocalRenderCorpusEntry,
+	row: BatchRow | undefined,
+	stats: BatchEnvironmentStats,
+	canonicalHash: string | null,
+): InvitationEnvStatusRow {
+	let status: InvitationEnvContentState;
+	if (!stats.configured) status = 'CREDENTIALS_REQUIRED';
+	else if (!stats.reachable || !row) status = 'UNREACHABLE';
+	else if (row.activeCount === 0) status = 'NOT_PRESENT';
+	else if (row.activeCount > 1) status = 'IDENTITY_CONFLICT';
+	else if (entry.classification === 'legacy') {
+		if (env !== 'local') status = 'UNVERIFIED';
+		else {
+			const referenceHash = legacyReferenceHash(entry);
+			const publishedHash = row.publishedContent
+				? hashPublicationProjection(row.publishedContent)
+				: null;
+			status =
+				referenceHash && publishedHash
+					? referenceHash === publishedHash
+						? 'MATCH_REFERENCE'
+						: 'DIVERGED_FROM_REFERENCE'
+					: 'UNVERIFIED';
+		}
+	} else if (!canonicalHash || !row.provenanceHash) status = 'UNVERIFIED';
+	else if (canonicalHash !== row.provenanceHash) status = 'BEHIND_CANONICAL';
+	else if (
+		row.draftStatus === 'draft' &&
+		row.draftUpdatedAt &&
+		row.publishedAt &&
+		new Date(row.draftUpdatedAt).getTime() > new Date(row.publishedAt).getTime()
+	)
+		status = 'DIVERGED';
+	else status = 'MATCH_CANONICAL';
+
 	return {
-		slug: entry.slug,
-		eventType: entry.eventType,
-		referenceClassification:
-			entry.classification === 'canonical' ? 'CANONICAL_MANAGED' : 'LOCAL_CORPUS_REFERENCE',
-		themeId: entry.themeId ?? null,
-		visualProfileId: entry.visualProfileId ?? null,
-		assetStrategy: entry.assetStrategy,
-		publicRoute: corpusPublicRoute(entry),
-		environments: {
-			local: unverified('local'),
-			preview: unverified('preview'),
-			production: unverified('production'),
-		},
-		recommendedCommand: `pnpm dbs --compact ${entry.slug}`,
-		failureCause: 'Classifier failure',
+		environment: env,
+		status,
+		publishedVersion: row?.publishedVersion ?? null,
+		assetCount: row?.assetCount ?? 0,
 	};
 }
 
 export async function evaluateInvitationHealth(options?: {
 	probeTimeoutMs?: number;
-}): Promise<InvitationHealthRow[]> {
-	const timeout = options?.probeTimeoutMs ?? 2_000;
-	const corpus = listLocalRenderCorpus();
+}): Promise<InvitationHealthBatch> {
+	const timeoutMs = options?.probeTimeoutMs ?? 2_000;
+	const entries = listLocalRenderCorpus();
+	const hashes = await canonicalHashes(entries);
+	const probes = Object.fromEntries(
+		ENVS.map((env) => [env, probeEnvironment(env, entries, timeoutMs)]),
+	) as Record<TargetEnv, ReturnType<typeof probeEnvironment>>;
 
-	// Parallel per invitation; keep env probes sequential inside each row to limit psql fan-out.
-	const settled = await Promise.allSettled(
-		corpus.map((entry) =>
-			entry.classification === 'canonical'
-				? evaluateCanonicalEntry(entry, timeout)
-				: evaluateLegacyEntry(entry, timeout),
-		),
-	);
-
-	return settled.map((result, index) => {
-		const entry = corpus[index]!;
-		if (result.status === 'fulfilled') return result.value;
-		return failedRow(
-			entry,
-			result.reason instanceof Error ? result.reason.message : 'Classifier failure',
-		);
+	const invitations = entries.map((entry): InvitationHealthRow => {
+		const environments = {} as InvitationHealthRow['environments'];
+		for (const env of ENVS) {
+			const row = probes[env].payload?.rows.find(
+				(candidate) => candidate.slug === entry.slug,
+			);
+			environments[env] = classifyRow(
+				env,
+				entry,
+				row,
+				probes[env].stats,
+				hashes.get(entry.slug) ?? null,
+			);
+		}
+		return {
+			slug: entry.slug,
+			eventType: entry.eventType,
+			referenceClassification:
+				entry.classification === 'canonical'
+					? 'CANONICAL_MANAGED'
+					: ('LOCAL_CORPUS_REFERENCE' satisfies ReferenceClassification),
+			themeId: entry.themeId ?? null,
+			visualProfileId: entry.visualProfileId ?? null,
+			assetStrategy: entry.assetStrategy,
+			publicRoute: corpusPublicRoute(entry),
+			environments,
+			recommendedCommand: null,
+			failureCause: null,
+		};
 	});
+
+	return {
+		invitations,
+		environmentStats: {
+			local: probes.local.stats,
+			preview: probes.preview.stats,
+			production: probes.production.stats,
+		},
+		probeCount: ENVS.filter((env) => probes[env].stats.configured).length,
+	};
 }
 
-/** Local corpus presence count for an environment (supported clients only). */
 export function countCorpusPresence(
 	invitations: readonly InvitationHealthRow[],
 	env: TargetEnv,
@@ -331,11 +356,7 @@ export function countCorpusPresence(
 	const total = invitations.length;
 	const present = invitations.filter((row) => {
 		const status = row.environments[env].status;
-		return (
-			status !== 'NOT_PRESENT' &&
-			status !== 'CREDENTIALS_REQUIRED' &&
-			status !== 'UNREACHABLE'
-		);
+		return !['NOT_PRESENT', 'CREDENTIALS_REQUIRED', 'UNREACHABLE'].includes(status);
 	}).length;
 	return { present, total };
 }

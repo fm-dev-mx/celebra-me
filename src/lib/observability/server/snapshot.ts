@@ -8,11 +8,14 @@ import { spawn } from 'node:child_process';
 import { resolve } from 'node:path';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import type { ObservabilitySnapshot } from '@/lib/observability/types';
+import { ObservabilitySnapshotSchema } from '@/lib/observability/schema';
+import { createObservabilitySnapshotCache } from './snapshot-cache';
 
 const SNAPSHOT_SCRIPT = resolve(process.cwd(), 'scripts/observability/print-snapshot.ts');
-const SNAPSHOT_TIMEOUT_MS = 300_000;
+const SNAPSHOT_TIMEOUT_MS = 30_000;
+const MAX_STDOUT_BYTES = 1024 * 1024;
 
-export async function buildObservabilitySnapshot(): Promise<ObservabilitySnapshot> {
+async function buildUncachedObservabilitySnapshot(): Promise<ObservabilitySnapshot> {
 	return await new Promise((resolvePromise, reject) => {
 		const child = spawn(process.execPath, ['--import', 'tsx', SNAPSHOT_SCRIPT], {
 			cwd: process.cwd(),
@@ -42,6 +45,18 @@ export async function buildObservabilitySnapshot(): Promise<ObservabilitySnapsho
 		child.stderr.setEncoding('utf8');
 		child.stdout.on('data', (chunk: string) => {
 			stdout += chunk;
+			if (Buffer.byteLength(stdout, 'utf8') > MAX_STDOUT_BYTES && !settled) {
+				settled = true;
+				clearTimeout(timer);
+				child.kill('SIGTERM');
+				reject(
+					new ApiError(
+						502,
+						'service_unavailable',
+						'La agregación de observabilidad excedió el tamaño permitido.',
+					),
+				);
+			}
 		});
 		child.stderr.on('data', (chunk: string) => {
 			stderr += chunk;
@@ -80,10 +95,7 @@ export async function buildObservabilitySnapshot(): Promise<ObservabilitySnapsho
 			}
 
 			try {
-				const parsed = JSON.parse(stdout) as ObservabilitySnapshot;
-				if (!parsed || typeof parsed !== 'object' || parsed.schemaVersion !== 1) {
-					throw new Error('invalid_snapshot_shape');
-				}
+				const parsed = ObservabilitySnapshotSchema.parse(JSON.parse(stdout));
 				resolvePromise(parsed);
 			} catch {
 				reject(
@@ -96,4 +108,12 @@ export async function buildObservabilitySnapshot(): Promise<ObservabilitySnapsho
 			}
 		});
 	});
+}
+
+const snapshotCache = createObservabilitySnapshotCache({
+	build: buildUncachedObservabilitySnapshot,
+});
+
+export async function buildObservabilitySnapshot(): Promise<ObservabilitySnapshot> {
+	return await snapshotCache.get();
 }

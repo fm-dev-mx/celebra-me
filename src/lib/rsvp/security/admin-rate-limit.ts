@@ -34,7 +34,7 @@ const RATE_LIMITS = {
 	'admin:users:update_login_alias': { maxHits: 5, windowSec: 60 }, // 5 req/min
 
 	// Local-only observability dashboard (manual refresh, read-only probes).
-	'admin:observabilidad': { maxHits: 30, windowSec: 60 }, // 30 req/min
+	'admin:observabilidad': { maxHits: 6, windowSec: 60 }, // cached, manual refresh only
 
 	// Claim code operations follow the same operational profile.
 	'claimcodes:list': { maxHits: 60, windowSec: 60 },

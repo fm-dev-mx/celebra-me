@@ -111,7 +111,7 @@ describe('requireAdminRateLimit', () => {
 		expect(mockCheckRateLimit).toHaveBeenCalledWith(
 			expect.objectContaining({
 				entityId: 'admin:observabilidad:user-1',
-				maxHits: 30,
+				maxHits: 6,
 				windowSec: 60,
 			}),
 		);

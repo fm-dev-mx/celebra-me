@@ -37,26 +37,51 @@ const mockCheckRateLimit = checkRateLimit as jest.MockedFunction<typeof checkRat
 
 function minimalSnapshot(): ObservabilitySnapshot {
 	return {
-		schemaVersion: 1,
+		schemaVersion: 2,
 		generatedAt: '2026-07-31T12:00:00.000Z',
 		overallStatus: 'UNVERIFIED',
+		cache: { state: 'fresh', refreshAfter: '2026-07-31T12:01:00.000Z' },
 		source: {
 			branch: 'dev-local',
-			commitSha: 'abc',
+			commitShaShort: 'abcdef1',
 			workingTreeDirty: false,
-			degraded: false,
 		},
-		fingerprints: { corpusFingerprint: 'c', inputFingerprint: 'i' },
-		validation: {
-			regression: { validationType: 'regression', freshness: 'NOT_RUN', snapshot: null },
-			screenshots: { validationType: 'screenshots', freshness: 'NOT_RUN', snapshot: null },
+		health: {
+			environments: { total: 0, ok: 0, warning: 0, blocking: 0, unverified: 0 },
+			invitations: { total: 0, ok: 0, warning: 0, blocking: 0, unverified: 0 },
+			migrations: { total: 0, ok: 0, warning: 0, blocking: 0, unverified: 0 },
+			assets: { total: 0, ok: 0, warning: 0, blocking: 0, unverified: 0 },
+			validations: { total: 2, ok: 0, warning: 0, blocking: 0, unverified: 2 },
 		},
-		migrations: [],
-		assets: [],
-		invitations: [],
-		environments: [],
-		recommendedCommands: [],
-		degradedNotes: ['Invitation matrix degraded: probe timeout'],
+		issues: [
+			{
+				id: 'probe_degraded:aggregation',
+				code: 'PROBE_DEGRADED',
+				severity: 'unverified',
+				domain: 'data_quality',
+				scope: 'Agregación',
+				title: 'Señal degradada',
+				description: 'La cobertura es incompleta.',
+				actionIds: [],
+			},
+		],
+		validationEvidence: [
+			{
+				type: 'regression',
+				freshness: 'NOT_RUN',
+				completedAt: null,
+				passed: null,
+				total: null,
+			},
+			{
+				type: 'screenshots',
+				freshness: 'NOT_RUN',
+				completedAt: null,
+				passed: null,
+				total: null,
+			},
+		],
+		recommendedActions: [],
 	};
 }
 
@@ -86,8 +111,8 @@ describe('GET /api/dashboard/observabilidad', () => {
 		expect(response.status).toBe(200);
 		expect(response.headers.get('Cache-Control')).toContain('no-store');
 		const body = (await response.json()) as ObservabilitySnapshot;
-		expect(body.schemaVersion).toBe(1);
-		expect(body.degradedNotes.length).toBeGreaterThan(0);
+		expect(body.schemaVersion).toBe(2);
+		expect(body.issues.length).toBeGreaterThan(0);
 		const serialized = JSON.stringify(body);
 		expect(serialized).not.toMatch(/postgres:\/\//i);
 		expect(serialized).not.toMatch(/service_role/i);

@@ -3,13 +3,10 @@
  * Asset inventory is corpus-level (see snapshot.assets), not per-environment.
  */
 
-import {
-	evaluateGeneralStatus,
-	withStatusProbeTimeout,
-	type TargetEnv,
-} from '../provision/dbs-status.ts';
+import type { TargetEnv } from '../provision/dbs-status.ts';
 import { EXPECTED_LOCAL_RENDER_CORPUS_SIZE } from '../provision/local-render-corpus/registry.ts';
 import { countCorpusPresence } from './invitation-health.ts';
+import type { BatchEnvironmentStats } from './invitation-health.ts';
 import type { EnvironmentHealthRow, InvitationHealthRow, SchemaLifecycleState } from './types.ts';
 
 function connectionFromGeneral(input: {
@@ -71,24 +68,25 @@ function renderParityForEnv(
 
 export function buildEnvironmentHealth(input: {
 	invitations: readonly InvitationHealthRow[];
-	probeTimeoutMs?: number;
+	environmentStats: Record<TargetEnv, BatchEnvironmentStats>;
+	migrations: readonly { environment: string; schemaLifecycle: SchemaLifecycleState }[];
 }): EnvironmentHealthRow[] {
-	const timeout = input.probeTimeoutMs ?? 2_000;
-	const general = withStatusProbeTimeout(timeout, () => evaluateGeneralStatus());
 	const envs: TargetEnv[] = ['local', 'preview', 'production'];
 
 	return envs.map((env) => {
-		const status = general.environments[env];
+		const status = input.environmentStats[env];
 		const presence = countCorpusPresence(input.invitations, env);
 		const connection = connectionFromGeneral(status);
-		const schemaLifecycle = (status.schemaLifecycle ?? 'UNVERIFIED') as SchemaLifecycleState;
+		const schemaLifecycle =
+			input.migrations.find((row) => row.environment === env)?.schemaLifecycle ??
+			'UNVERIFIED';
 
 		return {
 			environment: env,
 			connection,
-			runtimeIdentity: status.targetClassification || 'unknown',
+			runtimeIdentity: env === 'local' ? 'persistent-local' : env,
 			schemaLifecycle,
-			activeInvitationRows: status.activeManagedCount,
+			activeInvitationRows: status.activeInvitationRows,
 			supportedCorpusPresence: `${presence.present}/${presence.total || EXPECTED_LOCAL_RENDER_CORPUS_SIZE}`,
 			renderEffectiveParity: renderParityForEnv(
 				env,
@@ -97,10 +95,9 @@ export function buildEnvironmentHealth(input: {
 				status.configured,
 			),
 			detail:
-				status.errorDetail?.slice(0, 160) ??
-				(status.identityConflictsCount > 0
+				status.identityConflictsCount > 0
 					? `identityConflicts=${status.identityConflictsCount}`
-					: undefined),
+					: undefined,
 		};
 	});
 }
