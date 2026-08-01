@@ -3,6 +3,7 @@ import {
 	type ApiResult,
 	type ApiResponse,
 	type ApiErrorResponse,
+	type FetchJSONInit,
 } from '@/lib/api-client-shared';
 import { getCsrfToken } from '@/lib/csrf';
 
@@ -38,7 +39,7 @@ export class DashboardApiClient {
 		return headers;
 	}
 
-	async get<T>(path: string, init?: RequestInit): Promise<ApiResult<T>> {
+	async get<T>(path: string, init?: FetchJSONInit): Promise<ApiResult<T>> {
 		return fetchJSON<T>(`${this.baseUrl}${path}`, {
 			method: 'GET',
 			...init,

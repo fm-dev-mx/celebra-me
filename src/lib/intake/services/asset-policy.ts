@@ -1,6 +1,11 @@
-import sharp from 'sharp';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { ALLOWED_MIME_TYPES, MAX_FILE_SIZE } from '@/lib/intake/constants';
+
+/** Lazy-load so read-only importers (mime sniffing, observability) do not require native sharp at module eval. */
+async function loadSharp() {
+	const mod = await import('sharp');
+	return mod.default;
+}
 
 export const ASSET_POLICY_VERSION = 1;
 export const OUTPUT_MIME_TYPE = 'image/webp';
@@ -21,10 +26,20 @@ export function detectFileMimeType(filePath: string, sourceBytes?: Uint8Array): 
 	if (ext === 'webp') return 'image/webp';
 	if (ext === 'jpg' || ext === 'jpeg') return 'image/jpeg';
 	if (sourceBytes && sourceBytes.length >= 4) {
-		if (sourceBytes[0] === 0x89 && sourceBytes[1] === 0x50 && sourceBytes[2] === 0x4e && sourceBytes[3] === 0x47) {
+		if (
+			sourceBytes[0] === 0x89 &&
+			sourceBytes[1] === 0x50 &&
+			sourceBytes[2] === 0x4e &&
+			sourceBytes[3] === 0x47
+		) {
 			return 'image/png';
 		}
-		if (sourceBytes[0] === 0x52 && sourceBytes[1] === 0x49 && sourceBytes[2] === 0x46 && sourceBytes[3] === 0x46) {
+		if (
+			sourceBytes[0] === 0x52 &&
+			sourceBytes[1] === 0x49 &&
+			sourceBytes[2] === 0x46 &&
+			sourceBytes[3] === 0x46
+		) {
 			return 'image/webp';
 		}
 	}
@@ -50,13 +65,19 @@ export interface NormalizedInvitationImage {
 export async function extractBlobRawBytes(file: Blob): Promise<Uint8Array | undefined> {
 	if (Buffer.isBuffer(file) || file instanceof Uint8Array) return new Uint8Array(file);
 	if (typeof (file as { arrayBuffer?: unknown }).arrayBuffer === 'function') {
-		return new Uint8Array(await (file as { arrayBuffer: () => Promise<ArrayBuffer> }).arrayBuffer());
+		return new Uint8Array(
+			await (file as { arrayBuffer: () => Promise<ArrayBuffer> }).arrayBuffer(),
+		);
 	}
 	if (typeof (file as { bytes?: () => Promise<Uint8Array> }).bytes === 'function') {
 		return await (file as { bytes: () => Promise<Uint8Array> }).bytes();
 	}
 	const symbols = Object.getOwnPropertySymbols(file);
-	const impl = symbols.length > 0 ? (file as unknown as Record<symbol, unknown>)[symbols[0]] as Record<string, unknown> | undefined : undefined;
+	const impl =
+		symbols.length > 0
+			? ((file as unknown as Record<symbol, unknown>)[symbols[0]] as
+					Record<string, unknown> | undefined)
+			: undefined;
 	if (impl?._buffer && (Buffer.isBuffer(impl._buffer) || impl._buffer instanceof Uint8Array)) {
 		return new Uint8Array(impl._buffer as Uint8Array);
 	}
@@ -95,6 +116,7 @@ export async function normalizeInvitationImage(
 			throw new ApiError(422, 'validation_error', 'La imagen está vacía o dañada.');
 		}
 		const input = Buffer.from(rawBytes);
+		const sharp = await loadSharp();
 		const metadata = await sharp(input, {
 			failOn: 'error',
 			limitInputPixels: MAX_INPUT_PIXELS,
@@ -133,8 +155,7 @@ export async function normalizeInvitationImage(
 		}
 
 		let output:
-			| { data: Buffer; info: { width: number; height: number; size: number } }
-			| undefined;
+			{ data: Buffer; info: { width: number; height: number; size: number } } | undefined;
 		for (const quality of [84, 76, 68]) {
 			const result = await sharp(input, {
 				failOn: 'error',

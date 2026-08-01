@@ -102,7 +102,9 @@ export function evaluateMigrationHealth(): MigrationEnvHealth[] {
 				schemaLifecycle: 'UNVERIFIED',
 				reachable: false,
 				configured: false,
-				detail: redactDetail(err instanceof Error ? err.message : 'Unexpected probe failure'),
+				detail: redactDetail(
+					err instanceof Error ? err.message : 'Unexpected probe failure',
+				),
 			});
 		}
 	}

@@ -65,18 +65,17 @@ export function computeCorpusFingerprint(): string {
 	const corpus = listLocalRenderCorpus();
 	const lines = [
 		`size:${EXPECTED_LOCAL_RENDER_CORPUS_SIZE}`,
-		...corpus.map(
-			(entry) =>
-				[
-					entry.slug,
-					entry.eventType,
-					entry.classification,
-					entry.sourceStrategy,
-					entry.assetStrategy,
-					entry.themeId ?? '',
-					entry.visualProfileId ?? '',
-					entry.fixtureFile ?? '',
-				].join('|'),
+		...corpus.map((entry) =>
+			[
+				entry.slug,
+				entry.eventType,
+				entry.classification,
+				entry.sourceStrategy,
+				entry.assetStrategy,
+				entry.themeId ?? '',
+				entry.visualProfileId ?? '',
+				entry.fixtureFile ?? '',
+			].join('|'),
 		),
 	];
 	return sha256Hex(lines.join('\n'));

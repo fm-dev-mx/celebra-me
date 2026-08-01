@@ -92,6 +92,10 @@ export default defineConfig({
 			strictPort: true,
 		},
 		ssr: {
+			// Native image processing must load through Node, not Vite's module runner.
+			// Observability and intake image paths import sharp; bundling it under Vite SSR
+			// surfaces win32 ERR_DLOPEN_FAILED and collapses API routes to opaque 500 HTML.
+			external: ['sharp'],
 			// Vercel's serverless loader cannot safely load sanitize-html's runtime graph:
 			// bare requires in its bundled CommonJS entrypoint are not traced into the
 			// function, and htmlparser2@12 is ESM-only. Bundle the bounded SSR chain.

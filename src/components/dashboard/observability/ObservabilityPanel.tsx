@@ -63,8 +63,11 @@ export default function ObservabilityPanel() {
 	const load = useCallback(async () => {
 		setLoading(true);
 		setError(null);
+		// Snapshot aggregation probes Local/Preview/Production and can exceed the
+		// default 15s dashboard fetch budget; keep this read-only path fail-soft.
 		const result = await dashboardApi.get<ObservabilitySnapshot>(
 			'/api/dashboard/observabilidad',
+			{ timeoutMs: 300_000 },
 		);
 		if (!result.ok) {
 			setError(result.message || 'No se pudo cargar el estado operacional.');
@@ -111,7 +114,7 @@ export default function ObservabilityPanel() {
 										? 'con cambios'
 										: 'limpio'}
 							</span>
-							<span>
+							<span data-generated-at={snapshot.generatedAt}>
 								Generado:{' '}
 								{new Date(snapshot.generatedAt).toLocaleString('es-MX', {
 									dateStyle: 'short',

@@ -32,17 +32,12 @@ const ENVS: TargetEnv[] = ['local', 'preview', 'production'];
 
 function redactDetail(message: string): string {
 	return message
-		.replace(
-			/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi,
-			'[id]',
-		)
+		.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '[id]')
 		.replace(/:[^:@/]+@/g, ':***@')
 		.slice(0, 160);
 }
 
-function mapConnectivity(
-	status: StatusVocabulary,
-): InvitationEnvContentState | null {
+function mapConnectivity(status: StatusVocabulary): InvitationEnvContentState | null {
 	if (
 		status === 'NOT_PRESENT' ||
 		status === 'IDENTITY_CONFLICT' ||
@@ -54,10 +49,7 @@ function mapConnectivity(
 	return null;
 }
 
-function fetchPublishedProjectionHash(
-	env: TargetEnv,
-	invitationId: string,
-): string | null {
+function fetchPublishedProjectionHash(env: TargetEnv, invitationId: string): string | null {
 	const { dbUrl } = resolveDbUrlForEnv(env);
 	if (!dbUrl) return null;
 	const res = runPsql(
@@ -339,7 +331,11 @@ export function countCorpusPresence(
 	const total = invitations.length;
 	const present = invitations.filter((row) => {
 		const status = row.environments[env].status;
-		return status !== 'NOT_PRESENT' && status !== 'CREDENTIALS_REQUIRED' && status !== 'UNREACHABLE';
+		return (
+			status !== 'NOT_PRESENT' &&
+			status !== 'CREDENTIALS_REQUIRED' &&
+			status !== 'UNREACHABLE'
+		);
 	}).length;
 	return { present, total };
 }

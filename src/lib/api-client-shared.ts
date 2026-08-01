@@ -61,6 +61,11 @@ export function buildApiErrorResponse(error: unknown): ApiErrorResponse {
 
 const DEFAULT_FETCH_TIMEOUT_MS = 15_000;
 
+export type FetchJSONInit = RequestInit & {
+	/** Overrides the default 15s abort timeout. */
+	timeoutMs?: number;
+};
+
 function parseHttpErrorResponse(
 	data: unknown,
 	status: number,
@@ -103,14 +108,15 @@ function parseHttpErrorResponse(
 
 export async function fetchJSON<T>(
 	input: RequestInfo | URL,
-	init?: RequestInit,
+	init?: FetchJSONInit,
 ): Promise<ApiResult<T>> {
+	const { timeoutMs = DEFAULT_FETCH_TIMEOUT_MS, ...fetchInit } = init ?? {};
 	const controller = new AbortController();
-	const timeoutId = setTimeout(() => controller.abort(), DEFAULT_FETCH_TIMEOUT_MS);
+	const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
 	try {
 		const response = await fetch(input, {
-			...init,
+			...fetchInit,
 			signal: controller.signal,
 		});
 

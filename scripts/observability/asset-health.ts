@@ -114,7 +114,11 @@ function classifyAssetStatus(input: {
 	}
 
 	// HYBRID_VERSIONED_AND_REMOTE
-	if (remoteMediaReferenceCount > 0 && localFileCount === 0 && localAssetKeyReferenceCount === 0) {
+	if (
+		remoteMediaReferenceCount > 0 &&
+		localFileCount === 0 &&
+		localAssetKeyReferenceCount === 0
+	) {
 		return {
 			status: 'REMOTE_REFERENCE',
 			detail: `${remoteMediaReferenceCount} remote media reference(s); no local inventory`,
@@ -138,7 +142,10 @@ function classifyAssetStatus(input: {
 			detail: `${localFileCount} local file(s); ${localAssetKeyReferenceCount} local key ref(s)`,
 		};
 	}
-	return { status: 'UNVERIFIED', detail: 'No local inventory or remote media references detected' };
+	return {
+		status: 'UNVERIFIED',
+		detail: 'No local inventory or remote media references detected',
+	};
 }
 
 function evaluateEntry(
@@ -146,9 +153,10 @@ function evaluateEntry(
 	dbAssetCountBySlug?: ReadonlyMap<string, number | null>,
 ): AssetHealthRow {
 	const assetDir = resolve(ASSETS_ROOT, entry.slug);
-	const localFileCount = existsSync(assetDir) && statSync(assetDir).isDirectory()
-		? countFilesRecursive(assetDir)
-		: 0;
+	const localFileCount =
+		existsSync(assetDir) && statSync(assetDir).isDirectory()
+			? countFilesRecursive(assetDir)
+			: 0;
 
 	let remoteMediaReferenceCount = 0;
 	let localAssetKeyReferenceCount = 0;

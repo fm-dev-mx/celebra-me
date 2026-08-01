@@ -101,7 +101,9 @@ export function buildRecommendedCommands(input: {
 		}
 	}
 
-	const missingLocal = input.invitations.filter((row) => row.environments.local.status === 'NOT_PRESENT');
+	const missingLocal = input.invitations.filter(
+		(row) => row.environments.local.status === 'NOT_PRESENT',
+	);
 	if (missingLocal.length > 0) {
 		pushUnique(out, {
 			id: 'local-corpus-missing',
@@ -143,8 +145,7 @@ export function buildRecommendedCommands(input: {
 			label: 'Ciclo canónico (Local → Preview → validación → promote)',
 			command:
 				'pnpm invitation:update -- --slug <slug> --target preview  # luego validar y pnpm invitation:promote',
-			reason:
-				'Producción atrasada: nunca invitation:update directo a Production; usar promote tras Preview',
+			reason: 'Producción atrasada: nunca invitation:update directo a Production; usar promote tras Preview',
 		});
 	}
 

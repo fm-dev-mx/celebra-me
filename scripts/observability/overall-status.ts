@@ -103,7 +103,10 @@ function isRemoteAttention(environments: readonly EnvironmentHealthRow[]): boole
 	);
 }
 
-function evidenceUnverified(regression: ValidationEvidenceView, screenshots: ValidationEvidenceView): boolean {
+function evidenceUnverified(
+	regression: ValidationEvidenceView,
+	screenshots: ValidationEvidenceView,
+): boolean {
 	return (
 		regression.freshness === 'NOT_RUN' ||
 		screenshots.freshness === 'NOT_RUN' ||
@@ -124,11 +127,9 @@ export function computeOverallStatus(input: {
 	const { invitations, migrations, assets, regression, screenshots } = input;
 	const localEnv = input.environments.find((env) => env.environment === 'local');
 	const localMigration = migrations.find((m) => m.environment === 'local');
-	const evidenceFail =
-		regression.freshness === 'FAIL' || screenshots.freshness === 'FAIL';
+	const evidenceFail = regression.freshness === 'FAIL' || screenshots.freshness === 'FAIL';
 	const evidenceMissingOrBad =
-		evidenceBlocksHealthy(regression.freshness) ||
-		evidenceBlocksHealthy(screenshots.freshness);
+		evidenceBlocksHealthy(regression.freshness) || evidenceBlocksHealthy(screenshots.freshness);
 
 	if (
 		isBlocked({
