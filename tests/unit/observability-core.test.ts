@@ -11,7 +11,10 @@ import type {
 	ValidationEvidenceSnapshot,
 	ValidationEvidenceView,
 } from '../../scripts/observability/types.ts';
-import { listLocalRenderCorpus } from '../../scripts/provision/local-render-corpus/registry.ts';
+import {
+	EXPECTED_LOCAL_RENDER_CORPUS_SIZE,
+	listLocalRenderCorpus,
+} from '../../scripts/provision/local-render-corpus/registry.ts';
 
 const fingerprints: ObservabilityFingerprints = {
 	corpusFingerprint: 'corpus-a',
@@ -100,9 +103,9 @@ describe('observability validation freshness', () => {
 });
 
 describe('observability corpus SSOT', () => {
-	it('dashboard invitation rows derive from corpus registry (13 clients)', () => {
+	it('dashboard invitation rows derive from corpus registry size SSOT', () => {
 		const corpus = listLocalRenderCorpus();
-		expect(corpus).toHaveLength(13);
+		expect(corpus).toHaveLength(EXPECTED_LOCAL_RENDER_CORPUS_SIZE);
 		expect(corpus.every((entry) => entry.assetStrategy)).toBe(true);
 	});
 });
@@ -122,7 +125,7 @@ describe('observability overall status', () => {
 		runtimeIdentity: environment === 'local' ? 'persistent-local' : environment,
 		schemaLifecycle: 'CURRENT',
 		activeInvitationRows: 20,
-		supportedCorpusPresence: '13/13',
+		supportedCorpusPresence: `${EXPECTED_LOCAL_RENDER_CORPUS_SIZE}/${EXPECTED_LOCAL_RENDER_CORPUS_SIZE}`,
 		renderEffectiveParity: 'ALL_ALIGNED',
 	});
 
@@ -266,7 +269,7 @@ describe('observability overall status', () => {
 			runtimeIdentity: 'unknown',
 			schemaLifecycle: 'UNVERIFIED',
 			activeInvitationRows: 0,
-			supportedCorpusPresence: '0/13',
+			supportedCorpusPresence: `0/${EXPECTED_LOCAL_RENDER_CORPUS_SIZE}`,
 			renderEffectiveParity: 'UNVERIFIABLE',
 			detail: 'Not probed in this observability scope',
 		});

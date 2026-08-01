@@ -52,7 +52,7 @@ function expectedDescriptorComponents(content: Record<string, unknown>): string[
 describe('local render corpus regression sweep', () => {
 	const corpus = listLocalRenderCorpus();
 
-	it('registers exactly the 13 supported Production clients', () => {
+	it('registers exactly the 14 supported Production clients', () => {
 		assertLocalRenderCorpusIntegrity();
 		assertCanonicalRegistryCoveredByCorpus();
 		expect(corpus).toHaveLength(EXPECTED_LOCAL_RENDER_CORPUS_SIZE);
@@ -60,6 +60,7 @@ describe('local render corpus regression sweep', () => {
 			'alba-rosa-quinonez',
 			'abril-michelle-becerra-rea',
 			'romina-rios-chaparro',
+			'boda-perla-y-carlos',
 			'america-johana',
 			'valentina-hernandez',
 			'xareni-iyarit',

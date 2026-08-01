@@ -69,7 +69,7 @@ Local is **render-equivalent**, not DB-identical to Production.
 ## Regression & screenshots
 
 ```bash
-pnpm test:local-render-corpus          # schema → adapter → page → section descriptors (13 clients)
+pnpm test:local-render-corpus          # schema → adapter → page → section descriptors (14 clients)
 pnpm screenshot:local-render-corpus    # runtime/completeness against Local routes (no pixel baselines)
 pnpm exec tsx scripts/provision/local-render-corpus/verify-local-routes.ts
 ```

@@ -3,7 +3,7 @@
  * that must be reproducibly renderable and regression-tested in Local.
  *
  * Canonical managed lifecycle registry remains scripts/provision/invitations/registry.ts.
- * This corpus includes those three plus supported legacy clients.
+ * This corpus includes canonical managed invitations plus supported legacy clients.
  */
 
 export type CorpusClassification = 'canonical' | 'legacy';
@@ -61,6 +61,15 @@ export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] = [
 		assetStrategy: 'VERSIONED_MANAGED_ASSET',
 		themeId: 'premiere-floral',
 		visualProfileId: 'romina-rios-chaparro',
+	},
+	{
+		slug: 'boda-perla-y-carlos',
+		eventType: 'boda',
+		classification: 'canonical',
+		sourceStrategy: 'canonical_definition',
+		assetStrategy: 'VERSIONED_MANAGED_ASSET',
+		themeId: 'jewelry-box-wedding',
+		visualProfileId: 'boda-perla-y-carlos',
 	},
 	{
 		slug: 'america-johana',
@@ -162,7 +171,7 @@ export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] = [
 	},
 ] as const;
 
-export const EXPECTED_LOCAL_RENDER_CORPUS_SIZE = 13;
+export const EXPECTED_LOCAL_RENDER_CORPUS_SIZE = 14;
 
 export function listLocalRenderCorpus(): readonly LocalRenderCorpusEntry[] {
 	return LOCAL_RENDER_CORPUS;
