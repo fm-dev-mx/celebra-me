@@ -109,7 +109,6 @@ describe('Alba Rosa Quiñónez provision contract', () => {
 		const envelope = asRecord(content.envelope);
 		expect(envelope).toMatchObject({
 			guestPlacement: 'outside-envelope',
-			showCardAction: false,
 		});
 		expect(typeof envelope.cardLabel).toBe('string');
 		expect(typeof envelope.envelopeName).toBe('string');

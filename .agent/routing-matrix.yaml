@@ -4,7 +4,7 @@
 # Managed by Goal 3 operating model migration.
 ---
 version: "1.0.0"
-updated: "2026-07-30"
+updated: "2026-07-31"
 
 bootstrap:
   rules:
@@ -107,8 +107,6 @@ routes:
 
   - task_type: "invitation_preparation"
     description: "Client invitation preparation & intake completeness evaluation"
-    rules:
-      - ".agent/rules/intake-publishing.md"
     skills:
       - "client-invitation-audit"
       - "copywriting-es"

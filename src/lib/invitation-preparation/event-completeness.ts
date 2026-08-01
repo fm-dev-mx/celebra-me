@@ -245,6 +245,226 @@ const XV_FIELDS: readonly CompletenessFieldDefinition[] = [
 	},
 ] as const;
 
+/** Evidenced from Alba Rosa Quiñónez (cumple) preparation practice — partial, not XV-scale. */
+const CUMPLE_PARTIAL_FIELDS: readonly CompletenessFieldDefinition[] = [
+	{
+		id: 'slug',
+		label: 'Canonical invitation slug',
+		requirement: 'required',
+		blockingWhenUnresolved: true,
+		allowsPlaceholder: false,
+		evidenceNotes: 'Alba identity freeze + creation contract.',
+	},
+	{
+		id: 'celebrantName',
+		label: 'Celebrant full name',
+		requirement: 'required',
+		blockingWhenUnresolved: true,
+		allowsPlaceholder: false,
+		evidenceNotes: 'Alba orthography correction cycle.',
+	},
+	{
+		id: 'eventDate',
+		label: 'Event date',
+		requirement: 'required',
+		blockingWhenUnresolved: true,
+		allowsPlaceholder: false,
+	},
+	{
+		id: 'eventTime',
+		label: 'Primary event start time',
+		requirement: 'required',
+		blockingWhenUnresolved: true,
+		allowsPlaceholder: false,
+		evidenceNotes: 'Alba WA + location logistics.',
+	},
+	{
+		id: 'baseDemoId',
+		label: 'Base demo / editor preset selection',
+		requirement: 'required',
+		blockingWhenUnresolved: true,
+		allowsPlaceholder: false,
+		evidenceNotes: 'Alba client-selected demo-cumple-luxury-hacienda.',
+	},
+	{
+		id: 'sourceAssetPath',
+		label: 'Photograph / HR asset source path or opaque label',
+		requirement: 'required',
+		blockingWhenUnresolved: true,
+		allowsPlaceholder: false,
+	},
+	{
+		id: 'sectionOrder',
+		label: 'Included sections and order',
+		requirement: 'required',
+		blockingWhenUnresolved: true,
+		allowsPlaceholder: false,
+	},
+	{
+		id: 'primaryVenueName',
+		label: 'Primary venue name',
+		requirement: 'required',
+		blockingWhenUnresolved: true,
+		allowsPlaceholder: false,
+	},
+	{
+		id: 'primaryVenueAddress',
+		label: 'Primary venue address',
+		requirement: 'required',
+		blockingWhenUnresolved: true,
+		allowsPlaceholder: false,
+	},
+	{
+		id: 'rsvpConfirmationMode',
+		label: 'RSVP confirmation mode',
+		requirement: 'required',
+		blockingWhenUnresolved: true,
+		allowsPlaceholder: false,
+		evidenceNotes: 'Alba product standard api + hybrid access.',
+	},
+	{
+		id: 'eventLabel',
+		label: 'Event label / age occasion',
+		requirement: 'recommended',
+		blockingWhenUnresolved: false,
+		allowsPlaceholder: true,
+		evidenceNotes: 'Alba 70 Años lockup.',
+	},
+	{
+		id: 'timeZone',
+		label: 'IANA time zone',
+		requirement: 'recommended',
+		blockingWhenUnresolved: false,
+		allowsPlaceholder: true,
+	},
+	{
+		id: 'dressCode',
+		label: 'Dress code',
+		requirement: 'optional',
+		blockingWhenUnresolved: false,
+		allowsPlaceholder: true,
+	},
+	{
+		id: 'gifts',
+		label: 'Gift / legend information',
+		requirement: 'optional',
+		blockingWhenUnresolved: false,
+		allowsPlaceholder: true,
+	},
+	{
+		id: 'musicUrl',
+		label: 'Playable music URL',
+		requirement: 'optional',
+		blockingWhenUnresolved: false,
+		allowsPlaceholder: false,
+		evidenceNotes: 'Often not_applicable for senior cumple invites.',
+	},
+	{
+		id: 'clientColors',
+		label: 'Client-requested colors / palette',
+		requirement: 'optional',
+		blockingWhenUnresolved: false,
+		allowsPlaceholder: false,
+	},
+] as const;
+
+/** Evidenced from Leah Lexa baby-shower practice — partial minima only. */
+const BABY_SHOWER_PARTIAL_FIELDS: readonly CompletenessFieldDefinition[] = [
+	{
+		id: 'slug',
+		label: 'Canonical invitation slug',
+		requirement: 'required',
+		blockingWhenUnresolved: true,
+		allowsPlaceholder: false,
+		evidenceNotes: 'Leah route slug leah-lexa distinct from _assetSlug.',
+	},
+	{
+		id: 'celebrantName',
+		label: 'Celebrant / baby name',
+		requirement: 'required',
+		blockingWhenUnresolved: true,
+		allowsPlaceholder: false,
+	},
+	{
+		id: 'eventDate',
+		label: 'Event date',
+		requirement: 'required',
+		blockingWhenUnresolved: true,
+		allowsPlaceholder: false,
+	},
+	{
+		id: 'baseDemoId',
+		label: 'Base demo / editor preset selection',
+		requirement: 'required',
+		blockingWhenUnresolved: true,
+		allowsPlaceholder: false,
+		evidenceNotes: 'Leah base_demo_id demo-baby-shower-celestial.',
+	},
+	{
+		id: 'sourceAssetPath',
+		label: 'Photograph / HR asset source path or opaque label',
+		requirement: 'required',
+		blockingWhenUnresolved: true,
+		allowsPlaceholder: false,
+	},
+	{
+		id: 'sectionOrder',
+		label: 'Included sections and order',
+		requirement: 'required',
+		blockingWhenUnresolved: true,
+		allowsPlaceholder: false,
+	},
+	{
+		id: 'eventTime',
+		label: 'Primary event start time',
+		requirement: 'recommended',
+		blockingWhenUnresolved: false,
+		allowsPlaceholder: true,
+	},
+	{
+		id: 'primaryVenueName',
+		label: 'Primary venue name',
+		requirement: 'recommended',
+		blockingWhenUnresolved: false,
+		allowsPlaceholder: true,
+	},
+	{
+		id: 'primaryVenueAddress',
+		label: 'Primary venue address',
+		requirement: 'recommended',
+		blockingWhenUnresolved: false,
+		allowsPlaceholder: true,
+	},
+	{
+		id: 'rsvpConfirmationMode',
+		label: 'RSVP confirmation mode',
+		requirement: 'recommended',
+		blockingWhenUnresolved: false,
+		allowsPlaceholder: false,
+	},
+	{
+		id: 'musicUrl',
+		label: 'Playable music URL',
+		requirement: 'optional',
+		blockingWhenUnresolved: false,
+		allowsPlaceholder: false,
+	},
+	{
+		id: 'gifts',
+		label: 'Gift / registry information',
+		requirement: 'optional',
+		blockingWhenUnresolved: false,
+		allowsPlaceholder: true,
+	},
+	{
+		id: 'clientColors',
+		label: 'Client-requested colors / palette',
+		requirement: 'optional',
+		blockingWhenUnresolved: false,
+		allowsPlaceholder: false,
+	},
+] as const;
+
 const BODA_PARTIAL_FIELDS: readonly CompletenessFieldDefinition[] = [
 	{
 		id: 'slug',
@@ -389,8 +609,28 @@ const CONTRACTS: Record<EventType, EventTypeCompletenessContract> = {
 		fields: BODA_PARTIAL_FIELDS,
 	},
 	bautizo: undefinedContract('bautizo'),
-	cumple: undefinedContract('cumple'),
-	'baby-shower': undefinedContract('baby-shower'),
+	cumple: {
+		eventType: 'cumple',
+		maturity: 'partial',
+		summary:
+			'Partial contract from Alba Rosa Quiñónez cumple preparation practice. Expand only with additional verified birthday invitation evidence.',
+		gaps: [
+			'Family-name and itinerary requirement levels remain under-evidenced.',
+			'Age/occasion lockup patterns are not yet standardized across all cumple invites.',
+		],
+		fields: CUMPLE_PARTIAL_FIELDS,
+	},
+	'baby-shower': {
+		eventType: 'baby-shower',
+		maturity: 'partial',
+		summary:
+			'Partial contract from Leah Lexa baby-shower practice (route vs _assetSlug vs base demo). Expand only with additional verified baby-shower invitations.',
+		gaps: [
+			'Venue and RSVP requirement levels vary by client; treated as recommended until more samples exist.',
+			'Gallery/interlude asset patterns are editorial, not completeness-blocking.',
+		],
+		fields: BABY_SHOWER_PARTIAL_FIELDS,
+	},
 	'primera-comunion': undefinedContract('primera-comunion'),
 };
 

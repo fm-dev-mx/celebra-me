@@ -250,7 +250,6 @@ function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 			variant: normalizedPreset,
 			name: opening.envelope.name,
 			guestPlacement: data.envelope.guestPlacement,
-			showCardAction: data.envelope.showCardAction,
 			card: opening.card,
 			colors: {
 				background: data.envelope.closedPalette?.background

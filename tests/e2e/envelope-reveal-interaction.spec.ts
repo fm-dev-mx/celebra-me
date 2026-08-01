@@ -27,7 +27,7 @@ test.describe('shared envelope reveal interaction', () => {
 		await expect(cta).toBeVisible();
 		await expect(page.locator('[data-envelope-card]')).toHaveAttribute('aria-hidden', 'true');
 		await expect(page.locator('[data-envelope-card]')).toHaveCSS('opacity', '0');
-		await expect(page.locator('.invitation-reveal-card__action')).toBeDisabled();
+		await expect(page.locator('[data-envelope-card] [data-envelope-open]')).toHaveCount(0);
 
 		await cta.click();
 		await expectRevealed(page);
@@ -99,7 +99,7 @@ test.describe('shared envelope reveal interaction', () => {
 		await expectRevealed(page);
 	});
 
-	test('@extended keeps one CTA in the letter preview and uses an accessible focus ring', async ({
+	test('@extended keeps presentation-only letter card in preview and uses an accessible focus ring', async ({
 		page,
 	}) => {
 		await page.goto('/cumple/demo-cumple-luxury-hacienda?screenshot=1&reveal=letter', {
@@ -107,7 +107,7 @@ test.describe('shared envelope reveal interaction', () => {
 		});
 
 		await expect(page.locator('.envelope-external-instruction__button')).toBeHidden();
-		await expect(page.locator('.invitation-reveal-card__action')).toBeVisible();
+		await expect(page.locator('[data-screenshot="reveal-letter"] [data-envelope-open]')).toHaveCount(0);
 
 		await page.goto('/cumple/demo-cumple-luxury-hacienda?forceEnvelope=true', {
 			waitUntil: 'domcontentloaded',
@@ -171,7 +171,6 @@ test.describe('shared envelope reveal interaction', () => {
 		await page.goto('/cumple/alba-rosa-quinonez?screenshot=1&reveal=letter', {
 			waitUntil: 'domcontentloaded',
 		});
-		await expect(page.locator('.invitation-reveal-card__action')).toHaveCount(0);
 		await expect(page.locator('[data-screenshot="reveal-letter"]')).toContainText('70 AÑOS');
 		await expect(page.locator('[data-screenshot="reveal-letter"]')).not.toContainText(
 			'ABRIR LA INVITACIÓN',

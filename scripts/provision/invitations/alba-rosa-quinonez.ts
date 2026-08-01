@@ -186,7 +186,6 @@ export function buildAlbaPublishedContent(
 			cardName: 'Alba Rosa',
 			cardSecondaryName: 'Quiñónez López',
 			guestPlacement: 'outside-envelope',
-			showCardAction: false,
 			sealStyle: 'monogram',
 			sealIcon: 'monogram',
 			sealInitials: 'A·R',

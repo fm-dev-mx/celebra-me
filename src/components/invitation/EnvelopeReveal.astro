@@ -27,7 +27,6 @@ interface Props {
 	card: RevealCardData;
 	previewState?: 'closed' | 'opened' | 'letter';
 	guestPlacement?: 'inside-envelope' | 'outside-envelope';
-	showCardAction?: boolean;
 }
 
 const {
@@ -49,7 +48,6 @@ const {
 	card,
 	previewState,
 	guestPlacement = 'inside-envelope',
-	showCardAction = true,
 } = Astro.props;
 
 const sealPresentation = resolveSealPresentation({
@@ -150,7 +148,6 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 	<div class="envelope-reveal-stage" data-envelope-card aria-hidden="true">
 		<InvitationRevealCard
 			card={card}
-			showAction={showCardAction}
 			showGuest={guestPlacement !== 'outside-envelope'}
 		/>
 	</div>
@@ -233,15 +230,8 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 
 			const revealCard = this.querySelector('[data-envelope-card]');
 			const openButtons = Array.from(this.querySelectorAll<HTMLButtonElement>('[data-envelope-open]'));
-			const closedOpenButtons = openButtons.filter(
-				(button) => !button.closest('[data-envelope-card]'),
-			);
-			const letterOpenButtons = openButtons.filter((button) =>
-				Boolean(button.closest('[data-envelope-card]')),
-			);
 			let hasRevealed = false;
 			let isOpening = false;
-			let isLetterVisible = false;
 
 			/** Screenshot tool needs the letter laid out; do not race-hide the host. */
 			const isScreenshotCaptureMode = () => {
@@ -270,19 +260,11 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 				showCardToAccessibility();
 			};
 
-			const setClosedControlsDisabled = (disabled: boolean) => {
-				closedOpenButtons.forEach((button) => {
+			const setControlsDisabled = (disabled: boolean) => {
+				openButtons.forEach((button) => {
 					button.disabled = disabled;
 				});
 			};
-
-			const setLetterControlsDisabled = (disabled: boolean) => {
-				letterOpenButtons.forEach((button) => {
-					button.disabled = disabled;
-				});
-			};
-
-			setLetterControlsDisabled(true);
 
 			const focusRevealedDestination = () => {
 				const destination = document.querySelector<HTMLElement>(
@@ -325,8 +307,7 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 			const completeReveal = () => {
 				if (hasRevealed) return;
 				hasRevealed = true;
-				setClosedControlsDisabled(true);
-				setLetterControlsDisabled(true);
+				setControlsDisabled(true);
 
 				document.documentElement.classList.remove('envelope-open');
 				showCardToAccessibility();
@@ -407,23 +388,15 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 
 			const requestOpen = () => {
 				if (hasRevealed) return;
-
-				if (isLetterVisible) {
-					manager.setStoredFlag();
-					completeReveal();
-					return;
-				}
-
 				if (isOpening) return;
 				isOpening = true;
-				setClosedControlsDisabled(true);
+				setControlsDisabled(true);
 
 				manager.playOpenSound();
 				manager.setStoredFlag();
 
 				// Screenshot capture intentionally holds the letter instead of hiding the host.
 				if (isScreenshotCaptureMode()) {
-					isLetterVisible = true;
 					holdLetterForScreenshotCapture();
 					return;
 				}
@@ -436,10 +409,8 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 				this.classList.add('is-opening');
 
 				const showLetter = () => {
-					if (hasRevealed || isLetterVisible) return;
-					isLetterVisible = true;
+					if (hasRevealed) return;
 					showCardToAccessibility();
-					setLetterControlsDisabled(false);
 					completeReveal();
 				};
 

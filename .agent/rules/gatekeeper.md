@@ -357,7 +357,7 @@ pnpm run ci                  # Canonical package.json script alias for full pipe
 pnpm agent:git-safety:check
 ```
 
-`pnpm run ci` is the canonical full-pipeline equivalent of Tier C. It runs `pnpm type-check`, `pnpm validate:structure`, `pnpm lint`, `pnpm lint:styles`, `pnpm validate:ui-governance`, `pnpm validate:event-parity`, `pnpm validate:no-pii`, `pnpm test`, `pnpm test:e2e:ci`, and `pnpm build:app`. Use `pnpm ci:quick` for fast feedback only.
+`pnpm run ci` is the canonical full-pipeline equivalent of Tier C. It runs `pnpm type-check`, `pnpm validate:structure`, `pnpm lint`, `pnpm lint:styles`, `pnpm validate:ui-governance`, `pnpm validate:event-parity`, `pnpm validate:no-pii`, `pnpm validate:invitation-preparation`, `pnpm test`, `pnpm test:e2e:ci`, and `pnpm build:app`. Use `pnpm ci:quick` for fast feedback only.
 
 The pre-push hook intentionally remains lean (commit-message validation only); do not move tests or
 type-checks into pre-push.

@@ -48,6 +48,10 @@ digital invitations.
     `top: 50%; left: 50%; transform: translate(-50%, -50%);` relative to `.envelope-container`.
   - Seal center aligns directly with the 50% flap/pocket fold seam within
     `max(2px, 1% of seal width)` tolerance.
+- **Structural Invariants**:
+  - Envelope opening controls belong exclusively to the reveal container (`EnvelopeReveal`).
+  - `InvitationRevealCard` is presentation-only and must never contain opening controls or `data-envelope-open` buttons.
+  - `showCardAction` is deprecated and removed from schemas and DTO models.
 - **Rendering & Omission**: If `disabled: true` or envelope omitted, invitation opens directly on
   Hero fold without envelope animation.
 

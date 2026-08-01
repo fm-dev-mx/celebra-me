@@ -69,7 +69,18 @@ export {
 } from '@/lib/invitation-preparation/owner-decision-pack';
 
 export {
+	evaluateDocumentedPreparationAlignment,
+	hasUniquenessTableInMarkdown,
 	parseFactRegisterFromMarkdown,
+	parsePhotographInventoryQualitiesFromMarkdown,
 	parsePreparationReadinessFromMarkdown,
+	type DocumentedPreparationEvaluation,
 	type ParsedFactRow,
 } from '@/lib/invitation-preparation/markdown-state';
+
+export {
+	isCanonicalPreparationStatePath,
+	lintInvitationPreparationHygiene,
+	shouldLintInvitationDocHygiene,
+	type HygieneFinding,
+} from '@/lib/invitation-preparation/hygiene';

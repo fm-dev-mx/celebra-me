@@ -26,10 +26,17 @@ related_rules:
 A table per content section. For each, state current value, proposed value, and reason. Cover:
 
 - `theme.preset` change
-- `_assetSlug` (confirm or change)
+- `_assetSlug` (confirm or change; never equal demo `_assetSlug`)
 - `envelope.revealVariant` + required cover fields
 - `sectionStyles.*.variant` entries
 - `hero.variant`
+
+### Lane A inheritance reset (required when overriding a shared preset)
+
+List preset/inherited properties the profile must explicitly reset so Lane A does not fight the
+base theme (examples: absolute/inset positioning, frosted/backdrop bands, café/sepia image filters,
+mix-blend, competing hero metadata stacks). Link face-safe hero guidance in `frontend-design` when
+hero crops/type are in scope.
 
 Then separate sections for:
 
