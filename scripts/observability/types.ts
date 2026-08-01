@@ -162,6 +162,66 @@ export interface RecommendedCommand {
 	reason: string;
 }
 
+export type CommandCategory = 'DIAGNOSE' | 'VALIDATE' | 'REPAIR' | 'PROMOTE';
+
+export interface CategorizedCommand {
+	id: string;
+	label: string;
+	command: string;
+	reason: string;
+	category: CommandCategory;
+}
+
+export interface ObservabilitySummaryPayload {
+	schemaVersion: 1;
+	generatedAt: string;
+	overallStatus: OverallStatus;
+	source: ObservabilitySourceState;
+	summary: {
+		migrations: {
+			hasPending: boolean;
+			pendingCount: number;
+			localLifecycle: SchemaLifecycleState;
+		};
+		invitations: {
+			totalCount: number;
+			alignedCount: number;
+			divergedCount: number;
+			behindCount: number;
+			issueSlugs: string[];
+		};
+		validation: {
+			regressionFreshness: EvidenceFreshness;
+			screenshotsFreshness: EvidenceFreshness;
+		};
+	};
+	categorizedCommands: CategorizedCommand[];
+	degradedNotes: string[];
+}
+
+/**
+ * Internal multi-env matrix assembled before public/summary projection.
+ * Never sent to the browser as-is.
+ */
+export interface ObservabilityMatrixSnapshot {
+	schemaVersion: 1;
+	generatedAt: string;
+	overallStatus: OverallStatus;
+	source: ObservabilitySourceState;
+	fingerprints: ObservabilityFingerprints;
+	validation: {
+		regression: ValidationEvidenceView;
+		screenshots: ValidationEvidenceView;
+	};
+	migrations: MigrationEnvHealth[];
+	assets: AssetHealthRow[];
+	invitations: InvitationHealthRow[];
+	environments: EnvironmentHealthRow[];
+	recommendedCommands: RecommendedCommand[];
+	/** Short non-PII notes when probes degraded. */
+	degradedNotes: string[];
+}
+
 export type ObservabilityIssueSeverity = 'blocking' | 'warning' | 'unverified';
 
 export type ObservabilityIssueDomain =
@@ -232,8 +292,8 @@ export interface ValidationEvidenceSummary {
 }
 
 /**
- * Browser-safe observability snapshot. Omits credentials, absolute paths,
- * resolved UUIDs, dbUrlRedacted, and raw error stacks.
+ * Browser-safe anomaly-first detail snapshot. Omits credentials, absolute paths,
+ * resolved UUIDs, dbUrlRedacted, healthy row inventories, and raw error stacks.
  */
 export interface ObservabilitySnapshot {
 	schemaVersion: 2;

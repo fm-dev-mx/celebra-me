@@ -7,6 +7,8 @@ export type OverallStatus = 'HEALTHY' | 'ATTENTION' | 'BLOCKED' | 'UNVERIFIED';
 
 export type EvidenceFreshness = 'PASS' | 'FAIL' | 'STALE' | 'NOT_RUN' | 'INVALID';
 
+export type SchemaLifecycleState = 'CURRENT' | 'BEHIND' | 'SCHEMA_DRIFT' | 'UNVERIFIED' | 'SOURCE';
+
 export type ValidationEvidenceType = 'regression' | 'screenshots';
 
 export type ObservabilityIssueSeverity = 'blocking' | 'warning' | 'unverified';
@@ -71,6 +73,53 @@ export interface ValidationEvidenceSummary {
 	total: number | null;
 }
 
+export interface ObservabilitySourceState {
+	branch: string | null;
+	commitSha: string | null;
+	workingTreeDirty: boolean | null;
+	degraded: boolean;
+	detail?: string;
+}
+
+export type CommandCategory = 'DIAGNOSE' | 'VALIDATE' | 'REPAIR' | 'PROMOTE';
+
+export interface CategorizedCommand {
+	id: string;
+	label: string;
+	command: string;
+	reason: string;
+	category: CommandCategory;
+}
+
+/** Local-scoped SSR / refresh payload (schema v1). */
+export interface ObservabilitySummaryPayload {
+	schemaVersion: 1;
+	generatedAt: string;
+	overallStatus: OverallStatus;
+	source: ObservabilitySourceState;
+	summary: {
+		migrations: {
+			hasPending: boolean;
+			pendingCount: number;
+			localLifecycle: SchemaLifecycleState;
+		};
+		invitations: {
+			totalCount: number;
+			alignedCount: number;
+			divergedCount: number;
+			behindCount: number;
+			issueSlugs: string[];
+		};
+		validation: {
+			regressionFreshness: EvidenceFreshness;
+			screenshotsFreshness: EvidenceFreshness;
+		};
+	};
+	categorizedCommands: CategorizedCommand[];
+	degradedNotes: string[];
+}
+
+/** Anomaly-first detail payload for the browser (schema v2). */
 export interface ObservabilitySnapshot {
 	schemaVersion: 2;
 	generatedAt: string;

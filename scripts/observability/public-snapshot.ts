@@ -62,20 +62,31 @@ function environmentState(row: EnvironmentHealthRow): EntityState {
 function invitationState(row: InvitationHealthRow): EntityState {
 	const local = row.environments.local.status;
 	if (local === 'NOT_PRESENT' || local === 'IDENTITY_CONFLICT') return 'blocking';
-	const all = Object.values(row.environments).map((env) => env.status);
-	if (
-		all.some((status) => ['UNREACHABLE', 'CREDENTIALS_REQUIRED', 'UNVERIFIED'].includes(status))
-	) {
+	if (local === 'UNREACHABLE' || local === 'CREDENTIALS_REQUIRED' || local === 'UNVERIFIED') {
 		return 'unverified';
 	}
 	if (
-		all.some((status) =>
-			['BEHIND_CANONICAL', 'DIVERGED', 'DIVERGED_FROM_REFERENCE', 'NOT_PRESENT'].includes(
-				status,
-			),
-		)
-	)
+		local === 'BEHIND_CANONICAL' ||
+		local === 'DIVERGED' ||
+		local === 'DIVERGED_FROM_REFERENCE'
+	) {
 		return 'warning';
+	}
+
+	// Remotes: ignore presence-only / unprobed UNVERIFIED; surface connectivity and hard drift.
+	for (const env of ['preview', 'production'] as const) {
+		const status = row.environments[env].status;
+		if (status === 'UNREACHABLE' || status === 'CREDENTIALS_REQUIRED') return 'unverified';
+		if (
+			status === 'NOT_PRESENT' ||
+			status === 'IDENTITY_CONFLICT' ||
+			status === 'BEHIND_CANONICAL' ||
+			status === 'DIVERGED' ||
+			status === 'DIVERGED_FROM_REFERENCE'
+		) {
+			return 'warning';
+		}
+	}
 	return 'ok';
 }
 
@@ -252,14 +263,19 @@ function collectIssues(input: PublicSnapshotInput): {
 	for (const row of input.invitations) {
 		const state = invitationState(row);
 		if (state === 'ok') continue;
-		const statuses = Object.values(row.environments).map((env) => env.status);
-		const code = statuses.includes('IDENTITY_CONFLICT')
+		const actionableStatuses = [
+			row.environments.local.status,
+			...(['preview', 'production'] as const)
+				.map((env) => row.environments[env].status)
+				.filter((status) => status !== 'UNVERIFIED'),
+		];
+		const code = actionableStatuses.includes('IDENTITY_CONFLICT')
 			? 'INVITATION_IDENTITY_CONFLICT'
-			: statuses.includes('NOT_PRESENT')
+			: actionableStatuses.includes('NOT_PRESENT')
 				? 'INVITATION_MISSING'
-				: statuses.includes('BEHIND_CANONICAL')
+				: actionableStatuses.includes('BEHIND_CANONICAL')
 					? 'INVITATION_BEHIND'
-					: statuses.some(
+					: actionableStatuses.some(
 								(status) =>
 									status === 'DIVERGED' || status === 'DIVERGED_FROM_REFERENCE',
 						  )

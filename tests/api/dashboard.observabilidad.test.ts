@@ -13,25 +13,32 @@ jest.mock('@/lib/observability/access', () => ({
 
 jest.mock('@/lib/observability/server/snapshot', () => ({
 	buildObservabilitySnapshot: jest.fn(),
+	buildObservabilitySummaryPayload: jest.fn(),
 }));
 
 import { describe, expect, it, beforeEach, jest } from '@jest/globals';
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import { requireLocalObservabilityAccess } from '@/lib/observability/access';
-import { buildObservabilitySnapshot } from '@/lib/observability/server/snapshot';
+import {
+	buildObservabilitySnapshot,
+	buildObservabilitySummaryPayload,
+} from '@/lib/observability/server/snapshot';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { ADMIN_RATE_LIMIT_OPERATIONS } from '@/lib/rsvp/security/admin-rate-limit';
 import {
 	GET,
 	OBSERVABILITY_RATE_LIMIT_OPERATION,
 } from '@/pages/api/dashboard/observabilidad/index';
-import type { ObservabilitySnapshot } from '@/lib/observability/types';
+import type { ObservabilitySnapshot, ObservabilitySummaryPayload } from '@/lib/observability/types';
 
 const mockAccess = requireLocalObservabilityAccess as jest.MockedFunction<
 	typeof requireLocalObservabilityAccess
 >;
 const mockSnapshot = buildObservabilitySnapshot as jest.MockedFunction<
 	typeof buildObservabilitySnapshot
+>;
+const mockSummary = buildObservabilitySummaryPayload as jest.MockedFunction<
+	typeof buildObservabilitySummaryPayload
 >;
 const mockCheckRateLimit = checkRateLimit as jest.MockedFunction<typeof checkRateLimit>;
 
@@ -85,6 +92,33 @@ function minimalSnapshot(): ObservabilitySnapshot {
 	};
 }
 
+function minimalSummary(): ObservabilitySummaryPayload {
+	return {
+		schemaVersion: 1,
+		generatedAt: '2026-07-31T12:00:00.000Z',
+		overallStatus: 'UNVERIFIED',
+		source: {
+			branch: 'dev-local',
+			commitSha: 'abc',
+			workingTreeDirty: false,
+			degraded: false,
+		},
+		summary: {
+			migrations: { hasPending: false, pendingCount: 0, localLifecycle: 'UNVERIFIED' },
+			invitations: {
+				totalCount: 13,
+				alignedCount: 13,
+				divergedCount: 0,
+				behindCount: 0,
+				issueSlugs: [],
+			},
+			validation: { regressionFreshness: 'NOT_RUN', screenshotsFreshness: 'NOT_RUN' },
+		},
+		categorizedCommands: [],
+		degradedNotes: ['Invitation matrix degraded: probe timeout'],
+	};
+}
+
 describe('GET /api/dashboard/observabilidad', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
@@ -95,7 +129,34 @@ describe('GET /api/dashboard/observabilidad', () => {
 		expect(ADMIN_RATE_LIMIT_OPERATIONS).toContain(OBSERVABILITY_RATE_LIMIT_OPERATION);
 	});
 
-	it('returns 200 sanitized snapshot for authorized Local super_admin', async () => {
+	it('returns 200 summary payload for authorized Local super_admin by default', async () => {
+		mockAccess.mockResolvedValue({
+			userId: 'admin-1',
+			email: 'admin@example.com',
+			role: 'super_admin',
+			isSuperAdmin: true,
+			amr: [],
+		} as never);
+		mockSummary.mockResolvedValue(minimalSummary());
+
+		const response = await GET({
+			request: new Request('http://127.0.0.1:4321/api/dashboard/observabilidad'),
+		} as never);
+		expect(response.status).toBe(200);
+		expect(response.headers.get('Cache-Control')).toContain('no-store');
+		const body = (await response.json()) as ObservabilitySummaryPayload;
+		expect(body.schemaVersion).toBe(1);
+		expect(body.degradedNotes.length).toBeGreaterThan(0);
+		const serialized = JSON.stringify(body);
+		expect(serialized).not.toMatch(/postgres:\/\//i);
+		expect(serialized).not.toMatch(/service_role/i);
+		expect(serialized).not.toMatch(/password=/i);
+		expect(mockAccess).toHaveBeenCalled();
+		expect(mockCheckRateLimit).toHaveBeenCalled();
+		expect(mockSummary).toHaveBeenCalled();
+	});
+
+	it('returns 200 detail snapshot for mode=detail', async () => {
 		mockAccess.mockResolvedValue({
 			userId: 'admin-1',
 			email: 'admin@example.com',
@@ -106,10 +167,9 @@ describe('GET /api/dashboard/observabilidad', () => {
 		mockSnapshot.mockResolvedValue(minimalSnapshot());
 
 		const response = await GET({
-			request: new Request('http://127.0.0.1:4321/api/dashboard/observabilidad'),
+			request: new Request('http://127.0.0.1:4321/api/dashboard/observabilidad?mode=detail'),
 		} as never);
 		expect(response.status).toBe(200);
-		expect(response.headers.get('Cache-Control')).toContain('no-store');
 		const body = (await response.json()) as ObservabilitySnapshot;
 		expect(body.schemaVersion).toBe(2);
 		expect(body.issues.length).toBeGreaterThan(0);
@@ -117,9 +177,25 @@ describe('GET /api/dashboard/observabilidad', () => {
 		expect(serialized).not.toMatch(/postgres:\/\//i);
 		expect(serialized).not.toMatch(/service_role/i);
 		expect(serialized).not.toMatch(/password=/i);
-		expect(mockAccess).toHaveBeenCalled();
-		expect(mockCheckRateLimit).toHaveBeenCalled();
 		expect(mockSnapshot).toHaveBeenCalled();
+	});
+
+	it('returns 400 for invalid mode query parameter', async () => {
+		mockAccess.mockResolvedValue({
+			userId: 'admin-1',
+			email: 'admin@example.com',
+			role: 'super_admin',
+			isSuperAdmin: true,
+			amr: [],
+		} as never);
+
+		const response = await GET({
+			request: new Request(
+				'http://127.0.0.1:4321/api/dashboard/observabilidad?mode=unsupported',
+			),
+		} as never);
+		expect(response.status).toBe(400);
+		expect(mockSnapshot).not.toHaveBeenCalled();
 	});
 
 	it('rejects unauthorized before probing', async () => {

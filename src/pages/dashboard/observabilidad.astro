@@ -9,6 +9,7 @@ import {
 } from '@/lib/observability/runtime-gate';
 import { requireAdminStrongDashboardSessionFromLocals } from '@/lib/rsvp/auth/authorization';
 import { ApiError } from '@/lib/rsvp/core/errors';
+import { buildObservabilitySummaryPayload } from '@/lib/observability/server/snapshot';
 
 if (!isLocalObservabilityRuntime(readObservabilityRuntimeEnv())) {
 	return Astro.redirect('/404');
@@ -25,8 +26,15 @@ try {
 	}
 	throw error;
 }
+
+let initialSummary = null;
+try {
+	initialSummary = await buildObservabilitySummaryPayload();
+} catch {
+	// Fail soft to client fetch if SSR probe fails
+}
 ---
 
 <DashboardLayout title="Observabilidad operacional">
-	<ObservabilityPanel client:load />
+	<ObservabilityPanel client:load initialSummary={initialSummary} />
 </DashboardLayout>

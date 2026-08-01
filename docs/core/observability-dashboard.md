@@ -18,8 +18,9 @@ authorizes remote mutation.
 | Runtime       | Approved persistent-Local only                                                        |
 | Authorization | Authenticated `super_admin` with strong session (MFA / trusted device / Local bypass) |
 | Rate limit    | `admin:observabilidad` (6 req/min)                                                    |
+| Concurrency   | One aggregation child process at a time (queued)                                      |
 | Interaction   | Read-only                                                                             |
-| Refresh       | Initial load + manual **Actualizar estado**; 60 s cache                               |
+| Refresh       | Initial load + manual **Actualizar estado**; detail cached 60 s                       |
 | Polling       | None                                                                                  |
 
 Request order:
@@ -42,11 +43,33 @@ Worktree path alone is never authorization. There is no alternate env-flag overr
 
 ---
 
+## Summary vs detail (compute contract)
+
+| Mode      | Wire size                         | Probe scope                             | Timeout | When                                   |
+| --------- | --------------------------------- | --------------------------------------- | ------- | -------------------------------------- |
+| `summary` | Small payload (&lt; 3 KB)         | **Local only** + FS validation evidence | 60s     | SSR + **Actualizar estado** (bootstrap) |
+| `detail`  | Anomaly-first issues (schema v2)  | Local + Preview + Production            | 300s    | Panel issues UI (cached 60 s)          |
+
+Summary is lightweight in **both** wire size and remote DB cost: it does not open Preview/Production
+connections. Overall status for summary ignores unprobed remote stubs (`connection: unverified`).
+
+Both modes run in an isolated child process (`scripts/observability/print-snapshot.ts`) so sync
+`psql` / `execSync` probes cannot stall the Astro event loop.
+
+---
+
 ## Observed environments
 
-Local, Preview, and Production — connection, runtime identity, schema lifecycle, active invitation
-rows (all non-archived), supported corpus presence (13 Local Render Corpus clients), and
-render-effective parity.
+**Detail mode:** Local, Preview, and Production — connection, runtime identity, schema lifecycle,
+active invitation rows (all non-archived), supported corpus presence (Local Render Corpus
+clients), and render-effective parity. The browser receives only the projected issue list, not the
+full matrix.
+
+**Summary mode:** Local probes only. Preview/Production cells are marked unprobed until detail runs.
+
+Invitation batch SQL is always restricted to Local Render Corpus slugs. Published JSON content is
+fetched only for Local (base64-encoded) to support legacy reference hashing — never pulled from
+Preview/Production into the probe process.
 
 **Asset health** is corpus-level evidence (repository inventory + fixture metadata + Local DB asset
 counts). It is not presented as an independently verified per-environment remote asset audit.
@@ -66,15 +89,24 @@ Evidence freshness: `PASS` | `FAIL` | `STALE` | `NOT_RUN` | `INVALID`
 
 ---
 
-## Validation evidence
+## Validation evidence (optional for load; required for HEALTHY)
 
 | Item        | Location                                         | Owning command                        |
 | ----------- | ------------------------------------------------ | ------------------------------------- |
 | Regression  | `.tmp/observability/validation/regression.json`  | `pnpm test:local-render-corpus`       |
 | Screenshots | `.tmp/observability/validation/screenshots.json` | `pnpm screenshot:local-render-corpus` |
 
-Snapshots are generated artifacts (gitignored via `.tmp/`). Schema version `1`. Freshness matches
-`inputFingerprint` + `corpusFingerprint` against current registry/fixtures/test inputs.
+These CLIs are **operator evidence writers**, not runtime dependencies of the dashboard route:
+
+- Refresh **never** runs tests, screenshots, Playwright, migrations, or promotes.
+- Missing evidence → freshness `NOT_RUN` (page still loads); overall cannot be `HEALTHY`.
+- PNG artifacts under `output/screenshots/` are not read by the dashboard — only the JSON evidence
+  file is.
+- No GitHub workflow invokes `pnpm screenshot:local-render-corpus`.
+
+Validation evidence snapshots are generated artifacts (gitignored via `.tmp/`). Schema version `1`.
+Freshness matches `inputFingerprint` + `corpusFingerprint` against current registry/fixtures/test
+inputs.
 
 Regression totals (`total` / `passed` / `failed` / `failures[]`) are taken from Jest’s JSON report
 for the corpus suite. Snapshot write failures never convert a failed validation into a pass.
@@ -84,7 +116,7 @@ Dashboard refresh **never** runs tests, screenshots, migrations,
 
 ## Anomaly-first response contract
 
-The browser receives schema version `2`. The payload intentionally contains only:
+The browser detail payload uses schema version `2`. It intentionally contains only:
 
 - overall status, generation time, cache state, and next refresh time;
 - short source identity (branch, short SHA, dirty/clean state);
@@ -105,12 +137,13 @@ healthy status.
 
 - Corpus status is queried once per configured environment with a batched SQL statement. Migration
   history adds one query per environment, for a maximum of six database subprocesses per uncached
-  snapshot.
-- The Astro server caches a valid snapshot for 60 seconds and shares one in-flight rebuild across
-  concurrent requests. There is no force-refresh bypass.
-- Aggregation has a 30-second wall-clock limit; child stdout is capped at 1 MiB and stderr at 4 KiB.
-- When rebuilding fails, the last valid snapshot may be served for at most five minutes. It is
-  marked `stale-fallback`, receives `SNAPSHOT_REFRESH_FAILED`, and cannot remain `HEALTHY`.
+  detail snapshot.
+- Detail responses are cached for 60 seconds and share one in-flight rebuild across concurrent
+  requests. There is no force-refresh bypass. At most one aggregation child runs at a time.
+- Summary aggregation has a 60-second wall-clock limit; detail has 300 seconds. Child stdout is
+  capped at 1 MiB and stderr at 4 KiB.
+- When rebuilding detail fails, the last valid snapshot may be served for at most five minutes. It
+  is marked `stale-fallback`, receives `SNAPSHOT_REFRESH_FAILED`, and cannot remain `HEALTHY`.
 - The browser does not poll. Its refresh control becomes available at `refreshAfter`.
 
 ---
@@ -127,15 +160,40 @@ healthy status.
 
 ## Implementation & type boundary
 
-- Aggregation (Node-only): `scripts/observability/snapshot.ts` → `buildObservabilitySnapshot()`
-- Public issue classifier: `scripts/observability/public-snapshot.ts`
-- Runtime gate: `src/lib/observability/runtime-gate.ts`
-- Browser types/schema: `src/lib/observability/types.ts` + `src/lib/observability/schema.ts`
-- Server snapshot wrapper: `src/lib/observability/server/snapshot.ts`
-- UI island: `ObservabilityPanel` (fetches API only; never imports probe modules)
+- Aggregation (Node-only): `scripts/observability/snapshot.ts` →
+  `assembleObservabilityMatrix({ probeScope })`, `buildObservabilitySummary()` (always
+  `probeScope: 'local'`), and `buildObservabilitySnapshot()` (detail → public issues).
+- Public issue classifier: `scripts/observability/public-snapshot.ts`.
+- Shared env pass: one `evaluateGeneralStatus({ environments })` feeds both migration-health and
+  environment-health.
+- Batched Database Probes: `scripts/provision/dbs-status.ts` →
+  `evaluateBatchTargetStatuses(env, hashes, { slugs, includePublishedContent })` — corpus slug
+  filter + unit-separator fields; content only when `includePublishedContent` (Local).
+- Runtime gate: `src/lib/observability/runtime-gate.ts`.
+- Dual Payload Contracts:
+  - `ObservabilitySummaryPayload` (schema v1): small wire payload; Local-scoped compute; SSR +
+    `?mode=summary`.
+  - `ObservabilitySnapshot` (schema v2): anomaly-first issues; `?mode=detail`.
+- Browser types/schema: `src/lib/observability/types.ts` + `src/lib/observability/schema.ts`.
+- Server snapshot wrapper: `src/lib/observability/server/snapshot.ts` (child process + queue mutex +
+  detail cache).
+- UI island: `ObservabilityPanel` (SSR summary bootstrap; fetches detail for issues; never imports
+  probe modules).
 
 The mirrored type files are intentional: consolidating them into one module would risk pulling
 Node-only scripts into the client bundle. Keep the separation.
+
+## Deployment & Runtime Binary Contract
+
+The dashboard is explicitly gated for **Local operator environments only**. It will not run on
+hosted Vercel function runtimes:
+
+- `isLocalObservabilityRuntime()` detects `VERCEL=1` or `VERCEL_ENV=production|preview` and causes
+  Astro SSR to redirect to `/404`.
+- API route `/api/dashboard/observabilidad` rejects requests with a 404 error outside Local
+  environments.
+- This gate ensures Vercel deployments do not attempt to invoke non-existent local binaries
+  (`psql`), execute filesystem subprocesses, or time out on serverless cold starts.
 
 ## Known limitations
 
@@ -143,3 +201,5 @@ Node-only scripts into the client bundle. Keep the separation.
 - Asset health uses repository inventory + fixture metadata + Local DB counts — not bulk binary
   download.
 - Environment / invitation / evidence failures degrade independently inside a `200` snapshot.
+- SSR page load bypasses the API rate limiter (still Local + strong session gated); API refreshes
+  are rate-limited and serialized through the aggregation mutex.

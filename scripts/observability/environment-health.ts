@@ -1,12 +1,19 @@
 /**
  * Environment matrix health for Local / Preview / Production.
  * Asset inventory is corpus-level (see snapshot.assets), not per-environment.
+ *
+ * Prefer a precomputed `GeneralStatusSummary` so schema/connectivity are not
+ * re-probed after migration-health already consumed the same pass.
  */
 
-import type { TargetEnv } from '../provision/dbs-status.ts';
+import {
+	evaluateGeneralStatus,
+	withStatusProbeTimeout,
+	type GeneralStatusSummary,
+	type TargetEnv,
+} from '../provision/dbs-status.ts';
 import { EXPECTED_LOCAL_RENDER_CORPUS_SIZE } from '../provision/local-render-corpus/registry.ts';
 import { countCorpusPresence } from './invitation-health.ts';
-import type { BatchEnvironmentStats } from './invitation-health.ts';
 import type { EnvironmentHealthRow, InvitationHealthRow, SchemaLifecycleState } from './types.ts';
 
 function connectionFromGeneral(input: {
@@ -66,27 +73,50 @@ function renderParityForEnv(
 	return 'BEHIND_OR_CONFLICTED';
 }
 
+function stubUnprobedEnv(env: TargetEnv): EnvironmentHealthRow {
+	return {
+		environment: env,
+		connection: 'unverified',
+		runtimeIdentity: 'unknown',
+		schemaLifecycle: 'UNVERIFIED',
+		activeInvitationRows: 0,
+		supportedCorpusPresence: `0/${EXPECTED_LOCAL_RENDER_CORPUS_SIZE}`,
+		renderEffectiveParity: 'UNVERIFIABLE',
+		detail: 'Not probed in this observability scope',
+	};
+}
+
 export function buildEnvironmentHealth(input: {
 	invitations: readonly InvitationHealthRow[];
-	environmentStats: Record<TargetEnv, BatchEnvironmentStats>;
-	migrations: readonly { environment: string; schemaLifecycle: SchemaLifecycleState }[];
+	probeTimeoutMs?: number;
+	generalStatus?: GeneralStatusSummary;
+	/** Environments to include as live probes; others are stubbed as unprobed. */
+	environments?: readonly TargetEnv[];
 }): EnvironmentHealthRow[] {
-	const envs: TargetEnv[] = ['local', 'preview', 'production'];
+	const timeout = input.probeTimeoutMs ?? 2_000;
+	const probeEnvs: TargetEnv[] = input.environments
+		? [...input.environments]
+		: ['local', 'preview', 'production'];
+	const general =
+		input.generalStatus ?? withStatusProbeTimeout(timeout, () => evaluateGeneralStatus());
+	const allEnvs: TargetEnv[] = ['local', 'preview', 'production'];
 
-	return envs.map((env) => {
-		const status = input.environmentStats[env];
+	return allEnvs.map((env) => {
+		if (!probeEnvs.includes(env)) {
+			return stubUnprobedEnv(env);
+		}
+
+		const status = general.environments[env];
 		const presence = countCorpusPresence(input.invitations, env);
 		const connection = connectionFromGeneral(status);
-		const schemaLifecycle =
-			input.migrations.find((row) => row.environment === env)?.schemaLifecycle ??
-			'UNVERIFIED';
+		const schemaLifecycle = (status.schemaLifecycle ?? 'UNVERIFIED') as SchemaLifecycleState;
 
 		return {
 			environment: env,
 			connection,
-			runtimeIdentity: env === 'local' ? 'persistent-local' : env,
+			runtimeIdentity: status.targetClassification || 'unknown',
 			schemaLifecycle,
-			activeInvitationRows: status.activeInvitationRows,
+			activeInvitationRows: status.activeManagedCount,
 			supportedCorpusPresence: `${presence.present}/${presence.total || EXPECTED_LOCAL_RENDER_CORPUS_SIZE}`,
 			renderEffectiveParity: renderParityForEnv(
 				env,
@@ -95,9 +125,10 @@ export function buildEnvironmentHealth(input: {
 				status.configured,
 			),
 			detail:
-				status.identityConflictsCount > 0
+				status.errorDetail?.slice(0, 160) ??
+				(status.identityConflictsCount > 0
 					? `identityConflicts=${status.identityConflictsCount}`
-					: undefined,
+					: undefined),
 		};
 	});
 }

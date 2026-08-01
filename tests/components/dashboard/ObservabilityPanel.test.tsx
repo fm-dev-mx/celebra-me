@@ -66,7 +66,46 @@ function payload(): ObservabilitySnapshot {
 
 describe('ObservabilityPanel', () => {
 	it('renders anomalies before compact healthy coverage', async () => {
-		mockGet.mockResolvedValue({ ok: true, status: 200, data: payload() });
+		mockGet.mockImplementation(async (path) => {
+			if (String(path).includes('mode=detail')) {
+				return { ok: true, status: 200, data: payload() };
+			}
+			return {
+				ok: true,
+				status: 200,
+				data: {
+					schemaVersion: 1,
+					generatedAt: '2026-08-01T12:00:00.000Z',
+					overallStatus: 'ATTENTION',
+					source: {
+						branch: 'dev-local',
+						commitSha: 'abcdef1234',
+						workingTreeDirty: false,
+						degraded: false,
+					},
+					summary: {
+						migrations: {
+							hasPending: false,
+							pendingCount: 0,
+							localLifecycle: 'CURRENT',
+						},
+						invitations: {
+							totalCount: 13,
+							alignedCount: 12,
+							divergedCount: 0,
+							behindCount: 1,
+							issueSlugs: ['sample'],
+						},
+						validation: {
+							regressionFreshness: 'PASS',
+							screenshotsFreshness: 'PASS',
+						},
+					},
+					categorizedCommands: [],
+					degradedNotes: [],
+				},
+			};
+		});
 		render(<ObservabilityPanel />);
 		expect(screen.getByRole('status')).toHaveTextContent('Comprobando señales operacionales');
 		await waitFor(() =>
@@ -80,6 +119,10 @@ describe('ObservabilityPanel', () => {
 		expect(
 			screen.getByRole('button', { name: 'Actualización disponible en breve' }),
 		).toBeDisabled();
+		expect(mockGet).toHaveBeenCalledWith(
+			'/api/dashboard/observabilidad?mode=detail',
+			expect.objectContaining({ timeoutMs: 300_000 }),
+		);
 	});
 
 	it('shows a recoverable alert when the first request fails', async () => {

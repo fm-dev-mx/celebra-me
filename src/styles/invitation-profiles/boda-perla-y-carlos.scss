@@ -1,0 +1,159 @@
+// Perla & Carlos — Lane A on jewelry-box-wedding.
+// Client palette: olive + beige + gold. Do not mutate the shared preset.
+//
+// Inheritance reset (F07): champagne surfaces, sepia family filter, hardcoded PA
+// champagne paper gradients, missing RGB channels that break RSVP/location opacity.
+
+.event--boda-perla-y-carlos.theme-preset--jewelry-box-wedding {
+	--perla-olive: rgb(88 102 74);
+	--perla-olive-rgb: 88 102 74;
+	--perla-olive-deep: rgb(58 70 48);
+	--perla-olive-deep-rgb: 58 70 48;
+	--perla-beige: rgb(236 228 214);
+	--perla-beige-rgb: 236 228 214;
+	--perla-cream: rgb(247 243 235);
+	--perla-cream-rgb: 247 243 235;
+	--perla-sand: rgb(214 201 178);
+	--perla-sand-rgb: 214 201 178;
+	--perla-gold: rgb(176 148 96);
+	--perla-gold-rgb: 176 148 96;
+	--perla-ink: rgb(42 40 36);
+	--perla-ink-rgb: 42 40 36;
+
+	// Core surfaces / text (reset champagne preset)
+	--color-surface-primary: var(--perla-cream);
+	--color-surface-primary-rgb: var(--perla-cream-rgb);
+	--color-surface-secondary: var(--perla-beige);
+	--color-surface-soft: var(--perla-beige);
+	--color-surface-elevated: var(--perla-cream);
+	--color-surface-dark: var(--perla-olive-deep);
+	--color-surface-dark-rgb: var(--perla-olive-deep-rgb);
+	--color-text-primary: var(--perla-ink);
+	--color-text-primary-rgb: var(--perla-ink-rgb);
+	--color-text-secondary: rgb(var(--perla-ink-rgb) / 78%);
+	--color-text-emphasis: var(--perla-olive);
+	--color-text-on-dark: var(--perla-cream);
+	--color-text-on-light: var(--perla-ink);
+	--color-action-primary: var(--perla-olive-deep);
+	--color-action-primary-rgb: var(--perla-olive-deep-rgb);
+	--color-action-accent: var(--perla-gold);
+	--color-action-accent-rgb: var(--perla-gold-rgb);
+
+	--color-glass-bg: rgb(var(--perla-cream-rgb) / 72%);
+	--color-glass-border: rgb(var(--perla-gold-rgb) / 40%);
+	--color-glass-shadow: rgb(var(--perla-olive-rgb) / 14%);
+	--shadow-premium: 0 20px 40px var(--color-glass-shadow), 0 8px 16px rgb(0 0 0 / 4%);
+
+	// Family — kill sepia / champagne vignette bleed
+	--family-bg: radial-gradient(
+		circle at 50% 40%,
+		rgb(var(--perla-beige-rgb) / 90%) 0%,
+		var(--perla-cream) 100%
+	);
+	--family-vignette-bg: radial-gradient(
+		circle at 50% 50%,
+		transparent 0%,
+		rgb(var(--perla-olive-rgb) / 6%) 100%
+	);
+	--family-texture-opacity: 0.06;
+	--family-accent: var(--perla-gold);
+	--family-text-primary: var(--perla-ink);
+	--family-text-muted: rgb(var(--perla-ink-rgb) / 64%);
+	--family-divider: linear-gradient(
+		90deg,
+		transparent 0%,
+		rgb(var(--perla-gold-rgb) / 35%) 50%,
+		transparent 100%
+	);
+	--family-media-filter: none;
+	--family-panel-bg: var(--color-glass-bg);
+	--family-panel-border: 1px solid var(--color-glass-border);
+
+	--hero-label-color: var(--perla-gold);
+	--hero-badge-border: var(--perla-gold);
+	--gallery-title-color: var(--perla-olive);
+
+	// Location flourish / indications
+	--location-flourish-color: var(--perla-gold);
+	--location-indications-heading-color: var(--perla-olive);
+	--location-indications-panel-bg: rgb(var(--perla-beige-rgb) / 55%);
+	--location-indications-panel-border: 1px solid rgb(var(--perla-gold-rgb) / 28%);
+	--location-inner-frame-bg: var(--perla-cream);
+
+	// Personalized access — replace hardcoded champagne paper
+	--pa-card-bg-color: var(--perla-olive-deep);
+	--pa-card-bg-image: linear-gradient(
+		160deg,
+		rgb(var(--perla-cream-rgb) / 96%) 0%,
+		rgb(var(--perla-beige-rgb) / 98%) 50%,
+		rgb(var(--perla-cream-rgb) / 96%) 100%
+	);
+	--pa-card-border: 1.5px solid rgb(var(--perla-gold-rgb) / 40%);
+	--pa-card-shadow: 0 18px 50px rgb(var(--perla-olive-rgb) / 18%);
+	--pa-card-inner-border: 1px solid rgb(var(--perla-gold-rgb) / 24%);
+	--pa-card-glow: radial-gradient(
+		circle at top center,
+		rgb(var(--perla-gold-rgb) / 14%),
+		transparent 55%
+	);
+	--pa-eyebrow-color: var(--perla-olive);
+	--pa-title-color: var(--perla-olive-deep);
+	--pa-guest-color: var(--perla-ink);
+	--pa-divider-gradient: linear-gradient(
+		90deg,
+		transparent 0%,
+		var(--perla-gold) 50%,
+		transparent 100%
+	);
+	--pa-divider-diamond-bg: var(--perla-cream);
+	--pa-divider-diamond-border-color: var(--perla-gold);
+	--pa-count-frame-border: 1.5px solid rgb(var(--perla-gold-rgb) / 40%);
+	--pa-count-frame-bg: linear-gradient(180deg, var(--perla-cream) 0%, var(--perla-beige) 100%);
+	--pa-count-color: var(--perla-olive);
+	--pa-footer-border-top: 1px solid rgb(var(--perla-gold-rgb) / 22%);
+	--pa-footer-text-color: rgb(var(--perla-ink-rgb) / 72%);
+
+	// Thank you
+	.thank-you-section[data-variant='jewelry-box-wedding'] {
+		.thank-you-message {
+			letter-spacing: 0.01em;
+			color: var(--perla-ink);
+			background: rgb(var(--perla-cream-rgb) / 70%);
+			border-color: rgb(var(--perla-gold-rgb) / 35%);
+		}
+
+		.thank-you-message .drop-cap {
+			color: var(--perla-olive);
+			margin-inline-end: 0;
+		}
+
+		.closing-name {
+			color: var(--perla-olive);
+			letter-spacing: 0.12em;
+		}
+	}
+
+	// RSVP on dark olive band
+	.invitation-section-wrapper[data-section-kind='rsvp'],
+	.invitation-section-wrapper[data-section-kind='personalizedAccess'] {
+		--color-text-primary-rgb: var(--perla-cream-rgb);
+	}
+
+	.rsvp-section,
+	.rsvp {
+		--rsvp-title-color: var(--perla-cream);
+		--rsvp-label-color: rgb(var(--perla-cream-rgb) / 90%);
+		--rsvp-placeholder-color: rgb(var(--perla-cream-rgb) / 62%);
+		--rsvp-field-bg: rgb(var(--perla-cream-rgb) / 10%);
+		--rsvp-field-bg-focus: rgb(var(--perla-cream-rgb) / 16%);
+		--rsvp-field-border: rgb(var(--perla-gold-rgb) / 45%);
+		--rsvp-radio-bg: rgb(var(--perla-cream-rgb) / 12%);
+		--rsvp-radio-bg-hover: rgb(var(--perla-cream-rgb) / 18%);
+		--rsvp-radio-border: rgb(var(--perla-gold-rgb) / 50%);
+		--rsvp-radio-selected-bg: rgb(var(--perla-cream-rgb) / 20%);
+		--rsvp-radio-selected-border: var(--perla-gold);
+		--rsvp-radio-label-color: rgb(var(--perla-cream-rgb) / 92%);
+		--rsvp-radio-label-color-selected: var(--perla-cream);
+		--rsvp-radio-indicator-dot: var(--perla-gold);
+	}
+}

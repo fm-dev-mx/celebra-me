@@ -7,6 +7,7 @@ import type {
 	ObservabilityIssueDomain,
 	ObservabilityIssueSeverity,
 	ObservabilitySnapshot,
+	ObservabilitySummaryPayload,
 	OverallStatus,
 } from '@/lib/observability/types';
 
@@ -57,18 +58,23 @@ function formatDate(value: string | null): string {
 	});
 }
 
-export default function ObservabilityPanel() {
+interface ObservabilityPanelProps {
+	initialSummary?: ObservabilitySummaryPayload | null;
+}
+
+export default function ObservabilityPanel({ initialSummary = null }: ObservabilityPanelProps) {
+	const [summary, setSummary] = useState<ObservabilitySummaryPayload | null>(initialSummary);
 	const [snapshot, setSnapshot] = useState<ObservabilitySnapshot | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [canRefresh, setCanRefresh] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
-	const load = useCallback(async () => {
+	const loadDetail = useCallback(async () => {
 		setLoading(true);
 		setError(null);
 		const result = await dashboardApi.get<ObservabilitySnapshot>(
-			'/api/dashboard/observabilidad',
-			{ timeoutMs: 35_000 },
+			'/api/dashboard/observabilidad?mode=detail',
+			{ timeoutMs: 300_000 },
 		);
 		if (!result.ok) {
 			setError(result.message || 'No se pudo actualizar el estado operacional.');
@@ -80,9 +86,23 @@ export default function ObservabilityPanel() {
 		setLoading(false);
 	}, []);
 
+	const loadSummary = useCallback(async () => {
+		const result = await dashboardApi.get<ObservabilitySummaryPayload>(
+			'/api/dashboard/observabilidad?mode=summary',
+			{ timeoutMs: 60_000 },
+		);
+		if (result.ok) {
+			setSummary(result.data);
+		}
+	}, []);
+
+	const refresh = useCallback(async () => {
+		await Promise.all([loadSummary(), loadDetail()]);
+	}, [loadDetail, loadSummary]);
+
 	useEffect(() => {
-		void load();
-	}, [load]);
+		void loadDetail();
+	}, [loadDetail]);
 
 	useEffect(() => {
 		if (!snapshot || canRefresh) return;
@@ -95,6 +115,9 @@ export default function ObservabilityPanel() {
 		snapshot?.recommendedActions.map((action) => [action.id, action]) ?? [],
 	);
 
+	const headlineStatus = snapshot?.overallStatus ?? summary?.overallStatus;
+	const inviteSummary = summary?.summary.invitations;
+
 	return (
 		<section className="observability" aria-labelledby="observability-title">
 			<header className="observability__header">
@@ -105,7 +128,7 @@ export default function ObservabilityPanel() {
 				<button
 					type="button"
 					className="btn-secondary observability__refresh"
-					onClick={() => void load()}
+					onClick={() => void refresh()}
 					disabled={loading || (!canRefresh && snapshot !== null)}
 				>
 					{loading
@@ -130,10 +153,33 @@ export default function ObservabilityPanel() {
 				</div>
 			) : null}
 
+			{summary && !snapshot ? (
+				<section
+					className="observability__summary"
+					aria-labelledby="observability-bootstrap-title"
+				>
+					<div className="observability__overall">
+						{headlineStatus ? (
+							<span className="observability__status" data-status={headlineStatus}>
+								{OVERALL_LABELS[headlineStatus]}
+							</span>
+						) : null}
+						<div>
+							<h2 id="observability-bootstrap-title">Resumen Local</h2>
+							<p>
+								{inviteSummary
+									? `${inviteSummary.alignedCount} de ${inviteSummary.totalCount} invitaciones alineadas en Local.`
+									: 'Cargando señales detalladas…'}
+							</p>
+						</div>
+					</div>
+				</section>
+			) : null}
+
 			{loading && !snapshot ? (
 				<div className="observability__loading" role="status">
 					<strong>Comprobando señales operacionales…</strong>
-					<span>La primera lectura puede tardar algunos segundos.</span>
+					<span>La primera lectura detallada puede tardar algunos segundos.</span>
 				</div>
 			) : null}
 
