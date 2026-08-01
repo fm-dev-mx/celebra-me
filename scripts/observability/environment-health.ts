@@ -1,0 +1,128 @@
+/**
+ * Environment matrix health for Local / Preview / Production.
+ */
+
+import {
+	evaluateGeneralStatus,
+	withStatusProbeTimeout,
+	type TargetEnv,
+} from '../provision/dbs-status.ts';
+import { EXPECTED_LOCAL_RENDER_CORPUS_SIZE } from '../provision/local-render-corpus/registry.ts';
+import { countCorpusPresence } from './invitation-health.ts';
+import type {
+	AssetHealthRow,
+	EnvironmentHealthRow,
+	InvitationHealthRow,
+	SchemaLifecycleState,
+} from './types.ts';
+
+function connectionFromGeneral(input: {
+	configured: boolean;
+	reachable: boolean;
+}): EnvironmentHealthRow['connection'] {
+	if (!input.configured) return 'credentials_required';
+	if (!input.reachable) return 'unreachable';
+	return 'ok';
+}
+
+function summarizeAssets(assets: readonly AssetHealthRow[]): EnvironmentHealthRow['assetHealthSummary'] {
+	const summary = {
+		ok: 0,
+		partial: 0,
+		missing: 0,
+		remoteReference: 0,
+		unverified: 0,
+	};
+	for (const row of assets) {
+		if (row.status === 'OK') summary.ok += 1;
+		else if (row.status === 'PARTIAL') summary.partial += 1;
+		else if (row.status === 'MISSING') summary.missing += 1;
+		else if (row.status === 'REMOTE_REFERENCE') summary.remoteReference += 1;
+		else summary.unverified += 1;
+	}
+	return summary;
+}
+
+function renderParityForEnv(
+	env: TargetEnv,
+	invitations: readonly InvitationHealthRow[],
+	reachable: boolean,
+	configured: boolean,
+): EnvironmentHealthRow['renderEffectiveParity'] {
+	if (!configured || !reachable) return 'UNVERIFIABLE';
+	const statuses = invitations.map((row) => row.environments[env].status);
+	if (statuses.length === 0) return 'MISSING';
+
+	const blocking = statuses.filter(
+		(s) =>
+			s === 'NOT_PRESENT' ||
+			s === 'IDENTITY_CONFLICT' ||
+			s === 'CREDENTIALS_REQUIRED' ||
+			s === 'UNREACHABLE',
+	);
+	if (blocking.length === statuses.length) {
+		if (statuses.every((s) => s === 'NOT_PRESENT')) return 'MISSING';
+		return 'UNVERIFIABLE';
+	}
+	if (blocking.some((s) => s === 'NOT_PRESENT')) return 'PARTIAL_PRESENCE';
+
+	const aligned = statuses.filter(
+		(s) => s === 'MATCH_CANONICAL' || s === 'MATCH_REFERENCE',
+	).length;
+	const draftOnly = statuses.filter((s) => s === 'DIVERGED').length;
+	const publishedMismatch = statuses.filter(
+		(s) =>
+			s === 'BEHIND_CANONICAL' ||
+			s === 'DIVERGED_FROM_REFERENCE' ||
+			s === 'IDENTITY_CONFLICT',
+	).length;
+	const unverifiable = statuses.filter((s) => s === 'UNVERIFIED').length;
+
+	if (unverifiable > 0 && aligned + draftOnly + publishedMismatch + unverifiable === statuses.length) {
+		if (aligned === 0 && draftOnly === 0 && publishedMismatch === 0) return 'UNVERIFIABLE';
+	}
+	if (aligned === statuses.length) return 'ALL_ALIGNED';
+	if (aligned + draftOnly === statuses.length && draftOnly > 0) return 'DRAFT_DIVERGENCE_ONLY';
+	if (publishedMismatch > 0) return 'PUBLISHED_MISMATCH';
+	if (blocking.length > 0) return 'PARTIAL_PRESENCE';
+	return 'BEHIND_OR_CONFLICTED';
+}
+
+export function buildEnvironmentHealth(input: {
+	invitations: readonly InvitationHealthRow[];
+	assets: readonly AssetHealthRow[];
+	probeTimeoutMs?: number;
+}): EnvironmentHealthRow[] {
+	const timeout = input.probeTimeoutMs ?? 2_000;
+	const general = withStatusProbeTimeout(timeout, () => evaluateGeneralStatus());
+	const assetSummary = summarizeAssets(input.assets);
+	const envs: TargetEnv[] = ['local', 'preview', 'production'];
+
+	return envs.map((env) => {
+		const status = general.environments[env];
+		const presence = countCorpusPresence(input.invitations, env);
+		const connection = connectionFromGeneral(status);
+		const schemaLifecycle = (status.schemaLifecycle ?? 'UNVERIFIED') as SchemaLifecycleState;
+
+		return {
+			environment: env,
+			connection,
+			runtimeIdentity: status.targetClassification || 'unknown',
+			schemaLifecycle,
+			activeInvitationRows: status.activeManagedCount,
+			supportedCorpusPresence: `${presence.present}/${presence.total || EXPECTED_LOCAL_RENDER_CORPUS_SIZE}`,
+			renderEffectiveParity: renderParityForEnv(
+				env,
+				input.invitations,
+				status.reachable,
+				status.configured,
+			),
+			assetHealthSummary: assetSummary,
+			detail:
+				status.errorDetail?.slice(0, 160) ??
+				(status.identityConflictsCount > 0
+					? `identityConflicts=${status.identityConflictsCount}`
+					: undefined),
+		};
+	});
+}

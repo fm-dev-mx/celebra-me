@@ -34,6 +34,7 @@ import {
 import { runInteractiveFlow } from './interactive.js';
 import { runScreenshotJob } from './runner.js';
 import { buildCorpusScreenshotConfig } from '../provision/local-render-corpus/screenshot-pages.ts';
+import { tryWriteValidationEvidence } from '../observability/write-regression-evidence.ts';
 
 // ── Entry point ──────────────────────────────────────────────────────────
 
@@ -44,7 +45,40 @@ async function main() {
 	const isInteractive = shouldRunInteractive(cliOptions);
 
 	if (!isInteractive && (cliOptions.corpus || cliOptions.config)) {
+		const startedAt = new Date().toISOString();
 		const result = await runConfigJobs(cliOptions);
+		if (cliOptions.corpus) {
+			const completedAt = new Date().toISOString();
+			const total = Math.max(1, result.totalPages ?? 0);
+			const failed = result.failed;
+			const passed = Math.max(0, total - failed);
+			const writeResult = tryWriteValidationEvidence({
+				validationType: 'screenshots',
+				command: 'pnpm screenshot:local-render-corpus',
+				startedAt,
+				completedAt,
+				status: failed > 0 ? 'fail' : 'pass',
+				total,
+				passed,
+				failed,
+				failures:
+					failed > 0
+						? [
+								{
+									slug: 'local-render-corpus',
+									message: `${failed} corpus screenshot page(s) failed`,
+								},
+							]
+						: [],
+			});
+			if (!writeResult.ok) {
+				console.error(`observability evidence write failed: ${writeResult.error}`);
+			} else {
+				console.log(
+					`observability evidence written: ${writeResult.snapshot.artifactLocation} (${writeResult.snapshot.status})`,
+				);
+			}
+		}
 		if (result.failed > 0) process.exit(1);
 		return;
 	}
@@ -220,8 +254,10 @@ function buildJobFromCli(options: CliOptions): ScreenshotJob | null {
 }
 
 // eslint-disable-next-line complexity -- Config defaults are resolved in one place for predictable batch jobs.
-async function runConfigJobs(options: CliOptions): Promise<{ failed: number }> {
-	if (!options.corpus && !options.config) return { failed: 0 };
+async function runConfigJobs(
+	options: CliOptions,
+): Promise<{ failed: number; totalPages: number }> {
+	if (!options.corpus && !options.config) return { failed: 0, totalPages: 0 };
 
 	const config = options.corpus
 		? buildCorpusScreenshotConfig()
@@ -231,7 +267,7 @@ async function runConfigJobs(options: CliOptions): Promise<{ failed: number }> {
 
 	if (pages.length === 0) {
 		console.error(`✕ Config has no pages: ${options.config}`);
-		return { failed: 1 };
+		return { failed: 1, totalPages: 0 };
 	}
 
 	for (const page of pages) {
@@ -298,7 +334,7 @@ async function runConfigJobs(options: CliOptions): Promise<{ failed: number }> {
 		if (result.failed > 0) failed++;
 	}
 
-	return { failed };
+	return { failed, totalPages: pages.length };
 }
 
 // ── Run ──────────────────────────────────────────────────────────────────

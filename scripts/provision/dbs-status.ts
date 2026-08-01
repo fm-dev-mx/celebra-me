@@ -154,7 +154,7 @@ function countActiveManagedInvitations(dbUrl: string): {
 	};
 }
 
-function listExpectedMigrationVersions(): string[] {
+export function listExpectedMigrationVersions(): string[] {
 	const migrationsDir = resolve(PROJECT_ROOT, 'supabase', 'migrations');
 	if (!existsSync(migrationsDir)) return [];
 	return readdirSync(migrationsDir)
@@ -260,8 +260,13 @@ export function evaluateGeneralStatus(): GeneralStatusSummary {
 	};
 }
 
+/**
+ * Read-only per-environment invitation status probe.
+ * Pass `canonicalHash` for managed package-hash classification; pass `null`
+ * for presence-only checks (legacy corpus / reference-relative callers).
+ */
 // eslint-disable-next-line complexity -- Per-environment status has many fail-closed branches.
-function evaluateSingleTargetStatus(
+export function evaluateSingleTargetStatus(
 	env: TargetEnv,
 	slug: string,
 	canonicalHash: string | null,

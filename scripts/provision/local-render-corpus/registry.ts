@@ -10,11 +10,23 @@ export type CorpusClassification = 'canonical' | 'legacy';
 
 export type CorpusSourceStrategy = 'canonical_definition' | 'sanitized_fixture';
 
+/**
+ * How invitation media is expected to be present for Local render regression.
+ * - VERSIONED_MANAGED_ASSET: managed package assets under src/assets/invitations/{slug}
+ * - VERSIONED_LOCAL_ASSET: fully local versioned assets (no remote media references)
+ * - HYBRID_VERSIONED_AND_REMOTE: local inventory and/or fixture-referenced remote http(s) media
+ */
+export type CorpusAssetStrategy =
+	| 'VERSIONED_MANAGED_ASSET'
+	| 'VERSIONED_LOCAL_ASSET'
+	| 'HYBRID_VERSIONED_AND_REMOTE';
+
 export interface LocalRenderCorpusEntry {
 	readonly slug: string;
 	readonly eventType: string;
 	readonly classification: CorpusClassification;
 	readonly sourceStrategy: CorpusSourceStrategy;
+	readonly assetStrategy: CorpusAssetStrategy;
 	/** Optional profile / theme hints for documentation and coverage checks. */
 	readonly themeId?: string;
 	readonly visualProfileId?: string;
@@ -28,6 +40,7 @@ export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] = [
 		eventType: 'cumple',
 		classification: 'canonical',
 		sourceStrategy: 'canonical_definition',
+		assetStrategy: 'VERSIONED_MANAGED_ASSET',
 		themeId: 'luxury-hacienda',
 		visualProfileId: 'alba-rosa-quinonez',
 	},
@@ -36,6 +49,7 @@ export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] = [
 		eventType: 'xv',
 		classification: 'canonical',
 		sourceStrategy: 'canonical_definition',
+		assetStrategy: 'VERSIONED_MANAGED_ASSET',
 		themeId: 'premiere-floral',
 		visualProfileId: 'abril-michelle-becerra-rea',
 	},
@@ -44,6 +58,7 @@ export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] = [
 		eventType: 'xv',
 		classification: 'canonical',
 		sourceStrategy: 'canonical_definition',
+		assetStrategy: 'VERSIONED_MANAGED_ASSET',
 		themeId: 'premiere-floral',
 		visualProfileId: 'romina-rios-chaparro',
 	},
@@ -52,6 +67,7 @@ export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] = [
 		eventType: 'xv',
 		classification: 'legacy',
 		sourceStrategy: 'sanitized_fixture',
+		assetStrategy: 'HYBRID_VERSIONED_AND_REMOTE',
 		themeId: 'celestial-blue',
 		visualProfileId: 'america-johana',
 		fixtureFile: 'america-johana.json',
@@ -61,6 +77,7 @@ export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] = [
 		eventType: 'xv',
 		classification: 'legacy',
 		sourceStrategy: 'sanitized_fixture',
+		assetStrategy: 'HYBRID_VERSIONED_AND_REMOTE',
 		themeId: 'editorial-magazine',
 		visualProfileId: 'valentina-hernandez',
 		fixtureFile: 'valentina-hernandez.json',
@@ -70,6 +87,7 @@ export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] = [
 		eventType: 'xv',
 		classification: 'legacy',
 		sourceStrategy: 'sanitized_fixture',
+		assetStrategy: 'HYBRID_VERSIONED_AND_REMOTE',
 		themeId: 'celestial-blue',
 		visualProfileId: 'xareni-iyarit',
 		fixtureFile: 'xareni-iyarit.json',
@@ -79,6 +97,7 @@ export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] = [
 		eventType: 'baby-shower',
 		classification: 'legacy',
 		sourceStrategy: 'sanitized_fixture',
+		assetStrategy: 'HYBRID_VERSIONED_AND_REMOTE',
 		themeId: 'celestial-blue',
 		visualProfileId: 'leah-lexa',
 		fixtureFile: 'leah-lexa.json',
@@ -88,6 +107,7 @@ export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] = [
 		eventType: 'primera-comunion',
 		classification: 'legacy',
 		sourceStrategy: 'sanitized_fixture',
+		assetStrategy: 'HYBRID_VERSIONED_AND_REMOTE',
 		themeId: 'angelic-presence',
 		visualProfileId: 'luna-y-estrella',
 		fixtureFile: 'luna-y-estrella.json',
@@ -97,6 +117,7 @@ export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] = [
 		eventType: 'bautizo',
 		classification: 'legacy',
 		sourceStrategy: 'sanitized_fixture',
+		assetStrategy: 'HYBRID_VERSIONED_AND_REMOTE',
 		themeId: 'sacred-keepsake',
 		fixtureFile: 'cesar-ramses.json',
 	},
@@ -105,6 +126,7 @@ export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] = [
 		eventType: 'xv',
 		classification: 'legacy',
 		sourceStrategy: 'sanitized_fixture',
+		assetStrategy: 'HYBRID_VERSIONED_AND_REMOTE',
 		themeId: 'enchanted-rose',
 		fixtureFile: 'ayrin-samantha-lerma-castro.json',
 	},
@@ -113,6 +135,7 @@ export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] = [
 		eventType: 'xv',
 		classification: 'legacy',
 		sourceStrategy: 'sanitized_fixture',
+		assetStrategy: 'HYBRID_VERSIONED_AND_REMOTE',
 		/** Render-effective content theme (invitations.theme_id may still say jewelry-box). */
 		themeId: 'celestial-blue',
 		fixtureFile: 'ana-sofia-cota-guillen.json',
@@ -122,6 +145,7 @@ export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] = [
 		eventType: 'xv',
 		classification: 'legacy',
 		sourceStrategy: 'sanitized_fixture',
+		assetStrategy: 'HYBRID_VERSIONED_AND_REMOTE',
 		/** Render-effective content theme (invitations.theme_id may still say jewelry-box). */
 		themeId: 'premiere-floral',
 		fixtureFile: 'ximena-meza-trasvina.json',
@@ -131,6 +155,7 @@ export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] = [
 		eventType: 'cumple',
 		classification: 'legacy',
 		sourceStrategy: 'sanitized_fixture',
+		assetStrategy: 'HYBRID_VERSIONED_AND_REMOTE',
 		/** Render-effective content theme (invitations.theme_id may still say jewelry-box). */
 		themeId: 'luxury-hacienda',
 		fixtureFile: 'gerardo-sesenta.json',
@@ -165,6 +190,9 @@ export function assertLocalRenderCorpusIntegrity(): void {
 		slugs.add(entry.slug);
 		if (entry.sourceStrategy === 'sanitized_fixture' && !entry.fixtureFile) {
 			throw new Error(`Legacy corpus entry ${entry.slug} requires fixtureFile.`);
+		}
+		if (!entry.assetStrategy) {
+			throw new Error(`Corpus entry ${entry.slug} requires assetStrategy.`);
 		}
 		if (entry.slug.startsWith('demo-') || entry.slug === 'e2e-preview-publication') {
 			throw new Error(
