@@ -48,19 +48,27 @@ describe('Boda Perla y Carlos provision contract', () => {
 
 	it('ships a Lane A profile scoped to jewelry-box-wedding', () => {
 		const profile = fs.readFileSync(profilePath, 'utf8');
-		expect(profile).toContain(
-			'.event--boda-perla-y-carlos.theme-preset--jewelry-box-wedding',
-		);
+		expect(profile).toContain('.event--boda-perla-y-carlos.theme-preset--jewelry-box-wedding');
 		expect(profile).toContain('--perla-olive');
 		expect(profile).toContain('--perla-gold');
 		expect(profile).toContain('--pa-card-bg-image');
-		expect(profile).toContain('--family-media-filter: none');
+		expect(profile).toContain('--rsvp-bg');
 	});
 
-	it('has source files for every declared asset', () => {
-		for (const spec of PERLA_ASSET_SPECS) {
-			const filePath = path.join(assetDir, spec.relativePath);
-			expect(fs.existsSync(filePath)).toBe(true);
+	it('shares one physical hero source across desktop and mobile specs', () => {
+		const heroDesktop = PERLA_ASSET_SPECS.find((s) => s.key === 'hero-desktop');
+		const heroMobile = PERLA_ASSET_SPECS.find((s) => s.key === 'hero-mobile');
+		expect(heroDesktop?.relativePath).toBe('hero-source.jpg');
+		expect(heroMobile?.relativePath).toBe('hero-source.jpg');
+		expect(heroDesktop?.focalPoint).not.toEqual(heroMobile?.focalPoint);
+		expect(fs.existsSync(path.join(assetDir, 'hero-source.jpg'))).toBe(true);
+		expect(fs.existsSync(path.join(assetDir, 'hero-mobile-source.jpg'))).toBe(false);
+	});
+
+	it('has source files for every declared asset path', () => {
+		const uniquePaths = new Set(PERLA_ASSET_SPECS.map((spec) => spec.relativePath));
+		for (const relativePath of uniquePaths) {
+			expect(fs.existsSync(path.join(assetDir, relativePath))).toBe(true);
 		}
 	});
 
@@ -76,31 +84,58 @@ describe('Boda Perla y Carlos provision contract', () => {
 			'quote',
 			'countdown',
 			'location',
-			'family',
 			'gallery',
 			'personalizedAccess',
 			'rsvp',
 			'thankYou',
 		]);
+		expect(content).not.toHaveProperty('family');
 		expect(content).not.toHaveProperty('gifts');
 		expect(content).not.toHaveProperty('music');
+		expect(content).not.toHaveProperty('itinerary');
 		expect(content).not.toHaveProperty('interludes');
 
-		const family = content.family as {
-			presentation?: string;
-			groups?: Array<{ title: string; items: Array<{ name: string }> }>;
-			godparents?: unknown;
+		const envelope = content.envelope as {
+			microcopy?: string;
+			tooltipText?: string;
+			envelopeName?: string;
 		};
-		expect(family.presentation).toBe('text-only');
-		expect(family.godparents).toBeUndefined();
-		expect(family.groups?.map((g) => g.items[0]?.name)).toEqual([
-			'Por confirmar',
-			'Por confirmar',
-		]);
-		expect(JSON.stringify(content)).not.toMatch(/\[\[PENDIENTE:/);
+		expect(envelope.microcopy).toBe('Abrir invitación');
+		expect(envelope.tooltipText).toBe('Toca el sello');
+		expect(envelope.microcopy).not.toBe(envelope.tooltipText);
+		expect(envelope.envelopeName).toBe('Perla & Carlos');
 
-		const gallery = content.gallery as { items: unknown[] };
+		const location = content.location as {
+			venues?: Array<{ type: string; venueName: string; time: string }>;
+			ceremony?: unknown;
+			reception?: unknown;
+			indications?: Array<{ text: string }>;
+			indicationsHeading?: string;
+		};
+		expect(location.ceremony).toBeUndefined();
+		expect(location.reception).toBeUndefined();
+		expect(location.venues).toHaveLength(2);
+		expect(location.venues?.[0]).toMatchObject({
+			type: 'ceremony',
+			venueName: 'Catedral de Cristo Rey',
+			time: '5:30 p. m.',
+		});
+		expect(location.venues?.[1]).toMatchObject({
+			type: 'reception',
+			venueName: 'Salón El Pedregal',
+			time: '7:30 p. m.',
+		});
+		expect(location.indicationsHeading).toBe('Indicaciones');
+		expect(location.indications?.some((i) => /ceremonia civil/i.test(i.text))).toBe(true);
+		expect(location.indications?.some((i) => /8:15 p\. m\./.test(i.text))).toBe(true);
+
+		const gallery = content.gallery as {
+			items: unknown[];
+			subtitle?: string;
+			title?: string;
+		};
 		expect(gallery.items).toHaveLength(1);
+		expect(gallery.subtitle).not.toMatch(/fotos|galería de|colección/i);
 
 		const rsvp = content.rsvp as {
 			confirmationMode?: string;
@@ -108,8 +143,20 @@ describe('Boda Perla y Carlos provision contract', () => {
 		};
 		expect(rsvp.confirmationMode).toBe('api');
 		expect(rsvp.accessMode).toBe('hybrid');
+		expect(content.sectionStyles).not.toHaveProperty('rsvp');
 
-		const thankYou = content.thankYou as { image?: unknown };
+		const thankYou = content.thankYou as {
+			image?: unknown;
+			closingName?: string;
+			date?: string;
+		};
 		expect(thankYou.image).toBeUndefined();
+		expect(thankYou.closingName).toBe('Perla & Carlos');
+		expect(thankYou.date).toBe('28 de noviembre de 2026');
+
+		const serialized = JSON.stringify(content);
+		expect(serialized).not.toMatch(/\[\[PENDIENTE:/);
+		expect(serialized).not.toMatch(/Por confirmar/);
+		expect(serialized).not.toMatch(/hero-mobile-source/);
 	});
 });

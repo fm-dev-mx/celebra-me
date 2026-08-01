@@ -33,7 +33,13 @@ const SALON_MAPS_URL = 'https://maps.app.goo.gl/AzBTTezpCmPdUb136';
 
 const ceremonyAddress = 'Sta. Irene, Centro, 43000 Huejutla de Reyes, Hgo.';
 const receptionAddress =
-	'Avenida parque industrial col. tepoztequito s/n, Huejutla de Reyes, Hgo.';
+	'Avenida Parque Industrial, Col. Tepoztequito s/n, Huejutla de Reyes, Hgo.';
+
+const EVENT_DATE_LONG = '28 de noviembre de 2026';
+const EVENT_DATE_HEADING = 'Sábado, 28 de noviembre de 2026';
+const CEREMONY_TIME = '5:30 p. m.';
+const RECEPTION_TIME = '7:30 p. m.';
+const CIVIL_TIME = '8:15 p. m.';
 
 export const PERLA_ASSET_SPECS = [
 	{
@@ -50,7 +56,8 @@ export const PERLA_ASSET_SPECS = [
 	},
 	{
 		key: 'hero-mobile',
-		relativePath: 'hero-mobile-source.jpg',
+		// Same physical source as desktop; focals differ per breakpoint.
+		relativePath: 'hero-source.jpg',
 		displayName: 'Perla y Carlos — portada móvil',
 		alt: 'Perla y Carlos en retrato de sesión',
 		focalPoint: {
@@ -91,11 +98,11 @@ export function buildPerlaPublishedContent(
 			timeZone: PERLA_EVENT.timeZone,
 			startsAtUtc: PERLA_EVENT.startsAtUtc,
 		},
+		// Family omitted until parent names are confirmed (OD5).
 		sectionOrder: [
 			'quote',
 			'countdown',
 			'location',
-			'family',
 			'gallery',
 			'personalizedAccess',
 			'rsvp',
@@ -105,7 +112,6 @@ export function buildPerlaPublishedContent(
 			location: {
 				showFlourishes: true,
 			},
-			rsvp: {},
 		},
 		_assetSlug: PERLA_EVENT.assetSlug,
 		hero: {
@@ -135,8 +141,9 @@ export function buildPerlaPublishedContent(
 			documentLabel: 'P & C',
 			stampText: 'BODA',
 			stampYear: '2026',
+			// Primary open action is the external CTA; seal hint is instructional only.
 			microcopy: 'Abrir invitación',
-			tooltipText: 'Abrir invitación',
+			tooltipText: 'Toca el sello',
 			closedPalette: {
 				primary: 'surfacePrimary',
 				accent: 'actionAccent',
@@ -154,29 +161,37 @@ export function buildPerlaPublishedContent(
 		location: {
 			visibility: 'public',
 			introEyebrow: 'Huejutla de Reyes, Hidalgo',
-			introHeading: 'Sábado, 28 de noviembre de 2026',
+			introHeading: EVENT_DATE_HEADING,
 			introLede:
 				'Perla y Carlos celebrarán su enlace con ceremonia religiosa, recepción y ceremonia civil. Será un honor compartir este día con ustedes.',
-			ceremony: {
-				venueEvent: 'Ceremonia religiosa',
-				venueName: 'Catedral de Cristo Rey',
-				address: ceremonyAddress,
-				city: 'Huejutla de Reyes, Hidalgo',
-				date: '28 de noviembre de 2026',
-				time: '5:30 p. m.',
-				mapUrl: CHURCH_MAPS_URL,
-				googleMapsUrl: CHURCH_MAPS_URL,
-			},
-			reception: {
-				venueEvent: 'Recepción',
-				venueName: 'Salón El Pedregal',
-				address: receptionAddress,
-				city: 'Huejutla de Reyes, Hidalgo',
-				date: '28 de noviembre de 2026',
-				time: '7:30 p. m.',
-				mapUrl: SALON_MAPS_URL,
-				googleMapsUrl: SALON_MAPS_URL,
-			},
+			// venues[0] drives hero venue/time via page-data (ceremony-first without shared picker changes).
+			venues: [
+				{
+					type: 'ceremony',
+					id: 'ceremony-religiosa',
+					venueEvent: 'Ceremonia religiosa',
+					venueName: 'Catedral de Cristo Rey',
+					address: ceremonyAddress,
+					city: 'Huejutla de Reyes, Hidalgo',
+					date: EVENT_DATE_LONG,
+					time: CEREMONY_TIME,
+					mapUrl: CHURCH_MAPS_URL,
+					googleMapsUrl: CHURCH_MAPS_URL,
+				},
+				{
+					type: 'reception',
+					id: 'reception-pedregal',
+					venueEvent: 'Recepción',
+					venueName: 'Salón El Pedregal',
+					address: receptionAddress,
+					city: 'Huejutla de Reyes, Hidalgo',
+					date: EVENT_DATE_LONG,
+					time: RECEPTION_TIME,
+					mapUrl: SALON_MAPS_URL,
+					googleMapsUrl: SALON_MAPS_URL,
+				},
+			],
+			indicationsHeading: 'Indicaciones',
 			indications: [
 				{
 					iconName: 'DressCode',
@@ -186,34 +201,14 @@ export function buildPerlaPublishedContent(
 				{
 					iconName: 'Church',
 					styleVariant: 'default',
-					text: 'Ceremonia civil en la recepción a las 8:15 p. m.',
+					text: `La ceremonia civil se celebrará en la recepción a las ${CIVIL_TIME}`,
 				},
 			],
-		},
-		family: {
-			presentation: 'text-only',
-			groups: [
-				{
-					title: 'Padres de la novia',
-					items: [{ name: 'Por confirmar' }],
-				},
-				{
-					title: 'Padres del novio',
-					items: [{ name: 'Por confirmar' }],
-				},
-			],
-			labels: {
-				sectionSubtitle: 'Familia',
-				sectionTitle: 'Con la bendición de nuestros padres',
-				parentsTitle: 'Padres',
-				sectionMessage:
-					'Los nombres de nuestros padres se publicarán en cuanto queden confirmados.',
-			},
 		},
 		gallery: {
-			eyebrow: 'Galería',
-			title: 'Nuestra historia',
-			subtitle: 'Un retrato para recordar el comienzo de este camino.',
+			eyebrow: 'Retrato',
+			title: 'Nuestro comienzo',
+			subtitle: 'Una imagen para recordar el inicio de este camino juntos.',
 			items: [
 				{
 					key: 'gallery-01',
@@ -232,8 +227,7 @@ export function buildPerlaPublishedContent(
 			guestCap: 8,
 			accessMode: 'hybrid',
 			confirmationMode: 'api',
-			confirmationMessage:
-				'Gracias por acompañarnos. Su confirmación quedó registrada.',
+			confirmationMessage: 'Gracias por acompañarnos. Su confirmación quedó registrada.',
 			responseMessages: {
 				confirmed: {
 					title: '¡Gracias por confirmar, {guestName}!',
@@ -246,8 +240,7 @@ export function buildPerlaPublishedContent(
 			},
 			calendar: {
 				title: 'Boda de Perla y Carlos',
-				description:
-					'Ceremonia religiosa en Catedral de Cristo Rey (5:30 p. m.), recepción en Salón El Pedregal (7:30 p. m.) y ceremonia civil en la recepción (8:15 p. m.). Huejutla de Reyes, Hidalgo.',
+				description: `Ceremonia religiosa en Catedral de Cristo Rey (${CEREMONY_TIME}), recepción en Salón El Pedregal (${RECEPTION_TIME}) y ceremonia civil en la recepción (${CIVIL_TIME}). Huejutla de Reyes, Hidalgo.`,
 				startsAt: PERLA_EVENT.startsAtUtc,
 			},
 			personalizedAccess: {
@@ -261,7 +254,7 @@ export function buildPerlaPublishedContent(
 				'Gracias por acompañarnos en un día que recordaremos siempre con el corazón lleno.',
 			closingName: 'Perla & Carlos',
 			closingPhrase: 'Con cariño',
-			date: '28 de noviembre de 2026',
+			date: EVENT_DATE_LONG,
 		},
 		sharing: {
 			ogImage: assets['hero-desktop'],

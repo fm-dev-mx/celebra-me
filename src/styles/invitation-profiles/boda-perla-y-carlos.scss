@@ -1,8 +1,8 @@
 // Perla & Carlos — Lane A on jewelry-box-wedding.
 // Client palette: olive + beige + gold. Do not mutate the shared preset.
-//
-// Inheritance reset (F07): champagne surfaces, sepia family filter, hardcoded PA
+// Inheritance reset: champagne surfaces, sepia family filter, hardcoded PA
 // champagne paper gradients, missing RGB channels that break RSVP/location opacity.
+@use '../global/mixins' as mixins;
 
 .event--boda-perla-y-carlos.theme-preset--jewelry-box-wedding {
 	--perla-olive: rgb(88 102 74);
@@ -38,47 +38,40 @@
 	--color-action-primary-rgb: var(--perla-olive-deep-rgb);
 	--color-action-accent: var(--perla-gold);
 	--color-action-accent-rgb: var(--perla-gold-rgb);
-
 	--color-glass-bg: rgb(var(--perla-cream-rgb) / 72%);
 	--color-glass-border: rgb(var(--perla-gold-rgb) / 40%);
 	--color-glass-shadow: rgb(var(--perla-olive-rgb) / 14%);
-	--shadow-premium: 0 20px 40px var(--color-glass-shadow), 0 8px 16px rgb(0 0 0 / 4%);
-
-	// Family — kill sepia / champagne vignette bleed
-	--family-bg: radial-gradient(
-		circle at 50% 40%,
-		rgb(var(--perla-beige-rgb) / 90%) 0%,
-		var(--perla-cream) 100%
-	);
-	--family-vignette-bg: radial-gradient(
-		circle at 50% 50%,
-		transparent 0%,
-		rgb(var(--perla-olive-rgb) / 6%) 100%
-	);
-	--family-texture-opacity: 0.06;
-	--family-accent: var(--perla-gold);
-	--family-text-primary: var(--perla-ink);
-	--family-text-muted: rgb(var(--perla-ink-rgb) / 64%);
-	--family-divider: linear-gradient(
-		90deg,
-		transparent 0%,
-		rgb(var(--perla-gold-rgb) / 35%) 50%,
-		transparent 100%
-	);
-	--family-media-filter: none;
-	--family-panel-bg: var(--color-glass-bg);
-	--family-panel-border: 1px solid var(--color-glass-border);
-
+	--shadow-premium: 0 16px 32px var(--color-glass-shadow), 0 4px 12px rgb(0 0 0 / 4%);
 	--hero-label-color: var(--perla-gold);
 	--hero-badge-border: var(--perla-gold);
+	--hero-overlay: rgb(var(--perla-olive-deep-rgb) / 28%);
+	--hero-overlay-gradient: linear-gradient(
+		180deg,
+		rgb(var(--perla-olive-deep-rgb) / 34%) 0%,
+		rgb(var(--perla-olive-deep-rgb) / 6%) 36%,
+		rgb(var(--perla-olive-deep-rgb) / 22%) 58%,
+		rgb(var(--perla-olive-deep-rgb) / 68%) 100%
+	);
 	--gallery-title-color: var(--perla-olive);
+	--gallery-section-padding-block: clamp(3.5rem, 7vw, 5.5rem);
+	--gallery-card-shadow: 0 14px 36px rgb(var(--perla-olive-rgb) / 16%);
 
-	// Location flourish / indications
+	// Location — soften card chrome; lift indications
 	--location-flourish-color: var(--perla-gold);
+	--location-outer-frame-bg: transparent;
+	--location-outer-frame-padding: 0;
+	--location-outer-frame-shadow: none;
+	--location-inner-frame-bg: var(--perla-cream);
+	--location-inner-frame-padding: 0;
+	--location-card-shadow: 0 10px 28px rgb(var(--perla-olive-rgb) / 10%);
+	--location-card-padding: clamp(1.5rem, 4vw, 2rem) clamp(1.25rem, 3vw, 1.75rem);
 	--location-indications-heading-color: var(--perla-olive);
 	--location-indications-panel-bg: rgb(var(--perla-beige-rgb) / 55%);
 	--location-indications-panel-border: 1px solid rgb(var(--perla-gold-rgb) / 28%);
-	--location-inner-frame-bg: var(--perla-cream);
+	--location-indications-panel-padding: clamp(1.75rem, 4vw, 2.5rem) clamp(1.25rem, 3vw, 2rem);
+	--location-indications-gap: 1.75rem;
+	--location-indication-item-gap: 1rem;
+	--location-indication-icon-color: var(--perla-olive);
 
 	// Personalized access — replace hardcoded champagne paper
 	--pa-card-bg-color: var(--perla-olive-deep);
@@ -113,13 +106,183 @@
 	--pa-footer-border-top: 1px solid rgb(var(--perla-gold-rgb) / 22%);
 	--pa-footer-text-color: rgb(var(--perla-ink-rgb) / 72%);
 
-	// Thank you
-	.thank-you-section[data-variant='jewelry-box-wedding'] {
+	// -------------------------------------------------------------------------
+	// Reveal — one clear primary CTA; reduce nested card chrome
+	// -------------------------------------------------------------------------
+	.envelope-wrapper {
+		--env-bg:
+			radial-gradient(
+				ellipse 110% 80% at 50% 30%,
+				rgb(var(--perla-beige-rgb) / 70%) 0%,
+				transparent 62%
+			),
+			linear-gradient(
+				168deg,
+				var(--perla-cream) 0%,
+				var(--perla-beige) 55%,
+				rgb(var(--perla-sand-rgb) / 85%) 100%
+			);
+		--env-paper-bg: rgb(var(--perla-cream-rgb) / 94%);
+		--env-paper-border: rgb(var(--perla-gold-rgb) / 28%);
+		--env-text-primary: var(--perla-ink);
+		--env-text-secondary: rgb(var(--perla-ink-rgb) / 62%);
+		--env-accent: var(--perla-gold);
+		--env-shadow-container:
+			0 22px 44px rgb(var(--perla-olive-rgb) / 14%),
+			0 6px 14px rgb(var(--perla-olive-rgb) / 8%);
+		--reveal-card-bg: rgb(var(--perla-cream-rgb) / 96%);
+		--reveal-card-border: rgb(var(--perla-gold-rgb) / 22%);
+		--reveal-card-text-primary: var(--perla-ink);
+		--reveal-card-text-secondary: rgb(var(--perla-ink-rgb) / 58%);
+		--reveal-card-accent: rgb(var(--perla-gold-rgb) / 40%);
+	}
+
+	.envelope-seal-hint {
+		color: rgb(var(--perla-ink-rgb) / 55%);
+		letter-spacing: 0.06em;
+		text-transform: none;
+		opacity: 78%;
+	}
+
+	.envelope-external-instruction__button {
+		font-weight: 500;
+		letter-spacing: 0.08em;
+		color: var(--perla-olive-deep);
+		border-color: rgb(var(--perla-gold-rgb) / 45%);
+		background: rgb(var(--perla-cream-rgb) / 88%);
+	}
+
+	// -------------------------------------------------------------------------
+	// Hero — readable type without a heavy flat wash
+	// -------------------------------------------------------------------------
+	.invitation-hero {
+		--hero-badge-text: var(--perla-cream);
+
+		.invitation-hero__label {
+			color: var(--perla-gold);
+			text-shadow: 0 1px 12px rgb(var(--perla-olive-deep-rgb) / 35%);
+		}
+
+		.invitation-hero__name,
+		.invitation-hero__secondary-name {
+			text-shadow: 0 2px 18px rgb(var(--perla-olive-deep-rgb) / 40%);
+		}
+
+		.invitation-hero__details {
+			color: rgb(var(--perla-cream-rgb) / 94%);
+			text-shadow: 0 1px 10px rgb(var(--perla-olive-deep-rgb) / 45%);
+		}
+
+		.invitation-hero__scroll-indicator {
+			opacity: 78%;
+		}
+
+		.invitation-hero__scroll-text {
+			letter-spacing: 0.18em;
+			font-size: 0.72rem;
+		}
+	}
+
+	// -------------------------------------------------------------------------
+	// Quote + countdown — hierarchy and rhythm
+	// -------------------------------------------------------------------------
+	.quote-section {
+		--quote-padding-block: clamp(2.75rem, 6vh, 4.5rem);
+
+		min-height: 0;
+		color: var(--perla-ink);
+
+		.quote-content,
+		.quote-line {
+			line-height: 1.55;
+			max-width: 36rem;
+			margin-inline: auto;
+		}
+
+		.quote-author {
+			color: var(--perla-olive);
+			letter-spacing: 0.08em;
+		}
+	}
+
+	.countdown-section {
+		min-height: 0;
+		padding-block: clamp(3rem, 6vh, 4.5rem);
+
+		.countdown-title {
+			color: var(--perla-olive);
+		}
+
+		.countdown-footer,
+		.countdown-invitation-text {
+			color: rgb(var(--perla-ink-rgb) / 68%);
+		}
+	}
+
+	// -------------------------------------------------------------------------
+	// Location — less dashboard-card; civil indication readable
+	// -------------------------------------------------------------------------
+	.event-location {
+		.event-location__indications-heading {
+			font-weight: 500;
+			letter-spacing: 0.16em;
+			text-transform: uppercase;
+			font-size: 0.78rem;
+		}
+
+		.event-location__indication-text {
+			line-height: 1.5;
+			color: var(--perla-ink);
+		}
+
+		// Civil + dress share the indications panel; second item (civil) slightly emphasized
+		.event-location__indication-item:last-child {
+			.event-location__indication-icon {
+				color: var(--perla-gold);
+			}
+
+			.event-location__indication-text {
+				font-weight: 500;
+			}
+		}
+	}
+
+	// -------------------------------------------------------------------------
+	// Gallery — intentional single portrait
+	// -------------------------------------------------------------------------
+	.gallery-section {
+		.gallery-grid {
+			justify-content: center;
+		}
+
+		.gallery-grid__item {
+			max-width: min(22rem, 86vw);
+			margin-inline: auto;
+			border-radius: 4px;
+			overflow: hidden;
+			box-shadow: var(--gallery-card-shadow);
+		}
+
+		.gallery-section__subtitle {
+			max-width: 28rem;
+			margin-inline: auto;
+			color: rgb(var(--perla-ink-rgb) / 70%);
+		}
+	}
+
+	// -------------------------------------------------------------------------
+	// Thank you — closing message dominant; quieter branding
+	// -------------------------------------------------------------------------
+	.thank-you-section {
+		min-height: 0;
+		padding-block: clamp(4rem, 8vh, 6rem);
+
 		.thank-you-message {
 			letter-spacing: 0.01em;
 			color: var(--perla-ink);
 			background: rgb(var(--perla-cream-rgb) / 70%);
 			border-color: rgb(var(--perla-gold-rgb) / 35%);
+			box-shadow: none;
 		}
 
 		.thank-you-message .drop-cap {
@@ -131,19 +294,48 @@
 			color: var(--perla-olive);
 			letter-spacing: 0.12em;
 		}
+
+		.closing-date {
+			color: rgb(var(--perla-ink-rgb) / 68%);
+		}
+
+		.thank-you-footer {
+			opacity: 68%;
+		}
 	}
 
-	// RSVP on dark olive band
-	.invitation-section-wrapper[data-section-kind='rsvp'],
-	.invitation-section-wrapper[data-section-kind='personalizedAccess'] {
+	// -------------------------------------------------------------------------
+	// Personalized access + RSVP — dark olive band, cream controls
+	// -------------------------------------------------------------------------
+	.invitation-section-wrapper[data-section-kind='personalizedAccess'],
+	.invitation-section-wrapper[data-section-kind='rsvp'] {
+		--color-text-primary: var(--perla-cream);
 		--color-text-primary-rgb: var(--perla-cream-rgb);
+		--color-text-secondary: rgb(var(--perla-cream-rgb) / 82%);
+		--color-text-muted: rgb(var(--perla-cream-rgb) / 64%);
+
+		background: var(--perla-olive-deep);
+		color: var(--perla-cream);
+	}
+
+	.invitation-section-wrapper[data-section-kind='personalizedAccess'] {
+		padding-block: clamp(3.25rem, 6vw, 5rem);
+	}
+
+	.invitation-section-wrapper[data-section-kind='rsvp'] {
+		padding-block: 0;
 	}
 
 	.rsvp-section,
 	.rsvp {
+		--rsvp-bg: var(--perla-olive-deep);
+		--color-glass-bg: rgb(var(--perla-cream-rgb) / 8%);
+		--color-glass-border: rgb(var(--perla-gold-rgb) / 38%);
+		--color-glass-shadow: rgb(0 0 0 / 18%);
+		--shadow-premium: 0 18px 40px rgb(0 0 0 / 22%), 0 4px 12px rgb(0 0 0 / 10%);
 		--rsvp-title-color: var(--perla-cream);
-		--rsvp-label-color: rgb(var(--perla-cream-rgb) / 90%);
-		--rsvp-placeholder-color: rgb(var(--perla-cream-rgb) / 62%);
+		--rsvp-label-color: rgb(var(--perla-cream-rgb) / 92%);
+		--rsvp-placeholder-color: rgb(var(--perla-cream-rgb) / 58%);
 		--rsvp-field-bg: rgb(var(--perla-cream-rgb) / 10%);
 		--rsvp-field-bg-focus: rgb(var(--perla-cream-rgb) / 16%);
 		--rsvp-field-border: rgb(var(--perla-gold-rgb) / 45%);
@@ -155,5 +347,79 @@
 		--rsvp-radio-label-color: rgb(var(--perla-cream-rgb) / 92%);
 		--rsvp-radio-label-color-selected: var(--perla-cream);
 		--rsvp-radio-indicator-dot: var(--perla-gold);
+		--rsvp-button-color: var(--perla-gold);
+		--rsvp-button-color-hover: var(--perla-olive-deep);
+		--rsvp-button-bg: transparent;
+		--rsvp-button-bg-hover: var(--perla-gold);
+		--rsvp-button-border: rgb(var(--perla-gold-rgb) / 55%);
+		--rsvp-button-border-hover: var(--perla-gold);
+		--rsvp-button-bg-loading: rgb(var(--perla-gold-rgb) / 14%);
+		--rsvp-button-bg-success: var(--perla-gold);
+		--rsvp-button-border-success: var(--perla-gold);
+		--rsvp-button-color-success: var(--perla-olive-deep);
+		--rsvp-error-field: rgb(232 168 168);
+		--rsvp-error-text: rgb(255 214 214);
+		--rsvp-error-bg: rgb(255 214 214 / 12%);
+		--rsvp-error-border: rgb(232 168 168 / 45%);
+
+		color: var(--perla-cream);
+	}
+
+	.rsvp-section {
+		background: var(--rsvp-bg);
+		min-block-size: auto;
+		padding-block: clamp(3.5rem, 7vh, 5.5rem);
+
+		@include mixins.respond-to(md) {
+			min-block-size: min(100svh, 52rem);
+		}
+	}
+
+	.rsvp {
+		.rsvp__subcopy {
+			color: rgb(var(--perla-cream-rgb) / 78%);
+		}
+
+		.rsvp__field--has-value label,
+		.rsvp__field--has-value .rsvp__label {
+			color: var(--perla-cream);
+		}
+
+		.rsvp__field label,
+		.rsvp__label {
+			color: var(--rsvp-label-color);
+		}
+
+		input,
+		textarea,
+		select {
+			color: var(--perla-cream);
+			caret-color: var(--perla-gold);
+
+			&::placeholder {
+				color: var(--rsvp-placeholder-color);
+			}
+
+			&:disabled {
+				opacity: 55%;
+				color: rgb(var(--perla-cream-rgb) / 55%);
+			}
+
+			&:focus-visible {
+				outline: 2px solid rgb(var(--perla-gold-rgb) / 70%);
+				outline-offset: 2px;
+			}
+		}
+
+		.rsvp__radio:focus-within,
+		.rsvp__radio-card:focus-within {
+			outline: 2px solid rgb(var(--perla-gold-rgb) / 65%);
+			outline-offset: 2px;
+		}
+
+		.rsvp__button:disabled {
+			opacity: 55%;
+			color: rgb(var(--perla-cream-rgb) / 55%);
+		}
 	}
 }
