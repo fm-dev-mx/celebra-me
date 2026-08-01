@@ -225,11 +225,14 @@ function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 		year: 'numeric',
 		timeZone: 'UTC',
 	}).format(new Date(data.hero.date));
-	const teaserDetails = venueName
+	const derivedTeaser = venueName
 		? `${teaserDate} • ${venueName}`
 		: venueCity
 			? `${teaserDate} • ${venueCity}`
 			: teaserDate;
+	const explicitTeaser =
+		typeof data.envelope.teaserDetails === 'string' ? data.envelope.teaserDetails.trim() : '';
+	const teaserDetails = explicitTeaser || derivedTeaser;
 
 	return {
 		enabled: true,

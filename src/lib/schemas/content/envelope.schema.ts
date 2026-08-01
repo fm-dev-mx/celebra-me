@@ -38,6 +38,7 @@ export const envelopeSchema = z
 		stampText: z.string().optional(),
 		stampYear: z.string().optional(),
 		tooltipText: z.string().optional(),
+		teaserDetails: z.string().trim().max(500).optional(),
 		closedPalette: z
 			.object({
 				primary: ColorTokenSchema.optional(),
