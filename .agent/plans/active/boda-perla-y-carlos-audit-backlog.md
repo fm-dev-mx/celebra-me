@@ -2,10 +2,11 @@
 title: Boda Perla y Carlos — Recurrent-Failure Audit Backlog
 status: active
 created: 2026-07-31
-updated: 2026-07-31
+updated: 2026-08-01
 related_docs:
   - docs/invitations/boda-perla-y-carlos.md
   - .agent/plans/active/invitation-preparation-authority-baseline.md
+  - .agent/plans/active/boda-perla-y-carlos-implementation-audit.md
 ---
 
 # Audit backlog — `boda-perla-y-carlos`
@@ -19,7 +20,7 @@ Corpus checklist: Goal 1 F01–F17 (Alba/Abril/Valentina), filtered. Cosmético 
 | F03/F15 | mitigated | Opaque Sources in Markdown | Keep |
 | F04 | watch | Managed WebP already normalized once | Do not re-encode release WebPs; deliver Storage URLs |
 | F05 | mitigated | Slug/alias from verified orthography | Keep |
-| F06 | **closed** | Guest no longer sees raw tokens | Published “Por confirmar”; tokens remain in prep MD |
+| F06 | **closed** | Guest no longer sees raw tokens | Goal 2: Family omitted from publish until names confirmed; tokens remain in prep MD only |
 | F07 | **closed** | Lane A inheritance-reset expanded | Profile SCSS |
 | F08 | n/a | `boda` already `partial` | — |
 | F09 | **closed** | Uniqueness derivatives documented | Prep inventory updated |
