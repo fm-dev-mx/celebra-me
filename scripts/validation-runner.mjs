@@ -18,7 +18,8 @@ const MANAGED_INVITATION_RENDERING_SURFACES = [
 	/^src\/lib\/intake\/(?:schemas\/|services\/section-content-mapper(?:\.ts)?$)/u,
 	/^src\/styles\/(?:invitation|invitation-profiles|themes\/sections)\//u,
 	/^scripts\/provision\/invitations\//u,
-	/^tests\/provision\/managed-invitation-regression\.test\.ts$/u,
+	/^scripts\/provision\/local-render-corpus\//u,
+	/^tests\/provision\/(?:managed-invitation-regression|local-render-corpus-regression)\.test\.ts$/u,
 ];
 
 function runCommand(name, command, args) {
@@ -139,13 +140,13 @@ export function runValidation({
 	}
 
 	if (plan.requiresManagedInvitationRegression) {
-		const code = runStep('Managed invitation render regression sweep', 'pnpm', [
+		const code = runStep('Local Render Corpus regression sweep', 'pnpm', [
 			'test:managed:regression',
 		]);
-		if (code !== 0) return fail('managed-invitation-regression', code);
+		if (code !== 0) return fail('local-render-corpus-regression', code);
 	} else {
 		console.log(
-			`\n→ Managed invitation regression: no shared invitation rendering changes, skipping.`,
+			`\n→ Local Render Corpus regression: no shared invitation rendering changes, skipping.`,
 		);
 	}
 

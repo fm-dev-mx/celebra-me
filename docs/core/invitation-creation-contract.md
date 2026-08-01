@@ -91,7 +91,21 @@ approval, and recovery.
 
 ---
 
-## 3. Environment Observability & Identity Rekey Boundaries
+## 3. Local Render Corpus vs Canonical Registry
+
+The **Canonical Managed Registry** (`scripts/provision/invitations/registry.ts`) owns managed
+release lifecycle definitions.
+
+The **Local Render Corpus** (`scripts/provision/local-render-corpus/registry.ts`) owns every
+currently supported Production **client** invitation that must be renderable and regression-tested
+in Local before remote deployment. It includes the canonical managed set plus supported legacy
+clients. See [`local-render-corpus.md`](./local-render-corpus.md).
+
+`pnpm dbs` active “Managed” counts include demos and are not corpus size.
+
+---
+
+## 4. Environment Observability & Identity Rekey Boundaries
 
 ### Unified Status Command (`dbs`)
 
@@ -117,10 +131,9 @@ status with a strict per-query timeout. They never block Git success. Temporary 
 `CELEBRA_SKIP_MANAGED_STATUS=1`. Blocking husky gates (`pre-commit`, `pre-push`, `commit-msg`) do
 not run database/network status.
 
-**Hooks vs lane sync:** `post-rewrite` is not a reliable semantic equivalent of “lane
-synchronized”. A rebase that fast-forwards or rewrites nothing may produce no hook output.
-Use the canonical lane-sync command for deterministic observability after aligning with
-`develop`:
+**Hooks vs lane sync:** `post-rewrite` is not a reliable semantic equivalent of “lane synchronized”.
+A rebase that fast-forwards or rewrites nothing may produce no hook output. Use the canonical
+lane-sync command for deterministic observability after aligning with `develop`:
 
 ```bash
 pnpm lane:sync            # fetch + rebase onto origin/develop, then dbs --compact

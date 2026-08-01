@@ -217,6 +217,9 @@ function setOption(options: CliOptions, key: string, value: string): void {
 		'--config': () => {
 			options.config = value;
 		},
+		'--corpus': () => {
+			options.corpus = value === 'true';
+		},
 		'--clean': () => {
 			options.clean = true;
 		},

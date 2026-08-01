@@ -133,6 +133,8 @@ export interface CliOptions {
 	outputStyle?: OutputFolderStyle;
 	/** Path to a config JSON file */
 	config?: string;
+	/** Use Local Render Corpus SSOT pages (13 supported Production clients) */
+	corpus?: boolean;
 	/** Remove output directory before starting */
 	clean?: boolean;
 }

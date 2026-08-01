@@ -33,6 +33,7 @@ import {
 } from './utils.js';
 import { runInteractiveFlow } from './interactive.js';
 import { runScreenshotJob } from './runner.js';
+import { buildCorpusScreenshotConfig } from '../provision/local-render-corpus/screenshot-pages.ts';
 
 // ── Entry point ──────────────────────────────────────────────────────────
 
@@ -42,7 +43,7 @@ async function main() {
 	// ── Route to interactive or direct mode ────────────────────────────────
 	const isInteractive = shouldRunInteractive(cliOptions);
 
-	if (!isInteractive && cliOptions.config) {
+	if (!isInteractive && (cliOptions.corpus || cliOptions.config)) {
 		const result = await runConfigJobs(cliOptions);
 		if (result.failed > 0) process.exit(1);
 		return;
@@ -89,8 +90,8 @@ function shouldRunInteractive(options: CliOptions): boolean {
 	// Explicit --no-interactive (from a preset command)
 	if (options.interactive === false) return false;
 
-	// Config-driven runs are always non-interactive.
-	if (options.config) return false;
+	// Config / corpus-driven runs are always non-interactive.
+	if (options.config || options.corpus) return false;
 
 	// If URL is provided, run direct
 	if (options.url) return false;
@@ -220,9 +221,11 @@ function buildJobFromCli(options: CliOptions): ScreenshotJob | null {
 
 // eslint-disable-next-line complexity -- Config defaults are resolved in one place for predictable batch jobs.
 async function runConfigJobs(options: CliOptions): Promise<{ failed: number }> {
-	if (!options.config) return { failed: 0 };
+	if (!options.corpus && !options.config) return { failed: 0 };
 
-	const config = loadScreenshotConfig(options.config);
+	const config = options.corpus
+		? buildCorpusScreenshotConfig()
+		: loadScreenshotConfig(options.config!);
 	const pages = config.pages ?? [];
 	let failed = 0;
 
