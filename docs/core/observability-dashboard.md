@@ -17,9 +17,9 @@ authorizes remote mutation.
 | API           | `GET /api/dashboard/observabilidad`                                                   |
 | Runtime       | Approved persistent-Local only                                                        |
 | Authorization | Authenticated `super_admin` with strong session (MFA / trusted device / Local bypass) |
-| Rate limit    | `admin:observabilidad` (30 req/min)                                                   |
+| Rate limit    | `admin:observabilidad` (6 req/min)                                                    |
 | Interaction   | Read-only                                                                             |
-| Refresh       | Initial load + manual **Actualizar estado** only                                      |
+| Refresh       | Initial load + manual **Actualizar estado**; 60 s cache                               |
 | Polling       | None                                                                                  |
 
 Request order:
@@ -82,6 +82,37 @@ for the corpus suite. Snapshot write failures never convert a failed validation 
 Dashboard refresh **never** runs tests, screenshots, migrations,
 `invitation:update|reconcile|promote`, asset uploads/downloads, or database writes.
 
+## Anomaly-first response contract
+
+The browser receives schema version `2`. The payload intentionally contains only:
+
+- overall status, generation time, cache state, and next refresh time;
+- short source identity (branch, short SHA, dirty/clean state);
+- healthy/attention/blocking/unverified counts by domain;
+- non-healthy issues and allowlisted read-only or dry-run actions;
+- compact regression and screenshot evidence.
+
+Healthy invitation and asset rows, fingerprints, artifact paths, raw probe errors, resolved UUIDs,
+database URLs, credentials, stack traces, and invitation content never cross the browser boundary.
+The server validates the child-process JSON with a strict Zod schema before responding.
+
+Issues are ordered by severity (`blocking` → `warning` → `unverified`) and then by domain/scope.
+Contradictory counts, duplicate slugs, missing environment rows, impossible connectivity/parity
+combinations, and inconsistent validation totals create a `DATA_INTEGRITY` issue and prevent a
+healthy status.
+
+## Resource limits and failure behavior
+
+- Corpus status is queried once per configured environment with a batched SQL statement. Migration
+  history adds one query per environment, for a maximum of six database subprocesses per uncached
+  snapshot.
+- The Astro server caches a valid snapshot for 60 seconds and shares one in-flight rebuild across
+  concurrent requests. There is no force-refresh bypass.
+- Aggregation has a 30-second wall-clock limit; child stdout is capped at 1 MiB and stderr at 4 KiB.
+- When rebuilding fails, the last valid snapshot may be served for at most five minutes. It is
+  marked `stale-fallback`, receives `SNAPSHOT_REFRESH_FAILED`, and cannot remain `HEALTHY`.
+- The browser does not poll. Its refresh control becomes available at `refreshAfter`.
+
 ---
 
 ## Distinction of corpora
@@ -97,8 +128,9 @@ Dashboard refresh **never** runs tests, screenshots, migrations,
 ## Implementation & type boundary
 
 - Aggregation (Node-only): `scripts/observability/snapshot.ts` → `buildObservabilitySnapshot()`
+- Public issue classifier: `scripts/observability/public-snapshot.ts`
 - Runtime gate: `src/lib/observability/runtime-gate.ts`
-- Browser types: `src/lib/observability/types.ts` (duplicated, free of `scripts/` / Node imports)
+- Browser types/schema: `src/lib/observability/types.ts` + `src/lib/observability/schema.ts`
 - Server snapshot wrapper: `src/lib/observability/server/snapshot.ts`
 - UI island: `ObservabilityPanel` (fetches API only; never imports probe modules)
 
