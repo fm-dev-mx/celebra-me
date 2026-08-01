@@ -147,6 +147,43 @@ export interface RecommendedCommand {
 	reason: string;
 }
 
+export type CommandCategory = 'DIAGNOSE' | 'VALIDATE' | 'REPAIR' | 'PROMOTE';
+
+export interface CategorizedCommand {
+	id: string;
+	label: string;
+	command: string;
+	reason: string;
+	category: CommandCategory;
+}
+
+export interface ObservabilitySummaryPayload {
+	schemaVersion: 1;
+	generatedAt: string;
+	overallStatus: OverallStatus;
+	source: ObservabilitySourceState;
+	summary: {
+		migrations: {
+			hasPending: boolean;
+			pendingCount: number;
+			localLifecycle: SchemaLifecycleState;
+		};
+		invitations: {
+			totalCount: number;
+			alignedCount: number;
+			divergedCount: number;
+			behindCount: number;
+			issueSlugs: string[];
+		};
+		validation: {
+			regressionFreshness: EvidenceFreshness;
+			screenshotsFreshness: EvidenceFreshness;
+		};
+	};
+	categorizedCommands: CategorizedCommand[];
+	degradedNotes: string[];
+}
+
 export interface ObservabilitySnapshot {
 	schemaVersion: 1;
 	generatedAt: string;

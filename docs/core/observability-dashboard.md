@@ -96,14 +96,25 @@ Dashboard refresh **never** runs tests, screenshots, migrations,
 
 ## Implementation & type boundary
 
-- Aggregation (Node-only): `scripts/observability/snapshot.ts` → `buildObservabilitySnapshot()`
-- Runtime gate: `src/lib/observability/runtime-gate.ts`
-- Browser types: `src/lib/observability/types.ts` (duplicated, free of `scripts/` / Node imports)
-- Server snapshot wrapper: `src/lib/observability/server/snapshot.ts`
-- UI island: `ObservabilityPanel` (fetches API only; never imports probe modules)
+- Aggregation (Node-only): `scripts/observability/snapshot.ts` → `buildObservabilitySnapshot()` & `buildObservabilitySummary()`
+- Batched Database Probes: `scripts/provision/dbs-status.ts` → `evaluateBatchTargetStatuses()` (1 batched SQL query per target environment instead of 234 individual `psql` child processes).
+- Runtime gate: `src/lib/observability/runtime-gate.ts` (enforces persistent-Local execution only; redirects to 404 on Vercel platform runtimes).
+- Dual Payload Contracts:
+  - `ObservabilitySummaryPayload`: Lightweight summary payload (< 3 KB) evaluated during Astro SSR and passed via props for immediate rendering. Served by `GET /api/dashboard/observabilidad?mode=summary`.
+  - `ObservabilitySnapshot`: Full detailed matrix snapshot served on demand by `GET /api/dashboard/observabilidad?mode=detail`.
+- Browser types: `src/lib/observability/types.ts` (duplicated, free of `scripts/` / Node imports).
+- Server snapshot wrapper: `src/lib/observability/server/snapshot.ts`.
+- UI island: `ObservabilityPanel` (4-tier visual hierarchy: Resumen, Invitaciones con atención requerida, Evidencia, Diagnóstico & comandos categorizados).
 
 The mirrored type files are intentional: consolidating them into one module would risk pulling
 Node-only scripts into the client bundle. Keep the separation.
+
+## Deployment & Runtime Binary Contract
+
+The dashboard is explicitly gated for **Local operator environments only**. It will not run on hosted Vercel function runtimes:
+- `isLocalObservabilityRuntime()` detects `VERCEL=1` or `VERCEL_ENV=production|preview` and causes Astro SSR to redirect to `/404`.
+- API route `/api/dashboard/observabilidad` rejects requests with a 404 error outside Local environments.
+- This gate ensures Vercel deployments do not attempt to invoke non-existent local binaries (`psql`), execute filesystem subprocesses, or time out on serverless cold starts.
 
 ## Known limitations
 

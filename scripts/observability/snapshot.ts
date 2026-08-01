@@ -192,3 +192,68 @@ export async function buildObservabilitySnapshot(options?: {
 		degradedNotes,
 	};
 }
+
+function categorizeCommand(id: string): 'DIAGNOSE' | 'VALIDATE' | 'REPAIR' | 'PROMOTE' {
+	if (id.includes('dbs') || id.includes('status')) return 'DIAGNOSE';
+	if (id.includes('test') || id.includes('screenshot') || id.includes('validate')) return 'VALIDATE';
+	if (id.includes('promote')) return 'PROMOTE';
+	return 'REPAIR';
+}
+
+export async function buildObservabilitySummary(options?: {
+	probeTimeoutMs?: number;
+}): Promise<import('./types.ts').ObservabilitySummaryPayload> {
+	const snapshot = await buildObservabilitySnapshot(options);
+
+	const alignedCount = snapshot.invitations.filter(
+		(i) => i.environments.local.status === 'MATCH_CANONICAL' || i.environments.local.status === 'MATCH_REFERENCE',
+	).length;
+	const divergedCount = snapshot.invitations.filter(
+		(i) => i.environments.local.status === 'DIVERGED' || i.environments.local.status === 'DIVERGED_FROM_REFERENCE',
+	).length;
+	const behindCount = snapshot.invitations.filter(
+		(i) => i.environments.local.status === 'BEHIND_CANONICAL',
+	).length;
+	const issueSlugs = snapshot.invitations
+		.filter(
+			(i) =>
+				i.environments.local.status !== 'MATCH_CANONICAL' &&
+				i.environments.local.status !== 'MATCH_REFERENCE',
+		)
+		.map((i) => i.slug);
+
+	const localMigration = snapshot.migrations.find((m) => m.environment === 'local');
+	const pendingCount = Array.isArray(localMigration?.pending) ? localMigration.pending.length : 0;
+
+	const categorizedCommands = snapshot.recommendedCommands.map((cmd) => ({
+		...cmd,
+		category: categorizeCommand(cmd.id),
+	}));
+
+	return {
+		schemaVersion: 1,
+		generatedAt: snapshot.generatedAt,
+		overallStatus: snapshot.overallStatus,
+		source: snapshot.source,
+		summary: {
+			migrations: {
+				hasPending: pendingCount > 0,
+				pendingCount,
+				localLifecycle: localMigration?.schemaLifecycle ?? 'UNVERIFIED',
+			},
+			invitations: {
+				totalCount: snapshot.invitations.length,
+				alignedCount,
+				divergedCount,
+				behindCount,
+				issueSlugs,
+			},
+			validation: {
+				regressionFreshness: snapshot.validation.regression.freshness,
+				screenshotsFreshness: snapshot.validation.screenshots.freshness,
+			},
+		},
+		categorizedCommands,
+		degradedNotes: snapshot.degradedNotes,
+	};
+}

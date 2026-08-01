@@ -7,10 +7,54 @@
 import { spawn } from 'node:child_process';
 import { resolve } from 'node:path';
 import { ApiError } from '@/lib/rsvp/core/errors';
-import type { ObservabilitySnapshot } from '@/lib/observability/types';
+import type { ObservabilitySnapshot, ObservabilitySummaryPayload } from '@/lib/observability/types';
 
 const SNAPSHOT_SCRIPT = resolve(process.cwd(), 'scripts/observability/print-snapshot.ts');
 const SNAPSHOT_TIMEOUT_MS = 300_000;
+
+export async function buildObservabilitySummaryPayload(options?: {
+	probeTimeoutMs?: number;
+}): Promise<ObservabilitySummaryPayload> {
+	const probeTimeoutMs = options?.probeTimeoutMs ?? 2_000;
+	try {
+		const { buildObservabilitySummary } = await import('../../../../scripts/observability/snapshot.ts');
+		return await buildObservabilitySummary({ probeTimeoutMs });
+	} catch {
+		// Fallback to full snapshot wrapper mapped to summary if direct import fails
+		const full = await buildObservabilitySnapshot();
+		return {
+			schemaVersion: 1,
+			generatedAt: full.generatedAt,
+			overallStatus: full.overallStatus,
+			source: full.source,
+			summary: {
+				migrations: {
+					hasPending: (full.migrations.find((m) => m.environment === 'local')?.pending.length ?? 0) > 0,
+					pendingCount: Array.isArray(full.migrations.find((m) => m.environment === 'local')?.pending)
+						? (full.migrations.find((m) => m.environment === 'local')?.pending as string[]).length
+						: 0,
+					localLifecycle: full.migrations.find((m) => m.environment === 'local')?.schemaLifecycle ?? 'UNVERIFIED',
+				},
+				invitations: {
+					totalCount: full.invitations.length,
+					alignedCount: full.invitations.filter((i) => i.environments.local.status === 'MATCH_CANONICAL' || i.environments.local.status === 'MATCH_REFERENCE').length,
+					divergedCount: full.invitations.filter((i) => i.environments.local.status === 'DIVERGED' || i.environments.local.status === 'DIVERGED_FROM_REFERENCE').length,
+					behindCount: full.invitations.filter((i) => i.environments.local.status === 'BEHIND_CANONICAL').length,
+					issueSlugs: full.invitations.filter((i) => i.environments.local.status !== 'MATCH_CANONICAL' && i.environments.local.status !== 'MATCH_REFERENCE').map((i) => i.slug),
+				},
+				validation: {
+					regressionFreshness: full.validation.regression.freshness,
+					screenshotsFreshness: full.validation.screenshots.freshness,
+				},
+			},
+			categorizedCommands: full.recommendedCommands.map((cmd) => ({
+				...cmd,
+				category: cmd.id.includes('dbs') ? 'DIAGNOSE' : cmd.id.includes('test') ? 'VALIDATE' : cmd.id.includes('promote') ? 'PROMOTE' : 'REPAIR',
+			})),
+			degradedNotes: full.degradedNotes,
+		};
+	}
+}
 
 export async function buildObservabilitySnapshot(): Promise<ObservabilitySnapshot> {
 	return await new Promise((resolvePromise, reject) => {
