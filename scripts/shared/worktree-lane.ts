@@ -3,12 +3,12 @@
  * Path/lane identity is never authorization for mutations.
  *
  * Canonical layout:
- *   D:\code\
- *   ├── celebra-me\               (repo root / Integration lane)
- *   └── celebra-me-worktrees\     (external worktree root)
- *       ├── dev-local\
- *       ├── dev-preview\
- *       └── dev-extra\
+ *   <workspace-parent>/
+ *   ├── celebra-me/               (repo root / Integration lane)
+ *   └── celebra-me-worktrees/     (external worktree root)
+ *       ├── dev-local/
+ *       ├── dev-preview/
+ *       └── dev-extra/
  *
  * The old `.worktrees/` layout is detected as legacy and tooling warns about it
  * but does not treat those directories as active canonical lanes.
@@ -28,10 +28,7 @@ export interface WorktreeLaneDefinition {
 }
 
 /** Segment names for legacy `.worktrees/` directories that tooling warns about. */
-export const LEGACY_WORKTREE_SEGMENTS = Object.freeze([
-	'dev-lane',
-	'val-lane',
-]);
+export const LEGACY_WORKTREE_SEGMENTS = Object.freeze(['dev-lane', 'val-lane']);
 
 /** Names of lanes that are still in the old `.worktrees/` location and need migration. */
 export const DEPRECATED_DOT_WORKTREES_SEGMENTS = Object.freeze([
@@ -90,7 +87,7 @@ export function getWorktreeDevServerPort(laneId: WorktreeLaneId): number {
 /**
  * Returns the canonical external worktree root path based on the repo root.
  * Convention: sibling directory named `<repo-dir-name>-worktrees`.
- * Example: `D:\code\celebra-me` → `D:\code\celebra-me-worktrees`
+ * Example: `<parent-dir>/celebra-me` → `<parent-dir>/celebra-me-worktrees`
  */
 export function getExternalWorktreeRoot(repoRoot: string): string {
 	const resolved = resolve(repoRoot).replaceAll('\\', '/');
