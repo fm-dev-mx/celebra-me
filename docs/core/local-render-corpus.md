@@ -74,6 +74,16 @@ pnpm screenshot:local-render-corpus    # runtime/completeness against Local rout
 pnpm exec tsx scripts/provision/local-render-corpus/verify-local-routes.ts
 ```
 
+`pnpm screenshot:local-render-corpus` runs the **registered corpus only**. It does not support
+`--slug` filtering, and the current entry point does not expose a usable `--help`. To capture one
+invitation instead:
+
+```powershell
+pnpm screenshot --url=/<eventType>/<slug> --viewport=<viewport> --clean
+```
+
+See `scripts/screenshot/README.md` for the single-route contract and reveal-state capture rules.
+
 Failures name the exact invitation slug.
 
 Both commands write an uncommitted validation evidence snapshot under

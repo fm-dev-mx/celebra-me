@@ -2,7 +2,7 @@
 title: Invitation Reveal Gate — Automation Contract
 lifecycle: evergreen
 domain: invitation-delivery
-last_reviewed: 2026-07-27
+last_reviewed: 2026-08-01
 ---
 
 # Invitation reveal gate — automation contract
@@ -40,20 +40,22 @@ The state lives in the `data-reveal-state` attribute on the invitation root,
 `.event-theme-wrapper[data-event-slug]`. Read it from that element — never from the reveal
 component.
 
-| Value            | Meaning                                                               | Invitation body usable  |
-| ---------------- | --------------------------------------------------------------------- | ----------------------- |
-| `sealed`         | Initial server-rendered state; gate is closed                         | No                      |
-| `revealed`       | Gate completed (click, stored flag, `skipEnvelope`, editorial `open`) | Yes                     |
-| `preview-opened` | `?screenshot=1&reveal=open` on an **envelope** invitation             | Yes                     |
-| `letter-held`    | `?screenshot=1&reveal=letter`; envelope and card held for capture     | No (gate still painted) |
+| Value            | Meaning                                                                                          | Invitation body usable                                      |
+| ---------------- | ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------- |
+| `sealed`         | Initial server-rendered state; gate is closed                                                    | No                                                          |
+| `letter-held`    | `?screenshot=1&reveal=letter`; envelope and card held for capture                                | No (gate still painted; Hero remains gated)                 |
+| `preview-opened` | `?screenshot=1&reveal=open` on an **envelope** invitation — transitional open-letter preview     | No (letter preview only; Hero remains gated until revealed) |
+| `revealed`       | Gate completed (click, stored flag, `skipEnvelope`, editorial `open`, content-capture normalize) | Yes                                                         |
 
-`preview-opened` and `revealed` are both "open" outcomes. The value depends on which reveal variant
-the invitation uses, so **automation must accept both**:
+`preview-opened` is **not** the completed invitation state. Envelope `?screenshot=1&reveal=open`
+lands there so the open letter can be inspected; Hero and invitation content stay gated until the
+page advances to `revealed`. Editorial-cover + `?screenshot=1&reveal=open` goes directly to
+`revealed`.
 
-- Envelope variant + `?screenshot=1&reveal=open` → `preview-opened`
-- Editorial-cover variant + `?screenshot=1&reveal=open` → `revealed`
-
-Waiting only for `revealed` is a known way to hang forever on an envelope invitation.
+Screenshot content captures (Hero, sections, full-page) must normalize to `revealed` after the open
+URL — see `normalizeInvitationRevealedForCapture` in `scripts/screenshot/reveal.ts`. Waiting only
+for `revealed` immediately after envelope `reveal=open` (without that normalize step) hangs; waiting
+only for `preview-opened` silently measures a still-gated invitation.
 
 ## Supported URL contract
 
@@ -61,28 +63,28 @@ Waiting only for `revealed` is a known way to hang forever on an envelope invita
 (`src/pages/[eventType]/[slug].astro` gates `previewState` on `screenshotMode`). `?reveal=open`
 alone is a no-op.
 
-| URL                                              | Server behaviour                                      | Resulting state               | Gate in DOM      |
-| ------------------------------------------------ | ----------------------------------------------------- | ----------------------------- | ---------------- |
-| _(no parameters)_                                | Gate rendered, closed                                 | `sealed`                      | Yes, interactive |
-| `?skipEnvelope=true`                             | Gate **not rendered**; root ships pre-opened from SSR | `revealed`                    | No               |
-| `?screenshot=1&reveal=open`                      | Gate rendered but stood down on hydration             | `preview-opened` / `revealed` | Yes, inert       |
-| `?screenshot=1&reveal=letter&forceEnvelope=true` | Card painted and held, no teardown                    | `letter-held`                 | Yes, measurable  |
-| `?screenshot=1&reveal=closed&forceEnvelope=true` | Gate rendered closed, stored-open flag ignored        | `sealed`                      | Yes, interactive |
-| `?forceEnvelope=true`                            | Ignores the stored "already opened" flag              | `sealed`                      | Yes, interactive |
+| URL                                              | Server behaviour                                            | Resulting state               | Gate in DOM                                       |
+| ------------------------------------------------ | ----------------------------------------------------------- | ----------------------------- | ------------------------------------------------- |
+| _(no parameters)_                                | Gate rendered, closed                                       | `sealed`                      | Yes, interactive                                  |
+| `?skipEnvelope=true`                             | Gate **not rendered**; root ships pre-opened from SSR       | `revealed`                    | No                                                |
+| `?screenshot=1&reveal=open`                      | Envelope: letter preview on hydration; editorial: completed | `preview-opened` / `revealed` | Yes (envelope: letter preview; editorial: hidden) |
+| `?screenshot=1&reveal=letter&forceEnvelope=true` | Card painted and held, no teardown                          | `letter-held`                 | Yes, measurable                                   |
+| `?screenshot=1&reveal=closed&forceEnvelope=true` | Gate rendered closed, stored-open flag ignored              | `sealed`                      | Yes, interactive                                  |
+| `?forceEnvelope=true`                            | Ignores the stored "already opened" flag                    | `sealed`                      | Yes, interactive                                  |
 
 Adding `screenshot` also disables all CSS animation and transition durations page-wide, which is
 what makes the screenshot states settle in tens of milliseconds.
 
 ### Which one to use
 
-| Goal                                                      | Use                                              |
-| --------------------------------------------------------- | ------------------------------------------------ |
-| Reach invitation content as fast and reliably as possible | `?skipEnvelope=true`                             |
-| Measure real scroll motion on the open invitation         | `?skipEnvelope=true`                             |
-| Capture the closed gate                                   | `?screenshot=1&reveal=closed&forceEnvelope=true` |
-| Capture the letter/card                                   | `?screenshot=1&reveal=letter&forceEnvelope=true` |
-| Capture the open invitation for the screenshot pipeline   | `?screenshot=1&reveal=open`                      |
-| Test the open transition itself                           | Real click (see below)                           |
+| Goal                                                      | Use                                                                |
+| --------------------------------------------------------- | ------------------------------------------------------------------ |
+| Reach invitation content as fast and reliably as possible | `?skipEnvelope=true`                                               |
+| Measure real scroll motion on the open invitation         | `?skipEnvelope=true`                                               |
+| Capture the closed gate                                   | `?screenshot=1&reveal=closed&forceEnvelope=true`                   |
+| Capture the letter/card                                   | `?screenshot=1&reveal=letter&forceEnvelope=true`                   |
+| Capture the open invitation for the screenshot pipeline   | `?screenshot=1&reveal=open` then normalize to `revealed` (harness) |
+| Test the open transition itself                           | Real click (see below)                                             |
 
 `?skipEnvelope=true` is the recommended default. It is handled entirely server-side: the reveal
 component is not rendered and the wrapper is emitted with `data-reveal-state="revealed"`, so there
@@ -95,11 +97,10 @@ ms to reach `revealed`.
 Copy this instead of writing a bare `click()` plus `waitForTimeout()`.
 
 ```js
-const OPEN_STATES = ['revealed', 'preview-opened'];
-
 /**
  * Navigate to an invitation with the gate already open.
  * Throws on timeout so a gated page can never be measured as if it were open.
+ * Prefer skipEnvelope — it SSR-emits revealed. Do not treat preview-opened as content-ready.
  */
 async function openInvitation(page, path, { timeout = 15000 } = {}) {
   const url = new URL(path, 'http://localhost:4321');
@@ -109,11 +110,11 @@ async function openInvitation(page, path, { timeout = 15000 } = {}) {
 
   try {
     await page.waitForFunction(
-      (states) => {
+      () => {
         const root = document.querySelector('.event-theme-wrapper[data-event-slug]');
-        return states.includes(root?.getAttribute('data-reveal-state') ?? '');
+        return root?.getAttribute('data-reveal-state') === 'revealed';
       },
-      OPEN_STATES,
+      undefined,
       { timeout },
     );
   } catch {
@@ -245,16 +246,16 @@ reported exactly that before the cause was understood.
 
 ## Troubleshooting: stuck at `sealed`
 
-| Symptom                                                            | Cause                                                                                           | Fix                                                                                   |
-| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| Click reports success, state stays `sealed` for 2–3 s              | Normal: the open transition takes ~3.2–3.4 s                                                    | Wait with a bounded `waitForFunction`, not a fixed sleep                              |
-| State reaches `preview-opened`, wait for `revealed` never resolves | `?screenshot=1&reveal=open` on an envelope invitation                                           | Accept both `revealed` and `preview-opened`                                           |
-| `?reveal=open` alone does nothing                                  | `reveal` is only read when `screenshot` is present                                              | Use `?screenshot=1&reveal=open`                                                       |
-| Seeded `envelope-opened-*`, page still `sealed`                    | Target is a demo (`data-is-demo="true"`), which ignores the stored flag                         | Use `?skipEnvelope=true`                                                              |
-| Click lands but nothing happens at all                             | Clicked before `ds-envelope-reveal` was defined                                                 | Wait on `customElements.get('ds-envelope-reveal')`                                    |
-| State never leaves `sealed` even after 10 s                        | The `envCardRise` animation never ran (stylesheet failed, animation interrupted, tab throttled) | The component now falls back to a bounded safety timer; if it still hangs, file a bug |
-| `.has-motion` count is `0`, everything already `.is-visible`       | The 8 s fail-open fired, or the context emulates `prefers-reduced-motion: reduce`               | Re-run with `?skipEnvelope=true` inside 8 s and with `reducedMotion: 'no-preference'` |
-| `.has-motion` count is `0`, nothing is `.is-visible`               | The observed elements never mounted, so no observer was ever created                            | Verify the reveal state and the selectors before blaming motion                       |
+| Symptom                                                            | Cause                                                                                           | Fix                                                                                                                                                                     |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Click reports success, state stays `sealed` for 2–3 s              | Normal: the open transition takes ~3.2–3.4 s                                                    | Wait with a bounded `waitForFunction`, not a fixed sleep                                                                                                                |
+| State reaches `preview-opened`, wait for `revealed` never resolves | Envelope `?screenshot=1&reveal=open` stops at letter preview until normalized                   | For content measurement use `?skipEnvelope=true`, or call `normalizeInvitationRevealedForCapture` (screenshot harness). Do not treat `preview-opened` as content-ready. |
+| `?reveal=open` alone does nothing                                  | `reveal` is only read when `screenshot` is present                                              | Use `?screenshot=1&reveal=open`                                                                                                                                         |
+| Seeded `envelope-opened-*`, page still `sealed`                    | Target is a demo (`data-is-demo="true"`), which ignores the stored flag                         | Use `?skipEnvelope=true`                                                                                                                                                |
+| Click lands but nothing happens at all                             | Clicked before `ds-envelope-reveal` was defined                                                 | Wait on `customElements.get('ds-envelope-reveal')`                                                                                                                      |
+| State never leaves `sealed` even after 10 s                        | The `envCardRise` animation never ran (stylesheet failed, animation interrupted, tab throttled) | The component now falls back to a bounded safety timer; if it still hangs, file a bug                                                                                   |
+| `.has-motion` count is `0`, everything already `.is-visible`       | The 8 s fail-open fired, or the context emulates `prefers-reduced-motion: reduce`               | Re-run with `?skipEnvelope=true` inside 8 s and with `reducedMotion: 'no-preference'`                                                                                   |
+| `.has-motion` count is `0`, nothing is `.is-visible`               | The observed elements never mounted, so no observer was ever created                            | Verify the reveal state and the selectors before blaming motion                                                                                                         |
 
 ### Safety timer
 

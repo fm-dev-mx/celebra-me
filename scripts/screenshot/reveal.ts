@@ -74,8 +74,123 @@ export async function assertInvitationContentReady(page: Page): Promise<boolean>
 	}
 }
 
+/** Probe for completed content-capture reveal normalization. */
+export interface RevealCompletedDomProbe {
+	wrapperRevealState: string;
+	envelopeOpenOnHtml: boolean;
+	/** `null` when no reveal host is present. */
+	revealHidden: boolean | null;
+	openControlsEnabled: boolean;
+}
+
 /**
- * Open the invitation for section/full-page capture using only `?reveal=open`.
+ * True when the invitation is in the completed interactive state required for
+ * Hero / section / full-page content captures (`data-reveal-state="revealed"`).
+ */
+export function evaluateRevealCompletedForContent(probe: RevealCompletedDomProbe): boolean {
+	if (probe.wrapperRevealState !== 'revealed') return false;
+	if (probe.envelopeOpenOnHtml) return false;
+	if (probe.revealHidden === false) return false;
+	if (probe.openControlsEnabled) return false;
+	return true;
+}
+
+export interface NormalizeRevealedResult {
+	state: string;
+	changed: boolean;
+	envelopeInert: boolean;
+}
+
+/**
+ * Sole owner of the transition to `data-reveal-state="revealed"` for content
+ * captures (Hero, sections, full-page). Idempotent: re-asserts envelope
+ * inertness when already revealed. Mirrors EnvelopeReveal `completeReveal`
+ * residual state without a parallel Playwright reveal state machine.
+ *
+ * Call once per open-preparation lifecycle from
+ * {@link ensureInvitationOpenForCapture} only — not from section/full-page
+ * capture paths directly.
+ */
+export async function normalizeInvitationRevealedForCapture(
+	page: Page,
+): Promise<NormalizeRevealedResult> {
+	return page.evaluate(() => {
+		const wrapper = document.querySelector('.event-theme-wrapper[data-event-slug]');
+		if (!(wrapper instanceof HTMLElement)) {
+			return { state: '', changed: false, envelopeInert: true };
+		}
+
+		const previous = wrapper.getAttribute('data-reveal-state') || '';
+		const changed = previous !== 'revealed';
+		wrapper.setAttribute('data-reveal-state', 'revealed');
+		document.documentElement.classList.remove('envelope-open');
+
+		const reveal = wrapper.querySelector(
+			'[data-screenshot="reveal-section"], ds-envelope-reveal, ds-editorial-cover',
+		);
+		let envelopeInert = true;
+		if (reveal instanceof HTMLElement) {
+			reveal.hidden = true;
+			reveal.setAttribute('aria-hidden', 'true');
+			reveal.classList.remove('is-opening');
+			for (const button of reveal.querySelectorAll<HTMLButtonElement>(
+				'[data-envelope-open], [data-editorial-open]',
+			)) {
+				button.disabled = true;
+				button.setAttribute('aria-expanded', 'true');
+			}
+
+			const style = window.getComputedStyle(reveal);
+			envelopeInert =
+				reveal.hidden ||
+				style.display === 'none' ||
+				style.pointerEvents === 'none' ||
+				Number.parseFloat(style.opacity || '1') <= 0.01;
+		}
+
+		if (changed) {
+			const eventSlug = wrapper.getAttribute('data-event-slug') || '';
+			window.dispatchEvent(new CustomEvent('envelope:opened', { detail: { eventSlug } }));
+		}
+
+		return { state: 'revealed', changed, envelopeInert };
+	});
+}
+
+/** Gather completed-state probes after normalization. */
+export async function checkRevealCompletedForContent(page: Page): Promise<boolean> {
+	try {
+		const probe = await page.evaluate((): RevealCompletedDomProbe => {
+			const wrapper = document.querySelector('.event-theme-wrapper[data-event-slug]');
+			const reveal = wrapper?.querySelector(
+				'[data-screenshot="reveal-section"], ds-envelope-reveal, ds-editorial-cover',
+			);
+			const openControls = reveal
+				? Array.from(
+						reveal.querySelectorAll<HTMLButtonElement>(
+							'[data-envelope-open], [data-editorial-open]',
+						),
+					)
+				: [];
+			return {
+				wrapperRevealState: wrapper?.getAttribute('data-reveal-state') || '',
+				envelopeOpenOnHtml: document.documentElement.classList.contains('envelope-open'),
+				revealHidden:
+					reveal instanceof HTMLElement
+						? Boolean(reveal.hidden) || reveal.hasAttribute('hidden')
+						: null,
+				openControlsEnabled: openControls.some((button) => !button.disabled),
+			};
+		});
+		return evaluateRevealCompletedForContent(probe);
+	} catch {
+		return false;
+	}
+}
+
+/**
+ * Open the invitation for section/full-page capture using `?reveal=open`, then
+ * normalize once to `revealed` via {@link normalizeInvitationRevealedForCapture}.
  * Retries once with a fresh navigation. Does not use seal click automation.
  */
 export async function ensureInvitationOpenForCapture(
@@ -108,6 +223,15 @@ export async function ensureInvitationOpenForCapture(
 			job.hideSelectors,
 		);
 
+		let completedOk = true;
+		if (opts.hasReveal) {
+			const normalized = await normalizeInvitationRevealedForCapture(page);
+			completedOk =
+				normalized.state === 'revealed' &&
+				normalized.envelopeInert &&
+				(await checkRevealCompletedForContent(page));
+		}
+
 		const revealOk = opts.hasReveal ? await checkRevealIsOpen(page) : true;
 		const contentOk = await assertInvitationContentReady(page);
 		const clearOk = opts.hasReveal
@@ -115,13 +239,13 @@ export async function ensureInvitationOpenForCapture(
 				? await opts.occlusionCache.assert(page)
 				: await assertRevealDoesNotOccludeInvitation(page)
 			: true;
-		if (revealOk && contentOk && clearOk) {
-			console.log('  ✓ Invitation open and section content ready');
+		if (completedOk && revealOk && contentOk && clearOk) {
+			console.log('  ✓ Invitation revealed and section content ready');
 			return true;
 		}
 		opts.occlusionCache?.invalidate();
 		console.warn(
-			`  ⚠ Open assert failed (revealOpen=${revealOk}, contentReady=${contentOk}, revealClear=${clearOk})` +
+			`  ⚠ Open assert failed (completed=${completedOk}, revealOpen=${revealOk}, contentReady=${contentOk}, revealClear=${clearOk})` +
 				(attempt < maxAttempts ? '; retrying…' : ''),
 		);
 	}

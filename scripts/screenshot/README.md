@@ -55,11 +55,36 @@ height, selector checks, warnings, failures, console errors, and request failure
 
 ## Commands
 
-| Command                            | Description                                    | Status                                  |
-| ---------------------------------- | ---------------------------------------------- | --------------------------------------- |
-| `pnpm screenshot`                  | Interactive mode (guides through all options)  | ✅                                      |
-| `pnpm screenshot:invite --url=...` | Direct invitation capture                      | ✅ Verified                             |
-| `pnpm screenshot --url=...`        | Direct page capture (landing/dashboard/custom) | ⚠️ Landing verified, auth pages pending |
+| Command                               | Description                                                     | Status                                  |
+| ------------------------------------- | --------------------------------------------------------------- | --------------------------------------- |
+| `pnpm screenshot`                     | Interactive mode when no direct flags are supplied              | ✅                                      |
+| `pnpm screenshot:invite --url=...`    | Direct invitation capture                                       | ✅ Verified                             |
+| `pnpm screenshot --url=...`           | Direct page capture (invitation / landing / dashboard / custom) | ⚠️ Landing verified, auth pages pending |
+| `pnpm screenshot:local-render-corpus` | Runs the registered Local Render Corpus (`--corpus`)            | ✅                                      |
+
+### Single invitation vs corpus
+
+Capture **one** invitation (or any single route) with the supported direct command:
+
+```powershell
+pnpm screenshot --url=/<eventType>/<slug> --viewport=<viewport> --clean
+```
+
+Example:
+
+```powershell
+pnpm screenshot --url=/boda/boda-perla-y-carlos --viewport=mobile-standard --clean
+```
+
+`pnpm screenshot:local-render-corpus` runs every page registered in the Local Render Corpus.
+Observed behavior of the current entry point:
+
+- It does **not** support `--slug` filtering (extra flags are ignored; the full corpus still runs).
+- It does **not** expose a usable `--help` surface (`--help` is not treated as help and the corpus
+  run begins). Prefer this README and `docs/core/local-render-corpus.md` for usage.
+
+`pnpm screenshot --help` without other direct-mode flags currently enters the interactive prompt
+rather than printing CLI help.
 
 ## Interactive Flow
 
@@ -203,19 +228,24 @@ cannot be confused with the canonical `05-invitation-full-page.png`.
 
 ### Screenshot reveal URL contract
 
-| `reveal=`                    | Layout                                                                       | Used by                     |
-| ---------------------------- | ---------------------------------------------------------------------------- | --------------------------- |
-| `closed` (+ `forceEnvelope`) | Envelope/cover closed                                                        | `01`, `02`                  |
-| `letter` (+ `forceEnvelope`) | Envelope + letter held (`is-letter-held`; audit does **not** `display:none`) | `03`, `04` (one navigation) |
-| `open`                       | Invitation open; reveal removed from audit layout                            | `10-*`, `05`                |
+| `reveal=`                    | Layout                                                                         | Used by                     |
+| ---------------------------- | ------------------------------------------------------------------------------ | --------------------------- |
+| `closed` (+ `forceEnvelope`) | Envelope/cover closed (`sealed`)                                               | `01`, `02`                  |
+| `letter` (+ `forceEnvelope`) | Envelope + letter held (`letter-held`; audit does **not** `display:none`)      | `03`, `04` (one navigation) |
+| `open`                       | Envelope → `preview-opened`; harness then normalizes to `revealed` for content | `10-*`, `05`                |
 
 Navigation is skipped when the page is already on the same `screenshot`/`reveal`/`forceEnvelope`
 URL. Closed/letter prepares skip full-page lazy-scroll (only `reveal=open` needs section warm-up).
 
+Content captures (`10-*`, `05`) share one open-preparation path: `ensureInvitationOpenForCapture` →
+`?screenshot=1&reveal=open` → `normalizeInvitationRevealedForCapture` (sole owner of
+`data-reveal-state="revealed"`). Do not mutate reveal state from `cli.ts`, capture-plan, section, or
+full-page helpers.
+
 `05-invitation-full-page` is built by stacking the same-run section captures (source of truth) after
-a deterministic `?screenshot=1&reveal=open` (one retry). Invitations must expose
-`data-screenshot-section` markers and support screenshot reveal-open. If open or composite fails,
-the job fails and any previous `05` for that viewport is removed (correct or nothing).
+that normalized open state (one retry). Invitations must expose `data-screenshot-section` markers.
+If open or composite fails, the job fails and any previous `05` for that viewport is removed
+(correct or nothing).
 
 ### General Page Screenshots
 

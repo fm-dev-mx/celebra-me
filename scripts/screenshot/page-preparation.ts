@@ -362,8 +362,10 @@ async function normalizeForAudit(page: Page): Promise<void> {
         animation-delay: 0s !important;
       }
 
-      /* Remove reveal/cover from layout only for fully-open invitation capture.
-         Do NOT hide letter-held / is-letter-held (?reveal=letter) — steps 03/04 need a box. */
+      /* Remove reveal/cover from layout after content captures reach revealed.
+         Content path owns the state transition via normalizeInvitationRevealedForCapture.
+         Do NOT hide letter-held / is-letter-held (?reveal=letter) — steps 03/04 need a box.
+         preview-opened rules remain defense-in-depth if open URL is audited before normalize. */
       html[data-screenshot='audit'] [data-screenshot='reveal-section'][data-preview-state='opened'],
       html[data-screenshot='audit'] [data-screenshot='reveal-section'].is-preview-opened,
       html[data-screenshot='audit'] .event-theme-wrapper[data-reveal-state='revealed'] [data-screenshot='reveal-section'],

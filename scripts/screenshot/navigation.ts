@@ -18,7 +18,9 @@ export type ScreenshotRevealState = 'open' | 'closed' | 'letter';
  *
  * - `closed` / `letter`: also sets `forceEnvelope=true` so localStorage cannot skip the envelope.
  * - `letter`: server paints measurable envelope + card (`previewState=letter` / `is-letter-held`).
- * - `open`: invitation content; audit CSS removes the reveal from layout.
+ * - `open`: envelope lands at `preview-opened` (transitional letter preview). Content captures
+ *   must then call `normalizeInvitationRevealedForCapture` (via `ensureInvitationOpenForCapture`)
+ *   to reach `revealed` before Hero / section / full-page shots.
  */
 export function buildScreenshotUrl(baseUrl: string, revealState?: ScreenshotRevealState): string {
 	const url = new URL(baseUrl);

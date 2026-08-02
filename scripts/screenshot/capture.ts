@@ -99,6 +99,8 @@ export {
 	createRevealOcclusionCache,
 	shouldSkipInvitationOpenCapture,
 	assertInvitationContentReady,
+	evaluateRevealCompletedForContent,
+	normalizeInvitationRevealedForCapture,
 	ensureInvitationOpenForCapture,
 	findRevealSection,
 	findRevealLetter,
