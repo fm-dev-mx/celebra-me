@@ -4,6 +4,10 @@ The screenshot tool is a Local-first, configuration-driven QA adapter. Invitatio
 behavior belongs in the shared route, section, viewport, and render contracts; the screenshot core
 must not branch on individual slugs.
 
+Agent evidence ordering, incremental escalation, operating budgets, stopping conditions, and
+provider-isolation policy are owned by [`gatekeeper.md`](../../.agent/rules/gatekeeper.md) §5.3–5.4.
+This document owns the executable screenshot contract and its record/artifact guarantees.
+
 ## Validation boundary
 
 `pnpm screenshot` validates the static screenshot registry and all discovered invitation/demo

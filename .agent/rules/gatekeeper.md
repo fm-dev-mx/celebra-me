@@ -371,6 +371,17 @@ Choose the evidence class **before** launching screenshot or browser tools. This
 proportional visual validation; [`scripts/screenshot/README.md`](../../scripts/screenshot/README.md)
 owns tool mechanics and flags.
 
+Evidence hierarchy — consume evidence in this order and stop at the first layer that proves the
+contract:
+
+1. Focused test result and exit status.
+2. Concise `preflight.json` and final `report.json` summaries.
+3. Exact filesystem or manifest assertions.
+4. Targeted log excerpts for failures or disputed results only.
+5. Individual screenshots only when visual judgment is required.
+
+Do not load every generated image, a complete manifest, a full diff, or an entire log by default.
+
 | Change class                                                                                                  | Evidence class        | Minimum sufficient proof                                                                                                                                                                              |
 | ------------------------------------------------------------------------------------------------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Material layout, reveal, hero, or section composition                                                         | **Required**          | Same route; primary viewport (`mobile-standard` unless desktop-only); smallest strict target (`--sections=<id>`, `--set=reveal-only`, or a single affected step); reuse an already-running `pnpm dev` |
@@ -385,8 +396,6 @@ Rules:
 - Default capture when screenshots are justified: **one route × one viewport × smallest target**.
   Use full `critical-qa` / multi-viewport / `all-sections` only when reveal+open composition is in
   scope, a brief/domain doc requires it, or the minimum pass failed.
-- Do not `Read` screenshot binaries en masse. Cite artifact paths; open only images needed for a
-  Pass/Fail call. Prefer `report.json` for coverage metadata.
 - Reuse an existing server; do not start parallel full screenshot batches against a cold Vite
   optimize-dep without need.
 - Preserve full visual proof when risk justifies it (invitation ship QA, section-intersection
@@ -397,10 +406,48 @@ Rules:
   changes do not require screenshots unless they affect the screenshot mechanism.
 - Use the smallest representative invitation, section, and viewport set for the change. Full-corpus
   execution requires explicit justification in the task record. Capture once after implementation
-  stabilizes; repeat only when the earlier evidence is stale or invalidated by a later change.
-- Summarize the selected plan, results, failures, and artifact paths in the closing report. Do not
-  load redundant images or complete browser logs into context.
+  stabilizes; repeat only when the earlier evidence is stale or invalidated by a later change. A
+  successful browser check is reusable when no relevant code, configuration, content, asset, server,
+  or acceptance criterion changed.
+- Start with the smallest relevant pure or controlled-integration check. Expand to one
+  representative Local browser check only when that layer leaves a browser contract unresolved or
+  fails. Before every expansion, state the unresolved contract it will prove.
+- Do not rerun a successful browser check without an explicit invalidation reason. Stop when the
+  acceptance criteria are supported by current evidence; a clean gate is not a reason to collect
+  more evidence.
+- Reserve full corpus, hosted Preview, Production, and provider-backed checks for contracts Local
+  cannot prove or for an explicit requirement. State that limitation and the reason before running
+  them; never increase provider or network use merely to measure efficiency.
+- Summarize the selected plan, results, failures, and artifact paths in the closing report.
 - Name the validation tier (A/B/C) and any visual-evidence skips in the closing report.
+
+Default operating budget:
+
+- One representative route × one viewport × the smallest target first.
+- At most one browser execution per unresolved integration contract; widen only after failure,
+  inconclusive evidence, or an explicit requirement.
+- No full corpus without technical justification, no hosted provider when Local proves the same
+  behavior, and no image inspection unless appearance determines the result.
+- Do not repeat a clean final gate unless a later change invalidated it.
+
+When expected work exceeds these defaults, briefly justify the additional scope before executing it.
+
+### 5.4 Context-efficiency rules
+
+The audit identified the main high-consumption failure modes as repeated reads of unchanged files or
+already-established architecture, bulk ingestion of logs/manifests/diffs/images, repeated checks
+whose evidence was still valid, verbose duplicated progress summaries, and investigation continuing
+after acceptance was already demonstrated.
+
+- Use `rg` and focused line ranges first. Reopen an unchanged file only when a new question depends
+  on it; carry forward concise summaries and current evidence.
+- Summarize long command output at the source. Report only commands, status/exit code, failures,
+  material warnings, and affected files or artifact paths.
+- Progress updates must contain only new findings or a changed direction. Do not restate conclusions
+  already established in the same goal.
+- Treat unusually high token consumption as a process defect: explain the cause in the closing
+  report and tighten the next validation expansion. This is a proportional escalation trigger, not a
+  rigid token limit that can force incomplete or unsafe work.
 
 Screenshot infrastructure guardrails:
 
@@ -415,6 +462,9 @@ Screenshot infrastructure guardrails:
 - Screenshot preflight/report records and diagnostics must not persist or print credentials,
   cookies, signed URLs, query values, tokens, or personal invitation data. Cite record paths and
   summarize failures rather than attaching complete logs or image inventories.
+- Efficiency work must not add telemetry or external uploads of prompts, logs, screenshots, or
+  repository data. Keep token/accounting metadata at the agent/process layer, separate from runtime
+  application behavior.
 - The canonical screenshot contract and representative test matrix live in
   [`docs/core/screenshot-tool-contract.md`](../../docs/core/screenshot-tool-contract.md) and
   [`scripts/screenshot/README.md`](../../scripts/screenshot/README.md).

@@ -289,9 +289,9 @@ selectors fail validation; missing optional selectors warn.
 The normal targeted budget is one page/invitation, five total viewports, and thirty planned
 artifacts. A larger config batch must opt in with `--allow-large=true`; the named
 `pnpm screenshot:local-render-corpus` command is the explicit corpus exception. The command prints
-the planned page, invitation, viewport, and artifact counts first. Local is the default evidence
-environment; use Preview only when it supplies distinct deployment, auth, remote-asset, or runtime
-evidence, and do not use Production for routine screenshot validation.
+the planned page, invitation, viewport, and artifact counts first. Agent evidence selection and
+environment escalation are governed by
+[`.agent/rules/gatekeeper.md`](../../.agent/rules/gatekeeper.md).
 
 `preflight.json` and `report.json` are safe records: route query values, credentials, cookies,
 tokens, signatures, and sensitive diagnostic assignments are redacted. Explicit `--sections` is
@@ -423,10 +423,10 @@ optional elements produce warnings, not errors.
 
 ## Agent proportional use
 
-Screenshot CLI interactive defaults (`critical-qa`, invitation 3-viewport profile) are convenient
-for humans running a full visual audit. Agents must follow the **visual evidence** rules in
-[`.agent/rules/gatekeeper.md`](../../.agent/rules/gatekeeper.md) §5.3 and choose the smallest
-sufficient capture.
+[`gatekeeper.md`](../../.agent/rules/gatekeeper.md) §5.3–5.4 is the single authority for agent
+evidence hierarchy, incremental escalation, budgets, stopping conditions, and provider isolation.
+The examples below show only the command syntax for a focused capture; select the target there
+before launching the tool.
 
 Recommended agent patterns (server already on `http://localhost:4321`):
 
@@ -450,10 +450,6 @@ pnpm screenshot:invite \
   --target=critical-qa \
   --viewport=mobile-standard
 ```
-
-Do not load every PNG into agent context. Prefer `report.json`, then open only failing or disputed
-artifacts. Broaden viewports or `all-sections` only after a failed/inconclusive minimum pass or when
-a brief / domain doc explicitly requires it.
 
 ## Requirements
 
