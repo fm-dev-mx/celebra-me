@@ -7,9 +7,13 @@ related_docs:
   - docs/invitations/boda-perla-y-carlos.md
   - .agent/plans/active/invitation-preparation-authority-baseline.md
   - .agent/plans/active/boda-perla-y-carlos-implementation-audit.md
+  - .agent/plans/active/boda-perla-y-carlos-acceptance-matrix.md
 ---
 
 # Audit backlog — `boda-perla-y-carlos`
+
+Closure 2026-08-01: visual/readiness corrections landed — see acceptance matrix. Production
+promote remains out of cycle.
 
 Corpus checklist: Goal 1 F01–F17 (Alba/Abril/Valentina), filtered. Cosmético → P1 per owner.
 

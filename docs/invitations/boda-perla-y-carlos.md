@@ -215,12 +215,13 @@ with independent focals. Prep parent tokens remain below; they are **not** publi
 
 ## Preparation Readiness History
 
-| date       | readiness                 | helper basis                   | notes                                                                                                 |
-| ---------- | ------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------- |
-| 2026-07-31 | `NOT_READY`               | `evaluatePreparationReadiness` | Initial canonical state                                                                               |
-| 2026-07-31 | `NOT_READY`               | `evaluatePreparationReadiness` | OD1/OD3/OD4/OD5 resolved; OD2 pending                                                                 |
-| 2026-07-31 | `READY_WITH_PLACEHOLDERS` | `evaluatePreparationReadiness` | OD2 accepted; non-blocking parent placeholders remain                                                 |
-| 2026-07-31 | `READY_WITH_PLACEHOLDERS` | local apply                    | Managed definition + Lane A profile applied to **local** only                                         |
-| 2026-07-31 | `READY_WITH_PLACEHOLDERS` | audit Goal A–B                 | Guest “Por confirmar”; Lane A inheritance-reset; uniqueness derivatives filled                        |
-| 2026-08-01 | `READY_WITH_PLACEHOLDERS` | Goal 2 corrections             | Family omitted from publish; ceremony-first hero via `venues[]`; shared hero source; Lane A RSVP band |
-| 2026-08-01 | `READY_WITH_PLACEHOLDERS` | Goal 1 structural baseline     | Family restored with soft placeholders; seal-only reveal; Lane A visual grammar                       |
+| date       | readiness                 | helper basis                   | notes                                                                                                                 |
+| ---------- | ------------------------- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| 2026-07-31 | `NOT_READY`               | `evaluatePreparationReadiness` | Initial canonical state                                                                                               |
+| 2026-07-31 | `NOT_READY`               | `evaluatePreparationReadiness` | OD1/OD3/OD4/OD5 resolved; OD2 pending                                                                                 |
+| 2026-07-31 | `READY_WITH_PLACEHOLDERS` | `evaluatePreparationReadiness` | OD2 accepted; non-blocking parent placeholders remain                                                                 |
+| 2026-07-31 | `READY_WITH_PLACEHOLDERS` | local apply                    | Managed definition + Lane A profile applied to **local** only                                                         |
+| 2026-07-31 | `READY_WITH_PLACEHOLDERS` | audit Goal A–B                 | Guest “Por confirmar”; Lane A inheritance-reset; uniqueness derivatives filled                                        |
+| 2026-08-01 | `READY_WITH_PLACEHOLDERS` | Goal 2 corrections             | Family omitted from publish; ceremony-first hero via `venues[]`; shared hero source; Lane A RSVP band                 |
+| 2026-08-01 | `READY_WITH_PLACEHOLDERS` | Goal 1 structural baseline     | Family restored with soft placeholders; seal-only reveal; Lane A visual grammar                                       |
+| 2026-08-01 | `READY_WITH_PLACEHOLDERS` | Closure audit                  | Solid hero title fill (Lane A); readiness honors `venues[]`; Playwright targeted visual pass; Production not promoted |
