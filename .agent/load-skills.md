@@ -34,8 +34,8 @@ These are runtime capabilities, not tracked Celebra-me skills under `.agent/skil
   tooling. They never override `.agent/skills/`. See External Runtime Discovery below. Do **not**
   dump the host catalog into this repo. Do **promote** Celebra product workflows (for example staged
   review, branch lane / release prep, stash cleanup) into `.agent/skills/` when they are part of
-  this product's operating contract, then point the host at `.agent/skills` via `external_dirs`.
-  For Graphify specifically, `.agent/rules/graphify-ops.md` and `.agent/skills/graphify-ops` override
+  this product's operating contract, then point the host at `.agent/skills` via `external_dirs`. For
+  Graphify specifically, `.agent/rules/graphify-ops.md` and `.agent/skills/graphify-ops` override
   incompatible host “query first” instructions; operators may also disable the global Graphify skill
   for this repo when the host supports it.
 
@@ -70,7 +70,7 @@ canonical source.
 Expected host setup for this repo (configure outside git; do not commit host config):
 
 - Include the absolute path to this checkout's `.agent/skills` directory in Hermes
-  `skills.external_dirs` (example on this machine: `D:\code\celebra-me\.agent\skills`).
+  `skills.external_dirs` (example: `<repository-root>/.agent/skills`).
 - Keep any cross-project creative skills (e.g. a separate `creative-ops` skills dir) in their own
   external dir; do not merge them into Celebra-me's `.agent/skills/`.
 - If Celebra-me repo skills are missing from Hermes discovery, fix the host `external_dirs` entry —

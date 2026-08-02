@@ -1,12 +1,15 @@
 # dev-preview worktree
 
-**Path:** `D:\code\celebra-me-worktrees\dev-preview`  
+**Path:** `celebra-me-worktrees/dev-preview`  
 **Executable SSOT:** [`scripts/shared/worktree-lane.ts`](../../../scripts/shared/worktree-lane.ts)  
-**Policy SSOTs:** [`git-governance.md`](../git-governance.md), [`env-workflow.md`](../../env-workflow.md), [`database-workflow.md`](../../database-workflow.md), [`.agent/rules/database.md`](../../../.agent/rules/database.md)
+**Policy SSOTs:** [`git-governance.md`](../git-governance.md),
+[`env-workflow.md`](../../env-workflow.md), [`database-workflow.md`](../../database-workflow.md),
+[`.agent/rules/database.md`](../../../.agent/rules/database.md)
 
 ## Purpose
 
-Preview development and hosted-validation affinity lane. Preferred place to run authorized Preview operations; still not an authorization token.
+Preview development and hosted-validation affinity lane. Preferred place to run authorized Preview
+operations; still not an authorization token.
 
 ## Runtime default
 
@@ -20,7 +23,8 @@ This is independent of Vercel Preview deployments (`VERCEL_ENV=preview`).
 
 ## Idle / active state
 
-- Idle: Clean persistent branch `dev-preview` (or `git switch --detach develop`), aligned with `develop`
+- Idle: Clean persistent branch `dev-preview` (or `git switch --detach develop`), aligned with
+  `develop`
 - Active: Ephemeral branch created explicitly from `develop`
 - Release: Merge to `develop`; reset lane branch after integration
 
