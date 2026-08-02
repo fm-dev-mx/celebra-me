@@ -111,8 +111,8 @@ function lane {
     [string]$Name = 'main'
   )
 
-  $root = 'D:\code\celebra-me'
-  $worktrees = 'D:\code\celebra-me-worktrees'
+  $root = Resolve-Path (Join-Path $PSScriptRoot "..")
+  $worktrees = Resolve-Path (Join-Path $root "..\celebra-me-worktrees")
   $paths = @{
     main    = $root
     local   = "$worktrees\dev-local"

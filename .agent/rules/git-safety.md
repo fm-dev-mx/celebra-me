@@ -79,17 +79,18 @@ current task.
 The repository operates with four native Git worktree lanes:
 
 - **Integration**: canonical root worktree (`celebra-me`, trunk `develop`). Runtime default: Local.
-- **dev-local**: persistent reusable worktree (`D:\code\celebra-me-worktrees\dev-local`) using ephemeral task
-  branches. Runtime default: Local.
-- **dev-preview**: persistent reusable worktree (`D:\code\celebra-me-worktrees\dev-preview`) using ephemeral task
-  branches. Runtime default: Preview Supabase via `.env.preview.local`.
-- **dev-extra**: persistent reusable worktree (`D:\code\celebra-me-worktrees\dev-extra`) using ephemeral task
-  branches. Runtime default: Local.
+- **dev-local**: persistent reusable worktree (sibling `celebra-me-worktrees/dev-local` directory)
+  using ephemeral task branches. Runtime default: Local.
+- **dev-preview**: persistent reusable worktree (sibling `celebra-me-worktrees/dev-preview`
+  directory) using ephemeral task branches. Runtime default: Preview Supabase via
+  `.env.preview.local`.
+- **dev-extra**: persistent reusable worktree (sibling `celebra-me-worktrees/dev-extra` directory)
+  using ephemeral task branches. Runtime default: Local.
 
 ### Path Authorization Invariant
 
-Being located inside a development worktree (`dev-local`, `dev-preview`, or `dev-extra`)
-**does not grant** Git write permissions or environment/database mutation authority.
+Being located inside a development worktree (`dev-local`, `dev-preview`, or `dev-extra`) **does not
+grant** Git write permissions or environment/database mutation authority.
 
 ```text
 Environment authorization =
@@ -119,7 +120,8 @@ the following state:
 **Lane Invariants:**
 
 - `1 active task = 1 branch = 1 worktree`
-- An agent can claim a lane only if it is **idle (clean persistent lane branch aligned with develop, or detached HEAD on develop)** and **clean**, or already assigned to the **current task**.
+- An agent can claim a lane only if it is **idle (clean persistent lane branch aligned with develop,
+  or detached HEAD on develop)** and **clean**, or already assigned to the **current task**.
 - If a lane is occupied by another active task or contains pre-existing/unrelated dirty changes:
   **STOP** — do not switch, stash, reset, clean, overwrite, or repurpose the lane. Use another
   available lane or report the conflict to the user.

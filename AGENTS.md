@@ -27,6 +27,9 @@ authority.
   technical comments in English.
 - **Technical Commit Messages:** Never mention internal process/goal identifiers (e.g., `Goal 1`,
   `Goal 2`, `Phase X`) in commit headers or bodies. Focus strictly on code behavioral changes.
+- **Relative Paths Only:** Never hardcode absolute machine paths (e.g., drive letters `D:\`, user
+  paths `C:\Users\`, or local `file:///` URIs) in committed code, tests, or active documentation.
+  Always resolve paths relative to the repository root.
 - **Styling System:** SCSS only (`src/**/*.scss`). Tailwind is forbidden.
 - **Server/Client Boundary:** Astro server-only code (DB, secrets, Node APIs) must never leak into
   client islands (`client:*`).
