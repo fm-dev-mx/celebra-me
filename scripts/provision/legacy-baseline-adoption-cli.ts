@@ -4,7 +4,7 @@ import { dirname, resolve } from 'node:path';
 
 import { exportInvitationPackage } from './invitation-package.ts';
 import {
-	assertLegacyBaselineApplyBlocked,
+	applyLegacyBaselineAdoption,
 	createLegacyBaselineAdoptionManifest,
 	dryRunLegacyBaselineAdoption,
 	LEGACY_BASELINE_ADOPTION_SLUGS,
@@ -117,10 +117,21 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
 		return;
 	}
 	if (options.apply) {
-		assertLegacyBaselineApplyBlocked({
+		const result = await applyLegacyBaselineAdoption({
 			manifest: bound,
 			providedFingerprint: options.manifestFingerprint,
 		});
+		present(
+			{
+				status: 'APPLIED',
+				manifestPath,
+				manifestFingerprint: bound.manifestFingerprint,
+				entries: result.appliedEntries,
+				writes: result.writes,
+			},
+			options.json,
+		);
+		return;
 	}
 	if (!options.dryRun) {
 		throw new Error('Specify --dry-run to inspect an existing manifest.');

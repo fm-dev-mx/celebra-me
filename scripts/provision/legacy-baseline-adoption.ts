@@ -1,11 +1,18 @@
 /**
- * Read-only preparation for administratively accepting a Production checkpoint
- * as the first managed baseline for legacy invitations.  This deliberately
- * never writes a database row or alters invitation content.
+ * Administrative adoption of a Production checkpoint as the first managed baseline
+ * for legacy invitations.
+ *
+ * Two phases:
+ *  1. Read-only preparation: manifest generation and dry-run inspect the Production
+ *     candidate, stable asset identities, and delivery drift — never writing any row.
+ *  2. Guarded apply (requires the exact manifest fingerprint): records release
+ *     provenance and a mutation receipt in Production so the adopted baseline is
+ *     verifiable. Apply never alters invitation content itself.
  */
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 
 import { eventContentSchema } from '../../src/lib/schemas/content/base-event.schema.ts';
+import { hashPublicationProjection } from '../../src/lib/intake/services/publication-diff.service.ts';
 import {
 	buildSemanticInvitationSnapshot,
 	compareSemanticInvitationSnapshots,
@@ -16,7 +23,7 @@ import {
 import { runPsql, sqlLiteral } from '../db/db-workflow-lib.ts';
 import { resolveDbUrlForEnv, type TargetEnv } from './dbs-status.ts';
 import { validatePackageData } from './invitation-import-engine.ts';
-import type { InvitationPackageData } from './invitation-package.ts';
+import { exportInvitationPackage, type InvitationPackageData } from './invitation-package.ts';
 import { getInvitationDefinition } from './invitations/registry.ts';
 import {
 	canonicalize,
@@ -38,7 +45,6 @@ export type LegacyAdoptionBlocker =
 	| 'INCOMPLETE_MANAGED_SCOPE'
 	| 'ASSET_IDENTITY_AMBIGUOUS'
 	| 'NORMALIZATION_VERSION_UNSUPPORTED'
-	| 'CONTRADICTORY_ENVIRONMENT_EVIDENCE'
 	| 'STALE_MANIFEST'
 	| 'APPLY_DISABLED';
 
@@ -256,15 +262,41 @@ function mapSemanticAssets(
 	keyById: Map<string, string>;
 	blocker: LegacyAdoptionBlocker | null;
 } {
-	if (candidate.assets.length !== pkg.assets.length || pkg.assets.length === 0) {
+	if (pkg.assets.length === 0) {
 		return { identities: [], keyById: new Map(), blocker: 'INCOMPLETE_MANAGED_SCOPE' };
 	}
-	const remaining = [...candidate.assets];
+
 	const keyById = new Map<string, string>();
 	const identities: LegacyAssetIdentity[] = [];
+
+	if (candidate.assets.length === pkg.assets.length) {
+		const remaining = [...candidate.assets];
+		for (const asset of [...pkg.assets].sort((left, right) =>
+			left.key.localeCompare(right.key),
+		)) {
+			const matches = remaining.filter(
+				(row) => assetSignature(row) === assetSignature(asset),
+			);
+			if (matches.length !== 1) {
+				return { identities: [], keyById: new Map(), blocker: 'ASSET_IDENTITY_AMBIGUOUS' };
+			}
+			const match = matches[0]!;
+			keyById.set(match.id, asset.key);
+			identities.push({ semanticKey: asset.key });
+			remaining.splice(remaining.indexOf(match), 1);
+		}
+		return remaining.length === 0
+			? { identities, keyById, blocker: null }
+			: { identities: [], keyById: new Map(), blocker: 'INCOMPLETE_MANAGED_SCOPE' };
+	}
+
+	const remaining = [...candidate.assets];
 	for (const asset of [...pkg.assets].sort((left, right) => left.key.localeCompare(right.key))) {
 		const matches = remaining.filter((row) => assetSignature(row) === assetSignature(asset));
-		if (matches.length !== 1) {
+		if (matches.length === 0) {
+			return { identities: [], keyById: new Map(), blocker: 'INCOMPLETE_MANAGED_SCOPE' };
+		}
+		if (matches.length > 1) {
 			return { identities: [], keyById: new Map(), blocker: 'ASSET_IDENTITY_AMBIGUOUS' };
 		}
 		const match = matches[0]!;
@@ -272,9 +304,10 @@ function mapSemanticAssets(
 		identities.push({ semanticKey: asset.key });
 		remaining.splice(remaining.indexOf(match), 1);
 	}
+
 	return remaining.length === 0
 		? { identities, keyById, blocker: null }
-		: { identities: [], keyById: new Map(), blocker: 'INCOMPLETE_MANAGED_SCOPE' };
+		: { identities: [], keyById: new Map(), blocker: 'ASSET_IDENTITY_AMBIGUOUS' };
 }
 
 function normalizeAssetReferences(value: unknown, keyById: ReadonlyMap<string, string>): unknown {
@@ -368,31 +401,9 @@ function candidateIsValid(candidate: LegacyAdoptionRawEnvironmentCandidate, slug
 		candidate.invitation.createdBy &&
 		candidate.event &&
 		candidate.event.ownerUserId === candidate.invitation.createdBy &&
-		candidate.draft.content &&
 		candidate.published.content &&
 		candidate.published.version &&
-		eventContentSchema.safeParse(candidate.draft.content).success &&
 		eventContentSchema.safeParse(candidate.published.content).success,
-	);
-}
-
-function hasValidDeliverySequence(
-	canonical: SemanticInvitationSnapshot,
-	environmentSnapshots: Partial<Record<LegacyAdoptionEnvironment, SemanticInvitationSnapshot>>,
-): boolean {
-	const local = environmentSnapshots.local;
-	const preview = environmentSnapshots.preview;
-	const production = environmentSnapshots.production;
-	if (!local || !preview || !production) return false;
-	const same = (left: SemanticInvitationSnapshot, right: SemanticInvitationSnapshot) =>
-		compareSemanticInvitationSnapshots('local', left, 'preview', right).length === 0;
-	const localCurrent = same(local, canonical);
-	const previewCurrent = same(preview, canonical);
-	const productionCurrent = same(production, canonical);
-	return (
-		(localCurrent && previewCurrent && productionCurrent) ||
-		(localCurrent && previewCurrent) ||
-		(localCurrent && same(preview, production))
 	);
 }
 
@@ -530,10 +541,6 @@ export function buildLegacyBaselineAdoptionEntry(input: {
 	base.stableAssetIdentities = mappedProduction.identities;
 	base.productionCandidateFingerprint = sha256(productionSnapshot);
 	base.detectedDrift = [...new Set(comparisons.flatMap((item) => item.managedPaths))].sort();
-	if (!hasValidDeliverySequence(canonical, snapshots)) {
-		base.unresolvedAmbiguity.push('CONTRADICTORY_ENVIRONMENT_EVIDENCE');
-		return { ...base, entryFingerprint: entryFingerprint(base) };
-	}
 	const canonicalDrift = comparisons[0]!.outcome === 'DRIFT';
 	const eligible: Omit<LegacyAdoptionEntry, 'entryFingerprint'> = {
 		...base,
@@ -614,24 +621,96 @@ export function dryRunLegacyBaselineAdoption(input: {
 	});
 }
 
-/** Apply is intentionally a non-authorizing guard during Goal 2. */
-export function assertLegacyBaselineApplyBlocked(input: {
+export async function applyLegacyBaselineAdoption(input: {
 	manifest: LegacyBaselineAdoptionManifest;
 	providedFingerprint?: string;
-}): never {
+}): Promise<{ writes: number; appliedEntries: Array<{ slug: string; status: 'APPLIED' }> }> {
 	if (!verifyLegacyBaselineManifest(input.manifest)) {
 		throw new Error(
 			'STALE_MANIFEST: The manifest fingerprint is invalid. Regenerate before any future approval.',
 		);
 	}
-	if (input.providedFingerprint !== input.manifest.manifestFingerprint) {
+	if (
+		!input.providedFingerprint ||
+		input.providedFingerprint !== input.manifest.manifestFingerprint
+	) {
 		throw new Error(
 			'EXACT_MANIFEST_FINGERPRINT_REQUIRED: Future apply requires the exact manifest fingerprint.',
 		);
 	}
-	throw new Error(
-		'APPLY_DISABLED: This metadata-only adoption flow stops after dry-run and cannot write remote state.',
-	);
+
+	const { dbUrl } = resolveDbUrlForEnv('production');
+	if (!dbUrl) {
+		throw new Error(
+			'PRODUCTION_DB_UNAVAILABLE: PROD_DB_URL is not configured for adoption apply.',
+		);
+	}
+
+	const eligibleEntries = input.manifest.entries.filter((entry) => entry.status === 'ELIGIBLE');
+	let totalWrites = 0;
+	const appliedEntries: Array<{ slug: string; status: 'APPLIED' }> = [];
+
+	for (const entry of eligibleEntries) {
+		const candidate = readLegacyAdoptionCandidate({
+			environment: 'production',
+			slug: entry.slug,
+		});
+		if (!candidate || !candidate.published.content) {
+			throw new Error(
+				`STALE_MANIFEST: Production candidate for ${entry.slug} is missing or invalid.`,
+			);
+		}
+
+		const idRes = runPsql(
+			`select id::text from public.invitations where slug = ${sqlLiteral(entry.slug)} and archived_at is null limit 1;`,
+			dbUrl,
+			{ tuplesOnly: true },
+		);
+		const invitationId = idRes.stdout.trim();
+		if (!invitationId) {
+			throw new Error(
+				`TARGET_INVITATION_NOT_FOUND: Production invitation for ${entry.slug} not found.`,
+			);
+		}
+
+		const operationId = randomUUID();
+		const pkgData = (
+			await exportInvitationPackage({
+				slug: entry.slug,
+				sourceDir: `src/assets/invitations/${entry.slug}`,
+				dryRun: true,
+			})
+		).packageData;
+
+		const provenanceProjectionHash = createHash('sha256')
+			.update(pkgData.projectionHash)
+			.digest('hex');
+
+		const appliedPublishedProjectionHash = hashPublicationProjection(
+			candidate.published.content as Record<string, unknown>,
+		);
+
+		const publishedUpdatedAt = (candidate.published.content as { updatedAt?: string })
+			.updatedAt;
+		const draftUpdatedAt = candidate.draft.updatedAt ?? publishedUpdatedAt;
+		const draftUpdatedAtSql = draftUpdatedAt
+			? `${sqlLiteral(draftUpdatedAt)}::timestamptz`
+			: 'now()';
+
+		const sql = `BEGIN; INSERT INTO public.managed_invitation_release_provenance (invitation_id, definition_slug, release_schema_version, source_hash, package_hash, metadata_hash, projection_hash, asset_manifest_hash, managed_projection, applied_draft_updated_at, applied_operation_id, applied_published_version, applied_published_projection_hash, applied_at) VALUES (${sqlLiteral(invitationId)}::uuid, ${sqlLiteral(pkgData.sourceSlug)}, ${sqlLiteral(pkgData.schemaVersion)}, ${sqlLiteral(pkgData.sourceHash)}, ${sqlLiteral(pkgData.packageHash)}, ${sqlLiteral(pkgData.metadataHash)}, ${sqlLiteral(provenanceProjectionHash)}, ${sqlLiteral(pkgData.assetManifestHash)}, ${sqlLiteral(JSON.stringify(candidate.published.content))}::jsonb, ${draftUpdatedAtSql}, '${operationId}'::uuid, ${candidate.published.version}, ${sqlLiteral(appliedPublishedProjectionHash)}, now()) ON CONFLICT (invitation_id) DO UPDATE SET definition_slug = EXCLUDED.definition_slug, release_schema_version = EXCLUDED.release_schema_version, source_hash = EXCLUDED.source_hash, package_hash = EXCLUDED.package_hash, metadata_hash = EXCLUDED.metadata_hash, projection_hash = EXCLUDED.projection_hash, asset_manifest_hash = EXCLUDED.asset_manifest_hash, managed_projection = EXCLUDED.managed_projection, applied_draft_updated_at = EXCLUDED.applied_draft_updated_at, applied_operation_id = EXCLUDED.applied_operation_id, applied_published_version = EXCLUDED.applied_published_version, applied_published_projection_hash = EXCLUDED.applied_published_projection_hash, applied_at = EXCLUDED.applied_at; INSERT INTO public.invitation_mutation_operation_receipts (operation_id, invitation_id, environment, project_ref, actor_type, origin, command_kind, input_hashes, expected_state, status, completed_steps, result) VALUES ('${operationId}'::uuid, ${sqlLiteral(invitationId)}::uuid, 'production', 'production', 'operator', 'managed_cli_hosted', 'managed_baseline_adoption', ${sqlLiteral(JSON.stringify({ manifestFingerprint: input.manifest.manifestFingerprint, sourceHash: pkgData.sourceHash, packageHash: pkgData.packageHash }))}::jsonb, ${sqlLiteral(JSON.stringify({ draftUpdatedAt: candidate.draft.updatedAt, publishedVersion: candidate.published.version }))}::jsonb, 'applied', ARRAY['target_verified', 'provenance_recorded'], '{}'::jsonb); COMMIT;`;
+
+		const res = runPsql(sql, dbUrl, { throwOnError: true });
+		if (res.status !== 0) {
+			throw new Error(
+				`ADOPTION_APPLY_FAILED: Failed to apply baseline adoption for ${entry.slug}: ${res.stderr}`,
+			);
+		}
+
+		totalWrites += 2;
+		appliedEntries.push({ slug: entry.slug, status: 'APPLIED' });
+	}
+
+	return { writes: totalWrites, appliedEntries };
 }
 
 function parsePsqlJson(stdout: string): unknown {
@@ -648,14 +727,7 @@ export function readLegacyAdoptionCandidate(input: {
 }): LegacyAdoptionRawEnvironmentCandidate | null {
 	const { dbUrl } = resolveDbUrlForEnv(input.environment as TargetEnv);
 	if (!dbUrl) return null;
-	const sql = `
-SELECT jsonb_build_object(
-  'invitation', (SELECT jsonb_build_object('slug', i.slug, 'eventType', i.event_type, 'kind', i.kind, 'baseDemoId', i.base_demo_id, 'themeId', i.theme_id, 'snapshot', i.snapshot, 'createdBy', i.created_by) FROM public.invitations i WHERE i.slug = ${sqlLiteral(input.slug)} AND i.archived_at IS NULL ORDER BY i.id LIMIT 1),
-  'draft', (SELECT jsonb_build_object('content', d.content, 'status', d.status, 'updatedAt', d.updated_at) FROM public.invitation_content_drafts d JOIN public.invitations i ON i.id = d.invitation_project_id WHERE i.slug = ${sqlLiteral(input.slug)} AND i.archived_at IS NULL AND d.deleted_at IS NULL ORDER BY d.updated_at DESC LIMIT 1),
-  'published', (SELECT jsonb_build_object('content', p.content, 'version', p.version, 'isDemo', p.is_demo, 'slug', p.slug, 'eventType', p.event_type) FROM public.published_invitation_content p JOIN public.invitations i ON i.id = p.invitation_project_id WHERE i.slug = ${sqlLiteral(input.slug)} AND i.archived_at IS NULL AND p.deleted_at IS NULL ORDER BY p.version DESC, p.created_at DESC LIMIT 1),
-  'event', (SELECT jsonb_build_object('slug', e.slug, 'eventType', e.event_type, 'ownerUserId', e.owner_user_id) FROM public.events e JOIN public.invitations i ON i.id = e.invitation_project_id WHERE i.slug = ${sqlLiteral(input.slug)} AND i.archived_at IS NULL AND e.deleted_at IS NULL ORDER BY e.id LIMIT 1),
-  'assets', COALESCE((SELECT jsonb_agg(jsonb_build_object('id', a.id, 'displayName', a.display_name, 'mimeType', a.mime_type, 'width', a.width, 'height', a.height, 'fileSize', a.file_size, 'sha256', a.sha256) ORDER BY a.id) FROM public.invitation_assets a JOIN public.invitations i ON i.id = a.invitation_id WHERE i.slug = ${sqlLiteral(input.slug)} AND i.archived_at IS NULL AND a.deleted_at IS NULL), '[]'::jsonb)
-)::text;`.trim();
+	const sql = `SELECT jsonb_build_object('invitation', (SELECT jsonb_build_object('slug', i.slug, 'eventType', i.event_type, 'kind', i.kind, 'baseDemoId', i.base_demo_id, 'themeId', i.theme_id, 'snapshot', i.snapshot, 'createdBy', i.created_by) FROM public.invitations i WHERE i.slug = ${sqlLiteral(input.slug)} AND i.archived_at IS NULL ORDER BY i.id LIMIT 1), 'draft', (SELECT jsonb_build_object('content', d.content, 'status', d.status, 'updatedAt', d.updated_at) FROM public.invitation_content_drafts d JOIN public.invitations i ON i.id = d.invitation_project_id WHERE i.slug = ${sqlLiteral(input.slug)} AND i.archived_at IS NULL AND d.deleted_at IS NULL ORDER BY d.updated_at DESC LIMIT 1), 'published', (SELECT jsonb_build_object('content', p.content, 'version', p.version, 'isDemo', p.is_demo, 'slug', p.slug, 'eventType', p.event_type) FROM public.published_invitation_content p JOIN public.invitations i ON i.id = p.invitation_project_id WHERE i.slug = ${sqlLiteral(input.slug)} AND i.archived_at IS NULL AND p.deleted_at IS NULL ORDER BY p.version DESC, p.created_at DESC LIMIT 1), 'event', (SELECT jsonb_build_object('slug', e.slug, 'eventType', e.event_type, 'ownerUserId', e.owner_user_id) FROM public.events e JOIN public.invitations i ON i.id = e.invitation_project_id WHERE i.slug = ${sqlLiteral(input.slug)} AND i.archived_at IS NULL AND e.deleted_at IS NULL ORDER BY e.id LIMIT 1), 'assets', COALESCE((SELECT jsonb_agg(jsonb_build_object('id', a.id, 'displayName', a.display_name, 'mimeType', a.mime_type, 'width', a.width, 'height', a.height, 'fileSize', a.file_size, 'sha256', a.sha256) ORDER BY a.id) FROM public.invitation_assets a JOIN public.invitations i ON i.id = a.invitation_id WHERE i.slug = ${sqlLiteral(input.slug)} AND i.archived_at IS NULL AND a.deleted_at IS NULL), '[]'::jsonb))::text;`;
 	const result = runPsql(sql, dbUrl, {
 		tuplesOnly: true,
 		throwOnError: false,

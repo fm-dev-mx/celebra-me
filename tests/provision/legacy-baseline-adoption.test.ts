@@ -5,7 +5,7 @@ import {
 	type InvitationPackageData,
 } from '../../scripts/provision/invitation-package.ts';
 import {
-	assertLegacyBaselineApplyBlocked,
+	applyLegacyBaselineAdoption,
 	buildLegacyBaselineAdoptionEntry,
 	computeLegacyBaselineManifestFingerprint,
 	createLegacyBaselineAdoptionManifest,
@@ -176,7 +176,7 @@ describe('legacy baseline administrative adoption manifest', () => {
 		expect(JSON.stringify(entry)).not.toContain('99999999');
 	});
 
-	it('invalidates a generated manifest after a relevant candidate change and never enables apply', async () => {
+	it('invalidates a generated manifest after a relevant candidate change and gates apply behind the exact fingerprint', async () => {
 		const pkg = await packageFor('abril-michelle-becerra-rea');
 		const inputs = {
 			local: candidate(pkg, 'local'),
@@ -201,12 +201,13 @@ describe('legacy baseline administrative adoption manifest', () => {
 		expect(result?.sourceChangedAfterGeneration).toBe(true);
 		expect(result?.blockingReason).toBe('STALE_MANIFEST');
 		expect(result?.writes).toBe(0);
-		expect(() =>
-			assertLegacyBaselineApplyBlocked({
+		// Apply is gated behind the exact manifest fingerprint, verified before any DB access.
+		await expect(
+			applyLegacyBaselineAdoption({
 				manifest,
-				providedFingerprint: manifest.manifestFingerprint,
+				providedFingerprint: 'not-the-real-fingerprint',
 			}),
-		).toThrow('APPLY_DISABLED');
+		).rejects.toThrow('EXACT_MANIFEST_FINGERPRINT_REQUIRED');
 	});
 
 	it('rejects incompatible normalization before a candidate can be adopted', async () => {
