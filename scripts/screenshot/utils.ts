@@ -700,7 +700,8 @@ export function expectsScreenshotOutput(target: CaptureTarget): boolean {
 		target === 'critical-qa' ||
 		target === 'full-page' ||
 		target === 'all-sections' ||
-		target === 'single-section'
+		target === 'single-section' ||
+		target === 'reveal-only'
 	);
 }
 
