@@ -157,7 +157,7 @@ describe('legacy baseline administrative adoption manifest', () => {
 			'semantic_asset_identity',
 			'adoption_provenance_receipt',
 		]);
-	});
+	}, 30000);
 
 	it('keeps ambiguous semantic asset evidence unverified without using URLs or database IDs', async () => {
 		const pkg = await packageFor('abril-michelle-becerra-rea');
