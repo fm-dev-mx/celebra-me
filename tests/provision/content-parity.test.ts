@@ -10,6 +10,7 @@ import {
 	compareAcrossEnvironments,
 	compareSemanticInvitationSnapshots,
 	isExcludedFromContentParity,
+	listSemanticDifferencePaths,
 } from '../../scripts/provision/content-parity.ts';
 import { STORAGE_URL_PLACEHOLDER } from '../../scripts/provision/invitation-package.ts';
 
@@ -73,6 +74,40 @@ describe('content parity excluded scope', () => {
 });
 
 describe('semantic parity comparison', () => {
+	it('lists normalized semantic difference paths without returning values', () => {
+		expect(
+			listSemanticDifferencePaths(
+				{ location: { ceremony: { venueEvent: 'A' } }, title: 'Igual' },
+				{ location: { ceremony: { venueEvent: 'B' } }, title: 'Igual' },
+			),
+		).toEqual(['location.ceremony.venueEvent']);
+	});
+
+	it('omits runtime asset identifiers from semantic path diagnostics', () => {
+		expect(
+			listSemanticDifferencePaths(
+				{
+					hero: {
+						image: {
+							type: 'uploaded',
+							assetId: 'local-id',
+							src: 'https://local.test/a',
+						},
+					},
+				},
+				{
+					hero: {
+						image: {
+							type: 'uploaded',
+							assetId: 'preview-id',
+							src: 'https://preview.test/a',
+						},
+					},
+				},
+			),
+		).toEqual([]);
+	});
+
 	it('accepts legitimate Storage host differences via canonicalization', () => {
 		const local = clientSnapshot({
 			publishedContent: {

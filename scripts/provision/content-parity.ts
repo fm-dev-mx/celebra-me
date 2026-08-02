@@ -73,6 +73,47 @@ export interface ContentParityCompareResult {
 	ok: boolean;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function isUploadedAssetReference(value: unknown): boolean {
+	return isRecord(value) && value.type === 'uploaded' && typeof value.assetId === 'string';
+}
+
+function joinSemanticPath(parent: string, child: string | number): string {
+	if (typeof child === 'number') return `${parent}[${child}]`;
+	return parent ? `${parent}.${child}` : child;
+}
+
+/** Lists normalized semantic paths only; it deliberately never returns field values. */
+export function listSemanticDifferencePaths(left: unknown, right: unknown): string[] {
+	const walk = (currentLeft: unknown, currentRight: unknown, path: string): string[] => {
+		if (isSemanticallyEqual(currentLeft, currentRight)) return [];
+		// Asset identity is covered separately by invitation_assets. UUIDs and Storage URLs are not
+		// semantic content evidence and must not turn the path report into an identity dump.
+		if (isUploadedAssetReference(currentLeft) && isUploadedAssetReference(currentRight))
+			return [];
+		if (Array.isArray(currentLeft) && Array.isArray(currentRight)) {
+			if (currentLeft.length !== currentRight.length) return [path || '$'];
+			return currentLeft.flatMap((item, index) =>
+				walk(item, currentRight[index], joinSemanticPath(path, index)),
+			);
+		}
+		if (isRecord(currentLeft) && isRecord(currentRight)) {
+			const keys = new Set([...Object.keys(currentLeft), ...Object.keys(currentRight)]);
+			return [...keys]
+				.sort()
+				.flatMap((key) =>
+					walk(currentLeft[key], currentRight[key], joinSemanticPath(path, key)),
+				);
+		}
+		return [path || '$'];
+	};
+
+	return walk(canonicalizeValue(left), canonicalizeValue(right), '');
+}
+
 type DriftPush = (
 	entity: string,
 	field: string,
