@@ -74,9 +74,10 @@ pnpm screenshot:local-render-corpus    # runtime/completeness against Local rout
 pnpm exec tsx scripts/provision/local-render-corpus/verify-local-routes.ts
 ```
 
-`pnpm screenshot:local-render-corpus` runs the **registered corpus only**. It does not support
-`--slug` filtering, and the current entry point does not expose a usable `--help`. To capture one
-invitation instead:
+`pnpm screenshot:local-render-corpus` runs the **registered corpus only**. It does not accept
+targeted URL, invitation, section, viewport, target, or cleanup options. Each page uses the same
+strict scope resolver as direct and interactive capture, writes `preflight.json` before browser
+launch, and writes `report.json` after execution. To capture one invitation instead:
 
 ```powershell
 pnpm screenshot --url=/<eventType>/<slug> --viewport=<viewport> --clean

@@ -25,8 +25,10 @@ import {
 	type ViewportManifestReport,
 	type CaptureTarget,
 	type SectionExtent,
+	type ValidationStatus,
 	VIEWPORT_PROFILES,
 } from './types.js';
+import type { ResolvedScreenshotPlan } from './scope.js';
 export {
 	calculateImageHash,
 	getFileArtifactMeta,
@@ -56,6 +58,14 @@ export type {
 export function parseCliArgs(argv: string[]): CliOptions {
 	const options: CliOptions = {};
 	const args = argv.slice(2); // skip node and script path
+	const booleanFlags = new Set([
+		'--interactive',
+		'--no-interactive',
+		'--include-layout',
+		'--corpus',
+		'--clean',
+		'--help',
+	]);
 
 	for (let i = 0; i < args.length; i++) {
 		const arg = args[i];
@@ -63,6 +73,10 @@ export function parseCliArgs(argv: string[]): CliOptions {
 		// --no-* flags
 		if (arg === '--no-interactive') {
 			options.interactive = false;
+			continue;
+		}
+		if (arg === '--help' || arg === '-h') {
+			options.help = true;
 			continue;
 		}
 
@@ -79,7 +93,7 @@ export function parseCliArgs(argv: string[]): CliOptions {
 		if (arg.startsWith('--')) {
 			const key = arg;
 			const next = args[i + 1];
-			if (next && !next.startsWith('--')) {
+			if (!booleanFlags.has(key) && next && !next.startsWith('-')) {
 				setOption(options, key, next);
 				i++; // consume next arg
 			} else {
@@ -95,12 +109,35 @@ export function parseCliArgs(argv: string[]): CliOptions {
 			if (next && !next.startsWith('-')) {
 				setShortOption(options, arg, next);
 				i++;
+			} else {
+				throw new ScreenshotCliError(`Unknown or incomplete short option "${arg}".`);
 			}
 			continue;
 		}
+
+		throw new ScreenshotCliError(`Unexpected positional argument "${arg}".`);
 	}
 
 	return options;
+}
+
+export class ScreenshotCliError extends Error {
+	constructor(message: string) {
+		super(message);
+		this.name = 'ScreenshotCliError';
+	}
+}
+
+function parseBoolean(value: string, key: string): boolean {
+	if (value === 'true') return true;
+	if (value === 'false') return false;
+	throw new ScreenshotCliError(`Invalid value "${value}" for ${key}; expected true or false.`);
+}
+
+function requireValue(value: string, key: string): string {
+	const trimmed = value.trim();
+	if (!trimmed) throw new ScreenshotCliError(`${key} requires a non-empty value.`);
+	return trimmed;
 }
 
 function setOption(options: CliOptions, key: string, value: string): void {
@@ -109,124 +146,125 @@ function setOption(options: CliOptions, key: string, value: string): void {
 	// a canonical, documented surface.
 	const handlers: Record<string, () => void> = {
 		'--interactive': () => {
-			options.interactive = value === 'true';
+			options.interactive = parseBoolean(value, key);
 		},
 		'--url': () => {
-			options.url = value;
+			options.url = requireValue(value, key);
 		},
 		'--base-url': () => {
-			options.baseUrl = value;
+			options.baseUrl = requireValue(value, key);
 		},
 		'--type': () => {
+			if (
+				!['invitation', 'landing', 'dashboard', 'admin', 'login', 'custom'].includes(value)
+			) {
+				throw new ScreenshotCliError(`Invalid page type "${value}" for ${key}.`);
+			}
 			options.pageType = value as PageType;
 		},
 		'--mode': () => {
-			if (isScreenshotMode(value)) {
-				options.mode = value;
-			}
+			if (!isScreenshotMode(value))
+				throw new ScreenshotCliError(`Invalid screenshot mode "${value}".`);
+			options.mode = value;
 		},
 		'--viewport': () => {
-			options.viewport = (options.viewport ?? []).concat(
-				value.split(',').map((v) => v.trim()),
-			);
+			const values = value
+				.split(',')
+				.map((v) => v.trim())
+				.filter(Boolean);
+			if (values.length === 0)
+				throw new ScreenshotCliError(`${key} requires at least one viewport.`);
+			options.viewport = (options.viewport ?? []).concat(values);
 		},
 		'--profile': () => {
+			if (!['invitation', 'site', 'full', 'single'].includes(value)) {
+				throw new ScreenshotCliError(`Invalid viewport profile "${value}".`);
+			}
 			options.profile = value as ViewportProfileType;
 		},
 		'--target': () => {
 			if (
-				value === 'full-page' ||
-				value === 'critical-qa' ||
-				value === 'all-sections' ||
-				value === 'single-section'
+				![
+					'full-page',
+					'critical-qa',
+					'all-sections',
+					'single-section',
+					'reveal-only',
+				].includes(value)
 			) {
-				options.target = value as CaptureTarget;
+				throw new ScreenshotCliError(`Invalid screenshot target "${value}".`);
 			}
+			options.target = value as CaptureTarget;
 		},
 		'--include-layout': () => {
-			options.includeLayout = value === 'true';
+			options.includeLayout = parseBoolean(value, key);
 		},
 		'--set': () => {
 			setInvitationSet(options, value);
 		},
 		'--general-set': () => {
-			if (value === 'basic' || value === 'full-qa') {
-				options.generalSet = value;
-			}
+			if (value !== 'basic' && value !== 'full-qa')
+				throw new ScreenshotCliError(`Invalid general set "${value}".`);
+			options.generalSet = value;
 		},
 		'--reveal': () => {
-			if (
-				value === 'auto' ||
-				value === 'force-open' ||
-				value === 'closed-only' ||
-				value === 'open-only' ||
-				value === 'skip'
-			) {
-				options.reveal = value;
-			}
+			if (!['auto', 'force-open', 'closed-only', 'open-only', 'skip'].includes(value))
+				throw new ScreenshotCliError(`Invalid reveal mode "${value}".`);
+			options.reveal = value as CliOptions['reveal'];
 		},
 		'--animation': () => {
-			if (
-				value === 'disable' ||
-				value === 'wait' ||
-				value === 'query-param' ||
-				value === 'custom'
-			) {
-				options.animation = value;
-			}
+			if (!['disable', 'wait', 'query-param', 'custom'].includes(value))
+				throw new ScreenshotCliError(`Invalid animation mode "${value}".`);
+			options.animation = value as CliOptions['animation'];
 		},
 		'--sections': () => {
-			options.sections = value;
+			options.sections = requireValue(value, key);
 		},
 		'--section-selectors': () => {
-			options.sectionSelectors = value;
+			throw new ScreenshotCliError(
+				`${key} was removed from the strict scope pipeline; use --sections=<registered-id>.`,
+			);
 		},
 		'--section-extent': () => {
-			if (value === 'full' || value === 'viewport') {
-				options.sectionExtent = value as SectionExtent;
-			}
+			if (value !== 'full' && value !== 'viewport')
+				throw new ScreenshotCliError(`Invalid section extent "${value}".`);
+			options.sectionExtent = value as SectionExtent;
 		},
 		'--auth': () => {
-			if (
-				value === 'none' ||
-				value === 'existing-session' ||
-				value === 'storage-state' ||
-				value === 'manual-login'
-			) {
-				options.auth = value;
-			}
+			if (!['none', 'existing-session', 'storage-state', 'manual-login'].includes(value))
+				throw new ScreenshotCliError(`Invalid auth method "${value}".`);
+			options.auth = value as CliOptions['auth'];
 		},
 		'--format': () => {
-			if (value === 'png' || value === 'jpeg' || value === 'webp' || value === 'pdf') {
-				options.format = value;
-			}
+			if (!['png', 'jpeg', 'webp', 'pdf'].includes(value))
+				throw new ScreenshotCliError(`Invalid output format "${value}".`);
+			options.format = value as OutputFormat;
 		},
 		'--output': () => {
-			options.output = value;
+			options.output = requireValue(value, key);
 		},
 		'--output-style': () => {
-			if (
-				value === 'default' ||
-				value === 'timestamped' ||
-				value === 'custom' ||
-				value === 'overwrite'
-			) {
-				options.outputStyle = value;
-			}
+			if (!['default', 'timestamped', 'custom', 'overwrite'].includes(value))
+				throw new ScreenshotCliError(`Invalid output style "${value}".`);
+			options.outputStyle = value as CliOptions['outputStyle'];
 		},
 		'--config': () => {
-			options.config = value;
+			options.config = requireValue(value, key);
 		},
 		'--corpus': () => {
-			options.corpus = value === 'true';
+			options.corpus = parseBoolean(value, key);
 		},
 		'--clean': () => {
-			options.clean = true;
+			options.clean = parseBoolean(value, key);
+		},
+		'--help': () => {
+			options.help = true;
 		},
 	};
 
 	const handler = handlers[key];
-	if (handler) handler();
+	if (!handler) throw new ScreenshotCliError(`Unknown screenshot argument "${key}".`);
+	handler();
 }
 
 function setInvitationSet(options: CliOptions, value: string): void {
@@ -237,14 +275,10 @@ function setInvitationSet(options: CliOptions, value: string): void {
 			: value === 'full-qa-invitation'
 				? 'full-qa'
 				: value;
-	if (
-		mapped === 'essential' ||
-		mapped === 'full-qa' ||
-		mapped === 'reveal-only' ||
-		mapped === 'full-page'
-	) {
-		options.invitationSet = mapped;
+	if (!['essential', 'full-qa', 'reveal-only', 'full-page'].includes(mapped)) {
+		throw new ScreenshotCliError(`Invalid invitation set "${value}".`);
 	}
+	options.invitationSet = mapped as CliOptions['invitationSet'];
 }
 
 function isScreenshotMode(value: string): value is ScreenshotMode {
@@ -268,6 +302,8 @@ function setShortOption(options: CliOptions, key: string, value: string): void {
 		case '-o':
 			options.output = value;
 			break;
+		default:
+			throw new ScreenshotCliError(`Unknown short option "${key}".`);
 	}
 }
 
@@ -459,17 +495,12 @@ export function resolveViewports(
 		const viewports: Viewport[] = [];
 		for (const name of viewportNames) {
 			const found = findViewportByName(name);
-			if (found) {
-				viewports.push(found);
-			} else {
-				console.warn(
-					`  ⚠ Unknown viewport "${name}" — skipping. Known names: mobile-narrow, mobile-standard, mobile-large, tablet, desktop`,
+			if (!found) {
+				throw new Error(
+					`Unknown viewport "${name}". Known names: mobile-narrow, mobile-standard, mobile-large, tablet, desktop`,
 				);
 			}
-		}
-		if (viewports.length === 0) {
-			console.warn('  ⚠ No valid viewport names provided — falling back to profile defaults');
-			return getViewportsForProfile(profile);
+			if (!viewports.some((viewport) => viewport.name === found.name)) viewports.push(found);
 		}
 		return viewports;
 	}
@@ -617,55 +648,6 @@ export async function getDocumentHeight(page: import('playwright').Page): Promis
 	}
 }
 
-/**
- * Static estimate for non-dynamic page targets only.
- * Invitation critical-qa / all-sections are plan-driven at runtime via
- * `resolveCapturePlan` — do not use this for invitation manifest expectations.
- */
-export function getExpectedCaptureCount(input: {
-	pageType: PageType;
-	mode: ScreenshotMode;
-	target: CaptureTarget;
-	includeLayout?: boolean;
-	criticalSelectors?: ScreenshotSelectorConfig[];
-	sectionSelectors?: string[];
-}): number {
-	const criticalCount =
-		input.target === 'critical-qa' && input.mode === 'audit'
-			? (input.criticalSelectors ?? []).filter((s) => s.capture).length
-			: 0;
-
-	if (input.pageType === 'invitation') {
-		if (input.target === 'full-page') {
-			return 2; // initial-full-page + invitation-full-open
-		}
-		// critical-qa / all-sections: section inventory is runtime SSOT
-		if (input.target === 'critical-qa' || input.target === 'all-sections') {
-			return 0;
-		}
-		if (input.target === 'single-section') {
-			return 1;
-		}
-		return 0;
-	}
-
-	// General Page
-	const layoutCount = input.includeLayout ? 4 : 0; // viewport + header + main + footer
-	if (input.target === 'full-page') {
-		return 1; // only 02-full-page
-	}
-	if (input.target === 'critical-qa') {
-		return 1 + layoutCount + criticalCount; // full-page + layout + critical
-	}
-	if (input.target === 'all-sections') {
-		return 0; // dynamic — resolved at runtime from actual page sections
-	}
-	if (input.target === 'single-section') {
-		return 1;
-	}
-	return 2;
-}
-
 export function dedupeScreenshotNotices(notices: string[]): string[] {
 	const seen = new Set<string>();
 	const out: string[] = [];
@@ -687,8 +669,23 @@ export function computeScreenshotBlockingErrors(input: {
 	return input.captureFailed + input.validationFailed + input.manifestFailed;
 }
 
-export function shouldExitScreenshotNonZero(blockingErrors: number): boolean {
-	return blockingErrors > 0;
+export function resolveScreenshotRunStatus(input: {
+	failed: number;
+	succeeded: number;
+	warnings: number;
+}): ValidationStatus {
+	if (input.failed > 0) return input.succeeded > 0 ? 'partial' : 'failed';
+	return input.warnings > 0 ? 'warning' : 'passed';
+}
+
+/** Targets whose manifest contract requires at least one successful output. */
+export function expectsScreenshotOutput(target: CaptureTarget): boolean {
+	return (
+		target === 'critical-qa' ||
+		target === 'full-page' ||
+		target === 'all-sections' ||
+		target === 'single-section'
+	);
 }
 
 export function buildCurrentRunManifest(input: {
@@ -726,11 +723,7 @@ export function buildCurrentRunManifest(input: {
 				requiredTasks.length > 0
 					? requiredTasks.length
 					: (input.perViewportPlanned[viewport.name] ?? 0);
-			const expectsOutput =
-				input.target === 'critical-qa' ||
-				input.target === 'full-page' ||
-				input.target === 'all-sections' ||
-				input.target === 'single-section';
+			const expectsOutput = expectsScreenshotOutput(input.target);
 
 			// Pass when every required planned task succeeded. Optional extras may
 			// increase `files` above `expected` without failing the run.
@@ -859,6 +852,17 @@ export async function writeScreenshotReport(
 	const reportPath = path.join(outputDir, 'report.json');
 	await fs.writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
 	return reportPath;
+}
+
+/** Persist the resolved scope before Playwright is launched. */
+export async function writeScreenshotPreflight(
+	outputDir: string,
+	plan: ResolvedScreenshotPlan,
+): Promise<string> {
+	await ensureDir(outputDir);
+	const preflightPath = path.join(outputDir, 'preflight.json');
+	await fs.writeFile(preflightPath, `${JSON.stringify(plan, null, 2)}\n`, 'utf8');
+	return preflightPath;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

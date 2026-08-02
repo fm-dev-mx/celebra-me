@@ -1,5 +1,0 @@
-{
-    "_comment": "DEPRECATED hardcoded list. Screenshot completeness now derives from the Local Render Corpus SSOT via `pnpm screenshot:managed:regression` (`--corpus`). Kept only as a historical pointer; do not edit page lists here.",
-    "outputDir": "output/screenshots/local-render-corpus",
-    "pages": []
-}

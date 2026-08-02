@@ -5,6 +5,7 @@
 import type { Page } from 'playwright';
 import type { ScreenshotJob } from './types.js';
 import { buildScreenshotUrl, navigateTo } from './navigation.js';
+import type { ExpectedInvitationIdentity } from './navigation.js';
 
 export interface RevealOcclusionCache {
 	assert(page: Page): Promise<boolean>;
@@ -197,11 +198,17 @@ export async function ensureInvitationOpenForCapture(
 	page: Page,
 	job: Pick<
 		ScreenshotJob,
-		'url' | 'mode' | 'animationHandling' | 'criticalSelectors' | 'hideSelectors'
+		| 'url'
+		| 'mode'
+		| 'animationHandling'
+		| 'criticalSelectors'
+		| 'hideSelectors'
+		| 'waitSelectors'
 	>,
 	opts: {
 		hasReveal: boolean;
 		maxAttempts?: number;
+		expectedInvitation?: ExpectedInvitationIdentity;
 		/** When provided, open-state occlusion results seed/reuse the E2 cache. */
 		occlusionCache?: RevealOcclusionCache;
 	} = { hasReveal: true },
@@ -221,6 +228,8 @@ export async function ensureInvitationOpenForCapture(
 			job.animationHandling,
 			job.criticalSelectors,
 			job.hideSelectors,
+			opts.expectedInvitation,
+			job.waitSelectors,
 		);
 
 		let completedOk = true;

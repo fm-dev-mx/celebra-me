@@ -14,10 +14,9 @@
             "pageType": "invitation",
             "route": "/boda/demo-boda-jewelry-box-wedding",
             "profile": "invitation",
-            "invitationSet": "essential",
+            "target": "critical-qa",
             "revealHandling": "auto",
             "animationHandling": "disable",
-            "sectionCapture": "known",
             "sectionExtent": "full",
             "outputFormat": "png"
         },
@@ -26,10 +25,9 @@
             "pageType": "invitation",
             "route": "/xv/demo-xv-premium",
             "profile": "full",
-            "invitationSet": "full-qa",
+            "target": "critical-qa",
             "revealHandling": "force-open",
             "animationHandling": "disable",
-            "sectionCapture": "known",
             "sectionExtent": "full"
         },
         {
@@ -38,8 +36,7 @@
             "route": "/",
             "mode": "audit",
             "profile": "site",
-            "generalSet": "full-qa",
-            "sectionCapture": "auto",
+            "target": "critical-qa",
             "sectionExtent": "full",
             "criticalSelectors": [
                 { "selector": "main", "required": true, "capture": true },
@@ -97,7 +94,7 @@
             "pageType": "dashboard",
             "route": "/dashboard",
             "profile": "site",
-            "generalSet": "basic",
+            "target": "full-page",
             "authMethod": "storage-state"
         }
     ]

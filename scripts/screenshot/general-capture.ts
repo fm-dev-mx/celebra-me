@@ -65,6 +65,8 @@ export async function captureGeneralPageScreenshots(
 		job.animationHandling,
 		job.criticalSelectors,
 		job.hideSelectors,
+		undefined,
+		job.waitSelectors,
 	);
 
 	const tasks = await resolveCapturePlan(page, job);

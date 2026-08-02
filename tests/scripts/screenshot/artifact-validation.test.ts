@@ -47,7 +47,7 @@ describe('screenshot artifact validation freshness', () => {
 		expect(existsSync(finalPath)).toBe(false);
 	});
 
-	it('removes legacy 05-invitation-full-open artifacts from viewport folders', async () => {
+	it('removes exact owned legacy 05-invitation-full-open targets', async () => {
 		const viewportDir = path.join(tempDir, 'mobile-standard');
 		mkdirSync(viewportDir, { recursive: true });
 		const legacy = path.join(viewportDir, '05-invitation-full-open.png');
@@ -55,7 +55,7 @@ describe('screenshot artifact validation freshness', () => {
 		writeFileSync(legacy, 'legacy');
 		writeFileSync(canonical, 'canonical');
 
-		const removed = await removeLegacyInvitationFullOpenArtifacts(tempDir);
+		const removed = await removeLegacyInvitationFullOpenArtifacts([legacy]);
 		expect(removed).toEqual([legacy]);
 		expect(existsSync(legacy)).toBe(false);
 		expect(existsSync(canonical)).toBe(true);

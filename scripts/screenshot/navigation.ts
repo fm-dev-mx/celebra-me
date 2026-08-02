@@ -8,9 +8,15 @@ import {
 	type ScreenshotSelectorConfig,
 	DEFAULT_NAVIGATION_TIMEOUT,
 } from './types.js';
+import { normalizeRouteIdentity, type RouteIdentity } from './scope.js';
 import { disableAnimations, prepareAuditPage, prepareRawPage } from './page-preparation.js';
 
 export type ScreenshotRevealState = 'open' | 'closed' | 'letter';
+
+export interface ExpectedInvitationIdentity {
+	routeIdentity: RouteIdentity;
+	slug?: string;
+}
 
 /**
  * Build a screenshot-mode URL by adding query parameters.
@@ -67,15 +73,56 @@ export function isSameScreenshotNavigationUrl(currentHref: string, targetHref: s
 		if (current.origin !== target.origin || current.pathname !== target.pathname) {
 			return false;
 		}
-		const keys = ['screenshot', 'reveal', 'forceEnvelope'] as const;
-		for (const key of keys) {
-			if ((current.searchParams.get(key) ?? '') !== (target.searchParams.get(key) ?? '')) {
+		const ignored = new Set(['screenshot', 'reveal', 'forceEnvelope']);
+		const comparable = (url: URL) =>
+			Array.from(url.searchParams.entries())
+				.filter(
+					([key]) =>
+						!ignored.has(key) &&
+						!/^utm_/i.test(key) &&
+						!['gclid', 'fbclid'].includes(key.toLowerCase()),
+				)
+				.sort(([aKey, aValue], [bKey, bValue]) =>
+					aKey === bKey ? aValue.localeCompare(bValue) : aKey.localeCompare(bKey),
+				)
+				.map(([key, value]) => `${key}=${value}`)
+				.join('&');
+		if (comparable(current) !== comparable(target)) return false;
+		for (const key of ['screenshot', 'reveal', 'forceEnvelope']) {
+			if ((current.searchParams.get(key) ?? '') !== (target.searchParams.get(key) ?? ''))
 				return false;
-			}
 		}
 		return true;
 	} catch {
 		return false;
+	}
+}
+
+export function routeIdentityMatches(actual: RouteIdentity, expected: RouteIdentity): boolean {
+	return actual.key === expected.key;
+}
+
+export async function assertScreenshotNavigationIdentity(
+	page: Page,
+	expected: ExpectedInvitationIdentity,
+): Promise<void> {
+	const actualRoute = normalizeRouteIdentity(page.url());
+	if (!routeIdentityMatches(actualRoute, expected.routeIdentity)) {
+		throw new Error(
+			`SCREENSHOT_ROUTE_IDENTITY_MISMATCH: expected ${expected.routeIdentity.key}, received ${actualRoute.key}.`,
+		);
+	}
+	if (!expected.slug) return;
+	const renderedSlug = await page.evaluate(
+		() =>
+			document
+				.querySelector('.event-theme-wrapper[data-event-slug]')
+				?.getAttribute('data-event-slug') ?? null,
+	);
+	if (!renderedSlug || renderedSlug.toLowerCase() !== expected.slug.toLowerCase()) {
+		throw new Error(
+			`SCREENSHOT_RENDERED_IDENTITY_MISMATCH: expected invitation "${expected.slug}", received "${renderedSlug ?? 'none'}".`,
+		);
 	}
 }
 
@@ -90,9 +137,18 @@ export async function navigateTo(
 	animationHandling: string,
 	criticalSelectors: ScreenshotSelectorConfig[] = [],
 	hideSelectors: string[] = [],
+	expectedInvitation?: ExpectedInvitationIdentity,
+	waitSelectors: string[] = [],
 ): Promise<void> {
 	// Same URL: skip goto and avoid stacking Playwright init scripts.
 	if (isSameScreenshotNavigationUrl(page.url(), url)) {
+		if (expectedInvitation) await assertScreenshotNavigationIdentity(page, expectedInvitation);
+		for (const selector of waitSelectors) {
+			await page.waitForSelector(selector, {
+				state: 'attached',
+				timeout: DEFAULT_NAVIGATION_TIMEOUT,
+			});
+		}
 		return;
 	}
 
@@ -152,6 +208,7 @@ export async function navigateTo(
 		waitUntil: 'domcontentloaded',
 		timeout: DEFAULT_NAVIGATION_TIMEOUT,
 	});
+	if (expectedInvitation) await assertScreenshotNavigationIdentity(page, expectedInvitation);
 
 	if (mode === 'audit') {
 		let skipLazyScroll: boolean;
@@ -164,11 +221,16 @@ export async function navigateTo(
 		await prepareAuditPage(page, criticalSelectors, hideSelectors, {
 			skipLazyScroll,
 		});
-		return;
+	} else {
+		await prepareRawPage(page);
+		if (animationHandling === 'disable') {
+			await disableAnimations(page);
+		}
 	}
-
-	await prepareRawPage(page);
-	if (animationHandling === 'disable') {
-		await disableAnimations(page);
+	for (const selector of waitSelectors) {
+		await page.waitForSelector(selector, {
+			state: 'attached',
+			timeout: DEFAULT_NAVIGATION_TIMEOUT,
+		});
 	}
 }

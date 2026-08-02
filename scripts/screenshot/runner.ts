@@ -2,6 +2,7 @@
 // CELEBRA-ME | Screenshot Tool — Job Runner
 
 import sharp from 'sharp';
+import * as fs from 'node:fs/promises';
 import type { Page, Request } from 'playwright';
 import {
 	type ScreenshotJob,
@@ -18,19 +19,24 @@ import {
 import { deriveSectionInventory } from './inventory.js';
 import {
 	createPageSlug,
-	resolveOutputDir,
 	ensureDir,
 	formatViewport,
 	formatDuration,
 	writeScreenshotReport,
+	writeScreenshotPreflight,
 	buildCurrentRunManifest,
 	classifyConsoleError,
 	dedupeScreenshotNotices,
 	computeScreenshotBlockingErrors,
+	expectsScreenshotOutput,
+	resolveScreenshotRunStatus,
 	validateBlankBottom,
+	getDocumentHeight,
 	getFileArtifactMeta,
 	removeLegacyInvitationFullOpenArtifacts,
 } from './utils.js';
+import { validateResolvedCleanupTargets } from './scope.js';
+import type { ResolvedScreenshotPlan } from './scope.js';
 import {
 	launchBrowser,
 	createContext,
@@ -46,6 +52,20 @@ interface SingleViewportCaptureResult {
 	report: ViewportRunReport;
 }
 
+async function cleanResolvedScope(plan: ResolvedScreenshotPlan): Promise<void> {
+	for (const target of plan.cleanupTargets) {
+		const stat = await fs.lstat(target).catch(() => undefined);
+		if (!stat) continue;
+		if (stat.isDirectory()) {
+			throw new Error(
+				`Refusing to clean directory target; expected an owned file: ${target}`,
+			);
+		}
+		await fs.rm(target, { force: true });
+		console.log(`  Cleaned planned artifact: ${target}`);
+	}
+}
+
 /**
  * Capture a single viewport: create a page context, run captures, build report.
  */
@@ -55,7 +75,7 @@ async function captureSingleViewport(
 	outputDir: string,
 	viewport: ScreenshotJob['viewports'][number],
 ): Promise<SingleViewportCaptureResult> {
-	const context = await createContext(browser, viewport);
+	const context = await createContext(browser, viewport, { authMethod: job.authMethod });
 	const page = await context.newPage();
 	const consoleErrors: string[] = [];
 	const requestFailures: RequestFailureReport[] = [];
@@ -178,11 +198,33 @@ export async function runScreenshotJob(job: ScreenshotJob): Promise<JobResult> {
 	console.log('');
 
 	// ── 1. Prepare output directory ────────────────────────────────────────
-	const outputDir = resolveOutputDir(pageSlug, job.outputFolderStyle, job.outputFolder);
+	if (!job.scope?.invitations[0]) {
+		throw new Error(
+			'Screenshot job has no resolved scope. Resolve it before launching the runner.',
+		);
+	}
+	const outputDir = job.scope.invitations[0].outputDir;
+	if (job.scope) {
+		validateResolvedCleanupTargets(job.scope);
+	}
+	if (job.scope?.clean) {
+		await cleanResolvedScope(job.scope);
+	}
 	await ensureDir(outputDir);
+	if (job.scope) {
+		const preflightPath = await writeScreenshotPreflight(outputDir, job.scope);
+		console.log(`  Preflight plan: ${preflightPath}`);
+		console.log(`  Planned scope: ${job.scope.tasks.length} exact task artifact(s)`);
+		console.log(`  Resolved plan:\n${JSON.stringify(job.scope, null, 2)}`);
+	}
 
 	if (job.pageType === 'invitation') {
-		const removedLegacy = await removeLegacyInvitationFullOpenArtifacts(outputDir);
+		const legacyTargets = job.scope?.invitations[0]?.cleanupTargets.filter((target) =>
+			target.includes('05-invitation-full-open.'),
+		);
+		const removedLegacy = legacyTargets
+			? await removeLegacyInvitationFullOpenArtifacts(legacyTargets)
+			: [];
 		if (removedLegacy.length > 0) {
 			console.log(
 				`  🧹 Removed ${removedLegacy.length} legacy 05-invitation-full-open artifact(s)`,
@@ -320,8 +362,11 @@ async function finalizeScreenshotJobResult(input: {
 	const failed = blockingErrors;
 	const optionalOmitted = allCaptures.filter((r) => r.isOptional && !r.success).length;
 
-	const reportStatus: ScreenshotRunReport['status'] =
-		failed > 0 ? 'failed' : warnings.length > 0 ? 'warning' : 'passed';
+	const reportStatus: ScreenshotRunReport['status'] = resolveScreenshotRunStatus({
+		failed,
+		succeeded,
+		warnings: warnings.length,
+	});
 
 	const report: ScreenshotRunReport = {
 		route: job.url,
@@ -339,6 +384,7 @@ async function finalizeScreenshotJobResult(input: {
 		validationFailures: validationFailureMessages,
 		manifestFailures,
 		failures: [...captureFailureMessages, ...validationFailureMessages, ...manifestFailures],
+		scope: job.scope,
 		...(fallbacks.length > 0 ? { fallback: fallbacks[0], stitchFailures } : {}),
 	};
 	const reportPath = await writeScreenshotReport(outputDir, report);
@@ -460,6 +506,7 @@ function printScreenshotJobSummary(input: {
 // Viewport Report Builder
 // =============================================================================
 
+// eslint-disable-next-line complexity -- Viewport reporting combines capture, artifact, selector, and scope checks.
 async function buildViewportReport({
 	page,
 	job,
@@ -572,9 +619,24 @@ async function buildViewportReport({
 
 	let sectionCoverage: SectionCoverageReport | undefined;
 
-	if (job.pageType === 'invitation') {
+	if (
+		job.pageType === 'invitation' &&
+		job.target !== 'full-page' &&
+		job.target !== 'reveal-only'
+	) {
 		const inventory = await deriveSectionInventory(page);
-		sectionCoverage = buildSectionCoverage(inventory, results, validationFailures);
+		const plannedSectionIds =
+			job.scope?.invitations[0]?.sectionSelection.kind === 'ids'
+				? job.scope.invitations[0].sectionSelection.ids
+				: undefined;
+		if (plannedSectionIds === undefined || plannedSectionIds.length > 0) {
+			sectionCoverage = buildSectionCoverage(
+				inventory,
+				results,
+				validationFailures,
+				plannedSectionIds,
+			);
+		}
 	}
 
 	const failures = [...taskCaptureFailures, ...validationFailures];
@@ -649,11 +711,23 @@ function buildSectionCoverage(
 	inventory: Awaited<ReturnType<typeof deriveSectionInventory>>,
 	results: CaptureResult[],
 	captureFailures: string[],
+	plannedSectionIds?: string[],
 ): SectionCoverageReport {
 	const sectionResults = results.filter((r) => r.label.startsWith('Section:'));
 	const missingSections: string[] = [];
+	const sections = plannedSectionIds
+		? plannedSectionIds.map(
+				(id, index) =>
+					inventory.sections.find((section) => section.id === id) ?? {
+						id,
+						order: index + 1,
+						label: id,
+						selector: `[data-screenshot-section="${id}"]`,
+					},
+			)
+		: inventory.sections;
 
-	for (const sec of inventory.sections) {
+	for (const sec of sections) {
 		const found = results.some(
 			(r) => r.success && (r.path.includes(`-${sec.id}.`) || r.label.includes(sec.label)),
 		);
@@ -663,18 +737,22 @@ function buildSectionCoverage(
 		}
 	}
 
-	for (const dup of inventory.duplicates) {
+	for (const dup of inventory.duplicates.filter(
+		(id) => !plannedSectionIds || plannedSectionIds.includes(id),
+	)) {
 		captureFailures.push(`Duplicate section root detected in DOM: "${dup}".`);
 	}
 
 	return {
-		expectedCount: inventory.expected,
-		renderedCount: inventory.rendered,
+		expectedCount: sections.length,
+		renderedCount: sections.filter((section) =>
+			inventory.sections.some((item) => item.id === section.id),
+		).length,
 		plannedCount: sectionResults.length,
 		successfulCount: sectionResults.filter((r) => r.success).length,
 		missingSections,
 		duplicateSections: inventory.duplicates,
-		sections: inventory.sections.map((sec) => {
+		sections: sections.map((sec) => {
 			const match = results.find(
 				(r) => r.success && (r.path.includes(`-${sec.id}.`) || r.label.includes(sec.label)),
 			);
@@ -862,15 +940,6 @@ function isFullPageCaptureLabel(label: string): boolean {
 	);
 }
 
-function expectsScreenshotOutput(target: ScreenshotJob['target']): boolean {
-	return (
-		target === 'critical-qa' ||
-		target === 'full-page' ||
-		target === 'all-sections' ||
-		target === 'single-section'
-	);
-}
-
 async function readImageMetadata(filePath: string): Promise<{ width?: number; height?: number }> {
 	try {
 		const metadata = await sharp(filePath).metadata();
@@ -893,16 +962,6 @@ async function readAuditNormalizations(page: Page): Promise<string[]> {
 		});
 	} catch {
 		return [];
-	}
-}
-
-async function getDocumentHeight(page: Page): Promise<number> {
-	try {
-		return await page.evaluate(() =>
-			Math.max(document.body.scrollHeight, document.documentElement.scrollHeight),
-		);
-	} catch {
-		return 0;
 	}
 }
 

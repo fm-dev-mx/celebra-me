@@ -6,15 +6,13 @@ import {
 	resolveViewports,
 	loadScreenshotConfig,
 	writeScreenshotReport,
-	getDefaultCriticalSelectors,
 	getDefaultHideSelectors,
 	getOperationalToolbarSelectors,
-	getExpectedCaptureCount,
 	buildCurrentRunManifest,
 	classifyConsoleError,
 	dedupeScreenshotNotices,
 	computeScreenshotBlockingErrors,
-	shouldExitScreenshotNonZero,
+	resolveScreenshotRunStatus,
 	resolveScreenshotBaseUrl,
 	resolveScreenshotLaneContext,
 	getViewportProfileSummary,
@@ -29,6 +27,31 @@ describe('screenshot CLI utilities', () => {
 		expect(parseCliArgs(['node', 'cli.ts', '--url=/', '--mode=audit']).mode).toBe('audit');
 	});
 
+	it('rejects unknown CLI arguments instead of silently entering interactive mode', () => {
+		expect(() => parseCliArgs(['node', 'cli.ts', '--not-a-real-flag'])).toThrow(
+			/Unknown screenshot argument/,
+		);
+	});
+
+	it('deduplicates explicit viewport names and rejects invalid values', () => {
+		expect(
+			resolveViewports('site', ['mobile-standard', 'mobile-standard', 'desktop']).map(
+				(viewport) => viewport.name,
+			),
+		).toEqual(['mobile-standard', 'desktop']);
+		expect(() => resolveViewports('site', ['not-a-viewport'])).toThrow(/Unknown viewport/);
+	});
+
+	it('marks incomplete execution as partial when requested work also succeeded', () => {
+		expect(resolveScreenshotRunStatus({ failed: 1, succeeded: 2, warnings: 0 })).toBe(
+			'partial',
+		);
+		expect(resolveScreenshotRunStatus({ failed: 1, succeeded: 0, warnings: 0 })).toBe('failed');
+		expect(resolveScreenshotRunStatus({ failed: 0, succeeded: 2, warnings: 1 })).toBe(
+			'warning',
+		);
+	});
+
 	it('parses --section-extent for full and viewport framing', () => {
 		expect(parseCliArgs(['node', 'cli.ts', '--section-extent=full']).sectionExtent).toBe(
 			'full',
@@ -36,9 +59,9 @@ describe('screenshot CLI utilities', () => {
 		expect(parseCliArgs(['node', 'cli.ts', '--section-extent', 'viewport']).sectionExtent).toBe(
 			'viewport',
 		);
-		expect(
-			parseCliArgs(['node', 'cli.ts', '--section-extent=invalid']).sectionExtent,
-		).toBeUndefined();
+		expect(() => parseCliArgs(['node', 'cli.ts', '--section-extent=invalid'])).toThrow(
+			/Invalid section extent/,
+		);
 	});
 
 	it('intersects element boxes with the viewport for viewport-crop framing', () => {
@@ -80,28 +103,6 @@ describe('screenshot CLI utilities', () => {
 		expect(getViewportProfileSummary('site')).toBe(
 			'mobile-narrow, mobile-standard, tablet, desktop',
 		);
-	});
-
-	it('includes automatic audit critical captures in expected counts', () => {
-		expect(
-			getExpectedCaptureCount({
-				pageType: 'landing',
-				mode: 'audit',
-				target: 'critical-qa',
-				includeLayout: true,
-				criticalSelectors: getDefaultCriticalSelectors('landing'),
-			}),
-		).toBe(10);
-
-		expect(
-			getExpectedCaptureCount({
-				pageType: 'landing',
-				mode: 'raw',
-				target: 'critical-qa',
-				includeLayout: true,
-				criticalSelectors: getDefaultCriticalSelectors('landing'),
-			}),
-		).toBe(5);
 	});
 
 	it('builds current-run manifests without counting stale output files', () => {
@@ -177,7 +178,7 @@ describe('screenshot CLI utilities', () => {
 		).toEqual(['Audit normalization: overlays', 'Optional capture omitted: letter']);
 	});
 
-	it('computes blocking errors and exit-code semantics without conflating successful captures', () => {
+	it('computes blocking errors without conflating successful captures', () => {
 		expect(
 			computeScreenshotBlockingErrors({
 				captureFailed: 0,
@@ -192,8 +193,6 @@ describe('screenshot CLI utilities', () => {
 				manifestFailed: 0,
 			}),
 		).toBe(0);
-		expect(shouldExitScreenshotNonZero(0)).toBe(false);
-		expect(shouldExitScreenshotNonZero(1)).toBe(true);
 	});
 
 	it('resolves screenshot base URL from the worktree lane port table', () => {
@@ -238,17 +237,6 @@ describe('screenshot CLI utilities', () => {
 			baseUrl: 'http://127.0.0.1:9999',
 			portSource: 'explicit',
 		});
-	});
-
-	it('treats invitation critical-qa expected counts as plan-driven (not a static 5+critical)', () => {
-		expect(
-			getExpectedCaptureCount({
-				pageType: 'invitation',
-				mode: 'audit',
-				target: 'critical-qa',
-				criticalSelectors: getDefaultCriticalSelectors('invitation'),
-			}),
-		).toBe(0);
 	});
 
 	it('passes manifest when all required tasks succeed even if optional files also exist', () => {
