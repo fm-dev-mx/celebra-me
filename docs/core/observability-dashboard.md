@@ -70,7 +70,24 @@ failures. A new `in_progress` invitation absent from all environments is valid p
 same state for a `published` invitation is an operational failure. An `in_progress` invitation
 already aligned in Production requires lifecycle metadata correction.
 
-## Baseline authority and three-way reconciliation
+## Direct alignment and baseline authority
+
+The snapshot first attempts a direct present-state proof for each canonical invitation. It requires
+one available, unique row in Local, Preview, and Production; compatible invitation/event ownership
+and managed metadata; valid non-empty draft content; and a complete, unambiguous current mapping of
+every required asset slot. Each current draft is rewritten to semantic asset keys in memory and
+compared to the normalized canonical managed projection.
+
+When those three current projections are equal, the invitation is `HEALTHY + ALIGNED` even if it has
+no legacy provenance row or persisted asset keys. Missing historical evidence is not an issue in
+that case. The row IDs used to make the in-memory association never leave the server and never
+become semantic identity.
+
+If any current projection differs, direct equality is not enough to infer delivery order or drift.
+The snapshot then uses the durable baseline and three-way reconciliation below. A missing or
+normalization-incompatible baseline makes delivery `UNVERIFIED`, but does not independently reduce
+operational health when current availability, schema, content, identity, and asset integrity are
+healthy.
 
 The durable common ancestor is the `managed_projection` recorded in
 `public.managed_invitation_release_provenance`. Its identity is accepted only when all of the
@@ -83,10 +100,11 @@ following agree:
 
 The baseline changes only after a completed managed apply records new provenance and its receipt.
 Current timestamps are opaque concurrency tokens, not evidence that “newer is canonical.” Missing,
-legacy, or version-incompatible provenance produces typed `UNVERIFIED` delivery evidence. An empty
-object, an empty normalized document, or an equivalent structurally empty projection is not a
-baseline. Metadata-only verification can establish only a non-empty stored projection; detailed
-reconciliation reuses the same authority path and rejects an empty loaded document.
+legacy, or version-incompatible provenance produces typed `UNVERIFIED` delivery evidence only when
+there is a real current-state difference to interpret. An empty object, an empty normalized
+document, or an equivalent structurally empty projection is not a baseline. Metadata-only
+verification can establish only a non-empty stored projection; detailed reconciliation reuses the
+same authority path and rejects an empty loaded document.
 
 `scripts/observability/delivery-reconciliation.ts` uses the shared semantic three-way reconciler and
 ownership map:
@@ -103,10 +121,12 @@ and residual infrastructure fields are excluded.
 
 Only declared non-optional asset keys are required. A missing required asset on published content is
 an operational defect. The same missing asset on unpublished content is delivery work in progress.
-Optional assets never degrade operational health. When enough asset rows exist but legacy rows lack
-managed semantic keys, the dashboard reports `ASSET_IDENTITY_UNVERIFIED`; it does not mislabel
-existing binaries as missing. Published evidence of that form makes operational health `UNVERIFIED`,
-while unpublished evidence makes delivery `UNVERIFIED`.
+Optional assets never degrade operational health. A legacy row without a persisted semantic key is
+accepted when exactly one current asset matches the known semantic slot by normalized display name,
+MIME type, dimensions, and file size. Ambiguous or absent slot association remains
+`ASSET_IDENTITY_UNVERIFIED`; it does not mislabel existing binaries as missing. Published evidence
+of that form makes operational health `UNVERIFIED`, while unpublished evidence makes delivery
+`UNVERIFIED`.
 
 The batch projection uses only the managed asset `id` and semantic `key` for reconciliation. Storage
 paths, buckets, provider URLs, hashes, and environment-specific identifiers are neither queried as
