@@ -1,3 +1,5 @@
+import { RELEASE_SCHEMA_VERSION } from './normalized-invitation-release.ts';
+
 export type ManagedBaselineClassification =
 	| 'verified_current'
 	| 'missing_provenance'
@@ -222,4 +224,23 @@ export function resolveManagedMergeBaseline(
 	}
 
 	return managedProjection;
+}
+
+/**
+ * Pure evaluator checking whether a given baseline input satisfies the strict
+ * Phase 2 release provenance contract (correct schema version, complete identity,
+ * matching durable receipt, and provenance_recorded completed step).
+ */
+export function isVerifiedManagedReleaseProvenance(
+	input: ManagedMergeBaselineInput,
+	expectedNormalizationVersion: string = RELEASE_SCHEMA_VERSION,
+): boolean {
+	try {
+		resolveVerifiedManagedBaseline(input, expectedNormalizationVersion, {
+			requireProjection: false,
+		});
+		return true;
+	} catch {
+		return false;
+	}
 }
