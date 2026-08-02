@@ -59,6 +59,8 @@ describe('Boda Perla y Carlos provision contract', () => {
 		expect(profile).toContain("data-reveal-state='revealed'");
 		expect(profile).toContain('invitation-hero__ampersand');
 		expect(profile).toContain('event-location__heading');
+		expect(profile).toContain('-webkit-text-fill-color: var(--perla-cream)');
+		expect(profile).toMatch(/\.invitation-hero__title[\s\S]*background:\s*none/);
 	});
 
 	it('keeps Hero chrome hidden during sealed, letter-held, and preview-opened', () => {

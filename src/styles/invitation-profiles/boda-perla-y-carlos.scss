@@ -226,10 +226,25 @@
 			font-family: var(--font-display);
 			font-size: clamp(2.35rem, 9vw, 4.15rem);
 			line-height: 1.05;
+
+			// Solid cream names — kill shared gradient/specular clip that can leave
+			// desktop titles invisible when background-position is off-glyph.
+			background: none;
+			background-clip: border-box;
+			-webkit-text-stroke: 0;
+			animation: none;
+
+			@media (prefers-reduced-motion: no-preference) {
+				animation: motion-fade-in-up var(--motion-hero-title-duration) var(--ease-out)
+					var(--motion-hero-title-delay) forwards;
+			}
 		}
 
 		.invitation-hero__title,
-		.invitation-hero__secondary-name {
+		.invitation-hero__secondary-name,
+		.invitation-hero__ampersand {
+			-webkit-text-fill-color: var(--perla-cream);
+			color: var(--perla-cream);
 			text-shadow: 0 2px 18px rgb(var(--perla-olive-deep-rgb) / 40%);
 		}
 
