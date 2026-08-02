@@ -3,6 +3,7 @@ import { dirname, resolve } from 'node:path';
 import { spawnSync, type SpawnSyncOptions } from 'node:child_process';
 import { createInterface } from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
+import { createHmac, timingSafeEqual } from 'node:crypto';
 import {
 	PROD_SECRET_FILES,
 	LOCAL_DB_URL,
@@ -517,10 +518,149 @@ export async function promptUser(question: string): Promise<string> {
 	}
 }
 
+export interface ProductionApprovalTokenPayload {
+	operationType: string;
+	targetEnv: 'production';
+	scope: string;
+	manifestFingerprint: string;
+	expiresAt: number;
+	nonce: string;
+}
+
+export interface ProductionApprovalToken {
+	payload: ProductionApprovalTokenPayload;
+	signature: string;
+}
+
+export function createProductionApprovalToken(
+	payload: ProductionApprovalTokenPayload,
+	secret: string,
+): string {
+	const payloadJson = JSON.stringify(payload);
+	const hmac = createHmac('sha256', secret).update(payloadJson).digest('hex');
+	const tokenObj: ProductionApprovalToken = { payload, signature: hmac };
+	return Buffer.from(JSON.stringify(tokenObj), 'utf8').toString('base64url');
+}
+
+export function verifyProductionApprovalToken(input: {
+	tokenStr: string | undefined;
+	secret: string | undefined;
+	expectedContext: {
+		operationType: string;
+		targetEnv: 'production';
+		scope: string;
+		manifestFingerprint: string;
+	};
+	nowMs?: number;
+}): { valid: boolean; reason?: string } {
+	if (!input.tokenStr || !input.tokenStr.trim()) {
+		return { valid: false, reason: 'MISSING_APPROVAL_TOKEN' };
+	}
+	if (!input.secret || !input.secret.trim()) {
+		return { valid: false, reason: 'MISSING_OPERATOR_AUTH_SECRET' };
+	}
+
+	let parsed: ProductionApprovalToken;
+	try {
+		const json = Buffer.from(input.tokenStr.trim(), 'base64url').toString('utf8');
+		parsed = JSON.parse(json);
+	} catch {
+		return { valid: false, reason: 'MALFORMED_APPROVAL_TOKEN' };
+	}
+
+	if (
+		!parsed ||
+		typeof parsed !== 'object' ||
+		!parsed.payload ||
+		typeof parsed.signature !== 'string'
+	) {
+		return { valid: false, reason: 'MALFORMED_APPROVAL_TOKEN' };
+	}
+
+	const { payload, signature } = parsed;
+	const expectedHmac = createHmac('sha256', input.secret.trim())
+		.update(JSON.stringify(payload))
+		.digest('hex');
+
+	const sigBuf = Buffer.from(signature, 'hex');
+	const expectedBuf = Buffer.from(expectedHmac, 'hex');
+
+	if (sigBuf.length !== expectedBuf.length || !timingSafeEqual(sigBuf, expectedBuf)) {
+		return { valid: false, reason: 'INVALID_SIGNATURE' };
+	}
+
+	const now = input.nowMs ?? Date.now();
+	if (payload.expiresAt <= now) {
+		return { valid: false, reason: 'EXPIRED_APPROVAL_TOKEN' };
+	}
+
+	if (payload.targetEnv !== input.expectedContext.targetEnv) {
+		return { valid: false, reason: 'TARGET_ENV_MISMATCH' };
+	}
+
+	if (payload.operationType !== input.expectedContext.operationType) {
+		return { valid: false, reason: 'OPERATION_TYPE_MISMATCH' };
+	}
+
+	if (payload.scope !== '*' && payload.scope !== input.expectedContext.scope) {
+		return { valid: false, reason: 'SCOPE_MISMATCH' };
+	}
+
+	if (
+		payload.manifestFingerprint !== '*' &&
+		payload.manifestFingerprint !== input.expectedContext.manifestFingerprint
+	) {
+		return { valid: false, reason: 'MANIFEST_FINGERPRINT_MISMATCH' };
+	}
+
+	return { valid: true };
+}
+
 export async function confirmProductionAction(
 	targetDescription: string,
 	requiredConfirmation: string,
+	params?: {
+		operationType?: string;
+		scope?: string;
+		manifestFingerprint?: string;
+	},
 ): Promise<void> {
+	// Block autonomous agent self-authorization regardless of variables
+	const agentContext = process.env.CELEBRA_AGENT_CONTEXT?.trim();
+	if (agentContext && agentContext !== 'false' && agentContext !== '0') {
+		fail(
+			`AGENT_SELF_AUTHORIZATION_BLOCKED: Production actions require external operator approval evidence. ` +
+				`Autonomous agents cannot self-authorize Production writes.`,
+		);
+	}
+
+	const envToken = process.env.CELEBRA_PROD_APPROVAL_TOKEN?.trim();
+	const authSecret = process.env.CELEBRA_PROD_AUTH_SECRET?.trim();
+
+	// Primary Protection: external cryptographically bound approval token
+	if (envToken || authSecret) {
+		const verification = verifyProductionApprovalToken({
+			tokenStr: envToken,
+			secret: authSecret,
+			expectedContext: {
+				operationType: params?.operationType ?? 'production_migration',
+				targetEnv: 'production',
+				scope: params?.scope ?? '*',
+				manifestFingerprint: params?.manifestFingerprint ?? requiredConfirmation,
+			},
+		});
+
+		if (!verification.valid) {
+			fail(
+				`PRODUCTION_AUTHORIZATION_FAILED [${verification.reason}]: Production action requires valid external operator approval evidence. ` +
+					`Deriving confirmation strings locally without an operator secret is forbidden.`,
+			);
+		}
+
+		console.info(`\n✅ Production approval token verified for ${targetDescription}.`);
+		return;
+	}
+
 	const envConfirmation = process.env.CONFIRM_PROD_MIGRATION?.trim();
 	if (envConfirmation) {
 		if (envConfirmation !== requiredConfirmation) {
@@ -547,7 +687,12 @@ export async function confirmProductionAction(
 export async function requireProductionConfirmation(
 	targetDescription: string,
 	requiredConfirmation?: string,
+	params?: {
+		operationType?: string;
+		scope?: string;
+		manifestFingerprint?: string;
+	},
 ): Promise<void> {
 	const confirmation = requiredConfirmation || `MIGRATE ${targetDescription}`;
-	await confirmProductionAction(targetDescription, confirmation);
+	await confirmProductionAction(targetDescription, confirmation, params);
 }

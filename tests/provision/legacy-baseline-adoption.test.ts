@@ -218,4 +218,50 @@ describe('legacy baseline administrative adoption manifest', () => {
 		});
 		expect(entry.unresolvedAmbiguity).toEqual(['NORMALIZATION_VERSION_UNSUPPORTED']);
 	});
+
+	it('rejects candidate when draft content fails schema validation', async () => {
+		const pkg = await packageFor('abril-michelle-becerra-rea');
+		const base = candidate(pkg, 'production');
+		// Corrupt the draft content to trigger schema validation failure (godparents must be an array)
+		const invalidDraftCandidate: LegacyAdoptionRawEnvironmentCandidate = {
+			...base,
+			draft: {
+				...base.draft,
+				content: {
+					...(base.draft.content as Record<string, unknown>),
+					family: { godparents: 'not-an-array' }, // schema requires array
+				},
+			},
+		};
+		const entry = buildLegacyBaselineAdoptionEntry({
+			pkg,
+			candidates: {
+				local: candidate(pkg, 'local'),
+				preview: candidate(pkg, 'preview'),
+				production: invalidDraftCandidate,
+			},
+		});
+
+		// Baseline adoption must reject invalid draft candidates
+		expect(entry.status).toBe('BLOCKED');
+		expect(entry.unresolvedAmbiguity).toContain('INVALID_PRODUCTION_CANDIDATE');
+	});
+
+	it('does not report DRAFT_INVALID when both published and draft content are valid', async () => {
+		const pkg = await packageFor('abril-michelle-becerra-rea');
+		const environments = {
+			local: candidate(pkg, 'local'),
+			preview: candidate(pkg, 'preview'),
+			production: candidate(pkg, 'production'),
+		};
+		const entry = buildLegacyBaselineAdoptionEntry({
+			pkg,
+			candidates: environments,
+		});
+
+		expect(entry.status).toBe('ELIGIBLE');
+		// Clean draft: DRAFT_INVALID must not appear in expected issues
+		expect(entry.expectedSnapshot.issuesExpectedToRemain).not.toContain('DRAFT_INVALID');
+		expect(entry.expectedSnapshot.operationalStatus).toBe('HEALTHY');
+	});
 });

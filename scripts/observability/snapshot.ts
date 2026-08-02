@@ -293,23 +293,6 @@ function appendPresenceSignals(input: {
 		input.state.comparisons.push(comparison);
 		if (inProgress) {
 			input.state.deliveryStatuses.push('IN_PROGRESS');
-			input.state.workItems.push(
-				signal({
-					impact: 'DELIVERY',
-					reasonCode: 'CANONICAL_CHANGE_PENDING',
-					nextStep:
-						environment === 'local'
-							? 'APPLY_LOCAL'
-							: environment === 'preview'
-								? 'PROMOTE_PREVIEW'
-								: 'PROMOTE_PRODUCTION',
-					deliveryStatus: 'IN_PROGRESS',
-					environment,
-					slug: input.canonical.slug,
-					lifecycle: input.canonical.lifecycle,
-					comparison,
-				}),
-			);
 			continue;
 		}
 		input.state.operationalStatuses.push('BLOCKED');
@@ -329,6 +312,23 @@ function appendPresenceSignals(input: {
 		);
 	}
 }
+function resolveDeliveryReasonCode(
+	hasValidDraftPending: boolean,
+	state: CanonicalEvaluationState,
+): ObservabilityReasonCode {
+	if (hasValidDraftPending) return 'VALID_DRAFT_PENDING';
+	const isPartial =
+		state.comparisons.some((c) => c.outcome === 'ALREADY_APPLIED') &&
+		state.comparisons.some((c) => c.outcome === 'APPLY');
+	return isPartial ? 'PARTIAL_PROMOTION' : 'CANONICAL_CHANGE_PENDING';
+}
+
+function resolveNextStep(env: (typeof ENVIRONMENTS)[number]): ObservabilityNextStep {
+	if (env === 'local') return 'APPLY_LOCAL';
+	if (env === 'preview') return 'PROMOTE_PREVIEW';
+	return 'PROMOTE_PRODUCTION';
+}
+
 function appendLifecycleSignals(
 	canonical: CanonicalObservation,
 	state: CanonicalEvaluationState,
@@ -356,21 +356,50 @@ function appendLifecycleSignals(
 			}),
 		);
 		state.deliveryStatuses.push('ACTION_REQUIRED');
-	} else if (
-		state.comparisons.some((comparison) => comparison.outcome === 'ALREADY_APPLIED') &&
-		state.comparisons.some((comparison) => comparison.outcome === 'APPLY')
-	) {
+		return;
+	}
+
+	const hasValidDraftPending = state.workItems.some(
+		(w) => w.reasonCode === 'VALID_DRAFT_PENDING',
+	);
+
+	const deliveryWorkIndices: number[] = [];
+	for (let i = 0; i < state.workItems.length; i++) {
+		const item = state.workItems[i]!;
+		if (
+			item.reasonCode === 'CANONICAL_CHANGE_PENDING' ||
+			item.reasonCode === 'PARTIAL_PROMOTION' ||
+			item.reasonCode === 'VALID_DRAFT_PENDING'
+		) {
+			deliveryWorkIndices.push(i);
+		}
+	}
+	for (let i = deliveryWorkIndices.length - 1; i >= 0; i--) {
+		state.workItems.splice(deliveryWorkIndices[i]!, 1);
+	}
+
+	const actionableEnv = ENVIRONMENTS.find((env) => {
+		const outcome = byEnvironment.get(env)?.outcome;
+		return outcome === 'APPLY' || outcome === 'DRIFT';
+	});
+
+	if (actionableEnv) {
+		const reasonCode = resolveDeliveryReasonCode(hasValidDraftPending, state);
+		const nextStep = resolveNextStep(actionableEnv);
 		state.workItems.push(
 			signal({
 				impact: 'DELIVERY',
-				reasonCode: 'PARTIAL_PROMOTION',
-				nextStep: previewAligned ? 'PROMOTE_PRODUCTION' : 'PROMOTE_PREVIEW',
+				reasonCode,
+				nextStep,
 				deliveryStatus: 'IN_PROGRESS',
+				environment: actionableEnv,
 				slug: canonical.slug,
 				lifecycle: canonical.lifecycle,
+				comparison: byEnvironment.get(actionableEnv),
 			}),
 		);
 	}
+
 	if (canonical.lifecycle !== 'in_progress' || !productionAligned) return;
 	state.issues.push(
 		signal({
@@ -421,7 +450,9 @@ function evaluateCanonicalInvitation(
 	const directlyAligned =
 		coverage.every((item) => item.status === 'AVAILABLE') &&
 		directRows.length === ENVIRONMENTS.length &&
-		ENVIRONMENTS.every((environment) => (rowsByEnvironment.get(environment) ?? []).length === 1) &&
+		ENVIRONMENTS.every(
+			(environment) => (rowsByEnvironment.get(environment) ?? []).length === 1,
+		) &&
 		proveDirectCurrentAlignment({ canonical, rows: directRows });
 
 	for (const environment of ENVIRONMENTS) {

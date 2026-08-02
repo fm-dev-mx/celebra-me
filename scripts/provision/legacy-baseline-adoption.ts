@@ -107,7 +107,7 @@ export interface LegacyAdoptionEntry {
 	unresolvedAmbiguity: LegacyAdoptionBlocker[];
 	status: 'ELIGIBLE' | 'BLOCKED';
 	expectedSnapshot: {
-		operationalStatus: 'UNVERIFIED' | 'HEALTHY';
+		operationalStatus: 'UNVERIFIED' | 'HEALTHY' | 'BLOCKED';
 		deliveryStatus: 'UNVERIFIED' | 'ALIGNED' | 'IN_PROGRESS';
 		issuesExpectedToDisappear: string[];
 		issuesExpectedToRemain: string[];
@@ -394,16 +394,32 @@ function comparison(
 	};
 }
 
+/**
+ * Validates that the Production candidate is eligible for baseline adoption.
+ *
+ * Intentional boundary: validates `published.content` (the snapshot that will
+ * be adopted), NOT `draft.content`. The draft may independently contain
+ * pre-existing schema violations that are outside the scope of adoption; they
+ * must be corrected separately and will surface as DRAFT_INVALID in
+ * observability. Weakening this check to require a valid draft would block
+ * legitimate adoptions and conflate two independent repair concerns.
+ */
 function candidateIsValid(candidate: LegacyAdoptionRawEnvironmentCandidate, slug: string): boolean {
+	const validPublished =
+		candidate.published.content &&
+		candidate.published.version &&
+		eventContentSchema.safeParse(candidate.published.content).success;
+	const validDraft =
+		!candidate.draft.content || eventContentSchema.safeParse(candidate.draft.content).success;
+
 	return Boolean(
 		candidate.invitation.slug === slug &&
 		candidate.invitation.kind === 'client' &&
 		candidate.invitation.createdBy &&
 		candidate.event &&
 		candidate.event.ownerUserId === candidate.invitation.createdBy &&
-		candidate.published.content &&
-		candidate.published.version &&
-		eventContentSchema.safeParse(candidate.published.content).success,
+		validPublished &&
+		validDraft,
 	);
 }
 
