@@ -357,7 +357,10 @@ pnpm run ci                  # Canonical package.json script alias for full pipe
 pnpm agent:git-safety:check
 ```
 
-`pnpm run ci` is the canonical full-pipeline equivalent of Tier C. It runs `pnpm type-check`, `pnpm validate:structure`, `pnpm lint`, `pnpm lint:styles`, `pnpm validate:ui-governance`, `pnpm validate:event-parity`, `pnpm validate:no-pii`, `pnpm validate:invitation-preparation`, `pnpm test`, `pnpm test:e2e:ci`, and `pnpm build:app`. Use `pnpm ci:quick` for fast feedback only.
+`pnpm run ci` is the canonical full-pipeline equivalent of Tier C. It runs `pnpm type-check`,
+`pnpm validate:structure`, `pnpm lint`, `pnpm lint:styles`, `pnpm validate:ui-governance`,
+`pnpm validate:event-parity`, `pnpm validate:no-pii`, `pnpm validate:invitation-preparation`,
+`pnpm test`, `pnpm test:e2e:ci`, and `pnpm build:app`. Use `pnpm ci:quick` for fast feedback only.
 
 The pre-push hook intentionally remains lean (commit-message validation only); do not move tests or
 type-checks into pre-push.
@@ -368,14 +371,14 @@ Choose the evidence class **before** launching screenshot or browser tools. This
 proportional visual validation; [`scripts/screenshot/README.md`](../../scripts/screenshot/README.md)
 owns tool mechanics and flags.
 
-| Change class | Evidence class | Minimum sufficient proof |
-| --- | --- | --- |
-| Material layout, reveal, hero, or section composition | **Required** | Same route; primary viewport (`mobile-standard` unless desktop-only); smallest target (`--sections=<id>`, `--set=reveal-only`, or a single affected step); reuse an already-running `pnpm dev` |
-| Reference-driven redesign closing an approved brief | **Required** (scoped) | Viewports listed in the brief — not an automatic five-viewport or full interactive default |
-| Work under [`docs/domains/theme/section-intersections.md`](../../docs/domains/theme/section-intersections.md) | **Required** | Follow that domain matrix only for intersection work; **do not** generalize it to all UI |
-| Copy-only, token/color without layout, docs, backend | **Unnecessary** | Skip screenshots |
-| Selector presence, overflow, or simple DOM checks | **Replaceable** | Browser snapshot, CDP/`getBoundingClientRect`, or a focused Playwright assert |
-| Habitual `full-qa` / `all-sections` / full profile / all invitations | **Reducible** | Prefer one viewport; widen only after a failed or inconclusive minimum pass, or when the owner asks for a full audit |
+| Change class                                                                                                  | Evidence class        | Minimum sufficient proof                                                                                                                                                                              |
+| ------------------------------------------------------------------------------------------------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Material layout, reveal, hero, or section composition                                                         | **Required**          | Same route; primary viewport (`mobile-standard` unless desktop-only); smallest strict target (`--sections=<id>`, `--set=reveal-only`, or a single affected step); reuse an already-running `pnpm dev` |
+| Reference-driven redesign closing an approved brief                                                           | **Required** (scoped) | Viewports listed in the brief — not an automatic five-viewport or full interactive default                                                                                                            |
+| Work under [`docs/domains/theme/section-intersections.md`](../../docs/domains/theme/section-intersections.md) | **Required**          | Follow that domain matrix only for intersection work; **do not** generalize it to all UI                                                                                                              |
+| Copy-only, token/color without layout, docs, backend                                                          | **Unnecessary**       | Skip screenshots                                                                                                                                                                                      |
+| Selector presence, overflow, or simple DOM checks                                                             | **Replaceable**       | Browser snapshot, CDP/`getBoundingClientRect`, or a focused Playwright assert                                                                                                                         |
+| Habitual `full-qa` / `all-sections` / full profile / all invitations                                          | **Reducible**         | Prefer one viewport; widen only after a failed or inconclusive minimum pass, or when the owner asks for a full audit                                                                                  |
 
 Rules:
 
@@ -388,6 +391,15 @@ Rules:
   optimize-dep without need.
 - Preserve full visual proof when risk justifies it (invitation ship QA, section-intersection
   acceptance, reference-driven acceptance). Do not weaken required coverage for those cases.
+- Screenshot validation is impact-driven, not a default closure gate. Visible content, assets,
+  styles, layout, rendered components, browser interactions, and screenshot infrastructure require
+  proportional visual verification; backend-only, observability, CLI, metadata, and provenance
+  changes do not require screenshots unless they affect the screenshot mechanism.
+- Use the smallest representative invitation, section, and viewport set for the change. Full-corpus
+  execution requires explicit justification in the task record. Capture once after implementation
+  stabilizes; repeat only when the earlier evidence is stale or invalidated by a later change.
+- Summarize the selected plan, results, failures, and artifact paths in the closing report. Do not
+  load redundant images or complete browser logs into context.
 - Name the validation tier (A/B/C) and any visual-evidence skips in the closing report.
 
 ---
