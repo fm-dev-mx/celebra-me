@@ -17,10 +17,9 @@ The repository uses a **linear two-branch workflow** with annotated tags for rel
 
 - `develop` is the active trunk for daily development. Direct commits are allowed.
 - `main` is the protected production branch, updated only via fast-forward from `develop`.
-- Persistent native Git worktrees (`celebra-me` root,
-  `D:\\code\\celebra-me-worktrees\\dev-local`,
-  `D:\\code\\celebra-me-worktrees\\dev-preview`,
-  `D:\\code\\celebra-me-worktrees\\dev-extra`) isolate Integration and three development lanes.
+- Persistent native Git worktrees (`celebra-me` root, `D:\\code\\celebra-me-worktrees\\dev-local`,
+  `D:\\code\\celebra-me-worktrees\\dev-preview`, `D:\\code\\celebra-me-worktrees\\dev-extra`)
+  isolate Integration and three development lanes.
 - Ephemeral task branches (`feat/*`, `fix/*`, `candidate/*`) are checked out in development lanes.
   Permanent lane branches are forbidden.
 - Worktree location grants no environment privilege (`path ≠ privilege`).
@@ -49,8 +48,8 @@ Celebra-me uses native Git worktrees to establish four persistent, reusable oper
    hosted-validation affinity lane on ephemeral task branches. Runtime default: Preview Supabase via
    `.env.preview.local`. Preferred lane for authorized Preview operations; path still grants no
    mutation privilege.
-4. **dev-extra** (`D:\\code\\celebra-me-worktrees\\dev-extra`): Additional parallel Local development
-   lane on ephemeral task branches. Runtime default: Local.
+4. **dev-extra** (`D:\\code\\celebra-me-worktrees\\dev-extra`): Additional parallel Local
+   development lane on ephemeral task branches. Runtime default: Local.
 
 Lane-specific operational cards (facts only; policy stays centralized):
 [`docs/core/worktrees/`](worktrees/).
@@ -58,15 +57,14 @@ Lane-specific operational cards (facts only; policy stays centralized):
 ### Core Invariants
 
 - **Worktrees are persistent**: Canonical directory locations (root for Integration; sibling
-  `celebra-me-worktrees/` directory for development lanes) remain on disk.
-  `.worktrees/` is gitignored and no longer a canonical location.
+  `celebra-me-worktrees/` directory for development lanes) remain on disk. `.worktrees/` is
+  gitignored and no longer a canonical location.
 - **Task branches are ephemeral**: Development lanes operate on normal task-scoped branches
   (`feat/*`, `fix/*`, `candidate/*`). Creating permanent branches like `dev-local`, `dev-preview`,
   `dev-lane`, or `val-lane` is strictly forbidden.
-- **Worktree location does NOT grant environment authorization**: Being inside
-  `dev-preview` does not give permission to mutate Preview or Production databases.
-  Environment access is determined solely by explicit task scope, target environment, operation
-  risk, and safety rules.
+- **Worktree location does NOT grant environment authorization**: Being inside `dev-preview` does
+  not give permission to mutate Preview or Production databases. Environment access is determined
+  solely by explicit task scope, target environment, operation risk, and safety rules.
 - **Runtime defaults are lane-specific**: Local lanes load `.env` / `.env.local`. The Preview lane
   overlays `.env.preview.local` and sets `CELEBRA_RUNTIME_TARGET=preview`. See
   [`docs/env-workflow.md`](../env-workflow.md).
@@ -139,9 +137,9 @@ _Note: Agents do not use shell functions and must always specify explicit workin
 
 ### Lane synchronization observability
 
-Git hooks (`post-commit`, `post-merge`, `post-rewrite`) may print `pnpm dbs --compact` as
-fail-open observability. They are **not** a reliable “lane synchronized” signal: a rebase that
-effectively fast-forwards or performs no meaningful rewrite may produce no managed-status output.
+Git hooks (`post-commit`, `post-merge`, `post-rewrite`) may print `pnpm dbs --compact` as fail-open
+observability. They are **not** a reliable “lane synchronized” signal: a rebase that effectively
+fast-forwards or performs no meaningful rewrite may produce no managed-status output.
 
 Canonical deterministic path after aligning a lane with `develop`:
 
@@ -149,9 +147,9 @@ Canonical deterministic path after aligning a lane with `develop`:
 pnpm lane:sync
 ```
 
-This fetches `origin/develop`, rebases (or `--ff-only` merges) the current branch, then always
-runs compact managed status unless `CELEBRA_SKIP_MANAGED_STATUS=1` or `--skip-status` is set.
-Remote DB unavailability never fails the Git synchronization step.
+This fetches `origin/develop`, rebases (or `--ff-only` merges) the current branch, then always runs
+compact managed status unless `CELEBRA_SKIP_MANAGED_STATUS=1` or `--skip-status` is set. Remote DB
+unavailability never fails the Git synchronization step.
 
 ### Worktree Inspection Tooling
 
@@ -225,9 +223,9 @@ Supported types are enforced by `commitlint`.
 
 - Use the commit type that best matches the main change.
 - Use a concrete `scope` in `kebab-case`.
-- Make the subject describe the result, not the process.
-- Name the thing that changed, not vague placeholders such as `changes`, `stuff`, `messages`, or
-  `work`.
+- Do not reference internal task numbers, phase identifiers, or project goals (e.g., `Goal 1`,
+  `Goal 2`, `Phase 1`, `Sprint 3`). Commits must focus strictly on technical behavioral changes to
+  the code.
 
 Examples:
 
@@ -245,6 +243,8 @@ feat(theme): improve things
 chore(repo): misc changes
 fix(rsvp): quick fix
 refactor(core): apply changes
+feat(observability): close Goal 1 contracts
+fix(db): resolve Goal 2 audit findings
 ```
 
 ## Commit Body Policy
