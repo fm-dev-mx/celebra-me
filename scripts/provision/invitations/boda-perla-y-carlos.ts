@@ -294,6 +294,8 @@ export function buildPerlaPublishedContent(
 export const perlaInvitation: InvitationDefinition<PerlaAssetKey> = defineInvitation({
 	slug: PERLA_EVENT.slug,
 	createdAt: '2026-07-31T12:00:00.000Z',
+	lifecycle: 'in_progress',
+	deliveryScope: 'content-and-assets',
 	eventType: PERLA_EVENT.eventType,
 	title: PERLA_EVENT.title,
 	clientName: 'Daniela Medina',

@@ -1,205 +1,222 @@
 # Observability Dashboard (Local-first)
 
-**Owns:** read-only operational health for invitation corpus, environments, migrations, assets, and
-latest Local validation evidence.
+**Owns:** a read-only snapshot of operational health and managed-invitation delivery progress.
 
-**Does not own:** writes, promotions, migrations, asset transfers, alerts, history, or remote
-mutation authority. CLI workflows remain authoritative for all writes. Dashboard health never
-authorizes remote mutation.
+**Does not own:** writes, promotion, migration, repair, alerts, history, or remote mutation
+authority. The dashboard describes evidence; it never authorizes an action.
 
----
+## Route and boundary
 
-## Route & availability
+| Item        | Contract                                                       |
+| ----------- | -------------------------------------------------------------- |
+| Page        | `/dashboard/observabilidad`                                    |
+| API         | `GET /api/dashboard/observabilidad?mode=summary                | detail` |
+| Runtime     | Persistent Local only; hosted Vercel runtimes return not-found |
+| Access      | Authenticated `super_admin` with a strong session              |
+| Interaction | Read-only; manual refresh, no polling                          |
+| Cache       | 60 seconds; one shared in-flight detail rebuild                |
+| Timeout     | 30 seconds for summary and detail                              |
 
-| Item          | Value                                                                                 |
-| ------------- | ------------------------------------------------------------------------------------- |
-| Route         | `/dashboard/observabilidad`                                                           |
-| API           | `GET /api/dashboard/observabilidad`                                                   |
-| Runtime       | Approved persistent-Local only                                                        |
-| Authorization | Authenticated `super_admin` with strong session (MFA / trusted device / Local bypass) |
-| Rate limit    | `admin:observabilidad` (6 req/min)                                                    |
-| Concurrency   | One aggregation child process at a time (queued)                                      |
-| Interaction   | Read-only                                                                             |
-| Refresh       | Initial load + manual **Actualizar estado**; detail cached 60 s                       |
-| Polling       | None                                                                                  |
+The runtime gate is executable in `src/lib/observability/runtime-gate.ts`. Worktree location is not
+environment authority. Server-only probes run in a child process and never enter the client island.
 
-Request order:
+## Snapshot v3 status contract
 
-```text
-strong super_admin session → persistent-Local runtime → rate limit → probes
+Operational health and delivery progress are separate axes. Neither is derived from the other.
+
+| Axis                | Values                                                    | Meaning                                                                                       |
+| ------------------- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `operationalStatus` | `HEALTHY`, `ATTENTION`, `UNVERIFIED`, `BLOCKED`           | Whether the observed system is functioning and its required evidence is trustworthy           |
+| `deliveryStatus`    | `ALIGNED`, `IN_PROGRESS`, `UNVERIFIED`, `ACTION_REQUIRED` | Whether managed intent has reached Local, Preview, and Production in the allowed order        |
+| `freshness`         | `FRESH`, `PARTIAL`, `STALE`                               | Whether the snapshot covers all requested environments and whether a cached fallback was used |
+
+Precedence is deterministic:
+
+- operational: `BLOCKED > UNVERIFIED > ATTENTION > HEALTHY`;
+- delivery: `ACTION_REQUIRED > UNVERIFIED > IN_PROGRESS > ALIGNED`.
+
+A valid canonical change can therefore be `HEALTHY + IN_PROGRESS`. Preview ahead of a proven Local
+baseline, or Production ahead of a proven Preview baseline, is `HEALTHY + ACTION_REQUIRED`.
+Unavailable evidence is `UNVERIFIED`; it is never inferred to be an ordering violation.
+
+The detail response is anomaly-first and exposes only typed reason codes, typed next steps,
+comparison outcomes, counts, lifecycle, environment, slug, and bounded semantic paths. It excludes
+field values, invitation or operation UUIDs, hashes, URLs, credentials, commands, raw errors,
+absolute paths, and unmanaged evidence. `src/lib/observability/schema.ts` validates the complete
+strict schema before the payload crosses the server boundary.
+
+## Summary and detail
+
+| Mode      | Probe scope                                         | Purpose                                  |
+| --------- | --------------------------------------------------- | ---------------------------------------- |
+| `summary` | Local only; Preview and Production are `NOT_PROBED` | Fast SSR/bootstrap status                |
+| `detail`  | Local, Preview, and Production                      | Full lifecycle and reconciliation status |
+
+Both payloads use schema version `3`. Summary is a strict subset containing the two status axes,
+freshness, coverage, generation time, and aggregate counts. Unprobed environments do not contribute
+to summary aggregation.
+
+## Authoritative invitation sets
+
+- The canonical managed registry is `scripts/provision/invitations/registry.ts`.
+- Every managed definition declares `lifecycle: in_progress | published` and
+  `deliveryScope: content-only | content-and-assets | assets-only`.
+- The Local Render Corpus is `scripts/provision/local-render-corpus/registry.ts`.
+- Every legacy entry explicitly declares `remoteParity: excluded | required`; classification as
+  legacy alone does not imply exclusion.
+
+The dashboard has no private slug list. Canonical build/validation failures are operational
+failures. A new `in_progress` invitation absent from all environments is valid pending work; the
+same state for a `published` invitation is an operational failure. An `in_progress` invitation
+already aligned in Production requires lifecycle metadata correction.
+
+## Direct alignment and baseline authority
+
+The snapshot first attempts a direct present-state proof for each canonical invitation. It requires
+one available, unique row in Local, Preview, and Production; compatible invitation/event ownership
+and managed metadata; valid non-empty draft content; and a complete, unambiguous current mapping of
+every required asset slot. Each current draft is rewritten to semantic asset keys in memory and
+compared to the normalized canonical managed projection.
+
+When those three current projections are equal, the invitation is `HEALTHY + ALIGNED` even if it has
+no legacy provenance row or persisted asset keys. Missing historical evidence is not an issue in
+that case. The row IDs used to make the in-memory association never leave the server and never
+become semantic identity.
+
+If any current projection differs, direct equality is not enough to infer delivery order or drift.
+The snapshot then uses the durable baseline and three-way reconciliation below. A missing or
+normalization-incompatible baseline makes delivery `UNVERIFIED`, but does not independently reduce
+operational health when current availability, schema, content, identity, and asset integrity are
+healthy.
+
+The durable common ancestor is the `managed_projection` recorded in
+`public.managed_invitation_release_provenance`. Its identity is accepted only when all of the
+following agree:
+
+1. definition slug;
+2. `release_schema_version` (the normalization-contract version);
+3. applied draft revision, operation ID, published version, and published projection hash;
+4. a matching durable `managed_invitation_apply` receipt that completed `provenance_recorded`.
+
+The baseline changes only after a completed managed apply records new provenance and its receipt.
+Current timestamps are opaque concurrency tokens, not evidence that “newer is canonical.” Missing,
+legacy, or version-incompatible provenance produces typed `UNVERIFIED` delivery evidence only when
+there is a real current-state difference to interpret. An empty object, an empty normalized
+document, or an equivalent structurally empty projection is not a baseline. Metadata-only
+verification can establish only a non-empty stored projection; detailed reconciliation reuses the
+same authority path and rejects an empty loaded document.
+
+`scripts/observability/delivery-reconciliation.ts` uses the shared semantic three-way reconciler and
+ownership map:
+
+- previous canonical = authoritative managed projection;
+- current canonical = repository definition normalized by the same release contract;
+- current target = current environment draft, with managed asset IDs mapped back to semantic keys.
+
+Outcomes are `APPLY`, `ALREADY_APPLIED`, `DRIFT`, `DELIVERY_SCOPE_BLOCKED`, or `UNVERIFIED`. Only
+definition-managed and managed-reconciled paths are reported. RSVP, target-owned, publication-owned,
+and residual infrastructure fields are excluded.
+
+## Assets and operational impact
+
+Only declared non-optional asset keys are required. A missing required asset on published content is
+an operational defect. The same missing asset on unpublished content is delivery work in progress.
+Optional assets never degrade operational health. A legacy row without a persisted semantic key is
+accepted when exactly one current asset matches the known semantic slot by normalized display name,
+MIME type, dimensions, and file size. Ambiguous or absent slot association remains
+`ASSET_IDENTITY_UNVERIFIED`; it does not mislabel existing binaries as missing. Published evidence
+of that form makes operational health `UNVERIFIED`, while unpublished evidence makes delivery
+`UNVERIFIED`.
+
+The batch projection uses only the managed asset `id` and semantic `key` for reconciliation. Storage
+paths, buckets, provider URLs, hashes, and environment-specific identifiers are neither queried as
+semantic identity nor included in the public snapshot.
+
+## Legacy administrative baseline preparation
+
+`pnpm invitation:legacy-baseline-adoption` is the only preparation path for legacy invitations whose
+historical managed baseline cannot be proved. It is deliberately separate from the prior Romina-only
+content-changing maintenance command: this flow is metadata-only and stops after inspection,
+manifest generation, and dry-run.
+
+The command creates one consolidated manifest for Abril and Romina. Each entry records a Production
+candidate fingerprint, the shared normalization/contract version, managed scope, semantic asset
+keys, cross-environment comparison summaries, exclusions, unresolved ambiguity, and the
+deterministic expected snapshot transition. It never stores raw invitation content, field values,
+URLs, storage paths, UUIDs, database identifiers, credentials, or database errors in the manifest.
+
+Production is marked `production_administrative_adoption`: an explicitly reviewed initial
+checkpoint, never reconstructed historical truth. An entry is eligible only after schema,
+client/owner, published/draft, complete-scope, and unambiguous semantic-asset validation. A valid
+delivery sequence may retain canonical delivery work; unexplained or contradictory environment
+evidence remains `UNVERIFIED` and blocks only that entry.
+
+```sh
+# generate the local review artifact (no remote write)
+pnpm invitation:legacy-baseline-adoption -- --out .agent/tmp/adoptions/legacy-baseline-adoption-manifest.json --json
+
+# re-inspect all sources and dry-run the exact artifact (writes: 0)
+pnpm invitation:legacy-baseline-adoption -- --manifest .agent/tmp/adoptions/legacy-baseline-adoption-manifest.json --dry-run --json
 ```
 
-Outside Local (including Vercel Preview/Production), the page redirects to `/404` and the API
-returns not-found. Non–`super_admin` dashboard users are redirected to `/dashboard/invitados` by
-middleware. The route remains build-safe when hosted credentials are absent.
+The manifest includes the future apply command bound to its exact fingerprint. During this goal that
+command is intentionally rejected with `APPLY_DISABLED`; no approval artifact or executable write
+authorization is generated. Any relevant canonical, Production, scope, normalization, or
+semantic-asset change changes the entry fingerprint and makes dry-run return `STALE_MANIFEST`.
 
-Local gate (executable contract in `src/lib/observability/runtime-gate.ts`):
+## Database projection audit
 
-- not hosted Vercel (`VERCEL=1` / `VERCEL_ENV=production|preview`);
-- `CELEBRA_RUNTIME_TARGET` is not `preview`;
-- `SUPABASE_URL` is Local Supabase (`http://127.0.0.1:54321` or `http://localhost:54321`).
+Each environment uses one slug-filtered, read-only content projection and one migration-history
+read. The content projection returns aggregate active-row/identity counts and the minimum
+reconciliation metadata for all relevant invitations in one JSON result. Draft content, managed
+projection content, and managed asset references are loaded only for rows whose revisions differ
+from provenance and only within the detail budget.
 
-Worktree path alone is never authorization. There is no alternate env-flag override for this gate.
+No database view or materialized view is introduced. The audit found no invocation or security
+benefit: the existing batch query is already one database invocation per environment, while a view
+would add a separately grantable schema object and could widen access to sensitive JSON. If a view
+is introduced later, it requires measured justification, explicit grants, `security_invoker` where
+supported, and database-contract tests. Materialization additionally requires an owned refresh and
+staleness policy.
 
----
+## Resource and failure limits
 
-## Summary vs detail (compute contract)
+- Maximum six database invocations per uncached detail snapshot: content plus migration history for
+  each of three environments. The shared budget fails closed on a seventh invocation.
+- No per-invitation fallback queries.
+- Maximum 256 KiB combined detail content per invitation row.
+- Maximum 50 public semantic paths per comparison. When exceeded, the known outcome and counts are
+  preserved, `detailStatus` becomes `DETAIL_UNAVAILABLE`, and paths are omitted.
+- Public issue/work arrays are capped at 200 and invitation summaries at 100 by the wire schema.
+- A failed rebuild may serve the last valid snapshot for at most five minutes. It becomes `STALE`,
+  gains `SNAPSHOT_REFRESH_FAILED`, and cannot remain operationally healthy.
 
-| Mode      | Wire size                         | Probe scope                             | Timeout | When                                   |
-| --------- | --------------------------------- | --------------------------------------- | ------- | -------------------------------------- |
-| `summary` | Small payload (&lt; 3 KB)         | **Local only** + FS validation evidence | 60s     | SSR + **Actualizar estado** (bootstrap) |
-| `detail`  | Anomaly-first issues (schema v2)  | Local + Preview + Production            | 300s    | Panel issues UI (cached 60 s)          |
+## Operator and agent interpretation
 
-Summary is lightweight in **both** wire size and remote DB cost: it does not open Preview/Production
-connections. Overall status for summary ignores unprobed remote stubs (`connection: unverified`).
+Operators should read operational health first, then delivery progress. Typed next steps identify
+the owning workflow, but the dashboard never emits executable commands.
 
-Both modes run in an isolated child process (`scripts/observability/print-snapshot.ts`) so sync
-`psql` / `execSync` probes cannot stall the Astro event loop.
+Agents may use the snapshot for diagnosis and planning. They must still follow database, Git, and
+invitation-production authorization. `HEALTHY`, `IN_PROGRESS`, or a suggested next step grants no
+mutation privilege.
 
----
+## Operator presentation
 
-## Observed environments
+The panel keeps operational attention and expected delivery work in separate sections. It groups
+only records with the same reason, environment, impact/classification, and remediation path. Each
+group states the problem, practical impact, affected invitation scope, and next safe action; it
+shows up to five slugs and progressively discloses the rest. Semantic paths are similarly hidden
+until requested. Preview and Production are never grouped together.
 
-**Detail mode:** Local, Preview, and Production — connection, runtime identity, schema lifecycle,
-active invitation rows (all non-archived), supported corpus presence (Local Render Corpus
-clients), and render-effective parity. The browser receives only the projected issue list, not the
-full matrix.
+## Implementation map
 
-**Summary mode:** Local probes only. Preview/Production cells are marked unprobed until detail runs.
-
-Invitation batch SQL is always restricted to Local Render Corpus slugs. Published JSON content is
-fetched only for Local (base64-encoded) to support legacy reference hashing — never pulled from
-Preview/Production into the probe process.
-
-**Asset health** is corpus-level evidence (repository inventory + fixture metadata + Local DB asset
-counts). It is not presented as an independently verified per-environment remote asset audit.
-
----
-
-## Status vocabulary
-
-Overall: `HEALTHY` | `ATTENTION` | `BLOCKED` | `UNVERIFIED`
-
-Never `HEALTHY` when required evidence is unreachable, stale, invalid, or absent.
-
-Canonical invitation cells reuse `MATCH_CANONICAL` / `BEHIND_CANONICAL` / `DIVERGED` / … Legacy
-cells use reference-relative `MATCH_REFERENCE` / `DIVERGED_FROM_REFERENCE` / …
-
-Evidence freshness: `PASS` | `FAIL` | `STALE` | `NOT_RUN` | `INVALID`
-
----
-
-## Validation evidence (optional for load; required for HEALTHY)
-
-| Item        | Location                                         | Owning command                        |
-| ----------- | ------------------------------------------------ | ------------------------------------- |
-| Regression  | `.tmp/observability/validation/regression.json`  | `pnpm test:local-render-corpus`       |
-| Screenshots | `.tmp/observability/validation/screenshots.json` | `pnpm screenshot:local-render-corpus` |
-
-These CLIs are **operator evidence writers**, not runtime dependencies of the dashboard route:
-
-- Refresh **never** runs tests, screenshots, Playwright, migrations, or promotes.
-- Missing evidence → freshness `NOT_RUN` (page still loads); overall cannot be `HEALTHY`.
-- PNG artifacts under `output/screenshots/` are not read by the dashboard — only the JSON evidence
-  file is.
-- No GitHub workflow invokes `pnpm screenshot:local-render-corpus`.
-
-Validation evidence snapshots are generated artifacts (gitignored via `.tmp/`). Schema version `1`.
-Freshness matches `inputFingerprint` + `corpusFingerprint` against current registry/fixtures/test
-inputs.
-
-Regression totals (`total` / `passed` / `failed` / `failures[]`) are taken from Jest’s JSON report
-for the corpus suite. Snapshot write failures never convert a failed validation into a pass.
-
-Dashboard refresh **never** runs tests, screenshots, migrations,
-`invitation:update|reconcile|promote`, asset uploads/downloads, or database writes.
-
-## Anomaly-first response contract
-
-The browser detail payload uses schema version `2`. It intentionally contains only:
-
-- overall status, generation time, cache state, and next refresh time;
-- short source identity (branch, short SHA, dirty/clean state);
-- healthy/attention/blocking/unverified counts by domain;
-- non-healthy issues and allowlisted read-only or dry-run actions;
-- compact regression and screenshot evidence.
-
-Healthy invitation and asset rows, fingerprints, artifact paths, raw probe errors, resolved UUIDs,
-database URLs, credentials, stack traces, and invitation content never cross the browser boundary.
-The server validates the child-process JSON with a strict Zod schema before responding.
-
-Issues are ordered by severity (`blocking` → `warning` → `unverified`) and then by domain/scope.
-Contradictory counts, duplicate slugs, missing environment rows, impossible connectivity/parity
-combinations, and inconsistent validation totals create a `DATA_INTEGRITY` issue and prevent a
-healthy status.
-
-## Resource limits and failure behavior
-
-- Corpus status is queried once per configured environment with a batched SQL statement. Migration
-  history adds one query per environment, for a maximum of six database subprocesses per uncached
-  detail snapshot.
-- Detail responses are cached for 60 seconds and share one in-flight rebuild across concurrent
-  requests. There is no force-refresh bypass. At most one aggregation child runs at a time.
-- Summary aggregation has a 60-second wall-clock limit; detail has 300 seconds. Child stdout is
-  capped at 1 MiB and stderr at 4 KiB.
-- When rebuilding detail fails, the last valid snapshot may be served for at most five minutes. It
-  is marked `stale-fallback`, receives `SNAPSHOT_REFRESH_FAILED`, and cannot remain `HEALTHY`.
-- The browser does not poll. Its refresh control becomes available at `refreshAfter`.
-
----
-
-## Distinction of corpora
-
-| Surface                    | SSOT                                                       |
-| -------------------------- | ---------------------------------------------------------- |
-| Canonical managed registry | `scripts/provision/invitations/registry.ts`                |
-| Local Render Corpus        | `scripts/provision/local-render-corpus/registry.ts`        |
-| Dashboard observability    | Aggregates the above; does not define a parallel slug list |
-
----
-
-## Implementation & type boundary
-
-- Aggregation (Node-only): `scripts/observability/snapshot.ts` →
-  `assembleObservabilityMatrix({ probeScope })`, `buildObservabilitySummary()` (always
-  `probeScope: 'local'`), and `buildObservabilitySnapshot()` (detail → public issues).
-- Public issue classifier: `scripts/observability/public-snapshot.ts`.
-- Shared env pass: one `evaluateGeneralStatus({ environments })` feeds both migration-health and
-  environment-health.
-- Batched Database Probes: `scripts/provision/dbs-status.ts` →
-  `evaluateBatchTargetStatuses(env, hashes, { slugs, includePublishedContent })` — corpus slug
-  filter + unit-separator fields; content only when `includePublishedContent` (Local).
-- Runtime gate: `src/lib/observability/runtime-gate.ts`.
-- Dual Payload Contracts:
-  - `ObservabilitySummaryPayload` (schema v1): small wire payload; Local-scoped compute; SSR +
-    `?mode=summary`.
-  - `ObservabilitySnapshot` (schema v2): anomaly-first issues; `?mode=detail`.
-- Browser types/schema: `src/lib/observability/types.ts` + `src/lib/observability/schema.ts`.
-- Server snapshot wrapper: `src/lib/observability/server/snapshot.ts` (child process + queue mutex +
-  detail cache).
-- UI island: `ObservabilityPanel` (SSR summary bootstrap; fetches detail for issues; never imports
-  probe modules).
-
-The mirrored type files are intentional: consolidating them into one module would risk pulling
-Node-only scripts into the client bundle. Keep the separation.
-
-## Deployment & Runtime Binary Contract
-
-The dashboard is explicitly gated for **Local operator environments only**. It will not run on
-hosted Vercel function runtimes:
-
-- `isLocalObservabilityRuntime()` detects `VERCEL=1` or `VERCEL_ENV=production|preview` and causes
-  Astro SSR to redirect to `/404`.
-- API route `/api/dashboard/observabilidad` rejects requests with a 404 error outside Local
-  environments.
-- This gate ensures Vercel deployments do not attempt to invoke non-existent local binaries
-  (`psql`), execute filesystem subprocesses, or time out on serverless cold starts.
-
-## Known limitations
-
-- No history, charts, polling, WebSockets, alerts, or GitHub/Vercel deployment history.
-- Asset health uses repository inventory + fixture metadata + Local DB counts — not bulk binary
-  download.
-- Environment / invitation / evidence failures degrade independently inside a `200` snapshot.
-- SSR page load bypasses the API rate limiter (still Local + strong session gated); API refreshes
-  are rate-limited and serialized through the aggregation mutex.
+- DB evidence and budget: `scripts/observability/database-projection.ts`
+- baseline reconciliation: `scripts/observability/delivery-reconciliation.ts`
+- deterministic assembly: `scripts/observability/snapshot.ts`
+- safe public projection: `scripts/observability/public-snapshot.ts`
+- browser-safe mirror/schema: `src/lib/observability/types.ts`, `src/lib/observability/schema.ts`
+- child process/cache: `src/lib/observability/server/snapshot.ts`,
+  `src/lib/observability/server/snapshot-cache.ts`
+- UI: `src/components/dashboard/observability/ObservabilityPanel.tsx`
+- legacy-adoption inspection and manifest: `scripts/provision/legacy-baseline-adoption.ts`,
+  `scripts/provision/legacy-baseline-adoption-cli.ts`

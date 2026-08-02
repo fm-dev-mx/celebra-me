@@ -123,7 +123,12 @@ export function buildRominaPublishedContent(
 		visualProfileId: ROMINA_EVENT.visualProfileId,
 		title: ROMINA_EVENT.title,
 		description: 'Acompáñeme a celebrar este momento tan especial.',
-		theme: { preset: ROMINA_EVENT.themeId },
+		theme: { preset: ROMINA_EVENT.themeId, fontFamily: 'serif' },
+		music: {
+			url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1784908430/Perfect_opt_vkkh87.mp3',
+			title: 'Perfect',
+			autoPlay: true,
+		},
 		eventTiming: {
 			localDateTime: ROMINA_EVENT.localDateTime,
 			timeZone: ROMINA_EVENT.timeZone,
@@ -181,12 +186,12 @@ export function buildRominaPublishedContent(
 			parentsOrder: 'mother-first',
 			godparents: [{ name: 'Fernando Nájera' }, { name: 'Esmeralda Carbajal' }],
 			labels: {
-				sectionSubtitle: 'Familia',
-				sectionTitle: 'Con el amor de mis padres y la compañía de mis padrinos',
+				sectionSubtitle: 'Círculo cercano',
+				sectionTitle: 'Con el amor de mis padres y la compañía de mi familia',
 				parentsTitle: 'Con la bendición de',
 				godparentsTitle: 'Acompañada por mis padrinos',
 				sectionMessage:
-					'Su amor ha acompañado cada paso de mi vida. Gracias por estar a mi lado y ser parte de un día que guardaré siempre en mi corazón.',
+					'Su cariño ha acompañado cada paso de mi vida. Gracias por estar a mi lado y ser parte de un día que guardaré siempre en mi corazón.',
 			},
 			featuredImage: assets.family,
 			focalPoint: '50% 35%',
@@ -210,12 +215,12 @@ export function buildRominaPublishedContent(
 				googleMapsUrl: googleMapsSearch(ceremonyQuery),
 				appleMapsUrl: appleMapsSearch(ceremonyQuery),
 				coordinates: {
-					lat: 30.4137,
-					lng: -107.9125,
+					lat: 30.4162552,
+					lng: -107.9141371,
 				},
 			},
 			reception: {
-				venueEvent: 'Recepción y cena',
+				venueEvent: 'Recepción',
 				venueName: 'Gabro Jardín de Eventos',
 				address: receptionAddress,
 				city: 'Nuevo Casas Grandes, Chihuahua',
@@ -225,11 +230,22 @@ export function buildRominaPublishedContent(
 				googleMapsUrl: googleMapsSearch(receptionQuery),
 				appleMapsUrl: appleMapsSearch(receptionQuery),
 				coordinates: {
-					lat: 30.428,
-					lng: -107.925,
-					zoom: 13,
+					lat: 30.4207812,
+					lng: -107.8944895,
 				},
 			},
+			indications: [
+				{
+					text: 'Código de vestimenta: Formal',
+					iconName: 'DressCode',
+					styleVariant: 'default',
+				},
+				{
+					text: 'Favor de evitar los colores verde sage y beige, reservados para la quinceañera y sus damas.',
+					iconName: 'FlowerSeal',
+					styleVariant: 'default',
+				},
+			],
 		},
 		interludes: [
 			{
@@ -316,6 +332,17 @@ export function buildRominaPublishedContent(
 		sharing: {
 			ogImage: assets.social,
 			ogDescription: 'Invitación a los XV años de Romina Ríos Chaparro',
+			shareMessages: {
+				reminder:
+					'Hola {{invitado}},\n\n{{hora_evento}}\n\n{{limite_confirmacion}}\n\n{{enlace}}',
+				invitation:
+					'Hola {name}, le compartimos su invitación para los XV años de Romina: {inviteUrl}',
+			},
+			reminderSettings: {
+				enabled: true,
+				audience: 'unconfirmed',
+				showWhenDaysBeforeEvent: 7,
+			},
 			whatsappTemplate:
 				'Hola {name}, le compartimos su invitación para los XV años de Romina: {inviteUrl}',
 		},
@@ -325,6 +352,8 @@ export function buildRominaPublishedContent(
 export const rominaInvitation: InvitationDefinition<RominaAssetKey> = defineInvitation({
 	slug: ROMINA_EVENT.slug,
 	createdAt: '2026-07-20T00:00:00.000Z',
+	lifecycle: 'published',
+	deliveryScope: 'content-and-assets',
 	eventType: ROMINA_EVENT.eventType,
 	title: ROMINA_EVENT.title,
 	clientName: 'Romina Ríos Chaparro',

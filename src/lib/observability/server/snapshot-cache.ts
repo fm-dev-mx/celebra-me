@@ -1,4 +1,4 @@
-import type { ObservabilityIssue, ObservabilitySnapshot } from '@/lib/observability/types';
+import type { ObservabilitySignal, ObservabilitySnapshot } from '@/lib/observability/types';
 
 export const OBSERVABILITY_CACHE_TTL_MS = 60_000;
 export const OBSERVABILITY_STALE_FALLBACK_MS = 300_000;
@@ -13,16 +13,17 @@ interface SnapshotCacheOptions {
 	now?: () => number;
 }
 
-function staleIssue(): ObservabilityIssue {
+function staleIssue(): ObservabilitySignal {
 	return {
-		id: 'snapshot_refresh_failed:aggregation',
-		code: 'SNAPSHOT_REFRESH_FAILED',
-		severity: 'unverified',
-		domain: 'data_quality',
-		scope: 'Agregación',
-		title: 'No se pudo actualizar el snapshot',
-		description: 'Se muestra la última evidencia válida disponible; confirme su antigüedad.',
-		actionIds: [],
+		impact: 'OPERATIONAL',
+		reasonCode: 'SNAPSHOT_REFRESH_FAILED',
+		nextStep: 'RETRY_PROBE',
+		operationalStatus: 'UNVERIFIED',
+		deliveryStatus: 'ALIGNED',
+		detailStatus: 'DETAIL_UNAVAILABLE',
+		affectedFieldCount: 0,
+		affectedSectionCount: 0,
+		semanticPaths: [],
 	};
 }
 
@@ -43,13 +44,15 @@ export function createObservabilitySnapshotCache(options: SnapshotCacheOptions):
 				const issue = staleIssue();
 				return {
 					...cache.snapshot,
-					overallStatus:
-						cache.snapshot.overallStatus === 'BLOCKED' ? 'BLOCKED' : 'UNVERIFIED',
+					freshness: 'STALE',
+					operationalStatus:
+						cache.snapshot.operationalStatus === 'BLOCKED' ? 'BLOCKED' : 'UNVERIFIED',
 					cache: {
-						state: 'stale-fallback',
 						refreshAfter: new Date(now() + OBSERVABILITY_CACHE_TTL_MS).toISOString(),
 					},
-					issues: cache.snapshot.issues.some((item) => item.code === issue.code)
+					issues: cache.snapshot.issues.some(
+						(item) => item.reasonCode === issue.reasonCode,
+					)
 						? cache.snapshot.issues
 						: [issue, ...cache.snapshot.issues],
 				};

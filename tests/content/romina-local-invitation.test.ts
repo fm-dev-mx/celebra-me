@@ -10,7 +10,6 @@ import {
 	type RominaAssetMap,
 } from '../../scripts/provision/invitations/romina-rios-chaparro.ts';
 
-
 function buildTestAssets(): RominaAssetMap {
 	return Object.fromEntries(
 		ROMINA_ASSET_SPECS.map((spec, index) => [
@@ -76,13 +75,17 @@ describe('Romina local invitation content', () => {
 		expect(typedContent.location.reception.coordinates).toEqual({
 			lat: expect.any(Number),
 			lng: expect.any(Number),
-			zoom: 13,
 		});
+		expect(typedContent.location.reception.coordinates).not.toHaveProperty('zoom');
 		expect(typedContent.location.ceremony.coordinates).not.toEqual(
 			typedContent.location.reception.coordinates,
 		);
 		expect(result.data!.gallery!.items).toHaveLength(7);
-		expect(content).not.toHaveProperty('music');
+		expect(content).toHaveProperty('music', {
+			autoPlay: true,
+			title: 'Perfect',
+			url: expect.stringMatching(/^https:\/\//),
+		});
 		expect(content).not.toHaveProperty('gifts');
 		const jsonString = JSON.stringify(content);
 		expect(jsonString).not.toContain('contar with');

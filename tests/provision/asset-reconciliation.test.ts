@@ -71,6 +71,40 @@ describe('asset-reconciliation engine', () => {
 		expect(result.reconciledAssets[0]?.plannedAction).toBe('REUSE');
 	});
 
+	it('selects the referenced duplicate and repairs its semantic key without pruning peers', () => {
+		const referenced: TargetAssetRecord = {
+			...mockTargetDbRecord,
+			id: '11111111-1111-4111-8111-111111111111',
+		};
+		const duplicate: TargetAssetRecord = {
+			...mockTargetDbRecord,
+			id: '22222222-2222-4222-8222-222222222222',
+			storagePath: 'invitations/duplicate/optimized/hero.webp',
+		};
+		const result = reconcileAssets({
+			canonicalAssets: [mockCanonicalAsset],
+			targetDbAssets: [referenced, duplicate],
+			observedStorage: {
+				[referenced.storagePath]: { present: true, sha256: mockCanonicalAsset.sha256 },
+				[duplicate.storagePath]: { present: true, sha256: mockCanonicalAsset.sha256 },
+			},
+			policy: 'sync',
+			definitionSlug: 'romina-rios-chaparro',
+			referencedAssetIds: new Set([referenced.id]),
+		});
+
+		expect(result.blocked).toBe(false);
+		expect(result.summary.plannedMetadataRepairs).toBe(1);
+		expect(result.reconciledAssets[0]).toEqual(
+			expect.objectContaining({
+				targetAssetId: referenced.id,
+				classification: 'BINARY_MATCH_METADATA_DRIFT',
+				plannedAction: 'REPAIR_METADATA',
+			}),
+		);
+		expect(result.summary.plannedDeletes).toBe(0);
+	});
+
 	it('classifies BINARY_MATCH_METADATA_DRIFT and plans REPAIR_METADATA under missing', () => {
 		const observedStorage: Record<string, ObservedStorageState> = {
 			'managed/romina-rios-chaparro/hero.webp': {
@@ -243,9 +277,7 @@ describe('asset-reconciliation engine', () => {
 
 		expect(resultPrune.summary.unreferenced).toBe(1);
 		expect(resultPrune.summary.plannedDeletes).toBe(1);
-		expect(resultPrune.unreferencedAssets[0]?.plannedAction).toBe(
-			'PRUNE_STORAGE_AND_METADATA',
-		);
+		expect(resultPrune.unreferencedAssets[0]?.plannedAction).toBe('PRUNE_STORAGE_AND_METADATA');
 	});
 
 	it('preserves unmanaged assets even when pruning is requested', () => {
@@ -261,7 +293,10 @@ describe('asset-reconciliation engine', () => {
 			canonicalAssets: [mockCanonicalAsset],
 			targetDbAssets: [mockTargetDbRecord, unmanaged],
 			observedStorage: {
-				[mockTargetDbRecord.storagePath]: { present: true, sha256: mockCanonicalAsset.sha256 },
+				[mockTargetDbRecord.storagePath]: {
+					present: true,
+					sha256: mockCanonicalAsset.sha256,
+				},
 				[unmanaged.storagePath]: { present: true, sha256: 'd'.repeat(64) },
 			},
 			policy: 'missing',
@@ -294,7 +329,10 @@ describe('asset-reconciliation engine', () => {
 			canonicalAssets: [mockCanonicalAsset],
 			targetDbAssets: [mockTargetDbRecord, stale],
 			observedStorage: {
-				[mockTargetDbRecord.storagePath]: { present: true, sha256: mockCanonicalAsset.sha256 },
+				[mockTargetDbRecord.storagePath]: {
+					present: true,
+					sha256: mockCanonicalAsset.sha256,
+				},
 				[stale.storagePath]: { present: false, sha256: null },
 			},
 			pruneAssets: true,
@@ -325,7 +363,10 @@ describe('asset-reconciliation engine', () => {
 			canonicalAssets: [mockCanonicalAsset],
 			targetDbAssets: [mockTargetDbRecord, referenced],
 			observedStorage: {
-				[mockTargetDbRecord.storagePath]: { present: true, sha256: mockCanonicalAsset.sha256 },
+				[mockTargetDbRecord.storagePath]: {
+					present: true,
+					sha256: mockCanonicalAsset.sha256,
+				},
 			},
 			pruneAssets: true,
 			definitionSlug: 'romina-rios-chaparro',

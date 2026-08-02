@@ -19,7 +19,9 @@ import {
 	evaluatePromotionSchemaGate,
 	runPromotionApply,
 	runPromotionPreflight,
+	type PromotionPreflightReport,
 } from '../../scripts/provision/invitation-promote.ts';
+import { toPublicPromotionReport } from '../../scripts/provision/invitation-promote-cli.ts';
 import { MergeConflictError } from '../../scripts/provision/semantic-delta.ts';
 import { parseMutationTargets } from '../../scripts/provision/invitation-update-options.ts';
 
@@ -139,6 +141,14 @@ function engineResult(overrides: Partial<ImportEngineResult> = {}): ImportEngine
 }
 
 describe('Promotion target boundaries', () => {
+	it('never exposes a target database URL in the public CLI report', () => {
+		const report = toPublicPromotionReport({
+			targetDbUrl: 'postgresql://user:password@production.invalid/postgres',
+		} as PromotionPreflightReport);
+
+		expect(report).not.toHaveProperty('targetDbUrl');
+	});
+
 	it('rejects Production as invitation:update mutation destination', () => {
 		expect(() => parseMutationTargets('production')).toThrow('invitation:promote');
 		expect(() => parseMutationTargets('local')).not.toThrow();
@@ -306,7 +316,9 @@ describe('runPromotionPreflight / apply', () => {
 		const report = await runPromotionPreflight({
 			packageData: packageData(),
 			requireBackup: false,
-			getProductionDbUrl: () => ({ url: 'postgresql://user@db.productionproject.supabase.co/postgres' }),
+			getProductionDbUrl: () => ({
+				url: 'postgresql://user@db.productionproject.supabase.co/postgres',
+			}),
 			evaluateSchema: () => ({
 				state: 'CURRENT',
 				migrationHead: '2',
@@ -329,7 +341,9 @@ describe('runPromotionPreflight / apply', () => {
 			approvalsDirs: [approvalsDir],
 			requireBackup: false,
 			now,
-			getProductionDbUrl: () => ({ url: 'postgresql://user@db.productionproject.supabase.co/postgres' }),
+			getProductionDbUrl: () => ({
+				url: 'postgresql://user@db.productionproject.supabase.co/postgres',
+			}),
 			evaluateSchema: () => ({
 				state: 'CURRENT',
 				migrationHead: '2',
@@ -353,7 +367,9 @@ describe('runPromotionPreflight / apply', () => {
 			approvalsDirs: [approvalsDir],
 			requireBackup: false,
 			now,
-			getProductionDbUrl: () => ({ url: 'postgresql://user@db.productionproject.supabase.co/postgres' }),
+			getProductionDbUrl: () => ({
+				url: 'postgresql://user@db.productionproject.supabase.co/postgres',
+			}),
 			evaluateSchema: () => ({
 				state: 'CURRENT',
 				migrationHead: '2',
@@ -375,7 +391,9 @@ describe('runPromotionPreflight / apply', () => {
 			approvalsDirs: [approvalsDir],
 			requireBackup: false,
 			now,
-			getProductionDbUrl: () => ({ url: 'postgresql://user@db.productionproject.supabase.co/postgres' }),
+			getProductionDbUrl: () => ({
+				url: 'postgresql://user@db.productionproject.supabase.co/postgres',
+			}),
 			evaluateSchema: () => ({
 				state: 'CURRENT',
 				migrationHead: '2',
@@ -414,7 +432,9 @@ describe('runPromotionPreflight / apply', () => {
 			approvalsDirs: [approvalsDir],
 			requireBackup: false,
 			now,
-			getProductionDbUrl: () => ({ url: 'postgresql://user@db.productionproject.supabase.co/postgres' }),
+			getProductionDbUrl: () => ({
+				url: 'postgresql://user@db.productionproject.supabase.co/postgres',
+			}),
 			evaluateSchema: () => ({
 				state: 'CURRENT',
 				migrationHead: '2',
@@ -443,7 +463,9 @@ describe('runPromotionPreflight / apply', () => {
 			approvalsDirs: [approvalsDir],
 			requireBackup: false,
 			now,
-			getProductionDbUrl: () => ({ url: 'postgresql://user@db.productionproject.supabase.co/postgres' }),
+			getProductionDbUrl: () => ({
+				url: 'postgresql://user@db.productionproject.supabase.co/postgres',
+			}),
 			evaluateSchema: () => ({
 				state: 'CURRENT',
 				migrationHead: '2',
@@ -504,7 +526,9 @@ describe('runPromotionPreflight / apply', () => {
 			approvalsDirs: [approvalsDir],
 			requireBackup: false,
 			now,
-			getProductionDbUrl: () => ({ url: 'postgresql://user@db.productionproject.supabase.co/postgres' }),
+			getProductionDbUrl: () => ({
+				url: 'postgresql://user@db.productionproject.supabase.co/postgres',
+			}),
 			evaluateSchema: () => ({
 				state: 'CURRENT',
 				migrationHead: '2',
@@ -545,7 +569,11 @@ describe('runPromotionPreflight / apply', () => {
 						},
 					});
 				}
-				return engineResult({ plannedMutations: 0, isZeroDrift: true, functionalChanges: [] });
+				return engineResult({
+					plannedMutations: 0,
+					isZeroDrift: true,
+					functionalChanges: [],
+				});
 			},
 		});
 		expect(report.status).toBe('PROMOTED');

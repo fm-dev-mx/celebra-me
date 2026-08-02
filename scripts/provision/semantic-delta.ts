@@ -96,7 +96,10 @@ export function resolvePathPolicy(
 
 export class MergeConflictError extends Error {
 	readonly code = 'merge_conflict';
-	constructor(message: string, readonly deltas: SemanticFieldDelta[]) {
+	constructor(
+		message: string,
+		readonly deltas: SemanticFieldDelta[],
+	) {
 		super(message);
 		this.name = 'MergeConflictError';
 	}
@@ -109,6 +112,7 @@ interface ReconcileContext {
 	deltas: SemanticFieldDelta[];
 	operations: StructuralOperation[];
 	blockedReasons: string[];
+	detectTargetOnlyDrift: boolean;
 }
 
 function canReconcileRecordChildren(
@@ -117,7 +121,8 @@ function canReconcileRecordChildren(
 	target: StructuralValueState,
 ): boolean {
 	if (!previous.present || !current.present || !target.present) return false;
-	if (!isRecord(previous.value) || !isRecord(current.value) || !isRecord(target.value)) return false;
+	if (!isRecord(previous.value) || !isRecord(current.value) || !isRecord(target.value))
+		return false;
 	return ![previous.value, current.value, target.value].some(isAssetReference);
 }
 
@@ -127,8 +132,16 @@ function canReconcileArrayChildren(
 	target: StructuralValueState,
 ): boolean {
 	if (!previous.present || !current.present || !target.present) return false;
-	if (!Array.isArray(previous.value) || !Array.isArray(current.value) || !Array.isArray(target.value)) return false;
-	return previous.value.length === current.value.length && previous.value.length === target.value.length;
+	if (
+		!Array.isArray(previous.value) ||
+		!Array.isArray(current.value) ||
+		!Array.isArray(target.value)
+	)
+		return false;
+	return (
+		previous.value.length === current.value.length &&
+		previous.value.length === target.value.length
+	);
 }
 
 function isBlockedByScope(scope: UpdateScope, isAsset: boolean): boolean {
@@ -150,7 +163,8 @@ function pushDecision(
 	const operations = changes.length > 0 ? changes : [fallbackOperation];
 	for (const operation of operations) {
 		const path = structuralPathToString(operation.path);
-		const operationTarget = operation.path.length === pathTokens.length ? target.value : undefined;
+		const operationTarget =
+			operation.path.length === pathTokens.length ? target.value : undefined;
 		context.deltas.push({
 			path,
 			operation: operation.kind,
@@ -168,6 +182,51 @@ function pushDecision(
 	}
 }
 
+function reconcileChildren(
+	context: ReconcileContext,
+	pathTokens: StructuralPathToken[],
+	previous: StructuralValueState,
+	current: StructuralValueState,
+	target: StructuralValueState,
+): boolean {
+	if (canReconcileRecordChildren(previous, current, target)) {
+		const previousRecord = previous.value as Record<string, unknown>;
+		const currentRecord = current.value as Record<string, unknown>;
+		const targetRecord = target.value as Record<string, unknown>;
+		const keys = new Set([
+			...Object.keys(previousRecord),
+			...Object.keys(currentRecord),
+			...Object.keys(targetRecord),
+		]);
+		for (const key of [...keys].sort()) {
+			reconcileNode(
+				context,
+				[...pathTokens, key],
+				childState(previous, key),
+				childState(current, key),
+				childState(target, key),
+			);
+		}
+		return true;
+	}
+	if (canReconcileArrayChildren(previous, current, target)) {
+		const previousArray = previous.value as unknown[];
+		const currentArray = current.value as unknown[];
+		const targetArray = target.value as unknown[];
+		for (let index = 0; index < previousArray.length; index += 1) {
+			reconcileNode(
+				context,
+				[...pathTokens, index],
+				{ present: true, value: previousArray[index] },
+				{ present: true, value: currentArray[index] },
+				{ present: true, value: targetArray[index] },
+			);
+		}
+		return true;
+	}
+	return false;
+}
+
 function reconcileNode(
 	context: ReconcileContext,
 	pathTokens: StructuralPathToken[],
@@ -175,7 +234,16 @@ function reconcileNode(
 	current: StructuralValueState,
 	target: StructuralValueState,
 ): void {
-	if (equalState(previous, current)) return;
+	if (equalState(previous, current)) {
+		if (!context.detectTargetOnlyDrift || equalState(current, target)) return;
+		if (reconcileChildren(context, pathTokens, previous, current, target)) return;
+		const targetOnlyPath = structuralPathToString(pathTokens);
+		pushDecision(context, pathTokens, previous, current, target, 'DRIFT');
+		context.blockedReasons.push(
+			`Conflicto de derivación en "${targetOnlyPath}": el destino cambió fuera del baseline administrado.`,
+		);
+		return;
+	}
 
 	const path = structuralPathToString(pathTokens);
 	const isAsset = isAssetFieldPath(path, previous.value, current.value, target.value);
@@ -201,44 +269,17 @@ function reconcileNode(
 
 	// Recurse only for fields that existed as ordinary objects in all three states. A field added
 	// independently on both sides is one concurrent addition and must conflict when values differ.
-	if (canReconcileRecordChildren(previous, current, target)) {
-		const previousRecord = previous.value as Record<string, unknown>;
-		const currentRecord = current.value as Record<string, unknown>;
-		const targetRecord = target.value as Record<string, unknown>;
-		const keys = new Set([
-			...Object.keys(previousRecord),
-			...Object.keys(currentRecord),
-			...Object.keys(targetRecord),
-		]);
-		for (const key of [...keys].sort()) {
-			reconcileNode(
-				context,
-				[...pathTokens, key],
-				childState(previous, key),
-				childState(current, key),
-				childState(target, key),
-			);
-		}
-		return;
-	}
-	if (canReconcileArrayChildren(previous, current, target)) {
-		const previousArray = previous.value as unknown[];
-		const currentArray = current.value as unknown[];
-		const targetArray = target.value as unknown[];
-		for (let index = 0; index < previousArray.length; index += 1) {
-			reconcileNode(
-				context,
-				[...pathTokens, index],
-				{ present: true, value: previousArray[index] },
-				{ present: true, value: currentArray[index] },
-				{ present: true, value: targetArray[index] },
-			);
-		}
-		return;
-	}
+	if (reconcileChildren(context, pathTokens, previous, current, target)) return;
 	if (equalState(previous, target)) {
 		const resolution = resolvePathPolicy(path, context.resolutions);
-		pushDecision(context, pathTokens, previous, current, target, resolution === 'target' ? 'ALREADY_APPLIED' : 'APPLY');
+		pushDecision(
+			context,
+			pathTokens,
+			previous,
+			current,
+			target,
+			resolution === 'target' ? 'ALREADY_APPLIED' : 'APPLY',
+		);
 		return;
 	}
 
@@ -264,6 +305,8 @@ export function apply3WaySemanticPatch(params: {
 	scope: UpdateScope;
 	targetName?: string;
 	resolutions?: ConflictResolutions;
+	/** Observation mode: report target-only changes even when canonical did not change. */
+	detectTargetOnlyDrift?: boolean;
 }): SemanticPatchResult {
 	const context: ReconcileContext = {
 		scope: params.scope,
@@ -272,6 +315,7 @@ export function apply3WaySemanticPatch(params: {
 		deltas: [],
 		operations: [],
 		blockedReasons: [],
+		detectTargetOnlyDrift: params.detectTargetOnlyDrift ?? false,
 	};
 
 	const keys = new Set([
@@ -283,8 +327,14 @@ export function apply3WaySemanticPatch(params: {
 		reconcileNode(
 			context,
 			[key],
-			{ present: Object.hasOwn(params.previousCanonical, key), value: params.previousCanonical[key] },
-			{ present: Object.hasOwn(params.currentCanonical, key), value: params.currentCanonical[key] },
+			{
+				present: Object.hasOwn(params.previousCanonical, key),
+				value: params.previousCanonical[key],
+			},
+			{
+				present: Object.hasOwn(params.currentCanonical, key),
+				value: params.currentCanonical[key],
+			},
 			{ present: Object.hasOwn(params.currentTarget, key), value: params.currentTarget[key] },
 		);
 	}

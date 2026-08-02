@@ -9,6 +9,23 @@ import {
 } from '../../scripts/provision/semantic-delta.ts';
 
 describe('apply3WaySemanticPatch', () => {
+	it('can classify target-only managed changes as drift for read-only observability', () => {
+		const result = apply3WaySemanticPatch({
+			previousCanonical: { hero: { title: 'Managed baseline' } },
+			currentCanonical: { hero: { title: 'Managed baseline' } },
+			currentTarget: { hero: { title: 'Host edit' } },
+			scope: 'content-only',
+			targetName: 'local',
+			detectTargetOnlyDrift: true,
+		});
+
+		expect(result.deltas).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ path: 'hero.title', status: 'DRIFT' }),
+			]),
+		);
+	});
+
 	it('merges non-overlapping content changes onto the target', () => {
 		const previousCanonical = {
 			hero: { title: 'Base', subtitle: 'Old subtitle' },
@@ -122,12 +139,10 @@ describe('apply3WaySemanticPatch', () => {
 			hero: { subtitle: 'New' },
 			thankYou: { phrase: 'Gracias' },
 		});
-		expect(
-			result.deltas.find((delta) => delta.path === 'thankYou.phrase')?.status,
-		).toBe('ALREADY_APPLIED');
-		expect(
-			result.deltas.find((delta) => delta.path === 'hero.subtitle')?.status,
-		).toBe('APPLY');
+		expect(result.deltas.find((delta) => delta.path === 'thankYou.phrase')?.status).toBe(
+			'ALREADY_APPLIED',
+		);
+		expect(result.deltas.find((delta) => delta.path === 'hero.subtitle')?.status).toBe('APPLY');
 	});
 
 	it('honors section-prefix path policy for selective apply', () => {
@@ -174,10 +189,11 @@ describe('apply3WaySemanticPatch', () => {
 		});
 
 		expect(result.blocked).toBe(true);
-		expect(listDriftConflicts(result.deltas).map((d) => d.path).sort()).toEqual([
-			'envelope.microcopy',
-			'hero.name',
-		]);
+		expect(
+			listDriftConflicts(result.deltas)
+				.map((d) => d.path)
+				.sort(),
+		).toEqual(['envelope.microcopy', 'hero.name']);
 		expect(result.patchedContent.envelope).toMatchObject({ tooltipText: 'PKG' });
 	});
 
@@ -223,8 +239,20 @@ describe('apply3WaySemanticPatch', () => {
 	});
 
 	it.each([
-		['package-only addition', {}, { hero: { label: 'Paquete' } }, {}, { hero: { label: 'Paquete' } }],
-		['target-only addition', {}, {}, { hero: { label: 'Destino' } }, { hero: { label: 'Destino' } }],
+		[
+			'package-only addition',
+			{},
+			{ hero: { label: 'Paquete' } },
+			{},
+			{ hero: { label: 'Paquete' } },
+		],
+		[
+			'target-only addition',
+			{},
+			{},
+			{ hero: { label: 'Destino' } },
+			{ hero: { label: 'Destino' } },
+		],
 		[
 			'identical concurrent addition',
 			{},

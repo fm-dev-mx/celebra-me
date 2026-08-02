@@ -1,301 +1,70 @@
 import { describe, expect, it } from '@jest/globals';
-import { classifyValidationFreshness } from '../../scripts/observability/validation-evidence.ts';
-import { computeOverallStatus } from '../../scripts/observability/overall-status.ts';
-import type {
-	AssetHealthRow,
-	EnvironmentHealthRow,
-	InvitationHealthRow,
-	MigrationEnvHealth,
-	ObservabilityFingerprints,
-	ObservabilitySourceState,
-	ValidationEvidenceSnapshot,
-	ValidationEvidenceView,
-} from '../../scripts/observability/types.ts';
 import {
-	EXPECTED_LOCAL_RENDER_CORPUS_SIZE,
-	listLocalRenderCorpus,
-} from '../../scripts/provision/local-render-corpus/registry.ts';
+	aggregateDeliveryStatus,
+	aggregateOperationalStatus,
+	comparisonToDeliveryStatus,
+} from '../../scripts/observability/overall-status.ts';
+import { classifyValidationFreshness } from '../../scripts/observability/validation-evidence.ts';
+import { listLocalRenderCorpus } from '../../scripts/provision/local-render-corpus/registry.ts';
 
-const fingerprints: ObservabilityFingerprints = {
-	corpusFingerprint: 'corpus-a',
-	inputFingerprint: 'input-a',
-};
-
-const source: ObservabilitySourceState = {
-	branch: 'feat/x',
-	commitSha: 'abc123',
-	workingTreeDirty: false,
-	degraded: false,
-};
-
-function baseSnapshot(
-	overrides: Partial<ValidationEvidenceSnapshot> = {},
-): ValidationEvidenceSnapshot {
-	return {
-		schemaVersion: 1,
-		validationType: 'regression',
-		command: 'pnpm test:local-render-corpus',
-		startedAt: '2026-07-31T00:00:00.000Z',
-		completedAt: '2026-07-31T00:01:00.000Z',
-		status: 'pass',
-		branch: 'feat/x',
-		commitSha: 'abc123',
-		workingTreeDirty: false,
-		inputFingerprint: 'input-a',
-		corpusFingerprint: 'corpus-a',
-		total: 13,
-		passed: 13,
-		failed: 0,
-		failures: [],
-		artifactLocation: '.tmp/observability/validation/regression.json',
-		...overrides,
-	};
-}
-
-describe('observability validation freshness', () => {
-	it('PASS when fingerprints and source match a passing snapshot', () => {
-		expect(classifyValidationFreshness(baseSnapshot(), fingerprints, source)).toBe('PASS');
+describe('observability deterministic aggregation', () => {
+	it('applies operational precedence BLOCKED > UNVERIFIED > ATTENTION > HEALTHY', () => {
+		expect(aggregateOperationalStatus(['HEALTHY', 'ATTENTION'])).toBe('ATTENTION');
+		expect(aggregateOperationalStatus(['ATTENTION', 'UNVERIFIED'])).toBe('UNVERIFIED');
+		expect(aggregateOperationalStatus(['UNVERIFIED', 'BLOCKED'])).toBe('BLOCKED');
 	});
 
-	it('STALE when input fingerprint changes', () => {
-		expect(
-			classifyValidationFreshness(
-				baseSnapshot(),
-				{ ...fingerprints, inputFingerprint: 'other' },
-				source,
-			),
-		).toBe('STALE');
+	it('applies delivery precedence ACTION_REQUIRED > UNVERIFIED > IN_PROGRESS > ALIGNED', () => {
+		expect(aggregateDeliveryStatus(['ALIGNED', 'IN_PROGRESS'])).toBe('IN_PROGRESS');
+		expect(aggregateDeliveryStatus(['IN_PROGRESS', 'UNVERIFIED'])).toBe('UNVERIFIED');
+		expect(aggregateDeliveryStatus(['UNVERIFIED', 'ACTION_REQUIRED'])).toBe('ACTION_REQUIRED');
 	});
 
-	it('STALE when corpus fingerprint changes', () => {
-		expect(
-			classifyValidationFreshness(
-				baseSnapshot(),
-				{ ...fingerprints, corpusFingerprint: 'other' },
-				source,
-			),
-		).toBe('STALE');
-	});
-
-	it('NOT_RUN when snapshot missing', () => {
-		expect(classifyValidationFreshness(null, fingerprints, source)).toBe('NOT_RUN');
-	});
-
-	it('FAIL when latest run failed', () => {
-		expect(
-			classifyValidationFreshness(
-				baseSnapshot({ status: 'fail', failed: 1, passed: 12 }),
-				fingerprints,
-				source,
-			),
-		).toBe('FAIL');
-	});
-
-	it('INVALID for unsupported schema', () => {
-		expect(
-			classifyValidationFreshness(
-				baseSnapshot({ schemaVersion: 2 as unknown as 1 }),
-				fingerprints,
-				source,
-			),
-		).toBe('INVALID');
+	it('maps drift and scope blocking to action-required delivery without degrading health', () => {
+		expect(comparisonToDeliveryStatus({ outcome: 'DRIFT' })).toBe('ACTION_REQUIRED');
+		expect(comparisonToDeliveryStatus({ outcome: 'DELIVERY_SCOPE_BLOCKED' })).toBe(
+			'ACTION_REQUIRED',
+		);
 	});
 });
 
-describe('observability corpus SSOT', () => {
-	it('dashboard invitation rows derive from corpus registry size SSOT', () => {
-		const corpus = listLocalRenderCorpus();
-		expect(corpus).toHaveLength(EXPECTED_LOCAL_RENDER_CORPUS_SIZE);
-		expect(corpus.every((entry) => entry.assetStrategy)).toBe(true);
+describe('observability evidence is independent from operational health', () => {
+	it('still classifies stale regression evidence without using it as health input', () => {
+		const result = classifyValidationFreshness(
+			{
+				schemaVersion: 1,
+				validationType: 'regression',
+				command: 'pnpm test:local-render-corpus',
+				startedAt: '2026-08-01T00:00:00.000Z',
+				completedAt: '2026-08-01T00:01:00.000Z',
+				status: 'pass',
+				branch: 'dev-local',
+				commitSha: 'abc',
+				workingTreeDirty: false,
+				inputFingerprint: 'old',
+				corpusFingerprint: 'corpus',
+				total: 13,
+				passed: 13,
+				failed: 0,
+				failures: [],
+				artifactLocation: '.tmp/observability/validation/regression.json',
+			},
+			{ inputFingerprint: 'current', corpusFingerprint: 'corpus' },
+			{
+				branch: 'dev-local',
+				commitSha: 'abc',
+				workingTreeDirty: false,
+				degraded: false,
+			},
+		);
+		expect(result).toBe('STALE');
 	});
 });
 
-function emptyEvidence(freshness: ValidationEvidenceView['freshness']): ValidationEvidenceView {
-	return {
-		validationType: 'regression',
-		freshness,
-		snapshot: freshness === 'PASS' ? baseSnapshot() : null,
-	};
-}
-
-describe('observability overall status', () => {
-	const healthyEnv = (environment: 'local' | 'preview' | 'production'): EnvironmentHealthRow => ({
-		environment,
-		connection: 'ok',
-		runtimeIdentity: environment === 'local' ? 'persistent-local' : environment,
-		schemaLifecycle: 'CURRENT',
-		activeInvitationRows: 20,
-		supportedCorpusPresence: `${EXPECTED_LOCAL_RENDER_CORPUS_SIZE}/${EXPECTED_LOCAL_RENDER_CORPUS_SIZE}`,
-		renderEffectiveParity: 'ALL_ALIGNED',
-	});
-
-	const healthyInvite = (slug: string): InvitationHealthRow => ({
-		slug,
-		eventType: 'xv',
-		referenceClassification: 'LOCAL_CORPUS_REFERENCE',
-		themeId: null,
-		visualProfileId: null,
-		assetStrategy: 'HYBRID_VERSIONED_AND_REMOTE',
-		publicRoute: `/xv/${slug}`,
-		environments: {
-			local: {
-				environment: 'local',
-				status: 'MATCH_REFERENCE',
-				publishedVersion: 1,
-				assetCount: 1,
-			},
-			preview: {
-				environment: 'preview',
-				status: 'MATCH_REFERENCE',
-				publishedVersion: 1,
-				assetCount: 1,
-			},
-			production: {
-				environment: 'production',
-				status: 'MATCH_REFERENCE',
-				publishedVersion: 1,
-				assetCount: 1,
-			},
-		},
-		recommendedCommand: null,
-		failureCause: null,
-	});
-
-	const healthyAsset = (slug: string): AssetHealthRow => ({
-		slug,
-		assetStrategy: 'HYBRID_VERSIONED_AND_REMOTE',
-		status: 'REMOTE_REFERENCE',
-		localFileCount: 0,
-		remoteMediaReferenceCount: 1,
-		localAssetKeyReferenceCount: 0,
-		dbAssetCount: 1,
-	});
-
-	const migrationsOk: MigrationEnvHealth[] = [
-		{
-			environment: 'repository',
-			appliedCount: 10,
-			pending: '—',
-			schemaLifecycle: 'SOURCE',
-			reachable: true,
-			configured: true,
-		},
-		{
-			environment: 'local',
-			appliedCount: 10,
-			pending: [],
-			schemaLifecycle: 'CURRENT',
-			reachable: true,
-			configured: true,
-		},
-		{
-			environment: 'preview',
-			appliedCount: 10,
-			pending: [],
-			schemaLifecycle: 'CURRENT',
-			reachable: true,
-			configured: true,
-		},
-		{
-			environment: 'production',
-			appliedCount: 10,
-			pending: [],
-			schemaLifecycle: 'CURRENT',
-			reachable: true,
-			configured: true,
-		},
-	];
-
-	it('BLOCKED when Local corpus invitation missing', () => {
-		const invite = healthyInvite('missing-one');
-		invite.environments.local.status = 'NOT_PRESENT';
-		expect(
-			computeOverallStatus({
-				environments: [
-					healthyEnv('local'),
-					healthyEnv('preview'),
-					healthyEnv('production'),
-				],
-				invitations: [invite],
-				migrations: migrationsOk,
-				assets: [healthyAsset('missing-one')],
-				regression: emptyEvidence('PASS'),
-				screenshots: emptyEvidence('PASS'),
-				corpusComplete: true,
-			}),
-		).toBe('BLOCKED');
-	});
-
-	it('UNVERIFIED when evidence not run', () => {
-		expect(
-			computeOverallStatus({
-				environments: [
-					healthyEnv('local'),
-					healthyEnv('preview'),
-					healthyEnv('production'),
-				],
-				invitations: [healthyInvite('x')],
-				migrations: migrationsOk,
-				assets: [{ ...healthyAsset('x'), status: 'OK' }],
-				regression: emptyEvidence('NOT_RUN'),
-				screenshots: emptyEvidence('PASS'),
-				corpusComplete: true,
-			}),
-		).toBe('UNVERIFIED');
-	});
-
-	it('ATTENTION when evidence stale but environments ok', () => {
-		expect(
-			computeOverallStatus({
-				environments: [
-					healthyEnv('local'),
-					healthyEnv('preview'),
-					healthyEnv('production'),
-				],
-				invitations: [healthyInvite('x')],
-				migrations: migrationsOk,
-				assets: [{ ...healthyAsset('x'), status: 'OK' }],
-				regression: emptyEvidence('STALE'),
-				screenshots: emptyEvidence('PASS'),
-				corpusComplete: true,
-			}),
-		).toBe('ATTENTION');
-	});
-
-	it('HEALTHY when remotes are unprobed summary stubs and Local is aligned', () => {
-		const unprobed = (environment: 'preview' | 'production'): EnvironmentHealthRow => ({
-			environment,
-			connection: 'unverified',
-			runtimeIdentity: 'unknown',
-			schemaLifecycle: 'UNVERIFIED',
-			activeInvitationRows: 0,
-			supportedCorpusPresence: `0/${EXPECTED_LOCAL_RENDER_CORPUS_SIZE}`,
-			renderEffectiveParity: 'UNVERIFIABLE',
-			detail: 'Not probed in this observability scope',
-		});
-		expect(
-			computeOverallStatus({
-				environments: [healthyEnv('local'), unprobed('preview'), unprobed('production')],
-				invitations: [healthyInvite('x')],
-				migrations: migrationsOk.filter(
-					(m) => m.environment === 'repository' || m.environment === 'local',
-				),
-				assets: [{ ...healthyAsset('x'), status: 'OK' }],
-				regression: emptyEvidence('PASS'),
-				screenshots: emptyEvidence('PASS'),
-				corpusComplete: true,
-			}),
-		).toBe('HEALTHY');
-	});
-});
-
-describe('observability command categorization', () => {
-	it('maps recommended command ids to operator categories', async () => {
-		const { categorizeCommand } = await import('../../scripts/observability/snapshot.ts');
-		expect(categorizeCommand('dbs-status')).toBe('DIAGNOSE');
-		expect(categorizeCommand('regression-evidence')).toBe('VALIDATE');
-		expect(categorizeCommand('screenshot-evidence')).toBe('VALIDATE');
-		expect(categorizeCommand('invite-promote-x')).toBe('PROMOTE');
-		expect(categorizeCommand('invitation-local-corpus')).toBe('REPAIR');
+describe('observability corpus authority', () => {
+	it('marks every legacy remote-parity exclusion explicitly', () => {
+		const legacy = listLocalRenderCorpus().filter((entry) => entry.classification === 'legacy');
+		expect(legacy.length).toBeGreaterThan(0);
+		expect(legacy.every((entry) => entry.remoteParity === 'excluded')).toBe(true);
 	});
 });

@@ -35,9 +35,10 @@ export function resolveCorpusPublishedContent(
 export function assertCanonicalRegistryCoveredByCorpus(): void {
 	const corpusSlugs = new Set(listLocalRenderCorpus().map((e) => e.slug));
 	for (const definition of listInvitationDefinitions()) {
+		if (definition.lifecycle === 'in_progress') continue;
 		if (!corpusSlugs.has(definition.slug)) {
 			throw new Error(
-				`Canonical managed invitation "${definition.slug}" is missing from the Local Render Corpus SSOT.`,
+				`Published canonical managed invitation "${definition.slug}" is missing from the Local Render Corpus SSOT.`,
 			);
 		}
 	}

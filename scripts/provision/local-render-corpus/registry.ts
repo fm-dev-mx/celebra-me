@@ -3,7 +3,8 @@
  * that must be reproducibly renderable and regression-tested in Local.
  *
  * Canonical managed lifecycle registry remains scripts/provision/invitations/registry.ts.
- * This corpus includes canonical managed invitations plus supported legacy clients.
+ * This corpus includes every published canonical definition plus supported legacy clients.
+ * Canonical definitions marked in_progress are intentionally outside the Production corpus.
  */
 
 export type CorpusClassification = 'canonical' | 'legacy';
@@ -17,14 +18,14 @@ export type CorpusSourceStrategy = 'canonical_definition' | 'sanitized_fixture';
  * - HYBRID_VERSIONED_AND_REMOTE: local inventory and/or fixture-referenced remote http(s) media
  */
 export type CorpusAssetStrategy =
-	| 'VERSIONED_MANAGED_ASSET'
-	| 'VERSIONED_LOCAL_ASSET'
-	| 'HYBRID_VERSIONED_AND_REMOTE';
+	'VERSIONED_MANAGED_ASSET' | 'VERSIONED_LOCAL_ASSET' | 'HYBRID_VERSIONED_AND_REMOTE';
 
 export interface LocalRenderCorpusEntry {
 	readonly slug: string;
 	readonly eventType: string;
 	readonly classification: CorpusClassification;
+	/** Remote parity authority. Legacy exclusions must be explicit here. */
+	readonly remoteParity: 'required' | 'excluded';
 	readonly sourceStrategy: CorpusSourceStrategy;
 	readonly assetStrategy: CorpusAssetStrategy;
 	/** Optional profile / theme hints for documentation and coverage checks. */
@@ -39,6 +40,7 @@ export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] = [
 		slug: 'alba-rosa-quinonez',
 		eventType: 'cumple',
 		classification: 'canonical',
+		remoteParity: 'required',
 		sourceStrategy: 'canonical_definition',
 		assetStrategy: 'VERSIONED_MANAGED_ASSET',
 		themeId: 'luxury-hacienda',
@@ -48,6 +50,7 @@ export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] = [
 		slug: 'abril-michelle-becerra-rea',
 		eventType: 'xv',
 		classification: 'canonical',
+		remoteParity: 'required',
 		sourceStrategy: 'canonical_definition',
 		assetStrategy: 'VERSIONED_MANAGED_ASSET',
 		themeId: 'premiere-floral',
@@ -57,24 +60,17 @@ export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] = [
 		slug: 'romina-rios-chaparro',
 		eventType: 'xv',
 		classification: 'canonical',
+		remoteParity: 'required',
 		sourceStrategy: 'canonical_definition',
 		assetStrategy: 'VERSIONED_MANAGED_ASSET',
 		themeId: 'premiere-floral',
 		visualProfileId: 'romina-rios-chaparro',
 	},
 	{
-		slug: 'boda-perla-y-carlos',
-		eventType: 'boda',
-		classification: 'canonical',
-		sourceStrategy: 'canonical_definition',
-		assetStrategy: 'VERSIONED_MANAGED_ASSET',
-		themeId: 'jewelry-box-wedding',
-		visualProfileId: 'boda-perla-y-carlos',
-	},
-	{
 		slug: 'america-johana',
 		eventType: 'xv',
 		classification: 'legacy',
+		remoteParity: 'excluded',
 		sourceStrategy: 'sanitized_fixture',
 		assetStrategy: 'HYBRID_VERSIONED_AND_REMOTE',
 		themeId: 'celestial-blue',
@@ -85,6 +81,7 @@ export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] = [
 		slug: 'valentina-hernandez',
 		eventType: 'xv',
 		classification: 'legacy',
+		remoteParity: 'excluded',
 		sourceStrategy: 'sanitized_fixture',
 		assetStrategy: 'HYBRID_VERSIONED_AND_REMOTE',
 		themeId: 'editorial-magazine',
@@ -95,6 +92,7 @@ export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] = [
 		slug: 'xareni-iyarit',
 		eventType: 'xv',
 		classification: 'legacy',
+		remoteParity: 'excluded',
 		sourceStrategy: 'sanitized_fixture',
 		assetStrategy: 'HYBRID_VERSIONED_AND_REMOTE',
 		themeId: 'celestial-blue',
@@ -105,6 +103,7 @@ export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] = [
 		slug: 'leah-lexa',
 		eventType: 'baby-shower',
 		classification: 'legacy',
+		remoteParity: 'excluded',
 		sourceStrategy: 'sanitized_fixture',
 		assetStrategy: 'HYBRID_VERSIONED_AND_REMOTE',
 		themeId: 'celestial-blue',
@@ -115,6 +114,7 @@ export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] = [
 		slug: 'luna-y-estrella',
 		eventType: 'primera-comunion',
 		classification: 'legacy',
+		remoteParity: 'excluded',
 		sourceStrategy: 'sanitized_fixture',
 		assetStrategy: 'HYBRID_VERSIONED_AND_REMOTE',
 		themeId: 'angelic-presence',
@@ -125,6 +125,7 @@ export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] = [
 		slug: 'cesar-ramses',
 		eventType: 'bautizo',
 		classification: 'legacy',
+		remoteParity: 'excluded',
 		sourceStrategy: 'sanitized_fixture',
 		assetStrategy: 'HYBRID_VERSIONED_AND_REMOTE',
 		themeId: 'sacred-keepsake',
@@ -134,6 +135,7 @@ export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] = [
 		slug: 'ayrin-samantha-lerma-castro',
 		eventType: 'xv',
 		classification: 'legacy',
+		remoteParity: 'excluded',
 		sourceStrategy: 'sanitized_fixture',
 		assetStrategy: 'HYBRID_VERSIONED_AND_REMOTE',
 		themeId: 'enchanted-rose',
@@ -143,6 +145,7 @@ export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] = [
 		slug: 'ana-sofia-cota-guillen',
 		eventType: 'xv',
 		classification: 'legacy',
+		remoteParity: 'excluded',
 		sourceStrategy: 'sanitized_fixture',
 		assetStrategy: 'HYBRID_VERSIONED_AND_REMOTE',
 		/** Render-effective content theme (invitations.theme_id may still say jewelry-box). */
@@ -153,6 +156,7 @@ export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] = [
 		slug: 'ximena-meza-trasvina',
 		eventType: 'xv',
 		classification: 'legacy',
+		remoteParity: 'excluded',
 		sourceStrategy: 'sanitized_fixture',
 		assetStrategy: 'HYBRID_VERSIONED_AND_REMOTE',
 		/** Render-effective content theme (invitations.theme_id may still say jewelry-box). */
@@ -163,6 +167,7 @@ export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] = [
 		slug: 'gerardo-sesenta',
 		eventType: 'cumple',
 		classification: 'legacy',
+		remoteParity: 'excluded',
 		sourceStrategy: 'sanitized_fixture',
 		assetStrategy: 'HYBRID_VERSIONED_AND_REMOTE',
 		/** Render-effective content theme (invitations.theme_id may still say jewelry-box). */
@@ -171,7 +176,7 @@ export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] = [
 	},
 ] as const;
 
-export const EXPECTED_LOCAL_RENDER_CORPUS_SIZE = 14;
+export const EXPECTED_LOCAL_RENDER_CORPUS_SIZE = 13;
 
 export function listLocalRenderCorpus(): readonly LocalRenderCorpusEntry[] {
 	return LOCAL_RENDER_CORPUS;
@@ -202,6 +207,12 @@ export function assertLocalRenderCorpusIntegrity(): void {
 		}
 		if (!entry.assetStrategy) {
 			throw new Error(`Corpus entry ${entry.slug} requires assetStrategy.`);
+		}
+		if (
+			(entry.classification === 'legacy' && entry.remoteParity !== 'excluded') ||
+			(entry.classification === 'canonical' && entry.remoteParity !== 'required')
+		) {
+			throw new Error(`Corpus entry ${entry.slug} has contradictory remote parity metadata.`);
 		}
 		if (entry.slug.startsWith('demo-') || entry.slug === 'e2e-preview-publication') {
 			throw new Error(

@@ -38,6 +38,12 @@ Every managed digital invitation must define:
   `editorial-magazine`, `jewelry-box`).
 - **Visual Profile ID** (`visualProfileId`): Compatible visual profile.
 - **Base Demo ID** (`baseDemoId`): Pre-existing demo snapshot ID paired with the selected theme.
+- **Lifecycle** (`lifecycle`): `in_progress` while the definition is intentionally absent or not yet
+  aligned through Production; `published` once Production alignment is expected. This metadata is
+  explicit and is not inferred from timestamps or environment presence.
+- **Delivery Scope** (`deliveryScope`): `content-only`, `content-and-assets`, or `assets-only`.
+  Three-way reconciliation must use this declared scope and report out-of-scope changes rather than
+  applying or hiding them.
 - **Client Details**: Client name, client email, client WhatsApp number, and photo reception status.
 - **Owner Policy**:
   - **All targets**: Preserve the existing invitation owner on updates.
@@ -54,7 +60,7 @@ Every managed digital invitation must define:
   must be completely omitted without empty renderable structures.
 - **Section Order**: Array of section keys defining exact publication sequence.
 - **Asset Requirements**: Stable semantic keys (`hero`, `portrait`, `gallery1`, etc.) mapped to
-  verified source binaries (JPEG, PNG, WebP).
+  verified source binaries (JPEG, PNG, WebP). Declared keys are operationally required.
 - **Storage Conventions**: Storage path `managed/<slug>/<key>.webp` in bucket `invitation-assets`.
 
 When a new invitation uses custom section-to-section composition, select and verify it against the

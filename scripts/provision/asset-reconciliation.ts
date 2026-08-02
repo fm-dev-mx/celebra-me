@@ -116,7 +116,8 @@ export function collectUploadedAssetIds(content: unknown): Set<string> {
 			return;
 		}
 		const record = value as Record<string, unknown>;
-		if (record.type === 'uploaded' && typeof record.assetId === 'string') ids.add(record.assetId);
+		if (record.type === 'uploaded' && typeof record.assetId === 'string')
+			ids.add(record.assetId);
 		Object.values(record).forEach(visit);
 	};
 	visit(content);
@@ -142,9 +143,24 @@ export function parseAssetPolicy(raw?: string): AssetPolicy {
 function checkMetadataMatch(canonical: InvitationPackageAsset, target: TargetAssetRecord): boolean {
 	return (
 		target.mimeType === canonical.mimeType &&
-		(target.fileSize === null || canonical.fileSize === null || target.fileSize === canonical.fileSize) &&
+		(target.fileSize === null ||
+			canonical.fileSize === null ||
+			target.fileSize === canonical.fileSize) &&
 		(target.width === null || canonical.width === null || target.width === canonical.width) &&
 		(target.height === null || canonical.height === null || target.height === canonical.height)
+	);
+}
+
+function checkManagedMetadataMatch(
+	canonical: InvitationPackageAsset,
+	target: TargetAssetRecord,
+	definitionSlug?: string,
+): boolean {
+	return (
+		checkMetadataMatch(canonical, target) &&
+		(!definitionSlug ||
+			(target.managedByDefinitionSlug === definitionSlug &&
+				target.managedSourceKey === canonical.key))
 	);
 }
 
@@ -154,8 +170,11 @@ function reconcileBinaryPresentHashMatch(
 	storageState: ObservedStorageState,
 	targetPath: string,
 	policy: AssetPolicy,
+	definitionSlug?: string,
 ): { item: ReconciledAsset; blocked: boolean; blockReason?: string } {
-	const dbMatch = dbRecord ? checkMetadataMatch(canonical, dbRecord) : false;
+	const dbMatch = dbRecord
+		? checkManagedMetadataMatch(canonical, dbRecord, definitionSlug)
+		: false;
 	if (dbRecord && dbMatch) {
 		return {
 			item: {
@@ -218,7 +237,9 @@ function reconcileBinaryPresentHashMatch(
 			observedSize: dbRecord?.fileSize ?? null,
 		},
 		blocked: isVerify,
-		blockReason: isVerify ? `Derivación de metadatos detectada bajo la política ${policy} en "${canonical.displayName}".` : undefined,
+		blockReason: isVerify
+			? `Derivación de metadatos detectada bajo la política ${policy} en "${canonical.displayName}".`
+			: undefined,
 	};
 }
 
@@ -262,7 +283,9 @@ function reconcileBinaryPresentHashMismatch(
 			targetAssetId: dbRecord?.id,
 			classification: 'CONTENT_MISMATCH',
 			plannedAction: isSync ? 'OVERWRITE' : 'BLOCK',
-			reasonCode: isSync ? 'ASSET_CONTENT_MISMATCH_SYNC_OVERWRITE' : 'ASSET_CONTENT_MISMATCH_BLOCKED',
+			reasonCode: isSync
+				? 'ASSET_CONTENT_MISMATCH_SYNC_OVERWRITE'
+				: 'ASSET_CONTENT_MISMATCH_BLOCKED',
 			reason: isSync
 				? `El archivo "${canonical.displayName}" existe pero contiene bytes diferentes. Se sobrescribirá bajo política sync.`
 				: `El archivo "${canonical.displayName}" existe pero contiene un hash diferente (esperado: ${canonical.sha256.slice(0, 12)}…, hallado: ${storageState.sha256?.slice(0, 12) ?? 'desconocido'}). Bloqueado bajo política ${policy}. Use --asset-policy sync si desea sobrescribir.`,
@@ -270,7 +293,9 @@ function reconcileBinaryPresentHashMismatch(
 			observedSize: dbRecord?.fileSize ?? null,
 		},
 		blocked: !isSync,
-		blockReason: !isSync ? `Conflicto de contenido binario no autorizado en "${canonical.displayName}".` : undefined,
+		blockReason: !isSync
+			? `Conflicto de contenido binario no autorizado en "${canonical.displayName}".`
+			: undefined,
 	};
 }
 
@@ -321,7 +346,9 @@ function reconcileBinaryAbsent(
 			observedSize: null,
 		},
 		blocked: isBlock,
-		blockReason: isBlock ? `Archivo binario requerido ausente bajo la política ${policy}: "${canonical.displayName}".` : undefined,
+		blockReason: isBlock
+			? `Archivo binario requerido ausente bajo la política ${policy}: "${canonical.displayName}".`
+			: undefined,
 	};
 }
 
@@ -330,18 +357,59 @@ function reconcileCanonicalAsset(
 	dbRecord: TargetAssetRecord | undefined,
 	storageState: ObservedStorageState,
 	policy: AssetPolicy,
+	definitionSlug?: string,
 ): { item: ReconciledAsset; blocked: boolean; blockReason?: string } {
 	const targetPath = canonical.storagePath;
+
+	if (
+		dbRecord &&
+		definitionSlug &&
+		dbRecord.managedByDefinitionSlug &&
+		dbRecord.managedByDefinitionSlug !== definitionSlug
+	) {
+		return {
+			item: {
+				key: canonical.key,
+				displayName: canonical.displayName,
+				canonicalHash: canonical.sha256,
+				canonicalSize: canonical.fileSize,
+				canonicalMimeType: canonical.mimeType,
+				targetStoragePath: targetPath,
+				targetAssetId: dbRecord.id,
+				classification: 'INVALID',
+				plannedAction: 'BLOCK',
+				reasonCode: 'ASSET_MANAGED_IDENTITY_CONFLICT',
+				reason: `El archivo "${canonical.displayName}" pertenece a otra definición administrada.`,
+				observedHash: storageState.sha256,
+				observedSize: dbRecord.fileSize,
+			},
+			blocked: true,
+			blockReason: `Identidad administrada en conflicto para "${canonical.displayName}".`,
+		};
+	}
 
 	if (!storageState.present) {
 		return reconcileBinaryAbsent(canonical, dbRecord, targetPath, policy);
 	}
 
 	if (storageState.sha256 === canonical.sha256) {
-		return reconcileBinaryPresentHashMatch(canonical, dbRecord, storageState, targetPath, policy);
+		return reconcileBinaryPresentHashMatch(
+			canonical,
+			dbRecord,
+			storageState,
+			targetPath,
+			policy,
+			definitionSlug,
+		);
 	}
 
-	return reconcileBinaryPresentHashMismatch(canonical, dbRecord, storageState, targetPath, policy);
+	return reconcileBinaryPresentHashMismatch(
+		canonical,
+		dbRecord,
+		storageState,
+		targetPath,
+		policy,
+	);
 }
 
 // eslint-disable-next-line complexity -- Prune classification enumerates ownership, identity, reference, provider, and DB/Storage asymmetry gates.
@@ -363,7 +431,8 @@ function reconcileUnreferencedAssets(
 		return {
 			unreferencedAssets,
 			deletesCount,
-			blockedReason: 'Asset pruning requires verified definition and target invitation identity.',
+			blockedReason:
+				'Asset pruning requires verified definition and target invitation identity.',
 		};
 	}
 
@@ -379,7 +448,8 @@ function reconcileUnreferencedAssets(
 			present: false,
 			sha256: null,
 		};
-		const targetMatches = !dbRecord.invitationId || dbRecord.invitationId === targetInvitationId;
+		const targetMatches =
+			!dbRecord.invitationId || dbRecord.invitationId === targetInvitationId;
 		const stillReferenced = referencedAssetIds.has(dbRecord.id);
 		let classification: AssetClassification = 'UNREFERENCED';
 		let plannedAction: PlannedAssetAction = 'RETAIN';
@@ -417,20 +487,24 @@ function reconcileUnreferencedAssets(
 		}
 
 		unreferencedAssets.push({
-				key: dbRecord.storagePath.split('/').at(-1)?.replace(/\.[^.]+$/, '') ?? dbRecord.displayName,
-				displayName: dbRecord.displayName,
-				canonicalHash: '',
-				canonicalSize: null,
-				canonicalMimeType: dbRecord.mimeType,
-				targetStoragePath: dbRecord.storagePath,
-				targetAssetId: dbRecord.id,
-				classification,
-				plannedAction,
-				reasonCode,
-				reason,
-				observedHash: storageState.sha256,
-				observedSize: dbRecord.fileSize,
-			});
+			key:
+				dbRecord.storagePath
+					.split('/')
+					.at(-1)
+					?.replace(/\.[^.]+$/, '') ?? dbRecord.displayName,
+			displayName: dbRecord.displayName,
+			canonicalHash: '',
+			canonicalSize: null,
+			canonicalMimeType: dbRecord.mimeType,
+			targetStoragePath: dbRecord.storagePath,
+			targetAssetId: dbRecord.id,
+			classification,
+			plannedAction,
+			reasonCode,
+			reason,
+			observedHash: storageState.sha256,
+			observedSize: dbRecord.fileSize,
+		});
 	}
 	const blocked = unreferencedAssets.find((asset) => asset.plannedAction === 'BLOCK');
 	return {
@@ -442,29 +516,88 @@ function reconcileUnreferencedAssets(
 
 function reconcileCanonicalList(
 	canonicalAssets: InvitationPackageAsset[],
-	targetDbByManagedKey: Map<string, TargetAssetRecord>,
-	targetDbByDisplayName: Map<string, TargetAssetRecord>,
-	targetDbByPath: Map<string, TargetAssetRecord>,
+	targetDbByManagedKey: Map<string, TargetAssetRecord[]>,
+	targetDbByDisplayName: Map<string, TargetAssetRecord[]>,
+	targetDbByPath: Map<string, TargetAssetRecord[]>,
 	observedStorage: Record<string, ObservedStorageState>,
 	policy: AssetPolicy,
+	definitionSlug?: string,
+	referencedAssetIds: ReadonlySet<string> = new Set(),
 ) {
 	const reconciledAssets: ReconciledAsset[] = [];
 	let isBlocked = false;
 	let overallBlockReason: string | undefined;
-	const counts = { match: 0, drift: 0, missing: 0, mismatch: 0, invalid: 0, uploads: 0, overwrites: 0, repairs: 0, reuses: 0 };
+	const counts = {
+		match: 0,
+		drift: 0,
+		missing: 0,
+		mismatch: 0,
+		invalid: 0,
+		uploads: 0,
+		overwrites: 0,
+		repairs: 0,
+		reuses: 0,
+	};
+
+	const uniqueRecords = (records: TargetAssetRecord[]): TargetAssetRecord[] => [
+		...new Map(records.map((record) => [record.id, record])).values(),
+	];
+	const selectTargetRecord = (
+		canonical: InvitationPackageAsset,
+	): { record?: TargetAssetRecord; ambiguous: boolean } => {
+		const keyed = uniqueRecords(targetDbByManagedKey.get(canonical.key) ?? []);
+		if (keyed.length === 1) return { record: keyed[0], ambiguous: false };
+		if (keyed.length > 1) return { ambiguous: true };
+
+		const candidates = uniqueRecords([
+			...(targetDbByDisplayName.get(canonical.displayName) ?? []),
+			...(targetDbByPath.get(canonical.storagePath) ?? []),
+		]);
+		const referenced = candidates.filter((record) => referencedAssetIds.has(record.id));
+		if (referenced.length === 1) return { record: referenced[0], ambiguous: false };
+		if (referenced.length > 1 || candidates.length > 1) return { ambiguous: true };
+		return { record: candidates[0], ambiguous: false };
+	};
 
 	for (const canonical of canonicalAssets) {
-		const dbRecord =
-			targetDbByManagedKey.get(canonical.key) ??
-			targetDbByDisplayName.get(canonical.displayName) ??
-			targetDbByPath.get(canonical.storagePath);
+		const selection = selectTargetRecord(canonical);
+		if (selection.ambiguous) {
+			const item: ReconciledAsset = {
+				key: canonical.key,
+				displayName: canonical.displayName,
+				canonicalHash: canonical.sha256,
+				canonicalSize: canonical.fileSize,
+				canonicalMimeType: canonical.mimeType,
+				targetStoragePath: canonical.storagePath,
+				classification: 'INVALID',
+				plannedAction: 'BLOCK',
+				reasonCode: 'ASSET_IDENTITY_AMBIGUOUS',
+				reason: `La identidad del archivo "${canonical.displayName}" no se puede resolver de forma unívoca.`,
+				observedHash: null,
+				observedSize: null,
+			};
+			reconciledAssets.push(item);
+			isBlocked = true;
+			overallBlockReason =
+				overallBlockReason ?? `Identidad ambigua para "${canonical.displayName}".`;
+			counts.invalid++;
+			continue;
+		}
+		const dbRecord = selection.record;
 		const targetPath = dbRecord?.storagePath ?? canonical.storagePath;
-		const storageState = observedStorage[targetPath] ?? observedStorage[canonical.storagePath] ?? {
-			present: false,
-			sha256: null,
-		};
+		const storageState = observedStorage[targetPath] ??
+			observedStorage[canonical.storagePath] ?? {
+				present: false,
+				sha256: null,
+			};
 
-		const res = reconcileCanonicalAsset(canonical, dbRecord, storageState, policy);
+		const res = reconcileCanonicalAsset(
+			canonical,
+			dbRecord,
+			storageState,
+			policy,
+			definitionSlug,
+		);
 		reconciledAssets.push(res.item);
 		if (res.blocked) {
 			isBlocked = true;
@@ -472,40 +605,68 @@ function reconcileCanonicalList(
 		}
 
 		switch (res.item.classification) {
-			case 'MATCH': counts.match++; break;
-			case 'BINARY_MATCH_METADATA_DRIFT': counts.drift++; break;
-			case 'MISSING': counts.missing++; break;
-			case 'CONTENT_MISMATCH': counts.mismatch++; break;
-			case 'INVALID': counts.invalid++; break;
+			case 'MATCH':
+				counts.match++;
+				break;
+			case 'BINARY_MATCH_METADATA_DRIFT':
+				counts.drift++;
+				break;
+			case 'MISSING':
+				counts.missing++;
+				break;
+			case 'CONTENT_MISMATCH':
+				counts.mismatch++;
+				break;
+			case 'INVALID':
+				counts.invalid++;
+				break;
 		}
 
 		switch (res.item.plannedAction) {
-			case 'REUSE': counts.reuses++; break;
-			case 'REPAIR_METADATA': counts.repairs++; break;
-			case 'UPLOAD': counts.uploads++; break;
-			case 'OVERWRITE': counts.overwrites++; break;
+			case 'REUSE':
+				counts.reuses++;
+				break;
+			case 'REPAIR_METADATA':
+				counts.repairs++;
+				break;
+			case 'UPLOAD':
+				counts.uploads++;
+				break;
+			case 'OVERWRITE':
+				counts.overwrites++;
+				break;
 		}
 	}
 
 	return { reconciledAssets, isBlocked, overallBlockReason, counts };
 }
 
-export function reconcileAssets(
-	options: AssetReconciliationOptions,
-): AssetReconciliationResult {
-	const { canonicalAssets, targetDbAssets, observedStorage, policy = 'missing', pruneAssets = false } = options;
+export function reconcileAssets(options: AssetReconciliationOptions): AssetReconciliationResult {
+	const {
+		canonicalAssets,
+		targetDbAssets,
+		observedStorage,
+		policy = 'missing',
+		pruneAssets = false,
+	} = options;
 
-	const targetDbByDisplayName = new Map<string, TargetAssetRecord>();
-	const targetDbByPath = new Map<string, TargetAssetRecord>();
-	const targetDbByManagedKey = new Map<string, TargetAssetRecord>();
+	const targetDbByDisplayName = new Map<string, TargetAssetRecord[]>();
+	const targetDbByPath = new Map<string, TargetAssetRecord[]>();
+	const targetDbByManagedKey = new Map<string, TargetAssetRecord[]>();
 	for (const record of targetDbAssets) {
-		targetDbByDisplayName.set(record.displayName, record);
-		targetDbByPath.set(record.storagePath, record);
+		const byDisplayName = targetDbByDisplayName.get(record.displayName) ?? [];
+		byDisplayName.push(record);
+		targetDbByDisplayName.set(record.displayName, byDisplayName);
+		const byPath = targetDbByPath.get(record.storagePath) ?? [];
+		byPath.push(record);
+		targetDbByPath.set(record.storagePath, byPath);
 		if (
 			record.managedSourceKey &&
 			(!options.definitionSlug || record.managedByDefinitionSlug === options.definitionSlug)
 		) {
-			targetDbByManagedKey.set(record.managedSourceKey, record);
+			const byManagedKey = targetDbByManagedKey.get(record.managedSourceKey) ?? [];
+			byManagedKey.push(record);
+			targetDbByManagedKey.set(record.managedSourceKey, byManagedKey);
 		}
 	}
 
@@ -516,6 +677,8 @@ export function reconcileAssets(
 		targetDbByPath,
 		observedStorage,
 		policy,
+		options.definitionSlug,
+		options.referencedAssetIds,
 	);
 
 	const { unreferencedAssets, deletesCount, blockedReason } = reconcileUnreferencedAssets(

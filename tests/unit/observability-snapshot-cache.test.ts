@@ -1,63 +1,31 @@
 import { describe, expect, it, jest } from '@jest/globals';
 import { ObservabilitySnapshotSchema } from '@/lib/observability/schema';
+import { ApiError } from '@/lib/rsvp/core/errors';
 import {
 	createObservabilitySnapshotCache,
 	OBSERVABILITY_CACHE_TTL_MS,
 	OBSERVABILITY_STALE_FALLBACK_MS,
 } from '@/lib/observability/server/snapshot-cache';
 import type { ObservabilitySnapshot } from '@/lib/observability/types';
-
-function snapshot(): ObservabilitySnapshot {
-	const empty = { total: 0, ok: 0, warning: 0, blocking: 0, unverified: 0 };
-	return {
-		schemaVersion: 2,
-		generatedAt: '2026-08-01T12:00:00.000Z',
-		overallStatus: 'HEALTHY',
-		cache: { state: 'fresh', refreshAfter: '2026-08-01T12:01:00.000Z' },
-		source: { branch: 'dev-local', commitShaShort: 'abcdef1234', workingTreeDirty: false },
-		health: {
-			environments: empty,
-			invitations: empty,
-			migrations: empty,
-			assets: empty,
-			validations: { total: 2, ok: 2, warning: 0, blocking: 0, unverified: 0 },
-		},
-		issues: [],
-		validationEvidence: [
-			{
-				type: 'regression',
-				freshness: 'PASS',
-				completedAt: '2026-08-01T12:00:00.000Z',
-				passed: 13,
-				total: 13,
-			},
-			{
-				type: 'screenshots',
-				freshness: 'PASS',
-				completedAt: '2026-08-01T12:00:00.000Z',
-				passed: 13,
-				total: 13,
-			},
-		],
-		recommendedActions: [],
-	};
-}
+import { buildObservabilitySnapshotFixture } from '../helpers/observability-snapshot-fixture';
 
 describe('observability snapshot contract', () => {
-	it('accepts the strict browser-safe v2 payload', () => {
-		expect(ObservabilitySnapshotSchema.parse(snapshot()).schemaVersion).toBe(2);
+	it('accepts the strict browser-safe v3 payload', () => {
+		expect(
+			ObservabilitySnapshotSchema.parse(buildObservabilitySnapshotFixture()).schemaVersion,
+		).toBe(3);
 	});
 
-	it('rejects unexpected sensitive fields and unsafe commands', () => {
+	it('rejects unsupported versions and unexpected sensitive fields', () => {
 		expect(() =>
-			ObservabilitySnapshotSchema.parse({ ...snapshot(), dbUrl: 'postgres://secret' }),
+			ObservabilitySnapshotSchema.parse(
+				buildObservabilitySnapshotFixture({ schemaVersion: 2 as never }),
+			),
 		).toThrow();
 		expect(() =>
 			ObservabilitySnapshotSchema.parse({
-				...snapshot(),
-				recommendedActions: [
-					{ id: 'x', label: 'X', command: 'pnpm db:prod:migrate', reason: 'X' },
-				],
+				...buildObservabilitySnapshotFixture(),
+				dbUrl: 'postgres://secret',
 			}),
 		).toThrow();
 	});
@@ -66,7 +34,7 @@ describe('observability snapshot contract', () => {
 describe('observability snapshot cache', () => {
 	it('reuses a snapshot for 60 seconds and rebuilds after expiry', async () => {
 		let now = 0;
-		const build = jest.fn(async () => snapshot());
+		const build = jest.fn(async () => buildObservabilitySnapshotFixture());
 		const cache = createObservabilitySnapshotCache({ build, now: () => now });
 		await cache.get();
 		now = OBSERVABILITY_CACHE_TTL_MS - 1;
@@ -86,26 +54,29 @@ describe('observability snapshot cache', () => {
 		const first = cache.get();
 		const second = cache.get();
 		expect(build).toHaveBeenCalledTimes(1);
-		resolveBuild?.(snapshot());
+		resolveBuild?.(buildObservabilitySnapshotFixture());
 		await expect(Promise.all([first, second])).resolves.toHaveLength(2);
 	});
 
-	it('returns a marked stale fallback for at most five minutes', async () => {
+	it('returns a typed stale fallback after a timeout for at most five minutes', async () => {
 		let now = 0;
 		let fail = false;
 		const build = jest.fn(async () => {
-			if (fail) throw new Error('probe failed');
-			return snapshot();
+			if (fail) {
+				throw new ApiError(504, 'service_unavailable', 'aggregation timeout');
+			}
+			return buildObservabilitySnapshotFixture();
 		});
 		const cache = createObservabilitySnapshotCache({ build, now: () => now });
 		await cache.get();
 		fail = true;
 		now = OBSERVABILITY_CACHE_TTL_MS;
 		const stale = await cache.get();
-		expect(stale.cache.state).toBe('stale-fallback');
-		expect(stale.overallStatus).toBe('UNVERIFIED');
-		expect(stale.issues[0]?.code).toBe('SNAPSHOT_REFRESH_FAILED');
+		expect(stale.freshness).toBe('STALE');
+		expect(stale.operationalStatus).toBe('UNVERIFIED');
+		expect(stale.deliveryStatus).toBe('ALIGNED');
+		expect(stale.issues[0]?.reasonCode).toBe('SNAPSHOT_REFRESH_FAILED');
 		now = OBSERVABILITY_STALE_FALLBACK_MS + 1;
-		await expect(cache.get()).rejects.toThrow('probe failed');
+		await expect(cache.get()).rejects.toThrow('aggregation timeout');
 	});
 });

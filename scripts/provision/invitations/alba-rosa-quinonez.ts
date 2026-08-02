@@ -336,6 +336,8 @@ export function buildAlbaPublishedContent(
 export const albaInvitation: InvitationDefinition<AlbaAssetKey> = defineInvitation({
 	slug: ALBA_EVENT.slug,
 	createdAt: '2026-07-28T12:00:00.000Z',
+	lifecycle: 'published',
+	deliveryScope: 'content-and-assets',
 	eventType: ALBA_EVENT.eventType,
 	title: ALBA_EVENT.title,
 	clientName: 'Lucero Ramírez',

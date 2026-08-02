@@ -30,12 +30,12 @@ asks you to change, backfill, replay, or manually invoke them.
 
 Four distinct database targets exist:
 
-| Target               | Identification                                                                  | Usage                                                                             | Destructive ops allowed?                                                          |
-| -------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| **production**       | Supabase cloud host (`*.supabase.co`, `*.supabase.com`)                         | Read-only inspection and export; schema mutations via `pnpm db:prod:migrate` only | NEVER                                                                             |
-| **preview**          | Hosted branch DB (`PREVIEW_DB_URL` or secret files)                             | Provisioned hosted Preview project for Vercel `develop` deployments               | NO — schema mutated via `pnpm db:preview:migrate` only                            |
-| **persistent-local** | `127.0.0.1:54322` or `localhost:54322`, container `supabase_db_celebra-me-rsvp` | Normal development through `pnpm dev`                                             | NO — protected state                                                              |
-| **disposable-test**  | `127.0.0.1:54332` or `localhost:54332`, container `celebra-me-test-db`          | Migration reconstruction/pgTAP/seed/canonical audit reference                     | YES — created/recreated on demand                                                 |
+| Target               | Identification                                                                  | Usage                                                                             | Destructive ops allowed?                               |
+| -------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| **production**       | Supabase cloud host (`*.supabase.co`, `*.supabase.com`)                         | Read-only inspection and export; schema mutations via `pnpm db:prod:migrate` only | NEVER                                                  |
+| **preview**          | Hosted branch DB (`PREVIEW_DB_URL` or secret files)                             | Provisioned hosted Preview project for Vercel `develop` deployments               | NO — schema mutated via `pnpm db:preview:migrate` only |
+| **persistent-local** | `127.0.0.1:54322` or `localhost:54322`, container `supabase_db_celebra-me-rsvp` | Normal development through `pnpm dev`                                             | NO — protected state                                   |
+| **disposable-test**  | `127.0.0.1:54332` or `localhost:54332`, container `celebra-me-test-db`          | Migration reconstruction/pgTAP/seed/canonical audit reference                     | YES — created/recreated on demand                      |
 
 Unknown targets cause an immediate abort. The guard script `scripts/db/db-guard.ts` enforces these
 boundaries through classification, identity verification, and per-target policy checks.
@@ -85,8 +85,8 @@ task authorization, target classification, and standard guard checks.
   1. Target guard check (`db-guard.ts check --target production --operation migrate`)
   2. Local codebase validation (`pnpm type-check`, `pnpm test`, `pnpm build`)
   3. Read-only production schema audit (`pnpm db:prod:audit`)
-  4. Dry-run push and allowlist matching (`--allowlist` or `EXPECTED_MIGRATIONS`)
-  4b. Migration / deployment compatibility (`CELEBRA_TARGET_RELEASE_SHA`, rollout phases in
+  4. Dry-run push and allowlist matching (`--allowlist` or `EXPECTED_MIGRATIONS`) 4b. Migration /
+     deployment compatibility (`CELEBRA_TARGET_RELEASE_SHA`, rollout phases in
      `supabase/migration-rollout-registry.json`; SSOT
      `scripts/db/migration-deployment-compatibility.ts`)
   5. Automatic pre-migration backup (`.backups/prod/...`)
@@ -96,10 +96,9 @@ task authorization, target classification, and standard guard checks.
   8. Post-migration schema verification (`supabase_migrations.schema_migrations` audit)
 - **Hosted identity vs environment selection**: Selecting Preview/Production and having credentials
   is not authorization. Hosted migrate fails closed without an authorized target-release SHA.
-  Contract-phase migrations also require deployed-app evidence
-  (`CELEBRA_DEPLOYED_APP_SHA` / `CELEBRA_DEPLOYED_APP_CAPABILITIES`). Local is not gated by hosted
-  deployment identity. See `docs/database-workflow.md` → Migration / Deployment Compatibility
-  Contract.
+  Contract-phase migrations also require deployed-app evidence (`CELEBRA_DEPLOYED_APP_SHA` /
+  `CELEBRA_DEPLOYED_APP_CAPABILITIES`). Local is not gated by hosted deployment identity. See
+  `docs/database-workflow.md` → Migration / Deployment Compatibility Contract.
 
 ## Preview Environment Status & Rules
 
@@ -146,6 +145,35 @@ task authorization, target classification, and standard guard checks.
   longer registered.
 
 ## Decision Tree
+
+### Required-database availability preflight
+
+Before any task claims database integrity, parity, reconciliation, deployment readiness, data state,
+or a result derived from database contents, identify its required targets and run:
+
+```bash
+pnpm db:availability:verify -- --targets local,preview,production
+```
+
+Use only the targets the conclusion actually depends on. The preflight classifies target identity,
+opens a bounded session with `default_transaction_read_only=on`, and fails closed when credentials,
+identity, reachability, or read-only enforcement cannot be proven.
+
+If a required target is unavailable:
+
+- report the target and typed reason; never translate unavailable evidence into zero rows,
+  no-change, alignment, or integrity;
+- stop every remaining step whose correctness depends on that target and do not claim the task is
+  complete;
+- continue only independent, non-database work whose conclusion does not rely on the missing
+  evidence;
+- do not automatically reset, restore, migrate, recreate, or repair a target. Starting an existing
+  persistent-Local stack is allowed only when the user authorized recovery and its persistent
+  volumes were verified first.
+
+Read-only observability is deliberately different: its purpose is to report availability. It must
+return typed `UNVERIFIED`/unavailable evidence and remain usable; it must not hide the failure,
+invent a healthy state, or acquire mutation authority.
 
 - Need local development data? Use `pnpm db:prod:backup` + `pnpm db:local:restore-from-dump` (see
   `docs/database-workflow.md` and the PII exception in

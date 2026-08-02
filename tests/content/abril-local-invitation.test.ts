@@ -218,7 +218,11 @@ describe('Abril Michelle local invitation content', () => {
 			assets['gallery-05-white-dress'].assetId,
 		);
 
-		expect(content).not.toHaveProperty('music');
+		expect(content).toHaveProperty('music', {
+			autoPlay: true,
+			title: 'Talking to the moon',
+			url: expect.stringMatching(/^https:\/\//),
+		});
 		expect(content).toHaveProperty('gifts');
 		expect(typedContent.location.ceremony.googleMapsUrl).toMatch(/^https:\/\//);
 		expect(typedContent.location.reception.googleMapsUrl).toMatch(/^https:\/\//);

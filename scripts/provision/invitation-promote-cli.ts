@@ -10,10 +10,7 @@ import { resolveInvitationPackageInput, PackageInputError } from './invitation-p
 import { parseAssetPolicy } from './asset-reconciliation.ts';
 import type { UpdateScope } from './semantic-delta.ts';
 import { loadConflictResolutionsFile } from './conflict-resolutions.ts';
-import {
-	getProdDbUrl,
-	requireProductionConfirmation,
-} from '../db/db-workflow-lib.ts';
+import { getProdDbUrl, requireProductionConfirmation } from '../db/db-workflow-lib.ts';
 import {
 	runPromotionApply,
 	runPromotionPreflight,
@@ -24,6 +21,17 @@ import {
 function value(args: string[], flag: string): string | undefined {
 	const index = args.indexOf(flag);
 	return index >= 0 ? args[index + 1] : undefined;
+}
+
+/**
+ * The preflight report retains the connection string only for the in-process
+ * apply flow. CLI output is an operator artifact and must never serialize it.
+ */
+export function toPublicPromotionReport(
+	report: PromotionPreflightReport | PromotionApplyReport,
+): Omit<PromotionPreflightReport | PromotionApplyReport, 'targetDbUrl'> {
+	const { targetDbUrl: _targetDbUrl, ...publicReport } = report;
+	return publicReport;
 }
 
 function printHelp(): void {
@@ -98,15 +106,9 @@ function printHumanReport(report: PromotionPreflightReport | PromotionApplyRepor
 	console.log(`Backup status:       ${report.backup.acceptable ? 'OK' : 'BLOCKED'}`);
 	console.log(`Backup command:      ${report.backup.canonicalCommand}`);
 	console.log(`Backup detail:       ${report.backup.detail}`);
-	console.log(
-		`Safe managed changes: ${report.divergence.safeManagedChanges.length}`,
-	);
-	console.log(
-		`Target-owned diffs:   ${report.divergence.targetOwnedDifferences.length}`,
-	);
-	console.log(
-		`Managed divergences:  ${report.divergence.managedDivergences.length}`,
-	);
+	console.log(`Safe managed changes: ${report.divergence.safeManagedChanges.length}`);
+	console.log(`Target-owned diffs:   ${report.divergence.targetOwnedDifferences.length}`);
+	console.log(`Managed divergences:  ${report.divergence.managedDivergences.length}`);
 	console.log(`Conflicts:           ${report.divergence.conflicts.length}`);
 	for (const item of [
 		...report.divergence.managedDivergences,
@@ -117,9 +119,7 @@ function printHumanReport(report: PromotionPreflightReport | PromotionApplyRepor
 	if (report.engineResult) {
 		console.log(`Plan ID:             ${report.engineResult.plan.planId}`);
 		console.log(`Planned mutations:   ${report.engineResult.plannedMutations}`);
-		console.log(
-			`Published version:   ${report.engineResult.publishedVersion ?? '(n/a)'}`,
-		);
+		console.log(`Published version:   ${report.engineResult.publishedVersion ?? '(n/a)'}`);
 	}
 	if ('applyResult' in report && report.applyResult) {
 		console.log(`Applied plan ID:     ${report.applyResult.plan.planId}`);
@@ -217,9 +217,7 @@ async function main(): Promise<void> {
 	const preflight = await runPromotionPreflight({
 		packageData: packageInput.packageData,
 		ownerUserId,
-		approvalsDirs: approvalsDir
-			? [approvalsDir, '.agent/tmp/approvals']
-			: undefined,
+		approvalsDirs: approvalsDir ? [approvalsDir, '.agent/tmp/approvals'] : undefined,
 		assetPolicy,
 		pruneAssets,
 		updateScope,
@@ -230,14 +228,14 @@ async function main(): Promise<void> {
 	});
 
 	if (!apply) {
-		if (json) console.log(JSON.stringify(preflight, null, 2));
+		if (json) console.log(JSON.stringify(toPublicPromotionReport(preflight), null, 2));
 		else printHumanReport(preflight);
 		if (preflight.status === 'BLOCKED') process.exitCode = 1;
 		return;
 	}
 
 	if (preflight.status === 'BLOCKED') {
-		if (json) console.log(JSON.stringify(preflight, null, 2));
+		if (json) console.log(JSON.stringify(toPublicPromotionReport(preflight), null, 2));
 		else printHumanReport(preflight);
 		process.exitCode = 1;
 		return;
@@ -249,10 +247,9 @@ async function main(): Promise<void> {
 			...preflight,
 			status: 'BLOCKED',
 			blockCode: 'CONFIRMATION_REQUIRED',
-			reason:
-				'CONFIRMATION_REQUIRED: Production promotion apply requires an interactive owner TTY confirmation or CONFIRM_PROD_MIGRATION set to the exact challenge. There is no agent non-interactive promotion mode.',
+			reason: 'CONFIRMATION_REQUIRED: Production promotion apply requires an interactive owner TTY confirmation or CONFIRM_PROD_MIGRATION set to the exact challenge. There is no agent non-interactive promotion mode.',
 		};
-		if (json) console.log(JSON.stringify(blocked, null, 2));
+		if (json) console.log(JSON.stringify(toPublicPromotionReport(blocked), null, 2));
 		else printHumanReport(blocked);
 		process.exitCode = 1;
 		return;
@@ -286,7 +283,7 @@ async function main(): Promise<void> {
 		conflictResolutions,
 	});
 
-	if (json) console.log(JSON.stringify(applyReport, null, 2));
+	if (json) console.log(JSON.stringify(toPublicPromotionReport(applyReport), null, 2));
 	else printHumanReport(applyReport);
 
 	if (

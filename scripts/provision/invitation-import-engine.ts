@@ -586,7 +586,9 @@ async function pruneHostedManagedAssets(input: {
 		const { record } = deletion;
 		if (deletion.deleteStorage) {
 			if (!input.serviceRoleKey) {
-				throw new Error('Managed asset pruning requires the verified target Storage credential.');
+				throw new Error(
+					'Managed asset pruning requires the verified target Storage credential.',
+				);
 			}
 			const storagePath = record.providerPublicId || record.storagePath;
 			const objectUrl = `${input.targetSupabaseUrl.replace(/\/+$/, '')}/storage/v1/object/${record.bucket}/${storagePath}`;
@@ -598,12 +600,17 @@ async function pruneHostedManagedAssets(input: {
 				},
 			});
 			if (!response.ok && response.status !== 404) {
-				throw new Error(`Managed Storage prune failed for asset ${record.id} (HTTP ${response.status}).`);
+				throw new Error(
+					`Managed Storage prune failed for asset ${record.id} (HTTP ${response.status}).`,
+				);
 			}
 			const verify = await fetch(
 				`${input.targetSupabaseUrl.replace(/\/+$/, '')}/storage/v1/object/public/${record.bucket}/${storagePath}`,
 			);
-			if (verify.ok) throw new Error(`Managed Storage prune could not verify deletion for asset ${record.id}.`);
+			if (verify.ok)
+				throw new Error(
+					`Managed Storage prune could not verify deletion for asset ${record.id}.`,
+				);
 			storageDeletes++;
 		}
 
@@ -853,8 +860,11 @@ interface TargetScanResult {
 	pubQuery: string;
 }
 
-function parseReceiptEvidence(value: Record<string, unknown> | null): ManagedBaselineReceiptEvidence | null {
-	if (!value || typeof value.operation_id !== 'string' || typeof value.status !== 'string') return null;
+function parseReceiptEvidence(
+	value: Record<string, unknown> | null,
+): ManagedBaselineReceiptEvidence | null {
+	if (!value || typeof value.operation_id !== 'string' || typeof value.status !== 'string')
+		return null;
 	return {
 		operationId: value.operation_id,
 		status: value.status as ManagedBaselineReceiptEvidence['status'],
@@ -1054,19 +1064,21 @@ function analyzeTargetDrift(
 			appliedPublishedProjectionHash: scanned.appliedPublishedProjectionHash,
 			currentDraftUpdatedAt: recoveringPartial
 				? scanned.appliedDraftUpdatedAt
-				:
-				typeof scanned.existingDraft.updated_at === 'string'
+				: typeof scanned.existingDraft.updated_at === 'string'
 					? scanned.existingDraft.updated_at
 					: null,
 			currentPublishedVersion: recoveringPartial
 				? scanned.appliedPublishedVersion
-				:
-				typeof scanned.existingPub?.version === 'number' ? scanned.existingPub.version : null,
+				: typeof scanned.existingPub?.version === 'number'
+					? scanned.existingPub.version
+					: null,
 			currentPublishedProjectionHash: recoveringPartial
 				? scanned.appliedPublishedProjectionHash
 				: scanned.existingPub?.content
-				? hashPublicationProjection(scanned.existingPub.content as Record<string, unknown>)
-				: null,
+					? hashPublicationProjection(
+							scanned.existingPub.content as Record<string, unknown>,
+						)
+					: null,
 			appliedReceipt: scanned.appliedReceipt,
 			latestMutationReceipt: recoveringPartial
 				? scanned.appliedReceipt
@@ -1156,6 +1168,7 @@ function resolveTargetAssetRefs(
 	targetDbUrl: string,
 	invitationId: string,
 	targetStorageUrl: string,
+	preferredAssetIds: ReadonlySet<string> = new Set(),
 ): UploadedAssetMap {
 	const result = runPsql(
 		`select json_agg(t) from (select id, display_name, storage_path from public.invitation_assets where invitation_id = '${invitationId}'::uuid and deleted_at is null) t;`,
@@ -1163,13 +1176,39 @@ function resolveTargetAssetRefs(
 		{ tuplesOnly: true, throwOnError: false },
 	);
 	const rows = parsePsqlJsonArray(result.stdout);
-	const byPath = new Map(rows.map((row) => [row.storage_path as string, row]));
-	const byDisplayName = new Map(rows.map((row) => [row.display_name as string, row]));
+	const byPath = new Map<string, Record<string, unknown>[]>();
+	const byDisplayName = new Map<string, Record<string, unknown>[]>();
+	for (const row of rows) {
+		const pathRows = byPath.get(row.storage_path as string) ?? [];
+		pathRows.push(row);
+		byPath.set(row.storage_path as string, pathRows);
+		const displayRows = byDisplayName.get(row.display_name as string) ?? [];
+		displayRows.push(row);
+		byDisplayName.set(row.display_name as string, displayRows);
+	}
+	const uniqueRows = (candidateRows: Record<string, unknown>[]): Record<string, unknown>[] => [
+		...new Map(candidateRows.map((row) => [row.id as string, row])).values(),
+	];
+	const selectExistingRecord = (
+		asset: InvitationPackageAsset,
+	): Record<string, unknown> | null => {
+		const candidates = uniqueRows([
+			...(byPath.get(asset.storagePath) ?? []),
+			...(byDisplayName.get(asset.displayName) ?? []),
+		]);
+		const preferred = candidates.filter((row) => preferredAssetIds.has(row.id as string));
+		if (preferred.length === 1) return preferred[0]!;
+		if (preferred.length > 1 || candidates.length > 1) {
+			throw new Error(
+				`La identidad del archivo "${asset.displayName}" no se puede resolver de forma unívoca en el destino; no se reutilizará una fila arbitraria.`,
+			);
+		}
+		return candidates[0] ?? null;
+	};
 
 	return Object.fromEntries(
 		pkg.assets.map((asset) => {
-			const existingRecord =
-				byPath.get(asset.storagePath) ?? byDisplayName.get(asset.displayName);
+			const existingRecord = selectExistingRecord(asset);
 			const assetId = (existingRecord?.id as string) ?? randomUUID();
 			const storagePath = (existingRecord?.storage_path as string) ?? asset.storagePath;
 			return [
@@ -1311,6 +1350,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		targetDbUrl,
 		initialScan.targetInvitationId,
 		targetStorageUrl,
+		collectUploadedAssetIds(initialScan.existingDraft?.content),
 	);
 	const updateScope = options.updateScope ?? 'content-only';
 	const assetPolicy =
@@ -1359,8 +1399,13 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		isEventAndMemberIdentical: drift.isEventAndMemberIdentical,
 	});
 	const hasManagedChanges = actions.some(
-		(action) => action.action === 'create' || action.action === 'replace' || action.action === 'delete',
+		(action) =>
+			action.action === 'create' || action.action === 'replace' || action.action === 'delete',
 	);
+	const recoverableManagedPartial = isRecoverableManagedPartial(drift.latestMutationReceipt, {
+		sourceHash: pkg.sourceHash,
+		packageHash: pkg.packageHash,
+	});
 	const provenanceExists =
 		runPsql(
 			`select exists (select 1 from public.managed_invitation_release_provenance where invitation_id = '${drift.targetInvitationId}'::uuid);`,
@@ -1383,7 +1428,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		});
 	}
 
-	if (hasManagedChanges) {
+	if (hasManagedChanges || recoverableManagedPartial) {
 		const previewAdminId =
 			expectedTarget === 'preview' ? resolvePreviewAdminUser(targetDbUrl) : null;
 		if (expectedTarget === 'preview' && previewAdminId && ownerUserId === previewAdminId) {
@@ -1516,10 +1561,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 	}
 	const executionPlan = options.plan ?? currentPlan;
 	const rootOperationId = operationIdFromPlanId(executionPlan.planId);
-	const retryParentOperationId = isRecoverableManagedPartial(drift.latestMutationReceipt, {
-		sourceHash: pkg.sourceHash,
-		packageHash: pkg.packageHash,
-	})
+	const retryParentOperationId = recoverableManagedPartial
 		? drift.latestMutationReceipt!.operationId
 		: undefined;
 	const activeOperationId = retryParentOperationId
@@ -1810,6 +1852,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			targetDbUrl,
 			drift.targetInvitationId,
 			targetStorageUrl,
+			collectUploadedAssetIds(drift.targetDraftContent),
 		);
 		// Re-load invitation identity after apply. Creates start with existingInvitation=null;
 		// reusing that null here made final verification invent a new ID and always fail.

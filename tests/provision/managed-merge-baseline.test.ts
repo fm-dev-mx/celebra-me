@@ -80,6 +80,13 @@ describe('resolveManagedMergeBaseline', () => {
 		expectClassification({ managedProjection: null }, 'missing_provenance');
 	});
 
+	it.each([{}, { hero: {} }, { hero: { title: '   ' }, sections: [] }])(
+		'rejects structurally empty managed projections',
+		(managedProjection) => {
+			expectClassification({ managedProjection }, 'missing_provenance');
+		},
+	);
+
 	it.each([
 		['operation identity', { appliedOperationId: null }],
 		['draft revision', { appliedDraftUpdatedAt: null }],
@@ -92,7 +99,12 @@ describe('resolveManagedMergeBaseline', () => {
 	it('rejects provenance without its exact receipt', () => {
 		expectClassification({ appliedReceipt: null }, 'missing_receipt');
 		expectClassification(
-			{ appliedReceipt: { ...completeInput.appliedReceipt!, operationId: crypto.randomUUID() } },
+			{
+				appliedReceipt: {
+					...completeInput.appliedReceipt!,
+					operationId: crypto.randomUUID(),
+				},
+			},
 			'missing_receipt',
 		);
 	});
