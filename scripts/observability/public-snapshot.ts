@@ -1,4 +1,4 @@
-/** Final browser-safe projection. No values, UUIDs, hashes, URLs, commands, or raw errors. */
+/** Final browser-safe projection. No content values, UUIDs, URLs, commands, or raw errors. */
 import { isManagedInvitationPath } from '../../src/lib/intake/mutations/ownership.ts';
 import type {
 	EnvironmentSummary,

@@ -11,6 +11,11 @@ import {
 	readLegacyAdoptionCandidate,
 	type LegacyBaselineAdoptionManifest,
 } from './legacy-baseline-adoption.ts';
+import {
+	consumeProductionApproval,
+	getProdDbUrl,
+	requireProductionConfirmation,
+} from '../db/db-workflow-lib.ts';
 
 interface CliOptions {
 	manifestPath?: string;
@@ -117,6 +122,19 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
 		return;
 	}
 	if (options.apply) {
+		const { url: productionDbUrl } = getProdDbUrl();
+		const scope = bound.entries
+			.filter((entry) => entry.status === 'ELIGIBLE')
+			.map((entry) => entry.slug)
+			.sort()
+			.join(',');
+		await requireProductionConfirmation(new URL(productionDbUrl).hostname, undefined, {
+			operationType: 'legacy_baseline_adoption',
+			scope,
+			manifestFingerprint: bound.manifestFingerprint,
+			consumeApproval: (payload) =>
+				consumeProductionApproval({ dbUrl: productionDbUrl, payload }),
+		});
 		const result = await applyLegacyBaselineAdoption({
 			manifest: bound,
 			providedFingerprint: options.manifestFingerprint,

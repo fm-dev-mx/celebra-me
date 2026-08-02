@@ -37,6 +37,7 @@ const reasonCode = z.enum([
 	'CANONICAL_CHANGE_PENDING',
 	'VALID_DRAFT_PENDING',
 	'PARTIAL_PROMOTION',
+	'PREVIEW_VERIFICATION_REQUIRED',
 	'DETAIL_BUDGET_EXCEEDED',
 	'SNAPSHOT_REFRESH_FAILED',
 ]);
@@ -50,6 +51,7 @@ const nextStep = z.enum([
 	'APPLY_LOCAL',
 	'PROMOTE_PREVIEW',
 	'PROMOTE_PRODUCTION',
+	'VERIFY_PREVIEW',
 	'FIX_CANONICAL_DEFINITION',
 	'UPDATE_LIFECYCLE_METADATA',
 	'PROVIDE_REQUIRED_ASSET',
@@ -63,6 +65,39 @@ const semanticPath = z
 	.max(160)
 	.regex(/^[A-Za-z0-9_$.-]+(?:\[[0-9]+\])?(?:(?:\.|\[)[A-Za-z0-9_$\]-]+)*$/);
 const semanticPaths = z.array(semanticPath).max(50);
+const reporting = z
+	.object({
+		schemaVersion: z.literal(1),
+		snapshotId: z.string().min(1).max(160),
+		evidenceFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+		generatedAt: z.iso.datetime({ offset: true }),
+		commitSha: z
+			.string()
+			.regex(/^[a-f0-9]{40}$/)
+			.nullable(),
+		databaseTargets: z
+			.object({
+				local: z.literal('persistent-local'),
+				preview: z.literal('preview'),
+				production: z.literal('production'),
+			})
+			.strict(),
+		invitationClassifications: z
+			.array(
+				z
+					.object({
+						slug,
+						lifecycle,
+						operationalStatus,
+						deliveryStatus,
+					})
+					.strict(),
+			)
+			.max(100),
+		issueKeys: z.array(z.string().min(1).max(500)).max(200),
+		workItemKeys: z.array(z.string().min(1).max(500)).max(200),
+	})
+	.strict();
 
 const comparisonSummary = z
 	.object({
@@ -129,6 +164,7 @@ export const ObservabilitySnapshotSchema: z.ZodType<ObservabilitySnapshot> = z
 		freshness: z.enum(['FRESH', 'STALE', 'PARTIAL']),
 		operationalStatus,
 		deliveryStatus,
+		reporting,
 		coverage: coverageArray,
 		cache: z.object({ refreshAfter: z.iso.datetime({ offset: true }) }).strict(),
 		issues: z.array(signal).max(200),
@@ -175,6 +211,7 @@ export const ObservabilitySummarySchema: z.ZodType<ObservabilitySummaryPayload> 
 		freshness: z.enum(['FRESH', 'STALE', 'PARTIAL']),
 		operationalStatus,
 		deliveryStatus,
+		reporting,
 		coverage: coverageArray,
 		counts: z
 			.object({

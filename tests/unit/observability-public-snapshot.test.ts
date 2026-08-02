@@ -9,6 +9,21 @@ describe('public observability snapshot v3', () => {
 			freshness: 'FRESH',
 			operationalStatus: 'HEALTHY',
 			deliveryStatus: 'IN_PROGRESS',
+			reporting: {
+				schemaVersion: 1,
+				snapshotId: 'observability-test',
+				evidenceFingerprint: 'b'.repeat(64),
+				generatedAt: '2026-08-01T12:00:00.000Z',
+				commitSha: 'b'.repeat(40),
+				databaseTargets: {
+					local: 'persistent-local',
+					preview: 'preview',
+					production: 'production',
+				},
+				invitationClassifications: [],
+				issueKeys: [],
+				workItemKeys: [],
+			},
 			coverage: [
 				{ environment: 'local', status: 'AVAILABLE' },
 				{ environment: 'preview', status: 'AVAILABLE' },
@@ -77,6 +92,21 @@ describe('public observability snapshot v3', () => {
 			freshness: 'FRESH',
 			operationalStatus: 'HEALTHY',
 			deliveryStatus: 'ALIGNED',
+			reporting: {
+				schemaVersion: 1,
+				snapshotId: 'observability-test',
+				evidenceFingerprint: 'b'.repeat(64),
+				generatedAt: '2026-08-01T12:00:00.000Z',
+				commitSha: 'b'.repeat(40),
+				databaseTargets: {
+					local: 'persistent-local',
+					preview: 'preview',
+					production: 'production',
+				},
+				invitationClassifications: [],
+				issueKeys: [],
+				workItemKeys: [],
+			},
 			coverage: [
 				{ environment: 'local', status: 'AVAILABLE' },
 				{ environment: 'preview', status: 'AVAILABLE' },

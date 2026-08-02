@@ -496,8 +496,8 @@ application login substitute. Host invitation flows continue to use real `host_c
 - **Disposition: `RESTRICT_OWNER_ONLY` / `KEEP_SPECIALIZED`.**
 - Narrow owner-only maintenance for reviewed patches that cannot yet be expressed as versioned
   `supabase/migrations/*`. Not a bypass for `db:prod:migrate` or `invitation:promote`.
-- Requires owner confirmation (`PATCH <owner-uuid> <file>` / `CONFIRM_PROD_MIGRATION`) and never
-  auto-runs schema migrations.
+- Requires an external Ed25519 approval token and public key bound to the owner, patch fingerprint,
+  target, and durable operation receipt; it never auto-runs schema migrations.
 
 ## Workflows
 

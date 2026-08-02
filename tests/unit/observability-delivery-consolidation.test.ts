@@ -186,7 +186,7 @@ describe('Observability Delivery Consolidation', () => {
 		expect(workItem.reasonCode).toBe('PARTIAL_PROMOTION');
 	});
 
-	it('emits PROMOTE_PRODUCTION for Production when Preview is unavailable', () => {
+	it('requires Preview verification when Preview is unavailable', () => {
 		const ev = evidence();
 		ev.projections.preview.reachable = false;
 		ev.projections.preview.failure = 'credentials_required';
@@ -197,7 +197,8 @@ describe('Observability Delivery Consolidation', () => {
 		);
 		expect(perlaWorkItems).toHaveLength(1);
 		const workItem = perlaWorkItems[0]!;
-		expect(workItem.environment).toBe('production');
-		expect(workItem.nextStep).toBe('PROMOTE_PRODUCTION');
+		expect(workItem.environment).toBe('preview');
+		expect(workItem.nextStep).toBe('VERIFY_PREVIEW');
+		expect(workItem.reasonCode).toBe('PREVIEW_VERIFICATION_REQUIRED');
 	});
 });

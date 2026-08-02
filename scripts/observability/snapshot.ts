@@ -1,22 +1,7 @@
 /** Snapshot v3 assembly: read-only evidence collection plus deterministic aggregation. */
-import { listInvitationDefinitions } from '../provision/invitations/registry.ts';
-import {
-	getInvitationAssetSourceDir,
-	type InvitationDefinition,
-	type InvitationLifecycle,
-} from '../provision/invitations/invitation-definition.ts';
-import { listLocalRenderCorpus } from '../provision/local-render-corpus/registry.ts';
-import { buildNormalizedInvitationRelease } from '../provision/normalized-invitation-release.ts';
-import { serializeInvitationPackage } from '../provision/invitation-package.ts';
-import {
-	ObservabilityInvocationBudget,
-	readEnvironmentDatabaseProjection,
-	readMigrationProjection,
-	unprobedEnvironmentProjection,
-	unprobedMigrationProjection,
-	type EnvironmentDatabaseProjection,
-	type MigrationProjection,
-} from './database-projection.ts';
+import type { InvitationLifecycle } from '../provision/invitations/invitation-definition.ts';
+import type { EnvironmentDatabaseProjection, MigrationProjection } from './database-projection.ts';
+import { collectSnapshotEvidence } from './snapshot-evidence.ts';
 import {
 	directlyAlignedDelivery,
 	reconcileInvitationDelivery,
@@ -34,6 +19,7 @@ import {
 	comparisonToDeliveryStatus,
 } from './overall-status.ts';
 import { finalizeObservabilitySnapshot } from './public-snapshot.ts';
+import { buildReportingEvidence } from './reporting-parity.ts';
 import type {
 	ComparisonSummary,
 	DeliveryStatus,
@@ -50,7 +36,6 @@ import type {
 } from './types.ts';
 export type ObservabilityProbeScope = 'local' | 'all';
 const ENVIRONMENTS: readonly ObservabilityEnvironment[] = ['local', 'preview', 'production'];
-const PROBE_TIMEOUT_MS = 4_000;
 const REFRESH_TTL_MS = 60_000;
 export interface CanonicalObservation extends CanonicalDeliveryInput, CurrentStateCanonical {}
 export interface SnapshotEvidence {
@@ -329,9 +314,52 @@ function resolveNextStep(env: (typeof ENVIRONMENTS)[number]): ObservabilityNextS
 	return 'PROMOTE_PRODUCTION';
 }
 
+function appendPreviewVerificationSignal(
+	canonical: CanonicalObservation,
+	state: CanonicalEvaluationState,
+	coverage: readonly EnvironmentCoverage[],
+	byEnvironment: ReadonlyMap<ObservabilityEnvironment, ComparisonSummary>,
+	previewOutcome: ComparisonSummary['outcome'] | undefined,
+): boolean {
+	const previewCoverage = coverage.find((item) => item.environment === 'preview');
+	if (
+		previewCoverage?.status === 'NOT_PROBED' ||
+		(previewCoverage?.status === 'AVAILABLE' && previewOutcome !== 'UNVERIFIED')
+	) {
+		return false;
+	}
+	for (let i = state.workItems.length - 1; i >= 0; i--) {
+		if (
+			[
+				'CANONICAL_CHANGE_PENDING',
+				'PARTIAL_PROMOTION',
+				'VALID_DRAFT_PENDING',
+				'PREVIEW_VERIFICATION_REQUIRED',
+			].includes(state.workItems[i]!.reasonCode)
+		) {
+			state.workItems.splice(i, 1);
+		}
+	}
+	state.workItems.push(
+		signal({
+			impact: 'DELIVERY',
+			reasonCode: 'PREVIEW_VERIFICATION_REQUIRED',
+			nextStep: 'VERIFY_PREVIEW',
+			deliveryStatus: 'UNVERIFIED',
+			environment: 'preview',
+			slug: canonical.slug,
+			lifecycle: canonical.lifecycle,
+			comparison: byEnvironment.get('preview'),
+		}),
+	);
+	state.deliveryStatuses.push('UNVERIFIED');
+	return true;
+}
+
 function appendLifecycleSignals(
 	canonical: CanonicalObservation,
 	state: CanonicalEvaluationState,
+	coverage: readonly EnvironmentCoverage[],
 ): void {
 	const byEnvironment = new Map(
 		state.comparisons.map((comparison) => [comparison.environment, comparison]),
@@ -358,6 +386,9 @@ function appendLifecycleSignals(
 		state.deliveryStatuses.push('ACTION_REQUIRED');
 		return;
 	}
+
+	if (appendPreviewVerificationSignal(canonical, state, coverage, byEnvironment, previewOutcome))
+		return;
 
 	const hasValidDraftPending = state.workItems.some(
 		(w) => w.reasonCode === 'VALID_DRAFT_PENDING',
@@ -522,7 +553,7 @@ function evaluateCanonicalInvitation(
 	}
 
 	appendPresenceSignals({ canonical, coverage, rowsByEnvironment, state });
-	appendLifecycleSignals(canonical, state);
+	appendLifecycleSignals(canonical, state, coverage);
 
 	return {
 		summary: {
@@ -673,12 +704,20 @@ export function assembleSnapshotFromEvidence(evidence: SnapshotEvidence): Observ
 		...issues.filter((item) => !item.environment).map((item) => item.deliveryStatus),
 	]);
 	const freshness = coverage.every((item) => item.status === 'AVAILABLE') ? 'FRESH' : 'PARTIAL';
+	const reporting = buildReportingEvidence({
+		generatedAt: evidence.generatedAt,
+		probeScope: evidence.probeScope,
+		invitations: invitationSummaries,
+		issues,
+		workItems,
+	});
 
 	return finalizeObservabilitySnapshot({
 		generatedAt: evidence.generatedAt,
 		freshness,
 		operationalStatus,
 		deliveryStatus,
+		reporting,
 		coverage,
 		cache: {
 			refreshAfter: new Date(
@@ -690,98 +729,6 @@ export function assembleSnapshotFromEvidence(evidence: SnapshotEvidence): Observ
 		environmentSummaries,
 		invitationSummaries,
 	});
-}
-
-async function buildCanonicalObservations(): Promise<{
-	canonical: CanonicalObservation[];
-	failures: Array<{ slug: string; lifecycle: InvitationLifecycle }>;
-}> {
-	const canonical: CanonicalObservation[] = [];
-	const failures: Array<{ slug: string; lifecycle: InvitationLifecycle }> = [];
-	await Promise.all(
-		listInvitationDefinitions().map(async (definition: InvitationDefinition) => {
-			try {
-				const release = await buildNormalizedInvitationRelease({
-					slug: definition.slug,
-					sourceDir: getInvitationAssetSourceDir(definition),
-				});
-				canonical.push({
-					slug: definition.slug,
-					lifecycle: definition.lifecycle,
-					deliveryScope: definition.deliveryScope,
-					packageHash: serializeInvitationPackage(release).packageHash,
-					managedContent: release.draftContent,
-					metadata: {
-						eventType: release.metadata.eventType,
-						kind: 'client',
-						baseDemoId: release.metadata.baseDemoId,
-						themeId: release.metadata.themeId,
-						snapshot: release.metadata.snapshot,
-						clientName: release.metadata.clientName,
-					},
-					assets: release.assets.map((asset) => ({
-						key: asset.key,
-						displayName: asset.displayName,
-						mimeType: asset.mimeType,
-						width: asset.width,
-						height: asset.height,
-						fileSize: asset.fileSize,
-					})),
-				});
-			} catch {
-				failures.push({ slug: definition.slug, lifecycle: definition.lifecycle });
-			}
-		}),
-	);
-	canonical.sort((left, right) => left.slug.localeCompare(right.slug));
-	failures.sort((left, right) => left.slug.localeCompare(right.slug));
-	return { canonical, failures };
-}
-
-async function collectSnapshotEvidence(
-	probeScope: ObservabilityProbeScope,
-): Promise<SnapshotEvidence> {
-	const generatedAt = new Date().toISOString();
-	const built = await buildCanonicalObservations();
-	const legacy = listLocalRenderCorpus()
-		.filter((entry) => entry.classification === 'legacy')
-		.map((entry) => ({ slug: entry.slug, remoteParity: entry.remoteParity }));
-	const slugs = [
-		...new Set([
-			...built.canonical.map((item) => item.slug),
-			...legacy.map((item) => item.slug),
-		]),
-	];
-	const budget = new ObservabilityInvocationBudget();
-	const projections = {} as Record<ObservabilityEnvironment, EnvironmentDatabaseProjection>;
-	const migrations = {} as Record<ObservabilityEnvironment, MigrationProjection>;
-	for (const environment of ENVIRONMENTS) {
-		if (probeScope === 'local' && environment !== 'local') {
-			projections[environment] = unprobedEnvironmentProjection(environment);
-			migrations[environment] = unprobedMigrationProjection(environment);
-			continue;
-		}
-		projections[environment] = readEnvironmentDatabaseProjection({
-			environment,
-			slugs,
-			timeoutMs: PROBE_TIMEOUT_MS,
-			budget,
-		});
-		migrations[environment] = readMigrationProjection({
-			environment,
-			timeoutMs: PROBE_TIMEOUT_MS,
-			budget,
-		});
-	}
-	return {
-		generatedAt,
-		probeScope,
-		canonical: built.canonical,
-		canonicalFailures: built.failures,
-		legacy,
-		projections,
-		migrations,
-	};
 }
 
 export async function buildObservabilitySnapshot(options?: {
@@ -800,6 +747,7 @@ export async function buildObservabilitySummary(): Promise<ObservabilitySummaryP
 		freshness: snapshot.freshness,
 		operationalStatus: snapshot.operationalStatus,
 		deliveryStatus: snapshot.deliveryStatus,
+		reporting: snapshot.reporting,
 		coverage: snapshot.coverage,
 		counts: {
 			invitations: snapshot.invitationSummaries.length,

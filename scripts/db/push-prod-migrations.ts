@@ -10,7 +10,7 @@
  *   4. Dry-run push and allowlist matching (`--allowlist` or `EXPECTED_MIGRATIONS`)
  *   4b. Migration / deployment compatibility (target-release membership, rollout phases)
  *   5. Complete pre-migration critical recovery point (`.backups/prod/...`)
- *   6. Interactive user confirmation (`MIGRATE <hostname>` or `CONFIRM_PROD_MIGRATION="MIGRATE <hostname>"`)
+ *   6. External Ed25519 approval verification and durable single-use receipt consumption
  *   7. Migration application (`supabase db push --db-url <url> --yes`)
  *   8. Post-migration schema/application contract verification
  *   9. Complete post-migration critical backup (DB, Auth, Storage metadata/bytes)
@@ -30,6 +30,7 @@
 import { runHostedMigrationCompatibilityGate } from './hosted-migration-compatibility-gate.ts';
 import {
 	assertProductionDbUrl,
+	consumeProductionApproval,
 	fail,
 	getProdDbUrl,
 	redactDbUrl,
@@ -194,7 +195,12 @@ async function main(): Promise<void> {
 
 	// 6. Explicit User Confirmation
 	console.info('6. Prompting for explicit production migration confirmation...');
-	await requireProductionConfirmation(target.hostname);
+	await requireProductionConfirmation(target.hostname, undefined, {
+		operationType: 'production_migration',
+		scope: target.hostname,
+		manifestFingerprint: expectedVersions.join(','),
+		consumeApproval: (payload) => consumeProductionApproval({ dbUrl: prodDbUrl, payload }),
+	});
 
 	// 7. DB Push execution
 	console.info('7. Applying migrations to production database...');

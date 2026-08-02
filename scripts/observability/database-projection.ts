@@ -51,6 +51,8 @@ export interface InvitationDatabaseProjection {
 	draftStatus: string | null;
 	draftUpdatedAt: string | null;
 	draftContent: Record<string, unknown> | null;
+	/** Published content is the canonical present-state target for approved drafts. */
+	publishedContent?: Record<string, unknown> | null;
 	detailRequired: boolean;
 	detailBudgetExceeded: boolean;
 	publishedVersion: number | null;
@@ -231,6 +233,7 @@ function parseRows(value: unknown): InvitationDatabaseProjection[] {
 				draftStatus: stringOrNull(row.draftStatus),
 				draftUpdatedAt: stringOrNull(row.draftUpdatedAt),
 				draftContent: decodeRecord(row.draftContentBase64),
+				publishedContent: decodeRecord(row.publishedContentBase64),
 				detailRequired: row.detailRequired === true,
 				detailBudgetExceeded: row.detailBudgetExceeded === true,
 				publishedVersion: numberOrNull(row.publishedVersion),
@@ -345,9 +348,11 @@ WITH target_rows AS (
 	-- Direct alignment needs the current managed projection even when durable provenance exists.
 	true AS detail_required,
     COALESCE(octet_length(d.content::text), 0) +
+	  COALESCE(octet_length(pub.content::text), 0) +
 	  COALESCE(octet_length(p.managed_projection::text), 0) +
 	  COALESCE(octet_length(assets.items::text), 0) AS detail_bytes,
-    d.content AS draft_content
+    d.content AS draft_content,
+    pub.content AS published_content
   FROM target_rows i
   LEFT JOIN public.managed_invitation_release_provenance p ON p.invitation_id = i.id
   LEFT JOIN public.invitation_mutation_operation_receipts applied_receipt
@@ -359,7 +364,7 @@ WITH target_rows AS (
     ORDER BY d0.updated_at DESC LIMIT 1
   ) d ON true
   LEFT JOIN LATERAL (
-    SELECT p0.version, p0.published_at
+    SELECT p0.version, p0.published_at, p0.content
     FROM public.published_invitation_content p0
     WHERE p0.invitation_project_id = i.id AND p0.deleted_at IS NULL
     ORDER BY p0.version DESC LIMIT 1
@@ -413,6 +418,9 @@ SELECT jsonb_build_object(
       'draftContentBase64', CASE
         WHEN detail_required AND detail_bytes <= ${OBSERVABILITY_DETAIL_BUDGET_BYTES}
         THEN encode(convert_to(draft_content::text, 'UTF8'), 'base64') ELSE NULL END,
+      'publishedContentBase64', CASE
+        WHEN detail_required AND detail_bytes <= ${OBSERVABILITY_DETAIL_BUDGET_BYTES}
+        THEN encode(convert_to(published_content::text, 'UTF8'), 'base64') ELSE NULL END,
       'detailRequired', detail_required,
       'detailBudgetExceeded', detail_required AND detail_bytes > ${OBSERVABILITY_DETAIL_BUDGET_BYTES},
       'publishedVersion', published_version,

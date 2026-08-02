@@ -652,15 +652,19 @@ describe('confirmProductionAction', () => {
 		jest.restoreAllMocks();
 	});
 
-	it('accepts matching CONFIRM_PROD_MIGRATION without prompting', async () => {
+	it('rejects plaintext CONFIRM_PROD_MIGRATION even when it matches', async () => {
 		const { confirmProductionAction } = await import('../../scripts/db/db-workflow-lib.ts');
 		process.env.CONFIRM_PROD_MIGRATION = 'MIGRATE aws-0-us-west-2.pooler.supabase.com';
+		jest.spyOn(console, 'error').mockImplementation(() => undefined);
+		jest.spyOn(process, 'exit').mockImplementation(((code?: string | number | null) => {
+			throw new Error(`process.exit:${code ?? ''}`);
+		}) as never);
 		await expect(
 			confirmProductionAction(
 				'aws-0-us-west-2.pooler.supabase.com',
 				'MIGRATE aws-0-us-west-2.pooler.supabase.com',
 			),
-		).resolves.toBeUndefined();
+		).rejects.toThrow('process.exit:1');
 	});
 
 	it('rejects mismatched CONFIRM_PROD_MIGRATION', async () => {

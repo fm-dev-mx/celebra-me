@@ -21,8 +21,7 @@ const TEST_PATCH_PATH = resolve(
 
 const VALID_UUID = '550e8400-e29b-41d4-a716-446655440000';
 const VALID_SUPABASE_URL = 'https://abcdefghijklm.supabase.co';
-const VALID_PROD_DB_URL =
-	'postgresql://postgres:***@db.abcdefghijklm.supabase.co:5432/postgres';
+const VALID_PROD_DB_URL = 'postgresql://postgres:***@db.abcdefghijklm.supabase.co:5432/postgres';
 
 // These are mutable variables that the mock closures capture.
 let mockRunPsql: jest.Mock;
@@ -31,6 +30,16 @@ let mockGetProdDbUrl: jest.Mock;
 jest.mock('../../scripts/db/db-workflow-lib', () => ({
 	runPsql: (...args: unknown[]) => mockRunPsql(...args),
 	getProdDbUrl: (...args: unknown[]) => mockGetProdDbUrl(...args),
+	consumeProductionApproval: async () => ({ consumed: true }),
+	requireProductionConfirmationSync: () => {
+		if (
+			!process.env.CELEBRA_PROD_APPROVAL_TOKEN ||
+			!process.env.CELEBRA_PROD_APPROVAL_PUBLIC_KEY
+		) {
+			console.error('PRODUCTION_AUTHORIZATION_FAILED [MISSING_APPROVAL_TOKEN]');
+			process.exit(1);
+		}
+	},
 	fail: (message: string) => {
 		console.error(message);
 		process.exit(1);
@@ -53,6 +62,8 @@ beforeEach(() => {
 	delete process.env.SUPABASE_URL;
 	delete process.env.PROD_DB_URL;
 	delete process.env.CONFIRM_PROD_MIGRATION;
+	delete process.env.CELEBRA_PROD_APPROVAL_TOKEN;
+	delete process.env.CELEBRA_PROD_APPROVAL_PUBLIC_KEY;
 	delete process.env.CELEBRA_TASK_SCOPE;
 
 	jest.spyOn(process, 'exit').mockImplementation(((code?: number) => {
@@ -193,7 +204,8 @@ describe('run-prod-patch orchestration', () => {
 			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
 			setEnv({
 				SUPABASE_URL: VALID_SUPABASE_URL,
-				CONFIRM_PROD_MIGRATION: `PATCH ${VALID_UUID} ${TEST_PATCH_PATH}`,
+				CELEBRA_PROD_APPROVAL_TOKEN: 'external-token',
+				CELEBRA_PROD_APPROVAL_PUBLIC_KEY: 'external-public-key',
 			});
 			importRunner();
 
@@ -218,7 +230,8 @@ describe('run-prod-patch orchestration', () => {
 			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
 			setEnv({
 				SUPABASE_URL: VALID_SUPABASE_URL,
-				CONFIRM_PROD_MIGRATION: `PATCH ${VALID_UUID} ${TEST_PATCH_PATH}`,
+				CELEBRA_PROD_APPROVAL_TOKEN: 'external-token',
+				CELEBRA_PROD_APPROVAL_PUBLIC_KEY: 'external-public-key',
 			});
 			importRunner();
 
@@ -236,7 +249,8 @@ describe('run-prod-patch orchestration', () => {
 			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
 			setEnv({
 				SUPABASE_URL: VALID_SUPABASE_URL,
-				CONFIRM_PROD_MIGRATION: `PATCH ${VALID_UUID} ${TEST_PATCH_PATH}`,
+				CELEBRA_PROD_APPROVAL_TOKEN: 'external-token',
+				CELEBRA_PROD_APPROVAL_PUBLIC_KEY: 'external-public-key',
 			});
 			importRunner();
 
@@ -245,7 +259,7 @@ describe('run-prod-patch orchestration', () => {
 			expect(sqlArg).toContain(`'${VALID_SUPABASE_URL}'`);
 		});
 
-		it('exits 1 when CONFIRM_PROD_MIGRATION is missing', () => {
+		it('exits 1 when external approval evidence is missing', () => {
 			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
 			setEnv({ SUPABASE_URL: VALID_SUPABASE_URL });
 			importRunner();
@@ -261,7 +275,8 @@ describe('run-prod-patch orchestration', () => {
 			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
 			setEnv({
 				SUPABASE_URL: VALID_SUPABASE_URL,
-				CONFIRM_PROD_MIGRATION: `PATCH ${VALID_UUID} ${TEST_PATCH_PATH}`,
+				CELEBRA_PROD_APPROVAL_TOKEN: 'external-token',
+				CELEBRA_PROD_APPROVAL_PUBLIC_KEY: 'external-public-key',
 			});
 			importRunner();
 

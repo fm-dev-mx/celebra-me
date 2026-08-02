@@ -2,15 +2,18 @@
 /**
  * invitation-promote-cli.ts — Public owner-only Production promotion entrypoint.
  *
- * Agents may run read-only preflight/status. Apply requires interactive owner
- * confirmation (or CONFIRM_PROD_MIGRATION matching the exact challenge).
- * There is no agent/non-interactive Production promotion mode.
+ * Agents may run read-only preflight/status. Apply requires external Ed25519
+ * owner approval and durable replay consumption.
  */
 import { resolveInvitationPackageInput, PackageInputError } from './invitation-package-input.ts';
 import { parseAssetPolicy } from './asset-reconciliation.ts';
 import type { UpdateScope } from './semantic-delta.ts';
 import { loadConflictResolutionsFile } from './conflict-resolutions.ts';
-import { getProdDbUrl, requireProductionConfirmation } from '../db/db-workflow-lib.ts';
+import {
+	consumeProductionApproval,
+	getProdDbUrl,
+	requireProductionConfirmation,
+} from '../db/db-workflow-lib.ts';
 import {
 	runPromotionApply,
 	runPromotionPreflight,
@@ -60,8 +63,8 @@ Release identity (exactly one source preferred; package recommended for immutabl
 
 Owner apply gates:
   --backup-manifest <path>  Verified critical backup manifest (or auto-discover newest under .backups/prod/)
-  Interactive confirmation challenge: PROMOTE <slug> <packageHash>
-  Or CONFIRM_PROD_MIGRATION with the exact same challenge string
+  CELEBRA_PROD_APPROVAL_TOKEN  External Ed25519 approval bound to slug, package hash, and operation ID
+  CELEBRA_PROD_APPROVAL_PUBLIC_KEY  Verification key; approval consumption is durable and single-use
 
 Optional:
   --owner-user-id <uuid>  Owner assertion for new Production invitations
@@ -241,13 +244,15 @@ async function main(): Promise<void> {
 		return;
 	}
 
-	const interactive = Boolean(process.stdin.isTTY && process.stdout.isTTY);
-	if (!interactive && !process.env.CONFIRM_PROD_MIGRATION?.trim()) {
+	if (
+		!process.env.CELEBRA_PROD_APPROVAL_TOKEN?.trim() ||
+		!process.env.CELEBRA_PROD_APPROVAL_PUBLIC_KEY?.trim()
+	) {
 		const blocked: PromotionPreflightReport = {
 			...preflight,
 			status: 'BLOCKED',
 			blockCode: 'CONFIRMATION_REQUIRED',
-			reason: 'CONFIRMATION_REQUIRED: Production promotion apply requires an interactive owner TTY confirmation or CONFIRM_PROD_MIGRATION set to the exact challenge. There is no agent non-interactive promotion mode.',
+			reason: 'CONFIRMATION_REQUIRED: Production promotion apply requires CELEBRA_PROD_APPROVAL_TOKEN and CELEBRA_PROD_APPROVAL_PUBLIC_KEY from an external operator.',
 		};
 		if (json) console.log(JSON.stringify(toPublicPromotionReport(blocked), null, 2));
 		else printHumanReport(blocked);
@@ -271,7 +276,13 @@ async function main(): Promise<void> {
 			return 'production';
 		}
 	})();
-	await requireProductionConfirmation(prodHost, challenge);
+	await requireProductionConfirmation(prodHost, challenge, {
+		operationType: 'promotion',
+		scope: slug,
+		manifestFingerprint: packageInput.packageData.packageHash,
+		consumeApproval: (payload) =>
+			consumeProductionApproval({ dbUrl: preflight.targetDbUrl ?? '', payload }),
+	});
 
 	const applyReport: PromotionApplyReport = await runPromotionApply({
 		preflight,

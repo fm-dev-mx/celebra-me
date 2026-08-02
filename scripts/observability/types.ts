@@ -91,6 +91,7 @@ export type ObservabilityReasonCode =
 	| 'CANONICAL_CHANGE_PENDING'
 	| 'VALID_DRAFT_PENDING'
 	| 'PARTIAL_PROMOTION'
+	| 'PREVIEW_VERIFICATION_REQUIRED'
 	| 'DETAIL_BUDGET_EXCEEDED'
 	| 'SNAPSHOT_REFRESH_FAILED';
 
@@ -104,6 +105,7 @@ export type ObservabilityNextStep =
 	| 'APPLY_LOCAL'
 	| 'PROMOTE_PREVIEW'
 	| 'PROMOTE_PRODUCTION'
+	| 'VERIFY_PREVIEW'
 	| 'FIX_CANONICAL_DEFINITION'
 	| 'UPDATE_LIFECYCLE_METADATA'
 	| 'PROVIDE_REQUIRED_ASSET'
@@ -160,12 +162,34 @@ export interface EnvironmentSummary {
 	};
 }
 
+export interface ObservabilityReporting {
+	schemaVersion: 1;
+	snapshotId: string;
+	evidenceFingerprint: string;
+	generatedAt: string;
+	commitSha: string | null;
+	databaseTargets: {
+		local: 'persistent-local';
+		preview: 'preview';
+		production: 'production';
+	};
+	invitationClassifications: Array<{
+		slug: string;
+		lifecycle: InvitationLifecycle;
+		operationalStatus: OperationalStatus;
+		deliveryStatus: DeliveryStatus;
+	}>;
+	issueKeys: string[];
+	workItemKeys: string[];
+}
+
 export interface ObservabilitySnapshot {
 	schemaVersion: 3;
 	generatedAt: string;
 	freshness: SnapshotFreshness;
 	operationalStatus: OperationalStatus;
 	deliveryStatus: DeliveryStatus;
+	reporting: ObservabilityReporting;
 	coverage: EnvironmentCoverage[];
 	cache: {
 		refreshAfter: string;
@@ -182,6 +206,7 @@ export interface ObservabilitySummaryPayload {
 	freshness: SnapshotFreshness;
 	operationalStatus: OperationalStatus;
 	deliveryStatus: DeliveryStatus;
+	reporting: ObservabilityReporting;
 	coverage: EnvironmentCoverage[];
 	counts: {
 		invitations: number;

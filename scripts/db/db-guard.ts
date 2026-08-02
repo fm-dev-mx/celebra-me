@@ -33,7 +33,6 @@ import type { DbTarget, ClassificationResult, GuardResult } from './db-target-co
 import {
 	PERSISTENT_LOCAL,
 	classifyDbTarget,
-	parseDbUrl,
 	redactDbUrl,
 	redactCredentials,
 	resolveDbUrl,
@@ -124,9 +123,10 @@ export function guardProduction(
 	}
 
 	if (operation === 'migrate') {
-		const parsed = parseDbUrl(classification.dbUrl ?? '');
-		const expectedHost = parsed?.hostname ?? '';
-		if (expectedHost && process.env.CONFIRM_PROD_MIGRATION === `MIGRATE ${expectedHost}`) {
+		if (
+			process.env.CELEBRA_PROD_APPROVAL_TOKEN?.trim() &&
+			process.env.CELEBRA_PROD_APPROVAL_PUBLIC_KEY?.trim()
+		) {
 			return { ok: true, errors: [] };
 		}
 	}

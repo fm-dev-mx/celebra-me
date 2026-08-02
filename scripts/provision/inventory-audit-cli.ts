@@ -8,19 +8,21 @@
  * This command is strictly read-only and never mutates any database.
  */
 import { runInventoryAudit } from './inventory-audit.ts';
+import { buildObservabilitySnapshot } from '../observability/snapshot.ts';
 
 function pad(str: string, width: number): string {
 	return str.padEnd(width, ' ');
 }
 
-function main(): void {
+async function main(): Promise<void> {
 	const args = process.argv.slice(2);
 	const jsonMode = args.includes('--json');
 
 	const result = runInventoryAudit();
+	const observability = await buildObservabilitySnapshot({ probeScope: 'all' });
 
 	if (jsonMode) {
-		console.log(JSON.stringify(result, null, 2));
+		console.log(JSON.stringify({ ...result, observability }, null, 2));
 		return;
 	}
 
@@ -33,6 +35,14 @@ function main(): void {
 	);
 
 	console.log(`Generated At:                ${result.generatedAt}`);
+	console.log(`Snapshot ID:                 ${observability.reporting.snapshotId}`);
+	console.log(`Evidence Fingerprint:       ${observability.reporting.evidenceFingerprint}`);
+	console.log(
+		`Commit SHA:                  ${observability.reporting.commitSha ?? 'unavailable'}`,
+	);
+	console.log(
+		`Database Targets:            local=${observability.reporting.databaseTargets.local}, preview=${observability.reporting.databaseTargets.preview}, production=${observability.reporting.databaseTargets.production}`,
+	);
 	console.log(
 		`Repository Definitions:     ${result.summary.repoCanonicalCount} (${result.summary.repoCanonicalPublishedCount} published, ${result.summary.repoCanonicalInProgressCount} in_progress)`,
 	);
@@ -139,6 +149,9 @@ function main(): void {
 	console.log(
 		`\n========================================================================================\n`,
 	);
+	console.log(
+		`Observability parity: ${observability.reporting.invitationClassifications.length} classifications, ${observability.reporting.issueKeys.length} issues, ${observability.reporting.workItemKeys.length} work items`,
+	);
 }
 
-main();
+await main();

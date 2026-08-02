@@ -41,9 +41,12 @@ Unavailable evidence is `UNVERIFIED`; it is never inferred to be an ordering vio
 
 The detail response is anomaly-first and exposes only typed reason codes, typed next steps,
 comparison outcomes, counts, lifecycle, environment, slug, and bounded semantic paths. It excludes
-field values, invitation or operation UUIDs, hashes, URLs, credentials, commands, raw errors,
-absolute paths, and unmanaged evidence. `src/lib/observability/schema.ts` validates the complete
-strict schema before the payload crosses the server boundary.
+field values, invitation or operation UUIDs, content hashes, URLs, credentials, commands, raw
+errors, absolute paths, and unmanaged evidence. A controlled `reporting` envelope carries only the
+source commit SHA, logical database targets, snapshot ID, non-content evidence fingerprint,
+timestamp, and deterministic keys for the same invitation classifications, issues, and work items
+consumed by the inventory CLI and dashboard. `src/lib/observability/schema.ts` validates the
+complete strict schema before the payload crosses the server boundary.
 
 ## Summary and detail
 
@@ -129,8 +132,8 @@ of that form makes operational health `UNVERIFIED`, while unpublished evidence m
 `UNVERIFIED`.
 
 The batch projection uses only the managed asset `id` and semantic `key` for reconciliation. Storage
-paths, buckets, provider URLs, hashes, and environment-specific identifiers are neither queried as
-semantic identity nor included in the public snapshot.
+paths, buckets, provider URLs, content hashes, and environment-specific identifiers are neither
+queried as semantic identity nor included in the public snapshot.
 
 ## Legacy administrative baseline preparation
 

@@ -158,8 +158,9 @@ describe('Database Pipeline Safety & Hardening Regression Tests', () => {
 			expect(result.errors[0]).toContain('PRODUCTION WRITE BLOCKED');
 		});
 
-		it('permits migrate operation ONLY when CONFIRM_PROD_MIGRATION matches exact host', () => {
-			process.env.CONFIRM_PROD_MIGRATION = 'MIGRATE db.ineitkdkyrxqyressllp.supabase.co';
+		it('permits migrate operation only when external token and public key are present', () => {
+			process.env.CELEBRA_PROD_APPROVAL_TOKEN = 'external-token';
+			process.env.CELEBRA_PROD_APPROVAL_PUBLIC_KEY = 'external-public-key';
 
 			const result = guardProduction(prodClassification, 'migrate');
 			expect(result.ok).toBe(true);

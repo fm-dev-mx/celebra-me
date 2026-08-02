@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { createHash } from 'node:crypto';
 import {
 	lintProductionPatchSql,
 	argValue,
@@ -7,7 +8,12 @@ import {
 	validateOwnerUserId,
 	assertSameSupabaseProject,
 } from './sql-safety.ts';
-import { fail, getProdDbUrl, runPsql } from './db-workflow-lib.ts';
+import {
+	consumeProductionApproval,
+	getProdDbUrl,
+	requireProductionConfirmationSync,
+	runPsql,
+} from './db-workflow-lib.ts';
 
 /**
  * db:prod:patch disposition: RESTRICT_OWNER_ONLY / KEEP_SPECIALIZED
@@ -15,8 +21,8 @@ import { fail, getProdDbUrl, runPsql } from './db-workflow-lib.ts';
  * Narrow owner-only path for reviewed manual SQL patches that cannot yet be
  * expressed as versioned supabase/migrations/*. Not a bypass for
  * invitation:promote or db:prod:migrate. Default operator mode is lint-only
- * (--dry-run). --apply requires CONFIRM_PROD_MIGRATION matching the exact
- * challenge and never auto-migrates schema.
+ * (--dry-run). --apply requires external Ed25519 approval matching the exact
+ * patch fingerprint and never auto-migrates schema.
  */
 
 const dryRun = process.argv.includes('--dry-run');
@@ -33,29 +39,7 @@ function printUsage(): void {
 		'Owner-only specialized maintenance. Prefer supabase/migrations + db:prod:migrate for schema and invitation:promote for managed content.',
 	);
 	console.error(
-		'Apply requires CONFIRM_PROD_MIGRATION="PATCH <owner-uuid> <file>" after reviewing --dry-run output.',
-	);
-}
-
-function assertOwnerPatchConfirmation(requiredConfirmation: string): void {
-	if (process.env.CELEBRA_TASK_SCOPE) {
-		fail(
-			'CELEBRA_TASK_SCOPE is Preview automation only and does not authorize db:prod:patch --apply.',
-		);
-	}
-	const envConfirmation = process.env.CONFIRM_PROD_MIGRATION?.trim();
-	if (!envConfirmation) {
-		fail(
-			`CONFIRMATION_REQUIRED: set CONFIRM_PROD_MIGRATION="${requiredConfirmation}" after reviewing the dry-run. There is no agent non-interactive Production patch mode.`,
-		);
-	}
-	if (envConfirmation !== requiredConfirmation) {
-		fail(
-			`CONFIRM_PROD_MIGRATION mismatched. Expected "${requiredConfirmation}", received "${envConfirmation}". Aborting.`,
-		);
-	}
-	console.info(
-		`\n✅ Production confirmation accepted via CONFIRM_PROD_MIGRATION for patch apply.`,
+		'Apply requires CELEBRA_PROD_APPROVAL_TOKEN and CELEBRA_PROD_APPROVAL_PUBLIC_KEY after reviewing the dry-run output.',
 	);
 }
 
@@ -150,11 +134,20 @@ try {
 	process.exit(1);
 }
 
-assertOwnerPatchConfirmation(`PATCH ${validatedOwnerId} ${file}`);
-
 const ownerConfig = `SELECT set_config('app.owner_user_id', '${validatedOwnerId.replace(/'/g, "''")}', false);\n`;
 const urlConfig = `SELECT set_config('app.supabase_project_url', '${normalizedUrl.replace(/'/g, "''")}', false);\n`;
 const fullSql = ownerConfig + urlConfig + sql;
+
+const manifestFingerprint = createHash('sha256')
+	.update(`${file}\u001f${validatedOwnerId}\u001f${normalizedUrl}\u001f${fullSql}`)
+	.digest('hex');
+
+requireProductionConfirmationSync(new URL(dbUrl).hostname, undefined, {
+	operationType: 'production_patch',
+	scope: validatedOwnerId,
+	manifestFingerprint,
+	consumeApproval: (payload) => consumeProductionApproval({ dbUrl, payload }),
+});
 
 const execResult = runPsql(fullSql, dbUrl, [normalizedUrl, dbUrl]);
 

@@ -119,6 +119,35 @@ function normalizeCurrentAssetReferences(
 	);
 }
 
+const SEMANTIC_EMPTY_LEGACY_PATHS = new Set([
+	'hero.nickname',
+	'hero.secondaryName',
+	'location.indicationsHeading',
+	'thankYou.closingPhrase',
+]);
+
+/** Treat omitted optional legacy copy and an explicit empty string as the same semantic value. */
+export function normalizeCurrentSemanticContent(value: unknown, path = ''): unknown {
+	if (Array.isArray(value)) {
+		return value.map((item, index) =>
+			normalizeCurrentSemanticContent(item, `${path}[${index}]`),
+		);
+	}
+	if (!value || typeof value !== 'object') return value;
+	const record = value as Record<string, unknown>;
+	return Object.fromEntries(
+		Object.entries(record)
+			.filter(([key, item]) => {
+				const childPath = path ? `${path}.${key}` : key;
+				return !(SEMANTIC_EMPTY_LEGACY_PATHS.has(childPath) && item === '');
+			})
+			.map(([key, item]) => [
+				key,
+				normalizeCurrentSemanticContent(item, path ? `${path}.${key}` : key),
+			]),
+	);
+}
+
 function allUploadedReferencesMap(value: unknown, keyById: ReadonlyMap<string, string>): boolean {
 	if (Array.isArray(value)) return value.every((item) => allUploadedReferencesMap(item, keyById));
 	if (!value || typeof value !== 'object') return true;
@@ -131,6 +160,10 @@ function allUploadedReferencesMap(value: unknown, keyById: ReadonlyMap<string, s
 		return Boolean(storedKey && [...keyById.values()].includes(storedKey));
 	}
 	return Object.values(record).every((item) => allUploadedReferencesMap(item, keyById));
+}
+
+function comparisonContent(row: InvitationDatabaseProjection): Record<string, unknown> | null {
+	return row.publishedContent ?? row.draftContent;
 }
 
 function rowIsCompatible(
@@ -167,6 +200,10 @@ export function proveDirectCurrentAlignment(input: {
 		if (!row.draftContent || !eventContentSchema.safeParse(row.draftContent).success) {
 			return false;
 		}
+		const targetContent = comparisonContent(row);
+		if (!targetContent || !eventContentSchema.safeParse(targetContent).success) {
+			return false;
+		}
 		if (!rowIsCompatible(input.canonical, row)) {
 			return false;
 		}
@@ -174,12 +211,15 @@ export function proveDirectCurrentAlignment(input: {
 		if (
 			slots.ambiguousKeys.length > 0 ||
 			slots.missingKeys.length > 0 ||
-			!allUploadedReferencesMap(row.draftContent, slots.keyById)
+			!allUploadedReferencesMap(targetContent, slots.keyById)
 		) {
 			return false;
 		}
-		const normalized = normalizeCurrentAssetReferences(row.draftContent, slots.keyById);
-		if (canonicalize(normalized) !== canonicalize(input.canonical.managedContent)) {
+		const normalized = normalizeCurrentSemanticContent(
+			normalizeCurrentAssetReferences(targetContent, slots.keyById),
+		);
+		const normalizedCanonical = normalizeCurrentSemanticContent(input.canonical.managedContent);
+		if (canonicalize(normalized) !== canonicalize(normalizedCanonical)) {
 			return false;
 		}
 	}

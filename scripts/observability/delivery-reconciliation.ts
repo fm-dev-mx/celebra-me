@@ -18,6 +18,7 @@ import type {
 import type { InvitationDatabaseProjection } from './database-projection.ts';
 import {
 	resolveCurrentAssetSlots,
+	normalizeCurrentSemanticContent,
 	type CurrentSemanticAssetSlot,
 } from './current-state-alignment.ts';
 import { comparisonToDeliveryStatus } from './overall-status.ts';
@@ -204,13 +205,19 @@ function detailedComparison(input: {
 		assetKeyById,
 	) as Record<string, unknown>;
 	const currentTarget = normalizeManagedAssetReferences(
-		input.row.draftContent,
+		input.row.publishedContent ?? input.row.draftContent,
 		assetKeyById,
 	) as Record<string, unknown>;
 	const patch = apply3WaySemanticPatch({
-		previousCanonical,
-		currentCanonical: input.canonical.managedContent,
-		currentTarget,
+		previousCanonical: normalizeCurrentSemanticContent(previousCanonical) as Record<
+			string,
+			unknown
+		>,
+		currentCanonical: normalizeCurrentSemanticContent(input.canonical.managedContent) as Record<
+			string,
+			unknown
+		>,
+		currentTarget: normalizeCurrentSemanticContent(currentTarget) as Record<string, unknown>,
 		scope: input.canonical.deliveryScope,
 		targetName: `${input.environment}:${input.canonical.slug}`,
 		detectTargetOnlyDrift: true,
@@ -276,6 +283,10 @@ export function reconcileInvitationDelivery(input: {
 		return unavailable(environment, 'DETAIL_BUDGET_EXCEEDED', 'RECONCILE_MANAGED_CONTENT');
 	}
 	if (!eventContentSchema.safeParse(row.draftContent).success) {
+		return unavailable(environment, 'DRAFT_INVALID', 'FIX_CANONICAL_DEFINITION', 'AVAILABLE');
+	}
+	const comparisonContent = row.publishedContent ?? row.draftContent;
+	if (!comparisonContent || !eventContentSchema.safeParse(comparisonContent).success) {
 		return unavailable(environment, 'DRAFT_INVALID', 'FIX_CANONICAL_DEFINITION', 'AVAILABLE');
 	}
 

@@ -57,6 +57,7 @@ const REASON_LABELS: Record<ObservabilityReasonCode, string> = {
 	CANONICAL_CHANGE_PENDING: 'Hay un cambio canónico pendiente',
 	VALID_DRAFT_PENDING: 'Hay un borrador válido pendiente de entrega',
 	PARTIAL_PROMOTION: 'La promoción parcial sigue una secuencia válida',
+	PREVIEW_VERIFICATION_REQUIRED: 'Preview requiere verificación antes de continuar',
 	DETAIL_BUDGET_EXCEEDED: 'El detalle excede el presupuesto seguro',
 	SNAPSHOT_REFRESH_FAILED: 'Falló la actualización del snapshot',
 };
@@ -71,6 +72,7 @@ const NEXT_STEP_LABELS: Record<ObservabilityNextStep, string> = {
 	APPLY_LOCAL: 'Aplique primero en Local.',
 	PROMOTE_PREVIEW: 'Promueva el cambio a Preview.',
 	PROMOTE_PRODUCTION: 'Promueva el cambio a Producción.',
+	VERIFY_PREVIEW: 'Verifique Preview antes de continuar.',
 	FIX_CANONICAL_DEFINITION: 'Corrija la definición mediante el contrato existente.',
 	UPDATE_LIFECYCLE_METADATA: 'Actualice el ciclo de vida canónico.',
 	PROVIDE_REQUIRED_ASSET: 'Proporcione el asset mediante el flujo administrado.',

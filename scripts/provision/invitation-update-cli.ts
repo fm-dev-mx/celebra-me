@@ -31,6 +31,7 @@ import { readFastInvitationInventory } from './invitation-status-inventory.ts';
 import { evaluateInvitationReadiness } from './invitation-readiness.ts';
 import { LOCAL_DB_URL, redactCredentials } from '../db/db-target-config.ts';
 import {
+	consumeProductionApproval,
 	getSecretFromEnvOrFiles,
 	PREVIEW_SECRET_FILES,
 	getProdDbUrl,
@@ -302,6 +303,12 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 		await requireProductionConfirmation(
 			new URL(url).hostname,
 			`ADOPT romina-rios-chaparro ${planned.packageHash}`,
+			{
+				operationType: 'legacy_adoption',
+				scope: 'romina-rios-chaparro',
+				manifestFingerprint: planned.packageHash,
+				consumeApproval: (payload) => consumeProductionApproval({ dbUrl: url, payload }),
+			},
 		);
 		const applied = await runProductionLegacyAdoption({
 			packagePath,
