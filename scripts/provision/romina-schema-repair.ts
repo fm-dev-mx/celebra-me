@@ -1,9 +1,11 @@
 import { createHash } from 'node:crypto';
 
 import { eventContentSchema } from '../../src/lib/schemas/content/base-event.schema.ts';
+import { deriveProductionOperationId } from '../db/db-workflow-lib.ts';
 import { canonicalize } from './normalized-invitation-release.ts';
 
 export const ROMINA_SCHEMA_REPAIR_SLUG = 'romina-rios-chaparro' as const;
+export const ROMINA_SCHEMA_REPAIR_OPERATION_TYPE = 'romina_schema_repair' as const;
 const EXPECTED_CHANGED_PATHS = [
 	'location.venues[0].venueEvent',
 	'location.venues[1].venueEvent',
@@ -27,6 +29,9 @@ export interface RominaSchemaRepairPlan {
 	slug: typeof ROMINA_SCHEMA_REPAIR_SLUG;
 	mode: 'dry-run';
 	writes: 0;
+	operationFingerprint: string;
+	operationId: string;
+	receiptOperationId: string;
 	draftStatus: string | null;
 	draftUpdatedAt: string | null;
 	publishedVersion: number | null;
@@ -44,6 +49,24 @@ export interface RominaSchemaRepairPlan {
 		after: string;
 		unrelatedBefore: string;
 		unrelatedAfter: string;
+	};
+	affectedTables: string[];
+	provenanceAndReceipts: {
+		approvalConsumption: {
+			table: 'production_authorization_receipts';
+			action: 'insert before the repair transaction';
+		};
+		operationReceipt: {
+			table: 'invitation_mutation_operation_receipts';
+			action: 'insert in the repair transaction';
+		};
+		managedReleaseProvenance: 'unchanged';
+	};
+	backup: {
+		required: true;
+		command: 'pnpm db:prod:backup:critical';
+		manifest: 'fresh verified complete Production backup, no older than 24 hours';
+		artifacts: ['database', 'auth', 'storage-metadata', 'storage-objects'];
 	};
 	preservation: {
 		unrelatedDocumentFields: 'unchanged';
@@ -101,6 +124,33 @@ function godparentNames(value: unknown): string[] {
 
 function hash(value: unknown): string {
 	return createHash('sha256').update(canonicalize(value)).digest('hex');
+}
+
+export function rominaReceiptOperationId(operationId: string): string {
+	if (!/^[a-f0-9]{64}$/i.test(operationId)) {
+		throw new Error('ROMINA_REPAIR_OPERATION_ID_INVALID: expected a SHA-256 operation ID.');
+	}
+	const hex = operationId.slice(0, 32).toLowerCase().split('');
+	hex[12] = '8';
+	hex[16] = ['8', '9', 'a', 'b'][Number.parseInt(hex[16]!, 16) % 4]!;
+	return `${hex.slice(0, 8).join('')}-${hex.slice(8, 12).join('')}-${hex
+		.slice(12, 16)
+		.join('')}-${hex.slice(16, 20).join('')}-${hex.slice(20, 32).join('')}`;
+}
+
+export function deriveRominaSchemaRepairFingerprint(input: {
+	slug: string;
+	afterContent: JsonRecord;
+	publishedVersion: number | null;
+}): string {
+	return hash({
+		schemaVersion: 'romina-schema-repair-v1',
+		target: 'production',
+		slug: input.slug,
+		afterHash: hash(input.afterContent),
+		changedPaths: [...EXPECTED_CHANGED_PATHS].sort(),
+		publishedVersion: input.publishedVersion,
+	});
 }
 
 function diffPaths(before: unknown, after: unknown, path = ''): string[] {
@@ -205,12 +255,29 @@ export function buildRominaSchemaRepairPlan(
 		throw new Error(`ROMINA_REPAIR_SCOPE_CHANGED: ${changedPaths.join(', ')}`);
 	}
 
+	const beforeHash = hash(before);
+	const afterHash = hash(after);
+	const operationFingerprint = deriveRominaSchemaRepairFingerprint({
+		slug: ROMINA_SCHEMA_REPAIR_SLUG,
+		afterContent: after,
+		publishedVersion: input.publishedVersion,
+	});
+	const operationId = deriveProductionOperationId({
+		operationType: ROMINA_SCHEMA_REPAIR_OPERATION_TYPE,
+		targetEnv: 'production',
+		scope: ROMINA_SCHEMA_REPAIR_SLUG,
+		manifestFingerprint: operationFingerprint,
+	});
+
 	return {
 		schemaVersion: 'romina-schema-repair-v1',
 		target: 'production',
 		slug: ROMINA_SCHEMA_REPAIR_SLUG,
 		mode: 'dry-run',
 		writes: 0,
+		operationFingerprint,
+		operationId,
+		receiptOperationId: rominaReceiptOperationId(operationId),
 		draftStatus: input.draftStatus,
 		draftUpdatedAt: input.draftUpdatedAt,
 		publishedVersion: input.publishedVersion,
@@ -224,10 +291,32 @@ export function buildRominaSchemaRepairPlan(
 			godparents: publishedGodparents,
 		},
 		hashes: {
-			before: hash(before),
-			after: hash(after),
+			before: beforeHash,
+			after: afterHash,
 			unrelatedBefore: hash(removeRepairFields(before)),
 			unrelatedAfter: hash(removeRepairFields(after)),
+		},
+		affectedTables: [
+			'invitation_content_drafts',
+			'production_authorization_receipts',
+			'invitation_mutation_operation_receipts',
+		],
+		provenanceAndReceipts: {
+			approvalConsumption: {
+				table: 'production_authorization_receipts',
+				action: 'insert before the repair transaction',
+			},
+			operationReceipt: {
+				table: 'invitation_mutation_operation_receipts',
+				action: 'insert in the repair transaction',
+			},
+			managedReleaseProvenance: 'unchanged',
+		},
+		backup: {
+			required: true,
+			command: 'pnpm db:prod:backup:critical',
+			manifest: 'fresh verified complete Production backup, no older than 24 hours',
+			artifacts: ['database', 'auth', 'storage-metadata', 'storage-objects'],
 		},
 		preservation: {
 			unrelatedDocumentFields: 'unchanged',
@@ -245,4 +334,37 @@ export function buildRominaSchemaRepairPlan(
 			forbiddenScope: 'assets, events, guests, rsvps, published content, lifecycle metadata',
 		},
 	};
+}
+
+export function verifyRominaSchemaRepairOutcome(
+	plan: RominaSchemaRepairPlan,
+	draftContent: JsonRecord,
+): void {
+	const parsed = eventContentSchema.safeParse(draftContent);
+	if (!parsed.success) {
+		throw new Error(`ROMINA_REPAIR_RESULT_INVALID: ${parsed.error.message}`);
+	}
+	if (hash(draftContent) !== plan.hashes.after) {
+		throw new Error(
+			'ROMINA_REPAIR_RESULT_MISMATCH: resulting Production draft hash differs from the approved after hash.',
+		);
+	}
+	if (hash(removeRepairFields(draftContent)) !== plan.hashes.unrelatedAfter) {
+		throw new Error(
+			'ROMINA_REPAIR_UNRELATED_CONTENT_CHANGED: unrelated document content changed.',
+		);
+	}
+	const venueEvents: [unknown, unknown] = [
+		venueAt(draftContent, 0).venueEvent,
+		venueAt(draftContent, 1).venueEvent,
+	];
+	const godparents = clone(record(draftContent.family, 'family').godparents);
+	if (
+		canonicalize(venueEvents) !== canonicalize(plan.after.venueEvents) ||
+		canonicalize(godparents) !== canonicalize(plan.after.godparents)
+	) {
+		throw new Error(
+			'ROMINA_REPAIR_RESULT_MISMATCH: repaired fields differ from the approved canonical values.',
+		);
+	}
 }

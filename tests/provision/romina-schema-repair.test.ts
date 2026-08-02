@@ -4,7 +4,11 @@ import {
 	ROMINA_ASSET_SPECS,
 	type RominaAssetMap,
 } from '../../scripts/provision/invitations/romina-rios-chaparro.ts';
-import { buildRominaSchemaRepairPlan } from '../../scripts/provision/romina-schema-repair.ts';
+import {
+	buildRominaSchemaRepairPlan,
+	verifyRominaSchemaRepairOutcome,
+} from '../../scripts/provision/romina-schema-repair.ts';
+import { buildRominaSchemaRepairTransactionSql } from '../../scripts/provision/romina-schema-repair-service.ts';
 
 function fixture(): {
 	draftContent: Record<string, unknown>;
@@ -97,5 +101,41 @@ describe('Romina schema repair planner', () => {
 				publishedVersion: 10,
 			}),
 		).toThrow('ROMINA_REPAIR_SEMANTIC_MISMATCH');
+	});
+
+	it('describes guarded receipts and verifies the complete repaired document', () => {
+		const input = fixture();
+		const plan = buildRominaSchemaRepairPlan({
+			slug: 'romina-rios-chaparro',
+			...input,
+			draftStatus: 'approved',
+			draftUpdatedAt: '2026-07-24T18:31:47.138647+00:00',
+			publishedVersion: 10,
+		});
+		const repaired = JSON.parse(JSON.stringify(input.draftContent)) as Record<string, unknown>;
+		const location = repaired.location as Record<string, unknown>;
+		const venues = location.venues as Record<string, unknown>[];
+		venues[0]!.venueEvent = plan.after.venueEvents[0];
+		venues[1]!.venueEvent = plan.after.venueEvents[1];
+		(repaired.family as Record<string, unknown>).godparents = plan.after.godparents;
+
+		verifyRominaSchemaRepairOutcome(plan, repaired);
+		const sql = buildRominaSchemaRepairTransactionSql({
+			plan,
+			draftContent: input.draftContent,
+			draftStatus: 'approved',
+			draftUpdatedAt: '2026-07-24T18:31:47.138647+00:00',
+			targetDbUrl: 'postgresql://production.example.invalid/db',
+		});
+		expect(plan.affectedTables).toEqual([
+			'invitation_content_drafts',
+			'production_authorization_receipts',
+			'invitation_mutation_operation_receipts',
+		]);
+		expect(plan.provenanceAndReceipts.managedReleaseProvenance).toBe('unchanged');
+		expect(sql).toContain('BEGIN;');
+		expect(sql).toContain("'romina_schema_repair'");
+		expect(sql).toContain('ROMINA_REPAIR_STALE_DRAFT');
+		expect(sql).toContain('invitation_mutation_operation_receipts');
 	});
 });
