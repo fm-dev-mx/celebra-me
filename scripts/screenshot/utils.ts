@@ -1,3 +1,4 @@
+/* eslint-disable max-lines -- Shared compatibility utilities remain one import surface for the capture adapters. */
 // =============================================================================
 // CELEBRA-ME | Screenshot Tool — Utility Functions
 // =============================================================================
@@ -29,6 +30,17 @@ import {
 	VIEWPORT_PROFILES,
 } from './types.js';
 import type { ResolvedScreenshotPlan } from './scope.js';
+import {
+	isSafeScreenshotArtifactSegment,
+	validateScreenshotConfig,
+} from './registry-validation.js';
+import { redactScreenshotPlan, redactScreenshotReport, redactScreenshotText } from './redaction.js';
+export {
+	redactScreenshotPlan,
+	redactScreenshotReport,
+	redactScreenshotText,
+	redactScreenshotUrl,
+} from './redaction.js';
 export {
 	calculateImageHash,
 	getFileArtifactMeta,
@@ -64,6 +76,7 @@ export function parseCliArgs(argv: string[]): CliOptions {
 		'--include-layout',
 		'--corpus',
 		'--clean',
+		'--allow-large',
 		'--help',
 	]);
 
@@ -256,6 +269,9 @@ function setOption(options: CliOptions, key: string, value: string): void {
 		},
 		'--clean': () => {
 			options.clean = parseBoolean(value, key);
+		},
+		'--allow-large': () => {
+			options.allowLarge = parseBoolean(value, key);
 		},
 		'--help': () => {
 			options.help = true;
@@ -761,9 +777,10 @@ export function buildCurrentRunManifest(input: {
 }
 
 export function classifyConsoleError(message: string): ConsoleErrorReport {
+	const safeMessage = redactScreenshotText(message);
 	if (message.includes('__name is not defined')) {
 		return {
-			message,
+			message: safeMessage,
 			severity: 'warning',
 			source: 'test-runner-transpiler',
 			environment: 'development',
@@ -775,7 +792,7 @@ export function classifyConsoleError(message: string): ConsoleErrorReport {
 
 	if (message.includes('jsxDEV is not a function')) {
 		return {
-			message,
+			message: safeMessage,
 			severity: 'warning',
 			source: 'test-runner-transpiler',
 			environment: 'development',
@@ -791,7 +808,7 @@ export function classifyConsoleError(message: string): ConsoleErrorReport {
 		message.includes('RSVP.tsx')
 	) {
 		return {
-			message,
+			message: safeMessage,
 			severity: 'warning',
 			source: 'page-script',
 			environment: 'development',
@@ -808,7 +825,7 @@ export function classifyConsoleError(message: string): ConsoleErrorReport {
 		message.includes('astro-retry=')
 	) {
 		return {
-			message,
+			message: safeMessage,
 			severity: 'warning',
 			source: 'test-runner-transpiler',
 			environment: 'development',
@@ -819,7 +836,7 @@ export function classifyConsoleError(message: string): ConsoleErrorReport {
 	}
 
 	return {
-		message,
+		message: safeMessage,
 		severity: 'critical',
 		source: message.startsWith('pageerror:') ? 'page-script' : 'browser',
 		environment: 'unknown',
@@ -834,14 +851,17 @@ export function classifyConsoleError(message: string): ConsoleErrorReport {
 // ---------------------------------------------------------------------------
 
 export function loadScreenshotConfig(configPath: string): ScreenshotConfig {
-	const raw = syncFs.readFileSync(configPath, 'utf8');
-	const parsed = JSON.parse(raw) as unknown;
-
-	if (!isRecord(parsed)) {
-		throw new Error(`Screenshot config must be a JSON object: ${configPath}`);
+	let parsed: unknown;
+	try {
+		const raw = syncFs.readFileSync(configPath, 'utf8');
+		parsed = JSON.parse(raw) as unknown;
+	} catch (error) {
+		throw new Error(
+			`Could not load screenshot config ${configPath}: ${error instanceof Error ? error.message : String(error)}`,
+			{ cause: error },
+		);
 	}
-
-	return parsed as ScreenshotConfig;
+	return validateScreenshotConfig(parsed, configPath);
 }
 
 export async function writeScreenshotReport(
@@ -850,7 +870,11 @@ export async function writeScreenshotReport(
 ): Promise<string> {
 	await ensureDir(outputDir);
 	const reportPath = path.join(outputDir, 'report.json');
-	await fs.writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+	await fs.writeFile(
+		reportPath,
+		`${JSON.stringify(redactScreenshotReport(report), null, 2)}\n`,
+		'utf8',
+	);
 	return reportPath;
 }
 
@@ -861,12 +885,12 @@ export async function writeScreenshotPreflight(
 ): Promise<string> {
 	await ensureDir(outputDir);
 	const preflightPath = path.join(outputDir, 'preflight.json');
-	await fs.writeFile(preflightPath, `${JSON.stringify(plan, null, 2)}\n`, 'utf8');
+	await fs.writeFile(
+		preflightPath,
+		`${JSON.stringify(redactScreenshotPlan(plan), null, 2)}\n`,
+		'utf8',
+	);
 	return preflightPath;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 // ---------------------------------------------------------------------------
@@ -957,6 +981,11 @@ export async function buildScreenshotPath(
 	label: string,
 	format: OutputFormat,
 ): Promise<string> {
+	if (!isSafeScreenshotArtifactSegment(viewportName) || !isSafeScreenshotArtifactSegment(label)) {
+		throw new Error(
+			`Unsafe screenshot artifact name: viewport="${viewportName}" label="${label}".`,
+		);
+	}
 	const ext = formatExtension(format);
 	const viewportDir = path.join(outputDir, viewportName);
 	await ensureDir(viewportDir);

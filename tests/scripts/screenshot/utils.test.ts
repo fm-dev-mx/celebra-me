@@ -17,6 +17,10 @@ import {
 	resolveScreenshotLaneContext,
 	getViewportProfileSummary,
 	intersectRectWithViewport,
+	redactScreenshotText,
+	redactScreenshotUrl,
+	redactScreenshotPlan,
+	buildScreenshotPath,
 } from '../../../scripts/screenshot/utils';
 import type { ScreenshotRunReport } from '../../../scripts/screenshot/types';
 
@@ -31,6 +35,23 @@ describe('screenshot CLI utilities', () => {
 		expect(() => parseCliArgs(['node', 'cli.ts', '--not-a-real-flag'])).toThrow(
 			/Unknown screenshot argument/,
 		);
+	});
+
+	it('redacts query values and credentials from screenshot diagnostics', () => {
+		expect(redactScreenshotUrl('/xv/demo?guest=ana&screenshot=1')).toBe('/xv/demo');
+		expect(redactScreenshotText('GET https://example.test/x?token=secret')).toBe(
+			'GET https://example.test/x',
+		);
+		const redacted = redactScreenshotPlan({
+			sourceRequest: { routes: ['/xv/demo?guest=ana'] },
+		} as never) as unknown as { sourceRequest: { routes: string[] } };
+		expect(redacted.sourceRequest.routes).toEqual(['/xv/demo']);
+	});
+
+	it('rejects unsafe artifact names before creating capture directories', async () => {
+		await expect(
+			buildScreenshotPath('screenshots', 'mobile-standard', '../private', 'png'),
+		).rejects.toThrow(/Unsafe screenshot artifact name/);
 	});
 
 	it('deduplicates explicit viewport names and rejects invalid values', () => {

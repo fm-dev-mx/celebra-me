@@ -54,6 +54,7 @@ export {
 	plannedTasksFromCapturePlan,
 	withTaskIdentity,
 	buildTaskFailureResult,
+	assertCapturePlanScopeOwnership,
 	probeFirstMatchingSelectors,
 	resolveCapturePlan,
 } from './capture-plan.js';

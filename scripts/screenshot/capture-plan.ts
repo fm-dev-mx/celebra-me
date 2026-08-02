@@ -10,6 +10,7 @@ import {
 	type RevealCapabilities,
 } from './inventory.js';
 import { getResolvedSectionIds } from './scope.js';
+import { isSafeScreenshotArtifactSegment } from './registry-validation.js';
 
 export type TaskRequirement = 'required' | 'optional' | 'unsupported';
 
@@ -60,6 +61,25 @@ export function plannedTasksFromCapturePlan(tasks: CaptureTask[]): PlannedCaptur
 		id: task.id,
 		required: isCaptureTaskRequired(task),
 	}));
+}
+
+/** Explicit section requests are closed sets; preset scopes intentionally defer section inventory to the DOM. */
+export function assertCapturePlanScopeOwnership(tasks: CaptureTask[], job: ScreenshotJob): void {
+	const invitation =
+		job.scope?.invitations.find((entry) => entry.url === job.url) ?? job.scope?.invitations[0];
+	if (
+		!invitation ||
+		invitation.sectionSelection.kind === 'preset' ||
+		invitation.sectionSelection.ids.length === 0
+	)
+		return;
+	const plannedIds = new Set(invitation.tasks.map((task) => task.id));
+	const unexpected = tasks.map((task) => task.id).filter((id) => !plannedIds.has(id));
+	if (unexpected.length > 0) {
+		throw new Error(
+			`SCREENSHOT_SCOPE_EXPANDED: explicit scope produced unplanned task(s): ${[...new Set(unexpected)].join(', ')}`,
+		);
+	}
 }
 
 export function withTaskIdentity(
@@ -183,6 +203,11 @@ async function appendInventoryOrKnownInvitationSections(
 	const inventory = await deriveSectionInventory(page);
 	if (inventory.sections.length > 0) {
 		for (const sec of inventory.sections) {
+			if (!isSafeScreenshotArtifactSegment(sec.id)) {
+				throw new Error(
+					`UNSAFE_SCREENSHOT_SECTION_ID: rendered section "${sec.id}" is not a safe artifact identity.`,
+				);
+			}
 			const orderStr = String(sec.order).padStart(2, '0');
 			tasks.push({
 				id: `10-${orderStr}-${sec.id}`,

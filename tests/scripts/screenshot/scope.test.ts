@@ -88,6 +88,15 @@ describe('canonical screenshot scope resolver', () => {
 		).toThrow(/Unknown invitation route/);
 	});
 
+	it('rejects duplicate route identities instead of expanding the target scope', () => {
+		expect(() =>
+			resolveScreenshotPlan(
+				request({ routes: ['/xv/demo-invitation', '/xv/demo-invitation'] }),
+				catalog,
+			),
+		).toThrow(/Duplicate route in screenshot scope/);
+	});
+
 	it('rejects corpus plus targeted scope options', () => {
 		expect(() =>
 			resolveScreenshotPlan(

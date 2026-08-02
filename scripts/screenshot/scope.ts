@@ -1,3 +1,4 @@
+/* eslint-disable max-lines -- Scope resolution, cleanup ownership, and plan validation share one canonical boundary. */
 // =============================================================================
 // CELEBRA-ME | Screenshot Tool — Canonical Scope Resolver
 // =============================================================================
@@ -26,6 +27,19 @@ import {
 	getDefaultProfile,
 	resolveOutputDir,
 } from './utils.js';
+import {
+	assertScreenshotRegistryIntegrity,
+	VALID_ANIMATION_HANDLING,
+	VALID_AUTH_METHODS,
+	VALID_MODES,
+	VALID_OUTPUT_FORMATS,
+	VALID_OUTPUT_FOLDER_STYLES,
+	VALID_PAGE_TYPES,
+	VALID_REVEAL_HANDLING,
+	VALID_SECTION_CAPTURE,
+	VALID_SECTION_EXTENT,
+	VALID_TARGETS,
+} from './registry-validation.js';
 
 export type ScopeSource = 'direct' | 'config' | 'interactive' | 'corpus';
 export type ScopePreset = 'all-sections' | 'critical-qa';
@@ -123,23 +137,6 @@ export class ScreenshotScopeError extends Error {
 		this.code = code;
 	}
 }
-
-const VALID_PAGE_TYPES: readonly PageType[] = [
-	'invitation',
-	'landing',
-	'dashboard',
-	'admin',
-	'login',
-	'custom',
-];
-
-const VALID_TARGETS: readonly CaptureTarget[] = [
-	'full-page',
-	'critical-qa',
-	'all-sections',
-	'single-section',
-	'reveal-only',
-];
 
 const REVEAL_ONLY_TARGET: CaptureTarget = 'reveal-only';
 
@@ -405,30 +402,14 @@ function assertCorpusCompatibility(request: ScreenshotScopeRequest): void {
 
 function assertRequestValues(request: ScreenshotScopeRequest): void {
 	const checks: Array<[string, unknown, readonly string[]]> = [
-		['mode', request.mode, ['audit', 'raw']],
-		[
-			'reveal handling',
-			request.revealHandling,
-			['auto', 'force-open', 'closed-only', 'open-only', 'skip'],
-		],
-		[
-			'animation handling',
-			request.animationHandling,
-			['disable', 'wait', 'query-param', 'custom'],
-		],
-		['section extent', request.sectionExtent, ['full', 'viewport']],
-		['section capture', request.sectionCapture, ['none', 'auto', 'known', 'custom', 'single']],
-		[
-			'auth method',
-			request.authMethod,
-			['none', 'existing-session', 'storage-state', 'manual-login'],
-		],
-		['output format', request.outputFormat, ['png', 'jpeg', 'webp', 'pdf']],
-		[
-			'output folder style',
-			request.outputFolderStyle,
-			['default', 'timestamped', 'custom', 'overwrite'],
-		],
+		['mode', request.mode, VALID_MODES],
+		['reveal handling', request.revealHandling, VALID_REVEAL_HANDLING],
+		['animation handling', request.animationHandling, VALID_ANIMATION_HANDLING],
+		['section extent', request.sectionExtent, VALID_SECTION_EXTENT],
+		['section capture', request.sectionCapture, VALID_SECTION_CAPTURE],
+		['auth method', request.authMethod, VALID_AUTH_METHODS],
+		['output format', request.outputFormat, VALID_OUTPUT_FORMATS],
+		['output folder style', request.outputFolderStyle, VALID_OUTPUT_FOLDER_STYLES],
 	];
 	for (const [label, value, allowed] of checks) {
 		if (value !== undefined && !allowed.includes(String(value))) {
@@ -579,6 +560,62 @@ export function validateResolvedCleanupTargets(plan: ResolvedScreenshotPlan): vo
 	}
 }
 
+function assertResolvedPlanIntegrity(plan: ResolvedScreenshotPlan): void {
+	const invitationKeys = new Set<string>();
+	const outputPaths = new Set<string>();
+	const cleanupTargets = new Set<string>();
+
+	for (const invitation of plan.invitations) {
+		if (invitationKeys.has(invitation.routeIdentity.key)) {
+			throw new ScreenshotScopeError(
+				`Duplicate invitation identity in screenshot scope: "${invitation.routeIdentity.key}".`,
+				'DUPLICATE_ROUTE',
+			);
+		}
+		invitationKeys.add(invitation.routeIdentity.key);
+		const viewportNames = new Set<string>();
+		for (const viewport of invitation.viewports) {
+			if (viewportNames.has(viewport.name)) {
+				throw new ScreenshotScopeError(
+					`Duplicate viewport "${viewport.name}" in resolved screenshot scope.`,
+					'DUPLICATE_VIEWPORT',
+				);
+			}
+			viewportNames.add(viewport.name);
+		}
+		const taskIds = new Set<string>();
+		for (const task of invitation.tasks) {
+			const normalizedPath = path.resolve(task.outputPath).toLowerCase();
+			if (taskIds.has(`${task.viewportName}:${task.id}`)) {
+				throw new ScreenshotScopeError(
+					`Duplicate screenshot artifact task "${task.viewportName}/${task.id}".`,
+					'DUPLICATE_ARTIFACT',
+				);
+			}
+			if (outputPaths.has(normalizedPath)) {
+				throw new ScreenshotScopeError(
+					`Screenshot artifact path collision: "${task.outputPath}".`,
+					'DUPLICATE_ARTIFACT',
+				);
+			}
+			taskIds.add(`${task.viewportName}:${task.id}`);
+			outputPaths.add(normalizedPath);
+		}
+		for (const target of invitation.cleanupTargets) {
+			const normalizedTarget = path.resolve(target).toLowerCase();
+			if (cleanupTargets.has(normalizedTarget)) {
+				throw new ScreenshotScopeError(
+					`Duplicate screenshot cleanup target: "${target}".`,
+					'DUPLICATE_CLEANUP_TARGET',
+				);
+			}
+			cleanupTargets.add(normalizedTarget);
+		}
+	}
+
+	validateResolvedCleanupTargets(plan);
+}
+
 // eslint-disable-next-line complexity -- Scope validation intentionally centralizes incompatible selections.
 function resolveInvitationScope(
 	request: ScreenshotScopeRequest,
@@ -711,6 +748,7 @@ export function resolveScreenshotPlan(
 	request: ScreenshotScopeRequest,
 	catalog: ScopeRouteCatalog,
 ): ResolvedScreenshotPlan {
+	assertScreenshotRegistryIntegrity();
 	assertRequestValues(request);
 	assertCorpusCompatibility(request);
 	if (request.routes.length === 0) {
@@ -719,11 +757,20 @@ export function resolveScreenshotPlan(
 			'EMPTY_SCOPE',
 		);
 	}
-	const invitations = request.routes.map((route) =>
-		resolveInvitationScope(request, route, catalog),
-	);
+	const routeKeys = new Set<string>();
+	const invitations = request.routes.map((route) => {
+		const identity = normalizeRouteIdentity(route, request.baseUrl);
+		if (routeKeys.has(identity.key)) {
+			throw new ScreenshotScopeError(
+				`Duplicate route in screenshot scope: "${identity.key}".`,
+				'DUPLICATE_ROUTE',
+			);
+		}
+		routeKeys.add(identity.key);
+		return resolveInvitationScope(request, route, catalog);
+	});
 	const first = invitations[0];
-	return {
+	const plan: ResolvedScreenshotPlan = {
 		version: 1,
 		source: request.source,
 		sourceRequest: { ...request },
@@ -734,6 +781,8 @@ export function resolveScreenshotPlan(
 		cleanupTargets: invitations.flatMap((invitation) => invitation.cleanupTargets),
 		clean: request.clean === true,
 	};
+	assertResolvedPlanIntegrity(plan);
+	return plan;
 }
 
 export function resolveScreenshotJobScope(

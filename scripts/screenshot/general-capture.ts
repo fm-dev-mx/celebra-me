@@ -11,6 +11,7 @@ import {
 	getPlannedCaptureLabel,
 	plannedTasksFromCapturePlan,
 	resolveCapturePlan,
+	assertCapturePlanScopeOwnership,
 	withTaskIdentity,
 } from './capture-plan.js';
 import { buildScreenshotUrl, navigateTo } from './navigation.js';
@@ -70,6 +71,7 @@ export async function captureGeneralPageScreenshots(
 	);
 
 	const tasks = await resolveCapturePlan(page, job);
+	assertCapturePlanScopeOwnership(tasks, job);
 	const plannedTasks = plannedTasksFromCapturePlan(tasks);
 	const plannedCount = plannedTasks.filter((t) => t.required).length;
 

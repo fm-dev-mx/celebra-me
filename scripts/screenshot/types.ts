@@ -140,6 +140,8 @@ export interface CliOptions {
 	corpus?: boolean;
 	/** Remove output directory before starting */
 	clean?: boolean;
+	/** Permit config batches above the normal targeted execution budget. */
+	allowLarge?: boolean;
 }
 
 /** Minimal shape for a screenshot config JSON file */
@@ -151,7 +153,6 @@ export interface ScreenshotConfig {
 	defaultAnimationHandling?: AnimationHandling;
 	defaultOutputFormat?: OutputFormat;
 	defaultOutputFolderStyle?: OutputFolderStyle;
-	storageStatePath?: string;
 	pages?: ScreenshotConfigPage[];
 }
 
@@ -169,6 +170,7 @@ export interface ScreenshotConfigPage {
 	revealHandling?: RevealHandling;
 	animationHandling?: AnimationHandling;
 	sectionCapture?: SectionCapture;
+	sections?: string[];
 	sectionExtent?: SectionExtent;
 	criticalSelectors?: ScreenshotSelectorConfig[];
 	waitSelectors?: string[];
@@ -394,6 +396,10 @@ export const VIEWPORT_PROFILES: Record<string, ViewportProfile> = {
 			{ width: 768, height: 1024, deviceScaleFactor: 2, name: 'tablet' },
 			{ width: 1440, height: 1200, deviceScaleFactor: 1, name: 'desktop' },
 		],
+	},
+	single: {
+		name: 'single',
+		viewports: [],
 	},
 };
 

@@ -1,5 +1,4 @@
 {
-    "//": "Celebra-me Screenshot Tool — Example Configuration",
     "baseUrl": "http://localhost:4321",
     "outputDir": "screenshots",
     "defaultMode": "audit",
@@ -7,7 +6,6 @@
     "defaultAnimationHandling": "disable",
     "defaultOutputFormat": "png",
     "defaultOutputFolderStyle": "default",
-    "storageStatePath": "playwright/.auth/user.json",
     "pages": [
         {
             "name": "Boda Jewelry Box Wedding",
@@ -21,9 +19,9 @@
             "outputFormat": "png"
         },
         {
-            "name": "XV Demo Premium",
+            "name": "XV Demo Jewelry Box",
             "pageType": "invitation",
-            "route": "/xv/demo-xv-premium",
+            "route": "/xv/demo-xv-jewelry-box",
             "profile": "full",
             "target": "critical-qa",
             "revealHandling": "force-open",

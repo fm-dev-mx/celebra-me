@@ -21,6 +21,11 @@ import {
 	ScreenshotScopeError,
 } from './scope.js';
 import {
+	assertInvitationCatalogIntegrity,
+	validateScreenshotConfig,
+} from './registry-validation.js';
+import { assertScreenshotExecutionBudget, summarizeScreenshotPlans } from './execution-policy.js';
+import {
 	parseCliArgs,
 	loadScreenshotConfig,
 	createPageSlug,
@@ -33,14 +38,19 @@ import { buildCorpusScreenshotConfig } from '../provision/local-render-corpus/sc
 import {
 	corpusPublicRoute,
 	listLocalRenderCorpus,
+	assertLocalRenderCorpusIntegrity,
 } from '../provision/local-render-corpus/registry.ts';
 import { discoverAllInvitations } from './discovery.js';
 import { tryWriteValidationEvidence } from '../observability/validation-evidence.ts';
 
 function knownInvitationCatalog(): ScopeRouteCatalog {
-	const discovered = discoverAllInvitations().map((invitation) => invitation.route);
+	const discoveredEntries = discoverAllInvitations();
+	assertInvitationCatalogIntegrity(discoveredEntries);
+	assertLocalRenderCorpusIntegrity();
+	const discovered = discoveredEntries.map((invitation) => invitation.route);
 	const corpus = listLocalRenderCorpus().map(corpusPublicRoute);
-	return { invitationRoutes: [...new Set([...discovered, ...corpus])] };
+	const invitationRoutes = [...new Set([...discovered, ...corpus])];
+	return { invitationRoutes };
 }
 
 function printHelp(): void {
@@ -61,6 +71,7 @@ Scope options:
   --sections=<ids>         comma-separated registered section IDs, stable-deduplicated
   --viewport=<names>       comma-separated viewport names, stable-deduplicated
   --profile=<profile>      invitation, site, full, single
+  --allow-large=true       allow an intentional config batch above the normal budget
 
 Strict behavior:
   Unknown flags, invalid values, unknown routes/sections/viewports, empty selections,
@@ -174,7 +185,7 @@ function configScopeRequest(
 		invitationSet: page.invitationSet,
 		generalSet: page.generalSet,
 		sectionCapture: page.sectionCapture,
-		sections: undefined,
+		sections: page.sections,
 		includeLayout: page.includeLayout,
 		revealHandling: page.revealHandling,
 		animationHandling: page.animationHandling ?? options.animation,
@@ -200,6 +211,7 @@ async function runConfigJobs(
 	const config = options.corpus
 		? buildCorpusScreenshotConfig()
 		: loadScreenshotConfig(options.config!);
+	validateScreenshotConfig(config, options.corpus ? 'Local Render Corpus' : options.config);
 	const pages = config.pages ?? [];
 	if (pages.length === 0) {
 		throw new ScreenshotScopeError(
@@ -210,8 +222,7 @@ async function runConfigJobs(
 		);
 	}
 
-	let failed = 0;
-	for (const page of pages) {
+	const preparedJobs = pages.map((page) => {
 		const laneContext = resolveScreenshotLaneContext({
 			explicitBaseUrl: config.baseUrl ?? options.baseUrl,
 		});
@@ -234,6 +245,22 @@ async function runConfigJobs(
 		validateStorageState(request.authMethod);
 		const plan = resolveScreenshotPlan(request, catalog);
 		const job = buildJobFromResolvedInvitation(plan, plan.invitations[0], request);
+		return { job, plan };
+	});
+	const summary = summarizeScreenshotPlans(preparedJobs.map((entry) => entry.plan));
+	console.log(
+		`  Execution plan: ${summary.pages} page(s), ${summary.invitations} invitation(s), ${summary.viewports} viewport(s), ${summary.artifacts} planned artifact(s)` +
+			(summary.deferredPresetScopes > 0
+				? `, ${summary.deferredPresetScopes} preset section scope(s) resolved from rendered DOM`
+				: ''),
+	);
+	assertScreenshotExecutionBudget(summary, {
+		source: options.corpus ? 'corpus' : 'config',
+		allowLarge: options.allowLarge,
+	});
+
+	let failed = 0;
+	for (const { job } of preparedJobs) {
 		const result = await runScreenshotJob(job);
 		if (result.failed > 0) failed++;
 	}

@@ -3,6 +3,7 @@
 
 import sharp from 'sharp';
 import * as fs from 'node:fs/promises';
+import * as path from 'node:path';
 import type { Page, Request } from 'playwright';
 import {
 	type ScreenshotJob,
@@ -34,7 +35,11 @@ import {
 	getDocumentHeight,
 	getFileArtifactMeta,
 	removeLegacyInvitationFullOpenArtifacts,
+	redactScreenshotPlan,
+	redactScreenshotText,
+	redactScreenshotUrl,
 } from './utils.js';
+import { summarizeScreenshotPlans } from './execution-policy.js';
 import { validateResolvedCleanupTargets } from './scope.js';
 import type { ResolvedScreenshotPlan } from './scope.js';
 import {
@@ -64,6 +69,35 @@ async function cleanResolvedScope(plan: ResolvedScreenshotPlan): Promise<void> {
 		await fs.rm(target, { force: true });
 		console.log(`  Cleaned planned artifact: ${target}`);
 	}
+}
+
+/**
+ * Preset section inventories are resolved by the rendered DOM, so their prior
+ * artifact names are not known to the pure scope resolver. Materialize only
+ * canonical section filenames already present in the selected viewport folders
+ * before writing preflight and cleaning. Explicit section scopes never use this
+ * fallback and therefore remain exact-file-only.
+ */
+async function materializePresetCleanupTargets(plan: ResolvedScreenshotPlan): Promise<void> {
+	if (!plan.clean) return;
+	const sectionArtifact = /^(?:10-\d{2}-|06-section-)[A-Za-z0-9_-]+\.(?:png|jpg|webp|pdf)$/i;
+	const targets = new Set(plan.cleanupTargets);
+	for (const invitation of plan.invitations) {
+		if (invitation.sectionSelection.kind !== 'preset') continue;
+		for (const viewport of invitation.viewports) {
+			const viewportDir = path.join(invitation.outputDir, viewport.name);
+			const entries = await fs.readdir(viewportDir, { withFileTypes: true }).catch(() => []);
+			for (const entry of entries) {
+				if (!entry.isFile() || !sectionArtifact.test(entry.name)) continue;
+				const target = path.join(viewportDir, entry.name);
+				if (!targets.has(target)) {
+					targets.add(target);
+					invitation.cleanupTargets.push(target);
+				}
+			}
+		}
+	}
+	plan.cleanupTargets = [...targets];
 }
 
 /**
@@ -142,7 +176,9 @@ async function captureSingleViewport(
 			report: viewportReport,
 		};
 	} catch (err) {
-		console.error(`  ✕ Error capturing viewport ${viewport.name}: ${err}`);
+		console.error(
+			`  ✕ Error capturing viewport ${viewport.name}: ${redactScreenshotText(String(err))}`,
+		);
 		return {
 			captures: [],
 			plannedCaptures: 0,
@@ -189,7 +225,7 @@ export async function runScreenshotJob(job: ScreenshotJob): Promise<JobResult> {
 	console.log('║        CELEBRA-ME SCREENSHOT TOOL                   ║');
 	console.log('╚══════════════════════════════════════════════════════╝');
 	console.log('');
-	console.log(`  Page:    ${job.url}`);
+	console.log(`  Page:    ${redactScreenshotUrl(job.url)}`);
 	console.log(`  Base:    ${job.baseUrl}`);
 	console.log(`  Slug:    ${pageSlug}`);
 	console.log(`  Type:    ${job.pageType}`);
@@ -204,18 +240,28 @@ export async function runScreenshotJob(job: ScreenshotJob): Promise<JobResult> {
 		);
 	}
 	const outputDir = job.scope.invitations[0].outputDir;
+	await ensureDir(outputDir);
 	if (job.scope) {
+		await materializePresetCleanupTargets(job.scope);
 		validateResolvedCleanupTargets(job.scope);
 	}
 	if (job.scope?.clean) {
 		await cleanResolvedScope(job.scope);
 	}
-	await ensureDir(outputDir);
 	if (job.scope) {
 		const preflightPath = await writeScreenshotPreflight(outputDir, job.scope);
 		console.log(`  Preflight plan: ${preflightPath}`);
 		console.log(`  Planned scope: ${job.scope.tasks.length} exact task artifact(s)`);
-		console.log(`  Resolved plan:\n${JSON.stringify(job.scope, null, 2)}`);
+		const summary = summarizeScreenshotPlans([job.scope]);
+		console.log(
+			`  Execution plan: ${summary.pages} page(s), ${summary.invitations} invitation(s), ${summary.viewports} viewport(s), ${summary.artifacts} planned artifact(s)` +
+				(summary.deferredPresetScopes > 0
+					? `, ${summary.deferredPresetScopes} preset section scope(s) resolved from rendered DOM`
+					: ''),
+		);
+		console.log(
+			`  Resolved plan:\n${JSON.stringify(redactScreenshotPlan(job.scope), null, 2)}`,
+		);
 	}
 
 	if (job.pageType === 'invitation') {
@@ -785,25 +831,25 @@ function appendExpectedOutputFailures(
 
 	if (job.target === 'all-sections' && results.length === 0) {
 		captureFailures.push(
-			`No capturable sections resolved for ${job.pageType} route ${job.url}.`,
+			`No capturable sections resolved for ${job.pageType} route ${redactScreenshotUrl(job.url)}.`,
 		);
 	}
 
 	if (job.target === 'single-section' && results.length === 0) {
 		captureFailures.push(
-			`Selected section "${job.selectedSection ?? 'unknown'}" could not be resolved for ${job.pageType} route ${job.url}.`,
+			`Selected section "${job.selectedSection ?? 'unknown'}" could not be resolved for ${job.pageType} route ${redactScreenshotUrl(job.url)}.`,
 		);
 	}
 
 	if (job.target === 'full-page' && successfulFullPageCount == 0) {
 		captureFailures.push(
-			`Full-page target produced no successful full-page capture for ${job.pageType} route ${job.url}.`,
+			`Full-page target produced no successful full-page capture for ${job.pageType} route ${redactScreenshotUrl(job.url)}.`,
 		);
 	}
 
 	if (expectsScreenshotOutput(job.target) && successfulOutputCount === 0) {
 		captureFailures.push(
-			`Screenshot target "${job.target}" produced zero output files for ${job.pageType} route ${job.url}.`,
+			`Screenshot target "${job.target}" produced zero output files for ${job.pageType} route ${redactScreenshotUrl(job.url)}.`,
 		);
 	}
 }
@@ -829,7 +875,7 @@ async function validateFullPageBlanks(
 		if (check.trailingBlankSpaceDetected) {
 			detailedWarnings.push({
 				message: `Trailing blank space detected in full page: ${check.note}`,
-				target: targetUrl,
+				target: redactScreenshotUrl(targetUrl),
 				viewport: viewportName,
 				expected: false,
 			});
@@ -869,7 +915,7 @@ async function collectSelectorAndRequestWarnings(
 			} else {
 				detailedWarnings.push({
 					message: w,
-					target: job.url,
+					target: redactScreenshotUrl(job.url),
 					viewport: viewportName,
 					expected: true,
 				});
@@ -880,7 +926,7 @@ async function collectSelectorAndRequestWarnings(
 		for (const failure of selector.failures ?? []) {
 			detailedWarnings.push({
 				message: failure,
-				target: job.url,
+				target: redactScreenshotUrl(job.url),
 				viewport: viewportName,
 				expected: true,
 			});
@@ -893,7 +939,7 @@ async function collectSelectorAndRequestWarnings(
 		const msg = `${failure.severity === 'critical' ? 'Critical' : 'Non-critical'} request failed: ${failure.method} ${failure.url} :: ${failure.errorText}`;
 		detailedWarnings.push({
 			message: msg,
-			target: job.url,
+			target: redactScreenshotUrl(job.url),
 			viewport: viewportName,
 			expected: false,
 		});
@@ -916,7 +962,7 @@ async function collectSelectorAndRequestWarnings(
 		const msg = `Console ${classified.severity} (${classified.source}; production risk ${classified.productionRisk}; screenshot reliability ${classified.affectsScreenshotReliability ? 'affected' : 'not affected'}): ${classified.message} — ${classified.note}`;
 		detailedWarnings.push({
 			message: msg,
-			target: job.url,
+			target: redactScreenshotUrl(job.url),
 			viewport: viewportName,
 			expected: classified.source === 'test-runner-transpiler',
 		});
@@ -1093,9 +1139,9 @@ function classifyRequestFailure(request: Request): RequestFailureReport {
 	const severity = isCriticalRequest(url) ? 'critical' : 'warning';
 
 	return {
-		url,
+		url: redactScreenshotUrl(url),
 		method: request.method(),
-		errorText,
+		errorText: redactScreenshotText(errorText),
 		severity,
 	};
 }
