@@ -1,7 +1,6 @@
 // Perla & Carlos — Lane A on jewelry-box-wedding.
+// Goal 1: structural states + visual grammar (color, type, rhythm, intersections).
 // Client palette: olive + beige + gold. Do not mutate the shared preset.
-// Inheritance reset: champagne surfaces, sepia family filter, hardcoded PA
-// champagne paper gradients, missing RGB channels that break RSVP/location opacity.
 @use '../global/mixins' as mixins;
 
 .event--boda-perla-y-carlos.theme-preset--jewelry-box-wedding {
@@ -13,6 +12,8 @@
 	--perla-beige-rgb: 236 228 214;
 	--perla-cream: rgb(247 243 235);
 	--perla-cream-rgb: 247 243 235;
+	--perla-ivory: rgb(252 249 243);
+	--perla-ivory-rgb: 252 249 243;
 	--perla-sand: rgb(214 201 178);
 	--perla-sand-rgb: 214 201 178;
 	--perla-gold: rgb(176 148 96);
@@ -53,10 +54,10 @@
 		rgb(var(--perla-olive-deep-rgb) / 68%) 100%
 	);
 	--gallery-title-color: var(--perla-olive);
-	--gallery-section-padding-block: clamp(3.5rem, 7vw, 5.5rem);
+	--gallery-section-padding-block: clamp(3.25rem, 6.5vw, 5rem);
 	--gallery-card-shadow: 0 14px 36px rgb(var(--perla-olive-rgb) / 16%);
 
-	// Location — soften card chrome; lift indications
+	// Location — continuous chapter; soften nested frames
 	--location-flourish-color: var(--perla-gold);
 	--location-outer-frame-bg: transparent;
 	--location-outer-frame-padding: 0;
@@ -64,14 +65,47 @@
 	--location-inner-frame-bg: var(--perla-cream);
 	--location-inner-frame-padding: 0;
 	--location-card-shadow: 0 10px 28px rgb(var(--perla-olive-rgb) / 10%);
-	--location-card-padding: clamp(1.5rem, 4vw, 2rem) clamp(1.25rem, 3vw, 1.75rem);
+	--location-card-padding: clamp(1.35rem, 3.5vw, 1.85rem) clamp(1.1rem, 3vw, 1.6rem);
+	--location-padding-block: clamp(2.25rem, 5vh, 3.75rem) clamp(2.75rem, 5.5vh, 4.5rem);
+	--location-date-white-space: normal;
+	--location-date-font-family: var(--font-body);
+	--location-date-letter-spacing: 0.08em;
 	--location-indications-heading-color: var(--perla-olive);
-	--location-indications-panel-bg: rgb(var(--perla-beige-rgb) / 55%);
-	--location-indications-panel-border: 1px solid rgb(var(--perla-gold-rgb) / 28%);
-	--location-indications-panel-padding: clamp(1.75rem, 4vw, 2.5rem) clamp(1.25rem, 3vw, 2rem);
-	--location-indications-gap: 1.75rem;
+	--location-indications-panel-bg: rgb(var(--perla-beige-rgb) / 42%);
+	--location-indications-panel-border: 1px solid rgb(var(--perla-gold-rgb) / 22%);
+	--location-indications-panel-padding: clamp(1.5rem, 3.5vw, 2.25rem) clamp(1.1rem, 3vw, 1.75rem);
+	--location-indications-gap: 1.5rem;
 	--location-indication-item-gap: 1rem;
 	--location-indication-icon-color: var(--perla-olive);
+
+	// Family — light ceremonial chapter; kill preset sepia media filter
+	--family-bg: linear-gradient(
+		180deg,
+		var(--perla-ivory) 0%,
+		var(--perla-cream) 48%,
+		rgb(var(--perla-beige-rgb) / 70%) 100%
+	);
+	--family-padding-block: clamp(3.25rem, 7vw, 5.25rem);
+	--family-texture-opacity: 0%;
+	--family-vignette-bg: transparent;
+	--family-panel-bg: transparent;
+	--family-panel-border: none;
+	--family-panel-shadow: none;
+	--family-header-filter: none;
+	--family-accent: var(--perla-gold);
+	--family-text-primary: var(--perla-ink);
+	--family-text-muted: rgb(var(--perla-ink-rgb) / 64%);
+	--family-divider: linear-gradient(
+		90deg,
+		transparent 0%,
+		rgb(var(--perla-gold-rgb) / 55%) 50%,
+		transparent 100%
+	);
+	--family-title-font: var(--font-display);
+	--family-name-font: var(--font-display);
+	--family-media-filter: none;
+	--family-eyebrow-color: var(--perla-olive);
+	--family-title-color: var(--perla-olive-deep);
 
 	// Personalized access — replace hardcoded champagne paper
 	--pa-card-bg-color: var(--perla-olive-deep);
@@ -105,125 +139,309 @@
 	--pa-count-color: var(--perla-olive);
 	--pa-footer-border-top: 1px solid rgb(var(--perla-gold-rgb) / 22%);
 	--pa-footer-text-color: rgb(var(--perla-ink-rgb) / 72%);
+	--intersection-depth: clamp(2.5rem, 6vw, 4.75rem);
+	--intersection-blend: linear-gradient(
+		180deg,
+		rgb(var(--perla-cream-rgb) / 0%) 0%,
+		rgb(var(--perla-beige-rgb) / 55%) 100%
+	);
 
 	// -------------------------------------------------------------------------
-	// Reveal — one clear primary CTA; reduce nested card chrome
+	// Reveal — warm ivory; one seal control; no nested-panel chrome; hero sealed
 	// -------------------------------------------------------------------------
 	.envelope-wrapper {
 		--env-bg:
 			radial-gradient(
 				ellipse 110% 80% at 50% 30%,
-				rgb(var(--perla-beige-rgb) / 70%) 0%,
+				rgb(var(--perla-beige-rgb) / 55%) 0%,
 				transparent 62%
 			),
 			linear-gradient(
 				168deg,
-				var(--perla-cream) 0%,
-				var(--perla-beige) 55%,
-				rgb(var(--perla-sand-rgb) / 85%) 100%
+				var(--perla-ivory) 0%,
+				var(--perla-cream) 52%,
+				rgb(var(--perla-sand-rgb) / 70%) 100%
 			);
-		--env-paper-bg: rgb(var(--perla-cream-rgb) / 94%);
-		--env-paper-border: rgb(var(--perla-gold-rgb) / 28%);
+		--env-paper-bg: rgb(var(--perla-ivory-rgb) / 96%);
+		--env-paper-border: rgb(var(--perla-gold-rgb) / 18%);
 		--env-text-primary: var(--perla-ink);
 		--env-text-secondary: rgb(var(--perla-ink-rgb) / 62%);
 		--env-accent: var(--perla-gold);
-		--env-shadow-container:
-			0 22px 44px rgb(var(--perla-olive-rgb) / 14%),
-			0 6px 14px rgb(var(--perla-olive-rgb) / 8%);
+		--env-shadow-container: 0 14px 32px rgb(var(--perla-olive-rgb) / 10%);
+		--env-container-radius: 4px;
 		--reveal-card-bg: rgb(var(--perla-cream-rgb) / 96%);
-		--reveal-card-border: rgb(var(--perla-gold-rgb) / 22%);
+		--reveal-card-border: rgb(var(--perla-gold-rgb) / 20%);
 		--reveal-card-text-primary: var(--perla-ink);
 		--reveal-card-text-secondary: rgb(var(--perla-ink-rgb) / 58%);
-		--reveal-card-accent: rgb(var(--perla-gold-rgb) / 40%);
+		--reveal-card-accent: rgb(var(--perla-gold-rgb) / 36%);
+	}
+
+	.envelope-container {
+		box-shadow: var(--env-shadow-container);
+	}
+
+	.envelope-base,
+	.envelope-pocket,
+	.envelope-flap {
+		box-shadow: none;
+		filter: none;
+	}
+
+	.envelope-base {
+		border-color: rgb(var(--perla-gold-rgb) / 16%);
+	}
+
+	.envelope-name {
+		font-family: var(--font-display);
+		font-weight: 400;
+		color: var(--perla-ink);
+	}
+
+	.envelope-details {
+		font-family: var(--font-body);
+		letter-spacing: 0.14em;
 	}
 
 	.envelope-seal-hint {
+		font-family: var(--font-body);
 		color: rgb(var(--perla-ink-rgb) / 55%);
 		letter-spacing: 0.06em;
 		text-transform: none;
 		opacity: 78%;
 	}
 
-	.envelope-external-instruction__button {
-		font-weight: 500;
-		letter-spacing: 0.08em;
-		color: var(--perla-olive-deep);
-		border-color: rgb(var(--perla-gold-rgb) / 45%);
-		background: rgb(var(--perla-cream-rgb) / 88%);
-	}
-
 	// -------------------------------------------------------------------------
-	// Hero — readable type without a heavy flat wash
+	// Hero — immersive photo; names lead; hide until reveal completes
 	// -------------------------------------------------------------------------
 	.invitation-hero {
 		--hero-badge-text: var(--perla-cream);
 
 		.invitation-hero__label {
+			font-family: var(--font-display);
 			color: var(--perla-gold);
 			text-shadow: 0 1px 12px rgb(var(--perla-olive-deep-rgb) / 35%);
 		}
 
-		.invitation-hero__name,
+		.invitation-hero__title {
+			font-family: var(--font-display);
+			font-size: clamp(2.35rem, 9vw, 4.15rem);
+			line-height: 1.05;
+		}
+
+		.invitation-hero__title,
 		.invitation-hero__secondary-name {
 			text-shadow: 0 2px 18px rgb(var(--perla-olive-deep-rgb) / 40%);
 		}
 
+		// Intentional spacing: "Perla & Carlos" (markup has no whitespace between & and name)
+		.invitation-hero__ampersand {
+			display: inline-block;
+			margin-inline: 0.18em 0.28em;
+			font-weight: 300;
+		}
+
+		.invitation-hero__secondary-name {
+			display: inline-block;
+		}
+
 		.invitation-hero__details {
+			font-family: var(--font-body);
 			color: rgb(var(--perla-cream-rgb) / 94%);
 			text-shadow: 0 1px 10px rgb(var(--perla-olive-deep-rgb) / 45%);
 		}
 
-		.invitation-hero__scroll-indicator {
-			opacity: 78%;
+		.invitation-hero__venue {
+			.calligraphy-accent {
+				font-family: var(--font-calligraphy);
+			}
 		}
 
 		.invitation-hero__scroll-text {
+			font-family: var(--font-body);
 			letter-spacing: 0.18em;
 			font-size: 0.72rem;
 		}
 	}
 
+	// Hide hero chrome until reveal completes (beats profile scroll opacity via state specificity).
+	// preview-opened is a transitional open-letter preview — Hero stays gated until revealed.
+	&[data-reveal-state='sealed'] .invitation-hero,
+	&[data-reveal-state='letter-held'] .invitation-hero,
+	&[data-reveal-state='preview-opened'] .invitation-hero {
+		.invitation-hero__content,
+		.invitation-hero__title-wrapper,
+		.invitation-hero__label,
+		.invitation-hero__title,
+		.invitation-hero__nickname-badge,
+		.invitation-hero__details,
+		.invitation-hero__divider,
+		.invitation-hero__scroll-indicator {
+			opacity: 0%;
+			visibility: hidden;
+			pointer-events: none;
+			animation: none;
+		}
+
+		.invitation-hero__scroll-chevron {
+			animation: none;
+		}
+	}
+
+	&[data-reveal-state='revealed'] .invitation-hero .invitation-hero__scroll-indicator {
+		opacity: 78%;
+		visibility: visible;
+		pointer-events: auto;
+	}
+
 	// -------------------------------------------------------------------------
-	// Quote + countdown — hierarchy and rhythm
+	// Quote + countdown — light editorial; compact countdown
 	// -------------------------------------------------------------------------
+	.invitation-section-wrapper[data-section-kind='quote'] {
+		background: linear-gradient(
+			180deg,
+			rgb(var(--perla-olive-deep-rgb) / 6%) 0%,
+			var(--perla-cream) 28%,
+			var(--perla-ivory) 100%
+		);
+	}
+
 	.quote-section {
-		--quote-padding-block: clamp(2.75rem, 6vh, 4.5rem);
+		--quote-padding-block: clamp(2.5rem, 5.5vh, 4rem);
 
 		min-height: 0;
 		color: var(--perla-ink);
 
 		.quote-content,
 		.quote-line {
+			font-family: var(--font-calligraphy);
+			font-size: clamp(1.35rem, 3.8vw, 1.95rem);
 			line-height: 1.55;
 			max-width: 36rem;
 			margin-inline: auto;
 		}
 
 		.quote-author {
+			font-family: var(--font-body);
 			color: var(--perla-olive);
 			letter-spacing: 0.08em;
+			text-transform: uppercase;
+			font-size: 0.78rem;
 		}
+	}
+
+	.invitation-section-wrapper[data-section-kind='countdown'] {
+		background: linear-gradient(180deg, var(--perla-ivory) 0%, var(--perla-cream) 100%);
 	}
 
 	.countdown-section {
 		min-height: 0;
-		padding-block: clamp(3rem, 6vh, 4.5rem);
+		padding-block: clamp(2.25rem, 4.5vh, 3.5rem);
 
 		.countdown-title {
+			font-family: var(--font-display);
 			color: var(--perla-olive);
+			font-size: clamp(1.15rem, 2.8vw, 1.45rem);
 		}
 
+		.countdown__value {
+			font-family: var(--font-display);
+		}
+
+		.countdown__label,
+		.countdown__unit,
 		.countdown-footer,
 		.countdown-invitation-text {
+			font-family: var(--font-body);
 			color: rgb(var(--perla-ink-rgb) / 68%);
 		}
 	}
 
+	// Ornamental separator: countdown → location
+	.invitation-section-wrapper[data-section-kind='location'] {
+		background: linear-gradient(
+			180deg,
+			var(--perla-beige) 0%,
+			var(--perla-cream) 18%,
+			var(--perla-cream) 100%
+		);
+
+		&::before {
+			content: '';
+			display: block;
+			width: min(12rem, 42vw);
+			height: 1px;
+			margin: 0 auto clamp(0.35rem, 1.2vw, 0.75rem);
+			background: linear-gradient(
+				90deg,
+				transparent 0%,
+				rgb(var(--perla-gold-rgb) / 70%) 50%,
+				transparent 100%
+			);
+			pointer-events: none;
+		}
+	}
+
 	// -------------------------------------------------------------------------
-	// Location — less dashboard-card; civil indication readable
+	// Location — denser information; wrap date heading; continuous indications
 	// -------------------------------------------------------------------------
 	.event-location {
+		.event-location__intro {
+			max-width: min(36rem, 92vw);
+			margin-inline: auto;
+			padding-inline: clamp(0.75rem, 3vw, 1.25rem);
+		}
+
+		.event-location__eyebrow {
+			font-family: var(--font-body);
+			letter-spacing: 0.14em;
+			color: rgb(var(--perla-ink-rgb) / 58%);
+		}
+
+		.event-location__heading {
+			font-family: var(--font-display);
+			font-size: clamp(1.55rem, 5.2vw, 2.35rem);
+			font-weight: 400;
+			line-height: 1.2;
+			letter-spacing: 0.01em;
+			color: var(--perla-ink);
+			max-width: 100%;
+			margin-inline: auto;
+			overflow-wrap: break-word;
+			word-break: normal;
+			hyphens: manual;
+			text-wrap: balance;
+			white-space: normal;
+		}
+
+		.event-location__lede {
+			font-family: var(--font-body);
+			line-height: 1.55;
+			color: rgb(var(--perla-ink-rgb) / 72%);
+		}
+
+		.event-location__card-content-place {
+			font-family: var(--font-display);
+		}
+
+		.event-location__card-content-date,
+		.event-location__card-content-hour,
+		.event-location__card-content-address,
+		.event-location__nav-button {
+			font-family: var(--font-body);
+		}
+
+		.event-location__card-content-date {
+			white-space: normal;
+			overflow-wrap: break-word;
+			text-wrap: balance;
+		}
+
+		.event-location__indications {
+			margin-top: clamp(1.75rem, 4vw, 2.75rem);
+		}
+
 		.event-location__indications-heading {
+			font-family: var(--font-body);
 			font-weight: 500;
 			letter-spacing: 0.16em;
 			text-transform: uppercase;
@@ -231,11 +449,11 @@
 		}
 
 		.event-location__indication-text {
+			font-family: var(--font-body);
 			line-height: 1.5;
 			color: var(--perla-ink);
 		}
 
-		// Civil + dress share the indications panel; second item (civil) slightly emphasized
 		.event-location__indication-item:last-child {
 			.event-location__indication-icon {
 				color: var(--perla-gold);
@@ -247,10 +465,69 @@
 		}
 	}
 
+	// Ceremonial separator: location/indications → family
+	.invitation-section-wrapper[data-section-kind='family'] {
+		&::before {
+			content: '';
+			display: block;
+			width: min(9rem, 36vw);
+			height: 1px;
+			margin: 0 auto;
+			background:
+				radial-gradient(circle at center, var(--perla-gold) 0 2px, transparent 2.5px),
+				linear-gradient(
+					90deg,
+					transparent 0%,
+					rgb(var(--perla-gold-rgb) / 55%) 50%,
+					transparent 100%
+				);
+			pointer-events: none;
+		}
+
+		.family__eyebrow,
+		.family__meta,
+		.family__message {
+			font-family: var(--font-body);
+		}
+
+		.family__group-title {
+			font-family: var(--font-display);
+			font-size: clamp(0.78rem, 1.8vw, 0.88rem);
+			letter-spacing: 0.16em;
+			text-transform: uppercase;
+			color: var(--perla-olive);
+			font-weight: 500;
+		}
+
+		.family__name {
+			font-size: clamp(1.2rem, 3.2vw, 1.65rem);
+			line-height: 1.25;
+			overflow-wrap: anywhere;
+		}
+	}
+
 	// -------------------------------------------------------------------------
-	// Gallery — intentional single portrait
+	// Gallery — photographic pause; tonal into olive action chapter
 	// -------------------------------------------------------------------------
+	.invitation-section-wrapper[data-section-kind='gallery'] {
+		background: linear-gradient(
+			180deg,
+			rgb(var(--perla-beige-rgb) / 45%) 0%,
+			var(--perla-cream) 40%,
+			var(--perla-ivory) 100%
+		);
+	}
+
 	.gallery-section {
+		.gallery-section__eyebrow,
+		.gallery-section__subtitle {
+			font-family: var(--font-body);
+		}
+
+		.gallery-section__title {
+			font-family: var(--font-display);
+		}
+
 		.gallery-grid {
 			justify-content: center;
 		}
@@ -270,14 +547,35 @@
 		}
 	}
 
+	.invitation-section-wrapper[data-section-kind='personalized-access'][data-intersection='overlap'] {
+		--intersection-depth: clamp(2.75rem, 7vw, 5.25rem);
+
+		clip-path: polygon(0 0, 100% 2.75rem, 100% 100%, 0 100%);
+		padding-block-start: clamp(3.5rem, 8vw, 5.5rem);
+
+		@include mixins.respond-to(md) {
+			clip-path: polygon(0 0, 100% 3.5rem, 100% 100%, 0 100%);
+		}
+	}
+
 	// -------------------------------------------------------------------------
-	// Thank you — closing message dominant; quieter branding
+	// Thank you — return to ivory; spacious closing
 	// -------------------------------------------------------------------------
+	.invitation-section-wrapper[data-section-kind='thankYou'] {
+		background: linear-gradient(
+			180deg,
+			rgb(var(--perla-olive-deep-rgb) / 8%) 0%,
+			var(--perla-cream) 22%,
+			var(--perla-ivory) 100%
+		);
+	}
+
 	.thank-you-section {
 		min-height: 0;
-		padding-block: clamp(4rem, 8vh, 6rem);
+		padding-block: clamp(3.75rem, 7.5vh, 5.75rem);
 
 		.thank-you-message {
+			font-family: var(--font-display);
 			letter-spacing: 0.01em;
 			color: var(--perla-ink);
 			background: rgb(var(--perla-cream-rgb) / 70%);
@@ -291,8 +589,15 @@
 		}
 
 		.closing-name {
+			font-family: var(--font-calligraphy);
 			color: var(--perla-olive);
-			letter-spacing: 0.12em;
+			letter-spacing: 0.04em;
+		}
+
+		.closing-date,
+		.closing-phrase,
+		.thank-you-footer {
+			font-family: var(--font-body);
 		}
 
 		.closing-date {
@@ -305,9 +610,9 @@
 	}
 
 	// -------------------------------------------------------------------------
-	// Personalized access + RSVP — dark olive band, cream controls
+	// Personalized access + RSVP — deep olive action chapter
 	// -------------------------------------------------------------------------
-	.invitation-section-wrapper[data-section-kind='personalizedAccess'],
+	.invitation-section-wrapper[data-section-kind='personalized-access'],
 	.invitation-section-wrapper[data-section-kind='rsvp'] {
 		--color-text-primary: var(--perla-cream);
 		--color-text-primary-rgb: var(--perla-cream-rgb);
@@ -318,8 +623,8 @@
 		color: var(--perla-cream);
 	}
 
-	.invitation-section-wrapper[data-section-kind='personalizedAccess'] {
-		padding-block: clamp(3.25rem, 6vw, 5rem);
+	.invitation-section-wrapper[data-section-kind='personalized-access'] {
+		padding-block: clamp(3rem, 5.5vw, 4.5rem);
 	}
 
 	.invitation-section-wrapper[data-section-kind='rsvp'] {
@@ -368,10 +673,20 @@
 	.rsvp-section {
 		background: var(--rsvp-bg);
 		min-block-size: auto;
-		padding-block: clamp(3.5rem, 7vh, 5.5rem);
+		padding-block: clamp(3rem, 6vh, 4.75rem);
 
 		@include mixins.respond-to(md) {
-			min-block-size: min(100svh, 52rem);
+			min-block-size: min(100svh, 48rem);
+		}
+
+		.rsvp__title {
+			font-family: var(--font-display);
+		}
+
+		.rsvp__subcopy,
+		.rsvp__label,
+		.rsvp__button {
+			font-family: var(--font-body);
 		}
 	}
 

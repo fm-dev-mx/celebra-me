@@ -50,6 +50,18 @@ const INTERSECTION_PROFILES: Readonly<Record<string, IntersectionProfile>> = {
 		// Thank You keeps the blend; the memory photo itself crosses the seam
 		thankYou: { family: 'atmospheric-blend', source: 'family' },
 	},
+	'boda-perla-y-carlos': {
+		// Tonal continuity through editorial chapters; ornamental separators are Lane A SCSS.
+		quote: { family: 'atmospheric-blend', source: 'hero' },
+		countdown: { family: 'atmospheric-blend', source: 'quote' },
+		location: { family: 'atmospheric-blend', source: 'countdown' },
+		family: { family: 'atmospheric-blend', source: 'location' },
+		gallery: { family: 'atmospheric-blend', source: 'family' },
+		// Primary structural overlap: portrait into the deep olive action chapter.
+		'personalized-access': { family: 'overlap', source: 'gallery' },
+		rsvp: { family: 'atmospheric-blend', source: 'personalized-access' },
+		thankYou: { family: 'atmospheric-blend', source: 'rsvp' },
+	},
 };
 
 export function resolveRenderPlanIntersection(

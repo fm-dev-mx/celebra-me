@@ -79,4 +79,29 @@ describe('invitation intersection profiles', () => {
 			source: 'interlude-after-location',
 		});
 	});
+
+	it('maps Perla y Carlos tonal chapters and portrait-to-RSVP overlap', () => {
+		expect(resolveRenderPlanIntersection('boda-perla-y-carlos', 'quote')).toEqual({
+			family: 'atmospheric-blend',
+			source: 'hero',
+		});
+		expect(resolveRenderPlanIntersection('boda-perla-y-carlos', 'family')).toEqual({
+			family: 'atmospheric-blend',
+			source: 'location',
+		});
+		expect(resolveRenderPlanIntersection('boda-perla-y-carlos', 'gallery')).toEqual({
+			family: 'atmospheric-blend',
+			source: 'family',
+		});
+		expect(resolveRenderPlanIntersection('boda-perla-y-carlos', 'personalized-access')).toEqual(
+			{
+				family: 'overlap',
+				source: 'gallery',
+			},
+		);
+		expect(resolveRenderPlanIntersection('boda-perla-y-carlos', 'thankYou')).toEqual({
+			family: 'atmospheric-blend',
+			source: 'rsvp',
+		});
+	});
 });

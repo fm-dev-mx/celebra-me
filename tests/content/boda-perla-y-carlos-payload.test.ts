@@ -53,6 +53,25 @@ describe('Boda Perla y Carlos provision contract', () => {
 		expect(profile).toContain('--perla-gold');
 		expect(profile).toContain('--pa-card-bg-image');
 		expect(profile).toContain('--rsvp-bg');
+		expect(profile).toContain("data-reveal-state='sealed'");
+		expect(profile).toContain("data-reveal-state='letter-held'");
+		expect(profile).toContain("data-reveal-state='preview-opened'");
+		expect(profile).toContain("data-reveal-state='revealed'");
+		expect(profile).toContain('invitation-hero__ampersand');
+		expect(profile).toContain('event-location__heading');
+	});
+
+	it('keeps Hero chrome hidden during sealed, letter-held, and preview-opened', () => {
+		const profile = fs.readFileSync(profilePath, 'utf8');
+		const hideBlock =
+			profile.match(
+				/&\[data-reveal-state='sealed'\][\s\S]*?&\[data-reveal-state='revealed'\]/,
+			)?.[0] ?? '';
+		expect(hideBlock).toContain("data-reveal-state='sealed'");
+		expect(hideBlock).toContain("data-reveal-state='letter-held'");
+		expect(hideBlock).toContain("data-reveal-state='preview-opened'");
+		expect(hideBlock).toContain('opacity: 0%');
+		expect(hideBlock).toContain('visibility: hidden');
 	});
 
 	it('shares one physical hero source across desktop and mobile specs', () => {
@@ -84,12 +103,13 @@ describe('Boda Perla y Carlos provision contract', () => {
 			'quote',
 			'countdown',
 			'location',
+			'family',
 			'gallery',
 			'personalizedAccess',
 			'rsvp',
 			'thankYou',
 		]);
-		expect(content).not.toHaveProperty('family');
+		expect(content).toHaveProperty('family');
 		expect(content).not.toHaveProperty('gifts');
 		expect(content).not.toHaveProperty('music');
 		expect(content).not.toHaveProperty('itinerary');
@@ -100,9 +120,8 @@ describe('Boda Perla y Carlos provision contract', () => {
 			tooltipText?: string;
 			envelopeName?: string;
 		};
-		expect(envelope.microcopy).toBe('Abrir invitación');
-		expect(envelope.tooltipText).toBe('Toca el sello');
-		expect(envelope.microcopy).not.toBe(envelope.tooltipText);
+		expect(envelope.microcopy).toBe('');
+		expect(envelope.tooltipText).toBe('Toque el sello');
 		expect(envelope.envelopeName).toBe('Perla & Carlos');
 
 		const location = content.location as {
@@ -111,6 +130,7 @@ describe('Boda Perla y Carlos provision contract', () => {
 			reception?: unknown;
 			indications?: Array<{ text: string }>;
 			indicationsHeading?: string;
+			introHeading?: string;
 		};
 		expect(location.ceremony).toBeUndefined();
 		expect(location.reception).toBeUndefined();
@@ -125,9 +145,26 @@ describe('Boda Perla y Carlos provision contract', () => {
 			venueName: 'Salón El Pedregal',
 			time: '7:30 p. m.',
 		});
+		expect(location.introHeading).toBe('Sábado, 28 de noviembre de 2026');
 		expect(location.indicationsHeading).toBe('Indicaciones');
 		expect(location.indications?.some((i) => /ceremonia civil/i.test(i.text))).toBe(true);
 		expect(location.indications?.some((i) => /8:15 p\. m\./.test(i.text))).toBe(true);
+
+		const family = content.family as {
+			presentation?: string;
+			groups?: Array<{ title: string; items: Array<{ name: string }> }>;
+			labels?: { sectionSubtitle?: string; sectionTitle?: string };
+		};
+		expect(family.presentation).toBe('text-only');
+		expect(family.labels?.sectionSubtitle).toBe('Familia');
+		expect(family.groups).toHaveLength(2);
+		expect(family.groups?.[0]?.title).toBe('Padres de la Novia');
+		expect(family.groups?.[1]?.title).toBe('Padres del Novio');
+		expect(
+			family.groups?.every((group) =>
+				group.items.every((item) => item.name === 'Por confirmar'),
+			),
+		).toBe(true);
 
 		const gallery = content.gallery as {
 			items: unknown[];
@@ -156,7 +193,7 @@ describe('Boda Perla y Carlos provision contract', () => {
 
 		const serialized = JSON.stringify(content);
 		expect(serialized).not.toMatch(/\[\[PENDIENTE:/);
-		expect(serialized).not.toMatch(/Por confirmar/);
+		expect(serialized).toMatch(/Por confirmar/);
 		expect(serialized).not.toMatch(/hero-mobile-source/);
 	});
 });

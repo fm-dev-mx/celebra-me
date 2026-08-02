@@ -98,11 +98,11 @@ export function buildPerlaPublishedContent(
 			timeZone: PERLA_EVENT.timeZone,
 			startsAtUtc: PERLA_EVENT.startsAtUtc,
 		},
-		// Family omitted until parent names are confirmed (OD5).
 		sectionOrder: [
 			'quote',
 			'countdown',
 			'location',
+			'family',
 			'gallery',
 			'personalizedAccess',
 			'rsvp',
@@ -141,9 +141,9 @@ export function buildPerlaPublishedContent(
 			documentLabel: 'P & C',
 			stampText: 'BODA',
 			stampYear: '2026',
-			// Primary open action is the external CTA; seal hint is instructional only.
-			microcopy: 'Abrir invitación',
-			tooltipText: 'Toca el sello',
+			// Seal is the sole [data-envelope-open] control; empty microcopy suppresses the external button.
+			microcopy: '',
+			tooltipText: 'Toque el sello',
 			closedPalette: {
 				primary: 'surfacePrimary',
 				accent: 'actionAccent',
@@ -204,6 +204,32 @@ export function buildPerlaPublishedContent(
 					text: `La ceremonia civil se celebrará en la recepción a las ${CIVIL_TIME}`,
 				},
 			],
+		},
+		// Soft guest placeholders until parent names are confirmed (OD5). No invented names.
+		family: {
+			presentation: 'text-only',
+			groups: [
+				{
+					title: 'Padres de la Novia',
+					items: [
+						{ name: 'Por confirmar', role: 'Madre' },
+						{ name: 'Por confirmar', role: 'Padre' },
+					],
+				},
+				{
+					title: 'Padres del Novio',
+					items: [
+						{ name: 'Por confirmar', role: 'Madre' },
+						{ name: 'Por confirmar', role: 'Padre' },
+					],
+				},
+			],
+			labels: {
+				sectionSubtitle: 'Familia',
+				sectionTitle: 'Con la bendición de nuestros padres',
+				sectionMessage:
+					'Con gratitud honramos a quienes nos han acompañado con amor hasta este día.',
+			},
 		},
 		gallery: {
 			eyebrow: 'Retrato',
