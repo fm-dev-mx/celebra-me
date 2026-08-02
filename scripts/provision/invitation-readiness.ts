@@ -189,17 +189,32 @@ function verifyPublishedContent(
 	const location = pubContent.location as Record<string, unknown> | undefined;
 	const ceremony = location?.ceremony as Record<string, unknown> | undefined;
 	const reception = location?.reception as Record<string, unknown> | undefined;
-	const venues = [ceremony, reception].filter((venue): venue is Record<string, unknown> =>
+	const explicitVenues = Array.isArray(location?.venues)
+		? location.venues.filter((venue): venue is Record<string, unknown> =>
+				Boolean(venue && typeof venue === 'object'),
+			)
+		: [];
+	const legacyVenues = [ceremony, reception].filter((venue): venue is Record<string, unknown> =>
 		Boolean(venue && typeof venue === 'object'),
 	);
+	// Prefer venues[] (current dual-venue contract); fall back to legacy ceremony/reception.
+	const venues = explicitVenues.length > 0 ? explicitVenues : legacyVenues;
 	if (venues.length > 0) {
-		if (venues.every((venue) => typeof venue.mapUrl === 'string' && venue.mapUrl.length > 0)) {
+		const hasMap = (venue: Record<string, unknown>) => {
+			const mapUrl = venue.mapUrl;
+			const googleMapsUrl = venue.googleMapsUrl;
+			return (
+				(typeof mapUrl === 'string' && mapUrl.length > 0) ||
+				(typeof googleMapsUrl === 'string' && googleMapsUrl.length > 0)
+			);
+		};
+		if (venues.every(hasMap)) {
 			details.mapsValid = true;
 		} else {
-			reasons.push('Location maps URLs missing for ceremony or reception.');
+			reasons.push('Location maps URLs missing for one or more venues.');
 		}
 	} else {
-		reasons.push('Location content section missing ceremony or reception data.');
+		reasons.push('Location content missing venue data.');
 	}
 }
 
