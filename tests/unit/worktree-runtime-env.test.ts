@@ -24,22 +24,22 @@ import {
 
 describe('worktree lane detection', () => {
 	it('recognizes Integration and the four persistent development lanes', () => {
-		expect(detectWorktreeLane('D:/code/celebra-me').id).toBe('integration');
-		expect(detectWorktreeLane('D:/code/celebra-me/.worktrees/dev-local').id).toBe('dev-local');
-		expect(detectWorktreeLane('D:/code/celebra-me/.worktrees/dev-preview').id).toBe(
+		expect(detectWorktreeLane('/mock/celebra-me').id).toBe('integration');
+		expect(detectWorktreeLane('/mock/celebra-me/.worktrees/dev-local').id).toBe('dev-local');
+		expect(detectWorktreeLane('/mock/celebra-me/.worktrees/dev-preview').id).toBe(
 			'dev-preview',
 		);
-		expect(detectWorktreeLane('D:/code/celebra-me/.worktrees/dev-extra').id).toBe('dev-extra');
+		expect(detectWorktreeLane('/mock/celebra-me/.worktrees/dev-extra').id).toBe('dev-extra');
 	});
 
 	it('marks legacy lane paths as unknown without treating them as active lanes', () => {
-		expect(detectWorktreeLane('D:/code/celebra-me/.worktrees/dev-lane').id).toBe('unknown');
-		expect(detectWorktreeLane('D:/code/celebra-me/.worktrees/val-lane').id).toBe('unknown');
+		expect(detectWorktreeLane('/mock/celebra-me/.worktrees/dev-lane').id).toBe('unknown');
+		expect(detectWorktreeLane('/mock/celebra-me/.worktrees/val-lane').id).toBe('unknown');
 		expect([...LEGACY_WORKTREE_SEGMENTS]).toEqual(['dev-lane', 'val-lane']);
 	});
 
 	it('lists expected lane paths under the repository root', () => {
-		const lanes = listExpectedLanePaths('D:/code/celebra-me');
+		const lanes = listExpectedLanePaths('/mock/celebra-me');
 		expect(lanes.map((lane) => lane.id)).toEqual([
 			'integration',
 			'dev-local',

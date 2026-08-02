@@ -366,16 +366,15 @@ describe('test-asset-loader — portable demo-json URL', () => {
 	});
 
 	it('handles non-Windows import.meta.url patterns', () => {
-		// Simulate what the loader would produce on a Linux/GitHub Actions runner
-		const linuxPath =
-			'/home/runner/work/celebra-me/celebra-me/scripts/db/test-asset-loader.mjs';
+		// Simulate what the loader would produce on a Linux POSIX environment
+		const linuxPath = '/workspace/scripts/db/test-asset-loader.mjs';
 		const linuxUrl = new URL(`file://${linuxPath}`);
 		const resolved = new URL(
 			'../../src/content/event-demos/xv/demo-xv-jewelry-box.json',
 			linuxUrl,
 		);
 		expect(resolved.href).toBe(
-			'file:///home/runner/work/celebra-me/celebra-me/src/content/event-demos/xv/demo-xv-jewelry-box.json',
+			'file:///workspace/src/content/event-demos/xv/demo-xv-jewelry-box.json',
 		);
 	});
 });
