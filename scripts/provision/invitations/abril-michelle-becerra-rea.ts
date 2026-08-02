@@ -159,7 +159,12 @@ export function buildAbrilPublishedContent(
 		title: ABRIL_EVENT.title,
 		description:
 			'Acompáñenos a celebrar los XV años de Abril Michelle Becerra Rea el 12 de septiembre de 2026 en Lagos de Moreno.',
-		theme: { preset: ABRIL_EVENT.themeId },
+		theme: { preset: ABRIL_EVENT.themeId, fontFamily: 'serif' },
+		music: {
+			url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1785250298/Bruno_Mars_-_Talking_To_The_Moon_Optimized_fbmxzl.mp3',
+			title: 'Talking to the moon',
+			autoPlay: true,
+		},
 		eventTiming: {
 			localDateTime: ABRIL_EVENT.localDateTime,
 			timeZone: ABRIL_EVENT.timeZone,
@@ -273,6 +278,18 @@ export function buildAbrilPublishedContent(
 					zoom: 16,
 				},
 			},
+			indications: [
+				{
+					text: 'El <strong>color rosa palo</strong> está reservado para la quinceañera.',
+					iconName: 'Crown',
+					styleVariant: 'default',
+				},
+				{
+					text: 'Código de vestimenta: <strong>formal</strong>',
+					iconName: 'DressCode',
+					styleVariant: 'default',
+				},
+			],
 		},
 		interludes: [
 			{
@@ -420,7 +437,6 @@ export function buildAbrilPublishedContent(
 		thankYou: {
 			message: 'Gracias por hacer más luminosa esta celebración.',
 			closingName: 'Abril Michelle',
-			closingPhrase: 'Con gratitud',
 			date: '12 de septiembre de 2026',
 			image: assets['gallery-05-white-dress'],
 			focalPoint: '50% 28%',
@@ -428,6 +444,17 @@ export function buildAbrilPublishedContent(
 		sharing: {
 			ogImage: assets['hero-desktop'],
 			ogDescription: 'Invitación a los XV años de Abril Michelle Becerra Rea',
+			shareMessages: {
+				reminder:
+					'Hola {{invitado}},\n\n{{hora_evento}}\n\n{{limite_confirmacion}}\n\n{{enlace}}',
+				invitation:
+					'Hola! Estamos muy felices y emocionados de poderte compartir tu invitación \n\nÁbrela para ver los detalles y confirmar tu asistencia.',
+			},
+			reminderSettings: {
+				enabled: true,
+				audience: 'unconfirmed',
+				showWhenDaysBeforeEvent: 70,
+			},
 			whatsappTemplate:
 				'Hola {name}, le compartimos la invitación para los XV años de Abril Michelle: {inviteUrl}',
 		},

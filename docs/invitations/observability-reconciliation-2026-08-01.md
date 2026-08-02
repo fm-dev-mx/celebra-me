@@ -3,6 +3,11 @@
 > Operational evidence record, not a source-of-truth override. Canonical invitation definitions,
 > approved Preview artifacts, and the managed lifecycle remain authoritative.
 
+> **Supersession note:** The current reconciliation goal supersedes the Abril and Romina editorial
+> recommendations recorded below. This historical record remains operational evidence only; the
+> current field-mapping records are `abril-michelle-becerra-rea-production-field-mapping.md` and
+> `romina-rios-chaparro-production-field-mapping.md`.
+
 ## Scope and evidence
 
 This record covers only `abril-michelle-becerra-rea`, `romina-rios-chaparro`, `alba-rosa-quinonez`,

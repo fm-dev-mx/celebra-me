@@ -43,11 +43,12 @@ Storage mutations when content is unchanged.
   - `6:00 p. m.` — Cena (`Dinner`)
   - `7:00 p. m.` — Vals (`Waltz`)
   - `12:00 a. m.` — Cierre de evento (`Sparkles`)
-- **Music Configuration:** Intentionally omitted (no auto-play background audio requested).
+- **Music Configuration:** Retained from the approved Production published presentation under the
+  current `music` contract.
 - **Guest Management Behavior:** `personalized-only`, default `guestCap: 4`.
 - **Included Sections:** `quote`, `family`, `countdown`, `location`, `itinerary`, `gallery`,
   `personalizedAccess`, `rsvp`, `thankYou`.
-- **Intentionally Omitted Sections:** `music`, `gifts`.
+- **Intentionally Omitted Sections:** `gifts`.
 
 ---
 
