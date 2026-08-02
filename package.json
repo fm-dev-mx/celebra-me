@@ -96,6 +96,7 @@
         "invitation:content-parity": "tsx scripts/provision/content-parity-cli.ts",
         "invitation:promote": "tsx scripts/provision/invitation-promote-cli.ts",
         "invitation:preview-fixture": "tsx scripts/provision/preview-e2e-fixture-cli.ts",
+        "invitation:inventory-audit": "tsx scripts/provision/inventory-audit-cli.ts",
         "screenshot": "tsx scripts/screenshot/cli.ts",
         "screenshot:interactive": "tsx scripts/screenshot/cli.ts --interactive",
         "screenshot:invite": "tsx scripts/screenshot/cli.ts --type=invitation",
