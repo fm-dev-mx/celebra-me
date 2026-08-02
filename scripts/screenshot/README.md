@@ -282,8 +282,24 @@ If open or composite fails, the job fails and any previous `05` for that viewpor
 
 Batch mode via `--config=screenshot.config.example.json` runs each configured page sequentially. The
 config supports `defaultMode`, `outputDir`, viewport presets, page routes, wait selectors, hide
-selectors, and page-specific critical selectors. Missing required selectors fail validation; missing
-optional selectors warn.
+selectors, registered `sections`, and page-specific critical selectors. The tool validates every
+configured page and resolves every plan before launching the first browser. Missing required
+selectors fail validation; missing optional selectors warn.
+
+The normal targeted budget is one page/invitation, five total viewports, and thirty planned
+artifacts. A larger config batch must opt in with `--allow-large=true`; the named
+`pnpm screenshot:local-render-corpus` command is the explicit corpus exception. The command prints
+the planned page, invitation, viewport, and artifact counts first. Local is the default evidence
+environment; use Preview only when it supplies distinct deployment, auth, remote-asset, or runtime
+evidence, and do not use Production for routine screenshot validation.
+
+`preflight.json` and `report.json` are safe records: route query values, credentials, cookies,
+tokens, signatures, and sensitive diagnostic assignments are redacted. Explicit `--sections` is
+exact; `critical-qa` and `all-sections` are named presets that may discover data-driven sections
+such as interludes from the rendered DOM.
+
+See [`docs/core/screenshot-tool-contract.md`](../../docs/core/screenshot-tool-contract.md) for the
+validation boundary and representative test matrix.
 
 ## Viewport Profiles
 

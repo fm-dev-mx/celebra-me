@@ -402,6 +402,23 @@ Rules:
   load redundant images or complete browser logs into context.
 - Name the validation tier (A/B/C) and any visual-evidence skips in the closing report.
 
+Screenshot infrastructure guardrails:
+
+- Routine screenshot evidence is Local-first. Preview is only for distinct deployment,
+  authentication, remote-asset, or runtime evidence; Production is not a routine screenshot target.
+- `pnpm screenshot --config=...` must validate every configured page and resolve the complete batch
+  before launching its first browser. Targeted requests must not expand route, section, viewport, or
+  artifact scope. Use `--allow-large=true` only for an intentional batch above the normal budget.
+- `pnpm screenshot:local-render-corpus` is an explicit high-cost corpus operation. Prefer a single
+  route, one viewport, and the smallest target for agent evidence; do not run the corpus to validate
+  a localized change.
+- Screenshot preflight/report records and diagnostics must not persist or print credentials,
+  cookies, signed URLs, query values, tokens, or personal invitation data. Cite record paths and
+  summarize failures rather than attaching complete logs or image inventories.
+- The canonical screenshot contract and representative test matrix live in
+  [`docs/core/screenshot-tool-contract.md`](../../docs/core/screenshot-tool-contract.md) and
+  [`scripts/screenshot/README.md`](../../scripts/screenshot/README.md).
+
 ---
 
 ## 6) Output Contract
