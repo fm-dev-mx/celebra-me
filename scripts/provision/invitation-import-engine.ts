@@ -39,6 +39,7 @@ import {
 import {
 	isRecoverableManagedPartial,
 	resolveManagedMergeBaseline,
+	ManagedBaselineError,
 	type ManagedBaselineReceiptEvidence,
 } from './managed-merge-baseline.ts';
 import { materializeAssetReferences } from './normalized-invitation-release.ts';
@@ -1056,34 +1057,51 @@ function analyzeTargetDrift(
 			sourceHash: pkg.sourceHash,
 			packageHash: pkg.packageHash,
 		});
-		const prevCanonical = resolveManagedMergeBaseline({
-			managedProjection: scanned.managedProjection,
-			appliedDraftUpdatedAt: scanned.appliedDraftUpdatedAt,
-			appliedOperationId: scanned.appliedOperationId,
-			appliedPublishedVersion: scanned.appliedPublishedVersion,
-			appliedPublishedProjectionHash: scanned.appliedPublishedProjectionHash,
-			currentDraftUpdatedAt: recoveringPartial
-				? scanned.appliedDraftUpdatedAt
-				: typeof scanned.existingDraft.updated_at === 'string'
-					? scanned.existingDraft.updated_at
-					: null,
-			currentPublishedVersion: recoveringPartial
-				? scanned.appliedPublishedVersion
-				: typeof scanned.existingPub?.version === 'number'
-					? scanned.existingPub.version
-					: null,
-			currentPublishedProjectionHash: recoveringPartial
-				? scanned.appliedPublishedProjectionHash
-				: scanned.existingPub?.content
-					? hashPublicationProjection(
-							scanned.existingPub.content as Record<string, unknown>,
-						)
-					: null,
-			appliedReceipt: scanned.appliedReceipt,
-			latestMutationReceipt: recoveringPartial
-				? scanned.appliedReceipt
-				: scanned.latestMutationReceipt,
-		});
+		let prevCanonical: Record<string, unknown>;
+		try {
+			prevCanonical = resolveManagedMergeBaseline({
+				managedProjection: scanned.managedProjection,
+				appliedDraftUpdatedAt: scanned.appliedDraftUpdatedAt,
+				appliedOperationId: scanned.appliedOperationId,
+				appliedPublishedVersion: scanned.appliedPublishedVersion,
+				appliedPublishedProjectionHash: scanned.appliedPublishedProjectionHash,
+				currentDraftUpdatedAt: recoveringPartial
+					? scanned.appliedDraftUpdatedAt
+					: typeof scanned.existingDraft.updated_at === 'string'
+						? scanned.existingDraft.updated_at
+						: null,
+				currentPublishedVersion: recoveringPartial
+					? scanned.appliedPublishedVersion
+					: typeof scanned.existingPub?.version === 'number'
+						? scanned.existingPub.version
+						: null,
+				currentPublishedProjectionHash: recoveringPartial
+					? scanned.appliedPublishedProjectionHash
+					: scanned.existingPub?.content
+						? hashPublicationProjection(
+								scanned.existingPub.content as Record<string, unknown>,
+							)
+						: null,
+				appliedReceipt: scanned.appliedReceipt,
+				latestMutationReceipt: recoveringPartial
+					? scanned.appliedReceipt
+					: scanned.latestMutationReceipt,
+			});
+		} catch (error) {
+			if (
+				error instanceof ManagedBaselineError &&
+				(error.classification === 'missing_provenance' ||
+					error.classification === 'legacy_provenance')
+			) {
+				// No verified Phase 2 baseline exists yet: use the current draft as the
+				// 3-way patch ancestor so the import can establish the first baseline.
+				prevCanonical = (scanned.existingDraft.content as Record<string, unknown>) ?? {};
+			} else {
+				// All other classifications (partial operation, drift, stale provenance,
+				// publication after baseline) indicate a real conflict: abort, do not mask.
+				throw error;
+			}
+		}
 		const patchRes = apply3WaySemanticPatch({
 			previousCanonical: prevCanonical,
 			currentCanonical: packageCanonicalContent,
