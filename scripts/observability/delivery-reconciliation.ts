@@ -16,6 +16,10 @@ import type {
 	InvitationLifecycle,
 } from '../provision/invitations/invitation-definition.ts';
 import type { InvitationDatabaseProjection } from './database-projection.ts';
+import {
+	resolveCurrentAssetSlots,
+	type CurrentSemanticAssetSlot,
+} from './current-state-alignment.ts';
 import { comparisonToDeliveryStatus } from './overall-status.ts';
 import type {
 	ComparisonSummary,
@@ -34,6 +38,7 @@ export interface CanonicalDeliveryInput {
 	deliveryScope: InvitationDeliveryScope;
 	packageHash: string;
 	managedContent: Record<string, unknown>;
+	assets: CurrentSemanticAssetSlot[];
 }
 
 export interface DeliveryReconciliationResult {
@@ -148,6 +153,20 @@ function knownResult(comparison: ComparisonSummary): DeliveryReconciliationResul
 	return result;
 }
 
+/** A complete current-state proof makes historical baseline provenance unnecessary. */
+export function directlyAlignedDelivery(
+	environment: ObservabilityEnvironment,
+): DeliveryReconciliationResult {
+	return knownResult({
+		environment,
+		outcome: 'ALREADY_APPLIED',
+		detailStatus: 'AVAILABLE',
+		affectedFieldCount: 0,
+		affectedSectionCount: 0,
+		semanticPaths: [],
+	});
+}
+
 function baselineInputFor(row: InvitationDatabaseProjection): ManagedMergeBaselineInput {
 	return {
 		managedProjection: row.provenance.managedProjection,
@@ -168,7 +187,18 @@ function detailedComparison(input: {
 	row: InvitationDatabaseProjection;
 	baseline: Record<string, unknown>;
 }): ComparisonSummary {
-	const assetKeyById = new Map(input.row.managedAssets.map((asset) => [asset.id, asset.key]));
+	const slotResolution = resolveCurrentAssetSlots(
+		input.canonical.assets,
+		input.row.managedAssets,
+	);
+	const assetKeyById =
+		slotResolution.missingKeys.length === 0 && slotResolution.ambiguousKeys.length === 0
+			? slotResolution.keyById
+			: new Map(
+					input.row.managedAssets.flatMap((asset) =>
+						asset.key ? [[asset.id, asset.key] as const] : [],
+					),
+				);
 	const previousCanonical = normalizeManagedAssetReferences(
 		input.baseline,
 		assetKeyById,

@@ -8,19 +8,26 @@ import {
 import { listLocalRenderCorpus } from '../provision/local-render-corpus/registry.ts';
 import { buildNormalizedInvitationRelease } from '../provision/normalized-invitation-release.ts';
 import { serializeInvitationPackage } from '../provision/invitation-package.ts';
-import type { TargetEnv } from '../provision/dbs-status.ts';
 import {
 	ObservabilityInvocationBudget,
 	readEnvironmentDatabaseProjection,
 	readMigrationProjection,
+	unprobedEnvironmentProjection,
+	unprobedMigrationProjection,
 	type EnvironmentDatabaseProjection,
 	type MigrationProjection,
 } from './database-projection.ts';
 import {
+	directlyAlignedDelivery,
 	reconcileInvitationDelivery,
 	type CanonicalDeliveryInput,
 	type DeliveryReconciliationResult,
 } from './delivery-reconciliation.ts';
+import {
+	proveDirectCurrentAlignment,
+	type CurrentStateCanonical,
+} from './current-state-alignment.ts';
+import { evaluateAssetSignals } from './asset-signals.ts';
 import {
 	aggregateDeliveryStatus,
 	aggregateOperationalStatus,
@@ -41,16 +48,11 @@ import type {
 	ObservabilitySummaryPayload,
 	OperationalStatus,
 } from './types.ts';
-
 export type ObservabilityProbeScope = 'local' | 'all';
 const ENVIRONMENTS: readonly ObservabilityEnvironment[] = ['local', 'preview', 'production'];
 const PROBE_TIMEOUT_MS = 4_000;
 const REFRESH_TTL_MS = 60_000;
-
-export interface CanonicalObservation extends CanonicalDeliveryInput {
-	requiredAssetKeys: string[];
-}
-
+export interface CanonicalObservation extends CanonicalDeliveryInput, CurrentStateCanonical {}
 export interface SnapshotEvidence {
 	generatedAt: string;
 	probeScope: ObservabilityProbeScope;
@@ -60,7 +62,6 @@ export interface SnapshotEvidence {
 	projections: Record<ObservabilityEnvironment, EnvironmentDatabaseProjection>;
 	migrations: Record<ObservabilityEnvironment, MigrationProjection>;
 }
-
 function emptyComparison(
 	environment: ObservabilityEnvironment,
 	outcome: ComparisonSummary['outcome'] = 'UNVERIFIED',
@@ -74,7 +75,6 @@ function emptyComparison(
 		semanticPaths: [],
 	};
 }
-
 function signal(input: {
 	impact: ObservabilitySignal['impact'];
 	reasonCode: ObservabilityReasonCode;
@@ -102,11 +102,9 @@ function signal(input: {
 		...(input.comparison ? { comparisonOutcome: input.comparison.outcome } : {}),
 	};
 }
-
 function expectedTarget(environment: ObservabilityEnvironment): string {
 	return environment === 'local' ? 'persistent-local' : environment;
 }
-
 function coverageFor(
 	environment: ObservabilityEnvironment,
 	probeScope: ObservabilityProbeScope,
@@ -128,7 +126,6 @@ function coverageFor(
 	}
 	return { environment, status: 'AVAILABLE' };
 }
-
 function signalFromReconciliation(input: {
 	result: DeliveryReconciliationResult;
 	environment: ObservabilityEnvironment;
@@ -153,7 +150,6 @@ function signalFromReconciliation(input: {
 		comparison: input.result.comparison,
 	});
 }
-
 function environmentBaseSignals(
 	evidence: SnapshotEvidence,
 	coverage: readonly EnvironmentCoverage[],
@@ -222,14 +218,12 @@ function environmentBaseSignals(
 	}
 	return issues;
 }
-
 function rowsFor(
 	projection: EnvironmentDatabaseProjection,
 	slug: string,
 ): EnvironmentDatabaseProjection['rows'] {
 	return projection.rows.filter((row) => row.slug === slug);
 }
-
 interface CanonicalEvaluationState {
 	issues: ObservabilitySignal[];
 	workItems: ObservabilitySignal[];
@@ -237,59 +231,6 @@ interface CanonicalEvaluationState {
 	operationalStatuses: OperationalStatus[];
 	deliveryStatuses: DeliveryStatus[];
 }
-
-function appendAssetSignals(input: {
-	canonical: CanonicalObservation;
-	environment: ObservabilityEnvironment;
-	row: EnvironmentDatabaseProjection['rows'][number];
-	state: CanonicalEvaluationState;
-}): void {
-	const missingRequiredAssets = input.canonical.requiredAssetKeys.filter(
-		(key) => !input.row.managedAssetKeys.includes(key),
-	);
-	if (missingRequiredAssets.length === 0) return;
-	const published = input.row.publishedVersion !== null;
-	const unkeyedAssetCount = Math.max(0, input.row.assetCount - input.row.managedAssetKeys.length);
-	const definitelyMissingCount = Math.max(0, missingRequiredAssets.length - unkeyedAssetCount);
-	if (definitelyMissingCount === 0) {
-		const evidenceSignal = signal({
-			impact: published ? 'OPERATIONAL' : 'DELIVERY',
-			reasonCode: 'ASSET_IDENTITY_UNVERIFIED',
-			nextStep: 'VERIFY_ASSET_EVIDENCE',
-			operationalStatus: published ? 'UNVERIFIED' : 'HEALTHY',
-			deliveryStatus: published ? 'ALIGNED' : 'UNVERIFIED',
-			environment: input.environment,
-			slug: input.canonical.slug,
-			lifecycle: input.canonical.lifecycle,
-		});
-		evidenceSignal.affectedFieldCount = missingRequiredAssets.length;
-		evidenceSignal.affectedSectionCount = 1;
-		input.state.issues.push(evidenceSignal);
-		if (published) input.state.operationalStatuses.push('UNVERIFIED');
-		else input.state.deliveryStatuses.push('UNVERIFIED');
-		return;
-	}
-	const assetSignal = signal({
-		impact: published ? 'OPERATIONAL' : 'DELIVERY',
-		reasonCode: published ? 'REQUIRED_PUBLISHED_ASSET_MISSING' : 'UNPUBLISHED_ASSET_PENDING',
-		nextStep: 'PROVIDE_REQUIRED_ASSET',
-		operationalStatus: published ? 'BLOCKED' : 'HEALTHY',
-		deliveryStatus: published ? 'ALIGNED' : 'IN_PROGRESS',
-		environment: input.environment,
-		slug: input.canonical.slug,
-		lifecycle: input.canonical.lifecycle,
-	});
-	assetSignal.affectedFieldCount = definitelyMissingCount;
-	assetSignal.affectedSectionCount = 1;
-	if (published) {
-		input.state.issues.push(assetSignal);
-		input.state.operationalStatuses.push('BLOCKED');
-		return;
-	}
-	input.state.workItems.push(assetSignal);
-	input.state.deliveryStatuses.push('IN_PROGRESS');
-}
-
 function appendPresenceSignals(input: {
 	canonical: CanonicalObservation;
 	coverage: readonly EnvironmentCoverage[];
@@ -388,7 +329,6 @@ function appendPresenceSignals(input: {
 		);
 	}
 }
-
 function appendLifecycleSignals(
 	canonical: CanonicalObservation,
 	state: CanonicalEvaluationState,
@@ -444,7 +384,6 @@ function appendLifecycleSignals(
 	);
 	state.deliveryStatuses.push('ACTION_REQUIRED');
 }
-
 function evaluateCanonicalInvitation(
 	canonical: CanonicalObservation,
 	evidence: SnapshotEvidence,
@@ -470,12 +409,25 @@ function evaluateCanonicalInvitation(
 		ObservabilityEnvironment,
 		EnvironmentDatabaseProjection['rows']
 	>();
+	for (const environment of ENVIRONMENTS) {
+		rowsByEnvironment.set(
+			environment,
+			rowsFor(evidence.projections[environment], canonical.slug),
+		);
+	}
+	const directRows = ENVIRONMENTS.flatMap(
+		(environment) => rowsByEnvironment.get(environment) ?? [],
+	);
+	const directlyAligned =
+		coverage.every((item) => item.status === 'AVAILABLE') &&
+		directRows.length === ENVIRONMENTS.length &&
+		ENVIRONMENTS.every((environment) => (rowsByEnvironment.get(environment) ?? []).length === 1) &&
+		proveDirectCurrentAlignment({ canonical, rows: directRows });
 
 	for (const environment of ENVIRONMENTS) {
 		const coverageRow = coverage.find((item) => item.environment === environment)!;
 		if (coverageRow.status === 'NOT_PROBED') continue;
-		const rows = rowsFor(evidence.projections[environment], canonical.slug);
-		rowsByEnvironment.set(environment, rows);
+		const rows = rowsByEnvironment.get(environment) ?? [];
 		if (coverageRow.status !== 'AVAILABLE') {
 			comparisons.push(emptyComparison(environment));
 			operationalStatuses.push('UNVERIFIED');
@@ -504,11 +456,13 @@ function evaluateCanonicalInvitation(
 		}
 		if (rows.length === 0) continue;
 
-		const result = reconcileInvitationDelivery({
-			environment,
-			canonical,
-			row: rows[0]!,
-		});
+		const result = directlyAligned
+			? directlyAlignedDelivery(environment)
+			: reconcileInvitationDelivery({
+					environment,
+					canonical,
+					row: rows[0]!,
+				});
 		comparisons.push(result.comparison);
 		operationalStatuses.push(result.operationalStatus);
 		deliveryStatuses.push(result.deliveryStatus);
@@ -529,7 +483,11 @@ function evaluateCanonicalInvitation(
 		});
 		if (work) workItems.push(work);
 
-		appendAssetSignals({ canonical, environment, row: rows[0]!, state });
+		const assetSignals = evaluateAssetSignals({ canonical, environment, row: rows[0]! });
+		issues.push(...assetSignals.issues);
+		workItems.push(...assetSignals.workItems);
+		operationalStatuses.push(...assetSignals.operationalStatuses);
+		deliveryStatuses.push(...assetSignals.deliveryStatuses);
 	}
 
 	appendPresenceSignals({ canonical, coverage, rowsByEnvironment, state });
@@ -703,29 +661,6 @@ export function assembleSnapshotFromEvidence(evidence: SnapshotEvidence): Observ
 	});
 }
 
-function unprobedEnvironment(environment: TargetEnv): EnvironmentDatabaseProjection {
-	return {
-		environment,
-		configured: false,
-		reachable: false,
-		targetClassification: 'unknown',
-		activeInvitationRows: 0,
-		identityConflictsCount: 0,
-		rows: [],
-		failure: 'credentials_required',
-	};
-}
-
-function unprobedMigration(environment: TargetEnv): MigrationProjection {
-	return {
-		environment,
-		available: false,
-		schemaLifecycle: 'UNVERIFIED',
-		appliedCount: null,
-		pendingCount: 0,
-	};
-}
-
 async function buildCanonicalObservations(): Promise<{
 	canonical: CanonicalObservation[];
 	failures: Array<{ slug: string; lifecycle: InvitationLifecycle }>;
@@ -745,7 +680,22 @@ async function buildCanonicalObservations(): Promise<{
 					deliveryScope: definition.deliveryScope,
 					packageHash: serializeInvitationPackage(release).packageHash,
 					managedContent: release.draftContent,
-					requiredAssetKeys: definition.assets.map((asset) => asset.key).sort(),
+					metadata: {
+						eventType: release.metadata.eventType,
+						kind: 'client',
+						baseDemoId: release.metadata.baseDemoId,
+						themeId: release.metadata.themeId,
+						snapshot: release.metadata.snapshot,
+						clientName: release.metadata.clientName,
+					},
+					assets: release.assets.map((asset) => ({
+						key: asset.key,
+						displayName: asset.displayName,
+						mimeType: asset.mimeType,
+						width: asset.width,
+						height: asset.height,
+						fileSize: asset.fileSize,
+					})),
 				});
 			} catch {
 				failures.push({ slug: definition.slug, lifecycle: definition.lifecycle });
@@ -776,8 +726,8 @@ async function collectSnapshotEvidence(
 	const migrations = {} as Record<ObservabilityEnvironment, MigrationProjection>;
 	for (const environment of ENVIRONMENTS) {
 		if (probeScope === 'local' && environment !== 'local') {
-			projections[environment] = unprobedEnvironment(environment);
-			migrations[environment] = unprobedMigration(environment);
+			projections[environment] = unprobedEnvironmentProjection(environment);
+			migrations[environment] = unprobedMigrationProjection(environment);
 			continue;
 		}
 		projections[environment] = readEnvironmentDatabaseProjection({

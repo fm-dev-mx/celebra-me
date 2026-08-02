@@ -37,7 +37,12 @@ export class ObservabilityInvocationBudget {
 
 export interface ManagedAssetProjection {
 	id: string;
-	key: string;
+	key: string | null;
+	displayName: string | null;
+	mimeType: string | null;
+	width: number | null;
+	height: number | null;
+	fileSize: number | null;
 }
 
 export interface InvitationDatabaseProjection {
@@ -53,6 +58,16 @@ export interface InvitationDatabaseProjection {
 	assetCount: number;
 	managedAssetKeys: string[];
 	managedAssets: ManagedAssetProjection[];
+	metadata: {
+		eventType: string | null;
+		kind: string | null;
+		baseDemoId: string | null;
+		themeId: string | null;
+		snapshot: Record<string, unknown> | null;
+		clientName: string | null;
+		createdBy: string | null;
+	};
+	event: { slug: string | null; eventType: string | null; ownerUserId: string | null };
 	provenance: {
 		definitionSlug: string | null;
 		releaseSchemaVersion: string | null;
@@ -85,6 +100,31 @@ export interface MigrationProjection {
 	schemaLifecycle: SchemaLifecycleState;
 	appliedCount: number | null;
 	pendingCount: number;
+}
+
+export function unprobedEnvironmentProjection(
+	environment: TargetEnv,
+): EnvironmentDatabaseProjection {
+	return {
+		environment,
+		configured: false,
+		reachable: false,
+		targetClassification: 'unknown',
+		activeInvitationRows: 0,
+		identityConflictsCount: 0,
+		rows: [],
+		failure: 'credentials_required',
+	};
+}
+
+export function unprobedMigrationProjection(environment: TargetEnv): MigrationProjection {
+	return {
+		environment,
+		available: false,
+		schemaLifecycle: 'UNVERIFIED',
+		appliedCount: null,
+		pendingCount: 0,
+	};
 }
 
 interface RawProjectionPayload {
@@ -150,9 +190,18 @@ function managedAssets(value: unknown): ManagedAssetProjection[] {
 		if (!item || typeof item !== 'object' || Array.isArray(item)) return [];
 		const row = item as Record<string, unknown>;
 		const id = stringOrNull(row.id);
-		const key = stringOrNull(row.key);
-		if (!id || !key) return [];
-		return [{ id, key }];
+		if (!id) return [];
+		return [
+			{
+				id,
+				key: stringOrNull(row.key),
+				displayName: stringOrNull(row.displayName),
+				mimeType: stringOrNull(row.mimeType),
+				width: numberOrNull(row.width),
+				height: numberOrNull(row.height),
+				fileSize: numberOrNull(row.fileSize),
+			},
+		];
 	});
 }
 
@@ -173,6 +222,8 @@ function parseRows(value: unknown): InvitationDatabaseProjection[] {
 			row.provenance && typeof row.provenance === 'object' && !Array.isArray(row.provenance)
 				? (row.provenance as Record<string, unknown>)
 				: {};
+		const metadata = isRecord(row.metadata) ? row.metadata : {};
+		const event = isRecord(row.event) ? row.event : {};
 		return [
 			{
 				slug,
@@ -187,6 +238,20 @@ function parseRows(value: unknown): InvitationDatabaseProjection[] {
 				assetCount: numberOrNull(row.assetCount) ?? 0,
 				managedAssetKeys: stringArray(row.managedAssetKeys),
 				managedAssets: managedAssets(row.managedAssets),
+				metadata: {
+					eventType: stringOrNull(metadata.eventType),
+					kind: stringOrNull(metadata.kind),
+					baseDemoId: stringOrNull(metadata.baseDemoId),
+					themeId: stringOrNull(metadata.themeId),
+					snapshot: isRecord(metadata.snapshot) ? metadata.snapshot : null,
+					clientName: stringOrNull(metadata.clientName),
+					createdBy: stringOrNull(metadata.createdBy),
+				},
+				event: {
+					slug: stringOrNull(event.slug),
+					eventType: stringOrNull(event.eventType),
+					ownerUserId: stringOrNull(event.ownerUserId),
+				},
 				provenance: {
 					definitionSlug: stringOrNull(provenance.definitionSlug),
 					releaseSchemaVersion: stringOrNull(provenance.releaseSchemaVersion),
@@ -207,6 +272,10 @@ function parseRows(value: unknown): InvitationDatabaseProjection[] {
 	});
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
 function readOnlyPsql(sql: string, dbUrl: string, timeoutMs: number) {
 	return runPsql(sql, dbUrl, {
 		tuplesOnly: true,
@@ -224,16 +293,7 @@ export function readEnvironmentDatabaseProjection(input: {
 }): EnvironmentDatabaseProjection {
 	const { dbUrl } = resolveDbUrlForEnv(input.environment);
 	if (!dbUrl) {
-		return {
-			environment: input.environment,
-			configured: false,
-			reachable: false,
-			targetClassification: 'unknown',
-			activeInvitationRows: 0,
-			identityConflictsCount: 0,
-			rows: [],
-			failure: 'credentials_required',
-		};
+		return unprobedEnvironmentProjection(input.environment);
 	}
 
 	const classification = classifyDbTarget(dbUrl);
@@ -247,6 +307,16 @@ WITH target_rows AS (
   SELECT
     i.slug,
     i.id,
+	 i.event_type AS invitation_event_type,
+	 i.kind,
+	 i.base_demo_id,
+	 i.theme_id,
+	 i.snapshot,
+	 i.client_name,
+	 i.created_by,
+	 event.slug AS event_slug,
+	 event.event_type AS event_type,
+	 event.owner_user_id AS event_owner_user_id,
     d.status AS draft_status,
     d.updated_at AS draft_updated_at,
     pub.version AS published_version,
@@ -272,12 +342,8 @@ WITH target_rows AS (
     COALESCE(assets.asset_count, 0) AS asset_count,
 	COALESCE(assets.keys, '[]'::jsonb) AS managed_asset_keys,
     COALESCE(assets.items, '[]'::jsonb) AS managed_assets,
-    (
-      p.invitation_id IS NOT NULL AND (
-        d.updated_at IS DISTINCT FROM p.applied_draft_updated_at OR
-        pub.version IS DISTINCT FROM p.applied_published_version
-      )
-    ) AS detail_required,
+	-- Direct alignment needs the current managed projection even when durable provenance exists.
+	true AS detail_required,
     COALESCE(octet_length(d.content::text), 0) +
 	  COALESCE(octet_length(p.managed_projection::text), 0) +
 	  COALESCE(octet_length(assets.items::text), 0) AS detail_bytes,
@@ -305,14 +371,25 @@ WITH target_rows AS (
     ORDER BY r.created_at DESC LIMIT 1
   ) latest_receipt ON true
   LEFT JOIN LATERAL (
+	 SELECT e.slug, e.event_type, e.owner_user_id
+	 FROM public.events e
+	 WHERE e.invitation_project_id = i.id AND e.deleted_at IS NULL
+	 ORDER BY e.id LIMIT 1
+  ) event ON true
+  LEFT JOIN LATERAL (
     SELECT
       COUNT(*) AS asset_count,
 	  jsonb_agg(a.managed_source_key ORDER BY a.managed_source_key)
 	    FILTER (WHERE a.managed_source_key IS NOT NULL) AS keys,
       jsonb_agg(jsonb_build_object(
         'id', a.id,
-        'key', a.managed_source_key
-      ) ORDER BY a.managed_source_key) FILTER (WHERE a.managed_source_key IS NOT NULL) AS items
+        'key', a.managed_source_key,
+		'displayName', a.display_name,
+		'mimeType', a.mime_type,
+		'width', a.width,
+		'height', a.height,
+		'fileSize', a.file_size
+      ) ORDER BY a.id) AS items
     FROM public.invitation_assets a
     WHERE a.invitation_id = i.id AND a.deleted_at IS NULL
   ) assets ON true
@@ -345,6 +422,20 @@ SELECT jsonb_build_object(
       'managedAssets', CASE
         WHEN detail_required AND detail_bytes <= ${OBSERVABILITY_DETAIL_BUDGET_BYTES}
         THEN managed_assets ELSE '[]'::jsonb END,
+	  'metadata', jsonb_build_object(
+		'eventType', invitation_event_type,
+		'kind', kind,
+		'baseDemoId', base_demo_id,
+		'themeId', theme_id,
+		'snapshot', snapshot,
+		'clientName', client_name,
+		'createdBy', created_by
+	  ),
+	  'event', jsonb_build_object(
+		'slug', event_slug,
+		'eventType', event_type,
+		'ownerUserId', event_owner_user_id
+	  ),
       'provenance', jsonb_build_object(
         'definitionSlug', definition_slug,
         'releaseSchemaVersion', release_schema_version,

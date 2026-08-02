@@ -77,6 +77,9 @@ Alba Rosa Quiñones client invitation, premium motion system, and preview infras
 
 - **Observabilidad Local v3**: salud operacional y progreso de entrega separados, con evidencias
   tipadas y proyección acotada por entorno.
+- **Observabilidad direct alignment**: when Local/Preview/Production current managed drafts match
+  (including asset slots), delivery can be `ALIGNED` without legacy provenance; otherwise baseline
+  three-way reconciliation still applies.
 - **Free-tier Production recovery**: local Windows EFS critical backups support unattended daily
   reporting, category byte metrics, checksum verification, and 30-daily/12-monthly retention.
 

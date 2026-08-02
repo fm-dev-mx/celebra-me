@@ -32,7 +32,22 @@ function canonical(
 		deliveryScope: 'content-and-assets',
 		packageHash: CURRENT_HASH,
 		managedContent: { hero: { name: 'Managed' } },
-		requiredAssetKeys,
+		metadata: {
+			eventType: 'boda',
+			kind: 'client',
+			baseDemoId: 'luxury-hacienda',
+			themeId: 'luxury-hacienda',
+			snapshot: {},
+			clientName: 'Cliente',
+		},
+		assets: requiredAssetKeys.map((key) => ({
+			key,
+			displayName: key,
+			mimeType: 'image/webp',
+			width: null,
+			height: null,
+			fileSize: null,
+		})),
 	};
 }
 
@@ -63,6 +78,16 @@ function row(
 		assetCount: 0,
 		managedAssetKeys: [],
 		managedAssets: [],
+		metadata: {
+			eventType: 'boda',
+			kind: 'client',
+			baseDemoId: 'luxury-hacienda',
+			themeId: 'luxury-hacienda',
+			snapshot: {},
+			clientName: 'Cliente',
+			createdBy: 'owner-id',
+		},
+		event: { slug: 'managed-invitation', eventType: 'boda', ownerUserId: 'owner-id' },
 		provenance: {
 			definitionSlug: 'managed-invitation',
 			releaseSchemaVersion: RELEASE_SCHEMA_VERSION,
@@ -158,6 +183,37 @@ function summary(snapshot: ReturnType<typeof assembleSnapshotFromEvidence>) {
 	return snapshot.invitationSummaries.find((item) => item.slug === 'managed-invitation')!;
 }
 
+function directCanonical(requiredAssetKeys: string[] = []): CanonicalObservation {
+	const managedContent = buildEventContentData({
+		title: 'Boda Demo',
+		eventType: 'boda',
+		theme: { preset: 'luxury-hacienda' },
+		hero: {
+			name: 'Managed',
+			date: '2026-08-01T00:00:00.000Z',
+			backgroundImage: '/assets/hero.jpg',
+		},
+	});
+	return { ...canonical('published', requiredAssetKeys), managedContent };
+}
+
+function directRow(
+	content: Record<string, unknown>,
+	overrides: Partial<InvitationDatabaseProjection> = {},
+): InvitationDatabaseProjection {
+	return row('aligned', {
+		detailRequired: true,
+		draftContent: content,
+		provenance: {
+			...row().provenance,
+			hasManagedProjection: false,
+			managedProjection: null,
+			releaseSchemaVersion: null,
+		},
+		...overrides,
+	});
+}
+
 describe('observability v3 operational and delivery separation', () => {
 	it('reports healthy operations while a canonical change is pending everywhere', () => {
 		const snapshot = assembleSnapshotFromEvidence(
@@ -229,6 +285,78 @@ describe('observability v3 operational and delivery separation', () => {
 });
 
 describe('observability v3 baseline and lifecycle authority', () => {
+	it('proves direct alignment without legacy provenance when all current states are equal', () => {
+		const definition = directCanonical();
+		const current = directRow(definition.managedContent);
+		const snapshot = assembleSnapshotFromEvidence(
+			evidence({
+				definition,
+				rows: { local: [current], preview: [current], production: [current] },
+			}),
+		);
+		expect(summary(snapshot)).toMatchObject({
+			operationalStatus: 'HEALTHY',
+			deliveryStatus: 'ALIGNED',
+		});
+		expect(snapshot.issues.some((item) => item.reasonCode === 'BASELINE_UNAVAILABLE')).toBe(
+			false,
+		);
+	});
+
+	it('requires a baseline only when a current environment differs', () => {
+		const definition = directCanonical();
+		const divergent = buildEventContentData({
+			title: 'Boda Demo',
+			eventType: 'boda',
+			theme: { preset: 'luxury-hacienda' },
+			hero: {
+				name: 'Different',
+				date: '2026-08-01T00:00:00.000Z',
+				backgroundImage: '/assets/hero.jpg',
+			},
+		});
+		const snapshot = assembleSnapshotFromEvidence(
+			evidence({
+				definition,
+				rows: {
+					local: [directRow(definition.managedContent)],
+					preview: [directRow(divergent)],
+					production: [directRow(definition.managedContent)],
+				},
+			}),
+		);
+		expect(snapshot.operationalStatus).toBe('HEALTHY');
+		expect(snapshot.deliveryStatus).toBe('UNVERIFIED');
+		expect(snapshot.issues.some((item) => item.reasonCode === 'BASELINE_UNAVAILABLE')).toBe(
+			true,
+		);
+	});
+
+	it('does not allow an incompatible normalization version to bypass baseline verification', () => {
+		const definition = directCanonical();
+		const incompatible = directRow(definition.managedContent, {
+			provenance: {
+				...row().provenance,
+				releaseSchemaVersion: '1.0.0',
+				managedProjection: definition.managedContent,
+			},
+		});
+		const snapshot = assembleSnapshotFromEvidence(
+			evidence({
+				definition,
+				rows: {
+					local: [incompatible],
+					preview: [incompatible],
+					production: [incompatible],
+				},
+			}),
+		);
+		expect(snapshot.deliveryStatus).toBe('UNVERIFIED');
+		expect(
+			snapshot.issues.some((item) => item.reasonCode === 'BASELINE_VERSION_INCOMPATIBLE'),
+		).toBe(true);
+	});
+
 	it('blocks an invitation identity conflict without leaking row identity', () => {
 		const duplicate = row('aligned', { invitationId: 'second-internal-id' });
 		const snapshot = assembleSnapshotFromEvidence(
@@ -241,29 +369,21 @@ describe('observability v3 baseline and lifecycle authority', () => {
 		expect(JSON.stringify(snapshot)).not.toContain('second-internal-id');
 	});
 
-	it.each([
-		[
-			'missing baseline',
-			{ hasManagedProjection: false, managedProjection: null },
-			'BASELINE_UNAVAILABLE',
-		],
-		[
-			'incompatible normalization version',
-			{ releaseSchemaVersion: '1.0.0' },
-			'BASELINE_VERSION_INCOMPATIBLE',
-		],
-	] as const)(
-		'classifies %s as unverified delivery evidence',
-		(_label, provenance, reasonCode) => {
-			const local = row('aligned', {
-				provenance: { ...row().provenance, ...provenance },
-			});
-			const snapshot = assembleSnapshotFromEvidence(evidence({ rows: { local: [local] } }));
-			expect(snapshot.operationalStatus).toBe('HEALTHY');
-			expect(snapshot.deliveryStatus).toBe('UNVERIFIED');
-			expect(snapshot.issues.some((item) => item.reasonCode === reasonCode)).toBe(true);
-		},
-	);
+	it('classifies a missing baseline as unverified delivery evidence', () => {
+		const local = row('aligned', {
+			provenance: {
+				...row().provenance,
+				hasManagedProjection: false,
+				managedProjection: null,
+			},
+		});
+		const snapshot = assembleSnapshotFromEvidence(evidence({ rows: { local: [local] } }));
+		expect(snapshot.operationalStatus).toBe('HEALTHY');
+		expect(snapshot.deliveryStatus).toBe('UNVERIFIED');
+		expect(snapshot.issues.some((item) => item.reasonCode === 'BASELINE_UNAVAILABLE')).toBe(
+			true,
+		);
+	});
 
 	it('treats a new in-progress invitation as valid pending work', () => {
 		const snapshot = assembleSnapshotFromEvidence(
@@ -420,22 +540,67 @@ describe('observability v3 operational failure boundaries', () => {
 		).toBe(true);
 	});
 
-	it('does not call existing unkeyed published assets missing', () => {
-		const unkeyedAssets = row('aligned', { assetCount: 2, managedAssetKeys: [] });
+	it('accepts a legacy asset when its current semantic slot is unique', () => {
+		const definition = directCanonical(['hero']);
+		const withCurrentAsset = directRow(definition.managedContent, {
+			assetCount: 1,
+			managedAssetKeys: [],
+			managedAssets: [
+				{
+					id: 'legacy-hero',
+					key: null,
+					displayName: 'hero',
+					mimeType: 'image/webp',
+					width: null,
+					height: null,
+					fileSize: null,
+				},
+			],
+		});
 		const snapshot = assembleSnapshotFromEvidence(
 			evidence({
-				definition: canonical('published', ['hero', 'portrait']),
+				definition,
 				rows: {
-					local: [unkeyedAssets],
-					preview: [unkeyedAssets],
-					production: [unkeyedAssets],
+					local: [withCurrentAsset],
+					preview: [withCurrentAsset],
+					production: [withCurrentAsset],
 				},
 			}),
 		);
-		expect(snapshot.operationalStatus).toBe('UNVERIFIED');
-		expect(
-			snapshot.issues.every((item) => item.reasonCode !== 'REQUIRED_PUBLISHED_ASSET_MISSING'),
-		).toBe(true);
+		expect(snapshot).toMatchObject({ operationalStatus: 'HEALTHY', deliveryStatus: 'ALIGNED' });
+		expect(snapshot.issues).toEqual([]);
+	});
+
+	it('keeps ambiguous current asset mappings visible', () => {
+		const ambiguous = row('aligned', {
+			assetCount: 2,
+			managedAssets: [
+				{
+					id: 'one',
+					key: null,
+					displayName: 'hero',
+					mimeType: 'image/webp',
+					width: null,
+					height: null,
+					fileSize: null,
+				},
+				{
+					id: 'two',
+					key: null,
+					displayName: 'hero',
+					mimeType: 'image/webp',
+					width: null,
+					height: null,
+					fileSize: null,
+				},
+			],
+		});
+		const snapshot = assembleSnapshotFromEvidence(
+			evidence({
+				definition: canonical('published', ['hero']),
+				rows: { local: [ambiguous], preview: [ambiguous], production: [ambiguous] },
+			}),
+		);
 		expect(
 			snapshot.issues.some((item) => item.reasonCode === 'ASSET_IDENTITY_UNVERIFIED'),
 		).toBe(true);
