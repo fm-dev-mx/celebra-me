@@ -6,6 +6,8 @@ import {
 } from '../../scripts/provision/invitations/romina-rios-chaparro.ts';
 import {
 	buildRominaSchemaRepairPlan,
+	buildRominaSchemaRepairReplayIdentity,
+	isRominaSchemaRepairApplied,
 	verifyRominaSchemaRepairOutcome,
 } from '../../scripts/provision/romina-schema-repair.ts';
 import { buildRominaSchemaRepairTransactionSql } from '../../scripts/provision/romina-schema-repair-service.ts';
@@ -137,5 +139,61 @@ describe('Romina schema repair planner', () => {
 		expect(sql).toContain("'romina_schema_repair'");
 		expect(sql).toContain('ROMINA_REPAIR_STALE_DRAFT');
 		expect(sql).toContain('invitation_mutation_operation_receipts');
+	});
+
+	it('derives a durable replay identity only after the canonical fields are applied', () => {
+		const input = fixture();
+		const plan = buildRominaSchemaRepairPlan({
+			slug: 'romina-rios-chaparro',
+			...input,
+			draftStatus: 'approved',
+			draftUpdatedAt: '2026-07-24T18:31:47.138647+00:00',
+			publishedVersion: 10,
+		});
+		const repaired = JSON.parse(JSON.stringify(input.draftContent)) as Record<string, unknown>;
+		const location = repaired.location as Record<string, unknown>;
+		const venues = location.venues as Record<string, unknown>[];
+		venues[0]!.venueEvent = plan.after.venueEvents[0];
+		venues[1]!.venueEvent = plan.after.venueEvents[1];
+		(repaired.family as Record<string, unknown>).godparents = plan.after.godparents;
+
+		expect(
+			isRominaSchemaRepairApplied({
+				slug: 'romina-rios-chaparro',
+				draftContent: input.draftContent,
+				publishedContent: input.publishedContent,
+			}),
+		).toBe(false);
+		expect(
+			isRominaSchemaRepairApplied({
+				slug: 'romina-rios-chaparro',
+				draftContent: repaired,
+				publishedContent: input.publishedContent,
+			}),
+		).toBe(true);
+
+		const identity = buildRominaSchemaRepairReplayIdentity({
+			slug: 'romina-rios-chaparro',
+			draftContent: repaired,
+			publishedContent: input.publishedContent,
+			publishedVersion: 10,
+		});
+		const repeated = buildRominaSchemaRepairReplayIdentity({
+			slug: 'romina-rios-chaparro',
+			draftContent: repaired,
+			publishedContent: input.publishedContent,
+			publishedVersion: 10,
+		});
+
+		expect(identity).toEqual(repeated);
+		expect(identity.afterHash).toBe(plan.hashes.after);
+		expect(() =>
+			buildRominaSchemaRepairReplayIdentity({
+				slug: 'abril-michelle-becerra-rea',
+				draftContent: repaired,
+				publishedContent: input.publishedContent,
+				publishedVersion: 10,
+			}),
+		).toThrow('ROMINA_REPAIR_REPLAY_NOT_APPLIED');
 	});
 });

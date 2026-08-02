@@ -153,6 +153,69 @@ export function deriveRominaSchemaRepairFingerprint(input: {
 	});
 }
 
+export interface RominaSchemaRepairReplayIdentity {
+	operationFingerprint: string;
+	operationId: string;
+	receiptOperationId: string;
+	afterHash: string;
+}
+
+export function isRominaSchemaRepairApplied(input: {
+	slug: string;
+	draftContent: JsonRecord;
+	publishedContent: JsonRecord;
+}): boolean {
+	if (input.slug !== ROMINA_SCHEMA_REPAIR_SLUG) return false;
+	if (!eventContentSchema.safeParse(input.draftContent).success) return false;
+	if (!eventContentSchema.safeParse(input.publishedContent).success) return false;
+	try {
+		const publishedVenueEvents: [unknown, unknown] = [
+			venueAt(input.publishedContent, 0).venueEvent,
+			venueAt(input.publishedContent, 1).venueEvent,
+		];
+		const draftVenueEvents: [unknown, unknown] = [
+			venueAt(input.draftContent, 0).venueEvent,
+			venueAt(input.draftContent, 1).venueEvent,
+		];
+		const publishedGodparents = record(input.publishedContent.family, 'family').godparents;
+		const draftGodparents = record(input.draftContent.family, 'family').godparents;
+		return (
+			canonicalize(draftVenueEvents) === canonicalize(publishedVenueEvents) &&
+			canonicalize(draftGodparents) === canonicalize(publishedGodparents)
+		);
+	} catch {
+		return false;
+	}
+}
+
+export function buildRominaSchemaRepairReplayIdentity(input: {
+	slug: string;
+	draftContent: JsonRecord;
+	publishedContent: JsonRecord;
+	publishedVersion: number | null;
+}): RominaSchemaRepairReplayIdentity {
+	if (!isRominaSchemaRepairApplied(input)) {
+		throw new Error('ROMINA_REPAIR_REPLAY_NOT_APPLIED: the draft is not already repaired.');
+	}
+	const operationFingerprint = deriveRominaSchemaRepairFingerprint({
+		slug: input.slug,
+		afterContent: input.draftContent,
+		publishedVersion: input.publishedVersion,
+	});
+	const operationId = deriveProductionOperationId({
+		operationType: ROMINA_SCHEMA_REPAIR_OPERATION_TYPE,
+		targetEnv: 'production',
+		scope: ROMINA_SCHEMA_REPAIR_SLUG,
+		manifestFingerprint: operationFingerprint,
+	});
+	return {
+		operationFingerprint,
+		operationId,
+		receiptOperationId: rominaReceiptOperationId(operationId),
+		afterHash: hash(input.draftContent),
+	};
+}
+
 function diffPaths(before: unknown, after: unknown, path = ''): string[] {
 	if (canonicalize(before) === canonicalize(after)) return [];
 	if (Array.isArray(before) && Array.isArray(after)) {
