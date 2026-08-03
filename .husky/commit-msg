@@ -1,4 +1,4 @@
 #!/bin/sh
-# Invoke commitlint directly. Routing through `cmd.exe /c "..."` breaks because
-# Windows cmd treats `/C` inside `.git/COMMIT_EDITMSG` as another /C switch.
-pnpm commitlint --edit "$1"
+# Invoke commitlint through node directly: the corepack `pnpm` shim crashes under
+# git-bash (mangled drive path) and `cmd.exe /c` breaks on `/C`-like arguments.
+node node_modules/@commitlint/cli/cli.js --edit "$1"
