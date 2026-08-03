@@ -39,6 +39,42 @@ import {
 	runPsql,
 } from './db-workflow-lib.ts';
 
+/**
+ * Production authorization inputs that must not cross the Step 2 child-process boundary.
+ *
+ * `runCommand` treats a supplied `env` as the complete child environment, so the workflow copies
+ * the parent environment and removes only these authorization inputs. The parent `process.env`
+ * remains unchanged for the target guard and the later external approval consumption. The
+ * private key is included because the shared confirmation boundary rejects self-issued signing
+ * material; `PROD_DB_URL` is intentionally not included because it is a connection input, not
+ * authorization.
+ */
+export const PRODUCTION_AUTHORIZATION_ENV_KEYS = [
+	'CELEBRA_PROD_APPROVAL_TOKEN',
+	'CELEBRA_PROD_APPROVAL_PUBLIC_KEY',
+	'CONFIRM_PROD_MIGRATION',
+	'CELEBRA_PROD_AUTH_SECRET',
+	'ALLOW_PROD_MIGRATE',
+	'CELEBRA_PROD_APPROVAL_PRIVATE_KEY',
+] as const;
+
+export function createSanitizedValidationEnv(
+	parentEnv: NodeJS.ProcessEnv = process.env,
+): NodeJS.ProcessEnv {
+	const validationEnv = { ...parentEnv };
+	for (const key of PRODUCTION_AUTHORIZATION_ENV_KEYS) {
+		delete validationEnv[key];
+	}
+	return validationEnv;
+}
+
+export function runLocalValidation(runner: typeof runCommand = runCommand): void {
+	const validationEnv = createSanitizedValidationEnv();
+	runner('pnpm', ['type-check'], { env: validationEnv });
+	runner('pnpm', ['test'], { env: validationEnv });
+	runner('pnpm', ['build'], { env: validationEnv });
+}
+
 async function main(): Promise<void> {
 	const { url: prodDbUrl, source } = getProdDbUrl();
 	const target = assertProductionDbUrl(prodDbUrl);
@@ -91,9 +127,7 @@ async function main(): Promise<void> {
 
 	// 2. Repository / CI Validation checks
 	console.info('2. Running local codebase checks (type-check, tests, build)...');
-	runCommand('pnpm', ['type-check']);
-	runCommand('pnpm', ['test']);
-	runCommand('pnpm', ['build']);
+	runLocalValidation();
 	console.info('✅ Local codebase checks passed.\n');
 
 	// 3. Production Schema Audit
@@ -254,6 +288,8 @@ async function main(): Promise<void> {
 	console.info('Production migration workflow completed successfully.');
 }
 
-main().catch((error: unknown) => {
-	fail(error instanceof Error ? error.message : String(error));
-});
+if (process.argv[1]?.endsWith('push-prod-migrations.ts')) {
+	main().catch((error: unknown) => {
+		fail(error instanceof Error ? error.message : String(error));
+	});
+}

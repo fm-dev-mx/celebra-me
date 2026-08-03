@@ -22,7 +22,10 @@ describe('Database Pipeline Safety & Hardening Regression Tests', () => {
 	const originalEnv = process.env;
 
 	beforeEach(() => {
+		// Keep missing-approval guard assertions independent from approval variables inherited by the shell.
 		process.env = { ...originalEnv };
+		delete process.env.CELEBRA_PROD_APPROVAL_TOKEN;
+		delete process.env.CELEBRA_PROD_APPROVAL_PUBLIC_KEY;
 	});
 
 	afterEach(() => {
