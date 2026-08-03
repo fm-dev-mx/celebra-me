@@ -17,6 +17,7 @@ import {
 	getPlannedCaptureLabel,
 	plannedTasksFromCapturePlan,
 	resolveCapturePlan,
+	assertCapturePlanScopeOwnership,
 	withTaskIdentity,
 } from './capture-plan.js';
 import { buildScreenshotUrl, navigateTo } from './navigation.js';
@@ -53,6 +54,12 @@ export async function captureInvitationScreenshots(
 ): Promise<CapturePlanResult> {
 	const results: CaptureResult[] = [];
 	const format = job.outputFormat;
+	const plannedInvitation =
+		job.scope?.invitations.find((invitation) => invitation.url === job.url) ??
+		job.scope?.invitations[0];
+	const expectedInvitation = plannedInvitation
+		? { routeIdentity: plannedInvitation.routeIdentity, slug: plannedInvitation.slug }
+		: undefined;
 	const timings: Array<{ phase: string; ms: number }> = [];
 	const mark = (phase: string) => {
 		const elapsed = Date.now();
@@ -91,6 +98,8 @@ export async function captureInvitationScreenshots(
 			job.animationHandling,
 			job.criticalSelectors,
 			job.hideSelectors,
+			expectedInvitation,
+			job.waitSelectors,
 		);
 		t();
 	};
@@ -104,6 +113,7 @@ export async function captureInvitationScreenshots(
 
 	// E1: reuse capabilities already detected for this viewport.
 	const tasks = await resolveCapturePlan(page, job, { revealCapabilities });
+	assertCapturePlanScopeOwnership(tasks, job);
 	const plannedTasks = plannedTasksFromCapturePlan(tasks);
 	const plannedCount = plannedTasks.filter((t) => t.required).length;
 
@@ -123,6 +133,7 @@ export async function captureInvitationScreenshots(
 			hasReveal: revealCapabilities.hasReveal,
 			maxAttempts: 2,
 			occlusionCache,
+			expectedInvitation,
 		});
 		t();
 		return revealOpened;
@@ -142,6 +153,8 @@ export async function captureInvitationScreenshots(
 			job.animationHandling,
 			job.criticalSelectors,
 			job.hideSelectors,
+			expectedInvitation,
+			job.waitSelectors,
 		);
 		const letterCount = await page.locator('[data-screenshot="reveal-letter"]').count();
 		const ready =

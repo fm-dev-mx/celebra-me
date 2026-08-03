@@ -17,9 +17,9 @@ The repository uses a **linear two-branch workflow** with annotated tags for rel
 
 - `develop` is the active trunk for daily development. Direct commits are allowed.
 - `main` is the protected production branch, updated only via fast-forward from `develop`.
-- Persistent native Git worktrees (`celebra-me` root, `D:\\code\\celebra-me-worktrees\\dev-local`,
-  `D:\\code\\celebra-me-worktrees\\dev-preview`, `D:\\code\\celebra-me-worktrees\\dev-extra`)
-  isolate Integration and three development lanes.
+- Persistent native Git worktrees (repository root `celebra-me` plus sibling
+  `<repo-dir>-worktrees/` development lanes `dev-local`, `dev-preview`, `dev-extra`) isolate
+  Integration and three development lanes.
 - Ephemeral task branches (`feat/*`, `fix/*`, `candidate/*`) are checked out in development lanes.
   Permanent lane branches are forbidden.
 - Worktree location grants no environment privilege (`path ≠ privilege`).
@@ -40,16 +40,20 @@ about commit hygiene.
 
 Celebra-me uses native Git worktrees to establish four persistent, reusable operational lanes:
 
-1. **Integration** (`celebra-me` root): Canonical worktree on `develop`. Integration, release
+1. **Integration** (repository root): Canonical worktree on `develop`. Integration, release
    preparation, trunk operations. Runtime default: Local.
-2. **dev-local** (`D:\\code\\celebra-me-worktrees\\dev-local`): Primary feature/fix development on
+2. **dev-local** (`<worktrees-root>\dev-local`): Primary feature/fix development on
    ephemeral task branches. Runtime default: Local.
-3. **dev-preview** (`D:\\code\\celebra-me-worktrees\\dev-preview`): Preview development and
+3. **dev-preview** (`<worktrees-root>\dev-preview`): Preview development and
    hosted-validation affinity lane on ephemeral task branches. Runtime default: Preview Supabase via
    `.env.preview.local`. Preferred lane for authorized Preview operations; path still grants no
    mutation privilege.
-4. **dev-extra** (`D:\\code\\celebra-me-worktrees\\dev-extra`): Additional parallel Local
-   development lane on ephemeral task branches. Runtime default: Local.
+4. **dev-extra** (`<worktrees-root>\dev-extra`): Additional parallel Local development
+   lane on ephemeral task branches. Runtime default: Local.
+
+`<worktrees-root>` is the sibling `<repo-dir>-worktrees/` directory next to the repository root —
+the tooling derives it from the checkout root and does not require any particular parent
+directory (see `scripts/shared/worktree-lane.ts`).
 
 Lane-specific operational cards (facts only; policy stays centralized):
 [`docs/core/worktrees/`](worktrees/).
@@ -102,7 +106,8 @@ lifecycle:
 ### Human Developer Ergonomics & Navigation
 
 To navigate between worktrees efficiently in PowerShell, add the following function to your
-PowerShell profile (`$PROFILE`):
+PowerShell profile (`$PROFILE`). It is a **reference-machine example** (this repo's current
+development machine) — adjust `$root`/`$worktrees` to your own clone's parent directory:
 
 ```powershell
 function lane {
@@ -128,7 +133,7 @@ function lane {
 Install / verify:
 
 1. Open `$PROFILE` (`notepad $PROFILE` or your editor).
-2. Paste the `lane` function above (update `$root` if your clone path differs).
+2. Paste the `lane` function above (update `$root`/`$worktrees` to your clone path).
 3. Reload: `. $PROFILE`
 4. Verify: `Get-Command lane`, then `lane preview` and confirm `pwd` / `git status -sb`.
 

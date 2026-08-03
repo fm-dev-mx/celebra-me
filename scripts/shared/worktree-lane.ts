@@ -2,10 +2,10 @@
  * Persistent worktree lane detection for Celebra-me.
  * Path/lane identity is never authorization for mutations.
  *
- * Canonical layout:
- *   <workspace-parent>/
- *   ├── celebra-me/               (repo root / Integration lane)
- *   └── celebra-me-worktrees/     (external worktree root)
+ * Canonical layout (parent directory is machine-local; tooling derives paths):
+ *   <parent>/
+ *   ├── <repo>/                   (repo root / Integration lane)
+ *   └── <repo>-worktrees/         (external worktree root)
  *       ├── dev-local/
  *       ├── dev-preview/
  *       └── dev-extra/
@@ -87,7 +87,7 @@ export function getWorktreeDevServerPort(laneId: WorktreeLaneId): number {
 /**
  * Returns the canonical external worktree root path based on the repo root.
  * Convention: sibling directory named `<repo-dir-name>-worktrees`.
- * Example: `<parent-dir>/celebra-me` → `<parent-dir>/celebra-me-worktrees`
+ * Example: `<parent>/<repo>` → `<parent>/<repo>-worktrees`
  */
 export function getExternalWorktreeRoot(repoRoot: string): string {
 	const resolved = resolve(repoRoot).replaceAll('\\', '/');

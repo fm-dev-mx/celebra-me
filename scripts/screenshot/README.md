@@ -10,7 +10,7 @@ dashboard, login, and custom routes.
 | Invitations with screenshot mode (`?screenshot=1`) | ✅ Verified — full 5-shot sequence              |
 | Landing pages                                      | ✅ Verified                                     |
 | Dashboard/admin (no auth)                          | ✅ Functional                                   |
-| Dashboard/admin (requires auth)                    | ⚠️ Not validated — no auth pipeline yet         |
+| Dashboard/admin (requires auth)                    | ✅ Storage-state pipeline                       |
 | Login pages                                        | ⚠️ Not validated                                |
 | Batch mode (`--config`)                            | ✅ Implemented — see Configuration File section |
 
@@ -49,9 +49,11 @@ The default mode is `audit`, which is intended for recurring visual QA. It marks
 page to trigger lazy loading and reveal effects, waits for height stability, records critical
 selector visibility, then normalizes reveal states and disables animations right before capture.
 
-Use `--mode=raw` only when debugging real runtime behavior with minimal intervention. Each run
-writes `report.json` with route, mode, viewport metadata, generated files, dimensions, document
-height, selector checks, warnings, failures, console errors, and request failures.
+Use `--mode=raw` only when debugging real runtime behavior with minimal intervention. Each run first
+resolves and prints a strict scope plan, then writes `preflight.json` before browser launch. After
+execution it writes `report.json` with route, mode, planned task results, viewport metadata,
+generated files, dimensions, selector checks, warnings, failures, console errors, and request
+failures. A partial or failed run is never reported as passed.
 
 ## Commands
 
@@ -76,15 +78,10 @@ Example:
 pnpm screenshot --url=/boda/boda-perla-y-carlos --viewport=mobile-standard --clean
 ```
 
-`pnpm screenshot:local-render-corpus` runs every page registered in the Local Render Corpus.
-Observed behavior of the current entry point:
-
-- It does **not** support `--slug` filtering (extra flags are ignored; the full corpus still runs).
-- It does **not** expose a usable `--help` surface (`--help` is not treated as help and the corpus
-  run begins). Prefer this README and `docs/core/local-render-corpus.md` for usage.
-
-`pnpm screenshot --help` without other direct-mode flags currently enters the interactive prompt
-rather than printing CLI help.
+`pnpm screenshot:local-render-corpus` runs every page registered in the Local Render Corpus. Corpus
+mode is intentionally incompatible with targeted URL, invitation, section, viewport, target, and
+cleanup options; run a direct command for one route. `pnpm screenshot --help` prints the supported
+surface without launching Playwright.
 
 ## Interactive Flow
 
@@ -103,11 +100,11 @@ $ pnpm screenshot
 
 ? URL or route to capture: /boda/demo-boda-jewelry-box-wedding
 
-? Which screenshot set do you want?
-  ❯ Essential invitation set  (initial + reveal open/closed + full)
-    Full invitation QA        (essential + individual sections)
-    Reveal only               (closed + open letter + open section)
-    ...
+? What is the target of this screenshot run?
+  ❯ Critical QA set
+    Full page
+    All sections
+    Single section
 
 ? Which viewport profile do you want?
   ❯ Invitation  (mobile-narrow, mobile-standard, mobile-large)
@@ -175,17 +172,32 @@ pnpm screenshot:invite \
 | `--mode=<mode>`           |       | Mode: audit (default), raw                                                                             |
 | `--profile=<name>`        | `-p`  | Viewport profile: invitation, site, full, single                                                       |
 | `--viewport=<names>`      |       | Comma-separated viewport names: mobile-narrow, mobile-standard, mobile-large, tablet, desktop          |
+| `--target=<preset>`       |       | Preset: full-page, critical-qa, all-sections, single-section, reveal-only                              |
+| `--include-layout[=bool]` |       | Include standard general-page layout tasks                                                             |
 | `--set=<name>`            |       | Invitation set: essential, full-qa, reveal-only, full-page                                             |
 | `--general-set=<name>`    |       | Page set: basic, full-qa                                                                               |
 | `--reveal=<mode>`         |       | Reveal handling: auto, force-open, closed-only, open-only, skip                                        |
 | `--animation=<mode>`      |       | Compatibility flag: disable, wait, query-param, custom. Prefer `--mode=audit` or `--mode=raw` instead. |
-| `--sections=<mode>`       |       | Sections: none, auto, known, custom (or a known section id for single-section)                         |
+| `--sections=<ids>`        |       | Comma-separated registered section IDs; stable-deduplicated                                            |
 | `--section-extent=<mode>` |       | Section framing: `full` (default, entire element) or `viewport` (visible crop only)                    |
-| `--auth=<method>`         |       | Auth: none, existing-session, storage-state, manual-login                                              |
+| `--auth=<method>`         |       | Auth: none or storage-state (deterministic headless capture)                                           |
 | `--format=<fmt>`          | `-f`  | Output: png, jpeg, webp, pdf                                                                           |
 | `--output=<path>`         | `-o`  | Custom output folder                                                                                   |
 | `--output-style=<style>`  |       | Folder style: default, timestamped, custom, overwrite                                                  |
 | `--config=<path>`         |       | Path to screenshot.config.json                                                                         |
+| `--corpus`                |       | Run the canonical Local Render Corpus; incompatible with targeted scope options                        |
+| `--clean`                 |       | Remove only exact artifacts and manifests owned by the resolved plan                                   |
+| `--interactive`           |       | Use the guided flow                                                                                    |
+| `--help`                  | `-h`  | Print the supported command surface                                                                    |
+
+`--set` and `--general-set` remain compatibility inputs, but they are resolved immediately to
+explicit targets (`essential`/`full-qa` → `critical-qa`, `reveal-only` → `reveal-only`, `full-page`
+→ `full-page`; `basic` → `full-page`). `--section-selectors` and unsupported interactive
+authentication are rejected with an actionable error.
+
+Scope is resolved once. Runtime DOM probes may verify readiness and the presence of a planned
+section, but they cannot add persisted tasks to an explicit section request. `all-sections` and
+`critical-qa` are named presets with their documented runtime inventory behavior.
 
 ## Output Structure
 
@@ -212,19 +224,27 @@ screenshots/
     report.json
 ```
 
-Legacy filename `05-invitation-full-open.png` is removed automatically on invitation runs so it
-cannot be confused with the canonical `05-invitation-full-page.png`.
+Legacy filename `05-invitation-full-open.png` is removed only at the exact planned viewport path so
+it cannot be confused with the canonical `05-invitation-full-page.png`.
+
+### Preflight, cleanup, and final records
+
+`preflight.json` is the resolved scope record and exists before Playwright launches. It contains the
+canonical route identity, page type, section selection, deduplicated viewports, planned task paths,
+and owned cleanup targets. `--clean` deletes those exact files only; it never removes an output
+directory or scans another viewport. `report.json` is written after capture and reports `passed`,
+`warning`, `partial`, or `failed` status using the same task IDs.
 
 ### Invitation Screenshots
 
-| File                             | Description                                             |
-| -------------------------------- | ------------------------------------------------------- |
-| `01-initial-closed-viewport.png` | Closed reveal state (viewport only)                     |
-| `02-reveal-closed.png`           | Reveal section, unopened                                |
-| `03-reveal-letter-open.png`      | Letter/card via `?reveal=letter` (measurable hold)      |
-| `04-reveal-transition-open.png`  | Reveal section via same `?reveal=letter` state          |
-| `10-*-{section}.png`             | Per-section captures (before full-page in full QA)      |
-| `05-invitation-full-page.png`    | Open invitation full page: vertical composite of `10-*` |
+| File                             | Description                                         |
+| -------------------------------- | --------------------------------------------------- |
+| `01-initial-closed-viewport.png` | Closed reveal state (viewport only)                 |
+| `02-reveal-closed.png`           | Reveal section, unopened                            |
+| `03-reveal-letter-open.png`      | Letter/card via `?reveal=letter` (measurable hold)  |
+| `04-reveal-transition-open.png`  | Reveal section via same `?reveal=letter` state      |
+| `10-*-{section}.png`             | Per-section captures (before full-page in full QA)  |
+| `05-invitation-full-page.png`    | Open invitation full page: document-space composite |
 
 ### Screenshot reveal URL contract
 
@@ -262,8 +282,24 @@ If open or composite fails, the job fails and any previous `05` for that viewpor
 
 Batch mode via `--config=screenshot.config.example.json` runs each configured page sequentially. The
 config supports `defaultMode`, `outputDir`, viewport presets, page routes, wait selectors, hide
-selectors, and page-specific critical selectors. Missing required selectors fail validation; missing
-optional selectors warn.
+selectors, registered `sections`, and page-specific critical selectors. The tool validates every
+configured page and resolves every plan before launching the first browser. Missing required
+selectors fail validation; missing optional selectors warn.
+
+The normal targeted budget is one page/invitation, five total viewports, and thirty planned
+artifacts. A larger config batch must opt in with `--allow-large=true`; the named
+`pnpm screenshot:local-render-corpus` command is the explicit corpus exception. The command prints
+the planned page, invitation, viewport, and artifact counts first. Agent evidence selection and
+environment escalation are governed by
+[`.agent/rules/gatekeeper.md`](../../.agent/rules/gatekeeper.md).
+
+`preflight.json` and `report.json` are safe records: route query values, credentials, cookies,
+tokens, signatures, and sensitive diagnostic assignments are redacted. Explicit `--sections` is
+exact; `critical-qa` and `all-sections` are named presets that may discover data-driven sections
+such as interludes from the rendered DOM.
+
+See [`docs/core/screenshot-tool-contract.md`](../../docs/core/screenshot-tool-contract.md) for the
+validation boundary and representative test matrix.
 
 ## Viewport Profiles
 
@@ -387,10 +423,10 @@ optional elements produce warnings, not errors.
 
 ## Agent proportional use
 
-Screenshot CLI interactive defaults (`critical-qa`, invitation 3-viewport profile) are convenient
-for humans running a full visual audit. Agents must follow the **visual evidence** rules in
-[`.agent/rules/gatekeeper.md`](../../.agent/rules/gatekeeper.md) §5.3 and choose the smallest
-sufficient capture.
+[`gatekeeper.md`](../../.agent/rules/gatekeeper.md) §5.3–5.4 is the single authority for agent
+evidence hierarchy, incremental escalation, budgets, stopping conditions, and provider isolation.
+The examples below show only the command syntax for a focused capture; select the target there
+before launching the tool.
 
 Recommended agent patterns (server already on `http://localhost:4321`):
 
@@ -414,10 +450,6 @@ pnpm screenshot:invite \
   --target=critical-qa \
   --viewport=mobile-standard
 ```
-
-Do not load every PNG into agent context. Prefer `report.json`, then open only failing or disputed
-artifacts. Broaden viewports or `all-sections` only after a failed/inconclusive minimum pass or when
-a brief / domain doc explicitly requires it.
 
 ## Requirements
 

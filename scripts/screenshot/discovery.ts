@@ -5,6 +5,7 @@
 import * as syncFs from 'node:fs';
 import * as path from 'node:path';
 import { listInvitationDefinitions } from '../provision/invitations/registry.ts';
+import { assertInvitationCatalogIntegrity } from './registry-validation.js';
 
 export interface DiscoveredInvitation {
 	name: string;
@@ -47,8 +48,11 @@ export function discoverStaticDemos(): DiscoveredInvitation[] {
 					eventType,
 					source: 'demo',
 				});
-			} catch {
-				// Ignore invalid files
+			} catch (error) {
+				throw new Error(
+					`Invalid static demo file "${path.join(folderPath, file)}": ${error instanceof Error ? error.message : String(error)}`,
+					{ cause: error },
+				);
 			}
 		}
 	}
@@ -89,8 +93,11 @@ export function discoverStaticTemplates(): DiscoveredInvitation[] {
 					eventType,
 					source: 'template',
 				});
-			} catch {
-				// Ignore invalid files
+			} catch (error) {
+				throw new Error(
+					`Invalid static template file "${path.join(folderPath, file)}": ${error instanceof Error ? error.message : String(error)}`,
+					{ cause: error },
+				);
 			}
 		}
 	}
@@ -102,28 +109,21 @@ export function discoverStaticTemplates(): DiscoveredInvitation[] {
  * Discover canonical provisioned invitations from scripts/provision/invitations/registry.ts
  */
 export function discoverProvisionedInvitations(): DiscoveredInvitation[] {
-	try {
-		const definitions = listInvitationDefinitions();
-		return definitions.map((def) => ({
-			name: def.title || `Provisioned: ${def.slug}`,
-			route: `/${def.eventType}/${def.slug}`,
-			slug: def.slug,
-			eventType: def.eventType,
-			source: 'provisioned',
-		}));
-	} catch {
-		return [];
-	}
+	const definitions = listInvitationDefinitions();
+	return definitions.map((def) => ({
+		name: def.title || `Provisioned: ${def.slug}`,
+		route: `/${def.eventType}/${def.slug}`,
+		slug: def.slug,
+		eventType: def.eventType,
+		source: 'provisioned',
+	}));
 }
 
 /**
  * Discover all invitations from static demos, templates, provisioned registry,
  * and database-published invitations if available.
- * Normalizes and deduplicates by canonical route using explicit source priority:
- * 1. Database Published
- * 2. Provisioned Registry
- * 3. Static Demo
- * 4. Static Template
+ * Validates and returns every discovered invitation. Route collisions are
+ * configuration errors rather than silently selected by source priority.
  */
 export function discoverAllInvitations(): DiscoveredInvitation[] {
 	const all: DiscoveredInvitation[] = [
@@ -132,25 +132,6 @@ export function discoverAllInvitations(): DiscoveredInvitation[] {
 		...discoverStaticTemplates(),
 	];
 
-	// Map keyed by canonical route
-	const map = new Map<string, DiscoveredInvitation>();
-
-	// Priority mapping (higher number = higher priority)
-	const priority: Record<DiscoveredInvitation['source'], number> = {
-		published: 4,
-		provisioned: 3,
-		demo: 2,
-		template: 1,
-	};
-
-	for (const item of all) {
-		const normalizedRoute = item.route.toLowerCase();
-		const existing = map.get(normalizedRoute);
-
-		if (!existing || priority[item.source] > priority[existing.source]) {
-			map.set(normalizedRoute, item);
-		}
-	}
-
-	return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
+	assertInvitationCatalogIntegrity(all);
+	return all.sort((a, b) => a.name.localeCompare(b.name));
 }

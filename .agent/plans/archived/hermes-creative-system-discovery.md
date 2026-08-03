@@ -12,7 +12,7 @@
 > image-generation workflows.
 >
 > **Bridge verification (2026-07-25):** Hermes host `skills.external_dirs` includes
-> `D:\code\celebra-me\.agent\skills` alongside `creative-ops` skills. Canonical loading rules and
+> `<checkout-root>\.agent\skills` alongside `creative-ops` skills. Canonical loading rules and
 > the Hermes-vs-repo inventory live in `.agent/load-skills.md` (External Runtime Discovery). Do not
 > treat this archived audit as live policy.
 

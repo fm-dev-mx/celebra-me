@@ -409,24 +409,19 @@ export async function invalidateStaleInvitationFullPage(finalPath: string): Prom
  * `05-invitation-full-page` name, avoiding mixed-generation comparisons.
  */
 export async function removeLegacyInvitationFullOpenArtifacts(
-	outputDir: string,
+	ownedTargets: string[],
 ): Promise<string[]> {
 	const removed: string[] = [];
-	try {
-		const entries = await fs.readdir(outputDir, { withFileTypes: true });
-		for (const entry of entries) {
-			if (!entry.isDirectory()) continue;
-			const viewportDir = path.join(outputDir, entry.name);
-			const files = await fs.readdir(viewportDir);
-			for (const file of files) {
-				if (!file.startsWith('05-invitation-full-open.')) continue;
-				const fullPath = path.join(viewportDir, file);
-				await fs.rm(fullPath, { force: true });
-				removed.push(fullPath);
-			}
+	for (const fullPath of ownedTargets) {
+		if (!path.basename(fullPath).startsWith('05-invitation-full-open.')) continue;
+		try {
+			const stat = await fs.lstat(fullPath);
+			if (stat.isDirectory()) continue;
+			await fs.rm(fullPath, { force: true });
+			removed.push(fullPath);
+		} catch {
+			// A stale legacy artifact may not exist for this planned viewport.
 		}
-	} catch {
-		// Output dir may not exist yet.
 	}
 	return removed;
 }

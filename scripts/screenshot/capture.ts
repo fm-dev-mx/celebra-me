@@ -3,7 +3,8 @@
 // =============================================================================
 
 import { chromium, type Browser, type BrowserContext } from 'playwright';
-import type { Viewport } from './types.js';
+import * as path from 'node:path';
+import { DEFAULT_STORAGE_STATE_PATH, type AuthMethod, type Viewport } from './types.js';
 
 /**
  * Launch a headless Chromium browser instance.
@@ -24,13 +25,20 @@ export async function launchBrowser(): Promise<Browser> {
  * Create a new browser context with the specified viewport.
  * Each context gets a clean storage state and viewport.
  */
-export function createContext(browser: Browser, viewport: Viewport): Promise<BrowserContext> {
+export function createContext(
+	browser: Browser,
+	viewport: Viewport,
+	options: { authMethod?: AuthMethod } = {},
+): Promise<BrowserContext> {
 	return browser.newContext({
 		viewport: { width: viewport.width, height: viewport.height },
 		deviceScaleFactor: viewport.deviceScaleFactor,
 		locale: 'es-MX',
 		timezoneId: 'America/Mexico_City',
 		acceptDownloads: false,
+		...(options.authMethod === 'storage-state'
+			? { storageState: path.resolve(process.cwd(), DEFAULT_STORAGE_STATE_PATH) }
+			: {}),
 	});
 }
 
@@ -46,6 +54,7 @@ export {
 	plannedTasksFromCapturePlan,
 	withTaskIdentity,
 	buildTaskFailureResult,
+	assertCapturePlanScopeOwnership,
 	probeFirstMatchingSelectors,
 	resolveCapturePlan,
 } from './capture-plan.js';

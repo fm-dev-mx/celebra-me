@@ -25,6 +25,23 @@ import {
 describe('worktree lane detection', () => {
 	it('recognizes Integration and the four persistent development lanes', () => {
 		expect(detectWorktreeLane('/mock/celebra-me').id).toBe('integration');
+		expect(detectWorktreeLane('/mock/celebra-me-worktrees/dev-local').id).toBe('dev-local');
+		expect(detectWorktreeLane('/mock/celebra-me-worktrees/dev-preview').id).toBe(
+			'dev-preview',
+		);
+		expect(detectWorktreeLane('/mock/celebra-me-worktrees/dev-extra').id).toBe('dev-extra');
+	});
+
+	it('detects lanes from Unix-style checkout roots as well', () => {
+		expect(detectWorktreeLane('/home/dev/celebra-me').id).toBe('integration');
+		expect(detectWorktreeLane('/home/dev/celebra-me-worktrees/dev-local').id).toBe('dev-local');
+		expect(detectWorktreeLane('/home/dev/celebra-me-worktrees/dev-preview').id).toBe(
+			'dev-preview',
+		);
+		expect(detectWorktreeLane('/home/dev/celebra-me-worktrees/dev-extra').id).toBe('dev-extra');
+	});
+
+	it('still recognizes deprecated .worktrees/ lane segments', () => {
 		expect(detectWorktreeLane('/mock/celebra-me/.worktrees/dev-local').id).toBe('dev-local');
 		expect(detectWorktreeLane('/mock/celebra-me/.worktrees/dev-preview').id).toBe(
 			'dev-preview',

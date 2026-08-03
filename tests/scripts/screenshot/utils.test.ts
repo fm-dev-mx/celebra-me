@@ -6,19 +6,22 @@ import {
 	resolveViewports,
 	loadScreenshotConfig,
 	writeScreenshotReport,
-	getDefaultCriticalSelectors,
 	getDefaultHideSelectors,
 	getOperationalToolbarSelectors,
-	getExpectedCaptureCount,
 	buildCurrentRunManifest,
 	classifyConsoleError,
 	dedupeScreenshotNotices,
 	computeScreenshotBlockingErrors,
-	shouldExitScreenshotNonZero,
+	resolveScreenshotRunStatus,
 	resolveScreenshotBaseUrl,
 	resolveScreenshotLaneContext,
+	resolveUrl,
 	getViewportProfileSummary,
 	intersectRectWithViewport,
+	redactScreenshotText,
+	redactScreenshotUrl,
+	redactScreenshotPlan,
+	buildScreenshotPath,
 } from '../../../scripts/screenshot/utils';
 import type { ScreenshotRunReport } from '../../../scripts/screenshot/types';
 
@@ -29,6 +32,48 @@ describe('screenshot CLI utilities', () => {
 		expect(parseCliArgs(['node', 'cli.ts', '--url=/', '--mode=audit']).mode).toBe('audit');
 	});
 
+	it('rejects unknown CLI arguments instead of silently entering interactive mode', () => {
+		expect(() => parseCliArgs(['node', 'cli.ts', '--not-a-real-flag'])).toThrow(
+			/Unknown screenshot argument/,
+		);
+	});
+
+	it('redacts query values and credentials from screenshot diagnostics', () => {
+		expect(redactScreenshotUrl('/xv/demo?guest=ana&screenshot=1')).toBe('/xv/demo');
+		expect(redactScreenshotText('GET https://example.test/x?token=secret')).toBe(
+			'GET https://example.test/x',
+		);
+		const redacted = redactScreenshotPlan({
+			sourceRequest: { routes: ['/xv/demo?guest=ana'] },
+		} as never) as unknown as { sourceRequest: { routes: string[] } };
+		expect(redacted.sourceRequest.routes).toEqual(['/xv/demo']);
+	});
+
+	it('rejects unsafe artifact names before creating capture directories', async () => {
+		await expect(
+			buildScreenshotPath('screenshots', 'mobile-standard', '../private', 'png'),
+		).rejects.toThrow(/Unsafe screenshot artifact name/);
+	});
+
+	it('deduplicates explicit viewport names and rejects invalid values', () => {
+		expect(
+			resolveViewports('site', ['mobile-standard', 'mobile-standard', 'desktop']).map(
+				(viewport) => viewport.name,
+			),
+		).toEqual(['mobile-standard', 'desktop']);
+		expect(() => resolveViewports('site', ['not-a-viewport'])).toThrow(/Unknown viewport/);
+	});
+
+	it('marks incomplete execution as partial when requested work also succeeded', () => {
+		expect(resolveScreenshotRunStatus({ failed: 1, succeeded: 2, warnings: 0 })).toBe(
+			'partial',
+		);
+		expect(resolveScreenshotRunStatus({ failed: 1, succeeded: 0, warnings: 0 })).toBe('failed');
+		expect(resolveScreenshotRunStatus({ failed: 0, succeeded: 2, warnings: 1 })).toBe(
+			'warning',
+		);
+	});
+
 	it('parses --section-extent for full and viewport framing', () => {
 		expect(parseCliArgs(['node', 'cli.ts', '--section-extent=full']).sectionExtent).toBe(
 			'full',
@@ -36,9 +81,9 @@ describe('screenshot CLI utilities', () => {
 		expect(parseCliArgs(['node', 'cli.ts', '--section-extent', 'viewport']).sectionExtent).toBe(
 			'viewport',
 		);
-		expect(
-			parseCliArgs(['node', 'cli.ts', '--section-extent=invalid']).sectionExtent,
-		).toBeUndefined();
+		expect(() => parseCliArgs(['node', 'cli.ts', '--section-extent=invalid'])).toThrow(
+			/Invalid section extent/,
+		);
 	});
 
 	it('intersects element boxes with the viewport for viewport-crop framing', () => {
@@ -56,7 +101,7 @@ describe('screenshot CLI utilities', () => {
 			intersectRectWithViewport({ x: 0, y: 900, width: 390, height: 200 }, viewport),
 		).toBeNull();
 
-		// 100vh section 1px taller than viewport — clamp so page.screenshot accepts clip
+		// 100vh section 1px taller than viewport ΓÇö clamp so page.screenshot accepts clip
 		expect(
 			intersectRectWithViewport(
 				{ x: 0, y: 0, width: 360, height: 741 },
@@ -80,28 +125,6 @@ describe('screenshot CLI utilities', () => {
 		expect(getViewportProfileSummary('site')).toBe(
 			'mobile-narrow, mobile-standard, tablet, desktop',
 		);
-	});
-
-	it('includes automatic audit critical captures in expected counts', () => {
-		expect(
-			getExpectedCaptureCount({
-				pageType: 'landing',
-				mode: 'audit',
-				target: 'critical-qa',
-				includeLayout: true,
-				criticalSelectors: getDefaultCriticalSelectors('landing'),
-			}),
-		).toBe(10);
-
-		expect(
-			getExpectedCaptureCount({
-				pageType: 'landing',
-				mode: 'raw',
-				target: 'critical-qa',
-				includeLayout: true,
-				criticalSelectors: getDefaultCriticalSelectors('landing'),
-			}),
-		).toBe(5);
 	});
 
 	it('builds current-run manifests without counting stale output files', () => {
@@ -177,7 +200,7 @@ describe('screenshot CLI utilities', () => {
 		).toEqual(['Audit normalization: overlays', 'Optional capture omitted: letter']);
 	});
 
-	it('computes blocking errors and exit-code semantics without conflating successful captures', () => {
+	it('computes blocking errors without conflating successful captures', () => {
 		expect(
 			computeScreenshotBlockingErrors({
 				captureFailed: 0,
@@ -192,8 +215,6 @@ describe('screenshot CLI utilities', () => {
 				manifestFailed: 0,
 			}),
 		).toBe(0);
-		expect(shouldExitScreenshotNonZero(0)).toBe(false);
-		expect(shouldExitScreenshotNonZero(1)).toBe(true);
 	});
 
 	it('resolves screenshot base URL from the worktree lane port table', () => {
@@ -213,7 +234,14 @@ describe('screenshot CLI utilities', () => {
 		expect(resolveScreenshotBaseUrl({ cwd: '/mock/celebra-me-worktrees/dev-preview' })).toBe(
 			'http://localhost:4323',
 		);
-		expect(resolveScreenshotBaseUrl({ cwd: '/mock/celebra-me' })).toBe('http://localhost:4321');
+		expect(resolveScreenshotBaseUrl({ cwd: '/mock/celebra-me' })).toBe(
+			'http://localhost:4321',
+		);
+
+		// Unix checkout root: lane detection is platform-agnostic (marker-based).
+		expect(resolveScreenshotBaseUrl({ cwd: '/home/dev/celebra-me-worktrees/dev-preview' })).toBe(
+			'http://localhost:4323',
+		);
 	});
 
 	it('lets ASTRO_PORT and explicit base URL override the lane table', () => {
@@ -236,17 +264,6 @@ describe('screenshot CLI utilities', () => {
 			baseUrl: 'http://127.0.0.1:9999',
 			portSource: 'explicit',
 		});
-	});
-
-	it('treats invitation critical-qa expected counts as plan-driven (not a static 5+critical)', () => {
-		expect(
-			getExpectedCaptureCount({
-				pageType: 'invitation',
-				mode: 'audit',
-				target: 'critical-qa',
-				criticalSelectors: getDefaultCriticalSelectors('invitation'),
-			}),
-		).toBe(0);
 	});
 
 	it('passes manifest when all required tasks succeed even if optional files also exist', () => {
@@ -484,6 +501,71 @@ describe('screenshot CLI utilities', () => {
 			files: 3,
 			expected: 5,
 			status: 'failed',
+		});
+	});
+
+	describe('resolveUrl', () => {
+		const base = 'http://localhost:4321';
+
+		it('passes absolute http(s) URLs through untouched', () => {
+			expect(resolveUrl('https://www.celebra-me.com/boda/x', base)).toBe(
+				'https://www.celebra-me.com/boda/x',
+			);
+			expect(resolveUrl('http://127.0.0.1:4390/dashboard', base)).toBe(
+				'http://127.0.0.1:4390/dashboard',
+			);
+		});
+
+		it('joins routes that intentionally begin with a slash', () => {
+			expect(resolveUrl('/boda/demo-boda-jewelry-box-wedding', base)).toBe(
+				'http://localhost:4321/boda/demo-boda-jewelry-box-wedding',
+			);
+			expect(resolveUrl('/', base)).toBe('http://localhost:4321/');
+		});
+
+		it('normalizes relative application routes to a leading slash', () => {
+			expect(resolveUrl('boda/demo-xv-editorial', base)).toBe(
+				'http://localhost:4321/boda/demo-xv-editorial',
+			);
+		});
+
+		it('recovers Git for Windows conversion (C:/Program Files/Git prefix)', () => {
+			expect(resolveUrl('C:/Program Files/Git/boda/demo-boda-jewelry-box-wedding', base)).toBe(
+				'http://localhost:4321/boda/demo-boda-jewelry-box-wedding',
+			);
+		});
+
+		it('recovers MSYS2 conversion (C:/msys64 prefix)', () => {
+			expect(resolveUrl('C:/msys64/boda/demo-xv-editorial', base)).toBe(
+				'http://localhost:4321/boda/demo-xv-editorial',
+			);
+		});
+
+		it('recovers Scoop Git conversion (C:/Users/<u>/scoop/apps/git/current prefix)', () => {
+			expect(
+				resolveUrl(
+					'C:/Users/someone/scoop/apps/git/current/boda/demo-xv-enchanted-rose',
+					base,
+				),
+			).toBe('http://localhost:4321/boda/demo-xv-enchanted-rose');
+		});
+
+		it('recovers converted /c/Users/... arguments', () => {
+			expect(resolveUrl('C:/Users/someone/boda/demo-xv-editorial', base)).toBe(
+				'http://localhost:4321/boda/demo-xv-editorial',
+			);
+		});
+
+		it('does not strip arbitrary Windows path prefixes', () => {
+			expect(resolveUrl('C:/Some Other/dir/route', base)).toBe(
+				'http://localhost:4321/C:/Some Other/dir/route',
+			);
+		});
+
+		it('keeps query strings intact after prefix stripping', () => {
+			expect(resolveUrl('C:/Program Files/Git/boda/x?tab=1', base)).toBe(
+				'http://localhost:4321/boda/x?tab=1',
+			);
 		});
 	});
 });

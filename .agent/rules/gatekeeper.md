@@ -357,7 +357,10 @@ pnpm run ci                  # Canonical package.json script alias for full pipe
 pnpm agent:git-safety:check
 ```
 
-`pnpm run ci` is the canonical full-pipeline equivalent of Tier C. It runs `pnpm type-check`, `pnpm validate:structure`, `pnpm lint`, `pnpm lint:styles`, `pnpm validate:ui-governance`, `pnpm validate:event-parity`, `pnpm validate:no-pii`, `pnpm validate:invitation-preparation`, `pnpm test`, `pnpm test:e2e:ci`, and `pnpm build:app`. Use `pnpm ci:quick` for fast feedback only.
+`pnpm run ci` is the canonical full-pipeline equivalent of Tier C. It runs `pnpm type-check`,
+`pnpm validate:structure`, `pnpm lint`, `pnpm lint:styles`, `pnpm validate:ui-governance`,
+`pnpm validate:event-parity`, `pnpm validate:no-pii`, `pnpm validate:invitation-preparation`,
+`pnpm test`, `pnpm test:e2e:ci`, and `pnpm build:app`. Use `pnpm ci:quick` for fast feedback only.
 
 The pre-push hook intentionally remains lean (commit-message validation only); do not move tests or
 type-checks into pre-push.
@@ -368,27 +371,103 @@ Choose the evidence class **before** launching screenshot or browser tools. This
 proportional visual validation; [`scripts/screenshot/README.md`](../../scripts/screenshot/README.md)
 owns tool mechanics and flags.
 
-| Change class | Evidence class | Minimum sufficient proof |
-| --- | --- | --- |
-| Material layout, reveal, hero, or section composition | **Required** | Same route; primary viewport (`mobile-standard` unless desktop-only); smallest target (`--sections=<id>`, `--set=reveal-only`, or a single affected step); reuse an already-running `pnpm dev` |
-| Reference-driven redesign closing an approved brief | **Required** (scoped) | Viewports listed in the brief — not an automatic five-viewport or full interactive default |
-| Work under [`docs/domains/theme/section-intersections.md`](../../docs/domains/theme/section-intersections.md) | **Required** | Follow that domain matrix only for intersection work; **do not** generalize it to all UI |
-| Copy-only, token/color without layout, docs, backend | **Unnecessary** | Skip screenshots |
-| Selector presence, overflow, or simple DOM checks | **Replaceable** | Browser snapshot, CDP/`getBoundingClientRect`, or a focused Playwright assert |
-| Habitual `full-qa` / `all-sections` / full profile / all invitations | **Reducible** | Prefer one viewport; widen only after a failed or inconclusive minimum pass, or when the owner asks for a full audit |
+Evidence hierarchy — consume evidence in this order and stop at the first layer that proves the
+contract:
+
+1. Focused test result and exit status.
+2. Concise `preflight.json` and final `report.json` summaries.
+3. Exact filesystem or manifest assertions.
+4. Targeted log excerpts for failures or disputed results only.
+5. Individual screenshots only when visual judgment is required.
+
+Do not load every generated image, a complete manifest, a full diff, or an entire log by default.
+
+| Change class                                                                                                  | Evidence class        | Minimum sufficient proof                                                                                                                                                                              |
+| ------------------------------------------------------------------------------------------------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Material layout, reveal, hero, or section composition                                                         | **Required**          | Same route; primary viewport (`mobile-standard` unless desktop-only); smallest strict target (`--sections=<id>`, `--set=reveal-only`, or a single affected step); reuse an already-running `pnpm dev` |
+| Reference-driven redesign closing an approved brief                                                           | **Required** (scoped) | Viewports listed in the brief — not an automatic five-viewport or full interactive default                                                                                                            |
+| Work under [`docs/domains/theme/section-intersections.md`](../../docs/domains/theme/section-intersections.md) | **Required**          | Follow that domain matrix only for intersection work; **do not** generalize it to all UI                                                                                                              |
+| Copy-only, token/color without layout, docs, backend                                                          | **Unnecessary**       | Skip screenshots                                                                                                                                                                                      |
+| Selector presence, overflow, or simple DOM checks                                                             | **Replaceable**       | Browser snapshot, CDP/`getBoundingClientRect`, or a focused Playwright assert                                                                                                                         |
+| Habitual `full-qa` / `all-sections` / full profile / all invitations                                          | **Reducible**         | Prefer one viewport; widen only after a failed or inconclusive minimum pass, or when the owner asks for a full audit                                                                                  |
 
 Rules:
 
 - Default capture when screenshots are justified: **one route × one viewport × smallest target**.
   Use full `critical-qa` / multi-viewport / `all-sections` only when reveal+open composition is in
   scope, a brief/domain doc requires it, or the minimum pass failed.
-- Do not `Read` screenshot binaries en masse. Cite artifact paths; open only images needed for a
-  Pass/Fail call. Prefer `report.json` for coverage metadata.
 - Reuse an existing server; do not start parallel full screenshot batches against a cold Vite
   optimize-dep without need.
 - Preserve full visual proof when risk justifies it (invitation ship QA, section-intersection
   acceptance, reference-driven acceptance). Do not weaken required coverage for those cases.
+- Screenshot validation is impact-driven, not a default closure gate. Visible content, assets,
+  styles, layout, rendered components, browser interactions, and screenshot infrastructure require
+  proportional visual verification; backend-only, observability, CLI, metadata, and provenance
+  changes do not require screenshots unless they affect the screenshot mechanism.
+- Use the smallest representative invitation, section, and viewport set for the change. Full-corpus
+  execution requires explicit justification in the task record. Capture once after implementation
+  stabilizes; repeat only when the earlier evidence is stale or invalidated by a later change. A
+  successful browser check is reusable when no relevant code, configuration, content, asset, server,
+  or acceptance criterion changed.
+- Start with the smallest relevant pure or controlled-integration check. Expand to one
+  representative Local browser check only when that layer leaves a browser contract unresolved or
+  fails. Before every expansion, state the unresolved contract it will prove.
+- Do not rerun a successful browser check without an explicit invalidation reason. Stop when the
+  acceptance criteria are supported by current evidence; a clean gate is not a reason to collect
+  more evidence.
+- Reserve full corpus, hosted Preview, Production, and provider-backed checks for contracts Local
+  cannot prove or for an explicit requirement. State that limitation and the reason before running
+  them; never increase provider or network use merely to measure efficiency.
+- Summarize the selected plan, results, failures, and artifact paths in the closing report.
 - Name the validation tier (A/B/C) and any visual-evidence skips in the closing report.
+
+Default operating budget:
+
+- One representative route × one viewport × the smallest target first.
+- At most one browser execution per unresolved integration contract; widen only after failure,
+  inconclusive evidence, or an explicit requirement.
+- No full corpus without technical justification, no hosted provider when Local proves the same
+  behavior, and no image inspection unless appearance determines the result.
+- Do not repeat a clean final gate unless a later change invalidated it.
+
+When expected work exceeds these defaults, briefly justify the additional scope before executing it.
+
+### 5.4 Context-efficiency rules
+
+The audit identified the main high-consumption failure modes as repeated reads of unchanged files or
+already-established architecture, bulk ingestion of logs/manifests/diffs/images, repeated checks
+whose evidence was still valid, verbose duplicated progress summaries, and investigation continuing
+after acceptance was already demonstrated.
+
+- Use `rg` and focused line ranges first. Reopen an unchanged file only when a new question depends
+  on it; carry forward concise summaries and current evidence.
+- Summarize long command output at the source. Report only commands, status/exit code, failures,
+  material warnings, and affected files or artifact paths.
+- Progress updates must contain only new findings or a changed direction. Do not restate conclusions
+  already established in the same goal.
+- Treat unusually high token consumption as a process defect: explain the cause in the closing
+  report and tighten the next validation expansion. This is a proportional escalation trigger, not a
+  rigid token limit that can force incomplete or unsafe work.
+
+Screenshot infrastructure guardrails:
+
+- Routine screenshot evidence is Local-first. Preview is only for distinct deployment,
+  authentication, remote-asset, or runtime evidence; Production is not a routine screenshot target.
+- `pnpm screenshot --config=...` must validate every configured page and resolve the complete batch
+  before launching its first browser. Targeted requests must not expand route, section, viewport, or
+  artifact scope. Use `--allow-large=true` only for an intentional batch above the normal budget.
+- `pnpm screenshot:local-render-corpus` is an explicit high-cost corpus operation. Prefer a single
+  route, one viewport, and the smallest target for agent evidence; do not run the corpus to validate
+  a localized change.
+- Screenshot preflight/report records and diagnostics must not persist or print credentials,
+  cookies, signed URLs, query values, tokens, or personal invitation data. Cite record paths and
+  summarize failures rather than attaching complete logs or image inventories.
+- Efficiency work must not add telemetry or external uploads of prompts, logs, screenshots, or
+  repository data. Keep token/accounting metadata at the agent/process layer, separate from runtime
+  application behavior.
+- The canonical screenshot contract and representative test matrix live in
+  [`docs/core/screenshot-tool-contract.md`](../../docs/core/screenshot-tool-contract.md) and
+  [`scripts/screenshot/README.md`](../../scripts/screenshot/README.md).
 
 ---
 

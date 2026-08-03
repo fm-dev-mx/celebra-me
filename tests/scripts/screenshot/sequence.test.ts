@@ -196,6 +196,51 @@ describe('Screenshot workflow sequence & capability contracts', () => {
 		expect(manifest[0].plannedTotal).toBe(3);
 	});
 
+	it('treats reveal-only captures as output-producing when required reveal state succeeds', () => {
+		const [viewport] = resolveViewports('invitation', ['mobile-narrow']);
+		const manifest = buildCurrentRunManifest({
+			viewports: [viewport],
+			perViewportPlanned: { 'mobile-narrow': 3 },
+			target: 'reveal-only',
+			perViewportPlannedTasks: {
+				'mobile-narrow': [
+					{ id: '02-reveal-closed', required: true },
+					{ id: '03-reveal-letter-open', required: false },
+					{ id: '04-reveal-transition-open', required: false },
+				],
+			},
+			captures: [
+				{
+					id: '02-reveal-closed',
+					path: 'closed.png',
+					viewportName: 'mobile-narrow',
+					label: 'closed',
+					success: true,
+				},
+				{
+					id: '03-reveal-letter-open',
+					path: 'letter.png',
+					viewportName: 'mobile-narrow',
+					label: 'letter',
+					success: true,
+					isOptional: true,
+				},
+				{
+					id: '04-reveal-transition-open',
+					path: 'transition.png',
+					viewportName: 'mobile-narrow',
+					label: 'transition',
+					success: true,
+					isOptional: true,
+				},
+			],
+		});
+
+		expect(manifest[0].status).toBe('passed');
+		expect(manifest[0].requiredVerified).toBe(1);
+		expect(manifest[0].optionalGenerated).toBe(2);
+	});
+
 	let tempDir: string;
 	let tempPngPath: string;
 

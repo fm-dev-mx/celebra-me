@@ -197,11 +197,28 @@ export function assertLocalRenderCorpusIntegrity(): void {
 		);
 	}
 	const slugs = new Set<string>();
+	const identities = new Set<string>();
+	const routes = new Set<string>();
 	for (const entry of LOCAL_RENDER_CORPUS) {
 		if (slugs.has(entry.slug)) {
 			throw new Error(`Duplicate Local Render Corpus slug: ${entry.slug}`);
 		}
 		slugs.add(entry.slug);
+		if (
+			!/^[A-Za-z0-9][A-Za-z0-9_-]*$/.test(entry.eventType) ||
+			!/^[A-Za-z0-9][A-Za-z0-9_-]*$/.test(entry.slug)
+		) {
+			throw new Error(
+				`Local Render Corpus entry ${entry.slug} has an unsafe route identity.`,
+			);
+		}
+		const identity = `${entry.eventType.toLowerCase()}/${entry.slug.toLowerCase()}`;
+		const route = corpusPublicRoute(entry);
+		if (identities.has(identity) || routes.has(route.toLowerCase())) {
+			throw new Error(`Duplicate Local Render Corpus route or identity: ${route}`);
+		}
+		identities.add(identity);
+		routes.add(route.toLowerCase());
 		if (entry.sourceStrategy === 'sanitized_fixture' && !entry.fixtureFile) {
 			throw new Error(`Legacy corpus entry ${entry.slug} requires fixtureFile.`);
 		}

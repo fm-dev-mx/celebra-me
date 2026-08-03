@@ -2,56 +2,292 @@
 // =============================================================================
 // CELEBRA-ME | Screenshot Tool — CLI Entry Point
 // =============================================================================
-//
-// Usage:
-//   pnpm screenshot                              # Interactive mode
-//   pnpm screenshot:invite --url=...             # Direct invitation mode
-//   pnpm screenshot --url=...                    # Direct general page mode
-//
-// =============================================================================
 
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 import {
 	type CliOptions,
-	type ScreenshotJob,
 	type PageType,
-	type CaptureTarget,
+	type ScreenshotConfigPage,
+	type ScreenshotJob,
 	DEFAULT_STORAGE_STATE_PATH,
 } from './types.js';
 import {
+	buildJobFromResolvedInvitation,
+	resolveScreenshotJobScope,
+	resolveScreenshotPlan,
+	type ScopeRouteCatalog,
+	type ScreenshotScopeRequest,
+	ScreenshotScopeError,
+} from './scope.js';
+import {
+	assertInvitationCatalogIntegrity,
+	validateScreenshotConfig,
+} from './registry-validation.js';
+import { assertScreenshotExecutionBudget, summarizeScreenshotPlans } from './execution-policy.js';
+import {
 	parseCliArgs,
-	resolveUrl,
-	createPageSlug,
-	resolveViewports,
-	getDefaultProfile,
-	resolveOutputDir,
 	loadScreenshotConfig,
-	getDefaultCriticalSelectors,
+	createPageSlug,
 	resolveScreenshotBaseUrl,
 	resolveScreenshotLaneContext,
 } from './utils.js';
 import { runInteractiveFlow } from './interactive.js';
 import { runScreenshotJob } from './runner.js';
 import { buildCorpusScreenshotConfig } from '../provision/local-render-corpus/screenshot-pages.ts';
+import {
+	corpusPublicRoute,
+	listLocalRenderCorpus,
+	assertLocalRenderCorpusIntegrity,
+} from '../provision/local-render-corpus/registry.ts';
+import { discoverAllInvitations } from './discovery.js';
 import { tryWriteValidationEvidence } from '../observability/validation-evidence.ts';
 
-// ── Entry point ──────────────────────────────────────────────────────────
+function knownInvitationCatalog(): ScopeRouteCatalog {
+	const discoveredEntries = discoverAllInvitations();
+	assertInvitationCatalogIntegrity(discoveredEntries);
+	assertLocalRenderCorpusIntegrity();
+	const discovered = discoveredEntries.map((invitation) => invitation.route);
+	const corpus = listLocalRenderCorpus().map(corpusPublicRoute);
+	const invitationRoutes = [...new Set([...discovered, ...corpus])];
+	return { invitationRoutes };
+}
 
-async function main() {
+function printHelp(): void {
+	console.log(`
+Celebra-me screenshot capture
+
+Direct:
+  pnpm screenshot --url=/<eventType>/<slug> [scope options]
+  pnpm screenshot:invite --url=/<eventType>/<slug> [scope options]
+  pnpm screenshot:local-render-corpus
+  pnpm screenshot:interactive
+
+Scope options:
+  --type=<page-type>       invitation, landing, dashboard, admin, login, custom
+  --target=<preset>        full-page, critical-qa, all-sections, single-section, reveal-only
+  --set=<preset>           legacy invitation set mapped to an explicit target
+  --general-set=<preset>   legacy general set mapped to an explicit target
+  --sections=<ids>         comma-separated registered section IDs, stable-deduplicated
+  --viewport=<names>       comma-separated viewport names, stable-deduplicated
+  --profile=<profile>      invitation, site, full, single
+  --allow-large=true       allow an intentional config batch above the normal budget
+
+Strict behavior:
+  Unknown flags, invalid values, unknown routes/sections/viewports, empty selections,
+  and corpus plus targeted options fail before Playwright launches.
+  --clean removes only exact artifacts and manifests owned by the resolved plan.
+  preflight.json is written before capture; report.json is written after execution.
+`);
+}
+
+function inferPageType(options: CliOptions, route: string, catalog: ScopeRouteCatalog): PageType {
+	if (options.pageType) return options.pageType;
+	const pathname = new URL(route, resolveScreenshotBaseUrl()).pathname;
+	const isInvitation = catalog.invitationRoutes.some(
+		(candidate) =>
+			new URL(candidate, resolveScreenshotBaseUrl()).pathname ===
+			pathname.replace(/\/+$/, ''),
+	);
+	return isInvitation ? 'invitation' : 'custom';
+}
+
+function validateStorageState(authMethod: ScreenshotJob['authMethod'] | undefined): void {
+	if (authMethod !== 'storage-state') return;
+	const storagePath = path.join(process.cwd(), DEFAULT_STORAGE_STATE_PATH);
+	if (!fs.existsSync(storagePath)) {
+		throw new ScreenshotScopeError(
+			`Storage state file not found: ${storagePath}. Use --auth=none or provide ${DEFAULT_STORAGE_STATE_PATH}.`,
+			'MISSING_STORAGE_STATE',
+		);
+	}
+}
+
+function directScopeRequest(
+	options: CliOptions,
+	baseUrl: string,
+	catalog: ScopeRouteCatalog,
+): ScreenshotScopeRequest {
+	if (!options.url) {
+		throw new ScreenshotScopeError(
+			`No URL provided. Use --url=<route> or run without flags for interactive mode. Example: pnpm screenshot:invite --url=/boda/<slug>.`,
+			'MISSING_URL',
+		);
+	}
+	const pageType = inferPageType(options, options.url, catalog);
+	const outputStyle = options.output ? 'custom' : (options.outputStyle ?? 'default');
+	return {
+		source: 'direct',
+		pageType,
+		baseUrl,
+		routes: [options.url],
+		mode: options.mode,
+		profile: options.profile,
+		viewports: options.viewport,
+		target: options.target,
+		invitationSet: options.invitationSet,
+		generalSet: options.generalSet,
+		sections: options.sections,
+		includeLayout: options.includeLayout,
+		revealHandling: options.reveal,
+		animationHandling: options.animation,
+		sectionExtent: options.sectionExtent,
+		authMethod: options.auth,
+		outputFormat: options.format,
+		outputFolderStyle: outputStyle,
+		outputFolder: options.output,
+		clean: options.clean,
+	};
+}
+
+function buildJobFromCli(options: CliOptions, catalog: ScopeRouteCatalog): ScreenshotJob {
+	const laneContext = resolveScreenshotLaneContext({ explicitBaseUrl: options.baseUrl });
+	console.log(
+		`  Lane:    ${laneContext.displayName} (${laneContext.laneId}) → ${laneContext.baseUrl}` +
+			(laneContext.portSource !== 'lane' ? ` [${laneContext.portSource}]` : ''),
+	);
+	const request = directScopeRequest(options, laneContext.baseUrl, catalog);
+	validateStorageState(request.authMethod);
+	const plan = resolveScreenshotPlan(request, catalog);
+	return buildJobFromResolvedInvitation(plan, plan.invitations[0], request);
+}
+
+// eslint-disable-next-line complexity -- Config and corpus defaults are normalized at one resolver boundary.
+function configScopeRequest(
+	page: ScreenshotConfigPage,
+	config: ReturnType<typeof loadScreenshotConfig>,
+	options: CliOptions,
+	source: 'config' | 'corpus',
+	baseUrl: string,
+	outputFolder: string | undefined,
+): ScreenshotScopeRequest {
+	const targetedOptions =
+		source === 'corpus'
+			? [
+					...(options.url ? ['--url'] : []),
+					...(options.pageType ? ['--type'] : []),
+					...(options.invitationSet || options.generalSet ? ['--set'] : []),
+					...(options.sections ? ['--sections'] : []),
+					...(options.viewport || options.profile ? ['--viewport/profile'] : []),
+					...(options.target ? ['--target'] : []),
+					...(options.clean ? ['--clean'] : []),
+				]
+			: [];
+	return {
+		source,
+		pageType: page.pageType,
+		baseUrl,
+		routes: [page.route],
+		mode: page.mode ?? config.defaultMode ?? options.mode,
+		profile: page.profile ?? config.defaultViewportProfile ?? options.profile,
+		viewports: page.viewports ?? options.viewport,
+		target: page.target ?? options.target,
+		invitationSet: page.invitationSet,
+		generalSet: page.generalSet,
+		sectionCapture: page.sectionCapture,
+		sections: page.sections,
+		includeLayout: page.includeLayout,
+		revealHandling: page.revealHandling,
+		animationHandling: page.animationHandling ?? options.animation,
+		sectionExtent: page.sectionExtent,
+		criticalSelectors: page.criticalSelectors,
+		waitSelectors: page.waitSelectors,
+		hideSelectors: page.hideSelectors,
+		authMethod: page.authMethod,
+		outputFormat: page.outputFormat ?? config.defaultOutputFormat,
+		outputFolderStyle: outputFolder
+			? 'custom'
+			: (options.outputStyle ?? config.defaultOutputFolderStyle ?? 'default'),
+		outputFolder,
+		clean: options.clean,
+		targetedOptions,
+	};
+}
+
+async function runConfigJobs(
+	options: CliOptions,
+	catalog: ScopeRouteCatalog,
+): Promise<{ failed: number; totalPages: number }> {
+	const config = options.corpus
+		? buildCorpusScreenshotConfig()
+		: loadScreenshotConfig(options.config!);
+	validateScreenshotConfig(config, options.corpus ? 'Local Render Corpus' : options.config);
+	const pages = config.pages ?? [];
+	if (pages.length === 0) {
+		throw new ScreenshotScopeError(
+			options.corpus
+				? 'Local Render Corpus has no registered pages.'
+				: `Config has no pages: ${options.config}`,
+			'EMPTY_CONFIG',
+		);
+	}
+
+	const preparedJobs = pages.map((page) => {
+		const laneContext = resolveScreenshotLaneContext({
+			explicitBaseUrl: config.baseUrl ?? options.baseUrl,
+		});
+		console.log(
+			`  Lane:    ${laneContext.displayName} (${laneContext.laneId}) → ${laneContext.baseUrl}` +
+				(laneContext.portSource !== 'lane' ? ` [${laneContext.portSource}]` : ''),
+		);
+		const baseOutput = options.output ?? config.outputDir;
+		const outputFolder = baseOutput
+			? path.join(baseOutput, createPageSlug(page.route))
+			: undefined;
+		const request = configScopeRequest(
+			page,
+			config,
+			options,
+			options.corpus ? 'corpus' : 'config',
+			laneContext.baseUrl,
+			outputFolder,
+		);
+		validateStorageState(request.authMethod);
+		const plan = resolveScreenshotPlan(request, catalog);
+		const job = buildJobFromResolvedInvitation(plan, plan.invitations[0], request);
+		return { job, plan };
+	});
+	const summary = summarizeScreenshotPlans(preparedJobs.map((entry) => entry.plan));
+	console.log(
+		`  Execution plan: ${summary.pages} page(s), ${summary.invitations} invitation(s), ${summary.viewports} viewport(s), ${summary.artifacts} planned artifact(s)` +
+			(summary.deferredPresetScopes > 0
+				? `, ${summary.deferredPresetScopes} preset section scope(s) resolved from rendered DOM`
+				: ''),
+	);
+	assertScreenshotExecutionBudget(summary, {
+		source: options.corpus ? 'corpus' : 'config',
+		allowLarge: options.allowLarge,
+	});
+
+	let failed = 0;
+	for (const { job } of preparedJobs) {
+		const result = await runScreenshotJob(job);
+		if (result.failed > 0) failed++;
+	}
+	return { failed, totalPages: pages.length };
+}
+
+async function main(): Promise<void> {
 	const cliOptions = parseCliArgs(process.argv);
+	if (cliOptions.help) {
+		printHelp();
+		return;
+	}
+	if (cliOptions.corpus && cliOptions.config) {
+		throw new ScreenshotScopeError(
+			'Use either --corpus or --config, not both.',
+			'AMBIGUOUS_SOURCE',
+		);
+	}
 
-	// ── Route to interactive or direct mode ────────────────────────────────
-	const isInteractive = shouldRunInteractive(cliOptions);
-
-	if (!isInteractive && (cliOptions.corpus || cliOptions.config)) {
+	const catalog = knownInvitationCatalog();
+	if (cliOptions.corpus || cliOptions.config) {
 		const startedAt = new Date().toISOString();
-		const result = await runConfigJobs(cliOptions);
+		const result = await runConfigJobs(cliOptions, catalog);
 		if (cliOptions.corpus) {
 			const completedAt = new Date().toISOString();
-			const total = Math.max(1, result.totalPages ?? 0);
+			const total = Math.max(1, result.totalPages);
 			const failed = result.failed;
-			const passed = Math.max(0, total - failed);
 			const writeResult = tryWriteValidationEvidence({
 				validationType: 'screenshots',
 				command: 'pnpm screenshot:local-render-corpus',
@@ -59,7 +295,7 @@ async function main() {
 				completedAt,
 				status: failed > 0 ? 'fail' : 'pass',
 				total,
-				passed,
+				passed: Math.max(0, total - failed),
 				failed,
 				failures:
 					failed > 0
@@ -71,273 +307,46 @@ async function main() {
 							]
 						: [],
 			});
-			if (!writeResult.ok) {
+			if (!writeResult.ok)
 				console.error(`observability evidence write failed: ${writeResult.error}`);
-			} else {
+			else
 				console.log(
 					`observability evidence written: ${writeResult.snapshot.artifactLocation} (${writeResult.snapshot.status})`,
 				);
-			}
 		}
 		if (result.failed > 0) process.exit(1);
 		return;
 	}
 
-	const jobOrJobs = isInteractive ? await runInteractiveFlow() : buildJobFromCli(cliOptions);
-
-	if (!jobOrJobs) {
-		process.exit(0);
-	}
-
-	const jobs = Array.isArray(jobOrJobs) ? jobOrJobs : [jobOrJobs];
-	let failed = 0;
-
-	for (const job of jobs) {
-		// ── Clean output directory ──────────────────────────────────────────
-		if (cliOptions.clean) {
-			const cleanDir = resolveOutputDir(
-				createPageSlug(job.url),
-				job.outputFolderStyle,
-				job.outputFolder,
-			);
-			fs.rmSync(cleanDir, { recursive: true, force: true });
-			console.log(`  🧹 Cleaned output: ${cleanDir}/`);
-		}
-
-		// ── Execute ────────────────────────────────────────────────────────────
-		const result = await runScreenshotJob(job);
-		failed += result.failed;
-	}
-
-	// Exit with non-zero if any failures
-	if (failed > 0) {
-		process.exit(1);
-	}
-}
-
-// ── Interactive vs Direct detection ───────────────────────────────────────
-
-function shouldRunInteractive(options: CliOptions): boolean {
-	// Explicit --interactive flag
-	if (options.interactive === true) return true;
-
-	// Explicit --no-interactive (from a preset command)
-	if (options.interactive === false) return false;
-
-	// Config / corpus-driven runs are always non-interactive.
-	if (options.config || options.corpus) return false;
-
-	// If URL is provided, run direct
-	if (options.url) return false;
-
-	// If invoked with no flags, run interactive
-	const hasAnyFlag = Object.values(options).some((v) => v !== undefined);
-	if (!hasAnyFlag) return true;
-
-	// Fallback: interactive
-	return true;
-}
-
-// ── Build job from CLI flags ─────────────────────────────────────────────
-
-function validateCliOptions(options: CliOptions): void {
-	if (options.auth === 'storage-state') {
-		const storagePath = path.join(process.cwd(), DEFAULT_STORAGE_STATE_PATH);
-		if (!fs.existsSync(storagePath)) {
-			console.error(`✕ Storage state file not found: ${storagePath}`);
-			console.error(
-				'  Use --auth=manual-login instead, or save a Playwright storage state to:',
-			);
-			console.error(`    ${DEFAULT_STORAGE_STATE_PATH}`);
-			process.exit(1);
-		}
-	}
-}
-
-// eslint-disable-next-line complexity
-function buildJobFromCli(options: CliOptions): ScreenshotJob | null {
-	const url = options.url;
-	if (!url) {
-		console.error(
-			'✕ No URL provided. Use --url=<url> or run without flags for interactive mode.',
-		);
-		console.error('  Examples:');
-		console.error('    pnpm screenshot:invite --url=/boda/demo-boda-jewelry-box-wedding');
-		console.error(`    pnpm screenshot --url=${resolveScreenshotBaseUrl()}/dashboard`);
-		process.exit(1);
-	}
-
-	validateCliOptions(options);
-
-	const laneContext = resolveScreenshotLaneContext({
-		explicitBaseUrl: options.baseUrl,
-	});
-	const baseUrl = laneContext.baseUrl;
-	const resolvedUrl = resolveUrl(url, baseUrl);
-	console.log(
-		`  Lane:    ${laneContext.displayName} (${laneContext.laneId}) → ${baseUrl}` +
-			(laneContext.portSource !== 'lane' ? ` [${laneContext.portSource}]` : ''),
-	);
-
-	// Determine page type
-	let pageType: PageType;
-	if (options.pageType) {
-		pageType = options.pageType;
-	} else if (url.includes('/boda/') || url.includes('/xv/') || url.includes('/invitation')) {
-		pageType = 'invitation';
-	} else {
-		pageType = 'custom';
-	}
-
-	// Viewport handling
-	const profile = options.profile ?? getDefaultProfile(pageType);
-	const viewports = resolveViewports(profile, options.viewport);
-
-	// Target resolution
-	let target: CaptureTarget = options.target ?? 'critical-qa';
-	let includeLayout = options.includeLayout;
-	let sectionCapture: 'none' | 'auto' | 'known' | 'custom' | 'single' = 'none';
-	let selectedSection: string | undefined;
-	let sectionSelectors: string[] | undefined;
-
-	if (options.sections) {
-		if (options.sections === 'known' || options.sections === 'auto') {
-			target = 'all-sections';
-			sectionCapture = options.sections;
-		} else {
-			target = 'single-section';
-			sectionCapture = 'single';
-			selectedSection = options.sections;
-		}
-	} else if (options.sectionSelectors) {
-		target = 'all-sections';
-		sectionCapture = 'custom';
-		sectionSelectors = options.sectionSelectors
-			.split(',')
-			.map((s) => s.trim())
-			.filter(Boolean);
-	}
-
-	if (includeLayout === undefined) {
-		includeLayout = target === 'critical-qa' && pageType !== 'invitation';
-	}
-
-	const outputFolderStyle = options.outputStyle ?? 'default';
-
-	const job: ScreenshotJob = {
-		pageType,
-		mode: options.mode ?? 'audit',
-		url: resolvedUrl,
-		baseUrl,
-		viewportProfile: profile,
-		viewports,
-		target,
-		includeLayout,
-		invitationSet: options.invitationSet,
-		generalSet: options.generalSet,
-		revealHandling: options.reveal ?? 'auto',
-		animationHandling: options.animation ?? 'disable',
-		sectionCapture,
-		sectionExtent: options.sectionExtent ?? 'full',
-		selectedSection,
-		sectionSelectors,
-		criticalSelectors: getDefaultCriticalSelectors(pageType),
-		waitSelectors: [],
-		hideSelectors: [],
-		authMethod: options.auth ?? 'none',
-		outputFormat: options.format ?? 'png',
-		outputFolderStyle,
-		outputFolder: outputFolderStyle === 'custom' ? options.output : undefined,
-	};
-
-	return job;
-}
-
-// eslint-disable-next-line complexity -- Config defaults are resolved in one place for predictable batch jobs.
-async function runConfigJobs(options: CliOptions): Promise<{ failed: number; totalPages: number }> {
-	if (!options.corpus && !options.config) return { failed: 0, totalPages: 0 };
-
-	const config = options.corpus
-		? buildCorpusScreenshotConfig()
-		: loadScreenshotConfig(options.config!);
-	const pages = config.pages ?? [];
-	let failed = 0;
-
-	if (pages.length === 0) {
-		console.error(`✕ Config has no pages: ${options.config}`);
-		return { failed: 1, totalPages: 0 };
-	}
-
-	for (const page of pages) {
-		const laneContext = resolveScreenshotLaneContext({
-			explicitBaseUrl: config.baseUrl ?? options.baseUrl,
+	const isInteractive =
+		cliOptions.interactive === true ||
+		(cliOptions.interactive === undefined &&
+			!cliOptions.url &&
+			!Object.keys(cliOptions).some((key) => key !== 'interactive'));
+	if (isInteractive) {
+		const interactiveJobs = await runInteractiveFlow();
+		if (!interactiveJobs) return;
+		const rawJobs = Array.isArray(interactiveJobs) ? interactiveJobs : [interactiveJobs];
+		const jobs = rawJobs.map((job) => {
+			const scopedJob =
+				rawJobs.length > 1 && job.outputFolder
+					? { ...job, outputFolder: path.join(job.outputFolder, createPageSlug(job.url)) }
+					: job;
+			validateStorageState(scopedJob.authMethod);
+			return resolveScreenshotJobScope(scopedJob, 'interactive', catalog, false).job;
 		});
-		const baseUrl = laneContext.baseUrl;
-		console.log(
-			`  Lane:    ${laneContext.displayName} (${laneContext.laneId}) → ${baseUrl}` +
-				(laneContext.portSource !== 'lane' ? ` [${laneContext.portSource}]` : ''),
-		);
-		const profile =
-			page.profile ?? config.defaultViewportProfile ?? getDefaultProfile(page.pageType);
-		const viewports = resolveViewports(profile, page.viewports);
-		const route = page.route;
-		const outputFolderStyle =
-			options.outputStyle ?? config.defaultOutputFolderStyle ?? 'default';
-		const outputFolder =
-			options.output ??
-			(config.outputDir
-				? path.join(
-						config.outputDir,
-						page.name
-							.toLowerCase()
-							.replace(/[^a-z0-9]+/g, '-')
-							.replace(/^-|-$/g, ''),
-					)
-				: undefined);
-
-		const target =
-			page.target ?? (page.invitationSet === 'full-page' ? 'full-page' : 'critical-qa');
-		const includeLayout =
-			page.includeLayout ?? (target === 'critical-qa' && page.pageType !== 'invitation');
-
-		const job: ScreenshotJob = {
-			pageType: page.pageType,
-			mode: page.mode ?? config.defaultMode ?? options.mode ?? 'audit',
-			url: resolveUrl(route, baseUrl),
-			baseUrl,
-			viewportProfile: profile,
-			viewports,
-			target,
-			includeLayout,
-			invitationSet: page.invitationSet ?? 'essential',
-			generalSet: page.generalSet ?? 'basic',
-			revealHandling: page.revealHandling ?? 'auto',
-			animationHandling: page.animationHandling ?? options.animation ?? 'disable',
-			sectionCapture: page.sectionCapture ?? 'none',
-			sectionExtent: page.sectionExtent ?? 'full',
-			sectionSelectors: page.sectionSelectors,
-			criticalSelectors:
-				page.criticalSelectors && page.criticalSelectors.length > 0
-					? page.criticalSelectors
-					: getDefaultCriticalSelectors(page.pageType),
-			waitSelectors: page.waitSelectors ?? [],
-			hideSelectors: page.hideSelectors ?? [],
-			authMethod: page.authMethod ?? 'none',
-			outputFormat: page.outputFormat ?? config.defaultOutputFormat ?? 'png',
-			outputFolderStyle: outputFolder ? 'custom' : outputFolderStyle,
-			outputFolder,
-		};
-
-		const result = await runScreenshotJob(job);
-		if (result.failed > 0) failed++;
+		let failed = 0;
+		for (const job of jobs) failed += (await runScreenshotJob(job)).failed;
+		if (failed > 0) process.exit(1);
+		return;
 	}
 
-	return { failed, totalPages: pages.length };
+	const job = buildJobFromCli(cliOptions, catalog);
+	const result = await runScreenshotJob(job);
+	if (result.failed > 0) process.exit(1);
 }
 
-// ── Run ──────────────────────────────────────────────────────────────────
-
-main().catch((err) => {
-	console.error('\n✕  Fatal error:', err);
+main().catch((error: unknown) => {
+	console.error(`\n✕  Fatal error: ${error instanceof Error ? error.message : String(error)}`);
 	process.exit(1);
 });

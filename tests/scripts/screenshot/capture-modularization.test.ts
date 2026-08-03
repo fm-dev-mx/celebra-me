@@ -12,6 +12,7 @@ import {
 	captureGeneralPageScreenshots,
 	planDocumentCaptureStrips,
 	shouldSkipInvitationOpenCapture,
+	assertCapturePlanScopeOwnership,
 } from '../../../scripts/screenshot/capture';
 import type { ScreenshotJob } from '../../../scripts/screenshot/types';
 
@@ -48,6 +49,7 @@ describe('screenshot capture modularization contracts', () => {
 		expect(typeof probeFirstMatchingSelectors).toBe('function');
 		expect(typeof evaluateRevealIsOpen).toBe('function');
 		expect(typeof shouldSkipInvitationOpenCapture).toBe('function');
+		expect(typeof assertCapturePlanScopeOwnership).toBe('function');
 		expect(typeof buildScreenshotUrl).toBe('function');
 	});
 

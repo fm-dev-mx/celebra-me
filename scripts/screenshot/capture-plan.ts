@@ -9,6 +9,8 @@ import {
 	detectRevealCapabilities,
 	type RevealCapabilities,
 } from './inventory.js';
+import { getResolvedSectionIds } from './scope.js';
+import { isSafeScreenshotArtifactSegment } from './registry-validation.js';
 
 export type TaskRequirement = 'required' | 'optional' | 'unsupported';
 
@@ -59,6 +61,25 @@ export function plannedTasksFromCapturePlan(tasks: CaptureTask[]): PlannedCaptur
 		id: task.id,
 		required: isCaptureTaskRequired(task),
 	}));
+}
+
+/** Explicit section requests are closed sets; preset scopes intentionally defer section inventory to the DOM. */
+export function assertCapturePlanScopeOwnership(tasks: CaptureTask[], job: ScreenshotJob): void {
+	const invitation =
+		job.scope?.invitations.find((entry) => entry.url === job.url) ?? job.scope?.invitations[0];
+	if (
+		!invitation ||
+		invitation.sectionSelection.kind === 'preset' ||
+		invitation.sectionSelection.ids.length === 0
+	)
+		return;
+	const plannedIds = new Set(invitation.tasks.map((task) => task.id));
+	const unexpected = tasks.map((task) => task.id).filter((id) => !plannedIds.has(id));
+	if (unexpected.length > 0) {
+		throw new Error(
+			`SCREENSHOT_SCOPE_EXPANDED: explicit scope produced unplanned task(s): ${[...new Set(unexpected)].join(', ')}`,
+		);
+	}
 }
 
 export function withTaskIdentity(
@@ -139,6 +160,42 @@ async function appendKnownInvitationSections(page: Page, tasks: CaptureTask[]): 
 	}
 }
 
+/**
+ * Resolve only the section IDs supplied by the canonical scope plan.
+ * A missing selector is kept as a required task so the run reports the
+ * planned failure instead of silently shrinking the requested scope.
+ */
+async function appendResolvedSections(
+	page: Page,
+	tasks: CaptureTask[],
+	job: ScreenshotJob,
+): Promise<void> {
+	const ids = getResolvedSectionIds(job);
+	const sections = ids
+		.map((id) =>
+			KNOWN_SECTIONS.find(
+				(section) => section.pageType === job.pageType && section.id === id,
+			),
+		)
+		.filter((section): section is (typeof KNOWN_SECTIONS)[number] => Boolean(section));
+	const matches = await probeFirstMatchingSelectors(
+		page,
+		sections.map((section) => ({
+			id: section.id,
+			selectors: [section.selector, ...(section.fallbackSelectors ?? [])],
+		})),
+	);
+	for (const section of sections) {
+		tasks.push({
+			id: `06-section-${section.outputSlug}`,
+			label: `Section: ${section.label}`,
+			type: 'section',
+			selector: matches[section.id] ?? section.selector,
+			requirement: 'required',
+		});
+	}
+}
+
 async function appendInventoryOrKnownInvitationSections(
 	page: Page,
 	tasks: CaptureTask[],
@@ -146,6 +203,11 @@ async function appendInventoryOrKnownInvitationSections(
 	const inventory = await deriveSectionInventory(page);
 	if (inventory.sections.length > 0) {
 		for (const sec of inventory.sections) {
+			if (!isSafeScreenshotArtifactSegment(sec.id)) {
+				throw new Error(
+					`UNSAFE_SCREENSHOT_SECTION_ID: rendered section "${sec.id}" is not a safe artifact identity.`,
+				);
+			}
 			const orderStr = String(sec.order).padStart(2, '0');
 			tasks.push({
 				id: `10-${orderStr}-${sec.id}`,
@@ -164,7 +226,11 @@ async function resolveSingleSectionTask(
 	page: Page,
 	job: ScreenshotJob,
 ): Promise<CaptureTask | null> {
-	const s = KNOWN_SECTIONS.find((x) => x.id === job.selectedSection);
+	const s = KNOWN_SECTIONS.find(
+		(x) =>
+			x.pageType === job.pageType &&
+			x.id === (job.selectedSection ?? job.selectedSections?.[0]),
+	);
 	if (!s) return null;
 	const selectors = [s.selector, ...(s.fallbackSelectors ?? [])];
 	const matches = await probeFirstMatchingSelectors(page, [{ id: s.id, selectors }]);
@@ -198,7 +264,7 @@ export async function resolveCapturePlan(
 		const shouldCaptureFullOpen =
 			job.revealHandling !== 'closed-only' &&
 			job.revealHandling !== 'skip' &&
-			capabilities.hasReveal;
+			(job.target === 'full-page' || capabilities.hasReveal);
 
 		const initialClosedTask: CaptureTask = {
 			id: '01-initial-closed-viewport',
@@ -252,18 +318,56 @@ export async function resolveCapturePlan(
 				}
 			}
 
-			// Per-section captures BEFORE full-page so 05 can validate against
-			// same-run standalones (avoids poisoning publish with stale heights).
-			await appendInventoryOrKnownInvitationSections(page, tasks);
+			// Explicit section IDs are the only persisted section scope. Named
+			// presets retain their documented runtime inventory behavior.
+			if (job.scope?.invitations[0].sectionSelection.kind === 'ids') {
+				await appendResolvedSections(page, tasks, job);
+			} else {
+				await appendInventoryOrKnownInvitationSections(page, tasks);
+			}
 
 			if (shouldCaptureFullOpen) {
 				tasks.push(fullOpenTask);
 			}
 		} else if (job.target === 'all-sections') {
-			await appendInventoryOrKnownInvitationSections(page, tasks);
+			if (job.scope?.invitations[0].sectionSelection.kind === 'ids') {
+				await appendResolvedSections(page, tasks, job);
+			} else {
+				await appendInventoryOrKnownInvitationSections(page, tasks);
+			}
 		} else if (job.target === 'single-section' && job.selectedSection) {
-			const task = await resolveSingleSectionTask(page, job);
-			if (task) tasks.push(task);
+			for (const selectedSection of job.selectedSections ?? [job.selectedSection]) {
+				const task = await resolveSingleSectionTask(page, {
+					...job,
+					selectedSection,
+				});
+				if (task) tasks.push(task);
+			}
+		} else if (job.target === 'reveal-only') {
+			tasks.push({
+				id: '02-reveal-closed',
+				label:
+					capabilities.revealType === 'editorial-cover'
+						? 'Reveal cover (closed)'
+						: 'Reveal section (closed)',
+				type: 'invitation-step',
+				invitationStep: 'reveal-closed',
+				requirement: 'required',
+			});
+			tasks.push({
+				id: '03-reveal-letter-open',
+				label: 'Reveal letter (open)',
+				type: 'invitation-step',
+				invitationStep: 'reveal-letter-open',
+				requirement: 'optional',
+			});
+			tasks.push({
+				id: '04-reveal-transition-open',
+				label: 'Reveal transition (open)',
+				type: 'invitation-step',
+				invitationStep: 'reveal-open',
+				requirement: 'optional',
+			});
 		}
 	} else {
 		// General Page type
@@ -372,9 +476,14 @@ export async function resolveCapturePlan(
 				});
 				sIndex++;
 			}
-		} else if (job.target === 'single-section' && job.selectedSection) {
-			const task = await resolveSingleSectionTask(page, job);
-			if (task) tasks.push(task);
+		} else if (
+			job.target === 'single-section' &&
+			(job.selectedSection || job.selectedSections?.length)
+		) {
+			for (const selectedSection of job.selectedSections ?? [job.selectedSection!]) {
+				const task = await resolveSingleSectionTask(page, { ...job, selectedSection });
+				if (task) tasks.push(task);
+			}
 		}
 	}
 

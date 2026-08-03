@@ -5,6 +5,7 @@ import type { ScreenshotConfig, ScreenshotConfigPage } from '../../screenshot/ty
 import {
 	corpusPublicRoute,
 	listLocalRenderCorpus,
+	assertLocalRenderCorpusIntegrity,
 	type LocalRenderCorpusEntry,
 } from './registry.ts';
 
@@ -23,6 +24,7 @@ export function buildCorpusScreenshotPages(
 }
 
 export function buildCorpusScreenshotConfig(): ScreenshotConfig {
+	assertLocalRenderCorpusIntegrity();
 	return {
 		outputDir: 'output/screenshots/local-render-corpus',
 		pages: buildCorpusScreenshotPages(),

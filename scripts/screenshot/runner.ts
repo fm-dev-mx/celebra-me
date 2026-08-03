@@ -2,6 +2,8 @@
 // CELEBRA-ME | Screenshot Tool — Job Runner
 
 import sharp from 'sharp';
+import * as fs from 'node:fs/promises';
+import * as path from 'node:path';
 import type { Page, Request } from 'playwright';
 import {
 	type ScreenshotJob,
@@ -18,19 +20,28 @@ import {
 import { deriveSectionInventory } from './inventory.js';
 import {
 	createPageSlug,
-	resolveOutputDir,
 	ensureDir,
 	formatViewport,
 	formatDuration,
 	writeScreenshotReport,
+	writeScreenshotPreflight,
 	buildCurrentRunManifest,
 	classifyConsoleError,
 	dedupeScreenshotNotices,
 	computeScreenshotBlockingErrors,
+	expectsScreenshotOutput,
+	resolveScreenshotRunStatus,
 	validateBlankBottom,
+	getDocumentHeight,
 	getFileArtifactMeta,
 	removeLegacyInvitationFullOpenArtifacts,
+	redactScreenshotPlan,
+	redactScreenshotText,
+	redactScreenshotUrl,
 } from './utils.js';
+import { summarizeScreenshotPlans } from './execution-policy.js';
+import { validateResolvedCleanupTargets } from './scope.js';
+import type { ResolvedScreenshotPlan } from './scope.js';
 import {
 	launchBrowser,
 	createContext,
@@ -46,6 +57,49 @@ interface SingleViewportCaptureResult {
 	report: ViewportRunReport;
 }
 
+async function cleanResolvedScope(plan: ResolvedScreenshotPlan): Promise<void> {
+	for (const target of plan.cleanupTargets) {
+		const stat = await fs.lstat(target).catch(() => undefined);
+		if (!stat) continue;
+		if (stat.isDirectory()) {
+			throw new Error(
+				`Refusing to clean directory target; expected an owned file: ${target}`,
+			);
+		}
+		await fs.rm(target, { force: true });
+		console.log(`  Cleaned planned artifact: ${target}`);
+	}
+}
+
+/**
+ * Preset section inventories are resolved by the rendered DOM, so their prior
+ * artifact names are not known to the pure scope resolver. Materialize only
+ * canonical section filenames already present in the selected viewport folders
+ * before writing preflight and cleaning. Explicit section scopes never use this
+ * fallback and therefore remain exact-file-only.
+ */
+async function materializePresetCleanupTargets(plan: ResolvedScreenshotPlan): Promise<void> {
+	if (!plan.clean) return;
+	const sectionArtifact = /^(?:10-\d{2}-|06-section-)[A-Za-z0-9_-]+\.(?:png|jpg|webp|pdf)$/i;
+	const targets = new Set(plan.cleanupTargets);
+	for (const invitation of plan.invitations) {
+		if (invitation.sectionSelection.kind !== 'preset') continue;
+		for (const viewport of invitation.viewports) {
+			const viewportDir = path.join(invitation.outputDir, viewport.name);
+			const entries = await fs.readdir(viewportDir, { withFileTypes: true }).catch(() => []);
+			for (const entry of entries) {
+				if (!entry.isFile() || !sectionArtifact.test(entry.name)) continue;
+				const target = path.join(viewportDir, entry.name);
+				if (!targets.has(target)) {
+					targets.add(target);
+					invitation.cleanupTargets.push(target);
+				}
+			}
+		}
+	}
+	plan.cleanupTargets = [...targets];
+}
+
 /**
  * Capture a single viewport: create a page context, run captures, build report.
  */
@@ -55,7 +109,7 @@ async function captureSingleViewport(
 	outputDir: string,
 	viewport: ScreenshotJob['viewports'][number],
 ): Promise<SingleViewportCaptureResult> {
-	const context = await createContext(browser, viewport);
+	const context = await createContext(browser, viewport, { authMethod: job.authMethod });
 	const page = await context.newPage();
 	const consoleErrors: string[] = [];
 	const requestFailures: RequestFailureReport[] = [];
@@ -122,7 +176,9 @@ async function captureSingleViewport(
 			report: viewportReport,
 		};
 	} catch (err) {
-		console.error(`  ✕ Error capturing viewport ${viewport.name}: ${err}`);
+		console.error(
+			`  ✕ Error capturing viewport ${viewport.name}: ${redactScreenshotText(String(err))}`,
+		);
 		return {
 			captures: [],
 			plannedCaptures: 0,
@@ -169,7 +225,7 @@ export async function runScreenshotJob(job: ScreenshotJob): Promise<JobResult> {
 	console.log('║        CELEBRA-ME SCREENSHOT TOOL                   ║');
 	console.log('╚══════════════════════════════════════════════════════╝');
 	console.log('');
-	console.log(`  Page:    ${job.url}`);
+	console.log(`  Page:    ${redactScreenshotUrl(job.url)}`);
 	console.log(`  Base:    ${job.baseUrl}`);
 	console.log(`  Slug:    ${pageSlug}`);
 	console.log(`  Type:    ${job.pageType}`);
@@ -178,11 +234,43 @@ export async function runScreenshotJob(job: ScreenshotJob): Promise<JobResult> {
 	console.log('');
 
 	// ── 1. Prepare output directory ────────────────────────────────────────
-	const outputDir = resolveOutputDir(pageSlug, job.outputFolderStyle, job.outputFolder);
+	if (!job.scope?.invitations[0]) {
+		throw new Error(
+			'Screenshot job has no resolved scope. Resolve it before launching the runner.',
+		);
+	}
+	const outputDir = job.scope.invitations[0].outputDir;
 	await ensureDir(outputDir);
+	if (job.scope) {
+		await materializePresetCleanupTargets(job.scope);
+		validateResolvedCleanupTargets(job.scope);
+	}
+	if (job.scope?.clean) {
+		await cleanResolvedScope(job.scope);
+	}
+	if (job.scope) {
+		const preflightPath = await writeScreenshotPreflight(outputDir, job.scope);
+		console.log(`  Preflight plan: ${preflightPath}`);
+		console.log(`  Planned scope: ${job.scope.tasks.length} exact task artifact(s)`);
+		const summary = summarizeScreenshotPlans([job.scope]);
+		console.log(
+			`  Execution plan: ${summary.pages} page(s), ${summary.invitations} invitation(s), ${summary.viewports} viewport(s), ${summary.artifacts} planned artifact(s)` +
+				(summary.deferredPresetScopes > 0
+					? `, ${summary.deferredPresetScopes} preset section scope(s) resolved from rendered DOM`
+					: ''),
+		);
+		console.log(
+			`  Resolved plan:\n${JSON.stringify(redactScreenshotPlan(job.scope), null, 2)}`,
+		);
+	}
 
 	if (job.pageType === 'invitation') {
-		const removedLegacy = await removeLegacyInvitationFullOpenArtifacts(outputDir);
+		const legacyTargets = job.scope?.invitations[0]?.cleanupTargets.filter((target) =>
+			target.includes('05-invitation-full-open.'),
+		);
+		const removedLegacy = legacyTargets
+			? await removeLegacyInvitationFullOpenArtifacts(legacyTargets)
+			: [];
 		if (removedLegacy.length > 0) {
 			console.log(
 				`  🧹 Removed ${removedLegacy.length} legacy 05-invitation-full-open artifact(s)`,
@@ -320,8 +408,11 @@ async function finalizeScreenshotJobResult(input: {
 	const failed = blockingErrors;
 	const optionalOmitted = allCaptures.filter((r) => r.isOptional && !r.success).length;
 
-	const reportStatus: ScreenshotRunReport['status'] =
-		failed > 0 ? 'failed' : warnings.length > 0 ? 'warning' : 'passed';
+	const reportStatus: ScreenshotRunReport['status'] = resolveScreenshotRunStatus({
+		failed,
+		succeeded,
+		warnings: warnings.length,
+	});
 
 	const report: ScreenshotRunReport = {
 		route: job.url,
@@ -339,6 +430,7 @@ async function finalizeScreenshotJobResult(input: {
 		validationFailures: validationFailureMessages,
 		manifestFailures,
 		failures: [...captureFailureMessages, ...validationFailureMessages, ...manifestFailures],
+		scope: job.scope,
 		...(fallbacks.length > 0 ? { fallback: fallbacks[0], stitchFailures } : {}),
 	};
 	const reportPath = await writeScreenshotReport(outputDir, report);
@@ -460,6 +552,7 @@ function printScreenshotJobSummary(input: {
 // Viewport Report Builder
 // =============================================================================
 
+// eslint-disable-next-line complexity -- Viewport reporting combines capture, artifact, selector, and scope checks.
 async function buildViewportReport({
 	page,
 	job,
@@ -572,9 +665,24 @@ async function buildViewportReport({
 
 	let sectionCoverage: SectionCoverageReport | undefined;
 
-	if (job.pageType === 'invitation') {
+	if (
+		job.pageType === 'invitation' &&
+		job.target !== 'full-page' &&
+		job.target !== 'reveal-only'
+	) {
 		const inventory = await deriveSectionInventory(page);
-		sectionCoverage = buildSectionCoverage(inventory, results, validationFailures);
+		const plannedSectionIds =
+			job.scope?.invitations[0]?.sectionSelection.kind === 'ids'
+				? job.scope.invitations[0].sectionSelection.ids
+				: undefined;
+		if (plannedSectionIds === undefined || plannedSectionIds.length > 0) {
+			sectionCoverage = buildSectionCoverage(
+				inventory,
+				results,
+				validationFailures,
+				plannedSectionIds,
+			);
+		}
 	}
 
 	const failures = [...taskCaptureFailures, ...validationFailures];
@@ -649,11 +757,23 @@ function buildSectionCoverage(
 	inventory: Awaited<ReturnType<typeof deriveSectionInventory>>,
 	results: CaptureResult[],
 	captureFailures: string[],
+	plannedSectionIds?: string[],
 ): SectionCoverageReport {
 	const sectionResults = results.filter((r) => r.label.startsWith('Section:'));
 	const missingSections: string[] = [];
+	const sections = plannedSectionIds
+		? plannedSectionIds.map(
+				(id, index) =>
+					inventory.sections.find((section) => section.id === id) ?? {
+						id,
+						order: index + 1,
+						label: id,
+						selector: `[data-screenshot-section="${id}"]`,
+					},
+			)
+		: inventory.sections;
 
-	for (const sec of inventory.sections) {
+	for (const sec of sections) {
 		const found = results.some(
 			(r) => r.success && (r.path.includes(`-${sec.id}.`) || r.label.includes(sec.label)),
 		);
@@ -663,18 +783,22 @@ function buildSectionCoverage(
 		}
 	}
 
-	for (const dup of inventory.duplicates) {
+	for (const dup of inventory.duplicates.filter(
+		(id) => !plannedSectionIds || plannedSectionIds.includes(id),
+	)) {
 		captureFailures.push(`Duplicate section root detected in DOM: "${dup}".`);
 	}
 
 	return {
-		expectedCount: inventory.expected,
-		renderedCount: inventory.rendered,
+		expectedCount: sections.length,
+		renderedCount: sections.filter((section) =>
+			inventory.sections.some((item) => item.id === section.id),
+		).length,
 		plannedCount: sectionResults.length,
 		successfulCount: sectionResults.filter((r) => r.success).length,
 		missingSections,
 		duplicateSections: inventory.duplicates,
-		sections: inventory.sections.map((sec) => {
+		sections: sections.map((sec) => {
 			const match = results.find(
 				(r) => r.success && (r.path.includes(`-${sec.id}.`) || r.label.includes(sec.label)),
 			);
@@ -707,25 +831,25 @@ function appendExpectedOutputFailures(
 
 	if (job.target === 'all-sections' && results.length === 0) {
 		captureFailures.push(
-			`No capturable sections resolved for ${job.pageType} route ${job.url}.`,
+			`No capturable sections resolved for ${job.pageType} route ${redactScreenshotUrl(job.url)}.`,
 		);
 	}
 
 	if (job.target === 'single-section' && results.length === 0) {
 		captureFailures.push(
-			`Selected section "${job.selectedSection ?? 'unknown'}" could not be resolved for ${job.pageType} route ${job.url}.`,
+			`Selected section "${job.selectedSection ?? 'unknown'}" could not be resolved for ${job.pageType} route ${redactScreenshotUrl(job.url)}.`,
 		);
 	}
 
 	if (job.target === 'full-page' && successfulFullPageCount == 0) {
 		captureFailures.push(
-			`Full-page target produced no successful full-page capture for ${job.pageType} route ${job.url}.`,
+			`Full-page target produced no successful full-page capture for ${job.pageType} route ${redactScreenshotUrl(job.url)}.`,
 		);
 	}
 
 	if (expectsScreenshotOutput(job.target) && successfulOutputCount === 0) {
 		captureFailures.push(
-			`Screenshot target "${job.target}" produced zero output files for ${job.pageType} route ${job.url}.`,
+			`Screenshot target "${job.target}" produced zero output files for ${job.pageType} route ${redactScreenshotUrl(job.url)}.`,
 		);
 	}
 }
@@ -751,7 +875,7 @@ async function validateFullPageBlanks(
 		if (check.trailingBlankSpaceDetected) {
 			detailedWarnings.push({
 				message: `Trailing blank space detected in full page: ${check.note}`,
-				target: targetUrl,
+				target: redactScreenshotUrl(targetUrl),
 				viewport: viewportName,
 				expected: false,
 			});
@@ -791,7 +915,7 @@ async function collectSelectorAndRequestWarnings(
 			} else {
 				detailedWarnings.push({
 					message: w,
-					target: job.url,
+					target: redactScreenshotUrl(job.url),
 					viewport: viewportName,
 					expected: true,
 				});
@@ -802,7 +926,7 @@ async function collectSelectorAndRequestWarnings(
 		for (const failure of selector.failures ?? []) {
 			detailedWarnings.push({
 				message: failure,
-				target: job.url,
+				target: redactScreenshotUrl(job.url),
 				viewport: viewportName,
 				expected: true,
 			});
@@ -815,7 +939,7 @@ async function collectSelectorAndRequestWarnings(
 		const msg = `${failure.severity === 'critical' ? 'Critical' : 'Non-critical'} request failed: ${failure.method} ${failure.url} :: ${failure.errorText}`;
 		detailedWarnings.push({
 			message: msg,
-			target: job.url,
+			target: redactScreenshotUrl(job.url),
 			viewport: viewportName,
 			expected: false,
 		});
@@ -838,7 +962,7 @@ async function collectSelectorAndRequestWarnings(
 		const msg = `Console ${classified.severity} (${classified.source}; production risk ${classified.productionRisk}; screenshot reliability ${classified.affectsScreenshotReliability ? 'affected' : 'not affected'}): ${classified.message} — ${classified.note}`;
 		detailedWarnings.push({
 			message: msg,
-			target: job.url,
+			target: redactScreenshotUrl(job.url),
 			viewport: viewportName,
 			expected: classified.source === 'test-runner-transpiler',
 		});
@@ -859,15 +983,6 @@ function isFullPageCaptureLabel(label: string): boolean {
 		label === 'Initial full page' ||
 		label === 'Initial full page (closed)' ||
 		label === 'Full invitation (open)'
-	);
-}
-
-function expectsScreenshotOutput(target: ScreenshotJob['target']): boolean {
-	return (
-		target === 'critical-qa' ||
-		target === 'full-page' ||
-		target === 'all-sections' ||
-		target === 'single-section'
 	);
 }
 
@@ -893,16 +1008,6 @@ async function readAuditNormalizations(page: Page): Promise<string[]> {
 		});
 	} catch {
 		return [];
-	}
-}
-
-async function getDocumentHeight(page: Page): Promise<number> {
-	try {
-		return await page.evaluate(() =>
-			Math.max(document.body.scrollHeight, document.documentElement.scrollHeight),
-		);
-	} catch {
-		return 0;
 	}
 }
 
@@ -1034,9 +1139,9 @@ function classifyRequestFailure(request: Request): RequestFailureReport {
 	const severity = isCriticalRequest(url) ? 'critical' : 'warning';
 
 	return {
-		url,
+		url: redactScreenshotUrl(url),
 		method: request.method(),
-		errorText,
+		errorText: redactScreenshotText(errorText),
 		severity,
 	};
 }

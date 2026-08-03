@@ -1,6 +1,6 @@
 # dev-extra worktree
 
-**Path:** `celebra-me-worktrees/dev-extra`  
+**Path:** `<worktrees-root>\dev-extra` (sibling `<repo-dir>-worktrees/` directory of the repository root; see `docs/core/git-governance.md` for the reference-machine example)  
 **Executable SSOT:** [`scripts/shared/worktree-lane.ts`](../../../scripts/shared/worktree-lane.ts)  
 **Policy SSOTs:** [`git-governance.md`](../git-governance.md),
 [`env-workflow.md`](../../env-workflow.md),

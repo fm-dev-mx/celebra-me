@@ -50,7 +50,8 @@ export interface Viewport {
 	name: string;
 }
 
-export type CaptureTarget = 'full-page' | 'critical-qa' | 'all-sections' | 'single-section';
+export type CaptureTarget =
+	'full-page' | 'critical-qa' | 'all-sections' | 'single-section' | 'reveal-only';
 
 export interface ScreenshotWarning {
 	message: string;
@@ -92,7 +93,8 @@ export interface ScreenshotJob {
 	 */
 	sectionExtent: SectionExtent;
 	selectedSection?: string;
-	sectionSelectors?: string[];
+	/** Exact section IDs resolved by the canonical scope resolver. */
+	selectedSections?: string[];
 	criticalSelectors: ScreenshotSelectorConfig[];
 	waitSelectors: string[];
 	hideSelectors: string[];
@@ -101,12 +103,15 @@ export interface ScreenshotJob {
 	outputFolderStyle: OutputFolderStyle;
 	/** Custom output folder (only when outputFolderStyle === 'custom') */
 	outputFolder?: string;
+	/** Canonical, preflight-validated scope consumed by downstream capture code. */
+	scope?: import('./scope.js').ResolvedScreenshotPlan;
 }
 
 /** Options parsed from CLI flags */
 export interface CliOptions {
 	/** Force interactive mode even when flags are present (--interactive) */
 	interactive?: boolean;
+	help?: boolean;
 	url?: string;
 	baseUrl?: string;
 	pageType?: PageType;
@@ -122,8 +127,6 @@ export interface CliOptions {
 	animation?: AnimationHandling;
 	/** Comma-separated section names for known sections */
 	sections?: string;
-	/** Comma-separated CSS selectors for custom sections */
-	sectionSelectors?: string;
 	/** Framing for section captures: full element or viewport crop */
 	sectionExtent?: SectionExtent;
 	auth?: AuthMethod;
@@ -137,6 +140,8 @@ export interface CliOptions {
 	corpus?: boolean;
 	/** Remove output directory before starting */
 	clean?: boolean;
+	/** Permit config batches above the normal targeted execution budget. */
+	allowLarge?: boolean;
 }
 
 /** Minimal shape for a screenshot config JSON file */
@@ -148,7 +153,6 @@ export interface ScreenshotConfig {
 	defaultAnimationHandling?: AnimationHandling;
 	defaultOutputFormat?: OutputFormat;
 	defaultOutputFolderStyle?: OutputFolderStyle;
-	storageStatePath?: string;
 	pages?: ScreenshotConfigPage[];
 }
 
@@ -166,8 +170,8 @@ export interface ScreenshotConfigPage {
 	revealHandling?: RevealHandling;
 	animationHandling?: AnimationHandling;
 	sectionCapture?: SectionCapture;
+	sections?: string[];
 	sectionExtent?: SectionExtent;
-	sectionSelectors?: string[];
 	criticalSelectors?: ScreenshotSelectorConfig[];
 	waitSelectors?: string[];
 	hideSelectors?: string[];
@@ -210,7 +214,7 @@ export interface CaptureResult {
 	};
 }
 
-export type ValidationStatus = 'passed' | 'warning' | 'failed';
+export type ValidationStatus = 'passed' | 'warning' | 'partial' | 'failed';
 
 export type RequestFailureSeverity = 'critical' | 'warning';
 
@@ -329,6 +333,8 @@ export interface ScreenshotRunReport {
 	manifestFailures?: string[];
 	/** Union of blocking failure messages. */
 	failures: string[];
+	/** The same resolved plan persisted in preflight.json, echoed for correlation. */
+	scope?: import('./scope.js').ResolvedScreenshotPlan;
 }
 
 /** Overall job result */
@@ -390,6 +396,10 @@ export const VIEWPORT_PROFILES: Record<string, ViewportProfile> = {
 			{ width: 768, height: 1024, deviceScaleFactor: 2, name: 'tablet' },
 			{ width: 1440, height: 1200, deviceScaleFactor: 1, name: 'desktop' },
 		],
+	},
+	single: {
+		name: 'single',
+		viewports: [],
 	},
 };
 

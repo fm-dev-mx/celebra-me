@@ -424,9 +424,7 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | ScreenshotJo
 			message: 'Does this page require authentication?',
 			choices: [
 				{ name: 'No', value: 'none' },
-				{ name: 'Use existing browser session', value: 'existing-session' },
 				{ name: 'Use saved Playwright storage state', value: 'storage-state' },
-				{ name: 'Open browser for manual login', value: 'manual-login' },
 			],
 			default: isDashboard ? 'storage-state' : 'none',
 		});
@@ -482,7 +480,6 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | ScreenshotJo
 		sectionCapture,
 		sectionExtent,
 		selectedSection,
-		sectionSelectors: undefined,
 		criticalSelectors: getDefaultCriticalSelectors(pageType),
 		waitSelectors: [],
 		hideSelectors: [],
@@ -543,9 +540,6 @@ function printJobSummary(jobs: ScreenshotJob[]): void {
 	console.log(`  Mode:          ${job.mode}`);
 	if (job.selectedSection) {
 		console.log(`  Sel. Section:  ${job.selectedSection}`);
-	}
-	if (job.sectionSelectors?.length) {
-		console.log(`  Selectors:     ${job.sectionSelectors.join(', ')}`);
 	}
 	console.log(`  Auth:          ${job.authMethod}`);
 	console.log(`  Format:        ${job.outputFormat}`);
