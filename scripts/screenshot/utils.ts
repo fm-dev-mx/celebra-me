@@ -418,10 +418,12 @@ export function resolveUrl(input: string, baseUrl: string = resolveScreenshotBas
 		return trimmed;
 	}
 
-	// Strip MSYS/git-bash Windows path prefix (e.g. C:/Program Files/Git/...)
-	// This happens when git-bash converts /route to a Windows absolute path
+	// Strip known MSYS/Git Bash roots only (see tests). Prefer MSYS_NO_PATHCONV=1
+	// (Git Bash) or MSYS2_ARG_CONV_EXCL="*" to disable conversion at the shell.
 	let route = trimmed;
-	const msysMatch = trimmed.match(/^[A-Za-z]:\/(?:Program Files\/Git|Users\/[^/]+)\/(.+)$/);
+	const msysMatch = trimmed.match(
+		/^[A-Za-z]:\/(?:Program Files\/Git|msys64|Users\/[^/]+\/scoop\/apps\/git\/current|Users\/[^/]+)\/(.+)$/i,
+	);
 	if (msysMatch) {
 		route = '/' + msysMatch[1];
 	}

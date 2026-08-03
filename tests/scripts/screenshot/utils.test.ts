@@ -15,6 +15,7 @@ import {
 	resolveScreenshotRunStatus,
 	resolveScreenshotBaseUrl,
 	resolveScreenshotLaneContext,
+	resolveUrl,
 	getViewportProfileSummary,
 	intersectRectWithViewport,
 	redactScreenshotText,
@@ -500,6 +501,71 @@ describe('screenshot CLI utilities', () => {
 			files: 3,
 			expected: 5,
 			status: 'failed',
+		});
+	});
+
+	describe('resolveUrl', () => {
+		const base = 'http://localhost:4321';
+
+		it('passes absolute http(s) URLs through untouched', () => {
+			expect(resolveUrl('https://www.celebra-me.com/boda/x', base)).toBe(
+				'https://www.celebra-me.com/boda/x',
+			);
+			expect(resolveUrl('http://127.0.0.1:4390/dashboard', base)).toBe(
+				'http://127.0.0.1:4390/dashboard',
+			);
+		});
+
+		it('joins routes that intentionally begin with a slash', () => {
+			expect(resolveUrl('/boda/demo-boda-jewelry-box-wedding', base)).toBe(
+				'http://localhost:4321/boda/demo-boda-jewelry-box-wedding',
+			);
+			expect(resolveUrl('/', base)).toBe('http://localhost:4321/');
+		});
+
+		it('normalizes relative application routes to a leading slash', () => {
+			expect(resolveUrl('boda/demo-xv-editorial', base)).toBe(
+				'http://localhost:4321/boda/demo-xv-editorial',
+			);
+		});
+
+		it('recovers Git for Windows conversion (C:/Program Files/Git prefix)', () => {
+			expect(resolveUrl('C:/Program Files/Git/boda/demo-boda-jewelry-box-wedding', base)).toBe(
+				'http://localhost:4321/boda/demo-boda-jewelry-box-wedding',
+			);
+		});
+
+		it('recovers MSYS2 conversion (C:/msys64 prefix)', () => {
+			expect(resolveUrl('C:/msys64/boda/demo-xv-editorial', base)).toBe(
+				'http://localhost:4321/boda/demo-xv-editorial',
+			);
+		});
+
+		it('recovers Scoop Git conversion (C:/Users/<u>/scoop/apps/git/current prefix)', () => {
+			expect(
+				resolveUrl(
+					'C:/Users/someone/scoop/apps/git/current/boda/demo-xv-enchanted-rose',
+					base,
+				),
+			).toBe('http://localhost:4321/boda/demo-xv-enchanted-rose');
+		});
+
+		it('recovers converted /c/Users/... arguments', () => {
+			expect(resolveUrl('C:/Users/someone/boda/demo-xv-editorial', base)).toBe(
+				'http://localhost:4321/boda/demo-xv-editorial',
+			);
+		});
+
+		it('does not strip arbitrary Windows path prefixes', () => {
+			expect(resolveUrl('C:/Some Other/dir/route', base)).toBe(
+				'http://localhost:4321/C:/Some Other/dir/route',
+			);
+		});
+
+		it('keeps query strings intact after prefix stripping', () => {
+			expect(resolveUrl('C:/Program Files/Git/boda/x?tab=1', base)).toBe(
+				'http://localhost:4321/boda/x?tab=1',
+			);
 		});
 	});
 });
