@@ -97,6 +97,7 @@
         "invitation:promote": "tsx scripts/provision/invitation-promote-cli.ts",
         "invitation:preview-fixture": "tsx scripts/provision/preview-e2e-fixture-cli.ts",
         "invitation:inventory-audit": "tsx scripts/provision/inventory-audit-cli.ts",
+        "invitation:purge-by-id": "tsx scripts/provision/invitation-id-purge-cli.ts",
         "invitation:romina-schema-repair": "tsx scripts/provision/romina-schema-repair-cli.ts",
         "screenshot": "tsx scripts/screenshot/cli.ts",
         "screenshot:interactive": "tsx scripts/screenshot/cli.ts --interactive",
