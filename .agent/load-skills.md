@@ -70,7 +70,7 @@ canonical source.
 Expected host setup for this repo (configure outside git; do not commit host config):
 
 - Include the absolute path to this checkout's `.agent/skills` directory in Hermes
-  `skills.external_dirs` (example on this machine: `D:\code\celebra-me\.agent\skills`).
+  `skills.external_dirs` (example on this machine: `<checkout-root>\.agent\skills`).
 - Keep any cross-project creative skills (e.g. a separate `creative-ops` skills dir) in their own
   external dir; do not merge them into Celebra-me's `.agent/skills/`.
 - If Celebra-me repo skills are missing from Hermes discovery, fix the host `external_dirs` entry —

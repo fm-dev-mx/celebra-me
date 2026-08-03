@@ -81,7 +81,7 @@ to the wedding preset.
 
 Generated files were created with the built-in image generation tool and copied into
 `src/assets/images/events/demo-boda-jewelry-box-wedding/` as WebP assets. Original generated PNGs
-remain under `C:\Users\fmdevmx\.codex\generated_images\019f1f8a-af69-71b1-abf9-b05745f03835`.
+remain under `<generated-images-dir>`.
 
 | Demo                                  | Section                   | Image Purpose                      | Prompt / Asset Name                        | Status          |
 | ------------------------------------- | ------------------------- | ---------------------------------- | ------------------------------------------ | --------------- |
@@ -137,7 +137,7 @@ Browser path:
 - In-app Browser screenshot capture timed out during the QA loop, so QA fell back to repo
   Playwright.
 - Playwright screenshots and JSON results were saved outside the repo under
-  `C:\Users\fmdevmx\.codex\tmp\celebra-premium-demo-qa\`.
+  `<temporary-qa-dir>`.
 
 Routes/viewports:
 
@@ -159,7 +159,7 @@ Results:
 - Wedding gifts rendered as one Liverpool CTA with envelope/buenos deseos copy in the section note.
 - Clean screenshots without the cookie banner were captured for wedding hero, wedding gallery,
   wedding gifts, editorial rose mobile, and enchanted rose mobile under
-  `C:\Users\fmdevmx\.codex\tmp\celebra-premium-demo-qa\clean\`.
+  `<temporary-qa-dir>/clean/`.
 
 ## 11. Validation Results
 

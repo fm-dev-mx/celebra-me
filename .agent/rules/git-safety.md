@@ -78,13 +78,18 @@ current task.
 
 The repository operates with four native Git worktree lanes:
 
-- **Integration**: canonical root worktree (`celebra-me`, trunk `develop`). Runtime default: Local.
-- **dev-local**: persistent reusable worktree (`D:\code\celebra-me-worktrees\dev-local`) using ephemeral task
-  branches. Runtime default: Local.
-- **dev-preview**: persistent reusable worktree (`D:\code\celebra-me-worktrees\dev-preview`) using ephemeral task
-  branches. Runtime default: Preview Supabase via `.env.preview.local`.
-- **dev-extra**: persistent reusable worktree (`D:\code\celebra-me-worktrees\dev-extra`) using ephemeral task
-  branches. Runtime default: Local.
+- **Integration**: canonical root worktree (the repository root, trunk `develop`). Runtime default: Local.
+- **dev-local**: persistent reusable worktree in the sibling `<repo-dir>-worktrees/` directory
+  (segment `dev-local`) using ephemeral task branches. Runtime default: Local.
+- **dev-preview**: persistent reusable worktree in the sibling `<repo-dir>-worktrees/` directory
+  (segment `dev-preview`) using ephemeral task branches. Runtime default: Preview Supabase via
+  `.env.preview.local`.
+- **dev-extra**: persistent reusable worktree in the sibling `<repo-dir>-worktrees/` directory
+  (segment `dev-extra`) using ephemeral task branches. Runtime default: Local.
+
+The tooling derives lane paths from the checkout root (`scripts/shared/worktree-lane.ts`) and does
+not require any specific parent directory. See `docs/core/git-governance.md` for the labeled
+reference-machine example layout.
 
 ### Path Authorization Invariant
 

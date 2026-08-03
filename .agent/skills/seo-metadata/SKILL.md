@@ -29,8 +29,8 @@ Apply this skill when creating or updating invitation pages to ensure optimal so
 ## 1. Open Graph Tags
 
 The live invitation metadata surface is the shared
-[Layout.astro](/D:/code/celebra-me/src/layouts/Layout.astro:30) contract plus the invitation route
-at [src/pages/[eventType]/[slug].astro](/D:/code/celebra-me/src/pages/[eventType]/[slug].astro:64).
+`src/layouts/Layout.astro:30` contract plus the invitation route
+at `src/pages/[eventType]/[slug].astro:64`.
 Invitation pages must publish title, description, canonical URL, and absolute social-image URLs
 through those surfaces.
 
