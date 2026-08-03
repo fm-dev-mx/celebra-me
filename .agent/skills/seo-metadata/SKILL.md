@@ -28,10 +28,11 @@ Apply this skill when creating or updating invitation pages to ensure optimal so
 
 ## 1. Open Graph Tags
 
-The live invitation metadata surface is the shared [Layout.astro](src/layouts/Layout.astro#L30)
+The live invitation metadata surface is the shared [Layout.astro](../../../src/layouts/Layout.astro)
 contract plus the invitation route at
-[src/pages/[eventType]/[slug].astro](src/pages/[eventType]/[slug].astro#L64). Invitation pages must
-publish title, description, canonical URL, and absolute social-image URLs through those surfaces.
+[src/pages/[eventType]/[slug].astro](../../../src/pages/[eventType]/[slug].astro). Invitation pages
+must publish title, description, canonical URL, and absolute social-image URLs through those
+surfaces.
 
 ```astro
 ---
