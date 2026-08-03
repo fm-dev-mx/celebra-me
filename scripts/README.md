@@ -45,6 +45,7 @@ are no longer registered. Use `pnpm dbs` and `pnpm invitation:*` for invitation 
 | `pnpm invitation:promote`         | `scripts/provision/invitation-promote-cli.ts`   | Owner-only Production managed-content promotion from an exact Preview-approved release    |
 | `pnpm invitation:preview-fixture` | `scripts/provision/preview-e2e-fixture-cli.ts`  | Preview-only E2E fixture bootstrap for `e2e-preview-publication` (not Dashboard create)   |
 | `pnpm invitation:purge-by-id`     | `scripts/provision/invitation-id-purge-cli.ts`  | Preview-only UUID purge with dry-run audit, transactional delete, and JSON artifact       |
+| `pnpm invitation:cross-db-reconcile` | `scripts/provision/cross-db-invitation-reconciliation-cli.ts` | Read-only cross-DB invitation parity (excludes draft/in_progress)            |
 
 The CLI resolves source/package input through `invitation-package-input.ts`, retains one immutable
 plan per target, and delegates mutation ordering/result synthesis to
