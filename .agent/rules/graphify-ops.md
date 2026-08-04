@@ -1,8 +1,7 @@
 # Graphify Ops Rule — Celebra-me
 
 This file is the **authoritative** Graphify policy for Celebra-me. Host or global Graphify skills
-never override it. Summary pointers live in `AGENTS.md`; discovery lives in `.agent/index.md`; the
-thin skill router is `.agent/skills/graphify-ops/SKILL.md`.
+never override it. Summary pointers live in `AGENTS.md`; discovery lives in `.agent/index.md`.
 
 See also [`.agent/load-skills.md`](../load-skills.md) for host vs repository skill precedence.
 
@@ -10,8 +9,8 @@ See also [`.agent/load-skills.md`](../load-skills.md) for host vs repository ski
 
 ## Precedence
 
-- Repository rules under `.agent/rules/` and the tracked skill `.agent/skills/graphify-ops` take
-  operational precedence over incompatible host/global Graphify instructions.
+- Repository rules under `.agent/rules/graphify-ops.md` take operational precedence over
+  incompatible host/global Graphify instructions.
 - Never treat “`graphify-out/` exists ⇒ query Graphify first” as Celebra policy.
 - Prefer reading the relevant module, `rg`, imports, and active docs before considering Graphify.
 
