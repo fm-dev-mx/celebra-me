@@ -153,7 +153,9 @@ Executable exclusion list for the Preview mirror: `EXCLUDED_TABLES` in
 
 `pnpm db:preview:sync-invitations` mirrors invitation-facing tables and Storage, remaps ownership to
 the dedicated Preview admin, rewrites Storage URLs, and does **not** copy Production guests, claims,
-Auth, intake, or commercial data.
+Auth, intake, or commercial data. `--dry-run` performs zero writes (including role/profile and report
+files). `--apply` requires Preview authorization
+(`CELEBRA_TASK_SCOPE=preview:content-mirror:sync-invitations` or interactive confirmation).
 
 It replaces Preview `events` with `TRUNCATE … CASCADE` then reinserts Production event shells. That
 **resets Preview RSVP children** (guests, claims, memberships) on those events. Stale Preview-only

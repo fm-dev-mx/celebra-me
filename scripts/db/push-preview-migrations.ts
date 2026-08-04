@@ -5,8 +5,11 @@
  *   1. Credential resolution (PREVIEW_DB_URL)
  *   2. Dry-run + optional allowlist matching (EXPECTED_MIGRATIONS / --allowlist)
  *   3. Migration / deployment compatibility (target-release membership, rollout phases)
- *   4. Migration application
- *   5. Mutation schema contract verification
+ *   4. Explicit --apply + Preview authorization (task scope or interactive TTY)
+ *   5. Migration application
+ *   6. Mutation schema contract verification
+ *
+ * Default (no --apply) is read-only preflight — no Preview schema writes.
  *
  * Hosted identity (fail closed):
  *   - CELEBRA_TARGET_RELEASE_SHA — authorized target release Git tree
@@ -25,10 +28,15 @@ import {
 } from './migration-pending-set.ts';
 import { PREVIEW_SECRET_FILES, getSecretFromEnvOrFiles } from './db-guard.ts';
 import { fail, runCommand, runPsql } from './db-workflow-lib.ts';
+import { authorizePreviewWriteApply } from '../provision/preview-write-auth.ts';
 
-function parseAllowlist(): string[] | null {
-	const allowlistIdx = process.argv.indexOf('--allowlist');
-	let allowlistStr = allowlistIdx !== -1 ? process.argv[allowlistIdx + 1] : undefined;
+/** Stable Preview auth slug for schema migrate (CELEBRA_TASK_SCOPE). */
+const PREVIEW_MIGRATE_AUTH_SLUG = 'schema';
+const PREVIEW_MIGRATE_AUTH_OPERATION = 'migrate';
+
+function parseAllowlist(argv: string[]): string[] | null {
+	const allowlistIdx = argv.indexOf('--allowlist');
+	let allowlistStr = allowlistIdx !== -1 ? argv[allowlistIdx + 1] : undefined;
 	if (!allowlistStr) {
 		allowlistStr = process.env.EXPECTED_MIGRATIONS;
 	}
@@ -37,7 +45,17 @@ function parseAllowlist(): string[] | null {
 	return versions.length > 0 ? versions : null;
 }
 
-function main(): void {
+function parseCliArgs(argv: string[]): { apply: boolean } {
+	const apply = argv.includes('--apply');
+	const dryRun = argv.includes('--dry-run');
+	if (apply && dryRun) {
+		fail('Cannot combine --apply with --dry-run. Omit --dry-run; default is read-only preflight.');
+	}
+	return { apply };
+}
+
+export async function main(argv: string[] = process.argv): Promise<void> {
+	const { apply } = parseCliArgs(argv);
 	const previewDbUrl = getSecretFromEnvOrFiles('PREVIEW_DB_URL', PREVIEW_SECRET_FILES);
 	if (!previewDbUrl) {
 		fail(
@@ -45,10 +63,10 @@ function main(): void {
 		);
 	}
 
-	const expectedVersions = parseAllowlist();
+	const expectedVersions = parseAllowlist(argv);
 
 	console.info('============================================================');
-	console.info('Preview Migration Workflow');
+	console.info(apply ? 'Preview Migration Apply' : 'Preview Migration Preflight (read-only)');
 	console.info(
 		`- Expected Migrations Allowlist: ${expectedVersions ? expectedVersions.join(', ') : '(dry-run pending set)'}`,
 	);
@@ -115,7 +133,26 @@ function main(): void {
 		return;
 	}
 
-	console.info('\n3. Applying pending migrations to preview database...');
+	if (!apply) {
+		console.info('Read-only preflight complete. No Preview write was performed.');
+		console.info(
+			`To apply: CELEBRA_TASK_SCOPE=preview:${PREVIEW_MIGRATE_AUTH_SLUG}:${PREVIEW_MIGRATE_AUTH_OPERATION} ` +
+				`pnpm db:preview:migrate -- --apply` +
+				(expectedVersions ? ` --allowlist ${expectedVersions.join(',')}` : ''),
+		);
+		console.info('Or run with an interactive TTY and confirm when prompted.');
+		return;
+	}
+
+	console.info('\n3. Authorizing Preview schema write...');
+	await authorizePreviewWriteApply({
+		slug: PREVIEW_MIGRATE_AUTH_SLUG,
+		operation: PREVIEW_MIGRATE_AUTH_OPERATION,
+		confirmPrompt: 'Confirm Preview schema migration apply? Type YES to proceed: ',
+	});
+	console.info('✅ Preview write authorized.\n');
+
+	console.info('4. Applying pending migrations to preview database...');
 	const result = runCommand('supabase', ['db', 'push', '--db-url', previewDbUrl, '--yes'], {
 		redact: [previewDbUrl],
 		throwOnError: false,
@@ -144,7 +181,7 @@ function main(): void {
 	}
 
 	console.info(
-		'4. Verifying the application mutation schema contract before Preview code deployment...',
+		'5. Verifying the application mutation schema contract before Preview code deployment...',
 	);
 	runCommand('npx', [
 		'tsx',
@@ -155,8 +192,11 @@ function main(): void {
 	console.info('✅ Preview migration and mutation contract verification complete.');
 }
 
-try {
-	main();
-} catch (err: unknown) {
-	fail(err instanceof Error ? err.message : String(err));
+if (
+	typeof process.argv[1] === 'string' &&
+	/push-preview-migrations\.(ts|js|mjs|cjs)$/.test(process.argv[1])
+) {
+	void main().catch((err: unknown) => {
+		fail(err instanceof Error ? err.message : String(err));
+	});
 }

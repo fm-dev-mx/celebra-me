@@ -14,6 +14,8 @@
  *   - Rejects Preview as the source
  *   - Rejects unknown, local, or disposable targets
  *   - Requires explicit --apply for mutations
+ *   - --dry-run performs zero DB, role, profile, Storage, or report-file writes
+ *   - --apply requires Preview task-scope or interactive authorization
  *   - Does NOT create Auth users
  *   - Does NOT prune Preview-only records automatically
  *   - Never prints credentials in output
@@ -59,6 +61,11 @@ import {
 	writeReportFile,
 	type SyncReport,
 } from './preview-sync-report.ts';
+import { authorizePreviewWriteApply } from '../provision/preview-write-auth.ts';
+
+/** Stable Preview auth slug for the content mirror (CELEBRA_TASK_SCOPE). */
+const PREVIEW_MIRROR_AUTH_SLUG = 'content-mirror';
+const PREVIEW_MIRROR_AUTH_OPERATION = 'sync-invitations';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -77,23 +84,53 @@ const MIRROR_TABLES = CONTENT_MIRROR_TABLES.filter((table) => table !== 'events'
 
 interface SyncOptions {
 	dryRun: boolean;
+	apply: boolean;
 }
 
-function parseArgs(): SyncOptions {
-	const args = process.argv.slice(2);
-	const dryRun = args.includes('--dry-run');
-	const apply = args.includes('--apply');
+function parseArgs(argv: string[] = process.argv.slice(2)): SyncOptions {
+	const dryRun = argv.includes('--dry-run');
+	const apply = argv.includes('--apply');
+
+	if (dryRun && apply) {
+		fail('Cannot specify both --dry-run and --apply. Choose one mode.');
+	}
 
 	if (!dryRun && !apply) {
 		console.info('Usage:');
-		console.info('  pnpm db:preview:sync-invitations -- --dry-run   (report only)');
-		console.info('  pnpm db:preview:sync-invitations -- --apply     (execute)');
+		console.info('  pnpm db:preview:sync-invitations -- --dry-run   (report only; zero writes)');
+		console.info(
+			'  pnpm db:preview:sync-invitations -- --apply     (mutate after Preview authorization)',
+		);
 		console.info('');
-		console.info('  --stale-candidates  Show Preview-only records not in Production');
+		console.info(
+			`  Apply requires CELEBRA_TASK_SCOPE=preview:${PREVIEW_MIRROR_AUTH_SLUG}:${PREVIEW_MIRROR_AUTH_OPERATION}`,
+		);
+		console.info('  or an interactive TTY confirmation.');
 		process.exit(0);
 	}
 
-	return { dryRun };
+	return { dryRun, apply };
+}
+
+/**
+ * Phase 1 admin resolution. Dry-run performs a read-only lookup only.
+ * Role/profile writes require apply mode.
+ */
+export function runPreviewAdminPhase(
+	previewDbUrl: string,
+	options: Pick<SyncOptions, 'dryRun'>,
+): string {
+	const userId = resolvePreviewAdminUser(previewDbUrl);
+	if (options.dryRun) {
+		console.info(`   Preview admin user ID: ${userId}`);
+		console.info('   [dry-run] Would update role and host profile (skipped — zero writes)');
+		return userId;
+	}
+	updatePreviewAdminRole(previewDbUrl, userId);
+	ensureHostProfile(previewDbUrl, userId);
+	console.info(`   Preview admin user ID: ${userId}`);
+	console.info(`   Role and profile updated (no Auth user created)`);
+	return userId;
 }
 
 // ---------------------------------------------------------------------------
@@ -246,17 +283,12 @@ function buildPhases(
 	report: SyncReport,
 ): Phase[] {
 	return [
-		// Phase 1: Resolve and update Preview admin
+		// Phase 1: Resolve Preview admin (role/profile writes only when applying)
 		{
 			name: 'Preview admin resolution',
 			action: () => {
 				console.info('\n📋 Phase 1: Preview admin');
-				const userId = resolvePreviewAdminUser(previewCtx.dbUrl);
-				updatePreviewAdminRole(previewCtx.dbUrl, userId);
-				ensureHostProfile(previewCtx.dbUrl, userId);
-				previewCtx.previewAdminUserId = userId;
-				console.info(`   Preview admin user ID: ${userId}`);
-				console.info(`   Role and profile updated (no Auth user created)`);
+				previewCtx.previewAdminUserId = runPreviewAdminPhase(previewCtx.dbUrl, options);
 			},
 		},
 
@@ -525,7 +557,7 @@ function buildPhases(
 // Main
 // ---------------------------------------------------------------------------
 
-async function main(): Promise<void> {
+export async function main(): Promise<void> {
 	const options = parseArgs();
 	const report = createReport(options.dryRun);
 
@@ -573,6 +605,17 @@ async function main(): Promise<void> {
 		);
 	}
 
+	// Authorization before any Preview write. Dry-run skips (apply=false).
+	if (options.apply) {
+		console.info('■ Authorizing Preview write...');
+		await authorizePreviewWriteApply({
+			slug: PREVIEW_MIRROR_AUTH_SLUG,
+			operation: PREVIEW_MIRROR_AUTH_OPERATION,
+			confirmPrompt: 'Confirm Preview content mirror apply? Type YES to proceed: ',
+		});
+		console.info('✅ Preview write authorized.\n');
+	}
+
 	const prodCtx: ProdContext = {
 		dbUrl: prodDbUrl,
 		dbHost: '',
@@ -615,13 +658,22 @@ async function main(): Promise<void> {
 	report.status = hasFailures ? 'failed' : options.dryRun ? 'dry-run-pending' : 'applied';
 
 	printReport(report, redactDbUrl);
-	writeReportFile(report, redactDbUrl);
+	if (options.dryRun) {
+		console.info('Dry-run complete: no report file written (zero filesystem mutations).');
+	} else {
+		writeReportFile(report, redactDbUrl);
+	}
 
 	process.exit(hasFailures ? 1 : 0);
 }
 
-void main().catch((err: unknown) => {
-	console.error('\n❌ UNEXPECTED ERROR:');
-	console.error(err instanceof Error ? err.message : String(err));
-	process.exit(1);
-});
+if (
+	typeof process.argv[1] === 'string' &&
+	/preview-sync-invitations\.(ts|js|mjs|cjs)$/.test(process.argv[1])
+) {
+	void main().catch((err: unknown) => {
+		console.error('\n❌ UNEXPECTED ERROR:');
+		console.error(err instanceof Error ? err.message : String(err));
+		process.exit(1);
+	});
+}

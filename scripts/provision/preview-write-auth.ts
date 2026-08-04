@@ -6,12 +6,14 @@
  * depends on separating credentials and execution boundaries.
  *
  * Authorization model:
- *  - Human (interactive): caller confirms separately, then passes isInteractive.
+ *  - Human (interactive): verify short-circuits; caller MUST still confirm (YES).
  *  - Automation (canonical): CELEBRA_TASK_SCOPE="preview:<slug>:<operation>".
  *  - Lane/worktree/branch/environment identity alone IS NOT AUTHORIZATION.
  *  - Production credentials are never inputs to this mechanism.
  *  - Production promotion uses invitation:promote owner confirmation, not this API.
  */
+
+import { createInterface } from 'node:readline/promises';
 
 export interface PreviewWriteAuthInput {
 	slug: string;
@@ -73,4 +75,36 @@ export function verifyPreviewWriteAuthorization(input: PreviewWriteAuthInput): P
 		authorized: true,
 		actor: 'automated_scoped_token',
 	};
+}
+
+/**
+ * Preview write gate for CLI mutators: validate task scope (non-TTY) and always
+ * require an explicit YES confirmation on interactive TTY — even if CELEBRA_TASK_SCOPE
+ * is set (leftover/wrong tokens must not skip confirmation).
+ */
+export async function authorizePreviewWriteApply(input: {
+	slug: string;
+	operation: string;
+	confirmPrompt: string;
+}): Promise<PreviewWriteAuthResult> {
+	const isInteractive = Boolean(process.stdin.isTTY && process.stdout.isTTY);
+	const result = verifyPreviewWriteAuthorization({
+		slug: input.slug,
+		targets: ['preview'],
+		apply: true,
+		isInteractive,
+		operation: input.operation,
+	});
+	if (isInteractive) {
+		const rl = createInterface({ input: process.stdin, output: process.stderr });
+		try {
+			const answer = (await rl.question(input.confirmPrompt)).trim();
+			if (answer !== 'YES') {
+				throw new Error('PREVIEW_WRITE_CANCELLED: Operator cancelled the Preview write.');
+			}
+		} finally {
+			rl.close();
+		}
+	}
+	return result;
 }

@@ -249,15 +249,19 @@ PROVISIONED & HOSTED-VALIDATED
   `.env.preview.local`.
 - **Target Classification**: `scripts/db/db-guard.ts` classifies targets matching `PREVIEW_DB_URL`
   as `preview`.
-- **Migration Command**: `pnpm db:preview:migrate` applies pending migrations to `PREVIEW_DB_URL`
-  after dry-run, optional allowlist (`EXPECTED_MIGRATIONS` / `--allowlist`), and the Migration /
-  Deployment Compatibility Contract (see below). Hosted Preview fails closed without
-  `CELEBRA_TARGET_RELEASE_SHA`.
+- **Migration Command**: `pnpm db:preview:migrate` defaults to **read-only preflight** against
+  `PREVIEW_DB_URL` (dry-run pending set, optional allowlist `EXPECTED_MIGRATIONS` / `--allowlist`,
+  and the Migration / Deployment Compatibility Contract). Mutations require explicit `--apply` plus
+  Preview authorization (`CELEBRA_TASK_SCOPE=preview:schema:migrate` or interactive TTY `YES`).
+  Hosted Preview fails closed without `CELEBRA_TARGET_RELEASE_SHA`.
 - **Invitation Sync Command**: `pnpm db:preview:sync-invitations` mirrors invitation-facing data
   from Production to Preview:
-  - `--dry-run`: report what would change without mutating.
-  - `--apply`: execute the sync (requires `PROD_DB_URL`, `PREVIEW_DB_URL`, `PREVIEW_SUPABASE_URL`,
-    `PREVIEW_SUPABASE_SERVICE_ROLE_KEY`). Policy, excluded PII tables, and the Preview RSVP reset
+  - `--dry-run`: report what would change with **zero** DB, role, profile, Storage, or report-file
+    writes.
+  - `--apply`: execute the sync after Preview authorization
+    (`CELEBRA_TASK_SCOPE=preview:content-mirror:sync-invitations` or interactive TTY `YES`).
+    Requires `PROD_DB_URL`, `PREVIEW_DB_URL`, `PREVIEW_SUPABASE_URL`,
+    `PREVIEW_SUPABASE_SERVICE_ROLE_KEY`. Policy, excluded PII tables, and the Preview RSVP reset
     caused by `TRUNCATE events CASCADE` are owned by
     [`content-parity-rsvp-isolation.md`](core/content-parity-rsvp-isolation.md). After apply, re-run
     Preview E2E fixture bootstrap (`pnpm invitation:preview-fixture --apply`) then gated content
@@ -268,7 +272,8 @@ PROVISIONED & HOSTED-VALIDATED
   (`127.0.0.1:54332`). The audit reports the live remote/pending counts; documentation does not
   freeze a migration total.
 - **Separation of Operations**: Migration, seed, and audit are separate operations.
-  `pnpm db:preview:migrate` applies migrations only and does NOT automatically seed or audit.
+  `pnpm db:preview:migrate` preflights by default and applies only with `--apply`; it does NOT
+  automatically seed or audit.
 - **Expected Failure Mode**: If Preview credentials are unconfigured or unavailable, Preview
   commands fail closed with exit code `1`.
 - **Synthetic Data & Privacy**: Preview must use isolated synthetic data
@@ -306,7 +311,9 @@ pnpm db:branch:parity -- --base <ref> --head <ref>
 pnpm release-check
 pnpm db:prod:migrate -- --expected <versions>
 pnpm db:preview:migrate
+pnpm db:preview:migrate -- --apply
 pnpm db:preview:audit
+pnpm db:preview:sync-invitations -- --dry-run
 pnpm db:prod:patch -- --file <path>
 pnpm db:sql:lint -- --file <path>
 ```
@@ -364,8 +371,12 @@ Hosted targets prove migration membership from Git contents
 path, UI banner, and credential presence alone never authorize hosted mutation.
 
 ```bash
-# Preview — still requires an authorized target-release SHA
+# Preview — read-only preflight (default)
 CELEBRA_TARGET_RELEASE_SHA=<git-sha> EXPECTED_MIGRATIONS=<versions> pnpm db:preview:migrate
+
+# Preview — apply after Preview authorization
+CELEBRA_TASK_SCOPE=preview:schema:migrate CELEBRA_TARGET_RELEASE_SHA=<git-sha> \
+  EXPECTED_MIGRATIONS=<versions> pnpm db:preview:migrate -- --apply
 
 # Production — release identity is the current clean HEAD after pnpm release-check
 pnpm release-check

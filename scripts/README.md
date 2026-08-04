@@ -81,7 +81,8 @@ selected target aborts the complete mutation phase.
 | `pnpm db:branch:remediate-disposable`      | `scripts/db/`  | verify then rebuild disposable-test only (`--verify-only` / `--execute`)           |
 | `pnpm release-check`                       | `scripts/db/`  | clean-HEAD type-check + test + build; writes release evidence                      |
 | `pnpm db:prod:migrate`                     | `scripts/db/`  | Production schema preflight / apply (`--expected`, optional `--apply` + TTY)       |
-| `pnpm db:preview:migrate`                  | `scripts/db/`  | apply pending migrations to Preview (`PREVIEW_DB_URL`)                             |
+| `pnpm db:preview:migrate`                  | `scripts/db/`  | Preview schema preflight; `--apply` + Preview auth to mutate (`PREVIEW_DB_URL`)    |
+| `pnpm db:preview:sync-invitations`         | `scripts/db/`  | Prod→Preview content mirror; `--dry-run` zero writes; `--apply` needs Preview auth |
 | `pnpm db:preview:audit`                    | `scripts/db/`  | read-only Preview schema drift audit (`PREVIEW_DB_URL`)                            |
 | `pnpm db:disposable:reset`                 | `scripts/db/`  | reset isolated disposable test environment container                               |
 | `pnpm test:db:rsvp-contracts`              | `scripts/db/`  | reset disposable DB, start PostgREST, run public RSVP Jest DB/HTTP contracts       |

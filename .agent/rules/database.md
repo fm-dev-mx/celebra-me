@@ -117,9 +117,13 @@ task authorization, target classification, and standard guard checks.
   against the canonical reference without mutating Preview or persistent local. Report the live
   remote/pending migration counts from the audit; never freeze a hosted pending total in this rule.
 - **Separation of Operations**: Migration (`pnpm db:preview:migrate`), seed, and audit
-  (`pnpm db:preview:audit`) are separate operations. `pnpm db:preview:migrate` applies migrations
-  only after dry-run, optional allowlist, and the compatibility contract; it does not automatically
-  seed or audit.
+  (`pnpm db:preview:audit`) are separate operations. `pnpm db:preview:migrate` defaults to
+  read-only preflight; mutations require explicit `--apply` plus Preview authorization
+  (`CELEBRA_TASK_SCOPE=preview:schema:migrate` or interactive TTY confirmation) after dry-run,
+  optional allowlist, and the compatibility contract. It does not automatically seed or audit.
+- **Preview mirror**: `pnpm db:preview:sync-invitations --dry-run` performs zero DB, role, profile,
+  Storage, or report-file writes. `--apply` requires Preview authorization
+  (`CELEBRA_TASK_SCOPE=preview:content-mirror:sync-invitations` or interactive confirmation).
 - **Failure Handling**: When Preview credentials are missing/unconfigured, `pnpm db:preview:migrate`
   and `pnpm db:preview:audit` fail closed with exit code `1`.
 - **Content promote / mirror / RSVP isolation**: Follow
@@ -139,7 +143,8 @@ task authorization, target classification, and standard guard checks.
 - `pnpm db:prod:migrate` is the approved production **schema** mutation workflow.
 - `pnpm invitation:promote` is the approved production **managed-content** promotion workflow
   (owner-only; separate from schema migrate).
-- `pnpm db:preview:migrate` applies pending migrations to Preview (`PREVIEW_DB_URL`).
+- `pnpm db:preview:migrate` preflights Preview (`PREVIEW_DB_URL`); `--apply` applies pending
+  migrations after Preview authorization.
 - `pnpm db:prod:patch` disposition is `RESTRICT_OWNER_ONLY` / `KEEP_SPECIALIZED`: `--dry-run` is
   lint-only; `--apply` is owner-confirmed specialized maintenance and must not bypass
   `db:prod:migrate` or `invitation:promote`.
