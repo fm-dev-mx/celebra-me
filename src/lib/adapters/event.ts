@@ -33,6 +33,7 @@ import { COUNTDOWN_DEFAULTS } from '@/lib/intake/constants';
 import {
 	resolveItineraryPresentation,
 	resolveLocationShowFlourishes,
+	resolveLocationShowNavigationButtons,
 	resolvePortraitEnabled,
 	resolveXareniSealColor,
 	XARENI_ASSET_SLUG,
@@ -191,10 +192,7 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 			? { src: resolveAssetSrc(eventSlug, data.hero.backgroundImageDesktop) }
 			: undefined,
 		backgroundImageMobile: resolveAsset(eventSlug, data.hero.backgroundImageMobile, data.title),
-		portrait: resolvePortraitEnabled(
-			data.hero.presentation,
-			themeSupportsPortrait(preset),
-		)
+		portrait: resolvePortraitEnabled(data.hero.presentation, themeSupportsPortrait(preset))
 			? resolveAsset(eventSlug, data.hero.portrait, data.title)
 			: undefined,
 		variant: preset,
@@ -414,6 +412,7 @@ function buildLocationSectionData(context: AdaptationContext) {
 				data.location.presentationOptions?.showFlourishes ??
 				data.sectionStyles?.location?.showFlourishes,
 		}),
+		showNavigationButtons: resolveLocationShowNavigationButtons(data.sectionStyles?.location),
 		introEyebrow: data.location.introEyebrow,
 		introHeading: data.location.introHeading,
 		introLede: data.location.introLede,

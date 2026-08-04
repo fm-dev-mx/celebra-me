@@ -139,6 +139,10 @@ export function buildPerlaPublishedContent(
 		sectionStyles: {
 			location: {
 				showFlourishes: true,
+				// Map preview is the sole primary map link; the duplicated
+				// Apple/Google/Waze/“Cómo llegar” row is suppressed so each
+				// venue card exposes exactly two actions.
+				showNavigationButtons: false,
 			},
 		},
 		_assetSlug: PERLA_EVENT.assetSlug,

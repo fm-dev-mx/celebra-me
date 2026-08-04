@@ -1356,11 +1356,6 @@
 		--location-hour-color: var(--perla-ink);
 		--location-address-font-size: 0.88rem;
 		--location-address-line-height: 1.55;
-		--location-nav-bg: transparent;
-		--location-nav-border: 1px solid rgb(var(--perla-gold-rgb) / 42%);
-		--location-nav-color: var(--perla-olive-deep);
-		--location-nav-hover-bg: var(--perla-olive-deep);
-		--location-nav-hover-color: var(--perla-cream);
 		--location-map-preview-bg: var(--perla-beige);
 		--location-map-preview-art-bg: rgb(var(--perla-cream-rgb) / 72%);
 		--location-map-preview-road: rgb(var(--perla-ivory-rgb) / 88%);
@@ -1425,18 +1420,6 @@
 			margin-right: 0;
 			padding: 0.55rem;
 			border-color: rgb(var(--perla-gold-rgb) / 34%);
-		}
-
-		:where(.event-location__card-navigation-buttons) {
-			justify-content: center;
-			gap: 0.55rem;
-			flex-wrap: wrap;
-		}
-
-		:where(.event-location__nav-button) {
-			min-height: 2.75rem;
-			padding-inline: 0.9rem;
-			font-size: 0.66rem;
 		}
 
 		:where(.event-location__indications-container) {

@@ -210,6 +210,7 @@ export interface LocationSection {
 	indications?: Indication[];
 	variant?: LocationVariant;
 	showFlourishes?: boolean;
+	showNavigationButtons?: boolean;
 	introEyebrow?: string;
 	introHeading?: string;
 	introLede?: string;
