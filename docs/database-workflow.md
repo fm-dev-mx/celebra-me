@@ -374,8 +374,9 @@ backup.
 ### Migration / Deployment Compatibility Contract
 
 SSOT: `scripts/db/migration-deployment-compatibility.ts` +
-`supabase/migration-rollout-registry.json`. Wired into `pnpm db:preview:migrate` and
-`pnpm db:prod:migrate` (does not replace allowlist, dry-run, backup, or contract verification).
+`supabase/migration-rollout-registry.json`. Wired into `pnpm db:migrate` (and aliases
+`db:preview:migrate` / `db:prod:migrate`) via the shared orchestrator (does not replace
+`--expected` pin, dry-run, backup, or contract verification).
 
 Hosted targets prove migration membership from Git contents
 (`candidate ∈ <release-sha>:supabase/migrations/`), not filename chronology. Branch name, worktree

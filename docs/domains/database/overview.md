@@ -347,10 +347,11 @@ active Dashboard workflow and must not be invoked for managed client creation.
 Do not freeze a migration count in active documentation. Production uses `pnpm db:prod:migrate` to
 apply reviewed migrations only, and hosted state must be read through `pnpm db:prod:audit`.
 
-**For persistent-local**: use `pnpm db:migrate -- --target local` (plan) or `pnpm db:local:migrate`
-(legacy apply wrapper) to apply pending migrations without resetting the protected database, then
-run `pnpm db:local:validate`. To import production-shaped data, use the non-destructive backup and
-restore workflow in `docs/database-workflow.md`.
+**For persistent-local**: use `pnpm db:migrate -- --target local` (preflight-first), then explicit
+`--apply` after review. `pnpm db:local:migrate` remains a deprecated compatibility wrapper that
+defaults to `--apply` (stderr warning). Then run `pnpm db:local:validate`. To import
+production-shaped data, use the non-destructive backup and restore workflow in
+`docs/database-workflow.md`.
 
 **For destructive reconstruction tests**: use `pnpm db:disposable:reset`. It targets the isolated
 disposable database, never persistent-local.

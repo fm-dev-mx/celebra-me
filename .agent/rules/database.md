@@ -151,8 +151,9 @@ task authorization, target classification, and standard guard checks.
 - `pnpm db:local:reset` is blocked. Use `pnpm db:disposable:reset` for destructive tests.
 - `pnpm db:migrate` is the canonical schema migrate planner/orchestrator (`--target` required;
   default read-only preflight).
-- `pnpm db:local:migrate` applies pending migrations to persistent-local transactionally without
-  resetting (compatibility wrapper; defaults to `--apply`).
+- `pnpm db:local:migrate` is a deprecated compatibility wrapper that defaults to `--apply` for
+  legacy callers (stderr warning). Prefer `pnpm db:migrate -- --target local` (preflight-first)
+  then explicit `--apply`. Remove the default-apply shim when no callers rely on it.
 - `pnpm db:prod:migrate` is the approved production **schema** mutation workflow (wrapper over
   `db:migrate -- --target production`).
 - `pnpm invitation:promote` is the approved production **managed-content** promotion workflow
