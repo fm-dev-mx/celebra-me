@@ -86,6 +86,27 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 			).toThrow(/non-empty string slug/);
 		});
 
+		it('throws when slug repeats eventType prefix', () => {
+			expect(() =>
+				defineInvitation({
+					slug: 'boda-daniela-y-martin',
+					createdAt: '2026-07-20T00:00:00.000Z',
+					lifecycle: 'in_progress',
+					deliveryScope: 'content-and-assets',
+					eventType: 'boda',
+					title: 'Title',
+					clientName: 'Client',
+					hostLoginAlias: 'daniela_medina',
+					baseDemoId: 'demo',
+					themeId: 'theme',
+					visualProfileId: 'profile',
+					eventTiming: { localDateTime: '', timeZone: '', startsAtUtc: '' },
+					assets: [],
+					buildPublishedContent: () => ({}),
+				}),
+			).toThrow(/must not include eventType/);
+		});
+
 		it('throws on invalid hostLoginAlias', () => {
 			expect(() =>
 				defineInvitation({

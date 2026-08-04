@@ -75,7 +75,7 @@ pnpm screenshot --url=/<eventType>/<slug> --viewport=<viewport> --clean
 Example:
 
 ```powershell
-pnpm screenshot --url=/boda/boda-perla-y-carlos --viewport=mobile-standard --clean
+pnpm screenshot --url=/boda/daniela-y-martin --viewport=mobile-standard --clean
 ```
 
 `pnpm screenshot:local-render-corpus` runs every page registered in the Local Render Corpus. Corpus

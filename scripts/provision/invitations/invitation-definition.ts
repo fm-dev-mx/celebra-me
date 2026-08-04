@@ -95,6 +95,17 @@ function validateAssetKeys(assets: readonly InvitationAssetSpec[]): void {
 	}
 }
 
+/** Public routes are /{eventType}/{slug}; never repeat eventType inside the slug. */
+function assertSlugDoesNotRepeatEventType(slug: string, eventType: string): void {
+	const eventTypePrefix = `${eventType}-`;
+	if (slug === eventType || slug.startsWith(eventTypePrefix)) {
+		throw new Error(
+			`Invitation slug "${slug}" must not include eventType "${eventType}" ` +
+				`(URL is already /${eventType}/{slug}).`,
+		);
+	}
+}
+
 /**
  * Type-safe helper for defining single-file invitations.
  */
@@ -116,6 +127,7 @@ export function defineInvitation<K extends string = string>(
 	if (!definition.eventType || typeof definition.eventType !== 'string') {
 		throw new Error('Invitation definition requires a non-empty string eventType.');
 	}
+	assertSlugDoesNotRepeatEventType(definition.slug, definition.eventType);
 	if (!definition.title || typeof definition.title !== 'string') {
 		throw new Error('Invitation definition requires a non-empty string title.');
 	}
