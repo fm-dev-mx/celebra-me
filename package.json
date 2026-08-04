@@ -100,6 +100,7 @@
         "invitation:purge-by-id": "tsx scripts/provision/invitation-id-purge-cli.ts",
         "invitation:cross-db-reconcile": "tsx scripts/provision/cross-db-invitation-reconciliation-cli.ts",
         "invitation:romina-schema-repair": "tsx scripts/provision/romina-schema-repair-cli.ts",
+        "invitation:romina-draft-reset": "tsx scripts/provision/romina-draft-reset-cli.ts",
         "screenshot": "tsx scripts/screenshot/cli.ts",
         "screenshot:interactive": "tsx scripts/screenshot/cli.ts --interactive",
         "screenshot:invite": "tsx scripts/screenshot/cli.ts --type=invitation",

@@ -68,6 +68,16 @@ export function createSanitizedValidationEnv(
 	return validationEnv;
 }
 
+/** BEHIND with zero unexplained errors is the expected pre-apply Production state. */
+export function isAllowlistedBehindAuditOutput(auditOutput: string, status: number): boolean {
+	if (status === 0) return false;
+	return (
+		/Final schema lifecycle state:\s*BEHIND\b/.test(auditOutput) &&
+		/Errors:\s*0\b/.test(auditOutput) &&
+		!/Final schema lifecycle state:\s*SCHEMA_DRIFT\b/.test(auditOutput)
+	);
+}
+
 export function runLocalValidation(runner: typeof runCommand = runCommand): void {
 	const validationEnv = createSanitizedValidationEnv();
 	runner('pnpm', ['type-check'], { env: validationEnv });
@@ -137,10 +147,20 @@ async function main(): Promise<void> {
 		['tsx', 'scripts/db/audit-db.ts', '--target', 'production'],
 		{ throwOnError: false },
 	);
-	if (auditResult.status !== 0) {
-		fail('Production database audit failed. Please resolve schema drift before migrating.');
+	const auditOutput = `${auditResult.stdout}\n${auditResult.stderr}`;
+	const behindOnly = isAllowlistedBehindAuditOutput(auditOutput, auditResult.status ?? 1);
+	if (auditResult.status !== 0 && !behindOnly) {
+		fail(
+			'Production database audit failed. Resolve schema drift or unverified history before migrating.',
+		);
 	}
-	console.info('✅ Production database audit passed.\n');
+	if (behindOnly) {
+		console.info(
+			'ℹ️  Production is BEHIND expected migrations (allowed before an exact allowlisted apply).\n',
+		);
+	} else {
+		console.info('✅ Production database audit passed.\n');
+	}
 
 	// 4. Dry-run Push Check
 	console.info('4. Executing migration dry-run and allowlist validation...');

@@ -3,6 +3,10 @@ import { createHash } from 'node:crypto';
 import { eventContentSchema } from '../../src/lib/schemas/content/base-event.schema.ts';
 import { deriveProductionOperationId } from '../db/db-workflow-lib.ts';
 import { canonicalize } from './normalized-invitation-release.ts';
+import {
+	deriveRominaReceiptOperationId,
+	diffContentPaths,
+} from './romina-shared-helpers.ts';
 
 export const ROMINA_SCHEMA_REPAIR_SLUG = 'romina-rios-chaparro' as const;
 export const ROMINA_SCHEMA_REPAIR_OPERATION_TYPE = 'romina_schema_repair' as const;
@@ -126,18 +130,6 @@ function hash(value: unknown): string {
 	return createHash('sha256').update(canonicalize(value)).digest('hex');
 }
 
-export function rominaReceiptOperationId(operationId: string): string {
-	if (!/^[a-f0-9]{64}$/i.test(operationId)) {
-		throw new Error('ROMINA_REPAIR_OPERATION_ID_INVALID: expected a SHA-256 operation ID.');
-	}
-	const hex = operationId.slice(0, 32).toLowerCase().split('');
-	hex[12] = '8';
-	hex[16] = ['8', '9', 'a', 'b'][Number.parseInt(hex[16]!, 16) % 4]!;
-	return `${hex.slice(0, 8).join('')}-${hex.slice(8, 12).join('')}-${hex
-		.slice(12, 16)
-		.join('')}-${hex.slice(16, 20).join('')}-${hex.slice(20, 32).join('')}`;
-}
-
 export function deriveRominaSchemaRepairFingerprint(input: {
 	slug: string;
 	afterContent: JsonRecord;
@@ -211,43 +203,9 @@ export function buildRominaSchemaRepairReplayIdentity(input: {
 	return {
 		operationFingerprint,
 		operationId,
-		receiptOperationId: rominaReceiptOperationId(operationId),
+		receiptOperationId: deriveRominaReceiptOperationId(operationId),
 		afterHash: hash(input.draftContent),
 	};
-}
-
-function diffPaths(before: unknown, after: unknown, path = ''): string[] {
-	if (canonicalize(before) === canonicalize(after)) return [];
-	if (Array.isArray(before) && Array.isArray(after)) {
-		const paths: string[] = [];
-		const length = Math.max(before.length, after.length);
-		for (let index = 0; index < length; index++) {
-			paths.push(...diffPaths(before[index], after[index], `${path}[${index}]`));
-		}
-		return paths;
-	}
-	if (
-		before &&
-		after &&
-		typeof before === 'object' &&
-		typeof after === 'object' &&
-		!Array.isArray(before) &&
-		!Array.isArray(after)
-	) {
-		const keys = new Set([...Object.keys(before), ...Object.keys(after)]);
-		const paths: string[] = [];
-		for (const key of [...keys].sort()) {
-			paths.push(
-				...diffPaths(
-					(before as JsonRecord)[key],
-					(after as JsonRecord)[key],
-					path ? `${path}.${key}` : key,
-				),
-			);
-		}
-		return paths;
-	}
-	return [path || '$'];
 }
 
 function removeRepairFields(content: JsonRecord): JsonRecord {
@@ -313,7 +271,7 @@ export function buildRominaSchemaRepairPlan(
 	if (!parsedAfter.success) {
 		throw new Error(`ROMINA_REPAIR_RESULT_INVALID: ${parsedAfter.error.message}`);
 	}
-	const changedPaths = diffPaths(before, after).sort();
+	const changedPaths = diffContentPaths(before, after).sort();
 	if (canonicalize(changedPaths) !== canonicalize([...EXPECTED_CHANGED_PATHS].sort())) {
 		throw new Error(`ROMINA_REPAIR_SCOPE_CHANGED: ${changedPaths.join(', ')}`);
 	}
@@ -340,7 +298,7 @@ export function buildRominaSchemaRepairPlan(
 		writes: 0,
 		operationFingerprint,
 		operationId,
-		receiptOperationId: rominaReceiptOperationId(operationId),
+		receiptOperationId: deriveRominaReceiptOperationId(operationId),
 		draftStatus: input.draftStatus,
 		draftUpdatedAt: input.draftUpdatedAt,
 		publishedVersion: input.publishedVersion,

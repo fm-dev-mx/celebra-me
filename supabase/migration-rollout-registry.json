@@ -17,6 +17,11 @@
 			"provides": ["public_guest_rsvp_rpc_pgcrypto_portable"],
 			"notes": "Qualifies extensions.gen_random_bytes for hybrid create under search_path=public."
 		},
+		"20260802090000": {
+			"phase": "expand",
+			"provides": ["production_authorization_receipts"],
+			"notes": "Creates durable single-use Production authorization receipt table for owner workflows."
+		},
 		"__historical_rsvp_dml_revoke__": {
 			"phase": "contract",
 			"requiresDeployedAppCapabilities": ["public_guest_rsvp_rpc_client"],
