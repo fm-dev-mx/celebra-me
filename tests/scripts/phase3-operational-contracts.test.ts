@@ -31,7 +31,7 @@ describe('Phase 3 operational contracts', () => {
 			"'scripts/db/daily-critical-production-backup.ts'",
 		);
 		const compatibility = workflow.indexOf('runHostedMigrationCompatibilityGate');
-		const migration = workflow.indexOf('// 7. DB Push execution');
+		const migration = workflow.indexOf("['db', 'push', '--db-url', prodDbUrl, '--yes']");
 		const contract = workflow.indexOf("'scripts/db/verify-mutation-schema-contract.ts'");
 		const postMigrationBackup = workflow.lastIndexOf(
 			"'scripts/db/backup-critical-production.ts'",

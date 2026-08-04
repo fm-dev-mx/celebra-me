@@ -303,7 +303,8 @@ pnpm db:validate:pipeline
 pnpm db:prod:backup
 pnpm db:prod:audit
 pnpm db:branch:parity -- --base <ref> --head <ref>
-pnpm db:prod:migrate
+pnpm release-check
+pnpm db:prod:migrate -- --expected <versions>
 pnpm db:preview:migrate
 pnpm db:preview:audit
 pnpm db:prod:patch -- --file <path>
@@ -358,17 +359,23 @@ SSOT: `scripts/db/migration-deployment-compatibility.ts` +
 `supabase/migration-rollout-registry.json`. Wired into `pnpm db:preview:migrate` and
 `pnpm db:prod:migrate` (does not replace allowlist, dry-run, backup, or contract verification).
 
-Hosted Preview/Production require an authorized **target release** Git identity:
+Hosted targets prove migration membership from Git contents
+(`candidate ∈ <release-sha>:supabase/migrations/`), not filename chronology. Branch name, worktree
+path, UI banner, and credential presence alone never authorize hosted mutation.
 
 ```bash
+# Preview — still requires an authorized target-release SHA
 CELEBRA_TARGET_RELEASE_SHA=<git-sha> EXPECTED_MIGRATIONS=<versions> pnpm db:preview:migrate
-CELEBRA_TARGET_RELEASE_SHA=<git-sha> EXPECTED_MIGRATIONS=<versions> pnpm db:prod:migrate
+
+# Production — release identity is the current clean HEAD after pnpm release-check
+pnpm release-check
+pnpm db:prod:migrate -- --expected <versions>                 # read-only preflight
+pnpm db:prod:migrate -- --apply --expected <versions>         # owner TTY apply
 ```
 
-Membership is proven from Git contents (`candidate ∈ <TARGET_RELEASE_SHA>:supabase/migrations/`),
-not filename chronology. Branch name, worktree path, UI banner, and credential presence alone never
-authorize hosted mutation. Missing `CELEBRA_TARGET_RELEASE_SHA` fails closed on hosted targets.
-Local / disposable remain free to develop against repository `HEAD`.
+Production apply fails closed without valid `pnpm release-check` evidence for the current clean
+`HEAD`. Preview fails closed without `CELEBRA_TARGET_RELEASE_SHA`. Local / disposable remain free
+to develop against repository `HEAD`.
 
 Rollout phases (registry metadata; annotate only migrations that participate in sequencing):
 
@@ -469,46 +476,29 @@ application login substitute. Host invitation flows continue to use real `host_c
   and duration metrics, and applies 30-daily/12-monthly local retention.
 - Returns nonzero on capture, integrity, encryption, reporting, or retention failure.
 
+`pnpm release-check`
+
+- Requires a clean working tree.
+- Runs `pnpm type-check`, `pnpm test`, and `pnpm build` against the full current `HEAD`.
+- Writes gitignored evidence to `.agent/tmp/release-check-evidence.json` (SHA + pass metadata).
+- Evidence is rejected when `HEAD` changes, the tree becomes dirty, or required checks did not pass.
+
 `pnpm db:prod:migrate`
 
-- Runs `pnpm type-check`, `pnpm test`, `pnpm build`, and `supabase migration list`.
-- Creates and verifies a complete predecessor-profile recovery point first, then creates a complete
-  Phase 3 recovery set after contract verification.
-- Applies pending Supabase migrations only.
-- If `public.production_authorization_receipts` is absent and the pending set is exactly
-  `20260802090000`, verifies the external Ed25519 approval against the Production hostname, the
-  canonical migration fingerprint, and `CELEBRA_TARGET_RELEASE_SHA`, then creates the receipt table
-  and consumes that approval in one transaction before continuing through the normal Supabase
-  migration workflow. Any other pending or migration-history state fails closed.
-- Once the receipt table exists, every Production operation uses the standard durable single-use
-  receipt path; no bootstrap flag, manual SQL procedure, secret fallback, or unsigned approval is
-  available.
-- Mutates production and requires explicit confirmation.
-- This is the only approved production mutation workflow.
-
-#### Production authorization bootstrap threat model
-
-The bootstrap exists only for the circular first-use case where the approval ledger does not yet
-exist. It is eligible only on the Production target, with an absent
-`public.production_authorization_receipts` table, exactly one pending migration (`20260802090000`),
-an exact allowlist, and no unexpected migration-history entries. The external Ed25519 payload must
-bind `production_migration`, the Production hostname, the SHA-256 fingerprint of the canonical
-pending migration manifest, `CELEBRA_TARGET_RELEASE_SHA`, a derived operation ID, an unexpired
-timestamp, and a non-empty nonce.
-
-The runner verifies that signature and rejects `CELEBRA_AGENT_CONTEXT`, legacy authorization
-secrets, and private signing material before opening the bootstrap write transaction. The
-transaction takes a transaction-scoped advisory lock to serialize concurrent first-use attempts,
-creates the canonical table definition, applies its comment, RLS, and role revocations, then inserts
-the receipt; any SQL or receipt failure aborts the transaction. The following standard Supabase
-migration push records `20260802090000` in `schema_migrations`. Once the ledger exists, the
-bootstrap branch is unavailable and every operation uses the normal durable
-`INSERT ... ON CONFLICT DO NOTHING` consumption path.
-
-An invalid, expired, mismatched, or replayed approval therefore produces no database change. A
-failure after the bootstrap commits but before Supabase records the migration consumes that one
-approval and leaves only the ledger table; the operator must issue a new short-lived approval for a
-retry. This is fail-closed and single-use, not a reusable bypass or a manual SQL repair path.
+- Canonical schema commands:
+  - `pnpm db:prod:migrate -- --expected <versions>` — read-only preflight (no TTY, no writes)
+  - `pnpm db:prod:migrate -- --apply --expected <versions>` — owner apply path
+- Apply sequence: identity → audit → dry-run equals `--expected` → compatibility (HEAD) → valid
+  `release-check` evidence → verified pre-migration backup → operation summary + exact TTY
+  confirmation → `supabase db push` → migration-history + contract verification → post-migration
+  backup.
+- Release identity for Production is the current clean `HEAD` (not `CELEBRA_TARGET_RELEASE_SHA`).
+- Shared owner boundary: `requireOwnerProductionApply` (also used by promote/patch/repair/adoption).
+- Rejects `CELEBRA_AGENT_CONTEXT`. No token, secret, env, or noninteractive confirmation alternative.
+- `public.production_authorization_receipts` is historical inert state from migration
+  `20260802090000`; no mutation path inserts into or depends on it.
+- This is the only approved production **schema** mutation workflow. Content promotion and
+  specialized patches are separate owner workflows that share the same authorization boundary.
 
 `pnpm db:sql:lint -- --file <path>`
 
@@ -528,8 +518,8 @@ retry. This is fail-closed and single-use, not a reusable bypass or a manual SQL
 - **Disposition: `RESTRICT_OWNER_ONLY` / `KEEP_SPECIALIZED`.**
 - Narrow owner-only maintenance for reviewed patches that cannot yet be expressed as versioned
   `supabase/migrations/*`. Not a bypass for `db:prod:migrate` or `invitation:promote`.
-- Requires an external Ed25519 approval token and public key bound to the owner, patch fingerprint,
-  target, and durable operation receipt; it never auto-runs schema migrations.
+- Requires valid `pnpm release-check` evidence and interactive owner TTY confirmation bound to the
+  owner UUID and patch fingerprint; it never auto-runs schema migrations.
 
 ## Workflows
 
@@ -632,11 +622,14 @@ PROD_DB_URL=... pnpm db:prod:backup -- --schema-only
 ### Push migrations to production
 
 ```bash
-PROD_DB_URL=... pnpm db:prod:migrate
+pnpm release-check
+PROD_DB_URL=... pnpm db:prod:migrate -- --expected <versions>
+PROD_DB_URL=... pnpm db:prod:migrate -- --apply --expected <versions>
 ```
 
-This is the only workflow allowed to mutate production. It runs preflight checks, creates a backup
-first, applies migrations only, and never pushes local data dumps.
+This is the only workflow allowed to mutate production **schema**. Preflight is read-only. Apply
+requires release-check evidence, a verified backup, and exact interactive TTY confirmation. It never
+pushes local data dumps.
 
 ### Check a manual production patch
 

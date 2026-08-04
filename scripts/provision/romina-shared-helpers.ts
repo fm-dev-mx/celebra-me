@@ -1,9 +1,31 @@
 /**
  * Shared helpers for Romina production mutation planners (schema-repair, draft-reset).
  */
+import { createHash } from 'node:crypto';
 import { canonicalize } from './normalized-invitation-release.ts';
 
 type JsonRecord = Record<string, unknown>;
+
+/** Deterministic SHA-256 operation id for Romina invitation mutation receipts. */
+export function deriveStableOperationId(context: {
+	operationType: string;
+	targetEnv: string;
+	scope: string;
+	manifestFingerprint: string;
+	releaseSha?: string;
+}): string {
+	return createHash('sha256')
+		.update(
+			[
+				context.operationType,
+				context.targetEnv,
+				context.scope,
+				context.manifestFingerprint,
+				...(context.releaseSha === undefined ? [] : [context.releaseSha]),
+			].join('\u001f'),
+		)
+		.digest('hex');
+}
 
 export function diffContentPaths(before: unknown, after: unknown, path = ''): string[] {
 	if (canonicalize(before) === canonicalize(after)) return [];

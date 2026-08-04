@@ -5,10 +5,10 @@
 import { createHash } from 'node:crypto';
 
 import { eventContentSchema } from '../../src/lib/schemas/content/base-event.schema.ts';
-import { deriveProductionOperationId } from '../db/db-workflow-lib.ts';
 import { canonicalize } from './normalized-invitation-release.ts';
 import {
 	deriveRominaReceiptOperationId,
+	deriveStableOperationId,
 	diffContentPaths,
 } from './romina-shared-helpers.ts';
 
@@ -47,9 +47,9 @@ export interface RominaDraftResetPlan {
 	};
 	affectedTables: string[];
 	provenanceAndReceipts: {
-		approvalConsumption: {
-			table: 'production_authorization_receipts';
-			action: 'insert before the reset transaction';
+		ownerAuthorization: {
+			boundary: 'requireOwnerProductionApply';
+			action: 'interactive TTY confirmation immediately before the first write';
 		};
 		operationReceipt: {
 			table: 'invitation_mutation_operation_receipts';
@@ -130,7 +130,7 @@ export function buildRominaDraftResetPlan(input: RominaDraftResetInput): RominaD
 		publishedVersion: input.publishedVersion,
 		publishedHash,
 	});
-	const operationId = deriveProductionOperationId({
+	const operationId = deriveStableOperationId({
 		operationType: ROMINA_DRAFT_RESET_OPERATION_TYPE,
 		targetEnv: 'production',
 		scope: ROMINA_DRAFT_RESET_SLUG,
@@ -156,15 +156,11 @@ export function buildRominaDraftResetPlan(input: RominaDraftResetInput): RominaD
 			draftBefore: draftBeforeHash,
 			draftAfter: draftAfterHash,
 		},
-		affectedTables: [
-			'invitation_content_drafts',
-			'production_authorization_receipts',
-			'invitation_mutation_operation_receipts',
-		],
+		affectedTables: ['invitation_content_drafts', 'invitation_mutation_operation_receipts'],
 		provenanceAndReceipts: {
-			approvalConsumption: {
-				table: 'production_authorization_receipts',
-				action: 'insert before the reset transaction',
+			ownerAuthorization: {
+				boundary: 'requireOwnerProductionApply',
+				action: 'interactive TTY confirmation immediately before the first write',
 			},
 			operationReceipt: {
 				table: 'invitation_mutation_operation_receipts',

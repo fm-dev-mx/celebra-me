@@ -31,12 +31,11 @@ import { readFastInvitationInventory } from './invitation-status-inventory.ts';
 import { evaluateInvitationReadiness } from './invitation-readiness.ts';
 import { LOCAL_DB_URL, redactCredentials } from '../db/db-target-config.ts';
 import {
-	consumeProductionApproval,
 	getSecretFromEnvOrFiles,
 	PREVIEW_SECRET_FILES,
 	getProdDbUrl,
-	requireProductionConfirmation,
 } from '../db/db-workflow-lib.ts';
+import { requireOwnerProductionApply } from '../db/owner-production-apply.ts';
 import { finalizePreviewApprovalArtifact } from './preview-approval-service.ts';
 import {
 	formatStatusReport,
@@ -300,16 +299,17 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 			return;
 		}
 		const { url } = getProdDbUrl();
-		await requireProductionConfirmation(
-			new URL(url).hostname,
-			`ADOPT romina-rios-chaparro ${planned.packageHash}`,
-			{
-				operationType: 'legacy_adoption',
-				scope: 'romina-rios-chaparro',
-				manifestFingerprint: planned.packageHash,
-				consumeApproval: (payload) => consumeProductionApproval({ dbUrl: url, payload }),
-			},
-		);
+		requireOwnerProductionApply({
+			apply: true,
+			dbUrl: url,
+			operationType: 'legacy_adoption',
+			confirmationChallenge: `ADOPT romina-rios-chaparro ${planned.packageHash}`,
+			summary: [
+				['Mode', 'legacy adoption'],
+				['Slug', 'romina-rios-chaparro'],
+				['Package hash', planned.packageHash],
+			],
+		});
 		const applied = await runProductionLegacyAdoption({
 			packagePath,
 			approvalArtifactPath,

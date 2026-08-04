@@ -22,10 +22,7 @@ describe('Database Pipeline Safety & Hardening Regression Tests', () => {
 	const originalEnv = process.env;
 
 	beforeEach(() => {
-		// Keep missing-approval guard assertions independent from approval variables inherited by the shell.
 		process.env = { ...originalEnv };
-		delete process.env.CELEBRA_PROD_APPROVAL_TOKEN;
-		delete process.env.CELEBRA_PROD_APPROVAL_PUBLIC_KEY;
 	});
 
 	afterEach(() => {
@@ -135,39 +132,21 @@ describe('Database Pipeline Safety & Hardening Regression Tests', () => {
 			'postgresql://postgres:secret@db.ineitkdkyrxqyressllp.supabase.co:5432/postgres';
 		const prodClassification = classifyDbTarget(prodUrl);
 
-		it('blocks migrate operation when no CONFIRM_PROD_MIGRATION env is set', () => {
-			delete process.env.CONFIRM_PROD_MIGRATION;
-			delete process.env.ALLOW_PROD_MIGRATE;
-
-			const result = guardProduction(prodClassification, 'migrate');
-			expect(result.ok).toBe(false);
-			expect(result.errors[0]).toContain('PRODUCTION WRITE BLOCKED');
-		});
-
-		it('rejects broad ALLOW_PROD_MIGRATE=true bypass without host confirmation', () => {
-			process.env.ALLOW_PROD_MIGRATE = 'true';
-			delete process.env.CONFIRM_PROD_MIGRATION;
-
-			const result = guardProduction(prodClassification, 'migrate');
-			expect(result.ok).toBe(false);
-			expect(result.errors[0]).toContain('PRODUCTION WRITE BLOCKED');
-		});
-
-		it('rejects CONFIRM_PROD_MIGRATION when target host does not match', () => {
-			process.env.CONFIRM_PROD_MIGRATION = 'MIGRATE wrong-host.supabase.com';
-
-			const result = guardProduction(prodClassification, 'migrate');
-			expect(result.ok).toBe(false);
-			expect(result.errors[0]).toContain('PRODUCTION WRITE BLOCKED');
-		});
-
-		it('permits migrate operation only when external token and public key are present', () => {
-			process.env.CELEBRA_PROD_APPROVAL_TOKEN = 'external-token';
-			process.env.CELEBRA_PROD_APPROVAL_PUBLIC_KEY = 'external-public-key';
-
+		it('allows controlled migrate entrypoint (CLI enforces --apply and TTY confirmation)', () => {
 			const result = guardProduction(prodClassification, 'migrate');
 			expect(result.ok).toBe(true);
 			expect(result.errors.length).toBe(0);
+		});
+
+		it('allows controlled patch entrypoint', () => {
+			const result = guardProduction(prodClassification, 'patch');
+			expect(result.ok).toBe(true);
+		});
+
+		it('still blocks unstructured production write operations', () => {
+			const result = guardProduction(prodClassification, 'reset');
+			expect(result.ok).toBe(false);
+			expect(result.errors[0]).toContain('PRODUCTION WRITE BLOCKED');
 		});
 	});
 

@@ -135,9 +135,9 @@ execution-boundary separation.
   read.
 - **Owner-only Production content promotion:** `pnpm invitation:promote --apply` requires exact
   Preview approval, schema `CURRENT`, verified critical backup evidence
-  (`pnpm db:prod:backup:critical`), and interactive owner confirmation
-  (`PROMOTE <slug> <packageHash>` or matching `CONFIRM_PROD_MIGRATION`). Agents must not execute
-  `--apply`.
+  (`pnpm db:prod:backup:critical`), valid `pnpm release-check` evidence for the current clean
+  `HEAD`, and interactive owner TTY confirmation (`PROMOTE <slug> <packageHash>`). Agents must not
+  execute `--apply`.
 
 ## Schema lifecycle contract
 

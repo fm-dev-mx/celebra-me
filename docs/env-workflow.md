@@ -115,6 +115,13 @@ execution:
   approved ignored secret files and are intentionally absent from `.env.example` and app typing. The
   local daily backup task resolves the same ignored sources under the interactive operator account;
   credentials are never copied into the scheduled-task definition.
+- **Production owner apply:** Requires interactive TTY confirmation via
+  `requireOwnerProductionApply`. There is no approval-token, secret, or noninteractive confirmation
+  env alternative. `CELEBRA_AGENT_CONTEXT` rejects agent self-authorization. Apply also requires
+  valid `pnpm release-check` evidence for the current clean `HEAD`.
+- **Preview hosted migrate identity:** `CELEBRA_TARGET_RELEASE_SHA` (and for contract phases
+  `CELEBRA_DEPLOYED_APP_SHA` / `CELEBRA_DEPLOYED_APP_CAPABILITIES`) authorize Preview migration
+  membership. Production migrate derives release identity from clean `HEAD` instead.
 - **Test-only:** `PLAYWRIGHT_*`, audit run IDs, test fixture variables. The canonical local E2E
   server is isolated by default; `PLAYWRIGHT_REUSE_EXISTING_SERVER=true` is an explicit opt-in.
 - **Stale/manual-only:** `DATABASE_URL` and `RSVP_TOKEN_SECRET` are not active runtime inputs. Keep

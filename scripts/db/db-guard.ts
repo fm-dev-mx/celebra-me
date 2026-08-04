@@ -122,13 +122,9 @@ export function guardProduction(
 		return { ok: true, errors: [] };
 	}
 
-	if (operation === 'migrate') {
-		if (
-			process.env.CELEBRA_PROD_APPROVAL_TOKEN?.trim() &&
-			process.env.CELEBRA_PROD_APPROVAL_PUBLIC_KEY?.trim()
-		) {
-			return { ok: true, errors: [] };
-		}
+	// Controlled entrypoints: the owning CLI enforces --apply, identity, and TTY confirmation.
+	if (operation === 'migrate' || operation === 'patch') {
+		return { ok: true, errors: [] };
 	}
 
 	const blockedOperations = [
@@ -364,6 +360,13 @@ function cliCheck(): void {
 	}
 
 	const classification = classifyDbTarget(resolvedUrl);
+
+	if (classification.target !== target) {
+		console.error(
+			`GUARD BLOCKED: Target mismatch: requested "${target}" but URL classifies as "${classification.target}" (${classification.reason}).`,
+		);
+		process.exit(1);
+	}
 
 	const guards = runGuards(target, classification, operation ?? 'unknown');
 

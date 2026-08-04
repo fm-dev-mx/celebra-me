@@ -131,9 +131,11 @@ describe('Romina schema repair planner', () => {
 		});
 		expect(plan.affectedTables).toEqual([
 			'invitation_content_drafts',
-			'production_authorization_receipts',
 			'invitation_mutation_operation_receipts',
 		]);
+		expect(plan.provenanceAndReceipts.ownerAuthorization.boundary).toBe(
+			'requireOwnerProductionApply',
+		);
 		expect(plan.provenanceAndReceipts.managedReleaseProvenance).toBe('unchanged');
 		expect(sql).toContain('BEGIN;');
 		expect(sql).toContain("'romina_schema_repair'");

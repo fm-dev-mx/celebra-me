@@ -11,11 +11,8 @@ import {
 	readLegacyAdoptionCandidate,
 	type LegacyBaselineAdoptionManifest,
 } from './legacy-baseline-adoption.ts';
-import {
-	consumeProductionApproval,
-	getProdDbUrl,
-	requireProductionConfirmation,
-} from '../db/db-workflow-lib.ts';
+import { getProdDbUrl } from '../db/db-workflow-lib.ts';
+import { requireOwnerProductionApply } from '../db/owner-production-apply.ts';
 
 interface CliOptions {
 	manifestPath?: string;
@@ -128,12 +125,16 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
 			.map((entry) => entry.slug)
 			.sort()
 			.join(',');
-		await requireProductionConfirmation(new URL(productionDbUrl).hostname, undefined, {
+		requireOwnerProductionApply({
+			apply: true,
+			dbUrl: productionDbUrl,
 			operationType: 'legacy_baseline_adoption',
-			scope,
-			manifestFingerprint: bound.manifestFingerprint,
-			consumeApproval: (payload) =>
-				consumeProductionApproval({ dbUrl: productionDbUrl, payload }),
+			confirmationChallenge: `ADOPT_BASELINE ${bound.manifestFingerprint}`,
+			summary: [
+				['Mode', 'legacy baseline adoption'],
+				['Scope', scope || '(none)'],
+				['Fingerprint', bound.manifestFingerprint],
+			],
 		});
 		const result = await applyLegacyBaselineAdoption({
 			manifest: bound,

@@ -1,14 +1,15 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { spawnSync, type SpawnSyncOptions } from 'node:child_process';
-import { createHash, createPublicKey, verify } from 'node:crypto';
 import {
 	PROD_SECRET_FILES,
 	LOCAL_DB_URL,
 	redactDbUrl,
 	parseDbUrl,
 	getSecretFromEnvOrFiles,
+	extractSupabaseProjectRef,
 } from './db-target-config.ts';
+import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
 
 export * from './db-target-config.ts';
 
@@ -158,6 +159,23 @@ export function assertProductionDbUrl(rawUrl: string): URL {
 	if (isLocal || !isSupabaseProductionHostname(host)) {
 		fail(
 			`Refusing PROD_DB_URL because host is not a Supabase production host. Redacted target: ${redactDbUrl(
+				rawUrl,
+			)}`,
+		);
+	}
+	let projectRef: string;
+	try {
+		projectRef = extractSupabaseProjectRef(rawUrl);
+	} catch (error: unknown) {
+		fail(
+			`Refusing PROD_DB_URL because the Supabase project ref could not be extracted (${
+				error instanceof Error ? error.message : String(error)
+			}). Redacted target: ${redactDbUrl(rawUrl)}`,
+		);
+	}
+	if (projectRef !== SUPABASE_PROJECT_REFS.production) {
+		fail(
+			`Refusing PROD_DB_URL because project ref does not match configured Production. Redacted target: ${redactDbUrl(
 				rawUrl,
 			)}`,
 		);
@@ -510,361 +528,4 @@ export function validateRefreshParity(opts: ParityValidationOptions): {
 		ok: failures.length === 0,
 		failures,
 	};
-}
-
-export interface ProductionApprovalTokenPayload {
-	operationType: string;
-	targetEnv: 'production';
-	scope: string;
-	manifestFingerprint: string;
-	releaseSha?: string;
-	operationId: string;
-	expiresAt: number;
-	nonce: string;
-}
-
-export interface ProductionApprovalToken {
-	version: 1;
-	algorithm: 'Ed25519';
-	payload: ProductionApprovalTokenPayload;
-	signature: string;
-}
-
-export interface ProductionApprovalConsumption {
-	consumed: boolean;
-	reason?: 'REPLAYED_APPROVAL' | 'REPLAY_LEDGER_UNAVAILABLE';
-}
-
-export type ProductionApprovalConsumer = (
-	payload: ProductionApprovalTokenPayload,
-) => ProductionApprovalConsumption;
-
-export interface ProductionApprovalContext {
-	operationType: string;
-	targetEnv: 'production';
-	scope: string;
-	manifestFingerprint: string;
-	releaseSha?: string;
-	operationId: string;
-}
-
-export function serializeProductionApprovalPayload(
-	payload: ProductionApprovalTokenPayload,
-): string {
-	const serialized: Record<string, unknown> = {
-		operationType: payload.operationType,
-		targetEnv: payload.targetEnv,
-		scope: payload.scope,
-		manifestFingerprint: payload.manifestFingerprint,
-	};
-	if (payload.releaseSha !== undefined) serialized.releaseSha = payload.releaseSha;
-	serialized.operationId = payload.operationId;
-	serialized.expiresAt = payload.expiresAt;
-	serialized.nonce = payload.nonce;
-	return JSON.stringify(serialized);
-}
-
-export function deriveProductionOperationId(
-	context: Omit<ProductionApprovalContext, 'operationId'>,
-): string {
-	return createHash('sha256')
-		.update(
-			[
-				context.operationType,
-				context.targetEnv,
-				context.scope,
-				context.manifestFingerprint,
-				...(context.releaseSha === undefined ? [] : [context.releaseSha]),
-			].join('\u001f'),
-		)
-		.digest('hex');
-}
-
-function parseProductionApprovalToken(tokenStr: string | undefined): {
-	token?: ProductionApprovalToken;
-	reason?: string;
-} {
-	if (!tokenStr || !tokenStr.trim()) return { reason: 'MISSING_APPROVAL_TOKEN' };
-	try {
-		const parsed = JSON.parse(
-			Buffer.from(tokenStr.trim(), 'base64url').toString('utf8'),
-		) as ProductionApprovalToken;
-		if (
-			!parsed ||
-			typeof parsed !== 'object' ||
-			parsed.version !== 1 ||
-			parsed.algorithm !== 'Ed25519' ||
-			!parsed.payload ||
-			typeof parsed.signature !== 'string'
-		) {
-			return { reason: 'MALFORMED_APPROVAL_TOKEN' };
-		}
-		return { token: parsed };
-	} catch {
-		return { reason: 'MALFORMED_APPROVAL_TOKEN' };
-	}
-}
-
-function validProductionApprovalPayload(
-	payload: ProductionApprovalTokenPayload,
-	signature: string,
-): boolean {
-	const stringValues: unknown[] = [
-		payload.operationType,
-		payload.targetEnv,
-		payload.scope,
-		payload.manifestFingerprint,
-		payload.operationId,
-		payload.nonce,
-		signature,
-	];
-	if (!stringValues.every((value) => typeof value === 'string' && value.trim().length > 0)) {
-		return false;
-	}
-	if (
-		payload.releaseSha !== undefined &&
-		(typeof payload.releaseSha !== 'string' || payload.releaseSha.trim().length === 0)
-	) {
-		return false;
-	}
-	return (
-		typeof payload.expiresAt === 'number' &&
-		Number.isFinite(payload.expiresAt) &&
-		Number.isInteger(payload.expiresAt)
-	);
-}
-
-function productionApprovalContextReason(
-	payload: ProductionApprovalTokenPayload,
-	expected: ProductionApprovalContext,
-	now: number,
-): string | undefined {
-	if (payload.expiresAt <= now) return 'EXPIRED_APPROVAL_TOKEN';
-	if (payload.targetEnv !== expected.targetEnv) return 'TARGET_ENV_MISMATCH';
-	if (payload.operationType !== expected.operationType) return 'OPERATION_TYPE_MISMATCH';
-	if (payload.scope !== expected.scope) return 'SCOPE_MISMATCH';
-	if (payload.manifestFingerprint !== expected.manifestFingerprint) {
-		return 'MANIFEST_FINGERPRINT_MISMATCH';
-	}
-	if (expected.releaseSha !== undefined && payload.releaseSha !== expected.releaseSha) {
-		return 'RELEASE_SHA_MISMATCH';
-	}
-	if (payload.operationId !== expected.operationId) return 'OPERATION_ID_MISMATCH';
-	return undefined;
-}
-
-function validProductionApprovalSignature(
-	payload: ProductionApprovalTokenPayload,
-	signature: string,
-	publicKeyText: string,
-): boolean {
-	try {
-		const publicKey = createPublicKey(publicKeyText.trim());
-		const signatureBytes = Buffer.from(signature, 'base64url');
-		return (
-			signatureBytes.length > 0 &&
-			verify(
-				null,
-				Buffer.from(serializeProductionApprovalPayload(payload), 'utf8'),
-				publicKey,
-				signatureBytes,
-			)
-		);
-	} catch {
-		return false;
-	}
-}
-
-export function verifyProductionApprovalToken(input: {
-	tokenStr: string | undefined;
-	publicKey: string | undefined;
-	expectedContext: ProductionApprovalContext;
-	nowMs?: number;
-}): { valid: boolean; reason?: string } {
-	if (!input.publicKey || !input.publicKey.trim()) {
-		return { valid: false, reason: 'MISSING_OPERATOR_PUBLIC_KEY' };
-	}
-	const parsed = parseProductionApprovalToken(input.tokenStr);
-	if (!parsed.token) return { valid: false, reason: parsed.reason };
-	const { payload, signature } = parsed.token;
-	if (!validProductionApprovalPayload(payload, signature)) {
-		return { valid: false, reason: 'MALFORMED_APPROVAL_TOKEN' };
-	}
-	if (!validProductionApprovalSignature(payload, signature, input.publicKey)) {
-		return { valid: false, reason: 'INVALID_SIGNATURE' };
-	}
-	const reason = productionApprovalContextReason(
-		payload,
-		input.expectedContext,
-		input.nowMs ?? Date.now(),
-	);
-	return reason ? { valid: false, reason } : { valid: true };
-}
-
-export function consumeProductionApproval(input: {
-	dbUrl: string;
-	payload: ProductionApprovalTokenPayload;
-	runPsql?: (
-		sql: string,
-		dbUrl: string,
-		options: { tuplesOnly: boolean; throwOnError: boolean },
-	) => CommandResult;
-}): ProductionApprovalConsumption {
-	const result = (input.runPsql ?? runPsql)(
-		`INSERT INTO public.production_authorization_receipts (operation_id, nonce, operation_type, target_env, scope, manifest_fingerprint, expires_at)
-         VALUES (${sqlLiteral(input.payload.operationId)}, ${sqlLiteral(input.payload.nonce)}, ${sqlLiteral(input.payload.operationType)}, ${sqlLiteral(input.payload.targetEnv)}, ${sqlLiteral(input.payload.scope)}, ${sqlLiteral(input.payload.manifestFingerprint)}, to_timestamp(${input.payload.expiresAt} / 1000.0))
-         ON CONFLICT DO NOTHING
-         RETURNING operation_id;`,
-		input.dbUrl,
-		{ tuplesOnly: true, throwOnError: false },
-	);
-	if (result.status !== 0) {
-		return { consumed: false, reason: 'REPLAY_LEDGER_UNAVAILABLE' };
-	}
-	return result.stdout.trim()
-		? { consumed: true }
-		: { consumed: false, reason: 'REPLAYED_APPROVAL' };
-}
-
-export function getProductionApprovalTokenPayload(
-	tokenStr: string | undefined,
-): ProductionApprovalTokenPayload | undefined {
-	return parseProductionApprovalToken(tokenStr).token?.payload;
-}
-
-interface ProductionConfirmationParams {
-	operationType?: string;
-	scope?: string;
-	manifestFingerprint?: string;
-	releaseSha?: string;
-	operationId?: string;
-	consumeApproval?: ProductionApprovalConsumer;
-}
-
-function requireExternalProductionApproval(
-	targetDescription: string,
-	requiredConfirmation: string,
-	params: ProductionConfirmationParams | undefined,
-): { payload: ProductionApprovalTokenPayload; consume: ProductionApprovalConsumer } {
-	const operationType = params?.operationType ?? 'production_migration';
-	const scope = params?.scope ?? targetDescription;
-	const manifestFingerprint = params?.manifestFingerprint ?? requiredConfirmation;
-	const operationId =
-		params?.operationId ??
-		deriveProductionOperationId({
-			operationType,
-			targetEnv: 'production',
-			scope,
-			manifestFingerprint,
-			releaseSha: params?.releaseSha,
-		});
-	const verification = verifyProductionApprovalToken({
-		tokenStr: process.env.CELEBRA_PROD_APPROVAL_TOKEN,
-		publicKey: process.env.CELEBRA_PROD_APPROVAL_PUBLIC_KEY,
-		expectedContext: {
-			operationType,
-			targetEnv: 'production',
-			scope,
-			manifestFingerprint,
-			releaseSha: params?.releaseSha,
-			operationId,
-		},
-	});
-	if (!verification.valid) {
-		fail(
-			`PRODUCTION_AUTHORIZATION_FAILED [${verification.reason}]: Production action requires valid external Ed25519 operator approval evidence.`,
-		);
-	}
-	const consume = params?.consumeApproval;
-	if (!consume) {
-		fail(
-			'PRODUCTION_AUTHORIZATION_FAILED [REPLAY_LEDGER_REQUIRED]: Durable approval consumption is required before a Production write.',
-		);
-	}
-	try {
-		const parsed = JSON.parse(
-			Buffer.from(
-				process.env.CELEBRA_PROD_APPROVAL_TOKEN?.trim() ?? '',
-				'base64url',
-			).toString('utf8'),
-		) as ProductionApprovalToken;
-		return { payload: parsed.payload, consume };
-	} catch {
-		fail(
-			'PRODUCTION_AUTHORIZATION_FAILED [MALFORMED_APPROVAL_TOKEN]: Token payload could not be read.',
-		);
-	}
-}
-
-export function productionAuthorizationBoundaryReason(
-	env: NodeJS.ProcessEnv = process.env,
-): 'AGENT_SELF_AUTHORIZATION_BLOCKED' | 'SELF_ISSUED_APPROVAL_REJECTED' | undefined {
-	const agentContext = env.CELEBRA_AGENT_CONTEXT?.trim();
-	if (agentContext && agentContext !== 'false' && agentContext !== '0') {
-		return 'AGENT_SELF_AUTHORIZATION_BLOCKED';
-	}
-	if (env.CELEBRA_PROD_AUTH_SECRET?.trim() || env.CELEBRA_PROD_APPROVAL_PRIVATE_KEY?.trim()) {
-		return 'SELF_ISSUED_APPROVAL_REJECTED';
-	}
-	return undefined;
-}
-
-export function confirmProductionActionSync(
-	targetDescription: string,
-	requiredConfirmation: string,
-	params?: ProductionConfirmationParams,
-): void {
-	const boundaryReason = productionAuthorizationBoundaryReason();
-	if (boundaryReason === 'AGENT_SELF_AUTHORIZATION_BLOCKED') {
-		fail(
-			`AGENT_SELF_AUTHORIZATION_BLOCKED: Production actions require external operator approval evidence. ` +
-				`Autonomous agents cannot self-authorize Production writes.`,
-		);
-	}
-
-	if (boundaryReason === 'SELF_ISSUED_APPROVAL_REJECTED') {
-		fail(
-			'PRODUCTION_AUTHORIZATION_FAILED [SELF_ISSUED_APPROVAL_REJECTED]: Signing material is not accepted in the production runtime.',
-		);
-	}
-
-	const approval = requireExternalProductionApproval(
-		targetDescription,
-		requiredConfirmation,
-		params,
-	);
-	const consumed = approval.consume(approval.payload);
-	if (!consumed.consumed) {
-		fail(
-			`PRODUCTION_AUTHORIZATION_FAILED [${consumed.reason ?? 'REPLAYED_APPROVAL'}]: Approval was not durably consumed.`,
-		);
-	}
-	console.info(
-		`\n✅ External Production approval verified and consumed for ${targetDescription}.`,
-	);
-}
-
-export async function confirmProductionAction(
-	targetDescription: string,
-	requiredConfirmation: string,
-	params?: ProductionConfirmationParams,
-): Promise<void> {
-	confirmProductionActionSync(targetDescription, requiredConfirmation, params);
-}
-
-export function requireProductionConfirmationSync(
-	targetDescription: string,
-	requiredConfirmation?: string,
-	params?: ProductionConfirmationParams,
-): void {
-	const confirmation = requiredConfirmation || `MIGRATE ${targetDescription}`;
-	confirmProductionActionSync(targetDescription, confirmation, params);
-}
-
-export async function requireProductionConfirmation(
-	targetDescription: string,
-	requiredConfirmation?: string,
-	params?: ProductionConfirmationParams,
-): Promise<void> {
-	requireProductionConfirmationSync(targetDescription, requiredConfirmation, params);
 }

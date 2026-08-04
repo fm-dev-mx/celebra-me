@@ -1,10 +1,10 @@
 import { createHash } from 'node:crypto';
 
 import { eventContentSchema } from '../../src/lib/schemas/content/base-event.schema.ts';
-import { deriveProductionOperationId } from '../db/db-workflow-lib.ts';
 import { canonicalize } from './normalized-invitation-release.ts';
 import {
 	deriveRominaReceiptOperationId,
+	deriveStableOperationId,
 	diffContentPaths,
 } from './romina-shared-helpers.ts';
 
@@ -56,9 +56,9 @@ export interface RominaSchemaRepairPlan {
 	};
 	affectedTables: string[];
 	provenanceAndReceipts: {
-		approvalConsumption: {
-			table: 'production_authorization_receipts';
-			action: 'insert before the repair transaction';
+		ownerAuthorization: {
+			boundary: 'requireOwnerProductionApply';
+			action: 'interactive TTY confirmation immediately before the first write';
 		};
 		operationReceipt: {
 			table: 'invitation_mutation_operation_receipts';
@@ -194,7 +194,7 @@ export function buildRominaSchemaRepairReplayIdentity(input: {
 		afterContent: input.draftContent,
 		publishedVersion: input.publishedVersion,
 	});
-	const operationId = deriveProductionOperationId({
+	const operationId = deriveStableOperationId({
 		operationType: ROMINA_SCHEMA_REPAIR_OPERATION_TYPE,
 		targetEnv: 'production',
 		scope: ROMINA_SCHEMA_REPAIR_SLUG,
@@ -283,7 +283,7 @@ export function buildRominaSchemaRepairPlan(
 		afterContent: after,
 		publishedVersion: input.publishedVersion,
 	});
-	const operationId = deriveProductionOperationId({
+	const operationId = deriveStableOperationId({
 		operationType: ROMINA_SCHEMA_REPAIR_OPERATION_TYPE,
 		targetEnv: 'production',
 		scope: ROMINA_SCHEMA_REPAIR_SLUG,
@@ -317,15 +317,11 @@ export function buildRominaSchemaRepairPlan(
 			unrelatedBefore: hash(removeRepairFields(before)),
 			unrelatedAfter: hash(removeRepairFields(after)),
 		},
-		affectedTables: [
-			'invitation_content_drafts',
-			'production_authorization_receipts',
-			'invitation_mutation_operation_receipts',
-		],
+		affectedTables: ['invitation_content_drafts', 'invitation_mutation_operation_receipts'],
 		provenanceAndReceipts: {
-			approvalConsumption: {
-				table: 'production_authorization_receipts',
-				action: 'insert before the repair transaction',
+			ownerAuthorization: {
+				boundary: 'requireOwnerProductionApply',
+				action: 'interactive TTY confirmation immediately before the first write',
 			},
 			operationReceipt: {
 				table: 'invitation_mutation_operation_receipts',

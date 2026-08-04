@@ -20,6 +20,8 @@ export function runHostedMigrationCompatibilityGate(options: {
 	dbAppliedVersions: readonly string[];
 	fail: (message: string) => never;
 	env?: NodeJS.ProcessEnv;
+	/** When set (Production migrate), overrides CELEBRA_TARGET_RELEASE_SHA. */
+	targetReleaseShaOverride?: string | null;
 }): void {
 	if (!isHostedMigrateTarget(options.target)) {
 		return;
@@ -27,11 +29,16 @@ export function runHostedMigrationCompatibilityGate(options: {
 
 	const env = options.env ?? process.env;
 	const identity = resolveHostedMigrationIdentity(env);
+	if (options.targetReleaseShaOverride !== undefined) {
+		identity.targetReleaseSha = options.targetReleaseShaOverride?.trim() || null;
+	}
 	const registry = loadMigrationRolloutRegistry();
 
 	if (!identity.targetReleaseSha) {
 		options.fail(
-			'Hosted migration requires CELEBRA_TARGET_RELEASE_SHA (authorized target release Git identity). Branch name, worktree path, UI banner, and credential presence alone cannot authorize hosted mutation.',
+			options.target === 'production'
+				? 'Production migration requires a clean Git HEAD release identity from `pnpm release-check` evidence.'
+				: 'Hosted migration requires CELEBRA_TARGET_RELEASE_SHA (authorized target release Git identity). Branch name, worktree path, UI banner, and credential presence alone cannot authorize hosted mutation.',
 		);
 	}
 

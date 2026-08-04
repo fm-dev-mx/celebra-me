@@ -18,6 +18,11 @@
  */
 
 import { runHostedMigrationCompatibilityGate } from './hosted-migration-compatibility-gate.ts';
+import {
+	comparePendingSetToExpected,
+	extractPendingMigrationVersions,
+	parseMigrationVersionList,
+} from './migration-pending-set.ts';
 import { PREVIEW_SECRET_FILES, getSecretFromEnvOrFiles } from './db-guard.ts';
 import { fail, runCommand, runPsql } from './db-workflow-lib.ts';
 
@@ -28,10 +33,7 @@ function parseAllowlist(): string[] | null {
 		allowlistStr = process.env.EXPECTED_MIGRATIONS;
 	}
 	if (!allowlistStr) return null;
-	const versions = allowlistStr
-		.split(/[,\s]+/)
-		.map((v) => v.trim())
-		.filter(Boolean);
+	const versions = parseMigrationVersionList(allowlistStr);
 	return versions.length > 0 ? versions : null;
 }
 
@@ -59,46 +61,22 @@ function main(): void {
 		{ redact: [previewDbUrl] },
 	);
 	const dryRunOutput = `${dryRunResult.stdout}\n${dryRunResult.stderr}`;
-	const dryRunVersions = Array.from(dryRunOutput.matchAll(/\b(\d{14})_/g)).map(
-		(match) => match[1],
-	);
+	const dryRunVersions = extractPendingMigrationVersions(dryRunOutput);
 
 	if (dryRunVersions.length === 0) {
 		console.info('Dry-run reports no pending migrations.');
-		if (expectedVersions && expectedVersions[0] !== 'none') {
-			fail(
-				`Expected migrations to apply: ${expectedVersions.join(', ')}, but dry-run shows 0 migrations.`,
-			);
-		}
 	} else {
 		console.info(`Pending migrations from dry-run: ${dryRunVersions.join(', ')}`);
-		if (expectedVersions) {
-			const expectedSet = new Set(expectedVersions);
-			const dryRunSet = new Set(dryRunVersions);
-			let match = true;
-			for (const v of expectedVersions) {
-				if (!dryRunSet.has(v)) {
-					console.error(
-						`❌ ERROR: Expected migration "${v}" is not in the dry-run list of pending migrations.`,
-					);
-					match = false;
-				}
-			}
-			for (const v of dryRunVersions) {
-				if (!expectedSet.has(v)) {
-					console.error(
-						`❌ ERROR: Dry-run pending migration "${v}" is not in your explicit allowlist.`,
-					);
-					match = false;
-				}
-			}
-			if (!match) {
-				fail(
-					'Migration dry-run does not match the explicit expected migrations allowlist. Aborting.',
-				);
-			}
-			console.info('✅ Dry-run matches the explicit expected migrations allowlist exactly.');
+	}
+	if (expectedVersions) {
+		const pendingCompare = comparePendingSetToExpected(dryRunVersions, expectedVersions);
+		if (!pendingCompare.ok) {
+			for (const error of pendingCompare.errors) console.error(`❌ ERROR: ${error}`);
+			fail(
+				'Migration dry-run does not match the explicit expected migrations allowlist. Aborting.',
+			);
 		}
+		console.info('✅ Dry-run matches the explicit expected migrations allowlist exactly.');
 	}
 
 	const candidateVersions =

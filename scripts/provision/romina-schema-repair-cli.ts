@@ -1,9 +1,5 @@
-import {
-	consumeProductionApproval,
-	getProdDbUrl,
-	requireProductionConfirmationSync,
-	runPsql,
-} from '../db/db-workflow-lib.ts';
+import { getProdDbUrl, runPsql } from '../db/db-workflow-lib.ts';
+import { requireOwnerProductionApply } from '../db/owner-production-apply.ts';
 import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
 import { evaluatePromotionBackupGate } from './invitation-promote.ts';
 import {
@@ -132,21 +128,17 @@ function printReplay(identity: ReturnType<typeof buildRominaSchemaRepairReplayId
 
 function verifyRequiredProductionTables(dbUrl: string): void {
 	const result = runPsql(
-		`select table_name from information_schema.tables where table_schema = 'public' and table_name = any(array['production_authorization_receipts', 'invitation_mutation_operation_receipts']);`,
+		`select table_name from information_schema.tables where table_schema = 'public' and table_name = 'invitation_mutation_operation_receipts';`,
 		dbUrl,
 		{
 			tuplesOnly: true,
 			env: { ...process.env, PGOPTIONS: '-c default_transaction_read_only=on' },
 		},
 	);
-	const present = new Set(result.stdout.trim().split(/\r?\n/).filter(Boolean));
-	const missing = [
-		'production_authorization_receipts',
-		'invitation_mutation_operation_receipts',
-	].filter((table) => !present.has(table));
-	if (missing.length > 0) {
+	const present = result.stdout.trim();
+	if (present !== 'invitation_mutation_operation_receipts') {
 		throw new Error(
-			`PRODUCTION_SCHEMA_BEHIND: required receipt table(s) missing: ${missing.join(', ')}. Run the guarded schema migration workflow, then regenerate this dry-run.`,
+			'PRODUCTION_SCHEMA_BEHIND: required table invitation_mutation_operation_receipts is missing. Run the guarded schema migration workflow, then regenerate this dry-run.',
 		);
 	}
 }
@@ -192,26 +184,18 @@ function applyPlan(): void {
 			'ROMINA_REPAIR_FINGERPRINT_MISMATCH: supplied operation fingerprint differs from the current dry-run.',
 		);
 	}
-	const approvalToken = process.env.CELEBRA_PROD_APPROVAL_TOKEN?.trim();
-	const publicKey = process.env.CELEBRA_PROD_APPROVAL_PUBLIC_KEY?.trim();
-	if (!approvalToken || !publicKey) {
-		throw new Error(
-			'PRODUCTION_AUTHORIZATION_REQUIRED: set the externally issued Ed25519 approval token and public key for this exact operation.',
-		);
-	}
-	const productionHost = new URL(targetDbUrl).hostname;
-	requireProductionConfirmationSync(
-		productionHost,
-		`REPAIR ${plan.slug} ${plan.operationFingerprint}`,
-		{
-			operationType: ROMINA_SCHEMA_REPAIR_OPERATION_TYPE,
-			scope: plan.slug,
-			manifestFingerprint: plan.operationFingerprint,
-			operationId: plan.operationId,
-			consumeApproval: (payload) =>
-				consumeProductionApproval({ dbUrl: targetDbUrl, payload }),
-		},
-	);
+	requireOwnerProductionApply({
+		apply: true,
+		dbUrl: targetDbUrl,
+		operationType: ROMINA_SCHEMA_REPAIR_OPERATION_TYPE,
+		confirmationChallenge: `REPAIR ${plan.slug} ${plan.operationFingerprint}`,
+		summary: [
+			['Mode', 'Romina schema repair'],
+			['Slug', plan.slug],
+			['Fingerprint', plan.operationFingerprint],
+			['Operation ID', plan.operationId],
+		],
+	});
 
 	const applied = applyRominaSchemaRepair({
 		plan,

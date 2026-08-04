@@ -1,71 +1,17 @@
-import { generateKeyPairSync, sign, type KeyObject } from 'node:crypto';
 import { afterEach, describe, expect, it, jest } from '@jest/globals';
+import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
 import {
-	confirmProductionAction,
-	deriveProductionOperationId,
-	verifyProductionApprovalToken,
-	type ProductionApprovalTokenPayload,
-} from '../../scripts/db/db-workflow-lib.ts';
+	assertExactProductionProjectRef,
+	requireOwnerProductionApply,
+} from '../../scripts/db/owner-production-apply.ts';
 
 const originalEnv = { ...process.env };
-const keyPair = generateKeyPairSync('ed25519');
-const otherKeyPair = generateKeyPairSync('ed25519');
-const PUBLIC_KEY = keyPair.publicKey.export({ type: 'spki', format: 'pem' }).toString();
-const TARGET = 'production-test-host';
-const CONTEXT = {
-	operationType: 'promotion',
-	targetEnv: 'production' as const,
-	scope: 'abril-michelle-becerra-rea',
-	manifestFingerprint: 'manifest-sha-123',
-};
-
-function payload(
-	overrides: Partial<ProductionApprovalTokenPayload> = {},
-): ProductionApprovalTokenPayload {
-	return {
-		...CONTEXT,
-		operationId: deriveProductionOperationId(CONTEXT),
-		expiresAt: Date.now() + 60_000,
-		nonce: 'nonce-1',
-		...overrides,
-	};
-}
-
-function token(
-	overrides: Partial<ProductionApprovalTokenPayload> = {},
-	privateKey = keyPair.privateKey,
-): string {
-	return createTestApprovalToken(payload(overrides), privateKey);
-}
-
-function createTestApprovalToken(
-	approvalPayload: ProductionApprovalTokenPayload,
-	privateKey: KeyObject,
-): string {
-	const signedPayload = JSON.stringify({
-		operationType: approvalPayload.operationType,
-		targetEnv: approvalPayload.targetEnv,
-		scope: approvalPayload.scope,
-		manifestFingerprint: approvalPayload.manifestFingerprint,
-		operationId: approvalPayload.operationId,
-		expiresAt: approvalPayload.expiresAt,
-		nonce: approvalPayload.nonce,
-	});
-	return Buffer.from(
-		JSON.stringify({
-			version: 1,
-			algorithm: 'Ed25519',
-			payload: approvalPayload,
-			signature: sign(null, Buffer.from(signedPayload, 'utf8'), privateKey).toString(
-				'base64url',
-			),
-		}),
-		'utf8',
-	).toString('base64url');
-}
+const PROD_URL = `postgresql://postgres:secret@db.${SUPABASE_PROJECT_REFS.production}.supabase.co:5432/postgres`;
+const PREVIEW_URL = `postgresql://postgres:secret@db.${SUPABASE_PROJECT_REFS.preview}.supabase.co:5432/postgres`;
 
 function mockExit(): void {
 	jest.spyOn(console, 'error').mockImplementation(() => undefined);
+	jest.spyOn(console, 'info').mockImplementation(() => undefined);
 	jest.spyOn(process, 'exit').mockImplementation(((code?: string | number | null) => {
 		throw new Error(`process.exit:${code ?? ''}`);
 	}) as never);
@@ -79,120 +25,134 @@ afterEach(() => {
 	jest.restoreAllMocks();
 });
 
-describe('external Ed25519 approval boundary', () => {
-	it('creates and verifies a valid exact-context token', () => {
-		const result = verifyProductionApprovalToken({
-			tokenStr: token(),
-			publicKey: PUBLIC_KEY,
-			expectedContext: { ...CONTEXT, operationId: deriveProductionOperationId(CONTEXT) },
-		});
-		expect(result).toEqual({ valid: true });
+describe('requireOwnerProductionApply', () => {
+	it('fails without --apply', () => {
+		mockExit();
+		expect(() =>
+			requireOwnerProductionApply({
+				apply: false,
+				dbUrl: PROD_URL,
+				operationType: 'production_migration',
+				confirmationChallenge: 'MIGRATE test',
+				summary: [['Mode', 'test']],
+				assertReleaseEvidence: () => ({ sha: 'abc1234' }),
+				readConfirmationLine: () => 'MIGRATE test',
+			}),
+		).toThrow('process.exit:1');
 	});
 
-	it('rejects expired, malformed, mismatched, and wrongly signed tokens', () => {
-		expect(
-			verifyProductionApprovalToken({
-				tokenStr: token({ expiresAt: Date.now() - 1 }),
-				publicKey: PUBLIC_KEY,
-				expectedContext: { ...CONTEXT, operationId: deriveProductionOperationId(CONTEXT) },
+	it('rejects agent contexts', () => {
+		mockExit();
+		expect(() =>
+			requireOwnerProductionApply({
+				apply: true,
+				dbUrl: PROD_URL,
+				operationType: 'production_migration',
+				confirmationChallenge: 'MIGRATE test',
+				summary: [['Mode', 'test']],
+				env: { CELEBRA_AGENT_CONTEXT: 'true' },
+				assertReleaseEvidence: () => ({ sha: 'abc1234' }),
+				readConfirmationLine: () => 'MIGRATE test',
 			}),
-		).toEqual({ valid: false, reason: 'EXPIRED_APPROVAL_TOKEN' });
-		expect(
-			verifyProductionApprovalToken({
-				tokenStr: token({}, otherKeyPair.privateKey),
-				publicKey: PUBLIC_KEY,
-				expectedContext: { ...CONTEXT, operationId: deriveProductionOperationId(CONTEXT) },
+		).toThrow('process.exit:1');
+	});
+
+	it('rejects non-Production project URLs', () => {
+		mockExit();
+		expect(() => assertExactProductionProjectRef(PREVIEW_URL)).toThrow('process.exit:1');
+	});
+
+	it('fails closed without TTY when no confirmation seam is provided', () => {
+		mockExit();
+		const fakeStdin = { isTTY: false } as NodeJS.ReadStream;
+		expect(() =>
+			requireOwnerProductionApply({
+				apply: true,
+				dbUrl: PROD_URL,
+				operationType: 'production_migration',
+				confirmationChallenge: 'MIGRATE test',
+				summary: [['Mode', 'test']],
+				stdin: fakeStdin,
+				assertReleaseEvidence: () => ({ sha: 'abc1234' }),
 			}),
-		).toEqual({ valid: false, reason: 'INVALID_SIGNATURE' });
-		expect(
-			verifyProductionApprovalToken({
-				tokenStr: token(),
-				publicKey: PUBLIC_KEY,
-				expectedContext: {
-					...CONTEXT,
-					scope: 'romina-rios-chaparro',
-					operationId: deriveProductionOperationId(CONTEXT),
-				},
+		).toThrow('process.exit:1');
+	});
+
+	it('fails when typed confirmation does not match', () => {
+		mockExit();
+		expect(() =>
+			requireOwnerProductionApply({
+				apply: true,
+				dbUrl: PROD_URL,
+				operationType: 'production_migration',
+				confirmationChallenge: 'MIGRATE exact',
+				summary: [['Mode', 'test']],
+				assertReleaseEvidence: () => ({ sha: 'abc1234' }),
+				readConfirmationLine: () => 'MIGRATE wrong',
 			}),
-		).toEqual({ valid: false, reason: 'SCOPE_MISMATCH' });
-		expect(
-			verifyProductionApprovalToken({
-				tokenStr: 'not-a-valid-token-json',
-				publicKey: PUBLIC_KEY,
-				expectedContext: { ...CONTEXT, operationId: deriveProductionOperationId(CONTEXT) },
+		).toThrow('process.exit:1');
+	});
+
+	it('accepts exact TTY confirmation after identity and release evidence', () => {
+		expect(() =>
+			requireOwnerProductionApply({
+				apply: true,
+				dbUrl: PROD_URL,
+				operationType: 'production_migration',
+				confirmationChallenge: 'MIGRATE exact',
+				summary: [['Mode', 'test']],
+				assertReleaseEvidence: () => ({ sha: 'abc1234' }),
+				readConfirmationLine: () => 'MIGRATE exact',
 			}),
-		).toEqual({ valid: false, reason: 'MALFORMED_APPROVAL_TOKEN' });
-		expect(
-			verifyProductionApprovalToken({
-				tokenStr: token(),
-				publicKey: undefined,
-				expectedContext: { ...CONTEXT, operationId: deriveProductionOperationId(CONTEXT) },
-			}),
-		).toEqual({ valid: false, reason: 'MISSING_OPERATOR_PUBLIC_KEY' });
+		).not.toThrow();
+	});
+
+	it('keeps owner prompts off stdout for machine-readable callers', () => {
+		const stdoutWrite = jest.spyOn(process.stdout, 'write').mockImplementation(() => true);
+		const stderrWrite = jest.spyOn(process.stderr, 'write').mockImplementation(() => true);
+
+		requireOwnerProductionApply({
+			apply: true,
+			dbUrl: PROD_URL,
+			operationType: 'production_migration',
+			confirmationChallenge: 'MIGRATE exact',
+			summary: [['Mode', 'test']],
+			assertReleaseEvidence: () => ({ sha: 'abc1234' }),
+			readConfirmationLine: () => 'MIGRATE exact',
+		});
+
+		expect(stdoutWrite).not.toHaveBeenCalled();
+		expect(stderrWrite).toHaveBeenCalled();
 	});
 });
 
-describe('confirmProductionAction', () => {
-	it('requires external approval and consumes it durably', async () => {
-		process.env.CELEBRA_PROD_APPROVAL_PUBLIC_KEY = PUBLIC_KEY;
-		const operationContext = {
-			operationType: 'production_migration',
-			targetEnv: 'production' as const,
-			scope: TARGET,
-			manifestFingerprint: 'MIGRATE production-test-host',
-		};
-		process.env.CELEBRA_PROD_APPROVAL_TOKEN = createTestApprovalToken(
-			{
-				...operationContext,
-				operationId: deriveProductionOperationId(operationContext),
-				expiresAt: Date.now() + 60_000,
-				nonce: 'nonce-confirm',
-			},
-			keyPair.privateKey,
-		);
-		const consumeApproval = jest.fn(() => ({ consumed: true as const }));
-
-		await expect(
-			confirmProductionAction(TARGET, 'MIGRATE production-test-host', { consumeApproval }),
-		).resolves.toBeUndefined();
-		expect(consumeApproval).toHaveBeenCalledTimes(1);
+describe('crypto authorization removal', () => {
+	it('does not export Ed25519 approval helpers from db-workflow-lib', async () => {
+		const lib = await import('../../scripts/db/db-workflow-lib.ts');
+		expect('verifyProductionApprovalToken' in lib).toBe(false);
+		expect('consumeProductionApproval' in lib).toBe(false);
+		expect('requireProductionConfirmation' in lib).toBe(false);
+		expect('confirmProductionAction' in lib).toBe(false);
+		expect('deriveProductionOperationId' in lib).toBe(false);
 	});
 
-	it('rejects plaintext confirmation, self-issued secrets, and replayed approvals', async () => {
-		process.env.CONFIRM_PROD_MIGRATION = 'MIGRATE production-test-host';
-		mockExit();
-		await expect(
-			confirmProductionAction(TARGET, 'MIGRATE production-test-host'),
-		).rejects.toThrow('process.exit:1');
-
-		process.env.CELEBRA_PROD_AUTH_SECRET = 'legacy-secret';
-		await expect(
-			confirmProductionAction(TARGET, 'MIGRATE production-test-host'),
-		).rejects.toThrow('process.exit:1');
-
-		delete process.env.CELEBRA_PROD_AUTH_SECRET;
-		process.env.CELEBRA_PROD_APPROVAL_PUBLIC_KEY = PUBLIC_KEY;
-		process.env.CELEBRA_PROD_APPROVAL_TOKEN = createTestApprovalToken(
-			{
-				operationType: 'production_migration',
-				targetEnv: 'production',
-				scope: TARGET,
-				manifestFingerprint: 'MIGRATE production-test-host',
-				operationId: deriveProductionOperationId({
-					operationType: 'production_migration',
-					targetEnv: 'production',
-					scope: TARGET,
-					manifestFingerprint: 'MIGRATE production-test-host',
-				}),
-				expiresAt: Date.now() + 60_000,
-				nonce: 'nonce-replay',
-			},
-			keyPair.privateKey,
-		);
-		await expect(
-			confirmProductionAction(TARGET, 'MIGRATE production-test-host', {
-				consumeApproval: () => ({ consumed: false, reason: 'REPLAYED_APPROVAL' }),
-			}),
-		).rejects.toThrow('process.exit:1');
+	it('wires all seven Production mutators to requireOwnerProductionApply', async () => {
+		const { readFileSync } = await import('node:fs');
+		const files = [
+			'scripts/db/push-prod-migrations.ts',
+			'scripts/db/run-prod-patch.ts',
+			'scripts/provision/invitation-promote-cli.ts',
+			'scripts/provision/romina-schema-repair-cli.ts',
+			'scripts/provision/romina-draft-reset-cli.ts',
+			'scripts/provision/legacy-baseline-adoption-cli.ts',
+			'scripts/provision/invitation-update-cli.ts',
+		];
+		for (const file of files) {
+			const source = readFileSync(file, 'utf8');
+			expect(source).toContain('requireOwnerProductionApply');
+			expect(source).not.toContain('consumeProductionApproval');
+			expect(source).not.toContain('CELEBRA_PROD_APPROVAL_TOKEN');
+			expect(source).not.toContain('production_authorization_receipts');
+		}
 	});
 });

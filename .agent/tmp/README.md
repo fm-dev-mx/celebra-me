@@ -10,6 +10,7 @@ is ignored by git except this README.
 | `handoffs/<task-id>/`         | Structured handoff between sequential delegated tasks                  | Delete after task completes                        |
 | `branch-lane-checkpoint.json` | Partial read-only branch-lane evidence (SHAs/hashes + check summaries) | Overwritten or deleted on invalidate / session end |
 | `branch-lane-clearance.json`  | Write-ready branch-lane clearance fingerprint (SHAs/hashes only)       | Overwritten or deleted on invalidate / session end |
+| `release-check-evidence.json` | Pass evidence from `pnpm release-check` (SHA + check metadata only)    | Overwritten on each run; invalidated when HEAD/dirty |
 | Other files/dirs              | Scratch work, scripts, screenshots, QA artifacts                       | Not tracked; clean up manually                     |
 
 `branch-lane-checkpoint.json` and `branch-lane-clearance.json` must never contain credentials,

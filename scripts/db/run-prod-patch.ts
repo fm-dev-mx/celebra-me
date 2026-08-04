@@ -8,12 +8,8 @@ import {
 	validateOwnerUserId,
 	assertSameSupabaseProject,
 } from './sql-safety.ts';
-import {
-	consumeProductionApproval,
-	getProdDbUrl,
-	requireProductionConfirmationSync,
-	runPsql,
-} from './db-workflow-lib.ts';
+import { getProdDbUrl, runPsql } from './db-workflow-lib.ts';
+import { requireOwnerProductionApply } from './owner-production-apply.ts';
 
 /**
  * db:prod:patch disposition: RESTRICT_OWNER_ONLY / KEEP_SPECIALIZED
@@ -21,8 +17,7 @@ import {
  * Narrow owner-only path for reviewed manual SQL patches that cannot yet be
  * expressed as versioned supabase/migrations/*. Not a bypass for
  * invitation:promote or db:prod:migrate. Default operator mode is lint-only
- * (--dry-run). --apply requires external Ed25519 approval matching the exact
- * patch fingerprint and never auto-migrates schema.
+ * (--dry-run). --apply requires interactive owner TTY confirmation.
  */
 
 const dryRun = process.argv.includes('--dry-run');
@@ -39,12 +34,9 @@ function printUsage(): void {
 		'Owner-only specialized maintenance. Prefer supabase/migrations + db:prod:migrate for schema and invitation:promote for managed content.',
 	);
 	console.error(
-		'Apply requires CELEBRA_PROD_APPROVAL_TOKEN and CELEBRA_PROD_APPROVAL_PUBLIC_KEY after reviewing the dry-run output.',
+		'Apply requires `pnpm release-check` evidence and an interactive TTY confirmation.',
 	);
 }
-
-// ── Mode validation ──────────────────────────────────────────────────────
-// Exactly one of --dry-run or --apply is required.
 
 if (dryRun && apply) {
 	console.error('Cannot specify both --dry-run and --apply. Choose one mode.');
@@ -56,8 +48,6 @@ if (!dryRun && !apply) {
 	console.error('       Specify --dry-run (lint only) or --apply (execute after validation).');
 	process.exit(1);
 }
-
-// ── File validation ──────────────────────────────────────────────────────
 
 if (!file || file === '--help' || file === '-h') {
 	printUsage();
@@ -81,8 +71,6 @@ if (!result.ok) {
 	process.exit(1);
 }
 
-// ── Dry-run stops here ───────────────────────────────────────────────────
-
 if (dryRun) {
 	console.info(`Production patch dry-run passed lint: ${path}`);
 	console.info('No database connection was opened and no SQL was executed.');
@@ -91,8 +79,6 @@ if (dryRun) {
 	);
 	process.exit(0);
 }
-
-// ── --apply mode (owner-only) ────────────────────────────────────────────
 
 let validatedOwnerId: string;
 try {
@@ -142,11 +128,17 @@ const manifestFingerprint = createHash('sha256')
 	.update(`${file}\u001f${validatedOwnerId}\u001f${normalizedUrl}\u001f${fullSql}`)
 	.digest('hex');
 
-requireProductionConfirmationSync(new URL(dbUrl).hostname, undefined, {
+requireOwnerProductionApply({
+	apply: true,
+	dbUrl,
 	operationType: 'production_patch',
-	scope: validatedOwnerId,
-	manifestFingerprint,
-	consumeApproval: (payload) => consumeProductionApproval({ dbUrl, payload }),
+	confirmationChallenge: `PATCH ${validatedOwnerId} ${manifestFingerprint}`,
+	summary: [
+		['Mode', 'production SQL patch apply'],
+		['Owner', validatedOwnerId],
+		['Fingerprint', manifestFingerprint],
+		['File', file],
+	],
 });
 
 const execResult = runPsql(fullSql, dbUrl, [normalizedUrl, dbUrl]);

@@ -26,6 +26,7 @@
         "test:e2e:infra": "node scripts/run-e2e-tier.mjs infra",
         "test:e2e:visual": "node scripts/run-e2e-tier.mjs visual",
         "type-check": "astro check && tsc --noEmit -p tsconfig.json",
+        "release-check": "tsx scripts/db/release-check.ts",
         "ci": "pnpm type-check && pnpm validate:structure && pnpm lint && pnpm lint:styles && pnpm validate:ui-governance && pnpm validate:event-parity && pnpm validate:no-pii && pnpm validate:invitation-preparation && pnpm test && pnpm test:e2e:ci && pnpm build:app && pnpm agent:git-safety:check",
         "ci:quick": "node scripts/ci-quick.mjs",
         "ci:diagnose": "node scripts/ci-diagnose.mjs",

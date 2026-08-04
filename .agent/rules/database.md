@@ -64,9 +64,8 @@ task authorization, target classification, and standard guard checks.
 - **Reconciliation Complete**: Production migration-history reconciliation is 100% complete.
 - **Hosted migration state**: Never freeze an applied/pending count in active guidance. Obtain the
   current state with the read-only Production audit before any migration decision.
-- **Pending Migrations**: Do not freeze a hosted pending count here. After adding
-  `20260730101500_mutation_receipt_lock_serialization.sql`, Preview/Production remain pending until
-  authorized guarded migrate + `pnpm db:contract:verify` for each target.
+- **Pending Migrations**: Do not freeze a hosted pending count here. Obtain live pending sets from
+  `pnpm db:prod:audit` / `pnpm db:preview:audit` before any migrate decision.
 - **Migration Ownership**: All schema changes must be introduced through versioned migrations under
   `supabase/migrations/` and promoted Local → Preview → Production through the guarded workflows. Do
   not repair schema or privilege drift with manual Supabase dashboard SQL/grants.
@@ -81,21 +80,27 @@ task authorization, target classification, and standard guard checks.
 - **One-Time Recovery Tool Removed**: `scripts/db/reconcile-prod-baseline.ts` was a one-time
   recovery tool and is no longer part of the repository.
 - **Production Migration Safety Workflow**: `pnpm db:prod:migrate` is the only approved production
-  **schema** mutation path and requires the exact safety workflow:
+  **schema** mutation path. Default is read-only preflight; mutation requires `--apply`:
   1. Target guard check (`db-guard.ts check --target production --operation migrate`)
-  2. Local codebase validation (`pnpm type-check`, `pnpm test`, `pnpm build`)
+  2. Exact Production project-ref identity
   3. Read-only production schema audit (`pnpm db:prod:audit`)
-  4. Dry-run push and allowlist matching (`--allowlist` or `EXPECTED_MIGRATIONS`) 4b. Migration /
-     deployment compatibility (`CELEBRA_TARGET_RELEASE_SHA`, rollout phases in
-     `supabase/migration-rollout-registry.json`; SSOT
+  4. Dry-run push equals `--expected <versions>`
+  5. Migration / deployment compatibility using current clean `HEAD` + rollout registry
+     (`supabase/migration-rollout-registry.json`; SSOT
      `scripts/db/migration-deployment-compatibility.ts`)
-  5. Automatic pre-migration backup (`.backups/prod/...`)
-  6. Interactive prompt requiring `MIGRATE <hostname>` or
-     `CONFIRM_PROD_MIGRATION="MIGRATE <hostname>"`
-  7. Migration application (`supabase db push --db-url <url> --yes`)
-  8. Post-migration schema verification (`supabase_migrations.schema_migrations` audit)
+  6. Valid `pnpm release-check` evidence for the current clean `HEAD` (apply only)
+  7. Verified pre-migration backup (`.backups/prod/...`)
+  8. Shared owner boundary: operation summary + exact interactive TTY confirmation
+  9. Migration application (`supabase db push --db-url <url> --yes`)
+  10. Post-migration `schema_migrations` + `pnpm db:contract:verify --target production`
+  11. Verified post-migration critical backup
+- **Owner authorization**: All owner-only Production mutators use
+  `requireOwnerProductionApply` (explicit `--apply`, Production project identity, agent rejection,
+  release-check evidence, TTY confirmation). No token, secret, or noninteractive confirmation
+  alternative exists. `production_authorization_receipts` is historical inert state.
 - **Hosted identity vs environment selection**: Selecting Preview/Production and having credentials
-  is not authorization. Hosted migrate fails closed without an authorized target-release SHA.
+  is not authorization. Production migrate derives release identity from clean `HEAD` +
+  `pnpm release-check`. Preview migrate still requires `CELEBRA_TARGET_RELEASE_SHA`.
   Contract-phase migrations also require deployed-app evidence (`CELEBRA_DEPLOYED_APP_SHA` /
   `CELEBRA_DEPLOYED_APP_CAPABILITIES`). Local is not gated by hosted deployment identity. See
   `docs/database-workflow.md` → Migration / Deployment Compatibility Contract.

@@ -26,24 +26,19 @@ const VALID_PROD_DB_URL = 'postgresql://postgres:***@db.abcdefghijklm.supabase.c
 // These are mutable variables that the mock closures capture.
 let mockRunPsql: jest.Mock;
 let mockGetProdDbUrl: jest.Mock;
+let mockRequireOwnerProductionApply: jest.Mock;
 
 jest.mock('../../scripts/db/db-workflow-lib', () => ({
 	runPsql: (...args: unknown[]) => mockRunPsql(...args),
 	getProdDbUrl: (...args: unknown[]) => mockGetProdDbUrl(...args),
-	consumeProductionApproval: async () => ({ consumed: true }),
-	requireProductionConfirmationSync: () => {
-		if (
-			!process.env.CELEBRA_PROD_APPROVAL_TOKEN ||
-			!process.env.CELEBRA_PROD_APPROVAL_PUBLIC_KEY
-		) {
-			console.error('PRODUCTION_AUTHORIZATION_FAILED [MISSING_APPROVAL_TOKEN]');
-			process.exit(1);
-		}
-	},
 	fail: (message: string) => {
 		console.error(message);
 		process.exit(1);
 	},
+}));
+
+jest.mock('../../scripts/db/owner-production-apply', () => ({
+	requireOwnerProductionApply: (...args: unknown[]) => mockRequireOwnerProductionApply(...args),
 }));
 
 let exitCode: number | null;
@@ -56,14 +51,12 @@ beforeEach(() => {
 		url: VALID_PROD_DB_URL,
 		source: 'test-mock',
 	});
+	mockRequireOwnerProductionApply = jest.fn();
 
 	exitCode = null;
 	// Clear env vars that could interfere with tests
 	delete process.env.SUPABASE_URL;
 	delete process.env.PROD_DB_URL;
-	delete process.env.CONFIRM_PROD_MIGRATION;
-	delete process.env.CELEBRA_PROD_APPROVAL_TOKEN;
-	delete process.env.CELEBRA_PROD_APPROVAL_PUBLIC_KEY;
 	delete process.env.CELEBRA_TASK_SCOPE;
 
 	jest.spyOn(process, 'exit').mockImplementation(((code?: number) => {
@@ -204,13 +197,12 @@ describe('run-prod-patch orchestration', () => {
 			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
 			setEnv({
 				SUPABASE_URL: VALID_SUPABASE_URL,
-				CELEBRA_PROD_APPROVAL_TOKEN: 'external-token',
-				CELEBRA_PROD_APPROVAL_PUBLIC_KEY: 'external-public-key',
 			});
 			importRunner();
 
 			// The runner does not call process.exit(0) on success — it falls
 			// off the end. Verify runPsql was called correctly instead.
+			expect(mockRequireOwnerProductionApply).toHaveBeenCalledTimes(1);
 			expect(mockRunPsql).toHaveBeenCalledTimes(1);
 
 			const [sqlArg, dbUrlArg, redactArg] = mockRunPsql.mock.calls[0];
@@ -230,8 +222,6 @@ describe('run-prod-patch orchestration', () => {
 			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
 			setEnv({
 				SUPABASE_URL: VALID_SUPABASE_URL,
-				CELEBRA_PROD_APPROVAL_TOKEN: 'external-token',
-				CELEBRA_PROD_APPROVAL_PUBLIC_KEY: 'external-public-key',
 			});
 			importRunner();
 
@@ -249,8 +239,6 @@ describe('run-prod-patch orchestration', () => {
 			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
 			setEnv({
 				SUPABASE_URL: VALID_SUPABASE_URL,
-				CELEBRA_PROD_APPROVAL_TOKEN: 'external-token',
-				CELEBRA_PROD_APPROVAL_PUBLIC_KEY: 'external-public-key',
 			});
 			importRunner();
 
@@ -259,7 +247,11 @@ describe('run-prod-patch orchestration', () => {
 			expect(sqlArg).toContain(`'${VALID_SUPABASE_URL}'`);
 		});
 
-		it('exits 1 when external approval evidence is missing', () => {
+		it('exits 1 when owner boundary rejects apply', () => {
+			mockRequireOwnerProductionApply.mockImplementation(() => {
+				console.error('OWNER_APPLY_REQUIRED');
+				process.exit(1);
+			});
 			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
 			setEnv({ SUPABASE_URL: VALID_SUPABASE_URL });
 			importRunner();
@@ -275,8 +267,6 @@ describe('run-prod-patch orchestration', () => {
 			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
 			setEnv({
 				SUPABASE_URL: VALID_SUPABASE_URL,
-				CELEBRA_PROD_APPROVAL_TOKEN: 'external-token',
-				CELEBRA_PROD_APPROVAL_PUBLIC_KEY: 'external-public-key',
 			});
 			importRunner();
 

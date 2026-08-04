@@ -79,7 +79,8 @@ selected target aborts the complete mutation phase.
 | `pnpm db:branch:parity`                    | `scripts/db/`  | read-only branch migration identity/content + DB-sensitive detection (`--json`)    |
 | `pnpm db:branch:diagnose`                  | `scripts/db/`  | read-only branch-lane diagnosis from structured evidence (`--evidence-json`)       |
 | `pnpm db:branch:remediate-disposable`      | `scripts/db/`  | verify then rebuild disposable-test only (`--verify-only` / `--execute`)           |
-| `pnpm db:prod:migrate`                     | `scripts/db/`  | apply reviewed migrations to production (with preflight checks & backup)           |
+| `pnpm release-check`                       | `scripts/db/`  | clean-HEAD type-check + test + build; writes release evidence                      |
+| `pnpm db:prod:migrate`                     | `scripts/db/`  | Production schema preflight / apply (`--expected`, optional `--apply` + TTY)       |
 | `pnpm db:preview:migrate`                  | `scripts/db/`  | apply pending migrations to Preview (`PREVIEW_DB_URL`)                             |
 | `pnpm db:preview:audit`                    | `scripts/db/`  | read-only Preview schema drift audit (`PREVIEW_DB_URL`)                            |
 | `pnpm db:disposable:reset`                 | `scripts/db/`  | reset isolated disposable test environment container                               |
