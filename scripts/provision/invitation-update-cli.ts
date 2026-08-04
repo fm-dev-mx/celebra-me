@@ -30,12 +30,7 @@ import { verifyPreviewWriteAuthorization } from './preview-write-auth.ts';
 import { readFastInvitationInventory } from './invitation-status-inventory.ts';
 import { evaluateInvitationReadiness } from './invitation-readiness.ts';
 import { LOCAL_DB_URL, redactCredentials } from '../db/db-target-config.ts';
-import {
-	getSecretFromEnvOrFiles,
-	PREVIEW_SECRET_FILES,
-	getProdDbUrl,
-} from '../db/db-workflow-lib.ts';
-import { requireOwnerProductionApply } from '../db/owner-production-apply.ts';
+import { getSecretFromEnvOrFiles, PREVIEW_SECRET_FILES } from '../db/db-workflow-lib.ts';
 import { finalizePreviewApprovalArtifact } from './preview-approval-service.ts';
 import {
 	formatStatusReport,
@@ -48,7 +43,6 @@ import {
 	type TargetPlanData,
 	type TargetApplyResultData,
 } from './invitation-update-presenter.ts';
-import { runProductionLegacyAdoption } from './legacy-production-adoption-service.ts';
 import { establishPreviewProvenanceBaseline } from './preview-provenance-baseline-service.ts';
 import { runPreviewApply } from './preview-apply.ts';
 import type { OperationalPlan } from './invitation-update-plan.ts';
@@ -168,8 +162,6 @@ Usage:
   pnpm invitation:update --status [--slug <slug>] [--targets <targets>] [--json]
   pnpm invitation:update --slug <slug> --targets local|preview|local,preview --dry-run|--apply [--non-interactive] [--source-dir <dir>|--package <path>]
   pnpm invitation:update --artifact <path> --evidence <path> --apply
-  pnpm invitation:update --adoption-plan --slug romina-rios-chaparro --targets production --package <path> --approval-artifact <path> [--adoption-manifest <path>] [--json]
-  pnpm invitation:update --adoption-apply --slug romina-rios-chaparro --targets production --package <path> --approval-artifact <path> --adoption-manifest <path> [--json]
   pnpm invitation:update --preview-provenance --slug <slug> --targets preview --package <path> --dry-run [--json]
   pnpm invitation:update --preview-provenance --slug <slug> --targets preview --package <path> --approval-artifact <path> --apply [--json]
 
@@ -192,10 +184,7 @@ Options:
   --verbose                    Show full field values and plan IDs in terminal output
   --json                       Format output as JSON
   --owner-user-id <uuid>       Optional override/assertion; new invites default to a dedicated host ({hostLoginAlias}@clientes.celebra.invalid)
-  --adoption-plan              Read-only plan for the isolated Production legacy adoption (Romina MAINTENANCE_ONLY)
-  --adoption-apply             Apply the isolated Production legacy adoption after exact confirmation (Romina MAINTENANCE_ONLY)
-  --approval-artifact <path>   Exact approved Preview artifact required for legacy adoption
-  --adoption-manifest <path>   Exact immutable adoption manifest required for legacy adoption apply
+  --approval-artifact <path>   Exact approved Preview artifact required for --preview-provenance apply
   --preview-provenance         Establish the Preview provenance baseline without changing content (specialized)
   --help, -h                   Show this help message
 
@@ -219,8 +208,6 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 		return;
 	}
 
-	const adoptionPlan = args.includes('--adoption-plan');
-	const adoptionApply = args.includes('--adoption-apply');
 	const previewProvenance = args.includes('--preview-provenance');
 	if (previewProvenance) {
 		const slug = value(args, '--slug');
@@ -250,76 +237,6 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 		else
 			console.log(
 				`Provenance de Preview: ${result.status === 'BASELINED' ? 'registrada' : result.status === 'IN_SYNC' ? 'ya verificada' : result.status === 'EVIDENCE_UNAVAILABLE' ? 'sin evidencia suficiente' : 'planificada'}.`,
-			);
-		return;
-	}
-	if (adoptionPlan || adoptionApply) {
-		if (adoptionPlan && adoptionApply) {
-			throw new Error(
-				'Elija exactamente una operación de adopción: --adoption-plan o --adoption-apply.',
-			);
-		}
-		if (args.includes('--status') || args.includes('--dry-run') || args.includes('--apply')) {
-			throw new Error(
-				'La adopción legacy no se combina con los modos normales de actualización.',
-			);
-		}
-		const slug = value(args, '--slug');
-		const targets = parseTargets(value(args, '--targets'));
-		const packagePath = value(args, '--package');
-		const approvalArtifactPath = value(args, '--approval-artifact');
-		const manifestPath = value(args, '--adoption-manifest');
-		if (
-			slug !== 'romina-rios-chaparro' ||
-			targets.length !== 3 ||
-			targets[2] !== 'production' ||
-			!packagePath ||
-			!approvalArtifactPath ||
-			(adoptionApply && !manifestPath)
-		) {
-			throw new Error(
-				'La adopción legacy requiere exactamente Production, Romina, --package, --approval-artifact y, al aplicar, --adoption-manifest.',
-			);
-		}
-		const planned = await runProductionLegacyAdoption({
-			packagePath,
-			approvalArtifactPath,
-			manifestPath,
-			apply: false,
-		});
-		if (!adoptionApply || planned.status === 'IN_SYNC') {
-			if (json) console.log(JSON.stringify(planned, null, 2));
-			else {
-				console.log(
-					`Adopción legacy de Romina: ${planned.status === 'IN_SYNC' ? 'ya sincronizada' : 'planificada'}.`,
-				);
-				console.log(`Manifiesto: ${planned.manifestPath}`);
-				console.log(`Hash del plan: ${planned.planHash}`);
-			}
-			return;
-		}
-		const { url } = getProdDbUrl();
-		requireOwnerProductionApply({
-			apply: true,
-			dbUrl: url,
-			operationType: 'legacy_adoption',
-			confirmationChallenge: `ADOPT romina-rios-chaparro ${planned.packageHash}`,
-			summary: [
-				['Mode', 'legacy adoption'],
-				['Slug', 'romina-rios-chaparro'],
-				['Package hash', planned.packageHash],
-			],
-		});
-		const applied = await runProductionLegacyAdoption({
-			packagePath,
-			approvalArtifactPath,
-			manifestPath,
-			apply: true,
-		});
-		if (json) console.log(JSON.stringify(applied, null, 2));
-		else
-			console.log(
-				`Adopción legacy de Romina: ${applied.status === 'ADOPTED' ? 'completada' : 'ya sincronizada'}.`,
 			);
 		return;
 	}

@@ -91,7 +91,6 @@
         "validate:event-parity": "tsx scripts/validate-event-parity.ts --allowMissingDb",
         "dbs": "tsx scripts/provision/dbs-cli.ts",
         "invitation:update": "tsx scripts/provision/invitation-update-cli.ts",
-        "invitation:legacy-baseline-adoption": "tsx scripts/provision/legacy-baseline-adoption-cli.ts",
         "invitation:reconcile": "tsx scripts/provision/invitation-reconcile-cli.ts",
         "invitation:content-parity": "tsx scripts/provision/content-parity-cli.ts",
         "invitation:promote": "tsx scripts/provision/invitation-promote-cli.ts",

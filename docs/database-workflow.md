@@ -214,8 +214,7 @@ Definition → normalized release → Local → immutable package → Preview �
 
 Production never imports from the Preview DB or Preview Storage. Mirror is never promotion.
 Normal `invitation:update` is Local/Preview only; use `invitation:promote` for Production managed
-content. Temporary Production one-offs (`romina-draft-reset`, `invitation:update --adoption-*`,
-`legacy-baseline-adoption`) and their retirement conditions are listed in
+content. Temporary Production one-off (`romina-draft-reset`) and its retirement condition are listed in
 [`.agent/rules/invitation-production.md`](../.agent/rules/invitation-production.md).
 Credential presence, worktree path, runtime target, and UI banners do not authorize mutations.
 
@@ -507,7 +506,7 @@ application login substitute. Host invitation flows continue to use real `host_c
   confirmation → `supabase db push` → migration-history + contract verification → post-migration
   backup.
 - Release identity for Production is the current clean `HEAD` (not `CELEBRA_TARGET_RELEASE_SHA`).
-- Shared owner boundary: `requireOwnerProductionApply` (also used by promote/patch/repair/adoption).
+- Shared owner boundary: `requireOwnerProductionApply` (also used by promote/patch/draft-reset).
 - Rejects `CELEBRA_AGENT_CONTEXT`. No token, secret, env, or noninteractive confirmation alternative.
 - `public.production_authorization_receipts` is historical inert state from migration
   `20260802090000`; no mutation path inserts into or depends on it.

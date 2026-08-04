@@ -152,12 +152,7 @@ The batch projection uses only the managed asset `id` and semantic `key` for rec
 paths, buckets, provider URLs, content hashes, and environment-specific identifiers are neither
 queried as semantic identity nor included in the public snapshot.
 
-## Legacy administrative baseline (observability contract)
-
-Legacy baseline adoption is metadata-only provenance preparation. Operational commands, apply
-recovery evidence, and retirement conditions are owned by
-[`.agent/rules/invitation-production.md`](../../.agent/rules/invitation-production.md) and
-[`docs/database-workflow.md`](../database-workflow.md).
+## Schema observability contract
 
 Schema signals in this dashboard use **migration_history_parity** evidence
 (`scripts/status-core/migration-probe.ts`). They are not equivalent to `pnpm db:*:audit`

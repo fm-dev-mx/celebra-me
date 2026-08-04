@@ -4,7 +4,7 @@
  * Discovers every requireOwnerProductionApply caller under scripts/ (all .ts files),
  * compares against the approved mutator registry, and proves gate-before-first-write
  * ordering. Permanent families: schema migrate, managed promote, SQL patch.
- * Temporary one-offs remain registered until Goal 4 retires them.
+ * Temporary one-offs remain registered until retired (e.g. romina-draft-reset).
  */
 
 import { afterEach, describe, expect, it, jest } from '@jest/globals';
@@ -59,18 +59,6 @@ const APPROVED_MUTATORS: MutatorSpec[] = [
 		file: 'scripts/provision/romina-draft-reset-cli.ts',
 		firstWritePattern: /applyRominaDraftReset\s*\(/,
 		preflightPatterns: [/evaluatePromotionBackupGate/, /BACKUP_REQUIRED/],
-		family: 'pending_one_off',
-	},
-	{
-		file: 'scripts/provision/legacy-baseline-adoption-cli.ts',
-		firstWritePattern: /applyLegacyBaselineAdoption\s*\(/,
-		preflightPatterns: [/captureLegacyBaselinePreWriteSnapshot/, /RECOVERY_SNAPSHOT/],
-		family: 'pending_one_off',
-	},
-	{
-		file: 'scripts/provision/invitation-update-cli.ts',
-		firstWritePattern: /const applied = await runProductionLegacyAdoption\s*\(/,
-		preflightPatterns: [/adoption-apply/, /const planned = await runProductionLegacyAdoption/],
 		family: 'pending_one_off',
 	},
 ];

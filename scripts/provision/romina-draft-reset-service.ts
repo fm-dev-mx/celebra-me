@@ -1,6 +1,57 @@
-import { runPsql, sqlLiteral } from '../db/db-workflow-lib.ts';
+import { getProdDbUrl, runPsql, sqlLiteral } from '../db/db-workflow-lib.ts';
 import type { RominaDraftResetPlan } from './romina-draft-reset.ts';
 import { deriveRominaReceiptOperationId } from './romina-shared-helpers.ts';
+
+export interface RominaProductionContentState {
+	draft: {
+		content: Record<string, unknown> | null;
+		status: string | null;
+		updatedAt: string | null;
+	};
+	published: {
+		content: Record<string, unknown> | null;
+		version: number | null;
+	};
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function parsePsqlJson(stdout: string): unknown {
+	const text = stdout.trim();
+	const start = text.indexOf('{');
+	const end = text.lastIndexOf('}');
+	if (start < 0 || end < start) return null;
+	return JSON.parse(text.slice(start, end + 1)) as unknown;
+}
+
+export function readRominaProductionState(slug: string): RominaProductionContentState | null {
+	const { url: dbUrl } = getProdDbUrl();
+	const sql = `SELECT jsonb_build_object('draft', (SELECT jsonb_build_object('content', d.content, 'status', d.status, 'updatedAt', d.updated_at) FROM public.invitation_content_drafts d JOIN public.invitations i ON i.id = d.invitation_project_id WHERE i.slug = ${sqlLiteral(slug)} AND i.archived_at IS NULL AND d.deleted_at IS NULL ORDER BY d.updated_at DESC LIMIT 1), 'published', (SELECT jsonb_build_object('content', p.content, 'version', p.version) FROM public.published_invitation_content p JOIN public.invitations i ON i.id = p.invitation_project_id WHERE i.slug = ${sqlLiteral(slug)} AND i.archived_at IS NULL AND p.deleted_at IS NULL ORDER BY p.version DESC, p.created_at DESC LIMIT 1))::text;`;
+	const result = runPsql(sql, dbUrl, {
+		tuplesOnly: true,
+		throwOnError: false,
+		timeoutMs: 30_000,
+		env: { ...process.env, PGOPTIONS: '-c default_transaction_read_only=on' },
+	});
+	if (result.status !== 0) return null;
+	const parsed = parsePsqlJson(result.stdout);
+	if (!isRecord(parsed) || !isRecord(parsed.draft) || !isRecord(parsed.published)) return null;
+	const draftContent = parsed.draft.content;
+	const publishedContent = parsed.published.content;
+	return {
+		draft: {
+			content: isRecord(draftContent) ? draftContent : null,
+			status: typeof parsed.draft.status === 'string' ? parsed.draft.status : null,
+			updatedAt: typeof parsed.draft.updatedAt === 'string' ? parsed.draft.updatedAt : null,
+		},
+		published: {
+			content: isRecord(publishedContent) ? publishedContent : null,
+			version: typeof parsed.published.version === 'number' ? parsed.published.version : null,
+		},
+	};
+}
 
 export interface RominaDraftResetTransactionInput {
 	plan: RominaDraftResetPlan;

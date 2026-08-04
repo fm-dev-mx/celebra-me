@@ -3,7 +3,6 @@ import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environmen
 import { getProdDbUrl, runPsql } from '../db/db-workflow-lib.ts';
 import { requireOwnerProductionApply } from '../db/owner-production-apply.ts';
 import { evaluatePromotionBackupGate } from './invitation-promote.ts';
-import { readLegacyAdoptionCandidate } from './legacy-baseline-adoption.ts';
 import { canonicalize } from './normalized-invitation-release.ts';
 import {
 	buildRominaDraftResetPlan,
@@ -13,7 +12,7 @@ import {
 	ROMINA_DRAFT_RESET_SLUG,
 	verifyRominaDraftResetOutcome,
 } from './romina-draft-reset.ts';
-import { applyRominaDraftReset } from './romina-draft-reset-service.ts';
+import { applyRominaDraftReset, readRominaProductionState } from './romina-draft-reset-service.ts';
 import {
 	deriveRominaReceiptOperationId,
 	deriveStableOperationId,
@@ -52,10 +51,7 @@ function printPlan(plan: ReturnType<typeof buildRominaDraftResetPlan>): void {
 }
 
 function readProductionState() {
-	const candidate = readLegacyAdoptionCandidate({
-		environment: 'production',
-		slug: ROMINA_DRAFT_RESET_SLUG,
-	});
+	const candidate = readRominaProductionState(ROMINA_DRAFT_RESET_SLUG);
 	if (!candidate?.draft.content || !candidate.published.content) {
 		throw new Error(
 			'ROMINA_DRAFT_RESET_PRODUCTION_UNAVAILABLE: complete Production evidence is required.',

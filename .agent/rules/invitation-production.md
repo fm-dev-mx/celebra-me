@@ -169,8 +169,6 @@ delete implementation, package alias, tests, and active docs in a code-only clea
 | Command / path | Pending operation | Removal condition |
 | --- | --- | --- |
 | `pnpm invitation:romina-draft-reset` | Full draft←published reset for `romina-rios-chaparro` | Apply verified or abandoned |
-| `pnpm invitation:update --adoption-plan/--adoption-apply` | Content-changing Romina Production adoption | Apply verified or abandoned; then restore `invitation:update` to Local/Preview only |
-| `pnpm invitation:legacy-baseline-adoption` | Metadata-only provenance baseline for remaining eligible legacy slugs | All eligible invitations adopted or explicitly excluded |
 
 Romina narrow schema-repair was superseded by draft-reset and removed. Operational sequences live in
 [`docs/database-workflow.md`](../../docs/database-workflow.md).
