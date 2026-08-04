@@ -127,7 +127,12 @@ describe('Boda Perla y Carlos provision contract', () => {
 		expect(envelope.envelopeName).toBe('Perla & Carlos');
 
 		const location = content.location as {
-			venues?: Array<{ type: string; venueName: string; time: string }>;
+			venues?: Array<{
+				type: string;
+				venueName: string;
+				time: string;
+				googleMapsUrl?: string;
+			}>;
 			ceremony?: unknown;
 			reception?: unknown;
 			indications?: Array<{ text: string }>;
@@ -141,12 +146,15 @@ describe('Boda Perla y Carlos provision contract', () => {
 			type: 'ceremony',
 			venueName: 'Catedral de Cristo Rey',
 			time: '5:30 p. m.',
+			googleMapsUrl: expect.stringContaining('maps.app.goo.gl'),
 		});
 		expect(location.venues?.[1]).toMatchObject({
 			type: 'reception',
 			venueName: 'Salón El Pedregal',
 			time: '7:30 p. m.',
+			googleMapsUrl: expect.stringContaining('maps.app.goo.gl'),
 		});
+		expect(location.venues?.[0]?.googleMapsUrl).not.toBe(location.venues?.[1]?.googleMapsUrl);
 		expect(location.introHeading).toBe('Sábado, 28 de noviembre de 2026');
 		expect(location.indicationsHeading).toBe('Indicaciones');
 		expect(location.indications?.some((i) => /ceremonia civil/i.test(i.text))).toBe(true);

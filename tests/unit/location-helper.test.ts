@@ -1,4 +1,29 @@
-import { groupVenues, type VenueEntry } from '@/lib/invitation/location-helper';
+import {
+	groupVenues,
+	resolveVenueMapPreviewUrl,
+	type VenueEntry,
+} from '@/lib/invitation/location-helper';
+
+describe('resolveVenueMapPreviewUrl', () => {
+	it('prefers the approved Google Maps URL for a public preview', () => {
+		expect(
+			resolveVenueMapPreviewUrl({
+				mapUrl: 'https://maps.example.com/fallback',
+				googleMapsUrl: 'https://maps.example.com/google',
+			}),
+		).toBe('https://maps.example.com/google');
+	});
+
+	it('falls back through the existing public navigation URLs without inventing coordinates', () => {
+		expect(resolveVenueMapPreviewUrl({ mapUrl: 'https://maps.example.com/map' })).toBe(
+			'https://maps.example.com/map',
+		);
+		expect(resolveVenueMapPreviewUrl({ appleMapsUrl: 'https://maps.example.com/apple' })).toBe(
+			'https://maps.example.com/apple',
+		);
+		expect(resolveVenueMapPreviewUrl({})).toBeUndefined();
+	});
+});
 
 describe('groupVenues', () => {
 	it('returns the same array if empty or single venue', () => {

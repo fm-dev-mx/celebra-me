@@ -39,6 +39,18 @@ export interface GroupedVenue extends VenueEntry {
 }
 
 /**
+ * Returns the safest public navigation URL available for a venue preview.
+ * Coordinates remain the source for an embedded map; this fallback lets a
+ * venue with an approved public map URL still expose a visible map affordance
+ * without inventing coordinates or requiring a provider key.
+ */
+export function resolveVenueMapPreviewUrl(
+	venue: Pick<VenueData, 'googleMapsUrl' | 'mapUrl' | 'appleMapsUrl' | 'wazeUrl'>,
+): string | undefined {
+	return venue.googleMapsUrl ?? venue.mapUrl ?? venue.appleMapsUrl ?? venue.wazeUrl;
+}
+
+/**
  * Normalizes a string for comparison by removing leading/trailing spaces and lowering case.
  */
 function normalize(str?: string): string {
