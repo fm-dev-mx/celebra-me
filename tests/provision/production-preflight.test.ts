@@ -12,7 +12,10 @@ import {
 	ProductionPreflightError,
 	runProductionPreflight,
 } from '../../scripts/provision/production-preflight.ts';
-import type { PreviewApprovalArtifact } from '../../scripts/provision/preview-approval-service.ts';
+import {
+	PREVIEW_APPROVAL_SCHEMA_VERSION,
+	type PreviewApprovalArtifact,
+} from '../../scripts/provision/preview-approval-service.ts';
 
 const dirs: string[] = [];
 const now = new Date('2026-07-23T12:00:00.000Z');
@@ -40,10 +43,12 @@ function packageData(): InvitationPackageData {
 function approval(overrides: Partial<PreviewApprovalArtifact> = {}): PreviewApprovalArtifact {
 	return {
 		approvalState: 'approved',
+		schemaVersion: PREVIEW_APPROVAL_SCHEMA_VERSION,
 		packageHash,
 		sourceHash,
 		metadataHash,
-		projectionHash,
+		canonicalProjectionHash: projectionHash,
+		materializedProjectionHash: 'e'.repeat(32),
 		assetManifestHash,
 		planId: previewPlanId,
 		slug: 'fixture',
@@ -58,7 +63,7 @@ function approval(overrides: Partial<PreviewApprovalArtifact> = {}): PreviewAppr
 			packageHash,
 			previewProjectRef: 'iwipdvisoyerfdytuhwi',
 			route: '/xv/fixture',
-			projectionHash,
+			projectionHash: 'e'.repeat(32),
 			planId: previewPlanId,
 			reviewedAt: '2026-07-23T11:30:00.000Z',
 			reviewedBy: 'qa@celebra-me.test',

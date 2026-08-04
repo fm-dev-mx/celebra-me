@@ -1,12 +1,28 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 
+/** Current Preview approval artifact contract. Older schemas are rejected, not migrated. */
+export const PREVIEW_APPROVAL_SCHEMA_VERSION = '2.1.0' as const;
+
+const MD5 = /^[a-f0-9]{32}$/;
+const SHA256 = /^[a-f0-9]{64}$/;
+
 export interface PreviewApprovalArtifact {
 	approvalState: 'pending_hosted_validation' | 'approved';
+	schemaVersion: typeof PREVIEW_APPROVAL_SCHEMA_VERSION;
 	packageHash: string;
 	sourceHash: string;
 	metadataHash: string;
-	projectionHash: string;
+	/**
+	 * Canonical package projection hash (environment-neutral published content).
+	 * Production release identity binds to this value.
+	 */
+	canonicalProjectionHash: string;
+	/**
+	 * Preview environment-materialized projection hash (includes Preview asset IDs/URLs).
+	 * Hosted Preview validation evidence binds to this value.
+	 */
+	materializedProjectionHash: string;
 	assetManifestHash: string;
 	planId?: string;
 	slug: string;
@@ -16,12 +32,12 @@ export interface PreviewApprovalArtifact {
 	approvedBy?: string;
 	intendedProductionProjectRef?: string;
 	route: string;
-	schemaVersion?: string;
 	expectedAssetHashes: Record<string, string>;
 	hostedValidation?: {
 		packageHash: string;
 		previewProjectRef: string;
 		route: string;
+		/** Must equal artifact.materializedProjectionHash. */
 		projectionHash: string;
 		planId: string;
 		reviewedAt: string;
@@ -31,10 +47,13 @@ export interface PreviewApprovalArtifact {
 		storageHashVerification: Record<string, string>;
 	};
 }
+
+/** Production / promote identity — uses the canonical package projection hash. */
 export interface ApprovedReleaseIdentity {
 	packageHash: string;
 	sourceHash: string;
 	metadataHash: string;
+	/** Canonical package projection hash. */
 	projectionHash: string;
 	assetManifestHash: string;
 	planId?: string;
@@ -42,11 +61,25 @@ export interface ApprovedReleaseIdentity {
 	route: string;
 	intendedProductionProjectRef?: string;
 }
+
+function isCurrentContract(artifact: PreviewApprovalArtifact): boolean {
+	return (
+		artifact.schemaVersion === PREVIEW_APPROVAL_SCHEMA_VERSION &&
+		SHA256.test(artifact.packageHash) &&
+		SHA256.test(artifact.sourceHash) &&
+		SHA256.test(artifact.metadataHash) &&
+		SHA256.test(artifact.assetManifestHash) &&
+		MD5.test(artifact.canonicalProjectionHash) &&
+		MD5.test(artifact.materializedProjectionHash)
+	);
+}
+
 export function createPendingPreviewApprovalArtifact(input: {
 	packageHash: string;
 	sourceHash: string;
 	metadataHash: string;
-	projectionHash: string;
+	canonicalProjectionHash: string;
+	materializedProjectionHash: string;
 	assetManifestHash: string;
 	planId?: string;
 	slug: string;
@@ -54,6 +87,14 @@ export function createPendingPreviewApprovalArtifact(input: {
 	route: string;
 	expectedAssetHashes: Record<string, string>;
 }): string {
+	if (
+		!MD5.test(input.canonicalProjectionHash) ||
+		!MD5.test(input.materializedProjectionHash)
+	) {
+		throw new Error(
+			'Preview approval requires valid MD5 canonical and materialized projection hashes.',
+		);
+	}
 	const path = resolve(
 		process.cwd(),
 		'.agent/tmp/approvals',
@@ -61,8 +102,17 @@ export function createPendingPreviewApprovalArtifact(input: {
 	);
 	if (existsSync(path)) {
 		const existing = JSON.parse(readFileSync(path, 'utf8')) as PreviewApprovalArtifact;
-		if (existing.approvalState === 'approved' && existing.packageHash === input.packageHash)
+		// Reuse only a current-contract approved artifact bound to the exact package + both hashes.
+		if (
+			existing.approvalState === 'approved' &&
+			isCurrentContract(existing) &&
+			existing.packageHash === input.packageHash &&
+			existing.canonicalProjectionHash === input.canonicalProjectionHash &&
+			existing.materializedProjectionHash === input.materializedProjectionHash
+		) {
 			return path;
+		}
+		// Old-contract or mismatched artifacts are invalidated by overwrite (not migrated).
 	}
 	mkdirSync(dirname(path), { recursive: true });
 	writeFileSync(
@@ -70,10 +120,10 @@ export function createPendingPreviewApprovalArtifact(input: {
 		JSON.stringify(
 			{
 				...input,
-				schemaVersion: '2.0.0',
+				schemaVersion: PREVIEW_APPROVAL_SCHEMA_VERSION,
 				createdAt: new Date().toISOString(),
 				approvalState: 'pending_hosted_validation',
-			},
+			} satisfies PreviewApprovalArtifact,
 			null,
 			2,
 		),
@@ -87,13 +137,10 @@ function validateStorageEvidence(
 	evidence: NonNullable<PreviewApprovalArtifact['hostedValidation']>,
 ): void {
 	const expectedEntries = Object.entries(artifact.expectedAssetHashes);
-	// No expected assets — nothing to verify against
 	if (expectedEntries.length === 0) return;
-	// Evidence must carry a storageHashVerification map
 	if (!evidence.storageHashVerification || typeof evidence.storageHashVerification !== 'object') {
 		throw new Error('Hosted Preview evidence is missing required storage hash verification.');
 	}
-	// Every expected asset must be present and match
 	for (const [assetPath, expectedHash] of expectedEntries) {
 		if (!(assetPath in evidence.storageHashVerification)) {
 			throw new Error(
@@ -112,7 +159,6 @@ function validateStorageEvidence(
 			);
 		}
 	}
-	// Reject unexpected extra entries
 	if (Object.keys(evidence.storageHashVerification).length > expectedEntries.length) {
 		throw new Error(
 			'Hosted preview evidence contains unexpected storage hash verification entries.',
@@ -130,6 +176,11 @@ export function finalizePreviewApprovalArtifact(
 	const evidence = JSON.parse(
 		readFileSync(resolve(process.cwd(), evidencePath), 'utf8'),
 	) as NonNullable<PreviewApprovalArtifact['hostedValidation']>;
+	if (!isCurrentContract(artifact)) {
+		throw new Error(
+			'Preview approval artifact uses an obsolete contract and must be regenerated (not migrated).',
+		);
+	}
 	if (artifact.approvalState !== 'pending_hosted_validation')
 		throw new Error('Hosted Preview evidence does not satisfy the pending approval artifact.');
 	if (evidence.packageHash !== artifact.packageHash)
@@ -138,7 +189,7 @@ export function finalizePreviewApprovalArtifact(
 		throw new Error('Hosted Preview evidence does not satisfy the pending approval artifact.');
 	if (evidence.route !== artifact.route)
 		throw new Error('Hosted Preview evidence does not satisfy the pending approval artifact.');
-	if (evidence.projectionHash !== artifact.projectionHash)
+	if (evidence.projectionHash !== artifact.materializedProjectionHash)
 		throw new Error('Hosted Preview evidence does not satisfy the pending approval artifact.');
 	if (!Object.values(evidence.checklistResults).every(Boolean))
 		throw new Error('Hosted Preview evidence does not satisfy the pending approval artifact.');
@@ -164,29 +215,23 @@ export function finalizePreviewApprovalArtifact(
 	writeFileSync(resolve(process.cwd(), artifactPath), JSON.stringify(approved, null, 2), 'utf8');
 	return approved;
 }
-function isHashFormatValid(artifact: PreviewApprovalArtifact): boolean {
-	return (
-		/^[a-f0-9]{64}$/.test(artifact.sourceHash) &&
-		/^[a-f0-9]{64}$/.test(artifact.metadataHash) &&
-		/^[a-f0-9]{64}$/.test(artifact.assetManifestHash) &&
-		/^[a-f0-9]{32}$/.test(artifact.projectionHash)
-	);
-}
 
 function checkArtifactHashesAndFormat(
 	artifact: PreviewApprovalArtifact,
 	identity: ApprovedReleaseIdentity,
 ): boolean {
+	if (!isCurrentContract(artifact)) return false;
 	if (artifact.approvalState !== 'approved') return false;
 	if (artifact.packageHash !== identity.packageHash) return false;
 	if (artifact.sourceHash !== identity.sourceHash) return false;
 	if (artifact.metadataHash !== identity.metadataHash) return false;
-	if (artifact.projectionHash !== identity.projectionHash) return false;
+	if (artifact.canonicalProjectionHash !== identity.projectionHash) return false;
 	if (artifact.assetManifestHash !== identity.assetManifestHash) return false;
 	if (artifact.slug !== identity.slug) return false;
 	if (artifact.route !== identity.route) return false;
 	if (!artifact.hostedValidation) return false;
-	if (artifact.hostedValidation.projectionHash !== identity.projectionHash) return false;
+	if (artifact.hostedValidation.projectionHash !== artifact.materializedProjectionHash)
+		return false;
 	if (!artifact.planId || artifact.hostedValidation.planId !== artifact.planId) return false;
 	if (!artifact.approvedAt || !artifact.approvedBy) return false;
 	if (!artifact.intendedProductionProjectRef) return false;
@@ -195,7 +240,7 @@ function checkArtifactHashesAndFormat(
 		artifact.intendedProductionProjectRef !== identity.intendedProductionProjectRef
 	)
 		return false;
-	return isHashFormatValid(artifact);
+	return true;
 }
 
 export function verifyPreviewApprovalArtifact(
@@ -215,6 +260,11 @@ export function verifyPreviewApprovalArtifact(
 	if (!path)
 		throw new Error(`No approved Preview artifact exists for package ${identity.packageHash}.`);
 	const artifact = JSON.parse(readFileSync(path, 'utf8')) as PreviewApprovalArtifact;
+	if (!isCurrentContract(artifact)) {
+		throw new Error(
+			'Preview approval artifact uses an obsolete contract and must be regenerated (not migrated).',
+		);
+	}
 	if (!checkArtifactHashesAndFormat(artifact, identity)) {
 		throw new Error(
 			'Preview approval artifact is stale, incomplete, or does not match the exact release hashes.',

@@ -34,7 +34,7 @@ function pkg(): InvitationPackageData {
 		sourceHash,
 		metadataHash: 'c'.repeat(64),
 		assetManifestHash: 'd'.repeat(64),
-		projectionHash: 'e'.repeat(32),
+		projectionHash: 'c'.repeat(32),
 	} as InvitationPackageData;
 }
 
@@ -96,7 +96,11 @@ describe('Preview apply adapter integration', () => {
 		expect(applied.plan?.planId).toBe(confirmedPlan.planId);
 		expect(applied.receipt?.planId).toBe(confirmedPlan.planId);
 		expect(createPendingApproval).toHaveBeenCalledWith(
-			expect.objectContaining({ planId: confirmedPlan.planId }),
+			expect.objectContaining({
+				planId: confirmedPlan.planId,
+				canonicalProjectionHash: 'c'.repeat(32),
+				materializedProjectionHash: 'e'.repeat(32),
+			}),
 		);
 	});
 

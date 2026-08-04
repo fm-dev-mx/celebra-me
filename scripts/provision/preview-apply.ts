@@ -43,7 +43,8 @@ export async function runPreviewApply(input: {
 		slug: result.slug,
 		previewProjectRef: result.projectRef,
 		route: result.route,
-		projectionHash: result.projectionHash,
+		canonicalProjectionHash: input.packageData.projectionHash,
+		materializedProjectionHash: result.projectionHash,
 		expectedAssetHashes: result.verifiedAssetHashes,
 	});
 	return result;
