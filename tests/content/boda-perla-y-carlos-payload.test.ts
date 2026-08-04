@@ -55,6 +55,8 @@ describe('Boda Perla y Carlos provision contract', () => {
 		expect(profile).toContain('--perla-gold');
 		expect(profile).toContain('--pa-card-bg-image');
 		expect(profile).toContain('--rsvp-bg');
+		expect(profile).toContain('--perla-countdown-padding-block');
+		expect(profile).toContain('--perla-location-card-gap');
 		expect(profile).toContain("data-reveal-state='sealed'");
 		expect(profile).toContain("data-reveal-state='letter-held'");
 		expect(profile).toContain("data-reveal-state='preview-opened'");
@@ -63,6 +65,10 @@ describe('Boda Perla y Carlos provision contract', () => {
 		expect(profile).toContain('event-location__heading');
 		expect(profile).toContain('-webkit-text-fill-color: var(--perla-cream)');
 		expect(profile).toMatch(/\.invitation-hero__title[\s\S]*background:\s*none/);
+		expect(profile).toContain('family__group--group-0');
+		expect(profile).toContain('family__group--group-1');
+		expect(profile).not.toContain('interlude-free');
+		expect(profile).toMatch(/--env-bg:[\s\S]*var\(--perla-sand\)/);
 	});
 
 	it('keeps Hero chrome hidden during sealed, letter-held, and preview-opened', () => {
