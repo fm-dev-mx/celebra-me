@@ -1,15 +1,15 @@
 /**
  * Migration-history retrieval and schema lifecycle classification.
- * Reuses audit-db parity + schema-lifecycle-state; does not reimplement rules.
+ * Reuses shared history reader + schema-lifecycle-state; does not reimplement rules.
+ *
+ * Sync/async adapters are thin wrappers over one SQL query path and one
+ * result-classification function. Observability must use StatusProbeSession.
  */
 
 import { existsSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
-import {
-	evaluateMigrationHistoryParity,
-	fetchRemoteMigrationVersions,
-} from '../db/audit-db.ts';
-import { PROJECT_ROOT, runCommand } from '../db/db-workflow-lib.ts';
+import { evaluateMigrationHistoryParity } from '../db/audit-db.ts';
+import { PROJECT_ROOT } from '../db/db-workflow-lib.ts';
 import {
 	classifySchemaLifecycle,
 	type SchemaLifecycleState,
@@ -77,6 +77,39 @@ function unverifiedLifecycle(): MigrationLifecycleResult {
 	};
 }
 
+function classifyRemoteVersions(remoteVersions: string[]): MigrationLifecycleResult {
+	const parity = evaluateMigrationHistoryParity(
+		listExpectedMigrationVersions(),
+		remoteVersions,
+	);
+	return toLifecycle(parity, remoteVersions);
+}
+
+function classifyFromPsqlResult(result: {
+	status: number | null;
+	stdout: string;
+	stderr: string;
+}): MigrationLifecycleResult {
+	if (result.status !== 0) {
+		const combined = `${result.stderr}\n${result.stdout}`;
+		const uninitialized =
+			(combined.includes('42P01') || combined.includes('does not exist')) &&
+			combined.includes('supabase_migrations.schema_migrations');
+		if (uninitialized) {
+			return classifyRemoteVersions([]);
+		}
+		return unverifiedLifecycle();
+	}
+	const remoteVersions = result.stdout
+		.split(/\r?\n/)
+		.map((v) => v.trim())
+		.filter(Boolean);
+	return classifyRemoteVersions(remoteVersions);
+}
+
+const MIGRATION_HISTORY_SQL =
+	'select version from supabase_migrations.schema_migrations order by version;';
+
 /**
  * Read migration lifecycle for a DB URL with explicit timeout via session/runner.
  * Counts as one session invocation when using StatusProbeSession memoization of the SQL.
@@ -85,30 +118,9 @@ export async function readMigrationLifecycleForUrl(
 	dbUrl: string,
 	session: StatusProbeSession,
 ): Promise<MigrationLifecycleResult> {
-	const sql = 'select version from supabase_migrations.schema_migrations order by version;';
 	try {
-		const result = await session.psql(sql, dbUrl, { tuplesOnly: true });
-		if (result.status !== 0) {
-			const combined = `${result.stderr}\n${result.stdout}`;
-			const uninitialized =
-				(combined.includes('42P01') || combined.includes('does not exist')) &&
-				combined.includes('supabase_migrations.schema_migrations');
-			if (uninitialized) {
-				const expected = listExpectedMigrationVersions();
-				const parity = evaluateMigrationHistoryParity(expected, []);
-				return toLifecycle(parity, []);
-			}
-			return unverifiedLifecycle();
-		}
-		const remoteVersions = result.stdout
-			.split(/\r?\n/)
-			.map((v) => v.trim())
-			.filter(Boolean);
-		const parity = evaluateMigrationHistoryParity(
-			listExpectedMigrationVersions(),
-			remoteVersions,
-		);
-		return toLifecycle(parity, remoteVersions);
+		const result = await session.psql(MIGRATION_HISTORY_SQL, dbUrl, { tuplesOnly: true });
+		return classifyFromPsqlResult(result);
 	} catch {
 		return unverifiedLifecycle();
 	}
@@ -118,59 +130,12 @@ export function readMigrationLifecycleForUrlSync(
 	dbUrl: string,
 	session: StatusProbeSession,
 ): MigrationLifecycleResult {
-	const sql = 'select version from supabase_migrations.schema_migrations order by version;';
 	try {
-		const result = session.psqlSync(sql, dbUrl, { tuplesOnly: true, throwOnError: false });
-		if (result.status !== 0) {
-			const combined = `${result.stderr}\n${result.stdout}`;
-			const uninitialized =
-				(combined.includes('42P01') || combined.includes('does not exist')) &&
-				combined.includes('supabase_migrations.schema_migrations');
-			if (uninitialized) {
-				const expected = listExpectedMigrationVersions();
-				const parity = evaluateMigrationHistoryParity(expected, []);
-				return toLifecycle(parity, []);
-			}
-			return unverifiedLifecycle();
-		}
-		const remoteVersions = result.stdout
-			.split(/\r?\n/)
-			.map((v) => v.trim())
-			.filter(Boolean);
-		const parity = evaluateMigrationHistoryParity(
-			listExpectedMigrationVersions(),
-			remoteVersions,
-		);
-		return toLifecycle(parity, remoteVersions);
-	} catch {
-		return unverifiedLifecycle();
-	}
-}
-
-/**
- * Observability-compatible path: uses audit-db fetch with an explicit timeout runner.
- * Prefer session-based APIs for managed-status; this helper preserves budget consume sites.
- */
-export function readMigrationLifecycleWithTimeout(
-	dbUrl: string,
-	timeoutMs: number,
-): MigrationLifecycleResult {
-	try {
-		const remote = fetchRemoteMigrationVersions(dbUrl, (command, args, options) =>
-			runCommand(command, args, {
-				...options,
-				env: {
-					...process.env,
-					PGOPTIONS: '-c default_transaction_read_only=on',
-				},
-				timeoutMs,
-			}),
-		);
-		const parity = evaluateMigrationHistoryParity(
-			listExpectedMigrationVersions(),
-			remote.remoteVersions,
-		);
-		return toLifecycle(parity, remote.remoteVersions);
+		const result = session.psqlSync(MIGRATION_HISTORY_SQL, dbUrl, {
+			tuplesOnly: true,
+			throwOnError: false,
+		});
+		return classifyFromPsqlResult(result);
 	} catch {
 		return unverifiedLifecycle();
 	}

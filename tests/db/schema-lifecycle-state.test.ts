@@ -1,5 +1,8 @@
 import { describe, expect, it } from '@jest/globals';
-import { classifySchemaLifecycle } from '../../scripts/db/schema-lifecycle-state.ts';
+import {
+	classifySchemaLifecycle,
+	domainUnverified,
+} from '../../scripts/db/schema-lifecycle-state.ts';
 
 describe('classifySchemaLifecycle', () => {
 	it('classifies verified aligned schema as CURRENT', () => {
@@ -20,5 +23,17 @@ describe('classifySchemaLifecycle', () => {
 
 	it('classifies an unverified audit as UNVERIFIED', () => {
 		expect(classifySchemaLifecycle({ verified: false, pendingMigrations: ['x'] })).toBe('UNVERIFIED');
+	});
+});
+
+describe('domainUnverified', () => {
+	it('returns structured UNVERIFIED without domain-prefixed status tokens', () => {
+		const result = domainUnverified('schema', 'probe failed', 'migration_history_parity');
+		expect(result).toEqual({
+			status: 'UNVERIFIED',
+			domain: 'schema',
+			reason: 'probe failed',
+			evidenceClass: 'migration_history_parity',
+		});
 	});
 });

@@ -152,44 +152,19 @@ The batch projection uses only the managed asset `id` and semantic `key` for rec
 paths, buckets, provider URLs, content hashes, and environment-specific identifiers are neither
 queried as semantic identity nor included in the public snapshot.
 
-## Legacy administrative baseline preparation
+## Legacy administrative baseline (observability contract)
 
-`pnpm invitation:legacy-baseline-adoption` is the only preparation path for legacy invitations whose
-historical managed baseline cannot be proved. It is deliberately separate from the prior Romina-only
-content-changing maintenance command: this flow is metadata-only and stops after inspection,
-manifest generation, and dry-run.
-
-The command creates one consolidated manifest for Abril and Romina. Each entry records a Production
-candidate fingerprint, the shared normalization/contract version, managed scope, semantic asset
-keys, cross-environment comparison summaries, exclusions, unresolved ambiguity, and the
-deterministic expected snapshot transition. It never stores raw invitation content, field values,
-URLs, storage paths, UUIDs, database identifiers, credentials, or database errors in the manifest.
-
-Production is marked `production_administrative_adoption`: an explicitly reviewed initial
-checkpoint, never reconstructed historical truth. An entry is eligible only after schema,
-client/owner, published/draft, complete-scope, and unambiguous semantic-asset validation. A valid
-delivery sequence may retain canonical delivery work; unexplained or contradictory environment
-evidence remains `UNVERIFIED` and blocks only that entry.
-
-```sh
-# generate the local review artifact (no remote write)
-pnpm invitation:legacy-baseline-adoption -- --out .agent/tmp/adoptions/legacy-baseline-adoption-manifest.json --json
-
-# re-inspect all sources and dry-run the exact artifact (writes: 0)
-pnpm invitation:legacy-baseline-adoption -- --manifest .agent/tmp/adoptions/legacy-baseline-adoption-manifest.json --dry-run --json
-```
-
-The manifest includes the future apply command bound to its exact fingerprint. Owner apply requires
-`--manifest-fingerprint`, a verified critical `--backup-manifest`, and
-`requireOwnerProductionApply` (same Production owner boundary as promote/repair). Any relevant
-canonical, Production, scope, normalization, or semantic-asset change changes the entry fingerprint
-and makes dry-run return `STALE_MANIFEST`.
+Legacy baseline adoption is metadata-only provenance preparation. Operational commands, apply
+recovery evidence, and retirement conditions are owned by
+[`.agent/rules/invitation-production.md`](../../.agent/rules/invitation-production.md) and
+[`docs/database-workflow.md`](../database-workflow.md).
 
 Schema signals in this dashboard use **migration_history_parity** evidence
 (`scripts/status-core/migration-probe.ts`). They are not equivalent to `pnpm db:*:audit`
 **object_audit_readiness**. Axis `UNVERIFIED` values remain axis-scoped (`operationalStatus` vs
-`deliveryStatus`); schema unavailable evidence surfaces as `SCHEMA_UNAVAILABLE` /
-`SCHEMA_UNVERIFIED` reason codes, not as a healthy claim.
+`deliveryStatus`); schema unavailable evidence uses structured
+`{ status: 'UNVERIFIED', domain: 'schema', ... }` (formatters may show `SCHEMA_UNVERIFIED`), not a
+healthy claim.
 
 ## Database projection audit
 
@@ -245,5 +220,3 @@ until requested. Preview and Production are never grouped together.
 - child process/cache: `src/lib/observability/server/snapshot.ts`,
   `src/lib/observability/server/snapshot-cache.ts`
 - UI: `src/components/dashboard/observability/ObservabilityPanel.tsx`
-- legacy-adoption inspection and manifest: `scripts/provision/legacy-baseline-adoption.ts`,
-  `scripts/provision/legacy-baseline-adoption-cli.ts`

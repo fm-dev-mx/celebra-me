@@ -32,20 +32,6 @@ jest.mock('../../scripts/db/audit-db.ts', () => ({
 					: [],
 		};
 	},
-	fetchRemoteMigrationVersions: (
-		_url: string,
-		runner: (command: string, args: string[], options: { timeoutMs?: number }) => {
-			status: number;
-			stdout: string;
-			stderr: string;
-		},
-	) => {
-		const result = runner('psql', [], { timeoutMs: 1000 });
-		return {
-			remoteVersions: result.stdout.trim().split(/\n/).filter(Boolean),
-			isUninitialized: false,
-		};
-	},
 }));
 
 import {
@@ -54,7 +40,6 @@ import {
 	createLiveFreshness,
 	redactProbeError,
 	readMigrationLifecycleForUrlSync,
-	readMigrationLifecycleWithTimeout,
 	mapPool,
 } from '../../scripts/status-core/index.ts';
 
@@ -152,17 +137,18 @@ describe('status-core migration lifecycle', () => {
 	});
 
 	it('returns BEHIND with exact pending IDs when remote lacks later versions', () => {
-		mockRunCommand.mockReturnValue({
+		mockRunPsql.mockReturnValue({
 			status: 0,
 			stdout: '20260730220544\n',
 			stderr: '',
 		});
-		const lifecycle = readMigrationLifecycleWithTimeout('postgres://prod', 2500);
+		const session = new StatusProbeSession({ timeoutMs: 2500 });
+		const lifecycle = readMigrationLifecycleForUrlSync('postgres://prod', session);
 		expect(lifecycle.schemaLifecycle).toBe('BEHIND');
 		expect(lifecycle.pendingMigrations.length).toBeGreaterThan(0);
 		expect(lifecycle.pendingMigrations).toContain('20260802090000');
 		expect(lifecycle.extraMigrations).toEqual([]);
-		expect(mockRunCommand.mock.calls[0]?.[2]).toMatchObject({ timeoutMs: 2500 });
+		expect(mockRunPsql.mock.calls[0]?.[2]).toMatchObject({ timeoutMs: 2500 });
 	});
 
 	it('memoized sync migration read reuses the session query', () => {

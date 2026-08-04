@@ -7,7 +7,8 @@ import { classifyDbTarget } from '../db/db-guard.ts';
 import { runPsql, sqlLiteral } from '../db/db-workflow-lib.ts';
 import type { SchemaLifecycleState } from '../db/schema-lifecycle-state.ts';
 import {
-	readMigrationLifecycleWithTimeout,
+	StatusProbeSession,
+	readMigrationLifecycleForUrlSync,
 } from '../status-core/index.ts';
 import { resolveDbUrlForEnv, type TargetEnv } from '../provision/dbs-status.ts';
 import type { ManagedBaselineReceiptEvidence } from '../provision/managed-merge-baseline.ts';
@@ -543,7 +544,8 @@ export function readMigrationProjection(input: {
 
 	input.budget.consume();
 	try {
-		const lifecycle = readMigrationLifecycleWithTimeout(dbUrl, input.timeoutMs);
+		const session = new StatusProbeSession({ timeoutMs: input.timeoutMs });
+		const lifecycle = readMigrationLifecycleForUrlSync(dbUrl, session);
 		return {
 			environment: input.environment,
 			available: lifecycle.verified,

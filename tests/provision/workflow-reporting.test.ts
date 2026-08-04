@@ -20,7 +20,7 @@ describe('unified workflow dependency reporting', () => {
 				slug: string;
 				environments: Record<string, { status: string; probed?: boolean }>;
 			}>;
-			legacy: { status: string };
+			legacy: { status: string; domain: string };
 		};
 		expect(report.surface).toBe('local_inventory');
 		expect(report.remoteProbe).toBe('not_performed');
@@ -28,8 +28,12 @@ describe('unified workflow dependency reporting', () => {
 		expect(report.definitions).toHaveLength(1);
 		expect(report.definitions[0]).toMatchObject({
 			slug: 'romina-rios-chaparro',
-			environments: { preview: { status: 'INVENTORY_UNVERIFIED', probed: false } },
+			classification: { status: 'UNVERIFIED', domain: 'inventory' },
+			environments: {
+				preview: { status: 'UNVERIFIED', domain: 'inventory', probed: false },
+			},
 		});
-		expect(report.legacy.status).toBe('INVENTORY_UNVERIFIED');
+		expect(report.legacy.status).toBe('UNVERIFIED');
+		expect(report.legacy.domain).toBe('inventory');
 	});
 });

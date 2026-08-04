@@ -1,5 +1,5 @@
+import { domainUnverified } from '../db/schema-lifecycle-state.ts';
 import { listInvitationDefinitions } from './invitations/registry.ts';
-import { formatDomainUnverified } from '../status-core/schema-lifecycle-contract.ts';
 
 export type InvitationUpdateTarget = 'local' | 'preview' | 'production';
 
@@ -156,12 +156,12 @@ export function buildStatusReport(input: StatusReportOptions): Record<string, un
 	const targets =
 		opts.targets && opts.targets.length > 0 ? opts.targets : ['local', 'preview', 'production'];
 
-	const unprobedRemote = formatDomainUnverified(
-		'INVENTORY',
+	const unprobedRemote = domainUnverified(
+		'inventory',
 		'invitation:update --status is local inventory only. Remote environments are not probed. Use pnpm dbs for cross-environment schema/content evidence.',
 	);
-	const unprobedLocal = formatDomainUnverified(
-		'INVENTORY',
+	const unprobedLocal = domainUnverified(
+		'inventory',
 		'Local inventory not yet enriched; this report builder does not probe persistent-local.',
 	);
 
@@ -176,13 +176,13 @@ export function buildStatusReport(input: StatusReportOptions): Record<string, un
 						? {
 								status: unverified.status,
 								domain: unverified.domain,
-								reason: unverified.detail,
+								reason: unverified.reason,
 							}
 						: {
 								status: unverified.status,
 								domain: unverified.domain,
 								probed: false,
-								reason: unverified.detail,
+								reason: unverified.reason,
 							};
 				return [target, envInfo];
 			});
@@ -190,14 +190,18 @@ export function buildStatusReport(input: StatusReportOptions): Record<string, un
 				slug: definition.slug,
 				title: definition.title,
 				createdAt: definition.createdAt,
-				classification: 'INVENTORY_UNVERIFIED',
+				classification: {
+					status: 'UNVERIFIED' as const,
+					domain: 'inventory' as const,
+					reason: 'Local inventory classification only; remote environments are not probed.',
+				},
 				environments: Object.fromEntries(envEntries),
 			};
 		});
 
 	const legacyUnprobed = opts.includeLegacy
-		? formatDomainUnverified(
-				'INVENTORY',
+		? domainUnverified(
+				'inventory',
 				'Legacy discovery is not performed by invitation:update --status without a configured local inventory probe.',
 			)
 		: undefined;
@@ -218,7 +222,7 @@ export function buildStatusReport(input: StatusReportOptions): Record<string, un
 			? {
 					status: legacyUnprobed.status,
 					domain: legacyUnprobed.domain,
-					reason: legacyUnprobed.detail,
+					reason: legacyUnprobed.reason,
 				}
 			: undefined,
 	};

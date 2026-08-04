@@ -21,7 +21,6 @@ export {
 	listExpectedMigrationVersions,
 	readMigrationLifecycleForUrl,
 	readMigrationLifecycleForUrlSync,
-	readMigrationLifecycleWithTimeout,
 	type MigrationLifecycleResult,
 } from './migration-probe.ts';
 

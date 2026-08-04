@@ -24,12 +24,12 @@ import { createHash } from 'node:crypto';
 import {
 	DISPOSABLE_DB_URL,
 	redactDbUrl,
-	runCommand,
 	runPsql,
 	PROJECT_ROOT,
 	resolveDbUrl,
 	classifyDbTarget,
 } from './db-workflow-lib.ts';
+import { fetchRemoteMigrationVersions } from '../status-core/migration-history-reader.ts';
 import { cmdStart, isDisposableDbReady } from './disposable-test-env.ts';
 import { classifySchemaLifecycle } from './schema-lifecycle-state.ts';
 
@@ -326,61 +326,6 @@ export function evaluateMigrationHistoryParity(
 		hasDivergentHistory,
 		errors,
 	};
-}
-
-export interface RemoteMigrationHistoryResult {
-	remoteVersions: string[];
-	isUninitialized: boolean;
-}
-
-export function fetchRemoteMigrationVersions(
-	dbUrl: string,
-	runner: typeof runCommand = runCommand,
-): RemoteMigrationHistoryResult {
-	const sql = 'select version from supabase_migrations.schema_migrations order by version;';
-	const result = runner(
-		'psql',
-		[
-			'--set',
-			'ON_ERROR_STOP=1',
-			'--no-align',
-			'--tuples-only',
-			'--field-separator',
-			'|',
-			'--dbname',
-			dbUrl,
-		],
-		{
-			input: sql,
-			throwOnError: false,
-			redact: [dbUrl],
-		},
-	);
-
-	if (result.status === 0) {
-		const versions = result.stdout
-			.split(/\r?\n/)
-			.map((v) => v.trim())
-			.filter(Boolean);
-		return { remoteVersions: versions, isUninitialized: false };
-	}
-
-	const combinedOutput = `${result.stderr}\n${result.stdout}`;
-	const isMissingSchemaMigrationsTable =
-		(combinedOutput.includes('42P01') || combinedOutput.includes('does not exist')) &&
-		combinedOutput.includes('supabase_migrations.schema_migrations');
-
-	if (isMissingSchemaMigrationsTable) {
-		console.info(
-			'ℹ️  Target database is uninitialized (supabase_migrations.schema_migrations relation does not exist).',
-		);
-		return { remoteVersions: [], isUninitialized: true };
-	}
-
-	const details = combinedOutput.trim();
-	throw new Error(
-		`Failed to query schema_migrations table: exit code ${result.status}.${details ? `\n${details}` : ''}`,
-	);
 }
 
 function runMigrationsAudit(

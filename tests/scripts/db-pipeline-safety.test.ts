@@ -1,10 +1,8 @@
 import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
 import { classifyDbTarget, guardProduction } from '../../scripts/db/db-guard';
 import { enforceDisposableTargetOnly } from '../../scripts/db/apply-migrations';
-import {
-	evaluateMigrationHistoryParity,
-	fetchRemoteMigrationVersions,
-} from '../../scripts/db/audit-db';
+import { evaluateMigrationHistoryParity } from '../../scripts/db/audit-db';
+import { fetchRemoteMigrationVersions } from '../../scripts/status-core/migration-history-reader';
 import {
 	DISPOSABLE_DB_URL,
 	LOCAL_DB_URL,

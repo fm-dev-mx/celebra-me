@@ -7,10 +7,8 @@
  */
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import {
-	evaluateMigrationHistoryParity,
-	fetchRemoteMigrationVersions,
-} from '../db/audit-db.ts';
+import { evaluateMigrationHistoryParity } from '../db/audit-db.ts';
+import { fetchRemoteMigrationVersions } from '../status-core/migration-history-reader.ts';
 import {
 	validateCriticalBackupManifest,
 	type CriticalBackupManifest,

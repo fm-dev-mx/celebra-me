@@ -1,33 +1,21 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const mockRunPsql = jest.fn(() => ({
-	status: 0,
-	stdout: JSON.stringify({ activeInvitationRows: 1, identityConflictsCount: 0, rows: [] }),
-	stderr: '',
-}));
-const mockRunCommand = jest.fn((...args: unknown[]) => {
-	void args;
-	return { status: 0, stdout: '', stderr: '' };
-});
-const mockReadMigrationLifecycleWithTimeout = jest.fn((...args: unknown[]) => {
-	void args;
-	mockRunCommand('psql', [], {
-		env: { ...process.env, PGOPTIONS: '-c default_transaction_read_only=on' },
-	});
+const mockRunPsql = jest.fn((sql: string) => {
+	if (typeof sql === 'string' && sql.includes('schema_migrations')) {
+		return { status: 0, stdout: '', stderr: '' };
+	}
 	return {
-		schemaLifecycle: 'CURRENT',
-		migrationHead: null,
-		pendingMigrations: [],
-		extraMigrations: [],
-		appliedMigrationCount: 0,
-		verified: true,
+		status: 0,
+		stdout: JSON.stringify({ activeInvitationRows: 1, identityConflictsCount: 0, rows: [] }),
+		stderr: '',
 	};
 });
 
 jest.mock('../../scripts/db/db-workflow-lib.ts', () => ({
-	runPsql: mockRunPsql,
-	runCommand: mockRunCommand,
+	PROJECT_ROOT: process.cwd(),
+	runPsql: (...args: unknown[]) => mockRunPsql(...(args as [string])),
+	runCommand: jest.fn(),
 	sqlLiteral: (value: string) => `'${value}'`,
 }));
 jest.mock('../../scripts/db/db-guard.ts', () => ({
@@ -37,10 +25,15 @@ jest.mock('../../scripts/provision/dbs-status.ts', () => ({
 	resolveDbUrlForEnv: (environment: string) => ({ dbUrl: `postgres://${environment}` }),
 	listExpectedMigrationVersions: () => [],
 }));
-jest.mock('../../scripts/status-core/index.ts', () => ({
-	listExpectedMigrationVersions: () => [],
-	readMigrationLifecycleWithTimeout: (...args: unknown[]) =>
-		mockReadMigrationLifecycleWithTimeout(...args),
+jest.mock('../../scripts/db/audit-db.ts', () => ({
+	evaluateMigrationHistoryParity: () => ({
+		isAligned: true,
+		pendingLocal: [],
+		extraRemote: [],
+		isReordered: false,
+		hasDivergentHistory: false,
+		errors: [],
+	}),
 }));
 
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
@@ -54,8 +47,6 @@ import {
 describe('observability database resource budget', () => {
 	beforeEach(() => {
 		mockRunPsql.mockClear();
-		mockRunCommand.mockClear();
-		mockReadMigrationLifecycleWithTimeout.mockClear();
 	});
 
 	it('uses one content projection and one migration query per environment', () => {
@@ -70,17 +61,19 @@ describe('observability database resource budget', () => {
 			readMigrationProjection({ environment, timeoutMs: 4_000, budget });
 		}
 		expect(budget.used).toBe(OBSERVABILITY_MAX_DB_INVOCATIONS);
-		expect(mockRunPsql).toHaveBeenCalledTimes(3);
-		expect(mockReadMigrationLifecycleWithTimeout).toHaveBeenCalledTimes(3);
-		expect(mockRunCommand).toHaveBeenCalledTimes(3);
+		// 3 content + 3 migration history reads, all via StatusProbeSession → runPsql
+		expect(mockRunPsql).toHaveBeenCalledTimes(6);
 		expect(
 			((mockRunPsql.mock.calls[0] as unknown[])[2] as { env: NodeJS.ProcessEnv }).env
 				.PGOPTIONS,
 		).toBe('-c default_transaction_read_only=on');
+		const migrationCall = mockRunPsql.mock.calls.find(
+			(call) => typeof call[0] === 'string' && String(call[0]).includes('schema_migrations'),
+		);
+		expect(migrationCall).toBeDefined();
 		expect(
-			((mockRunCommand.mock.calls[0] as unknown[])[2] as { env: NodeJS.ProcessEnv }).env
-				.PGOPTIONS,
-		).toBe('-c default_transaction_read_only=on');
+			((migrationCall as unknown[])[2] as { env: NodeJS.ProcessEnv }).env.PGOPTIONS,
+		).toContain('default_transaction_read_only=on');
 	});
 
 	it('fails closed before a seventh external database invocation', () => {
@@ -98,6 +91,8 @@ describe('observability database resource budget', () => {
 		);
 		expect(source).not.toMatch(/managed-status/);
 		expect(source).not.toMatch(/HOOK_TIMEOUT/);
-		expect(source).toMatch(/readMigrationLifecycleWithTimeout/);
+		expect(source).toMatch(/StatusProbeSession/);
+		expect(source).toMatch(/readMigrationLifecycleForUrlSync/);
+		expect(source).not.toMatch(/readMigrationLifecycleWithTimeout/);
 	});
 });

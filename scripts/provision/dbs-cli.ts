@@ -10,12 +10,20 @@
  *   pnpm dbs --json            # JSON output
  */
 
+import type { SchemaLifecycleState } from '../db/schema-lifecycle-state.ts';
 import { evaluateGeneralStatus, evaluateInvitationStatus } from './dbs-status.ts';
 import {
 	MANAGED_STATUS_DEFAULT_TIMEOUT_MS,
 	runCompactManagedStatusSafe,
 } from './managed-status.ts';
-import { formatSchemaLifecycleLabel } from '../status-core/schema-lifecycle-contract.ts';
+
+/** Formatter-only schema label (SCHEMA_UNVERIFIED is not a classifier status). */
+function formatSchemaLifecycleLabel(
+	lifecycle: SchemaLifecycleState,
+): 'CURRENT' | 'BEHIND' | 'SCHEMA_DRIFT' | 'SCHEMA_UNVERIFIED' {
+	if (lifecycle === 'UNVERIFIED') return 'SCHEMA_UNVERIFIED';
+	return lifecycle;
+}
 
 function pad(str: string, width: number): string {
 	return str.padEnd(width, ' ');
