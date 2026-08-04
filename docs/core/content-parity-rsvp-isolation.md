@@ -211,7 +211,7 @@ the repository’s guarded operation confirmations. See `docs/env-workflow.md` a
 | `pnpm ops optimize-assets`         | **REMOVED** — no longer registered                              |
 | `pnpm ops new-invitation`          | **REMOVED** — no longer registered                              |
 | `pnpm ops dbs`                     | **REMOVED** alias — use canonical `pnpm dbs`                    |
-| Legacy Production adoption flags   | `MAINTENANCE_ONLY` Romina one-shot via `invitation:update --adoption-*` |
+| Legacy Production adoption flags   | `MAINTENANCE_ONLY` pending Goal 4; see `.agent/rules/invitation-production.md` |
 | `--preview-provenance`             | `KEEP_SPECIALIZED` Preview baseline helper                      |
 | `pnpm db:local:refresh-from-prod*` | Fail-closed — use backup + restore-from-dump                    |
 | Manual production SQL patches      | `RESTRICT_OWNER_ONLY` via `pnpm db:prod:patch`                  |

@@ -46,8 +46,8 @@ are no longer registered. Use `pnpm dbs` and `pnpm invitation:*` for invitation 
 | `pnpm invitation:preview-fixture` | `scripts/provision/preview-e2e-fixture-cli.ts`  | Preview-only E2E fixture bootstrap for `e2e-preview-publication` (not Dashboard create)   |
 | `pnpm invitation:purge-by-id`     | `scripts/provision/invitation-id-purge-cli.ts`  | Preview-only UUID purge with dry-run audit, transactional delete, and JSON artifact       |
 | `pnpm invitation:cross-db-reconcile` | `scripts/provision/cross-db-invitation-reconciliation-cli.ts` | Read-only cross-DB invitation parity (excludes draft/in_progress)            |
-| `pnpm invitation:romina-schema-repair` | `scripts/provision/romina-schema-repair-cli.ts` | Production dry-run/apply narrow draft field repair for `romina-rios-chaparro` (kept until full reset verified) |
-| `pnpm invitation:romina-draft-reset` | `scripts/provision/romina-draft-reset-cli.ts` | Production dry-run/apply full draft←published reset for `romina-rios-chaparro` |
+| `pnpm invitation:legacy-baseline-adoption` | `scripts/provision/legacy-baseline-adoption-cli.ts` | Metadata-only legacy provenance baseline (pending until eligible slugs adopted/excluded) |
+| `pnpm invitation:romina-draft-reset` | `scripts/provision/romina-draft-reset-cli.ts` | Temporary Production draft←published reset for `romina-rios-chaparro` (retire after apply) |
 
 The CLI resolves source/package input through `invitation-package-input.ts`, retains one immutable
 plan per target, and delegates mutation ordering/result synthesis to

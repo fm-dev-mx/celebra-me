@@ -148,15 +148,29 @@ versioned migration → Disposable → Persistent Local → Preview → human-co
 ```
 
 Schema drift states: `CURRENT` | `BEHIND` | `SCHEMA_DRIFT` | `UNVERIFIED`
-(`scripts/db/schema-lifecycle-state.ts` / `scripts/status-core/schema-lifecycle-contract.ts`).
-Operator-facing unavailable schema evidence is labeled `SCHEMA_UNVERIFIED`.
-`pnpm dbs` / observability use **migration_history_parity**; `pnpm db:*:audit` uses
-**object_audit_readiness** — not equivalent. Do not reuse invitation reconciliation decisions
-(`KEEP_ENVIRONMENT`, etc.) for schema. Invitation workflows must never auto-run migrations;
-`invitation:promote` preflight that detects incompatible schema returns `SCHEMA_INCOMPATIBLE` /
-`OWNER_ACTION_REQUIRED` and stops. Preview schema migrate and content mirror require Preview
-authorization before any write (`preview:schema:migrate` /
+(`scripts/db/schema-lifecycle-state.ts` — single classifier). Unavailable evidence uses structured
+`{ status: 'UNVERIFIED', domain, reason, evidenceClass? }`; CLI/UI formatters may label schema
+UNVERIFIED as `SCHEMA_UNVERIFIED`. `pnpm dbs` / observability use **migration_history_parity**;
+`pnpm db:*:audit` uses **object_audit_readiness** — not equivalent. Do not reuse invitation
+reconciliation decisions (`KEEP_ENVIRONMENT`, etc.) for schema. Invitation workflows must never
+auto-run migrations; `invitation:promote` preflight that detects incompatible schema returns
+`SCHEMA_INCOMPATIBLE` / `OWNER_ACTION_REQUIRED` and stops. Preview schema migrate and content
+mirror require exact Preview task scope before any write (`preview:schema:migrate` /
 `preview:content-mirror:sync-invitations`).
 
 Disposable operations are available to **both Agent and Owner** under the guarded disposable-test
 workflows.
+
+## Pending one-off Production maintenance (Goal 4)
+
+Retain each tool only until its operation completes, is verified, or is explicitly abandoned; then
+delete implementation, package alias, tests, and active docs in a code-only cleanup.
+
+| Command / path | Pending operation | Removal condition |
+| --- | --- | --- |
+| `pnpm invitation:romina-draft-reset` | Full draft←published reset for `romina-rios-chaparro` | Apply verified or abandoned |
+| `pnpm invitation:update --adoption-plan/--adoption-apply` | Content-changing Romina Production adoption | Apply verified or abandoned; then restore `invitation:update` to Local/Preview only |
+| `pnpm invitation:legacy-baseline-adoption` | Metadata-only provenance baseline for remaining eligible legacy slugs | All eligible invitations adopted or explicitly excluded |
+
+Romina narrow schema-repair was superseded by draft-reset and removed. Operational sequences live in
+[`docs/database-workflow.md`](../../docs/database-workflow.md).

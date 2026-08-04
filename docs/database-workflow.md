@@ -213,7 +213,10 @@ Definition → normalized release → Local → immutable package → Preview �
 | `pnpm dbs` / `pnpm dbs --compact`  | Read-only managed **status** (content + schema classifiers)  | Local / Preview / Production               |
 
 Production never imports from the Preview DB or Preview Storage. Mirror is never promotion.
-`invitation:update` rejects Production mutation targets; use `invitation:promote` for Production.
+Normal `invitation:update` is Local/Preview only; use `invitation:promote` for Production managed
+content. Temporary Production one-offs (`romina-draft-reset`, `invitation:update --adoption-*`,
+`legacy-baseline-adoption`) and their retirement conditions are listed in
+[`.agent/rules/invitation-production.md`](../.agent/rules/invitation-production.md).
 Credential presence, worktree path, runtime target, and UI banners do not authorize mutations.
 
 ### Commands
