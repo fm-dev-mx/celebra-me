@@ -137,6 +137,16 @@ export function getProdDbUrl(): { url: string; source: string } {
 	);
 }
 
+export function isSupabaseProductionHostname(hostname: string): boolean {
+	const host = hostname.toLowerCase();
+	return (
+		host === 'supabase.co' ||
+		host.endsWith('.supabase.co') ||
+		host === 'supabase.com' ||
+		host.endsWith('.supabase.com')
+	);
+}
+
 export function assertProductionDbUrl(rawUrl: string): URL {
 	const parsed = parseDbUrl(rawUrl);
 	if (!parsed) {
@@ -144,13 +154,8 @@ export function assertProductionDbUrl(rawUrl: string): URL {
 	}
 	const host = parsed.hostname;
 	const isLocal = ['localhost', '127.0.0.1', '::1'].includes(host);
-	const isSupabaseHost =
-		host === 'supabase.co' ||
-		host.endsWith('.supabase.co') ||
-		host === 'supabase.com' ||
-		host.endsWith('.supabase.com');
 
-	if (isLocal || !isSupabaseHost) {
+	if (isLocal || !isSupabaseProductionHostname(host)) {
 		fail(
 			`Refusing PROD_DB_URL because host is not a Supabase production host. Redacted target: ${redactDbUrl(
 				rawUrl,
@@ -512,6 +517,7 @@ export interface ProductionApprovalTokenPayload {
 	targetEnv: 'production';
 	scope: string;
 	manifestFingerprint: string;
+	releaseSha?: string;
 	operationId: string;
 	expiresAt: number;
 	nonce: string;
@@ -538,19 +544,24 @@ export interface ProductionApprovalContext {
 	targetEnv: 'production';
 	scope: string;
 	manifestFingerprint: string;
+	releaseSha?: string;
 	operationId: string;
 }
 
-function approvalPayloadJson(payload: ProductionApprovalTokenPayload): string {
-	return JSON.stringify({
+export function serializeProductionApprovalPayload(
+	payload: ProductionApprovalTokenPayload,
+): string {
+	const serialized: Record<string, unknown> = {
 		operationType: payload.operationType,
 		targetEnv: payload.targetEnv,
 		scope: payload.scope,
 		manifestFingerprint: payload.manifestFingerprint,
-		operationId: payload.operationId,
-		expiresAt: payload.expiresAt,
-		nonce: payload.nonce,
-	});
+	};
+	if (payload.releaseSha !== undefined) serialized.releaseSha = payload.releaseSha;
+	serialized.operationId = payload.operationId;
+	serialized.expiresAt = payload.expiresAt;
+	serialized.nonce = payload.nonce;
+	return JSON.stringify(serialized);
 }
 
 export function deriveProductionOperationId(
@@ -563,6 +574,7 @@ export function deriveProductionOperationId(
 				context.targetEnv,
 				context.scope,
 				context.manifestFingerprint,
+				...(context.releaseSha === undefined ? [] : [context.releaseSha]),
 			].join('\u001f'),
 		)
 		.digest('hex');
@@ -609,6 +621,12 @@ function validProductionApprovalPayload(
 	if (!stringValues.every((value) => typeof value === 'string' && value.trim().length > 0)) {
 		return false;
 	}
+	if (
+		payload.releaseSha !== undefined &&
+		(typeof payload.releaseSha !== 'string' || payload.releaseSha.trim().length === 0)
+	) {
+		return false;
+	}
 	return (
 		typeof payload.expiresAt === 'number' &&
 		Number.isFinite(payload.expiresAt) &&
@@ -628,6 +646,9 @@ function productionApprovalContextReason(
 	if (payload.manifestFingerprint !== expected.manifestFingerprint) {
 		return 'MANIFEST_FINGERPRINT_MISMATCH';
 	}
+	if (expected.releaseSha !== undefined && payload.releaseSha !== expected.releaseSha) {
+		return 'RELEASE_SHA_MISMATCH';
+	}
 	if (payload.operationId !== expected.operationId) return 'OPERATION_ID_MISMATCH';
 	return undefined;
 }
@@ -644,7 +665,7 @@ function validProductionApprovalSignature(
 			signatureBytes.length > 0 &&
 			verify(
 				null,
-				Buffer.from(approvalPayloadJson(payload), 'utf8'),
+				Buffer.from(serializeProductionApprovalPayload(payload), 'utf8'),
 				publicKey,
 				signatureBytes,
 			)
@@ -683,8 +704,13 @@ export function verifyProductionApprovalToken(input: {
 export function consumeProductionApproval(input: {
 	dbUrl: string;
 	payload: ProductionApprovalTokenPayload;
+	runPsql?: (
+		sql: string,
+		dbUrl: string,
+		options: { tuplesOnly: boolean; throwOnError: boolean },
+	) => CommandResult;
 }): ProductionApprovalConsumption {
-	const result = runPsql(
+	const result = (input.runPsql ?? runPsql)(
 		`INSERT INTO public.production_authorization_receipts (operation_id, nonce, operation_type, target_env, scope, manifest_fingerprint, expires_at)
          VALUES (${sqlLiteral(input.payload.operationId)}, ${sqlLiteral(input.payload.nonce)}, ${sqlLiteral(input.payload.operationType)}, ${sqlLiteral(input.payload.targetEnv)}, ${sqlLiteral(input.payload.scope)}, ${sqlLiteral(input.payload.manifestFingerprint)}, to_timestamp(${input.payload.expiresAt} / 1000.0))
          ON CONFLICT DO NOTHING
@@ -700,10 +726,17 @@ export function consumeProductionApproval(input: {
 		: { consumed: false, reason: 'REPLAYED_APPROVAL' };
 }
 
+export function getProductionApprovalTokenPayload(
+	tokenStr: string | undefined,
+): ProductionApprovalTokenPayload | undefined {
+	return parseProductionApprovalToken(tokenStr).token?.payload;
+}
+
 interface ProductionConfirmationParams {
 	operationType?: string;
 	scope?: string;
 	manifestFingerprint?: string;
+	releaseSha?: string;
 	operationId?: string;
 	consumeApproval?: ProductionApprovalConsumer;
 }
@@ -723,6 +756,7 @@ function requireExternalProductionApproval(
 			targetEnv: 'production',
 			scope,
 			manifestFingerprint,
+			releaseSha: params?.releaseSha,
 		});
 	const verification = verifyProductionApprovalToken({
 		tokenStr: process.env.CELEBRA_PROD_APPROVAL_TOKEN,
@@ -732,6 +766,7 @@ function requireExternalProductionApproval(
 			targetEnv: 'production',
 			scope,
 			manifestFingerprint,
+			releaseSha: params?.releaseSha,
 			operationId,
 		},
 	});
@@ -761,24 +796,33 @@ function requireExternalProductionApproval(
 	}
 }
 
+export function productionAuthorizationBoundaryReason(
+	env: NodeJS.ProcessEnv = process.env,
+): 'AGENT_SELF_AUTHORIZATION_BLOCKED' | 'SELF_ISSUED_APPROVAL_REJECTED' | undefined {
+	const agentContext = env.CELEBRA_AGENT_CONTEXT?.trim();
+	if (agentContext && agentContext !== 'false' && agentContext !== '0') {
+		return 'AGENT_SELF_AUTHORIZATION_BLOCKED';
+	}
+	if (env.CELEBRA_PROD_AUTH_SECRET?.trim() || env.CELEBRA_PROD_APPROVAL_PRIVATE_KEY?.trim()) {
+		return 'SELF_ISSUED_APPROVAL_REJECTED';
+	}
+	return undefined;
+}
+
 export function confirmProductionActionSync(
 	targetDescription: string,
 	requiredConfirmation: string,
 	params?: ProductionConfirmationParams,
 ): void {
-	// Block autonomous agent self-authorization regardless of variables
-	const agentContext = process.env.CELEBRA_AGENT_CONTEXT?.trim();
-	if (agentContext && agentContext !== 'false' && agentContext !== '0') {
+	const boundaryReason = productionAuthorizationBoundaryReason();
+	if (boundaryReason === 'AGENT_SELF_AUTHORIZATION_BLOCKED') {
 		fail(
 			`AGENT_SELF_AUTHORIZATION_BLOCKED: Production actions require external operator approval evidence. ` +
 				`Autonomous agents cannot self-authorize Production writes.`,
 		);
 	}
 
-	if (
-		process.env.CELEBRA_PROD_AUTH_SECRET?.trim() ||
-		process.env.CELEBRA_PROD_APPROVAL_PRIVATE_KEY?.trim()
-	) {
+	if (boundaryReason === 'SELF_ISSUED_APPROVAL_REJECTED') {
 		fail(
 			'PRODUCTION_AUTHORIZATION_FAILED [SELF_ISSUED_APPROVAL_REJECTED]: Signing material is not accepted in the production runtime.',
 		);

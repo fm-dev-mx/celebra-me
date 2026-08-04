@@ -475,8 +475,40 @@ application login substitute. Host invitation flows continue to use real `host_c
 - Creates and verifies a complete predecessor-profile recovery point first, then creates a complete
   Phase 3 recovery set after contract verification.
 - Applies pending Supabase migrations only.
+- If `public.production_authorization_receipts` is absent and the pending set is exactly
+  `20260802090000`, verifies the external Ed25519 approval against the Production hostname, the
+  canonical migration fingerprint, and `CELEBRA_TARGET_RELEASE_SHA`, then creates the receipt table
+  and consumes that approval in one transaction before continuing through the normal Supabase
+  migration workflow. Any other pending or migration-history state fails closed.
+- Once the receipt table exists, every Production operation uses the standard durable single-use
+  receipt path; no bootstrap flag, manual SQL procedure, secret fallback, or unsigned approval is
+  available.
 - Mutates production and requires explicit confirmation.
 - This is the only approved production mutation workflow.
+
+#### Production authorization bootstrap threat model
+
+The bootstrap exists only for the circular first-use case where the approval ledger does not yet
+exist. It is eligible only on the Production target, with an absent
+`public.production_authorization_receipts` table, exactly one pending migration (`20260802090000`),
+an exact allowlist, and no unexpected migration-history entries. The external Ed25519 payload must
+bind `production_migration`, the Production hostname, the SHA-256 fingerprint of the canonical
+pending migration manifest, `CELEBRA_TARGET_RELEASE_SHA`, a derived operation ID, an unexpired
+timestamp, and a non-empty nonce.
+
+The runner verifies that signature and rejects `CELEBRA_AGENT_CONTEXT`, legacy authorization
+secrets, and private signing material before opening the bootstrap write transaction. The
+transaction takes a transaction-scoped advisory lock to serialize concurrent first-use attempts,
+creates the canonical table definition, applies its comment, RLS, and role revocations, then inserts
+the receipt; any SQL or receipt failure aborts the transaction. The following standard Supabase
+migration push records `20260802090000` in `schema_migrations`. Once the ledger exists, the
+bootstrap branch is unavailable and every operation uses the normal durable
+`INSERT ... ON CONFLICT DO NOTHING` consumption path.
+
+An invalid, expired, mismatched, or replayed approval therefore produces no database change. A
+failure after the bootstrap commits but before Supabase records the migration consumes that one
+approval and leaves only the ledger table; the operator must issue a new short-lived approval for a
+retry. This is fail-closed and single-use, not a reusable bypass or a manual SQL repair path.
 
 `pnpm db:sql:lint -- --file <path>`
 

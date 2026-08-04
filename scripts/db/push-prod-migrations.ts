@@ -21,13 +21,16 @@
  *
  * Current Production Status:
  *   - Hosted reconciliation state must be established by the current read-only audit.
- *   - Direct SQL is prohibited; all schema changes must use versioned migrations.
+ *   - Schema changes use versioned migrations via `supabase db push`, except the one-time
+ *     receipt-table bootstrap transaction documented in docs/database-workflow.md.
  *
  * Credentials:
  *   - PROD_DB_URL env variable or PROD_SECRET_FILES (.env.production.local).
  */
 
 import { runHostedMigrationCompatibilityGate } from './hosted-migration-compatibility-gate.ts';
+import { resolveHostedMigrationIdentity } from './migration-deployment-compatibility.ts';
+import { getValidatedMigrationFiles } from './apply-migrations.ts';
 import {
 	assertProductionDbUrl,
 	consumeProductionApproval,
@@ -38,6 +41,15 @@ import {
 	runCommand,
 	runPsql,
 } from './db-workflow-lib.ts';
+import {
+	bootstrapProductionMigration,
+	computeMigrationManifestFingerprint,
+	evaluateProductionMigrationBootstrapEligibility,
+	PRODUCTION_MIGRATION_OPERATION_TYPE,
+	readCanonicalMigrationFile,
+	getProductionMigrationApprovalContext,
+	type CanonicalMigrationFile,
+} from './production-migration-bootstrap.ts';
 
 /**
  * Production authorization inputs that must not cross the Step 2 child-process boundary.
@@ -83,6 +95,159 @@ export function runLocalValidation(runner: typeof runCommand = runCommand): void
 	runner('pnpm', ['type-check'], { env: validationEnv });
 	runner('pnpm', ['test'], { env: validationEnv });
 	runner('pnpm', ['build'], { env: validationEnv });
+}
+
+interface ProductionMigrationAuthorizationState {
+	targetReleaseSha: string;
+	migrationFingerprint: string;
+	receiptTableExists: boolean;
+	pendingMigrationFiles: readonly CanonicalMigrationFile[];
+	bootstrapState: {
+		target: 'production';
+		receiptTableExists: boolean;
+		pendingVersions: readonly string[];
+		expectedVersions: readonly string[];
+		appliedVersions: readonly string[];
+		knownMigrationVersions: readonly string[];
+	};
+}
+
+function prepareProductionMigrationAuthorization(input: {
+	dbUrl: string;
+	dryRunVersions: readonly string[];
+	expectedVersions: readonly string[];
+	appliedVersions: readonly string[];
+}): ProductionMigrationAuthorizationState {
+	const targetReleaseSha = resolveHostedMigrationIdentity().targetReleaseSha;
+	if (!targetReleaseSha) {
+		fail('Production migration requires CELEBRA_TARGET_RELEASE_SHA.');
+	}
+	const knownMigrationVersions = getValidatedMigrationFiles().map(({ version }) => version);
+	const pendingMigrationFiles = input.dryRunVersions.map((version) =>
+		readCanonicalMigrationFile(version),
+	);
+	const migrationFingerprint = computeMigrationManifestFingerprint(pendingMigrationFiles);
+	const receiptTableResult = runPsql(
+		"select to_regclass('public.production_authorization_receipts') is not null",
+		input.dbUrl,
+		{ tuplesOnly: true, throwOnError: false },
+	);
+	if (receiptTableResult.status !== 0) {
+		fail('Unable to determine whether the Production authorization receipt table exists.');
+	}
+	const receiptTableOutput = receiptTableResult.stdout.trim().toLowerCase();
+	if (receiptTableOutput !== 't' && receiptTableOutput !== 'f') {
+		fail('Production authorization receipt table state was not an exact boolean result.');
+	}
+	const receiptTableExists = receiptTableOutput === 't';
+	return {
+		targetReleaseSha,
+		migrationFingerprint,
+		receiptTableExists,
+		pendingMigrationFiles,
+		bootstrapState: {
+			target: 'production',
+			receiptTableExists,
+			pendingVersions: input.dryRunVersions,
+			expectedVersions: input.expectedVersions,
+			appliedVersions: input.appliedVersions,
+			knownMigrationVersions,
+		},
+	};
+}
+
+async function authorizeProductionMigration(input: {
+	dbUrl: string;
+	hostname: string;
+	authorization: ProductionMigrationAuthorizationState;
+}): Promise<void> {
+	console.info('6. Prompting for explicit production migration confirmation...');
+	const { authorization } = input;
+	const bootstrapEligibility = evaluateProductionMigrationBootstrapEligibility(
+		authorization.bootstrapState,
+	);
+	if (authorization.receiptTableExists) {
+		const context = getProductionMigrationApprovalContext({
+			hostname: input.hostname,
+			migrationFingerprint: authorization.migrationFingerprint,
+			releaseSha: authorization.targetReleaseSha,
+		});
+		await requireProductionConfirmation(input.hostname, undefined, {
+			operationType: PRODUCTION_MIGRATION_OPERATION_TYPE,
+			scope: input.hostname,
+			manifestFingerprint: authorization.migrationFingerprint,
+			releaseSha: authorization.targetReleaseSha,
+			operationId: context.operationId,
+			consumeApproval: (payload) =>
+				consumeProductionApproval({ dbUrl: input.dbUrl, payload }),
+		});
+		return;
+	}
+	if (!bootstrapEligibility.eligible) {
+		fail(
+			`PRODUCTION_AUTHORIZATION_FAILED [${bootstrapEligibility.reason}]: Receipt-table bootstrap is permitted only for the exact first Production authorization migration.`,
+		);
+	}
+	const bootstrap = bootstrapProductionMigration({
+		dbUrl: input.dbUrl,
+		hostname: input.hostname,
+		migrationFingerprint: authorization.migrationFingerprint,
+		releaseSha: authorization.targetReleaseSha,
+		tokenStr: process.env.CELEBRA_PROD_APPROVAL_TOKEN,
+		publicKey: process.env.CELEBRA_PROD_APPROVAL_PUBLIC_KEY,
+		state: authorization.bootstrapState,
+		canonicalMigrationSql: authorization.pendingMigrationFiles[0]?.sql,
+	});
+	if (!bootstrap.bootstrapped) {
+		fail(
+			`PRODUCTION_AUTHORIZATION_FAILED [${bootstrap.reason ?? 'BOOTSTRAP_FAILED'}]: Approval was not durably consumed.`,
+		);
+	}
+	console.info(
+		'✅ External Production approval verified and consumed in the one-time receipt-table bootstrap transaction.\n',
+	);
+}
+
+function validateDryRunAgainstAllowlist(
+	dryRunVersions: readonly string[],
+	expectedVersions: readonly string[],
+): void {
+	if (dryRunVersions.length === 0) {
+		console.info('Dry-run reports no pending migrations.');
+		if (expectedVersions.length > 0 && expectedVersions[0] !== 'none') {
+			fail(
+				`Expected migrations to apply: ${expectedVersions.join(', ')}, but dry-run shows 0 migrations.`,
+			);
+		}
+		return;
+	}
+
+	console.info(`Pending migrations from dry-run: ${dryRunVersions.join(', ')}`);
+	const expectedSet = new Set(expectedVersions);
+	const dryRunSet = new Set(dryRunVersions);
+	let match = true;
+	for (const version of expectedVersions) {
+		if (!dryRunSet.has(version)) {
+			console.error(
+				`❌ ERROR: Expected migration "${version}" is not in the dry-run list of pending migrations.`,
+			);
+			match = false;
+		}
+	}
+	for (const version of dryRunVersions) {
+		if (!expectedSet.has(version)) {
+			console.error(
+				`❌ ERROR: Dry-run pending migration "${version}" is not in your explicit allowlist.`,
+			);
+			match = false;
+		}
+	}
+	if (!match) {
+		fail(
+			'Migration dry-run does not match the explicit expected migrations allowlist. Aborting.',
+		);
+	}
+	console.info('✅ Dry-run matches the explicit expected migrations allowlist exactly.\n');
 }
 
 async function main(): Promise<void> {
@@ -172,50 +337,17 @@ async function main(): Promise<void> {
 		},
 	);
 
-	// Extract timestamps matching the 14-digit pattern from the dry-run output
+	// Extract unique timestamps matching the 14-digit pattern from the dry-run output.
+	// Deduping preserves first-seen order so fingerprint/bootstrap eligibility stay stable if the
+	// CLI mentions the same pending version more than once.
 	const dryRunOutput = `${dryRunResult.stdout}\n${dryRunResult.stderr}`;
-	const dryRunVersions = Array.from(dryRunOutput.matchAll(/\b(\d{14})_/g)).map(
-		(match) => match[1],
-	);
+	const dryRunVersions = [
+		...new Set(
+			Array.from(dryRunOutput.matchAll(/\b(\d{14})_/g)).map((match) => match[1] as string),
+		),
+	];
 
-	if (dryRunVersions.length === 0) {
-		console.info('Dry-run reports no pending migrations.');
-		if (expectedVersions.length > 0 && expectedVersions[0] !== 'none') {
-			fail(
-				`Expected migrations to apply: ${expectedVersions.join(', ')}, but dry-run shows 0 migrations.`,
-			);
-		}
-	} else {
-		console.info(`Pending migrations from dry-run: ${dryRunVersions.join(', ')}`);
-
-		const expectedSet = new Set(expectedVersions);
-		const dryRunSet = new Set(dryRunVersions);
-
-		let match = true;
-		for (const v of expectedVersions) {
-			if (!dryRunSet.has(v)) {
-				console.error(
-					`❌ ERROR: Expected migration "${v}" is not in the dry-run list of pending migrations.`,
-				);
-				match = false;
-			}
-		}
-		for (const v of dryRunVersions) {
-			if (!expectedSet.has(v)) {
-				console.error(
-					`❌ ERROR: Dry-run pending migration "${v}" is not in your explicit allowlist.`,
-				);
-				match = false;
-			}
-		}
-
-		if (!match) {
-			fail(
-				'Migration dry-run does not match the explicit expected migrations allowlist. Aborting.',
-			);
-		}
-		console.info('✅ Dry-run matches the explicit expected migrations allowlist exactly.\n');
-	}
+	validateDryRunAgainstAllowlist(dryRunVersions, expectedVersions);
 
 	console.info('4b. Evaluating migration / deployment compatibility contract...');
 	const appliedResult = runPsql(
@@ -237,9 +369,15 @@ async function main(): Promise<void> {
 	});
 	console.info('');
 
+	const authorization = prepareProductionMigrationAuthorization({
+		dbUrl: prodDbUrl,
+		dryRunVersions,
+		expectedVersions,
+		appliedVersions: dbAppliedVersions,
+	});
+
 	// 5. Complete pre-migration recovery point. Production completed Phase 3
-	// (20260729140514/20260729152113), so the standard profile applies: the receipt table
-	// exists and must be part of the integrity fingerprint.
+	// (20260729140514/20260729152113), so the standard profile applies.
 	console.info('5. Creating a complete read-only pre-migration critical recovery point...');
 	runCommand('npx', ['tsx', 'scripts/db/daily-critical-production-backup.ts'], {
 		env: { ...process.env, PROD_DB_URL: prodDbUrl },
@@ -248,12 +386,10 @@ async function main(): Promise<void> {
 	console.info('✅ Complete pre-migration critical recovery point verified.\n');
 
 	// 6. Explicit User Confirmation
-	console.info('6. Prompting for explicit production migration confirmation...');
-	await requireProductionConfirmation(target.hostname, undefined, {
-		operationType: 'production_migration',
-		scope: target.hostname,
-		manifestFingerprint: expectedVersions.join(','),
-		consumeApproval: (payload) => consumeProductionApproval({ dbUrl: prodDbUrl, payload }),
+	await authorizeProductionMigration({
+		dbUrl: prodDbUrl,
+		hostname: target.hostname,
+		authorization,
 	});
 
 	// 7. DB Push execution

@@ -1,5 +1,4 @@
 -- Durable, single-use receipts for externally signed Production approvals.
--- This migration is intentionally not executed by the observability/remediation task.
 
 CREATE TABLE IF NOT EXISTS public.production_authorization_receipts (
   operation_id text PRIMARY KEY,
