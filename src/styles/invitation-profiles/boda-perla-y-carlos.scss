@@ -831,7 +831,18 @@
 		.event-location__card-map-preview--link .event-location__card-map-preview-grid {
 			inset: 0;
 			transform: none;
-			opacity: 46%;
+			opacity: 32%;
+			background:
+				repeating-linear-gradient(
+					90deg,
+					transparent 0 1.85rem,
+					rgb(var(--perla-gold-rgb) / 22%) 1.9rem 1.96rem
+				),
+				repeating-linear-gradient(
+					0deg,
+					transparent 0 1.55rem,
+					rgb(var(--perla-gold-rgb) / 18%) 1.6rem 1.66rem
+				);
 		}
 
 		.event-location__card-map-preview-artwork {
@@ -867,36 +878,25 @@
 		}
 
 		.event-location__card-map-preview-pin {
-			width: 2.65rem;
-			height: 2.65rem;
+			position: absolute;
+			inset: auto 0.75rem 0.55rem auto;
+			transform: none;
+			width: 1.85rem;
+			height: 1.85rem;
 			background: var(--perla-cream);
 			color: var(--perla-olive-deep);
 			border-color: var(--perla-gold);
 			box-shadow:
-				0 8px 16px rgb(var(--perla-olive-rgb) / 18%),
-				inset 0 0 0 2px rgb(var(--perla-cream-rgb) / 100%);
-		}
-
-		// Pin sits on the silhouette (cathedral doorway / salón entrance),
-		// not dead-center where it would block the spire.
-		.event-location__card--ceremony .event-location__card-map-preview-pin {
-			top: 74%;
-			left: 50%;
-			z-index: 2;
-		}
-
-		.event-location__card--reception .event-location__card-map-preview-pin {
-			top: 78%;
-			left: 50%;
+				0 4px 12px rgb(var(--perla-olive-rgb) / 16%),
+				inset 0 0 0 1.5px rgb(var(--perla-cream-rgb) / 100%);
 			z-index: 2;
 		}
 
 		.event-location__card-map-preview-foot {
 			display: flex;
 			align-items: center;
-			justify-content: space-between;
-			gap: 0.6rem;
-			padding: 0.95rem 1.1rem;
+			justify-content: center;
+			padding: 0.85rem 1.1rem;
 			border-top: 1px solid rgb(var(--perla-gold-rgb) / 22%);
 			color: var(--perla-olive);
 			letter-spacing: 0.2em;
@@ -905,13 +905,15 @@
 			svg {
 				width: 14px;
 				height: 14px;
+				transition: transform var(--duration-fast) var(--ease-standard);
 			}
 		}
 
-		.event-location__card-map-preview-foot .event-location__card-map-preview-label {
+		.event-location__card-map-preview-action {
 			display: inline-flex;
 			align-items: center;
-			gap: 0.4rem;
+			justify-content: center;
+			gap: 0.45rem;
 		}
 
 		.event-location__card--ceremony:hover .event-location__card-map-preview-foot,
@@ -919,6 +921,10 @@
 		.event-location__card--ceremony:focus-within .event-location__card-map-preview-foot,
 		.event-location__card--reception:focus-within .event-location__card-map-preview-foot {
 			color: var(--perla-olive-deep);
+
+			.event-location__card-map-preview-action svg {
+				transform: translateX(3px);
+			}
 		}
 
 		.event-location__indications {

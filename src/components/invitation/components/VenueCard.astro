@@ -166,11 +166,26 @@ const useMapPreviewLink = showNavigationButtons === false && hasMapLink;
 							focusable="false"
 						>
 							<path class="event-location__card-map-preview-artwork-horizon" d="M18 96h204" />
-							<path class="event-location__card-map-preview-artwork-silhouette" d="M36 96V59h35l12-16h74l12 16h35v37H36Z" />
-							<path class="event-location__card-map-preview-artwork-silhouette" d="M78 43h84l-12-14H90L78 43Z" />
-							<path class="event-location__card-map-preview-artwork-detail" d="M48 65h21v31H48zM171 65h21v31h-21z" />
-							<path class="event-location__card-map-preview-artwork-detail" d="M91 65h18v16H91zM131 65h18v16h-18z" />
-							<path class="event-location__card-map-preview-artwork-detail" d="M107 96V77a13 13 0 0 1 26 0v19h-26Z" />
+							<path
+								class="event-location__card-map-preview-artwork-silhouette"
+								d="M38 96V64l40-14 36-16v-9h12v9l36 16 40 14v32H38Z"
+							/>
+							<path
+								class="event-location__card-map-preview-artwork-cross"
+								d="M120 17v8M78 50l42-18 42 18M38 64h40M162 64h40"
+							/>
+							<path
+								class="event-location__card-map-preview-artwork-detail"
+								d="M106 96V76a14 14 0 0 1 28 0v20h-28Z"
+							/>
+							<path
+								class="event-location__card-map-preview-artwork-detail"
+								d="M112 52a8 8 0 0 1 16 0v4h-16Z"
+							/>
+							<path
+								class="event-location__card-map-preview-artwork-detail"
+								d="M46 72a5 5 0 0 1 10 0v16H46zM62 70a5 5 0 0 1 10 0v18H62zM168 70a5 5 0 0 1 10 0v18h-10zM184 72a5 5 0 0 1 10 0v16h-10z"
+							/>
 						</svg>
 					)}
 					<span class="event-location__card-map-preview-pin">
@@ -178,8 +193,10 @@ const useMapPreviewLink = showNavigationButtons === false && hasMapLink;
 					</span>
 				</span>
 				<span class="event-location__card-map-preview-foot">
-					<span class="event-location__card-map-preview-label">Ver mapa</span>
-					<Icon name="ArrowRight" size={16} />
+					<span class="event-location__card-map-preview-action">
+						<span class="event-location__card-map-preview-label">Ver mapa</span>
+						<Icon name="ArrowRight" size={16} />
+					</span>
 				</span>
 			</a>
 		)}
