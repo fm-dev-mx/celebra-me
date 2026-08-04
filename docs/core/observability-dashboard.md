@@ -179,10 +179,11 @@ pnpm invitation:legacy-baseline-adoption -- --out .agent/tmp/adoptions/legacy-ba
 pnpm invitation:legacy-baseline-adoption -- --manifest .agent/tmp/adoptions/legacy-baseline-adoption-manifest.json --dry-run --json
 ```
 
-The manifest includes the future apply command bound to its exact fingerprint. During this goal that
-command is intentionally rejected with `APPLY_DISABLED`; no approval artifact or executable write
-authorization is generated. Any relevant canonical, Production, scope, normalization, or
-semantic-asset change changes the entry fingerprint and makes dry-run return `STALE_MANIFEST`.
+The manifest includes the future apply command bound to its exact fingerprint. Owner apply requires
+`--manifest-fingerprint`, a verified critical `--backup-manifest`, and
+`requireOwnerProductionApply` (same Production owner boundary as promote/repair). Any relevant
+canonical, Production, scope, normalization, or semantic-asset change changes the entry fingerprint
+and makes dry-run return `STALE_MANIFEST`.
 
 Schema signals in this dashboard use **migration_history_parity** evidence
 (`scripts/status-core/migration-probe.ts`). They are not equivalent to `pnpm db:*:audit`

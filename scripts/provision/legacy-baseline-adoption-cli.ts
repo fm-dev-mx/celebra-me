@@ -13,6 +13,8 @@ import {
 } from './legacy-baseline-adoption.ts';
 import { getProdDbUrl } from '../db/db-workflow-lib.ts';
 import { requireOwnerProductionApply } from '../db/owner-production-apply.ts';
+import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
+import { evaluatePromotionBackupGate } from './invitation-promote.ts';
 
 interface CliOptions {
 	manifestPath?: string;
@@ -20,6 +22,7 @@ interface CliOptions {
 	dryRun: boolean;
 	apply: boolean;
 	manifestFingerprint?: string;
+	backupManifestPath?: string;
 	json: boolean;
 }
 
@@ -32,6 +35,7 @@ function parseOptions(args: string[]): CliOptions {
 	const manifestPath = value(args, '--manifest');
 	const outPath = value(args, '--out');
 	const manifestFingerprint = value(args, '--manifest-fingerprint');
+	const backupManifestPath = value(args, '--backup-manifest');
 	if ((manifestPath && outPath) || (args.includes('--dry-run') && !manifestPath)) {
 		throw new Error('Use --out to generate, or --manifest together with --dry-run or --apply.');
 	}
@@ -44,6 +48,7 @@ function parseOptions(args: string[]): CliOptions {
 		dryRun: args.includes('--dry-run'),
 		apply: args.includes('--apply'),
 		manifestFingerprint,
+		backupManifestPath,
 		json: args.includes('--json'),
 	};
 }
@@ -77,7 +82,7 @@ function commandFor(path: string, fingerprint: string): LegacyBaselineAdoptionMa
 	const quoted = JSON.stringify(path);
 	return {
 		dryRun: `pnpm invitation:legacy-baseline-adoption -- --manifest ${quoted} --dry-run --json`,
-		futureApply: `pnpm invitation:legacy-baseline-adoption -- --manifest ${quoted} --manifest-fingerprint ${fingerprint} --apply --json`,
+		futureApply: `pnpm invitation:legacy-baseline-adoption -- --manifest ${quoted} --manifest-fingerprint ${fingerprint} --backup-manifest <critical-backup-manifest.json> --apply --json`,
 	};
 }
 
@@ -119,7 +124,20 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
 		return;
 	}
 	if (options.apply) {
+		if (!options.backupManifestPath) {
+			throw new Error(
+				'BACKUP_REQUIRED: pass --backup-manifest from a fresh pnpm db:prod:backup:critical run before applying legacy baseline adoption.',
+			);
+		}
 		const { url: productionDbUrl } = getProdDbUrl();
+		const backup = evaluatePromotionBackupGate({
+			manifestPath: options.backupManifestPath,
+			productionProjectRef: SUPABASE_PROJECT_REFS.production,
+			required: true,
+		});
+		if (!backup.acceptable) {
+			throw new Error(backup.detail);
+		}
 		const scope = bound.entries
 			.filter((entry) => entry.status === 'ELIGIBLE')
 			.map((entry) => entry.slug)
@@ -134,6 +152,7 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
 				['Mode', 'legacy baseline adoption'],
 				['Scope', scope || '(none)'],
 				['Fingerprint', bound.manifestFingerprint],
+				['Backup', backup.manifestPath ?? options.backupManifestPath],
 			],
 		});
 		const result = await applyLegacyBaselineAdoption({
@@ -145,6 +164,7 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
 				status: 'APPLIED',
 				manifestPath,
 				manifestFingerprint: bound.manifestFingerprint,
+				backupManifest: backup.manifestPath ?? options.backupManifestPath,
 				entries: result.appliedEntries,
 				writes: result.writes,
 			},

@@ -527,6 +527,7 @@ application login substitute. Host invitation flows continue to use real `host_c
 `pnpm db:prod:patch -- --apply --owner-user-id <UUID> --file <path>`
 
 - **Disposition: `RESTRICT_OWNER_ONLY` / `KEEP_SPECIALIZED`.**
+- After owner confirmation and SQL apply, runs `pnpm db:contract:verify --target production`.
 - Narrow owner-only maintenance for reviewed patches that cannot yet be expressed as versioned
   `supabase/migrations/*`. Not a bypass for `db:prod:migrate` or `invitation:promote`.
 - Requires valid `pnpm release-check` evidence and interactive owner TTY confirmation bound to the

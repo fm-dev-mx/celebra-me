@@ -27,9 +27,11 @@ const VALID_PROD_DB_URL = 'postgresql://postgres:***@db.abcdefghijklm.supabase.c
 let mockRunPsql: jest.Mock;
 let mockGetProdDbUrl: jest.Mock;
 let mockRequireOwnerProductionApply: jest.Mock;
+let mockRunCommand: jest.Mock;
 
 jest.mock('../../scripts/db/db-workflow-lib', () => ({
 	runPsql: (...args: unknown[]) => mockRunPsql(...args),
+	runCommand: (...args: unknown[]) => mockRunCommand(...args),
 	getProdDbUrl: (...args: unknown[]) => mockGetProdDbUrl(...args),
 	fail: (message: string) => {
 		console.error(message);
@@ -47,6 +49,7 @@ beforeEach(() => {
 	jest.resetModules();
 
 	mockRunPsql = jest.fn().mockReturnValue({ status: 0, stdout: '', stderr: '' });
+	mockRunCommand = jest.fn().mockReturnValue({ status: 0, stdout: '', stderr: '' });
 	mockGetProdDbUrl = jest.fn().mockReturnValue({
 		url: VALID_PROD_DB_URL,
 		source: 'test-mock',
@@ -193,7 +196,20 @@ describe('run-prod-patch orchestration', () => {
 	});
 
 	describe('successful execution path', () => {
-		it('calls runPsql exactly once with session config + SQL', () => {
+		it('calls runPsql exactly once with session config + SQL after owner gate', () => {
+			const callOrder: string[] = [];
+			mockRequireOwnerProductionApply.mockImplementation(() => {
+				callOrder.push('gate');
+			});
+			mockRunPsql.mockImplementation(() => {
+				callOrder.push('write');
+				return { status: 0, stdout: '', stderr: '' };
+			});
+			mockRunCommand.mockImplementation(() => {
+				callOrder.push('post-verify');
+				return { status: 0, stdout: '', stderr: '' };
+			});
+
 			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
 			setEnv({
 				SUPABASE_URL: VALID_SUPABASE_URL,
@@ -204,6 +220,8 @@ describe('run-prod-patch orchestration', () => {
 			// off the end. Verify runPsql was called correctly instead.
 			expect(mockRequireOwnerProductionApply).toHaveBeenCalledTimes(1);
 			expect(mockRunPsql).toHaveBeenCalledTimes(1);
+			expect(mockRunCommand).toHaveBeenCalledTimes(1);
+			expect(callOrder).toEqual(['gate', 'write', 'post-verify']);
 
 			const [sqlArg, dbUrlArg, redactArg] = mockRunPsql.mock.calls[0];
 			expect(sqlArg).toContain("set_config('app.owner_user_id'");

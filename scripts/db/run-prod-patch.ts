@@ -8,7 +8,7 @@ import {
 	validateOwnerUserId,
 	assertSameSupabaseProject,
 } from './sql-safety.ts';
-import { getProdDbUrl, runPsql } from './db-workflow-lib.ts';
+import { getProdDbUrl, runCommand, runPsql } from './db-workflow-lib.ts';
 import { requireOwnerProductionApply } from './owner-production-apply.ts';
 
 /**
@@ -152,3 +152,22 @@ if (execResult.status !== 0) {
 console.info(`Owner UUID validated and applied: ${validatedOwnerId}`);
 console.info(`Production patch applied successfully: ${file}`);
 if (execResult.stdout) console.info(execResult.stdout);
+
+console.info('Running post-apply mutation schema contract verification...');
+const contractResult = runCommand(
+	'npx',
+	['tsx', 'scripts/db/verify-mutation-schema-contract.ts', '--target', 'production'],
+	{
+		env: { ...process.env, PROD_DB_URL: dbUrl },
+		redact: [dbUrl],
+		throwOnError: false,
+	},
+);
+if (contractResult.status !== 0) {
+	console.error(
+		`POST_APPLY_CONTRACT_FAILED: Production patch SQL succeeded but mutation schema contract verification failed (exit ${contractResult.status}).`,
+	);
+	console.error(contractResult.stderr || contractResult.stdout);
+	process.exit(1);
+}
+console.info('✅ Post-apply mutation schema contract verification passed.');
