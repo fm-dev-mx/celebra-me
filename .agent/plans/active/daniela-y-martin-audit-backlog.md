@@ -1,16 +1,16 @@
 ---
-title: Boda Perla y Carlos — Recurrent-Failure Audit Backlog
+title: Boda Daniela y Martín — Recurrent-Failure Audit Backlog
 status: active
 created: 2026-07-31
 updated: 2026-08-01
 related_docs:
-  - docs/invitations/boda-perla-y-carlos.md
+  - docs/invitations/daniela-y-martin.md
   - .agent/plans/active/invitation-preparation-authority-baseline.md
-  - .agent/plans/active/boda-perla-y-carlos-implementation-audit.md
-  - .agent/plans/active/boda-perla-y-carlos-acceptance-matrix.md
+  - .agent/plans/active/daniela-y-martin-implementation-audit.md
+  - .agent/plans/active/daniela-y-martin-acceptance-matrix.md
 ---
 
-# Audit backlog — `boda-perla-y-carlos`
+# Audit backlog — `daniela-y-martin`
 
 Closure 2026-08-01: visual/readiness corrections landed — see acceptance matrix. Production
 promote remains out of cycle.
@@ -35,7 +35,7 @@ Corpus checklist: Goal 1 F01–F17 (Alba/Abril/Valentina), filtered. Cosmético 
 | F14     | n/a          | —                                                          | —                                                                                                  |
 | F16     | mitigated    | Distinct slug / `_assetSlug` / `baseDemoId` / `templateId` | Keep                                                                                               |
 | F17     | mitigated    | validate script exists                                     | Re-run on close                                                                                    |
-| C01     | **closed**   | Envelope teaser ignored content field                      | Adapter prefers `envelope.teaserDetails`; Perla → Huejutla/fecha                                   |
+| C01     | **closed**   | Envelope teaser ignored content field                      | Adapter prefers `envelope.teaserDetails`; Daniela → Huejutla/fecha                                   |
 | C02     | **closed**   | PA champagne paper                                         | Olive/beige PA tokens                                                                              |
 | C03     | **closed**   | Thank-you / RSVP retint                                    | Profile overrides                                                                                  |
 | C04     | **closed**   | Alts + dress indication                                    | Tightened                                                                                          |

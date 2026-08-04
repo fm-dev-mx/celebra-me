@@ -165,7 +165,7 @@ describe('Inventory Audit & Parity Engine (scripts/provision/inventory-audit.ts)
 			expect(classifySlugCategory('abril-michelle-becerra-rea', true, 'published')).toBe(
 				'canonical_published',
 			);
-			expect(classifySlugCategory('boda-perla-y-carlos', true, 'in_progress')).toBe(
+			expect(classifySlugCategory('daniela-y-martin', true, 'in_progress')).toBe(
 				'canonical_in_progress',
 			);
 		});
@@ -236,10 +236,10 @@ describe('Inventory Audit & Parity Engine (scripts/provision/inventory-audit.ts)
 			expect(audit.summary.environments.production.totalActiveRows).toBe(24);
 
 			// Check specific row classifications in the output matrix
-			const perla = audit.rows.find((r) => r.slug === 'boda-perla-y-carlos');
-			expect(perla).toBeDefined();
-			expect(perla?.category).toBe('canonical_in_progress');
-			expect(perla?.deliveryState).toBe('IN_PROGRESS');
+			const daniela = audit.rows.find((r) => r.slug === 'daniela-y-martin');
+			expect(daniela).toBeDefined();
+			expect(daniela?.category).toBe('canonical_in_progress');
+			expect(daniela?.deliveryState).toBe('IN_PROGRESS');
 
 			const abril = audit.rows.find((r) => r.slug === 'abril-michelle-becerra-rea');
 			expect(abril).toBeDefined();

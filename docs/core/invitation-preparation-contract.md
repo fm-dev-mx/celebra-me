@@ -70,6 +70,10 @@ complete, done, or release-ready while such ambiguity remains.
 orthography must be `verified` (or an explicit owner override recorded). Do not lock identity on
 inferred spelling.
 
+**Slug vs route:** Never include `eventType` in the slug. The public path is already
+`/{eventType}/{slug}` — see
+[`invitation-creation-contract.md`](./invitation-creation-contract.md) (Canonical Slug).
+
 ---
 
 ## 3. Event-type completeness

@@ -42,13 +42,13 @@ describe('cross-db-invitation-reconciliation findings', () => {
 			production: snap('production', [{ slug: 'alba-rosa-quinonez' }]),
 		} as Record<TargetEnv, EnvironmentSnapshot>;
 
-		const findings = buildCrossDbInvitationFindings(snapshots, ['boda-perla-y-carlos']);
+		const findings = buildCrossDbInvitationFindings(snapshots, ['daniela-y-martin']);
 		const typo = findings.find((f) => f.canonicalKey === 'alba-rosa-quinones');
 		const canonical = findings.find((f) => f.canonicalKey === 'alba-rosa-quinonez');
 
 		expect(typo?.kind).toBe('extra');
 		expect(canonical?.kind).toBe('aligned');
-		expect(findings.some((f) => f.canonicalKey === 'boda-perla-y-carlos')).toBe(false);
+		expect(findings.some((f) => f.canonicalKey === 'daniela-y-martin')).toBe(false);
 	});
 
 	it('marks title/packageHash drift as divergent', () => {

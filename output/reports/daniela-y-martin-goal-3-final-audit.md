@@ -1,4 +1,4 @@
-# Boda de Perla y Carlos — final audit, interlude integration, and cleanup
+# Boda de Daniela y Martín — final audit, interlude integration, and cleanup
 
 Audit timestamp: 2026-08-03T21:02:41-07:00  
 Repository: `Celebra-me`  
@@ -40,11 +40,11 @@ publication workflow remains required before the new interludes can appear in th
   existing staged work, performed no Git mutation, and did not write to any database or environment.
 - `.agent/routing-matrix.yaml` and relevant architecture/domain documentation.
 - `docs/core/architecture.md` — section order, interlude placement, and intersection metadata.
-- `docs/invitations/boda-perla-y-carlos.md` — approved preparation state, source-role inventory, and
+- `docs/invitations/daniela-y-martin.md` — approved preparation state, source-role inventory, and
   content constraints.
-- `.agent/tmp/handoffs/boda-perla-y-carlos-goal-1/implementation-audit.md` — Goal 1 factual
+- `.agent/tmp/handoffs/daniela-y-martin-goal-1/implementation-audit.md` — Goal 1 factual
   traceability baseline.
-- `.agent/tmp/handoffs/boda-perla-y-carlos-goal-2/implementation-report.md` — Goal 2 implementation
+- `.agent/tmp/handoffs/daniela-y-martin-goal-2/implementation-report.md` — Goal 2 implementation
   and validation baseline.
 - `pasted-text-1.txt` — Goal 3 scope, mandatory two-interlude requirement, map/accessibility/cleanup
   criteria, and no-publish boundary.
@@ -101,13 +101,13 @@ published route can be inspected without mutation.
 
 | Finding                                           | Final status                                      | Evidence and boundary                                                                                                                                                                                                |
 | ------------------------------------------------- | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| F01 — preparation readiness / placeholders        | Complete                                          | `docs/invitations/boda-perla-y-carlos.md` remains `READY_WITH_PLACEHOLDERS`; preparation validation passed. This is a preparation gate, not a browser rendering state.                                               |
+| F01 — preparation readiness / placeholders        | Complete                                          | `docs/invitations/daniela-y-martin.md` remains `READY_WITH_PLACEHOLDERS`; preparation validation passed. This is a preparation gate, not a browser rendering state.                                               |
 | F02 — source provenance                           | Complete                                          | `PERLA_ASSET_SPECS` retains the approved hero/gallery roles and adds only the two Goal 3 interlude roles with repository-relative paths. No source re-encoding or provider change was introduced.                    |
 | F03 — opaque source labels                        | Complete                                          | Canonical preparation documentation remains the provenance boundary; no raw operational path is emitted to client content. `validate:no-pii` passed.                                                                 |
 | F04 — managed image normalization                 | Complete for source contract; publication pending | Interludes use the same managed asset specification/upload contract as hero/gallery. No Storage write or second runtime normalization was added. The owner must run the approved upload workflow before publication. |
-| F05 — route slug/alias                            | Complete                                          | `boda-perla-y-carlos`, event type `boda`, and route identity remain unchanged.                                                                                                                                       |
+| F05 — route slug/alias                            | Complete                                          | `daniela-y-martin`, event type `boda`, and route identity remain unchanged.                                                                                                                                       |
 | F06 — family placeholders                         | Complete                                          | Payload still has two groups and four `Por confirmar` entries; live route DOM showed both groups and all four entries. `Family.astro` only adds a presentation class.                                                |
-| F07 — Lane A inheritance reset                    | Complete                                          | Perla-specific profile styles remain scoped to `.event--boda-perla-y-carlos.theme-preset--jewelry-box-wedding`; no shared wedding preset was changed in Goal 3.                                                      |
+| F07 — Lane A inheritance reset                    | Complete                                          | Perla-specific profile styles remain scoped to `.event--daniela-y-martin.theme-preset--jewelry-box-wedding`; no shared wedding preset was changed in Goal 3.                                                      |
 | F08 — event-type classification                   | Not applicable to the Goal 3 visual correction    | `boda` remains a supported route type; no classification issue was reopened.                                                                                                                                         |
 | F09 — identity derivatives                        | Complete                                          | Slug, `_assetSlug`, demo, template, and visual profile identities remain unchanged.                                                                                                                                  |
 | F10 — dynamic resolver / routing                  | Not applicable to a Perla-specific correction     | The shared resolver remains the source-of-truth boundary for published real invitations; no route fallback was introduced.                                                                                           |
@@ -133,8 +133,8 @@ published route can be inspected without mutation.
 
 | Interlude                     | Final asset                                                   | Content entry                                                                     | Render position             | Focal / responsive evidence                                                                                                        |
 | ----------------------------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| A — anticipation to locations | `src/assets/invitations/boda-perla-y-carlos/interlude-01.png` | `PERLA_ASSET_SPECS['interlude-01']`; `buildPerlaPublishedContent().interludes[0]` | `afterSection: 'countdown'` | `50% 50%`; mobile-narrow, mobile-standard, mobile-large, and desktop screenshots retain the arch, doorway, and floral edge.        |
-| B — gallery to RSVP           | `src/assets/invitations/boda-perla-y-carlos/interlude-02.png` | `PERLA_ASSET_SPECS['interlude-02']`; `buildPerlaPublishedContent().interludes[1]` | `afterSection: 'gallery'`   | `50% 58%`; mobile-narrow, mobile-standard, mobile-large, and desktop screenshots retain the table, glassware, candle, and flowers. |
+| A — anticipation to locations | `src/assets/invitations/daniela-y-martin/interlude-01.png` | `PERLA_ASSET_SPECS['interlude-01']`; `buildPerlaPublishedContent().interludes[0]` | `afterSection: 'countdown'` | `50% 50%`; mobile-narrow, mobile-standard, mobile-large, and desktop screenshots retain the arch, doorway, and floral edge.        |
+| B — gallery to RSVP           | `src/assets/invitations/daniela-y-martin/interlude-02.png` | `PERLA_ASSET_SPECS['interlude-02']`; `buildPerlaPublishedContent().interludes[1]` | `afterSection: 'gallery'`   | `50% 58%`; mobile-narrow, mobile-standard, mobile-large, and desktop screenshots retain the table, glassware, candle, and flowers. |
 
 ### Image creation outcome
 
@@ -154,12 +154,12 @@ published route can be inspected without mutation.
 
 | Finding / surface                 | Section or state                          | Component                                                              | File / symbol                                                                                          | Styles / tokens                                                                     | Data / assets                                                   | Dependencies                                                         | Ownership                                              | Correction boundary         | Regression risk                                                                                                  | Validation                                                                                              |
 | --------------------------------- | ----------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- | --------------------------------------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------ | --------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| Goal 3 interlude A                | After countdown, before location          | `Interlude.astro`                                                      | `scripts/provision/invitations/boda-perla-y-carlos.ts:PERLA_ASSET_SPECS`, `buildPerlaPublishedContent` | `src/styles/invitation/_interlude.scss`; inherited Perla profile and theme contract | `interlude-01.png`; semantic uploaded asset ref                 | `buildInterludes`, `resolveAsset`, Astro image delivery              | Perla invitation definition and managed asset workflow | Local data/asset addition   | Wrong key or upload mapping would omit the image; screen-height pause changes page length and LCP below the fold | Payload schema test; render-plan test; 4-width browser image load and screenshots                       |
+| Goal 3 interlude A                | After countdown, before location          | `Interlude.astro`                                                      | `scripts/provision/invitations/daniela-y-martin.ts:PERLA_ASSET_SPECS`, `buildPerlaPublishedContent` | `src/styles/invitation/_interlude.scss`; inherited Perla profile and theme contract | `interlude-01.png`; semantic uploaded asset ref                 | `buildInterludes`, `resolveAsset`, Astro image delivery              | Perla invitation definition and managed asset workflow | Local data/asset addition   | Wrong key or upload mapping would omit the image; screen-height pause changes page length and LCP below the fold | Payload schema test; render-plan test; 4-width browser image load and screenshots                       |
 | Goal 3 interlude B                | After gallery, before RSVP                | `Interlude.astro`                                                      | Same definition symbols; `interludes[1]`                                                               | Same shared interlude contract; `focalPoint: 50% 58%`                               | `interlude-02.png`; semantic uploaded asset ref                 | Same shared adapter/render path                                      | Perla invitation definition and managed asset workflow | Local data/asset addition   | Incorrect focal point could crop the table detail; upload mapping could omit the image                           | Payload schema test; render-plan sequence assertion; responsive section screenshots                     |
 | Exact count / order               | Full section sequence                     | `InvitationSections.astro`                                             | `buildInvitationRenderPlan`, `buildInvitationSectionRenderDescriptors`                                 | Existing intersection metadata and motion coordinator                               | `viewModel.interludes` filtered by `afterSection`               | Shared render-plan and motion system                                 | Shared platform contract, Perla-owned data             | No shared refactor required | Duplicate entries or wrong `sectionOrder` position could move RSVP or create extra pauses                        | 2 interludes in view model; exact plan sequence; browser synthetic DOM sequence                         |
 | Asset resolution                  | Adapter stage                             | `buildInterludes`                                                      | `src/lib/adapters/event.ts:280`                                                                        | No new CSS or runtime override                                                      | `InterludeInput.image` → `ImageAsset`                           | `resolveAsset`, `_assetSlug`                                         | Shared adapter                                         | Preserved shared behavior   | Invalid image key is skipped with warning                                                                        | Existing adapter tests; Perla source asset contract; schema pass                                        |
 | Actual markup and loading         | Interlude section                         | `Interlude.astro`, `OptimizedImage`                                    | `src/components/invitation/Interlude.astro`                                                            | `src/styles/invitation/_interlude.scss`                                             | `alt`, `height`, `focalPoint` props                             | Lazy loading, async decoding, low priority, one motion coordinator   | Shared component                                       | Preserved shared component  | Component contract, accessibility, or performance regression                                                     | Existing interlude tests; images loaded at 1024×1536 in browser harness; reduced-motion shared coverage |
-| Reveal / hero / quote / countdown | All reveal states and initial chapters    | Existing shared reveal, `Hero.astro`, `Quote.astro`, `Countdown.astro` | Existing Goal 2 symbols and Perla profile                                                              | `src/styles/invitation-profiles/boda-perla-y-carlos.scss`                           | Existing hero source and text payload                           | `RevealManager`, localStorage, matchMedia, countdown target/timezone | Shared contracts with Perla profile presentation       | Preserved; no Goal 3 change | Existing Goal 2 visual and interaction coverage remains the regression boundary                                  | Reveal E2E 10/10; existing mobile/desktop screenshots; 90 targeted unit tests                           |
+| Reveal / hero / quote / countdown | All reveal states and initial chapters    | Existing shared reveal, `Hero.astro`, `Quote.astro`, `Countdown.astro` | Existing Goal 2 symbols and Perla profile                                                              | `src/styles/invitation-profiles/daniela-y-martin.scss`                           | Existing hero source and text payload                           | `RevealManager`, localStorage, matchMedia, countdown target/timezone | Shared contracts with Perla profile presentation       | Preserved; no Goal 3 change | Existing Goal 2 visual and interaction coverage remains the regression boundary                                  | Reveal E2E 10/10; existing mobile/desktop screenshots; 90 targeted unit tests                           |
 | Location and map actions          | Two venue cards and indications           | `EventLocation.astro`, `VenueCard.astro`                               | Existing Goal 2 helper/markup and Perla location payload                                               | Perla location profile and `_event-location.scss`                                   | Two approved public map URLs; civil ceremony remains indication | Clipboard API / fallback and external links                          | Shared markup, Perla content                           | Preserved; no Goal 3 change | Third-card promotion or map destination drift                                                                    | Live DOM: 2 cards; 2 distinct URLs; copy success; location screenshots                                  |
 | Family / gallery                  | Guest-facing family and one-photo gallery | `Family.astro`, `Gallery.astro`, `PhotoGallery.astro`                  | Existing Goal 2 class and profile rules                                                                | Perla family/gallery profile styling                                                | Two groups, four pending entries, one approved gallery image    | Gallery dialog and focus restoration                                 | Shared renderer with Perla presentation                | Preserved; no Goal 3 change | Placeholder or dialog contract regression                                                                        | Live DOM and gallery keyboard/Escape/focus evidence                                                     |
 | RSVP / closing                    | Confirmation and footer closure           | `RSVP.tsx`, `ThankYou.astro`, `Footer.astro`                           | Existing Goal 2 symbols                                                                                | Perla RSVP, thank-you, and footer profile rules                                     | API/hybrid contract, calendar, closing copy, provider credit    | React island, RSVP API, calendar behavior                            | Shared contract with Perla presentation                | Preserved; no Goal 3 change | Hydration/API/persistence regression                                                                             | Synthetic local RSVP progression; known shared hydration warning documented; no submission              |
@@ -216,13 +216,13 @@ Reuse decisions:
 
 | Command / check                                                                                                                                              | Result                                                                                                                                                                                            |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pnpm test -- tests/content/boda-perla-y-carlos-payload.test.ts tests/unit/invitation.render-plan.test.ts tests/unit/invitation.section-render-data.test.ts` | Passed — 3 suites, 26 tests.                                                                                                                                                                      |
+| `pnpm test -- tests/content/daniela-y-martin-payload.test.ts tests/unit/invitation.render-plan.test.ts tests/unit/invitation.section-render-data.test.ts` | Passed — 3 suites, 26 tests.                                                                                                                                                                      |
 | Targeted section/adapter/motion/gallery/family/location suite                                                                                                | Passed — 10 suites, 90 tests.                                                                                                                                                                     |
 | `pnpm validate:changed`                                                                                                                                      | Passed — related validation, 38 suites / 344 tests, and local render corpus regression 17/17. Prettier warning was only the existing Goal 2 report handoff; changed source files were formatted.  |
-| `pnpm validate:invitation-preparation -- --file docs/invitations/boda-perla-y-carlos.md`                                                                     | Passed — readiness matches `READY_WITH_PLACEHOLDERS`.                                                                                                                                             |
+| `pnpm validate:invitation-preparation -- --file docs/invitations/daniela-y-martin.md`                                                                     | Passed — readiness matches `READY_WITH_PLACEHOLDERS`.                                                                                                                                             |
 | `pnpm validate:event-parity --allowMissingDb`                                                                                                                | Passed — 4 DB events considered, 0 without published content. No DB write.                                                                                                                        |
 | `pnpm validate:no-pii`                                                                                                                                       | Passed — no non-demo content files found.                                                                                                                                                         |
-| `pnpm exec stylelint 'src/styles/invitation-profiles/boda-perla-y-carlos.scss' 'src/styles/invitation/_event-location.scss'`                                 | Passed.                                                                                                                                                                                           |
+| `pnpm exec stylelint 'src/styles/invitation-profiles/daniela-y-martin.scss' 'src/styles/invitation/_event-location.scss'`                                 | Passed.                                                                                                                                                                                           |
 | Prettier check for the changed Perla definition and payload test                                                                                             | Passed.                                                                                                                                                                                           |
 | `pnpm test:e2e -- tests/e2e/envelope-reveal-interaction.spec.ts`                                                                                             | Passed — 10/10. The first attempt was blocked only because a pre-existing local Astro server occupied port 4321; after stopping that local server, the managed E2E server completed successfully. |
 | `pnpm type-check`                                                                                                                                            | Blocked by 2 pre-existing diagnostics in `tests/unit/observability-batch.test.ts:8` and `:36`; no changed-file diagnostic was reported.                                                           |
@@ -252,35 +252,35 @@ The harness verified:
 
 New interlude evidence:
 
-- `output/playwright/boda-perla-y-carlos/goal3-interlude-a-mobile-narrow.png`
-- `output/playwright/boda-perla-y-carlos/goal3-interlude-b-mobile-narrow.png`
-- `output/playwright/boda-perla-y-carlos/goal3-interludes-mobile-narrow-full.png`
-- `output/playwright/boda-perla-y-carlos/goal3-interlude-a-mobile-standard.png`
-- `output/playwright/boda-perla-y-carlos/goal3-interlude-b-mobile-standard.png`
-- `output/playwright/boda-perla-y-carlos/goal3-interludes-mobile-standard-full.png`
-- `output/playwright/boda-perla-y-carlos/goal3-interlude-a-mobile-large.png`
-- `output/playwright/boda-perla-y-carlos/goal3-interlude-b-mobile-large.png`
-- `output/playwright/boda-perla-y-carlos/goal3-interludes-mobile-large-full.png`
-- `output/playwright/boda-perla-y-carlos/goal3-interlude-a-desktop.png`
-- `output/playwright/boda-perla-y-carlos/goal3-interlude-b-desktop.png`
-- `output/playwright/boda-perla-y-carlos/goal3-interludes-desktop-full.png`
-- `output/playwright/boda-perla-y-carlos/goal3-interlude-a-mobile.png`
-- `output/playwright/boda-perla-y-carlos/goal3-interlude-b-mobile.png`
-- `output/playwright/boda-perla-y-carlos/goal3-interludes-mobile-full.png`
+- `output/playwright/daniela-y-martin/goal3-interlude-a-mobile-narrow.png`
+- `output/playwright/daniela-y-martin/goal3-interlude-b-mobile-narrow.png`
+- `output/playwright/daniela-y-martin/goal3-interludes-mobile-narrow-full.png`
+- `output/playwright/daniela-y-martin/goal3-interlude-a-mobile-standard.png`
+- `output/playwright/daniela-y-martin/goal3-interlude-b-mobile-standard.png`
+- `output/playwright/daniela-y-martin/goal3-interludes-mobile-standard-full.png`
+- `output/playwright/daniela-y-martin/goal3-interlude-a-mobile-large.png`
+- `output/playwright/daniela-y-martin/goal3-interlude-b-mobile-large.png`
+- `output/playwright/daniela-y-martin/goal3-interludes-mobile-large-full.png`
+- `output/playwright/daniela-y-martin/goal3-interlude-a-desktop.png`
+- `output/playwright/daniela-y-martin/goal3-interlude-b-desktop.png`
+- `output/playwright/daniela-y-martin/goal3-interludes-desktop-full.png`
+- `output/playwright/daniela-y-martin/goal3-interlude-a-mobile.png`
+- `output/playwright/daniela-y-martin/goal3-interlude-b-mobile.png`
+- `output/playwright/daniela-y-martin/goal3-interludes-mobile-full.png`
 
-Existing Goal 2 section/reveal evidence remains under `output/playwright/boda-perla-y-carlos/`,
+Existing Goal 2 section/reveal evidence remains under `output/playwright/daniela-y-martin/`,
 including sealed/opening/open reveal states, location, gallery, RSVP, and full-page checks.
 
 ## Files inspected and changed
 
 ### Goal 3 changes
 
-- `scripts/provision/invitations/boda-perla-y-carlos.ts`
+- `scripts/provision/invitations/daniela-y-martin.ts`
   - `PERLA_ASSET_SPECS`: `interlude-01`, `interlude-02`.
   - `buildPerlaPublishedContent()`: exactly two `interludes` entries.
-- `src/assets/invitations/boda-perla-y-carlos/interlude-01.png`
-- `src/assets/invitations/boda-perla-y-carlos/interlude-02.png`
-- `tests/content/boda-perla-y-carlos-payload.test.ts`
+- `src/assets/invitations/daniela-y-martin/interlude-01.png`
+- `src/assets/invitations/daniela-y-martin/interlude-02.png`
+- `tests/content/daniela-y-martin-payload.test.ts`
   - source-file coverage, schema contract, exact interlude metadata, and exact render-plan sequence.
 
 ### Goal 2 files inspected in the final diff
@@ -288,10 +288,10 @@ including sealed/opening/open reveal states, location, gallery, RSVP, and full-p
 - `src/components/invitation/Family.astro` — pending-name presentation class.
 - `src/components/invitation/components/VenueCard.astro` — compliant map-link preview fallback.
 - `src/lib/invitation/location-helper.ts` — public map preview URL selection.
-- `src/styles/invitation-profiles/boda-perla-y-carlos.scss` — Perla-scoped presentation corrections.
+- `src/styles/invitation-profiles/daniela-y-martin.scss` — Perla-scoped presentation corrections.
 - `src/styles/invitation/_event-location.scss` — shared map-preview contract styles.
 - `tests/unit/location-helper.test.ts` — map fallback coverage.
-- `output/reports/boda-perla-y-carlos-goal-2-implementation-report.md` — existing staged handoff,
+- `output/reports/daniela-y-martin-goal-2-implementation-report.md` — existing staged handoff,
   preserved as historical Goal 2 evidence.
 
 No unrelated source file, dependency manifest, environment file, database record, Storage object, or
@@ -338,13 +338,13 @@ At the final audit snapshot:
 - HEAD: `b724c24ece9a02be59e27755a08060d3d326009f`.
 - Staged baseline preserved: the existing Goal 2 report and six Goal 2 implementation/test files
   remain staged as supplied by the working session.
-- Unstaged Goal 3 source changes: `scripts/provision/invitations/boda-perla-y-carlos.ts` and the
-  additional assertions in `tests/content/boda-perla-y-carlos-payload.test.ts`.
-- Untracked Goal 3 assets: `src/assets/invitations/boda-perla-y-carlos/interlude-01.png` and
+- Unstaged Goal 3 source changes: `scripts/provision/invitations/daniela-y-martin.ts` and the
+  additional assertions in `tests/content/daniela-y-martin-payload.test.ts`.
+- Untracked Goal 3 assets: `src/assets/invitations/daniela-y-martin/interlude-01.png` and
   `interlude-02.png`.
 - This canonical report is an ignored audit handoff under
-  `.agent/tmp/handoffs/boda-perla-y-carlos-goal-3/`. A visible copy is provided under
-  `output/reports/boda-perla-y-carlos-goal-3-final-audit.md` without staging it.
+  `.agent/tmp/handoffs/daniela-y-martin-goal-3/`. A visible copy is provided under
+  `output/reports/daniela-y-martin-goal-3-final-audit.md` without staging it.
 - No commit, reset, push, database write, publication, Storage upload, dependency install,
   secret/configuration mutation, or Preview/Production operation occurred.
 

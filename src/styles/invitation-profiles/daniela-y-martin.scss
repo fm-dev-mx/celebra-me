@@ -1,196 +1,185 @@
-// Perla & Carlos — Lane A on jewelry-box-wedding.
+// Daniela & Martín — Lane A on jewelry-box-wedding.
 // Structural states + visual grammar (color, type, rhythm, intersections).
 // Client palette: olive + beige + gold. Do not mutate the shared preset.
 @use '../global/mixins' as mixins;
 
-.event--boda-perla-y-carlos.theme-preset--jewelry-box-wedding {
-	--perla-olive: rgb(88 102 74);
-	--perla-olive-rgb: 88 102 74;
-	--perla-olive-deep: rgb(58 70 48);
-	--perla-olive-deep-rgb: 58 70 48;
-	--perla-beige: rgb(236 228 214);
-	--perla-beige-rgb: 236 228 214;
-	--perla-cream: rgb(247 243 235);
-	--perla-cream-rgb: 247 243 235;
-	--perla-ivory: rgb(252 249 243);
-	--perla-ivory-rgb: 252 249 243;
-	--perla-sand: rgb(214 201 178);
-	--perla-sand-rgb: 214 201 178;
-	--perla-gold: rgb(176 148 96);
-	--perla-gold-rgb: 176 148 96;
-	--perla-ink: rgb(42 40 36);
-	--perla-ink-rgb: 42 40 36;
+.event--daniela-y-martin.theme-preset--jewelry-box-wedding {
+	--daniela-olive: rgb(88 102 74);
+	--daniela-olive-rgb: 88 102 74;
+	--daniela-olive-deep: rgb(58 70 48);
+	--daniela-olive-deep-rgb: 58 70 48;
+	--daniela-beige: rgb(236 228 214);
+	--daniela-beige-rgb: 236 228 214;
+	--daniela-cream: rgb(247 243 235);
+	--daniela-cream-rgb: 247 243 235;
+	--daniela-ivory: rgb(252 249 243);
+	--daniela-ivory-rgb: 252 249 243;
+	--daniela-sand: rgb(214 201 178);
+	--daniela-sand-rgb: 214 201 178;
+	--daniela-gold: rgb(176 148 96);
+	--daniela-gold-rgb: 176 148 96;
+	--daniela-ink: rgb(42 40 36);
+	--daniela-ink-rgb: 42 40 36;
 
 	// Core surfaces / text (reset champagne preset)
-	--color-surface-primary: var(--perla-cream);
-	--color-surface-primary-rgb: var(--perla-cream-rgb);
-	--color-surface-secondary: var(--perla-beige);
-	--color-surface-soft: var(--perla-beige);
-	--color-surface-elevated: var(--perla-cream);
-	--color-surface-dark: var(--perla-olive-deep);
-	--color-surface-dark-rgb: var(--perla-olive-deep-rgb);
-	--color-text-primary: var(--perla-ink);
-	--color-text-primary-rgb: var(--perla-ink-rgb);
-	--color-text-secondary: rgb(var(--perla-ink-rgb) / 78%);
-	--color-text-emphasis: var(--perla-olive);
-	--color-text-on-dark: var(--perla-cream);
-	--color-text-on-light: var(--perla-ink);
-	--color-action-primary: var(--perla-olive-deep);
-	--color-action-primary-rgb: var(--perla-olive-deep-rgb);
-	--color-action-accent: var(--perla-gold);
-	--color-action-accent-rgb: var(--perla-gold-rgb);
-	--color-glass-bg: rgb(var(--perla-cream-rgb) / 72%);
-	--color-glass-border: rgb(var(--perla-gold-rgb) / 40%);
-	--color-glass-shadow: rgb(var(--perla-olive-rgb) / 14%);
+	--color-surface-primary: var(--daniela-cream);
+	--color-surface-primary-rgb: var(--daniela-cream-rgb);
+	--color-surface-secondary: var(--daniela-beige);
+	--color-surface-soft: var(--daniela-beige);
+	--color-surface-elevated: var(--daniela-cream);
+	--color-surface-dark: var(--daniela-olive-deep);
+	--color-surface-dark-rgb: var(--daniela-olive-deep-rgb);
+	--color-text-primary: var(--daniela-ink);
+	--color-text-primary-rgb: var(--daniela-ink-rgb);
+	--color-text-secondary: rgb(var(--daniela-ink-rgb) / 78%);
+	--color-text-emphasis: var(--daniela-olive);
+	--color-text-on-dark: var(--daniela-cream);
+	--color-text-on-light: var(--daniela-ink);
+	--color-action-primary: var(--daniela-olive-deep);
+	--color-action-primary-rgb: var(--daniela-olive-deep-rgb);
+	--color-action-accent: var(--daniela-gold);
+	--color-action-accent-rgb: var(--daniela-gold-rgb);
+	--color-glass-bg: rgb(var(--daniela-cream-rgb) / 72%);
+	--color-glass-border: rgb(var(--daniela-gold-rgb) / 40%);
+	--color-glass-shadow: rgb(var(--daniela-olive-rgb) / 14%);
 	--shadow-premium: 0 16px 32px var(--color-glass-shadow), 0 4px 12px rgb(0 0 0 / 4%);
-	--hero-label-color: var(--perla-cream);
-	--hero-badge-border: var(--perla-gold);
-	--hero-overlay: rgb(var(--perla-olive-deep-rgb) / 28%);
-	--hero-overlay-gradient: linear-gradient(
-		180deg,
-		rgb(var(--perla-olive-deep-rgb) / 34%) 0%,
-		rgb(var(--perla-olive-deep-rgb) / 6%) 36%,
-		rgb(var(--perla-olive-deep-rgb) / 22%) 58%,
-		rgb(var(--perla-olive-deep-rgb) / 68%) 100%
-	);
-	--gallery-title-color: var(--perla-olive);
+	--hero-label-color: var(--daniela-cream);
+	--hero-badge-border: var(--daniela-gold);
+	--gallery-title-color: var(--daniela-olive);
 	--gallery-section-padding-block: clamp(3.25rem, 6.5vw, 5rem);
-	--gallery-card-shadow: 0 14px 36px rgb(var(--perla-olive-rgb) / 16%);
+	--gallery-card-shadow: 0 14px 36px rgb(var(--daniela-olive-rgb) / 16%);
 
 	// Location — continuous chapter; soften nested frames
-	--location-flourish-color: var(--perla-gold);
+	--location-flourish-color: var(--daniela-gold);
 	--location-outer-frame-bg: transparent;
 	--location-outer-frame-padding: 0;
 	--location-outer-frame-shadow: none;
-	--location-inner-frame-bg: var(--perla-cream);
+	--location-inner-frame-bg: var(--daniela-cream);
 	--location-inner-frame-padding: 0;
 	--location-card-padding: clamp(1.35rem, 3.5vw, 1.85rem) clamp(1.1rem, 3vw, 1.6rem);
-	--location-padding-block: var(--perla-location-padding-block);
+	--location-padding-block: var(--daniela-location-padding-block);
 	--location-date-white-space: normal;
 	--location-date-font-family: var(--font-body);
 	--location-date-letter-spacing: 0.08em;
-	--location-indications-heading-color: var(--perla-olive);
+	--location-indications-heading-color: var(--daniela-olive);
 
 	// Panel chrome lives on `__indications-container` below; keep inner panel unset.
 	--location-indications-panel-bg: transparent;
 	--location-indications-panel-border: none;
 	--location-indications-panel-padding: 0;
-	--location-indications-gap: var(--perla-location-indications-gap);
+	--location-indications-gap: var(--daniela-location-indications-gap);
 	--location-indication-item-gap: 1rem;
-	--location-indication-icon-color: var(--perla-olive);
+	--location-indication-icon-color: var(--daniela-olive);
 
 	// Family — light ceremonial chapter; kill preset sepia media filter
 	--family-bg: linear-gradient(
 		180deg,
-		var(--perla-ivory) 0%,
-		var(--perla-cream) 48%,
-		rgb(var(--perla-beige-rgb) / 70%) 100%
+		var(--daniela-ivory) 0%,
+		var(--daniela-cream) 48%,
+		rgb(var(--daniela-beige-rgb) / 70%) 100%
 	);
-	--family-padding-block: var(--perla-family-padding-block);
+	--family-padding-block: var(--daniela-family-padding-block);
 	--family-texture-opacity: 0%;
 	--family-vignette-bg: transparent;
 	--family-panel-bg: transparent;
 	--family-panel-border: none;
 	--family-panel-shadow: none;
 	--family-header-filter: none;
-	--family-accent: var(--perla-gold);
-	--family-text-primary: var(--perla-ink);
-	--family-text-muted: rgb(var(--perla-ink-rgb) / 64%);
+	--family-accent: var(--daniela-gold);
+	--family-text-primary: var(--daniela-ink);
+	--family-text-muted: rgb(var(--daniela-ink-rgb) / 64%);
 	--family-divider: linear-gradient(
 		90deg,
 		transparent 0%,
-		rgb(var(--perla-gold-rgb) / 55%) 50%,
+		rgb(var(--daniela-gold-rgb) / 55%) 50%,
 		transparent 100%
 	);
 	--family-title-font: var(--font-display);
 	--family-name-font: var(--font-display);
 	--family-media-filter: none;
-	--family-eyebrow-color: var(--perla-olive);
-	--family-title-color: var(--perla-olive-deep);
+	--family-eyebrow-color: var(--daniela-olive);
+	--family-title-color: var(--daniela-olive-deep);
 
 	// Personalized access — replace hardcoded champagne paper
-	--pa-card-bg-color: var(--perla-olive-deep);
+	--pa-card-bg-color: var(--daniela-olive-deep);
 	--pa-card-bg-image: linear-gradient(
 		160deg,
-		rgb(var(--perla-cream-rgb) / 96%) 0%,
-		rgb(var(--perla-beige-rgb) / 98%) 50%,
-		rgb(var(--perla-cream-rgb) / 96%) 100%
+		rgb(var(--daniela-cream-rgb) / 96%) 0%,
+		rgb(var(--daniela-beige-rgb) / 98%) 50%,
+		rgb(var(--daniela-cream-rgb) / 96%) 100%
 	);
-	--pa-card-border: 1.5px solid rgb(var(--perla-gold-rgb) / 40%);
-	--pa-card-shadow: 0 18px 50px rgb(var(--perla-olive-rgb) / 18%);
-	--pa-card-inner-border: 1px solid rgb(var(--perla-gold-rgb) / 24%);
+	--pa-card-border: 1.5px solid rgb(var(--daniela-gold-rgb) / 40%);
+	--pa-card-shadow: 0 18px 50px rgb(var(--daniela-olive-rgb) / 18%);
+	--pa-card-inner-border: 1px solid rgb(var(--daniela-gold-rgb) / 24%);
 	--pa-card-glow: radial-gradient(
 		circle at top center,
-		rgb(var(--perla-gold-rgb) / 14%),
+		rgb(var(--daniela-gold-rgb) / 14%),
 		transparent 55%
 	);
-	--pa-eyebrow-color: var(--perla-olive);
-	--pa-title-color: var(--perla-olive-deep);
-	--pa-guest-color: var(--perla-ink);
+	--pa-eyebrow-color: var(--daniela-olive);
+	--pa-title-color: var(--daniela-olive-deep);
+	--pa-guest-color: var(--daniela-ink);
 	--pa-divider-gradient: linear-gradient(
 		90deg,
 		transparent 0%,
-		var(--perla-gold) 50%,
+		var(--daniela-gold) 50%,
 		transparent 100%
 	);
-	--pa-divider-diamond-bg: var(--perla-cream);
-	--pa-divider-diamond-border-color: var(--perla-gold);
-	--pa-count-frame-border: 1.5px solid rgb(var(--perla-gold-rgb) / 40%);
-	--pa-count-frame-bg: linear-gradient(180deg, var(--perla-cream) 0%, var(--perla-beige) 100%);
-	--pa-count-color: var(--perla-olive);
-	--pa-footer-border-top: 1px solid rgb(var(--perla-gold-rgb) / 22%);
-	--pa-footer-text-color: rgb(var(--perla-ink-rgb) / 72%);
+	--pa-divider-diamond-bg: var(--daniela-cream);
+	--pa-divider-diamond-border-color: var(--daniela-gold);
+	--pa-count-frame-border: 1.5px solid rgb(var(--daniela-gold-rgb) / 40%);
+	--pa-count-frame-bg: linear-gradient(180deg, var(--daniela-cream) 0%, var(--daniela-beige) 100%);
+	--pa-count-color: var(--daniela-olive);
+	--pa-footer-border-top: 1px solid rgb(var(--daniela-gold-rgb) / 22%);
+	--pa-footer-text-color: rgb(var(--daniela-ink-rgb) / 72%);
 	--intersection-depth: clamp(2.5rem, 6vw, 4.75rem);
 	--intersection-arch-height: clamp(2.85rem, 5.5vw, 5.25rem);
 	--intersection-blend: linear-gradient(
 		180deg,
-		rgb(var(--perla-cream-rgb) / 0%) 0%,
-		rgb(var(--perla-beige-rgb) / 55%) 100%
+		rgb(var(--daniela-cream-rgb) / 0%) 0%,
+		rgb(var(--daniela-beige-rgb) / 55%) 100%
 	);
 
-	// Perla rhythm tokens — section adjacency without shared wrapper edits.
-	--perla-space-xs: clamp(0.65rem, 1.6vw, 1rem);
-	--perla-space-sm: clamp(1rem, 2.4vw, 1.5rem);
-	--perla-space-md: clamp(1.5rem, 3.5vw, 2.35rem);
-	--perla-space-lg: clamp(2.25rem, 5vw, 3.5rem);
-	--perla-space-xl: clamp(3rem, 7vw, 4.75rem);
-	--perla-countdown-padding-block: clamp(3rem, 6.5vw, 5rem);
-	--perla-countdown-exit: clamp(1.75rem, 4vw, 2.75rem);
-	--perla-location-padding-block: var(--perla-space-xl) clamp(3.25rem, 7vw, 5.25rem);
-	--perla-location-heading-gap: clamp(1.75rem, 4vw, 2.75rem);
-	--perla-location-card-gap: clamp(1.75rem, 4.5vw, 2.85rem);
-	--perla-location-indications-gap: clamp(2.25rem, 5vw, 3.5rem);
-	--perla-family-padding-block: clamp(3.75rem, 8vw, 6rem);
+	// Daniela rhythm tokens — section adjacency without shared wrapper edits.
+	--daniela-space-xs: clamp(0.65rem, 1.6vw, 1rem);
+	--daniela-space-sm: clamp(1rem, 2.4vw, 1.5rem);
+	--daniela-space-md: clamp(1.5rem, 3.5vw, 2.35rem);
+	--daniela-space-lg: clamp(2.25rem, 5vw, 3.5rem);
+	--daniela-space-xl: clamp(3rem, 7vw, 4.75rem);
+	--daniela-countdown-padding-block: clamp(3rem, 6.5vw, 5rem);
+	--daniela-countdown-exit: clamp(1.75rem, 4vw, 2.75rem);
+	--daniela-location-padding-block: var(--daniela-space-xl) clamp(3.25rem, 7vw, 5.25rem);
+	--daniela-location-heading-gap: clamp(1.75rem, 4vw, 2.75rem);
+	--daniela-location-card-gap: clamp(1.75rem, 4.5vw, 2.85rem);
+	--daniela-location-indications-gap: clamp(2.25rem, 5vw, 3.5rem);
+	--daniela-family-padding-block: clamp(3.75rem, 8vw, 6rem);
 
 	// -------------------------------------------------------------------------
 	// Reveal — fully opaque surface; one seal control; hero chrome gated
 	// -------------------------------------------------------------------------
 	.envelope-wrapper {
-		// Every stop is opaque so underlying invitation never shows through.
+		// Opaque wash only here. Paper/container/reveal tokens live in the
+		// `:where(.envelope-wrapper)` block below so they are not overridden
+		// by this higher-specificity stub.
 		--env-bg:
 			radial-gradient(
 				ellipse 110% 80% at 50% 30%,
-				var(--perla-beige) 0%,
-				var(--perla-cream) 62%
+				var(--daniela-beige) 0%,
+				var(--daniela-cream) 62%
 			),
 			linear-gradient(
 				168deg,
-				var(--perla-ivory) 0%,
-				var(--perla-cream) 52%,
-				var(--perla-sand) 100%
+				var(--daniela-ivory) 0%,
+				var(--daniela-cream) 52%,
+				var(--daniela-sand) 100%
 			);
-		--env-paper-bg: var(--perla-ivory);
-		--env-paper-border: rgb(var(--perla-gold-rgb) / 18%);
-		--env-text-primary: var(--perla-ink);
-		--env-text-secondary: rgb(var(--perla-ink-rgb) / 62%);
-		--env-accent: var(--perla-gold);
-		--env-shadow-container: 0 14px 32px rgb(var(--perla-olive-rgb) / 10%);
-		--env-container-radius: 4px;
-		--reveal-card-bg: var(--perla-cream);
-		--reveal-card-border: rgb(var(--perla-gold-rgb) / 20%);
-		--reveal-card-text-primary: var(--perla-ink);
-		--reveal-card-text-secondary: rgb(var(--perla-ink-rgb) / 58%);
-		--reveal-card-accent: rgb(var(--perla-gold-rgb) / 36%);
+		--env-text-primary: var(--daniela-ink);
+		--env-text-secondary: rgb(var(--daniela-ink-rgb) / 62%);
+		--env-accent: var(--daniela-gold);
+		--reveal-card-border: rgb(var(--daniela-gold-rgb) / 20%);
+		--reveal-card-text-primary: var(--daniela-ink);
+		--reveal-card-text-secondary: rgb(var(--daniela-ink-rgb) / 58%);
+		--reveal-card-accent: rgb(var(--daniela-gold-rgb) / 36%);
 
 		isolation: isolate;
 		background: var(--env-bg);
@@ -208,13 +197,13 @@
 	}
 
 	.envelope-base {
-		border-color: rgb(var(--perla-gold-rgb) / 16%);
+		border-color: rgb(var(--daniela-gold-rgb) / 16%);
 	}
 
 	.envelope-name {
 		font-family: var(--font-display);
 		font-weight: 400;
-		color: var(--perla-ink);
+		color: var(--daniela-ink);
 	}
 
 	.envelope-details {
@@ -224,7 +213,7 @@
 
 	.envelope-seal-hint {
 		font-family: var(--font-body);
-		color: rgb(var(--perla-ink-rgb) / 55%);
+		color: rgb(var(--daniela-ink-rgb) / 55%);
 		letter-spacing: 0.06em;
 		text-transform: none;
 		opacity: 78%;
@@ -241,8 +230,8 @@
 	// -------------------------------------------------------------------------
 	.invitation-hero {
 		// Single left axis shared by every hero surface.
-		--perla-hero-axis-x: clamp(1rem, 5.4vw, 2.4rem);
-		--perla-hero-group-gap: clamp(1.15rem, 3vw, 1.85rem);
+		--daniela-hero-axis-x: clamp(1rem, 5.4vw, 2.4rem);
+		--daniela-hero-group-gap: clamp(1.15rem, 3vw, 1.85rem);
 
 		// Neutral, locally-fading overlay. Concentrated around the text column
 		// on the left; the right two thirds of the photograph stay free of
@@ -258,7 +247,7 @@
 				rgb(0 0 0 / 0%) 50%
 			),
 			radial-gradient(ellipse 70% 50% at 28% 100%, rgb(0 0 0 / 22%) 0%, rgb(0 0 0 / 0%) 55%);
-		--hero-badge-text: var(--perla-cream);
+		--hero-badge-text: var(--daniela-cream);
 
 		&__background::after {
 			background: var(--hero-overlay-gradient);
@@ -272,11 +261,11 @@
 			// short mobile. The two padding-block clamps share the axis so
 			// the content never gets pinned to the bottom edge nor floats
 			// detached from the subjects in the lower half.
-			margin-inline: var(--perla-hero-axis-x) auto;
+			margin-inline: var(--daniela-hero-axis-x) auto;
 			padding-inline: 0;
 			padding-block: clamp(1.5rem, 18vh, 5.5rem) clamp(5.5rem, 12vh, 7.5rem);
 			text-align: left;
-			gap: var(--perla-hero-group-gap);
+			gap: var(--daniela-hero-group-gap);
 		}
 
 		// -----------------------------------------------------------------
@@ -289,7 +278,7 @@
 			font-weight: 500;
 			letter-spacing: 0.3em;
 			text-transform: uppercase;
-			color: rgb(var(--perla-cream-rgb) / 92%);
+			color: rgb(var(--daniela-cream-rgb) / 92%);
 			text-shadow: 0 1px 10px rgb(0 0 0 / 45%);
 		}
 
@@ -305,8 +294,8 @@
 			line-height: 0.94;
 			letter-spacing: -0.02em;
 			text-wrap: balance;
-			color: var(--perla-cream);
-			-webkit-text-fill-color: var(--perla-cream);
+			color: var(--daniela-cream);
+			-webkit-text-fill-color: var(--daniela-cream);
 
 			// Solid cream names — kill shared gradient/specular clip that can
 			// leave desktop titles invisible when background-position is off-glyph.
@@ -322,12 +311,12 @@
 			}
 		}
 
-		// Perla locks the title to the same cream treatment across all BEM parts.
+		// Daniela locks the title to the same cream treatment across all BEM parts.
 		&__title,
 		&__secondary-name,
 		&__ampersand {
-			color: var(--perla-cream);
-			-webkit-text-fill-color: var(--perla-cream);
+			color: var(--daniela-cream);
+			-webkit-text-fill-color: var(--daniela-cream);
 		}
 
 		&__title-line,
@@ -335,7 +324,7 @@
 			display: inline-block;
 		}
 
-		// Intentional spacing: "Perla & Carlos" (markup has no whitespace between
+		// Intentional spacing: "Daniela & Martín" (markup has no whitespace between
 		// "&" and the next name).
 		&__ampersand {
 			display: inline-block;
@@ -350,7 +339,7 @@
 			font-size: clamp(0.7rem, 2.2vw, 0.82rem);
 			letter-spacing: 0.22em;
 			text-transform: uppercase;
-			color: rgb(var(--perla-cream-rgb) / 78%);
+			color: rgb(var(--daniela-cream-rgb) / 78%);
 		}
 
 		// -----------------------------------------------------------------
@@ -364,8 +353,8 @@
 			margin-inline: 0;
 			background: linear-gradient(
 				90deg,
-				rgb(var(--perla-cream-rgb) / 80%) 0%,
-				rgb(var(--perla-cream-rgb) / 0%) 100%
+				rgb(var(--daniela-cream-rgb) / 80%) 0%,
+				rgb(var(--daniela-cream-rgb) / 0%) 100%
 			);
 			opacity: 80%;
 		}
@@ -384,7 +373,7 @@
 			font-weight: 500;
 			line-height: 1.2;
 			letter-spacing: 0.04em;
-			color: var(--perla-cream);
+			color: var(--daniela-cream);
 			text-shadow: 0 1px 12px rgb(0 0 0 / 45%);
 		}
 
@@ -394,7 +383,7 @@
 			font-weight: 500;
 			line-height: 1.4;
 			letter-spacing: 0.1em;
-			color: rgb(var(--perla-cream-rgb) / 88%);
+			color: rgb(var(--daniela-cream-rgb) / 88%);
 			text-shadow: 0 1px 10px rgb(0 0 0 / 40%);
 		}
 
@@ -412,7 +401,7 @@
 			font-style: normal;
 			line-height: 1.35;
 			letter-spacing: 0.01em;
-			color: rgb(var(--perla-cream-rgb) / 94%);
+			color: rgb(var(--daniela-cream-rgb) / 94%);
 			text-shadow: 0 1px 10px rgb(0 0 0 / 42%);
 			text-wrap: balance;
 
@@ -464,7 +453,7 @@
 
 			// No shared fade-in; reveal state gates visibility, not entrance.
 			animation: none;
-			color: rgb(var(--perla-cream-rgb) / 78%);
+			color: rgb(var(--daniela-cream-rgb) / 78%);
 		}
 
 		&__scroll-text {
@@ -499,8 +488,8 @@
 		// the content from floating in a void between the subjects and
 		// the eyebrow on very short viewports.
 		@include mixins.respond-below(sm) {
-			--perla-hero-axis-x: clamp(0.95rem, 5.4vw, 1.25rem);
-			--perla-hero-group-gap: clamp(0.85rem, 2.4vw, 1.25rem);
+			--daniela-hero-axis-x: clamp(0.95rem, 5.4vw, 1.25rem);
+			--daniela-hero-group-gap: clamp(0.85rem, 2.4vw, 1.25rem);
 
 			&__content {
 				width: min(90vw, 24rem);
@@ -514,13 +503,13 @@
 
 		// Wide mobile / phablet: relax the axis slightly.
 		@include mixins.respond-to(sm) {
-			--perla-hero-axis-x: clamp(1.5rem, 5.4vw, 2.25rem);
+			--daniela-hero-axis-x: clamp(1.5rem, 5.4vw, 2.25rem);
 		}
 
 		// Tablet: widen the axis, the content column, and let the
 		// overlay taper a touch more.
 		@include mixins.respond-to(md) {
-			--perla-hero-axis-x: clamp(2.5rem, 6.5vw, 4.5rem);
+			--daniela-hero-axis-x: clamp(2.5rem, 6.5vw, 4.5rem);
 
 			&__content {
 				width: min(60vw, 32rem);
@@ -535,8 +524,8 @@
 		// Desktop: full editorial axis. Content stays compact (we keep
 		// the text column restrained, the photo is the canvas).
 		@include mixins.respond-to(lg) {
-			--perla-hero-axis-x: clamp(3.5rem, 7.5vw, 6.5rem);
-			--perla-hero-group-gap: clamp(1.6rem, 3.2vw, 2.1rem);
+			--daniela-hero-axis-x: clamp(3.5rem, 7.5vw, 6.5rem);
+			--daniela-hero-group-gap: clamp(1.6rem, 3.2vw, 2.1rem);
 
 			&__content {
 				width: min(38vw, 30rem);
@@ -599,9 +588,9 @@
 	.invitation-section-wrapper[data-section-kind='quote'] {
 		background: linear-gradient(
 			180deg,
-			rgb(var(--perla-olive-deep-rgb) / 6%) 0%,
-			var(--perla-cream) 28%,
-			var(--perla-ivory) 100%
+			rgb(var(--daniela-olive-deep-rgb) / 6%) 0%,
+			var(--daniela-cream) 28%,
+			var(--daniela-ivory) 100%
 		);
 	}
 
@@ -609,7 +598,7 @@
 		--quote-padding-block: clamp(2.5rem, 5.5vh, 4rem);
 
 		min-height: 0;
-		color: var(--perla-ink);
+		color: var(--daniela-ink);
 
 		.quote-content,
 		.quote-line {
@@ -622,7 +611,7 @@
 
 		.quote-author {
 			font-family: var(--font-body);
-			color: var(--perla-olive);
+			color: var(--daniela-olive);
 			letter-spacing: 0.08em;
 			text-transform: uppercase;
 			font-size: 0.78rem;
@@ -630,16 +619,16 @@
 	}
 
 	.invitation-section-wrapper[data-section-kind='countdown'] {
-		background: linear-gradient(180deg, var(--perla-ivory) 0%, var(--perla-cream) 100%);
+		background: linear-gradient(180deg, var(--daniela-ivory) 0%, var(--daniela-cream) 100%);
 	}
 
 	.countdown-section {
 		min-height: 0;
-		padding-block: var(--perla-countdown-padding-block);
+		padding-block: var(--daniela-countdown-padding-block);
 
 		.countdown-title {
 			font-family: var(--font-display);
-			color: var(--perla-olive);
+			color: var(--daniela-olive);
 			font-size: clamp(1.15rem, 2.8vw, 1.45rem);
 		}
 
@@ -652,7 +641,7 @@
 		.countdown-footer,
 		.countdown-invitation-text {
 			font-family: var(--font-body);
-			color: rgb(var(--perla-ink-rgb) / 68%);
+			color: rgb(var(--daniela-ink-rgb) / 68%);
 		}
 	}
 
@@ -660,9 +649,9 @@
 	.invitation-section-wrapper[data-section-kind='location'] {
 		background: linear-gradient(
 			180deg,
-			var(--perla-beige) 0%,
-			var(--perla-cream) 18%,
-			var(--perla-cream) 100%
+			var(--daniela-beige) 0%,
+			var(--daniela-cream) 18%,
+			var(--daniela-cream) 100%
 		);
 	}
 
@@ -679,7 +668,7 @@
 		.event-location__eyebrow {
 			font-family: var(--font-body);
 			letter-spacing: 0.14em;
-			color: rgb(var(--perla-ink-rgb) / 58%);
+			color: rgb(var(--daniela-ink-rgb) / 58%);
 		}
 
 		.event-location__heading {
@@ -688,7 +677,7 @@
 			font-weight: 400;
 			line-height: 1.2;
 			letter-spacing: 0.01em;
-			color: var(--perla-ink);
+			color: var(--daniela-ink);
 			max-width: 100%;
 			margin-inline: auto;
 			overflow-wrap: break-word;
@@ -701,14 +690,14 @@
 		.event-location__lede {
 			font-family: var(--font-body);
 			line-height: 1.55;
-			color: rgb(var(--perla-ink-rgb) / 72%);
+			color: rgb(var(--daniela-ink-rgb) / 72%);
 		}
 
 		.event-location__card-content-place {
 			font-family: var(--font-display);
 			font-size: clamp(1.4rem, 3.6vw, 1.8rem);
 			line-height: 1.15;
-			color: var(--perla-olive-deep);
+			color: var(--daniela-olive-deep);
 			margin: 0 0 0.15rem;
 		}
 
@@ -718,7 +707,7 @@
 			font-weight: 500;
 			letter-spacing: 0.16em;
 			text-transform: uppercase;
-			color: rgb(var(--perla-ink-rgb) / 60%);
+			color: rgb(var(--daniela-ink-rgb) / 60%);
 			white-space: normal;
 			overflow-wrap: break-word;
 			text-wrap: balance;
@@ -734,7 +723,7 @@
 			line-height: 1.25;
 			letter-spacing: 0;
 			text-transform: none;
-			color: var(--perla-olive);
+			color: var(--daniela-olive);
 			margin-block: 0.1rem 0.65rem;
 		}
 
@@ -762,27 +751,27 @@
 		.event-location__card-content-address {
 			font-family: var(--font-body);
 			font-size: 0.88rem;
-			color: rgb(var(--perla-ink-rgb) / 82%);
+			color: rgb(var(--daniela-ink-rgb) / 82%);
 			padding-top: 0.6rem;
-			border-top: 1px solid rgb(var(--perla-gold-rgb) / 22%);
+			border-top: 1px solid rgb(var(--daniela-gold-rgb) / 22%);
 			margin-top: 0.6rem;
 		}
 
 		// Copy button — subdued inline icon, gold accent, no chrome.
 		.event-location__card-content-copy-button {
-			color: var(--perla-gold);
+			color: var(--daniela-gold);
 			opacity: 70%;
 
 			&:hover,
 			&:focus-visible {
 				opacity: 100%;
-				color: var(--perla-olive-deep);
-				background: rgb(var(--perla-gold-rgb) / 10%);
+				color: var(--daniela-olive-deep);
+				background: rgb(var(--daniela-gold-rgb) / 10%);
 			}
 
 			&.copy-success {
-				color: var(--perla-olive-deep);
-				background: rgb(var(--perla-gold-rgb) / 14%);
+				color: var(--daniela-olive-deep);
+				background: rgb(var(--daniela-gold-rgb) / 14%);
 			}
 		}
 
@@ -792,8 +781,8 @@
 		.event-location__card-map-preview {
 			background: linear-gradient(
 				180deg,
-				rgb(var(--perla-beige-rgb) / 60%) 0%,
-				rgb(var(--perla-cream-rgb) / 100%) 100%
+				rgb(var(--daniela-beige-rgb) / 60%) 0%,
+				rgb(var(--daniela-cream-rgb) / 100%) 100%
 			);
 		}
 
@@ -813,7 +802,7 @@
 			}
 
 			&:focus-visible {
-				outline: 2px solid var(--perla-gold);
+				outline: 2px solid var(--daniela-gold);
 				outline-offset: 3px;
 			}
 		}
@@ -823,8 +812,8 @@
 			overflow: hidden;
 			background: linear-gradient(
 				180deg,
-				rgb(var(--perla-cream-rgb) / 100%) 0%,
-				rgb(var(--perla-beige-rgb) / 70%) 100%
+				rgb(var(--daniela-cream-rgb) / 100%) 0%,
+				rgb(var(--daniela-beige-rgb) / 70%) 100%
 			);
 		}
 
@@ -836,12 +825,12 @@
 				repeating-linear-gradient(
 					90deg,
 					transparent 0 1.85rem,
-					rgb(var(--perla-gold-rgb) / 22%) 1.9rem 1.96rem
+					rgb(var(--daniela-gold-rgb) / 22%) 1.9rem 1.96rem
 				),
 				repeating-linear-gradient(
 					0deg,
 					transparent 0 1.55rem,
-					rgb(var(--perla-gold-rgb) / 18%) 1.6rem 1.66rem
+					rgb(var(--daniela-gold-rgb) / 18%) 1.6rem 1.66rem
 				);
 		}
 
@@ -852,7 +841,7 @@
 			width: 84%;
 			height: 88%;
 			overflow: visible;
-			color: var(--perla-olive-deep);
+			color: var(--daniela-olive-deep);
 		}
 
 		.event-location__card-map-preview-artwork-silhouette {
@@ -861,18 +850,18 @@
 		}
 
 		.event-location__card-map-preview-artwork-detail {
-			fill: var(--perla-cream);
+			fill: var(--daniela-cream);
 			opacity: 92%;
 		}
 
 		.event-location__card-map-preview-artwork-cross {
-			fill: var(--perla-olive-deep);
+			fill: var(--daniela-olive-deep);
 			opacity: 78%;
 		}
 
 		.event-location__card-map-preview-artwork-horizon {
 			fill: none;
-			stroke: var(--perla-gold);
+			stroke: var(--daniela-gold);
 			stroke-width: 1.5;
 			opacity: 52%;
 		}
@@ -883,12 +872,12 @@
 			transform: none;
 			width: 1.85rem;
 			height: 1.85rem;
-			background: var(--perla-cream);
-			color: var(--perla-olive-deep);
-			border-color: var(--perla-gold);
+			background: var(--daniela-cream);
+			color: var(--daniela-olive-deep);
+			border-color: var(--daniela-gold);
 			box-shadow:
-				0 4px 12px rgb(var(--perla-olive-rgb) / 16%),
-				inset 0 0 0 1.5px rgb(var(--perla-cream-rgb) / 100%);
+				0 4px 12px rgb(var(--daniela-olive-rgb) / 16%),
+				inset 0 0 0 1.5px rgb(var(--daniela-cream-rgb) / 100%);
 			z-index: 2;
 		}
 
@@ -897,8 +886,8 @@
 			align-items: center;
 			justify-content: center;
 			padding: 0.85rem 1.1rem;
-			border-top: 1px solid rgb(var(--perla-gold-rgb) / 22%);
-			color: var(--perla-olive);
+			border-top: 1px solid rgb(var(--daniela-gold-rgb) / 22%);
+			color: var(--daniela-olive);
 			letter-spacing: 0.2em;
 			transition: color var(--duration-fast) var(--ease-standard);
 
@@ -920,7 +909,7 @@
 		.event-location__card--reception:hover .event-location__card-map-preview-foot,
 		.event-location__card--ceremony:focus-within .event-location__card-map-preview-foot,
 		.event-location__card--reception:focus-within .event-location__card-map-preview-foot {
-			color: var(--perla-olive-deep);
+			color: var(--daniela-olive-deep);
 
 			.event-location__card-map-preview-action svg {
 				transform: translateX(3px);
@@ -928,7 +917,7 @@
 		}
 
 		.event-location__indications {
-			margin-top: var(--perla-location-indications-gap);
+			margin-top: var(--daniela-location-indications-gap);
 		}
 
 		.event-location__indications-heading {
@@ -942,12 +931,12 @@
 		.event-location__indication-text {
 			font-family: var(--font-body);
 			line-height: 1.5;
-			color: var(--perla-ink);
+			color: var(--daniela-ink);
 		}
 
 		.event-location__indication-item:last-child {
 			.event-location__indication-icon {
-				color: var(--perla-gold);
+				color: var(--daniela-gold);
 			}
 
 			.event-location__indication-text {
@@ -996,11 +985,11 @@
 			height: 1px;
 			margin: 0 auto;
 			background:
-				radial-gradient(circle at center, var(--perla-gold) 0 2px, transparent 2.5px),
+				radial-gradient(circle at center, var(--daniela-gold) 0 2px, transparent 2.5px),
 				linear-gradient(
 					90deg,
 					transparent 0%,
-					rgb(var(--perla-gold-rgb) / 55%) 50%,
+					rgb(var(--daniela-gold-rgb) / 55%) 50%,
 					transparent 100%
 				);
 			pointer-events: none;
@@ -1017,7 +1006,7 @@
 			font-size: clamp(0.78rem, 1.8vw, 0.88rem);
 			letter-spacing: 0.16em;
 			text-transform: uppercase;
-			color: var(--perla-olive);
+			color: var(--daniela-olive);
 			font-weight: 500;
 		}
 
@@ -1034,9 +1023,9 @@
 	.invitation-section-wrapper[data-section-kind='gallery'] {
 		background: linear-gradient(
 			180deg,
-			rgb(var(--perla-beige-rgb) / 45%) 0%,
-			var(--perla-cream) 40%,
-			var(--perla-ivory) 100%
+			rgb(var(--daniela-beige-rgb) / 45%) 0%,
+			var(--daniela-cream) 40%,
+			var(--daniela-ivory) 100%
 		);
 	}
 
@@ -1065,13 +1054,13 @@
 		.gallery-section__subtitle {
 			max-width: 28rem;
 			margin-inline: auto;
-			color: rgb(var(--perla-ink-rgb) / 70%);
+			color: rgb(var(--daniela-ink-rgb) / 70%);
 		}
 	}
 
 	// Interlude A rises into countdown with the shared arch primitive.
 	.invitation-section-wrapper[data-section-kind='interlude'][data-intersection='arch'] {
-		--intersection-surface: var(--perla-olive-deep);
+		--intersection-surface: var(--daniela-olive-deep);
 		--intersection-arch-height: clamp(3rem, 6vw, 5.5rem);
 
 		.invitation-interlude {
@@ -1089,24 +1078,24 @@
 
 	.invitation-section-wrapper[data-section-kind='personalized-access'][data-intersection='overlap'] {
 		--intersection-depth: clamp(3rem, 7.5vw, 5.75rem);
-		--perla-pa-cut: clamp(2.35rem, 5.5vw, 3.65rem);
+		--daniela-pa-cut: clamp(2.35rem, 5.5vw, 3.65rem);
 
 		clip-path: polygon(
-			0 var(--perla-pa-cut),
-			62% calc(var(--perla-pa-cut) * 0.28),
+			0 var(--daniela-pa-cut),
+			62% calc(var(--daniela-pa-cut) * 0.28),
 			100% 0,
 			100% 100%,
 			0 100%
 		);
-		padding-block-start: calc(clamp(3.25rem, 7vw, 5rem) + var(--perla-pa-cut));
+		padding-block-start: calc(clamp(3.25rem, 7vw, 5rem) + var(--daniela-pa-cut));
 
 		@include mixins.respond-to(md) {
-			--perla-pa-cut: clamp(2.75rem, 5vw, 4rem);
+			--daniela-pa-cut: clamp(2.75rem, 5vw, 4rem);
 		}
 	}
 
 	.invitation-interlude {
-		--interlude-bg: var(--perla-olive-deep);
+		--interlude-bg: var(--daniela-olive-deep);
 	}
 
 	// -------------------------------------------------------------------------
@@ -1115,9 +1104,9 @@
 	.invitation-section-wrapper[data-section-kind='thankYou'] {
 		background: linear-gradient(
 			180deg,
-			rgb(var(--perla-olive-deep-rgb) / 8%) 0%,
-			var(--perla-cream) 22%,
-			var(--perla-ivory) 100%
+			rgb(var(--daniela-olive-deep-rgb) / 8%) 0%,
+			var(--daniela-cream) 22%,
+			var(--daniela-ivory) 100%
 		);
 	}
 
@@ -1128,20 +1117,20 @@
 		.thank-you-message {
 			font-family: var(--font-display);
 			letter-spacing: 0.01em;
-			color: var(--perla-ink);
-			background: rgb(var(--perla-cream-rgb) / 70%);
-			border-color: rgb(var(--perla-gold-rgb) / 35%);
+			color: var(--daniela-ink);
+			background: rgb(var(--daniela-cream-rgb) / 70%);
+			border-color: rgb(var(--daniela-gold-rgb) / 35%);
 			box-shadow: none;
 		}
 
 		.thank-you-message .drop-cap {
-			color: var(--perla-olive);
+			color: var(--daniela-olive);
 			margin-inline-end: 0;
 		}
 
 		.closing-name {
 			font-family: var(--font-calligraphy);
-			color: var(--perla-olive);
+			color: var(--daniela-olive);
 			letter-spacing: 0.04em;
 		}
 
@@ -1152,7 +1141,7 @@
 		}
 
 		.closing-date {
-			color: rgb(var(--perla-ink-rgb) / 68%);
+			color: rgb(var(--daniela-ink-rgb) / 68%);
 		}
 
 		.thank-you-footer {
@@ -1165,13 +1154,13 @@
 	// -------------------------------------------------------------------------
 	.invitation-section-wrapper[data-section-kind='personalized-access'],
 	.invitation-section-wrapper[data-section-kind='rsvp'] {
-		--color-text-primary: var(--perla-cream);
-		--color-text-primary-rgb: var(--perla-cream-rgb);
-		--color-text-secondary: rgb(var(--perla-cream-rgb) / 82%);
-		--color-text-muted: rgb(var(--perla-cream-rgb) / 64%);
+		--color-text-primary: var(--daniela-cream);
+		--color-text-primary-rgb: var(--daniela-cream-rgb);
+		--color-text-secondary: rgb(var(--daniela-cream-rgb) / 82%);
+		--color-text-muted: rgb(var(--daniela-cream-rgb) / 64%);
 
-		background: var(--perla-olive-deep);
-		color: var(--perla-cream);
+		background: var(--daniela-olive-deep);
+		color: var(--daniela-cream);
 	}
 
 	.invitation-section-wrapper[data-section-kind='personalized-access'] {
@@ -1184,41 +1173,41 @@
 
 	.rsvp-section,
 	.rsvp {
-		--rsvp-bg: var(--perla-olive-deep);
-		--color-glass-bg: rgb(var(--perla-cream-rgb) / 8%);
-		--color-glass-border: rgb(var(--perla-gold-rgb) / 38%);
+		--rsvp-bg: var(--daniela-olive-deep);
+		--color-glass-bg: rgb(var(--daniela-cream-rgb) / 8%);
+		--color-glass-border: rgb(var(--daniela-gold-rgb) / 38%);
 		--color-glass-shadow: rgb(0 0 0 / 18%);
 		--shadow-premium: 0 18px 40px rgb(0 0 0 / 22%), 0 4px 12px rgb(0 0 0 / 10%);
-		--rsvp-title-color: var(--perla-cream);
-		--rsvp-label-color: rgb(var(--perla-cream-rgb) / 92%);
-		--rsvp-placeholder-color: rgb(var(--perla-cream-rgb) / 58%);
-		--rsvp-field-bg: rgb(var(--perla-cream-rgb) / 10%);
-		--rsvp-field-bg-focus: rgb(var(--perla-cream-rgb) / 16%);
-		--rsvp-field-border: rgb(var(--perla-gold-rgb) / 45%);
-		--rsvp-radio-bg: rgb(var(--perla-cream-rgb) / 12%);
-		--rsvp-radio-bg-hover: rgb(var(--perla-cream-rgb) / 18%);
-		--rsvp-radio-border: rgb(var(--perla-gold-rgb) / 50%);
-		--rsvp-radio-selected-bg: rgb(var(--perla-cream-rgb) / 20%);
-		--rsvp-radio-selected-border: var(--perla-gold);
-		--rsvp-radio-label-color: rgb(var(--perla-cream-rgb) / 92%);
-		--rsvp-radio-label-color-selected: var(--perla-cream);
-		--rsvp-radio-indicator-dot: var(--perla-gold);
-		--rsvp-button-color: var(--perla-gold);
-		--rsvp-button-color-hover: var(--perla-olive-deep);
+		--rsvp-title-color: var(--daniela-cream);
+		--rsvp-label-color: rgb(var(--daniela-cream-rgb) / 92%);
+		--rsvp-placeholder-color: rgb(var(--daniela-cream-rgb) / 58%);
+		--rsvp-field-bg: rgb(var(--daniela-cream-rgb) / 10%);
+		--rsvp-field-bg-focus: rgb(var(--daniela-cream-rgb) / 16%);
+		--rsvp-field-border: rgb(var(--daniela-gold-rgb) / 45%);
+		--rsvp-radio-bg: rgb(var(--daniela-cream-rgb) / 12%);
+		--rsvp-radio-bg-hover: rgb(var(--daniela-cream-rgb) / 18%);
+		--rsvp-radio-border: rgb(var(--daniela-gold-rgb) / 50%);
+		--rsvp-radio-selected-bg: rgb(var(--daniela-cream-rgb) / 20%);
+		--rsvp-radio-selected-border: var(--daniela-gold);
+		--rsvp-radio-label-color: rgb(var(--daniela-cream-rgb) / 92%);
+		--rsvp-radio-label-color-selected: var(--daniela-cream);
+		--rsvp-radio-indicator-dot: var(--daniela-gold);
+		--rsvp-button-color: var(--daniela-gold);
+		--rsvp-button-color-hover: var(--daniela-olive-deep);
 		--rsvp-button-bg: transparent;
-		--rsvp-button-bg-hover: var(--perla-gold);
-		--rsvp-button-border: rgb(var(--perla-gold-rgb) / 55%);
-		--rsvp-button-border-hover: var(--perla-gold);
-		--rsvp-button-bg-loading: rgb(var(--perla-gold-rgb) / 14%);
-		--rsvp-button-bg-success: var(--perla-gold);
-		--rsvp-button-border-success: var(--perla-gold);
-		--rsvp-button-color-success: var(--perla-olive-deep);
+		--rsvp-button-bg-hover: var(--daniela-gold);
+		--rsvp-button-border: rgb(var(--daniela-gold-rgb) / 55%);
+		--rsvp-button-border-hover: var(--daniela-gold);
+		--rsvp-button-bg-loading: rgb(var(--daniela-gold-rgb) / 14%);
+		--rsvp-button-bg-success: var(--daniela-gold);
+		--rsvp-button-border-success: var(--daniela-gold);
+		--rsvp-button-color-success: var(--daniela-olive-deep);
 		--rsvp-error-field: rgb(232 168 168);
 		--rsvp-error-text: rgb(255 214 214);
 		--rsvp-error-bg: rgb(255 214 214 / 12%);
 		--rsvp-error-border: rgb(232 168 168 / 45%);
 
-		color: var(--perla-cream);
+		color: var(--daniela-cream);
 	}
 
 	.rsvp-section {
@@ -1243,12 +1232,12 @@
 
 	.rsvp {
 		.rsvp__subcopy {
-			color: rgb(var(--perla-cream-rgb) / 78%);
+			color: rgb(var(--daniela-cream-rgb) / 78%);
 		}
 
 		.rsvp__field--has-value label,
 		.rsvp__field--has-value .rsvp__label {
-			color: var(--perla-cream);
+			color: var(--daniela-cream);
 		}
 
 		.rsvp__field label,
@@ -1259,8 +1248,8 @@
 		input,
 		textarea,
 		select {
-			color: var(--perla-cream);
-			caret-color: var(--perla-gold);
+			color: var(--daniela-cream);
+			caret-color: var(--daniela-gold);
 
 			&::placeholder {
 				color: var(--rsvp-placeholder-color);
@@ -1268,24 +1257,24 @@
 
 			&:disabled {
 				opacity: 55%;
-				color: rgb(var(--perla-cream-rgb) / 55%);
+				color: rgb(var(--daniela-cream-rgb) / 55%);
 			}
 
 			&:focus-visible {
-				outline: 2px solid rgb(var(--perla-gold-rgb) / 70%);
+				outline: 2px solid rgb(var(--daniela-gold-rgb) / 70%);
 				outline-offset: 2px;
 			}
 		}
 
 		.rsvp__radio:focus-within,
 		.rsvp__radio-card:focus-within {
-			outline: 2px solid rgb(var(--perla-gold-rgb) / 65%);
+			outline: 2px solid rgb(var(--daniela-gold-rgb) / 65%);
 			outline-offset: 2px;
 		}
 
 		.rsvp__button:disabled {
 			opacity: 55%;
-			color: rgb(var(--perla-cream-rgb) / 55%);
+			color: rgb(var(--daniela-cream-rgb) / 55%);
 		}
 	}
 
@@ -1303,31 +1292,31 @@
 		--env-seal-size-standard: 64px;
 		--env-seal-size-large: 76px;
 		--env-shadow-container:
-			0 34px 58px rgb(var(--perla-olive-deep-rgb) / 20%),
-			0 10px 22px rgb(var(--perla-olive-deep-rgb) / 12%);
+			0 34px 58px rgb(var(--daniela-olive-deep-rgb) / 20%),
+			0 10px 22px rgb(var(--daniela-olive-deep-rgb) / 12%);
 		--env-paper-bg: linear-gradient(
 			152deg,
-			var(--perla-ivory) 0%,
-			var(--perla-cream) 55%,
-			var(--perla-beige) 100%
+			var(--daniela-ivory) 0%,
+			var(--daniela-cream) 55%,
+			var(--daniela-beige) 100%
 		);
-		--env-paper-border: rgb(var(--perla-gold-rgb) / 28%);
-		--reveal-card-bg: var(--perla-cream);
+		--env-paper-border: rgb(var(--daniela-gold-rgb) / 28%);
+		--reveal-card-bg: var(--daniela-cream);
 		--reveal-card-radius: 2px;
 		--reveal-card-shadow:
-			0 3px 8px rgb(var(--perla-olive-deep-rgb) / 10%),
-			0 20px 42px rgb(var(--perla-olive-deep-rgb) / 18%),
-			inset 0 1px 0 rgb(var(--perla-ivory-rgb) / 72%),
-			inset 0 -1px 2px rgb(var(--perla-olive-deep-rgb) / 7%);
-		--wax-seal-mid: var(--perla-gold);
+			0 3px 8px rgb(var(--daniela-olive-deep-rgb) / 10%),
+			0 20px 42px rgb(var(--daniela-olive-deep-rgb) / 18%),
+			inset 0 1px 0 rgb(var(--daniela-ivory-rgb) / 72%),
+			inset 0 -1px 2px rgb(var(--daniela-olive-deep-rgb) / 7%);
+		--wax-seal-mid: var(--daniela-gold);
 		--wax-seal-deep: rgb(132 105 61);
-		--wax-seal-letter: var(--perla-olive-deep);
+		--wax-seal-letter: var(--daniela-olive-deep);
 
 		.envelope-container {
 			border-radius: var(--env-container-radius);
 			transform: translateY(-2px);
 			isolation: isolate;
-			background: var(--perla-cream);
+			background: var(--daniela-cream);
 		}
 
 		.envelope-base,
@@ -1339,46 +1328,46 @@
 			// Opaque paper body — tonal wash only uses solid cream stops, never alpha holes.
 			background: linear-gradient(
 				168deg,
-				var(--perla-ivory) 0%,
-				var(--perla-cream) 46%,
-				var(--perla-beige) 100%
+				var(--daniela-ivory) 0%,
+				var(--daniela-cream) 46%,
+				var(--daniela-beige) 100%
 			);
 		}
 
 		.envelope-base {
 			box-shadow:
-				inset 0 1px 0 rgb(var(--perla-ivory-rgb) / 78%),
-				inset 0 -16px 26px rgb(var(--perla-olive-deep-rgb) / 7%);
+				inset 0 1px 0 rgb(var(--daniela-ivory-rgb) / 78%),
+				inset 0 -16px 26px rgb(var(--daniela-olive-deep-rgb) / 7%);
 		}
 
 		.envelope-pocket {
-			box-shadow: inset 0 16px 28px rgb(var(--perla-olive-deep-rgb) / 14%);
+			box-shadow: inset 0 16px 28px rgb(var(--daniela-olive-deep-rgb) / 14%);
 
 			&::after {
 				background: linear-gradient(
 					to right,
-					var(--perla-cream),
-					rgb(var(--perla-gold-rgb) / 48%),
-					var(--perla-cream)
+					var(--daniela-cream),
+					rgb(var(--daniela-gold-rgb) / 48%),
+					var(--daniela-cream)
 				);
 			}
 		}
 
 		.envelope-flap {
-			filter: drop-shadow(0 18px 30px rgb(var(--perla-olive-deep-rgb) / 22%));
+			filter: drop-shadow(0 18px 30px rgb(var(--daniela-olive-deep-rgb) / 22%));
 
 			&::after {
 				background: linear-gradient(
 					to right,
-					var(--perla-cream),
-					rgb(var(--perla-gold-rgb) / 42%),
-					var(--perla-cream)
+					var(--daniela-cream),
+					rgb(var(--daniela-gold-rgb) / 42%),
+					var(--daniela-cream)
 				);
 			}
 		}
 
 		.invitation-reveal-card {
-			background: var(--perla-cream);
+			background: var(--daniela-cream);
 		}
 
 		// Closed envelope shows only the paper + seal. Shared reduced-motion rules
@@ -1395,7 +1384,7 @@
 		}
 
 		.envelope-flap-shadow {
-			background: rgb(var(--perla-olive-deep-rgb) / 36%);
+			background: rgb(var(--daniela-olive-deep-rgb) / 36%);
 			filter: blur(30px);
 		}
 
@@ -1426,8 +1415,8 @@
 					var(--wax-seal-deep) 100%
 				);
 			box-shadow:
-				0 12px 20px rgb(var(--perla-olive-deep-rgb) / 34%),
-				0 3px 5px rgb(var(--perla-olive-deep-rgb) / 24%),
+				0 12px 20px rgb(var(--daniela-olive-deep-rgb) / 34%),
+				0 3px 5px rgb(var(--daniela-olive-deep-rgb) / 24%),
 				inset 0 2px 4px rgb(252 249 243 / 48%),
 				inset 0 -4px 7px rgb(80 58 28 / 46%);
 			filter: none;
@@ -1467,7 +1456,7 @@
 			inset: -5px;
 			z-index: -1;
 			border-radius: 49% 51% 48% 52% / 52% 48%;
-			background: rgb(var(--perla-olive-deep-rgb) / 16%);
+			background: rgb(var(--daniela-olive-deep-rgb) / 16%);
 			filter: blur(2px);
 			pointer-events: none;
 		}
@@ -1492,15 +1481,15 @@
 			.envelope-seal-button__visual {
 			transform: scale(1.04) translateY(-1px) rotate(-1deg);
 			box-shadow:
-				0 14px 24px rgb(var(--perla-olive-deep-rgb) / 36%),
-				0 4px 8px rgb(var(--perla-olive-deep-rgb) / 24%),
+				0 14px 24px rgb(var(--daniela-olive-deep-rgb) / 36%),
+				0 4px 8px rgb(var(--daniela-olive-deep-rgb) / 24%),
 				inset 0 2px 3px rgb(252 249 243 / 48%),
 				inset 0 -3px 5px rgb(80 58 28 / 42%);
 		}
 
 		:where(.invitation-reveal-card) {
 			background:
-				linear-gradient(180deg, rgb(var(--perla-ivory-rgb) / 58%) 0%, transparent 42%),
+				linear-gradient(180deg, rgb(var(--daniela-ivory-rgb) / 58%) 0%, transparent 42%),
 				var(--reveal-card-bg);
 
 			&::after {
@@ -1508,7 +1497,7 @@
 				position: absolute;
 				inset: 0.65rem;
 				z-index: 0;
-				border: 1px solid rgb(var(--perla-gold-rgb) / 26%);
+				border: 1px solid rgb(var(--daniela-gold-rgb) / 26%);
 				pointer-events: none;
 			}
 		}
@@ -1535,17 +1524,17 @@
 			font-family: var(--font-body);
 			font-size: 0.48em;
 			font-style: normal;
-			color: var(--perla-gold);
+			color: var(--daniela-gold);
 		}
 
 		.invitation-reveal-card__date {
-			color: var(--perla-olive);
+			color: var(--daniela-olive);
 		}
 
 		.invitation-reveal-card__divider {
 			width: min(7rem, 40%);
 			margin-top: 0.8rem;
-			background: linear-gradient(to right, transparent, var(--perla-gold), transparent);
+			background: linear-gradient(to right, transparent, var(--daniela-gold), transparent);
 		}
 	}
 
@@ -1589,7 +1578,7 @@
 
 	:where(.invitation-section-wrapper[data-section-kind='countdown']) {
 		position: relative;
-		padding-block-end: var(--perla-countdown-exit);
+		padding-block-end: var(--daniela-countdown-exit);
 
 		&::after {
 			content: '';
@@ -1600,7 +1589,7 @@
 			background: linear-gradient(
 				90deg,
 				transparent,
-				rgb(var(--perla-gold-rgb) / 35%),
+				rgb(var(--daniela-gold-rgb) / 35%),
 				transparent
 			);
 			pointer-events: none;
@@ -1608,7 +1597,7 @@
 	}
 
 	:where(.countdown-section) {
-		padding-block: var(--perla-countdown-padding-block);
+		padding-block: var(--daniela-countdown-padding-block);
 
 		.countdown-container {
 			max-width: 44rem;
@@ -1635,7 +1624,7 @@
 		.countdown__segment {
 			padding: 0.85rem 0.35rem 0.95rem;
 			border: 0;
-			border-bottom: 1px solid rgb(var(--perla-gold-rgb) / 38%);
+			border-bottom: 1px solid rgb(var(--daniela-gold-rgb) / 38%);
 			border-radius: 0;
 			background: transparent;
 			box-shadow: none;
@@ -1646,13 +1635,13 @@
 			font-weight: 400;
 			letter-spacing: 0.02em;
 			font-variant-numeric: tabular-nums;
-			color: var(--perla-olive-deep);
+			color: var(--daniela-olive-deep);
 		}
 
 		.countdown__label {
 			font-size: 0.62rem;
 			letter-spacing: 0.16em;
-			color: var(--perla-olive);
+			color: var(--daniela-olive);
 		}
 
 		.countdown-date {
@@ -1661,7 +1650,7 @@
 			.event-date {
 				font-size: 0.7rem;
 				letter-spacing: 0.16em;
-				color: rgb(var(--perla-ink-rgb) / 72%);
+				color: rgb(var(--daniela-ink-rgb) / 72%);
 			}
 		}
 
@@ -1681,35 +1670,35 @@
 	:where(.event-location) {
 		--location-container-max-width: 56rem;
 		--location-card-max-width: 26rem;
-		--location-gap: var(--perla-location-card-gap);
-		--location-card-bg: linear-gradient(180deg, var(--perla-ivory) 0%, var(--perla-cream) 100%);
-		--location-card-border: 1px solid rgb(var(--perla-gold-rgb) / 18%);
+		--location-gap: var(--daniela-location-card-gap);
+		--location-card-bg: linear-gradient(180deg, var(--daniela-ivory) 0%, var(--daniela-cream) 100%);
+		--location-card-border: 1px solid rgb(var(--daniela-gold-rgb) / 18%);
 		--location-card-radius: 6px;
-		--location-card-shadow: 0 12px 28px rgb(var(--perla-olive-rgb) / 10%);
-		--location-card-hover-shadow: 0 14px 28px rgb(var(--perla-olive-rgb) / 14%);
+		--location-card-shadow: 0 12px 28px rgb(var(--daniela-olive-rgb) / 10%);
+		--location-card-hover-shadow: 0 14px 28px rgb(var(--daniela-olive-rgb) / 14%);
 		--location-content-padding: clamp(1.1rem, 2.6vw, 1.6rem);
 		--location-place-font-size: clamp(1.3rem, 3vw, 1.7rem);
 		--location-place-line-height: 1.12;
-		--location-date-color: var(--perla-olive);
-		--location-hour-color: var(--perla-ink);
+		--location-date-color: var(--daniela-olive);
+		--location-hour-color: var(--daniela-ink);
 		--location-address-font-size: 0.88rem;
 		--location-address-line-height: 1.55;
-		--location-map-preview-bg: var(--perla-beige);
-		--location-map-preview-art-bg: rgb(var(--perla-cream-rgb) / 72%);
-		--location-map-preview-road: rgb(var(--perla-ivory-rgb) / 88%);
-		--location-map-preview-line: rgb(var(--perla-gold-rgb) / 20%);
-		--location-map-preview-copy-bg: rgb(var(--perla-ivory-rgb) / 78%);
-		--location-map-preview-copy-border: rgb(var(--perla-gold-rgb) / 22%);
-		--location-map-preview-pin-bg: var(--perla-cream);
-		--location-map-preview-pin-color: var(--perla-olive);
+		--location-map-preview-bg: var(--daniela-beige);
+		--location-map-preview-art-bg: rgb(var(--daniela-cream-rgb) / 72%);
+		--location-map-preview-road: rgb(var(--daniela-ivory-rgb) / 88%);
+		--location-map-preview-line: rgb(var(--daniela-gold-rgb) / 20%);
+		--location-map-preview-copy-bg: rgb(var(--daniela-ivory-rgb) / 78%);
+		--location-map-preview-copy-border: rgb(var(--daniela-gold-rgb) / 22%);
+		--location-map-preview-pin-bg: var(--daniela-cream);
+		--location-map-preview-pin-color: var(--daniela-olive);
 
 		:where(.event-location__intro) {
-			margin-block-end: var(--perla-location-heading-gap);
+			margin-block-end: var(--daniela-location-heading-gap);
 		}
 
 		:where(.event-location__container) {
 			align-items: stretch;
-			gap: var(--perla-location-card-gap);
+			gap: var(--daniela-location-card-gap);
 		}
 
 		:where(.event-location__card-wrapper) {
@@ -1718,13 +1707,13 @@
 			flex: 1 1 0;
 			width: min(100%, var(--location-card-max-width));
 			margin-block: 0;
-			gap: var(--perla-space-xs);
+			gap: var(--daniela-space-xs);
 		}
 
 		:where(.event-location__card-wrapper) + :where(.event-location__card-wrapper) {
 			// Clear the previous card's soft shadow so RECEPCIÓN is never trapped.
 			margin-block-start: clamp(3rem, 7vw, 4.5rem);
-			padding-block-start: var(--perla-space-sm);
+			padding-block-start: var(--daniela-space-sm);
 		}
 
 		:where(.event-location__card) {
@@ -1739,10 +1728,10 @@
 			position: relative;
 			z-index: 1;
 			margin-block: 0;
-			padding-block: var(--perla-space-sm) 0;
+			padding-block: var(--daniela-space-sm) 0;
 			font-size: 0.7rem;
 			letter-spacing: 0.22em;
-			color: var(--perla-olive);
+			color: var(--daniela-olive);
 		}
 
 		:where(.event-location__card-flourish) {
@@ -1764,15 +1753,15 @@
 			height: 2.75rem;
 			margin-right: 0;
 			padding: 0.55rem;
-			border-color: rgb(var(--perla-gold-rgb) / 34%);
+			border-color: rgb(var(--daniela-gold-rgb) / 34%);
 		}
 
 		:where(.event-location__indications-container) {
 			max-width: 42rem;
 			margin-inline: auto;
 			padding: clamp(1.35rem, 3.5vw, 2rem) clamp(1rem, 3vw, 1.5rem);
-			border: 1px solid rgb(var(--perla-gold-rgb) / 20%);
-			background: rgb(var(--perla-beige-rgb) / 38%);
+			border: 1px solid rgb(var(--daniela-gold-rgb) / 20%);
+			background: rgb(var(--daniela-beige-rgb) / 38%);
 		}
 
 		:where(.event-location__indication-item) {
@@ -1784,9 +1773,9 @@
 			flex: 0 0 2rem;
 			width: 2rem;
 			height: 2rem;
-			border: 1px solid rgb(var(--perla-gold-rgb) / 28%);
+			border: 1px solid rgb(var(--daniela-gold-rgb) / 28%);
 			border-radius: 50%;
-			background: rgb(var(--perla-cream-rgb) / 52%);
+			background: rgb(var(--daniela-cream-rgb) / 52%);
 		}
 	}
 
@@ -1819,8 +1808,8 @@
 			box-shadow: none;
 			background: linear-gradient(
 				180deg,
-				rgb(var(--perla-ivory-rgb) / 88%) 0%,
-				rgb(var(--perla-cream-rgb) / 42%) 100%
+				rgb(var(--daniela-ivory-rgb) / 88%) 0%,
+				rgb(var(--daniela-cream-rgb) / 42%) 100%
 			);
 		}
 
@@ -1828,16 +1817,16 @@
 			content: '';
 			position: absolute;
 			inset: 0.85rem;
-			border: 1px solid rgb(var(--perla-gold-rgb) / 18%);
+			border: 1px solid rgb(var(--daniela-gold-rgb) / 18%);
 			pointer-events: none;
 		}
 
 		&__content {
 			display: grid;
 			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-			gap: var(--perla-space-md) clamp(1.5rem, 5vw, 3.5rem);
+			gap: var(--daniela-space-md) clamp(1.5rem, 5vw, 3.5rem);
 			width: 100%;
-			padding-block: var(--perla-space-sm);
+			padding-block: var(--daniela-space-sm);
 		}
 
 		&__group {
@@ -1868,13 +1857,13 @@
 			font-weight: 500;
 			letter-spacing: 0.14em;
 			text-transform: uppercase;
-			color: rgb(var(--perla-ink-rgb) / 72%);
+			color: rgb(var(--daniela-ink-rgb) / 72%);
 		}
 
 		&__name {
 			font-size: clamp(1.15rem, 2.9vw, 1.55rem);
 			line-height: 1.22;
-			color: var(--perla-olive-deep);
+			color: var(--daniela-olive-deep);
 		}
 
 		// Bride family — left editorial column
@@ -1883,7 +1872,7 @@
 
 			text-align: left;
 			padding-inline-end: clamp(0.5rem, 2vw, 1.25rem);
-			border-inline-end: 1px solid rgb(var(--perla-gold-rgb) / 22%);
+			border-inline-end: 1px solid rgb(var(--daniela-gold-rgb) / 22%);
 
 			.family__group-title,
 			.family__list,
@@ -1894,7 +1883,7 @@
 			}
 
 			.family__group-title {
-				color: var(--perla-olive);
+				color: var(--daniela-olive);
 			}
 		}
 
@@ -1918,7 +1907,7 @@
 			}
 
 			.family__group-title {
-				color: var(--perla-olive-deep);
+				color: var(--daniela-olive-deep);
 			}
 		}
 
@@ -1931,20 +1920,20 @@
 			letter-spacing: 0.03em;
 			text-transform: none;
 			font-style: italic;
-			color: var(--perla-olive-deep);
+			color: var(--daniela-olive-deep);
 		}
 
 		&__item--pending .family__meta {
 			font-size: 0.68rem;
 			letter-spacing: 0.14em;
-			color: rgb(var(--perla-ink-rgb) / 72%);
+			color: rgb(var(--daniela-ink-rgb) / 72%);
 		}
 	}
 
 	@include mixins.respond-below(sm) {
 		.family__content {
 			grid-template-columns: 1fr;
-			gap: var(--perla-space-md);
+			gap: var(--daniela-space-md);
 		}
 
 		.family__group--group-0,
@@ -1955,8 +1944,8 @@
 		}
 
 		.family__group--group-0 {
-			padding-block-end: var(--perla-space-sm);
-			border-block-end: 1px solid rgb(var(--perla-gold-rgb) / 22%);
+			padding-block-end: var(--daniela-space-sm);
+			border-block-end: 1px solid rgb(var(--daniela-gold-rgb) / 22%);
 		}
 
 		.family__group--group-1,
@@ -1988,7 +1977,7 @@
 			font-size: 0.68rem;
 			letter-spacing: 0.24em;
 			text-transform: uppercase;
-			color: var(--perla-olive);
+			color: var(--daniela-olive);
 		}
 
 		:where(.gallery-section__title) {
@@ -2008,15 +1997,15 @@
 			max-width: none;
 			aspect-ratio: 2 / 3;
 			padding: 0.45rem;
-			border: 1px solid rgb(var(--perla-gold-rgb) / 34%);
+			border: 1px solid rgb(var(--daniela-gold-rgb) / 34%);
 			border-radius: 2px;
-			background: var(--perla-cream);
-			box-shadow: 0 20px 42px rgb(var(--perla-olive-rgb) / 17%);
+			background: var(--daniela-cream);
+			box-shadow: 0 20px 42px rgb(var(--daniela-olive-rgb) / 17%);
 		}
 
 		:where(.gallery-grid__item)::after {
 			inset: 0.9rem;
-			border: 1px solid rgb(var(--perla-ivory-rgb) / 62%);
+			border: 1px solid rgb(var(--daniela-ivory-rgb) / 62%);
 			border-radius: 0;
 		}
 
@@ -2029,7 +2018,7 @@
 			margin-inline: auto;
 			font-size: 0.95rem;
 			line-height: 1.6;
-			color: rgb(var(--perla-ink-rgb) / 68%);
+			color: rgb(var(--daniela-ink-rgb) / 68%);
 		}
 	}
 
@@ -2057,7 +2046,7 @@
 			font-family: var(--font-display);
 			font-size: 4.1em;
 			line-height: 0.72;
-			color: var(--perla-gold);
+			color: var(--daniela-gold);
 		}
 
 		:where(.closing-name) {
@@ -2076,7 +2065,7 @@
 		:where(.thank-you-footer) {
 			margin-top: 0.4rem;
 			padding-top: 1.1rem;
-			border-color: rgb(var(--perla-gold-rgb) / 22%);
+			border-color: rgb(var(--daniela-gold-rgb) / 22%);
 			font-size: 0.6rem;
 			letter-spacing: 0.14em;
 			opacity: 52%;
@@ -2085,18 +2074,18 @@
 
 	.invitation-footer {
 		padding-block: 1.6rem calc(1.6rem + env(safe-area-inset-bottom, 0px));
-		border-top-color: rgb(var(--perla-gold-rgb) / 20%);
-		background: var(--perla-ivory);
+		border-top-color: rgb(var(--daniela-gold-rgb) / 20%);
+		background: var(--daniela-ivory);
 
 		.footer__closing-phrase {
 			font-size: 0.95rem;
-			color: var(--perla-olive);
+			color: var(--daniela-olive);
 		}
 
 		.footer__divider {
 			width: 5rem;
 			margin-bottom: 1.1rem;
-			background: rgb(var(--perla-gold-rgb) / 48%);
+			background: rgb(var(--daniela-gold-rgb) / 48%);
 		}
 
 		.footer__info .footer-brand-logo.logo {
@@ -2107,12 +2096,12 @@
 		.footer__info .powered-by {
 			font-size: 0.54rem;
 			letter-spacing: 0.15em;
-			color: rgb(var(--perla-ink-rgb) / 56%);
+			color: rgb(var(--daniela-ink-rgb) / 56%);
 		}
 
 		.footer__replay-link {
 			min-height: 2.75rem;
-			color: rgb(var(--perla-ink-rgb) / 58%);
+			color: rgb(var(--daniela-ink-rgb) / 58%);
 		}
 	}
 
@@ -2120,8 +2109,8 @@
 	// dashboard card. Fields and state contracts remain untouched.
 	:where(.invitation-section-wrapper[data-section-kind='rsvp']) {
 		background:
-			radial-gradient(circle at 50% 0%, rgb(var(--perla-gold-rgb) / 12%), transparent 42%),
-			var(--perla-olive-deep);
+			radial-gradient(circle at 50% 0%, rgb(var(--daniela-gold-rgb) / 12%), transparent 42%),
+			var(--daniela-olive-deep);
 	}
 
 	:where(.rsvp-section) {
@@ -2132,26 +2121,26 @@
 		--rsvp-radius-card: 0;
 		--rsvp-card-max-width: 46rem;
 		--color-glass-bg: transparent;
-		--color-glass-border: rgb(var(--perla-gold-rgb) / 28%);
+		--color-glass-border: rgb(var(--daniela-gold-rgb) / 28%);
 		--shadow-premium: none;
-		--rsvp-field-bg: rgb(var(--perla-cream-rgb) / 5%);
-		--rsvp-field-bg-focus: rgb(var(--perla-cream-rgb) / 11%);
-		--rsvp-field-border: rgb(var(--perla-gold-rgb) / 38%);
-		--rsvp-radio-bg: rgb(var(--perla-cream-rgb) / 5%);
-		--rsvp-radio-bg-hover: rgb(var(--perla-cream-rgb) / 11%);
-		--rsvp-radio-border: rgb(var(--perla-gold-rgb) / 38%);
-		--rsvp-radio-selected-bg: rgb(var(--perla-gold-rgb) / 16%);
-		--rsvp-radio-selected-border: var(--perla-gold);
-		--rsvp-button-bg: var(--perla-gold);
-		--rsvp-button-bg-hover: var(--perla-cream);
-		--rsvp-button-color: var(--perla-olive-deep);
-		--rsvp-button-color-hover: var(--perla-olive-deep);
-		--rsvp-button-border: var(--perla-gold);
-		--rsvp-button-border-hover: var(--perla-cream);
+		--rsvp-field-bg: rgb(var(--daniela-cream-rgb) / 5%);
+		--rsvp-field-bg-focus: rgb(var(--daniela-cream-rgb) / 11%);
+		--rsvp-field-border: rgb(var(--daniela-gold-rgb) / 38%);
+		--rsvp-radio-bg: rgb(var(--daniela-cream-rgb) / 5%);
+		--rsvp-radio-bg-hover: rgb(var(--daniela-cream-rgb) / 11%);
+		--rsvp-radio-border: rgb(var(--daniela-gold-rgb) / 38%);
+		--rsvp-radio-selected-bg: rgb(var(--daniela-gold-rgb) / 16%);
+		--rsvp-radio-selected-border: var(--daniela-gold);
+		--rsvp-button-bg: var(--daniela-gold);
+		--rsvp-button-bg-hover: var(--daniela-cream);
+		--rsvp-button-color: var(--daniela-olive-deep);
+		--rsvp-button-color-hover: var(--daniela-olive-deep);
+		--rsvp-button-border: var(--daniela-gold);
+		--rsvp-button-border-hover: var(--daniela-cream);
 		--rsvp-button-shadow-rest: 0 10px 24px rgb(0 0 0 / 18%);
 		--rsvp-button-shadow-hover: 0 14px 30px rgb(0 0 0 / 24%);
 
-		border-block: 1px solid rgb(var(--perla-gold-rgb) / 28%);
+		border-block: 1px solid rgb(var(--daniela-gold-rgb) / 28%);
 		border-inline: 0;
 		border-radius: 0;
 		background: transparent;
@@ -2166,13 +2155,13 @@
 			font-size: clamp(1.8rem, 5vw, 2.6rem);
 			font-weight: 400;
 			line-height: 1.08;
-			color: var(--perla-cream);
+			color: var(--daniela-cream);
 			text-wrap: balance;
 		}
 
 		:where(.rsvp__eyebrow),
 		:where(.rsvp__separator) {
-			color: var(--perla-gold);
+			color: var(--daniela-gold);
 		}
 
 		:where(.rsvp__subcopy) {
@@ -2201,7 +2190,7 @@
 
 		:where(.rsvp__attendance-summary) {
 			border-radius: 0;
-			background: rgb(var(--perla-cream-rgb) / 6%);
+			background: rgb(var(--daniela-cream-rgb) / 6%);
 		}
 	}
 
@@ -2220,7 +2209,7 @@
 			background: linear-gradient(
 				90deg,
 				transparent,
-				rgb(var(--perla-gold-rgb) / 28%),
+				rgb(var(--daniela-gold-rgb) / 28%),
 				transparent
 			);
 			pointer-events: none;
@@ -2230,7 +2219,7 @@
 	// Soften location arrival after Interlude A without shared after-interlude edits.
 	.invitation-section-wrapper[data-section-kind='location'][data-after-interlude] {
 		.event-location {
-			padding-block-start: var(--perla-space-lg);
+			padding-block-start: var(--daniela-space-lg);
 		}
 	}
 

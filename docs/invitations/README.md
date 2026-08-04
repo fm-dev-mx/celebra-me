@@ -6,6 +6,9 @@ Per-client invitation evidence and **canonical preparation state** live here:
 docs/invitations/<slug>.md
 ```
 
+Slug must **not** repeat `eventType` (public URL is already `/{eventType}/{slug}`). Canonical rule:
+[`docs/core/invitation-creation-contract.md`](../core/invitation-creation-contract.md).
+
 Supported Production clients that must remain Local-renderable for regression are listed in the
 [Local Render Corpus](../core/local-render-corpus.md)
 (`scripts/provision/local-render-corpus/registry.ts`), which is distinct from the canonical managed

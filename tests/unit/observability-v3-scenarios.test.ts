@@ -616,11 +616,11 @@ describe('observability v3 operational failure boundaries', () => {
 			...rominaAligned,
 			draftContent: { invalid: true },
 		};
-		const perlaLocal = row('aligned', {
-			slug: 'boda-perla-y-carlos',
+		const danielaLocal = row('aligned', {
+			slug: 'daniela-y-martin',
 			provenance: {
 				...row('aligned').provenance,
-				definitionSlug: 'boda-perla-y-carlos',
+				definitionSlug: 'daniela-y-martin',
 				packageHash: CURRENT_HASH,
 			},
 		});
@@ -629,18 +629,18 @@ describe('observability v3 operational failure boundaries', () => {
 			probeScope: 'all',
 			canonical: [
 				{
-					slug: 'boda-perla-y-carlos',
+					slug: 'daniela-y-martin',
 					lifecycle: 'in_progress',
 					deliveryScope: 'content-and-assets',
 					packageHash: CURRENT_HASH,
-					managedContent: { hero: { title: 'Perla y Carlos' } },
+					managedContent: { hero: { title: 'Daniela y Martín' } },
 					metadata: {
 						eventType: 'boda',
 						kind: 'client',
 						baseDemoId: '',
 						themeId: 'luxury-hacienda',
 						snapshot: {},
-						clientName: 'Perla y Carlos',
+						clientName: 'Daniela y Martín',
 					},
 					assets: [],
 				},
@@ -664,7 +664,7 @@ describe('observability v3 operational failure boundaries', () => {
 			canonicalFailures: [],
 			legacy: [],
 			projections: {
-				local: projection('local', [perlaLocal, rominaAligned]),
+				local: projection('local', [danielaLocal, rominaAligned]),
 				preview: projection('preview', [rominaAligned]),
 				production: projection('production', [rominaInvalidProduction]),
 			},
@@ -681,8 +681,8 @@ describe('observability v3 operational failure boundaries', () => {
 
 		expect(snapshot.issues.some((item) => item.reasonCode === 'SCHEMA_BEHIND')).toBe(true);
 		expect(snapshot.issues.some((item) => item.reasonCode === 'DRAFT_INVALID')).toBe(true);
-		const perlaWork = snapshot.workItems.find((item) => item.slug === 'boda-perla-y-carlos');
-		expect(perlaWork).toMatchObject({
+		const danielaWork = snapshot.workItems.find((item) => item.slug === 'daniela-y-martin');
+		expect(danielaWork).toMatchObject({
 			reasonCode: 'PARTIAL_PROMOTION',
 			nextStep: 'PROMOTE_PREVIEW',
 			deliveryStatus: 'IN_PROGRESS',

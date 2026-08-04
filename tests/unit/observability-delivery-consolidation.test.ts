@@ -8,7 +8,7 @@ import type { InvitationDatabaseProjection } from '../../scripts/observability/d
 import { RELEASE_SCHEMA_VERSION } from '../../scripts/provision/normalized-invitation-release.ts';
 
 function canonical(
-	slug = 'boda-perla-y-carlos',
+	slug = 'daniela-y-martin',
 	lifecycle: CanonicalObservation['lifecycle'] = 'in_progress',
 ): CanonicalObservation {
 	return {
@@ -16,14 +16,14 @@ function canonical(
 		lifecycle,
 		deliveryScope: 'content-and-assets',
 		packageHash: 'current-hash',
-		managedContent: { hero: { title: 'Perla y Carlos' } },
+		managedContent: { hero: { title: 'Daniela y Martín' } },
 		metadata: {
 			eventType: 'boda',
 			kind: 'client',
 			baseDemoId: '',
 			themeId: 'luxury-hacienda',
 			snapshot: {},
-			clientName: 'Perla y Carlos',
+			clientName: 'Daniela y Martín',
 		},
 		assets: [],
 	};
@@ -39,7 +39,7 @@ function receipt() {
 	};
 }
 
-function localRow(slug = 'boda-perla-y-carlos'): InvitationDatabaseProjection {
+function localRow(slug = 'daniela-y-martin'): InvitationDatabaseProjection {
 	return {
 		slug,
 		invitationId: 'inv-1',
@@ -59,7 +59,7 @@ function localRow(slug = 'boda-perla-y-carlos'): InvitationDatabaseProjection {
 			baseDemoId: null,
 			themeId: 'luxury-hacienda',
 			snapshot: {},
-			clientName: 'Perla y Carlos',
+			clientName: 'Daniela y Martín',
 			createdBy: 'owner-id',
 		},
 		event: { slug, eventType: 'boda', ownerUserId: 'owner-id' },
@@ -67,7 +67,7 @@ function localRow(slug = 'boda-perla-y-carlos'): InvitationDatabaseProjection {
 			definitionSlug: slug,
 			releaseSchemaVersion: RELEASE_SCHEMA_VERSION,
 			packageHash: 'current-hash',
-			managedProjection: { hero: { title: 'Perla y Carlos' } },
+			managedProjection: { hero: { title: 'Daniela y Martín' } },
 			hasManagedProjection: true,
 			appliedDraftUpdatedAt: '2026-08-01T00:00:00.000Z',
 			appliedOperationId: 'op-1',
@@ -156,7 +156,7 @@ describe('Observability Delivery Consolidation', () => {
 		const snapshot = assembleSnapshotFromEvidence(evidence());
 
 		const perlaWorkItems = snapshot.workItems.filter(
-			(item) => item.slug === 'boda-perla-y-carlos',
+			(item) => item.slug === 'daniela-y-martin',
 		);
 		expect(perlaWorkItems).toHaveLength(1);
 		const workItem = perlaWorkItems[0]!;
@@ -165,7 +165,7 @@ describe('Observability Delivery Consolidation', () => {
 		expect(workItem.reasonCode).toBe('PARTIAL_PROMOTION');
 
 		const perlaSummary = snapshot.invitationSummaries.find(
-			(s) => s.slug === 'boda-perla-y-carlos',
+			(s) => s.slug === 'daniela-y-martin',
 		)!;
 		const previewComparison = perlaSummary.comparisons.find(
 			(c) => c.environment === 'preview',
@@ -179,11 +179,11 @@ describe('Observability Delivery Consolidation', () => {
 
 	it('emits PROMOTE_PRODUCTION when Preview is aligned but Production is pending', () => {
 		const ev = evidence();
-		ev.projections.preview.rows = [localRow('boda-perla-y-carlos')];
+		ev.projections.preview.rows = [localRow('daniela-y-martin')];
 		const snapshot = assembleSnapshotFromEvidence(ev);
 
 		const perlaWorkItems = snapshot.workItems.filter(
-			(item) => item.slug === 'boda-perla-y-carlos',
+			(item) => item.slug === 'daniela-y-martin',
 		);
 		expect(perlaWorkItems).toHaveLength(1);
 		const workItem = perlaWorkItems[0]!;
@@ -199,7 +199,7 @@ describe('Observability Delivery Consolidation', () => {
 		const snapshot = assembleSnapshotFromEvidence(ev);
 
 		const perlaWorkItems = snapshot.workItems.filter(
-			(item) => item.slug === 'boda-perla-y-carlos',
+			(item) => item.slug === 'daniela-y-martin',
 		);
 		expect(perlaWorkItems).toHaveLength(1);
 		const workItem = perlaWorkItems[0]!;

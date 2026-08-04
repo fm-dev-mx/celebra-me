@@ -11,7 +11,7 @@
 ## Scope and evidence
 
 This record covers only `abril-michelle-becerra-rea`, `romina-rios-chaparro`, `alba-rosa-quinonez`,
-and `boda-perla-y-carlos`.
+and `daniela-y-martin`.
 
 - Local, Preview, and Production availability were verified as read-only before inspection.
 - A fresh observability detail snapshot was available for all three environments.
@@ -125,9 +125,9 @@ absence is the approved structural intent. This is not an editorial decision.
 - Production still has the one pending semantic deletion. It remains dry-run-only until an exact
   Preview approval and invitation-specific Production authorization are supplied.
 
-## Perla y Carlos
+## Daniela y Martín
 
-`boda-perla-y-carlos` remains `HEALTHY + IN_PROGRESS`. Its Local differences remain preparation work
+`daniela-y-martin` remains `HEALTHY + IN_PROGRESS`. Its Local differences remain preparation work
 (envelope text, family, gallery, location, section order, and RSVP styling); Preview and Production
 do not contain the invitation. No reconciliation or promotion was attempted merely to clear
 observability.

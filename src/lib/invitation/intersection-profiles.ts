@@ -50,7 +50,7 @@ const INTERSECTION_PROFILES: Readonly<Record<string, IntersectionProfile>> = {
 		// Thank You keeps the blend; the memory photo itself crosses the seam
 		thankYou: { family: 'atmospheric-blend', source: 'family' },
 	},
-	'boda-perla-y-carlos': {
+	'daniela-y-martin': {
 		// Restrained asymmetric system: one arch into Interlude A, one shallow overlap
 		// from Interlude B into personalized access. Remaining chapters stay atmospheric.
 		quote: { family: 'atmospheric-blend', source: 'hero' },
@@ -59,8 +59,9 @@ const INTERSECTION_PROFILES: Readonly<Record<string, IntersectionProfile>> = {
 		location: { family: 'atmospheric-blend', source: 'interlude-after-countdown' },
 		family: { family: 'atmospheric-blend', source: 'location' },
 		gallery: { family: 'atmospheric-blend', source: 'family' },
-		'interlude-after-gallery': { family: 'atmospheric-blend', source: 'gallery' },
-		'personalized-access': { family: 'overlap', source: 'interlude-after-gallery' },
+		gifts: { family: 'atmospheric-blend', source: 'gallery' },
+		'interlude-after-gifts': { family: 'atmospheric-blend', source: 'gifts' },
+		'personalized-access': { family: 'overlap', source: 'interlude-after-gifts' },
 		rsvp: { family: 'atmospheric-blend', source: 'personalized-access' },
 		thankYou: { family: 'atmospheric-blend', source: 'rsvp' },
 	},

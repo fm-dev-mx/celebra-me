@@ -1,9 +1,9 @@
 /**
- * boda-perla-y-carlos.ts — Managed invitation for Perla Daniela Medina Carrillo
+ * daniela-y-martin.ts — Managed invitation for Perla Daniela Medina Carrillo
  * & Carlos Martín Ochoa Felipe
  *
  * Base: demo-boda-jewelry-box-wedding / jewelry-box-wedding
- * Prep SoT: docs/invitations/boda-perla-y-carlos.md
+ * Prep SoT: docs/invitations/daniela-y-martin.md
  */
 
 import { defineInvitation } from './invitation-definition.ts';
@@ -13,21 +13,21 @@ import type {
 	UploadedAssetRef,
 } from './invitation-definition.ts';
 
-export const PERLA_EVENT = {
+export const DANIELA_EVENT = {
 	eventType: 'boda',
-	slug: 'boda-perla-y-carlos',
-	assetSlug: 'boda-perla-y-carlos',
+	slug: 'daniela-y-martin',
+	assetSlug: 'daniela-y-martin',
 	baseDemoId: 'demo-boda-jewelry-box-wedding',
 	themeId: 'jewelry-box-wedding',
-	visualProfileId: 'boda-perla-y-carlos',
-	title: 'Boda de Perla y Carlos',
+	visualProfileId: 'daniela-y-martin',
+	title: 'Boda de Daniela y Martín',
 	localDateTime: '2026-11-28T17:30',
 	timeZone: 'America/Mexico_City',
 	startsAtUtc: '2026-11-28T23:30:00.000Z',
 	heroDate: '2026-11-28T17:30:00.000Z',
 } as const;
 
-/** Session: first Maps link = salón; second = iglesia. */
+/** Session: first Maps link = iglesia; second = salón. */
 const CHURCH_MAPS_URL = 'https://maps.app.goo.gl/tFWKx2UKMoKcvxth8';
 const SALON_MAPS_URL = 'https://maps.app.goo.gl/AzBTTezpCmPdUb136';
 
@@ -41,22 +41,22 @@ const CEREMONY_TIME = '5:30 p. m.';
 const RECEPTION_TIME = '7:30 p. m.';
 const CIVIL_TIME = '8:15 p. m.';
 
-const PERLA_INTERLUDE_01 = {
+const DANIELA_INTERLUDE_01 = {
 	alt: 'Arco de piedra con flores blancas al atardecer',
 	focalPoint: '50% 50%',
 } as const;
 
-const PERLA_INTERLUDE_02 = {
+const DANIELA_INTERLUDE_02 = {
 	alt: 'Mesa de recepción con flores blancas y luces cálidas',
 	focalPoint: '50% 58%',
 } as const;
 
-export const PERLA_ASSET_SPECS = [
+export const DANIELA_ASSET_SPECS = [
 	{
 		key: 'hero-desktop',
 		relativePath: 'hero-source.jpg',
-		displayName: 'Perla y Carlos — portada',
-		alt: 'Perla y Carlos en retrato de sesión',
+		displayName: 'Daniela y Martín — portada',
+		alt: 'Daniela y Martín en retrato de sesión',
 		focalPoint: {
 			default: '50% 32%',
 			mobile: '50% 28%',
@@ -68,8 +68,8 @@ export const PERLA_ASSET_SPECS = [
 		key: 'hero-mobile',
 		// Same physical source as desktop; focals differ per breakpoint.
 		relativePath: 'hero-source.jpg',
-		displayName: 'Perla y Carlos — portada móvil',
-		alt: 'Perla y Carlos en retrato de sesión',
+		displayName: 'Daniela y Martín — portada móvil',
+		alt: 'Daniela y Martín en retrato de sesión',
 		focalPoint: {
 			default: '50% 28%',
 			mobile: '50% 26%',
@@ -80,8 +80,8 @@ export const PERLA_ASSET_SPECS = [
 	{
 		key: 'gallery-01',
 		relativePath: 'gallery-01-source.jpg',
-		displayName: 'Perla y Carlos — galería',
-		alt: 'Perla y Carlos en retrato de sesión',
+		displayName: 'Daniela y Martín — galería',
+		alt: 'Daniela y Martín en retrato de sesión',
 		focalPoint: {
 			default: '50% 38%',
 		},
@@ -89,42 +89,42 @@ export const PERLA_ASSET_SPECS = [
 	{
 		key: 'interlude-01',
 		relativePath: 'interlude-01.png',
-		displayName: 'Perla y Carlos — interludio de arquitectura',
-		alt: PERLA_INTERLUDE_01.alt,
+		displayName: 'Daniela y Martín — interludio de arquitectura',
+		alt: DANIELA_INTERLUDE_01.alt,
 		focalPoint: {
-			default: PERLA_INTERLUDE_01.focalPoint,
+			default: DANIELA_INTERLUDE_01.focalPoint,
 		},
 	},
 	{
 		key: 'interlude-02',
 		relativePath: 'interlude-02.png',
-		displayName: 'Perla y Carlos — interludio de recepción',
-		alt: PERLA_INTERLUDE_02.alt,
+		displayName: 'Daniela y Martín — interludio de recepción',
+		alt: DANIELA_INTERLUDE_02.alt,
 		focalPoint: {
-			default: PERLA_INTERLUDE_02.focalPoint,
+			default: DANIELA_INTERLUDE_02.focalPoint,
 		},
 	},
 ] as const;
 
-export type PerlaAssetKey = (typeof PERLA_ASSET_SPECS)[number]['key'];
-export type PerlaAssetMap = Record<PerlaAssetKey, UploadedAssetRef>;
+export type DanielaAssetKey = (typeof DANIELA_ASSET_SPECS)[number]['key'];
+export type DanielaAssetMap = Record<DanielaAssetKey, UploadedAssetRef>;
 
-export function buildPerlaPublishedContent(
-	assets: UploadedAssetMap<PerlaAssetKey>,
+export function buildDanielaPublishedContent(
+	assets: UploadedAssetMap<DanielaAssetKey>,
 ): Record<string, unknown> {
 	return {
-		eventType: PERLA_EVENT.eventType,
+		eventType: DANIELA_EVENT.eventType,
 		isDemo: false,
 		templateId: 'boda-jewelry-box-wedding',
-		visualProfileId: PERLA_EVENT.visualProfileId,
-		title: PERLA_EVENT.title,
+		visualProfileId: DANIELA_EVENT.visualProfileId,
+		title: DANIELA_EVENT.title,
 		description:
-			'Acompáñennos a celebrar la boda de Perla Daniela Medina Carrillo y Carlos Martín Ochoa Felipe el 28 de noviembre de 2026 en Huejutla de Reyes, Hidalgo.',
-		theme: { preset: PERLA_EVENT.themeId },
+			'Acompáñennos a celebrar la boda de Daniela y Martín el 28 de noviembre de 2026 en Huejutla de Reyes, Hidalgo.',
+		theme: { preset: DANIELA_EVENT.themeId },
 		eventTiming: {
-			localDateTime: PERLA_EVENT.localDateTime,
-			timeZone: PERLA_EVENT.timeZone,
-			startsAtUtc: PERLA_EVENT.startsAtUtc,
+			localDateTime: DANIELA_EVENT.localDateTime,
+			timeZone: DANIELA_EVENT.timeZone,
+			startsAtUtc: DANIELA_EVENT.startsAtUtc,
 		},
 		sectionOrder: [
 			'quote',
@@ -132,6 +132,7 @@ export function buildPerlaPublishedContent(
 			'location',
 			'family',
 			'gallery',
+			'gifts',
 			'personalizedAccess',
 			'rsvp',
 			'thankYou',
@@ -145,12 +146,12 @@ export function buildPerlaPublishedContent(
 				showNavigationButtons: false,
 			},
 		},
-		_assetSlug: PERLA_EVENT.assetSlug,
+		_assetSlug: DANIELA_EVENT.assetSlug,
 		hero: {
-			name: 'Perla',
-			secondaryName: 'Carlos',
+			name: 'Daniela',
+			secondaryName: 'Martín',
 			label: 'Nuestra boda',
-			date: PERLA_EVENT.heroDate,
+			date: DANIELA_EVENT.heroDate,
 			backgroundImage: assets['hero-desktop'],
 			backgroundImageMobile: assets['hero-mobile'],
 			backgroundImageDesktop: assets['hero-desktop'],
@@ -162,15 +163,15 @@ export function buildPerlaPublishedContent(
 		envelope: {
 			disabled: false,
 			cardLabel: 'BODA',
-			envelopeName: 'Perla & Carlos',
+			envelopeName: 'Daniela & Martín',
 			teaserDetails: '28 · NOV · 2026 · HUEJUTLA',
-			cardName: 'Perla',
-			cardSecondaryName: 'Carlos',
+			cardName: 'Daniela',
+			cardSecondaryName: 'Martín',
 			guestPlacement: 'outside-envelope',
 			sealStyle: 'wax',
 			sealIcon: 'monogram',
-			sealInitials: 'P·C',
-			documentLabel: 'P & C',
+			sealInitials: 'D·M',
+			documentLabel: 'D & M',
 			stampText: 'BODA',
 			stampYear: '2026',
 			// Seal is the sole [data-envelope-open] control; empty microcopy suppresses the external button.
@@ -184,7 +185,7 @@ export function buildPerlaPublishedContent(
 		},
 		quote: {
 			text: 'Hoy unimos nuestros caminos con gratitud y con la certeza de caminar juntos el resto de la vida.',
-			author: 'Perla & Carlos',
+			author: 'Daniela & Martín',
 		},
 		countdown: {
 			title: 'Nuestra boda comienza en',
@@ -195,7 +196,7 @@ export function buildPerlaPublishedContent(
 			introEyebrow: 'Huejutla de Reyes, Hidalgo',
 			introHeading: EVENT_DATE_HEADING,
 			introLede:
-				'Perla y Carlos celebrarán su enlace con ceremonia religiosa, recepción y ceremonia civil. Será un honor compartir este día con ustedes.',
+				'Daniela y Martín celebrarán su enlace con ceremonia religiosa, recepción y ceremonia civil. Será un honor compartir este día con ustedes.',
 			// venues[0] drives hero venue/time via page-data (ceremony-first without shared picker changes).
 			venues: [
 				{
@@ -237,23 +238,19 @@ export function buildPerlaPublishedContent(
 				},
 			],
 		},
-		// Soft guest placeholders until parent names are confirmed (OD5). No invented names.
 		family: {
 			presentation: 'text-only',
 			groups: [
 				{
 					title: 'Padres de la Novia',
 					items: [
-						{ name: 'Por confirmar', role: 'Madre' },
-						{ name: 'Por confirmar', role: 'Padre' },
+						{ name: 'Laura Carrillo Morales', role: 'Madre' },
+						{ name: 'Pilar Medina Martínez', role: 'Padre' },
 					],
 				},
 				{
 					title: 'Padres del Novio',
-					items: [
-						{ name: 'Por confirmar', role: 'Madre' },
-						{ name: 'Por confirmar', role: 'Padre' },
-					],
+					items: [{ name: 'María de Jesús Felipe Redondo', role: 'Madre' }],
 				},
 			],
 			labels: {
@@ -271,10 +268,28 @@ export function buildPerlaPublishedContent(
 				{
 					key: 'gallery-01',
 					image: assets['gallery-01'],
-					alt: 'Perla y Carlos en retrato de sesión',
+					alt: 'Daniela y Martín en retrato de sesión',
 					focalPoint: '50% 38%',
 					layoutRole: 'feature',
 					aspectRatio: '2 / 3',
+				},
+			],
+		},
+		gifts: {
+			title: 'Mesa de regalos',
+			subtitle:
+				'Su presencia será nuestro mayor regalo. Si desean tener un detalle, pueden elegir de nuestra mesa en Amazon o acompañarnos con una lluvia de sobres el día de la recepción.',
+			items: [
+				{
+					type: 'store',
+					title: 'Amazon',
+					url: 'https://www.amazon.com.mx/wedding/guest-view/30EX58RGSIPUM',
+					description: 'Mesa de regalos de Daniela Medina y Martín Ochoa',
+				},
+				{
+					type: 'cash',
+					title: 'Lluvia de sobres',
+					text: 'También contaremos con un buzón para sobres el día de la recepción.',
 				},
 			],
 		},
@@ -282,16 +297,16 @@ export function buildPerlaPublishedContent(
 			{
 				image: assets['interlude-01'],
 				afterSection: 'countdown',
-				alt: PERLA_INTERLUDE_01.alt,
+				alt: DANIELA_INTERLUDE_01.alt,
 				height: 'screen',
-				focalPoint: PERLA_INTERLUDE_01.focalPoint,
+				focalPoint: DANIELA_INTERLUDE_01.focalPoint,
 			},
 			{
 				image: assets['interlude-02'],
-				afterSection: 'gallery',
-				alt: PERLA_INTERLUDE_02.alt,
+				afterSection: 'gifts',
+				alt: DANIELA_INTERLUDE_02.alt,
 				height: 'screen',
-				focalPoint: PERLA_INTERLUDE_02.focalPoint,
+				focalPoint: DANIELA_INTERLUDE_02.focalPoint,
 			},
 		],
 		rsvp: {
@@ -313,9 +328,9 @@ export function buildPerlaPublishedContent(
 				},
 			},
 			calendar: {
-				title: 'Boda de Perla y Carlos',
+				title: 'Boda de Daniela y Martín',
 				description: `Ceremonia religiosa en Catedral de Cristo Rey (${CEREMONY_TIME}), recepción en Salón El Pedregal (${RECEPTION_TIME}) y ceremonia civil en la recepción (${CIVIL_TIME}). Huejutla de Reyes, Hidalgo.`,
-				startsAt: PERLA_EVENT.startsAtUtc,
+				startsAt: DANIELA_EVENT.startsAtUtc,
 			},
 			personalizedAccess: {
 				title: 'Su invitación personal',
@@ -326,41 +341,39 @@ export function buildPerlaPublishedContent(
 		thankYou: {
 			message:
 				'Gracias por acompañarnos en un día que recordaremos siempre con el corazón lleno.',
-			closingName: 'Perla & Carlos',
+			closingName: 'Daniela & Martín',
 			closingPhrase: 'Con cariño',
 			date: EVENT_DATE_LONG,
 		},
 		sharing: {
 			ogImage: assets['hero-desktop'],
-			ogDescription: 'Invitación a la boda de Perla y Carlos',
+			ogDescription: 'Invitación a la boda de Daniela y Martín',
 			whatsappTemplate:
-				'Hola {name}, le compartimos la invitación a la boda de Perla y Carlos: {inviteUrl}',
+				'Hola {name}, le compartimos la invitación a la boda de Daniela y Martín: {inviteUrl}',
 		},
 	};
 }
 
-export const perlaInvitation: InvitationDefinition<PerlaAssetKey> = defineInvitation({
-	slug: PERLA_EVENT.slug,
+export const danielaInvitation: InvitationDefinition<DanielaAssetKey> = defineInvitation({
+	slug: DANIELA_EVENT.slug,
 	createdAt: '2026-07-31T12:00:00.000Z',
 	lifecycle: 'in_progress',
 	deliveryScope: 'content-and-assets',
-	eventType: PERLA_EVENT.eventType,
-	title: PERLA_EVENT.title,
+	eventType: DANIELA_EVENT.eventType,
+	title: DANIELA_EVENT.title,
 	clientName: 'Daniela Medina',
-	hostLoginAlias: 'perla_medina',
+	hostLoginAlias: 'daniela_medina',
 	clientEmail: '',
 	clientWhatsapp: '',
 	photosReceived: true,
-	baseDemoId: PERLA_EVENT.baseDemoId,
-	themeId: PERLA_EVENT.themeId,
-	visualProfileId: PERLA_EVENT.visualProfileId,
+	baseDemoId: DANIELA_EVENT.baseDemoId,
+	themeId: DANIELA_EVENT.themeId,
+	visualProfileId: DANIELA_EVENT.visualProfileId,
 	eventTiming: {
-		localDateTime: PERLA_EVENT.localDateTime,
-		timeZone: PERLA_EVENT.timeZone,
-		startsAtUtc: PERLA_EVENT.startsAtUtc,
+		localDateTime: DANIELA_EVENT.localDateTime,
+		timeZone: DANIELA_EVENT.timeZone,
+		startsAtUtc: DANIELA_EVENT.startsAtUtc,
 	},
-	assets: PERLA_ASSET_SPECS,
-	buildPublishedContent(assets) {
-		return buildPerlaPublishedContent(assets);
-	},
+	assets: DANIELA_ASSET_SPECS,
+	buildPublishedContent: buildDanielaPublishedContent,
 });

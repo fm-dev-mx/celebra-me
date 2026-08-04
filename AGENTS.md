@@ -34,6 +34,8 @@ authority.
 - **Server/Client Boundary:** Astro server-only code (DB, secrets, Node APIs) must never leak into
   client islands (`client:*`).
 - **Command Authority:** `package.json` is the SSOT for available scripts.
+- **Invitation Slug:** Never prefix `slug` with `eventType`. Routes are `/{eventType}/{slug}`
+  (e.g. `/boda/daniela-y-martin`). See `docs/core/invitation-creation-contract.md`.
 
 ## Context Discovery & Routing
 

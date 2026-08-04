@@ -20,8 +20,16 @@ See the invitation authority chain in [`.agent/index.md`](../../.agent/index.md)
 Every managed digital invitation must define:
 
 - **Display Name** (`title`): Spanish human-readable title (e.g. `Romina Ríos Chaparro`).
-- **Canonical Slug** (`slug`): Lowercase hyphenated unique identifier (e.g. `romina-rios-chaparro`).
-  Slug drives public URLs, assets, and storage paths. It is **not** the host login.
+- **Canonical Slug** (`slug`): Lowercase hyphenated unique identifier (e.g. `romina-rios-chaparro`,
+  `daniela-y-martin`). Slug drives public URLs, assets, and storage paths. It is **not** the host
+  login.
+  - **Do not prefix the slug with `eventType`.** Public routes are already
+    `/{eventType}/{slug}` (e.g. `/boda/daniela-y-martin`). A slug like `boda-daniela-y-martin`
+    produces a redundant URL (`/boda/boda-daniela-y-martin`) and is forbidden for new invitations.
+  - Prefer celebrant/couple identity tokens only (names), not event-type labels (`boda`, `xv`,
+    `cumple`, etc.).
+  - `assetSlug` and `visualProfileId` should match the canonical slug unless a documented exception
+    exists.
 - **Host Login Alias** (`hostLoginAlias`): Short unique Auth login for the dedicated host. Technical
   email is `{hostLoginAlias}@clientes.celebra.invalid`. Alias is independent of slug.
   - **Preferred form:** `{primer_nombre}_{primer_apellido}` from the celebrant/honoree (not the
