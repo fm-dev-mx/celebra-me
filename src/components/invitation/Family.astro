@@ -285,7 +285,7 @@ if (!hasContent) return;
 										<div class="family__godparent-names">
 											<ul class="family__list family__list--godparents family__list--godparents-grouped">
 												{group.entries.map((entry) => (
-													<li class:list={['family__item', 'family__item--godparent']}>
+													<li class:list={['family__item', 'family__item--godparent', entry.name === 'Por confirmar' && 'family__item--pending']}>
 														<p class="family__name">
 															<span>{entry.name}</span>
 														</p>
@@ -310,7 +310,7 @@ if (!hasContent) return;
 								]}
 							>
 								{block.entries.map((entry) => (
-									<li class:list={['family__item', entry.lead && 'family__item--lead', block.id === 'godparents' && 'family__item--godparent']}>
+									<li class:list={['family__item', entry.lead && 'family__item--lead', block.id === 'godparents' && 'family__item--godparent', entry.name === 'Por confirmar' && 'family__item--pending']}>
 										<p class="family__name">
 											<span>{entry.name}</span>
 											{entry.deceased && (

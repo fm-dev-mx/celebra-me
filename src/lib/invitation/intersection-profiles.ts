@@ -51,14 +51,16 @@ const INTERSECTION_PROFILES: Readonly<Record<string, IntersectionProfile>> = {
 		thankYou: { family: 'atmospheric-blend', source: 'family' },
 	},
 	'boda-perla-y-carlos': {
-		// Tonal continuity through editorial chapters; ornamental separators are Lane A SCSS.
+		// Restrained asymmetric system: one arch into Interlude A, one shallow overlap
+		// from Interlude B into personalized access. Remaining chapters stay atmospheric.
 		quote: { family: 'atmospheric-blend', source: 'hero' },
 		countdown: { family: 'atmospheric-blend', source: 'quote' },
-		location: { family: 'atmospheric-blend', source: 'countdown' },
+		'interlude-after-countdown': { family: 'arch', source: 'countdown' },
+		location: { family: 'atmospheric-blend', source: 'interlude-after-countdown' },
 		family: { family: 'atmospheric-blend', source: 'location' },
 		gallery: { family: 'atmospheric-blend', source: 'family' },
-		// Primary structural overlap: portrait into the deep olive action chapter.
-		'personalized-access': { family: 'overlap', source: 'gallery' },
+		'interlude-after-gallery': { family: 'atmospheric-blend', source: 'gallery' },
+		'personalized-access': { family: 'overlap', source: 'interlude-after-gallery' },
 		rsvp: { family: 'atmospheric-blend', source: 'personalized-access' },
 		thankYou: { family: 'atmospheric-blend', source: 'rsvp' },
 	},

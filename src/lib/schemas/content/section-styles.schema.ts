@@ -21,6 +21,7 @@ export const sectionStylesSchema = z
 			.object({
 				variant: z.enum(THEME_PRESETS).optional(),
 				showFlourishes: z.boolean().default(true),
+				showNavigationButtons: z.boolean().default(true),
 			})
 			.strict()
 			.optional(),

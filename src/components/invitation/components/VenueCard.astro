@@ -6,6 +6,7 @@
 import OptimizedImage from '@/components/common/OptimizedImage.astro';
 import GoogleMap from '@/components/common/GoogleMap.astro';
 import Icon from '@/components/common/icons/Icon.astro';
+import { resolveVenueMapPreviewUrl } from '@/lib/invitation/location-helper';
 
 import type { ImageMetadata } from 'astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
@@ -45,6 +46,7 @@ interface Props {
 	variant?: string;
 	presentation?: LocationPresentation;
 	showFlourishes?: boolean;
+	showNavigationButtons?: boolean;
 	accessLabel?: string;
 }
 
@@ -54,6 +56,7 @@ const {
 	variant = 'structured',
 	presentation,
 	showFlourishes = true,
+	showNavigationButtons = true,
 	accessLabel,
 } = Astro.props;
 
@@ -82,6 +85,9 @@ const mediaMode = resolveLocationMediaMode(presentation, {
 	hasCoordinates: Boolean(venue.coordinates),
 	hasImage: Boolean(venue.image),
 });
+const mapPreviewUrl = resolveVenueMapPreviewUrl(venue);
+const hasMapLink = Boolean(mapPreviewUrl);
+const useMapPreviewLink = showNavigationButtons === false && hasMapLink;
 ---
 
 <div class="event-location__card-wrapper" data-reveal-item>
@@ -95,7 +101,7 @@ const mediaMode = resolveLocationMediaMode(presentation, {
 		</div>
 	)}
 	<article class={`event-location__card event-location__card--${type}`} data-media-mode={mediaMode}>
-		{mediaMode !== 'none' && (
+		{mediaMode !== 'none' && !useMapPreviewLink && (
 			<div class="event-location__card-image-outer-frame">
 				<div class="event-location__card-image-inner-frame">
 					<div class="event-location__card-image-container" data-focal-point={venue.focalPoint}>
@@ -119,6 +125,105 @@ const mediaMode = resolveLocationMediaMode(presentation, {
 				</div>
 			</div>
 		)}
+		{/* Venue-specific map preview plate for mediaMode === 'none'.
+		    Linked to the canonical map URL; carries the address as the
+		    source of truth and a venue-type-driven decorative composition. */}
+		{mediaMode === 'none' && useMapPreviewLink && (
+			<a
+				href={mapPreviewUrl}
+				class="event-location__card-map-preview event-location__card-map-preview--link"
+				data-map-preview="link"
+				target="_blank"
+				rel="noopener noreferrer"
+				aria-label={`Abrir mapa de ${venue.venueName}`}
+			>
+				<span class="event-location__card-map-preview-art" aria-hidden="true">
+					<span class="event-location__card-map-preview-grid"></span>
+					{type === 'ceremony' && (
+						<svg
+							class="event-location__card-map-preview-artwork"
+							data-venue-artwork="church"
+							viewBox="0 0 240 112"
+							aria-hidden="true"
+							focusable="false"
+						>
+							<path class="event-location__card-map-preview-artwork-horizon" d="M18 96h204" />
+							<path class="event-location__card-map-preview-artwork-silhouette" d="M52 96V61l68-27 68 27v35H52Z" />
+							<path class="event-location__card-map-preview-artwork-silhouette" d="M101 96V31h38v65h-38Z" />
+							<path class="event-location__card-map-preview-artwork-silhouette" d="m120 9 11 13h-22L120 9Z" />
+							<path class="event-location__card-map-preview-artwork-cross" d="M117 7h6v10h9v6h-9v11h-6V23h-9v-6h9V7Z" />
+							<path class="event-location__card-map-preview-artwork-detail" d="M111 96V79a9 9 0 0 1 18 0v17h-18Z" />
+							<circle class="event-location__card-map-preview-artwork-detail" cx="120" cy="48" r="5" />
+							<path class="event-location__card-map-preview-artwork-detail" d="M73 68h12v12H73zM155 68h12v12h-12z" />
+						</svg>
+					)}
+					{type === 'reception' && (
+						<svg
+							class="event-location__card-map-preview-artwork"
+							data-venue-artwork="event-hall"
+							viewBox="0 0 240 112"
+							aria-hidden="true"
+							focusable="false"
+						>
+							<path class="event-location__card-map-preview-artwork-horizon" d="M18 96h204" />
+							<path
+								class="event-location__card-map-preview-artwork-silhouette"
+								d="M38 96V64l40-14 36-16v-9h12v9l36 16 40 14v32H38Z"
+							/>
+							<path
+								class="event-location__card-map-preview-artwork-cross"
+								d="M120 17v8M78 50l42-18 42 18M38 64h40M162 64h40"
+							/>
+							<path
+								class="event-location__card-map-preview-artwork-detail"
+								d="M106 96V76a14 14 0 0 1 28 0v20h-28Z"
+							/>
+							<path
+								class="event-location__card-map-preview-artwork-detail"
+								d="M112 52a8 8 0 0 1 16 0v4h-16Z"
+							/>
+							<path
+								class="event-location__card-map-preview-artwork-detail"
+								d="M46 72a5 5 0 0 1 10 0v16H46zM62 70a5 5 0 0 1 10 0v18H62zM168 70a5 5 0 0 1 10 0v18h-10zM184 72a5 5 0 0 1 10 0v16h-10z"
+							/>
+						</svg>
+					)}
+					<span class="event-location__card-map-preview-pin">
+						<Icon name="MapLocation" size={20} />
+					</span>
+				</span>
+				<span class="event-location__card-map-preview-foot">
+					<span class="event-location__card-map-preview-action">
+						<span class="event-location__card-map-preview-label">Ver mapa</span>
+						<Icon name="ArrowRight" size={16} />
+					</span>
+				</span>
+			</a>
+		)}
+		{mediaMode === 'none' && !useMapPreviewLink && hasMapLink && (
+			<div class="event-location__card-map-preview" data-map-preview="link">
+				<div class="event-location__card-map-preview-art" aria-hidden="true">
+					<span class="event-location__card-map-preview-grid"></span>
+					<span class="event-location__card-map-preview-pin">
+						<Icon name="MapLocation" size={24} />
+					</span>
+				</div>
+				<div class="event-location__card-map-preview-copy">
+					<span class="event-location__card-map-preview-label">Ubicación</span>
+						<a
+						href={mapPreviewUrl}
+						class="event-location__card-map-preview-link"
+						target="_blank"
+						rel="noopener noreferrer"
+						aria-label={`Abrir mapa de ${venue.venueName}`}
+					>
+						Ver mapa
+						<Icon name="ArrowRight" size={16} />
+					</a>
+				</div>
+			</div>
+		)}
+		{/* Card content: venue name → naturally formatted time → address with copy. */}
 		<div class="event-location__card-content">
 			<ul class="event-location__card-content-list">
 				<li class="event-location__card-content-place">
@@ -146,56 +251,64 @@ const mediaMode = resolveLocationMediaMode(presentation, {
 				)}
 				<li class="event-location__card-content-address">
 					<span class="event-location__card-content-address-text">{venue.address}</span>
-					<button class="event-location__card-content-copy-button copy-button" data-address={venue.address} aria-label="Copiar dirección" title="Copiar dirección">
+					<button
+						type="button"
+						class="event-location__card-content-copy-button copy-button"
+						data-address={venue.address}
+						aria-label="Copiar dirección"
+						title="Copiar dirección"
+					>
 						<Icon name="Copy" size={20} />
 					</button>
 				</li>
 			</ul>
 
-			<div class="event-location__card-navigation-buttons">
-				{venue.appleMapsUrl && (
-					<a
-						href={venue.appleMapsUrl}
-						class="event-location__nav-button event-location__nav-button--apple u-hidden-initially"
-						target="_blank"
-						rel="noopener noreferrer"
-						data-apple-link
-					>
-						Apple Maps
-					</a>
-				)}
-				{venue.googleMapsUrl && (
-					<a
-						href={venue.googleMapsUrl}
-						class="event-location__nav-button event-location__nav-button--maps"
-						target="_blank"
-						rel="noopener noreferrer"
-					>
-						Google Maps
-					</a>
-				)}
-				{venue.wazeUrl && (
-					<a
-						href={venue.wazeUrl}
-						class="event-location__nav-button event-location__nav-button--waze"
-						target="_blank"
-						rel="noopener noreferrer"
-					>
-						Waze
-					</a>
-				)}
-				{!venue.appleMapsUrl && !venue.googleMapsUrl && venue.mapUrl && (
-					<a
-						href={venue.mapUrl}
-						class="event-location__nav-button event-location__nav-button--primary"
-						target="_blank"
-						rel="noopener noreferrer"
-					>
-						<Icon name="MapLocation" size={20} />
-						Cómo llegar
-					</a>
-				)}
-			</div>
+			{showNavigationButtons && (
+				<div class="event-location__card-navigation-buttons">
+					{venue.appleMapsUrl && (
+						<a
+							href={venue.appleMapsUrl}
+							class="event-location__nav-button event-location__nav-button--apple u-hidden-initially"
+							target="_blank"
+							rel="noopener noreferrer"
+							data-apple-link
+						>
+							Apple Maps
+						</a>
+					)}
+					{venue.googleMapsUrl && (
+						<a
+							href={venue.googleMapsUrl}
+							class="event-location__nav-button event-location__nav-button--maps"
+							target="_blank"
+							rel="noopener noreferrer"
+						>
+							Google Maps
+						</a>
+					)}
+					{venue.wazeUrl && (
+						<a
+							href={venue.wazeUrl}
+							class="event-location__nav-button event-location__nav-button--waze"
+							target="_blank"
+							rel="noopener noreferrer"
+						>
+							Waze
+						</a>
+					)}
+					{!venue.appleMapsUrl && !venue.googleMapsUrl && venue.mapUrl && (
+						<a
+							href={venue.mapUrl}
+							class="event-location__nav-button event-location__nav-button--primary"
+							target="_blank"
+							rel="noopener noreferrer"
+						>
+							<Icon name="MapLocation" size={20} />
+							Cómo llegar
+						</a>
+					)}
+				</div>
+			)}
 		</div>
 
 		{variant === 'luxury-hacienda' && (

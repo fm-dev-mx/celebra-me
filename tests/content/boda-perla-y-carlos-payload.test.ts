@@ -1,6 +1,10 @@
 import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
 import { checkPublishGuard } from '@/lib/intake/services/invitation-preset-resolver';
+import { adaptEvent } from '@/lib/adapters/event';
+import { resolveLocationShowNavigationButtons } from '@/lib/invitation/presentation-options';
+import { buildInvitationRenderPlan } from '@/lib/invitation/render-plan';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
+import demoBodaJewelryBoxWedding from '../../src/content/event-demos/boda/demo-boda-jewelry-box-wedding.json';
 import fs from 'node:fs';
 import path from 'node:path';
 import {
@@ -53,14 +57,26 @@ describe('Boda Perla y Carlos provision contract', () => {
 		expect(profile).toContain('--perla-gold');
 		expect(profile).toContain('--pa-card-bg-image');
 		expect(profile).toContain('--rsvp-bg');
+		expect(profile).toContain('--perla-countdown-padding-block');
+		expect(profile).toContain('--perla-location-card-gap');
 		expect(profile).toContain("data-reveal-state='sealed'");
 		expect(profile).toContain("data-reveal-state='letter-held'");
 		expect(profile).toContain("data-reveal-state='preview-opened'");
 		expect(profile).toContain("data-reveal-state='revealed'");
-		expect(profile).toContain('invitation-hero__ampersand');
+		// The ampersand is styled via SCSS nesting under `.invitation-hero`,
+		// so the source contains the suffix `&__ampersand` (the SCSS compiler
+		// resolves `&` to `.invitation-hero`).
+		expect(profile).toMatch(/&__ampersand\s*\{[^}]*font-weight:\s*300/);
 		expect(profile).toContain('event-location__heading');
 		expect(profile).toContain('-webkit-text-fill-color: var(--perla-cream)');
-		expect(profile).toMatch(/\.invitation-hero__title[\s\S]*background:\s*none/);
+		// The title is styled via SCSS nesting; the source contains `&__title`
+		// followed (anywhere in the block) by `background: none` to kill the
+		// shared gradient/specular clip on the names.
+		expect(profile).toMatch(/&__title\s*\{[^}]*?background:\s*none/);
+		expect(profile).toContain('family__group--group-0');
+		expect(profile).toContain('family__group--group-1');
+		expect(profile).not.toContain('interlude-free');
+		expect(profile).toMatch(/--env-bg:[\s\S]*var\(--perla-sand\)/);
 	});
 
 	it('keeps Hero chrome hidden during sealed, letter-held, and preview-opened', () => {
@@ -115,7 +131,69 @@ describe('Boda Perla y Carlos provision contract', () => {
 		expect(content).not.toHaveProperty('gifts');
 		expect(content).not.toHaveProperty('music');
 		expect(content).not.toHaveProperty('itinerary');
-		expect(content).not.toHaveProperty('interludes');
+
+		const interludes = content.interludes as Array<{
+			afterSection: string;
+			image: unknown;
+			alt?: string;
+			height?: string;
+			focalPoint?: string;
+		}>;
+		expect(interludes).toHaveLength(2);
+		expect(interludes.map((interlude) => interlude.afterSection)).toEqual([
+			'countdown',
+			'gallery',
+		]);
+		expect(interludes).toEqual([
+			expect.objectContaining({
+				afterSection: 'countdown',
+				alt: 'Arco de piedra con flores blancas al atardecer',
+				height: 'screen',
+				focalPoint: '50% 50%',
+			}),
+			expect.objectContaining({
+				afterSection: 'gallery',
+				alt: 'Mesa de recepción con flores blancas y luces cálidas',
+				height: 'screen',
+				focalPoint: '50% 58%',
+			}),
+		]);
+
+		const viewModel = adaptEvent({
+			id: 'events/boda-perla-y-carlos',
+			data: content,
+		} as Parameters<typeof adaptEvent>[0]);
+		const renderPlan = buildInvitationRenderPlan(viewModel);
+		expect(renderPlan.filter((item) => item.type === 'interlude')).toHaveLength(2);
+		expect(
+			renderPlan.map((item) => (item.type === 'section' ? item.section : item.type)),
+		).toEqual([
+			'quote',
+			'countdown',
+			'interlude',
+			'location',
+			'family',
+			'gallery',
+			'interlude',
+			'personalized-access',
+			'rsvp',
+			'thankYou',
+		]);
+		expect(
+			renderPlan.find(
+				(item) => item.type === 'interlude' && item.afterSection === 'countdown',
+			),
+		).toMatchObject({
+			intersection: { family: 'arch', source: 'countdown' },
+		});
+		expect(
+			renderPlan.find((item) => item.type === 'interlude' && item.afterSection === 'gallery'),
+		).toMatchObject({
+			intersection: { family: 'atmospheric-blend', source: 'gallery' },
+		});
+		expect(renderPlan.find((item) => item.type === 'personalized-access')).toMatchObject({
+			intersection: { family: 'overlap', source: 'interlude-after-gallery' },
+		});
 
 		const envelope = content.envelope as {
 			microcopy?: string;
@@ -127,7 +205,12 @@ describe('Boda Perla y Carlos provision contract', () => {
 		expect(envelope.envelopeName).toBe('Perla & Carlos');
 
 		const location = content.location as {
-			venues?: Array<{ type: string; venueName: string; time: string }>;
+			venues?: Array<{
+				type: string;
+				venueName: string;
+				time: string;
+				googleMapsUrl?: string;
+			}>;
 			ceremony?: unknown;
 			reception?: unknown;
 			indications?: Array<{ text: string }>;
@@ -141,12 +224,15 @@ describe('Boda Perla y Carlos provision contract', () => {
 			type: 'ceremony',
 			venueName: 'Catedral de Cristo Rey',
 			time: '5:30 p. m.',
+			googleMapsUrl: expect.stringContaining('maps.app.goo.gl'),
 		});
 		expect(location.venues?.[1]).toMatchObject({
 			type: 'reception',
 			venueName: 'Salón El Pedregal',
 			time: '7:30 p. m.',
+			googleMapsUrl: expect.stringContaining('maps.app.goo.gl'),
 		});
+		expect(location.venues?.[0]?.googleMapsUrl).not.toBe(location.venues?.[1]?.googleMapsUrl);
 		expect(location.introHeading).toBe('Sábado, 28 de noviembre de 2026');
 		expect(location.indicationsHeading).toBe('Indicaciones');
 		expect(location.indications?.some((i) => /ceremonia civil/i.test(i.text))).toBe(true);
@@ -197,5 +283,58 @@ describe('Boda Perla y Carlos provision contract', () => {
 		expect(serialized).not.toMatch(/\[\[PENDIENTE:/);
 		expect(serialized).toMatch(/Por confirmar/);
 		expect(serialized).not.toMatch(/hero-mobile-source/);
+	});
+
+	it('enforces the two-action map contract end-to-end', () => {
+		// Payload declares the opt-out explicitly so the live row stays
+		// in lockstep with the canonical source.
+		const published = buildPerlaPublishedContent(buildTestAssets());
+		const publishedSectionStyles = published.sectionStyles as
+			{ location?: { showNavigationButtons?: boolean } } | undefined;
+		expect(publishedSectionStyles?.location?.showNavigationButtons).toBe(false);
+
+		// The adapter must surface the opt-out on the section data the
+		// render plan and EventLocation consume.
+		const viewModel = adaptEvent({
+			id: 'events/boda-perla-y-carlos',
+			data: published,
+		} as unknown as Parameters<typeof adaptEvent>[0]);
+		expect(viewModel.sections.location?.showNavigationButtons).toBe(false);
+
+		// Venue names, times, addresses, and canonical map URLs are
+		// unchanged. The refinement is a presentation-only change.
+		const venues = (
+			published.location as {
+				venues: Array<{
+					venueName: string;
+					time: string;
+					address: string;
+					googleMapsUrl: string;
+				}>;
+			}
+		).venues;
+		expect(venues).toHaveLength(2);
+		expect(venues[0]).toMatchObject({
+			venueName: 'Catedral de Cristo Rey',
+			time: '5:30 p. m.',
+			googleMapsUrl: expect.stringContaining('maps.app.goo.gl'),
+		});
+		expect(venues[1]).toMatchObject({
+			venueName: 'Salón El Pedregal',
+			time: '7:30 p. m.',
+			googleMapsUrl: expect.stringContaining('maps.app.goo.gl'),
+		});
+		expect(venues[0].googleMapsUrl).not.toBe(venues[1].googleMapsUrl);
+	});
+
+	it('keeps provider navigation enabled for the existing wedding control invitation', () => {
+		expect(resolveLocationShowNavigationButtons(undefined)).toBe(true);
+
+		const viewModel = adaptEvent({
+			id: 'event-demos/boda/demo-boda-jewelry-box-wedding.json',
+			data: demoBodaJewelryBoxWedding,
+		} as unknown as Parameters<typeof adaptEvent>[0]);
+
+		expect(viewModel.sections.location?.showNavigationButtons).toBe(true);
 	});
 });

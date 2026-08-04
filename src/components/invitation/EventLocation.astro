@@ -66,6 +66,7 @@ interface Props {
 	variant?: LocationVariant;
 	presentation?: LocationPresentation;
 	showFlourishes?: boolean;
+	showNavigationButtons?: boolean;
 	indicationsHeading?: string;
 	nextSectionLink?: {
 		href: string;
@@ -88,6 +89,7 @@ const {
 	variant = 'structured',
 	presentation,
 	showFlourishes = true,
+	showNavigationButtons = true,
 	indicationsHeading,
 	nextSectionLink,
 	introEyebrow,
@@ -149,6 +151,7 @@ const isSingleVenue = displayVenues.length === 1;
 					variant={variant}
 					presentation={presentation}
 					showFlourishes={showFlourishes}
+					showNavigationButtons={showNavigationButtons}
 					accessLabel={variant === 'editorial-magazine' ? `ACCESO ${String(index + 1).padStart(2, '0')}` : undefined}
 				/>
 			))}

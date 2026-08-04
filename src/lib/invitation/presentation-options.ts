@@ -80,8 +80,16 @@ export function resolveLocationMediaMode(
 	return media.hasImage ? 'image' : 'none';
 }
 
-export function resolveLocationShowFlourishes(options: LocationPresentationOptions | undefined): boolean {
+export function resolveLocationShowFlourishes(
+	options: LocationPresentationOptions | undefined,
+): boolean {
 	return options?.showFlourishes ?? true;
+}
+
+export function resolveLocationShowNavigationButtons(
+	options: { showNavigationButtons?: boolean } | undefined,
+): boolean {
+	return options?.showNavigationButtons ?? true;
 }
 
 export function resolvePortraitEnabled(
