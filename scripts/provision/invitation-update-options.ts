@@ -1,4 +1,5 @@
 import { listInvitationDefinitions } from './invitations/registry.ts';
+import { formatDomainUnverified } from '../status-core/schema-lifecycle-contract.ts';
 
 export type InvitationUpdateTarget = 'local' | 'preview' | 'production';
 
@@ -155,28 +156,56 @@ export function buildStatusReport(input: StatusReportOptions): Record<string, un
 	const targets =
 		opts.targets && opts.targets.length > 0 ? opts.targets : ['local', 'preview', 'production'];
 
+	const unprobedRemote = formatDomainUnverified(
+		'INVENTORY',
+		'invitation:update --status is local inventory only. Remote environments are not probed. Use pnpm dbs for cross-environment schema/content evidence.',
+	);
+	const unprobedLocal = formatDomainUnverified(
+		'INVENTORY',
+		'Local inventory not yet enriched; this report builder does not probe persistent-local.',
+	);
+
 	const definitions = listInvitationDefinitions()
 		.filter((definition) => !requestedSlug || definition.slug === requestedSlug)
 		.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
 		.map((definition) => {
 			const envEntries = targets.map((target) => {
-				const envInfo = {
-					status: 'UNVERIFIED',
-					reason: 'Fast target summaries require configured target credentials and are read-only.',
-				};
+				const unverified = target === 'local' ? unprobedLocal : unprobedRemote;
+				const envInfo =
+					target === 'local'
+						? {
+								status: unverified.status,
+								domain: unverified.domain,
+								reason: unverified.detail,
+							}
+						: {
+								status: unverified.status,
+								domain: unverified.domain,
+								probed: false,
+								reason: unverified.detail,
+							};
 				return [target, envInfo];
 			});
 			return {
 				slug: definition.slug,
 				title: definition.title,
 				createdAt: definition.createdAt,
-				classification: 'UNVERIFIED',
+				classification: 'INVENTORY_UNVERIFIED',
 				environments: Object.fromEntries(envEntries),
 			};
 		});
 
+	const legacyUnprobed = opts.includeLegacy
+		? formatDomainUnverified(
+				'INVENTORY',
+				'Legacy discovery is not performed by invitation:update --status without a configured local inventory probe.',
+			)
+		: undefined;
+
 	return {
 		mode: 'status',
+		surface: 'local_inventory',
+		remoteProbe: 'not_performed',
 		filters: {
 			slug: requestedSlug ?? null,
 			targets,
@@ -185,10 +214,11 @@ export function buildStatusReport(input: StatusReportOptions): Record<string, un
 			includeDemos: opts.includeDemos ?? false,
 		},
 		definitions,
-		legacy: opts.includeLegacy
+		legacy: legacyUnprobed
 			? {
-					status: 'UNVERIFIED',
-					reason: 'Legacy discovery requires a configured target and is not available from definitions alone.',
+					status: legacyUnprobed.status,
+					domain: legacyUnprobed.domain,
+					reason: legacyUnprobed.detail,
 				}
 			: undefined,
 	};

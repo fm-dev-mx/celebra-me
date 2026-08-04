@@ -7,11 +7,29 @@ describe('unified workflow dependency reporting', () => {
 		expect(parseTargets('local,production')).toEqual(['local', 'preview', 'production']);
 	});
 
-	it('honors read-only status filters and does not pretend unqueried targets are present', () => {
-		const report = buildStatusReport({ slug: 'romina-rios-chaparro', targets: ['preview'], includeLegacy: true }) as { filters: { targets: string[]; includeLegacy: boolean }; definitions: Array<{ slug: string; environments: Record<string, { status: string }> }>; legacy: { status: string } };
+	it('labels invitation:update --status as local inventory with unprobed remotes', () => {
+		const report = buildStatusReport({
+			slug: 'romina-rios-chaparro',
+			targets: ['preview'],
+			includeLegacy: true,
+		}) as {
+			surface: string;
+			remoteProbe: string;
+			filters: { targets: string[]; includeLegacy: boolean };
+			definitions: Array<{
+				slug: string;
+				environments: Record<string, { status: string; probed?: boolean }>;
+			}>;
+			legacy: { status: string };
+		};
+		expect(report.surface).toBe('local_inventory');
+		expect(report.remoteProbe).toBe('not_performed');
 		expect(report.filters).toMatchObject({ targets: ['preview'], includeLegacy: true });
 		expect(report.definitions).toHaveLength(1);
-		expect(report.definitions[0]).toMatchObject({ slug: 'romina-rios-chaparro', environments: { preview: { status: 'UNVERIFIED' } } });
-		expect(report.legacy.status).toBe('UNVERIFIED');
+		expect(report.definitions[0]).toMatchObject({
+			slug: 'romina-rios-chaparro',
+			environments: { preview: { status: 'INVENTORY_UNVERIFIED', probed: false } },
+		});
+		expect(report.legacy.status).toBe('INVENTORY_UNVERIFIED');
 	});
 });

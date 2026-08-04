@@ -115,7 +115,7 @@ execution-boundary separation.
 | Persistent Local raw/ad-hoc DB mutation | Never (unsupported agent workflow)                                                                                          | Exceptional only                                               |
 | Preview managed mutation                | Yes with explicit Preview task scope (`CELEBRA_TASK_SCOPE`)                                                                 | Yes                                                            |
 | Preview raw DB mutation                 | Never                                                                                                                       | Guarded schema workflow only                                   |
-| Production read — safe surfaces         | `pnpm dbs`; `invitation:update --status`; `invitation:content-parity`; `invitation:promote --dry-run` (read-only preflight) | Same safe surfaces                                             |
+| Production read — safe surfaces         | `pnpm dbs`; `invitation:update --status` (local inventory; remotes unprobed); `invitation:content-parity`; `invitation:promote --dry-run` (read-only preflight) | Same safe surfaces                                             |
 | Production read — privileged DB audit   | Never (`db:prod:audit`, backups, Auth/Storage export)                                                                       | Owner-only guarded `db:prod:*` audit/backup/export             |
 | Production invitation mutation          | Never via `invitation:update` or `invitation:reconcile`                                                                     | Owner-only `pnpm invitation:promote --apply`                   |
 | Production schema / migration           | Never                                                                                                                       | Owner-only `db:prod:migrate` (separate from content promotion) |
@@ -148,10 +148,15 @@ versioned migration → Disposable → Persistent Local → Preview → human-co
 ```
 
 Schema drift states: `CURRENT` | `BEHIND` | `SCHEMA_DRIFT` | `UNVERIFIED`
-(`scripts/db/schema-lifecycle-state.ts`, surfaced by `db:*:audit` and `pnpm dbs`). Do not reuse
-invitation reconciliation decisions (`KEEP_ENVIRONMENT`, etc.) for schema. Invitation workflows must
-never auto-run migrations; `invitation:promote` preflight that detects incompatible schema returns
-`SCHEMA_INCOMPATIBLE` / `OWNER_ACTION_REQUIRED` and stops.
+(`scripts/db/schema-lifecycle-state.ts` / `scripts/status-core/schema-lifecycle-contract.ts`).
+Operator-facing unavailable schema evidence is labeled `SCHEMA_UNVERIFIED`.
+`pnpm dbs` / observability use **migration_history_parity**; `pnpm db:*:audit` uses
+**object_audit_readiness** — not equivalent. Do not reuse invitation reconciliation decisions
+(`KEEP_ENVIRONMENT`, etc.) for schema. Invitation workflows must never auto-run migrations;
+`invitation:promote` preflight that detects incompatible schema returns `SCHEMA_INCOMPATIBLE` /
+`OWNER_ACTION_REQUIRED` and stops. Preview schema migrate and content mirror require Preview
+authorization before any write (`preview:schema:migrate` /
+`preview:content-mirror:sync-invitations`).
 
 Disposable operations are available to **both Agent and Owner** under the guarded disposable-test
 workflows.

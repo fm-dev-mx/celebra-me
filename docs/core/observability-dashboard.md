@@ -184,6 +184,12 @@ command is intentionally rejected with `APPLY_DISABLED`; no approval artifact or
 authorization is generated. Any relevant canonical, Production, scope, normalization, or
 semantic-asset change changes the entry fingerprint and makes dry-run return `STALE_MANIFEST`.
 
+Schema signals in this dashboard use **migration_history_parity** evidence
+(`scripts/status-core/migration-probe.ts`). They are not equivalent to `pnpm db:*:audit`
+**object_audit_readiness**. Axis `UNVERIFIED` values remain axis-scoped (`operationalStatus` vs
+`deliveryStatus`); schema unavailable evidence surfaces as `SCHEMA_UNAVAILABLE` /
+`SCHEMA_UNVERIFIED` reason codes, not as a healthy claim.
+
 ## Database projection audit
 
 Each environment uses one slug-filtered, read-only content projection and one migration-history

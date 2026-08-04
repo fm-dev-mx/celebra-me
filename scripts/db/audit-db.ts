@@ -751,6 +751,9 @@ function main(): void {
 		verified: true,
 	});
 	console.log(`Final schema lifecycle state: ${finalLifecycle}`);
+	console.log(
+		'Evidence class: object_audit_readiness (history parity + disposable object fingerprint). Not equivalent to pnpm dbs migration_history_parity.',
+	);
 
 	if (errors > 0 || finalLifecycle === 'SCHEMA_DRIFT') {
 		console.error(`❌ AUDIT FAILED: Unexplained schema drift or history divergence detected (${finalLifecycle}).`);

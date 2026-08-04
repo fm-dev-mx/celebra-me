@@ -176,7 +176,7 @@ Usage:
 Options:
   --asset-policy <policy>     Asset handling policy: verify, missing (default), sync
   --prune-assets               Enable explicit removal of unreferenced managed assets (requires confirmation)
-  --status                     Read-only inventory status check
+  --status                     Local inventory status (remotes unprobed; use pnpm dbs for matrix)
   --targets <targets>          Mutations: local, preview, local,preview. --targets all and Production mutations are rejected.
                                Status only: local, preview, production, all (all includes Production read-only).
   --slug <slug>                Invitation slug (e.g. romina-rios-chaparro)

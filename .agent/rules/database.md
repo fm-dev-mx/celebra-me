@@ -145,6 +145,8 @@ task authorization, target classification, and standard guard checks.
   (owner-only; separate from schema migrate).
 - `pnpm db:preview:migrate` preflights Preview (`PREVIEW_DB_URL`); `--apply` applies pending
   migrations after Preview authorization.
+- Schema status evidence: `pnpm dbs` / observability use **migration_history_parity**;
+  `pnpm db:*:audit` uses **object_audit_readiness**. Do not treat them as equivalent.
 - `pnpm db:prod:patch` disposition is `RESTRICT_OWNER_ONLY` / `KEEP_SPECIALIZED`: `--dry-run` is
   lint-only; `--apply` is owner-confirmed specialized maintenance and must not bypass
   `db:prod:migrate` or `invitation:promote`.

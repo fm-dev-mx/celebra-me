@@ -5,10 +5,15 @@
  * CONTENT + SCHEMA surface. Fresh evidence only — no dashboard cache,
  * persistent snapshots, or historical healthy fallback.
  *
- * Vocabulary (unchanged from dbs-status / schema-lifecycle-state):
+ * Vocabulary:
  *   CONTENT: MATCH_CANONICAL | BEHIND_CANONICAL | DIVERGED | IDENTITY_CONFLICT |
  *            NOT_PRESENT | UNREACHABLE | CREDENTIALS_REQUIRED | UNVERIFIED
+ *            (operator label CONTENT_UNVERIFIED when status is UNVERIFIED)
  *   SCHEMA:  CURRENT | BEHIND | SCHEMA_DRIFT | UNVERIFIED
+ *            (operator label SCHEMA_UNVERIFIED when status is UNVERIFIED)
+ *
+ * SCHEMA evidence class is always migration_history_parity here — never equate
+ * to object_audit_readiness from pnpm db:*:audit.
  */
 
 import {
@@ -22,6 +27,12 @@ import {
 	type TargetEnv,
 } from './dbs-status.ts';
 import type { SchemaLifecycleState } from '../db/schema-lifecycle-state.ts';
+import {
+	DEFAULT_STATUS_SCHEMA_EVIDENCE,
+	formatDomainUnverified,
+	formatSchemaLifecycleLabel,
+	type SchemaEvidenceClass,
+} from '../status-core/schema-lifecycle-contract.ts';
 import { listInvitationDefinitions } from './invitations/registry.ts';
 import type { StatusProbeDebugCounters } from '../status-core/index.ts';
 
@@ -46,6 +57,8 @@ const CONTENT_SEVERITY: Record<StatusVocabulary, number> = {
 export interface CompactEnvContentStatus {
 	environment: TargetEnv;
 	status: StatusVocabulary;
+	/** Operator-facing label when status is UNVERIFIED (CONTENT_UNVERIFIED). */
+	operatorStatus?: string;
 	detail?: string;
 	timeoutDegraded?: boolean;
 	durationMs?: number;
@@ -54,6 +67,9 @@ export interface CompactEnvContentStatus {
 export interface CompactEnvSchemaStatus {
 	environment: TargetEnv;
 	status: SchemaLifecycleState;
+	/** Operator-facing label (SCHEMA_UNVERIFIED when status is UNVERIFIED). */
+	operatorStatus: ReturnType<typeof formatSchemaLifecycleLabel>;
+	evidenceClass: SchemaEvidenceClass;
 	detail?: string;
 	timeoutDegraded?: boolean;
 	durationMs?: number;
@@ -88,27 +104,24 @@ export interface AggregateContentSummary {
 }
 
 function schemaFromEnv(envStatus: EnvTargetStatus): CompactEnvSchemaStatus {
-	if (!envStatus.configured) {
-		return {
-			environment: envStatus.environment,
-			status: 'UNVERIFIED',
-			detail: envStatus.errorDetail ?? 'Credentials not configured',
-			timeoutDegraded: envStatus.timeoutDegraded,
-			durationMs: envStatus.durationMs,
-		};
-	}
-	if (!envStatus.reachable) {
-		return {
-			environment: envStatus.environment,
-			status: 'UNVERIFIED',
-			detail: envStatus.errorDetail ?? 'Unreachable',
-			timeoutDegraded: envStatus.timeoutDegraded,
-			durationMs: envStatus.durationMs,
-		};
-	}
+	const lifecycle: SchemaLifecycleState = !envStatus.configured
+		? 'UNVERIFIED'
+		: !envStatus.reachable
+			? 'UNVERIFIED'
+			: (envStatus.schemaLifecycle ?? 'UNVERIFIED');
+	const detail = !envStatus.configured
+		? (envStatus.errorDetail ?? 'Credentials not configured')
+		: !envStatus.reachable
+			? (envStatus.errorDetail ?? 'Unreachable')
+			: lifecycle === 'UNVERIFIED'
+				? formatDomainUnverified('SCHEMA').detail
+				: undefined;
 	return {
 		environment: envStatus.environment,
-		status: envStatus.schemaLifecycle ?? 'UNVERIFIED',
+		status: lifecycle,
+		operatorStatus: formatSchemaLifecycleLabel(lifecycle),
+		evidenceClass: DEFAULT_STATUS_SCHEMA_EVIDENCE,
+		detail,
 		timeoutDegraded: envStatus.timeoutDegraded,
 		durationMs: envStatus.durationMs,
 	};
@@ -133,20 +146,30 @@ function contentFromConnectivity(envStatus: EnvTargetStatus): CompactEnvContentS
 			durationMs: envStatus.durationMs,
 		};
 	}
+	const unverified = formatDomainUnverified(
+		'CONTENT',
+		'Pass pnpm dbs --compact <slug> for package-hash content classification',
+	);
 	return {
 		environment: envStatus.environment,
 		status: 'UNVERIFIED',
-		detail: 'Pass pnpm dbs --compact <slug> for package-hash content classification',
+		operatorStatus: unverified.status,
+		detail: unverified.detail,
 		timeoutDegraded: envStatus.timeoutDegraded,
 		durationMs: envStatus.durationMs,
 	};
 }
 
 function contentFromTarget(target: PerInvitationTargetStatus): CompactEnvContentStatus {
+	const unverified =
+		target.status === 'UNVERIFIED'
+			? formatDomainUnverified('CONTENT', target.detail)
+			: undefined;
 	return {
 		environment: target.environment,
 		status: target.status,
-		detail: target.detail,
+		operatorStatus: unverified?.status,
+		detail: unverified?.detail ?? target.detail,
 		timeoutDegraded: target.timeoutDegraded,
 		durationMs: target.durationMs,
 	};
@@ -200,6 +223,8 @@ function degradedCompactStatus(reason: string): CompactManagedStatus {
 			{
 				environment: env,
 				status: 'UNVERIFIED' as const,
+				operatorStatus: formatSchemaLifecycleLabel('UNVERIFIED'),
+				evidenceClass: DEFAULT_STATUS_SCHEMA_EVIDENCE,
 				detail: reason,
 				timeoutDegraded: true,
 			},
@@ -392,11 +417,14 @@ function envLabel(env: TargetEnv): string {
 export function formatCompactManagedStatus(status: CompactManagedStatus): string {
 	const lines: string[] = ['CONTENT'];
 	for (const env of ENVS) {
-		lines.push(`${padLabel(envLabel(env))}${status.content[env].status}`);
+		const content = status.content[env];
+		const label = content.operatorStatus ?? content.status;
+		lines.push(`${padLabel(envLabel(env))}${label}`);
 	}
 	lines.push('', 'SCHEMA');
 	for (const env of ENVS) {
-		lines.push(`${padLabel(envLabel(env))}${status.schema[env].status}`);
+		const schema = status.schema[env];
+		lines.push(`${padLabel(envLabel(env))}${schema.operatorStatus}`);
 	}
 	if (status.aggregateSummary) {
 		lines.push('', 'CORPUS');

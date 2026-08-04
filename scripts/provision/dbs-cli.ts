@@ -15,6 +15,7 @@ import {
 	MANAGED_STATUS_DEFAULT_TIMEOUT_MS,
 	runCompactManagedStatusSafe,
 } from './managed-status.ts';
+import { formatSchemaLifecycleLabel } from '../status-core/schema-lifecycle-contract.ts';
 
 function pad(str: string, width: number): string {
 	return str.padEnd(width, ' ');
@@ -91,10 +92,13 @@ async function formatGeneralView(jsonMode: boolean): Promise<void> {
 
 	const schemaRow =
 		pad('Schema', 18) +
-		pad(envs.local.schemaLifecycle ?? 'UNVERIFIED', colW) +
-		pad(envs.preview.schemaLifecycle ?? 'UNVERIFIED', colW) +
-		pad(envs.production.schemaLifecycle ?? 'UNVERIFIED', colW);
+		pad(formatSchemaLifecycleLabel(envs.local.schemaLifecycle ?? 'UNVERIFIED'), colW) +
+		pad(formatSchemaLifecycleLabel(envs.preview.schemaLifecycle ?? 'UNVERIFIED'), colW) +
+		pad(formatSchemaLifecycleLabel(envs.production.schemaLifecycle ?? 'UNVERIFIED'), colW);
 	console.log(schemaRow);
+	console.log(
+		'(Schema labels use migration_history_parity evidence; object_audit_readiness requires pnpm db:*:audit.)',
+	);
 
 	console.log('\nDefinitions in repo:', summary.totalDefinitionsCount);
 }

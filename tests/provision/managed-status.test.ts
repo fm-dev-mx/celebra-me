@@ -277,7 +277,7 @@ describe('managed-status compact composition', () => {
 			expect(result.status.content.local.status).not.toBe('MATCH_CANONICAL');
 			expect(result.status.schema.local.status).not.toBe('CURRENT');
 			expect(formatCompactManagedStatus(result.status)).toContain('UNREACHABLE');
-			expect(formatCompactManagedStatus(result.status)).toContain('UNVERIFIED');
+			expect(formatCompactManagedStatus(result.status)).toContain('SCHEMA_UNVERIFIED');
 		}
 	});
 
