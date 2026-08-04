@@ -1,10 +1,17 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 const mockRunPsql = jest.fn(() => ({
 	status: 0,
 	stdout: JSON.stringify({ activeInvitationRows: 1, identityConflictsCount: 0, rows: [] }),
 	stderr: '',
 }));
-const mockRunCommand = jest.fn(() => ({ status: 0, stdout: '', stderr: '' }));
-const mockReadMigrationLifecycleWithTimeout = jest.fn(() => {
+const mockRunCommand = jest.fn((...args: unknown[]) => {
+	void args;
+	return { status: 0, stdout: '', stderr: '' };
+});
+const mockReadMigrationLifecycleWithTimeout = jest.fn((...args: unknown[]) => {
+	void args;
 	mockRunCommand('psql', [], {
 		env: { ...process.env, PGOPTIONS: '-c default_transaction_read_only=on' },
 	});
@@ -85,11 +92,8 @@ describe('observability database resource budget', () => {
 	});
 
 	it('does not import hook orchestration or managed-status policies', () => {
-		const source = require('fs').readFileSync(
-			require('path').join(
-				process.cwd(),
-				'scripts/observability/database-projection.ts',
-			),
+		const source = readFileSync(
+			join(process.cwd(), 'scripts/observability/database-projection.ts'),
 			'utf8',
 		);
 		expect(source).not.toMatch(/managed-status/);
