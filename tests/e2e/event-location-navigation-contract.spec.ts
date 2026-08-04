@@ -1,8 +1,8 @@
 import { expect, test } from '@playwright/test';
 
 test.describe('event location navigation contract', () => {
-	test('Perla uses the linked map previews and address copy actions only', async ({ page }) => {
-		await page.goto('/boda/boda-perla-y-carlos?skipEnvelope=true', {
+	test('Daniela uses the linked map previews and address copy actions only', async ({ page }) => {
+		await page.goto('/boda/daniela-y-martin?skipEnvelope=true', {
 			waitUntil: 'domcontentloaded',
 		});
 

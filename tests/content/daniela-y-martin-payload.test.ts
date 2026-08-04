@@ -8,22 +8,22 @@ import demoBodaJewelryBoxWedding from '../../src/content/event-demos/boda/demo-b
 import fs from 'node:fs';
 import path from 'node:path';
 import {
-	PERLA_ASSET_SPECS,
-	PERLA_EVENT,
-	buildPerlaPublishedContent,
-	type PerlaAssetMap,
-} from '../../scripts/provision/invitations/boda-perla-y-carlos.ts';
+	DANIELA_ASSET_SPECS,
+	DANIELA_EVENT,
+	buildDanielaPublishedContent,
+	type DanielaAssetMap,
+} from '../../scripts/provision/invitations/daniela-y-martin.ts';
 
 const profilePath = path.join(
 	process.cwd(),
-	'src/styles/invitation-profiles/boda-perla-y-carlos.scss',
+	'src/styles/invitation-profiles/daniela-y-martin.scss',
 );
 
-const assetDir = path.join(process.cwd(), 'src/assets/invitations/boda-perla-y-carlos');
+const assetDir = path.join(process.cwd(), 'src/assets/invitations/daniela-y-martin');
 
-function buildTestAssets(): PerlaAssetMap {
+function buildTestAssets(): DanielaAssetMap {
 	return Object.fromEntries(
-		PERLA_ASSET_SPECS.map((spec, index) => [
+		DANIELA_ASSET_SPECS.map((spec, index) => [
 			spec.key,
 			{
 				type: 'uploaded' as const,
@@ -31,12 +31,12 @@ function buildTestAssets(): PerlaAssetMap {
 				src: `http://127.0.0.1:54321/storage/v1/object/public/invitation-assets/${spec.key}.webp`,
 			},
 		]),
-	) as PerlaAssetMap;
+	) as DanielaAssetMap;
 }
 
-describe('Boda Perla y Carlos provision contract', () => {
+describe('Boda Daniela y Martín provision contract', () => {
 	it('uses jewelry-box-wedding catalog entry', () => {
-		const preset = findDemoPreset(PERLA_EVENT.baseDemoId);
+		const preset = findDemoPreset(DANIELA_EVENT.baseDemoId);
 		expect(preset).toMatchObject({
 			id: 'demo-boda-jewelry-box-wedding',
 			eventType: 'boda',
@@ -44,21 +44,21 @@ describe('Boda Perla y Carlos provision contract', () => {
 		});
 		expect(
 			checkPublishGuard({
-				baseDemoId: PERLA_EVENT.baseDemoId,
-				themeId: PERLA_EVENT.themeId,
+				baseDemoId: DANIELA_EVENT.baseDemoId,
+				themeId: DANIELA_EVENT.themeId,
 			}),
 		).toEqual({ ok: true });
 	});
 
 	it('ships a Lane A profile scoped to jewelry-box-wedding', () => {
 		const profile = fs.readFileSync(profilePath, 'utf8');
-		expect(profile).toContain('.event--boda-perla-y-carlos.theme-preset--jewelry-box-wedding');
-		expect(profile).toContain('--perla-olive');
-		expect(profile).toContain('--perla-gold');
+		expect(profile).toContain('.event--daniela-y-martin.theme-preset--jewelry-box-wedding');
+		expect(profile).toContain('--daniela-olive');
+		expect(profile).toContain('--daniela-gold');
 		expect(profile).toContain('--pa-card-bg-image');
 		expect(profile).toContain('--rsvp-bg');
-		expect(profile).toContain('--perla-countdown-padding-block');
-		expect(profile).toContain('--perla-location-card-gap');
+		expect(profile).toContain('--daniela-countdown-padding-block');
+		expect(profile).toContain('--daniela-location-card-gap');
 		expect(profile).toContain("data-reveal-state='sealed'");
 		expect(profile).toContain("data-reveal-state='letter-held'");
 		expect(profile).toContain("data-reveal-state='preview-opened'");
@@ -68,7 +68,7 @@ describe('Boda Perla y Carlos provision contract', () => {
 		// resolves `&` to `.invitation-hero`).
 		expect(profile).toMatch(/&__ampersand\s*\{[^}]*font-weight:\s*300/);
 		expect(profile).toContain('event-location__heading');
-		expect(profile).toContain('-webkit-text-fill-color: var(--perla-cream)');
+		expect(profile).toContain('-webkit-text-fill-color: var(--daniela-cream)');
 		// The title is styled via SCSS nesting; the source contains `&__title`
 		// followed (anywhere in the block) by `background: none` to kill the
 		// shared gradient/specular clip on the names.
@@ -76,7 +76,7 @@ describe('Boda Perla y Carlos provision contract', () => {
 		expect(profile).toContain('family__group--group-0');
 		expect(profile).toContain('family__group--group-1');
 		expect(profile).not.toContain('interlude-free');
-		expect(profile).toMatch(/--env-bg:[\s\S]*var\(--perla-sand\)/);
+		expect(profile).toMatch(/--env-bg:[\s\S]*var\(--daniela-sand\)/);
 	});
 
 	it('keeps Hero chrome hidden during sealed, letter-held, and preview-opened', () => {
@@ -93,8 +93,8 @@ describe('Boda Perla y Carlos provision contract', () => {
 	});
 
 	it('shares one physical hero source across desktop and mobile specs', () => {
-		const heroDesktop = PERLA_ASSET_SPECS.find((s) => s.key === 'hero-desktop');
-		const heroMobile = PERLA_ASSET_SPECS.find((s) => s.key === 'hero-mobile');
+		const heroDesktop = DANIELA_ASSET_SPECS.find((s) => s.key === 'hero-desktop');
+		const heroMobile = DANIELA_ASSET_SPECS.find((s) => s.key === 'hero-mobile');
 		expect(heroDesktop?.relativePath).toBe('hero-source.jpg');
 		expect(heroMobile?.relativePath).toBe('hero-source.jpg');
 		expect(heroDesktop?.focalPoint).not.toEqual(heroMobile?.focalPoint);
@@ -103,14 +103,14 @@ describe('Boda Perla y Carlos provision contract', () => {
 	});
 
 	it('has source files for every declared asset path', () => {
-		const uniquePaths = new Set(PERLA_ASSET_SPECS.map((spec) => spec.relativePath));
+		const uniquePaths = new Set(DANIELA_ASSET_SPECS.map((spec) => spec.relativePath));
 		for (const relativePath of uniquePaths) {
 			expect(fs.existsSync(path.join(assetDir, relativePath))).toBe(true);
 		}
 	});
 
 	it('builds schema-valid published content with OD2 structural contracts', () => {
-		const content = buildPerlaPublishedContent(buildTestAssets());
+		const content = buildDanielaPublishedContent(buildTestAssets());
 		const result = eventContentSchema.safeParse(content);
 		expect(result.success).toBe(true);
 		if (!result.success) {
@@ -123,14 +123,32 @@ describe('Boda Perla y Carlos provision contract', () => {
 			'location',
 			'family',
 			'gallery',
+			'gifts',
 			'personalizedAccess',
 			'rsvp',
 			'thankYou',
 		]);
 		expect(content).toHaveProperty('family');
-		expect(content).not.toHaveProperty('gifts');
+		expect(content).toHaveProperty('gifts');
 		expect(content).not.toHaveProperty('music');
 		expect(content).not.toHaveProperty('itinerary');
+
+		const gifts = content.gifts as {
+			title?: string;
+			items?: Array<{ type: string; title: string; url?: string; text?: string }>;
+		};
+		expect(gifts.title).toBe('Mesa de regalos');
+		expect(gifts.items).toEqual([
+			expect.objectContaining({
+				type: 'store',
+				title: 'Amazon',
+				url: 'https://www.amazon.com.mx/wedding/guest-view/30EX58RGSIPUM',
+			}),
+			expect.objectContaining({
+				type: 'cash',
+				title: 'Lluvia de sobres',
+			}),
+		]);
 
 		const interludes = content.interludes as Array<{
 			afterSection: string;
@@ -142,7 +160,7 @@ describe('Boda Perla y Carlos provision contract', () => {
 		expect(interludes).toHaveLength(2);
 		expect(interludes.map((interlude) => interlude.afterSection)).toEqual([
 			'countdown',
-			'gallery',
+			'gifts',
 		]);
 		expect(interludes).toEqual([
 			expect.objectContaining({
@@ -152,7 +170,7 @@ describe('Boda Perla y Carlos provision contract', () => {
 				focalPoint: '50% 50%',
 			}),
 			expect.objectContaining({
-				afterSection: 'gallery',
+				afterSection: 'gifts',
 				alt: 'Mesa de recepción con flores blancas y luces cálidas',
 				height: 'screen',
 				focalPoint: '50% 58%',
@@ -160,7 +178,7 @@ describe('Boda Perla y Carlos provision contract', () => {
 		]);
 
 		const viewModel = adaptEvent({
-			id: 'events/boda-perla-y-carlos',
+			id: 'events/daniela-y-martin',
 			data: content,
 		} as Parameters<typeof adaptEvent>[0]);
 		const renderPlan = buildInvitationRenderPlan(viewModel);
@@ -174,6 +192,7 @@ describe('Boda Perla y Carlos provision contract', () => {
 			'location',
 			'family',
 			'gallery',
+			'gifts',
 			'interlude',
 			'personalized-access',
 			'rsvp',
@@ -187,12 +206,12 @@ describe('Boda Perla y Carlos provision contract', () => {
 			intersection: { family: 'arch', source: 'countdown' },
 		});
 		expect(
-			renderPlan.find((item) => item.type === 'interlude' && item.afterSection === 'gallery'),
+			renderPlan.find((item) => item.type === 'interlude' && item.afterSection === 'gifts'),
 		).toMatchObject({
-			intersection: { family: 'atmospheric-blend', source: 'gallery' },
+			intersection: { family: 'atmospheric-blend', source: 'gifts' },
 		});
 		expect(renderPlan.find((item) => item.type === 'personalized-access')).toMatchObject({
-			intersection: { family: 'overlap', source: 'interlude-after-gallery' },
+			intersection: { family: 'overlap', source: 'interlude-after-gifts' },
 		});
 
 		const envelope = content.envelope as {
@@ -202,7 +221,7 @@ describe('Boda Perla y Carlos provision contract', () => {
 		};
 		expect(envelope.microcopy).toBe('');
 		expect(envelope.tooltipText).toBe('Toque el sello');
-		expect(envelope.envelopeName).toBe('Perla & Carlos');
+		expect(envelope.envelopeName).toBe('Daniela & Martín');
 
 		const location = content.location as {
 			venues?: Array<{
@@ -246,13 +265,17 @@ describe('Boda Perla y Carlos provision contract', () => {
 		expect(family.presentation).toBe('text-only');
 		expect(family.labels?.sectionSubtitle).toBe('Familia');
 		expect(family.groups).toHaveLength(2);
-		expect(family.groups?.[0]?.title).toBe('Padres de la Novia');
-		expect(family.groups?.[1]?.title).toBe('Padres del Novio');
-		expect(
-			family.groups?.every((group) =>
-				group.items.every((item) => item.name === 'Por confirmar'),
-			),
-		).toBe(true);
+		expect(family.groups?.[0]).toMatchObject({
+			title: 'Padres de la Novia',
+			items: [
+				{ name: 'Laura Carrillo Morales', role: 'Madre' },
+				{ name: 'Pilar Medina Martínez', role: 'Padre' },
+			],
+		});
+		expect(family.groups?.[1]).toMatchObject({
+			title: 'Padres del Novio',
+			items: [{ name: 'María de Jesús Felipe Redondo', role: 'Madre' }],
+		});
 
 		const gallery = content.gallery as {
 			items: unknown[];
@@ -276,19 +299,22 @@ describe('Boda Perla y Carlos provision contract', () => {
 			date?: string;
 		};
 		expect(thankYou.image).toBeUndefined();
-		expect(thankYou.closingName).toBe('Perla & Carlos');
+		expect(thankYou.closingName).toBe('Daniela & Martín');
 		expect(thankYou.date).toBe('28 de noviembre de 2026');
 
 		const serialized = JSON.stringify(content);
 		expect(serialized).not.toMatch(/\[\[PENDIENTE:/);
-		expect(serialized).toMatch(/Por confirmar/);
+		expect(serialized).not.toMatch(/Por confirmar/);
+		expect(serialized).not.toMatch(
+			/boda-perla-y-carlos|boda-daniela-y-martin|perla_medina|Perla & Carlos|Perla y Carlos/,
+		);
 		expect(serialized).not.toMatch(/hero-mobile-source/);
 	});
 
 	it('enforces the two-action map contract end-to-end', () => {
 		// Payload declares the opt-out explicitly so the live row stays
 		// in lockstep with the canonical source.
-		const published = buildPerlaPublishedContent(buildTestAssets());
+		const published = buildDanielaPublishedContent(buildTestAssets());
 		const publishedSectionStyles = published.sectionStyles as
 			{ location?: { showNavigationButtons?: boolean } } | undefined;
 		expect(publishedSectionStyles?.location?.showNavigationButtons).toBe(false);
@@ -296,35 +322,10 @@ describe('Boda Perla y Carlos provision contract', () => {
 		// The adapter must surface the opt-out on the section data the
 		// render plan and EventLocation consume.
 		const viewModel = adaptEvent({
-			id: 'events/boda-perla-y-carlos',
+			id: 'events/daniela-y-martin',
 			data: published,
 		} as unknown as Parameters<typeof adaptEvent>[0]);
 		expect(viewModel.sections.location?.showNavigationButtons).toBe(false);
-
-		// Venue names, times, addresses, and canonical map URLs are
-		// unchanged. The refinement is a presentation-only change.
-		const venues = (
-			published.location as {
-				venues: Array<{
-					venueName: string;
-					time: string;
-					address: string;
-					googleMapsUrl: string;
-				}>;
-			}
-		).venues;
-		expect(venues).toHaveLength(2);
-		expect(venues[0]).toMatchObject({
-			venueName: 'Catedral de Cristo Rey',
-			time: '5:30 p. m.',
-			googleMapsUrl: expect.stringContaining('maps.app.goo.gl'),
-		});
-		expect(venues[1]).toMatchObject({
-			venueName: 'Salón El Pedregal',
-			time: '7:30 p. m.',
-			googleMapsUrl: expect.stringContaining('maps.app.goo.gl'),
-		});
-		expect(venues[0].googleMapsUrl).not.toBe(venues[1].googleMapsUrl);
 	});
 
 	it('keeps provider navigation enabled for the existing wedding control invitation', () => {

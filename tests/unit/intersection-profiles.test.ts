@@ -80,46 +80,50 @@ describe('invitation intersection profiles', () => {
 		});
 	});
 
-	it('maps Perla y Carlos arch, interlude bridges, and PA overlap', () => {
-		expect(resolveRenderPlanIntersection('boda-perla-y-carlos', 'quote')).toEqual({
+	it('maps Daniela y Martín arch, interlude bridges, and PA overlap', () => {
+		expect(resolveRenderPlanIntersection('daniela-y-martin', 'quote')).toEqual({
 			family: 'atmospheric-blend',
 			source: 'hero',
 		});
-		expect(resolveRenderPlanIntersection('boda-perla-y-carlos', 'countdown')).toEqual({
+		expect(resolveRenderPlanIntersection('daniela-y-martin', 'countdown')).toEqual({
 			family: 'atmospheric-blend',
 			source: 'quote',
 		});
 		expect(
-			resolveRenderPlanIntersection('boda-perla-y-carlos', 'interlude-after-countdown'),
+			resolveRenderPlanIntersection('daniela-y-martin', 'interlude-after-countdown'),
 		).toEqual({
 			family: 'arch',
 			source: 'countdown',
 		});
-		expect(resolveRenderPlanIntersection('boda-perla-y-carlos', 'location')).toEqual({
+		expect(resolveRenderPlanIntersection('daniela-y-martin', 'location')).toEqual({
 			family: 'atmospheric-blend',
 			source: 'interlude-after-countdown',
 		});
-		expect(resolveRenderPlanIntersection('boda-perla-y-carlos', 'family')).toEqual({
+		expect(resolveRenderPlanIntersection('daniela-y-martin', 'family')).toEqual({
 			family: 'atmospheric-blend',
 			source: 'location',
 		});
-		expect(resolveRenderPlanIntersection('boda-perla-y-carlos', 'gallery')).toEqual({
+		expect(resolveRenderPlanIntersection('daniela-y-martin', 'gallery')).toEqual({
 			family: 'atmospheric-blend',
 			source: 'family',
 		});
-		expect(
-			resolveRenderPlanIntersection('boda-perla-y-carlos', 'interlude-after-gallery'),
-		).toEqual({
+		expect(resolveRenderPlanIntersection('daniela-y-martin', 'gifts')).toEqual({
 			family: 'atmospheric-blend',
 			source: 'gallery',
 		});
-		expect(resolveRenderPlanIntersection('boda-perla-y-carlos', 'personalized-access')).toEqual(
+		expect(
+			resolveRenderPlanIntersection('daniela-y-martin', 'interlude-after-gifts'),
+		).toEqual({
+			family: 'atmospheric-blend',
+			source: 'gifts',
+		});
+		expect(resolveRenderPlanIntersection('daniela-y-martin', 'personalized-access')).toEqual(
 			{
 				family: 'overlap',
-				source: 'interlude-after-gallery',
+				source: 'interlude-after-gifts',
 			},
 		);
-		expect(resolveRenderPlanIntersection('boda-perla-y-carlos', 'thankYou')).toEqual({
+		expect(resolveRenderPlanIntersection('daniela-y-martin', 'thankYou')).toEqual({
 			family: 'atmospheric-blend',
 			source: 'rsvp',
 		});
