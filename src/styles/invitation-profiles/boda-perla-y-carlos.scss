@@ -64,7 +64,6 @@
 	--location-outer-frame-shadow: none;
 	--location-inner-frame-bg: var(--perla-cream);
 	--location-inner-frame-padding: 0;
-	--location-card-shadow: 0 10px 28px rgb(var(--perla-olive-rgb) / 10%);
 	--location-card-padding: clamp(1.35rem, 3.5vw, 1.85rem) clamp(1.1rem, 3vw, 1.6rem);
 	--location-padding-block: var(--perla-location-padding-block);
 	--location-date-white-space: normal;
@@ -232,27 +231,89 @@
 	}
 
 	// -------------------------------------------------------------------------
-	// Hero — immersive photo; names lead; hide until reveal completes
+	// Hero — single visual source of truth.
+	// Profile-specific overrides consolidated into one `.invitation-hero` block.
+	// Group 1: eyebrow + names. Group 2: divider + event details. Group 3: scroll.
+	// SCSS nesting gives every per-element selector a specificity of 0,0,2,0
+	// inside the event scope, which reliably overrides the shared `_hero.scss`
+	// defaults without `!important`. State-specific motion-gate behaviour is
+	// kept in the dedicated `[data-reveal-state='…']` selectors below.
 	// -------------------------------------------------------------------------
 	.invitation-hero {
+		// Single left axis shared by every hero surface.
+		--perla-hero-axis-x: clamp(1rem, 5.4vw, 2.4rem);
+		--perla-hero-group-gap: clamp(1.15rem, 3vw, 1.85rem);
+
+		// Neutral, locally-fading overlay. Concentrated around the text column
+		// on the left; the right two thirds of the photograph stay free of
+		// overlay so skin tones, garment detail, and depth read naturally.
+		// No flat wash, no visible vertical split, no olive tint.
+		--hero-overlay: transparent;
+		--hero-overlay-gradient:
+			linear-gradient(
+				90deg,
+				rgb(0 0 0 / 44%) 0%,
+				rgb(0 0 0 / 30%) 14%,
+				rgb(0 0 0 / 16%) 32%,
+				rgb(0 0 0 / 0%) 50%
+			),
+			radial-gradient(ellipse 70% 50% at 28% 100%, rgb(0 0 0 / 22%) 0%, rgb(0 0 0 / 0%) 55%);
 		--hero-badge-text: var(--perla-cream);
 
-		.invitation-hero__label {
-			font-family: var(--font-body);
-			color: rgb(var(--perla-cream-rgb) / 92%);
-			text-shadow: 0 1px 12px rgb(var(--perla-olive-deep-rgb) / 35%);
+		&__background::after {
+			background: var(--hero-overlay-gradient);
 		}
 
-		.invitation-hero__title {
-			font-family: var(--font-display);
-			font-size: clamp(2.35rem, 9vw, 4.15rem);
-			line-height: 1.05;
+		&__content {
+			align-items: flex-start;
+			width: min(88vw, 30rem);
 
-			// Solid cream names — kill shared gradient/specular clip that can leave
-			// desktop titles invisible when background-position is off-glyph.
+			// Lower-middle vertical region on tall mobile, lower region on
+			// short mobile. The two padding-block clamps share the axis so
+			// the content never gets pinned to the bottom edge nor floats
+			// detached from the subjects in the lower half.
+			margin-inline: var(--perla-hero-axis-x) auto;
+			padding-inline: 0;
+			padding-block: clamp(1.5rem, 18vh, 5.5rem) clamp(5.5rem, 12vh, 7.5rem);
+			text-align: left;
+			gap: var(--perla-hero-group-gap);
+		}
+
+		// -----------------------------------------------------------------
+		// Group 1 — identity (eyebrow + names)
+		// -----------------------------------------------------------------
+		&__label {
+			margin: 0;
+			font-family: var(--font-body);
+			font-size: clamp(0.66rem, 2vw, 0.78rem);
+			font-weight: 500;
+			letter-spacing: 0.3em;
+			text-transform: uppercase;
+			color: rgb(var(--perla-cream-rgb) / 92%);
+			text-shadow: 0 1px 10px rgb(0 0 0 / 45%);
+		}
+
+		&__title-wrapper {
+			max-width: 22rem;
+			margin-inline: 0;
+		}
+
+		&__title {
+			font-family: var(--font-display);
+			font-size: clamp(2.85rem, 10.2vw, 4.85rem);
+			font-weight: 500;
+			line-height: 0.94;
+			letter-spacing: -0.02em;
+			text-wrap: balance;
+			color: var(--perla-cream);
+			-webkit-text-fill-color: var(--perla-cream);
+
+			// Solid cream names — kill shared gradient/specular clip that can
+			// leave desktop titles invisible when background-position is off-glyph.
 			background: none;
 			background-clip: border-box;
 			-webkit-text-stroke: 0;
+			text-shadow: 0 2px 18px rgb(0 0 0 / 40%);
 			animation: none;
 
 			@media (prefers-reduced-motion: no-preference) {
@@ -261,41 +322,237 @@
 			}
 		}
 
-		.invitation-hero__title,
-		.invitation-hero__secondary-name,
-		.invitation-hero__ampersand {
-			-webkit-text-fill-color: var(--perla-cream);
+		// Perla locks the title to the same cream treatment across all BEM parts.
+		&__title,
+		&__secondary-name,
+		&__ampersand {
 			color: var(--perla-cream);
-			text-shadow: 0 2px 18px rgb(var(--perla-olive-deep-rgb) / 40%);
+			-webkit-text-fill-color: var(--perla-cream);
 		}
 
-		// Intentional spacing: "Perla & Carlos" (markup has no whitespace between & and name)
-		.invitation-hero__ampersand {
+		&__title-line,
+		&__secondary-name {
+			display: inline-block;
+		}
+
+		// Intentional spacing: "Perla & Carlos" (markup has no whitespace between
+		// "&" and the next name).
+		&__ampersand {
 			display: inline-block;
 			margin-inline: 0.18em 0.28em;
+			font-family: var(--font-display);
 			font-weight: 300;
+			opacity: 82%;
 		}
 
-		.invitation-hero__secondary-name {
-			display: inline-block;
-		}
-
-		.invitation-hero__details {
+		&__nickname-badge {
 			font-family: var(--font-body);
-			color: rgb(var(--perla-cream-rgb) / 94%);
-			text-shadow: 0 1px 10px rgb(var(--perla-olive-deep-rgb) / 45%);
+			font-size: clamp(0.7rem, 2.2vw, 0.82rem);
+			letter-spacing: 0.22em;
+			text-transform: uppercase;
+			color: rgb(var(--perla-cream-rgb) / 78%);
 		}
 
-		.invitation-hero__venue {
-			.calligraphy-accent {
-				font-family: var(--font-calligraphy);
+		// -----------------------------------------------------------------
+		// Group 2 — event details (divider + date + time + venue)
+		// Compact, one cohesive secondary block under the names.
+		// -----------------------------------------------------------------
+		&__divider {
+			width: 3.5rem;
+			height: 1px;
+			margin-block: 0;
+			margin-inline: 0;
+			background: linear-gradient(
+				90deg,
+				rgb(var(--perla-cream-rgb) / 80%) 0%,
+				rgb(var(--perla-cream-rgb) / 0%) 100%
+			);
+			opacity: 80%;
+		}
+
+		&__details {
+			align-items: flex-start;
+			gap: 0.18rem;
+			font-size: 0.9rem;
+			text-align: left;
+			max-width: 22rem;
+		}
+
+		&__date {
+			font-family: var(--font-display);
+			font-size: clamp(0.95rem, 3vw, 1.12rem);
+			font-weight: 500;
+			line-height: 1.2;
+			letter-spacing: 0.04em;
+			color: var(--perla-cream);
+			text-shadow: 0 1px 12px rgb(0 0 0 / 45%);
+		}
+
+		&__time {
+			font-family: var(--font-body);
+			font-size: clamp(0.84rem, 2.4vw, 0.94rem);
+			font-weight: 500;
+			line-height: 1.4;
+			letter-spacing: 0.1em;
+			color: rgb(var(--perla-cream-rgb) / 88%);
+			text-shadow: 0 1px 10px rgb(0 0 0 / 40%);
+		}
+
+		&__venue {
+			display: block;
+			max-width: 24rem;
+
+			// No extra top margin: the gap from the previous line is set
+			// by `__details { gap: … }`, so the venue sits naturally under
+			// the time without an artificial extra space.
+			margin-top: 0;
+			font-family: var(--font-body);
+			font-size: clamp(0.88rem, 2.8vw, 1rem);
+			font-weight: 400;
+			font-style: normal;
+			line-height: 1.35;
+			letter-spacing: 0.01em;
+			color: rgb(var(--perla-cream-rgb) / 94%);
+			text-shadow: 0 1px 10px rgb(0 0 0 / 42%);
+			text-wrap: balance;
+
+			// "en" is a normal preposition, same role and rhythm as the rest
+			// of the line, so the venue reads as one continuous phrase
+			// ("en Catedral de Cristo Rey"). No trailing margin on the span:
+			// the natural whitespace from the JSX is the only gap between
+			// "en" and "Catedral de Cristo Rey". Specificity 0,0,4,0
+			// (event + theme + venue + span) beats the global
+			// `.calligraphy-accent` (0,0,1,0) and any nested per-profile
+			// attempts to italicise it.
+			span.calligraphy-accent {
+				display: inline;
+				margin-inline-end: 0;
+				font-family: inherit;
+				font-style: normal;
+				font-weight: inherit;
+				font-size: inherit;
+				letter-spacing: inherit;
+				color: inherit;
+				text-transform: none;
 			}
 		}
 
-		.invitation-hero__scroll-text {
+		// -----------------------------------------------------------------
+		// Group 3 — interaction cue (DESLIZA)
+		// Horizontally centered relative to the hero viewport. Visually
+		// independent from the left-aligned content column; safe-area aware.
+		// The label and chevron render as one centered unit (column flex
+		// with `align-items: center`).
+		// -----------------------------------------------------------------
+		&__scroll-indicator {
+			position: absolute;
+			left: 50%;
+			right: auto;
+			bottom: max(1.1rem, env(safe-area-inset-bottom));
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 0.35rem;
+
+			// Centering the unit: the column's own width is `max-content`,
+			// so `translateX(-50%)` puts the geometric centre at `left: 50%`.
+			// We also need to neutralise the shared `motion-fade-in` translateY
+			// (which would otherwise shift the indicator downward during the
+			// entrance and break the centred position).
+			transform: translateX(-50%);
+			transform-origin: center;
+
+			// No shared fade-in; reveal state gates visibility, not entrance.
+			animation: none;
+			color: rgb(var(--perla-cream-rgb) / 78%);
+		}
+
+		&__scroll-text {
 			font-family: var(--font-body);
-			letter-spacing: 0.18em;
-			font-size: 0.72rem;
+			letter-spacing: 0.28em;
+			font-size: 0.68rem;
+			font-weight: 500;
+			text-transform: uppercase;
+			opacity: 100%;
+			text-align: center;
+		}
+
+		&__scroll-chevron {
+			width: 20px;
+			height: 20px;
+			opacity: 78%;
+
+			// The bounce-down translateY applies to the chevron, not the
+			// indicator, so the horizontal centering stays intact.
+			animation: invitation-bounce-down 2s infinite;
+		}
+
+		// -----------------------------------------------------------------
+		// Responsive rhythm — uses the project's existing mixin breakpoints
+		// (xs=480, sm=640, md=768, lg=992, xl=1200). Every range gets a
+		// deliberate adjustment; no raw media queries or hardcoded widths.
+		// -----------------------------------------------------------------
+
+		// Shortest mobile layouts (xs and below): tighter axis and
+		// reduced bottom padding so the scroll indicator never collides
+		// with the safe-area inset. The reduced padding-block-start keeps
+		// the content from floating in a void between the subjects and
+		// the eyebrow on very short viewports.
+		@include mixins.respond-below(sm) {
+			--perla-hero-axis-x: clamp(0.95rem, 5.4vw, 1.25rem);
+			--perla-hero-group-gap: clamp(0.85rem, 2.4vw, 1.25rem);
+
+			&__content {
+				width: min(90vw, 24rem);
+				padding-block: clamp(1rem, 10vh, 2.5rem) clamp(4rem, 9vh, 5.25rem);
+			}
+
+			&__title {
+				font-size: clamp(2.5rem, 9.2vw, 3.1rem);
+			}
+		}
+
+		// Wide mobile / phablet: relax the axis slightly.
+		@include mixins.respond-to(sm) {
+			--perla-hero-axis-x: clamp(1.5rem, 5.4vw, 2.25rem);
+		}
+
+		// Tablet: widen the axis, the content column, and let the
+		// overlay taper a touch more.
+		@include mixins.respond-to(md) {
+			--perla-hero-axis-x: clamp(2.5rem, 6.5vw, 4.5rem);
+
+			&__content {
+				width: min(60vw, 32rem);
+				padding-block-end: clamp(5rem, 11vh, 7rem);
+			}
+
+			&__details {
+				max-width: 24rem;
+			}
+		}
+
+		// Desktop: full editorial axis. Content stays compact (we keep
+		// the text column restrained, the photo is the canvas).
+		@include mixins.respond-to(lg) {
+			--perla-hero-axis-x: clamp(3.5rem, 7.5vw, 6.5rem);
+			--perla-hero-group-gap: clamp(1.6rem, 3.2vw, 2.1rem);
+
+			&__content {
+				width: min(38vw, 30rem);
+				padding-block-end: clamp(5.5rem, 11vh, 7.5rem);
+			}
+
+			&__title {
+				font-size: clamp(3rem, 5.6vw, 4.5rem);
+			}
+		}
+
+		// Wide desktop: gentle cap, the text column never runs away.
+		@include mixins.respond-to(xl) {
+			&__content {
+				width: min(34vw, 30rem);
+			}
 		}
 	}
 
@@ -327,6 +584,13 @@
 		opacity: 78%;
 		visibility: visible;
 		pointer-events: auto;
+
+		// Force the shared `motion-fade-in` translateY out and re-apply the
+		// centred translateX here. Specificity (5 class) beats the global
+		// (2 class) so this rule is the final say on the indicator's
+		// transform and animation once the reveal completes.
+		transform: translateX(-50%);
+		animation: none;
 	}
 
 	// -------------------------------------------------------------------------
@@ -442,19 +706,219 @@
 
 		.event-location__card-content-place {
 			font-family: var(--font-display);
-		}
-
-		.event-location__card-content-date,
-		.event-location__card-content-hour,
-		.event-location__card-content-address,
-		.event-location__nav-button {
-			font-family: var(--font-body);
+			font-size: clamp(1.4rem, 3.6vw, 1.8rem);
+			line-height: 1.15;
+			color: var(--perla-olive-deep);
+			margin: 0 0 0.15rem;
 		}
 
 		.event-location__card-content-date {
+			font-family: var(--font-body);
+			font-size: 0.72rem;
+			font-weight: 500;
+			letter-spacing: 0.16em;
+			text-transform: uppercase;
+			color: rgb(var(--perla-ink-rgb) / 60%);
 			white-space: normal;
 			overflow-wrap: break-word;
 			text-wrap: balance;
+			margin-bottom: 0.4rem;
+		}
+
+		// Time renders naturally ("5:30 p. m.") — display serif, no
+		// uppercase and no artificial character spacing.
+		.event-location__card-content-hour {
+			font-family: var(--font-display);
+			font-size: clamp(1.2rem, 3.1vw, 1.55rem);
+			font-weight: 400;
+			line-height: 1.25;
+			letter-spacing: 0;
+			text-transform: none;
+			color: var(--perla-olive);
+			margin-block: 0.1rem 0.65rem;
+		}
+
+		// Card — restrained surface; gold hairline accent replaces the
+		// template-like full border + weak shadow + outlined footer
+		// button combination. Both ceremony and reception cards share
+		// the same proportions and grid.
+		.event-location__card {
+			background: var(--location-card-bg);
+			border: var(--location-card-border);
+			border-radius: var(--location-card-radius);
+			box-shadow: var(--location-card-shadow);
+			overflow: hidden;
+		}
+
+		.event-location__card-content {
+			padding: clamp(1.35rem, 3.2vw, 1.85rem) clamp(1.1rem, 3vw, 1.6rem);
+			gap: 0.25rem;
+		}
+
+		.event-location__card-content-list {
+			margin-bottom: 0;
+		}
+
+		.event-location__card-content-address {
+			font-family: var(--font-body);
+			font-size: 0.88rem;
+			color: rgb(var(--perla-ink-rgb) / 82%);
+			padding-top: 0.6rem;
+			border-top: 1px solid rgb(var(--perla-gold-rgb) / 22%);
+			margin-top: 0.6rem;
+		}
+
+		// Copy button — subdued inline icon, gold accent, no chrome.
+		.event-location__card-content-copy-button {
+			color: var(--perla-gold);
+			opacity: 70%;
+
+			&:hover,
+			&:focus-visible {
+				opacity: 100%;
+				color: var(--perla-olive-deep);
+				background: rgb(var(--perla-gold-rgb) / 10%);
+			}
+
+			&.copy-success {
+				color: var(--perla-olive-deep);
+				background: rgb(var(--perla-gold-rgb) / 14%);
+			}
+		}
+
+		// Map preview — full-width plate, two venue-specific
+		// compositions (ceremony = sanctuary silhouette,
+		// reception = hall silhouette). Sole primary map link.
+		.event-location__card-map-preview {
+			background: linear-gradient(
+				180deg,
+				rgb(var(--perla-beige-rgb) / 60%) 0%,
+				rgb(var(--perla-cream-rgb) / 100%) 100%
+			);
+		}
+
+		.event-location__card-map-preview--link {
+			display: grid;
+			grid-template-columns: 1fr;
+			grid-template-rows: minmax(8rem, 18vw) auto;
+			width: 100%;
+			border: 0;
+			color: inherit;
+			text-decoration: none;
+			isolation: isolate;
+
+			&:hover .event-location__card-map-preview-pin,
+			&:focus-visible .event-location__card-map-preview-pin {
+				transform: translate(-50%, -50%) scale(1.05);
+			}
+
+			&:focus-visible {
+				outline: 2px solid var(--perla-gold);
+				outline-offset: 3px;
+			}
+		}
+
+		.event-location__card-map-preview-art {
+			min-height: 0;
+			overflow: hidden;
+			background: linear-gradient(
+				180deg,
+				rgb(var(--perla-cream-rgb) / 100%) 0%,
+				rgb(var(--perla-beige-rgb) / 70%) 100%
+			);
+		}
+
+		.event-location__card-map-preview--link .event-location__card-map-preview-grid {
+			inset: 0;
+			transform: none;
+			opacity: 46%;
+		}
+
+		.event-location__card-map-preview-artwork {
+			position: absolute;
+			inset: 8% 8% 4%;
+			z-index: 1;
+			width: 84%;
+			height: 88%;
+			overflow: visible;
+			color: var(--perla-olive-deep);
+		}
+
+		.event-location__card-map-preview-artwork-silhouette {
+			fill: currentcolor;
+			opacity: 58%;
+		}
+
+		.event-location__card-map-preview-artwork-detail {
+			fill: var(--perla-cream);
+			opacity: 92%;
+		}
+
+		.event-location__card-map-preview-artwork-cross {
+			fill: var(--perla-olive-deep);
+			opacity: 78%;
+		}
+
+		.event-location__card-map-preview-artwork-horizon {
+			fill: none;
+			stroke: var(--perla-gold);
+			stroke-width: 1.5;
+			opacity: 52%;
+		}
+
+		.event-location__card-map-preview-pin {
+			width: 2.65rem;
+			height: 2.65rem;
+			background: var(--perla-cream);
+			color: var(--perla-olive-deep);
+			border-color: var(--perla-gold);
+			box-shadow:
+				0 8px 16px rgb(var(--perla-olive-rgb) / 18%),
+				inset 0 0 0 2px rgb(var(--perla-cream-rgb) / 100%);
+		}
+
+		// Pin sits on the silhouette (cathedral doorway / salón entrance),
+		// not dead-center where it would block the spire.
+		.event-location__card--ceremony .event-location__card-map-preview-pin {
+			top: 74%;
+			left: 50%;
+			z-index: 2;
+		}
+
+		.event-location__card--reception .event-location__card-map-preview-pin {
+			top: 78%;
+			left: 50%;
+			z-index: 2;
+		}
+
+		.event-location__card-map-preview-foot {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 0.6rem;
+			padding: 0.95rem 1.1rem;
+			border-top: 1px solid rgb(var(--perla-gold-rgb) / 22%);
+			color: var(--perla-olive);
+			letter-spacing: 0.2em;
+			transition: color var(--duration-fast) var(--ease-standard);
+
+			svg {
+				width: 14px;
+				height: 14px;
+			}
+		}
+
+		.event-location__card-map-preview-foot .event-location__card-map-preview-label {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.4rem;
+		}
+
+		.event-location__card--ceremony:hover .event-location__card-map-preview-foot,
+		.event-location__card--reception:hover .event-location__card-map-preview-foot,
+		.event-location__card--ceremony:focus-within .event-location__card-map-preview-foot,
+		.event-location__card--reception:focus-within .event-location__card-map-preview-foot {
+			color: var(--perla-olive-deep);
 		}
 
 		.event-location__indications {
@@ -482,6 +946,37 @@
 
 			.event-location__indication-text {
 				font-weight: 500;
+			}
+		}
+
+		// Responsive — use existing project mixins; no hardcoded widths.
+		@include mixins.respond-to(md) {
+			.event-location__card-content {
+				padding: clamp(1.55rem, 3.4vw, 2rem) clamp(1.4rem, 3.4vw, 1.85rem);
+			}
+
+			.event-location__card-map-preview-art {
+				min-height: clamp(7.5rem, 12vw, 11rem);
+			}
+		}
+
+		@include mixins.respond-below(xs) {
+			.event-location__card-content-place {
+				font-size: 1.3rem;
+			}
+
+			.event-location__card-content-hour {
+				font-size: 1.1rem;
+			}
+
+			.event-location__card-content-address {
+				flex-direction: row;
+				align-items: flex-start;
+				gap: 0.4rem;
+			}
+
+			.event-location__card-content-copy-button {
+				padding: 0.35rem;
 			}
 		}
 	}
@@ -1056,169 +1551,6 @@
 		}
 	}
 
-	// Hero: photograph-safe lockup — label → names → date → time → venue → cue.
-	:where(.invitation-hero) {
-		--hero-overlay: rgb(var(--perla-olive-deep-rgb) / 16%);
-		--hero-overlay-gradient: linear-gradient(
-			180deg,
-			rgb(var(--perla-olive-deep-rgb) / 28%) 0%,
-			rgb(var(--perla-olive-deep-rgb) / 8%) 24%,
-			transparent 40%,
-			rgb(var(--perla-olive-deep-rgb) / 34%) 62%,
-			rgb(var(--perla-olive-deep-rgb) / 74%) 100%
-		);
-
-		:where(.invitation-hero__background)::after {
-			background:
-				linear-gradient(
-					105deg,
-					rgb(var(--perla-olive-deep-rgb) / 22%) 0%,
-					transparent 40%,
-					transparent 55%,
-					rgb(var(--perla-olive-deep-rgb) / 14%) 100%
-				),
-				var(--hero-overlay-gradient);
-		}
-
-		:where(.invitation-hero__content) {
-			align-items: flex-start;
-			width: min(88vw, 34rem);
-			margin-inline: clamp(1.1rem, 6vw, 4.5rem) auto;
-			padding-inline: clamp(0.85rem, 3vw, 1.35rem);
-			padding-block: 0 clamp(6.4rem, 15vh, 9rem);
-			text-align: left;
-		}
-
-		:where(.invitation-hero__label) {
-			margin-bottom: 0.7rem;
-			font-family: var(--font-body);
-			font-size: clamp(0.68rem, 2.1vw, 0.8rem);
-			font-weight: 500;
-			letter-spacing: 0.28em;
-			text-transform: uppercase;
-			color: rgb(var(--perla-cream-rgb) / 92%);
-			text-shadow: 0 1px 10px rgb(var(--perla-olive-deep-rgb) / 45%);
-		}
-
-		:where(.invitation-hero__title-wrapper) {
-			max-width: 22rem;
-			margin-inline: 0;
-		}
-
-		:where(.invitation-hero__title) {
-			font-family: var(--font-display);
-			font-size: clamp(2.55rem, 9.2vw, 4.15rem);
-			font-weight: 500;
-			line-height: 0.96;
-			letter-spacing: -0.02em;
-			text-wrap: balance;
-		}
-
-		:where(.invitation-hero__title-line),
-		:where(.invitation-hero__secondary-name) {
-			display: inline-block;
-		}
-
-		:where(.invitation-hero__ampersand) {
-			font-family: var(--font-display);
-			font-weight: 400;
-			opacity: 82%;
-		}
-
-		:where(.invitation-hero__divider) {
-			width: 4.25rem;
-			margin-block: 0.95rem 0.85rem;
-			margin-inline: 0;
-			background: linear-gradient(
-				90deg,
-				rgb(var(--perla-cream-rgb) / 78%),
-				rgb(var(--perla-cream-rgb) / 18%)
-			);
-		}
-
-		:where(.invitation-hero__details) {
-			align-items: flex-start;
-			gap: 0.28rem;
-			font-size: 0.92rem;
-			text-align: left;
-		}
-
-		:where(.invitation-hero__date) {
-			font-family: var(--font-display);
-			font-size: clamp(1.05rem, 3.6vw, 1.28rem);
-			font-weight: 500;
-			letter-spacing: 0.04em;
-			color: var(--perla-cream);
-		}
-
-		:where(.invitation-hero__time) {
-			font-family: var(--font-body);
-			font-size: 0.86rem;
-			font-weight: 500;
-			letter-spacing: 0.1em;
-			color: rgb(var(--perla-cream-rgb) / 88%);
-		}
-
-		:where(.invitation-hero__venue) {
-			display: block;
-			max-width: 28rem;
-			margin-top: 0.55rem;
-			font-family: var(--font-body);
-			font-size: clamp(0.92rem, 3.4vw, 1.12rem);
-			font-weight: 400;
-			font-style: normal;
-			line-height: 1.35;
-			letter-spacing: 0.01em;
-			color: rgb(var(--perla-cream-rgb) / 96%);
-			text-shadow: 0 1px 12px rgb(var(--perla-olive-deep-rgb) / 55%);
-			text-wrap: balance;
-
-			:where(.calligraphy-accent),
-			span.calligraphy-accent {
-				display: inline;
-				margin-inline-end: 0.28em;
-				font-family: var(--font-body);
-				font-style: italic;
-				font-weight: 500;
-				font-size: 0.95em;
-				letter-spacing: 0.02em;
-				color: rgb(var(--perla-cream-rgb) / 90%);
-			}
-		}
-
-		:where(.invitation-hero__date),
-		:where(.invitation-hero__time) {
-			text-shadow: 0 1px 12px rgb(var(--perla-olive-deep-rgb) / 55%);
-		}
-
-		:where(.invitation-hero__scroll-indicator) {
-			right: auto;
-			left: clamp(1.1rem, 6vw, 4.5rem);
-			bottom: max(1.05rem, env(safe-area-inset-bottom));
-			align-items: flex-start;
-			gap: 0.3rem;
-			transform: none;
-		}
-
-		:where(.invitation-hero__scroll-text) {
-			letter-spacing: 0.2em;
-			font-size: 0.66rem;
-			opacity: 86%;
-		}
-
-		@include mixins.respond-to(md) {
-			:where(.invitation-hero__content) {
-				width: min(42vw, 34rem);
-				margin-inline: clamp(3rem, 8vw, 7rem) auto;
-				padding-block-end: clamp(6.5rem, 12vh, 8.5rem);
-			}
-
-			:where(.invitation-hero__scroll-indicator) {
-				left: clamp(3rem, 8vw, 7rem);
-			}
-		}
-	}
-
 	// Quote and countdown: editorial pause, not a sequence of widgets.
 	:where(.quote-section) {
 		--quote-padding-block: clamp(3rem, 7vw, 5rem);
@@ -1344,11 +1676,11 @@
 		--location-container-max-width: 56rem;
 		--location-card-max-width: 26rem;
 		--location-gap: var(--perla-location-card-gap);
-		--location-card-bg: rgb(var(--perla-ivory-rgb) / 74%);
-		--location-card-border: 1px solid rgb(var(--perla-gold-rgb) / 26%);
-		--location-card-radius: 2px;
-		--location-card-shadow: 0 16px 34px rgb(var(--perla-olive-rgb) / 12%);
-		--location-card-hover-shadow: 0 20px 40px rgb(var(--perla-olive-rgb) / 18%);
+		--location-card-bg: linear-gradient(180deg, var(--perla-ivory) 0%, var(--perla-cream) 100%);
+		--location-card-border: 1px solid rgb(var(--perla-gold-rgb) / 18%);
+		--location-card-radius: 6px;
+		--location-card-shadow: 0 12px 28px rgb(var(--perla-olive-rgb) / 10%);
+		--location-card-hover-shadow: 0 14px 28px rgb(var(--perla-olive-rgb) / 14%);
 		--location-content-padding: clamp(1.1rem, 2.6vw, 1.6rem);
 		--location-place-font-size: clamp(1.3rem, 3vw, 1.7rem);
 		--location-place-line-height: 1.12;
@@ -1384,17 +1716,24 @@
 		}
 
 		:where(.event-location__card-wrapper) + :where(.event-location__card-wrapper) {
-			margin-block-start: var(--perla-space-md);
+			// Clear the previous card's soft shadow so RECEPCIÓN is never trapped.
+			margin-block-start: clamp(3rem, 7vw, 4.5rem);
+			padding-block-start: var(--perla-space-sm);
 		}
 
 		:where(.event-location__card) {
+			// Grow inside the wrapper for equal desktop columns, but never size to
+			// 100% of the wrapper — that overflows the title/flourish and traps RECEPCIÓN.
 			width: 100%;
-			min-height: 100%;
+			flex: 1 1 auto;
+			min-height: 0;
 		}
 
 		:where(.event-location__card-title) {
+			position: relative;
+			z-index: 1;
 			margin-block: 0;
-			padding-block: var(--perla-space-xs) 0;
+			padding-block: var(--perla-space-sm) 0;
 			font-size: 0.7rem;
 			letter-spacing: 0.22em;
 			color: var(--perla-olive);
@@ -1519,11 +1858,11 @@
 
 		&__meta {
 			order: -1;
-			font-size: 0.62rem;
+			font-size: 0.68rem;
 			font-weight: 500;
-			letter-spacing: 0.16em;
+			letter-spacing: 0.14em;
 			text-transform: uppercase;
-			color: rgb(var(--perla-ink-rgb) / 48%);
+			color: rgb(var(--perla-ink-rgb) / 72%);
 		}
 
 		&__name {
@@ -1577,21 +1916,22 @@
 			}
 		}
 
+		// Pending stays secondary to real names (italic + smaller), WCAG AA on cream.
 		&__item--pending .family__name,
 		&__item--pending .family__name span {
 			font-family: var(--font-body);
-			font-size: clamp(0.72rem, 1.7vw, 0.84rem);
-			font-weight: 400;
-			letter-spacing: 0.04em;
+			font-size: clamp(0.9rem, 2.1vw, 1.05rem);
+			font-weight: 500;
+			letter-spacing: 0.03em;
 			text-transform: none;
 			font-style: italic;
-			color: rgb(var(--perla-ink-rgb) / 38%);
+			color: var(--perla-olive-deep);
 		}
 
 		&__item--pending .family__meta {
-			font-size: 0.6rem;
+			font-size: 0.68rem;
 			letter-spacing: 0.14em;
-			color: rgb(var(--perla-ink-rgb) / 52%);
+			color: rgb(var(--perla-ink-rgb) / 72%);
 		}
 	}
 
@@ -1615,7 +1955,10 @@
 
 		.family__group--group-1,
 		.family__group--group-1 .family__item,
-		.family__group--group-1 .family__list {
+		.family__group--group-1 .family__list,
+		.family__group--group-1 .family__group-title,
+		.family__group--group-1 .family__name,
+		.family__group--group-1 .family__meta {
 			text-align: left;
 			align-items: flex-start;
 		}
