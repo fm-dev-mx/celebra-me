@@ -129,6 +129,40 @@ describe('Preview Write Scoped Authorization (PREVIEW_WRITE_AUTH_REQUIRED)', () 
 		expect(result.authorized).toBe(true);
 		expect(result.actor).toBe('automated_scoped_token');
 	});
+
+	it('rejects apply tokens for non-apply operations and rejects wildcard scopes', () => {
+		expect(() =>
+			verifyPreviewWriteAuthorization({
+				slug: 'schema',
+				targets: ['preview'],
+				apply: true,
+				isInteractive: false,
+				operation: 'migrate',
+				authToken: 'preview:schema:apply',
+			}),
+		).toThrow(/does not authorize operation "migrate"/);
+
+		expect(() =>
+			verifyPreviewWriteAuthorization({
+				slug: 'schema',
+				targets: ['preview'],
+				apply: true,
+				isInteractive: false,
+				operation: 'migrate',
+				authToken: 'preview:schema:*',
+			}),
+		).toThrow(/does not authorize operation "migrate"/);
+
+		const exact = verifyPreviewWriteAuthorization({
+			slug: 'schema',
+			targets: ['preview'],
+			apply: true,
+			isInteractive: false,
+			operation: 'migrate',
+			authToken: 'preview:schema:migrate',
+		});
+		expect(exact.authorized).toBe(true);
+	});
 });
 
 function createMockDelta(partial: Partial<SemanticDelta> & { path: string }): SemanticDelta {

@@ -8,6 +8,8 @@
  * Authorization model:
  *  - Human (interactive): verify short-circuits; caller MUST still confirm (YES).
  *  - Automation (canonical): CELEBRA_TASK_SCOPE="preview:<slug>:<operation>".
+ *  - Exact operation match only — tokens ending in `apply` authorize only `apply`,
+ *    never migrate / sync-invitations / purge / other operations. No `*` wildcard.
  *  - Lane/worktree/branch/environment identity alone IS NOT AUTHORIZATION.
  *  - Production credentials are never inputs to this mechanism.
  *  - Production promotion uses invitation:promote owner confirmation, not this API.
@@ -65,9 +67,9 @@ export function verifyPreviewWriteAuthorization(input: PreviewWriteAuthInput): P
 	}
 
 	const tokenOp = token.slice(expectedPrefix.length).trim();
-	if (tokenOp !== operation && tokenOp !== 'apply' && tokenOp !== '*') {
+	if (tokenOp !== operation) {
 		throw new Error(
-			`PREVIEW_WRITE_AUTH_REQUIRED: Preview write authorization scope mismatch. Token operation "${tokenOp}" does not authorize operation "${operation}".`,
+			`PREVIEW_WRITE_AUTH_REQUIRED: Preview write authorization scope mismatch. Token operation "${tokenOp}" does not authorize operation "${operation}". Exact scope preview:${slug}:${operation} is required.`,
 		);
 	}
 
@@ -75,6 +77,40 @@ export function verifyPreviewWriteAuthorization(input: PreviewWriteAuthInput): P
 		authorized: true,
 		actor: 'automated_scoped_token',
 	};
+}
+
+/**
+ * Shared interactive YES confirmation for Preview mutators.
+ * Injectable input seam for tests; TTY readline is the default.
+ */
+export async function confirmPreviewWriteYes(input: {
+	confirmPrompt: string;
+	readConfirmationLine?: () => string | Promise<string>;
+	isInteractive?: boolean;
+}): Promise<void> {
+	const isInteractive =
+		input.isInteractive ?? Boolean(process.stdin.isTTY && process.stdout.isTTY);
+	if (!isInteractive && !input.readConfirmationLine) {
+		throw new Error(
+			'PREVIEW_WRITE_CANCELLED: Interactive YES confirmation required; no TTY and no confirmation seam provided.',
+		);
+	}
+
+	const readLine =
+		input.readConfirmationLine ??
+		(async () => {
+			const rl = createInterface({ input: process.stdin, output: process.stderr });
+			try {
+				return (await rl.question(input.confirmPrompt)).trim();
+			} finally {
+				rl.close();
+			}
+		});
+
+	const answer = (await readLine()).trim();
+	if (answer !== 'YES') {
+		throw new Error('PREVIEW_WRITE_CANCELLED: Operator cancelled the Preview write.');
+	}
 }
 
 /**
@@ -86,8 +122,11 @@ export async function authorizePreviewWriteApply(input: {
 	slug: string;
 	operation: string;
 	confirmPrompt: string;
+	readConfirmationLine?: () => string | Promise<string>;
+	isInteractive?: boolean;
 }): Promise<PreviewWriteAuthResult> {
-	const isInteractive = Boolean(process.stdin.isTTY && process.stdout.isTTY);
+	const isInteractive =
+		input.isInteractive ?? Boolean(process.stdin.isTTY && process.stdout.isTTY);
 	const result = verifyPreviewWriteAuthorization({
 		slug: input.slug,
 		targets: ['preview'],
@@ -95,16 +134,12 @@ export async function authorizePreviewWriteApply(input: {
 		isInteractive,
 		operation: input.operation,
 	});
-	if (isInteractive) {
-		const rl = createInterface({ input: process.stdin, output: process.stderr });
-		try {
-			const answer = (await rl.question(input.confirmPrompt)).trim();
-			if (answer !== 'YES') {
-				throw new Error('PREVIEW_WRITE_CANCELLED: Operator cancelled the Preview write.');
-			}
-		} finally {
-			rl.close();
-		}
+	if (isInteractive || input.readConfirmationLine) {
+		await confirmPreviewWriteYes({
+			confirmPrompt: input.confirmPrompt,
+			readConfirmationLine: input.readConfirmationLine,
+			isInteractive,
+		});
 	}
 	return result;
 }
