@@ -3,18 +3,13 @@
  * permitted per environment; repository-to-environment reconciliation remains in TypeScript.
  */
 import { Buffer } from 'node:buffer';
-import { evaluateMigrationHistoryParity, fetchRemoteMigrationVersions } from '../db/audit-db.ts';
 import { classifyDbTarget } from '../db/db-guard.ts';
-import { runCommand, runPsql, sqlLiteral } from '../db/db-workflow-lib.ts';
+import { runPsql, sqlLiteral } from '../db/db-workflow-lib.ts';
+import type { SchemaLifecycleState } from '../db/schema-lifecycle-state.ts';
 import {
-	classifySchemaLifecycle,
-	type SchemaLifecycleState,
-} from '../db/schema-lifecycle-state.ts';
-import {
-	listExpectedMigrationVersions,
-	resolveDbUrlForEnv,
-	type TargetEnv,
-} from '../provision/dbs-status.ts';
+	readMigrationLifecycleWithTimeout,
+} from '../status-core/index.ts';
+import { resolveDbUrlForEnv, type TargetEnv } from '../provision/dbs-status.ts';
 import type { ManagedBaselineReceiptEvidence } from '../provision/managed-merge-baseline.ts';
 
 export const OBSERVABILITY_MAX_DB_INVOCATIONS = 6;
@@ -548,44 +543,15 @@ export function readMigrationProjection(input: {
 
 	input.budget.consume();
 	try {
-		const remote = fetchRemoteMigrationVersions(dbUrl, (command, args, options) =>
-			runCommand(command, args, {
-				...options,
-				env: { ...process.env, PGOPTIONS: '-c default_transaction_read_only=on' },
-				timeoutMs: input.timeoutMs,
-			}),
-		);
-		const parity = evaluateMigrationHistoryParity(
-			listExpectedMigrationVersions(),
-			remote.remoteVersions,
-		);
-		const schemaLifecycle = classifySchemaLifecycle({
-			pendingMigrations: parity.pendingLocal,
-			extraMigrations: parity.extraRemote,
-			mismatchedMigrations:
-				parity.isReordered || parity.hasDivergentHistory
-					? parity.extraRemote.length > 0
-						? parity.extraRemote
-						: ['divergent-history']
-					: [],
-			auditErrors: parity.errors.filter(
-				(error) => !error.startsWith('Pending local migrations'),
-			),
-			verified: true,
-		});
-		// Fail closed: never report BEHIND without exact missing version IDs.
-		const resolvedLifecycle =
-			schemaLifecycle === 'BEHIND' && parity.pendingLocal.length === 0
-				? 'UNVERIFIED'
-				: schemaLifecycle;
+		const lifecycle = readMigrationLifecycleWithTimeout(dbUrl, input.timeoutMs);
 		return {
 			environment: input.environment,
-			available: true,
-			schemaLifecycle: resolvedLifecycle,
-			appliedCount: remote.remoteVersions.length,
-			pendingCount: parity.pendingLocal.length,
-			pendingMigrations: [...parity.pendingLocal],
-			extraMigrations: [...parity.extraRemote],
+			available: lifecycle.verified,
+			schemaLifecycle: lifecycle.schemaLifecycle,
+			appliedCount: lifecycle.appliedMigrationCount,
+			pendingCount: lifecycle.pendingMigrations.length,
+			pendingMigrations: [...lifecycle.pendingMigrations],
+			extraMigrations: [...lifecycle.extraMigrations],
 		};
 	} catch {
 		return {

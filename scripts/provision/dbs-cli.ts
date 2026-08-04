@@ -31,8 +31,8 @@ function readTimeoutMs(args: string[]): number {
 	return Math.floor(parsed);
 }
 
-function formatGeneralView(jsonMode: boolean): void {
-	const summary = evaluateGeneralStatus();
+async function formatGeneralView(jsonMode: boolean): Promise<void> {
+	const summary = await evaluateGeneralStatus({ includeManagedCounts: true, concurrency: 3 });
 	if (jsonMode) {
 		console.log(JSON.stringify(summary, null, 2));
 		return;
@@ -176,7 +176,7 @@ async function main(): Promise<void> {
 	if (slug) {
 		await formatInvitationView(slug, jsonMode);
 	} else {
-		formatGeneralView(jsonMode);
+		await formatGeneralView(jsonMode);
 	}
 }
 

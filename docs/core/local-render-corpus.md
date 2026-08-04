@@ -34,7 +34,7 @@ scripts/provision/local-render-corpus/registry.ts
 Consumed by:
 
 - Local bootstrap — `pnpm invitation:local-corpus`
-- Deterministic regression — `pnpm test:managed:regression` / `pnpm test:local-render-corpus`
+- Deterministic regression — `pnpm test:local-render-corpus`
 - Screenshot completeness — `pnpm screenshot:local-render-corpus` (`--corpus`)
 - Changed-path routing — `requiresManagedInvitationRegression` in `scripts/validation-runner.mjs`
 - Local observability dashboard — `/dashboard/observabilidad` (read-only; rows derived from this

@@ -1,8 +1,9 @@
 /**
  * managed-status.ts — Compact read-only managed invitation status
  *
- * Composes existing dbs-status / schema-lifecycle classifiers into a single
- * CONTENT + SCHEMA surface. Does not introduce a parallel divergence model.
+ * Composes status-core probes + dbs-status classifiers into a single
+ * CONTENT + SCHEMA surface. Fresh evidence only — no dashboard cache,
+ * persistent snapshots, or historical healthy fallback.
  *
  * Vocabulary (unchanged from dbs-status / schema-lifecycle-state):
  *   CONTENT: MATCH_CANONICAL | BEHIND_CANONICAL | DIVERGED | IDENTITY_CONFLICT |
@@ -13,7 +14,8 @@
 import {
 	evaluateGeneralStatus,
 	evaluateInvitationStatus,
-	withStatusProbeTimeout,
+	getOrCreateStatusProbeSession,
+	resetStatusProbeSession,
 	type EnvTargetStatus,
 	type PerInvitationTargetStatus,
 	type StatusVocabulary,
@@ -21,6 +23,7 @@ import {
 } from './dbs-status.ts';
 import type { SchemaLifecycleState } from '../db/schema-lifecycle-state.ts';
 import { listInvitationDefinitions } from './invitations/registry.ts';
+import type { StatusProbeDebugCounters } from '../status-core/index.ts';
 
 /** Default remote probe budget for routine CLI use (ms). */
 export const MANAGED_STATUS_DEFAULT_TIMEOUT_MS = 8_000;
@@ -44,12 +47,16 @@ export interface CompactEnvContentStatus {
 	environment: TargetEnv;
 	status: StatusVocabulary;
 	detail?: string;
+	timeoutDegraded?: boolean;
+	durationMs?: number;
 }
 
 export interface CompactEnvSchemaStatus {
 	environment: TargetEnv;
 	status: SchemaLifecycleState;
 	detail?: string;
+	timeoutDegraded?: boolean;
+	durationMs?: number;
 }
 
 export interface CompactManagedStatus {
@@ -61,6 +68,11 @@ export interface CompactManagedStatus {
 	/** Per-environment corpus interpretation, available only for aggregate content mode. */
 	aggregateSummary?: Record<TargetEnv, AggregateContentSummary>;
 	readOnly: true;
+	/** True when overall budget forced incomplete probes. */
+	timeoutDegraded?: boolean;
+	debugCounters?: StatusProbeDebugCounters;
+	/** Per-environment durations from this execution (ms). */
+	environmentDurationsMs?: Record<TargetEnv, number | undefined>;
 }
 
 export interface AggregateContentSummary {
@@ -81,6 +93,8 @@ function schemaFromEnv(envStatus: EnvTargetStatus): CompactEnvSchemaStatus {
 			environment: envStatus.environment,
 			status: 'UNVERIFIED',
 			detail: envStatus.errorDetail ?? 'Credentials not configured',
+			timeoutDegraded: envStatus.timeoutDegraded,
+			durationMs: envStatus.durationMs,
 		};
 	}
 	if (!envStatus.reachable) {
@@ -88,11 +102,15 @@ function schemaFromEnv(envStatus: EnvTargetStatus): CompactEnvSchemaStatus {
 			environment: envStatus.environment,
 			status: 'UNVERIFIED',
 			detail: envStatus.errorDetail ?? 'Unreachable',
+			timeoutDegraded: envStatus.timeoutDegraded,
+			durationMs: envStatus.durationMs,
 		};
 	}
 	return {
 		environment: envStatus.environment,
 		status: envStatus.schemaLifecycle ?? 'UNVERIFIED',
+		timeoutDegraded: envStatus.timeoutDegraded,
+		durationMs: envStatus.durationMs,
 	};
 }
 
@@ -102,6 +120,8 @@ function contentFromConnectivity(envStatus: EnvTargetStatus): CompactEnvContentS
 			environment: envStatus.environment,
 			status: 'CREDENTIALS_REQUIRED',
 			detail: envStatus.errorDetail ?? 'Credentials not configured',
+			timeoutDegraded: envStatus.timeoutDegraded,
+			durationMs: envStatus.durationMs,
 		};
 	}
 	if (!envStatus.reachable) {
@@ -109,12 +129,16 @@ function contentFromConnectivity(envStatus: EnvTargetStatus): CompactEnvContentS
 			environment: envStatus.environment,
 			status: 'UNREACHABLE',
 			detail: envStatus.errorDetail ?? 'Unreachable',
+			timeoutDegraded: envStatus.timeoutDegraded,
+			durationMs: envStatus.durationMs,
 		};
 	}
 	return {
 		environment: envStatus.environment,
 		status: 'UNVERIFIED',
 		detail: 'Pass pnpm dbs --compact <slug> for package-hash content classification',
+		timeoutDegraded: envStatus.timeoutDegraded,
+		durationMs: envStatus.durationMs,
 	};
 }
 
@@ -123,6 +147,8 @@ function contentFromTarget(target: PerInvitationTargetStatus): CompactEnvContent
 		environment: target.environment,
 		status: target.status,
 		detail: target.detail,
+		timeoutDegraded: target.timeoutDegraded,
+		durationMs: target.durationMs,
 	};
 }
 
@@ -156,8 +182,53 @@ function summarizeAggregateContent(statuses: CompactEnvContentStatus[]): Aggrega
 	return { classification: 'BEHIND_OR_CONFLICTED', total, aligned, draftDiverged };
 }
 
+function degradedCompactStatus(reason: string): CompactManagedStatus {
+	const content = Object.fromEntries(
+		ENVS.map((env) => [
+			env,
+			{
+				environment: env,
+				status: 'UNREACHABLE' as const,
+				detail: reason,
+				timeoutDegraded: true,
+			},
+		]),
+	) as Record<TargetEnv, CompactEnvContentStatus>;
+	const schema = Object.fromEntries(
+		ENVS.map((env) => [
+			env,
+			{
+				environment: env,
+				status: 'UNVERIFIED' as const,
+				detail: reason,
+				timeoutDegraded: true,
+			},
+		]),
+	) as Record<TargetEnv, CompactEnvSchemaStatus>;
+	return {
+		content,
+		schema,
+		contentSlug: null,
+		contentMode: 'connectivity',
+		readOnly: true,
+		timeoutDegraded: true,
+	};
+}
+
+function emitDebugCounters(counters: StatusProbeDebugCounters | undefined, wallMs: number): void {
+	const raw = process.env.CELEBRA_MANAGED_STATUS_DEBUG?.trim().toLowerCase();
+	if (raw !== '1' && raw !== 'true' && raw !== 'yes') return;
+	const payload = {
+		invocations: counters?.invocations ?? 0,
+		memoHits: counters?.memoHits ?? 0,
+		timeoutDegraded: counters?.timeoutDegraded ?? false,
+		durationMs: wallMs,
+	};
+	process.stderr.write(`[managed-status:debug] ${JSON.stringify(payload)}\n`);
+}
+
 /**
- * Build compact status by composing existing classifiers only.
+ * Build compact status by composing status-core probes + existing classifiers.
  *
  * - with slug: CONTENT from evaluateInvitationStatus
  * - aggregateContent: worst-of all definitions (slower; explicit)
@@ -167,21 +238,38 @@ export async function evaluateCompactManagedStatus(options?: {
 	slug?: string;
 	aggregateContent?: boolean;
 	probeTimeoutMs?: number;
+	overallTimeoutMs?: number;
 }): Promise<CompactManagedStatus> {
+	const wallStart = performance.now();
+	resetStatusProbeSession();
 	const perQueryTimeout = options?.probeTimeoutMs ?? MANAGED_STATUS_PER_QUERY_TIMEOUT_MS;
-	const general = withStatusProbeTimeout(perQueryTimeout, () => evaluateGeneralStatus());
+	const session = getOrCreateStatusProbeSession(perQueryTimeout);
+
+	const general = await evaluateGeneralStatus({
+		includeManagedCounts: false,
+		concurrency: 3,
+		session,
+		overallTimeoutMs: options?.overallTimeoutMs,
+	});
+
 	const schema = {
 		local: schemaFromEnv(general.environments.local),
 		preview: schemaFromEnv(general.environments.preview),
 		production: schemaFromEnv(general.environments.production),
 	} as Record<TargetEnv, CompactEnvSchemaStatus>;
 
+	const environmentDurationsMs = Object.fromEntries(
+		ENVS.map((env) => [env, general.environments[env].durationMs]),
+	) as Record<TargetEnv, number | undefined>;
+
 	const slug = options?.slug?.trim() || null;
 	if (slug) {
-		const invitation = await withStatusProbeTimeout(perQueryTimeout, () =>
-			evaluateInvitationStatus(slug),
-		);
-		return {
+		const invitation = await evaluateInvitationStatus(slug, {
+			session,
+			concurrency: 3,
+			overallTimeoutMs: options?.overallTimeoutMs,
+		});
+		const status: CompactManagedStatus = {
 			content: {
 				local: contentFromTarget(invitation.environments.local),
 				preview: contentFromTarget(invitation.environments.preview),
@@ -191,11 +279,16 @@ export async function evaluateCompactManagedStatus(options?: {
 			contentSlug: slug,
 			contentMode: 'slug',
 			readOnly: true,
+			timeoutDegraded: session.timeoutDegraded,
+			debugCounters: session.debugCounters,
+			environmentDurationsMs,
 		};
+		emitDebugCounters(status.debugCounters, Math.round(performance.now() - wallStart));
+		return status;
 	}
 
 	if (!options?.aggregateContent) {
-		return {
+		const status: CompactManagedStatus = {
 			content: {
 				local: contentFromConnectivity(general.environments.local),
 				preview: contentFromConnectivity(general.environments.preview),
@@ -205,7 +298,12 @@ export async function evaluateCompactManagedStatus(options?: {
 			contentSlug: null,
 			contentMode: 'connectivity',
 			readOnly: true,
+			timeoutDegraded: session.timeoutDegraded,
+			debugCounters: session.debugCounters,
+			environmentDurationsMs,
 		};
+		emitDebugCounters(status.debugCounters, Math.round(performance.now() - wallStart));
+		return status;
 	}
 
 	const definitions = listInvitationDefinitions();
@@ -234,6 +332,9 @@ export async function evaluateCompactManagedStatus(options?: {
 			contentMode: 'aggregate',
 			aggregateSummary,
 			readOnly: true,
+			timeoutDegraded: session.timeoutDegraded,
+			debugCounters: session.debugCounters,
+			environmentDurationsMs,
 		};
 	}
 
@@ -244,9 +345,11 @@ export async function evaluateCompactManagedStatus(options?: {
 	};
 	let first = true;
 	for (const definition of definitions) {
-		const invitation = await withStatusProbeTimeout(perQueryTimeout, () =>
-			evaluateInvitationStatus(definition.slug),
-		);
+		const invitation = await evaluateInvitationStatus(definition.slug, {
+			session,
+			concurrency: 3,
+			overallTimeoutMs: options?.overallTimeoutMs,
+		});
 		for (const env of ENVS) {
 			const next = contentFromTarget(invitation.environments[env]);
 			aggregateEntries[env].push(next);
@@ -260,14 +363,19 @@ export async function evaluateCompactManagedStatus(options?: {
 		preview: summarizeAggregateContent(aggregateEntries.preview),
 		production: summarizeAggregateContent(aggregateEntries.production),
 	};
-	return {
+	const status: CompactManagedStatus = {
 		content,
 		schema,
 		contentSlug: null,
 		contentMode: 'aggregate',
 		aggregateSummary,
 		readOnly: true,
+		timeoutDegraded: session.timeoutDegraded,
+		debugCounters: session.debugCounters,
+		environmentDurationsMs,
 	};
+	emitDebugCounters(status.debugCounters, Math.round(performance.now() - wallStart));
+	return status;
 }
 
 function padLabel(label: string, width = 12): string {
@@ -305,6 +413,7 @@ export function formatCompactManagedStatus(status: CompactManagedStatus): string
 /**
  * Run compact status for Git hooks / CLI. Never throws for expected unavailable
  * remotes; returns a printable string and exit-safe result.
+ * On overall timeout: emits UNREACHABLE/UNVERIFIED with timeoutDegraded — never healthy.
  */
 export async function runCompactManagedStatusSafe(options?: {
 	slug?: string;
@@ -328,9 +437,16 @@ export async function runCompactManagedStatusSafe(options?: {
 				slug: options?.slug,
 				aggregateContent: options?.aggregateContent,
 				probeTimeoutMs: perQueryTimeout,
+				overallTimeoutMs: timeoutMs,
 			}),
-			new Promise<never>((_, reject) => {
-				timer = setTimeout(() => reject(new Error('MANAGED_STATUS_TIMEOUT')), timeoutMs);
+			new Promise<CompactManagedStatus>((resolve) => {
+				timer = setTimeout(() => {
+					resolve(
+						degradedCompactStatus(
+							'Managed status timed out waiting for remote environments (timeout degraded; not a proven outage).',
+						),
+					);
+				}, timeoutMs);
 			}),
 		]);
 		return { ok: true, text: formatCompactManagedStatus(status), status };
@@ -344,5 +460,6 @@ export async function runCompactManagedStatusSafe(options?: {
 		if (timer) clearTimeout(timer);
 		if (previousConnect === undefined) delete process.env.PGCONNECT_TIMEOUT;
 		else process.env.PGCONNECT_TIMEOUT = previousConnect;
+		resetStatusProbeSession();
 	}
 }

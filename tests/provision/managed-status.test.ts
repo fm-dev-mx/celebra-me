@@ -3,10 +3,18 @@
  */
 import { describe, expect, it, jest, beforeEach } from '@jest/globals';
 
+const mockSession = {
+	timeoutMs: 2000,
+	timeoutDegraded: false,
+	debugCounters: { invocations: 0, memoHits: 0, timeoutDegraded: false },
+	markTimeoutDegraded: jest.fn(),
+};
+
 jest.mock('../../scripts/provision/dbs-status.ts', () => ({
 	evaluateGeneralStatus: jest.fn(),
 	evaluateInvitationStatus: jest.fn(),
-	withStatusProbeTimeout: jest.fn((_timeout: number | undefined, run: () => unknown) => run()),
+	getOrCreateStatusProbeSession: jest.fn(() => mockSession),
+	resetStatusProbeSession: jest.fn(),
 }));
 
 jest.mock('../../scripts/provision/invitations/registry.ts', () => ({
@@ -83,10 +91,11 @@ describe('managed-status compact composition', () => {
 		mockedGeneral.mockReset();
 		mockedInvitation.mockReset();
 		mockedList.mockReset();
+		mockSession.timeoutDegraded = false;
 	});
 
 	it('composes existing schema + per-slug content classifiers without inventing CLEAN', async () => {
-		mockedGeneral.mockReturnValue({
+		mockedGeneral.mockResolvedValue({
 			environments: {
 				local: envStatus('local', 'CURRENT'),
 				preview: envStatus('preview', 'CURRENT'),
@@ -117,7 +126,7 @@ describe('managed-status compact composition', () => {
 	});
 
 	it('uses connectivity CONTENT by default without slug (Git-hook safe)', async () => {
-		mockedGeneral.mockReturnValue({
+		mockedGeneral.mockResolvedValue({
 			environments: {
 				local: envStatus('local', 'CURRENT'),
 				preview: envStatus('preview', 'UNVERIFIED', {
@@ -141,10 +150,11 @@ describe('managed-status compact composition', () => {
 		expect(status.content.production.status).toBe('UNREACHABLE');
 		expect(status.schema.preview.status).toBe('UNVERIFIED');
 		expect(mockedInvitation).not.toHaveBeenCalled();
+		expect(mockedGeneral.mock.calls[0]?.[0]).toMatchObject({ includeManagedCounts: false });
 	});
 
 	it('aggregates worst CONTENT across definitions when requested', async () => {
-		mockedGeneral.mockReturnValue({
+		mockedGeneral.mockResolvedValue({
 			environments: {
 				local: envStatus('local', 'CURRENT'),
 				preview: envStatus('preview', 'CURRENT'),
@@ -194,7 +204,7 @@ describe('managed-status compact composition', () => {
 	});
 
 	it('does not report aggregate alignment when any environment is unverifiable', async () => {
-		mockedGeneral.mockReturnValue({
+		mockedGeneral.mockResolvedValue({
 			environments: {
 				local: envStatus('local', 'CURRENT'),
 				preview: envStatus('preview', 'UNVERIFIED'),
@@ -220,16 +230,14 @@ describe('managed-status compact composition', () => {
 	});
 
 	it('keeps safe runner non-throwing when probes fail', async () => {
-		mockedGeneral.mockImplementation(() => {
-			throw new Error('boom');
-		});
+		mockedGeneral.mockRejectedValue(new Error('boom'));
 		const result = await runCompactManagedStatusSafe();
 		expect(result.ok).toBe(false);
 		if (!result.ok) expect(result.text).toMatch(/unavailable/i);
 	});
 
 	it('reuses schema BEHIND and SCHEMA_DRIFT from the general classifier', async () => {
-		mockedGeneral.mockReturnValue({
+		mockedGeneral.mockResolvedValue({
 			environments: {
 				local: envStatus('local', 'BEHIND'),
 				preview: envStatus('preview', 'SCHEMA_DRIFT'),
@@ -246,8 +254,8 @@ describe('managed-status compact composition', () => {
 		expect(formatCompactManagedStatus(status)).toContain('SCHEMA_DRIFT');
 	});
 
-	it('bounds completion when invitation probes never resolve', async () => {
-		mockedGeneral.mockReturnValue({
+	it('emits timeout-degraded UNREACHABLE/UNVERIFIED without inventing healthy statuses', async () => {
+		mockedGeneral.mockResolvedValue({
 			environments: {
 				local: envStatus('local', 'CURRENT'),
 				preview: envStatus('preview', 'CURRENT'),
@@ -261,9 +269,40 @@ describe('managed-status compact composition', () => {
 			slug: 'romina-rios-chaparro',
 			timeoutMs: 80,
 		});
-		expect(result.ok).toBe(false);
-		if (!result.ok) {
-			expect(result.text).toMatch(/timed out/i);
+		expect(result.ok).toBe(true);
+		if (result.ok) {
+			expect(result.status.timeoutDegraded).toBe(true);
+			expect(result.status.content.local.status).toBe('UNREACHABLE');
+			expect(result.status.schema.local.status).toBe('UNVERIFIED');
+			expect(result.status.content.local.status).not.toBe('MATCH_CANONICAL');
+			expect(result.status.schema.local.status).not.toBe('CURRENT');
+			expect(formatCompactManagedStatus(result.status)).toContain('UNREACHABLE');
+			expect(formatCompactManagedStatus(result.status)).toContain('UNVERIFIED');
 		}
+	});
+
+	it('never uses historical healthy fallback for compact status', async () => {
+		mockedGeneral.mockResolvedValue({
+			environments: {
+				local: envStatus('local', 'UNVERIFIED', {
+					configured: true,
+					reachable: false,
+					errorDetail: 'timeout degraded',
+				}),
+				preview: envStatus('preview', 'UNVERIFIED', {
+					configured: true,
+					reachable: false,
+				}),
+				production: envStatus('production', 'UNVERIFIED', {
+					configured: true,
+					reachable: false,
+				}),
+			},
+			totalDefinitionsCount: 0,
+		});
+		const status = await evaluateCompactManagedStatus();
+		expect(status.schema.local.status).toBe('UNVERIFIED');
+		expect(status.content.local.status).toBe('UNREACHABLE');
+		expect(Object.values(status.schema).every((s) => s.status !== 'CURRENT')).toBe(true);
 	});
 });

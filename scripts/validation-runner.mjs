@@ -141,7 +141,7 @@ export function runValidation({
 
 	if (plan.requiresManagedInvitationRegression) {
 		const code = runStep('Local Render Corpus regression sweep', 'pnpm', [
-			'test:managed:regression',
+			'test:local-render-corpus',
 		]);
 		if (code !== 0) return fail('local-render-corpus-regression', code);
 	} else {

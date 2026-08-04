@@ -2,36 +2,47 @@
  * dbs-status.ts — Unified Read-Only Environment Status Engine
  *
  * Evaluates Local, Preview, and Production environment status, DB connectivity,
- * managed invitation counts, identity conflicts, and per-invitation parity across targets.
+ * optional managed invitation counts, and per-invitation parity across targets.
  *
  * Vocabulary:
  *   MATCH_CANONICAL, BEHIND_CANONICAL, DIVERGED, IDENTITY_CONFLICT, NOT_PRESENT, UNREACHABLE, CREDENTIALS_REQUIRED, UNVERIFIED
  *
  * Schema lifecycle (separate vocabulary): CURRENT | BEHIND | SCHEMA_DRIFT | UNVERIFIED
+ *
+ * Probe I/O is owned by scripts/status-core (execution-local memoization).
  */
 
 import {
-	runPsql,
-	sqlLiteral,
 	getSecretFromEnvOrFiles,
 	PREVIEW_SECRET_FILES,
 	getProdDbUrl,
-	PROJECT_ROOT,
 } from '../db/db-workflow-lib.ts';
 import { LOCAL_DB_URL, classifyDbTarget, redactDbUrl } from '../db/db-guard.ts';
-import { evaluateMigrationHistoryParity, fetchRemoteMigrationVersions } from '../db/audit-db.ts';
+import type { SchemaLifecycleState } from '../db/schema-lifecycle-state.ts';
 import {
-	classifySchemaLifecycle,
-	type SchemaLifecycleState,
-} from '../db/schema-lifecycle-state.ts';
+	StatusProbeSession,
+	mapPool,
+	listExpectedMigrationVersions,
+	readMigrationLifecycleForUrl,
+	readMigrationLifecycleForUrlSync,
+	readManagedInvitationMeta,
+	readManagedInvitationMetaSync,
+	classifyManagedInvitationMeta,
+	createLiveFreshness,
+	type FreshnessMeta,
+	type StatusProbeDebugCounters,
+} from '../status-core/index.ts';
 import { listInvitationDefinitions, getInvitationDefinition } from './invitations/registry.ts';
 import { buildNormalizedInvitationRelease } from './normalized-invitation-release.ts';
 import { serializeInvitationPackage } from './invitation-package.ts';
-import { existsSync, readdirSync } from 'node:fs';
-import { resolve } from 'node:path';
+
+export { listExpectedMigrationVersions };
 
 /** Per-psql wall clock used by compact/Git-hook probes when set. */
 let statusProbeTimeoutMs: number | undefined;
+
+/** Active execution-local session (set by withStatusProbeSession / evaluate* helpers). */
+let activeSession: StatusProbeSession | undefined;
 
 export function withStatusProbeTimeout<T>(timeoutMs: number | undefined, run: () => T): T {
 	const previous = statusProbeTimeoutMs;
@@ -43,11 +54,20 @@ export function withStatusProbeTimeout<T>(timeoutMs: number | undefined, run: ()
 	}
 }
 
-function psqlOptions(extra: { tuplesOnly?: boolean; throwOnError?: boolean } = {}) {
-	return {
-		...extra,
-		...(typeof statusProbeTimeoutMs === 'number' ? { timeoutMs: statusProbeTimeoutMs } : {}),
-	};
+export function getOrCreateStatusProbeSession(
+	timeoutMs: number | undefined = statusProbeTimeoutMs,
+): StatusProbeSession {
+	if (activeSession && activeSession.timeoutMs === timeoutMs) return activeSession;
+	activeSession = new StatusProbeSession({ timeoutMs, readOnly: true });
+	return activeSession;
+}
+
+export function resetStatusProbeSession(): void {
+	activeSession = undefined;
+}
+
+export function getStatusProbeDebugCounters(): StatusProbeDebugCounters | null {
+	return activeSession?.debugCounters ?? null;
 }
 
 export type StatusVocabulary =
@@ -75,17 +95,20 @@ export interface EnvTargetStatus {
 	pendingMigrationsCount?: number;
 	/** Pending migration version identities (shared with observability migration health). */
 	pendingMigrations?: string[];
+	extraMigrations?: string[];
 	/** Count of migration versions applied on the remote target. */
 	appliedMigrationCount?: number | null;
 	errorDetail?: string;
+	freshness?: FreshnessMeta;
+	/** Wall duration for this environment probe (ms), when measured. */
+	durationMs?: number;
+	timeoutDegraded?: boolean;
 }
-
-/** Unit separator — does not appear in invitation slugs, hashes, or ISO timestamps. */
-const BATCH_FIELD_SEP = '\u001f';
 
 export interface GeneralStatusSummary {
 	environments: Record<TargetEnv, EnvTargetStatus>;
 	totalDefinitionsCount: number;
+	debugCounters?: StatusProbeDebugCounters;
 }
 
 export interface PerInvitationTargetStatus {
@@ -101,6 +124,9 @@ export interface PerInvitationTargetStatus {
 	publishedAt: string | null;
 	assetCount: number;
 	detail: string;
+	freshness?: FreshnessMeta;
+	timeoutDegraded?: boolean;
+	durationMs?: number;
 }
 
 export interface PerInvitationStatusSummary {
@@ -108,6 +134,7 @@ export interface PerInvitationStatusSummary {
 	title: string;
 	eventType: string;
 	environments: Record<TargetEnv, PerInvitationTargetStatus>;
+	debugCounters?: StatusProbeDebugCounters;
 }
 
 export function resolveDbUrlForEnv(env: TargetEnv): { dbUrl: string | null; error?: string } {
@@ -134,19 +161,14 @@ export function resolveDbUrlForEnv(env: TargetEnv): { dbUrl: string | null; erro
 	return { dbUrl: null, error: 'Unknown environment' };
 }
 
-function testConnectivity(dbUrl: string): boolean {
-	const res = runPsql('select 1;', dbUrl, psqlOptions({ tuplesOnly: true, throwOnError: false }));
-	return res.status === 0 && res.stdout.trim() === '1';
-}
-
-function countActiveManagedInvitations(dbUrl: string): {
-	activeCount: number;
-	conflictsCount: number;
-} {
-	const res = runPsql(
+function countActiveManagedInvitations(
+	session: StatusProbeSession,
+	dbUrl: string,
+): { activeCount: number; conflictsCount: number } {
+	const res = session.psqlSync(
 		`select count(*), count(distinct slug) from public.invitations where archived_at is null;`,
 		dbUrl,
-		psqlOptions({ tuplesOnly: true, throwOnError: false }),
+		{ tuplesOnly: true, throwOnError: false },
 	);
 	if (res.status !== 0 || !res.stdout.trim()) return { activeCount: 0, conflictsCount: 0 };
 	const [totalStr, distinctStr] = res.stdout
@@ -161,58 +183,23 @@ function countActiveManagedInvitations(dbUrl: string): {
 	};
 }
 
-export function listExpectedMigrationVersions(): string[] {
-	const migrationsDir = resolve(PROJECT_ROOT, 'supabase', 'migrations');
-	if (!existsSync(migrationsDir)) return [];
-	return readdirSync(migrationsDir)
-		.filter((f) => f.endsWith('.sql'))
-		.sort()
-		.map((f) => f.split('_')[0]!)
-		.filter(Boolean);
+export interface GeneralEnvStatusOptions {
+	/** Include managed invitation row counts (full matrix). Compact skips this. */
+	includeManagedCounts?: boolean;
+	session?: StatusProbeSession;
+	timeoutDegraded?: boolean;
 }
 
-function evaluateSchemaLifecycleForUrl(dbUrl: string): {
-	schemaLifecycle: SchemaLifecycleState;
-	migrationHead: string | null;
-	pendingMigrationsCount: number;
-	pendingMigrations: string[];
-	appliedMigrationCount: number | null;
-} {
-	try {
-		const expected = listExpectedMigrationVersions();
-		const remote = fetchRemoteMigrationVersions(dbUrl);
-		const parity = evaluateMigrationHistoryParity(expected, remote.remoteVersions);
-		const schemaLifecycle = classifySchemaLifecycle({
-			pendingMigrations: parity.pendingLocal,
-			extraMigrations: parity.extraRemote,
-			mismatchedMigrations:
-				parity.isReordered || parity.hasDivergentHistory
-					? parity.extraRemote.length > 0
-						? parity.extraRemote
-						: ['divergent-history']
-					: [],
-			auditErrors: parity.errors.filter((e) => !e.startsWith('Pending local migrations')),
-			verified: true,
-		});
-		return {
-			schemaLifecycle,
-			migrationHead: remote.remoteVersions.at(-1) ?? null,
-			pendingMigrationsCount: parity.pendingLocal.length,
-			pendingMigrations: parity.pendingLocal,
-			appliedMigrationCount: remote.remoteVersions.length,
-		};
-	} catch {
-		return {
-			schemaLifecycle: 'UNVERIFIED',
-			migrationHead: null,
-			pendingMigrationsCount: 0,
-			pendingMigrations: [],
-			appliedMigrationCount: null,
-		};
-	}
-}
+export function getGeneralEnvStatus(
+	env: TargetEnv,
+	options: GeneralEnvStatusOptions = {},
+): EnvTargetStatus {
+	const includeManagedCounts = options.includeManagedCounts !== false;
+	const session =
+		options.session ?? getOrCreateStatusProbeSession(statusProbeTimeoutMs);
+	const started = performance.now();
+	const freshness = createLiveFreshness(Boolean(options.timeoutDegraded));
 
-export function getGeneralEnvStatus(env: TargetEnv): EnvTargetStatus {
 	const { dbUrl, error } = resolveDbUrlForEnv(env);
 	if (!dbUrl) {
 		return {
@@ -225,11 +212,14 @@ export function getGeneralEnvStatus(env: TargetEnv): EnvTargetStatus {
 			identityConflictsCount: 0,
 			schemaLifecycle: 'UNVERIFIED',
 			errorDetail: error,
+			freshness,
+			durationMs: Math.round(performance.now() - started),
+			timeoutDegraded: options.timeoutDegraded,
 		};
 	}
 
 	const classification = classifyDbTarget(dbUrl);
-	const reachable = testConnectivity(dbUrl);
+	const reachable = session.probeConnectivitySync(dbUrl);
 	if (!reachable) {
 		return {
 			environment: env,
@@ -240,12 +230,19 @@ export function getGeneralEnvStatus(env: TargetEnv): EnvTargetStatus {
 			activeManagedCount: 0,
 			identityConflictsCount: 0,
 			schemaLifecycle: 'UNVERIFIED',
-			errorDetail: 'Database connection check failed or timed out',
+			errorDetail: options.timeoutDegraded
+				? 'Probe budget exhausted before environment verification (timeout degraded)'
+				: 'Database connection check failed or timed out',
+			freshness,
+			durationMs: Math.round(performance.now() - started),
+			timeoutDegraded: options.timeoutDegraded,
 		};
 	}
 
-	const { activeCount, conflictsCount } = countActiveManagedInvitations(dbUrl);
-	const schema = evaluateSchemaLifecycleForUrl(dbUrl);
+	const counts = includeManagedCounts
+		? countActiveManagedInvitations(session, dbUrl)
+		: { activeCount: 0, conflictsCount: 0 };
+	const schema = readMigrationLifecycleForUrlSync(dbUrl, session);
 
 	return {
 		environment: env,
@@ -253,13 +250,108 @@ export function getGeneralEnvStatus(env: TargetEnv): EnvTargetStatus {
 		reachable: true,
 		dbUrlRedacted: redactDbUrl(dbUrl),
 		targetClassification: classification.target,
-		activeManagedCount: activeCount,
-		identityConflictsCount: conflictsCount,
+		activeManagedCount: counts.activeCount,
+		identityConflictsCount: counts.conflictsCount,
 		schemaLifecycle: schema.schemaLifecycle,
 		migrationHead: schema.migrationHead,
-		pendingMigrationsCount: schema.pendingMigrationsCount,
+		pendingMigrationsCount: schema.pendingMigrations.length,
 		pendingMigrations: schema.pendingMigrations,
+		extraMigrations: schema.extraMigrations,
 		appliedMigrationCount: schema.appliedMigrationCount,
+		freshness,
+		durationMs: Math.round(performance.now() - started),
+		timeoutDegraded: options.timeoutDegraded,
+	};
+}
+
+async function getGeneralEnvStatusAsync(
+	env: TargetEnv,
+	options: GeneralEnvStatusOptions = {},
+): Promise<EnvTargetStatus> {
+	const includeManagedCounts = options.includeManagedCounts !== false;
+	const session =
+		options.session ?? getOrCreateStatusProbeSession(statusProbeTimeoutMs);
+	const started = performance.now();
+	const freshness = createLiveFreshness(Boolean(options.timeoutDegraded));
+
+	const { dbUrl, error } = resolveDbUrlForEnv(env);
+	if (!dbUrl) {
+		return {
+			environment: env,
+			configured: false,
+			reachable: false,
+			dbUrlRedacted: '(not configured)',
+			targetClassification: 'unknown',
+			activeManagedCount: 0,
+			identityConflictsCount: 0,
+			schemaLifecycle: 'UNVERIFIED',
+			errorDetail: error,
+			freshness,
+			durationMs: Math.round(performance.now() - started),
+			timeoutDegraded: options.timeoutDegraded,
+		};
+	}
+
+	const classification = classifyDbTarget(dbUrl);
+	const reachable = await session.probeConnectivity(dbUrl);
+	if (!reachable) {
+		return {
+			environment: env,
+			configured: true,
+			reachable: false,
+			dbUrlRedacted: redactDbUrl(dbUrl),
+			targetClassification: classification.target,
+			activeManagedCount: 0,
+			identityConflictsCount: 0,
+			schemaLifecycle: 'UNVERIFIED',
+			errorDetail: options.timeoutDegraded
+				? 'Probe budget exhausted before environment verification (timeout degraded)'
+				: 'Database connection check failed or timed out',
+			freshness,
+			durationMs: Math.round(performance.now() - started),
+			timeoutDegraded: options.timeoutDegraded,
+		};
+	}
+
+	let activeManagedCount = 0;
+	let identityConflictsCount = 0;
+	if (includeManagedCounts) {
+		const countRes = await session.psql(
+			`select count(*), count(distinct slug) from public.invitations where archived_at is null;`,
+			dbUrl,
+			{ tuplesOnly: true },
+		);
+		if (countRes.status === 0 && countRes.stdout.trim()) {
+			const [totalStr, distinctStr] = countRes.stdout
+				.trim()
+				.split('|')
+				.map((s) => s.trim());
+			const total = Number(totalStr || '0');
+			const distinct = Number(distinctStr || '0');
+			activeManagedCount = total;
+			identityConflictsCount = Math.max(0, total - distinct);
+		}
+	}
+
+	const schema = await readMigrationLifecycleForUrl(dbUrl, session);
+
+	return {
+		environment: env,
+		configured: true,
+		reachable: true,
+		dbUrlRedacted: redactDbUrl(dbUrl),
+		targetClassification: classification.target,
+		activeManagedCount,
+		identityConflictsCount,
+		schemaLifecycle: schema.schemaLifecycle,
+		migrationHead: schema.migrationHead,
+		pendingMigrationsCount: schema.pendingMigrations.length,
+		pendingMigrations: schema.pendingMigrations,
+		extraMigrations: schema.extraMigrations,
+		appliedMigrationCount: schema.appliedMigrationCount,
+		freshness,
+		durationMs: Math.round(performance.now() - started),
+		timeoutDegraded: options.timeoutDegraded,
 	};
 }
 
@@ -276,31 +368,110 @@ function unprobedGeneralEnv(env: TargetEnv): EnvTargetStatus {
 		pendingMigrations: [],
 		appliedMigrationCount: null,
 		errorDetail: 'Not probed in this observability scope',
+		freshness: createLiveFreshness(false),
 	};
 }
 
-export function evaluateGeneralStatus(options?: {
+function timeoutUnverifiedEnv(env: TargetEnv): EnvTargetStatus {
+	return {
+		environment: env,
+		configured: true,
+		reachable: false,
+		dbUrlRedacted: '(timeout degraded)',
+		targetClassification: 'unknown',
+		activeManagedCount: 0,
+		identityConflictsCount: 0,
+		schemaLifecycle: 'UNVERIFIED',
+		pendingMigrations: [],
+		appliedMigrationCount: null,
+		errorDetail: 'Probe budget exhausted before environment verification (timeout degraded)',
+		freshness: createLiveFreshness(true),
+		timeoutDegraded: true,
+	};
+}
+
+export interface EvaluateGeneralStatusOptions {
 	environments?: readonly TargetEnv[];
-}): GeneralStatusSummary {
+	/** Default true for full matrix; compact connectivity sets false. */
+	includeManagedCounts?: boolean;
+	/** Max concurrent environment probes (default 3). */
+	concurrency?: number;
+	session?: StatusProbeSession;
+	/** Overall wall budget; unfinished envs become timeout-degraded UNVERIFIED. */
+	overallTimeoutMs?: number;
+}
+
+/**
+ * Async general status with bounded parallel environment probes.
+ */
+export async function evaluateGeneralStatus(
+	options?: EvaluateGeneralStatusOptions,
+): Promise<GeneralStatusSummary> {
 	const probeEnvs: TargetEnv[] = options?.environments
 		? [...options.environments]
 		: ['local', 'preview', 'production'];
+	const includeManagedCounts = options?.includeManagedCounts !== false;
+	const concurrency = options?.concurrency ?? 3;
+	const session =
+		options?.session ?? getOrCreateStatusProbeSession(statusProbeTimeoutMs);
+	activeSession = session;
+
 	const definitions = listInvitationDefinitions();
+	const allEnvs: TargetEnv[] = ['local', 'preview', 'production'];
+	const collected = new Map<TargetEnv, EnvTargetStatus>();
+
+	const work = mapPool(probeEnvs, concurrency, async (env) => {
+		const status = await getGeneralEnvStatusAsync(env, {
+			includeManagedCounts,
+			session,
+		});
+		collected.set(env, status);
+		return status;
+	});
+
+	if (typeof options?.overallTimeoutMs === 'number' && options.overallTimeoutMs > 0) {
+		let timer: ReturnType<typeof setTimeout> | undefined;
+		try {
+			await Promise.race([
+				work,
+				new Promise<never>((_, reject) => {
+					timer = setTimeout(
+						() => reject(new Error('GENERAL_STATUS_TIMEOUT')),
+						options.overallTimeoutMs,
+					);
+				}),
+			]);
+		} catch (error) {
+			if (error instanceof Error && error.message === 'GENERAL_STATUS_TIMEOUT') {
+				session.markTimeoutDegraded();
+			} else {
+				throw error;
+			}
+		} finally {
+			if (timer) clearTimeout(timer);
+		}
+	} else {
+		await work;
+	}
+
 	const environments = {
-		local: probeEnvs.includes('local')
-			? getGeneralEnvStatus('local')
-			: unprobedGeneralEnv('local'),
-		preview: probeEnvs.includes('preview')
-			? getGeneralEnvStatus('preview')
-			: unprobedGeneralEnv('preview'),
-		production: probeEnvs.includes('production')
-			? getGeneralEnvStatus('production')
-			: unprobedGeneralEnv('production'),
-	};
+		local: unprobedGeneralEnv('local'),
+		preview: unprobedGeneralEnv('preview'),
+		production: unprobedGeneralEnv('production'),
+	} as Record<TargetEnv, EnvTargetStatus>;
+
+	for (const env of allEnvs) {
+		if (!probeEnvs.includes(env)) {
+			environments[env] = unprobedGeneralEnv(env);
+			continue;
+		}
+		environments[env] = collected.get(env) ?? timeoutUnverifiedEnv(env);
+	}
 
 	return {
 		environments,
 		totalDefinitionsCount: definitions.length,
+		debugCounters: session.debugCounters,
 	};
 }
 
@@ -309,348 +480,23 @@ export function evaluateGeneralStatus(options?: {
  * Pass `canonicalHash` for managed package-hash classification; pass `null`
  * for presence-only checks (legacy corpus / reference-relative callers).
  */
-// eslint-disable-next-line complexity -- Per-environment status has many fail-closed branches.
 export function evaluateSingleTargetStatus(
 	env: TargetEnv,
 	slug: string,
 	canonicalHash: string | null,
+	options: { session?: StatusProbeSession; timeoutDegraded?: boolean } = {},
 ): PerInvitationTargetStatus {
+	const session =
+		options.session ?? getOrCreateStatusProbeSession(statusProbeTimeoutMs);
+	const started = performance.now();
+	const freshness = createLiveFreshness(Boolean(options.timeoutDegraded));
 	const { dbUrl, error } = resolveDbUrlForEnv(env);
-	if (!dbUrl) {
-		return {
-			environment: env,
-			status: 'CREDENTIALS_REQUIRED',
-			activeMatchCount: 0,
-			resolvedId: null,
-			resolvedSlug: null,
-			provenanceDefinitionSlug: null,
-			provenancePackageHash: null,
-			provenanceAppliedAt: null,
-			publishedVersion: null,
-			publishedAt: null,
-			assetCount: 0,
-			detail: error || 'Target credentials not configured',
-		};
-	}
 
-	if (!testConnectivity(dbUrl)) {
-		return {
-			environment: env,
-			status: 'UNREACHABLE',
-			activeMatchCount: 0,
-			resolvedId: null,
-			resolvedSlug: null,
-			provenanceDefinitionSlug: null,
-			provenancePackageHash: null,
-			provenanceAppliedAt: null,
-			publishedVersion: null,
-			publishedAt: null,
-			assetCount: 0,
-			detail: 'Target database unreachable',
-		};
-	}
-
-	// Query active matching invitations for slug
-	const matchRes = runPsql(
-		`select id::text, slug, created_at::text from public.invitations where slug = ${sqlLiteral(slug)} and archived_at is null;`,
-		dbUrl,
-		psqlOptions({ tuplesOnly: true, throwOnError: false }),
-	);
-	if (matchRes.status !== 0) {
-		return {
-			environment: env,
-			status: 'UNREACHABLE',
-			activeMatchCount: 0,
-			resolvedId: null,
-			resolvedSlug: null,
-			provenanceDefinitionSlug: null,
-			provenancePackageHash: null,
-			provenanceAppliedAt: null,
-			publishedVersion: null,
-			publishedAt: null,
-			assetCount: 0,
-			detail: 'Target database query failed',
-		};
-	}
-	const rows = matchRes.stdout.trim().split('\n').filter(Boolean);
-
-	if (rows.length === 0) {
-		return {
-			environment: env,
-			status: 'NOT_PRESENT',
-			activeMatchCount: 0,
-			resolvedId: null,
-			resolvedSlug: null,
-			provenanceDefinitionSlug: null,
-			provenancePackageHash: null,
-			provenanceAppliedAt: null,
-			publishedVersion: null,
-			publishedAt: null,
-			assetCount: 0,
-			detail: `Invitation ${slug} not present in target DB`,
-		};
-	}
-
-	if (rows.length > 1) {
-		const matchingIds = rows.map((r) => r.split('|')[0]!.trim());
-		return {
-			environment: env,
-			status: 'IDENTITY_CONFLICT',
-			activeMatchCount: rows.length,
-			resolvedId: null,
-			resolvedSlug: slug,
-			provenanceDefinitionSlug: null,
-			provenancePackageHash: null,
-			provenanceAppliedAt: null,
-			publishedVersion: null,
-			publishedAt: null,
-			assetCount: 0,
-			detail: `IDENTITY_CONFLICT: ${rows.length} active invitations found (${matchingIds.join(', ')})`,
-		};
-	}
-
-	const [invId, invSlug] = rows[0]!.split('|').map((s) => s.trim());
-
-	// Query provenance
-	const provRes = runPsql(
-		`select definition_slug, package_hash, applied_at::text from public.managed_invitation_release_provenance where invitation_id = ${sqlLiteral(invId!)}::uuid;`,
-		dbUrl,
-		psqlOptions({ tuplesOnly: true, throwOnError: false }),
-	);
-	const [provSlug, provHash, provApplied] = provRes.stdout
-		.trim()
-		.split('|')
-		.map((s) => s.trim());
-
-	// Query published content
-	const pubRes = runPsql(
-		`select version::text, published_at::text from public.published_invitation_content where invitation_project_id = ${sqlLiteral(invId!)}::uuid order by version desc limit 1;`,
-		dbUrl,
-		psqlOptions({ tuplesOnly: true, throwOnError: false }),
-	);
-	const [pubVer, pubAt] = pubRes.stdout
-		.trim()
-		.split('|')
-		.map((s) => s.trim());
-
-	// Query draft state for divergence
-	const draftRes = runPsql(
-		`select status, updated_at::text from public.invitation_content_drafts where invitation_project_id = ${sqlLiteral(invId!)}::uuid and deleted_at is null limit 1;`,
-		dbUrl,
-		psqlOptions({ tuplesOnly: true, throwOnError: false }),
-	);
-	const [draftStatus, draftUpdatedAt] = draftRes.stdout
-		.trim()
-		.split('|')
-		.map((s) => s.trim());
-
-	// Query assets count
-	const assetRes = runPsql(
-		`select count(*) from public.invitation_assets where invitation_id = ${sqlLiteral(invId!)}::uuid and deleted_at is null;`,
-		dbUrl,
-		psqlOptions({ tuplesOnly: true, throwOnError: false }),
-	);
-	const assetCount = Number(assetRes.stdout.trim() || '0');
-
-	const isDiverged = Boolean(
-		draftStatus === 'draft' &&
-		draftUpdatedAt &&
-		pubAt &&
-		new Date(draftUpdatedAt).getTime() > new Date(pubAt).getTime(),
-	);
-
-	let status: StatusVocabulary = 'UNVERIFIED';
-	let detail = `Active invitation resolved (${invId})`;
-	if (provHash && canonicalHash) {
-		if (provHash !== canonicalHash) {
-			status = 'BEHIND_CANONICAL';
-		} else if (isDiverged) {
-			status = 'DIVERGED';
-		} else {
-			status = 'MATCH_CANONICAL';
-		}
-	} else if (provHash && isDiverged) {
-		status = 'DIVERGED';
-	} else if (!canonicalHash) {
-		detail = `Active invitation resolved (${invId}); canonical package hash unavailable — not a proven MATCH`;
-	} else if (!provHash) {
-		detail = `Active invitation resolved (${invId}); managed provenance package hash missing — not a proven MATCH`;
-	}
-
-	return {
-		environment: env,
-		status,
-		activeMatchCount: 1,
-		resolvedId: invId!,
-		resolvedSlug: invSlug!,
-		provenanceDefinitionSlug: provSlug || null,
-		provenancePackageHash: provHash || null,
-		provenanceAppliedAt: provApplied || null,
-		publishedVersion: pubVer ? Number(pubVer) : null,
-		publishedAt: pubAt || null,
-		assetCount,
-		detail,
-	};
-}
-
-interface BatchInvitationRowData {
-	invId: string;
-	provSlug: string | null;
-	provHash: string | null;
-	provApplied: string | null;
-	pubVersion: number | null;
-	pubAt: string | null;
-	pubContent: string | null;
-	draftStatus: string | null;
-	draftUpdatedAt: string | null;
-	assetCount: number;
-}
-
-function resolveBatchRowStatus(
-	env: TargetEnv,
-	slug: string,
-	rows: BatchInvitationRowData[],
-	canonicalHash: string | null,
-): PerInvitationTargetStatus & { publishedContent?: string | null } {
-	if (rows.length > 1) {
-		return {
-			environment: env,
-			status: 'IDENTITY_CONFLICT',
-			activeMatchCount: rows.length,
-			resolvedId: null,
-			resolvedSlug: slug,
-			provenanceDefinitionSlug: null,
-			provenancePackageHash: null,
-			provenanceAppliedAt: null,
-			publishedVersion: null,
-			publishedAt: null,
-			assetCount: 0,
-			detail: `IDENTITY_CONFLICT: ${rows.length} active invitations found`,
-		};
-	}
-
-	const row = rows[0]!;
-	const isDiverged = Boolean(
-		row.draftStatus === 'draft' &&
-		row.draftUpdatedAt &&
-		row.pubAt &&
-		new Date(row.draftUpdatedAt).getTime() > new Date(row.pubAt).getTime(),
-	);
-
-	let status: StatusVocabulary = 'UNVERIFIED';
-	let detail = `Active invitation resolved (${row.invId})`;
-	if (row.provHash && canonicalHash) {
-		if (row.provHash !== canonicalHash) {
-			status = 'BEHIND_CANONICAL';
-		} else if (isDiverged) {
-			status = 'DIVERGED';
-		} else {
-			status = 'MATCH_CANONICAL';
-		}
-	} else if (row.provHash && isDiverged) {
-		status = 'DIVERGED';
-	} else if (!canonicalHash) {
-		detail = `Active invitation resolved (${row.invId}); canonical package hash unavailable — not a proven MATCH`;
-	} else if (!row.provHash) {
-		detail = `Active invitation resolved (${row.invId}); managed provenance package hash missing — not a proven MATCH`;
-	}
-
-	return {
-		environment: env,
-		status,
-		activeMatchCount: 1,
-		resolvedId: row.invId,
-		resolvedSlug: slug,
-		provenanceDefinitionSlug: row.provSlug,
-		provenancePackageHash: row.provHash,
-		provenanceAppliedAt: row.provApplied,
-		publishedVersion: row.pubVersion,
-		publishedAt: row.pubAt,
-		assetCount: row.assetCount,
-		detail,
-		publishedContent: row.pubContent,
-	};
-}
-
-function parseBatchOutput(stdout: string): Map<string, BatchInvitationRowData[]> {
-	const rowsBySlug = new Map<string, BatchInvitationRowData[]>();
-	const lines = stdout.trim().split('\n').filter(Boolean);
-	for (const line of lines) {
-		const parts = line.split(BATCH_FIELD_SEP);
-		if (parts.length < 10 || !parts[0]) continue;
-		const [
-			slug,
-			invId,
-			provSlug,
-			provHash,
-			provApplied,
-			pubVer,
-			pubAt,
-			draftStatus,
-			draftUpdatedAt,
-			assetCountStr,
-			pubContentB64,
-		] = parts;
-
-		let pubContent: string | null = null;
-		if (pubContentB64) {
-			try {
-				pubContent = Buffer.from(pubContentB64, 'base64').toString('utf8');
-			} catch {
-				pubContent = null;
-			}
-		}
-
-		const rowData: BatchInvitationRowData = {
-			invId: invId || '',
-			provSlug: provSlug || null,
-			provHash: provHash || null,
-			provApplied: provApplied || null,
-			pubVersion: pubVer ? Number(pubVer) : null,
-			pubAt: pubAt || null,
-			pubContent,
-			draftStatus: draftStatus || null,
-			draftUpdatedAt: draftUpdatedAt || null,
-			assetCount: Number(assetCountStr || '0'),
-		};
-
-		const existing = rowsBySlug.get(slug) ?? [];
-		existing.push(rowData);
-		rowsBySlug.set(slug, existing);
-	}
-	return rowsBySlug;
-}
-
-export type BatchTargetStatusOptions = {
-	/** Restrict the scan to these slugs (observability corpus). Empty → no rows. */
-	slugs: readonly string[];
-	/**
-	 * When true, include base64-encoded published JSON for legacy Local reference compares.
-	 * Never enable for Preview/Production — content stays on the remote DB.
-	 */
-	includePublishedContent?: boolean;
-};
-
-/**
- * Batched per-invitation status for a target env.
- * Always slug-filtered; never scans the full active invitation inventory.
- */
-export function evaluateBatchTargetStatuses(
-	env: TargetEnv,
-	canonicalHashes: Map<string, string | null>,
-	options: BatchTargetStatusOptions,
-): Map<string, PerInvitationTargetStatus & { publishedContent?: string | null }> {
-	const result = new Map<
-		string,
-		PerInvitationTargetStatus & { publishedContent?: string | null }
-	>();
-	const slugs = [...new Set(options.slugs.map((s) => s.trim()).filter(Boolean))];
-	if (slugs.length === 0) return result;
-
-	const emptyStatus = (
-		status: 'CREDENTIALS_REQUIRED' | 'UNREACHABLE',
+	const base = (
+		status: StatusVocabulary,
 		detail: string,
-	): PerInvitationTargetStatus & { publishedContent?: string | null } => ({
+		extra: Partial<PerInvitationTargetStatus> = {},
+	): PerInvitationTargetStatus => ({
 		environment: env,
 		status,
 		activeMatchCount: 0,
@@ -663,111 +509,138 @@ export function evaluateBatchTargetStatuses(
 		publishedAt: null,
 		assetCount: 0,
 		detail,
+		freshness,
+		timeoutDegraded: options.timeoutDegraded,
+		durationMs: Math.round(performance.now() - started),
+		...extra,
 	});
 
-	const { dbUrl, error } = resolveDbUrlForEnv(env);
 	if (!dbUrl) {
-		for (const slug of slugs) {
-			result.set(
-				slug,
-				emptyStatus('CREDENTIALS_REQUIRED', error || 'Credentials not configured'),
-			);
-		}
-		return result;
-	}
-	if (!testConnectivity(dbUrl)) {
-		for (const slug of slugs) {
-			result.set(
-				slug,
-				emptyStatus('UNREACHABLE', 'Database connection check failed or timed out'),
-			);
-		}
-		return result;
+		return base('CREDENTIALS_REQUIRED', error || 'Target credentials not configured');
 	}
 
-	const slugList = slugs.map((s) => sqlLiteral(s)).join(', ');
-	const includeContent = Boolean(options.includePublishedContent);
-	const contentExpr = includeContent
-		? `COALESCE(encode(convert_to(COALESCE(pub.content::text, ''), 'UTF8'), 'base64'), '')`
-		: `''`;
-
-	const batchSql = `
-SELECT
-  concat_ws(
-    chr(31),
-    i.slug,
-    i.id::text,
-    COALESCE(p.definition_slug, ''),
-    COALESCE(p.package_hash, ''),
-    COALESCE(p.applied_at::text, ''),
-    COALESCE(pub.version::text, ''),
-    COALESCE(pub.published_at::text, ''),
-    COALESCE(d.status, ''),
-    COALESCE(d.updated_at::text, ''),
-    COALESCE(a.asset_count, 0)::text,
-    ${contentExpr}
-  )
-FROM public.invitations i
-LEFT JOIN public.managed_invitation_release_provenance p ON p.invitation_id = i.id
-LEFT JOIN LATERAL (
-  SELECT version, published_at${includeContent ? ', content' : ''}
-  FROM public.published_invitation_content
-  WHERE invitation_project_id = i.id ORDER BY version DESC LIMIT 1
-) pub ON true
-LEFT JOIN LATERAL (
-  SELECT status, updated_at FROM public.invitation_content_drafts
-  WHERE invitation_project_id = i.id AND deleted_at IS NULL LIMIT 1
-) d ON true
-LEFT JOIN LATERAL (
-  SELECT COUNT(*) AS asset_count FROM public.invitation_assets
-  WHERE invitation_id = i.id AND deleted_at IS NULL
-) a ON true
-WHERE i.archived_at IS NULL
-  AND i.slug IN (${slugList});
-`.trim();
-
-	const batchRes = runPsql(
-		batchSql,
-		dbUrl,
-		psqlOptions({ tuplesOnly: true, throwOnError: false }),
-	);
-	if (batchRes.status !== 0) {
-		for (const slug of slugs) {
-			result.set(slug, emptyStatus('UNREACHABLE', 'Batched invitation status query failed'));
-		}
-		return result;
+	if (!session.probeConnectivitySync(dbUrl)) {
+		return base(
+			'UNREACHABLE',
+			options.timeoutDegraded
+				? 'Probe budget exhausted before environment verification (timeout degraded)'
+				: 'Target database unreachable',
+		);
 	}
 
-	const rowsBySlug = parseBatchOutput(batchRes.stdout);
-	for (const slug of slugs) {
-		const rows = rowsBySlug.get(slug);
-		if (!rows || rows.length === 0) {
-			result.set(slug, {
-				environment: env,
-				status: 'NOT_PRESENT',
-				activeMatchCount: 0,
-				resolvedId: null,
-				resolvedSlug: null,
-				provenanceDefinitionSlug: null,
-				provenancePackageHash: null,
-				provenanceAppliedAt: null,
-				publishedVersion: null,
-				publishedAt: null,
-				assetCount: 0,
-				detail: `NOT_PRESENT: no active invitation found for slug "${slug}"`,
-			});
-			continue;
-		}
-		const canonicalHash = canonicalHashes.get(slug) ?? null;
-		result.set(slug, resolveBatchRowStatus(env, slug, rows, canonicalHash));
-	}
+	const meta = readManagedInvitationMetaSync(session, dbUrl, slug);
+	const classified = classifyManagedInvitationMeta(meta, canonicalHash, slug);
 
-	return result;
+	return base(classified.status, classified.detail, {
+		activeMatchCount: classified.activeMatchCount,
+		resolvedId: classified.resolvedId,
+		resolvedSlug: classified.resolvedSlug,
+		provenanceDefinitionSlug: classified.provenanceDefinitionSlug,
+		provenancePackageHash: classified.provenancePackageHash,
+		provenanceAppliedAt: classified.provenanceAppliedAt,
+		publishedVersion: classified.publishedVersion,
+		publishedAt: classified.publishedAt,
+		assetCount: classified.assetCount,
+	});
 }
 
-export async function evaluateInvitationStatus(slug: string): Promise<PerInvitationStatusSummary> {
+async function evaluateSingleTargetStatusAsync(
+	env: TargetEnv,
+	slug: string,
+	canonicalHash: string | null,
+	options: { session?: StatusProbeSession; timeoutDegraded?: boolean } = {},
+): Promise<PerInvitationTargetStatus> {
+	const session =
+		options.session ?? getOrCreateStatusProbeSession(statusProbeTimeoutMs);
+	const started = performance.now();
+	const freshness = createLiveFreshness(Boolean(options.timeoutDegraded));
+	const { dbUrl, error } = resolveDbUrlForEnv(env);
+
+	const base = (
+		status: StatusVocabulary,
+		detail: string,
+		extra: Partial<PerInvitationTargetStatus> = {},
+	): PerInvitationTargetStatus => ({
+		environment: env,
+		status,
+		activeMatchCount: 0,
+		resolvedId: null,
+		resolvedSlug: null,
+		provenanceDefinitionSlug: null,
+		provenancePackageHash: null,
+		provenanceAppliedAt: null,
+		publishedVersion: null,
+		publishedAt: null,
+		assetCount: 0,
+		detail,
+		freshness,
+		timeoutDegraded: options.timeoutDegraded,
+		durationMs: Math.round(performance.now() - started),
+		...extra,
+	});
+
+	if (!dbUrl) {
+		return base('CREDENTIALS_REQUIRED', error || 'Target credentials not configured');
+	}
+
+	if (!(await session.probeConnectivity(dbUrl))) {
+		return base(
+			'UNREACHABLE',
+			options.timeoutDegraded
+				? 'Probe budget exhausted before environment verification (timeout degraded)'
+				: 'Target database unreachable',
+		);
+	}
+
+	const meta = await readManagedInvitationMeta(session, dbUrl, slug);
+	const classified = classifyManagedInvitationMeta(meta, canonicalHash, slug);
+
+	return base(classified.status, classified.detail, {
+		activeMatchCount: classified.activeMatchCount,
+		resolvedId: classified.resolvedId,
+		resolvedSlug: classified.resolvedSlug,
+		provenanceDefinitionSlug: classified.provenanceDefinitionSlug,
+		provenancePackageHash: classified.provenancePackageHash,
+		provenanceAppliedAt: classified.provenanceAppliedAt,
+		publishedVersion: classified.publishedVersion,
+		publishedAt: classified.publishedAt,
+		assetCount: classified.assetCount,
+	});
+}
+
+function timeoutUnreachableTarget(env: TargetEnv): PerInvitationTargetStatus {
+	return {
+		environment: env,
+		status: 'UNREACHABLE',
+		activeMatchCount: 0,
+		resolvedId: null,
+		resolvedSlug: null,
+		provenanceDefinitionSlug: null,
+		provenancePackageHash: null,
+		provenanceAppliedAt: null,
+		publishedVersion: null,
+		publishedAt: null,
+		assetCount: 0,
+		detail: 'Probe budget exhausted before environment verification (timeout degraded)',
+		freshness: createLiveFreshness(true),
+		timeoutDegraded: true,
+	};
+}
+
+export async function evaluateInvitationStatus(
+	slug: string,
+	options?: {
+		session?: StatusProbeSession;
+		concurrency?: number;
+		overallTimeoutMs?: number;
+	},
+): Promise<PerInvitationStatusSummary> {
 	const definition = getInvitationDefinition(slug);
 	const envs: TargetEnv[] = ['local', 'preview', 'production'];
+	const session =
+		options?.session ?? getOrCreateStatusProbeSession(statusProbeTimeoutMs);
+	activeSession = session;
+	const concurrency = options?.concurrency ?? 3;
 
 	let canonicalHash: string | null = null;
 	try {
@@ -777,15 +650,49 @@ export async function evaluateInvitationStatus(slug: string): Promise<PerInvitat
 		// Canonical hash calculation unavailable; status falls back to provenance presence check.
 	}
 
-	const envResults: Partial<Record<TargetEnv, PerInvitationTargetStatus>> = {};
-	for (const env of envs) {
-		envResults[env] = evaluateSingleTargetStatus(env, slug, canonicalHash);
+	const collected = new Map<TargetEnv, PerInvitationTargetStatus>();
+	const work = mapPool(envs, concurrency, async (env) => {
+		const status = await evaluateSingleTargetStatusAsync(env, slug, canonicalHash, {
+			session,
+		});
+		collected.set(env, status);
+		return status;
+	});
+
+	if (typeof options?.overallTimeoutMs === 'number' && options.overallTimeoutMs > 0) {
+		let timer: ReturnType<typeof setTimeout> | undefined;
+		try {
+			await Promise.race([
+				work,
+				new Promise<never>((_, reject) => {
+					timer = setTimeout(
+						() => reject(new Error('INVITATION_STATUS_TIMEOUT')),
+						options.overallTimeoutMs,
+					);
+				}),
+			]);
+		} catch (error) {
+			if (error instanceof Error && error.message === 'INVITATION_STATUS_TIMEOUT') {
+				session.markTimeoutDegraded();
+			} else {
+				throw error;
+			}
+		} finally {
+			if (timer) clearTimeout(timer);
+		}
+	} else {
+		await work;
 	}
 
 	return {
 		slug: definition.slug,
 		title: definition.title,
 		eventType: definition.eventType,
-		environments: envResults as Record<TargetEnv, PerInvitationTargetStatus>,
+		environments: {
+			local: collected.get('local') ?? timeoutUnreachableTarget('local'),
+			preview: collected.get('preview') ?? timeoutUnreachableTarget('preview'),
+			production: collected.get('production') ?? timeoutUnreachableTarget('production'),
+		},
+		debugCounters: session.debugCounters,
 	};
 }

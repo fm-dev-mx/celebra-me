@@ -75,7 +75,6 @@
         "db:disposable:test": "tsx scripts/db/disposable-test-env.ts run-tests",
         "test:db:rsvp-contracts": "tsx scripts/db/disposable-test-env.ts run-rsvp-db-contracts",
         "test:db:managed-contracts": "tsx scripts/db/disposable-test-env.ts run-managed-db-contracts",
-        "test:managed:regression": "tsx scripts/observability/run-local-render-corpus-regression.ts",
         "test:local-render-corpus": "tsx scripts/observability/run-local-render-corpus-regression.ts",
         "invitation:local-corpus": "tsx scripts/provision/local-render-corpus/cli.ts",
         "db:disposable:phase3-concurrency": "tsx scripts/db/disposable-test-env.ts run-phase3-concurrency-test",
