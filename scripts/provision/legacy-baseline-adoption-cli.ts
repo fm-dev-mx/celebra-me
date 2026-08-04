@@ -1,20 +1,29 @@
-/** CLI boundary for the read-only legacy baseline adoption preparation flow. */
+/**
+ * CLI boundary for legacy baseline adoption preparation and metadata-only apply.
+ *
+ * Writes are limited to managed provenance + mutation receipts (never invitation
+ * content). Recovery evidence is a bounded pre-write snapshot — not a full
+ * critical Production backup.
+ *
+ * Pending until all LEGACY_BASELINE_ADOPTION_SLUGS are adopted or explicitly
+ * excluded (Goal 4 retirement condition).
+ */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 
 import { exportInvitationPackage } from './invitation-package.ts';
 import {
 	applyLegacyBaselineAdoption,
+	captureLegacyBaselinePreWriteSnapshot,
 	createLegacyBaselineAdoptionManifest,
 	dryRunLegacyBaselineAdoption,
 	LEGACY_BASELINE_ADOPTION_SLUGS,
 	readLegacyAdoptionCandidate,
 	type LegacyBaselineAdoptionManifest,
+	type LegacyBaselinePreWriteSnapshot,
 } from './legacy-baseline-adoption.ts';
 import { getProdDbUrl } from '../db/db-workflow-lib.ts';
 import { requireOwnerProductionApply } from '../db/owner-production-apply.ts';
-import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
-import { evaluatePromotionBackupGate } from './invitation-promote.ts';
 
 interface CliOptions {
 	manifestPath?: string;
@@ -22,7 +31,7 @@ interface CliOptions {
 	dryRun: boolean;
 	apply: boolean;
 	manifestFingerprint?: string;
-	backupManifestPath?: string;
+	recoverySnapshotPath?: string;
 	json: boolean;
 }
 
@@ -35,7 +44,7 @@ function parseOptions(args: string[]): CliOptions {
 	const manifestPath = value(args, '--manifest');
 	const outPath = value(args, '--out');
 	const manifestFingerprint = value(args, '--manifest-fingerprint');
-	const backupManifestPath = value(args, '--backup-manifest');
+	const recoverySnapshotPath = value(args, '--recovery-snapshot');
 	if ((manifestPath && outPath) || (args.includes('--dry-run') && !manifestPath)) {
 		throw new Error('Use --out to generate, or --manifest together with --dry-run or --apply.');
 	}
@@ -48,7 +57,7 @@ function parseOptions(args: string[]): CliOptions {
 		dryRun: args.includes('--dry-run'),
 		apply: args.includes('--apply'),
 		manifestFingerprint,
-		backupManifestPath,
+		recoverySnapshotPath,
 		json: args.includes('--json'),
 	};
 }
@@ -82,13 +91,18 @@ function commandFor(path: string, fingerprint: string): LegacyBaselineAdoptionMa
 	const quoted = JSON.stringify(path);
 	return {
 		dryRun: `pnpm invitation:legacy-baseline-adoption -- --manifest ${quoted} --dry-run --json`,
-		futureApply: `pnpm invitation:legacy-baseline-adoption -- --manifest ${quoted} --manifest-fingerprint ${fingerprint} --backup-manifest <critical-backup-manifest.json> --apply --json`,
+		futureApply: `pnpm invitation:legacy-baseline-adoption -- --manifest ${quoted} --manifest-fingerprint ${fingerprint} --recovery-snapshot <prewrite-snapshot.json> --apply --json`,
 	};
 }
 
 function writeManifest(path: string, manifest: LegacyBaselineAdoptionManifest): void {
 	mkdirSync(dirname(path), { recursive: true });
 	writeFileSync(path, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
+}
+
+function writeSnapshot(path: string, snapshot: LegacyBaselinePreWriteSnapshot): void {
+	mkdirSync(dirname(path), { recursive: true });
+	writeFileSync(path, `${JSON.stringify(snapshot, null, 2)}\n`, 'utf8');
 }
 
 function present(value: unknown, json: boolean): void {
@@ -124,35 +138,33 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
 		return;
 	}
 	if (options.apply) {
-		if (!options.backupManifestPath) {
+		const { url: productionDbUrl } = getProdDbUrl();
+		const snapshot = captureLegacyBaselinePreWriteSnapshot({
+			manifest: bound,
+			dbUrl: productionDbUrl,
+		});
+		const snapshotPath = resolve(
+			process.cwd(),
+			options.recoverySnapshotPath ??
+				`.agent/tmp/adoptions/legacy-baseline-prewrite-${bound.manifestFingerprint.slice(0, 12)}.json`,
+		);
+		writeSnapshot(snapshotPath, snapshot);
+		if (snapshot.scope.length === 0) {
 			throw new Error(
-				'BACKUP_REQUIRED: pass --backup-manifest from a fresh pnpm db:prod:backup:critical run before applying legacy baseline adoption.',
+				'RECOVERY_SNAPSHOT: no ELIGIBLE entries in manifest; refusing apply with empty recovery scope.',
 			);
 		}
-		const { url: productionDbUrl } = getProdDbUrl();
-		const backup = evaluatePromotionBackupGate({
-			manifestPath: options.backupManifestPath,
-			productionProjectRef: SUPABASE_PROJECT_REFS.production,
-			required: true,
-		});
-		if (!backup.acceptable) {
-			throw new Error(backup.detail);
-		}
-		const scope = bound.entries
-			.filter((entry) => entry.status === 'ELIGIBLE')
-			.map((entry) => entry.slug)
-			.sort()
-			.join(',');
+		const scope = snapshot.scope.join(',');
 		requireOwnerProductionApply({
 			apply: true,
 			dbUrl: productionDbUrl,
 			operationType: 'legacy_baseline_adoption',
 			confirmationChallenge: `ADOPT_BASELINE ${bound.manifestFingerprint}`,
 			summary: [
-				['Mode', 'legacy baseline adoption'],
-				['Scope', scope || '(none)'],
+				['Mode', 'legacy baseline adoption (metadata-only)'],
+				['Scope', scope],
 				['Fingerprint', bound.manifestFingerprint],
-				['Backup', backup.manifestPath ?? options.backupManifestPath],
+				['Recovery snapshot', snapshotPath],
 			],
 		});
 		const result = await applyLegacyBaselineAdoption({
@@ -164,7 +176,8 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
 				status: 'APPLIED',
 				manifestPath,
 				manifestFingerprint: bound.manifestFingerprint,
-				backupManifest: backup.manifestPath ?? options.backupManifestPath,
+				recoverySnapshot: snapshotPath,
+				rollback: snapshot.rollback,
 				entries: result.appliedEntries,
 				writes: result.writes,
 			},
@@ -184,6 +197,8 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
 			manifestFingerprint: bound.manifestFingerprint,
 			entries: result,
 			writes: 0,
+			recoveryNote:
+				'Apply captures a bounded pre-write provenance snapshot (not a full critical backup) before the owner gate.',
 		},
 		options.json,
 	);

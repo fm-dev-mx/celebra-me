@@ -637,6 +637,85 @@ export function dryRunLegacyBaselineAdoption(input: {
 	});
 }
 
+export interface LegacyBaselinePreWriteRow {
+	slug: string;
+	invitationId: string | null;
+	provenance: Record<string, unknown> | null;
+}
+
+export interface LegacyBaselinePreWriteSnapshot {
+	schemaVersion: 'legacy-baseline-prewrite-v1';
+	capturedAt: string;
+	manifestFingerprint: string;
+	scope: string[];
+	/** Prior provenance rows only — content/RSVP tables are never mutated by this flow. */
+	rows: LegacyBaselinePreWriteRow[];
+	rollback: {
+		description: string;
+		steps: string[];
+	};
+}
+
+/**
+ * Bounded pre-write recovery evidence for metadata-only baseline adoption.
+ * Captures existing managed provenance rows for eligible slugs so apply can be
+ * rolled back without a full critical Production backup.
+ */
+export function captureLegacyBaselinePreWriteSnapshot(input: {
+	manifest: LegacyBaselineAdoptionManifest;
+	dbUrl: string;
+}): LegacyBaselinePreWriteSnapshot {
+	const scope = input.manifest.entries
+		.filter((entry) => entry.status === 'ELIGIBLE')
+		.map((entry) => entry.slug)
+		.sort();
+	const rows: LegacyBaselinePreWriteRow[] = [];
+
+	for (const slug of scope) {
+		const idRes = runPsql(
+			`select id::text from public.invitations where slug = ${sqlLiteral(slug)} and archived_at is null limit 1;`,
+			input.dbUrl,
+			{ tuplesOnly: true, throwOnError: false },
+		);
+		const invitationId = idRes.status === 0 ? idRes.stdout.trim() || null : null;
+		if (!invitationId) {
+			rows.push({ slug, invitationId: null, provenance: null });
+			continue;
+		}
+		const provRes = runPsql(
+			`select coalesce(row_to_json(p), 'null'::json)::text from public.managed_invitation_release_provenance p where invitation_id = ${sqlLiteral(invitationId)}::uuid limit 1;`,
+			input.dbUrl,
+			{ tuplesOnly: true, throwOnError: false },
+		);
+		let provenance: Record<string, unknown> | null = null;
+		if (provRes.status === 0) {
+			const text = provRes.stdout.trim();
+			if (text && text !== 'null') {
+				provenance = JSON.parse(text) as Record<string, unknown>;
+			}
+		}
+		rows.push({ slug, invitationId, provenance });
+	}
+
+	return {
+		schemaVersion: 'legacy-baseline-prewrite-v1',
+		capturedAt: new Date().toISOString(),
+		manifestFingerprint: input.manifest.manifestFingerprint,
+		scope,
+		rows,
+		rollback: {
+			description:
+				'Metadata-only rollback: restore or delete managed_invitation_release_provenance for scoped invitation IDs; leave invitation content untouched. Receipts are append-only — retain for audit.',
+			steps: [
+				'Stop further apply attempts for this manifest fingerprint.',
+				'For each snapshot row with prior provenance, restore that JSON into managed_invitation_release_provenance (or delete the row if prior provenance was null).',
+				'Do not reverse invitation_mutation_operation_receipts rows (append-only ledger).',
+				'Re-run dry-run against the same immutable manifest before any retry.',
+			],
+		},
+	};
+}
+
 export async function applyLegacyBaselineAdoption(input: {
 	manifest: LegacyBaselineAdoptionManifest;
 	providedFingerprint?: string;
