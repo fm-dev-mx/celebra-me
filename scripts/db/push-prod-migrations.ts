@@ -4,13 +4,11 @@
  * Canonical entrypoint: pnpm db:migrate -- --target production
  * Alias: pnpm db:prod:migrate
  *
+ * Thin delegation only — no orchestration logic.
  * Orchestration lives in migrate-orchestrator.ts + migrate-policy-production.ts.
  */
 
 import { runMigrateCli } from './migrate-cli.ts';
-
-// Re-export helpers/tests still import from this path.
-export { isAllowlistedBehindAuditOutput } from './migrate-policy-production.ts';
 
 async function main(): Promise<void> {
 	const forwarded = [

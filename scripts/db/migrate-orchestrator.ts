@@ -70,6 +70,7 @@ function withSeams(
 ): MigratePolicyContext {
 	return {
 		...ctx,
+		session: ctx.session ?? {},
 		readConfirmationLine: input.readConfirmationLine ?? ctx.readConfirmationLine,
 		isInteractive: input.isInteractive ?? ctx.isInteractive,
 	};

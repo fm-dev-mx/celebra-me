@@ -10,7 +10,6 @@ import {
 	verifyRominaDraftResetOutcome,
 } from '../../scripts/provision/romina-draft-reset.ts';
 import { buildRominaDraftResetTransactionSql } from '../../scripts/provision/romina-draft-reset-service.ts';
-import { isAllowlistedBehindAuditOutput } from '../../scripts/db/push-prod-migrations.ts';
 
 function fixture(): {
 	draftContent: Record<string, unknown>;
@@ -82,22 +81,5 @@ describe('Romina full draft reset planner', () => {
 		expect(sql).toContain('romina_draft_reset');
 		expect(sql).toContain('ROMINA_DRAFT_RESET_PUBLISHED_CHANGED');
 		expect(sql).toContain('ROMINA_DRAFT_RESET_STALE_DRAFT');
-	});
-});
-
-describe('Production migrate BEHIND allowance', () => {
-	it('allows BEHIND audits with zero unexplained errors', () => {
-		const output = `
-Final schema lifecycle state: BEHIND
-Errors:   0
-`;
-		expect(isAllowlistedBehindAuditOutput(output, 1)).toBe(true);
-		expect(isAllowlistedBehindAuditOutput(output, 0)).toBe(false);
-		expect(
-			isAllowlistedBehindAuditOutput(
-				'Final schema lifecycle state: SCHEMA_DRIFT\nErrors:   0',
-				1,
-			),
-		).toBe(false);
 	});
 });

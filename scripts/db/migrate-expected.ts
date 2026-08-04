@@ -1,6 +1,6 @@
 /**
  * Shared --expected constraint parser for all migrate targets.
- * Preview temporarily accepts --allowlist / EXPECTED_MIGRATIONS with a deprecation warning.
+ * Deprecated --allowlist / EXPECTED_MIGRATIONS are Preview-only transition shims.
  */
 
 import { parseMigrationVersionList } from './migration-pending-set.ts';
@@ -12,14 +12,24 @@ export interface ExpectedConstraintParseResult {
 	deprecationWarnings: string[];
 }
 
+export interface ParseExpectedConstraintOptions {
+	/**
+	 * When true, accept deprecated `--allowlist` and `EXPECTED_MIGRATIONS`.
+	 * Preview transition only — Production/Local/Disposable must stay false.
+	 */
+	allowDeprecatedAliases?: boolean;
+}
+
 /**
- * Parse expected-set constraint from argv + env.
+ * Parse expected subset constraint from argv + env.
  * Single parser for all environments — no per-target duplicate logic.
  */
 export function parseExpectedConstraint(
 	argv: readonly string[],
 	env: NodeJS.ProcessEnv = process.env,
+	options: ParseExpectedConstraintOptions = {},
 ): ExpectedConstraintParseResult {
+	const allowDeprecated = options.allowDeprecatedAliases === true;
 	const warnings: string[] = [];
 	const expectedIdx = argv.indexOf('--expected');
 	const allowlistIdx = argv.indexOf('--allowlist');
@@ -33,6 +43,12 @@ export function parseExpectedConstraint(
 	}
 
 	if (allowlistIdx !== -1) {
+		if (!allowDeprecated) {
+			throw new Error(
+				'Unsupported flag --allowlist. Use --expected <comma-separated-versions>. ' +
+					'(Deprecated --allowlist remains Preview-only during the transition window.)',
+			);
+		}
 		const allowlistRaw = argv[allowlistIdx + 1];
 		if (!allowlistRaw || allowlistRaw.startsWith('-')) {
 			throw new Error(
@@ -40,7 +56,7 @@ export function parseExpectedConstraint(
 			);
 		}
 		warnings.push(
-			'DEPRECATED: --allowlist is an alias of --expected and will be removed. Use --expected <versions>.',
+			'DEPRECATED: --allowlist is a Preview-only alias of --expected and will be removed after the transition window (no remaining scripts/docs callers). Use --expected <versions>.',
 		);
 		if (raw !== undefined && raw !== allowlistRaw) {
 			throw new Error('Conflicting --expected and --allowlist values. Use only --expected.');
@@ -49,8 +65,14 @@ export function parseExpectedConstraint(
 	}
 
 	if (raw === undefined && env.EXPECTED_MIGRATIONS?.trim()) {
+		if (!allowDeprecated) {
+			throw new Error(
+				'Unsupported EXPECTED_MIGRATIONS. Pass --expected <comma-separated-versions>. ' +
+					'(EXPECTED_MIGRATIONS remains Preview-only during the transition window.)',
+			);
+		}
 		warnings.push(
-			'DEPRECATED: EXPECTED_MIGRATIONS is an alias of --expected and will be removed. Pass --expected <versions>.',
+			'DEPRECATED: EXPECTED_MIGRATIONS is a Preview-only alias of --expected and will be removed after the transition window (no remaining scripts/docs callers). Pass --expected <versions>.',
 		);
 		raw = env.EXPECTED_MIGRATIONS.trim();
 	}

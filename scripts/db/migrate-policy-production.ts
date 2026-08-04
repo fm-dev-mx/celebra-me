@@ -26,7 +26,7 @@ import {
 	runMutationContractVerify,
 	verifyVersionsInHistory,
 } from './migrate-executors.ts';
-import type { MigrateEnvironmentPolicy } from './migrate-policy.ts';
+import type { MigrateEnvironmentPolicy, MigratePolicySession } from './migrate-policy.ts';
 import { buildMigrationPlan } from './migration-plan.ts';
 import { comparePendingSetToExpected } from './migration-pending-set.ts';
 import { requireOwnerProductionApply } from './owner-production-apply.ts';
@@ -44,7 +44,11 @@ export function isAllowlistedBehindAuditOutput(auditOutput: string, status: numb
 	);
 }
 
-function runProductionAudit(): void {
+function runProductionAudit(ctx: { session?: MigratePolicySession }): void {
+	if (ctx.session?.productionAuditCompleted) {
+		console.info('1. Reusing Production audit evidence from this orchestration (already verified).\n');
+		return;
+	}
 	console.info('1. Running read-only production database audit...');
 	const auditResult = runCommand(
 		'npx',
@@ -65,6 +69,7 @@ function runProductionAudit(): void {
 	} else {
 		console.info('✅ Production database audit passed.\n');
 	}
+	if (ctx.session) ctx.session.productionAuditCompleted = true;
 }
 
 function runPreMigrationBackup(prodDbUrl: string): void {
@@ -107,11 +112,12 @@ export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 			dbUrl: prodDbUrl,
 			expectedPin: input.expectedPin,
 			env: input.env ?? process.env,
+			session: {},
 		};
 	},
 
 	buildPlan(ctx, mode) {
-		runProductionAudit();
+		runProductionAudit(ctx);
 
 		console.info('2. Executing migration dry-run and pending-set discovery...');
 		const dryRun = executeSupabaseDryRun(ctx.dbUrl);

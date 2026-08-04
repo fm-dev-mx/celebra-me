@@ -5,12 +5,20 @@
 
 import type { MigrationPlan, MigrateTarget } from './migration-plan.ts';
 
+/** Per-orchestration memo for expensive read-only steps that must run once. */
+export interface MigratePolicySession {
+	/** Production object audit already completed for this apply/preflight orchestration. */
+	productionAuditCompleted?: boolean;
+}
+
 export interface MigratePolicyContext {
 	/** Resolved database URL — never logged in full by policies. */
 	dbUrl: string;
 	/** Optional expected pin from shared parser. */
 	expectedPin: readonly string[] | null;
 	env: NodeJS.ProcessEnv;
+	/** Mutable session bag shared across rebuilds within one orchestration. */
+	session?: MigratePolicySession;
 	/** Test seams */
 	readConfirmationLine?: () => string | Promise<string>;
 	isInteractive?: boolean;

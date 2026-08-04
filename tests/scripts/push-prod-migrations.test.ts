@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
-import { isAllowlistedBehindAuditOutput } from '../../scripts/db/push-prod-migrations.ts';
+import { isAllowlistedBehindAuditOutput } from '../../scripts/db/migrate-policy-production.ts';
 import {
 	comparePendingSetToExpected,
 	extractPendingMigrationVersions,

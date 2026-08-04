@@ -125,7 +125,9 @@ export async function runMigrateCli(argv: string[] = process.argv): Promise<void
 
 	let expectedPin: readonly string[] | null;
 	try {
-		const parsedExpected = parseExpectedConstraint(parsed.argv, process.env);
+		const parsedExpected = parseExpectedConstraint(parsed.argv, process.env, {
+			allowDeprecatedAliases: parsed.target === 'preview',
+		});
 		for (const warning of parsedExpected.deprecationWarnings) {
 			writeHuman(warning);
 		}
