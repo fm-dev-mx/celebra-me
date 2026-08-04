@@ -1,6 +1,6 @@
 # Perla `event-location` — final closure
 
-Scoped presentation refinement for `boda-perla-y-carlos` map preview / navigation hierarchy. No
+Scoped presentation refinement for `daniela-y-martin` map preview / navigation hierarchy. No
 venue payload, URL, or shared provider-button capability was removed.
 
 ## Contract preserved
@@ -8,7 +8,7 @@ venue payload, URL, or shared provider-button capability was removed.
 | Rule                                             | Status                                                |
 | ------------------------------------------------ | ----------------------------------------------------- |
 | `showNavigationButtons` optional, default `true` | Preserved (`presentation-options.ts`, schema default) |
-| Perla alone sets `showNavigationButtons: false`  | Preserved (`boda-perla-y-carlos.ts` provision)        |
+| Perla alone sets `showNavigationButtons: false`  | Preserved (`daniela-y-martin.ts` provision)        |
 | Other invitations keep provider buttons          | Confirmed via jewelry-box control                     |
 | Shared `VenueCard` provider buttons retained     | Still rendered when `showNavigationButtons !== false` |
 
@@ -20,7 +20,7 @@ venue payload, URL, or shared provider-button capability was removed.
 
 ## Visual refinements (Perla-scoped)
 
-Applied in `src/styles/invitation-profiles/boda-perla-y-carlos.scss`:
+Applied in `src/styles/invitation-profiles/daniela-y-martin.scss`:
 
 1. **Pin** — smaller marker anchored to the plate corner (`inset: auto 0.7rem 0.55rem auto`) so
    church spire/cross/door and hall entrance stay readable
@@ -55,7 +55,7 @@ Result: **2/2 passed**
 ### Payload / adapter
 
 ```text
-pnpm test -- tests/content/boda-perla-y-carlos-payload.test.ts
+pnpm test -- tests/content/daniela-y-martin-payload.test.ts
 ```
 
 Result: **8/8 passed** (Perla opt-out + control default `true`).
@@ -63,7 +63,7 @@ Result: **8/8 passed** (Perla opt-out + control default `true`).
 ### Screenshots
 
 ```text
-pnpm screenshot --url=/boda/boda-perla-y-carlos --type=invitation --sections=location --viewport=mobile-standard,desktop --output=output/playwright/boda-perla-y-carlos/event-location-closure --clean
+pnpm screenshot --url=/boda/daniela-y-martin --type=invitation --sections=location --viewport=mobile-standard,desktop --output=output/playwright/daniela-y-martin/event-location-closure --clean
 
 pnpm screenshot --url=/boda/demo-boda-jewelry-box-wedding --type=invitation --sections=location --viewport=mobile-standard,desktop --output=output/playwright/demo-boda-jewelry-box-wedding/event-location-closure --clean
 ```
@@ -72,8 +72,8 @@ Artifacts (repo-relative; under gitignored `output/playwright/`):
 
 | Subject | Viewport        | Path                                                                                                             |
 | ------- | --------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Perla   | mobile-standard | `output/playwright/boda-perla-y-carlos/event-location-closure/mobile-standard/06-section-location.png`           |
-| Perla   | desktop         | `output/playwright/boda-perla-y-carlos/event-location-closure/desktop/06-section-location.png`                   |
+| Perla   | mobile-standard | `output/playwright/daniela-y-martin/event-location-closure/mobile-standard/06-section-location.png`           |
+| Perla   | desktop         | `output/playwright/daniela-y-martin/event-location-closure/desktop/06-section-location.png`                   |
 | Control | mobile-standard | `output/playwright/demo-boda-jewelry-box-wedding/event-location-closure/mobile-standard/06-section-location.png` |
 | Control | desktop         | `output/playwright/demo-boda-jewelry-box-wedding/event-location-closure/desktop/06-section-location.png`         |
 
@@ -119,7 +119,7 @@ None of the four files in this change appear in the type-check diagnostics.
 ## Files touched
 
 - `src/components/invitation/components/VenueCard.astro`
-- `src/styles/invitation-profiles/boda-perla-y-carlos.scss`
+- `src/styles/invitation-profiles/daniela-y-martin.scss`
 - `src/styles/invitation/_event-location.scss`
 - `tests/e2e/event-location-navigation-contract.spec.ts`
 

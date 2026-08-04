@@ -1,5 +1,5 @@
 ---
-title: Boda Perla y Carlos — Final Visual Remediation Implementation Report
+title: Boda Daniela y Martín — Final Visual Remediation Implementation Report
 status: implementation-complete
 scope: Goal 2 final visual remediation from Goal 1 audit map
 implementation_timestamp: 2026-08-03T22:09:51-07:00
@@ -28,13 +28,13 @@ update, Preview, Production, database, or Storage mutation was performed.
 Prior Goal 2/3 staged paths remain staged. This Goal 2 added unstaged refinements on:
 
 - `src/lib/invitation/intersection-profiles.ts` (unstaged)
-- `src/styles/invitation-profiles/boda-perla-y-carlos.scss` (`MM` — staged prior + unstaged Goal 2)
-- `tests/content/boda-perla-y-carlos-payload.test.ts` (`MM`)
+- `src/styles/invitation-profiles/daniela-y-martin.scss` (`MM` — staged prior + unstaged Goal 2)
+- `tests/content/daniela-y-martin-payload.test.ts` (`MM`)
 - `tests/unit/intersection-profiles.test.ts` (unstaged)
 
 ## Baseline verification (real Local route)
 
-Before editing, `/boda/boda-perla-y-carlos?skipEnvelope=true` confirmed:
+Before editing, `/boda/daniela-y-martin?skipEnvelope=true` confirmed:
 
 | Check           | Result                                                                                              |
 | --------------- | --------------------------------------------------------------------------------------------------- |
@@ -46,16 +46,16 @@ Before editing, `/boda/boda-perla-y-carlos?skipEnvelope=true` confirmed:
 | Guest PA        | omitted on public route (expected); PA remains in source render plan when guest/demo context exists |
 
 Baseline screenshot:
-`output/playwright/boda-perla-y-carlos/goal2-final/baseline-skipEnvelope-390.png`
+`output/playwright/daniela-y-martin/goal2-final/baseline-skipEnvelope-390.png`
 
 ## Files and exact symbols changed
 
 | File                                                      | Symbols / selectors                                                                                                                                                                                                                                                                                          | Change                                                                                                    |
 | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
-| `src/styles/invitation-profiles/boda-perla-y-carlos.scss` | `--perla-space-*`, `--perla-countdown-*`, `--perla-location-*`, `--perla-family-padding-block`; opaque `--env-bg` / paper layers; wax seal visual rules for `[data-seal-icon='monogram']`; sealed letter-stage hide; hero lockup hierarchy; countdown/location/family/interlude/PA intersection presentation | Primary remediation surface                                                                               |
-| `src/lib/invitation/intersection-profiles.ts`             | `INTERSECTION_PROFILES['boda-perla-y-carlos']`                                                                                                                                                                                                                                                               | Arch into Interlude A; atmospheric Interlude B; PA overlap source retargeted to `interlude-after-gallery` |
+| `src/styles/invitation-profiles/daniela-y-martin.scss` | `--perla-space-*`, `--perla-countdown-*`, `--perla-location-*`, `--perla-family-padding-block`; opaque `--env-bg` / paper layers; wax seal visual rules for `[data-seal-icon='monogram']`; sealed letter-stage hide; hero lockup hierarchy; countdown/location/family/interlude/PA intersection presentation | Primary remediation surface                                                                               |
+| `src/lib/invitation/intersection-profiles.ts`             | `INTERSECTION_PROFILES['daniela-y-martin']`                                                                                                                                                                                                                                                               | Arch into Interlude A; atmospheric Interlude B; PA overlap source retargeted to `interlude-after-gallery` |
 | `tests/unit/intersection-profiles.test.ts`                | Perla map assertions                                                                                                                                                                                                                                                                                         | Covers arch / interlude bridges / PA overlap source                                                       |
-| `tests/content/boda-perla-y-carlos-payload.test.ts`       | profile contracts + render-plan intersection expectations                                                                                                                                                                                                                                                    | Opaque env-bg, family columns, no `interlude-free`, interlude/PA intersection metadata                    |
+| `tests/content/daniela-y-martin-payload.test.ts`       | profile contracts + render-plan intersection expectations                                                                                                                                                                                                                                                    | Opaque env-bg, family columns, no `interlude-free`, interlude/PA intersection metadata                    |
 
 No shared Family schema, reveal state machine, VenueCard, location helper, or `_event-wrapper.scss`
 edits in this Goal 2 pass.
@@ -140,7 +140,7 @@ heading clearance), indications gap, and family chapter padding. No `_event-wrap
 
 | Change                                                                                | Shared?                               | Blast radius |
 | ------------------------------------------------------------------------------------- | ------------------------------------- | ------------ |
-| Intersection map for `boda-perla-y-carlos` only                                       | Profile metadata file, Perla key only | Perla only   |
+| Intersection map for `daniela-y-martin` only                                       | Profile metadata file, Perla key only | Perla only   |
 | Perla profile SCSS                                                                    | Invitation-specific                   | Perla only   |
 | No shared `_event-wrapper`, reveal JS, Family schema, or VenueCard edits in this pass | —                                     | —            |
 
@@ -155,14 +155,14 @@ heading clearance), indications gap, and family chapter padding. No `_event-wrap
 | `pnpm validate:event-parity --allowMissingDb`                                    | **Passed**                                                                                                                                                     |
 | `pnpm test:e2e -- tests/e2e/envelope-reveal-interaction.spec.ts`                 | **10/10 passed**                                                                                                                                               |
 | Real-route reveal check (Playwright harness)                                     | Pass — sealed opaque; wax seal visible; hero chrome hidden until revealed; reduced-motion immediate reveal; no-JS fallback present                             |
-| Multi-viewport screenshots (360×740, 390×844, 430×932, desktop)                  | Captured under `output/playwright/boda-perla-y-carlos/goal2-final/` (48 PNGs)                                                                                  |
+| Multi-viewport screenshots (360×740, 390×844, 430×932, desktop)                  | Captured under `output/playwright/daniela-y-martin/goal2-final/` (48 PNGs)                                                                                  |
 | Horizontal overflow checks                                                       | None detected                                                                                                                                                  |
 | `pnpm type-check` / CI                                                           | **Failed** on pre-existing unrelated `tests/unit/observability-batch.test.ts` (2 errors). Not introduced by this work.                                         |
 | `pnpm agent:git-safety:check`                                                    | **Blocked by ENOBUFS** reading the already-staged binary interlude PNGs in `git diff --cached --binary`. No Git mutation performed; staged baseline preserved. |
 
 ## Screenshot paths
 
-Directory: `output/playwright/boda-perla-y-carlos/goal2-final/`
+Directory: `output/playwright/daniela-y-martin/goal2-final/`
 
 | Category              | Examples                                                                                                                                                                                                                                                                                                        |
 | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

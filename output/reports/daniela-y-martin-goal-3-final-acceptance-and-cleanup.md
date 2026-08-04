@@ -1,5 +1,5 @@
 ---
-title: Boda Perla y Carlos — Goal 3 Final Acceptance Audit and Cleanup
+title: Boda Daniela y Martín — Goal 3 Final Acceptance Audit and Cleanup
 status: acceptance-complete
 scope: Final acceptance of Goal 2 visual remediation on Local v6; residual defect correction only
 audit_timestamp: 2026-08-04T05:39:21-07:00
@@ -9,7 +9,7 @@ audit_timestamp: 2026-08-04T05:39:21-07:00
 
 ## Executive result
 
-Goal 3 acceptance is **complete** on the real Local route `/boda/boda-perla-y-carlos` (published
+Goal 3 acceptance is **complete** on the real Local route `/boda/daniela-y-martin` (published
 v6). Two verified residual defects from the pre-change audit were corrected in the Perla profile
 SCSS only. Reveal, Hero, both interludes, intersections, Location (`RECEPCIÓN` clearance), and
 Family pending contrast were re-verified on the live route at the required viewports.
@@ -20,18 +20,18 @@ No Preview, Production, database, Storage, dependency, content, or Git mutation 
 | ------------ | ----------------------------------------------------------------------------- |
 | Branch       | `dev-local`                                                                   |
 | HEAD         | `c83b98fe` — `docs(reports): archive Perla implementation and audit evidence` |
-| Working tree | Unstaged: `src/styles/invitation-profiles/boda-perla-y-carlos.scss` only      |
+| Working tree | Unstaged: `src/styles/invitation-profiles/daniela-y-martin.scss` only      |
 | Staged       | Empty (prior Goal 2 work already committed)                                   |
 | Git actions  | None (no stage/commit/push/reset)                                             |
 
 ## Authority inputs
 
 - Goal 1 handoff:
-  `.agent/tmp/handoffs/boda-perla-y-carlos-goal-1-final-visual/implementation-audit.md`
-- Goal 2 report: `output/reports/boda-perla-y-carlos-goal-2-final-visual-remediation.md`
+  `.agent/tmp/handoffs/daniela-y-martin-goal-1-final-visual/implementation-audit.md`
+- Goal 2 report: `output/reports/daniela-y-martin-goal-2-final-visual-remediation.md`
 - Live Local v6 route, current source, tests, and Goal 3 screenshots under
-  `output/playwright/boda-perla-y-carlos/goal3-final/`
-- Note: `output/reports/boda-perla-y-carlos-goal-3-final-audit.md` is a **prior**
+  `output/playwright/daniela-y-martin/goal3-final/`
+- Note: `output/reports/daniela-y-martin-goal-3-final-audit.md` is a **prior**
   interlude-integration report (different Goal 3 scope) and is not this acceptance deliverable.
 
 ## Pre-change audit (before Goal 3 edits)
@@ -54,7 +54,7 @@ Verified on Local v6 before modifying files:
 
 ## Residual corrections and cleanup performed
 
-File changed: `src/styles/invitation-profiles/boda-perla-y-carlos.scss`
+File changed: `src/styles/invitation-profiles/daniela-y-martin.scss`
 
 | Symbol / selector                                         | Correction                                                                                                               |
 | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
@@ -71,7 +71,7 @@ shared reveal/Hero/interlude/location/Family/RSVP contract files were edited in 
 
 ## Post-fix live-route evidence
 
-Machine summary: `output/playwright/boda-perla-y-carlos/goal3-final/audit-summary.json`
+Machine summary: `output/playwright/daniela-y-martin/goal3-final/audit-summary.json`
 
 | Check                                    | Result                                                                         |
 | ---------------------------------------- | ------------------------------------------------------------------------------ |
@@ -139,7 +139,7 @@ atmospheric. PA overlap remains active when PA renders (guest/demo).
 
 | Change                      | Shared?             | Blast radius               |
 | --------------------------- | ------------------- | -------------------------- |
-| Goal 3 SCSS edits           | Perla profile only  | `boda-perla-y-carlos` only |
+| Goal 3 SCSS edits           | Perla profile only  | `daniela-y-martin` only |
 | Intersection map            | Unchanged in Goal 3 | —                          |
 | Shared components / helpers | Not modified        | —                          |
 
@@ -162,7 +162,7 @@ atmospheric. PA overlap remains active when PA renders (guest/demo).
 
 ## Final screenshot paths
 
-Directory: `output/playwright/boda-perla-y-carlos/goal3-final/`
+Directory: `output/playwright/daniela-y-martin/goal3-final/`
 
 | Category        | Paths                                                                                                                                                                     |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -185,7 +185,7 @@ Directory: `output/playwright/boda-perla-y-carlos/goal3-final/`
 ## Final staged and working-tree state
 
 ```
- M src/styles/invitation-profiles/boda-perla-y-carlos.scss
+ M src/styles/invitation-profiles/daniela-y-martin.scss
 ```
 
 No staged paths. HEAD remains `c83b98fe`.
