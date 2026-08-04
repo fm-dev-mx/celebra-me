@@ -35,18 +35,18 @@ are no longer registered. Use `pnpm dbs` and `pnpm invitation:*` for invitation 
 
 ## Invitation Provisioning & Promotion Commands
 
-| Command                           | Canonical Script                                | Purpose                                                                                   |
-| --------------------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `pnpm dbs`                        | `scripts/provision/dbs-cli.ts`                  | Read-only Local/Preview/Production status matrix (managed invitations + schema lifecycle) |
-| `pnpm dbs --compact`              | `scripts/provision/managed-status.ts`           | Compact CONTENT + SCHEMA composing existing classifiers (Git-hook friendly)               |
-| `pnpm invitation:update`          | `scripts/provision/invitation-update-cli.ts`    | Define, plan, apply, package, and approve managed invitations for Local/Preview           |
-| `pnpm invitation:reconcile`       | `scripts/provision/invitation-reconcile-cli.ts` | Guided Local/Preview managed divergence reconciliation                                    |
-| `pnpm invitation:content-parity`  | `scripts/provision/content-parity-cli.ts`       | Read-only semantic content parity across environments (excludes RSVP/PII)                 |
-| `pnpm invitation:promote`         | `scripts/provision/invitation-promote-cli.ts`   | Owner-only Production managed-content promotion from an exact Preview-approved release    |
-| `pnpm invitation:preview-fixture` | `scripts/provision/preview-e2e-fixture-cli.ts`  | Preview-only E2E fixture bootstrap for `e2e-preview-publication` (not Dashboard create)   |
-| `pnpm invitation:purge-by-id`     | `scripts/provision/invitation-id-purge-cli.ts`  | Preview-only UUID purge with dry-run audit, transactional delete, and JSON artifact       |
-| `pnpm invitation:cross-db-reconcile` | `scripts/provision/cross-db-invitation-reconciliation-cli.ts` | Read-only cross-DB invitation parity (excludes draft/in_progress)            |
-| `pnpm invitation:romina-draft-reset` | `scripts/provision/romina-draft-reset-cli.ts` | Temporary Production draft←published reset for `romina-rios-chaparro` (retire after apply) |
+| Command                              | Canonical Script                                              | Purpose                                                                                    |
+| ------------------------------------ | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `pnpm dbs`                           | `scripts/provision/dbs-cli.ts`                                | Read-only Local/Preview/Production status matrix (managed invitations + schema lifecycle)  |
+| `pnpm dbs --compact`                 | `scripts/provision/managed-status.ts`                         | Compact CONTENT + SCHEMA composing existing classifiers (Git-hook friendly)                |
+| `pnpm invitation:update`             | `scripts/provision/invitation-update-cli.ts`                  | Define, plan, apply, package, and approve managed invitations for Local/Preview            |
+| `pnpm invitation:reconcile`          | `scripts/provision/invitation-reconcile-cli.ts`               | Guided Local/Preview managed divergence reconciliation                                     |
+| `pnpm invitation:content-parity`     | `scripts/provision/content-parity-cli.ts`                     | Read-only semantic content parity across environments (excludes RSVP/PII)                  |
+| `pnpm invitation:promote`            | `scripts/provision/invitation-promote-cli.ts`                 | Owner-only Production managed-content promotion from an exact Preview-approved release     |
+| `pnpm invitation:preview-fixture`    | `scripts/provision/preview-e2e-fixture-cli.ts`                | Preview-only E2E fixture bootstrap for `e2e-preview-publication` (not Dashboard create)    |
+| `pnpm invitation:purge-by-id`        | `scripts/provision/invitation-id-purge-cli.ts`                | Preview-only UUID purge with dry-run audit, transactional delete, and JSON artifact        |
+| `pnpm invitation:cross-db-reconcile` | `scripts/provision/cross-db-invitation-reconciliation-cli.ts` | Read-only cross-DB invitation parity (excludes draft/in_progress)                          |
+| `pnpm invitation:romina-draft-reset` | `scripts/provision/romina-draft-reset-cli.ts`                 | Temporary Production draft←published reset for `romina-rios-chaparro` (retire after apply) |
 
 The CLI resolves source/package input through `invitation-package-input.ts`, retains one immutable
 plan per target, and delegates mutation ordering/result synthesis to
@@ -79,8 +79,11 @@ selected target aborts the complete mutation phase.
 | `pnpm db:branch:diagnose`                  | `scripts/db/`  | read-only branch-lane diagnosis from structured evidence (`--evidence-json`)       |
 | `pnpm db:branch:remediate-disposable`      | `scripts/db/`  | verify then rebuild disposable-test only (`--verify-only` / `--execute`)           |
 | `pnpm release-check`                       | `scripts/db/`  | clean-HEAD type-check + test + build; writes release evidence                      |
-| `pnpm db:prod:migrate`                     | `scripts/db/`  | Production schema preflight / apply (`--expected`, optional `--apply` + TTY)       |
-| `pnpm db:preview:migrate`                  | `scripts/db/`  | Preview schema preflight; `--apply` + Preview auth to mutate (`PREVIEW_DB_URL`)    |
+| `pnpm db:migrate`                          | `scripts/db/`  | Canonical schema migrate planner/orchestrator (`--target`, default preflight)      |
+| `pnpm db:local:migrate`                    | `scripts/db/`  | Persistent-local pending apply (wrapper; defaults to `--apply`)                    |
+| `pnpm db:local:audit`                      | `scripts/db/`  | read-only persistent-local schema audit                                            |
+| `pnpm db:prod:migrate`                     | `scripts/db/`  | Production schema preflight / apply (wrapper; optional `--expected`, `--apply`)    |
+| `pnpm db:preview:migrate`                  | `scripts/db/`  | Preview schema preflight; `--apply` + Preview auth (wrapper over `db:migrate`)     |
 | `pnpm db:preview:sync-invitations`         | `scripts/db/`  | Prod→Preview content mirror; `--dry-run` zero writes; `--apply` needs Preview auth |
 | `pnpm db:preview:audit`                    | `scripts/db/`  | read-only Preview schema drift audit (`PREVIEW_DB_URL`)                            |
 | `pnpm db:disposable:reset`                 | `scripts/db/`  | reset isolated disposable test environment container                               |

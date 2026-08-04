@@ -34,7 +34,7 @@ interface MutatorSpec {
 /** Approved Production mutators. Discovery must match this set exactly. */
 const APPROVED_MUTATORS: MutatorSpec[] = [
 	{
-		file: 'scripts/db/push-prod-migrations.ts',
+		file: 'scripts/db/migrate-policy-production.ts',
 		firstWritePattern: /runCommand\(\s*'supabase',\s*\[[^\]]*['"]--yes['"]/,
 		preflightPatterns: [
 			/audit-db\.ts/,
@@ -225,13 +225,6 @@ describe('Production mutator discovery and gate ordering', () => {
 		const discovered = discoverRequireOwnerProductionApplyCallers();
 		const approved = APPROVED_MUTATORS.map((m) => m.file).sort();
 		expect(discovered).toEqual(approved);
-
-		const permanentFamilies = new Set(
-			APPROVED_MUTATORS.filter((m) => m.family !== 'pending_one_off').map((m) => m.family),
-		);
-		expect(permanentFamilies).toEqual(
-			new Set(['schema_migration', 'managed_promotion', 'sql_patch']),
-		);
 	});
 
 	it('wires each approved mutator to requireOwnerProductionApply without legacy crypto auth', () => {

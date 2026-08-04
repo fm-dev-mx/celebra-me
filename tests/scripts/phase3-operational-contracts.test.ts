@@ -26,32 +26,33 @@ describe('Phase 3 operational contracts', () => {
 	});
 
 	it('captures complete recovery before migration and verifies schema before code', () => {
-		const workflow = read('scripts/db/push-prod-migrations.ts');
+		const workflow = read('scripts/db/migrate-policy-production.ts');
 		const firstCriticalBackup = workflow.indexOf(
 			"'scripts/db/daily-critical-production-backup.ts'",
 		);
-		const compatibility = workflow.indexOf('runHostedMigrationCompatibilityGate');
-		const migration = workflow.indexOf("['db', 'push', '--db-url', prodDbUrl, '--yes']");
-		const contract = workflow.indexOf("'scripts/db/verify-mutation-schema-contract.ts'");
-		const postMigrationBackup = workflow.lastIndexOf(
-			"'scripts/db/backup-critical-production.ts'",
-		);
+		const compatibility = workflow.indexOf('evaluateHostedCompatibilityForPlan');
+		const migration = workflow.indexOf("['db', 'push', '--db-url', ctx.dbUrl, '--yes']");
+		const afterWriteIdx = workflow.indexOf('afterWrite(plan, ctx)');
+		const contract = workflow.indexOf("runMutationContractVerify('production')", afterWriteIdx);
+		const postMigrationBackupCall = workflow.indexOf('runPostMigrationBackup', afterWriteIdx);
 		expect(firstCriticalBackup).toBeGreaterThan(0);
 		// Phase 3 is fully applied in Production; the stale pre-phase3 profile must not return.
 		expect(workflow).not.toContain('--integrity-profile=pre-phase3');
 		expect(compatibility).toBeGreaterThan(0);
 		expect(compatibility).toBeLessThan(firstCriticalBackup);
 		expect(migration).toBeGreaterThan(firstCriticalBackup);
-		expect(contract).toBeGreaterThan(migration);
-		expect(postMigrationBackup).toBeGreaterThan(contract);
-		expect(postMigrationBackup).toBeGreaterThan(firstCriticalBackup);
+		expect(afterWriteIdx).toBeGreaterThan(migration);
+		expect(contract).toBeGreaterThan(afterWriteIdx);
+		expect(postMigrationBackupCall).toBeGreaterThan(contract);
+		expect(workflow).toContain("'scripts/db/backup-critical-production.ts'");
 	});
 
 	it('wires Preview migrate through dry-run and the compatibility gate', () => {
-		const workflow = read('scripts/db/push-preview-migrations.ts');
-		expect(workflow).toContain("['db', 'push', '--db-url', previewDbUrl, '--dry-run']");
-		expect(workflow).toContain('runHostedMigrationCompatibilityGate');
-		expect(workflow).toContain("'scripts/db/verify-mutation-schema-contract.ts'");
+		const workflow = read('scripts/db/migrate-policy-preview.ts');
+		expect(workflow).toContain('executeSupabaseDryRun');
+		expect(workflow).toContain('evaluateHostedCompatibilityForPlan');
+		expect(workflow).toContain('runMutationContractVerify');
+		expect(workflow).toContain('slug: PREVIEW_MIGRATE_AUTH_SLUG');
 	});
 
 	it('removes incomplete critical backup output and never logs service credentials', () => {

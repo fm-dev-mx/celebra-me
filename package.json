@@ -43,6 +43,7 @@
         "commitlint": "commitlint",
         "prepare": "husky",
         "db:migrate:new": "supabase migration new",
+        "db:migrate": "tsx scripts/db/migrate-cli.ts",
         "db:push": "node scripts/db/blocked-db-push.mjs",
         "db:local:reset": "echo 'BLOCKED: Use db:disposable:reset for destructive tests.' && exit 1",
         "db:start": "supabase start",

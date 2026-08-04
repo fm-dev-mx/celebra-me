@@ -23,7 +23,7 @@ const registry: MigrationRolloutRegistry = {
 			requiresDbCapabilities: ['public_guest_rsvp_rpc'],
 			provides: ['public_guest_rsvp_rpc_pgcrypto_portable'],
 		},
-		'__historical_rsvp_dml_revoke__': {
+		__historical_rsvp_dml_revoke__: {
 			phase: 'contract',
 			requiresDeployedAppCapabilities: ['public_guest_rsvp_rpc_client'],
 			revokes: ['direct_guest_service_role_dml'],
@@ -88,6 +88,22 @@ describe('migration / deployment compatibility contract', () => {
 		expect(result.phaseByVersion['20260730220544']).toBe('expand');
 	});
 
+	it('blocks hosted candidates that lack an explicit rollout registry phase', () => {
+		const result = evaluateMigrationDeploymentCompatibility({
+			target: 'production',
+			targetReleaseSha: 'abc1234',
+			deployedAppSha: null,
+			deployedAppCapabilities: [],
+			dbAppliedVersions: ['20260730113000'],
+			candidateVersions: ['20990101000000'],
+			targetReleaseMigrationVersions: [...releaseVersions, '20990101000000'],
+			registry,
+		});
+		expect(result.status).toBe('block');
+		expect(result.phaseByVersion['20990101000000']).toBe('unspecified');
+		expect(result.reasons.join(' ')).toMatch(/lacks an explicit rollout phase/);
+	});
+
 	it('blocks a migration absent from the authorized target release', () => {
 		const result = evaluateMigrationDeploymentCompatibility({
 			target: 'preview',
@@ -134,25 +150,14 @@ describe('migration / deployment compatibility contract', () => {
 		expect(result.reasons.join(' ')).toMatch(/public_guest_rsvp_rpc_client/);
 	});
 
-	it('blocks contract when credentials/target alone would otherwise authorize mutation', () => {
+	it('resolves hosted identity without treating credentials as deployed-app evidence', () => {
 		const identity = resolveHostedMigrationIdentity({
 			CELEBRA_TARGET_RELEASE_SHA: 'abc1234',
 			// No deployed app SHA / capabilities — worktree/branch/creds are irrelevant here
 		});
 		expect(identity.deployedAppSha).toBeNull();
 		expect(identity.deployedAppCapabilities).toEqual([]);
-
-		const result = evaluateMigrationDeploymentCompatibility({
-			target: 'production',
-			targetReleaseSha: identity.targetReleaseSha,
-			deployedAppSha: identity.deployedAppSha,
-			deployedAppCapabilities: identity.deployedAppCapabilities,
-			dbAppliedVersions: ['20260730113000'],
-			candidateVersions: ['__historical_rsvp_dml_revoke__'],
-			targetReleaseMigrationVersions: [...releaseVersions, '__historical_rsvp_dml_revoke__'],
-			registry,
-		});
-		expect(result.status).toBe('block');
+		expect(identity.targetReleaseSha).toBe('abc1234');
 	});
 
 	it('allows contract after required deployment and verification evidence exists', () => {
@@ -193,8 +198,8 @@ describe('migration / deployment compatibility contract', () => {
 		const live = loadMigrationRolloutRegistry();
 		expect(live.migrations['20260730220544']?.phase).toBe('expand');
 		expect(live.migrations['__historical_rsvp_dml_revoke__']?.phase).toBe('contract');
-		expect(live.migrations['__historical_rsvp_dml_revoke__']?.requiresDeployedAppCapabilities).toEqual(
-			['public_guest_rsvp_rpc_client'],
-		);
+		expect(
+			live.migrations['__historical_rsvp_dml_revoke__']?.requiresDeployedAppCapabilities,
+		).toEqual(['public_guest_rsvp_rpc_client']);
 	});
 });

@@ -6,24 +6,17 @@
  * result-classification function. Observability must use StatusProbeSession.
  */
 
-import { existsSync, readdirSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { evaluateMigrationHistoryParity } from '../db/audit-db.ts';
-import { PROJECT_ROOT } from '../db/db-workflow-lib.ts';
+import { getValidatedMigrationFiles } from '../db/apply-migrations.ts';
 import {
 	classifySchemaLifecycle,
 	type SchemaLifecycleState,
 } from '../db/schema-lifecycle-state.ts';
 import type { StatusProbeSession } from './probe-runner.ts';
 
+/** Repository migration versions via shared filename validator (SSOT). */
 export function listExpectedMigrationVersions(): string[] {
-	const migrationsDir = resolve(PROJECT_ROOT, 'supabase', 'migrations');
-	if (!existsSync(migrationsDir)) return [];
-	return readdirSync(migrationsDir)
-		.filter((f) => f.endsWith('.sql'))
-		.sort()
-		.map((f) => f.split('_')[0]!)
-		.filter(Boolean);
+	return getValidatedMigrationFiles().map((f) => f.version);
 }
 
 export interface MigrationLifecycleResult {
@@ -78,10 +71,7 @@ function unverifiedLifecycle(): MigrationLifecycleResult {
 }
 
 function classifyRemoteVersions(remoteVersions: string[]): MigrationLifecycleResult {
-	const parity = evaluateMigrationHistoryParity(
-		listExpectedMigrationVersions(),
-		remoteVersions,
-	);
+	const parity = evaluateMigrationHistoryParity(listExpectedMigrationVersions(), remoteVersions);
 	return toLifecycle(parity, remoteVersions);
 }
 

@@ -107,7 +107,10 @@ export function deriveDbCapabilities(
 	return [...caps].sort();
 }
 
-function defaultPhase(version: string, registry: MigrationRolloutRegistry): RolloutPhase | 'unspecified' {
+function defaultPhase(
+	version: string,
+	registry: MigrationRolloutRegistry,
+): RolloutPhase | 'unspecified' {
 	return registry.migrations[version]?.phase ?? 'unspecified';
 }
 
@@ -152,6 +155,15 @@ function evaluateCandidateVersion(options: {
 	if (hosted && !options.releaseSet.has(version)) {
 		reasons.push(
 			`Migration ${version} is not present in authorized target release tree ${options.targetReleaseSha}.`,
+		);
+		return { phase, reasons };
+	}
+
+	if (hosted && phase === 'unspecified') {
+		reasons.push(
+			`Migration ${version} lacks an explicit rollout phase in supabase/migration-rollout-registry.json. ` +
+				`Hosted candidates must be classified as expand, neutral, or contract before apply. ` +
+				`DROP/REVOKE/TRUNCATE-class changes must never become safe through registry omission.`,
 		);
 		return { phase, reasons };
 	}
