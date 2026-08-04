@@ -102,6 +102,10 @@ export interface MigrationProjection {
 	schemaLifecycle: SchemaLifecycleState;
 	appliedCount: number | null;
 	pendingCount: number;
+	/** Exact missing repository migration version IDs; required for SCHEMA_BEHIND. */
+	pendingMigrations: string[];
+	/** Exact remote-only migration version IDs; used for SCHEMA_DRIFT evidence. */
+	extraMigrations: string[];
 }
 
 export function unprobedEnvironmentProjection(
@@ -126,6 +130,8 @@ export function unprobedMigrationProjection(environment: TargetEnv): MigrationPr
 		schemaLifecycle: 'UNVERIFIED',
 		appliedCount: null,
 		pendingCount: 0,
+		pendingMigrations: [],
+		extraMigrations: [],
 	};
 }
 
@@ -535,6 +541,8 @@ export function readMigrationProjection(input: {
 			schemaLifecycle: 'UNVERIFIED',
 			appliedCount: null,
 			pendingCount: 0,
+			pendingMigrations: [],
+			extraMigrations: [],
 		};
 	}
 
@@ -551,25 +559,33 @@ export function readMigrationProjection(input: {
 			listExpectedMigrationVersions(),
 			remote.remoteVersions,
 		);
+		const schemaLifecycle = classifySchemaLifecycle({
+			pendingMigrations: parity.pendingLocal,
+			extraMigrations: parity.extraRemote,
+			mismatchedMigrations:
+				parity.isReordered || parity.hasDivergentHistory
+					? parity.extraRemote.length > 0
+						? parity.extraRemote
+						: ['divergent-history']
+					: [],
+			auditErrors: parity.errors.filter(
+				(error) => !error.startsWith('Pending local migrations'),
+			),
+			verified: true,
+		});
+		// Fail closed: never report BEHIND without exact missing version IDs.
+		const resolvedLifecycle =
+			schemaLifecycle === 'BEHIND' && parity.pendingLocal.length === 0
+				? 'UNVERIFIED'
+				: schemaLifecycle;
 		return {
 			environment: input.environment,
 			available: true,
-			schemaLifecycle: classifySchemaLifecycle({
-				pendingMigrations: parity.pendingLocal,
-				extraMigrations: parity.extraRemote,
-				mismatchedMigrations:
-					parity.isReordered || parity.hasDivergentHistory
-						? parity.extraRemote.length > 0
-							? parity.extraRemote
-							: ['divergent-history']
-						: [],
-				auditErrors: parity.errors.filter(
-					(error) => !error.startsWith('Pending local migrations'),
-				),
-				verified: true,
-			}),
+			schemaLifecycle: resolvedLifecycle,
 			appliedCount: remote.remoteVersions.length,
 			pendingCount: parity.pendingLocal.length,
+			pendingMigrations: [...parity.pendingLocal],
+			extraMigrations: [...parity.extraRemote],
 		};
 	} catch {
 		return {
@@ -578,6 +594,8 @@ export function readMigrationProjection(input: {
 			schemaLifecycle: 'UNVERIFIED',
 			appliedCount: null,
 			pendingCount: 0,
+			pendingMigrations: [],
+			extraMigrations: [],
 		};
 	}
 }

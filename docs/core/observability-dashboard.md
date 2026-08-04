@@ -23,12 +23,28 @@ environment authority. Server-only probes run in a child process and never enter
 ## Snapshot v3 status contract
 
 Operational health and delivery progress are separate axes. Neither is derived from the other.
+Aggregation is axis-scoped: operational issues never overwrite delivery status, and delivery work
+never overwrites operational findings. Invitation-level evidence remains authoritative over
+aggregates when both exist.
 
 | Axis                | Values                                                    | Meaning                                                                                       |
 | ------------------- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
 | `operationalStatus` | `HEALTHY`, `ATTENTION`, `UNVERIFIED`, `BLOCKED`           | Whether the observed system is functioning and its required evidence is trustworthy           |
 | `deliveryStatus`    | `ALIGNED`, `IN_PROGRESS`, `UNVERIFIED`, `ACTION_REQUIRED` | Whether managed intent has reached Local, Preview, and Production in the allowed order        |
 | `freshness`         | `FRESH`, `PARTIAL`, `STALE`                               | Whether the snapshot covers all requested environments and whether a cached fallback was used |
+
+Operator interpretation also distinguishes these concurrent conditions without conflation:
+
+- confirmed migration debt (`SCHEMA_BEHIND` with exact pending migration version IDs);
+- migration drift (`SCHEMA_DRIFT`);
+- invalid managed content (`DRAFT_INVALID` → `REPAIR_MANAGED_DRAFT`);
+- unavailable evidence (`SCHEMA_UNAVAILABLE` / environment unavailable);
+- invitation delivery progress (`pending_work` equivalents such as `PARTIAL_PROMOTION`).
+
+`SCHEMA_BEHIND` is emitted only when exact missing migration version IDs are known. Those IDs appear
+on the issue signal and on the environment summary. Missing IDs fail closed to `SCHEMA_UNAVAILABLE`.
+Invalid managed drafts are operational defects; they do not force unrelated delivery work to
+`UNVERIFIED`.
 
 Precedence is deterministic:
 
@@ -40,13 +56,14 @@ baseline, or Production ahead of a proven Preview baseline, is `HEALTHY + ACTION
 Unavailable evidence is `UNVERIFIED`; it is never inferred to be an ordering violation.
 
 The detail response is anomaly-first and exposes only typed reason codes, typed next steps,
-comparison outcomes, counts, lifecycle, environment, slug, and bounded semantic paths. It excludes
-field values, invitation or operation UUIDs, content hashes, URLs, credentials, commands, raw
-errors, absolute paths, and unmanaged evidence. A controlled `reporting` envelope carries only the
-source commit SHA, logical database targets, snapshot ID, non-content evidence fingerprint,
-timestamp, and deterministic keys for the same invitation classifications, issues, and work items
-consumed by the inventory CLI and dashboard. `src/lib/observability/schema.ts` validates the
-complete strict schema before the payload crosses the server boundary.
+comparison outcomes, counts, lifecycle, environment, slug, bounded semantic paths, and exact
+migration version IDs for schema debt/drift. It excludes field values, invitation or operation
+UUIDs, content hashes, URLs, credentials, commands, raw errors, absolute paths, and unmanaged
+evidence. A controlled `reporting` envelope carries only the source commit SHA, logical database
+targets, snapshot ID, non-content evidence fingerprint, timestamp, and deterministic keys for the
+same invitation classifications, issues, and work items consumed by the inventory CLI and
+dashboard. `src/lib/observability/schema.ts` validates the complete strict schema before the
+payload crosses the server boundary.
 
 ## Summary and detail
 

@@ -133,6 +133,8 @@ function migration(
 		schemaLifecycle: 'CURRENT',
 		appliedCount: 20,
 		pendingCount: 0,
+		pendingMigrations: [],
+		extraMigrations: [],
 		...overrides,
 	};
 }
@@ -463,7 +465,13 @@ describe('observability v3 operational failure boundaries', () => {
 		});
 		const snapshot = assembleSnapshotFromEvidence(evidence({ rows: { local: [invalid] } }));
 		expect(snapshot.operationalStatus).toBe('BLOCKED');
-		expect(snapshot.issues.some((item) => item.reasonCode === 'DRAFT_INVALID')).toBe(true);
+		const draftIssue = snapshot.issues.find((item) => item.reasonCode === 'DRAFT_INVALID');
+		expect(draftIssue).toMatchObject({
+			nextStep: 'REPAIR_MANAGED_DRAFT',
+			operationalStatus: 'BLOCKED',
+			deliveryStatus: 'ALIGNED',
+			impact: 'OPERATIONAL',
+		});
 	});
 
 	it.each([
@@ -515,15 +523,177 @@ describe('observability v3 operational failure boundaries', () => {
 	it('surfaces schema incompatibility as a typed operational issue', () => {
 		const snapshot = assembleSnapshotFromEvidence(
 			evidence({
-				migrationOverrides: { preview: { schemaLifecycle: 'SCHEMA_DRIFT' } },
+				migrationOverrides: {
+					preview: {
+						schemaLifecycle: 'SCHEMA_DRIFT',
+						extraMigrations: ['20260801999999'],
+					},
+				},
 			}),
 		);
 		expect(snapshot.operationalStatus).toBe('BLOCKED');
+		const drift = snapshot.issues.find(
+			(item) => item.environment === 'preview' && item.reasonCode === 'SCHEMA_DRIFT',
+		);
+		expect(drift?.extraMigrations).toEqual(['20260801999999']);
 		expect(
-			snapshot.issues.some(
-				(item) => item.environment === 'preview' && item.reasonCode === 'SCHEMA_DRIFT',
+			snapshot.environmentSummaries.find((item) => item.environment === 'preview')
+				?.extraMigrations,
+		).toEqual(['20260801999999']);
+	});
+
+	it('exposes exact pending migration IDs for SCHEMA_BEHIND and never emits behind without them', () => {
+		const behind = assembleSnapshotFromEvidence(
+			evidence({
+				migrationOverrides: {
+					production: {
+						schemaLifecycle: 'BEHIND',
+						pendingCount: 1,
+						pendingMigrations: ['20260802090000'],
+					},
+				},
+			}),
+		);
+		const issue = behind.issues.find(
+			(item) => item.environment === 'production' && item.reasonCode === 'SCHEMA_BEHIND',
+		);
+		expect(issue?.pendingMigrations).toEqual(['20260802090000']);
+		expect(issue?.operationalStatus).toBe('ATTENTION');
+		expect(
+			behind.environmentSummaries.find((item) => item.environment === 'production')
+				?.pendingMigrations,
+		).toEqual(['20260802090000']);
+
+		const unavailable = assembleSnapshotFromEvidence(
+			evidence({
+				migrationOverrides: {
+					production: {
+						schemaLifecycle: 'BEHIND',
+						pendingCount: 0,
+						pendingMigrations: [],
+					},
+				},
+			}),
+		);
+		expect(
+			unavailable.issues.some(
+				(item) =>
+					item.environment === 'production' && item.reasonCode === 'SCHEMA_BEHIND',
+			),
+		).toBe(false);
+		expect(
+			unavailable.issues.some(
+				(item) =>
+					item.environment === 'production' && item.reasonCode === 'SCHEMA_UNAVAILABLE',
 			),
 		).toBe(true);
+	});
+
+	it('keeps unrelated delivery progress visible when another invitation has an invalid draft', () => {
+		const validPublished = buildEventContentData({
+			title: 'XV Demo',
+			eventType: 'xv',
+			theme: { preset: 'premiere-floral' },
+			hero: {
+				name: 'Romina',
+				date: '2026-08-14T00:00:00.000Z',
+				backgroundImage: '/assets/hero.jpg',
+			},
+		});
+		const rominaAligned = row('aligned', {
+			slug: 'romina-rios-chaparro',
+			detailRequired: true,
+			draftContent: validPublished,
+			publishedContent: validPublished,
+			provenance: {
+				...row().provenance,
+				definitionSlug: 'romina-rios-chaparro',
+				packageHash: CURRENT_HASH,
+				managedProjection: validPublished,
+			},
+		});
+		const rominaInvalidProduction = {
+			...rominaAligned,
+			draftContent: { invalid: true },
+		};
+		const perlaLocal = row('aligned', {
+			slug: 'boda-perla-y-carlos',
+			provenance: {
+				...row('aligned').provenance,
+				definitionSlug: 'boda-perla-y-carlos',
+				packageHash: CURRENT_HASH,
+			},
+		});
+		const snapshot = assembleSnapshotFromEvidence({
+			generatedAt: '2026-08-03T12:00:00.000Z',
+			probeScope: 'all',
+			canonical: [
+				{
+					slug: 'boda-perla-y-carlos',
+					lifecycle: 'in_progress',
+					deliveryScope: 'content-and-assets',
+					packageHash: CURRENT_HASH,
+					managedContent: { hero: { title: 'Perla y Carlos' } },
+					metadata: {
+						eventType: 'boda',
+						kind: 'client',
+						baseDemoId: '',
+						themeId: 'luxury-hacienda',
+						snapshot: {},
+						clientName: 'Perla y Carlos',
+					},
+					assets: [],
+				},
+				{
+					slug: 'romina-rios-chaparro',
+					lifecycle: 'published',
+					deliveryScope: 'content-and-assets',
+					packageHash: CURRENT_HASH,
+					managedContent: validPublished,
+					metadata: {
+						eventType: 'xv',
+						kind: 'client',
+						baseDemoId: '',
+						themeId: 'premiere-floral',
+						snapshot: {},
+						clientName: 'Romina',
+					},
+					assets: [],
+				},
+			],
+			canonicalFailures: [],
+			legacy: [],
+			projections: {
+				local: projection('local', [perlaLocal, rominaAligned]),
+				preview: projection('preview', [rominaAligned]),
+				production: projection('production', [rominaInvalidProduction]),
+			},
+			migrations: {
+				local: migration('local'),
+				preview: migration('preview'),
+				production: migration('production', {
+					schemaLifecycle: 'BEHIND',
+					pendingCount: 1,
+					pendingMigrations: ['20260802090000'],
+				}),
+			},
+		});
+
+		expect(snapshot.issues.some((item) => item.reasonCode === 'SCHEMA_BEHIND')).toBe(true);
+		expect(snapshot.issues.some((item) => item.reasonCode === 'DRAFT_INVALID')).toBe(true);
+		const perlaWork = snapshot.workItems.find((item) => item.slug === 'boda-perla-y-carlos');
+		expect(perlaWork).toMatchObject({
+			reasonCode: 'PARTIAL_PROMOTION',
+			nextStep: 'PROMOTE_PREVIEW',
+			deliveryStatus: 'IN_PROGRESS',
+		});
+		expect(snapshot.deliveryStatus).toBe('IN_PROGRESS');
+		expect(snapshot.operationalStatus).toBe('BLOCKED');
+		const romina = snapshot.invitationSummaries.find(
+			(item) => item.slug === 'romina-rios-chaparro',
+		);
+		expect(romina?.operationalStatus).toBe('BLOCKED');
+		expect(romina?.deliveryStatus).not.toBe('UNVERIFIED');
 	});
 
 	it('blocks contradictory authoritative row counts', () => {

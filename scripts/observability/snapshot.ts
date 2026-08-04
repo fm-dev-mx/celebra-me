@@ -13,11 +13,7 @@ import {
 	type CurrentStateCanonical,
 } from './current-state-alignment.ts';
 import { evaluateAssetSignals } from './asset-signals.ts';
-import {
-	aggregateDeliveryStatus,
-	aggregateOperationalStatus,
-	comparisonToDeliveryStatus,
-} from './overall-status.ts';
+import { aggregateDeliveryStatus, aggregateOperationalStatus } from './overall-status.ts';
 import { finalizeObservabilitySnapshot } from './public-snapshot.ts';
 import { buildReportingEvidence } from './reporting-parity.ts';
 import type {
@@ -70,6 +66,8 @@ function signal(input: {
 	slug?: string;
 	lifecycle?: InvitationLifecycle;
 	comparison?: ComparisonSummary;
+	pendingMigrations?: string[];
+	extraMigrations?: string[];
 }): ObservabilitySignal {
 	return {
 		impact: input.impact,
@@ -85,6 +83,12 @@ function signal(input: {
 		...(input.slug ? { slug: input.slug } : {}),
 		...(input.lifecycle ? { lifecycle: input.lifecycle } : {}),
 		...(input.comparison ? { comparisonOutcome: input.comparison.outcome } : {}),
+		...(input.pendingMigrations && input.pendingMigrations.length > 0
+			? { pendingMigrations: [...input.pendingMigrations] }
+			: {}),
+		...(input.extraMigrations && input.extraMigrations.length > 0
+			? { extraMigrations: [...input.extraMigrations] }
+			: {}),
 	};
 }
 function expectedTarget(environment: ObservabilityEnvironment): string {
@@ -187,15 +191,55 @@ function environmentBaseSignals(
 				}),
 			);
 		}
-		if (migration.available && migration.schemaLifecycle !== 'CURRENT') {
-			const reasonCode =
-				migration.schemaLifecycle === 'SCHEMA_DRIFT' ? 'SCHEMA_DRIFT' : 'SCHEMA_BEHIND';
+		if (!migration.available) continue;
+		if (migration.schemaLifecycle === 'SCHEMA_DRIFT') {
 			issues.push(
 				signal({
 					impact: 'OPERATIONAL',
-					reasonCode,
+					reasonCode: 'SCHEMA_DRIFT',
 					nextStep: 'AUDIT_SCHEMA',
-					operationalStatus: reasonCode === 'SCHEMA_DRIFT' ? 'BLOCKED' : 'ATTENTION',
+					operationalStatus: 'BLOCKED',
+					environment,
+					extraMigrations: migration.extraMigrations,
+				}),
+			);
+			continue;
+		}
+		if (migration.schemaLifecycle === 'BEHIND') {
+			if (migration.pendingMigrations.length === 0) {
+				issues.push(
+					signal({
+						impact: 'OPERATIONAL',
+						reasonCode: 'SCHEMA_UNAVAILABLE',
+						nextStep: 'AUDIT_SCHEMA',
+						operationalStatus: 'UNVERIFIED',
+						deliveryStatus: 'ALIGNED',
+						environment,
+					}),
+				);
+				continue;
+			}
+			issues.push(
+				signal({
+					impact: 'OPERATIONAL',
+					reasonCode: 'SCHEMA_BEHIND',
+					nextStep: 'AUDIT_SCHEMA',
+					operationalStatus: 'ATTENTION',
+					deliveryStatus: 'ALIGNED',
+					environment,
+					pendingMigrations: migration.pendingMigrations,
+				}),
+			);
+			continue;
+		}
+		if (migration.schemaLifecycle === 'UNVERIFIED') {
+			issues.push(
+				signal({
+					impact: 'OPERATIONAL',
+					reasonCode: 'SCHEMA_UNAVAILABLE',
+					nextStep: 'AUDIT_SCHEMA',
+					operationalStatus: 'UNVERIFIED',
+					deliveryStatus: 'ALIGNED',
 					environment,
 				}),
 			);
@@ -632,7 +676,8 @@ export function assembleSnapshotFromEvidence(evidence: SnapshotEvidence): Observ
 				reasonCode: 'CANONICAL_INVALID',
 				nextStep: 'FIX_CANONICAL_DEFINITION',
 				operationalStatus: 'BLOCKED',
-				deliveryStatus: 'UNVERIFIED',
+				// Operational-only defect: do not pollute delivery aggregation.
+				deliveryStatus: 'ALIGNED',
 				slug: failure.slug,
 				lifecycle: failure.lifecycle,
 			}),
@@ -641,7 +686,7 @@ export function assembleSnapshotFromEvidence(evidence: SnapshotEvidence): Observ
 			slug: failure.slug,
 			lifecycle: failure.lifecycle,
 			operationalStatus: 'BLOCKED',
-			deliveryStatus: 'UNVERIFIED',
+			deliveryStatus: 'ALIGNED',
 			comparisons: [],
 		});
 	}
@@ -659,26 +704,42 @@ export function assembleSnapshotFromEvidence(evidence: SnapshotEvidence): Observ
 	const environmentSummaries: EnvironmentSummary[] = ENVIRONMENTS.map((environment) => {
 		const coverageRow = coverage.find((item) => item.environment === environment)!;
 		const scopedIssues = issues.filter((item) => item.environment === environment);
-		const scopedWork = workItems.filter((item) => item.environment === environment);
-		const comparisonStatuses = invitationSummaries.flatMap((summary) =>
-			summary.comparisons
-				.filter((comparison) => comparison.environment === environment)
-				.map((comparison) => comparisonToDeliveryStatus(comparison)),
+		const scopedOperationalIssues = scopedIssues.filter(
+			(item) => item.impact === 'OPERATIONAL',
 		);
+		const scopedWork = workItems.filter((item) => item.environment === environment);
+		// Invitation-level delivery is authoritative over raw comparison outcomes so
+		// operational UNVERIFIED comparisons (e.g. DRAFT_INVALID) cannot pollute delivery.
+		const invitationDeliveryStatuses = invitationSummaries
+			.filter((summary) =>
+				summary.comparisons.some((comparison) => comparison.environment === environment),
+			)
+			.map((summary) => summary.deliveryStatus);
+		const migration = evidence.migrations[environment];
+		const pendingMigrations =
+			migration.available &&
+			migration.schemaLifecycle === 'BEHIND' &&
+			migration.pendingMigrations.length > 0
+				? [...migration.pendingMigrations]
+				: undefined;
+		const extraMigrations =
+			migration.available && migration.extraMigrations.length > 0
+				? [...migration.extraMigrations]
+				: undefined;
 		return {
 			environment,
 			operationalStatus:
 				coverageRow.status === 'NOT_PROBED'
 					? 'UNVERIFIED'
 					: aggregateOperationalStatus(
-							scopedIssues.map((item) => item.operationalStatus),
+							scopedOperationalIssues.map((item) => item.operationalStatus),
 						),
+			// Axis-scoped: delivery ignores operational issue deliveryStatus fields.
 			deliveryStatus:
 				coverageRow.status === 'NOT_PROBED'
 					? 'UNVERIFIED'
 					: aggregateDeliveryStatus([
-							...comparisonStatuses,
-							...scopedIssues.map((item) => item.deliveryStatus),
+							...invitationDeliveryStatuses,
 							...scopedWork.map((item) => item.deliveryStatus),
 						]),
 			coverage: coverageRow.status,
@@ -687,21 +748,28 @@ export function assembleSnapshotFromEvidence(evidence: SnapshotEvidence): Observ
 				issues: scopedIssues.length,
 				workItems: scopedWork.length,
 			},
+			...(pendingMigrations ? { pendingMigrations } : {}),
+			...(extraMigrations ? { extraMigrations } : {}),
 		};
 	});
 
 	const aggregateEnvironments = environmentSummaries.filter(
 		(summary) => summary.coverage !== 'NOT_PROBED',
 	);
+	const operationalIssues = issues.filter((item) => item.impact === 'OPERATIONAL');
+	const deliveryWork = workItems.filter((item) => item.impact === 'DELIVERY');
 	const operationalStatus = aggregateOperationalStatus([
 		...aggregateEnvironments.map((summary) => summary.operationalStatus),
 		...invitationSummaries.map((summary) => summary.operationalStatus),
-		...issues.filter((item) => !item.environment).map((item) => item.operationalStatus),
+		...operationalIssues
+			.filter((item) => !item.environment)
+			.map((item) => item.operationalStatus),
 	]);
+	// Axis-scoped: global delivery comes from delivery work + invitation delivery only.
 	const deliveryStatus = aggregateDeliveryStatus([
 		...aggregateEnvironments.map((summary) => summary.deliveryStatus),
 		...invitationSummaries.map((summary) => summary.deliveryStatus),
-		...issues.filter((item) => !item.environment).map((item) => item.deliveryStatus),
+		...deliveryWork.map((item) => item.deliveryStatus),
 	]);
 	const freshness = coverage.every((item) => item.status === 'AVAILABLE') ? 'FRESH' : 'PARTIAL';
 	const reporting = buildReportingEvidence({

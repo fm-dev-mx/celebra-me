@@ -103,6 +103,7 @@ function unavailable(
 	nextStep: ObservabilityNextStep,
 	detailStatus: ComparisonSummary['detailStatus'] = 'DETAIL_UNAVAILABLE',
 ): DeliveryReconciliationResult {
+	const isInvalidDraft = reasonCode === 'DRAFT_INVALID';
 	return {
 		comparison: {
 			environment,
@@ -112,8 +113,10 @@ function unavailable(
 			affectedSectionCount: 0,
 			semanticPaths: [],
 		},
-		operationalStatus: reasonCode === 'DRAFT_INVALID' ? 'BLOCKED' : 'HEALTHY',
-		deliveryStatus: 'UNVERIFIED',
+		// Invalid managed drafts are operational defects only. Keep delivery ALIGNED so
+		// unrelated invitation delivery progress is not polluted by aggregation.
+		operationalStatus: isInvalidDraft ? 'BLOCKED' : 'HEALTHY',
+		deliveryStatus: isInvalidDraft ? 'ALIGNED' : 'UNVERIFIED',
 		issueReasonCode: reasonCode,
 		nextStep,
 	};
@@ -283,11 +286,11 @@ export function reconcileInvitationDelivery(input: {
 		return unavailable(environment, 'DETAIL_BUDGET_EXCEEDED', 'RECONCILE_MANAGED_CONTENT');
 	}
 	if (!eventContentSchema.safeParse(row.draftContent).success) {
-		return unavailable(environment, 'DRAFT_INVALID', 'FIX_CANONICAL_DEFINITION', 'AVAILABLE');
+		return unavailable(environment, 'DRAFT_INVALID', 'REPAIR_MANAGED_DRAFT', 'AVAILABLE');
 	}
 	const comparisonContent = row.publishedContent ?? row.draftContent;
 	if (!comparisonContent || !eventContentSchema.safeParse(comparisonContent).success) {
-		return unavailable(environment, 'DRAFT_INVALID', 'FIX_CANONICAL_DEFINITION', 'AVAILABLE');
+		return unavailable(environment, 'DRAFT_INVALID', 'REPAIR_MANAGED_DRAFT', 'AVAILABLE');
 	}
 
 	return knownResult(

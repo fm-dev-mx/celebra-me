@@ -53,11 +53,14 @@ const nextStep = z.enum([
 	'PROMOTE_PRODUCTION',
 	'VERIFY_PREVIEW',
 	'FIX_CANONICAL_DEFINITION',
+	'REPAIR_MANAGED_DRAFT',
 	'UPDATE_LIFECYCLE_METADATA',
 	'PROVIDE_REQUIRED_ASSET',
 	'VERIFY_ASSET_EVIDENCE',
 ]);
 const slug = z.string().regex(/^[a-z0-9-]{1,100}$/);
+const migrationVersion = z.string().regex(/^\d{14}$/);
+const migrationVersions = z.array(migrationVersion).max(200);
 const boundedCount = z.number().int().nonnegative().max(100_000);
 const semanticPath = z
 	.string()
@@ -128,11 +131,19 @@ const signal = z
 		slug: slug.optional(),
 		lifecycle: lifecycle.optional(),
 		comparisonOutcome: comparisonOutcome.optional(),
+		pendingMigrations: migrationVersions.optional(),
+		extraMigrations: migrationVersions.optional(),
 	})
 	.strict()
 	.refine((value) => value.detailStatus === 'AVAILABLE' || value.semanticPaths.length === 0, {
 		message: 'detail_unavailable_must_not_include_paths',
-	});
+	})
+	.refine(
+		(value) =>
+			value.reasonCode !== 'SCHEMA_BEHIND' ||
+			(Array.isArray(value.pendingMigrations) && value.pendingMigrations.length > 0),
+		{ message: 'schema_behind_requires_pending_migration_ids' },
+	);
 
 const expectedEnvironmentOrder = ['local', 'preview', 'production'] as const;
 function hasEnvironmentOrder(values: readonly { environment: string }[]): boolean {
@@ -184,6 +195,8 @@ export const ObservabilitySnapshotSchema: z.ZodType<ObservabilitySnapshot> = z
 								workItems: boundedCount,
 							})
 							.strict(),
+						pendingMigrations: migrationVersions.optional(),
+						extraMigrations: migrationVersions.optional(),
 					})
 					.strict(),
 			)

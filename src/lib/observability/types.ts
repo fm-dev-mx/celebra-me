@@ -49,6 +49,7 @@ export type ObservabilityNextStep =
 	| 'PROMOTE_PRODUCTION'
 	| 'VERIFY_PREVIEW'
 	| 'FIX_CANONICAL_DEFINITION'
+	| 'REPAIR_MANAGED_DRAFT'
 	| 'UPDATE_LIFECYCLE_METADATA'
 	| 'PROVIDE_REQUIRED_ASSET'
 	| 'VERIFY_ASSET_EVIDENCE';
@@ -90,6 +91,10 @@ export interface ObservabilitySignal {
 	slug?: string;
 	lifecycle?: InvitationLifecycle;
 	comparisonOutcome?: ComparisonOutcome;
+	/** Exact missing migration version IDs when reasonCode is SCHEMA_BEHIND. */
+	pendingMigrations?: string[];
+	/** Exact remote-only migration version IDs when reasonCode is SCHEMA_DRIFT. */
+	extraMigrations?: string[];
 }
 
 export interface EnvironmentSummary {
@@ -102,6 +107,10 @@ export interface EnvironmentSummary {
 		issues: number;
 		workItems: number;
 	};
+	/** Exact missing migration version IDs when the environment is behind. */
+	pendingMigrations?: string[];
+	/** Exact remote-only migration version IDs when history has extras. */
+	extraMigrations?: string[];
 }
 
 export interface ObservabilityReporting {

@@ -126,6 +126,8 @@ function evidence(): SnapshotEvidence {
 				schemaLifecycle: 'CURRENT',
 				appliedCount: 20,
 				pendingCount: 0,
+				pendingMigrations: [],
+				extraMigrations: [],
 			},
 			preview: {
 				environment: 'preview',
@@ -133,6 +135,8 @@ function evidence(): SnapshotEvidence {
 				schemaLifecycle: 'CURRENT',
 				appliedCount: 20,
 				pendingCount: 0,
+				pendingMigrations: [],
+				extraMigrations: [],
 			},
 			production: {
 				environment: 'production',
@@ -140,6 +144,8 @@ function evidence(): SnapshotEvidence {
 				schemaLifecycle: 'CURRENT',
 				appliedCount: 20,
 				pendingCount: 0,
+				pendingMigrations: [],
+				extraMigrations: [],
 			},
 		},
 	};

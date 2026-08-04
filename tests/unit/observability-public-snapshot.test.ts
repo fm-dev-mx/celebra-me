@@ -85,6 +85,104 @@ describe('public observability snapshot v3', () => {
 		expect(ObservabilitySnapshotSchema.parse(result)).toEqual(result);
 	});
 
+	it('requires exact pending migration IDs for SCHEMA_BEHIND signals', () => {
+		const baseIssue = {
+			impact: 'OPERATIONAL' as const,
+			reasonCode: 'SCHEMA_BEHIND' as const,
+			nextStep: 'AUDIT_SCHEMA' as const,
+			operationalStatus: 'ATTENTION' as const,
+			deliveryStatus: 'ALIGNED' as const,
+			detailStatus: 'AVAILABLE' as const,
+			affectedFieldCount: 0,
+			affectedSectionCount: 0,
+			semanticPaths: [] as string[],
+			environment: 'production' as const,
+		};
+		expect(() =>
+			ObservabilitySnapshotSchema.parse(
+				finalizeObservabilitySnapshot({
+					generatedAt: '2026-08-01T12:00:00.000Z',
+					freshness: 'FRESH',
+					operationalStatus: 'ATTENTION',
+					deliveryStatus: 'ALIGNED',
+					reporting: {
+						schemaVersion: 1,
+						snapshotId: 'observability-test',
+						evidenceFingerprint: 'b'.repeat(64),
+						generatedAt: '2026-08-01T12:00:00.000Z',
+						commitSha: 'b'.repeat(40),
+						databaseTargets: {
+							local: 'persistent-local',
+							preview: 'preview',
+							production: 'production',
+						},
+						invitationClassifications: [],
+						issueKeys: [],
+						workItemKeys: [],
+					},
+					coverage: [
+						{ environment: 'local', status: 'AVAILABLE' },
+						{ environment: 'preview', status: 'AVAILABLE' },
+						{ environment: 'production', status: 'AVAILABLE' },
+					],
+					cache: { refreshAfter: '2026-08-01T12:01:00.000Z' },
+					issues: [baseIssue],
+					workItems: [],
+					environmentSummaries: ['local', 'preview', 'production'].map((environment) => ({
+						environment: environment as 'local' | 'preview' | 'production',
+						operationalStatus: 'HEALTHY' as const,
+						deliveryStatus: 'ALIGNED' as const,
+						coverage: 'AVAILABLE' as const,
+						counts: { invitations: 0, issues: 0, workItems: 0 },
+					})),
+					invitationSummaries: [],
+				}),
+			),
+		).toThrow(/schema_behind_requires_pending_migration_ids/);
+
+		const withIds = finalizeObservabilitySnapshot({
+			generatedAt: '2026-08-01T12:00:00.000Z',
+			freshness: 'FRESH',
+			operationalStatus: 'ATTENTION',
+			deliveryStatus: 'ALIGNED',
+			reporting: {
+				schemaVersion: 1,
+				snapshotId: 'observability-test',
+				evidenceFingerprint: 'b'.repeat(64),
+				generatedAt: '2026-08-01T12:00:00.000Z',
+				commitSha: 'b'.repeat(40),
+				databaseTargets: {
+					local: 'persistent-local',
+					preview: 'preview',
+					production: 'production',
+				},
+				invitationClassifications: [],
+				issueKeys: [],
+				workItemKeys: [],
+			},
+			coverage: [
+				{ environment: 'local', status: 'AVAILABLE' },
+				{ environment: 'preview', status: 'AVAILABLE' },
+				{ environment: 'production', status: 'AVAILABLE' },
+			],
+			cache: { refreshAfter: '2026-08-01T12:01:00.000Z' },
+			issues: [{ ...baseIssue, pendingMigrations: ['20260802090000'] }],
+			workItems: [],
+			environmentSummaries: ['local', 'preview', 'production'].map((environment) => ({
+				environment: environment as 'local' | 'preview' | 'production',
+				operationalStatus: 'HEALTHY' as const,
+				deliveryStatus: 'ALIGNED' as const,
+				coverage: 'AVAILABLE' as const,
+				counts: { invitations: 0, issues: 0, workItems: 0 },
+				...(environment === 'production'
+					? { pendingMigrations: ['20260802090000'] }
+					: {}),
+			})),
+			invitationSummaries: [],
+		});
+		expect(ObservabilitySnapshotSchema.parse(withIds)).toEqual(withIds);
+	});
+
 	it('rejects field values, UUIDs, hashes, URLs, commands, and unmanaged extra evidence', () => {
 		const base = {
 			schemaVersion: 3,

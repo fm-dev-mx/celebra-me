@@ -74,6 +74,8 @@ const NEXT_STEP_LABELS: Record<ObservabilityNextStep, string> = {
 	PROMOTE_PRODUCTION: 'Promueva el cambio a Producción.',
 	VERIFY_PREVIEW: 'Verifique Preview antes de continuar.',
 	FIX_CANONICAL_DEFINITION: 'Corrija la definición mediante el contrato existente.',
+	REPAIR_MANAGED_DRAFT:
+		'Repare el borrador administrado con el flujo de corrección de borrador existente.',
 	UPDATE_LIFECYCLE_METADATA: 'Actualice el ciclo de vida canónico.',
 	PROVIDE_REQUIRED_ASSET: 'Proporcione el asset mediante el flujo administrado.',
 	VERIFY_ASSET_EVIDENCE:
@@ -91,6 +93,12 @@ const REASON_CAUSES: Partial<Record<ObservabilityReasonCode, string>> = {
 		'El detalle excede el límite seguro; el resultado de alto nivel se conserva cuando es conocido.',
 	CANONICAL_CHANGE_PENDING: 'El cambio canónico válido aún no se ha entregado a este entorno.',
 	PARTIAL_PROMOTION: 'La secuencia de promoción tiene una siguiente etapa permitida pendiente.',
+	DRAFT_INVALID:
+		'El borrador administrado no cumple el contrato de contenido; la entrega de otras invitaciones permanece independiente.',
+	SCHEMA_BEHIND:
+		'Hay migraciones del repositorio confirmadas como pendientes en este entorno.',
+	SCHEMA_DRIFT: 'El historial de migraciones remoto no coincide con el repositorio.',
+	SCHEMA_UNAVAILABLE: 'No fue posible obtener evidencia verificable del historial de esquema.',
 };
 
 function formatDate(value: string): string {
@@ -99,9 +107,21 @@ function formatDate(value: string): string {
 
 function actionType(nextStep: ObservabilityNextStep): string {
 	if (nextStep === 'VERIFY_BASELINE' || nextStep === 'VERIFY_ASSET_EVIDENCE') return 'Adopción';
-	if (nextStep === 'RECONCILE_MANAGED_CONTENT') return 'Reconciliación';
+	if (nextStep === 'RECONCILE_MANAGED_CONTENT' || nextStep === 'REPAIR_MANAGED_DRAFT') {
+		return 'Reparación';
+	}
 	if (nextStep === 'APPLY_LOCAL' || nextStep.startsWith('PROMOTE_')) return 'Promoción';
 	return 'Diagnóstico';
+}
+
+function migrationIdsLabel(item: ObservabilitySignal): string | null {
+	if (item.reasonCode === 'SCHEMA_BEHIND' && item.pendingMigrations?.length) {
+		return item.pendingMigrations.join(', ');
+	}
+	if (item.reasonCode === 'SCHEMA_DRIFT' && item.extraMigrations?.length) {
+		return item.extraMigrations.join(', ');
+	}
+	return null;
 }
 
 interface SignalGroup {
@@ -159,6 +179,7 @@ function SignalList({ items, empty }: { items: ObservabilitySignal[]; empty: str
 			{groupSignals(items).map(({ key, item, slugs }) => {
 				const cause = REASON_CAUSES[item.reasonCode];
 				const guidance = adoptionGuidance(item);
+				const migrationIds = migrationIdsLabel(item);
 				return (
 					<li key={key} className="observability__issue">
 						<div className="observability__issue-meta">
@@ -178,11 +199,25 @@ function SignalList({ items, empty }: { items: ObservabilitySignal[]; empty: str
 									<dd>{cause}</dd>
 								</div>
 							) : null}
+							{migrationIds ? (
+								<div>
+									<dt>
+										{item.reasonCode === 'SCHEMA_DRIFT'
+											? 'Migraciones desconocidas'
+											: 'Migraciones pendientes'}
+									</dt>
+									<dd>
+										<code>{migrationIds}</code>
+									</dd>
+								</div>
+							) : null}
 							<div>
 								<dt>Impacto</dt>
 								<dd>
 									{item.impact === 'OPERATIONAL'
-										? 'La salud operacional no puede confirmarse hasta resolver la evidencia.'
+										? item.reasonCode === 'DRAFT_INVALID'
+											? 'El contenido administrado es inválido; el progreso de entrega de otras invitaciones permanece visible.'
+											: 'La salud operacional no puede confirmarse hasta resolver la evidencia.'
 										: 'El trabajo de entrega permanece separado de la salud operacional.'}
 								</dd>
 							</div>

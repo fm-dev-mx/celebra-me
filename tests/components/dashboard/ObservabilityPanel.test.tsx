@@ -121,11 +121,64 @@ describe('ObservabilityPanel', () => {
 				name: 'No se pudo verificar la identidad de los assets existentes',
 			}),
 		).toHaveLength(1);
-		expect(screen.getAllByText('Acción recomendada').length).toBeGreaterThan(0);
 		expect(
 			screen.getByText(/Producción es solo una candidata administrativa/),
 		).toBeInTheDocument();
 		expect(screen.getByText(/no se ha escrito ningún cambio/)).toBeInTheDocument();
+	});
+
+	it('shows exact pending migration IDs and draft-repair guidance', async () => {
+		const data = payload();
+		data.operationalStatus = 'BLOCKED';
+		data.deliveryStatus = 'IN_PROGRESS';
+		data.issues = [
+			{
+				impact: 'OPERATIONAL',
+				reasonCode: 'SCHEMA_BEHIND',
+				nextStep: 'AUDIT_SCHEMA',
+				operationalStatus: 'ATTENTION',
+				deliveryStatus: 'ALIGNED',
+				detailStatus: 'AVAILABLE',
+				affectedFieldCount: 0,
+				affectedSectionCount: 0,
+				semanticPaths: [],
+				environment: 'production',
+				pendingMigrations: ['20260802090000'],
+			},
+			{
+				impact: 'OPERATIONAL',
+				reasonCode: 'DRAFT_INVALID',
+				nextStep: 'REPAIR_MANAGED_DRAFT',
+				operationalStatus: 'BLOCKED',
+				deliveryStatus: 'ALIGNED',
+				detailStatus: 'AVAILABLE',
+				affectedFieldCount: 0,
+				affectedSectionCount: 0,
+				semanticPaths: [],
+				environment: 'production',
+				slug: 'romina-rios-chaparro',
+				lifecycle: 'published',
+				comparisonOutcome: 'UNVERIFIED',
+			},
+		];
+		data.environmentSummaries = data.environmentSummaries.map((summary) =>
+			summary.environment === 'production'
+				? { ...summary, operationalStatus: 'BLOCKED' }
+				: summary,
+		);
+		mockGet.mockResolvedValue({ ok: true, status: 200, data } as never);
+		render(<ObservabilityPanel />);
+		await waitFor(() =>
+			expect(screen.getByText('El esquema tiene migraciones pendientes')).toBeInTheDocument(),
+		);
+		expect(screen.getAllByText('20260802090000').length).toBeGreaterThanOrEqual(1);
+		expect(screen.getByText('El borrador administrado no es válido')).toBeInTheDocument();
+		expect(
+			screen.getByText(
+				/Repare el borrador administrado con el flujo de corrección de borrador existente/,
+			),
+		).toBeInTheDocument();
+		expect(screen.getByText('Entrega: En progreso')).toBeInTheDocument();
 	});
 
 	it('keeps otherwise equivalent Preview and Producción signals separate', async () => {
