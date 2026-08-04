@@ -79,31 +79,40 @@ task authorization, target classification, and standard guard checks.
   or `invitation:promote`.
 - **One-Time Recovery Tool Removed**: `scripts/db/reconcile-prod-baseline.ts` was a one-time
   recovery tool and is no longer part of the repository.
-- **Production Migration Safety Workflow**: `pnpm db:prod:migrate` is the only approved production
-  **schema** mutation path. Default is read-only preflight; mutation requires `--apply`:
+- **Production Migration Safety Workflow**: Canonical planner is
+  `pnpm db:migrate -- --target production` (alias `pnpm db:prod:migrate`). Default is read-only
+  preflight; mutation requires `--apply`:
   1. Target guard check (`db-guard.ts check --target production --operation migrate`)
   2. Exact Production project-ref identity
   3. Read-only production schema audit (`pnpm db:prod:audit`)
-  4. Dry-run push equals `--expected <versions>`
+  4. Dry-run pending set (optional `--expected` pin must match exactly when provided)
   5. Migration / deployment compatibility using current clean `HEAD` + rollout registry
      (`supabase/migration-rollout-registry.json`; SSOT
-     `scripts/db/migration-deployment-compatibility.ts`)
-  6. Valid `pnpm release-check` evidence for the current clean `HEAD` (apply only)
+     `scripts/db/migration-deployment-compatibility.ts`). Hosted candidates without an explicit
+     registry phase fail closed.
+  6. Valid `pnpm release-check` evidence for the current clean `HEAD` (apply only; ordinary
+     preflight does not run the full suite)
   7. Verified pre-migration backup (`.backups/prod/...`)
-  8. Shared owner boundary: operation summary + exact interactive TTY confirmation
+  8. Shared owner boundary: operation summary + exact interactive TTY confirmation bound to release
+     SHA, pending versions, and immutable `planId`
   9. Migration application (`supabase db push --db-url <url> --yes`)
   10. Post-migration `schema_migrations` + `pnpm db:contract:verify --target production`
   11. Verified post-migration critical backup
-- **Owner authorization**: All owner-only Production mutators use
-  `requireOwnerProductionApply` (explicit `--apply`, Production project identity, agent rejection,
-  release-check evidence, TTY confirmation). No token, secret, or noninteractive confirmation
-  alternative exists. `production_authorization_receipts` is historical inert state.
+- **Owner authorization**: All owner-only Production mutators use `requireOwnerProductionApply`
+  (explicit `--apply`, Production project identity, agent rejection, release-check evidence, TTY
+  confirmation). No token, secret, or noninteractive confirmation alternative exists.
+  `production_authorization_receipts` is historical inert state.
 - **Hosted identity vs environment selection**: Selecting Preview/Production and having credentials
   is not authorization. Production migrate derives release identity from clean `HEAD` +
-  `pnpm release-check`. Preview migrate still requires `CELEBRA_TARGET_RELEASE_SHA`.
-  Contract-phase migrations also require deployed-app evidence (`CELEBRA_DEPLOYED_APP_SHA` /
+  `pnpm release-check`. Preview migrate still requires `CELEBRA_TARGET_RELEASE_SHA`. Contract-phase
+  migrations also require deployed-app evidence (`CELEBRA_DEPLOYED_APP_SHA` /
   `CELEBRA_DEPLOYED_APP_CAPABILITIES`). Local is not gated by hosted deployment identity. See
   `docs/database-workflow.md` → Migration / Deployment Compatibility Contract.
+- **Unified orchestration**: Local, Preview, and Production schema migrate share
+  `scripts/db/migrate-orchestrator.ts` with isolated environment policies. Invitation promote,
+  Preview content mirror, seeds, restores, and `db:prod:patch` remain outside that orchestrator.
+  After any failed apply, re-run preflight — no resume from cached plans. Cross-machine concurrency
+  is an accepted single-operator residual risk (no distributed lock).
 
 ## Preview Environment Status & Rules
 
@@ -116,11 +125,13 @@ task authorization, target classification, and standard guard checks.
   reconstructs the canonical disposable reference database (`127.0.0.1:54332`), and compares Preview
   against the canonical reference without mutating Preview or persistent local. Report the live
   remote/pending migration counts from the audit; never freeze a hosted pending total in this rule.
-- **Separation of Operations**: Migration (`pnpm db:preview:migrate`), seed, and audit
-  (`pnpm db:preview:audit`) are separate operations. `pnpm db:preview:migrate` defaults to
-  read-only preflight; mutations require explicit `--apply` plus Preview authorization
-  (`CELEBRA_TASK_SCOPE=preview:schema:migrate` or interactive TTY confirmation) after dry-run,
-  optional allowlist, and the compatibility contract. It does not automatically seed or audit.
+- **Separation of Operations**: Migration (`pnpm db:preview:migrate` /
+  `pnpm db:migrate -- --target preview`), seed, and audit (`pnpm db:preview:audit`) are separate
+  operations. Preview migrate defaults to read-only preflight; mutations require explicit `--apply`
+  plus Preview authorization (`CELEBRA_TASK_SCOPE=preview:schema:migrate` or interactive TTY
+  confirmation) after dry-run, optional `--expected` pin (deprecated `--allowlist` /
+  `EXPECTED_MIGRATIONS` shim still accepted with a warning), and the compatibility contract. It does
+  not automatically seed or audit.
 - **Preview mirror**: `pnpm db:preview:sync-invitations --dry-run` performs zero DB, role, profile,
   Storage, or report-file writes. `--apply` requires Preview authorization
   (`CELEBRA_TASK_SCOPE=preview:content-mirror:sync-invitations` or interactive confirmation).
@@ -138,13 +149,16 @@ task authorization, target classification, and standard guard checks.
 
 - `pnpm db:push` is intentionally blocked. Do not bypass it with raw `supabase db push`.
 - `pnpm db:local:reset` is blocked. Use `pnpm db:disposable:reset` for destructive tests.
+- `pnpm db:migrate` is the canonical schema migrate planner/orchestrator (`--target` required;
+  default read-only preflight).
 - `pnpm db:local:migrate` applies pending migrations to persistent-local transactionally without
-  resetting.
-- `pnpm db:prod:migrate` is the approved production **schema** mutation workflow.
+  resetting (compatibility wrapper; defaults to `--apply`).
+- `pnpm db:prod:migrate` is the approved production **schema** mutation workflow (wrapper over
+  `db:migrate -- --target production`).
 - `pnpm invitation:promote` is the approved production **managed-content** promotion workflow
   (owner-only; separate from schema migrate).
 - `pnpm db:preview:migrate` preflights Preview (`PREVIEW_DB_URL`); `--apply` applies pending
-  migrations after Preview authorization.
+  migrations after Preview authorization (wrapper over `db:migrate -- --target preview`).
 - Schema status evidence: `pnpm dbs` / observability use **migration_history_parity**;
   `pnpm db:*:audit` uses **object_audit_readiness**. Do not treat them as equivalent.
 - `pnpm db:prod:patch` disposition is `RESTRICT_OWNER_ONLY` / `KEEP_SPECIALIZED`: `--dry-run` is

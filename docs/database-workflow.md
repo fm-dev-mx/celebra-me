@@ -212,11 +212,11 @@ Definition → normalized release → Local → immutable package → Preview �
 | `pnpm invitation:content-parity`   | Read-only **semantic** content parity check                  | Compares Local/Preview/Production          |
 | `pnpm dbs` / `pnpm dbs --compact`  | Read-only managed **status** (content + schema classifiers)  | Local / Preview / Production               |
 
-Production never imports from the Preview DB or Preview Storage. Mirror is never promotion.
-Normal `invitation:update` is Local/Preview only; use `invitation:promote` for Production managed
-content. Temporary Production one-off (`romina-draft-reset`) and its retirement condition are listed in
-[`.agent/rules/invitation-production.md`](../.agent/rules/invitation-production.md).
-Credential presence, worktree path, runtime target, and UI banners do not authorize mutations.
+Production never imports from the Preview DB or Preview Storage. Mirror is never promotion. Normal
+`invitation:update` is Local/Preview only; use `invitation:promote` for Production managed content.
+Temporary Production one-off (`romina-draft-reset`) and its retirement condition are listed in
+[`.agent/rules/invitation-production.md`](../.agent/rules/invitation-production.md). Credential
+presence, worktree path, runtime target, and UI banners do not authorize mutations.
 
 ### Commands
 
@@ -251,11 +251,14 @@ PROVISIONED & HOSTED-VALIDATED
   `.env.preview.local`.
 - **Target Classification**: `scripts/db/db-guard.ts` classifies targets matching `PREVIEW_DB_URL`
   as `preview`.
-- **Migration Command**: `pnpm db:preview:migrate` defaults to **read-only preflight** against
-  `PREVIEW_DB_URL` (dry-run pending set, optional allowlist `EXPECTED_MIGRATIONS` / `--allowlist`,
-  and the Migration / Deployment Compatibility Contract). Mutations require explicit `--apply` plus
-  Preview authorization (`CELEBRA_TASK_SCOPE=preview:schema:migrate` or interactive TTY `YES`).
-  Hosted Preview fails closed without `CELEBRA_TARGET_RELEASE_SHA`.
+- **Migration Command**: Canonical planner is `pnpm db:migrate -- --target preview` (alias
+  `pnpm db:preview:migrate`). Defaults to **read-only preflight** against `PREVIEW_DB_URL` (dry-run
+  pending set, optional `--expected` pin, and the Migration / Deployment Compatibility Contract).
+  Deprecated Preview-only shims `--allowlist` / `EXPECTED_MIGRATIONS` still parse through the shared
+  `--expected` parser with a warning. Mutations require explicit `--apply` plus Preview
+  authorization (`CELEBRA_TASK_SCOPE=preview:schema:migrate` or interactive TTY `YES`). Hosted
+  Preview fails closed without `CELEBRA_TARGET_RELEASE_SHA`. Hosted candidates without an explicit
+  rollout registry phase fail closed.
 - **Invitation Sync Command**: `pnpm db:preview:sync-invitations` mirrors invitation-facing data
   from Production to Preview:
   - `--dry-run`: report what would change with **zero** DB, role, profile, Storage, or report-file
@@ -311,10 +314,16 @@ pnpm db:prod:backup
 pnpm db:prod:audit
 pnpm db:branch:parity -- --base <ref> --head <ref>
 pnpm release-check
-pnpm db:prod:migrate -- --expected <versions>
+pnpm db:migrate -- --target local
+pnpm db:local:migrate
+pnpm db:migrate -- --target preview
 pnpm db:preview:migrate
 pnpm db:preview:migrate -- --apply
+pnpm db:migrate -- --target production
+pnpm db:prod:migrate -- --expected <versions>
+pnpm db:prod:migrate -- --apply --expected <versions>
 pnpm db:preview:audit
+pnpm db:local:audit
 pnpm db:preview:sync-invitations -- --dry-run
 pnpm db:prod:patch -- --file <path>
 pnpm db:sql:lint -- --file <path>
@@ -373,24 +382,32 @@ Hosted targets prove migration membership from Git contents
 path, UI banner, and credential presence alone never authorize hosted mutation.
 
 ```bash
+# Canonical planner (default: read-only preflight)
+pnpm db:migrate -- --target local|preview|production [--expected <versions>] [--json]
+
 # Preview — read-only preflight (default)
-CELEBRA_TARGET_RELEASE_SHA=<git-sha> EXPECTED_MIGRATIONS=<versions> pnpm db:preview:migrate
+CELEBRA_TARGET_RELEASE_SHA=<git-sha> pnpm db:preview:migrate
+CELEBRA_TARGET_RELEASE_SHA=<git-sha> pnpm db:preview:migrate -- --expected <versions>
 
 # Preview — apply after Preview authorization
 CELEBRA_TASK_SCOPE=preview:schema:migrate CELEBRA_TARGET_RELEASE_SHA=<git-sha> \
-  EXPECTED_MIGRATIONS=<versions> pnpm db:preview:migrate -- --apply
+  pnpm db:preview:migrate -- --apply --expected <versions>
 
 # Production — release identity is the current clean HEAD after pnpm release-check
 pnpm release-check
-pnpm db:prod:migrate -- --expected <versions>                 # read-only preflight
+pnpm db:prod:migrate                                          # read-only preflight (derived pending set)
+pnpm db:prod:migrate -- --expected <versions>                 # preflight with exact pin
 pnpm db:prod:migrate -- --apply --expected <versions>         # owner TTY apply
 ```
 
 Production apply fails closed without valid `pnpm release-check` evidence for the current clean
-`HEAD`. Preview fails closed without `CELEBRA_TARGET_RELEASE_SHA`. Local / disposable remain free
-to develop against repository `HEAD`.
+`HEAD`. Ordinary preflight does not run the full release suite. Preview fails closed without
+`CELEBRA_TARGET_RELEASE_SHA`. Local / disposable remain free to develop against repository `HEAD`.
+After any failed apply, re-run preflight and obtain a newly validated plan — do not resume from
+cached assumptions. Cross-machine concurrent migrate is an accepted single-operator residual risk.
 
-Rollout phases (registry metadata; annotate only migrations that participate in sequencing):
+Rollout phases (registry metadata; **hosted candidates must have an explicit phase** — omission
+fails closed; do not backfill already-applied historical migrations without need):
 
 | Phase      | Meaning                                                    | Hosted rule                                                                                                                    |
 | ---------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
@@ -496,18 +513,26 @@ application login substitute. Host invitation flows continue to use real `host_c
 - Writes gitignored evidence to `.agent/tmp/release-check-evidence.json` (SHA + pass metadata).
 - Evidence is rejected when `HEAD` changes, the tree becomes dirty, or required checks did not pass.
 
-`pnpm db:prod:migrate`
+`pnpm db:migrate` / `pnpm db:prod:migrate`
 
-- Canonical schema commands:
-  - `pnpm db:prod:migrate -- --expected <versions>` — read-only preflight (no TTY, no writes)
+- Canonical schema planner:
+  `pnpm db:migrate -- --target <local|preview|production|disposable-test>`. Compatibility aliases:
+  `db:local:migrate`, `db:preview:migrate`, `db:prod:migrate`.
+- Production commands:
+  - `pnpm db:prod:migrate` — read-only preflight (derived pending set; no TTY, no writes)
+  - `pnpm db:prod:migrate -- --expected <versions>` — preflight with exact pin
   - `pnpm db:prod:migrate -- --apply --expected <versions>` — owner apply path
-- Apply sequence: identity → audit → dry-run equals `--expected` → compatibility (HEAD) → valid
-  `release-check` evidence → verified pre-migration backup → operation summary + exact TTY
-  confirmation → `supabase db push` → migration-history + contract verification → post-migration
-  backup.
+- Shared orchestrator sequence: plan → (apply: rebuild + drift check) → beforeWrite → authorize →
+  execute → verify/evidence. Human logs on stderr; `--json` plans on stdout only.
+- Production apply sequence: identity → audit → dry-run (+ optional `--expected` pin) →
+  compatibility (HEAD; explicit registry phase required) → valid `release-check` evidence → verified
+  pre-migration backup → operation summary + exact TTY confirmation bound to release SHA, pending
+  versions, and `planId` → `supabase db push` → migration-history + contract verification →
+  post-migration backup.
 - Release identity for Production is the current clean `HEAD` (not `CELEBRA_TARGET_RELEASE_SHA`).
 - Shared owner boundary: `requireOwnerProductionApply` (also used by promote/patch/draft-reset).
-- Rejects `CELEBRA_AGENT_CONTEXT`. No token, secret, env, or noninteractive confirmation alternative.
+- Rejects `CELEBRA_AGENT_CONTEXT`. No token, secret, env, or noninteractive confirmation
+  alternative.
 - `public.production_authorization_receipts` is historical inert state from migration
   `20260802090000`; no mutation path inserts into or depends on it.
 - This is the only approved production **schema** mutation workflow. Content promotion and
