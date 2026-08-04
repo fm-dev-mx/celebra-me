@@ -41,6 +41,16 @@ const CEREMONY_TIME = '5:30 p. m.';
 const RECEPTION_TIME = '7:30 p. m.';
 const CIVIL_TIME = '8:15 p. m.';
 
+const PERLA_INTERLUDE_01 = {
+	alt: 'Arco de piedra con flores blancas al atardecer',
+	focalPoint: '50% 50%',
+} as const;
+
+const PERLA_INTERLUDE_02 = {
+	alt: 'Mesa de recepción con flores blancas y luces cálidas',
+	focalPoint: '50% 58%',
+} as const;
+
 export const PERLA_ASSET_SPECS = [
 	{
 		key: 'hero-desktop',
@@ -74,6 +84,24 @@ export const PERLA_ASSET_SPECS = [
 		alt: 'Perla y Carlos en retrato de sesión',
 		focalPoint: {
 			default: '50% 38%',
+		},
+	},
+	{
+		key: 'interlude-01',
+		relativePath: 'interlude-01.png',
+		displayName: 'Perla y Carlos — interludio de arquitectura',
+		alt: PERLA_INTERLUDE_01.alt,
+		focalPoint: {
+			default: PERLA_INTERLUDE_01.focalPoint,
+		},
+	},
+	{
+		key: 'interlude-02',
+		relativePath: 'interlude-02.png',
+		displayName: 'Perla y Carlos — interludio de recepción',
+		alt: PERLA_INTERLUDE_02.alt,
+		focalPoint: {
+			default: PERLA_INTERLUDE_02.focalPoint,
 		},
 	},
 ] as const;
@@ -246,6 +274,22 @@ export function buildPerlaPublishedContent(
 				},
 			],
 		},
+		interludes: [
+			{
+				image: assets['interlude-01'],
+				afterSection: 'countdown',
+				alt: PERLA_INTERLUDE_01.alt,
+				height: 'screen',
+				focalPoint: PERLA_INTERLUDE_01.focalPoint,
+			},
+			{
+				image: assets['interlude-02'],
+				afterSection: 'gallery',
+				alt: PERLA_INTERLUDE_02.alt,
+				height: 'screen',
+				focalPoint: PERLA_INTERLUDE_02.focalPoint,
+			},
+		],
 		rsvp: {
 			title: 'Confirme su asistencia',
 			subcopy:

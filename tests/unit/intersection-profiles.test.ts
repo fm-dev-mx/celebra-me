@@ -80,10 +80,24 @@ describe('invitation intersection profiles', () => {
 		});
 	});
 
-	it('maps Perla y Carlos tonal chapters and portrait-to-RSVP overlap', () => {
+	it('maps Perla y Carlos arch, interlude bridges, and PA overlap', () => {
 		expect(resolveRenderPlanIntersection('boda-perla-y-carlos', 'quote')).toEqual({
 			family: 'atmospheric-blend',
 			source: 'hero',
+		});
+		expect(resolveRenderPlanIntersection('boda-perla-y-carlos', 'countdown')).toEqual({
+			family: 'atmospheric-blend',
+			source: 'quote',
+		});
+		expect(
+			resolveRenderPlanIntersection('boda-perla-y-carlos', 'interlude-after-countdown'),
+		).toEqual({
+			family: 'arch',
+			source: 'countdown',
+		});
+		expect(resolveRenderPlanIntersection('boda-perla-y-carlos', 'location')).toEqual({
+			family: 'atmospheric-blend',
+			source: 'interlude-after-countdown',
 		});
 		expect(resolveRenderPlanIntersection('boda-perla-y-carlos', 'family')).toEqual({
 			family: 'atmospheric-blend',
@@ -93,10 +107,16 @@ describe('invitation intersection profiles', () => {
 			family: 'atmospheric-blend',
 			source: 'family',
 		});
+		expect(
+			resolveRenderPlanIntersection('boda-perla-y-carlos', 'interlude-after-gallery'),
+		).toEqual({
+			family: 'atmospheric-blend',
+			source: 'gallery',
+		});
 		expect(resolveRenderPlanIntersection('boda-perla-y-carlos', 'personalized-access')).toEqual(
 			{
 				family: 'overlap',
-				source: 'gallery',
+				source: 'interlude-after-gallery',
 			},
 		);
 		expect(resolveRenderPlanIntersection('boda-perla-y-carlos', 'thankYou')).toEqual({

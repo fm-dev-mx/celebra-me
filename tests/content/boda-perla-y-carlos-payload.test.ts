@@ -1,5 +1,7 @@
 import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
 import { checkPublishGuard } from '@/lib/intake/services/invitation-preset-resolver';
+import { adaptEvent } from '@/lib/adapters/event';
+import { buildInvitationRenderPlan } from '@/lib/invitation/render-plan';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -115,7 +117,69 @@ describe('Boda Perla y Carlos provision contract', () => {
 		expect(content).not.toHaveProperty('gifts');
 		expect(content).not.toHaveProperty('music');
 		expect(content).not.toHaveProperty('itinerary');
-		expect(content).not.toHaveProperty('interludes');
+
+		const interludes = content.interludes as Array<{
+			afterSection: string;
+			image: unknown;
+			alt?: string;
+			height?: string;
+			focalPoint?: string;
+		}>;
+		expect(interludes).toHaveLength(2);
+		expect(interludes.map((interlude) => interlude.afterSection)).toEqual([
+			'countdown',
+			'gallery',
+		]);
+		expect(interludes).toEqual([
+			expect.objectContaining({
+				afterSection: 'countdown',
+				alt: 'Arco de piedra con flores blancas al atardecer',
+				height: 'screen',
+				focalPoint: '50% 50%',
+			}),
+			expect.objectContaining({
+				afterSection: 'gallery',
+				alt: 'Mesa de recepción con flores blancas y luces cálidas',
+				height: 'screen',
+				focalPoint: '50% 58%',
+			}),
+		]);
+
+		const viewModel = adaptEvent({
+			id: 'events/boda-perla-y-carlos',
+			data: content,
+		} as Parameters<typeof adaptEvent>[0]);
+		const renderPlan = buildInvitationRenderPlan(viewModel);
+		expect(renderPlan.filter((item) => item.type === 'interlude')).toHaveLength(2);
+		expect(
+			renderPlan.map((item) => (item.type === 'section' ? item.section : item.type)),
+		).toEqual([
+			'quote',
+			'countdown',
+			'interlude',
+			'location',
+			'family',
+			'gallery',
+			'interlude',
+			'personalized-access',
+			'rsvp',
+			'thankYou',
+		]);
+		expect(
+			renderPlan.find(
+				(item) => item.type === 'interlude' && item.afterSection === 'countdown',
+			),
+		).toMatchObject({
+			intersection: { family: 'arch', source: 'countdown' },
+		});
+		expect(
+			renderPlan.find((item) => item.type === 'interlude' && item.afterSection === 'gallery'),
+		).toMatchObject({
+			intersection: { family: 'atmospheric-blend', source: 'gallery' },
+		});
+		expect(renderPlan.find((item) => item.type === 'personalized-access')).toMatchObject({
+			intersection: { family: 'overlap', source: 'interlude-after-gallery' },
+		});
 
 		const envelope = content.envelope as {
 			microcopy?: string;
