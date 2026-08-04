@@ -1,0 +1,73 @@
+# Graphify corpus contract: keep the extracted graph focused on executable architecture.
+# Patterns follow gitignore semantics; the last matching rule wins.
+
+# Default deny: explicitly re-include the roots that carry application relationships.
+*
+!src/
+!src/**
+!tests/
+!tests/**
+!scripts/
+!scripts/**
+!supabase/
+!supabase/**
+!db/
+!db/**
+
+# Relevant root configuration.
+!astro.config.*
+!vite.config.*
+!tsconfig*.json
+!package.json
+!pnpm-workspace.yaml
+!vercel.json
+!eslint.config.*
+!jest.config.*
+!playwright*.config.*
+
+# Local, generated, dependency, and build noise.
+node_modules/
+/dist/
+/.astro/
+/.vercel/
+/coverage/
+/graphify-out/
+/.agent/
+/.hermes/
+
+# Supabase local state must remain excluded after the supabase reinclusion above.
+/supabase/.temp/
+/supabase/.temp/**
+/supabase/.branches/
+/supabase/.branches/**
+
+# Graphify must not analyze its own implementation, wrapper, fixtures, or tests.
+/scripts/graphify/
+/scripts/graphify/**
+/scripts/graphify-operational-views.ts
+/tests/fixtures/graphify-operational/
+/tests/fixtures/graphify-operational/**
+/tests/unit/graphify-operational-views.test.ts
+/tests/unit/graphify-corpus.test.ts
+
+# Root public assets only. Nested application routes containing "public" are valid corpus files.
+/public/
+/public/**
+
+# Non-topological documentation and binary assets.
+*.md
+*.mdx
+*.txt
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif
+*.svg
+*.pdf
+*.docx
+*.xlsx
+
+# Package-manager lockfiles and example-only configuration do not add useful graph topology.
+/pnpm-lock.yaml
+/screenshot.config.example.json

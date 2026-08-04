@@ -1,5 +1,22 @@
 export { FILE_CATEGORIES, RSVP_DOMAIN_GROUPS } from './graphify/constants.js';
-export { validateGraphShape, validateAnalysisShape } from './graphify/validate.js';
+export {
+	validateGraphShape,
+	validateAnalysisShape,
+	validateGraphIntegrity,
+	normalizeRawGraphDirected,
+	rawEdgeList,
+} from './graphify/validate.js';
+export {
+	GRAPHIFY_VERSION,
+	REQUIRED_CORPUS_FILES,
+	FORBIDDEN_CORPUS_MARKERS,
+	manifestFiles,
+	graphSourceFiles,
+	computeCorpusHealth,
+	assertCorpusContract,
+	graphifyIgnoreSha256,
+} from './graphify/corpus.js';
+export { sourceFingerprint, assertSourceStateFresh } from './graphify/source-state.js';
 export {
 	classifyFileCategory,
 	classifyRsvpDomainGroup,
@@ -26,6 +43,8 @@ export {
 	renderIntakePublishingDomainMarkdown,
 	renderInvitationRenderingDomainMarkdown,
 	renderThemeAssetsDomainMarkdown,
+	renderCorpusHealthMarkdown,
+	directionCaveat,
 	renderOperationalReadme,
 } from './graphify/render.js';
 export { serializeStableJson } from './graphify/serialize.js';

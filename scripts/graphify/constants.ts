@@ -10,6 +10,8 @@ export const FILE_CATEGORIES = [
 export const DEFAULT_GRAPH_PATH = 'graphify-out/graph.json';
 export const DEFAULT_ANALYSIS_PATH = 'graphify-out/.graphify_analysis.json';
 export const DEFAULT_OUTPUT_DIR = 'graphify-out/operational';
+export const DEFAULT_MANIFEST_PATH = 'graphify-out/manifest.json';
+export const DEFAULT_SOURCE_STATE_PATH = 'graphify-out/SOURCE_STATE.json';
 export const UNKNOWN_SOURCE_FILE = null;
 export const TOP_LIMIT = 20;
 

@@ -814,7 +814,7 @@ describe('CLI integration', () => {
 		}
 	});
 
-	it('generates all 15 output files', () => {
+	it('generates all 17 output files', () => {
 		const tempRoot = mkdtempSync(join(tmpdir(), 'graphify-operational-pass-'));
 		const outputRoot = mkdtempSync(join(tmpdir(), 'graphify-operational-out-'));
 
@@ -860,6 +860,8 @@ describe('CLI integration', () => {
 				'domain-invitation-rendering.md',
 				'domain-theme-assets.json',
 				'domain-theme-assets.md',
+				'corpus-health.json',
+				'corpus-health.md',
 			];
 			for (const file of fileNames) {
 				expect(readFileSync(join(outputRoot, file), 'utf8')).toBeTruthy();

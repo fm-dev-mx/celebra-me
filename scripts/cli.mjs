@@ -14,6 +14,7 @@ const SCRIPTS = {
 	'validate-commits': { script: 'validate-commits.mjs', runtime: 'node' },
 	'graphify-views': { script: 'graphify/entry.ts', runtime: 'tsx' },
 	'graphify-refresh': { script: 'graphify/refresh.ts', runtime: 'tsx' },
+	'graphify-doctor': { script: 'graphify/doctor.ts', runtime: 'tsx' },
 	'data-audit-events-invitations': {
 		script: 'data-audit-events-invitations.mjs',
 		runtime: 'node',

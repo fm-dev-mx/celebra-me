@@ -7,6 +7,7 @@ import {
 	TOP_LIMIT,
 } from './constants.js';
 import type { DomainGroupDef } from './constants.js';
+import type { CorpusHealth } from './corpus.js';
 import { normalizeSourceFileForSort } from './core.js';
 
 const FILE_METRIC_HEADERS = [
@@ -25,7 +26,10 @@ const NODE_METRIC_HEADERS = [
 	'crossCommunityEdgeCount',
 ];
 
-function directionCaveat(metadata: Record<string, unknown>): string {
+export function directionCaveat(metadata: Record<string, unknown>): string {
+	if (metadata.graphDirected === true) {
+		return `Graph directed flag: \`true\`. Source/target metrics represent the directed dependency relationship stored by Graphify.`;
+	}
 	return `Graph directed flag: \`${metadata.graphDirected}\`. Because Graphify marks this graph as undirected, source/target metrics are orientation hints from stored link fields, not true dependency direction.`;
 }
 
@@ -455,10 +459,39 @@ export function renderOperationalReadme(metadata: Record<string, unknown>): stri
 		'- `domain-intake-publishing.json` / `domain-intake-publishing.md`: likely related files for editor, draft, merge, preview, publish, and intake publishing tests.',
 		'- `domain-invitation-rendering.json` / `domain-invitation-rendering.md`: likely related files for public routes, content resolution, page-data, adapters, render plans, public components, and rendering tests.',
 		'- `domain-theme-assets.json` / `domain-theme-assets.md`: cross-layer theme vocabulary, asset registry, section boundary, styling contract, and focused test files without image/style inventory.',
+		'- `corpus-health.json` / `corpus-health.md`: manifest coverage, files without nodes, SQL coverage, exclusions, and symbolic references.',
 		'',
 		'Use a domain view when a task crosses route, API, service, schema, mapper, component, style, and test layers. Do not use Graphify for one-file edits, copy-only changes, tiny CSS changes, or cases where source code and active docs already answer the question directly.',
 		'',
 		'Graphify findings are leads, not authority. Raw Graphify outputs remain unchanged and source code plus active docs remain the source of truth.',
+		'',
+	].join('\n');
+}
+
+export function renderCorpusHealthMarkdown(health: CorpusHealth): string {
+	const sql = health.sql;
+	const symbolic = health.symbolicReferences;
+	const filesWithoutNodes = health.filesWithoutNodes;
+	return [
+		'# Graphify Corpus Health',
+		'',
+		'Coverage and exclusion checks for the versioned Graphify corpus contract.',
+		'',
+		`Manifest files: **${health.manifestFileCount}**. Source-file nodes: **${health.sourceFileNodeCount}**. Files with nodes: **${health.filesWithNodes}**.`,
+		`Graph-only symbolic source references: **${health.graphOnlySourceFiles.length}**.`,
+		`SQL coverage: **${sql.filesWithNodes}/${sql.manifestFiles} files** (${(sql.coverageRatio * 100).toFixed(1)}%).`,
+		`Symbolic references: **${symbolic.nodesWithoutSourceFile}** nodes without source files; packages **${symbolic.packages}**, SCSS **${symbolic.scss}**, images **${symbolic.images}**.`,
+		'',
+		`Forbidden manifest files: ${health.forbiddenManifestFiles.length}.`,
+		`Forbidden graph source files: ${health.forbiddenGraphSourceFiles.length}.`,
+		`Missing required manifest files: ${health.missingRequiredManifestFiles.length}.`,
+		`Missing required graph files: ${health.missingRequiredGraphFiles.length}.`,
+		'',
+		'## Files without source-file nodes',
+		'',
+		filesWithoutNodes.length === 0
+			? '_None._'
+			: filesWithoutNodes.map((file) => `- \`${file}\``).join('\n'),
 		'',
 	].join('\n');
 }

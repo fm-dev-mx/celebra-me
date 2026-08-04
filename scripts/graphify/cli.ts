@@ -1,8 +1,16 @@
 import { execSync } from 'node:child_process';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
-import { DEFAULT_GRAPH_PATH, DEFAULT_ANALYSIS_PATH, DEFAULT_OUTPUT_DIR } from './constants.js';
+import {
+	DEFAULT_ANALYSIS_PATH,
+	DEFAULT_GRAPH_PATH,
+	DEFAULT_MANIFEST_PATH,
+	DEFAULT_OUTPUT_DIR,
+	DEFAULT_SOURCE_STATE_PATH,
+} from './constants.js';
+import { assertCorpusContract, computeCorpusHealth, graphifyIgnoreSha256 } from './corpus.js';
+import { assertSourceStateFresh } from './source-state.js';
 import { validateGraphShape, validateAnalysisShape } from './validate.js';
 import { buildGraphIndexes } from './core.js';
 import {
@@ -22,6 +30,7 @@ import {
 	renderIntakePublishingDomainMarkdown,
 	renderInvitationRenderingDomainMarkdown,
 	renderThemeAssetsDomainMarkdown,
+	renderCorpusHealthMarkdown,
 	renderOperationalReadme,
 } from './render.js';
 import { serializeStableJson } from './serialize.js';
@@ -34,7 +43,16 @@ const REPORT_NAMES = [
 	'domain-intake-publishing',
 	'domain-invitation-rendering',
 	'domain-theme-assets',
+	'corpus-health',
 ] as const;
+
+export interface GenerateOperationalReportsOptions {
+	graphPath?: string;
+	analysisPath?: string;
+	outputDir?: string;
+	manifestPath?: string;
+	sourceStatePath?: string;
+}
 
 function writePair<T>(outputDir: string, name: string, data: T, render: (data: T) => string) {
 	writeFileSync(path.join(outputDir, `${name}.json`), serializeStableJson(data));
@@ -73,7 +91,14 @@ export function generateOperationalReports({
 	graphPath = DEFAULT_GRAPH_PATH,
 	analysisPath = DEFAULT_ANALYSIS_PATH,
 	outputDir = DEFAULT_OUTPUT_DIR,
-} = {}) {
+	manifestPath,
+	sourceStatePath,
+}: GenerateOperationalReportsOptions = {}) {
+	const requiresSnapshotState = sourceStatePath !== undefined || graphPath === DEFAULT_GRAPH_PATH;
+	const resolvedManifestPath =
+		manifestPath ?? (requiresSnapshotState ? DEFAULT_MANIFEST_PATH : undefined);
+	const resolvedSourceStatePath =
+		sourceStatePath ?? (requiresSnapshotState ? DEFAULT_SOURCE_STATE_PATH : undefined);
 	const graph = validateGraphShape(
 		JSON.parse(readFileSync(graphPath, 'utf8')) as Record<string, unknown>,
 	);
@@ -81,10 +106,26 @@ export function generateOperationalReports({
 		graph.built_at_commit as string | null | undefined,
 		execSync('git rev-parse HEAD').toString().trim(),
 	);
+	if (resolvedSourceStatePath) {
+		if (!existsSync(resolvedSourceStatePath)) {
+			throw new Error(`Graphify source state is missing: ${resolvedSourceStatePath}`);
+		}
+		const sourceState = JSON.parse(readFileSync(resolvedSourceStatePath, 'utf8')) as Record<
+			string,
+			unknown
+		>;
+		assertSourceStateFresh(sourceState, process.cwd(), graphifyIgnoreSha256(process.cwd()));
+	}
 	const analysis = validateAnalysisShape(
 		JSON.parse(readFileSync(analysisPath, 'utf8')) as Record<string, unknown>,
 	);
 	const indexes = buildGraphIndexes(graph, analysis);
+	const manifest =
+		resolvedManifestPath && existsSync(resolvedManifestPath)
+			? JSON.parse(readFileSync(resolvedManifestPath, 'utf8'))
+			: {};
+	const corpusHealth = computeCorpusHealth(manifest, graph);
+	if (requiresSnapshotState) assertCorpusContract(corpusHealth);
 	const options = { sourceGraphPath: graphPath.replaceAll('\\', '/') };
 
 	const communitySummary = computeCommunitySummary(graph, analysis, indexes, options);
@@ -133,6 +174,7 @@ export function generateOperationalReports({
 		themeAssetsDomainReport,
 		renderThemeAssetsDomainMarkdown,
 	);
+	writePair(outputDir, 'corpus-health', corpusHealth, renderCorpusHealthMarkdown);
 	writeFileSync(path.join(outputDir, 'README.md'), renderOperationalReadme(communitySummary));
 
 	return {
@@ -160,9 +202,15 @@ export function parseArgs(argv: string[]) {
 		} else if (arg === '--out') {
 			options.outputDir = argv[index + 1];
 			index += 1;
+		} else if (arg === '--manifest') {
+			options.manifestPath = argv[index + 1];
+			index += 1;
+		} else if (arg === '--source-state') {
+			options.sourceStatePath = argv[index + 1];
+			index += 1;
 		} else if (arg === '--help' || arg === '-h') {
 			console.log(
-				'Usage: pnpm ops graphify-views [--graph path] [--analysis path] [--out path]',
+				'Usage: pnpm ops graphify-views [--graph path] [--analysis path] [--manifest path] [--source-state path] [--out path]',
 			);
 			process.exit(0);
 		} else {
