@@ -5,11 +5,8 @@
 
 import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import {
-	PROJECT_ROOT,
-	runPsql,
-	type CommandResult,
-} from '../db/db-workflow-lib.ts';
+import { PROJECT_ROOT, runPsql, type CommandResult } from '../db/db-workflow-lib.ts';
+import { redactCredentials } from '../db/db-target-config.ts';
 
 export interface StatusProbeSessionOptions {
 	/** Per-query wall-clock budget (ms). */
@@ -32,10 +29,7 @@ function urlKey(dbUrl: string): string {
 	return createHash('sha256').update(dbUrl).digest('hex');
 }
 
-function buildReadOnlyEnv(
-	base: NodeJS.ProcessEnv,
-	readOnly: boolean,
-): NodeJS.ProcessEnv {
+function buildReadOnlyEnv(base: NodeJS.ProcessEnv, readOnly: boolean): NodeJS.ProcessEnv {
 	if (!readOnly) return { ...base };
 	const existing = base.PGOPTIONS?.trim() ?? '';
 	const flag = '-c default_transaction_read_only=on';
@@ -44,6 +38,15 @@ function buildReadOnlyEnv(
 		...base,
 		PGOPTIONS: existing ? `${existing} ${flag}` : flag,
 	};
+}
+
+/** Redact connection strings from probe stdout/stderr without truncating query payloads. */
+export function redactProbeIo(text: string, secrets: readonly string[] = []): string {
+	let out = text;
+	for (const secret of secrets) {
+		if (secret) out = out.split(secret).join('<redacted>');
+	}
+	return redactCredentials(out);
 }
 
 /**
@@ -57,6 +60,7 @@ export function runPsqlAsync(
 		timeoutMs?: number;
 		readOnly?: boolean;
 		tuplesOnly?: boolean;
+		redact?: readonly string[];
 	} = {},
 ): Promise<CommandResult> {
 	const args = ['--set', 'ON_ERROR_STOP=1'];
@@ -66,6 +70,7 @@ export function runPsqlAsync(
 	args.push('--dbname', dbUrl);
 
 	const env = buildReadOnlyEnv(process.env, options.readOnly !== false);
+	const secrets = [dbUrl, ...(options.redact ?? [])];
 
 	return new Promise((resolve) => {
 		const child = spawn('psql', args, {
@@ -81,7 +86,11 @@ export function runPsqlAsync(
 		const finish = (status: number | null) => {
 			if (settled) return;
 			settled = true;
-			resolve({ status, stdout, stderr });
+			resolve({
+				status,
+				stdout: redactProbeIo(stdout, secrets),
+				stderr: redactProbeIo(stderr, secrets),
+			});
 		};
 
 		const timer =
@@ -184,6 +193,7 @@ export class StatusProbeSession {
 				timeoutMs: this.timeoutMs,
 				readOnly: this.readOnly,
 				tuplesOnly: options.tuplesOnly,
+				redact: [dbUrl],
 			});
 			this.#memo.set(key, result);
 			this.#inflight.delete(key);
