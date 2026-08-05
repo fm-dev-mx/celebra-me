@@ -176,7 +176,7 @@ export function buildDanielaPublishedContent(
 			stampYear: '2026',
 			// Seal is the sole [data-envelope-open] control; empty microcopy suppresses the external button.
 			microcopy: '',
-			tooltipText: 'Toque el sello',
+			tooltipText: 'Abrir invitación',
 			closedPalette: {
 				primary: 'surfacePrimary',
 				accent: 'actionAccent',
@@ -184,19 +184,18 @@ export function buildDanielaPublishedContent(
 			},
 		},
 		quote: {
-			text: 'Hoy unimos nuestros caminos con gratitud y con la certeza de caminar juntos el resto de la vida.',
+			text: 'Hoy elegimos caminar juntos, con gratitud por lo vivido y emoción por todo lo que está por venir.',
 			author: 'Daniela & Martín',
 		},
 		countdown: {
-			title: 'Nuestra boda comienza en',
+			title: 'Falta poco',
 			footerText: 'Huejutla de Reyes, Hidalgo',
 		},
 		location: {
 			visibility: 'public',
 			introEyebrow: 'Huejutla de Reyes, Hidalgo',
 			introHeading: EVENT_DATE_HEADING,
-			introLede:
-				'Daniela y Martín celebrarán su enlace con ceremonia religiosa, recepción y ceremonia civil. Será un honor compartir este día con ustedes.',
+			introLede: 'Nos alegrará compartir con ustedes cada momento de esta celebración.',
 			// venues[0] drives hero venue/time via page-data (ceremony-first without shared picker changes).
 			venues: [
 				{
@@ -229,12 +228,12 @@ export function buildDanielaPublishedContent(
 				{
 					iconName: 'DressCode',
 					styleVariant: 'default',
-					text: 'Etiqueta formal. Mujeres: vestido largo de noche (evitar blanco, beige o tonos claros). Hombres: traje.',
+					text: 'Etiqueta formal. Mujeres: vestido largo de noche. Evitar blanco, beige y tonos claros. Hombres: traje.',
 				},
 				{
 					iconName: 'Church',
 					styleVariant: 'default',
-					text: `La ceremonia civil se celebrará en la recepción a las ${CIVIL_TIME}`,
+					text: `Se celebrará durante la recepción a las ${CIVIL_TIME}`,
 				},
 			],
 		},
@@ -254,15 +253,15 @@ export function buildDanielaPublishedContent(
 				},
 			],
 			labels: {
-				sectionSubtitle: 'Círculo cercano',
-				sectionTitle: 'Con la bendición de nuestra familia',
+				sectionSubtitle: 'Familia',
+				sectionTitle: 'Con la bendición de quienes nos han acompañado siempre',
 				sectionMessage: '',
 			},
 		},
 		gallery: {
 			eyebrow: 'Retrato',
 			title: 'Nuestro comienzo',
-			subtitle: 'Una imagen para recordar el inicio de este camino juntos.',
+			subtitle: 'El instante que marcó el inicio de esta historia.',
 			items: [
 				{
 					key: 'gallery-01',
@@ -277,7 +276,7 @@ export function buildDanielaPublishedContent(
 		gifts: {
 			title: 'Mesa de regalos',
 			subtitle:
-				'Su presencia será nuestro mayor regalo. Si desean tener un detalle, pueden elegir de nuestra mesa en Amazon o acompañarnos con una lluvia de sobres el día de la recepción.',
+				'Su presencia es nuestro mejor regalo. Para quienes deseen tener un detalle con nosotros, hemos preparado las siguientes opciones.',
 			items: [
 				{
 					type: 'store',
@@ -288,7 +287,7 @@ export function buildDanielaPublishedContent(
 				{
 					type: 'cash',
 					title: 'Lluvia de sobres',
-					text: 'También contaremos con un buzón para sobres el día de la recepción.',
+					text: 'Durante la recepción habrá un buzón disponible para quienes prefieran acompañarnos con un obsequio en sobre.',
 				},
 			],
 		},
@@ -309,9 +308,9 @@ export function buildDanielaPublishedContent(
 			},
 		],
 		rsvp: {
-			title: 'Confirme su asistencia',
+			title: '¿Podrán acompañarnos?',
 			subcopy:
-				'Será un honor recibirles. Les pedimos confirmar su asistencia desde esta invitación.',
+				'Será un gusto celebrar con ustedes. Les pedimos confirmar su asistencia desde esta invitación.',
 			guestCap: 8,
 			accessMode: 'hybrid',
 			confirmationMode: 'api',
@@ -334,14 +333,13 @@ export function buildDanielaPublishedContent(
 			personalizedAccess: {
 				title: 'Su invitación personal',
 				subtitle: 'Esta invitación ha sido preparada para:',
-				footerText: 'Confirme su asistencia en el formulario.',
+				footerText: 'Confirme su asistencia desde esta invitación.',
 			},
 		},
 		thankYou: {
 			message:
-				'Gracias por acompañarnos en un día que recordaremos siempre con el corazón lleno.',
+				'Gracias por compartir con nosotros un día que permanecerá siempre en nuestra memoria.',
 			closingName: 'Daniela & Martín',
-			closingPhrase: 'Con cariño',
 			date: EVENT_DATE_LONG,
 		},
 		sharing: {

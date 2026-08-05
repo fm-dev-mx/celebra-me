@@ -220,7 +220,7 @@ describe('Boda Daniela y Martín provision contract', () => {
 			envelopeName?: string;
 		};
 		expect(envelope.microcopy).toBe('');
-		expect(envelope.tooltipText).toBe('Toque el sello');
+		expect(envelope.tooltipText).toBe('Abrir invitación');
 		expect(envelope.envelopeName).toBe('Daniela & Martín');
 
 		const location = content.location as {
@@ -254,7 +254,7 @@ describe('Boda Daniela y Martín provision contract', () => {
 		expect(location.venues?.[0]?.googleMapsUrl).not.toBe(location.venues?.[1]?.googleMapsUrl);
 		expect(location.introHeading).toBe('Sábado, 28 de noviembre de 2026');
 		expect(location.indicationsHeading).toBe('Indicaciones');
-		expect(location.indications?.some((i) => /ceremonia civil/i.test(i.text))).toBe(true);
+		expect(location.indications?.some((i) => /recepción/i.test(i.text))).toBe(true);
 		expect(location.indications?.some((i) => /8:15 p\. m\./.test(i.text))).toBe(true);
 
 		const family = content.family as {
@@ -263,7 +263,7 @@ describe('Boda Daniela y Martín provision contract', () => {
 			labels?: { sectionSubtitle?: string; sectionTitle?: string };
 		};
 		expect(family.presentation).toBe('text-only');
-		expect(family.labels?.sectionSubtitle).toBe('Círculo cercano');
+		expect(family.labels?.sectionSubtitle).toBe('Familia');
 		expect(family.groups).toHaveLength(2);
 		expect(family.groups?.[0]).toMatchObject({
 			title: 'De la Novia',
