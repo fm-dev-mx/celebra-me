@@ -1,11 +1,11 @@
 ---
 name: staged-code-review
 description: |
-  Analyze staged git changes with a simplification-first mindset. Find dead code, redundant
-  abstractions, orphaned files, and removable surface; secondarily catch bugs and anti-patterns.
-  Read-only — no edits, staging, or commits.
+  Analyze staged git changes with a simplification-first mindset. Full-file hygiene on each staged
+  path (not diff-only): dead code, redundant abstractions, orphaned files; secondarily bugs and
+  anti-patterns. Read-only — no edits, staging, or commits. Emits apply-tags for staged-code-review-apply.
 domain: quality
-version: 1.0.0
+version: 1.2.1
 when_to_use:
   - User asks to review staged changes before committing
   - User asks to analyze staged work for over-engineering or dead code
@@ -14,6 +14,7 @@ preconditions:
   - Read AGENTS.md
   - Read .agent/rules/gatekeeper.md
   - Read .agent/rules/git-safety.md
+  - Read .agent/templates/agent-report-contract.md
   - Staged changes exist (`git diff --cached` non-empty)
 related_skills:
   - staged-code-review-apply
@@ -22,58 +23,102 @@ related_skills:
 related_docs:
   - docs/core/git-governance.md
   - docs/core/project-conventions.md
+  - .agent/templates/agent-report-samples.md
 ---
 
 # Staged Code Review
 
-Analyze files currently staged in git with a **simplification-first** mindset. Every staged change
-is an opportunity to remove dead imports, unused exports, orphaned components, redundant
-abstractions, and stale comments the change touches but does not clean up.
+## Mission
 
-**Primary mission:** find what can be safely deleted or simplified.  
-**Secondary mission:** catch bugs, regressions, and anti-patterns.
+Two jobs on the **staged** set only:
 
-Produces a structured, actionable plan only. No code changes. No commits. No staging changes.
+1. **Staged quality** — simplification-first; then obvious bugs/regressions.
+2. **Continuous hygiene** — for every staged path, read the **entire file** (the diff is not enough)
+   and propose cleanup coupled to that touch. Read neighbors only when a finding needs proof
+   (consumers, CSS↔template, imports). Do not audit non-staged modules opportunistically.
 
-## Preconditions
+Produces a structured plan with apply-tags for [`staged-code-review-apply`](../staged-code-review-apply/SKILL.md).
+No edits, staging, or commits.
 
-1. Confirm a git repository at the working directory.
-2. Run `git diff --cached --stat` and `git diff --cached`.
-3. If nothing is staged, stop and tell the user to stage first. Do **not** analyze unstaged-only
-   work.
-4. Do not run this skill autonomously — only when the user asked for staged analysis/review.
+**Report contract:** [`.agent/templates/agent-report-contract.md`](../../templates/agent-report-contract.md)
+(samples: [`agent-report-samples.md`](../../templates/agent-report-samples.md)).
 
-## Mode selection
+**Large diffs:** [`references/parallel-mode.md`](./references/parallel-mode.md).
 
-| Condition               | Mode                                                                             |
-| ----------------------- | -------------------------------------------------------------------------------- |
-| ≤20 files AND ≤25K diff | Sequential (one agent)                                                           |
-| >20 files OR >25K diff  | Parallel groups if the runtime supports subagents; otherwise sequential per-file |
+## Hard constraints
 
-For parallel work, follow [`celebra-delegation-patterns`](../celebra-delegation-patterns/SKILL.md).
-Do not assume Hermes `delegate_task` or `/skill` APIs.
+- Read-only: no edits, stash, stage/unstage, or commit.
+- Never run `git add`, `git restore --staged`, `git reset` (staging), or any index mutation.
+  Staging and unstaging are **user-owned** so the owner can visualize diffs in the working tree.
+- Do not run lint/test/build unless the user asks.
+- Do not analyze unstaged-only work; stop if `git diff --cached` is empty.
+- Do not run autonomously — only when the user asked for staged analysis/review.
+- Language: same as the user request.
+- Governance / protected docs are findings only with apply-tag `manual` — never imply auto-edit:
+  `docs/**`, `.agent/**` (includes rules, briefs, skills, templates, workflows).
 
-**Independent groups** (same wave when parallel):
+## Flight order
 
-| Group                             | File types                                                         | Focus                                                                                |
-| --------------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
-| A — Components, styles, templates | `.astro`, `.tsx`, `.jsx`, `.scss`, `.css`, layouts, theme partials | Prop surface, SSR/CSR consistency, import hygiene, selector vs template, token drift |
-| B — Scripts, utilities, tests     | tooling `.ts`/`.js`, configs, `*.test.ts`, `*.spec.ts`             | Over-engineering, brittle tests, hardcoded paths, redundant abstractions             |
-| C — Content data                  | content JSON, YAML/TOML config                                     | Duplicate keys, dead fields, format inconsistencies                                  |
+1. **Inspect** — confirm git repo; `git status --short`; `git diff --cached --stat` and
+   `git diff --cached`; stop if empty; note MM paths.
+2. **Analyze** — per staged path: read the **full file**; run checklists below; focused neighbor
+   reads only as needed. Prefer deletion opportunities before improvement suggestions.
+3. **Classify** — each finding: priority; HIGH → **Clase** `risk`|`cleanup`; apply-tag; `MM` if
+   applicable.
+4. **Consolidate** — dedupe; re-prioritize globally; if ≥10 findings, a dedupe pass is **mandatory**;
+   compute `~N`.
+5. **Report** — Verdict → Body → Decision (contract order).
 
-After groups finish, consolidate: dedupe, re-prioritize globally, cross-check content fields against
-adapters/viewmodels. Optional false-positive filter when ≥10 findings.
+If >20 files or >25K diff, load [`references/parallel-mode.md`](./references/parallel-mode.md).
+Otherwise stay sequential.
 
-## Sequential analysis
+## Full-file rule
 
-For each staged file:
+- **Diff** = what changed. **Full file** = what else is wrong in what we already touched.
+- Scope: every staged path, complete. Neighbors only for proof. No repo-wide fishing.
 
-1. Read the full file (diff alone misses context).
-2. Check naming, pattern consistency with neighbors, and Celebra conventions (`@/*` in TSX, Spanish
-   UI copy, English identifiers, SCSS not Tailwind, Astro server/client boundaries).
-3. Prefer deletion opportunities before improvement suggestions.
+## Apply-tags
 
-### Simplification checklist (priority)
+Required on every expanded finding (and on LOW when actionable):
+
+| Tag | When |
+| --- | --- |
+| `auto-safe` | Obvious dead code / unused import or export / trivial comment; not protected; not MM-blocked |
+| `needs-confirm` | File delete, doubtful consumers, doubtful SCSS `@use`, mixed safe/unsafe scope |
+| `manual` | Governance/protected paths, complex bug/security, MM overlap that blocks safe apply |
+
+Review **labels only**; apply revalidates gates.
+
+Meta line example: `src/lib/guests.ts:42 · ~12 lines · TS · apply: auto-safe`
+
+## Priorities
+
+| Priority | Criteria |
+| --- | --- |
+| HIGH | Real bugs, security, regressions, **or** clearly safe cleanup with material impact |
+| MEDIUM | Partial deletion, convention drift, maintainability debt |
+| LOW | Cosmetic, AI-slop comments, tiny nits |
+
+Every HIGH card includes **Clase:** `risk` | `cleanup`.
+
+## MM
+
+For staged paths that are also unstaged (MM):
+
+1. Use **staged** content as the source of truth for the finding.
+2. Mark `MM` on the meta line.
+3. Apply-tag `needs-confirm` or `manual` — never `auto-safe` if the fix depends on unclean
+   working-tree state.
+4. State MM file count under Alcance.
+
+## `~N` line estimate
+
+Sum approximate removable lines from **cleanup-class** findings in HIGH+MEDIUM only (integers per
+finding → one total). If none: `~0`.
+
+## Checklists
+
+### Simplification (priority)
 
 - Unused imports, exports, variables, types
 - Orphaned components / files with zero consumers
@@ -85,63 +130,56 @@ For each staged file:
 - Dead conditionals (`true`/`false` guards)
 - Redundant abstractions introduced by the staged change
 
-### Celebra-specific checks
+### Risk (secondary, keep short)
 
-- Client islands must not import server-only code
+- Client islands importing server-only code
+- Non-serializable values passed from server/BFF to client without serialization
 - Path casing (Vercel/Linux sensitive)
-- Do not invent slug equality (`previewSlug` / `_assetSlug` / route slug can differ)
-- Governance paths (`.agent/rules/**`, `docs/**`) are findings only — never propose auto-edit here
-  as required; flag for human review in apply
+- Invented slug equality (`previewSlug` / `_assetSlug` / route slug can differ)
+- Secrets or server env reaching client bundles
 
-## Priorities
+Also check naming and Celebra conventions when relevant (`@/*` in TSX, Spanish UI copy, English
+identifiers, SCSS not Tailwind).
 
-| Priority | Criteria                                                                 |
-| -------- | ------------------------------------------------------------------------ |
-| HIGH     | Safe dead-code removal; orphaned files; real bugs; security; regressions |
-| MEDIUM   | Partial deletion; convention drift; maintainability debt                 |
-| LOW      | Cosmetic naming; AI-slop comments; tiny cleanups                         |
-
-## Report format
+## Report template
 
 ```md
-# Staged Change Analysis — celebra-me
+# Staged review
 
-## Summary
+**Veredicto:** <H> HIGH (<R> risk · <C> cleanup) · <M> MEDIUM · <L> LOW · ~<N> líneas
+**Alcance:** <files>, +Y/−Z — <one sentence>; MM: <count or 0>
 
-<X files, +Y/−Z — brief characterization>
+## HIGH
 
-## HIGH Priority
+### <Short symptom title>
 
-### 1. `path/file.ts:line` — Short title
+`<path>:<line>` · ~<N> lines · <type> · apply: <tag> · [MM]
 
-**Issue:** ... **Why it matters:** ... **Fix:** actionable change (code or steps) **Estimated line
-reduction:** ~N (if deletion)
+**Clase:** risk | cleanup
+**Qué pasa:** ...
+**Por qué importa:** ...
+**Fix:** ...
 
----
+## MEDIUM
 
-## MEDIUM Priority
+… (same card shape; omit Clase)
 
-...
+## LOW
 
-## LOW Priority
+- `<path>:<line>` — short title · apply: <tag>
 
-...
+## Decisión
 
-## Summary of Recommendations
-
-- High: <count>
-- Medium: <count>
-- Low: <count>
-- Potential line reduction: ~N
-
-**Next step:** Load `staged-code-review-apply` after the user approves proceeding.
+<CTA if all actionable findings are auto-safe; else one a/b/c MCQ>
 ```
 
-Every finding must include file, line, issue, why it matters, and a concrete fix.
+Omit empty priority sections. Every expanded finding: file, line, issue, why, concrete fix, apply-tag.
 
-## Hard constraints
+**Decision rules:**
 
-- Read-only: no edits, no stash, no stage/unstage, no commit.
-- Do not run lint/test/build unless the user asks.
-- If staged + unstaged (MM) files exist, prefer staged content and note MM risk for false positives.
-- Language: respond in the same language as the user request.
+- All actionable findings `auto-safe`, none `needs-confirm` → CTA to run `staged-code-review-apply`.
+- Any `needs-confirm`, mixed scope, or material MM → one MCQ (`a`/`b`/`c`); see contract (action +
+  scope + brief example per option).
+- Manual / governance fix options: say **edit working tree and leave unstaged** — never “re-stage”,
+  never ask the agent to `git add` / unstage. The user stages when they want to review the index.
+- No duplicate end summary that repeats the verdict.

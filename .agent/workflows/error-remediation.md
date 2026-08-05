@@ -3,16 +3,27 @@ description: Technical error diagnosis and surgical remediation.
 lifecycle: evergreen
 domain: governance
 owner: workflow-governance
-last_reviewed: 2026-03-15
+last_reviewed: 2026-08-05
 ---
 
 # Error-Diagnosis & Remediation
 
-Execute this workflow when a terminal error, test failure, or gatekeeper block requires remediation.
-This workflow enforces a strict 7-state machine with a hard cycle limit of 3 to prevent "fix-fail"
-loops.
+## Mission
 
-**Cycle Limit:** Maximum of 3 cycles per error. If VERIFY fails 3 times, escalate to user.
+Execute this workflow when a terminal error, test failure, or gatekeeper block requires remediation.
+Enforces a strict 7-state machine with a hard cycle limit of **3** to prevent fix-fail loops.
+
+**Cycle Limit:** Maximum of 3 cycles per error. If VERIFY fails 3 times, escalate to the user.
+
+**Report contract:** [`.agent/templates/agent-report-contract.md`](../templates/agent-report-contract.md)
+(sample: [`agent-report-samples.md`](../templates/agent-report-samples.md)).
+
+## Hard constraints
+
+- Maximum 3 remediation cycles; then escalate (do not loop silently).
+- Prefer the minimal atomic fix; do not expand into unrelated refactors.
+- If unrelated edits are present, do **not** use destructive rollback. Smallest safe scope, or pause
+  and ask the repository owner when edits overlap.
 
 ## Pre-flight
 
@@ -77,3 +88,65 @@ Re-run the exact failing command (e.g., `pnpm type-check` or `pnpm test`) to con
   escalate instead of forcing a reset.
 
 Increment cycle counter when verification fails. Return to **CLASSIFY** to analyze the new output.
+
+## Report template
+
+Surface a user-facing diagnostic card when reporting progress, VERIFY failure, or escalation. Follow
+the shared contract.
+
+### Diagnostic card (cycles 1–3 while remediating)
+
+```md
+# Remediation
+
+**Estado:** CYCLE <n>/3 · VERIFY PASS|FAIL
+**Error:** <exact message, 1–2 lines>
+**Dónde:** `<path>:<line>` · category: <…> · complexity: <trivial|moderate|complex>
+
+## Hipótesis actual
+
+…
+
+## Por qué cambió vs ciclo anterior
+
+… (required when cycle ≥ 2)
+
+## Fix propuesto
+
+… (minimal, atomic)
+
+## Decisión
+
+Re-run: `<exact command>`
+```
+
+On clear cycle-1/2 fixes with an obvious next verify step: use a single CTA (re-run command), not an
+MCQ.
+
+### Escalation card (cycle 3 VERIFY failure, or unsafe / overlapping rollback)
+
+```md
+# Escalation — remediation exhausted
+
+**Bloqueante:** <current error>
+**Intentos:** 3
+
+**Qué se intentó:**
+- C1: …
+- C2: …
+- C3: …
+
+## Decisión
+
+**¿Cómo quiere proceder?**
+
+a) Parar aquí; indico el siguiente enfoque **(recomendado)**
+b) …
+c) …
+```
+
+**Decision rules for this workflow:**
+
+- No MCQ on clear cycle-1/2 fixes.
+- On cycle-3 failure or unsafe rollback: MCQ with exactly `a` / `b` / `c`; **`a` = stop / escalate
+  safely**. Never put destructive reset in `a`. See contract.

@@ -1,11 +1,12 @@
 ---
 name: staged-code-review-apply
 description: |
-  Apply fixes from a staged-code-review report after simplification and safety gates. Prefer
-  deletion; block new abstractions. Auto-apply safe TS/JS/SCSS/JSON cleanups; never auto-apply SQL,
-  production, or governance docs. Does not stage or commit.
+  Apply fixes from a staged-code-review report after revalidating apply-tags with safety gates.
+  Prefer deletion and net reduction. Auto-apply safe TS/JS/SCSS/JSON cleanups; never auto-apply SQL,
+  production, or governance docs. Never stages, unstages, or commits — user owns the index for
+  visualization. Respects prior review MCQ scope choices.
 domain: workflow
-version: 1.0.0
+version: 1.3.1
 when_to_use:
   - Immediately after a staged-code-review report when the user says proceed / apply / adelante
   - User explicitly asks to apply staged-code-review fixes
@@ -13,6 +14,7 @@ preconditions:
   - Read AGENTS.md
   - Read .agent/rules/gatekeeper.md
   - Read .agent/rules/git-safety.md
+  - Read .agent/templates/agent-report-contract.md
   - A staged-code-review report exists in the current conversation
   - User explicitly asked to apply fixes
 related_skills:
@@ -23,20 +25,46 @@ related_skills:
 related_docs:
   - docs/core/git-governance.md
   - docs/core/project-conventions.md
+  - .agent/templates/agent-report-samples.md
 ---
 
 # Staged Code Review Apply
 
-Apply concrete fixes from a `staged-code-review` report only after Gates A/B/C pass. Prefer deletion
-and net reduction. Leave the working tree dirty — never stage or commit.
+## Mission
+
+Apply the `staged-code-review` plan with **net reduction**, revalidating review apply-tags against
+gates. Leave the working tree dirty — **never stage, unstage, or commit**. The user stages when they
+want to visualize or ship; MM (staged + unstaged) after edits is expected and correct.
+
+Review tags are a **hint**, never a bypass. Prefer deletion over patching when both are safe.
+
+**Report contract:** [`.agent/templates/agent-report-contract.md`](../../templates/agent-report-contract.md)
+(samples: [`agent-report-samples.md`](../../templates/agent-report-samples.md)).
+
+**Gates / protected paths:** [`references/gates-and-protected-paths.md`](./references/gates-and-protected-paths.md).
+
+**Large apply sets:** [`references/parallel-mode.md`](./references/parallel-mode.md).
+
+## Hard constraints
+
+- Never mutate the index: no `git add`, `git restore --staged`, `git reset` (staging), or
+  “re-stage after apply”. Never commit, tag, or push.
+- Leave applied edits **unstaged** (or MM if the path was already staged) so the user can review in
+  the working tree / Source Control “Changes” panel.
+- Never auto-apply SQL or production patches.
+- Prefer deletion; success metric is net line reduction.
+- Gates stay agent-internal; human skip reasons in plain language (not “Gate A failed”).
+- Decision MCQs: exactly `a`/`b`/`c` with action + scope + brief example (contract). Never offer
+  agent-driven stage/unstage as an option.
+- Use the same apply-tag vocabulary as review: `auto-safe` · `needs-confirm` · `manual`.
 
 ## Preconditions
 
 1. A `staged-code-review` report with file:line findings and actionable fixes is in context. If
    missing, stop and ask the user to run `staged-code-review` first.
 2. User explicitly authorized applying fixes in this task.
-3. Optional backup stash is allowed **only** if the user also authorized git stash in this task (see
-   git-safety). If not authorized, skip stash and note that in the report.
+3. Optional backup stash **only** if the user also authorized git stash in this task (git-safety).
+   If not authorized, skip stash and note that in Verify.
 
 ## Backup (when stash is authorized)
 
@@ -45,83 +73,55 @@ git stash push -m "pre-staged-code-review-apply-<timestamp>" --include-untracked
 git stash apply --index
 ```
 
-`--index` is required so the user's staged state is restored. Document the stash name in the final
-report. Recovery of old apply stashes: `git-stash-branch-cleanup`.
+`--index` restores the user's staged state. Document the stash name in Verify. Old apply stashes:
+`git-stash-branch-cleanup`.
 
-## Protected paths (never auto-modify / never auto-delete)
+## Flight order
 
-| Path                                             | Action                                 |
-| ------------------------------------------------ | -------------------------------------- |
-| `src/content/**`, `src/pages/**`, `public/**`    | Skip auto-delete; mention as protected |
-| `src/layouts/**`                                 | Manual review only                     |
-| `.agent/rules/**`, `.agent/briefs/**`, `docs/**` | Never auto-modify                      |
-| `supabase/migrations/**`                         | Never touch                            |
-| `.env*`, `*.env.local`                           | Never touch                            |
+1. **Inspect** — `git status --short`; note MM; confirm apply authorization (+ stash if allowed).
+2. **Parse** — extract findings (file, line, issue, fix, priority, type, apply-tag, Clase). Prefer
+   review tags when present. Process HIGH → MEDIUM. Skip LOW unless trivially safe (single-line
+   deletion or comment fix).
+3. **Revalidate** — load gates/protected paths; assign a **final** tag per finding (rules below).
+4. **Scope bind** — if the user already chose scope via the review MCQ (`a`/`b`/`c`), honor it and
+   do **not** re-ask the same question. If no equivalent choice exists and any final tag is
+   `needs-confirm`, stop for one pre-apply MCQ before editing.
+5. **Apply** — only authorized items. Re-read each target (line drift). Prefer deletion. Clean
+   blank-line residue. Do not stage, unstage, or commit.
+6. **Verify** — proportional commands (below). Fix regressions only in files you modified.
+7. **Report** — Verdict → Body (Manual → Aplicado → Omitido) → Decision → Verify (ops).
 
-Before deleting any `.scss` file, search for `@use` / `@forward` consumers. If any exist, flag for
-manual review instead of deleting.
+If ≥6 findings across ≥3 files, load [`references/parallel-mode.md`](./references/parallel-mode.md).
 
-Collect all proposed file deletions into one deletion manifest and ask once for confirmation before
-deleting any files. Do not interleave per-file delete prompts mid-flight.
+## Tag revalidation
 
-## Mode selection
+| Review tag | Apply may |
+| --- | --- |
+| `auto-safe` | Confirm, or **downgrade** to `needs-confirm` / `manual` if gate/MM/protected fails |
+| `needs-confirm` | Keep, or downgrade to `manual`; **upgrade** to `auto-safe` only with new evidence (e.g. proven zero `@use`) |
+| `manual` | Never auto-apply; list under Manual |
 
-| Condition                      | Mode                                                           |
-| ------------------------------ | -------------------------------------------------------------- |
-| <6 findings or all in ≤2 files | Sequential                                                     |
-| ≥6 findings across ≥3 files    | Parallel validation/apply groups if runtime supports subagents |
+Additional rules:
 
-Use [`celebra-delegation-patterns`](../celebra-delegation-patterns/SKILL.md) when parallel. Fall
-back to sequential otherwise.
+- **HIGH + Clase `risk`:** default `manual`, unless the fix is trivial and local (≈1–3 lines, no
+  control-flow change). Cleanup findings follow the table above.
+- **MM** on the target file: never final `auto-safe` if the fix depends on a dirty working tree →
+  `needs-confirm` or `manual` (“solapamiento staged/unstaged”).
+- User pre-approval of a specific fix in this conversation satisfies the manual-review ask for that
+  finding (still run Gates A/B).
 
-## Phase 1 — Parse report
+### Deletion rules
 
-Extract: file, line, issue, fix, priority, inferred type (SCSS / TS-JS / SQL / content / config).
-Process HIGH → MEDIUM. Skip LOW unless trivially safe (single-line deletion or comment fix).
+| Situation | Final tag |
+| --- | --- |
+| Clearly dead file, zero consumers, outside protected paths | may be `auto-safe` after search |
+| Doubt, `@use`/`@forward`, or unknown consumers | `needs-confirm` (one shared manifest) |
+| Protected / governance / SQL / env | `manual` |
 
-## Phase 2 — Gates (all three must pass)
+Collect all `needs-confirm` deletions into **one** manifest for a single pre-apply MCQ. Do not
+interleave per-file delete prompts.
 
-### Gate A — Simplification (aggressive)
-
-Pass if the fix removes dead code, deletes a dead file (+ cascade import cleanup), replaces
-hardcodes with existing tokens, or reduces maintenance surface with **net line reduction**.
-
-Fail if the fix grows the codebase, adds indirection, adds unused CSS variables, or is a pure
-rename/restructure without removal.
-
-### Gate B — Over-engineering (relaxed)
-
-Reject only if the fix introduces **new** abstractions for hypothetical reuse: generic interfaces,
-factories, registries, new packages, or single-use config systems. Consolidation and deletion are
-allowed.
-
-### Gate C — Safety
-
-| Fix type                              | Action                                                                                      |
-| ------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `.scss` / `.css`                      | Auto-apply when gates A/B pass                                                              |
-| `.ts` / `.tsx` / `.js` / `.astro`     | Auto-apply for dead code / unused imports / deprecated exports; complex logic → flag        |
-| `.json` content                       | Auto-apply duplicate/dead-field cleanup                                                     |
-| `.agent/**`, `docs/**`                | Never auto-apply — flag                                                                     |
-| SQL / migrations / production patches | Never auto-apply — flag                                                                     |
-| Config / CI / Docker                  | Never auto-apply — flag                                                                     |
-| Entire file deletion                  | Auto-apply only for clearly dead tests/components with no consumers after search; else flag |
-
-User pre-approval of a specific fix approach in this conversation satisfies Gate C's manual-review
-ask for that finding (still run Gates A/B).
-
-## Phase 3 — Apply
-
-For each approved fix (HIGH first):
-
-1. Re-read the target file (line drift).
-2. Apply the minimal edit. Prefer deletion.
-3. Do not stage or commit.
-4. After line deletions, clean blank-line residue in the touched region.
-
-## Phase 4 — Verify
-
-Match verification to what changed (see gatekeeper / `package.json`):
+## Verify
 
 | Change                       | Command                                                                        |
 | ---------------------------- | ------------------------------------------------------------------------------ |
@@ -131,38 +131,74 @@ Match verification to what changed (see gatekeeper / `package.json`):
 | Content schema               | `pnpm ops validate-schema` when available                                      |
 | Touched `.agent/` or `docs/` | Doc integrity: escaped backticks, broken fences, truncated operational phrases |
 
-Triage failures: fix regressions in files you modified; do not refactor untouched files for complex
-pre-existing lint. Trivial one-line pre-existing lint may be fixed; complex issues → report only.
+Triage: fix regressions in files you modified; do not refactor untouched files for complex
+pre-existing lint. Trivial one-line pre-existing lint may be fixed; complex issues → Manual/Omitido.
 
-## Phase 5 — Result report
+## Report template
 
 ```md
-## staged-code-review-apply — Result
+# Apply result
 
-### Applied (<count>)
+**Veredicto:** <A> aplicados · <S> omitidos · <M> manual · ~<L> líneas · verify PASS|FAIL
+**Scope:** <what the user authorized / default auto-safe>
 
-- `path:line` — description
+## Manual
 
-### Skipped (<count>)
+### <Short symptom>
 
-- `path:line` — reason
+`<path>:<line>`
 
-### Flagged for manual review (<count>)
+**Motivo:** ...
+**Sugerencia:** ...
 
-- `path:line` — reason
+## Aplicado
 
-### Verification
+| Archivo | Cambio | ~líneas |
+| --- | --- | --- |
+| `<path>:<line>` | <short description> | <n> |
 
-- type-check / lint / build / doc integrity — PASS/FAIL with evidence
+## Omitido
 
-### Backup
+- `<path>:<line>` — <human-readable reason>
 
+## Decisión
+
+<CTA or one a/b/c MCQ — see rules>
+
+## Verify
+
+- <command> — PASS|FAIL
 - Stash: <name or "skipped — stash not authorized">
 ```
 
-## Hard constraints
+`~L` = sum of lines actually removed/simplified in Aplicado. Omit empty sections.
 
-- Never `git add`, commit, tag, or push.
-- Never auto-apply SQL or production patches.
-- Prefer deletion over patching when both are safe.
-- Prefer net reduction as the success metric.
+### Pre-apply MCQ (only if `needs-confirm` and no equivalent review choice)
+
+```md
+## Decisión
+
+Hay <N> borrados que requieren confirmación (manifest arriba).
+
+**¿Cómo quiere proceder?**
+
+a) Auto-safe + borrar el manifest. Ej.: quitar `_legacy-badge.scss` huérfano **(recomendado)**
+b) Solo auto-safe; deletes a manual. Ej.: limpiar imports y dejar el `.scss`
+c) No aplicar nada
+```
+
+### Post-apply Decision
+
+| Situation | Decision |
+| --- | --- |
+| Verify PASS, dirty tree, no new blockers | CTA: user stages when ready, then `commit-planner`; or MCQ if material Manual remains |
+| Verify FAIL | CTA/MCQ for triage; never put destructive reset or agent stage/unstage in `a` |
+| Nothing applied / all manual | CTA: resolve Manual or re-run review |
+
+**Decision rules:**
+
+- Honor prior review MCQ scope; do not re-ask the same choice.
+- Pre-apply MCQ only when final `needs-confirm` remains unbound.
+- Post-apply: Decision **after** Manual / Aplicado / Omitido; MCQ copy per contract.
+- Manual section before Applied lists.
+- Never instruct the agent to stage/unstage; remind that index updates are user-owned.

@@ -48,4 +48,6 @@ This file is the human-readable map for repository guidance and discovery. For m
 
 - Conversational planning is default. Tracked plans belong under `.agent/plans/active/` per [`.agent/plans/README.md`](./plans/README.md).
 - Historical audits and reports live under `docs/archive/reports/` and `.agent/plans/archived/`.
+- Human-facing agent report layout (review / apply / commit / remediation):
+  [`.agent/templates/agent-report-contract.md`](./templates/agent-report-contract.md)
 
