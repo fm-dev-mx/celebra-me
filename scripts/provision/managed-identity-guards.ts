@@ -2,17 +2,26 @@
  * managed-identity-guards.ts — Pure managed identity / rekey decision helpers.
  *
  * Extracted so hermetic Jest can cover IDENTITY_NOT_FOUND / IDENTITY_CONFLICT /
- * no-fuzzy-inference contracts without persistent Local Supabase.
+ * REKEY_REQUIRED / no-fuzzy-inference contracts without persistent Local Supabase.
  */
 
 export type ManagedIdentityRow = {
 	id: string;
 	slug: string;
+	managedIdentityId?: string | null;
 };
 
 export type RekeyIdentityDecision =
 	| { ok: true; invitationId: string }
 	| { ok: false; code: 'IDENTITY_CONFLICT' | 'IDENTITY_NOT_FOUND'; message: string };
+
+export type IdentityResolutionDecision =
+	| {
+			ok: true;
+			invitationId: string | null;
+			mode: 'managed_identity' | 'slug' | 'provenance' | 'absent';
+	  }
+	| { ok: false; code: 'IDENTITY_CONFLICT' | 'REKEY_REQUIRED'; message: string };
 
 /**
  * Decide rekey identity from explicit --rekey-from lookup results only.
@@ -23,6 +32,7 @@ export function decideRekeyIdentity(input: {
 	rekeyFrom: string;
 	sourceByOldSlug: ManagedIdentityRow | null;
 	collisionByTargetSlug: ManagedIdentityRow | null;
+	expectedManagedIdentityId?: string;
 }): RekeyIdentityDecision {
 	const rekeyFrom = input.rekeyFrom.trim();
 	const slug = input.slug.trim();
@@ -59,35 +69,85 @@ export function decideRekeyIdentity(input: {
 		};
 	}
 
+	if (
+		input.expectedManagedIdentityId &&
+		input.sourceByOldSlug.managedIdentityId &&
+		input.sourceByOldSlug.managedIdentityId !== input.expectedManagedIdentityId
+	) {
+		return {
+			ok: false,
+			code: 'IDENTITY_CONFLICT',
+			message: `IDENTITY_CONFLICT: Source slug "${rekeyFrom}" belongs to managed identity ${input.sourceByOldSlug.managedIdentityId}, not ${input.expectedManagedIdentityId}.`,
+		};
+	}
+
 	return { ok: true, invitationId: input.sourceByOldSlug.id };
 }
 
 /**
- * Without --rekey-from, identity resolution is slug + provenance only.
- * Matching client_name must never force a rekey.
+ * Without --rekey-from, identity resolution is managedIdentityId + slug + provenance only.
+ * Matching client_name must never force a rekey. Historical previousSlugs require explicit rekey.
  */
 export function resolveIdentityWithoutRekey(input: {
 	slug: string;
+	managedIdentityId: string;
+	previousSlugs?: readonly string[];
+	invitationByManagedIdentity: ManagedIdentityRow | null;
 	provenanceInvitationId: string | null;
 	invitationBySlug: ManagedIdentityRow | null;
+	activeInvitationByPreviousSlug: ManagedIdentityRow | null;
+	matchedPreviousSlug?: string | null;
 	/** Present only to prove fuzzy client_name is ignored. */
 	invitationByClientName?: ManagedIdentityRow | null;
-}):
-	| { ok: true; invitationId: string | null; mode: 'slug' | 'provenance' | 'absent' }
-	| { ok: false; code: 'IDENTITY_CONFLICT'; message: string } {
+}): IdentityResolutionDecision {
 	void input.invitationByClientName; // intentionally unused — no fuzzy inference
 
+	const managedId = input.invitationByManagedIdentity?.id ?? null;
 	const provenanceId = input.provenanceInvitationId;
 	const slugId = input.invitationBySlug?.id ?? null;
+	const previousHit = input.activeInvitationByPreviousSlug;
 
-	if (provenanceId && slugId && provenanceId !== slugId) {
+	if (previousHit?.id) {
+		const sameManaged =
+			previousHit.managedIdentityId &&
+			previousHit.managedIdentityId === input.managedIdentityId;
+		const sameAsManagedRow = managedId !== null && previousHit.id === managedId;
+		const sameAsSlugRow = slugId !== null && previousHit.id === slugId;
+		const sameAsProvenance = provenanceId !== null && previousHit.id === provenanceId;
+		if (!sameManaged && !sameAsManagedRow && !sameAsSlugRow && !sameAsProvenance) {
+			const matched = input.matchedPreviousSlug ?? previousHit.slug;
+			return {
+				ok: false,
+				code: 'REKEY_REQUIRED',
+				message: `REKEY_REQUIRED: Definition "${input.slug}" replaces prior slug "${matched}" (invitation ${previousHit.id}). Rerun with --rekey-from ${matched}.`,
+			};
+		}
+		// Same identity still on a previous slug — operator must pass --rekey-from.
+		if (previousHit.slug !== input.slug) {
+			const matched = input.matchedPreviousSlug ?? previousHit.slug;
+			return {
+				ok: false,
+				code: 'REKEY_REQUIRED',
+				message: `REKEY_REQUIRED: Managed identity ${input.managedIdentityId} is still bound to slug "${matched}". Rerun with --rekey-from ${matched}.`,
+			};
+		}
+	}
+
+	const candidates = [managedId, provenanceId, slugId].filter(
+		(value): value is string => typeof value === 'string' && value.length > 0,
+	);
+	const unique = new Set(candidates);
+	if (unique.size > 1) {
 		return {
 			ok: false,
 			code: 'IDENTITY_CONFLICT',
-			message: `IDENTITY_CONFLICT: Ambiguous identity lineage for slug "${input.slug}". Provenance links to invitation ${provenanceId}, but active invitation slug matches ${slugId}.`,
+			message: `IDENTITY_CONFLICT: Ambiguous identity lineage for slug "${input.slug}". managedIdentity=${managedId ?? 'none'}, provenance=${provenanceId ?? 'none'}, slug=${slugId ?? 'none'}.`,
 		};
 	}
 
+	if (managedId) {
+		return { ok: true, invitationId: managedId, mode: 'managed_identity' };
+	}
 	if (provenanceId) {
 		return { ok: true, invitationId: provenanceId, mode: 'provenance' };
 	}

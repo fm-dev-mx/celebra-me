@@ -46,6 +46,8 @@ export interface NormalizedInvitationRelease {
 	projectionHash: string;
 	assetManifestHash: string;
 	metadata: {
+		managedIdentityId: string;
+		previousSlugs: string[];
 		title: string;
 		eventType: string;
 		baseDemoId: string;
@@ -265,6 +267,8 @@ export async function buildNormalizedInvitationRelease(options: {
 	if (!snapshot || snapshot.themeId !== definition.themeId)
 		throw new Error(`Definition has invalid preset/theme pairing: ${definition.baseDemoId}.`);
 	const metadata = {
+		managedIdentityId: definition.managedIdentityId,
+		previousSlugs: [...(definition.previousSlugs ?? [])].sort(),
 		title: definition.title,
 		eventType: definition.eventType,
 		baseDemoId: definition.baseDemoId,

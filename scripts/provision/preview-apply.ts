@@ -19,6 +19,7 @@ export async function runPreviewApply(input: {
 	pruneAssets?: boolean;
 	updateScope?: UpdateScope;
 	conflictResolutions?: ConflictResolutions;
+	rekeyFrom?: string;
 	runEngine?: (options: ImportEngineOptions) => Promise<ImportEngineResult>;
 	createPendingApproval?: typeof createPendingPreviewApprovalArtifact;
 }): Promise<ImportEngineResult & { plan: OperationalPlan }> {
@@ -32,6 +33,7 @@ export async function runPreviewApply(input: {
 		pruneAssets: input.pruneAssets,
 		updateScope: input.updateScope,
 		conflictResolutions: input.conflictResolutions,
+		rekeyFrom: input.rekeyFrom,
 	});
 	assertEngineResult(result, input.plan.planId, 'Preview', true);
 	(input.createPendingApproval ?? createPendingPreviewApprovalArtifact)({

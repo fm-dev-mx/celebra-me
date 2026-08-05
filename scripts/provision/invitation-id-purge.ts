@@ -28,8 +28,19 @@ const EXCLUDED_LIFECYCLE = new Set(['draft', 'in_progress']);
 export interface InvitationIdPurgeInput {
 	incorrectInvitationId: string;
 	canonicalInvitationId: string;
-	expectIncorrectSlug?: string;
-	expectCanonicalSlug?: string;
+	/** Required exact slug assertion for the obsolete invitation. */
+	expectIncorrectSlug: string;
+	/** Required exact slug assertion for the canonical invitation. */
+	expectCanonicalSlug: string;
+	/**
+	 * Required for this cleanup class: source must already be archived with inconsistent
+	 * dependents. Active (non-archived) incorrect invitations are rejected.
+	 */
+	allowArchivedInconsistentSource?: boolean;
+	/** Require canonical active assets to cover incorrect asset sha256 set (empty incorrect set passes). */
+	requireCanonicalAssetHashEquivalence?: boolean;
+	/** Resume Storage-only cleanup after DB already deleted (idempotent partial recovery). */
+	resumeStorageCleanup?: boolean;
 	apply?: boolean;
 	isInteractive?: boolean;
 	authToken?: string;
@@ -62,6 +73,7 @@ export interface DependencyCounts {
 	mutationReceipts: number;
 	legacyAdoption: number;
 	intakeRequests: number;
+	intakeSubmissions: number;
 	sourcedInvitations: number;
 	guests: number;
 	claimCodes: number;
@@ -101,14 +113,36 @@ export interface InvitationIdPurgeAudit {
 	};
 	blocked: boolean;
 	blockReasons: string[];
-	deletionResult: 'not_executed' | 'deleted' | 'rolled_back' | 'blocked' | 'deleted_with_residual';
+	deletionResult:
+		| 'not_executed'
+		| 'deleted'
+		| 'rolled_back'
+		| 'blocked'
+		| 'deleted_with_residual'
+		| 'already_absent';
+	completedSteps: string[];
+	failures: string[];
+	assetHashEquivalence?: {
+		ok: boolean;
+		incorrectHashes: string[];
+		canonicalHashes: string[];
+		missingOnCanonical: string[];
+	};
+	storageCleanup?: {
+		attempted: string[];
+		removed: string[];
+		alreadyAbsent: string[];
+		failed: Array<{ path: string; error: string }>;
+	};
 	postconditions?: {
 		incorrectExists: boolean;
 		canonicalExists: boolean;
 		canonicalSlug: string | null;
 		orphanChecks: Record<string, number>;
+		obsoleteSlugPresent: boolean;
 	};
 	auditArtifactPath: string | null;
+	operationReceiptId?: string | null;
 }
 
 function assertUuid(value: string, label: string): string {
@@ -229,6 +263,7 @@ select coalesce((
         'mutationReceipts', (select count(*)::int from public.invitation_mutation_operation_receipts r where r.invitation_id = ${sqlLiteral(incorrectId)}::uuid),
         'legacyAdoption', (select count(*)::int from public.managed_invitation_legacy_adoption_receipts r where r.invitation_id = ${sqlLiteral(incorrectId)}::uuid),
         'intakeRequests', (select count(*)::int from public.intake_requests ir where ir.invitation_project_id = ${sqlLiteral(incorrectId)}::uuid),
+        'intakeSubmissions', (select count(*)::int from public.intake_submissions s where s.intake_request_id in (select ir.id from public.intake_requests ir where ir.invitation_project_id = ${sqlLiteral(incorrectId)}::uuid)),
         'sourcedInvitations', (select count(*)::int from public.invitations i where i.source_invitation_id = ${sqlLiteral(incorrectId)}::uuid),
         'guests', (select count(*)::int from public.guest_invitations g join public.events e on e.id = g.event_id where e.invitation_project_id = ${sqlLiteral(incorrectId)}::uuid),
         'claimCodes', (select count(*)::int from public.event_claim_codes c join public.events e on e.id = c.event_id where e.invitation_project_id = ${sqlLiteral(incorrectId)}::uuid),
@@ -248,6 +283,7 @@ select coalesce((
         'mutationReceipts', (select count(*)::int from public.invitation_mutation_operation_receipts r where r.invitation_id = ${sqlLiteral(canonicalId)}::uuid),
         'legacyAdoption', (select count(*)::int from public.managed_invitation_legacy_adoption_receipts r where r.invitation_id = ${sqlLiteral(canonicalId)}::uuid),
         'intakeRequests', (select count(*)::int from public.intake_requests ir where ir.invitation_project_id = ${sqlLiteral(canonicalId)}::uuid),
+        'intakeSubmissions', (select count(*)::int from public.intake_submissions s where s.intake_request_id in (select ir.id from public.intake_requests ir where ir.invitation_project_id = ${sqlLiteral(canonicalId)}::uuid)),
         'sourcedInvitations', (select count(*)::int from public.invitations i where i.source_invitation_id = ${sqlLiteral(canonicalId)}::uuid),
         'guests', (select count(*)::int from public.guest_invitations g join public.events e on e.id = g.event_id where e.invitation_project_id = ${sqlLiteral(canonicalId)}::uuid),
         'claimCodes', (select count(*)::int from public.event_claim_codes c join public.events e on e.id = c.event_id where e.invitation_project_id = ${sqlLiteral(canonicalId)}::uuid),
@@ -488,12 +524,21 @@ function loadPostconditions(
 	dbUrl: string,
 	incorrectId: string,
 	canonicalId: string,
+	obsoleteSlug?: string,
 ): NonNullable<InvitationIdPurgeAudit['postconditions']> {
+	const obsoleteSlugLiteral = obsoleteSlug ? sqlLiteral(obsoleteSlug) : "''";
 	const sql = `
 select jsonb_build_object(
   'incorrectExists', exists(select 1 from public.invitations where id = ${sqlLiteral(incorrectId)}::uuid),
   'canonicalExists', exists(select 1 from public.invitations where id = ${sqlLiteral(canonicalId)}::uuid),
   'canonicalSlug', (select slug from public.invitations where id = ${sqlLiteral(canonicalId)}::uuid),
+  'obsoleteSlugPresent', exists(
+    select 1 from public.invitations where slug = ${obsoleteSlugLiteral} and archived_at is null
+  ) or exists(
+    select 1 from public.published_invitation_content where slug = ${obsoleteSlugLiteral} and deleted_at is null
+  ) or exists(
+    select 1 from public.events where slug = ${obsoleteSlugLiteral} and deleted_at is null
+  ),
   'orphanChecks', jsonb_build_object(
     'events', (select count(*)::int from public.events where invitation_project_id = ${sqlLiteral(incorrectId)}::uuid),
     'drafts', (select count(*)::int from public.invitation_content_drafts where invitation_project_id = ${sqlLiteral(incorrectId)}::uuid),
@@ -508,52 +553,417 @@ select jsonb_build_object(
 	return parseJsonObject(result.stdout, 'postconditions');
 }
 
+function loadAssetHashes(dbUrl: string, invitationId: string): string[] {
+	const sql = `
+select coalesce(json_agg(a.sha256 order by a.sha256), '[]'::json)
+from public.invitation_assets a
+where a.invitation_id = ${sqlLiteral(invitationId)}::uuid
+  and a.deleted_at is null
+  and a.sha256 is not null;
+`;
+	const raw = runPsql(sql, dbUrl, { tuplesOnly: true, throwOnError: true }).stdout.trim();
+	const parsed = JSON.parse(raw || '[]') as unknown;
+	return Array.isArray(parsed) ? parsed.filter((value): value is string => typeof value === 'string') : [];
+}
+
+function assessAssetHashEquivalence(
+	incorrectHashes: string[],
+	canonicalHashes: string[],
+): NonNullable<InvitationIdPurgeAudit['assetHashEquivalence']> {
+	const canonicalSet = new Set(canonicalHashes);
+	const missingOnCanonical = incorrectHashes.filter((hash) => !canonicalSet.has(hash));
+	return {
+		ok: missingOnCanonical.length === 0,
+		incorrectHashes,
+		canonicalHashes,
+		missingOnCanonical,
+	};
+}
+
+async function removePreviewStorageObjects(
+	paths: string[],
+	env: NodeJS.ProcessEnv,
+): Promise<NonNullable<InvitationIdPurgeAudit['storageCleanup']>> {
+	const supabaseUrl = (
+		env.PREVIEW_SUPABASE_URL?.trim() ||
+		getSecretFromEnvOrFiles('PREVIEW_SUPABASE_URL', PREVIEW_SECRET_FILES) ||
+		getSecretFromEnvOrFiles('SUPABASE_URL', PREVIEW_SECRET_FILES)
+	).trim();
+	const serviceRoleKey = (
+		env.PREVIEW_SUPABASE_SERVICE_ROLE_KEY?.trim() ||
+		getSecretFromEnvOrFiles('PREVIEW_SUPABASE_SERVICE_ROLE_KEY', PREVIEW_SECRET_FILES) ||
+		getSecretFromEnvOrFiles('SUPABASE_SERVICE_ROLE_KEY', PREVIEW_SECRET_FILES)
+	).trim();
+	const result: NonNullable<InvitationIdPurgeAudit['storageCleanup']> = {
+		attempted: [...paths],
+		removed: [],
+		alreadyAbsent: [],
+		failed: [],
+	};
+	if (paths.length === 0) return result;
+	if (!supabaseUrl || !serviceRoleKey) {
+		for (const path of paths) {
+			result.failed.push({
+				path,
+				error: 'PREVIEW_STORAGE_CREDENTIALS_MISSING',
+			});
+		}
+		return result;
+	}
+	const base = supabaseUrl.replace(/\/+$/, '');
+	for (const storagePath of paths) {
+		const objectUrl = `${base}/storage/v1/object/invitation-assets/${storagePath}`;
+		try {
+			const response = await fetch(objectUrl, {
+				method: 'DELETE',
+				headers: {
+					Authorization: `Bearer ${serviceRoleKey}`,
+					apikey: serviceRoleKey,
+				},
+			});
+			if (response.ok) {
+				result.removed.push(storagePath);
+			} else if (response.status === 404) {
+				result.alreadyAbsent.push(storagePath);
+			} else {
+				const body = await response.text().catch(() => '');
+				result.failed.push({
+					path: storagePath,
+					error: `HTTP ${response.status}: ${body.slice(0, 200)}`,
+				});
+			}
+		} catch (error) {
+			result.failed.push({
+				path: storagePath,
+				error: error instanceof Error ? error.message : String(error),
+			});
+		}
+	}
+	return result;
+}
+
+function insertPurgeReceipt(
+	dbUrl: string,
+	canonicalId: string,
+	incorrectId: string,
+	audit: InvitationIdPurgeAudit,
+): string {
+	const operationId = cryptoRandomUuid();
+	const status =
+		audit.blocked ||
+		audit.deletionResult === 'rolled_back' ||
+		audit.deletionResult === 'deleted_with_residual'
+			? 'partial'
+			: audit.deletionResult === 'already_absent'
+				? 'replayed'
+				: 'applied';
+	const completedStepsSql =
+		audit.completedSteps.length > 0
+			? `array[${audit.completedSteps.map((step) => sqlLiteral(step)).join(',')}]::text[]`
+			: `array[]::text[]`;
+	const inputHashes = JSON.stringify({
+		incorrectInvitationId: incorrectId,
+		canonicalInvitationId: canonicalId,
+	});
+	const expectedState = JSON.stringify({
+		expectIncorrectSlug: audit.incorrect.slug,
+		expectCanonicalSlug: audit.canonical.slug,
+		incorrectDependencies: audit.incorrectDependencies,
+	});
+	const resultPayload = JSON.stringify({
+		deletionResult: audit.deletionResult,
+		storageCleanup: audit.storageCleanup ?? null,
+		postconditions: audit.postconditions ?? null,
+		failures: audit.failures,
+	});
+	const sql = `
+insert into public.invitation_mutation_operation_receipts (
+  operation_id, invitation_id, environment, project_ref, actor_type, origin, command_kind,
+  input_hashes, expected_state, status, completed_steps, result, sanitized_error
+) values (
+  ${sqlLiteral(operationId)}::uuid,
+  ${sqlLiteral(canonicalId)}::uuid,
+  'preview',
+  'preview',
+  'operator',
+  'managed_cli_hosted',
+  'invitation_id_purge',
+  ${sqlLiteral(inputHashes)}::jsonb,
+  ${sqlLiteral(expectedState)}::jsonb,
+  ${sqlLiteral(status)},
+  ${completedStepsSql},
+  ${sqlLiteral(resultPayload)}::jsonb,
+  ${audit.failures.length > 0 ? sqlLiteral(audit.failures.join(' | ').slice(0, 500)) : 'null'}
+);
+select ${sqlLiteral(operationId)};
+`;
+	runPsql(sql, dbUrl, { tuplesOnly: true, throwOnError: true });
+	return operationId;
+}
+
+function cryptoRandomUuid(): string {
+	return globalThis.crypto.randomUUID();
+}
+
+function assertRequiredSlugPins(input: InvitationIdPurgeInput): {
+	expectIncorrectSlug: string;
+	expectCanonicalSlug: string;
+} {
+	const expectIncorrectSlug = input.expectIncorrectSlug?.trim();
+	const expectCanonicalSlug = input.expectCanonicalSlug?.trim();
+	if (!expectIncorrectSlug || !expectCanonicalSlug) {
+		throw new Error(
+			'SLUG_ASSERTIONS_REQUIRED: --expect-incorrect-slug and --expect-canonical-slug are mandatory.',
+		);
+	}
+	return { expectIncorrectSlug, expectCanonicalSlug };
+}
+
+function assertStorageOwnership(paths: string[], incorrectSlug: string): string[] {
+	const prefix = `managed/${incorrectSlug}/`;
+	return paths.filter((path) => !path.startsWith(prefix));
+}
+
 function collectPurgeBlockReasons(
 	input: InvitationIdPurgeInput,
 	loaded: LoadedAuditPayload,
 	migration: MigrationAssessment,
+	assetHashEquivalence: NonNullable<InvitationIdPurgeAudit['assetHashEquivalence']>,
+	expectIncorrectSlug: string,
+	expectCanonicalSlug: string,
 ): string[] {
 	const blockReasons: string[] = [];
-	if (input.expectIncorrectSlug && loaded.incorrect.slug !== input.expectIncorrectSlug) {
+	if (loaded.incorrect.slug !== expectIncorrectSlug) {
 		blockReasons.push(
-			`Incorrect slug mismatch: expected ${input.expectIncorrectSlug}, got ${loaded.incorrect.slug}.`,
+			`Incorrect slug mismatch: expected ${expectIncorrectSlug}, got ${loaded.incorrect.slug}.`,
 		);
 	}
-	if (input.expectCanonicalSlug && loaded.canonical.slug !== input.expectCanonicalSlug) {
+	if (loaded.canonical.slug !== expectCanonicalSlug) {
 		blockReasons.push(
-			`Canonical slug mismatch: expected ${input.expectCanonicalSlug}, got ${loaded.canonical.slug}.`,
+			`Canonical slug mismatch: expected ${expectCanonicalSlug}, got ${loaded.canonical.slug}.`,
 		);
 	}
-	if (EXCLUDED_LIFECYCLE.has(loaded.incorrect.status) || EXCLUDED_LIFECYCLE.has(loaded.canonical.status)) {
-		blockReasons.push('Refusing purge involving draft/in_progress lifecycle status.');
-	}
-	if (loaded.incorrect.archivedAt) {
-		blockReasons.push('Incorrect invitation is archived; refuse ambiguous archive/delete path.');
+	if (EXCLUDED_LIFECYCLE.has(loaded.canonical.status)) {
+		blockReasons.push('Refusing purge: canonical invitation has draft/in_progress status.');
 	}
 	if (loaded.canonical.archivedAt) {
 		blockReasons.push('Canonical invitation is archived; refuse purge.');
 	}
+	if (!loaded.incorrect.archivedAt) {
+		blockReasons.push(
+			'INCORRECT_NOT_ARCHIVED: This purge accepts only a genuinely archived inconsistent source.',
+		);
+	}
+	if (!input.allowArchivedInconsistentSource) {
+		blockReasons.push(
+			'ARCHIVED_INCONSISTENT_ACK_REQUIRED: Pass --allow-archived-inconsistent-source to purge an archived inconsistent source.',
+		);
+	}
+	if (loaded.incorrectDependencies.claimCodes > 0) {
+		blockReasons.push(
+			`UNRESOLVED_CLAIM_CODES: ${loaded.incorrectDependencies.claimCodes} claim code(s) remain; migrate or disposition before purge.`,
+		);
+	}
 	if (migration.required && migration.blockReason) {
 		blockReasons.push(migration.blockReason);
+	}
+	if (
+		loaded.incorrectDependencies.guests > 0 &&
+		migration.guestCandidates.some((g) => g.classification === 'requires_migration_review')
+	) {
+		blockReasons.push(
+			'UNRESOLVED_GUESTS: Non-synthetic guest rows remain; migrate or disposition before purge.',
+		);
+	}
+	// Active intake under an archived inconsistent parent is deleted with the invitation.
+	// Soft-deleted intake is also hard-removed by invitation delete. Counted in audit only.
+	if (
+		input.requireCanonicalAssetHashEquivalence !== false &&
+		!assetHashEquivalence.ok
+	) {
+		blockReasons.push(
+			`ASSET_HASH_EQUIVALENCE_FAILED: incorrect asset hashes missing on canonical: ${assetHashEquivalence.missingOnCanonical.join(', ')}`,
+		);
+	}
+	const foreignStorage = assertStorageOwnership(loaded.storageAssetPaths, expectIncorrectSlug);
+	if (foreignStorage.length > 0) {
+		blockReasons.push(
+			`STORAGE_OWNERSHIP_VIOLATION: paths outside managed/${expectIncorrectSlug}/: ${foreignStorage.join(', ')}`,
+		);
 	}
 	return blockReasons;
 }
 
-export function runInvitationIdPurge(input: InvitationIdPurgeInput): InvitationIdPurgeAudit {
+function emptyDependencyCounts(): DependencyCounts {
+	return {
+		events: 0,
+		drafts: 0,
+		published: 0,
+		assets: 0,
+		assetsActive: 0,
+		provenance: 0,
+		publicationIdempotency: 0,
+		mutationReceipts: 0,
+		legacyAdoption: 0,
+		intakeRequests: 0,
+		intakeSubmissions: 0,
+		sourcedInvitations: 0,
+		guests: 0,
+		claimCodes: 0,
+		memberships: 0,
+		guestAudit: 0,
+	};
+}
+
+export async function runInvitationIdPurge(
+	input: InvitationIdPurgeInput,
+): Promise<InvitationIdPurgeAudit> {
 	const incorrectInvitationId = assertUuid(input.incorrectInvitationId, 'incorrectInvitationId');
 	const canonicalInvitationId = assertUuid(input.canonicalInvitationId, 'canonicalInvitationId');
 	if (incorrectInvitationId === canonicalInvitationId) {
 		throw new Error('INVITATION_IDS_COLLIDE: incorrect and canonical IDs must differ.');
 	}
+	const { expectIncorrectSlug, expectCanonicalSlug } = assertRequiredSlugPins(input);
 
 	const apply = input.apply === true;
 	const env = input.env ?? process.env;
 	const dbUrl = resolvePreviewPurgeDbUrl(env);
 	const auditDir = input.auditDir ?? join(PROJECT_ROOT, '.tmp', 'invitation-purge-audits');
+	const completedSteps = ['target_classified', 'slug_assertions_bound'];
+	const failures: string[] = [];
+
+	const incorrectExists = runPsql(
+		`select exists(select 1 from public.invitations where id = ${sqlLiteral(incorrectInvitationId)}::uuid);`,
+		dbUrl,
+		{ tuplesOnly: true, throwOnError: true },
+	).stdout.trim();
+	if (incorrectExists === 'f' || incorrectExists === 'false') {
+		const canonicalOnly = runPsql(
+			`select row_to_json(t) from (
+        select id::text, slug, title, status, kind, event_type as "eventType",
+               archived_at as "archivedAt", created_at as "createdAt", updated_at as "updatedAt",
+               client_name as "clientName"
+        from public.invitations where id = ${sqlLiteral(canonicalInvitationId)}::uuid
+      ) t;`,
+			dbUrl,
+			{ tuplesOnly: true, throwOnError: true },
+		).stdout.trim();
+		if (!canonicalOnly) {
+			throw new Error('CANONICAL_NOT_FOUND: Canonical invitation is required for idempotent purge replay.');
+		}
+		const canonical = {
+			...(JSON.parse(canonicalOnly) as Omit<InvitationRecordSummary, 'environment'>),
+			environment: 'preview' as const,
+		};
+		if (canonical.slug !== expectCanonicalSlug) {
+			throw new Error(
+				`CANONICAL_SLUG_MISMATCH: expected ${expectCanonicalSlug}, got ${canonical.slug}.`,
+			);
+		}
+		const residualStoragePrefix = `managed/${expectIncorrectSlug}/`;
+		const audit: InvitationIdPurgeAudit = {
+			mode: apply ? 'apply' : 'dry_run',
+			executedAt: new Date().toISOString(),
+			environment: 'preview',
+			dbUrlRedacted: redactDbUrl(dbUrl),
+			incorrect: {
+				id: incorrectInvitationId,
+				slug: expectIncorrectSlug,
+				title: '',
+				status: 'absent',
+				kind: 'client',
+				eventType: '',
+				archivedAt: null,
+				createdAt: '',
+				updatedAt: '',
+				clientName: null,
+				environment: 'preview',
+			},
+			canonical,
+			incorrectDependencies: emptyDependencyCounts(),
+			canonicalDependencies: emptyDependencyCounts(),
+			migration: { required: false, blockReason: null, guestCandidates: [], notes: [] },
+			deletePlan: { tables: [], storageAssetPaths: [] },
+			blocked: false,
+			blockReasons: [],
+			deletionResult: 'already_absent',
+			completedSteps: [...completedSteps, 'idempotent_absent'],
+			failures: [],
+			auditArtifactPath: null,
+		};
+		if (apply) {
+			verifyPreviewWriteAuthorization({
+				slug: expectIncorrectSlug,
+				targets: ['preview'],
+				apply: true,
+				isInteractive: input.isInteractive,
+				authToken: input.authToken,
+				operation: INVITATION_ID_PURGE_OPERATION,
+			});
+			audit.completedSteps.push('preview_auth_checked');
+			// DB already converged. Storage resume requires explicit prior audit paths via
+			// resumeStorageCleanup + storageAssetPaths from the previous artifact (operator-supplied).
+			const resumePaths = input.resumeStorageCleanup
+				? (env.CELEBRA_PURGE_RESUME_STORAGE_PATHS ?? '')
+						.split(',')
+						.map((path) => path.trim())
+						.filter(Boolean)
+				: [];
+			if (resumePaths.length > 0) {
+				const foreign = assertStorageOwnership(resumePaths, expectIncorrectSlug);
+				if (foreign.length > 0) {
+					audit.blocked = true;
+					failures.push(`STORAGE_OWNERSHIP_VIOLATION: ${foreign.join(', ')}`);
+					audit.deletionResult = 'deleted_with_residual';
+				} else {
+					audit.storageCleanup = await removePreviewStorageObjects(resumePaths, env);
+					audit.completedSteps.push('storage_resume_attempted');
+					if (audit.storageCleanup.failed.length > 0) {
+						audit.blocked = true;
+						audit.deletionResult = 'deleted_with_residual';
+						failures.push('STORAGE_RESUME_PARTIAL');
+					}
+				}
+			} else {
+				audit.completedSteps.push(
+					`db_absent_storage_manual_if_needed:${residualStoragePrefix}`,
+				);
+			}
+			try {
+				audit.operationReceiptId = insertPurgeReceipt(
+					dbUrl,
+					canonicalInvitationId,
+					incorrectInvitationId,
+					{ ...audit, failures, completedSteps: audit.completedSteps },
+				);
+				audit.completedSteps.push('receipt_recorded');
+			} catch (error) {
+				const message = error instanceof Error ? error.message : String(error);
+				failures.push(`RECEIPT_INSERT_FAILED: ${message}`);
+				audit.blocked = true;
+			}
+		}
+		audit.failures = failures;
+		audit.auditArtifactPath = writeAuditArtifact(audit, auditDir);
+		return audit;
+	}
 
 	const loaded = loadAuditPayload(dbUrl, incorrectInvitationId, canonicalInvitationId);
+	completedSteps.push('audit_loaded');
 	const migration = assessMigration(loaded.guests, loaded.incorrectDependencies);
-	const blockReasons = collectPurgeBlockReasons(input, loaded, migration);
+	const assetHashEquivalence = assessAssetHashEquivalence(
+		loadAssetHashes(dbUrl, incorrectInvitationId),
+		loadAssetHashes(dbUrl, canonicalInvitationId),
+	);
+	completedSteps.push('asset_hashes_compared');
+	const blockReasons = collectPurgeBlockReasons(
+		input,
+		loaded,
+		migration,
+		assetHashEquivalence,
+		expectIncorrectSlug,
+		expectCanonicalSlug,
+	);
 
 	verifyPreviewWriteAuthorization({
 		slug: loaded.incorrect.slug,
@@ -563,6 +973,7 @@ export function runInvitationIdPurge(input: InvitationIdPurgeInput): InvitationI
 		authToken: input.authToken,
 		operation: INVITATION_ID_PURGE_OPERATION,
 	});
+	completedSteps.push('preview_auth_checked');
 
 	const audit: InvitationIdPurgeAudit = {
 		mode: apply ? 'apply' : 'dry_run',
@@ -578,12 +989,17 @@ export function runInvitationIdPurge(input: InvitationIdPurgeInput): InvitationI
 		blocked: blockReasons.length > 0,
 		blockReasons,
 		deletionResult: 'not_executed',
+		completedSteps,
+		failures,
+		assetHashEquivalence,
 		auditArtifactPath: null,
+		operationReceiptId: null,
 	};
 
 	if (apply) {
 		if (audit.blocked) {
 			audit.deletionResult = 'blocked';
+			failures.push(...blockReasons);
 		} else {
 			const tx = executeDeleteTransaction(
 				dbUrl,
@@ -596,26 +1012,62 @@ export function runInvitationIdPurge(input: InvitationIdPurgeInput): InvitationI
 				audit.deletionResult = 'rolled_back';
 				audit.blocked = true;
 				audit.blockReasons.push(`TRANSACTION_ROLLED_BACK: ${tx.error}`);
+				failures.push(tx.error);
+				completedSteps.push('db_rolled_back');
 			} else {
 				audit.deletionResult = 'deleted';
+				completedSteps.push('db_deleted');
+				audit.storageCleanup = await removePreviewStorageObjects(
+					loaded.storageAssetPaths,
+					env,
+				);
+				completedSteps.push('storage_cleanup_attempted');
+				if (audit.storageCleanup.failed.length > 0) {
+					audit.deletionResult = 'deleted_with_residual';
+					audit.blocked = true;
+					const storageFailure = `STORAGE_CLEANUP_PARTIAL: ${audit.storageCleanup.failed.length} object(s) failed`;
+					audit.blockReasons.push(storageFailure);
+					failures.push(storageFailure);
+				}
 				audit.postconditions = loadPostconditions(
 					dbUrl,
 					incorrectInvitationId,
 					canonicalInvitationId,
+					loaded.incorrect.slug,
 				);
+				completedSteps.push('postconditions_verified');
 				if (
 					audit.postconditions.incorrectExists ||
 					!audit.postconditions.canonicalExists ||
+					audit.postconditions.obsoleteSlugPresent ||
 					Object.values(audit.postconditions.orphanChecks).some((count) => count > 0)
 				) {
 					audit.blocked = true;
 					audit.blockReasons.push('POSTCONDITION_FAILED: Unexpected residual state after delete.');
+					audit.deletionResult = 'deleted_with_residual';
+					failures.push('POSTCONDITION_FAILED');
+				}
+				try {
+					audit.operationReceiptId = insertPurgeReceipt(
+						dbUrl,
+						canonicalInvitationId,
+						incorrectInvitationId,
+						audit,
+					);
+					completedSteps.push('receipt_recorded');
+				} catch (error) {
+					const message = error instanceof Error ? error.message : String(error);
+					failures.push(`RECEIPT_INSERT_FAILED: ${message}`);
+					audit.blockReasons.push(`RECEIPT_INSERT_FAILED: ${message}`);
+					audit.blocked = true;
 					audit.deletionResult = 'deleted_with_residual';
 				}
 			}
 		}
 	}
 
+	audit.completedSteps = completedSteps;
+	audit.failures = failures;
 	audit.auditArtifactPath = writeAuditArtifact(audit, auditDir);
 	return audit;
 }

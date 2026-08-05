@@ -48,8 +48,21 @@ export type InvitationDeliveryScope = 'content-only' | 'content-and-assets' | 'a
 /** Host Auth login local-part: `{alias}@clientes.celebra.invalid`. Independent of slug. */
 export { HOST_LOGIN_ALIAS_MAX_LENGTH, HOST_LOGIN_ALIAS_PATTERN };
 
+const MANAGED_IDENTITY_UUID_RE =
+	/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 export interface InvitationDefinition<K extends string = string> {
 	slug: string;
+	/**
+	 * Immutable managed invitation identity (UUID v4). Independent of slug, title, and client_name.
+	 * Never reuse across definitions; never change after first publication.
+	 */
+	managedIdentityId: string;
+	/**
+	 * Historical slugs previously used by this managed identity. Used for alias diagnostics and
+	 * REKEY_REQUIRED protection — never for silent create/upsert identity inference.
+	 */
+	previousSlugs?: readonly string[];
 	createdAt: string;
 	/** Explicit delivery lifecycle. Observability must never infer this from age or placement. */
 	lifecycle: InvitationLifecycle;
@@ -116,6 +129,15 @@ export function defineInvitation<K extends string = string>(
 		throw new Error('Invitation definition requires a non-empty string slug.');
 	}
 	if (
+		!definition.managedIdentityId ||
+		typeof definition.managedIdentityId !== 'string' ||
+		!MANAGED_IDENTITY_UUID_RE.test(definition.managedIdentityId)
+	) {
+		throw new Error(
+			'Invitation definition requires managedIdentityId as an immutable UUID v4, independent of slug.',
+		);
+	}
+	if (
 		!definition.hostLoginAlias ||
 		typeof definition.hostLoginAlias !== 'string' ||
 		!isCanonicalHostLoginAlias(definition.hostLoginAlias)
@@ -128,6 +150,22 @@ export function defineInvitation<K extends string = string>(
 		throw new Error('Invitation definition requires a non-empty string eventType.');
 	}
 	assertSlugDoesNotRepeatEventType(definition.slug, definition.eventType);
+	const previousSlugs = definition.previousSlugs ?? [];
+	const seenPrevious = new Set<string>();
+	for (const previousSlug of previousSlugs) {
+		if (!previousSlug || typeof previousSlug !== 'string') {
+			throw new Error('Invitation previousSlugs entries must be non-empty strings.');
+		}
+		if (previousSlug === definition.slug) {
+			throw new Error(
+				`Invitation previousSlugs must not include the current slug "${definition.slug}".`,
+			);
+		}
+		if (seenPrevious.has(previousSlug)) {
+			throw new Error(`Invitation previousSlugs contains duplicate "${previousSlug}".`);
+		}
+		seenPrevious.add(previousSlug);
+	}
 	if (!definition.title || typeof definition.title !== 'string') {
 		throw new Error('Invitation definition requires a non-empty string title.');
 	}

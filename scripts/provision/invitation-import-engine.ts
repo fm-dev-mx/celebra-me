@@ -70,6 +70,10 @@ import { operationIdFromPlanId } from '../../src/lib/intake/mutations/outcome.ts
 import { sortPathPolicy } from './conflict-resolutions.ts';
 import { verifySupabaseApiCredential } from './supabase-credential-verification.ts';
 import { assertManagedContentSchema } from './managed-content-validation.ts';
+import {
+	decideRekeyIdentity,
+	resolveIdentityWithoutRekey,
+} from './managed-identity-guards.ts';
 
 export interface ImportEngineOptions {
 	packagePath?: string;
@@ -85,6 +89,8 @@ export interface ImportEngineOptions {
 	pruneAssets?: boolean;
 	updateScope?: UpdateScope;
 	conflictResolutions?: ConflictResolutions;
+	/** Explicit slug rekey source. Preview + Local only; never inferred from title/client_name. */
+	rekeyFrom?: string;
 }
 
 export interface ResourcePlanAction {
@@ -251,14 +257,41 @@ export function resolveTargetInvitationIdentity(input: {
 function loadTargetInvitationRows(
 	slug: string,
 	targetDbUrl: string,
+	options?: {
+		managedIdentityId?: string;
+		previousSlugs?: readonly string[];
+		rekeyFrom?: string;
+	},
 ): Array<Record<string, unknown>> {
+	const slugCandidates = [
+		slug,
+		...(options?.rekeyFrom ? [options.rekeyFrom] : []),
+		...(options?.previousSlugs ?? []),
+	].filter((value, index, all) => value && all.indexOf(value) === index);
+	const slugList = slugCandidates.map((value) => sqlLiteral(value)).join(', ');
+	const identityClause = options?.managedIdentityId
+		? ` or i.managed_identity_id = ${sqlLiteral(options.managedIdentityId)}::uuid or p.managed_identity_id = ${sqlLiteral(options.managedIdentityId)}::uuid`
+		: '';
 	return parsePsqlJsonArray(
 		runPsql(
-			`select json_agg(t) from (select distinct i.id, i.slug, i.title, i.event_type, i.status, i.base_demo_id, i.theme_id, i.kind, i.snapshot, i.client_name, i.client_email, i.client_whatsapp, i.photos_received, i.created_by, i.archived_at from public.invitations i left join public.managed_invitation_release_provenance p on p.invitation_id = i.id where i.slug = ${sqlLiteral(slug)} or p.definition_slug = ${sqlLiteral(slug)} order by i.archived_at nulls first, i.id) t;`,
+			`select json_agg(t) from (select distinct i.id, i.slug, i.title, i.event_type, i.status, i.base_demo_id, i.theme_id, i.kind, i.snapshot, i.client_name, i.client_email, i.client_whatsapp, i.photos_received, i.created_by, i.archived_at, i.managed_identity_id, p.definition_slug, p.managed_identity_id as provenance_managed_identity_id from public.invitations i left join public.managed_invitation_release_provenance p on p.invitation_id = i.id where i.slug in (${slugList}) or p.definition_slug in (${slugList})${identityClause} order by i.archived_at nulls first, i.id) t;`,
 			targetDbUrl,
 			{ tuplesOnly: true, throwOnError: false },
 		).stdout,
 	);
+}
+
+function rowToManagedIdentity(row: Record<string, unknown> | null | undefined): {
+	id: string;
+	slug: string;
+	managedIdentityId: string | null;
+} | null {
+	if (!row?.id) return null;
+	return {
+		id: String(row.id),
+		slug: String(row.slug ?? ''),
+		managedIdentityId: row.managed_identity_id ? String(row.managed_identity_id) : null,
+	};
 }
 
 function resolveTargetIdentity(
@@ -655,6 +688,7 @@ interface DatabaseUpsertParams {
 	shouldUpsertEvent: boolean;
 	assetRefs: UploadedAssetMap;
 	operationId: string;
+	rekeyFrom?: string;
 }
 
 /** Revalidates the draft revision immediately before an apply phase can write. */
@@ -764,7 +798,17 @@ function executeDatabaseUpserts(params: DatabaseUpsertParams): number {
 	let count = 0;
 
 	if (shouldUpsertInv) {
-		const effectiveSlug = (existingInv?.slug as string | undefined) ?? slug;
+		const allowSlugRekey = Boolean(params.rekeyFrom);
+		const effectiveSlug = allowSlugRekey
+			? slug
+			: ((existingInv?.slug as string | undefined) ?? slug);
+		// Keep published route slug aligned during pure identity rekey (content may be identical).
+		if (allowSlugRekey) {
+			runPsql(
+				`update public.published_invitation_content set slug = ${sqlLiteral(slug)}, updated_at = now() where invitation_project_id = '${targetInvitationId}'::uuid and deleted_at is null and slug is distinct from ${sqlLiteral(slug)};`,
+				targetDbUrl,
+			);
+		}
 		const effectiveTitle = (existingInv?.title as string | undefined) ?? pkg.invitation.title;
 		const effectiveStatus = (existingInv?.status as string | undefined) ?? 'draft';
 		const effectiveClientName =
@@ -776,7 +820,13 @@ function executeDatabaseUpserts(params: DatabaseUpsertParams): number {
 		const effectivePhotosReceived =
 			(existingInv?.photos_received as boolean | undefined) ?? pkg.invitation.photosReceived;
 		const effectiveOwner = (existingInv?.created_by as string | undefined) ?? ownerUserId;
-		const invUpsertSql = `insert into public.invitations (id, slug, title, event_type, status, base_demo_id, theme_id, kind, snapshot, client_name, client_email, client_whatsapp, photos_received, created_by) values ('${targetInvitationId}'::uuid, ${sqlLiteral(effectiveSlug)}, ${sqlLiteral(effectiveTitle)}, ${sqlLiteral(eventType)}, ${sqlLiteral(effectiveStatus)}, ${sqlLiteral(pkg.invitation.baseDemoId)}, ${sqlLiteral(pkg.invitation.themeId)}, ${sqlLiteral(pkg.invitation.kind)}, ${sqlLiteral(JSON.stringify(targetSnapshot))}::jsonb, ${sqlLiteral(effectiveClientName)}, ${sqlLiteral(effectiveClientEmail)}, ${sqlLiteral(effectiveClientWhatsapp)}, ${effectivePhotosReceived ? 'true' : 'false'}, '${effectiveOwner}'::uuid) on conflict (id) do update set event_type = excluded.event_type, base_demo_id = excluded.base_demo_id, theme_id = excluded.theme_id, kind = excluded.kind, snapshot = excluded.snapshot, updated_at = now() returning id;`;
+		const managedIdentityId = pkg.invitation.managedIdentityId;
+		if (!managedIdentityId) {
+			throw new Error(
+				`Package for "${slug}" is missing invitation.managedIdentityId; regenerate the package from the current managed definition.`,
+			);
+		}
+		const invUpsertSql = `insert into public.invitations (id, slug, managed_identity_id, title, event_type, status, base_demo_id, theme_id, kind, snapshot, client_name, client_email, client_whatsapp, photos_received, created_by) values ('${targetInvitationId}'::uuid, ${sqlLiteral(effectiveSlug)}, ${sqlLiteral(managedIdentityId)}::uuid, ${sqlLiteral(effectiveTitle)}, ${sqlLiteral(eventType)}, ${sqlLiteral(effectiveStatus)}, ${sqlLiteral(pkg.invitation.baseDemoId)}, ${sqlLiteral(pkg.invitation.themeId)}, ${sqlLiteral(pkg.invitation.kind)}, ${sqlLiteral(JSON.stringify(targetSnapshot))}::jsonb, ${sqlLiteral(effectiveClientName)}, ${sqlLiteral(effectiveClientEmail)}, ${sqlLiteral(effectiveClientWhatsapp)}, ${effectivePhotosReceived ? 'true' : 'false'}, '${effectiveOwner}'::uuid) on conflict (id) do update set slug = excluded.slug, managed_identity_id = coalesce(public.invitations.managed_identity_id, excluded.managed_identity_id), event_type = excluded.event_type, base_demo_id = excluded.base_demo_id, theme_id = excluded.theme_id, kind = excluded.kind, snapshot = excluded.snapshot, updated_at = now() returning id;`;
 		runPsql(invUpsertSql, targetDbUrl, { tuplesOnly: true });
 		count++;
 	}
@@ -823,15 +873,28 @@ function executeDatabaseUpserts(params: DatabaseUpsertParams): number {
 	}
 
 	if (shouldUpsertEvent) {
-		const eventRes = runPsql(
-			`insert into public.events (id, owner_user_id, slug, event_type, title, status, invitation_project_id) values (gen_random_uuid(), '${ownerUserId}'::uuid, ${sqlLiteral(slug)}, ${sqlLiteral(eventType)}, ${sqlLiteral(pkg.event?.title ?? pkg.invitation.title)}, 'published', '${targetInvitationId}'::uuid) on conflict (slug) do update set event_type = excluded.event_type, invitation_project_id = excluded.invitation_project_id, deleted_at = null, updated_at = now() returning id;`,
+		const eventTitle = pkg.event?.title ?? pkg.invitation.title;
+		// Prefer invitation_project_id so slug rekey preserves RSVP/membership linkage.
+		const linkedEventRes = runPsql(
+			`select id::text from public.events where invitation_project_id = '${targetInvitationId}'::uuid and deleted_at is null limit 1;`,
 			targetDbUrl,
-			{ tuplesOnly: true },
+			{ tuplesOnly: true, throwOnError: false },
 		);
-		const cleanEventId = eventRes.stdout
-			.trim()
-			.split(/[\r\n\s]+/)[0]
-			?.trim();
+		const linkedEventId = linkedEventRes.stdout.trim().split(/[\r\n\s]+/)[0]?.trim();
+		let cleanEventId = linkedEventId;
+		if (linkedEventId) {
+			runPsql(
+				`update public.events set slug = ${sqlLiteral(slug)}, event_type = ${sqlLiteral(eventType)}, title = ${sqlLiteral(eventTitle)}, status = 'published', deleted_at = null, updated_at = now() where id = '${linkedEventId}'::uuid;`,
+				targetDbUrl,
+			);
+		} else {
+			const eventRes = runPsql(
+				`insert into public.events (id, owner_user_id, slug, event_type, title, status, invitation_project_id) values (gen_random_uuid(), '${ownerUserId}'::uuid, ${sqlLiteral(slug)}, ${sqlLiteral(eventType)}, ${sqlLiteral(eventTitle)}, 'published', '${targetInvitationId}'::uuid) on conflict (slug) do update set event_type = excluded.event_type, invitation_project_id = excluded.invitation_project_id, deleted_at = null, updated_at = now() returning id;`,
+				targetDbUrl,
+				{ tuplesOnly: true },
+			);
+			cleanEventId = eventRes.stdout.trim().split(/[\r\n\s]+/)[0]?.trim();
+		}
 		if (cleanEventId) {
 			runPsql(
 				`insert into public.event_memberships (event_id, user_id, membership_role) values ('${cleanEventId}'::uuid, '${ownerUserId}'::uuid, 'owner') on conflict (event_id, user_id) do update set membership_role = 'owner', deleted_at = null;`,
@@ -905,12 +968,21 @@ function scanTargetState(
 	);
 	const existingDraft = draftResult.stdout.trim() ? parsePsqlJson(draftResult.stdout) : null;
 
-	const pubQuery = `select version, updated_at, published_at, content from public.published_invitation_content where slug = ${sqlLiteral(slug)} and event_type = ${sqlLiteral(eventType)} and deleted_at is null order by version desc limit 1`;
-	const pubResult = runPsql(`select row_to_json(t) from (${pubQuery}) t;`, targetDbUrl, {
+	const pubQuery = `select version, updated_at, published_at, content, slug from public.published_invitation_content where invitation_project_id = '${targetInvitationId}'::uuid and deleted_at is null order by version desc limit 1`;
+	const pubByInvitation = runPsql(`select row_to_json(t) from (${pubQuery}) t;`, targetDbUrl, {
 		tuplesOnly: true,
 		throwOnError: false,
 	});
-	const existingPub = pubResult.stdout.trim() ? parsePsqlJson(pubResult.stdout) : null;
+	const pubByRouteQuery = `select version, updated_at, published_at, content, slug from public.published_invitation_content where slug = ${sqlLiteral(slug)} and event_type = ${sqlLiteral(eventType)} and deleted_at is null order by version desc limit 1`;
+	const pubByRoute = runPsql(`select row_to_json(t) from (${pubByRouteQuery}) t;`, targetDbUrl, {
+		tuplesOnly: true,
+		throwOnError: false,
+	});
+	const existingPub = pubByInvitation.stdout.trim()
+		? parsePsqlJson(pubByInvitation.stdout)
+		: pubByRoute.stdout.trim()
+			? parsePsqlJson(pubByRoute.stdout)
+			: null;
 
 	const provenanceResult = runPsql(
 		`select row_to_json(t) from (select managed_projection, applied_draft_updated_at, applied_operation_id, applied_published_version, applied_published_projection_hash from public.managed_invitation_release_provenance where invitation_id = '${targetInvitationId}'::uuid) t;`,
@@ -948,12 +1020,21 @@ function scanTargetState(
 		latestReceiptResult.stdout.trim() ? parsePsqlJson(latestReceiptResult.stdout) : null,
 	);
 
-	const eventResult = runPsql(
+	const eventByInvitation = runPsql(
+		`select row_to_json(t) from (select id, owner_user_id, slug, event_type, title, status, invitation_project_id from public.events where invitation_project_id = '${targetInvitationId}'::uuid and deleted_at is null limit 1) t;`,
+		targetDbUrl,
+		{ tuplesOnly: true, throwOnError: false },
+	);
+	const eventBySlug = runPsql(
 		`select row_to_json(t) from (select id, owner_user_id, slug, event_type, title, status, invitation_project_id from public.events where slug = ${sqlLiteral(slug)} and deleted_at is null limit 1) t;`,
 		targetDbUrl,
 		{ tuplesOnly: true, throwOnError: false },
 	);
-	const existingEvent = eventResult.stdout.trim() ? parsePsqlJson(eventResult.stdout) : null;
+	const existingEvent = eventByInvitation.stdout.trim()
+		? parsePsqlJson(eventByInvitation.stdout)
+		: eventBySlug.stdout.trim()
+			? parsePsqlJson(eventBySlug.stdout)
+			: null;
 	if (existingInvitation && existingEvent && existingEvent.owner_user_id !== ownerUserId) {
 		throw new Error(`Target event owner does not match the invitation owner for "${slug}".`);
 	}
@@ -1026,10 +1107,13 @@ function analyzeTargetDrift(
 	updateScope: UpdateScope = 'content-only',
 	preferredInvitationId?: string,
 	conflictResolutions?: ConflictResolutions,
+	rekeyFrom?: string,
 ) {
-	const slug =
-		(typeof existingInvitation?.slug === 'string' && existingInvitation.slug) ||
-		pkg.invitation.slug;
+	// Explicit rekey targets the package/canonical slug; otherwise preserve hosted slug.
+	const slug = rekeyFrom
+		? pkg.invitation.slug
+		: (typeof existingInvitation?.slug === 'string' && existingInvitation.slug) ||
+			pkg.invitation.slug;
 	const eventType = pkg.invitation.eventType;
 	const route = `/${eventType}/${slug}`;
 	const scanned = scanTargetState(
@@ -1308,8 +1392,79 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 	const projectRef = validatedUrls.projectRef;
 	const targetStorageUrl = validatedUrls.storageUrl;
 	const targetClassification = classifyDbTarget(targetDbUrl, { apiUrl: targetSupabaseUrl });
-	const invitationRows = loadTargetInvitationRows(pkg.invitation.slug, targetDbUrl);
-	const existingInvitationRow = invitationRows.find((row) => row.archived_at === null) ?? null;
+	const managedIdentityId = pkg.invitation.managedIdentityId;
+	const previousSlugs = pkg.invitation.previousSlugs ?? [];
+	if (!managedIdentityId || typeof managedIdentityId !== 'string') {
+		throw new Error(
+			`Package for "${pkg.invitation.slug}" is missing invitation.managedIdentityId; regenerate the package from the current managed definition.`,
+		);
+	}
+	if (options.rekeyFrom && expectedTarget === 'production') {
+		throw new Error(
+			'IDENTITY_REKEY_UNSUPPORTED_TARGET: Identity rekey (--rekey-from) is not supported for Production. Use Local or Preview only.',
+		);
+	}
+	const invitationRows = loadTargetInvitationRows(pkg.invitation.slug, targetDbUrl, {
+		managedIdentityId,
+		previousSlugs,
+		rekeyFrom: options.rekeyFrom,
+	});
+	const activeRows = invitationRows.filter((row) => row.archived_at === null);
+	const rekeyFrom = options.rekeyFrom?.trim();
+	let selectedInvitationRow: Record<string, unknown> | null = null;
+	if (rekeyFrom) {
+		const sourceByOldSlug =
+			activeRows.find((row) => String(row.slug) === rekeyFrom) ?? null;
+		const collisionByTargetSlug =
+			activeRows.find(
+				(row) =>
+					String(row.slug) === pkg.invitation.slug &&
+					String(row.id) !== String(sourceByOldSlug?.id ?? ''),
+			) ?? null;
+		const decision = decideRekeyIdentity({
+			slug: pkg.invitation.slug,
+			rekeyFrom,
+			sourceByOldSlug: rowToManagedIdentity(sourceByOldSlug),
+			collisionByTargetSlug: rowToManagedIdentity(collisionByTargetSlug),
+			expectedManagedIdentityId: managedIdentityId,
+		});
+		if (!decision.ok) throw new Error(decision.message);
+		selectedInvitationRow = sourceByOldSlug;
+	} else {
+		const byManagedIdentity =
+			activeRows.find((row) => String(row.managed_identity_id ?? '') === managedIdentityId) ??
+			null;
+		const bySlug = activeRows.find((row) => String(row.slug) === pkg.invitation.slug) ?? null;
+		const provenanceByIdentity = runPsql(
+			`select invitation_id::text from public.managed_invitation_release_provenance where managed_identity_id = ${sqlLiteral(managedIdentityId)}::uuid or definition_slug = ${sqlLiteral(pkg.invitation.slug)} limit 1;`,
+			targetDbUrl,
+			{ tuplesOnly: true, throwOnError: false },
+		).stdout.trim();
+		let matchedPreviousSlug: string | null = null;
+		let activeInvitationByPreviousSlug: Record<string, unknown> | null = null;
+		for (const previousSlug of previousSlugs) {
+			const hit = activeRows.find((row) => String(row.slug) === previousSlug) ?? null;
+			if (hit) {
+				activeInvitationByPreviousSlug = hit;
+				matchedPreviousSlug = previousSlug;
+				break;
+			}
+		}
+		const decision = resolveIdentityWithoutRekey({
+			slug: pkg.invitation.slug,
+			managedIdentityId,
+			previousSlugs,
+			invitationByManagedIdentity: rowToManagedIdentity(byManagedIdentity),
+			provenanceInvitationId: provenanceByIdentity || null,
+			invitationBySlug: rowToManagedIdentity(bySlug),
+			activeInvitationByPreviousSlug: rowToManagedIdentity(activeInvitationByPreviousSlug),
+			matchedPreviousSlug,
+		});
+		if (!decision.ok) throw new Error(decision.message);
+		selectedInvitationRow =
+			activeRows.find((row) => String(row.id) === String(decision.invitationId ?? '')) ?? null;
+	}
+	const existingInvitationRow = selectedInvitationRow;
 	const serviceRoleKeyForHost =
 		options.serviceRoleKey ||
 		(expectedTarget === 'preview'
@@ -1345,7 +1500,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		dryRun,
 	});
 	const identity = resolveTargetIdentity(pkg.invitation.slug, explicitOwnerId, targetDbUrl, {
-		invitationRows,
+		invitationRows: existingInvitationRow ? [existingInvitationRow] : [],
 		plannedHostOwnerId: hostOwnerPlan.ownerUserId,
 		allowMissingOwnerDuringDryRunCreate:
 			dryRun && hostOwnerPlan.action === 'OWNER_CREATE_PLANNED',
@@ -1384,6 +1539,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		updateScope,
 		initialScan.targetInvitationId,
 		options.conflictResolutions,
+		rekeyFrom,
 	);
 	const {
 		assetsToUpload,
@@ -1430,6 +1586,30 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			targetDbUrl,
 			{ tuplesOnly: true },
 		).stdout.trim() === 't';
+	const provenanceIdentityRow = runPsql(
+		`select row_to_json(t) from (
+      select managed_identity_id::text as managed_identity_id, coalesce(previous_slugs, '{}'::text[]) as previous_slugs
+      from public.managed_invitation_release_provenance
+      where invitation_id = '${drift.targetInvitationId}'::uuid
+    ) t;`,
+		targetDbUrl,
+		{ tuplesOnly: true, throwOnError: false },
+	).stdout.trim();
+	let needsProvenanceIdentitySync = !provenanceExists;
+	if (provenanceIdentityRow) {
+		try {
+			const row = JSON.parse(provenanceIdentityRow) as {
+				managed_identity_id?: string | null;
+				previous_slugs?: string[] | null;
+			};
+			const existingPrevious = [...(row.previous_slugs ?? [])].sort().join('\0');
+			const desiredPrevious = [...previousSlugs].sort().join('\0');
+			needsProvenanceIdentitySync =
+				row.managed_identity_id !== managedIdentityId || existingPrevious !== desiredPrevious;
+		} catch {
+			needsProvenanceIdentitySync = true;
+		}
+	}
 	if (hostOwnerAction === 'OWNER_CREATE_PLANNED') {
 		actions.push({
 			resource: 'auth_host',
@@ -1446,10 +1626,15 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		});
 	}
 
-	if (hasManagedChanges || recoverableManagedPartial) {
+	if (hasManagedChanges || recoverableManagedPartial || needsProvenanceIdentitySync) {
 		const previewAdminId =
 			expectedTarget === 'preview' ? resolvePreviewAdminUser(targetDbUrl) : null;
-		if (expectedTarget === 'preview' && previewAdminId && ownerUserId === previewAdminId) {
+		if (
+			(hasManagedChanges || recoverableManagedPartial) &&
+			expectedTarget === 'preview' &&
+			previewAdminId &&
+			ownerUserId === previewAdminId
+		) {
 			actions.push(
 				{
 					resource: 'preview_identity',
@@ -1469,7 +1654,9 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			resource: 'managed_invitation_release_provenance',
 			name: 'Procedencia de la versión administrada',
 			action: provenanceExists ? 'replace' : 'create',
-			detail: 'Registrar la identidad del paquete ejecutado',
+			detail: needsProvenanceIdentitySync
+				? 'Registrar o alinear managedIdentityId/previousSlugs'
+				: 'Registrar la identidad del paquete ejecutado',
 		});
 	}
 
@@ -1816,13 +2003,14 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			existingInv: drift.existingInv,
 			existingDraft: drift.existingDraft,
 			existingPub: drift.existingPub,
-			shouldUpsertInv: !drift.isInvMetadataIdentical || !drift.existingInv,
+			shouldUpsertInv: !drift.isInvMetadataIdentical || !drift.existingInv || Boolean(rekeyFrom),
 			assetsForDbUpsert: [...assetsToUpload, ...assetsToUpsertDbOnly],
 			shouldUpsertDraft: !drift.isDraftIdentical || !drift.existingDraft,
 			shouldPublish: !drift.isPubIdentical || !drift.existingPub,
-			shouldUpsertEvent: !drift.isEventAndMemberIdentical,
+			shouldUpsertEvent: !drift.isEventAndMemberIdentical || Boolean(rekeyFrom),
 			assetRefs,
 			operationId: activeOperationId,
+			rekeyFrom,
 		});
 		executedMutations += dbMutations;
 		completedDatabaseWrites = {
@@ -1888,6 +2076,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			updateScope,
 			drift.targetInvitationId,
 			options.conflictResolutions,
+			rekeyFrom,
 		);
 		const finalAssets = await scanAssetStatus(
 			pkg.assets,
@@ -1920,7 +2109,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			.digest('hex');
 		markResourceOverwritten('managed_invitation_release_provenance', drift.targetInvitationId);
 		runPsql(
-			`insert into public.managed_invitation_release_provenance (invitation_id, definition_slug, release_schema_version, source_hash, package_hash, metadata_hash, projection_hash, asset_manifest_hash, managed_projection, applied_draft_updated_at, applied_operation_id, applied_published_version, applied_published_projection_hash, applied_at) values ('${drift.targetInvitationId}'::uuid, ${sqlLiteral(pkg.sourceSlug)}, ${sqlLiteral(pkg.schemaVersion)}, ${sqlLiteral(pkg.sourceHash)}, ${sqlLiteral(pkg.packageHash)}, ${sqlLiteral(pkg.metadataHash)}, ${sqlLiteral(provenanceProjectionHash)}, ${sqlLiteral(pkg.assetManifestHash)}, ${sqlLiteral(JSON.stringify(drift.targetDraftContent))}::jsonb, (select updated_at from public.invitation_content_drafts where invitation_project_id = '${drift.targetInvitationId}'::uuid and deleted_at is null limit 1), '${activeOperationId}'::uuid, ${finalPublishedVersion}, ${sqlLiteral(hashPublicationProjection(drift.targetPublishedContent))}, now()) on conflict (invitation_id) do update set definition_slug = excluded.definition_slug, release_schema_version = excluded.release_schema_version, source_hash = excluded.source_hash, package_hash = excluded.package_hash, metadata_hash = excluded.metadata_hash, projection_hash = excluded.projection_hash, asset_manifest_hash = excluded.asset_manifest_hash, managed_projection = excluded.managed_projection, applied_draft_updated_at = excluded.applied_draft_updated_at, applied_operation_id = excluded.applied_operation_id, applied_published_version = excluded.applied_published_version, applied_published_projection_hash = excluded.applied_published_projection_hash, applied_at = excluded.applied_at;`,
+			`insert into public.managed_invitation_release_provenance (invitation_id, definition_slug, managed_identity_id, previous_slugs, release_schema_version, source_hash, package_hash, metadata_hash, projection_hash, asset_manifest_hash, managed_projection, applied_draft_updated_at, applied_operation_id, applied_published_version, applied_published_projection_hash, applied_at) values ('${drift.targetInvitationId}'::uuid, ${sqlLiteral(pkg.sourceSlug)}, ${sqlLiteral(managedIdentityId)}::uuid, ${sqlTextArray(previousSlugs)}, ${sqlLiteral(pkg.schemaVersion)}, ${sqlLiteral(pkg.sourceHash)}, ${sqlLiteral(pkg.packageHash)}, ${sqlLiteral(pkg.metadataHash)}, ${sqlLiteral(provenanceProjectionHash)}, ${sqlLiteral(pkg.assetManifestHash)}, ${sqlLiteral(JSON.stringify(drift.targetDraftContent))}::jsonb, (select updated_at from public.invitation_content_drafts where invitation_project_id = '${drift.targetInvitationId}'::uuid and deleted_at is null limit 1), '${activeOperationId}'::uuid, ${finalPublishedVersion}, ${sqlLiteral(hashPublicationProjection(drift.targetPublishedContent))}, now()) on conflict (invitation_id) do update set definition_slug = excluded.definition_slug, managed_identity_id = coalesce(public.managed_invitation_release_provenance.managed_identity_id, excluded.managed_identity_id), previous_slugs = excluded.previous_slugs, release_schema_version = excluded.release_schema_version, source_hash = excluded.source_hash, package_hash = excluded.package_hash, metadata_hash = excluded.metadata_hash, projection_hash = excluded.projection_hash, asset_manifest_hash = excluded.asset_manifest_hash, managed_projection = excluded.managed_projection, applied_draft_updated_at = excluded.applied_draft_updated_at, applied_operation_id = excluded.applied_operation_id, applied_published_version = excluded.applied_published_version, applied_published_projection_hash = excluded.applied_published_projection_hash, applied_at = excluded.applied_at;`,
 			targetDbUrl,
 		);
 		completedSteps.push('provenance_recorded');

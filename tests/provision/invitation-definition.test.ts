@@ -33,11 +33,14 @@ function buildMockAssets(): UploadedAssetMap<RominaAssetKey> {
 	) as UploadedAssetMap<RominaAssetKey>;
 }
 
+const TEST_MANAGED_IDENTITY_ID = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
+
 describe('Single-File Invitation Definition Contract & Registry', () => {
 	describe('defineInvitation helper', () => {
 		it('returns a valid definition object when parameters pass', () => {
 			const def = defineInvitation({
 				slug: 'test-invitation',
+				managedIdentityId: TEST_MANAGED_IDENTITY_ID,
 				createdAt: '2026-07-20T00:00:00.000Z',
 				lifecycle: 'in_progress',
 				deliveryScope: 'content-and-assets',
@@ -60,6 +63,7 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 			});
 
 			expect(def.slug).toBe('test-invitation');
+			expect(def.managedIdentityId).toBe(TEST_MANAGED_IDENTITY_ID);
 			expect(def.hostLoginAlias).toBe('client_name');
 			expect(def.eventType).toBe('xv');
 			expect(def.assets).toHaveLength(1);
@@ -69,6 +73,7 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 			expect(() =>
 				defineInvitation({
 					slug: '',
+					managedIdentityId: TEST_MANAGED_IDENTITY_ID,
 					createdAt: '2026-07-20T00:00:00.000Z',
 					lifecycle: 'in_progress',
 					deliveryScope: 'content-and-assets',
@@ -90,6 +95,7 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 			expect(() =>
 				defineInvitation({
 					slug: 'boda-daniela-y-martin',
+					managedIdentityId: TEST_MANAGED_IDENTITY_ID,
 					createdAt: '2026-07-20T00:00:00.000Z',
 					lifecycle: 'in_progress',
 					deliveryScope: 'content-and-assets',
@@ -111,6 +117,7 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 			expect(() =>
 				defineInvitation({
 					slug: 'test-invitation',
+					managedIdentityId: TEST_MANAGED_IDENTITY_ID,
 					createdAt: '2026-07-20T00:00:00.000Z',
 					lifecycle: 'in_progress',
 					deliveryScope: 'content-and-assets',
@@ -132,6 +139,7 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 			expect(() =>
 				defineInvitation({
 					slug: 'unsafe-reference',
+					managedIdentityId: TEST_MANAGED_IDENTITY_ID,
 					createdAt: '2026-07-20T00:00:00.000Z',
 					lifecycle: 'in_progress',
 					deliveryScope: 'content-and-assets',

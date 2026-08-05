@@ -40,6 +40,8 @@ export interface InvitationPackageData {
 	sourceSlug: string;
 	invitation: {
 		slug: string;
+		managedIdentityId: string;
+		previousSlugs: string[];
 		title: string;
 		eventType: string;
 		baseDemoId: string;
@@ -108,6 +110,8 @@ export function serializeInvitationPackage(
 		sourceSlug: release.slug,
 		invitation: {
 			slug: release.slug,
+			managedIdentityId: release.metadata.managedIdentityId,
+			previousSlugs: [...release.metadata.previousSlugs],
 			title: release.metadata.title,
 			eventType: release.metadata.eventType,
 			baseDemoId: release.metadata.baseDemoId,

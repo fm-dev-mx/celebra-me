@@ -12,10 +12,18 @@ import { rominaInvitation } from './romina-rios-chaparro.ts';
 
 const registry = new Map<string, InvitationDefinition>();
 const hostLoginAliases = new Map<string, string>();
+const managedIdentities = new Map<string, string>();
+const previousSlugOwners = new Map<string, string>();
 
 function registerInvitation(definition: InvitationDefinition): void {
 	if (registry.has(definition.slug)) {
 		throw new Error(`Duplicate invitation slug registration: "${definition.slug}".`);
+	}
+	const identityOwner = managedIdentities.get(definition.managedIdentityId);
+	if (identityOwner) {
+		throw new Error(
+			`Duplicate managedIdentityId "${definition.managedIdentityId}" for "${definition.slug}" (already used by "${identityOwner}").`,
+		);
 	}
 	const alias = definition.hostLoginAlias;
 	const ownerSlug = hostLoginAliases.get(alias);
@@ -24,8 +32,29 @@ function registerInvitation(definition: InvitationDefinition): void {
 			`Duplicate hostLoginAlias "${alias}" for "${definition.slug}" (already used by "${ownerSlug}").`,
 		);
 	}
+	const previousOwnerOfCurrent = previousSlugOwners.get(definition.slug);
+	if (previousOwnerOfCurrent) {
+		throw new Error(
+			`Slug "${definition.slug}" is declared as previousSlugs for "${previousOwnerOfCurrent}"; cannot register as current slug.`,
+		);
+	}
+	for (const previousSlug of definition.previousSlugs ?? []) {
+		if (registry.has(previousSlug)) {
+			throw new Error(
+				`previousSlugs entry "${previousSlug}" for "${definition.slug}" collides with registered slug.`,
+			);
+		}
+		const prior = previousSlugOwners.get(previousSlug);
+		if (prior) {
+			throw new Error(
+				`Duplicate previousSlugs entry "${previousSlug}" for "${definition.slug}" (already used by "${prior}").`,
+			);
+		}
+		previousSlugOwners.set(previousSlug, definition.slug);
+	}
 	registry.set(definition.slug, definition);
 	hostLoginAliases.set(alias, definition.slug);
+	managedIdentities.set(definition.managedIdentityId, definition.slug);
 }
 
 // Register canonical invitations

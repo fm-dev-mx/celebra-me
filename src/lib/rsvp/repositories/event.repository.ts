@@ -8,6 +8,24 @@ import {
 } from '@/lib/rsvp/repositories/shared/rows';
 
 const ACTIVE_EVENT_FILTER = 'deleted_at=is.null';
+/** Service-role defense in depth beside DB archive cascade. Host tokens cannot read invitations. */
+const SERVICE_EVENT_WITH_INVITATION_ARCHIVE = `*,invitations!left(archived_at)`;
+
+type EventRowWithInvitation = EventRow & {
+	invitations?: { archived_at: string | null } | null;
+};
+
+function isActiveInvitationParent(row: EventRowWithInvitation): boolean {
+	// Unlinked events remain visible.
+	if (!row.invitation_project_id) return true;
+	// Fail closed: missing embed/relationship cannot prove the parent is active.
+	if (!row.invitations || typeof row.invitations !== 'object') return false;
+	return row.invitations.archived_at == null;
+}
+
+function toActiveEventRecords(rows: EventRowWithInvitation[]): EventRecord[] {
+	return rows.filter(isActiveInvitationParent).map(toEventRecord);
+}
 
 export async function findEventsByOwner(
 	ownerUserId: string,
@@ -40,35 +58,35 @@ export async function findEventById(
 }
 
 export async function findEventByIdService(eventId: string): Promise<EventRecord | null> {
-	const rows = await supabaseRestRequest<EventRow[]>({
-		pathWithQuery: `events?select=*&id=eq.${encodeURIComponent(eventId)}&${ACTIVE_EVENT_FILTER}&limit=1`,
+	const rows = await supabaseRestRequest<EventRowWithInvitation[]>({
+		pathWithQuery: `events?select=${SERVICE_EVENT_WITH_INVITATION_ARCHIVE}&id=eq.${encodeURIComponent(eventId)}&${ACTIVE_EVENT_FILTER}&limit=1`,
 		useServiceRole: true,
 	});
-	return rows[0] ? toEventRecord(rows[0]) : null;
+	return toActiveEventRecords(rows)[0] ?? null;
 }
 
 export async function findEventBySlugService(slug: string): Promise<EventRecord | null> {
-	const rows = await supabaseRestRequest<EventRow[]>({
-		pathWithQuery: `events?select=*&slug=eq.${encodeURIComponent(slug)}&${ACTIVE_EVENT_FILTER}&limit=1`,
+	const rows = await supabaseRestRequest<EventRowWithInvitation[]>({
+		pathWithQuery: `events?select=${SERVICE_EVENT_WITH_INVITATION_ARCHIVE}&slug=eq.${encodeURIComponent(slug)}&${ACTIVE_EVENT_FILTER}&limit=1`,
 		useServiceRole: true,
 	});
-	return rows[0] ? toEventRecord(rows[0]) : null;
+	return toActiveEventRecords(rows)[0] ?? null;
 }
 
 export async function findEventByInvitationPublic(eventId: string): Promise<EventRecord | null> {
-	const rows = await supabaseRestRequest<EventRow[]>({
-		pathWithQuery: `events?select=*&id=eq.${encodeURIComponent(eventId)}&${ACTIVE_EVENT_FILTER}&limit=1`,
+	const rows = await supabaseRestRequest<EventRowWithInvitation[]>({
+		pathWithQuery: `events?select=${SERVICE_EVENT_WITH_INVITATION_ARCHIVE}&id=eq.${encodeURIComponent(eventId)}&${ACTIVE_EVENT_FILTER}&limit=1`,
 		useServiceRole: true,
 	});
-	return rows[0] ? toEventRecord(rows[0]) : null;
+	return toActiveEventRecords(rows)[0] ?? null;
 }
 
 export async function listAllEventsService(): Promise<EventRecord[]> {
-	const rows = await supabaseRestRequest<EventRow[]>({
-		pathWithQuery: `events?select=*&${ACTIVE_EVENT_FILTER}&order=created_at.desc`,
+	const rows = await supabaseRestRequest<EventRowWithInvitation[]>({
+		pathWithQuery: `events?select=${SERVICE_EVENT_WITH_INVITATION_ARCHIVE}&${ACTIVE_EVENT_FILTER}&order=created_at.desc`,
 		useServiceRole: true,
 	});
-	return rows.map(toEventRecord);
+	return toActiveEventRecords(rows);
 }
 
 export async function createEventService(input: {
@@ -126,9 +144,9 @@ export async function updateEventService(input: {
 export async function findEventByInvitationIdService(
 	invitationId: string,
 ): Promise<EventRecord | null> {
-	const rows = await supabaseRestRequest<EventRow[]>({
-		pathWithQuery: `events?select=*&invitation_project_id=eq.${encodeURIComponent(invitationId)}&${ACTIVE_EVENT_FILTER}&limit=1`,
+	const rows = await supabaseRestRequest<EventRowWithInvitation[]>({
+		pathWithQuery: `events?select=${SERVICE_EVENT_WITH_INVITATION_ARCHIVE}&invitation_project_id=eq.${encodeURIComponent(invitationId)}&${ACTIVE_EVENT_FILTER}&limit=1`,
 		useServiceRole: true,
 	});
-	return rows[0] ? toEventRecord(rows[0]) : null;
+	return toActiveEventRecords(rows)[0] ?? null;
 }

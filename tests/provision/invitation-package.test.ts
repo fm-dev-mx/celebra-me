@@ -19,6 +19,8 @@ const basePayload: Omit<InvitationPackageData, 'packageHash'> = {
 	sourceSlug: 'test-invitation',
 	invitation: {
 		slug: 'test-invitation',
+		managedIdentityId: '11111111-1111-4111-8111-111111111111',
+		previousSlugs: [],
 		title: 'Test',
 		eventType: 'xv',
 		baseDemoId: 'demo',
@@ -94,6 +96,8 @@ describe('invitation package', () => {
 			projectionHash: md5hash,
 			assetManifestHash: hash,
 			metadata: {
+				managedIdentityId: '11111111-1111-4111-8111-111111111111',
+				previousSlugs: [],
 				title: 'Test',
 				eventType: 'xv',
 				baseDemoId: 'demo',

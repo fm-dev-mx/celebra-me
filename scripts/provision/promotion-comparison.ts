@@ -53,6 +53,12 @@ export function checkInvitationMetadataIdentical(
 	targetStorageUrl: string,
 ): boolean {
 	if (!existingInv) return false;
+	const existingManagedIdentity =
+		typeof existingInv.managed_identity_id === 'string' ? existingInv.managed_identity_id : null;
+	// Missing managed identity is drift: backfill even when content/metadata otherwise match.
+	if (pkgInv.managedIdentityId && existingManagedIdentity !== pkgInv.managedIdentityId) {
+		return false;
+	}
 	return (
 		existingInv.event_type === pkgInv.eventType &&
 		existingInv.base_demo_id === pkgInv.baseDemoId &&

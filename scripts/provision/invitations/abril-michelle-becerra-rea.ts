@@ -463,6 +463,7 @@ export function buildAbrilPublishedContent(
 
 export const abrilInvitation: InvitationDefinition<AbrilAssetKey> = defineInvitation({
 	slug: ABRIL_EVENT.slug,
+	managedIdentityId: '1a2b3c4d-5e6f-4a81-92a3-b4c5d6e7f809',
 	createdAt: '2026-07-24T00:00:00.000Z',
 	lifecycle: 'published',
 	deliveryScope: 'content-and-assets',

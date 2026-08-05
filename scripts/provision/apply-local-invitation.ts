@@ -28,6 +28,7 @@ import {
 import { checkTargetDivergenceConflict } from './promotion-comparison.ts';
 import {
 	isRecoverableManagedPartial,
+	ManagedBaselineError,
 	resolveManagedMergeBaseline,
 	type ManagedBaselineReceiptEvidence,
 } from './managed-merge-baseline.ts';
@@ -244,16 +245,16 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	}
 	const normalizedPhotos = release.assets.map((asset) => ({ ...asset, imageHash: asset.sha256 }));
 
-	// Check existing invitation
+	// Check existing invitation — never infer identity from title/client_name.
 	let existingInv: Record<string, unknown> | null;
 	const rekeyFrom = options.rekeyFrom?.trim();
+	const invitationSelect =
+		'id, slug, title, event_type, status, base_demo_id, theme_id, kind, snapshot, client_name, client_email, client_whatsapp, photos_received, created_by, managed_identity_id';
 
 	if (rekeyFrom) {
 		const { data: invByOldSlug } = await supabase
 			.from('invitations')
-			.select(
-				'id, slug, title, event_type, status, base_demo_id, theme_id, kind, snapshot, client_name, client_email, client_whatsapp, photos_received, created_by',
-			)
+			.select(invitationSelect)
 			.eq('slug', rekeyFrom)
 			.is('archived_at', null)
 			.maybeSingle();
@@ -261,7 +262,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		const { data: collisionInv } = invByOldSlug?.id
 			? await supabase
 					.from('invitations')
-					.select('id, slug')
+					.select('id, slug, managed_identity_id')
 					.eq('slug', slug)
 					.neq('id', invByOldSlug.id)
 					.is('archived_at', null)
@@ -272,11 +273,18 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			slug,
 			rekeyFrom,
 			sourceByOldSlug: invByOldSlug?.id
-				? { id: String(invByOldSlug.id), slug: String(invByOldSlug.slug) }
+				? {
+						id: String(invByOldSlug.id),
+						slug: String(invByOldSlug.slug),
+						managedIdentityId: invByOldSlug.managed_identity_id
+							? String(invByOldSlug.managed_identity_id)
+							: null,
+					}
 				: null,
 			collisionByTargetSlug: collisionInv?.id
 				? { id: String(collisionInv.id), slug: String(collisionInv.slug ?? slug) }
 				: null,
+			expectedManagedIdentityId: definition.managedIdentityId,
 		});
 		if (!decision.ok) {
 			throw new Error(decision.message);
@@ -287,12 +295,18 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			`[IDENTITY_REKEY] Rekeying invitation ${decision.invitationId}: "${rekeyFrom}" -> "${slug}"`,
 		);
 	} else {
-		const invitationSelect =
-			'id, slug, title, event_type, status, base_demo_id, theme_id, kind, snapshot, client_name, client_email, client_whatsapp, photos_received, created_by';
+		const { data: invByManagedIdentity } = await supabase
+			.from('invitations')
+			.select(invitationSelect)
+			.eq('managed_identity_id', definition.managedIdentityId)
+			.is('archived_at', null)
+			.maybeSingle();
 		const { data: existingProvenanceLink } = await supabase
 			.from('managed_invitation_release_provenance')
-			.select('invitation_id')
-			.eq('definition_slug', slug)
+			.select('invitation_id, managed_identity_id')
+			.or(
+				`definition_slug.eq.${slug},managed_identity_id.eq.${definition.managedIdentityId}`,
+			)
 			.maybeSingle();
 		const { data: invBySlug } = await supabase
 			.from('invitations')
@@ -301,29 +315,76 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			.is('archived_at', null)
 			.maybeSingle();
 
+		let activeInvitationByPreviousSlug: Record<string, unknown> | null = null;
+		let matchedPreviousSlug: string | null = null;
+		for (const previousSlug of definition.previousSlugs ?? []) {
+			const { data: invByPrevious } = await supabase
+				.from('invitations')
+				.select(invitationSelect)
+				.eq('slug', previousSlug)
+				.is('archived_at', null)
+				.maybeSingle();
+			if (invByPrevious?.id) {
+				activeInvitationByPreviousSlug = invByPrevious;
+				matchedPreviousSlug = previousSlug;
+				break;
+			}
+		}
+
 		const decision = resolveIdentityWithoutRekey({
 			slug,
+			managedIdentityId: definition.managedIdentityId,
+			previousSlugs: definition.previousSlugs,
+			invitationByManagedIdentity: invByManagedIdentity?.id
+				? {
+						id: String(invByManagedIdentity.id),
+						slug: String(invByManagedIdentity.slug),
+						managedIdentityId: invByManagedIdentity.managed_identity_id
+							? String(invByManagedIdentity.managed_identity_id)
+							: null,
+					}
+				: null,
 			provenanceInvitationId: existingProvenanceLink?.invitation_id
 				? String(existingProvenanceLink.invitation_id)
 				: null,
 			invitationBySlug: invBySlug?.id
-				? { id: String(invBySlug.id), slug: String(invBySlug.slug) }
+				? {
+						id: String(invBySlug.id),
+						slug: String(invBySlug.slug),
+						managedIdentityId: invBySlug.managed_identity_id
+							? String(invBySlug.managed_identity_id)
+							: null,
+					}
 				: null,
+			activeInvitationByPreviousSlug: activeInvitationByPreviousSlug?.id
+				? {
+						id: String(activeInvitationByPreviousSlug.id),
+						slug: String(activeInvitationByPreviousSlug.slug),
+						managedIdentityId: activeInvitationByPreviousSlug.managed_identity_id
+							? String(activeInvitationByPreviousSlug.managed_identity_id)
+							: null,
+					}
+				: null,
+			matchedPreviousSlug,
 		});
 		if (!decision.ok) {
 			throw new Error(decision.message);
 		}
 
-		if (decision.mode === 'provenance' && decision.invitationId) {
-			const { data: invByProv } = await supabase
-				.from('invitations')
-				.select(invitationSelect)
-				.eq('id', decision.invitationId)
-				.is('archived_at', null)
-				.maybeSingle();
-			existingInv = invByProv;
-		} else if (decision.mode === 'slug') {
-			existingInv = invBySlug;
+		if (decision.invitationId) {
+			if (invByManagedIdentity?.id === decision.invitationId) {
+				existingInv = invByManagedIdentity;
+			} else if (invBySlug?.id === decision.invitationId) {
+				existingInv = invBySlug;
+			} else {
+				const { data: invById } = await supabase
+					.from('invitations')
+					.select(invitationSelect)
+					.eq('id', decision.invitationId)
+					.is('archived_at', null)
+					.maybeSingle();
+				existingInv = invById;
+			}
 		} else {
 			existingInv = null;
 		}
@@ -630,42 +691,56 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			sourceHash: release.sourceHash,
 			packageHash,
 		});
-		const prevCanonical = resolveManagedMergeBaseline({
-			managedProjection: existingProvenance?.managed_projection as
-				Record<string, unknown> | null | undefined,
-			appliedDraftUpdatedAt:
-				typeof existingProvenance?.applied_draft_updated_at === 'string'
-					? existingProvenance.applied_draft_updated_at
-					: null,
-			appliedOperationId,
-			appliedPublishedVersion:
-				typeof existingProvenance?.applied_published_version === 'number'
-					? existingProvenance.applied_published_version
-					: null,
-			appliedPublishedProjectionHash:
-				typeof existingProvenance?.applied_published_projection_hash === 'string'
-					? existingProvenance.applied_published_projection_hash
-					: null,
-			currentDraftUpdatedAt: recoveringPartial
-				? (existingProvenance?.applied_draft_updated_at as string)
-				: typeof existingDraft.updated_at === 'string'
-					? existingDraft.updated_at
-					: null,
-			currentPublishedVersion: recoveringPartial
-				? (existingProvenance?.applied_published_version as number)
-				: typeof existingPub?.version === 'number'
-					? existingPub.version
-					: null,
-			currentPublishedProjectionHash: recoveringPartial
-				? (existingProvenance?.applied_published_projection_hash as string)
-				: existingPub?.content
-					? hashPublicationProjection(existingPub.content as Record<string, unknown>)
-					: null,
-			appliedReceipt: toReceiptEvidence(appliedReceiptRow as Record<string, unknown> | null),
-			latestMutationReceipt: recoveringPartial
-				? toReceiptEvidence(appliedReceiptRow as Record<string, unknown> | null)
-				: latestReceiptEvidence,
-		});
+		let prevCanonical: Record<string, unknown>;
+		try {
+			prevCanonical = resolveManagedMergeBaseline({
+				managedProjection: existingProvenance?.managed_projection as
+					Record<string, unknown> | null | undefined,
+				appliedDraftUpdatedAt:
+					typeof existingProvenance?.applied_draft_updated_at === 'string'
+						? existingProvenance.applied_draft_updated_at
+						: null,
+				appliedOperationId,
+				appliedPublishedVersion:
+					typeof existingProvenance?.applied_published_version === 'number'
+						? existingProvenance.applied_published_version
+						: null,
+				appliedPublishedProjectionHash:
+					typeof existingProvenance?.applied_published_projection_hash === 'string'
+						? existingProvenance.applied_published_projection_hash
+						: null,
+				currentDraftUpdatedAt: recoveringPartial
+					? (existingProvenance?.applied_draft_updated_at as string)
+					: typeof existingDraft.updated_at === 'string'
+						? existingDraft.updated_at
+						: null,
+				currentPublishedVersion: recoveringPartial
+					? (existingProvenance?.applied_published_version as number)
+					: typeof existingPub?.version === 'number'
+						? existingPub.version
+						: null,
+				currentPublishedProjectionHash: recoveringPartial
+					? (existingProvenance?.applied_published_projection_hash as string)
+					: existingPub?.content
+						? hashPublicationProjection(existingPub.content as Record<string, unknown>)
+						: null,
+				appliedReceipt: toReceiptEvidence(appliedReceiptRow as Record<string, unknown> | null),
+				latestMutationReceipt: recoveringPartial
+					? toReceiptEvidence(appliedReceiptRow as Record<string, unknown> | null)
+					: latestReceiptEvidence,
+			});
+		} catch (error) {
+			if (
+				error instanceof ManagedBaselineError &&
+				(error.classification === 'missing_provenance' ||
+					error.classification === 'legacy_provenance')
+			) {
+				// No verified Phase 2 baseline yet: use current draft as 3-way ancestor.
+				prevCanonical = (existingDraft.content as Record<string, unknown>) ?? {};
+			} else {
+				throw error;
+			}
+		}
 		const patchRes = apply3WaySemanticPatch({
 			previousCanonical: prevCanonical,
 			currentCanonical: packageCanonicalContent,
@@ -786,6 +861,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	const isInvitationIdentical = Boolean(
 		existingInv &&
 		existingInv.slug === targetSlug &&
+		existingInv.managed_identity_id === definition.managedIdentityId &&
 		existingInv.event_type === definition.eventType &&
 		existingInv.base_demo_id === definition.baseDemoId &&
 		existingInv.theme_id === definition.themeId &&
@@ -1129,6 +1205,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		// 1. Ensure Invitation Record
 		const invMetadata = {
 			slug: targetSlug,
+			managed_identity_id: definition.managedIdentityId,
 			title: targetMetadata.title,
 			event_type: definition.eventType,
 			status: targetMetadata.status,
@@ -1672,6 +1749,8 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			.upsert({
 				invitation_id: invitationId,
 				definition_slug: release.slug,
+				managed_identity_id: definition.managedIdentityId,
+				previous_slugs: [...(definition.previousSlugs ?? [])],
 				release_schema_version: release.schemaVersion,
 				source_hash: release.sourceHash,
 				package_hash: packageHash,

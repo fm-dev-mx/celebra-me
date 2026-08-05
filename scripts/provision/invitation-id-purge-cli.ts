@@ -2,11 +2,9 @@
  * invitation-id-purge-cli.ts — Dry-run / apply CLI for ID-scoped Preview invitation purge.
  *
  * Usage:
- *   pnpm invitation:purge-by-id -- --incorrect-id <uuid> --canonical-id <uuid> --dry-run
- *   pnpm invitation:purge-by-id -- --incorrect-id <uuid> --canonical-id <uuid> --apply
- *
- * Preview apply requires CELEBRA_TASK_SCOPE=preview:<incorrect-slug>:id-purge
- * unless running interactively.
+ *   pnpm invitation:purge-by-id -- --incorrect-id <uuid> --canonical-id <uuid> \
+ *     --expect-incorrect-slug <slug> --expect-canonical-slug <slug> \
+ *     --allow-archived-inconsistent-source --dry-run
  */
 
 import {
@@ -23,18 +21,27 @@ function printHelp(): void {
 	console.log(`invitation:purge-by-id — Preview invitation purge by immutable UUID
 
 Usage:
-  pnpm invitation:purge-by-id -- --incorrect-id <uuid> --canonical-id <uuid> --dry-run
-  pnpm invitation:purge-by-id -- --incorrect-id <uuid> --canonical-id <uuid> --apply
+  pnpm invitation:purge-by-id -- --incorrect-id <uuid> --canonical-id <uuid> \\
+    --expect-incorrect-slug <slug> --expect-canonical-slug <slug> \\
+    --allow-archived-inconsistent-source --dry-run
+  pnpm invitation:purge-by-id -- ... --apply
+
+Required:
+  --incorrect-id / --canonical-id
+  --expect-incorrect-slug / --expect-canonical-slug
+  --allow-archived-inconsistent-source   (source must already be archived)
+  exactly one of --dry-run or --apply
 
 Optional:
-  --expect-incorrect-slug <slug>
-  --expect-canonical-slug <slug>
+  --resume-storage-cleanup   (DB already absent; set CELEBRA_PURGE_RESUME_STORAGE_PATHS)
   --json
 
 Rules:
-  - Identifies invitations by UUID only (never by display name).
-  - Dry-run audits dependencies and migration need, then writes a JSON artifact.
-  - Apply runs a single Preview transaction and rolls back on validation failure.
+  - Identifies invitations by UUID + exact slug assertions (never by display name).
+  - Accepts only a genuinely archived inconsistent source.
+  - Blocks unresolved claim codes and non-synthetic guests.
+  - Verifies Storage ownership under managed/<incorrect-slug>/ and asset hash equivalence.
+  - Apply: DB transaction, then Storage cleanup; append-only receipt; resumable residuals.
   - Production is rejected.
   - Automated --apply requires CELEBRA_TASK_SCOPE=preview:<incorrect-slug>:${INVITATION_ID_PURGE_OPERATION}
 `);
@@ -48,22 +55,26 @@ async function main(argv = process.argv.slice(2)): Promise<void> {
 
 	const incorrectId = value(argv, '--incorrect-id');
 	const canonicalId = value(argv, '--canonical-id');
+	const expectIncorrectSlug = value(argv, '--expect-incorrect-slug');
+	const expectCanonicalSlug = value(argv, '--expect-canonical-slug');
 	const apply = argv.includes('--apply');
 	const dryRun = argv.includes('--dry-run');
 	const jsonMode = argv.includes('--json');
 
-	if (!incorrectId || !canonicalId || apply === dryRun) {
+	if (!incorrectId || !canonicalId || !expectIncorrectSlug || !expectCanonicalSlug || apply === dryRun) {
 		throw new Error(
-			'Usage requires --incorrect-id, --canonical-id, and exactly one of --dry-run or --apply.',
+			'Usage requires --incorrect-id, --canonical-id, --expect-incorrect-slug, --expect-canonical-slug, and exactly one of --dry-run or --apply.',
 		);
 	}
 
 	const isInteractive = process.stdin.isTTY === true && !process.env.CI;
-	const audit = runInvitationIdPurge({
+	const audit = await runInvitationIdPurge({
 		incorrectInvitationId: incorrectId,
 		canonicalInvitationId: canonicalId,
-		expectIncorrectSlug: value(argv, '--expect-incorrect-slug'),
-		expectCanonicalSlug: value(argv, '--expect-canonical-slug'),
+		expectIncorrectSlug,
+		expectCanonicalSlug,
+		allowArchivedInconsistentSource: argv.includes('--allow-archived-inconsistent-source'),
+		resumeStorageCleanup: argv.includes('--resume-storage-cleanup'),
 		apply: apply && !dryRun,
 		isInteractive,
 	});

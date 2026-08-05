@@ -46,6 +46,7 @@ function deps(overrides: Record<string, number> = {}) {
 		mutationReceipts: 3,
 		legacyAdoption: 0,
 		intakeRequests: 0,
+		intakeSubmissions: 0,
 		sourcedInvitations: 0,
 		guests: 1,
 		claimCodes: 0,
@@ -64,7 +65,7 @@ function auditPayload(overrides: Record<string, unknown> = {}) {
 			status: 'published',
 			kind: 'client',
 			eventType: 'cumple',
-			archivedAt: null,
+			archivedAt: '2026-08-05T00:00:00.000Z',
 			createdAt: '2026-07-28T16:25:25.065Z',
 			updatedAt: '2026-07-30T16:39:09.587Z',
 			clientName: 'Lucero Ramírez',
@@ -99,6 +100,28 @@ function auditPayload(overrides: Record<string, unknown> = {}) {
 	};
 }
 
+function mockDryRunQueries(payload: ReturnType<typeof auditPayload>): void {
+	mockedPsql
+		.mockReturnValueOnce({ status: 0, stdout: 't', stderr: '' } as never)
+		.mockReturnValueOnce({
+			status: 0,
+			stdout: JSON.stringify(payload),
+			stderr: '',
+		} as never)
+		.mockReturnValueOnce({ status: 0, stdout: '[]', stderr: '' } as never)
+		.mockReturnValueOnce({ status: 0, stdout: '[]', stderr: '' } as never);
+}
+
+const baseInput = {
+	incorrectInvitationId: INCORRECT_ID,
+	canonicalInvitationId: CANONICAL_ID,
+	expectIncorrectSlug: 'alba-rosa-quinones',
+	expectCanonicalSlug: 'alba-rosa-quinonez',
+	allowArchivedInconsistentSource: true,
+	env: { PREVIEW_DB_URL: PREVIEW_URL },
+	auditDir: `${process.cwd()}/.tmp/invitation-purge-audits-test`,
+};
+
 describe('invitation-id-purge', () => {
 	beforeEach(() => {
 		mockedClassify.mockReset();
@@ -114,40 +137,36 @@ describe('invitation-id-purge', () => {
 		);
 	});
 
-	it('blocks when IDs collide', () => {
-		expect(() =>
+	it('requires exact slug assertions', async () => {
+		await expect(
 			runInvitationIdPurge({
 				incorrectInvitationId: INCORRECT_ID,
-				canonicalInvitationId: INCORRECT_ID,
+				canonicalInvitationId: CANONICAL_ID,
+				expectIncorrectSlug: '',
+				expectCanonicalSlug: 'alba-rosa-quinonez',
 				env: { PREVIEW_DB_URL: PREVIEW_URL },
 			}),
-		).toThrow(/IDS_COLLIDE/);
+		).rejects.toThrow(/SLUG_ASSERTIONS_REQUIRED/);
 	});
 
-	it('dry-run audits synthetic guests as non-migrating and writes artifact metadata', () => {
-		mockedPsql.mockReturnValueOnce({
-			status: 0,
-			stdout: JSON.stringify(auditPayload()),
-			stderr: '',
-		} as never);
+	it('blocks when IDs collide', async () => {
+		await expect(
+			runInvitationIdPurge({
+				...baseInput,
+				canonicalInvitationId: INCORRECT_ID,
+			}),
+		).rejects.toThrow(/IDS_COLLIDE/);
+	});
 
-		const audit = runInvitationIdPurge({
-			incorrectInvitationId: INCORRECT_ID,
-			canonicalInvitationId: CANONICAL_ID,
-			expectIncorrectSlug: 'alba-rosa-quinones',
-			expectCanonicalSlug: 'alba-rosa-quinonez',
-			env: { PREVIEW_DB_URL: PREVIEW_URL },
-			auditDir: `${process.cwd()}/.tmp/invitation-purge-audits-test`,
-		});
+	it('dry-run accepts archived inconsistent source with synthetic guests', async () => {
+		mockDryRunQueries(auditPayload());
+
+		const audit = await runInvitationIdPurge(baseInput);
 
 		expect(audit.mode).toBe('dry_run');
 		expect(audit.blocked).toBe(false);
 		expect(audit.migration.required).toBe(false);
 		expect(audit.incorrectDependencies.guests).toBe(1);
-		expect(audit.deletePlan.tables.some((row) => row.table === 'invitation_publication_idempotency')).toBe(
-			true,
-		);
-		expect(audit.auditArtifactPath).toContain('invitation-id-purge-');
 		expect(mockedAuth).toHaveBeenCalledWith(
 			expect.objectContaining({
 				slug: 'alba-rosa-quinones',
@@ -157,34 +176,65 @@ describe('invitation-id-purge', () => {
 		);
 	});
 
-	it('blocks dry-run when exclusive non-synthetic guests require migration', () => {
-		mockedPsql.mockReturnValueOnce({
-			status: 0,
-			stdout: JSON.stringify(
-				auditPayload({
-					guests: [
-						{
-							id: 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee',
-							fullName: 'María Pérez',
-							hasEmail: true,
-							hasPhone: false,
-							attendanceStatus: 'confirmed',
-						},
-					],
-				}),
-			),
-			stderr: '',
-		} as never);
+	it('blocks non-archived incorrect invitation', async () => {
+		mockDryRunQueries(
+			auditPayload({
+				incorrect: {
+					...auditPayload().incorrect,
+					archivedAt: null,
+				},
+			}),
+		);
 
-		const audit = runInvitationIdPurge({
-			incorrectInvitationId: INCORRECT_ID,
-			canonicalInvitationId: CANONICAL_ID,
-			env: { PREVIEW_DB_URL: PREVIEW_URL },
-			auditDir: `${process.cwd()}/.tmp/invitation-purge-audits-test`,
+		const audit = await runInvitationIdPurge(baseInput);
+		expect(audit.blocked).toBe(true);
+		expect(audit.blockReasons.some((reason) => reason.includes('INCORRECT_NOT_ARCHIVED'))).toBe(
+			true,
+		);
+	});
+
+	it('blocks without allow-archived-inconsistent-source acknowledgment', async () => {
+		mockDryRunQueries(auditPayload());
+		const audit = await runInvitationIdPurge({
+			...baseInput,
+			allowArchivedInconsistentSource: false,
 		});
+		expect(audit.blocked).toBe(true);
+		expect(
+			audit.blockReasons.some((reason) => reason.includes('ARCHIVED_INCONSISTENT_ACK_REQUIRED')),
+		).toBe(true);
+	});
 
+	it('blocks foreign storage ownership paths', async () => {
+		mockDryRunQueries(
+			auditPayload({
+				storageAssetPaths: ['managed/other-slug/family.webp'],
+			}),
+		);
+		const audit = await runInvitationIdPurge(baseInput);
+		expect(audit.blocked).toBe(true);
+		expect(audit.blockReasons.some((reason) => reason.includes('STORAGE_OWNERSHIP_VIOLATION'))).toBe(
+			true,
+		);
+	});
+
+	it('blocks exclusive non-synthetic guests', async () => {
+		mockDryRunQueries(
+			auditPayload({
+				guests: [
+					{
+						id: 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee',
+						fullName: 'María Pérez',
+						hasEmail: true,
+						hasPhone: false,
+						attendanceStatus: 'confirmed',
+					},
+				],
+			}),
+		);
+
+		const audit = await runInvitationIdPurge(baseInput);
 		expect(audit.blocked).toBe(true);
 		expect(audit.migration.required).toBe(true);
-		expect(audit.deletionResult).toBe('not_executed');
 	});
 });

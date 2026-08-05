@@ -172,6 +172,7 @@ Options:
   --targets <targets>          Mutations: local, preview, local,preview. --targets all and Production mutations are rejected.
                                Status only: local, preview, production, all (all includes Production read-only).
   --slug <slug>                Invitation slug (e.g. romina-rios-chaparro)
+  --rekey-from <slug>          Explicit identity rekey from a prior slug (Local/Preview only; never Production)
   --source-dir <dir>           Directory containing source assets (optional if assets exist in DB/Storage)
   --package <path>             Immutable package; mutually exclusive with --source-dir
   --allow-stale-package        Allow --package whose sourceHash differs from the current managed definition (intentional only)
@@ -731,6 +732,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 									pruneAssets,
 									updateScope,
 									conflictResolutions,
+									rekeyFrom,
 								}
 							: {
 									packageData: confirmationPackage,
@@ -741,6 +743,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 									pruneAssets,
 									updateScope,
 									conflictResolutions,
+									rekeyFrom,
 								};
 						const result = await runImportEngine(engineOptions);
 						assertEngineResult(result, undefined, 'Preview', false);
@@ -1193,6 +1196,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 						pruneAssets,
 						updateScope,
 						conflictResolutions,
+						rekeyFrom,
 					});
 					reports.push({
 						stage: 'promote',

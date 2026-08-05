@@ -46,13 +46,9 @@ export function validateUpdateOptions(input: {
 	rekeyFrom?: string;
 	isMutation?: boolean;
 }): void {
-	if (
-		input.rekeyFrom &&
-		input.targets &&
-		(input.targets.includes('preview') || input.targets.includes('production'))
-	) {
+	if (input.rekeyFrom && input.targets?.includes('production')) {
 		throw new Error(
-			'IDENTITY_REKEY_UNSUPPORTED_TARGET: Identity rekey (--rekey-from) is supported only for the local target environment. Preview and Production rekey operations are unsupported.',
+			'IDENTITY_REKEY_UNSUPPORTED_TARGET: Identity rekey (--rekey-from) is not supported for Production. Use Local or Preview only.',
 		);
 	}
 

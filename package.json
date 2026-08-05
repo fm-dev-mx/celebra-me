@@ -99,6 +99,7 @@
         "invitation:preview-fixture": "tsx scripts/provision/preview-e2e-fixture-cli.ts",
         "invitation:inventory-audit": "tsx scripts/provision/inventory-audit-cli.ts",
         "invitation:purge-by-id": "tsx scripts/provision/invitation-id-purge-cli.ts",
+        "invitation:diagnose-identity": "tsx scripts/provision/managed-identity-diagnostics-cli.ts",
         "invitation:cross-db-reconcile": "tsx scripts/provision/cross-db-invitation-reconciliation-cli.ts",
         "invitation:romina-draft-reset": "tsx scripts/provision/romina-draft-reset-cli.ts",
         "screenshot": "tsx scripts/screenshot/cli.ts",
