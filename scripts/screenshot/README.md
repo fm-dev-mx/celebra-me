@@ -126,6 +126,16 @@ The tool asks only relevant questions based on the page type (e.g. reveal questi
 landing pages). Section framing is always asked when the target includes section captures
 (`critical-qa`, `all-sections`, or `single-section`).
 
+When the interactive (or direct) run finishes, the tool prints:
+
+- **Output** — absolute directory path(s) and a `file://` URI you can click to open in the terminal
+- **Replay (same scope)** — one or more `pnpm screenshot --url=...` commands that reproduce the same
+  invitation/sections/viewports without repeating the wizard (one command per URL in batch runs)
+
+Before capture, the tool probes the lane base URL. If the server is down it fails with a clear
+`pnpm dev` hint. It does **not** auto-start the Astro server (process ownership, cold start, and
+per-lane ports make an in-process lifecycle brittle; keep `pnpm dev` in a separate terminal).
+
 ## Direct Mode (Flags)
 
 ```bash
@@ -455,7 +465,8 @@ pnpm screenshot:invite \
 
 - Node.js >= 22.12.0
 - Playwright browsers installed (`pnpm exec playwright install chromium`)
-- Dev server running (`pnpm dev`) for local captures
+- Dev server running (`pnpm dev`) for local captures — screenshot preflight checks reachability and
+  does not start the server for you
 
 ## Troubleshooting
 
