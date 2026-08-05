@@ -512,13 +512,12 @@ as $fn$ select extensions.gen_random_bytes($1) $fn$;
 function cmdRunTests(): void {
 	console.info('=== Disposable Test Environment: Run Tests ===\n');
 
-	const testPath = resolve(
-		PROJECT_ROOT,
-		'supabase',
-		'tests',
+	const testFiles = [
 		'atomic_invitation_publication.test.sql',
-	);
-	if (!existsSync(testPath)) {
+		'managed_identity_archive_cascade.test.sql',
+	];
+	const testPaths = testFiles.map((file) => resolve(PROJECT_ROOT, 'supabase', 'tests', file));
+	if (!testPaths.some((testPath) => existsSync(testPath))) {
 		console.info('No pgTAP test files found.');
 		return;
 	}
@@ -548,22 +547,26 @@ as $fn$ select extensions.gen_random_bytes($1) $fn$;
 	}
 
 	console.info('Running pgTAP tests...');
-	const result = runCommand('psql', [
-		'--set',
-		'ON_ERROR_STOP=1',
-		'--dbname',
-		DISPOSABLE_DB_URL,
-		'--file',
-		testPath,
-	]);
-	console.info(result.stdout || '');
-	const tapFailed =
-		/(^|\n)not ok\b/m.test(result.stdout) || /Looks like you/i.test(result.stdout);
-	if (result.status !== 0 || tapFailed) {
-		console.error(
-			`    ${result.status !== 0 ? 'Harness failure' : 'Failed TAP assertion'}: ${result.stderr || 'see TAP output above'}`,
-		);
-		process.exit(1);
+	for (const testPath of testPaths) {
+		if (!existsSync(testPath)) continue;
+		console.info(`  file: ${testPath}`);
+		const result = runCommand('psql', [
+			'--set',
+			'ON_ERROR_STOP=1',
+			'--dbname',
+			DISPOSABLE_DB_URL,
+			'--file',
+			testPath,
+		]);
+		console.info(result.stdout || '');
+		const tapFailed =
+			/(^|\n)not ok\b/m.test(result.stdout) || /Looks like you/i.test(result.stdout);
+		if (result.status !== 0 || tapFailed) {
+			console.error(
+				`    ${result.status !== 0 ? 'Harness failure' : 'Failed TAP assertion'}: ${result.stderr || 'see TAP output above'}`,
+			);
+			process.exit(1);
+		}
 	}
 	console.info('Disposable tests completed.');
 }
