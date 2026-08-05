@@ -5,15 +5,15 @@
 
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 
-const mockResolvePreviewAdminUser = jest.fn((..._args: unknown[]) => 'admin-user-id');
-const mockUpdatePreviewAdminRole = jest.fn((..._args: unknown[]) => undefined);
-const mockEnsureHostProfile = jest.fn((..._args: unknown[]) => undefined);
-const mockWriteReportFile = jest.fn((..._args: unknown[]) => undefined);
-const mockUpsertFromJson = jest.fn((..._args: unknown[]) => ({ created: 0 }));
-const mockTruncateTable = jest.fn((..._args: unknown[]) => undefined);
-const mockSyncAsset = jest.fn(async (..._args: unknown[]) => true);
-const mockRunPsql = jest.fn((..._args: unknown[]) => ({ status: 0, stdout: '', stderr: '' }));
-const mockAuthorizePreviewWriteApply = jest.fn(async (..._args: unknown[]) => ({
+const mockResolvePreviewAdminUser = jest.fn(() => 'admin-user-id');
+const mockUpdatePreviewAdminRole = jest.fn(() => undefined);
+const mockEnsureHostProfile = jest.fn(() => undefined);
+const mockWriteReportFile = jest.fn(() => undefined);
+const mockUpsertFromJson = jest.fn(() => ({ created: 0 }));
+const mockTruncateTable = jest.fn(() => undefined);
+const mockSyncAsset = jest.fn(async () => true);
+const mockRunPsql = jest.fn(() => ({ status: 0, stdout: '', stderr: '' }));
+const mockAuthorizePreviewWriteApply = jest.fn(async () => ({
 	authorized: true as const,
 	actor: 'automated_scoped_token' as const,
 }));
@@ -24,9 +24,9 @@ jest.mock('../../scripts/db/preview-sync-guards', () => ({
 	assertNotSameProject: jest.fn(),
 	assertNotLocalTarget: jest.fn(),
 	assertNotDisposableTarget: jest.fn(),
-	resolvePreviewAdminUser: (...args: unknown[]) => mockResolvePreviewAdminUser(...args),
-	updatePreviewAdminRole: (...args: unknown[]) => mockUpdatePreviewAdminRole(...args),
-	ensureHostProfile: (...args: unknown[]) => mockEnsureHostProfile(...args),
+	resolvePreviewAdminUser: mockResolvePreviewAdminUser,
+	updatePreviewAdminRole: mockUpdatePreviewAdminRole,
+	ensureHostProfile: mockEnsureHostProfile,
 	getPreviewSupabaseUrl: () => 'https://iwipdvisoyerfdytuhwi.supabase.co',
 	getPreviewServiceRoleKey: () => 'preview-service-role',
 	deriveSupabaseUrlFromDbUrl: (url: string) => {
@@ -46,12 +46,12 @@ jest.mock('../../scripts/db/preview-sync-db', () => ({
 	queryTableJson: jest.fn(() => []),
 	resolveColumns: jest.fn(() => ['id', 'content']),
 	countRows: jest.fn(() => 0),
-	upsertFromJson: (...args: unknown[]) => mockUpsertFromJson(...args),
-	truncateTable: (...args: unknown[]) => mockTruncateTable(...args),
+	upsertFromJson: mockUpsertFromJson,
+	truncateTable: mockTruncateTable,
 }));
 
 jest.mock('../../scripts/db/preview-sync-storage', () => ({
-	syncAsset: (...args: unknown[]) => mockSyncAsset(...args),
+	syncAsset: mockSyncAsset,
 }));
 
 jest.mock('../../scripts/db/preview-sync-report', () => ({
@@ -69,7 +69,7 @@ jest.mock('../../scripts/db/preview-sync-report', () => ({
 		status: 'dry-run-pending',
 	}),
 	printReport: jest.fn(),
-	writeReportFile: (...args: unknown[]) => mockWriteReportFile(...args),
+	writeReportFile: mockWriteReportFile,
 }));
 
 jest.mock('../../scripts/db/db-workflow-lib', () => ({
@@ -81,7 +81,7 @@ jest.mock('../../scripts/db/db-workflow-lib', () => ({
 		url: 'postgresql://postgres:secret@db.ineitkdkyrxqyressllp.supabase.co:5432/postgres',
 		source: 'test',
 	}),
-	runPsql: (...args: unknown[]) => mockRunPsql(...args),
+	runPsql: mockRunPsql,
 }));
 
 jest.mock('../../scripts/db/db-guard', () => ({
@@ -91,7 +91,7 @@ jest.mock('../../scripts/db/db-guard', () => ({
 }));
 
 jest.mock('../../scripts/provision/preview-write-auth', () => ({
-	authorizePreviewWriteApply: (...args: unknown[]) => mockAuthorizePreviewWriteApply(...args),
+	authorizePreviewWriteApply: mockAuthorizePreviewWriteApply,
 	verifyPreviewWriteAuthorization: jest.fn(),
 }));
 
