@@ -278,7 +278,7 @@ export async function runScreenshotJob(job: ScreenshotJob): Promise<JobResult> {
 		}
 	}
 
-	console.log(`  Output:  ${outputDir}/`);
+	console.log(`  Output:  ${path.resolve(outputDir)}`);
 	// Sequential viewports avoid Vite optimize-dep races against `pnpm dev`.
 	let browser;
 	try {
@@ -503,8 +503,8 @@ function printScreenshotJobSummary(input: {
 	console.log(`  Notices:         ${input.notices.length}`);
 	console.log(`  Blocking errors: ${input.blockingErrors}`);
 	console.log(`  Duration:        ${formatDuration(input.durationMs)}`);
-	console.log(`  Output:          ${input.outputDir}/`);
-	console.log(`  Report:          ${input.reportPath}`);
+	console.log(`  Output:          ${path.resolve(input.outputDir)}`);
+	console.log(`  Report:          ${path.resolve(input.reportPath)}`);
 	console.log('');
 
 	if (input.notices.length > 0) {

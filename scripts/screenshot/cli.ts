@@ -32,7 +32,9 @@ import {
 	resolveScreenshotBaseUrl,
 	resolveScreenshotLaneContext,
 } from './utils.js';
+import { assertScreenshotBaseUrlReachable } from './base-url-preflight.js';
 import { runInteractiveFlow } from './interactive.js';
+import { printScreenshotReplayCommands } from './replay-command.js';
 import { runScreenshotJob } from './runner.js';
 import { buildCorpusScreenshotConfig } from '../provision/local-render-corpus/screenshot-pages.ts';
 import {
@@ -335,14 +337,21 @@ async function main(): Promise<void> {
 			validateStorageState(scopedJob.authMethod);
 			return resolveScreenshotJobScope(scopedJob, 'interactive', catalog, false).job;
 		});
+		const baseUrls = [...new Set(jobs.map((job) => job.baseUrl.replace(/\/+$/, '')))];
+		for (const baseUrl of baseUrls) {
+			await assertScreenshotBaseUrlReachable(baseUrl);
+		}
 		let failed = 0;
 		for (const job of jobs) failed += (await runScreenshotJob(job)).failed;
+		printScreenshotReplayCommands(jobs);
 		if (failed > 0) process.exit(1);
 		return;
 	}
 
 	const job = buildJobFromCli(cliOptions, catalog);
+	await assertScreenshotBaseUrlReachable(job.baseUrl);
 	const result = await runScreenshotJob(job);
+	printScreenshotReplayCommands([job]);
 	if (result.failed > 0) process.exit(1);
 }
 
