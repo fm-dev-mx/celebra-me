@@ -1,0 +1,55 @@
+---
+export const prerender = true;
+
+import Layout from '@/layouts/Layout.astro';
+import Icon from '@/components/common/icons/Icon.astro';
+import {
+	VALENTINA_MEMORIES_ROUTE_PATH,
+	valentinaMemoriesPageCopy,
+} from '@/data/valentina-memories.data';
+
+const copy = valentinaMemoriesPageCopy;
+---
+
+<Layout
+	title={copy.title}
+	description={copy.description}
+	hideHeader={true}
+	className="theme-preset--jewelry-box-landing"
+>
+	<meta name="robots" content={copy.robots} slot="head" />
+
+	<div class="status-page" data-route={VALENTINA_MEMORIES_ROUTE_PATH} data-page="valentina-memories">
+		<div class="status-page__bg-decoration"></div>
+
+		<div class="status-page__container">
+			<div class="status-page__card">
+				<div class="status-page__icon-wrapper">
+					<Icon name="Photo" size={48} />
+				</div>
+
+				<div class="status-page__header">
+					<span class="status-page__subtitle">{copy.subtitle}</span>
+					<h1 class="status-page__title">{copy.heading}</h1>
+				</div>
+
+				<p class="status-page__description">
+					{copy.body}
+				</p>
+
+				<div class="status-page__actions">
+					<a href={copy.primaryCtaHref} class="status-page__btn">
+						{copy.primaryCtaLabel}
+					</a>
+					<a href={copy.secondaryCtaHref} class="status-page__btn status-page__btn--outline">
+						{copy.secondaryCtaLabel}
+					</a>
+				</div>
+			</div>
+		</div>
+
+		<footer class="status-page__footer">
+			&copy; {new Date().getFullYear()} {copy.footer}
+		</footer>
+	</div>
+</Layout>
