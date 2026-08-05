@@ -4,6 +4,7 @@
  */
 
 import { confirm, select } from '@inquirer/prompts';
+import { redactCredentials } from './db-target-config.ts';
 import { parseDbSyncArgs, printDbSyncHelp } from './db-sync-args.ts';
 import { orchestrateDbSync, type OrchestrateDbSyncInput } from './db-sync-orchestrator.ts';
 import {
@@ -16,7 +17,7 @@ import {
 } from './db-sync-types.ts';
 
 function writeHuman(message = ''): void {
-	process.stderr.write(`${message}\n`);
+	process.stderr.write(`${redactCredentials(message)}\n`);
 }
 
 function writeJson(value: unknown): void {

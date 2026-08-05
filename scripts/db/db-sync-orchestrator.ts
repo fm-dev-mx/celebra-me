@@ -36,10 +36,7 @@ import {
 	listSemanticDifferencePaths,
 	type ContentParityEnvironment,
 } from '../provision/content-parity.ts';
-import {
-	loadSemanticSnapshotsForParity,
-	resolveDbUrl,
-} from '../provision/content-parity-load.ts';
+import { loadSemanticSnapshotsForParity, resolveDbUrl } from '../provision/content-parity-load.ts';
 import { resolveInvitationPackageInput } from '../provision/invitation-package-input.ts';
 import { applyLocalInvitation } from '../provision/apply-local-invitation.ts';
 import { runImportEngine } from '../provision/invitation-import-engine.ts';
@@ -373,6 +370,10 @@ export async function orchestrateApply(input: OrchestrateDbSyncInput): Promise<D
 	}
 
 	try {
+		// Reviewed plan TTL binds interactive hold-time; rebuild must still match identity.
+		if (input.reviewedPlan) {
+			assertPlanFresh(input.reviewedPlan, input.now);
+		}
 		assertPlanFresh(rebuilt, input.now);
 		const expected = input.expectedPlan ?? input.reviewedPlan?.planId;
 		assertExactPlan(rebuilt, expected);
@@ -421,12 +422,15 @@ export async function orchestrateApply(input: OrchestrateDbSyncInput): Promise<D
 			applyResult.ok = mirror.status === 'applied' && mirror.failures.length === 0;
 			applyResult.status = mirror.status;
 			applyResult.failures = [...mirror.failures];
-			if (mirror.missingAssets.length > 0) {
-				applyResult.failures.push(
-					...mirror.missingAssets.map((path) => `MISSING_ASSET: ${path}`),
-				);
+			for (const path of mirror.missingAssets) {
+				const tagged = `MISSING_ASSET: ${path}`;
+				if (!applyResult.failures.includes(tagged)) {
+					applyResult.failures.push(tagged);
+				}
+			}
+			if (mirror.missingAssets.length > 0 || applyResult.failures.length > 0) {
 				applyResult.ok = false;
-				applyResult.status = 'failed';
+				if (applyResult.status === 'applied') applyResult.status = 'failed';
 			}
 			applyResult.artifacts = [
 				...(applyResult.artifacts ?? []),

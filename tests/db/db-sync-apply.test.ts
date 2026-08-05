@@ -202,4 +202,94 @@ describe('db-sync apply mirror dispatch', () => {
 		expect(result.status).toBe('PLAN_INVALID');
 		expect(mockRunPreviewMirror).not.toHaveBeenCalled();
 	});
+
+	it('rejects expired plans before authorizing or mutating', async () => {
+		const { orchestratePlan, orchestrateApply } =
+			await import('../../scripts/db/db-sync-orchestrator.ts');
+		const planned = await orchestratePlan({
+			mode: 'plan',
+			direction: 'production-to-preview-mirror',
+			now: new Date('2026-08-04T00:00:00.000Z'),
+		});
+		const result = await orchestrateApply({
+			mode: 'apply',
+			direction: 'production-to-preview-mirror',
+			apply: true,
+			expectedPlan: planned.planId,
+			reviewedPlan: planned.plan,
+			authorizePreview: mockAuthorizePreview as never,
+			runMirror: mockRunPreviewMirror as never,
+			now: new Date('2026-08-04T01:00:00.000Z'),
+		});
+		expect(result.ok).toBe(false);
+		expect(result.status).toBe('PLAN_INVALID');
+		expect(result.failures.some((f) => f.includes('PLAN_EXPIRED'))).toBe(true);
+		expect(mockAuthorizePreview).not.toHaveBeenCalled();
+		expect(mockRunPreviewMirror).not.toHaveBeenCalled();
+	});
+
+	it('stops when Preview authorization fails', async () => {
+		mockAuthorizePreview.mockRejectedValueOnce(new Error('PREVIEW_AUTH_REQUIRED'));
+		const { orchestratePlan, orchestrateApply } =
+			await import('../../scripts/db/db-sync-orchestrator.ts');
+		const planned = await orchestratePlan({
+			mode: 'plan',
+			direction: 'production-to-preview-mirror',
+			now: new Date(),
+		});
+		const result = await orchestrateApply({
+			mode: 'apply',
+			direction: 'production-to-preview-mirror',
+			apply: true,
+			expectedPlan: planned.planId,
+			reviewedPlan: planned.plan,
+			authorizePreview: mockAuthorizePreview as never,
+			runMirror: mockRunPreviewMirror as never,
+			now: new Date(),
+		});
+		expect(result.ok).toBe(false);
+		expect(result.status).toBe('FAILED');
+		expect(result.failures.some((f) => f.includes('PREVIEW_AUTH_REQUIRED'))).toBe(true);
+		expect(mockRunPreviewMirror).not.toHaveBeenCalled();
+	});
+
+	it('authorizes mirror with content-mirror:sync-invitations scope', async () => {
+		mockRunPreviewMirror.mockResolvedValue({
+			dryRun: false,
+			startedAt: '2026-08-04T00:00:00.000Z',
+			source: 'redacted',
+			target: 'redacted',
+			created: {},
+			copiedAssets: 0,
+			missingAssets: [],
+			detectedDrift: [],
+			excludedTableCounts: {},
+			failures: [],
+			status: 'applied',
+		});
+		const { orchestratePlan, orchestrateApply } =
+			await import('../../scripts/db/db-sync-orchestrator.ts');
+		const planned = await orchestratePlan({
+			mode: 'plan',
+			direction: 'production-to-preview-mirror',
+			now: new Date(),
+		});
+		const result = await orchestrateApply({
+			mode: 'apply',
+			direction: 'production-to-preview-mirror',
+			apply: true,
+			expectedPlan: planned.planId,
+			reviewedPlan: planned.plan,
+			authorizePreview: mockAuthorizePreview as never,
+			runMirror: mockRunPreviewMirror as never,
+			now: new Date(),
+		});
+		expect(result.ok).toBe(true);
+		expect(mockAuthorizePreview).toHaveBeenCalledWith(
+			expect.objectContaining({
+				slug: 'content-mirror',
+				operation: 'sync-invitations',
+			}),
+		);
+	});
 });

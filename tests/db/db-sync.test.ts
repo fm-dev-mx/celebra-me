@@ -55,6 +55,23 @@ describe('db-sync args and directions', () => {
 		);
 	});
 
+	it('infers apply mode from --apply and rejects unknown flags / missing values', () => {
+		expect(parseDbSyncArgs(['--apply', '--direction', 'definition-to-local']).mode).toBe(
+			'apply',
+		);
+		expect(() => parseDbSyncArgs(['diagnose', '--bogus'])).toThrow(/Unknown argument/);
+		expect(() => parseDbSyncArgs(['--mode'])).toThrow(/Missing value for --mode/);
+		expect(() => parseDbSyncArgs(['--mode', 'migrate'])).toThrow(/Unknown mode/);
+	});
+
+	it('keeps args module free of orchestrator / mutation imports', () => {
+		const source = readFileSync('scripts/db/db-sync-args.ts', 'utf8');
+		expect(source).not.toMatch(/db-sync-orchestrator/);
+		expect(source).not.toMatch(/preview-sync-invitations/);
+		expect(source).not.toMatch(/invitation-promote/);
+		expect(source).not.toMatch(/owner-production-apply/);
+	});
+
 	it('rejects forbidden directions', () => {
 		expect(() => assertAllowedDirection('preview-to-production')).toThrow(
 			/FORBIDDEN_DIRECTION/,
@@ -113,10 +130,50 @@ describe('db-sync plan identity', () => {
 		});
 		expect(() => assertExactPlan(plan, 'other')).toThrow(/PLAN_DRIFT/);
 		expect(() => assertExactPlan(plan, plan.planId)).not.toThrow();
+		expect(() => assertExactPlan(plan, null)).toThrow(/EXPECTED_PLAN_REQUIRED/);
 		expect(() => assertPlanFresh(plan, new Date('2026-08-04T01:00:00.000Z'))).toThrow(
 			/PLAN_EXPIRED/,
 		);
 		expect(gatesForDirection('package-to-production').ownerProductionApplyRequired).toBe(true);
+	});
+
+	it('changes planId when package hash or schema evidence changes', () => {
+		const base = {
+			direction: 'definition-to-preview' as const,
+			slug: 'demo',
+			packageHash: 'pkg-a',
+			sourceHash: 'src',
+			redactedSourceIdentity: 'package:pkg-a',
+			redactedTargetIdentity: 'preview:redacted',
+			dataFingerprint: 'data',
+			assetFingerprint: 'assets',
+			schemaEvidence: 'preview:CURRENT',
+			now: new Date('2026-08-04T00:00:00.000Z'),
+		};
+		const a = buildDbSyncPlan(base);
+		const b = buildDbSyncPlan({ ...base, packageHash: 'pkg-b' });
+		const c = buildDbSyncPlan({ ...base, schemaEvidence: 'preview:BEHIND' });
+		expect(a.planId).not.toBe(b.planId);
+		expect(a.planId).not.toBe(c.planId);
+	});
+
+	it('encodes per-direction gates', () => {
+		expect(gatesForDirection('definition-to-local')).toMatchObject({
+			previewWriteAuthRequired: false,
+			ownerProductionApplyRequired: false,
+			rsvpResetDisclosureRequired: false,
+		});
+		expect(gatesForDirection('definition-to-preview').previewWriteAuthRequired).toBe(true);
+		expect(gatesForDirection('package-to-production')).toMatchObject({
+			previewApprovalRequired: true,
+			releaseCheckRequired: true,
+			criticalBackupRequired: true,
+			ownerProductionApplyRequired: true,
+		});
+		expect(gatesForDirection('production-to-preview-mirror')).toMatchObject({
+			previewWriteAuthRequired: true,
+			rsvpResetDisclosureRequired: true,
+		});
 	});
 });
 
@@ -145,6 +202,45 @@ describe('db-sync JSON and exit codes', () => {
 		expect(exitCodeForResult(applyOk)).toBe(0);
 		applyOk.ok = false;
 		expect(exitCodeForResult(applyOk)).toBe(1);
+
+		const compareDrift = emptyResult('compare');
+		compareDrift.ok = false;
+		compareDrift.status = 'DRIFT';
+		compareDrift.failures.push('SEMANTIC_DRIFT');
+		expect(exitCodeForResult(compareDrift)).toBe(1);
+
+		const planBlocked = emptyResult('plan');
+		planBlocked.ok = false;
+		planBlocked.status = 'PLAN_BLOCKED';
+		planBlocked.failures.push('DIRECTION_REQUIRED');
+		expect(exitCodeForResult(planBlocked)).toBe(1);
+	});
+
+	it('redacts nested sentinel secrets from JSON envelopes', () => {
+		const sentinel = 'postgresql://postgres:sentinel-db-password-9f3a@db.host:5432/postgres';
+		const result = emptyResult('diagnose');
+		result.ok = false;
+		result.failures.push(`nested cause: ${sentinel}`);
+		result.artifacts.push({ kind: 'error', detail: `connection=${sentinel}` });
+		const json = resultToJson(result);
+		expect(json).not.toContain('sentinel-db-password-9f3a');
+		expect(json).toContain('<redacted>');
+		expect(json).not.toMatch(/:[^:/<"\s]{12,}@/);
+	});
+});
+
+describe('db-sync specialized command compatibility', () => {
+	it('retains specialized package aliases alongside db:sync', () => {
+		const pkg = JSON.parse(readFileSync('package.json', 'utf8')) as {
+			scripts: Record<string, string>;
+		};
+		expect(pkg.scripts['db:sync']).toMatch(/db-sync-cli/);
+		expect(pkg.scripts['invitation:update']).toBeTruthy();
+		expect(pkg.scripts['invitation:promote']).toBeTruthy();
+		expect(pkg.scripts['invitation:content-parity']).toBeTruthy();
+		expect(pkg.scripts['db:preview:sync-invitations']).toBeTruthy();
+		expect(pkg.scripts.dbs).toBeTruthy();
+		expect(pkg.scripts['db:migrate']).toBeTruthy();
 	});
 });
 

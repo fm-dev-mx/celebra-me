@@ -11,6 +11,7 @@ import { classifyDbTarget } from '@/../scripts/db/db-target-config';
 import { getSecretFromEnvOrFiles, PREVIEW_SECRET_FILES } from '@/../scripts/db/db-guard';
 import { extractSupabaseProjectRef } from '@/../scripts/db/db-target-config';
 import { CONTENT_MIRROR_TABLES, EXCLUDED_TABLES } from '@/../scripts/db/db-target-config';
+import { rewriteStorageUrl } from '@/../scripts/db/preview-sync-guards';
 
 // Mock psql-dependent modules
 jest.mock('@/../scripts/db/db-workflow-lib', () => ({
@@ -121,6 +122,23 @@ describe('Storage URL rewriting', () => {
 		const content = JSON.stringify({ title: 'Test', date: '2026-08-15' });
 		const rewritten = content.replaceAll(PROD_STORAGE, PREVIEW_STORAGE);
 		expect(rewritten).toBe(content);
+	});
+
+	it('does not rewrite Cloudinary secure_url references (out of Supabase Storage rewrite)', () => {
+		const cloudinary = 'https://res.cloudinary.com/demo/image/upload/v1/invitations/hero.jpg';
+		const content = JSON.stringify({
+			hero: cloudinary,
+			supabase: `${PROD_STORAGE}/slug/hero.webp`,
+			asset: {
+				provider: 'cloudinary',
+				secure_url: cloudinary,
+			},
+		});
+		const rewritten = rewriteStorageUrl(content, PROD_STORAGE, PREVIEW_STORAGE);
+		const parsed = JSON.parse(rewritten);
+		expect(parsed.hero).toBe(cloudinary);
+		expect(parsed.asset.secure_url).toBe(cloudinary);
+		expect(parsed.supabase).toBe(`${PREVIEW_STORAGE}/slug/hero.webp`);
 	});
 });
 

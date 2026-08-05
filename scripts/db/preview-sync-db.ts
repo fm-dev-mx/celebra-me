@@ -1,8 +1,7 @@
 /**
- * preview-sync-db.ts — Database Reading, Writing & Pruning
- *
- * Reads invitation data from Production, writes to Preview via psql,
- * and prunes stale records to maintain mirror convergence.
+ * preview-sync-db.ts — Database reading, writing, and truncate helpers for the
+ * Production→Preview content mirror. Stale Preview-only rows are report-only in
+ * preview-sync-invitations (no automatic prune).
  */
 
 import { runPsql, sqlLiteral, quoteIdentifier } from './db-workflow-lib.ts';
@@ -141,103 +140,4 @@ export function upsertFromJson(
 
 export function truncateTable(dbUrl: string, table: string): void {
 	runPsql(`truncate table public.${quoteIdentifier(table)} cascade;`, dbUrl);
-}
-
-// ---------------------------------------------------------------------------
-// Pruning (Stale Record Reconciliation)
-// ---------------------------------------------------------------------------
-
-export interface PruneResult {
-	table: string;
-	staleCount: number;
-	action: 'none' | 'dry-run' | 'applied';
-}
-
-export function pruneStaleRecords(
-	prodDbUrl: string,
-	previewDbUrl: string,
-	table: string,
-	dryRun: boolean,
-	detectedDrift: string[],
-): PruneResult {
-	const columns = resolveColumns(prodDbUrl, table);
-	const pk = columns.includes('id') ? 'id' : columns[0] || 'id';
-
-	const prodResult = runPsql(
-		`select ${quoteIdentifier(pk)}::text from public.${quoteIdentifier(table)} order by ${quoteIdentifier(pk)};`,
-		prodDbUrl,
-		{ tuplesOnly: true },
-	);
-	const prodIds = new Set(prodResult.stdout.trim().split(/\r?\n/).filter(Boolean));
-
-	if (prodIds.size === 0) {
-		return { table, staleCount: 0, action: 'none' };
-	}
-
-	const previewResult = runPsql(
-		`select ${quoteIdentifier(pk)}::text from public.${quoteIdentifier(table)} order by ${quoteIdentifier(pk)};`,
-		previewDbUrl,
-		{ tuplesOnly: true, throwOnError: false },
-	);
-	const previewIds = new Set(previewResult.stdout.trim().split(/\r?\n/).filter(Boolean));
-
-	const staleIds = [...previewIds].filter((id) => !prodIds.has(id) && id.length > 0);
-
-	if (staleIds.length === 0) {
-		return { table, staleCount: 0, action: 'none' };
-	}
-
-	console.info(`   ${table}: ${staleIds.length} stale records in Preview not in Production`);
-
-	if (dryRun) {
-		console.info(`   [dry-run] Would prune ${staleIds.length} stale ${table} records`);
-		for (const id of staleIds.slice(0, 5)) {
-			console.info(`     - ${id}`);
-		}
-		if (staleIds.length > 5) {
-			console.info(`     - ... and ${staleIds.length - 5} more`);
-		}
-		detectedDrift.push(`${table}: ${staleIds.length} stale records to prune`);
-		return { table, staleCount: staleIds.length, action: 'dry-run' };
-	}
-
-	const idList = staleIds.map((id) => sqlLiteral(id)).join(', ');
-
-	if (table === 'invitations') {
-		runPsql(
-			`update public.${quoteIdentifier(table)}
-			 set archived_at = now()
-			 where ${quoteIdentifier(pk)} in (${idList})
-			 and archived_at is null;`,
-			previewDbUrl,
-		);
-	} else if (table === 'events') {
-		runPsql(
-			`update public.${quoteIdentifier(table)}
-			 set deleted_at = now(), status = 'archived'
-			 where ${quoteIdentifier(pk)} in (${idList})
-			 and deleted_at is null;`,
-			previewDbUrl,
-		);
-	} else {
-		const previewCols = resolveColumns(previewDbUrl, table);
-		if (previewCols.includes('deleted_at')) {
-			runPsql(
-				`update public.${quoteIdentifier(table)}
-				 set deleted_at = now()
-				 where ${quoteIdentifier(pk)} in (${idList})
-				 and deleted_at is null;`,
-				previewDbUrl,
-			);
-		} else {
-			runPsql(
-				`delete from public.${quoteIdentifier(table)}
-				 where ${quoteIdentifier(pk)} in (${idList});`,
-				previewDbUrl,
-			);
-		}
-	}
-
-	console.info(`   ✅ Pruned ${staleIds.length} stale ${table} records`);
-	return { table, staleCount: staleIds.length, action: 'applied' };
 }

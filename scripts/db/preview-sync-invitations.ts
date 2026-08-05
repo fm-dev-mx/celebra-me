@@ -72,11 +72,14 @@ const PREVIEW_MIRROR_AUTH_OPERATION = 'sync-invitations';
 // ---------------------------------------------------------------------------
 
 const PREVIEW_EXPECTED_REF = 'iwipdvisoyerfdytuhwi';
-const PROD_STORAGE_PATTERN =
-	/https:\/\/ineitkdkyrxqyressllp\.supabase\.co\/storage\/v1\/object\/public\/invitation-assets\//g;
 
 /** Invitation-facing tables upserted before the events shell remap (excludes events). */
 const MIRROR_TABLES = CONTENT_MIRROR_TABLES.filter((table) => table !== 'events');
+
+function productionStorageUrlPattern(storageUrl: string): RegExp {
+	const escaped = storageUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+	return new RegExp(`${escaped}/?`, 'g');
+}
 
 // ---------------------------------------------------------------------------
 // CLI Arguments
@@ -147,6 +150,7 @@ function scanContentForProdStorageUrls(prodCtx: ProdContext): {
 	const contentTables = ['published_invitation_content', 'invitation_content_drafts'] as const;
 	const jsonbTables = ['invitations'] as const;
 	const jsonbColumns = ['content', 'snapshot'];
+	const pattern = productionStorageUrlPattern(prodCtx.storageUrl);
 
 	for (const table of [...contentTables, ...jsonbTables]) {
 		const cols = resolveColumns(prodCtx.dbUrl, table);
@@ -161,7 +165,7 @@ function scanContentForProdStorageUrls(prodCtx: ProdContext): {
 					return typeof val === 'string' ? val : JSON.stringify(val ?? '');
 				})
 				.join(' ');
-			const matches = [...rowContent.matchAll(PROD_STORAGE_PATTERN)];
+			const matches = [...rowContent.matchAll(pattern)];
 			if (matches.length > 0) {
 				const urls = [...new Set(matches.map((m) => m[0].replace(/\/[^/]+$/, '')))];
 				found.push({ table, id: rowId, foundUrls: urls });
@@ -343,9 +347,12 @@ function buildPhases(
 				console.info(`   Content-referenced paths: ${referencedPaths.size}`);
 
 				if (unregistered.length > 0) {
-					report.detectedDrift.push(
-						`${unregistered.length} Storage references not in invitation_assets`,
-					);
+					const msg = `${unregistered.length} Storage references not in invitation_assets`;
+					report.detectedDrift.push(msg);
+					if (!options.dryRun) {
+						report.failures.push(`UNREGISTERED_STORAGE_REFS: ${msg}`);
+						throw new Error(`UNREGISTERED_STORAGE_REFS: ${msg}`);
+					}
 				}
 			},
 		},
@@ -538,12 +545,20 @@ function buildPhases(
 						report,
 					);
 					if (!ok && !options.dryRun) {
-						report.failures.push(`Storage upload failed for ${storagePath}`);
+						const kind = report.missingAssets.includes(storagePath)
+							? 'MISSING_ASSET'
+							: 'STORAGE_UPLOAD_FAILED';
+						report.failures.push(`${kind}: ${storagePath}`);
 					}
 				}
 				if (
 					!options.dryRun &&
-					report.failures.some((f) => f.startsWith('Storage upload'))
+					report.failures.some(
+						(f) =>
+							f.startsWith('MISSING_ASSET:') ||
+							f.startsWith('STORAGE_UPLOAD_FAILED:') ||
+							f.startsWith('STORAGE_INCOMPLETE:'),
+					)
 				) {
 					throw new Error('STORAGE_INCOMPLETE: one or more Storage uploads failed');
 				}
@@ -595,17 +610,16 @@ function buildPhases(
 					dbUrl: previewCtx.dbUrl,
 				});
 				if (total > 0) {
-					const msg = `${total} content row(s) still contain Production Storage URLs after mirror`;
+					const msg = `MIRROR_URL_AUDIT: ${total} content row(s) still contain Production Storage URLs after mirror`;
 					console.warn(`   ❌ ${msg}`);
 					for (const r of rows) {
 						console.warn(`       ${r.table}:${r.id}`);
 					}
 					report.detectedDrift.push(msg);
-				} else {
-					console.info(
-						'   ✅ No Production Storage URLs found in mirrored Preview content.',
-					);
+					report.failures.push(msg);
+					throw new Error(msg);
 				}
+				console.info('   ✅ No Production Storage URLs found in mirrored Preview content.');
 			},
 		},
 

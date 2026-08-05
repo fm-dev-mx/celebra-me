@@ -3,6 +3,8 @@
  * Secret-free JSON envelope; no mutation engines.
  */
 
+import { redactCredentials } from './db-target-config.ts';
+
 export const DB_SYNC_SCHEMA_VERSION = '1.0.0' as const;
 
 export const DB_SYNC_MODES = ['diagnose', 'compare', 'plan', 'apply'] as const;
@@ -148,9 +150,22 @@ export function emptyResult(mode: DbSyncMode): DbSyncResult {
 	};
 }
 
+function redactDeep(value: unknown): unknown {
+	if (typeof value === 'string') return redactCredentials(value);
+	if (Array.isArray(value)) return value.map((entry) => redactDeep(entry));
+	if (value && typeof value === 'object') {
+		const out: Record<string, unknown> = {};
+		for (const [key, entry] of Object.entries(value as Record<string, unknown>)) {
+			out[key] = redactDeep(entry);
+		}
+		return out;
+	}
+	return value;
+}
+
 /** Deterministic JSON for agents — never include secrets or raw DB URLs. */
 export function resultToJson(result: DbSyncResult): string {
-	return `${JSON.stringify(result, null, 2)}\n`;
+	return `${JSON.stringify(redactDeep(result), null, 2)}\n`;
 }
 
 export function exitCodeForResult(
