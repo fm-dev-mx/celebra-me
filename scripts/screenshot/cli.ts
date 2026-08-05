@@ -269,6 +269,84 @@ async function runConfigJobs(
 	return { failed, totalPages: pages.length };
 }
 
+function writeCorpusEvidence(
+	startedAt: string,
+	result: { failed: number; totalPages: number },
+): void {
+	const completedAt = new Date().toISOString();
+	const total = Math.max(1, result.totalPages);
+	const failed = result.failed;
+	const writeResult = tryWriteValidationEvidence({
+		validationType: 'screenshots',
+		command: 'pnpm screenshot:local-render-corpus',
+		startedAt,
+		completedAt,
+		status: failed > 0 ? 'fail' : 'pass',
+		total,
+		passed: Math.max(0, total - failed),
+		failed,
+		failures:
+			failed > 0
+				? [
+						{
+							slug: 'local-render-corpus',
+							message: `${failed} corpus screenshot page(s) failed`,
+						},
+					]
+				: [],
+	});
+	if (!writeResult.ok) console.error(`observability evidence write failed: ${writeResult.error}`);
+	else
+		console.log(
+			`observability evidence written: ${writeResult.snapshot.artifactLocation} (${writeResult.snapshot.status})`,
+		);
+}
+
+async function runConfigJobsAndExitOnFailure(
+	cliOptions: CliOptions,
+	catalog: ScopeRouteCatalog,
+): Promise<void> {
+	const startedAt = new Date().toISOString();
+	const result = await runConfigJobs(cliOptions, catalog);
+	if (cliOptions.corpus) {
+		writeCorpusEvidence(startedAt, result);
+	}
+	if (result.failed > 0) process.exit(1);
+}
+
+async function runInteractiveJobsAndExitOnFailure(catalog: ScopeRouteCatalog): Promise<void> {
+	const interactiveJobs = await runInteractiveFlow();
+	if (!interactiveJobs) return;
+	const rawJobs = Array.isArray(interactiveJobs) ? interactiveJobs : [interactiveJobs];
+	const jobs = rawJobs.map((job) => {
+		const scopedJob =
+			rawJobs.length > 1 && job.outputFolder
+				? { ...job, outputFolder: path.join(job.outputFolder, createPageSlug(job.url)) }
+				: job;
+		validateStorageState(scopedJob.authMethod);
+		return resolveScreenshotJobScope(scopedJob, 'interactive', catalog, false).job;
+	});
+	const baseUrls = [...new Set(jobs.map((job) => job.baseUrl.replace(/\/+$/, '')))];
+	for (const baseUrl of baseUrls) {
+		await assertScreenshotBaseUrlReachable(baseUrl);
+	}
+	let failed = 0;
+	for (const job of jobs) failed += (await runScreenshotJob(job)).failed;
+	printScreenshotReplayCommands(jobs);
+	if (failed > 0) process.exit(1);
+}
+
+async function runDirectJobAndExitOnFailure(
+	cliOptions: CliOptions,
+	catalog: ScopeRouteCatalog,
+): Promise<void> {
+	const job = buildJobFromCli(cliOptions, catalog);
+	await assertScreenshotBaseUrlReachable(job.baseUrl);
+	const result = await runScreenshotJob(job);
+	printScreenshotReplayCommands([job]);
+	if (result.failed > 0) process.exit(1);
+}
+
 async function main(): Promise<void> {
 	const cliOptions = parseCliArgs(process.argv);
 	if (cliOptions.help) {
@@ -284,39 +362,7 @@ async function main(): Promise<void> {
 
 	const catalog = knownInvitationCatalog();
 	if (cliOptions.corpus || cliOptions.config) {
-		const startedAt = new Date().toISOString();
-		const result = await runConfigJobs(cliOptions, catalog);
-		if (cliOptions.corpus) {
-			const completedAt = new Date().toISOString();
-			const total = Math.max(1, result.totalPages);
-			const failed = result.failed;
-			const writeResult = tryWriteValidationEvidence({
-				validationType: 'screenshots',
-				command: 'pnpm screenshot:local-render-corpus',
-				startedAt,
-				completedAt,
-				status: failed > 0 ? 'fail' : 'pass',
-				total,
-				passed: Math.max(0, total - failed),
-				failed,
-				failures:
-					failed > 0
-						? [
-								{
-									slug: 'local-render-corpus',
-									message: `${failed} corpus screenshot page(s) failed`,
-								},
-							]
-						: [],
-			});
-			if (!writeResult.ok)
-				console.error(`observability evidence write failed: ${writeResult.error}`);
-			else
-				console.log(
-					`observability evidence written: ${writeResult.snapshot.artifactLocation} (${writeResult.snapshot.status})`,
-				);
-		}
-		if (result.failed > 0) process.exit(1);
+		await runConfigJobsAndExitOnFailure(cliOptions, catalog);
 		return;
 	}
 
@@ -326,33 +372,11 @@ async function main(): Promise<void> {
 			!cliOptions.url &&
 			!Object.keys(cliOptions).some((key) => key !== 'interactive'));
 	if (isInteractive) {
-		const interactiveJobs = await runInteractiveFlow();
-		if (!interactiveJobs) return;
-		const rawJobs = Array.isArray(interactiveJobs) ? interactiveJobs : [interactiveJobs];
-		const jobs = rawJobs.map((job) => {
-			const scopedJob =
-				rawJobs.length > 1 && job.outputFolder
-					? { ...job, outputFolder: path.join(job.outputFolder, createPageSlug(job.url)) }
-					: job;
-			validateStorageState(scopedJob.authMethod);
-			return resolveScreenshotJobScope(scopedJob, 'interactive', catalog, false).job;
-		});
-		const baseUrls = [...new Set(jobs.map((job) => job.baseUrl.replace(/\/+$/, '')))];
-		for (const baseUrl of baseUrls) {
-			await assertScreenshotBaseUrlReachable(baseUrl);
-		}
-		let failed = 0;
-		for (const job of jobs) failed += (await runScreenshotJob(job)).failed;
-		printScreenshotReplayCommands(jobs);
-		if (failed > 0) process.exit(1);
+		await runInteractiveJobsAndExitOnFailure(catalog);
 		return;
 	}
 
-	const job = buildJobFromCli(cliOptions, catalog);
-	await assertScreenshotBaseUrlReachable(job.baseUrl);
-	const result = await runScreenshotJob(job);
-	printScreenshotReplayCommands([job]);
-	if (result.failed > 0) process.exit(1);
+	await runDirectJobAndExitOnFailure(cliOptions, catalog);
 }
 
 main().catch((error: unknown) => {
