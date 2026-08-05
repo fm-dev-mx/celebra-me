@@ -18,9 +18,9 @@
 **Preparation Readiness (prepReadiness):** `READY_FOR_IMPLEMENTATION`
 
 Must equal `evaluatePreparationReadiness`. Parents resolved (OD5 superseded). Display names use
-second given names (Daniela / Martín) per client audio 2026-08-04. Retired pre-delivery slugs:
-`boda-perla-y-carlos`, then `boda-daniela-y-martin` (eventType prefix forbidden — route is
-`/boda/daniela-y-martin`). Assets remain production-ready HR (D2/D4) under the two-photo freeze;
+second given names (Daniela / Martín) per client audio 2026-08-04. The canonical route has no
+eventType prefix: `/boda/daniela-y-martin`. Assets remain production-ready HR (D2/D4) under the
+two-photo freeze;
 atmospheric interludes use stock frames (not client portraits).
 
 Technical Local/Preview/Production readiness (**envReadiness**) is **out of scope** for this
@@ -43,7 +43,7 @@ document and remains owned by `pnpm invitation:update --status` / `invitation-re
 
 | field                 | value                                                                                                | classification | source             | notes                                                                                                      |
 | --------------------- | ---------------------------------------------------------------------------------------------------- | -------------- | ------------------ | ---------------------------------------------------------------------------------------------------------- |
-| slug                  | daniela-y-martin                                                                                     | verified       | owner 2026-08-04   | No eventType prefix; retired `boda-perla-y-carlos` → `boda-daniela-y-martin` → final                      |
+| slug                  | daniela-y-martin                                                                                     | verified       | owner 2026-08-04   | Canonical route slug without an eventType prefix                                                            |
 | hostLoginAlias        | daniela_medina                                                                                       | verified       | owner 2026-08-04   | `{primer_nombre}_{primer_apellido}` from partner A preferred display name                                  |
 | celebrantName         | Perla Daniela Medina Carrillo                                                                        | verified       | wa-export          | Legal full name                                                                                            |
 | secondaryName         | Carlos Martín Ochoa Felipe                                                                           | verified       | wa-export          | Partner B legal full name                                                                                  |
@@ -206,8 +206,8 @@ Owner constraint: **only these two client files** (session 2026-07-31).
 - Maps association: salón = first link; iglesia = second link (owner).
 - Reveal: seal is the sole `[data-envelope-open]` control; `microcopy` empty; seal hint
   `Toque el sello`; seal initials `D·M`.
-- Retired slugs `boda-perla-y-carlos` and `boda-daniela-y-martin` must not remain in runtime
-  registry, assets, or active docs.
+- Only the canonical slug `daniela-y-martin` may remain in the runtime registry, assets, or active
+  docs.
 - Delivery target: Preview (not Production) until owner authorizes promote.
 - Active plans: `.agent/plans/active/daniela-y-martin-*.md`.
 

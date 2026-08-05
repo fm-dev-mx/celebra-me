@@ -228,4 +228,4 @@ Current invitation-level evidence (post Phase 1):
 
 1. **Phase 2:** `CELEBRA_TARGET_RELEASE_SHA`, Ed25519 approval token/pubkey for `production_migration` with allowlist `20260802090000`, and confirmation.
 2. **Phase 3:** Separate approval for `romina_draft_reset`, fresh critical backup manifest, and `--acknowledge-discard-unpublished-draft`.
-3. **Phase 4:** Separate Preview promotion authorization, then separate Production promotion authorization for `boda-perla-y-carlos`.
+3. **Phase 4:** Separate Preview promotion authorization, then separate Production promotion authorization for the canonical wedding invitation.
