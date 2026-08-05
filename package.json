@@ -67,6 +67,7 @@
         "db:preview:migrate": "tsx scripts/db/db-guard.ts check --target preview --operation migrate && tsx scripts/db/push-preview-migrations.ts",
         "db:preview:audit": "tsx scripts/db/db-guard.ts check --target preview --operation audit && tsx scripts/db/audit-db.ts --target preview",
         "db:preview:sync-invitations": "tsx scripts/db/db-guard.ts check --target preview --operation sync-invitations --db-url \"${PREVIEW_DB_URL}\" && tsx scripts/db/preview-sync-invitations.ts",
+        "db:sync": "tsx scripts/db/db-sync-cli.ts",
         "db:local:migrate": "tsx scripts/db/apply-local-migrations.ts",
         "db:local:audit": "tsx scripts/db/db-guard.ts check --target persistent-local --operation audit && tsx scripts/db/audit-db.ts --target persistent-local",
         "db:branch:parity": "tsx scripts/db/branch-migration-parity.ts",

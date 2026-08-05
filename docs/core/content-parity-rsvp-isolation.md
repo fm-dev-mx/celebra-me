@@ -38,9 +38,13 @@ Content parity is **semantic**, not raw database equality.
 | ----------------- | ------------------------------------------------ | ---------------------------- | ------------------------------------- |
 | **Update**        | Managed invitation apply to Local and/or Preview | Definition → Local / Preview | `pnpm invitation:update`              |
 | **Promote**       | Owner-only managed content release to Production | Approved package → Production | `pnpm invitation:promote`            |
-| **Mirror**        | Invitation-facing content regression copy        | Production → Preview only    | `pnpm db:preview:sync-invitations`    |
+| **Mirror**        | Invitation-facing content regression copy        | Production → Preview only    | `pnpm db:preview:sync-invitations` / `pnpm db:sync` |
 | **Restore**       | Debugging import of a Production dump into Local | Production backup → Local    | `pnpm db:local:restore-from-dump`     |
 | **RSVP mutation** | Guest/claim/attendance/view/delivery writes      | Within one environment       | Authenticated RSVP/dashboard services |
+
+Orchestration facade: `pnpm db:sync` diagnoses, compares, plans, and delegates apply to the
+existing update / promote / mirror engines. It does not replace those engines, schema migrate,
+demo Content Sync, Git lane sync, or `pnpm db:local:restore-from-dump`.
 
 Canonical workflow: managed creation via definition registry → Local/Preview with
 `pnpm invitation:update` → Production only with `pnpm invitation:promote`.

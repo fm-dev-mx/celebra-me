@@ -135,6 +135,9 @@ task authorization, target classification, and standard guard checks.
 - **Preview mirror**: `pnpm db:preview:sync-invitations --dry-run` performs zero DB, role, profile,
   Storage, or report-file writes. `--apply` requires Preview authorization
   (`CELEBRA_TASK_SCOPE=preview:content-mirror:sync-invitations` or interactive confirmation).
+- **Invitation sync facade**: `pnpm db:sync` orchestrates diagnose/compare/plan/apply over existing
+  update, promote, and mirror engines. It does not introduce a second sync engine or treat schema
+  migrate / dump restore as content synchronization.
 - **Failure Handling**: When Preview credentials are missing/unconfigured, `pnpm db:preview:migrate`
   and `pnpm db:preview:audit` fail closed with exit code `1`.
 - **Content promote / mirror / RSVP isolation**: Follow
@@ -158,6 +161,8 @@ task authorization, target classification, and standard guard checks.
   `db:migrate -- --target production`).
 - `pnpm invitation:promote` is the approved production **managed-content** promotion workflow
   (owner-only; separate from schema migrate).
+- `pnpm db:sync` is the invitation content synchronization facade (diagnose/compare/plan/apply)
+  over existing engines; it is not schema migrate and not dump restore.
 - `pnpm db:preview:migrate` preflights Preview (`PREVIEW_DB_URL`); `--apply` applies pending
   migrations after Preview authorization (wrapper over `db:migrate -- --target preview`).
 - Schema status evidence: `pnpm dbs` / observability use **migration_history_parity**;

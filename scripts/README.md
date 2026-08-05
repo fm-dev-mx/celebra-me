@@ -85,6 +85,7 @@ selected target aborts the complete mutation phase.
 | `pnpm db:prod:migrate`                     | `scripts/db/`  | Production schema preflight / apply (wrapper; optional `--expected`, `--apply`)    |
 | `pnpm db:preview:migrate`                  | `scripts/db/`  | Preview schema preflight; `--apply` + Preview auth (wrapper over `db:migrate`)     |
 | `pnpm db:preview:sync-invitations`         | `scripts/db/`  | Prod→Preview content mirror; `--dry-run` zero writes; `--apply` needs Preview auth |
+| `pnpm db:sync`                             | `scripts/db/`  | Invitation sync facade: diagnose/compare/plan/apply over existing engines          |
 | `pnpm db:preview:audit`                    | `scripts/db/`  | read-only Preview schema drift audit (`PREVIEW_DB_URL`)                            |
 | `pnpm db:disposable:reset`                 | `scripts/db/`  | reset isolated disposable test environment container                               |
 | `pnpm test:db:rsvp-contracts`              | `scripts/db/`  | reset disposable DB, start PostgREST, run public RSVP Jest DB/HTTP contracts       |
