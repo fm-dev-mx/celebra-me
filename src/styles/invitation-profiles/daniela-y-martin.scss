@@ -46,8 +46,6 @@
 	--hero-label-color: var(--daniela-cream);
 	--hero-badge-border: var(--daniela-gold);
 	--gallery-title-color: var(--daniela-olive);
-	--gallery-section-padding-block: clamp(3.25rem, 6.5vw, 5rem);
-	--gallery-card-shadow: 0 14px 36px rgb(var(--daniela-olive-rgb) / 16%);
 
 	// Location — continuous chapter; soften nested frames
 	--location-flourish-color: var(--daniela-gold);
@@ -1001,7 +999,7 @@
 	}
 
 	// -------------------------------------------------------------------------
-	// Gallery — photographic pause; tonal into olive action chapter
+	// Gallery — photographic pause; single portrait editorial composition
 	// -------------------------------------------------------------------------
 	.invitation-section-wrapper[data-section-kind='gallery'] {
 		background: linear-gradient(
@@ -1013,31 +1011,70 @@
 	}
 
 	.gallery-section {
-		.gallery-section__eyebrow,
-		.gallery-section__subtitle {
+		--gallery-section-padding-block: clamp(3.25rem, 6.5vw, 5.25rem);
+		--gallery-item-image-position: 50% 38%;
+
+		.gallery-section__header {
+			max-width: 30rem;
+			margin-inline: auto;
+			margin-bottom: clamp(1.25rem, 2.8vw, 2rem);
+			text-align: center;
+		}
+
+		.gallery-section__eyebrow {
 			font-family: var(--font-body);
+			font-size: 0.68rem;
+			letter-spacing: 0.24em;
+			text-transform: uppercase;
+			color: var(--daniela-olive);
+			margin-bottom: 0.35rem;
+			display: block;
 		}
 
 		.gallery-section__title {
 			font-family: var(--font-display);
-		}
-
-		.gallery-grid {
-			justify-content: center;
-		}
-
-		.gallery-grid__item {
-			max-width: min(22rem, 86vw);
-			margin-inline: auto;
-			border-radius: 4px;
-			overflow: hidden;
-			box-shadow: var(--gallery-card-shadow);
+			font-size: clamp(1.75rem, 4.2vw, 2.6rem);
+			line-height: 1.08;
+			text-transform: none;
+			letter-spacing: 0.01em;
+			margin-bottom: 0.55rem;
+			text-wrap: balance;
 		}
 
 		.gallery-section__subtitle {
-			max-width: 28rem;
-			margin-inline: auto;
+			font-family: var(--font-body);
+			font-size: clamp(0.9rem, 1.8vw, 1.02rem);
+			line-height: 1.55;
 			color: rgb(var(--daniela-ink-rgb) / 70%);
+			max-width: 22.5rem;
+			margin-inline: auto;
+			text-wrap: balance;
+		}
+
+		.gallery-grid {
+			display: flex;
+			justify-content: center;
+			max-width: min(25rem, 84vw);
+			margin-inline: auto;
+		}
+
+		.gallery-grid__item,
+		.gallery-grid__item:nth-child(1) {
+			width: 100%;
+			max-width: min(25rem, 80vw);
+			aspect-ratio: 2 / 3;
+			margin-inline: auto;
+			padding: 0.45rem;
+			border: 1px solid rgb(var(--daniela-gold-rgb) / 24%);
+			border-radius: 2px;
+			background: var(--daniela-cream);
+			box-shadow: 0 10px 26px rgb(var(--daniela-olive-rgb) / 10%);
+			overflow: visible;
+
+			img {
+				border-radius: 0;
+				object-fit: cover;
+			}
 		}
 	}
 
@@ -2081,64 +2118,6 @@
 		}
 	}
 
-	// Gallery: one framed portrait with editorial scale and no generic card chrome.
-	:where(.gallery-section) {
-		--gallery-section-padding-block: clamp(3.8rem, 8vw, 6rem);
-
-		:where(.gallery-section__header) {
-			max-width: 34rem;
-			margin-inline: auto;
-		}
-
-		:where(.gallery-section__eyebrow) {
-			font-size: 0.68rem;
-			letter-spacing: 0.24em;
-			text-transform: uppercase;
-			color: var(--daniela-olive);
-		}
-
-		:where(.gallery-section__title) {
-			font-size: clamp(2rem, 6vw, 3.25rem);
-			line-height: 1.02;
-			letter-spacing: 0.01em;
-			text-wrap: balance;
-		}
-
-		:where(.gallery-grid) {
-			max-width: min(24rem, 88vw);
-			margin-inline: auto;
-		}
-
-		:where(.gallery-grid__item),
-		:where(.gallery-grid__item:nth-child(1)) {
-			max-width: none;
-			aspect-ratio: 2 / 3;
-			padding: 0.45rem;
-			border: 1px solid rgb(var(--daniela-gold-rgb) / 34%);
-			border-radius: 2px;
-			background: var(--daniela-cream);
-			box-shadow: 0 20px 42px rgb(var(--daniela-olive-rgb) / 17%);
-		}
-
-		:where(.gallery-grid__item)::after {
-			inset: 0.9rem;
-			border: 1px solid rgb(var(--daniela-ivory-rgb) / 62%);
-			border-radius: 0;
-		}
-
-		:where(.gallery-grid__item) img {
-			border-radius: 0;
-		}
-
-		:where(.gallery-section__subtitle) {
-			max-width: 25rem;
-			margin-inline: auto;
-			font-size: 0.95rem;
-			line-height: 1.6;
-			color: rgb(var(--daniela-ink-rgb) / 68%);
-		}
-	}
-
 	// Closing: a quiet letterpress finish with the required credit kept low.
 	:where(.thank-you-section) {
 		padding-block: clamp(3.8rem, 8vw, 6rem);
@@ -2344,5 +2323,239 @@
 	.invitation-section-wrapper[data-section-kind='interlude']
 		+ .invitation-section-wrapper[data-section-kind='rsvp'] {
 		padding-block-start: clamp(1.25rem, 3vw, 2rem);
+	}
+
+	// -------------------------------------------------------------------------
+	// Gifts Section — Refined composition & visual hierarchy for Daniela & Martín
+	// Scope: .event--daniela-y-martin.theme-preset--jewelry-box-wedding
+	// -------------------------------------------------------------------------
+	.gifts-section {
+		// Section container & background
+		--gifts-bg: var(--daniela-cream);
+		--gifts-text-color: var(--daniela-ink);
+		--gifts-title-color: var(--daniela-olive-deep);
+		--gifts-subtitle-color: rgb(var(--daniela-ink-rgb) / 82%);
+		--gifts-padding-block: clamp(3.25rem, 6.5vw, 5rem);
+		--gifts-padding-inline: clamp(1rem, 4vw, 2rem);
+
+		&__container {
+			max-width: 52rem;
+			margin-inline: auto;
+		}
+
+		&__header {
+			margin-bottom: clamp(1.5rem, 3.5vw, 2.25rem);
+		}
+
+		&__eyebrow {
+			color: var(--daniela-olive);
+			font-family: var(--font-body);
+			font-size: clamp(0.7rem, 1.8vw, 0.78rem);
+			letter-spacing: 0.22em;
+			font-weight: 500;
+		}
+
+		&__title {
+			font-family: var(--font-display);
+			font-size: clamp(1.85rem, 5vw, 2.75rem);
+			letter-spacing: 0.08em;
+			text-transform: uppercase;
+			margin-bottom: 0.5rem;
+		}
+
+		&__flourish {
+			margin: 0.65rem auto;
+			color: var(--daniela-gold);
+			opacity: 75%;
+		}
+
+		&__subtitle {
+			font-family: var(--font-body);
+			font-size: clamp(0.95rem, 2.2vw, 1.1rem);
+			line-height: 1.55;
+			color: var(--gifts-subtitle-color);
+			max-width: 36rem;
+			margin-inline: auto;
+		}
+
+		&__separator {
+			width: 4.5rem;
+			height: 1px;
+			margin: 0 auto clamp(1.5rem, 3.5vw, 2.25rem);
+			background: linear-gradient(
+				90deg,
+				transparent 0%,
+				rgb(var(--daniela-gold-rgb) / 45%) 50%,
+				transparent 100%
+			);
+		}
+	}
+
+	// Grid arrangement: 1 column on mobile, 2 columns side-by-side on desktop
+	.gifts-grid {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: clamp(1.1rem, 2.8vw, 1.75rem);
+		max-width: 24rem;
+		margin-inline: auto;
+
+		@include mixins.respond-to(md) {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			max-width: 50rem;
+			align-items: stretch;
+		}
+	}
+
+	// Card Base & Structural Reset
+	.gift-card {
+		position: relative;
+		border-radius: 10px;
+		padding: clamp(1.35rem, 3.2vw, 1.85rem) clamp(1.15rem, 2.8vw, 1.6rem);
+		transition:
+			transform var(--duration-snappy) var(--ease-standard),
+			box-shadow var(--duration-snappy) var(--ease-standard),
+			border-color var(--duration-snappy) var(--ease-standard);
+
+		// Remove redundant preset inset double border
+		&::after {
+			content: none;
+		}
+
+		// Single-axis vertical layout on all viewports (overriding 2-column grid auto-placement from preset)
+		&__inner {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			text-align: center;
+			gap: clamp(0.6rem, 1.6vw, 0.9rem);
+			height: 100%;
+		}
+
+		// Icon Medallion: simplified, subtle, non-competing
+		&__icon-medallion {
+			width: 2.75rem;
+			height: 2.75rem;
+			margin: 0 auto;
+			border-radius: 50%;
+			background: rgb(var(--daniela-olive-rgb) / 8%);
+			border: 1px solid rgb(var(--daniela-olive-rgb) / 16%);
+			box-shadow: none;
+			backdrop-filter: none;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			flex-shrink: 0;
+		}
+
+		&__icon-inner {
+			width: 1.35rem;
+			height: 1.35rem;
+			color: var(--daniela-olive-deep);
+		}
+
+		// Typography hierarchy & Safe Word Wrapping
+		&__title {
+			font-family: var(--font-display);
+			font-size: clamp(1.25rem, 2.8vw, 1.45rem);
+			font-weight: 500;
+			color: var(--daniela-olive-deep);
+			line-height: 1.25;
+			margin-bottom: 0;
+			overflow-wrap: normal;
+			word-break: normal;
+			text-wrap: balance;
+			max-width: 100%;
+			text-align: center;
+		}
+
+		&__description,
+		&__store-label {
+			font-family: var(--font-body);
+			font-size: clamp(0.88rem, 2vw, 0.95rem);
+			line-height: 1.5;
+			color: rgb(var(--daniela-ink-rgb) / 78%);
+			margin-top: 0;
+			text-align: center;
+			overflow-wrap: normal;
+			word-break: normal;
+		}
+
+		&__actions {
+			margin-top: auto;
+			padding-top: 0.35rem;
+			display: flex;
+			justify-content: center;
+			width: 100%;
+		}
+
+		// Refined CTA: integrated, high-contrast, non-pill control
+		&__button {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			padding: 0.65rem 1.4rem;
+			font-family: var(--font-body);
+			font-size: 0.88rem;
+			font-weight: 500;
+			letter-spacing: 0.04em;
+			text-decoration: none;
+			border-radius: 6px;
+			background: var(--daniela-olive-deep);
+			color: var(--daniela-cream);
+			border: 1px solid var(--daniela-olive-deep);
+			box-shadow: 0 2px 6px rgb(var(--daniela-olive-deep-rgb) / 16%);
+			transition:
+				background-color var(--duration-snappy) var(--ease-standard),
+				border-color var(--duration-snappy) var(--ease-standard),
+				color var(--duration-snappy) var(--ease-standard),
+				transform var(--duration-snappy) var(--ease-standard),
+				box-shadow var(--duration-snappy) var(--ease-standard);
+			cursor: pointer;
+
+			&:hover {
+				background: var(--daniela-olive);
+				border-color: var(--daniela-olive);
+				color: var(--daniela-cream);
+				transform: translateY(-1px);
+				box-shadow: 0 4px 12px rgb(var(--daniela-olive-deep-rgb) / 22%);
+			}
+
+			&:focus-visible {
+				outline: 2px solid var(--daniela-gold);
+				outline-offset: 2px;
+			}
+		}
+	}
+
+	// ---------------------------------------------------------------------
+	// Card Role Differentiation (Store / Amazon vs Cash / Lluvia de Sobres)
+	// ---------------------------------------------------------------------
+
+	// Primary Interactive Card (Amazon)
+	.gift-card--store {
+		background: var(--daniela-ivory);
+		border: 1px solid rgb(var(--daniela-gold-rgb) / 32%);
+		box-shadow: 0 4px 16px rgb(var(--daniela-olive-rgb) / 7%);
+
+		&:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 8px 24px rgb(var(--daniela-olive-rgb) / 12%);
+			border-color: rgb(var(--daniela-gold-rgb) / 52%);
+		}
+	}
+
+	// Secondary Informational Card (Lluvia de Sobres)
+	.gift-card--cash {
+		background: rgb(var(--daniela-beige-rgb) / 40%);
+		border: 1px solid rgb(var(--daniela-gold-rgb) / 22%);
+		box-shadow: none;
+		cursor: default;
+
+		// Remove misleading interactive affordances (hover lift / shadow)
+		&:hover {
+			transform: none;
+			box-shadow: none;
+			border-color: rgb(var(--daniela-gold-rgb) / 22%);
+		}
 	}
 }
