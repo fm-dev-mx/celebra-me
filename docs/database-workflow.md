@@ -12,13 +12,18 @@ Ownership Matrix in [`.agent/index.md`](../.agent/index.md).
 ## Principle
 
 Local development uses local Supabase. Production is the source of real customer data. Production
-can be read for backups/local refreshes. Production can only be mutated through reviewed migrations.
+can be read for backups/local refreshes. Production **schema** may be mutated only through reviewed
+migrations (`pnpm db:migrate -- --target production` / `pnpm db:prod:migrate`). Production **managed
+invitation content** may be mutated only through owner-only `pnpm invitation:promote` (also
+reachable via `pnpm db:sync` `package-to-production`).
 
 The workflow is asymmetric:
 
 ```txt
-Production -> Local: allowed for read-only refreshes and backups.
-Local -> Production: allowed only for reviewed migrations.
+Production -> Local: allowed for read-only refreshes, backups, and debug dump restore (not sync).
+Local -> Production (schema): reviewed migrations only.
+Local/Preview package -> Production (content): owner-only invitation:promote only.
+Preview -> Production: forbidden for DB/Storage content copy.
 ```
 
 ## Observability projection decision
@@ -204,6 +209,7 @@ Definition → normalized release → Local → immutable package → Preview �
 
 | Mechanism                          | Role                                                         | Direction                                  |
 | ---------------------------------- | ------------------------------------------------------------ | ------------------------------------------ |
+| `pnpm db:sync`                     | **Orchestration facade** (diagnose/compare/plan/apply)       | Delegates to update / promote / mirror     |
 | `pnpm invitation:update`           | **Update** managed content on Local and/or Preview           | Definition → Local / Preview               |
 | `pnpm invitation:promote`          | **Promote** managed content to Production (owner-only)       | Approved package → Production              |
 | `pnpm invitation:preview-fixture`  | **Bootstrap** Preview E2E publication fixture (Preview-only) | Creates/verifies `e2e-preview-publication` |
@@ -211,6 +217,35 @@ Definition → normalized release → Local → immutable package → Preview �
 | `pnpm db:local:restore-from-dump`  | **Restore** debugging dump (may include PII)                 | Production backup → Local                  |
 | `pnpm invitation:content-parity`   | Read-only **semantic** content parity check                  | Compares Local/Preview/Production          |
 | `pnpm dbs` / `pnpm dbs --compact`  | Read-only managed **status** (content + schema classifiers)  | Local / Preview / Production               |
+
+### `pnpm db:sync` (canonical content orchestration)
+
+`pnpm db:sync` is the normal entry point for invitation **content** synchronization diagnosis,
+comparison, planning, and delegated apply. It is a thin facade over existing engines and does
+**not** implement a second mirror, Storage, approval, backup, promote, or migration engine.
+
+| Mode       | Mutation?            | Purpose                                                      |
+| ---------- | -------------------- | ------------------------------------------------------------ |
+| `diagnose` | No                   | Availability + schema lifecycle readiness                    |
+| `compare`  | No                   | Semantic content parity (`invitation:content-parity` engine) |
+| `plan`     | No                   | Immutable `planId` + fingerprints + gates                    |
+| `apply`    | Yes (with `--apply`) | Revalidate exact plan, authorize, delegate                   |
+
+Directions (hard allowlist): `definition-to-local`, `definition-to-preview`,
+`package-to-production`, `production-to-preview-mirror`.
+
+Apply always rebuilds the plan from current evidence, requires `--expected-plan` (or an interactive
+reviewed plan), rejects expiration/drift, and never silently regenerates a different plan. Preview
+writes reuse `authorizePreviewWriteApply`; Production apply remains owner-only interactive TTY via
+`requireOwnerProductionApply` (agents/headless cannot apply to Production).
+
+Orthogonal systems (not `db:sync`): `pnpm db:migrate`, dashboard demo Content Sync,
+`pnpm lane:sync`, and `pnpm db:local:restore-from-dump`. Specialized commands (`invitation:update`,
+`invitation:promote`, `db:preview:sync-invitations`, `invitation:content-parity`, `dbs`) remain
+authoritative for their direct workflows.
+
+Policy for mirror exclusions, RSVP reset, and Cloudinary vs Supabase Storage boundaries:
+[`docs/core/content-parity-rsvp-isolation.md`](core/content-parity-rsvp-isolation.md).
 
 Production never imports from the Preview DB or Preview Storage. Mirror is never promotion. Normal
 `invitation:update` is Local/Preview only; use `invitation:promote` for Production managed content.
@@ -297,9 +332,13 @@ PROVISIONED & HOSTED-VALIDATED
   - RSVP tables (`rsvp_records`, `rsvp_audit_log`, `rsvp_channel_log`)
 - **Ownership Remapping**: Copied invitations and events are owned by `preview@preview.com` (the
   dedicated Preview admin). Real Production auth users are never copied.
-- **Storage Mirroring**: Asset binaries from `invitation-assets` bucket are copied to Preview
-  Storage. URLs in mirrored JSON content are rewritten from Production Storage host to Preview
-  Storage host.
+- **Storage Mirroring**: Supabase Storage binaries under `invitation-assets` (rows with
+  `storage_path`) are copied to Preview Storage. Supabase public Storage URLs inside mirrored JSON
+  `content`/`snapshot` are rewritten Production→Preview. Cloudinary `secure_url` / remote CDN
+  references are preserved as-is and are **not** a Supabase Storage completeness claim — see
+  [`content-parity-rsvp-isolation.md`](core/content-parity-rsvp-isolation.md). Apply fails closed on
+  partial upsert, missing transferable assets, Storage credential gaps, unregistered Storage refs,
+  or residual Production Storage URLs after rewrite.
 
 ## Common Commands
 
@@ -375,8 +414,8 @@ backup.
 
 SSOT: `scripts/db/migration-deployment-compatibility.ts` +
 `supabase/migration-rollout-registry.json`. Wired into `pnpm db:migrate` (and aliases
-`db:preview:migrate` / `db:prod:migrate`) via the shared orchestrator (does not replace
-`--expected` pin, dry-run, backup, or contract verification).
+`db:preview:migrate` / `db:prod:migrate`) via the shared orchestrator (does not replace `--expected`
+pin, dry-run, backup, or contract verification).
 
 Hosted targets prove migration membership from Git contents
 (`candidate ∈ <release-sha>:supabase/migrations/`), not filename chronology. Branch name, worktree

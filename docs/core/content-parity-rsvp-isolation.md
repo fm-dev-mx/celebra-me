@@ -34,21 +34,21 @@ Content parity is **semantic**, not raw database equality.
 
 ## Flows (terminology)
 
-| Term              | Meaning                                          | Direction                    | Command                               |
-| ----------------- | ------------------------------------------------ | ---------------------------- | ------------------------------------- |
-| **Update**        | Managed invitation apply to Local and/or Preview | Definition → Local / Preview | `pnpm invitation:update`              |
-| **Promote**       | Owner-only managed content release to Production | Approved package → Production | `pnpm invitation:promote`            |
-| **Mirror**        | Invitation-facing content regression copy        | Production → Preview only    | `pnpm db:preview:sync-invitations` / `pnpm db:sync` |
-| **Restore**       | Debugging import of a Production dump into Local | Production backup → Local    | `pnpm db:local:restore-from-dump`     |
-| **RSVP mutation** | Guest/claim/attendance/view/delivery writes      | Within one environment       | Authenticated RSVP/dashboard services |
+| Term              | Meaning                                          | Direction                     | Command                                             |
+| ----------------- | ------------------------------------------------ | ----------------------------- | --------------------------------------------------- |
+| **Update**        | Managed invitation apply to Local and/or Preview | Definition → Local / Preview  | `pnpm invitation:update`                            |
+| **Promote**       | Owner-only managed content release to Production | Approved package → Production | `pnpm invitation:promote`                           |
+| **Mirror**        | Invitation-facing content regression copy        | Production → Preview only     | `pnpm db:preview:sync-invitations` / `pnpm db:sync` |
+| **Restore**       | Debugging import of a Production dump into Local | Production backup → Local     | `pnpm db:local:restore-from-dump`                   |
+| **RSVP mutation** | Guest/claim/attendance/view/delivery writes      | Within one environment        | Authenticated RSVP/dashboard services               |
 
-Orchestration facade: `pnpm db:sync` diagnoses, compares, plans, and delegates apply to the
-existing update / promote / mirror engines. It does not replace those engines, schema migrate,
-demo Content Sync, Git lane sync, or `pnpm db:local:restore-from-dump`.
+Orchestration facade: `pnpm db:sync` diagnoses, compares, plans, and delegates apply to the existing
+update / promote / mirror engines. It does not replace those engines, schema migrate, demo Content
+Sync, Git lane sync, or `pnpm db:local:restore-from-dump`.
 
 Canonical workflow: managed creation via definition registry → Local/Preview with
-`pnpm invitation:update` → Production only with `pnpm invitation:promote`.
-`invitation:update` rejects Production mutation targets.
+`pnpm invitation:update` → Production only with `pnpm invitation:promote`. `invitation:update`
+rejects Production mutation targets.
 
 Production never imports content from the Preview database or Preview Storage. Mirror is never a
 promotion path.
@@ -155,19 +155,45 @@ Executable exclusion list for the Preview mirror: `EXCLUDED_TABLES` in
 
 ## Preview mirror and RSVP reset
 
-`pnpm db:preview:sync-invitations` mirrors invitation-facing tables and Storage, remaps ownership to
-the dedicated Preview admin, rewrites Storage URLs, and does **not** copy Production guests, claims,
-Auth, intake, or commercial data. `--dry-run` performs zero writes (including role/profile and report
-files). `--apply` requires Preview authorization
+`pnpm db:preview:sync-invitations` (also `pnpm db:sync --direction production-to-preview-mirror`)
+mirrors invitation-facing tables and Storage, remaps ownership to the dedicated Preview admin,
+rewrites Supabase Storage URLs, and does **not** copy Production guests, claims, Auth, intake, or
+commercial data. `--dry-run` performs zero writes (including role/profile and report files).
+`--apply` requires Preview authorization
 (`CELEBRA_TASK_SCOPE=preview:content-mirror:sync-invitations` or interactive confirmation).
 
 It replaces Preview `events` with `TRUNCATE … CASCADE` then reinserts Production event shells. That
 **resets Preview RSVP children** (guests, claims, memberships) on those events. Stale Preview-only
-invitation candidates are reported only; they are not auto-pruned.
+invitation candidates are reported only; they are not auto-pruned. Automatic pruning remains
+disabled.
+
+Mirror apply is fail-closed: any partial table upsert, missing transferable Storage object, missing
+Preview service-role key when transferable assets exist, unregistered Supabase Storage references in
+content, or residual Production Storage URLs after rewrite yields `ok=false`, non-zero exit, and no
+complete-sync claim. There is no automatic rollback of already-committed phases.
 
 After a mirror apply, recreate required Preview synthetic RSVP/E2E fixtures with the existing gated
 provisioning path (`pnpm test:e2e:preview:provision` and
 `PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING`). Provision synthetic data only.
+
+---
+
+## Cloudinary vs Supabase Storage boundary
+
+Invitation assets may use Supabase Storage (`storage_path` / public Storage URLs) or Cloudinary
+(`provider: cloudinary`, `secure_url`). `db:sync` / mirror / promote do **not** add a Cloudinary
+transfer engine.
+
+| Flow                               | Supabase Storage                                                                              | Cloudinary                                                                                                                  |
+| ---------------------------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Update / promote (managed package) | Package/asset manifest + import engine                                                        | References preserved when present in package/definition; no CDN rewrite                                                     |
+| Compare / content-parity           | Storage hosts canonicalized for semantic equality                                             | Remote CDN URLs compared as semantic asset identity (key + sha256 when present)                                             |
+| Production→Preview mirror          | Binary copy for rows with `storage_path`; rewrite public Storage URLs in `content`/`snapshot` | `secure_url` and Cloudinary hosts are **copied/preserved**, not rewritten; rows without `storage_path` skip binary transfer |
+
+Completeness claims for mirror apply cover allowlisted tables plus transferable Supabase Storage
+objects. Cloudinary remote resources are **not** verified for Preview reachability and must not be
+reported as Supabase Storage sync success. Do not invent provider-specific slug branches in the
+mirror path.
 
 ---
 
@@ -209,16 +235,16 @@ the repository’s guarded operation confirmations. See `docs/env-workflow.md` a
 
 ## Legacy / specialized paths
 
-| Path                               | Status                                                          |
-| ---------------------------------- | --------------------------------------------------------------- |
-| `pnpm ops adopt-legacy-events`     | **REMOVED** — no longer registered                              |
-| `pnpm ops optimize-assets`         | **REMOVED** — no longer registered                              |
-| `pnpm ops new-invitation`          | **REMOVED** — no longer registered                              |
-| `pnpm ops dbs`                     | **REMOVED** alias — use canonical `pnpm dbs`                    |
-| `--preview-provenance`             | `KEEP_SPECIALIZED` Preview baseline helper                      |
-| `pnpm db:local:refresh-from-prod*` | Fail-closed — use backup + restore-from-dump                    |
-| Manual production SQL patches      | `RESTRICT_OWNER_ONLY` via `pnpm db:prod:patch`                  |
-| `pnpm invitation:promote`          | Canonical owner-only Production managed-content promotion       |
+| Path                               | Status                                                    |
+| ---------------------------------- | --------------------------------------------------------- |
+| `pnpm ops adopt-legacy-events`     | **REMOVED** — no longer registered                        |
+| `pnpm ops optimize-assets`         | **REMOVED** — no longer registered                        |
+| `pnpm ops new-invitation`          | **REMOVED** — no longer registered                        |
+| `pnpm ops dbs`                     | **REMOVED** alias — use canonical `pnpm dbs`              |
+| `--preview-provenance`             | `KEEP_SPECIALIZED` Preview baseline helper                |
+| `pnpm db:local:refresh-from-prod*` | Fail-closed — use backup + restore-from-dump              |
+| Manual production SQL patches      | `RESTRICT_OWNER_ONLY` via `pnpm db:prod:patch`            |
+| `pnpm invitation:promote`          | Canonical owner-only Production managed-content promotion |
 
 ---
 

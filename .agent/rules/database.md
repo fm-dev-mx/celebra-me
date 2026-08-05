@@ -155,14 +155,24 @@ task authorization, target classification, and standard guard checks.
 - `pnpm db:migrate` is the canonical schema migrate planner/orchestrator (`--target` required;
   default read-only preflight).
 - `pnpm db:local:migrate` is a deprecated compatibility wrapper that defaults to `--apply` for
-  legacy callers (stderr warning). Prefer `pnpm db:migrate -- --target local` (preflight-first)
-  then explicit `--apply`. Remove the default-apply shim when no callers rely on it.
+  legacy callers (stderr warning). Prefer `pnpm db:migrate -- --target local` (preflight-first) then
+  explicit `--apply`. Remove the default-apply shim when no callers rely on it.
 - `pnpm db:prod:migrate` is the approved production **schema** mutation workflow (wrapper over
   `db:migrate -- --target production`).
 - `pnpm invitation:promote` is the approved production **managed-content** promotion workflow
   (owner-only; separate from schema migrate).
-- `pnpm db:sync` is the invitation content synchronization facade (diagnose/compare/plan/apply)
-  over existing engines; it is not schema migrate and not dump restore.
+- `pnpm db:sync` is the normal invitation **content** orchestration entry point
+  (diagnose/compare/plan/apply) over existing engines. Directions allowlist: `definition-to-local`,
+  `definition-to-preview`, `package-to-production`, `production-to-preview-mirror`. Read-only modes
+  perform no DB/Storage/approval/backup writes. Apply requires an exact reviewed `planId`,
+  revalidates evidence before mutation, and fails closed on expiration or drift. Preview auth and
+  Production owner-TTY gates are unchanged (headless cannot apply to Production). Mirror fail-closed
+  semantics, RSVP reset disclosure, table exclusions, and Cloudinary vs Supabase Storage boundaries
+  are owned by
+  [`docs/core/content-parity-rsvp-isolation.md`](../../docs/core/content-parity-rsvp-isolation.md).
+  Not schema migrate, demo Content Sync, Git `lane:sync`, or dump restore. Specialized commands
+  (`invitation:update`, `invitation:promote`, `db:preview:sync-invitations`,
+  `invitation:content-parity`, `dbs`) remain authoritative for direct use.
 - `pnpm db:preview:migrate` preflights Preview (`PREVIEW_DB_URL`); `--apply` applies pending
   migrations after Preview authorization (wrapper over `db:migrate -- --target preview`).
 - Schema status evidence: `pnpm dbs` / observability use **migration_history_parity**;

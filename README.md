@@ -142,30 +142,32 @@ and `pnpm db:preview:audit`.
 
 For local development, use local Supabase and keep `.env.local` pointed away from production.
 
-| Command                           | Purpose                                                                                     |
-| --------------------------------- | ------------------------------------------------------------------------------------------- |
-| `pnpm db:start`                   | Start local Supabase                                                                        |
-| `pnpm db:local:restore-from-dump` | Import a production dump into the persistent local database without destroying it           |
-| `pnpm db:local:backup-wip`        | Dump selected local tables before data-dependent operations                                 |
-| `pnpm db:local:bootstrap-admin`   | Create/repair local super admin without resetting                                           |
-| `pnpm db:local:validate`          | Check local DB health and super admin status                                                |
-| `pnpm db:disposable:reset`        | Reset the isolated disposable test database (destructive testing)                           |
-| `pnpm db:validate:pipeline`       | Run full database pipeline validation (baseline, latest, pgTAP, application flows)          |
-| `pnpm db:prod:backup`             | Read-only production data dump                                                              |
-| `pnpm db:prod:audit`              | Read-only production migration history and current schema audit                             |
-| `pnpm db:branch:parity`           | Read-only branch migration identity/content + DB-sensitive detection (`--json`)             |
-| `pnpm db:prod:migrate`            | Apply reviewed migrations to production (runs preflight checks, backup, and confirmation)   |
-| `pnpm db:preview:migrate`         | Apply pending migrations to Preview (`PREVIEW_DB_URL`)                                      |
-| `pnpm db:preview:audit`           | Read-only Preview schema drift audit (`PREVIEW_DB_URL`)                                     |
-| `pnpm invitation:update`          | Unified managed invitation update, package, Preview approval, and direct Production release |
-| `pnpm db:prod:patch`              | Dry-run lint for manifest-bearing production patches                                        |
-| `pnpm db:sql:lint`                | Lint a production SQL patch file                                                            |
-| `pnpm db:migrate:new <name>`      | Scaffold a new migration                                                                    |
+| Command                           | Purpose                                                                                |
+| --------------------------------- | -------------------------------------------------------------------------------------- |
+| `pnpm db:start`                   | Start local Supabase                                                                   |
+| `pnpm db:local:restore-from-dump` | Import a production dump into the persistent local database without destroying it      |
+| `pnpm db:local:backup-wip`        | Dump selected local tables before data-dependent operations                            |
+| `pnpm db:local:bootstrap-admin`   | Create/repair local super admin without resetting                                      |
+| `pnpm db:local:validate`          | Check local DB health and super admin status                                           |
+| `pnpm db:disposable:reset`        | Reset the isolated disposable test database (destructive testing)                      |
+| `pnpm db:validate:pipeline`       | Run full database pipeline validation (baseline, latest, pgTAP, application flows)     |
+| `pnpm db:prod:backup`             | Read-only production data dump                                                         |
+| `pnpm db:prod:audit`              | Read-only production migration history and current schema audit                        |
+| `pnpm db:branch:parity`           | Read-only branch migration identity/content + DB-sensitive detection (`--json`)        |
+| `pnpm db:prod:migrate`            | Apply reviewed schema migrations to production (preflight, backup, owner confirmation) |
+| `pnpm db:preview:migrate`         | Apply pending migrations to Preview (`PREVIEW_DB_URL`)                                 |
+| `pnpm db:preview:audit`           | Read-only Preview schema drift audit (`PREVIEW_DB_URL`)                                |
+| `pnpm db:sync`                    | Invitation content sync facade (diagnose/compare/plan/apply over existing engines)     |
+| `pnpm invitation:update`          | Managed invitation update/package/Preview approval (Local/Preview only)                |
+| `pnpm invitation:promote`         | Owner-only managed content promotion to Production                                     |
+| `pnpm db:prod:patch`              | Dry-run lint for manifest-bearing production patches                                   |
+| `pnpm db:sql:lint`                | Lint a production SQL patch file                                                       |
+| `pnpm db:migrate:new <name>`      | Scaffold a new migration                                                               |
 
 `pnpm db:push`, `pnpm db:local:reset`, `pnpm db:local:refresh-from-prod`, and
 `pnpm db:local:refresh-from-prod-preserve-local` are intentionally blocked safety rails, not
-runnable workflows. Production is read-only for backups and audits; it can only be mutated via
-`pnpm db:prod:migrate`.
+runnable workflows. Production is read-only for backups and audits except owner-gated schema migrate
+(`pnpm db:prod:migrate`) and managed-content promote (`pnpm invitation:promote`).
 
 See [`docs/database-workflow.md`](docs/database-workflow.md) for the full operational runbook,
 command details, troubleshooting, and production safety rules. Environment source hierarchy and
