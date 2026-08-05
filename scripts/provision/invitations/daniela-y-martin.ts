@@ -242,22 +242,21 @@ export function buildDanielaPublishedContent(
 			presentation: 'text-only',
 			groups: [
 				{
-					title: 'Padres de la Novia',
+					title: 'De la Novia',
 					items: [
 						{ name: 'Laura Carrillo Morales', role: 'Madre' },
 						{ name: 'Pilar Medina Martínez', role: 'Padre' },
 					],
 				},
 				{
-					title: 'Padres del Novio',
+					title: 'Del Novio',
 					items: [{ name: 'María de Jesús Felipe Redondo', role: 'Madre' }],
 				},
 			],
 			labels: {
-				sectionSubtitle: 'Familia',
-				sectionTitle: 'Con la bendición de nuestros padres',
-				sectionMessage:
-					'Con gratitud honramos a quienes nos han acompañado con amor hasta este día.',
+				sectionSubtitle: 'Círculo cercano',
+				sectionTitle: 'Con la bendición de nuestra familia',
+				sectionMessage: '',
 			},
 		},
 		gallery: {

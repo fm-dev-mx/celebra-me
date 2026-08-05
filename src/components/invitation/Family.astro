@@ -239,7 +239,9 @@ if (!hasContent) return;
 				<span class="family__eyebrow">{resolvedLabels.sectionSubtitle}</span>
 				<h2 class="family__title">{resolvedLabels.sectionTitle}</h2>
 				<div class="family__header-divider" aria-hidden="true"></div>
-				<p class="family__message">{resolvedLabels.sectionMessage}</p>
+				{resolvedLabels.sectionMessage && (
+					<p class="family__message">{resolvedLabels.sectionMessage}</p>
+				)}
 			</div>
 		</header>
 

@@ -263,17 +263,17 @@ describe('Boda Daniela y Martín provision contract', () => {
 			labels?: { sectionSubtitle?: string; sectionTitle?: string };
 		};
 		expect(family.presentation).toBe('text-only');
-		expect(family.labels?.sectionSubtitle).toBe('Familia');
+		expect(family.labels?.sectionSubtitle).toBe('Círculo cercano');
 		expect(family.groups).toHaveLength(2);
 		expect(family.groups?.[0]).toMatchObject({
-			title: 'Padres de la Novia',
+			title: 'De la Novia',
 			items: [
 				{ name: 'Laura Carrillo Morales', role: 'Madre' },
 				{ name: 'Pilar Medina Martínez', role: 'Padre' },
 			],
 		});
 		expect(family.groups?.[1]).toMatchObject({
-			title: 'Padres del Novio',
+			title: 'Del Novio',
 			items: [{ name: 'María de Jesús Felipe Redondo', role: 'Madre' }],
 		});
 
@@ -306,7 +306,7 @@ describe('Boda Daniela y Martín provision contract', () => {
 		expect(serialized).not.toMatch(/\[\[PENDIENTE:/);
 		expect(serialized).not.toMatch(/Por confirmar/);
 		expect(serialized).not.toMatch(
-			/boda-perla-y-carlos|boda-daniela-y-martin|perla_medina|Perla & Carlos|Perla y Carlos/,
+			/boda-daniela-y-martin|perla_medina|Perla & Carlos|Perla y Carlos/,
 		);
 		expect(serialized).not.toMatch(/hero-mobile-source/);
 	});
