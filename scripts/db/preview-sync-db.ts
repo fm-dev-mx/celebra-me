@@ -15,8 +15,15 @@ export interface DbRow {
 	[key: string]: unknown;
 }
 
+export interface UpsertFailure {
+	primaryKey: string;
+	message: string;
+}
+
 export interface UpsertResult {
 	created: number;
+	failed: number;
+	failures: UpsertFailure[];
 }
 
 // ---------------------------------------------------------------------------
@@ -86,14 +93,16 @@ export function upsertFromJson(
 	rows: DbRow[],
 	primaryKey: string,
 ): UpsertResult {
-	if (rows.length === 0) return { created: 0 };
+	if (rows.length === 0) return { created: 0, failed: 0, failures: [] };
 	const columns = resolveColumns(dbUrl, table);
 
 	let created = 0;
+	const failures: UpsertFailure[] = [];
 
 	for (const row of rows) {
 		const colList = columns.map((c) => quoteIdentifier(c)).join(', ');
 		const valList = columns.map((c) => sqlValue(row[c])).join(', ');
+		const pkValue = String(row[primaryKey] ?? '<missing>');
 
 		const updateSet = columns
 			.filter((c) => c !== primaryKey)
@@ -107,21 +116,27 @@ export function upsertFromJson(
 		try {
 			const result = runPsql(upsertSql, dbUrl, { tuplesOnly: false, throwOnError: false });
 			if (result.status !== 0) {
+				const message = result.stderr.slice(0, 200) || `upsert status ${result.status}`;
 				console.warn(
-					`   ⚠️  Upsert failed for ${table} ${primaryKey}=${row[primaryKey]}: ${result.stderr.slice(0, 200)}`,
+					`   ⚠️  Upsert failed for ${table} ${primaryKey}=${pkValue}: ${message}`,
 				);
+				failures.push({ primaryKey: pkValue, message });
 			} else {
 				created++;
 			}
 		} catch (err) {
+			const message = err instanceof Error ? err.message : String(err);
 			console.warn(
-				`   ⚠️  Exception upserting ${table} ${primaryKey}=${row[primaryKey]}: ${err}`,
+				`   ⚠️  Exception upserting ${table} ${primaryKey}=${pkValue}: ${message}`,
 			);
+			failures.push({ primaryKey: pkValue, message });
 		}
 	}
 
-	console.info(`   ${table}: ${created} upserted`);
-	return { created };
+	console.info(
+		`   ${table}: ${created} upserted${failures.length > 0 ? `, ${failures.length} failed` : ''}`,
+	);
+	return { created, failed: failures.length, failures };
 }
 
 export function truncateTable(dbUrl: string, table: string): void {

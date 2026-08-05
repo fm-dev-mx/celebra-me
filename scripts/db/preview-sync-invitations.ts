@@ -97,7 +97,9 @@ function parseArgs(argv: string[] = process.argv.slice(2)): SyncOptions {
 
 	if (!dryRun && !apply) {
 		console.info('Usage:');
-		console.info('  pnpm db:preview:sync-invitations -- --dry-run   (report only; zero writes)');
+		console.info(
+			'  pnpm db:preview:sync-invitations -- --dry-run   (report only; zero writes)',
+		);
 		console.info(
 			'  pnpm db:preview:sync-invitations -- --apply     (mutate after Preview authorization)',
 		);
@@ -283,6 +285,32 @@ function buildPhases(
 	report: SyncReport,
 ): Phase[] {
 	return [
+		// Phase 0: Storage credential preflight (fail closed before mutation when assets need transfer)
+		{
+			name: 'Storage credential preflight',
+			action: () => {
+				const assets = queryTableJson(prodCtx.dbUrl, 'invitation_assets', 'id');
+				const transferable = assets.filter(
+					(asset) =>
+						typeof asset.storage_path === 'string' && Boolean(asset.storage_path),
+				);
+				if (transferable.length === 0) return;
+				try {
+					getPreviewServiceRoleKey();
+				} catch (error: unknown) {
+					const detail = error instanceof Error ? error.message : String(error);
+					const msg = `PREVIEW_SUPABASE_SERVICE_ROLE_KEY required to transfer ${transferable.length} Storage asset(s): ${detail}`;
+					if (options.dryRun) {
+						report.detectedDrift.push(`Storage unavailable: ${msg}`);
+						console.warn(`   ⚠️  ${msg}`);
+						return;
+					}
+					report.failures.push(`STORAGE_INCOMPLETE: ${msg}`);
+					throw new Error(`STORAGE_INCOMPLETE: ${msg}`, { cause: error });
+				}
+			},
+		},
+
 		// Phase 1: Resolve Preview admin (role/profile writes only when applying)
 		{
 			name: 'Preview admin resolution',
@@ -390,6 +418,16 @@ function buildPhases(
 
 				const result = upsertFromJson(previewCtx.dbUrl, table, transformedRows, pk);
 				report.created[table] = (report.created[table] || 0) + result.created;
+				if (result.failed > 0) {
+					for (const failure of result.failures) {
+						report.failures.push(
+							`PARTIAL_UPSERT: ${table} ${pk}=${failure.primaryKey}: ${failure.message}`,
+						);
+					}
+					throw new Error(
+						`PARTIAL_UPSERT: ${table} failed ${result.failed}/${transformedRows.length} row(s)`,
+					);
+				}
 			},
 		})),
 
@@ -417,8 +455,23 @@ function buildPhases(
 					...row,
 					owner_user_id: previewCtx.previewAdminUserId,
 				}));
-				upsertFromJson(previewCtx.dbUrl, 'events', remappedEvents, 'id');
-				report.created['events'] = prodEvents.length;
+				const eventResult = upsertFromJson(
+					previewCtx.dbUrl,
+					'events',
+					remappedEvents,
+					'id',
+				);
+				report.created['events'] = eventResult.created;
+				if (eventResult.failed > 0) {
+					for (const failure of eventResult.failures) {
+						report.failures.push(
+							`PARTIAL_UPSERT: events id=${failure.primaryKey}: ${failure.message}`,
+						);
+					}
+					throw new Error(
+						`PARTIAL_UPSERT: events failed ${eventResult.failed}/${remappedEvents.length} row(s)`,
+					);
+				}
 				report.detectedDrift.push(rsvpResetNote);
 
 				// Collect mirrored event IDs for membership reconciliation
@@ -440,30 +493,42 @@ function buildPhases(
 			name: 'Storage sync',
 			action: async () => {
 				console.info('\n📋 Phase 6: Syncing Storage binaries');
-				let previewServiceRoleKey: string;
+				const assets = queryTableJson(prodCtx.dbUrl, 'invitation_assets', 'id');
+				const transferable = assets.filter(
+					(asset) => typeof asset.storage_path === 'string' && asset.storage_path,
+				);
+				console.info(`   Production assets: ${assets.length} rows`);
+
+				let previewServiceRoleKey: string | null;
 				try {
 					previewServiceRoleKey = getPreviewServiceRoleKey();
 				} catch {
-					console.warn(
-						'   ⚠️  PREVIEW_SUPABASE_SERVICE_ROLE_KEY not configured — skipping Storage sync',
-					);
-					report.detectedDrift.push(
-						'Storage sync skipped: missing PREVIEW_SUPABASE_SERVICE_ROLE_KEY',
+					previewServiceRoleKey = null;
+				}
+
+				if (!previewServiceRoleKey) {
+					const msg =
+						'PREVIEW_SUPABASE_SERVICE_ROLE_KEY unavailable — Storage transfer cannot complete';
+					if (options.dryRun) {
+						console.warn(`   ⚠️  ${msg}`);
+						report.detectedDrift.push(`Storage unavailable: ${msg}`);
+						return;
+					}
+					if (transferable.length > 0) {
+						report.failures.push(`STORAGE_INCOMPLETE: ${msg}`);
+						throw new Error(`STORAGE_INCOMPLETE: ${msg}`);
+					}
+					console.info(
+						'   No transferable Storage assets; continuing without service role.',
 					);
 					return;
 				}
-				const assets = queryTableJson(prodCtx.dbUrl, 'invitation_assets', 'id');
-				console.info(`   Production assets: ${assets.length} rows`);
 
-				if (assets.length === 0) return;
+				if (transferable.length === 0) return;
 
-				for (const asset of assets) {
+				for (const asset of transferable) {
 					const storagePath = asset.storage_path as string;
 					const bucket = (asset.bucket as string) || 'invitation-assets';
-					if (!storagePath) {
-						console.warn(`   ⚠️  Asset ${asset.id} has no storage_path`);
-						continue;
-					}
 					const ok = await syncAsset(
 						{ id: asset.id as string, storagePath, bucket },
 						prodCtx.storageUrl,
@@ -475,6 +540,12 @@ function buildPhases(
 					if (!ok && !options.dryRun) {
 						report.failures.push(`Storage upload failed for ${storagePath}`);
 					}
+				}
+				if (
+					!options.dryRun &&
+					report.failures.some((f) => f.startsWith('Storage upload'))
+				) {
+					throw new Error('STORAGE_INCOMPLETE: one or more Storage uploads failed');
 				}
 			},
 		},
@@ -554,11 +625,25 @@ function buildPhases(
 }
 
 // ---------------------------------------------------------------------------
-// Main
+// Library entry (no process.exit) + CLI main
 // ---------------------------------------------------------------------------
 
-export async function main(): Promise<void> {
-	const options = parseArgs();
+export interface PreviewMirrorOptions {
+	dryRun: boolean;
+	apply: boolean;
+	/** When true, skip Preview write auth (caller already authorized). */
+	skipAuthorization?: boolean;
+}
+
+/**
+ * Production→Preview content mirror. Returns the report; never calls process.exit.
+ * Apply requires Preview authorization unless skipAuthorization is set by a trusted caller.
+ */
+export async function runPreviewMirror(options: PreviewMirrorOptions): Promise<SyncReport> {
+	if (options.dryRun === options.apply) {
+		throw new Error('Preview mirror requires exactly one of dryRun or apply.');
+	}
+
 	const report = createReport(options.dryRun);
 
 	console.info('='.repeat(60));
@@ -567,7 +652,6 @@ export async function main(): Promise<void> {
 	console.info(`Mode: ${options.dryRun ? 'DRY RUN (no mutations)' : 'APPLY'}`);
 	console.info('');
 
-	// Load credentials
 	console.info('■ Loading credentials...');
 
 	const { url: prodDbUrl } = getProdDbUrl();
@@ -578,7 +662,6 @@ export async function main(): Promise<void> {
 	report.source = prodDbUrl;
 	report.target = previewDbUrl;
 
-	// Run safety guards
 	console.info('■ Running safety guards...');
 	assertProductionIsProd(prodDbUrl, 'Source');
 	assertPreviewIsPreview(previewDbUrl);
@@ -586,7 +669,6 @@ export async function main(): Promise<void> {
 	assertNotLocalTarget(previewDbUrl);
 	assertNotDisposableTarget(previewDbUrl);
 
-	// Build contexts using the centralized ref resolver
 	const prodSupabaseUrl = deriveSupabaseUrlFromDbUrl(prodDbUrl);
 	const prodProjectRef = getProjectRefFromSupabaseUrl(prodSupabaseUrl);
 	const prodStorageUrl = buildStorageUrl(prodSupabaseUrl);
@@ -605,8 +687,7 @@ export async function main(): Promise<void> {
 		);
 	}
 
-	// Authorization before any Preview write. Dry-run skips (apply=false).
-	if (options.apply) {
+	if (options.apply && !options.skipAuthorization) {
 		console.info('■ Authorizing Preview write...');
 		await authorizePreviewWriteApply({
 			slug: PREVIEW_MIRROR_AUTH_SLUG,
@@ -633,8 +714,8 @@ export async function main(): Promise<void> {
 		previewAdminUserId: '',
 	};
 
-	// Build and execute phases
-	const phases = buildPhases(options, prodCtx, previewCtx, report);
+	const syncOptions: SyncOptions = { dryRun: options.dryRun, apply: options.apply };
+	const phases = buildPhases(syncOptions, prodCtx, previewCtx, report);
 	console.info(
 		`\n■ Execution plan has ${phases.length} phases${options.dryRun ? ' (dry-run)' : ''}`,
 	);
@@ -647,13 +728,14 @@ export async function main(): Promise<void> {
 			}
 		} catch (err) {
 			const msg = err instanceof Error ? err.message : String(err);
-			report.failures.push(`${phase.name}: ${msg}`);
+			if (!report.failures.includes(`${phase.name}: ${msg}`)) {
+				report.failures.push(`${phase.name}: ${msg}`);
+			}
 			console.warn(`\n❌ Phase "${phase.name}" failed: ${msg}`);
 			break;
 		}
 	}
 
-	// Finalize
 	const hasFailures = report.failures.length > 0;
 	report.status = hasFailures ? 'failed' : options.dryRun ? 'dry-run-pending' : 'applied';
 
@@ -664,7 +746,13 @@ export async function main(): Promise<void> {
 		writeReportFile(report, redactDbUrl);
 	}
 
-	process.exit(hasFailures ? 1 : 0);
+	return report;
+}
+
+export async function main(argv: string[] = process.argv.slice(2)): Promise<void> {
+	const options = parseArgs(argv);
+	const report = await runPreviewMirror(options);
+	process.exit(report.failures.length > 0 ? 1 : 0);
 }
 
 if (
