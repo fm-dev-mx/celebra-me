@@ -19,6 +19,15 @@ See the invitation authority chain in [`.agent/index.md`](../../.agent/index.md)
 
 Every managed digital invitation must define:
 
+- **Managed Identity** (`managedIdentityId`): Immutable UUID v4 independent of slug, title, and
+  client name. Never reuse across definitions; never change after first publication. Identity
+  resolution and uniqueness use this value — never title or client name.
+- **Previous Slugs** (`previousSlugs`, optional): Historical slugs for this managed identity. Used
+  for alias diagnostics and fail-closed `REKEY_REQUIRED` protection. Creating a new row when a
+  previous slug is still active is forbidden; operators must pass `--rekey-from <old-slug>`.
+  Guarded rekey (Local and Preview only; Production blocked) preserves invitation UUID, owner,
+  publication, event, RSVP data, provenance, and assets; it aborts on collisions or drift.
+  `managedIdentityId` is assigned/backfilled even when content is otherwise unchanged.
 - **Display Name** (`title`): Spanish human-readable title (e.g. `Romina Ríos Chaparro`).
 - **Canonical Slug** (`slug`): Lowercase hyphenated unique identifier (e.g. `romina-rios-chaparro`,
   `daniela-y-martin`). Slug drives public URLs, assets, and storage paths. It is **not** the host
