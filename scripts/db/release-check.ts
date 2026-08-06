@@ -9,6 +9,10 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fail, runCommand, type CommandResult } from './db-workflow-lib.ts';
+import {
+	formatOperatorFailure,
+	parsePorcelainDirtyFiles,
+} from './operator-cli-ux.ts';
 
 export const RELEASE_CHECK_EVIDENCE_PATH = resolve(
 	process.cwd(),
@@ -41,17 +45,60 @@ export function readGitWorktreeState(
 		fail(`Unable to resolve current HEAD SHA (got "${sha}").`);
 	}
 	const porcelain = runner('git', ['status', '--porcelain']);
+	const dirtyCount = porcelain
+		.split(/\r?\n/)
+		.map((line) => line.trimEnd())
+		.filter(Boolean).length;
+	const dirtyFiles = parsePorcelainDirtyFiles(porcelain, 8);
 	return {
 		sha,
-		clean: porcelain.length === 0,
-		dirtySummary: porcelain.length === 0 ? '' : porcelain.split(/\r?\n/).slice(0, 8).join(' | '),
+		clean: dirtyCount === 0,
+		dirtySummary:
+			dirtyCount === 0 ? '' : `${dirtyCount} archivo(s): ${dirtyFiles.join(' | ')}`,
 	};
+}
+
+function failDirtyWorktree(state: GitWorktreeState, cause: string): never {
+	const porcelain = state.dirtySummary;
+	// Re-read porcelain paths from git for a precise multiline list.
+	let items: string[] = [];
+	try {
+		const raw = execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' });
+		items = parsePorcelainDirtyFiles(raw);
+	} catch {
+		items = porcelain
+			? porcelain
+					.replace(/^\d+ archivo\(s\):\s*/, '')
+					.split(' | ')
+					.filter(Boolean)
+			: [];
+	}
+	process.stderr.write(
+		formatOperatorFailure({
+			title: 'Árbol de trabajo con cambios',
+			cause,
+			code: 'DIRTY_WORKTREE',
+			remediation: [
+				'Revise los archivos afectados y confirme que los cambios son intencionales.',
+				'Haga commit de los cambios (o limpie el árbol) hasta que `git status` quede limpio.',
+				'Ejecute `pnpm release-check` sobre el HEAD limpio.',
+				'Reintente el comando de Production apply.',
+			],
+			retryCommand: 'pnpm release-check && pnpm db:prod:migrate',
+			affected: {
+				label: 'Archivos afectados',
+				items,
+			},
+		}),
+	);
+	process.exit(1);
 }
 
 export function assertCleanGitWorktree(state: GitWorktreeState = readGitWorktreeState()): string {
 	if (!state.clean) {
-		fail(
-			`DIRTY_WORKTREE: Release validation and Production apply require a clean working tree. Dirty summary: ${state.dirtySummary}`,
+		failDirtyWorktree(
+			state,
+			`Hay cambios locales sin commit. La validación de release y el apply de Production exigen un HEAD limpio. ${state.dirtySummary}`,
 		);
 	}
 	return state.sha;
@@ -148,8 +195,14 @@ export function runReleaseCheck(options: {
 	const post = readGitWorktreeState();
 	if (!post.clean || post.sha !== sha) {
 		clearReleaseCheckEvidence(evidencePath);
+		if (!post.clean) {
+			failDirtyWorktree(
+				post,
+				'El árbol de trabajo cambió durante release-check. No se escribió evidencia.',
+			);
+		}
 		fail(
-			'DIRTY_WORKTREE: Working tree changed during release-check. Evidence was not written.',
+			'DIRTY_WORKTREE: Working tree SHA changed during release-check. Evidence was not written.',
 		);
 	}
 

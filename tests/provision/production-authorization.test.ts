@@ -244,6 +244,31 @@ describe('requireOwnerProductionApply', () => {
 		expect(stdoutWrite).not.toHaveBeenCalled();
 		expect(stderrWrite).toHaveBeenCalled();
 	});
+
+	it('loops on review without accepting confirmation yet', async () => {
+		jest.spyOn(process.stderr, 'write').mockImplementation(() => true);
+		let calls = 0;
+		await requireOwnerProductionApply({
+			...baseApplyInput,
+			selectIntent: () => {
+				calls += 1;
+				return calls === 1 ? 'review' : 'proceed';
+			},
+			readConfirmationLine: () => 'MIGRATE abcdef01',
+			technicalReview: [
+				['Impacto', 'test'],
+				['Ejecutor', 'supabase_cli_push'],
+			],
+		});
+		expect(calls).toBe(2);
+	});
+
+	it('defaults Cancel so accidental Enter cannot authorize', async () => {
+		const source = sourceOf('scripts/db/owner-production-apply.ts');
+		expect(source).toMatch(/default:\s*'cancel'/);
+		expect(source).toContain("name: 'Cancelar'");
+		expect(source).toContain("name: 'Revisar cambios'");
+	});
 });
 
 describe('Production mutator discovery and gate ordering', () => {

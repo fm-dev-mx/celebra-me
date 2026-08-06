@@ -4,22 +4,26 @@
  * One interactive authorization model for all Production mutators:
  * explicit --apply, exact Production project identity, agent rejection,
  * deterministic operation summary, and a two-step TTY confirmation
- * (arrow intent + short bound code) immediately before the first write.
+ * (arrow intent defaulting to Cancel, optional technical review, then
+ * short bound code) immediately before the first write.
  * No env/token/secret confirmation alternatives.
  */
 
 import { readSync } from 'node:fs';
 import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
 import { extractSupabaseProjectRef, redactDbUrl } from './db-target-config.ts';
+import {
+	failOperator,
+	formatKeyValueBlock,
+	operatorSymbol,
+	shortSha,
+	writeHuman,
+	type OperatorFailureInput,
+} from './operator-cli-ux.ts';
 import { assertValidReleaseCheckEvidence } from './release-check.ts';
 
-function fail(message: string): never {
-	console.error(`ERROR: ${message}`);
-	process.exit(1);
-}
-
-function writeOwnerLine(message = ''): void {
-	process.stderr.write(`${message}\n`);
+function failGate(input: OperatorFailureInput, env?: NodeJS.ProcessEnv): never {
+	failOperator(input, env);
 }
 
 /** Strip terminal paste noise that breaks exact confirmation matching on Windows. */
@@ -37,9 +41,15 @@ export function sanitizeOwnerConfirmationInput(raw: string): string {
 export function shortBindingHex(bindingHex: string): string {
 	const cleaned = bindingHex.trim().toLowerCase().replace(/[^0-9a-f]/g, '');
 	if (cleaned.length < 8) {
-		fail(
-			'OWNER_BINDING_INVALID: Confirmation binding must contain at least 8 hexadecimal characters.',
-		);
+		failGate({
+			title: 'Enlace de confirmación inválido',
+			cause: 'El enlace de confirmación debe contener al menos 8 caracteres hexadecimales.',
+			code: 'OWNER_BINDING_INVALID',
+			remediation: [
+				'Reejecute el preflight para obtener un plan o huella válidos.',
+				'Reintente el apply con el plan actualizado.',
+			],
+		});
 	}
 	return cleaned.slice(0, 8);
 }
@@ -48,17 +58,27 @@ export function shortBindingHex(bindingHex: string): string {
 export function buildOwnerConfirmationCode(operationVerb: string, bindingHex: string): string {
 	const verb = operationVerb.trim().toUpperCase();
 	if (!/^[A-Z][A-Z0-9_-]*$/.test(verb)) {
-		fail('OWNER_BINDING_INVALID: operationVerb must be an uppercase operation token.');
+		failGate({
+			title: 'Verbo de operación inválido',
+			cause: 'operationVerb debe ser un token de operación en mayúsculas.',
+			code: 'OWNER_BINDING_INVALID',
+			remediation: [
+				'Corrija el verbo de operación del comando (MIGRATE, PROMOTE, PATCH, RESET).',
+				'Reintente el apply.',
+			],
+		});
 	}
 	return `${verb} ${shortBindingHex(bindingHex)}`;
 }
+
+export type OwnerIntent = 'proceed' | 'cancel' | 'review';
 
 export interface OwnerProductionApplyInput {
 	/** Must be true when the CLI received an explicit `--apply` flag. */
 	apply: boolean;
 	/** Resolved Production database URL (never logged in full). */
 	dbUrl: string;
-	/** Stable operation type label for the summary. */
+	/** Stable operation type label for technical review / audit. */
 	operationType: string;
 	/**
 	 * Operation verb for the short confirmation code (e.g. MIGRATE, PROMOTE).
@@ -67,17 +87,27 @@ export interface OwnerProductionApplyInput {
 	operationVerb: string;
 	/**
 	 * Hex fingerprint bound to this exact apply (planId, packageHash, etc.).
-	 * Only the first 8 hex characters are typed; full value stays in the summary.
+	 * Only the first 8 hex characters are typed; full value stays in technical review.
 	 */
 	bindingHex: string;
 	/** Spanish label for the dangerous apply action in the intent menu. */
 	applyActionLabel: string;
-	/** Deterministic summary rows printed before the challenge. */
+	/**
+	 * Compact operator summary rows (Spanish labels).
+	 * Do not include URLs, full hashes, executors, or internal policy names.
+	 */
 	summary: ReadonlyArray<readonly [string, string]>;
+	/**
+	 * Optional technical review rows (impact + safety controls + internal identifiers).
+	 * Shown only when the operator selects "Revisar cambios".
+	 */
+	technicalReview?: ReadonlyArray<readonly [string, string]>;
+	/** Optional Spanish title override for the compact card. */
+	summaryTitle?: string;
 	env?: NodeJS.ProcessEnv;
 	stdin?: NodeJS.ReadStream;
 	/** Test seam for arrow intent menu. */
-	selectIntent?: () => 'proceed' | 'cancel' | Promise<'proceed' | 'cancel'>;
+	selectIntent?: () => OwnerIntent | Promise<OwnerIntent>;
 	/** Test seam for confirmation input. */
 	readConfirmationLine?: () => string | Promise<string>;
 	/** Test seam for release-check evidence (defaults to assertValidReleaseCheckEvidence). */
@@ -89,16 +119,29 @@ export function assertExactProductionProjectRef(dbUrl: string): string {
 	try {
 		projectRef = extractSupabaseProjectRef(dbUrl);
 	} catch (error: unknown) {
-		fail(
-			`PRODUCTION_TARGET_MISMATCH: Unable to extract Supabase project ref from PROD_DB_URL (${
+		failGate({
+			title: 'No se pudo verificar el destino Production',
+			cause: `No fue posible extraer la referencia del proyecto Supabase (${
 				error instanceof Error ? error.message : String(error)
-			}). Redacted: ${redactDbUrl(dbUrl)}`,
-		);
+			}). Destino redactado: ${redactDbUrl(dbUrl)}`,
+			code: 'PRODUCTION_TARGET_MISMATCH',
+			remediation: [
+				'Confirme que PROD_DB_URL apunta al proyecto Production configurado.',
+				'Vuelva a cargar las credenciales operativas del propietario.',
+				'Reintente el apply.',
+			],
+		});
 	}
 	if (projectRef !== SUPABASE_PROJECT_REFS.production) {
-		fail(
-			`PRODUCTION_TARGET_MISMATCH: Resolved database project ref does not match configured Production. Redacted: ${redactDbUrl(dbUrl)}`,
-		);
+		failGate({
+			title: 'Destino distinto de Production',
+			cause: `La base resuelta no coincide con Production. Destino redactado: ${redactDbUrl(dbUrl)}`,
+			code: 'PRODUCTION_TARGET_MISMATCH',
+			remediation: [
+				'Use únicamente PROD_DB_URL de Production (nunca Preview ni Local).',
+				'Verifique la identidad del proyecto y reintente.',
+			],
+		});
 	}
 	return projectRef;
 }
@@ -124,17 +167,70 @@ function readTtyConfirmationLine(): string {
 	return Buffer.concat(chunks).toString('utf8');
 }
 
-async function promptOwnerIntent(applyActionLabel: string): Promise<'proceed' | 'cancel'> {
+async function promptOwnerIntent(applyActionLabel: string): Promise<OwnerIntent> {
 	// Dynamic import keeps Jest/CJS consumers free of @inquirer ESM parse issues.
 	const { select } = await import('@inquirer/prompts');
 	return select({
-		message: 'Confirmar escritura en Production',
+		message: 'Seleccione una acción',
 		default: 'cancel',
 		choices: [
 			{ name: 'Cancelar', value: 'cancel' as const },
+			{ name: 'Revisar cambios', value: 'review' as const },
 			{ name: applyActionLabel, value: 'proceed' as const },
 		],
 	});
+}
+
+function defaultTechnicalReview(input: {
+	operationType: string;
+	projectRef: string;
+	releaseSha: string;
+	dbUrl: string;
+	bindingHex: string;
+	confirmationCode: string;
+	summary: ReadonlyArray<readonly [string, string]>;
+	technicalReview?: ReadonlyArray<readonly [string, string]>;
+}): ReadonlyArray<readonly [string, string]> {
+	if (input.technicalReview && input.technicalReview.length > 0) {
+		return input.technicalReview;
+	}
+	return [
+		['Impacto', 'Escritura en Production tras confirmación'],
+		...input.summary,
+		['Tipo interno', input.operationType],
+		['Project ref', input.projectRef],
+		['Release SHA', input.releaseSha],
+		['Destino', redactDbUrl(input.dbUrl)],
+		['Enlace completo', input.bindingHex],
+		['Código', input.confirmationCode],
+		['Controles', 'TTY · agente bloqueado · release-check · sin token'],
+	];
+}
+
+function writeCompactSummary(input: OwnerProductionApplyInput): void {
+	const rows: Array<readonly [string, string]> = [
+		['Entorno', 'Production'],
+		...input.summary,
+	];
+	writeHuman(
+		formatKeyValueBlock(input.summaryTitle ?? 'Escritura en Production', rows, {
+			env: input.env,
+		}),
+	);
+	writeHuman(
+		`${operatorSymbol('info', input.env)} Cancelar está seleccionado por defecto. Enter no autoriza la escritura.`,
+	);
+	writeHuman();
+}
+
+function writeTechnicalReviewCard(
+	rows: ReadonlyArray<readonly [string, string]>,
+	env?: NodeJS.ProcessEnv,
+): void {
+	writeHuman(
+		formatKeyValueBlock('Revisión técnica — impacto y controles', rows, { env }),
+	);
+	writeHuman();
 }
 
 /**
@@ -144,16 +240,35 @@ async function promptOwnerIntent(applyActionLabel: string): Promise<'proceed' | 
 export async function requireOwnerProductionApply(
 	input: OwnerProductionApplyInput,
 ): Promise<void> {
+	const env = input.env ?? process.env;
+
 	if (!input.apply) {
-		fail(
-			'OWNER_APPLY_REQUIRED: Production mutation requires an explicit --apply flag. Dry-run/preflight mode performs no writes.',
+		failGate(
+			{
+				title: 'Se requiere --apply explícito',
+				cause: 'Las mutaciones de Production exigen la bandera --apply. El modo preflight no escribe.',
+				code: 'OWNER_APPLY_REQUIRED',
+				remediation: [
+					'Ejecute primero el preflight de solo lectura.',
+					'Reintente con --apply en una TTY interactiva del propietario.',
+				],
+			},
+			env,
 		);
 	}
 
-	const env = input.env ?? process.env;
 	if (agentSelfAuthorizationBlocked(env)) {
-		fail(
-			'AGENT_SELF_AUTHORIZATION_BLOCKED: Autonomous agents cannot authorize Production writes. An interactive owner TTY confirmation is required.',
+		failGate(
+			{
+				title: 'Autorización por agente bloqueada',
+				cause: 'Los agentes autónomos no pueden autorizar escrituras en Production.',
+				code: 'AGENT_SELF_AUTHORIZATION_BLOCKED',
+				remediation: [
+					'Ejecute el comando en una terminal interactiva del propietario.',
+					'No defina CELEBRA_AGENT_CONTEXT durante el apply de Production.',
+				],
+			},
+			env,
 		);
 	}
 
@@ -162,53 +277,92 @@ export async function requireOwnerProductionApply(
 	const stdin = input.stdin ?? process.stdin;
 	const confirmationCode = buildOwnerConfirmationCode(input.operationVerb, input.bindingHex);
 
-	writeOwnerLine();
-	writeOwnerLine('============================================================');
-	writeOwnerLine('Production owner apply — review carefully');
-	writeOwnerLine('============================================================');
-	writeOwnerLine(`Operation:     ${input.operationType}`);
-	writeOwnerLine(`Project ref:   ${projectRef}`);
-	writeOwnerLine(`Release SHA:   ${releaseEvidence.sha}`);
-	writeOwnerLine(`Target (redacted): ${redactDbUrl(input.dbUrl)}`);
-	for (const [label, value] of input.summary) {
-		writeOwnerLine(`${label.padEnd(14)} ${value}`);
-	}
-	writeOwnerLine('------------------------------------------------------------');
-	writeOwnerLine('Confirmation code (type or paste exactly):');
-	writeOwnerLine(`  ${confirmationCode}`);
-	writeOwnerLine('============================================================');
+	writeHuman();
+	writeCompactSummary(input);
 
 	const hasIntentSeam = Boolean(input.selectIntent);
 	const hasLineSeam = Boolean(input.readConfirmationLine);
 	if (!hasIntentSeam && !hasLineSeam && !stdin.isTTY) {
-		fail(
-			'TTY_REQUIRED: Production apply requires an interactive TTY for exact owner confirmation. Noninteractive confirmation is not accepted.',
+		failGate(
+			{
+				title: 'Se requiere una TTY interactiva',
+				cause: 'Production apply exige confirmación exacta del propietario en una TTY. No se acepta confirmación no interactiva.',
+				code: 'TTY_REQUIRED',
+				remediation: [
+					'Ejecute el comando en una terminal interactiva.',
+					'No use CI, pipes ni automatización para autorizar Production.',
+				],
+			},
+			env,
 		);
 	}
 
-	const intent = input.selectIntent
-		? await input.selectIntent()
-		: hasLineSeam
-			? 'proceed'
-			: await promptOwnerIntent(input.applyActionLabel);
+	for (;;) {
+		const intent = input.selectIntent
+			? await input.selectIntent()
+			: hasLineSeam
+				? 'proceed'
+				: await promptOwnerIntent(input.applyActionLabel);
 
-	if (intent !== 'proceed') {
-		fail(
-			'OWNER_CONFIRMATION_CANCELLED: Operator cancelled at the intent prompt. No Production write was performed.',
-		);
+		if (intent === 'cancel') {
+			failGate(
+				{
+					title: 'Operación cancelada',
+					cause: 'El operador canceló en el menú de intención.',
+					code: 'OWNER_CONFIRMATION_CANCELLED',
+					remediation: [
+						'Si la escritura era intencional, vuelva a ejecutar el comando.',
+						'Revise el plan y seleccione Aplicar de forma explícita.',
+					],
+				},
+				env,
+			);
+		}
+
+		if (intent === 'review') {
+			writeTechnicalReviewCard(
+				defaultTechnicalReview({
+					operationType: input.operationType,
+					projectRef,
+					releaseSha: releaseEvidence.sha,
+					dbUrl: input.dbUrl,
+					bindingHex: input.bindingHex,
+					confirmationCode,
+					summary: input.summary,
+					technicalReview: input.technicalReview,
+				}),
+				env,
+			);
+			continue;
+		}
+
+		break;
 	}
 
-	writeOwnerLine();
-	writeOwnerLine(`Escriba el código de confirmación:`);
-	writeOwnerLine(`  ${confirmationCode}`);
+	writeHuman(`Escriba el código de confirmación exactamente:`);
+	writeHuman(`  ${confirmationCode}`);
+	writeHuman(
+		`${operatorSymbol('info', env)} Enlace: plan ${shortSha(input.bindingHex)} · release ${shortSha(releaseEvidence.sha)}`,
+	);
 
 	const typedRaw = await (input.readConfirmationLine ?? readTtyConfirmationLine)();
 	const typed = sanitizeOwnerConfirmationInput(typedRaw);
 	if (typed !== confirmationCode) {
-		fail(
-			'OWNER_CONFIRMATION_MISMATCH: Typed confirmation did not match the required challenge. No Production write was performed.',
+		failGate(
+			{
+				title: 'Código de confirmación incorrecto',
+				cause: 'El texto ingresado no coincide con el desafío vinculado al plan.',
+				code: 'OWNER_CONFIRMATION_MISMATCH',
+				remediation: [
+					'Copie o escriba exactamente el código mostrado (VERB + 8 hex).',
+					'Si el plan cambió, cancele, vuelva a revisar y genere un nuevo código.',
+				],
+			},
+			env,
 		);
 	}
 
-	writeOwnerLine('✅ Owner confirmation accepted. Proceeding with the first write.');
+	writeHuman(
+		`${operatorSymbol('ok', env)} Confirmación del propietario aceptada. Continuando con la primera escritura.`,
+	);
 }

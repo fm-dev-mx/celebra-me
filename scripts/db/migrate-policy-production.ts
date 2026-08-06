@@ -29,10 +29,27 @@ import {
 import type { MigrateEnvironmentPolicy, MigratePolicySession } from './migrate-policy.ts';
 import { buildMigrationPlan } from './migration-plan.ts';
 import { comparePendingSetToExpected } from './migration-pending-set.ts';
+import {
+	formatPhaseSummary,
+	labelAuthRequirement,
+	labelBackupRequirement,
+	labelCompatibility,
+	operatorSymbol,
+	shortSha,
+	writeHuman,
+} from './operator-cli-ux.ts';
 import { requireOwnerProductionApply } from './owner-production-apply.ts';
 import { assertValidReleaseCheckEvidence, readGitWorktreeState } from './release-check.ts';
 
 export const PRODUCTION_MIGRATION_OPERATION_TYPE = 'production_migration';
+
+function beginPlanBuild(session?: MigratePolicySession): number {
+	const prior = session?.buildPlanCount ?? 0;
+	if (session) {
+		session.buildPlanCount = prior + 1;
+	}
+	return prior;
+}
 
 /** BEHIND with zero unexplained errors is the expected pre-apply Production state. */
 export function isAllowlistedBehindAuditOutput(auditOutput: string, status: number): boolean {
@@ -44,12 +61,20 @@ export function isAllowlistedBehindAuditOutput(auditOutput: string, status: numb
 	);
 }
 
-function runProductionAudit(ctx: { session?: MigratePolicySession }): void {
+function runProductionAudit(ctx: { session?: MigratePolicySession }, quiet: boolean): void {
 	if (ctx.session?.productionAuditCompleted) {
-		console.info('1. Reusing Production audit evidence from this orchestration (already verified).\n');
+		if (!quiet) {
+			writeHuman(
+				`${operatorSymbol('ok')} Auditoría de Production reutilizada en esta orquestación.`,
+			);
+		}
 		return;
 	}
-	console.info('1. Running read-only production database audit...');
+	if (quiet) {
+		writeHuman(`${operatorSymbol('info')} Revalidando auditoría…`);
+	} else {
+		writeHuman(`${operatorSymbol('info')} Ejecutando auditoría de solo lectura en Production…`);
+	}
 	const auditResult = runCommand(
 		'npx',
 		['tsx', 'scripts/db/audit-db.ts', '--target', 'production'],
@@ -62,18 +87,23 @@ function runProductionAudit(ctx: { session?: MigratePolicySession }): void {
 			'Production database audit failed. Resolve schema drift or unverified history before migrating.',
 		);
 	}
-	if (behindOnly) {
-		console.info(
-			'ℹ️  Production is BEHIND expected migrations (allowed before an exact expected-set apply).\n',
-		);
-	} else {
-		console.info('✅ Production database audit passed.\n');
+	if (!quiet) {
+		if (behindOnly) {
+			writeHuman(
+				`${operatorSymbol('warn')} Production está BEHIND (permitido antes de un apply con conjunto exacto).`,
+			);
+		} else {
+			writeHuman(`${operatorSymbol('ok')} Auditoría de Production aprobada.`);
+		}
+		writeHuman();
 	}
 	if (ctx.session) ctx.session.productionAuditCompleted = true;
 }
 
 function runPreMigrationBackup(prodDbUrl: string): void {
-	console.info('Creating a complete read-only pre-migration critical recovery point...');
+	writeHuman(
+		`${operatorSymbol('info')} Creando punto de recuperación crítico previo a la migración…`,
+	);
 	const backupResult = runCommand(
 		'npx',
 		['tsx', 'scripts/db/daily-critical-production-backup.ts'],
@@ -88,26 +118,28 @@ function runPreMigrationBackup(prodDbUrl: string): void {
 			'PRE_MIGRATION_BACKUP_FAILED: Verified pre-migration backup is required before owner confirmation. No Production write was performed.',
 		);
 	}
-	console.info('✅ Complete pre-migration critical recovery point verified.\n');
+	writeHuman(`${operatorSymbol('ok')} Respaldo crítico previo verificado.`);
+	writeHuman();
 }
 
 function runPostMigrationBackup(prodDbUrl: string): void {
-	console.info('Creating the complete post-migration critical recovery set...');
+	writeHuman(
+		`${operatorSymbol('info')} Creando conjunto de recuperación crítico posterior a la migración…`,
+	);
 	runCommand('npx', ['tsx', 'scripts/db/backup-critical-production.ts'], {
 		env: { ...process.env, PROD_DB_URL: prodDbUrl },
 		redact: [prodDbUrl],
 	});
-	console.info('✅ Complete post-migration critical recovery set verified.');
+	writeHuman(`${operatorSymbol('ok')} Respaldo crítico posterior verificado.`);
 }
 
 export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 	target: 'production',
 
 	resolveContext(input) {
-		const { url: prodDbUrl, source } = getProdDbUrl();
+		const { url: prodDbUrl } = getProdDbUrl();
 		assertProductionDbUrl(prodDbUrl);
-		console.info(`- PROD_DB_URL source: ${source}`);
-		console.info(`- Target: ${redactDbUrl(prodDbUrl)}`);
+		// Connection URLs stay hidden; failures from assertProductionDbUrl remain actionable.
 		return {
 			dbUrl: prodDbUrl,
 			expectedPin: input.expectedPin,
@@ -117,28 +149,54 @@ export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 	},
 
 	buildPlan(ctx, mode) {
-		runProductionAudit(ctx);
+		const priorBuilds = beginPlanBuild(ctx.session);
+		// Apply rebuilds are revalidation: keep progress compact; preflight stays verbose.
+		const quiet = mode === 'apply' || priorBuilds > 0;
+		if (quiet) {
+			writeHuman(
+				priorBuilds === 0
+					? `${operatorSymbol('info')} Revalidando evidencia del plan…`
+					: `${operatorSymbol('info')} Confirmando estabilidad del plan…`,
+			);
+		}
 
-		console.info('2. Executing migration dry-run and pending-set discovery...');
+		runProductionAudit(ctx, quiet);
+
+		if (!quiet) {
+			writeHuman(`${operatorSymbol('info')} Descubriendo migraciones pendientes (dry-run)…`);
+		}
 		const dryRun = executeSupabaseDryRun(ctx.dbUrl);
 		const pendingVersions = dryRun.pendingVersions;
 
 		if (ctx.expectedPin) {
 			const compare = comparePendingSetToExpected(pendingVersions, ctx.expectedPin);
 			if (!compare.ok) {
-				for (const error of compare.errors) console.error(`❌ ERROR: ${error}`);
+				for (const error of compare.errors) {
+					writeHuman(`${operatorSymbol('fail')} ${error}`);
+				}
 				fail('Migration dry-run does not match --expected. Aborting.');
 			}
-			console.info('✅ Dry-run matches --expected exactly.\n');
-		} else if (pendingVersions.length === 0) {
-			console.info('Dry-run reports no pending migrations.');
-		} else {
-			console.info(`Pending migrations from dry-run: ${pendingVersions.join(', ')}`);
+			if (!quiet) {
+				writeHuman(`${operatorSymbol('ok')} Dry-run coincide exactamente con --expected.`);
+				writeHuman();
+			}
+		} else if (!quiet) {
+			if (pendingVersions.length === 0) {
+				writeHuman(`${operatorSymbol('info')} No hay migraciones pendientes.`);
+			} else {
+				writeHuman(
+					`${operatorSymbol('info')} Pendientes: ${pendingVersions.join(', ')}`,
+				);
+			}
 		}
 
 		const worktree = readGitWorktreeState();
 		const releaseSha = worktree.sha;
-		console.info('3. Evaluating migration / deployment compatibility (release = HEAD)...');
+		if (!quiet) {
+			writeHuman(
+				`${operatorSymbol('info')} Evaluando compatibilidad de despliegue (release = HEAD)…`,
+			);
+		}
 		const dbAppliedVersions = readAppliedMigrationVersions(ctx.dbUrl);
 		const candidateVersions =
 			pendingVersions.length > 0
@@ -153,18 +211,29 @@ export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 			targetReleaseShaOverride: releaseSha,
 		});
 		assertHostedCompatibilityOrFail(compat, fail);
-		logHostedCompatibility(compat);
+		if (!quiet) {
+			logHostedCompatibility(compat);
+		}
 		const planCompat = toPlanCompatibility(compat);
 
 		let releaseEvidenceSha: string | null = null;
 		if (mode === 'apply') {
-			console.info('4. Validating release-check evidence for current clean HEAD...');
+			if (!quiet) {
+				writeHuman(
+					`${operatorSymbol('info')} Validando evidencia de release-check para HEAD limpio…`,
+				);
+			}
 			const evidence = assertValidReleaseCheckEvidence({ worktree });
 			releaseEvidenceSha = evidence.sha;
-			console.info(`✅ Release evidence valid for HEAD ${evidence.sha}\n`);
+			if (!quiet) {
+				writeHuman(
+					`${operatorSymbol('ok')} Evidencia de release válida para HEAD ${shortSha(evidence.sha, 12)}.`,
+				);
+				writeHuman();
+			}
 		}
 
-		return buildMigrationPlan({
+		const plan = buildMigrationPlan({
 			target: 'production',
 			mode,
 			sourceHead: releaseSha,
@@ -185,6 +254,18 @@ export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 			verificationRequirement: 'history_and_mutation_contract',
 			releaseEvidenceSha,
 		});
+
+		if (quiet && ctx.session) {
+			if (ctx.session.lastPlanId && ctx.session.lastPlanId !== plan.planId) {
+				writeHuman(
+					`${operatorSymbol('warn')} El plan cambió durante la revalidación (${shortSha(ctx.session.lastPlanId)} → ${shortSha(plan.planId)}). Se requiere una nueva revisión.`,
+				);
+			} else if (priorBuilds > 0) {
+				writeHuman(`${operatorSymbol('ok')} Revalidación sin cambios materiales en el plan.`);
+			}
+		}
+		if (ctx.session) ctx.session.lastPlanId = plan.planId;
+		return plan;
 	},
 
 	beforeWrite(_plan, ctx) {
@@ -194,7 +275,8 @@ export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 
 	async authorize(plan, ctx) {
 		const pendingLabel =
-			plan.pendingVersions.length === 0 ? '(none)' : plan.pendingVersions.join(',');
+			plan.pendingVersions.length === 0 ? '(ninguna)' : plan.pendingVersions.join(', ');
+		const phaseLabel = formatPhaseSummary(plan.phaseByVersion, plan.pendingVersions);
 		const releaseSha = plan.releaseEvidenceSha ?? plan.sourceHead;
 		await requireOwnerProductionApply({
 			apply: true,
@@ -202,16 +284,35 @@ export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 			operationType: PRODUCTION_MIGRATION_OPERATION_TYPE,
 			operationVerb: 'MIGRATE',
 			bindingHex: plan.planId,
-			applyActionLabel: 'Aplicar migración de schema',
+			applyActionLabel: 'Aplicar',
+			summaryTitle: 'Migración de schema — Production',
 			summary: [
-				['Mode', 'schema migration apply'],
-				['Release SHA', releaseSha],
-				['Pending', pendingLabel],
-				['Plan ID', plan.planId],
+				['Migraciones', pendingLabel],
 				[
-					'Expected pin',
-					plan.expectedPin ? plan.expectedPin.join(',') : '(derived from dry-run)',
+					'Fase / compat.',
+					`${phaseLabel} · ${labelCompatibility(plan.compatibilityStatus)}`,
 				],
+				['Respaldo', labelBackupRequirement(plan.backupRequirement)],
+				['Autorización', labelAuthRequirement(plan.authRequirement)],
+			],
+			technicalReview: [
+				['Impacto', 'Aplica migraciones de schema pendientes en Production'],
+				['Migraciones', pendingLabel],
+				['Fases', phaseLabel],
+				['Compatibilidad', `${plan.compatibilityStatus}`],
+				...(plan.compatibilityReasons.length > 0
+					? ([['Motivos', plan.compatibilityReasons.join('; ')]] as const)
+					: []),
+				['Respaldo (política)', plan.backupRequirement],
+				['Autorización (política)', plan.authRequirement],
+				['Ejecutor', plan.executor],
+				['Verificación', plan.verificationRequirement],
+				['Tipo interno', PRODUCTION_MIGRATION_OPERATION_TYPE],
+				['Plan ID', plan.planId],
+				['Release SHA', releaseSha],
+				['Destino', redactDbUrl(ctx.dbUrl)],
+				['Pin esperado', plan.expectedPin ? plan.expectedPin.join(',') : '(derivado del dry-run)'],
+				['Controles', 'TTY · agente bloqueado · release-check · backup obligatorio · sin token'],
 			],
 			env: ctx.env,
 			readConfirmationLine: ctx.readConfirmationLine
@@ -221,21 +322,22 @@ export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 	},
 
 	execute(_plan, ctx) {
-		console.info('6. Applying migrations to production database...');
+		writeHuman(`${operatorSymbol('info')} Aplicando migraciones en Production…`);
 		runCommand('supabase', ['db', 'push', '--db-url', ctx.dbUrl, '--yes'], {
 			redact: [ctx.dbUrl],
 		});
-		console.info('✅ Migrations applied successfully.\n');
+		writeHuman(`${operatorSymbol('ok')} Migraciones aplicadas.`);
+		writeHuman();
 	},
 
 	afterWrite(plan, ctx) {
-		console.info('7. Running post-migration verification...');
+		writeHuman(`${operatorSymbol('info')} Verificación posterior a la migración…`);
 		verifyVersionsInHistory(ctx.dbUrl, plan.pendingVersions);
 		runMutationContractVerify('production');
-		console.info(
-			'✅ Post-migration verification passed. Migrations and application DB contract are active.',
+		writeHuman(
+			`${operatorSymbol('ok')} Verificación posterior aprobada. Schema y contrato de mutación activos.`,
 		);
 		runPostMigrationBackup(ctx.dbUrl);
-		console.info('Production migration workflow completed successfully.');
+		writeHuman(`${operatorSymbol('ok')} Flujo de migración de Production completado.`);
 	},
 };

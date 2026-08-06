@@ -515,12 +515,22 @@ export async function orchestrateApply(input: OrchestrateDbSyncInput): Promise<D
 				operationType: 'invitation-promote',
 				operationVerb: 'PROMOTE',
 				bindingHex: packageData.packageHash,
-				applyActionLabel: 'Aplicar promoción a Production',
+				applyActionLabel: 'Aplicar',
+				summaryTitle: 'Sincronización — promoción Production',
 				summary: [
-					['Direction', DB_SYNC_DIRECTION_LABELS[direction]],
-					['Plan ID', rebuilt.planId],
-					['Package', packageData.packageHash],
+					['Operación', DB_SYNC_DIRECTION_LABELS[direction]],
 					['Slug', packageData.invitation.slug],
+					['Respaldo', 'Controles del motor de promoción'],
+					['Autorización', 'Confirmación interactiva del propietario'],
+				],
+				technicalReview: [
+					['Impacto', 'Delega apply de promoción administrada en Production'],
+					['Dirección', DB_SYNC_DIRECTION_LABELS[direction]],
+					['Slug', packageData.invitation.slug],
+					['Plan ID', rebuilt.planId],
+					['Package hash', packageData.packageHash],
+					['Tipo interno', 'invitation-promote'],
+					['Controles', 'TTY · agente bloqueado · release-check · plan exacto · sin token'],
 				],
 			});
 			const report = await runPromotionApply({

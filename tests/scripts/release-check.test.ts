@@ -46,8 +46,9 @@ describe('release-check evidence', () => {
 		expect(readReleaseCheckEvidence(path)?.status).toBe('pass');
 	});
 
-	it('rejects dirty worktrees', () => {
+	it('rejects dirty worktrees with actionable operator output', () => {
 		jest.spyOn(console, 'error').mockImplementation(() => undefined);
+		const stderrWrite = jest.spyOn(process.stderr, 'write').mockImplementation(() => true);
 		jest.spyOn(process, 'exit').mockImplementation(((code?: string | number | null) => {
 			throw new Error(`process.exit:${code ?? ''}`);
 		}) as never);
@@ -56,10 +57,14 @@ describe('release-check evidence', () => {
 				worktree: {
 					sha: 'abc1234',
 					clean: false,
-					dirtySummary: ' M scripts/db/push-prod-migrations.ts',
+					dirtySummary: '1 archivo(s): scripts/db/push-prod-migrations.ts',
 				},
 			}),
 		).toThrow('process.exit:1');
+		const stderr = stderrWrite.mock.calls.map((call) => String(call[0] ?? '')).join('');
+		expect(stderr).toContain('DIRTY_WORKTREE');
+		expect(stderr).toContain('No changes were made to Production');
+		expect(stderr).toContain('pnpm release-check');
 	});
 
 	it('rejects and clears stale evidence when HEAD changes', () => {

@@ -157,12 +157,21 @@ async function applyPlan(): Promise<void> {
 		operationType: ROMINA_DRAFT_RESET_OPERATION_TYPE,
 		operationVerb: 'RESET',
 		bindingHex: plan.operationFingerprint,
-		applyActionLabel: 'Aplicar reset de borrador en Production',
+		applyActionLabel: 'Aplicar',
+		summaryTitle: 'Reset de borrador — Production',
 		summary: [
-			['Mode', 'Romina draft reset'],
+			['Operación', 'Reset temporal de borrador (Romina)'],
 			['Slug', plan.slug],
-			['Fingerprint', plan.operationFingerprint],
+			['Respaldo', 'Puerta de backup evaluada'],
+			['Autorización', 'Confirmación interactiva del propietario'],
+		],
+		technicalReview: [
+			['Impacto', 'Reescribe borrador administrado en Production'],
+			['Slug', plan.slug],
+			['Huella', plan.operationFingerprint],
 			['Operation ID', plan.operationId],
+			['Tipo interno', ROMINA_DRAFT_RESET_OPERATION_TYPE],
+			['Controles', 'TTY · agente bloqueado · release-check · backup · sin token'],
 		],
 	});
 

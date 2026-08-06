@@ -93,9 +93,10 @@ task authorization, target classification, and standard guard checks.
   6. Valid `pnpm release-check` evidence for the current clean `HEAD` (apply only; ordinary
      preflight does not run the full suite)
   7. Verified pre-migration backup (`.backups/prod/...`)
-  8. Shared owner boundary: operation summary + two-step interactive TTY confirmation (arrow intent
-     defaulting to Cancel, then short bound code `<VERB> <8-hex>` from immutable `planId` /
-     fingerprint). Full release SHA, pending versions, and plan identity remain in the summary.
+  8. Shared owner boundary: compact operator summary + two-step interactive TTY confirmation
+     (arrow menu defaulting to Cancel, optional technical review, then short bound code
+     `<VERB> <8-hex>` from immutable `planId` / fingerprint). URLs, full hashes, executors, and
+     internal policy names stay in technical review / `--json`, not the default card.
   9. Migration application (`supabase db push --db-url <url> --yes`)
   10. Post-migration `schema_migrations` + `pnpm db:contract:verify --target production`
   11. Verified post-migration critical backup

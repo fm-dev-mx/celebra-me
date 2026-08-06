@@ -145,6 +145,10 @@ describe('migrate orchestrator', () => {
 		const first = plan({ mode: 'apply', pendingVersions: ['20260730220544'] });
 		const second = plan({ mode: 'apply', pendingVersions: ['20260802090000'] });
 		mockBuildPlan.mockReturnValueOnce(first).mockReturnValueOnce(second);
+		const stderrWrite = jest.spyOn(process.stderr, 'write').mockImplementation(() => true);
+		jest.spyOn(process, 'exit').mockImplementation(((code?: string | number | null) => {
+			throw new Error(`process.exit:${code ?? ''}`);
+		}) as never);
 
 		await expect(
 			orchestrateMigrate({
@@ -153,7 +157,9 @@ describe('migrate orchestrator', () => {
 				expectedPin: null,
 				remindConcurrencyRisk: false,
 			}),
-		).rejects.toThrow(/PLAN_DRIFT/);
+		).rejects.toThrow('process.exit:1');
+		const stderr = stderrWrite.mock.calls.map((call) => String(call[0] ?? '')).join('');
+		expect(stderr).toContain('PLAN_DRIFT');
 		expect(mockAuthorize).not.toHaveBeenCalled();
 		expect(mockExecute).not.toHaveBeenCalled();
 	});
@@ -169,6 +175,10 @@ describe('migrate orchestrator', () => {
 			pendingVersions: ['20260802090000'],
 		});
 		mockBuildPlan.mockReturnValue(live);
+		const stderrWrite = jest.spyOn(process.stderr, 'write').mockImplementation(() => true);
+		jest.spyOn(process, 'exit').mockImplementation(((code?: string | number | null) => {
+			throw new Error(`process.exit:${code ?? ''}`);
+		}) as never);
 
 		await expect(
 			orchestrateMigrate({
@@ -178,7 +188,9 @@ describe('migrate orchestrator', () => {
 				reviewedPlan: reviewed,
 				remindConcurrencyRisk: false,
 			}),
-		).rejects.toThrow(/PLAN_DRIFT/);
+		).rejects.toThrow('process.exit:1');
+		const stderr = stderrWrite.mock.calls.map((call) => String(call[0] ?? '')).join('');
+		expect(stderr).toContain('PLAN_DRIFT');
 		expect(mockExecute).not.toHaveBeenCalled();
 	});
 });

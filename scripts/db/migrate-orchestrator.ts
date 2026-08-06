@@ -22,6 +22,17 @@ import { localMigratePolicy } from './migrate-policy-local.ts';
 import { previewMigratePolicy } from './migrate-policy-preview.ts';
 import { productionMigratePolicy } from './migrate-policy-production.ts';
 import { disposableMigratePolicy } from './migrate-policy-disposable.ts';
+import {
+	formatKeyValueBlock,
+	formatOperatorFailure,
+	formatPhaseSummary,
+	labelAuthRequirement,
+	labelBackupRequirement,
+	labelCompatibility,
+	labelTarget,
+	shortSha,
+	writeHuman,
+} from './operator-cli-ux.ts';
 
 const POLICIES: Record<MigrateTarget, MigrateEnvironmentPolicy> = {
 	local: localMigratePolicy,
@@ -76,24 +87,60 @@ function withSeams(
 	};
 }
 
-function assertNoDrift(left: MigrationPlan, right: MigrationPlan, label: string): void {
+function failPlanDrift(
+	title: string,
+	drifts: readonly string[],
+	target: MigrateTarget,
+): never {
+	process.stderr.write(
+		formatOperatorFailure({
+			title,
+			cause: 'La evidencia en vivo ya no coincide con el plan revisado.',
+			code: 'PLAN_DRIFT',
+			remediation: [
+				'Ejecute de nuevo el preflight de solo lectura.',
+				'Revise el plan actualizado.',
+				'Reintente el apply con el plan nuevo (no reutilice un plan anterior).',
+			],
+			retryCommand: `pnpm db:migrate -- --target ${target}`,
+			noChangesMessage:
+				target === 'production'
+					? undefined
+					: `No se realizaron escrituras de schema en ${labelTarget(target)}.`,
+			affected: {
+				label: 'Campos con deriva',
+				items: [...drifts],
+			},
+		}),
+	);
+	process.exit(1);
+}
+
+function assertNoDrift(
+	left: MigrationPlan,
+	right: MigrationPlan,
+	label: string,
+	target: MigrateTarget,
+): void {
 	const drifts = detectPlanDrift(left, right);
 	if (drifts.length > 0) {
-		fail(
-			`PLAN_DRIFT: ${label} (${drifts.join(', ')}). ` +
-				`Re-run preflight and obtain a newly validated plan. No write was performed.`,
-		);
+		failPlanDrift(label, drifts, target);
 	}
 }
 
-function assertReviewDrift(reviewed: MigrationPlan, live: MigrationPlan): void {
+function assertReviewDrift(
+	reviewed: MigrationPlan,
+	live: MigrationPlan,
+	target: MigrateTarget,
+): void {
 	const explicit = detectPlanDrift(reviewed, live).filter((field) =>
 		REVIEW_DRIFT_FIELDS.has(field),
 	);
 	if (explicit.length > 0) {
-		fail(
-			`PLAN_DRIFT: Reviewed plan no longer matches live evidence (${explicit.join(', ')}). ` +
-				`Re-run preflight and obtain a newly validated plan. No write was performed.`,
+		failPlanDrift(
+			'El plan revisado ya no coincide con la evidencia en vivo',
+			explicit,
+			target,
 		);
 	}
 }
@@ -135,13 +182,13 @@ export async function orchestrateMigrate(
 	// Apply: rebuild current evidence twice; reject instability before authorization or write.
 	const first = policy.buildPlan(ctx, 'apply');
 	if (input.reviewedPlan) {
-		assertReviewDrift(input.reviewedPlan, first);
+		assertReviewDrift(input.reviewedPlan, first, input.target);
 	}
 	const plan = policy.buildPlan(ctx, 'apply');
-	assertNoDrift(first, plan, 'Live migration evidence changed before write');
+	assertNoDrift(first, plan, 'Live migration evidence changed before write', input.target);
 
 	if (input.remindConcurrencyRisk !== false) {
-		console.info(`Note: ${MIGRATE_CONCURRENCY_RESIDUAL_RISK}`);
+		writeHuman(`${MIGRATE_CONCURRENCY_RESIDUAL_RISK}`);
 	}
 
 	// Production: beforeWrite (critical backup) precedes authorize (owner TTY).
@@ -153,64 +200,46 @@ export async function orchestrateMigrate(
 	return { plan, wrote: plan.pendingVersions.length > 0 };
 }
 
+/** Full technical review — URLs stay redacted; hashes/executors/policy names included. */
 export function formatPlanReview(plan: MigrationPlan): string {
-	const lines = [
-		'------------------------------------------------------------',
-		'Migration plan review',
-		'------------------------------------------------------------',
-		`Plan ID:          ${plan.planId}`,
-		`Target:           ${plan.target}`,
-		`Mode:             ${plan.mode}`,
-		`Source HEAD:      ${plan.sourceHead}`,
-		`Identity:         ${plan.redactedTargetIdentity}`,
-		`Pending:          ${plan.pendingVersions.length === 0 ? '(none)' : plan.pendingVersions.join(', ')}`,
-		`Expected pin:     ${plan.expectedPin ? plan.expectedPin.join(', ') : '(none — derived)'}`,
-		`Phases:           ${
-			Object.keys(plan.phaseByVersion).length === 0
-				? '(none)'
-				: Object.entries(plan.phaseByVersion)
-						.map(([v, p]) => `${v}=${p}`)
-						.join(', ')
-		}`,
-		`Compatibility:    ${plan.compatibilityStatus}`,
-		`Release:          ${plan.releaseIdentity.kind}${plan.releaseIdentity.value ? `=${plan.releaseIdentity.value}` : ''}`,
-		`Deployed app:     ${plan.deployedAppIdentity.sha ?? '(none)'}`,
-		`Authorization:    ${plan.authRequirement}`,
-		`Backups:          ${plan.backupRequirement}`,
-		`Executor:         ${plan.executor}`,
-		`Verification:     ${plan.verificationRequirement}`,
-		`Release evidence: ${plan.releaseEvidenceSha ?? '(not required for this mode)'}`,
-		'------------------------------------------------------------',
-	];
-	return lines.join('\n');
+	const pending =
+		plan.pendingVersions.length === 0 ? '(ninguna)' : plan.pendingVersions.join(', ');
+	const phases = formatPhaseSummary(plan.phaseByVersion, plan.pendingVersions);
+	return formatKeyValueBlock('Revisión técnica del plan de migración', [
+		['Entorno', labelTarget(plan.target)],
+		['Modo', plan.mode],
+		['Migraciones', pending],
+		['Fases', phases],
+		['Compatibilidad', `${plan.compatibilityStatus} (${labelCompatibility(plan.compatibilityStatus)})`],
+		['Motivos', plan.compatibilityReasons.join('; ') || '(ninguno)'],
+		['Respaldo', `${plan.backupRequirement}`],
+		['Autorización', `${plan.authRequirement}`],
+		['Ejecutor', plan.executor],
+		['Verificación', plan.verificationRequirement],
+		['Plan ID', plan.planId],
+		['Source HEAD', plan.sourceHead],
+		['Identidad', plan.redactedTargetIdentity],
+		['Pin esperado', plan.expectedPin ? plan.expectedPin.join(', ') : '(derivado)'],
+		[
+			'Release',
+			`${plan.releaseIdentity.kind}${plan.releaseIdentity.value ? `=${plan.releaseIdentity.value}` : ''}`,
+		],
+		['App desplegada', plan.deployedAppIdentity.sha ?? '(ninguna)'],
+		['Evidencia release', plan.releaseEvidenceSha ?? '(no requerida en este modo)'],
+	]);
 }
 
-/** Compact interactive card — full detail remains in formatPlanReview / --json. */
+/** Compact operator card — no URLs, full hashes, executors, or internal policy names. */
 export function formatPlanReviewCompact(plan: MigrationPlan): string {
-	const headShort =
-		plan.sourceHead.length > 12 ? `${plan.sourceHead.slice(0, 12)}…` : plan.sourceHead;
-	const planShort = plan.planId.length > 8 ? `${plan.planId.slice(0, 8)}…` : plan.planId;
 	const pending =
-		plan.pendingVersions.length === 0 ? '(none)' : plan.pendingVersions.join(', ');
-	const phases =
-		Object.keys(plan.phaseByVersion).length === 0
-			? '(none)'
-			: Object.entries(plan.phaseByVersion)
-					.map(([v, p]) => `${v}=${p}`)
-					.join(', ');
-	const lines = [
-		'------------------------------------------------------------',
-		'Migration plan',
-		'------------------------------------------------------------',
-		`Target:           ${plan.target}`,
-		`Pending:          ${pending}`,
-		`Phases:           ${phases}`,
-		`HEAD:             ${headShort}`,
-		`Plan:             ${planShort}`,
-		`Compatibility:    ${plan.compatibilityStatus}`,
-		`Backups:          ${plan.backupRequirement}`,
-		`Authorization:    ${plan.authRequirement}`,
-		'------------------------------------------------------------',
-	];
-	return lines.join('\n');
+		plan.pendingVersions.length === 0 ? '(ninguna)' : plan.pendingVersions.join(', ');
+	const phases = formatPhaseSummary(plan.phaseByVersion, plan.pendingVersions);
+	return formatKeyValueBlock('Plan de migración', [
+		['Entorno', labelTarget(plan.target)],
+		['Migraciones', pending],
+		['Fase / compat.', `${phases} · ${labelCompatibility(plan.compatibilityStatus)}`],
+		['Respaldo', labelBackupRequirement(plan.backupRequirement)],
+		['Autorización', labelAuthRequirement(plan.authRequirement)],
+		['Plan', shortSha(plan.planId)],
+	]);
 }

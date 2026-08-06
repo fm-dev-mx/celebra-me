@@ -9,6 +9,10 @@ import type { MigrationPlan, MigrateTarget } from './migration-plan.ts';
 export interface MigratePolicySession {
 	/** Production object audit already completed for this apply/preflight orchestration. */
 	productionAuditCompleted?: boolean;
+	/** buildPlan invocations in this orchestration (rebuilds use compact progress). */
+	buildPlanCount?: number;
+	/** Last planId observed during rebuild; used to surface material plan changes only. */
+	lastPlanId?: string;
 }
 
 export interface MigratePolicyContext {

@@ -135,12 +135,21 @@ export async function runProdPatchMain(): Promise<void> {
 		operationType: 'production_patch',
 		operationVerb: 'PATCH',
 		bindingHex: manifestFingerprint,
-		applyActionLabel: 'Aplicar parche SQL en Production',
+		applyActionLabel: 'Aplicar',
+		summaryTitle: 'Parche SQL — Production',
 		summary: [
-			['Mode', 'production SQL patch apply'],
-			['Owner', validatedOwnerId],
-			['Fingerprint', manifestFingerprint],
-			['File', file],
+			['Operación', 'Parche SQL especializado'],
+			['Archivo', file],
+			['Respaldo', 'Responsabilidad del operador antes del apply'],
+			['Autorización', 'Confirmación interactiva del propietario'],
+		],
+		technicalReview: [
+			['Impacto', 'Ejecuta SQL de mantenimiento en Production'],
+			['Archivo', file],
+			['Owner UUID', validatedOwnerId],
+			['Huella', manifestFingerprint],
+			['Tipo interno', 'production_patch'],
+			['Controles', 'TTY · agente bloqueado · release-check · sin token'],
 		],
 	});
 

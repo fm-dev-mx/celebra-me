@@ -29,7 +29,7 @@ Options:
   --apply               Apply after plan validation (default: read-only preflight)
   --expected <versions> Optional exact pending-set pin (comma-separated)
   --json                Emit MigrationPlan JSON on stdout (human logs on stderr)
-  --interactive         Force guided TTY actions (Run / Review / Cancel)
+  --interactive         Force guided TTY actions (Cancel / Revisar cambios / Aplicar)
   --no-interactive      Disable guided prompts
   --help, -h            Show this help (no database access)
 

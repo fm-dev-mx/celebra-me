@@ -16,6 +16,7 @@ import {
 	type DbMigrateTarget,
 } from './migration-deployment-compatibility.ts';
 import type { PlanRolloutPhase } from './migration-plan.ts';
+import { operatorSymbol, shortSha, writeHuman } from './operator-cli-ux.ts';
 
 export interface HostedCompatibilityPlanInput {
 	target: DbMigrateTarget;
@@ -154,19 +155,19 @@ export function toPlanCompatibility(result: HostedCompatibilityPlanResult): {
 	};
 }
 
-/** Log compatibility details (stderr-friendly via console.info). */
+/** Log compatibility details on stderr (compact operator stream). */
 export function logHostedCompatibility(result: HostedCompatibilityPlanResult): void {
-	console.info('✅ Migration / deployment compatibility contract passed.');
+	writeHuman(`${operatorSymbol('ok')} Contrato de compatibilidad de despliegue aprobado.`);
 	if (result.targetReleaseSha) {
-		console.info(`   Target release: ${result.targetReleaseSha}`);
+		writeHuman(`   Release: ${shortSha(result.targetReleaseSha, 12)}`);
 	}
 	if (result.deployedAppSha) {
-		console.info(`   Deployed app: ${result.deployedAppSha}`);
+		writeHuman(`   App desplegada: ${shortSha(result.deployedAppSha, 12)}`);
 	}
 	if (result.deployedAppCapabilities.length > 0) {
-		console.info(`   Deployed capabilities: ${result.deployedAppCapabilities.join(', ')}`);
+		writeHuman(`   Capacidades: ${result.deployedAppCapabilities.join(', ')}`);
 	}
 	for (const [version, phase] of Object.entries(result.phaseByVersion)) {
-		console.info(`   Candidate ${version}: phase=${phase}`);
+		writeHuman(`   Candidata ${version}: fase=${phase}`);
 	}
 }

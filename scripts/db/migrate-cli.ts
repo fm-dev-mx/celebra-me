@@ -6,28 +6,48 @@
 import { select } from '@inquirer/prompts';
 import { parseMigrateCliArgs, printMigrateHelp, type MigrateCliArgs } from './migrate-cli-args.ts';
 import { planToJson, type MigrationPlan } from './migration-plan.ts';
-
-function writeHuman(message = ''): void {
-	process.stderr.write(`${message}\n`);
-}
+import {
+	formatOperatorFailure,
+	operatorSymbol,
+	writeHuman,
+} from './operator-cli-ux.ts';
 
 function writeJson(value: unknown): void {
 	process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
 }
 
 function writeError(error: unknown): void {
-	writeHuman(`ERROR: ${error instanceof Error ? error.message : String(error)}`);
+	const message = error instanceof Error ? error.message : String(error);
+	const codeMatch = /^(?<code>[A-Z][A-Z0-9_]+):/.exec(message);
+	const code = codeMatch?.groups?.code;
+	if (code) {
+		writeHuman(
+			formatOperatorFailure({
+				title: 'No se pudo completar la operación',
+				cause: message.replace(/^[A-Z][A-Z0-9_]+:\s*/, ''),
+				code,
+				remediation: [
+					'Revise la causa anterior y los controles de seguridad aplicables.',
+					'Reejecute el preflight y, si corresponde, el apply.',
+				],
+				retryCommand: 'pnpm db:migrate -- --help',
+				noChangesMessage: 'No se realizaron escrituras de schema.',
+			}),
+		);
+	} else {
+		writeHuman(`${operatorSymbol('fail')} ${message}`);
+	}
 	process.exitCode = 1;
 }
 
 async function promptAction(): Promise<'run' | 'review' | 'cancel'> {
 	return select({
-		message: 'Seleccione una acción para el plan',
+		message: 'Seleccione una acción',
 		default: 'cancel',
 		choices: [
 			{ name: 'Cancelar', value: 'cancel' as const },
-			{ name: 'Revisar plan (detalle completo)', value: 'review' as const },
-			{ name: 'Aplicar migración', value: 'run' as const },
+			{ name: 'Revisar cambios', value: 'review' as const },
+			{ name: 'Aplicar', value: 'run' as const },
 		],
 	});
 }
@@ -39,17 +59,17 @@ function writeApplyHint(
 	const expectedSuffix = expectedPin ? ` --expected ${expectedPin.join(',')}` : '';
 	if (target === 'production') {
 		writeHuman(
-			`To apply: pnpm release-check && pnpm db:migrate -- --target production --apply${expectedSuffix}`,
+			`Para aplicar: pnpm release-check && pnpm db:migrate -- --target production --apply${expectedSuffix}`,
 		);
 		return;
 	}
 	if (target === 'preview') {
 		writeHuman(
-			`To apply: CELEBRA_TASK_SCOPE=preview:schema:migrate pnpm db:migrate -- --target preview --apply${expectedSuffix}`,
+			`Para aplicar: CELEBRA_TASK_SCOPE=preview:schema:migrate pnpm db:migrate -- --target preview --apply${expectedSuffix}`,
 		);
 		return;
 	}
-	writeHuman(`To apply: pnpm db:migrate -- --target ${target} --apply${expectedSuffix}`);
+	writeHuman(`Para aplicar: pnpm db:migrate -- --target ${target} --apply${expectedSuffix}`);
 }
 
 type OrchestratorModule = typeof import('./migrate-orchestrator.ts');
@@ -80,7 +100,9 @@ async function runGuidedApply(options: {
 	for (;;) {
 		const action = await promptAction();
 		if (action === 'cancel') {
-			writeHuman('Cancelled. No schema write was performed.');
+			writeHuman(
+				`${operatorSymbol('info')} Cancelado. No se realizó ninguna escritura de schema.`,
+			);
 			return;
 		}
 		if (action === 'review') {
@@ -92,8 +114,12 @@ async function runGuidedApply(options: {
 			mode: 'apply',
 			reviewedPlan: options.plan,
 		});
-		emitPlan(options.orchestrator, result.plan, options.json, false);
-		writeHuman(result.wrote ? 'Apply completed.' : 'Apply completed (no pending migrations).');
+		emitPlan(options.orchestrator, result.plan, options.json, true);
+		writeHuman(
+			result.wrote
+				? `${operatorSymbol('ok')} Apply completado.`
+				: `${operatorSymbol('ok')} Apply completado (sin migraciones pendientes).`,
+		);
 		return;
 	}
 }
@@ -113,8 +139,16 @@ export async function runMigrateCli(argv: string[] = process.argv): Promise<void
 	}
 
 	if (!parsed.target) {
-		writeHuman('ERROR: --target <local|preview|production|disposable-test> is required.');
-		writeHuman('Run pnpm db:migrate -- --help for usage.');
+		writeHuman(
+			formatOperatorFailure({
+				title: 'Falta el destino',
+				cause: 'Debe indicar --target <local|preview|production|disposable-test>.',
+				code: 'TARGET_REQUIRED',
+				remediation: ['Ejecute pnpm db:migrate -- --help para ver el uso.'],
+				retryCommand: 'pnpm db:migrate -- --help',
+				noChangesMessage: 'No se realizaron escrituras de schema.',
+			}),
+		);
 		process.exitCode = 1;
 		return;
 	}
@@ -131,7 +165,7 @@ export async function runMigrateCli(argv: string[] = process.argv): Promise<void
 			allowDeprecatedAliases: parsed.target === 'preview',
 		});
 		for (const warning of parsedExpected.deprecationWarnings) {
-			writeHuman(warning);
+			writeHuman(`${operatorSymbol('warn')} ${warning}`);
 		}
 		expectedPin = parsedExpected.expectedPin;
 	} catch (error: unknown) {
@@ -156,9 +190,11 @@ export async function runMigrateCli(argv: string[] = process.argv): Promise<void
 	try {
 		if (parsed.mode === 'preflight' || guided) {
 			const plan = orchestrator.preflightMigrate({ ...baseInput, mode: 'preflight' });
-			emitPlan(orchestrator, plan, parsed.json, guided);
+			emitPlan(orchestrator, plan, parsed.json, true);
 			if (!guided) {
-				writeHuman('Read-only preflight complete. No schema write was performed.');
+				writeHuman(
+					`${operatorSymbol('ok')} Preflight de solo lectura completado. No se escribió schema.`,
+				);
 				writeApplyHint(parsed.target, expectedPin);
 				return;
 			}
@@ -172,8 +208,12 @@ export async function runMigrateCli(argv: string[] = process.argv): Promise<void
 		}
 
 		const result = await orchestrator.orchestrateMigrate({ ...baseInput, mode: 'apply' });
-		emitPlan(orchestrator, result.plan, parsed.json, false);
-		writeHuman(result.wrote ? 'Apply completed.' : 'Apply completed (no pending migrations).');
+		emitPlan(orchestrator, result.plan, parsed.json, true);
+		writeHuman(
+			result.wrote
+				? `${operatorSymbol('ok')} Apply completado.`
+				: `${operatorSymbol('ok')} Apply completado (sin migraciones pendientes).`,
+		);
 	} catch (error: unknown) {
 		writeError(error);
 	}

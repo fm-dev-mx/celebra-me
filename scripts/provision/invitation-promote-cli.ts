@@ -255,11 +255,20 @@ async function main(): Promise<void> {
 		operationType: 'promotion',
 		operationVerb: 'PROMOTE',
 		bindingHex: packageInput.packageData.packageHash,
-		applyActionLabel: 'Aplicar promoción a Production',
+		applyActionLabel: 'Aplicar',
+		summaryTitle: 'Promoción de contenido — Production',
 		summary: [
-			['Mode', 'managed invitation promotion'],
+			['Operación', 'Promoción de invitación administrada'],
+			['Slug', slug],
+			['Respaldo', 'Manifiesto de backup verificado'],
+			['Autorización', 'Confirmación interactiva del propietario'],
+		],
+		technicalReview: [
+			['Impacto', 'Escribe estado administrado de release en Production'],
 			['Slug', slug],
 			['Package hash', packageInput.packageData.packageHash],
+			['Tipo interno', 'promotion'],
+			['Controles', 'TTY · agente bloqueado · release-check · sin migraciones de schema'],
 		],
 	});
 
