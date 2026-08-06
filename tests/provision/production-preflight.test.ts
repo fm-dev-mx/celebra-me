@@ -16,6 +16,10 @@ import {
 	PREVIEW_APPROVAL_SCHEMA_VERSION,
 	type PreviewApprovalArtifact,
 } from '../../scripts/provision/preview-approval-service.ts';
+import {
+	createMemoryPreviewApprovalStore,
+	setDefaultPreviewApprovalStoreForTests,
+} from '../../scripts/provision/preview-approval-store.ts';
 
 const dirs: string[] = [];
 const now = new Date('2026-07-23T12:00:00.000Z');
@@ -27,7 +31,10 @@ const assetManifestHash = 'e'.repeat(64);
 const previewPlanId = 'preview-plan-executed';
 const productionProjectRef = 'productionproject';
 
-afterEach(() => dirs.splice(0).forEach((dir) => rmSync(dir, { recursive: true, force: true })));
+afterEach(() => {
+	setDefaultPreviewApprovalStoreForTests(null);
+	dirs.splice(0).forEach((dir) => rmSync(dir, { recursive: true, force: true }));
+});
 
 function packageData(): InvitationPackageData {
 	return {
@@ -76,6 +83,7 @@ function approval(overrides: Partial<PreviewApprovalArtifact> = {}): PreviewAppr
 }
 
 function writeApproval(artifact = approval()): string {
+	setDefaultPreviewApprovalStoreForTests(createMemoryPreviewApprovalStore([artifact]));
 	const root = mkdtempSync(join(tmpdir(), 'production-preflight-'));
 	dirs.push(root);
 	const approvalsDir = join(root, 'approvals');
@@ -152,6 +160,7 @@ describe('Production read-only preflight integration', () => {
 	});
 
 	it('allows preflight inspection when Preview approval artifact is missing (optional audit evidence)', async () => {
+		setDefaultPreviewApprovalStoreForTests(createMemoryPreviewApprovalStore());
 		const runEngine = jest.fn(async () => engineResult());
 		const result = await runProductionPreflight({
 			packageData: packageData(),

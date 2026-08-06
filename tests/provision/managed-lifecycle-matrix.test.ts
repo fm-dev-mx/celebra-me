@@ -1,4 +1,4 @@
-import { describe, expect, it } from '@jest/globals';
+import { afterEach, describe, expect, it } from '@jest/globals';
 import {
 	computePlanId,
 	verifyPlanPreconditions,
@@ -16,6 +16,14 @@ import {
 	type TrackedResource,
 } from '../../scripts/provision/managed-invitation-cleanup.ts';
 import { verifyPreviewApprovalArtifact } from '../../scripts/provision/preview-approval-service.ts';
+import {
+	createMemoryPreviewApprovalStore,
+	setDefaultPreviewApprovalStoreForTests,
+} from '../../scripts/provision/preview-approval-store.ts';
+
+afterEach(() => {
+	setDefaultPreviewApprovalStoreForTests(null);
+});
 
 describe('Managed Invitation Lifecycle Automated Matrix', () => {
 	describe('1. Single-Target Contracts & Plan Invariants', () => {
@@ -197,6 +205,7 @@ describe('Managed Invitation Lifecycle Automated Matrix', () => {
 
 	describe('3. Production Preflight Gate', () => {
 		it('blocks Production preflight when Preview approval artifact is missing or invalid', () => {
+			setDefaultPreviewApprovalStoreForTests(createMemoryPreviewApprovalStore());
 			expect(() =>
 				verifyPreviewApprovalArtifact({
 					packageHash: 'f'.repeat(64),

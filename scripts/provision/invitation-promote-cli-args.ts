@@ -60,7 +60,7 @@ Owner apply gates (guided path prepares these automatically):
 
 Optional:
   --owner-user-id <uuid>  Owner assertion for new Production invitations
-  --approvals-dir <path>  Extra approval artifact directory (default .agent/tmp/approvals)
+  --approvals-dir <path>  Legacy filesystem fallback if shared Preview DB row is missing
   --asset-policy <name>   Asset reconciliation policy
   --prune-assets          Allow planned definition-owned asset deletes
   --update-scope <scope>  content-only | content-and-assets | assets-only

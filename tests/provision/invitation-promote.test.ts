@@ -17,6 +17,10 @@ import {
 	type PreviewApprovalArtifact,
 } from '../../scripts/provision/preview-approval-service.ts';
 import {
+	createMemoryPreviewApprovalStore,
+	setDefaultPreviewApprovalStoreForTests,
+} from '../../scripts/provision/preview-approval-store.ts';
+import {
 	classifyPromotionDifferences,
 	evaluatePromotionBackupGate,
 	evaluatePromotionSchemaGate,
@@ -38,7 +42,10 @@ const assetManifestHash = 'e'.repeat(64);
 const previewPlanId = 'preview-plan-executed';
 const productionProjectRef = 'productionproject';
 
-afterEach(() => dirs.splice(0).forEach((dir) => rmSync(dir, { recursive: true, force: true })));
+afterEach(() => {
+	setDefaultPreviewApprovalStoreForTests(null);
+	dirs.splice(0).forEach((dir) => rmSync(dir, { recursive: true, force: true }));
+});
 
 function packageData(): InvitationPackageData {
 	return {
@@ -87,6 +94,7 @@ function approval(overrides: Partial<PreviewApprovalArtifact> = {}): PreviewAppr
 }
 
 function writeApproval(artifact = approval()): string {
+	setDefaultPreviewApprovalStoreForTests(createMemoryPreviewApprovalStore([artifact]));
 	const root = mkdtempSync(join(tmpdir(), 'invitation-promote-'));
 	dirs.push(root);
 	const approvalsDir = join(root, 'approvals');
@@ -318,6 +326,7 @@ describe('classifyPromotionDifferences', () => {
 
 describe('runPromotionPreflight / apply', () => {
 	it('blocks when exact approval is missing', async () => {
+		setDefaultPreviewApprovalStoreForTests(createMemoryPreviewApprovalStore());
 		const report = await runPromotionPreflight({
 			packageData: packageData(),
 			requireBackup: false,

@@ -1,4 +1,4 @@
-import { describe, expect, it } from '@jest/globals';
+import { afterEach, describe, expect, it } from '@jest/globals';
 import { detectFileMimeType } from '../../src/lib/intake/services/asset-policy.ts';
 import {
 	classifyDbTarget,
@@ -14,7 +14,15 @@ import {
 import { checkUnknownFlags } from '../../scripts/provision/invitation-update-options.ts';
 import { eventContentSchema } from '../../src/lib/schemas/content/base-event.schema.ts';
 import { verifyPreviewApprovalArtifact } from '../../scripts/provision/preview-approval-service.ts';
+import {
+	createMemoryPreviewApprovalStore,
+	setDefaultPreviewApprovalStoreForTests,
+} from '../../scripts/provision/preview-approval-store.ts';
 import { toMutationOutcomeStatus } from '../../scripts/provision/invitation-lifecycle-execution.ts';
+
+afterEach(() => {
+	setDefaultPreviewApprovalStoreForTests(null);
+});
 
 describe('Managed Lifecycle Remediation Suite', () => {
 	it.each([
@@ -212,6 +220,7 @@ describe('Managed Lifecycle Remediation Suite', () => {
 
 		describe('Preview Approval Artifact & Production Guardrail', () => {
 			it('rejects verification when approval artifact does not match release identity', () => {
+				setDefaultPreviewApprovalStoreForTests(createMemoryPreviewApprovalStore());
 				const mockIdentity = {
 					packageHash: 'c'.repeat(64),
 					sourceHash: 'a'.repeat(64),

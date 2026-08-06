@@ -135,11 +135,27 @@ async function promptCandidateSelection(
 		writeHuman(
 			`${operatorSymbol('warn')} ${candidate.title} (${candidate.slug}): ${candidate.reason}`,
 		);
+		for (const step of candidate.remediation) {
+			writeHuman(`  → ${step}`);
+		}
+	}
+	if (attention.length > 8) {
+		writeHuman(
+			`${operatorSymbol('info')} … y ${attention.length - 8} caso(s) de atención adicionales.`,
+		);
+	}
+	if (ready.length === 0) {
+		writeHuman(
+			`${operatorSymbol('info')} No hay releases listas para promover. Resuelva Atención y vuelva a ejecutar.`,
+		);
 	}
 
 	const { select } = await import('@inquirer/prompts');
 	const choice = await select({
-		message: 'Seleccione una invitación para promover a Production',
+		message:
+			ready.length === 0
+				? 'No hay candidatas listas — Cancelar para salir'
+				: 'Seleccione una invitación para promover a Production',
 		default: 'cancel',
 		choices: [
 			{ name: 'Cancelar', value: 'cancel' as const },

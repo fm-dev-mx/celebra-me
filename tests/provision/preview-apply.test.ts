@@ -6,6 +6,7 @@ import type {
 } from '../../scripts/provision/invitation-import-engine.ts';
 import { runPreviewApply } from '../../scripts/provision/preview-apply.ts';
 import type { OperationalPlan } from '../../scripts/provision/invitation-update-plan.ts';
+import type { PreviewApprovalArtifact } from '../../scripts/provision/preview-approval-service.ts';
 
 const sourceHash = 'a'.repeat(64);
 const packageHash = 'b'.repeat(64);
@@ -75,7 +76,7 @@ describe('Preview apply adapter integration', () => {
 			Parameters<typeof runPreviewApply>[0]['createPendingApproval']
 		> = jest.fn((input) => {
 			void input;
-			return 'approval.json';
+			return { packageHash: 'a'.repeat(64) } as PreviewApprovalArtifact;
 		});
 		const confirmedPlan = plan();
 		const applied = await runPreviewApply({
@@ -111,7 +112,9 @@ describe('Preview apply adapter integration', () => {
 				targetDbUrl: 'postgresql://redacted@preview.invalid/db',
 				plan: plan(),
 				runEngine: async () => result('different-plan'),
-				createPendingApproval: () => 'never.json',
+				createPendingApproval: () => {
+					throw new Error('should not create approval');
+				},
 			}),
 		).rejects.toThrow(/INVALID_ENGINE_RESULT/);
 	});
@@ -145,7 +148,9 @@ describe('Preview apply adapter integration', () => {
 				runEngine: async () => {
 					throw recoveryError;
 				},
-				createPendingApproval: () => 'never.json',
+				createPendingApproval: () => {
+					throw new Error('should not create approval');
+				},
 			}).catch((error: unknown) => error);
 			expect(caught).toBe(recoveryError);
 			expect(caught).toMatchObject({

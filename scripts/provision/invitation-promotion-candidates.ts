@@ -34,6 +34,8 @@ export interface InvitationPromotionCandidate {
 	disposition: PromotionCandidateDisposition;
 	selectable: boolean;
 	reason: string;
+	/** Concrete next steps when disposition is attention (Spanish operator copy). */
+	remediation: readonly string[];
 	packageInput?: ResolvedInvitationPackageInput;
 	approval?: PreviewApprovalArtifact;
 	production: PerInvitationTargetStatus;
@@ -101,16 +103,68 @@ function approvalIdentity(packageData: InvitationPackageData) {
 	};
 }
 
+function remediationMissingApproval(slug: string): readonly string[] {
+	return [
+		`Aplique la release actual a Preview: pnpm invitation:update -- --slug ${slug} --targets preview --dry-run`,
+		`Si el plan es correcto: pnpm invitation:update -- --slug ${slug} --targets preview --apply`,
+		`Finalize la aprobación compartida: pnpm invitation:update -- --package-hash <hash> --evidence <path> --apply`,
+		'Reejecute pnpm invitation:promote',
+	];
+}
+
+function remediationProductionStatus(input: {
+	slug: string;
+	eventType: string;
+	status: PerInvitationTargetStatus['status'];
+}): readonly string[] {
+	const parity = `pnpm invitation:content-parity -- --slug ${input.slug} --event-type ${input.eventType} --envs preview,production`;
+	switch (input.status) {
+		case 'DIVERGED':
+			return [
+				`Inspeccione divergencia: ${parity}`,
+				'Resuelva en la definición/Preview o con reconciliación administrada; promote no auto-fusiona.',
+				'Reejecute pnpm invitation:promote',
+			];
+		case 'IDENTITY_CONFLICT':
+			return [
+				`Diagnostique identidad en Preview/Local: pnpm invitation:diagnose-identity -- --target preview`,
+				`Revise el slug ${input.slug} en el informe y corrija el conflicto administrado antes de promover.`,
+				'Reejecute pnpm invitation:promote',
+			];
+		case 'UNVERIFIED':
+		case 'CREDENTIALS_REQUIRED':
+			return [
+				'Configure credenciales Production del propietario (PROD_DB_URL / secretos canónicos).',
+				'Verifique alcance con pnpm dbs --compact',
+				'Reejecute pnpm invitation:promote',
+			];
+		case 'UNREACHABLE':
+			return [
+				'Compruebe conectividad y credenciales Production.',
+				'Verifique con pnpm dbs --compact',
+				'Reejecute pnpm invitation:promote',
+			];
+		default:
+			return [
+				`Revise el estado Production con pnpm dbs y ${parity}`,
+				'Corrija el bloqueo reportado y reejecute pnpm invitation:promote',
+			];
+	}
+}
+
 function dispositionFor(input: {
+	slug: string;
+	eventType: string;
 	production: PerInvitationTargetStatus;
 	approval?: PreviewApprovalArtifact;
 	approvalFailure?: string;
-}): Pick<InvitationPromotionCandidate, 'disposition' | 'selectable' | 'reason'> {
+}): Pick<InvitationPromotionCandidate, 'disposition' | 'selectable' | 'reason' | 'remediation'> {
 	if (input.production.status === 'MATCH_CANONICAL') {
 		return {
 			disposition: 'in-sync',
 			selectable: false,
 			reason: 'Production ya coincide con la release administrada actual.',
+			remediation: [],
 		};
 	}
 
@@ -121,6 +175,7 @@ function dispositionFor(input: {
 			reason:
 				input.approvalFailure ??
 				'La release actual no cuenta con una aprobación Preview vigente y exacta.',
+			remediation: remediationMissingApproval(input.slug),
 		};
 	}
 
@@ -135,6 +190,7 @@ function dispositionFor(input: {
 				input.production.status === 'NOT_PRESENT'
 					? 'Aprobada en Preview y todavía ausente en Production.'
 					: 'Aprobada en Preview y pendiente de alinear en Production.',
+			remediation: [],
 		};
 	}
 
@@ -142,6 +198,11 @@ function dispositionFor(input: {
 		disposition: 'attention',
 		selectable: false,
 		reason: input.production.detail || `Production reportó ${input.production.status}.`,
+		remediation: remediationProductionStatus({
+			slug: input.slug,
+			eventType: input.eventType,
+			status: input.production.status,
+		}),
 	};
 }
 
@@ -167,6 +228,11 @@ async function inspectCandidate(
 			disposition: 'attention',
 			selectable: false,
 			reason: `No fue posible construir la release administrada: ${reason}`,
+			remediation: [
+				`Corrija la definición o los assets de ${definition.slug} hasta que el paquete se construya.`,
+				`Valide con: pnpm invitation:update -- --slug ${definition.slug} --targets local --dry-run`,
+				'Reejecute pnpm invitation:promote',
+			],
 			production: unavailableProduction('No evaluado porque la release local no es válida.'),
 		};
 	}
@@ -202,7 +268,13 @@ async function inspectCandidate(
 		route,
 		lifecycle: definition.lifecycle,
 		deliveryScope: definition.deliveryScope,
-		...dispositionFor({ production, approval, approvalFailure }),
+		...dispositionFor({
+			slug: definition.slug,
+			eventType: definition.eventType,
+			production,
+			approval,
+			approvalFailure,
+		}),
 		packageInput,
 		approval,
 		production,

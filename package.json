@@ -96,6 +96,7 @@
         "invitation:reconcile": "tsx scripts/provision/invitation-reconcile-cli.ts",
         "invitation:content-parity": "tsx scripts/provision/content-parity-cli.ts",
         "invitation:promote": "tsx scripts/provision/invitation-promote-cli.ts",
+        "invitation:approvals:migrate": "tsx scripts/provision/preview-approval-migrate.ts",
         "invitation:preview-fixture": "tsx scripts/provision/preview-e2e-fixture-cli.ts",
         "invitation:inventory-audit": "tsx scripts/provision/inventory-audit-cli.ts",
         "invitation:purge-by-id": "tsx scripts/provision/invitation-id-purge-cli.ts",

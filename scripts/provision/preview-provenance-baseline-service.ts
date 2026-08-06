@@ -49,21 +49,22 @@ function verifyApprovalForApply(
 	pkg: InvitationPackageData,
 ): void {
 	if (!input.apply) return;
-	if (!input.approvalArtifactPath)
-		throw new Error('An approved Preview artifact is required to write provenance.');
-	const approvalPath = resolve(process.cwd(), input.approvalArtifactPath);
-	verifyPreviewApprovalArtifact(
-		{
-			packageHash: pkg.packageHash,
-			sourceHash: pkg.sourceHash,
-			metadataHash: pkg.metadataHash,
-			projectionHash: pkg.projectionHash,
-			assetManifestHash: pkg.assetManifestHash,
-			slug: pkg.invitation.slug,
-			route: `/${pkg.invitation.eventType}/${pkg.invitation.slug}`,
-		},
-		[dirname(approvalPath)],
-	);
+	const identity = {
+		packageHash: pkg.packageHash,
+		sourceHash: pkg.sourceHash,
+		metadataHash: pkg.metadataHash,
+		projectionHash: pkg.projectionHash,
+		assetManifestHash: pkg.assetManifestHash,
+		slug: pkg.invitation.slug,
+		route: `/${pkg.invitation.eventType}/${pkg.invitation.slug}`,
+	};
+	// Prefer shared Preview DB store; optional legacy file dir remains as fallback.
+	if (input.approvalArtifactPath) {
+		const approvalPath = resolve(process.cwd(), input.approvalArtifactPath);
+		verifyPreviewApprovalArtifact(identity, [dirname(approvalPath)]);
+		return;
+	}
+	verifyPreviewApprovalArtifact(identity);
 }
 
 async function verifyPreviewTarget(

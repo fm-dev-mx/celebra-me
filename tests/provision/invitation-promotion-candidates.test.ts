@@ -96,7 +96,7 @@ describe('invitation promotion candidate discovery', () => {
 		expect(candidate.selectable).toBe(false);
 	});
 
-	it('blocks missing or expired Preview approval', async () => {
+	it('blocks missing or expired Preview approval with actionable remediation', async () => {
 		const missing = await discover({
 			production: productionStatus('NOT_PRESENT'),
 			approvalError: new Error('MISSING_PREVIEW_APPROVAL'),
@@ -104,9 +104,14 @@ describe('invitation promotion candidate discovery', () => {
 		expect(missing.disposition).toBe('attention');
 		expect(missing.selectable).toBe(false);
 		expect(missing.reason).toContain('MISSING_PREVIEW_APPROVAL');
+		expect(missing.remediation.join('\n')).toContain(
+			'pnpm invitation:update -- --slug demo --targets preview',
+		);
+		expect(missing.remediation.join('\n')).toContain('--package-hash');
+		expect(missing.remediation.at(-1)).toContain('pnpm invitation:promote');
 	});
 
-	it('surfaces DIVERGED and IDENTITY_CONFLICT as attention', async () => {
+	it('surfaces DIVERGED and IDENTITY_CONFLICT as attention with remediation', async () => {
 		for (const status of ['DIVERGED', 'IDENTITY_CONFLICT'] as const) {
 			const candidate = await discover({
 				production: productionStatus(status, `${status} detail`),
@@ -115,16 +120,19 @@ describe('invitation promotion candidate discovery', () => {
 			expect(candidate.disposition).toBe('attention');
 			expect(candidate.selectable).toBe(false);
 			expect(candidate.reason).toMatch(new RegExp(status));
+			expect(candidate.remediation.length).toBeGreaterThan(0);
+			expect(candidate.remediation.join('\n')).toContain('demo');
 		}
 	});
 
-	it('treats unverified Production probes as attention', async () => {
+	it('treats unverified Production probes as attention with credential remediation', async () => {
 		const candidate = await discover({
 			production: productionStatus('UNVERIFIED', 'credentials unavailable'),
 			approval: { approvalState: 'APPROVED' },
 		});
 		expect(candidate.disposition).toBe('attention');
 		expect(candidate.selectable).toBe(false);
+		expect(candidate.remediation.join('\n')).toMatch(/PROD_DB_URL|credenciales/i);
 	});
 
 	it('does not use lifecycle as a selection authority', async () => {

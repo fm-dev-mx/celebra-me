@@ -57,12 +57,16 @@ pnpm invitation:promote -- --slug <slug> --package <path> --apply
 
 Owner at-a-glance: [`promote-cheatsheet.md`](./promote-cheatsheet.md).
 
-Promotion requires an exact Preview-approved release identity, schema compatibility (`CURRENT`),
+Promotion requires an exact Preview-approved release identity from the **shared Preview DB store**
+(`public.preview_approval_artifacts`, read via `PREVIEW_DB_URL`), schema compatibility (`CURRENT`),
 critical backup coverage (shared prepare/revalidate; optional `--backup-manifest`), semantic
 comparison against current Production (target-owned state preserved; unresolved managed divergence
 blocks), typed owner confirmation (`PROMOTE <8-hex>`), managed import/publication apply, and
-mandatory post-apply verification. The guided TTY path and `db:sync package-to-production` share the
-same promotion orchestrator. Existing target invitations resolve and preserve their owner by slug.
+mandatory post-apply verification. Worktree files under `.agent/tmp/approvals` are not the SSOT;
+use `pnpm invitation:update -- --package-hash <hash> --evidence <path> --apply` to finalize, or
+`pnpm invitation:approvals:migrate` once to import legacy approved JSON. The guided TTY path and
+`db:sync package-to-production` share the same promotion orchestrator. Existing target invitations
+resolve and preserve their owner by slug.
 New target invitations ensure a dedicated Auth host from the definition `hostLoginAlias`
 (`{alias}@clientes.celebra.invalid`) before plan/apply; `--owner-user-id` is an optional
 override/assertion, not required on the happy path. Dry-run reports owner action as `OWNER_REUSE`,

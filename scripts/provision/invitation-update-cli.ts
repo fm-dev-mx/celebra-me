@@ -161,9 +161,10 @@ Usage:
   pnpm invitation:update                                             Interactive wizard (TTY only)
   pnpm invitation:update --status [--slug <slug>] [--targets <targets>] [--json]
   pnpm invitation:update --slug <slug> --targets local|preview|local,preview --dry-run|--apply [--non-interactive] [--source-dir <dir>|--package <path>]
+  pnpm invitation:update --package-hash <hash> --evidence <path> --apply
   pnpm invitation:update --artifact <path> --evidence <path> --apply
   pnpm invitation:update --preview-provenance --slug <slug> --targets preview --package <path> --dry-run [--json]
-  pnpm invitation:update --preview-provenance --slug <slug> --targets preview --package <path> --approval-artifact <path> --apply [--json]
+  pnpm invitation:update --preview-provenance --slug <slug> --targets preview --package <path> --apply [--json]
 
 Options:
   --asset-policy <policy>     Asset handling policy: verify, missing (default), sync
@@ -185,12 +186,15 @@ Options:
   --verbose                    Show full field values and plan IDs in terminal output
   --json                       Format output as JSON
   --owner-user-id <uuid>       Optional override/assertion; new invites default to a dedicated host ({hostLoginAlias}@clientes.celebra.invalid)
-  --approval-artifact <path>   Exact approved Preview artifact required for --preview-provenance apply
+  --package-hash <hash>        Shared-store package hash for Preview approval finalize
+  --artifact <path>            Legacy pending approval JSON (imported into shared store on finalize)
+  --evidence <path>            Hosted Preview validation evidence JSON (required with finalize)
+  --approval-artifact <path>   Legacy filesystem approval dir hint for --preview-provenance (optional)
   --preview-provenance         Establish the Preview provenance baseline without changing content (specialized)
   --help, -h                   Show this help message
 
 Production managed-content promotion uses:
-  pnpm invitation:promote -- --slug <slug> --package <path> --dry-run|--apply
+  pnpm invitation:promote
 `);
 }
 
@@ -222,11 +226,10 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 			!slug ||
 			targets.length !== 1 ||
 			targets[0] !== 'preview' ||
-			!packagePath ||
-			(apply && !approvalArtifactPath)
+			!packagePath
 		) {
 			throw new Error(
-				'La reconstrucción de baseline requiere Preview, slug, paquete, aprobación y --dry-run o --apply.',
+				'La reconstrucción de baseline requiere Preview, slug, paquete y --dry-run o --apply.',
 			);
 		}
 		const result = await establishPreviewProvenanceBaseline({
@@ -242,16 +245,30 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 		return;
 	}
 
+	const packageHash = value(args, '--package-hash');
 	const artifact = value(args, '--artifact');
 	const evidence = value(args, '--evidence');
-	if (artifact || evidence) {
-		if (!artifact || !evidence || !args.includes('--apply'))
-			throw new Error('Approval requires --artifact <path> --evidence <path> --apply.');
+	if (packageHash || artifact || evidence) {
+		if (!evidence || !args.includes('--apply') || (!packageHash && !artifact)) {
+			throw new Error(
+				'Approval finalize requires --evidence <path> --apply and either --package-hash <hash> or --artifact <path>.',
+			);
+		}
+		const finalized = finalizePreviewApprovalArtifact({
+			packageHash,
+			artifactPath: artifact,
+			evidencePath: evidence,
+		});
 		const result = {
-			approval: finalizePreviewApprovalArtifact(artifact, evidence).approvalState,
+			approval: finalized.approvalState,
+			packageHash: finalized.packageHash,
+			slug: finalized.slug,
 		};
 		if (json) console.log(JSON.stringify(result, null, 2));
-		else console.log(`Aprobación completada: ${result.approval}`);
+		else
+			console.log(
+				`Aprobación completada: ${result.approval} · ${result.slug} · ${result.packageHash.slice(0, 16)}`,
+			);
 		return;
 	}
 

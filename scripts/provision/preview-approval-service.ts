@@ -1,5 +1,16 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+/**
+ * preview-approval-service.ts — Preview release approval contract + validation.
+ *
+ * Storage is delegated to PreviewApprovalStore (Preview DB by default) so all
+ * worktrees share one SSOT. Filesystem paths remain only for evidence JSON and
+ * optional legacy artifact import during migration.
+ */
+import { existsSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import {
+	getDefaultPreviewApprovalStore,
+	type PreviewApprovalStore,
+} from './preview-approval-store.ts';
 
 /** Current Preview approval artifact contract. Older schemas are rejected, not migrated. */
 export const PREVIEW_APPROVAL_SCHEMA_VERSION = '2.1.0' as const;
@@ -62,7 +73,16 @@ export interface ApprovedReleaseIdentity {
 	intendedProductionProjectRef?: string;
 }
 
-function isCurrentContract(artifact: PreviewApprovalArtifact): boolean {
+export interface PreviewApprovalServiceOptions {
+	store?: PreviewApprovalStore;
+	now?: Date;
+}
+
+function resolveStore(options?: PreviewApprovalServiceOptions): PreviewApprovalStore {
+	return options?.store ?? getDefaultPreviewApprovalStore();
+}
+
+export function isCurrentContract(artifact: PreviewApprovalArtifact): boolean {
 	return (
 		artifact.schemaVersion === PREVIEW_APPROVAL_SCHEMA_VERSION &&
 		SHA256.test(artifact.packageHash) &&
@@ -72,64 +92,6 @@ function isCurrentContract(artifact: PreviewApprovalArtifact): boolean {
 		MD5.test(artifact.canonicalProjectionHash) &&
 		MD5.test(artifact.materializedProjectionHash)
 	);
-}
-
-export function createPendingPreviewApprovalArtifact(input: {
-	packageHash: string;
-	sourceHash: string;
-	metadataHash: string;
-	canonicalProjectionHash: string;
-	materializedProjectionHash: string;
-	assetManifestHash: string;
-	planId?: string;
-	slug: string;
-	previewProjectRef: string;
-	route: string;
-	expectedAssetHashes: Record<string, string>;
-}): string {
-	if (
-		!MD5.test(input.canonicalProjectionHash) ||
-		!MD5.test(input.materializedProjectionHash)
-	) {
-		throw new Error(
-			'Preview approval requires valid MD5 canonical and materialized projection hashes.',
-		);
-	}
-	const path = resolve(
-		process.cwd(),
-		'.agent/tmp/approvals',
-		`preview-approval-${input.packageHash.slice(0, 16)}.json`,
-	);
-	if (existsSync(path)) {
-		const existing = JSON.parse(readFileSync(path, 'utf8')) as PreviewApprovalArtifact;
-		// Reuse only a current-contract approved artifact bound to the exact package + both hashes.
-		if (
-			existing.approvalState === 'approved' &&
-			isCurrentContract(existing) &&
-			existing.packageHash === input.packageHash &&
-			existing.canonicalProjectionHash === input.canonicalProjectionHash &&
-			existing.materializedProjectionHash === input.materializedProjectionHash
-		) {
-			return path;
-		}
-		// Old-contract or mismatched artifacts are invalidated by overwrite (not migrated).
-	}
-	mkdirSync(dirname(path), { recursive: true });
-	writeFileSync(
-		path,
-		JSON.stringify(
-			{
-				...input,
-				schemaVersion: PREVIEW_APPROVAL_SCHEMA_VERSION,
-				createdAt: new Date().toISOString(),
-				approvalState: 'pending_hosted_validation',
-			} satisfies PreviewApprovalArtifact,
-			null,
-			2,
-		),
-		'utf8',
-	);
-	return path;
 }
 
 function validateStorageEvidence(
@@ -166,16 +128,126 @@ function validateStorageEvidence(
 	}
 }
 
-export function finalizePreviewApprovalArtifact(
-	artifactPath: string,
-	evidencePath: string,
+function checkArtifactHashesAndFormat(
+	artifact: PreviewApprovalArtifact,
+	identity: ApprovedReleaseIdentity,
+): boolean {
+	if (!isCurrentContract(artifact)) return false;
+	if (artifact.approvalState !== 'approved') return false;
+	if (artifact.packageHash !== identity.packageHash) return false;
+	if (artifact.sourceHash !== identity.sourceHash) return false;
+	if (artifact.metadataHash !== identity.metadataHash) return false;
+	if (artifact.canonicalProjectionHash !== identity.projectionHash) return false;
+	if (artifact.assetManifestHash !== identity.assetManifestHash) return false;
+	if (artifact.slug !== identity.slug) return false;
+	if (artifact.route !== identity.route) return false;
+	if (!artifact.hostedValidation) return false;
+	if (artifact.hostedValidation.projectionHash !== artifact.materializedProjectionHash)
+		return false;
+	if (!artifact.planId || artifact.hostedValidation.planId !== artifact.planId) return false;
+	if (!artifact.approvedAt || !artifact.approvedBy) return false;
+	if (!artifact.intendedProductionProjectRef) return false;
+	if (
+		identity.intendedProductionProjectRef &&
+		artifact.intendedProductionProjectRef !== identity.intendedProductionProjectRef
+	)
+		return false;
+	return true;
+}
+
+/**
+ * Create or reuse a pending Preview approval in the shared store.
+ * Returns the stored artifact (packageHash is the durable identity).
+ */
+export function createPendingPreviewApprovalArtifact(
+	input: {
+		packageHash: string;
+		sourceHash: string;
+		metadataHash: string;
+		canonicalProjectionHash: string;
+		materializedProjectionHash: string;
+		assetManifestHash: string;
+		planId?: string;
+		slug: string;
+		previewProjectRef: string;
+		route: string;
+		expectedAssetHashes: Record<string, string>;
+	},
+	options?: PreviewApprovalServiceOptions,
 ): PreviewApprovalArtifact {
-	const artifact = JSON.parse(
+	if (!MD5.test(input.canonicalProjectionHash) || !MD5.test(input.materializedProjectionHash)) {
+		throw new Error(
+			'Preview approval requires valid MD5 canonical and materialized projection hashes.',
+		);
+	}
+	const store = resolveStore(options);
+	const existing = store.get(input.packageHash);
+	if (
+		existing &&
+		existing.approvalState === 'approved' &&
+		isCurrentContract(existing) &&
+		existing.canonicalProjectionHash === input.canonicalProjectionHash &&
+		existing.materializedProjectionHash === input.materializedProjectionHash
+	) {
+		return existing;
+	}
+
+	return store.upsert({
+		...input,
+		schemaVersion: PREVIEW_APPROVAL_SCHEMA_VERSION,
+		createdAt: (options?.now ?? new Date()).toISOString(),
+		approvalState: 'pending_hosted_validation',
+	});
+}
+
+function loadEvidence(
+	evidencePath: string,
+): NonNullable<PreviewApprovalArtifact['hostedValidation']> {
+	return JSON.parse(readFileSync(resolve(process.cwd(), evidencePath), 'utf8')) as NonNullable<
+		PreviewApprovalArtifact['hostedValidation']
+	>;
+}
+
+function loadLegacyArtifact(artifactPath: string): PreviewApprovalArtifact {
+	return JSON.parse(
 		readFileSync(resolve(process.cwd(), artifactPath), 'utf8'),
 	) as PreviewApprovalArtifact;
-	const evidence = JSON.parse(
-		readFileSync(resolve(process.cwd(), evidencePath), 'utf8'),
-	) as NonNullable<PreviewApprovalArtifact['hostedValidation']>;
+}
+
+/**
+ * Finalize a pending approval with hosted validation evidence.
+ *
+ * Prefer `--package-hash` (shared store). `--artifact` remains for one-time
+ * import of a legacy filesystem pending artifact into the shared store.
+ */
+export function finalizePreviewApprovalArtifact(
+	input: {
+		packageHash?: string;
+		artifactPath?: string;
+		evidencePath: string;
+	},
+	options?: PreviewApprovalServiceOptions,
+): PreviewApprovalArtifact {
+	const store = resolveStore(options);
+	let artifact: PreviewApprovalArtifact;
+	if (input.packageHash) {
+		const pending = store.get(input.packageHash);
+		if (!pending) {
+			throw new Error(
+				`No pending Preview approval exists in the shared store for package ${input.packageHash}.`,
+			);
+		}
+		artifact = pending;
+	} else if (input.artifactPath) {
+		const legacy = loadLegacyArtifact(input.artifactPath);
+		// Import legacy pending artifact into the shared store before finalize.
+		artifact =
+			legacy.approvalState === 'pending_hosted_validation' ? store.upsert(legacy) : legacy;
+	} else {
+		throw new Error('Finalize requires --package-hash <hash> or --artifact <path>.');
+	}
+
+	const evidence = loadEvidence(input.evidencePath);
 	if (!isCurrentContract(artifact)) {
 		throw new Error(
 			'Preview approval artifact uses an obsolete contract and must be regenerated (not migrated).',
@@ -204,62 +276,65 @@ export function finalizePreviewApprovalArtifact(
 			'Hosted Preview evidence requires the intended Production project reference.',
 		);
 	validateStorageEvidence(artifact, evidence);
-	const approved: PreviewApprovalArtifact = {
+
+	return store.upsert({
 		...artifact,
 		approvalState: 'approved',
 		approvedAt: evidence.reviewedAt,
 		approvedBy: evidence.reviewedBy.trim(),
 		intendedProductionProjectRef: evidence.intendedProductionProjectRef,
 		hostedValidation: evidence,
-	};
-	writeFileSync(resolve(process.cwd(), artifactPath), JSON.stringify(approved, null, 2), 'utf8');
-	return approved;
+	});
 }
 
-function checkArtifactHashesAndFormat(
-	artifact: PreviewApprovalArtifact,
-	identity: ApprovedReleaseIdentity,
-): boolean {
-	if (!isCurrentContract(artifact)) return false;
-	if (artifact.approvalState !== 'approved') return false;
-	if (artifact.packageHash !== identity.packageHash) return false;
-	if (artifact.sourceHash !== identity.sourceHash) return false;
-	if (artifact.metadataHash !== identity.metadataHash) return false;
-	if (artifact.canonicalProjectionHash !== identity.projectionHash) return false;
-	if (artifact.assetManifestHash !== identity.assetManifestHash) return false;
-	if (artifact.slug !== identity.slug) return false;
-	if (artifact.route !== identity.route) return false;
-	if (!artifact.hostedValidation) return false;
-	if (artifact.hostedValidation.projectionHash !== artifact.materializedProjectionHash)
-		return false;
-	if (!artifact.planId || artifact.hostedValidation.planId !== artifact.planId) return false;
-	if (!artifact.approvedAt || !artifact.approvedBy) return false;
-	if (!artifact.intendedProductionProjectRef) return false;
-	if (
-		identity.intendedProductionProjectRef &&
-		artifact.intendedProductionProjectRef !== identity.intendedProductionProjectRef
-	)
-		return false;
-	return true;
-}
-
+/**
+ * Verify an exact approved Preview release from the shared store.
+ *
+ * Legacy signature `(identity, approvalsDirs?, now?)` remains for callers that
+ * still pass filesystem dirs during transition; those dirs are ignored when a
+ * store is configured (default Preview DB).
+ */
 export function verifyPreviewApprovalArtifact(
 	identity: ApprovedReleaseIdentity,
-	approvalsDirs = ['.agent/tmp/approvals'],
-	now = new Date(),
+	approvalsDirsOrOptions: string[] | PreviewApprovalServiceOptions = {},
+	nowArg?: Date,
 ): PreviewApprovalArtifact {
-	const path = approvalsDirs
-		.map((dir) =>
-			resolve(
-				process.cwd(),
-				dir,
-				`preview-approval-${identity.packageHash.slice(0, 16)}.json`,
-			),
-		)
-		.find(existsSync);
-	if (!path)
+	const options: PreviewApprovalServiceOptions = Array.isArray(approvalsDirsOrOptions)
+		? { now: nowArg }
+		: { ...approvalsDirsOrOptions, now: approvalsDirsOrOptions.now ?? nowArg };
+	const store = resolveStore(options);
+	const now = options.now ?? new Date();
+
+	const artifact = store.get(identity.packageHash);
+	if (!artifact) {
+		// Optional legacy filesystem fallback only when dirs were explicitly provided.
+		if (Array.isArray(approvalsDirsOrOptions) && approvalsDirsOrOptions.length > 0) {
+			const path = approvalsDirsOrOptions
+				.map((dir) =>
+					resolve(
+						process.cwd(),
+						dir,
+						`preview-approval-${identity.packageHash.slice(0, 16)}.json`,
+					),
+				)
+				.find(existsSync);
+			if (path) {
+				const fileArtifact = JSON.parse(
+					readFileSync(path, 'utf8'),
+				) as PreviewApprovalArtifact;
+				return assertVerifiedApproval(fileArtifact, identity, now);
+			}
+		}
 		throw new Error(`No approved Preview artifact exists for package ${identity.packageHash}.`);
-	const artifact = JSON.parse(readFileSync(path, 'utf8')) as PreviewApprovalArtifact;
+	}
+	return assertVerifiedApproval(artifact, identity, now);
+}
+
+function assertVerifiedApproval(
+	artifact: PreviewApprovalArtifact,
+	identity: ApprovedReleaseIdentity,
+	now: Date,
+): PreviewApprovalArtifact {
 	if (!isCurrentContract(artifact)) {
 		throw new Error(
 			'Preview approval artifact uses an obsolete contract and must be regenerated (not migrated).',

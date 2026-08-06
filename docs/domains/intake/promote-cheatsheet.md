@@ -24,13 +24,27 @@ Una sola candidata lista **nunca** se aplica sola: siempre hay selección explí
 
 | Requisito                         | Señal / comando                                         |
 | --------------------------------- | ------------------------------------------------------- |
-| Release en Preview aprobada       | Aprobación exacta de hashes (vigente)                   |
+| Release en Preview aprobada       | Aprobación exacta en el store compartido (Preview DB)   |
 | Schema Production compatible      | `CURRENT` (`pnpm dbs`); si no → `pnpm db:prod:migrate`  |
 | Worktree listo para release-check | `HEAD` limpio; evidencia válida o se genera en el flujo |
 | Sin scope de agente Preview       | Quite `CELEBRA_TASK_SCOPE`                              |
 | Credenciales Production           | `PROD_DB_URL` / secretos canónicos del propietario      |
+| Credenciales Preview (lectura)    | `PREVIEW_DB_URL` para verificar la aprobación compartida |
 
 Promote **no** migra schema, **no** toca RSVP/PII y **no** importa la DB de Preview.
+
+Las aprobaciones viven en `public.preview_approval_artifacts` (Preview DB), no en
+`.agent/tmp/approvals` del worktree. Finalize:
+
+```bash
+pnpm invitation:update -- --package-hash <hash> --evidence <path> --apply
+```
+
+Importación puntual de JSON legacy (solo `approved` vigentes):
+
+```bash
+pnpm invitation:approvals:migrate -- [--dir .agent/tmp/approvals] [--dry-run]
+```
 
 ## Qué verá en el menú
 
@@ -38,7 +52,7 @@ Promote **no** migra schema, **no** toca RSVP/PII y **no** importa la DB de Prev
 | ------------ | ------------- | ----------------------------------------------- |
 | Lista        | Sí            | Aprobada en Preview; ausente o atrasada en Prod |
 | Sincronizada | No            | Production ya coincide; se resume, no se elige  |
-| Atención     | No            | Falta aprobación, divergencia, conflicto, etc.  |
+| Atención     | No            | Bloqueada; el CLI imprime qué comando ejecutar  |
 
 `lifecycle` / `deliveryScope` son contexto; **no** autorizan la promoción.
 
@@ -46,7 +60,7 @@ Promote **no** migra schema, **no** toca RSVP/PII y **no** importa la DB de Prev
 
 | Bloqueo                         | Qué hacer                                                        |
 | ------------------------------- | ---------------------------------------------------------------- |
-| Sin aprobación Preview          | `invitation:update` → Preview → aprobar release exacta           |
+| Sin aprobación Preview          | Preview apply → `invitation:update --package-hash … --evidence … --apply` |
 | Schema incompatible             | Owner: `pnpm db:prod:migrate` (flujo aparte)                     |
 | Divergencia / conflicto managed | Resolver en origen o reconciliar; no hay auto-merge en promote   |
 | `PLAN_DRIFT`                    | Reiniciar `pnpm invitation:promote`; no confirmar plan viejo     |
