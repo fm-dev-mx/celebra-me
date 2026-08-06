@@ -7,6 +7,7 @@
  *     --allow-archived-inconsistent-source --dry-run
  */
 
+import type { InvitationIdPurgeAudit } from './invitation-id-purge.ts';
 import {
 	INVITATION_ID_PURGE_OPERATION,
 	runInvitationIdPurge,
@@ -47,6 +48,35 @@ Rules:
 `);
 }
 
+function printPurgeAuditResult(audit: InvitationIdPurgeAudit, jsonMode: boolean): void {
+	if (jsonMode) {
+		console.log(JSON.stringify(audit, null, 2));
+		return;
+	}
+	console.log(`Invitation ID purge (${audit.mode})`);
+	console.log(`  environment:     ${audit.environment}`);
+	console.log(`  target:          ${audit.dbUrlRedacted}`);
+	console.log(`  incorrect:       ${audit.incorrect.id}  slug=${audit.incorrect.slug}`);
+	console.log(`  canonical:       ${audit.canonical.id}  slug=${audit.canonical.slug}`);
+	console.log(`  migration needed:${audit.migration.required ? ' YES' : ' no'}`);
+	console.log(`  blocked:         ${audit.blocked ? 'YES' : 'no'}`);
+	console.log(`  deletion result: ${audit.deletionResult}`);
+	if (audit.blockReasons.length > 0) {
+		console.log('  block reasons:');
+		for (const reason of audit.blockReasons) console.log(`    - ${reason}`);
+	}
+	console.log('  incorrect dependency counts:');
+	for (const [key, count] of Object.entries(audit.incorrectDependencies)) {
+		console.log(`    - ${key}: ${count}`);
+	}
+	if (audit.auditArtifactPath) {
+		console.log(`  audit artifact:  ${audit.auditArtifactPath}`);
+	}
+	if (audit.mode === 'dry_run' && !audit.blocked) {
+		console.log('\nDry-run only. Re-run with --apply after explicit confirmation.');
+	}
+}
+
 async function main(argv = process.argv.slice(2)): Promise<void> {
 	if (argv.includes('--help') || argv.includes('-h')) {
 		printHelp();
@@ -79,32 +109,7 @@ async function main(argv = process.argv.slice(2)): Promise<void> {
 		isInteractive,
 	});
 
-	if (jsonMode) {
-		console.log(JSON.stringify(audit, null, 2));
-	} else {
-		console.log(`Invitation ID purge (${audit.mode})`);
-		console.log(`  environment:     ${audit.environment}`);
-		console.log(`  target:          ${audit.dbUrlRedacted}`);
-		console.log(`  incorrect:       ${audit.incorrect.id}  slug=${audit.incorrect.slug}`);
-		console.log(`  canonical:       ${audit.canonical.id}  slug=${audit.canonical.slug}`);
-		console.log(`  migration needed:${audit.migration.required ? ' YES' : ' no'}`);
-		console.log(`  blocked:         ${audit.blocked ? 'YES' : 'no'}`);
-		console.log(`  deletion result: ${audit.deletionResult}`);
-		if (audit.blockReasons.length > 0) {
-			console.log('  block reasons:');
-			for (const reason of audit.blockReasons) console.log(`    - ${reason}`);
-		}
-		console.log('  incorrect dependency counts:');
-		for (const [key, count] of Object.entries(audit.incorrectDependencies)) {
-			console.log(`    - ${key}: ${count}`);
-		}
-		if (audit.auditArtifactPath) {
-			console.log(`  audit artifact:  ${audit.auditArtifactPath}`);
-		}
-		if (audit.mode === 'dry_run' && !audit.blocked) {
-			console.log('\nDry-run only. Re-run with --apply after explicit confirmation.');
-		}
-	}
+	printPurgeAuditResult(audit, jsonMode);
 
 	if (audit.blocked || audit.deletionResult === 'rolled_back') {
 		process.exitCode = 1;
