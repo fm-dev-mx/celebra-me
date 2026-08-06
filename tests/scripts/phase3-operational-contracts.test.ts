@@ -27,22 +27,27 @@ describe('Phase 3 operational contracts', () => {
 
 	it('captures complete recovery before migration and verifies schema before code', () => {
 		const workflow = read('scripts/db/migrate-policy-production.ts');
-		const beforeWriteIdx = workflow.indexOf('beforeWrite(_plan, ctx)');
+		const beforeWriteIdx = workflow.indexOf('beforeWrite(plan, ctx)');
 		const authorizeIdx = workflow.indexOf('async authorize(plan, ctx)');
 		const migration = workflow.indexOf("['db', 'push', '--db-url', ctx.dbUrl, '--yes']");
 		const afterWriteIdx = workflow.indexOf('afterWrite(plan, ctx)');
 		const contract = workflow.indexOf("runMutationContractVerify('production')", afterWriteIdx);
-		const postBackup = workflow.indexOf("runCriticalBackup(ctx.dbUrl, 'post')", afterWriteIdx);
+		const postBackup = workflow.indexOf("runCriticalBackup(ctx.dbUrl, 'post'", afterWriteIdx);
 		expect(workflow).toContain('evaluateHostedCompatibilityForPlan');
+		expect(workflow).toContain('evaluateCriticalBackupReuse');
+		expect(workflow).toContain('assertProductionUnchangedSinceBackup');
 		expect(workflow).toContain("'scripts/db/backup-critical-production.ts'");
 		expect(workflow).not.toContain('daily-critical-production-backup');
 		// Phase 3 is fully applied in Production; the stale pre-phase3 profile must not return.
 		expect(workflow).not.toContain('--integrity-profile=pre-phase3');
 		expect(beforeWriteIdx).toBeGreaterThan(0);
-		expect(workflow.indexOf("runCriticalBackup(ctx.dbUrl, 'pre')", beforeWriteIdx)).toBeGreaterThan(
+		expect(workflow.indexOf("runCriticalBackup(ctx.dbUrl, 'pre'", beforeWriteIdx)).toBeGreaterThan(
 			beforeWriteIdx,
 		);
 		expect(authorizeIdx).toBeGreaterThan(beforeWriteIdx);
+		expect(workflow.indexOf('assertPreBackupCoverageBeforeAuthorize', authorizeIdx)).toBeGreaterThan(
+			authorizeIdx,
+		);
 		expect(migration).toBeGreaterThan(authorizeIdx);
 		expect(afterWriteIdx).toBeGreaterThan(migration);
 		expect(contract).toBeGreaterThan(afterWriteIdx);

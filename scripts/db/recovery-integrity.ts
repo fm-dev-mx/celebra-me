@@ -49,6 +49,35 @@ export interface RecoveryIntegrityComparison {
 	failures: string[];
 }
 
+/** Stable digest of recovery integrity for backup reuse (excludes capturedAt). */
+export function computeRecoveryStateDigest(integrity: RecoveryIntegritySnapshot): string {
+	const tables = Object.fromEntries(
+		Object.keys(integrity.tables)
+			.sort()
+			.map((key) => [key, integrity.tables[key]]),
+	);
+	const invariants = Object.fromEntries(
+		Object.keys(integrity.invariants)
+			.sort()
+			.map((key) => [key, integrity.invariants[key]]),
+	);
+	return createHash('sha256')
+		.update(
+			JSON.stringify({
+				version: integrity.version,
+				profile: integrity.profile ?? 'phase3',
+				migrationCount: integrity.migrationCount,
+				migrationVersions: [...(integrity.migrationVersions ?? [])],
+				migrationSha256: integrity.migrationSha256,
+				tables,
+				businessStateSha256: integrity.businessStateSha256,
+				invariants,
+			}),
+			'utf8',
+		)
+		.digest('hex');
+}
+
 function psqlCopy(dbUrl: string, sql: string): string {
 	const result = runCommand(
 		'psql',

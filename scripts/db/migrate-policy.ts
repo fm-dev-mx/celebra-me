@@ -4,6 +4,7 @@
  */
 
 import type { MigrationPlan, MigrateTarget } from './migration-plan.ts';
+import type { RecoveryIntegritySnapshot } from './recovery-integrity.ts';
 
 /** Per-orchestration memo for expensive read-only steps that must run once. */
 export interface MigratePolicySession {
@@ -11,6 +12,12 @@ export interface MigratePolicySession {
 	productionAuditCompleted?: boolean;
 	/** buildPlan invocations in this orchestration (rebuilds use compact progress). */
 	buildPlanCount?: number;
+	/** Pre-migration critical backup was reused (live integrity equivalent). */
+	preBackupReused?: boolean;
+	/** Manifest path of the reused or freshly created pre-migration backup. */
+	preBackupManifestPath?: string;
+	/** Live integrity snapshot accepted at pre-backup coverage time (for pre-auth re-check). */
+	preBackupIntegrity?: RecoveryIntegritySnapshot;
 }
 
 export interface MigratePolicyContext {

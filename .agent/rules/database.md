@@ -91,7 +91,11 @@ task authorization, target classification, and standard guard checks.
      registry phase fail closed.
   5. Valid `pnpm release-check` evidence for the current clean `HEAD` (apply ensures or runs
      `type-check` → `test` → `build:app`; ordinary preflight does not)
-  6. Verified pre-migration critical backup (`.backups/prod/...`)
+  6. Verified pre-migration critical backup (`.backups/prod/...`). If a recent verified
+     critical backup has live-equivalent recovery integrity (state digest / table + migration
+     fingerprints, intact artifacts, EFS), reuse it; otherwise capture a new set. Fail closed.
+     When reused, re-confirm live equivalence after plan revalidation and before the owner gate
+     (`PRODUCTION_CHANGED_SINCE_BACKUP` aborts). Post-migration backup always captures after write.
   7. One post-backup revalidation against the reviewed plan (material drift aborts)
   8. Shared owner boundary: one arrow menu defaulting to Cancel, optional technical review,
      then short bound code `<VERB> <8-hex>` from stable `planId`. Compact card once at CLI;

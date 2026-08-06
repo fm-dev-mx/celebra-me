@@ -11,6 +11,9 @@ export const CRITICAL_BACKUP_KINDS = [
 ] as const;
 export type CriticalBackupKind = (typeof CRITICAL_BACKUP_KINDS)[number];
 
+/** Why a verified critical backup was created (optional on legacy manifests). */
+export type CriticalBackupPurpose = 'migrate-pre' | 'migrate-post' | 'standalone';
+
 export interface BackupArtifactManifest {
 	kind: CriticalBackupKind;
 	path: string;
@@ -26,6 +29,12 @@ export interface CriticalBackupManifest {
 	artifacts: BackupArtifactManifest[];
 	integrity?: RecoveryIntegritySnapshot;
 	sourceEnvironment?: 'production' | 'disposable-test';
+	/** Optional metadata for migrate reuse / operator evidence. */
+	purpose?: CriticalBackupPurpose;
+	planId?: string;
+	pendingVersions?: string[];
+	/** SHA-256 of integrity excluding capturedAt — stable equivalence key. */
+	stateDigest?: string;
 }
 
 export function hashFile(path: string): string {

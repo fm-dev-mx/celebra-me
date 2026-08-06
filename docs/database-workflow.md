@@ -570,8 +570,11 @@ application login substitute. Host invitation flows continue to use real `host_c
   only the owner gate (Cancelar / Revisar cambios / Aplicar + bound code).
 - Production apply sequence: identity → audit → dry-run (+ optional `--expected` pin) →
   compatibility (HEAD; explicit registry phase required) → `release-check` evidence (reuse or run) →
-  verified critical pre-migration backup → one revalidation → owner gate → `supabase db push` →
-  migration-history + contract verification → critical post-migration backup.
+  verified critical pre-migration backup (reuse when live recovery integrity still matches a recent
+  verified manifest; otherwise capture) → one plan revalidation → if backup was reused, re-confirm
+  live integrity → owner gate → `supabase db push` → migration-history + contract verification →
+  critical post-migration backup (always capture after write). After cancel / wrong confirmation
+  code with no Production writes, the next apply typically reuses the pre-migration backup.
 - Release identity for Production is the current clean `HEAD` (not `CELEBRA_TARGET_RELEASE_SHA`).
 - Shared owner boundary: `requireOwnerProductionApply` (also used by promote/patch/draft-reset).
   The gate is two-step and TTY-only: (1) arrow-key intent select defaulting to Cancel; (2) type or

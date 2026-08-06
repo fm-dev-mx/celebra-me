@@ -12,13 +12,18 @@ import {
 	createArtifactManifest,
 	validateCriticalBackupManifest,
 	type CriticalBackupManifest,
+	type CriticalBackupPurpose,
 } from './backup-manifest.ts';
 import {
 	extractSupabaseProjectRef,
 	getSecretFromEnvOrFiles,
 	PROD_SECRET_FILES,
 } from './db-target-config.ts';
-import { captureRecoveryIntegrity, compareRecoveryIntegrity } from './recovery-integrity.ts';
+import {
+	captureRecoveryIntegrity,
+	compareRecoveryIntegrity,
+	computeRecoveryStateDigest,
+} from './recovery-integrity.ts';
 import {
 	classifyStorageDownloadFailure,
 	createStorageObjectArchiveEntry,
@@ -274,6 +279,20 @@ async function main(): Promise<void> {
 		);
 	}
 
+	const purposeRaw = process.env.CELEBRA_CRITICAL_BACKUP_PURPOSE?.trim();
+	const purpose: CriticalBackupPurpose =
+		purposeRaw === 'migrate-pre' || purposeRaw === 'migrate-post' || purposeRaw === 'standalone'
+			? purposeRaw
+			: 'standalone';
+	const planId = process.env.CELEBRA_CRITICAL_BACKUP_PLAN_ID?.trim() || undefined;
+	const pendingRaw = process.env.CELEBRA_CRITICAL_BACKUP_PENDING?.trim();
+	const pendingVersions = pendingRaw
+		? pendingRaw
+				.split(',')
+				.map((value) => value.trim())
+				.filter(Boolean)
+		: undefined;
+
 	const manifest: CriticalBackupManifest = {
 		version: 1,
 		createdAt: new Date().toISOString(),
@@ -287,6 +306,10 @@ async function main(): Promise<void> {
 			createArtifactManifest('storage-objects', storageObjectsPath),
 		],
 		integrity: after,
+		purpose,
+		planId,
+		pendingVersions,
+		stateDigest: computeRecoveryStateDigest(after),
 	};
 	validateCriticalBackupManifest(manifest);
 	writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, { mode: 0o600 });

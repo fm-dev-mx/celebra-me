@@ -42,6 +42,7 @@ const APPROVED_MUTATORS: MutatorSpec[] = [
 		preflightPatterns: [
 			/audit-db\.ts/,
 			/ensureValidReleaseCheckEvidence/,
+			/evaluateCriticalBackupReuse/,
 			/backup-critical-production/,
 		],
 		family: 'schema_migration',

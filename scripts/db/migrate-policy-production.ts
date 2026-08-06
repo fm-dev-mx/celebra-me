@@ -7,7 +7,12 @@
  * Gate-before-write ordering is intentional and covered by production-authorization tests.
  */
 
+import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
 import { parseSchemaAuditVerdictFromOutput } from './audit-db.ts';
+import {
+	assertProductionUnchangedSinceBackup,
+	evaluateCriticalBackupReuse,
+} from './critical-backup-reuse.ts';
 import { classifyDbTarget, guardProduction } from './db-guard.ts';
 import {
 	fail,
@@ -30,7 +35,7 @@ import {
 } from './migrate-executors.ts';
 import type { MigrateEnvironmentPolicy, MigratePolicySession } from './migrate-policy.ts';
 import { buildMigrationTechnicalReview } from './migrate-plan-format.ts';
-import { buildMigrationPlan } from './migration-plan.ts';
+import { buildMigrationPlan, type MigrationPlan } from './migration-plan.ts';
 import { comparePendingSetToExpected } from './migration-pending-set.ts';
 import {
 	OperatorError,
@@ -129,17 +134,64 @@ function runProductionAudit(ctx: { session?: MigratePolicySession }, quiet: bool
 	if (ctx.session) ctx.session.productionAuditCompleted = true;
 }
 
-function runCriticalBackup(prodDbUrl: string, phase: 'pre' | 'post'): void {
+function tryReusePreMigrationBackup(
+	prodDbUrl: string,
+	session?: MigratePolicySession,
+): boolean {
+	writeHuman(
+		`${operatorSymbol('info')} Comprobando si un respaldo crítico existente aún cubre Production…`,
+	);
+	const evaluation = evaluateCriticalBackupReuse({
+		prodDbUrl,
+		projectRef: SUPABASE_PROJECT_REFS.production,
+	});
+	if (!evaluation.reusable || !evaluation.manifestPath || !evaluation.liveIntegrity) {
+		writeHuman(
+			`${operatorSymbol('info')} Se requiere un respaldo crítico nuevo (${evaluation.reason}).`,
+		);
+		return false;
+	}
+	if (session) {
+		session.preBackupReused = true;
+		session.preBackupManifestPath = evaluation.manifestPath;
+		session.preBackupIntegrity = evaluation.liveIntegrity;
+	}
+	writeHuman(
+		`${operatorSymbol('ok')} Respaldo crítico existente reutilizado; Production no cambió.`,
+	);
+	writeHuman(`${operatorSymbol('info')} Manifest: ${evaluation.manifestPath}`);
+	return true;
+}
+
+function runCriticalBackup(
+	prodDbUrl: string,
+	phase: 'pre' | 'post',
+	plan?: MigrationPlan,
+	session?: MigratePolicySession,
+): void {
+	if (phase === 'pre' && tryReusePreMigrationBackup(prodDbUrl, session)) {
+		return;
+	}
+
 	const label =
 		phase === 'pre'
 			? 'Creando respaldo crítico previo…'
 			: 'Creando respaldo crítico posterior…';
 	writeHuman(`${operatorSymbol('info')} ${label}`);
+	const backupEnv: NodeJS.ProcessEnv = {
+		...process.env,
+		PROD_DB_URL: prodDbUrl,
+		CELEBRA_CRITICAL_BACKUP_PURPOSE: phase === 'pre' ? 'migrate-pre' : 'migrate-post',
+	};
+	if (plan) {
+		backupEnv.CELEBRA_CRITICAL_BACKUP_PLAN_ID = plan.planId;
+		backupEnv.CELEBRA_CRITICAL_BACKUP_PENDING = plan.pendingVersions.join(',');
+	}
 	const backupResult = runCommand(
 		'npx',
 		['tsx', 'scripts/db/backup-critical-production.ts'],
 		{
-			env: { ...process.env, PROD_DB_URL: prodDbUrl },
+			env: backupEnv,
 			redact: [prodDbUrl],
 			throwOnError: false,
 		},
@@ -164,9 +216,53 @@ function runCriticalBackup(prodDbUrl: string, phase: 'pre' | 'post'): void {
 				phase === 'pre' ? undefined : 'La migración pudo haberse aplicado; verifique el estado.',
 		});
 	}
+	if (phase === 'pre' && session) {
+		session.preBackupReused = false;
+		const manifestMatch = /CRITICAL_BACKUP_MANIFEST=([^\r\n]+)/.exec(
+			`${backupResult.stdout}\n${backupResult.stderr}`,
+		);
+		if (manifestMatch?.[1]) {
+			session.preBackupManifestPath = manifestMatch[1].trim();
+		}
+	}
 	writeHuman(
 		`${operatorSymbol('ok')} Respaldo crítico ${phase === 'pre' ? 'previo' : 'posterior'} verificado.`,
 	);
+}
+
+function assertPreBackupCoverageBeforeAuthorize(
+	ctx: { dbUrl: string; session?: MigratePolicySession },
+): void {
+	const expected = ctx.session?.preBackupIntegrity;
+	if (!ctx.session?.preBackupReused || !expected) {
+		return;
+	}
+	writeHuman(
+		`${operatorSymbol('info')} Confirmando que Production sigue cubierta por el respaldo reutilizado…`,
+	);
+	const check = assertProductionUnchangedSinceBackup({
+		prodDbUrl: ctx.dbUrl,
+		expectedIntegrity: expected,
+	});
+	if (!check.ok) {
+		throw new OperatorError({
+			title: 'Production cambió desde el respaldo crítico',
+			cause:
+				'El estado vivo ya no coincide con el respaldo reutilizado. Se aborta antes de la autorización.',
+			code: 'PRODUCTION_CHANGED_SINCE_BACKUP',
+			remediation: [
+				'Reintente `pnpm db:prod:migrate -- --apply` para capturar un respaldo crítico nuevo.',
+				'No reutilice el plan anterior si hubo otras escrituras (promoción, patch, etc.).',
+			],
+			retryCommand: 'pnpm db:prod:migrate -- --apply',
+			affected: {
+				label: 'Diferencias de integridad',
+				items: check.failures,
+			},
+		});
+	}
+	ctx.session.preBackupIntegrity = check.liveIntegrity;
+	writeHuman(`${operatorSymbol('ok')} Cobertura del respaldo confirmada.`);
 }
 
 function validatePendingVersions(
@@ -296,11 +392,23 @@ export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 		return plan;
 	},
 
-	beforeWrite(_plan, ctx) {
-		runCriticalBackup(ctx.dbUrl, 'pre');
+	beforeWrite(plan, ctx) {
+		runCriticalBackup(ctx.dbUrl, 'pre', plan, ctx.session);
 	},
 
 	async authorize(plan, ctx) {
+		assertPreBackupCoverageBeforeAuthorize(ctx);
+		const technicalReview: Array<readonly [string, string]> = [
+			...buildMigrationTechnicalReview(plan, redactDbUrl(ctx.dbUrl)),
+		];
+		if (ctx.session?.preBackupManifestPath) {
+			technicalReview.push([
+				'Respaldo previo',
+				ctx.session.preBackupReused
+					? `Reutilizado · ${ctx.session.preBackupManifestPath}`
+					: `Nuevo · ${ctx.session.preBackupManifestPath}`,
+			]);
+		}
 		await requireOwnerProductionApply({
 			apply: true,
 			dbUrl: ctx.dbUrl,
@@ -311,7 +419,7 @@ export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 			// Compact card already shown by migrate-cli / apply path; gate is menu + code only.
 			omitSummary: true,
 			summary: [],
-			technicalReview: buildMigrationTechnicalReview(plan, redactDbUrl(ctx.dbUrl)),
+			technicalReview,
 			env: ctx.env,
 			readConfirmationLine: ctx.readConfirmationLine,
 		});
@@ -332,7 +440,7 @@ export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 		writeHuman(
 			`${operatorSymbol('ok')} Verificación aprobada. Schema y contrato de mutación activos.`,
 		);
-		runCriticalBackup(ctx.dbUrl, 'post');
+		runCriticalBackup(ctx.dbUrl, 'post', plan, ctx.session);
 		writeHuman(`${operatorSymbol('ok')} Migración de Production completada.`);
 	},
 };
