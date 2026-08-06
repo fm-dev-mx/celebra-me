@@ -150,10 +150,7 @@ export async function buildValentinaMemoriesArtifacts(): Promise<GeneratedQrArti
 	const png = await rasterizeSvg(svg, valentinaMemoriesQrParams.pngSizePx);
 	const meta = await sharp(png).metadata();
 
-	const decodedFromSvg = await decodeQrFromPngBuffer(
-		await rasterizeSvg(svg, valentinaMemoriesQrParams.pngSizePx),
-	);
-	const decodedFromPng = await decodeQrFromPngBuffer(png);
+	const decoded = await decodeQrFromPngBuffer(png);
 	const totalModules = parseSvgModuleCount(svg);
 	if (totalModules === null) {
 		throw new Error('Unable to parse QR SVG viewBox module count.');
@@ -168,14 +165,9 @@ export async function buildValentinaMemoriesArtifacts(): Promise<GeneratedQrArti
 		totalModules,
 	});
 
-	if (decodedFromSvg !== VALENTINA_MEMORIES_QR_TARGET_URL) {
+	if (decoded !== VALENTINA_MEMORIES_QR_TARGET_URL) {
 		throw new Error(
-			`SVG-derived QR decoded to "${decodedFromSvg}" instead of "${VALENTINA_MEMORIES_QR_TARGET_URL}".`,
-		);
-	}
-	if (decodedFromPng !== VALENTINA_MEMORIES_QR_TARGET_URL) {
-		throw new Error(
-			`PNG QR decoded to "${decodedFromPng}" instead of "${VALENTINA_MEMORIES_QR_TARGET_URL}".`,
+			`PNG QR decoded to "${decoded}" instead of "${VALENTINA_MEMORIES_QR_TARGET_URL}".`,
 		);
 	}
 	if (!quietZoneValid) {
@@ -196,8 +188,8 @@ export async function buildValentinaMemoriesArtifacts(): Promise<GeneratedQrArti
 	return {
 		svg,
 		png,
-		decodedFromSvg,
-		decodedFromPng,
+		decodedFromSvg: decoded,
+		decodedFromPng: decoded,
 		pngWidth: meta.width ?? 0,
 		pngHeight: meta.height ?? 0,
 		pngFormat: meta.format,
@@ -225,6 +217,83 @@ export interface DriftCheckResult {
 	failures: string[];
 }
 
+async function verifyCommittedPngDrift(
+	pngPath: string,
+	svgPath: string,
+	failures: string[],
+): Promise<void> {
+	if (!existsSync(pngPath)) {
+		failures.push(`Missing committed PNG at ${VALENTINA_MEMORIES_PNG_RELATIVE_PATH}`);
+		return;
+	}
+	const committedPng = readFileSync(pngPath);
+	const meta = await sharp(committedPng).metadata();
+
+	if (meta.format !== 'png') {
+		failures.push(`Committed asset is not PNG (format=${meta.format ?? 'unknown'}).`);
+	}
+	if (
+		(meta.width ?? 0) < valentinaMemoriesQrParams.pngSizePx ||
+		(meta.height ?? 0) < valentinaMemoriesQrParams.pngSizePx
+	) {
+		failures.push(
+			`Committed PNG dimensions ${meta.width}x${meta.height} are below ${valentinaMemoriesQrParams.pngSizePx}x${valentinaMemoriesQrParams.pngSizePx}.`,
+		);
+	}
+
+	try {
+		const decoded = await decodeQrFromPngBuffer(committedPng);
+		if (decoded !== VALENTINA_MEMORIES_QR_TARGET_URL) {
+			failures.push(
+				`Committed PNG decoded to "${decoded}" instead of "${VALENTINA_MEMORIES_QR_TARGET_URL}".`,
+			);
+		}
+	} catch (error) {
+		failures.push(
+			`Committed PNG failed decode: ${error instanceof Error ? error.message : String(error)}`,
+		);
+	}
+
+	// Source relationship: regenerating from the committed SVG must decode
+	// to the same canonical URL (PNG bytes may differ across sharp builds).
+	if (existsSync(svgPath)) {
+		const committedSvg = normalizeNewlines(readFileSync(svgPath, 'utf8'));
+		const totalModules = parseSvgModuleCount(committedSvg);
+		if (totalModules === null) {
+			failures.push('Committed SVG is missing a square viewBox module count.');
+		} else {
+			try {
+				const quietZoneValid = await validateQuietZone(
+					committedPng,
+					valentinaMemoriesQrParams.marginModules,
+					{ totalModules },
+				);
+				if (!quietZoneValid) {
+					failures.push('Committed PNG quiet zone failed background validation.');
+				}
+			} catch (error) {
+				failures.push(
+					`Committed PNG quiet-zone check failed: ${error instanceof Error ? error.message : String(error)}`,
+				);
+			}
+		}
+
+		try {
+			const derived = await rasterizeSvg(committedSvg, valentinaMemoriesQrParams.pngSizePx);
+			const derivedDecoded = await decodeQrFromPngBuffer(derived);
+			if (derivedDecoded !== VALENTINA_MEMORIES_QR_TARGET_URL) {
+				failures.push(
+					`PNG source relationship failed: SVG re-rasterization decoded to "${derivedDecoded}".`,
+				);
+			}
+		} catch (error) {
+			failures.push(
+				`PNG source relationship check failed: ${error instanceof Error ? error.message : String(error)}`,
+			);
+		}
+	}
+}
+
 export async function checkValentinaMemoriesArtifacts(): Promise<DriftCheckResult> {
 	const failures: string[] = [];
 	const expected = await buildValentinaMemoriesArtifacts();
@@ -242,78 +311,12 @@ export async function checkValentinaMemoriesArtifacts(): Promise<DriftCheckResul
 		}
 	}
 
-	if (!existsSync(pngPath)) {
-		failures.push(`Missing committed PNG at ${VALENTINA_MEMORIES_PNG_RELATIVE_PATH}`);
-	} else {
-		const committedPng = readFileSync(pngPath);
-		const meta = await sharp(committedPng).metadata();
+	await verifyCommittedPngDrift(pngPath, svgPath, failures);
 
-		if (meta.format !== 'png') {
-			failures.push(`Committed asset is not PNG (format=${meta.format ?? 'unknown'}).`);
-		}
-		if (
-			(meta.width ?? 0) < valentinaMemoriesQrParams.pngSizePx ||
-			(meta.height ?? 0) < valentinaMemoriesQrParams.pngSizePx
-		) {
-			failures.push(
-				`Committed PNG dimensions ${meta.width}x${meta.height} are below ${valentinaMemoriesQrParams.pngSizePx}x${valentinaMemoriesQrParams.pngSizePx}.`,
-			);
-		}
-
-		try {
-			const decoded = await decodeQrFromPngBuffer(committedPng);
-			if (decoded !== VALENTINA_MEMORIES_QR_TARGET_URL) {
-				failures.push(
-					`Committed PNG decoded to "${decoded}" instead of "${VALENTINA_MEMORIES_QR_TARGET_URL}".`,
-				);
-			}
-		} catch (error) {
-			failures.push(
-				`Committed PNG failed decode: ${error instanceof Error ? error.message : String(error)}`,
-			);
-		}
-
-		// Source relationship: regenerating from the committed SVG must decode
-		// to the same canonical URL (PNG bytes may differ across sharp builds).
-		if (existsSync(svgPath)) {
-			const committedSvg = normalizeNewlines(readFileSync(svgPath, 'utf8'));
-			const totalModules = parseSvgModuleCount(committedSvg);
-			if (totalModules === null) {
-				failures.push('Committed SVG is missing a square viewBox module count.');
-			} else {
-				try {
-					const quietZoneValid = await validateQuietZone(
-						committedPng,
-						valentinaMemoriesQrParams.marginModules,
-						{ totalModules },
-					);
-					if (!quietZoneValid) {
-						failures.push('Committed PNG quiet zone failed background validation.');
-					}
-				} catch (error) {
-					failures.push(
-						`Committed PNG quiet-zone check failed: ${error instanceof Error ? error.message : String(error)}`,
-					);
-				}
-			}
-
-			try {
-				const derived = await rasterizeSvg(committedSvg, valentinaMemoriesQrParams.pngSizePx);
-				const derivedDecoded = await decodeQrFromPngBuffer(derived);
-				if (derivedDecoded !== VALENTINA_MEMORIES_QR_TARGET_URL) {
-					failures.push(
-						`PNG source relationship failed: SVG re-rasterization decoded to "${derivedDecoded}".`,
-					);
-				}
-			} catch (error) {
-				failures.push(
-					`PNG source relationship check failed: ${error instanceof Error ? error.message : String(error)}`,
-				);
-			}
-		}
-	}
-
-	return { ok: failures.length === 0, failures };
+	return {
+		ok: failures.length === 0,
+		failures,
+	};
 }
 
 async function main(): Promise<void> {

@@ -9,11 +9,7 @@
  * credentials, or owner UUIDs.
  */
 
-import {
-	HOST_LOGIN_ALIAS_MAX_LENGTH,
-	HOST_LOGIN_ALIAS_PATTERN,
-	isCanonicalHostLoginAlias,
-} from '../../../src/lib/auth/login-alias.ts';
+import { isCanonicalHostLoginAlias } from '../../../src/lib/auth/login-alias.ts';
 
 export interface InvitationAssetSpec {
 	key: string;
@@ -44,9 +40,6 @@ export interface InvitationEventTiming {
 
 export type InvitationLifecycle = 'in_progress' | 'published';
 export type InvitationDeliveryScope = 'content-only' | 'content-and-assets' | 'assets-only';
-
-/** Host Auth login local-part: `{alias}@clientes.celebra.invalid`. Independent of slug. */
-export { HOST_LOGIN_ALIAS_MAX_LENGTH, HOST_LOGIN_ALIAS_PATTERN };
 
 const MANAGED_IDENTITY_UUID_RE =
 	/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -119,12 +112,27 @@ function assertSlugDoesNotRepeatEventType(slug: string, eventType: string): void
 	}
 }
 
-/**
- * Type-safe helper for defining single-file invitations.
- */
-export function defineInvitation<K extends string = string>(
+function validatePreviousSlugs(slug: string, previousSlugs: readonly string[]): void {
+	const seenPrevious = new Set<string>();
+	for (const previousSlug of previousSlugs) {
+		if (!previousSlug || typeof previousSlug !== 'string') {
+			throw new Error('Invitation previousSlugs entries must be non-empty strings.');
+		}
+		if (previousSlug === slug) {
+			throw new Error(
+				`Invitation previousSlugs must not include the current slug "${slug}".`,
+			);
+		}
+		if (seenPrevious.has(previousSlug)) {
+			throw new Error(`Invitation previousSlugs contains duplicate "${previousSlug}".`);
+		}
+		seenPrevious.add(previousSlug);
+	}
+}
+
+function validateInvitationMetadata<K extends string>(
 	definition: InvitationDefinition<K>,
-): InvitationDefinition<K> {
+): void {
 	if (!definition.slug || typeof definition.slug !== 'string') {
 		throw new Error('Invitation definition requires a non-empty string slug.');
 	}
@@ -150,28 +158,18 @@ export function defineInvitation<K extends string = string>(
 		throw new Error('Invitation definition requires a non-empty string eventType.');
 	}
 	assertSlugDoesNotRepeatEventType(definition.slug, definition.eventType);
-	const previousSlugs = definition.previousSlugs ?? [];
-	const seenPrevious = new Set<string>();
-	for (const previousSlug of previousSlugs) {
-		if (!previousSlug || typeof previousSlug !== 'string') {
-			throw new Error('Invitation previousSlugs entries must be non-empty strings.');
-		}
-		if (previousSlug === definition.slug) {
-			throw new Error(
-				`Invitation previousSlugs must not include the current slug "${definition.slug}".`,
-			);
-		}
-		if (seenPrevious.has(previousSlug)) {
-			throw new Error(`Invitation previousSlugs contains duplicate "${previousSlug}".`);
-		}
-		seenPrevious.add(previousSlug);
-	}
+	validatePreviousSlugs(definition.slug, definition.previousSlugs ?? []);
 	if (!definition.title || typeof definition.title !== 'string') {
 		throw new Error('Invitation definition requires a non-empty string title.');
 	}
 	if (!Number.isFinite(Date.parse(definition.createdAt)) || !definition.createdAt.endsWith('Z')) {
 		throw new Error('Invitation definition requires a canonical UTC createdAt timestamp.');
 	}
+}
+
+function validateInvitationStructure<K extends string>(
+	definition: InvitationDefinition<K>,
+): void {
 	if (definition.lifecycle !== 'in_progress' && definition.lifecycle !== 'published') {
 		throw new Error('Invitation definition requires an explicit lifecycle.');
 	}
@@ -189,6 +187,16 @@ export function defineInvitation<K extends string = string>(
 	if (typeof definition.buildPublishedContent !== 'function') {
 		throw new Error('Invitation definition requires a buildPublishedContent function.');
 	}
+}
+
+/**
+ * Type-safe helper for defining single-file invitations.
+ */
+export function defineInvitation<K extends string = string>(
+	definition: InvitationDefinition<K>,
+): InvitationDefinition<K> {
+	validateInvitationMetadata(definition);
+	validateInvitationStructure(definition);
 	const semanticAssets = Object.fromEntries(
 		definition.assets.map((asset) => [
 			asset.key,
