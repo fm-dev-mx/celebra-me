@@ -56,9 +56,13 @@ semantics from this workflow into other docs.
 pnpm invitation:update -- --help
 pnpm invitation:update -- --slug <slug> --targets local --source-dir <path> --dry-run
 pnpm invitation:update -- --slug <slug> --targets local,preview --source-dir <path> --apply
+pnpm invitation:promote
 pnpm invitation:promote -- --slug <slug> --package <path> --dry-run
-pnpm invitation:promote -- --slug <slug> --package <path> --apply --backup-manifest <path>
+pnpm invitation:promote -- --slug <slug> --package <path> --apply
 ```
+
+`pnpm invitation:promote` with no args is the canonical owner TTY path (discovery + Cancelar
+default). Flag forms are advanced/non-TTY.
 
 Interactive apply (TTY) offers selective content apply: all changes, by section, or field-by-field.
 Deselected paths keep the destination value. Non-interactive selective apply uses

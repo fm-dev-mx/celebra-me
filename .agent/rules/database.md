@@ -79,9 +79,8 @@ task authorization, target classification, and standard guard checks.
   or `invitation:promote`.
 - **One-Time Recovery Tool Removed**: `scripts/db/reconcile-prod-baseline.ts` was a one-time
   recovery tool and is no longer part of the repository.
-- **Production Migration Safety Workflow**: Public operator entry is `pnpm db:prod:migrate`
-  (engine: `db:migrate -- --target production`). Default is read-only preflight; mutation
-  requires `--apply`:
+- **Production Migration Safety Workflow**: Public operator entry is `pnpm db:prod:migrate` (engine:
+  `db:migrate -- --target production`). Default is read-only preflight; mutation requires `--apply`:
   1. Production perimeter + exact project-ref identity (in-policy; equivalent to db-guard)
   2. Read-only production schema audit (BEHIND without drift is ready-to-migrate)
   3. Dry-run pending set (optional `--expected` pin must match exactly when provided)
@@ -91,10 +90,10 @@ task authorization, target classification, and standard guard checks.
      registry phase fail closed.
   5. Apply `prepareApply`: valid `pnpm release-check` evidence for the current clean `HEAD`
      (`type-check` → `test` → `build:app`; ordinary preflight does not run the suite)
-  6. Verified pre-migration critical backup coverage (`.backups/prod/...`) with bounded RPO
-     (default 15 minutes). Reuse when project/artifacts/EFS/profile/migration-history match and
-     age ≤ RPO; business-row drift after capture is allowed (online RSVP traffic). Otherwise
-     capture a new set automatically (one capture retry on mid-capture instability).
+  6. Verified pre-migration critical backup coverage (`.backups/prod/...`) with bounded RPO (default
+     15 minutes). Reuse when project/artifacts/EFS/profile/migration-history match and age ≤ RPO;
+     business-row drift after capture is allowed (online RSVP traffic). Otherwise capture a new set
+     automatically (one capture retry on mid-capture instability).
   7. One post-backup revalidation against the reviewed plan (material drift aborts)
   8. Structural coverage confirm before owner gate (`BACKUP_COVERAGE_EXPIRED` /
      `BACKUP_STRUCTURAL_DRIFT`). Shared owner boundary: Cancel-default arrow menu, optional
@@ -164,7 +163,8 @@ task authorization, target classification, and standard guard checks.
 - `pnpm db:prod:migrate` is the approved public production **schema** mutation workflow
   (`migrate-cli.ts --target production`).
 - `pnpm invitation:promote` is the approved production **managed-content** promotion workflow
-  (owner-only; separate from schema migrate).
+  (owner-only; separate from schema migrate). Canonical human path is TTY with no args (discovery +
+  Cancelar default); `--slug` / `--apply` remain for advanced/non-TTY use.
 - `pnpm db:sync` is the normal invitation **content** orchestration entry point
   (diagnose/compare/plan/apply) over existing engines. Directions allowlist: `definition-to-local`,
   `definition-to-preview`, `package-to-production`, `production-to-preview-mirror`. Read-only modes

@@ -107,21 +107,21 @@ This matrix is the SSOT for Agent vs Owner operational capabilities. Preview tas
 operational assertion, not cryptographic security; strong control depends on credential and
 execution-boundary separation.
 
-| Capability                              | Agent                                                                                                                       | Owner                                                          |
-| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| Canonical invitation source             | Edit with task authorization                                                                                                | Approve and own                                                |
-| Disposable test DB                      | Run guarded tests                                                                                                           | Run                                                            |
-| Persistent Local managed mutation       | Yes via managed lifecycle (`invitation:update --targets local`)                                                             | Yes                                                            |
-| Persistent Local raw/ad-hoc DB mutation | Never (unsupported agent workflow)                                                                                          | Exceptional only                                               |
-| Preview managed mutation                | Yes with explicit Preview task scope (`CELEBRA_TASK_SCOPE`)                                                                 | Yes                                                            |
-| Preview raw DB mutation                 | Never                                                                                                                       | Guarded schema workflow only                                   |
+| Capability                              | Agent                                                                                                                                                           | Owner                                                          |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| Canonical invitation source             | Edit with task authorization                                                                                                                                    | Approve and own                                                |
+| Disposable test DB                      | Run guarded tests                                                                                                                                               | Run                                                            |
+| Persistent Local managed mutation       | Yes via managed lifecycle (`invitation:update --targets local`)                                                                                                 | Yes                                                            |
+| Persistent Local raw/ad-hoc DB mutation | Never (unsupported agent workflow)                                                                                                                              | Exceptional only                                               |
+| Preview managed mutation                | Yes with explicit Preview task scope (`CELEBRA_TASK_SCOPE`)                                                                                                     | Yes                                                            |
+| Preview raw DB mutation                 | Never                                                                                                                                                           | Guarded schema workflow only                                   |
 | Production read — safe surfaces         | `pnpm dbs`; `invitation:update --status` (local inventory; remotes unprobed); `invitation:content-parity`; `invitation:promote --dry-run` (read-only preflight) | Same safe surfaces                                             |
-| Production read — privileged DB audit   | Never (`db:prod:audit`, backups, Auth/Storage export)                                                                       | Owner-only guarded `db:prod:*` audit/backup/export             |
-| Production invitation mutation          | Never via `invitation:update` or `invitation:reconcile`                                                                     | Owner-only `pnpm invitation:promote --apply`                   |
-| Production schema / migration           | Never                                                                                                                       | Owner-only `db:prod:migrate` (separate from content promotion) |
-| Production specialized SQL patch        | Never (`db:prod:patch --apply`)                                                                                             | Owner-only specialized maintenance (`RESTRICT_OWNER_ONLY`)     |
-| Reconciliation                          | Plan and apply Local/Preview managed decisions                                                                              | Authorize Preview scope and source updates                     |
-| Schema operations                       | Never auto-run from invitation workflows                                                                                    | Use separate guarded `db:*:migrate` workflows                  |
+| Production read — privileged DB audit   | Never (`db:prod:audit`, backups, Auth/Storage export)                                                                                                           | Owner-only guarded `db:prod:*` audit/backup/export             |
+| Production invitation mutation          | Never via `invitation:update` or `invitation:reconcile`                                                                                                         | Owner-only `pnpm invitation:promote --apply`                   |
+| Production schema / migration           | Never                                                                                                                                                           | Owner-only `db:prod:migrate` (separate from content promotion) |
+| Production specialized SQL patch        | Never (`db:prod:patch --apply`)                                                                                                                                 | Owner-only specialized maintenance (`RESTRICT_OWNER_ONLY`)     |
+| Reconciliation                          | Plan and apply Local/Preview managed decisions                                                                                                                  | Authorize Preview scope and source updates                     |
+| Schema operations                       | Never auto-run from invitation workflows                                                                                                                        | Use separate guarded `db:*:migrate` workflows                  |
 
 ### Production read surfaces
 
@@ -133,10 +133,11 @@ execution-boundary separation.
   `db:prod:export-auth`, `db:prod:export-storage`, and any direct Production `psql`/service-role
   inspection. Agents must not run these unless the owner explicitly authorizes that exact privileged
   read.
-- **Owner-only Production content promotion:** `pnpm invitation:promote --apply` requires exact
-  Preview approval, schema `CURRENT`, verified critical backup evidence
-  (`pnpm db:prod:backup:critical`), valid `pnpm release-check` evidence for the current clean
-  `HEAD`, and interactive owner TTY confirmation (`PROMOTE <slug> <packageHash>`). Agents must not
+- **Owner-only Production content promotion:** Canonical human path is `pnpm invitation:promote`
+  (TTY, no args): discover pending releases, Cancelar by default, then the shared orchestrator.
+  Advanced/non-TTY may use `--slug` / `--package` / `--dry-run` / `--apply`. Apply requires exact
+  Preview approval, schema `CURRENT`, critical backup coverage, valid `pnpm release-check` evidence
+  for the current clean `HEAD`, and typed owner confirmation (`PROMOTE <8-hex>`). Agents must not
   execute `--apply`.
 
 ## Schema lifecycle contract
@@ -154,8 +155,8 @@ UNVERIFIED as `SCHEMA_UNVERIFIED`. `pnpm dbs` / observability use **migration_hi
 `pnpm db:*:audit` uses **object_audit_readiness** — not equivalent. Do not reuse invitation
 reconciliation decisions (`KEEP_ENVIRONMENT`, etc.) for schema. Invitation workflows must never
 auto-run migrations; `invitation:promote` preflight that detects incompatible schema returns
-`SCHEMA_INCOMPATIBLE` / `OWNER_ACTION_REQUIRED` and stops. Preview schema migrate and content
-mirror require exact Preview task scope before any write (`preview:schema:migrate` /
+`SCHEMA_INCOMPATIBLE` / `OWNER_ACTION_REQUIRED` and stops. Preview schema migrate and content mirror
+require exact Preview task scope before any write (`preview:schema:migrate` /
 `preview:content-mirror:sync-invitations`).
 
 Disposable operations are available to **both Agent and Owner** under the guarded disposable-test
@@ -166,8 +167,8 @@ workflows.
 Retain each tool only until its operation completes, is verified, or is explicitly abandoned; then
 delete implementation, package alias, tests, and active docs in a code-only cleanup.
 
-| Command / path | Pending operation | Removal condition |
-| --- | --- | --- |
+| Command / path                       | Pending operation                                     | Removal condition           |
+| ------------------------------------ | ----------------------------------------------------- | --------------------------- |
 | `pnpm invitation:romina-draft-reset` | Full draft←published reset for `romina-rios-chaparro` | Apply verified or abandoned |
 
 Romina narrow schema-repair was superseded by draft-reset and removed. Operational sequences live in

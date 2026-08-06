@@ -20,15 +20,15 @@ Architecture: [`docs/core/architecture.md`](../../core/architecture.md). Authori
 
 ## Roles and responsibility
 
-| Concern                     | System                                                      | Agent/developer                                 | Designer                       | Manual/production operator                 |
-| --------------------------- | ----------------------------------------------------------- | ----------------------------------------------- | ------------------------------ | ------------------------------------------ |
-| Validate managed definition | Definition registry + CLI dry-run invariants | Author/verify definition + preset match | — | — |
+| Concern                     | System                                                           | Agent/developer                                 | Designer                       | Manual/production operator                 |
+| --------------------------- | ---------------------------------------------------------------- | ----------------------------------------------- | ------------------------------ | ------------------------------------------ |
+| Validate managed definition | Definition registry + CLI dry-run invariants                     | Author/verify definition + preset match         | —                              | —                                          |
 | Create managed invitation   | Definition registry + `invitation:update` / `invitation:promote` | Inspect dry-run/apply reports                   | Dry-run / Local+Preview apply  | Owner-only Production promote              |
-| Write content               | Editor schemas and optimistic locking                       | Enter accurate Spanish copy and structured data | Review narrative and hierarchy | Confirm client facts                       |
-| Prepare assets              | Server decode, normalize, resize, WebP conversion, metadata | Upload through the editor; never bypass policy  | Choose crop and focal point    | Review mobile crops                        |
-| Preview                     | Internal SSR preview                                        | Exercise all content states                     | Approve visual direction       | Verify links and client facts              |
-| Publish                     | Validation plus atomic RPC                                  | Resolve all blockers and initiate publish       | —                              | Apply required production migrations first |
-| Deploy and verify           | Vercel and Supabase runtime                                 | Run checks and capture evidence                 | Review deployed visuals        | Authorize production-only actions          |
+| Write content               | Editor schemas and optimistic locking                            | Enter accurate Spanish copy and structured data | Review narrative and hierarchy | Confirm client facts                       |
+| Prepare assets              | Server decode, normalize, resize, WebP conversion, metadata      | Upload through the editor; never bypass policy  | Choose crop and focal point    | Review mobile crops                        |
+| Preview                     | Internal SSR preview                                             | Exercise all content states                     | Approve visual direction       | Verify links and client facts              |
+| Publish                     | Validation plus atomic RPC                                       | Resolve all blockers and initiate publish       | —                              | Apply required production migrations first |
+| Deploy and verify           | Vercel and Supabase runtime                                      | Run checks and capture evidence                 | Review deployed visuals        | Authorize production-only actions          |
 
 Production database mutations, deployments, and rollbacks require explicit human authorization.
 
@@ -43,25 +43,30 @@ Define -> Plan -> Update Local -> Package -> Update Preview -> Approve -> Owner 
 
 Use
 `pnpm invitation:update -- --slug <slug> --targets <targets> --source-dir <path> --dry-run|--apply`.
-`invitation:update` mutation targets are `local`, `preview`, or `local,preview`; `all` is status-only
-and Production mutation is rejected. Production managed-content promotion is owner-only:
+`invitation:update` mutation targets are `local`, `preview`, or `local,preview`; `all` is
+status-only and Production mutation is rejected. Production managed-content promotion is owner-only:
 
 ```bash
+# Canonical human path (TTY): discover pending promotions, Cancelar by default, then owner gate
+pnpm invitation:promote
+
+# Advanced / non-TTY flags
 pnpm invitation:promote -- --slug <slug> --package <path> --dry-run
-pnpm invitation:promote -- --slug <slug> --package <path> --apply --backup-manifest <path>
+pnpm invitation:promote -- --slug <slug> --package <path> --apply
 ```
 
 Promotion requires an exact Preview-approved release identity, schema compatibility (`CURRENT`),
-verified critical backup evidence (`pnpm db:prod:backup:critical`), semantic comparison against
-current Production (target-owned state preserved; unresolved managed divergence blocks), explicit
-owner confirmation, managed import/publication apply, and mandatory post-apply verification.
-Existing target
-invitations resolve and preserve their owner by slug. New target invitations ensure a dedicated Auth
-host from the definition `hostLoginAlias` (`{alias}@clientes.celebra.invalid`) before plan/apply;
-`--owner-user-id` is an optional override/assertion, not required on the happy path. Dry-run reports
-owner action as `OWNER_REUSE`, `OWNER_CREATE_PLANNED`, or `OWNER_CONFLICT` (blocked). Every selected
-target is inspected and planned before any mutation; a blocked or unevaluated target aborts the
-complete apply phase across all targets.
+critical backup coverage (shared prepare/revalidate; optional `--backup-manifest`), semantic
+comparison against current Production (target-owned state preserved; unresolved managed divergence
+blocks), typed owner confirmation (`PROMOTE <8-hex>`), managed import/publication apply, and
+mandatory post-apply verification. The guided TTY path and `db:sync package-to-production` share the
+same promotion orchestrator. Existing target invitations resolve and preserve their owner by slug.
+New target invitations ensure a dedicated Auth host from the definition `hostLoginAlias`
+(`{alias}@clientes.celebra.invalid`) before plan/apply; `--owner-user-id` is an optional
+override/assertion, not required on the happy path. Dry-run reports owner action as `OWNER_REUSE`,
+`OWNER_CREATE_PLANNED`, or `OWNER_CONFLICT` (blocked). Every selected target is inspected and
+planned before any mutation; a blocked or unevaluated target aborts the complete apply phase across
+all targets.
 
 ### Package freshness (definition vs `--package`)
 
@@ -139,11 +144,11 @@ Before creating a record, collect:
   reception, itinerary, gallery, gifts, music, quote, thank-you message, envelope, map providers,
   WhatsApp templates, personalized passes, location gating, and sharing metadata.
 
-Choose the event type from `EVENT_TYPES` and a compatible editor preset from
-`DEMO_PRESET_CATALOG` (or the managed definition's `baseDemoId`). The preset's `eventType` must
-match the invitation event type. Managed definitions are validated by the provision CLI /
-`invitation:update` dry-run before apply. Low-level `createInvitation()` still enforces the same
-preset invariant for demos, tests, and internal callers — not for Dashboard client creates.
+Choose the event type from `EVENT_TYPES` and a compatible editor preset from `DEMO_PRESET_CATALOG`
+(or the managed definition's `baseDemoId`). The preset's `eventType` must match the invitation event
+type. Managed definitions are validated by the provision CLI / `invitation:update` dry-run before
+apply. Low-level `createInvitation()` still enforces the same preset invariant for demos, tests, and
+internal callers — not for Dashboard client creates.
 
 Choose slug roles independently:
 
@@ -170,8 +175,8 @@ validates the intentionally different routable, editor-selectable, and showroom 
 
 ## 3. Create the invitation
 
-Managed client invitations are created only through the canonical managed workflow — not through
-the Dashboard “Nueva invitación” UI or `POST /api/dashboard/intake`.
+Managed client invitations are created only through the canonical managed workflow — not through the
+Dashboard “Nueva invitación” UI or `POST /api/dashboard/intake`.
 
 ```text
 managed creation → scripts/provision/invitations/<slug>.ts (registry)
@@ -189,9 +194,10 @@ Production promotion → pnpm invitation:promote (owner-only)
    are divergence against the managed package and must be reconciled deliberately.
 
 `POST /api/dashboard/intake` and Dashboard demo-duplicate reject client creation so the API cannot
-bypass this workflow. Demo showroom rows continue to sync via list load (`synchronizeDemoInvitations`).
-Low-level `createInvitation` repository/service primitives remain for demos, provision, and tests —
-not for Dashboard-managed client creates. Do not create client records through manual SQL.
+bypass this workflow. Demo showroom rows continue to sync via list load
+(`synchronizeDemoInvitations`). Low-level `createInvitation` repository/service primitives remain
+for demos, provision, and tests — not for Dashboard-managed client creates. Do not create client
+records through manual SQL.
 
 Preview E2E publication fixture bootstrap (slug `e2e-preview-publication`) is separate from managed
 client creation: use `pnpm invitation:preview-fixture --apply` (Preview-only; Production rejected),
@@ -393,9 +399,9 @@ IDs for each test.
 
 1. Open a managed invitation Editor route and confirm draft/editor access for the Local or Preview
    agent identity (`super_admin`).
-2. Assert `POST /api/dashboard/intake` and demo-duplicate return 403
-   `canonical_creation_required` (managed create cannot bypass via Dashboard). Optionally validate an
-   invalid managed definition with `invitation:update --dry-run`.
+2. Assert `POST /api/dashboard/intake` and demo-duplicate return 403 `canonical_creation_required`
+   (managed create cannot bypass via Dashboard). Optionally validate an invalid managed definition
+   with `invitation:update --dry-run`.
 3. Upload a valid JPEG/PNG/WebP and verify normalized WebP metadata.
 4. Upload a spoofed, undersized, oversized, or corrupt image; expect 422 and no asset row.
 5. Publish a valid new invitation and verify invitation, RSVP event, snapshot, and draft state.

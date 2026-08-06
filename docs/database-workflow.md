@@ -13,9 +13,9 @@ Ownership Matrix in [`.agent/index.md`](../.agent/index.md).
 
 Local development uses local Supabase. Production is the source of real customer data. Production
 can be read for backups/local refreshes. Production **schema** may be mutated only through reviewed
-migrations (`pnpm db:prod:migrate`; engine: `db:migrate -- --target production`). Production **managed
-invitation content** may be mutated only through owner-only `pnpm invitation:promote` (also
-reachable via `pnpm db:sync` `package-to-production`).
+migrations (`pnpm db:prod:migrate`; engine: `db:migrate -- --target production`). Production
+**managed invitation content** may be mutated only through owner-only `pnpm invitation:promote`
+(also reachable via `pnpm db:sync` `package-to-production`).
 
 The workflow is asymmetric:
 
@@ -265,9 +265,14 @@ presence, worktree path, runtime target, and UI banners do not authorize mutatio
 2. **Promote to Production (owner-only)**:
 
    ```bash
+   pnpm invitation:promote
    pnpm invitation:promote -- --slug <slug> --package <path> --dry-run
-   pnpm invitation:promote -- --slug <slug> --package <path> --apply --backup-manifest <path>
+   pnpm invitation:promote -- --slug <slug> --package <path> --apply
    ```
+
+   On a TTY with no args, the CLI discovers pending managed promotions (Cancelar is the default).
+   Flags remain for advanced/non-TTY use. Apply always goes through the shared promotion
+   orchestrator (release-check, critical backup, owner `PROMOTE <8-hex>`, verify).
 
 3. **Semantic content parity (read-only)**:
    ```bash
@@ -581,11 +586,11 @@ application login substitute. Host invitation flows continue to use real `host_c
   with fine granularity but do **not** include Storage object bytes; the local critical set remains
   required for Auth/Storage recovery evidence.
 - Release identity for Production is the current clean `HEAD` (not `CELEBRA_TARGET_RELEASE_SHA`).
-- Shared owner boundary: `requireOwnerProductionApply` (also used by promote/patch/draft-reset).
-  The gate is two-step and TTY-only: (1) arrow-key intent select defaulting to Cancel; (2) type or
-  paste a short bound code `<VERB> <8-hex>` (e.g. `MIGRATE 6774a945` from `planId`). Full SHA,
-  pending versions, and fingerprints remain in the audit summary. Paste noise (bracketed-paste /
-  zero-width) is sanitized. A single Yes/No confirm is never sufficient.
+- Shared owner boundary: `requireOwnerProductionApply` (also used by promote/patch/draft-reset). The
+  gate is two-step and TTY-only: (1) arrow-key intent select defaulting to Cancel; (2) type or paste
+  a short bound code `<VERB> <8-hex>` (e.g. `MIGRATE 6774a945` from `planId`). Full SHA, pending
+  versions, and fingerprints remain in the audit summary. Paste noise (bracketed-paste / zero-width)
+  is sanitized. A single Yes/No confirm is never sufficient.
 - Rejects `CELEBRA_AGENT_CONTEXT`. No token, secret, env, or noninteractive confirmation
   alternative.
 - `public.production_authorization_receipts` is historical inert state from migration
