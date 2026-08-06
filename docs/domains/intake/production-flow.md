@@ -55,6 +55,8 @@ pnpm invitation:promote -- --slug <slug> --package <path> --dry-run
 pnpm invitation:promote -- --slug <slug> --package <path> --apply
 ```
 
+Owner at-a-glance: [`promote-cheatsheet.md`](./promote-cheatsheet.md).
+
 Promotion requires an exact Preview-approved release identity, schema compatibility (`CURRENT`),
 critical backup coverage (shared prepare/revalidate; optional `--backup-manifest`), semantic
 comparison against current Production (target-owned state preserved; unresolved managed divergence
