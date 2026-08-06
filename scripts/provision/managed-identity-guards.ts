@@ -84,6 +84,46 @@ export function decideRekeyIdentity(input: {
 	return { ok: true, invitationId: input.sourceByOldSlug.id };
 }
 
+function checkPreviousSlugRekey(
+	input: {
+		slug: string;
+		managedIdentityId: string;
+		activeInvitationByPreviousSlug: ManagedIdentityRow | null;
+		matchedPreviousSlug?: string | null;
+	},
+	managedId: string | null,
+	provenanceId: string | null,
+	slugId: string | null,
+): IdentityResolutionDecision | null {
+	const previousHit = input.activeInvitationByPreviousSlug;
+	if (!previousHit?.id) return null;
+
+	const sameManaged =
+		previousHit.managedIdentityId &&
+		previousHit.managedIdentityId === input.managedIdentityId;
+	const sameAsManagedRow = managedId !== null && previousHit.id === managedId;
+	const sameAsSlugRow = slugId !== null && previousHit.id === slugId;
+	const sameAsProvenance = provenanceId !== null && previousHit.id === provenanceId;
+
+	if (!sameManaged && !sameAsManagedRow && !sameAsSlugRow && !sameAsProvenance) {
+		const matched = input.matchedPreviousSlug ?? previousHit.slug;
+		return {
+			ok: false,
+			code: 'REKEY_REQUIRED',
+			message: `REKEY_REQUIRED: Definition "${input.slug}" replaces prior slug "${matched}" (invitation ${previousHit.id}). Rerun with --rekey-from ${matched}.`,
+		};
+	}
+	if (previousHit.slug !== input.slug) {
+		const matched = input.matchedPreviousSlug ?? previousHit.slug;
+		return {
+			ok: false,
+			code: 'REKEY_REQUIRED',
+			message: `REKEY_REQUIRED: Managed identity ${input.managedIdentityId} is still bound to slug "${matched}". Rerun with --rekey-from ${matched}.`,
+		};
+	}
+	return null;
+}
+
 /**
  * Without --rekey-from, identity resolution is managedIdentityId + slug + provenance only.
  * Matching client_name must never force a rekey. Historical previousSlugs require explicit rekey.
@@ -105,33 +145,9 @@ export function resolveIdentityWithoutRekey(input: {
 	const managedId = input.invitationByManagedIdentity?.id ?? null;
 	const provenanceId = input.provenanceInvitationId;
 	const slugId = input.invitationBySlug?.id ?? null;
-	const previousHit = input.activeInvitationByPreviousSlug;
 
-	if (previousHit?.id) {
-		const sameManaged =
-			previousHit.managedIdentityId &&
-			previousHit.managedIdentityId === input.managedIdentityId;
-		const sameAsManagedRow = managedId !== null && previousHit.id === managedId;
-		const sameAsSlugRow = slugId !== null && previousHit.id === slugId;
-		const sameAsProvenance = provenanceId !== null && previousHit.id === provenanceId;
-		if (!sameManaged && !sameAsManagedRow && !sameAsSlugRow && !sameAsProvenance) {
-			const matched = input.matchedPreviousSlug ?? previousHit.slug;
-			return {
-				ok: false,
-				code: 'REKEY_REQUIRED',
-				message: `REKEY_REQUIRED: Definition "${input.slug}" replaces prior slug "${matched}" (invitation ${previousHit.id}). Rerun with --rekey-from ${matched}.`,
-			};
-		}
-		// Same identity still on a previous slug — operator must pass --rekey-from.
-		if (previousHit.slug !== input.slug) {
-			const matched = input.matchedPreviousSlug ?? previousHit.slug;
-			return {
-				ok: false,
-				code: 'REKEY_REQUIRED',
-				message: `REKEY_REQUIRED: Managed identity ${input.managedIdentityId} is still bound to slug "${matched}". Rerun with --rekey-from ${matched}.`,
-			};
-		}
-	}
+	const previousRekeyDecision = checkPreviousSlugRekey(input, managedId, provenanceId, slugId);
+	if (previousRekeyDecision) return previousRekeyDecision;
 
 	const candidates = [managedId, provenanceId, slugId].filter(
 		(value): value is string => typeof value === 'string' && value.length > 0,

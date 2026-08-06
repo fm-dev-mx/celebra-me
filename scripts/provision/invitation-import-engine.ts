@@ -1411,7 +1411,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 	});
 	const activeRows = invitationRows.filter((row) => row.archived_at === null);
 	const rekeyFrom = options.rekeyFrom?.trim();
-	let selectedInvitationRow: Record<string, unknown> | null = null;
+	let existingInvitationRow: Record<string, unknown> | null;
 	if (rekeyFrom) {
 		const sourceByOldSlug =
 			activeRows.find((row) => String(row.slug) === rekeyFrom) ?? null;
@@ -1429,7 +1429,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			expectedManagedIdentityId: managedIdentityId,
 		});
 		if (!decision.ok) throw new Error(decision.message);
-		selectedInvitationRow = sourceByOldSlug;
+		existingInvitationRow = sourceByOldSlug;
 	} else {
 		const byManagedIdentity =
 			activeRows.find((row) => String(row.managed_identity_id ?? '') === managedIdentityId) ??
@@ -1461,10 +1461,9 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			matchedPreviousSlug,
 		});
 		if (!decision.ok) throw new Error(decision.message);
-		selectedInvitationRow =
+		existingInvitationRow =
 			activeRows.find((row) => String(row.id) === String(decision.invitationId ?? '')) ?? null;
 	}
-	const existingInvitationRow = selectedInvitationRow;
 	const serviceRoleKeyForHost =
 		options.serviceRoleKey ||
 		(expectedTarget === 'preview'
