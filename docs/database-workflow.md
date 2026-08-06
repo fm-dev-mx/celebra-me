@@ -13,7 +13,7 @@ Ownership Matrix in [`.agent/index.md`](../.agent/index.md).
 
 Local development uses local Supabase. Production is the source of real customer data. Production
 can be read for backups/local refreshes. Production **schema** may be mutated only through reviewed
-migrations (`pnpm db:migrate -- --target production` / `pnpm db:prod:migrate`). Production **managed
+migrations (`pnpm db:prod:migrate`; engine: `db:migrate -- --target production`). Production **managed
 invitation content** may be mutated only through owner-only `pnpm invitation:promote` (also
 reachable via `pnpm db:sync` `package-to-production`).
 
@@ -358,7 +358,7 @@ pnpm db:local:migrate
 pnpm db:migrate -- --target preview
 pnpm db:preview:migrate
 pnpm db:preview:migrate -- --apply
-pnpm db:migrate -- --target production
+pnpm db:prod:migrate
 pnpm db:prod:migrate -- --expected <versions>
 pnpm db:prod:migrate -- --apply --expected <versions>
 pnpm db:preview:audit
@@ -549,27 +549,29 @@ application login substitute. Host invitation flows continue to use real `host_c
 `pnpm release-check`
 
 - Requires a clean working tree.
-- Runs `pnpm type-check`, `pnpm test`, and `pnpm build` against the full current `HEAD`.
+- Runs `pnpm type-check`, `pnpm test`, and `pnpm build:app` against the full current `HEAD`
+  (`build:app` avoids a nested type-check).
 - Writes gitignored evidence to `.agent/tmp/release-check-evidence.json` (SHA + pass metadata).
 - Evidence is rejected when `HEAD` changes, the tree becomes dirty, or required checks did not pass.
+- Production migrate apply may reuse valid evidence or run release-check once when missing/stale.
 
-`pnpm db:migrate` / `pnpm db:prod:migrate`
+`pnpm db:prod:migrate` / `pnpm db:migrate`
 
-- Canonical schema planner:
-  `pnpm db:migrate -- --target <local|preview|production|disposable-test>`. Compatibility aliases:
-  `db:local:migrate`, `db:preview:migrate`, `db:prod:migrate`.
+- Public Production schema entry: `pnpm db:prod:migrate`. Multi-env engine:
+  `pnpm db:migrate -- --target <local|preview|production|disposable-test>`. Other aliases:
+  `db:local:migrate`, `db:preview:migrate`.
 - Production commands:
   - `pnpm db:prod:migrate` — read-only preflight (derived pending set; no TTY, no writes)
   - `pnpm db:prod:migrate -- --expected <versions>` — preflight with exact pin
   - `pnpm db:prod:migrate -- --apply --expected <versions>` — owner apply path
-- Shared orchestrator sequence: plan → (apply: rebuild + drift check) → beforeWrite → authorize →
-  execute → verify/evidence. Human logs on stderr; `--json` plans on stdout only.
-- Interactive TTY preflight uses an arrow-key action menu (Cancel / Review / Apply) with a compact
-  plan card; full plan detail remains available via Review and `--json`.
+- Shared orchestrator apply sequence: reviewed plan → beforeWrite (backup) → one rebuild + drift
+  check → authorize → execute → afterWrite. Human logs on stderr; `--json` plans on stdout only.
+- Non-Production interactive TTY may use Cancel / Revisar / Aplicar; Production authorization is
+  only the owner gate (Cancelar / Revisar cambios / Aplicar + bound code).
 - Production apply sequence: identity → audit → dry-run (+ optional `--expected` pin) →
-  compatibility (HEAD; explicit registry phase required) → valid `release-check` evidence → verified
-  pre-migration backup → owner gate → `supabase db push` → migration-history + contract
-  verification → post-migration backup.
+  compatibility (HEAD; explicit registry phase required) → `release-check` evidence (reuse or run) →
+  verified critical pre-migration backup → one revalidation → owner gate → `supabase db push` →
+  migration-history + contract verification → critical post-migration backup.
 - Release identity for Production is the current clean `HEAD` (not `CELEBRA_TARGET_RELEASE_SHA`).
 - Shared owner boundary: `requireOwnerProductionApply` (also used by promote/patch/draft-reset).
   The gate is two-step and TTY-only: (1) arrow-key intent select defaulting to Cancel; (2) type or

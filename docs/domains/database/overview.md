@@ -361,7 +361,7 @@ guarded hosted Preview target.
 
 **For production**: never rewrite, delete, or squash already-applied migrations. Always add
 corrective migrations. Migration history is append-only. Do not push local data dumps to production;
-use `pnpm db:migrate -- --target production` / `pnpm db:prod:migrate`. Hosted candidates require an
+use `pnpm db:prod:migrate`. Hosted candidates require an
 explicit rollout registry phase.
 
 **Fresh bootstrap**: A `supabase/baseline.sql` schema dump can be generated via

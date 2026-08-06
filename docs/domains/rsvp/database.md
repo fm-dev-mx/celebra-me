@@ -231,8 +231,7 @@ pnpm test -- tests/api/dashboard.guests.happy.test.ts tests/api/dashboard.guests
 Run the schema verification queries before and after deploying migrations:
 
 ```bash
-pnpm db:migrate -- --target production
-# alias: pnpm db:prod:migrate
+pnpm db:prod:migrate
 ```
 
 The canonical schema verification script is `supabase/verification/full_schema_audit.sql`, which
