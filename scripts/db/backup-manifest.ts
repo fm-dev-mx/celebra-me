@@ -12,7 +12,7 @@ export const CRITICAL_BACKUP_KINDS = [
 export type CriticalBackupKind = (typeof CRITICAL_BACKUP_KINDS)[number];
 
 /** Why a verified critical backup was created (optional on legacy manifests). */
-export type CriticalBackupPurpose = 'migrate-pre' | 'migrate-post' | 'standalone';
+export type CriticalBackupPurpose = 'migrate-pre' | 'migrate-post' | 'promote-pre' | 'standalone';
 
 export interface BackupArtifactManifest {
 	kind: CriticalBackupKind;

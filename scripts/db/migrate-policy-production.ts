@@ -8,15 +8,16 @@
  * Gate-before-write ordering is intentional and covered by production-authorization tests.
  */
 
-import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
 import { parseSchemaAuditVerdictFromOutput } from './audit-db.ts';
 import {
-	assertCriticalBackupStructuralCoverage,
 	CRITICAL_BACKUP_RPO_MS,
-	evaluateCriticalBackupCoverage,
 	formatBackupAge,
 	type CriticalBackupCoverage,
 } from './critical-backup-reuse.ts';
+import {
+	ensureCriticalProductionBackup,
+	revalidateCriticalProductionBackup,
+} from './critical-production-backup.ts';
 import { classifyDbTarget, guardProduction } from './db-guard.ts';
 import {
 	fail,
@@ -24,7 +25,6 @@ import {
 	assertProductionDbUrl,
 	redactDbUrl,
 	runCommand,
-	type CommandResult,
 } from './db-workflow-lib.ts';
 import {
 	assertHostedCompatibilityOrFail,
@@ -42,17 +42,9 @@ import type { MigrateEnvironmentPolicy, MigratePolicySession } from './migrate-p
 import { buildMigrationTechnicalReview } from './migrate-plan-format.ts';
 import { buildMigrationPlan, type MigrationPlan } from './migration-plan.ts';
 import { comparePendingSetToExpected } from './migration-pending-set.ts';
-import {
-	OperatorError,
-	operatorSymbol,
-	shortSha,
-	writeHuman,
-} from './operator-cli-ux.ts';
+import { OperatorError, operatorSymbol, shortSha, writeHuman } from './operator-cli-ux.ts';
 import { requireOwnerProductionApply } from './owner-production-apply.ts';
-import {
-	ensureValidReleaseCheckEvidence,
-	readGitWorktreeState,
-} from './release-check.ts';
+import { ensureValidReleaseCheckEvidence, readGitWorktreeState } from './release-check.ts';
 
 export const PRODUCTION_MIGRATION_OPERATION_TYPE = 'production_migration';
 
@@ -153,145 +145,35 @@ function rememberCoverage(
 	session.preBackupCoverageReason = coverage.reason;
 }
 
-function tryReusePreMigrationBackup(
-	prodDbUrl: string,
-	session?: MigratePolicySession,
-): boolean {
-	writeHuman(`${operatorSymbol('info')} Cobertura: evaluando respaldo crítico vigente…`);
-	const evaluation = evaluateCriticalBackupCoverage({
-		prodDbUrl,
-		projectRef: SUPABASE_PROJECT_REFS.production,
-		maxAgeMs: CRITICAL_BACKUP_RPO_MS,
-	});
-	if (!evaluation.covered || !evaluation.manifestPath) {
-		writeHuman(
-			`${operatorSymbol('info')} Respaldo vencido o estructuralmente incompatible; creando uno nuevo…`,
-		);
-		return false;
-	}
-	rememberCoverage(session, evaluation, true);
-	const ageLabel = formatBackupAge(evaluation.ageMs ?? 0);
-	const rpoLabel = formatBackupAge(evaluation.maxAgeMs);
-	writeHuman(
-		`${operatorSymbol('ok')} Respaldo vigente reutilizado · edad ${ageLabel} · RPO máximo ${rpoLabel}`,
-	);
-	if (evaluation.businessActivityDetected) {
-		writeHuman(
-			`${operatorSymbol('info')} Actividad de negocio posterior al respaldo: permitida dentro del RPO`,
-		);
-	}
-	return true;
-}
-
-function isCaptureUnstableOutput(stdout: string, stderr: string): boolean {
-	const combined = `${stdout}\n${stderr}`;
-	return /Production changed while the critical backup set was being captured/i.test(combined);
-}
-
-function captureCriticalBackupOnce(
-	prodDbUrl: string,
-	phase: 'pre' | 'post',
-	plan?: MigrationPlan,
-): CommandResult {
-	const backupEnv: NodeJS.ProcessEnv = {
-		...process.env,
-		PROD_DB_URL: prodDbUrl,
-		CELEBRA_CRITICAL_BACKUP_PURPOSE: phase === 'pre' ? 'migrate-pre' : 'migrate-post',
-	};
-	if (plan) {
-		backupEnv.CELEBRA_CRITICAL_BACKUP_PLAN_ID = plan.planId;
-		backupEnv.CELEBRA_CRITICAL_BACKUP_PENDING = plan.pendingVersions.join(',');
-	}
-	return runCommand('npx', ['tsx', 'scripts/db/backup-critical-production.ts'], {
-		env: backupEnv,
-		redact: [prodDbUrl],
-		throwOnError: false,
-	});
-}
-
 function runCriticalBackup(
 	prodDbUrl: string,
 	phase: 'pre' | 'post',
 	plan?: MigrationPlan,
 	session?: MigratePolicySession,
 ): void {
-	if (phase === 'pre' && tryReusePreMigrationBackup(prodDbUrl, session)) {
-		return;
-	}
-
-	const label =
-		phase === 'pre'
-			? 'Cobertura: creando respaldo crítico previo…'
-			: 'Verificación: creando respaldo crítico posterior…';
-	writeHuman(`${operatorSymbol('info')} ${label}`);
-
-	let backupResult = captureCriticalBackupOnce(prodDbUrl, phase, plan);
-	if (backupResult.status !== 0 && isCaptureUnstableOutput(backupResult.stdout, backupResult.stderr)) {
-		writeHuman(
-			`${operatorSymbol('warn')} Captura inestable por actividad concurrente; reintentando una vez…`,
-		);
-		backupResult = captureCriticalBackupOnce(prodDbUrl, phase, plan);
-		if (
-			backupResult.status !== 0 &&
-			isCaptureUnstableOutput(backupResult.stdout, backupResult.stderr)
-		) {
-			throw new OperatorError({
-				title: 'Captura de respaldo crítico inestable',
-				cause:
-					'Production cambió durante dos capturas consecutivas. El tráfico online impidió un punto de recuperación coherente.',
-				code: 'BACKUP_CAPTURE_UNSTABLE',
-				remediation: [
-					'Reintente en una ventana breve de menor tráfico.',
-					'Si persiste, use una ventana corta de mantenimiento y vuelva a ejecutar el apply.',
-					'Si hay PITR de Supabase habilitado, úselo como protección principal del motor de base de datos (no incluye objetos de Storage).',
-				],
-				retryCommand: 'pnpm db:prod:migrate -- --apply',
-			});
-		}
-	}
-
-	if (backupResult.status !== 0) {
-		const expiredOrStructural =
+	const preparation = ensureCriticalProductionBackup({
+		prodDbUrl,
+		purpose: phase === 'pre' ? 'migrate-pre' : 'migrate-post',
+		planId: plan?.planId,
+		pendingVersions: plan?.pendingVersions,
+		reuseExisting: phase === 'pre',
+		retryCommand: 'pnpm db:prod:migrate -- --apply',
+		operationLabel:
 			phase === 'pre'
-				? ({
-						title: 'Respaldo crítico previo fallido',
-						cause:
-							'El respaldo verificado es obligatorio antes de la confirmación del propietario.',
-						code: 'PRE_MIGRATION_BACKUP_FAILED',
-					} as const)
-				: ({
-						title: 'Respaldo crítico posterior fallido',
-						cause: 'El respaldo posterior a la migración no se completó.',
-						code: 'POST_MIGRATION_BACKUP_FAILED',
-					} as const);
-		throw new OperatorError({
-			...expiredOrStructural,
-			remediation: [
-				'Revise credenciales PROD_DB_URL / PROD_SUPABASE_* del operador.',
-				'Reintente el flujo completo de migración.',
-			],
-			retryCommand: 'pnpm db:prod:migrate -- --apply',
-			noChangesMessage:
-				phase === 'pre' ? undefined : 'La migración pudo haberse aplicado; verifique el estado.',
-		});
+				? 'la autorización de la migración'
+				: 'el cierre posterior de la migración',
+		failureTitle:
+			phase === 'pre'
+				? 'Respaldo crítico previo fallido'
+				: 'Respaldo crítico posterior fallido',
+		noChangesMessage:
+			phase === 'post'
+				? 'La migración pudo haberse aplicado; verifique el estado.'
+				: undefined,
+	});
+	if (phase === 'pre') {
+		rememberCoverage(session, preparation.coverage, preparation.reused);
 	}
-
-	if (phase === 'pre' && session) {
-		session.preBackupReused = false;
-		session.preBackupCoverageReason = 'covered';
-		session.preBackupMaxAgeMs = CRITICAL_BACKUP_RPO_MS;
-		session.preBackupAgeMs = 0;
-		session.preBackupBusinessActivity = false;
-		const manifestMatch = /CRITICAL_BACKUP_MANIFEST=([^\r\n]+)/.exec(
-			`${backupResult.stdout}\n${backupResult.stderr}`,
-		);
-		if (manifestMatch?.[1]) {
-			session.preBackupManifestPath = manifestMatch[1].trim();
-		}
-	}
-	writeHuman(
-		`${operatorSymbol('ok')} Respaldo crítico ${phase === 'pre' ? 'previo' : 'posterior'} verificado.`,
-	);
 }
 
 function assertPreBackupCoverageBeforeAuthorize(ctx: {
@@ -302,48 +184,13 @@ function assertPreBackupCoverageBeforeAuthorize(ctx: {
 	if (!manifestPath) {
 		return;
 	}
-	writeHuman(
-		`${operatorSymbol('info')} Autorización: confirmando cobertura estructural del respaldo…`,
-	);
-	const check = assertCriticalBackupStructuralCoverage({
+	const check = revalidateCriticalProductionBackup({
 		prodDbUrl: ctx.dbUrl,
 		manifestPath,
 		maxAgeMs: ctx.session?.preBackupMaxAgeMs ?? CRITICAL_BACKUP_RPO_MS,
+		retryCommand: 'pnpm db:prod:migrate -- --apply',
 	});
-	if (!check.covered) {
-		const code =
-			check.reason === 'expired'
-				? 'BACKUP_COVERAGE_EXPIRED'
-				: check.reason === 'structural_drift' || check.reason === 'profile_mismatch'
-					? 'BACKUP_STRUCTURAL_DRIFT'
-					: 'BACKUP_COVERAGE_EXPIRED';
-		throw new OperatorError({
-			title:
-				check.reason === 'structural_drift'
-					? 'Deriva estructural desde el respaldo crítico'
-					: 'Cobertura de respaldo crítico vencida',
-			cause:
-				check.reason === 'structural_drift'
-					? 'El historial o perfil de migraciones ya no coincide con el respaldo seleccionado.'
-					: 'El respaldo seleccionado ya no cumple el RPO o dejó de ser verificable.',
-			code,
-			remediation: [
-				'Reintente `pnpm db:prod:migrate -- --apply` para renovar la cobertura automáticamente.',
-				'No reutilice un plan anterior si hubo otras mutaciones de schema.',
-			],
-			retryCommand: 'pnpm db:prod:migrate -- --apply',
-			affected: check.failures
-				? { label: 'Detalles', items: check.failures }
-				: undefined,
-		});
-	}
 	rememberCoverage(ctx.session, check, ctx.session?.preBackupReused === true);
-	if (check.businessActivityDetected) {
-		writeHuman(
-			`${operatorSymbol('info')} Actividad de negocio posterior al respaldo: permitida dentro del RPO`,
-		);
-	}
-	writeHuman(`${operatorSymbol('ok')} Cobertura estructural confirmada.`);
 }
 
 function validatePendingVersions(

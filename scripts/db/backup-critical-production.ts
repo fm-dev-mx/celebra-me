@@ -23,6 +23,7 @@ import {
 	captureRecoveryIntegrity,
 	compareRecoveryIntegrity,
 	computeRecoveryStateDigest,
+	type RecoveryIntegritySnapshot,
 } from './recovery-integrity.ts';
 import {
 	classifyStorageDownloadFailure,
@@ -95,9 +96,10 @@ function storageObjectRef(bucketId: string, name: string): string {
 	return createHash('sha256').update(`${bucketId}/${name}`).digest('hex').slice(0, 16);
 }
 
-async function main(): Promise<void> {
-	const { url: prodDbUrl, source } = getProdDbUrl();
-	assertProductionDbUrl(prodDbUrl);
+function verifyProductionSecrets(prodDbUrl: string): {
+	prodSupabaseUrl: string;
+	prodServiceRole: string;
+} {
 	const prodSupabaseUrl = getSecretFromEnvOrFiles('PROD_SUPABASE_URL', PROD_SECRET_FILES);
 	const prodServiceRole = getSecretFromEnvOrFiles(
 		'PROD_SUPABASE_SERVICE_ROLE_KEY',
@@ -125,41 +127,13 @@ async function main(): Promise<void> {
 	if (apiRef !== SUPABASE_PROJECT_REFS.production) {
 		throw new Error('Production API URL does not match the allowlisted project.');
 	}
+	return { prodSupabaseUrl, prodServiceRole };
+}
 
-	const outputDir = resolve('.backups', 'prod', `critical-${timestamp()}`);
-	incompleteOutputDir = outputDir;
-	mkdirSync(outputDir, { recursive: true });
-	prepareEncryptedLocalDirectory(outputDir);
-	const databasePath = resolve(outputDir, 'database.sql');
-	const authPath = resolve(outputDir, 'auth.sql');
-	const storageMetadataPath = resolve(outputDir, 'storage-metadata.sql');
-	const storageObjectsPath = resolve(outputDir, 'storage-objects.json');
-	const manifestPath = resolve(outputDir, 'manifest.json');
-
-	console.info('Critical Production backup (read-only)');
-	console.info(`- PROD_DB_URL source: ${source}`);
-	console.info(`- Target: ${redactDbUrl(prodDbUrl)}`);
-	console.info('- Environment identity: verified Production project');
-	console.info('- Output: ignored, access-restricted local backup directory');
-
-	const before = captureRecoveryIntegrity(prodDbUrl);
-
-	runBackupCommand(
-		'pg_dump',
-		[
-			'--data-only',
-			'--schema',
-			'public',
-			'--no-owner',
-			'--no-privileges',
-			'--file',
-			databasePath,
-			'--dbname',
-			prodDbUrl,
-		],
-		{ redact: [prodDbUrl] },
-	);
-
+function backupAuthData(
+	prodDbUrl: string,
+	authPath: string,
+): { usersLength: number; identitiesLength: number } {
 	const users = queryJson<AuthUser[]>(
 		prodDbUrl,
 		`select coalesce(json_agg(sub order by created_at), '[]'::json)::text from (
@@ -178,7 +152,16 @@ async function main(): Promise<void> {
 		) sub;`,
 	);
 	writeFileSync(authPath, generateAuthDump(users, identities), { mode: 0o600 });
+	return { usersLength: users.length, identitiesLength: identities.length };
+}
 
+async function backupStorageData(
+	prodDbUrl: string,
+	prodSupabaseUrl: string,
+	prodServiceRole: string,
+	storageMetadataPath: string,
+	storageObjectsPath: string,
+): Promise<number> {
 	runBackupCommand(
 		'pg_dump',
 		[
@@ -270,18 +253,23 @@ async function main(): Promise<void> {
 		archive.objects.push(entry);
 	}
 	writeStorageObjectArchive(storageObjectsPath, archive);
+	return archive.objects.length;
+}
 
-	const after = captureRecoveryIntegrity(prodDbUrl);
-	const coherence = compareRecoveryIntegrity(before, after, { requireValidInvariants: false });
-	if (!coherence.ok) {
-		throw new Error(
-			`Production changed while the critical backup set was being captured; no manifest was created.\n${coherence.failures.join('\n')}`,
-		);
-	}
-
+function writeBackupManifest(
+	databasePath: string,
+	authPath: string,
+	storageMetadataPath: string,
+	storageObjectsPath: string,
+	manifestPath: string,
+	after: RecoveryIntegritySnapshot,
+): void {
 	const purposeRaw = process.env.CELEBRA_CRITICAL_BACKUP_PURPOSE?.trim();
 	const purpose: CriticalBackupPurpose =
-		purposeRaw === 'migrate-pre' || purposeRaw === 'migrate-post' || purposeRaw === 'standalone'
+		purposeRaw === 'migrate-pre' ||
+		purposeRaw === 'migrate-post' ||
+		purposeRaw === 'promote-pre' ||
+		purposeRaw === 'standalone'
 			? purposeRaw
 			: 'standalone';
 	const planId = process.env.CELEBRA_CRITICAL_BACKUP_PLAN_ID?.trim() || undefined;
@@ -317,12 +305,79 @@ async function main(): Promise<void> {
 		manifestPath,
 		...manifest.artifacts.map((artifact) => artifact.path),
 	]);
+}
+
+async function main(): Promise<void> {
+	const { url: prodDbUrl, source } = getProdDbUrl();
+	assertProductionDbUrl(prodDbUrl);
+	const { prodSupabaseUrl, prodServiceRole } = verifyProductionSecrets(prodDbUrl);
+
+	const outputDir = resolve('.backups', 'prod', `critical-${timestamp()}`);
+	incompleteOutputDir = outputDir;
+	mkdirSync(outputDir, { recursive: true });
+	prepareEncryptedLocalDirectory(outputDir);
+	const databasePath = resolve(outputDir, 'database.sql');
+	const authPath = resolve(outputDir, 'auth.sql');
+	const storageMetadataPath = resolve(outputDir, 'storage-metadata.sql');
+	const storageObjectsPath = resolve(outputDir, 'storage-objects.json');
+	const manifestPath = resolve(outputDir, 'manifest.json');
+
+	console.info('Critical Production backup (read-only)');
+	console.info(`- PROD_DB_URL source: ${source}`);
+	console.info(`- Target: ${redactDbUrl(prodDbUrl)}`);
+	console.info('- Environment identity: verified Production project');
+	console.info('- Output: ignored, access-restricted local backup directory');
+
+	const before = captureRecoveryIntegrity(prodDbUrl);
+
+	runBackupCommand(
+		'pg_dump',
+		[
+			'--data-only',
+			'--schema',
+			'public',
+			'--no-owner',
+			'--no-privileges',
+			'--file',
+			databasePath,
+			'--dbname',
+			prodDbUrl,
+		],
+		{ redact: [prodDbUrl] },
+	);
+
+	const { usersLength, identitiesLength } = backupAuthData(prodDbUrl, authPath);
+
+	const storageObjectsCount = await backupStorageData(
+		prodDbUrl,
+		prodSupabaseUrl,
+		prodServiceRole,
+		storageMetadataPath,
+		storageObjectsPath,
+	);
+
+	const after = captureRecoveryIntegrity(prodDbUrl);
+	const coherence = compareRecoveryIntegrity(before, after, { requireValidInvariants: false });
+	if (!coherence.ok) {
+		throw new Error(
+			`Production changed while the critical backup set was being captured; no manifest was created.\n${coherence.failures.join('\n')}`,
+		);
+	}
+
+	writeBackupManifest(
+		databasePath,
+		authPath,
+		storageMetadataPath,
+		storageObjectsPath,
+		manifestPath,
+		after,
+	);
 
 	console.info('Critical Production backup completed and verified.');
 	console.info(`- Manifest: ${manifestPath}`);
-	console.info(`- Auth users: ${users.length}`);
-	console.info(`- Auth identities: ${identities.length}`);
-	console.info(`- Storage objects: ${archive.objects.length}`);
+	console.info(`- Auth users: ${usersLength}`);
+	console.info(`- Auth identities: ${identitiesLength}`);
+	console.info(`- Storage objects: ${storageObjectsCount}`);
 	console.info(`- Critical tables: ${Object.keys(after.tables).length}`);
 	console.info(`- Integrity profile: ${after.profile}`);
 	console.info(`CRITICAL_BACKUP_MANIFEST=${manifestPath}`);
