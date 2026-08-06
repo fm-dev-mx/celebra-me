@@ -2,7 +2,8 @@
  * Production schema migration policy.
  *
  * Owns: perimeter identity, audit handling, release-check evidence, critical pre/post
- * backups, owner TTY confirmation, post-apply history + mutation contract verification.
+ * backups (bounded RPO coverage), owner TTY confirmation, post-apply history + mutation
+ * contract verification.
  *
  * Gate-before-write ordering is intentional and covered by production-authorization tests.
  */
@@ -10,8 +11,11 @@
 import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
 import { parseSchemaAuditVerdictFromOutput } from './audit-db.ts';
 import {
-	assertProductionUnchangedSinceBackup,
-	evaluateCriticalBackupReuse,
+	assertCriticalBackupStructuralCoverage,
+	CRITICAL_BACKUP_RPO_MS,
+	evaluateCriticalBackupCoverage,
+	formatBackupAge,
+	type CriticalBackupCoverage,
 } from './critical-backup-reuse.ts';
 import { classifyDbTarget, guardProduction } from './db-guard.ts';
 import {
@@ -134,33 +138,74 @@ function runProductionAudit(ctx: { session?: MigratePolicySession }, quiet: bool
 	if (ctx.session) ctx.session.productionAuditCompleted = true;
 }
 
+function rememberCoverage(
+	session: MigratePolicySession | undefined,
+	coverage: CriticalBackupCoverage,
+	reused: boolean,
+): void {
+	if (!session || !coverage.manifestPath) return;
+	session.preBackupReused = reused;
+	session.preBackupManifestPath = coverage.manifestPath;
+	session.preBackupAgeMs = coverage.ageMs;
+	session.preBackupMaxAgeMs = coverage.maxAgeMs;
+	session.preBackupBusinessActivity = coverage.businessActivityDetected === true;
+	session.preBackupCoverageReason = coverage.reason;
+}
+
 function tryReusePreMigrationBackup(
 	prodDbUrl: string,
 	session?: MigratePolicySession,
 ): boolean {
-	writeHuman(
-		`${operatorSymbol('info')} Comprobando si un respaldo crítico existente aún cubre Production…`,
-	);
-	const evaluation = evaluateCriticalBackupReuse({
+	writeHuman(`${operatorSymbol('info')} Cobertura: evaluando respaldo crítico vigente…`);
+	const evaluation = evaluateCriticalBackupCoverage({
 		prodDbUrl,
 		projectRef: SUPABASE_PROJECT_REFS.production,
+		maxAgeMs: CRITICAL_BACKUP_RPO_MS,
 	});
-	if (!evaluation.reusable || !evaluation.manifestPath || !evaluation.liveIntegrity) {
+	if (!evaluation.covered || !evaluation.manifestPath) {
 		writeHuman(
-			`${operatorSymbol('info')} Se requiere un respaldo crítico nuevo (${evaluation.reason}).`,
+			`${operatorSymbol('info')} Respaldo vencido o estructuralmente incompatible; creando uno nuevo…`,
 		);
 		return false;
 	}
-	if (session) {
-		session.preBackupReused = true;
-		session.preBackupManifestPath = evaluation.manifestPath;
-		session.preBackupIntegrity = evaluation.liveIntegrity;
-	}
+	rememberCoverage(session, evaluation, true);
+	const ageLabel = formatBackupAge(evaluation.ageMs ?? 0);
+	const rpoLabel = formatBackupAge(evaluation.maxAgeMs);
 	writeHuman(
-		`${operatorSymbol('ok')} Respaldo crítico existente reutilizado; Production no cambió.`,
+		`${operatorSymbol('ok')} Respaldo vigente reutilizado · edad ${ageLabel} · RPO máximo ${rpoLabel}`,
 	);
-	writeHuman(`${operatorSymbol('info')} Manifest: ${evaluation.manifestPath}`);
+	if (evaluation.businessActivityDetected) {
+		writeHuman(
+			`${operatorSymbol('info')} Actividad de negocio posterior al respaldo: permitida dentro del RPO`,
+		);
+	}
 	return true;
+}
+
+function isCaptureUnstableOutput(stdout: string, stderr: string): boolean {
+	const combined = `${stdout}\n${stderr}`;
+	return /Production changed while the critical backup set was being captured/i.test(combined);
+}
+
+function captureCriticalBackupOnce(
+	prodDbUrl: string,
+	phase: 'pre' | 'post',
+	plan?: MigrationPlan,
+): { status: number; stdout: string; stderr: string } {
+	const backupEnv: NodeJS.ProcessEnv = {
+		...process.env,
+		PROD_DB_URL: prodDbUrl,
+		CELEBRA_CRITICAL_BACKUP_PURPOSE: phase === 'pre' ? 'migrate-pre' : 'migrate-post',
+	};
+	if (plan) {
+		backupEnv.CELEBRA_CRITICAL_BACKUP_PLAN_ID = plan.planId;
+		backupEnv.CELEBRA_CRITICAL_BACKUP_PENDING = plan.pendingVersions.join(',');
+	}
+	return runCommand('npx', ['tsx', 'scripts/db/backup-critical-production.ts'], {
+		env: backupEnv,
+		redact: [prodDbUrl],
+		throwOnError: false,
+	});
 }
 
 function runCriticalBackup(
@@ -175,38 +220,51 @@ function runCriticalBackup(
 
 	const label =
 		phase === 'pre'
-			? 'Creando respaldo crítico previo…'
-			: 'Creando respaldo crítico posterior…';
+			? 'Cobertura: creando respaldo crítico previo…'
+			: 'Verificación: creando respaldo crítico posterior…';
 	writeHuman(`${operatorSymbol('info')} ${label}`);
-	const backupEnv: NodeJS.ProcessEnv = {
-		...process.env,
-		PROD_DB_URL: prodDbUrl,
-		CELEBRA_CRITICAL_BACKUP_PURPOSE: phase === 'pre' ? 'migrate-pre' : 'migrate-post',
-	};
-	if (plan) {
-		backupEnv.CELEBRA_CRITICAL_BACKUP_PLAN_ID = plan.planId;
-		backupEnv.CELEBRA_CRITICAL_BACKUP_PENDING = plan.pendingVersions.join(',');
+
+	let backupResult = captureCriticalBackupOnce(prodDbUrl, phase, plan);
+	if (backupResult.status !== 0 && isCaptureUnstableOutput(backupResult.stdout, backupResult.stderr)) {
+		writeHuman(
+			`${operatorSymbol('warn')} Captura inestable por actividad concurrente; reintentando una vez…`,
+		);
+		backupResult = captureCriticalBackupOnce(prodDbUrl, phase, plan);
+		if (
+			backupResult.status !== 0 &&
+			isCaptureUnstableOutput(backupResult.stdout, backupResult.stderr)
+		) {
+			throw new OperatorError({
+				title: 'Captura de respaldo crítico inestable',
+				cause:
+					'Production cambió durante dos capturas consecutivas. El tráfico online impidió un punto de recuperación coherente.',
+				code: 'BACKUP_CAPTURE_UNSTABLE',
+				remediation: [
+					'Reintente en una ventana breve de menor tráfico.',
+					'Si persiste, use una ventana corta de mantenimiento y vuelva a ejecutar el apply.',
+					'Si hay PITR de Supabase habilitado, úselo como protección principal del motor de base de datos (no incluye objetos de Storage).',
+				],
+				retryCommand: 'pnpm db:prod:migrate -- --apply',
+			});
+		}
 	}
-	const backupResult = runCommand(
-		'npx',
-		['tsx', 'scripts/db/backup-critical-production.ts'],
-		{
-			env: backupEnv,
-			redact: [prodDbUrl],
-			throwOnError: false,
-		},
-	);
+
 	if (backupResult.status !== 0) {
+		const expiredOrStructural =
+			phase === 'pre'
+				? ({
+						title: 'Respaldo crítico previo fallido',
+						cause:
+							'El respaldo verificado es obligatorio antes de la confirmación del propietario.',
+						code: 'PRE_MIGRATION_BACKUP_FAILED',
+					} as const)
+				: ({
+						title: 'Respaldo crítico posterior fallido',
+						cause: 'El respaldo posterior a la migración no se completó.',
+						code: 'POST_MIGRATION_BACKUP_FAILED',
+					} as const);
 		throw new OperatorError({
-			title:
-				phase === 'pre'
-					? 'Respaldo crítico previo fallido'
-					: 'Respaldo crítico posterior fallido',
-			cause:
-				phase === 'pre'
-					? 'El respaldo verificado es obligatorio antes de la confirmación del propietario.'
-					: 'El respaldo posterior a la migración no se completó.',
-			code: phase === 'pre' ? 'PRE_MIGRATION_BACKUP_FAILED' : 'POST_MIGRATION_BACKUP_FAILED',
+			...expiredOrStructural,
 			remediation: [
 				'Revise credenciales PROD_DB_URL / PROD_SUPABASE_* del operador.',
 				'Reintente el flujo completo de migración.',
@@ -216,8 +274,13 @@ function runCriticalBackup(
 				phase === 'pre' ? undefined : 'La migración pudo haberse aplicado; verifique el estado.',
 		});
 	}
+
 	if (phase === 'pre' && session) {
 		session.preBackupReused = false;
+		session.preBackupCoverageReason = 'covered';
+		session.preBackupMaxAgeMs = CRITICAL_BACKUP_RPO_MS;
+		session.preBackupAgeMs = 0;
+		session.preBackupBusinessActivity = false;
 		const manifestMatch = /CRITICAL_BACKUP_MANIFEST=([^\r\n]+)/.exec(
 			`${backupResult.stdout}\n${backupResult.stderr}`,
 		);
@@ -230,39 +293,56 @@ function runCriticalBackup(
 	);
 }
 
-function assertPreBackupCoverageBeforeAuthorize(
-	ctx: { dbUrl: string; session?: MigratePolicySession },
-): void {
-	const expected = ctx.session?.preBackupIntegrity;
-	if (!ctx.session?.preBackupReused || !expected) {
+function assertPreBackupCoverageBeforeAuthorize(ctx: {
+	dbUrl: string;
+	session?: MigratePolicySession;
+}): void {
+	const manifestPath = ctx.session?.preBackupManifestPath;
+	if (!manifestPath) {
 		return;
 	}
 	writeHuman(
-		`${operatorSymbol('info')} Confirmando que Production sigue cubierta por el respaldo reutilizado…`,
+		`${operatorSymbol('info')} Autorización: confirmando cobertura estructural del respaldo…`,
 	);
-	const check = assertProductionUnchangedSinceBackup({
+	const check = assertCriticalBackupStructuralCoverage({
 		prodDbUrl: ctx.dbUrl,
-		expectedIntegrity: expected,
+		manifestPath,
+		maxAgeMs: ctx.session?.preBackupMaxAgeMs ?? CRITICAL_BACKUP_RPO_MS,
 	});
-	if (!check.ok) {
+	if (!check.covered) {
+		const code =
+			check.reason === 'expired'
+				? 'BACKUP_COVERAGE_EXPIRED'
+				: check.reason === 'structural_drift' || check.reason === 'profile_mismatch'
+					? 'BACKUP_STRUCTURAL_DRIFT'
+					: 'BACKUP_COVERAGE_EXPIRED';
 		throw new OperatorError({
-			title: 'Production cambió desde el respaldo crítico',
+			title:
+				check.reason === 'structural_drift'
+					? 'Deriva estructural desde el respaldo crítico'
+					: 'Cobertura de respaldo crítico vencida',
 			cause:
-				'El estado vivo ya no coincide con el respaldo reutilizado. Se aborta antes de la autorización.',
-			code: 'PRODUCTION_CHANGED_SINCE_BACKUP',
+				check.reason === 'structural_drift'
+					? 'El historial o perfil de migraciones ya no coincide con el respaldo seleccionado.'
+					: 'El respaldo seleccionado ya no cumple el RPO o dejó de ser verificable.',
+			code,
 			remediation: [
-				'Reintente `pnpm db:prod:migrate -- --apply` para capturar un respaldo crítico nuevo.',
-				'No reutilice el plan anterior si hubo otras escrituras (promoción, patch, etc.).',
+				'Reintente `pnpm db:prod:migrate -- --apply` para renovar la cobertura automáticamente.',
+				'No reutilice un plan anterior si hubo otras mutaciones de schema.',
 			],
 			retryCommand: 'pnpm db:prod:migrate -- --apply',
-			affected: {
-				label: 'Diferencias de integridad',
-				items: check.failures,
-			},
+			affected: check.failures
+				? { label: 'Detalles', items: check.failures }
+				: undefined,
 		});
 	}
-	ctx.session.preBackupIntegrity = check.liveIntegrity;
-	writeHuman(`${operatorSymbol('ok')} Cobertura del respaldo confirmada.`);
+	rememberCoverage(ctx.session, check, ctx.session?.preBackupReused === true);
+	if (check.businessActivityDetected) {
+		writeHuman(
+			`${operatorSymbol('info')} Actividad de negocio posterior al respaldo: permitida dentro del RPO`,
+		);
+	}
+	writeHuman(`${operatorSymbol('ok')} Cobertura estructural confirmada.`);
 }
 
 function validatePendingVersions(
@@ -312,6 +392,22 @@ export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 		};
 	},
 
+	prepareApply(ctx) {
+		if (ctx.session?.releaseCheckCompleted && ctx.session.releaseEvidenceSha) {
+			return;
+		}
+		writeHuman(`${operatorSymbol('info')} Release: asegurando evidencia de release-check…`);
+		const worktree = readGitWorktreeState();
+		const evidence = ensureValidReleaseCheckEvidence({ worktree });
+		if (ctx.session) {
+			ctx.session.releaseCheckCompleted = true;
+			ctx.session.releaseEvidenceSha = evidence.sha;
+		}
+		writeHuman(
+			`${operatorSymbol('ok')} Evidencia de release válida para HEAD ${shortSha(evidence.sha, 12)}.`,
+		);
+	},
+
 	buildPlan(ctx, mode) {
 		const priorBuilds = beginPlanBuild(ctx.session);
 		const quiet = mode === 'apply' || priorBuilds > 0;
@@ -353,21 +449,30 @@ export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 
 		let releaseEvidenceSha: string | null = null;
 		if (mode === 'apply') {
-			if (!quiet) {
-				writeHuman(
-					`${operatorSymbol('info')} Release: asegurando evidencia de release-check…`,
-				);
-			}
-			const evidence = ensureValidReleaseCheckEvidence({ worktree });
-			releaseEvidenceSha = evidence.sha;
-			if (!quiet) {
-				writeHuman(
-					`${operatorSymbol('ok')} Evidencia de release válida para HEAD ${shortSha(evidence.sha, 12)}.`,
-				);
+			if (ctx.session?.releaseEvidenceSha) {
+				releaseEvidenceSha = ctx.session.releaseEvidenceSha;
+			} else {
+				// Fallback when buildPlan(apply) is invoked without prepareApply (tests / direct use).
+				if (!quiet) {
+					writeHuman(
+						`${operatorSymbol('info')} Release: asegurando evidencia de release-check…`,
+					);
+				}
+				const evidence = ensureValidReleaseCheckEvidence({ worktree });
+				releaseEvidenceSha = evidence.sha;
+				if (ctx.session) {
+					ctx.session.releaseCheckCompleted = true;
+					ctx.session.releaseEvidenceSha = evidence.sha;
+				}
+				if (!quiet) {
+					writeHuman(
+						`${operatorSymbol('ok')} Evidencia de release válida para HEAD ${shortSha(evidence.sha, 12)}.`,
+					);
+				}
 			}
 		}
 
-		const plan = buildMigrationPlan({
+		return buildMigrationPlan({
 			target: 'production',
 			mode,
 			sourceHead: releaseSha,
@@ -388,8 +493,6 @@ export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 			verificationRequirement: 'history_and_mutation_contract',
 			releaseEvidenceSha,
 		});
-
-		return plan;
 	},
 
 	beforeWrite(plan, ctx) {
@@ -402,12 +505,23 @@ export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 			...buildMigrationTechnicalReview(plan, redactDbUrl(ctx.dbUrl)),
 		];
 		if (ctx.session?.preBackupManifestPath) {
+			const ageLabel = formatBackupAge(ctx.session.preBackupAgeMs ?? 0);
+			const rpoLabel = formatBackupAge(
+				ctx.session.preBackupMaxAgeMs ?? CRITICAL_BACKUP_RPO_MS,
+			);
 			technicalReview.push([
 				'Respaldo previo',
 				ctx.session.preBackupReused
-					? `Reutilizado · ${ctx.session.preBackupManifestPath}`
-					: `Nuevo · ${ctx.session.preBackupManifestPath}`,
+					? `Reutilizado · edad ${ageLabel} · RPO ${rpoLabel}`
+					: `Nuevo · RPO ${rpoLabel}`,
 			]);
+			technicalReview.push(['Manifest', ctx.session.preBackupManifestPath]);
+			if (ctx.session.preBackupBusinessActivity) {
+				technicalReview.push([
+					'Actividad de negocio',
+					'Detectada tras el respaldo; permitida dentro del RPO',
+				]);
+			}
 		}
 		await requireOwnerProductionApply({
 			apply: true,

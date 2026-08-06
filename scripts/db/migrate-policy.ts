@@ -4,7 +4,7 @@
  */
 
 import type { MigrationPlan, MigrateTarget } from './migration-plan.ts';
-import type { RecoveryIntegritySnapshot } from './recovery-integrity.ts';
+import type { CriticalBackupCoverageReason } from './critical-backup-reuse.ts';
 
 /** Per-orchestration memo for expensive read-only steps that must run once. */
 export interface MigratePolicySession {
@@ -12,12 +12,22 @@ export interface MigratePolicySession {
 	productionAuditCompleted?: boolean;
 	/** buildPlan invocations in this orchestration (rebuilds use compact progress). */
 	buildPlanCount?: number;
-	/** Pre-migration critical backup was reused (live integrity equivalent). */
+	/** Release-check already completed in prepareApply for this orchestration. */
+	releaseCheckCompleted?: boolean;
+	/** SHA from prepareApply / release-check evidence. */
+	releaseEvidenceSha?: string;
+	/** Pre-migration critical backup was reused (structural coverage within RPO). */
 	preBackupReused?: boolean;
 	/** Manifest path of the reused or freshly created pre-migration backup. */
 	preBackupManifestPath?: string;
-	/** Live integrity snapshot accepted at pre-backup coverage time (for pre-auth re-check). */
-	preBackupIntegrity?: RecoveryIntegritySnapshot;
+	/** Age of reused backup at coverage decision time. */
+	preBackupAgeMs?: number;
+	/** RPO ceiling used for the coverage decision. */
+	preBackupMaxAgeMs?: number;
+	/** Business rows changed after backup capture (allowed within RPO). */
+	preBackupBusinessActivity?: boolean;
+	/** Coverage reason code for technical review. */
+	preBackupCoverageReason?: CriticalBackupCoverageReason;
 }
 
 export interface MigratePolicyContext {
@@ -44,6 +54,12 @@ export interface MigrateEnvironmentPolicy {
 
 	/** Build an immutable plan from live evidence (read-only). */
 	buildPlan(ctx: MigratePolicyContext, mode: 'preflight' | 'apply'): MigrationPlan;
+
+	/**
+	 * Optional apply preparation before backup/coverage (e.g. Production release-check).
+	 * Runs once per orchestration, before beforeWrite.
+	 */
+	prepareApply?(ctx: MigratePolicyContext): void;
 
 	/**
 	 * Authorization immediately before the first write.

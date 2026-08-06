@@ -1,6 +1,6 @@
 /**
  * Shared schema-migration orchestrator.
- * Sequence: preflight → (apply: reviewed → beforeWrite → rebuild+drift → authorize → execute → afterWrite).
+ * Sequence: preflight → (apply: prepareApply → beforeWrite → rebuild+drift → authorize → execute → afterWrite).
  *
  * After any failed apply, callers must obtain a newly validated plan — no cached resume.
  */
@@ -149,7 +149,7 @@ export function preflightMigrate(input: OrchestrateMigrateInput): MigrationPlan 
 
 /**
  * Full orchestration.
- * Apply: reviewed plan → beforeWrite (backup) → one rebuild → drift check → authorize → write.
+ * Apply: prepareApply → reviewed plan → beforeWrite (backup) → one rebuild → drift → authorize → write.
  */
 export async function orchestrateMigrate(
 	input: OrchestrateMigrateInput,
@@ -167,16 +167,19 @@ export async function orchestrateMigrate(
 		fail('orchestrateMigrate only supports mode=apply; use preflightMigrate for read-only planning.');
 	}
 
-	const reviewed = input.reviewedPlan ?? policy.buildPlan(ctx, 'apply');
-
 	if (input.remindConcurrencyRisk !== false && input.target === 'production') {
 		writeHuman(`${operatorSymbol('info')} ${MIGRATE_CONCURRENCY_RESIDUAL_RISK}`);
 	}
 
-	// Backup (and other beforeWrite hooks) precede final revalidation and owner authorization.
+	// Release validation (Production) before backup coverage decisions.
+	policy.prepareApply?.(ctx);
+
+	const reviewed = input.reviewedPlan ?? policy.buildPlan(ctx, 'apply');
+
+	// Backup / coverage precede final plan rebuild and owner authorization.
 	policy.beforeWrite(reviewed, ctx);
 
-	writeHuman(`${operatorSymbol('info')} Revalidando evidencia del plan…`);
+	writeHuman(`${operatorSymbol('info')} Revalidación: evidencia material del plan…`);
 	const plan = policy.buildPlan(ctx, 'apply');
 	assertReviewDrift(reviewed, plan, input.target);
 	writeHuman(`${operatorSymbol('ok')} Revalidación sin cambios materiales en el plan.`);

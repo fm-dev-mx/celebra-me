@@ -569,12 +569,17 @@ application login substitute. Host invitation flows continue to use real `host_c
 - Non-Production interactive TTY may use Cancel / Revisar / Aplicar; Production authorization is
   only the owner gate (Cancelar / Revisar cambios / Aplicar + bound code).
 - Production apply sequence: identity → audit → dry-run (+ optional `--expected` pin) →
-  compatibility (HEAD; explicit registry phase required) → `release-check` evidence (reuse or run) →
-  verified critical pre-migration backup (reuse when live recovery integrity still matches a recent
-  verified manifest; otherwise capture) → one plan revalidation → if backup was reused, re-confirm
-  live integrity → owner gate → `supabase db push` → migration-history + contract verification →
-  critical post-migration backup (always capture after write). After cancel / wrong confirmation
-  code with no Production writes, the next apply typically reuses the pre-migration backup.
+  compatibility (HEAD; explicit registry phase required) → compact plan card → concurrency notice →
+  **Release** (`release-check` evidence first) → **Cobertura** (critical pre-migration backup with
+  bounded RPO; reuse structurally valid recent manifests; auto-capture when expired/incompatible;
+  one retry if capture is unstable due to concurrent writes) → **Revalidación** (one material plan
+  rebuild) → structural coverage confirm → owner gate → `supabase db push` → history + contract
+  verification → critical post-migration backup (always capture after write).
+- Online migrate RPO: business-row changes (e.g. RSVP) after a verified backup do **not** invalidate
+  coverage while age ≤ RPO and migration history/profile remain unchanged. Structural drift or RPO
+  expiry forces a new backup. Supabase Database Backups / PITR (when enabled) protect the DB engine
+  with fine granularity but do **not** include Storage object bytes; the local critical set remains
+  required for Auth/Storage recovery evidence.
 - Release identity for Production is the current clean `HEAD` (not `CELEBRA_TARGET_RELEASE_SHA`).
 - Shared owner boundary: `requireOwnerProductionApply` (also used by promote/patch/draft-reset).
   The gate is two-step and TTY-only: (1) arrow-key intent select defaulting to Cancel; (2) type or

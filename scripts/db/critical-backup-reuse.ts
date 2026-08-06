@@ -1,8 +1,9 @@
 /**
- * Critical backup coverage / reuse for Production migrate.
+ * Critical backup coverage for Production migrate (online, bounded RPO).
  *
- * Mirrors release-check evidence reuse: validate cached recovery point against live
- * Production integrity; fail closed to a full capture when equivalence cannot be proven.
+ * A verified backup remains valid when normal business rows change after capture.
+ * Coverage fails closed on identity/project mismatch, missing integrity, invalid
+ * artifacts/EFS, recovery-profile mismatch, migration-history drift, or RPO expiry.
  */
 
 import { existsSync, readFileSync } from 'node:fs';
@@ -19,40 +20,51 @@ import {
 } from './local-backup-operations.ts';
 import {
 	captureRecoveryIntegrity,
-	compareRecoveryIntegrity,
-	computeRecoveryStateDigest,
 	type RecoveryIntegritySnapshot,
 } from './recovery-integrity.ts';
 
 export const DEFAULT_CRITICAL_BACKUP_ROOT = resolve('.backups', 'prod');
 
-/** How many recent critical directories to inspect for reuse. */
+/** Maximum age of a reusable pre-migration critical backup (bounded RPO). */
+export const CRITICAL_BACKUP_RPO_MS = 15 * 60 * 1000;
+
+/** How many recent critical directories to inspect for coverage. */
 const MAX_CANDIDATES = 12;
 
-export type CriticalBackupReuseReason =
-	| 'equivalent'
+export type CriticalBackupCoverageReason =
+	| 'covered'
 	| 'no_candidate'
-	| 'integrity_mismatch'
+	| 'expired'
+	| 'structural_drift'
 	| 'artifact_invalid'
 	| 'efs_failed'
 	| 'missing_integrity'
-	| 'project_mismatch';
+	| 'project_mismatch'
+	| 'profile_mismatch';
 
-export interface CriticalBackupReuseEvaluation {
-	reusable: boolean;
-	reason: CriticalBackupReuseReason;
+export interface CriticalBackupCoverage {
+	covered: boolean;
+	reason: CriticalBackupCoverageReason;
 	manifestPath?: string;
 	manifest?: CriticalBackupManifest;
 	liveIntegrity?: RecoveryIntegritySnapshot;
+	ageMs?: number;
+	maxAgeMs: number;
+	/** True when business-table fingerprints differ but structural coverage holds. */
+	businessActivityDetected?: boolean;
 	failures?: string[];
 }
 
-export interface EvaluateCriticalBackupReuseInput {
+export interface EvaluateCriticalBackupCoverageInput {
 	prodDbUrl: string;
 	projectRef?: string;
 	backupRoot?: string;
+	maxAgeMs?: number;
+	nowMs?: number;
 	/** Cap candidate scan; defaults to MAX_CANDIDATES. */
 	maxCandidates?: number;
+	/** When set, evaluate only this manifest (pre-authorize re-check). */
+	preferredManifestPath?: string;
 	captureIntegrity?: (dbUrl: string) => RecoveryIntegritySnapshot;
 	validateManifest?: (manifest: CriticalBackupManifest) => void;
 	assertEncrypted?: (paths: string[]) => void;
@@ -61,11 +73,13 @@ export interface EvaluateCriticalBackupReuseInput {
 }
 
 interface CandidateScanFlags {
-	integrityMismatch: boolean;
+	expired: boolean;
+	structuralDrift: boolean;
 	artifactInvalid: boolean;
 	efsFailed: boolean;
 	missingIntegrity: boolean;
 	projectMismatch: boolean;
+	profileMismatch: boolean;
 }
 
 function defaultReadManifest(manifestPath: string): CriticalBackupManifest | null {
@@ -82,10 +96,27 @@ function candidateManifestPaths(
 	listBackups: (root: string) => RetentionCandidate[],
 	maxCandidates: number,
 	readManifest: (path: string) => CriticalBackupManifest | null,
+	preferredManifestPath?: string,
 ): Array<{ manifestPath: string; createdAtMs: number; manifest: CriticalBackupManifest }> {
+	if (preferredManifestPath) {
+		const manifest = readManifest(preferredManifestPath);
+		if (!manifest) return [];
+		const createdAtMs = Date.parse(manifest.createdAt);
+		return [
+			{
+				manifestPath: preferredManifestPath,
+				createdAtMs: Number.isFinite(createdAtMs) ? createdAtMs : Date.now(),
+				manifest,
+			},
+		];
+	}
 	if (!existsSync(backupRoot)) return [];
 	const dirs = listBackups(backupRoot).slice(0, maxCandidates);
-	const loaded: Array<{ manifestPath: string; createdAtMs: number; manifest: CriticalBackupManifest }> = [];
+	const loaded: Array<{
+		manifestPath: string;
+		createdAtMs: number;
+		manifest: CriticalBackupManifest;
+	}> = [];
 	for (const dir of dirs) {
 		const manifestPath = join(dir.path, 'manifest.json');
 		const manifest = readManifest(manifestPath);
@@ -130,21 +161,37 @@ function artifactsAndEfsOk(
 	return true;
 }
 
-function integrityMatchesLive(
-	manifest: CriticalBackupManifest,
-	liveIntegrity: RecoveryIntegritySnapshot,
-	liveDigest: string,
+function migrationHistoryMatches(
+	stored: RecoveryIntegritySnapshot,
+	live: RecoveryIntegritySnapshot,
 ): boolean {
-	if (!manifest.integrity) return false;
-	const storedDigest = manifest.stateDigest ?? computeRecoveryStateDigest(manifest.integrity);
-	if (storedDigest === liveDigest) return true;
-	return compareRecoveryIntegrity(manifest.integrity, liveIntegrity, {
-		requireValidInvariants: false,
-	}).ok;
+	if (stored.migrationSha256 !== live.migrationSha256) return false;
+	if (stored.migrationCount !== live.migrationCount) return false;
+	const storedVersions = stored.migrationVersions ?? [];
+	const liveVersions = live.migrationVersions ?? [];
+	if (storedVersions.length !== liveVersions.length) return false;
+	return storedVersions.every((version, index) => version === liveVersions[index]);
 }
 
-function reasonFromFlags(flags: CandidateScanFlags): CriticalBackupReuseReason {
-	if (flags.integrityMismatch) return 'integrity_mismatch';
+function businessTablesDiffer(
+	stored: RecoveryIntegritySnapshot,
+	live: RecoveryIntegritySnapshot,
+): boolean {
+	if (stored.businessStateSha256 !== live.businessStateSha256) return true;
+	const keys = new Set([...Object.keys(stored.tables), ...Object.keys(live.tables)]);
+	for (const key of keys) {
+		const left = stored.tables[key];
+		const right = live.tables[key];
+		if (!left || !right) return true;
+		if (left.rowCount !== right.rowCount || left.sha256 !== right.sha256) return true;
+	}
+	return false;
+}
+
+function reasonFromFlags(flags: CandidateScanFlags): CriticalBackupCoverageReason {
+	if (flags.structuralDrift) return 'structural_drift';
+	if (flags.expired) return 'expired';
+	if (flags.profileMismatch) return 'profile_mismatch';
 	if (flags.artifactInvalid) return 'artifact_invalid';
 	if (flags.efsFailed) return 'efs_failed';
 	if (flags.missingIntegrity) return 'missing_integrity';
@@ -152,15 +199,103 @@ function reasonFromFlags(flags: CandidateScanFlags): CriticalBackupReuseReason {
 	return 'no_candidate';
 }
 
+function failuresForReason(
+	reason: CriticalBackupCoverageReason,
+	maxAgeMs: number,
+): string[] | undefined {
+	if (reason === 'structural_drift') {
+		return [
+			'El historial o perfil de migraciones ya no coincide con el respaldo crítico reciente.',
+		];
+	}
+	if (reason === 'expired') {
+		return [
+			`Ningún respaldo crítico reciente está dentro del RPO máximo (${formatBackupAge(maxAgeMs)}).`,
+		];
+	}
+	return undefined;
+}
+
+export function formatBackupAge(ageMs: number): string {
+	const minutes = Math.max(0, Math.floor(ageMs / 60_000));
+	if (minutes < 1) return '<1 min';
+	if (minutes === 1) return '1 min';
+	return `${minutes} min`;
+}
+
+function evaluateCandidateCoverage(input: {
+	candidate: { manifestPath: string; createdAtMs: number; manifest: CriticalBackupManifest };
+	projectRef: string;
+	liveIntegrity: RecoveryIntegritySnapshot;
+	nowMs: number;
+	maxAgeMs: number;
+	validateManifest: (manifest: CriticalBackupManifest) => void;
+	assertEncrypted: (paths: string[]) => void;
+	flags: CandidateScanFlags;
+}): CriticalBackupCoverage | null {
+	const { candidate, projectRef, liveIntegrity, nowMs, maxAgeMs, flags } = input;
+	const manifest = candidate.manifest;
+	if (!isProductionManifest(manifest, projectRef)) {
+		flags.projectMismatch = true;
+		return null;
+	}
+	if (!manifest.integrity) {
+		flags.missingIntegrity = true;
+		return null;
+	}
+	if (
+		!artifactsAndEfsOk(
+			manifest,
+			candidate.manifestPath,
+			input.validateManifest,
+			input.assertEncrypted,
+			flags,
+		)
+	) {
+		return null;
+	}
+
+	const storedProfile = manifest.integrity.profile ?? 'phase3';
+	const liveProfile = liveIntegrity.profile ?? 'phase3';
+	if (storedProfile !== liveProfile) {
+		flags.profileMismatch = true;
+		return null;
+	}
+
+	const ageMs = Math.max(0, nowMs - candidate.createdAtMs);
+	if (ageMs > maxAgeMs) {
+		flags.expired = true;
+		return null;
+	}
+
+	if (!migrationHistoryMatches(manifest.integrity, liveIntegrity)) {
+		flags.structuralDrift = true;
+		return null;
+	}
+
+	return {
+		covered: true,
+		reason: 'covered',
+		manifestPath: candidate.manifestPath,
+		manifest,
+		liveIntegrity,
+		ageMs,
+		maxAgeMs,
+		businessActivityDetected: businessTablesDiffer(manifest.integrity, liveIntegrity),
+	};
+}
+
 /**
- * Decide whether an existing verified critical backup still covers live Production.
- * Fail-closed: any doubt yields reusable=false (caller must capture).
+ * Decide whether an existing verified critical backup still covers Production for migrate.
+ * Business-row drift inside the RPO does not invalidate coverage.
  */
-export function evaluateCriticalBackupReuse(
-	input: EvaluateCriticalBackupReuseInput,
-): CriticalBackupReuseEvaluation {
+export function evaluateCriticalBackupCoverage(
+	input: EvaluateCriticalBackupCoverageInput,
+): CriticalBackupCoverage {
 	const projectRef = input.projectRef ?? SUPABASE_PROJECT_REFS.production;
 	const backupRoot = resolve(input.backupRoot ?? DEFAULT_CRITICAL_BACKUP_ROOT);
+	const maxAgeMs = input.maxAgeMs ?? CRITICAL_BACKUP_RPO_MS;
+	const nowMs = input.nowMs ?? Date.now();
 	const maxCandidates = input.maxCandidates ?? MAX_CANDIDATES;
 	const captureIntegrity = input.captureIntegrity ?? captureRecoveryIntegrity;
 	const validateManifest = input.validateManifest ?? ((m) => validateCriticalBackupManifest(m));
@@ -173,9 +308,10 @@ export function evaluateCriticalBackupReuse(
 		listBackups,
 		maxCandidates,
 		readManifest,
+		input.preferredManifestPath,
 	);
 	if (candidates.length === 0) {
-		return { reusable: false, reason: 'no_candidate' };
+		return { covered: false, reason: 'no_candidate', maxAgeMs };
 	}
 
 	let liveIntegrity: RecoveryIntegritySnapshot;
@@ -183,8 +319,9 @@ export function evaluateCriticalBackupReuse(
 		liveIntegrity = captureIntegrity(input.prodDbUrl);
 	} catch (error: unknown) {
 		return {
-			reusable: false,
-			reason: 'integrity_mismatch',
+			covered: false,
+			reason: 'structural_drift',
+			maxAgeMs,
 			failures: [
 				error instanceof Error
 					? error.message
@@ -193,83 +330,71 @@ export function evaluateCriticalBackupReuse(
 		};
 	}
 
-	const liveDigest = computeRecoveryStateDigest(liveIntegrity);
 	const flags: CandidateScanFlags = {
-		integrityMismatch: false,
+		expired: false,
+		structuralDrift: false,
 		artifactInvalid: false,
 		efsFailed: false,
 		missingIntegrity: false,
 		projectMismatch: false,
+		profileMismatch: false,
 	};
 
 	for (const candidate of candidates) {
-		const manifest = candidate.manifest;
-		if (!isProductionManifest(manifest, projectRef)) {
-			flags.projectMismatch = true;
-			continue;
-		}
-		if (!manifest.integrity) {
-			flags.missingIntegrity = true;
-			continue;
-		}
-		if (
-			!artifactsAndEfsOk(
-				manifest,
-				candidate.manifestPath,
-				validateManifest,
-				assertEncrypted,
-				flags,
-			)
-		) {
-			continue;
-		}
-		if (integrityMatchesLive(manifest, liveIntegrity, liveDigest)) {
-			return {
-				reusable: true,
-				reason: 'equivalent',
-				manifestPath: candidate.manifestPath,
-				manifest,
-				liveIntegrity,
-			};
-		}
-		flags.integrityMismatch = true;
+		const covered = evaluateCandidateCoverage({
+			candidate,
+			projectRef,
+			liveIntegrity,
+			nowMs,
+			maxAgeMs,
+			validateManifest,
+			assertEncrypted,
+			flags,
+		});
+		if (covered) return covered;
 	}
 
 	const reason = reasonFromFlags(flags);
 	return {
-		reusable: false,
+		covered: false,
 		reason,
 		liveIntegrity,
-		failures:
-			reason === 'integrity_mismatch'
-				? ['Ningún respaldo crítico reciente coincide con el estado vivo de Production.']
-				: undefined,
+		maxAgeMs,
+		failures: failuresForReason(reason, maxAgeMs),
 	};
+}
+
+/** @deprecated Prefer evaluateCriticalBackupCoverage — kept as a thin alias for transitional imports. */
+export function evaluateCriticalBackupReuse(
+	input: EvaluateCriticalBackupCoverageInput,
+): CriticalBackupCoverage & { reusable: boolean } {
+	const coverage = evaluateCriticalBackupCoverage(input);
+	return { ...coverage, reusable: coverage.covered };
 }
 
 /**
- * Re-check that Production still matches a previously accepted backup integrity snapshot.
- * Used after plan revalidation and before owner authorization when a backup was reused.
+ * Structural pre-authorize coverage check for a previously selected backup.
+ * Does not require exact business-table equality.
  */
-export function assertProductionUnchangedSinceBackup(input: {
+export function assertCriticalBackupStructuralCoverage(input: {
 	prodDbUrl: string;
-	expectedIntegrity: RecoveryIntegritySnapshot;
+	manifestPath: string;
+	maxAgeMs?: number;
+	nowMs?: number;
 	captureIntegrity?: (dbUrl: string) => RecoveryIntegritySnapshot;
-}): RecoveryIntegrityComparisonResult {
-	const captureIntegrity = input.captureIntegrity ?? captureRecoveryIntegrity;
-	const live = captureIntegrity(input.prodDbUrl);
-	const comparison = compareRecoveryIntegrity(input.expectedIntegrity, live, {
-		requireValidInvariants: false,
+	validateManifest?: (manifest: CriticalBackupManifest) => void;
+	assertEncrypted?: (paths: string[]) => void;
+	readManifest?: (manifestPath: string) => CriticalBackupManifest | null;
+}): CriticalBackupCoverage {
+	return evaluateCriticalBackupCoverage({
+		prodDbUrl: input.prodDbUrl,
+		preferredManifestPath: input.manifestPath,
+		maxAgeMs: input.maxAgeMs,
+		nowMs: input.nowMs,
+		captureIntegrity: input.captureIntegrity,
+		validateManifest: input.validateManifest,
+		assertEncrypted: input.assertEncrypted,
+		readManifest: input.readManifest,
+		listBackups: () => [],
 	});
-	return {
-		ok: comparison.ok,
-		failures: comparison.failures,
-		liveIntegrity: live,
-	};
-}
-
-export interface RecoveryIntegrityComparisonResult {
-	ok: boolean;
-	failures: string[];
-	liveIntegrity: RecoveryIntegritySnapshot;
 }

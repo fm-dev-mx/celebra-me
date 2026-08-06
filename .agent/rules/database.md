@@ -89,17 +89,16 @@ task authorization, target classification, and standard guard checks.
      (`supabase/migration-rollout-registry.json`; SSOT
      `scripts/db/migration-deployment-compatibility.ts`). Hosted candidates without an explicit
      registry phase fail closed.
-  5. Valid `pnpm release-check` evidence for the current clean `HEAD` (apply ensures or runs
-     `type-check` → `test` → `build:app`; ordinary preflight does not)
-  6. Verified pre-migration critical backup (`.backups/prod/...`). If a recent verified
-     critical backup has live-equivalent recovery integrity (state digest / table + migration
-     fingerprints, intact artifacts, EFS), reuse it; otherwise capture a new set. Fail closed.
-     When reused, re-confirm live equivalence after plan revalidation and before the owner gate
-     (`PRODUCTION_CHANGED_SINCE_BACKUP` aborts). Post-migration backup always captures after write.
+  5. Apply `prepareApply`: valid `pnpm release-check` evidence for the current clean `HEAD`
+     (`type-check` → `test` → `build:app`; ordinary preflight does not run the suite)
+  6. Verified pre-migration critical backup coverage (`.backups/prod/...`) with bounded RPO
+     (default 15 minutes). Reuse when project/artifacts/EFS/profile/migration-history match and
+     age ≤ RPO; business-row drift after capture is allowed (online RSVP traffic). Otherwise
+     capture a new set automatically (one capture retry on mid-capture instability).
   7. One post-backup revalidation against the reviewed plan (material drift aborts)
-  8. Shared owner boundary: one arrow menu defaulting to Cancel, optional technical review,
-     then short bound code `<VERB> <8-hex>` from stable `planId`. Compact card once at CLI;
-     URLs/full hashes/executors/internal policy names stay in technical review / `--json`.
+  8. Structural coverage confirm before owner gate (`BACKUP_COVERAGE_EXPIRED` /
+     `BACKUP_STRUCTURAL_DRIFT`). Shared owner boundary: Cancel-default arrow menu, optional
+     technical review, then short bound code `<VERB> <8-hex>` from stable `planId`.
   9. Migration application (`supabase db push --db-url <url> --yes`)
   10. Post-migration `schema_migrations` + `pnpm db:contract:verify --target production`
   11. Verified post-migration critical backup

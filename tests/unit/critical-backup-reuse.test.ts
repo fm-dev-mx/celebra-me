@@ -8,8 +8,10 @@ import {
 	type CriticalBackupManifest,
 } from '../../scripts/db/backup-manifest.ts';
 import {
-	assertProductionUnchangedSinceBackup,
-	evaluateCriticalBackupReuse,
+	assertCriticalBackupStructuralCoverage,
+	CRITICAL_BACKUP_RPO_MS,
+	evaluateCriticalBackupCoverage,
+	formatBackupAge,
 } from '../../scripts/db/critical-backup-reuse.ts';
 import {
 	computeRecoveryStateDigest,
@@ -78,58 +80,103 @@ describe('computeRecoveryStateDigest', () => {
 	});
 });
 
-describe('evaluateCriticalBackupReuse', () => {
-	it('reuses a verified manifest when live integrity matches', () => {
+describe('evaluateCriticalBackupCoverage', () => {
+	it('covers a verified manifest when structural history matches within RPO', () => {
 		const root = mkdtempSync(join(tmpdir(), 'critical-reuse-'));
-		const manifestPath = writeManifest(root, 'critical-2026-08-06T120000Z');
-		const live = integrity({ capturedAt: '2026-08-06T14:00:00.000Z' });
-		const result = evaluateCriticalBackupReuse({
+		const createdAt = '2026-08-06T12:00:00.000Z';
+		const manifestPath = writeManifest(root, 'critical-2026-08-06T120000Z', { createdAt });
+		const live = integrity({
+			capturedAt: '2026-08-06T12:05:00.000Z',
+			tables: {
+				'public.guest_invitations': { rowCount: 4, sha256: 'd'.repeat(64) },
+			},
+			businessStateSha256: 'e'.repeat(64),
+		});
+		const result = evaluateCriticalBackupCoverage({
 			prodDbUrl: 'postgresql://postgres:secret@db.ineitkdkyrxqyressllp.supabase.co:5432/postgres',
 			backupRoot: root,
+			nowMs: Date.parse('2026-08-06T12:05:00.000Z'),
 			captureIntegrity: () => live,
 			assertEncrypted: () => undefined,
 			listBackups: () => [
-				{ path: join(root, 'critical-2026-08-06T120000Z'), createdAt: new Date() },
+				{ path: join(root, 'critical-2026-08-06T120000Z'), createdAt: new Date(createdAt) },
 			],
 		});
-		expect(result.reusable).toBe(true);
-		expect(result.reason).toBe('equivalent');
+		expect(result.covered).toBe(true);
+		expect(result.reason).toBe('covered');
+		expect(result.businessActivityDetected).toBe(true);
 		expect(result.manifestPath).toBe(manifestPath);
+		expect(formatBackupAge(result.ageMs ?? 0)).toBe('5 min');
+		expect(result.maxAgeMs).toBe(CRITICAL_BACKUP_RPO_MS);
 	});
 
-	it('rejects reuse when live integrity drifts', () => {
+	it('rejects coverage when migration history drifts', () => {
 		const root = mkdtempSync(join(tmpdir(), 'critical-reuse-'));
 		writeManifest(root, 'critical-2026-08-06T120000Z');
-		const result = evaluateCriticalBackupReuse({
+		const result = evaluateCriticalBackupCoverage({
 			prodDbUrl: 'postgresql://postgres:secret@db.ineitkdkyrxqyressllp.supabase.co:5432/postgres',
 			backupRoot: root,
+			nowMs: Date.parse('2026-08-06T12:05:00.000Z'),
 			captureIntegrity: () =>
 				integrity({
 					migrationSha256: 'd'.repeat(64),
-					capturedAt: '2026-08-06T14:00:00.000Z',
+					migrationCount: 71,
+					migrationVersions: ['20260805143000', '20260806120000'],
 				}),
 			assertEncrypted: () => undefined,
 			listBackups: () => [
-				{ path: join(root, 'critical-2026-08-06T120000Z'), createdAt: new Date() },
+				{
+					path: join(root, 'critical-2026-08-06T120000Z'),
+					createdAt: new Date('2026-08-06T12:00:00.000Z'),
+				},
 			],
 		});
-		expect(result.reusable).toBe(false);
-		expect(result.reason).toBe('integrity_mismatch');
+		expect(result.covered).toBe(false);
+		expect(result.reason).toBe('structural_drift');
+	});
+
+	it('rejects coverage when the backup exceeds RPO', () => {
+		const root = mkdtempSync(join(tmpdir(), 'critical-reuse-'));
+		writeManifest(root, 'critical-2026-08-06T120000Z', {
+			createdAt: '2026-08-06T12:00:00.000Z',
+		});
+		const result = evaluateCriticalBackupCoverage({
+			prodDbUrl: 'postgresql://postgres:secret@db.ineitkdkyrxqyressllp.supabase.co:5432/postgres',
+			backupRoot: root,
+			nowMs: Date.parse('2026-08-06T12:20:00.000Z'),
+			captureIntegrity: () => integrity(),
+			assertEncrypted: () => undefined,
+			listBackups: () => [
+				{
+					path: join(root, 'critical-2026-08-06T120000Z'),
+					createdAt: new Date('2026-08-06T12:00:00.000Z'),
+				},
+			],
+		});
+		expect(result.covered).toBe(false);
+		expect(result.reason).toBe('expired');
 	});
 
 	it('rejects manifests without integrity', () => {
 		const root = mkdtempSync(join(tmpdir(), 'critical-reuse-'));
-		writeManifest(root, 'critical-2026-08-06T120000Z', { integrity: undefined, stateDigest: undefined });
-		const result = evaluateCriticalBackupReuse({
+		writeManifest(root, 'critical-2026-08-06T120000Z', {
+			integrity: undefined,
+			stateDigest: undefined,
+		});
+		const result = evaluateCriticalBackupCoverage({
 			prodDbUrl: 'postgresql://postgres:secret@db.ineitkdkyrxqyressllp.supabase.co:5432/postgres',
 			backupRoot: root,
+			nowMs: Date.parse('2026-08-06T12:05:00.000Z'),
 			captureIntegrity: () => integrity(),
 			assertEncrypted: () => undefined,
 			listBackups: () => [
-				{ path: join(root, 'critical-2026-08-06T120000Z'), createdAt: new Date() },
+				{
+					path: join(root, 'critical-2026-08-06T120000Z'),
+					createdAt: new Date('2026-08-06T12:00:00.000Z'),
+				},
 			],
 		});
-		expect(result.reusable).toBe(false);
+		expect(result.covered).toBe(false);
 		expect(result.reason).toBe('missing_integrity');
 	});
 
@@ -138,22 +185,26 @@ describe('evaluateCriticalBackupReuse', () => {
 		writeManifest(root, 'critical-2026-08-06T120000Z', {
 			projectRef: 'iwipdvisoyerfdytuhwi',
 		});
-		const result = evaluateCriticalBackupReuse({
+		const result = evaluateCriticalBackupCoverage({
 			prodDbUrl: 'postgresql://postgres:secret@db.ineitkdkyrxqyressllp.supabase.co:5432/postgres',
 			backupRoot: root,
+			nowMs: Date.parse('2026-08-06T12:05:00.000Z'),
 			captureIntegrity: () => integrity(),
 			assertEncrypted: () => undefined,
 			listBackups: () => [
-				{ path: join(root, 'critical-2026-08-06T120000Z'), createdAt: new Date() },
+				{
+					path: join(root, 'critical-2026-08-06T120000Z'),
+					createdAt: new Date('2026-08-06T12:00:00.000Z'),
+				},
 			],
 		});
-		expect(result.reusable).toBe(false);
+		expect(result.covered).toBe(false);
 		expect(result.reason).toBe('project_mismatch');
 	});
 
 	it('returns no_candidate when the backup root is empty', () => {
 		const root = mkdtempSync(join(tmpdir(), 'critical-reuse-'));
-		const result = evaluateCriticalBackupReuse({
+		const result = evaluateCriticalBackupCoverage({
 			prodDbUrl: 'postgresql://postgres:secret@db.ineitkdkyrxqyressllp.supabase.co:5432/postgres',
 			backupRoot: root,
 			captureIntegrity: () => {
@@ -161,7 +212,7 @@ describe('evaluateCriticalBackupReuse', () => {
 			},
 			listBackups: () => [],
 		});
-		expect(result).toEqual({ reusable: false, reason: 'no_candidate' });
+		expect(result).toEqual({ covered: false, reason: 'no_candidate', maxAgeMs: CRITICAL_BACKUP_RPO_MS });
 	});
 
 	it('prefers the newest matching candidate by createdAt', () => {
@@ -172,9 +223,10 @@ describe('evaluateCriticalBackupReuse', () => {
 		const newer = writeManifest(root, 'critical-2026-08-06T150000Z', {
 			createdAt: '2026-08-06T15:00:00.000Z',
 		});
-		const result = evaluateCriticalBackupReuse({
+		const result = evaluateCriticalBackupCoverage({
 			prodDbUrl: 'postgresql://postgres:secret@db.ineitkdkyrxqyressllp.supabase.co:5432/postgres',
 			backupRoot: root,
+			nowMs: Date.parse('2026-08-06T15:05:00.000Z'),
 			captureIntegrity: () => integrity(),
 			assertEncrypted: () => undefined,
 			listBackups: () => [
@@ -182,31 +234,47 @@ describe('evaluateCriticalBackupReuse', () => {
 				{ path: join(root, 'critical-2026-08-06T150000Z'), createdAt: new Date('2026-08-06') },
 			],
 		});
-		expect(result.reusable).toBe(true);
+		expect(result.covered).toBe(true);
 		expect(result.manifestPath).toBe(newer);
 	});
 });
 
-describe('assertProductionUnchangedSinceBackup', () => {
-	it('accepts an unchanged live snapshot', () => {
-		const expected = integrity();
-		const result = assertProductionUnchangedSinceBackup({
-			prodDbUrl: 'postgresql://example',
-			expectedIntegrity: expected,
-			captureIntegrity: () => integrity({ capturedAt: 'later' }),
+describe('assertCriticalBackupStructuralCoverage', () => {
+	it('accepts business-row drift for a preferred manifest within RPO', () => {
+		const root = mkdtempSync(join(tmpdir(), 'critical-reuse-'));
+		const manifestPath = writeManifest(root, 'critical-2026-08-06T120000Z', {
+			createdAt: '2026-08-06T12:00:00.000Z',
 		});
-		expect(result.ok).toBe(true);
-		expect(result.failures).toEqual([]);
+		const result = assertCriticalBackupStructuralCoverage({
+			prodDbUrl: 'postgresql://example',
+			manifestPath,
+			nowMs: Date.parse('2026-08-06T12:05:00.000Z'),
+			captureIntegrity: () =>
+				integrity({
+					businessStateSha256: 'e'.repeat(64),
+					tables: {
+						'public.guest_invitations': { rowCount: 9, sha256: 'f'.repeat(64) },
+					},
+				}),
+			assertEncrypted: () => undefined,
+		});
+		expect(result.covered).toBe(true);
+		expect(result.businessActivityDetected).toBe(true);
 	});
 
-	it('fails closed when business state drifts', () => {
-		const expected = integrity();
-		const result = assertProductionUnchangedSinceBackup({
-			prodDbUrl: 'postgresql://example',
-			expectedIntegrity: expected,
-			captureIntegrity: () => integrity({ businessStateSha256: 'e'.repeat(64) }),
+	it('fails closed when migration history drifts', () => {
+		const root = mkdtempSync(join(tmpdir(), 'critical-reuse-'));
+		const manifestPath = writeManifest(root, 'critical-2026-08-06T120000Z', {
+			createdAt: '2026-08-06T12:00:00.000Z',
 		});
-		expect(result.ok).toBe(false);
-		expect(result.failures.join('\n')).toMatch(/business-state/);
+		const result = assertCriticalBackupStructuralCoverage({
+			prodDbUrl: 'postgresql://example',
+			manifestPath,
+			nowMs: Date.parse('2026-08-06T12:05:00.000Z'),
+			captureIntegrity: () => integrity({ migrationSha256: 'e'.repeat(64) }),
+			assertEncrypted: () => undefined,
+		});
+		expect(result.covered).toBe(false);
+		expect(result.reason).toBe('structural_drift');
 	});
 });

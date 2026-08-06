@@ -27,6 +27,8 @@ describe('Phase 3 operational contracts', () => {
 
 	it('captures complete recovery before migration and verifies schema before code', () => {
 		const workflow = read('scripts/db/migrate-policy-production.ts');
+		const orchestrator = read('scripts/db/migrate-orchestrator.ts');
+		const prepareApplyIdx = workflow.indexOf('prepareApply(ctx)');
 		const beforeWriteIdx = workflow.indexOf('beforeWrite(plan, ctx)');
 		const authorizeIdx = workflow.indexOf('async authorize(plan, ctx)');
 		const migration = workflow.indexOf("['db', 'push', '--db-url', ctx.dbUrl, '--yes']");
@@ -34,13 +36,21 @@ describe('Phase 3 operational contracts', () => {
 		const contract = workflow.indexOf("runMutationContractVerify('production')", afterWriteIdx);
 		const postBackup = workflow.indexOf("runCriticalBackup(ctx.dbUrl, 'post'", afterWriteIdx);
 		expect(workflow).toContain('evaluateHostedCompatibilityForPlan');
-		expect(workflow).toContain('evaluateCriticalBackupReuse');
-		expect(workflow).toContain('assertProductionUnchangedSinceBackup');
+		expect(workflow).toContain('evaluateCriticalBackupCoverage');
+		expect(workflow).toContain('assertCriticalBackupStructuralCoverage');
+		expect(workflow).toContain('BACKUP_CAPTURE_UNSTABLE');
+		expect(workflow).toContain('CRITICAL_BACKUP_RPO_MS');
 		expect(workflow).toContain("'scripts/db/backup-critical-production.ts'");
 		expect(workflow).not.toContain('daily-critical-production-backup');
+		expect(workflow).not.toContain('assertProductionUnchangedSinceBackup');
+		expect(orchestrator).toContain('policy.prepareApply?.(ctx)');
+		expect(orchestrator.indexOf('policy.prepareApply?.(ctx)')).toBeLessThan(
+			orchestrator.indexOf('policy.beforeWrite(reviewed, ctx)'),
+		);
 		// Phase 3 is fully applied in Production; the stale pre-phase3 profile must not return.
 		expect(workflow).not.toContain('--integrity-profile=pre-phase3');
-		expect(beforeWriteIdx).toBeGreaterThan(0);
+		expect(prepareApplyIdx).toBeGreaterThan(0);
+		expect(beforeWriteIdx).toBeGreaterThan(prepareApplyIdx);
 		expect(workflow.indexOf("runCriticalBackup(ctx.dbUrl, 'pre'", beforeWriteIdx)).toBeGreaterThan(
 			beforeWriteIdx,
 		);

@@ -4,6 +4,7 @@ import { buildMigrationPlan } from '../../scripts/db/migration-plan.ts';
 
 const mockBuildPlan = jest.fn<(...args: unknown[]) => unknown>();
 const mockResolve = jest.fn<(...args: unknown[]) => unknown>();
+const mockPrepareApply = jest.fn<(...args: unknown[]) => void>();
 const mockAuthorize = jest.fn<(...args: unknown[]) => Promise<void>>(async () => undefined);
 const mockBeforeWrite = jest.fn<(...args: unknown[]) => void>();
 const mockExecute = jest.fn<(...args: unknown[]) => void>();
@@ -20,6 +21,7 @@ jest.mock('../../scripts/db/migrate-policy-local.ts', () => ({
 		target: 'local',
 		resolveContext: (input: unknown) => mockResolve(input),
 		buildPlan: (ctx: unknown, mode: unknown) => mockBuildPlan(ctx, mode),
+		prepareApply: (ctx: unknown) => mockPrepareApply(ctx),
 		authorize: (plan: unknown, ctx: unknown) => mockAuthorize(plan, ctx),
 		beforeWrite: (plan: unknown, ctx: unknown) => mockBeforeWrite(plan, ctx),
 		execute: (plan: unknown, ctx: unknown) => mockExecute(plan, ctx),
@@ -32,6 +34,7 @@ jest.mock('../../scripts/db/migrate-policy-preview.ts', () => ({
 		target: 'preview',
 		resolveContext: (input: unknown) => mockResolve(input),
 		buildPlan: (ctx: unknown, mode: unknown) => mockBuildPlan(ctx, mode),
+		prepareApply: (ctx: unknown) => mockPrepareApply(ctx),
 		authorize: (plan: unknown, ctx: unknown) => mockAuthorize(plan, ctx),
 		beforeWrite: (plan: unknown, ctx: unknown) => mockBeforeWrite(plan, ctx),
 		execute: (plan: unknown, ctx: unknown) => mockExecute(plan, ctx),
@@ -44,6 +47,7 @@ jest.mock('../../scripts/db/migrate-policy-production.ts', () => ({
 		target: 'production',
 		resolveContext: (input: unknown) => mockResolve(input),
 		buildPlan: (ctx: unknown, mode: unknown) => mockBuildPlan(ctx, mode),
+		prepareApply: (ctx: unknown) => mockPrepareApply(ctx),
 		authorize: (plan: unknown, ctx: unknown) => mockAuthorize(plan, ctx),
 		beforeWrite: (plan: unknown, ctx: unknown) => mockBeforeWrite(plan, ctx),
 		execute: (plan: unknown, ctx: unknown) => mockExecute(plan, ctx),
@@ -56,6 +60,7 @@ jest.mock('../../scripts/db/migrate-policy-disposable.ts', () => ({
 		target: 'disposable-test',
 		resolveContext: (input: unknown) => mockResolve(input),
 		buildPlan: (ctx: unknown, mode: unknown) => mockBuildPlan(ctx, mode),
+		prepareApply: (ctx: unknown) => mockPrepareApply(ctx),
 		authorize: (plan: unknown, ctx: unknown) => mockAuthorize(plan, ctx),
 		beforeWrite: (plan: unknown, ctx: unknown) => mockBeforeWrite(plan, ctx),
 		execute: (plan: unknown, ctx: unknown) => mockExecute(plan, ctx),
@@ -93,13 +98,14 @@ describe('migrate orchestrator', () => {
 			dbUrl: 'postgresql://postgres:secret@db.example.supabase.co:5432/postgres',
 			expectedPin: null,
 			env: {},
+			session: {},
 		});
 		const stable = plan({ mode: 'apply' });
 		mockBuildPlan.mockReturnValue(stable);
 		jest.spyOn(process.stderr, 'write').mockImplementation(() => true);
 	});
 
-	it('routes local, preview, production, and disposable through backup → rebuild → auth → write', async () => {
+	it('routes through prepareApply → backup → rebuild → auth → write', async () => {
 		const { orchestrateMigrate, getMigratePolicy } =
 			await import('../../scripts/db/migrate-orchestrator.ts');
 		expect(getMigratePolicy('local').target).toBe('local');
@@ -115,8 +121,12 @@ describe('migrate orchestrator', () => {
 				dbUrl: 'postgresql://postgres:secret@127.0.0.1:54322/postgres',
 				expectedPin: null,
 				env: {},
+				session: {},
 			});
 			const order: string[] = [];
+			mockPrepareApply.mockImplementation(() => {
+				order.push('prepare');
+			});
 			mockBeforeWrite.mockImplementation(() => {
 				order.push('before');
 			});
@@ -136,18 +146,22 @@ describe('migrate orchestrator', () => {
 				expectedPin: null,
 				remindConcurrencyRisk: false,
 			});
-			expect(order).toEqual(['before', 'auth', 'exec', 'after']);
+			expect(order).toEqual(['prepare', 'before', 'auth', 'exec', 'after']);
 			// Direct apply: one initial build + one post-backup rebuild.
 			expect(mockBuildPlan).toHaveBeenCalledTimes(2);
+			expect(mockPrepareApply.mock.invocationCallOrder[0]).toBeLessThan(
+				mockBeforeWrite.mock.invocationCallOrder[0]!,
+			);
 		}
 	});
 
-	it('with reviewedPlan: backup then one rebuild before authorization', async () => {
+	it('with reviewedPlan: prepareApply → backup → one rebuild before authorization', async () => {
 		const { orchestrateMigrate } = await import('../../scripts/db/migrate-orchestrator.ts');
 		const reviewed = plan({ mode: 'preflight' });
 		const live = plan({ mode: 'apply' });
 		mockBuildPlan.mockReturnValue(live);
 		const order: string[] = [];
+		mockPrepareApply.mockImplementation(() => order.push('prepare'));
 		mockBeforeWrite.mockImplementation(() => order.push('before'));
 		mockAuthorize.mockImplementation(async () => {
 			order.push('auth');
@@ -160,8 +174,11 @@ describe('migrate orchestrator', () => {
 			reviewedPlan: reviewed,
 			remindConcurrencyRisk: false,
 		});
-		expect(order).toEqual(['before', 'auth']);
+		expect(order).toEqual(['prepare', 'before', 'auth']);
 		expect(mockBuildPlan).toHaveBeenCalledTimes(1);
+		expect(mockPrepareApply.mock.invocationCallOrder[0]).toBeLessThan(
+			mockBeforeWrite.mock.invocationCallOrder[0]!,
+		);
 		expect(mockBeforeWrite.mock.invocationCallOrder[0]).toBeLessThan(
 			mockBuildPlan.mock.invocationCallOrder[0]!,
 		);
@@ -188,6 +205,7 @@ describe('migrate orchestrator', () => {
 				remindConcurrencyRisk: false,
 			}),
 		).rejects.toThrow(/PLAN_DRIFT/);
+		expect(mockPrepareApply).toHaveBeenCalled();
 		expect(mockBeforeWrite).toHaveBeenCalled();
 		expect(mockAuthorize).not.toHaveBeenCalled();
 		expect(mockExecute).not.toHaveBeenCalled();
