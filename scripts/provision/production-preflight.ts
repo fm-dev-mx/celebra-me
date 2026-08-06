@@ -11,9 +11,7 @@ import {
 } from './preview-approval-service.ts';
 
 export type ProductionPreflightErrorCode =
-	| 'MISSING_PREVIEW_APPROVAL'
-	| 'PRODUCTION_CREDENTIALS_UNAVAILABLE'
-	| 'PRODUCTION_PLAN_BLOCKED';
+	'MISSING_PREVIEW_APPROVAL' | 'PRODUCTION_CREDENTIALS_UNAVAILABLE' | 'PRODUCTION_PLAN_BLOCKED';
 
 export class ProductionPreflightError extends Error {
 	constructor(
@@ -44,6 +42,8 @@ export async function runProductionPreflight(input: {
 	pruneAssets?: boolean;
 	updateScope?: UpdateScope;
 	conflictResolutions?: ConflictResolutions;
+	/** When rebuilding after backup, bind the reviewed plan so create IDs stay stable. */
+	plan?: ImportEngineOptions['plan'];
 	getProductionDbUrl: () => { url: string };
 	runEngine?: (options: ImportEngineOptions) => Promise<ImportEngineResult>;
 }): Promise<ProductionPreflightResult> {
@@ -82,6 +82,7 @@ export async function runProductionPreflight(input: {
 			targetDbUrl,
 			ownerUserId: input.ownerUserId,
 			dryRun: true,
+			plan: input.plan,
 			assetPolicy: input.assetPolicy,
 			pruneAssets: input.pruneAssets,
 			updateScope: input.updateScope,
@@ -107,10 +108,6 @@ export async function runProductionPreflight(input: {
 		const safeReason = /bloquead|ausente|derivacio?n|politica|conflict/i.test(msg)
 			? msg
 			: 'No fue posible verificar de forma segura el proyecto y el estado de Producción. Revise las credenciales, la identidad de Database y Storage, y vuelva a ejecutar el preflight.';
-		throw new ProductionPreflightError(
-			'PRODUCTION_PLAN_BLOCKED',
-			safeReason,
-			error,
-		);
+		throw new ProductionPreflightError('PRODUCTION_PLAN_BLOCKED', safeReason, error);
 	}
 }

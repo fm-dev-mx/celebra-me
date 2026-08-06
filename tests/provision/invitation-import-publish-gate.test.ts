@@ -232,6 +232,22 @@ describe('managed invitation registry resolution', () => {
 	});
 });
 
+describe('stable create invitation identity', () => {
+	it('uses managedIdentityId as create fallback before randomUUID', () => {
+		const source = readFileSync(
+			resolve(process.cwd(), 'scripts/provision/invitation-import-engine.ts'),
+			'utf8',
+		);
+		const scanBlock = source.slice(
+			source.indexOf('function scanTargetState('),
+			source.indexOf('const draftResult = runPsql'),
+		);
+		expect(scanBlock).toMatch(/stableCreateInvitationId/);
+		expect(scanBlock).toMatch(/managedIdentityId → random/);
+		expect(source).toMatch(/pkg\.invitation\.managedIdentityId/);
+	});
+});
+
 describe('publish path ordering contract', () => {
 	it('resets draft before publish_invitation_atomic when republishing identical draft content', () => {
 		const source = readFileSync(

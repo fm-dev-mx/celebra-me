@@ -1008,14 +1008,17 @@ function scanTargetState(
 	ownerUserId: string,
 	existingInvitation: Record<string, unknown> | null,
 	preferredInvitationId?: string,
+	stableCreateInvitationId?: string,
 ): TargetScanResult {
-	// New invitations must keep a stable ID across plan → apply in the same release.
-	// randomUUID() here previously made planId diverge and blocked first-time Preview/Production applies.
+	// New invitations must keep a stable ID across plan → apply and promote double-preflight.
+	// Prefer: existing row → confirmed plan precondition → managedIdentityId → random (legacy only).
 	const targetInvitationId = existingInvitation
 		? (existingInvitation.id as string)
 		: preferredInvitationId && UUID_PATTERN.test(preferredInvitationId)
 			? preferredInvitationId
-			: randomUUID();
+			: stableCreateInvitationId && UUID_PATTERN.test(stableCreateInvitationId)
+				? stableCreateInvitationId
+				: randomUUID();
 
 	const draftResult = runPsql(
 		`select row_to_json(t) from (select id, status, updated_at, content from public.invitation_content_drafts where invitation_project_id = '${targetInvitationId}'::uuid and deleted_at is null limit 1) t;`,
@@ -1565,6 +1568,10 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 
 	// Prefer the invitation ID retained in the confirmed plan so plan → apply stays stable for creates.
 	const preferredInvitationId = options.plan?.targetPreconditions.targetInvitationId;
+	const stableCreateInvitationId =
+		typeof pkg.invitation.managedIdentityId === 'string'
+			? pkg.invitation.managedIdentityId
+			: undefined;
 	const initialScan = scanTargetState(
 		targetDbUrl,
 		pkg.invitation.slug,
@@ -1572,6 +1579,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		ownerUserId,
 		identity.existingInvitation,
 		preferredInvitationId,
+		stableCreateInvitationId,
 	);
 	const assetRefs = resolveTargetAssetRefs(
 		pkg,
@@ -1820,7 +1828,9 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			);
 		}
 	}
-	const executionPlan = options.plan ?? currentPlan;
+	// Dry-run may receive a plan only to bind create identity; always surface the recomputed plan
+	// so callers (e.g. promote assertPlanIdentity) can detect fingerprint drift after backup.
+	const executionPlan = dryRun ? currentPlan : (options.plan ?? currentPlan);
 	const rootOperationId = operationIdFromPlanId(executionPlan.planId);
 	const retryParentOperationId = recoverableManagedPartial
 		? drift.latestMutationReceipt!.operationId

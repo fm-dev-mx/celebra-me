@@ -444,6 +444,8 @@ export async function runPromotionPreflight(input: {
 	backupManifestPath?: string;
 	backupRoot?: string;
 	requireBackup?: boolean;
+	/** Reviewed plan from the first preflight; binds create identity on rebuild. */
+	plan?: ImportEngineOptions['plan'];
 	getProductionDbUrl: () => { url: string };
 	runEngine?: (options: ImportEngineOptions) => Promise<ImportEngineResult>;
 	evaluateSchema?: typeof evaluatePromotionSchemaGate;
@@ -538,6 +540,7 @@ export async function runPromotionPreflight(input: {
 			pruneAssets: input.pruneAssets,
 			updateScope: input.updateScope,
 			conflictResolutions: input.conflictResolutions,
+			plan: input.plan,
 			getProductionDbUrl: () => ({ url: targetDbUrl }),
 			runEngine: input.runEngine,
 		});

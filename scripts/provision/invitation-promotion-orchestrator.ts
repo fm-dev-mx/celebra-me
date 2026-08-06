@@ -84,7 +84,11 @@ function assertPlanIdentity(
 	if (!reviewedPlanId || !rebuiltPlanId || reviewedPlanId !== rebuiltPlanId) {
 		throw new OperatorError({
 			title: 'El plan de promoción cambió',
-			cause: 'La evidencia de Production o la release ya no coincide con el plan revisado. Se requiere un nuevo preflight.',
+			cause:
+				'La evidencia de Production o la release ya no coincide con el plan revisado. Se requiere un nuevo preflight.' +
+				(reviewedPlanId && rebuiltPlanId
+					? ` (revisado ${reviewedPlanId.slice(0, 8)}… ≠ revalidado ${rebuiltPlanId.slice(0, 8)}…)`
+					: ''),
 			code: 'PLAN_DRIFT',
 			remediation: [
 				'Vuelva a ejecutar pnpm invitation:promote para obtener un plan nuevo.',
@@ -252,6 +256,8 @@ export async function orchestrateInvitationPromotion(
 		conflictResolutions: input.conflictResolutions,
 		backupManifestPath: backup.manifestPath,
 		requireBackup: true,
+		// Bind create identity (invitation/owner IDs); dry-run still returns a recomputed plan.
+		plan: reviewed.engineResult.plan,
 		getProductionDbUrl,
 	});
 	assertPlanIdentity(reviewed, rebuilt);

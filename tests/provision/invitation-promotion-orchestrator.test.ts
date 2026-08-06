@@ -135,6 +135,42 @@ describe('invitation promotion orchestrator', () => {
 		);
 	});
 
+	it('binds the reviewed plan into the post-backup rebuild preflight', async () => {
+		const reviewedPlan = { planId: 'plan-aaa', invitationTitle: 'Demo' };
+		runPreflight
+			.mockResolvedValueOnce(preflight({ engineResult: { plan: reviewedPlan } as never }))
+			.mockResolvedValueOnce(
+				preflight({
+					engineResult: { plan: reviewedPlan } as never,
+					backup: {
+						required: true,
+						acceptable: true,
+						detail: 'ok',
+						createdAt: 't',
+						canonicalCommand: 'pnpm db:prod:backup:critical',
+					},
+				}),
+			);
+		await orchestrateInvitationPromotion({
+			packageData: packageData() as never,
+			quiet: true,
+			runPreflight: runPreflight as never,
+			runApply: runApply as never,
+			requireOwnerApply: requireOwnerApply as never,
+			ensureReleaseEvidence: ensureReleaseEvidence as never,
+			ensureBackup: ensureBackup as never,
+			revalidateBackup: revalidateBackup as never,
+		});
+		expect(runPreflight).toHaveBeenNthCalledWith(
+			1,
+			expect.not.objectContaining({ plan: expect.anything() }),
+		);
+		expect(runPreflight).toHaveBeenNthCalledWith(
+			2,
+			expect.objectContaining({ plan: reviewedPlan }),
+		);
+	});
+
 	it('orders preflight → release → backup → rebuild → gate → apply', async () => {
 		const order: string[] = [];
 		runPreflight.mockImplementation(async () => {
@@ -204,11 +240,14 @@ describe('invitation promotion orchestrator', () => {
 	});
 
 	it('blocks PLAN_DRIFT before owner gate when rebuilt plan diverges', async () => {
-		runPreflight.mockResolvedValueOnce(preflight()).mockResolvedValueOnce(
-			preflight({
-				engineResult: { plan: { planId: 'plan-BBB', invitationTitle: 'Demo' } },
-			} as never),
-		);
+		const reviewedPlan = { planId: 'plan-aaa', invitationTitle: 'Demo' };
+		runPreflight
+			.mockResolvedValueOnce(preflight({ engineResult: { plan: reviewedPlan } as never }))
+			.mockResolvedValueOnce(
+				preflight({
+					engineResult: { plan: { planId: 'plan-BBB', invitationTitle: 'Demo' } } as never,
+				}),
+			);
 
 		await expect(
 			orchestrateInvitationPromotion({
@@ -223,6 +262,12 @@ describe('invitation promotion orchestrator', () => {
 			}),
 		).rejects.toMatchObject({ code: 'PLAN_DRIFT' } satisfies Partial<OperatorError>);
 
+		// Binding must not mask drift: rebuild still receives the reviewed plan, but a divergent
+		// recomputed planId from dry-run fails closed before owner gate / apply.
+		expect(runPreflight).toHaveBeenNthCalledWith(
+			2,
+			expect.objectContaining({ plan: reviewedPlan }),
+		);
 		expect(requireOwnerApply).not.toHaveBeenCalled();
 		expect(runApply).not.toHaveBeenCalled();
 	});
