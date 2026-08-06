@@ -33,7 +33,16 @@ function printUsage(): void {
 	);
 }
 
-export async function runProdPatchMain(): Promise<void> {
+interface ParsedPatchInput {
+	dryRun: boolean;
+	apply: boolean;
+	file: string;
+	path: string;
+	ownerUserId: string | undefined;
+	sql: string;
+}
+
+function parsePatchInput(): ParsedPatchInput {
 	const dryRun = process.argv.includes('--dry-run');
 	const apply = process.argv.includes('--apply');
 	const file = argValue('--file');
@@ -72,15 +81,16 @@ export async function runProdPatchMain(): Promise<void> {
 		process.exit(1);
 	}
 
-	if (dryRun) {
-		console.info(`Production patch dry-run passed lint: ${path}`);
-		console.info('No database connection was opened and no SQL was executed.');
-		console.info(
-			'Disposition: RESTRICT_OWNER_ONLY specialized maintenance — not invitation:promote and not db:prod:migrate.',
-		);
-		process.exit(0);
-	}
+	return { dryRun, apply, file, path, ownerUserId, sql };
+}
 
+interface ValidatedTargetEnv {
+	validatedOwnerId: string;
+	normalizedUrl: string;
+	dbUrl: string;
+}
+
+function validateProductionTargetEnv(ownerUserId: string | undefined): ValidatedTargetEnv {
 	let validatedOwnerId: string;
 	try {
 		validatedOwnerId = validateOwnerUserId(ownerUserId);
@@ -121,6 +131,23 @@ export async function runProdPatchMain(): Promise<void> {
 		process.exit(1);
 	}
 
+	return { validatedOwnerId, normalizedUrl, dbUrl };
+}
+
+export async function runProdPatchMain(): Promise<void> {
+	const { dryRun, file, path, ownerUserId, sql } = parsePatchInput();
+
+	if (dryRun) {
+		console.info(`Production patch dry-run passed lint: ${path}`);
+		console.info('No database connection was opened and no SQL was executed.');
+		console.info(
+			'Disposition: RESTRICT_OWNER_ONLY specialized maintenance — not invitation:promote and not db:prod:migrate.',
+		);
+		process.exit(0);
+	}
+
+	const { validatedOwnerId, normalizedUrl, dbUrl } = validateProductionTargetEnv(ownerUserId);
+
 	const ownerConfig = `SELECT set_config('app.owner_user_id', '${validatedOwnerId.replace(/'/g, "''")}', false);\n`;
 	const urlConfig = `SELECT set_config('app.supabase_project_url', '${normalizedUrl.replace(/'/g, "''")}', false);\n`;
 	const fullSql = ownerConfig + urlConfig + sql;
@@ -144,6 +171,16 @@ export async function runProdPatchMain(): Promise<void> {
 		],
 	});
 
+	executeProductionPatchSql(fullSql, dbUrl, normalizedUrl, file, validatedOwnerId);
+}
+
+function executeProductionPatchSql(
+	fullSql: string,
+	dbUrl: string,
+	normalizedUrl: string,
+	file: string,
+	validatedOwnerId: string,
+): void {
 	const execResult = runPsql(fullSql, dbUrl, [normalizedUrl, dbUrl]);
 
 	if (execResult.status !== 0) {

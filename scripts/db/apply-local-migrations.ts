@@ -13,13 +13,12 @@
  * Orchestration lives in migrate-orchestrator.ts + migrate-policy-local.ts.
  */
 
-import { runMigrateCli } from './migrate-cli.ts';
-
 export {
 	verifyPersistentLocalTarget,
 } from './migrate-policy-local.ts';
 
 export async function main(argv: string[] = process.argv): Promise<void> {
+	const { runMigrateCli } = await import('./migrate-cli.ts');
 	const userArgs = argv.slice(2);
 	// Legacy alias always applied pending migrations unless an explicit preflight is requested.
 	const hasMode = userArgs.includes('--apply') || userArgs.includes('--preflight');

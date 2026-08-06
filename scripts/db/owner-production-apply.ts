@@ -22,6 +22,7 @@ function writeOwnerLine(message = ''): void {
 	process.stderr.write(`${message}\n`);
 }
 
+/* eslint-disable no-control-regex */
 /** Strip terminal paste noise that breaks exact confirmation matching on Windows. */
 export function sanitizeOwnerConfirmationInput(raw: string): string {
 	return raw
@@ -32,6 +33,7 @@ export function sanitizeOwnerConfirmationInput(raw: string): string {
 		.replace(/\r/g, '')
 		.trim();
 }
+/* eslint-enable no-control-regex */
 
 /** First 8 hex characters of a binding fingerprint (planId, packageHash, etc.). */
 export function shortBindingHex(bindingHex: string): string {
