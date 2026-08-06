@@ -2,7 +2,7 @@
 
 ## Overview
 
-Event content schemas are assembled in `src/content.config.ts` (Astro 6 content collections entry
+Event content schemas are assembled in `src/content.config.ts` (Astro content collections entry
 point) from modular Zod definitions under `src/lib/schemas/content`.
 
 ## Module Boundaries

@@ -8,7 +8,7 @@ support event operations.
 
 ## Stack
 
-- Astro 6
+- Astro 7
 - TypeScript
 - React islands
 - SCSS
@@ -58,13 +58,15 @@ canonical environment workflow.
 
 ## Ops CLI
 
-`pnpm ops` dispatches to the scripts under `scripts/`:
+`pnpm ops` dispatches governance tooling under `scripts/` (see `scripts/README.md`):
 
-- `optimize-assets`
 - `check-links`
 - `validate-schema`
 - `validate-commits`
-- `new-invitation` (disabled fail-closed; real/client invitations are DB-published)
+- `graphify-views` / `graphify-refresh`
+
+Removed one-shot ops (`optimize-assets`, `new-invitation`, `adopt-legacy-events`, `ops dbs`) are not
+registered. Use `pnpm dbs` and `pnpm invitation:*` for invitation operations.
 
 ## Repository Layout
 

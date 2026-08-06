@@ -14,6 +14,8 @@ all production database work as high risk.
 - [`docs/core/content-parity-rsvp-isolation.md`](../../docs/core/content-parity-rsvp-isolation.md)
   owns content promote/mirror/parity vs RSVP isolation (do not redefine here).
 - [`scripts/README.md`](../../scripts/README.md) is command inventory and ownership only.
+- [`docs/domains/database/cheatsheets/README.md`](../../docs/domains/database/cheatsheets/README.md)
+  owns concise operator cards and the status evidence taxonomy.
 
 ## Scope Boundary
 
@@ -164,18 +166,18 @@ task authorization, target classification, and standard guard checks.
 - `pnpm invitation:promote` is the approved production **managed-content** promotion workflow
   (owner-only; separate from schema migrate). Canonical human path is TTY with no args (discovery +
   Cancelar default); `--slug` / `--apply` remain for advanced/non-TTY use.
-- `pnpm db:sync` is the normal invitation **content** orchestration entry point
-  (diagnose/compare/plan/apply) over existing engines. Directions allowlist: `definition-to-local`,
-  `definition-to-preview`, `package-to-production`, `production-to-preview-mirror`. Read-only modes
-  perform no DB/Storage/approval/backup writes. Apply requires an exact reviewed `planId`,
-  revalidates evidence before mutation, and fails closed on expiration or drift. Preview auth and
-  Production owner-TTY gates are unchanged (headless cannot apply to Production). Mirror fail-closed
-  semantics, RSVP reset disclosure, table exclusions, and Cloudinary vs Supabase Storage boundaries
-  are owned by
+- `pnpm db:sync` is the automation/diagnostic invitation **content** orchestration facade
+  (diagnose/compare/plan/apply) over existing engines. Human mutation CLIs remain authoritative:
+  `invitation:update`, `invitation:promote`, `db:preview:sync-invitations`. Directions allowlist:
+  `definition-to-local`, `definition-to-preview`, `package-to-production`,
+  `production-to-preview-mirror`. Read-only modes perform no DB/Storage/approval/backup writes.
+  Apply requires an exact reviewed `planId`, revalidates evidence before mutation, and fails closed
+  on expiration, drift, or non-`CURRENT` schema (never auto-migrates). Preview auth and Production
+  owner-TTY gates are unchanged (headless cannot apply to Production). Mirror fail-closed semantics,
+  RSVP reset disclosure, table exclusions, and Cloudinary vs Supabase Storage boundaries are owned
+  by
   [`docs/core/content-parity-rsvp-isolation.md`](../../docs/core/content-parity-rsvp-isolation.md).
-  Not schema migrate, demo Content Sync, Git `lane:sync`, or dump restore. Specialized commands
-  (`invitation:update`, `invitation:promote`, `db:preview:sync-invitations`,
-  `invitation:content-parity`, `dbs`) remain authoritative for direct use.
+  Not schema migrate, demo Content Sync, Git `lane:sync`, or dump restore.
 - `pnpm db:preview:migrate` preflights Preview (`PREVIEW_DB_URL`); `--apply` applies pending
   migrations after Preview authorization (wrapper over `db:migrate -- --target preview`).
 - Schema status evidence: `pnpm dbs` / observability use **migration_history_parity**;
@@ -318,7 +320,8 @@ persistent-local database was preserved.
 - Unknown database targets must cause an immediate abort of the operation.
 - Dumps and credentials must never enter Git. Dumps live under gitignored `.tmp/` and `.backups/`;
   hosted DB credentials live only in gitignored `.env.preview.local` / `.env.production.local`.
-- Before any database operation, classify the target using `pnpm db:guard:classify --db-url <url>`.
+- Before any database operation, classify the target using
+  `tsx scripts/db/db-guard.ts classify --db-url <url>`.
 - Do not connect to production unless the user explicitly asks for that exact production operation.
 - Do not execute manual production SQL from `scripts/manual/production-patches/` or `scripts/sql/`
   without the owner-only `db:prod:patch` workflow.

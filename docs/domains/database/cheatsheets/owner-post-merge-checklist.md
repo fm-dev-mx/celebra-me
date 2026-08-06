@@ -1,0 +1,17 @@
+# Owner post-merge checklist (hosted applies)
+
+Implementation work must not mutate Local/Preview/Production. After merging workflow consolidation
+changes, the repository owner runs these **explicit** steps:
+
+1. **Preview schema:** confirm/apply `20260806120000` via `pnpm db:preview:migrate` (preflight →
+   scoped `--apply --expected …`).
+2. **Legacy approvals:** if any machine still has `.agent/tmp/approvals` JSON,
+   `pnpm invitation:approvals:migrate --` then `--apply` with Preview auth.
+3. **Production compatibility:** live `pnpm db:prod:audit` before any Production migrate; do not
+   trust frozen counts in docs/reports.
+4. **One-offs:** confirm whether `invitation:romina-draft-reset` is finished; remove alias only
+   after owner confirmation and zero remaining references.
+5. **Daily backup health:** inspect latest `.backups/prod/reports/` for RPO/EFS failures.
+
+Agents may prepare dry-run evidence; they must not run hosted `--apply` without current-task owner
+authorization.

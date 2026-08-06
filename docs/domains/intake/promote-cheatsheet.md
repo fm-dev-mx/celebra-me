@@ -22,13 +22,13 @@ Una sola candidata lista **nunca** se aplica sola: siempre hay selección explí
 
 ## Antes de promover
 
-| Requisito                         | Señal / comando                                         |
-| --------------------------------- | ------------------------------------------------------- |
-| Release en Preview aprobada       | Aprobación exacta en el store compartido (Preview DB)   |
-| Schema Production compatible      | `CURRENT` (`pnpm dbs`); si no → `pnpm db:prod:migrate`  |
-| Worktree listo para release-check | `HEAD` limpio; evidencia válida o se genera en el flujo |
-| Sin scope de agente Preview       | Quite `CELEBRA_TASK_SCOPE`                              |
-| Credenciales Production           | `PROD_DB_URL` / secretos canónicos del propietario      |
+| Requisito                         | Señal / comando                                          |
+| --------------------------------- | -------------------------------------------------------- |
+| Release en Preview aprobada       | Aprobación exacta en el store compartido (Preview DB)    |
+| Schema Production compatible      | `CURRENT` (`pnpm dbs`); si no → `pnpm db:prod:migrate`   |
+| Worktree listo para release-check | `HEAD` limpio; evidencia válida o se genera en el flujo  |
+| Sin scope de agente Preview       | Quite `CELEBRA_TASK_SCOPE`                               |
+| Credenciales Production           | `PROD_DB_URL` / secretos canónicos del propietario       |
 | Credenciales Preview (lectura)    | `PREVIEW_DB_URL` para verificar la aprobación compartida |
 
 Promote **no** migra schema, **no** toca RSVP/PII y **no** importa la DB de Preview.
@@ -43,7 +43,8 @@ pnpm invitation:update -- --package-hash <hash> --evidence <path> --apply
 Importación puntual de JSON legacy (solo `approved` vigentes):
 
 ```bash
-pnpm invitation:approvals:migrate -- [--dir .agent/tmp/approvals] [--dry-run]
+pnpm invitation:approvals:migrate -- [--dir .agent/tmp/approvals]            # dry-run default
+pnpm invitation:approvals:migrate -- --apply [--dir .agent/tmp/approvals]  # Preview auth required
 ```
 
 ## Qué verá en el menú
@@ -58,14 +59,14 @@ pnpm invitation:approvals:migrate -- [--dir .agent/tmp/approvals] [--dry-run]
 
 ## Si queda bloqueado
 
-| Bloqueo                         | Qué hacer                                                        |
-| ------------------------------- | ---------------------------------------------------------------- |
+| Bloqueo                         | Qué hacer                                                                 |
+| ------------------------------- | ------------------------------------------------------------------------- |
 | Sin aprobación Preview          | Preview apply → `invitation:update --package-hash … --evidence … --apply` |
-| Schema incompatible             | Owner: `pnpm db:prod:migrate` (flujo aparte)                     |
-| Divergencia / conflicto managed | Resolver en origen o reconciliar; no hay auto-merge en promote   |
-| `PLAN_DRIFT`                    | Reiniciar `pnpm invitation:promote`; no confirmar plan viejo     |
-| Respaldo / release-check        | Seguir remediación del CLI; no saltar el gate                    |
-| Sin TTY / automatización        | Preflight: `--slug … --dry-run`. Apply: solo TTY del propietario |
+| Schema incompatible             | Owner: `pnpm db:prod:migrate` (flujo aparte)                              |
+| Divergencia / conflicto managed | Resolver en origen o reconciliar; no hay auto-merge en promote            |
+| `PLAN_DRIFT`                    | Reiniciar `pnpm invitation:promote`; no confirmar plan viejo              |
+| Respaldo / release-check        | Seguir remediación del CLI; no saltar el gate                             |
+| Sin TTY / automatización        | Preflight: `--slug … --dry-run`. Apply: solo TTY del propietario          |
 
 ## Flags (avanzado / no TTY)
 

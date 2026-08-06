@@ -3,146 +3,150 @@
 # Maps task types / domains to the minimum required context (rules, skills, docs).
 # Managed by Goal 3 operating model migration.
 ---
-version: "1.0.0"
-updated: "2026-07-31"
+version: '1.0.0'
+updated: '2026-07-31'
 
 bootstrap:
-  rules:
-    - ".agent/rules/gatekeeper.md"
-    - ".agent/rules/git-safety.md"
+    rules:
+        - '.agent/rules/gatekeeper.md'
+        - '.agent/rules/git-safety.md'
 
 routes:
-  - task_type: "visual_ui"
-    description: "Visual, SCSS, or UI component implementation"
-    rules:
-      - ".agent/rules/agent-routing.md"
-      - ".agent/rules/dashboard-styling.md"
-      - ".agent/rules/invitation-preset-source-of-truth.md"
-    skills:
-      - "frontend-design"
-      - "theme-architecture"
-      - "animation-motion"
-    workflows:
-      - ".agent/workflows/theme-architecture-governance.md"
-    docs:
-      - "docs/domains/theme/architecture.md"
+    - task_type: 'visual_ui'
+      description: 'Visual, SCSS, or UI component implementation'
+      rules:
+          - '.agent/rules/agent-routing.md'
+          - '.agent/rules/dashboard-styling.md'
+          - '.agent/rules/invitation-preset-source-of-truth.md'
+      skills:
+          - 'frontend-design'
+          - 'theme-architecture'
+          - 'animation-motion'
+      workflows:
+          - '.agent/workflows/theme-architecture-governance.md'
+      docs:
+          - 'docs/domains/theme/architecture.md'
 
-  - task_type: "design_reference_redesign"
-    description: "Reference-driven visual redesign of invitation, demo, or dashboard"
-    rules:
-      - ".agent/rules/agent-routing.md"
-    skills:
-      - "frontend-design"
-      - "theme-architecture"
-      - "celebra-delegation-patterns"
-    workflows:
-      - ".agent/workflows/design-reference-to-build.md"
-    briefs:
-      - ".agent/briefs/celebra-me.md"
+    - task_type: 'design_reference_redesign'
+      description: 'Reference-driven visual redesign of invitation, demo, or dashboard'
+      rules:
+          - '.agent/rules/agent-routing.md'
+      skills:
+          - 'frontend-design'
+          - 'theme-architecture'
+          - 'celebra-delegation-patterns'
+      workflows:
+          - '.agent/workflows/design-reference-to-build.md'
+      briefs:
+          - '.agent/briefs/celebra-me.md'
 
-  - task_type: "backend_api"
-    description: "Backend engineering, API routes, or data validation"
-    rules:
-      - ".agent/rules/api-contracts.md"
-      - ".agent/rules/database.md"
-    skills:
-      - "backend-engineering"
-      - "astro-patterns"
-      - "demo-content-consistency"
-    docs:
-      - "docs/core/architecture.md"
+    - task_type: 'backend_api'
+      description: 'Backend engineering, API routes, or data validation'
+      rules:
+          - '.agent/rules/api-contracts.md'
+          - '.agent/rules/database.md'
+      skills:
+          - 'backend-engineering'
+          - 'astro-patterns'
+          - 'demo-content-consistency'
+      docs:
+          - 'docs/core/architecture.md'
 
-  - task_type: "database_ops"
-    description: "Supabase, migrations, schema updates, or database parity"
-    rules:
-      - ".agent/rules/database.md"
-      - ".agent/rules/manual-sql-manifest.md"
-    skills:
-      - "database-parity"
-      - "supabase"
-      - "supabase-postgres"
-      - "production-sql-patches"
-    docs:
-      - "docs/database-workflow.md"
-      - "docs/domains/database/overview.md"
+    - task_type: 'database_ops'
+      description: 'Supabase, migrations, schema updates, or database parity'
+      rules:
+          - '.agent/rules/database.md'
+          - '.agent/rules/manual-sql-manifest.md'
+      skills:
+          - 'database-parity'
+          - 'supabase'
+          - 'supabase-postgres'
+          - 'production-sql-patches'
+      docs:
+          - 'docs/database-workflow.md'
+          - 'docs/domains/database/overview.md'
+          - 'docs/domains/database/cheatsheets/README.md'
+          - 'docs/env-workflow.md'
 
-  - task_type: "documentation_governance"
-    description: "Documentation updates, link integrity, or system alignment"
-    rules:
-      - ".agent/rules/workflow.md"
-    skills:
-      - "documentation-governance"
-      - "agent-communication"
-    workflows:
-      - ".agent/workflows/system-doc-alignment.md"
+    - task_type: 'documentation_governance'
+      description: 'Documentation updates, link integrity, or system alignment'
+      rules:
+          - '.agent/rules/workflow.md'
+      skills:
+          - 'documentation-governance'
+          - 'agent-communication'
+      workflows:
+          - '.agent/workflows/system-doc-alignment.md'
 
-  - task_type: "testing_qa"
-    description: "Testing, Playwright E2E, accessibility, or QA verification"
-    rules:
-      - ".agent/rules/gatekeeper.md"
-    skills:
-      - "testing"
-      - "accessibility"
-      - "seo-metadata"
+    - task_type: 'testing_qa'
+      description: 'Testing, Playwright E2E, accessibility, or QA verification'
+      rules:
+          - '.agent/rules/gatekeeper.md'
+      skills:
+          - 'testing'
+          - 'accessibility'
+          - 'seo-metadata'
 
-  - task_type: "error_remediation"
-    description: "Command, test, or build failure diagnosis and surgical fix"
-    rules:
-      - ".agent/rules/gatekeeper.md"
-    workflows:
-      - ".agent/workflows/error-remediation.md"
+    - task_type: 'error_remediation'
+      description: 'Command, test, or build failure diagnosis and surgical fix'
+      rules:
+          - '.agent/rules/gatekeeper.md'
+      workflows:
+          - '.agent/workflows/error-remediation.md'
 
-  - task_type: "git_branch_lane"
-    description: "Git worktree lane operations, branch migration parity, or release prep"
-    rules:
-      - ".agent/rules/git-safety.md"
-    skills:
-      - "branch-lane"
-      - "database-parity"
-      - "commit-planner"
-      - "git-stash-branch-cleanup"
-    docs:
-      - "docs/core/git-governance.md"
-      - "docs/core/release-process.md"
+    - task_type: 'git_branch_lane'
+      description: 'Git worktree lane operations, branch migration parity, or release prep'
+      rules:
+          - '.agent/rules/git-safety.md'
+      skills:
+          - 'branch-lane'
+          - 'database-parity'
+          - 'commit-planner'
+          - 'git-stash-branch-cleanup'
+      docs:
+          - 'docs/core/git-governance.md'
+          - 'docs/core/release-process.md'
 
-  - task_type: "invitation_preparation"
-    description: "Client invitation preparation & intake completeness evaluation"
-    skills:
-      - "client-invitation-audit"
-      - "copywriting-es"
-    workflows:
-      - ".agent/workflows/invitation-preparation.md"
-    docs:
-      - "docs/core/invitation-preparation-contract.md"
+    - task_type: 'invitation_preparation'
+      description: 'Client invitation preparation & intake completeness evaluation'
+      skills:
+          - 'client-invitation-audit'
+          - 'copywriting-es'
+      workflows:
+          - '.agent/workflows/invitation-preparation.md'
+      docs:
+          - 'docs/core/invitation-preparation-contract.md'
 
-  - task_type: "invitation_publication"
-    description: "Publishing or managed lifecycle updates for client invitations"
-    rules:
-      - ".agent/rules/invitation-production.md"
-      - ".agent/rules/intake-publishing.md"
-    workflows:
-      - ".agent/workflows/managed-invitation-lifecycle.md"
-    docs:
-      - "docs/core/invitation-creation-contract.md"
-      - "docs/domains/intake/production-flow.md"
+    - task_type: 'invitation_publication'
+      description: 'Publishing or managed lifecycle updates for client invitations'
+      rules:
+          - '.agent/rules/invitation-production.md'
+          - '.agent/rules/intake-publishing.md'
+      workflows:
+          - '.agent/workflows/managed-invitation-lifecycle.md'
+      docs:
+          - 'docs/core/invitation-creation-contract.md'
+          - 'docs/domains/intake/production-flow.md'
+          - 'docs/domains/intake/promote-cheatsheet.md'
+          - 'docs/core/content-parity-rsvp-isolation.md'
+          - 'docs/domains/database/cheatsheets/README.md'
 
-  - task_type: "staged_code_review"
-    description: "Simplification-first code review of staged Git changes"
-    skills:
-      - "staged-code-review"
-      - "staged-code-review-apply"
+    - task_type: 'staged_code_review'
+      description: 'Simplification-first code review of staged Git changes'
+      skills:
+          - 'staged-code-review'
+          - 'staged-code-review-apply'
 
-  - task_type: "graphify_audit"
-    description: "Optional architecture-coupling audit using Graphify leads"
-    rules:
-      - ".agent/rules/graphify-ops.md"
+    - task_type: 'graphify_audit'
+      description: 'Optional architecture-coupling audit using Graphify leads'
+      rules:
+          - '.agent/rules/graphify-ops.md'
 
-  - task_type: "planning"
-    description: "Multi-session or complex task planning and goal sequencing"
-    rules:
-      - ".agent/rules/workflow.md"
-    workflows:
-      - ".agent/workflows/plan-authoring.md"
-    docs:
-      - ".agent/plans/README.md"
-
+    - task_type: 'planning'
+      description: 'Multi-session or complex task planning and goal sequencing'
+      rules:
+          - '.agent/rules/workflow.md'
+      workflows:
+          - '.agent/workflows/plan-authoring.md'
+      docs:
+          - '.agent/plans/README.md'

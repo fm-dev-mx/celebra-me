@@ -365,6 +365,6 @@ use `pnpm db:prod:migrate`. Hosted candidates require an explicit rollout regist
 
 **Fresh bootstrap**: A `supabase/baseline.sql` schema dump can be generated via
 `supabase db dump --schema public > supabase/baseline.sql` for environments that should not replay
-all 39 migrations.
+the full migration history. Never freeze hosted applied/pending counts in docs — read live audits.
 
 For refreshes, backups, and production migration operations, see `docs/database-workflow.md`.

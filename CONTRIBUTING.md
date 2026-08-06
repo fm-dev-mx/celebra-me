@@ -77,7 +77,8 @@ Please follow these coding standards:
 
 To set up the development environment:
 
-1. Install Node.js `22.12.0` or any Node.js `22.x` release compatible with `>=22.12.0 <23`.
+1. Install Node.js matching `package.json` `engines` (`>=22.12.0 <25`). Prefer a current Node 22 LTS
+   release.
 2. Use pnpm as the package manager. Install pnpm if you don't have it installed:
 
    ```bash
@@ -118,8 +119,9 @@ Before submitting a pull request, ensure:
    pnpm run ci
    ```
 
-   This command is the authoritative pre-PR gate for contributor work. It runs type-checking,
-   ESLint, changed-file Stylelint, UI governance, event parity, unit tests, and e2e checks.
+   This command is the authoritative pre-PR gate for contributor work. It matches the `ci` script in
+   `package.json` (type-check, structure, lint, styles, governance, event parity, PII, invitation
+   preparation, unit tests, e2e CI slice, production build, and Git-safety check).
 
 2. **Coverage is maintained** — New code should have tests where appropriate. Run coverage to
    verify:

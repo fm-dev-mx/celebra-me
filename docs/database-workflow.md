@@ -6,7 +6,9 @@ authorization boundaries).
 **Does not own:** schema ERD or entity semantics — those live in
 [`docs/domains/database/overview.md`](domains/database/overview.md). Content promote/mirror vs RSVP
 isolation lives in
-[`docs/core/content-parity-rsvp-isolation.md`](core/content-parity-rsvp-isolation.md). See the
+[`docs/core/content-parity-rsvp-isolation.md`](core/content-parity-rsvp-isolation.md). Concise
+operator cards live in
+[`docs/domains/database/cheatsheets/README.md`](domains/database/cheatsheets/README.md). See the
 Ownership Matrix in [`.agent/index.md`](../.agent/index.md).
 
 ## Principle
@@ -219,11 +221,11 @@ Definition → normalized release → Local → immutable package → Preview �
 | `pnpm invitation:content-parity`   | Read-only **semantic** content parity check                  | Compares Local/Preview/Production          |
 | `pnpm dbs` / `pnpm dbs --compact`  | Read-only managed **status** (content + schema classifiers)  | Local / Preview / Production               |
 
-### `pnpm db:sync` (canonical content orchestration)
+### `pnpm db:sync` (automation/diagnostic content orchestration)
 
-`pnpm db:sync` is the normal entry point for invitation **content** synchronization diagnosis,
-comparison, planning, and delegated apply. It is a thin facade over existing engines and does
-**not** implement a second mirror, Storage, approval, backup, promote, or migration engine.
+`pnpm db:sync` is the structured automation entry point for invitation **content** synchronization
+diagnosis, comparison, planning, and delegated apply. It is a thin facade over existing engines and
+does **not** implement a second mirror, Storage, approval, backup, promote, or migration engine.
 
 | Mode       | Mutation?            | Purpose                                                      |
 | ---------- | -------------------- | ------------------------------------------------------------ |
