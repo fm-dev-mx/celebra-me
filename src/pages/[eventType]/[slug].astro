@@ -129,6 +129,7 @@ try {
 					sectionStyles: resolution.rawContent?.sectionStyles as
 						| { footer?: { variant?: ThemePreset } }
 						| undefined,
+					screenshotMode,
 				});
 				pagePrepareDur = performance.now() - prepareStart;
 			}

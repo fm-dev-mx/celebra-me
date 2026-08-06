@@ -1181,6 +1181,18 @@
 		color: var(--daniela-cream);
 	}
 
+	// Screenshot tooling interlock: keeps the personalized-access wrapper visible from the moment
+	// html[data-screenshot] is set until normalizeForAudit adds .is-visible to every motion wrapper
+	// (scripts/screenshot/page-preparation.ts). Do not drop :not(.is-visible): it preserves
+	// specificity parity with the hidden-state rules in _motion-system.scss, which otherwise win.
+	html[data-screenshot]
+		#invitation-sections-container
+		> .invitation-section-wrapper[data-section-kind='personalized-access'].has-motion:not(
+			.is-visible
+		) {
+		opacity: 100%;
+	}
+
 	.invitation-section-wrapper[data-section-kind='personalized-access'] {
 		padding-block-end: clamp(1.5rem, 3.5vw, 2.5rem);
 	}

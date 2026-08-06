@@ -120,8 +120,17 @@ export function buildPageContextFromViewModel(input: {
 	eventType: string;
 	sectionStyles?: { footer?: { variant?: ThemePreset } };
 	isPreview?: boolean;
+	screenshotMode?: boolean;
 }): InvitationPageContext {
-	const { viewModel, slug, guestContext, eventType, sectionStyles, isPreview = false } = input;
+	const {
+		viewModel,
+		slug,
+		guestContext,
+		eventType,
+		sectionStyles,
+		isPreview = false,
+		screenshotMode = false,
+	} = input;
 	const renderViewModel = applyLocationPolicy({
 		viewModel,
 		isConfirmedGuest: guestContext?.guest.attendanceStatus === 'confirmed',
@@ -149,7 +158,7 @@ export function buildPageContextFromViewModel(input: {
 	const heroTime = pickHeroValue(sections, 'time');
 	const heroVenueName = pickHeroValue(sections, 'venueName');
 
-	const isDemoPreview = isDemo && !guestContext;
+	const isDemoPreview = (isDemo || screenshotMode) && !guestContext;
 	const confirmed = guestContext?.guest.attendanceStatus === 'confirmed';
 	const shouldRedactEnvelopeLocationTeaser = shouldRedactEnvelopeTeaser({
 		originalLocation: viewModel.sections.location,
