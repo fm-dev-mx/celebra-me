@@ -80,7 +80,9 @@ function isTty(): boolean {
 
 async function runInteractiveWizard(base: OrchestrateDbSyncInput): Promise<DbSyncResult> {
 	writeHuman(
-		'db:sync interactivo (solo lectura hasta que el orquestador autorice una mutación).',
+		'db:sync es la fachada de automatización/diagnóstico. ' +
+			'Mutaciones humanas preferidas: invitation:update / invitation:promote / db:preview:sync-invitations. ' +
+			'Asistente TTY en ventana de compatibilidad (Cancelar por defecto).',
 	);
 	const diagnose = await orchestrateDbSync({ ...base, mode: 'diagnose' });
 	formatResultHuman(diagnose);

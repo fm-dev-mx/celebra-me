@@ -29,7 +29,13 @@ export interface DbSyncCliArgs {
 }
 
 export function printDbSyncHelp(): void {
-	process.stderr.write(`pnpm db:sync — invitation database synchronization orchestration facade
+	process.stderr.write(`pnpm db:sync — automation/diagnostic content orchestration facade
+
+Audience:
+  Primary: agents/automation (diagnose/compare/plan + headless apply with --expected-plan).
+  Human mutation CLIs remain authoritative: invitation:update, invitation:promote,
+  db:preview:sync-invitations. Interactive TTY wizard is a compatibility window
+  (Cancelar default); prefer explicit --mode flags for scripts.
 
 Modes:
   diagnose   Read-only availability, schema lifecycle, and readiness (default)

@@ -413,6 +413,12 @@ export async function orchestrateApply(input: OrchestrateDbSyncInput): Promise<D
 		planResult.ok = false;
 		return planResult;
 	}
+	if (!planResult.ok || planResult.status === 'PLAN_BLOCKED') {
+		planResult.mode = 'apply';
+		planResult.ok = false;
+		planResult.status = 'BLOCKED';
+		return planResult;
+	}
 
 	try {
 		// Reviewed plan TTL binds interactive hold-time; rebuild must still match identity.

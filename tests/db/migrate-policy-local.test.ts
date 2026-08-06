@@ -1,8 +1,8 @@
 import { describe, expect, it, jest } from '@jest/globals';
-import { verifyPersistentLocalTarget } from '../../scripts/db/apply-local-migrations.ts';
+import { verifyPersistentLocalTarget } from '../../scripts/db/migrate-policy-local.ts';
 import { classifyDbTarget } from '../../scripts/db/db-guard.ts';
 
-describe('apply-local-migrations adapter and safety guards', () => {
+describe('persistent-local migrate safety guards', () => {
 	it('rejects remote, Preview, Production, or pooler URLs', () => {
 		const previewUrl =
 			'postgresql://postgres:pass@db.example-preview.supabase.co:5432/postgres';

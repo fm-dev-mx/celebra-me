@@ -19,7 +19,7 @@ describe('Preview perimeter helpers', () => {
 		).toThrow(/Refusing PREVIEW_DB_URL|Cannot extract Supabase project reference/);
 	});
 
-	it('preview migrate policy imports assertPreviewDbUrl and clean-HEAD override', () => {
+	it('preview migrate policy uses exact perimeter and clean-HEAD release identity', () => {
 		const source = readFileSync(
 			resolve(process.cwd(), 'scripts/db/migrate-policy-preview.ts'),
 			'utf8',
@@ -30,26 +30,20 @@ describe('Preview perimeter helpers', () => {
 		expect(source).not.toMatch(/CELEBRA_TARGET_RELEASE_SHA/);
 	});
 
-	it('local migrate alias never injects --apply', () => {
-		const source = readFileSync(
-			resolve(process.cwd(), 'scripts/db/apply-local-migrations.ts'),
-			'utf8',
+	it('local and preview migrate aliases invoke the canonical migrate CLI', () => {
+		const pkg = JSON.parse(readFileSync(resolve(process.cwd(), 'package.json'), 'utf8')) as {
+			scripts: Record<string, string>;
+		};
+		expect(pkg.scripts['db:local:migrate']).toBe(
+			'tsx scripts/db/migrate-cli.ts --target local',
 		);
-		expect(source).not.toMatch(/injectLegacyApply/);
-		expect(source).not.toMatch(/DEPRECATED: pnpm db:local:migrate defaults to --apply/);
-		expect(source).toMatch(/--target',\s*'local'/);
-	});
-
-	it('registers preview_approval_artifacts expand migration', () => {
-		const registry = JSON.parse(
-			readFileSync(
-				resolve(process.cwd(), 'supabase/migration-rollout-registry.json'),
-				'utf8',
-			),
-		) as { migrations: Record<string, { phase: string; provides?: string[] }> };
-		expect(registry.migrations['20260806120000']).toMatchObject({
-			phase: 'expand',
-			provides: expect.arrayContaining(['preview_approval_artifacts']),
-		});
+		expect(pkg.scripts['db:preview:migrate']).toBe(
+			'tsx scripts/db/migrate-cli.ts --target preview',
+		);
+		expect(pkg.scripts['db:prod:migrate']).toBe(
+			'tsx scripts/db/migrate-cli.ts --target production',
+		);
+		expect(pkg.scripts['db:local:migrate']).not.toMatch(/apply-local-migrations/);
+		expect(pkg.scripts['db:preview:migrate']).not.toMatch(/push-preview-migrations/);
 	});
 });
