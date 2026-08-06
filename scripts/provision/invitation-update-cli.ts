@@ -773,6 +773,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 									updateScope,
 									conflictResolutions,
 									rekeyFrom,
+									ownerUserId,
 								}
 							: {
 									packageData: confirmationPackage,
@@ -784,6 +785,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 									updateScope,
 									conflictResolutions,
 									rekeyFrom,
+									ownerUserId,
 								};
 						const result = await runImportEngine(engineOptions);
 						assertEngineResult(result, undefined, 'Preview', false);
@@ -1084,14 +1086,6 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 				(s, tp) => s + tp.expectedStorageMutations.overwrites,
 				0,
 			),
-			affectedTargets: targetPlans
-				.filter(
-					(tp) =>
-						tp.expectedDatabaseWrites.deletes > 0 ||
-						tp.expectedStorageMutations.deletes > 0 ||
-						tp.expectedStorageMutations.overwrites > 0,
-				)
-				.map((tp) => tp.target),
 		};
 
 		// ── CONFIRMATION GATES (after plan review; single auth per operation) ──────
@@ -1283,6 +1277,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 						updateScope,
 						conflictResolutions,
 						rekeyFrom,
+						ownerUserId,
 					});
 					const appliedPlan = result.plan;
 					if (!appliedPlan) {

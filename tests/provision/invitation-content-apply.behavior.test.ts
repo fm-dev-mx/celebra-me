@@ -87,6 +87,54 @@ describe('invitation-content-apply behavioral sequencing', () => {
 		expect(result).toMatchObject({ applied: true });
 	});
 
+	it('forwards ownerUserId through preview dry-run and supplied-plan apply', async () => {
+		const ownerUserId = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
+		const packageData = {
+			invitation: { slug: 'demo', eventType: 'boda' },
+			packageHash: 'hash',
+		};
+		mockRunImportEngine.mockResolvedValueOnce({
+			plan: { planId: 'preview-owner-plan' },
+			dryRun: true,
+		});
+		mockRunPreviewApply.mockResolvedValueOnce({
+			plan: { planId: 'preview-owner-plan' },
+			applied: true,
+		});
+		const { planAndApplyPreviewContent } =
+			await import('../../scripts/provision/invitation-content-apply.ts');
+
+		await planAndApplyPreviewContent({
+			packageData: packageData as never,
+			targetDbUrl: 'postgresql://postgres:secret@db.preview.supabase.co:5432/postgres',
+			apply: true,
+			ownerUserId,
+		});
+		expect(mockRunImportEngine).toHaveBeenCalledWith(
+			expect.objectContaining({ ownerUserId, dryRun: true, target: 'preview' }),
+		);
+		expect(mockRunPreviewApply).toHaveBeenCalledWith(
+			expect.objectContaining({ ownerUserId, plan: { planId: 'preview-owner-plan' } }),
+		);
+
+		mockRunPreviewApply.mockClear();
+		mockRunPreviewApply.mockResolvedValueOnce({
+			plan: { planId: 'preview-owner-plan' },
+			applied: true,
+		});
+		await planAndApplyPreviewContent({
+			packageData: packageData as never,
+			targetDbUrl: 'postgresql://postgres:secret@db.preview.supabase.co:5432/postgres',
+			apply: true,
+			plan: { planId: 'preview-owner-plan' } as never,
+			ownerUserId,
+		});
+		expect(mockRunImportEngine).toHaveBeenCalledTimes(1);
+		expect(mockRunPreviewApply).toHaveBeenCalledWith(
+			expect.objectContaining({ ownerUserId, plan: { planId: 'preview-owner-plan' } }),
+		);
+	});
+
 	it('blocks non-CURRENT schema without invoking apply engines', async () => {
 		const { assertContentSchemaCurrent } =
 			await import('../../scripts/provision/invitation-content-apply.ts');

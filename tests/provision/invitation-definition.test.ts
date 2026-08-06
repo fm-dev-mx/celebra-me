@@ -135,6 +135,144 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 			).toThrow(/hostLoginAlias/);
 		});
 
+		it('throws on non-v4 managedIdentityId', () => {
+			expect(() =>
+				defineInvitation({
+					slug: 'test-invitation',
+					managedIdentityId: 'aaaaaaaa-bbbb-1ccc-8ddd-eeeeeeeeeeee',
+					createdAt: '2026-07-20T00:00:00.000Z',
+					lifecycle: 'in_progress',
+					deliveryScope: 'content-and-assets',
+					eventType: 'xv',
+					title: 'Title',
+					clientName: 'Client',
+					hostLoginAlias: 'client_name',
+					baseDemoId: 'demo',
+					themeId: 'theme',
+					visualProfileId: 'profile',
+					eventTiming: { localDateTime: '', timeZone: '', startsAtUtc: '' },
+					assets: [],
+					buildPublishedContent: () => ({}),
+				}),
+			).toThrow(/managedIdentityId/);
+		});
+
+		it('throws on non-UTC createdAt', () => {
+			expect(() =>
+				defineInvitation({
+					slug: 'test-invitation',
+					managedIdentityId: TEST_MANAGED_IDENTITY_ID,
+					createdAt: '2026-07-20T00:00:00',
+					lifecycle: 'in_progress',
+					deliveryScope: 'content-and-assets',
+					eventType: 'xv',
+					title: 'Title',
+					clientName: 'Client',
+					hostLoginAlias: 'client_name',
+					baseDemoId: 'demo',
+					themeId: 'theme',
+					visualProfileId: 'profile',
+					eventTiming: { localDateTime: '', timeZone: '', startsAtUtc: '' },
+					assets: [],
+					buildPublishedContent: () => ({}),
+				}),
+			).toThrow(/createdAt/);
+		});
+
+		it('throws on invalid lifecycle', () => {
+			expect(() =>
+				defineInvitation({
+					slug: 'test-invitation',
+					managedIdentityId: TEST_MANAGED_IDENTITY_ID,
+					createdAt: '2026-07-20T00:00:00.000Z',
+					lifecycle: 'draft' as never,
+					deliveryScope: 'content-and-assets',
+					eventType: 'xv',
+					title: 'Title',
+					clientName: 'Client',
+					hostLoginAlias: 'client_name',
+					baseDemoId: 'demo',
+					themeId: 'theme',
+					visualProfileId: 'profile',
+					eventTiming: { localDateTime: '', timeZone: '', startsAtUtc: '' },
+					assets: [],
+					buildPublishedContent: () => ({}),
+				}),
+			).toThrow(/lifecycle/);
+		});
+
+		it('throws when previousSlugs includes current slug or duplicates', () => {
+			expect(() =>
+				defineInvitation({
+					slug: 'test-invitation',
+					managedIdentityId: TEST_MANAGED_IDENTITY_ID,
+					previousSlugs: ['test-invitation'],
+					createdAt: '2026-07-20T00:00:00.000Z',
+					lifecycle: 'in_progress',
+					deliveryScope: 'content-and-assets',
+					eventType: 'xv',
+					title: 'Title',
+					clientName: 'Client',
+					hostLoginAlias: 'client_name',
+					baseDemoId: 'demo',
+					themeId: 'theme',
+					visualProfileId: 'profile',
+					eventTiming: { localDateTime: '', timeZone: '', startsAtUtc: '' },
+					assets: [],
+					buildPublishedContent: () => ({}),
+				}),
+			).toThrow(/previousSlugs must not include the current slug/);
+			expect(() =>
+				defineInvitation({
+					slug: 'test-invitation',
+					managedIdentityId: TEST_MANAGED_IDENTITY_ID,
+					previousSlugs: ['old-slug', 'old-slug'],
+					createdAt: '2026-07-20T00:00:00.000Z',
+					lifecycle: 'in_progress',
+					deliveryScope: 'content-and-assets',
+					eventType: 'xv',
+					title: 'Title',
+					clientName: 'Client',
+					hostLoginAlias: 'client_name',
+					baseDemoId: 'demo',
+					themeId: 'theme',
+					visualProfileId: 'profile',
+					eventTiming: { localDateTime: '', timeZone: '', startsAtUtc: '' },
+					assets: [],
+					buildPublishedContent: () => ({}),
+				}),
+			).toThrow(/duplicate/);
+		});
+
+		it('throws on absolute or traversal asset paths', () => {
+			expect(() =>
+				defineInvitation({
+					slug: 'test-invitation',
+					managedIdentityId: TEST_MANAGED_IDENTITY_ID,
+					createdAt: '2026-07-20T00:00:00.000Z',
+					lifecycle: 'in_progress',
+					deliveryScope: 'content-and-assets',
+					eventType: 'xv',
+					title: 'Title',
+					clientName: 'Client',
+					hostLoginAlias: 'client_name',
+					baseDemoId: 'demo',
+					themeId: 'theme',
+					visualProfileId: 'profile',
+					eventTiming: { localDateTime: '', timeZone: '', startsAtUtc: '' },
+					assets: [
+						{
+							key: 'hero',
+							relativePath: '../escape.jpg',
+							displayName: 'Hero',
+							alt: 'Alt',
+						},
+					],
+					buildPublishedContent: () => ({}),
+				}),
+			).toThrow(/relative path/);
+		});
+
 		it('rejects environment-local asset references in content', () => {
 			expect(() =>
 				defineInvitation({
@@ -193,6 +331,25 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 			expect(() => getInvitationDefinition('unknown-slug')).toThrow(
 				/Invitation definition with slug "unknown-slug" not found/i,
 			);
+		});
+
+		it('future invitations keep unique managedIdentityId and hostLoginAlias', () => {
+			const list = listInvitationDefinitions();
+			const identities = list.map((d) => d.managedIdentityId);
+			const aliases = list.map((d) => d.hostLoginAlias);
+			expect(new Set(identities).size).toBe(identities.length);
+			expect(new Set(aliases).size).toBe(aliases.length);
+			for (const def of list) {
+				expect(def.slug).not.toMatch(new RegExp(`^${def.eventType}-`));
+				expect(def.managedIdentityId).toMatch(
+					/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+				);
+				expect(def.createdAt.endsWith('Z')).toBe(true);
+				expect(['in_progress', 'published']).toContain(def.lifecycle);
+				expect(['content-only', 'content-and-assets', 'assets-only']).toContain(
+					def.deliveryScope,
+				);
+			}
 		});
 	});
 

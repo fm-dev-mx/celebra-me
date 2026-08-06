@@ -115,39 +115,25 @@ export async function planAndApplyPreviewContent(
 		plan?: OperationalPlan;
 	} & ContentApplyOptions,
 ): Promise<ImportEngineResult & { plan?: OperationalPlan }> {
-	if (input.apply && input.plan) {
-		return runPreviewApply({
-			packageData: input.packageData,
-			targetDbUrl: input.targetDbUrl,
-			plan: input.plan,
-			assetPolicy: input.assetPolicy,
-			pruneAssets: input.pruneAssets,
-			updateScope: input.updateScope,
-			conflictResolutions: input.conflictResolutions,
-			rekeyFrom: input.rekeyFrom,
-		});
-	}
-	const dry = await runImportEngine({
+	const shared = {
 		packageData: input.packageData,
-		target: 'preview',
 		targetDbUrl: input.targetDbUrl,
-		dryRun: true,
 		assetPolicy: input.assetPolicy,
 		pruneAssets: input.pruneAssets,
 		updateScope: input.updateScope,
 		conflictResolutions: input.conflictResolutions,
 		rekeyFrom: input.rekeyFrom,
+		ownerUserId: input.ownerUserId,
+	};
+	if (input.apply && input.plan) {
+		return runPreviewApply({ ...shared, plan: input.plan });
+	}
+	const dry = await runImportEngine({
+		...shared,
+		target: 'preview',
+		dryRun: true,
 	});
 	if (!input.apply) return dry;
 	if (!dry.plan) throw new Error('PREVIEW_PLAN_MISSING');
-	return runPreviewApply({
-		packageData: input.packageData,
-		targetDbUrl: input.targetDbUrl,
-		plan: dry.plan,
-		assetPolicy: input.assetPolicy,
-		pruneAssets: input.pruneAssets,
-		updateScope: input.updateScope,
-		conflictResolutions: input.conflictResolutions,
-		rekeyFrom: input.rekeyFrom,
-	});
+	return runPreviewApply({ ...shared, plan: dry.plan });
 }

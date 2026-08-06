@@ -70,10 +70,7 @@ import { operationIdFromPlanId } from '../../src/lib/intake/mutations/outcome.ts
 import { sortPathPolicy } from './conflict-resolutions.ts';
 import { verifySupabaseApiCredential } from './supabase-credential-verification.ts';
 import { assertManagedContentSchema } from './managed-content-validation.ts';
-import {
-	decideRekeyIdentity,
-	resolveIdentityWithoutRekey,
-} from './managed-identity-guards.ts';
+import { decideRekeyIdentity, resolveIdentityWithoutRekey } from './managed-identity-guards.ts';
 
 export interface ImportEngineOptions {
 	packagePath?: string;
@@ -691,6 +688,68 @@ interface DatabaseUpsertParams {
 	rekeyFrom?: string;
 }
 
+export type HostedMutationFlags = {
+	shouldUpsertInv: boolean;
+	shouldUpsertDraft: boolean;
+	shouldPublish: boolean;
+	shouldUpsertEvent: boolean;
+};
+
+/**
+ * Decide which hosted DB writes a managed import must perform.
+ * Publish is independent of draft content identity: an approved draft still needs
+ * status reset before publish_invitation_atomic when published content diverges.
+ */
+export function resolveHostedMutationFlags(input: {
+	existingInv: unknown | null;
+	existingDraft: unknown | null;
+	existingPub: unknown | null;
+	isInvMetadataIdentical: boolean;
+	isDraftIdentical: boolean;
+	isPubIdentical: boolean;
+	isEventAndMemberIdentical: boolean;
+	rekeyFrom?: string | null;
+}): HostedMutationFlags {
+	return {
+		shouldUpsertInv:
+			!input.isInvMetadataIdentical || !input.existingInv || Boolean(input.rekeyFrom),
+		shouldUpsertDraft: !input.isDraftIdentical || !input.existingDraft,
+		shouldPublish: !input.isPubIdentical || !input.existingPub,
+		shouldUpsertEvent: !input.isEventAndMemberIdentical || Boolean(input.rekeyFrom),
+	};
+}
+
+/**
+ * Reset draft status to 'draft' and return the revision used by publish_invitation_atomic.
+ * Prior successful publishes leave status='approved', which the RPC rejects.
+ */
+export function prepareDraftForPublication(
+	targetDbUrl: string,
+	invitationId: string,
+): { draftId: string; draftUpdatedAt: string } {
+	runPsql(
+		`update public.invitation_content_drafts set status = 'draft', updated_at = now() where invitation_project_id = '${invitationId}'::uuid and deleted_at is null;`,
+		targetDbUrl,
+	);
+	const selectDraftRes = runPsql(
+		`select id, updated_at::text from public.invitation_content_drafts where invitation_project_id = '${invitationId}'::uuid and deleted_at is null order by updated_at desc limit 1;`,
+		targetDbUrl,
+		{ tuplesOnly: true },
+	);
+	const draftParts = selectDraftRes.stdout
+		.trim()
+		.split('|')
+		.map((s) => s.trim());
+	const draftId = draftParts[0];
+	const draftUpdatedAt = draftParts[1]?.split('\n')[0]?.trim();
+	if (!draftId || !draftUpdatedAt) {
+		throw new Error(
+			`PUBLISH_DRAFT_MISSING: no invitation_content_drafts row for invitation ${invitationId}`,
+		);
+	}
+	return { draftId, draftUpdatedAt };
+}
+
 /** Revalidates the draft revision immediately before an apply phase can write. */
 export function assertDraftRevisionUnchanged(
 	targetDbUrl: string,
@@ -855,20 +914,11 @@ function executeDatabaseUpserts(params: DatabaseUpsertParams): number {
 	}
 
 	if (shouldPublish) {
-		const selectDraftRes = runPsql(
-			`select id, updated_at::text from public.invitation_content_drafts where invitation_project_id = '${targetInvitationId}'::uuid and deleted_at is null limit 1;`,
+		const { draftId, draftUpdatedAt } = prepareDraftForPublication(
 			targetDbUrl,
-			{ tuplesOnly: true },
+			targetInvitationId,
 		);
-		const draftParts = selectDraftRes.stdout
-			.trim()
-			.split('|')
-			.map((s) => s.trim());
-		executePublicationRpcCall(
-			params,
-			draftParts[0] || randomUUID(),
-			draftParts[1]?.split('\n')[0]?.trim() || new Date().toISOString(),
-		);
+		executePublicationRpcCall(params, draftId, draftUpdatedAt);
 		count++;
 	}
 
@@ -880,7 +930,10 @@ function executeDatabaseUpserts(params: DatabaseUpsertParams): number {
 			targetDbUrl,
 			{ tuplesOnly: true, throwOnError: false },
 		);
-		const linkedEventId = linkedEventRes.stdout.trim().split(/[\r\n\s]+/)[0]?.trim();
+		const linkedEventId = linkedEventRes.stdout
+			.trim()
+			.split(/[\r\n\s]+/)[0]
+			?.trim();
 		let cleanEventId = linkedEventId;
 		if (linkedEventId) {
 			runPsql(
@@ -893,7 +946,10 @@ function executeDatabaseUpserts(params: DatabaseUpsertParams): number {
 				targetDbUrl,
 				{ tuplesOnly: true },
 			);
-			cleanEventId = eventRes.stdout.trim().split(/[\r\n\s]+/)[0]?.trim();
+			cleanEventId = eventRes.stdout
+				.trim()
+				.split(/[\r\n\s]+/)[0]
+				?.trim();
 		}
 		if (cleanEventId) {
 			runPsql(
@@ -1413,8 +1469,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 	const rekeyFrom = options.rekeyFrom?.trim();
 	let existingInvitationRow: Record<string, unknown> | null;
 	if (rekeyFrom) {
-		const sourceByOldSlug =
-			activeRows.find((row) => String(row.slug) === rekeyFrom) ?? null;
+		const sourceByOldSlug = activeRows.find((row) => String(row.slug) === rekeyFrom) ?? null;
 		const collisionByTargetSlug =
 			activeRows.find(
 				(row) =>
@@ -1462,7 +1517,8 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		});
 		if (!decision.ok) throw new Error(decision.message);
 		existingInvitationRow =
-			activeRows.find((row) => String(row.id) === String(decision.invitationId ?? '')) ?? null;
+			activeRows.find((row) => String(row.id) === String(decision.invitationId ?? '')) ??
+			null;
 	}
 	const serviceRoleKeyForHost =
 		options.serviceRoleKey ||
@@ -1604,7 +1660,8 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			const existingPrevious = [...(row.previous_slugs ?? [])].sort().join('\0');
 			const desiredPrevious = [...previousSlugs].sort().join('\0');
 			needsProvenanceIdentitySync =
-				row.managed_identity_id !== managedIdentityId || existingPrevious !== desiredPrevious;
+				row.managed_identity_id !== managedIdentityId ||
+				existingPrevious !== desiredPrevious;
 		} catch {
 			needsProvenanceIdentitySync = true;
 		}
@@ -2002,11 +2059,17 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			existingInv: drift.existingInv,
 			existingDraft: drift.existingDraft,
 			existingPub: drift.existingPub,
-			shouldUpsertInv: !drift.isInvMetadataIdentical || !drift.existingInv || Boolean(rekeyFrom),
+			...resolveHostedMutationFlags({
+				existingInv: drift.existingInv,
+				existingDraft: drift.existingDraft,
+				existingPub: drift.existingPub,
+				isInvMetadataIdentical: drift.isInvMetadataIdentical,
+				isDraftIdentical: drift.isDraftIdentical,
+				isPubIdentical: drift.isPubIdentical,
+				isEventAndMemberIdentical: drift.isEventAndMemberIdentical,
+				rekeyFrom,
+			}),
 			assetsForDbUpsert: [...assetsToUpload, ...assetsToUpsertDbOnly],
-			shouldUpsertDraft: !drift.isDraftIdentical || !drift.existingDraft,
-			shouldPublish: !drift.isPubIdentical || !drift.existingPub,
-			shouldUpsertEvent: !drift.isEventAndMemberIdentical || Boolean(rekeyFrom),
 			assetRefs,
 			operationId: activeOperationId,
 			rekeyFrom,

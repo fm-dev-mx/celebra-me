@@ -105,6 +105,35 @@ describe('Preview apply adapter integration', () => {
 		);
 	});
 
+	it('forwards ownerUserId override into the import engine', async () => {
+		const ownerUserId = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
+		const runEngine = jest.fn(async (...args: [ImportEngineOptions]) => {
+			void args;
+			return result();
+		});
+		const createPendingApproval: NonNullable<
+			Parameters<typeof runPreviewApply>[0]['createPendingApproval']
+		> = jest.fn((input) => {
+			void input;
+			return { packageHash: 'a'.repeat(64) } as PreviewApprovalArtifact;
+		});
+		await runPreviewApply({
+			packageData: pkg(),
+			targetDbUrl: 'postgresql://redacted@preview.invalid/db',
+			plan: plan(),
+			ownerUserId,
+			runEngine,
+			createPendingApproval,
+		});
+		expect(runEngine).toHaveBeenCalledWith(
+			expect.objectContaining({
+				target: 'preview',
+				dryRun: false,
+				ownerUserId,
+			}),
+		);
+	});
+
 	it('fails closed when the engine receipt does not match the confirmed plan', async () => {
 		await expect(
 			runPreviewApply({
