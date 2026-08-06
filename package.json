@@ -138,7 +138,7 @@
         "zod": "^4.4.3"
     },
     "devDependencies": {
-        "@astrojs/check": "^0.9.9",
+        "@astrojs/check": "^0.9.10",
         "@astrojs/react": "6.0.1",
         "@astrojs/sitemap": "^3.7.3",
         "@commitlint/cli": "^21.2.1",
