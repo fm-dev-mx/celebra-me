@@ -125,8 +125,8 @@ jest.mock('../../scripts/provision/invitation-promote.ts', () => ({
 	runPromotionApply: jest.fn(),
 }));
 
-jest.mock('../../scripts/db/owner-production-apply.ts', () => ({
-	requireOwnerProductionApply: jest.fn(),
+jest.mock('../../scripts/provision/invitation-promotion-orchestrator.ts', () => ({
+	orchestrateInvitationPromotion: jest.fn(),
 }));
 
 jest.mock('../../scripts/provision/invitation-promote-cli.ts', () => ({

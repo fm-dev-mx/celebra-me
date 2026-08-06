@@ -17,7 +17,6 @@ import {
 	gatesForDirection,
 } from './db-sync-plan.ts';
 import {
-	DB_SYNC_DIRECTION_LABELS,
 	emptyResult,
 	type DbSyncDirection,
 	type DbSyncDrift,
@@ -41,10 +40,13 @@ import { resolveInvitationPackageInput } from '../provision/invitation-package-i
 import { applyLocalInvitation } from '../provision/apply-local-invitation.ts';
 import { runImportEngine } from '../provision/invitation-import-engine.ts';
 import { runPreviewApply } from '../provision/preview-apply.ts';
-import { runPromotionPreflight, runPromotionApply } from '../provision/invitation-promote.ts';
-import { requireOwnerProductionApply } from './owner-production-apply.ts';
+import { runPromotionPreflight } from '../provision/invitation-promote.ts';
 import { authorizePreviewWriteApply } from '../provision/preview-write-auth.ts';
 import { toPublicPromotionReport } from '../provision/invitation-promote-cli.ts';
+import {
+	orchestrateInvitationPromotion,
+	type OrchestrateInvitationPromotionInput,
+} from '../provision/invitation-promotion-orchestrator.ts';
 import type { InvitationPackageData } from '../provision/invitation-package.ts';
 
 export interface OrchestrateDbSyncInput {
@@ -62,7 +64,9 @@ export interface OrchestrateDbSyncInput {
 	now?: Date;
 	runMirror?: typeof runPreviewMirror;
 	authorizePreview?: typeof authorizePreviewWriteApply;
-	requireOwnerApply?: typeof requireOwnerProductionApply;
+	/** Injected into the shared promotion orchestrator (package-to-production only). */
+	requireOwnerApply?: OrchestrateInvitationPromotionInput['requireOwnerApply'];
+	orchestratePromotion?: typeof orchestrateInvitationPromotion;
 }
 
 function redactedRef(env: ContentParityEnvironment): string {
@@ -303,7 +307,8 @@ async function buildPlanForDirection(
 		const preflight = await runPromotionPreflight({
 			packageData,
 			backupManifestPath: input.backupManifest ?? undefined,
-			requireBackup: true,
+			// Plan is read-only; apply captures/revalidates via orchestrateInvitationPromotion.
+			requireBackup: false,
 			getProductionDbUrl: getProdDbUrl,
 		});
 		enginePlanId = preflight.engineResult?.plan.planId;
@@ -491,53 +496,15 @@ export async function orchestrateApply(input: OrchestrateDbSyncInput): Promise<D
 		}
 
 		if (direction === 'package-to-production') {
-			const preflight = await runPromotionPreflight({
+			const report = await (input.orchestratePromotion ?? orchestrateInvitationPromotion)({
 				packageData,
 				backupManifestPath: input.backupManifest ?? undefined,
-				requireBackup: true,
-				getProductionDbUrl: getProdDbUrl,
-			});
-			if (preflight.status === 'BLOCKED' || preflight.status === 'IN_SYNC') {
-				applyResult.ok = preflight.status === 'IN_SYNC';
-				applyResult.status = preflight.status;
-				if (preflight.status === 'BLOCKED') {
-					applyResult.failures.push(preflight.reason ?? 'BLOCKED');
-				}
-				return applyResult;
-			}
-			if (!preflight.targetDbUrl) {
-				throw new Error('PRODUCTION_TARGET_UNAVAILABLE');
-			}
-			await (input.requireOwnerApply ?? requireOwnerProductionApply)({
-				apply: true,
-				dbUrl: preflight.targetDbUrl,
-				operationType: 'invitation-promote',
-				operationVerb: 'PROMOTE',
-				bindingHex: packageData.packageHash,
-				applyActionLabel: 'Aplicar',
-				summaryTitle: 'Sincronización — promoción Production',
-				summary: [
-					['Operación', DB_SYNC_DIRECTION_LABELS[direction]],
-					['Slug', packageData.invitation.slug],
-					['Respaldo', 'Controles del motor de promoción'],
-					['Autorización', 'Confirmación interactiva del propietario'],
-				],
-				technicalReview: [
-					['Impacto', 'Delega apply de promoción administrada en Production'],
-					['Dirección', DB_SYNC_DIRECTION_LABELS[direction]],
-					['Slug', packageData.invitation.slug],
-					['Plan ID', rebuilt.planId],
-					['Package hash', packageData.packageHash],
-					['Tipo interno', 'invitation-promote'],
-					['Controles', 'TTY · agente bloqueado · release-check · plan exacto · sin token'],
-				],
-			});
-			const report = await runPromotionApply({
-				preflight,
-				packageData,
+				requireOwnerApply: input.requireOwnerApply,
+				quiet: true,
 			});
 			const publicReport = toPublicPromotionReport(report);
-			applyResult.ok = publicReport.status === 'PROMOTED';
+			applyResult.ok =
+				publicReport.status === 'PROMOTED' || publicReport.status === 'IN_SYNC';
 			applyResult.status = publicReport.status;
 			if (!applyResult.ok) {
 				applyResult.failures.push(publicReport.reason ?? publicReport.status);

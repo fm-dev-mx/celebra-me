@@ -251,7 +251,8 @@ describe('db-sync ownership / no second engines', () => {
 		expect(source).toMatch(/EXCLUDED_TABLES/);
 		expect(source).toMatch(/runPreviewMirror/);
 		expect(source).toMatch(/runPromotionPreflight/);
-		expect(source).toMatch(/requireOwnerProductionApply/);
+		expect(source).toMatch(/orchestrateInvitationPromotion/);
+		expect(source).not.toMatch(/requireOwnerProductionApply/);
 		expect(source).not.toMatch(/truncate table public\.events cascade/i);
 		expect(source).not.toMatch(/storage\/v1\/object/);
 		expect(CONTENT_MIRROR_TABLES).toContain('invitations');

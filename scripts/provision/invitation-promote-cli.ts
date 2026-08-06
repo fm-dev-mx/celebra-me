@@ -2,26 +2,40 @@
 /**
  * invitation-promote-cli.ts — Public owner-only Production promotion entrypoint.
  *
- * Agents may run read-only preflight/status. Apply requires interactive owner
- * TTY confirmation via the shared Production owner boundary.
+ * TTY with no args: interactive discovery + guided apply.
+ * Agents may run read-only preflight. Apply requires owner TTY confirmation
+ * via the shared Production owner boundary / promotion orchestrator.
  */
-import { resolveInvitationPackageInput, PackageInputError } from './invitation-package-input.ts';
 import { parseAssetPolicy } from './asset-reconciliation.ts';
-import type { UpdateScope } from './semantic-delta.ts';
 import { loadConflictResolutionsFile } from './conflict-resolutions.ts';
 import { getProdDbUrl } from '../db/db-workflow-lib.ts';
-import { requireOwnerProductionApply } from '../db/owner-production-apply.ts';
 import {
-	runPromotionApply,
+	OperatorError,
+	inquirerTheme,
+	operatorSymbol,
+	renderOperatorError,
+	writeHuman,
+} from '../db/operator-cli-ux.ts';
+import { PackageInputError, resolveInvitationPackageInput } from './invitation-package-input.ts';
+import {
 	runPromotionPreflight,
 	type PromotionApplyReport,
 	type PromotionPreflightReport,
 } from './invitation-promote.ts';
-
-function value(args: string[], flag: string): string | undefined {
-	const index = args.indexOf(flag);
-	return index >= 0 ? args[index + 1] : undefined;
-}
+import {
+	parseInvitationPromoteCliArgs,
+	printInvitationPromoteHelp,
+	type InvitationPromoteCliArgs,
+} from './invitation-promote-cli-args.ts';
+import {
+	discoverInvitationPromotionCandidates,
+	type InvitationPromotionCandidate,
+} from './invitation-promotion-candidates.ts';
+import {
+	formatPromotionPlanCompact,
+	formatPromotionResult,
+} from './invitation-promotion-format.ts';
+import { orchestrateInvitationPromotion } from './invitation-promotion-orchestrator.ts';
 
 /**
  * The preflight report retains the connection string only for the in-process
@@ -34,268 +48,353 @@ export function toPublicPromotionReport(
 	return publicReport;
 }
 
-function printHelp(): void {
-	console.log(`
-pnpm invitation:promote — Owner-only Production managed-content promotion
-=======================================================================
-
-Promotes an exact Preview-approved release to Production using the managed
-import/publication engine. Never runs schema migrations.
-
-Usage:
-  pnpm invitation:promote -- --slug <slug> [--package <path>|--source-dir <path>] [--dry-run]
-  pnpm invitation:promote -- --slug <slug> --package <path> --apply --backup-manifest <path>
-
-Modes:
-  (default) / --dry-run   Read-only preflight (approval, schema, backup, Production divergence)
-  --apply                 Owner-confirmed Production mutation + mandatory post-verification
-  --help                  Show this help
-
-Required:
-  --slug <slug>           Managed invitation identity
-
-Release identity (exactly one source preferred; package recommended for immutable release):
-  --package <path>        Immutable approved package JSON
-  --source-dir <path>     Rebuild from managed definition (still must match approval hashes)
-
-Owner apply gates:
-  --backup-manifest <path>  Verified critical backup manifest (or auto-discover newest under .backups/prod/)
-  pnpm release-check        Valid evidence for the current clean HEAD
-  Interactive TTY           Exact typed confirmation immediately before the first write
-
-Optional:
-  --owner-user-id <uuid>  Owner assertion for new Production invitations
-  --approvals-dir <path>  Extra approval artifact directory (default .agent/tmp/approvals)
-  --asset-policy <name>   Asset reconciliation policy
-  --prune-assets          Allow planned definition-owned asset deletes
-  --update-scope <scope>  content-only | content-and-assets | assets-only
-  --conflict-resolutions <file.json>
-  --json                  Machine-readable output
-  --allow-stale-package   Intentional historical package (still must match approval)
-
-Agent boundaries:
-  Agents may run dry-run/preflight with Production read credentials.
-  Agents must NOT execute --apply. Owner-only confirmation is mandatory.
-  Schema incompatibility → OWNER_ACTION_REQUIRED via pnpm db:prod:migrate (separate workflow).
-`);
+function isTty(): boolean {
+	return Boolean(process.stdin.isTTY && process.stderr.isTTY);
 }
 
-function printHumanReport(report: PromotionPreflightReport | PromotionApplyReport): void {
-	console.log('\n=== invitation:promote ===');
-	console.log(`Status:              ${report.status}`);
-	if (report.blockCode) console.log(`Block code:          ${report.blockCode}`);
-	if (report.reason) console.log(`Reason:              ${report.reason}`);
-	console.log(`Invitation:          ${report.slug}`);
-	console.log(`Package hash:        ${report.packageHash}`);
-	console.log(`Source hash:         ${report.sourceHash}`);
-	console.log(`Projection hash:     ${report.projectionHash}`);
-	console.log(`Asset manifest hash: ${report.assetManifestHash}`);
-	if (report.approval) {
-		console.log(`Approval state:      ${report.approval.approvalState}`);
-		console.log(`Approved at:         ${report.approval.approvedAt ?? '(n/a)'}`);
-		console.log(`Approved by:         ${report.approval.approvedBy ?? '(n/a)'}`);
-		console.log(
-			`Intended Production: ${report.approval.intendedProductionProjectRef ?? '(n/a)'}`,
+function printHumanReport(
+	report: PromotionPreflightReport | PromotionApplyReport,
+	options: {
+		verbose?: boolean;
+		deliveryScope?: string;
+		title?: string;
+		route?: string;
+		/** Skip plan compact when the orchestrator already printed it. */
+		omitPlan?: boolean;
+	} = {},
+): void {
+	if (options.verbose) {
+		writeHuman('\n=== invitation:promote ===');
+		writeHuman(`Status:              ${report.status}`);
+		if (report.blockCode) writeHuman(`Block code:          ${report.blockCode}`);
+		if (report.reason) writeHuman(`Reason:              ${report.reason}`);
+		writeHuman(`Invitation:          ${report.slug}`);
+		writeHuman(`Package hash:        ${report.packageHash}`);
+		writeHuman(`Source hash:         ${report.sourceHash}`);
+		writeHuman(`Projection hash:     ${report.projectionHash}`);
+		writeHuman(`Asset manifest hash: ${report.assetManifestHash}`);
+		if (report.approval) {
+			writeHuman(`Approval state:      ${report.approval.approvalState}`);
+			writeHuman(`Approved at:         ${report.approval.approvedAt ?? '(n/a)'}`);
+			writeHuman(`Approved by:         ${report.approval.approvedBy ?? '(n/a)'}`);
+		}
+		writeHuman(`Schema state:        ${report.schema.state}`);
+		writeHuman(`Backup detail:       ${report.backup.detail}`);
+		writeHuman(`Safe managed changes: ${report.divergence.safeManagedChanges.length}`);
+		writeHuman(`Target-owned diffs:   ${report.divergence.targetOwnedDifferences.length}`);
+		writeHuman(`Managed divergences:  ${report.divergence.managedDivergences.length}`);
+		writeHuman(`Conflicts:           ${report.divergence.conflicts.length}`);
+		if (report.engineResult) {
+			writeHuman(`Plan ID:             ${report.engineResult.plan.planId}`);
+			writeHuman(`Planned mutations:   ${report.engineResult.plannedMutations}`);
+		}
+		if ('verification' in report && report.verification) {
+			writeHuman(`Verification:        ${report.verification.ok ? 'PASSED' : 'FAILED'}`);
+			writeHuman(`Verification detail: ${report.verification.detail}`);
+		}
+		writeHuman('');
+		return;
+	}
+
+	if (!options.omitPlan) {
+		writeHuman(
+			formatPromotionPlanCompact(report, {
+				title: options.title,
+				route: options.route,
+				deliveryScope: options.deliveryScope,
+			}),
 		);
 	}
-	if (report.productionProjectRef) {
-		console.log(`Production project:  ${report.productionProjectRef}`);
-	}
-	console.log(`Schema state:        ${report.schema.state}`);
-	console.log(`Schema detail:       ${report.schema.detail}`);
-	console.log(`Backup status:       ${report.backup.acceptable ? 'OK' : 'BLOCKED'}`);
-	console.log(`Backup command:      ${report.backup.canonicalCommand}`);
-	console.log(`Backup detail:       ${report.backup.detail}`);
-	console.log(`Safe managed changes: ${report.divergence.safeManagedChanges.length}`);
-	console.log(`Target-owned diffs:   ${report.divergence.targetOwnedDifferences.length}`);
-	console.log(`Managed divergences:  ${report.divergence.managedDivergences.length}`);
-	console.log(`Conflicts:           ${report.divergence.conflicts.length}`);
-	for (const item of [
-		...report.divergence.managedDivergences,
-		...report.divergence.conflicts,
-	].slice(0, 20)) {
-		console.log(`  - [${item.classification}] ${item.path}: ${item.detail}`);
-	}
-	if (report.engineResult) {
-		console.log(`Plan ID:             ${report.engineResult.plan.planId}`);
-		console.log(`Planned mutations:   ${report.engineResult.plannedMutations}`);
-		console.log(`Published version:   ${report.engineResult.publishedVersion ?? '(n/a)'}`);
-	}
-	if ('applyResult' in report && report.applyResult) {
-		console.log(`Applied plan ID:     ${report.applyResult.plan.planId}`);
-		console.log(`Completed ops:       ${report.applyResult.executedMutations}`);
-		console.log(`Receipt plan ID:     ${report.applyResult.receipt?.planId ?? '(n/a)'}`);
+	if (report.status === 'BLOCKED' && report.reason) {
+		writeHuman(`${operatorSymbol('fail')} ${report.reason}`);
 	}
 	if ('verification' in report && report.verification) {
-		console.log(`Verification:        ${report.verification.ok ? 'PASSED' : 'FAILED'}`);
-		console.log(`Verification detail: ${report.verification.detail}`);
+		writeHuman(formatPromotionResult(report));
 	}
-	console.log('');
 }
 
-// eslint-disable-next-line complexity -- CLI mode dispatch and owner confirmation gates.
-async function main(): Promise<void> {
-	const args = process.argv.slice(2);
-	if (args.includes('--help') || args.includes('-h')) {
-		printHelp();
-		return;
-	}
+async function promptCandidateSelection(
+	candidates: InvitationPromotionCandidate[],
+): Promise<InvitationPromotionCandidate | null> {
+	const ready = candidates.filter((candidate) => candidate.selectable);
+	const inSync = candidates.filter((candidate) => candidate.disposition === 'in-sync');
+	const attention = candidates.filter((candidate) => candidate.disposition === 'attention');
 
-	const slug = value(args, '--slug');
-	if (!slug) {
-		printHelp();
-		console.error('ERROR: --slug is required.');
-		process.exitCode = 1;
-		return;
-	}
-
-	const apply = args.includes('--apply');
-	const dryRun = args.includes('--dry-run') || !apply;
-	const json = args.includes('--json');
-	const sourceDir = value(args, '--source-dir');
-	const packagePath = value(args, '--package');
-	const ownerUserId = value(args, '--owner-user-id');
-	const backupManifestPath = value(args, '--backup-manifest');
-	const approvalsDir = value(args, '--approvals-dir');
-	const updateScope = value(args, '--update-scope') as UpdateScope | undefined;
-	const conflictResolutionsPath = value(args, '--conflict-resolutions');
-	const assetPolicyRaw = value(args, '--asset-policy');
-	const pruneAssets = args.includes('--prune-assets');
-	const allowStalePackage = args.includes('--allow-stale-package');
-
-	if (apply && dryRun && args.includes('--dry-run')) {
-		console.error('Cannot combine --apply with --dry-run.');
-		process.exitCode = 1;
-		return;
-	}
-
-	// Refuse agent-style Production automation tokens as authorization.
-	if (apply && process.env.CELEBRA_TASK_SCOPE) {
-		console.error(
-			'CONFIRMATION_REQUIRED: CELEBRA_TASK_SCOPE authorizes Preview automation only and is not Production promotion approval.',
+	writeHuman(`${operatorSymbol('info')} Buscando releases administradas…`);
+	writeHuman(
+		`${operatorSymbol('info')} Listas: ${ready.length} · Sincronizadas: ${inSync.length} · Atención: ${attention.length}`,
+	);
+	if (inSync.length > 0) {
+		writeHuman(
+			`${operatorSymbol('ok')} Ya sincronizadas: ${inSync
+				.map((candidate) => candidate.slug)
+				.join(', ')}`,
 		);
-		process.exitCode = 1;
-		return;
+	}
+	for (const candidate of attention.slice(0, 8)) {
+		writeHuman(
+			`${operatorSymbol('warn')} ${candidate.title} (${candidate.slug}): ${candidate.reason}`,
+		);
 	}
 
+	const { select } = await import('@inquirer/prompts');
+	const choice = await select({
+		message: 'Seleccione una invitación para promover a Production',
+		default: 'cancel',
+		choices: [
+			{ name: 'Cancelar', value: 'cancel' as const },
+			...ready.map((candidate) => ({
+				name: `${candidate.title} · ${candidate.route} · ${candidate.reason}`,
+				value: candidate.slug,
+			})),
+		],
+		theme: inquirerTheme(),
+	});
+	if (choice === 'cancel') return null;
+	return ready.find((candidate) => candidate.slug === choice) ?? null;
+}
+
+async function resolvePackageForArgs(parsed: InvitationPromoteCliArgs) {
+	if (!parsed.slug) {
+		throw new OperatorError({
+			title: 'Falta el slug',
+			cause: 'Fuera del modo interactivo debe indicar --slug <slug>.',
+			code: 'SLUG_REQUIRED',
+			remediation: [
+				'Ejecute pnpm invitation:promote en una TTY para elegir la invitación.',
+				'O pase --slug <slug> de forma explícita.',
+			],
+			retryCommand: 'pnpm invitation:promote',
+		});
+	}
+	return resolveInvitationPackageInput({
+		slug: parsed.slug,
+		sourceDir: parsed.sourceDir,
+		packagePath: parsed.packagePath,
+		allowStalePackage: parsed.allowStalePackage,
+	});
+}
+
+async function runGuidedPromote(parsed: InvitationPromoteCliArgs): Promise<void> {
+	if (!isTty()) {
+		throw new OperatorError({
+			title: 'Se requiere una TTY interactiva',
+			cause: 'Sin argumentos, invitation:promote solo puede ejecutarse en una terminal interactiva.',
+			code: 'TTY_REQUIRED',
+			remediation: [
+				'Ejecute el comando en una TTY del propietario.',
+				'Para automatización de solo lectura use --slug y --dry-run o --json.',
+			],
+			retryCommand: 'pnpm invitation:promote -- --slug <slug> --dry-run',
+		});
+	}
+
+	const summary = await discoverInvitationPromotionCandidates({
+		approvalsDirs: parsed.approvalsDir
+			? [parsed.approvalsDir, '.agent/tmp/approvals']
+			: undefined,
+	});
+	const selected = await promptCandidateSelection(summary.candidates);
+	if (!selected) {
+		writeHuman(
+			`${operatorSymbol('info')} Cancelado. No se realizó ninguna escritura en Production.`,
+		);
+		return;
+	}
+	if (!selected.packageInput) {
+		throw new OperatorError({
+			title: 'Release no disponible',
+			cause: selected.reason,
+			code: 'PRODUCTION_PLAN_BLOCKED',
+			remediation: ['Corrija la definición o el paquete y vuelva a intentar.'],
+			retryCommand: 'pnpm invitation:promote',
+		});
+	}
+
+	writeHuman(`${operatorSymbol('ok')} Seleccionada: ${selected.title} (${selected.slug})`);
+
+	const report = await orchestrateInvitationPromotion({
+		packageData: selected.packageInput.packageData,
+		approvalsDirs: parsed.approvalsDir
+			? [parsed.approvalsDir, '.agent/tmp/approvals']
+			: undefined,
+		backupManifestPath: parsed.backupManifestPath,
+		deliveryScope: selected.deliveryScope,
+		title: selected.title,
+		route: selected.route,
+		quiet: parsed.json,
+	});
+
+	if (parsed.json) {
+		process.stdout.write(`${JSON.stringify(toPublicPromotionReport(report), null, 2)}\n`);
+	} else {
+		printHumanReport(report, {
+			verbose: parsed.verbose,
+			deliveryScope: selected.deliveryScope,
+			title: selected.title,
+			route: selected.route,
+			omitPlan: true,
+		});
+	}
+	if (report.status === 'BLOCKED' || report.status === 'APPLIED_BUT_VERIFICATION_FAILED') {
+		process.exitCode = 1;
+	}
+}
+
+async function runFlaggedPromote(parsed: InvitationPromoteCliArgs): Promise<void> {
 	let packageInput;
 	try {
-		packageInput = await resolveInvitationPackageInput({
-			slug,
-			sourceDir,
-			packagePath,
-			allowStalePackage,
-		});
+		packageInput = await resolvePackageForArgs(parsed);
 	} catch (error) {
+		if (error instanceof OperatorError) throw error;
 		const message =
 			error instanceof PackageInputError
 				? error.safeReason
 				: error instanceof Error
 					? error.message
 					: String(error);
-		if (json) {
-			console.log(
-				JSON.stringify({
-					status: 'BLOCKED',
-					blockCode: 'PRODUCTION_PLAN_BLOCKED',
-					reason: message,
-					slug,
-				}),
+		if (parsed.json) {
+			process.stdout.write(
+				`${JSON.stringify(
+					{
+						status: 'BLOCKED',
+						blockCode: 'PRODUCTION_PLAN_BLOCKED',
+						reason: message,
+						slug: parsed.slug,
+					},
+					null,
+					2,
+				)}\n`,
 			);
 		} else {
-			console.error(message);
+			writeHuman(`${operatorSymbol('fail')} ${message}`);
 		}
 		process.exitCode = 1;
 		return;
 	}
 
-	const assetPolicy = assetPolicyRaw ? parseAssetPolicy(assetPolicyRaw) : undefined;
-	const conflictResolutions = conflictResolutionsPath
-		? loadConflictResolutionsFile(conflictResolutionsPath)
+	const assetPolicy = parsed.assetPolicyRaw ? parseAssetPolicy(parsed.assetPolicyRaw) : undefined;
+	const conflictResolutions = parsed.conflictResolutionsPath
+		? loadConflictResolutionsFile(parsed.conflictResolutionsPath)
+		: undefined;
+	const approvalsDirs = parsed.approvalsDir
+		? [parsed.approvalsDir, '.agent/tmp/approvals']
 		: undefined;
 
-	const preflight = await runPromotionPreflight({
-		packageData: packageInput.packageData,
-		ownerUserId,
-		approvalsDirs: approvalsDir ? [approvalsDir, '.agent/tmp/approvals'] : undefined,
-		assetPolicy,
-		pruneAssets,
-		updateScope,
-		conflictResolutions,
-		backupManifestPath,
-		requireBackup: apply,
-		getProductionDbUrl: getProdDbUrl,
-	});
-
-	if (!apply) {
-		if (json) console.log(JSON.stringify(toPublicPromotionReport(preflight), null, 2));
-		else printHumanReport(preflight);
+	if (parsed.mode !== 'apply') {
+		const preflight = await runPromotionPreflight({
+			packageData: packageInput.packageData,
+			ownerUserId: parsed.ownerUserId,
+			approvalsDirs,
+			assetPolicy,
+			pruneAssets: parsed.pruneAssets,
+			updateScope: parsed.updateScope,
+			conflictResolutions,
+			backupManifestPath: parsed.backupManifestPath,
+			requireBackup: false,
+			getProductionDbUrl: getProdDbUrl,
+		});
+		if (parsed.json) {
+			process.stdout.write(
+				`${JSON.stringify(toPublicPromotionReport(preflight), null, 2)}\n`,
+			);
+		} else {
+			printHumanReport(preflight, { verbose: parsed.verbose });
+			if (preflight.status === 'PROMOTABLE') {
+				writeHuman(
+					`${operatorSymbol('info')} Para aplicar: pnpm invitation:promote -- --slug ${parsed.slug} --apply`,
+				);
+			}
+		}
 		if (preflight.status === 'BLOCKED') process.exitCode = 1;
 		return;
 	}
 
-	if (preflight.status === 'BLOCKED') {
-		if (json) console.log(JSON.stringify(toPublicPromotionReport(preflight), null, 2));
-		else printHumanReport(preflight);
-		process.exitCode = 1;
-		return;
-	}
-
-	if (!json) {
-		printHumanReport(preflight);
-		console.log('Review the Production promotion above carefully before confirming.');
-		console.log('Promotion mutates only managed release-owned state.');
-		console.log('Target-owned Production differences are preserved.');
-		console.log('Schema migrations are never run by this command.');
-	}
-
-	await requireOwnerProductionApply({
-		apply: true,
-		dbUrl: preflight.targetDbUrl ?? getProdDbUrl().url,
-		operationType: 'promotion',
-		operationVerb: 'PROMOTE',
-		bindingHex: packageInput.packageData.packageHash,
-		applyActionLabel: 'Aplicar',
-		summaryTitle: 'Promoción de contenido — Production',
-		summary: [
-			['Operación', 'Promoción de invitación administrada'],
-			['Slug', slug],
-			['Respaldo', 'Manifiesto de backup verificado'],
-			['Autorización', 'Confirmación interactiva del propietario'],
-		],
-		technicalReview: [
-			['Impacto', 'Escribe estado administrado de release en Production'],
-			['Slug', slug],
-			['Package hash', packageInput.packageData.packageHash],
-			['Tipo interno', 'promotion'],
-			['Controles', 'TTY · agente bloqueado · release-check · sin migraciones de schema'],
-		],
-	});
-
-	const applyReport: PromotionApplyReport = await runPromotionApply({
-		preflight,
+	const report = await orchestrateInvitationPromotion({
 		packageData: packageInput.packageData,
-		ownerUserId,
+		ownerUserId: parsed.ownerUserId,
+		approvalsDirs,
 		assetPolicy,
-		pruneAssets,
-		updateScope,
+		pruneAssets: parsed.pruneAssets,
+		updateScope: parsed.updateScope,
 		conflictResolutions,
+		backupManifestPath: parsed.backupManifestPath,
+		quiet: parsed.json,
 	});
 
-	if (json) console.log(JSON.stringify(toPublicPromotionReport(applyReport), null, 2));
-	else printHumanReport(applyReport);
-
-	if (
-		applyReport.status === 'BLOCKED' ||
-		applyReport.status === 'APPLIED_BUT_VERIFICATION_FAILED'
-	) {
+	if (parsed.json) {
+		process.stdout.write(`${JSON.stringify(toPublicPromotionReport(report), null, 2)}\n`);
+	} else {
+		printHumanReport(report, { verbose: parsed.verbose, omitPlan: true });
+	}
+	if (report.status === 'BLOCKED' || report.status === 'APPLIED_BUT_VERIFICATION_FAILED') {
 		process.exitCode = 1;
 	}
 }
 
-if (process.argv[1]?.endsWith('invitation-promote-cli.ts')) {
-	main().catch((error: unknown) => {
-		console.error(error instanceof Error ? error.message : String(error));
+export async function runInvitationPromoteCli(
+	argv: string[] = process.argv.slice(2),
+): Promise<void> {
+	let parsed: InvitationPromoteCliArgs;
+	try {
+		parsed = parseInvitationPromoteCliArgs(argv);
+	} catch (error: unknown) {
+		renderOperatorError(error, {
+			title: 'Argumentos inválidos',
+			retryCommand: 'pnpm invitation:promote -- --help',
+		});
+		process.exitCode = 1;
+		return;
+	}
+
+	if (parsed.help) {
+		printInvitationPromoteHelp();
+		return;
+	}
+
+	const guided =
+		parsed.mode === 'guided' &&
+		(parsed.interactiveForced === true ||
+			(parsed.interactiveForced !== false && isTty() && !parsed.json));
+
+	try {
+		if (guided) {
+			await runGuidedPromote(parsed);
+			return;
+		}
+		if (parsed.mode === 'guided') {
+			throw new OperatorError({
+				title: 'Se requiere una TTY interactiva',
+				cause: 'Sin --slug, invitation:promote solo puede ejecutarse en una TTY (o con --interactive).',
+				code: 'TTY_REQUIRED',
+				remediation: [
+					'Ejecute en una terminal interactiva.',
+					'O pase --slug <slug> con --dry-run / --apply.',
+				],
+				retryCommand: 'pnpm invitation:promote -- --slug <slug> --dry-run',
+			});
+		}
+		await runFlaggedPromote(parsed);
+	} catch (error: unknown) {
+		renderOperatorError(error, {
+			title: 'No se pudo completar la promoción',
+			retryCommand: 'pnpm invitation:promote',
+		});
+		process.exitCode = 1;
+	}
+}
+
+function isMain(): boolean {
+	const entry = process.argv[1];
+	return typeof entry === 'string' && /invitation-promote-cli\.(ts|js|mjs|cjs)$/.test(entry);
+}
+
+if (isMain()) {
+	void runInvitationPromoteCli().catch((error: unknown) => {
+		renderOperatorError(error, {
+			title: 'No se pudo completar la promoción',
+			retryCommand: 'pnpm invitation:promote',
+		});
 		process.exitCode = 1;
 	});
 }

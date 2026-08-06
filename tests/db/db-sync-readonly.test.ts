@@ -68,6 +68,11 @@ jest.mock('../../scripts/provision/preview-write-auth.ts', () => ({
 jest.mock('../../scripts/db/owner-production-apply.ts', () => ({
 	requireOwnerProductionApply: (...args: unknown[]) => mockRequireOwner(...args),
 }));
+jest.mock('../../scripts/provision/invitation-promotion-orchestrator.ts', () => ({
+	orchestrateInvitationPromotion: jest.fn(async () => {
+		throw new Error('orchestrateInvitationPromotion must not run in readonly tests');
+	}),
+}));
 jest.mock('../../scripts/db/db-workflow-lib.ts', () => ({
 	getProdDbUrl: () => ({
 		url: 'postgresql://postgres:secret@db.ineitkdkyrxqyressllp.supabase.co:5432/postgres',

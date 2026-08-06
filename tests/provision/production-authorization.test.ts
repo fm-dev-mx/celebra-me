@@ -42,16 +42,10 @@ const APPROVED_MUTATORS: MutatorSpec[] = [
 		preflightPatterns: [
 			/audit-db\.ts/,
 			/ensureValidReleaseCheckEvidence/,
-			/evaluateCriticalBackupCoverage/,
-			/backup-critical-production/,
+			/ensureCriticalProductionBackup/,
+			/revalidateCriticalProductionBackup/,
 		],
 		family: 'schema_migration',
-	},
-	{
-		file: 'scripts/db/db-sync-orchestrator.ts',
-		firstWritePattern: /runPromotionApply\s*\(/,
-		preflightPatterns: [/runPromotionPreflight/],
-		family: 'managed_promotion',
 	},
 	{
 		file: 'scripts/db/run-prod-patch.ts',
@@ -60,9 +54,14 @@ const APPROVED_MUTATORS: MutatorSpec[] = [
 		family: 'sql_patch',
 	},
 	{
-		file: 'scripts/provision/invitation-promote-cli.ts',
-		firstWritePattern: /runPromotionApply\s*\(/,
-		preflightPatterns: [/runPromotionPreflight/],
+		file: 'scripts/provision/invitation-promotion-orchestrator.ts',
+		firstWritePattern: /runApply\s*\(\s*\{/,
+		preflightPatterns: [
+			/await runPreflight\s*\(/,
+			/ensureRelease\s*\(\s*\)/,
+			/ensureBackup\s*\(\s*\{/,
+			/revalidateBackup\s*\(\s*\{/,
+		],
 		family: 'managed_promotion',
 	},
 	{
@@ -171,7 +170,9 @@ describe('owner confirmation helpers', () => {
 		expect(source).toContain("import('@inquirer/prompts')");
 		expect(source).toContain('input({');
 		expect(source).not.toMatch(/from ['"]node:fs['"]/);
-		expect(source).not.toMatch(/const typedRaw = await \(input\.readConfirmationLine \?\? readTty/);
+		expect(source).not.toMatch(
+			/const typedRaw = await \(input\.readConfirmationLine \?\? readTty/,
+		);
 	});
 });
 
