@@ -8,7 +8,16 @@ if (typeof structuredClone === 'undefined') {
 	globalThis.structuredClone = <T>(value: T): T => JSON.parse(JSON.stringify(value));
 }
 
+import { TextDecoder, TextEncoder } from 'node:util';
 import { TransformStream } from 'node:stream/web';
+
+if (typeof globalThis.TextEncoder === 'undefined') {
+	globalThis.TextEncoder = TextEncoder;
+}
+
+if (typeof globalThis.TextDecoder === 'undefined') {
+	globalThis.TextDecoder = TextDecoder as typeof globalThis.TextDecoder;
+}
 
 if (typeof globalThis.TransformStream === 'undefined') {
 	// @ts-expect-error polyfill for Jest Node environment
