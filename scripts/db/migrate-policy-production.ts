@@ -24,6 +24,7 @@ import {
 	assertProductionDbUrl,
 	redactDbUrl,
 	runCommand,
+	type CommandResult,
 } from './db-workflow-lib.ts';
 import {
 	assertHostedCompatibilityOrFail,
@@ -191,7 +192,7 @@ function captureCriticalBackupOnce(
 	prodDbUrl: string,
 	phase: 'pre' | 'post',
 	plan?: MigrationPlan,
-): { status: number; stdout: string; stderr: string } {
+): CommandResult {
 	const backupEnv: NodeJS.ProcessEnv = {
 		...process.env,
 		PROD_DB_URL: prodDbUrl,
