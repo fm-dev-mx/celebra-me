@@ -27,24 +27,26 @@ describe('Phase 3 operational contracts', () => {
 
 	it('captures complete recovery before migration and verifies schema before code', () => {
 		const workflow = read('scripts/db/migrate-policy-production.ts');
-		const firstCriticalBackup = workflow.indexOf(
-			"'scripts/db/daily-critical-production-backup.ts'",
-		);
-		const compatibility = workflow.indexOf('evaluateHostedCompatibilityForPlan');
+		const beforeWriteIdx = workflow.indexOf('beforeWrite(_plan, ctx)');
+		const authorizeIdx = workflow.indexOf('async authorize(plan, ctx)');
 		const migration = workflow.indexOf("['db', 'push', '--db-url', ctx.dbUrl, '--yes']");
 		const afterWriteIdx = workflow.indexOf('afterWrite(plan, ctx)');
 		const contract = workflow.indexOf("runMutationContractVerify('production')", afterWriteIdx);
-		const postMigrationBackupCall = workflow.indexOf('runPostMigrationBackup', afterWriteIdx);
-		expect(firstCriticalBackup).toBeGreaterThan(0);
+		const postBackup = workflow.indexOf("runCriticalBackup(ctx.dbUrl, 'post')", afterWriteIdx);
+		expect(workflow).toContain('evaluateHostedCompatibilityForPlan');
+		expect(workflow).toContain("'scripts/db/backup-critical-production.ts'");
+		expect(workflow).not.toContain('daily-critical-production-backup');
 		// Phase 3 is fully applied in Production; the stale pre-phase3 profile must not return.
 		expect(workflow).not.toContain('--integrity-profile=pre-phase3');
-		expect(compatibility).toBeGreaterThan(0);
-		expect(compatibility).toBeLessThan(firstCriticalBackup);
-		expect(migration).toBeGreaterThan(firstCriticalBackup);
+		expect(beforeWriteIdx).toBeGreaterThan(0);
+		expect(workflow.indexOf("runCriticalBackup(ctx.dbUrl, 'pre')", beforeWriteIdx)).toBeGreaterThan(
+			beforeWriteIdx,
+		);
+		expect(authorizeIdx).toBeGreaterThan(beforeWriteIdx);
+		expect(migration).toBeGreaterThan(authorizeIdx);
 		expect(afterWriteIdx).toBeGreaterThan(migration);
 		expect(contract).toBeGreaterThan(afterWriteIdx);
-		expect(postMigrationBackupCall).toBeGreaterThan(contract);
-		expect(workflow).toContain("'scripts/db/backup-critical-production.ts'");
+		expect(postBackup).toBeGreaterThan(contract);
 	});
 
 	it('wires Preview migrate through dry-run and the compatibility gate', () => {

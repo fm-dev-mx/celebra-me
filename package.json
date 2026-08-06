@@ -62,7 +62,7 @@
         "db:backup:create-disposable-fixture": "tsx scripts/db/create-disposable-recovery-backup.ts",
         "db:restore:verify-disposable": "tsx scripts/db/disposable-restore-verify.ts",
         "db:contract:verify": "tsx scripts/db/verify-mutation-schema-contract.ts",
-        "db:prod:migrate": "tsx scripts/db/db-guard.ts check --target production --operation migrate && tsx scripts/db/push-prod-migrations.ts",
+        "db:prod:migrate": "tsx scripts/db/migrate-cli.ts --target production",
         "db:prod:audit": "tsx scripts/db/db-guard.ts check --target production --operation audit && tsx scripts/db/audit-db.ts --target production",
         "db:preview:migrate": "tsx scripts/db/db-guard.ts check --target preview --operation migrate && tsx scripts/db/push-preview-migrations.ts",
         "db:preview:audit": "tsx scripts/db/db-guard.ts check --target preview --operation audit && tsx scripts/db/audit-db.ts --target preview",

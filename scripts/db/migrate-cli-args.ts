@@ -18,32 +18,35 @@ export interface MigrateCliArgs {
 const TARGETS = new Set<string>(['local', 'preview', 'production', 'disposable-test']);
 
 export function printMigrateHelp(): void {
-	process.stderr.write(`db:migrate — Unified schema migration planning and orchestration
+	process.stderr.write(`db:migrate — Schema migration planning and orchestration
 
-Usage:
+Public Production entry:
+  pnpm db:prod:migrate                      # read-only preflight
+  pnpm db:prod:migrate -- --apply           # owner TTY apply (release-check + backup)
+
+Multi-env engine:
   pnpm db:migrate -- --target <local|preview|production|disposable-test> [options]
-  pnpm db:local:migrate | db:preview:migrate | db:prod:migrate   (compatibility wrappers)
 
 Options:
-  --target <target>     Migration target (required for canonical entrypoint)
+  --target <target>     Migration target (required for db:migrate)
   --apply               Apply after plan validation (default: read-only preflight)
   --expected <versions> Optional exact pending-set pin (comma-separated)
   --json                Emit MigrationPlan JSON on stdout (human logs on stderr)
-  --interactive         Force guided TTY actions (Cancel / Revisar cambios / Aplicar)
+  --interactive         Guided TTY for non-Production targets (Cancel / Revisar / Aplicar)
   --no-interactive      Disable guided prompts
   --help, -h            Show this help (no database access)
 
 Environment:
   Preview apply (non-TTY): CELEBRA_TASK_SCOPE=preview:schema:migrate
   Preview release identity: CELEBRA_TARGET_RELEASE_SHA (required for hosted Preview)
-  Production apply: pnpm release-check evidence + interactive owner TTY (no token path)
+  Production apply: release-check evidence + interactive owner TTY (no token path)
 
 Deprecated (Preview shim only):
   --allowlist <versions>   Alias of --expected (warns)
   EXPECTED_MIGRATIONS      Alias of --expected (warns)
 
-Default mode is read-only planning. Apply rebuilds evidence and rejects plan drift
-before authorization or the first write. After a failed apply, re-run preflight.
+Default mode is read-only planning. Production apply: backup → one revalidation →
+owner menu → bound code → write. After a failed apply, re-run preflight.
 `);
 }
 

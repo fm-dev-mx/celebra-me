@@ -9,7 +9,10 @@ import {
 	shortSha,
 } from '../../scripts/db/operator-cli-ux.ts';
 import { buildMigrationPlan } from '../../scripts/db/migration-plan.ts';
-import { formatPlanReview, formatPlanReviewCompact } from '../../scripts/db/migrate-orchestrator.ts';
+import {
+	formatPlanReview,
+	formatPlanReviewCompact,
+} from '../../scripts/db/migrate-plan-format.ts';
 
 describe('operator-cli-ux', () => {
 	it('formats failures with status, remediation, retry, and code last', () => {

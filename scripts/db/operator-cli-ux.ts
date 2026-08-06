@@ -29,6 +29,41 @@ export interface OperatorFailureInput {
 	noChangesMessage?: string;
 }
 
+/** Domain modules throw; CLI adapters render and set exit codes. */
+export class OperatorError extends Error {
+	readonly title: string;
+	readonly code: string;
+	readonly causeText: string;
+	readonly remediation: readonly string[];
+	readonly retryCommand?: string;
+	readonly affected?: OperatorFailureInput['affected'];
+	readonly noChangesMessage?: string;
+
+	constructor(input: OperatorFailureInput) {
+		super(`${input.code}: ${input.cause}`);
+		this.name = 'OperatorError';
+		this.title = input.title;
+		this.code = input.code;
+		this.causeText = input.cause;
+		this.remediation = input.remediation;
+		this.retryCommand = input.retryCommand;
+		this.affected = input.affected;
+		this.noChangesMessage = input.noChangesMessage;
+	}
+
+	toFailureInput(): OperatorFailureInput {
+		return {
+			title: this.title,
+			cause: this.causeText,
+			code: this.code,
+			remediation: this.remediation,
+			retryCommand: this.retryCommand,
+			affected: this.affected,
+			noChangesMessage: this.noChangesMessage,
+		};
+	}
+}
+
 function streamIsTty(): boolean {
 	return Boolean(process.stderr.isTTY);
 }
@@ -139,6 +174,56 @@ export function failOperator(
 ): never {
 	process.stderr.write(formatOperatorFailure(input, env));
 	process.exit(1);
+}
+
+export function renderOperatorError(
+	error: unknown,
+	fallback: Partial<OperatorFailureInput> = {},
+	env: NodeJS.ProcessEnv = process.env,
+): void {
+	if (error instanceof OperatorError) {
+		writeHuman(formatOperatorFailure(error.toFailureInput(), env));
+		return;
+	}
+	const message = error instanceof Error ? error.message : String(error);
+	const codeMatch = /^(?<code>[A-Z][A-Z0-9_]+):/.exec(message);
+	const code = codeMatch?.groups?.code ?? fallback.code ?? 'OPERATOR_ERROR';
+	writeHuman(
+		formatOperatorFailure(
+			{
+				title: fallback.title ?? 'No se pudo completar la operación',
+				cause: message.replace(/^[A-Z][A-Z0-9_]+:\s*/, ''),
+				code,
+				remediation: fallback.remediation ?? [
+					'Revise la causa y los controles de seguridad aplicables.',
+					'Reejecute el preflight y, si corresponde, el apply.',
+				],
+				retryCommand: fallback.retryCommand,
+				noChangesMessage: fallback.noChangesMessage,
+				affected: fallback.affected,
+			},
+			env,
+		),
+	);
+}
+
+/** Shared @inquirer theme that respects NO_COLOR. */
+export function inquirerTheme(env: NodeJS.ProcessEnv = process.env): {
+	style: {
+		message: (text: string) => string;
+		answer: (text: string) => string;
+		help: (text: string) => string;
+	};
+} {
+	const color = useCliColor(env);
+	const identity = (text: string) => text;
+	return {
+		style: {
+			message: color ? (text: string) => `\x1b[1m${text}\x1b[0m` : identity,
+			answer: color ? (text: string) => `\x1b[32m${text}\x1b[0m` : identity,
+			help: color ? (text: string) => `\x1b[2m${text}\x1b[0m` : identity,
+		},
+	};
 }
 
 /** Friendly labels for plan enums shown in compact operator views. */

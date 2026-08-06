@@ -508,8 +508,7 @@ export async function orchestrateApply(input: OrchestrateDbSyncInput): Promise<D
 			if (!preflight.targetDbUrl) {
 				throw new Error('PRODUCTION_TARGET_UNAVAILABLE');
 			}
-			const ownerApply = input.requireOwnerApply ?? requireOwnerProductionApply;
-			await ownerApply({
+			await (input.requireOwnerApply ?? requireOwnerProductionApply)({
 				apply: true,
 				dbUrl: preflight.targetDbUrl,
 				operationType: 'invitation-promote',

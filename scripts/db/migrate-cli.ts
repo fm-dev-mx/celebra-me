@@ -1,6 +1,9 @@
 /**
  * Canonical schema migration CLI — adapters only (no embedded DB mutation logic).
  * Help/parse paths stay free of orchestrator imports.
+ *
+ * Public Production operator entry: pnpm db:prod:migrate
+ * Multi-env engine: pnpm db:migrate -- --target <env>
  */
 
 import { select } from '@inquirer/prompts';
@@ -8,7 +11,9 @@ import { parseMigrateCliArgs, printMigrateHelp, type MigrateCliArgs } from './mi
 import { planToJson, type MigrationPlan } from './migration-plan.ts';
 import {
 	formatOperatorFailure,
+	inquirerTheme,
 	operatorSymbol,
+	renderOperatorError,
 	writeHuman,
 } from './operator-cli-ux.ts';
 
@@ -16,27 +21,23 @@ function writeJson(value: unknown): void {
 	process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
 }
 
-function writeError(error: unknown): void {
-	const message = error instanceof Error ? error.message : String(error);
-	const codeMatch = /^(?<code>[A-Z][A-Z0-9_]+):/.exec(message);
-	const code = codeMatch?.groups?.code;
-	if (code) {
-		writeHuman(
-			formatOperatorFailure({
-				title: 'No se pudo completar la operación',
-				cause: message.replace(/^[A-Z][A-Z0-9_]+:\s*/, ''),
-				code,
-				remediation: [
-					'Revise la causa anterior y los controles de seguridad aplicables.',
-					'Reejecute el preflight y, si corresponde, el apply.',
-				],
-				retryCommand: 'pnpm db:migrate -- --help',
-				noChangesMessage: 'No se realizaron escrituras de schema.',
-			}),
-		);
-	} else {
-		writeHuman(`${operatorSymbol('fail')} ${message}`);
-	}
+function writeError(
+	error: unknown,
+	target: MigrateCliArgs['target'] = null,
+): void {
+	renderOperatorError(error, {
+		title: 'No se pudo completar la operación',
+		retryCommand:
+			target === 'production'
+				? 'pnpm db:prod:migrate'
+				: target
+					? `pnpm db:migrate -- --target ${target}`
+					: 'pnpm db:migrate -- --help',
+		noChangesMessage:
+			target === 'production'
+				? undefined
+				: 'No se realizaron escrituras de schema.',
+	});
 	process.exitCode = 1;
 }
 
@@ -49,6 +50,7 @@ async function promptAction(): Promise<'run' | 'review' | 'cancel'> {
 			{ name: 'Revisar cambios', value: 'review' as const },
 			{ name: 'Aplicar', value: 'run' as const },
 		],
+		theme: inquirerTheme(),
 	});
 }
 
@@ -58,9 +60,7 @@ function writeApplyHint(
 ): void {
 	const expectedSuffix = expectedPin ? ` --expected ${expectedPin.join(',')}` : '';
 	if (target === 'production') {
-		writeHuman(
-			`Para aplicar: pnpm release-check && pnpm db:migrate -- --target production --apply${expectedSuffix}`,
-		);
+		writeHuman(`Para aplicar: pnpm db:prod:migrate -- --apply${expectedSuffix}`);
 		return;
 	}
 	if (target === 'preview') {
@@ -86,15 +86,33 @@ function emitPlan(
 	if (json) writeJson(planToJson(plan));
 }
 
+type BaseMigrateInput = {
+	target: NonNullable<MigrateCliArgs['target']>;
+	expectedPin: readonly string[] | null;
+	env: NodeJS.ProcessEnv;
+	isInteractive: boolean;
+};
+
+function writeApplyCompleted(wrote: boolean): void {
+	writeHuman(
+		wrote
+			? `${operatorSymbol('ok')} Apply completado.`
+			: `${operatorSymbol('ok')} Apply completado (sin migraciones pendientes).`,
+	);
+}
+
+function shouldUseGuidedMenu(parsed: MigrateCliArgs, isTty: boolean): boolean {
+	// Production authorization lives solely in requireOwnerProductionApply — no outer menu.
+	if (parsed.target === 'production') return false;
+	if (parsed.interactiveForced === true) return true;
+	if (parsed.interactiveForced === false) return false;
+	return isTty && !parsed.json && parsed.mode === 'preflight';
+}
+
 async function runGuidedApply(options: {
 	orchestrator: OrchestratorModule;
 	plan: MigrationPlan;
-	baseInput: {
-		target: NonNullable<MigrateCliArgs['target']>;
-		expectedPin: readonly string[] | null;
-		env: NodeJS.ProcessEnv;
-		isInteractive: boolean;
-	};
+	baseInput: BaseMigrateInput;
 	json: boolean;
 }): Promise<void> {
 	for (;;) {
@@ -115,13 +133,80 @@ async function runGuidedApply(options: {
 			reviewedPlan: options.plan,
 		});
 		emitPlan(options.orchestrator, result.plan, options.json, true);
+		writeApplyCompleted(result.wrote);
+		return;
+	}
+}
+
+async function runPreflightOrGuided(options: {
+	orchestrator: OrchestratorModule;
+	baseInput: BaseMigrateInput;
+	json: boolean;
+	guided: boolean;
+}): Promise<void> {
+	const plan = options.orchestrator.preflightMigrate({
+		...options.baseInput,
+		mode: 'preflight',
+	});
+	emitPlan(options.orchestrator, plan, options.json, true);
+	if (options.guided) {
+		await runGuidedApply({
+			orchestrator: options.orchestrator,
+			plan,
+			baseInput: options.baseInput,
+			json: options.json,
+		});
+		return;
+	}
+	writeHuman(
+		`${operatorSymbol('ok')} Preflight de solo lectura completado. No se escribió schema.`,
+	);
+	if (plan.pendingVersions.length === 0) {
+		writeHuman(`${operatorSymbol('info')} No hay migraciones pendientes.`);
+	} else {
+		writeApplyHint(options.baseInput.target, options.baseInput.expectedPin);
+	}
+}
+
+async function runProductionApply(options: {
+	orchestrator: OrchestratorModule;
+	baseInput: BaseMigrateInput;
+	json: boolean;
+}): Promise<void> {
+	const previewPlan = options.orchestrator.preflightMigrate({
+		...options.baseInput,
+		mode: 'preflight',
+	});
+	emitPlan(options.orchestrator, previewPlan, options.json, true);
+	if (previewPlan.pendingVersions.length === 0) {
 		writeHuman(
-			result.wrote
-				? `${operatorSymbol('ok')} Apply completado.`
-				: `${operatorSymbol('ok')} Apply completado (sin migraciones pendientes).`,
+			`${operatorSymbol('ok')} No hay migraciones pendientes. No se escribió schema.`,
 		);
 		return;
 	}
+	const result = await options.orchestrator.orchestrateMigrate({
+		...options.baseInput,
+		mode: 'apply',
+		reviewedPlan: previewPlan,
+	});
+	writeApplyCompleted(result.wrote);
+}
+
+function writeMissingTargetFailure(): void {
+	writeHuman(
+		formatOperatorFailure({
+			title: 'Falta el destino',
+			cause: 'Debe indicar --target <local|preview|production|disposable-test>.',
+			code: 'TARGET_REQUIRED',
+			remediation: [
+				'Para Production use: pnpm db:prod:migrate',
+				'Para otros entornos: pnpm db:migrate -- --help',
+			],
+			retryCommand: 'pnpm db:prod:migrate',
+			noChangesMessage: 'No se realizaron escrituras de schema.',
+		}),
+	);
+	process.exitCode = 1;
 }
 
 export async function runMigrateCli(argv: string[] = process.argv): Promise<void> {
@@ -139,17 +224,7 @@ export async function runMigrateCli(argv: string[] = process.argv): Promise<void
 	}
 
 	if (!parsed.target) {
-		writeHuman(
-			formatOperatorFailure({
-				title: 'Falta el destino',
-				cause: 'Debe indicar --target <local|preview|production|disposable-test>.',
-				code: 'TARGET_REQUIRED',
-				remediation: ['Ejecute pnpm db:migrate -- --help para ver el uso.'],
-				retryCommand: 'pnpm db:migrate -- --help',
-				noChangesMessage: 'No se realizaron escrituras de schema.',
-			}),
-		);
-		process.exitCode = 1;
+		writeMissingTargetFailure();
 		return;
 	}
 
@@ -169,18 +244,13 @@ export async function runMigrateCli(argv: string[] = process.argv): Promise<void
 		}
 		expectedPin = parsedExpected.expectedPin;
 	} catch (error: unknown) {
-		writeError(error);
+		writeError(error, parsed.target);
 		return;
 	}
 
 	const isTty = Boolean(process.stdin.isTTY && process.stderr.isTTY);
-	const guided =
-		parsed.interactiveForced === true ||
-		(parsed.interactiveForced !== false &&
-			isTty &&
-			!parsed.json &&
-			parsed.mode === 'preflight');
-	const baseInput = {
+	const guided = shouldUseGuidedMenu(parsed, isTty);
+	const baseInput: BaseMigrateInput = {
 		target: parsed.target,
 		expectedPin,
 		env: process.env,
@@ -189,18 +259,18 @@ export async function runMigrateCli(argv: string[] = process.argv): Promise<void
 
 	try {
 		if (parsed.mode === 'preflight' || guided) {
-			const plan = orchestrator.preflightMigrate({ ...baseInput, mode: 'preflight' });
-			emitPlan(orchestrator, plan, parsed.json, true);
-			if (!guided) {
-				writeHuman(
-					`${operatorSymbol('ok')} Preflight de solo lectura completado. No se escribió schema.`,
-				);
-				writeApplyHint(parsed.target, expectedPin);
-				return;
-			}
-			await runGuidedApply({
+			await runPreflightOrGuided({
 				orchestrator,
-				plan,
+				baseInput,
+				json: parsed.json,
+				guided,
+			});
+			return;
+		}
+
+		if (parsed.target === 'production') {
+			await runProductionApply({
+				orchestrator,
 				baseInput,
 				json: parsed.json,
 			});
@@ -209,13 +279,9 @@ export async function runMigrateCli(argv: string[] = process.argv): Promise<void
 
 		const result = await orchestrator.orchestrateMigrate({ ...baseInput, mode: 'apply' });
 		emitPlan(orchestrator, result.plan, parsed.json, true);
-		writeHuman(
-			result.wrote
-				? `${operatorSymbol('ok')} Apply completado.`
-				: `${operatorSymbol('ok')} Apply completado (sin migraciones pendientes).`,
-		);
+		writeApplyCompleted(result.wrote);
 	} catch (error: unknown) {
-		writeError(error);
+		writeError(error, parsed.target);
 	}
 }
 

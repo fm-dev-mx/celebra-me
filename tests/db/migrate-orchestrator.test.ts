@@ -96,9 +96,10 @@ describe('migrate orchestrator', () => {
 		});
 		const stable = plan({ mode: 'apply' });
 		mockBuildPlan.mockReturnValue(stable);
+		jest.spyOn(process.stderr, 'write').mockImplementation(() => true);
 	});
 
-	it('routes local, preview, production, and disposable through the same orchestrator sequence', async () => {
+	it('routes local, preview, production, and disposable through backup → rebuild → auth → write', async () => {
 		const { orchestrateMigrate, getMigratePolicy } =
 			await import('../../scripts/db/migrate-orchestrator.ts');
 		expect(getMigratePolicy('local').target).toBe('local');
@@ -136,35 +137,37 @@ describe('migrate orchestrator', () => {
 				remindConcurrencyRisk: false,
 			});
 			expect(order).toEqual(['before', 'auth', 'exec', 'after']);
-			expect(mockBuildPlan).toHaveBeenCalled();
+			// Direct apply: one initial build + one post-backup rebuild.
+			expect(mockBuildPlan).toHaveBeenCalledTimes(2);
 		}
 	});
 
-	it('rejects live drift before authorization or write', async () => {
+	it('with reviewedPlan: backup then one rebuild before authorization', async () => {
 		const { orchestrateMigrate } = await import('../../scripts/db/migrate-orchestrator.ts');
-		const first = plan({ mode: 'apply', pendingVersions: ['20260730220544'] });
-		const second = plan({ mode: 'apply', pendingVersions: ['20260802090000'] });
-		mockBuildPlan.mockReturnValueOnce(first).mockReturnValueOnce(second);
-		const stderrWrite = jest.spyOn(process.stderr, 'write').mockImplementation(() => true);
-		jest.spyOn(process, 'exit').mockImplementation(((code?: string | number | null) => {
-			throw new Error(`process.exit:${code ?? ''}`);
-		}) as never);
+		const reviewed = plan({ mode: 'preflight' });
+		const live = plan({ mode: 'apply' });
+		mockBuildPlan.mockReturnValue(live);
+		const order: string[] = [];
+		mockBeforeWrite.mockImplementation(() => order.push('before'));
+		mockAuthorize.mockImplementation(async () => {
+			order.push('auth');
+		});
 
-		await expect(
-			orchestrateMigrate({
-				target: 'preview',
-				mode: 'apply',
-				expectedPin: null,
-				remindConcurrencyRisk: false,
-			}),
-		).rejects.toThrow('process.exit:1');
-		const stderr = stderrWrite.mock.calls.map((call) => String(call[0] ?? '')).join('');
-		expect(stderr).toContain('PLAN_DRIFT');
-		expect(mockAuthorize).not.toHaveBeenCalled();
-		expect(mockExecute).not.toHaveBeenCalled();
+		await orchestrateMigrate({
+			target: 'preview',
+			mode: 'apply',
+			expectedPin: null,
+			reviewedPlan: reviewed,
+			remindConcurrencyRisk: false,
+		});
+		expect(order).toEqual(['before', 'auth']);
+		expect(mockBuildPlan).toHaveBeenCalledTimes(1);
+		expect(mockBeforeWrite.mock.invocationCallOrder[0]).toBeLessThan(
+			mockBuildPlan.mock.invocationCallOrder[0]!,
+		);
 	});
 
-	it('rejects reviewed-plan drift before write (failed apply requires replan)', async () => {
+	it('rejects post-backup drift before authorization or write', async () => {
 		const { orchestrateMigrate } = await import('../../scripts/db/migrate-orchestrator.ts');
 		const reviewed = plan({
 			mode: 'preflight',
@@ -175,10 +178,6 @@ describe('migrate orchestrator', () => {
 			pendingVersions: ['20260802090000'],
 		});
 		mockBuildPlan.mockReturnValue(live);
-		const stderrWrite = jest.spyOn(process.stderr, 'write').mockImplementation(() => true);
-		jest.spyOn(process, 'exit').mockImplementation(((code?: string | number | null) => {
-			throw new Error(`process.exit:${code ?? ''}`);
-		}) as never);
 
 		await expect(
 			orchestrateMigrate({
@@ -188,9 +187,9 @@ describe('migrate orchestrator', () => {
 				reviewedPlan: reviewed,
 				remindConcurrencyRisk: false,
 			}),
-		).rejects.toThrow('process.exit:1');
-		const stderr = stderrWrite.mock.calls.map((call) => String(call[0] ?? '')).join('');
-		expect(stderr).toContain('PLAN_DRIFT');
+		).rejects.toThrow(/PLAN_DRIFT/);
+		expect(mockBeforeWrite).toHaveBeenCalled();
+		expect(mockAuthorize).not.toHaveBeenCalled();
 		expect(mockExecute).not.toHaveBeenCalled();
 	});
 });

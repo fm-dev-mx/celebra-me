@@ -85,6 +85,23 @@ jest.mock('../../scripts/db/release-check', () => ({
 	readGitWorktreeState: () => ({ sha: 'abc1234', clean: true, dirtySummary: '' }),
 }));
 
+// Keep Preview tests off the Production policy → audit-db → disposable import chain.
+jest.mock('../../scripts/db/migrate-policy-production.ts', () => ({
+	productionMigratePolicy: {
+		target: 'production',
+		resolveContext: () => {
+			throw new Error('production policy unused in preview migrate tests');
+		},
+		buildPlan: () => {
+			throw new Error('production policy unused in preview migrate tests');
+		},
+		authorize: async () => undefined,
+		beforeWrite: () => undefined,
+		execute: () => undefined,
+		afterWrite: () => undefined,
+	},
+}));
+
 describe('preview migrate via shared orchestrator', () => {
 	const originalEnv = { ...process.env };
 

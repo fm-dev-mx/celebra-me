@@ -636,6 +636,46 @@ function runSchemaAudit(target: string, dbUrl: string, initialErrors: number): n
 	return errors;
 }
 
+/** Shared audit verdict consumed by standalone CLI and migrate preflight. */
+export interface SchemaAuditVerdict {
+	lifecycle: string;
+	errorCount: number;
+	/** Standalone `pnpm db:prod:audit` success (not BEHIND, not drift). */
+	passedStandalone: boolean;
+	/** Migrate may proceed (CURRENT, or BEHIND with zero unexplained errors). */
+	readyForMigrate: boolean;
+}
+
+export function buildSchemaAuditVerdict(
+	lifecycle: string,
+	errorCount: number,
+): SchemaAuditVerdict {
+	const readyForMigrate =
+		errorCount === 0 && (lifecycle === 'CURRENT' || lifecycle === 'BEHIND');
+	const passedStandalone = errorCount === 0 && lifecycle === 'CURRENT';
+	return {
+		lifecycle,
+		errorCount,
+		passedStandalone,
+		readyForMigrate,
+	};
+}
+
+/**
+ * Parse subprocess audit output into the shared verdict.
+ * Used when migrate embeds audit-db as a child process.
+ */
+export function parseSchemaAuditVerdictFromOutput(
+	auditOutput: string,
+	status: number,
+): SchemaAuditVerdict {
+	const lifecycleMatch = /Final schema lifecycle state:\s*(\S+)/.exec(auditOutput);
+	const errorsMatch = /Errors:\s*(\d+)/.exec(auditOutput);
+	const lifecycle = lifecycleMatch?.[1] ?? (status === 0 ? 'CURRENT' : 'SCHEMA_DRIFT');
+	const errorCount = errorsMatch ? Number(errorsMatch[1]) : status === 0 ? 0 : 1;
+	return buildSchemaAuditVerdict(lifecycle, errorCount);
+}
+
 function main(): void {
 	const targetIdx = process.argv.indexOf('--target');
 	const target = targetIdx !== -1 ? process.argv[targetIdx + 1] : undefined;
@@ -700,16 +740,19 @@ function main(): void {
 		'Evidence class: object_audit_readiness (history parity + disposable object fingerprint). Not equivalent to pnpm dbs migration_history_parity.',
 	);
 
-	if (errors > 0 || finalLifecycle === 'SCHEMA_DRIFT') {
-		console.error(`❌ AUDIT FAILED: Unexplained schema drift or history divergence detected (${finalLifecycle}).`);
+	const verdict = buildSchemaAuditVerdict(finalLifecycle, errors);
+	if (!verdict.passedStandalone) {
+		if (verdict.lifecycle === 'BEHIND') {
+			console.error(`❌ AUDIT FAILED: Target schema is BEHIND expected migrations.`);
+		} else {
+			console.error(
+				`❌ AUDIT FAILED: Unexplained schema drift or history divergence detected (${verdict.lifecycle}).`,
+			);
+		}
 		process.exit(1);
-	} else if (finalLifecycle === 'BEHIND') {
-		console.error(`❌ AUDIT FAILED: Target schema is BEHIND expected migrations.`);
-		process.exit(1);
-	} else {
-		console.log(`✅ AUDIT PASSED: Schema state is verified and clean (${finalLifecycle}).`);
-		process.exit(0);
 	}
+	console.log(`✅ AUDIT PASSED: Schema state is verified and clean (${verdict.lifecycle}).`);
+	process.exit(0);
 }
 
 if (process.argv[1]?.endsWith('audit-db.ts')) {

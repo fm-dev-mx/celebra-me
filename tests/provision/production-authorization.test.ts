@@ -41,10 +41,16 @@ const APPROVED_MUTATORS: MutatorSpec[] = [
 		firstWritePattern: /runCommand\(\s*'supabase',\s*\[[^\]]*['"]--yes['"]/,
 		preflightPatterns: [
 			/audit-db\.ts/,
-			/assertValidReleaseCheckEvidence/,
-			/daily-critical-production-backup/,
+			/ensureValidReleaseCheckEvidence/,
+			/backup-critical-production/,
 		],
 		family: 'schema_migration',
+	},
+	{
+		file: 'scripts/db/db-sync-orchestrator.ts',
+		firstWritePattern: /runPromotionApply\s*\(/,
+		preflightPatterns: [/runPromotionPreflight/],
+		family: 'managed_promotion',
 	},
 	{
 		file: 'scripts/db/run-prod-patch.ts',
@@ -86,12 +92,16 @@ function walkTsFiles(dir: string): string[] {
 	return out;
 }
 
+/** Direct call, or injectible seam: `(input.requireOwnerApply ?? requireOwnerProductionApply)(`. */
+const OWNER_GATE_CALL =
+	/(?:requireOwnerProductionApply|\(\s*input\.requireOwnerApply\s*\?\?\s*requireOwnerProductionApply\s*\))\s*\(/;
+
 function discoverRequireOwnerProductionApplyCallers(): string[] {
 	return walkTsFiles('scripts')
 		.filter((file) => file !== 'scripts/db/owner-production-apply.ts')
 		.filter((file) => {
 			const source = readFileSync(resolve(ROOT, file), 'utf8');
-			return /requireOwnerProductionApply\s*\(/.test(source);
+			return OWNER_GATE_CALL.test(source);
 		})
 		.sort();
 }
@@ -141,13 +151,26 @@ describe('owner confirmation helpers', () => {
 		expect(buildOwnerConfirmationCode('MIGRATE', '6774a9459a2a0626')).toBe('MIGRATE 6774a945');
 	});
 
-	it('strips bracketed-paste and zero-width noise from typed input', () => {
+	it('strips bracketed-paste, CR-only Enter, Ctrl+Z, and zero-width noise', () => {
 		expect(sanitizeOwnerConfirmationInput('\u001b[200~MIGRATE 6774a945\u001b[201~\n')).toBe(
 			'MIGRATE 6774a945',
 		);
 		expect(sanitizeOwnerConfirmationInput('  MIGRATE\u200b 6774a945  ')).toBe(
 			'MIGRATE 6774a945',
 		);
+		// Windows raw-mode Enter is often CR-only; Ctrl+Z may appear when unsticking a hung reader.
+		expect(sanitizeOwnerConfirmationInput('MIGRATE 6774a945\r')).toBe('MIGRATE 6774a945');
+		expect(sanitizeOwnerConfirmationInput('MIGRATE 6774a945\u001a')).toBe('MIGRATE 6774a945');
+		expect(sanitizeOwnerConfirmationInput('MIGRATE\u00a06774a945')).toBe('MIGRATE 6774a945');
+	});
+
+	it('uses @inquirer input for confirmation instead of byte-wise fs.readSync', () => {
+		const source = sourceOf('scripts/db/owner-production-apply.ts');
+		expect(source).toContain('promptOwnerConfirmationCode');
+		expect(source).toContain("import('@inquirer/prompts')");
+		expect(source).toContain('input({');
+		expect(source).not.toMatch(/from ['"]node:fs['"]/);
+		expect(source).not.toMatch(/const typedRaw = await \(input\.readConfirmationLine \?\? readTty/);
 	});
 });
 
@@ -302,10 +325,10 @@ describe('Production mutator discovery and gate ordering', () => {
 	for (const mutator of APPROVED_MUTATORS) {
 		it(`${mutator.file}: one gate precedes first write and follows preflight`, () => {
 			const source = sourceOf(mutator.file);
-			const gateCount = (source.match(/requireOwnerProductionApply\s*\(/g) ?? []).length;
+			const gateCount = (source.match(new RegExp(OWNER_GATE_CALL.source, 'g')) ?? []).length;
 			expect(gateCount).toBe(1);
 
-			const gateIndex = indexOfPattern(source, /requireOwnerProductionApply\s*\(/);
+			const gateIndex = indexOfPattern(source, OWNER_GATE_CALL);
 			const writeIndex = indexOfPattern(source, mutator.firstWritePattern);
 
 			expect(gateIndex).toBeGreaterThanOrEqual(0);

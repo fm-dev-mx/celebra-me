@@ -48,6 +48,14 @@ describe('MigrationPlan', () => {
 		expect(changed).not.toBe(base);
 	});
 
+	it('keeps planId stable across preflight/apply mode and releaseEvidenceSha', () => {
+		const preflight = computePlanId(sampleIdentity({ mode: 'preflight', releaseEvidenceSha: null }));
+		const apply = computePlanId(
+			sampleIdentity({ mode: 'apply', releaseEvidenceSha: 'abc1234def' }),
+		);
+		expect(apply).toBe(preflight);
+	});
+
 	it('detects plan drift fields before write', () => {
 		const left = buildMigrationPlan(sampleIdentity());
 		const right = buildMigrationPlan(sampleIdentity({ sourceHead: 'ffffffffffff' }));

@@ -9,12 +9,12 @@
  * No env/token/secret confirmation alternatives.
  */
 
-import { readSync } from 'node:fs';
 import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
 import { extractSupabaseProjectRef, redactDbUrl } from './db-target-config.ts';
 import {
 	failOperator,
 	formatKeyValueBlock,
+	inquirerTheme,
 	operatorSymbol,
 	shortSha,
 	writeHuman,
@@ -27,14 +27,21 @@ function failGate(input: OperatorFailureInput, env?: NodeJS.ProcessEnv): never {
 }
 
 /* eslint-disable no-control-regex */
-/** Strip terminal paste noise that breaks exact confirmation matching on Windows. */
+/**
+ * Strip terminal paste / raw-mode noise that breaks exact confirmation matching.
+ * Windows terminals after @inquirer select often deliver Enter as CR-only and may
+ * leave control bytes (e.g. SUB from Ctrl+Z) in the buffer.
+ */
 export function sanitizeOwnerConfirmationInput(raw: string): string {
 	return raw
 		.replace(/\u001b\[200~/g, '')
 		.replace(/\u001b\[201~/g, '')
 		.replace(/\u001b\[[0-9;?]*[ -/]*[@-~]/g, '')
 		.replace(/[\u200B-\u200D\uFEFF]/g, '')
-		.replace(/\r/g, '')
+		.replace(/[\u00A0\u202F]/g, ' ')
+		.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '')
+		.replace(/\r|\n/g, '')
+		.replace(/[ \t]+/g, ' ')
 		.trim();
 }
 /* eslint-enable no-control-regex */
@@ -106,6 +113,11 @@ export interface OwnerProductionApplyInput {
 	technicalReview?: ReadonlyArray<readonly [string, string]>;
 	/** Optional Spanish title override for the compact card. */
 	summaryTitle?: string;
+	/**
+	 * When true, skip the compact summary card (caller already presented it).
+	 * Menu + confirmation code still run.
+	 */
+	omitSummary?: boolean;
 	env?: NodeJS.ProcessEnv;
 	stdin?: NodeJS.ReadStream;
 	/** Test seam for arrow intent menu. */
@@ -155,21 +167,29 @@ export function agentSelfAuthorizationBlocked(
 	return Boolean(agentContext && agentContext !== 'false' && agentContext !== '0');
 }
 
-function readTtyConfirmationLine(): string {
-	process.stderr.write('Confirmation> ');
-	const chunks: Buffer[] = [];
-	const buf = Buffer.alloc(1);
-	for (;;) {
-		const bytesRead = readSync(0, buf, 0, 1, null);
-		if (bytesRead <= 0) break;
-		if (buf[0] === 0x0a) break;
-		if (buf[0] === 0x0d) continue;
-		chunks.push(Buffer.from(buf));
-	}
-	return Buffer.concat(chunks).toString('utf8');
+/**
+ * Read the bound confirmation code via the same @inquirer stack as the intent menu.
+ *
+ * Important: do not use byte-wise readSync(0) after @inquirer select. On Windows,
+ * the terminal remains in raw mode where Enter is CR (0x0d) only; the old reader
+ * skipped CR and waited for LF forever, so the operator appeared stuck and the
+ * eventual buffer (often with control bytes) failed the exact match.
+ */
+async function promptOwnerConfirmationCode(
+	env: NodeJS.ProcessEnv = process.env,
+): Promise<string> {
+	const { input } = await import('@inquirer/prompts');
+	return input({
+		message: 'Código de confirmación',
+		required: true,
+		theme: inquirerTheme(env),
+	});
 }
 
-async function promptOwnerIntent(applyActionLabel: string): Promise<OwnerIntent> {
+async function promptOwnerIntent(
+	applyActionLabel: string,
+	env: NodeJS.ProcessEnv = process.env,
+): Promise<OwnerIntent> {
 	// Dynamic import keeps Jest/CJS consumers free of @inquirer ESM parse issues.
 	const { select } = await import('@inquirer/prompts');
 	return select({
@@ -180,6 +200,7 @@ async function promptOwnerIntent(applyActionLabel: string): Promise<OwnerIntent>
 			{ name: 'Revisar cambios', value: 'review' as const },
 			{ name: applyActionLabel, value: 'proceed' as const },
 		],
+		theme: inquirerTheme(env),
 	});
 }
 
@@ -280,11 +301,19 @@ export async function requireOwnerProductionApply(
 	const confirmationCode = buildOwnerConfirmationCode(input.operationVerb, input.bindingHex);
 
 	writeHuman();
-	writeCompactSummary(input);
+	if (!input.omitSummary) {
+		writeCompactSummary(input);
+	} else {
+		writeHuman(
+			`${operatorSymbol('info', env)} Autorización: Cancelar está seleccionado por defecto. Enter no autoriza la escritura.`,
+		);
+		writeHuman();
+	}
 
 	const hasIntentSeam = Boolean(input.selectIntent);
 	const hasLineSeam = Boolean(input.readConfirmationLine);
-	if (!hasIntentSeam && !hasLineSeam && !stdin.isTTY) {
+	const ttyOk = Boolean(stdin.isTTY && process.stderr.isTTY);
+	if (!hasIntentSeam && !hasLineSeam && !ttyOk) {
 		failGate(
 			{
 				title: 'Se requiere una TTY interactiva',
@@ -304,7 +333,7 @@ export async function requireOwnerProductionApply(
 			? await input.selectIntent()
 			: hasLineSeam
 				? 'proceed'
-				: await promptOwnerIntent(input.applyActionLabel);
+				: await promptOwnerIntent(input.applyActionLabel, env);
 
 		if (intent === 'cancel') {
 			failGate(
@@ -347,16 +376,21 @@ export async function requireOwnerProductionApply(
 		`${operatorSymbol('info', env)} Enlace: plan ${shortSha(input.bindingHex)} · release ${shortSha(releaseEvidence.sha)}`,
 	);
 
-	const typedRaw = await (input.readConfirmationLine ?? readTtyConfirmationLine)();
+	const typedRaw = await (input.readConfirmationLine
+		? input.readConfirmationLine()
+		: promptOwnerConfirmationCode(env));
 	const typed = sanitizeOwnerConfirmationInput(typedRaw);
 	if (typed !== confirmationCode) {
 		failGate(
 			{
 				title: 'Código de confirmación incorrecto',
-				cause: 'El texto ingresado no coincide con el desafío vinculado al plan.',
+				cause:
+					`El texto ingresado no coincide con el desafío vinculado al plan. ` +
+					`Esperado ${confirmationCode.length} caracteres; recibido ${typed.length}.`,
 				code: 'OWNER_CONFIRMATION_MISMATCH',
 				remediation: [
-					'Copie o escriba exactamente el código mostrado (VERB + 8 hex).',
+					'Escriba exactamente el código mostrado (VERB + espacio + 8 hex), sin caracteres de control.',
+					'No use Ctrl+Z para “desbloquear” el prompt; use solo Enter tras el código.',
 					'Si el plan cambió, cancele, vuelva a revisar y genere un nuevo código.',
 				],
 			},

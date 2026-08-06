@@ -11,8 +11,6 @@ export interface MigratePolicySession {
 	productionAuditCompleted?: boolean;
 	/** buildPlan invocations in this orchestration (rebuilds use compact progress). */
 	buildPlanCount?: number;
-	/** Last planId observed during rebuild; used to surface material plan changes only. */
-	lastPlanId?: string;
 }
 
 export interface MigratePolicyContext {
@@ -58,6 +56,6 @@ export interface MigrateEnvironmentPolicy {
 
 /** Accepted residual risk: single-operator cross-machine coordination (no distributed lock). */
 export const MIGRATE_CONCURRENCY_RESIDUAL_RISK =
-	'Schema migrate assumes a single authorized operator per target. ' +
-	'No distributed lock is provided; concurrent applies across machines are an accepted residual risk. ' +
-	'After any failed apply, re-run preflight and obtain a newly validated plan before retrying.';
+	'Se asume un único operador autorizado por destino. No hay bloqueo distribuido; ' +
+	'aplicaciones concurrentes entre máquinas son un riesgo residual aceptado. ' +
+	'Tras un apply fallido, vuelva a ejecutar el preflight y obtenga un plan nuevo.';

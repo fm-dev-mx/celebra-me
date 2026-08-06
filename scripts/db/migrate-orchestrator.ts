@@ -1,6 +1,6 @@
 /**
  * Shared schema-migration orchestrator.
- * Sequence: preflight → (apply: rebuild+drift) → beforeWrite → authorize → execute → afterWrite.
+ * Sequence: preflight → (apply: reviewed → beforeWrite → rebuild+drift → authorize → execute → afterWrite).
  *
  * After any failed apply, callers must obtain a newly validated plan — no cached resume.
  */
@@ -22,17 +22,15 @@ import { localMigratePolicy } from './migrate-policy-local.ts';
 import { previewMigratePolicy } from './migrate-policy-preview.ts';
 import { productionMigratePolicy } from './migrate-policy-production.ts';
 import { disposableMigratePolicy } from './migrate-policy-disposable.ts';
+import { formatPlanReview, formatPlanReviewCompact } from './migrate-plan-format.ts';
 import {
-	formatKeyValueBlock,
-	formatOperatorFailure,
-	formatPhaseSummary,
-	labelAuthRequirement,
-	labelBackupRequirement,
-	labelCompatibility,
 	labelTarget,
-	shortSha,
+	operatorSymbol,
 	writeHuman,
+	OperatorError,
 } from './operator-cli-ux.ts';
+
+export { formatPlanReview, formatPlanReviewCompact };
 
 const POLICIES: Record<MigrateTarget, MigrateEnvironmentPolicy> = {
 	local: localMigratePolicy,
@@ -41,7 +39,7 @@ const POLICIES: Record<MigrateTarget, MigrateEnvironmentPolicy> = {
 	'disposable-test': disposableMigratePolicy,
 };
 
-/** Fields that must remain stable between a reviewed preflight plan and apply rebuild. */
+/** Material fields that must remain stable between a reviewed plan and post-backup rebuild. */
 const REVIEW_DRIFT_FIELDS: ReadonlySet<PlanDriftField> = new Set([
 	'target',
 	'sourceHead',
@@ -52,6 +50,7 @@ const REVIEW_DRIFT_FIELDS: ReadonlySet<PlanDriftField> = new Set([
 	'compatibilityStatus',
 	'releaseIdentity',
 	'deployedAppIdentity',
+	'planId',
 ]);
 
 export function getMigratePolicy(target: MigrateTarget): MigrateEnvironmentPolicy {
@@ -92,40 +91,28 @@ function failPlanDrift(
 	drifts: readonly string[],
 	target: MigrateTarget,
 ): never {
-	process.stderr.write(
-		formatOperatorFailure({
-			title,
-			cause: 'La evidencia en vivo ya no coincide con el plan revisado.',
-			code: 'PLAN_DRIFT',
-			remediation: [
-				'Ejecute de nuevo el preflight de solo lectura.',
-				'Revise el plan actualizado.',
-				'Reintente el apply con el plan nuevo (no reutilice un plan anterior).',
-			],
-			retryCommand: `pnpm db:migrate -- --target ${target}`,
-			noChangesMessage:
-				target === 'production'
-					? undefined
-					: `No se realizaron escrituras de schema en ${labelTarget(target)}.`,
-			affected: {
-				label: 'Campos con deriva',
-				items: [...drifts],
-			},
-		}),
-	);
-	process.exit(1);
-}
-
-function assertNoDrift(
-	left: MigrationPlan,
-	right: MigrationPlan,
-	label: string,
-	target: MigrateTarget,
-): void {
-	const drifts = detectPlanDrift(left, right);
-	if (drifts.length > 0) {
-		failPlanDrift(label, drifts, target);
-	}
+	throw new OperatorError({
+		title,
+		cause: 'La evidencia en vivo ya no coincide con el plan revisado.',
+		code: 'PLAN_DRIFT',
+		remediation: [
+			'Ejecute de nuevo el preflight de solo lectura.',
+			'Revise el plan actualizado.',
+			'Reintente el apply con el plan nuevo (no reutilice un plan anterior).',
+		],
+		retryCommand:
+			target === 'production'
+				? 'pnpm db:prod:migrate'
+				: `pnpm db:migrate -- --target ${target}`,
+		noChangesMessage:
+			target === 'production'
+				? undefined
+				: `No se realizaron escrituras de schema en ${labelTarget(target)}.`,
+		affected: {
+			label: 'Campos con deriva',
+			items: [...drifts],
+		},
+	});
 }
 
 function assertReviewDrift(
@@ -161,7 +148,8 @@ export function preflightMigrate(input: OrchestrateMigrateInput): MigrationPlan 
 }
 
 /**
- * Full orchestration. Apply rebuilds evidence and rejects plan drift before the first write.
+ * Full orchestration.
+ * Apply: reviewed plan → beforeWrite (backup) → one rebuild → drift check → authorize → write.
  */
 export async function orchestrateMigrate(
 	input: OrchestrateMigrateInput,
@@ -179,67 +167,23 @@ export async function orchestrateMigrate(
 		fail('orchestrateMigrate only supports mode=apply; use preflightMigrate for read-only planning.');
 	}
 
-	// Apply: rebuild current evidence twice; reject instability before authorization or write.
-	const first = policy.buildPlan(ctx, 'apply');
-	if (input.reviewedPlan) {
-		assertReviewDrift(input.reviewedPlan, first, input.target);
+	const reviewed = input.reviewedPlan ?? policy.buildPlan(ctx, 'apply');
+
+	if (input.remindConcurrencyRisk !== false && input.target === 'production') {
+		writeHuman(`${operatorSymbol('info')} ${MIGRATE_CONCURRENCY_RESIDUAL_RISK}`);
 	}
+
+	// Backup (and other beforeWrite hooks) precede final revalidation and owner authorization.
+	policy.beforeWrite(reviewed, ctx);
+
+	writeHuman(`${operatorSymbol('info')} Revalidando evidencia del plan…`);
 	const plan = policy.buildPlan(ctx, 'apply');
-	assertNoDrift(first, plan, 'Live migration evidence changed before write', input.target);
+	assertReviewDrift(reviewed, plan, input.target);
+	writeHuman(`${operatorSymbol('ok')} Revalidación sin cambios materiales en el plan.`);
 
-	if (input.remindConcurrencyRisk !== false) {
-		writeHuman(`${MIGRATE_CONCURRENCY_RESIDUAL_RISK}`);
-	}
-
-	// Production: beforeWrite (critical backup) precedes authorize (owner TTY).
-	policy.beforeWrite(plan, ctx);
 	await policy.authorize(plan, ctx);
 	policy.execute(plan, ctx);
 	policy.afterWrite(plan, ctx);
 
 	return { plan, wrote: plan.pendingVersions.length > 0 };
-}
-
-/** Full technical review — URLs stay redacted; hashes/executors/policy names included. */
-export function formatPlanReview(plan: MigrationPlan): string {
-	const pending =
-		plan.pendingVersions.length === 0 ? '(ninguna)' : plan.pendingVersions.join(', ');
-	const phases = formatPhaseSummary(plan.phaseByVersion, plan.pendingVersions);
-	return formatKeyValueBlock('Revisión técnica del plan de migración', [
-		['Entorno', labelTarget(plan.target)],
-		['Modo', plan.mode],
-		['Migraciones', pending],
-		['Fases', phases],
-		['Compatibilidad', `${plan.compatibilityStatus} (${labelCompatibility(plan.compatibilityStatus)})`],
-		['Motivos', plan.compatibilityReasons.join('; ') || '(ninguno)'],
-		['Respaldo', `${plan.backupRequirement}`],
-		['Autorización', `${plan.authRequirement}`],
-		['Ejecutor', plan.executor],
-		['Verificación', plan.verificationRequirement],
-		['Plan ID', plan.planId],
-		['Source HEAD', plan.sourceHead],
-		['Identidad', plan.redactedTargetIdentity],
-		['Pin esperado', plan.expectedPin ? plan.expectedPin.join(', ') : '(derivado)'],
-		[
-			'Release',
-			`${plan.releaseIdentity.kind}${plan.releaseIdentity.value ? `=${plan.releaseIdentity.value}` : ''}`,
-		],
-		['App desplegada', plan.deployedAppIdentity.sha ?? '(ninguna)'],
-		['Evidencia release', plan.releaseEvidenceSha ?? '(no requerida en este modo)'],
-	]);
-}
-
-/** Compact operator card — no URLs, full hashes, executors, or internal policy names. */
-export function formatPlanReviewCompact(plan: MigrationPlan): string {
-	const pending =
-		plan.pendingVersions.length === 0 ? '(ninguna)' : plan.pendingVersions.join(', ');
-	const phases = formatPhaseSummary(plan.phaseByVersion, plan.pendingVersions);
-	return formatKeyValueBlock('Plan de migración', [
-		['Entorno', labelTarget(plan.target)],
-		['Migraciones', pending],
-		['Fase / compat.', `${phases} · ${labelCompatibility(plan.compatibilityStatus)}`],
-		['Respaldo', labelBackupRequirement(plan.backupRequirement)],
-		['Autorización', labelAuthRequirement(plan.authRequirement)],
-		['Plan', shortSha(plan.planId)],
-	]);
 }

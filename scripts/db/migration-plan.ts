@@ -48,14 +48,18 @@ export interface MigrationPlan extends MigrationPlanIdentity {
 	planId: string;
 }
 
-const PLAN_ID_VERSION = 1;
+/**
+ * Plan-id version 2 hashes only material mutation identity.
+ * `mode` and `releaseEvidenceSha` stay on the plan for display/gates but must not
+ * change the operator-facing planId between preflight and apply for the same change set.
+ */
+const PLAN_ID_VERSION = 2;
 
 /** Canonical JSON used for planId — field order is fixed. */
 export function serializePlanIdentityForHash(identity: MigrationPlanIdentity): string {
 	return JSON.stringify({
 		v: PLAN_ID_VERSION,
 		target: identity.target,
-		mode: identity.mode,
 		sourceHead: identity.sourceHead,
 		redactedTargetIdentity: identity.redactedTargetIdentity,
 		pendingVersions: [...identity.pendingVersions],
@@ -79,7 +83,6 @@ export function serializePlanIdentityForHash(identity: MigrationPlanIdentity): s
 		backupRequirement: identity.backupRequirement,
 		executor: identity.executor,
 		verificationRequirement: identity.verificationRequirement,
-		releaseEvidenceSha: identity.releaseEvidenceSha,
 	});
 }
 

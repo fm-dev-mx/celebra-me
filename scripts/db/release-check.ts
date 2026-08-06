@@ -1,8 +1,9 @@
 /**
  * release-check.ts — Canonical release validation bound to clean HEAD.
  *
- * Runs type-check → tests → build against a clean working tree, then writes
+ * Runs type-check → tests → build:app against a clean working tree, then writes
  * gitignored evidence under .agent/tmp/ for Production apply gates.
+ * Uses build:app (not build) so type-check is not executed twice.
  */
 
 import { execFileSync } from 'node:child_process';
@@ -166,6 +167,35 @@ export function assertValidReleaseCheckEvidence(
 	return evidence;
 }
 
+/**
+ * Reuse valid evidence for the current clean HEAD, or run release-check once.
+ * Used by Production migrate apply so operators are not forced into a separate command
+ * when evidence is missing/stale.
+ */
+export function ensureValidReleaseCheckEvidence(
+	options: {
+		evidencePath?: string;
+		worktree?: GitWorktreeState;
+		runner?: typeof runCommand;
+	} = {},
+): ReleaseCheckEvidence {
+	const worktree = options.worktree ?? readGitWorktreeState();
+	const sha = assertCleanGitWorktree(worktree);
+	const path = options.evidencePath ?? RELEASE_CHECK_EVIDENCE_PATH;
+	const evidence = readReleaseCheckEvidence(path);
+	if (evidence && evidence.sha === sha) {
+		return evidence;
+	}
+	if (evidence && evidence.sha !== sha) {
+		clearReleaseCheckEvidence(path);
+	}
+	return runReleaseCheck({
+		runner: options.runner,
+		evidencePath: path,
+		worktree,
+	});
+}
+
 export function runReleaseCheck(options: {
 	runner?: typeof runCommand;
 	evidencePath?: string;
@@ -178,10 +208,11 @@ export function runReleaseCheck(options: {
 
 	clearReleaseCheckEvidence(evidencePath);
 
+	// build:app avoids the nested type-check inside `pnpm build`.
 	const steps: Array<{ label: 'typeCheck' | 'test' | 'build'; args: string[] }> = [
 		{ label: 'typeCheck', args: ['type-check'] },
 		{ label: 'test', args: ['test'] },
-		{ label: 'build', args: ['build'] },
+		{ label: 'build', args: ['build:app'] },
 	];
 
 	for (const step of steps) {

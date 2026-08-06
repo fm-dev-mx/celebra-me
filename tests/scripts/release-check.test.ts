@@ -1,10 +1,11 @@
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { afterEach, describe, expect, it, jest } from '@jest/globals';
 import {
 	assertValidReleaseCheckEvidence,
 	clearReleaseCheckEvidence,
+	ensureValidReleaseCheckEvidence,
 	readReleaseCheckEvidence,
 	writeReleaseCheckEvidence,
 	type ReleaseCheckEvidence,
@@ -57,7 +58,7 @@ describe('release-check evidence', () => {
 				worktree: {
 					sha: 'abc1234',
 					clean: false,
-					dirtySummary: '1 archivo(s): scripts/db/push-prod-migrations.ts',
+					dirtySummary: '1 archivo(s): scripts/db/migrate-policy-production.ts',
 				},
 			}),
 		).toThrow('process.exit:1');
@@ -93,5 +94,33 @@ describe('release-check evidence', () => {
 		expect(readReleaseCheckEvidence(path)).toBeNull();
 		clearReleaseCheckEvidence(path);
 		expect(() => readFileSync(path, 'utf8')).toThrow();
+	});
+
+	it('reuses matching evidence without re-running validation steps', () => {
+		const dir = mkdtempSync(join(tmpdir(), 'release-check-'));
+		tempDirs.push(dir);
+		const path = join(dir, 'evidence.json');
+		writeReleaseCheckEvidence(evidence('abc1234deadbeef'), path);
+		const runner = jest.fn(() => {
+			throw new Error('runner should not be called');
+		});
+		const result = ensureValidReleaseCheckEvidence({
+			evidencePath: path,
+			worktree: { sha: 'abc1234deadbeef', clean: true, dirtySummary: '' },
+			runner: runner as never,
+		});
+		expect(result.sha).toBe('abc1234deadbeef');
+		expect(runner).not.toHaveBeenCalled();
+	});
+
+	it('runs type-check → test → build:app (not nested type-check via build)', () => {
+		const source = readFileSync(
+			resolve(process.cwd(), 'scripts/db/release-check.ts'),
+			'utf8',
+		);
+		expect(source).toContain("args: ['build:app']");
+		expect(source).not.toMatch(/args:\s*\[['"]build['"]\]/);
+		expect(source).toContain("args: ['type-check']");
+		expect(source).toContain("args: ['test']");
 	});
 });
