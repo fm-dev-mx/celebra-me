@@ -1,9 +1,8 @@
 /** Idempotent Preview-only provenance baseline; it never changes invitation content or versions. */
 import { createHash, randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
-import { getSecretFromEnvOrFiles, runPsql, sqlLiteral } from '../db/db-workflow-lib.ts';
-import { PREVIEW_SECRET_FILES } from '../db/db-target-config.ts';
+import { resolve } from 'node:path';
+import { assertPreviewDbUrl, getPreviewDbUrl, runPsql, sqlLiteral } from '../db/db-workflow-lib.ts';
 import { validatePackageData, runImportEngine } from './invitation-import-engine.ts';
 import type { InvitationPackageData } from './invitation-package.ts';
 import { verifyPreviewApprovalArtifact } from './preview-approval-service.ts';
@@ -44,10 +43,7 @@ function publicationHash(content: Record<string, unknown>): string {
 	return createHash('md5').update(JSON.stringify(content)).digest('hex');
 }
 
-function verifyApprovalForApply(
-	input: { approvalArtifactPath?: string; apply?: boolean },
-	pkg: InvitationPackageData,
-): void {
+function verifyApprovalForApply(input: { apply?: boolean }, pkg: InvitationPackageData): void {
 	if (!input.apply) return;
 	const identity = {
 		packageHash: pkg.packageHash,
@@ -58,12 +54,6 @@ function verifyApprovalForApply(
 		slug: pkg.invitation.slug,
 		route: `/${pkg.invitation.eventType}/${pkg.invitation.slug}`,
 	};
-	// Prefer shared Preview DB store; optional legacy file dir remains as fallback.
-	if (input.approvalArtifactPath) {
-		const approvalPath = resolve(process.cwd(), input.approvalArtifactPath);
-		verifyPreviewApprovalArtifact(identity, [dirname(approvalPath)]);
-		return;
-	}
 	verifyPreviewApprovalArtifact(identity);
 }
 
@@ -169,7 +159,6 @@ function writeBaseline(
 
 export async function establishPreviewProvenanceBaseline(input: {
 	packagePath: string;
-	approvalArtifactPath?: string;
 	apply?: boolean;
 }): Promise<{
 	status: 'PLANNED' | 'BASELINED' | 'IN_SYNC' | 'EVIDENCE_UNAVAILABLE';
@@ -180,8 +169,8 @@ export async function establishPreviewProvenanceBaseline(input: {
 }> {
 	const pkg = readPackage(resolve(process.cwd(), input.packagePath));
 	verifyApprovalForApply(input, pkg);
-	const dbUrl = getSecretFromEnvOrFiles('PREVIEW_DB_URL', PREVIEW_SECRET_FILES);
-	if (!dbUrl) throw new Error('Preview credentials are unavailable.');
+	const { url: dbUrl } = getPreviewDbUrl();
+	assertPreviewDbUrl(dbUrl);
 	const verification = await verifyPreviewTarget(pkg, dbUrl);
 	if (verification.unavailable)
 		return {

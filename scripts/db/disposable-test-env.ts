@@ -374,6 +374,47 @@ function printReady(): void {
 	console.info(`  (Direct psql access only — no Supabase API/Studio)`);
 }
 
+function applyDisposableMigrations(options: { isBaseline: boolean; maxVersion?: string }): void {
+	// Full workspace apply uses the shared migrate policy/executor. Truncated
+	// baseline/--max-version remains on the disposable-only apply-migrations path.
+	if (!options.isBaseline && !options.maxVersion) {
+		const applyResult = runCommand('npx', [
+			'-y',
+			'tsx',
+			'scripts/db/migrate-cli.ts',
+			'--target',
+			'disposable-test',
+			'--apply',
+			'--no-interactive',
+		]);
+		if (applyResult.status !== 0) {
+			fail(`Migration failure: ${applyResult.stderr || applyResult.stdout}`);
+		}
+		console.info(applyResult.stdout);
+		console.info('Migrations applied successfully via shared disposable migrate policy.');
+		return;
+	}
+
+	const applyArgs = [
+		'-y',
+		'tsx',
+		'scripts/db/apply-migrations.ts',
+		'--db-url',
+		DISPOSABLE_DB_URL,
+	];
+	if (options.isBaseline) {
+		applyArgs.push('--max-version', BASELINE_CUTOFF_VERSION);
+	} else if (options.maxVersion) {
+		applyArgs.push('--max-version', options.maxVersion);
+	}
+	const applyResult = runCommand('npx', applyArgs);
+	if (applyResult.status !== 0) {
+		fail(`Migration failure: ${applyResult.stderr || applyResult.stdout}`);
+	}
+	console.info(applyResult.stdout);
+	console.info('Migrations applied successfully.');
+}
+
 export function cmdReset(): void {
 	console.info('=== Disposable Test Environment: Reset ===\n');
 
@@ -450,25 +491,7 @@ export function cmdReset(): void {
 	if (maxVersion && !/^\d{14}$/.test(maxVersion)) {
 		fail('Disposable reset --max-version must be a 14-digit migration version.');
 	}
-	const applyArgs = [
-		'-y',
-		'tsx',
-		'scripts/db/apply-migrations.ts',
-		'--db-url',
-		DISPOSABLE_DB_URL,
-	];
-	if (isBaseline) {
-		applyArgs.push('--max-version', BASELINE_CUTOFF_VERSION);
-	} else if (maxVersion) {
-		applyArgs.push('--max-version', maxVersion);
-	}
-	const applyResult = runCommand('npx', applyArgs);
-	if (applyResult.status !== 0) {
-		fail(`Migration failure: ${applyResult.stderr || applyResult.stdout}`);
-	} else {
-		console.info(applyResult.stdout);
-		console.info('Migrations applied successfully.');
-	}
+	applyDisposableMigrations({ isBaseline, maxVersion });
 
 	if (existsSync(SYNTHETIC_DATA_SQL)) {
 		console.info('Applying synthetic seed data...');

@@ -69,6 +69,8 @@ export interface DbSyncPlanGates {
 	previewWriteAuthRequired: boolean;
 	ownerProductionApplyRequired: boolean;
 	rsvpResetDisclosureRequired: boolean;
+	/** Content apply requires history-parity CURRENT on the write target. */
+	schemaCurrentRequired: boolean;
 }
 
 export interface DbSyncPlan {

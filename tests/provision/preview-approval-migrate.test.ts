@@ -82,7 +82,7 @@ describe('preview-approval-migrate', () => {
 		);
 
 		const store = createMemoryPreviewApprovalStore();
-		const result = migratePreviewApprovalArtifacts({ dir, now, store });
+		const result = migratePreviewApprovalArtifacts({ dir, now, store, dryRun: false });
 		expect(result.migrated).toBe(1);
 		expect(result.skipped).toBe(2);
 		expect(store.get('a'.repeat(64))?.approvalState).toBe('approved');

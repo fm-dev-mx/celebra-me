@@ -3,11 +3,13 @@ import { dirname, resolve } from 'node:path';
 import { spawnSync, type SpawnSyncOptions } from 'node:child_process';
 import {
 	PROD_SECRET_FILES,
+	PREVIEW_SECRET_FILES,
 	LOCAL_DB_URL,
 	redactDbUrl,
 	parseDbUrl,
 	getSecretFromEnvOrFiles,
 	extractSupabaseProjectRef,
+	validateEnvironmentUrlsPreflight,
 } from './db-target-config.ts';
 import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
 
@@ -136,6 +138,40 @@ export function getProdDbUrl(): { url: string; source: string } {
 			', ',
 		)}.`,
 	);
+}
+
+export function getPreviewDbUrl(): { url: string; source: string } {
+	const url = getSecretFromEnvOrFiles('PREVIEW_DB_URL', PREVIEW_SECRET_FILES);
+	if (url) {
+		const source = process.env.PREVIEW_DB_URL?.trim()
+			? 'environment variable PREVIEW_DB_URL'
+			: 'secret file';
+		return { url, source };
+	}
+
+	fail(
+		`PREVIEW_DB_URL is required. Set it in the shell or one of these gitignored files: ${PREVIEW_SECRET_FILES.join(
+			', ',
+		)}.`,
+	);
+}
+
+/**
+ * Fail closed unless the URL is the canonical hosted Preview project.
+ * Prefer this over classifyDbTarget alone — PREVIEW_DB_URL self-matching can
+ * misclassify a Production URL stored under that env name.
+ */
+export function assertPreviewDbUrl(rawUrl: string): URL {
+	try {
+		validateEnvironmentUrlsPreflight({ target: 'preview', targetDbUrl: rawUrl });
+	} catch (error: unknown) {
+		fail(
+			`Refusing PREVIEW_DB_URL: ${
+				error instanceof Error ? error.message : String(error)
+			}. Redacted target: ${redactDbUrl(rawUrl)}`,
+		);
+	}
+	return new URL(rawUrl);
 }
 
 export function isSupabaseProductionHostname(hostname: string): boolean {

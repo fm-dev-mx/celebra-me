@@ -65,35 +65,35 @@ selected target aborts the complete mutation phase.
 
 ## Database Command Inventory
 
-| Command                                    | Owner          | Purpose                                                                      |
-| ------------------------------------------ | -------------- | ---------------------------------------------------------------------------- |
-| `pnpm db:push`                             | `package.json` | blocked fail-closed replacement for ambiguous raw Supabase push              |
-| `pnpm db:prod:backup`                      | `scripts/db/`  | read-only production data dump                                               |
-| `pnpm db:prod:backup:critical`             | `scripts/db/`  | complete read-only Production DB/Auth/Storage set (Phase 3 or predecessor profile) |
-| `pnpm db:prod:backup:daily`                | `scripts/db/`  | scheduled local critical backup, EFS/report verification, metrics, and retention |
-| `pnpm db:backup:create-disposable-fixture` | `scripts/db/`  | synthetic complete recovery set for a disposable drill                       |
-| `pnpm db:restore:verify-disposable`        | `scripts/db/`  | rebuild, restore, and verify a complete set in disposable-test only          |
-| `pnpm db:contract:verify`                  | `scripts/db/`  | read-only required mutation schema/privilege contract verification           |
-| `pnpm db:prod:audit`                       | `scripts/db/`  | read-only production migration history & schema audit                        |
-| `pnpm db:branch:parity`                    | `scripts/db/`  | read-only branch migration identity/content + DB-sensitive detection (`--json`) |
-| `pnpm db:branch:diagnose`                  | `scripts/db/`  | read-only branch-lane diagnosis from structured evidence (`--evidence-json`) |
-| `pnpm db:branch:remediate-disposable`      | `scripts/db/`  | verify then rebuild disposable-test only (`--verify-only` / `--execute`)     |
-| `pnpm release-check`                       | `scripts/db/`  | clean-HEAD type-check + test + build; writes release evidence                |
-| `pnpm db:migrate`                          | `scripts/db/`  | Canonical schema migrate planner/orchestrator (`--target`, default preflight) |
-| `pnpm db:local:migrate`                    | `scripts/db/`  | Persistent-local pending apply (wrapper; defaults to `--apply`)              |
-| `pnpm db:local:audit`                      | `scripts/db/`  | read-only persistent-local schema audit                                      |
-| `pnpm db:prod:migrate`                     | `scripts/db/`  | Production schema preflight / apply (wrapper; optional `--expected`, `--apply`) |
-| `pnpm db:preview:migrate`                  | `scripts/db/`  | Preview schema preflight; `--apply` + Preview auth (wrapper over `db:migrate`) |
-| `pnpm db:preview:sync-invitations`         | `scripts/db/`  | Prod→Preview content mirror; `--dry-run` zero writes; `--apply` needs Preview auth |
-| `pnpm db:sync`                             | `scripts/db/`  | Content sync facade (diagnose/compare/plan/apply); see database-workflow.md  |
-| `pnpm db:preview:audit`                    | `scripts/db/`  | read-only Preview schema drift audit (`PREVIEW_DB_URL`)                      |
-| `pnpm db:disposable:reset`                 | `scripts/db/`  | reset isolated disposable test environment container                         |
-| `pnpm test:db:rsvp-contracts`              | `scripts/db/`  | reset disposable DB, start PostgREST, run public RSVP Jest DB/HTTP contracts |
-| `pnpm db:disposable:phase3-concurrency`    | `scripts/db/`  | run system concurrency/stale-plan scenarios against disposable-test          |
-| `pnpm db:validate:pipeline`                | `scripts/db/`  | full database validation pipeline (baseline, latest, pgTAP, application flows) |
-| `pnpm db:local:restore-from-dump`          | `scripts/db/`  | import production dump into persistent local database                        |
-| `pnpm db:sql:lint -- --file <path>`        | `scripts/db/`  | lint a manifest-bearing production SQL patch                                 |
-| `pnpm db:prod:patch -- --file <path>`      | `scripts/db/`  | dry-run-only production patch entrypoint                                     |
+| Command                                    | Owner          | Purpose                                                                               |
+| ------------------------------------------ | -------------- | ------------------------------------------------------------------------------------- |
+| `pnpm db:push`                             | `package.json` | blocked fail-closed replacement for ambiguous raw Supabase push                       |
+| `pnpm db:prod:backup`                      | `scripts/db/`  | read-only production data dump                                                        |
+| `pnpm db:prod:backup:critical`             | `scripts/db/`  | complete read-only Production DB/Auth/Storage set (Phase 3 or predecessor profile)    |
+| `pnpm db:prod:backup:daily`                | `scripts/db/`  | scheduled local critical backup, EFS/report verification, metrics, and retention      |
+| `pnpm db:backup:create-disposable-fixture` | `scripts/db/`  | synthetic complete recovery set for a disposable drill                                |
+| `pnpm db:restore:verify-disposable`        | `scripts/db/`  | rebuild, restore, and verify a complete set in disposable-test only                   |
+| `pnpm db:contract:verify`                  | `scripts/db/`  | read-only required mutation schema/privilege contract verification                    |
+| `pnpm db:prod:audit`                       | `scripts/db/`  | read-only production migration history & schema audit                                 |
+| `pnpm db:branch:parity`                    | `scripts/db/`  | read-only branch migration identity/content + DB-sensitive detection (`--json`)       |
+| `pnpm db:branch:diagnose`                  | `scripts/db/`  | read-only branch-lane diagnosis from structured evidence (`--evidence-json`)          |
+| `pnpm db:branch:remediate-disposable`      | `scripts/db/`  | verify then rebuild disposable-test only (`--verify-only` / `--execute`)              |
+| `pnpm release-check`                       | `scripts/db/`  | clean-HEAD type-check + test + build; writes release evidence                         |
+| `pnpm db:migrate`                          | `scripts/db/`  | Canonical schema migrate planner/orchestrator (`--target`, default preflight)         |
+| `pnpm db:local:migrate`                    | `scripts/db/`  | Persistent-local migrate alias (preflight-first; same as `db:migrate --target local`) |
+| `pnpm db:local:audit`                      | `scripts/db/`  | read-only persistent-local schema audit                                               |
+| `pnpm db:prod:migrate`                     | `scripts/db/`  | Production schema preflight / apply (wrapper; optional `--expected`, `--apply`)       |
+| `pnpm db:preview:migrate`                  | `scripts/db/`  | Preview schema preflight; `--apply` + Preview auth (wrapper over `db:migrate`)        |
+| `pnpm db:preview:sync-invitations`         | `scripts/db/`  | Prod→Preview content mirror; `--dry-run` zero writes; `--apply` needs Preview auth    |
+| `pnpm db:sync`                             | `scripts/db/`  | Content sync facade (diagnose/compare/plan/apply); see database-workflow.md           |
+| `pnpm db:preview:audit`                    | `scripts/db/`  | read-only Preview schema drift audit (`PREVIEW_DB_URL`)                               |
+| `pnpm db:disposable:reset`                 | `scripts/db/`  | reset isolated disposable test environment container                                  |
+| `pnpm test:db:rsvp-contracts`              | `scripts/db/`  | reset disposable DB, start PostgREST, run public RSVP Jest DB/HTTP contracts          |
+| `pnpm db:disposable:phase3-concurrency`    | `scripts/db/`  | run system concurrency/stale-plan scenarios against disposable-test                   |
+| `pnpm db:validate:pipeline`                | `scripts/db/`  | full database validation pipeline (baseline, latest, pgTAP, application flows)        |
+| `pnpm db:local:restore-from-dump`          | `scripts/db/`  | import production dump into persistent local database                                 |
+| `pnpm db:sql:lint -- --file <path>`        | `scripts/db/`  | lint a manifest-bearing production SQL patch                                          |
+| `pnpm db:prod:patch -- --file <path>`      | `scripts/db/`  | dry-run-only production patch entrypoint                                              |
 
 Behavior and safety rules live in [`docs/database-workflow.md`](../docs/database-workflow.md) and
 the [manual SQL manifest](../.agent/rules/manual-sql-manifest.md).

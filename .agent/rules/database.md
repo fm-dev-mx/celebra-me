@@ -106,11 +106,12 @@ task authorization, target classification, and standard guard checks.
   intent select + short bound code). No token, secret, or noninteractive confirmation alternative
   exists. `production_authorization_receipts` is historical inert state.
 - **Hosted identity vs environment selection**: Selecting Preview/Production and having credentials
-  is not authorization. Production migrate derives release identity from clean `HEAD` +
-  `pnpm release-check`. Preview migrate still requires `CELEBRA_TARGET_RELEASE_SHA`. Contract-phase
-  migrations also require deployed-app evidence (`CELEBRA_DEPLOYED_APP_SHA` /
-  `CELEBRA_DEPLOYED_APP_CAPABILITIES`). Local is not gated by hosted deployment identity. See
-  `docs/database-workflow.md` → Migration / Deployment Compatibility Contract.
+  is not authorization. Production and Preview migrate derive release identity from clean `HEAD`
+  (Production also requires `pnpm release-check`). Preview URL must match the canonical project ref
+  (`assertPreviewDbUrl`). Contract-phase migrations also require deployed-app evidence
+  (`CELEBRA_DEPLOYED_APP_SHA` / `CELEBRA_DEPLOYED_APP_CAPABILITIES`). Local is not gated by hosted
+  deployment identity. See `docs/database-workflow.md` → Migration / Deployment Compatibility
+  Contract.
 - **Unified orchestration**: Local, Preview, and Production schema migrate share
   `scripts/db/migrate-orchestrator.ts` with isolated environment policies. Invitation promote,
   Preview content mirror, seeds, restores, and `db:prod:patch` remain outside that orchestrator.
@@ -132,9 +133,8 @@ task authorization, target classification, and standard guard checks.
   `pnpm db:migrate -- --target preview`), seed, and audit (`pnpm db:preview:audit`) are separate
   operations. Preview migrate defaults to read-only preflight; mutations require explicit `--apply`
   plus Preview authorization (`CELEBRA_TASK_SCOPE=preview:schema:migrate` or interactive TTY
-  confirmation) after dry-run, optional `--expected` pin (deprecated `--allowlist` /
-  `EXPECTED_MIGRATIONS` shim still accepted with a warning), and the compatibility contract. It does
-  not automatically seed or audit.
+  confirmation) after dry-run, optional `--expected` pin, exact Preview perimeter, clean-HEAD
+  release identity, and the compatibility contract. It does not automatically seed or audit.
 - **Preview mirror**: `pnpm db:preview:sync-invitations --dry-run` performs zero DB, role, profile,
   Storage, or report-file writes. `--apply` requires Preview authorization
   (`CELEBRA_TASK_SCOPE=preview:content-mirror:sync-invitations` or interactive confirmation).
@@ -155,11 +155,10 @@ task authorization, target classification, and standard guard checks.
 
 - `pnpm db:push` is intentionally blocked. Do not bypass it with raw `supabase db push`.
 - `pnpm db:local:reset` is blocked. Use `pnpm db:disposable:reset` for destructive tests.
-- `pnpm db:migrate` is the canonical schema migrate planner/orchestrator (`--target` required;
-  default read-only preflight).
-- `pnpm db:local:migrate` is a deprecated compatibility wrapper that defaults to `--apply` for
-  legacy callers (stderr warning). Prefer `pnpm db:migrate -- --target local` (preflight-first) then
-  explicit `--apply`. Remove the default-apply shim when no callers rely on it.
+- `pnpm db:migrate` is the canonical schema migrate planner/orchestrator (TTY target selector with
+  Cancelar default; non-TTY requires `--target`; default read-only preflight).
+- `pnpm db:local:migrate` / `db:preview:migrate` / `db:prod:migrate` only preselect target and enter
+  the same CLI/policy (all preflight-first; never implicit Local `--apply`).
 - `pnpm db:prod:migrate` is the approved public production **schema** mutation workflow
   (`migrate-cli.ts --target production`).
 - `pnpm invitation:promote` is the approved production **managed-content** promotion workflow

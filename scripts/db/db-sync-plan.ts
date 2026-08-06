@@ -24,6 +24,11 @@ export function gatesForDirection(direction: DbSyncDirection): DbSyncPlanGates {
 			direction === 'definition-to-preview' || direction === 'production-to-preview-mirror',
 		ownerProductionApplyRequired: direction === 'package-to-production',
 		rsvpResetDisclosureRequired: direction === 'production-to-preview-mirror',
+		schemaCurrentRequired:
+			direction === 'definition-to-local' ||
+			direction === 'definition-to-preview' ||
+			direction === 'production-to-preview-mirror' ||
+			direction === 'package-to-production',
 	};
 }
 

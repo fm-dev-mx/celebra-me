@@ -64,7 +64,7 @@
         "db:contract:verify": "tsx scripts/db/verify-mutation-schema-contract.ts",
         "db:prod:migrate": "tsx scripts/db/migrate-cli.ts --target production",
         "db:prod:audit": "tsx scripts/db/db-guard.ts check --target production --operation audit && tsx scripts/db/audit-db.ts --target production",
-        "db:preview:migrate": "tsx scripts/db/db-guard.ts check --target preview --operation migrate && tsx scripts/db/push-preview-migrations.ts",
+        "db:preview:migrate": "tsx scripts/db/push-preview-migrations.ts",
         "db:preview:audit": "tsx scripts/db/db-guard.ts check --target preview --operation audit && tsx scripts/db/audit-db.ts --target preview",
         "db:preview:sync-invitations": "tsx scripts/db/db-guard.ts check --target preview --operation sync-invitations --db-url \"${PREVIEW_DB_URL}\" && tsx scripts/db/preview-sync-invitations.ts",
         "db:sync": "tsx scripts/db/db-sync-cli.ts",

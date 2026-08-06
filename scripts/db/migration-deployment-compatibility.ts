@@ -213,7 +213,7 @@ export function evaluateMigrationDeploymentCompatibility(
 		return {
 			status: 'block',
 			reasons: [
-				'Hosted migration requires CELEBRA_TARGET_RELEASE_SHA (authorized target release Git identity). Branch/worktree/credentials alone cannot authorize hosted mutation.',
+				'Hosted migration requires an authorized target-release Git identity (clean HEAD for Preview/Production policies). Branch/worktree/credentials alone cannot authorize hosted mutation.',
 			],
 			phaseByVersion,
 		};

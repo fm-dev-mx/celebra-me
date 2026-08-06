@@ -21,8 +21,11 @@ function printHelp(): void {
 pnpm invitation:approvals:migrate — Import legacy Preview approval JSON into shared DB
 
 Usage:
-  pnpm invitation:approvals:migrate -- [--dir .agent/tmp/approvals] [--dry-run]
+  pnpm invitation:approvals:migrate -- [--dir .agent/tmp/approvals]           # dry-run (default)
+  pnpm invitation:approvals:migrate -- --apply [--dir .agent/tmp/approvals]  # write after Preview auth
 
+Default is read-only dry-run. Explicit --apply is required for writes.
+Writes require Preview authorization (TTY YES or CELEBRA_TASK_SCOPE=preview:approvals:migrate).
 Only current-contract approved artifacts within the 7-day freshness window are imported.
 Pending / obsolete / stale files are skipped.
 `);
@@ -102,15 +105,37 @@ async function main(argv = process.argv.slice(2)): Promise<void> {
 		printHelp();
 		return;
 	}
+	const apply = argv.includes('--apply');
+	if (apply && argv.includes('--dry-run')) {
+		throw new Error('Cannot combine --apply with --dry-run.');
+	}
+	const dryRun = !apply;
+	if (apply) {
+		const { authorizePreviewWriteApply } = await import('./preview-write-auth.ts');
+		await authorizePreviewWriteApply({
+			slug: 'approvals',
+			operation: 'migrate',
+			confirmPrompt:
+				'Confirm import of legacy Preview approval artifacts into shared DB? Type YES to proceed: ',
+		});
+	}
 	const result = migratePreviewApprovalArtifacts({
 		dir: value(argv, '--dir'),
-		dryRun: argv.includes('--dry-run'),
+		dryRun,
 	});
 	for (const line of result.details) {
 		process.stderr.write(`${line}\n`);
 	}
 	process.stdout.write(
-		`${JSON.stringify({ migrated: result.migrated, skipped: result.skipped }, null, 2)}\n`,
+		`${JSON.stringify(
+			{
+				mode: dryRun ? 'dry-run' : 'apply',
+				migrated: result.migrated,
+				skipped: result.skipped,
+			},
+			null,
+			2,
+		)}\n`,
 	);
 }
 

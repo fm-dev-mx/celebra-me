@@ -38,11 +38,11 @@ shell, Vercel, or gitignored secret paths documented by the owning workflow.
   (`SUPABASE_URL=http://127.0.0.1:54321`) is the default application runtime for Integration and the
   Local development lanes. Use it for normal development, unit testing, component/SCSS iteration,
   and disposable destructive migration reconstruction.
-- **Preview Runtime Default (`dev-preview`)**: `dev-preview` (canonical external worktree) intentionally runs local
-  Astro against the dedicated Preview Supabase project. Application runtime values come from
-  `.env.preview.local` (overlay) and set `CELEBRA_RUNTIME_TARGET=preview`. This is **runtime
-  connectivity only** — it does not authorize Preview DB migrations, syncs, invitation updates, or
-  E2E provision/publish.
+- **Preview Runtime Default (`dev-preview`)**: `dev-preview` (canonical external worktree)
+  intentionally runs local Astro against the dedicated Preview Supabase project. Application runtime
+  values come from `.env.preview.local` (overlay) and set `CELEBRA_RUNTIME_TARGET=preview`. This is
+  **runtime connectivity only** — it does not authorize Preview DB migrations, syncs, invitation
+  updates, or E2E provision/publish.
 - **Preview Validation / Ops Role**: Preview (`PREVIEW_DB_URL`, Vercel Preview deployments, Preview
   E2E) remains the hosted validation environment for workflows requiring broader verification,
   including:
@@ -55,9 +55,9 @@ shell, Vercel, or gitignored secret paths documented by the owning workflow.
 - **Worktree Authorization Invariant**: Worktree path location grants no environment privilege
   (`path ≠ privilege`). Being inside a development worktree does not grant automatic Preview or
   Production mutation permission. Runtime target (`CELEBRA_RUNTIME_TARGET`), UI environment banners,
-  and credential presence also do not authorize mutations. Environment access is determined
-  strictly by task scope, target environment, operation risk, and existing repository safety rules.
-  Content promote/mirror vs RSVP isolation:
+  and credential presence also do not authorize mutations. Environment access is determined strictly
+  by task scope, target environment, operation risk, and existing repository safety rules. Content
+  promote/mirror vs RSVP isolation:
   [`docs/core/content-parity-rsvp-isolation.md`](core/content-parity-rsvp-isolation.md).
 
 ## Credential Preflight and Fail-Fast Taxonomy
@@ -121,9 +121,9 @@ execution:
   internal policy names. There is no approval-token, secret, or noninteractive confirmation env
   alternative. `CELEBRA_AGENT_CONTEXT` rejects agent self-authorization. Apply also requires valid
   `pnpm release-check` evidence for the current clean `HEAD`.
-- **Preview hosted migrate identity:** `CELEBRA_TARGET_RELEASE_SHA` (and for contract phases
-  `CELEBRA_DEPLOYED_APP_SHA` / `CELEBRA_DEPLOYED_APP_CAPABILITIES`) authorize Preview migration
-  membership. Production migrate derives release identity from clean `HEAD` instead.
+- **Preview hosted migrate identity:** clean Git `HEAD` (same release pattern as Production). For
+  contract phases, `CELEBRA_DEPLOYED_APP_SHA` / `CELEBRA_DEPLOYED_APP_CAPABILITIES` authorize
+  deployed-app readiness. Preview DB URL must match the canonical Preview project ref.
 - **Test-only:** `PLAYWRIGHT_*`, audit run IDs, test fixture variables. The canonical local E2E
   server is isolated by default; `PLAYWRIGHT_REUSE_EXISTING_SERVER=true` is an explicit opt-in.
 - **Stale/manual-only:** `DATABASE_URL` and `RSVP_TOKEN_SECRET` are not active runtime inputs. Keep
@@ -191,13 +191,13 @@ create `PUBLIC_CLOUDINARY_*` equivalents or place real Cloudinary values in trac
 
 ### Per-worktree `.env*` expectations
 
-| Worktree      | Primary runtime files                                                  | Preview ops file                                   | Notes                   |
-| ------------- | ---------------------------------------------------------------------- | -------------------------------------------------- | ----------------------- |
-| Integration   | `.env.local` (Local)                                                   | optional `.env.preview.local` for ops              | Local default           |
-| `dev-local`   | `.env.local` (Local)                                                   | usually absent                                     | Local default           |
-| `dev-preview` | `.env.local` (non-Supabase shared) + **required** `.env.preview.local` | same file holds `PREVIEW_*` ops keys               | Preview runtime default |
-| `dev-extra`   | `.env.local` (Local)                                                   | usually absent                                     | Local default           |
-| Preview E2E   | `.env.e2e.local`                                                       | —                                                  | Hosted Playwright only  |
+| Worktree      | Primary runtime files                                                  | Preview ops file                      | Notes                   |
+| ------------- | ---------------------------------------------------------------------- | ------------------------------------- | ----------------------- |
+| Integration   | `.env.local` (Local)                                                   | optional `.env.preview.local` for ops | Local default           |
+| `dev-local`   | `.env.local` (Local)                                                   | usually absent                        | Local default           |
+| `dev-preview` | `.env.local` (non-Supabase shared) + **required** `.env.preview.local` | same file holds `PREVIEW_*` ops keys  | Preview runtime default |
+| `dev-extra`   | `.env.local` (Local)                                                   | usually absent                        | Local default           |
+| Preview E2E   | `.env.e2e.local`                                                       | —                                     | Hosted Playwright only  |
 
 ## External Vercel Preview E2E
 

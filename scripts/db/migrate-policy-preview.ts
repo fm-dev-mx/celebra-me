@@ -1,10 +1,10 @@
 /**
  * Preview schema migration policy.
- * Exact preview:schema:migrate auth; target-release identity; no Production backups.
+ * Exact Preview project perimeter; clean-HEAD release identity; Preview write auth;
+ * no Production backups.
  */
 
-import { PREVIEW_SECRET_FILES, getSecretFromEnvOrFiles } from './db-guard.ts';
-import { fail, redactDbUrl } from './db-workflow-lib.ts';
+import { assertPreviewDbUrl, fail, getPreviewDbUrl, redactDbUrl } from './db-workflow-lib.ts';
 import {
 	assertHostedCompatibilityOrFail,
 	evaluateHostedCompatibilityForPlan,
@@ -22,7 +22,8 @@ import type { MigrateEnvironmentPolicy } from './migrate-policy.ts';
 import { buildMigrationPlan } from './migration-plan.ts';
 import { comparePendingSetToExpected } from './migration-pending-set.ts';
 import { authorizePreviewWriteApply } from '../provision/preview-write-auth.ts';
-import { readGitWorktreeState } from './release-check.ts';
+import { assertCleanGitWorktree, readGitWorktreeState } from './release-check.ts';
+import { operatorSymbol, writeHuman } from './operator-cli-ux.ts';
 
 const PREVIEW_MIGRATE_AUTH_SLUG = 'schema';
 const PREVIEW_MIGRATE_AUTH_OPERATION = 'migrate';
@@ -31,12 +32,8 @@ export const previewMigratePolicy: MigrateEnvironmentPolicy = {
 	target: 'preview',
 
 	resolveContext(input) {
-		const dbUrl = getSecretFromEnvOrFiles('PREVIEW_DB_URL', PREVIEW_SECRET_FILES);
-		if (!dbUrl) {
-			fail(
-				'PREVIEW_DB_URL is not configured. Set PREVIEW_DB_URL in environment or secret files.',
-			);
-		}
+		const { url: dbUrl } = getPreviewDbUrl();
+		assertPreviewDbUrl(dbUrl);
 		return {
 			dbUrl,
 			expectedPin: input.expectedPin,
@@ -46,6 +43,10 @@ export const previewMigratePolicy: MigrateEnvironmentPolicy = {
 
 	buildPlan(ctx, mode) {
 		const worktree = readGitWorktreeState();
+		const releaseSha = assertCleanGitWorktree(worktree);
+		writeHuman(
+			`${operatorSymbol('info')} Preflight: compatibilidad de despliegue (release = HEAD)…`,
+		);
 		const dryRun = executeSupabaseDryRun(ctx.dbUrl);
 		const pendingVersions = dryRun.pendingVersions;
 
@@ -68,6 +69,7 @@ export const previewMigratePolicy: MigrateEnvironmentPolicy = {
 			candidateVersions,
 			dbAppliedVersions,
 			env: ctx.env,
+			targetReleaseShaOverride: releaseSha,
 		});
 		assertHostedCompatibilityOrFail(compat, fail);
 		logHostedCompatibility(compat);
@@ -76,7 +78,7 @@ export const previewMigratePolicy: MigrateEnvironmentPolicy = {
 		return buildMigrationPlan({
 			target: 'preview',
 			mode,
-			sourceHead: worktree.sha,
+			sourceHead: releaseSha,
 			redactedTargetIdentity: `preview:${redactDbUrl(ctx.dbUrl)}`,
 			pendingVersions: candidateVersions,
 			expectedPin: ctx.expectedPin ? [...ctx.expectedPin] : null,
@@ -84,8 +86,8 @@ export const previewMigratePolicy: MigrateEnvironmentPolicy = {
 			compatibilityStatus: planCompat.compatibilityStatus,
 			compatibilityReasons: planCompat.compatibilityReasons,
 			releaseIdentity: {
-				kind: 'target_sha',
-				value: compat.targetReleaseSha,
+				kind: 'head',
+				value: releaseSha,
 			},
 			deployedAppIdentity: {
 				sha: compat.deployedAppSha,

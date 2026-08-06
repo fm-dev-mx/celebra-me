@@ -13,7 +13,11 @@ import {
 	validateCriticalBackupManifest,
 	type CriticalBackupManifest,
 } from '../db/backup-manifest.ts';
-import { classifySchemaLifecycle, type SchemaLifecycleState } from '../db/schema-lifecycle-state.ts';
+import { CRITICAL_BACKUP_RPO_MS } from '../db/critical-backup-reuse.ts';
+import {
+	classifySchemaLifecycle,
+	type SchemaLifecycleState,
+} from '../db/schema-lifecycle-state.ts';
 import { PROJECT_ROOT } from '../db/db-workflow-lib.ts';
 import type { InvitationPackageData } from './invitation-package.ts';
 import {
@@ -42,11 +46,7 @@ import type { AssetPolicy } from './asset-reconciliation.ts';
 import type { OperationalPlan } from './invitation-update-plan.ts';
 
 export type PromotionTerminalStatus =
-	| 'PROMOTABLE'
-	| 'PROMOTED'
-	| 'IN_SYNC'
-	| 'BLOCKED'
-	| 'APPLIED_BUT_VERIFICATION_FAILED';
+	'PROMOTABLE' | 'PROMOTED' | 'IN_SYNC' | 'BLOCKED' | 'APPLIED_BUT_VERIFICATION_FAILED';
 
 export type PromotionBlockCode =
 	| 'MISSING_PREVIEW_APPROVAL'
@@ -134,13 +134,10 @@ export interface PromotionApplyReport extends PromotionPreflightReport {
 
 const MIGRATIONS_DIR = resolve(PROJECT_ROOT, 'supabase', 'migrations');
 const DEFAULT_BACKUP_ROOT = resolve(PROJECT_ROOT, '.backups', 'prod');
-/** Planned Production mutations require a verified critical recovery point ≤24h old. */
-const BACKUP_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+/** Planned Production mutations share the critical migrate RPO (15 minutes). */
 const CANONICAL_BACKUP_COMMAND = 'pnpm db:prod:backup:critical';
 
-export function listExpectedMigrationVersions(
-	migrationsDir: string = MIGRATIONS_DIR,
-): string[] {
+export function listExpectedMigrationVersions(migrationsDir: string = MIGRATIONS_DIR): string[] {
 	if (!existsSync(migrationsDir)) return [];
 	return readdirSync(migrationsDir)
 		.filter((f) => f.endsWith('.sql'))
@@ -176,16 +173,15 @@ export function evaluatePromotionSchemaGate(input: {
 		const state = classifySchemaLifecycle({
 			pendingMigrations: parity.pendingLocal,
 			extraMigrations: parity.extraRemote,
-			mismatchedMigrations: parity.isReordered || parity.hasDivergentHistory
-				? parity.extraRemote.length > 0
-					? parity.extraRemote
-					: parity.pendingLocal.length > 0
-						? parity.pendingLocal
-						: ['divergent-history']
-				: [],
-			auditErrors: parity.errors.filter(
-				(e) => !e.startsWith('Pending local migrations'),
-			),
+			mismatchedMigrations:
+				parity.isReordered || parity.hasDivergentHistory
+					? parity.extraRemote.length > 0
+						? parity.extraRemote
+						: parity.pendingLocal.length > 0
+							? parity.pendingLocal
+							: ['divergent-history']
+					: [],
+			auditErrors: parity.errors.filter((e) => !e.startsWith('Pending local migrations')),
 			verified: true,
 		});
 		const compatible = state === 'CURRENT';
@@ -265,8 +261,12 @@ export function evaluatePromotionBackupGate(input: {
 		validateCriticalBackupManifest(manifest);
 		const createdAtMs = Date.parse(manifest.createdAt);
 		const nowMs = (input.now ?? new Date()).getTime();
-		const maxAgeMs = input.maxAgeMs ?? BACKUP_MAX_AGE_MS;
-		if (!Number.isFinite(createdAtMs) || createdAtMs > nowMs || nowMs - createdAtMs > maxAgeMs) {
+		const maxAgeMs = input.maxAgeMs ?? CRITICAL_BACKUP_RPO_MS;
+		if (
+			!Number.isFinite(createdAtMs) ||
+			createdAtMs > nowMs ||
+			nowMs - createdAtMs > maxAgeMs
+		) {
 			return {
 				required: true,
 				acceptable: false,
@@ -275,7 +275,7 @@ export function evaluatePromotionBackupGate(input: {
 				projectRef: manifest.projectRef,
 				canonicalCommand,
 				blockCode: 'BACKUP_REQUIRED',
-				detail: `BACKUP_REQUIRED: backup manifest is missing a fresh timestamp or is older than ${Math.round(maxAgeMs / 3600000)}h. Run ${canonicalCommand}.`,
+				detail: `BACKUP_REQUIRED: backup manifest is missing a fresh timestamp or is older than ${Math.round(maxAgeMs / 60000)}m (critical RPO). Run ${canonicalCommand}.`,
 			};
 		}
 		if (
@@ -475,8 +475,7 @@ export async function runPromotionPreflight(input: {
 			...base,
 			status: 'BLOCKED',
 			blockCode: 'PRODUCTION_CREDENTIALS_UNAVAILABLE',
-			reason:
-				'Credenciales de Producción no configuradas. Configure acceso owner y vuelva a ejecutar el preflight.',
+			reason: 'Credenciales de Producción no configuradas. Configure acceso owner y vuelva a ejecutar el preflight.',
 			schema,
 			backup: {
 				required: false,
@@ -549,8 +548,7 @@ export async function runPromotionPreflight(input: {
 				...base,
 				status: 'BLOCKED',
 				blockCode: 'MANAGED_DIVERGENCE',
-				reason:
-					'Unresolved Production managed divergence blocks promotion. Resolve semantically before apply; Production must not be blindly replaced by Preview.',
+				reason: 'Unresolved Production managed divergence blocks promotion. Resolve semantically before apply; Production must not be blindly replaced by Preview.',
 				approval,
 				schema,
 				backup: (input.evaluateBackup ?? evaluatePromotionBackupGate)({
@@ -685,7 +683,11 @@ export async function runPromotionApply(input: {
 	runEngine?: (options: ImportEngineOptions) => Promise<ImportEngineResult>;
 	evaluateSchema?: typeof evaluatePromotionSchemaGate;
 }): Promise<PromotionApplyReport> {
-	if (input.preflight.status === 'BLOCKED' || !input.preflight.engineResult || !input.preflight.targetDbUrl) {
+	if (
+		input.preflight.status === 'BLOCKED' ||
+		!input.preflight.engineResult ||
+		!input.preflight.targetDbUrl
+	) {
 		return {
 			...input.preflight,
 			status: 'BLOCKED',

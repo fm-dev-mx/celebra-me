@@ -25,10 +25,16 @@ Public Production entry:
   pnpm db:prod:migrate -- --apply           # owner TTY apply (release-check + backup)
 
 Multi-env engine:
+  pnpm db:migrate                           # TTY: select target (Cancelar default)
   pnpm db:migrate -- --target <local|preview|production|disposable-test> [options]
 
+Aliases (preselect target only; same CLI/policy):
+  pnpm db:local:migrate
+  pnpm db:preview:migrate
+  pnpm db:prod:migrate
+
 Options:
-  --target <target>     Migration target (required for db:migrate)
+  --target <target>     Migration target (TTY selector when omitted; required without TTY)
   --apply               Apply after plan validation (default: read-only preflight)
   --expected <versions> Optional exact pending-set pin (comma-separated)
   --json                Emit MigrationPlan JSON on stdout (human logs on stderr)
@@ -38,12 +44,8 @@ Options:
 
 Environment:
   Preview apply (non-TTY): CELEBRA_TASK_SCOPE=preview:schema:migrate
-  Preview release identity: CELEBRA_TARGET_RELEASE_SHA (required for hosted Preview)
+  Preview release identity: clean Git HEAD (derived automatically; no manual SHA export)
   Production apply: release-check evidence + interactive owner TTY (no token path)
-
-Deprecated (Preview shim only):
-  --allowlist <versions>   Alias of --expected (warns)
-  EXPECTED_MIGRATIONS      Alias of --expected (warns)
 
 Default mode is read-only planning. Production apply: backup → one revalidation →
 owner menu → bound code → write. After a failed apply, re-run preflight.

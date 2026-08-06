@@ -125,7 +125,8 @@ every relationship/business invariant at zero and all object hashes matching. Th
 database was reset to synthetic data and materialized Production-derived files were removed
 afterward. This demonstrates RTO ≤4 hours for the current Production data scale and proves the
 one-time recovery point. The daily OS schedule and newest successful report establish ongoing RPO
-evidence; the operator must treat a latest-valid-backup age over 24 hours as a blocking incident.
+evidence; planned mutations share the critical migrate RPO (`CRITICAL_BACKUP_RPO_MS`, 15 minutes).
+Treat an older recovery point as a blocking incident before promote/migrate apply.
 
 ### Free-tier recovery monitoring
 
@@ -235,9 +236,13 @@ Directions (hard allowlist): `definition-to-local`, `definition-to-preview`,
 `package-to-production`, `production-to-preview-mirror`.
 
 Apply always rebuilds the plan from current evidence, requires `--expected-plan` (or an interactive
-reviewed plan), rejects expiration/drift, and never silently regenerates a different plan. Preview
-writes reuse `authorizePreviewWriteApply`; Production apply remains owner-only interactive TTY via
-`requireOwnerProductionApply` (agents/headless cannot apply to Production).
+reviewed plan), rejects expiration/drift, and never silently regenerates a different plan. Content
+apply/plan blocks with `SCHEMA_INCOMPATIBLE` when the write-target schema is not `CURRENT` and
+points at the separate `db:*:migrate` alias — never auto-migrates. Local/Preview definition apply
+delegates to the shared `invitation-content-apply` sequence also used by `invitation:update`.
+Preview writes reuse `authorizePreviewWriteApply`; Production apply remains owner-only interactive
+TTY via `requireOwnerProductionApply` (agents/headless cannot apply to Production). Interactive
+`db:sync` does not add a second confirmation before those delegated gates.
 
 Orthogonal systems (not `db:sync`): `pnpm db:migrate`, dashboard demo Content Sync,
 `pnpm lane:sync`, and `pnpm db:local:restore-from-dump`. Specialized commands (`invitation:update`,
@@ -292,13 +297,12 @@ PROVISIONED & HOSTED-VALIDATED
 - **Target Classification**: `scripts/db/db-guard.ts` classifies targets matching `PREVIEW_DB_URL`
   as `preview`.
 - **Migration Command**: Canonical planner is `pnpm db:migrate -- --target preview` (alias
-  `pnpm db:preview:migrate`). Defaults to **read-only preflight** against `PREVIEW_DB_URL` (dry-run
-  pending set, optional `--expected` pin, and the Migration / Deployment Compatibility Contract).
-  Deprecated Preview-only shims `--allowlist` / `EXPECTED_MIGRATIONS` still parse through the shared
-  `--expected` parser with a warning. Mutations require explicit `--apply` plus Preview
-  authorization (`CELEBRA_TASK_SCOPE=preview:schema:migrate` or interactive TTY `YES`). Hosted
-  Preview fails closed without `CELEBRA_TARGET_RELEASE_SHA`. Hosted candidates without an explicit
-  rollout registry phase fail closed.
+  `pnpm db:preview:migrate`). Defaults to **read-only preflight** against the canonical Preview
+  project URL (exact project-ref perimeter via `assertPreviewDbUrl` /
+  `validateEnvironmentUrlsPreflight`). Release identity is the current clean Git `HEAD` (same
+  pattern as Production). Mutations require explicit `--apply` plus Preview authorization
+  (`CELEBRA_TASK_SCOPE=preview:schema:migrate` or interactive TTY `YES`). Hosted candidates without
+  an explicit rollout registry phase fail closed.
 - **Invitation Sync Command**: `pnpm db:preview:sync-invitations` mirrors invitation-facing data
   from Production to Preview:
   - `--dry-run`: report what would change with **zero** DB, role, profile, Storage, or report-file
@@ -427,15 +431,17 @@ Hosted targets prove migration membership from Git contents
 path, UI banner, and credential presence alone never authorize hosted mutation.
 
 ```bash
-# Canonical planner (default: read-only preflight)
+# Canonical planner (TTY: target selector with Cancelar default; non-TTY requires --target)
+pnpm db:migrate
 pnpm db:migrate -- --target local|preview|production [--expected <versions>] [--json]
 
-# Preview — read-only preflight (default)
-CELEBRA_TARGET_RELEASE_SHA=<git-sha> pnpm db:preview:migrate
-CELEBRA_TARGET_RELEASE_SHA=<git-sha> pnpm db:preview:migrate -- --expected <versions>
+# Aliases only preselect target (same CLI/policy; all preflight-first)
+pnpm db:local:migrate
+pnpm db:preview:migrate
+pnpm db:preview:migrate -- --expected <versions>
 
-# Preview — apply after Preview authorization
-CELEBRA_TASK_SCOPE=preview:schema:migrate CELEBRA_TARGET_RELEASE_SHA=<git-sha> \
+# Preview — apply after Preview authorization (release = clean HEAD)
+CELEBRA_TASK_SCOPE=preview:schema:migrate \
   pnpm db:preview:migrate -- --apply --expected <versions>
 
 # Production — release identity is the current clean HEAD after pnpm release-check
@@ -446,10 +452,11 @@ pnpm db:prod:migrate -- --apply --expected <versions>         # owner TTY apply
 ```
 
 Production apply fails closed without valid `pnpm release-check` evidence for the current clean
-`HEAD`. Ordinary preflight does not run the full release suite. Preview fails closed without
-`CELEBRA_TARGET_RELEASE_SHA`. Local / disposable remain free to develop against repository `HEAD`.
-After any failed apply, re-run preflight and obtain a newly validated plan — do not resume from
-cached assumptions. Cross-machine concurrent migrate is an accepted single-operator residual risk.
+`HEAD`. Ordinary preflight does not run the full release suite. Preview also requires a clean `HEAD`
+and exact Preview project perimeter. Local / disposable remain free to develop against repository
+`HEAD` for membership, but Local migrate is preflight-first (never implicit `--apply`). After any
+failed apply, re-run preflight and obtain a newly validated plan — do not resume from cached
+assumptions. Cross-machine concurrent migrate is an accepted single-operator residual risk.
 
 Rollout phases (registry metadata; **hosted candidates must have an explicit phase** — omission
 fails closed; do not backfill already-applied historical migrations without need):

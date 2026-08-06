@@ -37,9 +37,7 @@ import {
 } from '../provision/content-parity.ts';
 import { loadSemanticSnapshotsForParity, resolveDbUrl } from '../provision/content-parity-load.ts';
 import { resolveInvitationPackageInput } from '../provision/invitation-package-input.ts';
-import { applyLocalInvitation } from '../provision/apply-local-invitation.ts';
 import { runImportEngine } from '../provision/invitation-import-engine.ts';
-import { runPreviewApply } from '../provision/preview-apply.ts';
 import { runPromotionPreflight } from '../provision/invitation-promote.ts';
 import { authorizePreviewWriteApply } from '../provision/preview-write-auth.ts';
 import { toPublicPromotionReport } from '../provision/invitation-promote-cli.ts';
@@ -48,6 +46,13 @@ import {
 	type OrchestrateInvitationPromotionInput,
 } from '../provision/invitation-promotion-orchestrator.ts';
 import type { InvitationPackageData } from '../provision/invitation-package.ts';
+import {
+	assertContentSchemaCurrent,
+	contentMigrateCommandForTarget,
+	planAndApplyLocalContent,
+	planAndApplyPreviewContent,
+	type ContentApplyTarget,
+} from '../provision/invitation-content-apply.ts';
 
 export interface OrchestrateDbSyncInput {
 	mode: DbSyncMode;
@@ -81,6 +86,30 @@ function schemaEvidenceSummary(targets: DbSyncTargetEvidence[]): string {
 				`${t.environment}:${t.schemaLifecycle ?? (t.available ? 'UNKNOWN' : 'UNVERIFIED')}`,
 		)
 		.join(',');
+}
+
+function schemaCurrentBlockers(
+	direction: DbSyncDirection,
+	targets: DbSyncTargetEvidence[],
+): string[] {
+	if (!gatesForDirection(direction).schemaCurrentRequired) return [];
+	const writeEnv: ContentApplyTarget | 'production' =
+		direction === 'definition-to-local'
+			? 'local'
+			: direction === 'package-to-production'
+				? 'production'
+				: 'preview';
+	const hit = targets.find((t) => t.environment === writeEnv);
+	const state = hit?.schemaLifecycle ?? 'UNVERIFIED';
+	if (state === 'CURRENT') return [];
+	const migrateCmd =
+		writeEnv === 'production'
+			? 'pnpm db:prod:migrate'
+			: contentMigrateCommandForTarget(writeEnv);
+	return [
+		`SCHEMA_INCOMPATIBLE: target ${writeEnv} schema lifecycle is ${state}. ` +
+			`Content sync never runs migrations. Owner must execute ${migrateCmd}, then rerun db:sync.`,
+	];
 }
 
 async function diagnoseTargets(
@@ -223,8 +252,11 @@ async function buildPlanForDirection(
 	const now = input.now ?? new Date();
 
 	if (direction === 'production-to-preview-mirror') {
-		const { targets, blockers, ok } = await diagnoseTargets(['preview', 'production']);
-		result.targets = targets;
+		const diagnosed = await diagnoseTargets(['preview', 'production']);
+		const schemaBlockers = schemaCurrentBlockers(direction, diagnosed.targets);
+		const blockers = [...diagnosed.blockers, ...schemaBlockers];
+		const ok = diagnosed.ok && schemaBlockers.length === 0;
+		result.targets = diagnosed.targets;
 		const dataFingerprint = computeMirrorDataFingerprint({
 			sourceProjectRef: SUPABASE_PROJECT_REFS.production,
 			targetProjectRef: SUPABASE_PROJECT_REFS.preview,
@@ -239,7 +271,7 @@ async function buildPlanForDirection(
 			redactedTargetIdentity: redactedRef('preview'),
 			dataFingerprint,
 			assetFingerprint: 'invitation-assets:supabase-public',
-			schemaEvidence: schemaEvidenceSummary(targets),
+			schemaEvidence: schemaEvidenceSummary(diagnosed.targets),
 			now,
 		});
 		result.plan = plan;
@@ -276,17 +308,19 @@ async function buildPlanForDirection(
 				: 'production';
 	const diagnoseEnvs: ContentParityEnvironment[] =
 		direction === 'package-to-production' ? ['preview', 'production'] : [targetEnv];
-	const { targets, blockers, ok } = await diagnoseTargets(diagnoseEnvs);
-	result.targets = targets;
+	const diagnosed = await diagnoseTargets(diagnoseEnvs);
+	const schemaBlockers = schemaCurrentBlockers(direction, diagnosed.targets);
+	const blockers = [...diagnosed.blockers, ...schemaBlockers];
+	const ok = diagnosed.ok && schemaBlockers.length === 0;
+	result.targets = diagnosed.targets;
 
 	let enginePlanId: string | undefined;
 
 	if (direction === 'definition-to-local') {
-		const dry = await applyLocalInvitation({
-			slug,
-			apply: false,
-		});
-		enginePlanId = dry.plan.planId;
+		if (schemaBlockers.length === 0) {
+			const dry = await planAndApplyLocalContent({ slug, apply: false });
+			enginePlanId = dry.plan.planId;
+		}
 	} else if (direction === 'definition-to-preview') {
 		const previewUrl = resolveDbUrl('preview');
 		if (!previewUrl) {
@@ -296,13 +330,15 @@ async function buildPlanForDirection(
 			result.blockers = blockers;
 			return { result, plan: null };
 		}
-		const dry = await runImportEngine({
-			packageData,
-			target: 'preview',
-			targetDbUrl: previewUrl,
-			dryRun: true,
-		});
-		enginePlanId = dry.plan?.planId;
+		if (schemaBlockers.length === 0) {
+			const dry = await runImportEngine({
+				packageData,
+				target: 'preview',
+				targetDbUrl: previewUrl,
+				dryRun: true,
+			});
+			enginePlanId = dry.plan?.planId;
+		}
 	} else if (direction === 'package-to-production') {
 		const preflight = await runPromotionPreflight({
 			packageData,
@@ -326,7 +362,7 @@ async function buildPlanForDirection(
 		redactedTargetIdentity: redactedRef(targetEnv),
 		dataFingerprint: packageData.projectionHash,
 		assetFingerprint: packageData.assetManifestHash,
-		schemaEvidence: schemaEvidenceSummary(targets),
+		schemaEvidence: schemaEvidenceSummary(diagnosed.targets),
 		enginePlanId,
 		now,
 	});
@@ -335,7 +371,11 @@ async function buildPlanForDirection(
 	result.blockers = blockers;
 	result.ok = ok && result.failures.length === 0;
 	result.status = result.ok ? 'PLAN_READY' : 'PLAN_BLOCKED';
-	if (!ok) result.failures.push(...blockers);
+	if (!result.ok) {
+		for (const blocker of blockers) {
+			if (!result.failures.includes(blocker)) result.failures.push(blocker);
+		}
+	}
 	return { result, plan };
 }
 
@@ -447,14 +487,14 @@ export async function orchestrateApply(input: OrchestrateDbSyncInput): Promise<D
 		const packageData = await resolvePackage({ ...input, direction });
 
 		if (direction === 'definition-to-local') {
-			const dry = await applyLocalInvitation({
-				slug: packageData.invitation.slug,
-				apply: false,
+			assertContentSchemaCurrent({
+				target: 'local',
+				schemaLifecycle: applyResult.targets.find((t) => t.environment === 'local')
+					?.schemaLifecycle,
 			});
-			const local = await applyLocalInvitation({
+			const local = await planAndApplyLocalContent({
 				slug: packageData.invitation.slug,
 				apply: true,
-				plan: dry.plan,
 			});
 			applyResult.ok = Boolean(local.receipt) || local.isZeroDrift;
 			applyResult.status = local.isZeroDrift ? 'IN_SYNC' : 'APPLIED';
@@ -462,6 +502,11 @@ export async function orchestrateApply(input: OrchestrateDbSyncInput): Promise<D
 		}
 
 		if (direction === 'definition-to-preview') {
+			assertContentSchemaCurrent({
+				target: 'preview',
+				schemaLifecycle: applyResult.targets.find((t) => t.environment === 'preview')
+					?.schemaLifecycle,
+			});
 			const authorize = input.authorizePreview ?? authorizePreviewWriteApply;
 			await authorize({
 				slug: packageData.invitation.slug,
@@ -470,17 +515,10 @@ export async function orchestrateApply(input: OrchestrateDbSyncInput): Promise<D
 			});
 			const previewUrl = resolveDbUrl('preview');
 			if (!previewUrl) throw new Error('PREVIEW_CREDENTIALS_REQUIRED');
-			const dry = await runImportEngine({
-				packageData,
-				target: 'preview',
-				targetDbUrl: previewUrl,
-				dryRun: true,
-			});
-			if (!dry.plan) throw new Error('PREVIEW_PLAN_MISSING');
-			const applied = await runPreviewApply({
+			const applied = await planAndApplyPreviewContent({
 				packageData,
 				targetDbUrl: previewUrl,
-				plan: dry.plan,
+				apply: true,
 			});
 			applyResult.ok =
 				applied.receipt?.status === 'EXECUTED' ||

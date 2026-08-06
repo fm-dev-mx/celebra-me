@@ -13,7 +13,6 @@ export interface InvitationPromoteCliArgs {
 	packagePath?: string;
 	ownerUserId?: string;
 	backupManifestPath?: string;
-	approvalsDir?: string;
 	updateScope?: UpdateScope;
 	conflictResolutionsPath?: string;
 	assetPolicyRaw?: string;
@@ -60,7 +59,6 @@ Owner apply gates (guided path prepares these automatically):
 
 Optional:
   --owner-user-id <uuid>  Owner assertion for new Production invitations
-  --approvals-dir <path>  Legacy filesystem fallback if shared Preview DB row is missing
   --asset-policy <name>   Asset reconciliation policy
   --prune-assets          Allow planned definition-owned asset deletes
   --update-scope <scope>  content-only | content-and-assets | assets-only
@@ -69,6 +67,8 @@ Optional:
   --verbose               Include full hashes and plan IDs in human output
   --allow-stale-package   Intentional historical package (still must match approval)
   --interactive / --no-interactive
+
+Approvals SSOT is the shared Preview DB store (pnpm invitation:approvals:migrate for one-time import).
 
 Agent boundaries:
   Agents may run dry-run/preflight with Production read credentials.
@@ -101,6 +101,12 @@ export function parseInvitationPromoteCliArgs(
 	else if (hasExplicitMode) mode = 'preflight';
 	else mode = 'guided';
 
+	if (args.includes('--approvals-dir')) {
+		throw new Error(
+			'--approvals-dir was removed. Approvals SSOT is the shared Preview DB store; import legacy files with pnpm invitation:approvals:migrate -- --apply.',
+		);
+	}
+
 	const updateScope = value(args, '--update-scope') as UpdateScope | undefined;
 	if (
 		updateScope &&
@@ -119,7 +125,6 @@ export function parseInvitationPromoteCliArgs(
 		packagePath: value(args, '--package'),
 		ownerUserId: value(args, '--owner-user-id'),
 		backupManifestPath: value(args, '--backup-manifest'),
-		approvalsDir: value(args, '--approvals-dir'),
 		updateScope,
 		conflictResolutionsPath: value(args, '--conflict-resolutions'),
 		assetPolicyRaw: value(args, '--asset-policy'),

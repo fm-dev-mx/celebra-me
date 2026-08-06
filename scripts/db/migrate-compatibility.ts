@@ -71,7 +71,7 @@ export function evaluateHostedCompatibilityForPlan(
 		const reason =
 			options.target === 'production'
 				? 'Production migration requires a clean Git HEAD release identity.'
-				: 'Hosted migration requires CELEBRA_TARGET_RELEASE_SHA (authorized target release Git identity). Branch name, worktree path, UI banner, and credential presence alone cannot authorize hosted mutation.';
+				: 'Preview migration requires a clean Git HEAD release identity (derived automatically). Branch name, worktree path, UI banner, and credential presence alone cannot authorize hosted mutation.';
 		return {
 			compatibility: { status: 'block', reasons: [reason], phaseByVersion: {} },
 			readiness: { status: 'allow', reasons: [], phaseByVersion: {} },

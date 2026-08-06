@@ -33,6 +33,11 @@
             "provides": ["managed_invitation_immutable_identity"],
             "notes": "Adds immutable managed_identity_id + previous_slugs lineage and enforces archive cascade deactivation of dependents."
         },
+        "20260806120000": {
+            "phase": "expand",
+            "provides": ["preview_approval_artifacts"],
+            "notes": "Creates shared Preview release-approval store (cross-worktree SSOT for promote)."
+        },
         "__historical_rsvp_dml_revoke__": {
             "phase": "contract",
             "requiresDeployedAppCapabilities": ["public_guest_rsvp_rpc_client"],

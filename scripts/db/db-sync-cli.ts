@@ -3,7 +3,7 @@
  * Human diagnostics → stderr; --json → stdout. No embedded mutation engines.
  */
 
-import { confirm, select } from '@inquirer/prompts';
+import { select } from '@inquirer/prompts';
 import { redactCredentials } from './db-target-config.ts';
 import { parseDbSyncArgs, printDbSyncHelp } from './db-sync-args.ts';
 import { orchestrateDbSync, type OrchestrateDbSyncInput } from './db-sync-orchestrator.ts';
@@ -31,12 +31,12 @@ function writeError(error: unknown): void {
 
 function formatResultHuman(result: DbSyncResult): void {
 	writeHuman('--------------------------------------------------');
-	writeHuman(`db:sync  mode=${result.mode}  status=${result.status}  ok=${result.ok}`);
+	writeHuman(`db:sync  modo=${result.mode}  estado=${result.status}  ok=${result.ok}`);
 	if (result.direction) {
-		writeHuman(`Direction: ${DB_SYNC_DIRECTION_LABELS[result.direction]}`);
+		writeHuman(`Dirección: ${DB_SYNC_DIRECTION_LABELS[result.direction]}`);
 	}
 	if (result.planId) writeHuman(`Plan ID:   ${result.planId}`);
-	writeHuman('Targets:');
+	writeHuman('Destinos:');
 	for (const target of result.targets) {
 		writeHuman(
 			`  ${target.environment.padEnd(11)} available=${String(target.available).padEnd(5)} ` +
@@ -45,11 +45,11 @@ function formatResultHuman(result: DbSyncResult): void {
 		);
 	}
 	if (result.blockers && result.blockers.length > 0) {
-		writeHuman('Blockers:');
+		writeHuman('Bloqueos:');
 		for (const blocker of result.blockers) writeHuman(`  - ${blocker}`);
 	}
 	if (result.drifts.length > 0) {
-		writeHuman('Drifts (paths/summaries only):');
+		writeHuman('Diferencias (rutas/resúmenes):');
 		for (const drift of result.drifts) {
 			const paths = drift.paths?.length ? ` paths=${drift.paths.join(',')}` : '';
 			writeHuman(`  - [${drift.kind}] ${drift.entity}: ${drift.detail}${paths}`);
@@ -57,18 +57,18 @@ function formatResultHuman(result: DbSyncResult): void {
 	}
 	if (result.plan) {
 		writeHuman('Plan:');
-		writeHuman(`  Engine:     ${result.plan.delegatedEngine}`);
-		writeHuman(`  Operation:  ${result.plan.delegatedOperation}`);
-		writeHuman(`  Expires:    ${result.plan.expiresAt}`);
-		writeHuman(`  Post-state: ${result.plan.expectedPostState}`);
+		writeHuman(`  Motor:      ${result.plan.delegatedEngine}`);
+		writeHuman(`  Operación:  ${result.plan.delegatedOperation}`);
+		writeHuman(`  Expira:     ${result.plan.expiresAt}`);
+		writeHuman(`  Post-estado:${result.plan.expectedPostState}`);
 		if (result.plan.gates.rsvpResetDisclosureRequired) {
 			writeHuman(
-				'  WARNING: Mirror apply truncates Preview events (CASCADE) and resets RSVP children.',
+				'  ADVERTENCIA: Mirror aplica TRUNCATE events CASCADE y reinicia RSVP en Preview.',
 			);
 		}
 	}
 	if (result.failures.length > 0) {
-		writeHuman('Failures:');
+		writeHuman('Fallos:');
 		for (const failure of result.failures) writeHuman(`  - ${failure}`);
 	}
 	writeHuman('--------------------------------------------------');
@@ -79,20 +79,33 @@ function isTty(): boolean {
 }
 
 async function runInteractiveWizard(base: OrchestrateDbSyncInput): Promise<DbSyncResult> {
-	writeHuman('db:sync interactive workflow (read-only until you confirm a specific mutation).');
+	writeHuman(
+		'db:sync interactivo (solo lectura hasta que el orquestador autorice una mutación).',
+	);
 	const diagnose = await orchestrateDbSync({ ...base, mode: 'diagnose' });
 	formatResultHuman(diagnose);
 
 	const mode = await select({
-		message: 'Select mode',
+		message: 'Seleccione un modo',
+		default: 'cancel',
 		choices: [
-			{ name: 'Diagnose only (read-only)', value: 'diagnose' as DbSyncMode },
-			{ name: 'Compare semantic content (read-only)', value: 'compare' as DbSyncMode },
-			{ name: 'Build immutable plan (read-only)', value: 'plan' as DbSyncMode },
-			{ name: 'Apply a reviewed plan (mutation)', value: 'apply' as DbSyncMode },
+			{ name: 'Cancelar', value: 'cancel' as const },
+			{ name: 'Diagnosticar (solo lectura)', value: 'diagnose' as DbSyncMode },
+			{ name: 'Comparar contenido semántico (solo lectura)', value: 'compare' as DbSyncMode },
+			{ name: 'Construir plan inmutable (solo lectura)', value: 'plan' as DbSyncMode },
+			{ name: 'Aplicar un plan revisado (mutación)', value: 'apply' as DbSyncMode },
 		],
 	});
 
+	if (mode === 'cancel') {
+		return {
+			...diagnose,
+			mode: 'diagnose',
+			ok: false,
+			status: 'CANCELLED',
+			failures: ['CANCELLED_BY_OPERATOR'],
+		};
+	}
 	if (mode === 'diagnose') return diagnose;
 
 	if (mode === 'compare') {
@@ -100,12 +113,25 @@ async function runInteractiveWizard(base: OrchestrateDbSyncInput): Promise<DbSyn
 	}
 
 	const direction = await select({
-		message: 'Select direction',
-		choices: DB_SYNC_DIRECTIONS.map((value) => ({
-			name: DB_SYNC_DIRECTION_LABELS[value],
-			value,
-		})),
+		message: 'Seleccione la dirección',
+		default: 'cancel',
+		choices: [
+			{ name: 'Cancelar', value: 'cancel' as const },
+			...DB_SYNC_DIRECTIONS.map((value) => ({
+				name: DB_SYNC_DIRECTION_LABELS[value],
+				value,
+			})),
+		],
 	});
+	if (direction === 'cancel') {
+		return {
+			...diagnose,
+			mode: 'plan',
+			ok: false,
+			status: 'CANCELLED',
+			failures: ['CANCELLED_BY_OPERATOR'],
+		};
+	}
 
 	const planResult = await orchestrateDbSync({
 		...base,
@@ -118,22 +144,28 @@ async function runInteractiveWizard(base: OrchestrateDbSyncInput): Promise<DbSyn
 	if (mode === 'plan') return planResult;
 
 	const label = DB_SYNC_DIRECTION_LABELS[direction];
-	writeHuman(`Reviewed planId: ${planResult.plan.planId}`);
+	writeHuman(`Plan revisado: ${planResult.plan.planId}`);
 	if (planResult.plan.gates.rsvpResetDisclosureRequired) {
-		writeHuman(
-			'DESTRUCTIVE: Mirror Production content into Preview will TRUNCATE events CASCADE.',
-		);
+		writeHuman('DESTRUCTIVO: Mirror de Production a Preview hará TRUNCATE events CASCADE.');
 	}
-	const confirmed = await confirm({
-		message: `Confirm exact operation: ${label}?`,
-		default: false,
+	const action = await select({
+		message: `Operación exacta: ${label}`,
+		default: 'cancel',
+		choices: [
+			{ name: 'Cancelar', value: 'cancel' as const },
+			{
+				name: 'Aplicar (delegado al orquestador; auth del dominio si aplica)',
+				value: 'apply' as const,
+			},
+		],
 	});
-	if (!confirmed) {
+	if (action === 'cancel') {
 		const cancelled = { ...planResult, mode: 'apply' as const, ok: false, status: 'CANCELLED' };
 		cancelled.failures = ['CANCELLED_BY_OPERATOR'];
 		return cancelled;
 	}
 
+	// No second YES/confirm here — Preview/Production auth lives in delegated orchestrators.
 	return orchestrateDbSync({
 		...base,
 		mode: 'apply',
@@ -162,7 +194,7 @@ export async function runDbSyncCli(argv: string[] = process.argv.slice(2)): Prom
 	if (!isTty() && !parsed.noInteractive && !parsed.mode) {
 		writeError(
 			new Error(
-				'NON_INTERACTIVE_REQUIRED: no TTY detected. Pass an explicit mode and --no-interactive.',
+				'NON_INTERACTIVE_REQUIRED: no hay TTY. Pase un modo explícito y --no-interactive.',
 			),
 		);
 		return;
@@ -188,12 +220,12 @@ export async function runDbSyncCli(argv: string[] = process.argv.slice(2)): Prom
 		} else {
 			if (!parsed.mode) {
 				writeError(
-					new Error('MODE_REQUIRED: pass diagnose|compare|plan|apply or use a TTY'),
+					new Error('MODE_REQUIRED: pase diagnose|compare|plan|apply o use un TTY'),
 				);
 				return;
 			}
 			if (parsed.mode === 'apply' && !parsed.apply) {
-				writeError(new Error('APPLY_FLAG_REQUIRED: apply mode requires --apply'));
+				writeError(new Error('APPLY_FLAG_REQUIRED: el modo apply requiere --apply'));
 				return;
 			}
 			result = await orchestrateDbSync(base);

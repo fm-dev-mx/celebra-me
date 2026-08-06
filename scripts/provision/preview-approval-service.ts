@@ -5,7 +5,7 @@
  * worktrees share one SSOT. Filesystem paths remain only for evidence JSON and
  * optional legacy artifact import during migration.
  */
-import { existsSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import {
 	getDefaultPreviewApprovalStore,
@@ -208,17 +208,10 @@ function loadEvidence(
 	>;
 }
 
-function loadLegacyArtifact(artifactPath: string): PreviewApprovalArtifact {
-	return JSON.parse(
-		readFileSync(resolve(process.cwd(), artifactPath), 'utf8'),
-	) as PreviewApprovalArtifact;
-}
-
 /**
  * Finalize a pending approval with hosted validation evidence.
- *
- * Prefer `--package-hash` (shared store). `--artifact` remains for one-time
- * import of a legacy filesystem pending artifact into the shared store.
+ * Runtime SSOT is the shared Preview DB store (`--package-hash`).
+ * Legacy filesystem pending JSON must be imported via invitation:approvals:migrate.
  */
 export function finalizePreviewApprovalArtifact(
 	input: {
@@ -228,24 +221,22 @@ export function finalizePreviewApprovalArtifact(
 	},
 	options?: PreviewApprovalServiceOptions,
 ): PreviewApprovalArtifact {
-	const store = resolveStore(options);
-	let artifact: PreviewApprovalArtifact;
-	if (input.packageHash) {
-		const pending = store.get(input.packageHash);
-		if (!pending) {
-			throw new Error(
-				`No pending Preview approval exists in the shared store for package ${input.packageHash}.`,
-			);
-		}
-		artifact = pending;
-	} else if (input.artifactPath) {
-		const legacy = loadLegacyArtifact(input.artifactPath);
-		// Import legacy pending artifact into the shared store before finalize.
-		artifact =
-			legacy.approvalState === 'pending_hosted_validation' ? store.upsert(legacy) : legacy;
-	} else {
-		throw new Error('Finalize requires --package-hash <hash> or --artifact <path>.');
+	if (input.artifactPath) {
+		throw new Error(
+			'--artifact was removed. Import legacy approvals with pnpm invitation:approvals:migrate -- --apply, then finalize with --package-hash.',
+		);
 	}
+	const store = resolveStore(options);
+	if (!input.packageHash) {
+		throw new Error('Finalize requires --package-hash <hash>.');
+	}
+	const pending = store.get(input.packageHash);
+	if (!pending) {
+		throw new Error(
+			`No pending Preview approval exists in the shared store for package ${input.packageHash}.`,
+		);
+	}
+	const artifact: PreviewApprovalArtifact = pending;
 
 	const evidence = loadEvidence(input.evidencePath);
 	if (!isCurrentContract(artifact)) {
@@ -290,9 +281,9 @@ export function finalizePreviewApprovalArtifact(
 /**
  * Verify an exact approved Preview release from the shared store.
  *
- * Legacy signature `(identity, approvalsDirs?, now?)` remains for callers that
- * still pass filesystem dirs during transition; those dirs are ignored when a
- * store is configured (default Preview DB).
+ * Legacy signature `(identity, approvalsDirs?, now?)` remains for call-site
+ * compatibility; filesystem dirs are no longer consulted. Pass `{ store }` in
+ * tests. Runtime SSOT is Preview DB.
  */
 export function verifyPreviewApprovalArtifact(
 	identity: ApprovedReleaseIdentity,
@@ -307,24 +298,6 @@ export function verifyPreviewApprovalArtifact(
 
 	const artifact = store.get(identity.packageHash);
 	if (!artifact) {
-		// Optional legacy filesystem fallback only when dirs were explicitly provided.
-		if (Array.isArray(approvalsDirsOrOptions) && approvalsDirsOrOptions.length > 0) {
-			const path = approvalsDirsOrOptions
-				.map((dir) =>
-					resolve(
-						process.cwd(),
-						dir,
-						`preview-approval-${identity.packageHash.slice(0, 16)}.json`,
-					),
-				)
-				.find(existsSync);
-			if (path) {
-				const fileArtifact = JSON.parse(
-					readFileSync(path, 'utf8'),
-				) as PreviewApprovalArtifact;
-				return assertVerifiedApproval(fileArtifact, identity, now);
-			}
-		}
 		throw new Error(`No approved Preview artifact exists for package ${identity.packageHash}.`);
 	}
 	return assertVerifiedApproval(artifact, identity, now);

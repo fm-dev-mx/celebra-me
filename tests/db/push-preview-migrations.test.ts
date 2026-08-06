@@ -20,10 +20,12 @@ const mockRunPsql = jest.fn<(...args: unknown[]) => CommandResult>(() => ({
 const mockGetSecret = jest.fn<(...args: unknown[]) => string>(
 	() => 'postgresql://postgres:secret@db.iwipdvisoyerfdytuhwi.supabase.co:5432/postgres',
 );
-const mockAuthorizePreviewWriteApply = jest.fn<(...args: unknown[]) => Promise<{
-	authorized: true;
-	actor: 'automated_scoped_token';
-}>>(async () => ({
+const mockAuthorizePreviewWriteApply = jest.fn<
+	(...args: unknown[]) => Promise<{
+		authorized: true;
+		actor: 'automated_scoped_token';
+	}>
+>(async () => ({
 	authorized: true as const,
 	actor: 'automated_scoped_token' as const,
 }));
@@ -40,6 +42,9 @@ const mockEvaluateCompat = jest.fn<(...args: unknown[]) => unknown>(() => ({
 	phaseByVersion: { '20260804000000': 'expand' as const },
 }));
 
+const PREVIEW_DB_URL =
+	'postgresql://postgres:secret@db.iwipdvisoyerfdytuhwi.supabase.co:5432/postgres';
+
 jest.mock('../../scripts/db/db-workflow-lib', () => ({
 	fail: (message: string) => {
 		throw new Error(message);
@@ -47,6 +52,11 @@ jest.mock('../../scripts/db/db-workflow-lib', () => ({
 	runCommand: (...args: unknown[]) => mockRunCommand(...args),
 	runPsql: (...args: unknown[]) => mockRunPsql(...args),
 	redactDbUrl: (url: string) => url.replace(/:[^:@/]+@/, ':***@'),
+	getPreviewDbUrl: () => ({
+		url: PREVIEW_DB_URL,
+		source: 'environment variable PREVIEW_DB_URL',
+	}),
+	assertPreviewDbUrl: (url: string) => new URL(url),
 }));
 
 jest.mock('../../scripts/db/db-guard', () => ({
@@ -83,6 +93,7 @@ jest.mock('../../scripts/provision/preview-write-auth', () => ({
 
 jest.mock('../../scripts/db/release-check', () => ({
 	readGitWorktreeState: () => ({ sha: 'abc1234', clean: true, dirtySummary: '' }),
+	assertCleanGitWorktree: () => 'abc1234',
 }));
 
 // Keep Preview tests off the Production policy → audit-db → disposable import chain.
@@ -108,7 +119,7 @@ describe('preview migrate via shared orchestrator', () => {
 	beforeEach(() => {
 		jest.resetModules();
 		jest.clearAllMocks();
-		process.env = { ...originalEnv, CELEBRA_TARGET_RELEASE_SHA: 'abc1234' };
+		process.env = { ...originalEnv };
 		delete process.env.CELEBRA_TASK_SCOPE;
 		Object.defineProperty(process.stdin, 'isTTY', { value: false, configurable: true });
 		Object.defineProperty(process.stdout, 'isTTY', { value: false, configurable: true });
@@ -189,8 +200,7 @@ describe('preview migrate via shared orchestrator', () => {
 
 		expect(mockAuthorizePreviewWriteApply).toHaveBeenCalled();
 		const authArg = mockAuthorizePreviewWriteApply.mock.calls[0]?.[0] as
-			| { slug: string; operation: string }
-			| undefined;
+			{ slug: string; operation: string } | undefined;
 		expect(authArg).toMatchObject({
 			slug: 'schema',
 			operation: 'migrate',

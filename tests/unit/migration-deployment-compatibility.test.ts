@@ -70,7 +70,7 @@ describe('migration / deployment compatibility contract', () => {
 			registry,
 		});
 		expect(result.status).toBe('block');
-		expect(result.reasons.join(' ')).toMatch(/CELEBRA_TARGET_RELEASE_SHA/);
+		expect(result.reasons.join(' ')).toMatch(/target-release Git identity|clean HEAD/);
 	});
 
 	it('allows a migration that belongs to the authorized target release', () => {

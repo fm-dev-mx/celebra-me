@@ -21,10 +21,7 @@ function writeJson(value: unknown): void {
 	process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
 }
 
-function writeError(
-	error: unknown,
-	target: MigrateCliArgs['target'] = null,
-): void {
+function writeError(error: unknown, target: MigrateCliArgs['target'] = null): void {
 	renderOperatorError(error, {
 		title: 'No se pudo completar la operación',
 		retryCommand:
@@ -34,9 +31,7 @@ function writeError(
 					? `pnpm db:migrate -- --target ${target}`
 					: 'pnpm db:migrate -- --help',
 		noChangesMessage:
-			target === 'production'
-				? undefined
-				: 'No se realizaron escrituras de schema.',
+			target === 'production' ? undefined : 'No se realizaron escrituras de schema.',
 	});
 	process.exitCode = 1;
 }
@@ -49,6 +44,21 @@ async function promptAction(): Promise<'run' | 'review' | 'cancel'> {
 			{ name: 'Cancelar', value: 'cancel' as const },
 			{ name: 'Revisar cambios', value: 'review' as const },
 			{ name: 'Aplicar', value: 'run' as const },
+		],
+		theme: inquirerTheme(),
+	});
+}
+
+async function promptTarget(): Promise<MigrateCliArgs['target'] | 'cancel'> {
+	return select({
+		message: 'Seleccione el destino de migración de schema',
+		default: 'cancel',
+		choices: [
+			{ name: 'Cancelar', value: 'cancel' as const },
+			{ name: 'Local (persistent)', value: 'local' as const },
+			{ name: 'Preview', value: 'preview' as const },
+			{ name: 'Production', value: 'production' as const },
+			{ name: 'Disposable-test', value: 'disposable-test' as const },
 		],
 		theme: inquirerTheme(),
 	});
@@ -179,9 +189,7 @@ async function runProductionApply(options: {
 	});
 	emitPlan(options.orchestrator, previewPlan, options.json, true);
 	if (previewPlan.pendingVersions.length === 0) {
-		writeHuman(
-			`${operatorSymbol('ok')} No hay migraciones pendientes. No se escribió schema.`,
-		);
+		writeHuman(`${operatorSymbol('ok')} No hay migraciones pendientes. No se escribió schema.`);
 		return;
 	}
 	const result = await options.orchestrator.orchestrateMigrate({
@@ -196,13 +204,14 @@ function writeMissingTargetFailure(): void {
 	writeHuman(
 		formatOperatorFailure({
 			title: 'Falta el destino',
-			cause: 'Debe indicar --target <local|preview|production|disposable-test>.',
+			cause: 'Sin TTY debe indicar --target <local|preview|production|disposable-test>, o use un alias (db:local:migrate / db:preview:migrate / db:prod:migrate).',
 			code: 'TARGET_REQUIRED',
 			remediation: [
-				'Para Production use: pnpm db:prod:migrate',
-				'Para otros entornos: pnpm db:migrate -- --help',
+				'En terminal interactiva: pnpm db:migrate (selector con Cancelar por defecto)',
+				'Para Production: pnpm db:prod:migrate',
+				'Ayuda: pnpm db:migrate -- --help',
 			],
-			retryCommand: 'pnpm db:prod:migrate',
+			retryCommand: 'pnpm db:migrate -- --help',
 			noChangesMessage: 'No se realizaron escrituras de schema.',
 		}),
 	);
@@ -223,9 +232,22 @@ export async function runMigrateCli(argv: string[] = process.argv): Promise<void
 		return;
 	}
 
-	if (!parsed.target) {
-		writeMissingTargetFailure();
-		return;
+	const isTty = Boolean(process.stdin.isTTY && process.stderr.isTTY);
+	let target = parsed.target;
+	if (!target) {
+		if (!isTty || parsed.json || parsed.interactiveForced === false) {
+			writeMissingTargetFailure();
+			return;
+		}
+		const selected = await promptTarget();
+		if (selected === 'cancel' || selected === null) {
+			writeHuman(
+				`${operatorSymbol('info')} Cancelado. No se realizó ninguna escritura de schema.`,
+			);
+			return;
+		}
+		target = selected;
+		parsed = { ...parsed, target };
 	}
 
 	// Dynamic import keeps --help / parse-only paths free of mutation modules.
@@ -236,22 +258,15 @@ export async function runMigrateCli(argv: string[] = process.argv): Promise<void
 
 	let expectedPin: readonly string[] | null;
 	try {
-		const parsedExpected = parseExpectedConstraint(parsed.argv, process.env, {
-			allowDeprecatedAliases: parsed.target === 'preview',
-		});
-		for (const warning of parsedExpected.deprecationWarnings) {
-			writeHuman(`${operatorSymbol('warn')} ${warning}`);
-		}
-		expectedPin = parsedExpected.expectedPin;
+		expectedPin = parseExpectedConstraint(parsed.argv, process.env).expectedPin;
 	} catch (error: unknown) {
-		writeError(error, parsed.target);
+		writeError(error, target);
 		return;
 	}
 
-	const isTty = Boolean(process.stdin.isTTY && process.stderr.isTTY);
 	const guided = shouldUseGuidedMenu(parsed, isTty);
 	const baseInput: BaseMigrateInput = {
-		target: parsed.target,
+		target,
 		expectedPin,
 		env: process.env,
 		isInteractive: isTty,

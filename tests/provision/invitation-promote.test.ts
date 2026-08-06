@@ -257,7 +257,7 @@ describe('evaluatePromotionBackupGate', () => {
 			manifestPath,
 			JSON.stringify({
 				version: 1,
-				createdAt: '2026-07-23T11:00:00.000Z',
+				createdAt: '2026-07-23T11:50:00.000Z',
 				environment: 'production',
 				projectRef: productionProjectRef,
 				artifacts,
@@ -271,6 +271,45 @@ describe('evaluatePromotionBackupGate', () => {
 		});
 		expect(result.acceptable).toBe(true);
 		expect(result.manifestPath).toBe(manifestPath);
+	});
+
+	it('blocks manifests older than the critical 15-minute RPO', () => {
+		const root = mkdtempSync(join(tmpdir(), 'promote-backup-stale-'));
+		dirs.push(root);
+		const dir = join(root, 'critical-stale');
+		mkdirSync(dir, { recursive: true });
+		const artifacts = ['database', 'auth', 'storage-metadata', 'storage-objects'].map(
+			(kind) => {
+				const artifactPath = join(dir, `${kind}.bin`);
+				writeFileSync(artifactPath, Buffer.alloc(64, 1));
+				return {
+					kind,
+					path: artifactPath,
+					bytes: 64,
+					sha256: createHash('sha256').update(readFileSync(artifactPath)).digest('hex'),
+				};
+			},
+		);
+		const manifestPath = join(dir, 'manifest.json');
+		writeFileSync(
+			manifestPath,
+			JSON.stringify({
+				version: 1,
+				createdAt: '2026-07-23T11:00:00.000Z',
+				environment: 'production',
+				projectRef: productionProjectRef,
+				artifacts,
+			}),
+		);
+		const result = evaluatePromotionBackupGate({
+			manifestPath,
+			productionProjectRef,
+			required: true,
+			now,
+		});
+		expect(result.acceptable).toBe(false);
+		expect(result.blockCode).toBe('BACKUP_REQUIRED');
+		expect(result.detail).toMatch(/15m/);
 	});
 });
 

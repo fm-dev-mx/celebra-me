@@ -2,7 +2,7 @@
 /** The sole public managed-invitation release command. */
 /* eslint-disable max-lines, no-useless-assignment -- Managed release CLI handles mode dispatch, per-target planning, and interactive wizard. */
 import { confirm, select } from '@inquirer/prompts';
-import { applyLocalInvitation, type LocalApplyResult } from './apply-local-invitation.ts';
+import { type LocalApplyResult } from './apply-local-invitation.ts';
 import { exportInvitationPackage, type InvitationPackageData } from './invitation-package.ts';
 import { runImportEngine } from './invitation-import-engine.ts';
 import { assertEngineResult } from './invitation-engine-result.ts';
@@ -26,12 +26,18 @@ import {
 	validateUpdateOptions,
 	type InvitationUpdateTarget,
 } from './invitation-update-options.ts';
-import { verifyPreviewWriteAuthorization } from './preview-write-auth.ts';
+import { authorizePreviewWriteApply } from './preview-write-auth.ts';
 import { readFastInvitationInventory } from './invitation-status-inventory.ts';
 import { evaluateInvitationReadiness } from './invitation-readiness.ts';
 import { LOCAL_DB_URL, redactCredentials } from '../db/db-target-config.ts';
-import { getSecretFromEnvOrFiles, PREVIEW_SECRET_FILES } from '../db/db-workflow-lib.ts';
+import { assertPreviewDbUrl, getPreviewDbUrl } from '../db/db-workflow-lib.ts';
 import { finalizePreviewApprovalArtifact } from './preview-approval-service.ts';
+import { getDefaultPreviewApprovalStore } from './preview-approval-store.ts';
+import {
+	assertContentSchemaCurrent,
+	planAndApplyLocalContent,
+	planAndApplyPreviewContent,
+} from './invitation-content-apply.ts';
 import {
 	formatStatusReport,
 	formatDryRunPlan,
@@ -44,7 +50,6 @@ import {
 	type TargetApplyResultData,
 } from './invitation-update-presenter.ts';
 import { establishPreviewProvenanceBaseline } from './preview-provenance-baseline-service.ts';
-import { runPreviewApply } from './preview-apply.ts';
 import type { OperationalPlan } from './invitation-update-plan.ts';
 import {
 	loadConflictResolutionsFile,
@@ -162,12 +167,11 @@ Usage:
   pnpm invitation:update --status [--slug <slug>] [--targets <targets>] [--json]
   pnpm invitation:update --slug <slug> --targets local|preview|local,preview --dry-run|--apply [--non-interactive] [--source-dir <dir>|--package <path>]
   pnpm invitation:update --package-hash <hash> --evidence <path> --apply
-  pnpm invitation:update --artifact <path> --evidence <path> --apply
   pnpm invitation:update --preview-provenance --slug <slug> --targets preview --package <path> --dry-run [--json]
   pnpm invitation:update --preview-provenance --slug <slug> --targets preview --package <path> --apply [--json]
 
 Options:
-  --asset-policy <policy>     Asset handling policy: verify, missing (default), sync
+  --asset-policy <policy>     Asset handling policy: verify, missing (default), sync, preserve
   --prune-assets               Enable explicit removal of unreferenced managed assets (requires confirmation)
   --status                     Local inventory status (remotes unprobed; use pnpm dbs for matrix)
   --targets <targets>          Mutations: local, preview, local,preview. --targets all and Production mutations are rejected.
@@ -187,11 +191,12 @@ Options:
   --json                       Format output as JSON
   --owner-user-id <uuid>       Optional override/assertion; new invites default to a dedicated host ({hostLoginAlias}@clientes.celebra.invalid)
   --package-hash <hash>        Shared-store package hash for Preview approval finalize
-  --artifact <path>            Legacy pending approval JSON (imported into shared store on finalize)
   --evidence <path>            Hosted Preview validation evidence JSON (required with finalize)
-  --approval-artifact <path>   Legacy filesystem approval dir hint for --preview-provenance (optional)
   --preview-provenance         Establish the Preview provenance baseline without changing content (specialized)
   --help, -h                   Show this help message
+
+Legacy filesystem approvals: import once with pnpm invitation:approvals:migrate -- --apply
+Schema BEHIND/DRIFT: run pnpm db:local:migrate / pnpm db:preview:migrate (never auto-migrates).
 
 Production managed-content promotion uses:
   pnpm invitation:promote
@@ -218,7 +223,6 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 		const slug = value(args, '--slug');
 		const targets = parseTargets(value(args, '--targets'));
 		const packagePath = value(args, '--package');
-		const approvalArtifactPath = value(args, '--approval-artifact');
 		const apply = args.includes('--apply');
 		if (
 			args.includes('--status') ||
@@ -232,9 +236,16 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 				'La reconstrucción de baseline requiere Preview, slug, paquete y --dry-run o --apply.',
 			);
 		}
+		if (apply) {
+			await authorizePreviewWriteApply({
+				slug,
+				operation: 'provenance-baseline',
+				confirmPrompt: `Confirm Preview provenance baseline for "${slug}"? Type YES to proceed: `,
+				isInteractive: !nonInteractive && isTTY,
+			});
+		}
 		const result = await establishPreviewProvenanceBaseline({
 			packagePath,
-			approvalArtifactPath,
 			apply,
 		});
 		if (json) console.log(JSON.stringify(result, null, 2));
@@ -246,17 +257,32 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 	}
 
 	const packageHash = value(args, '--package-hash');
-	const artifact = value(args, '--artifact');
 	const evidence = value(args, '--evidence');
-	if (packageHash || artifact || evidence) {
-		if (!evidence || !args.includes('--apply') || (!packageHash && !artifact)) {
+	if (packageHash || evidence || args.includes('--artifact')) {
+		if (args.includes('--artifact')) {
 			throw new Error(
-				'Approval finalize requires --evidence <path> --apply and either --package-hash <hash> or --artifact <path>.',
+				'--artifact was removed. Import legacy approvals with pnpm invitation:approvals:migrate -- --apply, then finalize with --package-hash.',
 			);
 		}
+		if (!evidence || !args.includes('--apply') || !packageHash) {
+			throw new Error(
+				'Approval finalize requires --package-hash <hash> --evidence <path> --apply.',
+			);
+		}
+		const pending = getDefaultPreviewApprovalStore().get(packageHash);
+		if (!pending) {
+			throw new Error(
+				`No pending Preview approval exists in the shared store for package ${packageHash}.`,
+			);
+		}
+		await authorizePreviewWriteApply({
+			slug: pending.slug,
+			operation: 'finalize-approval',
+			confirmPrompt: `Confirm finalize Preview approval for "${pending.slug}"? Type YES to proceed: `,
+			isInteractive: !nonInteractive && isTTY,
+		});
 		const finalized = finalizePreviewApprovalArtifact({
 			packageHash,
-			artifactPath: artifact,
 			evidencePath: evidence,
 		});
 		const result = {
@@ -316,12 +342,18 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 			}
 			const operation = await select({
 				message: 'Selecciona la operación a realizar',
+				default: 'cancel',
 				choices: [
+					{ name: 'Cancelar', value: 'cancel' },
 					{ name: '1. Ver estado e inventario (status)', value: 'status' },
 					{ name: '2. Simular cambios sin escribir (dry-run)', value: 'dry-run' },
 					{ name: '3. Aplicar actualización (apply)', value: 'apply' },
 				],
 			});
+			if (operation === 'cancel') {
+				console.log('Cancelado. No se realizaron escrituras.');
+				return;
+			}
 
 			if (operation === 'status') statusMode = true;
 			else if (operation === 'dry-run') dryRun = true;
@@ -330,20 +362,27 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 			if (targets.length === 0) {
 				const choices = statusMode
 					? [
+							{ name: 'Cancelar', value: 'cancel' },
 							{ name: 'Local (127.0.0.1:54322)', value: 'local' },
 							{ name: 'Preview', value: 'preview' },
 							{ name: 'Producción (solo lectura)', value: 'production' },
 							{ name: 'Todos los entornos (solo lectura)', value: 'all' },
 						]
 					: [
+							{ name: 'Cancelar', value: 'cancel' },
 							{ name: 'Local (127.0.0.1:54322)', value: 'local' },
 							{ name: 'Preview', value: 'preview' },
 							{ name: 'Local y Preview', value: 'local,preview' },
 						];
 				const selected = await select({
 					message: 'Selecciona el entorno de destino',
+					default: 'cancel',
 					choices,
 				});
+				if (selected === 'cancel') {
+					console.log('Cancelado. No se realizaron escrituras.');
+					return;
+				}
 				targets = statusMode ? parseTargets(selected) : parseMutationTargets(selected);
 			}
 
@@ -482,24 +521,6 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 	}
 
 	getInvitationDefinition(slug);
-	verifyPreviewWriteAuthorization({
-		slug,
-		targets,
-		apply,
-		isInteractive: !nonInteractive && isTTY,
-		operation: 'apply',
-	});
-	if (apply && targets.includes('preview') && isTTY && !nonInteractive) {
-		const previewConfirmed = await confirm({
-			message: `¿Confirma la escritura administrada en Preview para "${slug}"?`,
-			default: false,
-		});
-		if (!previewConfirmed) {
-			throw new Error(
-				'PREVIEW_WRITE_CANCELLED: El operador canceló la escritura en Preview.',
-			);
-		}
-	}
 
 	const ownerUserId = value(args, '--owner-user-id');
 	const reports: StageReport[] = [];
@@ -630,12 +651,11 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 		for (const target of targets) {
 			if (target === 'local') {
 				try {
-					localResult = await applyLocalInvitation({
+					assertContentSchemaCurrent({ target: 'local', dbUrl: LOCAL_DB_URL });
+					localResult = await planAndApplyLocalContent({
 						slug,
-						rekeyFrom,
-						sourceDir,
-						ownerUserId,
 						apply: false,
+						rekeyFrom,
 						updateScope,
 						assetPolicy,
 						pruneAssets,
@@ -708,7 +728,9 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 			} else if (target === 'preview') {
 				let targetDbUrl: string | undefined;
 				try {
-					targetDbUrl = getSecretFromEnvOrFiles('PREVIEW_DB_URL', PREVIEW_SECRET_FILES);
+					const resolved = getPreviewDbUrl();
+					assertPreviewDbUrl(resolved.url);
+					targetDbUrl = resolved.url;
 				} catch {
 					targetDbUrl = undefined;
 				}
@@ -719,14 +741,14 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 						environment: 'preview',
 						status: 'BLOCKED',
 						reasonCode: 'PREVIEW_CREDENTIALS_UNAVAILABLE',
-						reason: 'Credenciales de preview no configuradas.',
+						reason: 'Credenciales de preview no configuradas o perímetro inválido.',
 						remainingAction:
-							'Configurar credenciales de preview y reejecutar el comando.',
+							'Configurar PREVIEW_DB_URL del proyecto Preview canónico y reejecutar el comando.',
 					});
 					targetPlans.push({
 						target: 'preview',
 						status: 'BLOQUEADO',
-						reason: 'No se realizó una inspección remota (credenciales de preview no configuradas).',
+						reason: 'No se realizó una inspección remota (credenciales de preview no configuradas o perímetro inválido).',
 						plannedOperations: 0,
 						expectedDatabaseWrites: { inserts: 0, updates: 0, deletes: 0 },
 						expectedStorageMutations: {
@@ -739,6 +761,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 					});
 				} else {
 					try {
+						assertContentSchemaCurrent({ target: 'preview', dbUrl: targetDbUrl });
 						const engineOptions = resolvedPackage
 							? {
 									packagePath: resolvedPackage,
@@ -1071,9 +1094,46 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 				.map((tp) => tp.target),
 		};
 
-		// ── CONFIRMATION GATES (INTERACTIVE & NON-INTERACTIVE) ─────────────────────
-		if (isTTY && !nonInteractive) {
-			console.log(formatApplyConfirmation(planData, presenterOptions));
+		// ── CONFIRMATION GATES (after plan review; single auth per operation) ──────
+		console.log(formatApplyConfirmation(planData, presenterOptions));
+		if (targets.includes('preview')) {
+			try {
+				await authorizePreviewWriteApply({
+					slug,
+					operation: 'apply',
+					confirmPrompt: `Confirm Update invitation "${slug}" in Preview? Type YES to proceed: `,
+					isInteractive: !nonInteractive && isTTY,
+				});
+			} catch (error: unknown) {
+				const message = error instanceof Error ? error.message : String(error);
+				if (!message.includes('PREVIEW_WRITE_CANCELLED')) throw error;
+				targetResults.push(...buildCancellationResults(targets, targetPlans));
+				const cancelResult = {
+					invitation: slug,
+					reports,
+					targetResults,
+					status: 'CANCELLED' as const,
+					reason: 'OPERATOR_CANCELLED',
+				};
+				if (json) console.log(JSON.stringify(cancelResult, null, 2));
+				else
+					console.log(
+						formatApplyResult({
+							planId: localResult?.plan?.planId,
+							invitation: slug,
+							status: 'CANCELLED',
+							environment: targets.join(', '),
+							completedOperations: 0,
+							databaseWrites: { inserts: 0, updates: 0, deletes: 0 },
+							storageMutations: { uploads: 0, overwrites: 0, moves: 0, deletes: 0 },
+							reason: 'Cancelado por el operador.',
+							functionalChanges: planData.functionalChanges,
+							targetResults,
+						}),
+					);
+				return;
+			}
+		} else if (isTTY && !nonInteractive) {
 			const confirmed = await confirm({
 				message: `¿Aplicar la actualización administrada de "${slug}" en ${targets.join(', ')}?`,
 				default: false,
@@ -1107,11 +1167,8 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 				}
 				return;
 			}
-		} else if (
-			nonInteractive &&
-			destInfo.hasDestructive &&
-			!args.includes('--confirm-destructive')
-		) {
+		}
+		if (nonInteractive && destInfo.hasDestructive && !args.includes('--confirm-destructive')) {
 			throw new Error(
 				`El plan contiene operaciones destructivas (${destInfo.databaseDeletes} eliminaciones DB, ${destInfo.storageDeletes} eliminaciones Storage, ${destInfo.storageOverwrites} sobrescrituras Storage). La ejecución no interactiva requiere --confirm-destructive.`,
 			);
@@ -1125,13 +1182,19 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 				sanitizeMessage(error instanceof Error ? error.message : String(error)),
 			executeTarget: async (target) => {
 				if (target === 'local') {
-					const executedLocal = await applyLocalInvitation({
+					const localPlan = executionPlans.get('local');
+					if (!localPlan) {
+						throw Object.assign(new Error('No existe un plan confirmado de Local.'), {
+							mutationStarted: false,
+						}) as LifecycleExecutionError;
+					}
+					const executedLocal = await planAndApplyLocalContent({
 						slug,
+						apply: true,
+						plan: localPlan,
 						rekeyFrom,
 						sourceDir,
 						ownerUserId,
-						apply: true,
-						plan: localResult?.plan,
 						updateScope,
 						assetPolicy,
 						pruneAssets,
@@ -1193,11 +1256,16 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 							packageHash: packaged.stats.packageHash,
 						});
 					}
-					const dbUrl = getSecretFromEnvOrFiles('PREVIEW_DB_URL', PREVIEW_SECRET_FILES);
-					if (!dbUrl) {
-						throw Object.assign(new Error('PREVIEW_DB_URL no configurada.'), {
-							mutationStarted: false,
-						}) as LifecycleExecutionError;
+					let dbUrl: string;
+					try {
+						const resolved = getPreviewDbUrl();
+						assertPreviewDbUrl(resolved.url);
+						dbUrl = resolved.url;
+					} catch {
+						throw Object.assign(
+							new Error('PREVIEW_DB_URL no configurada o perímetro inválido.'),
+							{ mutationStarted: false },
+						) as LifecycleExecutionError;
 					}
 					const previewPlan = executionPlans.get('preview');
 					if (!previewPlan) {
@@ -1205,9 +1273,10 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 							mutationStarted: false,
 						}) as LifecycleExecutionError;
 					}
-					const result = await runPreviewApply({
+					const result = await planAndApplyPreviewContent({
 						packageData: confirmationPackage,
 						targetDbUrl: dbUrl,
+						apply: true,
 						plan: previewPlan,
 						assetPolicy,
 						pruneAssets,
@@ -1215,34 +1284,40 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 						conflictResolutions,
 						rekeyFrom,
 					});
+					const appliedPlan = result.plan;
+					if (!appliedPlan) {
+						throw Object.assign(new Error('Preview apply returned no plan.'), {
+							mutationStarted: true,
+						}) as LifecycleExecutionError;
+					}
 					reports.push({
 						stage: 'promote',
 						environment: 'preview',
 						status: result.isZeroDrift ? 'IN_SYNC' : 'UPDATED',
 						plannedOperations: result.plannedMutations,
 						completedOperations: result.executedMutations,
-						databaseInserts: result.plan.physicalDatabaseOps.inserts,
-						databaseUpdates: result.plan.physicalDatabaseOps.updates,
-						databaseDeletes: result.plan.physicalDatabaseOps.deletes,
-						storageUploads: result.plan.storageOps.uploads,
-						storageOverwrites: result.plan.storageOps.overwrites,
-						storageMoves: result.plan.storageOps.moves,
-						storageDeletes: result.plan.storageOps.deletes,
+						databaseInserts: appliedPlan.physicalDatabaseOps.inserts,
+						databaseUpdates: appliedPlan.physicalDatabaseOps.updates,
+						databaseDeletes: appliedPlan.physicalDatabaseOps.deletes,
+						storageUploads: appliedPlan.storageOps.uploads,
+						storageOverwrites: appliedPlan.storageOps.overwrites,
+						storageMoves: appliedPlan.storageOps.moves,
+						storageDeletes: appliedPlan.storageOps.deletes,
 						assetCounts: assetCounts(result.actions),
 						publishedVersion: result.publishedVersion,
 						packageHash: result.packageHash,
 						approvalState: 'pending_hosted_validation',
 					});
 					return {
-						executionPlanId: result.plan.planId,
+						executionPlanId: appliedPlan.planId,
 						receiptPlanId: result.receipt?.planId ?? '',
 						result: {
 							target: 'preview',
-							planId: result.plan.planId,
+							planId: appliedPlan.planId,
 							status: result.isZeroDrift ? 'SIN CAMBIOS' : 'CAMBIOS APLICADOS',
 							completedOperations: result.executedMutations,
-							databaseWrites: result.plan.physicalDatabaseOps,
-							storageMutations: result.plan.storageOps,
+							databaseWrites: appliedPlan.physicalDatabaseOps,
+							storageMutations: appliedPlan.storageOps,
 							publishedVersion: result.publishedVersion,
 							functionalChanges: result.functionalChanges,
 						},

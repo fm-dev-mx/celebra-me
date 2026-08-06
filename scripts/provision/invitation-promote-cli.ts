@@ -205,11 +205,7 @@ async function runGuidedPromote(parsed: InvitationPromoteCliArgs): Promise<void>
 		});
 	}
 
-	const summary = await discoverInvitationPromotionCandidates({
-		approvalsDirs: parsed.approvalsDir
-			? [parsed.approvalsDir, '.agent/tmp/approvals']
-			: undefined,
-	});
+	const summary = await discoverInvitationPromotionCandidates({});
 	const selected = await promptCandidateSelection(summary.candidates);
 	if (!selected) {
 		writeHuman(
@@ -231,9 +227,6 @@ async function runGuidedPromote(parsed: InvitationPromoteCliArgs): Promise<void>
 
 	const report = await orchestrateInvitationPromotion({
 		packageData: selected.packageInput.packageData,
-		approvalsDirs: parsed.approvalsDir
-			? [parsed.approvalsDir, '.agent/tmp/approvals']
-			: undefined,
 		backupManifestPath: parsed.backupManifestPath,
 		deliveryScope: selected.deliveryScope,
 		title: selected.title,
@@ -293,15 +286,10 @@ async function runFlaggedPromote(parsed: InvitationPromoteCliArgs): Promise<void
 	const conflictResolutions = parsed.conflictResolutionsPath
 		? loadConflictResolutionsFile(parsed.conflictResolutionsPath)
 		: undefined;
-	const approvalsDirs = parsed.approvalsDir
-		? [parsed.approvalsDir, '.agent/tmp/approvals']
-		: undefined;
-
 	if (parsed.mode !== 'apply') {
 		const preflight = await runPromotionPreflight({
 			packageData: packageInput.packageData,
 			ownerUserId: parsed.ownerUserId,
-			approvalsDirs,
 			assetPolicy,
 			pruneAssets: parsed.pruneAssets,
 			updateScope: parsed.updateScope,
@@ -329,7 +317,6 @@ async function runFlaggedPromote(parsed: InvitationPromoteCliArgs): Promise<void
 	const report = await orchestrateInvitationPromotion({
 		packageData: packageInput.packageData,
 		ownerUserId: parsed.ownerUserId,
-		approvalsDirs,
 		assetPolicy,
 		pruneAssets: parsed.pruneAssets,
 		updateScope: parsed.updateScope,
