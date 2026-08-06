@@ -159,7 +159,7 @@ export function createPreviewDbApprovalStore(
              materialized_projection_hash, asset_manifest_hash, plan_id,
              preview_project_ref, intended_production_project_ref,
              expected_asset_hashes, hosted_validation, created_at,
-             approved_at, approved_by
+             approved_at, approved_by, expires_at
            ) values (
              ${sqlLiteral(artifact.packageHash)},
              ${sqlLiteral(artifact.slug)},
@@ -178,7 +178,8 @@ export function createPreviewDbApprovalStore(
              ${hostedJson},
              ${sqlLiteral(artifact.createdAt)}::timestamptz,
              ${approvedAt},
-             ${approvedBy}
+             ${approvedBy},
+             (${sqlLiteral(artifact.createdAt)}::timestamptz + interval '7 days')
            )
            on conflict (package_hash) do update set
              slug = excluded.slug,
@@ -197,7 +198,8 @@ export function createPreviewDbApprovalStore(
              hosted_validation = excluded.hosted_validation,
              created_at = excluded.created_at,
              approved_at = excluded.approved_at,
-             approved_by = excluded.approved_by
+             approved_by = excluded.approved_by,
+             expires_at = excluded.expires_at
            returning ${SELECT_COLS}
          ) t;`,
 				getDbUrl(),

@@ -73,6 +73,7 @@ describe('preview approval store', () => {
 		expect(sql).toContain(
 			'GRANT ALL ON TABLE public.preview_approval_artifacts TO service_role',
 		);
-		expect(sql).toContain('expires_at timestamptz GENERATED ALWAYS AS');
+		expect(sql).toContain('expires_at timestamptz NOT NULL DEFAULT');
+		expect(sql).not.toContain('GENERATED ALWAYS AS');
 	});
 });

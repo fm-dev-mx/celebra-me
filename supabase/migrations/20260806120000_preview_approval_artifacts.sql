@@ -22,7 +22,8 @@ CREATE TABLE IF NOT EXISTS public.preview_approval_artifacts (
   created_at timestamptz NOT NULL DEFAULT now(),
   approved_at timestamptz,
   approved_by text,
-  expires_at timestamptz GENERATED ALWAYS AS (created_at + interval '7 days') STORED,
+  -- Plain column: timestamptz + interval is not IMMUTABLE, so GENERATED STORED fails on Postgres.
+  expires_at timestamptz NOT NULL DEFAULT (now() + interval '7 days'),
   CONSTRAINT preview_approval_artifacts_approved_fields_chk CHECK (
     (
       approval_state = 'pending_hosted_validation'
@@ -47,7 +48,7 @@ COMMENT ON COLUMN public.preview_approval_artifacts.package_hash IS
   'Exact managed package hash (SHA-256). Primary release identity.';
 
 COMMENT ON COLUMN public.preview_approval_artifacts.expires_at IS
-  'Cleanup horizon from created_at; promote freshness still validates approved_at separately.';
+  'Cleanup horizon (created_at + 7 days). Promote freshness still validates approved_at in app code.';
 
 CREATE INDEX IF NOT EXISTS preview_approval_artifacts_slug_state_idx
   ON public.preview_approval_artifacts (slug, approval_state);
