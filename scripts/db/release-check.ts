@@ -59,20 +59,21 @@ export function readGitWorktreeState(
 }
 
 function failDirtyWorktree(state: GitWorktreeState, cause: string): never {
-	const porcelain = state.dirtySummary;
+	const dirtySummary = state.dirtySummary;
 	// Re-read porcelain paths from git for a precise multiline list.
-	let items: string[] = [];
-	try {
-		const raw = execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' });
-		items = parsePorcelainDirtyFiles(raw);
-	} catch {
-		items = porcelain
-			? porcelain
-					.replace(/^\d+ archivo\(s\):\s*/, '')
-					.split(' | ')
-					.filter(Boolean)
-			: [];
-	}
+	const items: string[] = (() => {
+		try {
+			const raw = execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' });
+			return parsePorcelainDirtyFiles(raw);
+		} catch {
+			return dirtySummary
+				? dirtySummary
+						.replace(/^\d+ archivo\(s\):\s*/, '')
+						.split(' | ')
+						.filter(Boolean)
+				: [];
+		}
+	})();
 	process.stderr.write(
 		formatOperatorFailure({
 			title: 'Árbol de trabajo con cambios',

@@ -133,6 +133,76 @@ function runPostMigrationBackup(prodDbUrl: string): void {
 	writeHuman(`${operatorSymbol('ok')} Respaldo crítico posterior verificado.`);
 }
 
+function validatePendingVersions(
+	pendingVersions: string[],
+	expectedPin: readonly string[] | null | undefined,
+	quiet: boolean,
+): void {
+	if (expectedPin) {
+		const compare = comparePendingSetToExpected(pendingVersions, expectedPin);
+		if (!compare.ok) {
+			for (const error of compare.errors) {
+				writeHuman(`${operatorSymbol('fail')} ${error}`);
+			}
+			fail('Migration dry-run does not match --expected. Aborting.');
+		}
+		if (!quiet) {
+			writeHuman(`${operatorSymbol('ok')} Dry-run coincide exactamente con --expected.`);
+			writeHuman();
+		}
+	} else if (!quiet) {
+		if (pendingVersions.length === 0) {
+			writeHuman(`${operatorSymbol('info')} No hay migraciones pendientes.`);
+		} else {
+			writeHuman(
+				`${operatorSymbol('info')} Pendientes: ${pendingVersions.join(', ')}`,
+			);
+		}
+	}
+}
+
+function resolveReleaseEvidenceSha(
+	mode: 'preflight' | 'apply',
+	worktree: ReturnType<typeof readGitWorktreeState>,
+	quiet: boolean,
+): string | null {
+	if (mode !== 'apply') return null;
+
+	if (!quiet) {
+		writeHuman(
+			`${operatorSymbol('info')} Validando evidencia de release-check para HEAD limpio…`,
+		);
+	}
+	const evidence = assertValidReleaseCheckEvidence({ worktree });
+	if (!quiet) {
+		writeHuman(
+			`${operatorSymbol('ok')} Evidencia de release válida para HEAD ${shortSha(evidence.sha, 12)}.`,
+		);
+		writeHuman();
+	}
+	return evidence.sha;
+}
+
+function recordSessionPlanRevalidation(
+	session: MigratePolicySession | undefined,
+	planId: string,
+	quiet: boolean,
+	priorBuilds: number,
+): void {
+	if (!session) return;
+
+	if (quiet) {
+		if (session.lastPlanId && session.lastPlanId !== planId) {
+			writeHuman(
+				`${operatorSymbol('warn')} El plan cambió durante la revalidación (${shortSha(session.lastPlanId)} → ${shortSha(planId)}). Se requiere una nueva revisión.`,
+			);
+		} else if (priorBuilds > 0) {
+			writeHuman(`${operatorSymbol('ok')} Revalidación sin cambios materiales en el plan.`);
+		}
+	}
+	session.lastPlanId = planId;
+}
+
 export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 	target: 'production',
 
@@ -168,27 +238,7 @@ export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 		const dryRun = executeSupabaseDryRun(ctx.dbUrl);
 		const pendingVersions = dryRun.pendingVersions;
 
-		if (ctx.expectedPin) {
-			const compare = comparePendingSetToExpected(pendingVersions, ctx.expectedPin);
-			if (!compare.ok) {
-				for (const error of compare.errors) {
-					writeHuman(`${operatorSymbol('fail')} ${error}`);
-				}
-				fail('Migration dry-run does not match --expected. Aborting.');
-			}
-			if (!quiet) {
-				writeHuman(`${operatorSymbol('ok')} Dry-run coincide exactamente con --expected.`);
-				writeHuman();
-			}
-		} else if (!quiet) {
-			if (pendingVersions.length === 0) {
-				writeHuman(`${operatorSymbol('info')} No hay migraciones pendientes.`);
-			} else {
-				writeHuman(
-					`${operatorSymbol('info')} Pendientes: ${pendingVersions.join(', ')}`,
-				);
-			}
-		}
+		validatePendingVersions(pendingVersions, ctx.expectedPin, quiet);
 
 		const worktree = readGitWorktreeState();
 		const releaseSha = worktree.sha;
@@ -215,23 +265,7 @@ export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 			logHostedCompatibility(compat);
 		}
 		const planCompat = toPlanCompatibility(compat);
-
-		let releaseEvidenceSha: string | null = null;
-		if (mode === 'apply') {
-			if (!quiet) {
-				writeHuman(
-					`${operatorSymbol('info')} Validando evidencia de release-check para HEAD limpio…`,
-				);
-			}
-			const evidence = assertValidReleaseCheckEvidence({ worktree });
-			releaseEvidenceSha = evidence.sha;
-			if (!quiet) {
-				writeHuman(
-					`${operatorSymbol('ok')} Evidencia de release válida para HEAD ${shortSha(evidence.sha, 12)}.`,
-				);
-				writeHuman();
-			}
-		}
+		const releaseEvidenceSha = resolveReleaseEvidenceSha(mode, worktree, quiet);
 
 		const plan = buildMigrationPlan({
 			target: 'production',
@@ -255,16 +289,7 @@ export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 			releaseEvidenceSha,
 		});
 
-		if (quiet && ctx.session) {
-			if (ctx.session.lastPlanId && ctx.session.lastPlanId !== plan.planId) {
-				writeHuman(
-					`${operatorSymbol('warn')} El plan cambió durante la revalidación (${shortSha(ctx.session.lastPlanId)} → ${shortSha(plan.planId)}). Se requiere una nueva revisión.`,
-				);
-			} else if (priorBuilds > 0) {
-				writeHuman(`${operatorSymbol('ok')} Revalidación sin cambios materiales en el plan.`);
-			}
-		}
-		if (ctx.session) ctx.session.lastPlanId = plan.planId;
+		recordSessionPlanRevalidation(ctx.session, plan.planId, quiet, priorBuilds);
 		return plan;
 	},
 
