@@ -1,6 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { OperatorError } from '../../scripts/db/operator-cli-ux.ts';
-import { orchestrateInvitationPromotion } from '../../scripts/provision/invitation-promotion-orchestrator.ts';
+import {
+	orchestrateInvitationPromotion,
+	resolvePromotionUpdateScope,
+} from '../../scripts/provision/invitation-promotion-orchestrator.ts';
 import type {
 	PromotionApplyReport,
 	PromotionPreflightReport,
@@ -46,6 +49,23 @@ function preflight(overrides: Partial<PromotionPreflightReport> = {}): Promotion
 		...overrides,
 	} as PromotionPreflightReport;
 }
+
+describe('resolvePromotionUpdateScope', () => {
+	it('prefers explicit updateScope over deliveryScope', () => {
+		expect(
+			resolvePromotionUpdateScope({
+				updateScope: 'content-only',
+				deliveryScope: 'content-and-assets',
+			}),
+		).toBe('content-only');
+	});
+
+	it('uses definition deliveryScope when updateScope is omitted', () => {
+		expect(resolvePromotionUpdateScope({ deliveryScope: 'content-and-assets' })).toBe(
+			'content-and-assets',
+		);
+	});
+});
 
 describe('invitation promotion orchestrator', () => {
 	const runPreflight = jest.fn<(...args: unknown[]) => Promise<PromotionPreflightReport>>();
@@ -93,6 +113,26 @@ describe('invitation promotion orchestrator', () => {
 		expect(ensureBackup).not.toHaveBeenCalled();
 		expect(requireOwnerApply).not.toHaveBeenCalled();
 		expect(runApply).not.toHaveBeenCalled();
+	});
+
+	it('passes deliveryScope as updateScope so first-time asset uploads are planned', async () => {
+		await orchestrateInvitationPromotion({
+			packageData: packageData() as never,
+			deliveryScope: 'content-and-assets',
+			quiet: true,
+			runPreflight: runPreflight as never,
+			runApply: runApply as never,
+			requireOwnerApply: requireOwnerApply as never,
+			ensureReleaseEvidence: ensureReleaseEvidence as never,
+			ensureBackup: ensureBackup as never,
+			revalidateBackup: revalidateBackup as never,
+		});
+		expect(runPreflight).toHaveBeenCalledWith(
+			expect.objectContaining({ updateScope: 'content-and-assets' }),
+		);
+		expect(runApply).toHaveBeenCalledWith(
+			expect.objectContaining({ updateScope: 'content-and-assets' }),
+		);
 	});
 
 	it('orders preflight → release → backup → rebuild → gate → apply', async () => {

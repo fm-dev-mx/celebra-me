@@ -151,8 +151,9 @@ export function createPreviewDbApprovalStore(
 				: 'null::timestamptz';
 			const approvedBy = artifact.approvedBy ? sqlLiteral(artifact.approvedBy) : 'null';
 			const planId = artifact.planId ? sqlLiteral(artifact.planId) : 'null';
+			// Postgres allows data-modifying INSERT only in a WITH (CTE), not in FROM (subquery).
 			const row = queryRow(
-				`select row_to_json(t) from (
+				`with upserted as (
            insert into public.preview_approval_artifacts (
              package_hash, slug, route, approval_state, schema_version,
              source_hash, metadata_hash, canonical_projection_hash,
@@ -201,7 +202,8 @@ export function createPreviewDbApprovalStore(
              approved_by = excluded.approved_by,
              expires_at = excluded.expires_at
            returning ${SELECT_COLS}
-         ) t;`,
+         )
+         select row_to_json(t) from upserted t;`,
 				getDbUrl(),
 			);
 			if (!row) {

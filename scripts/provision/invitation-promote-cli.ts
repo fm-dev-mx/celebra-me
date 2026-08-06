@@ -35,7 +35,11 @@ import {
 	formatPromotionPlanCompact,
 	formatPromotionResult,
 } from './invitation-promotion-format.ts';
-import { orchestrateInvitationPromotion } from './invitation-promotion-orchestrator.ts';
+import {
+	orchestrateInvitationPromotion,
+	resolvePromotionUpdateScope,
+} from './invitation-promotion-orchestrator.ts';
+import { getInvitationDefinition } from './invitations/registry.ts';
 
 /**
  * The preflight report retains the connection string only for the in-process
@@ -286,13 +290,20 @@ async function runFlaggedPromote(parsed: InvitationPromoteCliArgs): Promise<void
 	const conflictResolutions = parsed.conflictResolutionsPath
 		? loadConflictResolutionsFile(parsed.conflictResolutionsPath)
 		: undefined;
+	const deliveryScope = parsed.slug
+		? getInvitationDefinition(parsed.slug).deliveryScope
+		: undefined;
+	const updateScope = resolvePromotionUpdateScope({
+		updateScope: parsed.updateScope,
+		deliveryScope,
+	});
 	if (parsed.mode !== 'apply') {
 		const preflight = await runPromotionPreflight({
 			packageData: packageInput.packageData,
 			ownerUserId: parsed.ownerUserId,
 			assetPolicy,
 			pruneAssets: parsed.pruneAssets,
-			updateScope: parsed.updateScope,
+			updateScope,
 			conflictResolutions,
 			backupManifestPath: parsed.backupManifestPath,
 			requireBackup: false,
@@ -319,9 +330,10 @@ async function runFlaggedPromote(parsed: InvitationPromoteCliArgs): Promise<void
 		ownerUserId: parsed.ownerUserId,
 		assetPolicy,
 		pruneAssets: parsed.pruneAssets,
-		updateScope: parsed.updateScope,
+		updateScope,
 		conflictResolutions,
 		backupManifestPath: parsed.backupManifestPath,
+		deliveryScope,
 		quiet: parsed.json,
 	});
 

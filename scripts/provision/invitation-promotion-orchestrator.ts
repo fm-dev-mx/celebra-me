@@ -33,6 +33,25 @@ import type { ConflictResolutions, UpdateScope } from './semantic-delta.ts';
 
 const PROMOTION_OPERATION_TYPE = 'promotion';
 
+/**
+ * Prefer explicit --update-scope; otherwise honor definition deliveryScope so first-time
+ * Production promotes with content-and-assets upload missing binaries (not preserve-block).
+ */
+export function resolvePromotionUpdateScope(input: {
+	updateScope?: UpdateScope;
+	deliveryScope?: string;
+}): UpdateScope | undefined {
+	if (input.updateScope) return input.updateScope;
+	if (
+		input.deliveryScope === 'content-only' ||
+		input.deliveryScope === 'content-and-assets' ||
+		input.deliveryScope === 'assets-only'
+	) {
+		return input.deliveryScope;
+	}
+	return undefined;
+}
+
 export interface OrchestrateInvitationPromotionInput {
 	packageData: InvitationPackageData;
 	ownerUserId?: string;
@@ -131,8 +150,19 @@ export async function orchestrateInvitationPromotion(
 		});
 	}
 
+	const updateScope = resolvePromotionUpdateScope({
+		updateScope: input.updateScope,
+		deliveryScope: input.deliveryScope,
+	});
+
 	if (!quiet) {
 		writeHuman(`${operatorSymbol('info')} Preflight: evaluando release aprobada…`);
+		if (updateScope && updateScope !== 'content-only') {
+			writeHuman(
+				`${operatorSymbol('info')} Alcance de actualización: ${updateScope}` +
+					(input.assetPolicy ? ` · política de archivos: ${input.assetPolicy}` : ''),
+			);
+		}
 	}
 	const reviewed = await runPreflight({
 		packageData: input.packageData,
@@ -140,7 +170,7 @@ export async function orchestrateInvitationPromotion(
 		approvalsDirs: input.approvalsDirs,
 		assetPolicy: input.assetPolicy,
 		pruneAssets: input.pruneAssets,
-		updateScope: input.updateScope,
+		updateScope,
 		conflictResolutions: input.conflictResolutions,
 		backupManifestPath: input.backupManifestPath,
 		requireBackup: false,
@@ -218,7 +248,7 @@ export async function orchestrateInvitationPromotion(
 		approvalsDirs: input.approvalsDirs,
 		assetPolicy: input.assetPolicy,
 		pruneAssets: input.pruneAssets,
-		updateScope: input.updateScope,
+		updateScope,
 		conflictResolutions: input.conflictResolutions,
 		backupManifestPath: backup.manifestPath,
 		requireBackup: true,
@@ -274,7 +304,7 @@ export async function orchestrateInvitationPromotion(
 		ownerUserId: input.ownerUserId,
 		assetPolicy: input.assetPolicy,
 		pruneAssets: input.pruneAssets,
-		updateScope: input.updateScope,
+		updateScope,
 		conflictResolutions: input.conflictResolutions,
 	});
 }

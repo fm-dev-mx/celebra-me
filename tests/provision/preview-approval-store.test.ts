@@ -1,8 +1,9 @@
-import { describe, expect, it } from '@jest/globals';
+import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import {
 	createMemoryPreviewApprovalStore,
+	createPreviewDbApprovalStore,
 	rowToArtifact,
 } from '../../scripts/provision/preview-approval-store.ts';
 import {
@@ -75,5 +76,49 @@ describe('preview approval store', () => {
 		);
 		expect(sql).toContain('expires_at timestamptz NOT NULL DEFAULT');
 		expect(sql).not.toContain('GENERATED ALWAYS AS');
+	});
+
+	describe('Preview DB upsert SQL shape', () => {
+		const approvalRow = {
+			package_hash: sample.packageHash,
+			slug: sample.slug,
+			route: sample.route,
+			approval_state: 'pending_hosted_validation' as const,
+			schema_version: PREVIEW_APPROVAL_SCHEMA_VERSION,
+			source_hash: sample.sourceHash,
+			metadata_hash: sample.metadataHash,
+			canonical_projection_hash: sample.canonicalProjectionHash,
+			materialized_projection_hash: sample.materializedProjectionHash,
+			asset_manifest_hash: sample.assetManifestHash,
+			plan_id: null,
+			preview_project_ref: sample.previewProjectRef,
+			intended_production_project_ref: null,
+			expected_asset_hashes: {},
+			hosted_validation: null,
+			created_at: sample.createdAt,
+			approved_at: null,
+			approved_by: null,
+		};
+		const queryRow = jest.fn<(sql: string, dbUrl: string) => typeof approvalRow | null>();
+
+		beforeEach(() => {
+			queryRow.mockReset();
+			queryRow.mockReturnValue(approvalRow);
+		});
+
+		it('happy: upsert uses WITH insert CTE (not FROM subquery insert)', () => {
+			const store = createPreviewDbApprovalStore({
+				getDbUrl: () =>
+					'postgresql://postgres:secret@db.iwipdvisoyerfdytuhwi.supabase.co:5432/postgres',
+				queryRow,
+			});
+			const saved = store.upsert(sample);
+			expect(saved.packageHash).toBe(sample.packageHash);
+			const sql = String(queryRow.mock.calls[0]?.[0] ?? '');
+			expect(sql).toMatch(/^\s*with upserted as \(/i);
+			expect(sql).toMatch(/insert into public\.preview_approval_artifacts/i);
+			expect(sql).toMatch(/returning[\s\S]*\)\s*select row_to_json\(t\) from upserted t;/i);
+			expect(sql).not.toMatch(/from\s*\(\s*insert into/i);
+		});
 	});
 });

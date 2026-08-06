@@ -184,7 +184,9 @@ export async function executeTargetPlans(input: {
 	let executionFailed = false;
 	for (const target of input.targets) {
 		const plan = input.targetPlans.find((candidate) => candidate.target === target)!;
-		if (plan.status === 'SIN CAMBIOS') {
+		// Local zero-drift can skip. Preview must still execute: runPreviewApply records the
+		// shared pending approval artifact required by promote, even when content is unchanged.
+		if (plan.status === 'SIN CAMBIOS' && target !== 'preview') {
 			targetResults.push(zeroResult(target, plan, 'SIN CAMBIOS'));
 			continue;
 		}

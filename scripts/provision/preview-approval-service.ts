@@ -5,8 +5,9 @@
  * worktrees share one SSOT. Filesystem paths remain only for evidence JSON and
  * optional legacy artifact import during migration.
  */
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
 import {
 	getDefaultPreviewApprovalStore,
 	type PreviewApprovalStore,
@@ -203,9 +204,84 @@ export function createPendingPreviewApprovalArtifact(
 function loadEvidence(
 	evidencePath: string,
 ): NonNullable<PreviewApprovalArtifact['hostedValidation']> {
-	return JSON.parse(readFileSync(resolve(process.cwd(), evidencePath), 'utf8')) as NonNullable<
+	const absolute = resolve(process.cwd(), evidencePath);
+	if (!existsSync(absolute)) {
+		throw new Error(
+			`EVIDENCE_FILE_MISSING: no existe el archivo de evidencia "${evidencePath}". ` +
+				`Genere un scaffold con: pnpm invitation:update -- --package-hash <hash> --write-evidence-scaffold ${evidencePath}`,
+		);
+	}
+	return JSON.parse(readFileSync(absolute, 'utf8')) as NonNullable<
 		PreviewApprovalArtifact['hostedValidation']
 	>;
+}
+
+/**
+ * Write a finalize-ready evidence JSON bound to an existing pending approval.
+ * Operator should review checklist/reviewedBy before --apply finalize.
+ */
+export function writePendingApprovalEvidenceScaffold(
+	input: {
+		packageHash: string;
+		outputPath: string;
+		reviewedBy?: string;
+		intendedProductionProjectRef?: string;
+	},
+	options?: PreviewApprovalServiceOptions,
+): {
+	outputPath: string;
+	packageHash: string;
+	slug: string;
+	planId: string;
+} {
+	const store = resolveStore(options);
+	const pending = store.get(input.packageHash);
+	if (!pending) {
+		throw new Error(
+			`No pending Preview approval exists in the shared store for package ${input.packageHash}.`,
+		);
+	}
+	if (pending.approvalState !== 'pending_hosted_validation') {
+		throw new Error(
+			`Package ${input.packageHash} is "${pending.approvalState}", not pending_hosted_validation.`,
+		);
+	}
+	if (!pending.planId) {
+		throw new Error(
+			`Pending approval for ${input.packageHash} is missing planId; re-apply Preview to regenerate.`,
+		);
+	}
+	const intendedProductionProjectRef =
+		input.intendedProductionProjectRef ?? SUPABASE_PROJECT_REFS.production;
+	if (!/^[a-z0-9]{8,32}$/i.test(intendedProductionProjectRef)) {
+		throw new Error('intendedProductionProjectRef must be an 8-32 character project ref.');
+	}
+	const evidence: NonNullable<PreviewApprovalArtifact['hostedValidation']> = {
+		packageHash: pending.packageHash,
+		previewProjectRef: pending.previewProjectRef,
+		route: pending.route,
+		projectionHash: pending.materializedProjectionHash,
+		planId: pending.planId,
+		reviewedAt: (options?.now ?? new Date()).toISOString(),
+		reviewedBy: (input.reviewedBy ?? 'owner@celebra.me').trim(),
+		intendedProductionProjectRef,
+		checklistResults: {
+			route: true,
+			dashboard: true,
+			database: true,
+			storage: true,
+		},
+		storageHashVerification: { ...pending.expectedAssetHashes },
+	};
+	const absolute = resolve(process.cwd(), input.outputPath);
+	mkdirSync(dirname(absolute), { recursive: true });
+	writeFileSync(absolute, `${JSON.stringify(evidence, null, 2)}\n`, 'utf8');
+	return {
+		outputPath: input.outputPath,
+		packageHash: pending.packageHash,
+		slug: pending.slug,
+		planId: pending.planId,
+	};
 }
 
 /**

@@ -67,7 +67,7 @@ describe('managed invitation lifecycle execution integration', () => {
 		expect(result.targetResults.map((item) => item.status)).toEqual(['BLOQUEADO', 'BLOQUEADO']);
 	});
 
-	it('does not execute a no-change target but executes a later pending target', async () => {
+	it('does not execute a no-change local target but executes a later pending target', async () => {
 		const execute = jest.fn(async (...args: [InvitationUpdateTarget, TargetPlanData]) =>
 			outcome(args[0]),
 		);
@@ -87,6 +87,42 @@ describe('managed invitation lifecycle execution integration', () => {
 			'SIN CAMBIOS',
 			'CAMBIOS APLICADOS',
 		]);
+	});
+
+	it('still executes preview when plan status is SIN CAMBIOS (pending approval side effect)', async () => {
+		const execute = jest.fn(async (...args: [InvitationUpdateTarget, TargetPlanData]) => {
+			const target = args[0];
+			const planId = `${target}-plan`;
+			return {
+				executionPlanId: planId,
+				receiptPlanId: planId,
+				result: {
+					target,
+					planId,
+					status: 'SIN CAMBIOS' as const,
+					completedOperations: 0,
+					databaseWrites: { ...zeroDb },
+					storageMutations: { ...zeroStorage },
+				},
+			};
+		});
+		const result = await executeTargetPlans({
+			targets: ['local', 'preview'],
+			targetPlans: [targetPlan('local', 'SIN CAMBIOS'), targetPlan('preview', 'SIN CAMBIOS')],
+			executeTarget: execute,
+			sanitizeError: sanitize,
+		});
+
+		expect(execute).toHaveBeenCalledTimes(1);
+		expect(execute).toHaveBeenCalledWith(
+			'preview',
+			expect.objectContaining({ status: 'SIN CAMBIOS', planId: 'preview-plan' }),
+		);
+		expect(result.targetResults.map((item) => item.status)).toEqual([
+			'SIN CAMBIOS',
+			'SIN CAMBIOS',
+		]);
+		expect(result.executionFailed).toBe(false);
 	});
 
 	it('stops later targets after failure and preserves every target result', async () => {

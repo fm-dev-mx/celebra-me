@@ -7,8 +7,10 @@ import {
 	finalizePreviewApprovalArtifact,
 	PREVIEW_APPROVAL_SCHEMA_VERSION,
 	verifyPreviewApprovalArtifact,
+	writePendingApprovalEvidenceScaffold,
 	type PreviewApprovalArtifact,
 } from '../../scripts/provision/preview-approval-service.ts';
+import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
 import {
 	createMemoryPreviewApprovalStore,
 	setDefaultPreviewApprovalStoreForTests,
@@ -93,6 +95,38 @@ function productionIdentity(overrides: Record<string, string> = {}) {
 }
 
 describe('Preview approval artifact (shared store)', () => {
+	it('scaffolds finalize-ready evidence from a pending approval', () => {
+		createPending();
+		const dir = mkdtempSync(join(tmpdir(), 'celebra-approval-scaffold-'));
+		createdDirs.push(dir);
+		const outputPath = join(dir, 'evidence.json');
+		const scaffold = writePendingApprovalEvidenceScaffold({
+			packageHash: PACKAGE_HASH,
+			outputPath,
+			reviewedBy: 'owner@celebra.me',
+		});
+		expect(scaffold).toMatchObject({
+			outputPath,
+			packageHash: PACKAGE_HASH,
+			slug: 'test-invitation',
+			planId: PLAN_ID,
+		});
+		const evidence = JSON.parse(readFileSync(outputPath, 'utf8')) as Record<string, unknown>;
+		expect(evidence).toMatchObject({
+			packageHash: PACKAGE_HASH,
+			projectionHash: MATERIALIZED_PROJECTION_HASH,
+			planId: PLAN_ID,
+			intendedProductionProjectRef: SUPABASE_PROJECT_REFS.production,
+			storageHashVerification: { [ASSET_PATH]: ASSET_HASH },
+		});
+		expect(
+			finalizePreviewApprovalArtifact({
+				packageHash: PACKAGE_HASH,
+				evidencePath: outputPath,
+			}).approvalState,
+		).toBe('approved');
+	});
+
 	it('keeps canonical and Preview-materialized projection hashes distinct', () => {
 		const pending = createPending();
 		expect(pending.schemaVersion).toBe(PREVIEW_APPROVAL_SCHEMA_VERSION);

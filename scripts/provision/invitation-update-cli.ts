@@ -31,7 +31,10 @@ import { readFastInvitationInventory } from './invitation-status-inventory.ts';
 import { evaluateInvitationReadiness } from './invitation-readiness.ts';
 import { LOCAL_DB_URL, redactCredentials } from '../db/db-target-config.ts';
 import { assertPreviewDbUrl, getPreviewDbUrl } from '../db/db-workflow-lib.ts';
-import { finalizePreviewApprovalArtifact } from './preview-approval-service.ts';
+import {
+	finalizePreviewApprovalArtifact,
+	writePendingApprovalEvidenceScaffold,
+} from './preview-approval-service.ts';
 import { getDefaultPreviewApprovalStore } from './preview-approval-store.ts';
 import {
 	assertContentSchemaCurrent,
@@ -166,6 +169,7 @@ Usage:
   pnpm invitation:update                                             Interactive wizard (TTY only)
   pnpm invitation:update --status [--slug <slug>] [--targets <targets>] [--json]
   pnpm invitation:update --slug <slug> --targets local|preview|local,preview --dry-run|--apply [--non-interactive] [--source-dir <dir>|--package <path>]
+  pnpm invitation:update --package-hash <hash> --write-evidence-scaffold <path>
   pnpm invitation:update --package-hash <hash> --evidence <path> --apply
   pnpm invitation:update --preview-provenance --slug <slug> --targets preview --package <path> --dry-run [--json]
   pnpm invitation:update --preview-provenance --slug <slug> --targets preview --package <path> --apply [--json]
@@ -191,6 +195,7 @@ Options:
   --json                       Format output as JSON
   --owner-user-id <uuid>       Optional override/assertion; new invites default to a dedicated host ({hostLoginAlias}@clientes.celebra.invalid)
   --package-hash <hash>        Shared-store package hash for Preview approval finalize
+  --write-evidence-scaffold <path>  Write evidence JSON bound to a pending approval (review, then finalize)
   --evidence <path>            Hosted Preview validation evidence JSON (required with finalize)
   --preview-provenance         Establish the Preview provenance baseline without changing content (specialized)
   --help, -h                   Show this help message
@@ -258,15 +263,42 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 
 	const packageHash = value(args, '--package-hash');
 	const evidence = value(args, '--evidence');
-	if (packageHash || evidence || args.includes('--artifact')) {
+	const evidenceScaffoldPath = value(args, '--write-evidence-scaffold');
+	if (packageHash || evidence || evidenceScaffoldPath || args.includes('--artifact')) {
 		if (args.includes('--artifact')) {
 			throw new Error(
 				'--artifact was removed. Import legacy approvals with pnpm invitation:approvals:migrate -- --apply, then finalize with --package-hash.',
 			);
 		}
-		if (!evidence || !args.includes('--apply') || !packageHash) {
+		if (!packageHash) {
+			throw new Error('Approval flows require --package-hash <hash>.');
+		}
+		if (evidenceScaffoldPath) {
+			if (evidence || args.includes('--apply')) {
+				throw new Error(
+					'--write-evidence-scaffold cannot be combined with --evidence/--apply. Scaffold first, then finalize.',
+				);
+			}
+			const scaffold = writePendingApprovalEvidenceScaffold({
+				packageHash,
+				outputPath: evidenceScaffoldPath,
+			});
+			if (json) console.log(JSON.stringify(scaffold, null, 2));
+			else {
+				console.log(
+					`Scaffold de evidencia escrito: ${scaffold.outputPath}\n` +
+						`  slug     : ${scaffold.slug}\n` +
+						`  planId   : ${scaffold.planId}\n` +
+						`Revise checklist/reviewedBy y finalize:\n` +
+						`  pnpm invitation:update -- --package-hash ${scaffold.packageHash} --evidence ${scaffold.outputPath} --apply`,
+				);
+			}
+			return;
+		}
+		if (!evidence || !args.includes('--apply')) {
 			throw new Error(
-				'Approval finalize requires --package-hash <hash> --evidence <path> --apply.',
+				'Approval finalize requires --package-hash <hash> --evidence <path> --apply. ' +
+					'Si aún no tiene evidencia: --package-hash <hash> --write-evidence-scaffold <path>.',
 			);
 		}
 		const pending = getDefaultPreviewApprovalStore().get(packageHash);
@@ -1021,8 +1053,10 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 			return;
 		}
 
-		// Check if ALL selected targets are already in sync (0 operations)
-		if (isZeroDrift) {
+		// Content already in sync: skip apply only when Preview is not selected.
+		// Preview still needs runPreviewApply so the shared pending approval artifact exists
+		// (promote requires it even when content mutations are zero).
+		if (isZeroDrift && !targets.includes('preview')) {
 			for (const tp of targetPlans) {
 				targetResults.push({
 					target: tp.target,
@@ -1349,6 +1383,23 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 					targetResults,
 				}),
 			);
+			const pendingPreview = reports.find(
+				(report) =>
+					report.environment === 'preview' &&
+					report.approvalState === 'pending_hosted_validation' &&
+					typeof report.packageHash === 'string',
+			);
+			if (pendingPreview?.packageHash) {
+				console.log('');
+				console.log(
+					`Aprobación Preview pendiente (package-hash ${pendingPreview.packageHash}).`,
+				);
+				console.log(
+					'Finalize con evidencia hospedada y luego promueva:\n' +
+						`  pnpm invitation:update -- --package-hash ${pendingPreview.packageHash} --evidence <path> --apply\n` +
+						'  pnpm invitation:promote',
+				);
+			}
 		}
 	}
 }
