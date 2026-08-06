@@ -13,7 +13,10 @@ import { join, relative, resolve } from 'node:path';
 import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
 import {
 	assertExactProductionProjectRef,
+	buildOwnerConfirmationCode,
 	requireOwnerProductionApply,
+	sanitizeOwnerConfirmationInput,
+	shortBindingHex,
 } from '../../scripts/db/owner-production-apply.ts';
 
 const ROOT = process.cwd();
@@ -106,10 +109,23 @@ function indexOfPattern(source: string, pattern: RegExp): number {
 function mockExit(): void {
 	jest.spyOn(console, 'error').mockImplementation(() => undefined);
 	jest.spyOn(console, 'info').mockImplementation(() => undefined);
+	jest.spyOn(process.stderr, 'write').mockImplementation(() => true);
 	jest.spyOn(process, 'exit').mockImplementation(((code?: string | number | null) => {
 		throw new Error(`process.exit:${code ?? ''}`);
 	}) as never);
 }
+
+const baseApplyInput = {
+	apply: true as const,
+	dbUrl: PROD_URL,
+	operationType: 'production_migration',
+	operationVerb: 'MIGRATE',
+	bindingHex: 'abcdef0123456789deadbeef',
+	applyActionLabel: 'Aplicar migración de schema',
+	summary: [['Mode', 'test']] as const,
+	assertReleaseEvidence: () => ({ sha: 'abc1234' }),
+	selectIntent: () => 'proceed' as const,
+};
 
 afterEach(() => {
 	for (const key of Object.keys(process.env)) {
@@ -119,36 +135,43 @@ afterEach(() => {
 	jest.restoreAllMocks();
 });
 
-describe('requireOwnerProductionApply', () => {
-	it('fails without --apply', () => {
-		mockExit();
-		expect(() =>
-			requireOwnerProductionApply({
-				apply: false,
-				dbUrl: PROD_URL,
-				operationType: 'production_migration',
-				confirmationChallenge: 'MIGRATE test',
-				summary: [['Mode', 'test']],
-				assertReleaseEvidence: () => ({ sha: 'abc1234' }),
-				readConfirmationLine: () => 'MIGRATE test',
-			}),
-		).toThrow('process.exit:1');
+describe('owner confirmation helpers', () => {
+	it('builds a short verb + 8-hex confirmation code', () => {
+		expect(shortBindingHex('ABCDEF0123456789')).toBe('abcdef01');
+		expect(buildOwnerConfirmationCode('MIGRATE', '6774a9459a2a0626')).toBe('MIGRATE 6774a945');
 	});
 
-	it('rejects agent contexts', () => {
+	it('strips bracketed-paste and zero-width noise from typed input', () => {
+		expect(sanitizeOwnerConfirmationInput('\u001b[200~MIGRATE 6774a945\u001b[201~\n')).toBe(
+			'MIGRATE 6774a945',
+		);
+		expect(sanitizeOwnerConfirmationInput('  MIGRATE\u200b 6774a945  ')).toBe(
+			'MIGRATE 6774a945',
+		);
+	});
+});
+
+describe('requireOwnerProductionApply', () => {
+	it('fails without --apply', async () => {
 		mockExit();
-		expect(() =>
+		await expect(
 			requireOwnerProductionApply({
-				apply: true,
-				dbUrl: PROD_URL,
-				operationType: 'production_migration',
-				confirmationChallenge: 'MIGRATE test',
-				summary: [['Mode', 'test']],
-				env: { CELEBRA_AGENT_CONTEXT: 'true' },
-				assertReleaseEvidence: () => ({ sha: 'abc1234' }),
-				readConfirmationLine: () => 'MIGRATE test',
+				...baseApplyInput,
+				apply: false,
+				readConfirmationLine: () => 'MIGRATE abcdef01',
 			}),
-		).toThrow('process.exit:1');
+		).rejects.toThrow('process.exit:1');
+	});
+
+	it('rejects agent contexts', async () => {
+		mockExit();
+		await expect(
+			requireOwnerProductionApply({
+				...baseApplyInput,
+				env: { CELEBRA_AGENT_CONTEXT: 'true' },
+				readConfirmationLine: () => 'MIGRATE abcdef01',
+			}),
+		).rejects.toThrow('process.exit:1');
 	});
 
 	it('rejects non-Production project URLs', () => {
@@ -156,63 +179,66 @@ describe('requireOwnerProductionApply', () => {
 		expect(() => assertExactProductionProjectRef(PREVIEW_URL)).toThrow('process.exit:1');
 	});
 
-	it('fails closed without TTY when no confirmation seam is provided', () => {
+	it('fails closed without TTY when no confirmation seam is provided', async () => {
 		mockExit();
 		const fakeStdin = { isTTY: false } as NodeJS.ReadStream;
-		expect(() =>
+		await expect(
 			requireOwnerProductionApply({
-				apply: true,
-				dbUrl: PROD_URL,
-				operationType: 'production_migration',
-				confirmationChallenge: 'MIGRATE test',
-				summary: [['Mode', 'test']],
+				...baseApplyInput,
 				stdin: fakeStdin,
-				assertReleaseEvidence: () => ({ sha: 'abc1234' }),
+				selectIntent: undefined,
 			}),
-		).toThrow('process.exit:1');
+		).rejects.toThrow('process.exit:1');
 	});
 
-	it('fails when typed confirmation does not match', () => {
+	it('fails when intent is cancelled', async () => {
 		mockExit();
-		expect(() =>
+		await expect(
 			requireOwnerProductionApply({
-				apply: true,
-				dbUrl: PROD_URL,
-				operationType: 'production_migration',
-				confirmationChallenge: 'MIGRATE exact',
-				summary: [['Mode', 'test']],
-				assertReleaseEvidence: () => ({ sha: 'abc1234' }),
-				readConfirmationLine: () => 'MIGRATE wrong',
+				...baseApplyInput,
+				selectIntent: () => 'cancel',
+				readConfirmationLine: () => 'MIGRATE abcdef01',
 			}),
-		).toThrow('process.exit:1');
+		).rejects.toThrow('process.exit:1');
 	});
 
-	it('accepts exact TTY confirmation after identity and release evidence', () => {
-		expect(() =>
+	it('fails when typed confirmation does not match', async () => {
+		mockExit();
+		await expect(
 			requireOwnerProductionApply({
-				apply: true,
-				dbUrl: PROD_URL,
-				operationType: 'production_migration',
-				confirmationChallenge: 'MIGRATE exact',
-				summary: [['Mode', 'test']],
-				assertReleaseEvidence: () => ({ sha: 'abc1234' }),
-				readConfirmationLine: () => 'MIGRATE exact',
+				...baseApplyInput,
+				readConfirmationLine: () => 'MIGRATE wrongxxx',
 			}),
-		).not.toThrow();
+		).rejects.toThrow('process.exit:1');
 	});
 
-	it('keeps owner prompts off stdout for machine-readable callers', () => {
+	it('accepts short confirmation code after identity and release evidence', async () => {
+		jest.spyOn(process.stderr, 'write').mockImplementation(() => true);
+		await expect(
+			requireOwnerProductionApply({
+				...baseApplyInput,
+				readConfirmationLine: () => 'MIGRATE abcdef01',
+			}),
+		).resolves.toBeUndefined();
+	});
+
+	it('accepts pasted short codes wrapped in bracketed-paste sequences', async () => {
+		jest.spyOn(process.stderr, 'write').mockImplementation(() => true);
+		await expect(
+			requireOwnerProductionApply({
+				...baseApplyInput,
+				readConfirmationLine: () => '\u001b[200~MIGRATE abcdef01\u001b[201~',
+			}),
+		).resolves.toBeUndefined();
+	});
+
+	it('keeps owner prompts off stdout for machine-readable callers', async () => {
 		const stdoutWrite = jest.spyOn(process.stdout, 'write').mockImplementation(() => true);
 		const stderrWrite = jest.spyOn(process.stderr, 'write').mockImplementation(() => true);
 
-		requireOwnerProductionApply({
-			apply: true,
-			dbUrl: PROD_URL,
-			operationType: 'production_migration',
-			confirmationChallenge: 'MIGRATE exact',
-			summary: [['Mode', 'test']],
-			assertReleaseEvidence: () => ({ sha: 'abc1234' }),
-			readConfirmationLine: () => 'MIGRATE exact',
+		await requireOwnerProductionApply({
+			...baseApplyInput,
+			readConfirmationLine: () => 'MIGRATE abcdef01',
 		});
 
 		expect(stdoutWrite).not.toHaveBeenCalled();
@@ -234,6 +260,8 @@ describe('Production mutator discovery and gate ordering', () => {
 			expect(source).not.toContain('consumeProductionApproval');
 			expect(source).not.toContain('CELEBRA_PROD_APPROVAL_TOKEN');
 			expect(source).not.toContain('production_authorization_receipts');
+			expect(source).toContain('operationVerb');
+			expect(source).toContain('bindingHex');
 		}
 	});
 

@@ -3,7 +3,7 @@
  * Help/parse paths stay free of orchestrator imports.
  */
 
-import { createInterface } from 'node:readline/promises';
+import { select } from '@inquirer/prompts';
 import { parseMigrateCliArgs, printMigrateHelp, type MigrateCliArgs } from './migrate-cli-args.ts';
 import { planToJson, type MigrationPlan } from './migration-plan.ts';
 
@@ -21,20 +21,15 @@ function writeError(error: unknown): void {
 }
 
 async function promptAction(): Promise<'run' | 'review' | 'cancel'> {
-	writeHuman('Select an action for the plan above.');
-	writeHuman('Actions: [R]un  [E]dit/Review  [C]ancel');
-	const rl = createInterface({ input: process.stdin, output: process.stderr });
-	try {
-		for (;;) {
-			const answer = (await rl.question('Choice> ')).trim().toLowerCase();
-			if (answer === 'r' || answer === 'run') return 'run';
-			if (answer === 'e' || answer === 'review' || answer === 'edit') return 'review';
-			if (answer === 'c' || answer === 'cancel' || answer === '') return 'cancel';
-			writeHuman('Enter R (run), E (review/edit), or C (cancel).');
-		}
-	} finally {
-		rl.close();
-	}
+	return select({
+		message: 'Seleccione una acción para el plan',
+		default: 'cancel',
+		choices: [
+			{ name: 'Cancelar', value: 'cancel' as const },
+			{ name: 'Revisar plan (detalle completo)', value: 'review' as const },
+			{ name: 'Aplicar migración', value: 'run' as const },
+		],
+	});
 }
 
 function writeApplyHint(
@@ -59,8 +54,15 @@ function writeApplyHint(
 
 type OrchestratorModule = typeof import('./migrate-orchestrator.ts');
 
-function emitPlan(orchestrator: OrchestratorModule, plan: MigrationPlan, json: boolean): void {
-	writeHuman(orchestrator.formatPlanReview(plan));
+function emitPlan(
+	orchestrator: OrchestratorModule,
+	plan: MigrationPlan,
+	json: boolean,
+	compact: boolean,
+): void {
+	writeHuman(
+		compact ? orchestrator.formatPlanReviewCompact(plan) : orchestrator.formatPlanReview(plan),
+	);
 	if (json) writeJson(planToJson(plan));
 }
 
@@ -82,7 +84,7 @@ async function runGuidedApply(options: {
 			return;
 		}
 		if (action === 'review') {
-			emitPlan(options.orchestrator, options.plan, options.json);
+			emitPlan(options.orchestrator, options.plan, options.json, false);
 			continue;
 		}
 		const result = await options.orchestrator.orchestrateMigrate({
@@ -90,7 +92,7 @@ async function runGuidedApply(options: {
 			mode: 'apply',
 			reviewedPlan: options.plan,
 		});
-		emitPlan(options.orchestrator, result.plan, options.json);
+		emitPlan(options.orchestrator, result.plan, options.json, false);
 		writeHuman(result.wrote ? 'Apply completed.' : 'Apply completed (no pending migrations).');
 		return;
 	}
@@ -154,7 +156,7 @@ export async function runMigrateCli(argv: string[] = process.argv): Promise<void
 	try {
 		if (parsed.mode === 'preflight' || guided) {
 			const plan = orchestrator.preflightMigrate({ ...baseInput, mode: 'preflight' });
-			emitPlan(orchestrator, plan, parsed.json);
+			emitPlan(orchestrator, plan, parsed.json, guided);
 			if (!guided) {
 				writeHuman('Read-only preflight complete. No schema write was performed.');
 				writeApplyHint(parsed.target, expectedPin);
@@ -170,7 +172,7 @@ export async function runMigrateCli(argv: string[] = process.argv): Promise<void
 		}
 
 		const result = await orchestrator.orchestrateMigrate({ ...baseInput, mode: 'apply' });
-		emitPlan(orchestrator, result.plan, parsed.json);
+		emitPlan(orchestrator, result.plan, parsed.json, false);
 		writeHuman(result.wrote ? 'Apply completed.' : 'Apply completed (no pending migrations).');
 	} catch (error: unknown) {
 		writeError(error);

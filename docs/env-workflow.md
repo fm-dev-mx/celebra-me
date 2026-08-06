@@ -116,9 +116,10 @@ execution:
   local daily backup task resolves the same ignored sources under the interactive operator account;
   credentials are never copied into the scheduled-task definition.
 - **Production owner apply:** Requires interactive TTY confirmation via
-  `requireOwnerProductionApply`. There is no approval-token, secret, or noninteractive confirmation
-  env alternative. `CELEBRA_AGENT_CONTEXT` rejects agent self-authorization. Apply also requires
-  valid `pnpm release-check` evidence for the current clean `HEAD`.
+  `requireOwnerProductionApply` (arrow intent select defaulting to Cancel, then short bound code
+  `<VERB> <8-hex>`). There is no approval-token, secret, or noninteractive confirmation env
+  alternative. `CELEBRA_AGENT_CONTEXT` rejects agent self-authorization. Apply also requires valid
+  `pnpm release-check` evidence for the current clean `HEAD`.
 - **Preview hosted migrate identity:** `CELEBRA_TARGET_RELEASE_SHA` (and for contract phases
   `CELEBRA_DEPLOYED_APP_SHA` / `CELEBRA_DEPLOYED_APP_CAPABILITIES`) authorize Preview migration
   membership. Production migrate derives release identity from clean `HEAD` instead.

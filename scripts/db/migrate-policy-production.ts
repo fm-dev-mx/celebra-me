@@ -192,15 +192,17 @@ export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 		runPreMigrationBackup(ctx.dbUrl);
 	},
 
-	authorize(plan, ctx) {
+	async authorize(plan, ctx) {
 		const pendingLabel =
 			plan.pendingVersions.length === 0 ? '(none)' : plan.pendingVersions.join(',');
 		const releaseSha = plan.releaseEvidenceSha ?? plan.sourceHead;
-		requireOwnerProductionApply({
+		await requireOwnerProductionApply({
 			apply: true,
 			dbUrl: ctx.dbUrl,
 			operationType: PRODUCTION_MIGRATION_OPERATION_TYPE,
-			confirmationChallenge: `MIGRATE ${releaseSha} ${pendingLabel} ${plan.planId}`,
+			operationVerb: 'MIGRATE',
+			bindingHex: plan.planId,
+			applyActionLabel: 'Aplicar migración de schema',
 			summary: [
 				['Mode', 'schema migration apply'],
 				['Release SHA', releaseSha],

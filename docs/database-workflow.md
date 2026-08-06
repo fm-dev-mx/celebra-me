@@ -564,13 +564,18 @@ application login substitute. Host invitation flows continue to use real `host_c
   - `pnpm db:prod:migrate -- --apply --expected <versions>` — owner apply path
 - Shared orchestrator sequence: plan → (apply: rebuild + drift check) → beforeWrite → authorize →
   execute → verify/evidence. Human logs on stderr; `--json` plans on stdout only.
+- Interactive TTY preflight uses an arrow-key action menu (Cancel / Review / Apply) with a compact
+  plan card; full plan detail remains available via Review and `--json`.
 - Production apply sequence: identity → audit → dry-run (+ optional `--expected` pin) →
   compatibility (HEAD; explicit registry phase required) → valid `release-check` evidence → verified
-  pre-migration backup → operation summary + exact TTY confirmation bound to release SHA, pending
-  versions, and `planId` → `supabase db push` → migration-history + contract verification →
-  post-migration backup.
+  pre-migration backup → owner gate → `supabase db push` → migration-history + contract
+  verification → post-migration backup.
 - Release identity for Production is the current clean `HEAD` (not `CELEBRA_TARGET_RELEASE_SHA`).
 - Shared owner boundary: `requireOwnerProductionApply` (also used by promote/patch/draft-reset).
+  The gate is two-step and TTY-only: (1) arrow-key intent select defaulting to Cancel; (2) type or
+  paste a short bound code `<VERB> <8-hex>` (e.g. `MIGRATE 6774a945` from `planId`). Full SHA,
+  pending versions, and fingerprints remain in the audit summary. Paste noise (bracketed-paste /
+  zero-width) is sanitized. A single Yes/No confirm is never sufficient.
 - Rejects `CELEBRA_AGENT_CONTEXT`. No token, secret, env, or noninteractive confirmation
   alternative.
 - `public.production_authorization_receipts` is historical inert state from migration
@@ -597,8 +602,8 @@ application login substitute. Host invitation flows continue to use real `host_c
 - After owner confirmation and SQL apply, runs `pnpm db:contract:verify --target production`.
 - Narrow owner-only maintenance for reviewed patches that cannot yet be expressed as versioned
   `supabase/migrations/*`. Not a bypass for `db:prod:migrate` or `invitation:promote`.
-- Requires valid `pnpm release-check` evidence and interactive owner TTY confirmation bound to the
-  owner UUID and patch fingerprint; it never auto-runs schema migrations.
+- Requires valid `pnpm release-check` evidence and interactive owner TTY confirmation (short bound
+  code from the patch fingerprint); it never auto-runs schema migrations.
 
 ## Workflows
 

@@ -509,11 +509,13 @@ export async function orchestrateApply(input: OrchestrateDbSyncInput): Promise<D
 				throw new Error('PRODUCTION_TARGET_UNAVAILABLE');
 			}
 			const ownerApply = input.requireOwnerApply ?? requireOwnerProductionApply;
-			ownerApply({
+			await ownerApply({
 				apply: true,
 				dbUrl: preflight.targetDbUrl,
 				operationType: 'invitation-promote',
-				confirmationChallenge: `PROMOTE ${packageData.invitation.slug} ${packageData.packageHash}`,
+				operationVerb: 'PROMOTE',
+				bindingHex: packageData.packageHash,
+				applyActionLabel: 'Aplicar promoción a Production',
 				summary: [
 					['Direction', DB_SYNC_DIRECTION_LABELS[direction]],
 					['Plan ID', rebuilt.planId],

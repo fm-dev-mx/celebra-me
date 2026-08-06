@@ -3,8 +3,9 @@
  *
  * One interactive authorization model for all Production mutators:
  * explicit --apply, exact Production project identity, agent rejection,
- * deterministic operation summary, and exact TTY confirmation immediately
- * before the first write. No env/token/secret confirmation alternatives.
+ * deterministic operation summary, and a two-step TTY confirmation
+ * (arrow intent + short bound code) immediately before the first write.
+ * No env/token/secret confirmation alternatives.
  */
 
 import { readSync } from 'node:fs';
@@ -21,6 +22,37 @@ function writeOwnerLine(message = ''): void {
 	process.stderr.write(`${message}\n`);
 }
 
+/** Strip terminal paste noise that breaks exact confirmation matching on Windows. */
+export function sanitizeOwnerConfirmationInput(raw: string): string {
+	return raw
+		.replace(/\u001b\[200~/g, '')
+		.replace(/\u001b\[201~/g, '')
+		.replace(/\u001b\[[0-9;?]*[ -/]*[@-~]/g, '')
+		.replace(/[\u200B-\u200D\uFEFF]/g, '')
+		.replace(/\r/g, '')
+		.trim();
+}
+
+/** First 8 hex characters of a binding fingerprint (planId, packageHash, etc.). */
+export function shortBindingHex(bindingHex: string): string {
+	const cleaned = bindingHex.trim().toLowerCase().replace(/[^0-9a-f]/g, '');
+	if (cleaned.length < 8) {
+		fail(
+			'OWNER_BINDING_INVALID: Confirmation binding must contain at least 8 hexadecimal characters.',
+		);
+	}
+	return cleaned.slice(0, 8);
+}
+
+/** Short typed confirmation code: `<VERB> <8-hex>`. */
+export function buildOwnerConfirmationCode(operationVerb: string, bindingHex: string): string {
+	const verb = operationVerb.trim().toUpperCase();
+	if (!/^[A-Z][A-Z0-9_-]*$/.test(verb)) {
+		fail('OWNER_BINDING_INVALID: operationVerb must be an uppercase operation token.');
+	}
+	return `${verb} ${shortBindingHex(bindingHex)}`;
+}
+
 export interface OwnerProductionApplyInput {
 	/** Must be true when the CLI received an explicit `--apply` flag. */
 	apply: boolean;
@@ -28,14 +60,26 @@ export interface OwnerProductionApplyInput {
 	dbUrl: string;
 	/** Stable operation type label for the summary. */
 	operationType: string;
-	/** Exact string the operator must type. */
-	confirmationChallenge: string;
+	/**
+	 * Operation verb for the short confirmation code (e.g. MIGRATE, PROMOTE).
+	 * Combined with bindingHex into `<VERB> <8-hex>`.
+	 */
+	operationVerb: string;
+	/**
+	 * Hex fingerprint bound to this exact apply (planId, packageHash, etc.).
+	 * Only the first 8 hex characters are typed; full value stays in the summary.
+	 */
+	bindingHex: string;
+	/** Spanish label for the dangerous apply action in the intent menu. */
+	applyActionLabel: string;
 	/** Deterministic summary rows printed before the challenge. */
 	summary: ReadonlyArray<readonly [string, string]>;
 	env?: NodeJS.ProcessEnv;
 	stdin?: NodeJS.ReadStream;
+	/** Test seam for arrow intent menu. */
+	selectIntent?: () => 'proceed' | 'cancel' | Promise<'proceed' | 'cancel'>;
 	/** Test seam for confirmation input. */
-	readConfirmationLine?: () => string;
+	readConfirmationLine?: () => string | Promise<string>;
 	/** Test seam for release-check evidence (defaults to assertValidReleaseCheckEvidence). */
 	assertReleaseEvidence?: () => { sha: string };
 }
@@ -80,11 +124,26 @@ function readTtyConfirmationLine(): string {
 	return Buffer.concat(chunks).toString('utf8');
 }
 
+async function promptOwnerIntent(applyActionLabel: string): Promise<'proceed' | 'cancel'> {
+	// Dynamic import keeps Jest/CJS consumers free of @inquirer ESM parse issues.
+	const { select } = await import('@inquirer/prompts');
+	return select({
+		message: 'Confirmar escritura en Production',
+		default: 'cancel',
+		choices: [
+			{ name: 'Cancelar', value: 'cancel' as const },
+			{ name: applyActionLabel, value: 'proceed' as const },
+		],
+	});
+}
+
 /**
  * Final owner gate immediately before the first Production write.
  * Callers must invoke this only after all read-only preflight and backup steps.
  */
-export function requireOwnerProductionApply(input: OwnerProductionApplyInput): void {
+export async function requireOwnerProductionApply(
+	input: OwnerProductionApplyInput,
+): Promise<void> {
 	if (!input.apply) {
 		fail(
 			'OWNER_APPLY_REQUIRED: Production mutation requires an explicit --apply flag. Dry-run/preflight mode performs no writes.',
@@ -101,6 +160,7 @@ export function requireOwnerProductionApply(input: OwnerProductionApplyInput): v
 	const projectRef = assertExactProductionProjectRef(input.dbUrl);
 	const releaseEvidence = (input.assertReleaseEvidence ?? assertValidReleaseCheckEvidence)();
 	const stdin = input.stdin ?? process.stdin;
+	const confirmationCode = buildOwnerConfirmationCode(input.operationVerb, input.bindingHex);
 
 	writeOwnerLine();
 	writeOwnerLine('============================================================');
@@ -114,18 +174,37 @@ export function requireOwnerProductionApply(input: OwnerProductionApplyInput): v
 		writeOwnerLine(`${label.padEnd(14)} ${value}`);
 	}
 	writeOwnerLine('------------------------------------------------------------');
-	writeOwnerLine('Type the following confirmation exactly to proceed:');
-	writeOwnerLine(input.confirmationChallenge);
+	writeOwnerLine('Confirmation code (type or paste exactly):');
+	writeOwnerLine(`  ${confirmationCode}`);
 	writeOwnerLine('============================================================');
 
-	if (!input.readConfirmationLine && !stdin.isTTY) {
+	const hasIntentSeam = Boolean(input.selectIntent);
+	const hasLineSeam = Boolean(input.readConfirmationLine);
+	if (!hasIntentSeam && !hasLineSeam && !stdin.isTTY) {
 		fail(
 			'TTY_REQUIRED: Production apply requires an interactive TTY for exact owner confirmation. Noninteractive confirmation is not accepted.',
 		);
 	}
 
-	const typed = (input.readConfirmationLine ?? readTtyConfirmationLine)();
-	if (typed !== input.confirmationChallenge) {
+	const intent = input.selectIntent
+		? await input.selectIntent()
+		: hasLineSeam
+			? 'proceed'
+			: await promptOwnerIntent(input.applyActionLabel);
+
+	if (intent !== 'proceed') {
+		fail(
+			'OWNER_CONFIRMATION_CANCELLED: Operator cancelled at the intent prompt. No Production write was performed.',
+		);
+	}
+
+	writeOwnerLine();
+	writeOwnerLine(`Escriba el código de confirmación:`);
+	writeOwnerLine(`  ${confirmationCode}`);
+
+	const typedRaw = await (input.readConfirmationLine ?? readTtyConfirmationLine)();
+	const typed = sanitizeOwnerConfirmationInput(typedRaw);
+	if (typed !== confirmationCode) {
 		fail(
 			'OWNER_CONFIRMATION_MISMATCH: Typed confirmation did not match the required challenge. No Production write was performed.',
 		);

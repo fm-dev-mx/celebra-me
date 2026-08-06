@@ -118,7 +118,7 @@ function verifyRequiredProductionTables(dbUrl: string): void {
 	}
 }
 
-function applyPlan(): void {
+async function applyPlan(): Promise<void> {
 	if (!acknowledged) {
 		throw new Error(
 			'ACKNOWLEDGEMENT_REQUIRED: pass --acknowledge-discard-unpublished-draft to confirm unpublished draft differences will be discarded.',
@@ -151,11 +151,13 @@ function applyPlan(): void {
 			'ROMINA_DRAFT_RESET_FINGERPRINT_MISMATCH: supplied operation fingerprint differs from the current dry-run.',
 		);
 	}
-	requireOwnerProductionApply({
+	await requireOwnerProductionApply({
 		apply: true,
 		dbUrl: targetDbUrl,
 		operationType: ROMINA_DRAFT_RESET_OPERATION_TYPE,
-		confirmationChallenge: `RESET ${plan.slug} ${plan.operationFingerprint}`,
+		operationVerb: 'RESET',
+		bindingHex: plan.operationFingerprint,
+		applyActionLabel: 'Aplicar reset de borrador en Production',
 		summary: [
 			['Mode', 'Romina draft reset'],
 			['Slug', plan.slug],
@@ -216,15 +218,17 @@ function printReplay(identity: {
 		);
 }
 
-try {
-	if (apply) {
-		applyPlan();
-	} else {
-		const state = readProductionState();
-		if (state.replay) printReplay(state.replay);
-		else printPlan(state.plan);
+void (async () => {
+	try {
+		if (apply) {
+			await applyPlan();
+		} else {
+			const state = readProductionState();
+			if (state.replay) printReplay(state.replay);
+			else printPlan(state.plan);
+		}
+	} catch (error: unknown) {
+		console.error(error instanceof Error ? error.message : String(error));
+		process.exitCode = 1;
 	}
-} catch (error: unknown) {
-	console.error(error instanceof Error ? error.message : String(error));
-	process.exitCode = 1;
-}
+})();

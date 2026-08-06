@@ -93,15 +93,16 @@ task authorization, target classification, and standard guard checks.
   6. Valid `pnpm release-check` evidence for the current clean `HEAD` (apply only; ordinary
      preflight does not run the full suite)
   7. Verified pre-migration backup (`.backups/prod/...`)
-  8. Shared owner boundary: operation summary + exact interactive TTY confirmation bound to release
-     SHA, pending versions, and immutable `planId`
+  8. Shared owner boundary: operation summary + two-step interactive TTY confirmation (arrow intent
+     defaulting to Cancel, then short bound code `<VERB> <8-hex>` from immutable `planId` /
+     fingerprint). Full release SHA, pending versions, and plan identity remain in the summary.
   9. Migration application (`supabase db push --db-url <url> --yes`)
   10. Post-migration `schema_migrations` + `pnpm db:contract:verify --target production`
   11. Verified post-migration critical backup
 - **Owner authorization**: All owner-only Production mutators use `requireOwnerProductionApply`
   (explicit `--apply`, Production project identity, agent rejection, release-check evidence, TTY
-  confirmation). No token, secret, or noninteractive confirmation alternative exists.
-  `production_authorization_receipts` is historical inert state.
+  intent select + short bound code). No token, secret, or noninteractive confirmation alternative
+  exists. `production_authorization_receipts` is historical inert state.
 - **Hosted identity vs environment selection**: Selecting Preview/Production and having credentials
   is not authorization. Production migrate derives release identity from clean `HEAD` +
   `pnpm release-check`. Preview migrate still requires `CELEBRA_TARGET_RELEASE_SHA`. Contract-phase

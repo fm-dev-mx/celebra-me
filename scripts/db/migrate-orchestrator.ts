@@ -184,3 +184,33 @@ export function formatPlanReview(plan: MigrationPlan): string {
 	];
 	return lines.join('\n');
 }
+
+/** Compact interactive card — full detail remains in formatPlanReview / --json. */
+export function formatPlanReviewCompact(plan: MigrationPlan): string {
+	const headShort =
+		plan.sourceHead.length > 12 ? `${plan.sourceHead.slice(0, 12)}…` : plan.sourceHead;
+	const planShort = plan.planId.length > 8 ? `${plan.planId.slice(0, 8)}…` : plan.planId;
+	const pending =
+		plan.pendingVersions.length === 0 ? '(none)' : plan.pendingVersions.join(', ');
+	const phases =
+		Object.keys(plan.phaseByVersion).length === 0
+			? '(none)'
+			: Object.entries(plan.phaseByVersion)
+					.map(([v, p]) => `${v}=${p}`)
+					.join(', ');
+	const lines = [
+		'------------------------------------------------------------',
+		'Migration plan',
+		'------------------------------------------------------------',
+		`Target:           ${plan.target}`,
+		`Pending:          ${pending}`,
+		`Phases:           ${phases}`,
+		`HEAD:             ${headShort}`,
+		`Plan:             ${planShort}`,
+		`Compatibility:    ${plan.compatibilityStatus}`,
+		`Backups:          ${plan.backupRequirement}`,
+		`Authorization:    ${plan.authRequirement}`,
+		'------------------------------------------------------------',
+	];
+	return lines.join('\n');
+}

@@ -249,12 +249,13 @@ async function main(): Promise<void> {
 		console.log('Schema migrations are never run by this command.');
 	}
 
-	const challenge = `PROMOTE ${slug} ${packageInput.packageData.packageHash}`;
-	requireOwnerProductionApply({
+	await requireOwnerProductionApply({
 		apply: true,
 		dbUrl: preflight.targetDbUrl ?? getProdDbUrl().url,
 		operationType: 'promotion',
-		confirmationChallenge: challenge,
+		operationVerb: 'PROMOTE',
+		bindingHex: packageInput.packageData.packageHash,
+		applyActionLabel: 'Aplicar promoción a Production',
 		summary: [
 			['Mode', 'managed invitation promotion'],
 			['Slug', slug],
