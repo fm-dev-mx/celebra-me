@@ -81,6 +81,8 @@ export type ContentApplyOptions = {
 	rekeyFrom?: string;
 	ownerUserId?: string;
 	sourceDir?: string;
+	expectedSourceHash?: string;
+	expectedPackageHash?: string;
 };
 
 export async function planAndApplyLocalContent(
@@ -99,6 +101,8 @@ export async function planAndApplyLocalContent(
 		rekeyFrom: input.rekeyFrom,
 		ownerUserId: input.ownerUserId,
 		sourceDir: input.sourceDir,
+		expectedSourceHash: input.expectedSourceHash,
+		expectedPackageHash: input.expectedPackageHash,
 	};
 	if (input.apply && input.plan) {
 		return applyLocalInvitation({ ...shared, apply: true, plan: input.plan });

@@ -50,8 +50,10 @@ import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environmen
 import { resolveManagedInvitationMetadata } from '../../src/lib/intake/mutations/ownership.ts';
 import { operationIdFromPlanId } from '../../src/lib/intake/mutations/outcome.ts';
 
-const BUCKET = 'invitation-assets';
-
+import {
+	decideRekeyIdentity,
+	resolveIdentityWithoutRekey,
+} from './managed-identity-guards.ts';
 import {
 	buildSemanticFunctionalChanges,
 	computePlanId,
@@ -59,7 +61,6 @@ import {
 	type FunctionalChange,
 	type OperationalPlan,
 } from './invitation-update-plan.ts';
-
 import {
 	apply3WaySemanticPatch,
 	MergeConflictError,
@@ -75,10 +76,8 @@ import {
 } from './asset-reconciliation.ts';
 import { fingerprintPathPolicy } from './conflict-resolutions.ts';
 import { assertManagedContentSchema } from './managed-content-validation.ts';
-import {
-	decideRekeyIdentity,
-	resolveIdentityWithoutRekey,
-} from './managed-identity-guards.ts';
+
+const BUCKET = 'invitation-assets';
 
 interface ApplyLocalOptions {
 	slug: string;
@@ -92,6 +91,9 @@ interface ApplyLocalOptions {
 	assetPolicy?: AssetPolicy;
 	pruneAssets?: boolean;
 	conflictResolutions?: ConflictResolutions;
+	/** When set, Local must rebuild the same release identity as the session package. */
+	expectedSourceHash?: string;
+	expectedPackageHash?: string;
 }
 
 export interface LocalApplyResult {
@@ -239,6 +241,16 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	const definition = getInvitationDefinition(slug);
 	const release = await buildNormalizedInvitationRelease({ slug, sourceDir });
 	const packageHash = serializeInvitationPackage(release).packageHash;
+	if (options.expectedSourceHash && release.sourceHash !== options.expectedSourceHash) {
+		throw new Error(
+			`PLAN_DRIFT: Local sourceHash ${release.sourceHash.slice(0, 12)}… does not match session package ${options.expectedSourceHash.slice(0, 12)}…. Refresh the release and replan.`,
+		);
+	}
+	if (options.expectedPackageHash && packageHash !== options.expectedPackageHash) {
+		throw new Error(
+			`PLAN_DRIFT: Local packageHash ${packageHash.slice(0, 12)}… does not match session package ${options.expectedPackageHash.slice(0, 12)}…. Refresh the release and replan.`,
+		);
+	}
 	const preset = findDemoPreset(definition.baseDemoId);
 	if (!preset || preset.themeId !== definition.themeId) {
 		throw new Error(`Demo preset "${definition.baseDemoId}" is invalid or theme mismatch.`);

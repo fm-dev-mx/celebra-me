@@ -42,20 +42,25 @@ describe('invitation:release Production dispatch', () => {
 		expect(source).toMatch(/nunca migra/i);
 	});
 
-	it('guides next action Local → Preview → approve → Production', () => {
-		const nextAction = readFileSync(
-			resolve(process.cwd(), 'scripts/provision/invitation-release-next-action.ts'),
-			'utf8',
-		);
-		expect(nextAction).toContain("action: 'local'");
-		expect(nextAction).toContain("action: 'preview'");
-		expect(nextAction).toContain("action: 'approve'");
-		expect(nextAction).toContain("action: 'production'");
+	it('TTY modeCount===0 delegates to destination wizard (not next-action chain)', () => {
 		const cli = readFileSync(
 			resolve(process.cwd(), 'scripts/provision/invitation-release-cli.ts'),
 			'utf8',
 		);
-		expect(cli).toContain('deriveInvitationReleaseNextAction');
+		expect(cli).toContain('runDestinationReleaseWizard');
+		expect(cli).toContain('Ignore leftover --targets');
+		expect(cli).not.toContain('deriveInvitationReleaseNextAction');
+		const wizard = readFileSync(
+			resolve(process.cwd(), 'scripts/provision/invitation-release-wizard.ts'),
+			'utf8',
+		);
+		expect(wizard).toContain("describeDestination('local')");
+		expect(wizard).toContain("describeDestination('prepare_preview')");
+		expect(wizard).toContain("describeDestination('production')");
+		expect(wizard).toContain('expectedSourceHash');
+		expect(wizard).toContain('expectedPackageHash');
+		expect(wizard).toContain('orchestrateInvitationPromotion');
+		expect(wizard).not.toContain('reviewedPreflight');
 	});
 
 	it('strips targetDbUrl from public JSON reports', () => {

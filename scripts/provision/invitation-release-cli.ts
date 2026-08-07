@@ -69,10 +69,7 @@ import {
 	listDriftConflicts,
 	type ConflictResolutions,
 } from './semantic-delta.ts';
-import {
-	deriveInvitationReleaseNextAction,
-	describeReleaseNextAction,
-} from './invitation-release-next-action.ts';
+import { runDestinationReleaseWizard } from './invitation-release-wizard.ts';
 import { runPromotionPreflight } from './invitation-promote.ts';
 import {
 	formatPromotionPlanCompact,
@@ -345,10 +342,10 @@ async function runProductionReleaseDispatch(input: {
 
 export function printHelp(): void {
 	console.log(`
-invitation:release — Sole managed invitation release CLI (Local → Preview → approve → Production)
+invitation:release — Sole managed invitation release CLI
 
 Usage:
-  pnpm invitation:release                                             Interactive wizard (TTY only; offers next valid action)
+  pnpm invitation:release                                             Interactive destination wizard (TTY): Update Local | Prepare Preview | Release to Production
   pnpm invitation:release --status [--slug <slug>] [--targets <targets>] [--json]
   pnpm invitation:release --slug <slug> --targets local|preview|local,preview --dry-run|--apply [--non-interactive] [--source-dir <dir>|--package <path>]
   pnpm invitation:release --slug <slug> --targets production --dry-run|--apply [--package <path>|--source-dir <dir>]
@@ -532,7 +529,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 	const sourceDir = value(args, '--source-dir');
 	const packagePath = value(args, '--package');
 
-	// Interactive Wizard Flow
+	// Interactive destination wizard (no --status/--dry-run/--apply). Automation keeps flags.
 	if (modeCount === 0) {
 		if (!isTTY && !nonInteractive) {
 			throw new Error(
@@ -541,128 +538,9 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 		}
 
 		if (isTTY && !nonInteractive && !json) {
-			console.log('=== Celebra-me Managed Invitation Release Wizard ===\n');
-			if (!slug) {
-				slug = await select({
-					message: 'Selecciona la invitación administrada',
-					choices: listInvitationDefinitions()
-						.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-						.map((definition) => ({
-							name: `${definition.title} · ${definition.slug}`,
-							value: definition.slug,
-						})),
-				});
-			}
-
-			const next = await deriveInvitationReleaseNextAction({ slug });
-			console.log(`${describeReleaseNextAction(next)}\n  ${next.reason}\n`);
-
-			const nextChoices: Array<{ name: string; value: string }> = [
-				{ name: 'Cancelar', value: 'cancel' },
-				{ name: 'Ver estado e inventario (status)', value: 'status' },
-			];
-			if (next.action === 'local') {
-				nextChoices.push(
-					{ name: 'Simular Local (dry-run)', value: 'dry-run:local' },
-					{ name: 'Aplicar en Local', value: 'apply:local' },
-				);
-			} else if (next.action === 'preview') {
-				nextChoices.push(
-					{ name: 'Simular Preview (dry-run)', value: 'dry-run:preview' },
-					{ name: 'Aplicar en Preview', value: 'apply:preview' },
-				);
-			} else if (next.action === 'approve' && next.packageHash) {
-				nextChoices.push({
-					name: 'Verificar y aprobar Preview en vivo',
-					value: `approve:${next.packageHash}`,
-				});
-			} else if (next.action === 'production') {
-				nextChoices.push(
-					{
-						name: 'Simular promoción a Production (dry-run)',
-						value: 'dry-run:production',
-					},
-					{ name: 'Promover a Production (owner)', value: 'apply:production' },
-				);
-			} else if (next.action === 'in_sync') {
-				console.log('No hay escrituras pendientes en el ciclo de release.\n');
-			}
-
-			const operation = await select({
-				message: 'Selecciona la operación a realizar',
-				default: 'cancel',
-				choices: nextChoices,
-			});
-			if (operation === 'cancel') {
-				console.log('Cancelado. No se realizaron escrituras.');
-				return;
-			}
-
-			if (operation === 'status') statusMode = true;
-			else if (operation.startsWith('approve:')) {
-				await main(['--package-hash', operation.slice('approve:'.length), '--approve']);
-				return;
-			} else if (operation.startsWith('dry-run:')) {
-				dryRun = true;
-				targets = parseReleaseMutationTargets(operation.slice('dry-run:'.length));
-			} else if (operation.startsWith('apply:')) {
-				apply = true;
-				targets = parseReleaseMutationTargets(operation.slice('apply:'.length));
-			}
-
-			if (targets.length === 0 && statusMode) {
-				const selected = await select({
-					message: 'Selecciona el entorno de destino',
-					default: 'cancel',
-					choices: [
-						{ name: 'Cancelar', value: 'cancel' },
-						{ name: 'Local (127.0.0.1:54322)', value: 'local' },
-						{ name: 'Preview', value: 'preview' },
-						{ name: 'Producción (solo lectura)', value: 'production' },
-						{ name: 'Todos los entornos (solo lectura)', value: 'all' },
-					],
-				});
-				if (selected === 'cancel') {
-					console.log('Cancelado. No se realizaron escrituras.');
-					return;
-				}
-				targets = parseTargets(selected);
-			}
-
-			if (!statusMode && targets[0] !== 'production') {
-				const scopeChoice = await select({
-					message: '¿Qué deseas actualizar?',
-					choices: [
-						{ name: 'Solo contenido', value: 'content-only' },
-						{ name: 'Contenido y fotografías', value: 'content-and-assets' },
-						{ name: 'Solo fotografías', value: 'assets-only' },
-					],
-				});
-				args.push('--update-scope', scopeChoice);
-
-				if (scopeChoice === 'content-only') {
-					args.push('--asset-policy', 'preserve');
-				} else {
-					const policyChoice = await select({
-						message: '¿Cómo deseas manejar las fotografías y otros archivos?',
-						choices: [
-							{
-								name: 'Verificar y reutilizar los existentes (verify)',
-								value: 'verify',
-							},
-							{
-								name: 'Subir únicamente los archivos faltantes (missing)',
-								value: 'missing',
-							},
-							{
-								name: 'Sincronizar archivos faltantes y modificados (sync)',
-								value: 'sync',
-							},
-						],
-					});
-					args.push('--asset-policy', policyChoice);
-				}
-			}
+			// Ignore leftover --targets from shell history; destination menu owns the outcome.
+			await runDestinationReleaseWizard({ slug });
+			return;
 		}
 	}
 
