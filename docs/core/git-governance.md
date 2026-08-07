@@ -319,7 +319,7 @@ judgment.
 
 | Owner                                     | Responsibility                                                                                   |
 | ----------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `.agent/plans/README.md`                  | Contract for durable repository-tracked plans                                                    |
+| `.agent/plans/README.md`                  | Task Contract, Goal protocol, Handoff Contract, durable tracked plans                            |
 | `.agent/rules/gatekeeper.md`              | Validation tiers and review/remediation gates                                                    |
 | `.agent/rules/workflow.md`                | Agent operating procedure and authorization handoff                                              |
 | `commitlint.config.cjs`                   | Commit message validation and quality rules                                                      |

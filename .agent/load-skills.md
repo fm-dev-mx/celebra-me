@@ -30,13 +30,13 @@ These are runtime capabilities, not tracked Celebra-me skills under `.agent/skil
   files are forbidden; no CI `impeccable detect` gate). Selective anti-slop absorption (registers,
   structural bans, Adapt rules for cream/glass, intervention loop) lives in `frontend-design` and
   visual-director templates only. Temporary installs for audit must be uninstalled before merge.
-- **Global Hermes (or other host) skills** — may exist outside the repository for cross-project
-  tooling. They never override `.agent/skills/`. See External Runtime Discovery below. Do **not**
-  dump the host catalog into this repo. Do **promote** Celebra product workflows (for example staged
-  review, branch lane / release prep, stash cleanup) into `.agent/skills/` when they are part of
-  this product's operating contract, then point the host at `.agent/skills` via `external_dirs`. For
-  Graphify specifically, `.agent/rules/graphify-ops.md` overrides incompatible host “query first”
-  instructions; operators may also disable the global Graphify skill for this repo when the host
+- **Host/global skills** — may exist outside the repository for cross-project tooling. They never
+  override `.agent/skills/`. See External Runtime Discovery below. Do **not** dump a host catalog
+  into this repo. Do **promote** Celebra product workflows (for example staged review, branch lane /
+  release prep, stash cleanup) into `.agent/skills/` when they are part of this product's operating
+  contract, then point the host at `.agent/skills` via its discovery mechanism. For Graphify
+  specifically, `.agent/rules/graphify-ops.md` overrides incompatible host “query first”
+  instructions; operators may also disable a global Graphify skill for this repo when the host
   supports it.
 
 ## Constraints
@@ -48,45 +48,44 @@ These are runtime capabilities, not tracked Celebra-me skills under `.agent/skil
 - Do not assume a specific provider, model, tool name, or subagent invocation API.
 - If a skill contradicts the live codebase, the live codebase wins.
 
-## External Runtime Discovery (Hermes and similar)
+## External Runtime Discovery
 
 Provider-neutral rule: runtimes may discover this repository's skills, but the repo remains the
 canonical source.
 
-- Do **not** create `HERMES.md`, `.hermes.md`, or other provider-specific entry files. `AGENTS.md`
-  is the only project entry point.
-- Do **not** copy the host's global skill catalog into `.agent/skills/` as a dump or mirror.
+- Do **not** create provider-specific entry files (for example host-named `*.md` at the repo root).
+  `AGENTS.md` is the only project entry point.
+- Do **not** copy a host's global skill catalog into `.agent/skills/` as a dump or mirror.
 - Do **promote** Celebra-owned workflows into `.agent/skills/` (SCHEMA-compliant, provider-neutral)
   when they belong to this product; after promotion, host copies should stub/redirect here so
   `.agent/skills/` remains the single authority.
-- Do **not** re-host ComfyUI / multi-brand creative infrastructure inside this product repo.
-- Local/host config (gitignored, e.g. Hermes `skills.external_dirs`) may point at this repo's
-  `.agent/skills/` path so the host can load Celebra-me skills without forking them.
+- Do **not** re-host multi-brand creative infrastructure inside this product repo.
+- Local/host config (gitignored) may point at this repo's `.agent/skills/` path so the host can load
+  Celebra-me skills without forking them (for example an `external_dirs`-style discovery list).
 - Creative brand contracts for Celebra-me stay in `.agent/briefs/`, `.agent/templates/`, and role
   YAML under `.agent/agents/`.
 
-### Host discovery verification (Hermes)
+### Host discovery verification
 
 Expected host setup for this repo (configure outside git; do not commit host config):
 
-- Include the absolute path to this checkout's `.agent/skills` directory in Hermes
-  `skills.external_dirs` (example: `<repository-root>/.agent/skills`).
-- Keep any cross-project creative skills (e.g. a separate `creative-ops` skills dir) in their own
-  external dir; do not merge them into Celebra-me's `.agent/skills/`.
-- If Celebra-me repo skills are missing from Hermes discovery, fix the host `external_dirs` entry —
-  do not duplicate skills into the Hermes global tree.
+- Include the repository-relative path `.agent/skills` (as an absolute path from the checkout) in
+  the host's external skill discovery list.
+- Keep any cross-project creative skills in their own external dir; do not merge them into
+  Celebra-me's `.agent/skills/`.
+- If Celebra-me repo skills are missing from host discovery, fix the host discovery entry — do not
+  duplicate skills into the host's global tree.
 
-### Hermes categories vs Celebra-me skills (inventory)
+Concrete Codex / Cursor / other host setup steps are non-authoritative operator guidance under
+`.agent/external/provider-integration.md`. They never override this protocol or `AGENTS.md`.
 
-Hermes global categories (host-local, non-authoritative) typically include areas such as creative,
-software-development, database, media, git, research, and computer-use. Those stay on the host.
+### Host catalogs vs Celebra-me skills
 
-Celebra-me tracked skills (canonical) cover product contracts only, for example: `astro-patterns`,
-`backend-engineering`, `frontend-design`, `theme-architecture`, `supabase`, `supabase-postgres`,
-`testing`, `copywriting-es`, `commit-planner`, `staged-code-review`, `staged-code-review-apply`,
-`branch-lane`, `database-parity`, `release-prepare` (deprecated stub), `git-stash-branch-cleanup`,
-`client-invitation-audit`, `production-sql-patches`, `demo-content-consistency`,
-`documentation-governance`, and related domain skills listed in `.agent/index.md`.
+Host global categories (tooling discovery, non-authoritative) stay on the host.
 
-**Rule:** Hermes provides tooling discovery; `.agent/` provides Celebra-me authority. Overlap in
-names never overrides `.agent/skills/`.
+Celebra-me tracked skills (canonical) cover product contracts only — see `.agent/index.md` and
+`.agent/skills/`. Deprecated stubs (for example former `release-prepare`, absorbed into
+`branch-lane`) must not be reintroduced as parallel skills.
+
+**Rule:** Hosts provide tooling discovery; `.agent/` provides Celebra-me authority. Overlap in names
+never overrides `.agent/skills/`.
