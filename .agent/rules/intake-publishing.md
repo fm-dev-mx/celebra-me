@@ -68,6 +68,13 @@ Rules:
   structures rather than silently dropping `groups`, `children` or `godparentGroups`.
 - Repair legacy drafts with `pnpm invitation:draft-canonicalize --slug <slug> --target <env>`
   (read-only dry-run by default; Production writes require a backup manifest and owner confirmation).
+- Detect non-canonical persisted drafts (read-only) with
+  `pnpm invitation:draft-audit --slug <slug> --target <env>`.
+- Restore uses one domain service (`draft-restore.service.ts`):
+  - `restoreDraftSection` — replace one editable section from published → flat Draft;
+  - `restoreEntireDraft` — replace the full draft (and public title/slug via the atomic RPC).
+  Editor/API and `pnpm invitation:draft-restore` are facades over that planner; Published is never
+  written by restore.
 
 ## Draft → Editor → Publish Flow
 

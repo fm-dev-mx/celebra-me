@@ -10,9 +10,15 @@ current boundary.
 - Invitation operations live under `/dashboard/invitaciones`.
 - Creation validates the selected descriptor's event type and preset before any project or draft is
   persisted.
-- Draft content is sparse and uses the flat editable model, never the nested published model. A
-  draft seeded from a published revision is converted with `mapNestedToDraftContent` first; see the
-  contract table in [`.agent/rules/intake-publishing.md`](../../../.agent/rules/intake-publishing.md).
+- Contracts:
+  - Published content = nested public/persisted representation
+  - `DraftContent` = canonical flat editable representation
+  - Editor = consumer of `DraftContent` (never raw Published shapes)
+- Draft content is sparse. A draft seeded from a published revision is converted with
+  `mapNestedToDraftContent` first; see the contract table in
+  [`.agent/rules/intake-publishing.md`](../../../.agent/rules/intake-publishing.md).
+- Section restore (“Restaurar versión publicada”) and full draft restore reuse
+  `restoreDraftSection` / `restoreEntireDraft`. CLI: `pnpm invitation:draft-restore`.
 - Preview and publication compute effective content by merging draft data with the prior published
   snapshot; approved demo fallback is limited to demo invitations.
 - Both preview and publication remap effective draft content through `mapDraftToPublished` with
