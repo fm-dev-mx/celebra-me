@@ -317,7 +317,7 @@ Run the closest available match, **scaled to the change scope**:
 
 ```sh
 pnpm validate:changed      # Agent default when the WORKING TREE matches task scope
-pnpm agent:git-safety:check
+pnpm agent:git-safety:finish
 ```
 
 Agents normally cannot stage changes, so `pnpm validate:changed` is the default fast path. It
@@ -342,7 +342,7 @@ changes — broader local feedback:**
 pnpm validate:changed      # ESLint + Stylelint + Prettier + related Jest on WORKING-TREE files
 pnpm type-check            # When TS/Astro contracts, types, schemas, adapters, or routing can change
 pnpm validate:event-parity # when event/content parity can be affected
-pnpm agent:git-safety:check
+pnpm agent:git-safety:finish
 ```
 
 Use `pnpm validate:changed` when you have unstaged edits you want feedback on before staging. Use
@@ -357,13 +357,17 @@ proves the changed contract more directly.
 
 ```sh
 pnpm run ci                  # Canonical package.json script alias for full pipeline Tier C
-pnpm agent:git-safety:check
+pnpm agent:git-safety:finish # Interactive session close — not part of CI
 ```
 
 `pnpm run ci` is the canonical full-pipeline equivalent of Tier C. It runs `pnpm type-check`,
 `pnpm validate:structure`, `pnpm lint`, `pnpm lint:styles`, `pnpm validate:ui-governance`,
 `pnpm validate:event-parity`, `pnpm validate:no-pii`, `pnpm validate:invitation-preparation`,
-`pnpm test`, `pnpm test:e2e:ci`, and `pnpm build:app`. Use `pnpm ci:quick` for fast feedback only.
+`pnpm test`, `pnpm test:e2e:ci`, and `pnpm build:app`. It does **not** invoke interactive Git Safety
+(that requires a same-session baseline). Use `pnpm ci:quick` for fast feedback only.
+
+Close the mutable agent session with `pnpm agent:git-safety:finish` after Tier C when a session was
+started. See `.agent/rules/git-safety.md`.
 
 The pre-push hook intentionally remains lean (commit-message validation only); do not move tests or
 type-checks into pre-push.

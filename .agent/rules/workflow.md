@@ -8,10 +8,12 @@ This document defines the core 7-step operating procedure for agents.
 2. **Preflight Lane State:** Verify worktree path, current branch alignment, clean working tree, and target environment using `pnpm ops worktree-status`. Claim a lane only if idle and clean.
 3. **Set Scope:** Establish the Task Contract for this work (objective, authorized actions, scope,
    non-goals, invariants, acceptance, verification, stop conditions) per `.agent/plans/README.md`.
-   State file boundaries explicitly.
+   State file boundaries explicitly. For mutable sessions, run `pnpm agent:git-safety:start`
+   (interactive plumbing; see `.agent/rules/git-safety.md`).
 4. **Implement Narrowly:** Edit only authorized files within scope. Do not clean unrelated working tree changes.
 5. **Verify Proportionally:** Run the Gatekeeper validation tier matching the change scope (Tier A: `validate:changed`, Tier B: `type-check`, Tier C: `pnpm run ci`).
-6. **Preserve Session State:** Verify session baseline preservation with `pnpm agent:git-safety:check`. Report any unexpected drift.
+6. **Finish Session:** Close the mutable session with `pnpm agent:git-safety:finish`. On failure,
+   preserve evidence, report drift, and do not auto-remediate.
 7. **Report:** Close with the Handoff Contract fields that apply (completed work, evidence,
    validation passed/failed/not run, risks, authorization/exceptions, git/worktree state, next
    decision) per `.agent/plans/README.md`.

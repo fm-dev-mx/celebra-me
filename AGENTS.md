@@ -32,8 +32,8 @@ A repository rule may be temporarily overridden only when **all** of the followi
 - the exception and its operational effect are reported in the final handoff.
 
 Current-task authorization may unlock gated operations where repository policy permits it. It must
-not implicitly waive unrelated constraints. Do not create or rely on a generic bypass mechanism.
-Harness signals such as `.agent/tmp/allow-git-write` are not standing permission.
+not implicitly waive unrelated constraints. Do not create or rely on a generic bypass mechanism or
+any persistent filesystem marker for Git-write authority.
 
 ## Non-Negotiable Boundaries
 
@@ -77,4 +77,4 @@ These are **non-overridable** unless a cited owning rule explicitly marks a narr
   `.agent/plans/README.md`.
 - Validation tiers are defined in `.agent/rules/gatekeeper.md` using `package.json` script aliases
   (`validate:changed`, `type-check`, `pnpm run ci`).
-- Verify session preservation with `pnpm agent:git-safety:check` before final reporting.
+- Close mutable sessions with `pnpm agent:git-safety:finish` (see `.agent/rules/git-safety.md`).

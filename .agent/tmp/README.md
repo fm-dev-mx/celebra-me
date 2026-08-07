@@ -8,10 +8,14 @@ is ignored by git except this README.
 | Path                          | Purpose                                                                | Lifecycle                                          |
 | ----------------------------- | ---------------------------------------------------------------------- | -------------------------------------------------- |
 | `handoffs/<task-id>/`         | Structured handoff between sequential delegated tasks                  | Delete after task completes                        |
+| `git-safety-baseline.json`    | Interactive mutable-session baseline for `agent:git-safety:*`          | Created by `start`; removed only by successful `finish` (preserved on FAIL) |
 | `branch-lane-checkpoint.json` | Partial read-only branch-lane evidence (SHAs/hashes + check summaries) | Overwritten or deleted on invalidate / session end |
 | `branch-lane-clearance.json`  | Write-ready branch-lane clearance fingerprint (SHAs/hashes only)       | Overwritten or deleted on invalidate / session end |
 | `release-check-evidence.json` | Pass evidence from `pnpm release-check` (SHA + check metadata only)    | Overwritten on each run; invalidated when HEAD/dirty |
 | Other files/dirs              | Scratch work, scripts, screenshots, QA artifacts                       | Not tracked; clean up manually                     |
+
+Do **not** create `allow-git-write` or any other filesystem marker for Git-write authority. Authorization
+is Task Contract / current-task only (see `.agent/rules/git-safety.md`).
 
 `branch-lane-checkpoint.json` and `branch-lane-clearance.json` must never contain credentials,
 connection strings, dumps, or PII. They are bound to repository/worktree identity and are

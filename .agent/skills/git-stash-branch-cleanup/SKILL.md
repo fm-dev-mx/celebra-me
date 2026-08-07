@@ -117,7 +117,10 @@ git branch -d <branch>      # prefer -d over -D; use -D only if user insists
 git push origin --delete <branch>   # only if user confirmed remotes
 ```
 
-After writes, re-list stashes/branches and report what was removed vs kept.
+After writes, re-list stashes/branches and report what was removed vs kept. If a Git Safety session
+was started in Phase 0, close it with `pnpm agent:git-safety:finish` (and
+`--authorized-operation=...` only when the Task Contract already authorized exact Git writes that
+changed protected state).
 
 ## Hard constraints
 
