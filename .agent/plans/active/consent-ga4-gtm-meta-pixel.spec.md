@@ -1000,7 +1000,7 @@ All implementation phases produce buildable, deployable increments.
 
 - Inspect all listed source files for current state. ✅ Done.
 - Run `pnpm ops check-links` for document references. ✅ Done (passes).
-- Run `pnpm agent:git-safety:check` and `pnpm agent:git-safety:end`. ⬜ To be done.
+- Run `pnpm agent:git-safety:finish`. ⬜ To be done.
 - Report `git status --short`. ⬜ To be done.
 
 ### For each implementation phase

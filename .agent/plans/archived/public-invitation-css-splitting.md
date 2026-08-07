@@ -1,6 +1,6 @@
 ---
 title: Public Invitation CSS Splitting — Accepted Slice
-status: archived
+status: final
 archived_date: 2026-06-25
 created: 2026-06-21
 branch: perf/public-invitation-css-splitting

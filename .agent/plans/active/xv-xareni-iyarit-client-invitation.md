@@ -210,8 +210,7 @@ DB-published payload guidance:
 - `pnpm lint`
 - `pnpm validate:event-parity`
 - `pnpm build`
-- `pnpm agent:git-safety:check`
-- `pnpm agent:git-safety:end`
+- `pnpm agent:git-safety:finish`
 
 ## Risks And Mitigations
 

@@ -203,7 +203,7 @@ intentional UI context, not a metric bug.
 3. **Unit tests**: `pnpm test -- tests/unit/rsvp-guest-count.test.tsx` — run RSVP count tests
 4. **Full Jest suite**: `pnpm test` — ensure no regressions
 5. **Build**: `pnpm build` — verify production build succeeds
-6. **Git safety**: `pnpm agent:git-safety:check` — verify no unintended changes
+6. **Git safety**: `pnpm agent:git-safety:finish` — verify protected session state and close
 
 ## Rollback Notes
 

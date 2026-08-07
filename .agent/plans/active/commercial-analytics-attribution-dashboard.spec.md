@@ -489,8 +489,7 @@ For this documentation pass:
 
 - Inspect the generated spec for all required sections.
 - Run `pnpm ops check-links` because the spec references active docs.
-- Run `pnpm agent:git-safety:check`.
-- Run `pnpm agent:git-safety:end`.
+- Run `pnpm agent:git-safety:finish`.
 - Report `git status --short`.
 - Do not run build, type-check, or lint unless code-facing contracts are changed.
 

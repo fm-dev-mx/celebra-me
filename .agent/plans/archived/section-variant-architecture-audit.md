@@ -1,6 +1,6 @@
 ---
 title: Section Variant Architecture Audit
-status: archived
+status: final
 created: unknown
 updated: 2026-05-31
 ---

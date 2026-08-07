@@ -1,6 +1,6 @@
 ---
 title: Public Invitation Route Performance
-status: archived
+status: final
 archived_date: 2026-06-25
 created: 2026-06-20
 updated: 2026-06-23

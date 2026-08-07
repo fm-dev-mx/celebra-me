@@ -1,6 +1,6 @@
 ---
 title: Apply invitation_assets Migration & Fix Preview Pipeline
-status: historical-non-executable
+status: final
 created: 2026-06-03
 updated: 2026-06-03
 related_skills:

@@ -1,6 +1,6 @@
 ---
 title: LCP Measurement Results — Phase 2
-status: archived
+status: final
 archived_date: 2026-06-25
 created: 2026-06-20
 source_deployment: celebra-areapmyow-francisco-mendoza-s-projects.vercel.app

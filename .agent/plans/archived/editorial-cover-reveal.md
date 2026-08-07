@@ -1,6 +1,6 @@
 ---
 title: Editorial Cover Reveal
-status: archived
+status: final
 plan_type: implementation
 autonomy_level: 3
 created: 2026-06-26

@@ -1,6 +1,6 @@
 ---
 title: Editor Data Hydration Fix
-status: archived
+status: final
 archived_date: 2026-06-25
 reason: superseded by draft-preview-merge-fix.md
 created: 2026-05-31

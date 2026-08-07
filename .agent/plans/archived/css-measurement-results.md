@@ -1,6 +1,6 @@
 ---
 title: CSS Waste Measurement Results — Phase 3
-status: archived
+status: final
 archived_date: 2026-06-25
 created: 2026-06-21
 source_deployment: celebra-areapmyow-francisco-mendoza-s-projects.vercel.app

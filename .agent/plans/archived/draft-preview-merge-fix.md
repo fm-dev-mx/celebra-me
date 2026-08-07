@@ -1,6 +1,6 @@
 ---
 title: Draft Preview Merge Fix — Publish Safety
-status: archived
+status: final
 archived_date: 2026-06-25
 created: 2026-06-14
 updated: 2026-06-14

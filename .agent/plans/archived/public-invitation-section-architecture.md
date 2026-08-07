@@ -1,6 +1,6 @@
 ---
 title: Public Invitation Section Architecture
-status: archived
+status: final
 autonomy_level: 3
 plan_type: implementation
 created: 2026-06-22

@@ -1,6 +1,6 @@
 ---
 title: Domain Simplification Packages — Post-Implementation Audit
-status: archived
+status: final
 archived_date: 2026-06-25
 unresolved_gaps:
   - Gap A:

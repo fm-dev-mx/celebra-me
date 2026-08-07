@@ -11,7 +11,7 @@ related_skills:
 related_docs:
   - docs/domains/theme/motion.md
   - .agent/plans/archived/demo-xv-celestial-blue-motion-audit.md
-  - .agent/plans/active/motion-reveal-remediation.md
+  - .agent/plans/archived/motion-reveal-remediation.md
 supersedes: []
 ---
 

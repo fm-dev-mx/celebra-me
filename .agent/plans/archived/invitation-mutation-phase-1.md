@@ -1,6 +1,6 @@
 ---
 title: Invitation Mutation Architecture Phase 1
-status: completed
+status: final
 type: implementation
 autonomy: Level 2 — Local code changes allowed, no staging/commit/deploy
 created: 2026-07-29
