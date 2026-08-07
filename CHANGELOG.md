@@ -8,6 +8,47 @@ proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 Política por capas (qué va aquí vs notas por invitación vs migraciones):
 [`docs/core/release-process.md`](docs/core/release-process.md).
 
+## [Unreleased]
+
+## [0.16.0-beta.1] - 2026-08-07
+
+Comprehensive release consolidating public RSVP SECURITY DEFINER RPC architecture, Daniela y Martín real wedding invitation ship, CLI pipeline consolidations (`pnpm dbs`, `pnpm invitation:release`, `pnpm db:migrate`), multi-lane worktrees, production disaster recovery workflows, admin user authentication management, provisioning reconciliation tools, and agent governance matrices since `v0.15.0-beta.1`.
+
+### Added
+
+- **Daniela y Martín Wedding Client Invitation**: Managed wedding client invitation (`/boda/daniela-y-martin`) with personalized access section, arch-led family section redesign, custom gifts/gallery composition, and updated footer branding.
+- **CLI Pipeline Consolidations**:
+  - `pnpm dbs`: Unified status command (`scripts/provision/dbs-cli.ts`) for cross-environment inspection (`Local`, `Preview`, `Production`) across `CONTENT` and `SCHEMA`.
+  - `pnpm invitation:release`: Unified invitation release CLI (`scripts/provision/invitation-release-cli.ts`) consolidating publication workflows.
+  - `pnpm db:migrate`: Unified schema migration orchestrator CLI (`scripts/db/migrate-cli.ts`) replacing environment-specific wrappers.
+- **Public Guest RSVP Security RPCs**: Atomic `SECURITY DEFINER` Postgres RPCs (`submit_guest_rsvp`, `verify_guest_access`) eliminating direct public table mutation permissions, backed by schema contract gating, non-locking append-only mutation receipts (`invitation_mutation_receipts`), and isolated disposable contract tests.
+- **Content Parity System**: CLI (`pnpm invitation:content-parity`), contract enforcement, preview-sync RSVP reset awareness, and governance integration across agent rules and domain docs.
+- **Managed Reconciliation & Provisioning CLI**: Guided reconciliation for managed divergence (`c2512140`), identity rekey support for local invitation slug migrations (`3474ea8e`), decoupled `hostLoginAlias` (`59b01a20`), interactive section/field content prompts (`a7fc69c0`), and unified cross-environment inspection CLI (`pnpm dbs`).
+- **Four-Lane Worktree Architecture**: Persistent 4-lane worktree layout (`dev-local`, `dev-preview`, `dev-extra`, `Integration`), worktree status CLI, pre-commit `detached-head` guard, stable per-lane Astro port assignment, Windows-safe PowerShell helper, and runtime environment bootstrap.
+- **Admin Auth & Credentials Management**: Password reset and forced change flow with memorable word-digit passwords (`ChangePasswordModal`), admin rate-limiting (`74ac905d`), managed-user login alias editing (`076a0f5e`), and super-admin global event listing (`/dashboard/admin/invitaciones`).
+- **Production Backup & Recovery Infrastructure**: Encrypted daily Production backup workflow (`62ca2aae`), critical backup manifest generator (`37de18f7`), disposable restore verifier (`db:restore:verify-disposable`), failure stderr reporting (`afb718e8`), and integrity profile cutover support (`9db6b02b`).
+- **Alba Rosa Quiñones Invitation Enhancements**: Age lockup composition on Hero for milestone anniversaries/birthdays (`01467388`), senior-friendly typography/contrast, arch-led family layout, and surname spelling correction (`alba-rosa-quinones`).
+- **Agent Governance Matrix**: Structural routing matrix (`.agent/routing-matrix.yaml`) and code ownership registry (`.agent/ownership.yaml`) with structure validation script (`pnpm validate:structure`).
+
+### Changed
+
+- **Editor & Publication Infrastructure**: Provenance tracking for draft mutations (`publication_provenance`), atomic editor metadata/restore RPCs (`3521dfaf`, `9ba24029`), thank-you preview parity via prior published content projection, and field identity preservation in section saves.
+- **Screenshot Engine Architecture**: Modular extraction of capture submodules (`full-page`, `viewport`, `clip`) from monolithic `capture.ts` with document-space full-page capture and granular failure reporting.
+- **Provision & DB Parity**: Decoupled CDN asset probes from promotion plan identity; added portable RSVP `pgcrypto` support and migration deployment compatibility.
+- **Testing & CI Classification**: Deterministic Local Supabase URL stubs for zero-DB CI runs, `@extended` classification for live DB E2E tests, and webServer lifecycle hardening.
+
+### Fixed
+
+- **Database & Migration Safety**: Enforced `CONFIRM_PROD_MIGRATION` guard in production migration CLI, corrected auth boolean export nullability, and non-locking append-only receipt serialization.
+- **CI & Local Scripts**: Handled non-existent files in changed-files detection script, direct `commitlint` invocation to avoid Windows `cmd.exe` path collisions, and `structuredClone` undefined guard in section merging.
+
+### Removed
+
+- **Legacy & Obsolete DB CLI Commands**: `pnpm db:sync`, `pnpm db:local:migrate`, `pnpm db:preview:migrate`, and `pnpm db:prod:migrate` (unified behind `pnpm db:migrate`).
+- **Legacy Invitation Pipeline Commands**: `pnpm invitation:update`, `pnpm invitation:promote`, and `pnpm invitation:approvals:migrate` (unified behind `pnpm invitation:release`).
+- **Approval Scaffolds & Evidence Artifacts**: Retired ad-hoc approval scaffolds and `-evidence` file artifacts from repository and governance docs.
+- **Maintenance Cleanup**: Removed orphaned scripts, legacy segment worktree lanes, outdated asset dumps, and unneeded debug logs.
+
 ## [0.15.0-beta.1] - 2026-07-28
 
 Alba Rosa Quiñones client invitation, premium motion system, and preview infrastructure since
