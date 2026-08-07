@@ -96,6 +96,18 @@ jest.mock('../../scripts/db/release-check', () => ({
 	assertCleanGitWorktree: () => 'abc1234',
 }));
 
+jest.mock('../../scripts/db/disposable-migration-proof', () => ({
+	requireCurrentDisposableMigrationProof: () => ({
+		version: 1,
+		createdAt: '2026-08-06T00:00:00.000Z',
+		sourceHead: 'abc1234',
+		migrationSetDigest: 'mockdigest',
+		appliedVersions: ['20260804000000'],
+		target: 'disposable-test',
+		maxVersion: null,
+	}),
+}));
+
 // Keep Preview tests off the Production policy → audit-db → disposable import chain.
 jest.mock('../../scripts/db/migrate-policy-production.ts', () => ({
 	productionMigratePolicy: {

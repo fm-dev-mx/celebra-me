@@ -1,3 +1,7 @@
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+
 import {
 	classifySqlText,
 	evaluateMigrationSqlRisk,
@@ -52,14 +56,18 @@ $$;
 		const version = String(Number(SQL_RISK_CONTRACT_ENFORCEMENT_AFTER) + 1).padStart(14, '0');
 		const registry: MigrationRolloutRegistry = { migrations: {} };
 		const tmpSql = `DROP TABLE public.gone;`;
-		const path = require('node:path').join(
-			require('node:os').tmpdir(),
+		const tmpFilePath = path.join(
+			os.tmpdir(),
 			`${version}_risk_test.sql`,
 		);
-		require('node:fs').writeFileSync(path, tmpSql);
-		const result = evaluateMigrationSqlRisk({ version, registry, sqlPath: path });
-		expect(result.blocked).toBe(true);
-		expect(result.reasons.join(' ')).toMatch(/phase=contract/);
+		fs.writeFileSync(tmpFilePath, tmpSql);
+		try {
+			const result = evaluateMigrationSqlRisk({ version, registry, sqlPath: tmpFilePath });
+			expect(result.blocked).toBe(true);
+			expect(result.reasons.join(' ')).toMatch(/phase=contract/);
+		} finally {
+			fs.rmSync(tmpFilePath, { force: true });
+		}
 	});
 
 	it('allows destructive SQL with contract metadata', () => {
@@ -74,28 +82,36 @@ $$;
 			},
 		};
 		expect(hasContractMetadata(registry.migrations[version])).toBe(true);
-		const path = require('node:path').join(
-			require('node:os').tmpdir(),
+		const tmpFilePath = path.join(
+			os.tmpdir(),
 			`${version}_risk_ok.sql`,
 		);
-		require('node:fs').writeFileSync(path, 'DROP FUNCTION public.legacy();');
-		const result = evaluateMigrationSqlRisk({ version, registry, sqlPath: path });
-		expect(result.blocked).toBe(false);
+		fs.writeFileSync(tmpFilePath, 'DROP FUNCTION public.legacy();');
+		try {
+			const result = evaluateMigrationSqlRisk({ version, registry, sqlPath: tmpFilePath });
+			expect(result.blocked).toBe(false);
+		} finally {
+			fs.rmSync(tmpFilePath, { force: true });
+		}
 	});
 
 	it('grandfathers historical destructive SQL at or before cutoff', () => {
 		const registry: MigrationRolloutRegistry = { migrations: {} };
-		const path = require('node:path').join(
-			require('node:os').tmpdir(),
+		const tmpFilePath = path.join(
+			os.tmpdir(),
 			`${SQL_RISK_CONTRACT_ENFORCEMENT_AFTER}_risk_hist.sql`,
 		);
-		require('node:fs').writeFileSync(path, 'REVOKE ALL ON TABLE public.t FROM PUBLIC;');
-		const result = evaluateMigrationSqlRisk({
-			version: SQL_RISK_CONTRACT_ENFORCEMENT_AFTER,
-			registry,
-			sqlPath: path,
-		});
-		expect(result.blocked).toBe(false);
-		expect(result.risk.isDestructive).toBe(true);
+		fs.writeFileSync(tmpFilePath, 'REVOKE ALL ON TABLE public.t FROM PUBLIC;');
+		try {
+			const result = evaluateMigrationSqlRisk({
+				version: SQL_RISK_CONTRACT_ENFORCEMENT_AFTER,
+				registry,
+				sqlPath: tmpFilePath,
+			});
+			expect(result.blocked).toBe(false);
+			expect(result.risk.isDestructive).toBe(true);
+		} finally {
+			fs.rmSync(tmpFilePath, { force: true });
+		}
 	});
 });
