@@ -30,6 +30,11 @@ import {
 	verifyPreviewApprovalArtifact,
 	type PreviewApprovalArtifact,
 } from './preview-approval-service.ts';
+import { getDefaultPreviewApprovalStore } from './preview-approval-store.ts';
+import {
+	verifyPreviewArtifactLive,
+	type PreviewLiveVerificationResult,
+} from './preview-live-verification.ts';
 import {
 	ProductionPreflightError,
 	runProductionPreflight,
@@ -166,7 +171,7 @@ export function evaluatePromotionSchemaGate(input: {
 				extraMigrations: [],
 				compatible: false,
 				blockCode: 'SCHEMA_INCOMPATIBLE',
-				detail: `SCHEMA_INCOMPATIBLE / OWNER_ACTION_REQUIRED: Production schema is uninitialized relative to ${expectedVersions.length} expected migrations. Run owner-only pnpm db:prod:migrate, then rerun invitation:promote.`,
+				detail: `SCHEMA_INCOMPATIBLE / OWNER_ACTION_REQUIRED: Production schema is uninitialized relative to ${expectedVersions.length} expected migrations. Run pnpm db:migrate, then rerun invitation:release --targets production.`,
 			};
 		}
 		const parity = evaluateMigrationHistoryParity(expectedVersions, remote.remoteVersions);
@@ -194,7 +199,7 @@ export function evaluatePromotionSchemaGate(input: {
 			blockCode: compatible ? undefined : 'SCHEMA_INCOMPATIBLE',
 			detail: compatible
 				? `Schema lifecycle ${state}; Production matches expected migration head ${remote.remoteVersions.at(-1) ?? '(none)'}.`
-				: `SCHEMA_INCOMPATIBLE / OWNER_ACTION_REQUIRED: schema lifecycle is ${state}. Promotion never runs migrations. Owner must execute pnpm db:prod:migrate (or remediate SCHEMA_DRIFT), then rerun invitation:promote.`,
+				: `SCHEMA_INCOMPATIBLE / OWNER_ACTION_REQUIRED: schema lifecycle is ${state}. Promotion never runs migrations. Owner must execute pnpm db:migrate (or remediate SCHEMA_DRIFT), then rerun invitation:release --targets production.`,
 		};
 	} catch (error) {
 		return {
@@ -405,6 +410,7 @@ function requireApprovedRelease(
 	approvalsDirs?: string[],
 	now?: Date,
 	intendedProductionProjectRef?: string,
+	liveRecheck?: PreviewLiveVerificationResult,
 ): PreviewApprovalArtifact {
 	try {
 		return verifyPreviewApprovalArtifact(
@@ -418,8 +424,8 @@ function requireApprovedRelease(
 				route: `/${packageData.invitation.eventType}/${packageData.invitation.slug}`,
 				intendedProductionProjectRef,
 			},
-			approvalsDirs,
-			now,
+			liveRecheck ? { now, liveRecheck } : approvalsDirs,
+			liveRecheck ? undefined : now,
 		);
 	} catch (error) {
 		throw new ProductionPreflightError(
@@ -450,6 +456,8 @@ export async function runPromotionPreflight(input: {
 	runEngine?: (options: ImportEngineOptions) => Promise<ImportEngineResult>;
 	evaluateSchema?: typeof evaluatePromotionSchemaGate;
 	evaluateBackup?: typeof evaluatePromotionBackupGate;
+	liveRecheck?: PreviewLiveVerificationResult;
+	runLiveVerification?: typeof verifyPreviewArtifactLive;
 }): Promise<PromotionPreflightReport> {
 	const slug = input.packageData.invitation.slug;
 	const base = {
@@ -508,9 +516,25 @@ export async function runPromotionPreflight(input: {
 		};
 	}
 
+	let liveRecheck = input.liveRecheck;
+	if (!liveRecheck && !input.approvalsDirs) {
+		const storedApproval = getDefaultPreviewApprovalStore().get(input.packageData.packageHash);
+		if (storedApproval) {
+			liveRecheck = await (input.runLiveVerification ?? verifyPreviewArtifactLive)(
+				storedApproval,
+			);
+		}
+	}
+
 	let approval: PreviewApprovalArtifact;
 	try {
-		approval = requireApprovedRelease(input.packageData, input.approvalsDirs, input.now);
+		approval = requireApprovedRelease(
+			input.packageData,
+			input.approvalsDirs,
+			input.now,
+			undefined,
+			liveRecheck,
+		);
 	} catch (error) {
 		return {
 			...base,
@@ -543,6 +567,7 @@ export async function runPromotionPreflight(input: {
 			plan: input.plan,
 			getProductionDbUrl: () => ({ url: targetDbUrl }),
 			runEngine: input.runEngine,
+			liveRecheck,
 		});
 	} catch (error) {
 		const fromMerge = divergenceFromMergeConflict(error);
@@ -601,6 +626,7 @@ export async function runPromotionPreflight(input: {
 			input.approvalsDirs,
 			input.now,
 			preflight.engineResult.projectRef,
+			liveRecheck,
 		);
 	} catch (error) {
 		return {
@@ -689,13 +715,20 @@ export async function runPromotionApply(input: {
 	if (
 		input.preflight.status === 'BLOCKED' ||
 		!input.preflight.engineResult ||
-		!input.preflight.targetDbUrl
+		!input.preflight.targetDbUrl ||
+		!input.preflight.backup.acceptable
 	) {
 		return {
 			...input.preflight,
 			status: 'BLOCKED',
-			blockCode: input.preflight.blockCode ?? 'PRODUCTION_PLAN_BLOCKED',
-			reason: input.preflight.reason ?? 'Promotion apply requires a successful preflight.',
+			blockCode:
+				input.preflight.blockCode ??
+				(input.preflight.backup.acceptable ? 'PRODUCTION_PLAN_BLOCKED' : 'BACKUP_REQUIRED'),
+			reason:
+				input.preflight.reason ??
+				(input.preflight.backup.acceptable
+					? 'Promotion apply requires a successful preflight.'
+					: input.preflight.backup.detail),
 		};
 	}
 

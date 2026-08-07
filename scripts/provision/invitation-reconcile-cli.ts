@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /** Public, managed reconciliation entrypoint. Production is intentionally unsupported. */
 import { readFileSync } from 'node:fs';
-import { applyLocalInvitation } from './apply-local-invitation.ts';
+import { planAndApplyLocalContent } from './invitation-content-apply.ts';
 import { resolveInvitationPackageInput } from './invitation-package-input.ts';
 import { runImportEngine } from './invitation-import-engine.ts';
 import { runPreviewApply } from './preview-apply.ts';
@@ -96,7 +96,7 @@ Preview apply requires CELEBRA_TASK_SCOPE=preview:<slug>:apply.
 	const packageInput = await resolveInvitationPackageInput({ slug, packagePath });
 	for (const target of targets) {
 		if (target === 'local') {
-			await applyLocalInvitation({
+			await planAndApplyLocalContent({
 				slug,
 				apply: true,
 				conflictResolutions: managedPlan.conflictResolutions,

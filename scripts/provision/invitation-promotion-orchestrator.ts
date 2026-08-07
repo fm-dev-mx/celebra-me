@@ -1,14 +1,14 @@
 /**
  * invitation-promotion-orchestrator.ts — Single owner-only Production promote cycle.
  *
- * Sequence: reviewed preflight → release evidence → critical backup → rebuild/drift
- * → owner authorize → apply → verify. Domains stay in invitation-promote.ts; this
- * module owns ordered preparation only.
+ * Sequence: reviewed preflight → release evidence → proportional recovery
+ * → compact volatile revalidation → owner authorize → apply → verify.
  */
 import { getProdDbUrl } from '../db/db-workflow-lib.ts';
 import {
 	ensureCriticalProductionBackup,
 	revalidateCriticalProductionBackup,
+	type CriticalProductionBackupPreparation,
 } from '../db/critical-production-backup.ts';
 import { CRITICAL_BACKUP_RPO_MS } from '../db/critical-backup-reuse.ts';
 import { OperatorError, operatorSymbol, writeHuman } from '../db/operator-cli-ux.ts';
@@ -29,6 +29,15 @@ import {
 	buildPromotionTechnicalReview,
 	formatPromotionPlanCompact,
 } from './invitation-promotion-format.ts';
+import {
+	classifyPromotionRecoveryRisk,
+	type PromotionRecoveryRisk,
+	type PromotionRecoveryRiskInput,
+} from './promotion-recovery-risk.ts';
+import {
+	revalidatePromotionVolatilePreconditions,
+	type RevalidatePromotionVolatilePreconditionsInput,
+} from './promotion-volatile-revalidation.ts';
 import type { ConflictResolutions, UpdateScope } from './semantic-delta.ts';
 
 const PROMOTION_OPERATION_TYPE = 'promotion';
@@ -73,58 +82,10 @@ export interface OrchestrateInvitationPromotionInput {
 	ensureReleaseEvidence?: typeof ensureValidReleaseCheckEvidence;
 	ensureBackup?: typeof ensureCriticalProductionBackup;
 	revalidateBackup?: typeof revalidateCriticalProductionBackup;
-}
-
-function assertPlanIdentity(
-	reviewed: PromotionPreflightReport,
-	rebuilt: PromotionPreflightReport,
-): void {
-	const reviewedPlanId = reviewed.engineResult?.plan.planId;
-	const rebuiltPlanId = rebuilt.engineResult?.plan.planId;
-	if (!reviewedPlanId || !rebuiltPlanId || reviewedPlanId !== rebuiltPlanId) {
-		throw new OperatorError({
-			title: 'El plan de promoción cambió',
-			cause:
-				'La evidencia de Production o la release ya no coincide con el plan revisado. Se requiere un nuevo preflight.' +
-				(reviewedPlanId && rebuiltPlanId
-					? ` (revisado ${reviewedPlanId.slice(0, 8)}… ≠ revalidado ${rebuiltPlanId.slice(0, 8)}…)`
-					: ''),
-			code: 'PLAN_DRIFT',
-			remediation: [
-				'Vuelva a ejecutar pnpm invitation:promote para obtener un plan nuevo.',
-				'No confirme un plan que ya no coincide con la evidencia actual.',
-			],
-			retryCommand: 'pnpm invitation:promote',
-		});
-	}
-	if (
-		reviewed.packageHash !== rebuilt.packageHash ||
-		reviewed.sourceHash !== rebuilt.sourceHash ||
-		reviewed.projectionHash !== rebuilt.projectionHash
-	) {
-		throw new OperatorError({
-			title: 'La identidad de la release cambió',
-			cause: 'Los hashes del paquete ya no coinciden con el plan revisado.',
-			code: 'PLAN_DRIFT',
-			remediation: [
-				'Regenere el paquete o vuelva a seleccionar la invitación.',
-				'Reejecute el flujo interactivo desde el principio.',
-			],
-			retryCommand: 'pnpm invitation:promote',
-		});
-	}
-	if (rebuilt.status === 'BLOCKED') {
-		throw new OperatorError({
-			title: 'La promoción quedó bloqueada tras la revalidación',
-			cause: rebuilt.reason ?? rebuilt.blockCode ?? 'Preflight bloqueado.',
-			code: rebuilt.blockCode ?? 'PRODUCTION_PLAN_BLOCKED',
-			remediation: [
-				'Corrija el bloqueo reportado (schema, aprobación, divergencia o respaldo).',
-				'Reejecute pnpm invitation:promote.',
-			],
-			retryCommand: 'pnpm invitation:promote',
-		});
-	}
+	classifyRecoveryRisk?: (input: PromotionRecoveryRiskInput) => PromotionRecoveryRisk;
+	revalidateVolatile?: (
+		input: RevalidatePromotionVolatilePreconditionsInput,
+	) => Promise<PromotionPreflightReport>;
 }
 
 /**
@@ -142,7 +103,9 @@ export async function orchestrateInvitationPromotion(
 	const ensureRelease = input.ensureReleaseEvidence ?? ensureValidReleaseCheckEvidence;
 	const ensureBackup = input.ensureBackup ?? ensureCriticalProductionBackup;
 	const revalidateBackup = input.revalidateBackup ?? revalidateCriticalProductionBackup;
-	const retryCommand = 'pnpm invitation:promote';
+	const classifyRecoveryRisk = input.classifyRecoveryRisk ?? classifyPromotionRecoveryRisk;
+	const revalidateVolatile = input.revalidateVolatile ?? revalidatePromotionVolatilePreconditions;
+	const retryCommand = 'pnpm invitation:release -- --slug <slug> --targets production';
 
 	if (process.env.CELEBRA_TASK_SCOPE) {
 		throw new OperatorError({
@@ -232,37 +195,38 @@ export async function orchestrateInvitationPromotion(
 	}
 	ensureRelease();
 
-	const backup = ensureBackup({
-		prodDbUrl: reviewed.targetDbUrl,
-		purpose: 'promote-pre',
-		planId: reviewed.engineResult.plan.planId,
-		reuseExisting: true,
-		maxAgeMs: CRITICAL_BACKUP_RPO_MS,
-		retryCommand,
-		operationLabel: 'la autorización de la promoción',
-		failureTitle: 'Respaldo crítico previo fallido',
-	});
-
-	if (!quiet) {
-		writeHuman(`${operatorSymbol('info')} Revalidando evidencia del plan…`);
-	}
-	const rebuilt = await runPreflight({
-		packageData: input.packageData,
-		ownerUserId: input.ownerUserId,
-		approvalsDirs: input.approvalsDirs,
+	const recoveryRisk = classifyRecoveryRisk({
+		reviewed,
+		updateScope,
+		deliveryScope: input.deliveryScope,
 		assetPolicy: input.assetPolicy,
 		pruneAssets: input.pruneAssets,
-		updateScope,
-		conflictResolutions: input.conflictResolutions,
-		backupManifestPath: backup.manifestPath,
-		requireBackup: true,
-		// Bind create identity (invitation/owner IDs); dry-run still returns a recomputed plan.
-		plan: reviewed.engineResult.plan,
+	});
+	let backup: CriticalProductionBackupPreparation | undefined;
+	if (recoveryRisk.level === 'critical') {
+		backup = ensureBackup({
+			prodDbUrl: reviewed.targetDbUrl,
+			purpose: 'promote-pre',
+			planId: reviewed.engineResult.plan.planId,
+			reuseExisting: true,
+			maxAgeMs: CRITICAL_BACKUP_RPO_MS,
+			retryCommand,
+			operationLabel: 'la autorización de la promoción',
+			failureTitle: 'Respaldo crítico previo fallido',
+		});
+	}
+
+	if (!quiet) {
+		writeHuman(`${operatorSymbol('info')} Revalidando precondiciones volátiles del plan…`);
+	}
+	const revalidated = await revalidateVolatile({
+		reviewed,
+		packageData: input.packageData,
+		approvalsDirs: input.approvalsDirs,
 		getProductionDbUrl,
 	});
-	assertPlanIdentity(reviewed, rebuilt);
 
-	if (!rebuilt.targetDbUrl) {
+	if (!revalidated.targetDbUrl) {
 		throw new OperatorError({
 			title: 'Destino Production no disponible',
 			cause: 'La revalidación no resolvió la URL de Production.',
@@ -272,12 +236,36 @@ export async function orchestrateInvitationPromotion(
 		});
 	}
 
-	revalidateBackup({
-		prodDbUrl: rebuilt.targetDbUrl,
-		manifestPath: backup.manifestPath,
-		maxAgeMs: CRITICAL_BACKUP_RPO_MS,
-		retryCommand,
-	});
+	if (backup) {
+		revalidateBackup({
+			prodDbUrl: revalidated.targetDbUrl,
+			manifestPath: backup.manifestPath,
+			maxAgeMs: CRITICAL_BACKUP_RPO_MS,
+			retryCommand,
+		});
+	}
+
+	const prepared: PromotionPreflightReport = {
+		...revalidated,
+		backup: backup
+			? {
+					required: true,
+					acceptable: true,
+					manifestPath: backup.manifestPath,
+					createdAt: backup.coverage.manifest?.createdAt,
+					projectRef: backup.coverage.manifest?.projectRef,
+					canonicalCommand: reviewed.backup.canonicalCommand,
+					detail: backup.reused
+						? 'Verified critical Production backup coverage was reused.'
+						: 'A new verified critical Production backup was captured.',
+				}
+			: {
+					required: false,
+					acceptable: true,
+					canonicalCommand: reviewed.backup.canonicalCommand,
+					detail: 'Full critical backup not required for routine content-only promotion; recovery uses managed provenance and retained preimage evidence.',
+				},
+	};
 
 	if (!quiet) {
 		writeHuman(`${operatorSymbol('ok')} Revalidación sin cambios materiales en el plan.`);
@@ -285,7 +273,7 @@ export async function orchestrateInvitationPromotion(
 
 	await (input.requireOwnerApply ?? requireOwnerProductionApply)({
 		apply: true,
-		dbUrl: rebuilt.targetDbUrl,
+		dbUrl: prepared.targetDbUrl!,
 		operationType: PROMOTION_OPERATION_TYPE,
 		operationVerb: 'PROMOTE',
 		bindingHex: input.packageData.packageHash,
@@ -297,15 +285,23 @@ export async function orchestrateInvitationPromotion(
 			['Slug', input.packageData.invitation.slug],
 			[
 				'Respaldo',
-				backup.reused ? 'Cobertura crítica reutilizada' : 'Respaldo crítico nuevo',
+				backup
+					? backup.reused
+						? 'Cobertura crítica reutilizada'
+						: 'Respaldo crítico nuevo'
+					: 'No requerido · recuperación por procedencia/preimagen',
+			],
+			[
+				'Riesgo de recuperación',
+				`${recoveryRisk.level} · ${recoveryRisk.reasons.join(', ')}`,
 			],
 			['Autorización', 'Confirmación interactiva del propietario'],
 		],
-		technicalReview: buildPromotionTechnicalReview(rebuilt),
+		technicalReview: buildPromotionTechnicalReview(prepared),
 	});
 
 	return runApply({
-		preflight: rebuilt,
+		preflight: prepared,
 		packageData: input.packageData,
 		ownerUserId: input.ownerUserId,
 		assetPolicy: input.assetPolicy,

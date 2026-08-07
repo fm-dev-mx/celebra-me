@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/** The sole public managed-invitation release command. */
+/** The sole public managed-invitation release command (Local → Preview → approve → Production). */
 /* eslint-disable max-lines, no-useless-assignment -- Managed release CLI handles mode dispatch, per-target planning, and interactive wizard. */
 import { confirm, select } from '@inquirer/prompts';
 import { type LocalApplyResult } from './apply-local-invitation.ts';
@@ -20,22 +20,26 @@ import { parseAssetPolicy } from './asset-reconciliation.ts';
 import type { UpdateScope } from './semantic-delta.ts';
 import {
 	buildStatusReport,
-	parseMutationTargets,
+	parseReleaseMutationTargets,
 	parseTargets,
 	checkUnknownFlags,
 	validateUpdateOptions,
 	type InvitationUpdateTarget,
 } from './invitation-update-options.ts';
-import { authorizePreviewWriteApply } from './preview-write-auth.ts';
+import {
+	authorizePreviewWriteApply,
+	verifyPreviewWriteAuthorization,
+} from './preview-write-auth.ts';
 import { readFastInvitationInventory } from './invitation-status-inventory.ts';
 import { evaluateInvitationReadiness } from './invitation-readiness.ts';
 import { LOCAL_DB_URL, redactCredentials } from '../db/db-target-config.ts';
-import { assertPreviewDbUrl, getPreviewDbUrl } from '../db/db-workflow-lib.ts';
-import {
-	finalizePreviewApprovalArtifact,
-	writePendingApprovalEvidenceScaffold,
-} from './preview-approval-service.ts';
+import { assertPreviewDbUrl, getPreviewDbUrl, getProdDbUrl } from '../db/db-workflow-lib.ts';
+import { approvePreviewArtifactFromLiveVerification } from './preview-approval-service.ts';
 import { getDefaultPreviewApprovalStore } from './preview-approval-store.ts';
+import {
+	PREVIEW_LIVE_CHECKLIST_KEYS,
+	verifyPreviewArtifactLive,
+} from './preview-live-verification.ts';
 import {
 	assertContentSchemaCurrent,
 	planAndApplyLocalContent,
@@ -65,6 +69,21 @@ import {
 	listDriftConflicts,
 	type ConflictResolutions,
 } from './semantic-delta.ts';
+import {
+	deriveInvitationReleaseNextAction,
+	describeReleaseNextAction,
+} from './invitation-release-next-action.ts';
+import { runPromotionPreflight } from './invitation-promote.ts';
+import {
+	formatPromotionPlanCompact,
+	formatPromotionResult,
+	toPublicPromotionReport,
+} from './invitation-promotion-format.ts';
+import {
+	orchestrateInvitationPromotion,
+	resolvePromotionUpdateScope,
+} from './invitation-promotion-orchestrator.ts';
+import { operatorSymbol, writeHuman } from '../db/operator-cli-ux.ts';
 
 function mergeConflictsFromError(error: unknown): TargetPlanData['mergeConflicts'] {
 	let current: unknown = error;
@@ -161,24 +180,187 @@ function sanitizeMessage(message: string): string {
 		.replace(/[A-Za-z]:\\[^\s"']+/g, '[ruta interna]');
 }
 
+async function runProductionReleaseDispatch(input: {
+	slug: string;
+	definition: ReturnType<typeof getInvitationDefinition>;
+	sourceDir?: string;
+	packagePath?: string;
+	allowStalePackage: boolean;
+	ownerUserId?: string;
+	assetPolicyRaw?: string;
+	pruneAssets: boolean;
+	updateScope?: UpdateScope;
+	conflictResolutionsPath?: string;
+	backupManifestPath?: string;
+	apply: boolean;
+	json: boolean;
+	verbose: boolean;
+}): Promise<void> {
+	let packageInput;
+	try {
+		packageInput = await resolveInvitationPackageInput({
+			slug: input.slug,
+			sourceDir: input.sourceDir,
+			packagePath: input.packagePath,
+			allowStalePackage: input.allowStalePackage,
+		});
+	} catch (error) {
+		const message =
+			error instanceof PackageInputError
+				? error.safeReason
+				: error instanceof Error
+					? error.message
+					: String(error);
+		if (input.json) {
+			console.log(
+				JSON.stringify(
+					{
+						status: 'BLOCKED',
+						blockCode: 'PRODUCTION_PLAN_BLOCKED',
+						reason: message,
+						slug: input.slug,
+					},
+					null,
+					2,
+				),
+			);
+		} else {
+			writeHuman(`${operatorSymbol('fail')} ${message}`);
+		}
+		process.exitCode = 1;
+		return;
+	}
+
+	const assetPolicy = input.assetPolicyRaw ? parseAssetPolicy(input.assetPolicyRaw) : undefined;
+	const conflictResolutions = input.conflictResolutionsPath
+		? loadConflictResolutionsFile(input.conflictResolutionsPath)
+		: undefined;
+	const updateScope = resolvePromotionUpdateScope({
+		updateScope: input.updateScope,
+		deliveryScope: input.definition.deliveryScope,
+	});
+
+	if (!input.apply) {
+		const preflight = await runPromotionPreflight({
+			packageData: packageInput.packageData,
+			ownerUserId: input.ownerUserId,
+			assetPolicy,
+			pruneAssets: input.pruneAssets,
+			updateScope,
+			conflictResolutions,
+			backupManifestPath: input.backupManifestPath,
+			requireBackup: false,
+			getProductionDbUrl: getProdDbUrl,
+		});
+		if (input.json) {
+			console.log(JSON.stringify(toPublicPromotionReport(preflight), null, 2));
+		} else if (input.verbose) {
+			writeHuman(`\n=== invitation:release (Production) ===`);
+			writeHuman(`Status: ${preflight.status}`);
+			if (preflight.reason) writeHuman(`Reason: ${preflight.reason}`);
+			writeHuman(`Schema: ${preflight.schema.state}`);
+		} else {
+			writeHuman(
+				formatPromotionPlanCompact(preflight, {
+					title: input.definition.title,
+					route: `/${input.definition.eventType}/${input.definition.slug}`,
+					deliveryScope: input.definition.deliveryScope,
+				}),
+			);
+			if (preflight.status === 'PROMOTABLE') {
+				writeHuman(
+					`${operatorSymbol('info')} Para aplicar: pnpm invitation:release -- --slug ${input.slug} --targets production --apply`,
+				);
+			}
+			if (preflight.status === 'BLOCKED' && preflight.blockCode === 'SCHEMA_INCOMPATIBLE') {
+				writeHuman(
+					`${operatorSymbol('warn')} Schema incompatible. Ejecute pnpm db:migrate (nunca se migra automáticamente desde invitation:release).`,
+				);
+			}
+		}
+		if (preflight.status === 'BLOCKED') process.exitCode = 1;
+		return;
+	}
+
+	try {
+		const report = await orchestrateInvitationPromotion({
+			packageData: packageInput.packageData,
+			ownerUserId: input.ownerUserId,
+			assetPolicy,
+			pruneAssets: input.pruneAssets,
+			updateScope,
+			conflictResolutions,
+			backupManifestPath: input.backupManifestPath,
+			deliveryScope: input.definition.deliveryScope,
+			title: input.definition.title,
+			route: `/${input.definition.eventType}/${input.definition.slug}`,
+			quiet: input.json,
+		});
+
+		if (input.json) {
+			console.log(JSON.stringify(toPublicPromotionReport(report), null, 2));
+		} else {
+			if (report.status === 'BLOCKED' && report.reason) {
+				writeHuman(`${operatorSymbol('fail')} ${report.reason}`);
+				if (report.blockCode === 'SCHEMA_INCOMPATIBLE') {
+					writeHuman(
+						`${operatorSymbol('warn')} Ejecute pnpm db:migrate; invitation:release nunca migra el schema.`,
+					);
+				}
+			}
+			if ('verification' in report && report.verification) {
+				writeHuman(formatPromotionResult(report));
+			}
+		}
+		if (report.status === 'BLOCKED' || report.status === 'APPLIED_BUT_VERIFICATION_FAILED') {
+			process.exitCode = 1;
+		}
+	} catch (error: unknown) {
+		const message = sanitizeMessage(error instanceof Error ? error.message : String(error));
+		if (input.json) {
+			console.log(
+				JSON.stringify(
+					{
+						status: 'BLOCKED',
+						blockCode:
+							error instanceof Error && 'code' in error
+								? String(
+										(error as { code?: string }).code ??
+											'PRODUCTION_PLAN_BLOCKED',
+									)
+								: 'PRODUCTION_PLAN_BLOCKED',
+						reason: message,
+						slug: input.slug,
+					},
+					null,
+					2,
+				),
+			);
+		} else {
+			writeHuman(`${operatorSymbol('fail')} ${message}`);
+		}
+		process.exitCode = 1;
+	}
+}
+
 export function printHelp(): void {
 	console.log(`
-invitation:update — Unified managed invitation update/release CLI
+invitation:release — Sole managed invitation release CLI (Local → Preview → approve → Production)
 
 Usage:
-  pnpm invitation:update                                             Interactive wizard (TTY only)
-  pnpm invitation:update --status [--slug <slug>] [--targets <targets>] [--json]
-  pnpm invitation:update --slug <slug> --targets local|preview|local,preview --dry-run|--apply [--non-interactive] [--source-dir <dir>|--package <path>]
-  pnpm invitation:update --package-hash <hash> --write-evidence-scaffold <path>
-  pnpm invitation:update --package-hash <hash> --evidence <path> --apply
-  pnpm invitation:update --preview-provenance --slug <slug> --targets preview --package <path> --dry-run [--json]
-  pnpm invitation:update --preview-provenance --slug <slug> --targets preview --package <path> --apply [--json]
+  pnpm invitation:release                                             Interactive wizard (TTY only; offers next valid action)
+  pnpm invitation:release --status [--slug <slug>] [--targets <targets>] [--json]
+  pnpm invitation:release --slug <slug> --targets local|preview|local,preview --dry-run|--apply [--non-interactive] [--source-dir <dir>|--package <path>]
+  pnpm invitation:release --slug <slug> --targets production --dry-run|--apply [--package <path>|--source-dir <dir>]
+  pnpm invitation:release --package-hash <hash> --approve
+  pnpm invitation:release --preview-provenance --slug <slug> --targets preview --package <path> --dry-run [--json]
+  pnpm invitation:release --preview-provenance --slug <slug> --targets preview --package <path> --apply [--json]
 
 Options:
   --asset-policy <policy>     Asset handling policy: verify, missing (default), sync, preserve
   --prune-assets               Enable explicit removal of unreferenced managed assets (requires confirmation)
   --status                     Local inventory status (remotes unprobed; use pnpm dbs for matrix)
-  --targets <targets>          Mutations: local, preview, local,preview. --targets all and Production mutations are rejected.
+  --targets <targets>          Mutations: local, preview, local,preview, or production (exclusive).
                                Status only: local, preview, production, all (all includes Production read-only).
   --slug <slug>                Invitation slug (e.g. romina-rios-chaparro)
   --rekey-from <slug>          Explicit identity rekey from a prior slug (Local/Preview only; never Production)
@@ -191,20 +373,20 @@ Options:
   --confirm-destructive        Destructive operations acknowledgement required for non-interactive apply when plan contains deletions or overwrites
   --conflict-resolutions <path> JSON { "resolutions": { "<path>": "package"|"target" } } (required when apply has merge conflicts)
   --field-selections <path>    JSON { "resolutions": { "<path>": "package"|"target" } } selective apply (deselected paths keep target)
+  --backup-manifest <path>     Optional critical backup manifest for Production promote
   --verbose                    Show full field values and plan IDs in terminal output
   --json                       Format output as JSON
   --owner-user-id <uuid>       Optional override/assertion; new invites default to a dedicated host ({hostLoginAlias}@clientes.celebra.invalid)
-  --package-hash <hash>        Shared-store package hash for Preview approval finalize
-  --write-evidence-scaffold <path>  Write evidence JSON bound to a pending approval (review, then finalize)
-  --evidence <path>            Hosted Preview validation evidence JSON (required with finalize)
+  --package-hash <hash>        Shared-store package hash for direct live Preview approval
+  --approve                    Run live Preview checks, then request one Cancel-default owner approval
   --preview-provenance         Establish the Preview provenance baseline without changing content (specialized)
   --help, -h                   Show this help message
 
-Legacy filesystem approvals: import once with pnpm invitation:approvals:migrate -- --apply
-Schema BEHIND/DRIFT: run pnpm db:local:migrate / pnpm db:preview:migrate (never auto-migrates).
+Legacy filesystem approval import is retired; approvals are created and finalized in the shared Preview store.
+Schema BEHIND/DRIFT: run pnpm db:migrate (never auto-migrates from this command).
 
-Production managed-content promotion uses:
-  pnpm invitation:promote
+Production promote (approved Preview → Production) is folded into this CLI via --targets production.
+Each Local, Preview content, Preview approval, and Production write uses exactly one env-appropriate authorization.
 `);
 }
 
@@ -262,44 +444,15 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 	}
 
 	const packageHash = value(args, '--package-hash');
-	const evidence = value(args, '--evidence');
-	const evidenceScaffoldPath = value(args, '--write-evidence-scaffold');
-	if (packageHash || evidence || evidenceScaffoldPath || args.includes('--artifact')) {
+	const approve = args.includes('--approve');
+	if (packageHash || approve || args.includes('--artifact')) {
 		if (args.includes('--artifact')) {
 			throw new Error(
-				'--artifact was removed. Import legacy approvals with pnpm invitation:approvals:migrate -- --apply, then finalize with --package-hash.',
+				'--artifact was removed. Import legacy approvals once, then use --package-hash <hash> --approve.',
 			);
 		}
-		if (!packageHash) {
-			throw new Error('Approval flows require --package-hash <hash>.');
-		}
-		if (evidenceScaffoldPath) {
-			if (evidence || args.includes('--apply')) {
-				throw new Error(
-					'--write-evidence-scaffold cannot be combined with --evidence/--apply. Scaffold first, then finalize.',
-				);
-			}
-			const scaffold = writePendingApprovalEvidenceScaffold({
-				packageHash,
-				outputPath: evidenceScaffoldPath,
-			});
-			if (json) console.log(JSON.stringify(scaffold, null, 2));
-			else {
-				console.log(
-					`Scaffold de evidencia escrito: ${scaffold.outputPath}\n` +
-						`  slug     : ${scaffold.slug}\n` +
-						`  planId   : ${scaffold.planId}\n` +
-						`Revise checklist/reviewedBy y finalize:\n` +
-						`  pnpm invitation:update -- --package-hash ${scaffold.packageHash} --evidence ${scaffold.outputPath} --apply`,
-				);
-			}
-			return;
-		}
-		if (!evidence || !args.includes('--apply')) {
-			throw new Error(
-				'Approval finalize requires --package-hash <hash> --evidence <path> --apply. ' +
-					'Si aún no tiene evidencia: --package-hash <hash> --write-evidence-scaffold <path>.',
-			);
+		if (!packageHash || !approve || args.includes('--apply')) {
+			throw new Error('Direct Preview approval requires --package-hash <hash> --approve.');
 		}
 		const pending = getDefaultPreviewApprovalStore().get(packageHash);
 		if (!pending) {
@@ -307,15 +460,43 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 				`No pending Preview approval exists in the shared store for package ${packageHash}.`,
 			);
 		}
-		await authorizePreviewWriteApply({
+		const live = await verifyPreviewArtifactLive(pending);
+		if (!json) {
+			console.log(`Verificación Preview en vivo · ${pending.slug}`);
+			for (const key of PREVIEW_LIVE_CHECKLIST_KEYS) {
+				console.log(`  ${live.checklistResults[key] ? 'OK' : 'FALLO'}  ${key}`);
+			}
+		}
+		if (!live.ok) {
+			const failed = PREVIEW_LIVE_CHECKLIST_KEYS.filter((key) => !live.checklistResults[key]);
+			throw new Error(`LIVE_PREVIEW_VERIFICATION_FAILED: ${failed.join(', ')}.`);
+		}
+		verifyPreviewWriteAuthorization({
 			slug: pending.slug,
-			operation: 'finalize-approval',
-			confirmPrompt: `Confirm finalize Preview approval for "${pending.slug}"? Type YES to proceed: `,
+			targets: ['preview'],
+			apply: true,
+			operation: 'approve',
 			isInteractive: !nonInteractive && isTTY,
 		});
-		const finalized = finalizePreviewApprovalArtifact({
+		if (!nonInteractive && isTTY) {
+			const decision = await select({
+				message: `¿Aprobar la release verificada de Preview para "${pending.slug}"?`,
+				default: 'cancel',
+				choices: [
+					{ name: 'Cancelar', value: 'cancel' as const },
+					{ name: 'Aprobar Preview', value: 'approve' as const },
+				],
+			});
+			if (decision !== 'approve') {
+				throw new Error(
+					'PREVIEW_WRITE_CANCELLED: Operator cancelled the Preview approval.',
+				);
+			}
+		}
+		const finalized = approvePreviewArtifactFromLiveVerification({
 			packageHash,
-			evidencePath: evidence,
+			reviewedBy: process.env.USERNAME?.trim() || process.env.USER?.trim() || 'preview-owner',
+			live,
 		});
 		const result = {
 			approval: finalized.approvalState,
@@ -360,7 +541,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 		}
 
 		if (isTTY && !nonInteractive && !json) {
-			console.log('=== Celebra-me Managed Invitation Update Wizard ===\n');
+			console.log('=== Celebra-me Managed Invitation Release Wizard ===\n');
 			if (!slug) {
 				slug = await select({
 					message: 'Selecciona la invitación administrada',
@@ -372,15 +553,45 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 						})),
 				});
 			}
+
+			const next = await deriveInvitationReleaseNextAction({ slug });
+			console.log(`${describeReleaseNextAction(next)}\n  ${next.reason}\n`);
+
+			const nextChoices: Array<{ name: string; value: string }> = [
+				{ name: 'Cancelar', value: 'cancel' },
+				{ name: 'Ver estado e inventario (status)', value: 'status' },
+			];
+			if (next.action === 'local') {
+				nextChoices.push(
+					{ name: 'Simular Local (dry-run)', value: 'dry-run:local' },
+					{ name: 'Aplicar en Local', value: 'apply:local' },
+				);
+			} else if (next.action === 'preview') {
+				nextChoices.push(
+					{ name: 'Simular Preview (dry-run)', value: 'dry-run:preview' },
+					{ name: 'Aplicar en Preview', value: 'apply:preview' },
+				);
+			} else if (next.action === 'approve' && next.packageHash) {
+				nextChoices.push({
+					name: 'Verificar y aprobar Preview en vivo',
+					value: `approve:${next.packageHash}`,
+				});
+			} else if (next.action === 'production') {
+				nextChoices.push(
+					{
+						name: 'Simular promoción a Production (dry-run)',
+						value: 'dry-run:production',
+					},
+					{ name: 'Promover a Production (owner)', value: 'apply:production' },
+				);
+			} else if (next.action === 'in_sync') {
+				console.log('No hay escrituras pendientes en el ciclo de release.\n');
+			}
+
 			const operation = await select({
 				message: 'Selecciona la operación a realizar',
 				default: 'cancel',
-				choices: [
-					{ name: 'Cancelar', value: 'cancel' },
-					{ name: '1. Ver estado e inventario (status)', value: 'status' },
-					{ name: '2. Simular cambios sin escribir (dry-run)', value: 'dry-run' },
-					{ name: '3. Aplicar actualización (apply)', value: 'apply' },
-				],
+				choices: nextChoices,
 			});
 			if (operation === 'cancel') {
 				console.log('Cancelado. No se realizaron escrituras.');
@@ -388,37 +599,37 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 			}
 
 			if (operation === 'status') statusMode = true;
-			else if (operation === 'dry-run') dryRun = true;
-			else if (operation === 'apply') apply = true;
+			else if (operation.startsWith('approve:')) {
+				await main(['--package-hash', operation.slice('approve:'.length), '--approve']);
+				return;
+			} else if (operation.startsWith('dry-run:')) {
+				dryRun = true;
+				targets = parseReleaseMutationTargets(operation.slice('dry-run:'.length));
+			} else if (operation.startsWith('apply:')) {
+				apply = true;
+				targets = parseReleaseMutationTargets(operation.slice('apply:'.length));
+			}
 
-			if (targets.length === 0) {
-				const choices = statusMode
-					? [
-							{ name: 'Cancelar', value: 'cancel' },
-							{ name: 'Local (127.0.0.1:54322)', value: 'local' },
-							{ name: 'Preview', value: 'preview' },
-							{ name: 'Producción (solo lectura)', value: 'production' },
-							{ name: 'Todos los entornos (solo lectura)', value: 'all' },
-						]
-					: [
-							{ name: 'Cancelar', value: 'cancel' },
-							{ name: 'Local (127.0.0.1:54322)', value: 'local' },
-							{ name: 'Preview', value: 'preview' },
-							{ name: 'Local y Preview', value: 'local,preview' },
-						];
+			if (targets.length === 0 && statusMode) {
 				const selected = await select({
 					message: 'Selecciona el entorno de destino',
 					default: 'cancel',
-					choices,
+					choices: [
+						{ name: 'Cancelar', value: 'cancel' },
+						{ name: 'Local (127.0.0.1:54322)', value: 'local' },
+						{ name: 'Preview', value: 'preview' },
+						{ name: 'Producción (solo lectura)', value: 'production' },
+						{ name: 'Todos los entornos (solo lectura)', value: 'all' },
+					],
 				});
 				if (selected === 'cancel') {
 					console.log('Cancelado. No se realizaron escrituras.');
 					return;
 				}
-				targets = statusMode ? parseTargets(selected) : parseMutationTargets(selected);
+				targets = parseTargets(selected);
 			}
 
-			if (!statusMode) {
+			if (!statusMode && targets[0] !== 'production') {
 				const scopeChoice = await select({
 					message: '¿Qué deseas actualizar?',
 					choices: [
@@ -474,6 +685,11 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 		value(args, '--asset-policy') ?? (updateScope === 'content-only' ? 'preserve' : 'missing');
 	const pruneAssets = args.includes('--prune-assets');
 	const assetPolicy = parseAssetPolicy(rawAssetPolicy);
+	if (assetPolicy === 'preserve' && updateScope === 'content-and-assets') {
+		throw new Error(
+			'Asset policy "preserve" conflicts with update scope "content-and-assets". Choose verify, missing, or sync.',
+		);
+	}
 
 	// Default targets to local if interactive or unassigned
 	if (targets.length === 0 && (slug || statusMode)) {
@@ -481,11 +697,19 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 	}
 
 	const requestedTargets = value(args, '--targets') ?? targets.join(',');
-	targets = statusMode ? parseTargets(requestedTargets) : parseMutationTargets(requestedTargets);
+	targets = statusMode
+		? parseTargets(requestedTargets)
+		: parseReleaseMutationTargets(requestedTargets);
 	if (targets.length === 0 && (slug || statusMode)) {
 		targets = ['local'];
 	}
-	validateUpdateOptions({ slug, targets, rekeyFrom, isMutation: !statusMode });
+	validateUpdateOptions({
+		slug,
+		targets,
+		rekeyFrom,
+		isMutation: !statusMode,
+		allowProductionMutation: true,
+	});
 
 	if (statusMode) {
 		const statusReportOptions = {
@@ -552,7 +776,35 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 		);
 	}
 
-	getInvitationDefinition(slug);
+	const definition = getInvitationDefinition(slug);
+
+	// ── Production promote (approved Preview → Production) ───────────────────
+	if (targets.length === 1 && targets[0] === 'production') {
+		await runProductionReleaseDispatch({
+			slug,
+			definition,
+			sourceDir,
+			packagePath,
+			allowStalePackage: args.includes('--allow-stale-package'),
+			ownerUserId: value(args, '--owner-user-id'),
+			assetPolicyRaw: value(args, '--asset-policy'),
+			pruneAssets: args.includes('--prune-assets'),
+			updateScope: (() => {
+				const raw = value(args, '--update-scope');
+				return raw === 'content-and-assets' ||
+					raw === 'assets-only' ||
+					raw === 'content-only'
+					? raw
+					: undefined;
+			})(),
+			conflictResolutionsPath: value(args, '--conflict-resolutions'),
+			backupManifestPath: value(args, '--backup-manifest'),
+			apply: Boolean(apply),
+			json,
+			verbose,
+		});
+		return;
+	}
 
 	const ownerUserId = value(args, '--owner-user-id');
 	const reports: StageReport[] = [];
@@ -1122,87 +1374,43 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 			),
 		};
 
-		// ── CONFIRMATION GATES (after plan review; single auth per operation) ──────
+		// ── PLAN REVIEW (authorization happens once per target write below) ──────
 		console.log(formatApplyConfirmation(planData, presenterOptions));
-		if (targets.includes('preview')) {
-			try {
-				await authorizePreviewWriteApply({
-					slug,
-					operation: 'apply',
-					confirmPrompt: `Confirm Update invitation "${slug}" in Preview? Type YES to proceed: `,
-					isInteractive: !nonInteractive && isTTY,
-				});
-			} catch (error: unknown) {
-				const message = error instanceof Error ? error.message : String(error);
-				if (!message.includes('PREVIEW_WRITE_CANCELLED')) throw error;
-				targetResults.push(...buildCancellationResults(targets, targetPlans));
-				const cancelResult = {
-					invitation: slug,
-					reports,
-					targetResults,
-					status: 'CANCELLED' as const,
-					reason: 'OPERATOR_CANCELLED',
-				};
-				if (json) console.log(JSON.stringify(cancelResult, null, 2));
-				else
-					console.log(
-						formatApplyResult({
-							planId: localResult?.plan?.planId,
-							invitation: slug,
-							status: 'CANCELLED',
-							environment: targets.join(', '),
-							completedOperations: 0,
-							databaseWrites: { inserts: 0, updates: 0, deletes: 0 },
-							storageMutations: { uploads: 0, overwrites: 0, moves: 0, deletes: 0 },
-							reason: 'Cancelado por el operador.',
-							functionalChanges: planData.functionalChanges,
-							targetResults,
-						}),
-					);
-				return;
-			}
-		} else if (isTTY && !nonInteractive) {
-			const confirmed = await confirm({
-				message: `¿Aplicar la actualización administrada de "${slug}" en ${targets.join(', ')}?`,
-				default: false,
-			});
-			if (!confirmed) {
-				targetResults.push(...buildCancellationResults(targets, targetPlans));
-				const cancelResult = {
-					invitation: slug,
-					reports,
-					targetResults,
-					status: 'CANCELLED' as const,
-					reason: 'OPERATOR_CANCELLED',
-				};
-				if (json) {
-					console.log(JSON.stringify(cancelResult, null, 2));
-				} else {
-					console.log(
-						formatApplyResult({
-							planId: localResult?.plan?.planId,
-							invitation: slug,
-							status: 'CANCELLED',
-							environment: targets.join(', '),
-							completedOperations: 0,
-							databaseWrites: { inserts: 0, updates: 0, deletes: 0 },
-							storageMutations: { uploads: 0, overwrites: 0, moves: 0, deletes: 0 },
-							reason: 'Cancelado por el operador.',
-							functionalChanges: planData.functionalChanges,
-							targetResults,
-						}),
-					);
-				}
-				return;
-			}
-		}
 		if (nonInteractive && destInfo.hasDestructive && !args.includes('--confirm-destructive')) {
 			throw new Error(
 				`El plan contiene operaciones destructivas (${destInfo.databaseDeletes} eliminaciones DB, ${destInfo.storageDeletes} eliminaciones Storage, ${destInfo.storageOverwrites} sobrescrituras Storage). La ejecución no interactiva requiere --confirm-destructive.`,
 			);
 		}
 
+		const emitCancellation = (): void => {
+			targetResults.push(...buildCancellationResults(targets, targetPlans));
+			const cancelResult = {
+				invitation: slug,
+				reports,
+				targetResults,
+				status: 'CANCELLED' as const,
+				reason: 'OPERATOR_CANCELLED',
+			};
+			if (json) console.log(JSON.stringify(cancelResult, null, 2));
+			else
+				console.log(
+					formatApplyResult({
+						planId: localResult?.plan?.planId,
+						invitation: slug,
+						status: 'CANCELLED',
+						environment: targets.join(', '),
+						completedOperations: 0,
+						databaseWrites: { inserts: 0, updates: 0, deletes: 0 },
+						storageMutations: { uploads: 0, overwrites: 0, moves: 0, deletes: 0 },
+						reason: 'Cancelado por el operador.',
+						functionalChanges: planData.functionalChanges,
+						targetResults,
+					}),
+				);
+		};
+
 		// Execute retained target plans in deterministic order through the shared lifecycle core.
+		// Exactly one environment-appropriate authorization immediately before each write.
 		const executionSummary = await executeTargetPlans({
 			targets,
 			targetPlans,
@@ -1210,6 +1418,18 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 				sanitizeMessage(error instanceof Error ? error.message : String(error)),
 			executeTarget: async (target) => {
 				if (target === 'local') {
+					if (isTTY && !nonInteractive) {
+						const confirmed = await confirm({
+							message: `¿Aplicar la release administrada de "${slug}" en Local?`,
+							default: false,
+						});
+						if (!confirmed) {
+							throw Object.assign(new Error('OPERATOR_CANCELLED'), {
+								mutationStarted: false,
+								cancelled: true,
+							}) as LifecycleExecutionError;
+						}
+					}
 					const localPlan = executionPlans.get('local');
 					if (!localPlan) {
 						throw Object.assign(new Error('No existe un plan confirmado de Local.'), {
@@ -1270,6 +1490,23 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 				}
 
 				if (target === 'preview') {
+					try {
+						await authorizePreviewWriteApply({
+							slug,
+							operation: 'apply',
+							confirmPrompt: `Confirm release invitation "${slug}" in Preview? Type YES to proceed: `,
+							isInteractive: !nonInteractive && isTTY,
+						});
+					} catch (error: unknown) {
+						const message = error instanceof Error ? error.message : String(error);
+						if (message.includes('PREVIEW_WRITE_CANCELLED')) {
+							throw Object.assign(new Error('OPERATOR_CANCELLED'), {
+								mutationStarted: false,
+								cancelled: true,
+							}) as LifecycleExecutionError;
+						}
+						throw error;
+					}
 					if (!resolvedPackage) {
 						const packaged = await exportInvitationPackage({
 							slug,
@@ -1354,10 +1591,18 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 				}
 
 				throw new Error(
-					'PRODUCTION_PROMOTION_REQUIRED: Production apply moved to pnpm invitation:promote. invitation:update cannot mutate Production.',
+					'PRODUCTION_PROMOTION_REQUIRED: Use --targets production for owner-only Production promote via invitation:release.',
 				);
 			},
 		});
+		if (
+			executionSummary.targetResults.some((result) =>
+				(result.reason ?? '').includes('OPERATOR_CANCELLED'),
+			)
+		) {
+			emitCancellation();
+			return;
+		}
 		targetResults.push(...executionSummary.targetResults);
 		const executionFailed = executionSummary.executionFailed;
 
@@ -1395,16 +1640,19 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 					`Aprobación Preview pendiente (package-hash ${pendingPreview.packageHash}).`,
 				);
 				console.log(
-					'Finalize con evidencia hospedada y luego promueva:\n' +
-						`  pnpm invitation:update -- --package-hash ${pendingPreview.packageHash} --evidence <path> --apply\n` +
-						'  pnpm invitation:promote',
+					'Verifique y apruebe Preview en vivo; después promueva con el mismo comando:\n' +
+						`  pnpm invitation:release -- --package-hash ${pendingPreview.packageHash} --approve\n` +
+						`  pnpm invitation:release -- --slug ${slug} --targets production --dry-run`,
 				);
 			}
 		}
 	}
 }
 
-if (process.argv[1]?.endsWith('invitation-update-cli.ts')) {
+if (
+	typeof process.argv[1] === 'string' &&
+	/invitation-release-cli\.(ts|js|mjs|cjs)$/.test(process.argv[1])
+) {
 	main().catch((error: unknown) => {
 		const message = sanitizeMessage(error instanceof Error ? error.message : String(error));
 		const argv = process.argv.slice(2);

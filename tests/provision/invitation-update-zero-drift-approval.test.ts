@@ -5,10 +5,10 @@ import { describe, expect, it } from '@jest/globals';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-describe('invitation:update zero-drift Preview approval gate', () => {
+describe('invitation:release zero-drift Preview approval gate', () => {
 	it('does not early-return zero-drift when preview is among apply targets', () => {
 		const source = readFileSync(
-			resolve(process.cwd(), 'scripts/provision/invitation-update-cli.ts'),
+			resolve(process.cwd(), 'scripts/provision/invitation-release-cli.ts'),
 			'utf8',
 		);
 		expect(source).toMatch(/if \(isZeroDrift && !targets\.includes\('preview'\)\)/);
@@ -28,10 +28,21 @@ describe('invitation:update zero-drift Preview approval gate', () => {
 
 	it('prints finalize guidance after Preview pending approval is recorded', () => {
 		const source = readFileSync(
-			resolve(process.cwd(), 'scripts/provision/invitation-update-cli.ts'),
+			resolve(process.cwd(), 'scripts/provision/invitation-release-cli.ts'),
 			'utf8',
 		);
 		expect(source).toMatch(/Aprobación Preview pendiente \(package-hash/);
-		expect(source).toMatch(/--package-hash \$\{pendingPreview\.packageHash\} --evidence/);
+		expect(source).toMatch(/--package-hash \$\{pendingPreview\.packageHash\} --approve/);
+		expect(source).toContain('invitation:release');
+	});
+
+	it('authorizes Local and Preview writes separately before each mutation', () => {
+		const source = readFileSync(
+			resolve(process.cwd(), 'scripts/provision/invitation-release-cli.ts'),
+			'utf8',
+		);
+		expect(source).toMatch(/¿Aplicar la release administrada de "\$\{slug\}" en Local\?/);
+		expect(source).toMatch(/authorizePreviewWriteApply/);
+		expect(source).toMatch(/Exactly one environment-appropriate authorization/);
 	});
 });

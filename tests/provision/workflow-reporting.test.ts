@@ -7,7 +7,7 @@ describe('unified workflow dependency reporting', () => {
 		expect(parseTargets('local,production')).toEqual(['local', 'preview', 'production']);
 	});
 
-	it('labels invitation:update --status as local inventory with unprobed remotes', () => {
+	it('labels invitation:release --status as local inventory with unprobed remotes', () => {
 		const report = buildStatusReport({
 			slug: 'romina-rios-chaparro',
 			targets: ['preview'],

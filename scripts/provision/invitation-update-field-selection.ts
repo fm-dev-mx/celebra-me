@@ -1,5 +1,5 @@
 /**
- * Interactive field/section selection for selective invitation:update apply.
+ * Interactive field/section selection for selective invitation:release apply.
  */
 import { checkbox, select } from '@inquirer/prompts';
 import type { ConflictResolutions } from './semantic-delta.ts';

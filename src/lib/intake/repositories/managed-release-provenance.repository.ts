@@ -2,7 +2,7 @@ import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 
 /**
  * Clear the managed merge ancestor after an editor publish so the next
- * invitation:update uses published content as the 3-way baseline.
+ * invitation:release uses published content as the 3-way baseline.
  * No-op when provenance does not exist for the invitation.
  */
 export async function clearManagedProjectionAncestor(invitationId: string): Promise<void> {

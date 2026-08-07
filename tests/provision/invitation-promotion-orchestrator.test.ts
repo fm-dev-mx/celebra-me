@@ -8,6 +8,11 @@ import type {
 	PromotionApplyReport,
 	PromotionPreflightReport,
 } from '../../scripts/provision/invitation-promote.ts';
+import { classifyPromotionRecoveryRisk } from '../../scripts/provision/promotion-recovery-risk.ts';
+import {
+	revalidatePromotionVolatilePreconditions,
+	type RevalidatePromotionVolatilePreconditionsInput,
+} from '../../scripts/provision/promotion-volatile-revalidation.ts';
 
 const PROD_URL = 'postgresql://postgres:secret@db.ineitkdkyrxqyressllp.supabase.co:5432/postgres';
 
@@ -45,7 +50,28 @@ function preflight(overrides: Partial<PromotionPreflightReport> = {}): Promotion
 			conflicts: [],
 			blocksPromotion: false,
 		},
-		engineResult: { plan: { planId: 'plan-aaa', invitationTitle: 'Demo' } },
+		productionProjectRef: 'ineitkdkyrxqyressllp',
+		approval: { planId: 'preview-plan' },
+		engineResult: {
+			actions: [
+				{ resource: 'invitation', name: 'demo', action: 'replace', detail: 'content' },
+				{
+					resource: 'invitation_content_drafts',
+					name: 'demo-draft',
+					action: 'replace',
+					detail: 'content',
+				},
+			],
+			plan: {
+				planId: 'plan-aaa',
+				invitationTitle: 'Demo',
+				sourceHash: 'src',
+				packageHash: 'abcdef0123456789pkg',
+				functionalChanges: [],
+				storageOps: { uploads: 0, overwrites: 0, moves: 0, deletes: 0 },
+				targetPreconditions: {},
+			},
+		},
 		...overrides,
 	} as PromotionPreflightReport;
 }
@@ -67,6 +93,132 @@ describe('resolvePromotionUpdateScope', () => {
 	});
 });
 
+describe('classifyPromotionRecoveryRisk', () => {
+	it('classifies routine content-only plans without destructive asset or identity work', () => {
+		expect(
+			classifyPromotionRecoveryRisk({
+				reviewed: preflight(),
+				updateScope: 'content-only',
+				assetPolicy: 'preserve',
+			}),
+		).toEqual({
+			level: 'routine',
+			reasons: ['content-only-managed-preimage-recovery'],
+		});
+	});
+
+	it('requires critical recovery for asset overwrite intent', () => {
+		const reviewed = preflight();
+		reviewed.engineResult!.actions.push({
+			resource: 'invitation_assets',
+			name: 'hero',
+			action: 'replace',
+			detail: 'overwrite',
+		});
+		reviewed.engineResult!.plan.storageOps.overwrites = 1;
+		const risk = classifyPromotionRecoveryRisk({
+			reviewed,
+			updateScope: 'content-only',
+			assetPolicy: 'sync',
+		});
+		expect(risk.level).toBe('critical');
+		expect(risk.reasons).toEqual(expect.arrayContaining(['asset-replace', 'asset-overwrite']));
+	});
+
+	it('fails closed when the plan cannot be classified', () => {
+		const risk = classifyPromotionRecoveryRisk({
+			reviewed: preflight({ engineResult: undefined }),
+			updateScope: 'content-only',
+		});
+		expect(risk).toEqual({ level: 'critical', reasons: ['unclassifiable-plan'] });
+	});
+});
+
+describe('revalidatePromotionVolatilePreconditions', () => {
+	function reviewedWithVolatileState(): PromotionPreflightReport {
+		const reviewed = preflight();
+		reviewed.schema = {
+			state: 'CURRENT',
+			migrationHead: '20260801000000',
+			pendingMigrations: [],
+			extraMigrations: [],
+			compatible: true,
+			detail: 'ok',
+		};
+		reviewed.approval = {
+			...reviewed.approval,
+			approvalState: 'approved',
+			packageHash: 'abcdef0123456789pkg',
+			sourceHash: 'src',
+			metadataHash: 'meta',
+			canonicalProjectionHash: 'proj',
+			materializedProjectionHash: 'preview-proj',
+			assetManifestHash: 'assets',
+			previewProjectRef: 'previewproject',
+			intendedProductionProjectRef: 'ineitkdkyrxqyressllp',
+			hostedValidation: { projectionHash: 'preview-proj' },
+		} as never;
+		Object.assign(reviewed.engineResult!.plan, {
+			verifiedProjectRef: 'ineitkdkyrxqyressllp',
+			targetPreconditions: {
+				sourceHash: 'src',
+				packageHash: 'abcdef0123456789pkg',
+				assetManifestHash: 'assets',
+				verifiedProjectRef: 'ineitkdkyrxqyressllp',
+				targetInvitationId: '11111111-1111-4111-8111-111111111111',
+				targetOwnerUserId: '22222222-2222-4222-8222-222222222222',
+				existingDraftUpdatedAt: '2026-08-06T00:00:00.000Z',
+				existingPublishedVersion: 7,
+				assetStateHash: 'asset-state',
+			},
+		});
+		return reviewed;
+	}
+
+	it('checks retained target, schema, approval, project, and asset evidence', async () => {
+		const reviewed = reviewedWithVolatileState();
+		const computeAssetStateHash = jest.fn(async () => 'asset-state');
+		const result = await revalidatePromotionVolatilePreconditions({
+			reviewed,
+			packageData: packageData() as never,
+			getProductionDbUrl: () => ({ url: PROD_URL }),
+			evaluateSchema: () => reviewed.schema,
+			runLiveVerification: async () => ({ ok: true }) as never,
+			verifyApproval: () => reviewed.approval!,
+			readTargetState: () => ({
+				targetInvitationId: '11111111-1111-4111-8111-111111111111',
+				targetOwnerUserId: '22222222-2222-4222-8222-222222222222',
+				existingDraftUpdatedAt: '2026-08-06T00:00:00.000Z',
+				existingPublishedVersion: 7,
+			}),
+			computeAssetStateHash,
+		});
+		expect(result.engineResult?.plan).toBe(reviewed.engineResult?.plan);
+		expect(computeAssetStateHash).toHaveBeenCalledTimes(1);
+	});
+
+	it('throws PLAN_DRIFT when a volatile target version changes', async () => {
+		const reviewed = reviewedWithVolatileState();
+		await expect(
+			revalidatePromotionVolatilePreconditions({
+				reviewed,
+				packageData: packageData() as never,
+				getProductionDbUrl: () => ({ url: PROD_URL }),
+				evaluateSchema: () => reviewed.schema,
+				runLiveVerification: async () => ({ ok: true }) as never,
+				verifyApproval: () => reviewed.approval!,
+				readTargetState: () => ({
+					targetInvitationId: '11111111-1111-4111-8111-111111111111',
+					targetOwnerUserId: '22222222-2222-4222-8222-222222222222',
+					existingDraftUpdatedAt: '2026-08-06T00:00:00.000Z',
+					existingPublishedVersion: 8,
+				}),
+				computeAssetStateHash: async () => 'asset-state',
+			}),
+		).rejects.toMatchObject({ code: 'PLAN_DRIFT' } satisfies Partial<OperatorError>);
+	});
+});
+
 describe('invitation promotion orchestrator', () => {
 	const runPreflight = jest.fn<(...args: unknown[]) => Promise<PromotionPreflightReport>>();
 	const runApply = jest.fn<(...args: unknown[]) => Promise<PromotionApplyReport>>();
@@ -75,14 +227,43 @@ describe('invitation promotion orchestrator', () => {
 	const ensureBackup = jest.fn(() => ({
 		manifestPath: '.agent/tmp/backups/promote-pre/manifest.json',
 		reused: true,
+		coverage: {
+			covered: true,
+			reason: 'covered',
+			maxAgeMs: 15 * 60 * 1000,
+			manifest: {
+				createdAt: '2026-08-06T00:00:00.000Z',
+				projectRef: 'ineitkdkyrxqyressllp',
+			},
+		},
 	}));
 	const revalidateBackup = jest.fn();
+	const revalidateVolatile = jest.fn(
+		async (input: RevalidatePromotionVolatilePreconditionsInput) => input.reviewed,
+	);
 
 	beforeEach(() => {
 		jest.clearAllMocks();
 		jest.spyOn(process.stderr, 'write').mockImplementation(() => true);
 		delete process.env.CELEBRA_TASK_SCOPE;
+		requireOwnerApply.mockImplementation(async () => undefined);
+		ensureReleaseEvidence.mockImplementation(() => undefined);
+		ensureBackup.mockImplementation(() => ({
+			manifestPath: '.agent/tmp/backups/promote-pre/manifest.json',
+			reused: true,
+			coverage: {
+				covered: true,
+				reason: 'covered',
+				maxAgeMs: 15 * 60 * 1000,
+				manifest: {
+					createdAt: '2026-08-06T00:00:00.000Z',
+					projectRef: 'ineitkdkyrxqyressllp',
+				},
+			},
+		}));
+		revalidateBackup.mockImplementation(() => undefined);
 		runPreflight.mockResolvedValue(preflight());
+		revalidateVolatile.mockImplementation(async (input) => input.reviewed);
 		runApply.mockResolvedValue({
 			...preflight(),
 			status: 'PROMOTED',
@@ -126,6 +307,7 @@ describe('invitation promotion orchestrator', () => {
 			ensureReleaseEvidence: ensureReleaseEvidence as never,
 			ensureBackup: ensureBackup as never,
 			revalidateBackup: revalidateBackup as never,
+			revalidateVolatile,
 		});
 		expect(runPreflight).toHaveBeenCalledWith(
 			expect.objectContaining({ updateScope: 'content-and-assets' }),
@@ -135,24 +317,12 @@ describe('invitation promotion orchestrator', () => {
 		);
 	});
 
-	it('binds the reviewed plan into the post-backup rebuild preflight', async () => {
-		const reviewedPlan = { planId: 'plan-aaa', invitationTitle: 'Demo' };
-		runPreflight
-			.mockResolvedValueOnce(preflight({ engineResult: { plan: reviewedPlan } as never }))
-			.mockResolvedValueOnce(
-				preflight({
-					engineResult: { plan: reviewedPlan } as never,
-					backup: {
-						required: true,
-						acceptable: true,
-						detail: 'ok',
-						createdAt: 't',
-						canonicalCommand: 'pnpm db:prod:backup:critical',
-					},
-				}),
-			);
+	it('retains the reviewed plan and runs compact revalidation without a second preflight', async () => {
+		const reviewed = preflight();
+		runPreflight.mockResolvedValueOnce(reviewed);
 		await orchestrateInvitationPromotion({
 			packageData: packageData() as never,
+			deliveryScope: 'content-and-assets',
 			quiet: true,
 			runPreflight: runPreflight as never,
 			runApply: runApply as never,
@@ -160,30 +330,22 @@ describe('invitation promotion orchestrator', () => {
 			ensureReleaseEvidence: ensureReleaseEvidence as never,
 			ensureBackup: ensureBackup as never,
 			revalidateBackup: revalidateBackup as never,
+			revalidateVolatile,
 		});
-		expect(runPreflight).toHaveBeenNthCalledWith(
-			1,
-			expect.not.objectContaining({ plan: expect.anything() }),
-		);
-		expect(runPreflight).toHaveBeenNthCalledWith(
-			2,
-			expect.objectContaining({ plan: reviewedPlan }),
+		expect(runPreflight).toHaveBeenCalledTimes(1);
+		expect(revalidateVolatile).toHaveBeenCalledWith(
+			expect.objectContaining({
+				reviewed,
+				packageData: packageData(),
+			}),
 		);
 	});
 
-	it('orders preflight → release → backup → rebuild → gate → apply', async () => {
+	it('orders critical recovery before compact revalidation and apply', async () => {
 		const order: string[] = [];
 		runPreflight.mockImplementation(async () => {
 			order.push('preflight');
-			return preflight({
-				backup: {
-					required: true,
-					acceptable: true,
-					detail: 'ok',
-					createdAt: 't',
-					canonicalCommand: 'pnpm db:prod:backup:critical',
-				},
-			});
+			return preflight();
 		});
 		ensureReleaseEvidence.mockImplementation(() => {
 			order.push('release');
@@ -193,10 +355,23 @@ describe('invitation promotion orchestrator', () => {
 			return {
 				manifestPath: '.agent/tmp/backups/promote-pre/manifest.json',
 				reused: false,
+				coverage: {
+					covered: true,
+					reason: 'covered',
+					maxAgeMs: 15 * 60 * 1000,
+					manifest: {
+						createdAt: '2026-08-06T00:00:00.000Z',
+						projectRef: 'ineitkdkyrxqyressllp',
+					},
+				},
 			};
 		});
 		revalidateBackup.mockImplementation(() => {
-			order.push('revalidate');
+			order.push('backup-revalidate');
+		});
+		revalidateVolatile.mockImplementation(async (input) => {
+			order.push('volatile');
+			return input.reviewed;
 		});
 		requireOwnerApply.mockImplementation(async () => {
 			order.push('gate');
@@ -212,6 +387,7 @@ describe('invitation promotion orchestrator', () => {
 
 		await orchestrateInvitationPromotion({
 			packageData: packageData() as never,
+			deliveryScope: 'content-and-assets',
 			quiet: true,
 			runPreflight: runPreflight as never,
 			runApply: runApply as never,
@@ -219,14 +395,15 @@ describe('invitation promotion orchestrator', () => {
 			ensureReleaseEvidence: ensureReleaseEvidence as never,
 			ensureBackup: ensureBackup as never,
 			revalidateBackup: revalidateBackup as never,
+			revalidateVolatile,
 		});
 
 		expect(order).toEqual([
 			'preflight',
 			'release',
 			'backup',
-			'preflight',
-			'revalidate',
+			'volatile',
+			'backup-revalidate',
 			'gate',
 			'apply',
 		]);
@@ -239,19 +416,75 @@ describe('invitation promotion orchestrator', () => {
 		);
 	});
 
-	it('blocks PLAN_DRIFT before owner gate when rebuilt plan diverges', async () => {
-		const reviewedPlan = { planId: 'plan-aaa', invitationTitle: 'Demo' };
-		runPreflight
-			.mockResolvedValueOnce(preflight({ engineResult: { plan: reviewedPlan } as never }))
-			.mockResolvedValueOnce(
-				preflight({
-					engineResult: { plan: { planId: 'plan-BBB', invitationTitle: 'Demo' } } as never,
+	it('skips full critical backup for routine content-only recovery', async () => {
+		await orchestrateInvitationPromotion({
+			packageData: packageData() as never,
+			deliveryScope: 'content-only',
+			assetPolicy: 'preserve',
+			quiet: true,
+			runPreflight: runPreflight as never,
+			runApply: runApply as never,
+			requireOwnerApply: requireOwnerApply as never,
+			ensureReleaseEvidence: ensureReleaseEvidence as never,
+			ensureBackup: ensureBackup as never,
+			revalidateBackup: revalidateBackup as never,
+			revalidateVolatile,
+		});
+
+		expect(ensureReleaseEvidence).toHaveBeenCalledTimes(1);
+		expect(ensureBackup).not.toHaveBeenCalled();
+		expect(revalidateBackup).not.toHaveBeenCalled();
+		expect(revalidateVolatile).toHaveBeenCalledTimes(1);
+		expect(runPreflight).toHaveBeenCalledTimes(1);
+		expect(runApply).toHaveBeenCalledWith(
+			expect.objectContaining({
+				preflight: expect.objectContaining({
+					backup: expect.objectContaining({
+						required: false,
+						acceptable: true,
+						detail: expect.stringContaining('managed provenance'),
+					}),
 				}),
-			);
+			}),
+		);
+	});
+
+	it('reuses evidence while owner confirmation handles an in-gate retry', async () => {
+		requireOwnerApply.mockImplementation(async () => undefined);
+		await orchestrateInvitationPromotion({
+			packageData: packageData() as never,
+			deliveryScope: 'content-and-assets',
+			quiet: true,
+			runPreflight: runPreflight as never,
+			runApply: runApply as never,
+			requireOwnerApply: requireOwnerApply as never,
+			ensureReleaseEvidence: ensureReleaseEvidence as never,
+			ensureBackup: ensureBackup as never,
+			revalidateBackup: revalidateBackup as never,
+			revalidateVolatile,
+		});
+
+		expect(requireOwnerApply).toHaveBeenCalledTimes(1);
+		expect(runPreflight).toHaveBeenCalledTimes(1);
+		expect(ensureReleaseEvidence).toHaveBeenCalledTimes(1);
+		expect(ensureBackup).toHaveBeenCalledTimes(1);
+		expect(revalidateVolatile).toHaveBeenCalledTimes(1);
+	});
+
+	it('blocks PLAN_DRIFT from compact revalidation before owner gate', async () => {
+		revalidateVolatile.mockRejectedValueOnce(
+			new OperatorError({
+				title: 'El plan cambió',
+				cause: 'Target version changed.',
+				code: 'PLAN_DRIFT',
+				remediation: ['Reejecute el flujo.'],
+			}),
+		);
 
 		await expect(
 			orchestrateInvitationPromotion({
 				packageData: packageData() as never,
+				deliveryScope: 'content-and-assets',
 				quiet: true,
 				runPreflight: runPreflight as never,
 				runApply: runApply as never,
@@ -259,15 +492,11 @@ describe('invitation promotion orchestrator', () => {
 				ensureReleaseEvidence: ensureReleaseEvidence as never,
 				ensureBackup: ensureBackup as never,
 				revalidateBackup: revalidateBackup as never,
+				revalidateVolatile,
 			}),
 		).rejects.toMatchObject({ code: 'PLAN_DRIFT' } satisfies Partial<OperatorError>);
 
-		// Binding must not mask drift: rebuild still receives the reviewed plan, but a divergent
-		// recomputed planId from dry-run fails closed before owner gate / apply.
-		expect(runPreflight).toHaveBeenNthCalledWith(
-			2,
-			expect.objectContaining({ plan: reviewedPlan }),
-		);
+		expect(runPreflight).toHaveBeenCalledTimes(1);
 		expect(requireOwnerApply).not.toHaveBeenCalled();
 		expect(runApply).not.toHaveBeenCalled();
 	});

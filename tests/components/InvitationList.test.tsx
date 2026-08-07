@@ -214,7 +214,7 @@ describe('InvitationList', () => {
 		render(<InvitationList />);
 
 		expect(
-			screen.getByText(/flujo administrado \(pnpm invitation:update\)/i),
+			screen.getByText(/flujo administrado \(pnpm invitation:release\)/i),
 		).toBeInTheDocument();
 		expect(screen.queryByRole('link', { name: 'Nueva invitación' })).not.toBeInTheDocument();
 	});

@@ -1,8 +1,9 @@
 /**
  * Shared Local/Preview managed-invitation content apply sequence.
  *
- * Consumed by invitation:update and db:sync. Never runs schema migrations —
- * callers must gate on schema CURRENT separately via assertContentSchemaCurrent.
+ * Consumed by invitation:release and related content workflows. Never runs
+ * schema migrations — callers must gate on schema CURRENT separately via
+ * assertContentSchemaCurrent.
  */
 
 import type { InvitationPackageData } from './invitation-package.ts';
@@ -22,7 +23,7 @@ import { getValidatedMigrationFiles } from '../db/apply-migrations.ts';
 export type ContentApplyTarget = 'local' | 'preview';
 
 export function contentMigrateCommandForTarget(target: ContentApplyTarget): string {
-	return target === 'local' ? 'pnpm db:local:migrate' : 'pnpm db:preview:migrate';
+	return `pnpm db:migrate -- --target ${target}`;
 }
 
 export function readContentTargetSchemaLifecycle(dbUrl: string): SchemaLifecycleState {
@@ -53,7 +54,7 @@ export function readContentTargetSchemaLifecycle(dbUrl: string): SchemaLifecycle
 
 /**
  * Block content apply when target schema is not CURRENT.
- * Invitation workflows never auto-migrate; they only point at the migrate alias.
+ * Invitation workflows never auto-migrate; they only point at the migrate entrypoint.
  */
 export function assertContentSchemaCurrent(input: {
 	target: ContentApplyTarget;

@@ -12,7 +12,7 @@
  *    never migrate / sync-invitations / purge / other operations. No `*` wildcard.
  *  - Lane/worktree/branch/environment identity alone IS NOT AUTHORIZATION.
  *  - Production credentials are never inputs to this mechanism.
- *  - Production promotion uses invitation:promote owner confirmation, not this API.
+ *  - Production promotion uses invitation:release owner confirmation (orchestrator), not this API.
  */
 
 import { createInterface } from 'node:readline/promises';

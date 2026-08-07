@@ -219,7 +219,7 @@ const InvitationTableRow: FC<InvitationTableRowProps> = ({
 };
 
 const EMPTY_STATE_MESSAGES: Record<FilterTab, string> = {
-	all: 'No hay invitaciones activas. Las invitaciones de cliente se crean con el flujo administrado (pnpm invitation:update).',
+	all: 'No hay invitaciones activas. Las invitaciones de cliente se crean con el flujo administrado (pnpm invitation:release).',
 	clients:
 		'No hay invitaciones de clientes activas. Use el flujo administrado para crear nuevas.',
 	demos: 'No hay demos disponibles.',

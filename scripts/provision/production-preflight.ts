@@ -9,6 +9,7 @@ import {
 	verifyPreviewApprovalArtifact,
 	type PreviewApprovalArtifact,
 } from './preview-approval-service.ts';
+import type { PreviewLiveVerificationResult } from './preview-live-verification.ts';
 
 export type ProductionPreflightErrorCode =
 	'MISSING_PREVIEW_APPROVAL' | 'PRODUCTION_CREDENTIALS_UNAVAILABLE' | 'PRODUCTION_PLAN_BLOCKED';
@@ -46,6 +47,7 @@ export async function runProductionPreflight(input: {
 	plan?: ImportEngineOptions['plan'];
 	getProductionDbUrl: () => { url: string };
 	runEngine?: (options: ImportEngineOptions) => Promise<ImportEngineResult>;
+	liveRecheck?: PreviewLiveVerificationResult;
 }): Promise<ProductionPreflightResult> {
 	const identity = {
 		packageHash: input.packageData.packageHash,
@@ -59,7 +61,13 @@ export async function runProductionPreflight(input: {
 
 	let initialApproval: PreviewApprovalArtifact | undefined;
 	try {
-		initialApproval = verifyPreviewApprovalArtifact(identity, input.approvalsDirs, input.now);
+		initialApproval = verifyPreviewApprovalArtifact(
+			identity,
+			input.liveRecheck
+				? { now: input.now, liveRecheck: input.liveRecheck }
+				: input.approvalsDirs,
+			input.liveRecheck ? undefined : input.now,
+		);
 	} catch {
 		initialApproval = undefined;
 	}
@@ -94,8 +102,10 @@ export async function runProductionPreflight(input: {
 			try {
 				finalApproval = verifyPreviewApprovalArtifact(
 					{ ...identity, intendedProductionProjectRef: engineResult.projectRef },
-					input.approvalsDirs,
-					input.now,
+					input.liveRecheck
+						? { now: input.now, liveRecheck: input.liveRecheck }
+						: input.approvalsDirs,
+					input.liveRecheck ? undefined : input.now,
 				);
 			} catch {
 				finalApproval = undefined;

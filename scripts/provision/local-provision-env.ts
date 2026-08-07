@@ -21,7 +21,7 @@ export function resolveLocalEnv(projectRoot?: string): LocalEnv {
 		});
 	} catch {
 		throw new Error(
-			'Local Supabase is required for invitation:update. Refusing to run without local Supabase status.',
+			'Local Supabase is required for invitation:release. Refusing to run without local Supabase status.',
 		);
 	}
 

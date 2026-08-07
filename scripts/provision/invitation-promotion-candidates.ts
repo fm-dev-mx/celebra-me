@@ -105,10 +105,10 @@ function approvalIdentity(packageData: InvitationPackageData) {
 
 function remediationMissingApproval(slug: string): readonly string[] {
 	return [
-		`Aplique la release actual a Preview: pnpm invitation:update -- --slug ${slug} --targets preview --dry-run`,
-		`Si el plan es correcto: pnpm invitation:update -- --slug ${slug} --targets preview --apply`,
-		`Finalize la aprobación compartida: pnpm invitation:update -- --package-hash <hash> --evidence <path> --apply`,
-		'Reejecute pnpm invitation:promote',
+		`Aplique la release actual a Preview: pnpm invitation:release -- --slug ${slug} --targets preview --dry-run`,
+		`Si el plan es correcto: pnpm invitation:release -- --slug ${slug} --targets preview --apply`,
+		`Verifique y apruebe Preview en vivo: pnpm invitation:release -- --package-hash <hash> --approve`,
+		`Reejecute pnpm invitation:release -- --slug ${slug} --targets production`,
 	];
 }
 
@@ -122,32 +122,32 @@ function remediationProductionStatus(input: {
 		case 'DIVERGED':
 			return [
 				`Inspeccione divergencia: ${parity}`,
-				'Resuelva en la definición/Preview o con reconciliación administrada; promote no auto-fusiona.',
-				'Reejecute pnpm invitation:promote',
+				'Resuelva en la definición/Preview o con reconciliación administrada; release no auto-fusiona.',
+				`Reejecute pnpm invitation:release -- --slug ${input.slug} --targets production`,
 			];
 		case 'IDENTITY_CONFLICT':
 			return [
 				`Diagnostique identidad en Preview/Local: pnpm invitation:diagnose-identity -- --target preview`,
 				`Revise el slug ${input.slug} en el informe y corrija el conflicto administrado antes de promover.`,
-				'Reejecute pnpm invitation:promote',
+				`Reejecute pnpm invitation:release -- --slug ${input.slug} --targets production`,
 			];
 		case 'UNVERIFIED':
 		case 'CREDENTIALS_REQUIRED':
 			return [
 				'Configure credenciales Production del propietario (PROD_DB_URL / secretos canónicos).',
 				'Verifique alcance con pnpm dbs --compact',
-				'Reejecute pnpm invitation:promote',
+				`Reejecute pnpm invitation:release -- --slug ${input.slug} --targets production`,
 			];
 		case 'UNREACHABLE':
 			return [
 				'Compruebe conectividad y credenciales Production.',
 				'Verifique con pnpm dbs --compact',
-				'Reejecute pnpm invitation:promote',
+				`Reejecute pnpm invitation:release -- --slug ${input.slug} --targets production`,
 			];
 		default:
 			return [
 				`Revise el estado Production con pnpm dbs y ${parity}`,
-				'Corrija el bloqueo reportado y reejecute pnpm invitation:promote',
+				`Corrija el bloqueo reportado y reejecute pnpm invitation:release -- --slug ${input.slug} --targets production`,
 			];
 	}
 }
@@ -230,8 +230,8 @@ async function inspectCandidate(
 			reason: `No fue posible construir la release administrada: ${reason}`,
 			remediation: [
 				`Corrija la definición o los assets de ${definition.slug} hasta que el paquete se construya.`,
-				`Valide con: pnpm invitation:update -- --slug ${definition.slug} --targets local --dry-run`,
-				'Reejecute pnpm invitation:promote',
+				`Valide con: pnpm invitation:release -- --slug ${definition.slug} --targets local --dry-run`,
+				`Reejecute pnpm invitation:release -- --slug ${definition.slug}`,
 			],
 			production: unavailableProduction('No evaluado porque la release local no es válida.'),
 		};

@@ -2,16 +2,18 @@
  * preview-approval-service.ts — Preview release approval contract + validation.
  *
  * Storage is delegated to PreviewApprovalStore (Preview DB by default) so all
- * worktrees share one SSOT. Filesystem paths remain only for evidence JSON and
- * optional legacy artifact import during migration.
+ * worktrees share one SSOT. Approval is based on direct hosted Preview checks;
+ * legacy filesystem artifacts remain migration-only.
  */
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
 import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
 import {
 	getDefaultPreviewApprovalStore,
 	type PreviewApprovalStore,
 } from './preview-approval-store.ts';
+import {
+	PREVIEW_LIVE_CHECKLIST_KEYS,
+	type PreviewLiveVerificationResult,
+} from './preview-live-verification.ts';
 
 /** Current Preview approval artifact contract. Older schemas are rejected, not migrated. */
 export const PREVIEW_APPROVAL_SCHEMA_VERSION = '2.1.0' as const;
@@ -77,6 +79,7 @@ export interface ApprovedReleaseIdentity {
 export interface PreviewApprovalServiceOptions {
 	store?: PreviewApprovalStore;
 	now?: Date;
+	liveRecheck?: PreviewLiveVerificationResult | (() => PreviewLiveVerificationResult);
 }
 
 function resolveStore(options?: PreviewApprovalServiceOptions): PreviewApprovalStore {
@@ -126,6 +129,36 @@ function validateStorageEvidence(
 		throw new Error(
 			'Hosted preview evidence contains unexpected storage hash verification entries.',
 		);
+	}
+}
+
+function assertLiveVerificationMatches(
+	artifact: PreviewApprovalArtifact,
+	live: PreviewLiveVerificationResult,
+): void {
+	if (
+		!live.ok ||
+		!PREVIEW_LIVE_CHECKLIST_KEYS.every((key) => live.checklistResults[key] === true)
+	) {
+		throw new Error('Live Preview verification is incomplete or failed.');
+	}
+	if (
+		live.details.packageHash !== artifact.packageHash ||
+		live.details.slug !== artifact.slug ||
+		live.details.route !== artifact.route ||
+		live.details.previewProjectRef !== artifact.previewProjectRef ||
+		live.projectionHash !== artifact.materializedProjectionHash
+	) {
+		throw new Error('Live Preview verification does not match the pending approval artifact.');
+	}
+	const verificationTime = Date.parse(live.reviewedAt);
+	if (!Number.isFinite(verificationTime)) {
+		throw new Error('Live Preview verification has an invalid review timestamp.');
+	}
+	for (const [path, expectedHash] of Object.entries(artifact.expectedAssetHashes)) {
+		if (live.storageHashVerification[path] !== expectedHash) {
+			throw new Error(`Live Preview storage verification failed for asset: ${path}.`);
+		}
 	}
 }
 
@@ -201,24 +234,8 @@ export function createPendingPreviewApprovalArtifact(
 	});
 }
 
-function loadEvidence(
-	evidencePath: string,
-): NonNullable<PreviewApprovalArtifact['hostedValidation']> {
-	const absolute = resolve(process.cwd(), evidencePath);
-	if (!existsSync(absolute)) {
-		throw new Error(
-			`EVIDENCE_FILE_MISSING: no existe el archivo de evidencia "${evidencePath}". ` +
-				`Genere un scaffold con: pnpm invitation:update -- --package-hash <hash> --write-evidence-scaffold ${evidencePath}`,
-		);
-	}
-	return JSON.parse(readFileSync(absolute, 'utf8')) as NonNullable<
-		PreviewApprovalArtifact['hostedValidation']
-	>;
-}
-
 /**
- * Write a finalize-ready evidence JSON bound to an existing pending approval.
- * Operator should review checklist/reviewedBy before --apply finalize.
+ * @deprecated Evidence scaffolds are intentionally excluded from the approval happy path.
  */
 export function writePendingApprovalEvidenceScaffold(
 	input: {
@@ -234,6 +251,25 @@ export function writePendingApprovalEvidenceScaffold(
 	slug: string;
 	planId: string;
 } {
+	void input;
+	void options;
+	throw new Error(
+		'EVIDENCE_SCAFFOLD_REMOVED: use pnpm invitation:release -- --package-hash <hash> --approve for direct live Preview verification.',
+	);
+}
+
+/**
+ * Approve a pending artifact using direct, machine-generated hosted Preview results.
+ */
+export function approvePreviewArtifactFromLiveVerification(
+	input: {
+		packageHash: string;
+		reviewedBy: string;
+		intendedProductionProjectRef?: string;
+		live: PreviewLiveVerificationResult;
+	},
+	options?: PreviewApprovalServiceOptions,
+): PreviewApprovalArtifact {
 	const store = resolveStore(options);
 	const pending = store.get(input.packageHash);
 	if (!pending) {
@@ -241,53 +277,55 @@ export function writePendingApprovalEvidenceScaffold(
 			`No pending Preview approval exists in the shared store for package ${input.packageHash}.`,
 		);
 	}
-	if (pending.approvalState !== 'pending_hosted_validation') {
+	if (!isCurrentContract(pending)) {
 		throw new Error(
-			`Package ${input.packageHash} is "${pending.approvalState}", not pending_hosted_validation.`,
+			'Preview approval artifact uses an obsolete contract and must be regenerated (not migrated).',
 		);
 	}
+	if (pending.approvalState !== 'pending_hosted_validation') {
+		throw new Error('Live Preview verification requires a pending approval artifact.');
+	}
 	if (!pending.planId) {
-		throw new Error(
-			`Pending approval for ${input.packageHash} is missing planId; re-apply Preview to regenerate.`,
-		);
+		throw new Error('Pending Preview approval is missing the executed plan ID.');
+	}
+	const reviewedBy = input.reviewedBy.trim();
+	if (!reviewedBy || !Number.isFinite(Date.parse(input.live.reviewedAt))) {
+		throw new Error('Live Preview approval requires a reviewer and a valid review timestamp.');
 	}
 	const intendedProductionProjectRef =
 		input.intendedProductionProjectRef ?? SUPABASE_PROJECT_REFS.production;
 	if (!/^[a-z0-9]{8,32}$/i.test(intendedProductionProjectRef)) {
-		throw new Error('intendedProductionProjectRef must be an 8-32 character project ref.');
+		throw new Error(
+			'Live Preview approval requires the intended Production project reference.',
+		);
 	}
-	const evidence: NonNullable<PreviewApprovalArtifact['hostedValidation']> = {
+	assertLiveVerificationMatches(pending, input.live);
+	const hostedValidation: NonNullable<PreviewApprovalArtifact['hostedValidation']> = {
 		packageHash: pending.packageHash,
 		previewProjectRef: pending.previewProjectRef,
 		route: pending.route,
-		projectionHash: pending.materializedProjectionHash,
+		projectionHash: input.live.projectionHash!,
 		planId: pending.planId,
-		reviewedAt: (options?.now ?? new Date()).toISOString(),
-		reviewedBy: (input.reviewedBy ?? 'owner@celebra.me').trim(),
+		reviewedAt: input.live.reviewedAt,
+		reviewedBy,
 		intendedProductionProjectRef,
-		checklistResults: {
-			route: true,
-			dashboard: true,
-			database: true,
-			storage: true,
-		},
-		storageHashVerification: { ...pending.expectedAssetHashes },
+		checklistResults: { ...input.live.checklistResults },
+		storageHashVerification: { ...input.live.storageHashVerification },
 	};
-	const absolute = resolve(process.cwd(), input.outputPath);
-	mkdirSync(dirname(absolute), { recursive: true });
-	writeFileSync(absolute, `${JSON.stringify(evidence, null, 2)}\n`, 'utf8');
-	return {
-		outputPath: input.outputPath,
-		packageHash: pending.packageHash,
-		slug: pending.slug,
-		planId: pending.planId,
-	};
+	validateStorageEvidence(pending, hostedValidation);
+
+	return store.upsert({
+		...pending,
+		approvalState: 'approved',
+		approvedAt: input.live.reviewedAt,
+		approvedBy: reviewedBy,
+		intendedProductionProjectRef,
+		hostedValidation,
+	});
 }
 
 /**
- * Finalize a pending approval with hosted validation evidence.
- * Runtime SSOT is the shared Preview DB store (`--package-hash`).
- * Legacy filesystem pending JSON must be imported via invitation:approvals:migrate.
+ * @deprecated Filesystem evidence finalization was replaced by direct live verification.
  */
 export function finalizePreviewApprovalArtifact(
 	input: {
@@ -297,61 +335,11 @@ export function finalizePreviewApprovalArtifact(
 	},
 	options?: PreviewApprovalServiceOptions,
 ): PreviewApprovalArtifact {
-	if (input.artifactPath) {
-		throw new Error(
-			'--artifact was removed. Import legacy approvals with pnpm invitation:approvals:migrate -- --apply, then finalize with --package-hash.',
-		);
-	}
-	const store = resolveStore(options);
-	if (!input.packageHash) {
-		throw new Error('Finalize requires --package-hash <hash>.');
-	}
-	const pending = store.get(input.packageHash);
-	if (!pending) {
-		throw new Error(
-			`No pending Preview approval exists in the shared store for package ${input.packageHash}.`,
-		);
-	}
-	const artifact: PreviewApprovalArtifact = pending;
-
-	const evidence = loadEvidence(input.evidencePath);
-	if (!isCurrentContract(artifact)) {
-		throw new Error(
-			'Preview approval artifact uses an obsolete contract and must be regenerated (not migrated).',
-		);
-	}
-	if (artifact.approvalState !== 'pending_hosted_validation')
-		throw new Error('Hosted Preview evidence does not satisfy the pending approval artifact.');
-	if (evidence.packageHash !== artifact.packageHash)
-		throw new Error('Hosted Preview evidence does not satisfy the pending approval artifact.');
-	if (evidence.previewProjectRef !== artifact.previewProjectRef)
-		throw new Error('Hosted Preview evidence does not satisfy the pending approval artifact.');
-	if (evidence.route !== artifact.route)
-		throw new Error('Hosted Preview evidence does not satisfy the pending approval artifact.');
-	if (evidence.projectionHash !== artifact.materializedProjectionHash)
-		throw new Error('Hosted Preview evidence does not satisfy the pending approval artifact.');
-	if (!Object.values(evidence.checklistResults).every(Boolean))
-		throw new Error('Hosted Preview evidence does not satisfy the pending approval artifact.');
-	if (!artifact.planId || evidence.planId !== artifact.planId)
-		throw new Error('Hosted Preview evidence does not match the executed Preview plan.');
-	if (!evidence.reviewedBy?.trim() || !Number.isFinite(Date.parse(evidence.reviewedAt)))
-		throw new Error(
-			'Hosted Preview evidence requires a reviewer and a valid review timestamp.',
-		);
-	if (!/^[a-z0-9]{8,32}$/i.test(evidence.intendedProductionProjectRef))
-		throw new Error(
-			'Hosted Preview evidence requires the intended Production project reference.',
-		);
-	validateStorageEvidence(artifact, evidence);
-
-	return store.upsert({
-		...artifact,
-		approvalState: 'approved',
-		approvedAt: evidence.reviewedAt,
-		approvedBy: evidence.reviewedBy.trim(),
-		intendedProductionProjectRef: evidence.intendedProductionProjectRef,
-		hostedValidation: evidence,
-	});
+	void input;
+	void options;
+	throw new Error(
+		'EVIDENCE_FINALIZE_REMOVED: use pnpm invitation:release -- --package-hash <hash> --approve for direct live Preview verification.',
+	);
 }
 
 /**
@@ -376,13 +364,14 @@ export function verifyPreviewApprovalArtifact(
 	if (!artifact) {
 		throw new Error(`No approved Preview artifact exists for package ${identity.packageHash}.`);
 	}
-	return assertVerifiedApproval(artifact, identity, now);
+	return assertVerifiedApproval(artifact, identity, now, options);
 }
 
 function assertVerifiedApproval(
 	artifact: PreviewApprovalArtifact,
 	identity: ApprovedReleaseIdentity,
 	now: Date,
+	options: PreviewApprovalServiceOptions,
 ): PreviewApprovalArtifact {
 	if (!isCurrentContract(artifact)) {
 		throw new Error(
@@ -394,14 +383,26 @@ function assertVerifiedApproval(
 			'Preview approval artifact is stale, incomplete, or does not match the exact release hashes.',
 		);
 	}
-	const approvedAtMs = Date.parse(artifact.approvedAt!);
-	const maxAgeMs = 7 * 24 * 60 * 60 * 1000;
-	if (
-		!Number.isFinite(approvedAtMs) ||
-		approvedAtMs > now.getTime() ||
-		now.getTime() - approvedAtMs > maxAgeMs
-	) {
-		throw new Error('Preview approval artifact is stale and must be reviewed again.');
+	const liveRecheck =
+		typeof options.liveRecheck === 'function' ? options.liveRecheck() : options.liveRecheck;
+	if (liveRecheck) {
+		assertLiveVerificationMatches(artifact, liveRecheck);
+		const reviewedAtMs = Date.parse(liveRecheck.reviewedAt);
+		if (reviewedAtMs > now.getTime()) {
+			throw new Error('Live Preview verification timestamp is in the future.');
+		}
+	} else {
+		const approvedAtMs = Date.parse(artifact.approvedAt!);
+		const maxAgeMs = 7 * 24 * 60 * 60 * 1000;
+		if (
+			!Number.isFinite(approvedAtMs) ||
+			approvedAtMs > now.getTime() ||
+			now.getTime() - approvedAtMs > maxAgeMs
+		) {
+			throw new Error(
+				'Preview approval artifact is stale and requires a live Preview recheck.',
+			);
+		}
 	}
 	if (identity.planId && artifact.planId && artifact.planId !== identity.planId) {
 		throw new Error(

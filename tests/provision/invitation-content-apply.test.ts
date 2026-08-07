@@ -12,7 +12,7 @@ describe('invitation-content-apply schema gate', () => {
 		expect(() =>
 			assertContentSchemaCurrent({ target: 'preview', schemaLifecycle: 'BEHIND' }),
 		).toThrow(/SCHEMA_INCOMPATIBLE/);
-		expect(contentMigrateCommandForTarget('preview')).toBe('pnpm db:preview:migrate');
-		expect(contentMigrateCommandForTarget('local')).toBe('pnpm db:local:migrate');
+		expect(contentMigrateCommandForTarget('preview')).toBe('pnpm db:migrate -- --target preview');
+		expect(contentMigrateCommandForTarget('local')).toBe('pnpm db:migrate -- --target local');
 	});
 });

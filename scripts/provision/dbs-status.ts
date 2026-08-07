@@ -18,6 +18,9 @@ import {
 	getProdDbUrl,
 } from '../db/db-workflow-lib.ts';
 import { LOCAL_DB_URL, classifyDbTarget, redactDbUrl } from '../db/db-guard.ts';
+import {
+	assertCurrentDisposableMigrationProof,
+} from '../db/disposable-migration-proof.ts';
 import type { SchemaLifecycleState } from '../db/schema-lifecycle-state.ts';
 import {
 	StatusProbeSession,
@@ -82,6 +85,15 @@ export type StatusVocabulary =
 
 export type TargetEnv = 'local' | 'preview' | 'production';
 
+export type SchemaOperationReadiness =
+	| 'READY'
+	| 'NEEDS_DISPOSABLE_PROOF'
+	| 'PENDING_MIGRATIONS'
+	| 'SCHEMA_DRIFT'
+	| 'UNREACHABLE'
+	| 'NOT_CONFIGURED'
+	| 'UNVERIFIED';
+
 export interface EnvTargetStatus {
 	environment: TargetEnv;
 	configured: boolean;
@@ -98,6 +110,13 @@ export interface EnvTargetStatus {
 	extraMigrations?: string[];
 	/** Count of migration versions applied on the remote target. */
 	appliedMigrationCount?: number | null;
+	/**
+	 * Operation readiness for schema migrate (distinct from history-parity CURRENT).
+	 * CURRENT history alone is not sufficient when disposable proof is missing.
+	 */
+	schemaOperationReadiness?: SchemaOperationReadiness;
+	/** Exact next schema action for this environment, when actionable. */
+	schemaNextAction?: string | null;
 	errorDetail?: string;
 	freshness?: FreshnessMeta;
 	/** Wall duration for this environment probe (ms), when measured. */
@@ -108,7 +127,88 @@ export interface EnvTargetStatus {
 export interface GeneralStatusSummary {
 	environments: Record<TargetEnv, EnvTargetStatus>;
 	totalDefinitionsCount: number;
+	/** First incomplete lifecycle action across disposable proof → local → preview → production. */
+	schemaNextAction?: string | null;
+	disposableProofOk?: boolean;
+	disposableProofDetail?: string;
 	debugCounters?: StatusProbeDebugCounters;
+}
+
+function deriveSchemaOperationFields(
+	env: TargetEnv,
+	status: Pick<
+		EnvTargetStatus,
+		| 'configured'
+		| 'reachable'
+		| 'schemaLifecycle'
+		| 'pendingMigrationsCount'
+		| 'extraMigrations'
+	>,
+	disposableProofOk: boolean,
+): Pick<EnvTargetStatus, 'schemaOperationReadiness' | 'schemaNextAction'> {
+	if (!status.configured) {
+		return { schemaOperationReadiness: 'NOT_CONFIGURED', schemaNextAction: null };
+	}
+	if (!status.reachable) {
+		return { schemaOperationReadiness: 'UNREACHABLE', schemaNextAction: null };
+	}
+	if (status.schemaLifecycle === 'SCHEMA_DRIFT' || (status.extraMigrations?.length ?? 0) > 0) {
+		return {
+			schemaOperationReadiness: 'SCHEMA_DRIFT',
+			schemaNextAction: `Investigate SCHEMA_DRIFT on ${env} (pnpm db:${env === 'local' ? 'local' : env}:audit when available)`,
+		};
+	}
+	if (status.schemaLifecycle === 'UNVERIFIED' || status.schemaLifecycle === undefined) {
+		return { schemaOperationReadiness: 'UNVERIFIED', schemaNextAction: null };
+	}
+	const pending = status.pendingMigrationsCount ?? 0;
+	if (pending > 0) {
+		if (!disposableProofOk) {
+			return {
+				schemaOperationReadiness: 'NEEDS_DISPOSABLE_PROOF',
+				schemaNextAction:
+					'pnpm db:migrate -- --target disposable-test --apply',
+			};
+		}
+		const targetFlag =
+			env === 'production'
+				? 'production'
+				: env === 'preview'
+					? 'preview'
+					: 'local';
+		return {
+			schemaOperationReadiness: 'PENDING_MIGRATIONS',
+			schemaNextAction: `pnpm db:migrate -- --target ${targetFlag}`,
+		};
+	}
+	if (!disposableProofOk) {
+		return {
+			schemaOperationReadiness: 'NEEDS_DISPOSABLE_PROOF',
+			schemaNextAction: 'pnpm db:migrate -- --target disposable-test --apply',
+		};
+	}
+	return { schemaOperationReadiness: 'READY', schemaNextAction: null };
+}
+
+function deriveGlobalSchemaNextAction(
+	environments: Record<TargetEnv, EnvTargetStatus>,
+	disposableProofOk: boolean,
+): string | null {
+	if (!disposableProofOk) {
+		return 'pnpm db:migrate -- --target disposable-test --apply';
+	}
+	for (const env of ['local', 'preview', 'production'] as const) {
+		const action = environments[env].schemaNextAction;
+		if (action && environments[env].schemaOperationReadiness === 'PENDING_MIGRATIONS') {
+			return action;
+		}
+	}
+	for (const env of ['local', 'preview', 'production'] as const) {
+		if (environments[env].schemaOperationReadiness === 'SCHEMA_DRIFT') {
+			return environments[env].schemaNextAction ?? null;
+		}
+	}
+	return null;
 }
 
 export interface PerInvitationTargetStatus {
@@ -243,8 +343,7 @@ export function getGeneralEnvStatus(
 		? countActiveManagedInvitations(session, dbUrl)
 		: { activeCount: 0, conflictsCount: 0 };
 	const schema = readMigrationLifecycleForUrlSync(dbUrl, session);
-
-	return {
+	const base = {
 		environment: env,
 		configured: true,
 		reachable: true,
@@ -262,6 +361,8 @@ export function getGeneralEnvStatus(
 		durationMs: Math.round(performance.now() - started),
 		timeoutDegraded: options.timeoutDegraded,
 	};
+	const disposableProofOk = assertCurrentDisposableMigrationProof().ok;
+	return { ...base, ...deriveSchemaOperationFields(env, base, disposableProofOk) };
 }
 
 async function getGeneralEnvStatusAsync(
@@ -335,7 +436,7 @@ async function getGeneralEnvStatusAsync(
 
 	const schema = await readMigrationLifecycleForUrl(dbUrl, session);
 
-	return {
+	const base = {
 		environment: env,
 		configured: true,
 		reachable: true,
@@ -353,6 +454,8 @@ async function getGeneralEnvStatusAsync(
 		durationMs: Math.round(performance.now() - started),
 		timeoutDegraded: options.timeoutDegraded,
 	};
+	const disposableProofOk = assertCurrentDisposableMigrationProof().ok;
+	return { ...base, ...deriveSchemaOperationFields(env, base, disposableProofOk) };
 }
 
 function unprobedGeneralEnv(env: TargetEnv): EnvTargetStatus {
@@ -468,9 +571,13 @@ export async function evaluateGeneralStatus(
 		environments[env] = collected.get(env) ?? timeoutUnverifiedEnv(env);
 	}
 
+	const proof = assertCurrentDisposableMigrationProof();
 	return {
 		environments,
 		totalDefinitionsCount: definitions.length,
+		disposableProofOk: proof.ok,
+		disposableProofDetail: proof.reason,
+		schemaNextAction: deriveGlobalSchemaNextAction(environments, proof.ok),
 		debugCounters: session.debugCounters,
 	};
 }

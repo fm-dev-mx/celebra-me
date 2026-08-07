@@ -105,10 +105,12 @@ describe('invitation promotion candidate discovery', () => {
 		expect(missing.selectable).toBe(false);
 		expect(missing.reason).toContain('MISSING_PREVIEW_APPROVAL');
 		expect(missing.remediation.join('\n')).toContain(
-			'pnpm invitation:update -- --slug demo --targets preview',
+			'pnpm invitation:release -- --slug demo --targets preview',
 		);
 		expect(missing.remediation.join('\n')).toContain('--package-hash');
-		expect(missing.remediation.at(-1)).toContain('pnpm invitation:promote');
+		expect(missing.remediation.at(-1)).toContain(
+			'pnpm invitation:release -- --slug demo --targets production',
+		);
 	});
 
 	it('surfaces DIVERGED and IDENTITY_CONFLICT as attention with remediation', async () => {

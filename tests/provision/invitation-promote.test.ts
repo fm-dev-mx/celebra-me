@@ -28,9 +28,12 @@ import {
 	runPromotionPreflight,
 	type PromotionPreflightReport,
 } from '../../scripts/provision/invitation-promote.ts';
-import { toPublicPromotionReport } from '../../scripts/provision/invitation-promote-cli.ts';
+import { toPublicPromotionReport } from '../../scripts/provision/invitation-promotion-format.ts';
+import {
+	parseMutationTargets,
+	parseReleaseMutationTargets,
+} from '../../scripts/provision/invitation-update-options.ts';
 import { MergeConflictError } from '../../scripts/provision/semantic-delta.ts';
-import { parseMutationTargets } from '../../scripts/provision/invitation-update-options.ts';
 
 const dirs: string[] = [];
 const now = new Date('2026-07-23T12:00:00.000Z');
@@ -162,17 +165,21 @@ describe('Promotion target boundaries', () => {
 		expect(report).not.toHaveProperty('targetDbUrl');
 	});
 
-	it('rejects Production as invitation:update mutation destination', () => {
-		expect(() => parseMutationTargets('production')).toThrow('invitation:promote');
+	it('keeps parseMutationTargets Local/Preview-only; release parser allows Production alone', () => {
+		expect(() => parseMutationTargets('production')).toThrow(/invitation:release/);
 		expect(() => parseMutationTargets('local')).not.toThrow();
 		expect(() => parseMutationTargets('preview')).not.toThrow();
+		expect(parseReleaseMutationTargets('production')).toEqual(['production']);
+		expect(() => parseReleaseMutationTargets('local,production')).toThrow(
+			/PRODUCTION_TARGET_EXCLUSIVE/,
+		);
 	});
 
-	it('registers invitation:promote as the public package script', () => {
+	it('registers invitation:release as the public package script', () => {
 		const pkg = JSON.parse(readFileSync('package.json', 'utf8')) as {
 			scripts: Record<string, string>;
 		};
-		expect(pkg.scripts['invitation:promote']).toContain('invitation-promote-cli.ts');
+		expect(pkg.scripts['invitation:release']).toContain('invitation-release-cli.ts');
 		expect(pkg.scripts['dbs']).toContain('dbs-cli.ts');
 	});
 });
@@ -639,7 +646,9 @@ describe('removed dead public registrations', () => {
 		const pkg = JSON.parse(readFileSync('package.json', 'utf8')) as {
 			scripts: Record<string, string>;
 		};
-		expect(pkg.scripts['invitation:promote']).toBeTruthy();
+		expect(pkg.scripts['invitation:release']).toBeTruthy();
+		expect(pkg.scripts['invitation:update']).toBeUndefined();
+		expect(pkg.scripts['invitation:promote']).toBeUndefined();
 		expect(pkg.scripts.ops).toContain('cli.mjs');
 	});
 

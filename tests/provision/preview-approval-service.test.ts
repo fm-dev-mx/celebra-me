@@ -1,22 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
 import {
+	approvePreviewArtifactFromLiveVerification,
 	createPendingPreviewApprovalArtifact,
-	finalizePreviewApprovalArtifact,
 	PREVIEW_APPROVAL_SCHEMA_VERSION,
 	verifyPreviewApprovalArtifact,
 	writePendingApprovalEvidenceScaffold,
 	type PreviewApprovalArtifact,
 } from '../../scripts/provision/preview-approval-service.ts';
-import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
+import type { PreviewLiveVerificationResult } from '../../scripts/provision/preview-live-verification.ts';
 import {
 	createMemoryPreviewApprovalStore,
 	setDefaultPreviewApprovalStoreForTests,
 } from '../../scripts/provision/preview-approval-store.ts';
 
-const createdDirs: string[] = [];
 const PACKAGE_HASH = 'a'.repeat(64);
 const SOURCE_HASH = 'b'.repeat(64);
 const METADATA_HASH = 'c'.repeat(64);
@@ -26,12 +22,8 @@ const ASSET_MANIFEST_HASH = 'f'.repeat(64);
 const ASSET_HASH = '1'.repeat(64);
 const ASSET_PATH = 'managed/test/hero.webp';
 const PLAN_ID = 'preview-plan-1234';
-const BASE_REVIEW_EVIDENCE = {
-	planId: PLAN_ID,
-	reviewedAt: new Date().toISOString(),
-	reviewedBy: 'qa@celebra-me.test',
-	intendedProductionProjectRef: 'productionproject',
-};
+const PREVIEW_PROJECT_REF = 'iwipdvisoyerfdytuhwi';
+const REVIEWED_AT = '2026-08-06T12:00:00.000Z';
 
 beforeEach(() => {
 	setDefaultPreviewApprovalStoreForTests(createMemoryPreviewApprovalStore());
@@ -39,31 +31,7 @@ beforeEach(() => {
 
 afterEach(() => {
 	setDefaultPreviewApprovalStoreForTests(null);
-	createdDirs.splice(0).forEach((dir) => rmSync(dir, { recursive: true, force: true }));
 });
-
-function writeEvidence(
-	hashes: Record<string, string>,
-	overrides: Record<string, unknown> = {},
-): string {
-	const dir = mkdtempSync(join(tmpdir(), 'celebra-approval-evidence-'));
-	createdDirs.push(dir);
-	const path = join(dir, 'evidence.json');
-	writeFileSync(
-		path,
-		JSON.stringify({
-			...BASE_REVIEW_EVIDENCE,
-			packageHash: PACKAGE_HASH,
-			previewProjectRef: 'iwipdvisoyerfdytuhwi',
-			route: '/xv/test-invitation',
-			projectionHash: MATERIALIZED_PROJECTION_HASH,
-			checklistResults: { route: true, dashboard: true },
-			storageHashVerification: hashes,
-			...overrides,
-		}),
-	);
-	return path;
-}
 
 function createPending(expectedAssetHashes?: Record<string, string>): PreviewApprovalArtifact {
 	return createPendingPreviewApprovalArtifact({
@@ -73,11 +41,51 @@ function createPending(expectedAssetHashes?: Record<string, string>): PreviewApp
 		assetManifestHash: ASSET_MANIFEST_HASH,
 		planId: PLAN_ID,
 		slug: 'test-invitation',
-		previewProjectRef: 'iwipdvisoyerfdytuhwi',
+		previewProjectRef: PREVIEW_PROJECT_REF,
 		route: '/xv/test-invitation',
 		canonicalProjectionHash: CANONICAL_PROJECTION_HASH,
 		materializedProjectionHash: MATERIALIZED_PROJECTION_HASH,
 		expectedAssetHashes: expectedAssetHashes ?? { [ASSET_PATH]: ASSET_HASH },
+	});
+}
+
+function liveVerification(
+	overrides: Partial<PreviewLiveVerificationResult> = {},
+): PreviewLiveVerificationResult {
+	return {
+		ok: true,
+		checklistResults: {
+			project: true,
+			route: true,
+			publication: true,
+			provenance: true,
+			projection: true,
+			storage: true,
+		},
+		storageHashVerification: { [ASSET_PATH]: ASSET_HASH },
+		details: {
+			packageHash: PACKAGE_HASH,
+			slug: 'test-invitation',
+			route: '/xv/test-invitation',
+			previewProjectRef: PREVIEW_PROJECT_REF,
+			expectedPreviewProjectRef: PREVIEW_PROJECT_REF,
+			publicationPresent: true,
+			provenancePackageHash: PACKAGE_HASH,
+			provenanceProjectionHash: MATERIALIZED_PROJECTION_HASH,
+			assetFailures: {},
+			errors: [],
+		},
+		projectionHash: MATERIALIZED_PROJECTION_HASH,
+		reviewedAt: REVIEWED_AT,
+		...overrides,
+	};
+}
+
+function approve(live = liveVerification()): PreviewApprovalArtifact {
+	return approvePreviewArtifactFromLiveVerification({
+		packageHash: PACKAGE_HASH,
+		reviewedBy: 'owner@celebra.me',
+		live,
 	});
 }
 
@@ -95,36 +103,18 @@ function productionIdentity(overrides: Record<string, string> = {}) {
 }
 
 describe('Preview approval artifact (shared store)', () => {
-	it('scaffolds finalize-ready evidence from a pending approval', () => {
+	it('approves directly from complete live verification without evidence files', () => {
 		createPending();
-		const dir = mkdtempSync(join(tmpdir(), 'celebra-approval-scaffold-'));
-		createdDirs.push(dir);
-		const outputPath = join(dir, 'evidence.json');
-		const scaffold = writePendingApprovalEvidenceScaffold({
-			packageHash: PACKAGE_HASH,
-			outputPath,
-			reviewedBy: 'owner@celebra.me',
+		const approved = approve();
+		expect(approved).toMatchObject({
+			approvalState: 'approved',
+			approvedAt: REVIEWED_AT,
+			approvedBy: 'owner@celebra.me',
+			hostedValidation: {
+				projectionHash: MATERIALIZED_PROJECTION_HASH,
+				storageHashVerification: { [ASSET_PATH]: ASSET_HASH },
+			},
 		});
-		expect(scaffold).toMatchObject({
-			outputPath,
-			packageHash: PACKAGE_HASH,
-			slug: 'test-invitation',
-			planId: PLAN_ID,
-		});
-		const evidence = JSON.parse(readFileSync(outputPath, 'utf8')) as Record<string, unknown>;
-		expect(evidence).toMatchObject({
-			packageHash: PACKAGE_HASH,
-			projectionHash: MATERIALIZED_PROJECTION_HASH,
-			planId: PLAN_ID,
-			intendedProductionProjectRef: SUPABASE_PROJECT_REFS.production,
-			storageHashVerification: { [ASSET_PATH]: ASSET_HASH },
-		});
-		expect(
-			finalizePreviewApprovalArtifact({
-				packageHash: PACKAGE_HASH,
-				evidencePath: outputPath,
-			}).approvalState,
-		).toBe('approved');
 	});
 
 	it('keeps canonical and Preview-materialized projection hashes distinct', () => {
@@ -134,212 +124,106 @@ describe('Preview approval artifact (shared store)', () => {
 		expect(pending.materializedProjectionHash).toBe(MATERIALIZED_PROJECTION_HASH);
 		expect(pending.canonicalProjectionHash).not.toBe(pending.materializedProjectionHash);
 
-		const approved = finalizePreviewApprovalArtifact({
-			packageHash: PACKAGE_HASH,
-			evidencePath: writeEvidence({ [ASSET_PATH]: ASSET_HASH }),
-		});
-		expect(approved.approvalState).toBe('approved');
-		const verified = verifyPreviewApprovalArtifact(productionIdentity());
-		expect(verified.canonicalProjectionHash).toBe(CANONICAL_PROJECTION_HASH);
-		expect(verified.hostedValidation?.projectionHash).toBe(MATERIALIZED_PROJECTION_HASH);
+		const approved = approve();
+		expect(approved.hostedValidation?.projectionHash).toBe(MATERIALIZED_PROJECTION_HASH);
+		expect(
+			verifyPreviewApprovalArtifact(productionIdentity(), {
+				now: new Date(REVIEWED_AT),
+			}).canonicalProjectionHash,
+		).toBe(CANONICAL_PROJECTION_HASH);
 	});
 
-	it('finalizes against materialized Preview hash and verifies Production against canonical hash', () => {
+	it('rejects failed or incomplete live checklists', () => {
 		createPending();
-		expect(
-			finalizePreviewApprovalArtifact({
+		expect(() =>
+			approve(
+				liveVerification({
+					ok: false,
+					checklistResults: {
+						project: true,
+						route: true,
+						publication: true,
+						provenance: true,
+						projection: false,
+						storage: true,
+					},
+				}),
+			),
+		).toThrow(/incomplete or failed/i);
+	});
+
+	it('rejects live results bound to another materialized projection', () => {
+		createPending();
+		expect(() =>
+			approve(liveVerification({ projectionHash: CANONICAL_PROJECTION_HASH })),
+		).toThrow(/does not match/i);
+	});
+
+	it('rejects incomplete downloaded asset hashes', () => {
+		createPending();
+		expect(() => approve(liveVerification({ storageHashVerification: {} }))).toThrow(
+			/storage verification failed/i,
+		);
+	});
+
+	it('allows approval when no expected assets exist', () => {
+		createPending({});
+		const approved = approve(liveVerification({ storageHashVerification: {} }));
+		expect(approved.approvalState).toBe('approved');
+	});
+
+	it('disables the evidence scaffold happy path', () => {
+		createPending();
+		expect(() =>
+			writePendingApprovalEvidenceScaffold({
 				packageHash: PACKAGE_HASH,
-				evidencePath: writeEvidence({ [ASSET_PATH]: ASSET_HASH }),
+				outputPath: 'ignored.json',
+			}),
+		).toThrow(/EVIDENCE_SCAFFOLD_REMOVED/);
+	});
+
+	it('keeps seven-day freshness as fallback when no live recheck is available', () => {
+		createPending();
+		const approved = approve();
+		setDefaultPreviewApprovalStoreForTests(
+			createMemoryPreviewApprovalStore([
+				{ ...approved, approvedAt: '2026-06-01T00:00:00.000Z' },
+			]),
+		);
+		expect(() =>
+			verifyPreviewApprovalArtifact(productionIdentity(), {
+				now: new Date('2026-07-23T00:00:00.000Z'),
+			}),
+		).toThrow(/stale/i);
+	});
+
+	it('prefers a successful live recheck over the fallback age limit', () => {
+		createPending();
+		const approved = approve();
+		setDefaultPreviewApprovalStoreForTests(
+			createMemoryPreviewApprovalStore([
+				{ ...approved, approvedAt: '2026-06-01T00:00:00.000Z' },
+			]),
+		);
+		expect(
+			verifyPreviewApprovalArtifact(productionIdentity(), {
+				now: new Date(REVIEWED_AT),
+				liveRecheck: liveVerification(),
 			}).approvalState,
 		).toBe('approved');
-		expect(verifyPreviewApprovalArtifact(productionIdentity()).approvalState).toBe('approved');
 	});
 
-	it('rejects hosted evidence bound to the canonical hash instead of the materialized hash', () => {
+	it('rejects Production identity intended for another project', () => {
 		createPending();
-		expect(() =>
-			finalizePreviewApprovalArtifact({
-				packageHash: PACKAGE_HASH,
-				evidencePath: writeEvidence(
-					{ [ASSET_PATH]: ASSET_HASH },
-					{ projectionHash: CANONICAL_PROJECTION_HASH },
-				),
-			}),
-		).toThrow(/does not satisfy the pending approval artifact/i);
-	});
-
-	it('rejects Production identity that supplies the materialized hash as the canonical projection', () => {
-		createPending();
-		finalizePreviewApprovalArtifact({
-			packageHash: PACKAGE_HASH,
-			evidencePath: writeEvidence({ [ASSET_PATH]: ASSET_HASH }),
-		});
-		expect(() =>
-			verifyPreviewApprovalArtifact(
-				productionIdentity({ projectionHash: MATERIALIZED_PROJECTION_HASH }),
-			),
-		).toThrow(/exact release hashes/i);
-	});
-
-	it('rejects obsolete single-projectionHash artifacts instead of migrating them', () => {
-		const store = createMemoryPreviewApprovalStore([
-			{
-				schemaVersion: '2.0.0' as never,
-				approvalState: 'approved',
-				packageHash: PACKAGE_HASH,
-				sourceHash: SOURCE_HASH,
-				metadataHash: METADATA_HASH,
-				canonicalProjectionHash: CANONICAL_PROJECTION_HASH,
-				materializedProjectionHash: CANONICAL_PROJECTION_HASH,
-				assetManifestHash: ASSET_MANIFEST_HASH,
-				planId: PLAN_ID,
-				slug: 'test-invitation',
-				previewProjectRef: 'iwipdvisoyerfdytuhwi',
-				createdAt: new Date().toISOString(),
-				approvedAt: new Date().toISOString(),
-				approvedBy: 'qa@celebra-me.test',
-				intendedProductionProjectRef: 'productionproject',
-				route: '/xv/test-invitation',
-				expectedAssetHashes: {},
-				hostedValidation: {
-					packageHash: PACKAGE_HASH,
-					previewProjectRef: 'iwipdvisoyerfdytuhwi',
-					route: '/xv/test-invitation',
-					projectionHash: CANONICAL_PROJECTION_HASH,
-					planId: PLAN_ID,
-					reviewedAt: new Date().toISOString(),
-					reviewedBy: 'qa@celebra-me.test',
-					intendedProductionProjectRef: 'productionproject',
-					checklistResults: { route: true },
-					storageHashVerification: {},
-				},
-			},
-		]);
-		setDefaultPreviewApprovalStoreForTests(store);
-		expect(() => verifyPreviewApprovalArtifact(productionIdentity())).toThrow(
-			/obsolete contract/i,
-		);
-
-		const regenerated = createPending({});
-		expect(regenerated.approvalState).toBe('pending_hosted_validation');
-		expect(regenerated.schemaVersion).toBe(PREVIEW_APPROVAL_SCHEMA_VERSION);
-	});
-
-	it('rejects incomplete storage evidence', () => {
-		createPending();
-		expect(() =>
-			finalizePreviewApprovalArtifact({
-				packageHash: PACKAGE_HASH,
-				evidencePath: writeEvidence({}, { storageHashVerification: {} }),
-			}),
-		).toThrow(/missing storage hash verification for asset/i);
-	});
-
-	it('rejects missing storageHashVerification', () => {
-		createPending();
-		const path = writeEvidence({ [ASSET_PATH]: ASSET_HASH });
-		const evidence = JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>;
-		delete evidence.storageHashVerification;
-		writeFileSync(path, JSON.stringify(evidence));
-		expect(() =>
-			finalizePreviewApprovalArtifact({ packageHash: PACKAGE_HASH, evidencePath: path }),
-		).toThrow(/missing required storage hash verification/i);
-	});
-
-	it('rejects one missing asset when multiple are expected', () => {
-		createPending({
-			[ASSET_PATH]: ASSET_HASH,
-			'managed/test/second.webp': '2'.repeat(64),
-		});
-		expect(() =>
-			finalizePreviewApprovalArtifact({
-				packageHash: PACKAGE_HASH,
-				evidencePath: writeEvidence({ [ASSET_PATH]: ASSET_HASH }),
-			}),
-		).toThrow(/missing storage hash verification for asset/i);
-	});
-
-	it('rejects incorrect asset hash', () => {
-		createPending();
-		expect(() =>
-			finalizePreviewApprovalArtifact({
-				packageHash: PACKAGE_HASH,
-				evidencePath: writeEvidence({ [ASSET_PATH]: 'wronghashvalue' }),
-			}),
-		).toThrow(/storage hash mismatch for asset/i);
-	});
-
-	it('allows finalization when no expected assets exist', () => {
-		createPending({});
-		const path = writeEvidence({});
-		const evidence = JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>;
-		delete evidence.storageHashVerification;
-		writeFileSync(path, JSON.stringify(evidence));
-		expect(
-			finalizePreviewApprovalArtifact({ packageHash: PACKAGE_HASH, evidencePath: path })
-				.approvalState,
-		).toBe('approved');
-		expect(verifyPreviewApprovalArtifact(productionIdentity()).approvalState).toBe('approved');
-	});
-
-	it('rejects a stale approved artifact', () => {
-		createPending();
-		const approved = finalizePreviewApprovalArtifact({
-			packageHash: PACKAGE_HASH,
-			evidencePath: writeEvidence({ [ASSET_PATH]: ASSET_HASH }),
-		});
-		const store = createMemoryPreviewApprovalStore([
-			{ ...approved, approvedAt: '2026-06-01T00:00:00.000Z' },
-		]);
-		setDefaultPreviewApprovalStoreForTests(store);
+		approve();
 		expect(() =>
 			verifyPreviewApprovalArtifact(
 				{
 					...productionIdentity(),
-					planId: PLAN_ID,
-					intendedProductionProjectRef: 'productionproject',
+					intendedProductionProjectRef: 'anotherproject',
 				},
-				{},
-				new Date('2026-07-23T00:00:00.000Z'),
+				{ now: new Date(REVIEWED_AT) },
 			),
-		).toThrow(/stale/i);
-	});
-
-	it('rejects an approval intended for a different Production project', () => {
-		createPending();
-		finalizePreviewApprovalArtifact({
-			packageHash: PACKAGE_HASH,
-			evidencePath: writeEvidence({ [ASSET_PATH]: ASSET_HASH }),
-		});
-		expect(() =>
-			verifyPreviewApprovalArtifact({
-				...productionIdentity(),
-				planId: PLAN_ID,
-				intendedProductionProjectRef: 'anotherproject',
-			}),
-		).toThrow(/stale, incomplete, or does not match/i);
-	});
-
-	it('rejects approval evidence whose executed Preview plan ID does not match', () => {
-		createPending();
-		expect(() =>
-			finalizePreviewApprovalArtifact({
-				packageHash: PACKAGE_HASH,
-				evidencePath: writeEvidence(
-					{ [ASSET_PATH]: ASSET_HASH },
-					{ planId: 'different-preview-plan' },
-				),
-			}),
-		).toThrow(/executed Preview plan/i);
-	});
-
-	it('rejects approval evidence without reviewer identity', () => {
-		createPending();
-		expect(() =>
-			finalizePreviewApprovalArtifact({
-				packageHash: PACKAGE_HASH,
-				evidencePath: writeEvidence({ [ASSET_PATH]: ASSET_HASH }, { reviewedBy: '' }),
-			}),
-		).toThrow(/reviewer and a valid review timestamp/i);
+		).toThrow(/exact release hashes/i);
 	});
 });

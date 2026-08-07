@@ -423,6 +423,41 @@ async function probeStorageStates(
 	return { observedStorage, verifiedAssetHashes };
 }
 
+function hashTargetAssetState(
+	targetDbAssets: TargetAssetRecord[],
+	observedStorage: Record<string, ObservedStorageState>,
+): string {
+	return createHash('sha256')
+		.update(
+			JSON.stringify({
+				rows: [...targetDbAssets].sort((a, b) =>
+					a.storagePath.localeCompare(b.storagePath),
+				),
+				observedStorage,
+			}),
+		)
+		.digest('hex');
+}
+
+/** Re-probes only the asset state retained by a reviewed promotion plan. */
+export async function computePromotionVolatileAssetStateHash(input: {
+	packageData: InvitationPackageData;
+	targetDbUrl: string;
+	targetInvitationId: string;
+}): Promise<string> {
+	const { storageUrl } = validateEnvironmentUrlsPreflight({
+		target: 'production',
+		targetDbUrl: input.targetDbUrl,
+	});
+	const targetDbAssets = fetchTargetDbAssets(input.targetDbUrl, input.targetInvitationId);
+	const { observedStorage } = await probeStorageStates(
+		input.packageData.assets,
+		targetDbAssets,
+		storageUrl,
+	);
+	return hashTargetAssetState(targetDbAssets, observedStorage);
+}
+
 async function scanAssetStatus(
 	assets: InvitationPackageAsset[],
 	targetStorageUrl: string,
@@ -529,14 +564,7 @@ async function scanAssetStatus(
 		}
 	}
 
-	const assetStateHash = createHash('sha256')
-		.update(
-			JSON.stringify({
-				rows: targetDbAssets.sort((a, b) => a.storagePath.localeCompare(b.storagePath)),
-				observedStorage,
-			}),
-		)
-		.digest('hex');
+	const assetStateHash = hashTargetAssetState(targetDbAssets, observedStorage);
 
 	return {
 		assetsToUpload,

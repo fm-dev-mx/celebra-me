@@ -104,11 +104,27 @@ async function formatGeneralView(jsonMode: boolean): Promise<void> {
 		pad(formatSchemaLifecycleLabel(envs.preview.schemaLifecycle ?? 'UNVERIFIED'), colW) +
 		pad(formatSchemaLifecycleLabel(envs.production.schemaLifecycle ?? 'UNVERIFIED'), colW);
 	console.log(schemaRow);
+
+	const readinessRow =
+		pad('Op readiness', 18) +
+		pad(envs.local.schemaOperationReadiness ?? 'UNVERIFIED', colW) +
+		pad(envs.preview.schemaOperationReadiness ?? 'UNVERIFIED', colW) +
+		pad(envs.production.schemaOperationReadiness ?? 'UNVERIFIED', colW);
+	console.log(readinessRow);
 	console.log(
-		'(Schema labels use migration_history_parity evidence; object_audit_readiness requires pnpm db:*:audit.)',
+		'(Schema labels use migration_history_parity; Op readiness also requires disposable proof before migrate.)',
 	);
 
 	console.log('\nDefinitions in repo:', summary.totalDefinitionsCount);
+	console.log(
+		'Disposable proof:',
+		summary.disposableProofOk ? 'OK' : `MISSING/STALE — ${summary.disposableProofDetail ?? ''}`,
+	);
+	if (summary.schemaNextAction) {
+		console.log('Next schema action:', summary.schemaNextAction);
+	} else {
+		console.log('Next schema action: (none — schema lifecycle ready)');
+	}
 }
 
 async function formatInvitationView(slug: string, jsonMode: boolean): Promise<void> {

@@ -3,6 +3,17 @@ import type { PromotionApplyReport, PromotionPreflightReport } from './invitatio
 
 type PromotionReport = PromotionPreflightReport | PromotionApplyReport;
 
+/**
+ * The preflight report retains the connection string only for the in-process
+ * apply flow. CLI/operator artifacts must never serialize it.
+ */
+export function toPublicPromotionReport(
+	report: PromotionPreflightReport | PromotionApplyReport,
+): Omit<PromotionPreflightReport | PromotionApplyReport, 'targetDbUrl'> {
+	const { targetDbUrl: _targetDbUrl, ...publicReport } = report;
+	return publicReport;
+}
+
 function changeSummary(report: PromotionReport): string {
 	const plan = report.engineResult?.plan;
 	if (!plan) return '(no disponible)';
@@ -16,7 +27,7 @@ function changeSummary(report: PromotionReport): string {
 }
 
 function backupLabel(report: PromotionReport): string {
-	if (!report.backup.required) return 'Se preparará antes de escribir';
+	if (!report.backup.required) return 'Se evaluará antes de escribir';
 	if (!report.backup.acceptable) return 'Bloqueado';
 	return report.backup.createdAt ? `Verificado · ${report.backup.createdAt}` : 'Verificado';
 }
@@ -60,7 +71,9 @@ export function buildPromotionTechnicalReview(
 		],
 		[
 			'Controles',
-			'TTY · agente bloqueado · release-check · backup crítico · plan exacto · sin migraciones',
+			`TTY · agente bloqueado · release-check · ${
+				report.backup.required ? 'backup crítico' : 'recuperación por procedencia/preimagen'
+			} · plan exacto · sin migraciones`,
 		],
 	];
 }

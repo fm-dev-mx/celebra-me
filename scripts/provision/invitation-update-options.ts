@@ -28,16 +28,48 @@ export function parseMutationTargets(raw: string | undefined): InvitationUpdateT
 	if (!raw) return [];
 	if (raw === 'all') {
 		throw new Error(
-			'MUTATION_TARGETS_EXPLICIT_REQUIRED: --targets all is read-only only. Use --targets local,preview for invitation:update mutations.',
+			'MUTATION_TARGETS_EXPLICIT_REQUIRED: --targets all is read-only only. Use --targets local,preview for invitation:release content mutations.',
 		);
 	}
 	const targets = parseTargets(raw);
 	if (targets.includes('production')) {
 		throw new Error(
-			'PRODUCTION_PROMOTION_REQUIRED: Direct Production mutation via invitation:update is prohibited. Use pnpm invitation:promote for owner-only Production releases.',
+			'PRODUCTION_PROMOTION_REQUIRED: Use pnpm invitation:release -- --slug <slug> --targets production for owner-only Production releases.',
 		);
 	}
 	return targets;
+}
+
+/**
+ * Mutation targets for invitation:release. Production is allowed alone and
+ * dispatches through the promotion orchestrator (never mixed with Local/Preview).
+ * Unlike status parseTargets(), bare `production` does not expand to all envs.
+ */
+export function parseReleaseMutationTargets(raw: string | undefined): InvitationUpdateTarget[] {
+	if (!raw) return [];
+	if (raw === 'all') {
+		throw new Error(
+			'MUTATION_TARGETS_EXPLICIT_REQUIRED: --targets all is read-only only. Use --targets local, preview, local,preview, or production.',
+		);
+	}
+	const values = raw
+		.split(/[\s,]+/)
+		.map((s) => s.trim())
+		.filter(Boolean);
+	for (const target of values) {
+		if (!['local', 'preview', 'production'].includes(target)) {
+			throw new Error(`Unknown target "${target}".`);
+		}
+	}
+	if (values.includes('production')) {
+		if (values.length !== 1) {
+			throw new Error(
+				'PRODUCTION_TARGET_EXCLUSIVE: --targets production cannot be combined with local/preview. Run content stages first, then Production.',
+			);
+		}
+		return ['production'];
+	}
+	return parseMutationTargets(raw);
 }
 
 export function validateUpdateOptions(input: {
@@ -45,6 +77,8 @@ export function validateUpdateOptions(input: {
 	targets?: InvitationUpdateTarget[];
 	rekeyFrom?: string;
 	isMutation?: boolean;
+	/** When true, Production mutation is allowed (orchestrator path). */
+	allowProductionMutation?: boolean;
 }): void {
 	if (input.rekeyFrom && input.targets?.includes('production')) {
 		throw new Error(
@@ -52,9 +86,14 @@ export function validateUpdateOptions(input: {
 		);
 	}
 
-	if (input.targets && input.targets.includes('production') && input.isMutation !== false) {
+	if (
+		input.targets &&
+		input.targets.includes('production') &&
+		input.isMutation !== false &&
+		!input.allowProductionMutation
+	) {
 		throw new Error(
-			'PRODUCTION_PROMOTION_REQUIRED: Direct Production mutation via invitation:update is prohibited. Use pnpm invitation:promote for owner-only Production releases.',
+			'PRODUCTION_PROMOTION_REQUIRED: Use pnpm invitation:release -- --slug <slug> --targets production for owner-only Production releases.',
 		);
 	}
 }
@@ -74,6 +113,7 @@ const VALID_FLAGS = new Set([
 	'--package',
 	'--allow-stale-package',
 	'--package-hash',
+	'--approve',
 	'--preview-provenance',
 	'--asset-policy',
 	'--update-scope',
@@ -82,12 +122,13 @@ const VALID_FLAGS = new Set([
 	'--include-legacy',
 	'--include-archived',
 	'--include-demos',
-	'--evidence',
-	'--write-evidence-scaffold',
 	'--confirm-destructive',
 	'--conflict-resolutions',
 	'--field-selections',
 	'--verbose',
+	'--backup-manifest',
+	'--interactive',
+	'--no-interactive',
 	'--help',
 	'-h',
 ]);
@@ -110,12 +151,11 @@ export function checkUnknownFlags(args: string[]): void {
 					'--owner-user-id',
 					'--package',
 					'--package-hash',
-					'--evidence',
-					'--write-evidence-scaffold',
 					'--asset-policy',
 					'--update-scope',
 					'--conflict-resolutions',
 					'--field-selections',
+					'--backup-manifest',
 				].includes(arg)
 			) {
 				i++;
@@ -150,7 +190,7 @@ export function buildStatusReport(input: StatusReportOptions): Record<string, un
 
 	const unprobedRemote = domainUnverified(
 		'inventory',
-		'invitation:update --status is local inventory only. Remote environments are not probed. Use pnpm dbs for cross-environment schema/content evidence.',
+		'invitation:release --status is local inventory only. Remote environments are not probed. Use pnpm dbs for cross-environment schema/content evidence.',
 	);
 	const unprobedLocal = domainUnverified(
 		'inventory',
@@ -194,7 +234,7 @@ export function buildStatusReport(input: StatusReportOptions): Record<string, un
 	const legacyUnprobed = opts.includeLegacy
 		? domainUnverified(
 				'inventory',
-				'Legacy discovery is not performed by invitation:update --status without a configured local inventory probe.',
+				'Legacy discovery is not performed by invitation:release --status without a configured local inventory probe.',
 			)
 		: undefined;
 

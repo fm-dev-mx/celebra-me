@@ -446,7 +446,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	const targetSlug = targetMetadata.slug;
 	const route = `/${definition.eventType}/${targetSlug}`;
 
-	const invitationId = (existingInv?.id as string) || deriveDeterministicUuid('invitation', slug);
+	const invitationId = (existingInv?.id as string) || definition.managedIdentityId;
 
 	// Check existing draft & publication for divergence
 	const { data: existingDraft } = await supabase
@@ -676,6 +676,8 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	}
 
 	const updateScope: UpdateScope = options.updateScope ?? 'content-only';
+	const assetPolicy =
+		options.assetPolicy ?? (updateScope === 'content-only' ? 'preserve' : 'missing');
 	const packageCanonicalContent = materializeAssetReferences(
 		release.draftContent,
 		assetMap,
@@ -836,7 +838,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		canonicalAssets,
 		targetDbAssets: targetAssetRecords,
 		observedStorage,
-		policy: options.assetPolicy ?? 'missing',
+		policy: assetPolicy,
 		pruneAssets: options.pruneAssets ?? false,
 		definitionSlug: release.slug,
 		targetInvitationId: invitationId,
@@ -1016,6 +1018,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		packageHash,
 		verifiedProjectRef: 'persistent-local',
 		targetInvitationId: invitationId,
+		targetOwnerUserId: ownerUserId,
 		existingDraftUpdatedAt: existingDraft?.updated_at as string | undefined,
 		existingPublishedVersion: existingPub?.version as number | undefined,
 		assetStateHash,
@@ -1075,6 +1078,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			packageHash,
 			verifiedProjectRef: 'persistent-local',
 			targetInvitationId: invitationId,
+			targetOwnerUserId: ownerUserId,
 			existingDraftUpdatedAt: existingDraft?.updated_at as string | undefined,
 			existingPublishedVersion: existingPub?.version as number | undefined,
 			assetStateHash,
@@ -1755,10 +1759,10 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 				source_hash: release.sourceHash,
 				package_hash: packageHash,
 				metadata_hash: release.metadataHash,
-				// SHA-256 of the materialized proposed content (the provenance table check constraint
-				// requires 64-char hex; release.projectionHash is MD5/32-char for the RPC).
+				// The provenance table requires 64-char SHA-256; release.projectionHash is the
+				// 32-char MD5 projection used by the publish RPC.
 				projection_hash: createHash('sha256')
-					.update(canonicalize(proposedContent))
+					.update(release.projectionHash)
 					.digest('hex'),
 				asset_manifest_hash: release.assetManifestHash,
 				managed_projection: proposedContent,

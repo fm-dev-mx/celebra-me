@@ -5,22 +5,15 @@
 import { describe, expect, it } from '@jest/globals';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { DB_SYNC_DIRECTIONS } from '../../scripts/db/db-sync-types.ts';
-import { gatesForDirection } from '../../scripts/db/db-sync-plan.ts';
+import { parseReleaseMutationTargets } from '../../scripts/provision/invitation-update-options.ts';
 
 describe('managed definition content path boundaries', () => {
-	it('definition directions require CURRENT schema and never map to Production write env', () => {
-		expect(DB_SYNC_DIRECTIONS).toEqual(
-			expect.arrayContaining([
-				'definition-to-local',
-				'definition-to-preview',
-				'package-to-production',
-				'production-to-preview-mirror',
-			]),
+	it('release targets keep Production exclusive from Local and Preview writes', () => {
+		expect(parseReleaseMutationTargets('local,preview')).toEqual(['local', 'preview']);
+		expect(parseReleaseMutationTargets('production')).toEqual(['production']);
+		expect(() => parseReleaseMutationTargets('local,production')).toThrow(
+			'PRODUCTION_TARGET_EXCLUSIVE',
 		);
-		expect(gatesForDirection('definition-to-local').schemaCurrentRequired).toBe(true);
-		expect(gatesForDirection('definition-to-preview').schemaCurrentRequired).toBe(true);
-		expect(gatesForDirection('package-to-production').schemaCurrentRequired).toBe(true);
 	});
 
 	it('shared content apply module only exposes local|preview targets', () => {
@@ -30,6 +23,6 @@ describe('managed definition content path boundaries', () => {
 		);
 		expect(source).toMatch(/export type ContentApplyTarget = 'local' \| 'preview'/);
 		expect(source).not.toMatch(/ContentApplyTarget = .*"production"/);
-		expect(source).toMatch(/never runs schema migrations/i);
+		expect(source).toMatch(/Content apply never runs migrations/i);
 	});
 });
