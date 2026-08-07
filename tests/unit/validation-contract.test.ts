@@ -14,13 +14,20 @@ function readPackageManifest(): PackageManifest {
 
 describe('canonical validation contract', () => {
 	it('keeps full Stylelint and the production build in the canonical CI command', () => {
-		const ci = readPackageManifest().scripts?.['ci'] ?? '';
+		const scripts = readPackageManifest().scripts ?? {};
+		const ci = scripts['ci'] ?? '';
 
 		expect(ci).toContain('pnpm lint:styles');
 		expect(ci).not.toContain('pnpm lint:styles:changed');
 		expect(ci).toContain('pnpm build:app');
 		expect(ci).toContain('pnpm validate:structure');
-		expect(ci).toContain('pnpm agent:git-safety:check');
+		expect(ci).not.toContain('agent:git-safety');
+		expect(scripts['agent:git-safety:start']).toBe('node scripts/agent/git-safety.mjs start');
+		expect(scripts['agent:git-safety:finish']).toBe(
+			'node scripts/agent/git-safety.mjs finish',
+		);
+		expect(scripts['agent:git-safety:check']).toBeUndefined();
+		expect(scripts['agent:git-safety:end']).toBeUndefined();
 	});
 
 	it('keeps coverage opt-in and replaces placeholder E2E tiers', () => {
