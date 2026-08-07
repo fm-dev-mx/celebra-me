@@ -13,8 +13,6 @@ import {
 } from '@/lib/intake/constants';
 import { DEFAULT_REMINDER_MESSAGE } from '@/lib/rsvp/services/shared/share-message-defaults';
 import { buildPublishedEventTiming } from '@/lib/time/event-time';
-import { venueSchema } from '@/lib/intake/schemas/shared-content.schema';
-import type { z } from 'zod';
 
 type PublishCtx = {
 	isDemo: boolean;
@@ -161,7 +159,8 @@ function buildPersonalizedAccess(
 	const carried = isNonEmptyObject(prior)
 		? Object.fromEntries(
 				Object.entries(prior).filter(
-					([key]) => !PERSONALIZED_ACCESS_DRAFT_KEYS.includes(key),
+					([key]) =>
+						!(PERSONALIZED_ACCESS_DRAFT_KEYS as readonly string[]).includes(key),
 				),
 			)
 		: {};
@@ -306,7 +305,7 @@ function mapFamilyFromDraft(
 }
 
 function mapVenue(
-	draftVenue: z.infer<typeof venueSchema> | undefined,
+	draftVenue: Record<string, unknown> | undefined,
 	demoVenue: Record<string, unknown> | undefined,
 	ctx: PublishCtx,
 ): Record<string, unknown> | undefined {
@@ -535,7 +534,7 @@ function mapHeroSection(
 		};
 	}
 	return buildHeroFromDraft(
-		draftHero as NonNullable<DraftContent['hero']>,
+		draftHero,
 		demoHero,
 		priorHero,
 		invitationTitle,

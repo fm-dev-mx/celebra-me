@@ -14,6 +14,26 @@ export const godparentGroupDraftSchema = z.object({
 	names: optionalText(),
 });
 
+/**
+ * Flat draft label fields that map to published `family.labels`.
+ * Order is serialization-stable for the published nested object.
+ * SSOT: these keys must remain members of `familyDraftSchema`.
+ */
+export const FAMILY_LABEL_KEYS = [
+	'sectionSubtitle',
+	'sectionTitle',
+	'parentsTitle',
+	'fatherRole',
+	'motherRole',
+	'godparentsTitle',
+	'spouseTitle',
+	'spouseRole',
+	'childrenTitle',
+	'sectionMessage',
+] as const;
+
+export type FamilyLabelKey = (typeof FAMILY_LABEL_KEYS)[number];
+
 export const familyDraftSchema = z.object({
 	fatherName: optionalText(200),
 	fatherDeceased: z.boolean().optional(),
@@ -44,3 +64,8 @@ export const familyDraftSchema = z.object({
 export type FamilyDraft = z.infer<typeof familyDraftSchema>;
 export type FamilyGroupDraft = z.infer<typeof familyGroupDraftSchema>;
 export type GodparentGroupDraft = z.infer<typeof godparentGroupDraftSchema>;
+
+/** Compile-time guard: every label key remains a draft family field. */
+type _AssertFamilyLabelsInDraft = FamilyLabelKey extends keyof FamilyDraft ? true : never;
+const _familyLabelsInDraft: _AssertFamilyLabelsInDraft = true;
+void _familyLabelsInDraft;

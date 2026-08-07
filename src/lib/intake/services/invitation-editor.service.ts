@@ -24,6 +24,10 @@ import {
 	DraftNormalizationError,
 	mapNestedToDraftContent,
 } from '@/lib/intake/services/draft-content-mapper';
+import {
+	restoreDraftSection,
+	restoreEntireDraft,
+} from '@/lib/intake/services/draft-restore.service';
 import { resolveAssetSlug } from '@/lib/assets/asset-slug';
 import { mergePublishedWithDraft } from '@/lib/intake/services/merge-content.service';
 import {
@@ -32,10 +36,7 @@ import {
 } from '@/lib/intake/services/draft-mutation.service';
 import type { InvitationMutationCommandContext } from '@/lib/intake/mutations/command-context';
 import { recordInvitationMutationOutcome } from '@/lib/intake/services/mutation-operation.service';
-import {
-	restoreInvitationFromPublishedAtomic,
-	saveInvitationMetadataAtomic,
-} from '@/lib/intake/repositories/editor-atomic.repository';
+import { saveInvitationMetadataAtomic } from '@/lib/intake/repositories/editor-atomic.repository';
 import { createMutationOutcome } from '@/lib/intake/mutations/outcome';
 import {
 	EditorEnvironmentMismatchError,
@@ -401,60 +402,46 @@ export async function restoreInvitationEditorFromPublished(
 	invitationId: string,
 	input: {
 		expectedDraftUpdatedAt: string | null;
-		 expectedInvitationUpdatedAt: string;
+		expectedInvitationUpdatedAt: string;
 	},
 	commandContext: InvitationMutationCommandContext,
 ) {
-	const [invitation, draft, published] = await Promise.all([
-		findInvitationById(invitationId),
-		findDraftByInvitationId(invitationId),
-		findPublishedByInvitationId(invitationId),
-	]);
-	if (!invitation) {
-		throw new ApiError(404, 'not_found', 'No se encontró la invitación.');
-	}
-	if (!published) {
-		throw new ApiError(404, 'not_found', 'No existe una versión pública para restaurar.');
-	}
-	if (
-		invitation.updatedAt !== input.expectedInvitationUpdatedAt ||
-		(draft?.updatedAt ?? null) !== input.expectedDraftUpdatedAt
-	) {
-		throw new ApiError(
-			409,
-			'conflict',
-			'Otra persona guardó cambios antes que tú. Recarga los datos para continuar.',
-		);
-	}
-
-	const content = mapNestedToDraftContent(published.content);
-	const atomic = await restoreInvitationFromPublishedAtomic({
-		invitationId,
-		expectedInvitationUpdatedAt: input.expectedInvitationUpdatedAt,
-		expectedDraftUpdatedAt: input.expectedDraftUpdatedAt,
-		expectedPublishedId: published.id,
-		expectedPublishedVersion: published.version,
-		draftContent: content,
-		context: commandContext,
-	});
-	return {
-		...(draft ?? {
-			id: atomic.draftId!,
+	try {
+		const restored = await restoreEntireDraft({
 			invitationId,
-			submissionId: null,
-			createdAt: atomic.draftUpdatedAt!,
-		}),
-		id: atomic.draftId!,
-		content,
-		status: 'draft' as const,
-		updatedAt: atomic.draftUpdatedAt!,
-		mutation: createMutationOutcome({
-			operationId: commandContext.operationId,
-			status: atomic.idempotent ? 'replayed' : 'applied',
-			completedSteps: ['invitation_metadata_restored', 'draft_restored'],
-			...(atomic.idempotent
-				? { replayedFromOperationId: commandContext.operationId }
-				: {}),
-		}),
-	};
+			expectedDraftUpdatedAt: input.expectedDraftUpdatedAt,
+			expectedInvitationUpdatedAt: input.expectedInvitationUpdatedAt,
+			commandContext,
+		});
+		return { ...restored.draft, mutation: restored.mutation };
+	} catch (error) {
+		if (error instanceof DraftRevisionConflictError) {
+			throw new ApiError(409, 'conflict', error.message);
+		}
+		throw error;
+	}
+}
+
+/** Restore one editable section from the published revision; other draft edits survive. */
+export async function restoreInvitationEditorSection(
+	invitationId: string,
+	input: {
+		section: InvitationEditorSectionKey;
+		expectedDraftUpdatedAt: string | null;
+	},
+) {
+	try {
+		const restored = await restoreDraftSection({
+			invitationId,
+			section: input.section,
+			expectedDraftUpdatedAt: input.expectedDraftUpdatedAt,
+			actor: 'editor',
+		});
+		return restored.draft;
+	} catch (error) {
+		if (error instanceof DraftRevisionConflictError) {
+			throw new ApiError(409, 'conflict', error.message);
+		}
+		throw error;
+	}
 }

@@ -28,14 +28,12 @@ export const ENVELOPE_TEXT_FIELDS = [
 ] as const;
 
 /**
- * Subset of `rsvp.personalizedAccess` the draft contract owns. Any other field
- * (e.g. `noteText`) belongs to the published revision and must survive publish.
+ * Subset of `rsvp.personalizedAccess` the draft/editor contract owns.
+ * Derived from the Draft schema shape — published-only fields like `noteText`
+ * are intentionally absent and must survive publish from the prior revision.
+ * Ordering is not UI-significant; keep alphabetical for stable diffs.
  */
-export const PERSONALIZED_ACCESS_DRAFT_KEYS: readonly string[] = [
-	'title',
-	'subtitle',
-	'footerText',
-];
+export const PERSONALIZED_ACCESS_DRAFT_KEYS = ['footerText', 'subtitle', 'title'] as const;
 
 export const ALLOWED_MIME_TYPES = ['image/webp', 'image/jpeg', 'image/png'];
 

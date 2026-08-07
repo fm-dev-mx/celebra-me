@@ -405,7 +405,7 @@ export class AdminApi {
 
 	async publishInvitationEditor(
 		invitationId: string,
-		payload: import('./dto/intake').InvitationPublicationPreflightDTO & {
+		payload: InvitationPublicationPreflightDTO & {
 			idempotencyKey: string;
 		},
 	): Promise<{ context: InvitationEditorContextDTO; publishedContent: Record<string, unknown> }> {
@@ -442,6 +442,20 @@ export class AdminApi {
 		const response = this.handleResponse(result);
 		this.restoreMutationRoots.delete(mutationKey);
 		return response;
+	}
+
+	async restoreInvitationEditorSection(
+		invitationId: string,
+		payload: {
+			section: string;
+			expectedDraftUpdatedAt: string | null;
+		},
+	): Promise<{ context: InvitationEditorContextDTO }> {
+		const result = await dashboardApi.post<{ context: InvitationEditorContextDTO }>(
+			`/api/dashboard/intake/${encodeURIComponent(invitationId)}/editor/restore-section`,
+			payload,
+		);
+		return this.handleResponse(result);
 	}
 
 	async reconcileInvitationEditorRsvp(
