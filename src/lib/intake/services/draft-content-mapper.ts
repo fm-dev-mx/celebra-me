@@ -260,8 +260,7 @@ function mapFamilyToDraft(
 	const childrenArr = family.children as Array<{ name: string }> | undefined;
 	const labels = family.labels as Record<string, unknown> | undefined;
 	const publishedGroups = family.groups as
-		| Array<{ title: string; items: Array<{ name: string; role?: string }> }>
-		| undefined;
+		Array<{ title: string; items: Array<{ name: string; role?: string }> }> | undefined;
 	const result = {
 		fatherName: str(parents?.father),
 		motherName: str(parents?.mother),
@@ -294,8 +293,7 @@ function mapFamilyToDraft(
 		motherRole: str(labels?.motherRole),
 		visible: typeof family.visible === 'boolean' ? family.visible : undefined,
 		presentation: str(family.presentation) as
-			| NonNullable<DraftContent['family']>['presentation']
-			| undefined,
+			NonNullable<DraftContent['family']>['presentation'] | undefined,
 		groups: publishedGroups
 			?.filter((g) => g.items && g.items.length > 0)
 			.map((g) => ({
@@ -352,9 +350,7 @@ const PUBLISHED_PARENTS_KEYS = new Set([
 ]);
 
 export type DraftNormalizationIssueReason =
-	| 'conflicting_values'
-	| 'unsupported_shape'
-	| 'unrepresentable_field';
+	'conflicting_values' | 'unsupported_shape' | 'unrepresentable_field';
 
 export interface DraftNormalizationIssue {
 	path: string;
@@ -483,7 +479,6 @@ function canonicalizeGroupList(
 	});
 }
 
-// eslint-disable-next-line complexity -- One boundary converts every legacy nested family shape.
 function canonicalizeFamilyDraft(
 	family: Record<string, unknown>,
 	issues: DraftNormalizationIssue[],
@@ -784,8 +779,7 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 	if (isNonEmptyObject(rsvp)) {
 		const whatsappConfig = rsvp.whatsappConfig as Record<string, unknown> | undefined;
 		const responseMessages = rsvp.responseMessages as
-			| NonNullable<DraftContent['rsvp']>['responseMessages']
-			| undefined;
+			NonNullable<DraftContent['rsvp']>['responseMessages'] | undefined;
 		result.rsvp = {
 			title: str(rsvp.title),
 			guestCap: typeof rsvp.guestCap === 'number' ? rsvp.guestCap : undefined,
