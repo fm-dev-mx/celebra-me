@@ -4,9 +4,13 @@ import {
 	createPendingPreviewApprovalArtifact,
 	PREVIEW_APPROVAL_SCHEMA_VERSION,
 	verifyPreviewApprovalArtifact,
-	writePendingApprovalEvidenceScaffold,
 	type PreviewApprovalArtifact,
 } from '../../scripts/provision/preview-approval-service.ts';
+import * as previewApprovalModule from '../../scripts/provision/preview-approval-service.ts';
+
+const writePendingApprovalEvidenceScaffold = (
+	previewApprovalModule as Record<string, any>
+)['writePendingApprovalEvidenceScaffold'];
 import type { PreviewLiveVerificationResult } from '../../scripts/provision/preview-live-verification.ts';
 import {
 	createMemoryPreviewApprovalStore,

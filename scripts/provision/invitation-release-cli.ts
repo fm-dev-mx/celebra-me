@@ -177,6 +177,132 @@ function sanitizeMessage(message: string): string {
 		.replace(/[A-Za-z]:\\[^\s"']+/g, '[ruta interna]');
 }
 
+async function runProductionPreflightDispatch(input: {
+	slug: string;
+	definition: ReturnType<typeof getInvitationDefinition>;
+	ownerUserId?: string;
+	pruneAssets: boolean;
+	backupManifestPath?: string;
+	json: boolean;
+	verbose: boolean;
+	packageInput: Awaited<ReturnType<typeof resolveInvitationPackageInput>>;
+	assetPolicy: ReturnType<typeof parseAssetPolicy> | undefined;
+	conflictResolutions: ReturnType<typeof loadConflictResolutionsFile> | undefined;
+	updateScope?: UpdateScope;
+}): Promise<void> {
+	const preflight = await runPromotionPreflight({
+		packageData: input.packageInput.packageData,
+		ownerUserId: input.ownerUserId,
+		assetPolicy: input.assetPolicy,
+		pruneAssets: input.pruneAssets,
+		updateScope: input.updateScope,
+		conflictResolutions: input.conflictResolutions,
+		backupManifestPath: input.backupManifestPath,
+		requireBackup: false,
+		getProductionDbUrl: getProdDbUrl,
+	});
+	if (input.json) {
+		console.log(JSON.stringify(toPublicPromotionReport(preflight), null, 2));
+	} else if (input.verbose) {
+		writeHuman(`\n=== invitation:release (Production) ===`);
+		writeHuman(`Status: ${preflight.status}`);
+		if (preflight.reason) writeHuman(`Reason: ${preflight.reason}`);
+		writeHuman(`Schema: ${preflight.schema.state}`);
+	} else {
+		writeHuman(
+			formatPromotionPlanCompact(preflight, {
+				title: input.definition.title,
+				route: `/${input.definition.eventType}/${input.definition.slug}`,
+				deliveryScope: input.definition.deliveryScope,
+			}),
+		);
+		if (preflight.status === 'PROMOTABLE') {
+			writeHuman(
+				`${operatorSymbol('info')} Para aplicar: pnpm invitation:release -- --slug ${input.slug} --targets production --apply`,
+			);
+		}
+		if (preflight.status === 'BLOCKED' && preflight.blockCode === 'SCHEMA_INCOMPATIBLE') {
+			writeHuman(
+				`${operatorSymbol('warn')} Schema incompatible. Ejecute pnpm db:migrate (nunca se migra automáticamente desde invitation:release).`,
+			);
+		}
+	}
+	if (preflight.status === 'BLOCKED') process.exitCode = 1;
+}
+
+async function runProductionApplyDispatch(input: {
+	slug: string;
+	definition: ReturnType<typeof getInvitationDefinition>;
+	ownerUserId?: string;
+	pruneAssets: boolean;
+	backupManifestPath?: string;
+	json: boolean;
+	packageInput: Awaited<ReturnType<typeof resolveInvitationPackageInput>>;
+	assetPolicy: ReturnType<typeof parseAssetPolicy> | undefined;
+	conflictResolutions: ReturnType<typeof loadConflictResolutionsFile> | undefined;
+	updateScope?: UpdateScope;
+}): Promise<void> {
+	try {
+		const report = await orchestrateInvitationPromotion({
+			packageData: input.packageInput.packageData,
+			ownerUserId: input.ownerUserId,
+			assetPolicy: input.assetPolicy,
+			pruneAssets: input.pruneAssets,
+			updateScope: input.updateScope,
+			conflictResolutions: input.conflictResolutions,
+			backupManifestPath: input.backupManifestPath,
+			deliveryScope: input.definition.deliveryScope,
+			title: input.definition.title,
+			route: `/${input.definition.eventType}/${input.definition.slug}`,
+			quiet: input.json,
+		});
+
+		if (input.json) {
+			console.log(JSON.stringify(toPublicPromotionReport(report), null, 2));
+		} else {
+			if (report.status === 'BLOCKED' && report.reason) {
+				writeHuman(`${operatorSymbol('fail')} ${report.reason}`);
+				if (report.blockCode === 'SCHEMA_INCOMPATIBLE') {
+					writeHuman(
+						`${operatorSymbol('warn')} Ejecute pnpm db:migrate; invitation:release nunca migra el schema.`,
+					);
+				}
+			}
+			if ('verification' in report && report.verification) {
+				writeHuman(formatPromotionResult(report));
+			}
+		}
+		if (report.status === 'BLOCKED' || report.status === 'APPLIED_BUT_VERIFICATION_FAILED') {
+			process.exitCode = 1;
+		}
+	} catch (error: unknown) {
+		const message = sanitizeMessage(error instanceof Error ? error.message : String(error));
+		if (input.json) {
+			console.log(
+				JSON.stringify(
+					{
+						status: 'BLOCKED',
+						blockCode:
+							error instanceof Error && 'code' in error
+								? String(
+										(error as { code?: string }).code ??
+											'PRODUCTION_PLAN_BLOCKED',
+									)
+								: 'PRODUCTION_PLAN_BLOCKED',
+						reason: message,
+						slug: input.slug,
+					},
+					null,
+					2,
+				),
+			);
+		} else {
+			writeHuman(`${operatorSymbol('fail')} ${message}`);
+		}
+		process.exitCode = 1;
+	}
+}
+
 async function runProductionReleaseDispatch(input: {
 	slug: string;
 	definition: ReturnType<typeof getInvitationDefinition>;
@@ -238,106 +364,23 @@ async function runProductionReleaseDispatch(input: {
 	});
 
 	if (!input.apply) {
-		const preflight = await runPromotionPreflight({
-			packageData: packageInput.packageData,
-			ownerUserId: input.ownerUserId,
+		await runProductionPreflightDispatch({
+			...input,
+			packageInput,
 			assetPolicy,
-			pruneAssets: input.pruneAssets,
-			updateScope,
 			conflictResolutions,
-			backupManifestPath: input.backupManifestPath,
-			requireBackup: false,
-			getProductionDbUrl: getProdDbUrl,
+			updateScope,
 		});
-		if (input.json) {
-			console.log(JSON.stringify(toPublicPromotionReport(preflight), null, 2));
-		} else if (input.verbose) {
-			writeHuman(`\n=== invitation:release (Production) ===`);
-			writeHuman(`Status: ${preflight.status}`);
-			if (preflight.reason) writeHuman(`Reason: ${preflight.reason}`);
-			writeHuman(`Schema: ${preflight.schema.state}`);
-		} else {
-			writeHuman(
-				formatPromotionPlanCompact(preflight, {
-					title: input.definition.title,
-					route: `/${input.definition.eventType}/${input.definition.slug}`,
-					deliveryScope: input.definition.deliveryScope,
-				}),
-			);
-			if (preflight.status === 'PROMOTABLE') {
-				writeHuman(
-					`${operatorSymbol('info')} Para aplicar: pnpm invitation:release -- --slug ${input.slug} --targets production --apply`,
-				);
-			}
-			if (preflight.status === 'BLOCKED' && preflight.blockCode === 'SCHEMA_INCOMPATIBLE') {
-				writeHuman(
-					`${operatorSymbol('warn')} Schema incompatible. Ejecute pnpm db:migrate (nunca se migra automáticamente desde invitation:release).`,
-				);
-			}
-		}
-		if (preflight.status === 'BLOCKED') process.exitCode = 1;
 		return;
 	}
 
-	try {
-		const report = await orchestrateInvitationPromotion({
-			packageData: packageInput.packageData,
-			ownerUserId: input.ownerUserId,
-			assetPolicy,
-			pruneAssets: input.pruneAssets,
-			updateScope,
-			conflictResolutions,
-			backupManifestPath: input.backupManifestPath,
-			deliveryScope: input.definition.deliveryScope,
-			title: input.definition.title,
-			route: `/${input.definition.eventType}/${input.definition.slug}`,
-			quiet: input.json,
-		});
-
-		if (input.json) {
-			console.log(JSON.stringify(toPublicPromotionReport(report), null, 2));
-		} else {
-			if (report.status === 'BLOCKED' && report.reason) {
-				writeHuman(`${operatorSymbol('fail')} ${report.reason}`);
-				if (report.blockCode === 'SCHEMA_INCOMPATIBLE') {
-					writeHuman(
-						`${operatorSymbol('warn')} Ejecute pnpm db:migrate; invitation:release nunca migra el schema.`,
-					);
-				}
-			}
-			if ('verification' in report && report.verification) {
-				writeHuman(formatPromotionResult(report));
-			}
-		}
-		if (report.status === 'BLOCKED' || report.status === 'APPLIED_BUT_VERIFICATION_FAILED') {
-			process.exitCode = 1;
-		}
-	} catch (error: unknown) {
-		const message = sanitizeMessage(error instanceof Error ? error.message : String(error));
-		if (input.json) {
-			console.log(
-				JSON.stringify(
-					{
-						status: 'BLOCKED',
-						blockCode:
-							error instanceof Error && 'code' in error
-								? String(
-										(error as { code?: string }).code ??
-											'PRODUCTION_PLAN_BLOCKED',
-									)
-								: 'PRODUCTION_PLAN_BLOCKED',
-						reason: message,
-						slug: input.slug,
-					},
-					null,
-					2,
-				),
-			);
-		} else {
-			writeHuman(`${operatorSymbol('fail')} ${message}`);
-		}
-		process.exitCode = 1;
-	}
+	await runProductionApplyDispatch({
+		...input,
+		packageInput,
+		assetPolicy,
+		conflictResolutions,
+		updateScope,
+	});
 }
 
 export function printHelp(): void {
@@ -385,6 +428,223 @@ Schema BEHIND/DRIFT: run pnpm db:migrate (never auto-migrates from this command)
 Production promote (approved Preview → Production) is folded into this CLI via --targets production.
 Each Local, Preview content, Preview approval, and Production write uses exactly one env-appropriate authorization.
 `);
+}
+
+async function executeLocalTargetPlan(input: {
+	slug: string;
+	isTTY: boolean;
+	nonInteractive: boolean;
+	executionPlans: Map<InvitationUpdateTarget, OperationalPlan>;
+	rekeyFrom?: string;
+	sourceDir?: string;
+	ownerUserId?: string;
+	updateScope?: UpdateScope;
+	assetPolicy?: ReturnType<typeof parseAssetPolicy>;
+	pruneAssets: boolean;
+	conflictResolutions?: ReturnType<typeof loadConflictResolutionsFile>;
+	reports: StageReport[];
+}): Promise<{
+	executionPlanId: string;
+	receiptPlanId: string;
+	result: TargetApplyResultData;
+}> {
+	if (input.isTTY && !input.nonInteractive) {
+		const confirmed = await confirm({
+			message: `¿Aplicar la release administrada de "${input.slug}" en Local?`,
+			default: false,
+		});
+		if (!confirmed) {
+			throw Object.assign(new Error('OPERATOR_CANCELLED'), {
+				mutationStarted: false,
+				cancelled: true,
+			}) as LifecycleExecutionError;
+		}
+	}
+	const localPlan = input.executionPlans.get('local');
+	if (!localPlan) {
+		throw Object.assign(new Error('No existe un plan confirmado de Local.'), {
+			mutationStarted: false,
+		}) as LifecycleExecutionError;
+	}
+	const executedLocal = await planAndApplyLocalContent({
+		slug: input.slug,
+		apply: true,
+		plan: localPlan,
+		rekeyFrom: input.rekeyFrom,
+		sourceDir: input.sourceDir,
+		ownerUserId: input.ownerUserId,
+		updateScope: input.updateScope,
+		assetPolicy: input.assetPolicy,
+		pruneAssets: input.pruneAssets,
+		conflictResolutions: input.conflictResolutions,
+	});
+	input.reports.push({
+		stage: 'apply',
+		environment: 'local',
+		status: executedLocal.isZeroDrift ? 'IN_SYNC' : 'UPDATED',
+		plannedOperations: executedLocal.plannedOperations,
+		completedOperations: executedLocal.completedOperations,
+		databaseInserts: executedLocal.databaseInserts,
+		databaseUpdates: executedLocal.databaseUpdates,
+		databaseDeletes: executedLocal.databaseDeletes,
+		storageUploads: executedLocal.storageUploads,
+		storageOverwrites: executedLocal.storageOverwrites,
+		storageMoves: executedLocal.storageMoves,
+		storageDeletes: executedLocal.storageDeletes,
+		assetCounts: assetCounts(executedLocal.actions),
+		publishedVersion: executedLocal.publishedVersion,
+	});
+	return {
+		executionPlanId: executedLocal.plan.planId,
+		receiptPlanId: executedLocal.receipt?.planId ?? '',
+		result: {
+			target: 'local',
+			planId: executedLocal.plan.planId,
+			status: executedLocal.isZeroDrift ? 'SIN CAMBIOS' : 'CAMBIOS APLICADOS',
+			completedOperations: executedLocal.completedOperations,
+			databaseWrites: {
+				inserts: executedLocal.databaseInserts,
+				updates: executedLocal.databaseUpdates,
+				deletes: executedLocal.databaseDeletes,
+			},
+			storageMutations: {
+				uploads: executedLocal.storageUploads,
+				overwrites: executedLocal.storageOverwrites,
+				moves: executedLocal.storageMoves,
+				deletes: executedLocal.storageDeletes,
+			},
+			publishedVersion: executedLocal.publishedVersion,
+			functionalChanges: executedLocal.functionalChanges,
+		},
+	};
+}
+
+async function executePreviewTargetPlan(input: {
+	slug: string;
+	isTTY: boolean;
+	nonInteractive: boolean;
+	resolvedPackage: unknown;
+	sourceDir?: string;
+	confirmationPackage: InvitationPackageData | undefined;
+	executionPlans: Map<InvitationUpdateTarget, OperationalPlan>;
+	assetPolicy?: ReturnType<typeof parseAssetPolicy>;
+	pruneAssets: boolean;
+	updateScope?: UpdateScope;
+	conflictResolutions?: ReturnType<typeof loadConflictResolutionsFile>;
+	rekeyFrom?: string;
+	ownerUserId?: string;
+	reports: StageReport[];
+}): Promise<{
+	executionPlanId: string;
+	receiptPlanId: string;
+	result: TargetApplyResultData;
+	confirmationPackage?: InvitationPackageData;
+}> {
+	try {
+		await authorizePreviewWriteApply({
+			slug: input.slug,
+			operation: 'apply',
+			confirmPrompt: `Confirm release invitation "${input.slug}" in Preview? Type YES to proceed: `,
+			isInteractive: !input.nonInteractive && input.isTTY,
+		});
+	} catch (error: unknown) {
+		const message = error instanceof Error ? error.message : String(error);
+		if (message.includes('PREVIEW_WRITE_CANCELLED')) {
+			throw Object.assign(new Error('OPERATOR_CANCELLED'), {
+				mutationStarted: false,
+				cancelled: true,
+			}) as LifecycleExecutionError;
+		}
+		throw error;
+	}
+	let currentConfirmationPackage = input.confirmationPackage;
+	if (!input.resolvedPackage) {
+		const packaged = await exportInvitationPackage({
+			slug: input.slug,
+			sourceDir: input.sourceDir ?? '',
+			dryRun: false,
+		});
+		currentConfirmationPackage = packaged.packageData;
+		input.reports.push({
+			stage: 'package',
+			environment: 'local',
+			status: 'UPDATED',
+			packageHash: packaged.stats.packageHash,
+		});
+	}
+	let dbUrl: string;
+	try {
+		const resolved = getPreviewDbUrl();
+		assertPreviewDbUrl(resolved.url);
+		dbUrl = resolved.url;
+	} catch {
+		throw Object.assign(
+			new Error('PREVIEW_DB_URL no configurada o perímetro inválido.'),
+			{ mutationStarted: false },
+		) as LifecycleExecutionError;
+	}
+	const previewPlan = input.executionPlans.get('preview');
+	if (!previewPlan) {
+		throw Object.assign(new Error('No existe un plan confirmado de Preview.'), {
+			mutationStarted: false,
+		}) as LifecycleExecutionError;
+	}
+	if (!currentConfirmationPackage) {
+		throw Object.assign(new Error('No existe un paquete de confirmación resuelto para Preview.'), {
+			mutationStarted: false,
+		}) as LifecycleExecutionError;
+	}
+	const result = await planAndApplyPreviewContent({
+		packageData: currentConfirmationPackage,
+		targetDbUrl: dbUrl,
+		apply: true,
+		plan: previewPlan,
+		assetPolicy: input.assetPolicy,
+		pruneAssets: input.pruneAssets,
+		updateScope: input.updateScope,
+		conflictResolutions: input.conflictResolutions,
+		rekeyFrom: input.rekeyFrom,
+		ownerUserId: input.ownerUserId,
+	});
+	const appliedPlan = result.plan;
+	if (!appliedPlan) {
+		throw Object.assign(new Error('Preview apply returned no plan.'), {
+			mutationStarted: true,
+		}) as LifecycleExecutionError;
+	}
+	input.reports.push({
+		stage: 'promote',
+		environment: 'preview',
+		status: result.isZeroDrift ? 'IN_SYNC' : 'UPDATED',
+		plannedOperations: result.plannedMutations,
+		completedOperations: result.executedMutations,
+		databaseInserts: appliedPlan.physicalDatabaseOps.inserts,
+		databaseUpdates: appliedPlan.physicalDatabaseOps.updates,
+		databaseDeletes: appliedPlan.physicalDatabaseOps.deletes,
+		storageUploads: appliedPlan.storageOps.uploads,
+		storageOverwrites: appliedPlan.storageOps.overwrites,
+		storageMoves: appliedPlan.storageOps.moves,
+		storageDeletes: appliedPlan.storageOps.deletes,
+		assetCounts: assetCounts(result.actions),
+		publishedVersion: result.publishedVersion,
+		packageHash: result.packageHash,
+		approvalState: 'pending_hosted_validation',
+	});
+	return {
+		executionPlanId: appliedPlan.planId,
+		receiptPlanId: result.receipt?.planId ?? '',
+		result: {
+			target: 'preview',
+			planId: appliedPlan.planId,
+			status: result.isZeroDrift ? 'SIN CAMBIOS' : 'CAMBIOS APLICADOS',
+			completedOperations: result.executedMutations,
+			databaseWrites: appliedPlan.physicalDatabaseOps,
+			storageMutations: appliedPlan.storageOps,
+			publishedVersion: result.publishedVersion,
+			functionalChanges: result.functionalChanges,
+		},
+		confirmationPackage: currentConfirmationPackage,
+	};
 }
 
 // eslint-disable-next-line complexity -- CLI handles mode dispatch, interactive prompts, and hosted environment flow gates.
@@ -508,9 +768,9 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 		return;
 	}
 
-	let statusMode = args.includes('--status');
-	let apply = args.includes('--apply');
-	let dryRun = args.includes('--dry-run');
+	const statusMode = args.includes('--status');
+	const apply = args.includes('--apply');
+	const dryRun = args.includes('--dry-run');
 
 	const modeCount = (statusMode ? 1 : 0) + (apply ? 1 : 0) + (dryRun ? 1 : 0);
 	if (modeCount > 1) {
@@ -523,7 +783,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 		throw new Error('Non-TTY execution requires explicit options and --non-interactive.');
 	}
 
-	let slug = value(args, '--slug');
+	const slug = value(args, '--slug');
 	const rekeyFrom = value(args, '--rekey-from');
 	let targets = parseTargets(value(args, '--targets'));
 	const sourceDir = value(args, '--source-dir');
@@ -1296,28 +1556,11 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 				sanitizeMessage(error instanceof Error ? error.message : String(error)),
 			executeTarget: async (target) => {
 				if (target === 'local') {
-					if (isTTY && !nonInteractive) {
-						const confirmed = await confirm({
-							message: `¿Aplicar la release administrada de "${slug}" en Local?`,
-							default: false,
-						});
-						if (!confirmed) {
-							throw Object.assign(new Error('OPERATOR_CANCELLED'), {
-								mutationStarted: false,
-								cancelled: true,
-							}) as LifecycleExecutionError;
-						}
-					}
-					const localPlan = executionPlans.get('local');
-					if (!localPlan) {
-						throw Object.assign(new Error('No existe un plan confirmado de Local.'), {
-							mutationStarted: false,
-						}) as LifecycleExecutionError;
-					}
-					const executedLocal = await planAndApplyLocalContent({
+					return executeLocalTargetPlan({
 						slug,
-						apply: true,
-						plan: localPlan,
+						isTTY,
+						nonInteractive,
+						executionPlans,
 						rekeyFrom,
 						sourceDir,
 						ownerUserId,
@@ -1325,146 +1568,34 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 						assetPolicy,
 						pruneAssets,
 						conflictResolutions,
+						reports,
 					});
-					reports.push({
-						stage: 'apply',
-						environment: 'local',
-						status: executedLocal.isZeroDrift ? 'IN_SYNC' : 'UPDATED',
-						plannedOperations: executedLocal.plannedOperations,
-						completedOperations: executedLocal.completedOperations,
-						databaseInserts: executedLocal.databaseInserts,
-						databaseUpdates: executedLocal.databaseUpdates,
-						databaseDeletes: executedLocal.databaseDeletes,
-						storageUploads: executedLocal.storageUploads,
-						storageOverwrites: executedLocal.storageOverwrites,
-						storageMoves: executedLocal.storageMoves,
-						storageDeletes: executedLocal.storageDeletes,
-						assetCounts: assetCounts(executedLocal.actions),
-						publishedVersion: executedLocal.publishedVersion,
-					});
-					return {
-						executionPlanId: executedLocal.plan.planId,
-						receiptPlanId: executedLocal.receipt?.planId ?? '',
-						result: {
-							target: 'local',
-							planId: executedLocal.plan.planId,
-							status: executedLocal.isZeroDrift ? 'SIN CAMBIOS' : 'CAMBIOS APLICADOS',
-							completedOperations: executedLocal.completedOperations,
-							databaseWrites: {
-								inserts: executedLocal.databaseInserts,
-								updates: executedLocal.databaseUpdates,
-								deletes: executedLocal.databaseDeletes,
-							},
-							storageMutations: {
-								uploads: executedLocal.storageUploads,
-								overwrites: executedLocal.storageOverwrites,
-								moves: executedLocal.storageMoves,
-								deletes: executedLocal.storageDeletes,
-							},
-							publishedVersion: executedLocal.publishedVersion,
-							functionalChanges: executedLocal.functionalChanges,
-						},
-					};
 				}
 
 				if (target === 'preview') {
-					try {
-						await authorizePreviewWriteApply({
-							slug,
-							operation: 'apply',
-							confirmPrompt: `Confirm release invitation "${slug}" in Preview? Type YES to proceed: `,
-							isInteractive: !nonInteractive && isTTY,
-						});
-					} catch (error: unknown) {
-						const message = error instanceof Error ? error.message : String(error);
-						if (message.includes('PREVIEW_WRITE_CANCELLED')) {
-							throw Object.assign(new Error('OPERATOR_CANCELLED'), {
-								mutationStarted: false,
-								cancelled: true,
-							}) as LifecycleExecutionError;
-						}
-						throw error;
-					}
-					if (!resolvedPackage) {
-						const packaged = await exportInvitationPackage({
-							slug,
-							sourceDir: sourceDir ?? '',
-							dryRun: false,
-						});
-						confirmationPackage = packaged.packageData;
-						reports.push({
-							stage: 'package',
-							environment: 'local',
-							status: 'UPDATED',
-							packageHash: packaged.stats.packageHash,
-						});
-					}
-					let dbUrl: string;
-					try {
-						const resolved = getPreviewDbUrl();
-						assertPreviewDbUrl(resolved.url);
-						dbUrl = resolved.url;
-					} catch {
-						throw Object.assign(
-							new Error('PREVIEW_DB_URL no configurada o perímetro inválido.'),
-							{ mutationStarted: false },
-						) as LifecycleExecutionError;
-					}
-					const previewPlan = executionPlans.get('preview');
-					if (!previewPlan) {
-						throw Object.assign(new Error('No existe un plan confirmado de Preview.'), {
-							mutationStarted: false,
-						}) as LifecycleExecutionError;
-					}
-					const result = await planAndApplyPreviewContent({
-						packageData: confirmationPackage,
-						targetDbUrl: dbUrl,
-						apply: true,
-						plan: previewPlan,
+					const previewRes = await executePreviewTargetPlan({
+						slug,
+						isTTY,
+						nonInteractive,
+						resolvedPackage,
+						sourceDir,
+						confirmationPackage,
+						executionPlans,
 						assetPolicy,
 						pruneAssets,
 						updateScope,
 						conflictResolutions,
 						rekeyFrom,
 						ownerUserId,
+						reports,
 					});
-					const appliedPlan = result.plan;
-					if (!appliedPlan) {
-						throw Object.assign(new Error('Preview apply returned no plan.'), {
-							mutationStarted: true,
-						}) as LifecycleExecutionError;
+					if (previewRes.confirmationPackage) {
+						confirmationPackage = previewRes.confirmationPackage;
 					}
-					reports.push({
-						stage: 'promote',
-						environment: 'preview',
-						status: result.isZeroDrift ? 'IN_SYNC' : 'UPDATED',
-						plannedOperations: result.plannedMutations,
-						completedOperations: result.executedMutations,
-						databaseInserts: appliedPlan.physicalDatabaseOps.inserts,
-						databaseUpdates: appliedPlan.physicalDatabaseOps.updates,
-						databaseDeletes: appliedPlan.physicalDatabaseOps.deletes,
-						storageUploads: appliedPlan.storageOps.uploads,
-						storageOverwrites: appliedPlan.storageOps.overwrites,
-						storageMoves: appliedPlan.storageOps.moves,
-						storageDeletes: appliedPlan.storageOps.deletes,
-						assetCounts: assetCounts(result.actions),
-						publishedVersion: result.publishedVersion,
-						packageHash: result.packageHash,
-						approvalState: 'pending_hosted_validation',
-					});
 					return {
-						executionPlanId: appliedPlan.planId,
-						receiptPlanId: result.receipt?.planId ?? '',
-						result: {
-							target: 'preview',
-							planId: appliedPlan.planId,
-							status: result.isZeroDrift ? 'SIN CAMBIOS' : 'CAMBIOS APLICADOS',
-							completedOperations: result.executedMutations,
-							databaseWrites: appliedPlan.physicalDatabaseOps,
-							storageMutations: appliedPlan.storageOps,
-							publishedVersion: result.publishedVersion,
-							functionalChanges: result.functionalChanges,
-						},
+						executionPlanId: previewRes.executionPlanId,
+						receiptPlanId: previewRes.receiptPlanId,
+						result: previewRes.result,
 					};
 				}
 
