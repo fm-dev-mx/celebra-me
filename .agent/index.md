@@ -67,8 +67,12 @@ context resolution, use `.agent/routing-matrix.yaml` and `.agent/ownership.yaml`
 
 ## Planning & Governance
 
-- Conversational planning is default. Tracked plans belong under `.agent/plans/active/` per
+- Task Contract, Goal protocol, and Handoff Contract:
   [`.agent/plans/README.md`](./plans/README.md).
+- Conversational planning is default. Tracked plans belong under `.agent/plans/active/` per that
+  README.
 - Historical audits and reports live under `docs/archive/reports/` and `.agent/plans/archived/`.
 - Human-facing agent report layout (review / apply / commit / remediation):
-  [`.agent/templates/agent-report-contract.md`](./templates/agent-report-contract.md)
+  [`.agent/templates/agent-report-contract.md`](./templates/agent-report-contract.md) (presentation
+  only).
+- Non-authoritative provider defaults: [`.agent/external/`](./external/README.md) (never policy).

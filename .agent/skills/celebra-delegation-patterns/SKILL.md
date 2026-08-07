@@ -17,6 +17,7 @@ preconditions:
 related_skills: []
 related_docs:
   - .agent/rules/agent-routing.md
+  - .agent/plans/README.md
 ---
 
 # Celebra-me Delegation Patterns
@@ -24,9 +25,25 @@ related_docs:
 Practical patterns for provider-neutral temporary-subagent handoffs in Celebra-me. The active
 runtime owns invocation syntax, model selection, concurrency, and mechanical capability controls.
 
+Delegation is a **projection** of the Task Contract and Handoff Contract defined in
+`.agent/plans/README.md`. Authorization, scope, invariants, acceptance criteria, safety constraints,
+and required evidence must stay semantically consistent with the parent task.
+
 ## When to Use a Subagent
 
-Use a subagent only when the task creates ONE of these benefits:
+Use a temporary subagent only when the work meets **all** of these criteria (same gate as
+`.agent/rules/agent-routing.md`):
+
+1. It has enough independent value to justify handoff overhead.
+2. It is self-contained and can finish without user interaction.
+3. It has explicit file or output boundaries.
+4. It has clear success criteria and a verification path.
+
+Estimated minutes, file count, or creation of a component/page do not independently justify a
+handoff. If the orchestrator already performed the central investigation, it must not delegate the
+same exploration again.
+
+Benefits that often justify the overhead once the four criteria are met:
 
 | Benefit                | Description                                                                                                                                   | Example                                                                           |
 | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
@@ -108,7 +125,9 @@ Compact output format:
 ## Structured Handoffs
 
 Use `.agent/tmp/handoffs/<task-id>/` to pass approved output between sequential delegated tasks.
-This prevents context truncation and reduces `context` string bloat.
+These are **ephemeral role artifacts**, not a second policy SSOT. Semantic fields follow the Handoff
+Contract in `.agent/plans/README.md`. This prevents context truncation and reduces `context` string
+bloat.
 
 ### When to use structured handoffs
 

@@ -11,7 +11,9 @@ It specifies:
 - How verification must be performed
 - How results must be reported
 
-These rules are **authoritative** unless explicitly overridden by the repository owner.
+These rules are **authoritative** unless temporarily overridden under the Exception Model in
+`AGENTS.md` (owning rule must allow it; explicit current-task authorization; report in handoff).
+Hard Guards in §2 are **non-negotiable**.
 
 ---
 

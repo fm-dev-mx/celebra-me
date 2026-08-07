@@ -1,10 +1,10 @@
 # Celebra-me — Context Routing Matrix (SSOT)
 #
 # Maps task types / domains to the minimum required context (rules, skills, docs).
-# Managed by Goal 3 operating model migration.
+# Agent OS routing surface.
 ---
 version: '1.0.0'
-updated: '2026-07-31'
+updated: '2026-08-07'
 
 bootstrap:
     rules:

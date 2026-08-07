@@ -1,10 +1,10 @@
 # Celebra-me — System Ownership Matrix (SSOT)
 #
 # This file is the single authoritative source of truth (SSOT) mapping system aspects
-# to their canonical owner files. Managed by Goal 3 operating model migration.
+# to their canonical owner files. Agent OS ownership surface.
 ---
 version: '1.0.0'
-updated: '2026-07-30'
+updated: '2026-08-07'
 
 ownership:
     - aspect: 'Agent discovery & active inventory'
@@ -12,11 +12,32 @@ ownership:
       non_owners:
           - 'Archived plans'
           - 'Point-in-time reports'
+          - '.agent/external/'
 
     - aspect: 'Context routing matrix'
       owner: '.agent/routing-matrix.yaml'
       non_owners:
           - 'Narrative docs tables'
+          - '.agent/external/'
+
+    - aspect: 'Task Contract, Goal protocol & Handoff Contract'
+      owner: '.agent/plans/README.md'
+      non_owners:
+          - '.agent/templates/agent-report-contract.md'
+          - '.agent/tmp/handoffs/'
+          - '.agent/external/'
+          - 'Conversation transcripts'
+
+    - aspect: 'Plans lifecycle & tracked plan governance'
+      owner: '.agent/plans/README.md'
+      non_owners:
+          - 'Archived plans as policy'
+          - '.agent/external/'
+
+    - aspect: 'Lightweight plan authoring procedure'
+      owner: '.agent/workflows/plan-authoring.md'
+      non_owners:
+          - 'Manifest-based plan-id systems'
 
     - aspect: 'Validation tiers & review contract'
       owner: '.agent/rules/gatekeeper.md'
@@ -175,7 +196,8 @@ ownership:
       owner: '.agent/skills/'
       non_owners:
           - '.agents/'
-          - 'Global Hermes skills'
+          - 'Host/global skills'
+          - '.agent/external/'
 
     - aspect: 'Available commands'
       owner: 'package.json'

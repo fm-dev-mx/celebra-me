@@ -69,7 +69,8 @@ same exploration again.
 
 ## Delegation Contract
 
-Every handoff must include:
+Every handoff must include the Delegation Contract fields in `.agent/rules/agent-routing.md` and
+remain consistent with the parent Task Contract / Handoff Contract in `.agent/plans/README.md`:
 
 1. Role contract and goal.
 2. Allowed files or systems and explicit non-goals.

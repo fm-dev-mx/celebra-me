@@ -5,19 +5,42 @@ dashboard, RSVP operations, and publishing. This is the canonical entry point fo
 
 ## Authority Hierarchy
 
-1. Explicit repository-owner and current-task instructions.
-2. This file and active rules under `.agent/rules/`.
-3. Canonical skills under `.agent/skills/` and workflows under `.agent/workflows/`.
-4. Active architecture and domain docs under `docs/core/` and `docs/domains/`.
-5. Brand briefs under `.agent/briefs/` and templates under `.agent/templates/`.
+Apply this order when instructions conflict:
 
-Historical plans (`.agent/plans/archived/`) and point-in-time reports are evidence only, not policy
-authority.
+1. Non-overridable platform and organization safeguards.
+2. Repository policies and invariants explicitly marked as non-overridable (this file’s Non-Negotiable
+   Boundaries and their owning rules).
+3. Explicit current-task authorization, within repository-defined boundaries.
+4. Other repository safety, domain, workflow, and operational policy (`.agent/rules/`, skills,
+   workflows, `docs/core/`, `docs/domains/`, briefs, templates).
+5. Provider-specific defaults.
+6. General external principles (see `.agent/external/` — non-authoritative defaults only).
+
+Historical plans (`.agent/plans/archived/`), point-in-time reports, and `.agent/external/` are
+evidence or operator guidance only — never policy authority.
+
+## Exception Model
+
+A repository rule may be temporarily overridden only when **all** of the following hold:
+
+- the owning rule marks the constraint as overridable;
+- the user explicitly authorizes the specific exception in the current task;
+- scope and duration are limited to the current task;
+- the exception does not weaken non-overridable safeguards;
+- unrelated permissions are not inferred from it;
+- the exception and its operational effect are reported in the final handoff.
+
+Current-task authorization may unlock gated operations where repository policy permits it. It must
+not implicitly waive unrelated constraints. Do not create or rely on a generic bypass mechanism.
+Harness signals such as `.agent/tmp/allow-git-write` are not standing permission.
 
 ## Non-Negotiable Boundaries
 
+These are **non-overridable** unless a cited owning rule explicitly marks a narrower exception path:
+
 - **Git Safety:** Task-scoped Git authorization (`.agent/rules/git-safety.md`). Do not
-  stage/commit/reset without explicit authorization.
+  stage/commit/reset/push/create PRs or otherwise mutate Git state without explicit current-task
+  authorization.
 - **Path ≠ Privilege:** Worktree lane location (`dev-local`, `dev-preview`, `dev-extra`,
   `Integration`) grants no database or environment mutation privileges.
 - **Database Safety:** Operations on persistent local (`celebra-me-rsvp`), Preview, and Production
@@ -47,6 +70,8 @@ authority.
 
 ## Planning & Validation
 
+- Task Contract, Goal protocol, and Handoff Contract live in `.agent/plans/README.md`. Conversation,
+  tracked plans, and role delegation are projections of the same Task Contract.
 - Use conversation-scoped planning by default. Tracked plans belong under `.agent/plans/active/` per
   `.agent/plans/README.md`.
 - Validation tiers are defined in `.agent/rules/gatekeeper.md` using `package.json` script aliases

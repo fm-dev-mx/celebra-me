@@ -12,7 +12,8 @@ applies_to:
 # Agent Report Contract
 
 Normative layout for user-facing reports from the skills/workflows listed in frontmatter. Does not
-change gate semantics, git authorization, or when those skills run.
+change gate semantics, git authorization, or when those skills run. This is presentation layout
+only — Task Contract and Handoff Contract authority live in `.agent/plans/README.md`.
 
 ## Report order (required)
 

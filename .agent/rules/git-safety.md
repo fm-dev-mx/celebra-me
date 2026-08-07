@@ -23,22 +23,22 @@ carry over.
 
 ## Git Write Operations (Forbidden Without Current-Task Authorization)
 
-- `git add`
-- `git add -A`
-- `git add .`
-- `git commit`
-- `git commit --amend`
-- `git restore --staged`
-- `git reset`
-- `git reset --hard`
-- `git restore <file>`
-- `git checkout -- <file>`
-- `git clean`
-- `git stash`
-- `git checkout` or `git switch` when changing branches
-- `git merge`, `git rebase`, `git cherry-pick`
-- Any other command that changes HEAD, the index, branches, tags, history, stash state, or unrelated
-  working-tree files.
+Without explicit current-task authorization for that exact operation, do not:
+
+- stage or unstage (`git add`, `git restore --staged`, pathspecs that alter the index);
+- commit or amend;
+- create or switch branches (`git checkout` / `git switch` when changing branches; branch create);
+- stash or apply/drop stashes;
+- restore or checkout files in a way that discards working-tree changes;
+- reset or clean;
+- merge, rebase, or cherry-pick;
+- push or otherwise update remotes;
+- create a pull request;
+- otherwise mutate Git state (HEAD, index, branches, tags, history, stash, or unrelated
+  working-tree files).
+
+If an otherwise restricted action is explicitly authorized for the current task, perform only that
+authorized operation and do not infer adjacent permissions.
 
 ---
 
@@ -181,6 +181,10 @@ Git write operations are authorized only when the user explicitly requests that 
 in the current task. The local marker file `.agent/tmp/allow-git-write` is only a harness signal for
 an explicitly authorized current task. This file is unversioned and local-only, and its presence
 must not be treated as standing permission for future Git write operations.
+
+Provider environments, worktrees, cloud execution, elevated modes, or external integrations do not
+imply additional Git authorization. Path is isolation, not privilege (see Path Authorization
+Invariant).
 
 ---
 
