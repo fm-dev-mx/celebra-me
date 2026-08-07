@@ -11,7 +11,7 @@ related_docs:
   - docs/domains/theme/motion.md
   - .agent/templates/creative/creative-qa-report.md
   - .agent/agents/celebra-qa.yaml
-  - .agent/plans/active/motion-reveal-remediation.md
+  - .agent/plans/archived/motion-reveal-remediation.md
 supersedes: []
 ---
 
@@ -283,4 +283,4 @@ Runtime probes against local `localhost:4321` (Playwright + browser CDP). Artifa
 | F7 | Confirmed | Itinerary delays 0.12–0.60s; late rows still opacity 0 at +900ms |
 | F8 | Deferred | Not re-timed |
 
-Remediation plan: [`.agent/plans/active/motion-reveal-remediation.md`](../active/motion-reveal-remediation.md).
+Remediation plan: [`.agent/plans/archived/motion-reveal-remediation.md`](./motion-reveal-remediation.md).

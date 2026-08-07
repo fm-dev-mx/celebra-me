@@ -74,10 +74,10 @@ Spot-check Abril itinerary after F7.
 
 **Files**
 
-- [`src/styles/invitation/_thank-you.scss`](src/styles/invitation/_thank-you.scss)
-- [`src/styles/invitation/_gifts.scss`](src/styles/invitation/_gifts.scss) (cards)
-- [`src/styles/invitation/_event-location.scss`](src/styles/invitation/_event-location.scss) (cards)
-- Review [`_family.scss`](src/styles/invitation/_family.scss) for leftover `.has-motion &` without `:not`
+- [`src/styles/invitation/_thank-you.scss`](../../../src/styles/invitation/_thank-you.scss)
+- [`src/styles/invitation/_gifts.scss`](../../../src/styles/invitation/_gifts.scss) (cards)
+- [`src/styles/invitation/_event-location.scss`](../../../src/styles/invitation/_event-location.scss) (cards)
+- Review [`_family.scss`](../../../src/styles/invitation/_family.scss) for leftover `.has-motion &` without `:not`
 
 **Change**
 
@@ -113,7 +113,7 @@ Keep celestial thank-you signature override aligned (already safe) so it does no
 
 ### Phase 3 — F5 envelope handoff (Important)
 
-**File:** [`src/components/invitation/EnvelopeReveal.astro`](src/components/invitation/EnvelopeReveal.astro)
+**File:** [`src/components/invitation/EnvelopeReveal.astro`](../../../src/components/invitation/EnvelopeReveal.astro)
 
 **Change:** After reveal, if `#inicio` is already within viewport (IntersectionObserver or rect check), skip scroll. Otherwise use `behavior: 'smooth'` only when `prefers-reduced-motion: no-preference`; keep `auto` under reduced-motion.
 
@@ -123,9 +123,9 @@ Keep celestial thank-you signature override aligned (already safe) so it does no
 
 **Files**
 
-- [`src/styles/invitation/_hero.scss`](src/styles/invitation/_hero.scss) — sealed block must also zero/reset `__title-wrapper` animation
-- [`src/styles/themes/sections/hero/_celestial-blue.scss`](src/styles/themes/sections/hero/_celestial-blue.scss) — remove standalone 1s wrapper animation; rely on revealed-state label/title timeline
-- [`src/styles/themes/sections/hero/_enchanted-rose.scss`](src/styles/themes/sections/hero/_enchanted-rose.scss) — same 1s delayed entrance removal/alignment
+- [`src/styles/invitation/_hero.scss`](../../../src/styles/invitation/_hero.scss) — sealed block must also zero/reset `__title-wrapper` animation
+- [`src/styles/themes/sections/hero/_celestial-blue.scss`](../../../src/styles/themes/sections/hero/_celestial-blue.scss) — remove standalone 1s wrapper animation; rely on revealed-state label/title timeline
+- [`src/styles/themes/sections/hero/_enchanted-rose.scss`](../../../src/styles/themes/sections/hero/_enchanted-rose.scss) — same 1s delayed entrance removal/alignment
 
 **Change:** Hero child entrances fire only under `[data-reveal-state='revealed']`. No parallel animation on `__title-wrapper` that runs while sealed. Keep delays inside revealed timeline ≤ ~0.55s for details (existing revealed block is already closer to skill bands than the old base 0.8–1.4s path).
 
@@ -136,7 +136,7 @@ Keep celestial thank-you signature override aligned (already safe) so it does no
 **Files**
 
 - `src/lib/invitation/interlude-observer.ts` (deleted) — remove parallax scroll listeners / offset writes
-- [`src/styles/invitation/_interlude.scss`](src/styles/invitation/_interlude.scss) — keep pending hide on `__media` only via `:not(.is-visible)`; stop competing transform on `__image` for parallax
+- [`src/styles/invitation/_interlude.scss`](../../../src/styles/invitation/_interlude.scss) — keep pending hide on `__media` only via `:not(.is-visible)`; stop competing transform on `__image` for parallax
 
 **Change:** Delete parallax path (animation-motion ban). Interlude reveal = opacity + single translate on `__media`.
 
@@ -146,8 +146,8 @@ Keep celestial thank-you signature override aligned (already safe) so it does no
 
 **Files**
 
-- [`src/styles/themes/sections/itinerary/_celestial-blue.scss`](src/styles/themes/sections/itinerary/_celestial-blue.scss)
-- [`src/styles/themes/sections/itinerary/_enchanted-rose.scss`](src/styles/themes/sections/itinerary/_enchanted-rose.scss) (same 0.12s pattern)
+- [`src/styles/themes/sections/itinerary/_celestial-blue.scss`](../../../src/styles/themes/sections/itinerary/_celestial-blue.scss)
+- [`src/styles/themes/sections/itinerary/_enchanted-rose.scss`](../../../src/styles/themes/sections/itinerary/_enchanted-rose.scss) (same 0.12s pattern)
 
 **Change:** `transition-delay: min((n-1) * 0.08s, 0.48s)` (or equivalent `@for` with 0.08s step and cap). Keep `:not(.is-visible)` pending hide.
 
@@ -155,7 +155,7 @@ Keep celestial thank-you signature override aligned (already safe) so it does no
 
 ### Phase 7 — F8 optional harden (Minor)
 
-**File:** [`src/utils/animations.ts`](src/utils/animations.ts)
+**File:** [`src/utils/animations.ts`](../../../src/utils/animations.ts)
 
 Only if Phases 1–2 still leave snap reports: on fail-open, add `is-visible` without a hard class removal flash, or shorten timeout after first successful observe. Do not weaken fail-open content safety.
 
@@ -195,4 +195,4 @@ Acceptance (creative-qa motion rows):
 
 This plan is **ready to implement** but must not be executed until the repository owner explicitly
 authorizes remediation. Audit artifact remains
-[`.agent/plans/archived/demo-xv-celestial-blue-motion-audit.md`](../archived/demo-xv-celestial-blue-motion-audit.md).
+[`.agent/plans/archived/demo-xv-celestial-blue-motion-audit.md`](./demo-xv-celestial-blue-motion-audit.md).
