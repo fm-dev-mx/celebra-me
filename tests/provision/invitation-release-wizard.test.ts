@@ -1,15 +1,27 @@
 /**
  * Destination-driven invitation:release wizard contracts (source + readiness helpers).
  */
-import { describe, expect, it } from '@jest/globals';
+import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import {
 	describeDestination,
 	resolveDestinationReadiness,
 } from '../../scripts/provision/invitation-release-destination.ts';
+import {
+	createMemoryPreviewApprovalStore,
+	setDefaultPreviewApprovalStoreForTests,
+} from '../../scripts/provision/preview-approval-store.ts';
 
 describe('invitation-release destination readiness', () => {
+	beforeEach(() => {
+		setDefaultPreviewApprovalStoreForTests(createMemoryPreviewApprovalStore());
+	});
+
+	afterEach(() => {
+		setDefaultPreviewApprovalStoreForTests(null);
+	});
+
 	it('labels operator outcomes in Spanish destination language', () => {
 		expect(describeDestination('local')).toMatch(/Local/i);
 		expect(describeDestination('prepare_preview')).toMatch(/Preview/i);
