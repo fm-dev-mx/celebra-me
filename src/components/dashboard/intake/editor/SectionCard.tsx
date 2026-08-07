@@ -1,6 +1,12 @@
 import type { ReactNode } from 'react';
 
-interface Props {
+/** Optional restore control forwarded from InvitationEditor into section shells. */
+export interface SectionRestoreProps {
+	onRestorePublished?: () => void;
+	restoring?: boolean;
+}
+
+interface Props extends SectionRestoreProps {
 	id: string;
 	title: string;
 	description: string;
@@ -24,6 +30,8 @@ export default function SectionCard({
 	sourceBadge,
 	visible = true,
 	onRetry,
+	onRestorePublished,
+	restoring = false,
 }: Props) {
 	if (!visible) return null;
 
@@ -66,6 +74,21 @@ export default function SectionCard({
 					)}
 					{success && <p className="invitation-editor__success">{success}</p>}
 				</div>
+				{onRestorePublished && (
+					<button
+						type="button"
+						className="invitation-editor__secondary-button"
+						onClick={onRestorePublished}
+						disabled={restoring || dirty}
+						title={
+							dirty
+								? 'Guarde o descarte los cambios locales antes de restaurar esta sección'
+								: undefined
+						}
+					>
+						{restoring ? 'Restaurando...' : 'Restaurar versión publicada'}
+					</button>
+				)}
 			</div>
 		</section>
 	);

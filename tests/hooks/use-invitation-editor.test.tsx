@@ -4,8 +4,8 @@ import { adminApi } from '@/lib/dashboard/admin-api';
 import type {
 	InvitationEditorContextDTO,
 	InvitationPublicationPreflightDTO,
+	InvitationEditorSectionSaveResponse,
 } from '@/lib/dashboard/dto/intake';
-import type { InvitationEditorSectionSaveResponse } from '@/lib/dashboard/dto/intake';
 
 jest.mock('@/lib/dashboard/admin-api', () => ({
 	adminApi: {
@@ -13,8 +13,8 @@ jest.mock('@/lib/dashboard/admin-api', () => ({
 		updateInvitationEditorSection: jest.fn(),
 		updateInvitationEditorMetadata: jest.fn(),
 		publishInvitationEditor: jest.fn(),
-		getInvitationPublicationPreflight: jest.fn(),
 		restoreInvitationEditorFromPublished: jest.fn(),
+		restoreInvitationEditorSection: jest.fn(),
 		reconcileInvitationEditorRsvp: jest.fn(),
 		assignOwner: jest.fn(),
 	},

@@ -1,5 +1,5 @@
 import Field from '@/components/dashboard/intake/editor/Field';
-import SectionCard from '@/components/dashboard/intake/editor/SectionCard';
+import SectionCard, { type SectionRestoreProps } from '@/components/dashboard/intake/editor/SectionCard';
 import TextPresetPicker from '@/components/dashboard/intake/editor/TextPresetPicker';
 import { GIFT_TYPE_LABELS } from '@/lib/intake/labels';
 
@@ -30,6 +30,8 @@ interface Props {
 	error?: string;
 	success?: string;
 	sourceBadge?: { source: string; label: string };
+	onRestorePublished?: SectionRestoreProps['onRestorePublished'];
+	restoring?: boolean;
 	visible?: boolean;
 }
 
@@ -41,6 +43,8 @@ export default function GiftsSectionEditor({
 	error,
 	success,
 	sourceBadge,
+	onRestorePublished,
+	restoring,
 	visible,
 }: Props) {
 	const giftItems = gifts.items ?? [];
@@ -55,6 +59,8 @@ export default function GiftsSectionEditor({
 			error={error}
 			success={success}
 			sourceBadge={sourceBadge}
+			onRestorePublished={onRestorePublished}
+			restoring={restoring}
 			visible={visible}
 		>
 			<div className="invitation-editor__field-grid">
@@ -105,11 +111,10 @@ export default function GiftsSectionEditor({
 							<details className="invitation-editor__row-details">
 								<summary>Editar opción</summary>
 								<div className="invitation-editor__field-grid">
-									<Field
-										label="Tipo"
-										value={typeLabel}
-										onChange={() => undefined}
-									/>
+									<label className="invitation-editor__field">
+										<span>Tipo</span>
+										<input type="text" value={typeLabel} readOnly disabled />
+									</label>
 									<Field
 										label="Título"
 										value={item.title ?? ''}
@@ -117,7 +122,7 @@ export default function GiftsSectionEditor({
 											updateGiftItem(index, { title: value })
 										}
 									/>
-									{'url' in item && (
+									{(item.type === 'store' || item.type === 'paypal') && (
 										<Field
 											label="URL"
 											type="url"
@@ -127,7 +132,7 @@ export default function GiftsSectionEditor({
 											}
 										/>
 									)}
-									{'bankName' in item && (
+									{item.type === 'bank' && (
 										<>
 											<Field
 												label="Banco"
@@ -152,7 +157,7 @@ export default function GiftsSectionEditor({
 											/>
 										</>
 									)}
-									{'text' in item && (
+									{item.type === 'cash' && (
 										<Field
 											label="Texto"
 											value={item.text ?? ''}

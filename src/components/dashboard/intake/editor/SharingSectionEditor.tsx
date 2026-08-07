@@ -1,5 +1,5 @@
 import Field from '@/components/dashboard/intake/editor/Field';
-import SectionCard from '@/components/dashboard/intake/editor/SectionCard';
+import SectionCard, { type SectionRestoreProps } from '@/components/dashboard/intake/editor/SectionCard';
 import TextArea from '@/components/dashboard/intake/editor/TextArea';
 import ImageAssetField from '@/components/dashboard/intake/editor/ImageAssetField';
 import type { AssetField } from '@/lib/assets/asset-source';
@@ -34,6 +34,8 @@ interface Props {
 	error?: string;
 	success?: string;
 	sourceBadge?: { source: string; label: string };
+	onRestorePublished?: SectionRestoreProps['onRestorePublished'];
+	restoring?: boolean;
 	visible?: boolean;
 	assetLookupSlug?: string;
 	assets?: AssetItem[];
@@ -49,6 +51,8 @@ export default function SharingSectionEditor({
 	error,
 	success,
 	sourceBadge,
+	onRestorePublished,
+	restoring,
 	visible,
 	assetLookupSlug,
 	assets,
@@ -63,6 +67,8 @@ export default function SharingSectionEditor({
 			error={error}
 			success={success}
 			sourceBadge={sourceBadge}
+			onRestorePublished={onRestorePublished}
+			restoring={restoring}
 			visible={visible}
 		>
 			<Field
@@ -98,7 +104,7 @@ export default function SharingSectionEditor({
 			/>
 			{[
 				{
-					label: 'invitaci\u00f3n',
+					label: 'invitación',
 					message: sharing.invitation,
 					fallback: DEFAULT_INVITATION_MESSAGE,
 				},

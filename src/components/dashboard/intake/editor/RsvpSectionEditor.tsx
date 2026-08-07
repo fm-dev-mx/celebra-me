@@ -1,6 +1,6 @@
 /* eslint-disable complexity -- form with many fields */
 import Field from '@/components/dashboard/intake/editor/Field';
-import SectionCard from '@/components/dashboard/intake/editor/SectionCard';
+import SectionCard, { type SectionRestoreProps } from '@/components/dashboard/intake/editor/SectionCard';
 import TextArea from '@/components/dashboard/intake/editor/TextArea';
 import TextPresetPicker from '@/components/dashboard/intake/editor/TextPresetPicker';
 import { RSVP_GUEST_CAP_MIN, RSVP_GUEST_CAP_TECHNICAL_MAX } from '@/lib/rsvp/guest-cap';
@@ -34,6 +34,8 @@ interface Props {
 	error?: string;
 	success?: string;
 	sourceBadge?: { source: string; label: string };
+	onRestorePublished?: SectionRestoreProps['onRestorePublished'];
+	restoring?: boolean;
 	visible?: boolean;
 }
 
@@ -45,6 +47,8 @@ export default function RsvpSectionEditor({
 	error,
 	success,
 	sourceBadge,
+	onRestorePublished,
+	restoring,
 	visible,
 }: Props) {
 	return (
@@ -56,6 +60,8 @@ export default function RsvpSectionEditor({
 			error={error}
 			success={success}
 			sourceBadge={sourceBadge}
+			onRestorePublished={onRestorePublished}
+			restoring={restoring}
 			visible={visible}
 		>
 			<div className="invitation-editor__field-grid">

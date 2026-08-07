@@ -1,5 +1,5 @@
 import Field from '@/components/dashboard/intake/editor/Field';
-import SectionCard from '@/components/dashboard/intake/editor/SectionCard';
+import SectionCard, { type SectionRestoreProps } from '@/components/dashboard/intake/editor/SectionCard';
 import TextArea from '@/components/dashboard/intake/editor/TextArea';
 import TextPresetPicker from '@/components/dashboard/intake/editor/TextPresetPicker';
 import ImageAssetField from '@/components/dashboard/intake/editor/ImageAssetField';
@@ -37,6 +37,8 @@ interface Props {
 	error?: string;
 	success?: string;
 	sourceBadge?: { source: string; label: string };
+	onRestorePublished?: SectionRestoreProps['onRestorePublished'];
+	restoring?: boolean;
 	onUpdateContent: <K extends keyof DraftContent>(key: K, value: DraftContent[K]) => void;
 	onUpdateHero: (patch: Partial<HeroData>) => void;
 	onOpenAssetPicker: (
@@ -61,6 +63,8 @@ export default function MainSectionEditor({
 	error,
 	success,
 	sourceBadge,
+	onRestorePublished,
+	restoring,
 	onUpdateContent,
 	onUpdateHero,
 	onOpenAssetPicker,
@@ -78,6 +82,8 @@ export default function MainSectionEditor({
 			error={error}
 			success={success}
 			sourceBadge={sourceBadge}
+			onRestorePublished={onRestorePublished}
+			restoring={restoring}
 			visible={visible}
 		>
 			<div className="invitation-editor__field-grid">

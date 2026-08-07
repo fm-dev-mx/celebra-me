@@ -1,5 +1,5 @@
 import Field from '@/components/dashboard/intake/editor/Field';
-import SectionCard from '@/components/dashboard/intake/editor/SectionCard';
+import SectionCard, { type SectionRestoreProps } from '@/components/dashboard/intake/editor/SectionCard';
 import TextArea from '@/components/dashboard/intake/editor/TextArea';
 import TextPresetPicker from '@/components/dashboard/intake/editor/TextPresetPicker';
 import ImageAssetField from '@/components/dashboard/intake/editor/ImageAssetField';
@@ -25,6 +25,8 @@ interface Props {
 	error?: string;
 	success?: string;
 	sourceBadge?: { source: string; label: string };
+	onRestorePublished?: SectionRestoreProps['onRestorePublished'];
+	restoring?: boolean;
 	onUpdateFamily: (patch: Partial<FamilyDraft>) => void;
 	onOpenAssetPicker: (field: 'family.featuredImage') => void;
 	assetLookupSlug?: string;
@@ -226,6 +228,8 @@ export default function FamilySectionEditor({
 	error,
 	success,
 	sourceBadge,
+	onRestorePublished,
+	restoring,
 	onUpdateFamily,
 	onOpenAssetPicker,
 	assetLookupSlug,
@@ -245,6 +249,8 @@ export default function FamilySectionEditor({
 			error={error}
 			success={success}
 			sourceBadge={sourceBadge}
+			onRestorePublished={onRestorePublished}
+			restoring={restoring}
 			visible={visible}
 		>
 			<label className="invitation-editor__check">
@@ -268,7 +274,7 @@ export default function FamilySectionEditor({
 						})
 					}
 				>
-					<option value="">Con foto</option>
+					<option value="">Por defecto</option>
 					<option value="with-photo">Con foto</option>
 					<option value="text-only">Solo texto</option>
 				</select>

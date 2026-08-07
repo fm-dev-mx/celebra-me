@@ -1,5 +1,5 @@
 import Field from '@/components/dashboard/intake/editor/Field';
-import SectionCard from '@/components/dashboard/intake/editor/SectionCard';
+import SectionCard, { type SectionRestoreProps } from '@/components/dashboard/intake/editor/SectionCard';
 import TextArea from '@/components/dashboard/intake/editor/TextArea';
 import ImageAssetField from '@/components/dashboard/intake/editor/ImageAssetField';
 import IconPickerField from '@/components/dashboard/intake/editor/IconPickerField';
@@ -60,6 +60,8 @@ interface Props {
 	error?: string;
 	success?: string;
 	sourceBadge?: { source: string; label: string };
+	onRestorePublished?: SectionRestoreProps['onRestorePublished'];
+	restoring?: boolean;
 	onUpdateLocation: (patch: Partial<LocationData>) => void;
 	onOpenAssetPicker: (field: `location.${string}.image`) => void;
 	assetLookupSlug?: string;
@@ -100,6 +102,8 @@ export default function LocationSectionEditor({
 	error,
 	success,
 	sourceBadge,
+	onRestorePublished,
+	restoring,
 	onUpdateLocation,
 	onOpenAssetPicker,
 	assetLookupSlug,
@@ -182,13 +186,13 @@ export default function LocationSectionEditor({
 			}
 			const parsed = parseFloat(raw);
 			if (!isNaN(parsed) && parsed >= min && parsed <= max) {
-				if (otherValue !== undefined && !isNaN(otherValue)) {
-					const patch =
-						axis === 'lat'
-							? { lat: parsed, lng: otherValue }
-							: { lat: otherValue, lng: parsed };
-					updateVenue(index, { coordinates: patch });
-				}
+				const safeOther =
+					otherValue !== undefined && !isNaN(otherValue) ? otherValue : 0;
+				const patch =
+					axis === 'lat'
+						? { lat: parsed, lng: safeOther }
+						: { lat: safeOther, lng: parsed };
+				updateVenue(index, { coordinates: patch });
 			}
 		};
 
@@ -242,6 +246,8 @@ export default function LocationSectionEditor({
 			error={error}
 			success={success}
 			sourceBadge={sourceBadge}
+			onRestorePublished={onRestorePublished}
+			restoring={restoring}
 			visible={visible}
 		>
 			<div className="invitation-editor__section-group">

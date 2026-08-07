@@ -1,5 +1,5 @@
 import Field from '@/components/dashboard/intake/editor/Field';
-import SectionCard from '@/components/dashboard/intake/editor/SectionCard';
+import SectionCard, { type SectionRestoreProps } from '@/components/dashboard/intake/editor/SectionCard';
 import {
 	XARENI_SEAL_COLOR_LABELS,
 	XARENI_SEAL_COLORS,
@@ -31,6 +31,8 @@ interface Props {
 	error?: string;
 	success?: string;
 	sourceBadge?: { source: string; label: string };
+	onRestorePublished?: SectionRestoreProps['onRestorePublished'];
+	restoring?: boolean;
 	visible?: boolean;
 	supportsSealColor?: boolean;
 }
@@ -118,6 +120,8 @@ export default function EnvelopeSectionEditor({
 	error,
 	success,
 	sourceBadge,
+	onRestorePublished,
+	restoring,
 	visible,
 	supportsSealColor = false,
 }: Props) {
@@ -130,6 +134,8 @@ export default function EnvelopeSectionEditor({
 			error={error}
 			success={success}
 			sourceBadge={sourceBadge}
+			onRestorePublished={onRestorePublished}
+			restoring={restoring}
 			visible={visible}
 		>
 			<label className="invitation-editor__check">

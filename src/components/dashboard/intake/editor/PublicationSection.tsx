@@ -46,7 +46,7 @@ export default function PublicationSection({
 					onClick={onRestorePublished}
 					disabled={restoring}
 				>
-					{restoring ? 'Restaurando...' : 'Restaurar desde versión pública'}
+					{restoring ? 'Restaurando...' : 'Restaurar todo el borrador desde la versión pública'}
 				</button>
 			)}
 			{context.rsvpLink.status !== 'linked' && (

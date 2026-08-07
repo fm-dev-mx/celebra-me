@@ -268,7 +268,12 @@ export default function InvitationEditor({ initialContext }: Props) {
 	};
 
 	const [publishedSlug, setPublishedSlug] = useState<string | null>(null);
-	const [confirmation, setConfirmation] = useState<'publish' | 'restore' | null>(null);
+	const [confirmation, setConfirmation] = useState<
+		| 'publish'
+		| 'restore'
+		| { type: 'restore-section'; section: InvitationEditorSectionKey; label: string }
+		| null
+	>(null);
 	const [publicationPreflight, setPublicationPreflight] =
 		useState<InvitationPublicationPreflightDTO | null>(null);
 	const publicationIdempotencyKey = useRef<string | null>(null);
@@ -503,7 +508,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 		for (const [section, state] of Object.entries(editor.context.sectionStates)) {
 			if (state !== 'empty') continue;
 			// Skip sections excluded from sectionOrder — they are intentionally absent.
-			if (!orderSet.has(section as string)) continue;
+			if (!orderSet.has(section)) continue;
 			if (criticalSections.has(section)) critical.push(section);
 			else optional.push(section);
 		}
@@ -633,16 +638,19 @@ export default function InvitationEditor({ initialContext }: Props) {
 		],
 	);
 
+	const applyRestoredContext = (nextContext: InvitationEditorContextDTO, successKey: string) => {
+		setContent(nextContext.content);
+		setContentBaseline(nextContext.content);
+		setDirty(new Set());
+		setErrors({});
+		setSuccess({ [successKey]: 'Se restauró la versión publicada en el borrador editable.' });
+		refreshSavedPreview();
+	};
+
 	const restorePublished = async () => {
 		setConfirmation(null);
 		try {
-			const nextContext = await editor.restorePublished();
-			setContent(nextContext.content);
-			setContentBaseline(nextContext.content);
-			setDirty(new Set());
-			setErrors({});
-			setSuccess({ restore: 'Se restauró la versión pública como borrador editable.' });
-			refreshSavedPreview();
+			applyRestoredContext(await editor.restorePublished(), 'restore');
 		} catch (error) {
 			setErrors((current) => ({
 				...current,
@@ -650,6 +658,39 @@ export default function InvitationEditor({ initialContext }: Props) {
 			}));
 		}
 	};
+
+	const restoreSection = async (section: InvitationEditorSectionKey) => {
+		setConfirmation(null);
+		try {
+			applyRestoredContext(await editor.restoreSection(section), section);
+		} catch (error) {
+			setErrors((current) => ({
+				...current,
+				[section]: toErrorMessage(error, 'No se pudo restaurar esta sección.'),
+			}));
+		}
+	};
+
+	/** Show restore only when the section has unpublished draft differences. */
+	const sectionRestoreProps = useCallback(
+		(section: InvitationEditorSectionKey, label: string) => {
+			if (!editor.context.publication.hasPublishedContent) return {};
+			const badge = sectionSource(
+				section === 'messages' ? 'quote' : section === 'main' ? 'main' : section,
+			);
+			if (badge?.source !== 'draft') return {};
+			return {
+				onRestorePublished: () =>
+					setConfirmation({ type: 'restore-section', section, label }),
+				restoring: editor.operation.type === 'restoring',
+			};
+		},
+		[
+			editor.context.publication.hasPublishedContent,
+			editor.operation.type,
+			sectionSource,
+		],
+	);
 
 	const requestPreview = useCallback(() => {
 		const isDesktop = window.matchMedia(
@@ -719,10 +760,10 @@ export default function InvitationEditor({ initialContext }: Props) {
 		const updaters = pickerFieldUpdaters(ref);
 		// Handle dynamic venue ID patterns: location.{id}.image
 		const venueMatch = pickerField?.match(/^location\.(.+)\.image$/);
-		if (venueMatch && !updaters[pickerField!]) {
+		if (venueMatch && pickerField && !updaters[pickerField]) {
 			updateLocationVenueById(venueMatch[1]);
-		} else {
-			updaters[pickerField!]?.();
+		} else if (pickerField) {
+			updaters[pickerField]?.();
 		}
 		setPickerField(null);
 	};
@@ -902,6 +943,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						assetLookupSlug={assetLookupSlug}
 						assets={editorAssets}
 						visible={activeEditorCardId === 'main'}
+						{...sectionRestoreProps('main', 'Portada')}
 					/>
 
 					<FamilySectionEditor
@@ -917,6 +959,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						assetLookupSlug={assetLookupSlug}
 						assets={editorAssets}
 						visible={activeEditorCardId === 'family'}
+						{...sectionRestoreProps('family', 'Familia')}
 					/>
 
 					<LocationSectionEditor
@@ -930,6 +973,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						assetLookupSlug={assetLookupSlug}
 						assets={editorAssets}
 						visible={activeEditorCardId === 'location'}
+						{...sectionRestoreProps('location', 'Fecha y ubicaciones')}
 					/>
 
 					<SectionCard
@@ -941,6 +985,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						success={success.countdown}
 						sourceBadge={sectionSource('countdown')}
 						visible={activeEditorCardId === 'countdown'}
+						{...sectionRestoreProps('countdown', 'Cuenta regresiva')}
 					>
 						<div className="invitation-editor__field-grid">
 							<Field
@@ -984,6 +1029,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						success={success.itinerary}
 						sourceBadge={sectionSource('itinerary')}
 						visible={activeEditorCardId === 'itinerary'}
+						{...sectionRestoreProps('itinerary', 'Programa')}
 					>
 						<ItineraryEditor
 							value={content.itinerary ?? { items: [] }}
@@ -1000,6 +1046,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						success={success.rsvp}
 						sourceBadge={sectionSource('rsvp')}
 						visible={activeEditorCardId === 'rsvp'}
+						{...sectionRestoreProps('rsvp', 'Confirmación de asistencia')}
 					/>
 
 					<SectionCard
@@ -1011,6 +1058,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						success={success.music}
 						sourceBadge={sectionSource('music')}
 						visible={activeEditorCardId === 'music'}
+						{...sectionRestoreProps('music', 'Música')}
 					>
 						<div className="invitation-editor__field-grid">
 							<Field
@@ -1058,6 +1106,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						sourceBadge={sectionSource('envelope')}
 						visible={activeEditorCardId === 'envelope'}
 						supportsSealColor={supportsXareniOptions}
+						{...sectionRestoreProps('envelope', 'Sobre / apertura')}
 					/>
 
 					<GiftsSectionEditor
@@ -1066,7 +1115,6 @@ export default function InvitationEditor({ initialContext }: Props) {
 							updateContent('gifts', {
 								...gifts,
 								...patch,
-								items: patch.items ?? gifts.items,
 							} as Record<string, unknown>)
 						}
 						onUpdateItem={updateGiftItem}
@@ -1075,6 +1123,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						success={success.gifts}
 						sourceBadge={sectionSource('gifts')}
 						visible={activeEditorCardId === 'gifts'}
+						{...sectionRestoreProps('gifts', 'Mesa de regalos')}
 					/>
 
 					<SectionCard
@@ -1086,6 +1135,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						success={success.messages}
 						sourceBadge={sectionSource('quote')}
 						visible={activeEditorCardId === 'quote'}
+						{...sectionRestoreProps('messages', 'Frase y agradecimiento')}
 					>
 						<TextArea
 							label="Frase"
@@ -1121,6 +1171,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						success={success.messages}
 						sourceBadge={sectionSource('thankYou')}
 						visible={activeEditorCardId === 'thankYou'}
+						{...sectionRestoreProps('messages', 'Frase y agradecimiento')}
 					>
 						<TextArea
 							label="Mensaje de agradecimiento"
@@ -1183,6 +1234,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						success={success.gallery}
 						sourceBadge={sectionSource('gallery')}
 						visible={activeEditorCardId === 'gallery'}
+						{...sectionRestoreProps('gallery', 'Galería')}
 					>
 						<GalleryEditor
 							value={content.gallery ?? { items: [] }}
@@ -1240,6 +1292,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						assetLookupSlug={assetLookupSlug}
 						assets={editorAssets}
 						onOpenAssetPicker={() => setPickerField('sharing.ogImage')}
+						{...sectionRestoreProps('sharing', 'Plantillas de mensaje')}
 					/>
 
 					<SectionCard
@@ -1277,15 +1330,28 @@ export default function InvitationEditor({ initialContext }: Props) {
 			</div>
 			{confirmation === 'restore' && (
 				<ConfirmModal
-					title="Restaurar desde versión pública"
-					message="Esta acción reemplazará el borrador editable con el contenido de la versión pública actual. Los cambios sin guardar se perderán."
-					confirmLabel="Restaurar versión pública"
+					title="Restaurar todo el borrador"
+					message="Esta acción descartará todos los cambios no publicados del borrador y lo reemplazará con la versión pública actual convertida al contrato editable. El contenido publicado no se modifica."
+					confirmLabel="Descartar todos los cambios del borrador"
 					destructive
 					loading={editor.operation.type === 'restoring'}
 					onCancel={() => setConfirmation(null)}
 					onConfirm={() => void restorePublished()}
 				/>
 			)}
+			{confirmation &&
+				typeof confirmation === 'object' &&
+				confirmation.type === 'restore-section' && (
+					<ConfirmModal
+						title={`Restaurar «${confirmation.label}»`}
+						message={`Solo se descartarán los cambios no publicados de «${confirmation.label}». El resto del borrador se conserva. El contenido publicado no se modifica.`}
+						confirmLabel="Restaurar versión publicada"
+						destructive
+						loading={editor.operation.type === 'restoring'}
+						onCancel={() => setConfirmation(null)}
+						onConfirm={() => void restoreSection(confirmation.section)}
+					/>
+				)}
 			{confirmation === 'publish' && (
 				<ConfirmModal
 					title="Publicar cambios"

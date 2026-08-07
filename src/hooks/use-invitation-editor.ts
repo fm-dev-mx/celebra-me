@@ -147,6 +147,23 @@ export function useInvitationEditor(initialContext: InvitationEditorContextDTO) 
 		});
 	}, [context.draftUpdatedAt, context.invitation.id, context.invitation.updatedAt]);
 
+	const restoreSection = useCallback(
+		async (section: string) => {
+			return guard({ type: 'restoring' }, async () => {
+				const result = await adminApi.restoreInvitationEditorSection(
+					context.invitation.id,
+					{
+						section,
+						expectedDraftUpdatedAt: context.draftUpdatedAt,
+					},
+				);
+				setContext(result.context);
+				return result.context;
+			});
+		},
+		[context.draftUpdatedAt, context.invitation.id],
+	);
+
 	return {
 		context,
 		operation,
@@ -157,6 +174,7 @@ export function useInvitationEditor(initialContext: InvitationEditorContextDTO) 
 		preflightPublication,
 		reconcileRsvp,
 		restorePublished,
+		restoreSection,
 		assignOwner,
 	};
 }
