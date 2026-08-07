@@ -18,8 +18,9 @@ Canonical semantics for the Task Contract, Goal protocol, and Handoff Contract l
 4. **Choose Persistence**: keep the plan in the conversation by default. Create a lightweight
    Markdown plan under `.agent/plans/` only when work is multi-session, high risk, or the repository
    owner explicitly requests a tracked plan.
-5. **Scale Goals**: apply the proportional Goal protocol in `.agent/plans/README.md` when the work
-   spans audit/spec, implementation, or cleanup phases.
+5. **Choose lifecycle**: when the work is substantial and audit-driven, follow Goal 1 → Goal 2 →
+   Goal 3 in `.agent/plans/README.md`. Keep verification depth and risk as separate Task Contract /
+   gatekeeper choices — do not invent Goal “tiers” from task size.
 6. **Implement**: carry out the work with the standard repository workflow and conventional commits.
 
 ## Standards

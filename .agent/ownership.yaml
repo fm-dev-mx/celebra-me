@@ -12,27 +12,27 @@ ownership:
       non_owners:
           - 'Archived plans'
           - 'Point-in-time reports'
-          - '.agent/external/'
+          - 'Provider/global operator defaults outside the repo'
 
     - aspect: 'Context routing matrix'
       owner: '.agent/routing-matrix.yaml'
       non_owners:
           - 'Narrative docs tables'
-          - '.agent/external/'
+          - 'Provider/global operator defaults outside the repo'
 
     - aspect: 'Task Contract, Goal protocol & Handoff Contract'
       owner: '.agent/plans/README.md'
       non_owners:
           - '.agent/templates/agent-report-contract.md'
           - '.agent/tmp/handoffs/'
-          - '.agent/external/'
           - 'Conversation transcripts'
+          - 'Provider/global operator defaults outside the repo'
 
     - aspect: 'Plans lifecycle & tracked plan governance'
       owner: '.agent/plans/README.md'
       non_owners:
           - 'Archived plans as policy'
-          - '.agent/external/'
+          - 'Provider/global operator defaults outside the repo'
 
     - aspect: 'Lightweight plan authoring procedure'
       owner: '.agent/workflows/plan-authoring.md'
@@ -197,7 +197,7 @@ ownership:
       non_owners:
           - '.agents/'
           - 'Host/global skills'
-          - '.agent/external/'
+          - 'Provider/global operator defaults outside the repo'
 
     - aspect: 'Available commands'
       owner: 'package.json'

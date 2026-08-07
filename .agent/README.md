@@ -15,7 +15,6 @@ discovery map and skill-loading protocol.
   semantics in `plans/README.md`).
 - `../docs/invitations/` contains invitation-specific records and operational evidence.
 - `../docs/archive/reports/` contains historical reports; reports are not policy.
-- `.agent/external/` contains non-authoritative operator defaults; never policy.
 
 The root `.agents/` directory is gitignored local installation state. A runtime may copy or install
 skills there for local discovery, but `.agents/` never overrides or replaces `.agent/skills/`.

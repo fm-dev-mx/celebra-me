@@ -75,4 +75,3 @@ context resolution, use `.agent/routing-matrix.yaml` and `.agent/ownership.yaml`
 - Human-facing agent report layout (review / apply / commit / remediation):
   [`.agent/templates/agent-report-contract.md`](./templates/agent-report-contract.md) (presentation
   only).
-- Non-authoritative provider defaults: [`.agent/external/`](./external/README.md) (never policy).

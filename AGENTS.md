@@ -14,10 +14,11 @@ Apply this order when instructions conflict:
 4. Other repository safety, domain, workflow, and operational policy (`.agent/rules/`, skills,
    workflows, `docs/core/`, `docs/domains/`, briefs, templates).
 5. Provider-specific defaults.
-6. General external principles (see `.agent/external/` — non-authoritative defaults only).
+6. General external principles (operator/provider defaults configured outside this repository —
+   never a substitute for repository policy).
 
-Historical plans (`.agent/plans/archived/`), point-in-time reports, and `.agent/external/` are
-evidence or operator guidance only — never policy authority.
+Historical plans (`.agent/plans/archived/`) and point-in-time reports are evidence only — never
+policy authority.
 
 ## Exception Model
 

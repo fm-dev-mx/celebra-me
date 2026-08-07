@@ -129,18 +129,19 @@ Do not invent a second status vocabulary for a provider or runtime.
 | `.agent/skills/`    | Reusable agent execution guidance                           |
 | `.agent/workflows/` | Repeatable procedures                                       |
 | `.agent/tmp/handoffs/` | Ephemeral role-chain artifacts (not policy SSOT)         |
-| `.agent/external/`  | Non-authoritative operator defaults (never policy)          |
 
-## Proportional Goal Protocol
+## Goal lifecycle (canonical for substantial audit-driven remediation)
 
-Scale Goals by risk and continuity — not by conflating size, autonomy, verification depth, or severity.
+Lifecycle phases are not a scale or risk ladder. Do not couple task size, autonomy, severity, or
+verification depth to how many Goals exist.
 
-- **Tier 1 (simple):** One Goal — execute with conversation-scoped planning.
-- **Tier 2 (moderate):** Goal 1 Audit + Specification → Goal 2 Implementation + Verification.
-- **Tier 3 (substantial audit-driven remediation):** Goal 1 Audit + Specification → Goal 2
-  Implementation + Verification → Goal 3 Cleanup + Final Verification.
+For **substantial audit-driven remediation**, the canonical progression is:
 
-### Goal responsibilities
+```text
+Goal 1 — Audit + Specification
+  → Goal 2 — Implementation + Verification
+  → Goal 3 — Cleanup + Final Verification
+```
 
 | Goal | Must establish or do |
 | --- | --- |
@@ -148,8 +149,22 @@ Scale Goals by risk and continuity — not by conflating size, autonomy, verific
 | Goal 2 — Implementation + Verification | Implement only what Goal 1 established; verify against Goal 1 acceptance and strategy |
 | Goal 3 — Cleanup + Final Verification | Residual cleanup, consistency, documentation, and final verification — not another implementation phase |
 
-Goal 2 must not assume what Goal 1 has not established. Never put Goal or Phase identifiers in commit
-messages (`AGENTS.md`).
+Goal 2 must not assume what Goal 1 has not established. Goal 3 is not “more implementation.” Never
+put Goal or Phase identifiers in commit messages (`AGENTS.md`).
+
+### Separate dimensions (do not conflate)
+
+| Dimension | Selects | Does not select |
+| --- | --- | --- |
+| Lifecycle phase | Whether the next responsibility is audit/spec, implement/verify, or cleanup/final verify | Gatekeeper tier, autonomy, or plan tracking |
+| Continuity / persistence | Conversation vs tracked plan under `.agent/plans/` | Lifecycle phase names or count |
+| Risk / verification depth | Task Contract verification strategy; gatekeeper A/B/C | Inventing extra Goals as a substitute for deeper checks |
+| Autonomy | Optional frontmatter autonomy when high-risk writes may occur | Lifecycle length |
+
+Routine work may finish in one Goal (direct execution). Work that needs a design baseline before
+coding may use Goal 1 → Goal 2 without a separate Goal 3 when cleanup is not a distinct phase. Those
+choices are continuity and scope decisions — not a “Tier” taxonomy that maps simple/moderate/hard
+onto Goal counts.
 
 ## Handoff Contract (canonical)
 

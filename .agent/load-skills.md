@@ -76,8 +76,9 @@ Expected host setup for this repo (configure outside git; do not commit host con
 - If Celebra-me repo skills are missing from host discovery, fix the host discovery entry — do not
   duplicate skills into the host's global tree.
 
-Concrete Codex / Cursor / other host setup steps are non-authoritative operator guidance under
-`.agent/external/provider-integration.md`. They never override this protocol or `AGENTS.md`.
+Concrete Codex / Cursor / other host setup is operator configuration outside this repository. It
+never overrides this protocol or `AGENTS.md`, and must not duplicate repository policy into provider
+globals.
 
 ### Host catalogs vs Celebra-me skills
 
