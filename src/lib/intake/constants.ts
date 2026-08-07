@@ -27,6 +27,16 @@ export const ENVELOPE_TEXT_FIELDS = [
 	'coverIssue',
 ] as const;
 
+/**
+ * Subset of `rsvp.personalizedAccess` the draft contract owns. Any other field
+ * (e.g. `noteText`) belongs to the published revision and must survive publish.
+ */
+export const PERSONALIZED_ACCESS_DRAFT_KEYS: readonly string[] = [
+	'title',
+	'subtitle',
+	'footerText',
+];
+
 export const ALLOWED_MIME_TYPES = ['image/webp', 'image/jpeg', 'image/png'];
 
 export const MAX_FILE_SIZE = 8 * 1024 * 1024;

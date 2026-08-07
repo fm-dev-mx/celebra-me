@@ -8,10 +8,16 @@ import { isRecord } from '@/lib/shared/data-utils';
 import { ALL_EDITOR_KEYS, OBJECT_SECTION_KEYS } from '@/lib/intake/constants';
 import { ensureFamilyGodparentExclusivity } from '@/lib/intake/utils';
 
+function definedEntries(value: unknown): Record<string, unknown> {
+	if (!isRecord(value)) return {};
+	return Object.fromEntries(Object.entries(value).filter(([, v]) => v !== undefined));
+}
+
 function shallowMergeDefined(base: unknown, overlay: unknown): Record<string, unknown> | undefined {
-	const merged = { ...(isRecord(base) ? base : {}), ...(isRecord(overlay) ? overlay : {}) };
-	const defined = Object.fromEntries(Object.entries(merged).filter(([, v]) => v !== undefined));
-	return Object.keys(defined).length > 0 ? defined : undefined;
+	// An absent draft field is a gap, not a deletion: it must never erase the
+	// published value. Persisted drafts store cleared fields as absent keys.
+	const merged = { ...definedEntries(base), ...definedEntries(overlay) };
+	return Object.keys(merged).length > 0 ? merged : undefined;
 }
 
 interface MergeResult {

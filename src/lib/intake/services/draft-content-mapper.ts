@@ -1,7 +1,11 @@
 import { z } from 'zod';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import type { giftItemSchema } from '@/lib/intake/schemas/intake-block.schema';
-import { formatFamilyMembersAsLines, type ParentsOrder } from '@/lib/invitation/family-contract';
+import {
+	FAMILY_LABEL_KEYS,
+	formatFamilyMembersAsLines,
+	type ParentsOrder,
+} from '@/lib/invitation/family-contract';
 import {
 	str,
 	bool,
@@ -313,20 +317,329 @@ function stripVenueEvent(value: unknown): unknown {
 	return rest;
 }
 
-export function normalizeDraftContent(
+/**
+ * Content keys owned by the published projection. Publish rebuilds them from the
+ * invitation record or the prior published revision, so a canonical draft never
+ * carries them. Drafts seeded from raw published content before the draft
+ * baseline fix still contain them.
+ */
+const PUBLISHED_ONLY_DRAFT_KEYS = [
+	'_assetSlug',
+	'isDemo',
+	'navigation',
+	'sectionStyles',
+	'templateId',
+	'theme',
+	'visualProfileId',
+] as const;
+
+/**
+ * Published-only fields nested inside otherwise editable draft objects. Publish
+ * carries them over from the prior revision, so the draft must not hold them.
+ */
+const PUBLISHED_ONLY_NESTED_KEYS: ReadonlyArray<{
+	section: string;
+	object: string;
+	keys: readonly string[];
+}> = [{ section: 'rsvp', object: 'personalizedAccess', keys: ['noteText'] }];
+
+const PUBLISHED_PARENTS_KEYS = new Set([
+	'father',
+	'mother',
+	'fatherDeceased',
+	'motherDeceased',
+	'parentsOrder',
+]);
+
+export type DraftNormalizationIssueReason =
+	| 'conflicting_values'
+	| 'unsupported_shape'
+	| 'unrepresentable_field';
+
+export interface DraftNormalizationIssue {
+	path: string;
+	reason: DraftNormalizationIssueReason;
+	detail: string;
+}
+
+/** Raised when a persisted draft holds data the flat draft contract cannot express. */
+export class DraftNormalizationError extends Error {
+	readonly code = 'draft_normalization_unsupported';
+
+	constructor(readonly issues: DraftNormalizationIssue[]) {
+		super(
+			`DRAFT_NORMALIZATION_UNSUPPORTED: ${issues
+				.map((issue) => `${issue.path} — ${issue.detail}`)
+				.join('; ')}`,
+		);
+		this.name = 'DraftNormalizationError';
+	}
+}
+
+export interface DraftCanonicalizationResult {
+	content: DraftContent;
+	issues: DraftNormalizationIssue[];
+	removedPublishedOnlyKeys: string[];
+	changed: boolean;
+}
+
+function sameValue(left: unknown, right: unknown): boolean {
+	return JSON.stringify(left ?? null) === JSON.stringify(right ?? null);
+}
+
+/** Writes a flat value only when it is absent, and reports genuine conflicts. */
+function adoptFlatValue(
+	target: Record<string, unknown>,
+	key: string,
+	value: unknown,
+	path: string,
+	issues: DraftNormalizationIssue[],
+): void {
+	if (value === undefined) return;
+	const current = target[key];
+	if (current === undefined || current === '') {
+		target[key] = value;
+		return;
+	}
+	if (!sameValue(current, value)) {
+		issues.push({
+			path,
+			reason: 'conflicting_values',
+			detail: 'flat draft value and nested published value differ; resolve manually',
+		});
+	}
+}
+
+function reportUnknownKeys(
+	source: Record<string, unknown>,
+	known: ReadonlySet<string>,
+	path: string,
+	issues: DraftNormalizationIssue[],
+): void {
+	for (const key of Object.keys(source)) {
+		if (known.has(key)) continue;
+		issues.push({
+			path: `${path}.${key}`,
+			reason: 'unsupported_shape',
+			detail: 'no equivalent field exists in the flat draft contract',
+		});
+	}
+}
+
+/** Flattens a published member list to draft lines, reporting unrepresentable flags. */
+function membersToDraftLines(
+	members: readonly unknown[],
+	path: string,
+	issues: DraftNormalizationIssue[],
+): string | undefined {
+	members.forEach((member, index) => {
+		if (isRecord(member) && member.deceased === true) {
+			issues.push({
+				path: `${path}[${index}].deceased`,
+				reason: 'unrepresentable_field',
+				detail: 'the flat draft contract cannot express a deceased marker for list members',
+			});
+		}
+	});
+	return formatFamilyMembersAsLines(members);
+}
+
+function canonicalizeGroupList(
+	groups: readonly unknown[],
+	nestedKey: 'items' | 'godparents',
+	path: string,
+	issues: DraftNormalizationIssue[],
+): unknown[] {
+	return groups.map((group, index) => {
+		if (!isRecord(group)) {
+			issues.push({
+				path: `${path}[${index}]`,
+				reason: 'unsupported_shape',
+				detail: 'group entry is not an object',
+			});
+			return group;
+		}
+		const nested = group[nestedKey];
+		if (nested === undefined) return group;
+
+		const next = { ...group };
+		delete next[nestedKey];
+		if (!Array.isArray(nested)) {
+			issues.push({
+				path: `${path}[${index}].${nestedKey}`,
+				reason: 'unsupported_shape',
+				detail: 'expected an array of members',
+			});
+			return next;
+		}
+		adoptFlatValue(
+			next,
+			'names',
+			membersToDraftLines(nested, `${path}[${index}].${nestedKey}`, issues),
+			`${path}[${index}].names`,
+			issues,
+		);
+		return next;
+	});
+}
+
+// eslint-disable-next-line complexity -- One boundary converts every legacy nested family shape.
+function canonicalizeFamilyDraft(
+	family: Record<string, unknown>,
+	issues: DraftNormalizationIssue[],
+): Record<string, unknown> {
+	const result: Record<string, unknown> = { ...family };
+
+	const parents = result.parents;
+	if (parents !== undefined) {
+		delete result.parents;
+		if (isRecord(parents)) {
+			adoptFlatValue(result, 'fatherName', str(parents.father), 'family.fatherName', issues);
+			adoptFlatValue(result, 'motherName', str(parents.mother), 'family.motherName', issues);
+			adoptFlatValue(
+				result,
+				'fatherDeceased',
+				bool(parents.fatherDeceased),
+				'family.fatherDeceased',
+				issues,
+			);
+			adoptFlatValue(
+				result,
+				'motherDeceased',
+				bool(parents.motherDeceased),
+				'family.motherDeceased',
+				issues,
+			);
+			adoptFlatValue(
+				result,
+				'parentsOrder',
+				str(parents.parentsOrder),
+				'family.parentsOrder',
+				issues,
+			);
+			reportUnknownKeys(parents, PUBLISHED_PARENTS_KEYS, 'family.parents', issues);
+		} else {
+			issues.push({
+				path: 'family.parents',
+				reason: 'unsupported_shape',
+				detail: 'expected an object with father/mother names',
+			});
+		}
+	}
+
+	const labels = result.labels;
+	if (labels !== undefined) {
+		delete result.labels;
+		if (isRecord(labels)) {
+			for (const key of FAMILY_LABEL_KEYS) {
+				adoptFlatValue(result, key, str(labels[key]), `family.${key}`, issues);
+			}
+			reportUnknownKeys(labels, new Set(FAMILY_LABEL_KEYS), 'family.labels', issues);
+		} else {
+			issues.push({
+				path: 'family.labels',
+				reason: 'unsupported_shape',
+				detail: 'expected an object of label strings',
+			});
+		}
+	}
+
+	const spouse = result.spouse;
+	if (spouse !== undefined) {
+		delete result.spouse;
+		if (typeof spouse === 'string') {
+			adoptFlatValue(result, 'spouseName', str(spouse), 'family.spouseName', issues);
+		} else {
+			issues.push({
+				path: 'family.spouse',
+				reason: 'unsupported_shape',
+				detail: 'expected a spouse name string',
+			});
+		}
+	}
+
+	if (result.godparents !== undefined) {
+		const lines = formatFamilyMembersAsLines(result.godparents);
+		if (lines !== undefined) result.godparents = lines;
+		else delete result.godparents;
+	}
+
+	if (Array.isArray(result.children)) {
+		const names = result.children.map((child, index) => {
+			if (typeof child === 'string') return child.trim();
+			if (!isRecord(child)) {
+				issues.push({
+					path: `family.children[${index}]`,
+					reason: 'unsupported_shape',
+					detail: 'expected a child object with a name',
+				});
+				return '';
+			}
+			if (str(child.role)) {
+				issues.push({
+					path: `family.children[${index}].role`,
+					reason: 'unrepresentable_field',
+					detail: 'the flat draft contract stores children as names only',
+				});
+			}
+			return typeof child.name === 'string' ? child.name.trim() : '';
+		});
+		const joined = names.filter(Boolean).join('\n');
+		if (joined) result.children = joined;
+		else delete result.children;
+	}
+
+	if (Array.isArray(result.groups)) {
+		result.groups = canonicalizeGroupList(result.groups, 'items', 'family.groups', issues);
+	}
+	if (Array.isArray(result.godparentGroups)) {
+		result.godparentGroups = canonicalizeGroupList(
+			result.godparentGroups,
+			'godparents',
+			'family.godparentGroups',
+			issues,
+		);
+	}
+
+	return result;
+}
+
+/**
+ * Single canonicalization boundary for persisted drafts.
+ *
+ * Converts legacy/hybrid drafts (raw published structures persisted as a draft
+ * baseline before the seeding fix) into the flat `DraftContent` contract without
+ * discarding data: already-flat values win, nested values fill the gaps, and
+ * anything the flat contract cannot express is reported instead of dropped.
+ * Deterministic and idempotent.
+ */
+export function canonicalizeDraftContent(
 	content: DraftContent | Record<string, unknown>,
-): DraftContent {
+): DraftCanonicalizationResult {
+	const before = JSON.stringify(content ?? {});
 	const result = structuredClone(content) as Record<string, unknown>;
+	const issues: DraftNormalizationIssue[] = [];
+
+	const removedPublishedOnlyKeys: string[] = [];
+	for (const key of PUBLISHED_ONLY_DRAFT_KEYS) {
+		if (result[key] === undefined) continue;
+		delete result[key];
+		removedPublishedOnlyKeys.push(key);
+	}
+	for (const { section, object, keys } of PUBLISHED_ONLY_NESTED_KEYS) {
+		const sectionValue = result[section];
+		if (!isRecord(sectionValue) || !isRecord(sectionValue[object])) continue;
+		const nested = { ...sectionValue[object] };
+		const removed = keys.filter((key) => nested[key] !== undefined);
+		if (removed.length === 0) continue;
+		for (const key of removed) delete nested[key];
+		result[section] = { ...sectionValue, [object]: nested };
+		removedPublishedOnlyKeys.push(...removed.map((key) => `${section}.${object}.${key}`));
+	}
+
 	const family = result.family;
 	if (isRecord(family)) {
-		const normalizedFamily = { ...family };
-		const normalizedGodparents = formatFamilyMembersAsLines(family.godparents);
-		if (family.godparents !== undefined) {
-			if (normalizedGodparents !== undefined)
-				normalizedFamily.godparents = normalizedGodparents;
-			else delete normalizedFamily.godparents;
-		}
-		result.family = normalizedFamily;
+		result.family = canonicalizeFamilyDraft(family, issues);
 	}
 
 	const location = result.location;
@@ -338,7 +651,25 @@ export function normalizeDraftContent(
 		};
 	}
 
-	return result as DraftContent;
+	return {
+		content: result as DraftContent,
+		issues,
+		removedPublishedOnlyKeys,
+		changed: JSON.stringify(result) !== before,
+	};
+}
+
+/**
+ * Canonical draft normalization used by editor hydration, draft writes, preview
+ * and publish. Throws when the draft holds data the flat contract cannot express
+ * rather than silently dropping it.
+ */
+export function normalizeDraftContent(
+	content: DraftContent | Record<string, unknown>,
+): DraftContent {
+	const result = canonicalizeDraftContent(content);
+	if (result.issues.length > 0) throw new DraftNormalizationError(result.issues);
+	return result.content;
 }
 
 // eslint-disable-next-line complexity -- Nested-to-flat mapping covers many field transformations by design.

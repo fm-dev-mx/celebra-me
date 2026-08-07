@@ -1,9 +1,16 @@
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import type { FamilyDraft } from '@/lib/intake/schemas/family-draft.schema';
 import type { DemoPreset } from '@/lib/intake/types';
+import { FAMILY_LABEL_KEYS } from '@/lib/invitation/family-contract';
+import { ApiError } from '@/lib/rsvp/core/errors';
 import { venueLabel } from '@/lib/intake/utils';
 import { str, trimmedStr, normalizeDate, isNonEmptyObject } from '@/lib/shared/data-utils';
-import { COUNTDOWN_DEFAULTS, ENVELOPE_TEXT_FIELDS, VENUE_URL_FIELDS } from '@/lib/intake/constants';
+import {
+	COUNTDOWN_DEFAULTS,
+	ENVELOPE_TEXT_FIELDS,
+	PERSONALIZED_ACCESS_DRAFT_KEYS,
+	VENUE_URL_FIELDS,
+} from '@/lib/intake/constants';
 import { DEFAULT_REMINDER_MESSAGE } from '@/lib/rsvp/services/shared/share-message-defaults';
 import { buildPublishedEventTiming } from '@/lib/time/event-time';
 import { venueSchema } from '@/lib/intake/schemas/shared-content.schema';
@@ -105,18 +112,61 @@ function mapEventTimingFromDraft(
 	return derived as Record<string, unknown>;
 }
 
-const FAMILY_LABEL_KEYS: ReadonlyArray<keyof FamilyDraft> = [
-	'sectionSubtitle',
-	'sectionTitle',
-	'parentsTitle',
-	'fatherRole',
-	'motherRole',
-	'godparentsTitle',
-	'spouseTitle',
-	'spouseRole',
-	'childrenTitle',
-	'sectionMessage',
-] as const;
+/**
+ * Publish consumes canonical flat `DraftContent`. A draft that still carries
+ * published-shaped family structures would silently lose names here, so it is
+ * rejected instead: callers must normalize through `normalizeDraftContent`.
+ */
+function assertCanonicalFamilyDraft(draftFamily: Record<string, unknown>): void {
+	const nestedPaths: string[] = [];
+	for (const key of ['parents', 'labels', 'spouse'] as const) {
+		if (draftFamily[key] !== undefined) nestedPaths.push(`family.${key}`);
+	}
+	if (Array.isArray(draftFamily.children)) nestedPaths.push('family.children[]');
+	if (Array.isArray(draftFamily.godparents)) nestedPaths.push('family.godparents[]');
+	for (const [groupKey, nestedKey] of [
+		['groups', 'items'],
+		['godparentGroups', 'godparents'],
+	] as const) {
+		const groups = draftFamily[groupKey];
+		if (!Array.isArray(groups)) continue;
+		groups.forEach((group, index) => {
+			if (isNonEmptyObject(group) && group[nestedKey] !== undefined) {
+				nestedPaths.push(`family.${groupKey}[${index}].${nestedKey}`);
+			}
+		});
+	}
+	if (nestedPaths.length === 0) return;
+	throw new ApiError(
+		422,
+		'bad_request',
+		'El borrador conserva estructuras de contenido publicado y no puede publicarse sin normalizarse.',
+		{ nestedPaths },
+	);
+}
+
+/**
+ * The draft owns only the editable subset of `personalizedAccess`, so published-only
+ * fields must be carried over from the prior revision instead of being replaced away.
+ */
+function buildPersonalizedAccess(
+	ctx: PublishCtx,
+	draftValue: unknown,
+	priorRsvp: Record<string, unknown> | undefined,
+): Record<string, unknown> {
+	const prior = clientPriorFields(ctx, priorRsvp, ['personalizedAccess']).personalizedAccess;
+	if (!isNonEmptyObject(draftValue)) {
+		return isNonEmptyObject(prior) ? { personalizedAccess: prior } : {};
+	}
+	const carried = isNonEmptyObject(prior)
+		? Object.fromEntries(
+				Object.entries(prior).filter(
+					([key]) => !PERSONALIZED_ACCESS_DRAFT_KEYS.includes(key),
+				),
+			)
+		: {};
+	return { personalizedAccess: { ...carried, ...draftValue } };
+}
 
 function buildFamilyLabels(draftFamily: FamilyDraft): Record<string, unknown> | undefined {
 	const labels: Record<string, unknown> = {};
@@ -209,6 +259,7 @@ function mapFamilyFromDraft(
 	priorFamily?: Record<string, unknown>,
 ): Record<string, unknown> | undefined {
 	if (!isNonEmptyObject(draftFamily)) return undefined;
+	assertCanonicalFamilyDraft(draftFamily);
 	const family = draftFamily as FamilyDraft;
 
 	const result: Record<string, unknown> = definedFields(priorFamily, ['focalPoint']);
@@ -553,9 +604,7 @@ function mapRsvpSection(
 		subcopy: str(draftRsvp.subcopy) || demoStr(ctx, demo.subcopy),
 		...(confirmationDeadline ? { confirmationDeadline } : {}),
 		...(responseMessages ? { responseMessages } : {}),
-		...(draftRsvp.personalizedAccess
-			? { personalizedAccess: draftRsvp.personalizedAccess }
-			: clientPriorFields(ctx, priorRsvp, ['personalizedAccess'])),
+		...buildPersonalizedAccess(ctx, draftRsvp.personalizedAccess, priorRsvp),
 		...(draftRsvp.calendar
 			? { calendar: draftRsvp.calendar }
 			: clientPriorFields(ctx, priorRsvp, ['calendar'])),

@@ -20,7 +20,10 @@ import {
 } from '@/lib/rsvp/repositories/event.repository';
 import { loadDemoContent } from '@/lib/intake/editor-api';
 import { hasRsvpContent } from '@/lib/intake/utils';
-import { mapNestedToDraftContent } from '@/lib/intake/services/draft-content-mapper';
+import {
+	DraftNormalizationError,
+	mapNestedToDraftContent,
+} from '@/lib/intake/services/draft-content-mapper';
 import { resolveAssetSlug } from '@/lib/assets/asset-slug';
 import { mergePublishedWithDraft } from '@/lib/intake/services/merge-content.service';
 import {
@@ -72,10 +75,22 @@ function hydrateEditableContent(
 	demoContent: Record<string, unknown>,
 	options: { allowDemoFallback?: boolean } = {},
 ): { content: DraftContent; sectionStates: Record<string, SectionSource> } {
-	return mergePublishedWithDraft(publishedContent, draftContent, {
-		allowDemoFallback: options.allowDemoFallback,
-		demoContent,
-	});
+	try {
+		return mergePublishedWithDraft(publishedContent, draftContent, {
+			allowDemoFallback: options.allowDemoFallback,
+			demoContent,
+		});
+	} catch (error) {
+		if (error instanceof DraftNormalizationError) {
+			throw new ApiError(
+				422,
+				'bad_request',
+				'El borrador guardado conserva datos que el editor no puede representar. Ejecuta la canonicalización del borrador antes de editarlo.',
+				{ issues: error.issues },
+			);
+		}
+		throw error;
+	}
 }
 
 function createPublicationState(

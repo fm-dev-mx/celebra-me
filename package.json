@@ -96,6 +96,7 @@
         "invitation:diagnose-identity": "tsx scripts/provision/managed-identity-diagnostics-cli.ts",
         "invitation:cross-db-reconcile": "tsx scripts/provision/cross-db-invitation-reconciliation-cli.ts",
         "invitation:romina-draft-reset": "tsx scripts/provision/romina-draft-reset-cli.ts",
+        "invitation:draft-canonicalize": "tsx scripts/provision/draft-canonicalization-cli.ts",
         "qr:valentina-memories": "tsx scripts/qr/generate-valentina-memories.ts",
         "screenshot": "tsx scripts/screenshot/cli.ts",
         "screenshot:interactive": "tsx scripts/screenshot/cli.ts --interactive",

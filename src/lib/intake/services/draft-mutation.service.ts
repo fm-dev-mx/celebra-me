@@ -14,6 +14,11 @@ import {
 	type InvitationEditorSectionKey,
 } from '@/lib/intake/schemas/invitation-editor.schema';
 import { InvitationContentDraftContentSchema } from '@/lib/intake/schemas/invitation-content-draft.schema';
+import {
+	DraftNormalizationError,
+	mapNestedToDraftContent,
+	normalizeDraftContent,
+} from '@/lib/intake/services/draft-content-mapper';
 import { applySectionValue } from '@/lib/intake/services/section-content-mapper';
 import type { InvitationContentDraft } from '@/lib/intake/types';
 import { ApiError } from '@/lib/rsvp/core/errors';
@@ -57,6 +62,29 @@ function setPathValue(target: Record<string, unknown>, path: string, value: unkn
 
 function cloneContent(content: Record<string, unknown>): Record<string, unknown> {
 	return JSON.parse(JSON.stringify(content)) as Record<string, unknown>;
+}
+
+function toCanonicalBaseline(
+	draftContent: Record<string, unknown> | undefined,
+	publishedContent: Record<string, unknown> | undefined,
+): Record<string, unknown> {
+	try {
+		if (draftContent) return normalizeDraftContent(draftContent) as Record<string, unknown>;
+	} catch (error) {
+		if (error instanceof DraftNormalizationError) {
+			throw new ApiError(
+				422,
+				'bad_request',
+				'El borrador guardado conserva datos que el editor no puede representar. Ejecuta la canonicalización del borrador antes de continuar.',
+				{ issues: error.issues },
+			);
+		}
+		throw error;
+	}
+	if (publishedContent) {
+		return mapNestedToDraftContent(publishedContent) as Record<string, unknown>;
+	}
+	return {};
 }
 
 function validateResultingContent(content: Record<string, unknown>): Record<string, unknown> {
@@ -119,10 +147,12 @@ export async function applyDraftMutation(
 	}
 	// When no draft exists, create via upsert; client-supplied expected revision is ignored.
 
-	const baseline = cloneContent(
-		(draft?.content as Record<string, unknown> | undefined) ??
-			(published?.content as Record<string, unknown> | undefined) ??
-			{},
+	// Drafts are always the flat `DraftContent` contract. Seeding from a published
+	// revision must go through the canonical nested → flat mapping, and an existing
+	// draft is canonicalized so legacy hybrid documents converge on every write.
+	const baseline = toCanonicalBaseline(
+		draft?.content as Record<string, unknown> | undefined,
+		published?.content as Record<string, unknown> | undefined,
 	);
 
 	let nextContent: Record<string, unknown>;

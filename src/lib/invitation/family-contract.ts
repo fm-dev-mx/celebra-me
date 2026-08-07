@@ -4,6 +4,25 @@ export type ParentsOrder = 'father-first' | 'mother-first';
 
 export const DEFAULT_PARENTS_ORDER: ParentsOrder = 'mother-first';
 
+/**
+ * Label keys stored nested under `family.labels` in published content and flat
+ * on the draft family. Order is part of the published `labels` key order.
+ */
+export const FAMILY_LABEL_KEYS = [
+	'sectionSubtitle',
+	'sectionTitle',
+	'parentsTitle',
+	'fatherRole',
+	'motherRole',
+	'godparentsTitle',
+	'spouseTitle',
+	'spouseRole',
+	'childrenTitle',
+	'sectionMessage',
+] as const;
+
+export type FamilyLabelKey = (typeof FAMILY_LABEL_KEYS)[number];
+
 function text(value: unknown): string | undefined {
 	return typeof value === 'string' && value.trim() ? value.trim() : undefined;
 }

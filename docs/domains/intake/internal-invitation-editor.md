@@ -10,8 +10,11 @@ current boundary.
 - Invitation operations live under `/dashboard/invitaciones`.
 - Creation validates the selected descriptor's event type and preset before any project or draft is
   persisted.
-- Draft content is sparse. Preview and publication compute effective content by merging draft data
-  with the prior published snapshot; approved demo fallback is limited to demo invitations.
+- Draft content is sparse and uses the flat editable model, never the nested published model. A
+  draft seeded from a published revision is converted with `mapNestedToDraftContent` first; see the
+  contract table in [`.agent/rules/intake-publishing.md`](../../../.agent/rules/intake-publishing.md).
+- Preview and publication compute effective content by merging draft data with the prior published
+  snapshot; approved demo fallback is limited to demo invitations.
 - Both preview and publication remap effective draft content through `mapDraftToPublished` with
   `priorPublishedContent` so non-editable published fields (for example interludes, `sectionStyles`,
   `visualProfileId`, `thankYou.date`, and `thankYou.closingPhrase`) survive the rematerialization

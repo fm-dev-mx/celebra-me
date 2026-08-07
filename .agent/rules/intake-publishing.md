@@ -31,6 +31,44 @@ transition is code-enforced:
 - All other `InvitationStatus` values can be set through the metadata API without service-layer
   guards.
 
+## Content Contracts (Draft vs Published)
+
+Two distinct representations exist and must never be interchanged:
+
+| Representation      | Shape                                        | Storage                        |
+| ------------------- | -------------------------------------------- | ------------------------------ |
+| Published content   | Nested persisted/public model (`eventContentSchema`) | `published_invitation_content` |
+| Draft content       | Flat editable model (`InvitationContentDraftContentSchema`) | `invitation_content_drafts`    |
+
+`family` is where the two diverge most: published uses `parents`, `labels`, `spouse`,
+`children[]`, `godparents[]`, `godparentGroups[].godparents`, `groups[].items`; the draft uses
+`fatherName`/`motherName`, flat label keys, `spouseName`, `children` as a string, `godparents` as a
+string, `godparentGroups[].names`, `groups[].names`.
+
+Canonical conversion boundaries — do not add parallel mappings:
+
+| Direction                | Function                | Location                                          |
+| ------------------------ | ----------------------- | ------------------------------------------------- |
+| Published → Draft        | `mapNestedToDraftContent` | `src/lib/intake/services/draft-content-mapper.ts` |
+| Draft → Draft (canonical) | `normalizeDraftContent` / `canonicalizeDraftContent` | `src/lib/intake/services/draft-content-mapper.ts` |
+| Draft → Published        | `mapDraftToPublished`   | `src/lib/intake/mappers/draft-to-published.mapper.ts` |
+
+Rules:
+
+- **Raw published content must never be persisted as a draft baseline.** Seeding a draft from a
+  published revision always goes through `mapNestedToDraftContent`.
+- Persisted drafts must not carry published-only content: `theme`, `templateId`, `visualProfileId`,
+  `_assetSlug`, `isDemo`, `navigation`, `sectionStyles`, or `rsvp.personalizedAccess.noteText`.
+  Publish restores these from the invitation record or the prior published revision.
+- `normalizeDraftContent` is the single normalization boundary. Editor hydration, preview, publish
+  projection and draft writes all pass through it, so legacy hybrid drafts converge on read and on
+  write. It is deterministic, idempotent and non-destructive, and throws `DraftNormalizationError`
+  with explicit paths instead of dropping data it cannot express.
+- `mapDraftToPublished` stays strict: it rejects a family draft that still holds published-shaped
+  structures rather than silently dropping `groups`, `children` or `godparentGroups`.
+- Repair legacy drafts with `pnpm invitation:draft-canonicalize --slug <slug> --target <env>`
+  (read-only dry-run by default; Production writes require a backup manifest and owner confirmation).
+
 ## Draft → Editor → Publish Flow
 
 ### Editor context (`getInvitationEditorContext`)
@@ -40,7 +78,8 @@ Read-only composition: loads `invitation` + `draft` + `published` rows, derives 
 
 ### Save section (`saveInvitationEditorSection`)
 
-- Seeds content from `draft?.content ?? published?.content ?? {}`
+- Seeds the baseline as canonical flat `DraftContent`: `normalizeDraftContent(draft.content)` when a
+  draft exists, otherwise `mapNestedToDraftContent(published.content)`, otherwise `{}`
 - Writes or updates the draft row with `status = 'draft'`
 - Uses optimistic locking via `updateDraftContentConditionally` (conflict → 409)
 

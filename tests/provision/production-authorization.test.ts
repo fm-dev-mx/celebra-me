@@ -31,7 +31,12 @@ interface MutatorSpec {
 	/** Optional earlier markers that must remain before the gate (preflight). */
 	preflightPatterns?: RegExp[];
 	/** permanent | pending one-off awaiting Goal 4 retirement */
-	family: 'schema_migration' | 'managed_promotion' | 'sql_patch' | 'pending_one_off';
+	family:
+		| 'schema_migration'
+		| 'managed_promotion'
+		| 'sql_patch'
+		| 'draft_repair'
+		| 'pending_one_off';
 }
 
 /** Approved Production mutators. Discovery must match this set exactly. */
@@ -69,6 +74,12 @@ const APPROVED_MUTATORS: MutatorSpec[] = [
 		firstWritePattern: /applyRominaDraftReset\s*\(/,
 		preflightPatterns: [/evaluatePromotionBackupGate/, /BACKUP_REQUIRED/],
 		family: 'pending_one_off',
+	},
+	{
+		file: 'scripts/provision/draft-canonicalization-cli.ts',
+		firstWritePattern: /applyDraftCanonicalization\s*\(\s*\{/,
+		preflightPatterns: [/evaluatePromotionBackupGate/, /BACKUP_REQUIRED/],
+		family: 'draft_repair',
 	},
 ];
 
