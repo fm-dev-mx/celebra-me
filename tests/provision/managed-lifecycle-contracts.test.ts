@@ -1,6 +1,8 @@
 import { describe, expect, it } from '@jest/globals';
 import {
 	buildSemanticFunctionalChanges,
+	computePlanId,
+	stableTargetPreconditions,
 	verifyPlanPreconditions,
 	type OperationalPlan,
 } from '../../scripts/provision/invitation-update-plan.ts';
@@ -91,6 +93,30 @@ describe('managed lifecycle executable contracts', () => {
 				assetStateHash: 'f'.repeat(64), // different from plan's 'c'.repeat(64)
 			});
 			expect(result.ok).toBe(true);
+		});
+
+		it('excludes assetStateHash from stable preconditions and planId', () => {
+			const base = plan().targetPreconditions;
+			expect(stableTargetPreconditions(base)).not.toHaveProperty('assetStateHash');
+			expect(stableTargetPreconditions(base).packageHash).toBe(base.packageHash);
+
+			const idA = computePlanId({
+				slug: 'fixture',
+				sourceHash: 'a'.repeat(64),
+				targetEnvironment: 'production',
+				projectRef: 'ineitkdkyrxqyressllp',
+				changes: [],
+				preconditions: { ...base, assetStateHash: 'c'.repeat(64) },
+			});
+			const idB = computePlanId({
+				slug: 'fixture',
+				sourceHash: 'a'.repeat(64),
+				targetEnvironment: 'production',
+				projectRef: 'ineitkdkyrxqyressllp',
+				changes: [],
+				preconditions: { ...base, assetStateHash: 'f'.repeat(64) },
+			});
+			expect(idA).toBe(idB);
 		});
 
 		it('accepts the exact source, package, project, revision, version, and asset state', () => {

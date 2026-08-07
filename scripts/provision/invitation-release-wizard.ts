@@ -691,10 +691,12 @@ async function applyProductionOutcome(session: ReleaseWizardSession): Promise<vo
 		deliveryScope: definition.deliveryScope,
 	});
 	writeHuman(`${operatorSymbol('info')} Preflight Production…`);
+	// Match CLI dry-run: defer critical backup to the orchestrator recovery classifier.
 	const preflight = await runPromotionPreflight({
 		packageData: session.packageData,
 		updateScope,
 		assetPolicy: session.assetPolicy,
+		requireBackup: false,
 		getProductionDbUrl: getProdDbUrl,
 	});
 	if (preflight.status === 'BLOCKED') {

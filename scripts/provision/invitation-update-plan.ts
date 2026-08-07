@@ -53,7 +53,24 @@ export interface TargetPreconditions {
 	targetOwnerUserId?: string;
 	existingDraftUpdatedAt?: string;
 	existingPublishedVersion?: number;
+	/**
+	 * Diagnostic Storage/HTTP probe fingerprint from planning time only.
+	 * Never authoritative for planId, verifyPlanPreconditions, or promote
+	 * volatile revalidation — CDN/edge probes are non-deterministic.
+	 * Asset integrity is enforced by engine reconciliation at apply.
+	 */
 	assetStateHash?: string;
+}
+
+/**
+ * Preconditions safe for plan identity and stale-write gates.
+ * Drops Storage probe fingerprints that must not fail-close promote.
+ */
+export function stableTargetPreconditions(
+	preconditions: TargetPreconditions,
+): Omit<TargetPreconditions, 'assetStateHash'> {
+	const { assetStateHash: _diagnosticOnly, ...stable } = preconditions;
+	return stable;
 }
 
 export type PlanExecutionStatus =
@@ -97,13 +114,6 @@ export function computePlanId(params: {
 	preconditions: TargetPreconditions;
 	operationFingerprint?: string;
 }): string {
-	// NOTE: assetStateHash is intentionally excluded from planId computation.
-	// Storage HTTP probes are served through Supabase's CDN, which may return
-	// different cached content-lengths or headers across edge nodes, making
-	// assetStateHash non-deterministic between the planning (dry-run) and
-	// execution (apply) phases. DB-level preconditions (draft timestamp,
-	// published version, invitation ID) provide sufficient safety guarantees.
-	const { assetStateHash: _excluded, ...stablePreconditions } = params.preconditions;
 	const raw = JSON.stringify({
 		slug: params.slug,
 		sourceHash: params.sourceHash,
@@ -118,7 +128,7 @@ export function computePlanId(params: {
 			after: c.newValue,
 			scope: c.scope,
 		})),
-		preconditions: stablePreconditions,
+		preconditions: stableTargetPreconditions(params.preconditions),
 		operationFingerprint: params.operationFingerprint,
 	});
 	return createHash('sha256').update(raw).digest('hex').slice(0, 32);
@@ -213,9 +223,7 @@ export function verifyPlanPreconditions(
 		};
 	}
 
-	// NOTE: assetStateHash is intentionally excluded from precondition verification.
-	// Storage HTTP probes are non-deterministic across CDN edge nodes; re-probing
-	// storage during apply frequently produces a different hash than planning.
+	// assetStateHash is diagnostic-only (see TargetPreconditions / stableTargetPreconditions).
 	// Asset-level verification is handled by the reconciliation phase in the engine.
 
 	return { ok: true };

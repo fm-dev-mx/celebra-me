@@ -1,7 +1,6 @@
 import { extractSupabaseProjectRef } from '../db/db-target-config.ts';
 import { runPsql, sqlLiteral } from '../db/db-workflow-lib.ts';
 import { OperatorError } from '../db/operator-cli-ux.ts';
-import { computePromotionVolatileAssetStateHash } from './invitation-import-engine.ts';
 import type { InvitationPackageData } from './invitation-package.ts';
 import {
 	evaluatePromotionSchemaGate,
@@ -50,7 +49,6 @@ export interface RevalidatePromotionVolatilePreconditionsInput {
 		reviewed: PromotionPreflightReport;
 		packageData: InvitationPackageData;
 	}) => PromotionVolatileTargetState;
-	computeAssetStateHash?: typeof computePromotionVolatileAssetStateHash;
 }
 
 function planDrift(cause: string): OperatorError {
@@ -222,8 +220,13 @@ select json_build_object(
 }
 
 /**
- * Revalidates only volatile evidence retained by the reviewed plan.
- * It never rebuilds the package, semantic selection, or full promotion audit.
+ * Revalidates only authoritative volatile evidence retained by the reviewed plan.
+ * Never rebuilds the package, semantic selection, or full promotion audit.
+ *
+ * Does not re-probe Storage HTTP fingerprints (`assetStateHash`): those are
+ * diagnostic-only and non-deterministic across CDN edges. Asset integrity is
+ * enforced by package `assetManifestHash` identity plus engine reconciliation
+ * at apply — the same policy as {@link verifyPlanPreconditions}.
  */
 // eslint-disable-next-line complexity -- Volatile evidence is checked as one fail-closed pre-authorization boundary.
 export async function revalidatePromotionVolatilePreconditions(
@@ -293,20 +296,6 @@ export async function revalidatePromotionVolatilePreconditions(
 			...targetState,
 		});
 		if (!precondition.ok) throw new Error(precondition.reason);
-
-		const expectedAssetStateHash = plan.targetPreconditions.assetStateHash;
-		if (expectedAssetStateHash) {
-			const currentAssetStateHash = await (
-				input.computeAssetStateHash ?? computePromotionVolatileAssetStateHash
-			)({
-				packageData: input.packageData,
-				targetDbUrl,
-				targetInvitationId: targetState.targetInvitationId,
-			});
-			if (currentAssetStateHash !== expectedAssetStateHash) {
-				throw new Error('Production asset state changed after review.');
-			}
-		}
 
 		return {
 			...input.reviewed,

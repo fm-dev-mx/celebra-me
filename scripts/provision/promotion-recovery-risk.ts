@@ -51,8 +51,10 @@ function resolvedScope(input: PromotionRecoveryRiskInput): UpdateScope | undefin
  * Selects recovery coverage from the already-reviewed mutation plan.
  *
  * Unknown inputs and classifier failures deliberately require the full critical
- * backup. Routine content-only recovery relies on managed provenance/preimage
- * evidence retained by the apply engine.
+ * backup. Routine recovery relies on managed provenance/preimage evidence when
+ * the reviewed plan has no asset overwrite/delete/prune, auth/identity create,
+ * or other destructive signals — including `content-and-assets` plans whose
+ * Storage ops are zero (scope label alone is not risk).
  */
 // eslint-disable-next-line complexity -- Recovery classification intentionally evaluates every fail-closed risk signal in one pure decision.
 export function classifyPromotionRecoveryRisk(
@@ -71,9 +73,6 @@ export function classifyPromotionRecoveryRisk(
 
 		const reasons = new Set<string>();
 		if (!scope) reasons.add('unclassifiable-scope');
-		if (scope === 'content-and-assets' || scope === 'assets-only') {
-			reasons.add(`asset-scope:${scope}`);
-		}
 		if (input.pruneAssets === true) reasons.add('asset-prune-requested');
 
 		for (const action of actions) {
@@ -102,7 +101,9 @@ export function classifyPromotionRecoveryRisk(
 			}
 			if (
 				action.resource === 'invitation_assets' &&
-				(action.action === 'replace' || action.action === 'delete')
+				(action.action === 'create' ||
+					action.action === 'replace' ||
+					action.action === 'delete')
 			) {
 				reasons.add(`asset-${action.action}`);
 			}
@@ -127,11 +128,14 @@ export function classifyPromotionRecoveryRisk(
 		) {
 			reasons.add('unclassifiable-functional-change');
 		}
+		if (plan.storageOps.uploads > 0) reasons.add('asset-upload');
 		if (plan.storageOps.overwrites > 0) reasons.add('asset-overwrite');
 		if (plan.storageOps.deletes > 0) reasons.add('asset-delete');
 		if (
 			(input.assetPolicy === 'sync' || input.assetPolicy === 'missing') &&
-			(input.pruneAssets === true || plan.storageOps.overwrites > 0)
+			(input.pruneAssets === true ||
+				plan.storageOps.overwrites > 0 ||
+				plan.storageOps.deletes > 0)
 		) {
 			reasons.add(`asset-policy-${input.assetPolicy}-with-destructive-intent`);
 		}
@@ -139,12 +143,13 @@ export function classifyPromotionRecoveryRisk(
 		if (reasons.size > 0) {
 			return { level: 'critical', reasons: [...reasons] };
 		}
-		if (scope !== 'content-only') {
-			return { level: 'critical', reasons: ['unclassifiable-non-content-scope'] };
-		}
 		return {
 			level: 'routine',
-			reasons: ['content-only-managed-preimage-recovery'],
+			reasons: [
+				scope === 'content-only'
+					? 'content-only-managed-preimage-recovery'
+					: 'managed-content-preimage-recovery-no-asset-mutations',
+			],
 		};
 	} catch {
 		return {

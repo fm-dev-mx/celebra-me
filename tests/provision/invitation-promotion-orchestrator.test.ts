@@ -1,4 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { OperatorError } from '../../scripts/db/operator-cli-ux.ts';
 import {
 	orchestrateInvitationPromotion,
@@ -107,6 +109,19 @@ describe('classifyPromotionRecoveryRisk', () => {
 		});
 	});
 
+	it('treats content-and-assets with Storage 0 as routine (scope label is not risk)', () => {
+		expect(
+			classifyPromotionRecoveryRisk({
+				reviewed: preflight(),
+				updateScope: 'content-and-assets',
+				assetPolicy: 'missing',
+			}),
+		).toEqual({
+			level: 'routine',
+			reasons: ['managed-content-preimage-recovery-no-asset-mutations'],
+		});
+	});
+
 	it('requires critical recovery for asset overwrite intent', () => {
 		const reviewed = preflight();
 		reviewed.engineResult!.actions.push({
@@ -123,6 +138,24 @@ describe('classifyPromotionRecoveryRisk', () => {
 		});
 		expect(risk.level).toBe('critical');
 		expect(risk.reasons).toEqual(expect.arrayContaining(['asset-replace', 'asset-overwrite']));
+	});
+
+	it('requires critical recovery for asset upload / create intent', () => {
+		const reviewed = preflight();
+		reviewed.engineResult!.actions.push({
+			resource: 'invitation_assets',
+			name: 'hero',
+			action: 'create',
+			detail: 'upload',
+		});
+		reviewed.engineResult!.plan.storageOps.uploads = 1;
+		const risk = classifyPromotionRecoveryRisk({
+			reviewed,
+			updateScope: 'content-and-assets',
+			assetPolicy: 'missing',
+		});
+		expect(risk.level).toBe('critical');
+		expect(risk.reasons).toEqual(expect.arrayContaining(['asset-create', 'asset-upload']));
 	});
 
 	it('fails closed when the plan cannot be classified', () => {
@@ -169,16 +202,15 @@ describe('revalidatePromotionVolatilePreconditions', () => {
 				targetOwnerUserId: '22222222-2222-4222-8222-222222222222',
 				existingDraftUpdatedAt: '2026-08-06T00:00:00.000Z',
 				existingPublishedVersion: 7,
-				assetStateHash: 'asset-state',
+				// Diagnostic-only; must not fail-close revalidation when present.
+				assetStateHash: 'asset-state-from-planning-probe',
 			},
 		});
 		return reviewed;
 	}
 
-	it('checks retained target, schema, approval, project, and asset evidence', async () => {
-		const reviewed = reviewedWithVolatileState();
-		const computeAssetStateHash = jest.fn(async () => 'asset-state');
-		const result = await revalidatePromotionVolatilePreconditions({
+	function happyDeps(reviewed: PromotionPreflightReport) {
+		return {
 			reviewed,
 			packageData: packageData() as never,
 			getProductionDbUrl: () => ({ url: PROD_URL }),
@@ -191,33 +223,104 @@ describe('revalidatePromotionVolatilePreconditions', () => {
 				existingDraftUpdatedAt: '2026-08-06T00:00:00.000Z',
 				existingPublishedVersion: 7,
 			}),
-			computeAssetStateHash,
-		});
+		};
+	}
+
+	it('accepts retained target, schema, approval, and project evidence (happy path)', async () => {
+		const reviewed = reviewedWithVolatileState();
+		const result = await revalidatePromotionVolatilePreconditions(happyDeps(reviewed));
 		expect(result.engineResult?.plan).toBe(reviewed.engineResult?.plan);
-		expect(computeAssetStateHash).toHaveBeenCalledTimes(1);
+		expect(result.productionProjectRef).toBe('ineitkdkyrxqyressllp');
+		expect(result.targetDbUrl).toBe(PROD_URL);
 	});
 
-	it('throws PLAN_DRIFT when a volatile target version changes', async () => {
+	it('does not fail-close on diagnostic assetStateHash (CDN probe drift)', async () => {
+		const reviewed = reviewedWithVolatileState();
+		// Planning left a probe fingerprint; revalidation must not re-probe or compare it.
+		expect(reviewed.engineResult!.plan.targetPreconditions.assetStateHash).toBeTruthy();
+		await expect(
+			revalidatePromotionVolatilePreconditions(happyDeps(reviewed)),
+		).resolves.toMatchObject({ packageHash: reviewed.packageHash });
+	});
+
+	it('throws PLAN_DRIFT when a volatile published version changes', async () => {
 		const reviewed = reviewedWithVolatileState();
 		await expect(
 			revalidatePromotionVolatilePreconditions({
-				reviewed,
-				packageData: packageData() as never,
-				getProductionDbUrl: () => ({ url: PROD_URL }),
-				evaluateSchema: () => reviewed.schema,
-				runLiveVerification: async () => ({ ok: true }) as never,
-				verifyApproval: () => reviewed.approval!,
+				...happyDeps(reviewed),
 				readTargetState: () => ({
 					targetInvitationId: '11111111-1111-4111-8111-111111111111',
 					targetOwnerUserId: '22222222-2222-4222-8222-222222222222',
 					existingDraftUpdatedAt: '2026-08-06T00:00:00.000Z',
 					existingPublishedVersion: 8,
 				}),
-				computeAssetStateHash: async () => 'asset-state',
 			}),
 		).rejects.toMatchObject({ code: 'PLAN_DRIFT' } satisfies Partial<OperatorError>);
 	});
+
+	it('throws PLAN_DRIFT when package identity changes after review', async () => {
+		const reviewed = reviewedWithVolatileState();
+		await expect(
+			revalidatePromotionVolatilePreconditions({
+				...happyDeps(reviewed),
+				packageData: { ...packageData(), packageHash: 'different-package-hash' } as never,
+			}),
+		).rejects.toMatchObject({ code: 'PLAN_DRIFT' } satisfies Partial<OperatorError>);
+	});
+
+	it('throws PLAN_DRIFT when schema lifecycle changes after review', async () => {
+		const reviewed = reviewedWithVolatileState();
+		await expect(
+			revalidatePromotionVolatilePreconditions({
+				...happyDeps(reviewed),
+				evaluateSchema: () => ({
+					...reviewed.schema,
+					state: 'BEHIND',
+					compatible: false,
+					pendingMigrations: ['20260802000000'],
+				}),
+			}),
+		).rejects.toMatchObject({ code: 'PLAN_DRIFT' } satisfies Partial<OperatorError>);
+	});
+
+	it('throws PLAN_DRIFT when Preview approval identity changes after review', async () => {
+		const reviewed = reviewedWithVolatileState();
+		await expect(
+			revalidatePromotionVolatilePreconditions({
+				...happyDeps(reviewed),
+				verifyApproval: () =>
+					({
+						...reviewed.approval!,
+						materializedProjectionHash: 'different-hosted-projection',
+					}) as never,
+			}),
+		).rejects.toMatchObject({ code: 'PLAN_DRIFT' } satisfies Partial<OperatorError>);
+	});
+
+	it('source contract: never imports Storage probe hashing from the import engine', () => {
+		const source = readFileSync(
+			resolve(process.cwd(), 'scripts/provision/promotion-volatile-revalidation.ts'),
+			'utf8',
+		);
+		expect(source).not.toContain('invitation-import-engine');
+		expect(source).not.toContain('computePromotionVolatileAssetStateHash');
+		expect(source).not.toContain('computeAssetStateHash');
+		expect(source).not.toContain('Production asset state changed after review');
+		expect(source).toContain('verifyPlanPreconditions');
+	});
 });
+
+function preflightWithAssetOverwrite(): PromotionPreflightReport {
+	const reviewed = preflight();
+	reviewed.engineResult!.actions.push({
+		resource: 'invitation_assets',
+		name: 'hero',
+		action: 'replace',
+		detail: 'overwrite',
+	});
+	reviewed.engineResult!.plan.storageOps.overwrites = 1;
+	return reviewed;
+}
 
 describe('invitation promotion orchestrator', () => {
 	const runPreflight = jest.fn<(...args: unknown[]) => Promise<PromotionPreflightReport>>();
@@ -341,11 +444,12 @@ describe('invitation promotion orchestrator', () => {
 		);
 	});
 
-	it('orders critical recovery before compact revalidation and apply', async () => {
+	it('orders critical recovery before compact revalidation and apply when assets mutate', async () => {
 		const order: string[] = [];
+		const risky = preflightWithAssetOverwrite();
 		runPreflight.mockImplementation(async () => {
 			order.push('preflight');
-			return preflight();
+			return risky;
 		});
 		ensureReleaseEvidence.mockImplementation(() => {
 			order.push('release');
@@ -379,7 +483,7 @@ describe('invitation promotion orchestrator', () => {
 		runApply.mockImplementation(async () => {
 			order.push('apply');
 			return {
-				...preflight(),
+				...risky,
 				status: 'PROMOTED',
 				verification: { ok: true, detail: 'ok' },
 			} as PromotionApplyReport;
@@ -416,6 +520,27 @@ describe('invitation promotion orchestrator', () => {
 		);
 	});
 
+	it('skips full critical backup for content-and-assets when Storage ops are zero', async () => {
+		await orchestrateInvitationPromotion({
+			packageData: packageData() as never,
+			deliveryScope: 'content-and-assets',
+			assetPolicy: 'missing',
+			quiet: true,
+			runPreflight: runPreflight as never,
+			runApply: runApply as never,
+			requireOwnerApply: requireOwnerApply as never,
+			ensureReleaseEvidence: ensureReleaseEvidence as never,
+			ensureBackup: ensureBackup as never,
+			revalidateBackup: revalidateBackup as never,
+			revalidateVolatile,
+		});
+
+		expect(ensureBackup).not.toHaveBeenCalled();
+		expect(revalidateBackup).not.toHaveBeenCalled();
+		expect(revalidateVolatile).toHaveBeenCalledTimes(1);
+		expect(runApply).toHaveBeenCalled();
+	});
+
 	it('skips full critical backup for routine content-only recovery', async () => {
 		await orchestrateInvitationPromotion({
 			packageData: packageData() as never,
@@ -450,6 +575,7 @@ describe('invitation promotion orchestrator', () => {
 	});
 
 	it('reuses evidence while owner confirmation handles an in-gate retry', async () => {
+		runPreflight.mockResolvedValueOnce(preflightWithAssetOverwrite());
 		requireOwnerApply.mockImplementation(async () => undefined);
 		await orchestrateInvitationPromotion({
 			packageData: packageData() as never,
