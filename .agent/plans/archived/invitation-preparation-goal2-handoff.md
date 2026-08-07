@@ -1,12 +1,12 @@
 ---
 title: Invitation Preparation — Goal 2 Handoff & Goal 3 Automation List
-status: active
+status: final
 created: 2026-07-31
-updated: 2026-07-31
+updated: 2026-08-07
 related_skills:
   - client-invitation-audit
 related_docs:
-  - .agent/plans/active/invitation-preparation-authority-baseline.md
+  - .agent/plans/archived/invitation-preparation-authority-baseline.md
   - docs/core/invitation-preparation-contract.md
   - .agent/workflows/invitation-preparation.md
   - .agent/skills/client-invitation-audit/SKILL.md

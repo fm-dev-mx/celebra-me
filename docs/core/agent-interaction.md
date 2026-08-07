@@ -21,7 +21,8 @@ A high-quality prompt reduces cycles and prevents "hallucinations". Use this str
 
 Keep planning in the conversation by default. Create a repository-tracked plan only when the work
 must span sessions, carries high implementation or production risk, or the repository owner asks for
-a durable plan. Tracked plans follow `.agent/plans/README.md`.
+a durable plan. Tracked plans and the Task Contract / Goal / Handoff semantics follow
+`.agent/plans/README.md`.
 
 ---
 

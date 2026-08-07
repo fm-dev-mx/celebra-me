@@ -1,8 +1,8 @@
 ---
 title: Invitation Preparation — Authority Baseline & Recurrent-Failure Diagnosis (Goal 1)
-status: active
+status: final
 created: 2026-07-31
-updated: 2026-07-31
+updated: 2026-08-07
 related_skills:
   - client-invitation-audit
 related_docs:
@@ -14,7 +14,7 @@ related_docs:
   - docs/invitations/alba-rosa-quinonez.md
   - docs/invitations/abril-michelle-becerra-rea.md
   - docs/invitations/valentina-hernandez.md
-  - .agent/plans/active/invitation-preparation-goal2-handoff.md
+  - .agent/plans/archived/invitation-preparation-goal2-handoff.md
 supersedes: []
 superseded_by: []
 ---

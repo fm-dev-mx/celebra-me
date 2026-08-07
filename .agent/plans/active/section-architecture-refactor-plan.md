@@ -7,6 +7,14 @@ updated: 2026-07-26
 
 # Section Architecture Refactor Plan
 
+## Planning note (performance / public invitation work)
+
+Public response and cache contracts live at
+`docs/domains/invitations/public-response-cache-policy.md`. Keep performance or section-contract
+implementation work under `.agent/plans/active/` only while it has an actionable next step. Record
+baseline, preview-versus-production state, validation, and remaining risks in the plan or handoff —
+not in `.agent/plans/README.md` (governance only).
+
 ## 1. Executive Summary
 
 This plan outlines a phased migration from a highly fragmented theme-section styling architecture

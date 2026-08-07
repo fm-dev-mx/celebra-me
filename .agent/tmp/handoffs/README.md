@@ -1,7 +1,10 @@
-# `.agent/tmp/handoffs/` — Structured Task Handoffs
+# `.agent/tmp/handoffs/` — Ephemeral Role Artifacts
 
-Each subdirectory here represents one task's handoff chain.
-See `.agent/tmp/README.md` and `celebra-delegation-patterns` skill for conventions.
+Each subdirectory here represents one task's role-chain artifacts (copy → builder → QA, etc.).
+Semantic handoff fields follow the Handoff Contract in `.agent/plans/README.md`. This directory is
+not a policy SSOT.
+
+See `.agent/tmp/README.md` and `celebra-delegation-patterns` for conventions.
 
 ## Active handoffs (if any)
 

@@ -5,7 +5,7 @@ created: 2026-07-31
 updated: 2026-08-01
 related_docs:
   - docs/invitations/daniela-y-martin.md
-  - .agent/plans/active/invitation-preparation-authority-baseline.md
+  - .agent/plans/archived/invitation-preparation-authority-baseline.md
   - .agent/plans/active/daniela-y-martin-implementation-audit.md
   - .agent/plans/active/daniela-y-martin-acceptance-matrix.md
 ---

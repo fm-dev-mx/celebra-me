@@ -52,3 +52,10 @@ dashboard preview, an invalid route, and a canonical redirect. Record status and
 
 Do not introduce a positive `s-maxage`, stale-while-revalidate policy, ISR, or a new shared cache
 without a separate freshness decision and validation plan.
+
+## Related planning
+
+Actionable public-invitation performance or section-contract work is tracked under
+`.agent/plans/active/` (see `section-architecture-refactor-plan.md`) while a next step remains.
+Plan governance and Task Contract semantics live in `.agent/plans/README.md`.
+

@@ -10,13 +10,50 @@ multi-session, high risk, or explicitly requested by the repository owner.
 
 ```text
 .agent/plans/
-  README.md           # This file — plan governance
+  README.md           # This file — Task Contract, Goal protocol, Handoff Contract, plan governance
   active/             # Draft, active, or blocked plans with remaining work
   archived/           # Completed, deferred, superseded, final, or historical plans
 ```
 
 Local-only paths (`tmp/`, `drafts/`, `local/`) are gitignored. `archived/` is the canonical archive
 location. A folder named `archive/` is legacy-only and must not receive new plan files.
+
+## Task Contract (canonical)
+
+The **Task Contract** is the single semantic source of truth for what a task must satisfy. Conversation
+context, tracked plans under `.agent/plans/`, and role delegation payloads are **projections** of the
+same contract — not independent authorities.
+
+Same source of truth does not require identical context payloads. Context may be minimized by
+responsibility, but these must remain semantically consistent across projections:
+
+- authorization
+- scope
+- invariants
+- acceptance criteria
+- safety constraints
+- required evidence
+
+When applicable, a Task Contract expresses:
+
+| Field | Meaning |
+| --- | --- |
+| Objective | What success looks like |
+| Authorized actions and relevant overrides | Exact gated operations allowed for this task; any explicit exception |
+| Scope | Allowed files, systems, or surfaces |
+| Non-goals | What is intentionally excluded |
+| Applicable invariants | Non-overridable and other binding repository constraints |
+| Known evidence | Facts already established (do not re-audit without cause) |
+| Acceptance criteria | Observable done conditions |
+| Verification strategy | Commands, inspections, or evidence proportional to risk |
+| Stop conditions | When to halt and report |
+| Expected handoff | What the next responsibility needs |
+| Expected final report | What the closing report must include |
+
+Current-task authorization unlocks only gated operations that repository policy permits. It must not
+implicitly waive unrelated invariants. See `AGENTS.md` Exception Model.
+
+Authoring procedure: `.agent/workflows/plan-authoring.md`. Operating steps: `.agent/rules/workflow.md`.
 
 ## Plan Status Taxonomy
 
@@ -59,6 +96,15 @@ superseded_by:
 ---
 ```
 
+For high-risk tracked plans only, optionally add:
+
+```yaml
+autonomy: 2 # 0 report-only … 4 deploy with explicit human approval
+type: implementation # diagnostic | documentation | implementation | validation | hotfix/P0 | production rollout | deferred/roadmap
+```
+
+Do not invent a second status vocabulary for a provider or runtime.
+
 ## Governance Rules
 
 1. **Track only durable plans.** Routine single-session work stays in conversation context.
@@ -78,177 +124,76 @@ superseded_by:
 
 | Directory           | Purpose                                                     |
 | ------------------- | ----------------------------------------------------------- |
-| `.agent/plans/`     | Operational intent, implementation sequencing, agent memory |
+| `.agent/plans/`     | Operational intent, Goal sequencing, agent memory           |
 | `docs/`             | Stable product and system documentation                     |
 | `.agent/skills/`    | Reusable agent execution guidance                           |
 | `.agent/workflows/` | Repeatable procedures                                       |
+| `.agent/tmp/handoffs/` | Ephemeral role-chain artifacts (not policy SSOT)         |
+| `.agent/external/`  | Non-authoritative operator defaults (never policy)          |
 
-## Proportional Goal Protocol & Goal Handoff Contracts
+## Proportional Goal Protocol
 
-Celebra-me uses a proportional 3-tier goal scaling model for complex or multi-step work:
+Scale Goals by risk and continuity — not by conflating size, autonomy, verification depth, or severity.
 
-- **Tier 1 (Simple Task — 1 Goal):** Single-file fix, copy edit, localized bug. Executed directly with conversation-scoped planning.
-- **Tier 2 (Moderate Task — 2 Goals):** Multi-file feature or refactor. Goal 1: Design Spec & Plan $\rightarrow$ Goal 2: Implementation & Verification.
-- **Tier 3 (Systemic Task — 3 Goals):** System architecture, database overhaul, or operating model migration. Goal 1: Read-Only Audit $\rightarrow$ Goal 2: Target Architecture & Design Spec $\rightarrow$ Goal 3: Surgical Implementation & Verification.
+- **Tier 1 (simple):** One Goal — execute with conversation-scoped planning.
+- **Tier 2 (moderate):** Goal 1 Audit + Specification → Goal 2 Implementation + Verification.
+- **Tier 3 (substantial audit-driven remediation):** Goal 1 Audit + Specification → Goal 2
+  Implementation + Verification → Goal 3 Cleanup + Final Verification.
 
-### Goal Handoff Contract
+### Goal responsibilities
 
-When work spans multiple dependent goals, each goal produces a compact **Goal Handoff Contract** to pass verified facts to downstream goals without repeating discovery:
+| Goal | Must establish or do |
+| --- | --- |
+| Goal 1 — Audit + Specification | Findings, invariants, scope, risks, acceptance criteria, regression conditions, verification strategy, authorization boundaries — the evidence that governs Goal 2 |
+| Goal 2 — Implementation + Verification | Implement only what Goal 1 established; verify against Goal 1 acceptance and strategy |
+| Goal 3 — Cleanup + Final Verification | Residual cleanup, consistency, documentation, and final verification — not another implementation phase |
 
-1. **Observed Facts:** Empirical data, code snippets, file paths, line numbers.
-2. **Derived Conclusions:** Analysis of observed facts.
-3. **Decisions Made & Unresolved Decisions:** Accepted design choices; open questions carried forward.
-4. **Affected Surfaces:** Files, contracts, scripts, docs touched or audited.
-5. **Remaining Risks & Constraints:** Invariants that downstream goals must preserve.
-6. **Explicit Input for Next Goal:** Direct facts & boundaries so Goal $N+1$ proceeds without re-auditing.
+Goal 2 must not assume what Goal 1 has not established. Never put Goal or Phase identifiers in commit
+messages (`AGENTS.md`).
 
-Handoffs live in conversational output by default, and in `.agent/plans/active/` for multi-session tracked work.
+## Handoff Contract (canonical)
 
-## Loop Engineering
+One provider-neutral **Handoff Contract** applies whenever work crosses an execution boundary (next
+Goal, next session, or next role). Include fields when relevant:
 
-Plans should be written as executable loops, not static documents.
+| Field | Meaning |
+| --- | --- |
+| Current state | Where work stands |
+| Completed work | What was done |
+| Evidence | Facts, paths, measurements, links |
+| Validation passed | Checks that passed |
+| Validation failed | Checks that failed |
+| Validation intentionally not run | Checks skipped and why |
+| Unresolved uncertainty | Open questions |
+| Residual risks | Remaining hazards |
+| Applicable authorization or exception | Task-scoped grants and reported exceptions |
+| Branch / commit reference | When Git identity matters |
+| Next responsibility or decision | Who acts next and what they need |
 
-### Current Public Invitation Performance State
+### Persistence
 
-The current response and cache contract lives at
-`docs/domains/invitations/public-response-cache-policy.md`. Performance implementation work belongs
-under `.agent/plans/active/` only while it has an actionable next step.
+- **Default:** keep the handoff in conversation / Task Contract context.
+- **Persist** only when continuity genuinely requires it: multi-agent execution, multi-session work,
+  separate mutable worktrees, long-running tasks, or context that must survive the current execution
+  boundary.
+- Multi-session Goal continuity: `.agent/plans/active/` when a tracked plan is justified.
+- Role-chain artifacts: `.agent/tmp/handoffs/<task-id>/` (ephemeral; see
+  `celebra-delegation-patterns`). Not a second policy authority.
+- Do not generate mandatory handoff files for trivial work.
 
-- Production is not assumed to match the current branch. Validate production headers and CSS chunks
-  before drawing conclusions from branch-local plans.
-- Historical measurements and completed splitting plans live under `.agent/plans/archived/`.
-- The remaining section-contract refactor is tracked by
-  `.agent/plans/active/section-architecture-refactor-plan.md`.
-- Any future performance plan must record its baseline, preview-versus-production state, validation,
-  and remaining risks.
+Human-facing report **layout** for named review/apply/commit skills remains
+`.agent/templates/agent-report-contract.md` — presentation only, not Task Contract authority.
 
-### Loop Model
+## High-risk plan quality checklist
 
-```text
-context → current state → gates → allowed actions → stop conditions → validation → report → next decision
-```
+Before executing a high-risk tracked plan, confirm:
 
-Each loop produces a decision: continue the current phase, advance to the next gate, roll back, or
-stop entirely.
+- [ ] Task Contract fields above are explicit (scope, non-goals, acceptance, verification, stops)
+- [ ] Autonomy level is stated when Git writes, deploy, or production mutation may be involved
+- [ ] File boundaries are explicit
+- [ ] Rollback or stop path is defined
+- [ ] Handoff to the next Goal or decision is clear
 
-### Plan Types
-
-Every plan must declare its type in the frontmatter:
-
-| Type               | Description                                                        |
-| ------------------ | ------------------------------------------------------------------ |
-| diagnostic         | Measurement, inspection, or investigation only — no changes        |
-| documentation      | Writing or updating plan files, docs, or agent guidance only       |
-| implementation     | Code or configuration changes                                      |
-| validation         | Testing, measurement, or gate verification after implementation    |
-| hotfix/P0          | Emergency production fix — overrides normal gate sequencing        |
-| production rollout | Staged deploy, feature flag toggling, or production config changes |
-| deferred/roadmap   | Acknowledged but intentionally postponed — no active work          |
-
-### Autonomy Levels
-
-Plans must state their autonomy level in the frontmatter:
-
-```text
-Level 0 — Report only. No changes of any kind.
-Level 1 — Documentation changes only.
-Level 2 — Local code changes allowed, no staging/commit/deploy.
-Level 3 — Stage/commit allowed after validation.
-Level 4 — Deploy/production actions allowed only with explicit human approval.
-```
-
-### Gates
-
-Each loop or phase must define gates. A gate is a checkpoint that must pass before the next step may
-begin.
-
-| Gate type                 | Purpose                                                            |
-| ------------------------- | ------------------------------------------------------------------ |
-| Repo state gate           | Correct branch, clean working tree, no unintended modifications    |
-| Evidence gate             | Measurement or data required before proceeding                     |
-| Implementation gate       | Code change is complete and compiles                               |
-| Validation gate           | Tests, lint, type-check, build, visual QA pass                     |
-| Production-readiness gate | Deploy preview verified, cache headers validated, rollback defined |
-| Stop/rollback gate        | Condition that triggers revert or abort                            |
-
-Every gate must specify:
-
-- Required commands (e.g. `pnpm build`, `pnpm test`, curl checks)
-- Allowed file scope (which files may be touched)
-- Expected outputs (pass/fail criteria, measured values)
-- Whether the agent may continue autonomously or needs human approval
-
-If a gate fails, the agent must stop and report before proceeding.
-
-### Stop Conditions
-
-Every implementation loop must have explicit stop conditions. When any stop condition triggers, the
-agent must halt, produce a final report, and request human review.
-
-Examples of stop conditions:
-
-- Unexpected files modified outside the declared scope
-- Build or test failure not locally explainable
-- Visual regression (unstyled section, layout shift, missing element)
-- Production route returns empty 200 OK body (P0)
-- Cache privacy ambiguity (guest-specific HTML could become public-cacheable)
-- Required change exceeds declared scope (scope creep)
-- Data patch or migration required
-- Schema change required
-- Broad refactor required (more than 3 files outside scope)
-
-### Output Contracts
-
-Every loop must produce a final report with these fields:
-
-| Field                 | Description                                              |
-| --------------------- | -------------------------------------------------------- |
-| branch                | Current git branch                                       |
-| git status            | Working tree state (clean, dirty, staged)                |
-| files changed         | List of files modified in this loop                      |
-| commands run          | Every command executed, with outputs                     |
-| validation results    | Pass/fail per validation step                            |
-| evidence collected    | Measurements, screenshots, logs                          |
-| decisions made        | What was decided and why                                 |
-| risks                 | New risks introduced or discovered                       |
-| stop conditions hit   | Any stop conditions that triggered (or "none")           |
-| next recommended step | Continue, advance gate, roll back, stop                  |
-| human approval needed | Yes/No — whether the agent requires approval to continue |
-
-### Production Safety
-
-- P0 regressions override all performance or refactor work. Stop and report immediately.
-- A blank 200 OK body on any public route is P0. Stop and report immediately.
-- Cache-related changes must preserve privacy invariants: no guest-specific HTML may be
-  public-cacheable.
-- If cache safety is ambiguous for any request variant, fall back to `no-store, private`.
-- Production deploys require explicit approval unless the user states otherwise.
-
-### Artifact Lifecycle
-
-Use the single status taxonomy above for plans and related artifacts. Do not introduce a second
-status vocabulary for a specific runtime or provider.
-
-When to update each artifact type:
-
-| Artifact            | When to create or update                                       |
-| ------------------- | -------------------------------------------------------------- |
-| Master plan         | Once, when scope is approved; update only if scope changes     |
-| Measurement result  | After each measurement gate; archive when superseded           |
-| Implementation plan | Before each implementation loop; update as gates progress      |
-| Final report        | At loop end or when stop condition triggers                    |
-| Follow-up/deferred  | When a phase is deferred — document why and what would unblock |
-
-### Plan Quality Checklist
-
-A plan must satisfy every item below before execution may begin:
-
-- [ ] Scope is explicit (which files, which routes, which themes)
-- [ ] Non-goals are explicit (what is intentionally excluded)
-- [ ] Autonomy level is stated
-- [ ] File boundaries are explicit (which files may change)
-- [ ] Validation is executable (commands are listed and known to work)
-- [ ] Rollback is defined (what to revert and how)
-- [ ] Stop conditions exist (at least one per implementation loop)
-- [ ] Final output format exists (report shape is defined)
-- [ ] Handoff to the next loop is clear (what decision follows the report)
+Domain performance / cache contracts live under `docs/domains/` and domain plans (for example
+`docs/domains/invitations/public-response-cache-policy.md` and
+`.agent/plans/active/section-architecture-refactor-plan.md`) — not in this governance file.
