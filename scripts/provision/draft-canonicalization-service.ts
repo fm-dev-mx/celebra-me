@@ -56,6 +56,40 @@ function buildStateSql(slug: string): string {
                  ORDER BY p.version DESC, p.created_at DESC LIMIT 1))::text;`;
 }
 
+/**
+ * Read-only list of active invitation slugs that currently have a draft row.
+ * Used by inventory audits; never mutates.
+ */
+export function listDraftInvitationSlugs(dbUrl: string): string[] {
+	const sql = `SELECT COALESCE(jsonb_agg(slug ORDER BY slug), '[]'::jsonb)::text
+FROM (
+  SELECT DISTINCT i.slug
+    FROM public.invitation_content_drafts d
+    JOIN public.invitations i ON i.id = d.invitation_project_id
+   WHERE i.archived_at IS NULL
+     AND d.deleted_at IS NULL
+     AND i.slug IS NOT NULL
+) q;`;
+	const result = runPsql(sql, dbUrl, {
+		tuplesOnly: true,
+		throwOnError: false,
+		timeoutMs: 60_000,
+		env: { ...process.env, PGOPTIONS: '-c default_transaction_read_only=on' },
+	});
+	if (result.status !== 0) {
+		throw new Error(
+			`DRAFT_SLUG_LIST_FAILED: ${result.stderr?.trim() || result.stdout?.trim() || 'psql failed'}`,
+		);
+	}
+	const text = result.stdout.trim();
+	const start = text.indexOf('[');
+	const end = text.lastIndexOf(']');
+	if (start < 0 || end < start) return [];
+	const parsed = JSON.parse(text.slice(start, end + 1)) as unknown;
+	if (!Array.isArray(parsed)) return [];
+	return parsed.filter((value): value is string => typeof value === 'string');
+}
+
 export function readDraftCanonicalizationState(
 	slug: string,
 	dbUrl: string,
@@ -77,8 +111,7 @@ export function readDraftCanonicalizationState(
 		},
 		published: {
 			content: isRecord(parsed.published.content) ? parsed.published.content : null,
-			version:
-				typeof parsed.published.version === 'number' ? parsed.published.version : null,
+			version: typeof parsed.published.version === 'number' ? parsed.published.version : null,
 		},
 	};
 }
@@ -130,7 +163,8 @@ export function buildDraftCanonicalizationTransactionSql(
 			provenance: DRAFT_CANONICALIZATION_OPERATION_TYPE,
 			idempotent,
 		});
-	const publishedVersionSql = plan.publishedVersion === null ? 'NULL' : String(plan.publishedVersion);
+	const publishedVersionSql =
+		plan.publishedVersion === null ? 'NULL' : String(plan.publishedVersion);
 
 	return `BEGIN;
 DO $draft_canonicalization$

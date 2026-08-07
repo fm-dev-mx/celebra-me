@@ -1,10 +1,14 @@
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
-import type { FamilyDraft } from '@/lib/intake/schemas/family-draft.schema';
 import type { DemoPreset } from '@/lib/intake/types';
-import { FAMILY_LABEL_KEYS } from '@/lib/invitation/family-contract';
-import { ApiError } from '@/lib/rsvp/core/errors';
 import { venueLabel } from '@/lib/intake/utils';
-import { str, trimmedStr, normalizeDate, isNonEmptyObject } from '@/lib/shared/data-utils';
+import {
+	str,
+	trimmedStr,
+	normalizeDate,
+	toEditorDate,
+	isNonEmptyObject,
+	isRecord,
+} from '@/lib/shared/data-utils';
 import {
 	COUNTDOWN_DEFAULTS,
 	ENVELOPE_TEXT_FIELDS,
@@ -13,6 +17,8 @@ import {
 } from '@/lib/intake/constants';
 import { DEFAULT_REMINDER_MESSAGE } from '@/lib/rsvp/services/shared/share-message-defaults';
 import { buildPublishedEventTiming } from '@/lib/time/event-time';
+import { normalizeTime } from '@/lib/time/time-format';
+import { mapFamilyFromDraft } from '@/lib/intake/mappers/draft-to-published-family';
 
 type PublishCtx = {
 	isDemo: boolean;
@@ -111,39 +117,6 @@ function mapEventTimingFromDraft(
 }
 
 /**
- * Publish consumes canonical flat `DraftContent`. A draft that still carries
- * published-shaped family structures would silently lose names here, so it is
- * rejected instead: callers must normalize through `normalizeDraftContent`.
- */
-function assertCanonicalFamilyDraft(draftFamily: Record<string, unknown>): void {
-	const nestedPaths: string[] = [];
-	for (const key of ['parents', 'labels', 'spouse'] as const) {
-		if (draftFamily[key] !== undefined) nestedPaths.push(`family.${key}`);
-	}
-	if (Array.isArray(draftFamily.children)) nestedPaths.push('family.children[]');
-	if (Array.isArray(draftFamily.godparents)) nestedPaths.push('family.godparents[]');
-	for (const [groupKey, nestedKey] of [
-		['groups', 'items'],
-		['godparentGroups', 'godparents'],
-	] as const) {
-		const groups = draftFamily[groupKey];
-		if (!Array.isArray(groups)) continue;
-		groups.forEach((group, index) => {
-			if (isNonEmptyObject(group) && group[nestedKey] !== undefined) {
-				nestedPaths.push(`family.${groupKey}[${index}].${nestedKey}`);
-			}
-		});
-	}
-	if (nestedPaths.length === 0) return;
-	throw new ApiError(
-		422,
-		'bad_request',
-		'El borrador conserva estructuras de contenido publicado y no puede publicarse sin normalizarse.',
-		{ nestedPaths },
-	);
-}
-
-/**
  * The draft owns only the editable subset of `personalizedAccess`, so published-only
  * fields must be carried over from the prior revision instead of being replaced away.
  */
@@ -159,149 +132,44 @@ function buildPersonalizedAccess(
 	const carried = isNonEmptyObject(prior)
 		? Object.fromEntries(
 				Object.entries(prior).filter(
-					([key]) =>
-						!(PERSONALIZED_ACCESS_DRAFT_KEYS as readonly string[]).includes(key),
+					([key]) => !(PERSONALIZED_ACCESS_DRAFT_KEYS as readonly string[]).includes(key),
 				),
 			)
 		: {};
 	return { personalizedAccess: { ...carried, ...draftValue } };
 }
 
-function buildFamilyLabels(draftFamily: FamilyDraft): Record<string, unknown> | undefined {
-	const labels: Record<string, unknown> = {};
-	for (const key of FAMILY_LABEL_KEYS) {
-		const val = str(draftFamily[key]);
-		if (val) labels[key] = val;
-	}
-	return isNonEmptyObject(labels) ? labels : undefined;
+/**
+ * Canonical Published venue date/time are machine-readable.
+ * Legacy Spanish prose is accepted on read (Draft mapping / display helpers);
+ * writes always emit YYYY-MM-DD / HH:mm. Semantic equality in publication
+ * canonicalize absorbs legacy↔machine representation during the transition.
+ */
+function publishVenueDate(draftDate: unknown): string | undefined {
+	const draft = str(draftDate);
+	if (!draft) return undefined;
+	return toEditorDate(draft) ?? draft;
 }
 
-function buildFamilyGroups(
-	draftFamily: FamilyDraft,
-): Array<{ title: string; items: Array<{ name: string; role?: string }> }> | undefined {
-	const draftGroups = draftFamily.groups;
-	if (!draftGroups || draftGroups.length === 0) return undefined;
-	const mappedGroups = draftGroups
-		.filter((g) => str(g.title) || str(g.names))
-		.map((g) => {
-			const namesText = str(g.names);
-			const items = namesText ? parseFamilyLines(namesText) : [];
-			if (items.length === 0) return null;
-			return {
-				title: str(g.title) || 'Grupo',
-				items,
-			};
-		})
-		.filter(
-			(g): g is { title: string; items: Array<{ name: string; role?: string }> } =>
-				g !== null,
-		);
-	return mappedGroups.length > 0 ? mappedGroups : undefined;
+function publishVenueTime(draftTime: unknown): string | undefined {
+	const draft = str(draftTime);
+	if (!draft) return undefined;
+	return normalizeTime(draft) ?? draft;
 }
 
-function parseFamilyLines(text: string): Array<{ name: string; role?: string }> {
-	return text
-		.split('\n')
-		.map((l) => l.trim())
-		.filter(Boolean)
-		.map((line) => {
-			const parts = line.split(' — ').map((s) => s.trim());
-			return parts.length > 1 ? { name: parts[0], role: parts[1] } : { name: parts[0] };
-		});
-}
-
-function buildGodparents(
-	draftFamily: FamilyDraft,
-): Array<{ name: string; role?: string }> | undefined {
-	const godparentsText = str(draftFamily.godparents);
-	if (!godparentsText) return undefined;
-	const godparents = parseFamilyLines(godparentsText);
-	return godparents.length > 0 ? godparents : undefined;
-}
-
-function buildGodparentGroups(draftFamily: FamilyDraft):
-	| Array<{
-			honoreeName: string;
-			label?: string;
-			godparents: Array<{ name: string; role?: string }>;
-	  }>
-	| undefined {
-	const draftGroups = draftFamily.godparentGroups;
-	if (!draftGroups || draftGroups.length === 0) return undefined;
-	const mappedGroups = draftGroups
-		.map((group) => {
-			const honoreeName = str(group.honoreeName);
-			const namesText = str(group.names);
-			if (!honoreeName || !namesText) return null;
-			const godparents = parseFamilyLines(namesText);
-			if (godparents.length === 0) return null;
-			return {
-				honoreeName,
-				...(str(group.label) ? { label: str(group.label) } : {}),
-				godparents,
-			};
-		})
-		.filter(
-			(
-				group,
-			): group is {
-				honoreeName: string;
-				label?: string;
-				godparents: Array<{ name: string; role?: string }>;
-			} => group !== null,
-		);
-	return mappedGroups.length > 0 ? mappedGroups : undefined;
-}
-
-function mapFamilyFromDraft(
-	draftFamily: DraftContent['family'],
-	priorFamily?: Record<string, unknown>,
+function stripLegacyLocationFlourishes(
+	sectionStyles: unknown,
 ): Record<string, unknown> | undefined {
-	if (!isNonEmptyObject(draftFamily)) return undefined;
-	assertCanonicalFamilyDraft(draftFamily);
-	const family = draftFamily as FamilyDraft;
-
-	const result: Record<string, unknown> = definedFields(priorFamily, ['focalPoint']);
-	const parents: Record<string, unknown> = {};
-
-	if (str(family.fatherName)) parents.father = str(family.fatherName);
-	if (typeof family.fatherDeceased === 'boolean') parents.fatherDeceased = family.fatherDeceased;
-	if (str(family.motherName)) parents.mother = str(family.motherName);
-	if (typeof family.motherDeceased === 'boolean') parents.motherDeceased = family.motherDeceased;
-
-	if (isNonEmptyObject(parents)) result.parents = parents;
-	if (family.parentsOrder) result.parentsOrder = family.parentsOrder;
-	if (str(family.spouseName)) result.spouse = str(family.spouseName);
-
-	const mappedGodparentGroups = buildGodparentGroups(family);
-	if (mappedGodparentGroups) {
-		result.godparentGroups = mappedGodparentGroups;
-	} else {
-		const mappedGodparents = buildGodparents(family);
-		if (mappedGodparents) result.godparents = mappedGodparents;
+	if (!isRecord(sectionStyles)) return undefined;
+	const location = sectionStyles.location;
+	if (!isRecord(location) || location.showFlourishes === undefined) {
+		return sectionStyles;
 	}
-
-	const childrenText = str(family.children);
-	if (childrenText) {
-		const lines = childrenText
-			.split('\n')
-			.map((l) => l.trim())
-			.filter(Boolean);
-		if (lines.length > 0) {
-			result.children = lines.map((name) => ({ name }));
-		}
-	}
-
-	const labels = buildFamilyLabels(family);
-	if (labels) result.labels = labels;
-
-	const mappedGroups = buildFamilyGroups(family);
-	if (mappedGroups) result.groups = mappedGroups;
-
-	if (typeof family.visible === 'boolean') result.visible = family.visible;
-	if (family.presentation) result.presentation = family.presentation;
-	if (family.featuredImage) result.featuredImage = family.featuredImage;
-	return isNonEmptyObject(result) ? result : undefined;
+	const { showFlourishes: _legacy, ...locationRest } = location;
+	return {
+		...sectionStyles,
+		location: locationRest,
+	};
 }
 
 function mapVenue(
@@ -316,8 +184,10 @@ function mapVenue(
 	if (str(draftVenue.venueName)) result.venueName = str(draftVenue.venueName);
 	if (str(draftVenue.address)) result.address = str(draftVenue.address);
 	if (str(draftVenue.city)) result.city = str(draftVenue.city);
-	if (str(draftVenue.date)) result.date = str(draftVenue.date);
-	if (str(draftVenue.time)) result.time = str(draftVenue.time);
+	const date = publishVenueDate(draftVenue.date);
+	if (date) result.date = date;
+	const time = publishVenueTime(draftVenue.time);
+	if (time) result.time = time;
 	for (const field of VENUE_URL_FIELDS) {
 		const val = str((draftVenue as Record<string, unknown>)[field]);
 		if (val) result[field] = val;
@@ -329,6 +199,25 @@ function mapVenue(
 	}
 	if (draftVenue.coordinates) result.coordinates = draftVenue.coordinates;
 	return isNonEmptyObject(result) ? result : undefined;
+}
+
+function findPriorVenue(
+	priorLocation: Record<string, unknown> | undefined,
+	venue: { id?: string; type?: string },
+	index: number,
+): Record<string, unknown> | undefined {
+	const priorVenues = priorLocation?.venues;
+	if (!Array.isArray(priorVenues)) return undefined;
+	const byId = venue.id
+		? priorVenues.find((entry) => isRecord(entry) && entry.id === venue.id)
+		: undefined;
+	if (isRecord(byId)) return byId;
+	const byType = venue.type
+		? priorVenues.find((entry) => isRecord(entry) && entry.type === venue.type)
+		: undefined;
+	if (isRecord(byType)) return byType;
+	const byIndex = priorVenues[index];
+	return isRecord(byIndex) ? byIndex : undefined;
 }
 
 function resolveIntroFields(
@@ -353,8 +242,7 @@ function resolveIntroFields(
 
 function mapIndicationsFromDraft(
 	draftIndications:
-		| ReadonlyArray<{ iconName: string; text: string; styleVariant?: string }>
-		| undefined,
+		ReadonlyArray<{ iconName: string; text: string; styleVariant?: string }> | undefined,
 ): Array<Record<string, unknown>> | undefined {
 	if (!draftIndications || draftIndications.length === 0) return undefined;
 	const mapped = draftIndications
@@ -380,37 +268,44 @@ function mapLocationFromDraft(
 	const demoLocation = demoContent?.location as Record<string, unknown> | undefined;
 	if (draftLocation.visibility) result.visibility = draftLocation.visibility;
 	if (draftLocation.presentation) result.presentation = draftLocation.presentation;
-	if (draftLocation.presentationOptions) result.presentationOptions = draftLocation.presentationOptions;
+	if (draftLocation.presentationOptions)
+		result.presentationOptions = draftLocation.presentationOptions;
+
+	const priorLocation = ctx.priorPublishedContent?.location as
+		Record<string, unknown> | undefined;
 
 	if (draftLocation.venues && Array.isArray(draftLocation.venues)) {
 		const mappedVenues = draftLocation.venues
 			.filter((v) => v.isVisible !== false)
-			.map((v) => ({
-				id: v.id,
-				type: v.type,
-				label: venueLabel(v.type, v.label),
-				venueName: v.venueName || '',
-				address: v.address || '',
-				city: v.city || '',
-				date: v.date || '',
-				time: v.time || '',
-				...Object.fromEntries(
-					VENUE_URL_FIELDS.map((f) => [
-						f,
-						(v as Record<string, unknown>)[f] || undefined,
-					]).filter(([, val]) => val !== undefined),
-				),
-				...(v.image ? { image: v.image } : {}),
-				...(v.coordinates ? { coordinates: v.coordinates } : {}),
-				isVisible: true,
-				venueEvent: venueLabel(v.type, v.label),
-			}));
+			.map((v, index) => {
+				const priorVenue = findPriorVenue(priorLocation, v, index);
+				const label = str(v.label) || str(priorVenue?.label);
+				return {
+					id: v.id,
+					type: v.type,
+					...(label ? { label } : {}),
+					venueName: v.venueName || '',
+					address: v.address || '',
+					city: v.city || '',
+					date: publishVenueDate(v.date) || '',
+					time: publishVenueTime(v.time) || '',
+					...Object.fromEntries(
+						VENUE_URL_FIELDS.map((f) => [
+							f,
+							(v as Record<string, unknown>)[f] || undefined,
+						]).filter(([, val]) => val !== undefined),
+					),
+					...(v.image ? { image: v.image } : {}),
+					...(v.coordinates ? { coordinates: v.coordinates } : {}),
+					// Visible venues omit isVisible (default). Hidden ones are filtered above.
+					venueEvent: str(priorVenue?.venueEvent) || venueLabel(v.type, label),
+				};
+			});
 		if (mappedVenues.length === 0 && !isNonEmptyObject(result)) {
 			return undefined;
 		}
 		result.venues = mappedVenues;
 	} else {
-		const priorLocation = ctx.priorPublishedContent?.location as Record<string, unknown> | undefined;
 		const ceremony = mapVenue(
 			draftLocation.ceremony,
 			demoLocation?.ceremony as Record<string, unknown> | undefined,
@@ -430,7 +325,9 @@ function mapLocationFromDraft(
 		);
 		if (reception) {
 			reception.venueEvent =
-				str((priorLocation?.reception as Record<string, unknown> | undefined)?.venueEvent) ||
+				str(
+					(priorLocation?.reception as Record<string, unknown> | undefined)?.venueEvent,
+				) ||
 				str((demoLocation?.reception as Record<string, unknown> | undefined)?.venueEvent) ||
 				'Recepción';
 			result.reception = reception;
@@ -481,9 +378,7 @@ function buildHeroFromDraft(
 	} = demoHero ?? {};
 
 	const result: Record<string, unknown> = {
-		...clientPriorFields(ctx, priorHero, [
-			'variant',
-		]),
+		...clientPriorFields(ctx, priorHero, ['variant']),
 		name: str(draftHero.name) || demoStr(ctx, demoName as string) || invitationTitle,
 		secondaryName:
 			str(draftHero.secondaryName) || demoStr(ctx, demoSecondaryName as string) || '',
@@ -533,13 +428,7 @@ function mapHeroSection(
 			backgroundImage: { type: 'internal', key: 'hero' },
 		};
 	}
-	return buildHeroFromDraft(
-		draftHero,
-		demoHero,
-		priorHero,
-		invitationTitle,
-		ctx,
-	);
+	return buildHeroFromDraft(draftHero, demoHero, priorHero, invitationTitle, ctx);
 }
 
 function resolveRsvpResponseMessages(
@@ -668,8 +557,7 @@ function mapThankYouSection(
 	}
 	const message = str(draftThankYou.message);
 	const overlayFields: Record<string, unknown> = {};
-	if (draftThankYou.focalPoint !== undefined)
-		overlayFields.focalPoint = draftThankYou.focalPoint;
+	if (draftThankYou.focalPoint !== undefined) overlayFields.focalPoint = draftThankYou.focalPoint;
 	if (draftThankYou.closingPhrase !== undefined)
 		overlayFields.closingPhrase = draftThankYou.closingPhrase;
 	if (draftThankYou.overlayAnchor !== undefined)
@@ -730,8 +618,7 @@ function mapSharingFromDraft(
 ): Record<string, unknown> | undefined {
 	const draftMessages = (draftSharing || {}) as Record<string, unknown>;
 	const demoMessages = (ctx.isDemo ? demoSharing && demoSharing.shareMessages : undefined) as
-		| Record<string, unknown>
-		| undefined;
+		Record<string, unknown> | undefined;
 
 	const invitation = resolveInvitationTemplate(draftMessages, demoMessages ?? {}, ctx);
 	const reminder = resolveReminderTemplate(draftMessages, demoMessages ?? {}, ctx);
@@ -756,6 +643,22 @@ function mapSharingFromDraft(
 	if (ogImage) result.ogImage = ogImage;
 	if (ogDescription) result.ogDescription = ogDescription;
 	return result;
+}
+
+function mapItineraryFromDraft(
+	draftItinerary: DraftContent['itinerary'],
+	_priorItinerary: Record<string, unknown> | undefined,
+	demoItinerary: unknown,
+	ctx: PublishCtx,
+): DraftContent['itinerary'] | unknown {
+	if (!draftItinerary) {
+		return ctx.isDemo ? demoItinerary : undefined;
+	}
+	const items = draftItinerary.items?.map((item) => {
+		const time = publishVenueTime(item.time) ?? item.time;
+		return { ...item, time };
+	});
+	return items ? { ...draftItinerary, items } : draftItinerary;
 }
 
 // eslint-disable-next-line complexity -- The publish mapping covers many sections with optional demo fallback.
@@ -840,12 +743,13 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 		location: locationSection ?? (ctx.isDemo ? demoContent.location : undefined),
 		// Omit empty optional collections for client invites so publish does not
 		// invent sections the editor never edited (preflight noise / false drift).
-		gallery:
-			draftContent.gallery ??
-			(ctx.isDemo ? demoContent.gallery : undefined),
-		itinerary:
-			draftContent.itinerary ??
-			(ctx.isDemo ? demoContent.itinerary : undefined),
+		gallery: draftContent.gallery ?? (ctx.isDemo ? demoContent.gallery : undefined),
+		itinerary: mapItineraryFromDraft(
+			draftContent.itinerary,
+			priorPublished?.itinerary as Record<string, unknown> | undefined,
+			demoContent.itinerary,
+			ctx,
+		),
 		countdown: mapCountdownFromDraft(
 			draftContent.countdown,
 			demoContent.countdown as Record<string, unknown> | undefined,
@@ -859,7 +763,9 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 		thankYou: thankYouSection,
 
 		interludes: draftContent.interludes ?? (ctx.isDemo ? demoContent.interludes : undefined),
-		sectionStyles: ctx.isDemo ? demoContent.sectionStyles : priorPublished?.sectionStyles,
+		sectionStyles: stripLegacyLocationFlourishes(
+			ctx.isDemo ? demoContent.sectionStyles : priorPublished?.sectionStyles,
+		),
 		navigation: ctx.isDemo ? demoContent.navigation : priorPublished?.navigation,
 		sharing: mapSharingFromDraft(
 			draftContent.sharing as Record<string, unknown> | undefined,

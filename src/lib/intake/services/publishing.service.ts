@@ -21,6 +21,7 @@ import { loadDemoContent } from '@/lib/intake/editor-api';
 import { isValidEvent, getEventAsset, isEventAssetKey } from '@/lib/assets/asset-registry';
 import { resolveAssetSlug } from '@/lib/assets/asset-slug';
 import { computeEffectiveContent } from '@/lib/intake/services/merge-content.service';
+import { DraftNormalizationError } from '@/lib/intake/services/draft-content-mapper';
 import {
 	checkPublishGuard,
 	resolveInvitationTheme,
@@ -233,7 +234,20 @@ async function validatePublication(
 	const { invitation, draft, priorPublished, assetSlug, resolvedTheme, snapshot, demoContent } =
 		options;
 
-	const effectiveDraftContent = computeEffectiveContent(draft.content, priorPublished?.content);
+	let effectiveDraftContent;
+	try {
+		effectiveDraftContent = computeEffectiveContent(draft.content, priorPublished?.content);
+	} catch (error) {
+		if (error instanceof DraftNormalizationError) {
+			throw new ApiError(
+				422,
+				'bad_request',
+				'El borrador guardado conserva datos que el editor no puede representar. Ejecuta la canonicalización del borrador antes de publicarlo.',
+				{ issues: error.issues },
+			);
+		}
+		throw error;
+	}
 	if (Object.keys(effectiveDraftContent).length === 0) {
 		throw new ApiError(422, 'bad_request', 'El borrador no tiene contenido para publicar.');
 	}
@@ -521,8 +535,7 @@ function collectPublishedAssetRefs(content: Record<string, unknown>): AssetRefEn
 	}
 
 	const family = content.family as
-		| { featuredImage?: { type?: string; key?: string } }
-		| undefined;
+		{ featuredImage?: { type?: string; key?: string } } | undefined;
 	tryAddAssetRef(refs, 'family.featuredImage', family?.featuredImage);
 
 	const location = content.location as
@@ -537,8 +550,7 @@ function collectPublishedAssetRefs(content: Record<string, unknown>): AssetRefEn
 	}
 
 	const gallery = content.gallery as
-		| { items?: Array<{ image?: { type?: string; key?: string } }> }
-		| undefined;
+		{ items?: Array<{ image?: { type?: string; key?: string } }> } | undefined;
 	if (gallery?.items) {
 		gallery.items.forEach((item, index) => {
 			tryAddAssetRef(refs, `gallery.items[${index}].image`, item?.image);
@@ -546,8 +558,7 @@ function collectPublishedAssetRefs(content: Record<string, unknown>): AssetRefEn
 	}
 
 	const interludes = content.interludes as
-		| Array<{ image?: { type?: string; key?: string } }>
-		| undefined;
+		Array<{ image?: { type?: string; key?: string } }> | undefined;
 	if (interludes) {
 		interludes.forEach((item, index) => {
 			tryAddAssetRef(refs, `interludes[${index}].image`, item?.image);

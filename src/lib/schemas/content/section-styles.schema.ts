@@ -20,7 +20,12 @@ export const sectionStylesSchema = z
 		location: z
 			.object({
 				variant: z.enum(THEME_PRESETS).optional(),
-				showFlourishes: z.boolean().default(true),
+				/**
+				 * Legacy only. Canonical owner is
+				 * `location.presentationOptions.showFlourishes`. Kept optional
+				 * (no default) so schema parse does not re-inject a conflicting value.
+				 */
+				showFlourishes: z.boolean().optional(),
 				showNavigationButtons: z.boolean().default(true),
 			})
 			.strict()

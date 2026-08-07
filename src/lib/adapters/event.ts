@@ -407,11 +407,10 @@ function buildLocationSectionData(context: AdaptationContext) {
 			data.sectionStyles?.location?.variant,
 			normalizedPreset,
 		),
-		showFlourishes: resolveLocationShowFlourishes({
-			showFlourishes:
-				data.location.presentationOptions?.showFlourishes ??
-				data.sectionStyles?.location?.showFlourishes,
-		}),
+		showFlourishes: resolveLocationShowFlourishes(
+			data.location.presentationOptions,
+			data.sectionStyles?.location?.showFlourishes,
+		),
 		showNavigationButtons: resolveLocationShowNavigationButtons(data.sectionStyles?.location),
 		introEyebrow: data.location.introEyebrow,
 		introHeading: data.location.introHeading,

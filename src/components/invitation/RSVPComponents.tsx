@@ -20,6 +20,7 @@ import { HeartbreakIcon } from '@/components/common/icons/invitation/Heartbreak'
 import type { LocationSection } from '@/lib/adapters/types';
 import AddToCalendarButton from '@/components/invitation/AddToCalendarButton';
 import { buildCalendarEventInput } from '@/lib/calendar/build-calendar-event-input';
+import { formatVenueTimeForDisplay } from '@/lib/invitation/venue-datetime';
 
 export {
 	buildWhatsAppUrl,
@@ -166,6 +167,7 @@ function RevealedLocationBlock({ location }: { location: RevealedLocation }) {
 						: venue.wazeUrl
 							? 'Abrir en Waze'
 							: 'Ver ubicación';
+				const displayTime = formatVenueTimeForDisplay(venue.time);
 				return (
 					<div className="rsvp__revealed-location-card" key={venue.id ?? index}>
 						{venues.length > 1 && (
@@ -173,7 +175,9 @@ function RevealedLocationBlock({ location }: { location: RevealedLocation }) {
 						)}
 						<p className="rsvp__revealed-location-name">{venue.venueName}</p>
 						<p className="rsvp__revealed-location-address">{venue.address}</p>
-						{venue.time && <p className="rsvp__revealed-location-time">{venue.time}</p>}
+						{displayTime && (
+							<p className="rsvp__revealed-location-time">{displayTime}</p>
+						)}
 						{href && (
 							<a
 								className="rsvp__revealed-location-link"

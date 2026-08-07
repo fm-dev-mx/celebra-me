@@ -1,6 +1,4 @@
-import { z } from 'zod';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
-import type { giftItemSchema } from '@/lib/intake/schemas/intake-block.schema';
 import {
 	FAMILY_LABEL_KEYS,
 	formatFamilyMembersAsLines,
@@ -15,9 +13,30 @@ import {
 	isRecord,
 	isNonEmptyObject,
 } from '@/lib/shared/data-utils';
-import { normalizeTime } from '@/lib/time/time-format';
+import { foldShowFlourishesIntoPresentationOptions } from '@/lib/invitation/presentation-options';
 import { VENUE_URL_FIELDS, ENVELOPE_TEXT_FIELDS } from '@/lib/intake/constants';
 import type { IconName } from '@/lib/icons/icon-catalog';
+import {
+	DraftNormalizationError,
+	type DraftNormalizationIssue,
+} from '@/lib/intake/services/draft-normalization-types';
+import {
+	canonicalizeCountdownDraft,
+	canonicalizeGiftsDraft,
+	canonicalizeItineraryDraft,
+	canonicalizeLocationDraft,
+	canonicalizeRsvpDraft,
+	mapCountdownToDraft,
+	mapGiftsToDraft,
+	mapRsvpToDraft,
+	mapVenueDateTimeToDraft,
+} from '@/lib/intake/services/draft-section-mappers';
+
+export type {
+	DraftNormalizationIssue,
+	DraftNormalizationIssueReason,
+} from '@/lib/intake/services/draft-normalization-types';
+export { DraftNormalizationError } from '@/lib/intake/services/draft-normalization-types';
 
 function formatFamilyMemberLine(member: { name?: string; role?: string }): string {
 	const name = str(member.name);
@@ -148,13 +167,8 @@ function mapMusic(data: Record<string, unknown>): Partial<DraftContent> {
 }
 
 function mapGifts(data: Record<string, unknown>): Partial<DraftContent> {
-	const items = data.items;
 	return {
-		gifts: {
-			title: str(data.title),
-			subtitle: str(data.subtitle),
-			items: Array.isArray(items) ? (items as z.infer<typeof giftItemSchema>[]) : undefined,
-		},
+		gifts: mapGiftsToDraft(data) as DraftContent['gifts'],
 	};
 }
 
@@ -235,8 +249,7 @@ function mapVenueToDraft(
 		venueName: str(venue.venueName),
 		address: str(venue.address),
 		city: str(venue.city),
-		date: normalizeDate(venue.date),
-		time: normalizeTime(venue.time) ?? str(venue.time),
+		...mapVenueDateTimeToDraft(venue),
 		...Object.fromEntries(
 			VENUE_URL_FIELDS.map((f) => [f, str(venue[f])]).filter(([, v]) => v !== undefined),
 		),
@@ -309,12 +322,6 @@ function mapFamilyToDraft(
 	return result;
 }
 
-function stripVenueEvent(value: unknown): unknown {
-	if (!isRecord(value)) return value;
-	const { venueEvent: _, ...rest } = value;
-	return rest;
-}
-
 /**
  * Content keys owned by the published projection. Publish rebuilds them from the
  * invitation record or the prior published revision, so a canonical draft never
@@ -334,13 +341,14 @@ const PUBLISHED_ONLY_DRAFT_KEYS = [
 /**
  * Published-only fields nested inside otherwise editable draft objects. Publish
  * carries them over from the prior revision, so the draft must not hold them.
+ * Prefer section canonicalizers when a field needs semantic remapping; keep this
+ * list for genuinely discardable non-editable properties.
  */
 const PUBLISHED_ONLY_NESTED_KEYS: ReadonlyArray<{
 	section: string;
 	object: string;
 	keys: readonly string[];
 }> = [{ section: 'rsvp', object: 'personalizedAccess', keys: ['noteText'] }];
-
 const PUBLISHED_PARENTS_KEYS = new Set([
 	'father',
 	'mother',
@@ -348,29 +356,6 @@ const PUBLISHED_PARENTS_KEYS = new Set([
 	'motherDeceased',
 	'parentsOrder',
 ]);
-
-export type DraftNormalizationIssueReason =
-	'conflicting_values' | 'unsupported_shape' | 'unrepresentable_field';
-
-export interface DraftNormalizationIssue {
-	path: string;
-	reason: DraftNormalizationIssueReason;
-	detail: string;
-}
-
-/** Raised when a persisted draft holds data the flat draft contract cannot express. */
-export class DraftNormalizationError extends Error {
-	readonly code = 'draft_normalization_unsupported';
-
-	constructor(readonly issues: DraftNormalizationIssue[]) {
-		super(
-			`DRAFT_NORMALIZATION_UNSUPPORTED: ${issues
-				.map((issue) => `${issue.path} — ${issue.detail}`)
-				.join('; ')}`,
-		);
-		this.name = 'DraftNormalizationError';
-	}
-}
 
 export interface DraftCanonicalizationResult {
 	content: DraftContent;
@@ -639,11 +624,27 @@ export function canonicalizeDraftContent(
 
 	const location = result.location;
 	if (isRecord(location)) {
-		result.location = {
-			...location,
-			ceremony: stripVenueEvent(location.ceremony),
-			reception: stripVenueEvent(location.reception),
-		};
+		result.location = canonicalizeLocationDraft(location, removedPublishedOnlyKeys);
+	}
+
+	const itinerary = result.itinerary;
+	if (isRecord(itinerary)) {
+		result.itinerary = canonicalizeItineraryDraft(itinerary, issues, removedPublishedOnlyKeys);
+	}
+
+	const gifts = result.gifts;
+	if (isRecord(gifts)) {
+		result.gifts = canonicalizeGiftsDraft(gifts, removedPublishedOnlyKeys);
+	}
+
+	const countdown = result.countdown;
+	if (isRecord(countdown)) {
+		result.countdown = canonicalizeCountdownDraft(countdown, removedPublishedOnlyKeys);
+	}
+
+	const rsvp = result.rsvp;
+	if (isRecord(rsvp)) {
+		result.rsvp = canonicalizeRsvpDraft(rsvp, removedPublishedOnlyKeys);
 	}
 
 	return {
@@ -710,17 +711,32 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 			.map((ind) => ({
 				iconName: ind.iconName as IconName,
 				text: str(ind.text) as string,
+				...(str(ind.styleVariant) ? { styleVariant: str(ind.styleVariant) } : {}),
 			}));
 
-		const draftLocation: Record<string, unknown> = {
+		const sectionStylesLocation = isRecord(nestedContent.sectionStyles)
+			? nestedContent.sectionStyles.location
+			: undefined;
+		const legacyFlourishes = isRecord(sectionStylesLocation)
+			? (sectionStylesLocation.showFlourishes as boolean | undefined)
+			: undefined;
+
+		const draftLocationBase: Record<string, unknown> = {
 			visibility: str(location.visibility),
 			presentation: str(location.presentation),
+			...(isRecord(location.presentationOptions)
+				? { presentationOptions: location.presentationOptions }
+				: {}),
 			introEyebrow: str(location.introEyebrow),
 			introHeading: str(location.introHeading),
 			introLede: str(location.introLede),
 			indicationsHeading: str(location.indicationsHeading),
 			indications: draftIndications.length > 0 ? draftIndications : undefined,
 		};
+		const draftLocation = foldShowFlourishesIntoPresentationOptions(
+			draftLocationBase,
+			legacyFlourishes,
+		) as Record<string, unknown>;
 
 		// Flatten venues array if present (preferred source)
 		const publishedVenues = location.venues as Array<Record<string, unknown>> | undefined;
@@ -732,8 +748,7 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 				venueName: str(v.venueName),
 				address: str(v.address),
 				city: str(v.city),
-				date: str(v.date),
-				time: str(v.time),
+				...mapVenueDateTimeToDraft(v),
 				...Object.fromEntries(
 					VENUE_URL_FIELDS.map((f) => [f, str(v[f])]).filter(
 						([, val]) => val !== undefined,
@@ -760,10 +775,7 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 
 	const countdown = nestedContent.countdown as Record<string, unknown> | undefined;
 	if (isNonEmptyObject(countdown)) {
-		result.countdown = {
-			title: str(countdown.title),
-			footerText: str(countdown.footerText),
-		};
+		result.countdown = mapCountdownToDraft(countdown) as DraftContent['countdown'];
 	}
 
 	const eventTiming = nestedContent.eventTiming as Record<string, unknown> | undefined;
@@ -777,18 +789,7 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 
 	const rsvp = nestedContent.rsvp as Record<string, unknown> | undefined;
 	if (isNonEmptyObject(rsvp)) {
-		const whatsappConfig = rsvp.whatsappConfig as Record<string, unknown> | undefined;
-		const responseMessages = rsvp.responseMessages as
-			NonNullable<DraftContent['rsvp']>['responseMessages'] | undefined;
-		result.rsvp = {
-			title: str(rsvp.title),
-			guestCap: typeof rsvp.guestCap === 'number' ? rsvp.guestCap : undefined,
-			confirmationMessage: str(rsvp.confirmationMessage),
-			confirmationMode: str(rsvp.confirmationMode) as 'api' | 'whatsapp' | 'both' | undefined,
-			whatsappPhone: str(whatsappConfig?.phone),
-			subcopy: str(rsvp.subcopy),
-			...(responseMessages ? { responseMessages } : {}),
-		};
+		result.rsvp = mapRsvpToDraft(rsvp) as DraftContent['rsvp'];
 	}
 
 	const music = nestedContent.music as Record<string, unknown> | undefined;
@@ -817,13 +818,7 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 
 	const gifts = nestedContent.gifts as Record<string, unknown> | undefined;
 	if (isNonEmptyObject(gifts)) {
-		result.gifts = {
-			title: str(gifts.title),
-			subtitle: str(gifts.subtitle),
-			items: Array.isArray(gifts.items)
-				? (gifts.items as z.infer<typeof giftItemSchema>[])
-				: undefined,
-		};
+		result.gifts = mapGiftsToDraft(gifts) as DraftContent['gifts'];
 	}
 
 	const gallery = nestedContent.gallery as Record<string, unknown> | undefined;
@@ -833,16 +828,8 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 
 	const itinerary = nestedContent.itinerary as Record<string, unknown> | undefined;
 	if (isNonEmptyObject(itinerary)) {
-		const normalizedItems = (
-			itinerary.items as Array<Record<string, unknown>> | undefined
-		)?.map((item) => ({
-			...item,
-			time: normalizeTime(item.time) ?? item.time,
-		}));
-		result.itinerary = {
-			...itinerary,
-			...(normalizedItems ? { items: normalizedItems } : {}),
-		} as DraftContent['itinerary'];
+		// Explicit Draft itinerary shape — never spread Published residue.
+		result.itinerary = canonicalizeItineraryDraft(itinerary) as DraftContent['itinerary'];
 	}
 
 	const quote = nestedContent.quote as Record<string, unknown> | undefined;

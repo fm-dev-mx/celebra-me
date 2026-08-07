@@ -35,31 +35,55 @@ transition is code-enforced:
 
 Two distinct representations exist and must never be interchanged:
 
-| Representation      | Shape                                        | Storage                        |
-| ------------------- | -------------------------------------------- | ------------------------------ |
-| Published content   | Nested persisted/public model (`eventContentSchema`) | `published_invitation_content` |
-| Draft content       | Flat editable model (`InvitationContentDraftContentSchema`) | `invitation_content_drafts`    |
+| Representation    | Shape                                                       | Storage                        |
+| ----------------- | ----------------------------------------------------------- | ------------------------------ |
+| Published content | Nested persisted/public model (`eventContentSchema`)        | `published_invitation_content` |
+| Draft content     | Flat editable model (`InvitationContentDraftContentSchema`) | `invitation_content_drafts`    |
 
-`family` is where the two diverge most: published uses `parents`, `labels`, `spouse`,
-`children[]`, `godparents[]`, `godparentGroups[].godparents`, `groups[].items`; the draft uses
+`family` is where the two diverge most: published uses `parents`, `labels`, `spouse`, `children[]`,
+`godparents[]`, `godparentGroups[].godparents`, `groups[].items`; the draft uses
 `fatherName`/`motherName`, flat label keys, `spouseName`, `children` as a string, `godparents` as a
 string, `godparentGroups[].names`, `groups[].names`.
 
+**Date/time ownership (canonical machine contract):**
+
+| Field                                                    | Owner                                                | Canonical form                 | Notes                                            |
+| -------------------------------------------------------- | ---------------------------------------------------- | ------------------------------ | ------------------------------------------------ |
+| `eventTiming.localDateTime` / `timeZone` / `startsAtUtc` | Top-level `eventTiming`                              | `YYYY-MM-DDTHH:mm` + IANA zone | Countdown / calendar; independent of venue times |
+| Venue `date`                                             | `location.venues[]` or legacy `ceremony`/`reception` | `YYYY-MM-DD`                   | Independent per venue                            |
+| Venue `time`                                             | same                                                 | `HH:mm`                        | Independent per venue                            |
+| Itinerary item `time`                                    | `itinerary.items[]`                                  | `HH:mm`                        | Independent of venue times                       |
+
+Do not create fallback chains between `eventTiming` and venue date/time. Legacy Published Spanish
+prose (`28 de noviembre de 2026`, `5:30 p. m.`) is accepted only at the Published→Draft / display
+normalization boundary (`toEditorDate` / `normalizeTime` / `formatVenueDateForDisplay` /
+`formatVenueTimeForDisplay`). New writes emit machine form. Publication comparison treats equivalent
+spellings as equal during the transition. Inventory legacy Published values with
+`pnpm invitation:published-audit` (read-only).
+
+**`showFlourishes` ownership:** canonical field is `location.presentationOptions.showFlourishes`.
+Legacy `sectionStyles.location.showFlourishes` is folded into the canonical field when absent
+(`foldShowFlourishesIntoPresentationOptions`) and stripped on publish. Conflicts are reported by the
+published audit, not silently averaged.
+
 Canonical conversion boundaries — do not add parallel mappings:
 
-| Direction                | Function                | Location                                          |
-| ------------------------ | ----------------------- | ------------------------------------------------- |
-| Published → Draft        | `mapNestedToDraftContent` | `src/lib/intake/services/draft-content-mapper.ts` |
-| Draft → Draft (canonical) | `normalizeDraftContent` / `canonicalizeDraftContent` | `src/lib/intake/services/draft-content-mapper.ts` |
-| Draft → Published        | `mapDraftToPublished`   | `src/lib/intake/mappers/draft-to-published.mapper.ts` |
+| Direction                 | Function                                             | Location                                              |
+| ------------------------- | ---------------------------------------------------- | ----------------------------------------------------- |
+| Published → Draft         | `mapNestedToDraftContent`                            | `src/lib/intake/services/draft-content-mapper.ts`     |
+| Draft → Draft (canonical) | `normalizeDraftContent` / `canonicalizeDraftContent` | `src/lib/intake/services/draft-content-mapper.ts`     |
+| Draft → Published         | `mapDraftToPublished`                                | `src/lib/intake/mappers/draft-to-published.mapper.ts` |
 
 Rules:
 
 - **Raw published content must never be persisted as a draft baseline.** Seeding a draft from a
   published revision always goes through `mapNestedToDraftContent`.
 - Persisted drafts must not carry published-only content: `theme`, `templateId`, `visualProfileId`,
-  `_assetSlug`, `isDemo`, `navigation`, `sectionStyles`, or `rsvp.personalizedAccess.noteText`.
-  Publish restores these from the invitation record or the prior published revision.
+  `_assetSlug`, `isDemo`, `navigation`, `sectionStyles`, `rsvp.personalizedAccess.noteText`,
+  `rsvp.whatsappConfig` (folded to `whatsappPhone`), `gifts.variant` (presentation lives on
+  `sectionStyles.gifts.variant`), legacy `location.indications[].icon`, or obsolete
+  `countdown.subtitlePrefix`. Publish restores published-only fields from the invitation record or
+  the prior published revision.
 - `normalizeDraftContent` is the single normalization boundary. Editor hydration, preview, publish
   projection and draft writes all pass through it, so legacy hybrid drafts converge on read and on
   write. It is deterministic, idempotent and non-destructive, and throws `DraftNormalizationError`
@@ -67,14 +91,16 @@ Rules:
 - `mapDraftToPublished` stays strict: it rejects a family draft that still holds published-shaped
   structures rather than silently dropping `groups`, `children` or `godparentGroups`.
 - Repair legacy drafts with `pnpm invitation:draft-canonicalize --slug <slug> --target <env>`
-  (read-only dry-run by default; Production writes require a backup manifest and owner confirmation).
+  (read-only dry-run by default; Production writes require a backup manifest and owner
+  confirmation).
 - Detect non-canonical persisted drafts (read-only) with
-  `pnpm invitation:draft-audit --slug <slug> --target <env>`.
+  `pnpm invitation:draft-audit --slug <slug> --target <env>` or inventory all drafts with
+  `pnpm invitation:draft-audit --all --target <env>`.
 - Restore uses one domain service (`draft-restore.service.ts`):
   - `restoreDraftSection` — replace one editable section from published → flat Draft;
   - `restoreEntireDraft` — replace the full draft (and public title/slug via the atomic RPC).
-  Editor/API and `pnpm invitation:draft-restore` are facades over that planner; Published is never
-  written by restore.
+    Editor/API and `pnpm invitation:draft-restore` are facades over that planner; Published is never
+    written by restore.
 
 ## Draft → Editor → Publish Flow
 
@@ -179,8 +205,8 @@ Optimistic locking is used in editor save paths (`updateDraftContentConditionall
 `updateInvitationConditionally`) — conflict returns null, service throws 409.
 
 Editor metadata-reopen and restore-from-published commit through atomic RPCs that share the
-managed-mutation receipt contract in `docs/core/architecture.md` with
-`pnpm invitation:release` where applicable.
+managed-mutation receipt contract in `docs/core/architecture.md` with `pnpm invitation:release`
+where applicable.
 
 The publication path does not rely on the non-transactional repository helpers
 (`upsertPublishedContent`, `updateDraftStatus`) for write safety; it commits through the atomic RPC.

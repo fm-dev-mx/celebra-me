@@ -14,11 +14,20 @@ current boundary.
   - Published content = nested public/persisted representation
   - `DraftContent` = canonical flat editable representation
   - Editor = consumer of `DraftContent` (never raw Published shapes)
+  - Location venue `date`/`time` and itinerary times use the machine contract (`YYYY-MM-DD` /
+    `HH:mm`) in Draft and in new Published writes. Legacy Spanish prose is normalized at the
+    mapping/display boundary only. `showFlourishes` is owned by
+    `location.presentationOptions.showFlourishes` (legacy `sectionStyles.location.showFlourishes` is
+    folded on read and stripped on publish).
 - Draft content is sparse. A draft seeded from a published revision is converted with
   `mapNestedToDraftContent` first; see the contract table in
-  [`.agent/rules/intake-publishing.md`](../../../.agent/rules/intake-publishing.md).
-- Section restore (“Restaurar versión publicada”) and full draft restore reuse
-  `restoreDraftSection` / `restoreEntireDraft`. CLI: `pnpm invitation:draft-restore`.
+  [`.agent/rules/intake-publishing.md`](../../../.agent/rules/intake-publishing.md). Legacy/hybrid
+  drafts are normalized by `normalizeDraftContent` (strips published-only nested residue such as
+  `gifts.variant`, indication `icon`, `countdown.subtitlePrefix`, and folds `rsvp.whatsappConfig` →
+  `whatsappPhone`).
+- Section restore (“Restaurar versión publicada”) and full draft restore reuse `restoreDraftSection`
+  / `restoreEntireDraft`. CLI: `pnpm invitation:draft-restore`. Inventory non-canonical drafts
+  (read-only): `pnpm invitation:draft-audit --all --target <env>`.
 - Preview and publication compute effective content by merging draft data with the prior published
   snapshot; approved demo fallback is limited to demo invitations.
 - Both preview and publication remap effective draft content through `mapDraftToPublished` with

@@ -7,6 +7,10 @@ import OptimizedImage from '@/components/common/OptimizedImage.astro';
 import GoogleMap from '@/components/common/GoogleMap.astro';
 import Icon from '@/components/common/icons/Icon.astro';
 import { resolveVenueMapPreviewUrl } from '@/lib/invitation/location-helper';
+import {
+	formatVenueDateForDisplay,
+	formatVenueTimeForDisplay,
+} from '@/lib/invitation/venue-datetime';
 
 import type { ImageMetadata } from 'astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
@@ -60,27 +64,10 @@ const {
 	accessLabel,
 } = Astro.props;
 
-// Format venue date as human-readable Spanish string.
-// Invitation dates are floating event-local values serialized with a UTC
-// suffix (e.g. "2026-08-01T18:00:00.000Z"). We use timeZone: 'UTC' to
-// avoid visual date shifting on non-UTC servers.
-function formatVenueDate(raw: string): string | null {
-	if (!raw) return null;
-	try {
-		const d = new Date(raw);
-		if (isNaN(d.getTime())) return null;
-		return d.toLocaleDateString('es-MX', {
-			day: 'numeric',
-			month: 'long',
-			year: 'numeric',
-			timeZone: 'UTC',
-		});
-	} catch {
-		return null;
-	}
-}
-
-const formattedDate = formatVenueDate(venue.date);
+// Presentation-only Spanish formatting. Persistence uses YYYY-MM-DD / HH:mm;
+// legacy Published prose is normalized inside the shared helpers.
+const formattedDate = formatVenueDateForDisplay(venue.date);
+const formattedTime = formatVenueTimeForDisplay(venue.time);
 const mediaMode = resolveLocationMediaMode(presentation, {
 	hasCoordinates: Boolean(venue.coordinates),
 	hasImage: Boolean(venue.image),
@@ -246,9 +233,9 @@ const useMapPreviewLink = showNavigationButtons === false && hasMapLink;
 							))}
 						</ul>
 					</li>
-				) : (
-					<li class="event-location__card-content-hour">{venue.time}</li>
-				)}
+				) : formattedTime ? (
+					<li class="event-location__card-content-hour">{formattedTime}</li>
+				) : null}
 				<li class="event-location__card-content-address">
 					<span class="event-location__card-content-address-text">{venue.address}</span>
 					<button

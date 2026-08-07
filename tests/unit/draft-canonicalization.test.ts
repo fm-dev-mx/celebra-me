@@ -36,7 +36,9 @@ import { buildSectionSaveValue } from '@/lib/intake/services/section-content-map
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 
-const findDraftMock = findDraftByInvitationId as jest.MockedFunction<typeof findDraftByInvitationId>;
+const findDraftMock = findDraftByInvitationId as jest.MockedFunction<
+	typeof findDraftByInvitationId
+>;
 const upsertDraftMock = upsertDraft as jest.MockedFunction<typeof upsertDraft>;
 const updateDraftMock = updateDraftContentConditionally as jest.MockedFunction<
 	typeof updateDraftContentConditionally
@@ -207,8 +209,11 @@ async function saveLocationIndication(
 		});
 	};
 	upsertDraftMock.mockImplementation(capture as never);
-	updateDraftMock.mockImplementation(((_id: string, _expected: string, patch: { content: Record<string, unknown> }) =>
-		capture(patch)) as never);
+	updateDraftMock.mockImplementation(((
+		_id: string,
+		_expected: string,
+		patch: { content: Record<string, unknown> },
+	) => capture(patch)) as never);
 
 	await applyDraftMutation({
 		invitationId: 'inv-1',
@@ -235,7 +240,10 @@ describe('draft canonicalization', () => {
 			expect(family.labels).toBeUndefined();
 			expect(family.children).toBe('Emiliano\nRenata');
 			expect(family.groups).toEqual([
-				{ title: 'Padres de la novia', names: 'María Elena Ruiz\nJorge Alberto Sánchez — Padre' },
+				{
+					title: 'Padres de la novia',
+					names: 'María Elena Ruiz\nJorge Alberto Sánchez — Padre',
+				},
 				{ title: 'Padres del novio', names: 'Ana Sofía Torres\nLuis Fernando Marín' },
 			]);
 			expect(family.godparentGroups).toEqual([
@@ -354,17 +362,16 @@ describe('draft canonicalization', () => {
 
 		it('converges a hybrid draft on the next section save', async () => {
 			const published = buildNestedFamilyPublished();
-			const persisted = await saveLocationIndication(
-				published,
-				buildHybridDraft(published),
-			);
+			const persisted = await saveLocationIndication(published, buildHybridDraft(published));
 
 			expect(persisted).not.toHaveProperty('theme');
 			expect((persisted.family as Record<string, unknown>).labels).toBeUndefined();
 			expect(
-				((persisted.family as Record<string, unknown>).groups as Array<
-					Record<string, unknown>
-				>)[0]?.names,
+				(
+					(persisted.family as Record<string, unknown>).groups as Array<
+						Record<string, unknown>
+					>
+				)[0]?.names,
 			).toBe('María Elena Ruiz\nJorge Alberto Sánchez — Padre');
 		});
 
@@ -378,9 +385,109 @@ describe('draft canonicalization', () => {
 			const result = canonicalizeDraftContent(hybrid);
 
 			expect(result.removedPublishedOnlyKeys).toContain('rsvp.personalizedAccess.noteText');
+			expect((result.content.rsvp as Record<string, unknown>).personalizedAccess).toEqual({
+				title: 'Acceso',
+			});
+		});
+
+		it('strips gifts.variant without changing gift items', () => {
+			const hybrid = {
+				gifts: {
+					title: 'Mesa de regalos',
+					variant: 'celestial-blue',
+					items: [
+						{
+							type: 'cash',
+							title: 'Lluvia de sobres',
+							text: 'Tu presencia es el mejor regalo.',
+						},
+					],
+				},
+			};
+			const result = canonicalizeDraftContent(hybrid);
+			expect(result.issues).toEqual([]);
+			expect(result.removedPublishedOnlyKeys).toContain('gifts.variant');
+			expect(result.content.gifts).toEqual({
+				title: 'Mesa de regalos',
+				items: hybrid.gifts.items,
+			});
+			expect(canonicalizeDraftContent(result.content).changed).toBe(false);
+		});
+
+		it('strips legacy indication icon and countdown.subtitlePrefix', () => {
+			const hybrid = {
+				location: {
+					indications: [
+						{
+							icon: 'dressCode',
+							iconName: 'DressCode',
+							styleVariant: 'default',
+							text: 'Código de vestimenta casual elegante',
+						},
+					],
+				},
+				countdown: {
+					title: 'Falta poco',
+					footerText: 'Los esperamos',
+					subtitlePrefix: '',
+				},
+			};
+			const result = canonicalizeDraftContent(hybrid);
+			expect(result.issues).toEqual([]);
+			expect(result.removedPublishedOnlyKeys).toEqual(
+				expect.arrayContaining([
+					'location.indications[0].icon',
+					'countdown.subtitlePrefix',
+				]),
+			);
+			expect(result.content.location?.indications).toEqual([
+				{
+					iconName: 'DressCode',
+					styleVariant: 'default',
+					text: 'Código de vestimenta casual elegante',
+				},
+			]);
+			expect(result.content.countdown).toEqual({
+				title: 'Falta poco',
+				footerText: 'Los esperamos',
+			});
+		});
+
+		it('folds rsvp.whatsappConfig into whatsappPhone and maps personalizedAccess', () => {
+			const published = {
+				rsvp: {
+					title: 'Confirma',
+					accessMode: 'hybrid',
+					whatsappConfig: { phone: '+526671112233' },
+					personalizedAccess: {
+						title: 'Pase',
+						subtitle: 'Presente este pase',
+						footerText: 'Válido el día del evento',
+						noteText: 'interno',
+					},
+				},
+			};
+			const draft = mapNestedToDraftContent(published);
+			expect(draft.rsvp).toMatchObject({
+				title: 'Confirma',
+				accessMode: 'hybrid',
+				whatsappPhone: '+526671112233',
+				personalizedAccess: {
+					title: 'Pase',
+					subtitle: 'Presente este pase',
+					footerText: 'Válido el día del evento',
+				},
+			});
+			expect(draft.rsvp).not.toHaveProperty('whatsappConfig');
 			expect(
-				(result.content.rsvp as Record<string, unknown>).personalizedAccess,
-			).toEqual({ title: 'Acceso' });
+				(draft.rsvp as { personalizedAccess?: Record<string, unknown> }).personalizedAccess,
+			).not.toHaveProperty('noteText');
+
+			const hybridResult = canonicalizeDraftContent(published);
+			expect(hybridResult.removedPublishedOnlyKeys).toEqual(
+				expect.arrayContaining(['rsvp.whatsappConfig', 'rsvp.personalizedAccess.noteText']),
+			);
+			expect(hybridResult.content.rsvp).toEqual(draft.rsvp);
 		});
 	});
 
@@ -391,7 +498,10 @@ describe('draft canonicalization', () => {
 			const family = effective.family as Record<string, unknown>;
 
 			expect(family.groups).toEqual([
-				{ title: 'Padres de la novia', names: 'María Elena Ruiz\nJorge Alberto Sánchez — Padre' },
+				{
+					title: 'Padres de la novia',
+					names: 'María Elena Ruiz\nJorge Alberto Sánchez — Padre',
+				},
 				{ title: 'Padres del novio', names: 'Ana Sofía Torres\nLuis Fernando Marín' },
 			]);
 			expect(family.children).toBe('Emiliano\nRenata');

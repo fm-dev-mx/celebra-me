@@ -1,6 +1,9 @@
 import { createHash } from 'node:crypto';
 import { getEditorSectionForPublishedPath } from '@/lib/intake/invitation-section-registry';
-import { canonicalizePublicationValue } from '@/lib/intake/services/publication-canonicalize';
+import {
+	canonicalizePublicationValue,
+	preparePublicationProjection,
+} from '@/lib/intake/services/publication-canonicalize';
 
 export { canonicalizePublicationValue } from '@/lib/intake/services/publication-canonicalize';
 
@@ -36,7 +39,8 @@ export interface PublicationComparison {
 
 export function hashPublicationProjection(projection: Record<string, unknown>): string {
 	const canonical =
-		(canonicalizePublicationValue(projection) as Record<string, unknown> | undefined) ?? {};
+		(canonicalizePublicationValue(preparePublicationProjection(projection)) as
+			Record<string, unknown> | undefined) ?? {};
 	return optimisticLockHash(JSON.stringify(canonical));
 }
 
@@ -148,13 +152,12 @@ export function createPublicationComparison(input: {
 	publishedProjection?: Record<string, unknown>;
 }): PublicationComparison {
 	const canonicalDraftProjection =
-		(canonicalizePublicationValue(input.draftProjection) as
-			| Record<string, unknown>
-			| undefined) ?? {};
+		(canonicalizePublicationValue(preparePublicationProjection(input.draftProjection)) as
+			Record<string, unknown> | undefined) ?? {};
 	const canonicalPublishedProjection =
-		(canonicalizePublicationValue(input.publishedProjection ?? {}) as
-			| Record<string, unknown>
-			| undefined) ?? {};
+		(canonicalizePublicationValue(
+			preparePublicationProjection(input.publishedProjection ?? {}),
+		) as Record<string, unknown> | undefined) ?? {};
 	const changedPaths = collectChangedPaths(
 		canonicalDraftProjection,
 		canonicalPublishedProjection,

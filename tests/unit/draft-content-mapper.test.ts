@@ -1,4 +1,5 @@
 import {
+	canonicalizeDraftContent,
 	mapNestedToDraftContent,
 	normalizeDraftContent,
 } from '@/lib/intake/services/draft-content-mapper';
@@ -986,13 +987,18 @@ describe('mapNestedToDraftContent', () => {
 		expect(result.family?.parentsOrder).toBeUndefined();
 	});
 
-	it('does not normalize legacy itinerary icon fields from published content', () => {
+	it('strips legacy itinerary icon and keeps Draft iconName', () => {
 		const input = {
 			itinerary: {
 				title: 'Programa',
 				items: [
-					{ icon: 'church', label: 'Misa', time: '18:00' },
-					{ icon: 'map-location', label: 'Recepción', time: '20:00' },
+					{ iconName: 'Church', icon: 'church', label: 'Misa', time: '18:00' },
+					{
+						iconName: 'Reception',
+						icon: 'map-location',
+						label: 'Recepción',
+						time: '20:00',
+					},
 					{ iconName: 'Dinner', icon: 'dinner', label: 'Cena', time: '22:00' },
 				],
 			},
@@ -1001,10 +1007,28 @@ describe('mapNestedToDraftContent', () => {
 		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
 
 		expect(result.itinerary?.items).toEqual([
-			{ icon: 'church', label: 'Misa', time: '18:00' },
-			{ icon: 'map-location', label: 'Recepción', time: '20:00' },
-			{ iconName: 'Dinner', icon: 'dinner', label: 'Cena', time: '22:00' },
+			{ iconName: 'Church', label: 'Misa', time: '18:00' },
+			{ iconName: 'Reception', label: 'Recepción', time: '20:00' },
+			{ iconName: 'Dinner', label: 'Cena', time: '22:00' },
 		]);
+	});
+
+	it('reports itinerary items that only have legacy icon without iconName', () => {
+		const hybrid = {
+			itinerary: {
+				title: 'Programa',
+				items: [{ icon: 'church', label: 'Misa', time: '18:00' }],
+			},
+		};
+		const result = canonicalizeDraftContent(hybrid);
+		expect(result.issues).toEqual([
+			{
+				path: 'itinerary.items[0].icon',
+				reason: 'unrepresentable_field',
+				detail: 'legacy itinerary icon cannot be mapped to Draft iconName; resolve manually',
+			},
+		]);
+		expect(result.removedPublishedOnlyKeys).toContain('itinerary.items[0].icon');
 	});
 
 	it('normalizes 12-hour itinerary times to 24-hour format', () => {

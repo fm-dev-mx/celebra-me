@@ -3,8 +3,9 @@ function str(value: unknown): string | undefined {
 	return undefined;
 }
 
-const TIME_24H_REGEX = /^(\d{2}):(\d{2})$/;
-const TIME_12H_REGEX = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i;
+const TIME_24H_REGEX = /^(\d{2}):(\d{2})(?::\d{2})?$/;
+/** Accepts `6:00 PM`, `6:00 pm`, and Spanish display forms `6:00 p. m.` / `6:00 a.m.`. */
+const TIME_12H_REGEX = /^(\d{1,2}):(\d{2})\s*(a\.?\s*m\.?|p\.?\s*m\.?|am|pm)$/i;
 
 export function parseTime(value: unknown): { hours: number; minutes: number } | null {
 	const raw = str(value);
@@ -23,7 +24,8 @@ export function parseTime(value: unknown): { hours: number; minutes: number } | 
 	if (h12Match) {
 		let hours = parseInt(h12Match[1], 10);
 		const minutes = parseInt(h12Match[2], 10);
-		const period = h12Match[3].toUpperCase() as 'AM' | 'PM';
+		const periodToken = h12Match[3].replace(/[.\s]/g, '').toUpperCase();
+		const period = periodToken.startsWith('P') ? 'PM' : 'AM';
 
 		if (hours < 1 || hours > 12) return null;
 		if (minutes < 0 || minutes > 59) return null;
@@ -61,4 +63,24 @@ export function formatTime12h(value: string): string {
 	const displayMinutes = minutes.toString().padStart(2, '0');
 
 	return `${displayHours}:${displayMinutes} ${period}`;
+}
+
+/** Spanish display form used by many published invitations (`5:30 p. m.`). */
+export function formatTimeSpanish(value: string): string {
+	const parsed = parseTime(value);
+	if (!parsed) return value;
+
+	const { hours, minutes } = parsed;
+	const period = hours >= 12 ? 'p. m.' : 'a. m.';
+	const displayHours = hours % 12 === 0 ? 12 : hours % 12;
+	const displayMinutes = minutes.toString().padStart(2, '0');
+
+	return `${displayHours}:${displayMinutes} ${period}`;
+}
+
+/** True when both values resolve to the same HH:mm instant. */
+export function timesSemanticallyEqual(left: unknown, right: unknown): boolean {
+	const a = normalizeTime(left);
+	const b = normalizeTime(right);
+	return a !== undefined && a === b;
 }

@@ -99,6 +99,7 @@
         "invitation:draft-canonicalize": "tsx scripts/provision/draft-canonicalization-cli.ts",
         "invitation:draft-restore": "tsx scripts/provision/draft-restore-cli.ts",
         "invitation:draft-audit": "tsx scripts/provision/draft-audit-cli.ts",
+        "invitation:published-audit": "tsx scripts/provision/published-content-audit-cli.ts",
         "qr:valentina-memories": "tsx scripts/qr/generate-valentina-memories.ts",
         "screenshot": "tsx scripts/screenshot/cli.ts",
         "screenshot:interactive": "tsx scripts/screenshot/cli.ts --interactive",

@@ -80,10 +80,51 @@ export function resolveLocationMediaMode(
 	return media.hasImage ? 'image' : 'none';
 }
 
+/**
+ * Canonical owner of venue-card flourishes:
+ *   `location.presentationOptions.showFlourishes`
+ *
+ * Legacy Published / demo data may still store the same flag under
+ * `sectionStyles.location.showFlourishes`. Fold that legacy value only when the
+ * canonical field is absent — never bidirectional sync.
+ */
+export function detectShowFlourishesConflict(input: {
+	presentationOptions?: LocationPresentationOptions | null;
+	legacySectionStylesShowFlourishes?: boolean;
+}): boolean {
+	const canonical = input.presentationOptions?.showFlourishes;
+	const legacy = input.legacySectionStylesShowFlourishes;
+	return canonical !== undefined && legacy !== undefined && canonical !== legacy;
+}
+
+export function foldShowFlourishesIntoPresentationOptions<T extends Record<string, unknown>>(
+	location: T | undefined,
+	legacySectionStylesShowFlourishes?: boolean,
+): T | undefined {
+	if (!location) return location;
+	const current = location.presentationOptions as LocationPresentationOptions | undefined;
+	if (current?.showFlourishes !== undefined) {
+		return location;
+	}
+	if (legacySectionStylesShowFlourishes === undefined) {
+		return location;
+	}
+	return {
+		...location,
+		presentationOptions: {
+			...(current ?? {}),
+			showFlourishes: legacySectionStylesShowFlourishes,
+		},
+	};
+}
+
 export function resolveLocationShowFlourishes(
 	options: LocationPresentationOptions | undefined,
+	legacySectionStylesShowFlourishes?: boolean,
 ): boolean {
-	return options?.showFlourishes ?? true;
+	if (options?.showFlourishes !== undefined) return options.showFlourishes;
+	if (legacySectionStylesShowFlourishes !== undefined) return legacySectionStylesShowFlourishes;
+	return true;
 }
 
 export function resolveLocationShowNavigationButtons(

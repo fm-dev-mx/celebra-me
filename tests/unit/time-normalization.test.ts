@@ -1,5 +1,6 @@
 import { describe, it, expect } from '@jest/globals';
 import { parseTime, normalizeTime, isValidTime } from '@/lib/time/time-format';
+import { toEditorDate, datesSemanticallyEqual } from '@/lib/shared/data-utils';
 import {
 	buildPublishedEventTiming,
 	deriveStartsAtUtc,
@@ -121,6 +122,15 @@ describe('normalizeTime', () => {
 			expect(normalizeTime('12:00 AM')).toBe('00:00');
 			expect(normalizeTime('12:00 PM')).toBe('12:00');
 		});
+
+		it('converts Spanish display times used in published invitations', () => {
+			expect(normalizeTime('5:00 p. m.')).toBe('17:00');
+			expect(normalizeTime('5:30 p. m.')).toBe('17:30');
+			expect(normalizeTime('8:30 p. m.')).toBe('20:30');
+			expect(normalizeTime('9:00 a. m.')).toBe('09:00');
+			expect(normalizeTime('12:00 p.m.')).toBe('12:00');
+			expect(normalizeTime('12:00 a.m.')).toBe('00:00');
+		});
 	});
 
 	describe('invalid values', () => {
@@ -132,6 +142,28 @@ describe('normalizeTime', () => {
 			expect(normalizeTime('')).toBeUndefined();
 			expect(normalizeTime(null)).toBeUndefined();
 		});
+	});
+});
+
+describe('toEditorDate', () => {
+	it('keeps YYYY-MM-DD for date inputs', () => {
+		expect(toEditorDate('2026-08-14')).toBe('2026-08-14');
+	});
+
+	it('extracts the calendar day from ISO datetimes', () => {
+		expect(toEditorDate('2026-08-14T17:00:00.000Z')).toBe('2026-08-14');
+		expect(toEditorDate('2026-08-14T17:00')).toBe('2026-08-14');
+	});
+
+	it('parses Spanish long venue dates used in published invitations', () => {
+		expect(toEditorDate('14 de agosto de 2026')).toBe('2026-08-14');
+		expect(toEditorDate('28 de noviembre de 2026')).toBe('2026-11-28');
+		expect(toEditorDate('sábado, 28 de noviembre de 2026')).toBe('2026-11-28');
+	});
+
+	it('treats Spanish prose and ISO calendar days as semantically equal', () => {
+		expect(datesSemanticallyEqual('14 de agosto de 2026', '2026-08-14')).toBe(true);
+		expect(datesSemanticallyEqual('14 de agosto de 2026', '2026-08-15')).toBe(false);
 	});
 });
 

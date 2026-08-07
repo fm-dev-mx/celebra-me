@@ -2,6 +2,11 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import {
+	DANIELA_ASSET_SPECS,
+	DANIELA_EVENT,
+	buildDanielaPublishedContent,
+} from '../../scripts/provision/invitations/daniela-y-martin.ts';
+import {
 	ROMINA_ASSET_SPECS,
 	ROMINA_EVENT,
 	buildRominaPublishedContent,
@@ -19,10 +24,13 @@ import { computeEffectiveContent } from '@/lib/intake/services/merge-content.ser
 import { createPublicationComparison } from '@/lib/intake/services/publication-diff.service';
 import {
 	applySectionToBaseline,
+	buildSectionSaveValue,
 	getSectionValue,
 } from '@/lib/intake/services/section-content-mapper';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
+import { toEditorDate } from '@/lib/shared/data-utils';
+import { normalizeTime } from '@/lib/time/time-format';
 
 const demoContent = JSON.parse(
 	readFileSync(
@@ -42,6 +50,17 @@ const assets = Object.fromEntries(
 	]),
 );
 
+const danielaAssets = Object.fromEntries(
+	DANIELA_ASSET_SPECS.map((asset, index) => [
+		asset.key,
+		{
+			type: 'uploaded',
+			assetId: `00000000-0000-4000-8000-${String(index + 100).padStart(12, '0')}`,
+			src: `https://local.test/${asset.key}.webp`,
+		},
+	]),
+);
+
 const preset = {
 	id: ROMINA_EVENT.baseDemoId,
 	eventType: ROMINA_EVENT.eventType,
@@ -54,18 +73,63 @@ const preset = {
 	previewSlug: 'demo-xv-jewelry-box',
 };
 
+const danielaPreset = {
+	id: DANIELA_EVENT.baseDemoId,
+	eventType: DANIELA_EVENT.eventType,
+	displayName: 'Boda — Jewelry Box',
+	themeId: DANIELA_EVENT.themeId,
+	defaultSections: [],
+	supportedBlocks: [],
+	recommendedBlocks: [],
+	requiredAssets: [],
+	previewSlug: 'demo-boda-jewelry-box-wedding',
+};
+
 function published(): Record<string, unknown> {
 	return buildRominaPublishedContent(assets as never) as unknown as Record<string, unknown>;
 }
 
-function compare(draftContent: DraftContent, pub: Record<string, unknown>) {
+function publishedDaniela(): Record<string, unknown> {
+	return buildDanielaPublishedContent(danielaAssets as never) as unknown as Record<
+		string,
+		unknown
+	>;
+}
+
+function compare(
+	draftContent: DraftContent,
+	pub: Record<string, unknown>,
+	meta: {
+		title: string;
+		slug: string;
+		eventType: string;
+		assetSlug: string;
+		snapshot: {
+			id: string;
+			eventType: string;
+			displayName: string;
+			themeId: string;
+			defaultSections: unknown[];
+			supportedBlocks: unknown[];
+			recommendedBlocks: unknown[];
+			requiredAssets: unknown[];
+			previewSlug: string;
+		};
+	} = {
+		title: ROMINA_EVENT.title,
+		slug: ROMINA_EVENT.slug,
+		eventType: ROMINA_EVENT.eventType,
+		assetSlug: ROMINA_EVENT.assetSlug,
+		snapshot: preset,
+	},
+) {
 	const mapped = mapDraftToPublished({
 		invitation: {
-			title: ROMINA_EVENT.title,
-			eventType: ROMINA_EVENT.eventType,
-			snapshot: preset as never,
+			title: meta.title,
+			eventType: meta.eventType,
+			snapshot: meta.snapshot as never,
 		},
-		assetSlug: ROMINA_EVENT.assetSlug,
+		assetSlug: meta.assetSlug,
 		draftContent: computeEffectiveContent(draftContent, pub),
 		demoContent,
 		priorPublishedContent: pub,
@@ -74,13 +138,42 @@ function compare(draftContent: DraftContent, pub: Record<string, unknown>) {
 	return createPublicationComparison({
 		draftProjection: {
 			content: eventContentSchema.parse(mapped),
-			metadata: { title: ROMINA_EVENT.title, slug: ROMINA_EVENT.slug },
+			metadata: { title: meta.title, slug: meta.slug },
 		},
 		publishedProjection: {
 			content: eventContentSchema.parse(pub),
-			metadata: { title: pub.title, slug: ROMINA_EVENT.slug },
+			metadata: { title: pub.title, slug: meta.slug },
 		},
 	});
+}
+
+/** Shape consumed by LocationSectionEditor via getSectionValue(..., 'location'). */
+function editorLocationState(draft: DraftContent) {
+	return getSectionValue(draft, 'location') as {
+		ceremony?: { date?: string; time?: string; venueName?: string; address?: string };
+		reception?: { date?: string; time?: string; venueName?: string; address?: string };
+		venues?: Array<{
+			type?: string;
+			date?: string;
+			time?: string;
+			venueName?: string;
+			address?: string;
+		}>;
+		eventTiming?: { localDateTime?: string; timeZone?: string };
+		introHeading?: string;
+		indications?: Array<{ text?: string }>;
+	};
+}
+
+/** Assert the exact Draft shape consumed by `<input type="date|time">`. */
+function expectEditorDate(value: string | undefined, expectedDate: string) {
+	expect(value).toBe(expectedDate);
+	expect(toEditorDate(value)).toBe(expectedDate);
+}
+
+function expectEditorTime(value: string | undefined, expectedTime: string) {
+	expect(value).toBe(expectedTime);
+	expect(normalizeTime(value)).toBe(expectedTime);
 }
 
 describe('Draft ↔ Published contract parity', () => {
@@ -138,11 +231,7 @@ describe('Draft ↔ Published contract parity', () => {
 				edited.sharing = { ...edited.sharing, invitation: 'Mensaje editado' };
 			}
 
-			const next = applySectionToBaseline(
-				baseline,
-				section,
-				edited,
-			) as DraftContent;
+			const next = applySectionToBaseline(baseline, section, edited) as DraftContent;
 			// Untouched sections must still match the published baseline when projected.
 			for (const other of INVITATION_EDITOR_SECTION_KEYS) {
 				if (other === section || other === 'photoNotes') continue;
@@ -223,5 +312,148 @@ describe('legacy draft detection', () => {
 				(v) => v.kind === 'normalization_unsupported' && v.path.includes('deceased'),
 			),
 		).toBe(true);
+	});
+});
+
+describe('Fecha y ubicaciones editor-consumable Draft state', () => {
+	it('hydrates Romina ceremony/reception date+time for editor controls (no draft)', () => {
+		const pub = published();
+		const draft = mapNestedToDraftContent(pub);
+		const location = editorLocationState(draft);
+
+		expectEditorDate(location.ceremony?.date, '2026-08-14');
+		expectEditorTime(location.ceremony?.time, '17:00');
+		expectEditorDate(location.reception?.date, '2026-08-14');
+		expectEditorTime(location.reception?.time, '20:30');
+		expect(location.ceremony?.time).not.toBe(location.reception?.time);
+		expect(location.eventTiming?.localDateTime).toBe(ROMINA_EVENT.localDateTime);
+		expect(location.ceremony?.venueName).toBeTruthy();
+		expect(location.ceremony?.address).toBeTruthy();
+	});
+
+	it('hydrates Daniela venues with distinct ceremony/reception times', () => {
+		const pub = publishedDaniela();
+		const draft = mapNestedToDraftContent(pub);
+		const location = editorLocationState(draft);
+		const ceremony = location.venues?.find((v) => v.type === 'ceremony');
+		const reception = location.venues?.find((v) => v.type === 'reception');
+
+		expectEditorDate(ceremony?.date, '2026-11-28');
+		expectEditorTime(ceremony?.time, '17:30');
+		expectEditorDate(reception?.date, '2026-11-28');
+		expectEditorTime(reception?.time, '19:30');
+		expect(ceremony?.time).not.toBe(reception?.time);
+		expect(location.eventTiming?.localDateTime).toBe(DANIELA_EVENT.localDateTime);
+	});
+
+	it('keeps optional missing venue date/time absent rather than inventing empty strings', () => {
+		const pub = published();
+		const sparse = structuredClone(pub) as Record<string, unknown>;
+		const location = sparse.location as Record<string, unknown>;
+		const ceremony = { ...(location.ceremony as Record<string, unknown>) };
+		delete ceremony.date;
+		delete ceremony.time;
+		location.ceremony = ceremony;
+
+		const draft = mapNestedToDraftContent(sparse);
+		const editor = editorLocationState(draft);
+		expect(editor.ceremony?.date).toBeUndefined();
+		expect(editor.ceremony?.time).toBeUndefined();
+		expectEditorDate(editor.reception?.date, '2026-08-14');
+		expectEditorTime(editor.reception?.time, '20:30');
+	});
+
+	it('prefers existing Draft venue times over Published when both are present', () => {
+		const pub = published();
+		const draftOverlay: DraftContent = {
+			location: {
+				ceremony: { date: '2026-08-15', time: '18:00' },
+				reception: { date: '2026-08-15', time: '21:00' },
+			},
+		};
+		const merged = computeEffectiveContent(draftOverlay, pub);
+		const location = editorLocationState(merged);
+		expectEditorDate(location.ceremony?.date, '2026-08-15');
+		expectEditorTime(location.ceremony?.time, '18:00');
+		expectEditorDate(location.reception?.date, '2026-08-15');
+		expectEditorTime(location.reception?.time, '21:00');
+	});
+
+	it('no-op location save does not invent pending location/family changes', () => {
+		const pub = published();
+		const baseline = mapNestedToDraftContent(pub) as DraftContent;
+		const saveValue = buildSectionSaveValue(baseline, baseline, 'location');
+		expect(saveValue).toEqual(getSectionValue(baseline, 'location'));
+
+		const next = applySectionToBaseline(baseline, 'location', baseline) as DraftContent;
+		const comparison = compare(next, pub);
+		expect(comparison.changedPaths.filter((path) => path.includes('location'))).toEqual([]);
+		expect(comparison.changedPaths.filter((path) => path.includes('family'))).toEqual([]);
+
+		const location = editorLocationState(next);
+		expectEditorDate(location.ceremony?.date, '2026-08-14');
+		expectEditorTime(location.ceremony?.time, '17:00');
+		expectEditorDate(location.reception?.date, '2026-08-14');
+		expectEditorTime(location.reception?.time, '20:30');
+	});
+
+	it('isolated ceremony time edit changes only that semantic path', () => {
+		const pub = published();
+		const baseline = mapNestedToDraftContent(pub) as DraftContent;
+		const edited = structuredClone(baseline) as DraftContent;
+		edited.location = {
+			...edited.location,
+			ceremony: { ...edited.location?.ceremony, time: '17:15' },
+		};
+		const comparison = compare(edited, pub);
+		expect(
+			comparison.changedPaths.some(
+				(path) => path.includes('ceremony') && path.includes('time'),
+			),
+		).toBe(true);
+		expect(comparison.changedPaths.filter((path) => path.includes('family'))).toEqual([]);
+		expect(
+			comparison.changedPaths.filter(
+				(path) => path.includes('reception') && path.includes('time'),
+			),
+		).toEqual([]);
+	});
+
+	it('isolated ceremony date edit changes only that semantic path', () => {
+		const pub = published();
+		const baseline = mapNestedToDraftContent(pub) as DraftContent;
+		const edited = structuredClone(baseline) as DraftContent;
+		edited.location = {
+			...edited.location,
+			ceremony: { ...edited.location?.ceremony, date: '2026-08-15' },
+		};
+		const comparison = compare(edited, pub);
+		expect(
+			comparison.changedPaths.some(
+				(path) => path.includes('ceremony') && path.includes('date'),
+			),
+		).toBe(true);
+		expect(comparison.changedPaths.filter((path) => path.includes('family'))).toEqual([]);
+	});
+
+	it('Daniela no-edit round-trip preserves venue date/time and venueEvent (no false pending)', () => {
+		const pub = publishedDaniela();
+		const draft = mapNestedToDraftContent(pub);
+		const comparison = compare(draft, pub, {
+			title: DANIELA_EVENT.title,
+			slug: DANIELA_EVENT.slug,
+			eventType: DANIELA_EVENT.eventType,
+			assetSlug: DANIELA_EVENT.assetSlug,
+			snapshot: danielaPreset,
+		});
+		expect(
+			comparison.changedPaths.filter(
+				(path) =>
+					path.includes('location.venues') ||
+					path.includes('.date') ||
+					path.includes('.time'),
+			),
+		).toEqual([]);
+		expect(comparison.changedSections.map((s) => s.sectionId)).not.toContain('family');
 	});
 });
