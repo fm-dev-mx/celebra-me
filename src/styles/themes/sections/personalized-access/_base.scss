@@ -317,6 +317,15 @@
 		text-shadow: var(--pa-count-shadow, none);
 	}
 
+	&__note {
+		margin: 0 auto;
+		font-family: var(--font-body, serif);
+		font-size: 0.85rem;
+		line-height: 1.55;
+		color: var(--color-text-secondary);
+		text-align: center;
+	}
+
 	// Footer
 	&__footer {
 		padding: 1.25rem 1.75rem 1.75rem;

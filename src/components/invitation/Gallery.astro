@@ -34,7 +34,7 @@ if (!items || items.length === 0) return null;
 	<div class="gallery-section__container">
 		<header class="gallery-section__header">
 			{eyebrow && <span class="gallery-section__eyebrow">{eyebrow}</span>}
-			<h2 class="gallery-section__title">{title}</h2>
+			{title?.trim() && <h2 class="gallery-section__title">{title}</h2>}
 			{subtitle && <p class="gallery-section__subtitle">{subtitle}</p>}
 			{isEditorialMagazine && (
 				<p class="gallery-section__swipe-hint">Desliza la edición</p>

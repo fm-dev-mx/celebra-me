@@ -121,10 +121,10 @@ describe('Boda Daniela y Martín provision contract', () => {
 			'quote',
 			'countdown',
 			'location',
+			'personalizedAccess',
 			'family',
 			'gallery',
 			'gifts',
-			'personalizedAccess',
 			'rsvp',
 			'thankYou',
 		]);
@@ -190,11 +190,11 @@ describe('Boda Daniela y Martín provision contract', () => {
 			'countdown',
 			'interlude',
 			'location',
+			'personalized-access',
 			'family',
 			'gallery',
 			'gifts',
 			'interlude',
-			'personalized-access',
 			'rsvp',
 			'thankYou',
 		]);
@@ -211,7 +211,7 @@ describe('Boda Daniela y Martín provision contract', () => {
 			intersection: { family: 'atmospheric-blend', source: 'gifts' },
 		});
 		expect(renderPlan.find((item) => item.type === 'personalized-access')).toMatchObject({
-			intersection: { family: 'overlap', source: 'interlude-after-gifts' },
+			intersection: { family: 'overlap', source: 'location' },
 		});
 
 		const envelope = content.envelope as {
@@ -283,14 +283,16 @@ describe('Boda Daniela y Martín provision contract', () => {
 			title?: string;
 		};
 		expect(gallery.items).toHaveLength(1);
-		expect(gallery.subtitle).not.toMatch(/fotos|galería de|colección/i);
+		expect(gallery.subtitle).toBeUndefined();
 
 		const rsvp = content.rsvp as {
 			confirmationMode?: string;
 			accessMode?: string;
+			personalizedAccess?: { noteText?: string };
 		};
 		expect(rsvp.confirmationMode).toBe('api');
 		expect(rsvp.accessMode).toBe('hybrid');
+		expect(rsvp.personalizedAccess?.noteText).toContain('{count}');
 		expect(content.sectionStyles).not.toHaveProperty('rsvp');
 
 		const thankYou = content.thankYou as {

@@ -9,6 +9,7 @@ interface Props {
 	title?: string;
 	subtitle?: string;
 	footerText?: string;
+	noteText?: string;
 }
 
 const {
@@ -19,11 +20,19 @@ const {
 	variant = 'standard',
 	title = 'Pase de acceso',
 	subtitle = 'Este pase te identifica como invitado y muestra el número de lugares reservados.',
-	footerText = 'Confirma tu asistencia en la sección de RSVP al final de la invitación.'
+	footerText = 'Confirma tu asistencia en la sección de RSVP al final de la invitación.',
+	noteText,
 } = Astro.props;
 
 const seatsLabel =
 	maxAllowedAttendees === 1 ? 'Lugar reservado' : 'Lugares reservados';
+
+const personWord = maxAllowedAttendees === 1 ? 'persona' : 'personas';
+const formattedNoteText = noteText
+	? noteText
+			.replace('{count}', String(maxAllowedAttendees))
+			.replace('{personWord}', personWord)
+	: undefined;
 
 const accessAriaLabel = `Pase de acceso para ${guestName}. ${maxAllowedAttendees} ${seatsLabel.toLowerCase()}.`;
 
@@ -57,7 +66,7 @@ const showOrnaments = variant !== 'standard';
 
 			<header class="access-card__header">
 				<span class="access-card__eyebrow" data-demo-label>
-					{isDemoPreview && variant !== 'editorial-magazine' ? 'Vista previa demo' : 'Invitación personalizada'}
+					{isDemoPreview && variant !== 'editorial-magazine' ? 'Vista previa demo' : '-'}
 				</span>
 				<div class="access-card__seal" aria-hidden="true">
 					<svg
@@ -107,6 +116,14 @@ const showOrnaments = variant !== 'standard';
 						<span class="access-card__count">{maxAllowedAttendees}</span>
 					</div>
 				</div>
+
+				{
+					formattedNoteText && (
+						<p class="access-card__note">
+							{formattedNoteText}
+						</p>
+					)
+				}
 			</div>
 
 			{variant === 'editorial-magazine' && (

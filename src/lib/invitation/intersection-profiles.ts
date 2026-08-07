@@ -51,18 +51,18 @@ const INTERSECTION_PROFILES: Readonly<Record<string, IntersectionProfile>> = {
 		thankYou: { family: 'atmospheric-blend', source: 'family' },
 	},
 	'daniela-y-martin': {
-		// Restrained asymmetric system: one arch into Interlude A, one shallow overlap
-		// from Interlude B into personalized access. Remaining chapters stay atmospheric.
+		// Restrained asymmetric system: one arch into Interlude A, shallow overlap
+		// into personalized access after location. Remaining chapters stay atmospheric.
 		quote: { family: 'atmospheric-blend', source: 'hero' },
 		countdown: { family: 'atmospheric-blend', source: 'quote' },
 		'interlude-after-countdown': { family: 'arch', source: 'countdown' },
 		location: { family: 'atmospheric-blend', source: 'interlude-after-countdown' },
-		family: { family: 'atmospheric-blend', source: 'location' },
+		'personalized-access': { family: 'overlap', source: 'location' },
+		family: { family: 'atmospheric-blend', source: 'personalized-access' },
 		gallery: { family: 'atmospheric-blend', source: 'family' },
 		gifts: { family: 'atmospheric-blend', source: 'gallery' },
 		'interlude-after-gifts': { family: 'atmospheric-blend', source: 'gifts' },
-		'personalized-access': { family: 'overlap', source: 'interlude-after-gifts' },
-		rsvp: { family: 'atmospheric-blend', source: 'personalized-access' },
+		rsvp: { family: 'atmospheric-blend', source: 'interlude-after-gifts' },
 		thankYou: { family: 'atmospheric-blend', source: 'rsvp' },
 	},
 };

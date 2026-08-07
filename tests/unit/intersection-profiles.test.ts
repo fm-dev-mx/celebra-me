@@ -99,9 +99,15 @@ describe('invitation intersection profiles', () => {
 			family: 'atmospheric-blend',
 			source: 'interlude-after-countdown',
 		});
+		expect(resolveRenderPlanIntersection('daniela-y-martin', 'personalized-access')).toEqual(
+			{
+				family: 'overlap',
+				source: 'location',
+			},
+		);
 		expect(resolveRenderPlanIntersection('daniela-y-martin', 'family')).toEqual({
 			family: 'atmospheric-blend',
-			source: 'location',
+			source: 'personalized-access',
 		});
 		expect(resolveRenderPlanIntersection('daniela-y-martin', 'gallery')).toEqual({
 			family: 'atmospheric-blend',
@@ -117,12 +123,10 @@ describe('invitation intersection profiles', () => {
 			family: 'atmospheric-blend',
 			source: 'gifts',
 		});
-		expect(resolveRenderPlanIntersection('daniela-y-martin', 'personalized-access')).toEqual(
-			{
-				family: 'overlap',
-				source: 'interlude-after-gifts',
-			},
-		);
+		expect(resolveRenderPlanIntersection('daniela-y-martin', 'rsvp')).toEqual({
+			family: 'atmospheric-blend',
+			source: 'interlude-after-gifts',
+		});
 		expect(resolveRenderPlanIntersection('daniela-y-martin', 'thankYou')).toEqual({
 			family: 'atmospheric-blend',
 			source: 'rsvp',

@@ -47,6 +47,7 @@ export const rsvpSchema = z
 				title: z.string().optional(),
 				subtitle: z.string().optional(),
 				footerText: z.string().optional(),
+				noteText: z.string().optional(),
 			})
 			.strict()
 			.optional(),

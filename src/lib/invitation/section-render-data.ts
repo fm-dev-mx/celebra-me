@@ -35,6 +35,7 @@ type PersonalizedAccessProps = {
 	title?: string;
 	subtitle?: string;
 	footerText?: string;
+	noteText?: string;
 };
 
 export const DEMO_GUEST_NAME = 'María Fernanda Solís';
@@ -173,6 +174,7 @@ function renderPersonalizedAccess(pageContext: InvitationPageContext): Descripto
 			title: rsvpSection?.personalizedAccess?.title,
 			subtitle: rsvpSection?.personalizedAccess?.subtitle,
 			footerText: rsvpSection?.personalizedAccess?.footerText,
+			noteText: rsvpSection?.personalizedAccess?.noteText,
 		},
 	};
 }

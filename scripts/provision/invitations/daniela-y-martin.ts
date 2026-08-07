@@ -130,10 +130,10 @@ export function buildDanielaPublishedContent(
 			'quote',
 			'countdown',
 			'location',
+			'personalizedAccess',
 			'family',
 			'gallery',
 			'gifts',
-			'personalizedAccess',
 			'rsvp',
 			'thankYou',
 		],
@@ -255,13 +255,11 @@ export function buildDanielaPublishedContent(
 			labels: {
 				sectionSubtitle: 'Familia',
 				sectionTitle: 'Con la bendición de quienes nos han acompañado siempre',
-				sectionMessage: '',
 			},
 		},
 		gallery: {
 			eyebrow: 'Retrato',
-			title: 'Nuestro comienzo',
-			subtitle: 'El instante que marcó el inicio de esta historia.',
+			title: '',
 			items: [
 				{
 					key: 'gallery-01',
@@ -332,7 +330,8 @@ export function buildDanielaPublishedContent(
 			},
 			personalizedAccess: {
 				title: 'Su invitación personal',
-				subtitle: 'Esta invitación ha sido preparada para:',
+				noteText:
+					'Esta invitación es válida para {count} {personWord}. Por motivos de logística y capacidad, no será posible admitir acompañantes o invitados adicionales.',
 				footerText: 'Confirme su asistencia desde esta invitación.',
 			},
 		},

@@ -319,6 +319,7 @@ export interface InvitationViewModel {
 				title?: string;
 				subtitle?: string;
 				footerText?: string;
+				noteText?: string;
 			};
 		};
 		gifts?: {

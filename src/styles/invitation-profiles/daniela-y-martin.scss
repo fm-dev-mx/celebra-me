@@ -1017,7 +1017,7 @@
 		.gallery-section__header {
 			max-width: 30rem;
 			margin-inline: auto;
-			margin-bottom: clamp(1.25rem, 2.8vw, 2rem);
+			margin-bottom: clamp(1rem, 2.2vw, 1.5rem);
 			text-align: center;
 		}
 
@@ -1086,14 +1086,6 @@
 		.invitation-interlude {
 			isolation: isolate;
 		}
-	}
-
-	// Reserve trailing space in Interlude B before the PA shallow overlap.
-	// Guest-less interlude → RSVP breath is handled by the adjacent-sibling rule below.
-	.invitation-section-wrapper[data-section-kind='interlude']:has(
-			+ .invitation-section-wrapper[data-section-kind='personalized-access'][data-intersection='overlap']
-		) {
-		padding-block-end: clamp(2.5rem, 6vw, 4.25rem);
 	}
 
 	.invitation-section-wrapper[data-section-kind='personalized-access'][data-intersection='overlap'] {
@@ -1278,18 +1270,31 @@
 
 		&__count {
 			font-family: var(--font-display);
-			font-size: clamp(2.75rem, 6vw + 0.5rem, 4rem);
+			font-size: clamp(4.75rem, 6vw + 0.5rem, 5.5rem);
 			font-weight: 600;
 			line-height: 0.9;
 		}
 
+		&__note {
+			font-family: var(--font-body);
+			font-size: clamp(0.825rem, 1.8vw, 0.92rem);
+			line-height: 1.55;
+			color: rgb(var(--daniela-olive-rgb) / 88%);
+			max-width: 25.5rem;
+			margin-inline: auto;
+			margin-top: 0.85rem;
+			text-align: center;
+			text-wrap: balance;
+		}
+
 		&__footer {
-			padding: 1.1rem 1.5rem 1.5rem;
+			padding: 0.9rem 1.5rem 1.35rem;
 
 			p {
 				max-width: 23rem;
-				font-size: 0.85rem;
-				line-height: 1.6;
+				font-size: 0.78rem;
+				line-height: 1.5;
+				color: rgb(var(--daniela-cream-rgb) / 60%);
 			}
 		}
 	}
@@ -2538,10 +2543,10 @@
 			height: 100%;
 		}
 
-		// Icon Medallion: simplified, subtle, non-competing
+		// Icon Medallion: elevated anchor for primary and secondary cards
 		&__icon-medallion {
-			width: 2.75rem;
-			height: 2.75rem;
+			width: 3rem;
+			height: 3rem;
 			margin: 0 auto;
 			border-radius: 50%;
 			background: rgb(var(--daniela-olive-rgb) / 8%);
@@ -2555,18 +2560,19 @@
 		}
 
 		&__icon-inner {
-			width: 1.35rem;
-			height: 1.35rem;
+			width: 1.5rem;
+			height: 1.5rem;
 			color: var(--daniela-olive-deep);
 		}
 
 		// Typography hierarchy & Safe Word Wrapping
 		&__title {
 			font-family: var(--font-display);
-			font-size: clamp(1.25rem, 2.8vw, 1.45rem);
-			font-weight: 500;
+			font-size: clamp(1.4rem, 3.2vw, 1.65rem);
+			font-weight: 600;
+			letter-spacing: 0.02em;
 			color: var(--daniela-olive-deep);
-			line-height: 1.25;
+			line-height: 1.2;
 			margin-bottom: 0;
 			overflow-wrap: normal;
 			word-break: normal;
@@ -2595,22 +2601,23 @@
 			width: 100%;
 		}
 
-		// Refined CTA: integrated, high-contrast, non-pill control
+		// Refined CTA: integrated, high-contrast, prominent control
 		&__button {
 			display: inline-flex;
 			align-items: center;
 			justify-content: center;
-			padding: 0.65rem 1.4rem;
+			padding: 0.725rem 1.6rem;
 			font-family: var(--font-body);
-			font-size: 0.88rem;
-			font-weight: 500;
-			letter-spacing: 0.04em;
+			font-size: 0.84rem;
+			font-weight: 600;
+			letter-spacing: 0.05em;
+			text-transform: uppercase;
 			text-decoration: none;
 			border-radius: 6px;
 			background: var(--daniela-olive-deep);
 			color: var(--daniela-cream);
 			border: 1px solid var(--daniela-olive-deep);
-			box-shadow: 0 2px 6px rgb(var(--daniela-olive-deep-rgb) / 16%);
+			box-shadow: 0 3px 10px rgb(var(--daniela-olive-deep-rgb) / 20%);
 			transition:
 				background-color var(--duration-snappy) var(--ease-standard),
 				border-color var(--duration-snappy) var(--ease-standard),
@@ -2624,7 +2631,7 @@
 				border-color: var(--daniela-olive);
 				color: var(--daniela-cream);
 				transform: translateY(-1px);
-				box-shadow: 0 4px 12px rgb(var(--daniela-olive-deep-rgb) / 22%);
+				box-shadow: 0 5px 14px rgb(var(--daniela-olive-deep-rgb) / 26%);
 			}
 
 			&:focus-visible {
@@ -2641,13 +2648,18 @@
 	// Primary Interactive Card (Amazon)
 	.gift-card--store {
 		background: var(--daniela-ivory);
-		border: 1px solid rgb(var(--daniela-gold-rgb) / 32%);
+		border: 1px solid rgb(var(--daniela-gold-rgb) / 38%);
 		box-shadow: 0 4px 16px rgb(var(--daniela-olive-rgb) / 7%);
+
+		.gift-card__icon-medallion {
+			background: rgb(var(--daniela-gold-rgb) / 16%);
+			border-color: rgb(var(--daniela-gold-rgb) / 38%);
+		}
 
 		&:hover {
 			transform: translateY(-2px);
 			box-shadow: 0 8px 24px rgb(var(--daniela-olive-rgb) / 12%);
-			border-color: rgb(var(--daniela-gold-rgb) / 52%);
+			border-color: rgb(var(--daniela-gold-rgb) / 58%);
 		}
 	}
 
@@ -2657,6 +2669,11 @@
 		border: 1px solid rgb(var(--daniela-gold-rgb) / 22%);
 		box-shadow: none;
 		cursor: default;
+
+		.gift-card__icon-medallion {
+			background: rgb(var(--daniela-olive-rgb) / 10%);
+			border-color: rgb(var(--daniela-olive-rgb) / 22%);
+		}
 
 		// Remove misleading interactive affordances (hover lift / shadow)
 		&:hover {
