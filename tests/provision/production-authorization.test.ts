@@ -81,6 +81,12 @@ const APPROVED_MUTATORS: MutatorSpec[] = [
 		preflightPatterns: [/evaluatePromotionBackupGate/, /BACKUP_REQUIRED/],
 		family: 'draft_repair',
 	},
+	{
+		file: 'scripts/provision/draft-restore-cli.ts',
+		firstWritePattern: /applyRestoreSql\s*\(\s*\{/,
+		preflightPatterns: [/evaluatePromotionBackupGate/, /BACKUP_REQUIRED/],
+		family: 'draft_repair',
+	},
 ];
 
 function toPosix(path: string): string {
