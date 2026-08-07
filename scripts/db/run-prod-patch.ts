@@ -16,7 +16,7 @@ import { requireOwnerProductionApply } from './owner-production-apply.ts';
  *
  * Narrow owner-only path for reviewed manual SQL patches that cannot yet be
  * expressed as versioned supabase/migrations/*. Not a bypass for
- * invitation:promote or db:prod:migrate. Default operator mode is lint-only
+ * invitation:release or db:migrate. Default operator mode is lint-only
  * (--dry-run). --apply requires interactive owner TTY confirmation.
  */
 
@@ -26,7 +26,7 @@ function printUsage(): void {
 		'       pnpm db:prod:patch -- --apply --owner-user-id <UUID> --file <production-patch.sql>',
 	);
 	console.error(
-		'Owner-only specialized maintenance. Prefer supabase/migrations + db:prod:migrate for schema and invitation:promote for managed content.',
+		'Owner-only specialized maintenance. Prefer supabase/migrations + db:migrate for schema and invitation:release for managed content.',
 	);
 	console.error(
 		'Apply requires `pnpm release-check` evidence and an interactive TTY confirmation.',
@@ -141,7 +141,7 @@ export async function runProdPatchMain(): Promise<void> {
 		console.info(`Production patch dry-run passed lint: ${path}`);
 		console.info('No database connection was opened and no SQL was executed.');
 		console.info(
-			'Disposition: RESTRICT_OWNER_ONLY specialized maintenance — not invitation:promote and not db:prod:migrate.',
+			'Disposition: RESTRICT_OWNER_ONLY specialized maintenance — not invitation:release and not db:migrate.',
 		);
 		process.exit(0);
 	}

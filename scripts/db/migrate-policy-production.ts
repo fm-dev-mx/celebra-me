@@ -26,6 +26,7 @@ import {
 	redactDbUrl,
 	runCommand,
 } from './db-workflow-lib.ts';
+import { requireCurrentDisposableMigrationProof } from './disposable-migration-proof.ts';
 import {
 	assertHostedCompatibilityOrFail,
 	evaluateHostedCompatibilityForPlan,
@@ -75,7 +76,7 @@ function assertProductionMigratePerimeter(dbUrl: string): void {
 			code: 'PRODUCTION_TARGET_MISMATCH',
 			remediation: [
 				'Confirme PROD_DB_URL del proyecto Production configurado.',
-				'Reintente pnpm db:prod:migrate.',
+				'Reintente pnpm db:migrate -- --target production.',
 			],
 		});
 	}
@@ -86,7 +87,7 @@ function assertProductionMigratePerimeter(dbUrl: string): void {
 			cause: guard.errors.join('; ') || 'guardProduction rechazó la operación migrate.',
 			code: 'PRODUCTION_GUARD_BLOCKED',
 			remediation: [
-				'Use únicamente pnpm db:prod:migrate para mutaciones de schema en Production.',
+				'Use únicamente pnpm db:migrate -- --target production para mutaciones de schema en Production.',
 				'No intente bypasses de db-guard ni supabase db push directo.',
 			],
 		});
@@ -116,7 +117,7 @@ function runProductionAudit(ctx: { session?: MigratePolicySession }, quiet: bool
 				'Ejecute pnpm db:prod:audit y revise el informe.',
 				'Corrija SCHEMA_DRIFT o errores de objetos antes de reintentar.',
 			],
-			retryCommand: 'pnpm db:prod:migrate',
+			retryCommand: 'pnpm db:migrate -- --target production',
 		});
 	}
 	if (!quiet) {
@@ -157,7 +158,7 @@ function runCriticalBackup(
 		planId: plan?.planId,
 		pendingVersions: plan?.pendingVersions,
 		reuseExisting: phase === 'pre',
-		retryCommand: 'pnpm db:prod:migrate -- --apply',
+		retryCommand: 'pnpm db:migrate -- --target production --apply',
 		operationLabel:
 			phase === 'pre'
 				? 'la autorización de la migración'
@@ -188,7 +189,7 @@ function assertPreBackupCoverageBeforeAuthorize(ctx: {
 		prodDbUrl: ctx.dbUrl,
 		manifestPath,
 		maxAgeMs: ctx.session?.preBackupMaxAgeMs ?? CRITICAL_BACKUP_RPO_MS,
-		retryCommand: 'pnpm db:prod:migrate -- --apply',
+		retryCommand: 'pnpm db:migrate -- --target production --apply',
 	});
 	rememberCoverage(ctx.session, check, ctx.session?.preBackupReused === true);
 }
@@ -209,7 +210,7 @@ function validatePendingVersions(
 					'Revise el conjunto pendiente real con un preflight.',
 					'Ajuste --expected al conjunto exacto o omita el pin.',
 				],
-				retryCommand: 'pnpm db:prod:migrate',
+				retryCommand: 'pnpm db:migrate -- --target production',
 				affected: { label: 'Detalles', items: [...compare.errors] },
 			});
 		}
@@ -260,6 +261,7 @@ export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 		const priorBuilds = beginPlanBuild(ctx.session);
 		const quiet = mode === 'apply' || priorBuilds > 0;
 
+		requireCurrentDisposableMigrationProof(fail);
 		runProductionAudit(ctx, quiet);
 
 		if (!quiet) {

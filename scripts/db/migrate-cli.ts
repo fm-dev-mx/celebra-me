@@ -2,8 +2,7 @@
  * Canonical schema migration CLI — adapters only (no embedded DB mutation logic).
  * Help/parse paths stay free of orchestrator imports.
  *
- * Public Production operator entry: pnpm db:prod:migrate
- * Multi-env engine: pnpm db:migrate -- --target <env>
+ * Canonical operator entry: pnpm db:migrate -- --target <env>
  */
 
 import { select } from '@inquirer/prompts';
@@ -26,7 +25,7 @@ function writeError(error: unknown, target: MigrateCliArgs['target'] = null): vo
 		title: 'No se pudo completar la operación',
 		retryCommand:
 			target === 'production'
-				? 'pnpm db:prod:migrate'
+				? 'pnpm db:migrate -- --target production'
 				: target
 					? `pnpm db:migrate -- --target ${target}`
 					: 'pnpm db:migrate -- --help',
@@ -70,7 +69,7 @@ function writeApplyHint(
 ): void {
 	const expectedSuffix = expectedPin ? ` --expected ${expectedPin.join(',')}` : '';
 	if (target === 'production') {
-		writeHuman(`Para aplicar: pnpm db:prod:migrate -- --apply${expectedSuffix}`);
+		writeHuman(`Para aplicar: pnpm db:migrate -- --target production --apply${expectedSuffix}`);
 		return;
 	}
 	if (target === 'preview') {
@@ -99,6 +98,7 @@ function emitPlan(
 type BaseMigrateInput = {
 	target: NonNullable<MigrateCliArgs['target']>;
 	expectedPin: readonly string[] | null;
+	maxVersion?: string | null;
 	env: NodeJS.ProcessEnv;
 	isInteractive: boolean;
 };
@@ -204,11 +204,11 @@ function writeMissingTargetFailure(): void {
 	writeHuman(
 		formatOperatorFailure({
 			title: 'Falta el destino',
-			cause: 'Sin TTY debe indicar --target <local|preview|production|disposable-test>, o use un alias (db:local:migrate / db:preview:migrate / db:prod:migrate).',
+			cause: 'Sin TTY debe indicar --target <local|preview|production|disposable-test>.',
 			code: 'TARGET_REQUIRED',
 			remediation: [
 				'En terminal interactiva: pnpm db:migrate (selector con Cancelar por defecto)',
-				'Para Production: pnpm db:prod:migrate',
+				'Para Production: pnpm db:migrate -- --target production',
 				'Ayuda: pnpm db:migrate -- --help',
 			],
 			retryCommand: 'pnpm db:migrate -- --help',
@@ -264,10 +264,16 @@ export async function runMigrateCli(argv: string[] = process.argv): Promise<void
 		return;
 	}
 
+	if (parsed.maxVersion && target !== 'disposable-test') {
+		writeError(new Error('--max-version is only valid with --target disposable-test.'), target);
+		return;
+	}
+
 	const guided = shouldUseGuidedMenu(parsed, isTty);
 	const baseInput: BaseMigrateInput = {
 		target,
 		expectedPin,
+		maxVersion: parsed.maxVersion,
 		env: process.env,
 		isInteractive: isTty,
 	};

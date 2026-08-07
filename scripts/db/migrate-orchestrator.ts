@@ -23,12 +23,7 @@ import { previewMigratePolicy } from './migrate-policy-preview.ts';
 import { productionMigratePolicy } from './migrate-policy-production.ts';
 import { disposableMigratePolicy } from './migrate-policy-disposable.ts';
 import { formatPlanReview, formatPlanReviewCompact } from './migrate-plan-format.ts';
-import {
-	labelTarget,
-	operatorSymbol,
-	writeHuman,
-	OperatorError,
-} from './operator-cli-ux.ts';
+import { labelTarget, operatorSymbol, writeHuman, OperatorError } from './operator-cli-ux.ts';
 
 export { formatPlanReview, formatPlanReviewCompact };
 
@@ -61,6 +56,8 @@ export interface OrchestrateMigrateInput {
 	target: MigrateTarget;
 	mode: MigrateMode;
 	expectedPin: readonly string[] | null;
+	/** Disposable-only migration cutoff (baseline / truncated proof). */
+	maxVersion?: string | null;
 	env?: NodeJS.ProcessEnv;
 	/** Prior preflight plan from interactive review; apply rejects drift against it. */
 	reviewedPlan?: MigrationPlan | null;
@@ -86,11 +83,7 @@ function withSeams(
 	};
 }
 
-function failPlanDrift(
-	title: string,
-	drifts: readonly string[],
-	target: MigrateTarget,
-): never {
+function failPlanDrift(title: string, drifts: readonly string[], target: MigrateTarget): never {
 	throw new OperatorError({
 		title,
 		cause: 'La evidencia en vivo ya no coincide con el plan revisado.',
@@ -100,10 +93,7 @@ function failPlanDrift(
 			'Revise el plan actualizado.',
 			'Reintente el apply con el plan nuevo (no reutilice un plan anterior).',
 		],
-		retryCommand:
-			target === 'production'
-				? 'pnpm db:prod:migrate'
-				: `pnpm db:migrate -- --target ${target}`,
+		retryCommand: `pnpm db:migrate -- --target ${target}`,
 		noChangesMessage:
 			target === 'production'
 				? undefined
@@ -124,11 +114,7 @@ function assertReviewDrift(
 		REVIEW_DRIFT_FIELDS.has(field),
 	);
 	if (explicit.length > 0) {
-		failPlanDrift(
-			'El plan revisado ya no coincide con la evidencia en vivo',
-			explicit,
-			target,
-		);
+		failPlanDrift('El plan revisado ya no coincide con la evidencia en vivo', explicit, target);
 	}
 }
 
@@ -141,6 +127,7 @@ export function preflightMigrate(input: OrchestrateMigrateInput): MigrationPlan 
 		policy.resolveContext({
 			expectedPin: input.expectedPin,
 			env: input.env,
+			maxVersion: input.maxVersion,
 		}),
 		input,
 	);
@@ -159,12 +146,15 @@ export async function orchestrateMigrate(
 		policy.resolveContext({
 			expectedPin: input.expectedPin,
 			env: input.env,
+			maxVersion: input.maxVersion,
 		}),
 		input,
 	);
 
 	if (input.mode !== 'apply') {
-		fail('orchestrateMigrate only supports mode=apply; use preflightMigrate for read-only planning.');
+		fail(
+			'orchestrateMigrate only supports mode=apply; use preflightMigrate for read-only planning.',
+		);
 	}
 
 	if (input.remindConcurrencyRisk !== false && input.target === 'production') {

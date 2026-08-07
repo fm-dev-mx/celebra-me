@@ -1,12 +1,18 @@
 /**
  * Persistent-local schema migration policy.
- * No hosted release, backup, or authorization requirements.
+ * Requires current disposable migration proof; no hosted release/backup/auth.
  */
 
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { classifyDbTarget, verifyLocalIdentity, LOCAL_DB_URL } from './db-guard.ts';
 import { getValidatedMigrationFiles, PROJECT_ROOT } from './apply-migrations.ts';
+import { requireCurrentDisposableMigrationProof } from './disposable-migration-proof.ts';
+import {
+	assertCompatibilityOrFail,
+	evaluateMigrationDeploymentCompatibility,
+	loadMigrationRolloutRegistry,
+} from './migration-deployment-compatibility.ts';
 import {
 	ensureSchemaMigrationsTable,
 	executePsqlAtomicPending,
@@ -57,6 +63,7 @@ export const localMigratePolicy: MigrateEnvironmentPolicy = {
 	},
 
 	buildPlan(ctx, mode) {
+		requireCurrentDisposableMigrationProof(fail);
 		const worktree = readGitWorktreeState();
 		let pendingVersions = discoverLocalPending(ctx.dbUrl);
 		if (ctx.expectedPin) {
@@ -69,6 +76,20 @@ export const localMigratePolicy: MigrateEnvironmentPolicy = {
 			pendingVersions = [...ctx.expectedPin].filter((v) => v !== 'none');
 		}
 
+		const applied = readAppliedMigrationVersions(ctx.dbUrl);
+		const registry = loadMigrationRolloutRegistry();
+		const compatibility = evaluateMigrationDeploymentCompatibility({
+			target: 'local',
+			targetReleaseSha: null,
+			deployedAppSha: null,
+			deployedAppCapabilities: [],
+			dbAppliedVersions: applied,
+			candidateVersions: pendingVersions,
+			targetReleaseMigrationVersions: pendingVersions,
+			registry,
+		});
+		assertCompatibilityOrFail(compatibility, fail);
+
 		return buildMigrationPlan({
 			target: 'local',
 			mode,
@@ -77,10 +98,13 @@ export const localMigratePolicy: MigrateEnvironmentPolicy = {
 			pendingVersions,
 			expectedPin: ctx.expectedPin ? [...ctx.expectedPin] : null,
 			phaseByVersion: Object.fromEntries(
-				pendingVersions.map((v) => [v, 'unspecified' as const]),
+				pendingVersions.map((v) => [
+					v,
+					compatibility.phaseByVersion[v] ?? ('unspecified' as const),
+				]),
 			),
-			compatibilityStatus: 'allow',
-			compatibilityReasons: ['Local target is not gated by hosted deployment identity.'],
+			compatibilityStatus: compatibility.status,
+			compatibilityReasons: compatibility.reasons,
 			releaseIdentity: { kind: 'none', value: null },
 			deployedAppIdentity: { sha: null, capabilities: [] },
 			authRequirement: 'none',

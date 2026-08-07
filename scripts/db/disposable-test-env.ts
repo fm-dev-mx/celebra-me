@@ -375,32 +375,15 @@ function printReady(): void {
 }
 
 function applyDisposableMigrations(options: { isBaseline: boolean; maxVersion?: string }): void {
-	// Full workspace apply uses the shared migrate policy/executor. Truncated
-	// baseline/--max-version remains on the disposable-only apply-migrations path.
-	if (!options.isBaseline && !options.maxVersion) {
-		const applyResult = runCommand('npx', [
-			'-y',
-			'tsx',
-			'scripts/db/migrate-cli.ts',
-			'--target',
-			'disposable-test',
-			'--apply',
-			'--no-interactive',
-		]);
-		if (applyResult.status !== 0) {
-			fail(`Migration failure: ${applyResult.stderr || applyResult.stdout}`);
-		}
-		console.info(applyResult.stdout);
-		console.info('Migrations applied successfully via shared disposable migrate policy.');
-		return;
-	}
-
+	// Full and cutoff applies share the disposable migrate policy/executor.
 	const applyArgs = [
 		'-y',
 		'tsx',
-		'scripts/db/apply-migrations.ts',
-		'--db-url',
-		DISPOSABLE_DB_URL,
+		'scripts/db/migrate-cli.ts',
+		'--target',
+		'disposable-test',
+		'--apply',
+		'--no-interactive',
 	];
 	if (options.isBaseline) {
 		applyArgs.push('--max-version', BASELINE_CUTOFF_VERSION);
@@ -412,7 +395,7 @@ function applyDisposableMigrations(options: { isBaseline: boolean; maxVersion?: 
 		fail(`Migration failure: ${applyResult.stderr || applyResult.stdout}`);
 	}
 	console.info(applyResult.stdout);
-	console.info('Migrations applied successfully.');
+	console.info('Migrations applied successfully via shared disposable migrate policy.');
 }
 
 export function cmdReset(): void {

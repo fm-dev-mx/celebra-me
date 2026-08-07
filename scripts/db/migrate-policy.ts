@@ -35,6 +35,11 @@ export interface MigratePolicyContext {
 	dbUrl: string;
 	/** Optional expected pin from shared parser. */
 	expectedPin: readonly string[] | null;
+	/**
+	 * Disposable-only cutoff for baseline / truncated applies.
+	 * Full proof receipts are written only when this is unset.
+	 */
+	maxVersion?: string | null;
 	env: NodeJS.ProcessEnv;
 	/** Mutable session bag shared across rebuilds within one orchestration. */
 	session?: MigratePolicySession;
@@ -50,6 +55,7 @@ export interface MigrateEnvironmentPolicy {
 	resolveContext(input: {
 		expectedPin: readonly string[] | null;
 		env?: NodeJS.ProcessEnv;
+		maxVersion?: string | null;
 	}): MigratePolicyContext;
 
 	/** Build an immutable plan from live evidence (read-only). */

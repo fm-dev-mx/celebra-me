@@ -10,10 +10,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fail, runCommand, type CommandResult } from './db-workflow-lib.ts';
-import {
-	formatOperatorFailure,
-	parsePorcelainDirtyFiles,
-} from './operator-cli-ux.ts';
+import { formatOperatorFailure, parsePorcelainDirtyFiles } from './operator-cli-ux.ts';
 
 export const RELEASE_CHECK_EVIDENCE_PATH = resolve(
 	process.cwd(),
@@ -54,8 +51,7 @@ export function readGitWorktreeState(
 	return {
 		sha,
 		clean: dirtyCount === 0,
-		dirtySummary:
-			dirtyCount === 0 ? '' : `${dirtyCount} archivo(s): ${dirtyFiles.join(' | ')}`,
+		dirtySummary: dirtyCount === 0 ? '' : `${dirtyCount} archivo(s): ${dirtyFiles.join(' | ')}`,
 	};
 }
 
@@ -86,7 +82,7 @@ function failDirtyWorktree(state: GitWorktreeState, cause: string): never {
 				'Ejecute `pnpm release-check` sobre el HEAD limpio.',
 				'Reintente el comando de Production apply.',
 			],
-			retryCommand: 'pnpm release-check && pnpm db:prod:migrate',
+			retryCommand: 'pnpm release-check && pnpm db:migrate -- --target production',
 			affected: {
 				label: 'Archivos afectados',
 				items,
@@ -106,7 +102,10 @@ export function assertCleanGitWorktree(state: GitWorktreeState = readGitWorktree
 	return state.sha;
 }
 
-export function writeReleaseCheckEvidence(evidence: ReleaseCheckEvidence, path = RELEASE_CHECK_EVIDENCE_PATH): void {
+export function writeReleaseCheckEvidence(
+	evidence: ReleaseCheckEvidence,
+	path = RELEASE_CHECK_EVIDENCE_PATH,
+): void {
 	mkdirSync(dirname(path), { recursive: true });
 	writeFileSync(path, `${JSON.stringify(evidence, null, 2)}\n`, 'utf8');
 }
@@ -196,11 +195,13 @@ export function ensureValidReleaseCheckEvidence(
 	});
 }
 
-export function runReleaseCheck(options: {
-	runner?: typeof runCommand;
-	evidencePath?: string;
-	worktree?: GitWorktreeState;
-} = {}): ReleaseCheckEvidence {
+export function runReleaseCheck(
+	options: {
+		runner?: typeof runCommand;
+		evidencePath?: string;
+		worktree?: GitWorktreeState;
+	} = {},
+): ReleaseCheckEvidence {
 	const runner = options.runner ?? runCommand;
 	const worktree = options.worktree ?? readGitWorktreeState();
 	const sha = assertCleanGitWorktree(worktree);
@@ -220,7 +221,9 @@ export function runReleaseCheck(options: {
 		const result: CommandResult = runner('pnpm', step.args, { throwOnError: false });
 		if (result.status !== 0) {
 			clearReleaseCheckEvidence(evidencePath);
-			fail(`release-check failed during pnpm ${step.args.join(' ')} (exit ${result.status}).`);
+			fail(
+				`release-check failed during pnpm ${step.args.join(' ')} (exit ${result.status}).`,
+			);
 		}
 	}
 

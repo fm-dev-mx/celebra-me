@@ -88,7 +88,25 @@ describe('migration / deployment compatibility contract', () => {
 		expect(result.phaseByVersion['20260730220544']).toBe('expand');
 	});
 
-	it('blocks hosted candidates that lack an explicit rollout registry phase', () => {
+	it('allows ordinary hosted candidates without an explicit rollout registry phase', () => {
+		// 20260806120000 is expand in the real registry but omitted here to prove
+		// ordinary SQL does not require ceremony when the migration file exists.
+		const ordinaryVersion = '20260806120000';
+		const result = evaluateMigrationDeploymentCompatibility({
+			target: 'production',
+			targetReleaseSha: 'abc1234',
+			deployedAppSha: null,
+			deployedAppCapabilities: [],
+			dbAppliedVersions: ['20260730113000'],
+			candidateVersions: [ordinaryVersion],
+			targetReleaseMigrationVersions: [...releaseVersions, ordinaryVersion],
+			registry,
+		});
+		expect(result.status).toBe('allow');
+		expect(result.phaseByVersion[ordinaryVersion]).toBe('unspecified');
+	});
+
+	it('blocks hosted candidates when the migration SQL file cannot be classified', () => {
 		const result = evaluateMigrationDeploymentCompatibility({
 			target: 'production',
 			targetReleaseSha: 'abc1234',
@@ -100,8 +118,7 @@ describe('migration / deployment compatibility contract', () => {
 			registry,
 		});
 		expect(result.status).toBe('block');
-		expect(result.phaseByVersion['20990101000000']).toBe('unspecified');
-		expect(result.reasons.join(' ')).toMatch(/lacks an explicit rollout phase/);
+		expect(result.reasons.join(' ')).toMatch(/Unable to classify SQL risk|Migration file not found/);
 	});
 
 	it('blocks a migration absent from the authorized target release', () => {

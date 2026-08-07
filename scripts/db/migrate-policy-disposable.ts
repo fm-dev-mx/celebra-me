@@ -1,6 +1,7 @@
 /**
  * Disposable-test schema migration policy.
  * Destructive apply allowed only against disposable-test classification.
+ * Full applies write a disposable migration proof receipt for Local/Hosted gates.
  */
 
 import { DISPOSABLE_DB_URL, redactDbUrl } from './db-target-config.ts';
@@ -8,6 +9,12 @@ import {
 	enforceDisposableTargetOnly,
 	getValidatedMigrationFiles,
 } from './apply-migrations.ts';
+import { writeDisposableMigrationProof } from './disposable-migration-proof.ts';
+import {
+	assertCompatibilityOrFail,
+	evaluateMigrationDeploymentCompatibility,
+	loadMigrationRolloutRegistry,
+} from './migration-deployment-compatibility.ts';
 import {
 	ensureSchemaMigrationsTable,
 	executePsqlAtomicDisposable,
@@ -29,6 +36,7 @@ export const disposableMigratePolicy: MigrateEnvironmentPolicy = {
 		return {
 			dbUrl,
 			expectedPin: input.expectedPin,
+			maxVersion: input.maxVersion ?? null,
 			env: input.env ?? process.env,
 		};
 	},
@@ -37,7 +45,8 @@ export const disposableMigratePolicy: MigrateEnvironmentPolicy = {
 		const worktree = readGitWorktreeState();
 		ensureSchemaMigrationsTable(ctx.dbUrl);
 		const applied = new Set(readAppliedMigrationVersions(ctx.dbUrl));
-		let pendingVersions = getValidatedMigrationFiles()
+		const maxVersion = ctx.maxVersion ?? undefined;
+		let pendingVersions = getValidatedMigrationFiles(maxVersion)
 			.filter((f) => !applied.has(f.version))
 			.map((f) => f.version);
 
@@ -51,6 +60,19 @@ export const disposableMigratePolicy: MigrateEnvironmentPolicy = {
 			pendingVersions = [...ctx.expectedPin].filter((v) => v !== 'none');
 		}
 
+		const registry = loadMigrationRolloutRegistry();
+		const compatibility = evaluateMigrationDeploymentCompatibility({
+			target: 'disposable-test',
+			targetReleaseSha: null,
+			deployedAppSha: null,
+			deployedAppCapabilities: [],
+			dbAppliedVersions: [...applied],
+			candidateVersions: pendingVersions,
+			targetReleaseMigrationVersions: pendingVersions,
+			registry,
+		});
+		assertCompatibilityOrFail(compatibility, fail);
+
 		return buildMigrationPlan({
 			target: 'disposable-test',
 			mode,
@@ -59,10 +81,13 @@ export const disposableMigratePolicy: MigrateEnvironmentPolicy = {
 			pendingVersions,
 			expectedPin: ctx.expectedPin ? [...ctx.expectedPin] : null,
 			phaseByVersion: Object.fromEntries(
-				pendingVersions.map((v) => [v, 'unspecified' as const]),
+				pendingVersions.map((v) => [
+					v,
+					compatibility.phaseByVersion[v] ?? ('unspecified' as const),
+				]),
 			),
-			compatibilityStatus: 'allow',
-			compatibilityReasons: ['Disposable-test is not gated by hosted deployment identity.'],
+			compatibilityStatus: compatibility.status,
+			compatibilityReasons: compatibility.reasons,
 			releaseIdentity: { kind: 'none', value: null },
 			deployedAppIdentity: { sha: null, capabilities: [] },
 			authRequirement: 'none',
@@ -87,12 +112,30 @@ export const disposableMigratePolicy: MigrateEnvironmentPolicy = {
 		executePsqlAtomicDisposable({
 			dbUrl: ctx.dbUrl,
 			pendingVersions: plan.pendingVersions,
+			maxVersion: ctx.maxVersion ?? undefined,
 		});
 		console.info('✅ Disposable migration application complete.');
 	},
 
 	afterWrite(plan, ctx) {
-		if (plan.pendingVersions.length === 0) return;
-		verifyVersionsInHistory(ctx.dbUrl, plan.pendingVersions);
+		if (plan.pendingVersions.length > 0) {
+			verifyVersionsInHistory(ctx.dbUrl, plan.pendingVersions);
+		}
+		// Full (non-cutoff) applies produce the proof Local/Hosted require.
+		// Cutoff/baseline applies write a marked proof that cannot authorize hosted.
+		const appliedVersions = readAppliedMigrationVersions(ctx.dbUrl);
+		const proof = writeDisposableMigrationProof({
+			appliedVersions,
+			maxVersion: ctx.maxVersion ?? null,
+		});
+		if (proof.maxVersion) {
+			console.info(
+				`Disposable cutoff proof recorded (max-version=${proof.maxVersion}); not valid for Local/Hosted authorization.`,
+			);
+		} else {
+			console.info(
+				`✅ Disposable migration proof recorded (digest=${proof.migrationSetDigest.slice(0, 12)}…).`,
+			);
+		}
 	},
 };

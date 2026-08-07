@@ -11,8 +11,7 @@ const PROJECT_ROOT = path.resolve(__dirname, '..');
 
 const REPORT_FILE = path.join(
 	PROJECT_ROOT,
-	'.agent',
-	'plans',
+	'output',
 	'reports',
 	'data-audit-events-invitations.json',
 );

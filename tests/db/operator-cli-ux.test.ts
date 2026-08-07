@@ -9,10 +9,7 @@ import {
 	shortSha,
 } from '../../scripts/db/operator-cli-ux.ts';
 import { buildMigrationPlan } from '../../scripts/db/migration-plan.ts';
-import {
-	formatPlanReview,
-	formatPlanReviewCompact,
-} from '../../scripts/db/migrate-plan-format.ts';
+import { formatPlanReview, formatPlanReviewCompact } from '../../scripts/db/migrate-plan-format.ts';
 
 describe('operator-cli-ux', () => {
 	it('formats failures with status, remediation, retry, and code last', () => {
@@ -27,7 +24,7 @@ describe('operator-cli-ux', () => {
 					'Ejecute pnpm release-check',
 					'Reintente',
 				],
-				retryCommand: 'pnpm release-check && pnpm db:prod:migrate',
+				retryCommand: 'pnpm release-check && pnpm db:migrate -- --target production',
 				affected: {
 					label: 'Archivos afectados',
 					items: ['scripts/db/owner-production-apply.ts', 'README.md'],
@@ -40,7 +37,9 @@ describe('operator-cli-ux', () => {
 		expect(text).toContain(NO_PRODUCTION_CHANGES);
 		expect(text).toContain('Archivos afectados (2):');
 		expect(text).toContain('- scripts/db/owner-production-apply.ts');
-		expect(text).toContain('Reintento: pnpm release-check && pnpm db:prod:migrate');
+		expect(text).toContain(
+			'Reintento: pnpm release-check && pnpm db:migrate -- --target production',
+		);
 		expect(text.trimEnd().endsWith('Código: DIRTY_WORKTREE')).toBe(true);
 	});
 

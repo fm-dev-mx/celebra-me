@@ -10,6 +10,8 @@ export interface MigrateCliArgs {
 	json: boolean;
 	target: MigrateTarget | null;
 	mode: MigrateMode;
+	/** Disposable-only cutoff (internal/automation; not a human lifecycle flag). */
+	maxVersion: string | null;
 	/** Raw argv retained for shared --expected parser (loaded only on execute). */
 	argv: string[];
 	interactiveForced: boolean | null;
@@ -20,18 +22,11 @@ const TARGETS = new Set<string>(['local', 'preview', 'production', 'disposable-t
 export function printMigrateHelp(): void {
 	process.stderr.write(`db:migrate — Schema migration planning and orchestration
 
-Public Production entry:
-  pnpm db:prod:migrate                      # read-only preflight
-  pnpm db:prod:migrate -- --apply           # owner TTY apply (release-check + backup)
-
-Multi-env engine:
+Canonical entry:
   pnpm db:migrate                           # TTY: select target (Cancelar default)
   pnpm db:migrate -- --target <local|preview|production|disposable-test> [options]
-
-Aliases (preselect target only; same CLI/policy):
-  pnpm db:local:migrate
-  pnpm db:preview:migrate
-  pnpm db:prod:migrate
+  pnpm db:migrate -- --target production    # Production read-only preflight
+  pnpm db:migrate -- --target production --apply # owner TTY apply (release-check + backup)
 
 Options:
   --target <target>     Migration target (TTY selector when omitted; required without TTY)
@@ -60,6 +55,7 @@ export function parseMigrateCliArgs(argv: string[]): MigrateCliArgs {
 			json: false,
 			target: null,
 			mode: 'preflight',
+			maxVersion: null,
 			argv: args,
 			interactiveForced: null,
 		};
@@ -85,6 +81,19 @@ export function parseMigrateCliArgs(argv: string[]): MigrateCliArgs {
 		target = value as MigrateTarget;
 	}
 
+	const maxVersionIdx = args.indexOf('--max-version');
+	let maxVersion: string | null = null;
+	if (maxVersionIdx !== -1) {
+		const value = args[maxVersionIdx + 1];
+		if (!value || !/^\d{14}$/.test(value)) {
+			throw new Error('--max-version requires a 14-digit migration timestamp.');
+		}
+		if (target && target !== 'disposable-test') {
+			throw new Error('--max-version is only valid with --target disposable-test.');
+		}
+		maxVersion = value;
+	}
+
 	let interactiveForced: boolean | null = null;
 	if (args.includes('--interactive')) interactiveForced = true;
 	if (args.includes('--no-interactive')) interactiveForced = false;
@@ -94,6 +103,7 @@ export function parseMigrateCliArgs(argv: string[]): MigrateCliArgs {
 		json,
 		target,
 		mode: apply ? 'apply' : 'preflight',
+		maxVersion,
 		argv: args,
 		interactiveForced,
 	};

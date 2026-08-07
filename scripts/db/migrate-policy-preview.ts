@@ -5,6 +5,7 @@
  */
 
 import { assertPreviewDbUrl, fail, getPreviewDbUrl, redactDbUrl } from './db-workflow-lib.ts';
+import { requireCurrentDisposableMigrationProof } from './disposable-migration-proof.ts';
 import {
 	assertHostedCompatibilityOrFail,
 	evaluateHostedCompatibilityForPlan,
@@ -42,6 +43,7 @@ export const previewMigratePolicy: MigrateEnvironmentPolicy = {
 	},
 
 	buildPlan(ctx, mode) {
+		requireCurrentDisposableMigrationProof(fail);
 		const worktree = readGitWorktreeState();
 		const releaseSha = assertCleanGitWorktree(worktree);
 		writeHuman(

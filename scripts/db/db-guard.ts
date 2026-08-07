@@ -211,7 +211,7 @@ export function guardPreview(classification: ClassificationResult, operation: st
 		if (pattern.test(operation)) {
 			errors.push(
 				`PREVIEW BLOCKED: "${label}" is not permitted against the preview database. ` +
-					`Preview environment schema can be updated via pnpm db:preview:migrate -- --apply (after read-only preflight).`,
+					`Preview environment schema can be updated via pnpm db:migrate -- --target preview --apply (after read-only preflight).`,
 			);
 		}
 	}

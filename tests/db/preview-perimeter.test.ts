@@ -30,20 +30,13 @@ describe('Preview perimeter helpers', () => {
 		expect(source).not.toMatch(/CELEBRA_TARGET_RELEASE_SHA/);
 	});
 
-	it('local and preview migrate aliases invoke the canonical migrate CLI', () => {
+	it('exposes only the canonical schema migrate entrypoint', () => {
 		const pkg = JSON.parse(readFileSync(resolve(process.cwd(), 'package.json'), 'utf8')) as {
 			scripts: Record<string, string>;
 		};
-		expect(pkg.scripts['db:local:migrate']).toBe(
-			'tsx scripts/db/migrate-cli.ts --target local',
-		);
-		expect(pkg.scripts['db:preview:migrate']).toBe(
-			'tsx scripts/db/migrate-cli.ts --target preview',
-		);
-		expect(pkg.scripts['db:prod:migrate']).toBe(
-			'tsx scripts/db/migrate-cli.ts --target production',
-		);
-		expect(pkg.scripts['db:local:migrate']).not.toMatch(/apply-local-migrations/);
-		expect(pkg.scripts['db:preview:migrate']).not.toMatch(/push-preview-migrations/);
+		expect(pkg.scripts['db:migrate']).toBe('tsx scripts/db/migrate-cli.ts');
+		expect(pkg.scripts['db:local:migrate']).toBeUndefined();
+		expect(pkg.scripts['db:preview:migrate']).toBeUndefined();
+		expect(pkg.scripts['db:prod:migrate']).toBeUndefined();
 	});
 });

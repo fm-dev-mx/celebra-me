@@ -77,7 +77,7 @@ export interface BackupRequirementInput {
 	/** ISO timestamp of newest usable Production guest/RSVP dump, if any. */
 	latestBackupCapturedAt: string | null;
 	/**
-	 * When true, `pnpm db:prod:migrate` creates a pre-migration backup automatically.
+	 * When true, `pnpm db:migrate -- --target production` creates a pre-migration backup automatically.
 	 * A separate backup authorization is then only needed for independent coverage gaps.
 	 */
 	migrateWorkflowIncludesAutomaticBackup: boolean;
@@ -477,7 +477,7 @@ export function evaluateProductionBackupRequirement(
 			separateBackupAuthorizationRequired: false,
 			reason:
 				'A fresh pre-migration Production backup is required to capture state immediately before migrate;' +
-				' pnpm db:prod:migrate performs that backup automatically once migrate is authorized.' +
+				' pnpm db:migrate -- --target production performs that backup automatically once migrate is authorized.' +
 				(input.latestBackupCapturedAt
 					? ` Existing dump at ${input.latestBackupCapturedAt} is inventory coverage, not a substitute for the pre-migrate snapshot.`
 					: ''),
@@ -680,7 +680,7 @@ export function buildConsolidatedAuthorizationPlan(input: {
 		items.push({
 			id: 'preview-migrate',
 			status: 'Needs authorization',
-			action: 'Authorize pnpm db:preview:migrate for pending head migrations',
+			action: 'Authorize pnpm db:migrate -- --target preview for pending head migrations',
 			reason: 'Preview is behind head migrations required for a migration-bearing promote.',
 		});
 	}
@@ -696,7 +696,7 @@ export function buildConsolidatedAuthorizationPlan(input: {
 		items.push({
 			id: 'prod-migrate',
 			status: 'Needs authorization',
-			action: 'Authorize pnpm db:prod:migrate (includes automatic pre-migration backup when configured)',
+			action: 'Authorize pnpm db:migrate -- --target production (includes automatic pre-migration backup when configured)',
 			reason: `Production must receive pending migrations before or with ${input.laneDirection}.`,
 		});
 	}

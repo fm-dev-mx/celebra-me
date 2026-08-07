@@ -54,6 +54,8 @@ describe('observability refresh contract', () => {
 		);
 		expect(text).toContain('buildObservabilitySnapshot');
 		expect(text).not.toContain('invitation:update');
+		expect(text).not.toContain('invitation:promote');
+		expect(text).not.toContain('invitation:release');
 		expect(text).not.toContain('child_process');
 		expect(text).not.toContain('invitation-promote');
 		expect(text).not.toContain('apply-migrations');

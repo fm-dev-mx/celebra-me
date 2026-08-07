@@ -11,6 +11,7 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { evaluateMigrationSqlRisk } from './migration-sql-risk.ts';
 
 export type DbMigrateTarget = 'local' | 'preview' | 'production' | 'disposable-test';
 export type RolloutPhase = 'expand' | 'neutral' | 'contract';
@@ -139,6 +140,7 @@ function collectContractReasons(options: {
 
 function evaluateCandidateVersion(options: {
 	version: string;
+	target: DbMigrateTarget;
 	hosted: boolean;
 	targetReleaseSha: string | null;
 	deployedAppSha: string | null;
@@ -159,13 +161,28 @@ function evaluateCandidateVersion(options: {
 		return { phase, reasons };
 	}
 
-	if (hosted && phase === 'unspecified') {
-		reasons.push(
-			`Migration ${version} lacks an explicit rollout phase in supabase/migration-rollout-registry.json. ` +
-				`Hosted candidates must be classified as expand, neutral, or contract before apply. ` +
-				`DROP/REVOKE/TRUNCATE-class changes must never become safe through registry omission.`,
-		);
-		return { phase, reasons };
+	// Static SQL risk: ordinary additive/neutral SQL needs no registry ceremony.
+	// Destructive SQL (post-cutoff) fails closed without contract metadata.
+	// Disposable-test skips contract enforcement so historical DROP/REVOKE can apply for proof.
+	if (/^\d{14}$/.test(version)) {
+		try {
+			const sqlRisk = evaluateMigrationSqlRisk({
+				version,
+				registry,
+				skipContractEnforcement: options.target === 'disposable-test',
+			});
+			if (sqlRisk.blocked) {
+				reasons.push(...sqlRisk.reasons);
+				return { phase, reasons };
+			}
+		} catch (error: unknown) {
+			reasons.push(
+				`Unable to classify SQL risk for migration ${version}: ${
+					error instanceof Error ? error.message : String(error)
+				}`,
+			);
+			return { phase, reasons };
+		}
 	}
 
 	for (const required of entry?.requiresDbCapabilities ?? []) {
@@ -222,6 +239,7 @@ export function evaluateMigrationDeploymentCompatibility(
 	for (const version of candidates) {
 		const evaluated = evaluateCandidateVersion({
 			version,
+			target: input.target,
 			hosted,
 			targetReleaseSha: input.targetReleaseSha,
 			deployedAppSha: input.deployedAppSha,
