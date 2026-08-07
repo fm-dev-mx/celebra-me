@@ -42,18 +42,31 @@ const registry: MigrationRolloutRegistry = {
 const releaseVersions = ['20260730113000', '20260730164613', '20260730220544'];
 
 describe('migration / deployment compatibility contract', () => {
-	it('treats local as unconstrained by hosted deployment identity', () => {
-		const result = evaluateMigrationDeploymentCompatibility({
+	it('treats local and disposable-test as unconstrained by hosted deployment identity even for contract migrations', () => {
+		const resultLocal = evaluateMigrationDeploymentCompatibility({
 			target: 'local',
 			targetReleaseSha: null,
 			deployedAppSha: null,
 			deployedAppCapabilities: [],
 			dbAppliedVersions: ['20260730113000', '20260730164613'],
-			candidateVersions: ['20260730220544'],
+			candidateVersions: ['__historical_rsvp_dml_revoke__'],
 			targetReleaseMigrationVersions: [],
 			registry,
 		});
-		expect(result.status).toBe('allow');
+		expect(resultLocal.status).toBe('allow');
+
+		const resultDisposable = evaluateMigrationDeploymentCompatibility({
+			target: 'disposable-test',
+			targetReleaseSha: null,
+			deployedAppSha: null,
+			deployedAppCapabilities: [],
+			dbAppliedVersions: ['20260730113000', '20260730164613'],
+			candidateVersions: ['__historical_rsvp_dml_revoke__'],
+			targetReleaseMigrationVersions: [],
+			registry,
+		});
+		expect(resultDisposable.status).toBe('allow');
+
 		expect(isHostedMigrateTarget('local')).toBe(false);
 		expect(isHostedMigrateTarget('disposable-test')).toBe(false);
 	});

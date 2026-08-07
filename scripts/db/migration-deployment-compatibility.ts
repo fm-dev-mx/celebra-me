@@ -123,7 +123,10 @@ function collectContractReasons(options: {
 	entry: MigrationRolloutEntry | undefined;
 }): string[] {
 	const reasons: string[] = [];
-	if (options.hosted && (!options.deployedAppSha || !options.deployedAppSha.trim())) {
+	if (!options.hosted) {
+		return reasons;
+	}
+	if (!options.deployedAppSha || !options.deployedAppSha.trim()) {
 		reasons.push(
 			`Contract migration ${options.version} requires CELEBRA_DEPLOYED_APP_SHA proving the replacement application is deployed.`,
 		);
