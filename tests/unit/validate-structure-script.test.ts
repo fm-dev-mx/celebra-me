@@ -58,8 +58,19 @@ function createFixture(skillDomain = 'quality') {
 	writeFixtureFile(
 		root,
 		'.agent/ownership.yaml',
-		['- aspect: "testing"', '  owner: "AGENTS.md"'].join('\n'),
+		[
+			'- aspect: "Task Contract, Goal protocol & Handoff Contract"',
+			'  owner: ".agent/plans/README.md"',
+			'- aspect: "Plans lifecycle & tracked plan governance"',
+			'  owner: ".agent/plans/README.md"',
+			'- aspect: "Git authorization & worktree safety"',
+			'  owner: ".agent/rules/git-safety.md"',
+			'- aspect: "testing"',
+			'  owner: "AGENTS.md"',
+		].join('\n'),
 	);
+	writeFixtureFile(root, '.agent/plans/README.md', '# Plans\n');
+	writeFixtureFile(root, '.agent/rules/git-safety.md', '# Git safety\n');
 	writeFixtureFile(root, '.agent/rules/gatekeeper.md', '# Gatekeeper\n');
 	writeFixtureFile(
 		root,
@@ -68,6 +79,7 @@ function createFixture(skillDomain = 'quality') {
 			'bootstrap:',
 			'  rules:',
 			'    - ".agent/rules/gatekeeper.md"',
+			'    - ".agent/rules/git-safety.md"',
 			'routes:',
 			'  - task_type: "testing"',
 			'    skills:',
@@ -112,6 +124,44 @@ describe('validate-structure script', () => {
 		try {
 			writeFixtureFile(fixtureRoot, '.agent/rules/gatekeeper.md', 'Run `pnpm ci`.\n');
 			expect(validateFixture(fixtureRoot).join('\n')).toContain('use "pnpm run ci"');
+		} finally {
+			rmSync(fixtureRoot, { recursive: true, force: true });
+		}
+	});
+
+	it('rejects terminal plans under active and invalid archived status', () => {
+		const fixtureRoot = createFixture();
+		try {
+			writeFixtureFile(
+				fixtureRoot,
+				'.agent/plans/active/done.md',
+				['---', 'title: Done', 'status: implemented', '---', '# Done'].join('\n'),
+			);
+			writeFixtureFile(
+				fixtureRoot,
+				'.agent/plans/archived/old.md',
+				['---', 'title: Old', 'status: archived', '---', '# Old'].join('\n'),
+			);
+			writeFixtureFile(fixtureRoot, 'CLAUDE.md', '# no\n');
+			const output = validateFixture(fixtureRoot, ['CLAUDE.md']).join('\n');
+			expect(output).toContain('must not remain under plans/active/');
+			expect(output).toContain('status "archived" is invalid');
+			expect(output).toContain('competing provider-owned policy entry point');
+		} finally {
+			rmSync(fixtureRoot, { recursive: true, force: true });
+		}
+	});
+
+	it('rejects machine-specific paths in portable policy files', () => {
+		const fixtureRoot = createFixture();
+		try {
+			writeFixtureFile(
+				fixtureRoot,
+				'.agent/rules/gatekeeper.md',
+				'See C:/Users/alice/celebra/file.md\n',
+			);
+			const output = validateFixture(fixtureRoot, ['.agent/rules/gatekeeper.md']).join('\n');
+			expect(output).toContain('machine-specific path');
 		} finally {
 			rmSync(fixtureRoot, { recursive: true, force: true });
 		}

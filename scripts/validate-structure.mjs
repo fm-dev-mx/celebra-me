@@ -34,9 +34,43 @@ const RECOGNIZED_PLAN_STATUSES = new Set([
 	'accepted',
 	'deferred',
 	'superseded',
-	'archived',
 	'final',
 ]);
+const ACTIVE_DIRECTORY_PLAN_STATUSES = new Set(['draft', 'active', 'blocked']);
+const TERMINAL_PLAN_STATUSES = new Set([
+	'implemented',
+	'validated',
+	'accepted',
+	'deferred',
+	'superseded',
+	'final',
+]);
+const REQUIRED_OWNERSHIP = [
+	{
+		aspect: 'Task Contract, Goal protocol & Handoff Contract',
+		owner: '.agent/plans/README.md',
+	},
+	{
+		aspect: 'Plans lifecycle & tracked plan governance',
+		owner: '.agent/plans/README.md',
+	},
+	{
+		aspect: 'Git authorization & worktree safety',
+		owner: '.agent/rules/git-safety.md',
+	},
+];
+const FORBIDDEN_PROVIDER_ENTRY_POINTS = [
+	'CLAUDE.md',
+	'.cursorrules',
+	'.claude/CLAUDE.md',
+	'GEMINI.md',
+	'.github/copilot-instructions.md',
+];
+const PHYSICAL_PATH_PATTERNS = [
+	/\b[A-Za-z]:[/\\](?:Users|code|home)[/\\][^\s`'")]+/gi,
+	/(?:^|[\s`"'(=])\/(?:Users|home)\/[^\s`'")]+/g,
+	/file:\/\/\/[^\s`'")]+/gi,
+];
 const FORBIDDEN_TRACKED_DIRECTORIES = [
 	'.astro',
 	'.vercel',
@@ -213,6 +247,14 @@ function validateSkills(root) {
 		for (const reference of frontmatter.related_skills ?? []) {
 			relatedSkillReferences.push({ source: relativeFile, reference });
 		}
+		for (const docReference of frontmatter.related_docs ?? []) {
+			const resolvedDoc = path.resolve(root, String(docReference));
+			if (!existsSync(resolvedDoc)) {
+				errors.push(
+					`${relativeFile}: related doc "${docReference}" does not resolve on disk.`,
+				);
+			}
+		}
 	}
 
 	for (const { source, reference } of relatedSkillReferences) {
@@ -285,13 +327,147 @@ function validateActivePlans(root) {
 			errors.push(`${relativeFile}: active plan is missing YAML frontmatter.`);
 			continue;
 		}
+		if (frontmatter.status === 'archived') {
+			errors.push(
+				`${relativeFile}: status "archived" is a directory lifecycle, not a frontmatter status.`,
+			);
+			continue;
+		}
 		if (!RECOGNIZED_PLAN_STATUSES.has(frontmatter.status)) {
 			errors.push(
 				`${relativeFile}: plan status "${frontmatter.status ?? ''}" is not recognized.`,
 			);
+			continue;
+		}
+		if (!ACTIVE_DIRECTORY_PLAN_STATUSES.has(frontmatter.status)) {
+			errors.push(
+				`${relativeFile}: status "${frontmatter.status}" is terminal/inactive and must not remain under plans/active/.`,
+			);
 		}
 	}
 
+	return errors;
+}
+
+function validateArchivedPlans(root) {
+	const errors = [];
+	const archivedRoot = path.join(root, '.agent', 'plans', 'archived');
+	if (!existsSync(archivedRoot)) return errors;
+	const archivedPlans = listMarkdownFilesRecursively(archivedRoot);
+	for (const planFile of archivedPlans) {
+		const relativeFile = normalizePath(path.relative(root, planFile));
+		const frontmatter = parseFrontmatter(readFileSync(planFile, 'utf8'));
+		if (!frontmatter) continue;
+		if (frontmatter.status === 'archived') {
+			errors.push(
+				`${relativeFile}: status "archived" is invalid; use a terminal status such as "final" (directory already means archived).`,
+			);
+		} else if (
+			frontmatter.status &&
+			!RECOGNIZED_PLAN_STATUSES.has(frontmatter.status) &&
+			frontmatter.status !== 'archived'
+		) {
+			errors.push(
+				`${relativeFile}: plan status "${frontmatter.status}" is not recognized.`,
+			);
+		} else if (ACTIVE_DIRECTORY_PLAN_STATUSES.has(frontmatter.status)) {
+			errors.push(
+				`${relativeFile}: status "${frontmatter.status}" belongs under plans/active/, not archived/.`,
+			);
+		} else if (frontmatter.status && !TERMINAL_PLAN_STATUSES.has(frontmatter.status)) {
+			errors.push(
+				`${relativeFile}: archived plan status "${frontmatter.status}" is not a terminal status.`,
+			);
+		}
+	}
+	return errors;
+}
+
+function validateCanonicalOwnership(root) {
+	const errors = [];
+	const file = path.join(root, '.agent', 'ownership.yaml');
+	if (!existsSync(file)) return errors;
+	const content = readFileSync(file, 'utf8');
+	const aspectMatches = [...content.matchAll(/-\s+aspect:\s*["']?([^"'\r\n]+)["']?/g)];
+	const ownerMatches = [...content.matchAll(/\s+owner:\s*["']?([^"'\r\n]+)["']?/g)];
+	/** @type {Map<string, string>} */
+	const owners = new Map();
+	for (let i = 0; i < aspectMatches.length; i++) {
+		owners.set(aspectMatches[i][1].trim(), ownerMatches[i]?.[1]?.trim() ?? '');
+	}
+	for (const required of REQUIRED_OWNERSHIP) {
+		const owner = owners.get(required.aspect);
+		if (!owner) {
+			errors.push(
+				`.agent/ownership.yaml: missing required aspect "${required.aspect}".`,
+			);
+			continue;
+		}
+		if (normalizePath(owner) !== normalizePath(required.owner)) {
+			errors.push(
+				`.agent/ownership.yaml: aspect "${required.aspect}" must be owned by "${required.owner}" (found "${owner}").`,
+			);
+		}
+	}
+	return errors;
+}
+
+function validateProviderEntryPoints(_root, trackedFiles) {
+	const errors = [];
+	const tracked = new Set(trackedFiles.map(normalizePath));
+	for (const entry of FORBIDDEN_PROVIDER_ENTRY_POINTS) {
+		const normalized = normalizePath(entry);
+		if (tracked.has(normalized)) {
+			errors.push(
+				`${normalized}: competing provider-owned policy entry point is forbidden; AGENTS.md is the only project entry point.`,
+			);
+		}
+	}
+	return errors;
+}
+
+function isPortablePathScanTarget(relativeFile) {
+	const file = normalizePath(relativeFile);
+	if (file === 'AGENTS.md') return true;
+	if (file.startsWith('docs/archive/')) return false;
+	if (file.startsWith('.agent/plans/archived/')) return false;
+	if (file.startsWith('.agent/tmp/')) return false;
+	if (file.startsWith('.agent/')) return true;
+	if (file.startsWith('docs/')) return true;
+	if (file.startsWith('scripts/')) return true;
+	return false;
+}
+
+function validatePortablePaths(root, trackedFiles) {
+	const errors = [];
+	for (const trackedFile of trackedFiles) {
+		const relativeFile = normalizePath(trackedFile);
+		if (!isPortablePathScanTarget(relativeFile)) continue;
+		const absolute = path.join(root, ...relativeFile.split('/'));
+		if (!existsSync(absolute)) continue;
+		let content;
+		try {
+			content = readFileSync(absolute, 'utf8');
+		} catch {
+			continue;
+		}
+		const lines = content.split(/\r?\n/);
+		lines.forEach((lineText, idx) => {
+			for (const pattern of PHYSICAL_PATH_PATTERNS) {
+				pattern.lastIndex = 0;
+				let match;
+				while ((match = pattern.exec(lineText)) !== null) {
+					const matchStr = match[0].trim();
+					if (matchStr.includes('file:///workspace/')) continue;
+					if (/<(?:u|user|path|repo)[^>]*>/i.test(matchStr)) continue;
+					if (/someone|example\.com|placeholder/i.test(matchStr)) continue;
+					errors.push(
+						`${relativeFile}:${idx + 1}: machine-specific path "${matchStr}" is forbidden in portable policy/docs/scripts.`,
+					);
+				}
+			}
+		});
+	}
 	return errors;
 }
 
@@ -468,16 +644,21 @@ function detectOrphanedGuidance(root, skillNames) {
 
 export function validateStructure({ root = process.cwd(), trackedFiles } = {}) {
 	const skills = validateSkills(root);
+	const tracked = trackedFiles ?? getTrackedFiles(root);
 	return [
 		...skills.errors,
 		...validateRoles(root, skills.skillNames),
 		...validateIndex(root),
 		...validateActivePlans(root),
+		...validateArchivedPlans(root),
 		...validateCanonicalCiInvocation(root),
 		...validateOwnershipYaml(root),
+		...validateCanonicalOwnership(root),
 		...validateRoutingMatrixYaml(root, skills.skillNames),
 		...detectOrphanedGuidance(root, skills.skillNames),
-		...validateTrackedFiles(root, trackedFiles ?? getTrackedFiles(root)),
+		...validateProviderEntryPoints(root, tracked),
+		...validatePortablePaths(root, tracked),
+		...validateTrackedFiles(root, tracked),
 	].sort();
 }
 
