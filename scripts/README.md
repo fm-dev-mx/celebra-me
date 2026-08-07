@@ -39,11 +39,9 @@ are no longer registered. Use `pnpm dbs` and `pnpm invitation:*` for invitation 
 | ------------------------------------ | ------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------- |
 | `pnpm dbs`                           | Human / agent | `scripts/provision/dbs-cli.ts`                                | Read-only status matrix (`migration_history_parity` + managed content)          |
 | `pnpm dbs --compact`                 | Human / agent | `scripts/provision/managed-status.ts`                         | Compact CONTENT + SCHEMA (Git-hook friendly)                                    |
-| `pnpm invitation:update`             | Human / agent | `scripts/provision/invitation-update-cli.ts`                  | Define, plan, apply, package, and approve managed invitations for Local/Preview |
+| `pnpm invitation:release`            | Human / agent | `scripts/provision/invitation-release-cli.ts`                 | Define, plan, apply, approve, and release managed invitations                   |
 | `pnpm invitation:reconcile`          | Human / agent | `scripts/provision/invitation-reconcile-cli.ts`               | Guided Local/Preview managed divergence reconciliation                          |
 | `pnpm invitation:content-parity`     | Human / agent | `scripts/provision/content-parity-cli.ts`                     | Read-only semantic content parity (excludes RSVP/PII)                           |
-| `pnpm invitation:promote`            | Owner TTY     | `scripts/provision/invitation-promote-cli.ts`                 | Owner-only Production managed-content promotion from Preview DB approval        |
-| `pnpm invitation:approvals:migrate`  | Human / agent | `scripts/provision/preview-approval-migrate.ts`               | One-time legacy JSON → Preview DB (dry-run default; retire after backfill)      |
 | `pnpm invitation:preview-fixture`    | Human / agent | `scripts/provision/preview-e2e-fixture-cli.ts`                | Preview-only E2E fixture bootstrap (not Dashboard create)                       |
 | `pnpm invitation:purge-by-id`        | Human / agent | `scripts/provision/invitation-id-purge-cli.ts`                | Preview-only UUID purge with dry-run audit                                      |
 | `pnpm invitation:cross-db-reconcile` | Human / agent | `scripts/provision/cross-db-invitation-reconciliation-cli.ts` | Read-only cross-DB invitation inventory parity                                  |
@@ -91,13 +89,9 @@ selected target aborts the complete mutation phase.
 | `pnpm db:branch:remediate-disposable`      | Agent          | `scripts/db/`  | verify then rebuild disposable-test only                              |
 | `pnpm release-check`                       | Owner          | `scripts/db/`  | clean-HEAD type-check + test + build; writes release evidence         |
 | `pnpm db:migrate`                          | Human/agent    | `scripts/db/`  | Canonical schema migrate CLI (`migrate-cli.ts`; TTY Cancelar default) |
-| `pnpm db:local:migrate`                    | Human/agent    | `scripts/db/`  | alias → `migrate-cli.ts --target local` (preflight-first)             |
-| `pnpm db:preview:migrate`                  | Human/agent    | `scripts/db/`  | alias → `migrate-cli.ts --target preview`                             |
-| `pnpm db:prod:migrate`                     | Owner          | `scripts/db/`  | alias → `migrate-cli.ts --target production`                          |
 | `pnpm db:local:audit`                      | Human/agent    | `scripts/db/`  | object-audit readiness for persistent-local                           |
 | `pnpm db:preview:audit`                    | Human/agent    | `scripts/db/`  | object-audit readiness for Preview                                    |
 | `pnpm db:preview:sync-invitations`         | Human/agent    | `scripts/db/`  | Prod→Preview content mirror (specialized; RSVP reset)                 |
-| `pnpm db:sync`                             | Automation     | `scripts/db/`  | content orchestration facade; TTY wizard is compatibility-only        |
 | `pnpm db:disposable:start`                 | Human/agent    | `scripts/db/`  | start disposable containers                                           |
 | `pnpm db:disposable:reset`                 | Human/agent/CI | `scripts/db/`  | reset isolated disposable test environment                            |
 | `pnpm db:disposable:test`                  | Human          | `scripts/db/`  | pgTAP + migration tests (also embedded in validate pipeline)          |

@@ -30,9 +30,8 @@ Load in this order; do not copy semantics across layers:
    authorizes implementation:
    - `docs/core/invitation-creation-contract.md`
    - `docs/domains/intake/production-flow.md`
-   - `.agent/workflows/managed-invitation-lifecycle.md`
    - `.agent/rules/invitation-production.md`
-   - live `pnpm invitation:update -- --help`
+   - live `pnpm invitation:release -- --help`
 
 Do **not** load `intake-publishing.md` during preparation.
 
@@ -96,11 +95,11 @@ Summary:
 - prepReadiness state identical to helper outcome
 - Optional owner decision pack (single round when feasible)
 - Explicit statement that **envReadiness** is still owned by `invitation-readiness` /
-  `pnpm invitation:update --status`
+  `pnpm invitation:release --status`
 
 ## Non-goals
 
-Do not create a parallel creation stack, change `invitation:update` semantics, ingest WhatsApp
+Do not create a parallel creation stack, change `invitation:release` semantics, ingest WhatsApp
 attachments as managed assets, replace dashboard intake, pull `intake-publishing` into prep, or
 redesign invitation components. Do not extend the validate CLI beyond prep hygiene/alignment without
 owner scope.

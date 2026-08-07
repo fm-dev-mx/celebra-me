@@ -122,12 +122,9 @@ routes:
       rules:
           - '.agent/rules/invitation-production.md'
           - '.agent/rules/intake-publishing.md'
-      workflows:
-          - '.agent/workflows/managed-invitation-lifecycle.md'
       docs:
           - 'docs/core/invitation-creation-contract.md'
           - 'docs/domains/intake/production-flow.md'
-          - 'docs/domains/intake/promote-cheatsheet.md'
           - 'docs/core/content-parity-rsvp-isolation.md'
           - 'docs/domains/database/cheatsheets/README.md'
 

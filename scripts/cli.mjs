@@ -39,10 +39,9 @@ ${Object.keys(SCRIPTS)
 
 Canonical invitation / environment status commands (not via ops):
   - pnpm dbs
-  - pnpm invitation:update
+  - pnpm invitation:release
   - pnpm invitation:reconcile
   - pnpm invitation:content-parity
-  - pnpm invitation:promote
 
 Global Options:
   --help, -h     Show this help message

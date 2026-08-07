@@ -114,7 +114,7 @@ unresolved demo/palette choices in the owner pack — never as `verified`.
 
 **Agent says / does:** Compute readiness with `evaluatePreparationReadiness` (and
 `summarizeAssetQuality`). Write the **same** state into Markdown. Cite helper outcome in the
-session. Vocabulary: **prepReadiness** (this) vs **envReadiness** (`invitation:update --status` /
+session. Vocabulary: **prepReadiness** (this) vs **envReadiness** (`invitation:release --status` /
 `invitation-readiness.ts`) — never conflate.
 
 **Rules:**

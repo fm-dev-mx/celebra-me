@@ -16,7 +16,7 @@ promotion. Those remain:
 
 | Corpus                         | Purpose                                                                                         | SSOT                                                |
 | ------------------------------ | ----------------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| **Canonical Managed Registry** | Invitations controlled by `definition → invitation:update → Preview → invitation:promote`       | `scripts/provision/invitations/registry.ts`         |
+| **Canonical Managed Registry** | Invitations controlled by `definition → invitation:release → Preview → Production`               | `scripts/provision/invitations/registry.ts`         |
 | **Local Render Corpus**        | Every currently supported Production **client** invitation required for Local render regression | `scripts/provision/local-render-corpus/registry.ts` |
 | **Demo Corpus**                | Marketing/theme demonstration coverage (`kind=demo`, Astro `event-demos`)                       | `src/content/event-demos/**` + Local demo rows      |
 
@@ -54,7 +54,7 @@ pnpm invitation:local-corpus --apply --slug valentina-hernandez
 
 Behavior:
 
-- **Canonical** entries → `applyLocalInvitation` / `invitation:update` Local with
+- **Canonical** entries → `applyLocalInvitation` / `invitation:release` Local with
   `content-and-assets` (persistent-local only).
 - **Legacy** entries → upsert `invitations` + `published_invitation_content` from versioned
   sanitized fixtures under `scripts/provision/local-render-corpus/fixtures/`.

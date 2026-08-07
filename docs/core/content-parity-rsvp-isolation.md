@@ -36,18 +36,18 @@ Content parity is **semantic**, not raw database equality.
 
 | Term              | Meaning                                          | Direction                     | Command                                             |
 | ----------------- | ------------------------------------------------ | ----------------------------- | --------------------------------------------------- |
-| **Update**        | Managed invitation apply to Local and/or Preview | Definition → Local / Preview  | `pnpm invitation:update`                            |
-| **Promote**       | Owner-only managed content release to Production | Approved package → Production | `pnpm invitation:promote`                           |
-| **Mirror**        | Invitation-facing content regression copy        | Production → Preview only     | `pnpm db:preview:sync-invitations` / `pnpm db:sync` |
+| **Update**        | Managed invitation apply to Local and/or Preview | Definition → Local / Preview  | `pnpm invitation:release`                            |
+| **Promote**       | Owner-only managed content release to Production | Approved package → Production | `pnpm invitation:release`                           |
+| **Mirror**        | Invitation-facing content regression copy        | Production → Preview only     | `pnpm db:preview:sync-invitations`                  |
 | **Restore**       | Debugging import of a Production dump into Local | Production backup → Local     | `pnpm db:local:restore-from-dump`                   |
 | **RSVP mutation** | Guest/claim/attendance/view/delivery writes      | Within one environment        | Authenticated RSVP/dashboard services               |
 
-Orchestration facade: `pnpm db:sync` diagnoses, compares, plans, and delegates apply to the existing
-update / promote / mirror engines. It does not replace those engines, schema migrate, demo Content
-Sync, Git lane sync, or `pnpm db:local:restore-from-dump`.
+Use `pnpm dbs` for read-only managed status, `pnpm invitation:release` for managed content, and
+`pnpm db:migrate` for schema. Demo Content Sync, Git lane sync, Preview mirror, and
+`pnpm db:local:restore-from-dump` remain separate systems.
 
 Canonical workflow: managed creation via definition registry → Local/Preview with
-`pnpm invitation:update` → Production only with `pnpm invitation:promote`. `invitation:update`
+`pnpm invitation:release` → Production only with `pnpm invitation:release`. `invitation:release`
 rejects Production mutation targets.
 
 Production never imports content from the Preview database or Preview Storage. Mirror is never a
@@ -60,7 +60,7 @@ promotion path.
 ### Managed invitations
 
 Canonical writers: `scripts/provision/invitations/<slug>.ts`, the immutable package/provenance
-model, `pnpm invitation:update` (Local/Preview), and owner-only `pnpm invitation:promote`
+model, `pnpm invitation:release` (Local/Preview), and owner-only `pnpm invitation:release`
 (Production). Independent editor edits against the same managed published state are target
 divergence; existing managed reconciliation/merge behavior remains the intentional resolution path.
 Editor changes must not silently become a second source of truth for a managed slug.
@@ -155,8 +155,8 @@ Executable exclusion list for the Preview mirror: `EXCLUDED_TABLES` in
 
 ## Preview mirror and RSVP reset
 
-`pnpm db:preview:sync-invitations` (also `pnpm db:sync --direction production-to-preview-mirror`)
-mirrors invitation-facing tables and Storage, remaps ownership to the dedicated Preview admin,
+`pnpm db:preview:sync-invitations` mirrors invitation-facing tables and Storage, remaps ownership to
+the dedicated Preview admin,
 rewrites Supabase Storage URLs, and does **not** copy Production guests, claims, Auth, intake, or
 commercial data. `--dry-run` performs zero writes (including role/profile and report files).
 `--apply` requires Preview authorization
@@ -181,8 +181,8 @@ provisioning path (`pnpm test:e2e:preview:provision` and
 ## Cloudinary vs Supabase Storage boundary
 
 Invitation assets may use Supabase Storage (`storage_path` / public Storage URLs) or Cloudinary
-(`provider: cloudinary`, `secure_url`). `db:sync` / mirror / promote do **not** add a Cloudinary
-transfer engine.
+(`provider: cloudinary`, `secure_url`). Mirror and release do **not** add a Cloudinary transfer
+engine.
 
 | Flow                               | Supabase Storage                                                                              | Cloudinary                                                                                                                  |
 | ---------------------------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
@@ -244,7 +244,7 @@ the repository’s guarded operation confirmations. See `docs/env-workflow.md` a
 | `--preview-provenance`             | `KEEP_SPECIALIZED` Preview baseline helper                |
 | `pnpm db:local:refresh-from-prod*` | Fail-closed — use backup + restore-from-dump              |
 | Manual production SQL patches      | `RESTRICT_OWNER_ONLY` via `pnpm db:prod:patch`            |
-| `pnpm invitation:promote`          | Canonical owner-only Production managed-content promotion |
+| `pnpm invitation:release`          | Canonical owner-only Production managed-content promotion |
 
 ---
 
@@ -256,4 +256,4 @@ the repository’s guarded operation confirmations. See `docs/env-workflow.md` a
   [`docs/domains/intake/production-flow.md`](../domains/intake/production-flow.md)
 - Agent DB safety: [`.agent/rules/database.md`](../../.agent/rules/database.md)
 - Managed lifecycle procedure:
-  [`.agent/workflows/managed-invitation-lifecycle.md`](../../.agent/workflows/managed-invitation-lifecycle.md)
+  [`docs/domains/intake/production-flow.md`](../domains/intake/production-flow.md)

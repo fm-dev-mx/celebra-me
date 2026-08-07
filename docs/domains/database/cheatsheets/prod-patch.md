@@ -1,7 +1,7 @@
 # Cheat sheet — Manual Production SQL patch
 
 **Purpose:** Owner-only specialized SQL maintenance when a versioned migration cannot yet cover the
-case. Not a substitute for `db:prod:migrate` or `invitation:promote`.  
+case. Not a substitute for `db:migrate -- --target production` or `invitation:release`.
 **User:** Repository owner.  
 **Prerequisites:** Manifest per `.agent/rules/manual-sql-manifest.md`; dry-run first.
 

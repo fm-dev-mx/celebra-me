@@ -7,10 +7,7 @@ verification, and recovery (how production works).
 and migrations remain authoritative for executable behavior.
 
 Identity requirements:
-[`docs/core/invitation-creation-contract.md`](../../core/invitation-creation-contract.md). Agent
-procedure:
-[`.agent/workflows/managed-invitation-lifecycle.md`](../../../.agent/workflows/managed-invitation-lifecycle.md).
-Safety constraints:
+[`docs/core/invitation-creation-contract.md`](../../core/invitation-creation-contract.md). Safety constraints:
 [`.agent/rules/invitation-production.md`](../../../.agent/rules/invitation-production.md). Content
 shape: [`docs/core/content-schema.md`](../../core/content-schema.md). Content promote/mirror vs RSVP
 isolation:
@@ -23,7 +20,7 @@ Architecture: [`docs/core/architecture.md`](../../core/architecture.md). Authori
 | Concern                     | System                                                           | Agent/developer                                 | Designer                       | Manual/production operator                 |
 | --------------------------- | ---------------------------------------------------------------- | ----------------------------------------------- | ------------------------------ | ------------------------------------------ |
 | Validate managed definition | Definition registry + CLI dry-run invariants                     | Author/verify definition + preset match         | —                              | —                                          |
-| Create managed invitation   | Definition registry + `invitation:update` / `invitation:promote` | Inspect dry-run/apply reports                   | Dry-run / Local+Preview apply  | Owner-only Production promote              |
+| Create managed invitation   | Definition registry + `invitation:release`                       | Inspect dry-run/apply reports                   | Dry-run / Local+Preview apply  | Owner-only Production release              |
 | Write content               | Editor schemas and optimistic locking                            | Enter accurate Spanish copy and structured data | Review narrative and hierarchy | Confirm client facts                       |
 | Prepare assets              | Server decode, normalize, resize, WebP conversion, metadata      | Upload through the editor; never bypass policy  | Choose crop and focal point    | Review mobile crops                        |
 | Preview                     | Internal SSR preview                                             | Exercise all content states                     | Approve visual direction       | Verify links and client facts              |
@@ -38,41 +35,37 @@ Version-controlled invitations (e.g. Romina) are defined as single TypeScript fi
 `scripts/provision/invitations/<slug>.ts`.
 
 ```text
-Define -> Plan -> Update Local -> Package -> Update Preview -> Approve -> Owner invitation:promote
+Define -> Plan -> Release Local -> Package -> Release Preview -> Approve -> Owner Production release
 ```
 
-Use
-`pnpm invitation:update -- --slug <slug> --targets <targets> --source-dir <path> --dry-run|--apply`.
-`invitation:update` mutation targets are `local`, `preview`, or `local,preview`; `all` is
-status-only and Production mutation is rejected. Production managed-content promotion is owner-only:
+`pnpm invitation:release` is the sole managed release entrypoint. Start with `--dry-run`, inspect
+every selected target, and apply only the retained plan after exact target authorization. Any source,
+package, target, or asset drift requires a new dry run. Treat failed or unavailable inspection as
+blocked, never unchanged, and verify database, Storage, and published state per target.
 
 ```bash
-# Canonical human path (TTY): discover pending promotions, Cancelar by default, then owner gate
-pnpm invitation:promote
-
-# Advanced / non-TTY flags
-pnpm invitation:promote -- --slug <slug> --package <path> --dry-run
-pnpm invitation:promote -- --slug <slug> --package <path> --apply
+pnpm invitation:release -- --slug <slug> --targets local,preview --source-dir <path> --dry-run
+pnpm invitation:release -- --slug <slug> --targets local,preview --source-dir <path> --apply
+pnpm invitation:release
+pnpm invitation:release -- --slug <slug> --targets production --dry-run
+pnpm invitation:release -- --slug <slug> --targets production --apply
 ```
-
-Owner at-a-glance: [`promote-cheatsheet.md`](./promote-cheatsheet.md).
 
 Promotion requires an exact Preview-approved release identity from the **shared Preview DB store**
 (`public.preview_approval_artifacts`, read via `PREVIEW_DB_URL`), schema compatibility (`CURRENT`),
 critical backup coverage (shared prepare/revalidate; optional `--backup-manifest`), semantic
 comparison against current Production (target-owned state preserved; unresolved managed divergence
 blocks), typed owner confirmation (`PROMOTE <8-hex>`), managed import/publication apply, and
-mandatory post-apply verification. Worktree files under `.agent/tmp/approvals` are not the SSOT;
-use `pnpm invitation:update -- --package-hash <hash> --evidence <path> --apply` to finalize, or
-`pnpm invitation:approvals:migrate` once to import legacy approved JSON. The guided TTY path and
-`db:sync package-to-production` share the same promotion orchestrator. Existing target invitations
-resolve and preserve their owner by slug.
-New target invitations ensure a dedicated Auth host from the definition `hostLoginAlias`
-(`{alias}@clientes.celebra.invalid`) before plan/apply; `--owner-user-id` is an optional
-override/assertion, not required on the happy path. Dry-run reports owner action as `OWNER_REUSE`,
-`OWNER_CREATE_PLANNED`, or `OWNER_CONFLICT` (blocked). Every selected target is inspected and
-planned before any mutation; a blocked or unevaluated target aborts the complete apply phase across
-all targets.
+mandatory post-apply verification. Worktree files under `.agent/tmp/approvals` are not the SSOT; use
+`pnpm invitation:release -- --package-hash <hash> --approve` for direct live Preview verification
+and approval. Legacy filesystem approval import is retired. The guided TTY path uses the shared
+promotion orchestrator. Existing target
+invitations resolve and preserve their owner by slug. New target invitations ensure a dedicated Auth
+host from the definition `hostLoginAlias` (`{alias}@clientes.celebra.invalid`) before plan/apply;
+`--owner-user-id` is an optional override/assertion, not required on the happy path. Dry-run reports
+owner action as `OWNER_REUSE`, `OWNER_CREATE_PLANNED`, or `OWNER_CONFLICT` (blocked). Every selected
+target is inspected and planned before any mutation; a blocked or unevaluated target aborts the
+complete apply phase across all targets.
 
 ### Package freshness (definition vs `--package`)
 
@@ -152,7 +145,7 @@ Before creating a record, collect:
 
 Choose the event type from `EVENT_TYPES` and a compatible editor preset from `DEMO_PRESET_CATALOG`
 (or the managed definition's `baseDemoId`). The preset's `eventType` must match the invitation event
-type. Managed definitions are validated by the provision CLI / `invitation:update` dry-run before
+type. Managed definitions are validated by the `invitation:release` dry-run before
 apply. Low-level `createInvitation()` still enforces the same preset invariant for demos, tests, and
 internal callers — not for Dashboard client creates.
 
@@ -186,16 +179,16 @@ Dashboard “Nueva invitación” UI or `POST /api/dashboard/intake`.
 
 ```text
 managed creation → scripts/provision/invitations/<slug>.ts (registry)
-Local / Preview updates → pnpm invitation:update
-Production promotion → pnpm invitation:promote (owner-only)
+Local / Preview updates → pnpm invitation:release
+Production promotion → pnpm invitation:release (owner-only)
 ```
 
 1. Ensure preparation readiness (`docs/invitations/<slug>.md`) and register the definition under
    `scripts/provision/invitations/`.
-2. Apply Local (and Preview when ready) with `pnpm invitation:update` using `--dry-run` then
+2. Apply Local (and Preview when ready) with `pnpm invitation:release` using `--dry-run` then
    `--apply`. The engines resolve host owner, assets, draft/published content, and provenance.
-3. Promote Production only with `pnpm invitation:promote` after Preview approval, schema `CURRENT`,
-   and a verified critical backup. Do not use `invitation:update --targets production`.
+3. Promote Production only with `pnpm invitation:release -- --targets production` after Preview
+   approval, schema `CURRENT`, and a verified critical backup.
 4. Open the Editor from `/dashboard/invitaciones/{id}/editar` for environment overrides; those edits
    are divergence against the managed package and must be reconciled deliberately.
 
@@ -352,7 +345,7 @@ metadata hash and therefore do not invalidate a confirmation.
   RPCs (`save_invitation_metadata_atomic`, `restore_invitation_from_published_atomic`). They follow
   the managed-mutation receipt contract in [`docs/core/architecture.md`](../../core/architecture.md)
   (invitation-row serialization, append-only receipts, `operation_id` replay). The Editor and
-  `pnpm invitation:update` share that contract where applicable.
+  `pnpm invitation:release` share that contract where applicable.
 
 ## 8. Migrations and deployment
 
@@ -407,7 +400,7 @@ IDs for each test.
    agent identity (`super_admin`).
 2. Assert `POST /api/dashboard/intake` and demo-duplicate return 403 `canonical_creation_required`
    (managed create cannot bypass via Dashboard). Optionally validate an invalid managed definition
-   with `invitation:update --dry-run`.
+   with `invitation:release --dry-run`.
 3. Upload a valid JPEG/PNG/WebP and verify normalized WebP metadata.
 4. Upload a spoofed, undersized, oversized, or corrupt image; expect 422 and no asset row.
 5. Publish a valid new invitation and verify invitation, RSVP event, snapshot, and draft state.

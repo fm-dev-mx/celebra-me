@@ -242,7 +242,7 @@ not an owner-acceptable exception.
 
 **Backups:** require a fresh pre-migration Production backup based on risk/policy (state immediately
 before migrate), not merely because the newest dump has a different calendar date. When
-`pnpm db:prod:migrate` already creates that backup, do not demand a separate backup authorization
+`pnpm db:migrate -- --target production` already creates that backup, do not demand a separate backup authorization
 solely for date skew — see `evaluateProductionBackupRequirement`.
 
 ### 7. Manual actions

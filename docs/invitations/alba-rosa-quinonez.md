@@ -21,7 +21,7 @@
 > `READY_FOR_IMPLEMENTATION` until production-ready assets exist.
 
 Technical Local/Preview/Production readiness is **out of scope** for this document and remains owned
-by `pnpm invitation:update --status` / `invitation-readiness.ts`.
+by `pnpm invitation:release -- --status` / `invitation-readiness.ts`.
 
 ---
 
@@ -375,7 +375,7 @@ shared presets, components, intersection-profile map changes, or new abstraction
 | Intersections         | Families unchanged. Refined Hero→Countdown→Location atmospherics (shallower asymmetric radials), Pass/Gifts→RSVP overlap clearance, Family→Thank You blend + bleed math. Arch + Paris→Gallery structure intact                                                                                                                                               |
 | `70 años` motif       | Hero lockup (primary); envelope; letter label; Location eyebrow `70 AÑOS · 12 DE SEPTIEMBRE DE 2026`; Thank You copy `::before` tiny `70`                                                                                                                                                                                                                    |
 | Shared blast radius   | Contained — other invitations untouched                                                                                                                                                                                                                                                                                                                      |
-| Local content apply   | Provision SoT includes Location eyebrow; live Local DB still needs apply when provenance allows (`legacy_provenance` currently blocks `invitation:update --targets local`)                                                                                                                                                                                   |
+| Local content apply   | Provision SoT includes Location eyebrow; live Local DB still needs apply when provenance allows (`legacy_provenance` currently blocks `invitation:release --targets local`)                                                                                                                                                                                  |
 | Follow-up polish      | Countdown mineral plate differentiated from Location ivory; map CTAs charcoal primary + Apple outline; gallery overlap `padding-block-start` re-asserted so eyebrow clears Paris clip; payload tests are structural contracts (not editable-copy golden)                                                                                                     |
 | Vertical spacing      | Section shells raised toward ~4rem editorial minimum (`clamp` 3.25–6.25rem by band); internal gaps opened; gallery header `margin-top: 7rem` removed in favor of overlap `padding-top` that overrides `[data-after-interlude]` collapse so the eyebrow clears the Paris cut; RSVP host clearance + Thank You bleed retuned without double-counting cut depth |
 

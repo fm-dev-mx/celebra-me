@@ -152,7 +152,7 @@ Inventory `.backups/prod/` (no commit). Use `evaluateProductionBackupRequirement
 
 - Require a **fresh pre-migration** Production backup to capture state immediately before migrate.
 - Do **not** require a separate backup solely because the newest dump has a different calendar date.
-- When `pnpm db:prod:migrate` already creates the pre-migration backup, fold that into migrate
+- When `pnpm db:migrate -- --target production` already creates the pre-migration backup, fold that into migrate
   authorization rather than a date-skew-only backup prompt.
 - Empty or unusable inventory → `Needs authorization` for `pnpm db:prod:backup`.
 

@@ -6,8 +6,6 @@
 constraints. Those live in:
 
 - Runbook — [`docs/domains/intake/production-flow.md`](../domains/intake/production-flow.md)
-- Agent procedure —
-  [`.agent/workflows/managed-invitation-lifecycle.md`](../../.agent/workflows/managed-invitation-lifecycle.md)
 - Safety constraints —
   [`.agent/rules/invitation-production.md`](../../.agent/rules/invitation-production.md)
 

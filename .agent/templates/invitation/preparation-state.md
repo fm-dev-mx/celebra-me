@@ -25,7 +25,7 @@ Must equal `evaluatePreparationReadiness` for the facts/assets/design recorded b
 assets cannot be `READY_FOR_IMPLEMENTATION`.
 
 Technical Local/Preview/Production readiness (**envReadiness**) is **out of scope** for this
-document and remains owned by `pnpm invitation:update --status` / `invitation-readiness.ts`.
+document and remains owned by `pnpm invitation:release -- --status` / `invitation-readiness.ts`.
 
 ---
 

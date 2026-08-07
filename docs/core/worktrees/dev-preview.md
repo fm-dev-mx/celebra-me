@@ -39,13 +39,13 @@ This is independent of Vercel Preview deployments (`VERCEL_ENV=preview`).
 ## Common operations
 
 - Local Astro against Preview for Auth/SSR/data validation
-- Preferred lane for authorized `pnpm db:preview:*`, Preview `invitation:update`, Preview E2E
+- Preferred lane for authorized `pnpm db:preview:*`, Preview `invitation:release`, Preview E2E
 - Read-only `pnpm db:preview:audit` when credentials resolve
 
 ## Restrictions
 
 - Runtime connectivity ≠ mutate privilege
-- `db:preview:migrate`, sync-invitations, invitation apply, E2E provision/publish still need
+- `db:migrate -- --target preview`, sync-invitations, invitation apply, E2E provision/publish still need
   existing flags, guards, and task authorization
 - Never treat this path as Production access
 

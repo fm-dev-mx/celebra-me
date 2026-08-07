@@ -62,8 +62,6 @@ context resolution, use `.agent/routing-matrix.yaml` and `.agent/ownership.yaml`
   — Preparation contract & readiness
 - [`docs/domains/intake/production-flow.md`](../docs/domains/intake/production-flow.md) — Invitation
   production runbook
-- [`docs/domains/intake/promote-cheatsheet.md`](../docs/domains/intake/promote-cheatsheet.md) —
-  Owner Production promote card
 - [`docs/invitations/README.md`](../docs/invitations/README.md) — Per-client invitation Markdown
   state index
 

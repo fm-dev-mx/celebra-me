@@ -36,7 +36,6 @@ related_docs:
   - docs/domains/content/event-governance.md
   - docs/core/invitation-creation-contract.md
   - .agent/rules/invitation-production.md
-  - .agent/workflows/managed-invitation-lifecycle.md
   - .agent/workflows/design-reference-to-build.md
   - docs/domains/intake/production-flow.md
 ---
@@ -51,7 +50,7 @@ Structured discovery and preparation analysis for a **real** invitation. Covers:
 2. **Implementation audit** — pipeline identification, theme/preset lanes, section and asset audit,
    two-lane spec (only when prepReadiness allows and the task authorizes implementation work).
 
-**Does not own:** apply/publish lifecycle (`managed-invitation-lifecycle`), dashboard intake publish
+**Does not own:** apply/publish lifecycle (`docs/domains/intake/production-flow.md`), dashboard intake publish
 state (`intake-publishing`), identity field lists beyond preparation completeness
 (`invitation-creation-contract` — load post-prep), or production safety hard-stops
 (`invitation-production` — load when mutating/publishing).

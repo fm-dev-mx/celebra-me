@@ -2,7 +2,7 @@
 
 > Historical, non-authoritative record. Exact versions, identifiers, commands, and runtime claims
 > below describe the implementation session in which they were recorded. For current operations, use
-> `.agent/workflows/managed-invitation-lifecycle.md` and `pnpm invitation:update -- --help`.
+> `docs/domains/intake/production-flow.md` and `pnpm invitation:release -- --help`.
 
 This document records the implementation details, baseline state, decision register,
 original-requirement completion matrix, image allocation catalog, and publication workflow for the
@@ -40,7 +40,7 @@ original-requirement completion matrix, image allocation catalog, and publicatio
 | **Final Copy Changes**          | Uppercase chapter labels (`MIS XV`), formal date headers (`VIERNES · 14 DE AGOSTO DE 2026`), streamlined RSVP subcopy | `creative decision` | Removes unverified RSVP deadline and enhances formal tone                                     | Elegant editorial narrative coherence              | None                                           |
 | **Gallery Allocation**          | 7 unique, non-overlapping photographs                                                                                 | `creative decision` | Eliminates image duplication between Hero, Interlude, Thank You, and Gallery                  | Non-repetitive visual rhythm across all sections   | None                                           |
 | **Image Duplication Exception** | `IMG_3201.jpeg` used for Social OG preview and Gallery item                                                           | `verified`          | Open Graph image is invisible in page layout, allowing its use in Gallery                     | Standard OG sharing behavior                       | None                                           |
-| **Publication Workflow**        | `pnpm invitation:update` managed release pipeline                                                                     | `superseded`        | Define, package, Preview approval, then Production resume                                     | Atomic publication remains required                | None                                           |
+| **Publication Workflow**        | `pnpm invitation:release` managed release pipeline                                                                    | `superseded`        | Define, package, Preview approval, then Production resume                                     | Atomic publication remains required                | None                                           |
 
 ---
 

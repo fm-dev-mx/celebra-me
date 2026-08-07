@@ -26,7 +26,7 @@ directly under `.agent/rules/agent-routing.md`.
 - Invitation preparation readiness: `.agent/workflows/invitation-preparation.md` and
   `docs/invitations/<slug>.md` (do not implement invite-specific visuals while readiness is
   `NOT_READY`)
-- Invitation lifecycle: `.agent/workflows/managed-invitation-lifecycle.md`
+- Invitation lifecycle: `docs/domains/intake/production-flow.md`
 
 Figma frames, screenshots, Mobbin examples, and other external references are optional inputs. They
 are never sources of truth and must not introduce provider-specific configuration or a parallel
@@ -158,7 +158,7 @@ Screenshot output is evidence, not a tracked repository artifact.
 
 - Run `theme-architecture-governance` when a live token, preset, variant, or isolation contract
   changes. Update `docs/domains/theme/architecture.md` only when that technical contract changes.
-- For real invitations, continue through `managed-invitation-lifecycle`; this workflow grants no
+- For real invitations, continue through `docs/domains/intake/production-flow.md`; this workflow grants no
   Preview or Production authorization.
 - Report the brief/baseline used, files changed, visual evidence, validations, skips, remaining
   risks, and Git/production actions.
@@ -188,7 +188,7 @@ QA/checklist verdict.
 ### Real client invitation
 
 `design-reference-brief` → `client-invitation-audit` → Lane A/Lane B spec → focused implementation →
-visual QA → `managed-invitation-lifecycle`.
+visual QA → `docs/domains/intake/production-flow.md`.
 
 Both scenarios must be discoverable from `.agent/index.md` without relying on knowledge of a
 specific design tool or video.

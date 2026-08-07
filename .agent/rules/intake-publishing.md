@@ -133,8 +133,8 @@ Optimistic locking is used in editor save paths (`updateDraftContentConditionall
 `updateInvitationConditionally`) — conflict returns null, service throws 409.
 
 Editor metadata-reopen and restore-from-published commit through atomic RPCs that share the
-managed-mutation receipt contract in `docs/core/architecture.md` with `pnpm invitation:update` where
-applicable.
+managed-mutation receipt contract in `docs/core/architecture.md` with
+`pnpm invitation:release` where applicable.
 
 The publication path does not rely on the non-transactional repository helpers
 (`upsertPublishedContent`, `updateDraftStatus`) for write safety; it commits through the atomic RPC.

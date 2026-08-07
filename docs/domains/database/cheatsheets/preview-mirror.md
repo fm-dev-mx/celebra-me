@@ -10,8 +10,6 @@
 pnpm db:preview:sync-invitations -- --dry-run
 CELEBRA_TASK_SCOPE=preview:content-mirror:sync-invitations \
   pnpm db:preview:sync-invitations -- --apply
-# or via facade:
-pnpm db:sync -- --mode plan --direction production-to-preview-mirror
 ```
 
 **Expected result:** Mirrored invitation tables/assets; Preview RSVP children wiped.

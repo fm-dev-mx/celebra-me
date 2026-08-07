@@ -91,23 +91,11 @@ ownership:
           - 'Creation contract'
           - 'Agent workflow'
 
-    - aspect: 'Production promote operator cheatsheet'
-      owner: 'docs/domains/intake/promote-cheatsheet.md'
-      non_owners:
-          - 'Full production-flow runbook'
-          - 'Schema migrate cards'
-
     - aspect: 'Database/invitation operational cheatsheets'
       owner: 'docs/domains/database/cheatsheets/'
       non_owners:
           - 'Full database-workflow.md'
           - 'CLI --help flag SSOT'
-
-    - aspect: 'Agent invitation procedure'
-      owner: '.agent/workflows/managed-invitation-lifecycle.md'
-      non_owners:
-          - 'Runbook semantics'
-          - 'CLI flag copies'
 
     - aspect: 'Invitation agent safety constraints'
       owner: '.agent/rules/invitation-production.md'

@@ -21,7 +21,7 @@ support event operations.
 
 - Node.js `>=22.12.0 <25`
 - pnpm `11.x`
-- Supabase CLI for local database workflows (`db:start`, `db:local:migrate`,
+- Supabase CLI for local database workflows (`db:start`, `db:migrate -- --target local`,
   `db:local:restore-from-dump`, `db:local:backup-wip`, `db:local:bootstrap-admin`,
   `db:local:validate`, `db:disposable:reset`, `db:migrate:new`)
 - PostgreSQL client tools with `psql` installed and available on PATH for local DB workflow scripts.
@@ -139,8 +139,8 @@ not evidence of hosted state. Direct production SQL is prohibited; all schema ch
 introduced through versioned migrations.
 
 Hosted Preview is the mandatory managed-invitation QA gate. It uses isolated synthetic data and
-separate credentials (`PREVIEW_DB_URL`); migration and audit tooling are `pnpm db:preview:migrate`
-and `pnpm db:preview:audit`.
+separate credentials (`PREVIEW_DB_URL`); migration and audit tooling are
+`pnpm db:migrate -- --target preview` and `pnpm db:preview:audit`.
 
 For local development, use local Supabase and keep `.env.local` pointed away from production.
 
@@ -156,12 +156,10 @@ For local development, use local Supabase and keep `.env.local` pointed away fro
 | `pnpm db:prod:backup`             | Read-only production data dump                                                         |
 | `pnpm db:prod:audit`              | Read-only production migration history and current schema audit                        |
 | `pnpm db:branch:parity`           | Read-only branch migration identity/content + DB-sensitive detection (`--json`)        |
-| `pnpm db:prod:migrate`            | Apply reviewed schema migrations to production (preflight, backup, owner confirmation) |
-| `pnpm db:preview:migrate`         | Apply pending migrations to Preview (`PREVIEW_DB_URL`)                                 |
+| `pnpm db:migrate -- --target …`   | Plan/apply schema migrations through the canonical environment-targeted CLI            |
 | `pnpm db:preview:audit`           | Read-only Preview schema drift audit (`PREVIEW_DB_URL`)                                |
-| `pnpm db:sync`                    | Invitation content sync facade (diagnose/compare/plan/apply over existing engines)     |
-| `pnpm invitation:update`          | Managed invitation update/package/Preview approval (Local/Preview only)                |
-| `pnpm invitation:promote`         | Owner-only managed content promotion to Production                                     |
+| `pnpm dbs`                        | Read-only managed content and schema status                                             |
+| `pnpm invitation:release`         | Managed invitation Local/Preview release and owner-only Production promotion            |
 | `pnpm db:prod:patch`              | Dry-run lint for manifest-bearing production patches                                   |
 | `pnpm db:sql:lint`                | Lint a production SQL patch file                                                       |
 | `pnpm db:migrate:new <name>`      | Scaffold a new migration                                                               |
@@ -169,7 +167,8 @@ For local development, use local Supabase and keep `.env.local` pointed away fro
 `pnpm db:push`, `pnpm db:local:reset`, `pnpm db:local:refresh-from-prod`, and
 `pnpm db:local:refresh-from-prod-preserve-local` are intentionally blocked safety rails, not
 runnable workflows. Production is read-only for backups and audits except owner-gated schema migrate
-(`pnpm db:prod:migrate`) and managed-content promote (`pnpm invitation:promote`).
+(`pnpm db:migrate -- --target production`) and managed-content release
+(`pnpm invitation:release`).
 
 See [`docs/database-workflow.md`](docs/database-workflow.md) for the full operational runbook,
 command details, troubleshooting, and production safety rules. Environment source hierarchy and

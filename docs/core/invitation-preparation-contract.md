@@ -202,7 +202,7 @@ Helpers: `planImageOptimization`, `summarizeAssetQuality`, `isProductionAuthorit
 ## 9. Preparation readiness (**prepReadiness**)
 
 Independent from technical publication readiness (**envReadiness** —
-`invitation-readiness.ts` / `pnpm invitation:update --status`).
+`invitation-readiness.ts` / `pnpm invitation:release -- --status`).
 
 | State | Meaning |
 | ----- | ------- |

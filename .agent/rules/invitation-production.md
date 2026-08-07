@@ -4,8 +4,8 @@
 rollback claims, scope limits).
 
 **Does not own:** identity field lists, runbook steps, or CLI flag semantics. Authority chain:
-creation contract → production runbook → managed-invitation-lifecycle workflow → this rule → live
-CLI help. See [`.agent/index.md`](../index.md).
+creation contract → production runbook → this rule → live CLI help. See
+[`.agent/index.md`](../index.md).
 
 The canonical operational source is
 [`docs/domains/intake/production-flow.md`](../../docs/domains/intake/production-flow.md). Read it
@@ -54,9 +54,8 @@ Obsolete one-shot tooling (`ops optimize-assets`, `ops new-invitation`, `ops ado
 
 ## Managed updates
 
-Use `.agent/workflows/managed-invitation-lifecycle.md` as the thin agent procedure and the
-production runbook for lifecycle semantics, target order, flags, packaging, approval, and recovery
-behavior. Inspect the live CLI help before composing a command.
+Use the production runbook for lifecycle semantics, target order, packaging, approval, and recovery.
+Inspect `pnpm invitation:release -- --help` before composing a command.
 
 The agent-specific constraints are:
 
@@ -99,7 +98,7 @@ Local and Preview agent browser/Editor access uses real `super_admin` product id
 
 Do not authenticate agents with `service_role`, invent agent-only app permissions, or grant
 Production application access. Production managed promotion remains owner-only via
-`pnpm invitation:promote`.
+`pnpm invitation:release` (`--targets production` for Production content).
 
 ## Actor capability matrix (SSOT)
 
@@ -111,34 +110,34 @@ execution-boundary separation.
 | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
 | Canonical invitation source             | Edit with task authorization                                                                                                                                    | Approve and own                                                |
 | Disposable test DB                      | Run guarded tests                                                                                                                                               | Run                                                            |
-| Persistent Local managed mutation       | Yes via managed lifecycle (`invitation:update --targets local`)                                                                                                 | Yes                                                            |
+| Persistent Local managed mutation       | Yes via managed lifecycle (`invitation:release --targets local`)                                                                                                 | Yes                                                            |
 | Persistent Local raw/ad-hoc DB mutation | Never (unsupported agent workflow)                                                                                                                              | Exceptional only                                               |
 | Preview managed mutation                | Yes with explicit Preview task scope (`CELEBRA_TASK_SCOPE`)                                                                                                     | Yes                                                            |
 | Preview raw DB mutation                 | Never                                                                                                                                                           | Guarded schema workflow only                                   |
-| Production read — safe surfaces         | `pnpm dbs`; `invitation:update --status` (local inventory; remotes unprobed); `invitation:content-parity`; `invitation:promote --dry-run` (read-only preflight) | Same safe surfaces                                             |
+| Production read — safe surfaces         | `pnpm dbs`; `invitation:release --status` (local inventory; remotes unprobed); `invitation:content-parity`; `invitation:release --targets production --dry-run` | Same safe surfaces                                             |
 | Production read — privileged DB audit   | Never (`db:prod:audit`, backups, Auth/Storage export)                                                                                                           | Owner-only guarded `db:prod:*` audit/backup/export             |
-| Production invitation mutation          | Never via `invitation:update` or `invitation:reconcile`                                                                                                         | Owner-only `pnpm invitation:promote --apply`                   |
-| Production schema / migration           | Never                                                                                                                                                           | Owner-only `db:prod:migrate` (separate from content promotion) |
+| Production invitation mutation          | Never (`--targets production --apply` is owner-TTY only); never via `invitation:reconcile`                                                                      | Owner-only `pnpm invitation:release -- --targets production --apply` |
+| Production schema / migration           | Never                                                                                                                                                           | Owner-only `db:migrate -- --target production` (separate from content promotion) |
 | Production specialized SQL patch        | Never (`db:prod:patch --apply`)                                                                                                                                 | Owner-only specialized maintenance (`RESTRICT_OWNER_ONLY`)     |
 | Reconciliation                          | Plan and apply Local/Preview managed decisions                                                                                                                  | Authorize Preview scope and source updates                     |
 | Schema operations                       | Never auto-run from invitation workflows                                                                                                                        | Use separate guarded `db:*:migrate` workflows                  |
 
 ### Production read surfaces
 
-- **Safe Agent (and Owner) read:** `pnpm dbs` / `pnpm dbs --compact`, `invitation:update --status`
+- **Safe Agent (and Owner) read:** `pnpm dbs` / `pnpm dbs --compact`, `invitation:release --status`
   (including `--targets all|production`), `invitation:content-parity`, and
-  `invitation:promote --dry-run` / preflight. These are redacted / summary-oriented and do not
-  authorize privileged DDL inspection or PII dumps.
+  `invitation:release -- --slug <slug> --targets production --dry-run` / preflight. These are
+  redacted / summary-oriented and do not authorize privileged DDL inspection or PII dumps.
 - **Owner-only privileged DB audit:** `pnpm db:prod:audit`, `db:prod:backup*`,
   `db:prod:export-auth`, `db:prod:export-storage`, and any direct Production `psql`/service-role
   inspection. Agents must not run these unless the owner explicitly authorizes that exact privileged
   read.
-- **Owner-only Production content promotion:** Canonical human path is `pnpm invitation:promote`
-  (TTY, no args): discover pending releases, Cancelar by default, then the shared orchestrator.
-  Advanced/non-TTY may use `--slug` / `--package` / `--dry-run` / `--apply`. Apply requires exact
-  Preview approval, schema `CURRENT`, critical backup coverage, valid `pnpm release-check` evidence
-  for the current clean `HEAD`, and typed owner confirmation (`PROMOTE <8-hex>`). Agents must not
-  execute `--apply`.
+- **Owner-only Production content promotion:** Canonical human path is `pnpm invitation:release`
+  (TTY wizard derives next action including Production). Flag form:
+  `--slug` / `--targets production` / `--dry-run` / `--apply`. Apply requires exact Preview
+  approval, schema `CURRENT`, critical backup coverage, valid `pnpm release-check` evidence for the
+  current clean `HEAD`, and typed owner confirmation (`PROMOTE <8-hex>`). Agents must not execute
+  Production `--apply`. Schema incompatibility points to `pnpm db:migrate` (never auto-migrates).
 
 ## Schema lifecycle contract
 
@@ -154,7 +153,7 @@ Schema drift states: `CURRENT` | `BEHIND` | `SCHEMA_DRIFT` | `UNVERIFIED`
 UNVERIFIED as `SCHEMA_UNVERIFIED`. `pnpm dbs` / observability use **migration_history_parity**;
 `pnpm db:*:audit` uses **object_audit_readiness** — not equivalent. Do not reuse invitation
 reconciliation decisions (`KEEP_ENVIRONMENT`, etc.) for schema. Invitation workflows must never
-auto-run migrations; `invitation:promote` preflight that detects incompatible schema returns
+auto-run migrations; `invitation:release` preflight that detects incompatible schema returns
 `SCHEMA_INCOMPATIBLE` / `OWNER_ACTION_REQUIRED` and stops. Preview schema migrate and content mirror
 require exact Preview task scope before any write (`preview:schema:migrate` /
 `preview:content-mirror:sync-invitations`).

@@ -152,7 +152,7 @@ digital invitations.
 - **Rendering & Omission**: Optional closing fold. `closingPhrase` is consumed by the invitation
   footer; `date` renders as the Thank You closing-date line when present.
 - **Editing**: Managed invitations own `date` / `closingPhrase` / section variant via the provision
-  package and `pnpm invitation:update`. The dashboard Agradecimiento card edits message, firma, and
+  package and `pnpm invitation:release`. The dashboard Agradecimiento card edits message, firma, and
   image only; preview and publish preserve the remaining prior-published fields.
 
 ---

@@ -24,7 +24,7 @@ two-photo freeze;
 atmospheric interludes use stock frames (not client portraits).
 
 Technical Local/Preview/Production readiness (**envReadiness**) is **out of scope** for this
-document and remains owned by `pnpm invitation:update --status` / `invitation-readiness.ts`.
+document and remains owned by `pnpm invitation:release -- --status` / `invitation-readiness.ts`.
 
 ---
 

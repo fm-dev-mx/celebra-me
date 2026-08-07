@@ -15,16 +15,15 @@ Ownership Matrix in [`.agent/index.md`](../.agent/index.md).
 
 Local development uses local Supabase. Production is the source of real customer data. Production
 can be read for backups/local refreshes. Production **schema** may be mutated only through reviewed
-migrations (`pnpm db:prod:migrate`; engine: `db:migrate -- --target production`). Production
-**managed invitation content** may be mutated only through owner-only `pnpm invitation:promote`
-(also reachable via `pnpm db:sync` `package-to-production`).
+migrations (`pnpm db:migrate -- --target production`). Production **managed invitation content**
+may be mutated only through owner-only `pnpm invitation:release`.
 
 The workflow is asymmetric:
 
 ```txt
 Production -> Local: allowed for read-only refreshes, backups, and debug dump restore (not sync).
 Local -> Production (schema): reviewed migrations only.
-Local/Preview package -> Production (content): owner-only invitation:promote only.
+Local/Preview package -> Production (content): owner-only invitation:release only.
 Preview -> Production: forbidden for DB/Storage content copy.
 ```
 
@@ -184,7 +183,7 @@ categories, and precedence notes.
   `.env.preview.local` (template: `.env.preview.local.example`). On the `dev-preview` worktree,
   `.env.preview.local` also supplies the Preview **application** runtime (`SUPABASE_*` /
   `PUBLIC_SUPABASE_*`) via lane bootstrap; that runtime overlay does not authorize `db:preview:*` or
-  `invitation:update` mutations.
+  `invitation:release` mutations.
 - `.tmp/` and `.backups/` are never committed.
 - Never print or paste a full production or preview connection string in logs, docs, issues, or
   chat.
@@ -212,50 +211,25 @@ Definition → normalized release → Local → immutable package → Preview �
 
 | Mechanism                          | Role                                                         | Direction                                  |
 | ---------------------------------- | ------------------------------------------------------------ | ------------------------------------------ |
-| `pnpm db:sync`                     | **Orchestration facade** (diagnose/compare/plan/apply)       | Delegates to update / promote / mirror     |
-| `pnpm invitation:update`           | **Update** managed content on Local and/or Preview           | Definition → Local / Preview               |
-| `pnpm invitation:promote`          | **Promote** managed content to Production (owner-only)       | Approved package → Production              |
+| `pnpm invitation:release`          | **Release** managed content (Local/Preview/approve/Production) | Definition → Local → Preview → Production |
 | `pnpm invitation:preview-fixture`  | **Bootstrap** Preview E2E publication fixture (Preview-only) | Creates/verifies `e2e-preview-publication` |
 | `pnpm db:preview:sync-invitations` | **Mirror** invitation-facing content for regression          | Production → Preview only                  |
 | `pnpm db:local:restore-from-dump`  | **Restore** debugging dump (may include PII)                 | Production backup → Local                  |
 | `pnpm invitation:content-parity`   | Read-only **semantic** content parity check                  | Compares Local/Preview/Production          |
 | `pnpm dbs` / `pnpm dbs --compact`  | Read-only managed **status** (content + schema classifiers)  | Local / Preview / Production               |
 
-### `pnpm db:sync` (automation/diagnostic content orchestration)
-
-`pnpm db:sync` is the structured automation entry point for invitation **content** synchronization
-diagnosis, comparison, planning, and delegated apply. It is a thin facade over existing engines and
-does **not** implement a second mirror, Storage, approval, backup, promote, or migration engine.
-
-| Mode       | Mutation?            | Purpose                                                      |
-| ---------- | -------------------- | ------------------------------------------------------------ |
-| `diagnose` | No                   | Availability + schema lifecycle readiness                    |
-| `compare`  | No                   | Semantic content parity (`invitation:content-parity` engine) |
-| `plan`     | No                   | Immutable `planId` + fingerprints + gates                    |
-| `apply`    | Yes (with `--apply`) | Revalidate exact plan, authorize, delegate                   |
-
-Directions (hard allowlist): `definition-to-local`, `definition-to-preview`,
-`package-to-production`, `production-to-preview-mirror`.
-
-Apply always rebuilds the plan from current evidence, requires `--expected-plan` (or an interactive
-reviewed plan), rejects expiration/drift, and never silently regenerates a different plan. Content
-apply/plan blocks with `SCHEMA_INCOMPATIBLE` when the write-target schema is not `CURRENT` and
-points at the separate `db:*:migrate` alias — never auto-migrates. Local/Preview definition apply
-delegates to the shared `invitation-content-apply` sequence also used by `invitation:update`.
-Preview writes reuse `authorizePreviewWriteApply`; Production apply remains owner-only interactive
-TTY via `requireOwnerProductionApply` (agents/headless cannot apply to Production). Interactive
-`db:sync` does not add a second confirmation before those delegated gates.
-
-Orthogonal systems (not `db:sync`): `pnpm db:migrate`, dashboard demo Content Sync,
-`pnpm lane:sync`, and `pnpm db:local:restore-from-dump`. Specialized commands (`invitation:update`,
-`invitation:promote`, `db:preview:sync-invitations`, `invitation:content-parity`, `dbs`) remain
-authoritative for their direct workflows.
+Command authority is `package.json`. Use `pnpm dbs` for read-only status,
+`pnpm db:migrate -- --target <target>` for schema, `pnpm invitation:release` for managed content,
+and `pnpm db:preview:sync-invitations` only for the separate Production-to-Preview regression mirror.
+Dashboard demo Content Sync, `pnpm lane:sync`, and `pnpm db:local:restore-from-dump` remain separate
+systems.
 
 Policy for mirror exclusions, RSVP reset, and Cloudinary vs Supabase Storage boundaries:
 [`docs/core/content-parity-rsvp-isolation.md`](core/content-parity-rsvp-isolation.md).
 
 Production never imports from the Preview DB or Preview Storage. Mirror is never promotion. Normal
-`invitation:update` is Local/Preview only; use `invitation:promote` for Production managed content.
+Use `invitation:release --targets local|preview` for content stages and
+`--targets production` for owner-only Production promote.
 Temporary Production one-off (`romina-draft-reset`) and its retirement condition are listed in
 [`.agent/rules/invitation-production.md`](../.agent/rules/invitation-production.md). Credential
 presence, worktree path, runtime target, and UI banners do not authorize mutations.
@@ -265,16 +239,15 @@ presence, worktree path, runtime target, and UI banners do not authorize mutatio
 1. **Plan/update a managed definition (Local / Preview)**:
 
    ```bash
-   pnpm invitation:update -- --slug <slug> --targets local,preview --source-dir <path> --dry-run
-   pnpm invitation:update -- --slug <slug> --targets local,preview --source-dir <path> --apply
+   pnpm invitation:release -- --slug <slug> --targets local,preview --source-dir <path> --dry-run
+   pnpm invitation:release -- --slug <slug> --targets local,preview --source-dir <path> --apply
    ```
 
 2. **Promote to Production (owner-only)**:
 
    ```bash
-   pnpm invitation:promote
-   pnpm invitation:promote -- --slug <slug> --package <path> --dry-run
-   pnpm invitation:promote -- --slug <slug> --package <path> --apply
+   pnpm invitation:release -- --slug <slug> --targets production --dry-run
+   pnpm invitation:release -- --slug <slug> --targets production --apply
    ```
 
    On a TTY with no args, the CLI discovers pending managed promotions (Cancelar is the default).
@@ -298,8 +271,8 @@ PROVISIONED & HOSTED-VALIDATED
   `.env.preview.local`.
 - **Target Classification**: `scripts/db/db-guard.ts` classifies targets matching `PREVIEW_DB_URL`
   as `preview`.
-- **Migration Command**: Canonical planner is `pnpm db:migrate -- --target preview` (alias
-  `pnpm db:preview:migrate`). Defaults to **read-only preflight** against the canonical Preview
+- **Migration Command**: Canonical planner is `pnpm db:migrate -- --target preview`. Defaults to
+  **read-only preflight** against the canonical Preview
   project URL (exact project-ref perimeter via `assertPreviewDbUrl` /
   `validateEnvironmentUrlsPreflight`). Release identity is the current clean Git `HEAD` (same
   pattern as Production). Mutations require explicit `--apply` plus Preview authorization
@@ -323,8 +296,8 @@ PROVISIONED & HOSTED-VALIDATED
   (`127.0.0.1:54332`). The audit reports the live remote/pending counts; documentation does not
   freeze a migration total.
 - **Separation of Operations**: Migration, seed, and audit are separate operations.
-  `pnpm db:preview:migrate` preflights by default and applies only with `--apply`; it does NOT
-  automatically seed or audit.
+  `pnpm db:migrate -- --target preview` preflights by default and applies only with `--apply`; it
+  does NOT automatically seed or audit.
 - **Expected Failure Mode**: If Preview credentials are unconfigured or unavailable, Preview
   commands fail closed with exit code `1`.
 - **Synthetic Data & Privacy**: Preview must use isolated synthetic data
@@ -365,13 +338,11 @@ pnpm db:prod:audit
 pnpm db:branch:parity -- --base <ref> --head <ref>
 pnpm release-check
 pnpm db:migrate -- --target local
-pnpm db:local:migrate
 pnpm db:migrate -- --target preview
-pnpm db:preview:migrate
-pnpm db:preview:migrate -- --apply
-pnpm db:prod:migrate
-pnpm db:prod:migrate -- --expected <versions>
-pnpm db:prod:migrate -- --apply --expected <versions>
+pnpm db:migrate -- --target preview --apply
+pnpm db:migrate -- --target production
+pnpm db:migrate -- --target production --expected <versions>
+pnpm db:migrate -- --target production --apply --expected <versions>
 pnpm db:preview:audit
 pnpm db:local:audit
 pnpm db:preview:sync-invitations -- --dry-run
@@ -417,16 +388,15 @@ Stale fingerprints invalidate automatically and re-run affected checks.
 Complete remote audits via `pnpm db:local:audit` / `db:preview:audit` / `db:prod:audit` when
 credentials resolve. Production migration safety creates a complete DB/Auth/Storage recovery point
 with the explicit predecessor integrity profile immediately before mutation. After applying
-migrations and verifying the application schema contract, `pnpm db:prod:migrate` creates the
-complete Phase 3 recovery point again under the current profile. Preview is never a Production
-backup.
+migrations and verifying the application schema contract,
+`pnpm db:migrate -- --target production` creates the complete Phase 3 recovery point again under
+the current profile. Preview is never a Production backup.
 
 ### Migration / Deployment Compatibility Contract
 
 SSOT: `scripts/db/migration-deployment-compatibility.ts` +
-`supabase/migration-rollout-registry.json`. Wired into `pnpm db:migrate` (and aliases
-`db:preview:migrate` / `db:prod:migrate`) via the shared orchestrator (does not replace `--expected`
-pin, dry-run, backup, or contract verification).
+`supabase/migration-rollout-registry.json`. Wired into `pnpm db:migrate` via the shared orchestrator
+(does not replace `--expected` pin, dry-run, backup, or contract verification).
 
 Hosted targets prove migration membership from Git contents
 (`candidate ∈ <release-sha>:supabase/migrations/`), not filename chronology. Branch name, worktree
@@ -437,20 +407,15 @@ path, UI banner, and credential presence alone never authorize hosted mutation.
 pnpm db:migrate
 pnpm db:migrate -- --target local|preview|production [--expected <versions>] [--json]
 
-# Aliases only preselect target (same CLI/policy; all preflight-first)
-pnpm db:local:migrate
-pnpm db:preview:migrate
-pnpm db:preview:migrate -- --expected <versions>
-
 # Preview — apply after Preview authorization (release = clean HEAD)
 CELEBRA_TASK_SCOPE=preview:schema:migrate \
-  pnpm db:preview:migrate -- --apply --expected <versions>
+  pnpm db:migrate -- --target preview --apply --expected <versions>
 
 # Production — release identity is the current clean HEAD after pnpm release-check
 pnpm release-check
-pnpm db:prod:migrate                                          # read-only preflight (derived pending set)
-pnpm db:prod:migrate -- --expected <versions>                 # preflight with exact pin
-pnpm db:prod:migrate -- --apply --expected <versions>         # owner TTY apply
+pnpm db:migrate -- --target production                        # read-only preflight
+pnpm db:migrate -- --target production --expected <versions> # preflight with exact pin
+pnpm db:migrate -- --target production --apply --expected <versions> # owner TTY apply
 ```
 
 Production apply fails closed without valid `pnpm release-check` evidence for the current clean
@@ -569,15 +534,14 @@ application login substitute. Host invitation flows continue to use real `host_c
 - Evidence is rejected when `HEAD` changes, the tree becomes dirty, or required checks did not pass.
 - Production migrate apply may reuse valid evidence or run release-check once when missing/stale.
 
-`pnpm db:prod:migrate` / `pnpm db:migrate`
+`pnpm db:migrate`
 
-- Public Production schema entry: `pnpm db:prod:migrate`. Multi-env engine:
-  `pnpm db:migrate -- --target <local|preview|production|disposable-test>`. Other aliases:
-  `db:local:migrate`, `db:preview:migrate`.
+- Canonical schema entry:
+  `pnpm db:migrate -- --target <local|preview|production|disposable-test>`.
 - Production commands:
-  - `pnpm db:prod:migrate` — read-only preflight (derived pending set; no TTY, no writes)
-  - `pnpm db:prod:migrate -- --expected <versions>` — preflight with exact pin
-  - `pnpm db:prod:migrate -- --apply --expected <versions>` — owner apply path
+  - `pnpm db:migrate -- --target production` — read-only preflight
+  - `pnpm db:migrate -- --target production --expected <versions>` — preflight with exact pin
+  - `pnpm db:migrate -- --target production --apply --expected <versions>` — owner apply path
 - Shared orchestrator apply sequence: reviewed plan → beforeWrite (backup) → one rebuild + drift
   check → authorize → execute → afterWrite. Human logs on stderr; `--json` plans on stdout only.
 - Non-Production interactive TTY may use Cancel / Revisar / Aplicar; Production authorization is
@@ -625,7 +589,8 @@ application login substitute. Host invitation flows continue to use real `host_c
 - **Disposition: `RESTRICT_OWNER_ONLY` / `KEEP_SPECIALIZED`.**
 - After owner confirmation and SQL apply, runs `pnpm db:contract:verify --target production`.
 - Narrow owner-only maintenance for reviewed patches that cannot yet be expressed as versioned
-  `supabase/migrations/*`. Not a bypass for `db:prod:migrate` or `invitation:promote`.
+  `supabase/migrations/*`. Not a bypass for `db:migrate -- --target production` or
+  `invitation:release`.
 - Requires valid `pnpm release-check` evidence and interactive owner TTY confirmation (short bound
   code from the patch fingerprint); it never auto-runs schema migrations.
 
@@ -731,8 +696,8 @@ PROD_DB_URL=... pnpm db:prod:backup -- --schema-only
 
 ```bash
 pnpm release-check
-PROD_DB_URL=... pnpm db:prod:migrate -- --expected <versions>
-PROD_DB_URL=... pnpm db:prod:migrate -- --apply --expected <versions>
+PROD_DB_URL=... pnpm db:migrate -- --target production --expected <versions>
+PROD_DB_URL=... pnpm db:migrate -- --target production --apply --expected <versions>
 ```
 
 This is the only workflow allowed to mutate production **schema**. Preflight is read-only. Apply

@@ -46,7 +46,7 @@ Structural reconciliation distinguishes absent, `null`, unchanged, and removed v
 assets carry explicit definition/key/hash/operation ownership; only reviewed, unreferenced assets
 with matching ownership are pruneable. Editor metadata-reopen and restore-from-published use
 dedicated atomic RPCs with revision/version checks and receipts. The Editor and
-`pnpm invitation:update` share the same managed-mutation contract (validation, ownership,
+`pnpm invitation:release` share the same managed-mutation contract (validation, ownership,
 environment identity, publication, assets, and operation outcomes) where those paths apply. Auth
 password and managed-alias operations mark external success with an operation ID so downstream
 audit/receipt repair cannot silently repeat the Auth mutation. Database corrections for this

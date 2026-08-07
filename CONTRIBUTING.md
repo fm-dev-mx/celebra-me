@@ -86,7 +86,7 @@ To set up the development environment:
    ```
 
 3. Install the Supabase CLI if you plan to run the local database workflows (`pnpm db:start`,
-   `pnpm db:local:migrate`, `pnpm db:local:validate`, `pnpm db:disposable:reset`,
+   `pnpm db:migrate -- --target local`, `pnpm db:local:validate`, `pnpm db:disposable:reset`,
    `pnpm db:migrate:new`). Persistent-local reset and refresh aliases are blocked safety rails, not
    runnable setup commands.
 
