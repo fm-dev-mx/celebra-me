@@ -342,6 +342,50 @@ async function captureShortElementFullExtent(
 	}
 }
 
+export interface TallElementCaptureSegmentInput {
+	docY: number;
+	height: number;
+	nextOffset: number;
+	actualScrollY: number;
+	visibleHeight: number;
+}
+
+export interface TallElementCaptureSegment {
+	elementStart: number;
+	captureStart: number;
+	captureHeight: number;
+}
+
+/**
+ * Resolve the next non-overlapping element segment from the browser's actual
+ * scroll position. At the document bottom the requested scroll can be clamped,
+ * so the visible segment may begin before the requested offset; cropping the
+ * already-captured prefix keeps the stitched output contiguous.
+ */
+export function resolveTallElementCaptureSegment(
+	input: TallElementCaptureSegmentInput,
+): TallElementCaptureSegment {
+	const elementStart = Math.max(0, Math.min(input.height, input.actualScrollY - input.docY));
+	const visibleEnd = Math.min(input.height, elementStart + input.visibleHeight);
+	const epsilon = 0.5;
+
+	if (elementStart > input.nextOffset + epsilon) {
+		throw new Error(
+			`Tall element capture skipped content: actual start ${elementStart} is after next offset ${input.nextOffset}`,
+		);
+	}
+
+	const captureStart = input.nextOffset;
+	const captureHeight = visibleEnd - captureStart;
+	if (captureHeight <= epsilon) {
+		throw new Error(
+			`Tall element capture made no progress at offset ${input.nextOffset} (visible end ${visibleEnd})`,
+		);
+	}
+
+	return { elementStart, captureStart, captureHeight };
+}
+
 async function stitchTallElementTiles(
 	page: Page,
 	locator: Locator,
@@ -358,18 +402,18 @@ async function stitchTallElementTiles(
 
 	try {
 		const tiles: Array<{ file: string; width: number; height: number }> = [];
-		let yOffset = 0;
+		let nextOffset = 0;
 		let tileIdx = 0;
 
-		while (yOffset < metrics.height) {
-			const tileHeight = Math.min(viewport.height, metrics.height - yOffset);
+		while (nextOffset < metrics.height) {
 			await page.evaluate(
 				({ docY, offset }) => {
 					window.scrollTo(0, docY + offset);
 				},
-				{ docY: metrics.docY, offset: yOffset },
+				{ docY: metrics.docY, offset: nextOffset },
 			);
 			await page.waitForTimeout(80);
+			const actualScrollY = await page.evaluate(() => window.scrollY);
 
 			const tileFile = path.join(tmpDir, `tile-${tileIdx}.png`);
 			const box = await locator.boundingBox();
@@ -380,11 +424,19 @@ async function stitchTallElementTiles(
 			if (!visible) {
 				throw new Error('element left the viewport during tile capture');
 			}
+			const segment = resolveTallElementCaptureSegment({
+				docY: metrics.docY,
+				height: metrics.height,
+				nextOffset,
+				actualScrollY,
+				visibleHeight: visible.height,
+			});
+			const cropTop = segment.captureStart - segment.elementStart;
 			const clip = {
 				x: visible.x,
-				y: visible.y,
+				y: visible.y + cropTop,
 				width: visible.width,
-				height: Math.min(visible.height, tileHeight),
+				height: segment.captureHeight,
 			};
 
 			try {
@@ -394,15 +446,11 @@ async function stitchTallElementTiles(
 					...playwrightFormatOptions(format),
 				});
 			} catch {
-				// Retry once with a strictly viewport-clamped clip (no locator.screenshot —
-				// Playwright's element stitch introduces horizontal seams on ~1vh sections).
-				const clamped = intersectRectWithViewport(box, viewport);
-				if (!clamped) {
-					throw new Error('element clip unavailable during tile capture retry');
-				}
+				// Retry with the same actual-position-derived segment. Capturing the
+				// complete visible box here would reintroduce bottom-clamp overlap.
 				await page.screenshot({
 					path: tileFile,
-					clip: clamped,
+					clip,
 					...playwrightFormatOptions(format),
 				});
 			}
@@ -411,7 +459,7 @@ async function stitchTallElementTiles(
 			if (meta.width && meta.height) {
 				tiles.push({ file: tileFile, width: meta.width, height: meta.height });
 			}
-			yOffset += tileHeight;
+			nextOffset = segment.captureStart + segment.captureHeight;
 			tileIdx++;
 		}
 
