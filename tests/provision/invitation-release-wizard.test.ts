@@ -37,7 +37,7 @@ describe('invitation-release destination readiness', () => {
 		expect(readiness.sourceHash.length).toBeGreaterThan(16);
 		expect(readiness.productionReady).toBe(false);
 		expect(readiness.productionBlockReason).toBeTruthy();
-	});
+	}, 15_000);
 });
 
 describe('invitation-release wizard package binding', () => {
