@@ -127,6 +127,78 @@ function xvFacts(overrides: PreparationFact[] = []): PreparationFact[] {
 	return [...map.values()];
 }
 
+/** Minimal resolved boda facts except dual-venue reception fields (overridable). */
+function bodaFacts(overrides: PreparationFact[] = []): PreparationFact[] {
+	const base: PreparationFact[] = [
+		{
+			fieldId: 'slug',
+			value: 'victoria-y-roberto',
+			classification: 'verified',
+			source: 'owner',
+		},
+		{
+			fieldId: 'celebrantName',
+			value: 'Victoria',
+			classification: 'verified',
+			source: 'whatsapp',
+		},
+		{
+			fieldId: 'secondaryName',
+			value: 'Roberto',
+			classification: 'verified',
+			source: 'whatsapp',
+		},
+		{
+			fieldId: 'eventDate',
+			value: '2026-10-30',
+			classification: 'verified',
+			source: 'whatsapp',
+		},
+		{
+			fieldId: 'baseDemoId',
+			value: 'demo-boda-jewelry-box-wedding',
+			classification: 'verified',
+			source: 'owner-decision',
+		},
+		{
+			fieldId: 'sourceAssetPath',
+			value: 'source:hr-photos',
+			classification: 'verified',
+			source: 'owner-path',
+		},
+		{
+			fieldId: 'sectionOrder',
+			value: 'hero,location,family,gallery,rsvp,thankYou',
+			classification: 'verified',
+			source: 'owner-decision',
+		},
+		{
+			fieldId: 'primaryVenueName',
+			value: 'Parroquia Santo Niño',
+			classification: 'verified',
+			source: 'whatsapp',
+		},
+		{
+			fieldId: 'primaryVenueAddress',
+			value: 'Lic. Benito Juárez S/N, Mochicahui, Los Mochis, Sin.',
+			classification: 'verified',
+			source: 'whatsapp',
+		},
+		{
+			fieldId: 'rsvpConfirmationMode',
+			value: 'api',
+			classification: 'verified',
+			source: 'owner-decision',
+		},
+	];
+
+	const map = new Map(base.map((fact) => [fact.fieldId, fact]));
+	for (const override of overrides) {
+		map.set(override.fieldId, override);
+	}
+	return [...map.values()];
+}
+
 describe('invitation preparation — classification', () => {
 	it('rejects verified without evidence and inferred-as-client-statement', () => {
 		expect(
@@ -195,6 +267,125 @@ describe('invitation preparation — event completeness', () => {
 		expect(evaluation.sufficientToPrepare).toBe(true);
 		expect(evaluation.blockingGaps).toHaveLength(0);
 	});
+
+	it('keeps boda maturity partial and does not require eventTime or editorial fields', () => {
+		const contract = getEventCompletenessContract('boda');
+		expect(contract.maturity).toBe('partial');
+		const fieldIds = contract.fields.map((field) => field.id);
+		expect(fieldIds).toContain('receptionVenueName');
+		expect(fieldIds).toContain('receptionVenueAddress');
+		expect(fieldIds).not.toContain('eventTime');
+		expect(fieldIds).not.toContain('dressCode');
+		expect(fieldIds).not.toContain('godparents');
+		expect(fieldIds).not.toContain('clientColors');
+	});
+
+	it('blocks boda dual-venue prep when reception venue fields are missing', () => {
+		const evaluation = evaluateEventCompleteness(
+			'boda',
+			bodaFacts([
+				{
+					fieldId: 'distinctVenues',
+					value: 'true',
+					classification: 'verified',
+					source: 'whatsapp',
+				},
+			]),
+		);
+		expect(evaluation.sufficientToPrepare).toBe(false);
+		expect(evaluation.blockingGaps.map((gap) => gap.fieldId)).toEqual(
+			expect.arrayContaining(['receptionVenueName', 'receptionVenueAddress']),
+		);
+	});
+
+	it('blocks boda dual-venue prep when reception address is ambiguous', () => {
+		const evaluation = evaluateEventCompleteness(
+			'boda',
+			bodaFacts([
+				{
+					fieldId: 'distinctVenues',
+					value: 'true',
+					classification: 'verified',
+					source: 'whatsapp',
+				},
+				{
+					fieldId: 'receptionVenueName',
+					value: 'Eventos Platinum LM',
+					classification: 'verified',
+					source: 'whatsapp',
+				},
+				{
+					fieldId: 'receptionVenueAddress',
+					value: 'Carretera Mochis - Topo Km8',
+					classification: 'ambiguous',
+					source: 'whatsapp',
+					notes: 'Competing street spellings',
+				},
+			]),
+		);
+		expect(evaluation.sufficientToPrepare).toBe(false);
+		expect(evaluation.blockingGaps.map((gap) => gap.fieldId)).toContain(
+			'receptionVenueAddress',
+		);
+		expect(
+			evaluation.fields.find((field) => field.fieldId === 'receptionVenueName')?.status,
+		).toBe('satisfied');
+	});
+
+	it('accepts boda dual-venue prep when reception venue name and address resolve', () => {
+		const evaluation = evaluateEventCompleteness(
+			'boda',
+			bodaFacts([
+				{
+					fieldId: 'distinctVenues',
+					value: 'true',
+					classification: 'verified',
+					source: 'whatsapp',
+				},
+				{
+					fieldId: 'receptionVenueName',
+					value: 'Eventos Platinum LM',
+					classification: 'verified',
+					source: 'whatsapp',
+				},
+				{
+					fieldId: 'receptionVenueAddress',
+					value: 'Carretera Mochis - Topo Km8',
+					classification: 'verified',
+					source: 'whatsapp',
+				},
+			]),
+		);
+		expect(evaluation.sufficientToPrepare).toBe(true);
+		expect(evaluation.blockingGaps).toHaveLength(0);
+		expect(
+			evaluation.fields.find((field) => field.fieldId === 'receptionVenueName')?.status,
+		).toBe('satisfied');
+		expect(
+			evaluation.fields.find((field) => field.fieldId === 'receptionVenueAddress')?.status,
+		).toBe('satisfied');
+	});
+
+	it('skips boda reception venue fields when distinctVenues is false', () => {
+		const evaluation = evaluateEventCompleteness(
+			'boda',
+			bodaFacts([
+				{
+					fieldId: 'distinctVenues',
+					value: 'false',
+					classification: 'verified',
+					source: 'whatsapp',
+				},
+			]),
+		);
+		expect(evaluation.sufficientToPrepare).toBe(true);
+		expect(
+			evaluation.fields.find((field) => field.fieldId === 'receptionVenueName')?.status,
+		).toBe('skipped-condition-false');
+		expect(
+			evaluation.fields.find((field) => field.fieldId === 'receptionVenueAddress')?.status,
+		).toBe('skipped-condition-false');
+	});
 });
 
 describe('invitation preparation — placeholders and readiness', () => {
@@ -215,9 +406,9 @@ describe('invitation preparation — placeholders and readiness', () => {
 		]);
 		expect(emptyFieldId.ok).toBe(false);
 		if (!emptyFieldId.ok) {
-			expect(emptyFieldId.reasons.some((reason) => /fieldId must not be empty/i.test(reason))).toBe(
-				true,
-			);
+			expect(
+				emptyFieldId.reasons.some((reason) => /fieldId must not be empty/i.test(reason)),
+			).toBe(true);
 		}
 	});
 

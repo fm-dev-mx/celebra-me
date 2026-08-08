@@ -10,15 +10,17 @@ intake status machine (`intake-publishing`), or technical Local/Preview/Producti
 
 Related authorities:
 
-- Workflow — [`.agent/workflows/invitation-preparation.md`](../../.agent/workflows/invitation-preparation.md)
-- Analysis skill — [`.agent/skills/client-invitation-audit/SKILL.md`](../../.agent/skills/client-invitation-audit/SKILL.md)
+- Workflow —
+  [`.agent/workflows/invitation-preparation.md`](../../.agent/workflows/invitation-preparation.md)
+- Analysis skill —
+  [`.agent/skills/client-invitation-audit/SKILL.md`](../../.agent/skills/client-invitation-audit/SKILL.md)
 - Executable SSOT — [`src/lib/invitation-preparation/`](../../src/lib/invitation-preparation/)
 - Markdown template —
   [`.agent/templates/invitation/preparation-state.md`](../../.agent/templates/invitation/preparation-state.md)
 - Durable per-invite state — `docs/invitations/<slug>.md`
-- Post-prep identity — [`invitation-creation-contract.md`](./invitation-creation-contract.md)
-  (load only after preparation readiness allows implementation, or when freezing identity fields
-  that the creation contract defines)
+- Post-prep identity — [`invitation-creation-contract.md`](./invitation-creation-contract.md) (load
+  only after preparation readiness allows implementation, or when freezing identity fields that the
+  creation contract defines)
 
 Conceptual lifecycle: **Preparation → Implementation → Managed lifecycle / publication**.
 
@@ -26,11 +28,11 @@ Conceptual lifecycle: **Preparation → Implementation → Managed lifecycle / p
 
 ## 1. Intake channels
 
-| Channel | Role | Notes |
-| ------- | ---- | ----- |
-| Full chat / WhatsApp (text, photos, videos) | **Evidence** | Facts, preferences, constraints, ambiguities; media proves claims, not managed assets |
-| High-resolution (HR) photo URL or approved folder/repo path | **Asset source** | Required before photograph inventory |
-| Dashboard intake / editor publish state | **Out of scope** | Owned by intake-publishing + publication chain — not this contract |
+| Channel                                                     | Role             | Notes                                                                                 |
+| ----------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------- |
+| Full chat / WhatsApp (text, photos, videos)                 | **Evidence**     | Facts, preferences, constraints, ambiguities; media proves claims, not managed assets |
+| High-resolution (HR) photo URL or approved folder/repo path | **Asset source** | Required before photograph inventory                                                  |
+| Dashboard intake / editor publish state                     | **Out of scope** | Owned by intake-publishing + publication chain — not this contract                    |
 
 WhatsApp / conversation material is a source of client facts, event requirements, preferences,
 explicit decisions, constraints, textual content, and unresolved ambiguities.
@@ -50,29 +52,36 @@ conversation material only.
 Canonical states (executable: `InfoClassification` in
 `src/lib/invitation-preparation/classification.ts`):
 
-| State | Meaning |
-| ----- | ------- |
-| `verified` | Explicit supporting client/source evidence exists |
-| `inferred` | Agent-derived; must include basis; never presented as a client statement |
-| `ambiguous` | Competing interpretations preserved in notes |
-| `missing` | Not present; absence is not consent |
-| `not_applicable` | Event contract or invitation scope excludes the field |
-| `requires_owner_decision` | Subjective/commercial choice; recommendation must not auto-apply |
+| State                     | Meaning                                                                  |
+| ------------------------- | ------------------------------------------------------------------------ |
+| `verified`                | Explicit supporting client/source evidence exists                        |
+| `inferred`                | Agent-derived; must include basis; never presented as a client statement |
+| `ambiguous`               | Competing interpretations preserved in notes                             |
+| `missing`                 | Not present; absence is not consent                                      |
+| `not_applicable`          | Event contract or invitation scope excludes the field                    |
+| `requires_owner_decision` | Subjective/commercial choice; recommendation must not auto-apply         |
 
-Creative recommendations must be stored under **Agent Recommendations**, never as `verified`
-client requirements until explicitly approved.
+Creative recommendations must be stored under **Agent Recommendations**, never as `verified` client
+requirements until explicitly approved.
 
 **Ambiguous-fact discipline:** `ambiguous` on a required or conditional completeness field is
 **blocking** until resolved or validly marked `not_applicable`. Do not describe the invitation as
 complete, done, or release-ready while such ambiguity remains.
+
+**Media evidence interpretability:** Supplied audio, image, or video material may provide evidence
+only when its substantive information can be reliably interpreted. Unavailable, unintelligible, or
+otherwise unreliable media must never be reconstructed from surrounding conversational context and
+must remain `ambiguous` or `missing`, as appropriate, when material to preparation. This does not
+change the WhatsApp-vs-HR asset boundary (§1) or info-hygiene (§4.1): raw transcripts and media
+dumps must not become durable preparation state.
 
 **Identity spelling freeze:** Before freezing `slug` and `hostLoginAlias`, celebrant/honoree name
 orthography must be `verified` (or an explicit owner override recorded). Do not lock identity on
 inferred spelling.
 
 **Slug vs route:** Never include `eventType` in the slug. The public path is already
-`/{eventType}/{slug}` — see
-[`invitation-creation-contract.md`](./invitation-creation-contract.md) (Canonical Slug).
+`/{eventType}/{slug}` — see [`invitation-creation-contract.md`](./invitation-creation-contract.md)
+(Canonical Slug).
 
 ---
 
@@ -84,17 +93,16 @@ Each field supports: `required` | `conditional` | `recommended` | `optional`.
 
 Contract maturity:
 
-| Maturity | Meaning |
-| -------- | ------- |
+| Maturity          | Meaning                                                           |
+| ----------------- | ----------------------------------------------------------------- |
 | `evidence-backed` | Sufficient verified practice to evaluate preparation completeness |
-| `partial` | Some fields evidenced; gaps documented |
-| `undefined` | Only global identity minima; do not invent a full matrix |
+| `partial`         | Some fields evidenced; gaps documented                            |
+| `undefined`       | Only global identity minima; do not invent a full matrix          |
 
 Current posture:
 
 - `xv` — evidence-backed
-- `boda`, `cumple`, `baby-shower` — partial (evidenced field lists in
-  `event-completeness.ts`)
+- `boda`, `cumple`, `baby-shower` — partial (evidenced field lists in `event-completeness.ts`)
 - `bautizo`, `primera-comunion` — undefined (minima only)
 
 **Process for undefined / partial:** Evaluate only defined fields; record maturity gaps in Markdown;
@@ -123,13 +131,13 @@ Implementation Constraints, Preparation Readiness.
 
 ### 4.1 Info-hygiene — persist vs session-only
 
-| May persist in `docs/invitations/<slug>.md` | Session-only / never commit |
-| ------------------------------------------- | --------------------------- |
-| Opaque source labels (e.g. `source:wa-export`, `source:hr-photos`) | Absolute OneDrive / `Clientes\` / user-profile paths |
-| Classified facts needed to build the invite (names, dates, venues as event content) | Full chat exports, raw transcripts, photo/video dumps |
-| Repo-relative asset paths under the repository | Chat folder titles that embed contact names (`WhatsApp Chat - …`) |
-| High-level “HR photo URL on file (session)” without the secret URL | Paste of payroll / HR-portal / credential-bearing / environment URLs |
-| Quality labels, role map, uniqueness table | Screenshots of private chats committed as binaries |
+| May persist in `docs/invitations/<slug>.md`                                         | Session-only / never commit                                          |
+| ----------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Opaque source labels (e.g. `source:wa-export`, `source:hr-photos`)                  | Absolute OneDrive / `Clientes\` / user-profile paths                 |
+| Classified facts needed to build the invite (names, dates, venues as event content) | Full chat exports, raw transcripts, photo/video dumps                |
+| Repo-relative asset paths under the repository                                      | Chat folder titles that embed contact names (`WhatsApp Chat - …`)    |
+| High-level “HR photo URL on file (session)” without the secret URL                  | Paste of payroll / HR-portal / credential-bearing / environment URLs |
+| Quality labels, role map, uniqueness table                                          | Screenshots of private chats committed as binaries                   |
 
 **Forbidden in durable prep docs and agent commits:** absolute machine paths to client folders;
 chat-title dumps as durable identity; human-resources/payroll/internal portal URLs; secrets;
@@ -142,13 +150,13 @@ content-profile invariants).
 
 ## 5. Missing-information semantics
 
-| Kind | Effect |
-| ---- | ------ |
-| Blocking missing data | Prevents READY_*; implementation forbidden when `NOT_READY` |
-| Non-blocking missing data | May use a controlled placeholder; preparation may continue |
-| Ambiguous data | Requires resolution; blocking when the field is required/conditional |
-| Owner decision | Cannot be inferred |
-| Not applicable | Valid closed state |
+| Kind                      | Effect                                                               |
+| ------------------------- | -------------------------------------------------------------------- |
+| Blocking missing data     | Prevents READY_*; implementation forbidden when `NOT_READY`          |
+| Non-blocking missing data | May use a controlled placeholder; preparation may continue           |
+| Ambiguous data            | Requires resolution; blocking when the field is required/conditional |
+| Owner decision            | Cannot be inferred                                                   |
+| Not applicable            | Valid closed state                                                   |
 
 Do not fabricate plausible client content as a substitute for missing information.
 
@@ -201,14 +209,14 @@ Helpers: `planImageOptimization`, `summarizeAssetQuality`, `isProductionAuthorit
 
 ## 9. Preparation readiness (**prepReadiness**)
 
-Independent from technical publication readiness (**envReadiness** —
-`invitation-readiness.ts` / `pnpm invitation:release -- --status`).
+Independent from technical publication readiness (**envReadiness** — `invitation-readiness.ts` /
+`pnpm invitation:release -- --status`).
 
-| State | Meaning |
-| ----- | ------- |
-| `NOT_READY` | Blocking gaps/assets/decisions remain; **no** payload/SCSS implementation |
-| `READY_WITH_PLACEHOLDERS` | Structure resolved; only documented non-blocking placeholders and/or provisional asset replacements |
-| `READY_FOR_IMPLEMENTATION` | Required facts/assets/decisions resolved; production-authoritative assets; no placeholders remain |
+| State                      | Meaning                                                                                             |
+| -------------------------- | --------------------------------------------------------------------------------------------------- |
+| `NOT_READY`                | Blocking gaps/assets/decisions remain; **no** payload/SCSS implementation                           |
+| `READY_WITH_PLACEHOLDERS`  | Structure resolved; only documented non-blocking placeholders and/or provisional asset replacements |
+| `READY_FOR_IMPLEMENTATION` | Required facts/assets/decisions resolved; production-authoritative assets; no placeholders remain   |
 
 ### 9.1 Helper is SSOT (F01 / F17)
 
@@ -221,8 +229,8 @@ prepReadiness:
 
 **Markdown must mirror the helper.** Hand-editing `READY_FOR_IMPLEMENTATION` while assigned
 production roles remain `provisional-whatsapp` (or `summarizeAssetQuality` reports
-`onlyNonProductionImages: true`) is **invalid**. The correct ceiling is
-`READY_WITH_PLACEHOLDERS` until production-ready assets exist.
+`onlyNonProductionImages: true`) is **invalid**. The correct ceiling is `READY_WITH_PLACEHOLDERS`
+until production-ready assets exist.
 
 Agents must **cite** the helper outcome when updating Preparation Readiness (session note + history
 row). Repository gate: `pnpm validate:invitation-preparation` (Markdown prepReadiness ↔ helpers +

@@ -1,7 +1,8 @@
 # WhatsApp Intake Contract (Preparation)
 
 WhatsApp / conversation material participates in invitation preparation under these rules only.
-Parent policy: [`docs/core/invitation-preparation-contract.md`](../../../../docs/core/invitation-preparation-contract.md)
+Parent policy:
+[`docs/core/invitation-preparation-contract.md`](../../../../docs/core/invitation-preparation-contract.md)
 §1 and §4.1. Conversational script:
 [`conversational-phase-script.md`](conversational-phase-script.md).
 
@@ -39,13 +40,15 @@ Use exactly:
 
 Helpers: `assertClassificationRules` (`src/lib/invitation-preparation/`).
 
-| Rule | Detail |
-| ---- | ------ |
-| `verified` | Requires explicit supporting text/evidence from the supplied material |
-| `inferred` | Record basis; never phrase as “the client said” |
-| `ambiguous` | Keep competing readings in notes; blocking when field is required/conditional |
-| Absence | Never treat as consent, preference, or demo selection |
-| Recommendations | Stay in Agent Recommendations until owner approval |
+| Rule            | Detail                                                                        |
+| --------------- | ----------------------------------------------------------------------------- |
+| `verified`      | Requires explicit supporting text/evidence from the supplied material         |
+| `inferred`      | Record basis; never phrase as “the client said”                               |
+| `ambiguous`     | Keep competing readings in notes; blocking when field is required/conditional |
+| Absence         | Never treat as consent, preference, or demo selection                         |
+| Recommendations | Stay in Agent Recommendations until owner approval                            |
+
+Media interpretability (audio/image/video; no reconstruction from context): preparation contract §2.
 
 ## Process limits
 
