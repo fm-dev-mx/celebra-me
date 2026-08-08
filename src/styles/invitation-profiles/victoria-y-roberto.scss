@@ -190,7 +190,7 @@
 		}
 	}
 
-	@include mixins.mq-down(md) {
+	@include mixins.respond-below(md) {
 		.gallery-section[data-variant='single'],
 		.gallery-section:has(.gallery-grid__item:only-child) {
 			.gallery-grid {

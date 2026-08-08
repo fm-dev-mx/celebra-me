@@ -362,6 +362,7 @@ export function ConfirmedFields(props: {
 						value={notes}
 						onChange={(e) => onNotesChange(e.target.value)}
 						disabled={!isExpanded}
+						suppressHydrationWarning
 					/>
 				</div>
 			</div>
