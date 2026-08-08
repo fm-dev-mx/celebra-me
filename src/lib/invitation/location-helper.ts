@@ -39,15 +39,27 @@ export interface GroupedVenue extends VenueEntry {
 }
 
 /**
+ * True for http(s) navigation targets. Preparation placeholders
+ * (`[[PENDIENTE:...]]`) and other non-URL strings must fail closed.
+ */
+export function isNavigableVenueMapUrl(url: string | undefined): url is string {
+	if (!url) return false;
+	if (/\[\[PENDIENTE:/u.test(url)) return false;
+	return /^https?:\/\//iu.test(url);
+}
+
+/**
  * Returns the safest public navigation URL available for a venue preview.
  * Coordinates remain the source for an embedded map; this fallback lets a
  * venue with an approved public map URL still expose a visible map affordance
  * without inventing coordinates or requiring a provider key.
+ * Unresolved preparation placeholders never become clickable map actions.
  */
 export function resolveVenueMapPreviewUrl(
 	venue: Pick<VenueData, 'googleMapsUrl' | 'mapUrl' | 'appleMapsUrl' | 'wazeUrl'>,
 ): string | undefined {
-	return venue.googleMapsUrl ?? venue.mapUrl ?? venue.appleMapsUrl ?? venue.wazeUrl;
+	const candidates = [venue.googleMapsUrl, venue.mapUrl, venue.appleMapsUrl, venue.wazeUrl];
+	return candidates.find(isNavigableVenueMapUrl);
 }
 
 /**

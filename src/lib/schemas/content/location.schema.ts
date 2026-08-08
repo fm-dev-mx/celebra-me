@@ -13,6 +13,11 @@ const locationCoordinatesSchema = z
 	.optional();
 const richTextSchema = z.string();
 
+/** Navigable http(s) URL, or a preparation placeholder that must fail closed at render. */
+const venueMapUrlSchema = z
+	.union([z.url(), z.string().regex(/^\[\[PENDIENTE:[A-Z0-9_]+\]\]$/u)])
+	.optional();
+
 const venueSchema = z.object({
 	venueEvent: z.string(),
 	venueName: z.string(),
@@ -20,10 +25,10 @@ const venueSchema = z.object({
 	city: z.string().optional(),
 	date: z.string(),
 	time: z.string(),
-	mapUrl: z.url().optional(),
-	appleMapsUrl: z.url().optional(),
-	googleMapsUrl: z.url().optional(),
-	wazeUrl: z.url().optional(),
+	mapUrl: venueMapUrlSchema,
+	appleMapsUrl: venueMapUrlSchema,
+	googleMapsUrl: venueMapUrlSchema,
+	wazeUrl: venueMapUrlSchema,
 	image: AssetSchema.optional(),
 	focalPoint: focalPointSchema.optional(),
 	coordinates: locationCoordinatesSchema,
@@ -40,10 +45,10 @@ const venueEntrySchema = z.object({
 	city: z.string().optional(),
 	date: z.string(),
 	time: z.string(),
-	mapUrl: z.url().optional(),
-	appleMapsUrl: z.url().optional(),
-	googleMapsUrl: z.url().optional(),
-	wazeUrl: z.url().optional(),
+	mapUrl: venueMapUrlSchema,
+	appleMapsUrl: venueMapUrlSchema,
+	googleMapsUrl: venueMapUrlSchema,
+	wazeUrl: venueMapUrlSchema,
 	image: AssetSchema.optional(),
 	focalPoint: focalPointSchema.optional(),
 	coordinates: locationCoordinatesSchema,

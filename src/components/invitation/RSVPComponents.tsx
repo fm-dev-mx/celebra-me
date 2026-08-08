@@ -20,6 +20,7 @@ import { HeartbreakIcon } from '@/components/common/icons/invitation/Heartbreak'
 import type { LocationSection } from '@/lib/adapters/types';
 import AddToCalendarButton from '@/components/invitation/AddToCalendarButton';
 import { buildCalendarEventInput } from '@/lib/calendar/build-calendar-event-input';
+import { isNavigableVenueMapUrl } from '@/lib/invitation/location-helper';
 import { formatVenueTimeForDisplay } from '@/lib/invitation/venue-datetime';
 
 export {
@@ -158,15 +159,20 @@ function RevealedLocationBlock({ location }: { location: RevealedLocation }) {
 				<h3 className="rsvp__revealed-location-title">{location.introHeading}</h3>
 			)}
 			{venues.map((venue, index) => {
-				const href =
-					venue.googleMapsUrl ?? venue.mapUrl ?? venue.appleMapsUrl ?? venue.wazeUrl;
-				const mapLabel = venue.googleMapsUrl
-					? 'Ver ubicación en Google Maps'
-					: venue.appleMapsUrl
-						? 'Abrir en Apple Maps'
-						: venue.wazeUrl
-							? 'Abrir en Waze'
-							: 'Ver ubicación';
+				const href = [
+					venue.googleMapsUrl,
+					venue.mapUrl,
+					venue.appleMapsUrl,
+					venue.wazeUrl,
+				].find(isNavigableVenueMapUrl);
+				const mapLabel =
+					href === venue.googleMapsUrl
+						? 'Ver ubicación en Google Maps'
+						: href === venue.appleMapsUrl
+							? 'Abrir en Apple Maps'
+							: href === venue.wazeUrl
+								? 'Abrir en Waze'
+								: 'Ver ubicación';
 				const displayTime = formatVenueTimeForDisplay(venue.time);
 				return (
 					<div className="rsvp__revealed-location-card" key={venue.id ?? index}>

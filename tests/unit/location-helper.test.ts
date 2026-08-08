@@ -23,6 +23,20 @@ describe('resolveVenueMapPreviewUrl', () => {
 		);
 		expect(resolveVenueMapPreviewUrl({})).toBeUndefined();
 	});
+
+	it('fails closed for preparation placeholder map tokens', () => {
+		expect(
+			resolveVenueMapPreviewUrl({
+				googleMapsUrl: '[[PENDIENTE:CEREMONY_MAP_URL]]',
+			}),
+		).toBeUndefined();
+		expect(
+			resolveVenueMapPreviewUrl({
+				mapUrl: '[[PENDIENTE:RECEPTION_MAP_URL]]',
+				googleMapsUrl: 'https://maps.example.com/real',
+			}),
+		).toBe('https://maps.example.com/real');
+	});
 });
 
 describe('groupVenues', () => {

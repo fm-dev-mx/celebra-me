@@ -6,7 +6,10 @@
 import OptimizedImage from '@/components/common/OptimizedImage.astro';
 import GoogleMap from '@/components/common/GoogleMap.astro';
 import Icon from '@/components/common/icons/Icon.astro';
-import { resolveVenueMapPreviewUrl } from '@/lib/invitation/location-helper';
+import {
+	isNavigableVenueMapUrl,
+	resolveVenueMapPreviewUrl,
+} from '@/lib/invitation/location-helper';
 import {
 	formatVenueDateForDisplay,
 	formatVenueTimeForDisplay,
@@ -75,6 +78,10 @@ const mediaMode = resolveLocationMediaMode(presentation, {
 const mapPreviewUrl = resolveVenueMapPreviewUrl(venue);
 const hasMapLink = Boolean(mapPreviewUrl);
 const useMapPreviewLink = showNavigationButtons === false && hasMapLink;
+const hasAppleMap = isNavigableVenueMapUrl(venue.appleMapsUrl);
+const hasGoogleMap = isNavigableVenueMapUrl(venue.googleMapsUrl);
+const hasWazeMap = isNavigableVenueMapUrl(venue.wazeUrl);
+const hasGenericMap = isNavigableVenueMapUrl(venue.mapUrl);
 ---
 
 <div class="event-location__card-wrapper" data-reveal-item>
@@ -252,7 +259,7 @@ const useMapPreviewLink = showNavigationButtons === false && hasMapLink;
 
 			{showNavigationButtons && (
 				<div class="event-location__card-navigation-buttons">
-					{venue.appleMapsUrl && (
+					{hasAppleMap && (
 						<a
 							href={venue.appleMapsUrl}
 							class="event-location__nav-button event-location__nav-button--apple u-hidden-initially"
@@ -263,7 +270,7 @@ const useMapPreviewLink = showNavigationButtons === false && hasMapLink;
 							Apple Maps
 						</a>
 					)}
-					{venue.googleMapsUrl && (
+					{hasGoogleMap && (
 						<a
 							href={venue.googleMapsUrl}
 							class="event-location__nav-button event-location__nav-button--maps"
@@ -273,7 +280,7 @@ const useMapPreviewLink = showNavigationButtons === false && hasMapLink;
 							Google Maps
 						</a>
 					)}
-					{venue.wazeUrl && (
+					{hasWazeMap && (
 						<a
 							href={venue.wazeUrl}
 							class="event-location__nav-button event-location__nav-button--waze"
@@ -283,7 +290,7 @@ const useMapPreviewLink = showNavigationButtons === false && hasMapLink;
 							Waze
 						</a>
 					)}
-					{!venue.appleMapsUrl && !venue.googleMapsUrl && venue.mapUrl && (
+					{!hasAppleMap && !hasGoogleMap && hasGenericMap && (
 						<a
 							href={venue.mapUrl}
 							class="event-location__nav-button event-location__nav-button--primary"
