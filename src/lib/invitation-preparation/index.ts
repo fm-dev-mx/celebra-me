@@ -10,6 +10,7 @@ export {
 export {
 	PLACEHOLDER_TOKEN_PATTERN,
 	createPlaceholderToken,
+	findPlaceholderTokensInValue,
 	findPlaceholderTokens,
 	isPlaceholderToken,
 	toPlaceholderFieldKey,

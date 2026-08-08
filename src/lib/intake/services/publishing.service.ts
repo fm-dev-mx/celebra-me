@@ -26,6 +26,7 @@ import {
 	checkPublishGuard,
 	resolveInvitationTheme,
 } from '@/lib/intake/services/invitation-preset-resolver';
+import { findPlaceholderTokensInValue } from '@/lib/invitation-preparation/placeholders';
 import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
 import {
 	commitAtomicPublication,
@@ -277,8 +278,19 @@ async function validatePublication(
 	assertCountdownHasTiming(frozenContent);
 
 	const publishedContent = parsePublicationProjection(frozenContent);
+	if (options.stage === 'publish') {
+		const pendingTokens = findPlaceholderTokensInValue(publishedContent);
+		if (pendingTokens.length > 0) {
+			throw new ApiError(
+				422,
+				'validation_error',
+				'La publicación contiene datos pendientes de confirmación. Reemplace los placeholders antes de publicar.',
+				{ reason: 'published_content_placeholders', tokens: pendingTokens },
+			);
+		}
+	}
 
-	assertAllAssetsResolvable(publishedContent as Record<string, unknown>, {
+	assertAllAssetsResolvable(publishedContent, {
 		assetSlug,
 		invitationId,
 		stage: options.stage,

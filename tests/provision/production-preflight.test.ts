@@ -9,6 +9,7 @@ import type {
 } from '../../scripts/provision/invitation-import-engine.ts';
 import type { OperationalPlan } from '../../scripts/provision/invitation-update-plan.ts';
 import {
+	assertNoPendingPublishedPlaceholders,
 	ProductionPreflightError,
 	runProductionPreflight,
 } from '../../scripts/provision/production-preflight.ts';
@@ -36,7 +37,7 @@ afterEach(() => {
 	dirs.splice(0).forEach((dir) => rmSync(dir, { recursive: true, force: true }));
 });
 
-function packageData(): InvitationPackageData {
+function packageData(content: Record<string, unknown> = {}): InvitationPackageData {
 	return {
 		packageHash,
 		sourceHash,
@@ -44,6 +45,7 @@ function packageData(): InvitationPackageData {
 		projectionHash,
 		assetManifestHash,
 		invitation: { slug: 'fixture', eventType: 'xv' },
+		publishedContent: { content },
 	} as InvitationPackageData;
 }
 
@@ -136,6 +138,35 @@ function engineResult(overrides: Partial<ImportEngineResult> = {}): ImportEngine
 }
 
 describe('Production read-only preflight integration', () => {
+	it('allows draft/preparation packages to omit published content without a placeholder failure', () => {
+		expect(() => assertNoPendingPublishedPlaceholders(undefined)).not.toThrow();
+		expect(() =>
+			assertNoPendingPublishedPlaceholders({ title: 'Borrador autorizado' }),
+		).not.toThrow();
+	});
+
+	it('blocks unresolved placeholders at the Production release boundary', () => {
+		expect(() =>
+			assertNoPendingPublishedPlaceholders({
+				location: { venues: [{ googleMapsUrl: '[[PENDIENTE:MAP_URL]]' }] },
+			}),
+		).toThrow(
+			'La release de Producción contiene datos pendientes de confirmación. Reemplace los placeholders antes de continuar.',
+		);
+	});
+
+	it('enforces the placeholder boundary before the Production engine runs', async () => {
+		const runEngine = jest.fn(async () => engineResult());
+		await expect(
+			runProductionPreflight({
+				packageData: packageData({ title: '[[PENDIENTE:TITLE]]' }),
+				getProductionDbUrl: () => ({ url: 'postgresql://redacted@production.invalid/db' }),
+				runEngine,
+			}),
+		).rejects.toMatchObject({ code: 'PRODUCTION_PLAN_BLOCKED' });
+		expect(runEngine).not.toHaveBeenCalled();
+	});
+
 	it('verifies exact approval, intended target, credentials, inspection, and target plan', async () => {
 		const approvalsDir = writeApproval();
 		const runEngine = jest.fn(async (...args: [ImportEngineOptions]) => {

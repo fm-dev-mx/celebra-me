@@ -616,6 +616,25 @@ describe('publishDraft', () => {
 		expect(mockUpsertPublished).not.toHaveBeenCalled();
 	});
 
+	it('allows a draft placeholder during preflight but blocks the final publication', async () => {
+		mockGetProject.mockResolvedValue(baseProject as any);
+		mockFindDraft.mockResolvedValue({
+			...validDraft,
+			content: {
+				...validDraft.content,
+				description: '[[PENDIENTE:OWNER_NOTE]]',
+			},
+		} as any);
+
+		await expect(getPublicationPreflight('proj-1')).resolves.toHaveProperty('projectionHash');
+		await expect(publishDraft('proj-1')).rejects.toMatchObject({
+			status: 422,
+			code: 'validation_error',
+			message: expect.stringContaining('datos pendientes'),
+		});
+		expect(mockUpsertPublished).not.toHaveBeenCalled();
+	});
+
 	it('allows publish with incomplete eventTiming when countdown is not renderable', async () => {
 		mockGetProject.mockResolvedValue(baseProject as any);
 		mockFindDraft.mockResolvedValue({

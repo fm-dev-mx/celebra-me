@@ -7,6 +7,7 @@ import {
 	evaluateEventCompleteness,
 	evaluatePreparationReadiness,
 	findPlaceholderTokens,
+	findPlaceholderTokensInValue,
 	formatOwnerDecisionPackMarkdown,
 	getEventCompletenessContract,
 	isPlaceholderToken,
@@ -410,6 +411,16 @@ describe('invitation preparation — placeholders and readiness', () => {
 				emptyFieldId.reasons.some((reason) => /fieldId must not be empty/i.test(reason)),
 			).toBe(true);
 		}
+	});
+
+	it('finds placeholders generically in nested invitation values', () => {
+		expect(
+			findPlaceholderTokensInValue({
+				location: { venues: [{ googleMapsUrl: '[[PENDIENTE:MAP_URL]]' }] },
+				itinerary: { items: [{ time: '[[PENDIENTE:EVENT_TIME]]' }] },
+			}),
+		).toEqual(['[[PENDIENTE:EVENT_TIME]]', '[[PENDIENTE:MAP_URL]]']);
+		expect(findPlaceholderTokensInValue({ title: 'Confirmado' })).toEqual([]);
 	});
 
 	it('transitions NOT_READY → READY_WITH_PLACEHOLDERS → READY_FOR_IMPLEMENTATION', () => {

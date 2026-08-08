@@ -10,6 +10,9 @@ import {
 	type PreviewApprovalArtifact,
 } from './preview-approval-service.ts';
 import type { PreviewLiveVerificationResult } from './preview-live-verification.ts';
+import { findPlaceholderTokensInValue } from '../../src/lib/invitation-preparation/placeholders.ts';
+import type { AssetPolicy } from './asset-reconciliation.ts';
+import type { ConflictResolutions, UpdateScope } from './semantic-delta.ts';
 
 export type ProductionPreflightErrorCode =
 	'MISSING_PREVIEW_APPROVAL' | 'PRODUCTION_CREDENTIALS_UNAVAILABLE' | 'PRODUCTION_PLAN_BLOCKED';
@@ -31,8 +34,22 @@ export interface ProductionPreflightResult {
 	targetDbUrl: string;
 }
 
-import type { AssetPolicy } from './asset-reconciliation.ts';
-import type { ConflictResolutions, UpdateScope } from './semantic-delta.ts';
+/**
+ * Production is the first managed-release boundary where published content is
+ * externally visible. Draft and Local/Preview preparation may retain documented
+ * placeholders, but Production must reject them generically.
+ */
+export function assertNoPendingPublishedPlaceholders(
+	content: Record<string, unknown> | undefined,
+): void {
+	const tokens = findPlaceholderTokensInValue(content);
+	if (tokens.length === 0) return;
+	throw new ProductionPreflightError(
+		'PRODUCTION_PLAN_BLOCKED',
+		'La release de Producción contiene datos pendientes de confirmación. Reemplace los placeholders antes de continuar.',
+		{ reason: 'published_content_placeholders', tokens },
+	);
+}
 
 export async function runProductionPreflight(input: {
 	packageData: InvitationPackageData;
@@ -49,6 +66,8 @@ export async function runProductionPreflight(input: {
 	runEngine?: (options: ImportEngineOptions) => Promise<ImportEngineResult>;
 	liveRecheck?: PreviewLiveVerificationResult;
 }): Promise<ProductionPreflightResult> {
+	assertNoPendingPublishedPlaceholders(input.packageData.publishedContent?.content);
+
 	const identity = {
 		packageHash: input.packageData.packageHash,
 		sourceHash: input.packageData.sourceHash,

@@ -38,6 +38,17 @@ export function findPlaceholderTokens(text: string): string[] {
 	return [...found].sort();
 }
 
+/**
+ * Find controlled placeholder tokens anywhere in a serializable invitation value.
+ * Draft and implementation stages may retain these tokens; release boundaries use
+ * this helper to inspect the final published projection without enumerating fields.
+ */
+export function findPlaceholderTokensInValue(value: unknown): string[] {
+	if (value === undefined) return [];
+	const serialized = JSON.stringify(value);
+	return serialized ? findPlaceholderTokens(serialized) : [];
+}
+
 export interface PlaceholderRecord {
 	token: string;
 	fieldId: string;
