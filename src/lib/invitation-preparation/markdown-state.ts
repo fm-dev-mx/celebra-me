@@ -31,8 +31,7 @@ import { isEventType, type EventType } from '@/lib/theme/theme-contract';
 const READINESS_LINE =
 	/\*\*Preparation Readiness(?:\s*\(prepReadiness\))?:\*\*\s*`?(NOT_READY|READY_WITH_PLACEHOLDERS|READY_FOR_IMPLEMENTATION)`?/i;
 
-const FACT_ROW =
-	/^\|\s*([a-z][a-zA-Z0-9_]*)\s*\|\s*([^|]*)\|\s*`?([^|]+?)`?\s*\|/u;
+const FACT_ROW = /^\|\s*([a-z][a-zA-Z0-9_]*)\s*\|\s*([^|]*)\|\s*`?([^|]+?)`?\s*\|/u;
 
 const EVENT_TYPE_ROW = /\|\s*\*\*Event Type\*\*\s*\|\s*`?([a-z0-9-]+)`?\s*\|/i;
 
@@ -70,7 +69,10 @@ export interface ParsedFactRow {
 }
 
 function normalizeClassification(raw: string): InfoClassification | null {
-	const trimmed = raw.trim().toLowerCase().replace(/^`+|`+$/g, '');
+	const trimmed = raw
+		.trim()
+		.toLowerCase()
+		.replace(/^`+|`+$/g, '');
 	if (isInfoClassification(trimmed)) return trimmed;
 	const alias = CLASSIFICATION_ALIASES[trimmed];
 	return alias ?? null;
@@ -127,7 +129,8 @@ function parsePlaceholderRecordsFromMarkdown(markdown: string): PlaceholderRecor
 			fieldId,
 			blocking,
 			reason: reason || 'Documented placeholder',
-			replacementRequirement: replacementRequirement || 'Replace with verified client content',
+			replacementRequirement:
+				replacementRequirement || 'Replace with verified client content',
 		});
 	}
 
@@ -247,8 +250,9 @@ export function hasUniquenessTableInMarkdown(markdown: string): boolean {
 	return false;
 }
 
+/** Accepts legacy "Client-selected demo" and owner-resolved "Owner-selected base demo". */
 const DEMO_CLASS_ROW =
-	/\|\s*Client-selected demo\s*\|\s*([^|]*)\|\s*`?([a-z_()+/\s.-]+)`?\s*\|/iu;
+	/\|\s*(?:Client-selected demo|Owner-selected base demo)\s*\|\s*([^|]*)\|\s*`?([a-z_()+/\s.-]+)`?\s*\|/iu;
 
 function parseDesignDecisionSummaryFromMarkdown(markdown: string): DesignDecisionSummary {
 	const section = extractSection(markdown, /^##\s+Design Direction\b/iu);
@@ -279,8 +283,8 @@ function buildAssetSummaryFromMarkdown(markdown: string): AssetPreparationSummar
 	const sourceFact = facts.find((f) => f.fieldId === 'sourceAssetPath');
 	const sourcePathProvided = Boolean(
 		sourceFact &&
-			sourceFact.classification !== 'missing' &&
-			(sourceFact.value.trim() || sourceFact.classification === 'verified'),
+		sourceFact.classification !== 'missing' &&
+		(sourceFact.value.trim() || sourceFact.classification === 'verified'),
 	);
 	const qualities = parsePhotographInventoryQualitiesFromMarkdown(markdown);
 	const inventoried =
