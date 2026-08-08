@@ -886,6 +886,34 @@ async function validateFullPageBlanks(
 	}
 }
 
+async function ensureInvitationOpenForSelectorValidation(
+	page: Page,
+	job: ScreenshotJob,
+): Promise<void> {
+	if (
+		job.pageType !== 'invitation' ||
+		job.target === 'reveal-only' ||
+		!job.criticalSelectors.some((s) => s.required)
+	) {
+		return;
+	}
+
+	const openUrl = buildScreenshotUrl(job.url, 'open');
+	if (isSameScreenshotNavigationUrl(page.url(), openUrl)) return;
+
+	const expectedInvitation = job.scope?.invitations[0]
+		? {
+				routeIdentity: job.scope.invitations[0].routeIdentity,
+				slug: job.scope.invitations[0].slug,
+			}
+		: undefined;
+	await ensureInvitationOpenForCapture(page, job, {
+		hasReveal: true,
+		maxAttempts: 1,
+		expectedInvitation,
+	});
+}
+
 /**
  * Collect selector, request, and console warnings.
  * Returns the critical selectors validation report array.
@@ -904,26 +932,7 @@ async function collectSelectorAndRequestWarnings(
 ): Promise<{ criticalSelectors: SelectorValidationReport[]; blockingErrors: string[] }> {
 	const blockingErrors: string[] = [];
 
-	if (
-		job.pageType === 'invitation' &&
-		job.target !== 'reveal-only' &&
-		job.criticalSelectors.some((s) => s.required)
-	) {
-		const openUrl = buildScreenshotUrl(job.url, 'open');
-		if (!isSameScreenshotNavigationUrl(page.url(), openUrl)) {
-			const expectedInvitation = job.scope?.invitations[0]
-				? {
-						routeIdentity: job.scope.invitations[0].routeIdentity,
-						slug: job.scope.invitations[0].slug,
-					}
-				: undefined;
-			await ensureInvitationOpenForCapture(page, job, {
-				hasReveal: true,
-				maxAttempts: 1,
-				expectedInvitation,
-			});
-		}
-	}
+	await ensureInvitationOpenForSelectorValidation(page, job);
 
 	// Critical selectors — reclassify "Optional selector not found" as notices
 	const criticalSelectors = await validateCriticalSelectors(page, job.criticalSelectors);
