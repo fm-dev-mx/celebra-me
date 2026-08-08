@@ -88,6 +88,9 @@ jobs:
             - name: Documentation link integrity
               run: pnpm ops check-links
 
+            - name: Markdown table readability
+              run: pnpm validate:markdown-tables
+
     application-validation:
         name: Application Suite
         runs-on: ubuntu-latest

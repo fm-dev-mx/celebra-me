@@ -1,6 +1,15 @@
 {
-    "MD013": false,
-    "MD010": {
-        "code_blocks": false
+    "default": false,
+    "celebra-table-columns": {
+        "severity": "warning",
+        "maxColumns": 4
+    },
+    "celebra-table-narrative": {
+        "severity": "warning",
+        "maxCharacters": 120
+    },
+    "celebra-table-hard-limit": {
+        "severity": "error",
+        "maxCharacters": 240
     }
 }

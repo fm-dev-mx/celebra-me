@@ -1,0 +1,3 @@
+{
+    "customRules": ["./scripts/markdownlint/table-readability.mjs"]
+}

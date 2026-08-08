@@ -114,4 +114,33 @@ describe('related Jest source selection', () => {
 			'src/lib/example.ts',
 		]);
 	});
+
+	it('runs the Markdown table readability gate for changed Markdown files', () => {
+		const result = evaluateModuleScript<{ status: number; calls: string[][] }>(`
+			import { runValidation } from ${JSON.stringify(VALIDATION_RUNNER_MODULE)};
+			const calls = [];
+			console.log = () => {};
+			console.warn = () => {};
+			console.error = () => {};
+			const status = runValidation({
+				files: ['docs/core/example.md'],
+				scope: 'changed',
+				scopeDescription: 'working-tree',
+				pathExists: () => true,
+				runStep: (_name, _command, args) => {
+					calls.push(args);
+					return 0;
+				},
+			});
+			process.stdout.write(JSON.stringify({ status, calls }));
+		`);
+
+		expect(result.status).toBe(0);
+		expect(result.calls).toContainEqual([
+			'validate:markdown-tables',
+			'--',
+			'--files',
+			'docs/core/example.md',
+		]);
+	});
 });

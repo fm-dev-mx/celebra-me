@@ -32,6 +32,8 @@
         "ci:diagnose": "node scripts/ci-diagnose.mjs",
         "validate:staged": "node scripts/validate-staged.mjs",
         "validate:changed": "node scripts/validate-changed.mjs",
+        "validate:markdown-tables": "node scripts/validate-markdown-tables.mjs",
+        "format:markdown-tables": "node scripts/validate-markdown-tables.mjs --fix",
         "validate:structure": "node scripts/validate-structure.mjs",
         "lint": "eslint .",
         "lint:styles": "stylelint \"src/**/*.scss\"",
@@ -170,6 +172,7 @@
         "jest-environment-jsdom": "^30.4.1",
         "jsqr": "^1.4.0",
         "lint-staged": "17.2.0",
+        "markdownlint-cli2": "^0.23.2",
         "prettier": "^3.9.6",
         "prettier-plugin-astro": "^0.14.1",
         "qrcode": "^1.5.4",
@@ -186,6 +189,11 @@
         "*.{ts,tsx,js,jsx,mjs,cjs}": ["eslint --fix --cache", "prettier --write"],
         "*.astro": ["eslint --fix --cache", "prettier --write"],
         "*.{scss,css}": ["stylelint --fix --cache", "prettier --write"],
-        "*.{json,md,yml,yaml}": ["prettier --write"]
+        "*.md": [
+            "node scripts/validate-markdown-tables.mjs --fix --files",
+            "prettier --write",
+            "node scripts/validate-markdown-tables.mjs --files"
+        ],
+        "*.{json,yml,yaml}": ["prettier --write"]
     }
 }

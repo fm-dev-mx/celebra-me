@@ -5,6 +5,7 @@ import { spawnSync } from 'node:child_process';
 
 type PackageManifest = {
 	scripts?: Record<string, string>;
+	'lint-staged'?: Record<string, string[]>;
 };
 
 function readPackageManifest(): PackageManifest {
@@ -14,7 +15,8 @@ function readPackageManifest(): PackageManifest {
 
 describe('canonical validation contract', () => {
 	it('keeps full Stylelint and the production build in the canonical CI command', () => {
-		const scripts = readPackageManifest().scripts ?? {};
+		const manifest = readPackageManifest();
+		const scripts = manifest.scripts ?? {};
 		const ci = scripts['ci'] ?? '';
 
 		expect(ci).toContain('pnpm lint:styles');
@@ -23,11 +25,51 @@ describe('canonical validation contract', () => {
 		expect(ci).toContain('pnpm validate:structure');
 		expect(ci).not.toContain('agent:git-safety');
 		expect(scripts['agent:git-safety:start']).toBe('node scripts/agent/git-safety.mjs start');
-		expect(scripts['agent:git-safety:finish']).toBe(
-			'node scripts/agent/git-safety.mjs finish',
-		);
+		expect(scripts['agent:git-safety:finish']).toBe('node scripts/agent/git-safety.mjs finish');
 		expect(scripts['agent:git-safety:check']).toBeUndefined();
 		expect(scripts['agent:git-safety:end']).toBeUndefined();
+		expect(scripts['validate:markdown-tables']).toBe(
+			'node scripts/validate-markdown-tables.mjs',
+		);
+		expect(scripts['format:markdown-tables']).toBe(
+			'node scripts/validate-markdown-tables.mjs --fix',
+		);
+		expect(manifest['lint-staged']?.['*.md']).toEqual([
+			'node scripts/validate-markdown-tables.mjs --fix --files',
+			'prettier --write',
+			'node scripts/validate-markdown-tables.mjs --files',
+		]);
+
+		const markdownlintConfig = JSON.parse(
+			fs.readFileSync(path.resolve(process.cwd(), '.markdownlint.json'), 'utf8'),
+		) as Record<string, unknown>;
+		expect(markdownlintConfig.default).toBe(false);
+		expect(markdownlintConfig['celebra-table-narrative']).toEqual(
+			expect.objectContaining({ severity: 'warning', maxCharacters: 120 }),
+		);
+		expect(markdownlintConfig['celebra-table-hard-limit']).toEqual(
+			expect.objectContaining({ severity: 'error', maxCharacters: 240 }),
+		);
+
+		const markdownlintCliConfig = fs.readFileSync(
+			path.resolve(process.cwd(), '.markdownlint-cli2.jsonc'),
+			'utf8',
+		);
+		expect(markdownlintCliConfig).toContain('./scripts/markdownlint/table-readability.mjs');
+
+		const vscodeSettings = JSON.parse(
+			fs.readFileSync(path.resolve(process.cwd(), '.vscode/settings.json'), 'utf8'),
+		) as { '[markdown]'?: { 'editor.codeActionsOnSave'?: Record<string, unknown> } };
+		expect(vscodeSettings['[markdown]']?.['editor.codeActionsOnSave']).toEqual(
+			expect.objectContaining({ 'source.fixAll.markdownlint': 'explicit' }),
+		);
+
+		const extensions = JSON.parse(
+			fs.readFileSync(path.resolve(process.cwd(), '.vscode/extensions.json'), 'utf8'),
+		) as { recommendations?: string[] };
+		expect(extensions.recommendations).toEqual(
+			expect.arrayContaining(['DavidAnson.vscode-markdownlint', 'esbenp.prettier-vscode']),
+		);
 	});
 
 	it('keeps coverage opt-in and replaces placeholder E2E tiers', () => {
@@ -93,6 +135,7 @@ describe('canonical validation contract', () => {
 		expect(workflow).toContain('name: Application Suite');
 		expect(workflow).toContain('node scripts/validate-commits.mjs');
 		expect(workflow).toContain('pnpm ops check-links');
+		expect(workflow).toContain('pnpm validate:markdown-tables');
 		expect(workflow).toContain('run: pnpm run ci');
 		expect((workflow.match(/run: pnpm run ci/g) ?? []).length).toBe(1);
 		expect(workflow).not.toMatch(/needs:\s*policy-validation/);

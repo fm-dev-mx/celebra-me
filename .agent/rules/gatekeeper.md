@@ -340,6 +340,10 @@ reviewed files that is not part of the workflow change. Blocking on that debt wo
 ESLint, Stylelint, and related Jest are hard gates. New or modified files in the workflow commit
 must still be formatted — advisory is not a license to commit unformatted code.
 
+Markdown table readability is validated in the same changed/staged scope. Excessive cell prose is a
+hard gate; column count and moderately long cells remain advisory so compact matrices and existing
+technical tables do not become false positives.
+
 **B) Shared component, schema, adapter, render-data, routing, Supabase, or content-resolution
 changes — broader local feedback:**
 
@@ -394,14 +398,31 @@ contract:
 
 Do not load every generated image, a complete manifest, a full diff, or an entire log by default.
 
-| Change class                                                                                                  | Evidence class        | Minimum sufficient proof                                                                                                                                                                              |
-| ------------------------------------------------------------------------------------------------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Material layout, reveal, hero, or section composition                                                         | **Required**          | Same route; primary viewport (`mobile-standard` unless desktop-only); smallest strict target (`--sections=<id>`, `--set=reveal-only`, or a single affected step); reuse an already-running `pnpm dev` |
-| Reference-driven redesign closing an approved brief                                                           | **Required** (scoped) | Viewports listed in the brief — not an automatic five-viewport or full interactive default                                                                                                            |
-| Work under [`docs/domains/theme/section-intersections.md`](../../docs/domains/theme/section-intersections.md) | **Required**          | Follow that domain matrix only for intersection work; **do not** generalize it to all UI                                                                                                              |
-| Copy-only, token/color without layout, docs, backend                                                          | **Unnecessary**       | Skip screenshots                                                                                                                                                                                      |
-| Selector presence, overflow, or simple DOM checks                                                             | **Replaceable**       | Browser snapshot, CDP/`getBoundingClientRect`, or a focused Playwright assert                                                                                                                         |
-| Habitual `full-qa` / `all-sections` / full profile / all invitations                                          | **Reducible**         | Prefer one viewport; widen only after a failed or inconclusive minimum pass, or when the owner asks for a full audit                                                                                  |
+- **Change class:** Material layout, reveal, hero, or section composition
+  - **Evidence class:** **Required**
+  - **Minimum sufficient proof:** Same route; primary viewport (`mobile-standard` unless
+    desktop-only); smallest strict target (`--sections=<id>`, `--set=reveal-only`, or a single
+    affected step); reuse an already-running `pnpm dev`
+- **Change class:** Reference-driven redesign closing an approved brief
+  - **Evidence class:** **Required** (scoped)
+  - **Minimum sufficient proof:** Viewports listed in the brief — not an automatic five-viewport or
+    full interactive default
+- **Change class:** Work under
+  [`docs/domains/theme/section-intersections.md`](../../docs/domains/theme/section-intersections.md)
+  - **Evidence class:** **Required**
+  - **Minimum sufficient proof:** Follow that domain matrix only for intersection work; **do not**
+    generalize it to all UI
+- **Change class:** Copy-only, token/color without layout, docs, backend
+  - **Evidence class:** **Unnecessary**
+  - **Minimum sufficient proof:** Skip screenshots
+- **Change class:** Selector presence, overflow, or simple DOM checks
+  - **Evidence class:** **Replaceable**
+  - **Minimum sufficient proof:** Browser snapshot, CDP/`getBoundingClientRect`, or a focused
+    Playwright assert
+- **Change class:** Habitual `full-qa` / `all-sections` / full profile / all invitations
+  - **Evidence class:** **Reducible**
+  - **Minimum sufficient proof:** Prefer one viewport; widen only after a failed or inconclusive
+    minimum pass, or when the owner asks for a full audit
 
 Rules:
 

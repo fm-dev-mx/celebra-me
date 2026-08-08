@@ -19,6 +19,9 @@
     },
     "[markdown]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.codeActionsOnSave": {
+            "source.fixAll.markdownlint": "explicit"
+        },
         "editor.insertSpaces": true,
         "editor.tabSize": 2,
         "prettier.useTabs": false,

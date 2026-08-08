@@ -10,6 +10,7 @@ const PATTERNS = {
 	lintable: /\.(?:ts|tsx|js|jsx|mjs|cjs|astro)$/u,
 	stylesheet: /\.(?:css|scss)$/u,
 	prettier: /\.(?:ts|tsx|js|jsx|mjs|cjs|astro|json|md|yml|yaml|scss|css)$/u,
+	markdown: /\.md$/u,
 };
 
 const MANAGED_INVITATION_RENDERING_SURFACES = [
@@ -56,6 +57,7 @@ export function buildValidationPlan(files, pathExists) {
 		lintableFiles: filter(PATTERNS.lintable),
 		stylesheetFiles: filter(PATTERNS.stylesheet),
 		prettierFiles: filter(PATTERNS.prettier),
+		markdownFiles: filter(PATTERNS.markdown),
 		relatedTestSources: getRelatedTestSourceFiles(relevantFiles, pathExists),
 		requiresManagedInvitationRegression: requiresManagedInvitationRegression(relevantFiles),
 	};
@@ -122,6 +124,18 @@ export function runValidation({
 		}
 	} else {
 		console.log(`\n→ Prettier: no matching ${scopeDescription} files, skipping.`);
+	}
+
+	if (plan.markdownFiles.length > 0) {
+		const code = runStep(`Markdown table readability (${scopeDescription} files)`, 'pnpm', [
+			'validate:markdown-tables',
+			'--',
+			'--files',
+			...plan.markdownFiles,
+		]);
+		if (code !== 0) return fail('markdown-tables', code);
+	} else {
+		console.log(`\n→ Markdown table readability: no ${scopeDescription} files, skipping.`);
 	}
 
 	if (plan.relatedTestSources.length > 0) {

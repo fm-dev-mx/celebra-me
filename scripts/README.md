@@ -35,20 +35,20 @@ are no longer registered. Use `pnpm dbs` and `pnpm invitation:*` for invitation 
 
 ## Invitation Provisioning & Promotion Commands
 
-| Command                              | Audience      | Canonical Script                                              | Purpose                                                                         |
-| ------------------------------------ | ------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| `pnpm dbs`                           | Human / agent | `scripts/provision/dbs-cli.ts`                                | Read-only status matrix (`migration_history_parity` + managed content)          |
-| `pnpm dbs --compact`                 | Human / agent | `scripts/provision/managed-status.ts`                         | Compact CONTENT + SCHEMA (Git-hook friendly)                                    |
-| `pnpm invitation:release`            | Human / agent | `scripts/provision/invitation-release-cli.ts`                 | Define, plan, apply, approve, and release managed invitations                   |
-| `pnpm invitation:reconcile`          | Human / agent | `scripts/provision/invitation-reconcile-cli.ts`               | Guided Local/Preview managed divergence reconciliation                          |
-| `pnpm invitation:content-parity`     | Human / agent | `scripts/provision/content-parity-cli.ts`                     | Read-only semantic content parity (excludes RSVP/PII)                           |
-| `pnpm invitation:preview-fixture`    | Human / agent | `scripts/provision/preview-e2e-fixture-cli.ts`                | Preview-only E2E fixture bootstrap (not Dashboard create)                       |
-| `pnpm invitation:purge-by-id`        | Human / agent | `scripts/provision/invitation-id-purge-cli.ts`                | Preview-only UUID purge with dry-run audit                                      |
-| `pnpm invitation:cross-db-reconcile` | Human / agent | `scripts/provision/cross-db-invitation-reconciliation-cli.ts` | Read-only cross-DB invitation inventory parity                                  |
-| `pnpm invitation:inventory-audit`    | Human / agent | `scripts/provision/inventory-audit-cli.ts`                    | Tabular/JSON inventory matrix (distinct from `dbs` summary)                     |
-| `pnpm invitation:diagnose-identity`  | Human / agent | `scripts/provision/managed-identity-diagnostics-cli.ts`       | Managed identity / alias diagnostics                                            |
-| `pnpm invitation:local-corpus`       | Human / agent | `scripts/provision/local-render-corpus/cli.ts`                | Bootstrap local render corpus slugs                                             |
-| `pnpm invitation:romina-draft-reset` | Owner (temp)  | `scripts/provision/romina-draft-reset-cli.ts`                 | Temporary one-off; remove after owner confirms complete                         |
+| Command                              | Audience      | Canonical Script                                              | Purpose                                                                |
+| ------------------------------------ | ------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `pnpm dbs`                           | Human / agent | `scripts/provision/dbs-cli.ts`                                | Read-only status matrix (`migration_history_parity` + managed content) |
+| `pnpm dbs --compact`                 | Human / agent | `scripts/provision/managed-status.ts`                         | Compact CONTENT + SCHEMA (Git-hook friendly)                           |
+| `pnpm invitation:release`            | Human / agent | `scripts/provision/invitation-release-cli.ts`                 | Define, plan, apply, approve, and release managed invitations          |
+| `pnpm invitation:reconcile`          | Human / agent | `scripts/provision/invitation-reconcile-cli.ts`               | Guided Local/Preview managed divergence reconciliation                 |
+| `pnpm invitation:content-parity`     | Human / agent | `scripts/provision/content-parity-cli.ts`                     | Read-only semantic content parity (excludes RSVP/PII)                  |
+| `pnpm invitation:preview-fixture`    | Human / agent | `scripts/provision/preview-e2e-fixture-cli.ts`                | Preview-only E2E fixture bootstrap (not Dashboard create)              |
+| `pnpm invitation:purge-by-id`        | Human / agent | `scripts/provision/invitation-id-purge-cli.ts`                | Preview-only UUID purge with dry-run audit                             |
+| `pnpm invitation:cross-db-reconcile` | Human / agent | `scripts/provision/cross-db-invitation-reconciliation-cli.ts` | Read-only cross-DB invitation inventory parity                         |
+| `pnpm invitation:inventory-audit`    | Human / agent | `scripts/provision/inventory-audit-cli.ts`                    | Tabular/JSON inventory matrix (distinct from `dbs` summary)            |
+| `pnpm invitation:diagnose-identity`  | Human / agent | `scripts/provision/managed-identity-diagnostics-cli.ts`       | Managed identity / alias diagnostics                                   |
+| `pnpm invitation:local-corpus`       | Human / agent | `scripts/provision/local-render-corpus/cli.ts`                | Bootstrap local render corpus slugs                                    |
+| `pnpm invitation:romina-draft-reset` | Owner (temp)  | `scripts/provision/romina-draft-reset-cli.ts`                 | Temporary one-off; remove after owner confirms complete                |
 
 Operator cards:
 [`docs/domains/database/cheatsheets/README.md`](../docs/domains/database/cheatsheets/README.md).
@@ -60,6 +60,13 @@ uses `invitation-promote.ts` + `production-preflight.ts` + the managed import en
 selected target aborts the complete mutation phase.
 
 ## Validation Commands
+
+`pnpm validate:markdown-tables` checks active Markdown tables in the current changed range. Warnings
+are advisory; excessive cell prose is blocking. For explicit correction, use
+`pnpm format:markdown-tables -- --files <path...>` or `pnpm format:markdown-tables -- --all-active`.
+The pre-commit `lint-staged` pipeline applies the correction, runs Prettier, and performs a final
+check. In VS Code, install the recommended Markdownlint extension; an explicit save runs its fix
+action before the configured Prettier formatter.
 
 | Command                      | Canonical Script                   | Purpose                                                       |
 | ---------------------------- | ---------------------------------- | ------------------------------------------------------------- |
