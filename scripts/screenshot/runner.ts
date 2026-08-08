@@ -49,6 +49,8 @@ import {
 	captureGeneralPageScreenshots,
 	type PlannedCaptureTask,
 } from './capture.js';
+import { buildScreenshotUrl, isSameScreenshotNavigationUrl } from './navigation.js';
+import { ensureInvitationOpenForCapture } from './reveal.js';
 
 interface SingleViewportCaptureResult {
 	captures: CaptureResult[];
@@ -901,6 +903,27 @@ async function collectSelectorAndRequestWarnings(
 	viewportName: string,
 ): Promise<{ criticalSelectors: SelectorValidationReport[]; blockingErrors: string[] }> {
 	const blockingErrors: string[] = [];
+
+	if (
+		job.pageType === 'invitation' &&
+		job.target !== 'reveal-only' &&
+		job.criticalSelectors.some((s) => s.required)
+	) {
+		const openUrl = buildScreenshotUrl(job.url, 'open');
+		if (!isSameScreenshotNavigationUrl(page.url(), openUrl)) {
+			const expectedInvitation = job.scope?.invitations[0]
+				? {
+						routeIdentity: job.scope.invitations[0].routeIdentity,
+						slug: job.scope.invitations[0].slug,
+					}
+				: undefined;
+			await ensureInvitationOpenForCapture(page, job, {
+				hasReveal: true,
+				maxAttempts: 1,
+				expectedInvitation,
+			});
+		}
+	}
 
 	// Critical selectors — reclassify "Optional selector not found" as notices
 	const criticalSelectors = await validateCriticalSelectors(page, job.criticalSelectors);
