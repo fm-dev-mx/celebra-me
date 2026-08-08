@@ -365,6 +365,64 @@ that upscales past native width.
 
 ---
 
+## Creative Direction & Acceptance
+
+The Goal 3B visual review is closed within scope. This record distinguishes capture mechanics from
+the human creative decision and does not change `prepReadiness`.
+
+| concern                     | decision / evidence                                                                                                                                 | status     |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| Typography roles            | Display / label / body roles are explicit in the Victoria profile tokens and component selectors.                                                   | verified   |
+| Vertical rhythm and density | Open editorial cadence retained; Countdown, Gallery, Personalized Access, RSVP, and Thank You reviewed after Goal 3B.                               | verified   |
+| Surface hierarchy           | Open cream/terracotta flow with restrained low-chrome access/RSVP surfaces; remaining RSVP container presence is an accepted taste note.            | verified   |
+| Photographic treatment      | Five unique production-ready roles with face-safe hero, editorial interludes, single Gallery feature, and closing portrait.                         | verified   |
+| Section-intersection intent | Countdown→Location and Gifts→Personalized Access use overlap; Personalized Access→RSVP uses atmospheric blend; render-plan tests cover the profile. | verified   |
+| Local exceptions            | Scoped to `src/styles/invitation-profiles/victoria-y-roberto.scss`; no further Victoria redesign authorized by this goal.                           | documented |
+
+### Final creative acceptance record
+
+| field                                       | value                                                                                                                                                                                               |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Mechanical render/capture result            | **pass** — Goal 3B reports passed capture/selector/section coverage at 390 × 844 and 1440 × 1200 (`output/playwright/goal-3b-after-sections/report.json`, plus reveal and RSVP reports).            |
+| Whole-invitation responsive inspection      | Human review covered the rendered invitation as a whole and the focused responsive evidence; section reports cover Countdown, Itinerary, Family, Gallery, Personalized Access, RSVP, and Thank You. |
+| Section boundaries and narrative continuity | **pass**; remaining Family/RSVP observations are accepted taste notes, not defects.                                                                                                                 |
+| Human creative outcome                      | **`ACCEPTED_WITH_BLOCKERS`**                                                                                                                                                                        |
+| Reviewer and date                           | Owner visual review, 2026-08-08                                                                                                                                                                     |
+| Blocking reason or owner follow-up          | Only the five owner-data blockers below remain before Production: ceremony map URL, reception map URL, dinner time, toast time, closing time.                                                       |
+
+`ACCEPTED_WITH_BLOCKERS` here records an operational owner-data dependency, not an open visual
+correction. It must block the applicable Production boundary without blocking unrelated development.
+
+### Goal 4 audit disposition
+
+The original Goal 1 visual findings remain the fixed audit set; no new subjective findings were
+opened during Goal 4.
+
+| # | finding area | final disposition | evidence / note |
+| -: | ------------ | ----------------- | --------------- |
+| 1 | Cross-section editorial consistency | **resolved** | Goal 3 editorial system plus Goal 3B whole-invitation review. |
+| 2 | Typography roles and heterogeneity | **resolved by shared infrastructure** | Semantic font roles/tokens and profile selectors; structural tests retained. |
+| 3 | Vertical rhythm and density | **resolved** | Goal 2/3 rhythm corrections and focused responsive capture. |
+| 4 | Generic cards and bordered surfaces | **resolved** | Open-flow/local surface hierarchy; residual RSVP container presence is accepted taste. |
+| 5 | Photographic/content transitions | **resolved by shared infrastructure** | Canonical intersection profiles and render-plan coverage. |
+| 6 | Reveal card-like opening | **resolved** | Victoria reveal refinement; reveal-open contract and Goal 3B reveal report. |
+| 7 | Hero lower hierarchy | **resolved** | Goal 3 hero composition evidence; not reopened in Goal 3B. |
+| 8 | Quote/countdown empty space | **resolved** | Countdown composition and rhythm evidence in section report. |
+| 9 | Location refinement | **resolved** | Shared location semantics plus Victoria profile; no regression found. |
+| 10 | Itinerary unfinished state | **blocked only by owner-controlled data** | Visual pacing is corrected; dinner, toast, and closing times remain explicit placeholders. |
+| 11 | Family hierarchy | **intentionally unchanged with evidence** | Accepted visual quality; further editorial exploration is optional, not a defect. |
+| 12 | Gallery sparse/provisional treatment | **resolved** | Single-image editorial treatment; cross-preset `single` tests pass. |
+| 13 | Gifts generic card stack | **resolved** | Goal 3 surface hierarchy and focused whole-page review. |
+| 14 | Personalized Access / RSVP density mismatch | **resolved** | Connected guest-action sequence in Goal 3B. |
+| 15 | RSVP incomplete initial state | **resolved** | Initial/progression behavior retained; focused RSVP evidence passes. |
+| 16 | ThankYou duplicated rendering | **resolved by shared infrastructure** | Goal 2 duplicate-message guard; no Victoria workaround remains. |
+| 17 | ThankYou closing reading flow | **resolved** | Goal 3B closing refinement; no disruptive drop-cap remains. |
+
+The only remaining owner-data blockers are the five placeholders listed above; none blocks unrelated
+implementation or shared-contract validation.
+
+---
+
 ## Preparation Readiness History
 
 | date       | readiness                 | helper basis                   | notes                                                                  |
