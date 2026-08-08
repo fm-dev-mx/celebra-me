@@ -33,8 +33,14 @@ const { items, variant } = Astro.props;
 	<div class="itinerary__items">
 		{items.map((item, index) => {
 			const align = index % 2 === 0 ? 'left' : 'right';
+			const timeStatus = item.time.startsWith('[[PENDIENTE:') ? 'pending' : 'confirmed';
 			return (
-				<div class:list={['itinerary__item', `itinerary__item--${align}`]} data-itinerary-item data-reveal-item>
+				<div
+					class:list={['itinerary__item', `itinerary__item--${align}`]}
+					data-itinerary-item
+					data-time-status={timeStatus}
+					data-reveal-item
+				>
 					<div class="itinerary__item-content">
 						<div class="itinerary__item-time">{formatTime12h(item.time)}</div>
 						<h4 class="itinerary__item-label">{item.label}</h4>

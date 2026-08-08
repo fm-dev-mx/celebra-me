@@ -197,14 +197,66 @@
 	// Reveal remains the existing state machine, but reads as a quiet object
 	// instead of a stacked template card.
 	.envelope-wrapper {
-		gap: clamp(1rem, 3vw, 1.5rem);
+		--env-bg: radial-gradient(
+			ellipse at 50% 44%,
+			rgb(var(--victoria-sand-rgb) / 42%) 0%,
+			var(--victoria-cream) 70%
+		);
+		--env-container-width: min(72vw, 32rem);
+		--env-container-ratio: 1.45;
+		--env-container-max-height: min(48svh, 23rem);
+		--env-container-radius: var(--victoria-surface-radius);
+		--env-paper-bg: rgb(var(--victoria-ivory-rgb) / 82%);
+		--env-paper-border: rgb(var(--victoria-terracota-rgb) / 14%);
+		--env-shadow-container: 0 12px 30px rgb(var(--victoria-ink-rgb) / 10%);
+		--reveal-card-bg: transparent;
+		--reveal-card-border: rgb(var(--victoria-terracota-rgb) / 20%);
+		--reveal-card-radius: 0;
+		--reveal-card-shadow: none;
+		--reveal-card-grain-opacity: 32%;
+		--reveal-card-font-display: var(--victoria-font-display);
+
+		gap: clamp(0.85rem, 2vw, 1.25rem);
 
 		.envelope-container {
 			box-shadow: var(--env-shadow-container);
 		}
 
 		.envelope-tease {
-			padding: clamp(1rem, 3vw, 1.75rem);
+			padding: clamp(0.75rem, 2vw, 1.25rem);
+		}
+
+		.envelope-name {
+			font-family: var(--victoria-font-display);
+			font-weight: 400;
+		}
+
+		.envelope-details,
+		.envelope-manifest-label,
+		.envelope-seal-hint {
+			font-family: var(--victoria-font-label);
+		}
+
+		.invitation-reveal-card {
+			background: transparent;
+			border: 0;
+			border-block: var(--victoria-fine-border);
+			border-radius: 0;
+			box-shadow: none;
+		}
+
+		.invitation-reveal-card__inner {
+			min-height: min(30svh, 16rem);
+			padding: clamp(1.4rem, 4vw, 2rem);
+		}
+
+		.invitation-reveal-card__label,
+		.invitation-reveal-card__date {
+			font-family: var(--victoria-font-label);
+		}
+
+		.invitation-reveal-card__name {
+			font-size: clamp(1.7rem, 6vw, 2.35rem);
 		}
 	}
 
@@ -281,15 +333,37 @@
 	}
 
 	.countdown-section {
-		min-height: clamp(18rem, 40svh, 30rem);
-		padding-block: clamp(3.5rem, 7vw, 5rem);
+		min-height: clamp(17rem, 36svh, 25rem);
+		padding-block: clamp(3rem, 6vw, 4.5rem);
 	}
 
-	.countdown__segment {
-		border: var(--victoria-fine-border);
-		border-radius: var(--victoria-surface-radius);
-		background: rgb(var(--victoria-ivory-rgb) / 52%);
+	.countdown__timer {
+		gap: 0;
+	}
+
+	.countdown-section .countdown__segment {
+		padding: clamp(0.9rem, 2.4vw, 1.35rem) clamp(0.3rem, 1.4vw, 0.8rem);
+		border: 0;
+		border-radius: 0;
+		background: transparent;
 		box-shadow: none;
+
+		&:not(:last-child)::after {
+			content: '';
+			position: absolute;
+			top: 18%;
+			right: 0;
+			bottom: 18%;
+			width: 1px;
+			background: rgb(var(--victoria-terracota-rgb) / 24%);
+		}
+
+		&:hover {
+			transform: none;
+			border-color: transparent;
+			background: transparent;
+			box-shadow: none;
+		}
 	}
 
 	.countdown-title,
@@ -301,6 +375,14 @@
 	.countdown__label {
 		font-family: var(--victoria-font-label);
 		letter-spacing: 0.14em;
+	}
+
+	.countdown-date {
+		margin-top: 0.25rem;
+	}
+
+	.countdown-footer {
+		margin-top: clamp(2rem, 4vw, 3rem);
 	}
 
 	// Location and itinerary are open editorial records, not nested cards.
@@ -334,10 +416,10 @@
 	}
 
 	.itinerary {
-		padding-block: clamp(4rem, 8vw, 6rem);
+		padding-block: clamp(3.5rem, 7vw, 5rem);
 
 		&__header {
-			margin-bottom: clamp(2.5rem, 5vw, 3.5rem);
+			margin-bottom: clamp(2rem, 4vw, 2.75rem);
 		}
 
 		&__timeline {
@@ -345,7 +427,9 @@
 		}
 
 		&__items {
-			gap: clamp(0.2rem, 1vw, 0.6rem);
+			max-width: 44rem;
+			gap: 0;
+			margin-inline: auto;
 		}
 
 		&__animated-line-container {
@@ -354,8 +438,8 @@
 
 		&__item {
 			grid-template-columns: minmax(4.5rem, 7rem) minmax(0, 1fr);
-			gap: 0.75rem;
-			padding-block: 1rem;
+			gap: clamp(0.75rem, 2vw, 1.25rem);
+			padding-block: 0.85rem;
 			border-bottom: var(--victoria-fine-border);
 
 			&:last-child {
@@ -367,7 +451,8 @@
 		&__item--right {
 			& .itinerary__item-content {
 				grid-column: 2;
-				padding: 0 0 1rem;
+				padding: 0;
+				border-bottom: 0;
 				text-align: left;
 			}
 		}
@@ -388,19 +473,43 @@
 		&__item-description {
 			font-family: var(--victoria-font-body);
 			font-size: 0.9rem;
-			line-height: 1.55;
+			line-height: 1.45;
+		}
+
+		&__item[data-time-status='pending'] {
+			grid-template-columns: minmax(13rem, 16rem) minmax(0, 1fr);
+
+			.itinerary__item-time {
+				width: fit-content;
+				max-width: 100%;
+				padding: 0.28rem 0.45rem;
+				border: 1px dashed rgb(var(--victoria-terracota-rgb) / 28%);
+				background: rgb(var(--victoria-terracota-rgb) / 5%);
+				font-size: 0.64rem;
+				letter-spacing: 0.035em;
+				overflow-wrap: anywhere;
+			}
 		}
 	}
 
 	@media (width <= 47.9375rem) {
 		.itinerary {
 			&__item {
-				grid-template-columns: 1fr;
+				grid-template-columns: minmax(4.75rem, 5.5rem) minmax(0, 1fr);
 			}
 
 			&__item--left,
 			&__item--right {
 				& .itinerary__item-content {
+					grid-column: 2;
+				}
+			}
+
+			&__item[data-time-status='pending'] {
+				grid-template-columns: 1fr;
+
+				.itinerary__item-content,
+				.itinerary__item-time {
 					grid-column: 1;
 				}
 			}
@@ -412,23 +521,44 @@
 	.gallery-section:has(.gallery-grid__item:only-child) {
 		--gallery-item-aspect-ratio: 2 / 3;
 		--gallery-item-aspect-ratio-feature: 2 / 3;
-		--gallery-item-radius: var(--victoria-surface-radius);
-		--gallery-item-border: var(--victoria-fine-border);
-		--gallery-item-shadow: var(--victoria-soft-shadow);
-		--gallery-section-padding-block: clamp(4rem, 8vw, 6rem);
+		--gallery-item-radius: 0;
+		--gallery-item-padding: 0;
+		--gallery-item-bg: transparent;
+		--gallery-item-border: 0;
+		--gallery-item-shadow: none;
+		--gallery-item-emphasis-shadow: none;
+		--gallery-item-hover-shadow: none;
+		--gallery-item-image-radius: 0;
+		--gallery-section-padding-block: clamp(3.5rem, 7vw, 5rem);
+		--gallery-container-max-width: min(62rem, calc(100vw - 2rem));
+
+		.gallery-section__container {
+			display: grid;
+			grid-template-columns: max-content minmax(0, 30rem);
+			align-items: start;
+			justify-content: center;
+			gap: clamp(1.25rem, 3vw, 2.25rem);
+		}
 
 		.gallery-grid {
 			display: grid;
-			grid-template-columns: minmax(0, 28rem);
+			grid-template-columns: minmax(0, 30rem);
 			justify-content: center;
 			gap: 0;
+			margin-inline: 0;
 		}
 
 		.gallery-grid__item,
 		.gallery-grid__item--feature {
 			width: 100%;
-			max-width: 28rem;
+			max-width: 30rem;
 			margin-inline: auto;
+		}
+
+		.gallery-section__header {
+			margin: 0;
+			writing-mode: vertical-rl;
+			transform: rotate(180deg);
 		}
 
 		.gallery-section__eyebrow {
@@ -437,33 +567,55 @@
 			letter-spacing: 0.22em;
 			text-transform: uppercase;
 		}
-	}
 
-	.family__group--group-0,
-	.family__group--group-1 {
-		text-align: center;
+		.gallery-grid__item img {
+			border: var(--victoria-fine-border);
+		}
 	}
 
 	.family {
-		padding-block: clamp(4rem, 8vw, 6.5rem);
+		padding-block: clamp(3.75rem, 7vw, 5.5rem);
 
 		&__panel--no-media {
-			max-width: 48rem;
+			max-width: 54rem;
 			margin-inline: auto;
 		}
 
 		&__content {
-			gap: clamp(0.85rem, 2vw, 1.4rem);
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 0 clamp(1.5rem, 5vw, 4rem);
 		}
 
 		&__group {
-			padding-block: clamp(1rem, 2.5vw, 1.5rem);
+			padding-block: clamp(1.1rem, 2.5vw, 1.6rem);
 		}
 
-		&__group--parents {
-			padding-block: clamp(1.25rem, 3vw, 1.8rem);
+		&__group--group-0 {
+			padding-inline-end: clamp(0.75rem, 2vw, 1.5rem);
+			border-inline-end: var(--victoria-fine-border);
+			text-align: right;
+
+			.family__name {
+				justify-content: flex-end;
+			}
+		}
+
+		&__group--group-1 {
+			padding-inline-start: clamp(0.75rem, 2vw, 1.5rem);
+			text-align: left;
+
+			.family__name {
+				justify-content: flex-start;
+			}
+		}
+
+		&__group--godparents {
+			grid-column: 1 / -1;
+			margin-top: clamp(0.5rem, 2vw, 1rem);
+			padding-top: clamp(1.5rem, 3vw, 2rem);
 			border-top: var(--victoria-fine-border);
-			border-bottom: var(--victoria-fine-border);
+			text-align: center;
 		}
 
 		&__group-title {
@@ -540,25 +692,68 @@
 
 	// Access and RSVP share a low-chrome surface and a single cadence.
 	.personalized-access {
+		padding-block: clamp(3rem, 6vw, 4.5rem);
+
 		&__container {
 			max-width: 38rem;
 		}
 
 		.access-card {
 			max-width: 38rem;
+			overflow: visible;
+			border: 0;
+			border-block: var(--victoria-fine-border);
+			border-radius: 0;
+			background: transparent;
+			box-shadow: none;
+
+			&::before,
+			&::after {
+				content: none;
+			}
+		}
+
+		.access-card__ornaments,
+		.access-card__seal {
+			display: none;
 		}
 
 		.access-card__header {
-			padding-block: clamp(1.5rem, 4vw, 2.25rem) 1.1rem;
+			padding: clamp(1.5rem, 3vw, 2rem) clamp(1rem, 3vw, 1.5rem) 1rem;
+			gap: 0.55rem;
 		}
 
 		.access-card__body {
-			padding-block: 1.15rem 1.5rem;
-			gap: 1.15rem;
+			grid-template-columns: minmax(0, 1fr) minmax(7rem, 0.42fr);
+			align-items: center;
+			padding: 1rem clamp(1rem, 3vw, 1.5rem) 1.35rem;
+			gap: 0.9rem clamp(1.25rem, 4vw, 2rem);
+
+			.access-card__divider {
+				display: none;
+			}
+
+			.access-card__quota {
+				padding-inline-start: clamp(1rem, 3vw, 1.5rem);
+				border-inline-start: var(--victoria-fine-border);
+			}
+
+			.access-card__note {
+				grid-column: 1 / -1;
+				max-width: 32rem;
+			}
+
+			.access-card__count-frame {
+				min-width: 0;
+				padding: 0;
+				border: 0;
+				background: transparent;
+				box-shadow: none;
+			}
 		}
 
 		.access-card__footer {
-			padding-block: 1rem 1.35rem;
+			padding: 1rem clamp(1rem, 3vw, 1.5rem) 1.25rem;
 		}
 
 		.access-card__title,
@@ -573,13 +768,17 @@
 	}
 
 	.rsvp-section {
-		min-block-size: clamp(28rem, 60svh, 36rem);
-		padding-block: clamp(1.25rem, 4svh, 2.5rem);
+		min-block-size: auto;
+		padding-block: clamp(3rem, 6vw, 4.5rem);
+		background: var(--rsvp-bg);
 	}
 
 	.rsvp {
-		background-color: rgb(var(--victoria-ivory-rgb) / 72%);
-		border: var(--victoria-fine-border);
+		padding: clamp(1.5rem, 3vw, 2rem) clamp(1rem, 4vw, 1.75rem);
+		background: transparent;
+		border: 0;
+		border-block: var(--victoria-fine-border);
+		border-radius: 0;
 		box-shadow: none;
 		backdrop-filter: none;
 
@@ -593,12 +792,28 @@
 		&__title {
 			font-family: var(--victoria-font-display);
 		}
+
+		&__attendance-summary-label {
+			color: rgb(var(--victoria-terracota-deep-rgb) / 72%);
+		}
+
+		&__button,
+		&__button:hover:not(:disabled) {
+			color: var(--victoria-cream);
+			background: var(--victoria-terracota-deep);
+			border-color: rgb(var(--victoria-gold-rgb) / 52%);
+			box-shadow: none;
+		}
+
+		&__demo-footer {
+			color: rgb(var(--victoria-ink-rgb) / 62%);
+		}
 	}
 
 	// Closing is a compact epilogue: medallion, readable copy, then signature.
 	.thank-you-section {
-		min-height: clamp(30rem, 72svh, 46rem);
-		padding-block: clamp(4.5rem, 8vw, 6.5rem);
+		min-height: clamp(30rem, 64svh, 42rem);
+		padding-block: clamp(4rem, 7vw, 5.5rem);
 	}
 
 	.thank-you-content {
@@ -619,12 +834,16 @@
 		font-size: clamp(1rem, 1.4vw, 1.1rem);
 		line-height: 1.72;
 		margin-bottom: 1.35rem;
+		text-align: left;
+		text-wrap: pretty;
 
 		.drop-cap {
-			font-family: var(--victoria-font-display);
-			font-size: 2.5em;
-			line-height: 0.9;
-			color: var(--victoria-terracota);
+			float: none;
+			padding: 0;
+			font: inherit;
+			line-height: inherit;
+			color: inherit;
+			text-shadow: none;
 		}
 	}
 
@@ -651,6 +870,39 @@
 		letter-spacing: 0.16em;
 	}
 
+	@include mixins.respond-to(md) {
+		.thank-you-content {
+			display: grid;
+			grid-template-columns: minmax(11rem, 14rem) minmax(0, 1fr);
+			grid-template-areas:
+				'photo message'
+				'photo signature'
+				'photo footer';
+			gap: 1rem clamp(2.5rem, 6vw, 5rem);
+			max-width: 54rem;
+			text-align: left;
+		}
+
+		.photo-frame {
+			grid-area: photo;
+		}
+
+		.message-container {
+			grid-area: message;
+		}
+
+		.signature-block {
+			grid-area: signature;
+		}
+
+		.thank-you-footer {
+			grid-area: footer;
+			justify-self: start;
+			margin-top: 0.5rem;
+			text-align: left;
+		}
+	}
+
 	// Hide hero chrome until reveal completes (jewelry-box envelope contract)
 	&[data-reveal-state='sealed'],
 	&[data-reveal-state='letter-held'],
@@ -673,12 +925,89 @@
 	}
 
 	@include mixins.respond-below(md) {
+		.envelope-wrapper {
+			--env-container-width: min(86vw, 21rem);
+			--env-container-ratio: 1.1;
+			--env-container-max-height: min(58svh, 20rem);
+			--env-grid: 28% 32% 40%;
+		}
+
 		.gallery-section[data-variant='single'],
 		.gallery-section:has(.gallery-grid__item:only-child) {
+			.gallery-section__container {
+				display: block;
+			}
+
+			.gallery-section__header {
+				display: flex;
+				align-items: center;
+				gap: 0.75rem;
+				margin-bottom: 1.25rem;
+				writing-mode: horizontal-tb;
+				transform: none;
+			}
+
 			.gallery-grid {
 				grid-template-columns: minmax(0, 1fr);
-				padding-inline: 1.25rem;
+				padding-inline: 0.35rem;
 			}
+		}
+
+		.family {
+			&__content {
+				grid-template-columns: 1fr;
+			}
+
+			&__group--group-0 {
+				padding-inline: 0;
+				border-inline-end: 0;
+				border-bottom: var(--victoria-fine-border);
+				text-align: left;
+			}
+
+			&__group--group-1 {
+				padding-inline: 0;
+				text-align: right;
+			}
+
+			&__group--godparents {
+				grid-column: 1;
+			}
+		}
+
+		.gallery-section[data-variant='single'] .gallery-section__header::before,
+		.gallery-section[data-variant='single'] .gallery-section__header::after,
+		.gallery-section:has(.gallery-grid__item:only-child) .gallery-section__header::before,
+		.gallery-section:has(.gallery-grid__item:only-child) .gallery-section__header::after {
+			content: '';
+			flex: 1;
+			height: 1px;
+			background: rgb(var(--victoria-terracota-rgb) / 20%);
+		}
+
+		.family__group--group-0 .family__name {
+			justify-content: flex-start;
+		}
+
+		.family__group--group-1 .family__name {
+			justify-content: flex-end;
+		}
+
+		.personalized-access .access-card__body {
+			grid-template-columns: 1fr;
+		}
+
+		.personalized-access .access-card__divider {
+			display: block;
+		}
+
+		.personalized-access .access-card__quota {
+			padding-inline-start: 0;
+			border-inline-start: 0;
+		}
+
+		.personalized-access .access-card__note {
+			grid-column: 1;
 		}
 	}
 }
