@@ -20,8 +20,10 @@ function sha256(value: string | Buffer): string {
 	return createHash('sha256').update(value).digest('hex');
 }
 
+const MAX_BUFFER = 64 * 1024 * 1024;
+
 function git(root: string, args: string[]): string {
-	return execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim();
+	return execFileSync('git', args, { cwd: root, encoding: 'utf8', maxBuffer: MAX_BUFFER }).trim();
 }
 
 export function currentHead(root: string): string {
@@ -40,7 +42,7 @@ export function sourceFingerprint(root: string): SourceFingerprint {
 			':(exclude)graphify-out/**',
 			':(exclude).agent/tmp/**',
 		],
-		{ cwd: root },
+		{ cwd: root, maxBuffer: MAX_BUFFER },
 	);
 	const untracked = git(root, [
 		'ls-files',
