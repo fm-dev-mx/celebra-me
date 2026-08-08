@@ -63,10 +63,12 @@ describe('Boda Victoria y Roberto provision contract', () => {
 		expect(profile).toContain('--victoria-terracota');
 		expect(profile).toContain('--victoria-cream');
 		expect(profile).toContain('--victoria-gold');
+		expect(profile).toContain('--victoria-font-display');
+		expect(profile).toContain("data-intersection='overlap'");
 		expect(profile).toContain("data-reveal-state='sealed'");
 		expect(profile).toContain("data-reveal-state='revealed'");
 		expect(profile).toContain("data-variant='single'");
-		expect(profile).toContain("data-presentation='text-only'");
+		expect(profile).not.toContain("data-presentation='text-only'");
 		expect(profile).not.toContain('OneDrive');
 		expect(profile).not.toContain('Clientes\\');
 	});
@@ -266,6 +268,25 @@ describe('Boda Victoria y Roberto provision contract', () => {
 		} as Parameters<typeof adaptEvent>[0]);
 		const renderPlan = buildInvitationRenderPlan(viewModel);
 		expect(renderPlan.filter((item) => item.type === 'interlude')).toHaveLength(2);
+		expect(
+			renderPlan.filter((item) => item.type === 'interlude').map((item) => item.intersection),
+		).toEqual([
+			{ family: 'overlap', source: 'countdown' },
+			{ family: 'overlap', source: 'gifts' },
+		]);
+		expect(
+			renderPlan.find((item) => item.type === 'personalized-access')?.intersection,
+		).toEqual({
+			family: 'atmospheric-blend',
+			source: 'interlude-after-gifts',
+		});
+		expect(
+			renderPlan.find((item) => item.type === 'section' && item.section === 'rsvp')
+				?.intersection,
+		).toEqual({
+			family: 'atmospheric-blend',
+			source: 'personalized-access',
+		});
 		expect(
 			renderPlan.map((item) => (item.type === 'section' ? item.section : item.type)),
 		).toEqual([

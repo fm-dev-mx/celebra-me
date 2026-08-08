@@ -65,6 +65,23 @@ const INTERSECTION_PROFILES: Readonly<Record<string, IntersectionProfile>> = {
 		rsvp: { family: 'atmospheric-blend', source: 'interlude-after-gifts' },
 		thankYou: { family: 'atmospheric-blend', source: 'rsvp' },
 	},
+	'victoria-y-roberto': {
+		// Warm atmospheric pacing carries the editorial chapters without introducing
+		// a second geometric language. The two photographic interludes are the only
+		// depth-bearing seams; the access-to-RSVP handoff remains a quiet blend.
+		quote: { family: 'atmospheric-blend', source: 'hero' },
+		countdown: { family: 'atmospheric-blend', source: 'quote' },
+		'interlude-after-countdown': { family: 'overlap', source: 'countdown' },
+		location: { family: 'atmospheric-blend', source: 'interlude-after-countdown' },
+		itinerary: { family: 'atmospheric-blend', source: 'location' },
+		family: { family: 'atmospheric-blend', source: 'itinerary' },
+		gallery: { family: 'atmospheric-blend', source: 'family' },
+		gifts: { family: 'atmospheric-blend', source: 'gallery' },
+		'interlude-after-gifts': { family: 'overlap', source: 'gifts' },
+		'personalized-access': { family: 'atmospheric-blend', source: 'interlude-after-gifts' },
+		rsvp: { family: 'atmospheric-blend', source: 'personalized-access' },
+		thankYou: { family: 'atmospheric-blend', source: 'rsvp' },
+	},
 };
 
 export function resolveRenderPlanIntersection(

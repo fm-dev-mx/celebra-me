@@ -19,6 +19,15 @@
 	--victoria-gold: rgb(176 142 96);
 	--victoria-gold-rgb: 176 142 96;
 
+	// Local editorial contract: one display voice, one reading voice, and a
+	// restrained label voice for metadata and controls.
+	--victoria-font-display: var(--font-display, serif);
+	--victoria-font-body: var(--font-body, sans-serif);
+	--victoria-font-label: var(--font-label, var(--font-body, sans-serif));
+	--victoria-surface-radius: 2px;
+	--victoria-fine-border: 1px solid rgb(var(--victoria-terracota-rgb) / 22%);
+	--victoria-soft-shadow: 0 14px 28px rgb(var(--victoria-ink-rgb) / 8%);
+
 	// Core surfaces / text — reset champagne jewelry-box defaults toward terracota
 	--color-surface-primary: var(--victoria-cream);
 	--color-surface-primary-rgb: var(--victoria-cream-rgb);
@@ -44,6 +53,21 @@
 	--hero-label-color: var(--victoria-cream);
 	--hero-badge-border: var(--victoria-gold);
 	--gallery-title-color: var(--victoria-terracota-deep);
+	--quote-content-font: var(--victoria-font-display);
+	--quote-content-size: clamp(1.85rem, 4.5vw, 2.7rem);
+	--quote-content-line-height: 1.38;
+	--quote-divider-opacity: 0.42;
+	--countdown-segment-padding-mobile: 1rem 0.65rem;
+	--countdown-segment-padding-desktop: 1.25rem 1rem;
+
+	#event-header {
+		--header-nav-title-color: var(--victoria-cream);
+		--header-nav-color: rgb(var(--victoria-cream-rgb) / 88%);
+		--header-nav-color-transparent: rgb(var(--victoria-cream-rgb) / 90%);
+		--header-nav-hover-color: var(--victoria-gold);
+		--header-nav-shadow-transparent: 0 1px 10px rgb(0 0 0 / 34%);
+		--header-nav-filter-transparent: drop-shadow(0 4px 8px rgb(0 0 0 / 20%));
+	}
 
 	// Location — soft frames; kill demo-heavy nesting where needed
 	--location-flourish-color: var(--victoria-gold);
@@ -53,6 +77,20 @@
 	--location-inner-frame-bg: var(--victoria-cream);
 	--location-inner-frame-padding: 0;
 	--location-card-padding: clamp(1.35rem, 3.5vw, 1.85rem) clamp(1.1rem, 3vw, 1.6rem);
+	--location-card-bg: rgb(var(--victoria-ivory-rgb) / 34%);
+	--location-card-border: var(--victoria-fine-border);
+	--location-card-radius: var(--victoria-surface-radius);
+	--location-card-shadow: none;
+	--location-date-font-family: var(--victoria-font-label);
+	--location-date-font-size: 0.72rem;
+	--location-date-font-style: normal;
+	--location-date-letter-spacing: 0.12em;
+	--location-date-white-space: normal;
+	--location-hour-letter-spacing: 0.08em;
+	--location-title-font-family: var(--victoria-font-label);
+	--location-title-letter-spacing: 0.18em;
+	--location-place-font-family: var(--victoria-font-display);
+	--location-place-font-size: clamp(1.45rem, 3vw, 1.9rem);
 	--location-indications-heading-color: var(--victoria-terracota);
 	--location-indications-panel-bg: transparent;
 	--location-indications-panel-border: none;
@@ -87,9 +125,17 @@
 		rgb(var(--victoria-cream-rgb) / 98%) 100%
 	);
 	--pa-card-border: 1px solid rgb(var(--victoria-terracota-rgb) / 28%);
-	--pa-card-shadow: 0 14px 36px rgb(0 0 0 / 12%);
+	--pa-card-shadow: var(--victoria-soft-shadow);
 	--pa-card-inner-border: none;
 	--pa-card-glow: none;
+	--pa-padding-block: clamp(3rem, 6vw, 4.5rem);
+	--pa-padding-block-lg: clamp(4rem, 7vw, 5.5rem);
+	--pa-card-border-radius: var(--victoria-surface-radius);
+	--pa-count-frame-radius: var(--victoria-surface-radius);
+	--pa-count-frame-bg: rgb(var(--victoria-cream-rgb) / 44%);
+	--pa-count-frame-shadow: none;
+	--pa-count-frame-inner-border: none;
+	--pa-corner-opacity: 30%;
 	--pa-corner-color: var(--victoria-gold);
 	--pa-eyebrow-color: var(--victoria-terracota);
 	--pa-title-color: var(--victoria-terracota-deep);
@@ -105,6 +151,12 @@
 	);
 	--rsvp-title-color: var(--victoria-terracota-deep);
 	--rsvp-accent: var(--victoria-terracota);
+	--rsvp-radius-card: var(--victoria-surface-radius);
+	--rsvp-card-padding-block: clamp(1.35rem, 3vw, 2rem);
+	--rsvp-card-padding-inline: clamp(1rem, 4vw, 1.75rem);
+	--rsvp-card-max-width: 38rem;
+	--rsvp-form-gap: 0.85rem;
+	--rsvp-header-margin: 0 0 1rem;
 
 	// Countdown / quote / gifts / thank-you accents
 	--countdown-title-color: var(--victoria-terracota-deep);
@@ -116,10 +168,255 @@
 	--env-bg: var(--victoria-sand);
 	--env-accent: var(--victoria-terracota);
 	--env-ink: var(--victoria-ink);
+	--env-container-width: clamp(300px, 68vw, 620px);
+	--env-container-ratio: 1.5;
+	--env-container-max-height: min(48svh, 360px);
+	--env-container-radius: var(--victoria-surface-radius);
+	--env-shadow-container: 0 18px 32px rgb(var(--victoria-ink-rgb) / 12%);
+
+	// Intersections: the image interludes carry the only depth-bearing seams.
+	.invitation-section-wrapper[data-intersection='atmospheric-blend'] {
+		--intersection-surface: var(--victoria-cream);
+		--intersection-blend: radial-gradient(
+			circle at 50% 0%,
+			rgb(var(--victoria-gold-rgb) / 14%),
+			transparent 68%
+		);
+	}
+
+	.invitation-section-wrapper[data-intersection='overlap'][data-intersection-source='countdown'],
+	.invitation-section-wrapper[data-intersection='overlap'][data-intersection-source='gifts'] {
+		--intersection-depth: clamp(2rem, 4vw, 4rem);
+	}
+
+	.invitation-section-wrapper[data-section-kind='countdown'] .countdown-section,
+	.invitation-section-wrapper[data-section-kind='gifts'] .gifts-section {
+		padding-bottom: clamp(4rem, 8vw, 6rem);
+	}
+
+	// Reveal remains the existing state machine, but reads as a quiet object
+	// instead of a stacked template card.
+	.envelope-wrapper {
+		gap: clamp(1rem, 3vw, 1.5rem);
+
+		.envelope-container {
+			box-shadow: var(--env-shadow-container);
+		}
+
+		.envelope-tease {
+			padding: clamp(1rem, 3vw, 1.75rem);
+		}
+	}
+
+	// Hero: open composition, clear lower hierarchy, and a safe scroll cue.
+	.invitation-hero {
+		&__content {
+			width: min(90%, 34rem);
+			max-width: 30rem;
+			margin: 0 0 clamp(5.25rem, 12vh, 7rem);
+			padding: clamp(1.25rem, 3vw, 2rem) 0;
+			background: transparent;
+			border: 0;
+			border-radius: 0;
+			box-shadow: none;
+			backdrop-filter: none;
+		}
+
+		&__label {
+			font-family: var(--victoria-font-label);
+			font-size: 0.68rem;
+			letter-spacing: 0.24em;
+			text-transform: uppercase;
+		}
+
+		&__title {
+			font-family: var(--victoria-font-display);
+			font-size: clamp(2.35rem, 8vw, 4.6rem);
+			line-height: 1.03;
+			letter-spacing: 0.01em;
+			background: none;
+			-webkit-text-fill-color: var(--victoria-cream);
+			color: var(--victoria-cream);
+		}
+
+		&__ampersand {
+			font-weight: 300;
+			color: var(--victoria-gold);
+		}
+
+		&__divider {
+			width: 4rem;
+			margin: 1rem auto;
+		}
+
+		&__details {
+			gap: 0.2rem;
+			font-family: var(--victoria-font-label);
+		}
+
+		&__date,
+		&__time {
+			font-size: 0.82rem;
+			letter-spacing: 0.12em;
+		}
+
+		&__venue {
+			margin-top: 0.5rem;
+			font-family: var(--victoria-font-display);
+			font-size: 1.05rem;
+			font-style: normal;
+		}
+
+		&__scroll-indicator {
+			bottom: max(1.25rem, env(safe-area-inset-bottom));
+			font-family: var(--victoria-font-label);
+			letter-spacing: 0.18em;
+		}
+	}
+
+	.quote-section {
+		min-height: clamp(17rem, 34svh, 27rem);
+		padding-block: clamp(3rem, 6vw, 4.5rem);
+		background: var(--victoria-ivory);
+	}
+
+	.countdown-section {
+		min-height: clamp(18rem, 40svh, 30rem);
+		padding-block: clamp(3.5rem, 7vw, 5rem);
+	}
+
+	.countdown__segment {
+		border: var(--victoria-fine-border);
+		border-radius: var(--victoria-surface-radius);
+		background: rgb(var(--victoria-ivory-rgb) / 52%);
+		box-shadow: none;
+	}
+
+	.countdown-title,
+	.countdown__value,
+	.countdown__label {
+		font-family: var(--victoria-font-display);
+	}
+
+	.countdown__label {
+		font-family: var(--victoria-font-label);
+		letter-spacing: 0.14em;
+	}
+
+	// Location and itinerary are open editorial records, not nested cards.
+	.event-location {
+		padding-block: clamp(3.75rem, 7vw, 5.5rem);
+
+		&__container {
+			max-width: 54rem;
+		}
+
+		&__card-content {
+			border-bottom: var(--victoria-fine-border);
+		}
+
+		&__card-title,
+		&__card-content-place {
+			font-family: var(--victoria-font-display);
+		}
+
+		&__card-content-date,
+		&__card-content-hour,
+		&__card-content-address,
+		&__indications-heading {
+			font-family: var(--victoria-font-label);
+		}
+
+		&__heading {
+			-webkit-text-fill-color: var(--victoria-terracota-deep);
+			color: var(--victoria-terracota-deep);
+		}
+	}
+
+	.itinerary {
+		padding-block: clamp(4rem, 8vw, 6rem);
+
+		&__header {
+			margin-bottom: clamp(2.5rem, 5vw, 3.5rem);
+		}
+
+		&__timeline {
+			padding-block: 0;
+		}
+
+		&__items {
+			gap: clamp(0.2rem, 1vw, 0.6rem);
+		}
+
+		&__animated-line-container {
+			display: none;
+		}
+
+		&__item {
+			grid-template-columns: minmax(4.5rem, 7rem) minmax(0, 1fr);
+			gap: 0.75rem;
+			padding-block: 1rem;
+			border-bottom: var(--victoria-fine-border);
+
+			&:last-child {
+				border-bottom: 0;
+			}
+		}
+
+		&__item--left,
+		&__item--right {
+			& .itinerary__item-content {
+				grid-column: 2;
+				padding: 0 0 1rem;
+				text-align: left;
+			}
+		}
+
+		&__item-time {
+			font-family: var(--victoria-font-label);
+			font-size: 0.72rem;
+			letter-spacing: 0.08em;
+			font-variant-numeric: tabular-nums;
+		}
+
+		&__item-label {
+			font-family: var(--victoria-font-display);
+			font-size: clamp(1.2rem, 2.6vw, 1.55rem);
+			line-height: 1.15;
+		}
+
+		&__item-description {
+			font-family: var(--victoria-font-body);
+			font-size: 0.9rem;
+			line-height: 1.55;
+		}
+	}
+
+	@media (width <= 47.9375rem) {
+		.itinerary {
+			&__item {
+				grid-template-columns: 1fr;
+			}
+
+			&__item--left,
+			&__item--right {
+				& .itinerary__item-content {
+					grid-column: 1;
+				}
+			}
+		}
+	}
 
 	// Gallery — single editorial feature (not multi-column fill)
 	.gallery-section[data-variant='single'],
 	.gallery-section:has(.gallery-grid__item:only-child) {
+		--gallery-item-aspect-ratio: 2 / 3;
+		--gallery-item-aspect-ratio-feature: 2 / 3;
+		--gallery-item-radius: var(--victoria-surface-radius);
+		--gallery-item-border: var(--victoria-fine-border);
+		--gallery-item-shadow: var(--victoria-soft-shadow);
+		--gallery-section-padding-block: clamp(4rem, 8vw, 6rem);
+
 		.gallery-grid {
 			display: grid;
 			grid-template-columns: minmax(0, 28rem);
@@ -133,15 +430,12 @@
 			max-width: 28rem;
 			margin-inline: auto;
 		}
-	}
 
-	// Family — no empty media slot when text-only
-	.family[data-presentation='text-only'],
-	.family-section[data-presentation='text-only'] {
-		.family__media,
-		.family__featured,
-		.family__portrait {
-			display: none;
+		.gallery-section__eyebrow {
+			font-family: var(--victoria-font-label);
+			font-size: 0.65rem;
+			letter-spacing: 0.22em;
+			text-transform: uppercase;
 		}
 	}
 
@@ -150,23 +444,211 @@
 		text-align: center;
 	}
 
-	// Hero ampersand weight + name fill (reset preset gradient chrome)
-	.invitation-hero {
-		&__ampersand {
-			font-weight: 300;
-			color: var(--victoria-gold);
+	.family {
+		padding-block: clamp(4rem, 8vw, 6.5rem);
+
+		&__panel--no-media {
+			max-width: 48rem;
+			margin-inline: auto;
 		}
 
-		&__title {
-			background: none;
-			-webkit-text-fill-color: var(--victoria-cream);
-			color: var(--victoria-cream);
+		&__content {
+			gap: clamp(0.85rem, 2vw, 1.4rem);
+		}
+
+		&__group {
+			padding-block: clamp(1rem, 2.5vw, 1.5rem);
+		}
+
+		&__group--parents {
+			padding-block: clamp(1.25rem, 3vw, 1.8rem);
+			border-top: var(--victoria-fine-border);
+			border-bottom: var(--victoria-fine-border);
+		}
+
+		&__group-title {
+			font-family: var(--victoria-font-label);
+			color: var(--victoria-terracota);
+		}
+
+		&__name {
+			font-family: var(--victoria-font-display);
+			font-size: clamp(1.35rem, 3vw, 1.95rem);
+		}
+
+		&__meta,
+		&__godparent-label {
+			font-family: var(--victoria-font-label);
 		}
 	}
 
-	.event-location__heading {
-		-webkit-text-fill-color: var(--victoria-cream);
-		color: var(--victoria-cream);
+	.gifts-section {
+		--gifts-padding-block: clamp(4rem, 8vw, 6rem);
+		--gifts-card-bg: transparent;
+		--gifts-card-border: none;
+		--gifts-card-radius: 0;
+		--gifts-card-shadow: none;
+
+		&__header {
+			margin-bottom: clamp(2rem, 4vw, 3rem);
+		}
+	}
+
+	.gifts-section[data-variant='jewelry-box-wedding'] {
+		.gift-card {
+			padding: 1.25rem 0;
+			border-radius: 0;
+			box-shadow: none;
+
+			&::after {
+				content: none;
+			}
+
+			&:hover {
+				transform: none;
+				border-color: transparent;
+				box-shadow: none;
+			}
+		}
+	}
+
+	.gift-card {
+		&__inner {
+			gap: 0.85rem;
+		}
+
+		&__icon-medallion {
+			width: 2.75rem;
+			height: 2.75rem;
+			background: transparent;
+			border: 1px solid rgb(var(--victoria-gold-rgb) / 52%);
+			box-shadow: none;
+			backdrop-filter: none;
+		}
+
+		&__title {
+			margin-bottom: 0.5rem;
+			font-family: var(--victoria-font-display);
+			font-size: 1.35rem;
+		}
+
+		&__description {
+			font-family: var(--victoria-font-body);
+			font-size: 1rem;
+		}
+	}
+
+	// Access and RSVP share a low-chrome surface and a single cadence.
+	.personalized-access {
+		&__container {
+			max-width: 38rem;
+		}
+
+		.access-card {
+			max-width: 38rem;
+		}
+
+		.access-card__header {
+			padding-block: clamp(1.5rem, 4vw, 2.25rem) 1.1rem;
+		}
+
+		.access-card__body {
+			padding-block: 1.15rem 1.5rem;
+			gap: 1.15rem;
+		}
+
+		.access-card__footer {
+			padding-block: 1rem 1.35rem;
+		}
+
+		.access-card__title,
+		.access-card__guest {
+			font-family: var(--victoria-font-display);
+		}
+
+		.access-card__eyebrow,
+		.access-card__label {
+			font-family: var(--victoria-font-label);
+		}
+	}
+
+	.rsvp-section {
+		min-block-size: clamp(28rem, 60svh, 36rem);
+		padding-block: clamp(1.25rem, 4svh, 2.5rem);
+	}
+
+	.rsvp {
+		background-color: rgb(var(--victoria-ivory-rgb) / 72%);
+		border: var(--victoria-fine-border);
+		box-shadow: none;
+		backdrop-filter: none;
+
+		&__title,
+		&__eyebrow,
+		&__label,
+		&__button {
+			font-family: var(--victoria-font-label);
+		}
+
+		&__title {
+			font-family: var(--victoria-font-display);
+		}
+	}
+
+	// Closing is a compact epilogue: medallion, readable copy, then signature.
+	.thank-you-section {
+		min-height: clamp(30rem, 72svh, 46rem);
+		padding-block: clamp(4.5rem, 8vw, 6.5rem);
+	}
+
+	.thank-you-content {
+		gap: clamp(1.5rem, 4vw, 2.5rem);
+		max-width: 42rem;
+	}
+
+	.photo-frame {
+		width: clamp(10.5rem, 30vw, 14rem);
+		height: clamp(10.5rem, 30vw, 14rem);
+		border-color: rgb(var(--victoria-gold-rgb) / 62%);
+		box-shadow: var(--victoria-soft-shadow);
+	}
+
+	.thank-you-message {
+		max-width: 34rem;
+		font-family: var(--victoria-font-body);
+		font-size: clamp(1rem, 1.4vw, 1.1rem);
+		line-height: 1.72;
+		margin-bottom: 1.35rem;
+
+		.drop-cap {
+			font-family: var(--victoria-font-display);
+			font-size: 2.5em;
+			line-height: 0.9;
+			color: var(--victoria-terracota);
+		}
+	}
+
+	.closing-name {
+		font-family: var(--victoria-font-display);
+		font-size: clamp(2.15rem, 5vw, 3.35rem);
+		color: var(--thank-you-name-color);
+		background: none;
+		-webkit-text-fill-color: currentcolor;
+		text-shadow: none;
+	}
+
+	.closing-date {
+		font-family: var(--victoria-font-label);
+		letter-spacing: 0.14em;
+	}
+
+	.thank-you-footer {
+		margin-top: 1.25rem;
+		padding-top: 1.25rem;
+		opacity: 62%;
+		font-family: var(--victoria-font-label);
+		font-size: 0.68rem;
+		letter-spacing: 0.16em;
 	}
 
 	// Hide hero chrome until reveal completes (jewelry-box envelope contract)

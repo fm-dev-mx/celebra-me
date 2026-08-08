@@ -99,12 +99,10 @@ describe('invitation intersection profiles', () => {
 			family: 'atmospheric-blend',
 			source: 'interlude-after-countdown',
 		});
-		expect(resolveRenderPlanIntersection('daniela-y-martin', 'personalized-access')).toEqual(
-			{
-				family: 'overlap',
-				source: 'location',
-			},
-		);
+		expect(resolveRenderPlanIntersection('daniela-y-martin', 'personalized-access')).toEqual({
+			family: 'overlap',
+			source: 'location',
+		});
 		expect(resolveRenderPlanIntersection('daniela-y-martin', 'family')).toEqual({
 			family: 'atmospheric-blend',
 			source: 'personalized-access',
@@ -117,9 +115,7 @@ describe('invitation intersection profiles', () => {
 			family: 'atmospheric-blend',
 			source: 'gallery',
 		});
-		expect(
-			resolveRenderPlanIntersection('daniela-y-martin', 'interlude-after-gifts'),
-		).toEqual({
+		expect(resolveRenderPlanIntersection('daniela-y-martin', 'interlude-after-gifts')).toEqual({
 			family: 'atmospheric-blend',
 			source: 'gifts',
 		});
@@ -128,6 +124,41 @@ describe('invitation intersection profiles', () => {
 			source: 'interlude-after-gifts',
 		});
 		expect(resolveRenderPlanIntersection('daniela-y-martin', 'thankYou')).toEqual({
+			family: 'atmospheric-blend',
+			source: 'rsvp',
+		});
+	});
+
+	it('maps Victoria photographic interludes and connected closing chapters', () => {
+		expect(resolveRenderPlanIntersection('victoria-y-roberto', 'quote')).toEqual({
+			family: 'atmospheric-blend',
+			source: 'hero',
+		});
+		expect(
+			resolveRenderPlanIntersection('victoria-y-roberto', 'interlude-after-countdown'),
+		).toEqual({
+			family: 'overlap',
+			source: 'countdown',
+		});
+		expect(resolveRenderPlanIntersection('victoria-y-roberto', 'location')).toEqual({
+			family: 'atmospheric-blend',
+			source: 'interlude-after-countdown',
+		});
+		expect(
+			resolveRenderPlanIntersection('victoria-y-roberto', 'interlude-after-gifts'),
+		).toEqual({
+			family: 'overlap',
+			source: 'gifts',
+		});
+		expect(resolveRenderPlanIntersection('victoria-y-roberto', 'personalized-access')).toEqual({
+			family: 'atmospheric-blend',
+			source: 'interlude-after-gifts',
+		});
+		expect(resolveRenderPlanIntersection('victoria-y-roberto', 'rsvp')).toEqual({
+			family: 'atmospheric-blend',
+			source: 'personalized-access',
+		});
+		expect(resolveRenderPlanIntersection('victoria-y-roberto', 'thankYou')).toEqual({
 			family: 'atmospheric-blend',
 			source: 'rsvp',
 		});
