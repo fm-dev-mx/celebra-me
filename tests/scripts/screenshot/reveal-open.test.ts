@@ -420,10 +420,13 @@ describe('screenshot reveal open reliability', () => {
 		const cli = readSource('scripts/screenshot/cli.ts');
 		const pagePrep = readSource('scripts/screenshot/page-preparation.ts');
 
+		const runner = readSource('scripts/screenshot/runner.ts');
+
 		expect(revealSource).toContain(
 			'export async function normalizeInvitationRevealedForCapture',
 		);
 		expect(revealSource).toContain('await normalizeInvitationRevealedForCapture(page)');
+		expect(runner).toContain('ensureInvitationOpenForCapture');
 
 		const ensureFn =
 			revealSource.match(
