@@ -492,30 +492,6 @@
 		}
 	}
 
-	@media (width <= 47.9375rem) {
-		.itinerary {
-			&__item {
-				grid-template-columns: minmax(4.75rem, 5.5rem) minmax(0, 1fr);
-			}
-
-			&__item--left,
-			&__item--right {
-				& .itinerary__item-content {
-					grid-column: 2;
-				}
-			}
-
-			&__item[data-time-status='pending'] {
-				grid-template-columns: 1fr;
-
-				.itinerary__item-content,
-				.itinerary__item-time {
-					grid-column: 1;
-				}
-			}
-		}
-	}
-
 	// Gallery — single editorial feature (not multi-column fill)
 	.gallery-section[data-variant='single'],
 	.gallery-section:has(.gallery-grid__item:only-child) {
@@ -925,6 +901,28 @@
 	}
 
 	@include mixins.respond-below(md) {
+		.quote-section {
+			.quote-author {
+				white-space: nowrap;
+			}
+		}
+
+		.itinerary {
+			&__item {
+				grid-template-columns: 1fr;
+			}
+
+			&__item--left .itinerary__item-content,
+			&__item--right .itinerary__item-content {
+				grid-column: 1;
+			}
+
+			.itinerary__item[data-time-status='pending'] .itinerary__item-content,
+			.itinerary__item[data-time-status='pending'] .itinerary__item-time {
+				grid-column: 1;
+			}
+		}
+
 		.envelope-wrapper {
 			--env-container-width: min(86vw, 21rem);
 			--env-container-ratio: 1.1;
