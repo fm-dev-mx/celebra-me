@@ -88,6 +88,12 @@ UI work.
 
 ## Invitation Copy Assertions
 
+Anti-pattern: **brittle / content-coupled** asserts on host-editable invitation fields (also called
+**fragile** tests when they break on editor-only wording changes). Required property for contract /
+pipeline / schema / parity suites: **editor-resilient** — they must still pass when invitation
+wording changes if structure and propagation remain correct. Intentional exception: named
+**content-golden** suites.
+
 Do not couple pipeline/contract coverage to exact editable invitation wording (labels, titles,
 phrases, venue names, section copy, and similar host/editor fields).
 
@@ -127,6 +133,24 @@ expect(saved.tooltipText).toBe('ABRIR LA INVITACIÓN');
 Golden content fidelity stays in `tests/content/<slug>-payload.test.ts` (or an equivalently named
 describe). Do not embed real client Spanish in schema/mapper/provision contract fixtures “for
 parity.”
+
+## Regression locks after remediation
+
+Used by [`.agent/workflows/error-remediation.md`](../../workflows/error-remediation.md) after VERIFY
+PASS (`REGRESSION_DECISION`). Choose the smallest lock that closes the defect class; do not default
+to E2E or full-invitation corpus.
+
+| Defect class | Preferred lock | Notes |
+| --- | --- | --- |
+| `trivial` | `none` | Typo, unused, import, lint — VERIFY of the failing command is enough |
+| `local-behavior` | `extend-existing-test` or `add-focused-test` | Unit/contract first (pure function, Zod, adapter) |
+| `shared-contract` | `extend-existing-test` or `domain-validate` | Schema, mapper, parity, invitation-preparation scripts |
+| `family-extension` | Family invariant (synthetic matrix / schema / parity) | Invitations, sections, variants — one generative rule, not N client goldens |
+
+Layer order: unit/contract → domain validate → RTL → E2E/screenshot last (gatekeeper §5.3 for visual
+evidence). Any lock written during remediation **must** pass the Invitation Copy Assertions author
+checklist above. If the right lock is large or cross-cutting, choose `escalate-test-gap` instead of
+shipping a brittle or oversized suite.
 
 ## Unit Test Patterns
 

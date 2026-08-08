@@ -28,4 +28,8 @@ CSS↔template cross-checks stay intact.
 - Dedupe findings across groups.
 - Re-prioritize globally; assign apply-tags consistently.
 - Cross-check content fields against adapters/viewmodels when group C ran.
-- If ≥10 findings, a dedupe / false-positive pass is **mandatory** before the final report.
+- Run **cleanup uplift** (material dead export/import/type or orphan file → HIGH `Clase: cleanup`).
+- **Tag honesty (mandatory before final report):** downgrade any `auto-safe` that fails the
+  allowlist / deny list in `SKILL.md` (API surface, spy lifecycle, non-staged neighbors, etc.).
+- If ≥10 findings, a dedupe / false-positive pass is **mandatory** (includes tag honesty above).
+- Recompute `~N` from cleanup-class HIGH+MEDIUM only after honesty.

@@ -1,8 +1,8 @@
 ---
 name: commit-planner
-description: Full commit lifecycle: plan atomic commits, then optionally execute them after the user stages each unit. Use when preparing commits, splitting a large diff, reviewing atomicity, grouping staged/unstaged changes into commit units, drafting messages, committing what the user already staged, or recovering from common git accidents. Inspect `git status`, `git diff`, and `git diff --cached`, then propose commit boundaries, excluded changes, and Conventional Commit messages matching `docs/core/git-governance.md` and `commitlint.config.cjs`. Never stages or unstages — the user owns the index for visualization. Can commit after user confirmation when the staged set matches the plan.
+description: Full commit lifecycle: plan atomic commits and execute them safely. Option A authorizes the agent to stage exact planned file paths and execute atomic commits step-by-step according to the plan; option B preserves manual user staging. Use when preparing commits, splitting a large diff, reviewing atomicity, grouping staged/unstaged changes into commit units, drafting messages, or recovering from common git accidents. Inspect `git status`, `git diff`, and `git diff --cached`, then propose commit boundaries, excluded changes, and Conventional Commit messages matching `docs/core/git-governance.md` and `commitlint.config.cjs`.
 domain: meta
-version: 2.4.0
+version: 2.5.0
 absorbed_skills: [commit-staged]
 when_to_use:
   - Preparing commits or evaluating atomicity
@@ -29,11 +29,7 @@ related_docs:
 
 ## Mission
 
-Plan commit units without creating commits automatically. Optionally execute commits **only after**
-the user has staged each unit themselves and explicitly approved the plan. Treat
-[`docs/core/git-governance.md`](../../../docs/core/git-governance.md) as canonical policy and
-[`commitlint.config.cjs`](../../../commitlint.config.cjs) for enforced types, scopes, and length
-limits.
+Plan commit units and execute them safely. Option A authorizes the agent to stage exact planned file paths and execute atomic commits step-by-step according to the plan. Option B allows manual step-by-step user staging. Treat [`docs/core/git-governance.md`](../../../docs/core/git-governance.md) as canonical policy and [`commitlint.config.cjs`](../../../commitlint.config.cjs) for enforced types, scopes, and length limits.
 
 **Report contract:** [`.agent/templates/agent-report-contract.md`](../../templates/agent-report-contract.md)
 (sample: [`agent-report-samples.md`](../../templates/agent-report-samples.md)).
@@ -42,18 +38,14 @@ limits.
 
 ## Hard constraints
 
-- Never mutate the index: no `git add`, `git add -p`, `git restore --staged`, `git reset` /
-  `git reset HEAD` for staging/unstaging. Staging is **user-owned** so the owner can visualize
-  changes before commit.
-- Do not run `git commit` unless the user explicitly asks for commit creation / approves the plan
-  **and** the intended paths are already staged by the user.
-- In plans, suggest exact file paths for the **user** to stage — never directory-level globs; never
-  imply the agent will run those commands.
+- Option A in decision prompts authorizes the agent to stage exact file paths (`git reset HEAD .`, `git add <exact paths>`) and execute atomic commits step-by-step according to the plan.
+- For Option A, staging mutations are strictly limited to the exact file paths listed in the approved plan. Never use directory-level globs (`git add src/components/`).
+- Option B preserves manual user staging step-by-step.
+- Do not run `git commit` without explicit plan approval / user authorization.
 - Never present `SKIP_BRANCH_PROTECTION` / `ALLOW_MAIN_PUSH` as routine plan options.
 - Match the user’s language for report prose; commit subjects stay English per governance.
 - Do not include recovery/pitfall dumps in routine plan reports.
-- Recovery recipes that show `git add` / unstage are for the **user** (or only when the user
-  explicitly authorizes that exact git write in the current task).
+- Recovery recipes that show `git add` / unstage are for the **user** (or only when the user explicitly authorizes that exact git write in the current task).
 
 ## Inspect First
 
@@ -201,77 +193,58 @@ type(scope): subject
 
 ## Decisión
 
-<CTA once the user has staged Commit 1 (or asks to commit what’s already staged), OR one MCQ when
-ambiguous / execute-scope / destructive recovery>
+**¿Cómo quiere proceder?**
+
+- **a)** `[Recomendado]` — **Autorizar al agente a ejecutar los commits según lo planeado**
+  - **Objetivo:** Permitir que el agente realice las acciones necesarias en git (stage/unstage de los paths exactos y creación de los commits atómicos).
+  - **Pasos / Ej.:** El agente prepara y ejecuta Commit 1, luego Commit 2 de forma segura.
+
+- **b)** **Ejecución manual paso a paso (el usuario stagea)**
+  - **Objetivo:** El usuario stagea manualmente cada unidad en el index antes de que el agente cree el commit.
+  - **Pasos / Ej.:** El usuario ejecuta `git add <paths>` para cada unidad.
+
+- **c)** **Solo generar plan**
+  - **Objetivo:** Conservar la propuesta sin realizar cambios ni commits.
+  - **Pasos / Ej.:** Mantener el estado actual de Git.
 ```
 
 **Decision rules for this skill:**
 
-- Unambiguous plan → CTA: user stages the listed paths, then ask the agent to commit (or stop).
-- MCQ when atomicity is **ambiguous**, execute scope must be chosen, or recovery is destructive.
-- Every MCQ: exactly `a` / `b` / `c` in relevance order; `a` = recomendado / safe. See contract.
+- Option A is `[Recomendado]`: Authorizes agent to perform exact path staging (`git reset HEAD .`, `git add <exact paths>`) and atomic commit execution step-by-step according to plan.
+- Option B: Manual step-by-step user staging.
+- Option C: Plan only / do not commit.
+- Every MCQ: exactly `a` / `b` / `c` in relevance order; `a` = recomendado. See contract.
 - Do not MCQ between commits of an already approved plan.
-- Never offer agent-run `git add` / unstage as an option.
-- Recovery content: load [`references/recovery-and-pitfalls.md`](./references/recovery-and-pitfalls.md)
-  only for that failure mode.
+- Recovery content: load [`references/recovery-and-pitfalls.md`](./references/recovery-and-pitfalls.md) only for that failure mode.
 
-When proposing multi-commit sequencing, show for each commit: **user stages → inspect → ask agent
-to commit → verify**. Do not list several `git add` groups as if the agent will run them in a batch.
+## Commit Execution (Option A: Agent-managed / Option B: User-staged)
 
-## Commit Execution (plan → user stages → commit)
+When Option A is authorized by the user (or when the user explicitly requests executing all planned commits):
 
-After the user approves the plan, the agent commits **only** what the user has already staged.
-Between commits, wait for the user to stage the next unit — **do not** stage or unstage for them.
+### Per-commit procedure (Option A)
 
-### Preconditions
-
-- The user has explicitly approved the commit plan (said "si", "yes", "adelante", "do it").
-- For the current commit unit, the user has staged exactly the intended paths (agent verifies with
-  `git diff --cached --name-only` / `git status --short`). If staging is wrong or empty, **stop**
-  and ask the user to stage — never `git add` / `git reset HEAD` to “fix” it.
-
-### Per-commit procedure
-
-1. **Verify staged set** — read-only. Confirm staged paths match this commit’s **Incluye**. If not,
-   report the mismatch and wait.
-
-2. **Commit** — only after the staged set is correct:
-
+1. **Partition Index** — reset index if un-partitioned (`git reset HEAD .`), then stage exact file paths for current commit unit:
    ```sh
-   # Pre-validate the message with commitlint (especially when using
-   # --no-verify, which skips the commit-msg hook):
+   git add <exact path 1> <exact path 2>
+   ```
+2. **Verify staged set** — read-only confirmation (`git diff --cached --name-only`).
+3. **Pre-validate & Commit**:
+   ```sh
    echo "type(scope): subject" | pnpm exec commitlint --verbose 2>/dev/null \
      || { echo "❌ Commit message fails commitlint — fix before retrying"; exit 1; }
    git commit -m "type(scope): subject" \
-     -m "- path/file: change" \
-     -m "- path/other: other"
+     -m "- path/file: change"
    ```
-
-   - Use `--no-verify` only when the user authorized skipping hooks or a known infrastructure
-     failure requires it (e.g. pnpm path crash on git-bash). On healthy hook environments, omit it.
-   - Do NOT ask the user to confirm each commit message again — the plan was already approved.
-   - Do NOT run `git add`, `git add -p`, `git add --renormalize`, or unstage between commits.
-   - After each commit, CTA: user stages the next unit (paste the **Usuario stagea** lines), then
-     say when to continue. Stop on hook rejection, merge conflict, or staging mismatch.
-
-3. **Exact paths in user guidance** — never directory globs:
-
-   ```
-   ✅ git add src/components/home/Hero.astro src/components/home/Contact.astro
-   ❌ git add src/components/home/
-   ```
-
-4. **Line-ending normalization** — tell the **user** to run when CRLF noise appears:
-
-   ```sh
-   git add --renormalize <file>
-   git add <file>
-   ```
-
-5. **Final verification** — after the last commit (read-only + build as appropriate):
-
+4. **Repeat** — proceed to the next commit unit in sequence.
+5. **Final verification**:
    ```sh
    git log --oneline -<N+1>
    git status --short
-   pnpm run build
    ```
+
+### Procedure (Option B: User-staged)
+
+1. User stages intended paths for the commit unit.
+2. Agent verifies staged set matches plan (`git diff --cached --name-only`).
+3. Agent pre-validates message and executes `git commit`.
+4. Agent prompts user to stage the next unit.

@@ -5,7 +5,7 @@ description: |
   path (not diff-only): dead code, redundant abstractions, orphaned files; secondarily bugs and
   anti-patterns. Read-only — no edits, staging, or commits. Emits apply-tags for staged-code-review-apply.
 domain: quality
-version: 1.2.1
+version: 1.3.0
 when_to_use:
   - User asks to review staged changes before committing
   - User asks to analyze staged work for over-engineering or dead code
@@ -65,8 +65,11 @@ No edits, staging, or commits.
    reads only as needed. Prefer deletion opportunities before improvement suggestions.
 3. **Classify** — each finding: priority; HIGH → **Clase** `risk`|`cleanup`; apply-tag; `MM` if
    applicable.
-4. **Consolidate** — dedupe; re-prioritize globally; if ≥10 findings, a dedupe pass is **mandatory**;
-   compute `~N`.
+4. **Consolidate** — always:
+   1. Dedupe (mandatory if ≥10 findings; still recommended below that).
+   2. **Cleanup uplift** — see Priorities.
+   3. **Tag honesty** — downgrade any `auto-safe` that fails the allowlist before the report ships.
+   4. Recompute `~N` from cleanup-class findings in HIGH+MEDIUM only.
 5. **Report** — Verdict → Body → Decision (contract order).
 
 If >20 files or >25K diff, load [`references/parallel-mode.md`](./references/parallel-mode.md).
@@ -83,13 +86,34 @@ Required on every expanded finding (and on LOW when actionable):
 
 | Tag | When |
 | --- | --- |
-| `auto-safe` | Obvious dead code / unused import or export / trivial comment; not protected; not MM-blocked |
-| `needs-confirm` | File delete, doubtful consumers, doubtful SCSS `@use`, mixed safe/unsafe scope |
+| `auto-safe` | Only if **all** allowlist conditions hold (below); not protected; not MM-blocked |
+| `needs-confirm` | File delete, doubtful consumers, doubtful SCSS `@use`, mixed safe/unsafe scope, or deny-list items |
 | `manual` | Governance/protected paths, complex bug/security, MM overlap that blocks safe apply |
 
 Review **labels only**; apply revalidates gates.
 
 Meta line example: `src/lib/guests.ts:42 · ~12 lines · TS · apply: auto-safe`
+
+### `auto-safe` allowlist
+
+Tag `auto-safe` only when **all** hold:
+
+- Proven unused import/export/variable/type **or** single-line dead assignment **or** obsolete
+  comment with zero behavior change
+- Zero new/changed call sites outside the staged path set
+- Not an API/signature change (exported param, public helper arity, re-export surface)
+- Not control-flow, test-behavior, or mock/spy lifecycle
+- Not protected / MM-blocked
+
+### Never `auto-safe` (deny list)
+
+Use `needs-confirm`, or keep as LOW **without** implying apply will take it:
+
+- Wrapper renames / thin `failGate`→`failOperator` indirection
+- Unused params on **exported** functions (call-site cascade)
+- Test spy restore / `afterEach` hygiene that can flake if wrong
+- “Quiet mode”, UX copy, or operator-message tweaks
+- Any fix that needs a non-staged neighbor edit
 
 ## Priorities
 
@@ -100,6 +124,15 @@ Meta line example: `src/lib/guests.ts:42 · ~12 lines · TS · apply: auto-safe`
 | LOW | Cosmetic, AI-slop comments, tiny nits |
 
 Every HIGH card includes **Clase:** `risk` | `cleanup`.
+
+### Cleanup uplift
+
+After checklists / classify, run a **cleanup uplift pass**:
+
+- Any proven dead export/import/type with ≥3 removable lines, **or** any orphan file candidate,
+  MUST be a HIGH card with `Clase: cleanup` — not buried as LOW.
+- The verdict must not show `0 cleanup` when such findings exist (ops diffs may still be
+  risk-heavy; cleanup cards still appear when material).
 
 ## MM
 
@@ -180,6 +213,9 @@ Omit empty priority sections. Every expanded finding: file, line, issue, why, co
 - All actionable findings `auto-safe`, none `needs-confirm` → CTA to run `staged-code-review-apply`.
 - Any `needs-confirm`, mixed scope, or material MM → one MCQ (`a`/`b`/`c`); see contract (action +
   scope + brief example per option).
+- When option `a` is “auto-safe only” (or equivalent), the lead sentence must state that **only
+  allowlisted cleanups** will apply; `needs-confirm` / risk stay out unless the chosen option
+  includes them.
 - Manual / governance fix options: say **edit working tree and leave unstaged** — never “re-stage”,
   never ask the agent to `git add` / unstage. The user stages when they want to review the index.
 - No duplicate end summary that repeats the verdict.

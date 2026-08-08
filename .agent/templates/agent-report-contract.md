@@ -66,9 +66,7 @@ Do not cram Issue / Why / Fix into one paragraph.
 
 ### Option copy (required)
 
-Each option is one line (two max): **action + scope + brief example**. Concrete and aesthetic — not
-saturated. No gate jargon, no path dumps, no restating the full verdict. Prefer a short name or type
-(`guests.ts`, “partial SCSS”) over long paths. `c` may omit the example when it is simply stop/pause.
+Each option MUST be formatted as a structured bullet item with high visual hierarchy: bold option label, action title, objective, and concrete example/steps. Never collapse options into unreadable single-line paragraphs. Concrete and aesthetic — not saturated. No gate jargon, no path dumps, no restating the full verdict. Prefer a short name or type (`guests.ts`, “partial SCSS”) over long paths. `c` may omit the sub-bullets when it is simply a safe stop/pause.
 
 ### MCQ shape (always three options)
 
@@ -79,9 +77,17 @@ saturated. No gate jargon, no path dumps, no restating the full verdict. Prefer 
 
 **¿Cómo quiere proceder?**
 
-a) <acción y alcance>. Ej.: <caso corto> **(recomendado)**
-b) <acción y alcance>. Ej.: <caso corto>
-c) <alcance más estrecho, pausa o stop>
+- **a)** `[Recomendado]` — **<Título de Acción / Objetivo>**
+  - **Objetivo:** <resultado deseado>
+  - **Pasos / Ej.:** <acción concreta o archivos>
+
+- **b)** **<Título de Acción / Objetivo>**
+  - **Objetivo:** <resultado deseado>
+  - **Pasos / Ej.:** <acción concreta o archivos>
+
+- **c)** **<Título de Acción / Pausa>**
+  - **Objetivo:** <detener o mantener estado seguro>
+  - **Pasos / Ej.:** <pausa sin cambios>
 ```
 
 ## Language

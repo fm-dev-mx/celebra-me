@@ -26,6 +26,9 @@ hardcodes with existing tokens, or reduces maintenance surface with **net line r
 Fail if the fix grows the codebase, adds indirection, adds unused CSS variables, or is a pure
 rename/restructure without removal.
 
+**Exception:** HIGH `risk` fixes explicitly included in the user’s review/pre-apply MCQ scope are
+not blocked by Gate A net-reduction (still subject to Gates B/C and tag rules in `SKILL.md`).
+
 ### Gate B — Over-engineering (relaxed)
 
 Reject only if the fix introduces **new** abstractions for hypothetical reuse: generic interfaces,
@@ -37,7 +40,7 @@ allowed.
 | Fix type                              | Action                                                                                      |
 | ------------------------------------- | ------------------------------------------------------------------------------------------- |
 | `.scss` / `.css`                      | Auto-apply when gates A/B pass                                                              |
-| `.ts` / `.tsx` / `.js` / `.astro`     | Auto-apply for dead code / unused imports / deprecated exports; complex logic → flag        |
+| `.ts` / `.tsx` / `.js` / `.astro`     | Auto-apply only allowlisted cleanups (dead import/export/var/type, single-line dead assign, comment-only); API/signature, spy lifecycle, control-flow → flag |
 | `.json` content                       | Auto-apply duplicate/dead-field cleanup                                                     |
 | `.agent/**`, `docs/**`                | Never auto-apply — flag                                                                     |
 | SQL / migrations / production patches | Never auto-apply — flag                                                                     |

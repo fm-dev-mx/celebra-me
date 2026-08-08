@@ -6,7 +6,7 @@ description: |
   production, or governance docs. Never stages, unstages, or commits — user owns the index for
   visualization. Respects prior review MCQ scope choices.
 domain: workflow
-version: 1.3.1
+version: 1.4.0
 when_to_use:
   - Immediately after a staged-code-review report when the user says proceed / apply / adelante
   - User explicitly asks to apply staged-code-review fixes
@@ -52,7 +52,9 @@ Review tags are a **hint**, never a bypass. Prefer deletion over patching when b
 - Leave applied edits **unstaged** (or MM if the path was already staged) so the user can review in
   the working tree / Source Control “Changes” panel.
 - Never auto-apply SQL or production patches.
-- Prefer deletion; success metric is net line reduction.
+- Prefer deletion; for cleanup-class auto-apply, success metric is net line reduction. Authorized
+  HIGH `risk` fixes (via review/pre-apply MCQ that includes them) are **not** blocked by Gate A
+  net-reduction; `~L` may be 0 or positive for those items.
 - Gates stay agent-internal; human skip reasons in plain language (not “Gate A failed”).
 - Decision MCQs: exactly `a`/`b`/`c` with action + scope + brief example (contract). Never offer
   agent-driven stage/unstage as an option.
@@ -80,8 +82,8 @@ git stash apply --index
 
 1. **Inspect** — `git status --short`; note MM; confirm apply authorization (+ stash if allowed).
 2. **Parse** — extract findings (file, line, issue, fix, priority, type, apply-tag, Clase). Prefer
-   review tags when present. Process HIGH → MEDIUM. Skip LOW unless trivially safe (single-line
-   deletion or comment fix).
+   review tags when present. Process HIGH → MEDIUM. LOW only if it still passes the allowlist after
+   revalidation (single-line deletion or comment-only).
 3. **Revalidate** — load gates/protected paths; assign a **final** tag per finding (rules below).
 4. **Scope bind** — if the user already chose scope via the review MCQ (`a`/`b`/`c`), honor it and
    do **not** re-ask the same question. If no equivalent choice exists and any final tag is
@@ -97,18 +99,45 @@ If ≥6 findings across ≥3 files, load [`references/parallel-mode.md`](./refer
 
 | Review tag | Apply may |
 | --- | --- |
-| `auto-safe` | Confirm, or **downgrade** to `needs-confirm` / `manual` if gate/MM/protected fails |
+| `auto-safe` | Confirm against the same allowlist as review, or **downgrade** to `needs-confirm` / `manual` if gate/MM/protected/honesty fails |
 | `needs-confirm` | Keep, or downgrade to `manual`; **upgrade** to `auto-safe` only with new evidence (e.g. proven zero `@use`) |
 | `manual` | Never auto-apply; list under Manual |
 
-Additional rules:
+Use the review skill’s **`auto-safe` allowlist and deny list**
+([`staged-code-review/SKILL.md`](../staged-code-review/SKILL.md)) as the honesty check. If review
+said `auto-safe` but the fix fails honesty, downgrade and list under **Omitido** (when out of scope)
+or **Manual** as appropriate — do not silently apply.
+
+### LOW triviality
+
+Apply a LOW finding only when the **final** tag is `auto-safe` under that allowlist:
+
+- Single-line deletion, **or**
+- Comment-only fix with zero behavior change
+
+Otherwise omit (even if review labeled `auto-safe`).
+
+### Omitido reason phrases (standardize)
+
+Prefer these short human reasons when downgrading or skipping:
+
+- `cambia superficie pública`
+- `no es borrado trivial`
+- `requiere call sites fuera de staged`
+
+Additional plain-language reasons are fine when none of the three fit (e.g. “fuera del alcance `a`”,
+“solapamiento staged/unstaged”).
+
+### Additional rules
 
 - **HIGH + Clase `risk`:** default `manual`, unless the fix is trivial and local (≈1–3 lines, no
   control-flow change). Cleanup findings follow the table above.
+- A review/pre-apply MCQ that **explicitly includes** a specific risk fix authorizes that item
+  (still run Gates B/C; Gate A net-reduction does not block it).
 - **MM** on the target file: never final `auto-safe` if the fix depends on a dirty working tree →
   `needs-confirm` or `manual` (“solapamiento staged/unstaged”).
 - User pre-approval of a specific fix in this conversation satisfies the manual-review ask for that
-  finding (still run Gates A/B).
+  finding (still run Gates A/B for cleanup; Gate A waived for authorized risk as above).
 
 ### Deletion rules
 
@@ -171,7 +200,8 @@ pre-existing lint. Trivial one-line pre-existing lint may be fixed; complex issu
 - Stash: <name or "skipped — stash not authorized">
 ```
 
-`~L` = sum of lines actually removed/simplified in Aplicado. Omit empty sections.
+`~L` = sum of lines actually removed/simplified in Aplicado (risk fixes authorized by MCQ may
+contribute 0 or add lines; state that in the row if net is not a reduction). Omit empty sections.
 
 ### Pre-apply MCQ (only if `needs-confirm` and no equivalent review choice)
 
@@ -182,9 +212,17 @@ Hay <N> borrados que requieren confirmación (manifest arriba).
 
 **¿Cómo quiere proceder?**
 
-a) Auto-safe + borrar el manifest. Ej.: quitar `_legacy-badge.scss` huérfano **(recomendado)**
-b) Solo auto-safe; deletes a manual. Ej.: limpiar imports y dejar el `.scss`
-c) No aplicar nada
+- **a)** `[Recomendado]` — **Auto-safe + borrar manifest confirmado**
+  - **Objetivo:** Aplicar limpiezas seguras y proceder con el borrado del manifest.
+  - **Pasos / Ej.:** Eliminar `_legacy-badge.scss` huérfano.
+
+- **b)** **Solo auto-safe**
+  - **Objetivo:** Aplicar limpiezas seguras dejando el borrado de archivos a intervención manual.
+  - **Pasos / Ej.:** Limpiar imports y dejar el archivo `.scss`.
+
+- **c)** **No aplicar cambios**
+  - **Objetivo:** Cancelar la aplicación.
+  - **Pasos / Ej.:** No modificar nada.
 ```
 
 ### Post-apply Decision

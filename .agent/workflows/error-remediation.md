@@ -3,7 +3,7 @@ description: Technical error diagnosis and surgical remediation.
 lifecycle: evergreen
 domain: governance
 owner: workflow-governance
-last_reviewed: 2026-08-05
+last_reviewed: 2026-08-08
 ---
 
 # Error-Diagnosis & Remediation
@@ -11,7 +11,8 @@ last_reviewed: 2026-08-05
 ## Mission
 
 Execute this workflow when a terminal error, test failure, or gatekeeper block requires remediation.
-Enforces a strict 7-state machine with a hard cycle limit of **3** to prevent fix-fail loops.
+Enforces a strict 6-state machine with a hard cycle limit of **3** to prevent fix-fail loops.
+Human-facing reports follow the shared report contract (not a seventh machine state).
 
 **Cycle Limit:** Maximum of 3 cycles per error. If VERIFY fails 3 times, escalate to the user.
 
@@ -22,16 +23,11 @@ Enforces a strict 7-state machine with a hard cycle limit of **3** to prevent fi
 
 - Maximum 3 remediation cycles; then escalate (do not loop silently).
 - Prefer the minimal atomic fix; do not expand into unrelated refactors.
-- If unrelated edits are present, do **not** use destructive rollback. Smallest safe scope, or pause
-  and ask the repository owner when edits overlap.
+- Inspect the git working tree first with `git status`. If unrelated edits are present, do **not**
+  use destructive rollback. Work in the smallest safe scope, or pause and ask the repository owner
+  when edits overlap.
 
-## Pre-flight
-
-- Inspect the git working tree first with `git status`.
-- If unrelated edits are present, do **not** use destructive rollback commands. Work in the smallest
-  safe scope, or pause and ask the repository owner how to proceed when edits overlap.
-
-## The 7-State Remediation Machine
+## The 6-State Remediation Machine
 
 ### 1. CLASSIFY
 
@@ -68,10 +64,12 @@ _BFF/Hydration Guards:_ Check for common failure patterns:
 
 ### 4. DESIGN_FIX
 
-Propose the minimal atomic fix (Atomic Deployable Unit). _Pre-apply Validation Checks:_
+Propose the minimal atomic fix. _Pre-apply Validation Checks:_
 
 - **WCAG:** Ensure fix doesn't remove `aria-*` or break semantic structure.
-- **3-Layer Architecture:** Ensure `.scss` changes don't overwrite or bypass CSS tokens.
+- **Token architecture (SCSS only):** Do not overwrite or bypass the three-level token model
+  (foundation / semantic / component). See [`theme-architecture`](../skills/theme-architecture/SKILL.md)
+  when the failure involves tokens or presets.
 
 ### 5. APPLY
 
@@ -81,7 +79,9 @@ Modify the files with the proposed atomic fix.
 
 Re-run the exact failing command (e.g., `pnpm type-check` or `pnpm test`) to confirm the fix.
 
-- **If VERIFY passes:** proceed with the task.
+- **If VERIFY passes:** run **REGRESSION_DECISION** (below), then proceed. Session close and
+  validation depth remain owned by [`.agent/rules/gatekeeper.md`](../rules/gatekeeper.md) §5
+  (tiers A/B/C); run `pnpm agent:git-safety:finish` when closing a mutable session.
 
 - **If VERIFY fails:** inspect the new output and decide whether a targeted follow-up edit is safe.
   If the worktree contains overlapping user changes or the rollback would be ambiguous, stop and
@@ -89,12 +89,33 @@ Re-run the exact failing command (e.g., `pnpm type-check` or `pnpm test`) to con
 
 Increment cycle counter when verification fails. Return to **CLASSIFY** to analyze the new output.
 
+**Diagnostic card obligation:** Emit the user-facing diagnostic card on VERIFY FAIL, when cycle ≥ 2,
+or on escalation. On a clear cycle-1 trivial fix, skip the full card until VERIFY (or use a one-line
+CTA only). Do not spam progress cards on every APPLY.
+
+### REGRESSION_DECISION (after VERIFY PASS — not a 7th machine state)
+
+Decide whether this defect class needs a regression lock. Prefer the smallest lock that closes the
+invariant. Lock type selection and Invitation Copy Assertions:
+[`.agent/skills/testing/SKILL.md`](../skills/testing/SKILL.md).
+
+1. **Classify defect:** `trivial` | `local-behavior` | `shared-contract` | `family-extension`.
+2. **Choose lock:** `none` | `extend-existing-test` | `add-focused-test` | `domain-validate` |
+   `escalate-test-gap`.
+3. **Apply when cheap:** `trivial` → `Lock: none`. For behavior/contract/family defects, extend or
+   add a focused lock, or run the relevant domain validate. Prefer one **family invariant** (schema,
+   parity, synthetic matrix) over N per-invitation goldens. Locks must be **editor-resilient** (no
+   brittle content-coupled asserts) per Invitation Copy Assertions.
+4. **Re-VERIFY** the original command plus the related test path after applying a lock. Further
+   VERIFY failures still count toward the 3-cycle limit.
+5. **Escalate test-gap** when the right lock is large or cross-cutting: use the escalation card with
+   test-gap options (below). Do not silently skip the decision.
+
 ## Report template
 
-Surface a user-facing diagnostic card when reporting progress, VERIFY failure, or escalation. Follow
-the shared contract.
+Follow the shared contract. Shape below.
 
-### Diagnostic card (cycles 1–3 while remediating)
+### Diagnostic card (VERIFY FAIL, cycle ≥ 2, or escalate)
 
 ```md
 # Remediation
@@ -102,6 +123,7 @@ the shared contract.
 **Estado:** CYCLE <n>/3 · VERIFY PASS|FAIL
 **Error:** <exact message, 1–2 lines>
 **Dónde:** `<path>:<line>` · category: <…> · complexity: <trivial|moderate|complex>
+**Lock:** <none|extend-existing-test|add-focused-test|domain-validate|escalate-test-gap> — <invariant or none>
 
 ## Hipótesis actual
 
@@ -123,13 +145,13 @@ Re-run: `<exact command>`
 On clear cycle-1/2 fixes with an obvious next verify step: use a single CTA (re-run command), not an
 MCQ.
 
-### Escalation card (cycle 3 VERIFY failure, or unsafe / overlapping rollback)
+### Escalation card (cycle 3 VERIFY failure, unsafe / overlapping rollback, or test-gap)
 
 ```md
 # Escalation — remediation exhausted
 
-**Bloqueante:** <current error>
-**Intentos:** 3
+**Bloqueante:** <current error or test-gap>
+**Intentos:** 3 (or test-gap after VERIFY PASS)
 
 **Qué se intentó:**
 - C1: …
@@ -138,15 +160,26 @@ MCQ.
 
 ## Decisión
 
+Se agotaron 3 ciclos sin VERIFY PASS. (Or: lock required but out of safe scope.)
+
 **¿Cómo quiere proceder?**
 
-a) Parar aquí; indico el siguiente enfoque **(recomendado)**
-b) …
-c) …
+- **a)** `[Recomendado]` — **Pausar e indicar siguiente enfoque**
+  - **Objetivo:** Detener ciclos automáticos y registrar el test-gap/bloqueo de forma segura.
+  - **Pasos / Ej.:** Registrar invariante de familia o pedir revisión técnica.
+
+- **b)** **Intento adicional acotado**
+  - **Objetivo:** Ejecutar un intento final restringido a una superficie pequeña.
+  - **Pasos / Ej.:** Mapear únicamente en el adapter o un solo call site.
+
+- **c)** **Revertir cambios de esta remediación**
+  - **Objetivo:** Deshacer las modificaciones realizadas durante la remediación si el worktree lo permite.
+  - **Pasos / Ej.:** Restaurar archivos tocados por la sesión de remediación.
 ```
 
 **Decision rules for this workflow:**
 
 - No MCQ on clear cycle-1/2 fixes.
-- On cycle-3 failure or unsafe rollback: MCQ with exactly `a` / `b` / `c`; **`a` = stop / escalate
-  safely**. Never put destructive reset in `a`. See contract.
+- On cycle-3 failure, unsafe rollback, or test-gap: MCQ with exactly `a` / `b` / `c`; **`a` = stop /
+  escalate safely** (including ship fix + record gap). Never put destructive reset in `a`. See
+  contract.
