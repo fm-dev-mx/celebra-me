@@ -268,6 +268,16 @@ Minimum viewports:
 - 768 × 1024 tablet.
 - 1440 × 900 desktop.
 
+The technical checks below are not the creative acceptance decision. Before final acceptance or
+release, complete the Creative Direction & Acceptance record in
+`docs/invitations/<slug>.md` (optionally backed by `.agent/templates/creative/creative-qa-report.md`).
+The reviewer must inspect the invitation as a whole at representative responsive viewports,
+confirm section boundaries and narrative continuity, and record an explicit human outcome:
+`ACCEPTED`, `ACCEPTED_WITH_BLOCKERS`, or `REJECTED`. A successful screenshot or browser run proves
+capture/runtime integrity only; it does not imply aesthetic acceptance. `ACCEPTED_WITH_BLOCKERS`
+remains blocking for the applicable release boundary when the blocker is owner data or another
+non-creative dependency.
+
 Required cases:
 
 - Long content and missing optional content.

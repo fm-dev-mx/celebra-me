@@ -23,11 +23,17 @@ registry and from demos.
 | Preparation orchestration                      | `.agent/workflows/invitation-preparation.md`        |
 | Analysis skill                                 | `.agent/skills/client-invitation-audit`             |
 | Executable evaluation (**prepReadiness SSOT**) | `src/lib/invitation-preparation/`                   |
+| Human creative acceptance outcome              | `docs/invitations/<slug>.md` Creative Direction & Acceptance section |
 | Cross-cutting architecture / runbooks          | `docs/core/`, `docs/domains/` — **not** these files |
 
 Invitation-specific notes may guide their named invitation but must not redefine system contracts.
 **prepReadiness** in each file must match `evaluatePreparationReadiness` — never hand-promote to
 `READY_FOR_IMPLEMENTATION` while assets remain provisional.
+
+Creative acceptance is a separate post-implementation human decision. Record the responsive whole-
+invitation review and outcome in the same canonical file; do not treat screenshot mechanics or
+`prepReadiness` as aesthetic acceptance. Detailed evidence may use the existing
+`.agent/templates/creative/creative-qa-report.md` template.
 
 ## Info-hygiene
 

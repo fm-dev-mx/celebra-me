@@ -51,6 +51,10 @@ Obsolete one-shot tooling (`ops optimize-assets`, `ops new-invitation`, `ops ado
   migrations precede dependent application deployment. Never infer production alignment.
 - Run the narrow relevant checks plus production-oriented build/E2E checks proportional to risk. Do
   not stage, commit, deploy, or mutate production unless explicitly requested.
+- Treat creative acceptance as a separate human gate: the canonical invitation preparation record
+  must contain an explicit `ACCEPTED` outcome after whole-invitation responsive review before final
+  release. Render/screenshot success is mechanical evidence only; `ACCEPTED_WITH_BLOCKERS` remains
+  Production-blocking for its recorded owner-data or non-creative dependency.
 
 ## Managed updates
 
