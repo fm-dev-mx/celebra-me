@@ -113,7 +113,7 @@
 	--gallery-section-bg: linear-gradient(
 		180deg,
 		rgb(var(--color-surface-primary-rgb) / 94%) 0%,
-		rgb(var(--color-ice-blue-rgb) / 32%) 100%
+		rgb(var(--color-surface-soft-rgb, var(--color-surface-primary-rgb)) / 32%) 100%
 	);
 	--gallery-container-max-width: min(760px, calc(100vw - 2rem));
 	--gallery-header-gap: clamp(1.4rem, 4vw, 2.2rem);
@@ -128,11 +128,13 @@
 	--gallery-item-aspect-ratio: 4 / 3;
 	--gallery-item-radius: 8px;
 	--gallery-item-padding: clamp(0.35rem, 1.2vw, 0.55rem);
-	--gallery-item-bg: rgb(var(--color-diamond-white-rgb) / 82%);
-	--gallery-item-border: 1px solid rgb(var(--color-liquid-silver-rgb) / 40%);
+	--gallery-item-bg: rgb(
+		var(--color-surface-elevated-rgb, var(--color-surface-primary-rgb)) / 82%
+	);
+	--gallery-item-border: 1px solid color-mix(in srgb, var(--color-glass-border) 82%, transparent);
 	--gallery-item-shadow:
-		0 20px 48px rgb(var(--color-deep-blue-graphite-rgb) / 12%),
-		0 1px 0 rgb(var(--color-diamond-white-rgb) / 80%);
+		0 20px 48px rgb(var(--color-text-primary-rgb) / 12%),
+		0 1px 0 rgb(var(--color-surface-elevated-rgb, var(--color-surface-primary-rgb)) / 80%);
 	--gallery-item-hover-transform: translateY(-2px);
 	--gallery-item-emphasis-transform: none;
 	--gallery-item-image-radius: 5px;
