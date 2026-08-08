@@ -51,7 +51,23 @@ brand: celebra-me
 When reviewing shipped invitation or marketing UI (not only generated images), also apply the
 `frontend-design` Visual Critique / Polish Checklist (register, brand-first viewport, one job per
 section, theme tokens, hierarchy, spacing, contrast floors, structural bans, reduced-motion, Spanish
-copy fit, distill, slop test).
+copy fit, distill, slop test). Review an invitation as a continuous narrative, not only as isolated
+section crops.
+
+### Whole-invitation gate
+
+| Field                                       | Value                                                          |
+| ------------------------------------------- | -------------------------------------------------------------- |
+| Mechanical render/capture result            | pending / pass / fail                                          |
+| Representative responsive viewports         | e.g. 390 × 844 and 1440 × 900                                  |
+| Section boundaries and narrative continuity | pass / fail / blocked + note                                   |
+| Human creative outcome                      | `PENDING` / `ACCEPTED` / `ACCEPTED_WITH_BLOCKERS` / `REJECTED` |
+| Reviewer and date                           |                                                                |
+
+Mechanical screenshot success is evidence of capture integrity only. It does not imply aesthetic
+acceptance. `ACCEPTED_WITH_BLOCKERS` is reserved for a recorded non-creative dependency and still
+blocks the applicable release boundary. Do not replace this review with pixel snapshots, image-diff
+thresholds, or brittle geometry assertions.
 
 Use `Pass`, `Fail`, `Blocked`, or `N/A`. A pass requires evidence at every viewport named by the
 brief; `Blocked` identifies evidence or environment that could not be obtained.
@@ -109,10 +125,9 @@ Use this summary for non-UI assets. UI and invitation findings belong in the evi
 
 ## Overall Assessment
 
-| Verdict    | Description                                              |
-| ---------- | -------------------------------------------------------- |
-| ✅ Pass    | Every required area and acceptance criterion passes      |
-| ❌ Fail    | One or more criteria fail; revision evidence is required |
-| ⛔ Blocked | Required input, environment, or evidence is unavailable  |
+| Decision layer            | Verdict / outcome                                              | Description                                                                             |
+| ------------------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Mechanical QA             | `Pass` / `Fail` / `Blocked`                                    | Capture, runtime, accessibility, and other technical evidence.                          |
+| Human creative acceptance | `PENDING` / `ACCEPTED` / `ACCEPTED_WITH_BLOCKERS` / `REJECTED` | Explicit whole-invitation aesthetic decision; this is the release-facing creative gate. |
 
 ## Notes / Recommendations

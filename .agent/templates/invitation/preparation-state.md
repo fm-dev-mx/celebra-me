@@ -150,6 +150,43 @@ If the client did not select a demo, final selection remains `requires_owner_dec
 
 ---
 
+## Creative Direction & Acceptance
+
+This section extends the preparation record into the implementation handoff. It does **not** change
+`prepReadiness` and it cannot be inferred from a successful build or screenshot capture. Complete
+the direction rows when applicable before implementation, then complete the acceptance rows after
+the rendered invitation has been reviewed as a whole.
+
+| concern | decision / evidence | status |
+| ------- | ------------------- | ------ |
+| Typography roles (display, heading, body, metadata) |  | pending / verified / owner decision |
+| Vertical rhythm and density |  | pending / verified / owner decision |
+| Surface hierarchy (open flow vs cards/containers) |  | pending / verified / owner decision |
+| Photographic treatment (role, crop, focal point, filter) |  | pending / verified / owner decision |
+| Section-intersection intent and narrative cadence |  | pending / verified / owner decision |
+| Local exceptions to the selected preset |  | none / documented |
+
+### Creative acceptance record
+
+The record is required after implementation and before final acceptance or release. Use the
+existing [Creative QA Report](../creative/creative-qa-report.md) when a detailed report is useful;
+this table remains the durable invitation-level outcome.
+
+| field | value |
+| ----- | ----- |
+| Mechanical render/capture result | pending / pass / fail |
+| Whole-invitation responsive inspection | viewports and evidence references |
+| Section boundaries and narrative continuity | pass / fail / blocked + note |
+| Human creative outcome | `PENDING` / `ACCEPTED` / `ACCEPTED_WITH_BLOCKERS` / `REJECTED` |
+| Reviewer and date |  |
+| Blocking reason or owner follow-up |  |
+
+`ACCEPTED_WITH_BLOCKERS` is allowed only for an explicit, recorded non-creative dependency (for
+example owner data); it still blocks the applicable release boundary. A mechanical `pass` never
+substitutes for the human outcome.
+
+---
+
 ## Photograph Inventory
 
 Source label: `source:hr-photos` (opaque)  

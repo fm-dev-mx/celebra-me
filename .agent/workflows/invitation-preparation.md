@@ -89,6 +89,28 @@ Summary:
    `READY_FOR_IMPLEMENTATION` while only provisional assets remain).
 7. **C8** — Handoff by prepReadiness; envReadiness remains out of scope.
 
+### Post-implementation creative acceptance handoff
+
+When implementation is authorized and complete, return to the same canonical
+`docs/invitations/<slug>.md` record before final acceptance or release. Do not create a second
+per-invitation design specification. Complete the existing Creative Direction & Acceptance section
+and, when useful, link the existing `creative-qa-report` for detailed evidence.
+
+The review must:
+
+- inspect the rendered invitation as one narrative at representative responsive viewports (default
+  pair: 390 × 844 and 1440 × 900; focused evidence is sufficient, not the full screenshot corpus);
+- verify section boundaries, intersection intent, rhythm/density, and continuity between sections;
+- review typography roles, surfaces, photographic treatment, and documented local exceptions;
+- separate mechanical render/capture status from aesthetic acceptance;
+- record reviewer, date, evidence, blockers, and one explicit human outcome:
+  `PENDING`, `ACCEPTED`, `ACCEPTED_WITH_BLOCKERS`, or `REJECTED`.
+
+Only `ACCEPTED` clears the creative gate. A non-creative owner-data dependency may be recorded as
+`ACCEPTED_WITH_BLOCKERS`, but it remains blocking for the applicable Production/release boundary
+without preventing unrelated implementation work. Successful rendering alone never clears this
+gate.
+
 ## Outputs
 
 - Updated `docs/invitations/<slug>.md` (hygiene-compliant)
@@ -96,6 +118,7 @@ Summary:
 - Optional owner decision pack (single round when feasible)
 - Explicit statement that **envReadiness** is still owned by `invitation-readiness` /
   `pnpm invitation:release --status`
+- After implementation, an explicit human creative-acceptance outcome in the same canonical Markdown
 
 ## Non-goals
 

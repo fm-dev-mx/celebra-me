@@ -152,6 +152,12 @@ remain executable through explicit component/section references in any compatibl
    approved creative direction.
 6. Use the validation tier owned by `gatekeeper.md`; do not copy its command matrix here.
 
+For a real invitation, this review also completes the Creative Direction & Acceptance section in
+`docs/invitations/<slug>.md`. The invitation is reviewed as one narrative at representative
+responsive viewports, and the canonical record separates mechanical capture status from the human
+outcome (`PENDING`, `ACCEPTED`, `ACCEPTED_WITH_BLOCKERS`, or `REJECTED`). A successful render alone
+does not clear creative acceptance.
+
 Screenshot output is evidence, not a tracked repository artifact.
 
 ## Phase 6 — Sync and Handoff

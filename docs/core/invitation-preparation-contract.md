@@ -238,6 +238,36 @@ hygiene). Prose alignment to the helpers remains mandatory between runs.
 
 ---
 
+### 9.2 Creative acceptance is a separate human gate
+
+`prepReadiness` answers whether preparation is sufficiently resolved to begin implementation. It
+does **not** mean that the rendered invitation is creatively finished. After implementation and
+before final acceptance or release, the invitation must receive a lightweight creative-QA review
+recorded in the canonical preparation Markdown (and optionally detailed in the existing
+[`creative-qa-report.md`](../../.agent/templates/creative/creative-qa-report.md)).
+
+The review is whole-invitation, not a collection of isolated screenshots. At minimum inspect one
+representative mobile viewport and one desktop viewport (the default proof pair is 390 × 844 and
+1440 × 900; a focused browser review may use equivalent dimensions when documented), and assess:
+
+- typography roles, vertical rhythm/density, and surface hierarchy;
+- photographic treatment and focal crops;
+- section boundaries, intersection intent, and narrative continuity;
+- local exceptions to the selected preset;
+- responsive reflow, legibility, focus, reduced motion, and visible/operational placeholders.
+
+Record mechanical capture/render status separately from the human outcome. The human outcome is
+one of `PENDING`, `ACCEPTED`, `ACCEPTED_WITH_BLOCKERS`, or `REJECTED`; only an explicit human
+`ACCEPTED` may clear creative acceptance. `ACCEPTED_WITH_BLOCKERS` names a non-creative dependency
+and remains blocking for the applicable release boundary. Pixel thresholds, image diffs, and visual
+snapshots are not part of this contract.
+
+This gate does not replace executable readiness or publication preflight. The helpers and release
+checks remain authoritative for their respective invariants; the QA record supplies the explicit
+human decision that automation cannot make.
+
+---
+
 ## 10. Owner interaction
 
 Before asking the owner anything, exhaust conversation material, canonical Markdown, event contract,
