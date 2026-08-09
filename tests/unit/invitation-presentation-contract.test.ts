@@ -2,6 +2,7 @@ import {
 	assertSupportedGalleryPresentation,
 	resolveItineraryPresentation,
 	resolveLocationShowFlourishes,
+	resolveLocationShowNavigationButtons,
 	resolvePortraitEnabled,
 } from '@/lib/invitation/presentation-options';
 import { gallerySchema } from '@/lib/intake/schemas/shared-content.schema';
@@ -9,7 +10,12 @@ import { gallerySchema } from '@/lib/intake/schemas/shared-content.schema';
 describe('invitation presentation contract', () => {
 	it('resolves the structural presentation couplings from section content', () => {
 		expect(resolveLocationShowFlourishes({ showFlourishes: false })).toBe(false);
+		expect(resolveLocationShowNavigationButtons({ showNavigationButtons: false }, true)).toBe(
+			false,
+		);
+		expect(resolveLocationShowNavigationButtons(undefined, false)).toBe(false);
 		expect(resolveItineraryPresentation({ behavior: 'timeline-paper' })).toBe('timeline-paper');
+		expect(resolveItineraryPresentation({ behavior: 'standard' })).toBe('standard');
 		expect(resolvePortraitEnabled({ portraitEnabled: true }, false)).toBe(true);
 		expect(resolvePortraitEnabled(undefined, true)).toBe(true);
 		expect(() =>

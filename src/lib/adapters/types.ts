@@ -151,6 +151,7 @@ export interface EnvelopeViewModel {
 		sealIcon?: EnvelopeSealIcon;
 		sealInitials?: string;
 		sealVariant?: 'wax-organic' | 'wax-medallion' | 'premium-rose' | string;
+		sealColor?: string;
 		sealImage?: ImageAsset;
 		microcopy: string;
 		documentLabel?: string;

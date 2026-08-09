@@ -293,7 +293,7 @@ describe('Boda Daniela y Martín provision contract', () => {
 		expect(rsvp.confirmationMode).toBe('api');
 		expect(rsvp.accessMode).toBe('hybrid');
 		expect(rsvp.personalizedAccess?.noteText).toContain('{count}');
-		expect(content.sectionStyles).not.toHaveProperty('rsvp');
+		expect((content.sectionStyles as { rsvp?: unknown } | undefined)?.rsvp).toBeUndefined();
 
 		const thankYou = content.thankYou as {
 			image?: unknown;
@@ -317,9 +317,12 @@ describe('Boda Daniela y Martín provision contract', () => {
 		// Payload declares the opt-out explicitly so the live row stays
 		// in lockstep with the canonical source.
 		const published = buildDanielaPublishedContent(buildTestAssets());
-		const publishedSectionStyles = published.sectionStyles as
-			{ location?: { showNavigationButtons?: boolean } } | undefined;
-		expect(publishedSectionStyles?.location?.showNavigationButtons).toBe(false);
+		expect(
+			(
+				published.location as
+					{ presentationOptions?: { showNavigationButtons?: boolean } } | undefined
+			)?.presentationOptions?.showNavigationButtons,
+		).toBe(false);
 
 		// The adapter must surface the opt-out on the section data the
 		// render plan and EventLocation consume.

@@ -9,7 +9,6 @@ import {
 } from '@/lib/assets/asset-registry';
 import { buildCanonicalNavigation } from '@/lib/invitation/canonical-navigation';
 import {
-	ITINERARY_VARIANTS,
 	THEME_PRESETS,
 	type ItineraryVariant,
 	type ThemePreset,
@@ -240,6 +239,7 @@ function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 			sealIcon: data.envelope.sealIcon,
 			sealInitials: data.envelope.sealInitials,
 			sealVariant: data.envelope.sealVariant,
+			sealColor: data.envelope.sealColor,
 			sealImage: data.envelope.sealImage
 				? resolveAsset(eventSlug, data.envelope.sealImage, data.title)
 				: undefined,
@@ -411,7 +411,10 @@ function buildLocationSectionData(context: AdaptationContext) {
 			data.location.presentationOptions,
 			data.sectionStyles?.location?.showFlourishes,
 		),
-		showNavigationButtons: resolveLocationShowNavigationButtons(data.sectionStyles?.location),
+		showNavigationButtons: resolveLocationShowNavigationButtons(
+			data.location.presentationOptions,
+			data.sectionStyles?.location?.showNavigationButtons,
+		),
 		introEyebrow: data.location.introEyebrow,
 		introHeading: data.location.introHeading,
 		introLede: data.location.introLede,
@@ -483,22 +486,20 @@ function buildGallerySectionData(context: AdaptationContext) {
 function buildItinerarySectionData(
 	context: AdaptationContext,
 ): (EventContentEntry['data']['itinerary'] & { variant: ItineraryVariant }) | undefined {
-	const { data, normalizedPreset } = context;
+	const { data } = context;
 	if (!data.itinerary) return undefined;
 
 	const presentationBehavior = resolveItineraryPresentation(data.itinerary.presentation);
-	const fromStyles = data.sectionStyles?.itinerary?.variant;
+	const legacyVariant = data.sectionStyles?.itinerary?.variant;
+	const variant: ItineraryVariant =
+		presentationBehavior !== 'standard'
+			? presentationBehavior
+			: legacyVariant === 'celestial-blue'
+				? 'timeline-paper'
+				: (legacyVariant ?? 'standard');
 	return {
 		...data.itinerary,
-		variant:
-			presentationBehavior === 'timeline-paper'
-				? 'timeline-paper'
-				: pickVariant(
-						'sectionStyles.itinerary.variant',
-						fromStyles,
-						ITINERARY_VARIANTS,
-						normalizedPreset as ItineraryVariant,
-					),
+		variant,
 	};
 }
 

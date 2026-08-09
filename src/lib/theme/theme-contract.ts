@@ -118,7 +118,15 @@ export const SECTION_INTERSECTION_FAMILIES = [
 export type SectionIntersectionFamily = (typeof SECTION_INTERSECTION_FAMILIES)[number];
 
 export const ITINERARY_BEHAVIOR_VARIANTS = ['timeline-paper'] as const;
-export const ITINERARY_VARIANTS = [...THEME_PRESETS, ...ITINERARY_BEHAVIOR_VARIANTS] as const;
+/**
+ * `standard` is the canonical neutral itinerary behavior. Theme-named values
+ * remain in this union only for legacy sectionStyles compatibility.
+ */
+export const ITINERARY_VARIANTS = [
+	'standard',
+	...THEME_PRESETS,
+	...ITINERARY_BEHAVIOR_VARIANTS,
+] as const;
 
 // Semantic aliases for section-specific variations (all now match the main preset)
 export type QuoteVariant = ThemePreset;

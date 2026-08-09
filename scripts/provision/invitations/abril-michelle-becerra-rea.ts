@@ -182,9 +182,6 @@ export function buildAbrilPublishedContent(
 			'rsvp',
 			'thankYou',
 		],
-		sectionStyles: {
-			itinerary: { variant: 'timeline-paper' },
-		},
 		_assetSlug: ABRIL_EVENT.assetSlug,
 		hero: {
 			name: 'Abril Michelle',
@@ -309,6 +306,7 @@ export function buildAbrilPublishedContent(
 		],
 		itinerary: {
 			title: 'Momentos de la celebración',
+			presentation: { behavior: 'timeline-paper' },
 			items: [
 				{
 					time: '3:00 p. m.',

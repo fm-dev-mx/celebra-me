@@ -98,7 +98,8 @@ describe('Abril Michelle local invitation content', () => {
 			},
 			thankYou: { closingName: 'Abril Michelle', date: '12 de septiembre de 2026' },
 		});
-		expect(result.data!.sectionStyles?.itinerary?.variant).toBe('timeline-paper');
+		expect(result.data!.itinerary?.presentation?.behavior).toBe('timeline-paper');
+		expect(result.data!.sectionStyles?.itinerary).toBeUndefined();
 		expect(result.data!.itinerary?.items).toEqual([
 			expect.objectContaining({ label: 'Acción de gracias' }),
 			expect.objectContaining({ label: 'Bienvenida' }),
