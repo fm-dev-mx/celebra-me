@@ -208,10 +208,10 @@ source of structure or tokens.
   canonical footer override and visual profile. Canonical section partials are not exposed through a
   general per-section passthrough directory.
 
-Gallery CSS follows the theme-preset bundle path above. Setting `gallery.variant` to a different
-theme name does not load that theme’s gallery partial. See
-[`gallery-variants.md`](gallery-variants.md) for the honest swap recipe and the deferred layout-role
-delivery target.
+Gallery CSS starts with the theme-preset bundle and, when `gallery.variant` differs from the active
+theme, the section CSS resolver emits the matching gallery partial independently. See
+[`gallery-variants.md`](gallery-variants.md) for the current map, profile override boundary, and
+deferred layout-role target.
 
 ## Runtime Contract
 

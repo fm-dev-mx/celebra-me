@@ -1,12 +1,11 @@
-# Gallery Variants — As-Is and Deferred Target
+# Gallery Variants — Current Contract and Deferred Layout Naming
 
 **Last Updated:** 2026-07-26  
 **Related:** [`architecture.md`](architecture.md),
 [`.agent/plans/active/section-architecture-refactor-plan.md`](../../../.agent/plans/active/section-architecture-refactor-plan.md)
 
-This document describes how invitation gallery variants work **today**, what breaks if you treat
-them as theme-independent, and the **deferred** product target (fixed layout roles). It does not
-authorize implementing that target in an invitation polish pass.
+This document describes the current gallery variant contract and the remaining deferred target
+(fixed, theme-independent layout names).
 
 Gallery entrance behavior is independent of gallery layout naming. The render plan selects the
 behavior-named `stagger-group` recipe, items expose `data-reveal-item`, and the document coordinator
@@ -34,21 +33,24 @@ The field is **optional**. When omitted, the adapter resolves:
 
 Source: `buildGallerySectionData` in `src/lib/adapters/event.ts`.
 
-### Runtime CSS coupling (critical)
+### Runtime CSS delivery
 
-Gallery SCSS is loaded through **`invitation-sections-by-preset/<themePreset>.scss`**, keyed by the
-invitation theme — not by `gallery.variant`.
+The active theme bundle remains the base stylesheet. When `gallery.variant` differs from the theme,
+`section-css-resolver` also emits the matching `src/styles/themes/sections/gallery/_*.scss` partial.
+The `single` variant is provided by shared `src/styles/invitation/_gallery.scss`.
 
 Consequences:
 
 - Setting `gallery.variant` to another theme’s name updates `data-variant` on the section.
-- That does **not** guarantee the matching gallery partial is in the CSS bundle.
-- Cross-theme gallery variants are therefore **schema-legal but visually unreliable**.
-- `'single'` styles live in shared `src/styles/invitation/_gallery.scss` and are available across
-  presets.
+- A cross-theme gallery variant now has an explicit CSS delivery path and is testable at the URL-map
+  boundary.
+- Unknown variant names still resolve to no variant stylesheet and must be rejected or normalized by
+  the content boundary before publication.
+- Invitation profiles load after canonical styles; selectors that change grid or hierarchy remain
+  migration evidence, not a second variant contract.
 
-Do not document or sell “pick any gallery variant on any theme” until CSS is loaded by layout role
-(see §4).
+Do not describe theme-named variants as the final layout enum; the fixed role vocabulary remains
+deferred (see §4).
 
 ### Layout placement (`getLayoutClass`)
 
@@ -90,11 +92,11 @@ enums); keep distinct engines above.
 
 ## 3. How to change a gallery today (honest recipe)
 
-| Level                   | What to change                                      | When it works                                                                                      |
-| ----------------------- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| **A — Content variant** | Set `gallery.variant` (and optional `presentation`) | Only if that variant’s SCSS is already in the **current theme bundle**, or the variant is `single` |
-| **B — Content items**   | Reorder `items[]`, focals, alts, captions           | Always valid; array order is display order                                                         |
-| **C — Client profile**  | Lane A SCSS under `invitation-profiles/`            | When the invite needs a grid the theme mosaic does not provide (e.g. Abril 2×2)                    |
+| Level                   | What to change                                      | When it works                                                                                                  |
+| ----------------------- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| **A — Content variant** | Set `gallery.variant` (and optional `presentation`) | The adapter emits `data-variant`; the resolver loads a matching gallery partial when it differs from the theme |
+| **B — Content items**   | Reorder `items[]`, focals, alts, captions           | Always valid; array order is display order                                                                     |
+| **C — Client profile**  | Lane A SCSS under `invitation-profiles/`            | When the invite needs a grid the theme mosaic does not provide (e.g. Abril 2×2)                                |
 
 **Practice rule (until §4 ships):** every real invitation that includes a gallery should set
 `gallery.variant` **explicitly** so the choice is visible in provision/content, even if it matches
@@ -124,7 +126,7 @@ Required follow-through (platform work):
 
 1. Screenshot matrix of current gallery variants (per `section-architecture-refactor-plan`).
 2. Schema: layout enum separate from `THEME_PRESETS`; required when gallery section present.
-3. CSS delivery: load gallery partials by layout role (not only theme bundle).
+3. CSS delivery: replace the current theme-named partial map with the final layout-role map.
 4. Unify near-duplicate skins before freezing the enum.
 5. Migrate demos and managed invites to explicit layout roles.
 

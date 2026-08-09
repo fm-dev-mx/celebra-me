@@ -86,7 +86,8 @@ digital invitations.
   Waze, Apple Maps), and travel indications.
 - **Required Inputs**: Venue entries (`venues` array) or legacy `ceremony`/`reception` venues with
   `venueName`, `address`, `city`.
-- **Optional Inputs**: `visibility`, `presentation`, `indications`, `indicationsHeading`, `mapUrl`,
+- **Optional Inputs**: `visibility`, `presentation`, `presentationOptions.showFlourishes`,
+  `presentationOptions.showNavigationButtons`, `indications`, `indicationsHeading`, `mapUrl`,
   `wazeUrl`, `appleMapsUrl`.
 - **Rendering & Omission**: Optional section. If omitted, no empty location container is rendered.
 
@@ -96,7 +97,8 @@ digital invitations.
 
 - **Purpose**: Parents, godparents, honor court, and family members.
 - **Required Inputs**: `parents` array (father, mother names) or `sponsors` array.
-- **Optional Inputs**: `title`, `subtitle`, `featuredImage`, `variant`.
+- **Optional Inputs**: `title`, `subtitle`, `featuredImage`, `presentation` (`with-photo` or
+  `text-only`), `variant`.
 - **Rendering & Omission**: Optional section.
 
 ---
@@ -105,7 +107,7 @@ digital invitations.
 
 - **Purpose**: Interactive photo gallery grid / carousel of celebrant photos.
 - **Required Inputs**: `items` array of photo asset references with `image` and `alt`.
-- **Optional Inputs**: `title`, `subtitle`, `variant`, `aspectRatio`.
+- **Optional Inputs**: `title`, `subtitle`, `variant`, `presentation`, `aspectRatio`.
 - **Rendering & Omission**: Rendered if `items` contains 1 or more resolved photo assets; omitted if
   empty or missing.
 
@@ -115,9 +117,10 @@ digital invitations.
 
 - **Purpose**: Timeline of event activities (ceremony, reception, dinner, party, toast).
 - **Required Inputs**: `items` array with `time`, `title`.
-- **Optional Inputs**: `subtitle`, `description`, `icon`, `variant`.
+- **Optional Inputs**: `subtitle`, `description`, `icon`, `presentation.behavior`, `variant`.
 - **Variant Contract**: Use the behavior name `timeline-paper` for the reusable paper program.
-  `celestial-blue` is accepted only as a stored-content compatibility alias.
+  `standard` is the neutral default; `celestial-blue` is accepted only as a stored-content
+  compatibility alias. Theme-named `sectionStyles.itinerary.variant` values remain legacy inputs.
 - **Rendering & Omission**: Optional section.
 
 ---

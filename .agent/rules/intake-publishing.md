@@ -66,6 +66,12 @@ Legacy `sectionStyles.location.showFlourishes` is folded into the canonical fiel
 (`foldShowFlourishesIntoPresentationOptions`) and stripped on publish. Conflicts are reported by the
 published audit, not silently averaged.
 
+Location navigation visibility follows the same one-way boundary:
+`location.presentationOptions.showNavigationButtons` is canonical; legacy
+`sectionStyles.location.showNavigationButtons` is folded only when the canonical value is absent and
+is stripped from the publication projection. The adapter retains the legacy fallback for unchanged
+published records.
+
 Canonical conversion boundaries — do not add parallel mappings:
 
 | Direction                 | Function                                             | Location                                              |
