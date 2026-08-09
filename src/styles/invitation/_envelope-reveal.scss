@@ -33,10 +33,14 @@
 	--env-container-radius: 6px;
 	--env-grid: 35% 25% 40%;
 	--env-zone-width: 85cqw;
-	--env-seal-size-compact: 44px;
-	--env-seal-size-standard: 56px;
-	--env-seal-size-large: 68px;
-	--env-seal-size: var(--env-seal-size-compact);
+
+	// The visual seal follows the envelope's inline size. Keep the fallback
+	// explicit for browsers without container query units; the button's hit
+	// area remains independent below.
+	--env-seal-size-min: 40px;
+	--env-seal-size-max: 60px;
+	--env-seal-size-ratio: 10;
+	--env-seal-size: var(--env-seal-size-min);
 	--env-focus-ring: var(--env-seal-accent);
 	--env-title-size: clamp(1.2rem, 5cqw, 1.85rem);
 	--env-phase-exit-duration: var(--duration-long);
@@ -75,16 +79,6 @@
 	border-radius: var(--env-container-radius);
 	transform-style: preserve-3d;
 
-	--env-seal-size: var(--env-seal-size-compact);
-
-	@container (min-width: 360px) {
-		--env-seal-size: var(--env-seal-size-standard);
-	}
-
-	@container (min-width: 480px) {
-		--env-seal-size: var(--env-seal-size-large);
-	}
-
 	&::after {
 		content: '';
 		position: absolute;
@@ -92,6 +86,19 @@
 		z-index: -1;
 		border-radius: inherit;
 		box-shadow: var(--env-shadow-container);
+	}
+}
+
+// Container query units must be consumed by a descendant of the query
+// container. Applying the token to .envelope-container itself leaves the
+// container at its fallback size because a container cannot query itself.
+@supports (width: 1cqi) {
+	.envelope-container .envelope-seal-button__visual {
+		--env-seal-size: clamp(
+			var(--env-seal-size-min),
+			calc(var(--env-seal-size-ratio) * 1cqi),
+			var(--env-seal-size-max)
+		);
 	}
 }
 
@@ -472,8 +479,8 @@
 	box-shadow: var(--env-shadow-seal);
 
 	.seal-icon {
-		width: var(--spacing-8);
-		height: var(--spacing-8);
+		width: 72%;
+		height: 72%;
 		color: var(--env-seal-icon-override, var(--env-seal-icon));
 		filter: drop-shadow(
 				0 1px 0 color-mix(in srgb, var(--color-surface-elevated) 50%, transparent)
@@ -524,7 +531,7 @@
 	}
 }
 
-// Unified seal size tier contract & closure-seam anchor (50% fold seam).
+// Proportional seal sizing contract & closure-seam anchor (50% fold seam).
 
 .envelope-wrapper:not(.is-opening) {
 	.envelope-tease {
@@ -770,8 +777,8 @@
 		border-radius: 0;
 
 		.seal-icon {
-			width: 65%;
-			height: 65%;
+			width: 100%;
+			height: 100%;
 			color: var(--env-seal-icon-override, inherit);
 			filter: none;
 		}
@@ -851,4 +858,3 @@
 		--env-container-ratio: 1.35;
 	}
 }
-

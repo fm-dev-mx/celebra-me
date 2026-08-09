@@ -1,30 +1,32 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-describe('Envelope Seal Tier Selection Contract', () => {
+describe('Envelope Seal Proportional Sizing Contract', () => {
 	const scssPath = path.resolve('src/styles/invitation/_envelope-reveal.scss');
 	const scssContent = fs.readFileSync(scssPath, 'utf8');
 
-	it('defines public envelope tier tokens scoped to .envelope-wrapper surface', () => {
-		expect(scssContent).toContain('--env-seal-size-compact: 44px;');
-		expect(scssContent).toContain('--env-seal-size-standard: 56px;');
-		expect(scssContent).toContain('--env-seal-size-large: 68px;');
-		// Ensure tokens are NOT attached to :root
-		expect(scssContent).not.toMatch(/:root\s*\{[^}]*--env-seal-size-compact/);
+	it('defines bounded proportional seal tokens on the envelope surface', () => {
+		expect(scssContent).toContain('--env-seal-size-min: 40px;');
+		expect(scssContent).toContain('--env-seal-size-max: 60px;');
+		expect(scssContent).toContain('--env-seal-size-ratio: 10;');
+		expect(scssContent).toContain('--env-seal-size: var(--env-seal-size-min);');
+		expect(scssContent).not.toContain('--env-seal-size-compact');
+		expect(scssContent).not.toContain('--env-seal-size-standard');
+		expect(scssContent).not.toContain('--env-seal-size-large');
 	});
 
-	it('uses container queries for discrete seal size tiers on .envelope-container', () => {
+	it('applies cqi sizing to the visual descendant of the query container', () => {
 		expect(scssContent).toContain('container-type: inline-size;');
-		expect(scssContent).toContain('--env-seal-size: var(--env-seal-size-compact);');
-		expect(scssContent).toContain('@container (min-width: 360px)');
-		expect(scssContent).toContain('--env-seal-size: var(--env-seal-size-standard);');
-		expect(scssContent).toContain('@container (min-width: 480px)');
-		expect(scssContent).toContain('--env-seal-size: var(--env-seal-size-large);');
+		expect(scssContent).toContain('@supports (width: 1cqi)');
+		expect(scssContent).toContain('.envelope-container .envelope-seal-button__visual');
+		expect(scssContent).toContain('calc(var(--env-seal-size-ratio) * 1cqi)');
 	});
 
-	it('does not contain fluid clamp formulas for seal size in envelope reveal SCSS', () => {
-		const matches = scssContent.match(/--env-seal-size:\s*clamp\([^)]+\)/g);
-		expect(matches).toBeNull();
+	it('keeps the visual size separate from the accessible button hit area', () => {
+		expect(scssContent).toContain('min-width: 48px;');
+		expect(scssContent).toContain('min-height: 48px;');
+		expect(scssContent).toContain('width: var(--env-seal-size);');
+		expect(scssContent).toContain('height: var(--env-seal-size);');
 	});
 
 	it('unifies seal position at top: 50%; left: 50%; transform: translate(-50%, -50%);', () => {
