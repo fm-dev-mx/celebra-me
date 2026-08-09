@@ -50,7 +50,9 @@
 	--color-glass-border: rgb(var(--victoria-terracota-rgb) / 28%);
 	--color-glass-shadow: rgb(var(--victoria-ink-rgb) / 12%);
 	--shadow-premium: 0 16px 32px var(--color-glass-shadow), 0 4px 12px rgb(0 0 0 / 4%);
-	--hero-label-color: var(--victoria-cream);
+	--hero-label-color: rgb(var(--victoria-cream-rgb) / 88%);
+	--hero-badge-text: var(--victoria-cream);
+	--hero-scroll-indicator-color: rgb(var(--victoria-cream-rgb) / 74%);
 	--hero-badge-border: var(--victoria-gold);
 	--gallery-title-color: var(--victoria-terracota-deep);
 	--quote-content-font: var(--victoria-font-display);
@@ -174,7 +176,10 @@
 	--env-container-radius: var(--victoria-surface-radius);
 	--env-shadow-container: 0 18px 32px rgb(var(--victoria-ink-rgb) / 12%);
 
-	// Intersections: the image interludes carry the only depth-bearing seams.
+	// Shared local depth for the hero exit band and the clearance under lockup/scroll.
+	--victoria-hero-seam-depth: clamp(3rem, 6vw, 4.5rem);
+
+	// Intersections: interludes carry depth-bearing seams; chapter blends stay quiet.
 	.invitation-section-wrapper[data-intersection='atmospheric-blend'] {
 		--intersection-surface: var(--victoria-cream);
 		--intersection-blend: radial-gradient(
@@ -182,6 +187,30 @@
 			rgb(var(--victoria-gold-rgb) / 14%),
 			transparent 68%
 		);
+	}
+
+	// Hero-sourced handoff only (source=hero — not a fixed successor section).
+	// Opaque section children hide shared ::before, so the soft exit is painted on > *.
+	.invitation-section-wrapper[data-intersection='atmospheric-blend'][data-intersection-source='hero'] {
+		--intersection-depth: var(--victoria-hero-seam-depth);
+		--intersection-surface: var(--victoria-ivory);
+		--intersection-blend: transparent;
+
+		margin-top: calc(0px - var(--intersection-depth));
+
+		> * {
+			background-color: var(--intersection-surface);
+			background-image: linear-gradient(
+				180deg,
+				rgb(var(--victoria-ink-rgb) / 30%) 0%,
+				rgb(var(--victoria-ink-rgb) / 10%) 34%,
+				rgb(var(--victoria-cream-rgb) / 78%) 72%,
+				var(--intersection-surface) 100%
+			);
+			background-repeat: no-repeat;
+			background-position: top;
+			background-size: 100% var(--intersection-depth);
+		}
 	}
 
 	.invitation-section-wrapper[data-intersection='overlap'][data-intersection-source='countdown'],
@@ -260,13 +289,48 @@
 		}
 	}
 
-	// Hero: open composition, clear lower hierarchy, and a safe scroll cue.
+	// Hero: open composition over the photograph — no card/glass.
+	// Single warm-ink veil; primary lockup + compact secondary group; scroll separate.
 	.invitation-hero {
+		// Keep lockup/scroll above the hero-sourced overlap band.
+		--victoria-hero-seam-clearance: var(--victoria-hero-seam-depth);
+
+		// Lane A CSS focals — keep synchronized with provision hero.focalPoint*.
+		--hero-focal-point-default: 50% 34%;
+		--hero-focal-point-mobile: 46% 27%;
+		--hero-focal-point-tablet: 50% 34%;
+		--hero-focal-point-desktop: 49% 35%;
+		--hero-overlay: transparent;
+		--hero-overlay-gradient: linear-gradient(
+			180deg,
+			transparent 0%,
+			transparent 52%,
+			rgb(var(--victoria-ink-rgb) / 10%) 70%,
+			rgb(var(--victoria-ink-rgb) / 28%) 86%,
+			rgb(var(--victoria-ink-rgb) / 40%) 100%
+		);
+
+		&__background::after {
+			background: var(--hero-overlay-gradient);
+		}
+
 		&__content {
-			width: min(90%, 34rem);
-			max-width: 30rem;
-			margin: 0 0 clamp(5.25rem, 12vh, 7rem);
-			padding: clamp(1.25rem, 3vw, 2rem) 0;
+			position: relative;
+			z-index: 2;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+
+			// Narrower measure so the lockup reads against jacket mass, not full lace.
+			width: min(84%, 28rem);
+			max-width: 28rem;
+
+			// Clear overlap band + scroll cue lane under the metadata group.
+			margin: 0 auto calc(var(--victoria-hero-seam-clearance) + 2.85rem);
+			padding: 0.2rem 0.35rem 0;
+
+			// Bias toward Roberto’s darker jacket so cream type clears Victoria lace.
+			translate: clamp(-3rem, -3.2vw, -1.35rem) clamp(-0.45rem, -1.4vh, -0.15rem);
 			background: transparent;
 			border: 0;
 			border-radius: 0;
@@ -275,61 +339,168 @@
 		}
 
 		&__label {
+			margin: 0 0 0.55rem;
 			font-family: var(--victoria-font-label);
-			font-size: 0.68rem;
+			font-size: clamp(0.74rem, 1.8vw, 0.84rem);
+			font-weight: 500;
 			letter-spacing: 0.24em;
 			text-transform: uppercase;
+			color: var(--hero-label-color);
+			text-shadow: 0 1px 16px rgb(0 0 0 / 42%);
+		}
+
+		&__title-wrapper {
+			margin: 0;
 		}
 
 		&__title {
+			margin: 0;
 			font-family: var(--victoria-font-display);
-			font-size: clamp(2.35rem, 8vw, 4.6rem);
-			line-height: 1.03;
+			font-size: clamp(2.85rem, 9.2vw, 5rem);
+			font-weight: 400;
+			line-height: 1.02;
 			letter-spacing: 0.01em;
+			text-wrap: balance;
 			background: none;
-			-webkit-text-fill-color: var(--victoria-cream);
+			background-clip: border-box;
+			-webkit-text-stroke: 0;
+			text-shadow: 0 2px 22px rgb(0 0 0 / 40%);
+			animation: none;
+
+			@media (prefers-reduced-motion: no-preference) {
+				animation: motion-fade-in-up var(--motion-hero-title-duration) var(--ease-out)
+					var(--motion-hero-title-delay) forwards;
+			}
+		}
+
+		&__title,
+		&__secondary-name,
+		&__ampersand {
 			color: var(--victoria-cream);
+			-webkit-text-fill-color: var(--victoria-cream);
 		}
 
 		&__ampersand {
+			display: inline-block;
+			margin-inline: 0.1em 0.14em;
+			font-family: var(--victoria-font-display);
 			font-weight: 300;
-			color: var(--victoria-gold);
+			font-size: 0.88em;
+			opacity: 84%;
+		}
+
+		&__secondary-name {
+			font-size: 0.94em;
+			letter-spacing: 0.008em;
 		}
 
 		&__divider {
-			width: 4rem;
-			margin: 1rem auto;
+			width: 2.75rem;
+			height: 1px;
+
+			// Breath after the primary lockup; tight lead into the metadata group.
+			margin: 0.78rem auto 0.38rem;
+			background: linear-gradient(
+				90deg,
+				transparent,
+				rgb(var(--victoria-cream-rgb) / 62%),
+				transparent
+			);
+			opacity: 70%;
+
+			&::after {
+				content: none;
+			}
 		}
 
 		&__details {
-			gap: 0.2rem;
+			gap: 0.08rem;
 			font-family: var(--victoria-font-label);
+			line-height: 1.2;
+			text-shadow: 0 1px 14px rgb(0 0 0 / 40%);
 		}
 
-		&__date,
+		&__date {
+			margin: 0;
+			font-size: clamp(1.05rem, 2.5vw, 1.2rem);
+			font-weight: 500;
+			line-height: 1.2;
+			letter-spacing: 0.07em;
+			color: rgb(var(--victoria-cream-rgb) / 96%);
+			opacity: 100%;
+		}
+
 		&__time {
-			font-size: 0.82rem;
-			letter-spacing: 0.12em;
+			margin: 0;
+			font-size: clamp(0.86rem, 2vw, 0.96rem);
+			font-weight: 500;
+			line-height: 1.2;
+			letter-spacing: 0.1em;
+			color: rgb(var(--victoria-cream-rgb) / 72%);
+			opacity: 100%;
 		}
 
 		&__venue {
-			margin-top: 0.5rem;
-			font-family: var(--victoria-font-display);
-			font-size: 1.05rem;
+			// Reset shared `margin-top: 1rem` and any inherited paragraph bottom margin.
+			margin: 0;
+			font-family: var(--victoria-font-label);
+			font-size: clamp(0.88rem, 2.05vw, 0.98rem);
+			font-weight: 500;
 			font-style: normal;
+			line-height: 1.25;
+			letter-spacing: 0.045em;
+			color: rgb(var(--victoria-cream-rgb) / 76%);
+			opacity: 100%;
+			text-wrap: balance;
+
+			// Local only — keep global `.calligraphy-accent` intact for other invitations.
+			span.calligraphy-accent {
+				display: inline;
+				margin: 0;
+				padding: 0 0.2em 0 0;
+				font-family: inherit;
+				font-size: inherit;
+				font-style: normal;
+				font-weight: inherit;
+				letter-spacing: inherit;
+				line-height: inherit;
+				color: inherit;
+				text-transform: none;
+				vertical-align: baseline;
+			}
 		}
 
 		&__scroll-indicator {
-			bottom: max(1.25rem, env(safe-area-inset-bottom));
+			z-index: 2;
+
+			// Sit in the gap between metadata and the hero→next overlap band.
+			bottom: max(
+				calc(var(--victoria-hero-seam-clearance) + 0.15rem),
+				env(safe-area-inset-bottom)
+			);
+			gap: 0.22rem;
 			font-family: var(--victoria-font-label);
 			letter-spacing: 0.18em;
+			color: var(--hero-scroll-indicator-color);
+			text-shadow: 0 1px 10px rgb(0 0 0 / 36%);
+		}
+
+		&__scroll-text {
+			font-size: 0.68rem;
+			font-weight: 500;
+		}
+
+		&__scroll-chevron {
+			width: 20px;
+			height: 20px;
+			opacity: 72%;
 		}
 	}
 
 	.quote-section {
 		min-height: clamp(17rem, 34svh, 27rem);
 		padding-block: clamp(3rem, 6vw, 4.5rem);
-		background: var(--victoria-ivory);
+		background-color: var(--victoria-ivory);
 	}
 
 	.countdown-section {
@@ -883,24 +1054,43 @@
 	&[data-reveal-state='sealed'],
 	&[data-reveal-state='letter-held'],
 	&[data-reveal-state='preview-opened'] {
-		.invitation-hero__chrome,
-		.invitation-hero__content,
-		.invitation-hero__meta {
+		.invitation-hero__content {
 			opacity: 0%;
 			visibility: hidden;
 		}
 	}
 
 	&[data-reveal-state='revealed'] {
-		.invitation-hero__chrome,
-		.invitation-hero__content,
-		.invitation-hero__meta {
+		.invitation-hero__content {
 			opacity: 100%;
 			visibility: visible;
 		}
 	}
 
 	@include mixins.respond-below(md) {
+		.invitation-hero {
+			&__content {
+				width: min(72%, 20.5rem);
+				max-width: 20.5rem;
+
+				// Stronger jacket bias where lace contrast is hardest.
+				translate: clamp(-2.35rem, -9vw, -1.25rem) clamp(-0.7rem, -2vh, -0.25rem);
+			}
+
+			&__title {
+				font-size: clamp(2.7rem, 11.8vw, 3.45rem);
+				line-height: 0.96;
+			}
+
+			&__divider {
+				margin: 0.65rem auto 0.3rem;
+			}
+
+			&__details {
+				gap: 0.05rem;
+			}
+		}
+
 		.quote-section {
 			.quote-author {
 				white-space: nowrap;

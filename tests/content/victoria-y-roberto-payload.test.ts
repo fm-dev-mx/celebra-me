@@ -307,4 +307,53 @@ describe('Boda Victoria y Roberto provision contract', () => {
 		const serialized = JSON.stringify(content);
 		expect(serialized).not.toMatch(/OneDrive|Clientes\\/i);
 	});
+
+	it('keeps Lane A hero focals synchronized between provision content and profile CSS', () => {
+		const content = buildVictoriaPublishedContent(buildTestAssets());
+		const hero = content.hero as {
+			focalPoint: string;
+			focalPointMobile: string;
+			focalPointTablet: string;
+			focalPointDesktop: string;
+		};
+		const profile = fs.readFileSync(profilePath, 'utf8');
+
+		expect(hero.focalPoint).toBe('50% 34%');
+		expect(hero.focalPointMobile).toBe('46% 27%');
+		expect(hero.focalPointTablet).toBe('50% 34%');
+		expect(hero.focalPointDesktop).toBe('49% 35%');
+
+		expect(profile).toContain('--hero-focal-point-default: 50% 34%');
+		expect(profile).toContain('--hero-focal-point-mobile: 46% 27%');
+		expect(profile).toContain('--hero-focal-point-tablet: 50% 34%');
+		expect(profile).toContain('--hero-focal-point-desktop: 49% 35%');
+
+		const desktopAsset = VICTORIA_ASSET_SPECS.find((spec) => spec.key === 'hero-desktop');
+		expect(desktopAsset?.focalPoint).toMatchObject({
+			default: hero.focalPoint,
+			mobile: hero.focalPointMobile,
+			tablet: hero.focalPointTablet,
+			desktop: hero.focalPointDesktop,
+		});
+	});
+
+	it('keys the first invitation section handoff to source=hero without encoding a fixed successor', () => {
+		const content = buildVictoriaPublishedContent(buildTestAssets());
+		const viewModel = adaptEvent({
+			id: 'events/victoria-y-roberto',
+			data: content,
+		} as Parameters<typeof adaptEvent>[0]);
+		const renderPlan = buildInvitationRenderPlan(viewModel);
+		const firstSection = renderPlan.find((item) => item.type === 'section');
+
+		expect(firstSection).toMatchObject({
+			type: 'section',
+			section: 'quote',
+			intersection: { family: 'atmospheric-blend', source: 'hero' },
+		});
+
+		const profile = fs.readFileSync(profilePath, 'utf8');
+		expect(profile).toContain("data-intersection-source='hero'");
+		expect(profile).not.toContain("data-section-kind='quote'][data-intersection-source='hero'");
+	});
 });
