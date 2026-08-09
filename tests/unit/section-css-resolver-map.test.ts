@@ -3,6 +3,7 @@ import {
 	buildInvitationProfileUrlMap,
 	buildSectionUrlMap,
 	resolveInvitationCssUrls,
+	resolveGalleryVariantCssUrl,
 	resolveSectionBundleCssUrl,
 	resolveSectionCssUrl,
 	resolveSectionCssUrls,
@@ -125,6 +126,46 @@ describe('section-css-resolver-map', () => {
 				footerVariant: 'enchanted-rose',
 			}),
 		).toEqual(['/_astro/editorial-bundle.css', '/_astro/footer-enchanted-rose.css']);
+	});
+
+	it('loads Gallery variant CSS independently from the active theme bundle', () => {
+		const bundleUrlMap = buildSectionBundleUrlMap({
+			'/src/styles/invitation-sections-by-preset/luxury-hacienda.scss': {
+				default: '/_astro/luxury-bundle.css',
+			},
+		});
+		const sectionUrlMap = buildSectionUrlMap({
+			'/src/styles/themes/sections/gallery/_editorial-magazine.scss': {
+				default: '/_astro/gallery-editorial-magazine.css',
+			},
+			'/src/styles/themes/sections/gallery/_jewelry-box.scss': {
+				default: '/_astro/gallery-jewelry-box.css',
+			},
+		});
+
+		expect(resolveGalleryVariantCssUrl(sectionUrlMap, 'editorial-magazine')).toBe(
+			'/_astro/gallery-editorial-magazine.css',
+		);
+		expect(resolveGalleryVariantCssUrl(sectionUrlMap, 'single')).toBeUndefined();
+		expect(
+			resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
+				themePreset: 'luxury-hacienda',
+				galleryVariant: 'editorial-magazine',
+			}),
+		).toEqual(['/_astro/luxury-bundle.css', '/_astro/gallery-editorial-magazine.css']);
+	});
+
+	it('keeps Gallery aliases and unknown variants deterministic', () => {
+		const sectionUrlMap = buildSectionUrlMap({
+			'/src/styles/themes/sections/gallery/_editorial.scss': {
+				default: '/_astro/gallery-editorial.css',
+			},
+		});
+
+		expect(resolveGalleryVariantCssUrl(sectionUrlMap, 'premiere-floral')).toBe(
+			'/_astro/gallery-editorial.css',
+		);
+		expect(resolveGalleryVariantCssUrl(sectionUrlMap, 'not-a-gallery-variant')).toBeUndefined();
 	});
 
 	it('does not add duplicate footer CSS when the footer follows the theme preset', () => {

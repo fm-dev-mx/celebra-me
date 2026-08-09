@@ -20,6 +20,11 @@ const footerVariantModules = import.meta.glob(
 	},
 ) as Record<string, { default: string }>;
 
+const galleryVariantModules = import.meta.glob('/src/styles/themes/sections/gallery/_*.scss', {
+	query: '?url',
+	eager: true,
+}) as Record<string, { default: string }>;
+
 const sectionBundleModules = import.meta.glob('/src/styles/invitation-sections-by-preset/*.scss', {
 	query: '?url',
 	eager: true,
@@ -31,6 +36,7 @@ const invitationProfileModules = import.meta.glob('/src/styles/invitation-profil
 }) as Record<string, { default: string }>;
 
 const footerVariantUrlMap = buildSectionUrlMap(footerVariantModules);
+const galleryVariantUrlMap = buildSectionUrlMap(galleryVariantModules);
 const sectionBundleUrlMap = buildSectionBundleUrlMap(sectionBundleModules);
 const invitationProfileUrlMap = buildInvitationProfileUrlMap(invitationProfileModules);
 
@@ -52,12 +58,13 @@ export function resolveSectionBundleCssUrl(preset: string): string | undefined {
 export function resolveInvitationCssUrls(input: {
 	themePreset: string;
 	footerVariant?: string;
+	galleryVariant?: string;
 	visualProfileId?: string;
 	slug?: string;
 }): string[] {
 	return resolveInvitationCssUrlsFromMaps(
 		sectionBundleUrlMap,
-		footerVariantUrlMap,
+		{ ...footerVariantUrlMap, ...galleryVariantUrlMap },
 		input,
 		invitationProfileUrlMap,
 	);
