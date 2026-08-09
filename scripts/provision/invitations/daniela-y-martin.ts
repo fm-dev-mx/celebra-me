@@ -137,15 +137,6 @@ export function buildDanielaPublishedContent(
 			'rsvp',
 			'thankYou',
 		],
-		sectionStyles: {
-			location: {
-				showFlourishes: true,
-				// Map preview is the sole primary map link; the duplicated
-				// Apple/Google/Waze/“Cómo llegar” row is suppressed so each
-				// venue card exposes exactly two actions.
-				showNavigationButtons: false,
-			},
-		},
 		_assetSlug: DANIELA_EVENT.assetSlug,
 		hero: {
 			name: 'Daniela',
@@ -193,6 +184,13 @@ export function buildDanielaPublishedContent(
 		},
 		location: {
 			visibility: 'public',
+			presentationOptions: {
+				showFlourishes: true,
+				// Map preview is the sole primary map link; the duplicated
+				// Apple/Google/Waze/“Cómo llegar” row is suppressed so each
+				// venue card exposes exactly two actions.
+				showNavigationButtons: false,
+			},
 			introEyebrow: 'Huejutla de Reyes, Hidalgo',
 			introHeading: EVENT_DATE_HEADING,
 			introLede: 'Nos alegrará compartir con ustedes cada momento de esta celebración.',

@@ -64,6 +64,7 @@ export const locationSchema = z.object({
 	presentationOptions: z
 		.object({
 			showFlourishes: z.boolean().optional(),
+			showNavigationButtons: z.boolean().optional(),
 		})
 		.strict()
 		.optional(),

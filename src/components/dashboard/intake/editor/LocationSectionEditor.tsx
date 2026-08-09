@@ -1,5 +1,7 @@
 import Field from '@/components/dashboard/intake/editor/Field';
-import SectionCard, { type SectionRestoreProps } from '@/components/dashboard/intake/editor/SectionCard';
+import SectionCard, {
+	type SectionRestoreProps,
+} from '@/components/dashboard/intake/editor/SectionCard';
 import TextArea from '@/components/dashboard/intake/editor/TextArea';
 import ImageAssetField from '@/components/dashboard/intake/editor/ImageAssetField';
 import IconPickerField from '@/components/dashboard/intake/editor/IconPickerField';
@@ -42,7 +44,10 @@ interface DraftIndication {
 interface LocationData {
 	visibility?: 'public' | 'after-rsvp';
 	presentation?: LocationPresentation;
-	presentationOptions?: { showFlourishes?: boolean };
+	presentationOptions?: {
+		showFlourishes?: boolean;
+		showNavigationButtons?: boolean;
+	};
 	introEyebrow?: string;
 	introHeading?: string;
 	introLede?: string;
@@ -186,8 +191,7 @@ export default function LocationSectionEditor({
 			}
 			const parsed = parseFloat(raw);
 			if (!isNaN(parsed) && parsed >= min && parsed <= max) {
-				const safeOther =
-					otherValue !== undefined && !isNaN(otherValue) ? otherValue : 0;
+				const safeOther = otherValue !== undefined && !isNaN(otherValue) ? otherValue : 0;
 				const patch =
 					axis === 'lat'
 						? { lat: parsed, lng: safeOther }
@@ -281,6 +285,21 @@ export default function LocationSectionEditor({
 					/>
 					<span>Mostrar adornos en las tarjetas de ubicación</span>
 				</label>
+				<label className="invitation-editor__check">
+					<input
+						type="checkbox"
+						checked={location.presentationOptions?.showNavigationButtons ?? true}
+						onChange={(event) =>
+							onUpdateLocation({
+								presentationOptions: {
+									...location.presentationOptions,
+									showNavigationButtons: event.target.checked,
+								},
+							})
+						}
+					/>
+					<span>Mostrar botones de navegación en las tarjetas</span>
+				</label>
 				<label className="invitation-editor__field">
 					<span>Presentación</span>
 					<select
@@ -288,8 +307,7 @@ export default function LocationSectionEditor({
 						onChange={(event) =>
 							onUpdateLocation({
 								presentation: (event.target.value || undefined) as
-									| LocationPresentation
-									| undefined,
+									LocationPresentation | undefined,
 							})
 						}
 					>
@@ -529,7 +547,8 @@ export default function LocationSectionEditor({
 											value={indication.styleVariant ?? 'default'}
 											onChange={(event) =>
 												updateIndication(index, {
-													styleVariant: event.target.value as IndicationStyleVariant,
+													styleVariant: event.target
+														.value as IndicationStyleVariant,
 												})
 											}
 										>

@@ -22,7 +22,7 @@ import { createPublicationComparison } from '@/lib/intake/services/publication-d
 import { getSectionValue } from '@/lib/intake/services/section-content-mapper';
 import {
 	detectShowFlourishesConflict,
-	foldShowFlourishesIntoPresentationOptions,
+	foldLocationPresentationOptions,
 	resolveLocationShowFlourishes,
 } from '@/lib/invitation/presentation-options';
 import {
@@ -179,7 +179,7 @@ describe('showFlourishes ownership', () => {
 	});
 
 	it('folds legacy sectionStyles into presentationOptions when canonical absent', () => {
-		const folded = foldShowFlourishesIntoPresentationOptions(
+		const folded = foldLocationPresentationOptions(
 			{} as Record<string, unknown>,
 			false,
 		);
@@ -187,11 +187,25 @@ describe('showFlourishes ownership', () => {
 	});
 
 	it('does not overwrite canonical presentationOptions from legacy', () => {
-		const folded = foldShowFlourishesIntoPresentationOptions(
+		const folded = foldLocationPresentationOptions(
 			{ presentationOptions: { showFlourishes: true } } as Record<string, unknown>,
 			false,
 		);
 		expect(folded?.presentationOptions).toEqual({ showFlourishes: true });
+	});
+
+	it('folds legacy navigation visibility without overwriting canonical options', () => {
+		expect(
+			foldLocationPresentationOptions({} as Record<string, unknown>, undefined, false)
+				?.presentationOptions,
+		).toEqual({ showNavigationButtons: false });
+		expect(
+			foldLocationPresentationOptions(
+				{ presentationOptions: { showNavigationButtons: true } } as Record<string, unknown>,
+				undefined,
+				false,
+			)?.presentationOptions,
+		).toEqual({ showNavigationButtons: true });
 	});
 
 	it('detects conflicting legacy ownership instead of silently resolving', () => {
@@ -203,13 +217,13 @@ describe('showFlourishes ownership', () => {
 		).toBe(true);
 	});
 
-	it('maps Daniela sectionStyles.showFlourishes into Draft presentationOptions', () => {
+	it('keeps Daniela canonical showFlourishes in Draft presentationOptions', () => {
 		const pub = buildDanielaPublishedContent(danielaAssets as never) as Record<string, unknown>;
 		const draft = normalizeDraftContent(mapNestedToDraftContent(pub));
 		expect(draft.location?.presentationOptions?.showFlourishes).toBe(true);
 	});
 
-	it('strips legacy showFlourishes from sectionStyles on publish', () => {
+	it('keeps legacy showFlourishes publication projection clean', () => {
 		const pub = buildDanielaPublishedContent(danielaAssets as never) as Record<string, unknown>;
 		const draft = mapNestedToDraftContent(pub);
 		const mapped = mapDraftToPublished({
@@ -234,8 +248,9 @@ describe('showFlourishes ownership', () => {
 			priorPublishedContent: pub,
 			isDemo: false,
 		});
-		const styles = mapped.sectionStyles as { location?: { showFlourishes?: boolean } };
-		expect(styles.location?.showFlourishes).toBeUndefined();
+		const styles = mapped.sectionStyles as
+			{ location?: { showFlourishes?: boolean } } | undefined;
+		expect(styles?.location?.showFlourishes).toBeUndefined();
 		const location = mapped.location as {
 			presentationOptions?: { showFlourishes?: boolean };
 		};

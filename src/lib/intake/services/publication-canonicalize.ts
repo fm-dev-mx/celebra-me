@@ -2,7 +2,7 @@
  * Isomorphic publication value normalization shared by server publish/diff
  * and the client invitation editor section-save path. Must not import `node:*`.
  */
-import { foldShowFlourishesIntoPresentationOptions } from '@/lib/invitation/presentation-options';
+import { foldLocationPresentationOptions } from '@/lib/invitation/presentation-options';
 import { toEditorDate } from '@/lib/shared/data-utils';
 import { normalizeTime } from '@/lib/time/time-format';
 
@@ -52,16 +52,25 @@ export function preparePublicationProjection(value: unknown): unknown {
 		isPlainObject(sectionStyles) && isPlainObject(sectionStyles.location)
 			? (sectionStyles.location.showFlourishes as boolean | undefined)
 			: undefined;
+	const legacyNavigationButtons =
+		isPlainObject(sectionStyles) && isPlainObject(sectionStyles.location)
+			? (sectionStyles.location.showNavigationButtons as boolean | undefined)
+			: undefined;
 
 	if (isPlainObject(content.location)) {
-		content.location = foldShowFlourishesIntoPresentationOptions(
+		content.location = foldLocationPresentationOptions(
 			content.location,
 			legacyFlourishes,
+			legacyNavigationButtons,
 		) as Record<string, unknown>;
 	}
 
 	if (isPlainObject(sectionStyles) && isPlainObject(sectionStyles.location)) {
-		const { showFlourishes: _legacy, ...locationStyleRest } = sectionStyles.location;
+		const {
+			showFlourishes: _legacyFlourishes,
+			showNavigationButtons: _legacyNavigationButtons,
+			...locationStyleRest
+		} = sectionStyles.location;
 		content.sectionStyles = {
 			...sectionStyles,
 			location: locationStyleRest,

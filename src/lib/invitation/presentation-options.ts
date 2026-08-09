@@ -18,6 +18,7 @@ export type ItineraryPresentationBehavior = (typeof ITINERARY_PRESENTATION_BEHAV
 
 export interface LocationPresentationOptions {
 	showFlourishes?: boolean;
+	showNavigationButtons?: boolean;
 }
 
 export interface HeroPresentationOptions {
@@ -97,23 +98,26 @@ export function detectShowFlourishesConflict(input: {
 	return canonical !== undefined && legacy !== undefined && canonical !== legacy;
 }
 
-export function foldShowFlourishesIntoPresentationOptions<T extends Record<string, unknown>>(
+/** Fold both legacy location flags into the canonical presentation options object. */
+export function foldLocationPresentationOptions<T extends Record<string, unknown>>(
 	location: T | undefined,
 	legacySectionStylesShowFlourishes?: boolean,
+	legacySectionStylesShowNavigationButtons?: boolean,
 ): T | undefined {
 	if (!location) return location;
 	const current = location.presentationOptions as LocationPresentationOptions | undefined;
-	if (current?.showFlourishes !== undefined) {
-		return location;
-	}
-	if (legacySectionStylesShowFlourishes === undefined) {
+	const showFlourishes = current?.showFlourishes ?? legacySectionStylesShowFlourishes;
+	const showNavigationButtons =
+		current?.showNavigationButtons ?? legacySectionStylesShowNavigationButtons;
+	if (showFlourishes === undefined && showNavigationButtons === undefined) {
 		return location;
 	}
 	return {
 		...location,
 		presentationOptions: {
 			...(current ?? {}),
-			showFlourishes: legacySectionStylesShowFlourishes,
+			...(showFlourishes !== undefined ? { showFlourishes } : {}),
+			...(showNavigationButtons !== undefined ? { showNavigationButtons } : {}),
 		},
 	};
 }
@@ -128,9 +132,10 @@ export function resolveLocationShowFlourishes(
 }
 
 export function resolveLocationShowNavigationButtons(
-	options: { showNavigationButtons?: boolean } | undefined,
+	options: LocationPresentationOptions | undefined,
+	legacySectionStylesShowNavigationButtons?: boolean,
 ): boolean {
-	return options?.showNavigationButtons ?? true;
+	return options?.showNavigationButtons ?? legacySectionStylesShowNavigationButtons ?? true;
 }
 
 export function resolvePortraitEnabled(

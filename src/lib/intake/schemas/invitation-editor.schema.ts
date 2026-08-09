@@ -59,10 +59,7 @@ export const InvitationEditorSectionSchemas = {
 			backgroundImageDesktop: editableAssetSchema.optional(),
 			backgroundImageMobile: editableAssetSchema.optional(),
 			portrait: editableAssetSchema.optional(),
-			presentation: z
-				.object({ portraitEnabled: z.boolean().optional() })
-				.strict()
-				.optional(),
+			presentation: z.object({ portraitEnabled: z.boolean().optional() }).strict().optional(),
 			variant: z.enum(THEME_PRESETS).optional(),
 			focalPoint: focalPointSchema.optional(),
 			focalPointMobile: focalPointSchema.optional(),
@@ -75,7 +72,10 @@ export const InvitationEditorSectionSchemas = {
 		visibility: z.enum(['public', 'after-rsvp']).optional(),
 		presentation: z.enum(LOCATION_PRESENTATIONS).optional(),
 		presentationOptions: z
-			.object({ showFlourishes: z.boolean().optional() })
+			.object({
+				showFlourishes: z.boolean().optional(),
+				showNavigationButtons: z.boolean().optional(),
+			})
 			.strict()
 			.optional(),
 		introEyebrow: optionalText(200),

@@ -155,9 +155,6 @@ export function buildAlbaPublishedContent(
 			},
 		],
 		sectionStyles: {
-			location: {
-				showFlourishes: false,
-			},
 			rsvp: {},
 			thankYou: {
 				variant: 'editorial-magazine',
@@ -204,6 +201,7 @@ export function buildAlbaPublishedContent(
 		},
 		location: {
 			visibility: 'public',
+			presentationOptions: { showFlourishes: false },
 			introEyebrow: '12 DE SEPTIEMBRE DE 2026',
 			reception: {
 				venueEvent: 'Celebración',

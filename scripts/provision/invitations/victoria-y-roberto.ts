@@ -151,12 +151,6 @@ export function buildVictoriaPublishedContent(
 			'rsvp',
 			'thankYou',
 		],
-		sectionStyles: {
-			location: {
-				showFlourishes: true,
-				showNavigationButtons: false,
-			},
-		},
 		_assetSlug: VICTORIA_EVENT.assetSlug,
 		hero: {
 			name: 'Victoria',
@@ -203,6 +197,10 @@ export function buildVictoriaPublishedContent(
 		},
 		location: {
 			visibility: 'public',
+			presentationOptions: {
+				showFlourishes: true,
+				showNavigationButtons: false,
+			},
 			introEyebrow: 'Los Mochis, Sinaloa',
 			introHeading: EVENT_DATE_HEADING,
 			introLede:

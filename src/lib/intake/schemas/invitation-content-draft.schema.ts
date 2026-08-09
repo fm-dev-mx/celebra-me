@@ -89,7 +89,10 @@ export const InvitationContentDraftContentSchema = z
 				visibility: z.enum(['public', 'after-rsvp']).optional(),
 				presentation: z.enum(LOCATION_PRESENTATIONS).optional(),
 				presentationOptions: z
-					.object({ showFlourishes: z.boolean().optional() })
+					.object({
+						showFlourishes: z.boolean().optional(),
+						showNavigationButtons: z.boolean().optional(),
+					})
 					.strict()
 					.optional(),
 				introEyebrow: optionalText(200),

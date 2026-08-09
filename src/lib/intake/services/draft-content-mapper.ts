@@ -13,7 +13,7 @@ import {
 	isRecord,
 	isNonEmptyObject,
 } from '@/lib/shared/data-utils';
-import { foldShowFlourishesIntoPresentationOptions } from '@/lib/invitation/presentation-options';
+import { foldLocationPresentationOptions } from '@/lib/invitation/presentation-options';
 import { VENUE_URL_FIELDS, ENVELOPE_TEXT_FIELDS } from '@/lib/intake/constants';
 import type { IconName } from '@/lib/icons/icon-catalog';
 import {
@@ -720,6 +720,9 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 		const legacyFlourishes = isRecord(sectionStylesLocation)
 			? (sectionStylesLocation.showFlourishes as boolean | undefined)
 			: undefined;
+		const legacyNavigationButtons = isRecord(sectionStylesLocation)
+			? (sectionStylesLocation.showNavigationButtons as boolean | undefined)
+			: undefined;
 
 		const draftLocationBase: Record<string, unknown> = {
 			visibility: str(location.visibility),
@@ -733,9 +736,10 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 			indicationsHeading: str(location.indicationsHeading),
 			indications: draftIndications.length > 0 ? draftIndications : undefined,
 		};
-		const draftLocation = foldShowFlourishesIntoPresentationOptions(
+		const draftLocation = foldLocationPresentationOptions(
 			draftLocationBase,
 			legacyFlourishes,
+			legacyNavigationButtons,
 		) as Record<string, unknown>;
 
 		// Flatten venues array if present (preferred source)
