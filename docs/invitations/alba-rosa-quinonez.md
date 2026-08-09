@@ -37,117 +37,36 @@ by `pnpm invitation:release -- --status` / `invitation-readiness.ts`.
 
 ## Fact Register
 
-- **slug:** alba-rosa-quinonez
-  - Classification: verified
-  - Source: owner 2026-07-28
-  - Notes: Confirmed
-- **celebrantName:** Alba Rosa Quiñónez López
-  - Classification: owner override
-  - Source: client correction 2026-07-29
-  - Notes: Corrected from WhatsApp source per client request (con Z)
-- **eventLabel:** 70 Años
-  - Classification: inferred
-  - Source: age + demo pattern
-  - Notes: —
-- **eventDate:** 2026-09-12
-  - Classification: owner override
-  - Source: client correction 2026-07-29
-  - Notes: Client corrected from 2026-09-11; earlier WhatsApp source superseded
-- **eventTime:** 20:00
-  - Classification: verified
-  - Source: WA 17/07/26
-  - Notes: —
-- **timeZone:** America/Mexico_City
-  - Classification: inferred
-  - Source: MX practice / Sinaloa
-  - Notes: —
-- **age:** 70
-  - Classification: verified
-  - Source: WA 17/07/26
-  - Notes: —
-- **hostContactName:** Lucero Ramírez
-  - Classification: verified
-  - Source: WA
-  - Notes: Contact / nuera
-- **primaryVenueName:** Canta Luna Campestre
-  - Classification: verified
-  - Source: owner 2026-07-28
-  - Notes: —
-- **primaryVenueAddress:** Supermanzana km 6, Los Mochis, Sinaloa
-  - Classification: verified
-  - Source: owner 2026-07-28
-  - Notes: —
-- **dressCode:** Formal
-  - Classification: verified
-  - Source: WA 17/07/26
-  - Notes: —
-- **giftsMode:** legend-only (no cofre / dinerito UI)
-  - Classification: verified
-  - Source: WA 17/07/26
-  - Notes: —
-- **giftsLegend:** Mi mejor regalo es tu presencia, pero si deseas tener un detalle conmigo, puedes
-  hacerlo dentro de un sobre.
-  - Classification: verified (adapted per owner)
-  - Source: owner “Adaptar” + WA reference
-  - Notes: Adapted from wedding plural reference to singular birthday voice
-- **baseDemoId:** demo-cumple-luxury-hacienda
-  - Classification: verified
-  - Source: WA 13/07/26
-  - Notes: —
-- **themePreset:** luxury-hacienda
-  - Classification: inferred
-  - Source: catalog
-  - Notes: —
-- **clientColors:** neutros: beige, cremita, blanco
-  - Classification: verified
-  - Source: WA 13/07/26
-  - Notes: —
-- **stylePreference:** sencillo, sobrio, entendible (invitados mayores)
-  - Classification: verified
-  - Source: WA
-  - Notes: —
-- **sourceAssetPath:** `source:hr-photos`
-  - Classification: verified
-  - Source: owner
-  - Notes: Opaque label; session holds real path
-- **primaryPhotoIntent:** Garden denim seated portrait (`d40988d8-…JPG`)
-  - Classification: verified
-  - Source: WA + inventory
-  - Notes: —
-- **photoPipelineDecision:** Use folder sources; high-quality WebP via normalize (q84); exclude
-  unusable
-  - Classification: verified
-  - Source: owner 2026-07-28
-  - Notes: Preserve originals; no aggressive recompress
-- **familyNames:** —
-  - Classification: not_applicable
-  - Source: —
-  - Notes: Names unverified; minimal family photo + phrase only
-- **musicUrl:** —
-  - Classification: not_applicable
-  - Source: —
-  - Notes: Music section omitted
-- **itinerary:** —
-  - Classification: not_applicable
-  - Source: —
-  - Notes: Itinerary omitted
-- **rsvpConfirmationMode:** api
-  - Classification: verified
-  - Source: product standard (recent invites)
-  - Notes: América, Xareni, Luna, Ayrin + intake default `api`; Valentina `both` is outlier
-- **rsvpAccessMode:** hybrid
-  - Classification: verified
-  - Source: product standard (recent invites)
-  - Notes: Matches América / Xareni / Luna / Ayrin
-- **rsvpGuestCap:** per-guest via dashboard
-  - Classification: verified
-  - Source: WA 18/07/26
-  - Notes: Payload guestCap follows demo/practice; passes assigned in dashboarad
-- **sectionOrder:** hero, location, interlude(Paris), gallery, gifts, personalizedAccess, rsvp,
-  family, thankYou
-  - Classification: verified + owner goal
-  - Source: owner “ok” + Family before Thank You
-  - Notes: Thank You is the final content section
+| field                 | value                                                                                                        | classification | source                               | notes                                                                            |
+| --------------------- | ------------------------------------------------------------------------------------------------------------ | -------------- | ------------------------------------ | -------------------------------------------------------------------------------- |
+| slug                  | alba-rosa-quinonez                                                                                           | verified       | owner 2026-07-28                     | Confirmed                                                                        |
+| hostLoginAlias        | alba_quinonez                                                                                                | verified       | owner 2026-07-28                     | Host login alias                                                                 |
+| celebrantName         | Alba Rosa Quiñónez López                                                                                     | verified       | client correction 2026-07-29         | Corrected from WhatsApp source per client request (con Z)                        |
+| eventLabel            | 70 Años                                                                                                      | inferred       | age + demo pattern                   | —                                                                                |
+| eventDate             | 2026-09-12                                                                                                   | verified       | client correction 2026-07-29         | Client corrected from 2026-09-11; earlier WhatsApp source superseded             |
+| eventTime             | 20:00                                                                                                        | verified       | WA 17/07/26                          | —                                                                                |
+| timeZone              | America/Mexico_City                                                                                          | inferred       | MX practice / Sinaloa                | —                                                                                |
+| age                   | 70                                                                                                           | verified       | WA 17/07/26                          | —                                                                                |
+| hostContactName       | Lucero Ramírez                                                                                               | verified       | WA                                   | Contact / nuera                                                                  |
+| primaryVenueName      | Canta Luna Campestre                                                                                         | verified       | owner 2026-07-28                     | —                                                                                |
+| primaryVenueAddress   | Supermanzana km 6, Los Mochis, Sinaloa                                                                       | verified       | owner 2026-07-28                     | —                                                                                |
+| dressCode             | Formal                                                                                                       | verified       | WA 17/07/26                          | —                                                                                |
+| giftsMode             | legend-only                                                                                                  | verified       | WA 17/07/26                          | No cofre / dinerito UI                                                           |
+| giftsLegend           | Mi mejor regalo es tu presencia, pero si deseas tener un detalle conmigo, puedes hacerlo dentro de un sobre. | verified       | owner “Adaptar” + WA reference       | Adapted from wedding plural reference to singular birthday voice                 |
+| baseDemoId            | demo-cumple-luxury-hacienda                                                                                  | verified       | WA 13/07/26                          | —                                                                                |
+| themePreset           | luxury-hacienda                                                                                              | inferred       | catalog                              | —                                                                                |
+| clientColors          | neutros: beige, cremita, blanco                                                                              | verified       | WA 13/07/26                          | —                                                                                |
+| stylePreference       | sencillo, sobrio, entendible (invitados mayores)                                                             | verified       | WA                                   | —                                                                                |
+| sourceAssetPath       | source:hr-photos                                                                                             | verified       | owner                                | Opaque label; session holds real path                                            |
+| primaryPhotoIntent    | Garden denim seated portrait (`d40988d8-…JPG`)                                                               | verified       | WA + inventory                       | —                                                                                |
+| photoPipelineDecision | Use folder sources; high-quality WebP via normalize (q84); exclude unusable                                  | verified       | owner 2026-07-28                     | Preserve originals; no aggressive recompress                                     |
+| familyNames           | —                                                                                                            | not_applicable | —                                    | Names unverified; minimal family photo + phrase only                             |
+| musicUrl              | —                                                                                                            | not_applicable | —                                    | Music section omitted                                                            |
+| itinerary             | —                                                                                                            | not_applicable | —                                    | Itinerary omitted                                                                |
+| rsvpConfirmationMode  | api                                                                                                          | verified       | product standard                     | América, Xareni, Luna, Ayrin + intake default `api`; Valentina `both` is outlier |
+| rsvpAccessMode        | hybrid                                                                                                       | verified       | product standard                     | Matches América / Xareni / Luna / Ayrin                                          |
+| rsvpGuestCap          | per-guest via dashboard                                                                                      | verified       | WA 18/07/26                          | Payload guestCap follows demo/practice; passes assigned in dashboard             |
+| sectionOrder          | hero, location, interlude(Paris), gallery, gifts, personalizedAccess, rsvp, family, thankYou                 | verified       | owner “ok” + Family before Thank You | Thank You is the final content section                                           |
 
 ---
 
