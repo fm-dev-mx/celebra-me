@@ -491,12 +491,12 @@ function buildItinerarySectionData(
 
 	const presentationBehavior = resolveItineraryPresentation(data.itinerary.presentation);
 	const legacyVariant = data.sectionStyles?.itinerary?.variant;
-	const variant: ItineraryVariant =
-		presentationBehavior !== 'standard'
-			? presentationBehavior
-			: legacyVariant === 'celestial-blue'
-				? 'timeline-paper'
-				: (legacyVariant ?? 'standard');
+	const hasCanonicalPresentation = data.itinerary.presentation !== undefined;
+	const variant: ItineraryVariant = hasCanonicalPresentation
+		? presentationBehavior
+		: legacyVariant === 'celestial-blue'
+			? 'timeline-paper'
+			: (legacyVariant ?? context.normalizedPreset);
 	return {
 		...data.itinerary,
 		variant,

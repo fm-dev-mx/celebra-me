@@ -30,9 +30,26 @@ function eventWith(overrides: Record<string, unknown>) {
 }
 
 describe('itinerary canonical behavior adapter', () => {
-	it('uses neutral standard behavior instead of inferring the theme', () => {
-		const viewModel = adaptEvent(eventWith({}));
+	it('uses neutral standard behavior when the canonical presentation is explicit', () => {
+		const viewModel = adaptEvent(
+			eventWith({ itinerary: { ...baseItinerary, presentation: { behavior: 'standard' } } }),
+		);
 		expect(viewModel.sections.itinerary?.variant).toBe('standard');
+	});
+
+	it('gives explicit canonical behavior precedence over a legacy variant', () => {
+		const viewModel = adaptEvent(
+			eventWith({
+				itinerary: { ...baseItinerary, presentation: { behavior: 'standard' } },
+				sectionStyles: { itinerary: { variant: 'celestial-blue' } },
+			}),
+		);
+		expect(viewModel.sections.itinerary?.variant).toBe('standard');
+	});
+
+	it('preserves the theme fallback for legacy invitations without presentation fields', () => {
+		const viewModel = adaptEvent(eventWith({ theme: { preset: 'jewelry-box-wedding' } }));
+		expect(viewModel.sections.itinerary?.variant).toBe('jewelry-box-wedding');
 	});
 
 	it('lets explicit presentation behavior select the structural renderer', () => {
