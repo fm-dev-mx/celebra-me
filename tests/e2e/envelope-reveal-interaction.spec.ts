@@ -8,6 +8,14 @@ const representativeRoutes = [
 	'/baby-shower/demo-baby-shower-celestial',
 ] as const;
 
+const sealSizingRoutes = [
+	'/boda/victoria-y-roberto',
+	'/boda/demo-boda-jewelry-box-wedding',
+	'/boda/daniela-y-martin',
+	'/cumple/alba-rosa-quinonez',
+	'/baby-shower/demo-baby-shower-celestial',
+] as const;
+
 async function expectRevealed(page: Page) {
 	await expect(page.locator('.event-theme-wrapper')).toHaveAttribute(
 		'data-reveal-state',
@@ -107,7 +115,9 @@ test.describe('shared envelope reveal interaction', () => {
 		});
 
 		await expect(page.locator('.envelope-external-instruction__button')).toBeHidden();
-		await expect(page.locator('[data-screenshot="reveal-letter"] [data-envelope-open]')).toHaveCount(0);
+		await expect(
+			page.locator('[data-screenshot="reveal-letter"] [data-envelope-open]'),
+		).toHaveCount(0);
 
 		await page.goto('/cumple/demo-cumple-luxury-hacienda?forceEnvelope=true', {
 			waitUntil: 'domcontentloaded',
@@ -136,6 +146,51 @@ test.describe('shared envelope reveal interaction', () => {
 				),
 			)
 			.toBe(true);
+	});
+
+	test('@extended keeps the seal proportionate across profiles and viewports', async ({
+		page,
+	}) => {
+		for (const viewport of [
+			{ width: 390, height: 844 },
+			{ width: 1440, height: 1200 },
+		]) {
+			await page.setViewportSize(viewport);
+
+			for (const route of sealSizingRoutes) {
+				await page.goto(`${route}?forceEnvelope=true`, { waitUntil: 'domcontentloaded' });
+
+				const metrics = await page.evaluate(() => {
+					const container = document.querySelector<HTMLElement>('.envelope-container');
+					const visual = document.querySelector<HTMLElement>(
+						'.envelope-seal-button__visual',
+					);
+					const button =
+						document.querySelector<HTMLButtonElement>('.envelope-seal-button');
+
+					if (!container || !visual || !button) {
+						throw new Error('Envelope seal sizing surface is missing');
+					}
+
+					const containerWidth = container.getBoundingClientRect().width;
+					const visualWidth = visual.getBoundingClientRect().width;
+					const buttonRect = button.getBoundingClientRect();
+
+					return {
+						containerWidth,
+						visualWidth,
+						buttonWidth: buttonRect.width,
+						buttonHeight: buttonRect.height,
+					};
+				});
+
+				const expectedVisualSize = Math.min(60, Math.max(40, metrics.containerWidth * 0.1));
+
+				expect(Math.abs(metrics.visualWidth - expectedVisualSize)).toBeLessThanOrEqual(1);
+				expect(metrics.buttonWidth).toBeGreaterThanOrEqual(48);
+				expect(metrics.buttonHeight).toBeGreaterThanOrEqual(48);
+			}
+		}
 	});
 
 	test('@extended keeps Alba Rosa’s reveal, countdown, and map hierarchy senior-friendly', async ({

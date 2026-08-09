@@ -37,12 +37,14 @@ digital invitations.
   2. `sealVariant` / `sealIcon` explicit selection -> `wax-organic` or `wax-medallion`.
   3. Existing icon contract -> `wax-monogram` maps to `wax-organic`, `monogram` to `monogram`, etc.
   4. Default fallback -> `wax-organic`.
-- **Discrete Fixed-Size Tiers & Container Queries**:
-  - Sizing follows `.envelope-container` inline size via progressive `@container` queries:
-    - `--env-seal-size-compact: 44px;` (Default / `< 360px` container width)
-    - `--env-seal-size-standard: 56px;` (`@container (min-width: 360px)`)
-    - `--env-seal-size-large: 68px;` (`@container (min-width: 480px)`)
-  - Seal size is constant within each tier. Fluid `clamp()`, `cqw`, or `vw` scaling is forbidden.
+- **Proportional Bounded Sizing**:
+  - The visible seal follows the envelope's inline size at `10cqi`, clamped between `40px` and
+    `60px`.
+  - The fallback is `40px` when container query units are unavailable.
+  - The size declaration belongs to a descendant of `.envelope-container`; the container must not
+    query itself.
+  - The visual diameter is independent from the opening button hit area, which remains at least
+    `48px × 48px`.
 - **Closure Anchor Positioning Contract**:
   - Position `.envelope-zone--seal` absolutely at
     `top: 50%; left: 50%; transform: translate(-50%, -50%);` relative to `.envelope-container`.
@@ -50,7 +52,8 @@ digital invitations.
     `max(2px, 1% of seal width)` tolerance.
 - **Structural Invariants**:
   - Envelope opening controls belong exclusively to the reveal container (`EnvelopeReveal`).
-  - `InvitationRevealCard` is presentation-only and must never contain opening controls or `data-envelope-open` buttons.
+  - `InvitationRevealCard` is presentation-only and must never contain opening controls or
+    `data-envelope-open` buttons.
   - `showCardAction` is deprecated and removed from schemas and DTO models.
 - **Rendering & Omission**: If `disabled: true` or envelope omitted, invitation opens directly on
   Hero fold without envelope animation.

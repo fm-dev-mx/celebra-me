@@ -401,9 +401,6 @@ html:has(.event--alba-rosa-quinonez) body {
 		--env-container-max-height: min(60svh, 440px);
 		--env-grid: 28% 32% 40%;
 		--env-title-size: clamp(1.6rem, 5cqw, 2.1rem);
-		--env-seal-size-compact: 40px;
-		--env-seal-size-standard: 48px;
-		--env-seal-size-large: 54px;
 
 		// Opaque letter — no translucent ghost layers
 		--reveal-card-bg: var(--alba-ivory);
@@ -517,8 +514,6 @@ html:has(.event--alba-rosa-quinonez) body {
 
 		// Seal stays secondary to identity — compact satin champagne disc
 		.envelope-seal-button__visual {
-			width: clamp(2.5rem, 7cqw, 3.5rem);
-			height: clamp(2.5rem, 7cqw, 3.5rem);
 			border: 1px solid rgb(255 255 255 / 28%);
 			background: var(--env-seal-bg);
 			box-shadow: var(--env-shadow-seal);
@@ -532,8 +527,8 @@ html:has(.event--alba-rosa-quinonez) body {
 			}
 
 			.seal-icon {
-				width: 1.35rem;
-				height: 1.35rem;
+				width: 54%;
+				height: 54%;
 				color: var(--env-seal-icon-override, var(--env-seal-icon));
 				filter: none;
 			}
