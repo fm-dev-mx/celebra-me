@@ -43,6 +43,9 @@ importers:
       '@fontsource-variable/playfair-display':
         specifier: ^5.3.0
         version: 5.3.0
+      '@fontsource/allura':
+        specifier: ^5.3.0
+        version: 5.3.0
       '@fontsource/pinyon-script':
         specifier: ^5.3.0
         version: 5.3.0
@@ -1202,6 +1205,9 @@ packages:
 
   '@fontsource-variable/playfair-display@5.3.0':
     resolution: {integrity: sha512-IHdzTvE8eGIXHteZql7KXoqdc3Gfm+Zs1u4XlSC3MeplkwviT3sx/P6gI0tLwg/xIYLF4ZJYveZ5V+bl9cnDwA==}
+
+  '@fontsource/allura@5.3.0':
+    resolution: {integrity: sha512-UqloNNVxl03+psvtIXCYuo7/v2mD9XmX2HGiczhK6NmDDwbFJJDjrbHZ5tpNuVXKsMEQPc46tZu3hewYN82/YA==}
 
   '@fontsource/pinyon-script@5.3.0':
     resolution: {integrity: sha512-ilhy4l5apzyDkfuKb7PZBUT5Sf6nfxucdXT5TQ0wQDyWtDPlouLy1lQq3lMEPk1lPsHHVrd11EkPnEG8FqDgUA==}
@@ -7398,6 +7404,8 @@ snapshots:
   '@fontsource-variable/montserrat@5.3.0': {}
 
   '@fontsource-variable/playfair-display@5.3.0': {}
+
+  '@fontsource/allura@5.3.0': {}
 
   '@fontsource/pinyon-script@5.3.0': {}
 
