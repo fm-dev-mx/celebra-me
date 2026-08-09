@@ -80,6 +80,11 @@ geometric edge would be too literal.
 - Prefer one or two purposeful radial layers over an effect stack.
 - Do not use a generic linear-gradient seam as a substitute for art direction.
 - Keep texture subtle enough that text contrast and image detail remain stable.
+- The shared mechanic paints the blend on the wrapper `::before`. Opaque backgrounds on the incoming
+  section child cover that layer; if a profile needs the blend to read over a photo exit (for
+  example with a shallow negative-margin overlap keyed by `data-intersection-source`), paint or open
+  the top band on that child locally. Keep the treatment generic to the source attribute — do not
+  hard-code a successor section kind.
 
 ## Secondary Golden Thread
 
