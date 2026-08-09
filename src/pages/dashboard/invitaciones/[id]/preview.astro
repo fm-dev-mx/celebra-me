@@ -181,9 +181,10 @@ const activePresetUrl = pageCtx?.viewModel?.theme?.preset
 const activeSectionCssUrls =
 	pageCtx?.viewModel?.theme?.preset
 		? resolveInvitationCssUrls({
-				themePreset: pageCtx.viewModel.theme.preset,
-				footerVariant: pageCtx.footerVariant,
-				visualProfileId: pageCtx.viewModel.visualProfileId,
+					themePreset: pageCtx.viewModel.theme.preset,
+					footerVariant: pageCtx.footerVariant,
+					galleryVariant: pageCtx.viewModel.sections.gallery?.variant,
+					visualProfileId: pageCtx.viewModel.visualProfileId,
 				slug: invitationRecord?.slug ?? undefined,
 			})
 		: [];
@@ -261,6 +262,7 @@ const headLinks = [
 									sealIcon={pageCtx.envelope.sealIcon}
 									sealInitials={pageCtx.envelope.sealInitials}
 									sealVariant={pageCtx.envelope.sealVariant}
+									sealColor={pageCtx.envelope.sealColor}
 									sealImage={pageCtx.envelope.sealImage}
 									microcopy={pageCtx.envelope.microcopy}
 									documentLabel={pageCtx.envelope.documentLabel}

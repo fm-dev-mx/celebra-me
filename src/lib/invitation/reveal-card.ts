@@ -33,6 +33,14 @@ export interface SealPresentation {
 	image?: ImageAsset;
 }
 
+/** Structural renderer selection, intentionally independent from skin tokens. */
+export interface SealStructure {
+	renderer: SealRendererType;
+	initials?: string;
+	icon?: EnvelopeSealIcon;
+	image?: ImageAsset;
+}
+
 export interface EnvelopeSealInput {
 	sealStyle?: 'wax' | 'ribbon' | 'flower' | 'monogram';
 	sealIcon?: EnvelopeSealIcon;
@@ -40,6 +48,49 @@ export interface EnvelopeSealInput {
 	sealVariant?: string;
 	sealColor?: string;
 	sealImage?: ImageAsset;
+}
+
+export function resolveSealSkin(input: Pick<EnvelopeSealInput, 'sealColor' | 'sealVariant'> = {}) {
+	return input.sealColor || input.sealVariant;
+}
+
+/** Normalize legacy seal inputs into a structural renderer contract. */
+export function resolveSealStructure(input: EnvelopeSealInput = {}): SealStructure {
+	const initials = input.sealInitials?.trim() || undefined;
+
+	if (input.sealImage && Boolean(input.sealImage.src)) {
+		return { renderer: 'raster', image: input.sealImage, initials };
+	}
+
+	if (input.sealIcon === 'wax-medallion') {
+		return { renderer: 'wax-medallion', initials, icon: 'wax-medallion' };
+	}
+
+	if (input.sealIcon === 'wax-organic') {
+		return { renderer: 'wax-organic', initials, icon: 'wax-organic' };
+	}
+
+	if (input.sealIcon === 'wax-monogram') {
+		return { renderer: 'wax-organic', initials, icon: 'wax-monogram' };
+	}
+
+	if (input.sealIcon === 'monogram' || input.sealStyle === 'monogram') {
+		return { renderer: 'monogram', initials, icon: 'monogram' };
+	}
+
+	if (input.sealIcon && ['boot', 'heart', 'flower', 'special-edition'].includes(input.sealIcon)) {
+		return { renderer: 'vector-icon', icon: input.sealIcon, initials };
+	}
+
+	if (input.sealStyle === 'flower') {
+		return { renderer: 'vector-icon', icon: 'flower', initials };
+	}
+
+	if (input.sealStyle === 'ribbon') {
+		return { renderer: 'vector-icon', icon: 'special-edition', initials };
+	}
+
+	return { renderer: 'wax-organic', initials, icon: 'wax-organic' };
 }
 
 /**
@@ -52,90 +103,9 @@ export interface EnvelopeSealInput {
  * 4. Fallback Default -> 'wax-organic'
  */
 export function resolveSealPresentation(input: EnvelopeSealInput = {}): SealPresentation {
-	const initials = input.sealInitials?.trim() || undefined;
-	const skin = input.sealColor || input.sealVariant;
-
-	// 1. Raster image precedence (explicit asset input)
-	if (input.sealImage && Boolean(input.sealImage.src)) {
-		return {
-			renderer: 'raster',
-			image: input.sealImage,
-			skin: input.sealVariant,
-			initials,
-		};
-	}
-
-	// 2. Canonical structural selection via sealIcon
-	if (input.sealIcon === 'wax-medallion') {
-		return {
-			renderer: 'wax-medallion',
-			skin,
-			initials,
-			icon: 'wax-medallion',
-		};
-	}
-
-	if (input.sealIcon === 'wax-organic') {
-		return {
-			renderer: 'wax-organic',
-			skin,
-			initials,
-			icon: 'wax-organic',
-		};
-	}
-
-	// 3. Existing icon & style contracts
-	if (input.sealIcon === 'wax-monogram') {
-		return {
-			renderer: 'wax-organic',
-			skin,
-			initials,
-			icon: 'wax-monogram',
-		};
-	}
-
-	if (input.sealIcon === 'monogram' || input.sealStyle === 'monogram') {
-		return {
-			renderer: 'monogram',
-			skin,
-			initials,
-			icon: 'monogram',
-		};
-	}
-
-	if (input.sealIcon && ['boot', 'heart', 'flower', 'special-edition'].includes(input.sealIcon)) {
-		return {
-			renderer: 'vector-icon',
-			icon: input.sealIcon,
-			skin,
-			initials,
-		};
-	}
-
-	if (input.sealStyle === 'flower') {
-		return {
-			renderer: 'vector-icon',
-			icon: 'flower',
-			skin,
-			initials,
-		};
-	}
-
-	if (input.sealStyle === 'ribbon') {
-		return {
-			renderer: 'vector-icon',
-			icon: 'special-edition',
-			skin,
-			initials,
-		};
-	}
-
-	// 4. Default fallback: wax-organic
 	return {
-		renderer: 'wax-organic',
-		skin,
-		initials,
-		icon: 'wax-organic',
+		...resolveSealStructure(input),
+		skin: resolveSealSkin(input),
 	};
 }
 

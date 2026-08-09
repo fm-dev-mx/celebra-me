@@ -14,6 +14,7 @@ interface Props {
 	sealIcon?: EnvelopeSealIcon;
 	sealInitials?: string;
 	sealVariant?: string;
+	sealColor?: string;
 	sealImage?: ImageAsset;
 	microcopy: string;
 	documentLabel?: string;
@@ -35,6 +36,7 @@ const {
 	sealIcon,
 	sealInitials,
 	sealVariant,
+	sealColor,
 	sealImage,
 	microcopy,
 	documentLabel,
@@ -55,6 +57,7 @@ const sealPresentation = resolveSealPresentation({
 	sealIcon,
 	sealInitials,
 	sealVariant,
+	sealColor,
 	sealImage,
 });
 
@@ -76,6 +79,7 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 	data-event-slug={eventSlug}
 	data-variant={variant}
 	data-seal-variant={sealVariant || ''}
+	data-seal-skin={sealPresentation.skin || ''}
 	data-audio-url={audioUrl || ''}
 	data-dev-skip={String(import.meta.env.DEV)}
 	data-preview-state={previewState}

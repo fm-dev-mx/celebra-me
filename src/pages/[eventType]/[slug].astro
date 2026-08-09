@@ -182,6 +182,7 @@ const activeSectionCssUrls =
 		? resolveInvitationCssUrls({
 				themePreset: viewModel.theme.preset,
 				footerVariant: page.footerVariant,
+				galleryVariant: viewModel.sections.gallery?.variant,
 				visualProfileId: viewModel.visualProfileId,
 				slug,
 			})
@@ -294,6 +295,7 @@ const wrapperDataAttributes = page
 									sealIcon={page.envelope.sealIcon}
 									sealInitials={page.envelope.sealInitials}
 									sealVariant={page.envelope.sealVariant}
+									sealColor={page.envelope.sealColor}
 									sealImage={page.envelope.sealImage}
 									microcopy={page.envelope.microcopy}
 									documentLabel={page.envelope.documentLabel}

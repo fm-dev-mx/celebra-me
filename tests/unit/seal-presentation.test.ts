@@ -1,9 +1,26 @@
 import {
 	resolveSealPresentation,
+	resolveSealSkin,
+	resolveSealStructure,
 	SEAL_ICON_MAP,
 } from '@/lib/invitation/reveal-card';
 
 describe('resolveSealPresentation', () => {
+	it('separates structural selection from skin precedence', () => {
+		expect(resolveSealStructure({ sealIcon: 'wax-medallion', sealVariant: 'legacy' })).toEqual({
+			renderer: 'wax-medallion',
+			initials: undefined,
+			icon: 'wax-medallion',
+		});
+		expect(resolveSealSkin({ sealColor: 'roseGold', sealVariant: 'legacy' })).toBe('roseGold');
+		expect(
+			resolveSealPresentation({
+				sealIcon: 'wax-medallion',
+				sealColor: 'roseGold',
+				sealVariant: 'legacy',
+			}),
+		).toMatchObject({ renderer: 'wax-medallion', skin: 'roseGold' });
+	});
 	it('prefers raster image renderer when sealImage is provided', () => {
 		const mockImage = {
 			src: '/assets/rose-wax-seal.webp',
@@ -178,21 +195,15 @@ describe('parametric seal icon checks', () => {
 		const parametric = ['monogram', 'wax-organic', 'wax-medallion'];
 		const nonParametric = ['vector-icon', 'raster'];
 
-		expect(parametric).toContain(
-			resolveSealPresentation({ sealIcon: 'wax-organic' }).renderer,
-		);
+		expect(parametric).toContain(resolveSealPresentation({ sealIcon: 'wax-organic' }).renderer);
 		expect(parametric).toContain(
 			resolveSealPresentation({ sealIcon: 'wax-medallion' }).renderer,
 		);
 		expect(parametric).toContain(
 			resolveSealPresentation({ sealIcon: 'wax-monogram' }).renderer,
 		);
-		expect(parametric).toContain(
-			resolveSealPresentation({ sealIcon: 'monogram' }).renderer,
-		);
-		expect(nonParametric).toContain(
-			resolveSealPresentation({ sealIcon: 'flower' }).renderer,
-		);
+		expect(parametric).toContain(resolveSealPresentation({ sealIcon: 'monogram' }).renderer);
+		expect(nonParametric).toContain(resolveSealPresentation({ sealIcon: 'flower' }).renderer);
 	});
 
 	it('maps seal icons to components in SEAL_ICON_MAP', () => {
