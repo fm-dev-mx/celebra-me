@@ -29,7 +29,9 @@ Trace shorthand:
   section/profile CSS entrypoint.
 
 The matrix is a deterministic contract audit. It observes source values, adapter view-model values,
-render-plan descriptors, renderer attributes, and CSS ownership; it is not a pixel-screenshot claim.
+render-plan descriptors, renderer attributes, and CSS ownership; it is not a pixel-screenshot claim
+or an environment/deployment parity result. The follow-up browser comparison is recorded in the
+[P1.1 environment reconciliation addendum](render-parity-environment-reconciliation-2026-08-10.md).
 
 ## Parity matrix
 
