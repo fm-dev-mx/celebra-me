@@ -52,7 +52,7 @@ import {
 import {
 	EDITOR_SECTION_PRESENTATION,
 	INVITATION_STATUS_LABELS,
-	supportsXareniPresentationOptions,
+	supportsEnvelopeSealColorOptions,
 } from '@/lib/intake/labels';
 import {
 	applySectionToBaseline,
@@ -497,7 +497,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 
 	const eventType = editor.context.invitation.eventType;
 	const themeId = editor.context.invitation.themeId;
-	const supportsXareniOptions = supportsXareniPresentationOptions({ assetLookupSlug });
+	const supportsSealColorOptions = supportsEnvelopeSealColorOptions({ assetLookupSlug });
 
 	const criticalSections = useMemo(
 		() => getCriticalSections(eventType, rsvpEnabled),
@@ -1108,7 +1108,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						success={success.envelope}
 						sourceBadge={sectionSource('envelope')}
 						visible={activeEditorCardId === 'envelope'}
-						supportsSealColor={supportsXareniOptions}
+						supportsSealColor={supportsSealColorOptions}
 						{...sectionRestoreProps('envelope', 'Sobre / apertura')}
 					/>
 

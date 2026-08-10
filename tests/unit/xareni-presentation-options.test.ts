@@ -4,7 +4,6 @@ import {
 	resolveLocationMediaMode,
 	shouldRenderFamilyMedia,
 	supportsEnvelopeSealColorOptions,
-	supportsXareniPresentationOptions,
 } from '@/lib/invitation/presentation-options';
 import { ENVELOPE_SEAL_COLORS, isEnvelopeSealColor } from '@/lib/invitation/reveal-card';
 import { ENVELOPE_SEAL_COLOR_LABELS } from '@/lib/intake/labels';
@@ -125,7 +124,7 @@ describe('Xareni presentation options', () => {
 			expect(
 				supportsEnvelopeSealColorOptions({ assetLookupSlug: 'demo-xv-celestial-blue' }),
 			).toBe(true);
-			expect(supportsXareniPresentationOptions({ assetLookupSlug: 'any-slug' })).toBe(true);
+			expect(supportsEnvelopeSealColorOptions({ assetLookupSlug: 'any-slug' })).toBe(true);
 		});
 	});
 });
