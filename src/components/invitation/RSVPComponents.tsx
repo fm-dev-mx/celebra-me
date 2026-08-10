@@ -24,12 +24,6 @@ import { isNavigableVenueMapUrl } from '@/lib/invitation/location-helper';
 import { formatVenueTimeForDisplay } from '@/lib/invitation/venue-datetime';
 import type { RsvpStructuralVariant } from '@/lib/invitation/structural-variants';
 
-export {
-	buildWhatsAppUrl,
-	resolveLabels,
-	getDefaultRsvpSubcopy,
-} from '@/components/invitation/rsvp-logic';
-export type { WhatsAppConfig } from '@/components/invitation/rsvp-logic';
 export type RevealedLocation = LocationSection;
 
 // --- Sub-components ---
