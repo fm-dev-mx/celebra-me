@@ -30,6 +30,11 @@ function eventWith(overrides: Record<string, unknown>) {
 }
 
 describe('itinerary canonical behavior adapter', () => {
+	it('defaults to standard when presentation.behavior is omitted', () => {
+		const viewModel = adaptEvent(eventWith({ theme: { preset: 'jewelry-box-wedding' } }));
+		expect(viewModel.sections.itinerary?.variant).toBe('standard');
+	});
+
 	it('uses neutral standard behavior when the canonical presentation is explicit', () => {
 		const viewModel = adaptEvent(
 			eventWith({ itinerary: { ...baseItinerary, presentation: { behavior: 'standard' } } }),
@@ -37,7 +42,7 @@ describe('itinerary canonical behavior adapter', () => {
 		expect(viewModel.sections.itinerary?.variant).toBe('standard');
 	});
 
-	it('gives explicit canonical behavior precedence over a legacy variant', () => {
+	it('gives explicit canonical behavior precedence over a legacy sectionStyles variant', () => {
 		const viewModel = adaptEvent(
 			eventWith({
 				itinerary: { ...baseItinerary, presentation: { behavior: 'standard' } },
@@ -45,11 +50,6 @@ describe('itinerary canonical behavior adapter', () => {
 			}),
 		);
 		expect(viewModel.sections.itinerary?.variant).toBe('standard');
-	});
-
-	it('preserves the theme fallback for legacy invitations without presentation fields', () => {
-		const viewModel = adaptEvent(eventWith({ theme: { preset: 'jewelry-box-wedding' } }));
-		expect(viewModel.sections.itinerary?.variant).toBe('jewelry-box-wedding');
 	});
 
 	it('lets explicit presentation behavior select the structural renderer', () => {
@@ -61,10 +61,10 @@ describe('itinerary canonical behavior adapter', () => {
 		expect(viewModel.sections.itinerary?.variant).toBe('timeline-paper');
 	});
 
-	it('keeps the legacy celestial-blue alias only when canonical behavior is absent', () => {
+	it('does not treat legacy celestial-blue sectionStyles as itinerary authority', () => {
 		const viewModel = adaptEvent(
 			eventWith({ sectionStyles: { itinerary: { variant: 'celestial-blue' } } }),
 		);
-		expect(viewModel.sections.itinerary?.variant).toBe('timeline-paper');
+		expect(viewModel.sections.itinerary?.variant).toBe('standard');
 	});
 });

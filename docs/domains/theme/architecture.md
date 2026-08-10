@@ -205,10 +205,9 @@ composition root (for example, intersection profiles).
 ## Behavior-Named Section Variants
 
 Reusable section mechanics use behavior names instead of borrowing another theme's identity. The
-paper itinerary behavior is `timeline-paper`; `celestial-blue` remains an accepted compatibility
-alias while stored invitation data migrates. New content and profiles must request `timeline-paper`.
-Compatibility aliases may forward to the behavior implementation, but they must not become a second
-source of structure or tokens.
+paper itinerary behavior is `timeline-paper`, selected only via `itinerary.presentation.behavior`.
+The former `celestial-blue` itinerary alias and theme-name fallback are retired; omitted behavior
+resolves to `standard`. Theme presets remain visual skins.
 
 ## Runtime CSS Delivery
 
@@ -223,10 +222,11 @@ source of structure or tokens.
   Canonical section partials are not exposed through a general per-section passthrough directory.
 
 Gallery CSS starts with the theme-preset bundle. When an explicit semantic `gallery.variant` differs
-from the active theme, the section CSS resolver emits the matching layout partial independently;
-legacy theme-name fallbacks keep the active theme partial until migration. See
+from the active theme, the section CSS resolver emits the matching layout partial independently.
+Theme preset alone does not select gallery structure; the renderer always emits
+`data-structural-variant` for the resolved layout ID. See
 [`gallery-variants.md`](gallery-variants.md) for the current map, compatibility boundary, and
-profile override evidence.
+retained profile exceptions.
 
 ## Runtime Contract
 

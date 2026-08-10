@@ -9,96 +9,58 @@ import {
 	resolveRsvpStructuralVariant,
 	resolveThankYouStructuralVariant,
 } from '@/lib/invitation/structural-variants';
-import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 
 describe('section structural variant contracts', () => {
-	it('gives explicit section configuration precedence over theme compatibility aliases', () => {
-		expect(resolveHeroStructuralVariant('standard', 'editorial-magazine')).toBe('standard');
-		expect(resolveThankYouStructuralVariant('standard', 'sacred-keepsake')).toBe('standard');
-		expect(resolveGiftsStructuralVariant('standard', 'editorial-magazine')).toBe('standard');
-		expect(resolveRsvpStructuralVariant('standard', 'editorial-magazine')).toBe('standard');
-		expect(resolvePersonalizedAccessStructuralVariant('ornamented', 'editorial-magazine')).toBe(
-			'ornamented',
-		);
+	it('gives explicit section configuration precedence over defaults', () => {
+		expect(resolveHeroStructuralVariant('standard')).toBe('standard');
+		expect(resolveThankYouStructuralVariant('standard')).toBe('standard');
+		expect(resolveGiftsStructuralVariant('standard')).toBe('standard');
+		expect(resolveRsvpStructuralVariant('standard')).toBe('standard');
+		expect(resolvePersonalizedAccessStructuralVariant('ornamented')).toBe('ornamented');
 		expect(resolveFamilyStructuralVariant('split-groups')).toBe('split-groups');
 		expect(resolveLocationStructuralVariant('split-map')).toBe('split-map');
 	});
 
-	it('keeps explicit structural selections independent from the active theme', () => {
-		for (const theme of THEME_PRESETS) {
-			expect(resolveHeroStructuralVariant('editorial-cover', theme)).toBe('editorial-cover');
-			expect(resolveHeroStructuralVariant('split-cover', theme)).toBe('split-cover');
-			expect(resolveThankYouStructuralVariant('full-bleed-photo', theme)).toBe(
-				'full-bleed-photo',
-			);
-			expect(resolveGiftsStructuralVariant('editorial-catalog', theme)).toBe(
-				'editorial-catalog',
-			);
-			expect(resolveRsvpStructuralVariant('editorial-press-pass', theme)).toBe(
-				'editorial-press-pass',
-			);
-			expect(resolvePersonalizedAccessStructuralVariant('editorial-pass', theme)).toBe(
-				'editorial-pass',
-			);
-			expect(resolveGalleryLayoutVariant('magazine-spread', undefined, theme)).toBe(
-				'magazine-spread',
-			);
-			expect(resolveFamilyStructuralVariant('split-groups')).toBe('split-groups');
-			expect(resolveLocationStructuralVariant('split-map')).toBe('split-map');
-		}
+	it('keeps explicit structural selections independent from active theme contract', () => {
+		expect(resolveHeroStructuralVariant('editorial-cover')).toBe('editorial-cover');
+		expect(resolveHeroStructuralVariant('split-cover')).toBe('split-cover');
+		expect(resolveThankYouStructuralVariant('full-bleed-photo')).toBe('full-bleed-photo');
+		expect(resolveGiftsStructuralVariant('editorial-catalog')).toBe('editorial-catalog');
+		expect(resolveRsvpStructuralVariant('editorial-press-pass')).toBe('editorial-press-pass');
+		expect(resolvePersonalizedAccessStructuralVariant('editorial-pass')).toBe(
+			'editorial-pass',
+		);
+		expect(resolveGalleryLayoutVariant('magazine-spread')).toBe('magazine-spread');
+		expect(resolveFamilyStructuralVariant('split-groups')).toBe('split-groups');
+		expect(resolveLocationStructuralVariant('split-map')).toBe('split-map');
 	});
 
-	it('keeps invalid or omitted selectors on the documented compatibility path', () => {
-		expect(resolveHeroStructuralVariant('not-a-variant', 'editorial-magazine')).toBe(
-			'editorial-cover',
-		);
-		expect(resolveHeroStructuralVariant('not-a-variant', 'jewelry-box')).toBe('standard');
-		expect(resolveGalleryLayoutVariant('not-a-variant', undefined, 'celestial-blue')).toBe(
-			'index-choreography',
-		);
+	it('defaults omitted or invalid selectors to the canonical standard path', () => {
+		expect(resolveHeroStructuralVariant('not-a-variant')).toBe('standard');
+		expect(resolveHeroStructuralVariant(undefined)).toBe('standard');
+		expect(resolveThankYouStructuralVariant(undefined)).toBe('standard');
+		expect(resolveGiftsStructuralVariant(undefined)).toBe('standard');
+		expect(resolveRsvpStructuralVariant(undefined)).toBe('standard');
+		expect(resolvePersonalizedAccessStructuralVariant(undefined)).toBe('standard');
+		expect(resolveGalleryLayoutVariant('not-a-variant')).toBe('uniform-grid');
 		expect(resolveFamilyStructuralVariant(undefined)).toBe('standard');
 		expect(resolveFamilyStructuralVariant('not-a-variant')).toBe('standard');
 		expect(resolveLocationStructuralVariant(undefined)).toBe('standard');
 		expect(resolveLocationStructuralVariant('not-a-variant')).toBe('standard');
 	});
 
-	it('maps established legacy theme branches to bounded structural identifiers', () => {
-		expect(resolveHeroStructuralVariant(undefined, 'editorial-magazine')).toBe(
-			'editorial-cover',
+	it('keeps the single → single-keepsake gallery alias and ignores theme-named layout inference', () => {
+		expect(resolveGalleryLayoutVariant(undefined, 'editorial-magazine')).toBe('uniform-grid');
+		expect(resolveGalleryLayoutVariant(undefined, 'celestial-blue')).toBe('uniform-grid');
+		expect(resolveGalleryLayoutVariant(undefined, 'single')).toBe('single-keepsake');
+		expect(resolveGalleryLayoutVariant('single')).toBe('single-keepsake');
+		expect(resolveGalleryLayoutVariant(undefined, 'jewelry-box-wedding')).toBe('uniform-grid');
+		expect(resolveGalleryLayoutVariant('uniform-grid', 'editorial-magazine')).toBe(
+			'uniform-grid',
 		);
-		expect(resolveThankYouStructuralVariant(undefined, 'sacred-keepsake')).toBe(
-			'full-bleed-photo',
-		);
-		expect(resolveThankYouStructuralVariant(undefined, 'celestial-blue')).toBe(
-			'editorial-back-cover',
-		);
-		expect(resolveGiftsStructuralVariant(undefined, 'editorial-magazine')).toBe(
-			'editorial-catalog',
-		);
-		expect(resolveRsvpStructuralVariant(undefined, 'editorial-magazine')).toBe(
-			'editorial-press-pass',
-		);
-		expect(resolvePersonalizedAccessStructuralVariant(undefined, 'editorial-magazine')).toBe(
-			'editorial-pass',
-		);
-	});
-
-	it('maps gallery legacy names to the documented layout-role contract', () => {
-		expect(resolveGalleryLayoutVariant(undefined, 'editorial-magazine', 'jewelry-box')).toBe(
-			'magazine-spread',
-		);
-		expect(resolveGalleryLayoutVariant(undefined, 'celestial-blue', 'jewelry-box')).toBe(
+		expect(resolveGalleryLayoutVariant('index-choreography', 'celestial-blue')).toBe(
 			'index-choreography',
 		);
-		expect(resolveGalleryLayoutVariant(undefined, 'single', 'jewelry-box')).toBe(
-			'single-keepsake',
-		);
-		expect(
-			resolveGalleryLayoutVariant(undefined, 'jewelry-box-wedding', 'jewelry-box-wedding'),
-		).toBe('uniform-grid');
-		expect(
-			resolveGalleryLayoutVariant('uniform-grid', 'editorial-magazine', 'jewelry-box'),
-		).toBe('uniform-grid');
 	});
 
 	it('keeps the single-keepsake visual skin compatible with the single alias', () => {

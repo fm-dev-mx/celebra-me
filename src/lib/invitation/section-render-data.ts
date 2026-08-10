@@ -51,7 +51,6 @@ function resolvePersonalizedAccessVariant(
 ): PersonalizedAccessStructuralVariant {
 	return resolvePersonalizedAccessStructuralVariant(
 		pageContext.viewModel.sections.rsvp?.personalizedAccess?.structuralVariant,
-		pageContext.viewModel.theme.preset ?? THEME_PRESETS[0],
 	);
 }
 

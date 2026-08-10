@@ -47,12 +47,11 @@ export type GalleryLayoutVariant = (typeof GALLERY_LAYOUT_VARIANTS)[number];
 
 export function resolveHeroStructuralVariant(
 	explicit: string | undefined,
-	themePreset: ThemePreset,
 ): HeroStructuralVariant {
 	if (explicit && (HERO_STRUCTURAL_VARIANTS as readonly string[]).includes(explicit)) {
 		return explicit as HeroStructuralVariant;
 	}
-	return themePreset === 'editorial-magazine' ? 'editorial-cover' : 'standard';
+	return 'standard';
 }
 
 export function resolveFamilyStructuralVariant(
@@ -75,45 +74,33 @@ export function resolveLocationStructuralVariant(
 
 export function resolveThankYouStructuralVariant(
 	explicit: string | undefined,
-	themePreset: ThemePreset,
 ): ThankYouStructuralVariant {
 	if (explicit && (THANK_YOU_STRUCTURAL_VARIANTS as readonly string[]).includes(explicit)) {
 		return explicit as ThankYouStructuralVariant;
-	}
-	if (themePreset === 'sacred-keepsake') return 'full-bleed-photo';
-	if (
-		themePreset === 'celestial-blue' ||
-		themePreset === 'enchanted-rose' ||
-		themePreset === 'editorial-magazine'
-	) {
-		return 'editorial-back-cover';
 	}
 	return 'standard';
 }
 
 export function resolveGiftsStructuralVariant(
 	explicit: string | undefined,
-	themePreset: ThemePreset,
 ): GiftsStructuralVariant {
 	if (explicit && (GIFTS_STRUCTURAL_VARIANTS as readonly string[]).includes(explicit)) {
 		return explicit as GiftsStructuralVariant;
 	}
-	return themePreset === 'editorial-magazine' ? 'editorial-catalog' : 'standard';
+	return 'standard';
 }
 
 export function resolveRsvpStructuralVariant(
 	explicit: string | undefined,
-	themePreset: ThemePreset,
 ): RsvpStructuralVariant {
 	if (explicit && (RSVP_STRUCTURAL_VARIANTS as readonly string[]).includes(explicit)) {
 		return explicit as RsvpStructuralVariant;
 	}
-	return themePreset === 'editorial-magazine' ? 'editorial-press-pass' : 'standard';
+	return 'standard';
 }
 
 export function resolvePersonalizedAccessStructuralVariant(
 	explicit: string | undefined,
-	themePreset: ThemePreset,
 ): PersonalizedAccessStructuralVariant {
 	if (
 		explicit &&
@@ -121,28 +108,22 @@ export function resolvePersonalizedAccessStructuralVariant(
 	) {
 		return explicit as PersonalizedAccessStructuralVariant;
 	}
-	if (themePreset === 'editorial-magazine') return 'editorial-pass';
-	return themePreset === 'jewelry-box' ? 'standard' : 'ornamented';
+	return 'standard';
 }
 
+/**
+ * Resolve gallery layout from an explicit layout ID on `gallery.variant`.
+ * The only remaining content alias is `single` → `single-keepsake`.
+ * Theme names are visual skins via `resolveGalleryVisualVariant`, not layouts.
+ */
 export function resolveGalleryLayoutVariant(
 	explicit: string | undefined,
-	legacyVariant: string | undefined,
-	themePreset: ThemePreset,
+	legacyVariant?: string | undefined,
 ): GalleryLayoutVariant {
 	if (explicit && (GALLERY_LAYOUT_VARIANTS as readonly string[]).includes(explicit)) {
 		return explicit as GalleryLayoutVariant;
 	}
-	const legacy = legacyVariant ?? themePreset;
-	if (legacy === 'single') return 'single-keepsake';
-	if (legacy === 'editorial-magazine') return 'magazine-spread';
-	if (legacy === 'celestial-blue') return 'index-choreography';
-	if (legacy === 'luxury-hacienda' || legacy === 'enchanted-rose' || legacy === 'jewelry-box') {
-		return 'feature-mosaic';
-	}
-	if (legacy === 'editorial' || legacy === 'editorial-rose' || legacy === 'premiere-floral') {
-		return 'editorial-mosaic';
-	}
+	if (explicit === 'single' || legacyVariant === 'single') return 'single-keepsake';
 	return 'uniform-grid';
 }
 

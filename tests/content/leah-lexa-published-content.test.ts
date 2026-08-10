@@ -184,5 +184,12 @@ describe('Leah Lexa SQL patch published content', () => {
 		expect(result.data._assetSlug).toBe('leah-lexa-baby-shower');
 		expect(result.data.envelope?.sealVariant).toBe('premium-rose');
 		expect(result.data.hero.name).toBe('Leah Lexa');
+		// Explicit navigation metadata replaces the retired slug override map.
+		expect(result.data.navigation).toEqual([
+			{ label: 'Ubicación', href: '#event-location' },
+			{ label: 'Fecha', href: '#inicio' },
+			{ label: 'Regalos', href: '#regalos' },
+			{ label: 'Confirmar', href: '#rsvp' },
+		]);
 	});
 });

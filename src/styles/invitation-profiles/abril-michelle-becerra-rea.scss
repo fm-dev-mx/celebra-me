@@ -179,7 +179,7 @@ html:has(.event--abril-michelle-becerra-rea) body {
 	--theme-image-filter-gallery: saturate(1.02) contrast(1.02) brightness(1.01);
 
 	// Celestial program: demo-xv-celestial-blue parity (style + colors); Bodoni watermark only.
-	.itinerary:is([data-variant='timeline-paper'], [data-variant='celestial-blue']) {
+	.itinerary[data-variant='timeline-paper'] {
 		--itinerary-paper-white: rgb(253 251 247);
 		--itinerary-cream: rgb(245 241 230);
 
@@ -1016,7 +1016,7 @@ html:has(.event--abril-michelle-becerra-rea) body {
 	}
 
 	// Non-paper fallback only — timeline-paper owns its paper gradient above.
-	.itinerary:not([data-variant='timeline-paper'], [data-variant='celestial-blue']) {
+	.itinerary:not([data-variant='timeline-paper']) {
 		--itinerary-bg:
 			radial-gradient(
 				ellipse 100% var(--abril-transition-blend-depth) at 78% 0%,

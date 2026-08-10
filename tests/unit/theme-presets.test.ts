@@ -311,19 +311,19 @@ describe('Celestial blue section coverage', () => {
 		}
 	});
 
-	it('keeps the celestial itinerary name as a thin alias to the behavior module', () => {
-		const alias = fs.readFileSync(
-			path.join(projectRoot, 'src/styles/themes/sections/itinerary/_celestial-blue.scss'),
-			'utf8',
-		);
+	it('owns paper itinerary structure under the timeline-paper behavior module', () => {
 		const behavior = fs.readFileSync(
 			path.join(projectRoot, 'src/styles/themes/sections/itinerary/_timeline-paper.scss'),
 			'utf8',
 		);
+		const aliasPath = path.join(
+			projectRoot,
+			'src/styles/themes/sections/itinerary/_celestial-blue.scss',
+		);
 
-		expect(alias).toContain("@forward 'timeline-paper'");
-		expect(behavior).toContain("[data-variant='celestial-blue']");
+		expect(fs.existsSync(aliasPath)).toBe(false);
 		expect(behavior).toContain("[data-variant='timeline-paper']");
+		expect(behavior).not.toContain("[data-variant='celestial-blue']");
 	});
 
 	it('styles location through the base location contract', () => {

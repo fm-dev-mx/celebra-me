@@ -55,9 +55,7 @@ describe('Abril Michelle local invitation content', () => {
 		expect(profile).toContain(
 			"@use '@fontsource-variable/bodoni-moda/wght-italic.css' as bodoni-moda-italic;",
 		);
-		expect(profile).toContain(
-			".itinerary:is([data-variant='timeline-paper'], [data-variant='celestial-blue'])",
-		);
+		expect(profile).toContain(".itinerary[data-variant='timeline-paper']");
 		expect(profile).toContain('--itinerary-paper-white: rgb(253 251 247);');
 		// Paper and metal stay at demo parity, but the ink is deliberately re-tinted warm so
 		// the reused celestial variant stops clashing with Abril's palette.
@@ -72,9 +70,7 @@ describe('Abril Michelle local invitation content', () => {
 		expect(profile).toContain('padding-top: 5.25rem;');
 		expect(profile).toContain('--countdown-value-size-desktop: 4.5rem;');
 		expect(profile).toContain('font-size: 5.25rem;');
-		expect(profile).toContain(
-			".itinerary:not([data-variant='timeline-paper'], [data-variant='celestial-blue'])",
-		);
+		expect(profile).toContain(".itinerary:not([data-variant='timeline-paper'])");
 	});
 
 	it('keeps the Gallery composition exception explicit and documented', () => {

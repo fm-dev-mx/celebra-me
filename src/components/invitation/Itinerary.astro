@@ -36,7 +36,7 @@ const { title = "Itinerario", items, variant, monogram, subtitle } = Astro.props
 		<div class="itinerary__timeline">
 			<div class="itinerary__line-start" aria-hidden="true"></div>
 
-			{variant === 'timeline-paper' || variant === 'celestial-blue' ? (
+			{variant === 'timeline-paper' ? (
 				<ItineraryProgram items={items} variant={variant} monogram={monogram} />
 			) : (
 				<TimelineList items={items} variant={variant} />

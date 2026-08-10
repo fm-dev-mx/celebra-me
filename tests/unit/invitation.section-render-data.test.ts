@@ -102,12 +102,17 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 	});
 
 	it('preserves section variants already resolved by the adapter', () => {
+		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
 		const eventEntry = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',
 			data: {
-				...loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json'),
+				...fixture,
 				theme: {
 					preset: 'jewelry-box',
+				},
+				gallery: {
+					...fixture.gallery,
+					variant: 'editorial-mosaic',
 				},
 				sectionStyles: {
 					quote: { variant: 'editorial' },
@@ -141,6 +146,9 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 				expect(descriptor).toMatchObject({
 					props: { variant: 'editorial-mosaic', visualVariant: 'editorial' },
 				});
+			} else if (component === 'itinerary') {
+				// Canonical itinerary authority is presentation.behavior, not sectionStyles skin.
+				expect(descriptor).toMatchObject({ props: { variant: 'standard' } });
 			} else {
 				expect(descriptor).toMatchObject({ props: { variant: 'editorial' } });
 			}

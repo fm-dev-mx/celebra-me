@@ -219,7 +219,7 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 			? resolveAsset(eventSlug, data.hero.portrait, data.title)
 			: undefined,
 		variant: preset,
-		structuralVariant: resolveHeroStructuralVariant(data.hero.structuralVariant, preset),
+		structuralVariant: resolveHeroStructuralVariant(data.hero.structuralVariant),
 		structuralVariantExplicit: HERO_STRUCTURAL_VARIANTS.includes(
 			data.hero.structuralVariant as (typeof HERO_STRUCTURAL_VARIANTS)[number],
 		),
@@ -511,7 +511,6 @@ function buildGallerySectionData(context: AdaptationContext) {
 	const structuralVariant = resolveGalleryLayoutVariant(
 		rawGalleryVariant,
 		rawGalleryVariant ?? data.sectionStyles?.gallery?.variant,
-		normalizedPreset,
 	);
 	const legacyVisualVariant =
 		rawGalleryVariant === 'single-keepsake'
@@ -536,14 +535,9 @@ function buildItinerarySectionData(
 	const { data } = context;
 	if (!data.itinerary) return undefined;
 
-	const presentationBehavior = resolveItineraryPresentation(data.itinerary.presentation);
-	const legacyVariant = data.sectionStyles?.itinerary?.variant;
-	const hasCanonicalPresentation = data.itinerary.presentation !== undefined;
-	const variant: ItineraryVariant = hasCanonicalPresentation
-		? presentationBehavior
-		: legacyVariant === 'celestial-blue'
-			? 'timeline-paper'
-			: (legacyVariant ?? context.normalizedPreset);
+	// Canonical authority: itinerary.presentation.behavior only.
+	// Theme-named sectionStyles.itinerary.variant is no longer consulted.
+	const variant: ItineraryVariant = resolveItineraryPresentation(data.itinerary.presentation);
 	return {
 		...data.itinerary,
 		variant,
@@ -562,7 +556,6 @@ function buildRsvpSectionData(context: AdaptationContext, entrySlug: string) {
 					...data.rsvp.personalizedAccess,
 					structuralVariant: resolvePersonalizedAccessStructuralVariant(
 						data.rsvp.personalizedAccess.structuralVariant,
-						normalizedPreset,
 					),
 					structuralVariantExplicit: PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS.includes(
 						data.rsvp.personalizedAccess
@@ -575,7 +568,6 @@ function buildRsvpSectionData(context: AdaptationContext, entrySlug: string) {
 		variant: sectionVariant('rsvp', data.sectionStyles?.rsvp?.variant, normalizedPreset),
 		structuralVariant: resolveRsvpStructuralVariant(
 			data.sectionStyles?.rsvp?.structuralVariant,
-			normalizedPreset,
 		),
 		structuralVariantExplicit: RSVP_STRUCTURAL_VARIANTS.includes(
 			data.sectionStyles?.rsvp
@@ -601,7 +593,6 @@ function buildGiftsSectionData(context: AdaptationContext) {
 		variant: sectionVariant('gifts', data.sectionStyles?.gifts?.variant, normalizedPreset),
 		structuralVariant: resolveGiftsStructuralVariant(
 			data.sectionStyles?.gifts?.structuralVariant,
-			normalizedPreset,
 		),
 		structuralVariantExplicit: GIFTS_STRUCTURAL_VARIANTS.includes(
 			data.sectionStyles?.gifts
@@ -625,7 +616,6 @@ function buildThankYouSectionData(context: AdaptationContext) {
 		),
 		structuralVariant: resolveThankYouStructuralVariant(
 			data.sectionStyles?.thankYou?.structuralVariant,
-			normalizedPreset,
 		),
 		structuralVariantExplicit: THANK_YOU_STRUCTURAL_VARIANTS.includes(
 			data.sectionStyles?.thankYou

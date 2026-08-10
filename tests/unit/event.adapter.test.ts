@@ -121,7 +121,8 @@ describe('adaptEvent', () => {
 		expect(viewModel.sections.location?.ceremony).toBeDefined();
 		expect(viewModel.sections.location?.ceremony?.venueName).toBeDefined();
 		expect(viewModel.sections.location?.variant).toBe('jewelry-box');
-		expect(viewModel.sections.gallery?.structuralVariantExplicit).toBe(false);
+		expect(viewModel.sections.gallery?.variant).toBe('feature-mosaic');
+		expect(viewModel.sections.gallery?.structuralVariantExplicit).toBe(true);
 		expect(viewModel.hero.backgroundImage.src).toEqual(expect.any(String));
 	});
 

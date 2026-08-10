@@ -184,9 +184,7 @@ const activeSectionCssUrls =
 		? resolveInvitationCssUrls({
 					themePreset: pageCtx.viewModel.theme.preset,
 					footerVariant: pageCtx.footerVariant,
-					galleryVariant: pageCtx.viewModel.sections.gallery?.structuralVariantExplicit
-						? pageCtx.viewModel.sections.gallery.variant
-						: undefined,
+					galleryVariant: pageCtx.viewModel.sections.gallery?.variant,
 					structuralVariants: {
 						hero: pageCtx.viewModel.hero.structuralVariantExplicit
 							? pageCtx.viewModel.hero.structuralVariant

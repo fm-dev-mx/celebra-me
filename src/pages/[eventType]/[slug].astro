@@ -183,9 +183,7 @@ const activeSectionCssUrls =
 		? resolveInvitationCssUrls({
 				themePreset: viewModel.theme.preset,
 					footerVariant: page.footerVariant,
-					galleryVariant: viewModel.sections.gallery?.structuralVariantExplicit
-						? viewModel.sections.gallery.variant
-						: undefined,
+					galleryVariant: viewModel.sections.gallery?.variant,
 					structuralVariants: {
 						hero: viewModel.hero.structuralVariantExplicit
 							? viewModel.hero.structuralVariant

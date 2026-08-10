@@ -1,12 +1,11 @@
 # Gallery Variants — Current Contract and Compatibility Naming
 
-**Last Updated:** 2026-08-09
+**Last Updated:** 2026-08-10
 
-**Related:** [`architecture.md`](architecture.md),
-[`.agent/plans/active/section-architecture-refactor-plan.md`](../../../.agent/plans/active/section-architecture-refactor-plan.md)
+**Related:** [`architecture.md`](architecture.md), [`variant-system.md`](variant-system.md)
 
 This document describes the current gallery layout contract and its bounded theme-name compatibility
-aliases.
+aliases for visual skin / legacy input. Theme preset alone no longer selects gallery structure.
 
 Gallery entrance behavior is independent of gallery layout naming. The render plan selects the
 behavior-named `stagger-group` recipe, items expose `data-reveal-item`, and the document coordinator
@@ -27,33 +26,29 @@ accepts:
   `index-choreography`, or `single-keepsake`, or
 - a legacy `THEME_PRESETS` value / `'single'` alias during migration.
 
-The field is **optional**. When omitted, the adapter resolves:
-
-1. `gallery.variant` if set
-2. else `sectionStyles.gallery.variant`
-3. else the invitation `theme.preset`
-
-Source: `buildGallerySectionData` in `src/lib/adapters/event.ts`.
+The field is **optional**. When omitted or unrecognized (except the `single` → `single-keepsake`
+alias), the adapter resolves layout to `uniform-grid`. Theme preset is **not** consulted for layout
+selection. Source: `resolveGalleryLayoutVariant` / `buildGallerySectionData` in
+`src/lib/invitation/structural-variants.ts` and `src/lib/adapters/event.ts`.
 
 ### Runtime CSS delivery
 
 The active theme bundle remains the base stylesheet. When `gallery.variant` explicitly selects a
 semantic layout that differs from the theme, `section-css-resolver` also emits the matching
-compatibility partial independently. Legacy theme-name fallbacks retain the active theme CSS during
-migration so existing invitations keep their established composition. The adapter keeps the resolved
-visual skin in `visualVariant`; `data-structural-variant` is emitted only for explicit semantic
-selection and is the renderer/layout hook.
+compatibility partial independently. The adapter keeps the resolved visual skin in `visualVariant`
+(`data-variant`). The renderer **always** emits `data-structural-variant` for the resolved layout ID
+so structure is addressable without invitation identity.
 
 Consequences:
 
-- Setting a legacy `gallery.variant` theme name maps to a semantic layout and preserves the visual
-  skin in `data-variant`.
-- A cross-theme gallery variant now has an explicit CSS delivery path and is testable at the URL-map
+- Setting a legacy `gallery.variant` theme name still maps through the bounded alias table to a
+  semantic layout and may preserve a visual skin in `data-variant`.
+- A cross-theme gallery variant has an explicit CSS delivery path and is testable at the URL-map
   boundary.
-- Unknown variant names still resolve to no variant stylesheet and must be rejected or normalized by
-  the content boundary before publication.
+- Unknown variant names resolve to `uniform-grid` for structure; stylesheet selection remains gated
+  by the resolver map.
 - Invitation profiles load after canonical styles; selectors that change grid or hierarchy remain
-  migration evidence, not a second variant contract.
+  documented exceptions (Abril 2×2), not a second variant contract.
 
 Do not use theme-named values for new content; they are compatibility input only.
 
@@ -137,8 +132,8 @@ is not redefined as `feature-mosaic`.
 ## 4. Canonical layout contract
 
 Gallery uses a small fixed set of layout identifiers independently of theme tokens. The canonical
-source is `gallery.variant`; theme-named values remain accepted only as compatibility aliases while
-published content migrates.
+source is `gallery.variant`; theme-named values remain accepted only as compatibility aliases for
+layout ID / visual skin mapping. Structure is never inferred from `theme.preset` alone.
 
 Canonical closed set:
 
@@ -155,10 +150,9 @@ Skins (`sacred-keepsake` / `angelic-presence` / jewelry chrome) move to **theme 
 layout enum.
 
 The adapter emits the semantic value as `sections.gallery.variant` and retains the visual skin as
-`visualVariant`. Explicit semantic content is consumed for placement and emits
-`data-structural-variant`; `layoutRole` still wins for an individual item. Legacy aliases keep their
-existing theme CSS until managed content is migrated. The section CSS resolver loads the matching
-layout partial independently only for explicit semantic selection when it differs from the active
+`visualVariant`. Placement uses the semantic layout; the section always emits
+`data-structural-variant`. `layoutRole` still wins for an individual item. The section CSS resolver
+loads the matching layout partial independently when the selected layout differs from the active
 theme bundle.
 
 Compatibility mapping is bounded and deterministic:
@@ -180,12 +174,9 @@ Remaining bounded work:
 4. The managed representative migration is complete; retained aliases and the wedding storyboard
    remain until their documented consumers reach zero.
 
-Until all published records are migrated, treat the aliases above as a legacy input boundary only;
-new invitation content should use the semantic identifiers.
-
-The itinerary compatibility alias `celestial-blue` → `timeline-paper` is an example of the bounded
-migration strategy gallery layouts follows: introduce a behavior name, preserve the required legacy
-value, and keep palette ownership in theme tokens.
+Treat the aliases above as a legacy input boundary only; new invitation content should use the
+semantic identifiers. Itinerary no longer uses a `celestial-blue` → `timeline-paper` theme alias;
+gallery should follow the same end-state: explicit layout IDs, theme as skin only.
 
 ---
 
@@ -194,5 +185,4 @@ value, and keep palette ownership in theme tokens.
 - Installing external design SSOTs (e.g. Impeccable).
 - Adding theme-named gallery files “for symmetry.”
 - Masonry libraries or carousel components.
-- Making `gallery.variant` mandatory for every historical published record while compatibility
-  consumers remain.
+- Forcing Preview/Production published-record rewrites outside an authorized content sync.
