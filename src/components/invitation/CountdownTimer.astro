@@ -1,6 +1,6 @@
 ---
-import type { CountdownUnit } from '@/lib/invitation/presentation-options';
-import { COUNTDOWN_UNITS, resolveCountdownVisibleUnits } from '@/lib/invitation/presentation-options';
+import type { CountdownUnit } from '@/lib/invitation/countdown-presentation';
+import { COUNTDOWN_UNITS } from '@/lib/invitation/countdown-presentation';
 
 interface Props {
 	targetIso: string;
@@ -29,9 +29,7 @@ const ALL_SEGMENTS = [
 	{ key: 'seconds' as const, label: 'Segundos', value: initialTimeLeft.seconds },
 ];
 
-const resolvedUnits = resolveCountdownVisibleUnits(
-	visibleUnits ? { visibleUnits } : undefined,
-);
+const resolvedUnits = visibleUnits ? [...visibleUnits] : [...COUNTDOWN_UNITS];
 const unitOrder = new Map(COUNTDOWN_UNITS.map((unit, index) => [unit, index]));
 const segments = ALL_SEGMENTS.filter((segment) => resolvedUnits.includes(segment.key)).sort(
 	(a, b) => (unitOrder.get(a.key) ?? 0) - (unitOrder.get(b.key) ?? 0),

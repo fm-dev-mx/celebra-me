@@ -1,3 +1,5 @@
+import { resolveInvitationProfileCssUrl } from './invitation-profile-css';
+
 type CssModule = { default: string };
 
 export type SectionUrlMap = Record<string, Record<string, string>>;
@@ -198,12 +200,9 @@ export function resolveInvitationCssUrls(
 
 	urls.push(...resolveStructuralVariantCssUrls(sectionUrlMap, input));
 
-	const profileId = input.visualProfileId || input.slug;
-	if (profileId) {
-		const profileUrl = profileUrlMap[profileId];
-		if (profileUrl) {
-			urls.push(profileUrl);
-		}
+	const profileUrl = resolveInvitationProfileCssUrl(profileUrlMap, input);
+	if (profileUrl) {
+		urls.push(profileUrl);
 	}
 
 	return [...new Set(urls)];

@@ -7,10 +7,7 @@ import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { ThemePreset } from '@/lib/theme/theme-contract';
 import { DEFAULT_PARENTS_ORDER, type ParentsOrder } from '@/lib/invitation/family-contract';
 import { shouldHideRoleVisually } from '@/lib/invitation/family-helper';
-import {
-	shouldRenderFamilyMedia,
-	type FamilyPresentation,
-} from '@/lib/invitation/presentation-options';
+import { shouldRenderFamilyMedia, type FamilyPresentation } from '@/lib/invitation/family-presentation';
 import type { FamilyStructuralVariant } from '@/lib/invitation/structural-variants';
 
 interface Props {

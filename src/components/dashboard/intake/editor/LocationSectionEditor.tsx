@@ -11,7 +11,7 @@ import type { AssetItem } from '@/lib/intake/use-asset-library';
 import { MEXICO_TIME_ZONE_OPTIONS } from '@/lib/intake/constants';
 import { venueLabel } from '@/lib/intake/utils';
 import type { EventTiming } from '@/lib/time/event-time';
-import type { LocationPresentation } from '@/lib/invitation/presentation-options';
+import type { LocationPresentation } from '@/lib/invitation/location-presentation';
 import type { IndicationStyleVariant } from '@/lib/theme/theme-contract';
 
 interface VenueData {

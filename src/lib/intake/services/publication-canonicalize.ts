@@ -2,7 +2,7 @@
  * Isomorphic publication value normalization shared by server publish/diff
  * and the client invitation editor section-save path. Must not import `node:*`.
  */
-import { foldLocationPresentationOptions } from '@/lib/invitation/presentation-options';
+import { foldLocationPresentationOptions } from '@/lib/invitation/location-presentation-compatibility';
 import { toEditorDate } from '@/lib/shared/data-utils';
 import { normalizeTime } from '@/lib/time/time-format';
 

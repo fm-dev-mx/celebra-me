@@ -4,7 +4,7 @@
  * Inventories legacy venue date/time prose and conflicting showFlourishes
  * ownership. Does not rewrite data.
  */
-import { detectShowFlourishesConflict } from '@/lib/invitation/presentation-options';
+import { detectShowFlourishesConflict } from '@/lib/invitation/location-presentation-compatibility';
 import {
 	isCanonicalVenueDate,
 	isCanonicalVenueTime,

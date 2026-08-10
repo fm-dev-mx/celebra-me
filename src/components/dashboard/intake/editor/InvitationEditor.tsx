@@ -55,7 +55,7 @@ import {
 	buildSectionSaveValue,
 	getDirtySectionKey,
 } from '@/lib/intake/services/section-content-mapper';
-import { supportsXareniPresentationOptions } from '@/lib/invitation/presentation-options';
+import { supportsXareniPresentationOptions } from '@/lib/invitation/xareni-presentation';
 import {
 	getPublicationFeedback,
 	type PublicationFeedback,

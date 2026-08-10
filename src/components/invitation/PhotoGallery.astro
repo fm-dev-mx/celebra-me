@@ -3,14 +3,15 @@
 import type { ImageMetadata } from 'astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import { getGalleryPreviewRole } from '@/lib/components/gallery/gallery-presentation';
-import { resolveGalleryLayoutVariant } from '@/lib/invitation/structural-variants';
+import type { GalleryLayoutRole } from '@/lib/invitation/gallery-presentation';
+import type { GalleryLayoutVariant } from '@/lib/invitation/structural-variants';
 
 interface GalleryItem {
 	image: ImageMetadata | ImageAsset;
 	alt?: string;
 	caption?: string;
 	key?: string;
-	layoutRole?: 'feature' | 'wide' | 'standard';
+	layoutRole?: GalleryLayoutRole;
 	aspectRatio?: string;
 	focalPoint?: string;
 	focalPointMobile?: string;
@@ -20,14 +21,22 @@ interface GalleryItem {
 
 interface Props {
 	items: GalleryItem[];
-	variant?: string;
+	/** Already-normalized canonical Gallery layout. */
+	variant?: GalleryLayoutVariant;
+	structuralVariant?: GalleryLayoutVariant;
 	visualVariant?: string;
 	structuralVariantExplicit?: boolean;
 }
 
-const { items, variant = 'uniform-grid', visualVariant, structuralVariantExplicit = false } = Astro.props;
-const structuralVariant = resolveGalleryLayoutVariant(variant, variant, 'jewelry-box');
-const renderedVisualVariant = visualVariant ?? variant;
+const {
+	items,
+	variant = 'uniform-grid',
+	structuralVariant: structuralVariantProp,
+	visualVariant,
+	structuralVariantExplicit = false,
+} = Astro.props;
+const structuralVariant = structuralVariantProp ?? variant;
+const renderedVisualVariant = visualVariant ?? structuralVariant;
 const isEditorialMagazine = structuralVariant === 'magazine-spread';
 
 const resolveImage = (image: ImageMetadata | ImageAsset) => {

@@ -4,7 +4,7 @@ import {
 	XARENI_SEAL_COLOR_LABELS,
 	XARENI_SEAL_COLORS,
 	type XareniSealColor,
-} from '@/lib/invitation/presentation-options';
+} from '@/lib/invitation/xareni-presentation';
 
 interface EnvelopeValue {
 	disabled?: boolean;

@@ -16,15 +16,15 @@ import type { IconName } from '@/lib/icons/icon-catalog';
 import type { EnvelopeSealIcon, RevealCardData } from '@/lib/invitation/reveal-card';
 import type { RsvpResponseMessages } from '@/lib/invitation/rsvp-messages';
 import type { CountdownTargetSource } from '@/lib/time/event-time';
+import type { CountdownUnit } from '@/lib/invitation/countdown-presentation';
+import type { FamilyPresentation } from '@/lib/invitation/family-presentation';
 import type {
-	CountdownUnit,
-	FamilyPresentation,
+	GalleryLayoutRole,
 	GalleryMobileBrowseMode,
 	GalleryPresentation,
-	GalleryLayoutRole,
-	GiftsPresentation,
-	LocationPresentation,
-} from '@/lib/invitation/presentation-options';
+} from '@/lib/invitation/gallery-presentation';
+import type { GiftsPresentation } from '@/lib/invitation/gifts-presentation';
+import type { LocationPresentation } from '@/lib/invitation/location-presentation';
 import type { z } from 'zod';
 import type { EnvelopeRevealVariant } from '@/lib/schemas/content/envelope.schema';
 import type { giftItemSchema } from '@/lib/schemas/content/gifts.schema';

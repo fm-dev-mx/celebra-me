@@ -13,7 +13,7 @@ import {
 	isRecord,
 	isNonEmptyObject,
 } from '@/lib/shared/data-utils';
-import { foldLocationPresentationOptions } from '@/lib/invitation/presentation-options';
+import { foldLocationPresentationOptions } from '@/lib/invitation/location-presentation-compatibility';
 import { VENUE_URL_FIELDS, ENVELOPE_TEXT_FIELDS } from '@/lib/intake/constants';
 import type { IconName } from '@/lib/icons/icon-catalog';
 import {

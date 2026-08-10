@@ -5,9 +5,11 @@ import type { ImageAsset } from '@/lib/assets/asset-registry';
 import PhotoGallery from './PhotoGallery.astro';
 import GalleryLightbox from './GalleryLightbox.astro';
 import '@/styles/invitation/_gallery.scss';
-import type { GalleryMobileBrowseMode } from '@/lib/invitation/presentation-options';
-import { resolveGalleryMobileBrowse } from '@/lib/invitation/presentation-options';
-import { resolveGalleryLayoutVariant } from '@/lib/invitation/structural-variants';
+import type {
+	GalleryMobileBrowseMode,
+	GalleryPresentation,
+} from '@/lib/invitation/gallery-presentation';
+import type { GalleryLayoutVariant } from '@/lib/invitation/structural-variants';
 
 interface GalleryItem {
 	image: ImageMetadata | ImageAsset;
@@ -23,10 +25,10 @@ interface Props {
 	title?: string;
 	subtitle?: string;
 	items: GalleryItem[];
-	variant?: string;
+	variant?: GalleryLayoutVariant;
 	visualVariant?: string;
 	structuralVariantExplicit?: boolean;
-	presentation?: string;
+	presentation?: GalleryPresentation;
 	mobileBrowse?: GalleryMobileBrowseMode;
 }
 
@@ -41,12 +43,11 @@ const {
 	presentation,
 	mobileBrowse,
 } = Astro.props;
-const structuralVariant = resolveGalleryLayoutVariant(variant, variant, 'jewelry-box');
+// The adapter resolves canonical/legacy Gallery layout values before this renderer.
+const structuralVariant = variant;
 const renderedVisualVariant = visualVariant ?? variant;
 const isEditorialMagazine = structuralVariant === 'magazine-spread';
-const resolvedMobileBrowse = resolveGalleryMobileBrowse(
-	mobileBrowse ? { mobileBrowse } : undefined,
-);
+const resolvedMobileBrowse = mobileBrowse ?? 'stack';
 const usesMobileRail = isEditorialMagazine && resolvedMobileBrowse === 'rail';
 
 if (!items || items.length === 0) return null;
@@ -63,7 +64,7 @@ if (!items || items.length === 0) return null;
 			)}
 		</header>
 
-		<PhotoGallery items={items} variant={structuralVariant} visualVariant={renderedVisualVariant} structuralVariantExplicit={structuralVariantExplicit} />
+		<PhotoGallery items={items} structuralVariant={structuralVariant} visualVariant={renderedVisualVariant} structuralVariantExplicit={structuralVariantExplicit} />
 	</div>
 </section>
 

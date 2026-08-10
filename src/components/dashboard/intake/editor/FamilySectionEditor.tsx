@@ -15,7 +15,7 @@ import type {
 	FamilyGroupDraft,
 	GodparentGroupDraft,
 } from '@/lib/intake/schemas/family-draft.schema';
-import type { FamilyPresentation } from '@/lib/invitation/presentation-options';
+import type { FamilyPresentation } from '@/lib/invitation/family-presentation';
 
 interface Props {
 	family: FamilyDraft;

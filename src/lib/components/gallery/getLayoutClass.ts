@@ -1,4 +1,4 @@
-import type { GalleryLayoutRole } from '@/lib/invitation/presentation-options';
+import type { GalleryLayoutRole } from '@/lib/invitation/gallery-presentation';
 
 export type LayoutClass =
 	'gallery-grid__item--feature' | 'gallery-grid__item--wide' | 'gallery-grid__item--standard';
@@ -65,8 +65,6 @@ const strategies: Record<string, Strategy | ((index: number) => LayoutClass)> = 
 };
 
 type LayoutVariant = keyof typeof strategies;
-
-export type { GalleryLayoutRole };
 
 function layoutRoleToClass(role: GalleryLayoutRole | string | undefined): LayoutClass | null {
 	if (role === 'feature') return FEATURE;

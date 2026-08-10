@@ -29,17 +29,16 @@ import { buildOpeningViewModel } from '@/lib/invitation/reveal-card';
 import { DEFAULT_BRANDING_VISIBILITY } from '@/lib/adapters/branding';
 import { resolveCountdownTarget } from '@/lib/time/event-time';
 import { COUNTDOWN_DEFAULTS } from '@/lib/intake/constants';
+import { resolveCountdownVisibleUnits } from '@/lib/invitation/countdown-presentation';
+import { resolveGalleryMobileBrowse } from '@/lib/invitation/gallery-presentation';
+import { resolveGiftsPresentation } from '@/lib/invitation/gifts-presentation';
+import { resolvePortraitEnabled } from '@/lib/invitation/hero-presentation';
+import { resolveItineraryPresentation } from '@/lib/invitation/itinerary-presentation';
 import {
-	resolveCountdownVisibleUnits,
-	resolveGalleryMobileBrowse,
-	resolveGiftsPresentation,
-	resolveItineraryPresentation,
 	resolveLocationShowFlourishes,
 	resolveLocationShowNavigationButtons,
-	resolvePortraitEnabled,
-	resolveXareniSealColor,
-	XARENI_ASSET_SLUG,
-} from '@/lib/invitation/presentation-options';
+} from '@/lib/invitation/location-presentation-compatibility';
+import { resolveXareniSealColor, XARENI_ASSET_SLUG } from '@/lib/invitation/xareni-presentation';
 import {
 	FAMILY_STRUCTURAL_VARIANTS,
 	GALLERY_LAYOUT_VARIANTS,

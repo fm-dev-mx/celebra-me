@@ -8,7 +8,7 @@ import type { AssetField } from '@/lib/assets/asset-source';
 import type { AssetItem } from '@/lib/intake/use-asset-library';
 import { getFieldLabel } from '@/lib/intake/labels';
 import { themeSupportsPortrait } from '@/lib/theme/theme-contract';
-import { resolvePortraitEnabled } from '@/lib/invitation/presentation-options';
+import { resolvePortraitEnabled } from '@/lib/invitation/hero-presentation';
 
 interface HeroData {
 	name?: string;
@@ -172,7 +172,7 @@ export default function MainSectionEditor({
 							checked={portraitEnabled}
 							onChange={(event) =>
 								onUpdateHero({
-									presentation: { ...main.presentation, portraitEnabled: event.target.checked },
+								presentation: { ...main.presentation, portraitEnabled: event.target.checked },
 								})
 							}
 						/>
