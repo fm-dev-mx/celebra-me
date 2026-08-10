@@ -158,7 +158,9 @@
 
 	&__item-description {
 		font-size: 1rem;
-		color: var(--itinerary-item-desc-color, rgb(255 255 255 / 85%));
+
+		// Readable on shared light surfaces; themes/profiles override via token.
+		color: var(--itinerary-item-desc-color, var(--color-text-secondary));
 		line-height: 1.4;
 		max-width: 300px;
 		display: inline-block;

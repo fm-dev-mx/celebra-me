@@ -1,10 +1,8 @@
-@use '../../../tokens' as tokens;
-
 // ==========================================================================
-// EDITORIAL ITINERARY
+// PREMIERE FLORAL ITINERARY
 // ==========================================================================
 
-.itinerary[data-variant='premiere-floral'] {
+.theme-preset--premiere-floral .itinerary[data-variant='standard'] {
 	--itinerary-line-color: var(--color-action-primary);
 	--itinerary-accent: var(--color-action-accent);
 

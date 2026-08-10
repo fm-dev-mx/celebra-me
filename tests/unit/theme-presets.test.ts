@@ -220,7 +220,16 @@ describe('Angelic presence section coverage', () => {
 	it('styles every visible demo section with angelic-presence selectors', () => {
 		for (const relativePath of sectionThemeFiles) {
 			const filePath = path.join(projectRoot, relativePath);
-			expect(fs.readFileSync(filePath, 'utf8')).toContain("data-variant='angelic-presence'");
+			const content = fs.readFileSync(filePath, 'utf8');
+			if (relativePath.includes('/itinerary/')) {
+				// Canonical itinerary behavior is standard|timeline-paper; skin binds via theme preset.
+				expect(content).toContain(
+					".theme-preset--angelic-presence .itinerary[data-variant='standard']",
+				);
+				expect(content).not.toContain(".itinerary[data-variant='angelic-presence']");
+			} else {
+				expect(content).toContain("data-variant='angelic-presence'");
+			}
 		}
 	});
 
@@ -510,7 +519,14 @@ describe('Sacred keepsake section coverage', () => {
 			const filePath = path.join(projectRoot, relativePath);
 			const content = fs.readFileSync(filePath, 'utf8');
 
-			expect(content).toContain("data-variant='sacred-keepsake'");
+			if (relativePath.includes('/itinerary/')) {
+				expect(content).toContain(
+					".theme-preset--sacred-keepsake .itinerary[data-variant='standard']",
+				);
+				expect(content).not.toContain(".itinerary[data-variant='sacred-keepsake']");
+			} else {
+				expect(content).toContain("data-variant='sacred-keepsake'");
+			}
 			expect(content).not.toContain('cesar-ramses');
 			expect(content).not.toContain('Cesar Ramses');
 			expect(content).not.toContain('César Ramses');

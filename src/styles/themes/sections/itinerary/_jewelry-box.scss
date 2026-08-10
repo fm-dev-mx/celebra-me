@@ -1,11 +1,11 @@
-@use '../../../tokens' as tokens;
-
 // ==========================================================================
-// EDITORIAL ITINERARY
+// JEWELRY BOX ITINERARY
 // ==========================================================================
 
-.itinerary[data-variant='jewelry-box'],
-.itinerary[data-variant='jewelry-box-wedding'] {
+// Visual skin ownership: theme preset context + canonical standard behavior.
+// Renderer authority remains itinerary.presentation.behavior (not theme name).
+.theme-preset--jewelry-box .itinerary[data-variant='standard'],
+.theme-preset--jewelry-box-wedding .itinerary[data-variant='standard'] {
 	--itinerary-bg: radial-gradient(
 		circle at center,
 		rgb(var(--color-surface-primary-rgb) / 5%) 0%,
@@ -35,7 +35,7 @@
 	}
 }
 
-.itinerary[data-variant='jewelry-box-wedding'] {
+.theme-preset--jewelry-box-wedding .itinerary[data-variant='standard'] {
 	--itinerary-bg: linear-gradient(
 		180deg,
 		rgb(var(--color-surface-primary-rgb) / 92%) 0%,

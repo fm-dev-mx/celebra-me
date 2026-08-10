@@ -1,10 +1,8 @@
-@use '../../../tokens' as tokens;
-
 // ==========================================================================
 // EDITORIAL ITINERARY
 // ==========================================================================
 
-.itinerary[data-variant='editorial'] {
+.theme-preset--editorial .itinerary[data-variant='standard'] {
 	--itinerary-line-color: var(--color-action-primary);
 	--itinerary-accent: var(--color-action-accent);
 

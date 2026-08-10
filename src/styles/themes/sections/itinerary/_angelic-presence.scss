@@ -1,10 +1,10 @@
 @use '../../../invitation/section-primitives' as primitives;
 
 // ==========================================================================
-// EDITORIAL ITINERARY
+// ANGELIC PRESENCE ITINERARY
 // ==========================================================================
 
-.itinerary[data-variant='angelic-presence'] {
+.theme-preset--angelic-presence .itinerary[data-variant='standard'] {
 	@include primitives.normalized-section-spacing;
 
 	--itinerary-bg: radial-gradient(
