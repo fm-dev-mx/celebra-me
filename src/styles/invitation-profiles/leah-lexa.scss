@@ -1,2 +1,303 @@
-@use '../themes/sections/leah-lexa-rhythm';
-@use '../themes/sections/location/leah-lexa' as location-leah-lexa;
+@use '../global/mixins' as mixins;
+
+// LEAH LEXA — SECTION RHYTHM NORMALIZATION
+// Scoped via .event--leah-lexa on the <main> wrapper.
+// Unifies spacing across sections so they read as one continuous editorial piece.
+
+.event--leah-lexa {
+	// Location
+	.event-location {
+		--location-padding-block: clamp(3.5rem, 8vw, 6rem) clamp(3.5rem, 8vh, 5rem);
+	}
+
+	// Gifts
+	.gifts-section {
+		--gifts-padding-block: clamp(4rem, 9vw, 6rem);
+	}
+
+	// Pet-keepsake gallery (single variant)
+	.gallery-section[data-variant='single'] {
+		--gallery-section-padding-block: clamp(3.5rem, 8vw, 5.5rem);
+	}
+
+	// Thank-you
+	.thank-you-section {
+		padding-block: clamp(5rem, 14svh, 8rem) clamp(5rem, 12svh, 7.5rem);
+	}
+}
+
+// LEAH LEXA — LOCATION PRESENTATION REFINEMENT
+// Scoped via .event--leah-lexa on the <main> wrapper.
+// Rebalances the Google Map as a secondary visual, converts indications
+// from card blocks to editorial notes.
+
+.event--leah-lexa .event-location[data-variant='celestial-blue'] {
+	// -----------------------------------------------------------------------
+	// Map: visually secondary, softer frame
+	// -----------------------------------------------------------------------
+	.event-location__card-image-container {
+		max-height: 200px;
+
+		@include mixins.respond-to(md) {
+			max-height: 220px;
+		}
+	}
+
+	// -----------------------------------------------------------------------
+	// Indications (guest details): card → editorial note
+	// -----------------------------------------------------------------------
+	--location-indications-heading-color: rgb(var(--color-soft-graphite-rgb) / 48%);
+	--location-indication-item-bg: transparent;
+	--location-indication-item-border: none;
+	--location-indication-item-radius: 0;
+	--location-indication-item-box-shadow: none;
+	--location-indication-item-padding: 0.45rem 0;
+	--location-indication-item-min-height: auto;
+	--location-indication-item-gap: 0.75rem;
+	--location-indication-item-hover-bg: transparent;
+	--location-indication-item-hover-border-color: currentcolor;
+	--location-indication-item-hover-transform: none;
+	--location-indication-item-hover-box-shadow: none;
+	--location-indication-item-transition: none;
+	--location-indication-icon-bg: transparent;
+	--location-indication-icon-shadow: none;
+	--location-indication-icon-size: 1.25rem;
+	--location-indication-icon-color: rgb(var(--color-satin-blue-rgb) / 55%);
+	--location-indication-icon-opacity: 60%;
+	--location-indication-text-color: rgb(var(--color-deep-blue-graphite-rgb) / 72%);
+	--location-indication-text-font-size: clamp(0.82rem, 1.1vw, 0.92rem);
+	--location-indication-text-line-height: 1.55;
+	--location-indication-strong-color: rgb(var(--color-deep-blue-graphite-rgb) / 88%);
+	--location-indication-strong-font-weight: 500;
+
+	// Remove the ::before decorative border from the indications panel
+	.event-location__indications {
+		&::before {
+			display: none;
+		}
+	}
+
+	// Remove hover effects on indication items
+	.event-location__indication-item {
+		&::after {
+			display: none;
+		}
+	}
+
+	// Reserved variant gets a subtle left accent instead of full card border
+	.event-location__indication-item--reserved {
+		--location-indication-icon-color: rgb(var(--color-satin-blue-rgb) / 60%);
+	}
+}
+
+// LEAH LEXA — GIFTS SECTION POLISH
+// Scoped via .event--leah-lexa on the <main> wrapper.
+// Makes the subtitle the emotional anchor, refines the flourish.
+// Adds Liverpool-inspired editorial magenta accents to CTA, store label, and card border.
+
+.event--leah-lexa .gifts-section[data-variant='celestial-blue'] {
+	--gifts-title-letter-spacing: 0.18em;
+
+	// Liverpool-inspired editorial magenta
+	--gifts-accent-color: rgb(165 28 72);
+	--gifts-accent-color-rgb: 165 28 72;
+	--gifts-accent-color-dark: rgb(130 18 54);
+
+	// CTA button: filled accent, white text, pill shape
+	--gifts-button-color: var(--color-diamond-white);
+	--gifts-button-border: 1px solid var(--gifts-accent-color);
+	--gifts-button-border-radius: 999px;
+
+	.gifts-section__subtitle {
+		font-size: 1.1rem;
+		line-height: 1.65;
+		max-width: 32rem;
+		opacity: 88%;
+	}
+
+	.gifts-section__flourish {
+		.flourish-diamond {
+			width: 6px;
+			height: 6px;
+		}
+
+		.flourish-line {
+			width: 36px;
+			opacity: 50%;
+		}
+	}
+
+	.gift-card {
+		border-color: rgb(var(--gifts-accent-color-rgb) / 18%);
+
+		&:hover {
+			border-color: rgb(var(--gifts-accent-color-rgb) / 42%);
+		}
+	}
+
+	.gift-card__icon-inner {
+		color: rgb(var(--gifts-accent-color-rgb) / 18%);
+	}
+
+	.gift-card__button {
+		background: rgb(var(--gifts-accent-color-rgb) / 60%);
+		border: 0;
+
+		&:hover {
+			background: var(--gifts-accent-color-dark);
+			color: var(--color-diamond-white);
+		}
+
+		&:focus-visible {
+			outline: 2px solid var(--gifts-accent-color-dark);
+			outline-offset: 2px;
+		}
+	}
+
+	.gift-card__store-label {
+		color: var(--gifts-accent-color-dark);
+		opacity: 100%;
+	}
+}
+
+// LEAH LEXA — PREMIUM EDITORIAL KEEPSAKE OVERRIDE
+// Scoped exclusively via .event--leah-lexa on the <main> wrapper.
+// Extends the celestial-blue base with a contained card composition.
+// Blush-pink atmospheric glow is injected via --ty-ambient-blush.
+
+.event--leah-lexa .thank-you-section[data-variant='celestial-blue'] {
+	--ty-ambient-blush: radial-gradient(
+		circle at 50% 28%,
+		rgb(244 201 216 / 48%) 0%,
+		transparent 38%
+	);
+
+	.thank-you-editorial {
+		background: rgb(255 248 242 / 92%);
+		border: 1px solid rgb(231 201 139 / 30%);
+		border-radius: 1.25rem;
+		padding: clamp(2rem, 5vw, 3rem);
+		box-shadow:
+			0 18px 45px rgb(99 62 72 / 16%),
+			0 2px 8px rgb(255 255 255 / 75%) inset;
+		max-width: min(100%, 36rem);
+	}
+
+	.thank-you-editorial__ambient {
+		background:
+			radial-gradient(ellipse at 50% 42%, rgb(244 201 216 / 24%) 0%, transparent 44%),
+			radial-gradient(
+				ellipse at 70% 20%,
+				rgb(var(--color-diamond-white-rgb) / 70%) 0%,
+				transparent 38%
+			),
+			linear-gradient(
+				105deg,
+				transparent 0%,
+				rgb(var(--color-diamond-white-rgb) / 34%) 46%,
+				transparent 56%
+			);
+	}
+
+	.thank-you-message .drop-cap {
+		float: none;
+		font-size: inherit;
+		font-weight: inherit;
+		line-height: inherit;
+		margin: 0;
+		padding: 0;
+		color: inherit;
+		text-shadow: none;
+	}
+
+	.thank-you-editorial__copy {
+		max-width: 100%;
+	}
+
+	@include mixins.respond-to(lg) {
+		.thank-you-editorial {
+			max-width: min(100%, 52rem);
+			padding: clamp(2.5rem, 4vw, 3.5rem);
+			grid-template-columns: minmax(14rem, 0.78fr) minmax(16rem, 1fr);
+		}
+
+		.closing-name {
+			font-size: clamp(2.5rem, 4.5vw, 4.5rem);
+		}
+	}
+
+	@include mixins.respond-to(xl) {
+		.thank-you-editorial {
+			grid-template-columns: minmax(16rem, 0.8fr) minmax(18rem, 1fr);
+		}
+
+		.closing-name {
+			font-size: clamp(2.75rem, 4vw, 5rem);
+		}
+	}
+}
+
+// LEAH LEXA — HEADER REFINEMENT
+// Softer scrolled background, refined monogram, subtler hamburger.
+.event--leah-lexa .header-base[data-variant='celestial-blue'] {
+	--header-bg-scrolled: rgb(var(--color-cool-ivory-rgb) / 85%);
+	--header-nav-title-color: rgb(var(--color-diamond-white-rgb) / 92%);
+	--hamburger-color: rgb(var(--color-diamond-white-rgb) / 78%);
+	--hamburger-color-menu-open: rgb(var(--color-diamond-white-rgb) / 78%);
+
+	.hamburger__line {
+		height: 1px;
+	}
+
+	// Scrolled state — cream background needs dark text for contrast
+	&.header-base--scrolled {
+		--header-nav-title-color: var(--color-deep-blue-graphite);
+		--header-nav-color: var(--color-deep-blue-graphite);
+		--header-nav-hover-color: var(--color-satin-blue);
+		--header-nav-shadow-transparent: none;
+		--header-nav-filter-transparent: none;
+		--hamburger-color: var(--color-deep-blue-graphite);
+		--header-nav-cta-bg: rgb(var(--color-deep-blue-graphite-rgb) / 6%);
+		--header-nav-cta-color: var(--color-deep-blue-graphite);
+		--header-nav-cta-border: rgb(var(--color-deep-blue-graphite-rgb) / 24%);
+		--header-nav-cta-shadow: none;
+		--header-nav-cta-hover-bg: var(--color-deep-blue-graphite);
+		--header-nav-cta-hover-color: var(--color-diamond-white);
+		--header-nav-cta-hover-border: var(--color-deep-blue-graphite);
+		--header-nav-cta-hover-shadow: 0 4px 14px rgb(var(--color-deep-blue-graphite-rgb) / 14%);
+	}
+
+	// Transparent state — softer backdrop over hero/interlude images
+	&.header-base--transparent {
+		backdrop-filter: blur(4px);
+	}
+
+	.event-header__title-initials {
+		font-weight: 300;
+		letter-spacing: 0.18em;
+	}
+}
+
+// LEAH LEXA — PET KEEPSAKE REFINEMENT
+// Scoped via .event--leah-lexa on the <main> wrapper.
+// Tighter image sizing, warmer tonal balance, more refined paper frame.
+.event--leah-lexa .gallery-section[data-variant='single'][data-presentation='pet-keepsake'] {
+	--gallery-item-padding: clamp(0.35rem, 1vw, 0.55rem);
+	--gallery-item-shadow:
+		0 20px 48px -24px rgb(var(--color-deep-blue-graphite-rgb) / 22%),
+		0 6px 16px -12px rgb(var(--color-deep-blue-graphite-rgb) / 10%),
+		0 1px 0 rgb(var(--color-diamond-white-rgb) / 80%),
+		inset 0 1px 0 rgb(var(--color-diamond-white-rgb) / 50%);
+
+	.gallery-grid {
+		place-items: center;
+	}
+
+	.gallery-grid__item {
+		max-width: 320px;
+	}
+
+	.gallery-grid__item img {
+		filter: saturate(0.92) contrast(0.96) brightness(0.95);
+	}
+}
