@@ -139,6 +139,11 @@ export function buildVictoriaPublishedContent(
 			timeZone: VICTORIA_EVENT.timeZone,
 			startsAtUtc: VICTORIA_EVENT.startsAtUtc,
 		},
+		sectionStyles: {
+			gifts: { structuralVariant: 'standard' },
+			rsvp: { structuralVariant: 'standard' },
+			thankYou: { structuralVariant: 'standard' },
+		},
 		sectionOrder: [
 			'quote',
 			'countdown',
@@ -160,6 +165,7 @@ export function buildVictoriaPublishedContent(
 			backgroundImage: assets['hero-desktop'],
 			backgroundImageMobile: assets['hero-mobile'],
 			backgroundImageDesktop: assets['hero-desktop'],
+			structuralVariant: 'standard',
 			focalPoint: '50% 34%',
 			focalPointMobile: '46% 27%',
 			focalPointTablet: '50% 34%',
@@ -300,7 +306,7 @@ export function buildVictoriaPublishedContent(
 			},
 		},
 		gallery: {
-			variant: 'single',
+			variant: 'single-keepsake',
 			eyebrow: 'Retrato',
 			title: '',
 			items: [
@@ -365,6 +371,7 @@ export function buildVictoriaPublishedContent(
 				startsAt: VICTORIA_EVENT.startsAtUtc,
 			},
 			personalizedAccess: {
+				structuralVariant: 'ornamented',
 				title: 'Su invitación personal',
 				noteText:
 					'Esta invitación es válida para {count} {personWord}. Por organización del evento, no será posible admitir personas adicionales.',

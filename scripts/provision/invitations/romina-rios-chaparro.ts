@@ -134,6 +134,11 @@ export function buildRominaPublishedContent(
 			timeZone: ROMINA_EVENT.timeZone,
 			startsAtUtc: ROMINA_EVENT.startsAtUtc,
 		},
+		sectionStyles: {
+			gifts: { structuralVariant: 'standard' },
+			rsvp: { structuralVariant: 'standard' },
+			thankYou: { structuralVariant: 'standard' },
+		},
 		sectionOrder: [
 			'quote',
 			'family',
@@ -153,6 +158,7 @@ export function buildRominaPublishedContent(
 			backgroundImage: assets.hero,
 			backgroundImageMobile: assets.hero,
 			backgroundImageDesktop: assets.hero,
+			structuralVariant: 'standard',
 			focalPoint: '50% 42%',
 			focalPointMobile: '50% 42%',
 			focalPointTablet: '50% 40%',
@@ -265,6 +271,7 @@ export function buildRominaPublishedContent(
 			],
 		},
 		gallery: {
+			variant: 'uniform-grid',
 			eyebrow: 'Recuerdos',
 			title: 'Romina',
 			subtitle: 'Una historia entre naturaleza, familia y sueños',
@@ -317,6 +324,7 @@ export function buildRominaPublishedContent(
 			confirmationMessage:
 				'Gracias por confirmar. Será un gusto compartir este día con usted.',
 			personalizedAccess: {
+				structuralVariant: 'ornamented',
 				title: 'Pase de acceso',
 				subtitle: 'Esta invitación ha sido preparada especialmente para:',
 				footerText: 'Favor de confirmar su asistencia en la siguiente sección.',

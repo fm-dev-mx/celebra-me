@@ -15,7 +15,7 @@
         "location": {
             "showFlourishes": true
         },
-        "rsvp": {}
+        "rsvp": { "structuralVariant": "standard" }
     },
     "hero": {
         "name": "Aurora Valencia",
@@ -23,6 +23,7 @@
         "date": "2027-08-28T21:00:00.000Z",
         "backgroundImage": "hero",
         "portrait": "portrait",
+        "structuralVariant": "standard",
         "focalPoint": "50% 38%",
         "focalPointMobile": "50% 32%"
     },
@@ -120,6 +121,7 @@
         ]
     },
     "gallery": {
+        "variant": "editorial-mosaic",
         "eyebrow": "Galería",
         "title": "Brillar es la actitud",
         "subtitle": "Una secuencia editorial con detalles de luz, textura y ceremonia.",
@@ -147,6 +149,7 @@
         ]
     },
     "gifts": {
+        "structuralVariant": "standard",
         "title": "Regalos",
         "subtitle": "Su presencia será el detalle más valioso. Para quienes deseen tener una atención adicional, compartimos estas opciones.",
         "items": [
@@ -174,9 +177,11 @@
         "guestCap": 4,
         "accessMode": "hybrid",
         "confirmationMessage": "Gracias por confirmar. Será una alegría compartir esta noche con ustedes.",
-        "confirmationMode": "api"
+        "confirmationMode": "api",
+        "personalizedAccess": { "structuralVariant": "ornamented" }
     },
     "thankYou": {
+        "structuralVariant": "standard",
         "message": "Gracias por formar parte de una noche pensada para celebrar con elegancia, gratitud y alegría.",
         "closingName": "Aurora Valencia",
         "image": "thankYouPortrait",

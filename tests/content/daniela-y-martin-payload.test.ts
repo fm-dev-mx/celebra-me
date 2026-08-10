@@ -293,7 +293,9 @@ describe('Boda Daniela y Martín provision contract', () => {
 		expect(rsvp.confirmationMode).toBe('api');
 		expect(rsvp.accessMode).toBe('hybrid');
 		expect(rsvp.personalizedAccess?.noteText).toContain('{count}');
-		expect((content.sectionStyles as { rsvp?: unknown } | undefined)?.rsvp).toBeUndefined();
+		expect((content.sectionStyles as { rsvp?: unknown } | undefined)?.rsvp).toEqual({
+			structuralVariant: 'standard',
+		});
 
 		const thankYou = content.thankYou as {
 			image?: unknown;

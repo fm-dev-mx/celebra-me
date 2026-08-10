@@ -126,6 +126,11 @@ export function buildDanielaPublishedContent(
 			timeZone: DANIELA_EVENT.timeZone,
 			startsAtUtc: DANIELA_EVENT.startsAtUtc,
 		},
+		sectionStyles: {
+			gifts: { structuralVariant: 'standard' },
+			rsvp: { structuralVariant: 'standard' },
+			thankYou: { structuralVariant: 'standard' },
+		},
 		sectionOrder: [
 			'quote',
 			'countdown',
@@ -146,6 +151,7 @@ export function buildDanielaPublishedContent(
 			backgroundImage: assets['hero-desktop'],
 			backgroundImageMobile: assets['hero-mobile'],
 			backgroundImageDesktop: assets['hero-desktop'],
+			structuralVariant: 'standard',
 			focalPoint: '50% 32%',
 			focalPointMobile: '50% 26%',
 			focalPointTablet: '50% 30%',
@@ -256,6 +262,7 @@ export function buildDanielaPublishedContent(
 			},
 		},
 		gallery: {
+			variant: 'uniform-grid',
 			eyebrow: 'Retrato',
 			title: '',
 			items: [
@@ -327,6 +334,7 @@ export function buildDanielaPublishedContent(
 				startsAt: DANIELA_EVENT.startsAtUtc,
 			},
 			personalizedAccess: {
+				structuralVariant: 'ornamented',
 				title: 'Su invitación personal',
 				noteText:
 					'Esta invitación es válida para {count} {personWord}. Por motivos de logística y capacidad, no será posible admitir acompañantes o invitados adicionales.',

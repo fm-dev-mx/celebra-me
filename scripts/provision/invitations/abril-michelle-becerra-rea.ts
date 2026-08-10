@@ -170,6 +170,11 @@ export function buildAbrilPublishedContent(
 			timeZone: ABRIL_EVENT.timeZone,
 			startsAtUtc: ABRIL_EVENT.startsAtUtc,
 		},
+		sectionStyles: {
+			gifts: { structuralVariant: 'standard' },
+			rsvp: { structuralVariant: 'standard' },
+			thankYou: { structuralVariant: 'standard' },
+		},
 		sectionOrder: [
 			'quote',
 			'family',
@@ -190,6 +195,7 @@ export function buildAbrilPublishedContent(
 			backgroundImage: assets['hero-desktop'],
 			backgroundImageMobile: assets['hero-mobile'],
 			backgroundImageDesktop: assets['hero-desktop'],
+			structuralVariant: 'standard',
 			focalPoint: '50% 40%',
 			focalPointMobile: '50% 38%',
 			focalPointTablet: '50% 40%',
@@ -356,7 +362,7 @@ export function buildAbrilPublishedContent(
 			eyebrow: 'Recuerdos',
 			title: 'Abril Michelle',
 			subtitle: 'Luz, elegancia y la emoción de sus XV',
-			variant: 'premiere-floral',
+			variant: 'uniform-grid',
 			items: [
 				{
 					key: 'gallery-01-candles',
@@ -427,6 +433,7 @@ export function buildAbrilPublishedContent(
 				startsAt: '2026-09-12T23:00:00.000Z',
 			},
 			personalizedAccess: {
+				structuralVariant: 'ornamented',
 				title: 'Su invitación personal',
 				subtitle: 'Esta invitación ha sido preparada para:',
 				footerText: 'Confirme su asistencia en el formulario.',

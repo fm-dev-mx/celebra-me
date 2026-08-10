@@ -155,9 +155,11 @@ export function buildAlbaPublishedContent(
 			},
 		],
 		sectionStyles: {
-			rsvp: {},
+			gifts: { structuralVariant: 'standard' },
+			rsvp: { structuralVariant: 'standard' },
 			thankYou: {
 				variant: 'editorial-magazine',
+				structuralVariant: 'standard',
 			},
 		},
 		_assetSlug: ALBA_EVENT.assetSlug,
@@ -169,6 +171,7 @@ export function buildAlbaPublishedContent(
 			backgroundImage: assets['hero-desktop'],
 			backgroundImageMobile: assets['hero-mobile'],
 			backgroundImageDesktop: assets['hero-desktop'],
+			structuralVariant: 'standard',
 			focalPoint: '68% 42%',
 			focalPointMobile: '50% 26%',
 			focalPointTablet: '62% 40%',
@@ -231,6 +234,7 @@ export function buildAlbaPublishedContent(
 			title: 'FALTAN',
 		},
 		gallery: {
+			variant: 'feature-mosaic',
 			eyebrow: 'Recuerdos',
 			title: 'Momentos',
 			subtitle: 'Viajes, sonrisas y cariño',
@@ -297,6 +301,7 @@ export function buildAlbaPublishedContent(
 				startsAt: ALBA_EVENT.startsAtUtc,
 			},
 			personalizedAccess: {
+				structuralVariant: 'ornamented',
 				title: 'Su invitación personal',
 				subtitle: 'Esta invitación ha sido preparada para:',
 				footerText: 'Confirme su asistencia en el formulario.',

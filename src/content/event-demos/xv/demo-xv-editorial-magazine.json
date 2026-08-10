@@ -26,7 +26,8 @@
             "showFlourishes": false
         },
         "rsvp": {
-            "variant": "editorial-magazine"
+            "variant": "editorial-magazine",
+            "structuralVariant": "editorial-press-pass"
         }
     },
     "hero": {
@@ -36,6 +37,7 @@
         "backgroundImage": "hero",
         "portrait": "portrait",
         "variant": "editorial-magazine",
+        "structuralVariant": "editorial-cover",
         "focalPoint": "54% 38%",
         "focalPointMobile": "52% 30%"
     },
@@ -126,9 +128,11 @@
         "guestCap": 4,
         "accessMode": "hybrid",
         "confirmationMessage": "Tu acceso quedó confirmado. Gracias por ser parte de esta edición XV.",
-        "confirmationMode": "api"
+        "confirmationMode": "api",
+        "personalizedAccess": { "structuralVariant": "editorial-pass" }
     },
     "gallery": {
+        "variant": "magazine-spread",
         "eyebrow": "Galería",
         "title": "Doble página editorial",
         "subtitle": "Una selección visual con retratos, detalles y escenas de celebración.",
@@ -156,6 +160,7 @@
         ]
     },
     "gifts": {
+        "structuralVariant": "editorial-catalog",
         "title": "Guía de regalos",
         "subtitle": "Tu presencia es el regalo más importante. Si deseas tener un detalle adicional, aquí compartimos algunas opciones.",
         "items": [
@@ -178,6 +183,7 @@
         ]
     },
     "thankYou": {
+        "structuralVariant": "editorial-back-cover",
         "message": "Gracias por acompañarme en una noche hecha de estilo, alegría y recuerdos para siempre.",
         "closingName": "Roberta",
         "image": "thankYouPortrait",

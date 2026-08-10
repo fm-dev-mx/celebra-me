@@ -13,7 +13,7 @@
         "location": {
             "showFlourishes": true
         },
-        "rsvp": {}
+        "rsvp": { "structuralVariant": "standard" }
     },
     "hero": {
         "name": "Valentina Noir",
@@ -21,7 +21,8 @@
         "date": "2026-09-19T20:00:00.000Z",
         "backgroundImage": "hero",
         "portrait": "portrait",
-        "variant": "editorial"
+        "variant": "editorial",
+        "structuralVariant": "standard"
     },
     "location": {
         "reception": {
@@ -68,6 +69,7 @@
         "featuredImage": "family"
     },
     "gallery": {
+        "variant": "editorial-mosaic",
         "eyebrow": "Galería",
         "title": "Galería Editorial",
         "subtitle": "Una secuencia visual de siluetas, brillo y detalles de alta noche.",
@@ -107,6 +109,7 @@
         ]
     },
     "gifts": {
+        "structuralVariant": "standard",
         "title": "Mesa de Regalos",
         "subtitle": "Tu generosidad acompaña esta noche de estreno.",
         "items": [
@@ -131,13 +134,15 @@
         "title": "Confirma tu asistencia",
         "guestCap": 4,
         "confirmationMessage": "Tu lugar para Noir Premiere XV ha sido reservado. Nos vemos en la gala.",
-        "confirmationMode": "api"
+        "confirmationMode": "api",
+        "personalizedAccess": { "structuralVariant": "ornamented" }
     },
     "quote": {
         "text": "Con luz propia, inicio un nuevo capítulo. Gracias por ser parte de esta noche de quince años.",
         "author": "Valentina Noir"
     },
     "thankYou": {
+        "structuralVariant": "standard",
         "message": "Gracias por ser parte de este capítulo. Su presencia convierte esta noche en un recuerdo de luz, estilo y emoción.",
         "closingName": "Valentina",
         "image": "thankYouPortrait"

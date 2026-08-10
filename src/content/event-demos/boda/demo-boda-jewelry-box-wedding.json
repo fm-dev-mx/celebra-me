@@ -12,7 +12,7 @@
         "location": {
             "showFlourishes": true
         },
-        "rsvp": {}
+        "rsvp": { "structuralVariant": "standard" }
     },
     "hero": {
         "name": "Sofía",
@@ -20,6 +20,7 @@
         "label": "Nuestro enlace",
         "date": "2026-12-12T18:00:00.000Z",
         "backgroundImage": "hero",
+        "structuralVariant": "standard",
         "focalPoint": "50% 38%",
         "focalPointMobile": "50% 32%"
     },
@@ -65,6 +66,7 @@
         "accessMode": "hybrid",
         "confirmationMessage": "Gracias por acompañarnos en el inicio de esta nueva etapa.",
         "confirmationMode": "both",
+        "personalizedAccess": { "structuralVariant": "ornamented" },
         "whatsappConfig": {
             "phone": "5212221234567",
             "confirmedTemplate": "Hola. Somos {name}. Confirmamos con mucho gusto nuestra asistencia a la boda de Sofía y Alejandro. Asistentes: {guestCount}.",
@@ -126,6 +128,7 @@
         }
     },
     "gallery": {
+        "variant": "jewelry-box-wedding",
         "eyebrow": "Galería",
         "title": "Crónica de un sí",
         "subtitle": "Retratos de la historia que antecede a la ceremonia: la ciudad, la luz y los gestos que guardaremos para siempre.",
@@ -153,6 +156,7 @@
         ]
     },
     "gifts": {
+        "structuralVariant": "standard",
         "title": "Mesa de regalos",
         "subtitle": "Su presencia será nuestro mayor regalo. Para quienes deseen tener un detalle con nosotros, hemos preparado una mesa de regalos en Liverpool. También podrán acompañarnos con un sobre de buenos deseos el día de la recepción.",
         "items": [
@@ -201,6 +205,7 @@
         ]
     },
     "thankYou": {
+        "structuralVariant": "standard",
         "message": "Gracias por acompañarnos en un día que recordaremos siempre con el corazón lleno.",
         "closingName": "Sofía & Alejandro",
         "image": "thankYouPortrait",

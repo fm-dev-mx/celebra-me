@@ -11,9 +11,7 @@
         "preset": "celestial-blue"
     },
     "sectionStyles": {
-        "itinerary": {
-            "variant": "timeline-paper"
-        }
+        "rsvp": { "structuralVariant": "standard" }
     },
     "hero": {
         "name": "Camila Torres Rivas",
@@ -22,6 +20,7 @@
         "backgroundImage": "hero",
         "backgroundImageDesktop": "heroDesktop",
         "portrait": "portrait",
+        "structuralVariant": "standard",
         "focalPoint": "50% 32%",
         "focalPointMobile": "50% 30%",
         "focalPointDesktop": "62% 38%"
@@ -89,6 +88,7 @@
         ]
     },
     "gallery": {
+        "variant": "index-choreography",
         "eyebrow": "Galería",
         "title": "Luz, color y momentos que brillan con luz propia.",
         "subtitle": "Un recorrido visual por la magia de esta celebración única.",
@@ -104,6 +104,7 @@
         ]
     },
     "gifts": {
+        "structuralVariant": "standard",
         "title": "Lluvia de Sobres",
         "subtitle": "Tu presencia es el mejor regalo. Si deseas tener un detalle adicional, aquí algunas opciones:",
         "items": [
@@ -126,6 +127,7 @@
         "confirmationMessage": "Gracias por confirmar. Te esperamos con alegría en esta noche tan especial.",
         "confirmationMode": "api",
         "personalizedAccess": {
+            "structuralVariant": "ornamented",
             "title": "Tu lugar en la celebración",
             "subtitle": "Reservado especialmente para ti",
             "footerText": "Confirma abajo para asegurar tus lugares"
@@ -136,6 +138,7 @@
         "author": "Camila Fernanda"
     },
     "thankYou": {
+        "structuralVariant": "editorial-back-cover",
         "message": "Gracias por compartir esta noche conmigo. Su amor y compañía hacen de mis XV años un recuerdo que atesoraré para siempre.",
         "closingName": "Camila Torres Rivas",
         "image": "thankYouPortrait",
@@ -143,6 +146,7 @@
     },
     "itinerary": {
         "title": "Programa",
+        "presentation": { "behavior": "timeline-paper" },
         "items": [
             {
                 "iconName": "Church",

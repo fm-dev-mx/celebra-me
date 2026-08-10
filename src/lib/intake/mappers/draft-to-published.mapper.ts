@@ -378,7 +378,7 @@ function buildHeroFromDraft(
 	} = demoHero ?? {};
 
 	const result: Record<string, unknown> = {
-		...clientPriorFields(ctx, priorHero, ['variant']),
+		...clientPriorFields(ctx, priorHero, ['variant', 'structuralVariant']),
 		name: str(draftHero.name) || demoStr(ctx, demoName as string) || invitationTitle,
 		secondaryName:
 			str(draftHero.secondaryName) || demoStr(ctx, demoSecondaryName as string) || '',

@@ -24,14 +24,15 @@
     ],
     "sectionStyles": {
         "location": { "showFlourishes": true },
-        "rsvp": {}
+        "rsvp": { "structuralVariant": "standard" }
     },
     "hero": {
         "name": "Xareni Demo",
         "label": "Mis XV Años",
         "date": "2027-09-12T19:00:00.000Z",
         "backgroundImage": "hero",
-        "portrait": "portrait"
+        "portrait": "portrait",
+        "structuralVariant": "standard"
     },
     "location": {
         "ceremony": {
@@ -85,6 +86,7 @@
         ]
     },
     "gallery": {
+        "variant": "index-choreography",
         "eyebrow": "Galería",
         "title": "Luz, color y momentos que brillan con luz propia.",
         "subtitle": "Un recorrido visual por la magia de esta celebración única.",
@@ -98,6 +100,7 @@
         ]
     },
     "gifts": {
+        "structuralVariant": "standard",
         "title": "Lluvia de Sobres",
         "subtitle": "Tu presencia es el mejor regalo. Si deseas tener un detalle adicional, aquí algunas opciones:",
         "items": [
@@ -121,13 +124,15 @@
         "guestCap": 4,
         "accessMode": "hybrid",
         "confirmationMessage": "Gracias por confirmar. Te esperamos con alegría en esta noche tan especial.",
-        "confirmationMode": "api"
+        "confirmationMode": "api",
+        "personalizedAccess": { "structuralVariant": "ornamented" }
     },
     "quote": {
         "text": "Hoy empieza una nueva historia, y no hay mejor escenario que tenerlos a mi lado.",
         "author": "Xareni Demo"
     },
     "thankYou": {
+        "structuralVariant": "editorial-back-cover",
         "message": "Gracias por compartir esta noche conmigo. Su amor y compañía hacen de mis XV años un recuerdo que atesoraré para siempre.",
         "closingName": "Xareni Demo",
         "image": "thankYouPortrait",
@@ -135,6 +140,7 @@
     },
     "itinerary": {
         "title": "Programa",
+        "presentation": { "behavior": "timeline-paper" },
         "items": [
             {
                 "iconName": "Church",

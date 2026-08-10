@@ -17,6 +17,7 @@ const profilePath = path.join(
 	process.cwd(),
 	'src/styles/invitation-profiles/victoria-y-roberto.scss',
 );
+const galleryStylesPath = path.join(process.cwd(), 'src/styles/invitation/_gallery.scss');
 
 const assetDir = path.join(process.cwd(), 'src/assets/invitations/victoria-y-roberto');
 
@@ -67,7 +68,11 @@ describe('Boda Victoria y Roberto provision contract', () => {
 		expect(profile).toContain("data-intersection='overlap'");
 		expect(profile).toContain("data-reveal-state='sealed'");
 		expect(profile).toContain("data-reveal-state='revealed'");
-		expect(profile).toContain("data-variant='single'");
+		expect(profile).toContain('--gallery-single-label-font');
+		expect(profile).not.toContain("data-variant='single'");
+		expect(fs.readFileSync(galleryStylesPath, 'utf8')).toContain(
+			".gallery-section[data-structural-variant='single-keepsake']",
+		);
 		expect(profile).not.toContain("data-presentation='text-only'");
 		expect(profile).not.toContain('OneDrive');
 		expect(profile).not.toContain('Clientes\\');
@@ -224,7 +229,7 @@ describe('Boda Victoria y Roberto provision contract', () => {
 			items: unknown[];
 		};
 		expect(gallery.items).toEqual(expect.any(Array));
-		expect(gallery.variant).toBe('single');
+		expect(gallery.variant).toBe('single-keepsake');
 
 		const gifts = content.gifts as {
 			items?: Array<{ type: string; title: string; url?: string }>;

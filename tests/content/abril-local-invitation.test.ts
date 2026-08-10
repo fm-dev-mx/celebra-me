@@ -180,7 +180,7 @@ describe('Abril Michelle local invitation content', () => {
 		});
 
 		const assets = buildTestAssets();
-		expect(result.data!.gallery!.variant).toBe('premiere-floral');
+		expect(result.data!.gallery!.variant).toBe('uniform-grid');
 		expect(result.data!.gallery!.items).toHaveLength(5);
 		const galleryIds = result.data!.gallery!.items.map((item) =>
 			typeof item.image === 'object' && item.image && 'assetId' in item.image
