@@ -780,7 +780,8 @@
 		}
 	}
 
-	.itinerary[data-variant='editorial-magazine'] {
+	// Profile presentation on canonical TimelineList (`standard` behavior).
+	.itinerary {
 		background: var(--v-paper);
 		color: var(--v-ink);
 		padding-block: clamp(5.5rem, 12vw, 8rem);
@@ -1351,7 +1352,7 @@
 	}
 
 	@media (width <= 480px) {
-		.itinerary[data-variant='editorial-magazine'],
+		.itinerary,
 		.event-location[data-variant='editorial-magazine'],
 		.gifts-section[data-variant='editorial-magazine'] {
 			padding-inline: clamp(1rem, 5vw, 1.35rem);
