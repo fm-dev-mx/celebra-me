@@ -37,6 +37,20 @@ import {
 	resolveXareniSealColor,
 	XARENI_ASSET_SLUG,
 } from '@/lib/invitation/presentation-options';
+import {
+	GIFTS_STRUCTURAL_VARIANTS,
+	HERO_STRUCTURAL_VARIANTS,
+	PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS,
+	RSVP_STRUCTURAL_VARIANTS,
+	THANK_YOU_STRUCTURAL_VARIANTS,
+	resolveGalleryLayoutVariant,
+	resolveGalleryVisualVariant,
+	resolveGiftsStructuralVariant,
+	resolveHeroStructuralVariant,
+	resolvePersonalizedAccessStructuralVariant,
+	resolveRsvpStructuralVariant,
+	resolveThankYouStructuralVariant,
+} from '@/lib/invitation/structural-variants';
 
 interface AdaptationContext {
 	data: EventContentEntry['data'];
@@ -195,6 +209,10 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 			? resolveAsset(eventSlug, data.hero.portrait, data.title)
 			: undefined,
 		variant: preset,
+		structuralVariant: resolveHeroStructuralVariant(data.hero.structuralVariant, preset),
+		structuralVariantExplicit: HERO_STRUCTURAL_VARIANTS.includes(
+			data.hero.structuralVariant as (typeof HERO_STRUCTURAL_VARIANTS)[number],
+		),
 		focalPoint: data.hero.focalPoint,
 		focalPointMobile: data.hero.focalPointMobile,
 		focalPointTablet: data.hero.focalPointTablet,
@@ -436,7 +454,7 @@ function buildFamilySectionData(context: AdaptationContext) {
 }
 
 function buildGallerySectionData(context: AdaptationContext) {
-	const { data, eventSlug } = context;
+	const { data, eventSlug, normalizedPreset } = context;
 	if (!data.gallery) return undefined;
 	const items = data.gallery.items
 		.map(
@@ -470,16 +488,45 @@ function buildGallerySectionData(context: AdaptationContext) {
 		)
 		.filter(<T>(i: T | null): i is T => i !== null);
 	if (items.length === 0) return undefined;
+	const rawGalleryVariant = data.gallery.variant;
+	const structuralVariantExplicit =
+		typeof rawGalleryVariant === 'string' &&
+		(
+			[
+				'uniform-grid',
+				'editorial-mosaic',
+				'magazine-spread',
+				'feature-mosaic',
+				'index-choreography',
+				'single-keepsake',
+				'single',
+			] as readonly string[]
+		).includes(rawGalleryVariant);
+	const structuralVariant = resolveGalleryLayoutVariant(
+		rawGalleryVariant,
+		rawGalleryVariant ?? data.sectionStyles?.gallery?.variant,
+		normalizedPreset,
+	);
+	const legacyVisualVariant =
+		typeof rawGalleryVariant === 'string' &&
+		!(
+			[
+				'uniform-grid',
+				'editorial-mosaic',
+				'magazine-spread',
+				'feature-mosaic',
+				'index-choreography',
+				'single-keepsake',
+			] as readonly string[]
+		).includes(rawGalleryVariant)
+			? rawGalleryVariant
+			: data.sectionStyles?.gallery?.variant;
 	return {
 		...data.gallery,
 		items,
-		variant:
-			data.gallery.variant ??
-			sectionVariant(
-				'gallery',
-				data.sectionStyles?.gallery?.variant,
-				context.normalizedPreset,
-			),
+		variant: structuralVariant,
+		visualVariant: resolveGalleryVisualVariant(legacyVisualVariant, normalizedPreset),
+		structuralVariantExplicit,
 	};
 }
 
@@ -510,9 +557,30 @@ function buildRsvpSectionData(context: AdaptationContext, entrySlug: string) {
 	const eventStartsAt = calendar?.startsAt ?? data.eventTiming?.startsAtUtc ?? data.hero.date;
 	return {
 		...rsvpRest,
+		personalizedAccess: data.rsvp.personalizedAccess
+			? {
+					...data.rsvp.personalizedAccess,
+					structuralVariant: resolvePersonalizedAccessStructuralVariant(
+						data.rsvp.personalizedAccess.structuralVariant,
+						normalizedPreset,
+					),
+					structuralVariantExplicit: PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS.includes(
+						data.rsvp.personalizedAccess
+							.structuralVariant as (typeof PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS)[number],
+					),
+				}
+			: undefined,
 		eventSlug: entrySlug,
 		eventType: data.eventType,
 		variant: sectionVariant('rsvp', data.sectionStyles?.rsvp?.variant, normalizedPreset),
+		structuralVariant: resolveRsvpStructuralVariant(
+			data.sectionStyles?.rsvp?.structuralVariant,
+			normalizedPreset,
+		),
+		structuralVariantExplicit: RSVP_STRUCTURAL_VARIANTS.includes(
+			data.sectionStyles?.rsvp
+				?.structuralVariant as (typeof RSVP_STRUCTURAL_VARIANTS)[number],
+		),
 		labels: data.sectionStyles?.rsvp?.labels,
 		eventStartsAt,
 		eventTimeZone: data.eventTiming?.timeZone,
@@ -528,6 +596,14 @@ function buildGiftsSectionData(context: AdaptationContext) {
 	return {
 		...data.gifts,
 		variant: sectionVariant('gifts', data.sectionStyles?.gifts?.variant, normalizedPreset),
+		structuralVariant: resolveGiftsStructuralVariant(
+			data.sectionStyles?.gifts?.structuralVariant,
+			normalizedPreset,
+		),
+		structuralVariantExplicit: GIFTS_STRUCTURAL_VARIANTS.includes(
+			data.sectionStyles?.gifts
+				?.structuralVariant as (typeof GIFTS_STRUCTURAL_VARIANTS)[number],
+		),
 	};
 }
 
@@ -543,6 +619,14 @@ function buildThankYouSectionData(context: AdaptationContext) {
 			'thankYou',
 			data.sectionStyles?.thankYou?.variant,
 			normalizedPreset,
+		),
+		structuralVariant: resolveThankYouStructuralVariant(
+			data.sectionStyles?.thankYou?.structuralVariant,
+			normalizedPreset,
+		),
+		structuralVariantExplicit: THANK_YOU_STRUCTURAL_VARIANTS.includes(
+			data.sectionStyles?.thankYou
+				?.structuralVariant as (typeof THANK_YOU_STRUCTURAL_VARIANTS)[number],
 		),
 	};
 }

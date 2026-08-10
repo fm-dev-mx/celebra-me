@@ -136,13 +136,14 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 			'itinerary',
 			'thankYou',
 		] as const) {
-			expect(
-				descriptors.find((descriptor) => descriptor.component === component),
-			).toMatchObject({
-				props: {
-					variant: 'editorial',
-				},
-			});
+			const descriptor = descriptors.find((item) => item.component === component);
+			if (component === 'gallery') {
+				expect(descriptor).toMatchObject({
+					props: { variant: 'editorial-mosaic', visualVariant: 'editorial' },
+				});
+			} else {
+				expect(descriptor).toMatchObject({ props: { variant: 'editorial' } });
+			}
 		}
 	});
 

@@ -3,6 +3,7 @@
 import '@/styles/invitation/_thank-you.scss';
 import OptimizedImage from '@/components/common/OptimizedImage.astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
+import type { ThankYouStructuralVariant } from '@/lib/invitation/structural-variants';
 
 interface Props {
 	message: string;
@@ -10,6 +11,7 @@ interface Props {
 	date?: string;
 	image?: string | ImageAsset;
 	variant?: string;
+	structuralVariant?: ThankYouStructuralVariant;
 	focalPoint?: string;
 	overlayAnchor?: 'left' | 'right' | 'top' | 'bottom';
 	overlaySafeArea?: {
@@ -27,17 +29,14 @@ const {
 	date,
 	image,
 	variant = 'standard',
+	structuralVariant = 'standard',
 	focalPoint,
 	overlayAnchor,
 	overlaySafeArea,
 	showThankYouBranding = true,
 } = Astro.props;
-const EDITORIAL_THANK_YOU_VARIANTS = ['celestial-blue', 'enchanted-rose', 'editorial-magazine'] as const;
-const usesEditorialLayout = EDITORIAL_THANK_YOU_VARIANTS.includes(
-	variant as (typeof EDITORIAL_THANK_YOU_VARIANTS)[number],
-);
+const usesEditorialLayout = structuralVariant === 'editorial-back-cover';
 const hasSubjectAwareOverlay = Boolean(overlayAnchor || overlaySafeArea);
-const LARGE_PHOTO_VARIANTS: ReadonlySet<string> = new Set(['sacred-keepsake']);
 
 const firstLetter = message.charAt(0);
 const remainingMessage = message.slice(1);
@@ -74,7 +73,7 @@ const IMAGE_CONFIGS = {
 	},
 } as const;
 
-const needsLargePhoto = hasSubjectAwareOverlay || LARGE_PHOTO_VARIANTS.has(variant);
+const needsLargePhoto = hasSubjectAwareOverlay || structuralVariant === 'full-bleed-photo';
 const configKey: keyof typeof IMAGE_CONFIGS = needsLargePhoto ? 'subject-aware' : (variant in IMAGE_CONFIGS ? (variant as keyof typeof IMAGE_CONFIGS) : 'standard');
 const imageConfig = IMAGE_CONFIGS[configKey];
 
@@ -85,6 +84,7 @@ const imageConfig = IMAGE_CONFIGS[configKey];
 	data-screenshot-section="thankYou"
 	class="thank-you-section"
 	data-variant={variant}
+	data-structural-variant={structuralVariant}
 	data-overlay-anchor={overlayAnchor}
 	data-has-overlay-safe-area={overlaySafeArea ? 'true' : undefined}
 >

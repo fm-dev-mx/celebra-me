@@ -2,10 +2,8 @@
 
 @use '../../../global/mixins' as mixins;
 
-.gallery-section[data-variant='editorial-magazine'] {
-	background: var(--gallery-section-bg, var(--editorial-magazine-paper));
-	padding-block: var(--section-padding-block);
-
+.gallery-section[data-variant='editorial-magazine'],
+.gallery-section[data-structural-variant='magazine-spread'] {
 	.gallery-section__header {
 		margin-bottom: clamp(2.5rem, 7vw, 5rem);
 		text-align: left;
@@ -138,4 +136,9 @@
 			}
 		}
 	}
+}
+
+.gallery-section[data-variant='editorial-magazine'] {
+	background: var(--gallery-section-bg, var(--editorial-magazine-paper));
+	padding-block: var(--section-padding-block);
 }

@@ -5,7 +5,8 @@
 // Single-image/column layout for the celestial-blue theme.
 // ==========================================================================
 
-.gallery-section[data-variant='celestial-blue'] {
+.gallery-section[data-variant='celestial-blue'],
+.gallery-section[data-structural-variant='index-choreography'] {
 	padding-block: clamp(6rem, 10vw, 10rem);
 	background: var(--gallery-section-bg);
 
@@ -633,7 +634,8 @@
 // Neutral celestial-blue single variant — theme-safe sizing and atmosphere.
 // Does NOT set card-level styling (radius, shadow, border, padding, title
 // color) — those cascade from the base _gallery.scss single variant.
-[data-theme-preset='celestial-blue'] .gallery-section[data-variant='single'] {
+[data-theme-preset='celestial-blue'] .gallery-section[data-variant='single'],
+[data-theme-preset='celestial-blue'] .gallery-section[data-structural-variant='single-keepsake'] {
 	--gallery-section-padding-block: clamp(3.5rem, 7vw, 5.5rem);
 	--gallery-section-bg: linear-gradient(
 		180deg,

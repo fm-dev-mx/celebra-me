@@ -5,6 +5,7 @@ import { GiftIcon } from '@/components/common/icons/invitation/Gift';
 import { BankCardIcon } from '@/components/common/icons/ui/BankCard';
 import { CashIcon } from '@/components/common/icons/ui/Cash';
 import { PayPalIcon } from '@/components/common/icons/social/PayPal';
+import type { GiftsStructuralVariant } from '@/lib/invitation/structural-variants';
 
 interface GiftStoreLink {
 	label: string;
@@ -49,6 +50,7 @@ type Gift = GiftStore | GiftBank | GiftPaypal | GiftCash;
 interface Props {
 	gifts: Gift[];
 	variant?: string;
+	structuralVariant?: GiftsStructuralVariant;
 	eyebrow?: string;
 	title?: string;
 	subtitle?: string;
@@ -66,6 +68,7 @@ interface Props {
 const {
 	gifts,
 	variant = 'standard',
+	structuralVariant = 'standard',
 	eyebrow,
 	title = 'Mesa de Regalos',
 	subtitle = 'Su presencia es nuestro mayor regalo, pero si desean tener un detalle, aquí les compartimos algunas opciones.',
@@ -80,7 +83,7 @@ const {
 	},
 } = Astro.props;
 
-const isEditorialMagazine = variant === 'editorial-magazine';
+const isEditorialMagazine = structuralVariant === 'editorial-catalog';
 const displayTitle = isEditorialMagazine ? 'Mesa de cortesía' : title;
 
 const ICON_MAP = {
@@ -91,7 +94,7 @@ const ICON_MAP = {
 };
 ---
 
-<section id="regalos" class="gifts-section" data-screenshot-section="gifts" data-variant={variant}>
+<section id="regalos" class="gifts-section" data-screenshot-section="gifts" data-variant={variant} data-structural-variant={structuralVariant}>
 	<div class="gifts-section__container">
 		<header class="gifts-section__header">
 			{eyebrow && <span class="gifts-section__eyebrow">{eyebrow}</span>}

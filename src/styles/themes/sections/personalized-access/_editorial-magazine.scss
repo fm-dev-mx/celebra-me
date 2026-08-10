@@ -1,4 +1,5 @@
-.personalized-access[data-variant='editorial-magazine'] {
+.personalized-access[data-variant='editorial-magazine'],
+.personalized-access[data-structural-variant='editorial-pass'] {
 	background: var(--editorial-magazine-paper);
 	position: relative;
 

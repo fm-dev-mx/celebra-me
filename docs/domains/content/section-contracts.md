@@ -12,10 +12,21 @@ digital invitations.
   portrait or background image.
 - **Required Inputs**: `name` (string), `date` (ISO date string), `backgroundImage` (AssetSource).
 - **Optional Inputs**: `secondaryName`, `label`, `nickname`, `backgroundImageDesktop`,
-  `backgroundImageMobile`, `portrait`, `focalPoint`, `variant`.
+  `backgroundImageMobile`, `portrait`, `focalPoint`, `variant`, `structuralVariant`.
 - **Rendering & Omission**: Mandatory first fold. Cannot be omitted.
 - **Validation Rules**: `date` must be valid ISO 8601; `backgroundImage` must resolve to an accepted
   image asset.
+
+Structural renderer selections are section-owned and bounded. `hero.structuralVariant` accepts
+`standard` or `editorial-cover`; `sectionStyles.thankYou.structuralVariant` accepts
+`standard`, `editorial-back-cover`, or `full-bleed-photo`; Gifts and RSVP use
+`editorial-catalog` and `editorial-press-pass` respectively. `rsvp.personalizedAccess` uses
+`standard`, `ornamented`, or `editorial-pass`. These fields select markup/layout only; the theme
+`variant` remains the visual skin and is retained for compatibility.
+
+Countdown and Footer have no structural selector in the current contract: their theme branches are
+presentation skins only. They continue to consume the visual `variant` and must not be promoted to
+structural variants without new executable evidence.
 
 ---
 
@@ -34,7 +45,8 @@ digital invitations.
   - `raster`: Pre-rendered photo/3D asset mask (`sealImage`).
 - **Resolution Precedence**: `resolveSealPresentation()` maps configuration in order:
   1. `sealImage` present -> `raster` renderer.
-  2. `sealVariant` / `sealIcon` explicit selection -> `wax-organic` or `wax-medallion`.
+  2. `sealColor` is the canonical skin override; `sealVariant` supplies the skin when no color is
+     present. `sealIcon` remains the structural renderer selector.
   3. Existing icon contract -> `wax-monogram` maps to `wax-organic`, `monogram` to `monogram`, etc.
   4. Default fallback -> `wax-organic`.
 - **Proportional Bounded Sizing**:

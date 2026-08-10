@@ -8,6 +8,10 @@ import {
 	type SectionIntersectionFamily,
 	type ThemePreset,
 } from '@/lib/theme/theme-contract';
+import {
+	resolvePersonalizedAccessStructuralVariant,
+	type PersonalizedAccessStructuralVariant,
+} from '@/lib/invitation/structural-variants';
 import { getContactPhone, isPlaceholderContactPhone } from '@/utils/whatsapp';
 
 type Sections = InvitationPageContext['viewModel']['sections'];
@@ -32,6 +36,7 @@ type PersonalizedAccessProps = {
 	eventYear?: string;
 	isDemoPreview?: boolean;
 	variant?: ThemePreset;
+	structuralVariant?: PersonalizedAccessStructuralVariant;
 	title?: string;
 	subtitle?: string;
 	footerText?: string;
@@ -40,6 +45,15 @@ type PersonalizedAccessProps = {
 
 export const DEMO_GUEST_NAME = 'María Fernanda Solís';
 const DEFAULT_DEMO_GUEST_CAP = 2;
+
+function resolvePersonalizedAccessVariant(
+	pageContext: InvitationPageContext,
+): PersonalizedAccessStructuralVariant {
+	return resolvePersonalizedAccessStructuralVariant(
+		pageContext.viewModel.sections.rsvp?.personalizedAccess?.structuralVariant,
+		pageContext.viewModel.theme.preset ?? THEME_PRESETS[0],
+	);
+}
 
 const SECTION_NAV_TARGETS: Partial<Record<ContentSectionKey, { href: string; label: string }>> = {
 	quote: { href: '#quote-section', label: 'Mensaje' },
@@ -154,6 +168,7 @@ function renderPersonalizedAccess(pageContext: InvitationPageContext): Descripto
 
 	const guestContext = pageContext.guestContext;
 	const variant = pageContext.viewModel.theme.preset ?? THEME_PRESETS[0];
+	const structuralVariant = resolvePersonalizedAccessVariant(pageContext);
 	const eventYear = pageContext.viewModel.hero.date
 		? new Date(pageContext.viewModel.hero.date).getUTCFullYear().toString()
 		: undefined;
@@ -171,6 +186,7 @@ function renderPersonalizedAccess(pageContext: InvitationPageContext): Descripto
 			eventYear,
 			isDemoPreview,
 			variant,
+			structuralVariant,
 			title: rsvpSection?.personalizedAccess?.title,
 			subtitle: rsvpSection?.personalizedAccess?.subtitle,
 			footerText: rsvpSection?.personalizedAccess?.footerText,

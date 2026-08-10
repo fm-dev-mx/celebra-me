@@ -121,7 +121,34 @@ describe('adaptEvent', () => {
 		expect(viewModel.sections.location?.ceremony).toBeDefined();
 		expect(viewModel.sections.location?.ceremony?.venueName).toBeDefined();
 		expect(viewModel.sections.location?.variant).toBe('jewelry-box');
+		expect(viewModel.sections.gallery?.structuralVariantExplicit).toBe(false);
 		expect(viewModel.hero.backgroundImage.src).toEqual(expect.any(String));
+	});
+
+	it('treats gallery.variant as the canonical structural authority', () => {
+		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-editorial-magazine.json');
+		const event = {
+			id: 'event-demos/xv/demo-xv-editorial-magazine',
+			data: {
+				...fixture,
+				gallery: {
+					...fixture.gallery,
+					variant: 'uniform-grid',
+				},
+				sectionStyles: {
+					...fixture.sectionStyles,
+					gallery: {
+						...fixture.sectionStyles?.gallery,
+						variant: 'editorial-magazine',
+					},
+				},
+			},
+		} as Parameters<typeof adaptEvent>[0];
+
+		const viewModel = adaptEvent(event);
+
+		expect(viewModel.sections.gallery?.variant).toBe('uniform-grid');
+		expect(viewModel.sections.gallery?.structuralVariantExplicit).toBe(true);
 	});
 
 	it('passes location intro copy through to the invitation view model', () => {

@@ -16,6 +16,8 @@ interface Props {
 	backgroundImageDesktop?: { src: string };
 	backgroundImageMobile?: ImageMetadata | ImageAsset;
 	portrait?: ImageMetadata | ImageAsset;
+	variant?: string;
+	structuralVariant?: string;
 	focalPoint?: string;
 	focalPointMobile?: string;
 	focalPointTablet?: string;
@@ -35,6 +37,8 @@ const {
 	backgroundImageDesktop,
 	backgroundImageMobile,
 	portrait,
+	variant,
+	structuralVariant,
 	focalPoint,
 	focalPointMobile,
 	focalPointTablet,
@@ -100,7 +104,8 @@ const fpDesktop = focalPointDesktop || fpDefault;
 <section
 	id="inicio"
 	class="invitation-hero"
-	data-variant="editorial-magazine"
+	data-variant={variant ?? 'editorial-magazine'}
+	data-structural-variant={structuralVariant ?? 'editorial-cover'}
 	data-screenshot="invitation-open-hero"
 	data-screenshot-section="hero"
 >

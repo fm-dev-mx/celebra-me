@@ -1,7 +1,8 @@
 @use '../../../tokens' as tokens;
 @use '../../../global/mixins' as mixins;
 
-.gallery-section[data-variant='luxury-hacienda'] {
+.gallery-section[data-variant='luxury-hacienda'],
+.gallery-section[data-structural-variant='feature-mosaic'] {
 	--gallery-section-bg:
 		radial-gradient(
 			ellipse at 50% 0%,

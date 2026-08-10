@@ -1,6 +1,7 @@
 // Editorial-magazine thank-you: back cover with editorial palette
 
-.thank-you-section[data-variant='editorial-magazine'] {
+.thank-you-section[data-variant='editorial-magazine'],
+.thank-you-section[data-structural-variant='editorial-back-cover'] {
 	background: var(--editorial-magazine-ink);
 	color: var(--editorial-magazine-white);
 	min-height: 100svh;

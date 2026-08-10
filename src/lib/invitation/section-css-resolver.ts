@@ -25,6 +25,18 @@ const galleryVariantModules = import.meta.glob('/src/styles/themes/sections/gall
 	eager: true,
 }) as Record<string, { default: string }>;
 
+const structuralVariantModules = import.meta.glob(
+	[
+		'/src/styles/themes/sections/hero/_editorial-magazine.scss',
+		'/src/styles/themes/sections/thank-you/_editorial-magazine.scss',
+		'/src/styles/themes/sections/thank-you/_sacred-keepsake.scss',
+		'/src/styles/themes/sections/gifts/_editorial-magazine.scss',
+		'/src/styles/themes/sections/rsvp/_editorial-magazine.scss',
+		'/src/styles/themes/sections/personalized-access/_editorial-magazine.scss',
+	],
+	{ query: '?url', eager: true },
+) as Record<string, { default: string }>;
+
 const sectionBundleModules = import.meta.glob('/src/styles/invitation-sections-by-preset/*.scss', {
 	query: '?url',
 	eager: true,
@@ -59,12 +71,23 @@ export function resolveInvitationCssUrls(input: {
 	themePreset: string;
 	footerVariant?: string;
 	galleryVariant?: string;
+	structuralVariants?: {
+		hero?: string;
+		thankYou?: string;
+		gifts?: string;
+		rsvp?: string;
+		personalizedAccess?: string;
+	};
 	visualProfileId?: string;
 	slug?: string;
 }): string[] {
 	return resolveInvitationCssUrlsFromMaps(
 		sectionBundleUrlMap,
-		{ ...footerVariantUrlMap, ...galleryVariantUrlMap },
+		{
+			...footerVariantUrlMap,
+			...galleryVariantUrlMap,
+			...buildSectionUrlMap(structuralVariantModules),
+		},
 		input,
 		invitationProfileUrlMap,
 	);

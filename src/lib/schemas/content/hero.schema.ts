@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { AssetSchema, focalPointSchema } from '@/lib/schemas/content/shared.schema';
 import { THEME_PRESETS } from '@/lib/theme/theme-contract';
+import { HERO_STRUCTURAL_VARIANTS } from '@/lib/invitation/structural-variants';
 
 export const heroSchema = z
 	.object({
@@ -21,6 +22,7 @@ export const heroSchema = z
 			.strict()
 			.optional(),
 		variant: z.enum(THEME_PRESETS).optional(),
+		structuralVariant: z.enum(HERO_STRUCTURAL_VARIANTS).optional(),
 		focalPoint: focalPointSchema.optional(),
 		focalPointMobile: focalPointSchema.optional(),
 		focalPointTablet: focalPointSchema.optional(),

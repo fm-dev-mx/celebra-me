@@ -155,6 +155,69 @@ describe('section-css-resolver-map', () => {
 		).toEqual(['/_astro/luxury-bundle.css', '/_astro/gallery-editorial-magazine.css']);
 	});
 
+	it('resolves behavior-named Gallery CSS through the canonical partial map', () => {
+		const sectionUrlMap = {
+			gallery: {
+				'editorial-magazine': '/gallery-editorial-magazine.css',
+				'celestial-blue': '/gallery-celestial.css',
+			},
+		};
+
+		expect(resolveGalleryVariantCssUrl(sectionUrlMap, 'magazine-spread')).toBe(
+			'/gallery-editorial-magazine.css',
+		);
+		expect(resolveGalleryVariantCssUrl(sectionUrlMap, 'index-choreography')).toBe(
+			'/gallery-celestial.css',
+		);
+	});
+
+	it('does not duplicate Gallery CSS when a semantic variant maps to the active theme', () => {
+		const bundleUrlMap = buildSectionBundleUrlMap({
+			'/src/styles/invitation-sections-by-preset/editorial-magazine.scss': {
+				default: '/_astro/editorial-magazine-bundle.css',
+			},
+		});
+		const sectionUrlMap = buildSectionUrlMap({
+			'/src/styles/themes/sections/gallery/_editorial-magazine.scss': {
+				default: '/_astro/gallery-editorial-magazine.css',
+			},
+		});
+
+		expect(
+			resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
+				themePreset: 'editorial-magazine',
+				galleryVariant: 'magazine-spread',
+			}),
+		).toEqual(['/_astro/editorial-magazine-bundle.css']);
+	});
+
+	it('loads structural partials independently when a semantic renderer differs from the theme', () => {
+		const bundleUrlMap = buildSectionBundleUrlMap({
+			'/src/styles/invitation-sections-by-preset/jewelry-box.scss': {
+				default: '/_astro/jewelry-bundle.css',
+			},
+		});
+		const sectionUrlMap = buildSectionUrlMap({
+			'/src/styles/themes/sections/hero/_editorial-magazine.scss': {
+				default: '/_astro/hero-editorial.css',
+			},
+			'/src/styles/themes/sections/thank-you/_sacred-keepsake.scss': {
+				default: '/_astro/thank-you-sacred.css',
+			},
+		});
+
+		expect(
+			resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
+				themePreset: 'jewelry-box',
+				structuralVariants: { hero: 'editorial-cover', thankYou: 'full-bleed-photo' },
+			}),
+		).toEqual([
+			'/_astro/jewelry-bundle.css',
+			'/_astro/hero-editorial.css',
+			'/_astro/thank-you-sacred.css',
+		]);
+	});
+
 	it('keeps Gallery aliases and unknown variants deterministic', () => {
 		const sectionUrlMap = buildSectionUrlMap({
 			'/src/styles/themes/sections/gallery/_editorial.scss': {

@@ -2,10 +2,15 @@ import { z } from 'zod';
 import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 import { rsvpResponseMessagesSchema } from '@/lib/intake/schemas/shared-content.schema';
 import { rsvpGuestCapSchema } from '@/lib/rsvp/guest-cap';
+import {
+	PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS,
+	RSVP_STRUCTURAL_VARIANTS,
+} from '@/lib/invitation/structural-variants';
 
 export const rsvpSectionStyleSchema = z
 	.object({
 		variant: z.enum(THEME_PRESETS).optional(),
+		structuralVariant: z.enum(RSVP_STRUCTURAL_VARIANTS).optional(),
 		labels: z
 			.object({
 				name: z.string().optional(),
@@ -44,6 +49,7 @@ export const rsvpSchema = z
 			.optional(),
 		personalizedAccess: z
 			.object({
+				structuralVariant: z.enum(PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS).optional(),
 				title: z.string().optional(),
 				subtitle: z.string().optional(),
 				footerText: z.string().optional(),

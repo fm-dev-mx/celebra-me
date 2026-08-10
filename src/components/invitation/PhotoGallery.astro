@@ -3,6 +3,7 @@
 import type { ImageMetadata } from 'astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import { getGalleryPreviewRole } from '@/lib/components/gallery/gallery-presentation';
+import { resolveGalleryLayoutVariant } from '@/lib/invitation/structural-variants';
 
 interface GalleryItem {
 	image: ImageMetadata | ImageAsset;
@@ -20,10 +21,14 @@ interface GalleryItem {
 interface Props {
 	items: GalleryItem[];
 	variant?: string;
+	visualVariant?: string;
+	structuralVariantExplicit?: boolean;
 }
 
-const { items, variant = 'standard' } = Astro.props;
-const isEditorialMagazine = variant === 'editorial-magazine';
+const { items, variant = 'uniform-grid', visualVariant, structuralVariantExplicit = false } = Astro.props;
+const structuralVariant = resolveGalleryLayoutVariant(variant, variant, 'jewelry-box');
+const renderedVisualVariant = visualVariant ?? variant;
+const isEditorialMagazine = structuralVariant === 'magazine-spread';
 
 const resolveImage = (image: ImageMetadata | ImageAsset) => {
 	const src = typeof image.src === 'string' ? image.src : image.src.src;
@@ -32,11 +37,11 @@ const resolveImage = (image: ImageMetadata | ImageAsset) => {
 };
 ---
 
-<div class="gallery-grid" data-gallery data-variant={variant}>
+<div class="gallery-grid" data-gallery data-variant={renderedVisualVariant} {...(structuralVariantExplicit && { 'data-structural-variant': structuralVariant })}>
 	{
 		items.map((item, index) => {
 			const { src, width, height } = resolveImage(item.image);
-			const layoutRole = getGalleryPreviewRole(index, variant, item.layoutRole);
+			const layoutRole = getGalleryPreviewRole(index, structuralVariant, item.layoutRole);
 			const layoutClass = `gallery-grid__item--${layoutRole}`;
 			const aspectStyle = item.aspectRatio ? `aspect-ratio: ${item.aspectRatio};` : '';
 			return (

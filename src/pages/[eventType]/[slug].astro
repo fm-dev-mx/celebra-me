@@ -181,8 +181,28 @@ const activeSectionCssUrls =
 	page && viewModel?.theme?.preset
 		? resolveInvitationCssUrls({
 				themePreset: viewModel.theme.preset,
-				footerVariant: page.footerVariant,
-				galleryVariant: viewModel.sections.gallery?.variant,
+					footerVariant: page.footerVariant,
+					galleryVariant: viewModel.sections.gallery?.structuralVariantExplicit
+						? viewModel.sections.gallery.variant
+						: undefined,
+					structuralVariants: {
+						hero: viewModel.hero.structuralVariantExplicit
+						? viewModel.hero.structuralVariant
+						: undefined,
+						thankYou: viewModel.sections.thankYou?.structuralVariantExplicit
+							? viewModel.sections.thankYou.structuralVariant
+							: undefined,
+						gifts: viewModel.sections.gifts?.structuralVariantExplicit
+							? viewModel.sections.gifts.structuralVariant
+							: undefined,
+						rsvp: viewModel.sections.rsvp?.structuralVariantExplicit
+							? viewModel.sections.rsvp.structuralVariant
+							: undefined,
+						personalizedAccess:
+							viewModel.sections.rsvp?.personalizedAccess?.structuralVariantExplicit
+								? viewModel.sections.rsvp.personalizedAccess.structuralVariant
+								: undefined,
+					},
 				visualProfileId: viewModel.visualProfileId,
 				slug,
 			})

@@ -4,7 +4,7 @@
 
 Celebra-me uses a strict three-level styling architecture.
 
-Gallery section variants (as-is catalog, CSS coupling limits, and deferred layout-role target) are
+Gallery section variants (as-is catalog, compatibility aliases, and the canonical layout-role contract) are
 documented in [`gallery-variants.md`](gallery-variants.md).
 
 ## Token Levels
@@ -208,10 +208,11 @@ source of structure or tokens.
   canonical footer override and visual profile. Canonical section partials are not exposed through a
   general per-section passthrough directory.
 
-Gallery CSS starts with the theme-preset bundle and, when `gallery.variant` differs from the active
-theme, the section CSS resolver emits the matching gallery partial independently. See
-[`gallery-variants.md`](gallery-variants.md) for the current map, profile override boundary, and
-deferred layout-role target.
+Gallery CSS starts with the theme-preset bundle. When an explicit semantic `gallery.variant` differs
+from the active theme, the section CSS resolver emits the matching layout partial independently;
+legacy theme-name fallbacks keep the active theme partial until migration. See
+[`gallery-variants.md`](gallery-variants.md) for the current map, compatibility boundary, and
+profile override evidence.
 
 ## Runtime Contract
 

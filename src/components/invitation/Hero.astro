@@ -4,6 +4,7 @@ import { Image, getImage } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { ThemePreset } from '@/lib/theme/theme-contract';
+import type { HeroStructuralVariant } from '@/lib/invitation/structural-variants';
 import '@/styles/invitation/_hero.scss';
 import EditorialMagazineHero from './EditorialMagazineHero.astro';
 
@@ -20,6 +21,7 @@ interface Props {
 	backgroundImageMobile?: ImageMetadata | ImageAsset;
 	portrait?: ImageMetadata | ImageAsset;
 	variant?: ThemePreset;
+	structuralVariant?: HeroStructuralVariant;
 	scrollLabel?: string;
 	focalPoint?: string;
 	focalPointMobile?: string;
@@ -41,6 +43,7 @@ const {
 	backgroundImageMobile,
 	portrait,
 	variant,
+	structuralVariant = 'standard',
 	scrollLabel,
 	focalPoint,
 	focalPointMobile,
@@ -49,7 +52,7 @@ const {
 	highPriority = true,
 } = Astro.props;
 
-const isEditorialMagazine = variant === 'editorial-magazine';
+const isEditorialMagazine = structuralVariant === 'editorial-cover';
 
 const displayLabel = label && (label.toLowerCase().trim() === 'xv edition' || label.toLowerCase().trim() === 'xv edición')
 	? 'CAPÍTULO XV'
@@ -121,6 +124,7 @@ const fpDesktop = focalPointDesktop || fpDefault;
 		id="inicio"
 		class="invitation-hero"
 		data-variant={variant}
+		data-structural-variant={structuralVariant}
 		data-screenshot="invitation-open-hero"
 		data-screenshot-section="hero"
 	>

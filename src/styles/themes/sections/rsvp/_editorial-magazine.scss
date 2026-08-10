@@ -1,4 +1,5 @@
-.rsvp[data-variant='editorial-magazine'] {
+.rsvp[data-variant='editorial-magazine'],
+.rsvp[data-structural-variant='editorial-press-pass'] {
 	--rsvp-radio-label-color: rgb(var(--editorial-magazine-white-rgb) / 72%);
 	--rsvp-radio-label-color-selected: var(--editorial-magazine-white);
 

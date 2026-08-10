@@ -1,7 +1,5 @@
 export type LayoutClass =
-	| 'gallery-grid__item--feature'
-	| 'gallery-grid__item--wide'
-	| 'gallery-grid__item--standard';
+	'gallery-grid__item--feature' | 'gallery-grid__item--wide' | 'gallery-grid__item--standard';
 
 const FEATURE = 'gallery-grid__item--feature';
 const WIDE = 'gallery-grid__item--wide';
@@ -13,6 +11,30 @@ type Strategy = {
 };
 
 const strategies: Record<string, Strategy | ((index: number) => LayoutClass)> = {
+	'uniform-grid': {
+		featureIndices: [],
+		wideIndices: [],
+	},
+	'editorial-mosaic': {
+		featureIndices: [],
+		wideIndices: [],
+	},
+	'magazine-spread': {
+		featureIndices: [0, 4],
+		wideIndices: [3, 7],
+	},
+	'feature-mosaic': {
+		featureIndices: [0],
+		wideIndices: [1, 2, 7],
+	},
+	'index-choreography': {
+		featureIndices: [0, 5, 6],
+		wideIndices: [2, 3, 7],
+	},
+	'single-keepsake': {
+		featureIndices: [],
+		wideIndices: [],
+	},
 	'luxury-hacienda': {
 		featureIndices: [0],
 		wideIndices: [1, 2, 7],

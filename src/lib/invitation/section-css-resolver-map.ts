@@ -13,6 +13,13 @@ type InvitationCssInput = {
 	themePreset: string;
 	footerVariant?: string;
 	galleryVariant?: string;
+	structuralVariants?: {
+		hero?: string;
+		thankYou?: string;
+		gifts?: string;
+		rsvp?: string;
+		personalizedAccess?: string;
+	};
 	visualProfileId?: string;
 	slug?: string;
 };
@@ -25,6 +32,10 @@ const FOOTER_PRESET_TO_ENTRYPOINT: Record<string, string> = {
 };
 
 const GALLERY_VARIANT_TO_ENTRYPOINT: Record<string, string> = {
+	'editorial-mosaic': 'editorial',
+	'magazine-spread': 'editorial-magazine',
+	'feature-mosaic': 'luxury-hacienda',
+	'index-choreography': 'celestial-blue',
 	editorial: 'editorial',
 	'editorial-rose': 'editorial-rose',
 	'editorial-magazine': 'editorial-magazine',
@@ -36,6 +47,17 @@ const GALLERY_VARIANT_TO_ENTRYPOINT: Record<string, string> = {
 	'luxury-hacienda': 'luxury-hacienda',
 	'jewelry-box': 'jewelry-box',
 	'jewelry-box-wedding': 'jewelry-box',
+};
+
+const STRUCTURAL_VARIANT_TO_ENTRYPOINT: Record<string, Record<string, string>> = {
+	hero: { 'editorial-cover': 'editorial-magazine' },
+	thankYou: {
+		'editorial-back-cover': 'editorial-magazine',
+		'full-bleed-photo': 'sacred-keepsake',
+	},
+	gifts: { 'editorial-catalog': 'editorial-magazine' },
+	rsvp: { 'editorial-press-pass': 'editorial-magazine' },
+	personalizedAccess: { 'editorial-pass': 'editorial-magazine' },
 };
 
 // Only presets with a dedicated footer/*.scss file go here.
@@ -113,6 +135,30 @@ export function resolveSectionCssUrls(
 	});
 }
 
+function resolveStructuralVariantCssUrls(
+	sectionUrlMap: SectionUrlMap,
+	input: InvitationCssInput,
+): string[] {
+	return Object.entries(input.structuralVariants ?? {}).flatMap(([section, variant]) => {
+		if (!variant) return [];
+		const entrypoint = STRUCTURAL_VARIANT_TO_ENTRYPOINT[section]?.[variant];
+		if (!entrypoint || entrypoint === input.themePreset) return [];
+		const sectionName =
+			section === 'personalizedAccess'
+				? 'personalized-access'
+				: section === 'thankYou'
+					? 'thank-you'
+					: section;
+		const url = resolveSectionCssUrl(
+			sectionUrlMap,
+			sectionName,
+			{ [variant]: entrypoint },
+			variant,
+		);
+		return url ? [url] : [];
+	});
+}
+
 export function resolveInvitationCssUrls(
 	sectionBundleUrlMap: SectionBundleUrlMap,
 	sectionUrlMap: SectionUrlMap,
@@ -139,8 +185,11 @@ export function resolveInvitationCssUrls(
 
 	if (input.galleryVariant && input.galleryVariant !== input.themePreset) {
 		const galleryUrl = resolveGalleryVariantCssUrl(sectionUrlMap, input.galleryVariant);
-		if (galleryUrl) urls.push(galleryUrl);
+		const galleryEntrypoint = GALLERY_VARIANT_TO_ENTRYPOINT[input.galleryVariant];
+		if (galleryUrl && galleryEntrypoint !== input.themePreset) urls.push(galleryUrl);
 	}
+
+	urls.push(...resolveStructuralVariantCssUrls(sectionUrlMap, input));
 
 	const profileId = input.visualProfileId || input.slug;
 	if (profileId) {

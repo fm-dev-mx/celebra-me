@@ -20,9 +20,14 @@ describe('getLayoutClass', () => {
 		expect(getLayoutClass(1, 'jewelry-box')).toBe('gallery-grid__item--standard');
 	});
 
+	it('supports behavior-named layout variants independently of theme names', () => {
+		expect(getLayoutClass(0, 'magazine-spread')).toBe('gallery-grid__item--feature');
+		expect(getLayoutClass(3, 'magazine-spread')).toBe('gallery-grid__item--wide');
+		expect(getLayoutClass(0, 'index-choreography')).toBe('gallery-grid__item--feature');
+		expect(getLayoutClass(0, 'uniform-grid')).toBe('gallery-grid__item--standard');
+	});
+
 	it('honors an explicit layoutRole over variant index strategies', () => {
-		expect(getLayoutClass(3, 'premiere-floral', 'feature')).toBe(
-			'gallery-grid__item--feature',
-		);
+		expect(getLayoutClass(3, 'premiere-floral', 'feature')).toBe('gallery-grid__item--feature');
 	});
 });

@@ -25,6 +25,14 @@ import type {
 import type { z } from 'zod';
 import type { EnvelopeRevealVariant } from '@/lib/schemas/content/envelope.schema';
 import type { giftItemSchema } from '@/lib/schemas/content/gifts.schema';
+import type {
+	GalleryLayoutVariant,
+	GiftsStructuralVariant,
+	HeroStructuralVariant,
+	PersonalizedAccessStructuralVariant,
+	RsvpStructuralVariant,
+	ThankYouStructuralVariant,
+} from '@/lib/invitation/structural-variants';
 
 export interface ThemeConfig {
 	preset: ThemePreset;
@@ -44,6 +52,8 @@ export interface HeroViewModel {
 	backgroundImageMobile?: ImageAsset;
 	portrait?: ImageAsset;
 	variant: ThemePreset;
+	structuralVariant?: HeroStructuralVariant;
+	structuralVariantExplicit?: boolean;
 	focalPoint?: string;
 	focalPointMobile?: string;
 	focalPointTablet?: string;
@@ -142,7 +152,7 @@ export interface WhatsAppConfig {
 
 export type GiftItem = z.infer<typeof giftItemSchema>;
 
-export type GalleryVariant = SharedSectionVariant | 'single';
+export type GalleryVariant = GalleryLayoutVariant;
 
 export interface EnvelopeViewModel {
 	enabled: boolean;
@@ -278,6 +288,8 @@ export interface InvitationViewModel {
 				focalPointDesktop?: string;
 			}>;
 			variant: GalleryVariant;
+			visualVariant: ThemePreset | 'single';
+			structuralVariantExplicit: boolean;
 			presentation?: GalleryPresentation;
 		};
 		itinerary?: {
@@ -299,6 +311,8 @@ export interface InvitationViewModel {
 			whatsappConfig?: WhatsAppConfig;
 			responseMessages?: RsvpResponseMessages;
 			variant?: SharedSectionVariant;
+			structuralVariant?: RsvpStructuralVariant;
+			structuralVariantExplicit?: boolean;
 			revealedLocation?: LocationSection;
 			/**
 			 * Controls whether the guest can change their RSVP response after
@@ -317,6 +331,8 @@ export interface InvitationViewModel {
 				confirmButton?: string;
 			};
 			personalizedAccess?: {
+				structuralVariant?: PersonalizedAccessStructuralVariant;
+				structuralVariantExplicit?: boolean;
 				title?: string;
 				subtitle?: string;
 				footerText?: string;
@@ -328,6 +344,8 @@ export interface InvitationViewModel {
 			subtitle?: string;
 			items: GiftItem[];
 			variant?: SharedSectionVariant;
+			structuralVariant?: GiftsStructuralVariant;
+			structuralVariantExplicit?: boolean;
 		};
 		thankYou?: {
 			message: string;
@@ -344,6 +362,8 @@ export interface InvitationViewModel {
 				height: number;
 			};
 			variant?: SharedSectionVariant;
+			structuralVariant?: ThankYouStructuralVariant;
+			structuralVariantExplicit?: boolean;
 		};
 	};
 

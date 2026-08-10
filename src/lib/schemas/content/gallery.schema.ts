@@ -6,13 +6,16 @@ import {
 	GALLERY_PRESENTATIONS,
 	assertSupportedGalleryPresentation,
 } from '@/lib/invitation/presentation-options';
+import { GALLERY_LAYOUT_VARIANTS } from '@/lib/invitation/structural-variants';
 
 export const gallerySchema = z
 	.object({
 		eyebrow: z.string().max(200).default('Galería'),
 		title: z.string().default('Galería'),
 		subtitle: z.string().optional(),
-		variant: z.union([z.enum(THEME_PRESETS), z.literal('single')]).optional(),
+		variant: z
+			.union([z.enum(GALLERY_LAYOUT_VARIANTS), z.enum(THEME_PRESETS), z.literal('single')])
+			.optional(),
 		presentation: z.enum(GALLERY_PRESENTATIONS).optional(),
 		items: z.array(
 			z.object({
@@ -36,7 +39,10 @@ export const gallerySchema = z
 			context.addIssue({
 				code: 'custom',
 				path: ['presentation'],
-				message: error instanceof Error ? error.message : 'Presentación de galería no compatible.',
+				message:
+					error instanceof Error
+						? error.message
+						: 'Presentación de galería no compatible.',
 			});
 		}
 	})

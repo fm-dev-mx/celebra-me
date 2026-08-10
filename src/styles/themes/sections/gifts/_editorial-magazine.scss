@@ -1,6 +1,7 @@
 // Editorial-magazine gifts: editorial gift guide with flat layout
 
-.gifts-section[data-variant='editorial-magazine'] {
+.gifts-section[data-variant='editorial-magazine'],
+.gifts-section[data-structural-variant='editorial-catalog'] {
 	background: var(--gifts-bg);
 
 	.gifts-section__header {

@@ -183,7 +183,27 @@ const activeSectionCssUrls =
 		? resolveInvitationCssUrls({
 					themePreset: pageCtx.viewModel.theme.preset,
 					footerVariant: pageCtx.footerVariant,
-					galleryVariant: pageCtx.viewModel.sections.gallery?.variant,
+					galleryVariant: pageCtx.viewModel.sections.gallery?.structuralVariantExplicit
+						? pageCtx.viewModel.sections.gallery.variant
+						: undefined,
+					structuralVariants: {
+						hero: pageCtx.viewModel.hero.structuralVariantExplicit
+						? pageCtx.viewModel.hero.structuralVariant
+						: undefined,
+						thankYou: pageCtx.viewModel.sections.thankYou?.structuralVariantExplicit
+							? pageCtx.viewModel.sections.thankYou.structuralVariant
+							: undefined,
+						gifts: pageCtx.viewModel.sections.gifts?.structuralVariantExplicit
+							? pageCtx.viewModel.sections.gifts.structuralVariant
+							: undefined,
+						rsvp: pageCtx.viewModel.sections.rsvp?.structuralVariantExplicit
+							? pageCtx.viewModel.sections.rsvp.structuralVariant
+							: undefined,
+						personalizedAccess:
+							pageCtx.viewModel.sections.rsvp?.personalizedAccess?.structuralVariantExplicit
+								? pageCtx.viewModel.sections.rsvp.personalizedAccess.structuralVariant
+								: undefined,
+					},
 					visualProfileId: pageCtx.viewModel.visualProfileId,
 				slug: invitationRecord?.slug ?? undefined,
 			})
