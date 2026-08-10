@@ -43,6 +43,23 @@ describe('resolveSealPresentation', () => {
 		});
 	});
 
+	it('keeps raster structure while applying sealColor before sealVariant', () => {
+		const mockImage = {
+			src: '/assets/combined-seal.webp',
+			width: 200,
+			height: 200,
+			alt: 'Sello',
+		};
+
+		expect(
+			resolveSealPresentation({
+				sealImage: mockImage,
+				sealColor: 'ink',
+				sealVariant: 'premium-rose',
+			}),
+		).toMatchObject({ renderer: 'raster', image: mockImage, skin: 'ink' });
+	});
+
 	it('resolves clean raster seal configuration without monogram fields', () => {
 		const mockImage = {
 			src: '/assets/rose-wax-seal.webp',
