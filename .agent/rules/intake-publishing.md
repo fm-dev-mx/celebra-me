@@ -63,7 +63,7 @@ spellings as equal during the transition. Inventory legacy Published values with
 
 **`showFlourishes` ownership:** canonical field is `location.presentationOptions.showFlourishes`.
 Legacy `sectionStyles.location.showFlourishes` is folded into the canonical field when absent
-(`foldShowFlourishesIntoPresentationOptions`) and stripped on publish. Conflicts are reported by the
+(`foldLocationPresentationOptions`) and stripped on publish. Conflicts are reported by the
 published audit, not silently averaged.
 
 Location navigation visibility follows the same one-way boundary:
