@@ -1,6 +1,6 @@
 # Canonical Variant System
 
-**Last Updated:** 2026-08-09
+**Last Updated:** 2026-08-10
 
 **Related:** [`architecture.md`](architecture.md), [`gallery-variants.md`](gallery-variants.md),
 [`../content/section-contracts.md`](../content/section-contracts.md)
@@ -28,10 +28,12 @@ The inventory uses one record per section so each contract remains readable with
 scrolling.
 
 - **Hero**
-  - **Canonical structural owner:** `hero.structuralVariant`: `standard`, `editorial-cover` →
-    `Hero.astro`
-  - **Presentation / skin:** `portraitEnabled`; `hero.variant`; focal tokens
-  - **Fallback / exception / evidence:** Theme fallback only (`editorial-magazine` → cover). Tests:
+  - **Canonical structural owner:** `hero.structuralVariant`: `standard`, `editorial-cover`,
+    `split-cover` → `Hero.astro` (+ `EditorialMagazineHero.astro` for cover)
+  - **Presentation / skin:** `portraitEnabled`; `hero.variant`; focal tokens; split plane/overlay
+    tokens (`--hero-split-*`)
+  - **Fallback / exception / evidence:** Theme fallback only (`editorial-magazine` → cover).
+    `split-cover` requires explicit selection (no theme fallback). Origins: Romina Ríos. Tests:
     `structural-variants`, `section-css-resolver-map`.
 - **Thank You**
   - **Canonical structural owner:** `sectionStyles.thankYou.structuralVariant`: `standard`,
@@ -70,16 +72,21 @@ scrolling.
   - **Fallback / exception / evidence:** Legacy `sectionStyles.itinerary.variant`; `celestial-blue`
     aliases paper. Tests: itinerary adapter, Abril content.
 - **Location**
-  - **Canonical structural owner:** Shared `EventLocation` / `VenueCard` renderer
+  - **Canonical structural owner:** `location.structuralVariant`: `standard`, `split-map` →
+    `EventLocation.astro` / `VenueCard.astro`
   - **Presentation / skin:** `location.presentation` (`simple`, `with-map`, `with-photo`) and
-    options
-  - **Fallback / exception / evidence:** Legacy section flags fold one-way; canonical options win.
-    Tests: venue contract, event adapter.
+    options; map materiality/button chrome remain skins
+  - **Fallback / exception / evidence:** Invalid/omitted → `standard`. Legacy section flags fold
+    one-way; canonical options win. Origins: Alba Rosa. Tests: `structural-variants`,
+    `section-css-resolver-map`, venue contract.
 - **Family**
-  - **Canonical structural owner:** Shared renderer; no structural variant
-  - **Presentation / skin:** `family.presentation`: `with-photo` / `text-only`; section skin
-  - **Fallback / exception / evidence:** Absent presentation follows media availability. Tests:
-    presentation contract and draft mappers.
+  - **Canonical structural owner:** `family.structuralVariant`: `standard`, `split-groups` →
+    `Family.astro`
+  - **Presentation / skin:** `family.presentation`: `with-photo` / `text-only`; divider/type tokens
+    (`--family-split-*`)
+  - **Fallback / exception / evidence:** Invalid/omitted → `standard`. Absent presentation follows
+    media availability. Origins/pilot: Daniela y Martín; Victoria y Roberto. Tests:
+    `structural-variants`, `section-css-resolver-map`, presentation contract and draft mappers.
 - **Gallery item roles**
   - **Canonical structural owner:** Shared item renderer; `feature`, `wide`, `standard`
   - **Presentation / skin:** Focal/image treatment; `pet-keepsake` presentation
