@@ -26,6 +26,7 @@ import type { InterludeInput } from '@/lib/schemas/content/interludes.schema';
 import type { VenueEntryInput } from '@/lib/schemas/content/location.schema';
 import { resolveColorRole } from '@/lib/theme/color-tokens';
 import { buildOpeningViewModel } from '@/lib/invitation/reveal-card';
+import { isXareniAssetSlug } from '@/lib/assets/asset-keys';
 import { DEFAULT_BRANDING_VISIBILITY } from '@/lib/adapters/branding';
 import { resolveCountdownTarget } from '@/lib/time/event-time';
 import { COUNTDOWN_DEFAULTS } from '@/lib/intake/constants';
@@ -38,7 +39,7 @@ import {
 	resolveLocationShowFlourishes,
 	resolveLocationShowNavigationButtons,
 } from '@/lib/invitation/location-presentation-compatibility';
-import { resolveXareniSealColor, XARENI_ASSET_SLUG } from '@/lib/invitation/xareni-presentation';
+import { resolveXareniSealColor } from '@/lib/invitation/invitation-profile-css';
 import {
 	FAMILY_STRUCTURAL_VARIANTS,
 	GALLERY_LAYOUT_VARIANTS,
@@ -291,10 +292,9 @@ function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 				accent: data.envelope.closedPalette?.accent
 					? resolveColorRole(data.envelope.closedPalette.accent)
 					: undefined,
-				sealAccent:
-					eventSlug === XARENI_ASSET_SLUG
-						? resolveXareniSealColor(data.envelope.sealColor)
-						: undefined,
+				sealAccent: isXareniAssetSlug(eventSlug)
+					? resolveXareniSealColor(data.envelope.sealColor)
+					: undefined,
 			},
 			coverEdition: data.envelope.coverEdition,
 			coverVolume: data.envelope.coverVolume,

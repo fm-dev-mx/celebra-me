@@ -20,4 +20,17 @@ export {
 	resolveLocationShowFlourishes,
 	resolveLocationShowNavigationButtons,
 } from './location-presentation-compatibility';
-export * from './xareni-presentation';
+
+// Legacy Xareni exports remain available from their canonical Envelope,
+// editor-metadata, asset-identity, and profile-token owners.
+export {
+	ENVELOPE_SEAL_COLORS as XARENI_SEAL_COLORS,
+	isEnvelopeSealColor as isXareniSealColor,
+	type EnvelopeSealColor as XareniSealColor,
+} from './reveal-card';
+export { resolveXareniSealColor } from './invitation-profile-css';
+export { XARENI_ASSET_SLUG } from '@/lib/assets/asset-keys';
+export {
+	ENVELOPE_SEAL_COLOR_LABELS as XARENI_SEAL_COLOR_LABELS,
+	supportsXareniPresentationOptions,
+} from '@/lib/intake/labels';

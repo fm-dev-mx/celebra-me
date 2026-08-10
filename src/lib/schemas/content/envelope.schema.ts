@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { AssetSchema, ColorTokenSchema } from '@/lib/schemas/content/shared.schema';
-import { XARENI_SEAL_COLORS } from '@/lib/invitation/presentation-options';
+import { ENVELOPE_SEAL_COLORS } from '@/lib/invitation/reveal-card';
 
 export const envelopeRevealVariantSchema = z.enum(['celestial-blue', 'editorial-cover']);
 export type EnvelopeRevealVariant = z.infer<typeof envelopeRevealVariantSchema>;
@@ -22,7 +22,7 @@ export const envelopeSchema = z
 			])
 			.optional(),
 		sealInitials: z.string().max(4).optional(),
-		sealColor: z.enum(XARENI_SEAL_COLORS).optional(),
+		sealColor: z.enum(ENVELOPE_SEAL_COLORS).optional(),
 		sealVariant: z.enum(['wax-organic', 'wax-medallion', 'premium-rose']).optional(),
 		sealImage: AssetSchema.optional(),
 		cardLabel: z.string().trim().max(60).optional(),

@@ -49,13 +49,16 @@ import {
 	getEditorSectionById,
 	type EditorSectionId,
 } from '@/lib/intake/invitation-section-registry';
-import { EDITOR_SECTION_PRESENTATION, INVITATION_STATUS_LABELS } from '@/lib/intake/labels';
+import {
+	EDITOR_SECTION_PRESENTATION,
+	INVITATION_STATUS_LABELS,
+	supportsXareniPresentationOptions,
+} from '@/lib/intake/labels';
 import {
 	applySectionToBaseline,
 	buildSectionSaveValue,
 	getDirtySectionKey,
 } from '@/lib/intake/services/section-content-mapper';
-import { supportsXareniPresentationOptions } from '@/lib/invitation/xareni-presentation';
 import {
 	getPublicationFeedback,
 	type PublicationFeedback,

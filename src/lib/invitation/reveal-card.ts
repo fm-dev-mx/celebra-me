@@ -1,6 +1,21 @@
 import type { IconName } from '@/lib/icons/icon-catalog';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 
+/** Canonical editable seal palette accepted by the Envelope contract. */
+export const ENVELOPE_SEAL_COLORS = [
+	'roseGold',
+	'champagne',
+	'blush',
+	'mauve',
+	'deepMauve',
+] as const;
+
+export type EnvelopeSealColor = (typeof ENVELOPE_SEAL_COLORS)[number];
+
+export function isEnvelopeSealColor(value: unknown): value is EnvelopeSealColor {
+	return typeof value === 'string' && (ENVELOPE_SEAL_COLORS as readonly string[]).includes(value);
+}
+
 export type EnvelopeSealIcon =
 	| 'boot'
 	| 'heart'

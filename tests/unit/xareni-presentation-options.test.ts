@@ -1,9 +1,13 @@
 import {
+	XARENI_SEAL_COLORS,
+	XARENI_SEAL_COLOR_LABELS,
 	resolveLocationMediaMode,
 	resolveXareniSealColor,
 	shouldRenderFamilyMedia,
 	supportsXareniPresentationOptions,
 } from '@/lib/invitation/presentation-options';
+import { ENVELOPE_SEAL_COLORS, isEnvelopeSealColor } from '@/lib/invitation/reveal-card';
+import { ENVELOPE_SEAL_COLOR_LABELS } from '@/lib/intake/labels';
 import { generateThemeScopedStyles } from '@/lib/invitation/theme-styles.utils';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
@@ -33,6 +37,13 @@ function buildEnvelopeStyles(sealAccent?: string) {
 }
 
 describe('Xareni presentation options', () => {
+	it('keeps legacy exports as aliases of the canonical Envelope/editor owners', () => {
+		expect(XARENI_SEAL_COLORS).toBe(ENVELOPE_SEAL_COLORS);
+		expect(XARENI_SEAL_COLOR_LABELS).toBe(ENVELOPE_SEAL_COLOR_LABELS);
+		expect(isEnvelopeSealColor('roseGold')).toBe(true);
+		expect(isEnvelopeSealColor('var(--anything-from-editor)')).toBe(false);
+	});
+
 	describe('resolveXareniSealColor', () => {
 		it('maps allowed seal colors to trusted Xareni theme tokens', () => {
 			expect(resolveXareniSealColor('roseGold')).toBe('var(--xareni-rose-gold)');

@@ -1,10 +1,9 @@
 import Field from '@/components/dashboard/intake/editor/Field';
-import SectionCard, { type SectionRestoreProps } from '@/components/dashboard/intake/editor/SectionCard';
-import {
-	XARENI_SEAL_COLOR_LABELS,
-	XARENI_SEAL_COLORS,
-	type XareniSealColor,
-} from '@/lib/invitation/xareni-presentation';
+import SectionCard, {
+	type SectionRestoreProps,
+} from '@/components/dashboard/intake/editor/SectionCard';
+import { ENVELOPE_SEAL_COLOR_LABELS } from '@/lib/intake/labels';
+import { ENVELOPE_SEAL_COLORS, type EnvelopeSealColor } from '@/lib/invitation/reveal-card';
 
 interface EnvelopeValue {
 	disabled?: boolean;
@@ -21,7 +20,7 @@ interface EnvelopeValue {
 	guestLabel?: string;
 	guestNameFallback?: string;
 	sealInitials?: string;
-	sealColor?: XareniSealColor;
+	sealColor?: EnvelopeSealColor;
 }
 
 interface Props {
@@ -154,14 +153,14 @@ export default function EnvelopeSectionEditor({
 						onChange={(event) =>
 							onChange({
 								sealColor: (event.target.value || undefined) as
-									XareniSealColor | undefined,
+									EnvelopeSealColor | undefined,
 							})
 						}
 					>
 						<option value="">Color actual</option>
-						{XARENI_SEAL_COLORS.map((color) => (
+						{ENVELOPE_SEAL_COLORS.map((color) => (
 							<option key={color} value={color}>
-								{XARENI_SEAL_COLOR_LABELS[color]}
+								{ENVELOPE_SEAL_COLOR_LABELS[color]}
 							</option>
 						))}
 					</select>

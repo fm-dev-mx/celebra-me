@@ -7,8 +7,8 @@ import {
 import { ICON_NAMES_TUPLE } from '@/lib/icons/icon-catalog';
 import { giftItemSchema } from '@/lib/intake/schemas/intake-block.schema';
 import { THEME_PRESETS, INDICATION_STYLE_VARIANTS } from '@/lib/theme/theme-contract';
+import { ENVELOPE_SEAL_COLORS } from '@/lib/invitation/reveal-card';
 import {
-	XARENI_SEAL_COLORS,
 	COUNTDOWN_UNITS,
 	GALLERY_LAYOUT_ROLES,
 	GALLERY_MOBILE_BROWSE_MODES,
@@ -242,7 +242,7 @@ export const envelopeSchema = z
 			])
 			.optional(),
 		sealInitials: z.string().trim().max(4).optional(),
-		sealColor: z.enum(XARENI_SEAL_COLORS).optional(),
+		sealColor: z.enum(ENVELOPE_SEAL_COLORS).optional(),
 		sealVariant: z.enum(['wax-organic', 'wax-medallion', 'premium-rose']).optional(),
 		sealImage: editableAssetSchema.optional(),
 		microcopy: z.string().max(100).optional(),

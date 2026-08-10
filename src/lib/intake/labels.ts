@@ -10,8 +10,23 @@ import type {
 	IntakeRequestStatus,
 	IntakeBlockType,
 } from '@/lib/intake/types';
+import { isXareniAssetSlug } from '@/lib/assets/asset-keys';
+import type { EnvelopeSealColor } from '@/lib/invitation/reveal-card';
 
 export { EDITOR_SECTION_PRESENTATION };
+
+export const ENVELOPE_SEAL_COLOR_LABELS: Record<EnvelopeSealColor, string> = {
+	roseGold: 'Oro rosado',
+	champagne: 'Champagne',
+	blush: 'Rosa blush',
+	mauve: 'Malva',
+	deepMauve: 'Malva profundo',
+};
+
+/** Editor capability retained for the legacy Xareni envelope option. */
+export function supportsXareniPresentationOptions(context: { assetLookupSlug?: string }): boolean {
+	return isXareniAssetSlug(context.assetLookupSlug);
+}
 
 export const SECTION_LABELS: Record<string, string> = {
 	Hero: 'Datos principales / Hero',
