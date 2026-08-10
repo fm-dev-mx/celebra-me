@@ -1,6 +1,7 @@
 # Gallery Variants — Current Contract and Compatibility Naming
 
-**Last Updated:** 2026-07-26  
+**Last Updated:** 2026-08-09
+
 **Related:** [`architecture.md`](architecture.md),
 [`.agent/plans/active/section-architecture-refactor-plan.md`](../../../.agent/plans/active/section-architecture-refactor-plan.md)
 
@@ -84,8 +85,8 @@ Goal 4 resolution status:
   profile supplies only its label, border, and divider tokens.
 - `abril-michelle-becerra-rea.scss` still owns a profile-specific 2×2 grid and feature aspect ratio.
   Its selector now requires the explicit `uniform-grid` structural marker, but the exact composition
-  is an invitation-specific extension rather than a reusable variant contract and is intentionally
-  retained as an unresolved exception
+  is an unresolved invitation-specific extension rather than a reusable variant contract and is
+  intentionally retained
   (`src/styles/invitation-profiles/abril-michelle-becerra-rea.scss:1085-1131`).
 - `demo-xv-celestial-blue.scss` owns gallery reveal sequencing and timing, not the canonical layout
   identifier (`src/styles/invitation-profiles/demo-xv-celestial-blue.scss:251-301`); this is a
@@ -139,7 +140,7 @@ Gallery uses a small fixed set of layout identifiers independently of theme toke
 source is `gallery.variant`; theme-named values remain accepted only as compatibility aliases while
 published content migrates.
 
-Tentative closed set:
+Canonical closed set:
 
 | Layout role          | Replaces / covers today                                                        |
 | -------------------- | ------------------------------------------------------------------------------ |
@@ -168,13 +169,16 @@ Compatibility mapping is bounded and deterministic:
 - `editorial`, `editorial-rose`, and `premiere-floral` → `editorial-mosaic`
 - `single` → `single-keepsake`
 
-Required follow-through (platform work):
+Remaining bounded work:
 
-1. Screenshot matrix of current gallery variants (per `section-architecture-refactor-plan`).
-2. Schema: layout enum separate from `THEME_PRESETS`; required when gallery section present.
-3. CSS delivery: continue replacing the compatibility partial map with direct layout-role files.
-4. Unify near-duplicate skins before freezing the enum.
-5. Migrate demos and managed invites to explicit layout roles.
+1. Directed visual comparison remains appropriate when a renderer, structural CSS, or profile
+   interaction changes; an exhaustive screenshot matrix is not a release prerequisite.
+2. Compatibility CSS entrypoints may be replaced by direct layout-role files only when parity is
+   proven; `uniform-grid` and `single-keepsake` already use the shared Gallery contract.
+3. Near-duplicate visual skins remain a separate token-level cleanup and are not structural
+   variants.
+4. The managed representative migration is complete; retained aliases and the wedding storyboard
+   remain until their documented consumers reach zero.
 
 Until all published records are migrated, treat the aliases above as a legacy input boundary only;
 new invitation content should use the semantic identifiers.
@@ -190,5 +194,5 @@ value, and keep palette ownership in theme tokens.
 - Installing external design SSOTs (e.g. Impeccable).
 - Adding theme-named gallery files “for symmetry.”
 - Masonry libraries or carousel components.
-- Making `gallery.variant` required across all demos in one pass (managed migration remains
-  pending).
+- Making `gallery.variant` mandatory for every historical published record while compatibility
+  consumers remain.

@@ -28,6 +28,13 @@ architecture, section-based abstraction, and invitation isolation rules.
    contract or isolation rule changes.
 7. **Data-Driven Text Isolation**: Theme-specific labels (RSVP inputs, Hero descriptors) MUST live
    in the event JSON, not hardcoded in Astro or React components.
+8. **Canonical Variant Boundary**: Structural renderer selection belongs to the section-owned
+   `structuralVariant` contract (or canonical `gallery.variant`). Theme identity, invitation slug,
+   and `visualProfileId` may provide compatibility fallback only; they must not be the canonical
+   selector.
+9. **Presentation/Skin Separation**: Presentation options and visual skins may change tokens, media
+   treatment, copy, or motion, but must not replace a canonical renderer or internal grid. The
+   current inventory and known exceptions are recorded in `docs/domains/theme/variant-system.md`.
 
 ---
 
@@ -58,6 +65,8 @@ For every modified invitation section:
 - [ ] Ensure all `sectionStyles` variants are documented.
 - [ ] Sync Zod schemas in `src/content.config.ts` (include `labels` for RSVP and Tier 3 WhatsApp
       fields).
+- [ ] Sync `docs/domains/theme/variant-system.md` whenever a structural variant, presentation
+      option, skin, compatibility alias, or profile exception changes.
 
 > **Source of Truth Path:** `docs/domains/theme/architecture.md` is the canonical theme-system
 > document for the current repository layout.
@@ -72,6 +81,14 @@ If violations are found during Step 1 or 2:
 - [ ] Ensure all variants follow the `[data-variant]` pattern.
 - [ ] Ensure invitation-specific overrides remain inside `.event--<slug>` or
       `src/styles/events/<slug>.scss`.
+- [ ] Before creating a variant, prove that an existing variant or token cannot express the
+      requirement; add schema, CSS delivery, focused valid/invalid/fallback tests, and
+      representative configuration together.
+- [ ] Before removing a compatibility path, search managed invitations, demos, fixtures, tests,
+      schemas, adapters/resolvers, preview/publishing flows, and operational documentation. Keep the
+      path and record the exact blocker when any consumer remains.
+- [ ] Treat a profile structural rule as an explicit exception until reusable evidence justifies
+      extraction; do not create a new variant solely to eliminate one local rule.
 
 ## 🏗️ Step 5: Final Validation & Commit
 
@@ -90,3 +107,6 @@ After alignment:
 2. **Isolation Check**: Toggle between presets in the browser to ensure zero style bleeding.
 3. **Linting**: Ensure no `!important` flags are used unless absolutely necessary for component
    overrides.
+4. **Variant Contract**: Run the focused structural resolver/CSS delivery/profile-boundary suites,
+   then `pnpm run ci`. Use visual comparison only when renderer selection, structural CSS, layout,
+   or profile interaction changed.

@@ -1,11 +1,13 @@
 # Theme And Token Architecture
 
-**Last Updated:** 2026-07-26
+**Last Updated:** 2026-08-09
 
-Celebra-me uses a strict three-level styling architecture.
+Celebra-me uses a strict three-level styling architecture. The post-migration structural,
+presentation, skin, fallback, and profile inventory is maintained in
+[`variant-system.md`](variant-system.md).
 
-Gallery section variants (as-is catalog, compatibility aliases, and the canonical layout-role contract) are
-documented in [`gallery-variants.md`](gallery-variants.md).
+Gallery section variants (as-is catalog, compatibility aliases, and the canonical layout-role
+contract) are documented in [`gallery-variants.md`](gallery-variants.md).
 
 ## Token Levels
 
@@ -204,9 +206,9 @@ source of structure or tokens.
 - `src/styles/invitation-sections-by-preset/*.scss` import canonical `src/styles/themes/sections/**`
   modules directly. Their import order is the emitted cascade order, and a bundle may explicitly
   compose multiple canonical modules when a variant depends on both.
-- `src/lib/invitation/section-css-resolver.ts` emits one active section bundle plus only a requested
-  canonical footer override and visual profile. Canonical section partials are not exposed through a
-  general per-section passthrough directory.
+- `src/lib/invitation/section-css-resolver.ts` emits one active section bundle plus requested
+  canonical Gallery/structural partials, a footer visual override, and the active visual profile.
+  Canonical section partials are not exposed through a general per-section passthrough directory.
 
 Gallery CSS starts with the theme-preset bundle. When an explicit semantic `gallery.variant` differs
 from the active theme, the section CSS resolver emits the matching layout partial independently;

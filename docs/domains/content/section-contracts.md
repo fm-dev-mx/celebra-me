@@ -4,6 +4,10 @@ This document specifies the purpose, required/optional inputs, data models, rend
 asset contracts, accessibility, and validation rules for all supported sections in Celebra-me
 digital invitations.
 
+The complete post-migration ownership matrix for structural variants, presentation options, skins,
+compatibility aliases, and profile exceptions is maintained in
+[`docs/domains/theme/variant-system.md`](../theme/variant-system.md).
+
 ---
 
 ## 1. Hero (`hero`)
@@ -18,11 +22,11 @@ digital invitations.
   image asset.
 
 Structural renderer selections are section-owned and bounded. `hero.structuralVariant` accepts
-`standard` or `editorial-cover`; `sectionStyles.thankYou.structuralVariant` accepts
-`standard`, `editorial-back-cover`, or `full-bleed-photo`; Gifts and RSVP use
-`editorial-catalog` and `editorial-press-pass` respectively. `rsvp.personalizedAccess` uses
-`standard`, `ornamented`, or `editorial-pass`. These fields select markup/layout only; the theme
-`variant` remains the visual skin and is retained for compatibility.
+`standard` or `editorial-cover`; `sectionStyles.thankYou.structuralVariant` accepts `standard`,
+`editorial-back-cover`, or `full-bleed-photo`; Gifts and RSVP use `editorial-catalog` and
+`editorial-press-pass` respectively. `rsvp.personalizedAccess` uses `standard`, `ornamented`, or
+`editorial-pass`. These fields select markup/layout only; the theme `variant` remains the visual
+skin and is retained for compatibility.
 
 Countdown and Footer have no structural selector in the current contract: their theme branches are
 presentation skins only. They continue to consume the visual `variant` and must not be promoted to
@@ -119,7 +123,12 @@ structural variants without new executable evidence.
 
 - **Purpose**: Interactive photo gallery grid / carousel of celebrant photos.
 - **Required Inputs**: `items` array of photo asset references with `image` and `alt`.
-- **Optional Inputs**: `title`, `subtitle`, `variant`, `presentation`, `aspectRatio`.
+- **Optional Inputs**: `title`, `subtitle`, `variant`, `presentation`, item `layoutRole`, and
+  responsive focal-point fields. Canonical layout values are `uniform-grid`, `editorial-mosaic`,
+  `magazine-spread`, `feature-mosaic`, `index-choreography`, and `single-keepsake`.
+- **Precedence**: explicit `gallery.variant` wins; otherwise the adapter accepts the legacy
+  `sectionStyles.gallery.variant` / theme fallback for unchanged content. Theme-named values and
+  `single` are compatibility aliases only.
 - **Rendering & Omission**: Rendered if `items` contains 1 or more resolved photo assets; omitted if
   empty or missing.
 
