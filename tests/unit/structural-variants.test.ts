@@ -1,5 +1,6 @@
 import {
 	resolveGalleryLayoutVariant,
+	resolveGalleryVisualVariant,
 	resolveGiftsStructuralVariant,
 	resolveHeroStructuralVariant,
 	resolvePersonalizedAccessStructuralVariant,
@@ -55,5 +56,11 @@ describe('section structural variant contracts', () => {
 		expect(
 			resolveGalleryLayoutVariant('uniform-grid', 'editorial-magazine', 'jewelry-box'),
 		).toBe('uniform-grid');
+	});
+
+	it('keeps the single-keepsake visual skin compatible with the single alias', () => {
+		expect(resolveGalleryVisualVariant('single-keepsake', 'jewelry-box-wedding')).toBe(
+			'single',
+		);
 	});
 });

@@ -503,10 +503,12 @@ function buildGallerySectionData(context: AdaptationContext) {
 		normalizedPreset,
 	);
 	const legacyVisualVariant =
-		typeof rawGalleryVariant === 'string' &&
-		!(GALLERY_LAYOUT_VARIANTS as readonly string[]).includes(rawGalleryVariant)
-			? rawGalleryVariant
-			: data.sectionStyles?.gallery?.variant;
+		rawGalleryVariant === 'single-keepsake'
+			? 'single-keepsake'
+			: typeof rawGalleryVariant === 'string' &&
+				  !(GALLERY_LAYOUT_VARIANTS as readonly string[]).includes(rawGalleryVariant)
+				? rawGalleryVariant
+				: data.sectionStyles?.gallery?.variant;
 	return {
 		...data.gallery,
 		items,

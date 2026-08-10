@@ -171,6 +171,95 @@
 	}
 }
 
+// Canonical single-keepsake structure. Invitation profiles may supply the
+// visual tokens below, but the section-owned composition stays independent of
+// a profile or theme identity.
+.gallery-section[data-structural-variant='single-keepsake'] {
+	--gallery-item-aspect-ratio: 2 / 3;
+	--gallery-item-aspect-ratio-feature: 2 / 3;
+	--gallery-item-radius: 0;
+	--gallery-item-padding: 0;
+	--gallery-item-bg: transparent;
+	--gallery-item-border: 0;
+	--gallery-item-shadow: none;
+	--gallery-item-emphasis-shadow: none;
+	--gallery-item-hover-shadow: none;
+	--gallery-item-image-radius: 0;
+	--gallery-section-padding-block: clamp(3.5rem, 7vw, 5rem);
+	--gallery-container-max-width: min(62rem, calc(100vw - 2rem));
+
+	.gallery-section__container {
+		display: grid;
+		grid-template-columns: max-content minmax(0, 30rem);
+		align-items: start;
+		justify-content: center;
+		gap: clamp(1.25rem, 3vw, 2.25rem);
+	}
+
+	.gallery-grid {
+		display: grid;
+		grid-template-columns: minmax(0, 30rem);
+		justify-content: center;
+		gap: 0;
+		margin-inline: 0;
+	}
+
+	.gallery-grid__item,
+	.gallery-grid__item--feature {
+		width: 100%;
+		max-width: 30rem;
+		margin-inline: auto;
+	}
+
+	.gallery-section__header {
+		margin: 0;
+		writing-mode: vertical-rl;
+		transform: rotate(180deg);
+	}
+
+	.gallery-section__eyebrow {
+		font-family: var(--gallery-single-label-font, var(--font-label, var(--font-body)));
+		font-size: 0.65rem;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+	}
+
+	.gallery-grid__item img {
+		border: var(--gallery-single-image-border, var(--gallery-item-border));
+	}
+
+	@include m.respond-below(md) {
+		.gallery-section__container {
+			display: block;
+		}
+
+		.gallery-section__header {
+			display: flex;
+			align-items: center;
+			gap: 0.75rem;
+			margin-bottom: 1.25rem;
+			writing-mode: horizontal-tb;
+			transform: none;
+		}
+
+		.gallery-grid {
+			grid-template-columns: minmax(0, 1fr);
+			padding-inline: 0.35rem;
+		}
+
+		.gallery-section__header::before,
+		.gallery-section__header::after {
+			content: '';
+			flex: 1;
+			height: 1px;
+			background: var(
+				--gallery-single-divider-color,
+				rgb(var(--color-action-accent-rgb) / 20%)
+			);
+		}
+	}
+}
+
 .gallery-grid {
 	display: grid;
 	grid-template-columns: repeat(var(--gallery-grid-columns-mobile), minmax(0, 1fr));

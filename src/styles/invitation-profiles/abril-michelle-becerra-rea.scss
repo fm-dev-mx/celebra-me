@@ -1083,7 +1083,7 @@ html:has(.event--abril-michelle-becerra-rea) body {
 	}
 
 	// Editorial gallery: portrait pair → full-width confetti feature → portrait pair.
-	.gallery-section[data-variant='premiere-floral'] .gallery-grid {
+	.gallery-section[data-structural-variant='uniform-grid'] .gallery-grid {
 		display: grid;
 		grid-template-columns: 1fr;
 		gap: clamp(1rem, 2.5vw, 1.5rem);
@@ -1100,7 +1100,7 @@ html:has(.event--abril-michelle-becerra-rea) body {
 		}
 	}
 
-	.gallery-section[data-variant='premiere-floral'] .gallery-grid__item {
+	.gallery-section[data-structural-variant='uniform-grid'] .gallery-grid__item {
 		aspect-ratio: 4 / 5;
 		border-radius: 12px;
 		border: 1px solid rgb(var(--abril-antique-gold-rgb) / 28%);
@@ -1108,7 +1108,7 @@ html:has(.event--abril-michelle-becerra-rea) body {
 		overflow: hidden;
 	}
 
-	.gallery-section[data-variant='premiere-floral'] .gallery-grid__item img {
+	.gallery-section[data-structural-variant='uniform-grid'] .gallery-grid__item img {
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
@@ -1122,16 +1122,16 @@ html:has(.event--abril-michelle-becerra-rea) body {
 			filter var(--motion-interaction-duration, 0.2s) ease;
 	}
 
-	.gallery-section[data-variant='premiere-floral']
+	.gallery-section[data-structural-variant='uniform-grid']
 		.gallery-grid__item[data-layout-role='feature'],
-	.gallery-section[data-variant='premiere-floral']
+	.gallery-section[data-structural-variant='uniform-grid']
 		.gallery-grid__item[data-image-key='thank-you-confetti'] {
 		grid-column: 1 / -1;
 		aspect-ratio: 8 / 5;
 	}
 
 	@include mixins.respond-to(md) {
-		.gallery-section[data-variant='premiere-floral'] .gallery-grid__item img {
+		.gallery-section[data-structural-variant='uniform-grid'] .gallery-grid__item img {
 			object-position: var(
 				--gallery-item-focal-point-desktop,
 				var(--gallery-item-focal-point, 50% 40%)
@@ -1139,7 +1139,7 @@ html:has(.event--abril-michelle-becerra-rea) body {
 		}
 	}
 
-	.gallery-section[data-variant='premiere-floral'] .gallery-grid__item:hover img {
+	.gallery-section[data-structural-variant='uniform-grid'] .gallery-grid__item:hover img {
 		transform: scale(1.03);
 		filter: saturate(1.08) contrast(1.05) brightness(1.02) grayscale(0);
 	}

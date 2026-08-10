@@ -127,7 +127,7 @@ export function resolveGalleryVisualVariant(
 	legacyVariant: string | undefined,
 	themePreset: ThemePreset,
 ): ThemePreset | 'single' {
-	if (legacyVariant === 'single') return 'single';
+	if (legacyVariant === 'single' || legacyVariant === 'single-keepsake') return 'single';
 	if (legacyVariant && (THEME_PRESETS as readonly string[]).includes(legacyVariant)) {
 		return legacyVariant as ThemePreset;
 	}

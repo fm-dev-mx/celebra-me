@@ -28,6 +28,9 @@
 	--victoria-font-label: var(--font-label, var(--font-body, sans-serif));
 	--victoria-surface-radius: 2px;
 	--victoria-fine-border: 1px solid rgb(var(--victoria-terracota-rgb) / 22%);
+	--gallery-single-label-font: var(--victoria-font-label);
+	--gallery-single-image-border: var(--victoria-fine-border);
+	--gallery-single-divider-color: rgb(var(--victoria-terracota-rgb) / 20%);
 	--victoria-soft-shadow: 0 14px 28px rgb(var(--victoria-ink-rgb) / 8%);
 
 	// Core surfaces / text — reset champagne jewelry-box defaults toward terracota
@@ -694,63 +697,6 @@
 		}
 	}
 
-	// Gallery — single editorial feature (not multi-column fill)
-	.gallery-section[data-variant='single'],
-	.gallery-section:has(.gallery-grid__item:only-child) {
-		--gallery-item-aspect-ratio: 2 / 3;
-		--gallery-item-aspect-ratio-feature: 2 / 3;
-		--gallery-item-radius: 0;
-		--gallery-item-padding: 0;
-		--gallery-item-bg: transparent;
-		--gallery-item-border: 0;
-		--gallery-item-shadow: none;
-		--gallery-item-emphasis-shadow: none;
-		--gallery-item-hover-shadow: none;
-		--gallery-item-image-radius: 0;
-		--gallery-section-padding-block: clamp(3.5rem, 7vw, 5rem);
-		--gallery-container-max-width: min(62rem, calc(100vw - 2rem));
-
-		.gallery-section__container {
-			display: grid;
-			grid-template-columns: max-content minmax(0, 30rem);
-			align-items: start;
-			justify-content: center;
-			gap: clamp(1.25rem, 3vw, 2.25rem);
-		}
-
-		.gallery-grid {
-			display: grid;
-			grid-template-columns: minmax(0, 30rem);
-			justify-content: center;
-			gap: 0;
-			margin-inline: 0;
-		}
-
-		.gallery-grid__item,
-		.gallery-grid__item--feature {
-			width: 100%;
-			max-width: 30rem;
-			margin-inline: auto;
-		}
-
-		.gallery-section__header {
-			margin: 0;
-			writing-mode: vertical-rl;
-			transform: rotate(180deg);
-		}
-
-		.gallery-section__eyebrow {
-			font-family: var(--victoria-font-label);
-			font-size: 0.65rem;
-			letter-spacing: 0.22em;
-			text-transform: uppercase;
-		}
-
-		.gallery-grid__item img {
-			border: var(--victoria-fine-border);
-		}
-	}
-
 	.family {
 		padding-block: clamp(3.75rem, 7vw, 5.5rem);
 
@@ -1190,27 +1136,6 @@
 			--reveal-card-rest-y: clamp(-20px, -3svh, -10px);
 		}
 
-		.gallery-section[data-variant='single'],
-		.gallery-section:has(.gallery-grid__item:only-child) {
-			.gallery-section__container {
-				display: block;
-			}
-
-			.gallery-section__header {
-				display: flex;
-				align-items: center;
-				gap: 0.75rem;
-				margin-bottom: 1.25rem;
-				writing-mode: horizontal-tb;
-				transform: none;
-			}
-
-			.gallery-grid {
-				grid-template-columns: minmax(0, 1fr);
-				padding-inline: 0.35rem;
-			}
-		}
-
 		.family {
 			&__content {
 				grid-template-columns: 1fr;
@@ -1231,16 +1156,6 @@
 			&__group--godparents {
 				grid-column: 1;
 			}
-		}
-
-		.gallery-section[data-variant='single'] .gallery-section__header::before,
-		.gallery-section[data-variant='single'] .gallery-section__header::after,
-		.gallery-section:has(.gallery-grid__item:only-child) .gallery-section__header::before,
-		.gallery-section:has(.gallery-grid__item:only-child) .gallery-section__header::after {
-			content: '';
-			flex: 1;
-			height: 1px;
-			background: rgb(var(--victoria-terracota-rgb) / 20%);
 		}
 
 		.family__group--group-0 .family__name {

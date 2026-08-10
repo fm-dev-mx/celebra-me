@@ -59,50 +59,58 @@ Do not use theme-named values for new content; they are compatibility input only
 ### Layout placement (`getLayoutClass`)
 
 [`src/lib/components/gallery/getLayoutClass.ts`](../../../src/lib/components/gallery/getLayoutClass.ts)
-assigns `feature` / `wide` / `standard` by index for semantic layouts and legacy aliases (`luxury-hacienda`,
-`celestial-blue`, `enchanted-rose`, `editorial-magazine`, `jewelry-box`, `single`). Other theme
-names always get `standard`; their mosaic comes from CSS `nth-child` / `data-gallery-index` rules
-instead.
+assigns `feature` / `wide` / `standard` by index for semantic layouts and legacy aliases
+(`luxury-hacienda`, `celestial-blue`, `enchanted-rose`, `editorial-magazine`, `jewelry-box`,
+`single`). Other theme names always get `standard`; their mosaic comes from CSS `nth-child` /
+`data-gallery-index` rules instead.
 
 ### Profile overrides (Lane A)
 
-Client profiles under `src/styles/invitation-profiles/` may replace the theme gallery grid. Example:
-Abril Michelle forces a uniform 2×2 (`4 / 5`) while keeping `data-variant='premiere-floral'`. In
-that case, swapping the content variant string without updating profile selectors will not produce
-the intended layout.
+Client profiles under `src/styles/invitation-profiles/` may extend a canonical gallery layout when
+the invitation needs a composition the shared variant does not yet represent. Example: Abril
+Michelle forces a profile-specific uniform 2×2 (`4 / 5`) while selecting the explicit
+`data-structural-variant='uniform-grid'` marker. The profile remains an unresolved invitation
+exception; changing the semantic value alone does not reproduce its feature crop.
 
-Goal 4 bounded coupling inventory:
+Goal 4 resolution status:
 
-- `abril-michelle-becerra-rea.scss` owns a profile-specific `premiere-floral` grid and feature
-  aspect ratio (`src/styles/invitation-profiles/abril-michelle-becerra-rea.scss:1085-1131`).
-- `victoria-y-roberto.scss` owns a single-image gallery composition and its profile geometry
-  (`src/styles/invitation-profiles/victoria-y-roberto.scss:697-734`).
+- The representative demos and managed definitions now author semantic `gallery.variant` values
+  (`magazine-spread`, `index-choreography`, `feature-mosaic`, `editorial-mosaic`, `uniform-grid`, or
+  `single-keepsake`) instead of relying on theme fallback. The wedding demo keeps the explicit
+  legacy `jewelry-box-wedding` alias because its nth-child storyboard has no proven canonical
+  replacement.
+- `victoria-y-roberto.scss` no longer owns the single-image composition. The existing
+  `single-keepsake` contract in `src/styles/invitation/_gallery.scss` owns that structure; the
+  profile supplies only its label, border, and divider tokens.
+- `abril-michelle-becerra-rea.scss` still owns a profile-specific 2×2 grid and feature aspect ratio.
+  Its selector now requires the explicit `uniform-grid` structural marker, but the exact composition
+  is an invitation-specific extension rather than a reusable variant contract and is intentionally
+  retained as an unresolved exception
+  (`src/styles/invitation-profiles/abril-michelle-becerra-rea.scss:1085-1131`).
 - `demo-xv-celestial-blue.scss` owns gallery reveal sequencing and timing, not the canonical layout
-  identifier (`src/styles/invitation-profiles/demo-xv-celestial-blue.scss:251-301`).
+  identifier (`src/styles/invitation-profiles/demo-xv-celestial-blue.scss:251-301`); this is a
+  permitted motion/profile customization.
 - `jewelry-box-wedding` keeps its legacy nth-child gallery structure in
-  `src/styles/themes/sections/gallery/_jewelry-box.scss`; it is intentionally not silently mapped
-  to the reusable `feature-mosaic` CSS during migration.
-
-These remain invitation/theme-specific evidence for Goal 4; this goal does not normalize or remove
-them.
+  `src/styles/themes/sections/gallery/_jewelry-box.scss`; it remains a compatibility path because no
+  representative content or fixture proves that `feature-mosaic` reproduces its storyboard.
 
 ---
 
 ## 2. Catalog — layout engines vs skins
 
-| Name (content `variant`)        | Kind                | Notes                                                                 |
-| ------------------------------- | ------------------- | --------------------------------------------------------------------- |
-| `editorial` / `premiere-floral` | Layout (mosaic)     | Shared SCSS in `_editorial.scss`; premiere-floral is an alias         |
-| `editorial-magazine`            | Layout              | Fig. labels; flex → 12-col; uses feature/wide classes                 |
-| `celestial-blue`                | Layout              | Index choreography via `data-gallery-index`                           |
-| `enchanted-rose`                | Layout              | Feature/wide + image-key crops                                        |
-| `luxury-hacienda`               | Layout              | Feature/wide 12-col                                                   |
-| `jewelry-box-wedding`           | Layout (partial)    | nth-child hero / md columns in `_jewelry-box.scss`                    |
-| `jewelry-box`                   | Mostly skin         | Thin chrome over base; weak use of JS layout classes                  |
-| `editorial-rose`                | Thin layout + skin  | Uniform spans; token shell overlaps celestial early tokens            |
-| `sacred-keepsake`               | Skin                | Atmosphere / captions; little distinct grid                           |
-| `angelic-presence`              | Skin + light layout | Sacred palette + nth-child focal tweaks — unify candidate with sacred |
-| `single` (+ `pet-keepsake`)     | Layout role         | True non-theme keepake; one image                                     |
+| Name (content `variant`)              | Kind                | Notes                                                                 |
+| ------------------------------------- | ------------------- | --------------------------------------------------------------------- |
+| `editorial` / `premiere-floral`       | Layout (mosaic)     | Shared SCSS in `_editorial.scss`; premiere-floral is an alias         |
+| `editorial-magazine`                  | Layout              | Fig. labels; flex → 12-col; uses feature/wide classes                 |
+| `celestial-blue`                      | Layout              | Index choreography via `data-gallery-index`                           |
+| `enchanted-rose`                      | Layout              | Feature/wide + image-key crops                                        |
+| `luxury-hacienda`                     | Layout              | Feature/wide 12-col                                                   |
+| `jewelry-box-wedding`                 | Layout (partial)    | nth-child hero / md columns in `_jewelry-box.scss`                    |
+| `jewelry-box`                         | Mostly skin         | Thin chrome over base; weak use of JS layout classes                  |
+| `editorial-rose`                      | Thin layout + skin  | Uniform spans; token shell overlaps celestial early tokens            |
+| `sacred-keepsake`                     | Skin                | Atmosphere / captions; little distinct grid                           |
+| `angelic-presence`                    | Skin + light layout | Sacred palette + nth-child focal tweaks — unify candidate with sacred |
+| `single-keepsake` (+ legacy `single`) | Layout role         | True non-theme keepake; one image                                     |
 
 **Unify candidates (deferred):** `sacred-keepsake` ≈ `angelic-presence` (tokens, not separate layout
 enums); keep distinct engines above.
@@ -111,17 +119,17 @@ enums); keep distinct engines above.
 
 ## 3. How to change a gallery today (honest recipe)
 
-| Level                   | What to change                                      | When it works                                                                                                  |
-| ----------------------- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Level                   | What to change                                               | When it works                                                                                                     |
+| ----------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
 | **A — Content variant** | Set semantic `gallery.variant` (and optional `presentation`) | The adapter emits `data-structural-variant`; the resolver loads a matching partial when it differs from the theme |
-| **B — Content items**   | Reorder `items[]`, focals, alts, captions           | Always valid; array order is display order                                                                     |
-| **C — Client profile**  | Lane A SCSS under `invitation-profiles/`            | When the invite needs a grid the theme mosaic does not provide (e.g. Abril 2×2)                                |
+| **B — Content items**   | Reorder `items[]`, focals, alts, captions                    | Always valid; array order is display order                                                                        |
+| **C — Client profile**  | Lane A SCSS under `invitation-profiles/`                     | When the invite needs a grid the theme mosaic does not provide (e.g. Abril 2×2)                                   |
 
-**Practice rule:** every real invitation that includes a gallery should set
-`gallery.variant` **explicitly** so the choice is visible in provision/content, even if it matches
-`theme.preset`. Do not rely on silent inheritance for managed invites. Until that migration is
-complete, `jewelry-box-wedding` retains its legacy nth-child storyboard through the active theme
-partial; it is not redefined as `feature-mosaic`.
+**Practice rule:** every real invitation that includes a gallery should set `gallery.variant`
+**explicitly** so the choice is visible in provision/content, even if it matches `theme.preset`. Do
+not rely on silent inheritance for managed invites. Until that migration is complete,
+`jewelry-box-wedding` retains its legacy nth-child storyboard through the active theme partial; it
+is not redefined as `feature-mosaic`.
 
 ---
 
@@ -133,14 +141,14 @@ published content migrates.
 
 Tentative closed set:
 
-| Layout role          | Replaces / covers today                                       |
-| -------------------- | ------------------------------------------------------------- |
-| `uniform-grid`       | Regular 2×N grids (e.g. Abril profile 2×2)                    |
-| `editorial-mosaic`   | `editorial` + `premiere-floral`                               |
-| `magazine-spread`    | `editorial-magazine`                                          |
+| Layout role          | Replaces / covers today                                                        |
+| -------------------- | ------------------------------------------------------------------------------ |
+| `uniform-grid`       | Regular 2×N grids (e.g. Abril profile 2×2)                                     |
+| `editorial-mosaic`   | `editorial` + `premiere-floral`                                                |
+| `magazine-spread`    | `editorial-magazine`                                                           |
 | `feature-mosaic`     | `luxury-hacienda`, `enchanted-rose`, and legacy `jewelry-box` feature patterns |
-| `index-choreography` | `celestial-blue`                                              |
-| `single-keepsake`    | `single` + `pet-keepsake`                                     |
+| `index-choreography` | `celestial-blue`                                                               |
+| `single-keepsake`    | `single` + `pet-keepsake`                                                      |
 
 Skins (`sacred-keepsake` / `angelic-presence` / jewelry chrome) move to **theme tokens**, not the
 layout enum.
@@ -182,4 +190,5 @@ value, and keep palette ownership in theme tokens.
 - Installing external design SSOTs (e.g. Impeccable).
 - Adding theme-named gallery files “for symmetry.”
 - Masonry libraries or carousel components.
-- Making `gallery.variant` required across all demos in one pass (managed migration remains pending).
+- Making `gallery.variant` required across all demos in one pass (managed migration remains
+  pending).

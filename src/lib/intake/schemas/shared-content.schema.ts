@@ -14,6 +14,7 @@ import {
 	ITINERARY_PRESENTATION_BEHAVIORS,
 	assertSupportedGalleryPresentation,
 } from '@/lib/invitation/presentation-options';
+import { GALLERY_LAYOUT_VARIANTS } from '@/lib/invitation/structural-variants';
 
 export const optionalText = (max = 2000) => z.string().trim().max(max).optional();
 export const optionalUrl = z
@@ -73,7 +74,9 @@ export const gallerySchema = z
 		eyebrow: optionalText(200),
 		title: optionalText(200),
 		subtitle: optionalText(500),
-		variant: z.union([z.enum(THEME_PRESETS), z.literal('single')]).optional(),
+		variant: z
+			.union([z.enum(GALLERY_LAYOUT_VARIANTS), z.enum(THEME_PRESETS), z.literal('single')])
+			.optional(),
 		presentation: z.enum(GALLERY_PRESENTATIONS).optional(),
 		items: z.array(
 			z
@@ -100,7 +103,10 @@ export const gallerySchema = z
 			context.addIssue({
 				code: 'custom',
 				path: ['presentation'],
-				message: error instanceof Error ? error.message : 'Presentación de galería no compatible.',
+				message:
+					error instanceof Error
+						? error.message
+						: 'Presentación de galería no compatible.',
 			});
 		}
 	});
