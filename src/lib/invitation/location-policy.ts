@@ -2,12 +2,16 @@ import type { InvitationViewModel } from '@/lib/adapters/types';
 
 export const LOCATION_VISIBILITY_AFTER_RSVP = 'after-rsvp';
 
-const LUNA_ESTRELLA_ROUTE_SLUG = 'luna-y-estrella';
-
 type LocationSection = NonNullable<InvitationViewModel['sections']['location']>;
 
-export function isLunaEstrellaRoute(slug: string, eventType: string): boolean {
-	return slug === LUNA_ESTRELLA_ROUTE_SLUG && eventType === 'primera-comunion';
+/** True when after-rsvp location must stay off the public plan and surface via RSVP. */
+export function isRsvpRevealLocation(
+	location: InvitationViewModel['sections']['location'] | undefined,
+): boolean {
+	return (
+		location?.visibility === LOCATION_VISIBILITY_AFTER_RSVP &&
+		location.presentationOptions?.revealSurface === 'rsvp'
+	);
 }
 
 export function isLocationLocked(
@@ -38,14 +42,11 @@ export function shouldRedactEnvelopeTeaser(input: {
 	originalLocation: InvitationViewModel['sections']['location'] | undefined;
 	postPolicyLocation: InvitationViewModel['sections']['location'] | undefined;
 	isConfirmed: boolean;
-	slug: string;
-	eventType: string;
 }): boolean {
-	return (
-		isLocationLocked(input.postPolicyLocation, input.isConfirmed) ||
-		(isLunaEstrellaRoute(input.slug, input.eventType) &&
-			input.originalLocation?.visibility === LOCATION_VISIBILITY_AFTER_RSVP)
-	);
+	if (isRsvpRevealLocation(input.originalLocation)) {
+		return input.originalLocation?.visibility === LOCATION_VISIBILITY_AFTER_RSVP;
+	}
+	return isLocationLocked(input.postPolicyLocation, input.isConfirmed);
 }
 
 function removeLocationNavigation(
@@ -62,7 +63,7 @@ function removeLocationFromSectionOrder(
 	return sectionOrder?.filter((section) => section !== 'location');
 }
 
-function applyLunaEstrellaRsvpOnlyLocation(
+function applyRsvpRevealLocation(
 	viewModel: InvitationViewModel,
 	isConfirmedGuest: boolean,
 ): InvitationViewModel {
@@ -124,13 +125,11 @@ function redactProtectedLocation(location: LocationSection): LocationSection {
 export function applyLocationPolicy(input: {
 	viewModel: InvitationViewModel;
 	isConfirmedGuest: boolean;
-	routeSlug: string;
-	eventType: string;
 }): InvitationViewModel {
-	const { viewModel, isConfirmedGuest: confirmed, routeSlug, eventType } = input;
+	const { viewModel, isConfirmedGuest: confirmed } = input;
 
-	if (isLunaEstrellaRoute(routeSlug, eventType)) {
-		return applyLunaEstrellaRsvpOnlyLocation(viewModel, confirmed);
+	if (isRsvpRevealLocation(viewModel.sections.location)) {
+		return applyRsvpRevealLocation(viewModel, confirmed);
 	}
 
 	const location = viewModel.sections.location;

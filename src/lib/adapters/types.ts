@@ -218,6 +218,11 @@ export interface LocationSection {
 	presentation?: LocationPresentation;
 	structuralVariant?: LocationStructuralVariant;
 	structuralVariantExplicit?: boolean;
+	presentationOptions?: {
+		showFlourishes?: boolean;
+		showNavigationButtons?: boolean;
+		revealSurface?: 'section' | 'rsvp';
+	};
 	isLocked?: boolean;
 	lockedTitle?: string;
 	lockedMessage?: string;

@@ -3,6 +3,10 @@ export const LOCATION_PRESENTATIONS = ['simple', 'with-map', 'with-photo'] as co
 export type LocationPresentation = (typeof LOCATION_PRESENTATIONS)[number];
 export type LocationMediaMode = 'none' | 'map' | 'image';
 
+const LOCATION_REVEAL_SURFACES = ['section', 'rsvp'] as const;
+
+export type LocationRevealSurface = (typeof LOCATION_REVEAL_SURFACES)[number];
+
 export interface LocationPresentationOptions {
 	showFlourishes?: boolean;
 	/**
@@ -11,6 +15,12 @@ export interface LocationPresentationOptions {
 	 * surface instead of the Apple/Google/Waze navigation button row.
 	 */
 	showNavigationButtons?: boolean;
+	/**
+	 * Where after-rsvp location details surface:
+	 * - `section` (default): keep Location in the public plan as a locked section
+	 * - `rsvp`: omit Location from the public plan and reveal via RSVP when confirmed
+	 */
+	revealSurface?: LocationRevealSurface;
 }
 
 export function resolveLocationMediaMode(

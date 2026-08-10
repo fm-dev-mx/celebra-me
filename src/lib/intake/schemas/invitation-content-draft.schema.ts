@@ -98,6 +98,7 @@ export const InvitationContentDraftContentSchema = z
 					.object({
 						showFlourishes: z.boolean().optional(),
 						showNavigationButtons: z.boolean().optional(),
+						revealSurface: z.enum(['section', 'rsvp']).optional(),
 					})
 					.strict()
 					.optional(),

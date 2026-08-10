@@ -247,6 +247,9 @@ export function buildVictoriaPublishedContent(
 		itinerary: {
 			title: 'Orden del día',
 			subtitle: 'Una secuencia sencilla para orientar la tarde y la noche.',
+			presentation: {
+				behavior: 'standard',
+			},
 			items: [
 				{
 					iconName: 'Church',
@@ -372,7 +375,7 @@ export function buildVictoriaPublishedContent(
 				startsAt: VICTORIA_EVENT.startsAtUtc,
 			},
 			personalizedAccess: {
-				structuralVariant: 'ornamented',
+				structuralVariant: 'standard',
 				title: 'Su invitación personal',
 				noteText:
 					'Esta invitación es válida para {count} {personWord}. Por organización del evento, no será posible admitir personas adicionales.',

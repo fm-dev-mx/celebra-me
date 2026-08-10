@@ -21,24 +21,51 @@ const CANONICAL_NAV_ITEMS: readonly NavItemDef[] = [
 	{ label: 'Confirmar', href: '#rsvp', sectionKey: 'rsvp' },
 ];
 
-const NAV_ITEM_OVERRIDES: Record<string, readonly NavItemDef[]> = {
-	'leah-lexa': [
-		{ label: 'Ubicación', href: '#event-location', sectionKey: 'location' },
-		{ label: 'Fecha', href: '#inicio', sectionKey: null },
-		{ label: 'Regalos', href: '#regalos', sectionKey: 'gifts' },
-		{ label: 'Confirmar', href: '#rsvp', sectionKey: 'rsvp' },
-	],
+/** Map known invitation anchors to the section that must exist for the item to render. */
+const HREF_SECTION_KEYS: Readonly<Record<string, SectionKey | null>> = {
+	'#inicio': null,
+	'#event-location': 'location',
+	'#location': 'location',
+	'#itinerary': 'itinerary',
+	'#galeria': 'gallery',
+	'#regalos': 'gifts',
+	'#rsvp': 'rsvp',
 };
 
-export function buildCanonicalNavigation(
+function toNavItemDef(item: NavItem): NavItemDef {
+	const sectionKey = Object.hasOwn(HREF_SECTION_KEYS, item.href)
+		? HREF_SECTION_KEYS[item.href]!
+		: null;
+	return {
+		label: item.label,
+		href: item.href,
+		sectionKey,
+	};
+}
+
+function filterNavItems(
+	items: readonly NavItemDef[],
 	sections: InvitationViewModel['sections'],
-	slug?: string,
 ): NavItem[] {
-	const items = slug ? (NAV_ITEM_OVERRIDES[slug] ?? CANONICAL_NAV_ITEMS) : CANONICAL_NAV_ITEMS;
 	return items
 		.filter((item) => {
 			if (item.sectionKey === null) return true;
 			return Boolean(sections[item.sectionKey]);
 		})
 		.map(({ sectionKey: _, ...rest }) => rest);
+}
+
+/**
+ * Build invitation navigation from explicit content items when provided,
+ * otherwise the shared canonical defaults. Section presence still filters items.
+ */
+export function buildCanonicalNavigation(
+	sections: InvitationViewModel['sections'],
+	explicitNavigation?: readonly NavItem[],
+): NavItem[] {
+	const items =
+		explicitNavigation && explicitNavigation.length > 0
+			? explicitNavigation.map(toNavItemDef)
+			: CANONICAL_NAV_ITEMS;
+	return filterNavItems(items, sections);
 }

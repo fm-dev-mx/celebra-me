@@ -134,8 +134,6 @@ export function buildPageContextFromViewModel(input: {
 	const renderViewModel = applyLocationPolicy({
 		viewModel,
 		isConfirmedGuest: guestContext?.guest.attendanceStatus === 'confirmed',
-		routeSlug: slug,
-		eventType,
 	});
 
 	renderViewModel.brandingVisibility = resolveBrandingVisibility({
@@ -164,8 +162,6 @@ export function buildPageContextFromViewModel(input: {
 		originalLocation: viewModel.sections.location,
 		postPolicyLocation: sections.location,
 		isConfirmed: confirmed,
-		slug,
-		eventType,
 	});
 	const envelopeData = redactEnvelopeTeaserWhenLocationLocked(
 		buildEnvelopeData(styles.showEnvelope, envelope, renderViewModel.id, guestName, isDemo),

@@ -12,7 +12,6 @@ const locationCoordinatesSchema = z
 		zoom: z.number().min(1).max(22).optional(),
 	})
 	.optional();
-const richTextSchema = z.string();
 
 /** Navigable http(s) URL, or a preparation placeholder that must fail closed at render. */
 const venueMapUrlSchema = z
@@ -67,6 +66,7 @@ export const locationSchema = z.object({
 		.object({
 			showFlourishes: z.boolean().optional(),
 			showNavigationButtons: z.boolean().optional(),
+			revealSurface: z.enum(['section', 'rsvp']).optional(),
 		})
 		.strict()
 		.optional(),
@@ -90,7 +90,7 @@ export const locationSchema = z.object({
 			z.object({
 				iconName: z.enum(ICON_NAMES_TUPLE),
 				styleVariant: z.enum(INDICATION_STYLE_VARIANTS).default('default'),
-				text: richTextSchema,
+				text: z.string(),
 			}),
 		)
 		.optional(),

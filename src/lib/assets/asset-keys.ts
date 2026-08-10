@@ -3,12 +3,8 @@
  * Neutral module: no runtime build-time registry dependency.
  */
 
-/** Legacy invitation identity retained at the asset compatibility boundary. */
+/** Asset namespace for the Xareni client media registry (not a presentation authority). */
 export const XARENI_ASSET_SLUG = 'xv-xareni-iyarit';
-
-export function isXareniAssetSlug(value: unknown): value is typeof XARENI_ASSET_SLUG {
-	return value === XARENI_ASSET_SLUG;
-}
 
 export const EVENT_KEYS = [
 	'hero',

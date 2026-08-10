@@ -264,6 +264,9 @@ export function buildRominaPublishedContent(
 		],
 		itinerary: {
 			title: 'Programa',
+			presentation: {
+				behavior: 'standard',
+			},
 			items: [
 				{ time: '5:00 p. m.', label: 'Ceremonia', iconName: 'Church' },
 				{ time: '8:30 p. m.', label: 'Cena', iconName: 'Dinner' },
