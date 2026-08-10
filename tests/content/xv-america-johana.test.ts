@@ -13,7 +13,7 @@ const sqlPath = path.join(
 	projectRoot,
 	'scripts/manual/production-patches/20260706_america_johana_xv.sql',
 );
-const stylePath = path.join(projectRoot, 'src/styles/themes/sections/_xv-america-johana.scss');
+const stylePath = path.join(projectRoot, 'src/styles/invitation-profiles/america-johana.scss');
 const sectionsIndexPath = path.join(projectRoot, 'src/styles/themes/sections/_index.scss');
 
 type PersonalizedAccessDescriptor = Extract<

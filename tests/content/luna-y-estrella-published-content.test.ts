@@ -74,6 +74,9 @@ export const lunaYEstrellaContent = {
 	},
 	location: {
 		visibility: 'after-rsvp',
+		presentationOptions: {
+			revealSurface: 'rsvp',
+		},
 		introHeading: 'Detalles de la celebración',
 		indicationsHeading: '',
 		venues: [
@@ -166,6 +169,7 @@ describe('Luna y Estrella Primera Comunión published content', () => {
 		expect(result.data.theme.preset).toBe('angelic-presence');
 		expect(result.data._assetSlug).toBe('luna-y-estrella-primera-comunion');
 		expect(result.data.location?.visibility).toBe('after-rsvp');
+		expect(result.data.location?.presentationOptions?.revealSurface).toBe('rsvp');
 		expect(result.data.location?.venues?.[0]?.venueName).toBe('Salón García');
 		expect(result.data.hero.name).toBe('Luna Yamileth');
 		expect(result.data.hero.secondaryName).toBe('Estrella Abigail');

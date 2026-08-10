@@ -73,7 +73,7 @@ describe('related Jest source selection', () => {
 				]),
 				corpus: requiresManagedInvitationRegression([
 					'scripts/provision/local-render-corpus/registry.ts',
-					'src/styles/themes/sections/_xv-valentina-hernandez.scss',
+					'src/styles/invitation-profiles/valentina-hernandez.scss',
 				]),
 				backend: requiresManagedInvitationRegression(['src/pages/api/health.ts']),
 				docs: requiresManagedInvitationRegression(['docs/domains/database/overview.md']),

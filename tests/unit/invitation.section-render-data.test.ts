@@ -186,6 +186,7 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 	it('passes Luna y Estrella confirmed RSVP reveal props to the RSVP island descriptor', () => {
 		const protectedLocation = {
 			visibility: 'after-rsvp' as const,
+			presentationOptions: { revealSurface: 'rsvp' as const },
 			introHeading: 'Ubicación',
 			ceremony: {
 				venueEvent: 'Celebración',

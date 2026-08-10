@@ -1,5 +1,5 @@
 import {
-	isLunaEstrellaRoute,
+	isRsvpRevealLocation,
 	isLocationLocked,
 	applyLocationPolicy,
 	shouldRedactEnvelopeTeaser,
@@ -18,17 +18,22 @@ const baseViewModel = {
 	sectionOrder: [],
 } as any as InvitationViewModel;
 
-describe('isLunaEstrellaRoute', () => {
-	it('returns true for luna-y-estrella slug with primera-comunion event type', () => {
-		expect(isLunaEstrellaRoute('luna-y-estrella', 'primera-comunion')).toBe(true);
+describe('isRsvpRevealLocation', () => {
+	it('returns true for after-rsvp locations with revealSurface rsvp', () => {
+		expect(
+			isRsvpRevealLocation({
+				visibility: 'after-rsvp',
+				presentationOptions: { revealSurface: 'rsvp' },
+			} as any),
+		).toBe(true);
 	});
 
-	it('returns false for non-matching slug', () => {
-		expect(isLunaEstrellaRoute('otro-evento', 'primera-comunion')).toBe(false);
+	it('returns false for after-rsvp without revealSurface rsvp', () => {
+		expect(isRsvpRevealLocation({ visibility: 'after-rsvp' } as any)).toBe(false);
 	});
 
-	it('returns false for non-matching event type', () => {
-		expect(isLunaEstrellaRoute('luna-y-estrella', 'xv')).toBe(false);
+	it('returns false when location is undefined', () => {
+		expect(isRsvpRevealLocation(undefined)).toBe(false);
 	});
 });
 
@@ -59,8 +64,6 @@ describe('shouldRedactEnvelopeTeaser', () => {
 			originalLocation: { visibility: 'after-rsvp' } as any,
 			postPolicyLocation: { visibility: 'after-rsvp' } as any,
 			isConfirmed: false,
-			slug: 'test-event',
-			eventType: 'xv',
 		});
 		expect(result).toBe(true);
 	});
@@ -70,8 +73,6 @@ describe('shouldRedactEnvelopeTeaser', () => {
 			originalLocation: { visibility: 'public' } as any,
 			postPolicyLocation: { visibility: 'public' } as any,
 			isConfirmed: false,
-			slug: 'test-event',
-			eventType: 'xv',
 		});
 		expect(result).toBe(false);
 	});
@@ -81,41 +82,39 @@ describe('shouldRedactEnvelopeTeaser', () => {
 			originalLocation: { visibility: 'after-rsvp' } as any,
 			postPolicyLocation: { visibility: 'after-rsvp' } as any,
 			isConfirmed: true,
-			slug: 'test-event',
-			eventType: 'xv',
 		});
 		expect(result).toBe(false);
 	});
 
-	it('returns true for Luna-Estrella with after-rsvp visibility regardless of confirmation', () => {
-		const result = shouldRedactEnvelopeTeaser({
-			originalLocation: { visibility: 'after-rsvp' } as any,
-			postPolicyLocation: undefined,
-			isConfirmed: false,
-			slug: 'luna-y-estrella',
-			eventType: 'primera-comunion',
-		});
-		expect(result).toBe(true);
+	it('returns true for rsvp-reveal locations regardless of confirmation', () => {
+		const originalLocation = {
+			visibility: 'after-rsvp',
+			presentationOptions: { revealSurface: 'rsvp' },
+		} as any;
+		expect(
+			shouldRedactEnvelopeTeaser({
+				originalLocation,
+				postPolicyLocation: undefined,
+				isConfirmed: false,
+			}),
+		).toBe(true);
+		expect(
+			shouldRedactEnvelopeTeaser({
+				originalLocation,
+				postPolicyLocation: undefined,
+				isConfirmed: true,
+			}),
+		).toBe(true);
 	});
 
-	it('returns true for Luna-Estrella even when confirmed', () => {
+	it('returns false for rsvp-reveal locations with public visibility', () => {
 		const result = shouldRedactEnvelopeTeaser({
-			originalLocation: { visibility: 'after-rsvp' } as any,
-			postPolicyLocation: undefined,
-			isConfirmed: true,
-			slug: 'luna-y-estrella',
-			eventType: 'primera-comunion',
-		});
-		expect(result).toBe(true);
-	});
-
-	it('returns false for Luna-Estrella with public visibility', () => {
-		const result = shouldRedactEnvelopeTeaser({
-			originalLocation: { visibility: 'public' } as any,
+			originalLocation: {
+				visibility: 'public',
+				presentationOptions: { revealSurface: 'rsvp' },
+			} as any,
 			postPolicyLocation: undefined,
 			isConfirmed: false,
-			slug: 'luna-y-estrella',
-			eventType: 'primera-comunion',
 		});
 		expect(result).toBe(false);
 	});
@@ -162,8 +161,6 @@ describe('applyLocationPolicy', () => {
 		const result = applyLocationPolicy({
 			viewModel,
 			isConfirmedGuest: false,
-			routeSlug: 'test-event',
-			eventType: 'xv',
 		});
 		expect(result.sections.location?.introHeading).toBe('Ubicación');
 		expect(result.hero.venueName).toBe('Salón de Prueba');
@@ -183,8 +180,6 @@ describe('applyLocationPolicy', () => {
 		const result = applyLocationPolicy({
 			viewModel,
 			isConfirmedGuest: true,
-			routeSlug: 'test-event',
-			eventType: 'xv',
 		});
 		expect(result.sections.location?.introHeading).toBe('Ubicación');
 		expect(result.sections.location?.ceremony?.venueName).toBe('Salón García');
@@ -206,8 +201,6 @@ describe('applyLocationPolicy', () => {
 		const result = applyLocationPolicy({
 			viewModel,
 			isConfirmedGuest: false,
-			routeSlug: 'test-event',
-			eventType: 'xv',
 		});
 		expect(result.sections.location).toMatchObject({
 			isLocked: true,
@@ -218,12 +211,13 @@ describe('applyLocationPolicy', () => {
 		expect(result.hero.venueName).toBeUndefined();
 	});
 
-	it('strips location for Luna-Estrella when guest is not confirmed', () => {
+	it('strips location for rsvp-reveal capability when guest is not confirmed', () => {
 		const viewModel = {
 			...baseViewModel,
 			sections: {
 				location: {
 					visibility: 'after-rsvp' as const,
+					presentationOptions: { revealSurface: 'rsvp' as const },
 					introHeading: 'Ubicación',
 					ceremony: { venueName: 'Salón García' },
 				},
@@ -232,19 +226,18 @@ describe('applyLocationPolicy', () => {
 		const result = applyLocationPolicy({
 			viewModel,
 			isConfirmedGuest: false,
-			routeSlug: 'luna-y-estrella',
-			eventType: 'primera-comunion',
 		});
 		expect(result.sections.location).toBeUndefined();
 		expect(result.hero.venueName).toBeUndefined();
 	});
 
-	it('reveals location as rsvp.revealedLocation for confirmed Luna-Estrella guests', () => {
+	it('reveals location as rsvp.revealedLocation for confirmed rsvp-reveal guests', () => {
 		const viewModel = {
 			...baseViewModel,
 			sections: {
 				location: {
 					visibility: 'after-rsvp' as const,
+					presentationOptions: { revealSurface: 'rsvp' as const },
 					introHeading: 'Ubicación',
 					ceremony: { venueName: 'Salón García' },
 				},
@@ -254,8 +247,6 @@ describe('applyLocationPolicy', () => {
 		const result = applyLocationPolicy({
 			viewModel,
 			isConfirmedGuest: true,
-			routeSlug: 'luna-y-estrella',
-			eventType: 'primera-comunion',
 		});
 		expect(result.sections.location).toBeUndefined();
 		expect(result.sections.rsvp?.revealedLocation?.ceremony?.venueName).toBe('Salón García');

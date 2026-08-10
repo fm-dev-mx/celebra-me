@@ -123,6 +123,10 @@ describe('Romina local invitation content', () => {
 			structuralVariant: 'split-cover',
 			structuralVariantExplicit: true,
 		});
+		expect(page.viewModel.sections.itinerary?.variant).toBe('standard');
+		expect(content.itinerary).toMatchObject({
+			presentation: { behavior: 'standard' },
+		});
 		expect(page.renderPlan).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({ type: 'section', section: 'gallery' }),

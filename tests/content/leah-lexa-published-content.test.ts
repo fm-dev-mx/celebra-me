@@ -28,6 +28,12 @@ describe('Leah Lexa SQL patch published content', () => {
 				'gallery',
 				'thankYou',
 			],
+			navigation: [
+				{ label: 'Ubicación', href: '#event-location' },
+				{ label: 'Fecha', href: '#inicio' },
+				{ label: 'Regalos', href: '#regalos' },
+				{ label: 'Confirmar', href: '#rsvp' },
+			],
 			sectionStyles: {
 				location: { showFlourishes: true },
 				rsvp: {

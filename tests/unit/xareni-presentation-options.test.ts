@@ -2,8 +2,8 @@ import {
 	XARENI_SEAL_COLORS,
 	XARENI_SEAL_COLOR_LABELS,
 	resolveLocationMediaMode,
-	resolveXareniSealColor,
 	shouldRenderFamilyMedia,
+	supportsEnvelopeSealColorOptions,
 	supportsXareniPresentationOptions,
 } from '@/lib/invitation/presentation-options';
 import { ENVELOPE_SEAL_COLORS, isEnvelopeSealColor } from '@/lib/invitation/reveal-card';
@@ -11,6 +11,8 @@ import { ENVELOPE_SEAL_COLOR_LABELS } from '@/lib/intake/labels';
 import { generateThemeScopedStyles } from '@/lib/invitation/theme-styles.utils';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
+import fs from 'node:fs';
+import path from 'node:path';
 
 function buildEnvelopeStyles(sealAccent?: string) {
 	return generateThemeScopedStyles(
@@ -44,41 +46,33 @@ describe('Xareni presentation options', () => {
 		expect(isEnvelopeSealColor('var(--anything-from-editor)')).toBe(false);
 	});
 
-	describe('resolveXareniSealColor', () => {
-		it('maps allowed seal colors to trusted Xareni theme tokens', () => {
-			expect(resolveXareniSealColor('roseGold')).toBe('var(--xareni-rose-gold)');
-			expect(resolveXareniSealColor('champagne')).toBe('var(--xareni-champagne)');
-		});
-
-		it('does not resolve raw CSS seal color input', () => {
-			expect(resolveXareniSealColor('#c9a36a')).toBeUndefined();
-			expect(resolveXareniSealColor('var(--anything-from-editor)')).toBeUndefined();
-			expect(resolveXareniSealColor('linear-gradient(red, blue)')).toBeUndefined();
-		});
-	});
-
-	describe('seal accent through generateThemeScopedStyles', () => {
-		it('emits seal accent styles only from the trusted adapter value', () => {
-			const result = buildEnvelopeStyles(resolveXareniSealColor('roseGold'));
-
-			expect(result.scopedStyles).toContain('--env-seal-accent: var(--xareni-rose-gold);');
-			expect(result.scopedStyles).toContain('--env-seal-icon-override:');
-			expect(result.scopedStyles).toContain(
-				'color-mix(in srgb, var(--xareni-rose-gold) 70%, var(--color-surface-dark) 30%)',
-			);
-			expect(result.scopedStyles).not.toContain('#c9a36a');
-		});
-
-		it('does not emit seal icon override when sealAccent is absent', () => {
+	describe('seal accent ownership', () => {
+		it('keeps generic theme scoped styles free of Xareni token names', () => {
 			const result = buildEnvelopeStyles();
 
-			expect(result.scopedStyles).not.toContain('--env-seal-icon-override');
+			expect(result.scopedStyles).not.toContain('--xareni-');
 			expect(result.scopedStyles).not.toContain('--env-seal-accent');
+			expect(result.scopedStyles).not.toContain('--env-seal-icon-override');
+		});
+
+		it('maps seal skins to Xareni tokens inside the invitation profile boundary', () => {
+			const profile = fs.readFileSync(
+				path.join(process.cwd(), 'src/styles/invitation-profiles/xareni-iyarit.scss'),
+				'utf8',
+			);
+
+			expect(profile).toContain("data-seal-skin='roseGold'");
+			expect(profile).toContain('--env-seal-accent: var(--xareni-rose-gold)');
+			expect(profile).toContain('--env-seal-accent: var(--xareni-champagne)');
+			expect(profile).toContain('--env-seal-accent: var(--xareni-blush)');
+			expect(profile).toContain('--env-seal-accent: var(--xareni-mauve)');
+			expect(profile).toContain('--env-seal-accent: var(--xareni-deep-mauve)');
+			expect(profile).toContain('--env-seal-icon-override:');
 		});
 	});
 
 	describe('end-to-end page context', () => {
-		it('emits the seal accent variable through the preview and published page context path', () => {
+		it('preserves sealColor for profile CSS without injecting Xareni tokens into scoped styles', () => {
 			const viewModel = adaptDbEvent({
 				slug: 'xareni-client-slug',
 				eventType: 'xv',
@@ -107,6 +101,9 @@ describe('Xareni presentation options', () => {
 				},
 			});
 
+			expect(viewModel.envelope.data?.sealColor).toBe('mauve');
+			expect(viewModel.envelope.data?.colors?.sealAccent).toBeUndefined();
+
 			const pageContext = buildPageContextFromViewModel({
 				viewModel,
 				slug: 'xareni-client-slug',
@@ -114,23 +111,21 @@ describe('Xareni presentation options', () => {
 				isPreview: true,
 			});
 
-			expect(pageContext.wrapper.scopedStyles).toContain(
-				'--env-seal-accent: var(--xareni-mauve);',
-			);
-			expect(pageContext.wrapper.scopedStyles).toContain(
-				'[data-event-slug="xareni-client-slug"]',
-			);
+			expect(pageContext.wrapper.scopedStyles).not.toContain('--xareni-');
+			expect(pageContext.envelope?.sealColor).toBe('mauve');
 		});
 	});
 
-	describe('supportsXareniPresentationOptions', () => {
-		it('limits editor-only Xareni options to the Xareni asset context', () => {
-			expect(supportsXareniPresentationOptions({ assetLookupSlug: 'xv-xareni-iyarit' })).toBe(
+	describe('supportsEnvelopeSealColorOptions', () => {
+		it('treats seal colors as a generic envelope capability', () => {
+			expect(supportsEnvelopeSealColorOptions()).toBe(true);
+			expect(supportsEnvelopeSealColorOptions({ assetLookupSlug: 'xv-xareni-iyarit' })).toBe(
 				true,
 			);
 			expect(
-				supportsXareniPresentationOptions({ assetLookupSlug: 'demo-xv-celestial-blue' }),
-			).toBe(false);
+				supportsEnvelopeSealColorOptions({ assetLookupSlug: 'demo-xv-celestial-blue' }),
+			).toBe(true);
+			expect(supportsXareniPresentationOptions({ assetLookupSlug: 'any-slug' })).toBe(true);
 		});
 	});
 });

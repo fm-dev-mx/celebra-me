@@ -99,13 +99,20 @@ describe('Invitation header navigation contract', () => {
 		},
 	} as any;
 
-	it('returns Leah Lexa navigation exactly as [Ubicación, Fecha, Regalos, Confirmar]', () => {
+	const leahLexaNavigation = [
+		{ label: 'Ubicación', href: '#event-location' },
+		{ label: 'Fecha', href: '#inicio' },
+		{ label: 'Regalos', href: '#regalos' },
+		{ label: 'Confirmar', href: '#rsvp' },
+	] as const;
+
+	it('uses explicit content navigation when provided', () => {
 		const nav = buildCanonicalNavigation(
 			{
 				...leahLexaBase,
 				gifts: { items: [], variant: 'editorial' as const },
 			},
-			'leah-lexa',
+			leahLexaNavigation,
 		);
 		expect(nav).toEqual([
 			{ label: 'Ubicación', href: '#event-location' },
@@ -115,10 +122,10 @@ describe('Invitation header navigation contract', () => {
 		]);
 	});
 
-	it('filters Leah Lexa nav items when their section is missing', () => {
+	it('filters explicit navigation items when their section is missing', () => {
 		const nav = buildCanonicalNavigation(
 			{ location: leahLexaBase.location } as any,
-			'leah-lexa',
+			leahLexaNavigation,
 		);
 		expect(nav).toEqual([
 			{ label: 'Ubicación', href: '#event-location' },
@@ -126,7 +133,7 @@ describe('Invitation header navigation contract', () => {
 		]);
 	});
 
-	it('uses default canonical navigation for non-Leah-Lexa slugs', () => {
+	it('uses default canonical navigation when content navigation is absent', () => {
 		const allSections = {
 			location: { ceremony: {} as any, variant: 'editorial' as const },
 			rsvp: {
@@ -140,7 +147,7 @@ describe('Invitation header navigation contract', () => {
 				variant: 'editorial' as const,
 			},
 		} as any;
-		const nav = buildCanonicalNavigation(allSections, 'some-other-invitation');
+		const nav = buildCanonicalNavigation(allSections);
 		expect(nav).toEqual([
 			{ label: 'Inicio', href: '#inicio' },
 			{ label: 'Evento', href: '#event-location' },

@@ -546,6 +546,7 @@ describe('buildPageContextFromViewModel', () => {
 				quote: { text: 'Una cita inspiradora.' },
 				location: {
 					visibility: 'after-rsvp',
+					presentationOptions: { revealSurface: 'rsvp' },
 					introHeading: 'Ubicación',
 					ceremony: {
 						venueEvent: 'Celebración',
@@ -597,6 +598,7 @@ describe('buildPageContextFromViewModel', () => {
 	it('exposes Luna y Estrella protected location only as RSVP revealedLocation for confirmed guests', () => {
 		const protectedLocation = {
 			visibility: 'after-rsvp' as const,
+			presentationOptions: { revealSurface: 'rsvp' as const },
 			introHeading: 'Ubicación',
 			ceremony: {
 				venueEvent: 'Celebración',
@@ -716,6 +718,7 @@ describe('buildPageContextFromViewModel', () => {
 			sections: {
 				location: {
 					visibility: 'after-rsvp',
+					presentationOptions: { revealSurface: 'rsvp' },
 					ceremony: {
 						venueEvent: 'Celebración',
 						venueName: 'Salón García',

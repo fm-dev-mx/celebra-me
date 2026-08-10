@@ -9,7 +9,7 @@ describe('editorial cover reveal transition contract', () => {
 	const coverStyles = readSource('src/styles/invitation/_editorial-cover.scss');
 	const heroStyles = readSource('src/styles/themes/sections/hero/_editorial-magazine.scss');
 	const headerStyles = readSource('src/styles/themes/sections/header/_editorial-magazine.scss');
-	const valentinaStyles = readSource('src/styles/themes/sections/_xv-valentina-hernandez.scss');
+	const valentinaStyles = readSource('src/styles/invitation-profiles/valentina-hernandez.scss');
 
 	it('uses a local editorial reveal phase without extending data-reveal-state', () => {
 		expect(componentSource).toContain('editorialRevealPhase');

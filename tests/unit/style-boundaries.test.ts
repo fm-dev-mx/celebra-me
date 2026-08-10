@@ -185,6 +185,9 @@ describe('Style boundary governance', () => {
 		const invitationScss = read('src/styles/invitation.scss');
 		const sectionIndex = read('src/styles/themes/sections/_index.scss');
 		const sharedBase = read('src/styles/themes/sections/_base-theme.scss');
+		const sharedSectionStyles = getFilesRecursively('src/styles/themes/sections', ['.scss'])
+			.map(read)
+			.join('\n');
 
 		expect(invitationScss).toContain("@use 'themes/sections'");
 		for (const profile of [
@@ -198,6 +201,9 @@ describe('Style boundary governance', () => {
 		}
 		expect(sharedBase).not.toContain('.theme-preset--');
 		expect(sharedBase).not.toContain('.event--');
+		expect(sharedSectionStyles).not.toMatch(
+			/\.event--(?:luna-y-estrella|leah-lexa|america-johana|xareni-iyarit|valentina-hernandez)\b/,
+		);
 	});
 
 	it('preset section bundles import canonical modules without passthrough entrypoints', () => {

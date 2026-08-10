@@ -240,7 +240,7 @@ describe('Goal C — presentation options', () => {
 			const canonical = readSource(
 				'src/styles/themes/sections/gallery/_editorial-magazine.scss',
 			);
-			const valentina = readSource('src/styles/themes/sections/_xv-valentina-hernandez.scss');
+			const valentina = readSource('src/styles/invitation-profiles/valentina-hernandez.scss');
 			expect(canonical).toContain("data-mobile-browse='rail'");
 			expect(canonical).toContain('scroll-snap-type: x mandatory');
 			expect(valentina).not.toContain('scroll-snap-type: x mandatory');
