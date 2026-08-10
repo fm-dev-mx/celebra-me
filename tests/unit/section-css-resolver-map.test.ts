@@ -218,6 +218,83 @@ describe('section-css-resolver-map', () => {
 		]);
 	});
 
+	it('delivers every non-default structural partial independently of the active theme', () => {
+		const bundleUrlMap = buildSectionBundleUrlMap({
+			'/src/styles/invitation-sections-by-preset/jewelry-box.scss': {
+				default: '/_astro/jewelry-bundle.css',
+			},
+		});
+		const sectionUrlMap = buildSectionUrlMap({
+			'/src/styles/themes/sections/hero/_editorial-magazine.scss': {
+				default: '/_astro/hero-editorial.css',
+			},
+			'/src/styles/themes/sections/thank-you/_editorial-magazine.scss': {
+				default: '/_astro/thank-you-editorial.css',
+			},
+			'/src/styles/themes/sections/gifts/_editorial-magazine.scss': {
+				default: '/_astro/gifts-editorial.css',
+			},
+			'/src/styles/themes/sections/rsvp/_editorial-magazine.scss': {
+				default: '/_astro/rsvp-editorial.css',
+			},
+			'/src/styles/themes/sections/personalized-access/_editorial-magazine.scss': {
+				default: '/_astro/access-editorial.css',
+			},
+		});
+
+		expect(
+			resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
+				themePreset: 'jewelry-box',
+				structuralVariants: {
+					hero: 'editorial-cover',
+					thankYou: 'editorial-back-cover',
+					gifts: 'editorial-catalog',
+					rsvp: 'editorial-press-pass',
+					personalizedAccess: 'editorial-pass',
+				},
+			}),
+		).toEqual([
+			'/_astro/jewelry-bundle.css',
+			'/_astro/hero-editorial.css',
+			'/_astro/thank-you-editorial.css',
+			'/_astro/gifts-editorial.css',
+			'/_astro/rsvp-editorial.css',
+			'/_astro/access-editorial.css',
+		]);
+	});
+
+	it('maps canonical Gallery layouts to independent CSS only where a partial is required', () => {
+		const sectionUrlMap = buildSectionUrlMap({
+			'/src/styles/themes/sections/gallery/_editorial.scss': {
+				default: '/_astro/gallery-editorial.css',
+			},
+			'/src/styles/themes/sections/gallery/_editorial-magazine.scss': {
+				default: '/_astro/gallery-magazine.css',
+			},
+			'/src/styles/themes/sections/gallery/_luxury-hacienda.scss': {
+				default: '/_astro/gallery-feature.css',
+			},
+			'/src/styles/themes/sections/gallery/_celestial-blue.scss': {
+				default: '/_astro/gallery-index.css',
+			},
+		});
+
+		expect(resolveGalleryVariantCssUrl(sectionUrlMap, 'uniform-grid')).toBeUndefined();
+		expect(resolveGalleryVariantCssUrl(sectionUrlMap, 'single-keepsake')).toBeUndefined();
+		expect(resolveGalleryVariantCssUrl(sectionUrlMap, 'editorial-mosaic')).toBe(
+			'/_astro/gallery-editorial.css',
+		);
+		expect(resolveGalleryVariantCssUrl(sectionUrlMap, 'magazine-spread')).toBe(
+			'/_astro/gallery-magazine.css',
+		);
+		expect(resolveGalleryVariantCssUrl(sectionUrlMap, 'feature-mosaic')).toBe(
+			'/_astro/gallery-feature.css',
+		);
+		expect(resolveGalleryVariantCssUrl(sectionUrlMap, 'index-choreography')).toBe(
+			'/_astro/gallery-index.css',
+		);
+	});
+
 	it('keeps Gallery aliases and unknown variants deterministic', () => {
 		const sectionUrlMap = buildSectionUrlMap({
 			'/src/styles/themes/sections/gallery/_editorial.scss': {

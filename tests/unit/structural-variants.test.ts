@@ -7,6 +7,7 @@ import {
 	resolveRsvpStructuralVariant,
 	resolveThankYouStructuralVariant,
 } from '@/lib/invitation/structural-variants';
+import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 
 describe('section structural variant contracts', () => {
 	it('gives explicit section configuration precedence over theme compatibility aliases', () => {
@@ -16,6 +17,37 @@ describe('section structural variant contracts', () => {
 		expect(resolveRsvpStructuralVariant('standard', 'editorial-magazine')).toBe('standard');
 		expect(resolvePersonalizedAccessStructuralVariant('ornamented', 'editorial-magazine')).toBe(
 			'ornamented',
+		);
+	});
+
+	it('keeps explicit structural selections independent from the active theme', () => {
+		for (const theme of THEME_PRESETS) {
+			expect(resolveHeroStructuralVariant('editorial-cover', theme)).toBe('editorial-cover');
+			expect(resolveThankYouStructuralVariant('full-bleed-photo', theme)).toBe(
+				'full-bleed-photo',
+			);
+			expect(resolveGiftsStructuralVariant('editorial-catalog', theme)).toBe(
+				'editorial-catalog',
+			);
+			expect(resolveRsvpStructuralVariant('editorial-press-pass', theme)).toBe(
+				'editorial-press-pass',
+			);
+			expect(resolvePersonalizedAccessStructuralVariant('editorial-pass', theme)).toBe(
+				'editorial-pass',
+			);
+			expect(resolveGalleryLayoutVariant('magazine-spread', undefined, theme)).toBe(
+				'magazine-spread',
+			);
+		}
+	});
+
+	it('keeps invalid or omitted selectors on the documented compatibility path', () => {
+		expect(resolveHeroStructuralVariant('not-a-variant', 'editorial-magazine')).toBe(
+			'editorial-cover',
+		);
+		expect(resolveHeroStructuralVariant('not-a-variant', 'jewelry-box')).toBe('standard');
+		expect(resolveGalleryLayoutVariant('not-a-variant', undefined, 'celestial-blue')).toBe(
+			'index-choreography',
 		);
 	});
 

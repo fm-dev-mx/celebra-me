@@ -80,7 +80,7 @@ module.exports = {
 
 	coverageDirectory: '<rootDir>/coverage',
 	coverageReporters: ['text', 'lcov'],
-	modulePathIgnorePatterns: ['<rootDir>/.worktrees/', '<rootDir>/.tmp/'],
+	modulePathIgnorePatterns: ['<rootDir>/.worktrees/'],
 
 	...(strictRsvpCoverage
 		? {
@@ -110,7 +110,6 @@ module.exports = {
 		'/dist/',
 		'/\\.vercel/',
 		'/\\.worktrees/',
-		'/\\.tmp/',
 		'/tests/e2e/',
 		// Disposable PostgreSQL/PostgREST contracts — run via `pnpm test:db:rsvp-contracts`.
 		'/tests/db/public-guest-rsvp-db-boundary\\.test\\.ts$',

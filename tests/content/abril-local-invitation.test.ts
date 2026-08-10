@@ -16,6 +16,7 @@ const abrilProfilePath = path.join(
 	process.cwd(),
 	'src/styles/invitation-profiles/abril-michelle-becerra-rea.scss',
 );
+const galleryContractPath = path.join(process.cwd(), 'docs/domains/theme/gallery-variants.md');
 
 function buildTestAssets(): AbrilAssetMap {
 	return Object.fromEntries(
@@ -74,6 +75,16 @@ describe('Abril Michelle local invitation content', () => {
 		expect(profile).toContain(
 			".itinerary:not([data-variant='timeline-paper'], [data-variant='celestial-blue'])",
 		);
+	});
+
+	it('keeps the Gallery composition exception explicit and documented', () => {
+		const profile = fs.readFileSync(abrilProfilePath, 'utf8');
+		const galleryContract = fs.readFileSync(galleryContractPath, 'utf8');
+
+		expect(profile).toContain("[data-structural-variant='uniform-grid']");
+		expect(profile).not.toContain("[data-variant='premiere-floral']");
+		expect(galleryContract).toContain('unresolved invitation-specific extension');
+		expect(galleryContract).toContain('Abril');
 	});
 
 	it('builds schema-valid published content without visible pending placeholders', () => {
