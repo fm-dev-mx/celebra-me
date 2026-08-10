@@ -23,6 +23,7 @@ import EventHeader from '@/components/invitation/EventHeader.astro';
 import EnvelopeReveal from '@/components/invitation/EnvelopeReveal.astro';
 import EditorialCoverReveal from '@/components/invitation/EditorialCoverReveal.astro';
 import '@/styles/invitation.scss';
+import '@/styles/invitation/_preview-banner.scss';
 
 import { evaluatePreviewRevision } from '@/lib/editor/preview-revision';
 import { resolveInvitationTheme, resolvePreviewSlug } from '@/lib/intake/services/invitation-preset-resolver';
@@ -338,89 +339,4 @@ const headLinks = [
 	) : null
 }
 
-<style is:inline>
-	:root {
-		--preview-banner-height: {embeddedPreview ? '2.5rem' : '3rem'};
-	}
 
-	.preview-banner {
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		z-index: 99999;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: 1rem;
-		flex-wrap: wrap;
-		padding: 8px 16px;
-		background: color-mix(in srgb, var(--color-surface-primary) 92%, transparent);
-		backdrop-filter: blur(12px);
-		color: var(--color-text-primary);
-		font-family: system-ui, sans-serif;
-		font-size: 13px;
-		font-weight: 600;
-		letter-spacing: 0.3px;
-		border-bottom: 1px solid var(--color-border-subtle);
-	}
-
-	.preview-banner__back {
-		color: var(--color-action-accent);
-		text-decoration: none;
-		font-size: 12px;
-
-		&:hover {
-			text-decoration: underline;
-		}
-	}
-
-	.preview-banner__warning {
-		color: var(--color-state-warning-text, #b8860b);
-		font-size: 12px;
-		font-weight: 400;
-	}
-
-	.preview-banner__hint {
-		color: var(--color-text-muted);
-		font-size: 12px;
-		font-weight: 400;
-	}
-
-	.preview-banner--embedded {
-		gap: 0.5rem;
-		padding: 6px 10px;
-		font-size: 12px;
-	}
-
-	.preview-error {
-		padding: 40px 24px;
-		text-align: center;
-		font-family: system-ui, sans-serif;
-	}
-
-	.preview-error h2 {
-		font-size: 24px;
-		margin-bottom: 16px;
-		color: var(--color-state-error-text);
-	}
-
-	.preview-error p {
-		font-size: 16px;
-		color: var(--color-text-secondary);
-		margin-bottom: 24px;
-	}
-
-	.preview-error__back {
-		display: inline-block;
-		padding: 10px 20px;
-		background: var(--color-action-accent);
-		color: var(--color-text-inverse);
-		border-radius: 6px;
-		text-decoration: none;
-	}
-
-	.preview-error__back:hover {
-		opacity: 90%;
-	}
-</style>
