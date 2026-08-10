@@ -8,6 +8,10 @@ import {
 import { interludesSchema } from '@/lib/schemas/content/interludes.schema';
 import { LOCATION_PRESENTATIONS } from '@/lib/invitation/presentation-options';
 import {
+	HERO_STRUCTURAL_VARIANTS,
+	LOCATION_STRUCTURAL_VARIANTS,
+} from '@/lib/invitation/structural-variants';
+import {
 	optionalText,
 	optionalUrl,
 	editableAssetSchema,
@@ -53,6 +57,7 @@ export const InvitationContentDraftContentSchema = z
 					.strict()
 					.optional(),
 				variant: z.enum(THEME_PRESETS).optional(),
+				structuralVariant: z.enum(HERO_STRUCTURAL_VARIANTS).optional(),
 				focalPoint: focalPointSchema.optional(),
 				focalPointMobile: focalPointSchema.optional(),
 				focalPointTablet: focalPointSchema.optional(),
@@ -88,6 +93,7 @@ export const InvitationContentDraftContentSchema = z
 			.object({
 				visibility: z.enum(['public', 'after-rsvp']).optional(),
 				presentation: z.enum(LOCATION_PRESENTATIONS).optional(),
+				structuralVariant: z.enum(LOCATION_STRUCTURAL_VARIANTS).optional(),
 				presentationOptions: z
 					.object({
 						showFlourishes: z.boolean().optional(),

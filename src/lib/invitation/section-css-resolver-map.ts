@@ -19,6 +19,8 @@ type InvitationCssInput = {
 		gifts?: string;
 		rsvp?: string;
 		personalizedAccess?: string;
+		family?: string;
+		location?: string;
 	};
 	visualProfileId?: string;
 	slug?: string;
@@ -50,7 +52,10 @@ const GALLERY_VARIANT_TO_ENTRYPOINT: Record<string, string> = {
 };
 
 const STRUCTURAL_VARIANT_TO_ENTRYPOINT: Record<string, Record<string, string>> = {
-	hero: { 'editorial-cover': 'editorial-magazine' },
+	hero: {
+		'editorial-cover': 'editorial-magazine',
+		'split-cover': 'split-cover',
+	},
 	thankYou: {
 		'editorial-back-cover': 'editorial-magazine',
 		'full-bleed-photo': 'sacred-keepsake',
@@ -58,6 +63,8 @@ const STRUCTURAL_VARIANT_TO_ENTRYPOINT: Record<string, Record<string, string>> =
 	gifts: { 'editorial-catalog': 'editorial-magazine' },
 	rsvp: { 'editorial-press-pass': 'editorial-magazine' },
 	personalizedAccess: { 'editorial-pass': 'editorial-magazine' },
+	family: { 'split-groups': 'split-groups' },
+	location: { 'split-map': 'split-map' },
 };
 
 // Only presets with a dedicated footer/*.scss file go here.

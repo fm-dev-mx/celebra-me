@@ -4,7 +4,7 @@ import { THEME_PRESETS, type ThemePreset } from '@/lib/theme/theme-contract';
  * Section-owned structural contracts. These identifiers describe markup or
  * layout behavior; they are intentionally not part of the theme preset union.
  */
-export const HERO_STRUCTURAL_VARIANTS = ['standard', 'editorial-cover'] as const;
+export const HERO_STRUCTURAL_VARIANTS = ['standard', 'editorial-cover', 'split-cover'] as const;
 export type HeroStructuralVariant = (typeof HERO_STRUCTURAL_VARIANTS)[number];
 
 export const THANK_YOU_STRUCTURAL_VARIANTS = [
@@ -28,6 +28,12 @@ export const PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS = [
 export type PersonalizedAccessStructuralVariant =
 	(typeof PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS)[number];
 
+export const FAMILY_STRUCTURAL_VARIANTS = ['standard', 'split-groups'] as const;
+export type FamilyStructuralVariant = (typeof FAMILY_STRUCTURAL_VARIANTS)[number];
+
+export const LOCATION_STRUCTURAL_VARIANTS = ['standard', 'split-map'] as const;
+export type LocationStructuralVariant = (typeof LOCATION_STRUCTURAL_VARIANTS)[number];
+
 /** Gallery owns a layout contract; `variant` is not a theme identity. */
 export const GALLERY_LAYOUT_VARIANTS = [
 	'uniform-grid',
@@ -47,6 +53,24 @@ export function resolveHeroStructuralVariant(
 		return explicit as HeroStructuralVariant;
 	}
 	return themePreset === 'editorial-magazine' ? 'editorial-cover' : 'standard';
+}
+
+export function resolveFamilyStructuralVariant(
+	explicit: string | undefined,
+): FamilyStructuralVariant {
+	if (explicit && (FAMILY_STRUCTURAL_VARIANTS as readonly string[]).includes(explicit)) {
+		return explicit as FamilyStructuralVariant;
+	}
+	return 'standard';
+}
+
+export function resolveLocationStructuralVariant(
+	explicit: string | undefined,
+): LocationStructuralVariant {
+	if (explicit && (LOCATION_STRUCTURAL_VARIANTS as readonly string[]).includes(explicit)) {
+		return explicit as LocationStructuralVariant;
+	}
+	return 'standard';
 }
 
 export function resolveThankYouStructuralVariant(

@@ -481,13 +481,25 @@ describe('Style boundary governance', () => {
 		const forwarded = getForwardedPartials(dir);
 		const existing = getExistingPartials(dir);
 		const bundleImports = getPresetBundleImports('family');
+		// Structural-only partials are delivered by section-css-resolver, not
+		// theme index forwards or preset bundles.
+		const structuralResolverPartials = ['split-groups'];
 
 		for (const name of existing) {
-			expect(forwarded.includes(name) || bundleImports.includes(name)).toBe(true);
+			expect(
+				forwarded.includes(name) ||
+					bundleImports.includes(name) ||
+					structuralResolverPartials.includes(name),
+			).toBe(true);
 		}
 
 		for (const name of bundleImports) {
 			expect(existing).toContain(name);
+		}
+
+		const resolver = read('src/lib/invitation/section-css-resolver.ts');
+		for (const name of structuralResolverPartials) {
+			expect(resolver).toContain(`/family/_${name}.scss`);
 		}
 	});
 });

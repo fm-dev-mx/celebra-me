@@ -1,0 +1,54 @@
+@use '../../../global/mixins' as mixins;
+
+// Hero split-cover: independent type plane + contained lateral photograph.
+// Profiles may override plane/overlay tokens; they must not redefine the grid.
+.invitation-hero[data-structural-variant='split-cover'] {
+	--hero-split-plane-bg: var(--color-surface-dark, rgb(28 36 32));
+	--hero-split-overlay-strong: rgb(0 0 0 / 92%);
+	--hero-split-overlay-mid: rgb(0 0 0 / 72%);
+	--hero-split-overlay-soft: rgb(0 0 0 / 18%);
+	--hero-split-photo-width: min(58vw, 760px);
+	--hero-split-content-width: min(42vw, 560px);
+	--hero-split-content-inline-start: clamp(3rem, 7vw, 8rem);
+
+	@include mixins.respond-to(lg) {
+		align-items: flex-start;
+		justify-content: center;
+		text-align: left;
+		background: var(--hero-split-plane-bg);
+
+		.invitation-hero__background img {
+			display: block;
+			width: var(--hero-split-photo-width);
+			height: 100%;
+			margin-left: auto;
+			object-fit: contain;
+			object-position: right center;
+		}
+
+		.invitation-hero__background::after {
+			background: linear-gradient(
+				90deg,
+				var(--hero-split-overlay-strong) 0%,
+				var(--hero-split-overlay-mid) 34%,
+				var(--hero-split-overlay-soft) 68%,
+				transparent 100%
+			);
+		}
+
+		.invitation-hero__content {
+			width: var(--hero-split-content-width);
+			margin: 0 0 0 var(--hero-split-content-inline-start);
+			text-align: left;
+		}
+
+		.invitation-hero__divider {
+			margin-inline: 0;
+		}
+
+		.invitation-hero__scroll-indicator {
+			left: var(--hero-split-content-inline-start);
+			right: auto;
+		}
+	}
+}

@@ -189,8 +189,8 @@ const activeSectionCssUrls =
 						: undefined,
 					structuralVariants: {
 						hero: pageCtx.viewModel.hero.structuralVariantExplicit
-						? pageCtx.viewModel.hero.structuralVariant
-						: undefined,
+							? pageCtx.viewModel.hero.structuralVariant
+							: undefined,
 						thankYou: pageCtx.viewModel.sections.thankYou?.structuralVariantExplicit
 							? pageCtx.viewModel.sections.thankYou.structuralVariant
 							: undefined,
@@ -204,6 +204,12 @@ const activeSectionCssUrls =
 							pageCtx.viewModel.sections.rsvp?.personalizedAccess?.structuralVariantExplicit
 								? pageCtx.viewModel.sections.rsvp.personalizedAccess.structuralVariant
 								: undefined,
+						family: pageCtx.viewModel.sections.family?.structuralVariantExplicit
+							? pageCtx.viewModel.sections.family.structuralVariant
+							: undefined,
+						location: pageCtx.viewModel.sections.location?.structuralVariantExplicit
+							? pageCtx.viewModel.sections.location.structuralVariant
+							: undefined,
 					},
 					visualProfileId: pageCtx.viewModel.visualProfileId,
 				slug: invitationRecord?.slug ?? undefined,

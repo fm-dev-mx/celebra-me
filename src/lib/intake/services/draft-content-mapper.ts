@@ -307,6 +307,8 @@ function mapFamilyToDraft(
 		visible: typeof family.visible === 'boolean' ? family.visible : undefined,
 		presentation: str(family.presentation) as
 			NonNullable<DraftContent['family']>['presentation'] | undefined,
+		structuralVariant: str(family.structuralVariant) as
+			NonNullable<DraftContent['family']>['structuralVariant'] | undefined,
 		groups: publishedGroups
 			?.filter((g) => g.items && g.items.length > 0)
 			.map((g) => ({
@@ -727,6 +729,7 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 		const draftLocationBase: Record<string, unknown> = {
 			visibility: str(location.visibility),
 			presentation: str(location.presentation),
+			structuralVariant: str(location.structuralVariant),
 			...(isRecord(location.presentationOptions)
 				? { presentationOptions: location.presentationOptions }
 				: {}),

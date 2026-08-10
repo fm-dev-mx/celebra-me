@@ -28,11 +28,14 @@ const galleryVariantModules = import.meta.glob('/src/styles/themes/sections/gall
 const structuralVariantModules = import.meta.glob(
 	[
 		'/src/styles/themes/sections/hero/_editorial-magazine.scss',
+		'/src/styles/themes/sections/hero/_split-cover.scss',
 		'/src/styles/themes/sections/thank-you/_editorial-magazine.scss',
 		'/src/styles/themes/sections/thank-you/_sacred-keepsake.scss',
 		'/src/styles/themes/sections/gifts/_editorial-magazine.scss',
 		'/src/styles/themes/sections/rsvp/_editorial-magazine.scss',
 		'/src/styles/themes/sections/personalized-access/_editorial-magazine.scss',
+		'/src/styles/themes/sections/family/_split-groups.scss',
+		'/src/styles/themes/sections/location/_split-map.scss',
 	],
 	{ query: '?url', eager: true },
 ) as Record<string, { default: string }>;
@@ -77,6 +80,8 @@ export function resolveInvitationCssUrls(input: {
 		gifts?: string;
 		rsvp?: string;
 		personalizedAccess?: string;
+		family?: string;
+		location?: string;
 	};
 	visualProfileId?: string;
 	slug?: string;

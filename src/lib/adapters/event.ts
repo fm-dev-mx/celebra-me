@@ -38,16 +38,20 @@ import {
 	XARENI_ASSET_SLUG,
 } from '@/lib/invitation/presentation-options';
 import {
+	FAMILY_STRUCTURAL_VARIANTS,
 	GALLERY_LAYOUT_VARIANTS,
 	GIFTS_STRUCTURAL_VARIANTS,
 	HERO_STRUCTURAL_VARIANTS,
+	LOCATION_STRUCTURAL_VARIANTS,
 	PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS,
 	RSVP_STRUCTURAL_VARIANTS,
 	THANK_YOU_STRUCTURAL_VARIANTS,
+	resolveFamilyStructuralVariant,
 	resolveGalleryLayoutVariant,
 	resolveGalleryVisualVariant,
 	resolveGiftsStructuralVariant,
 	resolveHeroStructuralVariant,
+	resolveLocationStructuralVariant,
 	resolvePersonalizedAccessStructuralVariant,
 	resolveRsvpStructuralVariant,
 	resolveThankYouStructuralVariant,
@@ -418,6 +422,10 @@ function buildLocationSectionData(context: AdaptationContext) {
 	return {
 		visibility: data.location.visibility,
 		presentation: data.location.presentation,
+		structuralVariant: resolveLocationStructuralVariant(data.location.structuralVariant),
+		structuralVariantExplicit: LOCATION_STRUCTURAL_VARIANTS.includes(
+			data.location.structuralVariant as (typeof LOCATION_STRUCTURAL_VARIANTS)[number],
+		),
 		...(rawVenues !== undefined
 			? { venues }
 			: {
@@ -454,6 +462,10 @@ function buildFamilySectionData(context: AdaptationContext) {
 			? resolveAsset(eventSlug, data.family.featuredImage, data.title)
 			: undefined,
 		celebrantName: data.hero.name,
+		structuralVariant: resolveFamilyStructuralVariant(data.family.structuralVariant),
+		structuralVariantExplicit: FAMILY_STRUCTURAL_VARIANTS.includes(
+			data.family.structuralVariant as (typeof FAMILY_STRUCTURAL_VARIANTS)[number],
+		),
 		variant: sectionVariant('family', data.sectionStyles?.family?.variant, normalizedPreset),
 	};
 }

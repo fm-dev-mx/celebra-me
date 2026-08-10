@@ -1193,9 +1193,9 @@ html:has(.event--alba-rosa-quinonez) body {
 			margin-inline: auto;
 		}
 
-		&__card-wrapper {
-			width: 100%;
-			max-width: none;
+		// split-map geometry lives in themes/sections/location/_split-map.scss.
+		&[data-structural-variant='split-map'] {
+			--location-split-gap: clamp(1.75rem, 3.5vw, 2.5rem);
 		}
 
 		// Redundant intermediate heading ("CELEBRACIÓN") and flourish removed
@@ -1204,37 +1204,8 @@ html:has(.event--alba-rosa-quinonez) body {
 			display: none;
 		}
 
-		// The venue block is typography on the section surface — not a card
-		&__card {
-			background: transparent;
-			border: none;
-			box-shadow: none;
-			border-radius: 0;
-			padding: 0;
-			backdrop-filter: none;
-			max-width: none;
-			display: grid;
-			grid-template-areas:
-				'content'
-				'map';
-			gap: clamp(1.75rem, 3.5vw, 2.5rem);
-			overflow: visible;
-
-			.rivet {
-				display: none;
-			}
-		}
-
 		// The shared Carto street map stays a supporting editorial plate. It is
 		// intentionally static: no commercial pins, controls, or interaction-only cues.
-		&__card-image-outer-frame {
-			grid-area: map;
-			padding: 0;
-			background: transparent;
-			border: 0;
-			box-shadow: none;
-		}
-
 		&__card-image-inner-frame {
 			padding: 0;
 			border: 1px solid rgb(var(--alba-champagne-rgb) / 28%);
@@ -1242,8 +1213,11 @@ html:has(.event--alba-rosa-quinonez) body {
 		}
 
 		&__card-image-container {
-			aspect-ratio: 16 / 9;
 			background: var(--alba-limestone);
+
+			@media (width < 768px) {
+				aspect-ratio: 16 / 9;
+			}
 		}
 
 		.google-map-container[data-map-style='rustic'] {
@@ -1263,40 +1237,10 @@ html:has(.event--alba-rosa-quinonez) body {
 		}
 
 		&__card-content {
-			grid-area: content;
-			padding: 0;
 			text-align: center;
 
 			@media (width >= 768px) {
-				display: flex;
-				align-items: flex-start;
-				gap: 0;
 				text-align: left;
-			}
-		}
-
-		@media (width < 768px) {
-			&__card {
-				display: flex;
-				flex-direction: column;
-				gap: clamp(1.75rem, 4vw, 2.25rem);
-			}
-
-			&__card-content {
-				display: contents;
-			}
-
-			&__card-content-list {
-				order: 1;
-			}
-
-			&__card-image-outer-frame {
-				order: 2;
-			}
-
-			&__card-navigation-buttons {
-				order: 3;
-				margin-top: 0;
 			}
 		}
 
@@ -1391,13 +1335,6 @@ html:has(.event--alba-rosa-quinonez) body {
 			align-items: center;
 			gap: 0.6rem;
 			margin-top: 0.5rem;
-
-			@media (width >= 768px) {
-				margin-top: clamp(1.5rem, 3vw, 2.25rem);
-				align-items: stretch;
-				padding-left: 0;
-				border-left: 0;
-			}
 		}
 
 		// Premium map actions: charcoal primary plate + champagne inset hairline.
@@ -1475,47 +1412,11 @@ html:has(.event--alba-rosa-quinonez) body {
 			}
 		}
 
-		@media (width >= 768px) {
-			&__card {
-				grid-template-columns: minmax(0, 1.1fr) minmax(18rem, 0.9fr);
-				grid-template-areas:
-					'content map'
-					'content navigation';
-				align-items: start;
-				gap: 0.75rem clamp(2.5rem, 6vw, 5rem);
-			}
-
-			&__card-content {
-				display: contents;
-			}
-
-			&__card-content-list {
-				grid-area: content;
-				align-items: flex-start;
-			}
-
-			&__card-navigation-buttons {
-				grid-area: navigation;
-				align-items: stretch;
-				margin-top: 0;
-			}
-
-			&__card-image-container {
-				aspect-ratio: 4 / 5;
-			}
-		}
-
 		// Dress code as metadata, not another card
 		&__indications-container {
 			max-width: min(62rem, 100%);
 			margin-inline: auto;
 			margin-top: clamp(2.15rem, 4.5vw, 3rem);
-
-			@media (width >= 768px) {
-				width: calc(54% - clamp(1.25rem, 3vw, 2.5rem));
-				margin-left: 0;
-				margin-right: auto;
-			}
 		}
 
 		&__divider {
@@ -2237,9 +2138,10 @@ html:has(.event--alba-rosa-quinonez) body {
 	}
 
 	// ==========================================================================
-	// 10. THANK YOU SECTION (INTIMATE CLOSING MEMORY & SPLIT GRID)
+	// 10. THANK YOU SECTION
+	// Runtime selects structuralVariant=standard. Dead editorial-back-cover markup
+	// selectors were removed in Goal B; keep standard-compatible skin tokens only.
 	// ==========================================================================
-	// Let the memory photo cross the Family → Thank You boundary
 	.invitation-section-wrapper[data-section-kind='thankYou'] {
 		position: relative;
 		z-index: 2;
@@ -2258,107 +2160,6 @@ html:has(.event--alba-rosa-quinonez) body {
 			content: none;
 		}
 
-		.thank-you-editorial {
-			display: grid;
-			grid-template-columns: 1fr;
-			gap: clamp(2rem, 5vw, 3.5rem);
-			place-items: center;
-			width: 100%;
-			max-width: 52rem;
-			margin: 0 auto;
-
-			@media (width >= 768px) {
-				grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.1fr);
-				place-items: center stretch;
-				gap: clamp(2.25rem, 5.5vw, 4rem);
-			}
-		}
-
-		.thank-you-editorial__media.photo-frame {
-			width: 100%;
-			max-width: min(16.5rem, 72vw);
-			height: auto;
-			aspect-ratio: 4 / 5;
-			border-radius: 0;
-			border: 6px solid var(--alba-ivory);
-			background: var(--alba-ivory);
-			box-shadow: var(--alba-photo-shadow);
-			padding: 0;
-			justify-self: center;
-			overflow: hidden;
-
-			// Photographic bleed: the framed memory crosses the Family boundary,
-			// straddling stone and graphite instead of sitting inside one band.
-			margin-top: calc(-1 * (clamp(3.5rem, 7vw, 5.75rem) + clamp(2.25rem, 5vw, 3.75rem)));
-
-			@media (width >= 768px) {
-				max-width: min(15.5rem, 100%);
-				justify-self: end;
-				margin-top: calc(
-					-1 * (clamp(3.5rem, 7vw, 5.75rem) + clamp(2.75rem, 5.5vw, 4.5rem))
-				);
-			}
-
-			.thank-you-editorial__image-shell {
-				width: 100%;
-				height: 100%;
-			}
-
-			.photo-image {
-				width: 100%;
-				height: 100%;
-				object-fit: cover;
-				object-position: var(--thank-you-focal-point, 48% 22%);
-				border-radius: 0;
-				filter: var(--alba-photo-filter);
-				transition: filter 0.45s ease;
-			}
-
-			&:hover .photo-image {
-				transform: none;
-				filter: contrast(1.04) brightness(0.99) saturate(1);
-			}
-		}
-
-		.thank-you-editorial__copy {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			text-align: center;
-			gap: 1.75rem;
-			max-width: 28rem;
-
-			@media (width >= 768px) {
-				align-items: flex-start;
-				text-align: left;
-			}
-		}
-
-		// Family → Thank You: tiny ceremonial age accent (leitmotif D)
-		.thank-you-editorial__copy::before {
-			content: '70';
-			display: block;
-			margin: 0 auto;
-			font-family: var(--font-label, sans-serif);
-			font-size: clamp(0.58rem, 1.35vw, 0.72rem);
-			font-weight: 600;
-			letter-spacing: 0.28em;
-			line-height: 1;
-			color: rgb(var(--alba-champagne-rgb) / 48%);
-			text-transform: uppercase;
-			pointer-events: none;
-			user-select: none;
-		}
-
-		@include mixins.respond-to(md) {
-			.thank-you-editorial__copy::before {
-				margin-inline: 0;
-				letter-spacing: 0.32em;
-				color: rgb(var(--alba-champagne-rgb) / 55%);
-			}
-		}
-
-		// Single gratitude message rendering guard
 		.thank-you-message {
 			color: rgb(var(--alba-ivory-rgb) / 94%);
 			font-family: var(--font-body);
@@ -2372,8 +2173,6 @@ html:has(.event--alba-rosa-quinonez) body {
 				content: none;
 			}
 
-			// The floated drop cap fractured the first word ("G racias");
-			// a quiet continuous paragraph reads more editorial.
 			.drop-cap {
 				float: none;
 				display: inline;
@@ -2429,7 +2228,6 @@ html:has(.event--alba-rosa-quinonez) body {
 	// Restrained motion for accessibility
 	@media (prefers-reduced-motion: reduce) {
 		.gallery-grid__item,
-		.thank-you-editorial__media.photo-frame .photo-image,
 		.invitation-hero [data-reveal-item],
 		.family__reveal {
 			transition: none;

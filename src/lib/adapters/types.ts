@@ -26,9 +26,11 @@ import type { z } from 'zod';
 import type { EnvelopeRevealVariant } from '@/lib/schemas/content/envelope.schema';
 import type { giftItemSchema } from '@/lib/schemas/content/gifts.schema';
 import type {
+	FamilyStructuralVariant,
 	GalleryLayoutVariant,
 	GiftsStructuralVariant,
 	HeroStructuralVariant,
+	LocationStructuralVariant,
 	PersonalizedAccessStructuralVariant,
 	RsvpStructuralVariant,
 	ThankYouStructuralVariant,
@@ -211,6 +213,8 @@ export interface InvitationViewModelBrandingVisibility {
 export interface LocationSection {
 	visibility?: LocationVisibility;
 	presentation?: LocationPresentation;
+	structuralVariant?: LocationStructuralVariant;
+	structuralVariantExplicit?: boolean;
 	isLocked?: boolean;
 	lockedTitle?: string;
 	lockedMessage?: string;
@@ -268,6 +272,8 @@ export interface InvitationViewModel {
 			groups?: FamilyGroup[];
 			featuredImage?: ImageAsset;
 			presentation?: FamilyPresentation;
+			structuralVariant?: FamilyStructuralVariant;
+			structuralVariantExplicit?: boolean;
 			focalPoint?: string;
 			labels?: FamilyLabels;
 			celebrantName: string;

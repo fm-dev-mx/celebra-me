@@ -1,8 +1,10 @@
 import {
+	resolveFamilyStructuralVariant,
 	resolveGalleryLayoutVariant,
 	resolveGalleryVisualVariant,
 	resolveGiftsStructuralVariant,
 	resolveHeroStructuralVariant,
+	resolveLocationStructuralVariant,
 	resolvePersonalizedAccessStructuralVariant,
 	resolveRsvpStructuralVariant,
 	resolveThankYouStructuralVariant,
@@ -18,11 +20,14 @@ describe('section structural variant contracts', () => {
 		expect(resolvePersonalizedAccessStructuralVariant('ornamented', 'editorial-magazine')).toBe(
 			'ornamented',
 		);
+		expect(resolveFamilyStructuralVariant('split-groups')).toBe('split-groups');
+		expect(resolveLocationStructuralVariant('split-map')).toBe('split-map');
 	});
 
 	it('keeps explicit structural selections independent from the active theme', () => {
 		for (const theme of THEME_PRESETS) {
 			expect(resolveHeroStructuralVariant('editorial-cover', theme)).toBe('editorial-cover');
+			expect(resolveHeroStructuralVariant('split-cover', theme)).toBe('split-cover');
 			expect(resolveThankYouStructuralVariant('full-bleed-photo', theme)).toBe(
 				'full-bleed-photo',
 			);
@@ -38,6 +43,8 @@ describe('section structural variant contracts', () => {
 			expect(resolveGalleryLayoutVariant('magazine-spread', undefined, theme)).toBe(
 				'magazine-spread',
 			);
+			expect(resolveFamilyStructuralVariant('split-groups')).toBe('split-groups');
+			expect(resolveLocationStructuralVariant('split-map')).toBe('split-map');
 		}
 	});
 
@@ -49,6 +56,10 @@ describe('section structural variant contracts', () => {
 		expect(resolveGalleryLayoutVariant('not-a-variant', undefined, 'celestial-blue')).toBe(
 			'index-choreography',
 		);
+		expect(resolveFamilyStructuralVariant(undefined)).toBe('standard');
+		expect(resolveFamilyStructuralVariant('not-a-variant')).toBe('standard');
+		expect(resolveLocationStructuralVariant(undefined)).toBe('standard');
+		expect(resolveLocationStructuralVariant('not-a-variant')).toBe('standard');
 	});
 
 	it('maps established legacy theme branches to bounded structural identifiers', () => {

@@ -268,6 +268,7 @@ function mapLocationFromDraft(
 	const demoLocation = demoContent?.location as Record<string, unknown> | undefined;
 	if (draftLocation.visibility) result.visibility = draftLocation.visibility;
 	if (draftLocation.presentation) result.presentation = draftLocation.presentation;
+	if (draftLocation.structuralVariant) result.structuralVariant = draftLocation.structuralVariant;
 	if (draftLocation.presentationOptions)
 		result.presentationOptions = draftLocation.presentationOptions;
 
@@ -400,6 +401,7 @@ function buildHeroFromDraft(
 		'focalPointTablet',
 		'focalPointDesktop',
 		'presentation',
+		'structuralVariant',
 	] as const) {
 		if (draftHero[field] !== undefined) result[field] = draftHero[field];
 		else if (!ctx.isDemo && priorHero?.[field] !== undefined) result[field] = priorHero[field];

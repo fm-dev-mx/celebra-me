@@ -323,50 +323,23 @@
 		}
 	}
 
-	@include mixins.respond-to(lg) {
-		.invitation-hero {
-			align-items: flex-start;
-			justify-content: center;
-			text-align: left;
-			background:
-				radial-gradient(
-					circle at 78% 32%,
-					rgb(var(--romina-sage-rgb) / 28%),
-					transparent 34%
-				),
-				linear-gradient(
-					135deg,
-					rgb(34 53 42) 0%,
-					var(--romina-botanical) 62%,
-					rgb(38 60 48) 100%
-				);
+	// split-cover geometry lives in themes/sections/hero/_split-cover.scss.
+	// Profile owns plane color, overlay tint, and invitation typography only.
+	.invitation-hero[data-structural-variant='split-cover'] {
+		--hero-split-plane-bg:
+			radial-gradient(circle at 78% 32%, rgb(var(--romina-sage-rgb) / 28%), transparent 34%),
+			linear-gradient(
+				135deg,
+				rgb(34 53 42) 0%,
+				var(--romina-botanical) 62%,
+				rgb(38 60 48) 100%
+			);
+		--hero-split-overlay-strong: rgb(var(--romina-botanical-rgb) / 96%);
+		--hero-split-overlay-mid: rgb(var(--romina-botanical-rgb) / 82%);
+		--hero-split-overlay-soft: rgb(var(--romina-botanical-rgb) / 18%);
 
-			&__background img {
-				display: block;
-				width: min(58vw, 760px);
-				height: 100%;
-				margin-left: auto;
-				object-fit: contain;
-				object-position: right center;
-			}
-
-			&__background::after {
-				background: linear-gradient(
-					90deg,
-					rgb(var(--romina-botanical-rgb) / 96%) 0%,
-					rgb(var(--romina-botanical-rgb) / 82%) 34%,
-					rgb(var(--romina-botanical-rgb) / 18%) 68%,
-					transparent 100%
-				);
-			}
-
-			&__content {
-				width: min(42vw, 560px);
-				margin: 0 0 0 clamp(3rem, 7vw, 8rem);
-				text-align: left;
-			}
-
-			&__title {
+		@include mixins.respond-to(lg) {
+			.invitation-hero__title {
 				position: relative;
 				top: -4rem;
 				font-family: Parisienne, cursive;
@@ -380,13 +353,8 @@
 				transform: none;
 			}
 
-			&__divider {
+			.invitation-hero__details {
 				margin-inline: 0;
-			}
-
-			&__scroll-indicator {
-				left: clamp(3rem, 7vw, 8rem);
-				right: auto;
 			}
 		}
 	}

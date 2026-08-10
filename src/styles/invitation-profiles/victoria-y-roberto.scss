@@ -698,6 +698,12 @@
 	}
 
 	.family {
+		// split-groups geometry lives in themes/sections/family/_split-groups.scss.
+		// Pilot note: Victoria adopts the shared centered mobile stack (was mirrored).
+		--family-split-divider: rgb(var(--victoria-terracota-rgb) / 22%);
+		--family-split-gap-inline: clamp(1.5rem, 5vw, 4rem);
+		--family-split-content-max-width: 54rem;
+
 		padding-block: clamp(3.75rem, 7vw, 5.5rem);
 
 		&__panel--no-media {
@@ -705,41 +711,12 @@
 			margin-inline: auto;
 		}
 
-		&__content {
-			display: grid;
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-			gap: 0 clamp(1.5rem, 5vw, 4rem);
-		}
-
 		&__group {
 			padding-block: clamp(1.1rem, 2.5vw, 1.6rem);
 		}
 
-		&__group--group-0 {
-			padding-inline-end: clamp(0.75rem, 2vw, 1.5rem);
-			border-inline-end: var(--victoria-fine-border);
-			text-align: right;
-
-			.family__name {
-				justify-content: flex-end;
-			}
-		}
-
-		&__group--group-1 {
-			padding-inline-start: clamp(0.75rem, 2vw, 1.5rem);
-			text-align: left;
-
-			.family__name {
-				justify-content: flex-start;
-			}
-		}
-
 		&__group--godparents {
-			grid-column: 1 / -1;
-			margin-top: clamp(0.5rem, 2vw, 1rem);
-			padding-top: clamp(1.5rem, 3vw, 2rem);
 			border-top: var(--victoria-fine-border);
-			text-align: center;
 		}
 
 		&__group-title {
@@ -1134,36 +1111,6 @@
 			--reveal-card-width: min(80vw, 19rem);
 			--reveal-card-enter-y: clamp(18px, 3.5svh, 28px);
 			--reveal-card-rest-y: clamp(-20px, -3svh, -10px);
-		}
-
-		.family {
-			&__content {
-				grid-template-columns: 1fr;
-			}
-
-			&__group--group-0 {
-				padding-inline: 0;
-				border-inline-end: 0;
-				border-bottom: var(--victoria-fine-border);
-				text-align: left;
-			}
-
-			&__group--group-1 {
-				padding-inline: 0;
-				text-align: right;
-			}
-
-			&__group--godparents {
-				grid-column: 1;
-			}
-		}
-
-		.family__group--group-0 .family__name {
-			justify-content: flex-start;
-		}
-
-		.family__group--group-1 .family__name {
-			justify-content: flex-end;
 		}
 
 		.personalized-access .access-card__body {

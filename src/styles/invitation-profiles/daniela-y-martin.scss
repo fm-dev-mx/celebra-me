@@ -1010,71 +1010,26 @@
 		);
 	}
 
-	.gallery-section {
+	// single-keepsake structure is canonical; profile supplies frame/tokens only.
+	.gallery-section[data-structural-variant='single-keepsake'] {
 		--gallery-section-padding-block: clamp(3.25rem, 6.5vw, 5.25rem);
 		--gallery-item-image-position: 50% 38%;
-
-		.gallery-section__header {
-			max-width: 30rem;
-			margin-inline: auto;
-			margin-bottom: clamp(1rem, 2.2vw, 1.5rem);
-			text-align: center;
-		}
+		--gallery-single-label-font: var(--font-body);
+		--gallery-single-image-border: 1px solid rgb(var(--daniela-gold-rgb) / 24%);
+		--gallery-item-padding: 0.45rem;
+		--gallery-item-bg: var(--daniela-cream);
+		--gallery-item-radius: 2px;
+		--gallery-item-shadow: 0 10px 26px rgb(var(--daniela-olive-rgb) / 10%);
 
 		.gallery-section__eyebrow {
-			font-family: var(--font-body);
 			font-size: 0.68rem;
 			letter-spacing: 0.24em;
-			text-transform: uppercase;
 			color: var(--daniela-olive);
-			margin-bottom: 0.35rem;
-			display: block;
 		}
 
-		.gallery-section__title {
-			font-family: var(--font-display);
-			font-size: clamp(1.75rem, 4.2vw, 2.6rem);
-			line-height: 1.08;
-			text-transform: none;
-			letter-spacing: 0.01em;
-			margin-bottom: 0.55rem;
-			text-wrap: balance;
-		}
-
-		.gallery-section__subtitle {
-			font-family: var(--font-body);
-			font-size: clamp(0.9rem, 1.8vw, 1.02rem);
-			line-height: 1.55;
-			color: rgb(var(--daniela-ink-rgb) / 70%);
-			max-width: 22.5rem;
-			margin-inline: auto;
-			text-wrap: balance;
-		}
-
-		.gallery-grid {
-			display: flex;
-			justify-content: center;
-			max-width: min(25rem, 84vw);
-			margin-inline: auto;
-		}
-
-		.gallery-grid__item,
-		.gallery-grid__item:nth-child(1) {
-			width: 100%;
-			max-width: min(25rem, 80vw);
-			aspect-ratio: 2 / 3;
-			margin-inline: auto;
-			padding: 0.45rem;
-			border: 1px solid rgb(var(--daniela-gold-rgb) / 24%);
-			border-radius: 2px;
-			background: var(--daniela-cream);
-			box-shadow: 0 10px 26px rgb(var(--daniela-olive-rgb) / 10%);
-			overflow: visible;
-
-			img {
-				border-radius: 0;
-				object-fit: cover;
-			}
+		.gallery-grid__item img {
+			border-radius: 0;
+			object-fit: cover;
 		}
 	}
 
@@ -1983,6 +1938,10 @@
 			padding-inline: 0.35rem;
 		}
 
+		// split-groups geometry lives in themes/sections/family/_split-groups.scss.
+		--family-split-divider: rgb(var(--daniela-gold-rgb) / 42%);
+		--family-split-gap-inline: clamp(1.75rem, 4.5vw, 3.5rem);
+
 		&__panel--no-media {
 			position: relative;
 			border: 0;
@@ -1993,45 +1952,11 @@
 			margin-inline: auto;
 		}
 
-		&__content {
-			position: relative;
-			display: grid;
-			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-			gap: clamp(1.75rem, 4.5vw, 3.5rem);
-			width: 100%;
-			max-width: 44rem;
-			margin-inline: auto;
-			align-items: start;
-			padding-block: 0.25rem;
-
-			&::after {
-				content: '';
-				position: absolute;
-				top: 0.25rem;
-				bottom: 0.25rem;
-				left: 50%;
-				width: 1px;
-				transform: translateX(-50%);
-				background: linear-gradient(
-					180deg,
-					transparent 0%,
-					rgb(var(--daniela-gold-rgb) / 42%) 15%,
-					rgb(var(--daniela-gold-rgb) / 42%) 85%,
-					transparent 100%
-				);
-				pointer-events: none;
-			}
-		}
-
 		&__group {
 			position: relative;
 			border: 0;
 			background: transparent;
 			padding: 0;
-		}
-
-		&__group + &__group::before {
-			display: none;
 		}
 
 		&__group-title {
@@ -2080,66 +2005,6 @@
 			-webkit-font-smoothing: antialiased;
 		}
 
-		// Bride family — left column facing inward (right-aligned)
-		.family__group--group-0 {
-			text-align: right;
-			padding-inline-end: clamp(0.75rem, 2vw, 1.5rem);
-
-			.family__group-title {
-				text-align: right;
-			}
-
-			.family__list {
-				align-items: flex-end;
-			}
-
-			.family__item {
-				align-items: flex-end;
-				text-align: right;
-			}
-
-			.family__name {
-				display: flex;
-				justify-content: flex-end;
-				text-align: right;
-				width: 100%;
-			}
-
-			.family__meta {
-				text-align: right;
-			}
-		}
-
-		// Groom family — right column facing inward (left-aligned)
-		.family__group--group-1 {
-			text-align: left;
-			padding-inline-start: clamp(0.75rem, 2vw, 1.5rem);
-
-			.family__group-title {
-				text-align: left;
-			}
-
-			.family__list {
-				align-items: flex-start;
-			}
-
-			.family__item {
-				align-items: flex-start;
-				text-align: left;
-			}
-
-			.family__name {
-				display: flex;
-				justify-content: flex-start;
-				text-align: left;
-				width: 100%;
-			}
-
-			.family__meta {
-				text-align: left;
-			}
-		}
-
 		&__item--pending .family__name,
 		&__item--pending .family__name span {
 			font-family: var(--font-body);
@@ -2161,6 +2026,7 @@
 	@include mixins.respond-below(sm) {
 		.family {
 			--family-padding-block: clamp(2rem, 5vw, 3rem);
+			--family-split-divider: rgb(var(--daniela-gold-rgb) / 38%);
 		}
 
 		.family__header {
@@ -2171,59 +2037,6 @@
 			font-size: clamp(2.4rem, 5vw, 2.75rem);
 			line-height: 1.16;
 			max-width: 14ch;
-		}
-
-		.family__content {
-			grid-template-columns: 1fr;
-			gap: clamp(1.25rem, 3.5vw, 1.65rem);
-			max-width: 22rem;
-			margin-inline: auto;
-			padding-block: 0;
-		}
-
-		.family__content::after {
-			display: none;
-		}
-
-		.family__group--group-0,
-		.family__group--group-1 {
-			text-align: center;
-			align-items: center;
-			padding-inline: 0;
-			border: 0;
-		}
-
-		.family__group--group-0 .family__group-title,
-		.family__group--group-0 .family__list,
-		.family__group--group-0 .family__item,
-		.family__group--group-0 .family__name,
-		.family__group--group-0 .family__meta,
-		.family__group--group-1 .family__group-title,
-		.family__group--group-1 .family__list,
-		.family__group--group-1 .family__item,
-		.family__group--group-1 .family__name,
-		.family__group--group-1 .family__meta {
-			text-align: center;
-			align-items: center;
-			justify-content: center;
-			width: 100%;
-		}
-
-		.family__group--group-1 {
-			position: relative;
-		}
-
-		.family__group--group-1::before {
-			content: '';
-			display: block;
-			position: absolute;
-			top: calc(-1 * clamp(1.25rem, 3.5vw, 1.65rem) / 2);
-			left: 50%;
-			transform: translateX(-50%);
-			width: clamp(3rem, 16vw, 4rem);
-			height: 1px;
-			background: rgb(var(--daniela-gold-rgb) / 38%);
-			pointer-events: none;
 		}
 	}
 

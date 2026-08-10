@@ -188,8 +188,8 @@ const activeSectionCssUrls =
 						: undefined,
 					structuralVariants: {
 						hero: viewModel.hero.structuralVariantExplicit
-						? viewModel.hero.structuralVariant
-						: undefined,
+							? viewModel.hero.structuralVariant
+							: undefined,
 						thankYou: viewModel.sections.thankYou?.structuralVariantExplicit
 							? viewModel.sections.thankYou.structuralVariant
 							: undefined,
@@ -203,6 +203,12 @@ const activeSectionCssUrls =
 							viewModel.sections.rsvp?.personalizedAccess?.structuralVariantExplicit
 								? viewModel.sections.rsvp.personalizedAccess.structuralVariant
 								: undefined,
+						family: viewModel.sections.family?.structuralVariantExplicit
+							? viewModel.sections.family.structuralVariant
+							: undefined,
+						location: viewModel.sections.location?.structuralVariantExplicit
+							? viewModel.sections.location.structuralVariant
+							: undefined,
 					},
 				visualProfileId: viewModel.visualProfileId,
 				slug,

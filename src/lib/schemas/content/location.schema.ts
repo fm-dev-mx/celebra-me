@@ -3,6 +3,7 @@ import { ICON_NAMES_TUPLE } from '@/lib/icons/icon-catalog';
 import { INDICATION_STYLE_VARIANTS } from '@/lib/theme/theme-contract';
 import { AssetSchema, focalPointSchema } from '@/lib/schemas/content/shared.schema';
 import { LOCATION_PRESENTATIONS } from '@/lib/invitation/presentation-options';
+import { LOCATION_STRUCTURAL_VARIANTS } from '@/lib/invitation/structural-variants';
 
 const locationCoordinatesSchema = z
 	.object({
@@ -61,6 +62,7 @@ export type VenueEntryInput = z.infer<typeof venueEntrySchema>;
 export const locationSchema = z.object({
 	visibility: z.enum(['public', 'after-rsvp']).default('public'),
 	presentation: z.enum(LOCATION_PRESENTATIONS).optional(),
+	structuralVariant: z.enum(LOCATION_STRUCTURAL_VARIANTS).optional(),
 	presentationOptions: z
 		.object({
 			showFlourishes: z.boolean().optional(),

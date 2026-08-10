@@ -228,6 +228,9 @@ describe('section-css-resolver-map', () => {
 			'/src/styles/themes/sections/hero/_editorial-magazine.scss': {
 				default: '/_astro/hero-editorial.css',
 			},
+			'/src/styles/themes/sections/hero/_split-cover.scss': {
+				default: '/_astro/hero-split-cover.css',
+			},
 			'/src/styles/themes/sections/thank-you/_editorial-magazine.scss': {
 				default: '/_astro/thank-you-editorial.css',
 			},
@@ -240,6 +243,12 @@ describe('section-css-resolver-map', () => {
 			'/src/styles/themes/sections/personalized-access/_editorial-magazine.scss': {
 				default: '/_astro/access-editorial.css',
 			},
+			'/src/styles/themes/sections/family/_split-groups.scss': {
+				default: '/_astro/family-split-groups.css',
+			},
+			'/src/styles/themes/sections/location/_split-map.scss': {
+				default: '/_astro/location-split-map.css',
+			},
 		});
 
 		expect(
@@ -251,6 +260,8 @@ describe('section-css-resolver-map', () => {
 					gifts: 'editorial-catalog',
 					rsvp: 'editorial-press-pass',
 					personalizedAccess: 'editorial-pass',
+					family: 'split-groups',
+					location: 'split-map',
 				},
 			}),
 		).toEqual([
@@ -260,6 +271,43 @@ describe('section-css-resolver-map', () => {
 			'/_astro/gifts-editorial.css',
 			'/_astro/rsvp-editorial.css',
 			'/_astro/access-editorial.css',
+			'/_astro/family-split-groups.css',
+			'/_astro/location-split-map.css',
+		]);
+	});
+
+	it('delivers split-cover and split-map without origin profile or theme identity', () => {
+		const bundleUrlMap = buildSectionBundleUrlMap({
+			'/src/styles/invitation-sections-by-preset/celestial-blue.scss': {
+				default: '/_astro/celestial-bundle.css',
+			},
+		});
+		const sectionUrlMap = buildSectionUrlMap({
+			'/src/styles/themes/sections/hero/_split-cover.scss': {
+				default: '/_astro/hero-split-cover.css',
+			},
+			'/src/styles/themes/sections/location/_split-map.scss': {
+				default: '/_astro/location-split-map.css',
+			},
+			'/src/styles/themes/sections/family/_split-groups.scss': {
+				default: '/_astro/family-split-groups.css',
+			},
+		});
+
+		expect(
+			resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
+				themePreset: 'celestial-blue',
+				structuralVariants: {
+					hero: 'split-cover',
+					family: 'split-groups',
+					location: 'split-map',
+				},
+			}),
+		).toEqual([
+			'/_astro/celestial-bundle.css',
+			'/_astro/hero-split-cover.css',
+			'/_astro/family-split-groups.css',
+			'/_astro/location-split-map.css',
 		]);
 	});
 

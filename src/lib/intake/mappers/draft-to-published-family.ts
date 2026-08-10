@@ -184,6 +184,7 @@ export function mapFamilyFromDraft(
 
 	if (typeof family.visible === 'boolean') result.visible = family.visible;
 	if (family.presentation) result.presentation = family.presentation;
+	if (family.structuralVariant) result.structuralVariant = family.structuralVariant;
 	if (family.featuredImage) result.featuredImage = family.featuredImage;
 	return isNonEmptyObject(result) ? result : undefined;
 }

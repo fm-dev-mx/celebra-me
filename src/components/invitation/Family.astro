@@ -11,6 +11,7 @@ import {
 	shouldRenderFamilyMedia,
 	type FamilyPresentation,
 } from '@/lib/invitation/presentation-options';
+import type { FamilyStructuralVariant } from '@/lib/invitation/structural-variants';
 
 interface Props {
 	parents?: {
@@ -47,6 +48,7 @@ interface Props {
 	}>;
 	featuredImage?: string | ImageAsset;
 	presentation?: FamilyPresentation;
+	structuralVariant?: FamilyStructuralVariant;
 	celebrantName: string;
 	labels?: {
 		sectionTitle?: string;
@@ -93,6 +95,7 @@ const {
 	groups,
 	featuredImage,
 	presentation,
+	structuralVariant = 'standard',
 	celebrantName,
 	labels,
 	focalPoint,
@@ -230,6 +233,7 @@ if (!hasContent) return;
 	data-screenshot-section="family"
 	data-variant={variant}
 	data-presentation={presentation}
+	data-structural-variant={structuralVariant}
 >
 	<div class="family__bg-texture" aria-hidden="true"></div>
 

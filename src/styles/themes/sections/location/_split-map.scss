@@ -1,0 +1,114 @@
+@use '../../../global/mixins' as mixins;
+
+// Location split-map: cardless venue record + lateral map/actions planes.
+// Map materiality, button chrome, and typography remain profile/theme skins.
+.event-location[data-structural-variant='split-map'] {
+	--location-split-gap: clamp(1.75rem, 3.5vw, 2.5rem);
+	--location-split-desktop-gap-block: 0.75rem;
+	--location-split-desktop-gap-inline: clamp(2.5rem, 6vw, 5rem);
+	--location-split-map-min: 18rem;
+	--location-split-content-basis: 1.1fr;
+	--location-split-map-basis: 0.9fr;
+
+	.event-location__card-wrapper {
+		width: 100%;
+		max-width: none;
+	}
+
+	.event-location__card {
+		background: transparent;
+		border: none;
+		box-shadow: none;
+		border-radius: 0;
+		padding: 0;
+		backdrop-filter: none;
+		max-width: none;
+		display: grid;
+		grid-template-areas:
+			'content'
+			'map';
+		gap: var(--location-split-gap);
+		overflow: visible;
+
+		.rivet {
+			display: none;
+		}
+	}
+
+	.event-location__card-image-outer-frame {
+		grid-area: map;
+		padding: 0;
+		background: transparent;
+		border: 0;
+		box-shadow: none;
+	}
+
+	.event-location__card-content {
+		grid-area: content;
+		padding: 0;
+	}
+
+	@media (width < 768px) {
+		.event-location__card {
+			display: flex;
+			flex-direction: column;
+			gap: var(--location-split-gap);
+		}
+
+		.event-location__card-content {
+			display: contents;
+		}
+
+		.event-location__card-content-list {
+			order: 1;
+		}
+
+		.event-location__card-image-outer-frame {
+			order: 2;
+		}
+
+		.event-location__card-navigation-buttons {
+			order: 3;
+			margin-top: 0;
+		}
+	}
+
+	@media (width >= 768px) {
+		.event-location__card {
+			grid-template-columns: minmax(0, var(--location-split-content-basis)) minmax(
+					var(--location-split-map-min),
+					var(--location-split-map-basis)
+				);
+			grid-template-areas:
+				'content map'
+				'content navigation';
+			align-items: start;
+			gap: var(--location-split-desktop-gap-block) var(--location-split-desktop-gap-inline);
+		}
+
+		.event-location__card-content {
+			display: contents;
+		}
+
+		.event-location__card-content-list {
+			grid-area: content;
+			align-items: flex-start;
+		}
+
+		.event-location__card-navigation-buttons {
+			grid-area: navigation;
+			align-items: stretch;
+			margin-top: 0;
+		}
+
+		.event-location__card-image-container {
+			aspect-ratio: 4 / 5;
+		}
+
+		.event-location__indications-container {
+			width: calc(54% - clamp(1.25rem, 3vw, 2.5rem));
+			margin-left: 0;
+			margin-right: auto;
+		}
+	}
+}
