@@ -173,13 +173,13 @@ Optional future (non-blocking for prep): Roberto legal surname if ever needed fo
 
 Keep strictly separate from Fact Register and Owner Decisions.
 
-| topic               | recommendation                                                                                          | basis                                      | status               |
-| ------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------ | -------------------- |
-| supporting palette  | Neutral cream / soft ink / restrained gold accents around client terracota                              | jewelry-box-wedding + photography          | recommendation only  |
-| gallery treatment   | One-item gallery as intentional editorial feature (`variant`/`layoutRole` feature); not multi-grid fill | Schema allows 1 item; jewelry-box `single` | recommendation only  |
-| interlude placement | Provisional pacing: after `countdown` and after `gallery`; finalize `afterSection` in Goal 2            | Narrative flow / jewelry-box practice      | Goal 2 art direction |
-| hero crop           | Face-safe upper-body crop on `00000041`; prefer portrait derivatives                                    | Composition of selected hero               | recommendation only  |
-| thankYou source     | Use `00000042` despite lower native resolution; careful crop; do not upscale beyond native              | Only remaining unique composition          | recommendation only  |
+| topic               | recommendation                                                                                                     | basis                                                                                | status               |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------ | -------------------- |
+| supporting palette  | Neutral cream / soft ink / restrained gold accents around client terracota                                         | jewelry-box-wedding + photography                                                    | recommendation only  |
+| gallery treatment   | One-item gallery as intentional editorial feature (`single-keepsake` / `layoutRole: feature`); not multi-grid fill | Canonical single-keepsake layout; legacy `single` remains accepted for compatibility | recommendation only  |
+| interlude placement | Provisional pacing: after `countdown` and after `gallery`; finalize `afterSection` in Goal 2                       | Narrative flow / jewelry-box practice                                                | Goal 2 art direction |
+| hero crop           | Face-safe upper-body crop on `00000041`; prefer portrait derivatives                                               | Composition of selected hero                                                         | recommendation only  |
+| thankYou source     | Use `00000042` despite lower native resolution; careful crop; do not upscale beyond native                         | Only remaining unique composition                                                    | recommendation only  |
 
 ---
 
@@ -318,7 +318,8 @@ origin). Owner authorized this folder as the final invitation photograph source.
 ### Gallery capability note (preparation only)
 
 - Live `gallery.schema` accepts an `items[]` array with no minimum multi-image requirement.
-- Layout strategy includes a `single` variant; jewelry-box layout roles support a feature item.
+- Layout strategy uses the canonical `single-keepsake` variant; the legacy `single` alias remains
+  accepted for older published content and item `layoutRole: feature` preserves the portrait crop.
 - **Recommendation:** treat the one-item gallery as an intentional editorial feature, not a
   conventional multi-image gallery.
 - No component/style changes in Goal 1. If Goal 2 styling needs Lane A polish for a single frame,
@@ -398,25 +399,25 @@ correction. It must block the applicable Production boundary without blocking un
 The original Goal 1 visual findings remain the fixed audit set; no new subjective findings were
 opened during Goal 4.
 
-| # | finding area | final disposition | evidence / note |
-| -: | ------------ | ----------------- | --------------- |
-| 1 | Cross-section editorial consistency | **resolved** | Goal 3 editorial system plus Goal 3B whole-invitation review. |
-| 2 | Typography roles and heterogeneity | **resolved by shared infrastructure** | Semantic font roles/tokens and profile selectors; structural tests retained. |
-| 3 | Vertical rhythm and density | **resolved** | Goal 2/3 rhythm corrections and focused responsive capture. |
-| 4 | Generic cards and bordered surfaces | **resolved** | Open-flow/local surface hierarchy; residual RSVP container presence is accepted taste. |
-| 5 | Photographic/content transitions | **resolved by shared infrastructure** | Canonical intersection profiles and render-plan coverage. |
-| 6 | Reveal card-like opening | **resolved** | Victoria reveal refinement; reveal-open contract and Goal 3B reveal report. |
-| 7 | Hero lower hierarchy | **resolved** | Goal 3 hero composition evidence; not reopened in Goal 3B. |
-| 8 | Quote/countdown empty space | **resolved** | Countdown composition and rhythm evidence in section report. |
-| 9 | Location refinement | **resolved** | Shared location semantics plus Victoria profile; no regression found. |
-| 10 | Itinerary unfinished state | **blocked only by owner-controlled data** | Visual pacing is corrected; dinner, toast, and closing times remain explicit placeholders. |
-| 11 | Family hierarchy | **intentionally unchanged with evidence** | Accepted visual quality; further editorial exploration is optional, not a defect. |
-| 12 | Gallery sparse/provisional treatment | **resolved** | Single-image editorial treatment; cross-preset `single` tests pass. |
-| 13 | Gifts generic card stack | **resolved** | Goal 3 surface hierarchy and focused whole-page review. |
-| 14 | Personalized Access / RSVP density mismatch | **resolved** | Connected guest-action sequence in Goal 3B. |
-| 15 | RSVP incomplete initial state | **resolved** | Initial/progression behavior retained; focused RSVP evidence passes. |
-| 16 | ThankYou duplicated rendering | **resolved by shared infrastructure** | Goal 2 duplicate-message guard; no Victoria workaround remains. |
-| 17 | ThankYou closing reading flow | **resolved** | Goal 3B closing refinement; no disruptive drop-cap remains. |
+|   # | finding area                                | final disposition                         | evidence / note                                                                            |
+| --: | ------------------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------ |
+|   1 | Cross-section editorial consistency         | **resolved**                              | Goal 3 editorial system plus Goal 3B whole-invitation review.                              |
+|   2 | Typography roles and heterogeneity          | **resolved by shared infrastructure**     | Semantic font roles/tokens and profile selectors; structural tests retained.               |
+|   3 | Vertical rhythm and density                 | **resolved**                              | Goal 2/3 rhythm corrections and focused responsive capture.                                |
+|   4 | Generic cards and bordered surfaces         | **resolved**                              | Open-flow/local surface hierarchy; residual RSVP container presence is accepted taste.     |
+|   5 | Photographic/content transitions            | **resolved by shared infrastructure**     | Canonical intersection profiles and render-plan coverage.                                  |
+|   6 | Reveal card-like opening                    | **resolved**                              | Victoria reveal refinement; reveal-open contract and Goal 3B reveal report.                |
+|   7 | Hero lower hierarchy                        | **resolved**                              | Goal 3 hero composition evidence; not reopened in Goal 3B.                                 |
+|   8 | Quote/countdown empty space                 | **resolved**                              | Countdown composition and rhythm evidence in section report.                               |
+|   9 | Location refinement                         | **resolved**                              | Shared location semantics plus Victoria profile; no regression found.                      |
+|  10 | Itinerary unfinished state                  | **blocked only by owner-controlled data** | Visual pacing is corrected; dinner, toast, and closing times remain explicit placeholders. |
+|  11 | Family hierarchy                            | **intentionally unchanged with evidence** | Accepted visual quality; further editorial exploration is optional, not a defect.          |
+|  12 | Gallery sparse/provisional treatment        | **resolved**                              | Single-image editorial treatment; cross-preset `single` tests pass.                        |
+|  13 | Gifts generic card stack                    | **resolved**                              | Goal 3 surface hierarchy and focused whole-page review.                                    |
+|  14 | Personalized Access / RSVP density mismatch | **resolved**                              | Connected guest-action sequence in Goal 3B.                                                |
+|  15 | RSVP incomplete initial state               | **resolved**                              | Initial/progression behavior retained; focused RSVP evidence passes.                       |
+|  16 | ThankYou duplicated rendering               | **resolved by shared infrastructure**     | Goal 2 duplicate-message guard; no Victoria workaround remains.                            |
+|  17 | ThankYou closing reading flow               | **resolved**                              | Goal 3B closing refinement; no disruptive drop-cap remains.                                |
 
 The only remaining owner-data blockers are the five placeholders listed above; none blocks unrelated
 implementation or shared-contract validation.
