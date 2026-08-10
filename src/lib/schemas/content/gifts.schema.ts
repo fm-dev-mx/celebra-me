@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { GIFTS_PRESENTATIONS } from '@/lib/invitation/presentation-options';
 
 // Canonical gift item schemas — used as the single source of truth for the
 // gift data shape. The discriminated union type GiftItem is derived from
@@ -65,6 +66,18 @@ export const giftsSchema = z
 	.object({
 		title: z.string().optional(),
 		subtitle: z.string().optional(),
-		items: z.array(giftItemSchema),
+		presentation: z.enum(GIFTS_PRESENTATIONS).optional(),
+		items: z.array(giftItemSchema).optional(),
+	})
+	.superRefine((gifts, ctx) => {
+		const presentation = gifts.presentation ?? 'catalog';
+		const items = gifts.items ?? [];
+		if (presentation === 'legend-only' && items.length > 0) {
+			ctx.addIssue({
+				code: 'custom',
+				path: ['items'],
+				message: 'legend-only gifts must not include catalog items.',
+			});
+		}
 	})
 	.optional();

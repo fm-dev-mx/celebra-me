@@ -1,342 +1,346 @@
 {
-	"schemaVersion": 1,
-	"slug": "valentina-hernandez",
-	"eventType": "xv",
-	"title": "XV Años — Valentina Hernández Almaguer",
-	"themeId": "editorial-magazine",
-	"baseDemoId": "demo-xv-editorial-magazine",
-	"snapshot": {
-		"previewSlug": "demo-xv-editorial-magazine",
-		"themeId": "editorial-magazine",
-		"baseDemoId": "demo-xv-editorial-magazine"
-	},
-	"publishedContent": {
-		"hero": {
-			"date": "2026-08-29T21:45:00.000Z",
-			"name": "Valentina Hernández Almaguer",
-			"label": "XV Edition",
-			"variant": "editorial-magazine",
-			"portrait": "portrait",
-			"focalPoint": "50% 38%",
-			"backgroundImage": "hero",
-			"focalPointMobile": "50% 32%",
-			"backgroundImageMobile": "portrait"
-		},
-		"rsvp": {
-			"title": "Confirma tu asistencia",
-			"subcopy": "Por favor, confirma tu asistencia enviándome un mensaje directo o desde esta invitación. ¡Me encantará saber que vienes!",
-			"guestCap": 4,
-			"accessMode": "hybrid",
-			"whatsappConfig": {
-				"phone": "0000000000"
-			},
-			"confirmationMode": "both",
-			"confirmationMessage": "Gracias por confirmar. Me dará mucha alegría compartir esta noche contigo."
-		},
-		"gifts": {
-			"items": [
-				{
-					"text": "Un regalo con todo tu cariño para hacer de este día algo aún más especial.",
-					"type": "cash",
-					"title": "Regalo Sorpresa"
-				},
-				{
-					"text": "Se proporcionará un sobre el día del evento.",
-					"type": "cash",
-					"title": "Lluvia de Sobres"
-				},
-				{
-					"type": "store",
-					"links": [
-						{
-							"url": "https://mesaderegalos.liverpool.com.mx/milistaderegalos/52020257",
-							"label": "Ver lista"
-						}
-					],
-					"title": "Mesa en Liverpool",
-					"description": "VALENS DREAM TEAM",
-					"tableNumber": "52020257"
-				}
-			],
-			"title": "Regalos",
-			"subtitle": "Su presencia es mi mejor regalo, pero si desean tener un detalle conmigo, les comparto estas opciones."
-		},
-		"music": {
-			"url": "https://res.cloudinary.com/dusxvauvj/video/upload/v1782619626/Justin_Timberlake_-_CAN_T_STOP_THE_FEELING_mscvhn.m4a",
-			"autoPlay": true
-		},
-		"quote": {
-			"text": "Dicen que la moda es temporal, pero los recuerdos son eternos. Acompáñame a escribir el primer capítulo de mi nueva historia...",
-			"author": "Valentina Hernández Almaguer"
-		},
-		"theme": {
-			"preset": "editorial-magazine",
-			"fontFamily": "serif"
-		},
-		"title": "XV Años — Valentina Hernández Almaguer",
-		"family": {
-			"labels": {
-				"parentsTitle": "Mis padres",
-				"sectionTitle": "Mi familia",
-				"sectionMessage": "Gracias por darme la vida y tanto amor. Gracias por guiar mis pasos. Con la bendición de mi familia y el cariño de quienes han acompañado mi historia, celebro este día con el corazón lleno de gratitud.",
-				"godparentsTitle": "Padrinos",
-				"sectionSubtitle": "Con amor y gratitud"
-			},
-			"parents": {
-				"father": "Juan Carlos Hernández Calixco",
-				"mother": "María Estrella Almaguer Casarreal"
-			},
-			"focalPoint": "50% 38%",
-			"godparents": [
-				{
-					"name": "Nayeli Almaguer Casarreal",
-					"role": "Madrina"
-				},
-				{
-					"name": "César A. Pérez Monroy",
-					"role": "Padrino"
-				}
-			],
-			"parentsOrder": "mother-first",
-			"featuredImage": "family"
-		},
-		"isDemo": false,
-		"gallery": {
-			"items": [
-				{
-					"image": "gallery01"
-				},
-				{
-					"image": "gallery02"
-				},
-				{
-					"image": "gallery03"
-				},
-				{
-					"image": "gallery04"
-				},
-				{
-					"image": "gallery05"
-				},
-				{
-					"image": "gallery06"
-				},
-				{
-					"image": "gallery07"
-				},
-				{
-					"image": "gallery08"
-				}
-			],
-			"title": "Brillar es la actitud.",
-			"eyebrow": "Galería",
-			"subtitle": "Prepárate para una noche llena de magia, sueños y mucha diversión. Un recorrido visual por los momentos que hacen de esta celebración algo único."
-		},
-		"sharing": {
-			"ogImage": "hero",
-			"ogDescription": "Acompáñame en mis XV años el sábado, 29 de agosto de 2026, en Texcoco, Estado de México.",
-			"shareMessages": {
-				"reminder": "Hola {{invitado}},\n\n{{hora_evento}}\n\n{{limite_confirmacion}}\n\n{{enlace}}",
-				"invitation": "Con mucha alegría quiero invitarte a celebrar conmigo un día muy especial: mis XV años. Será un honor contar con tu presencia y compartir este momento tan importante para mí y mi familia.\n\nEspero que puedas acompañarnos y ser parte de esta hermosa celebración. ¡Nos dará muchísimo gusto verte!\n\n{inviteUrl}"
-			},
-			"reminderSettings": {
-				"enabled": true,
-				"audience": "unconfirmed",
-				"showWhenDaysBeforeEvent": 70
-			},
-			"whatsappTemplate": "Hola {name}, te comparto con mucha ilusión la invitación a mis XV años: {inviteUrl}"
-		},
-		"envelope": {
-			"disabled": false,
-			"sealIcon": "flower",
-			"cardLabel": "Edición XV",
-			"microcopy": "Abrir edición XV",
-			"sealStyle": "wax",
-			"stampText": "Valentina",
-			"stampYear": "2026",
-			"coverIssue": "2026",
-			"cardTagline": "Brillar es la actitud",
-			"coverVolume": "1",
-			"sealVariant": "premium-rose",
-			"coverEdition": "XV",
-			"sealInitials": "V·H",
-			"closedPalette": {
-				"accent": "actionAccent",
-				"primary": "surfaceDark",
-				"background": "surfaceDark"
-			},
-			"documentLabel": "Edición XV",
-			"revealVariant": "editorial-cover"
-		},
-		"location": {
-			"ceremony": {
-				"city": "Texcoco, Estado de México",
-				"date": "29 de agosto de 2026",
-				"time": "3:45 p.m.",
-				"address": "4ta Cerrada de Palma s/n, San Luis Huexotla, Texcoco, México",
-				"venueName": "Finca Las Palmas",
-				"venueEvent": "Ceremonia religiosa",
-				"googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Finca+Las+Palmas+San+Luis+Huexotla+Texcoco"
-			},
-			"introLede": "Será una alegría compartir contigo esta celebración.",
-			"reception": {
-				"city": "Texcoco, Estado de México",
-				"date": "29 de agosto de 2026",
-				"time": "4:30 p.m.",
-				"address": "4ta Cerrada de Palma s/n, San Luis Huexotla, Texcoco, México",
-				"venueName": "Finca Las Palmas",
-				"venueEvent": "Recepción",
-				"googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Finca+Las+Palmas+San+Luis+Huexotla+Texcoco"
-			},
-			"indications": [
-				{
-					"text": "Código de vestimenta: <strong>formal</strong>. Quiero que te veas <strong>INCREÍBLE</strong>. Damas: Divinas (Reserva el color <strong>rosa y lila</strong> para la XV). Caballeros: Guapos.",
-					"iconName": "DressCode",
-					"styleVariant": "reserved"
-				},
-				{
-					"text": "Agradecemos confirmar asistencia con anticipación para preparar cada detalle con cariño.",
-					"iconName": "Calendar",
-					"styleVariant": "default"
-				},
-				{
-					"text": "Agradecemos tu puntualidad para disfrutar juntos cada momento mágico de esta noche.",
-					"iconName": "Enveloped",
-					"styleVariant": "default"
-				},
-				{
-					"text": "Prepárate para una noche llena de magia, sueños y mucha diversión.",
-					"iconName": "Sparkles",
-					"styleVariant": "default"
-				},
-				{
-					"text": "Comparte tus mejores fotos y videos de la fiesta etiquetándome en <strong>@val27_0811</strong>. ¡Me encantará ver la celebración desde tu perspectiva!",
-					"iconName": "Photo",
-					"styleVariant": "default"
-				}
-			],
-			"introEyebrow": "Te esperamos en Texcoco",
-			"introHeading": "Sábado, 29 de agosto de 2026",
-			"indicationsHeading": "Detalles para mis invitados"
-		},
-		"thankYou": {
-			"image": "thankYouPortrait",
-			"message": "Que la alegría de este día sea el inicio de un futuro lleno de luz, magia y momentos inolvidables.",
-			"focalPoint": "50% 36%",
-			"closingName": "Valentina Hernández Almaguer"
-		},
-		"countdown": {
-			"title": "La celebración comienza en",
-			"footerText": "29 de agosto de 2026, Texcoco, Estado de México"
-		},
-		"eventType": "xv",
-		"itinerary": {
-			"items": [
-				{
-					"time": "15:45",
-					"label": "Ceremonia religiosa",
-					"iconName": "Church",
-					"description": "Inicio de la celebración con una ceremonia llena de gratitud."
-				},
-				{
-					"time": "16:30",
-					"label": "Recepción",
-					"iconName": "Reception",
-					"description": "Recepción y celebración en Finca Las Palmas."
-				}
-			],
-			"title": "Programa"
-		},
-		"_assetSlug": "xv-valentina-hernandez",
-		"interludes": [
-			{
-				"alt": "Detalle editorial rosa plata con brillo",
-				"image": "interlude01",
-				"height": "screen",
-				"lightX": "48%",
-				"lightY": "40%",
-				"focalPoint": "50% 50%",
-				"afterSection": "location"
-			},
-			{
-				"alt": "Marco decorativo rosa palo con acentos plateados",
-				"image": "interlude02",
-				"height": "screen",
-				"lightX": "55%",
-				"lightY": "34%",
-				"focalPoint": "50% 50%",
-				"afterSection": "family"
-			},
-			{
-				"alt": "Divisor decorativo con textura editorial",
-				"image": "interlude03",
-				"height": "medium",
-				"lightX": "50%",
-				"lightY": "46%",
-				"focalPoint": "50% 52%",
-				"afterSection": "itinerary"
-			},
-			{
-				"alt": "Fondo decorativo rosa con destellos plateados",
-				"image": "interlude04",
-				"height": "screen",
-				"lightX": "46%",
-				"lightY": "38%",
-				"focalPoint": "50% 50%",
-				"afterSection": "rsvp"
-			}
-		],
-		"description": "Invitación editorial para los XV años de Valentina Hernández Almaguer, con una estética inspirada en revista de moda en tonos rosa, blanco y plata.",
-		"eventTiming": {
-			"timeZone": "America/Mexico_City",
-			"startsAtUtc": "2026-08-29T21:45:00.000Z",
-			"localDateTime": "2026-08-29T15:45"
-		},
-		"sectionOrder": [
-			"quote",
-			"family",
-			"countdown",
-			"itinerary",
-			"location",
-			"gallery",
-			"gifts",
-			"personalizedAccess",
-			"rsvp",
-			"thankYou"
-		],
-		"sectionStyles": {
-			"rsvp": {
-				"labels": {
-					"name": "Tu nombre",
-					"attendance": "¿Me acompañas?",
-					"guestCount": "Personas que asistirán",
-					"confirmButton": "Confirmar asistencia"
-				},
-				"variant": "editorial-magazine"
-			},
-			"gifts": {
-				"variant": "editorial-magazine"
-			},
-			"quote": {
-				"variant": "editorial-magazine"
-			},
-			"family": {
-				"variant": "editorial-magazine"
-			},
-			"gallery": {
-				"variant": "editorial-magazine"
-			},
-			"location": {
-				"variant": "editorial-magazine",
-				"showFlourishes": false
-			},
-			"thankYou": {
-				"variant": "editorial-magazine"
-			},
-			"countdown": {
-				"variant": "editorial-magazine"
-			}
-		}
-	},
-	"notes": "Sanitized render fixture: invitations identity + published_invitation_content only. No Auth, guests, RSVP, analytics, or drafts."
+    "schemaVersion": 1,
+    "slug": "valentina-hernandez",
+    "eventType": "xv",
+    "title": "XV Años — Valentina Hernández Almaguer",
+    "themeId": "editorial-magazine",
+    "baseDemoId": "demo-xv-editorial-magazine",
+    "snapshot": {
+        "previewSlug": "demo-xv-editorial-magazine",
+        "themeId": "editorial-magazine",
+        "baseDemoId": "demo-xv-editorial-magazine"
+    },
+    "publishedContent": {
+        "hero": {
+            "date": "2026-08-29T21:45:00.000Z",
+            "name": "Valentina Hernández Almaguer",
+            "label": "XV Edition",
+            "variant": "editorial-magazine",
+            "portrait": "portrait",
+            "focalPoint": "50% 38%",
+            "backgroundImage": "hero",
+            "focalPointMobile": "50% 32%",
+            "backgroundImageMobile": "portrait"
+        },
+        "rsvp": {
+            "title": "Confirma tu asistencia",
+            "subcopy": "Por favor, confirma tu asistencia enviándome un mensaje directo o desde esta invitación. ¡Me encantará saber que vienes!",
+            "guestCap": 4,
+            "accessMode": "hybrid",
+            "whatsappConfig": {
+                "phone": "0000000000"
+            },
+            "confirmationMode": "both",
+            "confirmationMessage": "Gracias por confirmar. Me dará mucha alegría compartir esta noche contigo."
+        },
+        "gifts": {
+            "items": [
+                {
+                    "text": "Un regalo con todo tu cariño para hacer de este día algo aún más especial.",
+                    "type": "cash",
+                    "title": "Regalo Sorpresa"
+                },
+                {
+                    "text": "Se proporcionará un sobre el día del evento.",
+                    "type": "cash",
+                    "title": "Lluvia de Sobres"
+                },
+                {
+                    "type": "store",
+                    "links": [
+                        {
+                            "url": "https://mesaderegalos.liverpool.com.mx/milistaderegalos/52020257",
+                            "label": "Ver lista"
+                        }
+                    ],
+                    "title": "Mesa en Liverpool",
+                    "description": "VALENS DREAM TEAM",
+                    "tableNumber": "52020257"
+                }
+            ],
+            "title": "Regalos",
+            "subtitle": "Su presencia es mi mejor regalo, pero si desean tener un detalle conmigo, les comparto estas opciones."
+        },
+        "music": {
+            "url": "https://res.cloudinary.com/dusxvauvj/video/upload/v1782619626/Justin_Timberlake_-_CAN_T_STOP_THE_FEELING_mscvhn.m4a",
+            "autoPlay": true
+        },
+        "quote": {
+            "text": "Dicen que la moda es temporal, pero los recuerdos son eternos. Acompáñame a escribir el primer capítulo de mi nueva historia...",
+            "author": "Valentina Hernández Almaguer"
+        },
+        "theme": {
+            "preset": "editorial-magazine",
+            "fontFamily": "serif"
+        },
+        "title": "XV Años — Valentina Hernández Almaguer",
+        "family": {
+            "labels": {
+                "parentsTitle": "Mis padres",
+                "sectionTitle": "Mi familia",
+                "sectionMessage": "Gracias por darme la vida y tanto amor. Gracias por guiar mis pasos. Con la bendición de mi familia y el cariño de quienes han acompañado mi historia, celebro este día con el corazón lleno de gratitud.",
+                "godparentsTitle": "Padrinos",
+                "sectionSubtitle": "Con amor y gratitud"
+            },
+            "parents": {
+                "father": "Juan Carlos Hernández Calixco",
+                "mother": "María Estrella Almaguer Casarreal"
+            },
+            "focalPoint": "50% 38%",
+            "godparents": [
+                {
+                    "name": "Nayeli Almaguer Casarreal",
+                    "role": "Madrina"
+                },
+                {
+                    "name": "César A. Pérez Monroy",
+                    "role": "Padrino"
+                }
+            ],
+            "parentsOrder": "mother-first",
+            "featuredImage": "family"
+        },
+        "isDemo": false,
+        "gallery": {
+            "variant": "magazine-spread",
+            "presentationOptions": {
+                "mobileBrowse": "rail"
+            },
+            "items": [
+                {
+                    "image": "gallery01"
+                },
+                {
+                    "image": "gallery02"
+                },
+                {
+                    "image": "gallery03"
+                },
+                {
+                    "image": "gallery04"
+                },
+                {
+                    "image": "gallery05"
+                },
+                {
+                    "image": "gallery06"
+                },
+                {
+                    "image": "gallery07"
+                },
+                {
+                    "image": "gallery08"
+                }
+            ],
+            "title": "Brillar es la actitud.",
+            "eyebrow": "Galería",
+            "subtitle": "Prepárate para una noche llena de magia, sueños y mucha diversión. Un recorrido visual por los momentos que hacen de esta celebración algo único."
+        },
+        "sharing": {
+            "ogImage": "hero",
+            "ogDescription": "Acompáñame en mis XV años el sábado, 29 de agosto de 2026, en Texcoco, Estado de México.",
+            "shareMessages": {
+                "reminder": "Hola {{invitado}},\n\n{{hora_evento}}\n\n{{limite_confirmacion}}\n\n{{enlace}}",
+                "invitation": "Con mucha alegría quiero invitarte a celebrar conmigo un día muy especial: mis XV años. Será un honor contar con tu presencia y compartir este momento tan importante para mí y mi familia.\n\nEspero que puedas acompañarnos y ser parte de esta hermosa celebración. ¡Nos dará muchísimo gusto verte!\n\n{inviteUrl}"
+            },
+            "reminderSettings": {
+                "enabled": true,
+                "audience": "unconfirmed",
+                "showWhenDaysBeforeEvent": 70
+            },
+            "whatsappTemplate": "Hola {name}, te comparto con mucha ilusión la invitación a mis XV años: {inviteUrl}"
+        },
+        "envelope": {
+            "disabled": false,
+            "sealIcon": "flower",
+            "cardLabel": "Edición XV",
+            "microcopy": "Abrir edición XV",
+            "sealStyle": "wax",
+            "stampText": "Valentina",
+            "stampYear": "2026",
+            "coverIssue": "2026",
+            "cardTagline": "Brillar es la actitud",
+            "coverVolume": "1",
+            "sealVariant": "premium-rose",
+            "coverEdition": "XV",
+            "sealInitials": "V·H",
+            "closedPalette": {
+                "accent": "actionAccent",
+                "primary": "surfaceDark",
+                "background": "surfaceDark"
+            },
+            "documentLabel": "Edición XV",
+            "revealVariant": "editorial-cover"
+        },
+        "location": {
+            "ceremony": {
+                "city": "Texcoco, Estado de México",
+                "date": "29 de agosto de 2026",
+                "time": "3:45 p.m.",
+                "address": "4ta Cerrada de Palma s/n, San Luis Huexotla, Texcoco, México",
+                "venueName": "Finca Las Palmas",
+                "venueEvent": "Ceremonia religiosa",
+                "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Finca+Las+Palmas+San+Luis+Huexotla+Texcoco"
+            },
+            "introLede": "Será una alegría compartir contigo esta celebración.",
+            "reception": {
+                "city": "Texcoco, Estado de México",
+                "date": "29 de agosto de 2026",
+                "time": "4:30 p.m.",
+                "address": "4ta Cerrada de Palma s/n, San Luis Huexotla, Texcoco, México",
+                "venueName": "Finca Las Palmas",
+                "venueEvent": "Recepción",
+                "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Finca+Las+Palmas+San+Luis+Huexotla+Texcoco"
+            },
+            "indications": [
+                {
+                    "text": "Código de vestimenta: <strong>formal</strong>. Quiero que te veas <strong>INCREÍBLE</strong>. Damas: Divinas (Reserva el color <strong>rosa y lila</strong> para la XV). Caballeros: Guapos.",
+                    "iconName": "DressCode",
+                    "styleVariant": "reserved"
+                },
+                {
+                    "text": "Agradecemos confirmar asistencia con anticipación para preparar cada detalle con cariño.",
+                    "iconName": "Calendar",
+                    "styleVariant": "default"
+                },
+                {
+                    "text": "Agradecemos tu puntualidad para disfrutar juntos cada momento mágico de esta noche.",
+                    "iconName": "Enveloped",
+                    "styleVariant": "default"
+                },
+                {
+                    "text": "Prepárate para una noche llena de magia, sueños y mucha diversión.",
+                    "iconName": "Sparkles",
+                    "styleVariant": "default"
+                },
+                {
+                    "text": "Comparte tus mejores fotos y videos de la fiesta etiquetándome en <strong>@val27_0811</strong>. ¡Me encantará ver la celebración desde tu perspectiva!",
+                    "iconName": "Photo",
+                    "styleVariant": "default"
+                }
+            ],
+            "introEyebrow": "Te esperamos en Texcoco",
+            "introHeading": "Sábado, 29 de agosto de 2026",
+            "indicationsHeading": "Detalles para mis invitados"
+        },
+        "thankYou": {
+            "image": "thankYouPortrait",
+            "message": "Que la alegría de este día sea el inicio de un futuro lleno de luz, magia y momentos inolvidables.",
+            "focalPoint": "50% 36%",
+            "closingName": "Valentina Hernández Almaguer"
+        },
+        "countdown": {
+            "title": "La celebración comienza en",
+            "footerText": "29 de agosto de 2026, Texcoco, Estado de México"
+        },
+        "eventType": "xv",
+        "itinerary": {
+            "items": [
+                {
+                    "time": "15:45",
+                    "label": "Ceremonia religiosa",
+                    "iconName": "Church",
+                    "description": "Inicio de la celebración con una ceremonia llena de gratitud."
+                },
+                {
+                    "time": "16:30",
+                    "label": "Recepción",
+                    "iconName": "Reception",
+                    "description": "Recepción y celebración en Finca Las Palmas."
+                }
+            ],
+            "title": "Programa"
+        },
+        "_assetSlug": "xv-valentina-hernandez",
+        "interludes": [
+            {
+                "alt": "Detalle editorial rosa plata con brillo",
+                "image": "interlude01",
+                "height": "screen",
+                "lightX": "48%",
+                "lightY": "40%",
+                "focalPoint": "50% 50%",
+                "afterSection": "location"
+            },
+            {
+                "alt": "Marco decorativo rosa palo con acentos plateados",
+                "image": "interlude02",
+                "height": "screen",
+                "lightX": "55%",
+                "lightY": "34%",
+                "focalPoint": "50% 50%",
+                "afterSection": "family"
+            },
+            {
+                "alt": "Divisor decorativo con textura editorial",
+                "image": "interlude03",
+                "height": "medium",
+                "lightX": "50%",
+                "lightY": "46%",
+                "focalPoint": "50% 52%",
+                "afterSection": "itinerary"
+            },
+            {
+                "alt": "Fondo decorativo rosa con destellos plateados",
+                "image": "interlude04",
+                "height": "screen",
+                "lightX": "46%",
+                "lightY": "38%",
+                "focalPoint": "50% 50%",
+                "afterSection": "rsvp"
+            }
+        ],
+        "description": "Invitación editorial para los XV años de Valentina Hernández Almaguer, con una estética inspirada en revista de moda en tonos rosa, blanco y plata.",
+        "eventTiming": {
+            "timeZone": "America/Mexico_City",
+            "startsAtUtc": "2026-08-29T21:45:00.000Z",
+            "localDateTime": "2026-08-29T15:45"
+        },
+        "sectionOrder": [
+            "quote",
+            "family",
+            "countdown",
+            "itinerary",
+            "location",
+            "gallery",
+            "gifts",
+            "personalizedAccess",
+            "rsvp",
+            "thankYou"
+        ],
+        "sectionStyles": {
+            "rsvp": {
+                "labels": {
+                    "name": "Tu nombre",
+                    "attendance": "¿Me acompañas?",
+                    "guestCount": "Personas que asistirán",
+                    "confirmButton": "Confirmar asistencia"
+                },
+                "variant": "editorial-magazine"
+            },
+            "gifts": {
+                "variant": "editorial-magazine"
+            },
+            "quote": {
+                "variant": "editorial-magazine"
+            },
+            "family": {
+                "variant": "editorial-magazine"
+            },
+            "gallery": {
+                "variant": "editorial-magazine"
+            },
+            "location": {
+                "variant": "editorial-magazine",
+                "showFlourishes": false
+            },
+            "thankYou": {
+                "variant": "editorial-magazine"
+            },
+            "countdown": {
+                "variant": "editorial-magazine"
+            }
+        }
+    },
+    "notes": "Sanitized render fixture: invitations identity + published_invitation_content only. No Auth, guests, RSVP, analytics, or drafts."
 }

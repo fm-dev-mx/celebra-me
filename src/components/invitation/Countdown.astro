@@ -3,6 +3,7 @@
 // Premium countdown section
 import '@/styles/invitation/_countdown.scss';
 import CountdownTimer from '@/components/invitation/CountdownTimer.astro';
+import type { CountdownUnit } from '@/lib/invitation/presentation-options';
 import type { CountdownVariant } from '@/lib/theme/theme-contract';
 
 interface Props {
@@ -10,6 +11,7 @@ interface Props {
 	eventTimeZone?: string;
 	title?: string;
 	footerText?: string;
+	visibleUnits?: CountdownUnit[];
 	variant?: CountdownVariant;
 	isDemo?: boolean;
 }
@@ -19,6 +21,7 @@ const {
 	eventTimeZone,
 	title = "¡Falta muy poco!",
 	footerText,
+	visibleUnits,
 	variant = 'editorial',
 	isDemo = false,
 } = Astro.props;
@@ -50,7 +53,7 @@ const formattedDate = formatCountdownDate(targetIso, eventTimeZone);
 		<h2 class="countdown-title">{title}</h2>
 
 		<div class="countdown-timer-wrapper">
-			<CountdownTimer targetIso={targetIso} isDemo={isDemo} />
+			<CountdownTimer targetIso={targetIso} isDemo={isDemo} visibleUnits={visibleUnits} />
 		</div>
 
 		<div class="countdown-date">

@@ -72,6 +72,11 @@
 	}
 }
 
+.countdown__timer[data-unit-count='1'] {
+	--countdown-grid-columns-mobile: 1;
+	--countdown-grid-columns-tablet: 1;
+}
+
 .countdown__timer {
 	display: grid;
 	grid-template-columns: repeat(var(--countdown-grid-columns-mobile, 4), minmax(0, 1fr));

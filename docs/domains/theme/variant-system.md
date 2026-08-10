@@ -44,9 +44,11 @@ scrolling.
 - **Gifts**
   - **Canonical structural owner:** `sectionStyles.gifts.structuralVariant`: `standard`,
     `editorial-catalog` → `Gifts.astro`
-  - **Presentation / skin:** `sectionStyles.gifts.variant`
-  - **Fallback / exception / evidence:** Editorial theme fallback remains. Tests:
-    `structural-variants`, CSS resolver map.
+  - **Presentation / skin:** `gifts.presentation`: `catalog` (default) / `legend-only`;
+    `sectionStyles.gifts.variant`
+  - **Fallback / exception / evidence:** Absent presentation → catalog. `legend-only` omits the item
+    grid and must not carry catalog items; section omission remains distinct (no `gifts` block).
+    Origin: Alba Rosa. Tests: `presentation-options-goal-c`, Alba payload.
 - **RSVP**
   - **Canonical structural owner:** `sectionStyles.rsvp.structuralVariant`: `standard`,
     `editorial-press-pass` → RSVP components
@@ -61,10 +63,11 @@ scrolling.
     resolver map.
 - **Gallery layout**
   - **Canonical structural owner:** `gallery.variant` → `Gallery.astro` / `PhotoGallery.astro`
-  - **Presentation / skin:** `gallery.presentation`, item roles, `visualVariant`, focal/caption
-    tokens
-  - **Fallback / exception / evidence:** Aliases; Abril and wedding exceptions. See Gallery
-    contract. Tests: SV/CSS/Abril/Victoria.
+  - **Presentation / skin:** `gallery.presentation`, `gallery.presentationOptions.mobileBrowse`
+    (`stack` default / `rail`), item roles, `visualVariant`, focal/caption tokens
+  - **Fallback / exception / evidence:** `rail` is orthogonal to `magazine-spread` (desktop grid
+    unchanged; mobile scroll-snap). Aliases; Abril and wedding exceptions. Origin: Valentina. Tests:
+    SV/CSS/Abril/Victoria, `presentation-options-goal-c`.
 - **Itinerary**
   - **Canonical structural owner:** `itinerary.presentation.behavior`: `standard`, `timeline-paper`
     → `Itinerary.astro`
@@ -75,10 +78,13 @@ scrolling.
   - **Canonical structural owner:** `location.structuralVariant`: `standard`, `split-map` →
     `EventLocation.astro` / `VenueCard.astro`
   - **Presentation / skin:** `location.presentation` (`simple`, `with-map`, `with-photo`) and
-    options; map materiality/button chrome remain skins
-  - **Fallback / exception / evidence:** Invalid/omitted → `standard`. Legacy section flags fold
-    one-way; canonical options win. Origins: Alba Rosa. Tests: `structural-variants`,
-    `section-css-resolver-map`, venue contract.
+    `presentationOptions.showNavigationButtons` / `showFlourishes`; map materiality/button chrome
+    remain skins. Linked map-preview surfaces when `mediaMode=none` and
+    `showNavigationButtons=false` (Daniela) — not a separate presentation enum.
+  - **Fallback / exception / evidence:** Invalid/omitted structural → `standard`. Legacy section
+    flags fold one-way; canonical options win. Origins: Alba Rosa (`split-map`); Daniela map preview
+    reuses existing presentation options. Tests: `structural-variants`, `section-css-resolver-map`,
+    venue contract, Daniela payload.
 - **Family**
   - **Canonical structural owner:** `family.structuralVariant`: `standard`, `split-groups` →
     `Family.astro`
@@ -99,9 +105,11 @@ scrolling.
     remain. Tests: reveal-card contract.
 - **Quote, Countdown, Footer, Interludes**
   - **Canonical structural owner:** Shared implementations; no independent structural variant
-  - **Presentation / skin:** Theme/preset skins plus motion/intersection modifiers
-  - **Fallback / exception / evidence:** Theme names are visual compatibility only. Tests:
-    style-boundary and section suites.
+  - **Presentation / skin:** Countdown `presentationOptions.visibleUnits` (default all four units;
+    empty selection rejected). Theme/preset skins plus motion/intersection modifiers.
+  - **Fallback / exception / evidence:** Theme names are visual compatibility only. Countdown
+    days-only origin: Alba Rosa. Tests: style-boundary, section suites,
+    `presentation-options-goal-c`.
 
 Gallery layout identifiers are `uniform-grid`, `editorial-mosaic`, `magazine-spread`,
 `feature-mosaic`, `index-choreography`, and `single-keepsake`.

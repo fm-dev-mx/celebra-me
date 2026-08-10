@@ -30,6 +30,9 @@ import { DEFAULT_BRANDING_VISIBILITY } from '@/lib/adapters/branding';
 import { resolveCountdownTarget } from '@/lib/time/event-time';
 import { COUNTDOWN_DEFAULTS } from '@/lib/intake/constants';
 import {
+	resolveCountdownVisibleUnits,
+	resolveGalleryMobileBrowse,
+	resolveGiftsPresentation,
 	resolveItineraryPresentation,
 	resolveLocationShowFlourishes,
 	resolveLocationShowNavigationButtons,
@@ -357,6 +360,7 @@ function buildCountdownSectionData(context: AdaptationContext) {
 		targetIso: target.targetIso,
 		targetSource: target.source,
 		eventTimeZone: data.eventTiming?.timeZone,
+		visibleUnits: resolveCountdownVisibleUnits(data.countdown?.presentationOptions),
 		variant: sectionVariant(
 			'countdown',
 			data.sectionStyles?.countdown?.variant,
@@ -527,6 +531,7 @@ function buildGallerySectionData(context: AdaptationContext) {
 		variant: structuralVariant,
 		visualVariant: resolveGalleryVisualVariant(legacyVisualVariant, normalizedPreset),
 		structuralVariantExplicit,
+		mobileBrowse: resolveGalleryMobileBrowse(data.gallery.presentationOptions),
 	};
 }
 
@@ -593,8 +598,11 @@ function buildRsvpSectionData(context: AdaptationContext, entrySlug: string) {
 function buildGiftsSectionData(context: AdaptationContext) {
 	const { data, normalizedPreset } = context;
 	if (!data.gifts) return undefined;
+	const presentation = resolveGiftsPresentation(data.gifts.presentation);
 	return {
 		...data.gifts,
+		presentation,
+		items: presentation === 'legend-only' ? [] : (data.gifts.items ?? []),
 		variant: sectionVariant('gifts', data.sectionStyles?.gifts?.variant, normalizedPreset),
 		structuralVariant: resolveGiftsStructuralVariant(
 			data.sectionStyles?.gifts?.structuralVariant,

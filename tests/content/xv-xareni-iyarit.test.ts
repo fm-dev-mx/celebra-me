@@ -90,7 +90,7 @@ describe('XV Xareni Iyarit client invitation preparation', () => {
 			expect(result.data.gifts?.title).toBe('Regalos');
 			expect(result.data.gifts?.items).toHaveLength(2);
 
-			const [registry, cash] = result.data.gifts!.items;
+			const [registry, cash] = result.data.gifts!.items ?? [];
 			expect(registry).toMatchObject({
 				type: 'store',
 				title: 'Mesa de regalos',

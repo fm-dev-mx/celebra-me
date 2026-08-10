@@ -126,6 +126,9 @@
     },
     "gallery": {
         "variant": "magazine-spread",
+        "presentationOptions": {
+            "mobileBrowse": "rail"
+        },
         "eyebrow": "Galería",
         "title": "Galería editorial",
         "subtitle": "Una selección visual con retratos, detalles y escenas de celebración.",

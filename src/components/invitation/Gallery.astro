@@ -5,6 +5,8 @@ import type { ImageAsset } from '@/lib/assets/asset-registry';
 import PhotoGallery from './PhotoGallery.astro';
 import GalleryLightbox from './GalleryLightbox.astro';
 import '@/styles/invitation/_gallery.scss';
+import type { GalleryMobileBrowseMode } from '@/lib/invitation/presentation-options';
+import { resolveGalleryMobileBrowse } from '@/lib/invitation/presentation-options';
 import { resolveGalleryLayoutVariant } from '@/lib/invitation/structural-variants';
 
 interface GalleryItem {
@@ -25,6 +27,7 @@ interface Props {
 	visualVariant?: string;
 	structuralVariantExplicit?: boolean;
 	presentation?: string;
+	mobileBrowse?: GalleryMobileBrowseMode;
 }
 
 const {
@@ -36,21 +39,26 @@ const {
 	visualVariant,
 	structuralVariantExplicit = false,
 	presentation,
+	mobileBrowse,
 } = Astro.props;
 const structuralVariant = resolveGalleryLayoutVariant(variant, variant, 'jewelry-box');
 const renderedVisualVariant = visualVariant ?? variant;
 const isEditorialMagazine = structuralVariant === 'magazine-spread';
+const resolvedMobileBrowse = resolveGalleryMobileBrowse(
+	mobileBrowse ? { mobileBrowse } : undefined,
+);
+const usesMobileRail = isEditorialMagazine && resolvedMobileBrowse === 'rail';
 
 if (!items || items.length === 0) return null;
 ---
 
-<section id="galeria" class="gallery-section" data-variant={renderedVisualVariant} {...(structuralVariantExplicit && { 'data-structural-variant': structuralVariant })} data-screenshot-section="gallery" {...(presentation && { 'data-presentation': presentation })}>
+<section id="galeria" class="gallery-section" data-variant={renderedVisualVariant} {...(structuralVariantExplicit && { 'data-structural-variant': structuralVariant })} data-screenshot-section="gallery" {...(presentation && { 'data-presentation': presentation })} data-mobile-browse={resolvedMobileBrowse}>
 	<div class="gallery-section__container">
 		<header class="gallery-section__header">
 			{eyebrow && <span class="gallery-section__eyebrow">{eyebrow}</span>}
 			{title?.trim() && <h2 class="gallery-section__title">{title}</h2>}
 			{subtitle && <p class="gallery-section__subtitle">{subtitle}</p>}
-			{isEditorialMagazine && (
+			{usesMobileRail && (
 				<p class="gallery-section__swipe-hint">Desliza la edición</p>
 			)}
 		</header>

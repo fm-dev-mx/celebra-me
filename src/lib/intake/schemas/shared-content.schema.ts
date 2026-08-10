@@ -9,8 +9,11 @@ import { giftItemSchema } from '@/lib/intake/schemas/intake-block.schema';
 import { THEME_PRESETS, INDICATION_STYLE_VARIANTS } from '@/lib/theme/theme-contract';
 import {
 	XARENI_SEAL_COLORS,
+	COUNTDOWN_UNITS,
 	GALLERY_LAYOUT_ROLES,
+	GALLERY_MOBILE_BROWSE_MODES,
 	GALLERY_PRESENTATIONS,
+	GIFTS_PRESENTATIONS,
 	ITINERARY_PRESENTATION_BEHAVIORS,
 	assertSupportedGalleryPresentation,
 } from '@/lib/invitation/presentation-options';
@@ -78,6 +81,12 @@ export const gallerySchema = z
 			.union([z.enum(GALLERY_LAYOUT_VARIANTS), z.enum(THEME_PRESETS), z.literal('single')])
 			.optional(),
 		presentation: z.enum(GALLERY_PRESENTATIONS).optional(),
+		presentationOptions: z
+			.object({
+				mobileBrowse: z.enum(GALLERY_MOBILE_BROWSE_MODES).optional(),
+			})
+			.strict()
+			.optional(),
 		items: z.array(
 			z
 				.object({
@@ -152,14 +161,32 @@ export const giftsSchema = z
 	.object({
 		title: optionalText(200),
 		subtitle: optionalText(500),
+		presentation: z.enum(GIFTS_PRESENTATIONS).optional(),
 		items: z.array(giftItemSchema).optional(),
 	})
-	.strict();
+	.strict()
+	.superRefine((gifts, context) => {
+		const presentation = gifts.presentation ?? 'catalog';
+		const items = gifts.items ?? [];
+		if (presentation === 'legend-only' && items.length > 0) {
+			context.addIssue({
+				code: 'custom',
+				path: ['items'],
+				message: 'legend-only no admite ítems de catálogo.',
+			});
+		}
+	});
 
 export const countdownEditorSchema = z
 	.object({
 		title: optionalText(200),
 		footerText: optionalText(500),
+		presentationOptions: z
+			.object({
+				visibleUnits: z.array(z.enum(COUNTDOWN_UNITS)).min(1).max(4).optional(),
+			})
+			.strict()
+			.optional(),
 	})
 	.strict();
 

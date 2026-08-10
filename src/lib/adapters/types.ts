@@ -17,9 +17,12 @@ import type { EnvelopeSealIcon, RevealCardData } from '@/lib/invitation/reveal-c
 import type { RsvpResponseMessages } from '@/lib/invitation/rsvp-messages';
 import type { CountdownTargetSource } from '@/lib/time/event-time';
 import type {
+	CountdownUnit,
 	FamilyPresentation,
+	GalleryMobileBrowseMode,
 	GalleryPresentation,
 	GalleryLayoutRole,
+	GiftsPresentation,
 	LocationPresentation,
 } from '@/lib/invitation/presentation-options';
 import type { z } from 'zod';
@@ -257,6 +260,7 @@ export interface InvitationViewModel {
 			eventTimeZone?: string;
 			title: string;
 			footerText?: string;
+			visibleUnits: CountdownUnit[];
 			variant?: CountdownVariant;
 			/** Demo-only: if true, countdown uses a random target 30-60 days ahead */
 			isDemo?: boolean;
@@ -297,6 +301,7 @@ export interface InvitationViewModel {
 			visualVariant: ThemePreset | 'single';
 			structuralVariantExplicit: boolean;
 			presentation?: GalleryPresentation;
+			mobileBrowse: GalleryMobileBrowseMode;
 		};
 		itinerary?: {
 			title: string;
@@ -348,6 +353,7 @@ export interface InvitationViewModel {
 		gifts?: {
 			title?: string;
 			subtitle?: string;
+			presentation: GiftsPresentation;
 			items: GiftItem[];
 			variant?: SharedSectionVariant;
 			structuralVariant?: GiftsStructuralVariant;

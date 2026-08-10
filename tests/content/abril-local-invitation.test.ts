@@ -125,7 +125,7 @@ describe('Abril Michelle local invitation content', () => {
 			expect(item.description?.trim()).toBeTruthy();
 		}
 		expect(result.data!.gifts?.items).toHaveLength(1);
-		expect(result.data!.gifts?.items.map((item) => item.type)).toEqual(['cash']);
+		expect(result.data!.gifts?.items?.map((item) => item.type)).toEqual(['cash']);
 		expect(result.data!.sectionOrder).toBeDefined();
 		const sectionOrder = result.data!.sectionOrder!;
 		expect(sectionOrder.indexOf('gifts')).toBe(sectionOrder.indexOf('gallery') + 1);

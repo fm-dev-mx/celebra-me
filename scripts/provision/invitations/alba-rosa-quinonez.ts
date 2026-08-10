@@ -233,6 +233,9 @@ export function buildAlbaPublishedContent(
 		},
 		countdown: {
 			title: 'FALTAN',
+			presentationOptions: {
+				visibleUnits: ['days'],
+			},
 		},
 		gallery: {
 			variant: 'feature-mosaic',
@@ -269,13 +272,7 @@ export function buildAlbaPublishedContent(
 		gifts: {
 			title: 'Regalos',
 			subtitle: giftsLegend,
-			// Cash stub retained for schema stability; profile hides card UI (legend-only presentation).
-			items: [
-				{
-					type: 'cash',
-					title: 'Un detalle',
-				},
-			],
+			presentation: 'legend-only',
 		},
 		rsvp: {
 			title: 'Confirme su asistencia',

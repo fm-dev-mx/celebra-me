@@ -97,9 +97,14 @@ function mapCountdownFromDraft(
 	const title = str(draftCountdown?.title);
 	const footerText = str(draftCountdown?.footerText);
 
+	const presentationOptions = isNonEmptyObject(draftCountdown?.presentationOptions)
+		? draftCountdown.presentationOptions
+		: undefined;
+
 	return {
 		title: title || COUNTDOWN_DEFAULTS.title,
 		footerText: footerText || COUNTDOWN_DEFAULTS.footerText,
+		...(presentationOptions ? { presentationOptions } : {}),
 	};
 }
 
@@ -523,13 +528,20 @@ function mapGiftsSection(
 	if (!isNonEmptyObject(draftGifts)) {
 		return ctx.isDemo && demoGifts ? { ...demoGifts } : undefined;
 	}
+	const presentation =
+		typeof draftGifts.presentation === 'string' ? draftGifts.presentation : undefined;
+	const items =
+		presentation === 'legend-only'
+			? []
+			: (draftGifts.items as unknown as Array<Record<string, unknown>>) ||
+				(ctx.isDemo ? (demoGifts?.items as Array<Record<string, unknown>>) : undefined) ||
+				[];
+
 	return {
 		title: str(draftGifts.title) || demoStr(ctx, demoGifts?.title),
 		subtitle: str(draftGifts.subtitle) || demoStr(ctx, demoGifts?.subtitle),
-		items:
-			(draftGifts.items as unknown as Array<Record<string, unknown>>) ||
-			(ctx.isDemo ? (demoGifts?.items as Array<Record<string, unknown>>) : undefined) ||
-			[],
+		...(presentation ? { presentation } : {}),
+		items,
 	};
 }
 

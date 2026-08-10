@@ -3,6 +3,7 @@ import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 import { AssetSchema, focalPointSchema } from '@/lib/schemas/content/shared.schema';
 import {
 	GALLERY_LAYOUT_ROLES,
+	GALLERY_MOBILE_BROWSE_MODES,
 	GALLERY_PRESENTATIONS,
 	assertSupportedGalleryPresentation,
 } from '@/lib/invitation/presentation-options';
@@ -17,6 +18,12 @@ export const gallerySchema = z
 			.union([z.enum(GALLERY_LAYOUT_VARIANTS), z.enum(THEME_PRESETS), z.literal('single')])
 			.optional(),
 		presentation: z.enum(GALLERY_PRESENTATIONS).optional(),
+		presentationOptions: z
+			.object({
+				mobileBrowse: z.enum(GALLERY_MOBILE_BROWSE_MODES).optional(),
+			})
+			.strict()
+			.optional(),
 		items: z.array(
 			z.object({
 				key: z.string().min(1).max(120).optional(),

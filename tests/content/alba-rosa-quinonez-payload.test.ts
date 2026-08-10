@@ -125,6 +125,7 @@ describe('Alba Rosa Quiñónez provision contract', () => {
 		const countdown = asRecord(content.countdown);
 		expect(typeof countdown.title).toBe('string');
 		expect((countdown.title as string).length).toBeGreaterThan(0);
+		expect(countdown.presentationOptions).toEqual({ visibleUnits: ['days'] });
 
 		const location = asRecord(content.location);
 		expect(location.structuralVariant).toBe('split-map');
@@ -142,7 +143,8 @@ describe('Alba Rosa Quiñónez provision contract', () => {
 
 		const gifts = asRecord(content.gifts);
 		expect(typeof gifts.subtitle).toBe('string');
-		expect(gifts.items).toEqual([expect.objectContaining({ type: 'cash' })]);
+		expect(gifts.presentation).toBe('legend-only');
+		expect(gifts.items).toBeUndefined();
 
 		const thankYou = asRecord(content.thankYou);
 		expect(typeof thankYou.message).toBe('string');

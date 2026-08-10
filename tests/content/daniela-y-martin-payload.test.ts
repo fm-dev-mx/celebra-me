@@ -330,12 +330,14 @@ describe('Boda Daniela y Martín provision contract', () => {
 		// Payload declares the opt-out explicitly so the live row stays
 		// in lockstep with the canonical source.
 		const published = buildDanielaPublishedContent(buildTestAssets());
-		expect(
-			(
-				published.location as
-					{ presentationOptions?: { showNavigationButtons?: boolean } } | undefined
-			)?.presentationOptions?.showNavigationButtons,
-		).toBe(false);
+		const location = published.location as
+			| {
+					presentation?: string;
+					presentationOptions?: { showNavigationButtons?: boolean };
+			  }
+			| undefined;
+		expect(location?.presentation).toBe('simple');
+		expect(location?.presentationOptions?.showNavigationButtons).toBe(false);
 
 		// The adapter must surface the opt-out on the section data the
 		// render plan and EventLocation consume.
@@ -343,6 +345,7 @@ describe('Boda Daniela y Martín provision contract', () => {
 			id: 'events/daniela-y-martin',
 			data: published,
 		} as unknown as Parameters<typeof adaptEvent>[0]);
+		expect(viewModel.sections.location?.presentation).toBe('simple');
 		expect(viewModel.sections.location?.showNavigationButtons).toBe(false);
 	});
 

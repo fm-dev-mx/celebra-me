@@ -5,6 +5,7 @@ import { GiftIcon } from '@/components/common/icons/invitation/Gift';
 import { BankCardIcon } from '@/components/common/icons/ui/BankCard';
 import { CashIcon } from '@/components/common/icons/ui/Cash';
 import { PayPalIcon } from '@/components/common/icons/social/PayPal';
+import type { GiftsPresentation } from '@/lib/invitation/presentation-options';
 import type { GiftsStructuralVariant } from '@/lib/invitation/structural-variants';
 
 interface GiftStoreLink {
@@ -51,6 +52,7 @@ interface Props {
 	gifts: Gift[];
 	variant?: string;
 	structuralVariant?: GiftsStructuralVariant;
+	presentation?: GiftsPresentation;
 	eyebrow?: string;
 	title?: string;
 	subtitle?: string;
@@ -69,6 +71,7 @@ const {
 	gifts,
 	variant = 'standard',
 	structuralVariant = 'standard',
+	presentation = 'catalog',
 	eyebrow,
 	title = 'Mesa de Regalos',
 	subtitle = 'Su presencia es nuestro mayor regalo, pero si desean tener un detalle, aquí les compartimos algunas opciones.',
@@ -84,7 +87,9 @@ const {
 } = Astro.props;
 
 const isEditorialMagazine = structuralVariant === 'editorial-catalog';
+const isLegendOnly = presentation === 'legend-only';
 const displayTitle = isEditorialMagazine ? 'Mesa de cortesía' : title;
+const catalogGifts = isLegendOnly ? [] : gifts;
 
 const ICON_MAP = {
 	store: GiftIcon,
@@ -94,24 +99,28 @@ const ICON_MAP = {
 };
 ---
 
-<section id="regalos" class="gifts-section" data-screenshot-section="gifts" data-variant={variant} data-structural-variant={structuralVariant}>
+<section id="regalos" class="gifts-section" data-screenshot-section="gifts" data-variant={variant} data-structural-variant={structuralVariant} data-presentation={presentation}>
 	<div class="gifts-section__container">
 		<header class="gifts-section__header">
 			{eyebrow && <span class="gifts-section__eyebrow">{eyebrow}</span>}
 			<h2 class="gifts-section__title">{displayTitle}</h2>
-			<div class="gifts-section__flourish" aria-hidden="true">
-				<span class="flourish-line"></span>
-				<span class="flourish-diamond"></span>
-				<span class="flourish-line"></span>
-			</div>
+			{!isLegendOnly && (
+				<div class="gifts-section__flourish" aria-hidden="true">
+					<span class="flourish-line"></span>
+					<span class="flourish-diamond"></span>
+					<span class="flourish-line"></span>
+				</div>
+			)}
 			{subtitle && <p class="gifts-section__subtitle">{subtitle}</p>}
 		</header>
 
+		{!isLegendOnly && (
+			<>
 		<div class="gifts-section__separator" aria-hidden="true"></div>
 
-		<div class="gifts-grid" data-count={gifts.length}>
+		<div class="gifts-grid" data-count={catalogGifts.length}>
 			{
-				gifts.map((gift, index) => {
+				catalogGifts.map((gift, index) => {
 					const Icon = ICON_MAP[gift.type];
 					const giftNumber = String(index + 1).padStart(2, '0');
 					return (
@@ -206,6 +215,8 @@ const ICON_MAP = {
 				})
 			}
 		</div>
+			</>
+		)}
 	</div>
 </section>
 <script>

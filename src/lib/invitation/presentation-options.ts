@@ -6,6 +6,9 @@ export const FAMILY_PRESENTATIONS = ['with-photo', 'text-only'] as const;
 export const LOCATION_PRESENTATIONS = ['simple', 'with-map', 'with-photo'] as const;
 export const GALLERY_PRESENTATIONS = ['standard', 'pet-keepsake'] as const;
 export const GALLERY_LAYOUT_ROLES = ['feature', 'wide', 'standard'] as const;
+export const GALLERY_MOBILE_BROWSE_MODES = ['stack', 'rail'] as const;
+export const GIFTS_PRESENTATIONS = ['catalog', 'legend-only'] as const;
+export const COUNTDOWN_UNITS = ['days', 'hours', 'minutes', 'seconds'] as const;
 export const ITINERARY_PRESENTATION_BEHAVIORS = ['standard', 'timeline-paper'] as const;
 
 export type XareniSealColor = (typeof XARENI_SEAL_COLORS)[number];
@@ -14,10 +17,18 @@ export type LocationPresentation = (typeof LOCATION_PRESENTATIONS)[number];
 export type LocationMediaMode = 'none' | 'map' | 'image';
 export type GalleryPresentation = (typeof GALLERY_PRESENTATIONS)[number];
 export type GalleryLayoutRole = (typeof GALLERY_LAYOUT_ROLES)[number];
+export type GalleryMobileBrowseMode = (typeof GALLERY_MOBILE_BROWSE_MODES)[number];
+export type GiftsPresentation = (typeof GIFTS_PRESENTATIONS)[number];
+export type CountdownUnit = (typeof COUNTDOWN_UNITS)[number];
 export type ItineraryPresentationBehavior = (typeof ITINERARY_PRESENTATION_BEHAVIORS)[number];
 
 export interface LocationPresentationOptions {
 	showFlourishes?: boolean;
+	/**
+	 * When false and the venue has a map URL but no embeddable media
+	 * (`mediaMode === 'none'`), VenueCard renders the linked map-preview
+	 * surface instead of the Apple/Google/Waze navigation button row.
+	 */
 	showNavigationButtons?: boolean;
 }
 
@@ -27,6 +38,19 @@ export interface HeroPresentationOptions {
 
 export interface ItineraryPresentationOptions {
 	behavior?: ItineraryPresentationBehavior;
+}
+
+export interface CountdownPresentationOptions {
+	/** Subset of countdown units to render. Absent/undefined → all four units. */
+	visibleUnits?: CountdownUnit[];
+}
+
+export interface GalleryPresentationOptions {
+	/**
+	 * Mobile browse mode for layout variants that support it (e.g. magazine-spread).
+	 * Default `stack` preserves the canonical column layout on small viewports.
+	 */
+	mobileBrowse?: GalleryMobileBrowseMode;
 }
 
 export const XARENI_SEAL_COLOR_LABELS: Record<XareniSealColor, string> = {
@@ -149,6 +173,39 @@ export function resolveItineraryPresentation(
 	options: ItineraryPresentationOptions | undefined,
 ): ItineraryPresentationBehavior {
 	return options?.behavior ?? 'standard';
+}
+
+const COUNTDOWN_UNIT_SET = new Set<string>(COUNTDOWN_UNITS);
+
+/**
+ * Resolve countdown visible units. Absent options → all units.
+ * Unknown units are dropped. An empty/invalid selection falls back to all units
+ * so the section never renders with zero segments at runtime; schemas reject
+ * empty arrays at the content boundary.
+ */
+export function resolveCountdownVisibleUnits(
+	options: CountdownPresentationOptions | undefined,
+): CountdownUnit[] {
+	const requested = options?.visibleUnits;
+	if (!requested || requested.length === 0) {
+		return [...COUNTDOWN_UNITS];
+	}
+	const unique = [
+		...new Set(requested.filter((unit): unit is CountdownUnit => COUNTDOWN_UNIT_SET.has(unit))),
+	];
+	return unique.length > 0 ? unique : [...COUNTDOWN_UNITS];
+}
+
+export function resolveGiftsPresentation(
+	presentation: GiftsPresentation | undefined,
+): GiftsPresentation {
+	return presentation ?? 'catalog';
+}
+
+export function resolveGalleryMobileBrowse(
+	options: GalleryPresentationOptions | undefined,
+): GalleryMobileBrowseMode {
+	return options?.mobileBrowse ?? 'stack';
 }
 
 export function assertSupportedGalleryPresentation(

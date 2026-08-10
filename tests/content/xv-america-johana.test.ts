@@ -128,7 +128,7 @@ describe('XV America Johana client invitation preparation', () => {
 			'El color rojo está reservado para la quinceañera.',
 		);
 		expect(result.data.gifts?.items).toHaveLength(2);
-		expect(result.data.gifts?.items[0]).toMatchObject({
+		expect(result.data.gifts?.items?.[0]).toMatchObject({
 			type: 'store',
 			title: 'Mesa de regalos',
 			links: [

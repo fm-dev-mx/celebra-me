@@ -190,6 +190,10 @@ export function buildDanielaPublishedContent(
 		},
 		location: {
 			visibility: 'public',
+			// No coords/image → mediaMode none. With showNavigationButtons=false,
+			// VenueCard uses the canonical linked map-preview surface (not a new
+			// structural variant or parallel presentation enum).
+			presentation: 'simple',
 			presentationOptions: {
 				showFlourishes: true,
 				// Map preview is the sole primary map link; the duplicated

@@ -130,6 +130,7 @@ export function mapGiftsToDraft(gifts: Record<string, unknown>): Record<string, 
 	return {
 		...(str(gifts.title) ? { title: str(gifts.title) } : {}),
 		...(str(gifts.subtitle) ? { subtitle: str(gifts.subtitle) } : {}),
+		...(str(gifts.presentation) ? { presentation: str(gifts.presentation) } : {}),
 		...(Array.isArray(gifts.items) ? { items: gifts.items } : {}),
 	};
 }
@@ -152,6 +153,9 @@ export function mapCountdownToDraft(countdown: Record<string, unknown>): Record<
 	return {
 		...(str(countdown.title) ? { title: str(countdown.title) } : {}),
 		...(str(countdown.footerText) ? { footerText: str(countdown.footerText) } : {}),
+		...(isRecord(countdown.presentationOptions)
+			? { presentationOptions: countdown.presentationOptions }
+			: {}),
 	};
 }
 

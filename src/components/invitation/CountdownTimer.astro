@@ -1,10 +1,14 @@
 ---
+import type { CountdownUnit } from '@/lib/invitation/presentation-options';
+import { COUNTDOWN_UNITS, resolveCountdownVisibleUnits } from '@/lib/invitation/presentation-options';
+
 interface Props {
 	targetIso: string;
 	isDemo?: boolean;
+	visibleUnits?: CountdownUnit[];
 }
 
-const { targetIso, isDemo } = Astro.props;
+const { targetIso, isDemo, visibleUnits } = Astro.props;
 
 const targetDate = new Date(targetIso);
 const difference = targetDate.getTime() - Date.now();
@@ -18,15 +22,30 @@ const initialTimeLeft =
 			}
 		: { days: 0, hours: 0, minutes: 0, seconds: 0 };
 
-const segments = [
-	{ key: 'days', label: 'Días', value: initialTimeLeft.days },
-	{ key: 'hours', label: 'Horas', value: initialTimeLeft.hours },
-	{ key: 'minutes', label: 'Minutos', value: initialTimeLeft.minutes },
-	{ key: 'seconds', label: 'Segundos', value: initialTimeLeft.seconds },
+const ALL_SEGMENTS = [
+	{ key: 'days' as const, label: 'Días', value: initialTimeLeft.days },
+	{ key: 'hours' as const, label: 'Horas', value: initialTimeLeft.hours },
+	{ key: 'minutes' as const, label: 'Minutos', value: initialTimeLeft.minutes },
+	{ key: 'seconds' as const, label: 'Segundos', value: initialTimeLeft.seconds },
 ];
+
+const resolvedUnits = resolveCountdownVisibleUnits(
+	visibleUnits ? { visibleUnits } : undefined,
+);
+const unitOrder = new Map(COUNTDOWN_UNITS.map((unit, index) => [unit, index]));
+const segments = ALL_SEGMENTS.filter((segment) => resolvedUnits.includes(segment.key)).sort(
+	(a, b) => (unitOrder.get(a.key) ?? 0) - (unitOrder.get(b.key) ?? 0),
+);
 ---
 
-<div class="countdown__timer" data-countdown data-target-iso={targetIso} data-is-demo={isDemo ? "true" : undefined}>
+<div
+	class="countdown__timer"
+	data-countdown
+	data-target-iso={targetIso}
+	data-is-demo={isDemo ? "true" : undefined}
+	data-unit-count={String(segments.length)}
+	data-visible-units={resolvedUnits.join(',')}
+>
 	{
 		segments.map((segment, index) => (
 			<div class="countdown__segment" data-index={index} data-unit={segment.key} data-reveal-item>
