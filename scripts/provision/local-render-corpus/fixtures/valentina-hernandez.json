@@ -20,7 +20,8 @@
             "focalPoint": "50% 38%",
             "backgroundImage": "hero",
             "focalPointMobile": "50% 32%",
-            "backgroundImageMobile": "portrait"
+            "backgroundImageMobile": "portrait",
+            "structuralVariant": "editorial-cover"
         },
         "rsvp": {
             "title": "Confirma tu asistencia",
@@ -235,6 +236,10 @@
         },
         "eventType": "xv",
         "itinerary": {
+            "title": "Programa",
+            "presentation": {
+                "behavior": "standard"
+            },
             "items": [
                 {
                     "time": "15:45",
@@ -248,8 +253,7 @@
                     "iconName": "Reception",
                     "description": "Recepción y celebración en Finca Las Palmas."
                 }
-            ],
-            "title": "Programa"
+            ]
         },
         "_assetSlug": "xv-valentina-hernandez",
         "interludes": [
@@ -316,10 +320,12 @@
                     "guestCount": "Personas que asistirán",
                     "confirmButton": "Confirmar asistencia"
                 },
-                "variant": "editorial-magazine"
+                "variant": "editorial-magazine",
+                "structuralVariant": "editorial-press-pass"
             },
             "gifts": {
-                "variant": "editorial-magazine"
+                "variant": "editorial-magazine",
+                "structuralVariant": "editorial-catalog"
             },
             "quote": {
                 "variant": "editorial-magazine"
@@ -335,7 +341,8 @@
                 "showFlourishes": false
             },
             "thankYou": {
-                "variant": "editorial-magazine"
+                "variant": "editorial-magazine",
+                "structuralVariant": "editorial-back-cover"
             },
             "countdown": {
                 "variant": "editorial-magazine"

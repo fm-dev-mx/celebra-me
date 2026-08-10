@@ -13,7 +13,15 @@
         "location": {
             "showFlourishes": true
         },
-        "rsvp": { "structuralVariant": "standard" }
+        "rsvp": {
+            "structuralVariant": "standard"
+        },
+        "thankYou": {
+            "structuralVariant": "standard"
+        },
+        "gifts": {
+            "structuralVariant": "standard"
+        }
     },
     "hero": {
         "name": "Valentina Noir",
@@ -109,7 +117,6 @@
         ]
     },
     "gifts": {
-        "structuralVariant": "standard",
         "title": "Mesa de Regalos",
         "subtitle": "Tu generosidad acompaña esta noche de estreno.",
         "items": [
@@ -135,20 +142,24 @@
         "guestCap": 4,
         "confirmationMessage": "Tu lugar para Noir Premiere XV ha sido reservado. Nos vemos en la gala.",
         "confirmationMode": "api",
-        "personalizedAccess": { "structuralVariant": "ornamented" }
+        "personalizedAccess": {
+            "structuralVariant": "ornamented"
+        }
     },
     "quote": {
         "text": "Con luz propia, inicio un nuevo capítulo. Gracias por ser parte de esta noche de quince años.",
         "author": "Valentina Noir"
     },
     "thankYou": {
-        "structuralVariant": "standard",
         "message": "Gracias por ser parte de este capítulo. Su presencia convierte esta noche en un recuerdo de luz, estilo y emoción.",
         "closingName": "Valentina",
         "image": "thankYouPortrait"
     },
     "itinerary": {
         "title": "Programa de la Noche",
+        "presentation": {
+            "behavior": "standard"
+        },
         "items": [
             {
                 "iconName": "Reception",

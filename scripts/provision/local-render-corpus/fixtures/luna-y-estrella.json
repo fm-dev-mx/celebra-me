@@ -100,7 +100,8 @@
         "gallery": {
             "items": [],
             "title": "Galería",
-            "eyebrow": "Galería"
+            "eyebrow": "Galería",
+            "variant": "uniform-grid"
         },
         "sharing": {
             "ogDescription": "Acompáñenos en la Primera Comunión de Luna y Estrella el sábado, 1 de agosto de 2026.",
@@ -164,8 +165,11 @@
         },
         "eventType": "primera-comunion",
         "itinerary": {
-            "items": [],
-            "title": "Itinerario"
+            "title": "Itinerario",
+            "presentation": {
+                "behavior": "standard"
+            },
+            "items": []
         },
         "_assetSlug": "luna-y-estrella-primera-comunion",
         "description": "Invitación para la Primera Comunión de Luna Yamileth y Estrella Abigail, con una estética blanca, rosa suave, floral y ceremonial.",

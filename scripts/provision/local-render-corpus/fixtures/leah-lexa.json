@@ -85,7 +85,7 @@
             ],
             "title": "La manada también te espera",
             "eyebrow": "-",
-            "variant": "single",
+            "variant": "single-keepsake",
             "subtitle": "En casa ya hay patitas listas para recibirte con amor.",
             "presentation": "pet-keepsake"
         },
@@ -170,8 +170,11 @@
         },
         "eventType": "baby-shower",
         "itinerary": {
-            "items": [],
-            "title": "Itinerario"
+            "title": "Itinerario",
+            "presentation": {
+                "behavior": "timeline-paper"
+            },
+            "items": []
         },
         "_assetSlug": "leah-lexa-baby-shower",
         "interludes": [
@@ -203,11 +206,28 @@
             "thankYou"
         ],
         "navigation": [
-            { "label": "Ubicación", "href": "#event-location" },
-            { "label": "Fecha", "href": "#inicio" },
-            { "label": "Regalos", "href": "#regalos" },
-            { "label": "Confirmar", "href": "#rsvp" }
-        ]
+            {
+                "label": "Ubicación",
+                "href": "#event-location"
+            },
+            {
+                "label": "Fecha",
+                "href": "#inicio"
+            },
+            {
+                "label": "Regalos",
+                "href": "#regalos"
+            },
+            {
+                "label": "Confirmar",
+                "href": "#rsvp"
+            }
+        ],
+        "sectionStyles": {
+            "thankYou": {
+                "structuralVariant": "editorial-back-cover"
+            }
+        }
     },
     "notes": "Sanitized render fixture: invitations identity + published_invitation_content only. No Auth, guests, RSVP, analytics, or drafts."
 }

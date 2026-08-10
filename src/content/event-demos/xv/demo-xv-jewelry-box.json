@@ -129,7 +129,8 @@
                 "image": "gallery11",
                 "caption": "El jardín cierra la serie con aire de celebración."
             }
-        ]
+        ],
+        "variant": "feature-mosaic"
     },
     "gifts": {
         "title": "Detalle especial",
@@ -178,6 +179,9 @@
     },
     "itinerary": {
         "title": "Programa de la noche",
+        "presentation": {
+            "behavior": "standard"
+        },
         "items": [
             {
                 "iconName": "Church",

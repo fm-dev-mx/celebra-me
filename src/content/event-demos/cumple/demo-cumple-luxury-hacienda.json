@@ -77,7 +77,8 @@
                 "image": "gallery04",
                 "caption": "La tierra y la Hacienda que vieron crecer la historia."
             }
-        ]
+        ],
+        "variant": "feature-mosaic"
     },
     "rsvp": {
         "title": "Confirma tu asistencia.",
@@ -136,6 +137,9 @@
     },
     "itinerary": {
         "title": "Programa de la Noche",
+        "presentation": {
+            "behavior": "standard"
+        },
         "items": [
             {
                 "iconName": "Toast",

@@ -1,285 +1,289 @@
 {
-	"schemaVersion": 1,
-	"slug": "ximena-meza-trasvina",
-	"eventType": "xv",
-	"title": "XV años de Ximena",
-	"themeId": "jewelry-box",
-	"baseDemoId": "demo-xv-jewelry-box",
-	"snapshot": {
-		"previewSlug": "demo-xv-jewelry-box",
-		"themeId": "jewelry-box",
-		"baseDemoId": "demo-xv-jewelry-box"
-	},
-	"publishedContent": {
-		"hero": {
-			"date": "2026-04-11T20:00:00.000Z",
-			"name": "Ximena Meza Trasviña",
-			"label": "Mis XV Años",
-			"portrait": "portrait",
-			"backgroundImage": "hero"
-		},
-		"rsvp": {
-			"title": "Confirma tu asistencia",
-			"guestCap": 4,
-			"accessMode": "hybrid",
-			"confirmationMode": "api",
-			"confirmationMessage": "¡Nos vemos en la fiesta!"
-		},
-		"gifts": {
-			"items": [
-				{
-					"text": "Agradecemos su generosidad en el área de recepción.",
-					"type": "cash",
-					"title": "Lluvia de Sobres"
-				}
-			],
-			"title": "Detalles para Celebrar",
-			"subtitle": "Gracias por acompañarnos en este momento tan especial."
-		},
-		"music": {
-			"url": "https://res.cloudinary.com/dusxvauvj/video/upload/v1775084991/mi-nina-hermosa_zqi8ry.m4a",
-			"title": "Música de fondo: Edición Premiere",
-			"autoPlay": true
-		},
-		"quote": {
-			"text": "Entre flores y sueños, llega el momento más esperado.",
-			"author": "Ximena"
-		},
-		"theme": {
-			"preset": "premiere-floral"
-		},
-		"title": "XV Años de Ximena",
-		"family": {
-			"labels": {
-				"parentsTitle": "Con la bendición de",
-				"sectionTitle": "Mi Familia",
-				"sectionSubtitle": "Círculo Íntimo"
-			},
-			"parents": {
-				"father": "Bladimir Meza Briceño",
-				"mother": "Christian Jasiela Trasviña Valenzuela"
-			},
-			"godparents": [
-				{
-					"name": "Abigail Limón Villalobos",
-					"role": "Madrina de honor"
-				},
-				{
-					"name": "Eduardo Arredondo Valenzuela",
-					"role": "Padrino de honor"
-				},
-				{
-					"name": "Karla Gabriela Montoya Valenzuela",
-					"role": "Madrina de honor"
-				}
-			],
-			"featuredImage": "family"
-		},
-		"isDemo": false,
-		"gallery": {
-			"items": [
-				{
-					"image": "gallery01",
-					"caption": "Mi Gran Día."
-				},
-				{
-					"image": "gallery02",
-					"caption": "Preparada para Brillar."
-				},
-				{
-					"image": "gallery03",
-					"caption": "Elegancia en Cada Detalle."
-				},
-				{
-					"image": "gallery04",
-					"caption": "Brillo Natural."
-				},
-				{
-					"image": "gallery05",
-					"caption": "Sueños en Seda."
-				},
-				{
-					"image": "gallery07",
-					"caption": "Reflejo de Alegría."
-				},
-				{
-					"image": "gallery09",
-					"caption": "Movimiento y Luz."
-				},
-				{
-					"image": "gallery10",
-					"caption": "Actitud y Confianza."
-				}
-			],
-			"title": "Editorial de Ximena",
-			"subtitle": "Un recorrido visual por la esencia, el brillo y la elegancia."
-		},
-		"sharing": {
-			"ogImage": "portrait",
-			"whatsappTemplate": "Hola {name}, te comparto tu invitación para los XV años de Ximena: {inviteUrl}"
-		},
-		"envelope": {
-			"disabled": false,
-			"sealIcon": "flower",
-			"microcopy": "Abre Tu Invitación",
-			"sealStyle": "wax",
-			"sealInitials": "X·M",
-			"closedPalette": {
-				"accent": "actionAccent",
-				"primary": "surfacePrimary",
-				"background": "surfaceDark"
-			}
-		},
-		"location": {
-			"reception": {
-				"city": "Los Mochis",
-				"date": "11 de abril de 2026",
-				"time": "20:00",
-				"image": "jardin",
-				"mapUrl": "https://www.google.com/maps/search/?api=1&query=D%27Galaz+Alberca+y+Eventos+Los+Mochis",
-				"address": "Av Chihuahua 2979, Los Mochis, Sin.",
-				"venueName": "D'Galaz Alberca y Eventos",
-				"venueEvent": "Ubicación del evento",
-				"appleMapsUrl": "https://maps.apple.com/?q=D%27Galaz+Alberca+y+Eventos+Los+Mochis",
-				"googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=D%27Galaz+Alberca+y+Eventos+Los+Mochis"
-			},
-			"indications": [
-				{
-					"icon": "crown",
-					"text": "Dress Code <strong>El color rosa es exclusivo para la quinceañera</strong>",
-					"iconName": "Crown",
-					"styleVariant": "reserved"
-				},
-				{
-					"icon": "envelope",
-					"text": "<strong>Favor de confirmar antes del 8 de abril</strong>",
-					"iconName": "Enveloped",
-					"styleVariant": "default"
-				}
-			]
-		},
-		"thankYou": {
-			"image": "thankYouPortrait",
-			"message": "Gracias por ser parte de mis XV. Su cariño hace que este sueño brille aún más.",
-			"closingName": "Ximena Meza Trasviña"
-		},
-		"countdown": {
-			"title": "La gran noche comienza en",
-			"footerText": "D'Galaz Alberca y Eventos, Los Mochis, Sinaloa",
-			"subtitlePrefix": ""
-		},
-		"eventType": "xv",
-		"itinerary": {
-			"items": [
-				{
-					"time": "20:00",
-					"label": "Recepción",
-					"iconName": "Reception",
-					"description": "Los primeros en llegar."
-				},
-				{
-					"time": "22:00",
-					"label": "Vals",
-					"iconName": "Waltz",
-					"description": "Un baile que marca esta noche."
-				},
-				{
-					"time": "22:30",
-					"label": "Brindis",
-					"iconName": "Toast",
-					"description": "Para celebrar esta nueva etapa."
-				},
-				{
-					"time": "23:00",
-					"label": "Cena",
-					"iconName": "Dinner",
-					"description": "Acompañados de buena mesa."
-				},
-				{
-					"time": "23:30",
-					"label": "Pastel",
-					"iconName": "Cake",
-					"description": "El momento más dulce."
-				}
-			],
-			"title": "Programa de la Noche"
-		},
-		"_assetSlug": "ximena-meza-trasvina",
-		"interludes": [
-			{
-				"alt": "Rosas en tonos rosados y rose gold fluyendo editorialmente",
-				"image": "gallery04",
-				"height": "screen",
-				"focalPoint": "center 15%",
-				"afterSection": "location"
-			},
-			{
-				"alt": "Jardín privado iluminado para la gala",
-				"image": "gallery12",
-				"height": "screen",
-				"afterSection": "family"
-			},
-			{
-				"alt": "Detalle editorial de texturas y perlas",
-				"image": "interlude01",
-				"height": "screen",
-				"afterSection": "itinerary"
-			},
-			{
-				"alt": "Brillo rose metal cinematográfico",
-				"image": "gallery09",
-				"height": "screen",
-				"afterSection": "gallery"
-			},
-			{
-				"alt": "Explosión artística de destellos en el jardín",
-				"image": "gallery10",
-				"height": "screen",
-				"afterSection": "countdown"
-			},
-			{
-				"alt": "Retrato editorial final",
-				"image": "interlude04",
-				"height": "screen",
-				"focalPoint": "center 20%",
-				"afterSection": "rsvp"
-			}
-		],
-		"navigation": [
-			{
-				"href": "#inicio",
-				"label": "Inicio"
-			},
-			{
-				"href": "#event-location",
-				"label": "Ubicación"
-			},
-			{
-				"href": "#galeria",
-				"label": "Galería"
-			},
-			{
-				"href": "#regalos",
-				"label": "Regalos"
-			},
-			{
-				"href": "#rsvp",
-				"label": "Confirmar"
-			}
-		],
-		"description": "Acompáñame a celebrar este momento tan especial.",
-		"sectionStyles": {
-			"rsvp": {
-				"labels": {
-					"name": "Tu nombre",
-					"guestCount": "Número de asistentes",
-					"confirmButton": "Confirmar asistencia"
-				}
-			},
-			"location": {
-				"showFlourishes": true
-			}
-		}
-	},
-	"notes": "Sanitized render fixture: invitations identity + published_invitation_content only. No Auth, guests, RSVP, analytics, or drafts."
+    "schemaVersion": 1,
+    "slug": "ximena-meza-trasvina",
+    "eventType": "xv",
+    "title": "XV años de Ximena",
+    "themeId": "jewelry-box",
+    "baseDemoId": "demo-xv-jewelry-box",
+    "snapshot": {
+        "previewSlug": "demo-xv-jewelry-box",
+        "themeId": "jewelry-box",
+        "baseDemoId": "demo-xv-jewelry-box"
+    },
+    "publishedContent": {
+        "hero": {
+            "date": "2026-04-11T20:00:00.000Z",
+            "name": "Ximena Meza Trasviña",
+            "label": "Mis XV Años",
+            "portrait": "portrait",
+            "backgroundImage": "hero"
+        },
+        "rsvp": {
+            "title": "Confirma tu asistencia",
+            "guestCap": 4,
+            "accessMode": "hybrid",
+            "confirmationMode": "api",
+            "confirmationMessage": "¡Nos vemos en la fiesta!"
+        },
+        "gifts": {
+            "items": [
+                {
+                    "text": "Agradecemos su generosidad en el área de recepción.",
+                    "type": "cash",
+                    "title": "Lluvia de Sobres"
+                }
+            ],
+            "title": "Detalles para Celebrar",
+            "subtitle": "Gracias por acompañarnos en este momento tan especial."
+        },
+        "music": {
+            "url": "https://res.cloudinary.com/dusxvauvj/video/upload/v1775084991/mi-nina-hermosa_zqi8ry.m4a",
+            "title": "Música de fondo: Edición Premiere",
+            "autoPlay": true
+        },
+        "quote": {
+            "text": "Entre flores y sueños, llega el momento más esperado.",
+            "author": "Ximena"
+        },
+        "theme": {
+            "preset": "premiere-floral"
+        },
+        "title": "XV Años de Ximena",
+        "family": {
+            "labels": {
+                "parentsTitle": "Con la bendición de",
+                "sectionTitle": "Mi Familia",
+                "sectionSubtitle": "Círculo Íntimo"
+            },
+            "parents": {
+                "father": "Bladimir Meza Briceño",
+                "mother": "Christian Jasiela Trasviña Valenzuela"
+            },
+            "godparents": [
+                {
+                    "name": "Abigail Limón Villalobos",
+                    "role": "Madrina de honor"
+                },
+                {
+                    "name": "Eduardo Arredondo Valenzuela",
+                    "role": "Padrino de honor"
+                },
+                {
+                    "name": "Karla Gabriela Montoya Valenzuela",
+                    "role": "Madrina de honor"
+                }
+            ],
+            "featuredImage": "family"
+        },
+        "isDemo": false,
+        "gallery": {
+            "items": [
+                {
+                    "image": "gallery01",
+                    "caption": "Mi Gran Día."
+                },
+                {
+                    "image": "gallery02",
+                    "caption": "Preparada para Brillar."
+                },
+                {
+                    "image": "gallery03",
+                    "caption": "Elegancia en Cada Detalle."
+                },
+                {
+                    "image": "gallery04",
+                    "caption": "Brillo Natural."
+                },
+                {
+                    "image": "gallery05",
+                    "caption": "Sueños en Seda."
+                },
+                {
+                    "image": "gallery07",
+                    "caption": "Reflejo de Alegría."
+                },
+                {
+                    "image": "gallery09",
+                    "caption": "Movimiento y Luz."
+                },
+                {
+                    "image": "gallery10",
+                    "caption": "Actitud y Confianza."
+                }
+            ],
+            "title": "Editorial de Ximena",
+            "subtitle": "Un recorrido visual por la esencia, el brillo y la elegancia.",
+            "variant": "editorial-mosaic"
+        },
+        "sharing": {
+            "ogImage": "portrait",
+            "whatsappTemplate": "Hola {name}, te comparto tu invitación para los XV años de Ximena: {inviteUrl}"
+        },
+        "envelope": {
+            "disabled": false,
+            "sealIcon": "flower",
+            "microcopy": "Abre Tu Invitación",
+            "sealStyle": "wax",
+            "sealInitials": "X·M",
+            "closedPalette": {
+                "accent": "actionAccent",
+                "primary": "surfacePrimary",
+                "background": "surfaceDark"
+            }
+        },
+        "location": {
+            "reception": {
+                "city": "Los Mochis",
+                "date": "11 de abril de 2026",
+                "time": "20:00",
+                "image": "jardin",
+                "mapUrl": "https://www.google.com/maps/search/?api=1&query=D%27Galaz+Alberca+y+Eventos+Los+Mochis",
+                "address": "Av Chihuahua 2979, Los Mochis, Sin.",
+                "venueName": "D'Galaz Alberca y Eventos",
+                "venueEvent": "Ubicación del evento",
+                "appleMapsUrl": "https://maps.apple.com/?q=D%27Galaz+Alberca+y+Eventos+Los+Mochis",
+                "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=D%27Galaz+Alberca+y+Eventos+Los+Mochis"
+            },
+            "indications": [
+                {
+                    "icon": "crown",
+                    "text": "Dress Code <strong>El color rosa es exclusivo para la quinceañera</strong>",
+                    "iconName": "Crown",
+                    "styleVariant": "reserved"
+                },
+                {
+                    "icon": "envelope",
+                    "text": "<strong>Favor de confirmar antes del 8 de abril</strong>",
+                    "iconName": "Enveloped",
+                    "styleVariant": "default"
+                }
+            ]
+        },
+        "thankYou": {
+            "image": "thankYouPortrait",
+            "message": "Gracias por ser parte de mis XV. Su cariño hace que este sueño brille aún más.",
+            "closingName": "Ximena Meza Trasviña"
+        },
+        "countdown": {
+            "title": "La gran noche comienza en",
+            "footerText": "D'Galaz Alberca y Eventos, Los Mochis, Sinaloa",
+            "subtitlePrefix": ""
+        },
+        "eventType": "xv",
+        "itinerary": {
+            "title": "Programa de la Noche",
+            "presentation": {
+                "behavior": "standard"
+            },
+            "items": [
+                {
+                    "time": "20:00",
+                    "label": "Recepción",
+                    "iconName": "Reception",
+                    "description": "Los primeros en llegar."
+                },
+                {
+                    "time": "22:00",
+                    "label": "Vals",
+                    "iconName": "Waltz",
+                    "description": "Un baile que marca esta noche."
+                },
+                {
+                    "time": "22:30",
+                    "label": "Brindis",
+                    "iconName": "Toast",
+                    "description": "Para celebrar esta nueva etapa."
+                },
+                {
+                    "time": "23:00",
+                    "label": "Cena",
+                    "iconName": "Dinner",
+                    "description": "Acompañados de buena mesa."
+                },
+                {
+                    "time": "23:30",
+                    "label": "Pastel",
+                    "iconName": "Cake",
+                    "description": "El momento más dulce."
+                }
+            ]
+        },
+        "_assetSlug": "ximena-meza-trasvina",
+        "interludes": [
+            {
+                "alt": "Rosas en tonos rosados y rose gold fluyendo editorialmente",
+                "image": "gallery04",
+                "height": "screen",
+                "focalPoint": "center 15%",
+                "afterSection": "location"
+            },
+            {
+                "alt": "Jardín privado iluminado para la gala",
+                "image": "gallery12",
+                "height": "screen",
+                "afterSection": "family"
+            },
+            {
+                "alt": "Detalle editorial de texturas y perlas",
+                "image": "interlude01",
+                "height": "screen",
+                "afterSection": "itinerary"
+            },
+            {
+                "alt": "Brillo rose metal cinematográfico",
+                "image": "gallery09",
+                "height": "screen",
+                "afterSection": "gallery"
+            },
+            {
+                "alt": "Explosión artística de destellos en el jardín",
+                "image": "gallery10",
+                "height": "screen",
+                "afterSection": "countdown"
+            },
+            {
+                "alt": "Retrato editorial final",
+                "image": "interlude04",
+                "height": "screen",
+                "focalPoint": "center 20%",
+                "afterSection": "rsvp"
+            }
+        ],
+        "navigation": [
+            {
+                "href": "#inicio",
+                "label": "Inicio"
+            },
+            {
+                "href": "#event-location",
+                "label": "Ubicación"
+            },
+            {
+                "href": "#galeria",
+                "label": "Galería"
+            },
+            {
+                "href": "#regalos",
+                "label": "Regalos"
+            },
+            {
+                "href": "#rsvp",
+                "label": "Confirmar"
+            }
+        ],
+        "description": "Acompáñame a celebrar este momento tan especial.",
+        "sectionStyles": {
+            "rsvp": {
+                "labels": {
+                    "name": "Tu nombre",
+                    "guestCount": "Número de asistentes",
+                    "confirmButton": "Confirmar asistencia"
+                }
+            },
+            "location": {
+                "showFlourishes": true
+            }
+        }
+    },
+    "notes": "Sanitized render fixture: invitations identity + published_invitation_content only. No Auth, guests, RSVP, analytics, or drafts."
 }

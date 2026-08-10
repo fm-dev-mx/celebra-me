@@ -27,7 +27,15 @@
         "location": {
             "showFlourishes": true
         },
-        "rsvp": { "structuralVariant": "standard" }
+        "rsvp": {
+            "structuralVariant": "standard"
+        },
+        "thankYou": {
+            "structuralVariant": "editorial-back-cover"
+        },
+        "gifts": {
+            "structuralVariant": "standard"
+        }
     },
     "hero": {
         "name": "Isabella Rose Valenzuela",
@@ -135,7 +143,6 @@
         ]
     },
     "gifts": {
-        "structuralVariant": "standard",
         "title": "Un detalle especial",
         "subtitle": "Su presencia será el regalo más valioso. Para quienes deseen compartir un detalle adicional, habrá un espacio reservado durante la recepción.",
         "items": [
@@ -153,14 +160,15 @@
         "accessMode": "hybrid",
         "confirmationMessage": "Gracias por confirmar. Será una alegría recibirles en esta noche especial.",
         "confirmationMode": "api",
-        "personalizedAccess": { "structuralVariant": "ornamented" }
+        "personalizedAccess": {
+            "structuralVariant": "ornamented"
+        }
     },
     "quote": {
         "text": "Entre rosas y luz de velas, comienza una noche que guardaré para siempre.",
         "author": "Isabella Rose"
     },
     "thankYou": {
-        "structuralVariant": "editorial-back-cover",
         "message": "Gracias por compartir esta noche. Su presencia hará que mis XV años florezcan como un recuerdo lleno de amor y gratitud.",
         "closingName": "Isabella Rose Valenzuela",
         "image": "thankYouPortrait",
@@ -168,6 +176,9 @@
     },
     "itinerary": {
         "title": "Programa de la gala",
+        "presentation": {
+            "behavior": "standard"
+        },
         "items": [
             {
                 "iconName": "Church",

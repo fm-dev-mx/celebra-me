@@ -28,6 +28,12 @@
         "rsvp": {
             "variant": "editorial-magazine",
             "structuralVariant": "editorial-press-pass"
+        },
+        "thankYou": {
+            "structuralVariant": "editorial-back-cover"
+        },
+        "gifts": {
+            "structuralVariant": "editorial-catalog"
         }
     },
     "hero": {
@@ -129,7 +135,9 @@
         "accessMode": "hybrid",
         "confirmationMessage": "Tu acceso quedó confirmado. Gracias por ser parte de esta edición XV.",
         "confirmationMode": "api",
-        "personalizedAccess": { "structuralVariant": "editorial-pass" }
+        "personalizedAccess": {
+            "structuralVariant": "editorial-pass"
+        }
     },
     "gallery": {
         "variant": "magazine-spread",
@@ -160,7 +168,6 @@
         ]
     },
     "gifts": {
-        "structuralVariant": "editorial-catalog",
         "title": "Guía de regalos",
         "subtitle": "Tu presencia es el regalo más importante. Si deseas tener un detalle adicional, aquí compartimos algunas opciones.",
         "items": [
@@ -183,7 +190,6 @@
         ]
     },
     "thankYou": {
-        "structuralVariant": "editorial-back-cover",
         "message": "Gracias por acompañarme en una noche hecha de estilo, alegría y recuerdos para siempre.",
         "closingName": "Roberta",
         "image": "thankYouPortrait",

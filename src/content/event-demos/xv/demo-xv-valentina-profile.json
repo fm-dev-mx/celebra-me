@@ -23,11 +23,29 @@
         "thankYou"
     ],
     "sectionStyles": {
-        "quote": { "variant": "editorial-magazine" },
-        "countdown": { "variant": "editorial-magazine" },
-        "family": { "variant": "editorial-magazine" },
-        "location": { "variant": "editorial-magazine", "showFlourishes": false },
-        "rsvp": { "variant": "editorial-magazine", "structuralVariant": "editorial-press-pass" }
+        "quote": {
+            "variant": "editorial-magazine"
+        },
+        "countdown": {
+            "variant": "editorial-magazine"
+        },
+        "family": {
+            "variant": "editorial-magazine"
+        },
+        "location": {
+            "variant": "editorial-magazine",
+            "showFlourishes": false
+        },
+        "rsvp": {
+            "variant": "editorial-magazine",
+            "structuralVariant": "editorial-press-pass"
+        },
+        "thankYou": {
+            "structuralVariant": "editorial-back-cover"
+        },
+        "gifts": {
+            "structuralVariant": "editorial-catalog"
+        }
     },
     "hero": {
         "name": "Valentina Demo",
@@ -63,8 +81,14 @@
             "sectionMessage": "Gracias por hacer este sueño realidad y por acompañarme en cada paso de esta historia."
         },
         "godparents": [
-            { "name": "Sofía García", "role": "Madrina" },
-            { "name": "Roberto Martínez", "role": "Padrino" }
+            {
+                "name": "Sofía García",
+                "role": "Madrina"
+            },
+            {
+                "name": "Roberto Martínez",
+                "role": "Padrino"
+            }
         ],
         "focalPoint": "50% 38%"
     },
@@ -122,7 +146,9 @@
         "accessMode": "hybrid",
         "confirmationMessage": "Tu acceso quedó confirmado. Gracias por ser parte de esta edición XV.",
         "confirmationMode": "api",
-        "personalizedAccess": { "structuralVariant": "editorial-pass" }
+        "personalizedAccess": {
+            "structuralVariant": "editorial-pass"
+        }
     },
     "gallery": {
         "variant": "magazine-spread",
@@ -133,15 +159,29 @@
         "title": "Galería editorial",
         "subtitle": "Una selección visual con retratos, detalles y escenas de celebración.",
         "items": [
-            { "image": "gallery01", "caption": "Portada — retrato principal" },
-            { "image": "gallery02", "caption": "Interior — detalles del gran día" },
-            { "image": "gallery03", "caption": "Locación — la recepción" },
-            { "image": "gallery04", "caption": "Bodegón — texturas y luces" },
-            { "image": "gallery05", "caption": "Nocturno — brillo de celebración" }
+            {
+                "image": "gallery01",
+                "caption": "Portada — retrato principal"
+            },
+            {
+                "image": "gallery02",
+                "caption": "Interior — detalles del gran día"
+            },
+            {
+                "image": "gallery03",
+                "caption": "Locación — la recepción"
+            },
+            {
+                "image": "gallery04",
+                "caption": "Bodegón — texturas y luces"
+            },
+            {
+                "image": "gallery05",
+                "caption": "Nocturno — brillo de celebración"
+            }
         ]
     },
     "gifts": {
-        "structuralVariant": "editorial-catalog",
         "title": "Guía de regalos",
         "subtitle": "Tu presencia es el regalo más importante. Si deseas tener un detalle adicional, aquí compartimos algunas opciones.",
         "items": [
@@ -149,7 +189,12 @@
                 "type": "store",
                 "title": "Mesa de regalos",
                 "description": "Una selección especial para esta nueva etapa.",
-                "links": [{ "label": "Ver mesa", "url": "https://mesaderegalos.liverpool.com.mx/" }]
+                "links": [
+                    {
+                        "label": "Ver mesa",
+                        "url": "https://mesaderegalos.liverpool.com.mx/"
+                    }
+                ]
             },
             {
                 "type": "cash",
@@ -159,7 +204,6 @@
         ]
     },
     "thankYou": {
-        "structuralVariant": "editorial-back-cover",
         "message": "Gracias por acompañarme en una noche hecha de estilo, alegría y recuerdos para siempre.",
         "closingName": "Valentina Demo",
         "image": "thankYouPortrait",

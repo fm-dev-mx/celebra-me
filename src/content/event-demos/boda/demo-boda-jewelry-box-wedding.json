@@ -12,7 +12,18 @@
         "location": {
             "showFlourishes": true
         },
-        "rsvp": { "structuralVariant": "standard" }
+        "rsvp": {
+            "structuralVariant": "standard"
+        },
+        "thankYou": {
+            "structuralVariant": "standard"
+        },
+        "gifts": {
+            "structuralVariant": "standard"
+        },
+        "gallery": {
+            "variant": "jewelry-box-wedding"
+        }
     },
     "hero": {
         "name": "Sofía",
@@ -66,7 +77,9 @@
         "accessMode": "hybrid",
         "confirmationMessage": "Gracias por acompañarnos en el inicio de esta nueva etapa.",
         "confirmationMode": "both",
-        "personalizedAccess": { "structuralVariant": "ornamented" },
+        "personalizedAccess": {
+            "structuralVariant": "ornamented"
+        },
         "whatsappConfig": {
             "phone": "5212221234567",
             "confirmedTemplate": "Hola. Somos {name}. Confirmamos con mucho gusto nuestra asistencia a la boda de Sofía y Alejandro. Asistentes: {guestCount}.",
@@ -128,7 +141,7 @@
         }
     },
     "gallery": {
-        "variant": "jewelry-box-wedding",
+        "variant": "uniform-grid",
         "eyebrow": "Galería",
         "title": "Crónica de un sí",
         "subtitle": "Retratos de la historia que antecede a la ceremonia: la ciudad, la luz y los gestos que guardaremos para siempre.",
@@ -156,7 +169,6 @@
         ]
     },
     "gifts": {
-        "structuralVariant": "standard",
         "title": "Mesa de regalos",
         "subtitle": "Su presencia será nuestro mayor regalo. Para quienes deseen tener un detalle con nosotros, hemos preparado una mesa de regalos en Liverpool. También podrán acompañarnos con un sobre de buenos deseos el día de la recepción.",
         "items": [
@@ -171,6 +183,9 @@
     },
     "itinerary": {
         "title": "Programa del día",
+        "presentation": {
+            "behavior": "standard"
+        },
         "items": [
             {
                 "iconName": "Church",
@@ -205,7 +220,6 @@
         ]
     },
     "thankYou": {
-        "structuralVariant": "standard",
         "message": "Gracias por acompañarnos en un día que recordaremos siempre con el corazón lleno.",
         "closingName": "Sofía & Alejandro",
         "image": "thankYouPortrait",

@@ -15,7 +15,15 @@
         "location": {
             "showFlourishes": true
         },
-        "rsvp": { "structuralVariant": "standard" }
+        "rsvp": {
+            "structuralVariant": "standard"
+        },
+        "thankYou": {
+            "structuralVariant": "standard"
+        },
+        "gifts": {
+            "structuralVariant": "standard"
+        }
     },
     "hero": {
         "name": "Aurora Valencia",
@@ -99,6 +107,9 @@
     },
     "itinerary": {
         "title": "Programa de la noche",
+        "presentation": {
+            "behavior": "standard"
+        },
         "items": [
             {
                 "iconName": "Church",
@@ -149,7 +160,6 @@
         ]
     },
     "gifts": {
-        "structuralVariant": "standard",
         "title": "Regalos",
         "subtitle": "Su presencia será el detalle más valioso. Para quienes deseen tener una atención adicional, compartimos estas opciones.",
         "items": [
@@ -178,10 +188,11 @@
         "accessMode": "hybrid",
         "confirmationMessage": "Gracias por confirmar. Será una alegría compartir esta noche con ustedes.",
         "confirmationMode": "api",
-        "personalizedAccess": { "structuralVariant": "ornamented" }
+        "personalizedAccess": {
+            "structuralVariant": "ornamented"
+        }
     },
     "thankYou": {
-        "structuralVariant": "standard",
         "message": "Gracias por formar parte de una noche pensada para celebrar con elegancia, gratitud y alegría.",
         "closingName": "Aurora Valencia",
         "image": "thankYouPortrait",

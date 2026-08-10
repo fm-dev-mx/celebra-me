@@ -37,6 +37,9 @@
                 "attendance": "¿Nos acompañas?",
                 "confirmButton": "Confirmar asistencia"
             }
+        },
+        "thankYou": {
+            "structuralVariant": "editorial-back-cover"
         }
     },
     "hero": {
@@ -88,7 +91,8 @@
                 "image": "gallery03",
                 "caption": "La luz final anuncia una bienvenida tranquila."
             }
-        ]
+        ],
+        "variant": "index-choreography"
     },
     "location": {
         "introEyebrow": "Nos vemos para celebrar",
@@ -123,6 +127,9 @@
     },
     "itinerary": {
         "title": "Programa de la tarde",
+        "presentation": {
+            "behavior": "timeline-paper"
+        },
         "items": [
             {
                 "iconName": "Reception",

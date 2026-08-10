@@ -103,7 +103,8 @@
                 "image": "gallery05",
                 "caption": "Inocencia y pureza"
             }
-        ]
+        ],
+        "variant": "uniform-grid"
     },
     "gifts": {
         "title": "Detalles para Celebrar",
@@ -119,6 +120,9 @@
     "itinerary": {
         "title": "Programa",
         "subtitle": "Bautismo de María",
+        "presentation": {
+            "behavior": "standard"
+        },
         "items": [
             {
                 "iconName": "Reception",

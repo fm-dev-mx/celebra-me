@@ -23,8 +23,18 @@
         "thankYou"
     ],
     "sectionStyles": {
-        "location": { "showFlourishes": true },
-        "rsvp": { "structuralVariant": "standard" }
+        "location": {
+            "showFlourishes": true
+        },
+        "rsvp": {
+            "structuralVariant": "standard"
+        },
+        "thankYou": {
+            "structuralVariant": "editorial-back-cover"
+        },
+        "gifts": {
+            "structuralVariant": "standard"
+        }
     },
     "hero": {
         "name": "Xareni Demo",
@@ -81,8 +91,14 @@
             "sectionMessage": "Cada paso de este camino ha estado iluminado por su cariño. Gracias por ser parte de esta noche."
         },
         "godparents": [
-            { "name": "Ricardo Torres", "role": "Padrino" },
-            { "name": "Daniela Rivas", "role": "Madrina" }
+            {
+                "name": "Ricardo Torres",
+                "role": "Padrino"
+            },
+            {
+                "name": "Daniela Rivas",
+                "role": "Madrina"
+            }
         ]
     },
     "gallery": {
@@ -91,16 +107,33 @@
         "title": "Luz, color y momentos que brillan con luz propia.",
         "subtitle": "Un recorrido visual por la magia de esta celebración única.",
         "items": [
-            { "image": "gallery01", "caption": "Una noche de ensueño en tonos de cielo." },
-            { "image": "gallery02", "caption": "Cada instante, una obra de luz." },
-            { "image": "gallery03", "caption": "Elegancia que trasciende el momento." },
-            { "image": "gallery04", "caption": "Reflejos de una velada inolvidable." },
-            { "image": "gallery05", "caption": "Sonrisas que iluminan la noche." },
-            { "image": "gallery06", "caption": "Detalles que cuentan una historia." }
+            {
+                "image": "gallery01",
+                "caption": "Una noche de ensueño en tonos de cielo."
+            },
+            {
+                "image": "gallery02",
+                "caption": "Cada instante, una obra de luz."
+            },
+            {
+                "image": "gallery03",
+                "caption": "Elegancia que trasciende el momento."
+            },
+            {
+                "image": "gallery04",
+                "caption": "Reflejos de una velada inolvidable."
+            },
+            {
+                "image": "gallery05",
+                "caption": "Sonrisas que iluminan la noche."
+            },
+            {
+                "image": "gallery06",
+                "caption": "Detalles que cuentan una historia."
+            }
         ]
     },
     "gifts": {
-        "structuralVariant": "standard",
         "title": "Lluvia de Sobres",
         "subtitle": "Tu presencia es el mejor regalo. Si deseas tener un detalle adicional, aquí algunas opciones:",
         "items": [
@@ -125,14 +158,15 @@
         "accessMode": "hybrid",
         "confirmationMessage": "Gracias por confirmar. Te esperamos con alegría en esta noche tan especial.",
         "confirmationMode": "api",
-        "personalizedAccess": { "structuralVariant": "ornamented" }
+        "personalizedAccess": {
+            "structuralVariant": "ornamented"
+        }
     },
     "quote": {
         "text": "Hoy empieza una nueva historia, y no hay mejor escenario que tenerlos a mi lado.",
         "author": "Xareni Demo"
     },
     "thankYou": {
-        "structuralVariant": "editorial-back-cover",
         "message": "Gracias por compartir esta noche conmigo. Su amor y compañía hacen de mis XV años un recuerdo que atesoraré para siempre.",
         "closingName": "Xareni Demo",
         "image": "thankYouPortrait",
@@ -140,7 +174,9 @@
     },
     "itinerary": {
         "title": "Programa",
-        "presentation": { "behavior": "timeline-paper" },
+        "presentation": {
+            "behavior": "timeline-paper"
+        },
         "items": [
             {
                 "iconName": "Church",

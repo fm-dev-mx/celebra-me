@@ -97,7 +97,8 @@
                 "image": "gallery02",
                 "caption": "La luz del sacramento"
             }
-        ]
+        ],
+        "variant": "uniform-grid"
     },
     "gifts": {
         "title": "Detalles para Celebrar",
@@ -113,6 +114,9 @@
     "itinerary": {
         "title": "Programa",
         "subtitle": "Primera Comunión",
+        "presentation": {
+            "behavior": "standard"
+        },
         "items": [
             {
                 "iconName": "Reception",
