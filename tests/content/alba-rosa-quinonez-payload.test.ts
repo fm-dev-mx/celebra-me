@@ -1,5 +1,7 @@
 import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
 import { checkPublishGuard } from '@/lib/intake/services/invitation-preset-resolver';
+import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
+import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -165,5 +167,34 @@ describe('Alba Rosa Quiñónez provision contract', () => {
 		);
 
 		expect((content.interludes as unknown[]).length).toBe(1);
+	});
+
+	it('preserves Alba presentation and structural choices through page assembly', () => {
+		const content = buildAlbaPublishedContent(buildTestAssets());
+		const viewModel = adaptDbEvent({
+			slug: ALBA_EVENT.slug,
+			eventType: ALBA_EVENT.eventType,
+			isDemo: false,
+			content,
+			assetSlug: ALBA_EVENT.assetSlug,
+		});
+		const page = buildPageContextFromViewModel({
+			viewModel,
+			slug: ALBA_EVENT.slug,
+			eventType: ALBA_EVENT.eventType,
+		});
+
+		expect(viewModel.sections.countdown).toMatchObject({
+			visibleUnits: ['days'],
+		});
+		expect(viewModel.sections.location).toMatchObject({
+			structuralVariant: 'split-map',
+			structuralVariantExplicit: true,
+		});
+		expect(page.viewModel.sections.countdown?.visibleUnits).toEqual(['days']);
+		expect(page.viewModel.sections.location?.structuralVariant).toBe('split-map');
+		expect(
+			page.renderPlan.map((item) => (item.type === 'section' ? item.section : item.type)),
+		).toEqual(expect.arrayContaining(['countdown', 'location']));
 	});
 });

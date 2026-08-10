@@ -6,6 +6,11 @@ Celebra-me uses a strict three-level styling architecture. The post-migration st
 presentation, skin, fallback, and profile inventory is maintained in
 [`variant-system.md`](variant-system.md).
 
+The latest bounded corpus audit is
+[`render-parity-ownership-audit-2026-08-10.md`](../../archive/reports/render-parity-ownership-audit-2026-08-10.md).
+It is the evidence record for parity status and remaining compatibility ownership; it does not
+authorize changes to runtime, content, or styling by itself.
+
 Gallery section variants (as-is catalog, compatibility aliases, and the canonical layout-role
 contract) are documented in [`gallery-variants.md`](gallery-variants.md).
 
@@ -189,6 +194,13 @@ tokens. They should consume semantic tokens and component tokens by default.
 
 Theme identity belongs in the preset. If a section requires theme-specific behavior, expose that
 behavior through a public component token and let the preset provide the value.
+
+Canonical TypeScript and section renderers must remain invitation-agnostic: they consume canonical
+section contracts and semantic roles, not invitation slugs, event types, profile identities, or
+invitation-specific CSS custom-property names. A legacy identity branch is permitted only at a named
+adapter, schema, navigation, policy, or profile compatibility boundary with a documented consumer
+and removal condition. Do not treat high fan-in alone as a leak when the module is an explicit
+composition root (for example, intersection profiles).
 
 ## Behavior-Named Section Variants
 

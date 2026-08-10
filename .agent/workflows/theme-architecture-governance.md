@@ -35,6 +35,9 @@ architecture, section-based abstraction, and invitation isolation rules.
 9. **Presentation/Skin Separation**: Presentation options and visual skins may change tokens, media
    treatment, copy, or motion, but must not replace a canonical renderer or internal grid. The
    current inventory and known exceptions are recorded in `docs/domains/theme/variant-system.md`.
+10. **Identity Boundary**: Canonical resolvers and section renderers MUST NOT branch on invitation
+    slug, event type, or visual profile identity. Legacy identity behavior is allowed only in a
+    named compatibility boundary with an active consumer, owner, and removal condition.
 
 ---
 
@@ -46,6 +49,10 @@ Analyze the reviewed scope for:
 - [ ] Global style leaks (modifying `.card`, `.btn` outside of a preset class).
 - [ ] Inconsistencies between foundation, semantic, and component token ownership.
 - [ ] Missing slug-level isolation for event-specific overrides.
+- [ ] Identity or invitation-specific CSS-token knowledge inside canonical adapters, resolvers, or
+      section renderers.
+- [ ] A source-to-render trace for each audited invitation × rendered section, including explicit
+      structural values, presentation options, renderer attributes, and CSS delivery.
 
 ## 🏗️ Step 2: Section Abstraction
 
@@ -89,6 +96,9 @@ If violations are found during Step 1 or 2:
       path and record the exact blocker when any consumer remains.
 - [ ] Treat a profile structural rule as an explicit exception until reusable evidence justifies
       extraction; do not create a new variant solely to eliminate one local rule.
+- [ ] Record each parity row exactly once with one of `MATCH`, `INTENTIONAL_CHANGE`, `KNOWN_DEFECT`,
+      `REGRESSION`, or `INSUFFICIENT_EVIDENCE`; keep auxiliary blocks (music, interludes, gated
+      personalized access) separate from semantic section rows.
 
 ## 🏗️ Step 5: Final Validation & Commit
 

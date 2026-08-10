@@ -5,6 +5,10 @@
 **Related:** [`architecture.md`](architecture.md), [`gallery-variants.md`](gallery-variants.md),
 [`../content/section-contracts.md`](../content/section-contracts.md)
 
+The current parity and ownership evidence is recorded in
+[`render-parity-ownership-audit-2026-08-10.md`](../../archive/reports/render-parity-ownership-audit-2026-08-10.md).
+That report is diagnostic: its confirmed compatibility findings are not runtime fixes.
+
 This is the post-Goal-4 inventory of supported invitation variation. It separates structural
 renderer selection from presentation options and visual skins. A missing structural variant is
 intentional: the section uses its shared implementation.
@@ -21,6 +25,9 @@ intentional: the section uses its shared implementation.
   renderer.
 - Legacy theme-named inputs remain only at documented adapter/schema boundaries. Explicit canonical
   values take precedence; removal requires a repository-wide zero-dependency check.
+- Canonical structural resolvers and section renderers must not branch on invitation slug,
+  `eventType`, or `visualProfileId`. Identity-based behavior belongs in a named compatibility or
+  profile boundary with an active consumer and a removal condition.
 
 ## Final inventory
 
@@ -132,6 +139,10 @@ needed by a canonical variant. The known exceptions are deliberately explicit:
 Any new exception must record the invitation, canonical mechanism extended, reason extraction is
 unjustified, and the evidence that would trigger reevaluation.
 
+The P1 audit found remaining legacy identity branches in Location policy, canonical navigation,
+Xareni seal-token delivery, and Leah/Luna section overrides. They are recorded as bounded
+compatibility work in the audit report; they do not change the canonical variant inventory.
+
 ## Required change and retirement checks
 
 Before adding a structural variant, prove that existing variants and tokens cannot express the
@@ -145,3 +156,14 @@ only after all of those consumers are zero; otherwise retain it with the exact b
 The directed validation set is the focused variant/contract suites plus `pnpm run ci`. Cross-theme
 browser comparison is reserved for changes that affect renderer selection, structural CSS, layout,
 or profile interaction.
+
+### Parity audit checklist
+
+- [ ] Enumerate managed published, managed `in_progress`, legacy, and representative demo sources
+      from their registries; do not use a hand-maintained invitation list.
+- [ ] Trace each rendered section from content/config through adapter, render descriptor, renderer
+      attribute, and delivered structural/profile CSS.
+- [ ] Classify each invitation × section exactly once as `MATCH`, `INTENTIONAL_CHANGE`,
+      `KNOWN_DEFECT`, `REGRESSION`, or `INSUFFICIENT_EVIDENCE`.
+- [ ] Scan canonical code for slug, event-type, profile-identity, invitation-label, and CSS-token
+      knowledge; record legitimate compatibility roots and retirement conditions separately.

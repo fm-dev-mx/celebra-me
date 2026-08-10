@@ -119,6 +119,10 @@ describe('Romina local invitation content', () => {
 
 		expect(page.wrapper.className).toContain('event--romina-rios-chaparro');
 		expect(page.layout.image).toContain('/invitation-assets/');
+		expect(page.viewModel.hero).toMatchObject({
+			structuralVariant: 'split-cover',
+			structuralVariantExplicit: true,
+		});
 		expect(page.renderPlan).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({ type: 'section', section: 'gallery' }),
