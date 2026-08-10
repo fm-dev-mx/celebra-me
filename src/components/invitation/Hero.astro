@@ -54,29 +54,42 @@ const {
 
 const isEditorialMagazine = structuralVariant === 'editorial-cover';
 
-const displayLabel = label && (label.toLowerCase().trim() === 'xv edition' || label.toLowerCase().trim() === 'xv edición')
-	? 'CAPÍTULO XV'
-	: label;
+let displayLabel: string | undefined;
+let ageLockupMatch: RegExpMatchArray | null = null;
+let bgSrc: ImageMetadata | undefined;
+let mobileBgSrc: string | null = null;
+let desktopBgSrc: string | null = null;
+let portraitSrc: ImageMetadata | null = null;
+let formattedDate = '';
+let firstName = '';
+let surnames: string[] = [];
+let fpDefault = '50% 40%';
+let fpMobile = fpDefault;
+let fpTablet = fpDefault;
+let fpDesktop = fpDefault;
 
-// Birthday age lockups ("70 AÑOS") render as a two-level composition when styled;
-// without profile overrides the spans stay inline and read as a single label.
-const ageLockupMatch = displayLabel ? displayLabel.trim().match(/^(\d+)\s+(AÑOS)$/iu) : null;
+if (!isEditorialMagazine) {
+	displayLabel =
+		label &&
+		(label.toLowerCase().trim() === 'xv edition' || label.toLowerCase().trim() === 'xv edición')
+			? 'CAPÍTULO XV'
+			: label;
 
-const resolveImage = (image: ImageMetadata | ImageAsset): ImageMetadata =>
-	'src' in image ? (image.src as ImageMetadata) : image;
+	ageLockupMatch = displayLabel ? displayLabel.trim().match(/^(\d+)\s+(AÑOS)$/iu) : null;
 
-const bgSrc = resolveImage(backgroundImage);
-const resolvedMobileBg = backgroundImageMobile ? resolveImage(backgroundImageMobile) : null;
-const remoteMobileBgSrc =
-	backgroundImageMobile &&
-	'src' in backgroundImageMobile &&
-	typeof backgroundImageMobile.src === 'string'
-		? backgroundImageMobile.src
-		: null;
-// Managed release assets are already normalized WebP derivatives. Serve their
-// remote URL directly to avoid a second encode and accidental enlargement.
-const mobileBgSrc =
-	resolvedMobileBg && !isEditorialMagazine
+	const resolveImage = (image: ImageMetadata | ImageAsset): ImageMetadata =>
+		'src' in image ? (image.src as ImageMetadata) : image;
+
+	bgSrc = resolveImage(backgroundImage);
+	const resolvedMobileBg = backgroundImageMobile ? resolveImage(backgroundImageMobile) : null;
+	const remoteMobileBgSrc =
+		backgroundImageMobile &&
+		'src' in backgroundImageMobile &&
+		typeof backgroundImageMobile.src === 'string'
+			? backgroundImageMobile.src
+			: null;
+
+	mobileBgSrc = resolvedMobileBg
 		? remoteMobileBgSrc
 			? remoteMobileBgSrc
 			: (
@@ -89,30 +102,25 @@ const mobileBgSrc =
 				).src
 		: null;
 
-const desktopBgSrc =
-	backgroundImageDesktop && !isEditorialMagazine ? backgroundImageDesktop.src : null;
+	desktopBgSrc = backgroundImageDesktop ? backgroundImageDesktop.src : null;
+	portraitSrc = portrait ? resolveImage(portrait) : null;
 
-const portraitSrc = portrait ? resolveImage(portrait) : null;
+	formattedDate = new Date(date).toLocaleDateString('es-MX', {
+		day: 'numeric',
+		month: 'long',
+		year: 'numeric',
+		timeZone: 'UTC',
+	});
 
-// Invitation dates are floating event-local values serialized with a UTC
-// suffix (e.g. "2026-08-01T18:00:00.000Z"). timeZone: 'UTC' prevents
-// visual date shifting on non-UTC servers.
-const formattedDate = new Date(date).toLocaleDateString('es-MX', {
-	day: 'numeric',
-	month: 'long',
-	year: 'numeric',
-	timeZone: 'UTC',
-});
+	const names = name.trim().split(/\s+/);
+	firstName = names.slice(0, 2).join(' ');
+	surnames = names.slice(2);
 
-// Robust name handling for editorial layout
-const names = name.trim().split(/\s+/);
-const firstName = names.slice(0, 2).join(' ');
-const surnames = names.slice(2);
-
-const fpDefault = focalPoint || '50% 40%';
-const fpMobile = focalPointMobile || fpDefault;
-const fpTablet = focalPointTablet || fpDefault;
-const fpDesktop = focalPointDesktop || fpDefault;
+	fpDefault = focalPoint || '50% 40%';
+	fpMobile = focalPointMobile || fpDefault;
+	fpTablet = focalPointTablet || fpDefault;
+	fpDesktop = focalPointDesktop || fpDefault;
+}
 
 ---
 
@@ -136,16 +144,18 @@ const fpDesktop = focalPointDesktop || fpDefault;
 					{desktopBgSrc && (
 						<source media="(min-width: 992px)" srcset={desktopBgSrc} />
 					)}
-					<Image
-						src={bgSrc}
-						alt={name}
-						width={1080}
-						height={1920}
-						format="webp"
-						quality={84}
-						loading="eager"
-						fetchpriority={highPriority ? 'high' : undefined}
-					/>
+					{bgSrc && (
+						<Image
+							src={bgSrc}
+							alt={name}
+							width={1080}
+							height={1920}
+							format="webp"
+							quality={84}
+							loading="eager"
+							fetchpriority={highPriority ? 'high' : undefined}
+						/>
+					)}
 				</picture>
 			</div>
 
