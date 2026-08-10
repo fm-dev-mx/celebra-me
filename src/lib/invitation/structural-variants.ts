@@ -1,4 +1,4 @@
-import type { ThemePreset } from '@/lib/theme/theme-contract';
+import { THEME_PRESETS, type ThemePreset } from '@/lib/theme/theme-contract';
 
 /**
  * Section-owned structural contracts. These identifiers describe markup or
@@ -128,24 +128,7 @@ export function resolveGalleryVisualVariant(
 	themePreset: ThemePreset,
 ): ThemePreset | 'single' {
 	if (legacyVariant === 'single') return 'single';
-	if (
-		legacyVariant &&
-		(
-			[
-				'jewelry-box',
-				'jewelry-box-wedding',
-				'luxury-hacienda',
-				'editorial',
-				'editorial-rose',
-				'editorial-magazine',
-				'premiere-floral',
-				'celestial-blue',
-				'enchanted-rose',
-				'sacred-keepsake',
-				'angelic-presence',
-			] as readonly string[]
-		).includes(legacyVariant)
-	) {
+	if (legacyVariant && (THEME_PRESETS as readonly string[]).includes(legacyVariant)) {
 		return legacyVariant as ThemePreset;
 	}
 	return themePreset;

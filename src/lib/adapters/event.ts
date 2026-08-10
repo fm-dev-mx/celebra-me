@@ -38,6 +38,7 @@ import {
 	XARENI_ASSET_SLUG,
 } from '@/lib/invitation/presentation-options';
 import {
+	GALLERY_LAYOUT_VARIANTS,
 	GIFTS_STRUCTURAL_VARIANTS,
 	HERO_STRUCTURAL_VARIANTS,
 	PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS,
@@ -62,13 +63,17 @@ function pickVenueValue(
 	location: EventContentEntry['data']['location'] | undefined,
 	key: 'venueName' | 'city',
 ): string | undefined {
-	if (key === 'venueName') {
-		return location?.reception?.venueName ?? location?.ceremony?.venueName;
-	}
-	if (key === 'city') {
-		return location?.reception?.city ?? location?.ceremony?.city;
-	}
-	return undefined;
+	if (!location) return undefined;
+	const direct = location.reception?.[key] ?? location.ceremony?.[key];
+	if (direct) return direct;
+	const venues = location.venues;
+	if (!venues || venues.length === 0) return undefined;
+	const reception = venues.find((v) => v.type === 'reception' && v.isVisible !== false);
+	if (reception?.[key]) return reception[key];
+	const ceremony = venues.find((v) => v.type === 'ceremony' && v.isVisible !== false);
+	if (ceremony?.[key]) return ceremony[key];
+	const fallback = venues.find((v) => v.isVisible !== false) ?? venues[0];
+	return fallback?.[key];
 }
 
 function normalizeAssetSource(source: AssetSource | string | undefined): AssetSource | undefined {
@@ -491,17 +496,7 @@ function buildGallerySectionData(context: AdaptationContext) {
 	const rawGalleryVariant = data.gallery.variant;
 	const structuralVariantExplicit =
 		typeof rawGalleryVariant === 'string' &&
-		(
-			[
-				'uniform-grid',
-				'editorial-mosaic',
-				'magazine-spread',
-				'feature-mosaic',
-				'index-choreography',
-				'single-keepsake',
-				'single',
-			] as readonly string[]
-		).includes(rawGalleryVariant);
+		([...GALLERY_LAYOUT_VARIANTS, 'single'] as readonly string[]).includes(rawGalleryVariant);
 	const structuralVariant = resolveGalleryLayoutVariant(
 		rawGalleryVariant,
 		rawGalleryVariant ?? data.sectionStyles?.gallery?.variant,
@@ -509,16 +504,7 @@ function buildGallerySectionData(context: AdaptationContext) {
 	);
 	const legacyVisualVariant =
 		typeof rawGalleryVariant === 'string' &&
-		!(
-			[
-				'uniform-grid',
-				'editorial-mosaic',
-				'magazine-spread',
-				'feature-mosaic',
-				'index-choreography',
-				'single-keepsake',
-			] as readonly string[]
-		).includes(rawGalleryVariant)
+		!(GALLERY_LAYOUT_VARIANTS as readonly string[]).includes(rawGalleryVariant)
 			? rawGalleryVariant
 			: data.sectionStyles?.gallery?.variant;
 	return {
