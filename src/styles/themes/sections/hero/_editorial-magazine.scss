@@ -135,7 +135,8 @@
 		}
 	}
 
-	.invitation-hero__label {
+	.invitation-hero__label,
+	.invitation-hero__folio-label {
 		align-self: flex-start;
 		width: min(100%, 26rem);
 		margin: 0;
@@ -311,6 +312,7 @@
 		}
 
 		.invitation-hero__label,
+		.invitation-hero__folio-label,
 		.invitation-hero__divider,
 		.invitation-hero__portrait,
 		.invitation-hero__title,
@@ -324,6 +326,7 @@
 		}
 
 		.invitation-hero__label,
+		.invitation-hero__folio-label,
 		.invitation-hero__divider {
 			animation-delay: 150ms;
 		}
@@ -363,6 +366,7 @@
 		}
 
 		.invitation-hero__label,
+		.invitation-hero__folio-label,
 		.invitation-hero__divider,
 		.invitation-hero__portrait,
 		.invitation-hero__title,
@@ -376,6 +380,7 @@
 		}
 
 		.invitation-hero__label,
+		.invitation-hero__folio-label,
 		.invitation-hero__divider {
 			animation-delay: 150ms;
 		}
@@ -540,6 +545,7 @@
 			.invitation-hero__background,
 			.invitation-hero__background img,
 			.invitation-hero__label,
+			.invitation-hero__folio-label,
 			.invitation-hero__divider,
 			.invitation-hero__title,
 			.invitation-hero__first-name,
