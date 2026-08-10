@@ -59,7 +59,11 @@ describe('Romina local invitation content', () => {
 			thankYou: { closingName: 'Romina', date: '14 de agosto de 2026' },
 		});
 		const typedContent = content as {
-			hero: { portrait?: unknown; backgroundImage?: unknown };
+			hero: {
+				portrait?: unknown;
+				backgroundImage?: unknown;
+				structuralVariant?: string;
+			};
 			location: {
 				ceremony: { coordinates: unknown; googleMapsUrl: string; appleMapsUrl: string };
 				reception: { coordinates: unknown; googleMapsUrl: string; appleMapsUrl: string };
@@ -68,6 +72,7 @@ describe('Romina local invitation content', () => {
 		};
 		expect(typedContent.hero.portrait).toBeUndefined();
 		expect(typedContent.hero.backgroundImage).toBeDefined();
+		expect(typedContent.hero.structuralVariant).toBe('split-cover');
 		expect(typedContent.location.ceremony.coordinates).toEqual({
 			lat: expect.any(Number),
 			lng: expect.any(Number),

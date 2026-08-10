@@ -279,6 +279,7 @@ export function buildVictoriaPublishedContent(
 		},
 		family: {
 			presentation: 'text-only',
+			structuralVariant: 'split-groups',
 			groups: [
 				{
 					title: 'Padres de Victoria',

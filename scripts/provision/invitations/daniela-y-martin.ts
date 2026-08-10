@@ -243,6 +243,7 @@ export function buildDanielaPublishedContent(
 		},
 		family: {
 			presentation: 'text-only',
+			structuralVariant: 'split-groups',
 			groups: [
 				{
 					title: 'De la Novia',
@@ -262,7 +263,7 @@ export function buildDanielaPublishedContent(
 			},
 		},
 		gallery: {
-			variant: 'uniform-grid',
+			variant: 'single-keepsake',
 			eyebrow: 'Retrato',
 			title: '',
 			items: [
@@ -271,7 +272,6 @@ export function buildDanielaPublishedContent(
 					image: assets['gallery-01'],
 					alt: 'Daniela y Martín en retrato de sesión',
 					focalPoint: '50% 38%',
-					layoutRole: 'feature',
 					aspectRatio: '2 / 3',
 				},
 			],

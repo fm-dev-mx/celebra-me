@@ -204,6 +204,7 @@ export function buildAlbaPublishedContent(
 		},
 		location: {
 			visibility: 'public',
+			structuralVariant: 'split-map',
 			presentationOptions: { showFlourishes: false },
 			introEyebrow: '12 DE SEPTIEMBRE DE 2026',
 			reception: {

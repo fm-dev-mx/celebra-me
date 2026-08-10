@@ -158,7 +158,7 @@ export function buildRominaPublishedContent(
 			backgroundImage: assets.hero,
 			backgroundImageMobile: assets.hero,
 			backgroundImageDesktop: assets.hero,
-			structuralVariant: 'standard',
+			structuralVariant: 'split-cover',
 			focalPoint: '50% 42%',
 			focalPointMobile: '50% 42%',
 			focalPointTablet: '50% 40%',

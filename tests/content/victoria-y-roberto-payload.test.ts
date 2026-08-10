@@ -200,11 +200,13 @@ describe('Boda Victoria y Roberto provision contract', () => {
 
 		const family = content.family as {
 			presentation?: string;
+			structuralVariant?: string;
 			featuredImage?: unknown;
 			groups?: Array<{ title: string; items: Array<{ name: string }> }>;
 			godparents?: Array<{ name: string; role?: string }>;
 		};
 		expect(family.presentation).toBe('text-only');
+		expect(family.structuralVariant).toBe('split-groups');
 		expect(family.featuredImage).toBeUndefined();
 		expect(family.groups).toEqual(expect.any(Array));
 		expect(

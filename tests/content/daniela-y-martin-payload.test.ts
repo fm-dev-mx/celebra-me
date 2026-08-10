@@ -73,8 +73,15 @@ describe('Boda Daniela y Martín provision contract', () => {
 		// followed (anywhere in the block) by `background: none` to kill the
 		// shared gradient/specular clip on the names.
 		expect(profile).toMatch(/&__title\s*\{[^}]*?background:\s*none/);
-		expect(profile).toContain('family__group--group-0');
-		expect(profile).toContain('family__group--group-1');
+		expect(profile).toContain('--family-split-divider');
+		expect(profile).not.toContain('family__group--group-0');
+		expect(profile).not.toContain('family__group--group-1');
+		expect(
+			fs.readFileSync(
+				path.join(process.cwd(), 'src/styles/themes/sections/family/_split-groups.scss'),
+				'utf8',
+			),
+		).toContain(".family[data-structural-variant='split-groups']");
 		expect(profile).not.toContain('interlude-free');
 		expect(profile).toMatch(/--env-bg:[\s\S]*var\(--daniela-sand\)/);
 	});
@@ -259,10 +266,12 @@ describe('Boda Daniela y Martín provision contract', () => {
 
 		const family = content.family as {
 			presentation?: string;
+			structuralVariant?: string;
 			groups?: Array<{ title: string; items: Array<{ name: string }> }>;
 			labels?: { sectionSubtitle?: string; sectionTitle?: string };
 		};
 		expect(family.presentation).toBe('text-only');
+		expect(family.structuralVariant).toBe('split-groups');
 		expect(family.labels?.sectionSubtitle).toBe('Familia');
 		expect(family.groups).toHaveLength(2);
 		expect(family.groups?.[0]).toMatchObject({
@@ -278,10 +287,12 @@ describe('Boda Daniela y Martín provision contract', () => {
 		});
 
 		const gallery = content.gallery as {
+			variant?: string;
 			items: unknown[];
 			subtitle?: string;
 			title?: string;
 		};
+		expect(gallery.variant).toBe('single-keepsake');
 		expect(gallery.items).toHaveLength(1);
 		expect(gallery.subtitle).toBeUndefined();
 

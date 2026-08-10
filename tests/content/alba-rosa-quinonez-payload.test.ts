@@ -127,6 +127,7 @@ describe('Alba Rosa Quiñónez provision contract', () => {
 		expect((countdown.title as string).length).toBeGreaterThan(0);
 
 		const location = asRecord(content.location);
+		expect(location.structuralVariant).toBe('split-map');
 		expect(typeof location.introEyebrow).toBe('string');
 		expect((location.introEyebrow as string).length).toBeGreaterThan(0);
 		const reception = asRecord(location.reception);
