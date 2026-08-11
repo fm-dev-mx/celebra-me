@@ -1777,6 +1777,10 @@
 			color: rgb(var(--v-white-rgb) / 28%);
 		}
 	}
+
+	.invitation-interlude {
+		--interlude-focal-point-desktop: 50% 18%;
+	}
 }
 
 @media (prefers-reduced-motion: reduce) {

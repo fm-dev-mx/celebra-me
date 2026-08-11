@@ -19,6 +19,12 @@ function setInterludeProperties(root: ParentNode): void {
 				interlude.dataset.focalPoint,
 			);
 		}
+		if (interlude.dataset.focalPointDesktop) {
+			interlude.style.setProperty(
+				'--interlude-focal-point-desktop',
+				interlude.dataset.focalPointDesktop,
+			);
+		}
 		interlude.style.setProperty('--interlude-light-x', interlude.dataset.lightX || '50%');
 		interlude.style.setProperty('--interlude-light-y', interlude.dataset.lightY || '34%');
 		if (interlude.dataset.overlayOpacity) {

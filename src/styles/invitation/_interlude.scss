@@ -90,6 +90,11 @@
 		filter: var(--interlude-image-filter, saturate(0.96) contrast(1.02));
 		transform: none;
 		transition: filter 260ms ease-out;
+
+		@media (width >= 992px) {
+			object-position: var(--interlude-focal-point-desktop, var(--interlude-focal-point));
+			transform-origin: var(--interlude-focal-point-desktop, var(--interlude-focal-point));
+		}
 	}
 
 	@media (prefers-reduced-motion: no-preference) {

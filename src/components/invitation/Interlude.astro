@@ -10,6 +10,7 @@ interface Props {
 	height?: 'screen' | 'tall' | 'medium';
 	variant?: SharedSectionVariant;
 	focalPoint?: string;
+	focalPointDesktop?: string;
 	lightX?: string;
 	lightY?: string;
 	overlayOpacity?: string;
@@ -22,6 +23,7 @@ const {
 	height = 'screen',
 	variant = 'standard',
 	focalPoint,
+	focalPointDesktop,
 	lightX,
 	lightY,
 	overlayOpacity,
@@ -40,6 +42,7 @@ const {
 	data-interlude-index={interludeIndex}
 	data-screenshot-section={`interlude${interludeIndex ? `-${interludeIndex}` : ''}`}
 	data-focal-point={focalPoint}
+	data-focal-point-desktop={focalPointDesktop}
 	data-light-x={lightX}
 	data-light-y={lightY}
 	data-overlay-opacity={overlayOpacity}
