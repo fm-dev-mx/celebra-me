@@ -2,7 +2,7 @@
 // src/components/invitation/TimelineList.astro
 import Icon from '@/components/common/icons/Icon.astro';
 import type { IconName } from '@/lib/icons/icon-catalog';
-import { formatTime12h } from '@/lib/time/time-format';
+import { formatTime12h, isValidTime } from '@/lib/time/time-format';
 
 type TimelineItemData = {
 	iconName: IconName;
@@ -33,7 +33,8 @@ const { items, variant } = Astro.props;
 	<div class="itinerary__items">
 		{items.map((item, index) => {
 			const align = index % 2 === 0 ? 'left' : 'right';
-			const timeStatus = item.time.startsWith('[[PENDIENTE:') ? 'pending' : 'confirmed';
+			const timeValid = isValidTime(item.time);
+			const timeStatus = timeValid ? 'confirmed' : 'pending';
 			return (
 				<div
 					class:list={['itinerary__item', `itinerary__item--${align}`]}
@@ -42,7 +43,13 @@ const { items, variant } = Astro.props;
 					data-reveal-item
 				>
 					<div class="itinerary__item-content">
-						<div class="itinerary__item-time">{formatTime12h(item.time)}</div>
+						{timeValid ? (
+							<div class="itinerary__item-time">{formatTime12h(item.time)}</div>
+						) : (
+							<div class="itinerary__item-time itinerary__item-time--pending" data-itinerary-time-pending>
+								Por confirmar
+							</div>
+						)}
 						<h4 class="itinerary__item-label">{item.label}</h4>
 						{item.description && (
 							<p class="itinerary__item-description">{item.description}</p>
