@@ -114,6 +114,8 @@ _agent/
 .agents/
 _agents/
 .antigravity/
+.codex/
+_codex/
 .gemini/
 .opencode/
 *.agent.md
