@@ -6,7 +6,7 @@ describe('Envelope Seal Proportional Sizing Contract', () => {
 	const scssContent = fs.readFileSync(scssPath, 'utf8');
 
 	it('defines bounded proportional seal tokens on the envelope surface', () => {
-		expect(scssContent).toContain('--env-seal-size-min: 40px;');
+		expect(scssContent).toContain('--env-seal-size-min: 34px;');
 		expect(scssContent).toContain('--env-seal-size-max: 60px;');
 		expect(scssContent).toContain('--env-seal-size-ratio: 10;');
 		expect(scssContent).toContain('--env-seal-size: var(--env-seal-size-min);');
