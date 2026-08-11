@@ -252,7 +252,7 @@ export function buildVictoriaPublishedContent(
 			],
 		},
 		itinerary: {
-			title: 'El hilo de nuestra noche',
+			title: 'Itinerario de la noche',
 			subtitle: 'Del sí que nos une a cada brindis, acompáñenos a vivirla completa.',
 			presentation: {
 				behavior: 'standard',
