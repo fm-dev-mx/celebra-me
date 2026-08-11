@@ -138,6 +138,12 @@ describe('canonical validation contract', () => {
 		expect(workflow).toContain('pnpm validate:markdown-tables');
 		expect(workflow).toContain('run: pnpm run ci');
 		expect((workflow.match(/run: pnpm run ci/g) ?? []).length).toBe(1);
+		expect(workflow).toContain('uses: actions/checkout@v4');
+		expect(workflow).toContain('uses: pnpm/action-setup@v4');
+		expect(workflow).toContain('uses: actions/setup-node@v4');
+		expect(workflow).not.toContain('uses: actions/checkout@v7');
+		expect(workflow).not.toContain('uses: pnpm/action-setup@v6');
+		expect(workflow).not.toContain('uses: actions/setup-node@v6');
 		expect(workflow).not.toMatch(/needs:\s*policy-validation/);
 		expect(workflow).not.toContain('name: Validate PR Commits');
 	});
