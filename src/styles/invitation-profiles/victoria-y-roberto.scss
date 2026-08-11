@@ -2,30 +2,48 @@
 // Client color: terracota. Supporting neutrals are art direction only.
 // Do not mutate the shared jewelry-box-wedding preset.
 @use '../global/mixins' as mixins;
-@use '@fontsource/allura/400.css' as allura;
+@use '@fontsource-variable/cormorant-garamond/index.css' as cormorant-garamond;
+@use '@fontsource-variable/cormorant-garamond/wght-italic.css' as cormorant-garamond-italic;
+@use '@fontsource-variable/instrument-sans/index.css' as instrument-sans;
+@use '@fontsource/pinyon-script/400.css' as pinyon-script;
 
 .event--victoria-y-roberto.theme-preset--jewelry-box-wedding {
 	--victoria-terracota: rgb(166 84 58);
 	--victoria-terracota-rgb: 166 84 58;
 	--victoria-terracota-deep: rgb(120 56 38);
 	--victoria-terracota-deep-rgb: 120 56 38;
+	--victoria-title: rgb(91 46 42);
 	--victoria-cream: rgb(247 241 233);
 	--victoria-cream-rgb: 247 241 233;
 	--victoria-ivory: rgb(252 248 242);
 	--victoria-ivory-rgb: 252 248 242;
 	--victoria-sand: rgb(224 208 190);
 	--victoria-sand-rgb: 224 208 190;
-	--victoria-ink: rgb(42 36 32);
-	--victoria-ink-rgb: 42 36 32;
+	--victoria-ink: rgb(48 43 40);
+	--victoria-ink-rgb: 48 43 40;
+	--victoria-subtitle: rgb(95 87 81);
+
+	// Small metadata crosses sand surfaces, so it uses the accessible dark brass.
+	--victoria-meta: rgb(114 80 46);
 	--victoria-gold: rgb(176 142 96);
 	--victoria-gold-rgb: 176 142 96;
 
 	// Local editorial contract: one display voice, one reading voice, and a
-	// restrained label voice for metadata and controls.
-	--victoria-font-display: var(--font-display, serif);
-	--victoria-font-couple: 'Allura', var(--victoria-font-display);
-	--victoria-font-body: var(--font-body, sans-serif);
-	--victoria-font-label: var(--font-label, var(--font-body, sans-serif));
+	// restrained label voice for metadata and controls. Composition is role-driven:
+	// ceremonial pauses may center, reading chapters use a left axis, and secondary
+	// metadata/image anchors carry asymmetry. No rule depends on section position.
+	--victoria-font-display: 'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
+	--victoria-font-couple: 'Pinyon Script', var(--victoria-font-display);
+	--victoria-font-body: 'Instrument Sans Variable', system-ui, sans-serif;
+	--victoria-font-label: 'Bodoni Moda Variable', 'Playfair Display Variable', georgia, serif;
+
+	// rebind the inherited section contracts only inside this invitation profile.
+	--font-display: var(--victoria-font-display);
+	--font-display-elegant: var(--victoria-font-display);
+	--font-body: var(--victoria-font-body);
+	--font-label: var(--victoria-font-label);
+	--font-calligraphy: var(--victoria-font-couple);
+	--victoria-reading-measure: min(100%, 34rem);
 	--victoria-surface-radius: 2px;
 	--victoria-fine-border: 1px solid rgb(var(--victoria-terracota-rgb) / 22%);
 	--gallery-single-label-font: var(--victoria-font-label);
@@ -35,7 +53,7 @@
 	--gallery-single-frame-padding: clamp(0.55rem, 1.6vw, 0.85rem);
 	--victoria-soft-shadow: 0 14px 28px rgb(var(--victoria-ink-rgb) / 8%);
 
-	// Core surfaces / text — reset champagne jewelry-box defaults toward terracota
+	// core surfaces / text — reset champagne jewelry-box defaults toward terracota
 	--color-surface-primary: var(--victoria-cream);
 	--color-surface-primary-rgb: var(--victoria-cream-rgb);
 	--color-surface-secondary: var(--victoria-sand);
@@ -45,8 +63,8 @@
 	--color-surface-dark-rgb: var(--victoria-terracota-deep-rgb);
 	--color-text-primary: var(--victoria-ink);
 	--color-text-primary-rgb: var(--victoria-ink-rgb);
-	--color-text-secondary: rgb(var(--victoria-ink-rgb) / 78%);
-	--color-text-emphasis: var(--victoria-terracota);
+	--color-text-secondary: var(--victoria-subtitle);
+	--color-text-emphasis: var(--victoria-title);
 	--color-text-on-dark: var(--victoria-cream);
 	--color-text-on-light: var(--victoria-ink);
 	--color-action-primary: var(--victoria-terracota-deep);
@@ -57,11 +75,11 @@
 	--color-glass-border: rgb(var(--victoria-terracota-rgb) / 28%);
 	--color-glass-shadow: rgb(var(--victoria-ink-rgb) / 12%);
 	--shadow-premium: 0 16px 32px var(--color-glass-shadow), 0 4px 12px rgb(0 0 0 / 4%);
-	--hero-label-color: rgb(var(--victoria-cream-rgb) / 64%);
+	--hero-label-color: rgb(var(--victoria-ivory-rgb) / 92%);
 	--hero-badge-text: var(--victoria-cream);
-	--hero-scroll-indicator-color: rgb(var(--victoria-cream-rgb) / 48%);
+	--hero-scroll-indicator-color: rgb(var(--victoria-ivory-rgb) / 78%);
 	--hero-badge-border: var(--victoria-gold);
-	--gallery-title-color: var(--victoria-terracota-deep);
+	--gallery-title-color: var(--victoria-title);
 	--quote-content-font: var(--victoria-font-display);
 	--quote-content-size: clamp(1.3rem, 3.4vw, 1.95rem);
 	--quote-content-line-height: 1.55;
@@ -133,8 +151,8 @@
 	--family-text-primary: var(--victoria-ink);
 	--family-text-muted: rgb(var(--victoria-ink-rgb) / 64%);
 	--family-media-filter: none;
-	--family-eyebrow-color: var(--victoria-terracota);
-	--family-title-color: var(--victoria-terracota-deep);
+	--family-eyebrow-color: var(--victoria-meta);
+	--family-title-color: var(--victoria-title);
 
 	// Personalized access
 	--pa-card-bg-color: var(--victoria-terracota-deep);
@@ -157,10 +175,10 @@
 	--pa-count-frame-inner-border: none;
 	--pa-corner-opacity: 30%;
 	--pa-corner-color: var(--victoria-gold);
-	--pa-eyebrow-color: var(--victoria-terracota);
-	--pa-title-color: var(--victoria-terracota-deep);
-	--pa-subtitle-color: rgb(var(--victoria-ink-rgb) / 78%);
-	--pa-label-color: var(--victoria-terracota);
+	--pa-eyebrow-color: var(--victoria-meta);
+	--pa-title-color: var(--victoria-title);
+	--pa-subtitle-color: var(--victoria-subtitle);
+	--pa-label-color: var(--victoria-meta);
 	--pa-guest-color: var(--victoria-ink);
 
 	// RSVP
@@ -169,15 +187,15 @@
 		var(--victoria-cream) 0%,
 		rgb(var(--victoria-sand-rgb) / 40%) 100%
 	);
-	--rsvp-title-color: var(--victoria-terracota-deep);
-	--rsvp-accent: var(--victoria-terracota);
+	--rsvp-title-color: var(--victoria-title);
+	--rsvp-accent: var(--victoria-meta);
 	--rsvp-radius-card: var(--victoria-surface-radius);
 	--rsvp-card-max-width: 34rem;
 	--rsvp-form-gap: 1.1rem;
 
 	// Gifts / thank-you accents
-	--gifts-title-color: var(--victoria-terracota-deep);
-	--thank-you-name-color: var(--victoria-terracota-deep);
+	--gifts-title-color: var(--victoria-meta);
+	--thank-you-name-color: var(--victoria-title);
 
 	// Envelope closed palette toward warm sand / terracota
 	--env-bg: var(--victoria-sand);
@@ -385,7 +403,7 @@
 		--reveal-card-width: min(80vw, 23rem);
 		--reveal-card-enter-y: clamp(20px, 3svh, 30px);
 		--reveal-card-rest-y: clamp(-22px, -3.2svh, -10px);
-		--reveal-card-font-display: var(--victoria-font-display);
+		--reveal-card-font-display: var(--victoria-font-label);
 
 		gap: clamp(0.85rem, 2vw, 1.25rem);
 
@@ -399,7 +417,7 @@
 
 		.envelope-name {
 			font-size: clamp(1.5rem, 5vw, 2.5rem);
-			font-family: var(--victoria-font-couple);
+			font-family: var(--victoria-font-label);
 			font-weight: 400;
 		}
 
@@ -612,7 +630,7 @@
 			font-weight: 400;
 			line-height: 1.25;
 			letter-spacing: 0.16em;
-			color: rgb(var(--victoria-cream-rgb) / 52%);
+			color: rgb(var(--victoria-ivory-rgb) / 84%);
 		}
 
 		&__venue {
@@ -624,7 +642,7 @@
 			font-style: normal;
 			line-height: 1.3;
 			letter-spacing: 0.07em;
-			color: rgb(var(--victoria-cream-rgb) / 48%);
+			color: rgb(var(--victoria-ivory-rgb) / 82%);
 			text-wrap: balance;
 
 			// Local only — keep global `.calligraphy-accent` intact for other invitations.
@@ -712,7 +730,8 @@
 			margin-inline: auto;
 			font-family: var(--quote-content-font);
 			font-size: var(--quote-content-size);
-			font-weight: 400;
+			font-weight: 500;
+			font-style: italic;
 			line-height: var(--quote-content-line-height);
 			letter-spacing: 0.01em;
 			color: var(--victoria-ink);
@@ -734,7 +753,7 @@
 			font-style: normal;
 			letter-spacing: 0.18em;
 			text-transform: uppercase;
-			color: rgb(var(--victoria-terracota-rgb) / 72%);
+			color: var(--victoria-meta);
 		}
 	}
 
@@ -774,7 +793,7 @@
 		font-weight: 500;
 		line-height: 1.2;
 		letter-spacing: 0.3em;
-		color: var(--victoria-terracota);
+		color: var(--victoria-meta);
 	}
 
 	.countdown-timer-wrapper {
@@ -809,7 +828,7 @@
 		font-family: var(--victoria-font-display);
 		font-size: clamp(2rem, 5.5vw, 3rem);
 		font-variant-numeric: tabular-nums;
-		font-weight: 400;
+		font-weight: 500;
 		letter-spacing: 0;
 		line-height: 0.95;
 		color: rgb(var(--victoria-ink-rgb) / 82%);
@@ -819,12 +838,12 @@
 		.countdown__value {
 			font-size: clamp(4.2rem, 15vw, 9rem);
 			line-height: 0.85;
-			color: var(--victoria-terracota-deep);
+			color: var(--victoria-title);
 		}
 
 		.countdown__label {
 			font-size: clamp(0.7rem, 1.5vw, 0.84rem);
-			color: var(--victoria-terracota);
+			color: var(--victoria-meta);
 			opacity: 100%;
 		}
 	}
@@ -858,6 +877,7 @@
 			max-width: 100%;
 			font-family: var(--victoria-font-display);
 			font-size: clamp(1.55rem, 4.2vw, 2.55rem);
+			font-weight: 500;
 			letter-spacing: 0.05em;
 			line-height: 1.16;
 			color: var(--victoria-ink);
@@ -883,7 +903,7 @@
 		letter-spacing: 0.22em;
 		line-height: 1.35;
 		text-transform: uppercase;
-		color: rgb(var(--victoria-terracota-deep-rgb) / 72%);
+		color: var(--victoria-meta);
 		text-align: left;
 	}
 
@@ -916,16 +936,19 @@
 			font-size: clamp(0.7rem, 1.4vw, 0.78rem);
 			letter-spacing: 0.26em;
 			text-transform: uppercase;
-			color: var(--victoria-terracota);
+			color: var(--victoria-meta);
 			margin-bottom: 0.55rem;
 		}
 
 		&__heading {
 			font-family: var(--victoria-font-display);
-			font-size: clamp(1.85rem, 4vw, 2.6rem);
+			font-size: clamp(2rem, 4.4vw, 3rem);
+			font-weight: 600;
 			line-height: 1.12;
-			color: var(--victoria-terracota-deep);
-			-webkit-text-fill-color: var(--victoria-terracota-deep);
+			color: var(--victoria-title);
+			-webkit-text-fill-color: var(--victoria-title);
+			max-width: 18ch;
+			margin-inline: auto;
 			margin-bottom: 0.85rem;
 		}
 
@@ -933,7 +956,7 @@
 			font-family: var(--victoria-font-body);
 			font-size: clamp(0.92rem, 1.6vw, 1.05rem);
 			line-height: 1.58;
-			color: rgb(var(--victoria-ink-rgb) / 78%);
+			color: var(--victoria-subtitle);
 			text-wrap: pretty;
 		}
 
@@ -970,7 +993,7 @@
 			font-weight: 500;
 			letter-spacing: 0.22em;
 			text-transform: uppercase;
-			color: var(--victoria-terracota);
+			color: var(--victoria-meta);
 		}
 
 		&__card-flourish {
@@ -1149,10 +1172,10 @@
 		}
 
 		&__card-content-place {
-			font-weight: 400;
+			font-weight: 500;
 			font-size: var(--location-place-font-size);
 			line-height: var(--location-place-line-height);
-			color: var(--victoria-terracota-deep);
+			color: var(--victoria-ink);
 			margin-bottom: 0.35rem;
 			text-wrap: balance;
 		}
@@ -1166,10 +1189,10 @@
 		&__card-content-hour {
 			font-family: var(--victoria-font-display);
 			font-size: clamp(1.15rem, 3vw, 1.45rem);
-			font-weight: 400;
+			font-weight: 500;
 			letter-spacing: 0.01em;
 			text-transform: none;
-			color: var(--victoria-terracota);
+			color: var(--victoria-meta);
 			margin-bottom: 1rem;
 		}
 
@@ -1234,7 +1257,7 @@
 			font-weight: 500;
 			letter-spacing: 0.24em;
 			text-transform: uppercase;
-			color: var(--victoria-terracota);
+			color: var(--victoria-meta);
 			margin-bottom: 0.5rem;
 			text-align: center;
 		}
@@ -1293,7 +1316,7 @@
 			font-family: var(--victoria-font-body);
 			font-size: clamp(0.88rem, 1.5vw, 0.98rem);
 			line-height: 1.5;
-			color: rgb(var(--victoria-ink-rgb) / 80%);
+			color: var(--victoria-subtitle);
 			text-align: left;
 		}
 
@@ -1319,21 +1342,28 @@
 	// elements set against a continuous hairline axis; pending entries stay
 	// legible but visibly tentative (small caps, dashed rule, softened label).
 	.itinerary {
-		--itinerary-item-desc-color: rgb(var(--victoria-ink-rgb) / 72%);
+		--itinerary-item-desc-color: var(--victoria-subtitle);
 		--itinerary-item-label-color: var(--victoria-ink);
-		--itinerary-item-time-color: var(--victoria-terracota-deep);
+		--itinerary-item-time-color: var(--victoria-meta);
 
 		padding-block: clamp(4.25rem, 8vw, 6.25rem);
 		background: linear-gradient(180deg, var(--victoria-cream) 0%, var(--victoria-ivory) 100%);
 
 		&__header {
+			width: min(100%, 46rem);
 			margin-bottom: clamp(2.75rem, 5.5vw, 4.25rem);
+			text-align: left;
 		}
 
 		// Refined chapter mark: hairline rules and a small gold point.
 		&__header-flourish {
+			justify-content: flex-start;
 			gap: 1rem;
 			margin-top: clamp(1.35rem, 2.8vw, 1.85rem);
+		}
+
+		&__header-flourish .flourish-line:first-child {
+			display: none;
 		}
 
 		&__header-flourish .flourish-line {
@@ -1342,7 +1372,8 @@
 		}
 
 		&__header-flourish .flourish-line:last-child {
-			background: linear-gradient(to left, transparent, rgb(var(--victoria-gold-rgb) / 55%));
+			width: clamp(3.5rem, 9vw, 5.5rem);
+			background: linear-gradient(to right, rgb(var(--victoria-gold-rgb) / 55%), transparent);
 		}
 
 		&__header-flourish .flourish-diamond {
@@ -1353,17 +1384,23 @@
 		}
 
 		&__title {
+			max-width: 11ch;
 			font-family: var(--victoria-font-display);
-			font-size: clamp(2.1rem, 4.6vw, 3.1rem);
-			line-height: 1.1;
-			color: var(--victoria-terracota-deep);
+			font-size: clamp(2.35rem, 5.8vw, 4rem);
+			font-weight: 600;
+			line-height: 1.02;
+			letter-spacing: 0.01em;
+			color: var(--victoria-title);
+			text-wrap: balance;
 		}
 
 		&__subtitle {
-			max-width: 30rem;
-			margin-inline: auto;
+			max-width: var(--victoria-reading-measure);
+			margin-inline: 0;
 			font-family: var(--victoria-font-body);
-			color: rgb(var(--victoria-ink-rgb) / 72%);
+			text-align: left;
+			text-wrap: pretty;
+			color: var(--victoria-subtitle);
 		}
 
 		// The spine carries the rhythm; the decorative center line only repeats
@@ -1404,7 +1441,7 @@
 		}
 
 		&__item-label {
-			font-weight: 400;
+			font-weight: 500;
 			line-height: 1.18;
 		}
 
@@ -1417,11 +1454,11 @@
 				font-weight: 500;
 				letter-spacing: 0.16em;
 				line-height: 1.3;
-				color: rgb(var(--victoria-ink-rgb) / 48%);
+				color: var(--victoria-subtitle);
 			}
 
 			.itinerary__item-label {
-				color: rgb(var(--victoria-ink-rgb) / 68%);
+				color: var(--victoria-subtitle);
 			}
 
 			.itinerary__item-content {
@@ -1446,16 +1483,53 @@
 			}
 		}
 
-		// Desktop: confirmed times right-align against a continuous axis
-		// between the time column and the event copy.
+		// Tablet/desktop: one ledger replaces the inherited left/right alternation.
+		// Time remains secondary and right-set; every event reads down one copy axis.
 		@include mixins.respond-to(md) {
-			&__item-time {
-				text-align: right;
+			&__items {
+				width: min(100%, 52rem);
+				max-width: 52rem;
+				margin-inline: 0 auto;
+			}
+
+			&__item {
+				display: block;
+				padding-left: 0;
 			}
 
 			&__item-content {
-				padding-left: clamp(1.5rem, 2.5vw, 2.25rem);
-				border-left: 1px solid rgb(var(--victoria-terracota-rgb) / 20%);
+				display: grid;
+				grid-template-columns: minmax(7rem, 0.24fr) minmax(0, 1fr);
+				grid-column: auto;
+				gap: 0 clamp(1.75rem, 4vw, 3rem);
+				width: 100%;
+				padding: clamp(1.35rem, 2.8vw, 1.85rem) 0;
+				border-left: 0;
+				text-align: left;
+			}
+
+			&__item-time {
+				grid-column: 1;
+				grid-row: 1 / span 2;
+				padding: 0.3rem clamp(1rem, 2.5vw, 1.75rem) 0 0;
+				border-right: 1px solid rgb(var(--victoria-terracota-rgb) / 20%);
+				text-align: right;
+			}
+
+			&__item-label {
+				grid-column: 2;
+				margin: 0 0 0.35rem;
+			}
+
+			&__item-description {
+				grid-column: 2;
+				display: block;
+				max-width: var(--victoria-reading-measure);
+				margin: 0;
+			}
+
+			&__item-dot {
+				display: none;
 			}
 		}
 	}
@@ -1474,7 +1548,7 @@
 		.gallery__eyebrow {
 			font-family: var(--victoria-font-label);
 			letter-spacing: 0.18em;
-			color: var(--victoria-terracota);
+			color: var(--victoria-meta);
 		}
 	}
 
@@ -1518,6 +1592,7 @@
 		&__title {
 			max-width: 20ch;
 			font-size: clamp(1.75rem, 3.8vw, 2.45rem);
+			font-weight: 600;
 			line-height: 1.15;
 		}
 
@@ -1535,12 +1610,14 @@
 
 		&__group-title {
 			font-family: var(--victoria-font-label);
-			color: var(--victoria-terracota);
+			color: var(--victoria-meta);
 		}
 
 		&__name {
 			font-family: var(--victoria-font-display);
 			font-size: clamp(1.45rem, 3vw, 2.05rem);
+			font-weight: 500;
+			color: var(--victoria-ink);
 		}
 
 		&__meta,
@@ -1653,11 +1730,18 @@
 		--gifts-card-shadow: none;
 
 		&__header {
+			max-width: 42rem;
+			margin-inline: auto;
 			margin-bottom: clamp(2rem, 4vw, 3rem);
 		}
 
 		&__title {
-			font-size: clamp(1.7rem, 3.5vw, 2.35rem);
+			max-width: 18ch;
+			margin-inline: auto;
+			font-size: clamp(1.55rem, 2.8vw, 2rem);
+			font-weight: 600;
+			line-height: 1.18;
+			letter-spacing: 0.12em;
 		}
 	}
 
@@ -1697,23 +1781,58 @@
 			margin-bottom: 0.5rem;
 			font-family: var(--victoria-font-display);
 			font-size: 1.35rem;
+			font-weight: 500;
+			color: var(--victoria-ink);
 		}
 
 		&__description {
 			font-family: var(--victoria-font-body);
 			font-size: 1rem;
 		}
+
+		@include mixins.respond-to(md) {
+			&__inner {
+				grid-template-columns: auto minmax(0, 1fr);
+				grid-template-areas:
+					'icon title'
+					'icon description';
+				gap: 0.35rem clamp(1.25rem, 3vw, 2rem);
+				max-width: 36rem;
+				margin-inline: auto;
+				text-align: left;
+			}
+
+			&__icon-medallion {
+				grid-area: icon;
+				margin: 0;
+			}
+
+			&__title {
+				grid-area: title;
+				margin: 0;
+				text-align: left;
+			}
+
+			&__description {
+				grid-area: description;
+				margin: 0;
+				text-align: left;
+			}
+		}
 	}
 
-	// Access and RSVP share a low-chrome surface and a single cadence.
+	// Access is an identity folio: the guest is the reading anchor while the
+	// seal and quota remain secondary, right-set metadata.
 	.personalized-access {
 		padding-block: clamp(3rem, 6vw, 4.5rem);
 
 		&__container {
-			max-width: 38rem;
+			width: min(100%, 52rem);
+			max-width: 52rem;
 		}
 
 		.access-card {
+			// The 38rem folio sits left inside the wider container by design.
 			max-width: 38rem;
 			overflow: visible;
 			border: 0;
@@ -1729,8 +1848,52 @@
 		}
 
 		.access-card__header {
+			grid-template-columns: minmax(0, 1fr) auto;
+			grid-template-areas:
+				'eyebrow seal'
+				'title seal'
+				'subtitle subtitle';
+			align-items: center;
 			padding: clamp(1.5rem, 3vw, 2rem) clamp(1rem, 3vw, 1.5rem) 1rem;
-			gap: 0.55rem;
+			gap: 0.55rem clamp(1.25rem, 4vw, 2.5rem);
+			text-align: left;
+		}
+
+		.access-card__eyebrow {
+			grid-area: eyebrow;
+			color: var(--victoria-meta);
+		}
+
+		.access-card__seal {
+			grid-area: seal;
+			align-self: start;
+			width: clamp(2.75rem, 6vw, 3.5rem);
+			margin-inline: 0;
+		}
+
+		.access-card__title {
+			grid-area: title;
+			max-width: 15ch;
+			font-size: clamp(1.55rem, 3vw, 2.15rem);
+			font-weight: 600;
+			line-height: 1.05;
+			letter-spacing: 0.02em;
+			text-align: left;
+			text-transform: none;
+			text-wrap: balance;
+		}
+
+		.access-card__subtitle {
+			grid-area: subtitle;
+			max-width: 30rem;
+			margin: 0;
+			font-family: var(--victoria-font-body);
+			font-size: clamp(0.88rem, 1.4vw, 0.95rem);
+			font-weight: 400;
+			line-height: 1.5;
+			color: var(--victoria-subtitle);
+			text-align: left;
+			text-wrap: pretty;
 		}
 
 		.access-card__body {
@@ -1762,8 +1925,38 @@
 			}
 		}
 
+		.access-card__field {
+			justify-items: start;
+			text-align: left;
+		}
+
+		.access-card__guest {
+			max-width: 18ch;
+			font-size: clamp(2.15rem, 5vw, 3.15rem);
+			font-weight: 500;
+			color: var(--victoria-ink);
+			text-align: left;
+		}
+
+		.access-card__quota {
+			justify-items: end;
+			text-align: right;
+		}
+
+		.access-card__note {
+			margin-inline: 0;
+			text-align: left;
+			text-wrap: pretty;
+		}
+
 		.access-card__footer {
 			padding: 1rem clamp(1rem, 3vw, 1.5rem) 1.25rem;
+			text-align: left;
+
+			p {
+				max-width: 32rem;
+				margin-inline: 0;
+			}
 		}
 
 		.access-card__title,
@@ -1774,10 +1967,14 @@
 		.access-card__eyebrow,
 		.access-card__label {
 			font-family: var(--victoria-font-label);
+			color: var(--victoria-meta);
 		}
 	}
 
 	.rsvp-section {
+		grid-template-columns: minmax(0, 64rem);
+		justify-content: center;
+		justify-items: start;
 		min-block-size: auto;
 		padding-block: clamp(3.75rem, 7vw, 5.5rem);
 		background: var(--rsvp-bg);
@@ -1796,6 +1993,9 @@
 		--rsvp-field-bg-focus: var(--victoria-ivory);
 		--color-border-light: rgb(var(--victoria-terracota-rgb) / 22%);
 
+		width: min(100%, 40rem);
+		max-width: 40rem;
+		margin: 0;
 		padding: 0;
 		background: transparent;
 		border: 0;
@@ -1804,14 +2004,16 @@
 		backdrop-filter: none;
 
 		&__header {
+			max-width: 36rem;
 			margin-bottom: clamp(1.75rem, 3.5vw, 2.5rem);
+			text-align: left;
 		}
 
 		&__eyebrow {
 			font-family: var(--victoria-font-label);
 			font-size: 0.68rem;
 			letter-spacing: 0.24em;
-			color: var(--victoria-terracota);
+			color: var(--victoria-meta);
 		}
 
 		&__separator {
@@ -1820,16 +2022,27 @@
 
 		&__title {
 			font-family: var(--victoria-font-display);
-			font-size: clamp(1.9rem, 4vw, 2.6rem);
-			line-height: 1.12;
-			color: var(--victoria-terracota-deep);
+			font-size: clamp(2rem, 4.4vw, 3.25rem);
+			font-weight: 600;
+			line-height: 1.06;
+			color: var(--victoria-title);
+			text-align: left;
+			text-wrap: balance;
 		}
 
 		&__subcopy {
+			max-width: var(--victoria-reading-measure);
+			margin-inline: 0;
 			font-family: var(--victoria-font-body);
 			font-size: clamp(0.9rem, 1.6vw, 0.98rem);
 			line-height: 1.55;
-			color: rgb(var(--victoria-ink-rgb) / 72%);
+			color: var(--victoria-subtitle);
+			text-align: left;
+			text-wrap: pretty;
+		}
+
+		&__form {
+			width: var(--victoria-reading-measure);
 		}
 
 		&__label,
@@ -1838,7 +2051,7 @@
 			font-size: 0.7rem;
 			font-weight: 500;
 			letter-spacing: 0.16em;
-			color: rgb(var(--victoria-ink-rgb) / 60%);
+			color: var(--victoria-subtitle);
 		}
 
 		&__legend {
@@ -1885,9 +2098,11 @@
 		}
 
 		&__radio-label {
-			font-family: var(--victoria-font-display);
-			font-size: clamp(1.05rem, 2vw, 1.2rem);
+			font-family: var(--victoria-font-body);
+			font-size: clamp(0.95rem, 1.6vw, 1.05rem);
+			font-weight: 500;
 			letter-spacing: 0.01em;
+			color: var(--victoria-ink);
 		}
 
 		// Underline fields — no input boxes.
@@ -2013,6 +2228,7 @@
 	.thank-you-content {
 		gap: clamp(1.5rem, 4vw, 2.5rem);
 		max-width: 42rem;
+		padding-bottom: clamp(8rem, 10vw, 10rem);
 	}
 
 	.photo-frame {
@@ -2027,6 +2243,7 @@
 		font-family: var(--victoria-font-body);
 		font-size: clamp(1rem, 1.4vw, 1.1rem);
 		line-height: 1.72;
+		color: var(--victoria-subtitle);
 		margin-bottom: 1.35rem;
 		text-align: left;
 		text-wrap: pretty;
@@ -2056,6 +2273,7 @@
 	.closing-date {
 		font-family: var(--victoria-font-label);
 		letter-spacing: 0.14em;
+		color: var(--victoria-meta);
 	}
 
 	// The signature and date are the closing beat; the shared branding credit
