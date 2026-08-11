@@ -82,6 +82,8 @@ const hasAppleMap = isNavigableVenueMapUrl(venue.appleMapsUrl);
 const hasGoogleMap = isNavigableVenueMapUrl(venue.googleMapsUrl);
 const hasWazeMap = isNavigableVenueMapUrl(venue.wazeUrl);
 const hasGenericMap = isNavigableVenueMapUrl(venue.mapUrl);
+const MapPreviewContainer = useMapPreviewLink ? 'a' : 'div';
+const MapActionContainer = !useMapPreviewLink && hasMapLink ? 'a' : 'span';
 ---
 
 <div class="event-location__card-wrapper" data-reveal-item>
@@ -122,14 +124,14 @@ const hasGenericMap = isNavigableVenueMapUrl(venue.mapUrl);
 		{/* Venue-specific map preview plate for mediaMode === 'none'.
 		    Linked to the canonical map URL; carries the address as the
 		    source of truth and a venue-type-driven decorative composition. */}
-		{mediaMode === 'none' && useMapPreviewLink && (
-			<a
-				href={mapPreviewUrl}
-				class="event-location__card-map-preview event-location__card-map-preview--link"
-				data-map-preview="link"
-				target="_blank"
-				rel="noopener noreferrer"
-				aria-label={`Abrir mapa de ${venue.venueName}`}
+		{mediaMode === 'none' && (
+			<MapPreviewContainer
+				class={`event-location__card-map-preview${useMapPreviewLink ? ' event-location__card-map-preview--link' : ''}`}
+				data-map-preview={useMapPreviewLink || hasMapLink ? 'link' : 'illustration'}
+				href={useMapPreviewLink ? mapPreviewUrl : undefined}
+				target={useMapPreviewLink ? '_blank' : undefined}
+				rel={useMapPreviewLink ? 'noopener noreferrer' : undefined}
+				aria-label={useMapPreviewLink ? `Abrir mapa de ${venue.venueName}` : undefined}
 			>
 				<span class="event-location__card-map-preview-art" aria-hidden="true">
 					<span class="event-location__card-map-preview-grid"></span>
@@ -187,35 +189,18 @@ const hasGenericMap = isNavigableVenueMapUrl(venue.mapUrl);
 					</span>
 				</span>
 				<span class="event-location__card-map-preview-foot">
-					<span class="event-location__card-map-preview-action">
+					<MapActionContainer
+						class="event-location__card-map-preview-action"
+						href={!useMapPreviewLink && hasMapLink ? mapPreviewUrl : undefined}
+						target={!useMapPreviewLink && hasMapLink ? '_blank' : undefined}
+						rel={!useMapPreviewLink && hasMapLink ? 'noopener noreferrer' : undefined}
+						aria-label={!useMapPreviewLink && hasMapLink ? `Abrir mapa de ${venue.venueName}` : undefined}
+					>
 						<span class="event-location__card-map-preview-label">Ver mapa</span>
 						<Icon name="ArrowRight" size={16} />
-					</span>
+					</MapActionContainer>
 				</span>
-			</a>
-		)}
-		{mediaMode === 'none' && !useMapPreviewLink && hasMapLink && (
-			<div class="event-location__card-map-preview" data-map-preview="link">
-				<div class="event-location__card-map-preview-art" aria-hidden="true">
-					<span class="event-location__card-map-preview-grid"></span>
-					<span class="event-location__card-map-preview-pin">
-						<Icon name="MapLocation" size={24} />
-					</span>
-				</div>
-				<div class="event-location__card-map-preview-copy">
-					<span class="event-location__card-map-preview-label">Ubicación</span>
-						<a
-						href={mapPreviewUrl}
-						class="event-location__card-map-preview-link"
-						target="_blank"
-						rel="noopener noreferrer"
-						aria-label={`Abrir mapa de ${venue.venueName}`}
-					>
-						Ver mapa
-						<Icon name="ArrowRight" size={16} />
-					</a>
-				</div>
-			</div>
+			</MapPreviewContainer>
 		)}
 		{/* Card content: venue name → naturally formatted time → address with copy. */}
 		<div class="event-location__card-content">
