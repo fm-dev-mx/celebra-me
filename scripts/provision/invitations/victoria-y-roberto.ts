@@ -392,10 +392,10 @@ export function buildVictoriaPublishedContent(
 				startsAt: VICTORIA_EVENT.startsAtUtc,
 			},
 			personalizedAccess: {
-				structuralVariant: 'standard',
+				structuralVariant: 'ornamented',
 				title: 'Su invitación personal',
 				noteText:
-					'Esta invitación es válida para {count} {personWord}. Por organización del evento, no será posible admitir personas adicionales.',
+					'Esta invitación es válida para {count} {personWord}. Por organización del evento, no serán admitidos niños.',
 				footerText: 'Confirme su asistencia en la siguiente sección.',
 			},
 		},

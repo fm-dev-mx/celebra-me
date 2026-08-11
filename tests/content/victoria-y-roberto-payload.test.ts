@@ -260,7 +260,7 @@ describe('Boda Victoria y Roberto provision contract', () => {
 		expect(rsvp.confirmationMode).toBe('api');
 		expect(rsvp.accessMode).toBe('hybrid');
 		expect(rsvp.whatsappConfig).toBeUndefined();
-		expect(rsvp.personalizedAccess?.structuralVariant).toBe('standard');
+		expect(rsvp.personalizedAccess?.structuralVariant).toBe('ornamented');
 		expect(rsvp.personalizedAccess?.noteText).toContain('{count}');
 
 		const interludes = content.interludes as Array<{
@@ -287,7 +287,7 @@ describe('Boda Victoria y Roberto provision contract', () => {
 			data: content,
 		} as Parameters<typeof adaptEvent>[0]);
 		expect(viewModel.sections.itinerary?.variant).toBe('standard');
-		expect(viewModel.sections.rsvp?.personalizedAccess?.structuralVariant).toBe('standard');
+		expect(viewModel.sections.rsvp?.personalizedAccess?.structuralVariant).toBe('ornamented');
 		const renderPlan = buildInvitationRenderPlan(viewModel);
 		expect(renderPlan.filter((item) => item.type === 'interlude')).toHaveLength(2);
 		expect(
