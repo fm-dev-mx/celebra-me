@@ -219,7 +219,7 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 			? resolveAsset(eventSlug, data.hero.portrait, data.title)
 			: undefined,
 		variant: preset,
-		structuralVariant: resolveHeroStructuralVariant(data.hero.structuralVariant),
+		structuralVariant: resolveHeroStructuralVariant(data.hero.structuralVariant, preset),
 		structuralVariantExplicit: HERO_STRUCTURAL_VARIANTS.includes(
 			data.hero.structuralVariant as (typeof HERO_STRUCTURAL_VARIANTS)[number],
 		),
@@ -556,6 +556,7 @@ function buildRsvpSectionData(context: AdaptationContext, entrySlug: string) {
 					...data.rsvp.personalizedAccess,
 					structuralVariant: resolvePersonalizedAccessStructuralVariant(
 						data.rsvp.personalizedAccess.structuralVariant,
+						normalizedPreset,
 					),
 					structuralVariantExplicit: PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS.includes(
 						data.rsvp.personalizedAccess
@@ -568,6 +569,7 @@ function buildRsvpSectionData(context: AdaptationContext, entrySlug: string) {
 		variant: sectionVariant('rsvp', data.sectionStyles?.rsvp?.variant, normalizedPreset),
 		structuralVariant: resolveRsvpStructuralVariant(
 			data.sectionStyles?.rsvp?.structuralVariant,
+			normalizedPreset,
 		),
 		structuralVariantExplicit: RSVP_STRUCTURAL_VARIANTS.includes(
 			data.sectionStyles?.rsvp
@@ -593,6 +595,7 @@ function buildGiftsSectionData(context: AdaptationContext) {
 		variant: sectionVariant('gifts', data.sectionStyles?.gifts?.variant, normalizedPreset),
 		structuralVariant: resolveGiftsStructuralVariant(
 			data.sectionStyles?.gifts?.structuralVariant,
+			normalizedPreset,
 		),
 		structuralVariantExplicit: GIFTS_STRUCTURAL_VARIANTS.includes(
 			data.sectionStyles?.gifts
@@ -616,6 +619,7 @@ function buildThankYouSectionData(context: AdaptationContext) {
 		),
 		structuralVariant: resolveThankYouStructuralVariant(
 			data.sectionStyles?.thankYou?.structuralVariant,
+			normalizedPreset,
 		),
 		structuralVariantExplicit: THANK_YOU_STRUCTURAL_VARIANTS.includes(
 			data.sectionStyles?.thankYou

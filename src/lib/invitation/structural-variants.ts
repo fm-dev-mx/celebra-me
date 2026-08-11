@@ -47,10 +47,12 @@ export type GalleryLayoutVariant = (typeof GALLERY_LAYOUT_VARIANTS)[number];
 
 export function resolveHeroStructuralVariant(
 	explicit: string | undefined,
+	preset?: string,
 ): HeroStructuralVariant {
 	if (explicit && (HERO_STRUCTURAL_VARIANTS as readonly string[]).includes(explicit)) {
 		return explicit as HeroStructuralVariant;
 	}
+	if (preset === 'editorial-magazine') return 'editorial-cover';
 	return 'standard';
 }
 
@@ -74,33 +76,40 @@ export function resolveLocationStructuralVariant(
 
 export function resolveThankYouStructuralVariant(
 	explicit: string | undefined,
+	preset?: string,
 ): ThankYouStructuralVariant {
 	if (explicit && (THANK_YOU_STRUCTURAL_VARIANTS as readonly string[]).includes(explicit)) {
 		return explicit as ThankYouStructuralVariant;
 	}
+	if (preset === 'editorial-magazine') return 'editorial-back-cover';
 	return 'standard';
 }
 
 export function resolveGiftsStructuralVariant(
 	explicit: string | undefined,
+	preset?: string,
 ): GiftsStructuralVariant {
 	if (explicit && (GIFTS_STRUCTURAL_VARIANTS as readonly string[]).includes(explicit)) {
 		return explicit as GiftsStructuralVariant;
 	}
+	if (preset === 'editorial-magazine') return 'editorial-catalog';
 	return 'standard';
 }
 
 export function resolveRsvpStructuralVariant(
 	explicit: string | undefined,
+	preset?: string,
 ): RsvpStructuralVariant {
 	if (explicit && (RSVP_STRUCTURAL_VARIANTS as readonly string[]).includes(explicit)) {
 		return explicit as RsvpStructuralVariant;
 	}
+	if (preset === 'editorial-magazine') return 'editorial-press-pass';
 	return 'standard';
 }
 
 export function resolvePersonalizedAccessStructuralVariant(
 	explicit: string | undefined,
+	preset?: string,
 ): PersonalizedAccessStructuralVariant {
 	if (
 		explicit &&
@@ -108,6 +117,7 @@ export function resolvePersonalizedAccessStructuralVariant(
 	) {
 		return explicit as PersonalizedAccessStructuralVariant;
 	}
+	if (preset === 'editorial-magazine') return 'editorial-pass';
 	return 'standard';
 }
 
