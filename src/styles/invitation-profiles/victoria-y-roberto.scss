@@ -695,7 +695,7 @@
 
 	.quote-section {
 		min-height: auto;
-		padding-block: clamp(3rem, 6.5vh, 4.5rem);
+		padding-block: clamp(3.5rem, 7vh, 5.25rem);
 		background-color: var(--victoria-ivory);
 
 		.quote-divider-top,
@@ -720,7 +720,7 @@
 		}
 
 		.quote-author-container {
-			margin-top: clamp(1.25rem, 2.5vh, 1.85rem);
+			margin-top: clamp(1.35rem, 2.8vh, 2rem);
 			margin-bottom: 0;
 		}
 
@@ -732,7 +732,7 @@
 			font-size: clamp(0.7rem, 1.8vw, 0.78rem);
 			font-weight: 500;
 			font-style: normal;
-			letter-spacing: 0.14em;
+			letter-spacing: 0.18em;
 			text-transform: uppercase;
 			color: rgb(var(--victoria-terracota-rgb) / 72%);
 		}
@@ -817,7 +817,7 @@
 
 	.countdown__segment[data-unit='days'] {
 		.countdown__value {
-			font-size: clamp(3.9rem, 14vw, 8.5rem);
+			font-size: clamp(4.2rem, 15vw, 9rem);
 			line-height: 0.85;
 			color: var(--victoria-terracota-deep);
 		}
@@ -914,7 +914,7 @@
 		&__eyebrow {
 			font-family: var(--victoria-font-label);
 			font-size: clamp(0.7rem, 1.4vw, 0.78rem);
-			letter-spacing: 0.24em;
+			letter-spacing: 0.26em;
 			text-transform: uppercase;
 			color: var(--victoria-terracota);
 			margin-bottom: 0.55rem;
@@ -922,7 +922,7 @@
 
 		&__heading {
 			font-family: var(--victoria-font-display);
-			font-size: clamp(1.9rem, 4.2vw, 2.75rem);
+			font-size: clamp(1.85rem, 4vw, 2.6rem);
 			line-height: 1.12;
 			color: var(--victoria-terracota-deep);
 			-webkit-text-fill-color: var(--victoria-terracota-deep);
@@ -974,6 +974,7 @@
 		}
 
 		&__card-flourish {
+			align-self: center;
 			opacity: 70%;
 		}
 
@@ -1353,7 +1354,7 @@
 
 		&__title {
 			font-family: var(--victoria-font-display);
-			font-size: clamp(2rem, 4.4vw, 2.9rem);
+			font-size: clamp(2.1rem, 4.6vw, 3.1rem);
 			line-height: 1.1;
 			color: var(--victoria-terracota-deep);
 		}
@@ -1495,6 +1496,10 @@
 			rgb(var(--victoria-sand-rgb) / 56%) 100%
 		);
 
+		&__eyebrow {
+			padding-left: 2rem;
+		}
+
 		&__header {
 			max-width: 36rem;
 			margin: 0 0 clamp(2.5rem, 5vw, 3.75rem);
@@ -1512,11 +1517,14 @@
 
 		&__title {
 			max-width: 20ch;
+			font-size: clamp(1.75rem, 3.8vw, 2.45rem);
+			line-height: 1.15;
 		}
 
 		&__message {
 			max-width: 30rem;
 			margin-inline: 0;
+			padding-left: 2rem;
 		}
 
 		&__panel--no-media {
@@ -1646,6 +1654,10 @@
 
 		&__header {
 			margin-bottom: clamp(2rem, 4vw, 3rem);
+		}
+
+		&__title {
+			font-size: clamp(1.7rem, 3.5vw, 2.35rem);
 		}
 	}
 
