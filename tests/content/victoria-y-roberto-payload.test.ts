@@ -161,6 +161,7 @@ describe('Boda Victoria y Roberto provision contract', () => {
 		expect(quote.author.trim()).not.toBe('');
 
 		const location = content.location as {
+			structuralVariant?: string;
 			venues?: Array<{
 				type: string;
 				venueName: string;
@@ -169,6 +170,7 @@ describe('Boda Victoria y Roberto provision contract', () => {
 				mapUrl?: string;
 			}>;
 		};
+		expect(location.structuralVariant).toBe('split-map');
 		expect(location.venues).toEqual(expect.any(Array));
 		expect(location.venues?.length).toBeGreaterThan(0);
 		expect(

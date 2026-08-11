@@ -193,7 +193,7 @@ export function buildVictoriaPublishedContent(
 			},
 		},
 		quote: {
-			text: 'Mejores son dos que uno, porque tienen mejor paga de su trabajo. Porque si cayeren, el uno levantará a su compañero.',
+			text: 'Mejores son dos que uno, porque si cayeren, el uno levantará a su compañero.',
 			author: 'Eclesiastés 4:9–12',
 		},
 		countdown: {
@@ -202,6 +202,7 @@ export function buildVictoriaPublishedContent(
 		},
 		location: {
 			visibility: 'public',
+			structuralVariant: 'split-map',
 			presentationOptions: {
 				showFlourishes: true,
 				showNavigationButtons: false,
@@ -209,7 +210,7 @@ export function buildVictoriaPublishedContent(
 			introEyebrow: 'Los Mochis, Sinaloa',
 			introHeading: EVENT_DATE_HEADING,
 			introLede:
-				'Los esperamos para unir dos momentos: la ceremonia en Mochicahui y la recepción en Eventos Platinum LM.',
+				'Los esperamos para unir dos momentos: la ceremonia en la Parroquia Santo Niño y la recepción en Eventos Platinum LM.',
 			venues: [
 				{
 					type: 'ceremony',
@@ -241,40 +242,45 @@ export function buildVictoriaPublishedContent(
 					styleVariant: 'default',
 					text: 'Código de vestimenta: formal.',
 				},
+				{
+					iconName: 'FlowerSeal',
+					styleVariant: 'default',
+					text: 'Agradecemos considerar que la celebración está reservada para adultos. Gracias por su comprensión.',
+				},
 			],
 		},
 		itinerary: {
-			title: 'Orden del día',
-			subtitle: 'Una secuencia sencilla para orientar la tarde y la noche.',
+			title: 'El hilo de nuestra noche',
+			subtitle: 'Del sí que nos une a cada brindis, acompáñenos a vivirla completa.',
 			presentation: {
 				behavior: 'standard',
 			},
 			items: [
 				{
 					iconName: 'Church',
-					label: 'Ceremonia religiosa',
+					label: 'Nos damos el sí',
 					time: CEREMONY_TIME,
-					description: 'Parroquia Santo Niño.',
+					description: 'Ceremonia en Parroquia Santo Niño.',
 				},
 				{
 					iconName: 'Reception',
-					label: 'Recepción',
+					label: 'Nos encontramos',
 					time: RECEPTION_TIME,
-					description: 'Eventos Platinum LM.',
+					description: 'Recepción en Eventos Platinum LM.',
 				},
 				{
 					iconName: 'Dinner',
-					label: 'Cena',
+					label: 'Compartimos la mesa',
 					time: VICTORIA_PLACEHOLDERS.dinnerTime,
 				},
 				{
 					iconName: 'Toast',
-					label: 'Brindis',
+					label: 'Levantamos las copas',
 					time: VICTORIA_PLACEHOLDERS.toastTime,
 				},
 				{
 					iconName: 'Party',
-					label: 'Cierre de celebración',
+					label: 'Cerramos la noche',
 					time: VICTORIA_PLACEHOLDERS.closingTime,
 				},
 			],
