@@ -74,6 +74,7 @@
 		--header-nav-hover-color: var(--victoria-gold);
 		--header-nav-shadow-transparent: 0 1px 10px rgb(0 0 0 / 34%);
 		--header-nav-filter-transparent: drop-shadow(0 4px 8px rgb(0 0 0 / 20%));
+
 		// Lighter top scrim — default 55% black band fights the editorial photo.
 		--nav-transparent-scrim: linear-gradient(
 			to bottom,
@@ -222,14 +223,122 @@
 		}
 	}
 
-	.invitation-section-wrapper[data-intersection='overlap'][data-intersection-source='countdown'],
-	.invitation-section-wrapper[data-intersection='overlap'][data-intersection-source='gifts'] {
-		--intersection-depth: clamp(2rem, 4vw, 4rem);
+	// Depth-bearing seams on photographic interludes (family=overlap), not on
+	// a fixed predecessor section key — placement stays afterSection-driven.
+	.invitation-section-wrapper[data-section-kind='interlude'][data-intersection='overlap'] {
+		--intersection-depth: clamp(3.25rem, 6.5vw, 5.75rem);
+		--intersection-surface: var(--victoria-cream);
 	}
 
 	.invitation-section-wrapper[data-section-kind='countdown'] .countdown-section,
 	.invitation-section-wrapper[data-section-kind='gifts'] .gifts-section {
 		padding-bottom: clamp(4rem, 8vw, 6rem);
+	}
+
+	// -------------------------------------------------------------------------
+	// Photographic interludes — one editorial system, two distinct plates
+	// -------------------------------------------------------------------------
+	// Shared tokens: warm cream/ink continuity with the invitation palette.
+	// Per-index rules tune composition weight for each plate only; they do not
+	// encode section adjacency. Content height tokens (tall / medium) remain SoT
+	// for the height contract; local vars refine coverage inside that contract.
+	.invitation-interlude {
+		--victoria-interlude-ink-veil: rgb(var(--victoria-ink-rgb) / 22%);
+		--victoria-interlude-cream-veil: rgb(var(--victoria-cream-rgb) / 42%);
+		--victoria-interlude-gold-mist: rgb(var(--victoria-gold-rgb) / 16%);
+		--victoria-interlude-filter-bridge: contrast(1.06) brightness(0.96) saturate(0.2)
+			sepia(0.28);
+		--victoria-interlude-filter-terrace: contrast(1.04) brightness(0.97) saturate(0.72)
+			sepia(0.14);
+		--interlude-bg: var(--victoria-terracota-deep);
+		--interlude-image-filter: var(--victoria-interlude-filter-bridge);
+		--interlude-overlay-opacity: 0.2;
+		--interlude-overlay:
+			linear-gradient(
+				180deg,
+				var(--victoria-interlude-cream-veil) 0%,
+				transparent 18%,
+				transparent 72%,
+				var(--victoria-interlude-ink-veil) 100%
+			),
+			radial-gradient(
+				ellipse 120% 90% at 50% 42%,
+				transparent 36%,
+				rgb(var(--victoria-ink-rgb) / 18%) 100%
+			),
+			radial-gradient(circle at 72% 18%, var(--victoria-interlude-gold-mist), transparent 46%);
+
+		// Content omits focalPoint so responsive profile focals are not pinned
+		// by the motion coordinator's inline --interlude-focal-point write.
+		--interlude-focal-point: 42% 34%;
+
+		isolation: isolate;
+	}
+
+	.invitation-interlude[data-interlude-index='1'] {
+		--interlude-image-filter: var(--victoria-interlude-filter-bridge);
+		--interlude-min-height-1: clamp(420px, 72svh, 640px);
+		--interlude-min-height-1-sm: clamp(400px, 68svh, 560px);
+		--interlude-focal-point: 40% 32%;
+
+		@media (width >= 640px) {
+			--interlude-focal-point: 42% 34%;
+		}
+
+		@media (width >= 768px) {
+			--interlude-min-height-1: clamp(440px, 70svh, 620px);
+			--interlude-focal-point: 46% 38%;
+		}
+
+		@media (width >= 1024px) {
+			--interlude-focal-point: 48% 40%;
+		}
+	}
+
+	.invitation-interlude[data-interlude-index='2'] {
+		--interlude-image-filter: var(--victoria-interlude-filter-terrace);
+		--interlude-min-height-2: clamp(320px, 52svh, 480px);
+		--interlude-min-height-2-sm: clamp(300px, 48svh, 440px);
+		--interlude-focal-point: 58% 36%;
+		--interlude-overlay:
+			linear-gradient(
+				180deg,
+				rgb(var(--victoria-sand-rgb) / 34%) 0%,
+				transparent 20%,
+				transparent 70%,
+				rgb(var(--victoria-ink-rgb) / 26%) 100%
+			),
+			radial-gradient(
+				ellipse 110% 85% at 54% 40%,
+				transparent 40%,
+				rgb(var(--victoria-terracota-deep-rgb) / 16%) 100%
+			),
+			radial-gradient(circle at 28% 22%, var(--victoria-interlude-gold-mist), transparent 48%);
+
+		@media (width >= 640px) {
+			--interlude-focal-point: 56% 38%;
+		}
+
+		@media (width >= 768px) {
+			--interlude-min-height-2: clamp(340px, 50svh, 460px);
+			--interlude-focal-point: 54% 40%;
+		}
+
+		@media (width >= 1024px) {
+			--interlude-focal-point: 52% 40%;
+		}
+	}
+
+	// Soften arrival after a photographic pause without encoding the next section type.
+	.invitation-section-wrapper[data-after-interlude][data-intersection='atmospheric-blend'] {
+		--intersection-depth: clamp(2.75rem, 5.5vw, 4.5rem);
+		--intersection-surface: var(--victoria-cream);
+		--intersection-blend: linear-gradient(
+			180deg,
+			rgb(var(--victoria-ink-rgb) / 10%) 0%,
+			rgb(var(--victoria-cream-rgb) / 55%) 42%,
+			transparent 100%
+		);
 	}
 
 	// Reveal remains the existing state machine, but reads as a quiet object

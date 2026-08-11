@@ -11,8 +11,13 @@ type RevealWrapper = HTMLElement & {
 
 function setInterludeProperties(root: ParentNode): void {
 	root.querySelectorAll<HTMLElement>('.invitation-interlude').forEach((interlude) => {
+		// Content focal is a fallback token so invitation profiles can override
+		// --interlude-focal-point responsively without fighting an inline pin.
 		if (interlude.dataset.focalPoint) {
-			interlude.style.setProperty('--interlude-focal-point', interlude.dataset.focalPoint);
+			interlude.style.setProperty(
+				'--interlude-focal-point-content',
+				interlude.dataset.focalPoint,
+			);
 		}
 		interlude.style.setProperty('--interlude-light-x', interlude.dataset.lightX || '50%');
 		interlude.style.setProperty('--interlude-light-y', interlude.dataset.lightY || '34%');

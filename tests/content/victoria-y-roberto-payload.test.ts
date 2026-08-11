@@ -261,9 +261,17 @@ describe('Boda Victoria y Roberto provision contract', () => {
 		expect(rsvp.personalizedAccess?.structuralVariant).toBe('standard');
 		expect(rsvp.personalizedAccess?.noteText).toContain('{count}');
 
-		const interludes = content.interludes as Array<{ afterSection: string }>;
+		const interludes = content.interludes as Array<{
+			afterSection: string;
+			height?: string;
+			focalPoint?: string;
+		}>;
 		expect(interludes).toHaveLength(2);
 		expect(interludes.map((item) => item.afterSection)).toEqual(['countdown', 'gifts']);
+		expect(interludes.map((item) => item.height)).toEqual(['tall', 'medium']);
+		// Responsive crops are owned by the visual profile; content must not pin
+		// a single data-focal-point for the motion coordinator.
+		expect(interludes.every((item) => item.focalPoint === undefined)).toBe(true);
 
 		const thankYou = content.thankYou as {
 			image?: unknown;

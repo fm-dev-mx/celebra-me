@@ -5,14 +5,20 @@
 //   --interlude-image-filter         Image CSS filter
 //   --interlude-overlay-opacity      ::after vignette darkness
 //   --interlude-overlay              ::after overlay background (multi-gradient)
-//   --interlude-min-height           Section min-height
+//   --interlude-min-height           Section min-height (data-height=screen)
 //   --interlude-min-height-sm        Mobile min-height (<=640px)
 //   --interlude-min-height-tall      Tall variant min-height
+//   --interlude-min-height-medium     Medium variant min-height
+//   --interlude-min-height-medium-sm  Medium variant mobile min-height
+//   --interlude-min-height-1/-2       Optional per-index coverage overrides
+//   --interlude-min-height-1-sm/-2-sm Optional per-index mobile coverage
 //   --interlude-frame-inset          ::after inset (decorative border layouts)
 //   --interlude-frame-inset-sm       ::after mobile inset
 //   --interlude-frame-border         ::after border
 // Not in contract (internal / content-driven / behavior):
-//   --interlude-focal-point          Set by observer from data-focal-point
+//   --interlude-min-height-resolved  Internal data-height resolution
+//   --interlude-focal-point          Effective object-position (profile may override)
+//   --interlude-focal-point-content  Set by observer from data-focal-point
 //   --interlude-focal-x/y            Internal focal derivation
 //   --interlude-light-x/y            Set by observer for celestial highlight
 // ==========================================================================
@@ -21,7 +27,10 @@
 	// ---- focal derivation ----
 	--interlude-focal-x: 50%;
 	--interlude-focal-y: 14%;
-	--interlude-focal-point: var(--interlude-focal-x) var(--interlude-focal-y);
+	--interlude-focal-point: var(
+		--interlude-focal-point-content,
+		var(--interlude-focal-x) var(--interlude-focal-y)
+	);
 
 	// ---- contract variable defaults ----
 	--interlude-min-height: 100svh;
@@ -37,21 +46,28 @@
 		var(--invitation-header-offset, calc(70px + 1.5rem)) + var(--preview-banner-height, 0px)
 	);
 	position: relative;
-	min-height: var(--interlude-min-height);
+
+	// data-height resolves first; optional --interlude-min-height-N may override.
+	--interlude-min-height-resolved: var(--interlude-min-height);
+
+	min-height: var(--interlude-min-height-resolved);
 	overflow: hidden;
 	background: var(--interlude-bg, var(--color-surface-dark));
 
 	&[data-height='tall'] {
-		min-height: var(--interlude-min-height-tall);
-	}
-
-	&[data-interlude-index='1'],
-	&[data-interlude-index='2'] {
-		min-height: var(--interlude-min-height);
+		--interlude-min-height-resolved: var(--interlude-min-height-tall);
 	}
 
 	&[data-height='medium'] {
-		min-height: var(--interlude-min-height-medium);
+		--interlude-min-height-resolved: var(--interlude-min-height-medium);
+	}
+
+	&[data-interlude-index='1'] {
+		min-height: var(--interlude-min-height-1, var(--interlude-min-height-resolved));
+	}
+
+	&[data-interlude-index='2'] {
+		min-height: var(--interlude-min-height-2, var(--interlude-min-height-resolved));
 	}
 
 	&__media {
@@ -113,15 +129,32 @@
 
 	// ---- min-height responsive ----
 	@media (width <= 640px) {
-		min-height: var(--interlude-min-height-sm);
+		--interlude-min-height-resolved: var(--interlude-min-height-sm);
 
-		&[data-interlude-index='1'],
-		&[data-interlude-index='2'] {
-			min-height: var(--interlude-min-height-sm);
+		min-height: var(--interlude-min-height-resolved);
+
+		&[data-height='tall'] {
+			// Tall has no dedicated sm token; keep the resolved sm floor unless
+			// a profile supplies --interlude-min-height-1-sm / -1.
+			--interlude-min-height-resolved: var(--interlude-min-height-sm);
 		}
 
 		&[data-height='medium'] {
-			min-height: var(--interlude-min-height-medium-sm);
+			--interlude-min-height-resolved: var(--interlude-min-height-medium-sm);
+		}
+
+		&[data-interlude-index='1'] {
+			min-height: var(
+				--interlude-min-height-1-sm,
+				var(--interlude-min-height-1, var(--interlude-min-height-resolved))
+			);
+		}
+
+		&[data-interlude-index='2'] {
+			min-height: var(
+				--interlude-min-height-2-sm,
+				var(--interlude-min-height-2, var(--interlude-min-height-resolved))
+			);
 		}
 	}
 

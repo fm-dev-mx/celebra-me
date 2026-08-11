@@ -74,6 +74,9 @@ Defines the minimum height of the interlude section.
   - `"tall"`: 80svh
   - `"medium"`: compact editorial interlude height
 - **Default**: `"screen"`
+- Indexed interludes (`data-interlude-index`) honor this contract. Optional theme/profile tokens
+  `--interlude-min-height-1` / `--interlude-min-height-2` (and `*-sm` mobile variants) may refine
+  coverage per plate without forcing full-viewport height.
 
 ## Section Order
 
