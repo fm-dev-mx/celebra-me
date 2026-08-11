@@ -37,7 +37,7 @@
 	// The visual seal follows the envelope's inline size. Keep the fallback
 	// explicit for browsers without container query units; the button's hit
 	// area remains independent below.
-	--env-seal-size-min: 40px;
+	--env-seal-size-min: 34px;
 	--env-seal-size-max: 60px;
 	--env-seal-size-ratio: 10;
 	--env-seal-size: var(--env-seal-size-min);
