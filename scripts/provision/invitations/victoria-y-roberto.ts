@@ -349,9 +349,9 @@ export function buildVictoriaPublishedContent(
 				height: 'tall',
 			},
 			{
-				image: assets['interlude-02'],
+				image: assets['thank-you'],
 				afterSection: 'gifts',
-				alt: VICTORIA_INTERLUDE_02.alt,
+				alt: 'Victoria y Roberto en un retrato arquitectónico de sesión',
 				// Quieter second beat; profile CSS calibrates coverage + crop.
 				height: 'medium',
 			},
@@ -391,8 +391,8 @@ export function buildVictoriaPublishedContent(
 				'Guardaremos con cariño el gesto de haber estado presentes en el comienzo de esta etapa juntos.',
 			closingName: 'Victoria & Roberto',
 			date: EVENT_DATE_LONG,
-			image: assets['thank-you'],
-			focalPoint: '42% 38%',
+			image: assets['interlude-02'],
+			focalPoint: VICTORIA_INTERLUDE_02.focalPoint,
 		},
 		sharing: {
 			ogImage: assets['hero-desktop'],
