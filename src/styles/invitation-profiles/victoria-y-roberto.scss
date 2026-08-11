@@ -63,9 +63,9 @@
 	--hero-badge-border: var(--victoria-gold);
 	--gallery-title-color: var(--victoria-terracota-deep);
 	--quote-content-font: var(--victoria-font-display);
-	--quote-content-size: clamp(1.85rem, 4.5vw, 2.7rem);
-	--quote-content-line-height: 1.38;
-	--quote-divider-opacity: 0.42;
+	--quote-content-size: clamp(1.3rem, 3.4vw, 1.95rem);
+	--quote-content-line-height: 1.55;
+	--quote-divider-display: none;
 	--countdown-segment-padding-mobile: 1rem 0.65rem;
 	--countdown-segment-padding-desktop: 1.25rem 1rem;
 
@@ -169,7 +169,6 @@
 
 	// Countdown / quote / gifts / thank-you accents
 	--countdown-title-color: var(--victoria-terracota-deep);
-	--quote-accent: var(--victoria-terracota);
 	--gifts-title-color: var(--victoria-terracota-deep);
 	--thank-you-name-color: var(--victoria-terracota-deep);
 
@@ -560,31 +559,47 @@
 	}
 
 	.quote-section {
-		min-height: clamp(18rem, 36svh, 28rem);
-		padding-block: clamp(3.5rem, 7vw, 5.25rem);
+		min-height: auto;
+		padding-block: clamp(3rem, 6.5vh, 4.5rem);
 		background-color: var(--victoria-ivory);
+
+		.quote-divider-top,
+		.quote-divider-bottom,
+		.quote-texture,
+		.quote-ornament {
+			display: none;
+		}
 
 		.quote-content,
 		.quote__content,
 		blockquote {
-			max-width: 34rem;
+			max-width: min(32rem, 88vw);
 			margin-inline: auto;
 			font-family: var(--quote-content-font);
 			font-size: var(--quote-content-size);
+			font-weight: 400;
 			line-height: var(--quote-content-line-height);
+			letter-spacing: 0.01em;
 			color: var(--victoria-ink);
 			text-wrap: pretty;
+		}
+
+		.quote-author-container {
+			margin-top: clamp(1.25rem, 2.5vh, 1.85rem);
+			margin-bottom: 0;
 		}
 
 		.quote-author,
 		.quote__author,
 		cite {
-			margin-top: clamp(1.1rem, 2.4vw, 1.6rem);
+			margin-top: 0;
 			font-family: var(--victoria-font-label);
-			font-size: 0.72rem;
-			letter-spacing: 0.16em;
+			font-size: clamp(0.7rem, 1.8vw, 0.78rem);
+			font-weight: 500;
+			font-style: normal;
+			letter-spacing: 0.14em;
 			text-transform: uppercase;
-			color: rgb(var(--victoria-terracota-rgb) / 82%);
+			color: rgb(var(--victoria-terracota-rgb) / 72%);
 		}
 	}
 
@@ -1203,12 +1218,6 @@
 
 		.invitation-hero__details {
 			gap: 0.05rem;
-		}
-
-		.quote-section {
-			.quote-author {
-				white-space: nowrap;
-			}
 		}
 
 		.itinerary {
