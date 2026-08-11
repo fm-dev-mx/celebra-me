@@ -108,7 +108,7 @@ describe('canonical corpus structural/behavior contracts', () => {
 			presentation: { behavior: 'standard' },
 		});
 		expect(content.rsvp).toMatchObject({
-			personalizedAccess: { structuralVariant: 'standard' },
+			personalizedAccess: { structuralVariant: 'ornamented' },
 		});
 		expect(content.gallery).toMatchObject({ variant: 'single-keepsake' });
 
@@ -117,7 +117,7 @@ describe('canonical corpus structural/behavior contracts', () => {
 			data: content,
 		} as Parameters<typeof adaptEvent>[0]);
 		expect(viewModel.sections.itinerary?.variant).toBe('standard');
-		expect(viewModel.sections.rsvp?.personalizedAccess?.structuralVariant).toBe('standard');
+		expect(viewModel.sections.rsvp?.personalizedAccess?.structuralVariant).toBe('ornamented');
 		expect(viewModel.sections.gallery?.variant).toBe('single-keepsake');
 	});
 
