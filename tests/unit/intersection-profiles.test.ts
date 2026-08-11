@@ -129,7 +129,7 @@ describe('invitation intersection profiles', () => {
 		});
 	});
 
-	it('maps Victoria photographic interludes and connected closing chapters', () => {
+	it('maps Victoria photographic plate, location arch, and quiet closing chapters', () => {
 		expect(resolveRenderPlanIntersection('victoria-y-roberto', 'quote')).toEqual({
 			family: 'atmospheric-blend',
 			source: 'hero',
@@ -141,13 +141,13 @@ describe('invitation intersection profiles', () => {
 			source: 'countdown',
 		});
 		expect(resolveRenderPlanIntersection('victoria-y-roberto', 'location')).toEqual({
-			family: 'atmospheric-blend',
+			family: 'arch',
 			source: 'interlude-after-countdown',
 		});
 		expect(
 			resolveRenderPlanIntersection('victoria-y-roberto', 'interlude-after-gifts'),
 		).toEqual({
-			family: 'overlap',
+			family: 'atmospheric-blend',
 			source: 'gifts',
 		});
 		expect(resolveRenderPlanIntersection('victoria-y-roberto', 'personalized-access')).toEqual({

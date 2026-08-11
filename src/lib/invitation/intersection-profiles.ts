@@ -66,18 +66,20 @@ const INTERSECTION_PROFILES: Readonly<Record<string, IntersectionProfile>> = {
 		thankYou: { family: 'atmospheric-blend', source: 'rsvp' },
 	},
 	'victoria-y-roberto': {
-		// Warm atmospheric pacing carries the editorial chapters without introducing
-		// a second geometric language. The two photographic interludes are the only
-		// depth-bearing seams; the access-to-RSVP handoff remains a quiet blend.
+		// Warm atmospheric pacing carries the editorial chapters. Two geometric
+		// moments only: the first interlude plate rises over the countdown exit,
+		// and Location enters through an editorial arch out of that photograph —
+		// the strongest light-after-dark narrative turn. The closing sequence
+		// stays quiet: the second interlude reverts to a soft blend.
 		quote: { family: 'atmospheric-blend', source: 'hero' },
 		countdown: { family: 'atmospheric-blend', source: 'quote' },
 		'interlude-after-countdown': { family: 'overlap', source: 'countdown' },
-		location: { family: 'atmospheric-blend', source: 'interlude-after-countdown' },
+		location: { family: 'arch', source: 'interlude-after-countdown' },
 		itinerary: { family: 'atmospheric-blend', source: 'location' },
 		family: { family: 'atmospheric-blend', source: 'itinerary' },
 		gallery: { family: 'atmospheric-blend', source: 'family' },
 		gifts: { family: 'atmospheric-blend', source: 'gallery' },
-		'interlude-after-gifts': { family: 'overlap', source: 'gifts' },
+		'interlude-after-gifts': { family: 'atmospheric-blend', source: 'gifts' },
 		'personalized-access': { family: 'atmospheric-blend', source: 'interlude-after-gifts' },
 		rsvp: { family: 'atmospheric-blend', source: 'personalized-access' },
 		thankYou: { family: 'atmospheric-blend', source: 'rsvp' },

@@ -292,14 +292,16 @@ export function buildVictoriaPublishedContent(
 			structuralVariant: 'split-groups',
 			groups: [
 				{
-					title: 'Padres de Victoria',
+					// "Familia de …" keeps Madre/Padre roles informative instead of
+					// echoing a "Padres de …" group title.
+					title: 'Familia de Victoria',
 					items: [
 						{ name: 'Argelia Valdez', role: 'Madre' },
 						{ name: 'Victor Armenta', role: 'Padre' },
 					],
 				},
 				{
-					title: 'Padres de Roberto',
+					title: 'Familia de Roberto',
 					items: [
 						{ name: 'Socorro Palomares', role: 'Madre' },
 						{ name: 'Nicolas Luviano', role: 'Padre' },
@@ -314,6 +316,8 @@ export function buildVictoriaPublishedContent(
 				sectionSubtitle: 'Familia',
 				sectionTitle: 'Con la bendición de nuestros padres y padrinos',
 				godparentsTitle: 'Padrinos',
+				// Couple voice; the shared default speaks in singular ("conmigo").
+				sectionMessage: 'Su amor y guía nos acompañan en este día.',
 			},
 		},
 		gallery: {

@@ -294,8 +294,15 @@ describe('Boda Victoria y Roberto provision contract', () => {
 			renderPlan.filter((item) => item.type === 'interlude').map((item) => item.intersection),
 		).toEqual([
 			{ family: 'overlap', source: 'countdown' },
-			{ family: 'overlap', source: 'gifts' },
+			{ family: 'atmospheric-blend', source: 'gifts' },
 		]);
+		expect(
+			renderPlan.find((item) => item.type === 'section' && item.section === 'location')
+				?.intersection,
+		).toEqual({
+			family: 'arch',
+			source: 'interlude-after-countdown',
+		});
 		expect(
 			renderPlan.find((item) => item.type === 'personalized-access')?.intersection,
 		).toEqual({
