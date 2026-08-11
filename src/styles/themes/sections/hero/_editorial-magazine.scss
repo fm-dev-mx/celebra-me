@@ -153,6 +153,7 @@
 
 	.invitation-hero__title-wrapper {
 		width: min(100%, 34rem);
+		overflow: visible;
 	}
 
 	.invitation-hero__title {
@@ -160,6 +161,7 @@
 		color: var(--editorial-magazine-white);
 		font-family: var(--font-display);
 		letter-spacing: 0;
+		overflow: visible;
 	}
 
 	.invitation-hero__first-name {
