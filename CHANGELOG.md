@@ -10,6 +10,30 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.17.0-beta.1] - 2026-08-11
+
+Feature release consolidating Victoria & Roberto real wedding client invitation provisioning, section-owned structural variants architecture, draft restoration and contract audit tooling, and Git safety v2 lifecycle updates since `v0.16.0-beta.1`.
+
+### Added
+
+- **Victoria & Roberto Wedding Client Invitation**: Managed wedding client invitation (`/boda/victoria-y-roberto`) with custom visual profile, intersection treatments, editorial layout, typography scale, focal points, pending timeline status fallback, and artwork plate map previews on venue cards.
+- **Section-Owned Structural Variants Architecture**: Section-level structural variants (`split-cover`, `split-map`, `split-groups`, `single-keepsake` gallery, `timeline-paper` itinerary) encapsulated into invitation profile styles, with independent gallery variant stylesheet resolution.
+- **Draft Restoration & Contract Audit System**: Services and CLI tools for draft restoration (`invitation:draft-restore`, `invitation:draft-canonicalize`), contract audit (`invitation:draft-audit`), and section restore controls in `InvitationEditor`.
+- **Markdown Table Readability Gate**: Markdown table formatting and validation script (`pnpm validate:markdown-tables` / `pnpm format:markdown-tables`) integrated into `lint-staged` and CI.
+
+### Changed
+
+- **SCSS Delivery & Theme Bundles**: Decoupled section variant stylesheets from preset bundles and refactored gallery SCSS using semantic palette tokens.
+- **Git Safety Lifecycle v2**: Hardened pre-commit and lane lifecycle scripts (`pnpm agent:git-safety:start`, `pnpm agent:git-safety:finish`).
+
+### Verification
+
+| Check      | Result                                        |
+| :--------- | :-------------------------------------------- |
+| Type-check | Passed (0 errors, 0 warnings, 0 hints)        |
+| Tests      | Passed (449 suites passed, 5097 tests passed) |
+| Build      | Passed (Astro SSR + Vercel adapter)           |
+
 ## [0.16.0-beta.1] - 2026-08-07
 
 Comprehensive release consolidating public RSVP SECURITY DEFINER RPC architecture, Daniela y Martín real wedding invitation ship, CLI pipeline consolidations (`pnpm dbs`, `pnpm invitation:release`, `pnpm db:migrate`), multi-lane worktrees, production disaster recovery workflows, admin user authentication management, provisioning reconciliation tools, and agent governance matrices since `v0.15.0-beta.1`.
