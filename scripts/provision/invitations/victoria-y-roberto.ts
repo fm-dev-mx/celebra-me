@@ -47,12 +47,14 @@ const RECEPTION_TIME = '21:00';
 
 const VICTORIA_INTERLUDE_01 = {
 	alt: 'Victoria y Roberto en un momento íntimo sobre un puente de madera',
-	focalPoint: '50% 42%',
+	// Narrow-safe default; responsive refinements live in the visual profile.
+	focalPoint: '42% 34%',
 } as const;
 
 const VICTORIA_INTERLUDE_02 = {
 	alt: 'Victoria y Roberto frente a frente en una terraza con luz suave',
-	focalPoint: '48% 40%',
+	// Couple sits slightly right; keep faces readable under tall cover crops.
+	focalPoint: '56% 38%',
 } as const;
 
 export const VICTORIA_ASSET_SPECS = [
@@ -346,15 +348,18 @@ export function buildVictoriaPublishedContent(
 				image: assets['interlude-01'],
 				afterSection: 'countdown',
 				alt: VICTORIA_INTERLUDE_01.alt,
-				height: 'screen',
-				focalPoint: VICTORIA_INTERLUDE_01.focalPoint,
+				// Editorial pause — not a full-viewport chapter break.
+				// Responsive focals live in the visual profile (omit content
+				// focalPoint so the motion coordinator does not pin a single
+				// inline --interlude-focal-point).
+				height: 'tall',
 			},
 			{
-				image: assets['interlude-02'],
+				image: assets['thank-you'],
 				afterSection: 'gifts',
-				alt: VICTORIA_INTERLUDE_02.alt,
-				height: 'screen',
-				focalPoint: VICTORIA_INTERLUDE_02.focalPoint,
+				alt: 'Victoria y Roberto en un retrato arquitectónico de sesión',
+				// Quieter second beat; profile CSS calibrates coverage + crop.
+				height: 'medium',
 			},
 		],
 		rsvp: {
@@ -392,8 +397,8 @@ export function buildVictoriaPublishedContent(
 				'Guardaremos con cariño el gesto de haber estado presentes en el comienzo de esta etapa juntos.',
 			closingName: 'Victoria & Roberto',
 			date: EVENT_DATE_LONG,
-			image: assets['thank-you'],
-			focalPoint: '42% 38%',
+			image: assets['interlude-02'],
+			focalPoint: VICTORIA_INTERLUDE_02.focalPoint,
 		},
 		sharing: {
 			ogImage: assets['hero-desktop'],

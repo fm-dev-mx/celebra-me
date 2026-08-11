@@ -1,8 +1,8 @@
 # Canonical Invitation Preparation State — `victoria-y-roberto`
 
-> Schema owner: `docs/core/invitation-preparation-contract.md`  
-> Executable evaluation: `src/lib/invitation-preparation/` (**prepReadiness SSOT**)  
-> Workflow: `.agent/workflows/invitation-preparation.md`
+> Schema owner: `docs/core/invitation-preparation-contract.md` Executable evaluation:
+> `src/lib/invitation-preparation/` (**prepReadiness SSOT**) Workflow:
+> `.agent/workflows/invitation-preparation.md`
 
 ---
 
@@ -269,11 +269,11 @@ Content-profile invariants (implementation):
 
 ## Photograph Inventory
 
-Source label: `source:hr-photos` (opaque)  
-Originals must be preserved. Authorized root inspected in session (5 JPEGs). Files are
-byte-identical to the WhatsApp export attachments of the same names; quality labels below reflect
-**visual/dimension inspection** of the authorized source (not automatic demotion solely by WA
-origin). Owner authorized this folder as the final invitation photograph source.
+Source label: `source:hr-photos` (opaque) Originals must be preserved. Authorized root inspected in
+session (5 JPEGs). Files are byte-identical to the WhatsApp export attachments of the same names;
+quality labels below reflect **visual/dimension inspection** of the authorized source (not automatic
+demotion solely by WA origin). Owner authorized this folder as the final invitation photograph
+source.
 
 | source filename                        | dims      | format | orientation | weight   | quality          | role        | duplicate   | processing                               | derivative                               |
 | -------------------------------------- | --------- | ------ | ----------- | -------- | ---------------- | ----------- | ----------- | ---------------------------------------- | ---------------------------------------- |
@@ -301,8 +301,8 @@ origin). Owner authorized this folder as the final invitation photograph source.
 | 41   | Color intimate couple portrait; clear faces; outdoor soft bokeh  | hero          |
 | 43   | B&W romantic dip/kiss on wooden bridge; landscape                | interlude01   |
 | 44   | B&W lift/embrace by water; strong editorial single feature       | gallery01     |
-| 45   | Color forehead-to-forehead at glass architecture; landscape      | interlude02   |
-| 42   | Color architectural frame; woman sharp / man soft FG; lower dims | thankYou      |
+| 45   | Color forehead-to-forehead at glass architecture; landscape      | thankYou      |
+| 42   | Color architectural frame; woman sharp / man soft FG; lower dims | interlude02   |
 
 ### Uniqueness table (required before READY_*)
 
@@ -311,8 +311,8 @@ origin). Owner authorized this folder as the final invitation photograph source.
 | hero        | 00000041-PHOTO-2026-08-01-13-35-44.jpg | hero-desktop.webp / hero-mobile.webp | no                      |
 | interlude01 | 00000043-PHOTO-2026-08-01-13-35-44.jpg | interlude01.webp                     | no                      |
 | gallery01   | 00000044-PHOTO-2026-08-01-13-35-44.jpg | gallery-01.webp                      | no                      |
-| interlude02 | 00000045-PHOTO-2026-08-01-13-35-44.jpg | interlude02.webp                     | no                      |
-| thankYou    | 00000042-PHOTO-2026-08-01-13-35-44.jpg | thank-you.webp                       | no                      |
+| interlude02 | 00000042-PHOTO-2026-08-01-13-35-44.jpg | thank-you.webp                       | no                      |
+| thankYou    | 00000045-PHOTO-2026-08-01-13-35-44.jpg | interlude02.webp                     | no                      |
 | family      | —                                      | —                                    | n/a (no photo)          |
 
 ### Gallery capability note (preparation only)

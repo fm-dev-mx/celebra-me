@@ -89,13 +89,18 @@
 	--location-outer-frame-bg: transparent;
 	--location-outer-frame-padding: 0;
 	--location-outer-frame-shadow: none;
-	--location-inner-frame-bg: var(--victoria-cream);
+	--location-inner-frame-bg: transparent;
 	--location-inner-frame-padding: 0;
-	--location-card-padding: clamp(1.35rem, 3.5vw, 1.85rem) clamp(1.1rem, 3vw, 1.6rem);
-	--location-card-bg: rgb(var(--victoria-ivory-rgb) / 34%);
+	--location-card-padding: clamp(1.75rem, 4vw, 2.5rem) clamp(1.35rem, 3vw, 2rem);
+	--location-card-bg: linear-gradient(
+		180deg,
+		rgb(var(--victoria-ivory-rgb) / 85%) 0%,
+		rgb(var(--victoria-cream-rgb) / 60%) 100%
+	);
 	--location-card-border: var(--victoria-fine-border);
-	--location-card-radius: var(--victoria-surface-radius);
-	--location-card-shadow: none;
+	--location-card-radius: clamp(100px, 16vw, 130px) clamp(100px, 16vw, 130px) 12px 12px;
+	--location-card-overflow: hidden;
+	--location-card-shadow: 0 20px 48px rgb(var(--victoria-ink-rgb) / 8%);
 	--location-date-font-family: var(--victoria-font-label);
 	--location-date-font-size: 0.72rem;
 	--location-date-font-style: normal;
@@ -103,9 +108,9 @@
 	--location-date-white-space: normal;
 	--location-hour-letter-spacing: 0.08em;
 	--location-title-font-family: var(--victoria-font-label);
-	--location-title-letter-spacing: 0.18em;
+	--location-title-letter-spacing: 0.24em;
 	--location-place-font-family: var(--victoria-font-display);
-	--location-place-font-size: clamp(1.45rem, 3vw, 1.9rem);
+	--location-place-font-size: clamp(1.65rem, 3.5vw, 2.35rem);
 	--location-indications-heading-color: var(--victoria-terracota);
 	--location-indications-panel-bg: transparent;
 	--location-indications-panel-border: none;
@@ -223,14 +228,122 @@
 		}
 	}
 
-	.invitation-section-wrapper[data-intersection='overlap'][data-intersection-source='countdown'],
-	.invitation-section-wrapper[data-intersection='overlap'][data-intersection-source='gifts'] {
-		--intersection-depth: clamp(2rem, 4vw, 4rem);
+	// Depth-bearing seams on photographic interludes (family=overlap), not on
+	// a fixed predecessor section key — placement stays afterSection-driven.
+	.invitation-section-wrapper[data-section-kind='interlude'][data-intersection='overlap'] {
+		--intersection-depth: clamp(3.25rem, 6.5vw, 5.75rem);
+		--intersection-surface: var(--victoria-cream);
 	}
 
 	.invitation-section-wrapper[data-section-kind='countdown'] .countdown-section,
 	.invitation-section-wrapper[data-section-kind='gifts'] .gifts-section {
 		padding-bottom: clamp(4rem, 8vw, 6rem);
+	}
+
+	// -------------------------------------------------------------------------
+	// Photographic interludes — one editorial system, two distinct plates
+	// -------------------------------------------------------------------------
+	// Shared tokens: warm cream/ink continuity with the invitation palette.
+	// Per-index rules tune composition weight for each plate only; they do not
+	// encode section adjacency. Content height tokens (tall / medium) remain SoT
+	// for the height contract; local vars refine coverage inside that contract.
+	.invitation-interlude {
+		--victoria-interlude-ink-veil: rgb(var(--victoria-ink-rgb) / 22%);
+		--victoria-interlude-cream-veil: rgb(var(--victoria-cream-rgb) / 42%);
+		--victoria-interlude-gold-mist: rgb(var(--victoria-gold-rgb) / 16%);
+		--victoria-interlude-filter-bridge: contrast(1.06) brightness(0.96) saturate(0.2)
+			sepia(0.28);
+		--victoria-interlude-filter-terrace: contrast(1.04) brightness(0.97) saturate(0.72)
+			sepia(0.14);
+		--interlude-bg: var(--victoria-terracota-deep);
+		--interlude-image-filter: var(--victoria-interlude-filter-bridge);
+		--interlude-overlay-opacity: 0.2;
+		--interlude-overlay:
+			linear-gradient(
+				180deg,
+				var(--victoria-interlude-cream-veil) 0%,
+				transparent 18%,
+				transparent 72%,
+				var(--victoria-interlude-ink-veil) 100%
+			),
+			radial-gradient(
+				ellipse 120% 90% at 50% 42%,
+				transparent 36%,
+				rgb(var(--victoria-ink-rgb) / 18%) 100%
+			),
+			radial-gradient(circle at 72% 18%, var(--victoria-interlude-gold-mist), transparent 46%);
+
+		// Content omits focalPoint so responsive profile focals are not pinned
+		// by the motion coordinator's inline --interlude-focal-point write.
+		--interlude-focal-point: 42% 34%;
+
+		isolation: isolate;
+	}
+
+	.invitation-interlude[data-interlude-index='1'] {
+		--interlude-image-filter: var(--victoria-interlude-filter-bridge);
+		--interlude-min-height-1: clamp(420px, 72svh, 640px);
+		--interlude-min-height-1-sm: clamp(400px, 68svh, 560px);
+		--interlude-focal-point: 40% 32%;
+
+		@media (width >= 640px) {
+			--interlude-focal-point: 42% 34%;
+		}
+
+		@media (width >= 768px) {
+			--interlude-min-height-1: clamp(440px, 70svh, 620px);
+			--interlude-focal-point: 46% 38%;
+		}
+
+		@media (width >= 1024px) {
+			--interlude-focal-point: 48% 40%;
+		}
+	}
+
+	.invitation-interlude[data-interlude-index='2'] {
+		--interlude-image-filter: var(--victoria-interlude-filter-terrace);
+		--interlude-min-height-2: clamp(320px, 52svh, 480px);
+		--interlude-min-height-2-sm: clamp(300px, 48svh, 440px);
+		--interlude-focal-point: 58% 36%;
+		--interlude-overlay:
+			linear-gradient(
+				180deg,
+				rgb(var(--victoria-sand-rgb) / 34%) 0%,
+				transparent 20%,
+				transparent 70%,
+				rgb(var(--victoria-ink-rgb) / 26%) 100%
+			),
+			radial-gradient(
+				ellipse 110% 85% at 54% 40%,
+				transparent 40%,
+				rgb(var(--victoria-terracota-deep-rgb) / 16%) 100%
+			),
+			radial-gradient(circle at 28% 22%, var(--victoria-interlude-gold-mist), transparent 48%);
+
+		@media (width >= 640px) {
+			--interlude-focal-point: 56% 38%;
+		}
+
+		@media (width >= 768px) {
+			--interlude-min-height-2: clamp(340px, 50svh, 460px);
+			--interlude-focal-point: 54% 40%;
+		}
+
+		@media (width >= 1024px) {
+			--interlude-focal-point: 52% 40%;
+		}
+	}
+
+	// Soften arrival after a photographic pause without encoding the next section type.
+	.invitation-section-wrapper[data-after-interlude][data-intersection='atmospheric-blend'] {
+		--intersection-depth: clamp(2.75rem, 5.5vw, 4.5rem);
+		--intersection-surface: var(--victoria-cream);
+		--intersection-blend: linear-gradient(
+			180deg,
+			rgb(var(--victoria-ink-rgb) / 10%) 0%,
+			rgb(var(--victoria-cream-rgb) / 55%) 42%,
+			transparent 100%
+		);
 	}
 
 	// Reveal remains the existing state machine, but reads as a quiet object
@@ -715,31 +828,420 @@
 
 	// Location and itinerary are open editorial records, not nested cards.
 	.event-location {
-		padding-block: clamp(3.75rem, 7vw, 5.5rem);
+		padding-block: clamp(4.5rem, 8.5vw, 6.5rem);
+		background:
+			radial-gradient(
+				ellipse at 50% 12%,
+				rgb(var(--victoria-gold-rgb) / 10%),
+				transparent 54%
+			),
+			linear-gradient(
+				180deg,
+				var(--victoria-cream) 0%,
+				var(--victoria-ivory) 50%,
+				rgb(var(--victoria-sand-rgb) / 38%) 100%
+			);
 
-		&__container {
-			max-width: 54rem;
+		&__intro {
+			max-width: 36rem;
+			margin-inline: auto;
+			margin-bottom: clamp(2.75rem, 5.5vw, 4rem);
 		}
 
-		&__card-content {
-			border-bottom: var(--victoria-fine-border);
-		}
-
-		&__card-title,
-		&__card-content-place {
-			font-family: var(--victoria-font-display);
-		}
-
-		&__card-content-date,
-		&__card-content-hour,
-		&__card-content-address,
-		&__indications-heading {
+		&__eyebrow {
 			font-family: var(--victoria-font-label);
+			font-size: clamp(0.7rem, 1.4vw, 0.78rem);
+			letter-spacing: 0.24em;
+			text-transform: uppercase;
+			color: var(--victoria-terracota);
+			margin-bottom: 0.55rem;
 		}
 
 		&__heading {
-			-webkit-text-fill-color: var(--victoria-terracota-deep);
+			font-family: var(--victoria-font-display);
+			font-size: clamp(1.9rem, 4.2vw, 2.75rem);
+			line-height: 1.12;
 			color: var(--victoria-terracota-deep);
+			-webkit-text-fill-color: var(--victoria-terracota-deep);
+			margin-bottom: 0.85rem;
+		}
+
+		&__lede {
+			font-family: var(--victoria-font-body);
+			font-size: clamp(0.92rem, 1.6vw, 1.05rem);
+			line-height: 1.58;
+			color: rgb(var(--victoria-ink-rgb) / 78%);
+			text-wrap: pretty;
+		}
+
+		&__container {
+			max-width: 54rem;
+			gap: clamp(1.75rem, 4.5vw, 3rem);
+		}
+
+		&__card-wrapper {
+			max-width: 25rem;
+			text-align: center;
+			flex: 1;
+		}
+
+		&__card {
+			position: relative;
+			padding: clamp(1.25rem, 2.5vw, 1.75rem) clamp(1.5rem, 3.5vw, 2.25rem) clamp(2.25rem, 4.5vw, 2.75rem);
+			background: linear-gradient(
+				180deg,
+				rgb(var(--victoria-ivory-rgb) / 95%) 0%,
+				rgb(var(--victoria-cream-rgb) / 72%) 100%
+			);
+			border: 1px solid rgb(var(--victoria-terracota-rgb) / 22%);
+			border-radius: var(--location-card-radius);
+			overflow: hidden;
+			box-shadow:
+				0 24px 52px rgb(var(--victoria-ink-rgb) / 8%),
+				inset 0 0 0 1px rgb(var(--victoria-gold-rgb) / 42%),
+				inset 0 0 0 4px rgb(var(--victoria-ivory-rgb) / 92%),
+				inset 0 0 0 5px rgb(var(--victoria-terracota-rgb) / 16%);
+			transition:
+				border-color var(--motion-interaction-duration, 0.2s) var(--ease-premium),
+				box-shadow var(--motion-interaction-duration, 0.2s) var(--ease-premium),
+				transform var(--motion-interaction-duration, 0.2s) var(--ease-premium);
+
+			&:hover {
+				transform: translateY(-2px);
+				border-color: rgb(var(--victoria-terracota-rgb) / 40%);
+				box-shadow:
+					0 28px 58px rgb(var(--victoria-ink-rgb) / 11%),
+					inset 0 0 0 1px rgb(var(--victoria-gold-rgb) / 60%),
+					inset 0 0 0 4px rgb(var(--victoria-ivory-rgb) / 92%),
+					inset 0 0 0 5px rgb(var(--victoria-terracota-rgb) / 25%);
+			}
+
+			&::before {
+				content: '';
+				position: absolute;
+				top: 0;
+				left: 20%;
+				right: 20%;
+				height: 1px;
+				background: linear-gradient(
+					90deg,
+					transparent,
+					rgb(var(--victoria-gold-rgb) / 65%),
+					transparent
+				);
+				pointer-events: none;
+			}
+
+			&::after {
+				content: none;
+			}
+		}
+
+		&__card-flourish {
+			display: none;
+		}
+
+		&__card-map-preview {
+			position: relative;
+			display: flex;
+			flex-direction: column;
+			margin-bottom: 1.5rem;
+			background: linear-gradient(
+				180deg,
+				rgb(var(--victoria-sand-rgb) / 40%) 0%,
+				rgb(var(--victoria-cream-rgb) / 75%) 100%
+			);
+			border: 1px solid rgb(var(--victoria-terracota-rgb) / 22%);
+			border-radius: clamp(100px, 17vw, 130px) clamp(100px, 17vw, 130px) 6px 6px;
+			box-shadow: inset 0 0 0 1px rgb(var(--victoria-gold-rgb) / 36%);
+			overflow: hidden;
+			text-decoration: none;
+			color: inherit;
+			transition:
+				border-color var(--motion-interaction-duration, 0.2s) var(--ease-premium),
+				box-shadow var(--motion-interaction-duration, 0.2s) var(--ease-premium);
+		}
+
+		&__card-map-preview-art {
+			position: relative;
+			display: block;
+			height: clamp(7.5rem, 15vw, 9.5rem);
+			width: 100%;
+			overflow: hidden;
+		}
+
+		&__card-map-preview-grid {
+			position: absolute;
+			inset: -20%;
+			background: repeating-linear-gradient(
+				90deg,
+				transparent 0 1.6rem,
+				rgb(var(--victoria-terracota-rgb) / 6%) 1.65rem 1.7rem
+			);
+			opacity: 60%;
+		}
+
+		.event-location__card-map-preview-artwork {
+			position: absolute;
+			inset: 8% 8% 4%;
+			width: 84%;
+			height: 88%;
+			overflow: visible;
+			color: var(--victoria-terracota-deep);
+		}
+
+		.event-location__card-map-preview-artwork-silhouette {
+			fill: currentcolor;
+			opacity: 45%;
+		}
+
+		.event-location__card-map-preview-artwork-detail {
+			fill: var(--victoria-ivory);
+			opacity: 90%;
+		}
+
+		.event-location__card-map-preview-artwork-cross {
+			fill: var(--victoria-terracota);
+			opacity: 75%;
+		}
+
+		.event-location__card-map-preview-artwork-horizon {
+			fill: none;
+			stroke: var(--victoria-gold);
+			stroke-width: 1.5;
+			opacity: 50%;
+		}
+
+		.event-location__card-map-preview-pin {
+			position: absolute;
+			inset: auto 0.75rem 0.55rem auto;
+			transform: none;
+			display: grid;
+			place-items: center;
+			width: 1.85rem;
+			height: 1.85rem;
+			background: var(--victoria-ivory);
+			color: var(--victoria-terracota-deep);
+			border: 1px solid rgb(var(--victoria-terracota-rgb) / 32%);
+			border-radius: 50%;
+			box-shadow: 0 4px 12px rgb(var(--victoria-ink-rgb) / 10%);
+			z-index: 2;
+		}
+
+		.event-location__card-map-preview-foot {
+			position: relative;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 0.7rem 1rem;
+			border-top: 1px solid rgb(var(--victoria-terracota-rgb) / 20%);
+			background: linear-gradient(
+				180deg,
+				rgb(var(--victoria-sand-rgb) / 55%) 0%,
+				rgb(var(--victoria-sand-rgb) / 35%) 100%
+			);
+			font-family: var(--victoria-font-label);
+			font-size: clamp(0.68rem, 1.3vw, 0.75rem);
+			font-weight: 500;
+			letter-spacing: 0.22em;
+			text-transform: uppercase;
+			color: var(--victoria-terracota-deep);
+			transition:
+				background-color var(--motion-interaction-duration, 0.2s) var(--ease-premium),
+				color var(--motion-interaction-duration, 0.2s) var(--ease-premium);
+
+			svg {
+				width: 14px;
+				height: 14px;
+				transition: transform var(--motion-interaction-duration, 0.2s) var(--ease-premium);
+			}
+		}
+
+		.event-location__card-map-preview-action {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			gap: 0.45rem;
+			color: var(--victoria-terracota-deep);
+			text-decoration: none;
+		}
+
+		.event-location__card:hover .event-location__card-map-preview-foot,
+		.event-location__card-map-preview:hover .event-location__card-map-preview-foot {
+			background: rgb(var(--victoria-sand-rgb) / 72%);
+			color: var(--victoria-terracota);
+
+			.event-location__card-map-preview-action svg {
+				transform: translateX(3px);
+			}
+		}
+
+		&__card-content {
+			padding: 0;
+			border-bottom: none;
+		}
+
+		&__card-content-list {
+			margin-bottom: 0;
+		}
+
+		&__card-title {
+			font-size: clamp(0.72rem, 1.4vw, 0.8rem);
+			font-weight: 500;
+			text-transform: uppercase;
+			color: var(--victoria-terracota);
+			margin-bottom: 0.65rem;
+		}
+
+		&__card-content-place {
+			font-weight: 400;
+			line-height: 1.12;
+			color: var(--victoria-terracota-deep);
+			margin-bottom: 0.5rem;
+		}
+
+		// Redundant date emphasis reduction (section heading provides primary temporal context)
+		&__card-content-date {
+			display: none;
+		}
+
+		&__card-content-hour {
+			font-family: var(--victoria-font-label);
+			font-size: clamp(0.78rem, 1.5vw, 0.88rem);
+			font-weight: 500;
+			letter-spacing: 0.12em;
+			color: rgb(var(--victoria-ink-rgb) / 72%);
+			margin-bottom: 1rem;
+		}
+
+		&__card-content-address {
+			padding-top: 1rem;
+			border-top: 1px solid rgb(var(--victoria-terracota-rgb) / 18%);
+			gap: 0.5rem;
+			justify-content: center;
+			align-items: center;
+		}
+
+		&__card-content-address-text {
+			font-family: var(--victoria-font-body);
+			font-size: clamp(0.88rem, 1.6vw, 0.98rem);
+			line-height: 1.48;
+			color: rgb(var(--victoria-ink-rgb) / 84%);
+			max-width: 100%;
+		}
+
+		&__card-content-copy-button {
+			background: transparent;
+			border: none;
+			color: var(--victoria-terracota);
+			opacity: 70%;
+			padding: 0.25rem;
+			margin-right: 0;
+			flex-shrink: 0;
+
+			&:hover {
+				opacity: 100%;
+				transform: translateY(-1px);
+				background: transparent;
+				color: var(--victoria-terracota-deep);
+			}
+		}
+
+		&__indications-container {
+			max-width: 34rem;
+			margin-top: clamp(3.25rem, 6.5vw, 4.75rem);
+			position: relative;
+
+			&::before {
+				content: '';
+				display: block;
+				width: 4rem;
+				height: 1px;
+				margin: 0 auto clamp(2rem, 4vw, 2.75rem);
+				background: linear-gradient(
+					90deg,
+					transparent,
+					rgb(var(--victoria-gold-rgb) / 50%),
+					transparent
+				);
+			}
+		}
+
+		&__divider {
+			display: none;
+		}
+
+		&__indications-heading {
+			font-family: var(--victoria-font-label);
+			font-size: clamp(0.68rem, 1.3vw, 0.75rem);
+			font-weight: 500;
+			letter-spacing: 0.24em;
+			text-transform: uppercase;
+			color: var(--victoria-terracota);
+			margin-bottom: 1.25rem;
+		}
+
+		&__indications {
+			display: flex;
+			flex-direction: column;
+			gap: 0.85rem;
+			padding: 0;
+			background: transparent;
+			border: none;
+			box-shadow: none;
+		}
+
+		&__indication-item {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			gap: 0.85rem;
+			padding: 1rem 1.85rem;
+			background: linear-gradient(
+				180deg,
+				rgb(var(--victoria-ivory-rgb) / 92%) 0%,
+				rgb(var(--victoria-cream-rgb) / 75%) 100%
+			);
+			border: 1px solid rgb(var(--victoria-terracota-rgb) / 22%);
+			border-radius: var(--victoria-surface-radius);
+			box-shadow:
+				0 10px 24px rgb(var(--victoria-ink-rgb) / 5%),
+				inset 0 0 0 1px rgb(var(--victoria-gold-rgb) / 32%);
+			transition:
+				border-color var(--motion-interaction-duration, 0.2s) var(--ease-premium),
+				background-color var(--motion-interaction-duration, 0.2s) var(--ease-premium),
+				box-shadow var(--motion-interaction-duration, 0.2s) var(--ease-premium);
+
+			&:hover {
+				background: rgb(var(--victoria-ivory-rgb) / 96%);
+				border-color: rgb(var(--victoria-terracota-rgb) / 40%);
+				transform: none;
+				box-shadow:
+					0 14px 30px rgb(var(--victoria-ink-rgb) / 8%),
+					inset 0 0 0 1px rgb(var(--victoria-gold-rgb) / 50%);
+			}
+		}
+
+		&__indication-icon {
+			width: auto;
+			height: auto;
+			background: transparent;
+			border-radius: 0;
+			color: var(--victoria-terracota);
+			font-size: 1.1rem;
+
+			svg {
+				width: 18px;
+				height: 18px;
+			}
+		}
+
+		&__indication-text {
+			font-family: var(--victoria-font-body);
+			font-size: clamp(0.88rem, 1.5vw, 0.98rem);
+			line-height: 1.42;
+			color: rgb(var(--victoria-ink-rgb) / 84%);
+			text-align: center;
 		}
 	}
 
