@@ -3,7 +3,7 @@
  *
  * Base: demo-boda-jewelry-box-wedding / jewelry-box-wedding
  * Prep SoT: docs/invitations/victoria-y-roberto.md
- * prepReadiness: READY_WITH_PLACEHOLDERS (non-blocking map/time tokens preserved)
+ * prepReadiness: READY_FOR_IMPLEMENTATION
  */
 
 import { defineInvitation } from './invitation-definition.ts';
@@ -28,14 +28,17 @@ export const VICTORIA_EVENT = {
 	heroDate: '2026-10-30T19:00:00.000Z',
 } as const;
 
-/** Canonical unresolved preparation tokens — do not invent replacements. */
-export const VICTORIA_PLACEHOLDERS = {
-	ceremonyMapUrl: '[[PENDIENTE:CEREMONY_MAP_URL]]',
-	receptionMapUrl: '[[PENDIENTE:RECEPTION_MAP_URL]]',
-	dinnerTime: '[[PENDIENTE:DINNER_TIME]]',
-	toastTime: '[[PENDIENTE:TOAST_TIME]]',
-	closingTime: '[[PENDIENTE:CLOSING_TIME]]',
+/** Confirmed preparation details for navigation map URLs and itinerary times. */
+export const VICTORIA_SCHEDULE_DETAILS = {
+	ceremonyMapUrl: 'https://maps.app.goo.gl/Ahdb29SrPRNwXzpQ9',
+	receptionMapUrl: 'https://maps.app.goo.gl/dV5r1BrBvC3t5C1o6',
+	dinnerTime: '21:00',
+	toastTime: '22:00',
+	closingTime: '23:00',
 } as const;
+
+/** @deprecated Retained for backward compatibility. Use VICTORIA_SCHEDULE_DETAILS. */
+export const VICTORIA_PLACEHOLDERS = VICTORIA_SCHEDULE_DETAILS;
 
 const ceremonyAddress = 'Lic. Benito Juárez S/N, Mochicahui, 81257 Los Mochis, Sin.';
 const receptionAddress = 'Carretera Mochis - Topo Km8';
@@ -205,7 +208,7 @@ export function buildVictoriaPublishedContent(
 		location: {
 			visibility: 'public',
 			// Card composition (plate on top, content below) like daniela-y-martin;
-			// 'simple' forces the illustrated plate while map URLs stay pending.
+			// 'simple' forces the illustrated plate presentation.
 			structuralVariant: 'standard',
 			presentation: 'simple',
 			presentationOptions: {
@@ -226,7 +229,7 @@ export function buildVictoriaPublishedContent(
 					city: 'Los Mochis, Sinaloa',
 					date: EVENT_DATE_LONG,
 					time: CEREMONY_TIME,
-					googleMapsUrl: VICTORIA_PLACEHOLDERS.ceremonyMapUrl,
+					googleMapsUrl: VICTORIA_SCHEDULE_DETAILS.ceremonyMapUrl,
 				},
 				{
 					type: 'reception',
@@ -237,7 +240,7 @@ export function buildVictoriaPublishedContent(
 					city: 'Los Mochis, Sinaloa',
 					date: EVENT_DATE_LONG,
 					time: RECEPTION_TIME,
-					googleMapsUrl: VICTORIA_PLACEHOLDERS.receptionMapUrl,
+					googleMapsUrl: VICTORIA_SCHEDULE_DETAILS.receptionMapUrl,
 				},
 			],
 			indicationsHeading: 'Indicaciones',
@@ -276,17 +279,17 @@ export function buildVictoriaPublishedContent(
 				{
 					iconName: 'Dinner',
 					label: 'Compartimos la mesa',
-					time: VICTORIA_PLACEHOLDERS.dinnerTime,
+					time: VICTORIA_SCHEDULE_DETAILS.dinnerTime,
 				},
 				{
 					iconName: 'Toast',
 					label: 'Levantamos las copas',
-					time: VICTORIA_PLACEHOLDERS.toastTime,
+					time: VICTORIA_SCHEDULE_DETAILS.toastTime,
 				},
 				{
 					iconName: 'Party',
 					label: 'Cerramos la noche',
-					time: VICTORIA_PLACEHOLDERS.closingTime,
+					time: VICTORIA_SCHEDULE_DETAILS.closingTime,
 				},
 			],
 		},
