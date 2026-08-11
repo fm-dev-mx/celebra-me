@@ -62,11 +62,10 @@ export const VICTORIA_ASSET_SPECS = [
 		displayName: 'Victoria y Roberto — portada',
 		alt: 'Victoria y Roberto en retrato de sesión al aire libre',
 		focalPoint: {
-			// Bias slightly toward Roberto’s jacket mass; faces stay the subject.
 			default: '50% 34%',
-			mobile: '46% 27%',
+			mobile: '46% 32%',
 			tablet: '50% 34%',
-			desktop: '49% 35%',
+			desktop: '50% 36%',
 		},
 	},
 	{
@@ -75,10 +74,10 @@ export const VICTORIA_ASSET_SPECS = [
 		displayName: 'Victoria y Roberto — portada móvil',
 		alt: 'Victoria y Roberto en retrato de sesión al aire libre',
 		focalPoint: {
-			default: '46% 28%',
-			mobile: '46% 27%',
-			tablet: '48% 30%',
-			desktop: '48% 30%',
+			default: '46% 32%',
+			mobile: '46% 32%',
+			tablet: '50% 34%',
+			desktop: '50% 36%',
 		},
 	},
 	{
@@ -167,9 +166,9 @@ export function buildVictoriaPublishedContent(
 			backgroundImageDesktop: assets['hero-desktop'],
 			structuralVariant: 'standard',
 			focalPoint: '50% 34%',
-			focalPointMobile: '46% 27%',
+			focalPointMobile: '46% 32%',
 			focalPointTablet: '50% 34%',
-			focalPointDesktop: '49% 35%',
+			focalPointDesktop: '50% 36%',
 		},
 		envelope: {
 			disabled: false,
