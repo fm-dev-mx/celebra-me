@@ -204,7 +204,10 @@ export function buildVictoriaPublishedContent(
 		},
 		location: {
 			visibility: 'public',
-			structuralVariant: 'split-map',
+			// Card composition (plate on top, content below) like daniela-y-martin;
+			// 'simple' forces the illustrated plate while map URLs stay pending.
+			structuralVariant: 'standard',
+			presentation: 'simple',
 			presentationOptions: {
 				showFlourishes: true,
 				showNavigationButtons: false,

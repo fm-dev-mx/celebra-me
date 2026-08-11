@@ -82,6 +82,10 @@ const hasAppleMap = isNavigableVenueMapUrl(venue.appleMapsUrl);
 const hasGoogleMap = isNavigableVenueMapUrl(venue.googleMapsUrl);
 const hasWazeMap = isNavigableVenueMapUrl(venue.wazeUrl);
 const hasGenericMap = isNavigableVenueMapUrl(venue.mapUrl);
+// The artwork plate is the map surface for profiles that disable navigation
+// buttons: linked when a navigable URL exists, pure illustration while the
+// venue URL is still pending.
+const MapPreviewContainer = useMapPreviewLink ? 'a' : 'div';
 
 ---
 
@@ -121,15 +125,15 @@ const hasGenericMap = isNavigableVenueMapUrl(venue.mapUrl);
 			</div>
 		)}
 		{/* Artwork plate for profiles that disable navigation buttons (e.g. victoria, daniela).
-		    Renders as a full-width linked plate with venue-type SVG illustration. */}
-		{mediaMode === 'none' && useMapPreviewLink && (
-			<a
-				href={mapPreviewUrl}
-				class="event-location__card-map-preview event-location__card-map-preview--link"
-				data-map-preview="link"
-				target="_blank"
-				rel="noopener noreferrer"
-				aria-label={`Abrir mapa de ${venue.venueName}`}
+		    Linked when a navigable map URL exists; pure illustration while it is pending. */}
+		{mediaMode === 'none' && showNavigationButtons === false && (
+			<MapPreviewContainer
+				href={useMapPreviewLink ? mapPreviewUrl : undefined}
+				class={`event-location__card-map-preview${useMapPreviewLink ? ' event-location__card-map-preview--link' : ''}`}
+				data-map-preview={useMapPreviewLink ? 'link' : 'illustration'}
+				target={useMapPreviewLink ? '_blank' : undefined}
+				rel={useMapPreviewLink ? 'noopener noreferrer' : undefined}
+				aria-label={useMapPreviewLink ? `Abrir mapa de ${venue.venueName}` : undefined}
 			>
 				<span class="event-location__card-map-preview-art" aria-hidden="true">
 					<span class="event-location__card-map-preview-grid"></span>
@@ -192,7 +196,7 @@ const hasGenericMap = isNavigableVenueMapUrl(venue.mapUrl);
 						<Icon name="ArrowRight" size={16} />
 					</span>
 				</span>
-			</a>
+			</MapPreviewContainer>
 		)}
 		{/* Classic UBICACIÓN layout for invitations with navigation buttons enabled.
 		    Side-by-side grid: map art on the left, link panel on the right. */}

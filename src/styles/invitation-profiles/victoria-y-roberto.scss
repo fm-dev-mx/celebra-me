@@ -84,9 +84,34 @@
 		);
 	}
 
-	// Location — open editorial records; card chrome is reset by explicit rules
-	// in the .event-location block below. Only typography tokens that still
-	// drive shared base styles are kept here.
+	// Location — twin venue cards in the daniela-y-martin composition, translated
+	// to Victoria's palette. Card chrome matches Daniela proportions (radius,
+	// max widths, content padding); the .event-location block tunes type/color.
+	--location-container-max-width: 56rem;
+	--location-content-alignment: stretch;
+	--location-card-max-width: 26rem;
+	--location-gap: clamp(1.75rem, 4.5vw, 2.85rem);
+	--location-card-padding: 0;
+	--location-card-bg: linear-gradient(
+		180deg,
+		rgb(var(--victoria-ivory-rgb) / 95%) 0%,
+		rgb(var(--victoria-cream-rgb) / 72%) 100%
+	);
+	--location-card-border: 1px solid rgb(var(--victoria-gold-rgb) / 18%);
+	--location-card-radius: 6px;
+	--location-card-radius-xs: 6px;
+	--location-card-overflow: hidden;
+	--location-card-shadow: 0 12px 28px rgb(var(--victoria-ink-rgb) / 8%);
+	--location-card-hover-transform: none;
+	--location-card-hover-shadow: 0 14px 28px rgb(var(--victoria-ink-rgb) / 12%);
+	--location-card-hover-border-color: rgb(var(--victoria-terracota-rgb) / 40%);
+	--location-content-padding: clamp(1.1rem, 2.6vw, 1.6rem);
+	--location-place-font-size: clamp(1.3rem, 3vw, 1.7rem);
+	--location-place-line-height: 1.12;
+	--location-address-font-size: 0.88rem;
+	--location-address-line-height: 1.55;
+	--location-flourish-color: var(--victoria-gold);
+	--location-indications-before-display: none;
 	--location-title-font-family: var(--victoria-font-label);
 	--location-title-letter-spacing: 0.24em;
 	--location-place-font-family: var(--victoria-font-display);
@@ -862,11 +887,16 @@
 		text-align: left;
 	}
 
-	// Location — open editorial records, not cards. Each entry: kicker, media
-	// plate (arch-top motif echoing the section's arch entrance), then venue
-	// facts. Entries alternate media side on wide viewports so they read as
-	// composed records rather than duplicated components.
+	// Location — twin venue cards in the daniela-y-martin composition, translated
+	// to Victoria's palette: centered intro, kicker + flourish, plate on top,
+	// venue facts below. Proportions and alignment track Daniela at every
+	// mixin breakpoint; plate height uses the same row recipe with a max cap
+	// so ultra-wide viewports do not inflate the art band.
 	.event-location {
+		// Same art-row height as daniela-y-martin (`minmax(8rem, 18vw)`), capped
+		// so the plate stays proportional on very wide canvases.
+		--victoria-location-plate-row: minmax(8rem, min(18vw, 16rem));
+
 		padding-block: clamp(4.75rem, 9vw, 7rem);
 		background: linear-gradient(
 			180deg,
@@ -874,13 +904,11 @@
 			var(--victoria-cream) 56%,
 			rgb(var(--victoria-sand-rgb) / 42%) 100%
 		);
-		text-align: left;
 
 		&__intro {
-			max-width: 37rem;
-			margin-inline: 0;
-			margin-bottom: clamp(3rem, 6vw, 4.5rem);
-			text-align: left;
+			max-width: min(37rem, 92vw);
+			margin-inline: auto;
+			margin-block-end: clamp(1.75rem, 4vw, 2.75rem);
 		}
 
 		&__eyebrow {
@@ -910,102 +938,103 @@
 		}
 
 		&__container {
-			max-width: 64rem;
 			align-items: stretch;
-			gap: 0;
-
-			@include mixins.respond-to(md) {
-				flex-direction: column;
-				gap: 0;
-			}
+			gap: var(--location-gap);
 		}
 
 		&__card-wrapper {
-			max-width: none;
-			text-align: left;
+			display: flex;
+			flex-direction: column;
+			flex: 1 1 0;
 			align-items: stretch;
-			flex: none;
-			padding-block: clamp(2.75rem, 5.5vw, 4rem);
-			border-top: 1px solid rgb(var(--victoria-terracota-rgb) / 16%);
+			width: min(100%, var(--location-card-max-width));
+			margin-block: 0;
+			gap: clamp(0.35rem, 1vw, 0.55rem);
+			text-align: center;
 		}
 
+		// Grow inside the stretched wrapper for equal twin columns without
+		// sizing past the kicker/flourish column width.
 		&__card {
-			padding: 0;
-			background: none;
-			border: 0;
-			border-radius: 0;
-			overflow: visible;
-			box-shadow: none;
-			transition: none;
+			width: 100%;
+			flex: 1 1 auto;
+			min-height: 0;
+		}
 
-			&:hover {
-				transform: none;
-				border-color: transparent;
-				box-shadow: none;
-			}
-
-			&::before,
-			&::after {
-				content: none;
-			}
+		&__card-title {
+			position: relative;
+			z-index: 1;
+			margin-block: 0;
+			padding-block: 0.55rem 0;
+			font-size: 0.7rem;
+			font-weight: 500;
+			letter-spacing: 0.22em;
+			text-transform: uppercase;
+			color: var(--victoria-terracota);
 		}
 
 		&__card-flourish {
-			display: none;
+			opacity: 70%;
 		}
 
+		// Plate: Daniela grid rows (art + optional foot). Illustration mode
+		// keeps the same art-row height and hides the dead map CTA.
 		&__card-map-preview {
 			position: relative;
-			display: flex;
-			flex-direction: column;
-			margin-bottom: clamp(1.75rem, 3.5vw, 2.25rem);
+			display: grid;
+			grid-template-columns: 1fr;
+			grid-template-rows: var(--victoria-location-plate-row) auto;
+			width: 100%;
+			margin-bottom: 0;
 			background: linear-gradient(
 				180deg,
 				rgb(var(--victoria-sand-rgb) / 40%) 0%,
 				rgb(var(--victoria-cream-rgb) / 75%) 100%
 			);
-			border: 1px solid rgb(var(--victoria-terracota-rgb) / 18%);
-
-			// Proportional dome: the arch scales with the plate itself, so the
-			// silhouette stays consistent from narrow mobile to desktop.
-			border-radius: 50% 50% 6px 6px / 55% 55% 6px 6px;
-			box-shadow: 0 18px 40px rgb(var(--victoria-ink-rgb) / 7%);
+			border: 0;
+			border-radius: 0;
+			box-shadow: none;
 			overflow: hidden;
+			isolation: isolate;
 			text-decoration: none;
 			color: inherit;
-			transition:
-				border-color var(--motion-interaction-duration, 0.2s) var(--ease-premium),
-				box-shadow var(--motion-interaction-duration, 0.2s) var(--ease-premium);
-
-			@include mixins.respond-to(md) {
-				margin-bottom: 0;
-			}
 		}
 
 		&__card-map-preview-art {
 			position: relative;
 			display: block;
 			width: 100%;
-
-			// Constant 2:1 plate proportion at every viewport width.
-			aspect-ratio: 2 / 1;
+			min-height: 0;
 			overflow: hidden;
+			background: linear-gradient(
+				180deg,
+				rgb(var(--victoria-cream-rgb) / 100%) 0%,
+				rgb(var(--victoria-sand-rgb) / 55%) 100%
+			);
 		}
 
 		&__card-map-preview-grid {
 			position: absolute;
-			inset: -20%;
-			background: repeating-linear-gradient(
-				90deg,
-				transparent 0 1.6rem,
-				rgb(var(--victoria-terracota-rgb) / 6%) 1.65rem 1.7rem
-			);
-			opacity: 60%;
+			inset: 0;
+			transform: none;
+			opacity: 32%;
+			background:
+				repeating-linear-gradient(
+					90deg,
+					transparent 0 1.85rem,
+					rgb(var(--victoria-gold-rgb) / 22%) 1.9rem 1.96rem
+				),
+				repeating-linear-gradient(
+					0deg,
+					transparent 0 1.55rem,
+					rgb(var(--victoria-gold-rgb) / 18%) 1.6rem 1.66rem
+				);
 		}
 
 		.event-location__card-map-preview-artwork {
 			position: absolute;
 			inset: 8% 8% 4%;
+			z-index: 1;
 			width: 84%;
 			height: 88%;
 			overflow: visible;
@@ -1036,12 +1065,13 @@
 
 		.event-location__card-map-preview-pin {
 			position: absolute;
-			inset: auto 0.75rem 0.55rem auto;
-			transform: none;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
 			display: grid;
 			place-items: center;
-			width: 1.85rem;
-			height: 1.85rem;
+			width: 2.25rem;
+			height: 2.25rem;
 			background: var(--victoria-ivory);
 			color: var(--victoria-terracota-deep);
 			border: 1px solid rgb(var(--victoria-terracota-rgb) / 32%);
@@ -1089,8 +1119,10 @@
 		}
 
 		// Placeholder map URLs never render a dead affordance: the plate stays
-		// a pure illustration until a navigable URL turns it into a link.
+		// a pure illustration with the same art-row height as the linked plate.
 		.event-location__card-map-preview[data-map-preview='illustration'] {
+			grid-template-rows: var(--victoria-location-plate-row);
+
 			.event-location__card-map-preview-foot,
 			.event-location__card-map-preview-pin {
 				display: none;
@@ -1107,30 +1139,21 @@
 		}
 
 		&__card-content {
-			padding: 0;
 			border-bottom: none;
-			text-align: left;
+			text-align: center;
 		}
 
 		&__card-content-list {
 			margin-bottom: 0;
 		}
 
-		&__card-title {
-			font-size: clamp(0.72rem, 1.4vw, 0.8rem);
-			font-weight: 500;
-			text-transform: uppercase;
-			color: var(--victoria-terracota);
-			margin-bottom: clamp(0.85rem, 1.8vw, 1.15rem);
-			text-align: left;
-		}
-
 		&__card-content-place {
 			font-weight: 400;
-			font-size: clamp(1.95rem, 4vw, 2.75rem);
-			line-height: 1.1;
+			font-size: var(--location-place-font-size);
+			line-height: var(--location-place-line-height);
 			color: var(--victoria-terracota-deep);
-			margin-bottom: 0.6rem;
+			margin-bottom: 0.35rem;
+			text-wrap: balance;
 		}
 
 		// Redundant date emphasis reduction (section heading provides primary temporal context)
@@ -1138,39 +1161,45 @@
 			display: none;
 		}
 
+		// Display-serif hour in natural case ("7:00 p. m."), as in daniela-y-martin.
 		&__card-content-hour {
-			font-family: var(--victoria-font-label);
-			font-size: clamp(0.8rem, 1.5vw, 0.9rem);
-			font-weight: 500;
-			letter-spacing: 0.18em;
+			font-family: var(--victoria-font-display);
+			font-size: clamp(1.15rem, 3vw, 1.45rem);
+			font-weight: 400;
+			letter-spacing: 0.01em;
+			text-transform: none;
 			color: var(--victoria-terracota);
-			margin-bottom: 1.15rem;
+			margin-bottom: 1rem;
 		}
 
 		&__card-content-address {
-			padding-top: 1.1rem;
-			border-top: 1px solid rgb(var(--victoria-terracota-rgb) / 14%);
+			padding-top: 1rem;
+			border-top: 1px solid rgb(var(--victoria-terracota-rgb) / 16%);
 			gap: 0.65rem;
 			justify-content: flex-start;
 			align-items: flex-start;
+			text-align: left;
 		}
 
 		&__card-content-address-text {
 			font-family: var(--victoria-font-body);
-			font-size: clamp(0.92rem, 1.6vw, 1.02rem);
-			line-height: 1.55;
+			font-size: var(--location-address-font-size);
+			line-height: var(--location-address-line-height);
 			color: rgb(var(--victoria-ink-rgb) / 80%);
 			max-width: 100%;
+			text-align: left;
 		}
 
 		&__card-content-copy-button {
-			background: transparent;
-			border: none;
-			color: var(--victoria-terracota);
-			opacity: 70%;
-			padding: 0.25rem;
+			flex: 0 0 auto;
+			width: 2.75rem;
+			height: 2.75rem;
 			margin-right: 0;
-			flex-shrink: 0;
+			padding: 0.55rem;
+			background: transparent;
+			border: 1px solid rgb(var(--victoria-gold-rgb) / 34%);
+			color: var(--victoria-terracota);
+			opacity: 85%;
 
 			&:hover {
 				opacity: 100%;
@@ -1181,8 +1210,12 @@
 		}
 
 		&__indications-container {
-			max-width: 64rem;
-			margin-top: clamp(2.5rem, 5vw, 3.75rem);
+			max-width: 42rem;
+			margin-inline: auto;
+			margin-top: clamp(3rem, 6vw, 4.25rem);
+			padding: clamp(1.35rem, 3.5vw, 2rem) clamp(1rem, 3vw, 1.5rem);
+			border: 1px solid rgb(var(--victoria-gold-rgb) / 20%);
+			background: rgb(var(--victoria-sand-rgb) / 38%);
 			position: relative;
 
 			&::before {
@@ -1202,7 +1235,7 @@
 			text-transform: uppercase;
 			color: var(--victoria-terracota);
 			margin-bottom: 0.5rem;
-			text-align: left;
+			text-align: center;
 		}
 
 		&__indications {
@@ -1213,11 +1246,6 @@
 			background: transparent;
 			border: none;
 			box-shadow: none;
-
-			@include mixins.respond-to(md) {
-				grid-template-columns: 1fr 1fr;
-				gap: 0 clamp(2rem, 4vw, 3rem);
-			}
 		}
 
 		&__indication-item {
@@ -1232,6 +1260,7 @@
 			border-radius: 0;
 			box-shadow: none;
 			transition: none;
+			text-align: left;
 
 			&:hover {
 				background: none;
@@ -1244,11 +1273,11 @@
 		&__indication-icon {
 			display: grid;
 			place-items: center;
-			width: 2.1rem;
-			height: 2.1rem;
-			flex-shrink: 0;
-			background: transparent;
-			border: 1px solid rgb(var(--victoria-gold-rgb) / 48%);
+			flex: 0 0 2rem;
+			width: 2rem;
+			height: 2rem;
+			background: rgb(var(--victoria-cream-rgb) / 52%);
+			border: 1px solid rgb(var(--victoria-gold-rgb) / 28%);
 			border-radius: 50%;
 			color: var(--victoria-terracota);
 			font-size: 1.1rem;
@@ -1266,27 +1295,21 @@
 			color: rgb(var(--victoria-ink-rgb) / 80%);
 			text-align: left;
 		}
-	}
 
-	// Venue records become lateral media | text compositions on wide viewports,
-	// alternating sides per entry. Keyed on the section's own media state, not
-	// on neighbors. Pending map URLs keep media-mode='none' (illustration plate).
-	.event-location[data-structural-variant='split-map'] {
-		@include mixins.respond-to(md) {
-			.event-location__card[data-media-mode='none'] {
-				grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
-				grid-template-areas: 'media content';
-				align-items: center;
-				gap: 0 clamp(2.75rem, 5.5vw, 5rem);
+		// Stacked twin cards: full width + breathing room between chapters.
+		@include mixins.respond-below(md) {
+			.event-location__card-wrapper {
+				width: 100%;
 			}
 
-			.event-location__card[data-media-mode='none'] .event-location__card-map-preview {
-				grid-area: media;
+			.event-location__card-wrapper + .event-location__card-wrapper {
+				margin-block-start: clamp(3rem, 7vw, 4.5rem);
+				padding-block-start: 0.75rem;
 			}
 
-			.event-location__card-wrapper:nth-child(even)
-				.event-location__card[data-media-mode='none'] {
-				grid-template-areas: 'content media';
+			.event-location__card-map-preview,
+			.event-location__card-map-preview[data-map-preview='illustration'] {
+				--victoria-location-plate-row: minmax(7rem, min(18vw, 16rem));
 			}
 		}
 	}

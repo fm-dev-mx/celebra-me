@@ -170,7 +170,7 @@ describe('Boda Victoria y Roberto provision contract', () => {
 				mapUrl?: string;
 			}>;
 		};
-		expect(location.structuralVariant).toBe('split-map');
+		expect(location.structuralVariant).toBe('standard');
 		expect(location.venues).toEqual(expect.any(Array));
 		expect(location.venues?.length).toBeGreaterThan(0);
 		expect(
