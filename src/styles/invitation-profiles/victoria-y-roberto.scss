@@ -66,8 +66,6 @@
 	--quote-content-size: clamp(1.3rem, 3.4vw, 1.95rem);
 	--quote-content-line-height: 1.55;
 	--quote-divider-display: none;
-	--countdown-segment-padding-mobile: 1rem 0.65rem;
-	--countdown-segment-padding-desktop: 1.25rem 1rem;
 
 	#event-header {
 		--header-nav-title-color: var(--victoria-cream);
@@ -167,8 +165,7 @@
 	--rsvp-form-gap: 0.85rem;
 	--rsvp-header-margin: 0 0 1rem;
 
-	// Countdown / quote / gifts / thank-you accents
-	--countdown-title-color: var(--victoria-terracota-deep);
+	// Gifts / thank-you accents
 	--gifts-title-color: var(--victoria-terracota-deep);
 	--thank-you-name-color: var(--victoria-terracota-deep);
 
@@ -604,8 +601,8 @@
 	}
 
 	.countdown-section {
-		min-height: clamp(18rem, 38svh, 26rem);
-		padding-block: clamp(3.5rem, 7vw, 5.25rem);
+		min-height: clamp(22rem, 45svh, 34rem);
+		padding-block: clamp(3rem, 7vw, 5rem) clamp(4rem, 8vw, 6rem);
 		background:
 			radial-gradient(
 				ellipse at 50% 0%,
@@ -615,52 +612,86 @@
 			linear-gradient(180deg, var(--victoria-cream), var(--victoria-ivory));
 	}
 
+	.countdown-container {
+		max-width: min(100%, 68rem);
+	}
+
+	.countdown-title {
+		margin: 0 auto clamp(1.5rem, 4vw, 2.5rem);
+		font-family: var(--victoria-font-display);
+		font-size: clamp(0.95rem, 1.8vw, 1.2rem);
+		line-height: 1.2;
+		letter-spacing: 0.1em;
+	}
+
+	.countdown-timer-wrapper {
+		margin-bottom: clamp(1.75rem, 4vw, 3rem);
+	}
+
 	.countdown__timer {
-		gap: 0;
+		column-gap: clamp(0.35rem, 2vw, 1.5rem);
+		align-items: start;
 	}
 
 	.countdown-section .countdown__segment {
-		padding: clamp(0.9rem, 2.4vw, 1.35rem) clamp(0.3rem, 1.4vw, 0.8rem);
+		min-width: 0;
+		padding: clamp(0.5rem, 2.5vw, 1.25rem) clamp(0.1rem, 1vw, 0.75rem);
 		border: 0;
 		border-radius: 0;
 		background: transparent;
 		box-shadow: none;
-
-		&:not(:last-child)::after {
-			content: '';
-			position: absolute;
-			top: 18%;
-			right: 0;
-			bottom: 18%;
-			width: 1px;
-			background: rgb(var(--victoria-terracota-rgb) / 24%);
-		}
-
-		&:hover {
-			transform: none;
-			border-color: transparent;
-			background: transparent;
-			box-shadow: none;
-		}
 	}
 
-	.countdown-title,
-	.countdown__value,
-	.countdown__label {
+	.countdown__value {
 		font-family: var(--victoria-font-display);
+		font-size: clamp(3rem, 10vw, 6rem);
+		font-variant-numeric: tabular-nums;
+		font-weight: 400;
+		letter-spacing: 0;
+		line-height: 1;
 	}
 
 	.countdown__label {
 		font-family: var(--victoria-font-label);
-		letter-spacing: 0.14em;
+		font-size: clamp(0.62rem, 1.3vw, 0.78rem);
+		letter-spacing: 0.08em;
+		line-height: 1.2;
+		opacity: 60%;
+		white-space: nowrap;
 	}
 
 	.countdown-date {
-		margin-top: 0.25rem;
+		margin-top: 0;
+		padding-top: clamp(0.25rem, 1vw, 0.5rem);
+
+		.subtitle-line {
+			display: none;
+		}
+
+		.event-date {
+			max-width: 100%;
+			font-family: var(--victoria-font-label);
+			font-size: clamp(0.82rem, 1.8vw, 1.05rem);
+			letter-spacing: 0.08em;
+			line-height: 1.35;
+			white-space: nowrap;
+		}
 	}
 
 	.countdown-footer {
-		margin-top: clamp(2rem, 4vw, 3rem);
+		margin: clamp(0.35rem, 1vw, 0.65rem) auto 0;
+		padding-top: 0;
+		max-width: none;
+	}
+
+	.countdown-invitation-text {
+		font-family: var(--victoria-font-label);
+		font-size: clamp(0.78rem, 1.6vw, 0.95rem);
+		font-style: normal;
+		letter-spacing: 0.08em;
+		line-height: 1.35;
+		text-transform: uppercase;
+		color: rgb(var(--victoria-terracota-deep-rgb) / 76%);
 	}
 
 	// Location and itinerary are open editorial records, not nested cards.
