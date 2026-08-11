@@ -331,14 +331,14 @@ describe('Boda Victoria y Roberto provision contract', () => {
 		const profile = fs.readFileSync(profilePath, 'utf8');
 
 		expect(hero.focalPoint).toBe('50% 34%');
-		expect(hero.focalPointMobile).toBe('46% 27%');
+		expect(hero.focalPointMobile).toBe('46% 32%');
 		expect(hero.focalPointTablet).toBe('50% 34%');
-		expect(hero.focalPointDesktop).toBe('49% 35%');
+		expect(hero.focalPointDesktop).toBe('50% 36%');
 
 		expect(profile).toContain('--hero-focal-point-default: 50% 34%');
-		expect(profile).toContain('--hero-focal-point-mobile: 46% 27%');
+		expect(profile).toContain('--hero-focal-point-mobile: 46% 32%');
 		expect(profile).toContain('--hero-focal-point-tablet: 50% 34%');
-		expect(profile).toContain('--hero-focal-point-desktop: 49% 35%');
+		expect(profile).toContain('--hero-focal-point-desktop: 50% 36%');
 
 		const desktopAsset = VICTORIA_ASSET_SPECS.find((spec) => spec.key === 'hero-desktop');
 		expect(desktopAsset?.focalPoint).toMatchObject({
