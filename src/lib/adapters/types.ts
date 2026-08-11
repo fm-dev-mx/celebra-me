@@ -210,7 +210,6 @@ export interface Interlude {
 export interface InvitationViewModelBrandingVisibility {
 	showFooterBranding: boolean;
 	showContactCta: boolean;
-	showThankYouBranding: boolean;
 }
 
 export interface LocationSection {

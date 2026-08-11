@@ -26,7 +26,6 @@ jest.mock('@/lib/adapters/event', () => ({
 		brandingVisibility: {
 			showFooterBranding: true,
 			showContactCta: true,
-			showThankYouBranding: true,
 		},
 		sections: {},
 	})),
@@ -48,7 +47,6 @@ jest.mock('@/lib/adapters/db-event-adapter', () => ({
 		brandingVisibility: {
 			showFooterBranding: true,
 			showContactCta: true,
-			showThankYouBranding: true,
 		},
 		sections: {
 			rsvp: {

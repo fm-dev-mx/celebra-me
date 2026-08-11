@@ -51,7 +51,6 @@ function mockContentResolution(overrides?: {
 			brandingVisibility: {
 				showFooterBranding: true,
 				showContactCta: true,
-				showThankYouBranding: true,
 			},
 			sections: {
 				rsvp: { guestCap, accessMode },

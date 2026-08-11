@@ -41,7 +41,6 @@ describe('adaptEvent', () => {
 			expect(adaptEvent(event).brandingVisibility).toEqual({
 				showFooterBranding: true,
 				showContactCta: true,
-				showThankYouBranding: true,
 			});
 		}
 	});

@@ -118,7 +118,6 @@ type DescriptorData =
 			component: 'thankYou';
 			props: SectionData<'thankYou'> & {
 				variant: ThemePreset;
-				showThankYouBranding: boolean;
 			};
 	  }
 	| { component: 'personalized-access'; props: PersonalizedAccessProps };
@@ -374,8 +373,6 @@ function renderSection(
 					props: {
 						...thankYouProps,
 						variant: resolveSectionVariant(sections.thankYou, variant),
-						showThankYouBranding:
-							pageContext.viewModel.brandingVisibility.showThankYouBranding,
 					},
 				};
 			}

@@ -135,7 +135,6 @@ const mockViewModel = {
 	brandingVisibility: {
 		showFooterBranding: true,
 		showContactCta: false,
-		showThankYouBranding: true,
 	},
 	sections: {},
 } as Parameters<typeof buildPageContextFromViewModel>[0]['viewModel'];

@@ -69,7 +69,6 @@ beforeEach(() => {
 			brandingVisibility: {
 				showFooterBranding: true,
 				showContactCta: true,
-				showThankYouBranding: true,
 			},
 			sections: { location: protectedLocation },
 			interludes: [],
@@ -106,7 +105,6 @@ describe('resolveGatedLocationPayload', () => {
 				brandingVisibility: {
 					showFooterBranding: true,
 					showContactCta: true,
-					showThankYouBranding: true,
 				},
 				sections: { location: protectedLocation },
 				interludes: [],

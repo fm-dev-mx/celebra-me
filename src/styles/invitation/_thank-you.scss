@@ -37,8 +37,7 @@
 
 .thank-you-section[data-overlay-anchor='left'] {
 	.message-container,
-	.signature-block,
-	.thank-you-footer {
+	.signature-block {
 		justify-self: start;
 		text-align: left;
 	}
@@ -46,8 +45,7 @@
 
 .thank-you-section[data-overlay-anchor='right'] {
 	.message-container,
-	.signature-block,
-	.thank-you-footer {
+	.signature-block {
 		justify-self: end;
 		text-align: left;
 	}
@@ -68,8 +66,7 @@
 // Safe-area max-width constraints — prevent copy from overlapping the subject
 .thank-you-section[data-has-overlay-safe-area='true'] {
 	.message-container,
-	.signature-block,
-	.thank-you-footer {
+	.signature-block {
 		max-width: var(--thank-you-overlay-width);
 	}
 }
@@ -78,8 +75,7 @@
 	.thank-you-section[data-overlay-anchor='#{$anchor}'][data-has-overlay-safe-area='true'] {
 		@if $anchor == 'left' {
 			.message-container,
-			.signature-block,
-			.thank-you-footer {
+			.signature-block {
 				max-width: max(
 					16rem,
 					min(
@@ -90,8 +86,7 @@
 			}
 		} @else if $anchor == 'right' {
 			.message-container,
-			.signature-block,
-			.thank-you-footer {
+			.signature-block {
 				max-width: max(
 					16rem,
 					min(
@@ -194,16 +189,4 @@
 
 	line-height: 1.25;
 	text-shadow: 0 2px 4px rgb(0 0 0 / 5%);
-}
-
-.thank-you-footer {
-	margin-top: 2rem;
-	padding-top: 2rem;
-	border-top: 1px solid var(--color-border-subtle);
-	opacity: 40%;
-	font-family: var(--font-body);
-	font-size: 0.75rem;
-	letter-spacing: 0.15em;
-	text-transform: uppercase;
-
 }

@@ -240,7 +240,6 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 				brandingVisibility: {
 					showFooterBranding: true,
 					showContactCta: true,
-					showThankYouBranding: true,
 				},
 				sectionOrder: ['rsvp'],
 				sections: {
@@ -455,7 +454,6 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 					brandingVisibility: {
 						showFooterBranding: true,
 						showContactCta: true,
-						showThankYouBranding: true,
 					},
 					sectionOrder: ['rsvp'],
 					sections: {

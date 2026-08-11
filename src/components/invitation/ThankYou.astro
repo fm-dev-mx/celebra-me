@@ -20,7 +20,6 @@ interface Props {
 		width: number;
 		height: number;
 	};
-	showThankYouBranding?: boolean;
 }
 
 const {
@@ -33,7 +32,6 @@ const {
 	focalPoint,
 	overlayAnchor,
 	overlaySafeArea,
-	showThankYouBranding = true,
 } = Astro.props;
 const usesEditorialLayout = structuralVariant === 'editorial-back-cover';
 const hasSubjectAwareOverlay = Boolean(overlayAnchor || overlaySafeArea);
@@ -117,15 +115,9 @@ const imageConfig = IMAGE_CONFIGS[configKey];
 						</p>
 						{date && <p class="closing-date">{date}</p>}
 					</div>
-
-					{showThankYouBranding && (
-					<footer class="thank-you-footer">
-						<p>DISEÑO ORIGINAL • CELEBRA-ME.com</p>
-					</footer>
-				)}
 				</div>
 			</div>
-		) : (
+	) : (
 			<div class="thank-you-content">
 				{image && (
 					<div class="photo-frame">
@@ -148,15 +140,9 @@ const imageConfig = IMAGE_CONFIGS[configKey];
 					</p>
 					{date && <p class="closing-date">{date}</p>}
 				</div>
-
-				{showThankYouBranding && (
-				<footer class="thank-you-footer">
-					<p>INVITACIÓN DIGITAL POR CELEBRA-ME</p>
-				</footer>
-				)}
 			</div>
-		)
-	}
+	)
+}
 </section>
 
 <style define:vars={{

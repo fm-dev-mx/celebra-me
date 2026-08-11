@@ -219,32 +219,6 @@
 		@include mixins.text-gradient-clip;
 	}
 
-	.thank-you-footer {
-		width: min(100%, 7rem);
-		margin-top: clamp(2rem, 7vw, 3.5rem);
-		padding-top: clamp(1rem, 4vw, 1.35rem);
-		border-top: 1px solid rgb(var(--color-liquid-silver-rgb) / 34%);
-		opacity: 100%;
-		color: rgb(var(--color-soft-graphite-rgb) / 42%);
-		font-family: var(--font-body);
-		font-size: 0.6rem;
-		font-weight: 500;
-		letter-spacing: 0.14em;
-		text-transform: uppercase;
-
-		p {
-			margin: 0;
-		}
-	}
-
-	@include mixins.respond-to(sm) {
-		.thank-you-footer {
-			width: min(100%, 20rem);
-			font-size: 0.64rem;
-			letter-spacing: 0.18em;
-		}
-	}
-
 	@include mixins.respond-to(lg) {
 		padding-block: clamp(5.5rem, 14svh, 8rem) clamp(6.25rem, 13svh, 9rem);
 		padding-inline: clamp(2.5rem, 6vw, 6rem);
@@ -279,10 +253,6 @@
 
 		.closing-name {
 			font-size: clamp(3.25rem, 6vw, 5.25rem);
-		}
-
-		.thank-you-footer {
-			max-width: 23rem;
 		}
 	}
 

@@ -11,7 +11,6 @@ describe('resolveBrandingVisibility (guest-level)', () => {
 		expect(result).toEqual({
 			showFooterBranding: true,
 			showContactCta: true,
-			showThankYouBranding: true,
 		});
 	});
 
@@ -25,7 +24,6 @@ describe('resolveBrandingVisibility (guest-level)', () => {
 		expect(result).toEqual({
 			showFooterBranding: true,
 			showContactCta: true,
-			showThankYouBranding: true,
 		});
 	});
 
@@ -39,7 +37,6 @@ describe('resolveBrandingVisibility (guest-level)', () => {
 		expect(result).toEqual({
 			showFooterBranding: true,
 			showContactCta: true,
-			showThankYouBranding: true,
 		});
 	});
 
@@ -53,7 +50,6 @@ describe('resolveBrandingVisibility (guest-level)', () => {
 		expect(result).toEqual({
 			showFooterBranding: true,
 			showContactCta: true,
-			showThankYouBranding: true,
 		});
 	});
 
@@ -67,7 +63,6 @@ describe('resolveBrandingVisibility (guest-level)', () => {
 		expect(result).toEqual({
 			showFooterBranding: false,
 			showContactCta: false,
-			showThankYouBranding: false,
 		});
 	});
 
@@ -79,7 +74,6 @@ describe('resolveBrandingVisibility (guest-level)', () => {
 		expect(result).toEqual({
 			showFooterBranding: true,
 			showContactCta: true,
-			showThankYouBranding: true,
 		});
 	});
 
@@ -89,7 +83,6 @@ describe('resolveBrandingVisibility (guest-level)', () => {
 		expect(result).toEqual({
 			showFooterBranding: true,
 			showContactCta: true,
-			showThankYouBranding: true,
 		});
 	});
 });

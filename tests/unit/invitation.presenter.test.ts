@@ -298,7 +298,6 @@ const baseViewModel = {
 	brandingVisibility: {
 		showFooterBranding: true,
 		showContactCta: true,
-		showThankYouBranding: true,
 	},
 	interludes: [],
 };

@@ -98,8 +98,7 @@
 	}
 
 	.message-container,
-	.signature-block,
-	.thank-you-footer {
+	.signature-block {
 		position: relative;
 		z-index: 2;
 		justify-self: start;
@@ -168,26 +167,6 @@
 
 	.closing-name {
 		display: none;
-	}
-
-	.thank-you-footer {
-		width: min(100%, 24rem);
-		margin-top: clamp(0.75rem, 2vw, 1.2rem);
-		padding-top: clamp(1rem, 2.5vw, 1.35rem);
-		padding-bottom: clamp(2rem, 4vw, 4rem);
-		border-top: 0;
-		color: rgb(var(--color-eternal-ink-rgb) / 50%);
-		font-size: 0.68rem;
-		letter-spacing: 0.08em;
-		text-align: left;
-
-		&::before {
-			content: none;
-		}
-
-		p {
-			margin: 0;
-		}
 	}
 
 	@include mixins.respond-below(md) {
@@ -265,8 +244,7 @@
 		}
 
 		.message-container,
-		.signature-block,
-		.thank-you-footer {
+		.signature-block {
 			margin-left: 0;
 			justify-self: start;
 		}
@@ -306,11 +284,6 @@
 
 		.closing-name {
 			font-size: clamp(1.85rem, 11vw, 2.25rem);
-		}
-
-		.thank-you-footer {
-			width: min(100%, 18rem);
-			font-size: 0.62rem;
 		}
 	}
 
@@ -363,8 +336,7 @@
 		}
 
 		.message-container,
-		.signature-block,
-		.thank-you-footer {
+		.signature-block {
 			margin-left: clamp(0rem, 3vw, 1.5rem);
 		}
 

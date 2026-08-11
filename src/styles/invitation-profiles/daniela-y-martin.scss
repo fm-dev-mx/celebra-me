@@ -1100,17 +1100,12 @@
 		}
 
 		.closing-date,
-		.closing-phrase,
-		.thank-you-footer {
+		.closing-phrase {
 			font-family: var(--font-body);
 		}
 
 		.closing-date {
 			color: rgb(var(--daniela-ink-rgb) / 68%);
-		}
-
-		.thank-you-footer {
-			opacity: 68%;
 		}
 	}
 
@@ -2078,15 +2073,6 @@
 			font-size: 0.72rem;
 			letter-spacing: 0.16em;
 			text-transform: uppercase;
-		}
-
-		:where(.thank-you-footer) {
-			margin-top: 0.4rem;
-			padding-top: 1.1rem;
-			border-color: rgb(var(--daniela-gold-rgb) / 22%);
-			font-size: 0.6rem;
-			letter-spacing: 0.14em;
-			opacity: 52%;
 		}
 	}
 

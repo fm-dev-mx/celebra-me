@@ -162,7 +162,6 @@ describe('adaptDbEvent', () => {
 		expect(result.brandingVisibility).toEqual({
 			showFooterBranding: true,
 			showContactCta: true,
-			showThankYouBranding: true,
 		});
 	});
 });

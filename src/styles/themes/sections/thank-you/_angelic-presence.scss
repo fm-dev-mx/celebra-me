@@ -116,22 +116,6 @@
 		text-shadow: 0 4px 12px rgb(var(--color-sacred-gold-rgb) / 20%);
 	}
 
-	.thank-you-footer {
-		margin-top: clamp(2rem, 5vw, 3rem);
-		padding-top: clamp(1rem, 3vw, 1.5rem);
-		border-top: 1px solid rgb(var(--color-sacred-gold-rgb) / 25%);
-		color: rgb(var(--color-eternal-ink-rgb) / 50%);
-		font-family: var(--font-body);
-		font-size: 0.65rem;
-		font-weight: 500;
-		letter-spacing: 0.14em;
-		text-transform: uppercase;
-
-		p {
-			margin: 0;
-		}
-	}
-
 	@include mixins.respond-below(xs) {
 		.photo-frame {
 			width: min(82vw, 274px);

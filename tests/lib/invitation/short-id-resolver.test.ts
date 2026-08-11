@@ -72,7 +72,6 @@ const baseViewModel: InvitationViewModel = {
 	brandingVisibility: {
 		showFooterBranding: false,
 		showContactCta: false,
-		showThankYouBranding: false,
 	},
 	sectionOrder: [],
 	sections: {},
