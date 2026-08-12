@@ -211,16 +211,19 @@ an accepted owner placement decision.
 
 ### Itinerary preparation
 
-| item                    | time  | classification |
-| ----------------------- | ----- | -------------- |
-| Nos damos el sí         | 19:00 | verified       |
-| Recepción de invitados  | 21:00 | verified       |
-| Entrada de los novios   | 21:00 | verified       |
-| Baile de los novios     | 21:30 | verified       |
-| Cena                    | 22:30 | verified       |
-| Lanzamiento de ramo     | 23:30 | verified       |
-| Hora loca / música      | 23:40 | verified       |
-| Despedida de los novios | 02:00 | verified       |
+| item                    | time  | description                                         | classification |
+| ----------------------- | ----- | --------------------------------------------------- | -------------- |
+| Nos damos el sí         | 19:00 | Ceremonia en Parroquia Santo Niño.                  | verified       |
+| Recepción de invitados  | 21:00 | Recepción en Eventos Platinum LM.                   | verified       |
+| Entrada de los novios   | 21:00 | Abrimos la celebración con su llegada al salón.     | owner          |
+| Baile de los novios     | 21:30 | El primer vals de Victoria y Roberto.               | owner          |
+| Cena                    | 22:30 | Compartimos la mesa en un mismo brindis.            | owner          |
+| Lanzamiento de ramo     | 23:30 | Un momento especial para las solteras.              | owner          |
+| Hora loca / música      | 23:40 | La pista se enciende: música y baile.               | owner          |
+| Despedida de los novios | 02:00 | Cerramos la noche con su partida.                   | owner          |
+
+Times remain client-verified (`wa-export`). Secondary descriptions for celebration moments
+are owner-approved guest-facing copy (not client-dictated wording).
 
 ### Semantic roles (copy constraints for Goal 2)
 
