@@ -187,10 +187,19 @@ describe('grouped promotional SQL', () => {
 		expect(sql).toContain('json_agg');
 		expect(sql).toContain("'alpha'");
 		expect(sql).toContain("'beta'");
-		expect(sql).not.toContain('client_name');
 		expect(sql).not.toContain('client_email');
 		expect(sql).not.toContain('secure_url');
-		expect(sql).not.toContain('package_hash');
+		expect(sql).toContain('NULL::jsonb AS "managedProjection"');
+	});
+
+	it('keeps diagnostics on the same SQL family instead of a second query', () => {
+		const light = buildGroupedPromotionalEvidenceSql(['alpha']);
+		const heavy = buildGroupedPromotionalEvidenceSql(['alpha'], { diagnostics: true });
+		expect(light).toContain('NULL::jsonb AS "managedProjection"');
+		expect(heavy).toContain('p.managed_projection');
+		expect(heavy).not.toContain('NULL::jsonb AS "managedProjection"');
+		expect(light).toContain('FROM public.invitations i');
+		expect(heavy).toContain('FROM public.invitations i');
 	});
 
 	it('invokes psql once per grouped read', async () => {

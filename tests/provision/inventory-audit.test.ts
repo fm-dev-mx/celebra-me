@@ -1,36 +1,35 @@
 import { jest } from '@jest/globals';
 
-// ---------------------------------------------------------------------------
-// DB-layer mocks — the audit engine itself is exercised for real, only the
-// environment database projection is replaced with deterministic fixtures.
-// ---------------------------------------------------------------------------
-
-const mockReadProjection = jest.fn<
-	(input: { environment: string }) => EnvironmentDatabaseProjection
+const mockReadEvidence = jest.fn<
+	(
+		session: unknown,
+		dbUrl: string,
+		slugs: readonly string[],
+	) => Promise<{
+		ok: boolean;
+		rows: LiveInvitationEvidenceRow[];
+		activeInvitationRows: number;
+		identityConflictsCount: number;
+	}>
 >();
 
-jest.mock('../../scripts/observability/database-projection.ts', () => ({
-	ObservabilityInvocationBudget: class {
-		#used = 0;
-		consume(): void {
-			this.#used += 1;
-		}
-		get used(): number {
-			return this.#used;
-		}
+jest.mock('../../scripts/status-core/index.ts', () => ({
+	StatusProbeSession: class {
+		invocations = 0;
+		memoHits = 0;
 	},
-	readEnvironmentDatabaseProjection: (input: unknown) =>
-		mockReadProjection(input as { environment: string }),
+	readGroupedPromotionalEvidence: (
+		session: unknown,
+		dbUrl: string,
+		slugs: readonly string[],
+	) => mockReadEvidence(session, dbUrl, slugs),
 }));
 
 jest.mock('../../scripts/provision/dbs-status.ts', () => ({
 	resolveDbUrlForEnv: (environment: string) => ({ dbUrl: `postgres://fixture-${environment}` }),
 }));
 
-import type {
-	EnvironmentDatabaseProjection,
-	InvitationDatabaseProjection,
-} from '../../scripts/observability/database-projection.ts';
+import type { LiveInvitationEvidenceRow } from '../../scripts/status-core/promotional-evidence.ts';
 import type { ManagedBaselineReceiptEvidence } from '../../scripts/provision/managed-merge-baseline.ts';
 import { RELEASE_SCHEMA_VERSION } from '../../scripts/provision/normalized-invitation-release.ts';
 import { listInvitationDefinitions } from '../../scripts/provision/invitations/registry.ts';
@@ -40,10 +39,6 @@ import {
 	runInventoryAudit,
 } from '../../scripts/provision/inventory-audit.ts';
 
-// ---------------------------------------------------------------------------
-// Fixture helpers
-// ---------------------------------------------------------------------------
-
 const VERIFIED_RECEIPT: ManagedBaselineReceiptEvidence = {
 	operationId: '11111111-1111-4111-8111-111111111111',
 	status: 'applied',
@@ -52,12 +47,23 @@ const VERIFIED_RECEIPT: ManagedBaselineReceiptEvidence = {
 	completedSteps: ['target_verified', 'provenance_recorded'],
 };
 
-function emptyProvenance(): InvitationDatabaseProjection['provenance'] {
+function emptyRow(slug: string): LiveInvitationEvidenceRow {
 	return {
+		slug,
+		eventType: 'xv',
+		kind: 'client',
+		baseDemoId: null,
+		themeId: 'premiere-floral',
+		snapshot: null,
+		managedIdentityId: null,
 		definitionSlug: null,
-		releaseSchemaVersion: null,
+		clientName: 'Fixture Client',
+		draftContent: { title: 'fixture' },
+		publishedContent: { title: 'fixture' },
+		publishedVersion: 1,
+		assets: [],
 		packageHash: null,
-		managedProjection: null,
+		releaseSchemaVersion: null,
 		hasManagedProjection: false,
 		appliedDraftUpdatedAt: null,
 		appliedOperationId: null,
@@ -65,16 +71,19 @@ function emptyProvenance(): InvitationDatabaseProjection['provenance'] {
 		appliedPublishedProjectionHash: null,
 		appliedReceipt: null,
 		latestReceipt: null,
+		managedProjection: null,
+		detailBudgetExceeded: false,
 	};
 }
 
-function verifiedProvenance(definitionSlug: string): InvitationDatabaseProjection['provenance'] {
+function verifiedRow(slug: string): LiveInvitationEvidenceRow {
 	return {
-		definitionSlug,
-		releaseSchemaVersion: RELEASE_SCHEMA_VERSION,
+		...emptyRow(slug),
+		definitionSlug: slug,
 		packageHash: 'a'.repeat(64),
-		managedProjection: { title: 'fixture' },
+		releaseSchemaVersion: RELEASE_SCHEMA_VERSION,
 		hasManagedProjection: true,
+		managedProjection: { title: 'fixture' },
 		appliedDraftUpdatedAt: '2026-08-01T00:00:00.000Z',
 		appliedOperationId: VERIFIED_RECEIPT.operationId,
 		appliedPublishedVersion: 1,
@@ -84,77 +93,37 @@ function verifiedProvenance(definitionSlug: string): InvitationDatabaseProjectio
 	};
 }
 
-function row(
-	slug: string,
-	provenance: InvitationDatabaseProjection['provenance'],
-): InvitationDatabaseProjection {
+function evidence(activeInvitationRows: number, rows: LiveInvitationEvidenceRow[]) {
 	return {
-		slug,
-		invitationId: `00000000-0000-4000-8000-${slug.length}`,
-		draftStatus: 'published',
-		draftUpdatedAt: '2026-08-01T00:00:00.000Z',
-		draftContent: { title: 'fixture' },
-		detailRequired: false,
-		detailBudgetExceeded: false,
-		publishedVersion: 1,
-		publishedAt: '2026-08-01T00:00:00.000Z',
-		assetCount: 0,
-		managedAssetKeys: [],
-		managedAssets: [],
-		metadata: {
-			eventType: 'xv',
-			kind: 'client',
-			baseDemoId: null,
-			themeId: 'premiere-floral',
-			snapshot: null,
-			clientName: 'Fixture Client',
-			createdBy: '11111111-1111-4111-8111-111111111111',
-		},
-		event: { slug, eventType: 'xv', ownerUserId: '11111111-1111-4111-8111-111111111111' },
-		provenance,
-	};
-}
-
-function projection(
-	environment: string,
-	activeInvitationRows: number,
-	rows: InvitationDatabaseProjection[],
-): EnvironmentDatabaseProjection {
-	return {
-		environment: environment as EnvironmentDatabaseProjection['environment'],
-		configured: true,
-		reachable: true,
-		targetClassification: 'fixture',
+		ok: true,
+		rows,
 		activeInvitationRows,
 		identityConflictsCount: 0,
-		rows,
-		failure: null,
 	};
 }
 
-function installProjectionFixtures(): void {
-	mockReadProjection.mockImplementation((input: { environment: string }) => {
-		const env = input.environment;
-		if (env === 'local') {
-			return projection('local', 25, [
-				row('abril-michelle-becerra-rea', verifiedProvenance('abril-michelle-becerra-rea')),
-				row('romina-rios-chaparro', verifiedProvenance('romina-rios-chaparro')),
-				row('alba-rosa-quinonez', verifiedProvenance('alba-rosa-quinonez')),
+function installEvidenceFixtures(): void {
+	mockReadEvidence.mockImplementation(async (_session, dbUrl) => {
+		if (dbUrl.includes('local')) {
+			return evidence(25, [
+				verifiedRow('abril-michelle-becerra-rea'),
+				verifiedRow('romina-rios-chaparro'),
+				verifiedRow('alba-rosa-quinonez'),
 			]);
 		}
-		if (env === 'preview') {
-			return projection('preview', 26, [
-				row('abril-michelle-becerra-rea', verifiedProvenance('abril-michelle-becerra-rea')),
-				row('romina-rios-chaparro', verifiedProvenance('romina-rios-chaparro')),
-				row('alba-rosa-quinonez', verifiedProvenance('alba-rosa-quinonez')),
-				row('alba-rosa-quinones', emptyProvenance()),
-				row('e2e-preview-publication', emptyProvenance()),
+		if (dbUrl.includes('preview')) {
+			return evidence(26, [
+				verifiedRow('abril-michelle-becerra-rea'),
+				verifiedRow('romina-rios-chaparro'),
+				verifiedRow('alba-rosa-quinonez'),
+				emptyRow('alba-rosa-quinones'),
+				emptyRow('e2e-preview-publication'),
 			]);
 		}
-		return projection('production', 24, [
-			row('abril-michelle-becerra-rea', verifiedProvenance('abril-michelle-becerra-rea')),
-			row('romina-rios-chaparro', verifiedProvenance('romina-rios-chaparro')),
-			row('alba-rosa-quinonez', verifiedProvenance('alba-rosa-quinonez')),
+		return evidence(24, [
+			verifiedRow('abril-michelle-becerra-rea'),
+			verifiedRow('romina-rios-chaparro'),
+			verifiedRow('alba-rosa-quinonez'),
 		]);
 	});
 }
@@ -207,14 +176,13 @@ describe('Inventory Audit & Parity Engine (scripts/provision/inventory-audit.ts)
 
 	describe('runInventoryAudit', () => {
 		beforeEach(() => {
-			installProjectionFixtures();
+			installEvidenceFixtures();
 		});
 
-		it('executes read-only inventory audit against the projection fixtures', () => {
-			const audit = runInventoryAudit();
+		it('executes read-only inventory audit against the projection fixtures', async () => {
+			const audit = await runInventoryAudit();
 
 			expect(audit.generatedAt).toBeDefined();
-			// Registry-derived counts: never hardcode definitions/corpus sizes.
 			const canonical = listInvitationDefinitions();
 			const corpus = listLocalRenderCorpus();
 			expect(audit.summary.repoCanonicalCount).toBe(canonical.length);
@@ -230,12 +198,10 @@ describe('Inventory Audit & Parity Engine (scripts/provision/inventory-audit.ts)
 					.size,
 			);
 
-			// Fixture-driven environment totals
 			expect(audit.summary.environments.local.totalActiveRows).toBe(25);
 			expect(audit.summary.environments.preview.totalActiveRows).toBe(26);
 			expect(audit.summary.environments.production.totalActiveRows).toBe(24);
 
-			// Check specific row classifications in the output matrix
 			const daniela = audit.rows.find((r) => r.slug === 'daniela-y-martin');
 			expect(daniela).toBeDefined();
 			expect(daniela?.category).toBe('canonical_in_progress');
@@ -271,24 +237,28 @@ describe('Inventory Audit & Parity Engine (scripts/provision/inventory-audit.ts)
 			expect(fixture?.environments.preview.present).toBe(true);
 		});
 
-		it('reports a canonical published invitation missing from production as UNVERIFIED', () => {
-			// Production fixture omits 'romina-rios-chaparro' this time.
-			mockReadProjection.mockImplementation((input: { environment: string }) => {
-				if (input.environment === 'production') {
-					return projection('production', 23, [
-						row(
-							'abril-michelle-becerra-rea',
-							verifiedProvenance('abril-michelle-becerra-rea'),
-						),
-						row('alba-rosa-quinonez', verifiedProvenance('alba-rosa-quinonez')),
+		it('does not depend on Observability snapshot assembly', () => {
+			const fs = jest.requireActual('fs') as typeof import('node:fs');
+			const engine = fs.readFileSync('scripts/provision/inventory-audit.ts', 'utf8');
+			const cli = fs.readFileSync('scripts/provision/inventory-audit-cli.ts', 'utf8');
+			expect(engine).toContain('readGroupedPromotionalEvidence');
+			expect(engine).not.toContain('buildObservabilitySnapshot');
+			expect(engine).not.toContain('readEnvironmentDatabaseProjection');
+			expect(cli).not.toContain('buildObservabilitySnapshot');
+		});
+
+		it('reports a canonical published invitation missing from production as UNVERIFIED', async () => {
+			mockReadEvidence.mockImplementation(async (_session, dbUrl) => {
+				if (dbUrl.includes('production')) {
+					return evidence(23, [
+						verifiedRow('abril-michelle-becerra-rea'),
+						verifiedRow('alba-rosa-quinonez'),
 					]);
 				}
-				return projection(input.environment as 'local' | 'preview', 25, [
-					row('romina-rios-chaparro', verifiedProvenance('romina-rios-chaparro')),
-				]);
+				return evidence(25, [verifiedRow('romina-rios-chaparro')]);
 			});
 
-			const audit = runInventoryAudit();
+			const audit = await runInventoryAudit();
 			const romina = audit.rows.find((r) => r.slug === 'romina-rios-chaparro');
 
 			expect(romina).toBeDefined();

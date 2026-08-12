@@ -18,4 +18,27 @@ describe('canonical status CLI format', () => {
 		expect(text).toContain('Preview → Production');
 		expect(text).toContain('PROMOTE_PRODUCTION');
 	});
+
+	it('prints diagnostics only as enrichment', () => {
+		const text = formatCanonicalStatusView(
+			buildCanonicalStatusViewFixture({
+				diagnostics: [
+					{
+						code: 'MANAGED_DRIFT',
+						slug: 'victoria-y-roberto',
+						environment: 'preview',
+						cause: 'Semantic drift.',
+						affectedFieldCount: 1,
+						affectedSectionCount: 1,
+						semanticPaths: ['hero.title'],
+					},
+				],
+			}),
+			{ diagnostics: true },
+		);
+		expect(text).toContain('DIAGNOSTICS (enrichment only');
+		expect(text).toContain('MANAGED_DRIFT');
+		expect(text).not.toContain('HEALTHY');
+		expect(text).not.toContain('applyNextStep');
+	});
 });

@@ -10,6 +10,7 @@
 pnpm db:availability:verify -- --targets local,preview,production
 pnpm dbs
 pnpm dbs --verbose
+pnpm dbs --diagnostics
 pnpm dbs --in-sync
 pnpm dbs --json
 pnpm dbs --compact
@@ -26,6 +27,7 @@ pnpm db:local:audit | db:preview:audit | db:prod:audit
 schema. `--compact` is connectivity + schema only — not publication state.
 
 Local dashboard: `/dashboard/estado` (explicit remote refresh; same classifiers as `pnpm dbs`).
+Advanced diagnostics are enrichment only (`?diagnostics=1` / `pnpm dbs --diagnostics`).
 
 **Expected result:** Typed availability and lifecycle/parity evidence. `UNVERIFIED` ≠ healthy.
 

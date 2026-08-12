@@ -8,7 +8,7 @@ import {
 	ADMIN_RATE_LIMIT_OPERATIONS,
 	requireAdminRateLimit,
 } from '@/lib/rsvp/security/admin-rate-limit';
-import { OBSERVABILITY_RATE_LIMIT_OPERATION } from '@/pages/api/dashboard/observabilidad/index';
+import { CANONICAL_STATUS_RATE_LIMIT_OPERATION } from '@/pages/api/dashboard/estado/index';
 import { ApiError } from '@/lib/rsvp/core/errors';
 
 const mockCheckRateLimit = checkRateLimit as jest.MockedFunction<typeof checkRateLimit>;
@@ -99,18 +99,18 @@ describe('requireAdminRateLimit', () => {
 		);
 	});
 
-	it('registers observability dashboard operation and allows it', async () => {
-		const request = new Request('https://example.com/api/dashboard/observabilidad', {
+	it('registers canonical status dashboard operation and allows it', async () => {
+		const request = new Request('https://example.com/api/dashboard/estado', {
 			headers: { 'x-forwarded-for': '10.0.0.1' },
 		});
 
-		expect(ADMIN_RATE_LIMIT_OPERATIONS).toContain(OBSERVABILITY_RATE_LIMIT_OPERATION);
+		expect(ADMIN_RATE_LIMIT_OPERATIONS).toContain(CANONICAL_STATUS_RATE_LIMIT_OPERATION);
 		await expect(
-			requireAdminRateLimit(request, OBSERVABILITY_RATE_LIMIT_OPERATION, 'user-1'),
+			requireAdminRateLimit(request, CANONICAL_STATUS_RATE_LIMIT_OPERATION, 'user-1'),
 		).resolves.not.toThrow();
 		expect(mockCheckRateLimit).toHaveBeenCalledWith(
 			expect.objectContaining({
-				entityId: 'admin:observabilidad:user-1',
+				entityId: 'admin:estado:user-1',
 				maxHits: 6,
 				windowSec: 60,
 			}),

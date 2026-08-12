@@ -14,9 +14,9 @@ const allowedHydratedComponents = new Set([
 	'UsersAdminTable',
 	'InvitationEditor',
 	'ContentSyncPanel',
-	// Local-only observability dashboard — read-only fetch of aggregated health snapshot via
+	// Local-only canonical status dashboard — read-only fetch via
 	// @/lib/dashboard/api-client. No mutations, no server-only modules in the island.
-	'ObservabilityPanel',
+	'CanonicalStatusPanel',
 	// Commercial CRM islands — SalesWorkspace drives lead reconciliation, order creation,
 	// and deposit tracking; CapiOutboxPanel provides CAPI outbox monitoring and manual
 	// retry. Both only import the browser-safe @/lib/dashboard/api-client (fetch via

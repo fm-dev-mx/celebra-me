@@ -377,17 +377,18 @@ Celebra-me includes a dedicated RSVP and guest-management module for:
 - `GET /api/captura/[token]` — resolves intake request from raw token
 - `POST /api/captura/[token]` — submits intake data
 
-### Local Observability Boundary
+### Local canonical status boundary
 
-- `/dashboard/observabilidad` and `GET /api/dashboard/observabilidad` are available only in the
-  persistent-Local runtime to a strongly authenticated `super_admin`.
-- Server-only code collects one bounded content projection and one migration projection per
-  environment. Repository-to-environment reconciliation and aggregation remain in TypeScript.
-- Snapshot contract v3 keeps `operationalStatus` independent from `deliveryStatus`, validates the
-  browser payload with a strict schema, and exposes typed evidence without content, UUIDs, hashes,
-  URLs, credentials, commands, or raw errors.
-- The React island consumes only browser-safe v3 types; it never imports database, filesystem, or
-  child-process modules. See [`observability-dashboard.md`](./observability-dashboard.md).
+- `/dashboard/estado` and `GET /api/dashboard/estado` are available only in the persistent-Local
+  runtime to a strongly authenticated `super_admin`.
+- One `StatusProbeSession` collects at most one content SQL family and one migration-history probe
+  per environment. Canonical classification (`classifySchemaLifecycle`, `classifyLiveInvitation`,
+  `decidePromotionAction`, `deriveSchemaOperationFields`) stays in TypeScript. Diagnostics enrich
+  that view and never override publication, schema, or readiness.
+- The browser payload is `CanonicalStatusView`: classifier tokens, handoff copy, and optional
+  diagnostics. It must not include content, UUIDs, hashes, URLs, credentials, or raw errors.
+- The React island consumes only browser-safe status types; it never imports database, filesystem,
+  or child-process modules. Remote probes run only after explicit refresh.
 
 ### Other API Endpoints
 

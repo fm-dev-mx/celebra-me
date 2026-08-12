@@ -160,18 +160,19 @@ The single canonical repository command for inspecting environment status and ma
 state across Local, Preview, and Production is:
 
 ```bash
-pnpm dbs                 # General 3-environment matrix view (includes schema lifecycle)
-pnpm dbs <slug>          # Per-invitation cross-environment status
-pnpm dbs --compact       # Compact CONTENT + SCHEMA (connectivity CONTENT; fast)
-pnpm dbs --compact <slug># Compact package-hash CONTENT + SCHEMA for one invitation
-pnpm dbs --compact --aggregate-content  # Worst-of all definitions (slower)
+pnpm dbs                 # Canonical schema + publication + readiness
+pnpm dbs <slug>          # One registry invitation
+pnpm dbs --verbose       # Migration IDs, env states, reasonCode
+pnpm dbs --diagnostics   # Same decisions plus diagnostic enrichment
+pnpm dbs --compact       # Connectivity CONTENT + SCHEMA (not publication; Git-hook friendly)
+pnpm dbs --compact <slug># Same connectivity CONTENT scoped to one slug
 ```
 
-Compact output uses existing classifiers only (`dbs-status` content vocabulary +
-`classifySchemaLifecycle`). It is strictly read-only and never migrates, reconciles, updates, or
-promotes. Unavailable remotes degrade to `UNREACHABLE` / `CREDENTIALS_REQUIRED` / `UNVERIFIED`
-without noisy failure for expected gaps. Default `--compact` CONTENT is connectivity-derived for
-speed; pass a slug for `MATCH_CANONICAL` / `BEHIND_CANONICAL` / `DIVERGED` package-hash truth.
+Compact output is connectivity plus `classifySchemaLifecycle` only. It is strictly read-only and
+never migrates, reconciles, updates, or promotes. Unavailable remotes degrade to `UNREACHABLE` /
+`CREDENTIALS_REQUIRED` / `UNVERIFIED` without noisy failure for expected gaps. Publication state
+comes from `pnpm dbs` / `pnpm dbs <slug>` via `classifyLiveInvitation` and `decidePromotionAction`,
+not from package-hash compact output.
 
 Optional non-blocking Git hooks (`post-commit`, `post-merge`, `post-rewrite`) may print compact
 status with a strict per-query timeout. They never block Git success. Temporary opt-out:

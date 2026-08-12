@@ -1,5 +1,6 @@
 /** Spanish operator labels for the canonical status dashboard. */
 import type {
+	DiagnosticCode,
 	DisposableProofStatus,
 	EvidenceState,
 	PromotionAction,
@@ -40,4 +41,20 @@ export const ACTION_LABELS: Record<Exclude<PromotionAction, 'NONE'>, string> = {
 	PROMOTE_PRODUCTION: 'PROMOTE_PRODUCTION',
 	BLOCKED: 'BLOCKED',
 	UNKNOWN: 'UNKNOWN',
+};
+
+export const DIAGNOSTIC_LABELS: Record<DiagnosticCode, string> = {
+	ENVIRONMENT_IDENTITY_CONFLICT: 'La identidad del entorno no coincide',
+	AUTHORITATIVE_COUNT_MISMATCH: 'Hay filas de invitación duplicadas por slug',
+	INVITATION_IDENTITY_CONFLICT: 'Hay identidades de invitación duplicadas',
+	DRAFT_INVALID: 'El borrador administrado no es válido',
+	BASELINE_UNAVAILABLE: 'No hay un baseline verificable',
+	BASELINE_VERSION_INCOMPATIBLE: 'La versión del baseline no es compatible',
+	MANAGED_DRIFT: 'Hay divergencia administrada en campos semánticos',
+	DELIVERY_SCOPE_BLOCKED: 'El alcance autorizado bloquea la reconciliación',
+	REQUIRED_PUBLISHED_ASSET_MISSING: 'Falta un asset requerido en contenido publicado',
+	UNPUBLISHED_ASSET_PENDING: 'Hay assets pendientes en trabajo no publicado',
+	ASSET_IDENTITY_UNVERIFIED: 'No se pudo verificar la identidad de los assets',
+	LIFECYCLE_METADATA_STALE: 'El ciclo de vida declarado está obsoleto',
+	DETAIL_BUDGET_EXCEEDED: 'El detalle excede el presupuesto seguro',
 };

@@ -10,9 +10,10 @@ import { listLocalRenderCorpus } from './local-render-corpus/registry.ts';
 import type { LocalRenderCorpusEntry } from './local-render-corpus/registry.ts';
 import { resolveDbUrlForEnv, type TargetEnv } from './dbs-status.ts';
 import {
-	ObservabilityInvocationBudget,
-	readEnvironmentDatabaseProjection,
-} from '../observability/database-projection.ts';
+	readGroupedPromotionalEvidence,
+	StatusProbeSession,
+	type LiveInvitationEvidenceRow,
+} from '../status-core/index.ts';
 import { isVerifiedManagedReleaseProvenance } from './managed-merge-baseline.ts';
 
 export type InventoryCategory =
@@ -226,14 +227,28 @@ function buildParityRow(
 	};
 }
 
-function collectDatabaseRowStates(
+function rowHasVerifiedProvenance(row: LiveInvitationEvidenceRow): boolean {
+	return isVerifiedManagedReleaseProvenance({
+		managedProjection: row.managedProjection,
+		hasManagedProjection: row.hasManagedProjection,
+		releaseSchemaVersion: row.releaseSchemaVersion,
+		appliedDraftUpdatedAt: row.appliedDraftUpdatedAt,
+		appliedOperationId: row.appliedOperationId,
+		appliedPublishedVersion: row.appliedPublishedVersion,
+		appliedPublishedProjectionHash: row.appliedPublishedProjectionHash,
+		appliedReceipt: row.appliedReceipt,
+		latestMutationReceipt: row.latestReceipt,
+	});
+}
+
+async function collectDatabaseRowStates(
 	querySlugs: string[],
 	timeoutMs: number,
-): {
+): Promise<{
 	dbRowsByEnv: Map<TargetEnv, Map<string, DatabaseRowState>>;
 	envSummaries: Record<TargetEnv, EnvironmentInventorySummary>;
-} {
-	const budget = new ObservabilityInvocationBudget();
+}> {
+	const session = new StatusProbeSession({ timeoutMs, readOnly: true });
 	const dbRowsByEnv = new Map<TargetEnv, Map<string, DatabaseRowState>>();
 
 	const envSummaries: Record<TargetEnv, EnvironmentInventorySummary> = {
@@ -268,28 +283,21 @@ function collectDatabaseRowStates(
 		if (!dbUrl) continue;
 		envSummaries[env].configured = true;
 
-		const proj = readEnvironmentDatabaseProjection({
-			environment: env,
-			slugs: querySlugs,
-			timeoutMs,
-			budget,
-		});
-
-		if (!proj.reachable) continue;
+		const evidence = await readGroupedPromotionalEvidence(session, dbUrl, querySlugs);
+		if (!evidence.ok) continue;
 		envSummaries[env].reachable = true;
-		envSummaries[env].totalActiveRows = proj.activeInvitationRows;
+		envSummaries[env].totalActiveRows = evidence.activeInvitationRows;
 
-		for (const row of proj.rows) {
-			const hasVerifiedProvenance = isVerifiedManagedReleaseProvenance(row.provenance);
+		for (const row of evidence.rows) {
 			envMap.set(row.slug, {
 				present: true,
-				kind: row.metadata.kind ?? null,
-				eventType: row.metadata.eventType ?? null,
-				themeId: row.metadata.themeId ?? null,
-				clientName: row.metadata.clientName ?? null,
-				hasProvenance: hasVerifiedProvenance,
-				provenanceSlug: row.provenance.definitionSlug,
-				packageHash: row.provenance.packageHash,
+				kind: row.kind,
+				eventType: row.eventType,
+				themeId: row.themeId,
+				clientName: row.clientName,
+				hasProvenance: rowHasVerifiedProvenance(row),
+				provenanceSlug: row.definitionSlug,
+				packageHash: row.packageHash,
 			});
 		}
 	}
@@ -297,7 +305,9 @@ function collectDatabaseRowStates(
 	return { dbRowsByEnv, envSummaries };
 }
 
-export function runInventoryAudit(options?: { timeoutMs?: number }): InventoryAuditResult {
+export async function runInventoryAudit(options?: {
+	timeoutMs?: number;
+}): Promise<InventoryAuditResult> {
 	const timeoutMs = options?.timeoutMs ?? 15_000;
 	const generatedAt = new Date().toISOString();
 
@@ -318,8 +328,8 @@ export function runInventoryAudit(options?: { timeoutMs?: number }): InventoryAu
 
 	const querySlugs = Array.from(registeredSlugs);
 
-	// 2. Query Databases via Database Projection Service
-	const { dbRowsByEnv, envSummaries } = collectDatabaseRowStates(querySlugs, timeoutMs);
+	// 2. Query Databases via the shared promotional-evidence collector
+	const { dbRowsByEnv, envSummaries } = await collectDatabaseRowStates(querySlugs, timeoutMs);
 
 	// 3. Consolidate All Unique Slugs Across Registries and DBs
 	const allSlugsSet = new Set<string>([

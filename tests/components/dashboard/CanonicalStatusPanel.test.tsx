@@ -42,4 +42,31 @@ describe('CanonicalStatusPanel', () => {
 		expect(screen.queryByText('PROMOTIONS')).not.toBeInTheDocument();
 		expect(screen.queryByText('Managed')).not.toBeInTheDocument();
 	});
+
+	it('keeps advanced diagnostics collapsed and without operational authority', () => {
+		render(
+			<CanonicalStatusPanel
+				initialView={buildCanonicalStatusViewFixture({
+					diagnostics: [
+						{
+							code: 'MANAGED_DRIFT',
+							slug: 'victoria-y-roberto',
+							environment: 'preview',
+							cause: 'Live managed content differs from the canonical definition.',
+							affectedFieldCount: 2,
+							affectedSectionCount: 1,
+							semanticPaths: ['hero.title'],
+						},
+					],
+				})}
+			/>,
+		);
+		expect(screen.getByText(/Diagnóstico avanzado \(1\)/)).toBeInTheDocument();
+		expect(
+			screen.getByText(/No cambian la cola de publicación ni la idoneidad de migración/),
+		).toBeInTheDocument();
+		expect(screen.queryByText('HEALTHY')).not.toBeInTheDocument();
+		expect(screen.queryByText('ALIGNED')).not.toBeInTheDocument();
+		expect(screen.getByRole('checkbox', { name: 'Diagnóstico avanzado' })).not.toBeChecked();
+	});
 });

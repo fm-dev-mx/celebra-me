@@ -27,21 +27,18 @@ Local/Preview package -> Production (content): owner-only invitation:release onl
 Preview -> Production: forbidden for DB/Storage content copy.
 ```
 
-## Observability projection decision
+## Canonical status projection decision
 
-The Local-only observability dashboard reads each environment through one slug-filtered batch query
-plus one migration-history query. Reconciliation stays in TypeScript and uses the durable managed
-provenance/receipt baseline. All database sessions are read-only and share a hard six-invocation
-budget across Local, Preview, and Production.
+`pnpm dbs` and `/dashboard/estado` share one evidence pipeline. Each refresh uses one
+`StatusProbeSession` and, per environment, at most one content SQL family plus one migration-history
+probe. Canonical classification stays in TypeScript. Diagnostics may request the heavier content
+payload of the same SQL family; they never run a second content query in the same cycle and never
+override publication, schema, or readiness.
 
-The current projection deliberately remains application-owned SQL rather than a database view. A
-view would not reduce the one content invocation per environment, would add an independently
-grantable object, and could broaden access to draft or managed-projection JSON. Introduce a view
-only after measurement demonstrates a material query-plan or contract benefit. Any future view must
-have explicit grants and invoker semantics where supported; any materialized view must also define
-refresh ownership, maximum staleness, and failure behavior. See
-[`docs/core/observability-dashboard.md`](core/observability-dashboard.md) for the wire and resource
-contract.
+The current projection remains application-owned SQL rather than a database view. A view would not
+reduce the one content invocation per environment, would add an independently grantable object, and
+could broaden access to draft or managed-projection JSON. Introduce a view only after measurement
+demonstrates a material query-plan or contract benefit.
 
 ## Required-database availability preflight
 
@@ -55,9 +52,9 @@ pnpm db:availability:verify -- --targets local,preview,production
 The preflight verifies target identity, bounded reachability, and server-enforced read-only mode. A
 failure is evidence of `CREDENTIALS_REQUIRED`, `IDENTITY_CONFLICT`, `UNREACHABLE`, or
 `READ_ONLY_ENFORCEMENT_FAILED`; it is never equivalent to an empty database or no pending change.
-Dependent work stops until evidence becomes available. The observability dashboard remains usable
-and reports the same condition as typed unverified coverage, because reporting unavailable state is
-its job rather than a reason to conceal the snapshot.
+Dependent work stops until evidence becomes available. `/dashboard/estado` remains usable and
+reports the same condition as typed `UNVERIFIED` evidence, because reporting unavailable state is
+its job rather than a reason to conceal the view.
 
 ## Production backup and recovery authority
 

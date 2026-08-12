@@ -23,7 +23,7 @@ const envBanner = resolveDashboardEnvBanner({
 	previewMfaBypass: process.env.PREVIEW_MFA_BYPASS,
 });
 
-const showObservabilityNav = isLocalObservabilityRuntime(readObservabilityRuntimeEnv());
+const showCanonicalStatusNav = isLocalObservabilityRuntime(readObservabilityRuntimeEnv());
 
 // Middleware enforces the authenticated session and stores it in
 // Astro.locals.session. The layout reads from locals (not request cookies)
@@ -43,11 +43,8 @@ const { csrfToken } = Astro.locals;
 const navItems: DashboardNavItem[] = [
 	{ label: 'Invitados', href: '/dashboard/invitados' },
 	{ label: 'Administración', href: '/dashboard/admin', adminOnly: true },
-	...(showObservabilityNav
-		? [
-				{ label: 'Estado', href: '/dashboard/estado', adminOnly: true },
-				{ label: 'Observabilidad', href: '/dashboard/observabilidad', adminOnly: true },
-			]
+	...(showCanonicalStatusNav
+		? [{ label: 'Estado', href: '/dashboard/estado', adminOnly: true }]
 		: []),
 	{ label: 'Publicación de demos', href: '/dashboard/admin/content-sync', adminOnly: true },
 	{ label: 'Códigos de acceso', href: '/dashboard/claimcodes', adminOnly: true },

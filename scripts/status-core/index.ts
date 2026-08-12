@@ -42,4 +42,5 @@ export {
 	type GroupedPromotionalEvidence,
 	type LiveInvitationEvidenceRow,
 	type PromotionalEvidenceFailure,
+	type PromotionalEvidenceOptions,
 } from './promotional-evidence.ts';

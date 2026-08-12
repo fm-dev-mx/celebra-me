@@ -54,6 +54,13 @@
 	button {
 		min-height: 44px;
 	}
+
+	.canonical-status__check {
+		display: flex;
+		align-items: center;
+		gap: var(--spacing-xs);
+		min-height: 44px;
+	}
 }
 
 .canonical-status__announcer {
@@ -209,6 +216,25 @@
 
 	dd {
 		margin: 0;
+	}
+}
+
+.canonical-status__diagnostics {
+	display: grid;
+	gap: var(--spacing-sm);
+	list-style: none;
+	margin: 0;
+	padding: 0;
+
+	li {
+		padding: var(--spacing-sm);
+		border: 1px solid var(--dashboard-card-border);
+		border-radius: 0.5rem;
+		background: var(--color-surface-soft);
+	}
+
+	p {
+		margin: var(--spacing-xs) 0 0;
 	}
 }
 

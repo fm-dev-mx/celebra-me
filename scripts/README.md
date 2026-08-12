@@ -37,7 +37,7 @@ are no longer registered. Use `pnpm dbs` and `pnpm invitation:*` for invitation 
 
 | Command                              | Audience      | Canonical Script                                              | Purpose                                                                |
 | ------------------------------------ | ------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `pnpm dbs`                           | Human / agent | `scripts/provision/dbs-cli.ts`                                | Canonical read-only matrix: schema migrations, registry publication, migrate readiness |
+| `pnpm dbs`                           | Human / agent | `scripts/provision/dbs-cli.ts`                                | Canonical read-only matrix: schema, publication, readiness; `--diagnostics` enriches |
 | `pnpm dbs --compact`                 | Human / agent | `scripts/provision/managed-status.ts`                         | Connectivity CONTENT + SCHEMA only (not publication; Git-hook friendly) |
 | `pnpm invitation:release`            | Human / agent | `scripts/provision/invitation-release-cli.ts`                 | Define, plan, apply, approve, and release managed invitations          |
 | `pnpm invitation:reconcile`          | Human / agent | `scripts/provision/invitation-reconcile-cli.ts`               | Guided Local/Preview managed divergence reconciliation                 |

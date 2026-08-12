@@ -33,9 +33,8 @@ const RATE_LIMITS = {
 	// Login-alias remaps are privileged credential mutations.
 	'admin:users:update_login_alias': { maxHits: 5, windowSec: 60 }, // 5 req/min
 
-	// Local-only observability dashboard (manual refresh, read-only probes).
-	'admin:observabilidad': { maxHits: 6, windowSec: 60 }, // cached, manual refresh only
-	'admin:estado': { maxHits: 6, windowSec: 60 }, // canonical status, explicit refresh
+	// Local-only canonical status dashboard (manual refresh, read-only probes).
+	'admin:estado': { maxHits: 6, windowSec: 60 },
 
 	// Claim code operations follow the same operational profile.
 	'claimcodes:list': { maxHits: 60, windowSec: 60 },

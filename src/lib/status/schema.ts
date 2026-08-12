@@ -39,9 +39,40 @@ const envSummary = z
 		pendingMigrations: z.array(migrationVersion).max(200),
 		extraMigrations: z.array(migrationVersion).max(200),
 		invitationAttentionCount: z.number().int().nonnegative().max(1000),
+		identityConflictsCount: z.number().int().nonnegative().max(100_000),
+		targetClassification: z.string().min(1).max(80),
+		environmentIdentityOk: z.boolean(),
 		schemaOperationReadiness: readiness,
 		evidence,
 		probedAt: z.iso.datetime({ offset: true }).nullable(),
+	})
+	.strict();
+
+const diagnosticCode = z.enum([
+	'ENVIRONMENT_IDENTITY_CONFLICT',
+	'AUTHORITATIVE_COUNT_MISMATCH',
+	'INVITATION_IDENTITY_CONFLICT',
+	'DRAFT_INVALID',
+	'BASELINE_UNAVAILABLE',
+	'BASELINE_VERSION_INCOMPATIBLE',
+	'MANAGED_DRIFT',
+	'DELIVERY_SCOPE_BLOCKED',
+	'REQUIRED_PUBLISHED_ASSET_MISSING',
+	'UNPUBLISHED_ASSET_PENDING',
+	'ASSET_IDENTITY_UNVERIFIED',
+	'LIFECYCLE_METADATA_STALE',
+	'DETAIL_BUDGET_EXCEEDED',
+]);
+
+const diagnostic = z
+	.object({
+		code: diagnosticCode,
+		slug: slug.optional(),
+		environment: targetEnv.optional(),
+		cause: z.string().min(1).max(240),
+		affectedFieldCount: z.number().int().nonnegative().max(100_000),
+		affectedSectionCount: z.number().int().nonnegative().max(1000),
+		semanticPaths: z.array(z.string().min(1).max(160)).max(50),
 	})
 	.strict();
 
@@ -113,6 +144,14 @@ export const CanonicalStatusViewSchema: z.ZodType<CanonicalStatusView> = z
 				production: z.number().int().nonnegative().max(100_000),
 			})
 			.strict(),
+		identityConflictCounts: z
+			.object({
+				local: z.number().int().nonnegative().max(100_000),
+				preview: z.number().int().nonnegative().max(100_000),
+				production: z.number().int().nonnegative().max(100_000),
+			})
+			.strict(),
+		diagnostics: z.array(diagnostic).max(200),
 		debugCounters: z
 			.object({
 				invocations: z.number().int().nonnegative(),

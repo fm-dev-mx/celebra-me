@@ -63,7 +63,7 @@ export function formatAttentionCard(row: CanonicalPromotionRow, verbose: boolean
 
 export function formatCanonicalStatusView(
 	view: CanonicalStatusView,
-	options?: { verbose?: boolean; includeInSync?: boolean },
+	options?: { verbose?: boolean; includeInSync?: boolean; diagnostics?: boolean },
 ): string {
 	const verbose = Boolean(options?.verbose);
 	const col = 14;
@@ -137,6 +137,15 @@ export function formatCanonicalStatusView(
 	lines.push(
 		`Active DB rows (not registry): Local ${view.activeRowCounts.local} · Preview ${view.activeRowCounts.preview} · Production ${view.activeRowCounts.production}`,
 	);
+	if (
+		view.identityConflictCounts.local > 0 ||
+		view.identityConflictCounts.preview > 0 ||
+		view.identityConflictCounts.production > 0
+	) {
+		lines.push(
+			`Identity conflicts: Local ${view.identityConflictCounts.local} · Preview ${view.identityConflictCounts.preview} · Production ${view.identityConflictCounts.production}`,
+		);
+	}
 
 	lines.push('');
 	if (view.promotions.length === 0) {
@@ -159,6 +168,18 @@ export function formatCanonicalStatusView(
 	} else if (view.inSyncCount > 0) {
 		lines.push('');
 		lines.push(`In sync omitted: ${view.inSyncCount} (pass --in-sync to list)`);
+	}
+
+	if ((verbose || options?.diagnostics) && view.diagnostics.length > 0) {
+		lines.push('');
+		lines.push('DIAGNOSTICS (enrichment only; does not change publication or readiness)');
+		for (const item of view.diagnostics) {
+			const scope = [item.environment, item.slug].filter(Boolean).join(' ');
+			lines.push(`  ${item.code}${scope ? ` ${scope}` : ''}`);
+			if (item.semanticPaths.length > 0) {
+				lines.push(`    paths: ${item.semanticPaths.join(', ')}`);
+			}
+		}
 	}
 
 	lines.push('');

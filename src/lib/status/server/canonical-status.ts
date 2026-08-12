@@ -176,9 +176,13 @@ export async function getCanonicalStatusView(): Promise<CanonicalStatusView> {
 export async function refreshCanonicalStatusView(options?: {
 	env?: TargetEnv;
 	domain?: 'schema' | 'content';
+	diagnostics?: boolean;
 }): Promise<CanonicalStatusView> {
 	return await withLock(async () => {
-		const args = options?.env ? [`--env=${options.env}`] : [];
+		const args = [
+			...(options?.env ? [`--env=${options.env}`] : []),
+			...(options?.diagnostics ? ['--diagnostics'] : []),
+		];
 		const parsed = await runStatusChild(args, CANONICAL_STATUS_TIMEOUT_MS);
 		const incoming = CanonicalStatusViewSchema.parse(parsed);
 		const merged = mergeCanonicalStatusView({

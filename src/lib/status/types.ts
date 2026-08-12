@@ -56,6 +56,32 @@ export interface PromotionHandoff {
 	steps: string[];
 }
 
+export type DiagnosticCode =
+	| 'ENVIRONMENT_IDENTITY_CONFLICT'
+	| 'AUTHORITATIVE_COUNT_MISMATCH'
+	| 'INVITATION_IDENTITY_CONFLICT'
+	| 'DRAFT_INVALID'
+	| 'BASELINE_UNAVAILABLE'
+	| 'BASELINE_VERSION_INCOMPATIBLE'
+	| 'MANAGED_DRIFT'
+	| 'DELIVERY_SCOPE_BLOCKED'
+	| 'REQUIRED_PUBLISHED_ASSET_MISSING'
+	| 'UNPUBLISHED_ASSET_PENDING'
+	| 'ASSET_IDENTITY_UNVERIFIED'
+	| 'LIFECYCLE_METADATA_STALE'
+	| 'DETAIL_BUDGET_EXCEEDED';
+
+/** Enrichment only — must never carry promotion/schema/readiness authority. */
+export interface CanonicalDiagnostic {
+	code: DiagnosticCode;
+	slug?: string;
+	environment?: TargetEnv;
+	cause: string;
+	affectedFieldCount: number;
+	affectedSectionCount: number;
+	semanticPaths: string[];
+}
+
 export interface CanonicalEnvSummary {
 	environment: TargetEnv;
 	schemaLifecycle: SchemaLifecycleState;
@@ -65,6 +91,9 @@ export interface CanonicalEnvSummary {
 	pendingMigrations: string[];
 	extraMigrations: string[];
 	invitationAttentionCount: number;
+	identityConflictsCount: number;
+	targetClassification: string;
+	environmentIdentityOk: boolean;
 	schemaOperationReadiness: SchemaOperationReadiness;
 	evidence: EvidenceState;
 	probedAt: string | null;
@@ -104,6 +133,8 @@ export interface CanonicalStatusView {
 	disposableProof: CanonicalDisposableProof;
 	promotions: CanonicalPromotionRow[];
 	activeRowCounts: Record<TargetEnv, number>;
+	identityConflictCounts: Record<TargetEnv, number>;
+	diagnostics: CanonicalDiagnostic[];
 	debugCounters?: {
 		invocations: number;
 		memoHits: number;

@@ -32,6 +32,7 @@ export const GET: APIRoute = async ({ request }) => {
 		const refresh = url.searchParams.get('refresh') === '1';
 		const envParam = url.searchParams.get('env');
 		const domainParam = url.searchParams.get('domain');
+		const diagnostics = url.searchParams.get('diagnostics') === '1';
 		if (envParam !== null && !parseEnv(envParam)) {
 			throw new ApiError(400, 'bad_request', 'Parámetro env inválido.');
 		}
@@ -43,6 +44,7 @@ export const GET: APIRoute = async ({ request }) => {
 			? await refreshCanonicalStatusView({
 					env: parseEnv(envParam),
 					domain: parseDomain(domainParam),
+					diagnostics,
 				})
 			: await getCanonicalStatusView();
 		return withPrivateCache(jsonResponse(view));

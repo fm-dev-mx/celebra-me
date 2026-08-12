@@ -6,9 +6,10 @@
  *   pnpm invitation:inventory-audit --json  # Structured JSON output
  *
  * This command is strictly read-only and never mutates any database.
+ * It uses the shared promotional-evidence collector, not Observability snapshots.
  */
 import { runInventoryAudit } from './inventory-audit.ts';
-import { buildObservabilitySnapshot } from '../observability/snapshot.ts';
+import { readObservabilitySourceState } from '../observability/source-state.ts';
 
 function pad(str: string, width: number): string {
 	return str.padEnd(width, ' ');
@@ -18,11 +19,19 @@ async function main(): Promise<void> {
 	const args = process.argv.slice(2);
 	const jsonMode = args.includes('--json');
 
-	const result = runInventoryAudit();
-	const observability = await buildObservabilitySnapshot({ probeScope: 'all' });
+	const result = await runInventoryAudit();
+	const source = readObservabilitySourceState();
+	const reporting = {
+		commitSha: source.commitSha,
+		databaseTargets: {
+			local: 'persistent-local',
+			preview: 'preview',
+			production: 'production',
+		},
+	};
 
 	if (jsonMode) {
-		console.log(JSON.stringify({ ...result, observability }, null, 2));
+		console.log(JSON.stringify({ ...result, reporting }, null, 2));
 		return;
 	}
 
@@ -35,13 +44,9 @@ async function main(): Promise<void> {
 	);
 
 	console.log(`Generated At:                ${result.generatedAt}`);
-	console.log(`Snapshot ID:                 ${observability.reporting.snapshotId}`);
-	console.log(`Evidence Fingerprint:       ${observability.reporting.evidenceFingerprint}`);
+	console.log(`Commit SHA:                  ${reporting.commitSha ?? 'unavailable'}`);
 	console.log(
-		`Commit SHA:                  ${observability.reporting.commitSha ?? 'unavailable'}`,
-	);
-	console.log(
-		`Database Targets:            local=${observability.reporting.databaseTargets.local}, preview=${observability.reporting.databaseTargets.preview}, production=${observability.reporting.databaseTargets.production}`,
+		`Database Targets:            local=${reporting.databaseTargets.local}, preview=${reporting.databaseTargets.preview}, production=${reporting.databaseTargets.production}`,
 	);
 	console.log(
 		`Repository Definitions:     ${result.summary.repoCanonicalCount} (${result.summary.repoCanonicalPublishedCount} published, ${result.summary.repoCanonicalInProgressCount} in_progress)`,
@@ -150,7 +155,7 @@ async function main(): Promise<void> {
 		`\n========================================================================================\n`,
 	);
 	console.log(
-		`Observability parity: ${observability.reporting.invitationClassifications.length} classifications, ${observability.reporting.issueKeys.length} issues, ${observability.reporting.workItemKeys.length} work items`,
+		`Canonical publication decisions: pnpm dbs. Inventory categories above are not promotion authority.`,
 	);
 }
 

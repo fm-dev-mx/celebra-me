@@ -7,6 +7,7 @@
  *   pnpm dbs --verbose         # Migration IDs, env states, reasonCode
  *   pnpm dbs --in-sync         # Include NONE / in-sync slugs
  *   pnpm dbs --compact         # Connectivity CONTENT + schema (not publication)
+ *   pnpm dbs --diagnostics     # Same decisions plus diagnostic enrichment
  *   pnpm dbs --json            # CanonicalStatusView JSON
  */
 
@@ -30,25 +31,27 @@ async function formatGeneralView(
 	jsonMode: boolean,
 	verbose: boolean,
 	includeInSync: boolean,
+	diagnostics: boolean,
 ): Promise<void> {
 	const { buildCanonicalStatusView } = await import('./canonical-status.ts');
 	const { formatCanonicalStatusView } = await import('./canonical-status-format.ts');
-	const view = await buildCanonicalStatusView();
+	const view = await buildCanonicalStatusView({ diagnostics });
 	if (jsonMode) {
 		console.log(JSON.stringify(view, null, 2));
 		return;
 	}
-	process.stdout.write(formatCanonicalStatusView(view, { verbose, includeInSync }));
+	process.stdout.write(formatCanonicalStatusView(view, { verbose, includeInSync, diagnostics }));
 }
 
 async function formatInvitationView(
 	slug: string,
 	jsonMode: boolean,
 	verbose: boolean,
+	diagnostics: boolean,
 ): Promise<void> {
 	const { buildCanonicalStatusView } = await import('./canonical-status.ts');
 	const { formatSlugStatusView } = await import('./canonical-status-format.ts');
-	const view = await buildCanonicalStatusView({ slugs: [slug] });
+	const view = await buildCanonicalStatusView({ slugs: [slug], diagnostics });
 	if (jsonMode) {
 		const promotion = view.promotions.find((row) => row.slug === slug) ?? null;
 		console.log(
@@ -100,6 +103,7 @@ async function main(): Promise<void> {
 	const compactMode = args.includes('--compact');
 	const verbose = args.includes('--verbose');
 	const includeInSync = args.includes('--in-sync');
+	const diagnostics = args.includes('--diagnostics');
 	const aggregateContent = args.includes('--aggregate-content');
 	const timeoutMs = readTimeoutMs(args);
 	const timeoutIdx = args.indexOf('--timeout-ms');
@@ -115,9 +119,9 @@ async function main(): Promise<void> {
 	}
 
 	if (slug) {
-		await formatInvitationView(slug, jsonMode, verbose);
+		await formatInvitationView(slug, jsonMode, verbose, diagnostics);
 	} else {
-		await formatGeneralView(jsonMode, verbose, includeInSync);
+		await formatGeneralView(jsonMode, verbose, includeInSync, diagnostics);
 	}
 }
 

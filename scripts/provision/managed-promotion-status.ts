@@ -5,6 +5,7 @@
 import {
 	mapPool,
 	readGroupedPromotionalEvidence,
+	type LiveInvitationEvidenceRow,
 	type StatusProbeSession,
 } from '../status-core/index.ts';
 import {
@@ -34,6 +35,7 @@ export interface ManagedPromotionStatus {
 	environmentsBySlug: Record<string, Record<TargetEnv, EnvironmentPromotionState>>;
 	envEvidence: Record<TargetEnv, EvidenceState>;
 	canonicalAvailableBySlug: Record<string, boolean>;
+	rowsByEnv: Record<TargetEnv, LiveInvitationEvidenceRow[]>;
 }
 
 export function formatSlugPromotionLine(row: CanonicalPromotionRow | undefined): string {
@@ -49,6 +51,7 @@ export async function evaluateManagedPromotionStatus(options?: {
 	definitions?: InvitationDefinition[];
 	slugs?: readonly string[];
 	environments?: readonly TargetEnv[];
+	diagnostics?: boolean;
 }): Promise<ManagedPromotionStatus> {
 	const session = options?.session ?? getOrCreateStatusProbeSession();
 	const definitions = (options?.definitions ?? listInvitationDefinitions()).filter((definition) =>
@@ -79,6 +82,11 @@ export async function evaluateManagedPromotionStatus(options?: {
 		preview: 'UNVERIFIED',
 		production: 'UNVERIFIED',
 	};
+	const rowsByEnv: Record<TargetEnv, LiveInvitationEvidenceRow[]> = {
+		local: [],
+		preview: [],
+		production: [],
+	};
 
 	await mapPool(probeEnvs, 3, async (env) => {
 		const perSlug = new Map<string, EnvironmentPromotionState>();
@@ -93,12 +101,15 @@ export async function evaluateManagedPromotionStatus(options?: {
 			for (const slug of slugs) perSlug.set(slug, 'unknown');
 			return;
 		}
-		const evidence = await readGroupedPromotionalEvidence(session, dbUrl, slugs);
+		const evidence = await readGroupedPromotionalEvidence(session, dbUrl, slugs, {
+			diagnostics: Boolean(options?.diagnostics),
+		});
 		if (!evidence.ok) {
 			for (const slug of slugs) perSlug.set(slug, 'unknown');
 			return;
 		}
 		envEvidence[env] = 'LIVE';
+		rowsByEnv[env] = evidence.rows;
 		for (const definition of definitions) {
 			const canonical = canonicalBySlug.get(definition.slug);
 			if (!canonical) {
@@ -148,6 +159,7 @@ export async function evaluateManagedPromotionStatus(options?: {
 		environmentsBySlug,
 		envEvidence,
 		canonicalAvailableBySlug: Object.fromEntries(canonicalAvailableBySlug),
+		rowsByEnv,
 	};
 }
 

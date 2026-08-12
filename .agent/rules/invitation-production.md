@@ -73,13 +73,13 @@ The agent-specific constraints are:
 - Do not treat Production→Preview content mirror as promotion. Do not copy Production RSVP/PII into
   Preview. After a Preview mirror apply, re-provision synthetic fixtures if RSVP E2E needs them.
 
-### Local observability dashboard
+### Local canonical status dashboard
 
-`/dashboard/observabilidad` is observational only (persistent-Local runtime + `super_admin` strong
-session). It does not authorize writes. CLI workflows remain authoritative for mutations. Stale
-regression or screenshot evidence requires running the owning command
-(`pnpm test:local-render-corpus` / `pnpm screenshot:local-render-corpus`), not dashboard refresh.
-See [`docs/core/observability-dashboard.md`](../../docs/core/observability-dashboard.md).
+`/dashboard/estado` is observational only (persistent-Local runtime + `super_admin` strong session).
+It does not authorize writes. CLI workflows remain authoritative for mutations. Production handoffs
+always terminate at OWNER / HITL REQUIRED. Stale regression or screenshot evidence requires running
+the owning command (`pnpm test:local-render-corpus` / `pnpm screenshot:local-render-corpus`), not
+dashboard refresh.
 
 ## Scope and cleanup
 

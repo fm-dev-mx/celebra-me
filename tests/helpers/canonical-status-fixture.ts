@@ -12,6 +12,9 @@ export function buildCanonicalStatusViewFixture(
 		pendingMigrations: [],
 		extraMigrations: [],
 		invitationAttentionCount: 1,
+		identityConflictsCount: 0,
+		targetClassification: environment === 'local' ? 'persistent-local' : environment,
+		environmentIdentityOk: true,
 		schemaOperationReadiness: 'NEEDS_DISPOSABLE_PROOF' as const,
 		evidence: 'LIVE' as const,
 		probedAt: '2026-08-12T22:11:46.000Z',
@@ -59,6 +62,8 @@ export function buildCanonicalStatusViewFixture(
 			},
 		],
 		activeRowCounts: { local: 26, preview: 27, production: 26 },
+		identityConflictCounts: { local: 0, preview: 0, production: 0 },
+		diagnostics: [],
 		...overrides,
 	};
 }

@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { dashboardApi } from '@/lib/dashboard/api-client';
 import {
+	DIAGNOSTIC_LABELS,
 	DISPOSABLE_LABELS,
 	ENV_LABELS,
 	READINESS_LABELS,
@@ -10,7 +11,12 @@ import {
 	formatSchemaMigrationsLabel,
 	formatTransitionLabel,
 } from '@/lib/status/presentation';
-import type { CanonicalPromotionRow, CanonicalStatusView, TargetEnv } from '@/lib/status/types';
+import type {
+	CanonicalDiagnostic,
+	CanonicalPromotionRow,
+	CanonicalStatusView,
+	TargetEnv,
+} from '@/lib/status/types';
 
 const ENVS: TargetEnv[] = ['local', 'preview', 'production'];
 
@@ -72,6 +78,33 @@ function AttentionCard({ row }: { row: CanonicalPromotionRow }) {
 	);
 }
 
+function DiagnosticsList({ items }: { items: CanonicalDiagnostic[] }) {
+	if (items.length === 0) {
+		return <p>No hay diagnósticos adicionales. La cola de publicación es la autoridad operativa.</p>;
+	}
+	return (
+		<ul className="canonical-status__diagnostics">
+			{items.map((item, index) => (
+				<li key={`${item.code}:${item.environment ?? ''}:${item.slug ?? ''}:${index}`}>
+					<strong>{DIAGNOSTIC_LABELS[item.code]}</strong>
+					<p>
+						{[item.environment ? ENV_LABELS[item.environment] : null, item.slug]
+							.filter(Boolean)
+							.join(' · ')}
+					</p>
+					<p>{item.cause}</p>
+					{item.semanticPaths.length > 0 ? (
+						<details>
+							<summary>Ver detalle semántico</summary>
+							<p>{item.semanticPaths.join(', ')}</p>
+						</details>
+					) : null}
+				</li>
+			))}
+		</ul>
+	);
+}
+
 interface CanonicalStatusPanelProps {
 	initialView?: CanonicalStatusView | null;
 }
@@ -82,6 +115,7 @@ export default function CanonicalStatusPanel({ initialView = null }: CanonicalSt
 	const [error, setError] = useState<string | null>(null);
 	const [envFilter, setEnvFilter] = useState<'all' | TargetEnv>('all');
 	const [domainFilter, setDomainFilter] = useState<'all' | 'schema' | 'content'>('all');
+	const [includeDiagnostics, setIncludeDiagnostics] = useState(false);
 	const [showInSync, setShowInSync] = useState(false);
 
 	const refresh = useCallback(async () => {
@@ -90,6 +124,7 @@ export default function CanonicalStatusPanel({ initialView = null }: CanonicalSt
 		const params = new URLSearchParams({ refresh: '1' });
 		if (envFilter !== 'all') params.set('env', envFilter);
 		if (domainFilter !== 'all') params.set('domain', domainFilter);
+		if (includeDiagnostics) params.set('diagnostics', '1');
 		const result = await dashboardApi.get<CanonicalStatusView>(
 			`/api/dashboard/estado?${params.toString()}`,
 			{ timeoutMs: 30_000 },
@@ -101,7 +136,7 @@ export default function CanonicalStatusPanel({ initialView = null }: CanonicalSt
 		}
 		setView(result.data);
 		setLoading(false);
-	}, [domainFilter, envFilter]);
+	}, [domainFilter, envFilter, includeDiagnostics]);
 
 	const generated = useMemo(
 		() => (view ? formatWhen(view.generatedAt) : null),
@@ -145,6 +180,14 @@ export default function CanonicalStatusPanel({ initialView = null }: CanonicalSt
 							<option value="schema">Esquema</option>
 							<option value="content">Publicación</option>
 						</select>
+					</label>
+					<label className="canonical-status__check">
+						<input
+							type="checkbox"
+							checked={includeDiagnostics}
+							onChange={(event) => setIncludeDiagnostics(event.target.checked)}
+						/>
+						Diagnóstico avanzado
 					</label>
 					<button
 						type="button"
@@ -229,7 +272,17 @@ export default function CanonicalStatusPanel({ initialView = null }: CanonicalSt
 								Registro: {view.registryCount}. En sync: {view.inSyncCount}. Atención:{' '}
 								{view.promotions.length}. Filas activas en DB (no son el registro):
 								Local {view.activeRowCounts.local} · Preview {view.activeRowCounts.preview}{' '}
-								· Production {view.activeRowCounts.production}.
+								· Production {view.activeRowCounts.production}
+								{(view.identityConflictCounts.local > 0 ||
+									view.identityConflictCounts.preview > 0 ||
+									view.identityConflictCounts.production > 0) && (
+									<>
+										. Conflictos de identidad: Local {view.identityConflictCounts.local} ·
+										Preview {view.identityConflictCounts.preview} · Production{' '}
+										{view.identityConflictCounts.production}
+									</>
+								)}
+								.
 							</p>
 						</div>
 						{view.promotions.length === 0 ? (
@@ -257,6 +310,19 @@ export default function CanonicalStatusPanel({ initialView = null }: CanonicalSt
 								</ul>
 							</details>
 						) : null}
+					</section>
+
+					<section aria-labelledby="diagnostics-title">
+						<details className="canonical-status__details">
+							<summary id="diagnostics-title">
+								Diagnóstico avanzado ({view.diagnostics.length})
+							</summary>
+							<p>
+								Estas señales explican el estado canónico. No cambian la cola de
+								publicación ni la idoneidad de migración.
+							</p>
+							<DiagnosticsList items={view.diagnostics} />
+						</details>
 					</section>
 				</>
 			) : null}

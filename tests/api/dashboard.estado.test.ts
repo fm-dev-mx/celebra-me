@@ -80,8 +80,32 @@ describe('GET /api/dashboard/estado', () => {
 			),
 		} as never);
 		expect(response.status).toBe(200);
-		expect(mockRefresh).toHaveBeenCalledWith({ env: 'preview', domain: 'content' });
+		expect(mockRefresh).toHaveBeenCalledWith({
+			env: 'preview',
+			domain: 'content',
+			diagnostics: false,
+		});
 		expect(mockGet).not.toHaveBeenCalled();
+	});
+
+	it('passes diagnostics=1 only on explicit refresh', async () => {
+		mockAccess.mockResolvedValue({
+			userId: 'admin-1',
+			isSuperAdmin: true,
+		} as never);
+		mockRefresh.mockResolvedValue(buildCanonicalStatusViewFixture());
+
+		const response = await GET({
+			request: new Request(
+				'http://127.0.0.1:4321/api/dashboard/estado?refresh=1&diagnostics=1',
+			),
+		} as never);
+		expect(response.status).toBe(200);
+		expect(mockRefresh).toHaveBeenCalledWith({
+			env: undefined,
+			domain: undefined,
+			diagnostics: true,
+		});
 	});
 
 	it('rejects invalid env before probing', async () => {

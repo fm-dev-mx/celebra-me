@@ -19,11 +19,9 @@
 
 import {
 	evaluateGeneralStatus,
-	evaluateInvitationStatus,
 	getOrCreateStatusProbeSession,
 	resetStatusProbeSession,
 	type EnvTargetStatus,
-	type PerInvitationTargetStatus,
 	type StatusVocabulary,
 	type TargetEnv,
 } from './dbs-status.ts';
@@ -34,7 +32,6 @@ import {
 	type SchemaLifecycleState,
 	type StatusEvidenceDomain,
 } from '../db/schema-lifecycle-state.ts';
-import { listInvitationDefinitions } from './invitations/registry.ts';
 import type { StatusProbeDebugCounters } from '../status-core/index.ts';
 
 /** Default remote probe budget for routine CLI use (ms). */
@@ -43,17 +40,6 @@ export const MANAGED_STATUS_DEFAULT_TIMEOUT_MS = 8_000;
 export const MANAGED_STATUS_PER_QUERY_TIMEOUT_MS = 2_000;
 
 const ENVS: TargetEnv[] = ['local', 'preview', 'production'];
-
-const CONTENT_SEVERITY: Record<StatusVocabulary, number> = {
-	MATCH_CANONICAL: 0,
-	NOT_PRESENT: 1,
-	CREDENTIALS_REQUIRED: 2,
-	UNREACHABLE: 3,
-	UNVERIFIED: 4,
-	BEHIND_CANONICAL: 5,
-	DIVERGED: 6,
-	IDENTITY_CONFLICT: 7,
-};
 
 export interface CompactEnvContentStatus {
 	environment: TargetEnv;
@@ -81,29 +67,15 @@ export interface CompactEnvSchemaStatus {
 export interface CompactManagedStatus {
 	content: Record<TargetEnv, CompactEnvContentStatus>;
 	schema: Record<TargetEnv, CompactEnvSchemaStatus>;
-	/** Slug used for CONTENT, or null when CONTENT is connectivity-/aggregate-derived. */
+	/** Slug requested on the CLI; compact never classifies publication for it. */
 	contentSlug: string | null;
-	contentMode: 'slug' | 'aggregate' | 'connectivity';
-	/** Per-environment corpus interpretation, available only for aggregate content mode. */
-	aggregateSummary?: Record<TargetEnv, AggregateContentSummary>;
+	contentMode: 'connectivity';
 	readOnly: true;
 	/** True when overall budget forced incomplete probes. */
 	timeoutDegraded?: boolean;
 	debugCounters?: StatusProbeDebugCounters;
 	/** Per-environment durations from this execution (ms). */
 	environmentDurationsMs?: Record<TargetEnv, number | undefined>;
-}
-
-export interface AggregateContentSummary {
-	classification:
-		| 'ALL_ALIGNED'
-		| 'DRAFT_DIVERGENCE_ONLY'
-		| 'BEHIND_OR_CONFLICTED'
-		| 'UNVERIFIABLE'
-		| 'NO_DEFINITIONS';
-	total: number;
-	aligned: number;
-	draftDiverged: number;
 }
 
 function schemaFromEnv(envStatus: EnvTargetStatus): CompactEnvSchemaStatus {
@@ -172,62 +144,6 @@ function contentFromConnectivity(envStatus: EnvTargetStatus): CompactEnvContentS
 	};
 }
 
-function contentFromTarget(target: PerInvitationTargetStatus): CompactEnvContentStatus {
-	if (target.status !== 'UNVERIFIED') {
-		return {
-			environment: target.environment,
-			status: target.status,
-			detail: target.detail,
-			timeoutDegraded: target.timeoutDegraded,
-			durationMs: target.durationMs,
-		};
-	}
-	const unverified = domainUnverified(
-		'content',
-		target.detail ??
-			'Content evidence unavailable or not probed; fail-closed (do not infer healthy state).',
-	);
-	return {
-		environment: target.environment,
-		status: 'UNVERIFIED',
-		domain: unverified.domain,
-		reason: unverified.reason,
-		detail: unverified.reason,
-		timeoutDegraded: target.timeoutDegraded,
-		durationMs: target.durationMs,
-	};
-}
-
-function worstContent(
-	left: CompactEnvContentStatus,
-	right: CompactEnvContentStatus,
-): CompactEnvContentStatus {
-	return CONTENT_SEVERITY[right.status] > CONTENT_SEVERITY[left.status] ? right : left;
-}
-
-function summarizeAggregateContent(statuses: CompactEnvContentStatus[]): AggregateContentSummary {
-	const total = statuses.length;
-	const aligned = statuses.filter((status) => status.status === 'MATCH_CANONICAL').length;
-	const draftDiverged = statuses.filter((status) => status.status === 'DIVERGED').length;
-	if (total === 0) {
-		return { classification: 'NO_DEFINITIONS', total, aligned, draftDiverged };
-	}
-	if (
-		statuses.some((status) =>
-			['CREDENTIALS_REQUIRED', 'UNREACHABLE', 'UNVERIFIED'].includes(status.status),
-		)
-	) {
-		return { classification: 'UNVERIFIABLE', total, aligned, draftDiverged };
-	}
-	if (aligned === total) {
-		return { classification: 'ALL_ALIGNED', total, aligned, draftDiverged };
-	}
-	if (aligned + draftDiverged === total && draftDiverged > 0) {
-		return { classification: 'DRAFT_DIVERGENCE_ONLY', total, aligned, draftDiverged };
-	}
-	return { classification: 'BEHIND_OR_CONFLICTED', total, aligned, draftDiverged };
-}
-
 function degradedCompactStatus(reason: string): CompactManagedStatus {
 	const content = Object.fromEntries(
 		ENVS.map((env) => [
@@ -280,11 +196,8 @@ function emitDebugCounters(counters: StatusProbeDebugCounters | undefined, wallM
 }
 
 /**
- * Build compact status by composing status-core probes + existing classifiers.
- *
- * - with slug: CONTENT from evaluateInvitationStatus
- * - aggregateContent: worst-of all definitions (slower; explicit)
- * - default no slug: CONTENT from connectivity only (fast; Git-hook safe)
+ * Compact status is connectivity + schema only. Slug and aggregate flags do not
+ * classify publication; use `pnpm dbs` / `pnpm dbs <slug>` for that.
  */
 export async function evaluateCompactManagedStatus(options?: {
 	slug?: string;
@@ -314,113 +227,15 @@ export async function evaluateCompactManagedStatus(options?: {
 		ENVS.map((env) => [env, general.environments[env].durationMs]),
 	) as Record<TargetEnv, number | undefined>;
 
-	const slug = options?.slug?.trim() || null;
-	if (slug) {
-		const invitation = await evaluateInvitationStatus(slug, {
-			session,
-			concurrency: 3,
-			overallTimeoutMs: options?.overallTimeoutMs,
-		});
-		const status: CompactManagedStatus = {
-			content: {
-				local: contentFromTarget(invitation.environments.local),
-				preview: contentFromTarget(invitation.environments.preview),
-				production: contentFromTarget(invitation.environments.production),
-			},
-			schema,
-			contentSlug: slug,
-			contentMode: 'slug',
-			readOnly: true,
-			timeoutDegraded: session.timeoutDegraded,
-			debugCounters: session.debugCounters,
-			environmentDurationsMs,
-		};
-		emitDebugCounters(status.debugCounters, Math.round(performance.now() - wallStart));
-		return status;
-	}
-
-	if (!options?.aggregateContent) {
-		const status: CompactManagedStatus = {
-			content: {
-				local: contentFromConnectivity(general.environments.local),
-				preview: contentFromConnectivity(general.environments.preview),
-				production: contentFromConnectivity(general.environments.production),
-			},
-			schema,
-			contentSlug: null,
-			contentMode: 'connectivity',
-			readOnly: true,
-			timeoutDegraded: session.timeoutDegraded,
-			debugCounters: session.debugCounters,
-			environmentDurationsMs,
-		};
-		emitDebugCounters(status.debugCounters, Math.round(performance.now() - wallStart));
-		return status;
-	}
-
-	const definitions = listInvitationDefinitions();
-	const content: Record<TargetEnv, CompactEnvContentStatus> = {
-		local: { environment: 'local', status: 'NOT_PRESENT', detail: 'No managed definitions' },
-		preview: {
-			environment: 'preview',
-			status: 'NOT_PRESENT',
-			detail: 'No managed definitions',
-		},
-		production: {
-			environment: 'production',
-			status: 'NOT_PRESENT',
-			detail: 'No managed definitions',
-		},
-	};
-
-	if (definitions.length === 0) {
-		const aggregateSummary = Object.fromEntries(
-			ENVS.map((env) => [env, summarizeAggregateContent([])]),
-		) as Record<TargetEnv, AggregateContentSummary>;
-		return {
-			content,
-			schema,
-			contentSlug: null,
-			contentMode: 'aggregate',
-			aggregateSummary,
-			readOnly: true,
-			timeoutDegraded: session.timeoutDegraded,
-			debugCounters: session.debugCounters,
-			environmentDurationsMs,
-		};
-	}
-
-	const aggregateEntries = {
-		local: [] as CompactEnvContentStatus[],
-		preview: [] as CompactEnvContentStatus[],
-		production: [] as CompactEnvContentStatus[],
-	};
-	let first = true;
-	for (const definition of definitions) {
-		const invitation = await evaluateInvitationStatus(definition.slug, {
-			session,
-			concurrency: 3,
-			overallTimeoutMs: options?.overallTimeoutMs,
-		});
-		for (const env of ENVS) {
-			const next = contentFromTarget(invitation.environments[env]);
-			aggregateEntries[env].push(next);
-			content[env] = first ? next : worstContent(content[env], next);
-		}
-		first = false;
-	}
-
-	const aggregateSummary = {
-		local: summarizeAggregateContent(aggregateEntries.local),
-		preview: summarizeAggregateContent(aggregateEntries.preview),
-		production: summarizeAggregateContent(aggregateEntries.production),
-	};
 	const status: CompactManagedStatus = {
-		content,
+		content: {
+			local: contentFromConnectivity(general.environments.local),
+			preview: contentFromConnectivity(general.environments.preview),
+			production: contentFromConnectivity(general.environments.production),
+		},
 		schema,
-		contentSlug: null,
-		contentMode: 'aggregate',
-		aggregateSummary,
+		contentSlug: options?.slug?.trim() || null,
+		contentMode: 'connectivity',
 		readOnly: true,
 		timeoutDegraded: session.timeoutDegraded,
 		debugCounters: session.debugCounters,
@@ -462,7 +277,11 @@ function formatSchemaLabel(schema: CompactEnvSchemaStatus): string {
 /** Human compact formatter matching the operational CONTENT/SCHEMA layout. */
 export function formatCompactManagedStatus(status: CompactManagedStatus): string {
 	const lines: string[] = ['CONTENT'];
-	if (status.contentMode === 'connectivity') {
+	if (status.contentSlug) {
+		lines.push(
+			`(connectivity only; not publication state — use pnpm dbs ${status.contentSlug})`,
+		);
+	} else {
 		lines.push('(connectivity only; not publication state — use pnpm dbs)');
 	}
 	for (const env of ENVS) {
@@ -473,15 +292,6 @@ export function formatCompactManagedStatus(status: CompactManagedStatus): string
 	for (const env of ENVS) {
 		const schema = status.schema[env];
 		lines.push(`${padLabel(envLabel(env))}${formatSchemaLabel(schema)}`);
-	}
-	if (status.aggregateSummary) {
-		lines.push('', 'CORPUS');
-		for (const env of ENVS) {
-			const summary = status.aggregateSummary[env];
-			lines.push(
-				`${padLabel(envLabel(env))}${summary.classification} (${summary.aligned}/${summary.total} aligned; ${summary.draftDiverged} draft divergence)`,
-			);
-		}
 	}
 	return `${lines.join('\n')}\n`;
 }

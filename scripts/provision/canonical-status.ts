@@ -11,6 +11,7 @@ import {
 	type TargetEnv,
 } from './dbs-status.ts';
 import { evaluateManagedPromotionStatus } from './managed-promotion-status.ts';
+import { enrichCanonicalDiagnostics } from './canonical-diagnostics.ts';
 import { listInvitationDefinitions } from './invitations/registry.ts';
 import { invitationAttentionCount } from '../../src/lib/status/presentation.ts';
 import type {
@@ -29,6 +30,10 @@ function disposableStatus(ok: boolean, hasProof: boolean): DisposableProofStatus
 	return hasProof ? 'stale' : 'missing';
 }
 
+function expectedTargetClassification(environment: TargetEnv): string {
+	return environment === 'local' ? 'persistent-local' : environment;
+}
+
 function envSummary(
 	status: EnvTargetStatus,
 	expectedCount: number,
@@ -36,6 +41,7 @@ function envSummary(
 ): CanonicalEnvSummary {
 	const reachableLive = status.reachable && status.freshness?.source === 'live';
 	const evidence: EvidenceState = reachableLive ? 'LIVE' : 'UNVERIFIED';
+	const targetClassification = status.targetClassification || 'unknown';
 	return {
 		environment: status.environment,
 		schemaLifecycle: (status.schemaLifecycle ?? 'UNVERIFIED') as SchemaLifecycleState,
@@ -45,6 +51,10 @@ function envSummary(
 		pendingMigrations: status.pendingMigrations ?? [],
 		extraMigrations: status.extraMigrations ?? [],
 		invitationAttentionCount: invitationAttentionCountValue,
+		identityConflictsCount: status.identityConflictsCount,
+		targetClassification,
+		environmentIdentityOk:
+			!status.reachable || targetClassification === expectedTargetClassification(status.environment),
 		schemaOperationReadiness: (status.schemaOperationReadiness ??
 			'UNVERIFIED') as SchemaOperationReadiness,
 		evidence,
@@ -56,6 +66,7 @@ export async function buildCanonicalStatusView(options?: {
 	slugs?: readonly string[];
 	environments?: readonly TargetEnv[];
 	resetSession?: boolean;
+	diagnostics?: boolean;
 }): Promise<CanonicalStatusView> {
 	if (options?.resetSession !== false) resetStatusProbeSession();
 	const session = getOrCreateStatusProbeSession();
@@ -71,6 +82,7 @@ export async function buildCanonicalStatusView(options?: {
 		session,
 		slugs: options?.slugs,
 		environments: options?.environments,
+		diagnostics: Boolean(options?.diagnostics),
 	});
 	const envStateMap = new Map(
 		Object.entries(promotion.environmentsBySlug).map(([slug, states]) => [slug, states]),
@@ -101,7 +113,7 @@ export async function buildCanonicalStatusView(options?: {
 			? 'LIVE'
 			: 'UNVERIFIED';
 
-	return {
+	const view: CanonicalStatusView = {
 		schemaVersion: 1,
 		generatedAt: new Date().toISOString(),
 		evidence: overallEvidence,
@@ -122,8 +134,23 @@ export async function buildCanonicalStatusView(options?: {
 			preview: general.environments.preview.activeManagedCount,
 			production: general.environments.production.activeManagedCount,
 		},
+		identityConflictCounts: {
+			local: general.environments.local.identityConflictsCount,
+			preview: general.environments.preview.identityConflictsCount,
+			production: general.environments.production.identityConflictsCount,
+		},
+		diagnostics: [],
 		debugCounters: session.debugCounters,
 	};
+	view.diagnostics = enrichCanonicalDiagnostics({
+		view,
+		definitions: listInvitationDefinitions().filter((definition) =>
+			options?.slugs ? options.slugs.includes(definition.slug) : true,
+		),
+		rowsByEnv: promotion.rowsByEnv,
+		includeSemanticDetail: Boolean(options?.diagnostics),
+	});
+	return view;
 }
 
 export function buildLocalCanonicalStatusView(): CanonicalStatusView {
@@ -139,6 +166,9 @@ export function buildLocalCanonicalStatusView(): CanonicalStatusView {
 		pendingMigrations: [],
 		extraMigrations: [],
 		invitationAttentionCount: 0,
+		identityConflictsCount: 0,
+		targetClassification: 'unknown',
+		environmentIdentityOk: true,
 		schemaOperationReadiness: 'UNVERIFIED',
 		evidence: 'UNVERIFIED',
 		probedAt: null,
@@ -164,5 +194,7 @@ export function buildLocalCanonicalStatusView(): CanonicalStatusView {
 		},
 		promotions: [],
 		activeRowCounts: { local: 0, preview: 0, production: 0 },
+		identityConflictCounts: { local: 0, preview: 0, production: 0 },
+		diagnostics: [],
 	};
 }

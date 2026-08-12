@@ -137,6 +137,8 @@ export function mergeCanonicalStatusView(input: {
 		for (const env of ENVS) {
 			environments[env].invitationAttentionCount = invitationAttentionCount(merged, env);
 		}
+		environments[probed].identityConflictsCount =
+			input.incoming.environments[probed].identityConflictsCount;
 	}
 
 	if (domain !== 'content') {
@@ -158,6 +160,31 @@ export function mergeCanonicalStatusView(input: {
 		inSyncSlugs,
 		inSyncCount,
 		disposableProof: input.incoming.disposableProof,
+		activeRowCounts:
+			domain === 'schema'
+				? previous.activeRowCounts
+				: {
+						...previous.activeRowCounts,
+						[probed]: input.incoming.activeRowCounts[probed],
+					},
+		identityConflictCounts:
+			domain === 'schema'
+				? previous.identityConflictCounts
+				: {
+						...previous.identityConflictCounts,
+						[probed]: input.incoming.identityConflictCounts[probed],
+					},
+		diagnostics:
+			domain === 'schema'
+				? previous.diagnostics
+				: [
+						...previous.diagnostics.filter(
+							(item) => item.environment && item.environment !== probed,
+						),
+						...input.incoming.diagnostics.filter(
+							(item) => !item.environment || item.environment === probed,
+						),
+					],
 		debugCounters: input.incoming.debugCounters,
 	};
 }
