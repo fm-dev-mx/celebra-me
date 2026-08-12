@@ -373,7 +373,7 @@ export function buildAbrilPublishedContent(
 			eyebrow: 'Recuerdos',
 			title: 'Abril Michelle',
 			subtitle: 'Luz, elegancia y la emoción de sus XV',
-			variant: 'uniform-grid',
+			variant: 'paired-feature-band',
 			items: [
 				{
 					key: 'gallery-01-candles',

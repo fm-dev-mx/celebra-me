@@ -199,11 +199,10 @@ export function buildDanielaPublishedContent(
 			footerText: 'Huejutla de Reyes, Hidalgo',
 		},
 		location: {
-			variant: 'standard',
+			variant: 'stacked-venue-plates',
 			visibility: 'public',
-			// No coords/image → mediaMode none. With showNavigationButtons=false,
-			// VenueCard uses the canonical linked map-preview surface (not a new
-			// structural variant or parallel presentation enum).
+			// Twin venue chapters with illustrated plates; geometry is section-owned.
+			// With showNavigationButtons=false, VenueCard uses the linked map-preview surface.
 			presentation: 'simple',
 			presentationOptions: {
 				showFlourishes: true,
@@ -247,12 +246,19 @@ export function buildDanielaPublishedContent(
 				{
 					iconName: 'DressCode',
 					styleVariant: 'default',
-					text: 'Etiqueta formal. Mujeres: vestido largo de noche. Evitar blanco, beige y tonos claros. Hombres: traje.',
+					text: `Etiqueta formal.
+Mujeres: vestido largo de noche. Evitar blanco, beige y tonos claros.
+Hombres: traje.`,
 				},
 				{
 					iconName: 'Church',
 					styleVariant: 'default',
-					text: `Se celebrará durante la recepción a las ${CIVIL_TIME}`,
+					text: `La ceremonia civil se celebrará durante la recepción a las ${CIVIL_TIME}`,
+				},
+				{
+					iconName: 'Calendar',
+					styleVariant: 'default',
+					text: 'Agradecemos confirmar su asistencia antes del 15 de octubre.',
 				},
 			],
 		},

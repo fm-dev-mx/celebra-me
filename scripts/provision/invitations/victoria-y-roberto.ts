@@ -221,9 +221,9 @@ export function buildVictoriaPublishedContent(
 		},
 		location: {
 			visibility: 'public',
-			// Card composition (plate on top, content below) like daniela-y-martin;
+			// Twin venue chapters with illustrated plates; geometry is section-owned.
 			// 'simple' forces the illustrated plate presentation.
-			variant: 'standard',
+			variant: 'stacked-venue-plates',
 			presentation: 'simple',
 			presentationOptions: {
 				showFlourishes: true,
@@ -272,7 +272,7 @@ export function buildVictoriaPublishedContent(
 			],
 		},
 		itinerary: {
-			variant: 'standard',
+			variant: 'editorial-ledger',
 			title: 'Itinerario de la noche',
 			subtitle: 'Del sí que nos une a cada brindis, acompáñenos a vivirla completa.',
 			items: [
@@ -307,7 +307,7 @@ export function buildVictoriaPublishedContent(
 		},
 		family: {
 			presentation: 'text-only',
-			variant: 'split-groups',
+			variant: 'asymmetric-groups',
 			groups: [
 				{
 					// "Familia de …" keeps Madre/Padre roles informative instead of
