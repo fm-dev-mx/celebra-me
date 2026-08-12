@@ -32,21 +32,21 @@ export const VICTORIA_EVENT = {
 export const VICTORIA_SCHEDULE_DETAILS = {
 	ceremonyMapUrl: 'https://maps.app.goo.gl/Ahdb29SrPRNwXzpQ9',
 	receptionMapUrl: 'https://maps.app.goo.gl/dV5r1BrBvC3t5C1o6',
-	dinnerTime: '21:00',
-	toastTime: '22:00',
-	closingTime: '23:00',
+	ceremonyTime: '19:00',
+	receptionTime: '21:00',
+	coupleEntryTime: '21:00',
+	firstDanceTime: '21:30',
+	dinnerTime: '22:30',
+	bouquetTossTime: '23:30',
+	partyTime: '23:40',
+	closingTime: '02:00',
 } as const;
-
-/** @deprecated Retained for backward compatibility. Use VICTORIA_SCHEDULE_DETAILS. */
-export const VICTORIA_PLACEHOLDERS = VICTORIA_SCHEDULE_DETAILS;
 
 const ceremonyAddress = 'Lic. Benito Juárez S/N, Mochicahui, 81257 Los Mochis, Sin.';
 const receptionAddress = 'Carretera Mochis - Topo Km8';
 
 const EVENT_DATE_LONG = '30 de octubre de 2026';
 const EVENT_DATE_HEADING = 'Viernes, 30 de octubre de 2026';
-const CEREMONY_TIME = '19:00';
-const RECEPTION_TIME = '21:00';
 
 const VICTORIA_INTERLUDE_01 = {
 	alt: 'Victoria y Roberto en un momento íntimo sobre un puente de madera',
@@ -242,7 +242,7 @@ export function buildVictoriaPublishedContent(
 					address: ceremonyAddress,
 					city: 'Los Mochis, Sinaloa',
 					date: EVENT_DATE_LONG,
-					time: CEREMONY_TIME,
+					time: VICTORIA_SCHEDULE_DETAILS.ceremonyTime,
 					googleMapsUrl: VICTORIA_SCHEDULE_DETAILS.ceremonyMapUrl,
 				},
 				{
@@ -253,7 +253,7 @@ export function buildVictoriaPublishedContent(
 					address: receptionAddress,
 					city: 'Los Mochis, Sinaloa',
 					date: EVENT_DATE_LONG,
-					time: RECEPTION_TIME,
+					time: VICTORIA_SCHEDULE_DETAILS.receptionTime,
 					googleMapsUrl: VICTORIA_SCHEDULE_DETAILS.receptionMapUrl,
 				},
 			],
@@ -279,28 +279,43 @@ export function buildVictoriaPublishedContent(
 				{
 					iconName: 'Church',
 					label: 'Nos damos el sí',
-					time: CEREMONY_TIME,
+					time: VICTORIA_SCHEDULE_DETAILS.ceremonyTime,
 					description: 'Ceremonia en Parroquia Santo Niño.',
 				},
 				{
 					iconName: 'Reception',
-					label: 'Nos encontramos',
-					time: RECEPTION_TIME,
+					label: 'Recepción de invitados',
+					time: VICTORIA_SCHEDULE_DETAILS.receptionTime,
 					description: 'Recepción en Eventos Platinum LM.',
 				},
 				{
+					iconName: 'Rings',
+					label: 'Entrada de los novios',
+					time: VICTORIA_SCHEDULE_DETAILS.coupleEntryTime,
+				},
+				{
+					iconName: 'Waltz',
+					label: 'Baile de los novios',
+					time: VICTORIA_SCHEDULE_DETAILS.firstDanceTime,
+				},
+				{
 					iconName: 'Dinner',
-					label: 'Compartimos la mesa',
+					label: 'Cena',
 					time: VICTORIA_SCHEDULE_DETAILS.dinnerTime,
 				},
 				{
-					iconName: 'Toast',
-					label: 'Levantamos las copas',
-					time: VICTORIA_SCHEDULE_DETAILS.toastTime,
+					iconName: 'FlowerSeal',
+					label: 'Lanzamiento de ramo',
+					time: VICTORIA_SCHEDULE_DETAILS.bouquetTossTime,
 				},
 				{
 					iconName: 'Party',
-					label: 'Cerramos la noche',
+					label: 'Hora loca / música',
+					time: VICTORIA_SCHEDULE_DETAILS.partyTime,
+				},
+				{
+					iconName: 'Toast',
+					label: 'Despedida de los novios',
 					time: VICTORIA_SCHEDULE_DETAILS.closingTime,
 				},
 			],
@@ -405,7 +420,7 @@ export function buildVictoriaPublishedContent(
 			},
 			calendar: {
 				title: 'Boda de Victoria y Roberto',
-				description: `Ceremonia religiosa en Parroquia Santo Niño (${CEREMONY_TIME}) y recepción en Eventos Platinum LM (${RECEPTION_TIME}). Los Mochis, Sinaloa.`,
+				description: `Ceremonia religiosa en Parroquia Santo Niño (${VICTORIA_SCHEDULE_DETAILS.ceremonyTime}) y recepción en Eventos Platinum LM (${VICTORIA_SCHEDULE_DETAILS.receptionTime}). Los Mochis, Sinaloa.`,
 				startsAt: VICTORIA_EVENT.startsAtUtc,
 			},
 			personalizedAccess: {

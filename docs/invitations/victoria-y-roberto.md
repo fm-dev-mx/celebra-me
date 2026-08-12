@@ -51,11 +51,14 @@ Canonical route (creation contract): `/boda/victoria-y-roberto` — slug must no
 | displayCoupleNames    | Victoria & Roberto                                                                                      | verified       | wa-export + owner | Guest-facing lockup                                                                                        |
 | eventDate             | 2026-10-30                                                                                              | verified       | wa-export + owner | WA: “30 DE OCTUBRE”; year 2026 explicit owner decision for this preparation                                |
 | timeZone              | America/Mazatlan                                                                                        | inferred       | geography         | Los Mochis, Sinaloa (Pacific / Northwest MX); not client-stated                                            |
-| ceremonyTime          | 19:00                                                                                                   | verified       | wa-export         | “CEREMONIA HORA 7:00 PM”                                                                                   |
-| receptionTime         | 21:00                                                                                                   | verified       | wa-export         | “RECEPCION 9:00 PM”                                                                                        |
-| dinnerTime            | [[PENDIENTE:DINNER_TIME]]                                                                               | missing        | owner plan        | Planned itinerary item “Cena”; time not client-confirmed                                                   |
-| toastTime             | [[PENDIENTE:TOAST_TIME]]                                                                                | missing        | owner plan        | Planned itinerary item “Brindis”; time not client-confirmed                                                |
-| closingTime           | [[PENDIENTE:CLOSING_TIME]]                                                                              | missing        | owner plan        | Planned itinerary item “Cierre de celebración”; time not client-confirmed                                  |
+| ceremonyTime          | 19:00                                                                                                   | verified       | wa-export         | “Nos damos el si parroquia 7:00 pm”                                                                        |
+| receptionTime         | 21:00                                                                                                   | verified       | wa-export         | “Recepción de invitados lugar 9:00pm”                                                                      |
+| coupleEntryTime       | 21:00                                                                                                   | verified       | wa-export         | “Entrada de los novios 9:00pm”                                                                             |
+| firstDanceTime        | 21:30                                                                                                   | verified       | wa-export         | “Baile de los novios 9:30pm”                                                                               |
+| dinnerTime            | 22:30                                                                                                   | verified       | wa-export         | “Cena 10:30 pm”                                                                                            |
+| bouquetTossTime       | 23:30                                                                                                   | verified       | wa-export         | “Lanzamiento de ramo 11:30pm”                                                                              |
+| partyTime             | 23:40                                                                                                   | verified       | wa-export         | “Hora loca/música 11:40 pm”                                                                                |
+| closingTime           | 02:00                                                                                                   | verified       | wa-export         | “Despedida de los novios 2:00 am”                                                                          |
 | primaryVenueName      | Parroquia Santo Niño                                                                                    | verified       | wa-export         | Ceremony venue                                                                                             |
 | primaryVenueAddress   | Lic. Benito Juárez S/N, Mochicahui, 81257 Los Mochis, Sin.                                              | verified       | wa-export         | Ceremony address                                                                                           |
 | ceremonyMapUrl        | [[PENDIENTE:CEREMONY_MAP_URL]]                                                                          | missing        | —                 | Navigation URL not verified; do not fabricate                                                              |
@@ -110,7 +113,6 @@ Contract maturity for this event type: `partial` (`getEventCompletenessContract(
 ### Non-blocking gaps
 
 - Ceremony / reception map URLs (placeholders)
-- Dinner / toast / closing itinerary times (placeholders)
 - Roberto legal surname (not required by current boda completeness matrix)
 - Exact guest-facing quote wording (reference resolved; copy in Goal 2)
 - Supporting palette neutrals/gold/cream (agent recommendation only)
@@ -132,13 +134,10 @@ Answer: `yes` (`evaluateEventCompleteness('boda', facts)`).
 
 Use only grep-able tokens: `[[PENDIENTE:FIELD_ID]]`.
 
-| token                             | missing datum   | blocking | reason                                            | replacement requirement                                      |
-| --------------------------------- | --------------- | -------- | ------------------------------------------------- | ------------------------------------------------------------ |
-| `[[PENDIENTE:CEREMONY_MAP_URL]]`  | ceremonyMapUrl  | no       | Venue known; navigation URL not verified          | Owner-verified Google Maps (or equivalent) URL for ceremony  |
-| `[[PENDIENTE:RECEPTION_MAP_URL]]` | receptionMapUrl | no       | Venue known; navigation URL not verified          | Owner-verified Google Maps (or equivalent) URL for reception |
-| `[[PENDIENTE:DINNER_TIME]]`       | dinnerTime      | no       | “Cena” planned; time not client-confirmed         | Owner manual time after review before final publication      |
-| `[[PENDIENTE:TOAST_TIME]]`        | toastTime       | no       | “Brindis” planned; time not client-confirmed      | Owner manual time after review before final publication      |
-| `[[PENDIENTE:CLOSING_TIME]]`      | closingTime     | no       | “Cierre de celebración” planned; time unconfirmed | Owner manual time after review before final publication      |
+| token                             | missing datum   | blocking | reason                                   | replacement requirement                                      |
+| --------------------------------- | --------------- | -------- | ---------------------------------------- | ------------------------------------------------------------ |
+| `[[PENDIENTE:CEREMONY_MAP_URL]]`  | ceremonyMapUrl  | no       | Venue known; navigation URL not verified | Owner-verified Google Maps (or equivalent) URL for ceremony  |
+| `[[PENDIENTE:RECEPTION_MAP_URL]]` | receptionMapUrl | no       | Venue known; navigation URL not verified | Owner-verified Google Maps (or equivalent) URL for reception |
 
 `READY_WITH_PLACEHOLDERS` may contain only documented **non-blocking** placeholders. No blocking
 placeholders remain.
@@ -212,13 +211,16 @@ an accepted owner placement decision.
 
 ### Itinerary preparation
 
-| item                  | time                         | classification         |
-| --------------------- | ---------------------------- | ---------------------- |
-| Ceremonia religiosa   | 19:00                        | verified               |
-| Recepción             | 21:00                        | verified               |
-| Cena                  | `[[PENDIENTE:DINNER_TIME]]`  | planned / missing time |
-| Brindis               | `[[PENDIENTE:TOAST_TIME]]`   | planned / missing time |
-| Cierre de celebración | `[[PENDIENTE:CLOSING_TIME]]` | planned / missing time |
+| item                    | time  | classification |
+| ----------------------- | ----- | -------------- |
+| Nos damos el sí         | 19:00 | verified       |
+| Recepción de invitados  | 21:00 | verified       |
+| Entrada de los novios   | 21:00 | verified       |
+| Baile de los novios     | 21:30 | verified       |
+| Cena                    | 22:30 | verified       |
+| Lanzamiento de ramo     | 23:30 | verified       |
+| Hora loca / música      | 23:40 | verified       |
+| Despedida de los novios | 02:00 | verified       |
 
 ### Semantic roles (copy constraints for Goal 2)
 
@@ -389,7 +391,7 @@ the human creative decision and does not change `prepReadiness`.
 | Section boundaries and narrative continuity | **pass**; remaining Family/RSVP observations are accepted taste notes, not defects.                                                                                                                 |
 | Human creative outcome                      | **`ACCEPTED_WITH_BLOCKERS`**                                                                                                                                                                        |
 | Reviewer and date                           | Owner visual review, 2026-08-08                                                                                                                                                                     |
-| Blocking reason or owner follow-up          | Only the five owner-data blockers below remain before Production: ceremony map URL, reception map URL, dinner time, toast time, closing time.                                                       |
+| Blocking reason or owner follow-up          | Only the two owner-data map URL blockers below remain before Production: ceremony map URL, reception map URL. Itinerary times confirmed by client on 2026-08-12. |
 
 `ACCEPTED_WITH_BLOCKERS` here records an operational owner-data dependency, not an open visual
 correction. It must block the applicable Production boundary without blocking unrelated development.
@@ -399,27 +401,27 @@ correction. It must block the applicable Production boundary without blocking un
 The original Goal 1 visual findings remain the fixed audit set; no new subjective findings were
 opened during Goal 4.
 
-|   # | finding area                                | final disposition                         | evidence / note                                                                            |
-| --: | ------------------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------ |
-|   1 | Cross-section editorial consistency         | **resolved**                              | Goal 3 editorial system plus Goal 3B whole-invitation review.                              |
-|   2 | Typography roles and heterogeneity          | **resolved by shared infrastructure**     | Semantic font roles/tokens and profile selectors; structural tests retained.               |
-|   3 | Vertical rhythm and density                 | **resolved**                              | Goal 2/3 rhythm corrections and focused responsive capture.                                |
-|   4 | Generic cards and bordered surfaces         | **resolved**                              | Open-flow/local surface hierarchy; residual RSVP container presence is accepted taste.     |
-|   5 | Photographic/content transitions            | **resolved by shared infrastructure**     | Canonical intersection profiles and render-plan coverage.                                  |
-|   6 | Reveal card-like opening                    | **resolved**                              | Victoria reveal refinement; reveal-open contract and Goal 3B reveal report.                |
-|   7 | Hero lower hierarchy                        | **resolved**                              | Goal 3 hero composition evidence; not reopened in Goal 3B.                                 |
-|   8 | Quote/countdown empty space                 | **resolved**                              | Countdown composition and rhythm evidence in section report.                               |
-|   9 | Location refinement                         | **resolved**                              | Shared location semantics plus Victoria profile; no regression found.                      |
-|  10 | Itinerary unfinished state                  | **blocked only by owner-controlled data** | Visual pacing is corrected; dinner, toast, and closing times remain explicit placeholders. |
-|  11 | Family hierarchy                            | **intentionally unchanged with evidence** | Accepted visual quality; further editorial exploration is optional, not a defect.          |
-|  12 | Gallery sparse/provisional treatment        | **resolved**                              | Single-image editorial treatment; cross-preset `single` tests pass.                        |
-|  13 | Gifts generic card stack                    | **resolved**                              | Goal 3 surface hierarchy and focused whole-page review.                                    |
-|  14 | Personalized Access / RSVP density mismatch | **resolved**                              | Connected guest-action sequence in Goal 3B.                                                |
-|  15 | RSVP incomplete initial state               | **resolved**                              | Initial/progression behavior retained; focused RSVP evidence passes.                       |
-|  16 | ThankYou duplicated rendering               | **resolved by shared infrastructure**     | Goal 2 duplicate-message guard; no Victoria workaround remains.                            |
-|  17 | ThankYou closing reading flow               | **resolved**                              | Goal 3B closing refinement; no disruptive drop-cap remains.                                |
+|   # | finding area                                | final disposition                     | evidence / note                                                                   |
+| --: | ------------------------------------------- | ------------------------------------- | --------------------------------------------------------------------------------- |
+|   1 | Cross-section editorial consistency         | **resolved**                          | Goal 3 editorial system plus Goal 3B whole-invitation review.                     |
+|   2 | Typography roles and heterogeneity          | **resolved by shared infrastructure** | Semantic font roles/tokens and profile selectors; structural tests retained.      |
+|   3 | Vertical rhythm and density                 | **resolved**                          | Goal 2/3 rhythm corrections and focused responsive capture.                       |
+|   4 | Generic cards and bordered surfaces         | **resolved**                          | Open-flow/local surface hierarchy; residual RSVP container presence is accepted.  |
+|   5 | Photographic/content transitions            | **resolved by shared infrastructure** | Canonical intersection profiles and render-plan coverage.                         |
+|   6 | Reveal card-like opening                    | **resolved**                          | Victoria reveal refinement; reveal-open contract and Goal 3B reveal report.       |
+|   7 | Hero lower hierarchy                        | **resolved**                          | Goal 3 hero composition evidence; not reopened in Goal 3B.                        |
+|   8 | Quote/countdown empty space                 | **resolved**                          | Countdown composition and rhythm evidence in section report.                      |
+|   9 | Location refinement                         | **resolved**                          | Shared location semantics plus Victoria profile; no regression found.             |
+|  10 | Itinerary unfinished state                  | **resolved**                          | Visual pacing is corrected; itinerary items/times confirmed by client 2026-08-12. |
+|  11 | Family hierarchy                            | **intentionally unchanged**           | Accepted visual quality; further editorial exploration is optional.               |
+|  12 | Gallery sparse/provisional treatment        | **resolved**                          | Single-image editorial treatment; cross-preset `single` tests pass.               |
+|  13 | Gifts generic card stack                    | **resolved**                          | Goal 3 surface hierarchy and focused whole-page review.                           |
+|  14 | Personalized Access / RSVP density mismatch | **resolved**                          | Connected guest-action sequence in Goal 3B.                                       |
+|  15 | RSVP incomplete initial state               | **resolved**                          | Initial/progression behavior retained; focused RSVP evidence passes.              |
+|  16 | ThankYou duplicated rendering               | **resolved by shared infrastructure** | Goal 2 duplicate-message guard; no Victoria workaround remains.                   |
+|  17 | ThankYou closing reading flow               | **resolved**                          | Goal 3B closing refinement; no disruptive drop-cap remains.                       |
 
-The only remaining owner-data blockers are the five placeholders listed above; none blocks unrelated
+The only remaining owner-data blockers are the map URL placeholders listed above; none blocks unrelated
 implementation or shared-contract validation.
 
 ---
