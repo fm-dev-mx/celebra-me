@@ -2,7 +2,9 @@
 
 > Historical, non-authoritative record. Exact versions, identifiers, commands, and runtime claims
 > below describe the implementation session in which they were recorded. For current operations, use
-> `docs/domains/intake/production-flow.md` and `pnpm invitation:release -- --help`.
+> `docs/domains/intake/production-flow.md` and `pnpm invitation:release -- --help`. The current
+> reusable-architecture contract is [`romina-rios-chaparro.md`](romina-rios-chaparro.md); this file
+> remains a historical record.
 
 This document records the implementation details, baseline state, decision register,
 original-requirement completion matrix, image allocation catalog, and publication workflow for the

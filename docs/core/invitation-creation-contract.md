@@ -22,17 +22,17 @@ Every managed digital invitation must define:
   resolution and uniqueness use this value — never title or client name.
 - **Previous Slugs** (`previousSlugs`, optional): Historical slugs for this managed identity. Used
   for alias diagnostics and fail-closed `REKEY_REQUIRED` protection. Creating a new row when a
-  previous slug is still active is forbidden; operators must pass `--rekey-from <old-slug>`.
-  Guarded rekey (Local and Preview only; Production blocked) preserves invitation UUID, owner,
-  publication, event, RSVP data, provenance, and assets; it aborts on collisions or drift.
-  `managedIdentityId` is assigned/backfilled even when content is otherwise unchanged.
+  previous slug is still active is forbidden; operators must pass `--rekey-from <old-slug>`. Guarded
+  rekey (Local and Preview only; Production blocked) preserves invitation UUID, owner, publication,
+  event, RSVP data, provenance, and assets; it aborts on collisions or drift. `managedIdentityId` is
+  assigned/backfilled even when content is otherwise unchanged.
 - **Display Name** (`title`): Spanish human-readable title (e.g. `Romina Ríos Chaparro`).
 - **Canonical Slug** (`slug`): Lowercase hyphenated unique identifier (e.g. `romina-rios-chaparro`,
   `daniela-y-martin`). Slug drives public URLs, assets, and storage paths. It is **not** the host
   login.
-  - **Do not prefix the slug with `eventType`.** Public routes are already
-    `/{eventType}/{slug}` (e.g. `/boda/daniela-y-martin`). A slug like `boda-daniela-y-martin`
-    produces a redundant URL (`/boda/boda-daniela-y-martin`) and is forbidden for new invitations.
+  - **Do not prefix the slug with `eventType`.** Public routes are already `/{eventType}/{slug}`
+    (e.g. `/boda/daniela-y-martin`). A slug like `boda-daniela-y-martin` produces a redundant URL
+    (`/boda/boda-daniela-y-martin`) and is forbidden for new invitations.
   - Prefer celebrant/couple identity tokens only (names), not event-type labels (`boda`, `xv`,
     `cumple`, etc.).
   - `assetSlug` and `visualProfileId` should match the canonical slug unless a documented exception
@@ -82,6 +82,32 @@ When a new invitation uses custom section-to-section composition, select and ver
 canonical [Invitation Section Intersection System](../domains/theme/section-intersections.md). That
 theme-domain document owns the reusable patterns and review criteria; this creation contract does
 not redefine them.
+
+### Variant, style, and asset contract
+
+New managed content must follow the canonical
+[`variant-system.md`](../domains/theme/variant-system.md):
+
+- Select structural or behavioral choices with the owning `section.variant` field. Do not author
+  `sectionStyles.*.structuralVariant`, theme-named Gallery layouts, or
+  `itinerary.presentation.behavior` in new content.
+- Treat `theme.preset` and `visualVariant` as visual skin inputs only. Neither may select a
+  renderer, structural layout, required DOM, or section behavior.
+- Supply every variant-specific field required by its discriminated section schema. Unknown and
+  incompatible configurations must fail publication validation.
+- Keep profile SCSS limited to tokens, palette, typography, crop, decoration, and timing. Canonical
+  grid, order, required visibility, and structural breakpoints belong to the section variant's
+  semantic SCSS entrypoint.
+- Reference client photographs and artwork through the invitation's typed semantic asset keys. Do
+  not import another invitation's files from reusable code or styles.
+- Author non-neutral boundary choices in typed `composition.intersections`; do not derive them from
+  slug or profile identity.
+
+A reusable variant may originate during invitation work, but its name and implementation must
+describe design, structure, or behavior and retain no originating-client identity. Promotion
+requires an explicit typed contract, isolated CSS delivery, invalid/incompatible tests, and a
+non-origin portability proof without the originating profile or assets. One-off profile composition
+remains invitation-specific until that evidence exists.
 
 ---
 

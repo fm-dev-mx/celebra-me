@@ -126,10 +126,11 @@ Each profile should classify its boundaries before styling them:
 - **Climax:** an arch or the final atmospheric transition marks a narrative turn; reserve these for
   one or two moments in the invitation.
 
-Record only the non-neutral mappings in `intersection-profiles.ts`; the absence of a mapping is the
-intentional neutral default. A profile stylesheet must reserve its predecessor's trailing space for
-an overlap and document any non-obvious stacking relationship beside the selector. Do not promote a
-profile cadence to shared code until it has proven reusable without depending on client identity.
+Record only the non-neutral mappings in typed `composition.intersections`; the absence of a mapping
+is the intentional neutral default. A profile stylesheet may tune the selected treatment with tokens
+and must document any non-obvious stacking relationship beside the selector. It must not select the
+intersection from client identity. Do not promote a profile cadence to shared code until it has
+proven reusable without depending on client identity.
 
 Treat a bridge as a short material handoff, not a new section background: match the adjacent surface
 colors, keep the transition zone shallow, and never hide, desaturate, or soften the selected media.
@@ -155,9 +156,10 @@ colors, keep the transition zone shallow, and never hide, desaturate, or soften 
 
 ## Profile and Shared Ownership
 
-Client-specific composition belongs in `src/styles/invitation-profiles/<slug>.scss`, scoped by the
-invitation's event class. This includes which boundaries receive a treatment, exact client palette
-relationships, photo selection, focal behavior, and narrative sequencing.
+Boundary selection and source relationships belong in the invitation's typed
+`composition.intersections` configuration. Client profiles under
+`src/styles/invitation-profiles/<slug>.scss` may own exact palette relationships, focal treatment,
+decoration, and timing for those selected boundaries, scoped by the invitation's event class.
 
 Shared capabilities must remain generic and configurable:
 
@@ -178,10 +180,11 @@ Reusable mechanics are selected before rendering and copied onto stable wrapper 
 - `data-intersection-source`: explicit source identity from the selected composition profile;
 - `data-section-kind`: stable incoming section kind.
 
-Selection is owned by `src/lib/invitation/intersection-profiles.ts` and copied through the render
-plan. CSS must not infer a family from route slug, JSON order, screenshot order, `nth-*`, incidental
-adjacency, or a theme name. Profiles may set visual tokens against these stable attributes; shared
-mechanics live in `src/styles/invitation/_section-intersections.scss`.
+Selection is owned by typed `composition.intersections` (with legacy profile injection only at the
+variant-normalization boundary) and copied through the render plan. CSS must not infer a family from
+route slug, JSON order, screenshot order, `nth-*`, incidental adjacency, or a theme name. Profiles
+may set visual tokens against these stable attributes; shared mechanics live in
+`src/styles/invitation/_section-intersections.scss`.
 
 Current explicit mappings:
 

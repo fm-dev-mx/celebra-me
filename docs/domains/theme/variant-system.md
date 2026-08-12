@@ -1,178 +1,125 @@
-# Canonical Variant System
+# Canonical Invitation Variant System
 
-**Last Updated:** 2026-08-10
+**Status:** Active architecture contract
 
-**Related:** [`architecture.md`](architecture.md), [`gallery-variants.md`](gallery-variants.md),
+**Related:** [`variant-compatibility.md`](variant-compatibility.md),
+[`gallery-variants.md`](gallery-variants.md),
+[`section-intersections.md`](section-intersections.md), and
 [`../content/section-contracts.md`](../content/section-contracts.md)
 
-The current parity and ownership evidence is recorded in
-[`render-parity-ownership-audit-2026-08-10.md`](../../archive/reports/render-parity-ownership-audit-2026-08-10.md).
-That report is diagnostic: its confirmed compatibility findings are not runtime fixes.
+The canonical dependency direction is:
 
-This is the post-Goal-4 inventory of supported invitation variation. It separates structural
-renderer selection from presentation options and visual skins. A missing structural variant is
-intentional: the section uses its shared implementation.
+`Invitation configuration → section-owned typed variant → renderer + isolated variant SCSS → shared primitives`
 
-## Ownership and precedence
+Historical origin is evidence, never architectural identity. A reusable artifact may be developed
+while building a client invitation, but its identifier, code, stylesheet, data contract, and assets
+must remain independent of that client.
 
-- Structural choices are owned by the section contract and are emitted as `data-structural-variant`
-  (Gallery always emits the resolved layout ID). They must not be selected from `theme.preset`,
-  invitation slug, or `visualProfileId` in canonical content.
-- Presentation options change media, behavior, or emphasis without selecting a renderer. They are
-  validated by the owning section schema.
-- Skins and modifiers consume theme or invitation tokens. They may change color, typography,
-  imagery, decoration, motion timing, or copy, but must not replace a canonical structural grid or
-  renderer.
-- Theme structural fallbacks are retired: omitted or invalid structural selectors resolve to the
-  section default (`standard`, or Gallery `uniform-grid`). Legacy theme-named gallery inputs remain
-  only as compatibility aliases for layout ID resolution / visual skin; they do not imply structure
-  from `theme.preset` alone.
-- Canonical structural resolvers and section renderers must not branch on invitation slug,
-  `eventType`, or `visualProfileId`. Identity-based behavior belongs in a named compatibility or
-  profile boundary with an active consumer and a removal condition.
+## Boundary and authority
 
-## Final inventory
+Each participating section owns a closed `section.variant` vocabulary in its schema. Canonical
+content must select that value explicitly. The schema validates the selection before the adapter,
+the adapter exposes a typed section view-model, the render descriptor propagates it, and the section
+emits `data-structural-variant` when the value affects structure or renderer behavior.
 
-The inventory uses one record per section so each contract remains readable without horizontal
-scrolling.
+Canonical selection must never read `theme.preset`, invitation slug, client or person name,
+`visualProfileId`, `_assetSlug`, event-specific identifiers, another invitation's configuration, or
+hidden global state. Unknown variants and variants missing their required data fail schema
+validation; they do not fall back silently.
 
-- **Hero**
-  - **Canonical structural owner:** `hero.structuralVariant`: `standard`, `editorial-cover`,
-    `split-cover` → `Hero.astro` (+ `EditorialMagazineHero.astro` for cover)
-  - **Presentation / skin:** `portraitEnabled`; `hero.variant`; focal tokens; split plane/overlay
-    tokens (`--hero-split-*`)
-  - **Fallback / exception / evidence:** Invalid/omitted → `standard` (no theme fallback). Explicit
-    selection required for `editorial-cover` and `split-cover`. Origins: Valentina / editorial demos
-    (cover); Romina Ríos (`split-cover`). Tests: `structural-variants`,
-    `structural-variant-portability`, `section-css-resolver-map`.
-- **Thank You**
-  - **Canonical structural owner:** `sectionStyles.thankYou.structuralVariant`: `standard`,
-    `editorial-back-cover`, `full-bleed-photo` → `ThankYou.astro`
-  - **Presentation / skin:** `sectionStyles.thankYou.variant`
-  - **Fallback / exception / evidence:** Invalid/omitted → `standard` (no theme fallback). Tests:
-    `structural-variants`, Victoria payload.
-- **Gifts**
-  - **Canonical structural owner:** `sectionStyles.gifts.structuralVariant`: `standard`,
-    `editorial-catalog` → `Gifts.astro`
-  - **Presentation / skin:** `gifts.presentation`: `catalog` (default) / `legend-only`;
-    `sectionStyles.gifts.variant`
-  - **Fallback / exception / evidence:** Invalid/omitted structural → `standard`. Absent
-    presentation → catalog. `legend-only` omits the item grid and must not carry catalog items;
-    section omission remains distinct (no `gifts` block). Origin: Alba Rosa (presentation);
-    editorial demos (`editorial-catalog`). Tests: `presentation-options-goal-c`,
-    `structural-variant-portability`, Alba payload.
-- **RSVP**
-  - **Canonical structural owner:** `sectionStyles.rsvp.structuralVariant`: `standard`,
-    `editorial-press-pass` → RSVP components
-  - **Presentation / skin:** State/access and labels are interaction/skin contracts
-  - **Fallback / exception / evidence:** Invalid/omitted → `standard` (no theme fallback). Tests:
-    `structural-variants`, `structural-variant-portability`, RSVP suites.
-- **Personalized Access**
-  - **Canonical structural owner:** `rsvp.personalizedAccess.structuralVariant`: `standard`,
-    `ornamented`, `editorial-pass` → `PersonalizedAccess.astro`
-  - **Presentation / skin:** Parent RSVP skin and invitation tokens
-  - **Fallback / exception / evidence:** Invalid/omitted → `standard` (no theme fallback). Tests:
-    `structural-variants`, `structural-variant-portability`, CSS resolver map.
-- **Gallery layout**
-  - **Canonical structural owner:** `gallery.variant` → `Gallery.astro` / `PhotoGallery.astro`
-  - **Presentation / skin:** `gallery.presentation`, `gallery.presentationOptions.mobileBrowse`
-    (`stack` default / `rail`), item roles, `visualVariant`, focal/caption tokens
-  - **Fallback / exception / evidence:** Invalid/omitted → `uniform-grid`. Renderer always emits
-    `data-structural-variant` for the resolved layout ID. `rail` is orthogonal to `magazine-spread`.
-    Retained exceptions: Abril 2×2 profile composition; `jewelry-box-wedding` nth-child storyboard.
-    Tests: SV/CSS/Abril/Victoria, `structural-variant-portability`, `presentation-options-goal-c`.
-- **Itinerary**
-  - **Canonical structural owner:** `itinerary.presentation.behavior`: `standard`, `timeline-paper`
-    → `Itinerary.astro`
-  - **Presentation / skin:** Theme tokens and behavior tokens
-  - **Fallback / exception / evidence:** Authority is `presentation.behavior` only. Omitted →
-    `standard`. Theme-name fallback and the `celestial-blue` → `timeline-paper` alias are retired.
-    Tests: itinerary adapter, Abril / Ana Sofía corpus, `structural-variant-portability`.
-- **Location**
-  - **Canonical structural owner:** `location.structuralVariant`: `standard`, `split-map` →
-    `EventLocation.astro` / `VenueCard.astro`
-  - **Presentation / skin:** `location.presentation` (`simple`, `with-map`, `with-photo`) and
-    `presentationOptions.showNavigationButtons` / `showFlourishes`; map materiality/button chrome
-    remain skins. Linked map-preview surfaces when `mediaMode=none` and
-    `showNavigationButtons=false` (Daniela) — not a separate presentation enum.
-  - **Fallback / exception / evidence:** Invalid/omitted structural → `standard`. Legacy section
-    flags fold one-way; canonical options win. Origins: Alba Rosa (`split-map`); Daniela map preview
-    reuses existing presentation options. Tests: `structural-variants`,
-    `structural-variant-portability`, `section-css-resolver-map`, venue contract, Daniela payload.
-- **Family**
-  - **Canonical structural owner:** `family.structuralVariant`: `standard`, `split-groups` →
-    `Family.astro`
-  - **Presentation / skin:** `family.presentation`: `with-photo` / `text-only`; divider/type tokens
-    (`--family-split-*`)
-  - **Fallback / exception / evidence:** Invalid/omitted → `standard`. Absent presentation follows
-    media availability. Origins/pilot: Daniela y Martín; Victoria y Roberto. Tests:
-    `structural-variants`, `structural-variant-portability`, `section-css-resolver-map`,
-    presentation contract and draft mappers.
-- **Gallery item roles**
-  - **Canonical structural owner:** Shared item renderer; `feature`, `wide`, `standard`
-  - **Presentation / skin:** Focal/image treatment; `pet-keepsake` presentation
-  - **Fallback / exception / evidence:** Incompatible role/presentation combinations are
-    schema-rejected. Tests: presentation/editor schema.
-- **Envelope seal**
-  - **Canonical structural owner:** `resolveSealPresentation`: five renderer types → reveal renderer
-  - **Presentation / skin:** `sealColor` / `sealVariant`
-  - **Fallback / exception / evidence:** `wax-monogram` aliases organic wax; style/icon aliases
-    remain. Tests: reveal-card contract.
-- **Quote, Countdown, Footer, Interludes**
-  - **Canonical structural owner:** Shared implementations; no independent structural variant
-  - **Presentation / skin:** Countdown `presentationOptions.visibleUnits` (default all four units;
-    empty selection rejected). Theme/preset skins plus motion/intersection modifiers.
-  - **Fallback / exception / evidence:** Theme names are visual compatibility only. Countdown
-    days-only origin: Alba Rosa. Tests: style-boundary, section suites,
-    `presentation-options-goal-c`.
+Legacy inputs are normalized once by `src/lib/invitation/variant-normalization.ts`, before the
+canonical schema/adapter contract. The supported aliases, known consumers, and retirement conditions
+are maintained in [`variant-compatibility.md`](variant-compatibility.md). Renderers, descriptors,
+canonical CSS, and shared primitives must contain no compatibility branches.
 
-Gallery layout identifiers are `uniform-grid`, `editorial-mosaic`, `magazine-spread`,
-`feature-mosaic`, `index-choreography`, and `single-keepsake`.
+## Canonical inventory
 
-## Profile boundary
+- **Hero:** `standard`, `editorial-cover`, `split-cover`.
+  - `editorial-cover` owns its specialized renderer and semantic stylesheet.
+  - `split-cover` uses the shared Hero DOM and owns all required responsive plane/title geometry in
+    `_split-cover.scss`.
+  - `hero.visualVariant` is an independent visual skin.
+- **Family:** `standard`, `split-groups`.
+  - `split-groups` requires at least two explicit `groups` through a discriminated schema contract.
+- **Location:** `standard`, `split-map`.
+  - `split-map` requires at least one visible venue with coordinates or image media.
+  - Map/navigation media and presentation flags remain explicit section capabilities.
+- **Gallery:** `uniform-grid`, `editorial-mosaic`, `magazine-spread`, `feature-mosaic`,
+  `index-choreography`, `single-keepsake`.
+  - `gallery.variant` owns layout; `gallery.visualVariant` owns skin.
+  - Item roles and `presentationOptions.mobileBrowse` remain orthogonal typed capabilities.
+- **Itinerary:** `standard`, `timeline-paper`.
+  - The value selects the renderer path and is emitted as `data-structural-variant`.
+  - `_timeline-paper.scss` is delivered independently from theme and profile bundles.
+- **Gifts:** `standard`, `editorial-catalog`.
+- **RSVP:** `standard`, `editorial-press-pass`.
+- **Personalized Access:** `standard`, `ornamented`, `editorial-pass`.
+- **Thank You:** `standard`, `editorial-back-cover`, `full-bleed-photo`.
 
-Profiles may provide scoped tokens, typography, color, crop, decorative treatment, and motion
-timing. They must not choose a renderer, replace a canonical selector, or supply structural CSS
-needed by a canonical variant. The known exceptions are deliberately explicit:
+Sections without a structural choice use their shared renderer and do not receive a synthetic
+variant abstraction merely for symmetry.
 
-- Abril's `uniform-grid` selector adds a local 2×2 composition and feature crop. It is not promoted
-  to a new variant because no second reusable invitation contract currently proves that semantic
-  difference.
-- Celestial Blue's Gallery profile changes reveal sequencing only.
-- Victoria's single-keepsake profile supplies visual tokens; the canonical single-image structure is
-  owned by `src/styles/invitation/_gallery.scss`.
-- The `jewelry-box-wedding` Gallery storyboard remains a compatibility path until a replacement
-  proves equivalent nth-child behavior.
+## Data and configuration compatibility
 
-Any new exception must record the invitation, canonical mechanism extended, reason extraction is
-unjustified, and the evidence that would trigger reevaluation.
+Canonical managed definitions, demos, templates, editor drafts, and publication mappers write
+`section.variant` directly. Structural choices no longer live under `sectionStyles`, and Itinerary
+behavior no longer lives under `presentation`. Gallery layout and visual skin are separate fields.
 
-Managed corpus migrations retired the Luna location-policy identity branch, Leah navigation slug
-map, and Xareni seal-token bridge in favor of explicit content / profile ownership. Remaining
-profile exceptions (Abril 2×2, jewelry-box-wedding gallery storyboard) are documented below and do
-not change the canonical variant inventory.
+When variant-specific requirements differ, the owning schema represents them as a discriminated
+contract or a typed compatibility refinement. A variant may consume only its section view-model and
+documented capabilities. Cross-section composition is not variant data.
 
-## Required change and retirement checks
+## SCSS ownership and isolation
 
-Before adding a structural variant, prove that existing variants and tokens cannot express the
-requirement. Add the schema/type contract, renderer and CSS delivery, explicit representative
-configuration, focused valid/invalid/fallback tests, and documentation together.
+Semantic variant entrypoints live at
+`src/styles/themes/sections/<section>/_<semantic-variant>.scss`. They own the DOM geometry, order,
+responsive breakpoints, and visibility required for that variant. The section CSS resolver loads
+these entrypoints independently from the active theme bundle.
 
-Before removing compatibility, search managed definitions, demos, fixtures, tests, schemas,
-adapters/resolvers, preview/publishing paths, and operational documentation. A path is removable
-only after all of those consumers are zero; otherwise retain it with the exact blocker documented.
+Theme bundles and invitation profiles may supply palette, typography, crop, decoration, motion
+timing, and documented custom-property values. They may not import a canonical structural partial,
+redeclare its grid/order/required breakpoint, hide required elements, or make the canonical variant
+meaningful only under a particular profile.
 
-The directed validation set is the focused variant/contract suites plus `pnpm run ci`. Cross-theme
-browser comparison is reserved for changes that affect renderer selection, structural CSS, layout,
-or profile interaction.
+## Assets and shared primitives
 
-### Parity audit checklist
+Invitation photographs and client artwork remain invitation-owned and are referenced through typed
+semantic asset keys. A reusable variant receives resolved assets only through its explicit section
+contract; it never imports from another invitation's asset directory. Variant-owned decorative
+assets are permitted only when they are generic, stored with the variant/shared primitive, and
+documented as part of that reusable contract.
 
-- [ ] Enumerate managed published, managed `in_progress`, legacy, and representative demo sources
-      from their registries; do not use a hand-maintained invitation list.
-- [ ] Trace each rendered section from content/config through adapter, render descriptor, renderer
-      attribute, and delivered structural/profile CSS.
-- [ ] Classify each invitation × section exactly once as `MATCH`, `INTENTIONAL_CHANGE`,
-      `KNOWN_DEFECT`, `REGRESSION`, or `INSUFFICIENT_EVIDENCE`.
-- [ ] Scan canonical code for slug, event-type, profile-identity, invitation-label, and CSS-token
-      knowledge; record legitimate compatibility roots and retirement conditions separately.
+Shared primitives may expose generic capabilities such as map rendering, responsive images, icons,
+and formatting. They must not branch on invitation identity. A variant may depend on a primitive; a
+primitive must not depend on a variant or invitation.
+
+## Composition and invitation-specific customization
+
+Section intersections are selected by typed `composition.intersections` configuration. Render-plan
+targets and source relationships are validated by `composition-contract.ts`; the absence of an entry
+is the neutral default. Identity-based intersection maps are compatibility input only and cannot be
+read by the render plan.
+
+Invitation-specific configuration may choose canonical variants, content, assets, ordering,
+intersection cadence, and visual tokens. Invitation profile SCSS may add genuinely local visual
+treatment within the profile boundary. A one-off composition is not promoted until it has a portable
+semantic contract and a second independent use or equally strong reuse evidence.
+
+## Promotion and validation gates
+
+Before adding or promoting a variant:
+
+1. Prove existing variants and permitted tokens cannot express the requirement.
+2. Choose a semantic design/structure/behavior name with no theme, client, invitation, or slug
+   identity.
+3. Add the closed schema/type contract, incompatible-input failure, adapter/descriptor propagation,
+   DOM marker or renderer selection, and isolated SCSS delivery together.
+4. Prove the variant with a non-origin fixture that has no originating profile or assets.
+5. Scan reusable code and CSS for client, slug, historical-theme, profile, and invitation-asset
+   dependencies.
+6. Run focused schema, normalization, adapter, descriptor, CSS, governance, portability, affected
+   corpus, and browser checks; then run repository CI.
+
+Compatibility or identity-specific code may be deleted only after a fresh zero-consumer search
+across managed definitions, persisted-input assumptions, demos, templates, editor/publication paths,
+renderers, styles, tests, and documentation.
