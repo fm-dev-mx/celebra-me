@@ -183,6 +183,7 @@
             "indicationsHeading": "Indicaciones"
         },
         "thankYou": {
+            "variant": "editorial-back-cover",
             "image": "thankYouPortrait",
             "message": "Gracias por ser parte de mis XV años. Tu cariño y compañía hacen que este día sea aún más especial.",
             "focalPoint": "50% 30%",

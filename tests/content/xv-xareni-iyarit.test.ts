@@ -87,6 +87,12 @@ describe('XV Xareni Iyarit client invitation preparation', () => {
 			expect(result.data.rsvp?.confirmationMode).toBe('api');
 			expect(result.data.location?.ceremony?.image).toBeUndefined();
 			expect(result.data.location?.reception?.image).toBeUndefined();
+			expect(payload.itinerary.presentation.behavior).toBe('timeline-paper');
+			expect(payload.gallery.variant).toBe('index-choreography');
+			expect(payload.thankYou.variant).toBe('editorial-back-cover');
+			expect(result.data.itinerary?.variant).toBe('timeline-paper');
+			expect(result.data.gallery?.variant).toBe('index-choreography');
+			expect(result.data.thankYou?.variant).toBe('editorial-back-cover');
 			expect(result.data.gifts?.title).toBe('Regalos');
 			expect(result.data.gifts?.items).toHaveLength(2);
 
@@ -129,6 +135,10 @@ describe('XV Xareni Iyarit client invitation preparation', () => {
 				eventType: 'xv',
 			});
 
+			expect(viewModel.sections.itinerary?.variant).toBe('timeline-paper');
+			expect(viewModel.sections.gallery?.variant).toBe('index-choreography');
+			expect(viewModel.sections.thankYou?.structuralVariant).toBe('editorial-back-cover');
+			expect(viewModel.sections.thankYou?.variant).toBe('celestial-blue');
 			expect(pageContext.wrapper.className.split(' ')).toEqual(
 				expect.arrayContaining([
 					'event-theme-wrapper',

@@ -157,6 +157,7 @@
             "indicationsHeading": "Detalles para mis invitados"
         },
         "thankYou": {
+            "variant": "editorial-back-cover",
             "image": {
                 "key": "gallery02",
                 "type": "internal"

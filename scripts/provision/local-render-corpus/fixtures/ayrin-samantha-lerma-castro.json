@@ -226,6 +226,7 @@
             "indicationsHeading": "Indicaciones"
         },
         "thankYou": {
+            "variant": "editorial-back-cover",
             "image": {
                 "key": "thankYouPortrait",
                 "type": "internal"

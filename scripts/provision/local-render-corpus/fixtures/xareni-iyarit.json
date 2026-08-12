@@ -252,6 +252,7 @@
             "indicationsHeading": "Detalles para mis invitados"
         },
         "thankYou": {
+            "variant": "editorial-back-cover",
             "image": {
                 "key": "thankYouPortrait",
                 "type": "internal"

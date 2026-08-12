@@ -254,6 +254,7 @@
             "indicationsHeading": "Detalles para mis invitados"
         },
         "thankYou": {
+            "variant": "editorial-back-cover",
             "image": "thankYouPortrait",
             "message": "Gracias por acompañarme en mis XV años. Su presencia y cariño harán que esta noche sea un recuerdo para siempre.",
             "focalPoint": "50% 34%",

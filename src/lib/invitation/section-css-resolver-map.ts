@@ -51,7 +51,9 @@ const STRUCTURAL_VARIANT_TO_ENTRYPOINT: Record<string, Record<string, string>> =
 		'split-cover': 'split-cover',
 	},
 	thankYou: {
-		'editorial-back-cover': 'editorial-back-cover',
+		// editorial-back-cover selects shared editorial DOM. Theme bundles own
+		// thank-you editorial geometry; a global structural load would override
+		// those layouts.
 		'full-bleed-photo': 'full-bleed-photo',
 	},
 	gifts: { 'editorial-catalog': 'editorial-catalog' },

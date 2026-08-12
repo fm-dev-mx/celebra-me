@@ -85,6 +85,9 @@
     },
     "itinerary": {
         "title": "Programa",
+        "presentation": {
+            "behavior": "timeline-paper"
+        },
         "items": [
             {
                 "iconName": "Church",
@@ -155,6 +158,7 @@
         ]
     },
     "gallery": {
+        "variant": "index-choreography",
         "eyebrow": "Galería",
         "title": "Momentos que guardan la emoción de mis XV años.",
         "subtitle": "Un recuerdo visual en tonos románticos, delicados y elegantes.",
@@ -220,6 +224,7 @@
         "confirmationMode": "api"
     },
     "thankYou": {
+        "variant": "editorial-back-cover",
         "message": "Gracias por acompañarme en mis XV años. Su presencia y cariño harán de esta noche un recuerdo que guardaré para siempre.",
         "closingName": "Xareni Iyarit",
         "image": "thankYouPortrait",

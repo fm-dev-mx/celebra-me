@@ -1,4 +1,6 @@
-// Editorial back-cover geometry. Presentation tokens remain theme/profile-owned.
+// Shared editorial-back-cover DOM geometry for the magazine thank-you layout.
+// Loaded by the matching theme bundle, not the structural resolver, because
+// other presets share this DOM with different geometry.
 
 .thank-you-section[data-structural-variant='editorial-back-cover'] {
 	background: var(--color-text-primary);

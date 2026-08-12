@@ -231,9 +231,6 @@ describe('section-css-resolver-map', () => {
 			'/src/styles/themes/sections/hero/_split-cover.scss': {
 				default: '/_astro/hero-split-cover.css',
 			},
-			'/src/styles/themes/sections/thank-you/_editorial-back-cover.scss': {
-				default: '/_astro/thank-you-editorial.css',
-			},
 			'/src/styles/themes/sections/gifts/_editorial-catalog.scss': {
 				default: '/_astro/gifts-editorial.css',
 			},
@@ -271,7 +268,6 @@ describe('section-css-resolver-map', () => {
 		).toEqual([
 			'/_astro/jewelry-bundle.css',
 			'/_astro/hero-editorial.css',
-			'/_astro/thank-you-editorial.css',
 			'/_astro/gifts-editorial.css',
 			'/_astro/rsvp-editorial.css',
 			'/_astro/access-editorial.css',
@@ -279,6 +275,29 @@ describe('section-css-resolver-map', () => {
 			'/_astro/location-split-map.css',
 			'/_astro/itinerary-timeline-paper.css',
 		]);
+	});
+
+	it('does not load magazine thank-you geometry as a celestial structural override', () => {
+		const bundleUrlMap = buildSectionBundleUrlMap({
+			'/src/styles/invitation-sections-by-preset/celestial-blue.scss': {
+				default: '/_astro/celestial-bundle.css',
+			},
+		});
+		const sectionUrlMap = buildSectionUrlMap({
+			'/src/styles/themes/sections/thank-you/_editorial-back-cover.scss': {
+				default: '/_astro/thank-you-editorial.css',
+			},
+			'/src/styles/themes/sections/thank-you/_full-bleed-photo.scss': {
+				default: '/_astro/thank-you-full-bleed.css',
+			},
+		});
+
+		expect(
+			resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
+				themePreset: 'celestial-blue',
+				structuralVariants: { thankYou: 'editorial-back-cover' },
+			}),
+		).toEqual(['/_astro/celestial-bundle.css']);
 	});
 
 	it('delivers split-cover and split-map without origin profile or theme identity', () => {
