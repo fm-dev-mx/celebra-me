@@ -11,7 +11,12 @@
  */
 
 import type { SchemaLifecycleState } from '../db/schema-lifecycle-state.ts';
-import { evaluateGeneralStatus, evaluateInvitationStatus } from './dbs-status.ts';
+import {
+	evaluateGeneralStatus,
+	evaluateInvitationStatus,
+	getOrCreateStatusProbeSession,
+	resetStatusProbeSession,
+} from './dbs-status.ts';
 import {
 	MANAGED_STATUS_DEFAULT_TIMEOUT_MS,
 	runCompactManagedStatusSafe,
@@ -41,9 +46,28 @@ function readTimeoutMs(args: string[]): number {
 }
 
 async function formatGeneralView(jsonMode: boolean): Promise<void> {
-	const summary = await evaluateGeneralStatus({ includeManagedCounts: true, concurrency: 3 });
+	resetStatusProbeSession();
+	const session = getOrCreateStatusProbeSession();
+	const summary = await evaluateGeneralStatus({
+		includeManagedCounts: true,
+		concurrency: 3,
+		session,
+	});
+	const { evaluateManagedPromotionStatus, formatPromotionsSection } = await import(
+		'./managed-promotion-status.ts'
+	);
+	const promotionStatus = await evaluateManagedPromotionStatus({ session });
 	if (jsonMode) {
-		console.log(JSON.stringify(summary, null, 2));
+		console.log(
+			JSON.stringify(
+				{
+					...summary,
+					promotions: promotionStatus.promotions,
+				},
+				null,
+				2,
+			),
+		);
 		return;
 	}
 
@@ -125,12 +149,51 @@ async function formatGeneralView(jsonMode: boolean): Promise<void> {
 	} else {
 		console.log('Next schema action: (none — schema lifecycle ready)');
 	}
+
+	console.log('');
+	process.stdout.write(formatPromotionsSection(promotionStatus.promotions));
 }
 
 async function formatInvitationView(slug: string, jsonMode: boolean): Promise<void> {
-	const summary = await evaluateInvitationStatus(slug);
+	resetStatusProbeSession();
+	const session = getOrCreateStatusProbeSession();
+	const summary = await evaluateInvitationStatus(slug, { session });
+	const { evaluateManagedPromotionStatus, formatSlugPromotionLine } = await import(
+		'./managed-promotion-status.ts'
+	);
+	const promotionStatus = await evaluateManagedPromotionStatus({ session, slugs: [slug] });
+	const promotion = promotionStatus.promotions[0];
 	if (jsonMode) {
-		console.log(JSON.stringify(summary, null, 2));
+		const environments = Object.fromEntries(
+			(['local', 'preview', 'production'] as const).map((env) => {
+				const res = summary.environments[env];
+				return [
+					env,
+					{
+						environment: res.environment,
+						status: res.status,
+						activeMatchCount: res.activeMatchCount,
+						provenanceDefinitionSlug: res.provenanceDefinitionSlug,
+						publishedVersion: res.publishedVersion,
+						assetCount: res.assetCount,
+						detail: res.detail,
+					},
+				];
+			}),
+		);
+		console.log(
+			JSON.stringify(
+				{
+					slug: summary.slug,
+					title: summary.title,
+					eventType: summary.eventType,
+					environments,
+					promotion: promotion ?? null,
+				},
+				null,
+				2,
+			),
+		);
 		return;
 	}
 
@@ -138,17 +201,15 @@ async function formatInvitationView(slug: string, jsonMode: boolean): Promise<vo
 	console.log(` Managed Invitation Status: ${summary.title} (${summary.slug})`);
 	console.log(` Event Type: ${summary.eventType}`);
 	console.log(`============================================================\n`);
+	console.log(`${formatSlugPromotionLine(promotion)}\n`);
 
 	for (const env of ['local', 'preview', 'production'] as const) {
 		const res = summary.environments[env];
 		console.log(`--- [${env.toUpperCase()}] ---`);
 		console.log(`Status:            ${res.status}`);
 		console.log(`Active Matches:    ${res.activeMatchCount}`);
-		if (res.resolvedId) console.log(`Invitation UUID:   ${res.resolvedId}`);
 		if (res.provenanceDefinitionSlug)
 			console.log(`Provenance Slug:   ${res.provenanceDefinitionSlug}`);
-		if (res.provenancePackageHash)
-			console.log(`Package Hash:      ${res.provenancePackageHash.slice(0, 16)}…`);
 		if (res.publishedVersion)
 			console.log(`Published Version: ${res.publishedVersion} (${res.publishedAt || ''})`);
 		if (res.assetCount) console.log(`Assets Count:      ${res.assetCount}`);
@@ -188,11 +249,9 @@ async function main(): Promise<void> {
 	const aggregateContent = args.includes('--aggregate-content');
 	const timeoutMs = readTimeoutMs(args);
 	const timeoutIdx = args.indexOf('--timeout-ms');
-	const timeoutValue = timeoutIdx === -1 ? undefined : args[timeoutIdx + 1];
 	const slug = args.find(
 		(arg, index) =>
 			!arg.startsWith('-') &&
-			arg !== timeoutValue &&
 			!(timeoutIdx !== -1 && index === timeoutIdx + 1),
 	);
 

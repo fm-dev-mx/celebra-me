@@ -35,3 +35,11 @@ export {
 	type ManagedInvitationMeta,
 	type ClassifiedInvitationMeta,
 } from './invitation-meta.ts';
+
+export {
+	buildGroupedPromotionalEvidenceSql,
+	readGroupedPromotionalEvidence,
+	type GroupedPromotionalEvidence,
+	type LiveInvitationEvidenceRow,
+	type PromotionalEvidenceFailure,
+} from './promotional-evidence.ts';

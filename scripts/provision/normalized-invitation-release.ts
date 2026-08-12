@@ -4,16 +4,20 @@ import { existsSync, readFileSync, statSync } from 'node:fs';
 import { resolve, sep } from 'node:path';
 import { createClient } from '@supabase/supabase-js';
 import {
+	detectFileMimeType,
 	normalizeInvitationImage,
 	extractBlobRawBytes,
 } from '../../src/lib/intake/services/asset-policy.ts';
 import { findDemoPreset } from '../../src/lib/intake/demo-preset-catalog.ts';
 import { hashPublicationProjection } from '../../src/lib/intake/services/publication-diff.service.ts';
+import { eventContentSchema } from '../../src/lib/schemas/content/base-event.schema.ts';
+import { buildCloudinaryOgImageUrl } from './cloudinary-adapter.ts';
 import { getInvitationDefinition } from './invitations/registry.ts';
-import type {
-	InvitationDefinition,
-	UploadedAssetMap,
-	UploadedAssetRef,
+import {
+	getInvitationAssetSourceDir,
+	type InvitationDefinition,
+	type UploadedAssetMap,
+	type UploadedAssetRef,
 } from './invitations/invitation-definition.ts';
 import { resolveLocalEnv } from './local-provision-env.ts';
 
@@ -95,7 +99,6 @@ export function buildSemanticAssetMap<K extends string>(
 		definition.assets.map((asset) => [asset.key, semanticAssetRef(asset.key)]),
 	) as UploadedAssetMap<K>;
 }
-import { buildCloudinaryOgImageUrl } from './cloudinary-adapter.ts';
 
 export function materializeAssetReferences(
 	value: unknown,
@@ -202,10 +205,47 @@ async function loadPersistedAssets(
 	return assets;
 }
 
-import { detectFileMimeType } from '../../src/lib/intake/services/asset-policy.ts';
-import { eventContentSchema } from '../../src/lib/schemas/content/base-event.schema.ts';
+export interface SourceAssetDigest {
+	key: string;
+	sha256: string;
+}
 
-import { getInvitationAssetSourceDir } from './invitations/invitation-definition.ts';
+/**
+ * Local source-dir asset digests for promotional status. Never downloads Storage
+ * and never retains normalized bytes after hashing.
+ */
+export async function loadSourceAssetDigests(
+	definition: InvitationDefinition,
+	sourceDir?: string,
+): Promise<SourceAssetDigest[]> {
+	const effectiveSourceDir = sourceDir || getInvitationAssetSourceDir(definition);
+	const root = resolve(effectiveSourceDir);
+	if (!existsSync(root) || !statSync(root).isDirectory()) {
+		throw new Error(`Invitation asset root does not exist: ${effectiveSourceDir}`);
+	}
+	const digests: SourceAssetDigest[] = [];
+	for (const asset of definition.assets) {
+		const source = resolve(root, asset.relativePath);
+		if (
+			!source.startsWith(`${root}${sep}`) ||
+			!existsSync(source) ||
+			!statSync(source).isFile()
+		) {
+			throw new Error(`Declared asset "${asset.key}" is missing or escapes the asset root.`);
+		}
+		const sourceBytes = readFileSync(source);
+		const declaredMime = detectFileMimeType(asset.relativePath, sourceBytes);
+		const normalized = await normalizeInvitationImage(
+			new Blob([sourceBytes], { type: declaredMime }),
+			declaredMime,
+		);
+		const raw = await extractBlobRawBytes(normalized.blob);
+		if (!raw) throw new Error('Could not extract bytes from Blob.');
+		digests.push({ key: asset.key, sha256: hash(raw) });
+	}
+	digests.sort((left, right) => left.key.localeCompare(right.key));
+	return digests;
+}
 
 export async function buildNormalizedInvitationRelease(options: {
 	slug: string;
@@ -233,7 +273,7 @@ export async function buildNormalizedInvitationRelease(options: {
 			const sourceBytes = readFileSync(source);
 			const declaredMime = detectFileMimeType(asset.relativePath, sourceBytes);
 			const normalized = await normalizeInvitationImage(
-				new Blob([Uint8Array.from(sourceBytes)], { type: declaredMime }),
+				new Blob([sourceBytes], { type: declaredMime }),
 				declaredMime,
 			);
 			const raw = await extractBlobRawBytes(normalized.blob);
