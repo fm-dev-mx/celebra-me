@@ -504,7 +504,7 @@ describe('Style boundary governance', () => {
 		const bundleImports = getPresetBundleImports('family');
 		// Structural-only partials are delivered by section-css-resolver, not
 		// theme index forwards or preset bundles.
-		const structuralResolverPartials = ['split-groups'];
+		const structuralResolverPartials = ['split-groups', 'asymmetric-groups'];
 
 		for (const name of existing) {
 			expect(

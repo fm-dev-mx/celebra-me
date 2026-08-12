@@ -44,12 +44,17 @@ const canonicalVariantCss = [
 	'src/styles/themes/sections/hero/_editorial-cover.scss',
 	'src/styles/themes/sections/hero/_split-cover.scss',
 	'src/styles/themes/sections/family/_split-groups.scss',
+	'src/styles/themes/sections/family/_asymmetric-groups.scss',
 	'src/styles/themes/sections/location/_split-map.scss',
+	'src/styles/themes/sections/location/_stacked-venue-plates.scss',
 	'src/styles/themes/sections/gallery/_editorial-mosaic.scss',
 	'src/styles/themes/sections/gallery/_magazine-spread.scss',
 	'src/styles/themes/sections/gallery/_feature-mosaic.scss',
+	'src/styles/themes/sections/gallery/_feature-stack.scss',
+	'src/styles/themes/sections/gallery/_paired-feature-band.scss',
 	'src/styles/themes/sections/gallery/_index-choreography.scss',
 	'src/styles/themes/sections/itinerary/_timeline-paper.scss',
+	'src/styles/themes/sections/itinerary/_editorial-ledger.scss',
 	'src/styles/themes/sections/gifts/_editorial-catalog.scss',
 	'src/styles/themes/sections/rsvp/_editorial-press-pass.scss',
 	'src/styles/themes/sections/personalized-access/_editorial-pass.scss',
@@ -134,9 +139,18 @@ describe('canonical variant governance', () => {
 			resolver.indexOf('const STRUCTURAL_VARIANT_TO_ENTRYPOINT'),
 			resolver.indexOf('// Only presets with a dedicated footer'),
 		);
+		const galleryMap = resolver.slice(
+			resolver.indexOf('const GALLERY_VARIANT_TO_ENTRYPOINT'),
+			resolver.indexOf('const STRUCTURAL_VARIANT_TO_ENTRYPOINT'),
+		);
 
 		expect(structuralMap).toContain("'split-cover': 'split-cover'");
-		expect(structuralMap).toContain("itinerary: { 'timeline-paper': 'timeline-paper' }");
+		expect(structuralMap).toContain("'timeline-paper': 'timeline-paper'");
+		expect(structuralMap).toContain("'editorial-ledger': 'editorial-ledger'");
+		expect(structuralMap).toContain("'stacked-venue-plates': 'stacked-venue-plates'");
+		expect(structuralMap).toContain("'asymmetric-groups': 'asymmetric-groups'");
+		expect(galleryMap).toContain("'feature-stack': 'feature-stack'");
+		expect(galleryMap).toContain("'paired-feature-band': 'paired-feature-band'");
 		expect(structuralMap).not.toMatch(originIdentity);
 		expect(structuralMap).not.toMatch(historicalThemeIdentity);
 		expect(structuralMap).not.toMatch(/slug|visualProfileId|themePreset/);

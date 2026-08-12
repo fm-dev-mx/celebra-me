@@ -134,13 +134,6 @@ describe('adaptEvent', () => {
 					...fixture.gallery,
 					variant: 'uniform-grid',
 				},
-				sectionStyles: {
-					...fixture.sectionStyles,
-					gallery: {
-						...fixture.sectionStyles?.gallery,
-						variant: 'editorial-magazine',
-					},
-				},
 			},
 		} as Parameters<typeof adaptEvent>[0];
 

@@ -1,0 +1,117 @@
+@use '../../../global/mixins' as mixins;
+
+// Family asymmetric-groups: left-read staggered groups with optional right-set
+// spanning godparents block. Shares the multi-group DOM with split-groups.
+.family[data-structural-variant='asymmetric-groups'] {
+	--family-split-gap-inline: clamp(2rem, 6vw, 5rem);
+	--family-split-gap-block: clamp(1.25rem, 3.5vw, 1.65rem);
+	--family-split-divider: rgb(0 0 0 / 18%);
+	--family-split-content-max-width: 58rem;
+
+	.family__content {
+		position: relative;
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0 var(--family-split-gap-inline);
+		width: 100%;
+		max-width: var(--family-split-content-max-width);
+		margin-inline: 0;
+		align-items: start;
+	}
+
+	.family__content::after {
+		content: none;
+	}
+
+	.family__group + .family__group::before {
+		display: none;
+	}
+
+	.family__group--group-0,
+	.family__group--group-1 {
+		padding-top: clamp(1.25rem, 2.5vw, 1.75rem);
+		border-top: 1px solid var(--family-split-divider);
+		text-align: left;
+	}
+
+	.family__group--group-0 .family__group-title,
+	.family__group--group-0 .family__meta,
+	.family__group--group-1 .family__group-title,
+	.family__group--group-1 .family__meta {
+		text-align: left;
+	}
+
+	.family__group--group-0 .family__list,
+	.family__group--group-0 .family__item,
+	.family__group--group-1 .family__list,
+	.family__group--group-1 .family__item {
+		align-items: flex-start;
+	}
+
+	.family__group--group-0 .family__name,
+	.family__group--group-1 .family__name {
+		justify-content: flex-start;
+		text-align: left;
+		width: 100%;
+	}
+
+	.family__group--group-1 {
+		margin-top: clamp(1.75rem, 4vw, 3rem);
+	}
+
+	.family__group--group-1::before {
+		content: none;
+	}
+
+	.family__group--godparents {
+		grid-column: 1 / -1;
+		margin-top: clamp(2.5rem, 5vw, 3.75rem);
+		padding-top: clamp(1.5rem, 3vw, 2.25rem);
+		border-top: 1px solid var(--family-split-divider);
+		text-align: right;
+	}
+
+	.family__group--godparents .family__group-title,
+	.family__group--godparents .family__meta {
+		text-align: right;
+	}
+
+	.family__group--godparents .family__list,
+	.family__group--godparents .family__item {
+		align-items: flex-end;
+	}
+
+	.family__group--godparents .family__name {
+		justify-content: flex-end;
+		text-align: right;
+		width: 100%;
+	}
+
+	@include mixins.respond-below(sm) {
+		.family__content {
+			grid-template-columns: 1fr;
+			gap: var(--family-split-gap-block);
+			max-width: none;
+		}
+
+		.family__group--godparents {
+			grid-column: 1;
+			text-align: left;
+		}
+
+		.family__group--godparents .family__group-title,
+		.family__group--godparents .family__meta {
+			text-align: left;
+		}
+
+		.family__group--godparents .family__list,
+		.family__group--godparents .family__item {
+			align-items: flex-start;
+		}
+
+		.family__group--godparents .family__name {
+			justify-content: flex-start;
+			text-align: left;
+		}
+	}
+}

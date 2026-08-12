@@ -231,6 +231,7 @@ describe('Boda Daniela y Martín provision contract', () => {
 		expect(envelope.envelopeName).toBe('Daniela & Martín');
 
 		const location = content.location as {
+			variant?: string;
 			venues?: Array<{
 				type: string;
 				venueName: string;
@@ -243,6 +244,7 @@ describe('Boda Daniela y Martín provision contract', () => {
 			indicationsHeading?: string;
 			introHeading?: string;
 		};
+		expect(location.variant).toBe('stacked-venue-plates');
 		expect(location.ceremony).toBeUndefined();
 		expect(location.reception).toBeUndefined();
 		expect(location.venues).toHaveLength(2);
@@ -261,8 +263,20 @@ describe('Boda Daniela y Martín provision contract', () => {
 		expect(location.venues?.[0]?.googleMapsUrl).not.toBe(location.venues?.[1]?.googleMapsUrl);
 		expect(location.introHeading).toBe('Sábado, 28 de noviembre de 2026');
 		expect(location.indicationsHeading).toBe('Indicaciones');
-		expect(location.indications?.some((i) => /recepción/i.test(i.text))).toBe(true);
-		expect(location.indications?.some((i) => /8:15 p\. m\./.test(i.text))).toBe(true);
+		expect(location.indications).toEqual([
+			expect.objectContaining({
+				iconName: 'DressCode',
+				text: 'Etiqueta formal.\nMujeres: vestido largo de noche. Evitar blanco, beige y tonos claros.\nHombres: traje.',
+			}),
+			expect.objectContaining({
+				iconName: 'Church',
+				text: 'La ceremonia civil se celebrará durante la recepción a las 8:15 p. m.',
+			}),
+			expect.objectContaining({
+				iconName: 'Calendar',
+				text: 'Agradecemos confirmar su asistencia antes del 15 de octubre.',
+			}),
+		]);
 
 		const family = content.family as {
 			presentation?: string;

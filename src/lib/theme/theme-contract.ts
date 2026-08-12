@@ -122,7 +122,11 @@ export type SectionIntersectionFamily = (typeof SECTION_INTERSECTION_FAMILIES)[n
  * Visual skins bind through theme-preset / profile ownership, not theme-named
  * structural selectors.
  */
-export const ITINERARY_BEHAVIOR_VARIANTS = ['standard', 'timeline-paper'] as const;
+export const ITINERARY_BEHAVIOR_VARIANTS = [
+	'standard',
+	'timeline-paper',
+	'editorial-ledger',
+] as const;
 /**
  * Theme-named values remain in this union only for legacy sectionStyles
  * compatibility; they are not canonical itinerary behaviors.

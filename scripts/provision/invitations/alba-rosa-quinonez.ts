@@ -248,7 +248,7 @@ export function buildAlbaPublishedContent(
 			},
 		},
 		gallery: {
-			variant: 'feature-mosaic',
+			variant: 'feature-stack',
 			eyebrow: 'Recuerdos',
 			title: 'Momentos',
 			subtitle: 'Viajes, sonrisas y cariño',

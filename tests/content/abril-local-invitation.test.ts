@@ -71,14 +71,14 @@ describe('Abril Michelle local invitation content', () => {
 		expect(profile).toContain(".itinerary:not([data-structural-variant='timeline-paper'])");
 	});
 
-	it('keeps the Gallery composition exception explicit and documented', () => {
+	it('keeps Gallery paired-feature-band section-owned without profile geometry', () => {
 		const profile = fs.readFileSync(abrilProfilePath, 'utf8');
 		const galleryContract = fs.readFileSync(galleryContractPath, 'utf8');
 
-		expect(profile).toContain("[data-structural-variant='uniform-grid']");
+		expect(profile).toContain("[data-structural-variant='paired-feature-band']");
+		expect(profile).not.toMatch(/grid-template-columns|grid-column:\s*1\s*\/\s*-1/);
 		expect(profile).not.toContain("[data-variant='premiere-floral']");
-		expect(galleryContract).toContain('unresolved invitation-specific extension');
-		expect(galleryContract).toContain('Abril');
+		expect(galleryContract).toContain('paired-feature-band');
 	});
 
 	it('builds schema-valid published content without visible pending placeholders', () => {
@@ -184,7 +184,7 @@ describe('Abril Michelle local invitation content', () => {
 		});
 
 		const assets = buildTestAssets();
-		expect(result.data!.gallery!.variant).toBe('uniform-grid');
+		expect(result.data!.gallery!.variant).toBe('paired-feature-band');
 		expect(result.data!.gallery!.items).toHaveLength(5);
 		const galleryIds = result.data!.gallery!.items.map((item) =>
 			typeof item.image === 'object' && item.image && 'assetId' in item.image

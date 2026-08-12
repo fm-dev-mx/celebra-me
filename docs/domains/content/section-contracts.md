@@ -16,17 +16,18 @@ compatibility aliases, and profile exceptions is maintained in
   portrait or background image.
 - **Required Inputs**: `name` (string), `date` (ISO date string), `backgroundImage` (AssetSource).
 - **Optional Inputs**: `secondaryName`, `label`, `nickname`, `backgroundImageDesktop`,
-  `backgroundImageMobile`, `portrait`, `focalPoint`, `variant`, `structuralVariant`.
+  `backgroundImageMobile`, `portrait`, `focalPoint`, `variant`, `visualVariant`.
 - **Rendering & Omission**: Mandatory first fold. Cannot be omitted.
 - **Validation Rules**: `date` must be valid ISO 8601; `backgroundImage` must resolve to an accepted
   image asset.
 
-Structural renderer selections are section-owned and bounded. `hero.structuralVariant` accepts
-`standard` or `editorial-cover`; `sectionStyles.thankYou.structuralVariant` accepts `standard`,
+Structural renderer selections are section-owned and bounded via each section's `variant` field.
+Hero accepts `standard`, `editorial-cover`, or `split-cover`; Thank You accepts `standard`,
 `editorial-back-cover`, or `full-bleed-photo`; Gifts and RSVP use `editorial-catalog` and
 `editorial-press-pass` respectively. `rsvp.personalizedAccess` uses `standard`, `ornamented`, or
-`editorial-pass`. These fields select markup/layout only; the theme `variant` remains the visual
-skin and is retained for compatibility.
+`editorial-pass`. These fields select markup/layout only; `visualVariant` / theme preset remains the
+visual skin. Legacy `*.structuralVariant` inputs are compatibility-only (see
+[`variant-compatibility.md`](../theme/variant-compatibility.md)).
 
 Countdown and Footer have no structural selector in the current contract: their theme branches are
 presentation skins only. They continue to consume the visual `variant` and must not be promoted to
@@ -123,14 +124,15 @@ structural variants without new executable evidence.
 
 - **Purpose**: Interactive photo gallery grid / carousel of celebrant photos.
 - **Required Inputs**: `items` array of photo asset references with `image` and `alt`.
-- **Optional Inputs**: `title`, `subtitle`, `variant`, `presentation`, item `layoutRole`, and
-  responsive focal-point fields. Canonical layout values are `uniform-grid`, `editorial-mosaic`,
-  `magazine-spread`, `feature-mosaic`, `index-choreography`, and `single-keepsake`.
-- **Precedence**: explicit `gallery.variant` wins; otherwise the adapter accepts the legacy
-  `sectionStyles.gallery.variant` / theme fallback for unchanged content. Theme-named values and
-  `single` are compatibility aliases only.
+- **Optional Inputs**: `title`, `subtitle`, `variant`, `visualVariant`, `presentation`, item
+  `layoutRole`, and responsive focal-point fields. Canonical layout values are `uniform-grid`,
+  `editorial-mosaic`, `magazine-spread`, `feature-mosaic`, `feature-stack`, `paired-feature-band`,
+  `index-choreography`, and `single-keepsake`.
+- **Precedence**: `gallery.variant` is the sole post-normalization layout authority. Legacy
+  `sectionStyles.gallery.variant` / theme-named values / `single` are compatibility aliases only and
+  conflict with a different canonical layout.
 - **Rendering & Omission**: Rendered if `items` contains 1 or more resolved photo assets; omitted if
-  empty or missing.
+  empty or missing. `single-keepsake` requires exactly one item.
 
 ---
 
@@ -138,10 +140,10 @@ structural variants without new executable evidence.
 
 - **Purpose**: Timeline of event activities (ceremony, reception, dinner, party, toast).
 - **Required Inputs**: `items` array with `time`, `title`.
-- **Optional Inputs**: `subtitle`, `description`, `icon`, `presentation.behavior`, `variant`.
-- **Variant Contract**: Use the behavior name `timeline-paper` for the reusable paper program.
-  `standard` is the neutral default; `celestial-blue` is accepted only as a stored-content
-  compatibility alias. Theme-named `sectionStyles.itinerary.variant` values remain legacy inputs.
+- **Optional Inputs**: `subtitle`, `description`, `icon`, `variant`.
+- **Variant Contract**: Canonical `itinerary.variant` values are `standard`, `timeline-paper`, and
+  `editorial-ledger`. `timeline-paper` selects `ItineraryProgram`; `editorial-ledger` and `standard`
+  select `TimelineList`. Legacy `itinerary.presentation.behavior` is compatibility-only.
 - **Rendering & Omission**: Optional section.
 
 ---

@@ -63,11 +63,12 @@ function assetMapFromSpecs<T extends Record<string, unknown>>(
 }
 
 describe('canonical corpus structural/behavior contracts', () => {
-	it('locks Alba split-map Location and days-only Countdown', () => {
+	it('locks Alba split-map Location, feature-stack Gallery, and days-only Countdown', () => {
 		const content = buildAlbaPublishedContent(
 			assetMapFromSpecs<AlbaAssetMap>(ALBA_ASSET_SPECS),
 		);
 		expect(content.location).toMatchObject({ variant: 'split-map' });
+		expect(content.gallery).toMatchObject({ variant: 'feature-stack' });
 		expect(content.countdown).toMatchObject({
 			presentationOptions: { visibleUnits: ['days'] },
 		});
@@ -80,6 +81,7 @@ describe('canonical corpus structural/behavior contracts', () => {
 			assetSlug: ALBA_EVENT.assetSlug,
 		});
 		expect(viewModel.sections.location?.structuralVariant).toBe('split-map');
+		expect(viewModel.sections.gallery?.variant).toBe('feature-stack');
 		expect(viewModel.sections.countdown?.visibleUnits).toEqual(['days']);
 	});
 
@@ -98,11 +100,13 @@ describe('canonical corpus structural/behavior contracts', () => {
 		expect(viewModel.sections.itinerary?.variant).toBe('standard');
 	});
 
-	it('locks Victoria itinerary standard, PA standard, and gallery single-keepsake', () => {
+	it('locks Victoria editorial-ledger, asymmetric-groups, stacked-venue-plates, and single-keepsake', () => {
 		const content = buildVictoriaPublishedContent(
 			assetMapFromSpecs<VictoriaAssetMap>(VICTORIA_ASSET_SPECS),
 		);
-		expect(content.itinerary).toMatchObject({ variant: 'standard' });
+		expect(content.itinerary).toMatchObject({ variant: 'editorial-ledger' });
+		expect(content.family).toMatchObject({ variant: 'asymmetric-groups' });
+		expect(content.location).toMatchObject({ variant: 'stacked-venue-plates' });
 		expect(content.rsvp).toMatchObject({
 			personalizedAccess: { variant: 'ornamented' },
 		});
@@ -112,16 +116,19 @@ describe('canonical corpus structural/behavior contracts', () => {
 			id: 'events/victoria-y-roberto',
 			data: content,
 		} as Parameters<typeof adaptEvent>[0]);
-		expect(viewModel.sections.itinerary?.variant).toBe('standard');
+		expect(viewModel.sections.itinerary?.variant).toBe('editorial-ledger');
+		expect(viewModel.sections.family?.structuralVariant).toBe('asymmetric-groups');
+		expect(viewModel.sections.location?.structuralVariant).toBe('stacked-venue-plates');
 		expect(viewModel.sections.rsvp?.personalizedAccess?.structuralVariant).toBe('ornamented');
 		expect(viewModel.sections.gallery?.variant).toBe('single-keepsake');
 	});
 
-	it('locks Daniela Family split-groups and gallery single-keepsake', () => {
+	it('locks Daniela Family split-groups, stacked-venue-plates, and gallery single-keepsake', () => {
 		const content = buildDanielaPublishedContent(
 			assetMapFromSpecs<DanielaAssetMap>(DANIELA_ASSET_SPECS),
 		);
 		expect(content.family).toMatchObject({ variant: 'split-groups' });
+		expect(content.location).toMatchObject({ variant: 'stacked-venue-plates' });
 		expect(content.gallery).toMatchObject({ variant: 'single-keepsake' });
 
 		const viewModel = adaptEvent({
@@ -129,20 +136,23 @@ describe('canonical corpus structural/behavior contracts', () => {
 			data: content,
 		} as Parameters<typeof adaptEvent>[0]);
 		expect(viewModel.sections.family?.structuralVariant).toBe('split-groups');
+		expect(viewModel.sections.location?.structuralVariant).toBe('stacked-venue-plates');
 		expect(viewModel.sections.gallery?.variant).toBe('single-keepsake');
 	});
 
-	it('locks Abril itinerary timeline-paper', () => {
+	it('locks Abril itinerary timeline-paper and gallery paired-feature-band', () => {
 		const content = buildAbrilPublishedContent(
 			assetMapFromSpecs<AbrilAssetMap>(ABRIL_ASSET_SPECS),
 		);
 		expect(content.itinerary).toMatchObject({ variant: 'timeline-paper' });
+		expect(content.gallery).toMatchObject({ variant: 'paired-feature-band' });
 
 		const viewModel = adaptEvent({
 			id: 'events/abril-michelle-becerra-rea',
 			data: content,
 		} as Parameters<typeof adaptEvent>[0]);
 		expect(viewModel.sections.itinerary?.variant).toBe('timeline-paper');
+		expect(viewModel.sections.gallery?.variant).toBe('paired-feature-band');
 	});
 
 	it('locks Luna revealSurface rsvp from the local-render corpus fixture', () => {

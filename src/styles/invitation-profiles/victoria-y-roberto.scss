@@ -919,14 +919,9 @@
 
 	// Location — twin venue cards in the daniela-y-martin composition, translated
 	// to Victoria's palette: centered intro, kicker + flourish, plate on top,
-	// venue facts below. Proportions and alignment track Daniela at every
-	// mixin breakpoint; plate height uses the same row recipe with a max cap
-	// so ultra-wide viewports do not inflate the art band.
+	// venue facts below. Twin-plate geometry lives in
+	// themes/sections/location/_stacked-venue-plates.scss; profile tunes surfaces/type.
 	.event-location {
-		// Same art-row height as daniela-y-martin (`minmax(8rem, 18vw)`), capped
-		// so the plate stays proportional on very wide canvases.
-		--victoria-location-plate-row: minmax(8rem, min(18vw, 16rem));
-
 		padding-block: clamp(4.75rem, 9vw, 7rem);
 		background: linear-gradient(
 			180deg,
@@ -970,30 +965,6 @@
 			text-wrap: pretty;
 		}
 
-		&__container {
-			align-items: stretch;
-			gap: var(--location-gap);
-		}
-
-		&__card-wrapper {
-			display: flex;
-			flex-direction: column;
-			flex: 1 1 0;
-			align-items: stretch;
-			width: min(100%, var(--location-card-max-width));
-			margin-block: 0;
-			gap: clamp(0.35rem, 1vw, 0.55rem);
-			text-align: center;
-		}
-
-		// Grow inside the stretched wrapper for equal twin columns without
-		// sizing past the kicker/flourish column width.
-		&__card {
-			width: 100%;
-			flex: 1 1 auto;
-			min-height: 0;
-		}
-
 		&__card-title {
 			position: relative;
 			z-index: 1;
@@ -1011,14 +982,9 @@
 			opacity: 70%;
 		}
 
-		// Plate: Daniela grid rows (art + optional foot). Illustration mode
-		// keeps the same art-row height and hides the dead map CTA.
+		// Plate surfaces and illustration art; grid rows live in _stacked-venue-plates.scss.
 		&__card-map-preview {
 			position: relative;
-			display: grid;
-			grid-template-columns: 1fr;
-			grid-template-rows: var(--victoria-location-plate-row) auto;
-			width: 100%;
 			margin-bottom: 0;
 			background: linear-gradient(
 				180deg,
@@ -1152,11 +1118,8 @@
 			text-decoration: none;
 		}
 
-		// Placeholder map URLs never render a dead affordance: the plate stays
-		// a pure illustration with the same art-row height as the linked plate.
+		// Placeholder map URLs never render a dead affordance: hide the map CTA only.
 		.event-location__card-map-preview[data-map-preview='illustration'] {
-			grid-template-rows: var(--victoria-location-plate-row);
-
 			.event-location__card-map-preview-foot,
 			.event-location__card-map-preview-pin {
 				display: none;
@@ -1329,23 +1292,6 @@
 			color: var(--victoria-subtitle);
 			text-align: left;
 		}
-
-		// Stacked twin cards: full width + breathing room between chapters.
-		@include mixins.respond-below(md) {
-			.event-location__card-wrapper {
-				width: 100%;
-			}
-
-			.event-location__card-wrapper + .event-location__card-wrapper {
-				margin-block-start: clamp(3rem, 7vw, 4.5rem);
-				padding-block-start: 0.75rem;
-			}
-
-			.event-location__card-map-preview,
-			.event-location__card-map-preview[data-map-preview='illustration'] {
-				--victoria-location-plate-row: minmax(7rem, min(18vw, 16rem));
-			}
-		}
 	}
 
 	// Itinerary — an editorial program spine. Confirmed times are display
@@ -1412,37 +1358,15 @@
 			text-wrap: pretty;
 			color: var(--victoria-subtitle);
 		}
+	}
 
-		// The spine carries the rhythm; the decorative center line only repeats
-		// what the grid already says.
-		&__animated-line-container {
-			display: none;
-		}
+	// editorial-ledger geometry lives in themes/sections/itinerary/_editorial-ledger.scss;
+	// profile tints ledger colors, type, and pending-entry emphasis.
+	.itinerary[data-structural-variant='editorial-ledger'] {
+		--editorial-ledger-rule: rgb(var(--victoria-terracota-rgb) / 14%);
+		--editorial-ledger-spine: rgb(var(--victoria-terracota-rgb) / 20%);
 
-		&__timeline {
-			padding: 0;
-		}
-
-		&__items {
-			gap: 0;
-		}
-
-		&__item-content {
-			padding: clamp(1.35rem, 2.6vw, 1.75rem) 0;
-			border-bottom: 1px solid rgb(var(--victoria-terracota-rgb) / 14%);
-		}
-
-		&__item:first-child .itinerary__item-content {
-			padding-top: 0;
-		}
-
-		&__item:last-child .itinerary__item-content {
-			padding-bottom: 0;
-			border-bottom: 0;
-		}
-
-		&__item-time {
-			padding-top: 0.3rem;
+		.itinerary__item-time {
 			font-family: var(--victoria-font-display);
 			font-size: clamp(1.02rem, 2.1vw, 1.2rem);
 			font-weight: 500;
@@ -1450,14 +1374,14 @@
 			line-height: 1.2;
 		}
 
-		&__item-label {
+		.itinerary__item-label {
 			font-weight: 500;
 			line-height: 1.18;
 		}
 
 		// Pending entries: clear but visibly tentative — small muted caps,
 		// dashed rule, softened label.
-		&__item[data-time-status='pending'] {
+		.itinerary__item[data-time-status='pending'] {
 			.itinerary__item-time--pending {
 				font-family: var(--victoria-font-label);
 				font-size: clamp(0.68rem, 1.4vw, 0.76rem);
@@ -1477,69 +1401,13 @@
 			}
 		}
 
-		&__item:last-child[data-time-status='pending'] .itinerary__item-content {
+		.itinerary__item:last-child[data-time-status='pending'] .itinerary__item-content {
 			border-bottom: 0;
 		}
 
-		// Mobile: a left spine threads the stacked moments.
-		@include mixins.respond-below(md) {
-			&__item {
-				padding-left: 1.25rem;
-				border-left: 1px solid rgb(var(--victoria-terracota-rgb) / 20%);
-			}
-
-			&__item-time {
-				padding-top: 0;
-			}
-		}
-
-		// Tablet/desktop: one ledger replaces the inherited left/right alternation.
-		// Time remains secondary and right-set; every event reads down one copy axis.
 		@include mixins.respond-to(md) {
-			&__items {
-				width: min(100%, 52rem);
-				max-width: 52rem;
-				margin-inline: 0 auto;
-			}
-
-			&__item {
-				display: block;
-				padding-left: 0;
-			}
-
-			&__item-content {
-				display: grid;
-				grid-template-columns: minmax(7rem, 0.24fr) minmax(0, 1fr);
-				grid-column: auto;
-				gap: 0 clamp(1.75rem, 4vw, 3rem);
-				width: 100%;
-				padding: clamp(1.35rem, 2.8vw, 1.85rem) 0;
-				border-left: 0;
-				text-align: left;
-			}
-
-			&__item-time {
-				grid-column: 1;
-				grid-row: 1 / span 2;
-				padding: 0.3rem clamp(1rem, 2.5vw, 1.75rem) 0 0;
-				border-right: 1px solid rgb(var(--victoria-terracota-rgb) / 20%);
-				text-align: right;
-			}
-
-			&__item-label {
-				grid-column: 2;
-				margin: 0 0 0.35rem;
-			}
-
-			&__item-description {
-				grid-column: 2;
-				display: block;
+			.itinerary__item-description {
 				max-width: var(--victoria-reading-measure);
-				margin: 0;
-			}
-
-			&__item-dot {
-				display: none;
 			}
 		}
 	}
@@ -1566,8 +1434,8 @@
 	// intro steps out of center, parent groups break the mirror with a
 	// staggered offset, and padrinos close the chapter as a right-set signature.
 	.family {
-		// split-groups geometry lives in themes/sections/family/_split-groups.scss;
-		// Victoria overrides alignment, dividers, and offsets locally.
+		// asymmetric-groups geometry lives in themes/sections/family/_asymmetric-groups.scss;
+		// profile supplies split-layout tokens and chapter typography.
 		--family-split-divider: rgb(var(--victoria-terracota-rgb) / 18%);
 		--family-split-gap-inline: clamp(2rem, 6vw, 5rem);
 		--family-split-content-max-width: 58rem;
@@ -1633,102 +1501,6 @@
 		&__meta,
 		&__godparent-label {
 			font-family: var(--victoria-font-label);
-		}
-	}
-
-	// Victoria-local split-groups recomposition (does not touch the shared
-	// variant): no mirror rule, both groups left-read with a stagger, padrinos
-	// offset to the right as the closing beat. Flattened descendant selectors
-	// keep nesting within the repository stylelint budget.
-	.family[data-structural-variant='split-groups'] {
-		.family__content::after {
-			content: none;
-		}
-
-		.family__group--group-0,
-		.family__group--group-1 {
-			padding-top: clamp(1.25rem, 2.5vw, 1.75rem);
-			border-top: 1px solid var(--family-split-divider);
-			text-align: left;
-		}
-
-		.family__group--group-0 .family__group-title,
-		.family__group--group-0 .family__meta,
-		.family__group--group-1 .family__group-title,
-		.family__group--group-1 .family__meta {
-			text-align: left;
-		}
-
-		.family__group--group-0 .family__list,
-		.family__group--group-0 .family__item,
-		.family__group--group-1 .family__list,
-		.family__group--group-1 .family__item {
-			align-items: flex-start;
-		}
-
-		.family__group--group-0 .family__name,
-		.family__group--group-1 .family__name {
-			justify-content: flex-start;
-			text-align: left;
-		}
-
-		.family__group--group-1 {
-			margin-top: clamp(1.75rem, 4vw, 3rem);
-		}
-
-		.family__group--godparents {
-			margin-top: clamp(2.5rem, 5vw, 3.75rem);
-			padding-top: clamp(1.5rem, 3vw, 2.25rem);
-			border-top: 1px solid var(--family-split-divider);
-			text-align: right;
-		}
-
-		.family__group--godparents .family__group-title,
-		.family__group--godparents .family__meta {
-			text-align: right;
-		}
-
-		.family__group--godparents .family__list,
-		.family__group--godparents .family__item {
-			align-items: flex-end;
-		}
-
-		.family__group--godparents .family__name {
-			justify-content: flex-end;
-			text-align: right;
-		}
-
-		// The shared centered mobile divider is replaced by the group hairlines.
-		.family__group--group-1::before {
-			content: none;
-		}
-	}
-
-	// Mobile: one left-read column; padrinos keep the same reading direction.
-	@include mixins.respond-below(sm) {
-		.family[data-structural-variant='split-groups'] {
-			.family__content {
-				max-width: none;
-			}
-
-			.family__group--godparents {
-				text-align: left;
-			}
-
-			.family__group--godparents .family__group-title,
-			.family__group--godparents .family__meta {
-				text-align: left;
-			}
-
-			.family__group--godparents .family__list,
-			.family__group--godparents .family__item {
-				align-items: flex-start;
-			}
-
-			.family__group--godparents .family__name {
-				justify-content: flex-start;
-				text-align: left;
-			}
 		}
 	}
 

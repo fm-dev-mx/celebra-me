@@ -40,6 +40,8 @@ const GALLERY_VARIANT_TO_ENTRYPOINT: Record<string, string> = {
 	'editorial-mosaic': 'editorial-mosaic',
 	'magazine-spread': 'magazine-spread',
 	'feature-mosaic': 'feature-mosaic',
+	'feature-stack': 'feature-stack',
+	'paired-feature-band': 'paired-feature-band',
 	'index-choreography': 'index-choreography',
 };
 
@@ -55,9 +57,18 @@ const STRUCTURAL_VARIANT_TO_ENTRYPOINT: Record<string, Record<string, string>> =
 	gifts: { 'editorial-catalog': 'editorial-catalog' },
 	rsvp: { 'editorial-press-pass': 'editorial-press-pass' },
 	personalizedAccess: { 'editorial-pass': 'editorial-pass' },
-	family: { 'split-groups': 'split-groups' },
-	location: { 'split-map': 'split-map' },
-	itinerary: { 'timeline-paper': 'timeline-paper' },
+	family: {
+		'split-groups': 'split-groups',
+		'asymmetric-groups': 'asymmetric-groups',
+	},
+	location: {
+		'split-map': 'split-map',
+		'stacked-venue-plates': 'stacked-venue-plates',
+	},
+	itinerary: {
+		'timeline-paper': 'timeline-paper',
+		'editorial-ledger': 'editorial-ledger',
+	},
 };
 
 // Only presets with a dedicated footer/*.scss file go here.

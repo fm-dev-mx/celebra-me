@@ -95,23 +95,48 @@ const locationBaseSchema = z.object({
 		.optional(),
 });
 
+function collectVisibleVenues(location: {
+	ceremony?: unknown;
+	reception?: unknown;
+	venues?: Array<{ isVisible?: boolean }>;
+}): unknown[] {
+	return [
+		location.ceremony,
+		location.reception,
+		...(location.venues?.filter((venue) => venue.isVisible !== false) ?? []),
+	].filter(Boolean);
+}
+
 export const locationSchema = z
 	.discriminatedUnion('variant', [
 		locationBaseSchema.extend({ variant: z.literal(LOCATION_STRUCTURAL_VARIANTS[0]) }),
 		locationBaseSchema.extend({ variant: z.literal(LOCATION_STRUCTURAL_VARIANTS[1]) }),
+		locationBaseSchema.extend({ variant: z.literal(LOCATION_STRUCTURAL_VARIANTS[2]) }),
 	])
 	.superRefine((location, context) => {
-		if (location.variant !== 'split-map') return;
-		const venues = [
-			location.ceremony,
-			location.reception,
-			...(location.venues?.filter((venue) => venue.isVisible !== false) ?? []),
-		].filter(Boolean);
-		if (venues.some((venue) => venue?.coordinates || venue?.image)) return;
-		context.addIssue({
-			code: 'custom',
-			path: ['variant'],
-			message:
-				'location.variant=split-map requires at least one visible venue with coordinates or image media',
-		});
+		if (location.variant === 'split-map') {
+			const venues = collectVisibleVenues(location) as Array<{
+				coordinates?: unknown;
+				image?: unknown;
+			}>;
+			if (venues.some((venue) => venue?.coordinates || venue?.image)) return;
+			context.addIssue({
+				code: 'custom',
+				path: ['variant'],
+				message:
+					'location.variant=split-map requires at least one visible venue with coordinates or image media',
+			});
+			return;
+		}
+
+		if (location.variant === 'stacked-venue-plates') {
+			const venues = collectVisibleVenues(location);
+			if (venues.length >= 2) return;
+			context.addIssue({
+				code: 'custom',
+				path: ['variant'],
+				message:
+					'location.variant=stacked-venue-plates requires at least two visible venues',
+			});
+		}
 	});

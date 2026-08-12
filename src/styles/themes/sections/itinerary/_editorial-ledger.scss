@@ -1,0 +1,97 @@
+@use '../../../global/mixins' as mixins;
+
+// Itinerary editorial-ledger: flat time|label ledger over TimelineList DOM.
+// Profiles may tint colors/type; they must not redefine the ledger grid.
+.itinerary[data-structural-variant='editorial-ledger'] {
+	--editorial-ledger-rule: rgb(0 0 0 / 14%);
+	--editorial-ledger-spine: rgb(0 0 0 / 20%);
+	--editorial-ledger-max-width: 52rem;
+
+	.itinerary__header {
+		width: min(100%, 46rem);
+		text-align: left;
+	}
+
+	.itinerary__animated-line-container {
+		display: none;
+	}
+
+	.itinerary__timeline {
+		padding: 0;
+	}
+
+	.itinerary__items {
+		gap: 0;
+	}
+
+	.itinerary__item-content {
+		padding: clamp(1.35rem, 2.6vw, 1.75rem) 0;
+		border-bottom: 1px solid var(--editorial-ledger-rule);
+	}
+
+	.itinerary__item:first-child .itinerary__item-content {
+		padding-top: 0;
+	}
+
+	.itinerary__item:last-child .itinerary__item-content {
+		padding-bottom: 0;
+		border-bottom: 0;
+	}
+
+	@include mixins.respond-below(md) {
+		.itinerary__item {
+			padding-left: 1.25rem;
+			border-left: 1px solid var(--editorial-ledger-spine);
+		}
+
+		.itinerary__item-time {
+			padding-top: 0;
+		}
+	}
+
+	@include mixins.respond-to(md) {
+		.itinerary__items {
+			width: min(100%, var(--editorial-ledger-max-width));
+			max-width: var(--editorial-ledger-max-width);
+			margin-inline: 0 auto;
+		}
+
+		.itinerary__item {
+			display: block;
+			padding-left: 0;
+		}
+
+		.itinerary__item-content {
+			display: grid;
+			grid-template-columns: minmax(7rem, 0.24fr) minmax(0, 1fr);
+			gap: 0 clamp(1.75rem, 4vw, 3rem);
+			width: 100%;
+			padding: clamp(1.35rem, 2.8vw, 1.85rem) 0;
+			border-left: 0;
+			text-align: left;
+		}
+
+		.itinerary__item-time {
+			grid-column: 1;
+			grid-row: 1 / span 2;
+			padding: 0.3rem clamp(1rem, 2.5vw, 1.75rem) 0 0;
+			border-right: 1px solid var(--editorial-ledger-spine);
+			text-align: right;
+		}
+
+		.itinerary__item-label {
+			grid-column: 2;
+			margin: 0 0 0.35rem;
+		}
+
+		.itinerary__item-description {
+			grid-column: 2;
+			display: block;
+			margin: 0;
+		}
+
+		.itinerary__item-dot {
+			display: none;
+		}
+	}
+}

@@ -18,9 +18,7 @@ import {
 	assertSupportedGalleryPresentation,
 } from '@/lib/invitation/presentation-options';
 import { GALLERY_LAYOUT_VARIANTS } from '@/lib/invitation/structural-variants';
-import {
-	GIFTS_STRUCTURAL_VARIANTS,
-} from '@/lib/invitation/structural-variants';
+import { GIFTS_STRUCTURAL_VARIANTS } from '@/lib/invitation/structural-variants';
 
 export const optionalText = (max = 2000) => z.string().trim().max(max).optional();
 export const optionalUrl = z
@@ -119,6 +117,42 @@ export const gallerySchema = z
 						? error.message
 						: 'Presentación de galería no compatible.',
 			});
+		}
+
+		if (gallery.variant === 'single-keepsake' && gallery.items.length !== 1) {
+			context.addIssue({
+				code: 'custom',
+				path: ['items'],
+				message: 'La variante single-keepsake requiere exactamente un elemento en la galería.',
+			});
+		}
+
+		if (gallery.variant === 'feature-stack' && gallery.items.length < 3) {
+			context.addIssue({
+				code: 'custom',
+				path: ['items'],
+				message: 'La variante feature-stack requiere al menos tres elementos en la galería.',
+			});
+		}
+
+		if (gallery.variant === 'paired-feature-band') {
+			const hasFeatureRole = gallery.items.some((item) => item.layoutRole === 'feature');
+			if (!hasFeatureRole) {
+				context.addIssue({
+					code: 'custom',
+					path: ['items'],
+					message:
+						'La variante paired-feature-band requiere al menos un elemento con rol feature.',
+				});
+			}
+			if (gallery.items.length < 3) {
+				context.addIssue({
+					code: 'custom',
+					path: ['items'],
+					message:
+						'La variante paired-feature-band requiere al menos tres elementos en la galería.',
+				});
+			}
 		}
 	});
 

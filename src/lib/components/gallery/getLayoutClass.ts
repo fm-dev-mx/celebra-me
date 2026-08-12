@@ -29,6 +29,14 @@ const strategies: Record<string, Strategy | ((index: number) => LayoutClass)> = 
 		featureIndices: [0],
 		wideIndices: [1, 2, 7],
 	},
+	'feature-stack': {
+		featureIndices: [0],
+		wideIndices: [],
+	},
+	'paired-feature-band': {
+		featureIndices: [],
+		wideIndices: [],
+	},
 	'index-choreography': {
 		featureIndices: [0, 5, 6],
 		wideIndices: [2, 3, 7],

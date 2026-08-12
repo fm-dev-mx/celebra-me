@@ -40,9 +40,10 @@ type PortableOverrides = {
 	giftsStructuralVariant?: string;
 	rsvpStructuralVariant?: string;
 	personalizedAccessStructuralVariant?: string;
-	itineraryVariant?: 'standard' | 'timeline-paper';
+	itineraryVariant?: 'standard' | 'timeline-paper' | 'editorial-ledger';
 	/** Optional theme skin; structural selection must not depend on it. */
 	themePreset?: string;
+	galleryItems?: Array<Record<string, unknown>>;
 };
 
 /**
@@ -67,7 +68,8 @@ function buildPortableJewelryBoxEvent(overrides: PortableOverrides = {}) {
 			...(overrides.familyStructuralVariant
 				? {
 						variant: overrides.familyStructuralVariant,
-						...(overrides.familyStructuralVariant === 'split-groups'
+						...(overrides.familyStructuralVariant === 'split-groups' ||
+						overrides.familyStructuralVariant === 'asymmetric-groups'
 							? {
 									groups: [
 										{ title: 'Familia A', items: [{ name: 'Persona A' }] },
@@ -87,6 +89,7 @@ function buildPortableJewelryBoxEvent(overrides: PortableOverrides = {}) {
 		gallery: {
 			...fixture.gallery,
 			...(overrides.galleryVariant ? { variant: overrides.galleryVariant } : {}),
+			...(overrides.galleryItems ? { items: overrides.galleryItems } : {}),
 		},
 		gifts: {
 			...fixture.gifts,
@@ -167,6 +170,16 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 		expect(viewModel.sections.family?.structuralVariant).toBe('split-groups');
 	});
 
+	it('applies Family asymmetric-groups without Victoria identity', () => {
+		const event = buildPortableJewelryBoxEvent({
+			familyStructuralVariant: 'asymmetric-groups',
+		});
+		const viewModel = adaptEvent(event);
+
+		expect(event.data).not.toHaveProperty('visualProfileId');
+		expect(viewModel.sections.family?.structuralVariant).toBe('asymmetric-groups');
+	});
+
 	it('applies Location split-map to jewelry-box demo content with existing venue/map media', () => {
 		const event = buildPortableJewelryBoxEvent({ locationStructuralVariant: 'split-map' });
 		const viewModel = adaptEvent(event);
@@ -184,6 +197,16 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 		);
 	});
 
+	it('applies Location stacked-venue-plates without Daniela/Victoria identity', () => {
+		const event = buildPortableJewelryBoxEvent({
+			locationStructuralVariant: 'stacked-venue-plates',
+		});
+		const viewModel = adaptEvent(event);
+
+		expect(event.data).not.toHaveProperty('visualProfileId');
+		expect(viewModel.sections.location?.structuralVariant).toBe('stacked-venue-plates');
+	});
+
 	it('ports gallery layouts via adaptEvent on non-origin demos/overrides', () => {
 		const magazine = adaptEvent(
 			loadDemoEvent(
@@ -193,7 +216,10 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 		);
 		expect(magazine.sections.gallery?.variant).toBe('magazine-spread');
 
-		const keepsakeEvent = buildPortableJewelryBoxEvent({ galleryVariant: 'single-keepsake' });
+		const keepsakeEvent = buildPortableJewelryBoxEvent({
+			galleryVariant: 'single-keepsake',
+			galleryItems: [{ image: 'gallery01', caption: 'Keepsake' }],
+		});
 		const keepsake = adaptEvent(keepsakeEvent);
 		expect(keepsakeEvent.data).not.toHaveProperty('visualProfileId');
 		expect(keepsake.sections.gallery?.variant).toBe('single-keepsake');
@@ -214,6 +240,23 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 		const mosaic = adaptEvent(mosaicEvent);
 		expect(mosaic.theme.preset).toBe('premiere-floral');
 		expect(mosaic.sections.gallery?.variant).toBe('feature-mosaic');
+
+		const featureStack = adaptEvent(
+			buildPortableJewelryBoxEvent({ galleryVariant: 'feature-stack' }),
+		);
+		expect(featureStack.sections.gallery?.variant).toBe('feature-stack');
+
+		const pairedBand = adaptEvent(
+			buildPortableJewelryBoxEvent({
+				galleryVariant: 'paired-feature-band',
+				galleryItems: [
+					{ image: 'gallery01' },
+					{ image: 'gallery03', layoutRole: 'feature' },
+					{ image: 'gallery05' },
+				],
+			}),
+		);
+		expect(pairedBand.sections.gallery?.variant).toBe('paired-feature-band');
 	});
 
 	it('applies Gifts editorial-catalog and RSVP editorial-press-pass without invitation identity', () => {
@@ -246,7 +289,7 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 		);
 	});
 
-	it('selects Itinerary timeline-paper and standard from section.variant only', () => {
+	it('selects Itinerary timeline-paper, editorial-ledger, and standard from section.variant only', () => {
 		const standardEvent = buildPortableJewelryBoxEvent({ itineraryVariant: 'standard' });
 		const standard = adaptEvent(standardEvent);
 		expect(standard.sections.itinerary?.variant).toBe('standard');
@@ -258,6 +301,13 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 		const paper = adaptEvent(paperEvent);
 		expect(paper.theme.preset).toBe('jewelry-box');
 		expect(paper.sections.itinerary?.variant).toBe('timeline-paper');
+
+		const ledgerEvent = buildPortableJewelryBoxEvent({
+			itineraryVariant: 'editorial-ledger',
+		});
+		const ledger = adaptEvent(ledgerEvent);
+		expect(ledgerEvent.data).not.toHaveProperty('visualProfileId');
+		expect(ledger.sections.itinerary?.variant).toBe('editorial-ledger');
 	});
 
 	it('passes portable structural variants through section render descriptors', () => {
@@ -302,8 +352,8 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 			props: {
 				structuralVariant: 'editorial-press-pass',
 			},
+		});
 	});
-});
 	it('delivers structural CSS under jewelry-box without origin profile identity', () => {
 		const bundleUrlMap = buildSectionBundleUrlMap({
 			'/src/styles/invitation-sections-by-preset/jewelry-box.scss': {
@@ -317,14 +367,29 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 			'/src/styles/themes/sections/location/_split-map.scss': {
 				default: '/_astro/location-split-map.css',
 			},
+			'/src/styles/themes/sections/location/_stacked-venue-plates.scss': {
+				default: '/_astro/location-stacked-venue-plates.css',
+			},
 			'/src/styles/themes/sections/family/_split-groups.scss': {
 				default: '/_astro/family-split-groups.css',
+			},
+			'/src/styles/themes/sections/family/_asymmetric-groups.scss': {
+				default: '/_astro/family-asymmetric-groups.css',
 			},
 			'/src/styles/themes/sections/gallery/_magazine-spread.scss': {
 				default: '/_astro/gallery-magazine-spread.css',
 			},
+			'/src/styles/themes/sections/gallery/_feature-stack.scss': {
+				default: '/_astro/gallery-feature-stack.css',
+			},
+			'/src/styles/themes/sections/gallery/_paired-feature-band.scss': {
+				default: '/_astro/gallery-paired-feature-band.css',
+			},
 			'/src/styles/themes/sections/itinerary/_timeline-paper.scss': {
 				default: '/_astro/itinerary-timeline-paper.css',
+			},
+			'/src/styles/themes/sections/itinerary/_editorial-ledger.scss': {
+				default: '/_astro/itinerary-editorial-ledger.css',
 			},
 		});
 		const profileUrlMap = {
@@ -340,12 +405,12 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 			{
 				themePreset: 'jewelry-box',
 				// Explicitly omit slug / visualProfileId — structure must not need them.
-				galleryVariant: 'magazine-spread',
+				galleryVariant: 'feature-stack',
 				structuralVariants: {
 					hero: 'split-cover',
-					location: 'split-map',
-					family: 'split-groups',
-					itinerary: 'timeline-paper',
+					location: 'stacked-venue-plates',
+					family: 'asymmetric-groups',
+					itinerary: 'editorial-ledger',
 				},
 			},
 			profileUrlMap,
@@ -353,27 +418,81 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 
 		expect(urls).toEqual([
 			'/_astro/jewelry-bundle.css',
-			'/_astro/gallery-magazine-spread.css',
+			'/_astro/gallery-feature-stack.css',
 			'/_astro/hero-split-cover.css',
-			'/_astro/location-split-map.css',
-			'/_astro/family-split-groups.css',
-			'/_astro/itinerary-timeline-paper.css',
+			'/_astro/location-stacked-venue-plates.css',
+			'/_astro/family-asymmetric-groups.css',
+			'/_astro/itinerary-editorial-ledger.css',
 		]);
 		expect(urls.join('\n')).not.toMatch(/romina|alba-rosa|daniela|victoria|abril|valentina/i);
+
+		const coexistence = resolveInvitationCssUrls(
+			bundleUrlMap,
+			sectionUrlMap,
+			{
+				themePreset: 'jewelry-box',
+				galleryVariant: 'paired-feature-band',
+				structuralVariants: {
+					location: 'split-map',
+					family: 'split-groups',
+					itinerary: 'timeline-paper',
+				},
+			},
+			profileUrlMap,
+		);
+		expect(coexistence).toEqual(
+			expect.arrayContaining([
+				'/_astro/gallery-paired-feature-band.css',
+				'/_astro/location-split-map.css',
+				'/_astro/family-split-groups.css',
+				'/_astro/itinerary-timeline-paper.css',
+			]),
+		);
 	});
 
 	it('keeps canonical structural CSS free of origin slug/profile/theme identity', () => {
 		const splitCover = readSource('src/styles/themes/sections/hero/_split-cover.scss');
 		const splitMap = readSource('src/styles/themes/sections/location/_split-map.scss');
+		const stackedPlates = readSource(
+			'src/styles/themes/sections/location/_stacked-venue-plates.scss',
+		);
 		const splitGroups = readSource('src/styles/themes/sections/family/_split-groups.scss');
-		const combined = `${splitCover}\n${splitMap}\n${splitGroups}`;
+		const asymmetricGroups = readSource(
+			'src/styles/themes/sections/family/_asymmetric-groups.scss',
+		);
+		const featureStack = readSource('src/styles/themes/sections/gallery/_feature-stack.scss');
+		const pairedBand = readSource(
+			'src/styles/themes/sections/gallery/_paired-feature-band.scss',
+		);
+		const editorialLedger = readSource(
+			'src/styles/themes/sections/itinerary/_editorial-ledger.scss',
+		);
+		const combined = [
+			splitCover,
+			splitMap,
+			stackedPlates,
+			splitGroups,
+			asymmetricGroups,
+			featureStack,
+			pairedBand,
+			editorialLedger,
+		].join('\n');
 
 		expect(combined).toContain(".invitation-hero[data-structural-variant='split-cover']");
 		expect(combined).toContain(".event-location[data-structural-variant='split-map']");
+		expect(combined).toContain(
+			".event-location[data-structural-variant='stacked-venue-plates']",
+		);
 		expect(combined).toContain(".family[data-structural-variant='split-groups']");
+		expect(combined).toContain(".family[data-structural-variant='asymmetric-groups']");
+		expect(combined).toContain(".gallery-section[data-structural-variant='feature-stack']");
+		expect(combined).toContain(
+			".gallery-section[data-structural-variant='paired-feature-band']",
+		);
+		expect(combined).toContain(".itinerary[data-structural-variant='editorial-ledger']");
 		expect(combined).not.toMatch(/romina|alba-rosa|daniela-y-martin|visualProfileId/i);
-		expect(combined).toMatch(/respond-to\(lg\)|min-width|width\s*>=\s*768px/);
-		expect(combined).toMatch(/width\s*<\s*768px|respond-below/);
+		expect(combined).toMatch(/respond-to\(lg\)|min-width|width\s*>=\s*768px|respond-to\(md\)/);
+		expect(combined).toMatch(/width\s*<\s*768px|respond-below|width\s*<=\s*767px/);
 	});
 
 	it('does not require origin profile SCSS to own the structural grids', () => {

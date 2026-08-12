@@ -51,5 +51,41 @@ export const gallerySchema = z
 						: 'Presentación de galería no compatible.',
 			});
 		}
+
+		if (gallery.variant === 'single-keepsake' && gallery.items.length !== 1) {
+			context.addIssue({
+				code: 'custom',
+				path: ['items'],
+				message: 'gallery.variant=single-keepsake requires exactly one gallery item',
+			});
+		}
+
+		if (gallery.variant === 'feature-stack' && gallery.items.length < 3) {
+			context.addIssue({
+				code: 'custom',
+				path: ['items'],
+				message: 'gallery.variant=feature-stack requires at least three gallery items',
+			});
+		}
+
+		if (gallery.variant === 'paired-feature-band') {
+			const hasFeatureRole = gallery.items.some((item) => item.layoutRole === 'feature');
+			if (!hasFeatureRole) {
+				context.addIssue({
+					code: 'custom',
+					path: ['items'],
+					message:
+						'gallery.variant=paired-feature-band requires at least one item with layoutRole=feature',
+				});
+			}
+			if (gallery.items.length < 3) {
+				context.addIssue({
+					code: 'custom',
+					path: ['items'],
+					message:
+						'gallery.variant=paired-feature-band requires at least three gallery items',
+				});
+			}
+		}
 	})
 	.optional();

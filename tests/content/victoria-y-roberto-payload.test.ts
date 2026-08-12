@@ -170,7 +170,7 @@ describe('Boda Victoria y Roberto provision contract', () => {
 				mapUrl?: string;
 			}>;
 		};
-		expect(location.variant).toBe('standard');
+		expect(location.variant).toBe('stacked-venue-plates');
 		expect(location.venues).toEqual(expect.any(Array));
 		expect(location.venues?.length).toBeGreaterThan(0);
 		expect(
@@ -189,7 +189,7 @@ describe('Boda Victoria y Roberto provision contract', () => {
 			variant?: string;
 			items: Array<{ label: string; time: string }>;
 		};
-		expect(itinerary.variant).toBe('standard');
+		expect(itinerary.variant).toBe('editorial-ledger');
 		expect(itinerary.items).toEqual(expect.any(Array));
 		expect(itinerary.items.length).toBeGreaterThan(0);
 		expect(
@@ -210,7 +210,7 @@ describe('Boda Victoria y Roberto provision contract', () => {
 			godparents?: Array<{ name: string; role?: string }>;
 		};
 		expect(family.presentation).toBe('text-only');
-		expect(family.variant).toBe('split-groups');
+		expect(family.variant).toBe('asymmetric-groups');
 		expect(family.featuredImage).toBeUndefined();
 		expect(family.groups).toEqual(expect.any(Array));
 		expect(
@@ -286,7 +286,7 @@ describe('Boda Victoria y Roberto provision contract', () => {
 			id: 'events/victoria-y-roberto',
 			data: content,
 		} as Parameters<typeof adaptEvent>[0]);
-		expect(viewModel.sections.itinerary?.variant).toBe('standard');
+		expect(viewModel.sections.itinerary?.variant).toBe('editorial-ledger');
 		expect(viewModel.sections.rsvp?.personalizedAccess?.structuralVariant).toBe('ornamented');
 		const renderPlan = buildInvitationRenderPlan(viewModel);
 		expect(renderPlan.filter((item) => item.type === 'interlude')).toHaveLength(2);

@@ -35,8 +35,11 @@ const structuralVariantModules = import.meta.glob(
 		'/src/styles/themes/sections/rsvp/_editorial-press-pass.scss',
 		'/src/styles/themes/sections/personalized-access/_editorial-pass.scss',
 		'/src/styles/themes/sections/family/_split-groups.scss',
+		'/src/styles/themes/sections/family/_asymmetric-groups.scss',
 		'/src/styles/themes/sections/location/_split-map.scss',
+		'/src/styles/themes/sections/location/_stacked-venue-plates.scss',
 		'/src/styles/themes/sections/itinerary/_timeline-paper.scss',
+		'/src/styles/themes/sections/itinerary/_editorial-ledger.scss',
 	],
 	{ query: '?url', eager: true },
 ) as Record<string, { default: string }>;

@@ -410,8 +410,8 @@ Role-aware WebP transfer-weight **targets** (guidance):
 ### Neutral TOP PREMIUM Refinement (2026-07-28 — implemented final state)
 
 Implemented in `src/styles/invitation-profiles/alba-rosa-quinonez.scss` and
-`src/lib/invitation/intersection-profiles.ts` only. No shared components, presets, or other
-invitations were modified.
+content-owned `composition.intersections`. No shared components, presets, or other invitations were
+modified for those invitation-local visual treatments.
 
 - **Café/brown removal:** All inherited luxury-hacienda café tones neutralized inside the profile
   scope: reveal/envelope/seal tokens (`--env-*`, `--reveal-card-*`), header + mobile drawer hooks
@@ -459,7 +459,7 @@ invitations were modified.
   (`polygon(0 7rem, 58% …, 100% 0, …)`); (2) Gifts → RSVP — mirrored graphite diagonal descending
   left → right-deep; (3) Family → Thank You — photographic bleed: the ivory-framed memory photo
   crosses the boundary via negative margin (wrapper z-index 2, section `overflow: visible`).
-  Location → Paris keeps the arch crown. Configured in `intersection-profiles.ts`
+  Location → Paris keeps the arch crown. Configured in `composition.intersections`
   (`gallery: overlap`, `rsvp: overlap source gifts`); personalized-access reverted to a neutral
   blend because the render plan repositions it near the top on guest links.
 - **Thank You:** Broken floated drop cap neutralized — the gratitude message reads as one continuous

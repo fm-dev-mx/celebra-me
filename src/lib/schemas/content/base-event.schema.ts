@@ -18,7 +18,10 @@ import {
 	thankYouSchema,
 } from '@/lib/schemas/content/shared.schema';
 import { sectionStylesSchema } from '@/lib/schemas/content/section-styles.schema';
-import { normalizeInvitationVariantInput } from '@/lib/invitation/variant-normalization';
+import {
+	normalizeInvitationVariantInput,
+	VariantNormalizationConflictError,
+} from '@/lib/invitation/variant-normalization';
 
 export const canonicalEventContentSchema = baseEventFieldsSchema.extend({
 	sectionStyles: sectionStylesSchema,
@@ -39,7 +42,39 @@ export const canonicalEventContentSchema = baseEventFieldsSchema.extend({
 	sharing: sharingSchema,
 });
 
-export const eventContentSchema = z.preprocess(
-	normalizeInvitationVariantInput,
-	canonicalEventContentSchema,
-);
+type CanonicalEventContent = z.infer<typeof canonicalEventContentSchema>;
+
+/**
+ * Normalize legacy variant inputs, then validate the canonical contract.
+ * Dual-input conflicts become typed custom issues; unknown variants fail closed.
+ */
+export const eventContentSchema: z.ZodType<CanonicalEventContent> = z
+	.any()
+	.transform((input, context) => {
+		try {
+			const normalized = normalizeInvitationVariantInput(input);
+			const parsed = canonicalEventContentSchema.safeParse(normalized);
+			if (!parsed.success) {
+				for (const issue of parsed.error.issues) {
+					context.addIssue({
+						...issue,
+						path: issue.path,
+					});
+				}
+				return z.NEVER;
+			}
+			return parsed.data;
+		} catch (error) {
+			if (error instanceof VariantNormalizationConflictError) {
+				for (const conflict of error.conflicts) {
+					context.addIssue({
+						code: 'custom',
+						path: conflict.path,
+						message: conflict.message,
+					});
+				}
+				return z.NEVER;
+			}
+			throw error;
+		}
+	});
