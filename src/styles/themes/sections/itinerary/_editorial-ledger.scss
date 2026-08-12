@@ -2,6 +2,8 @@
 
 // Itinerary editorial-ledger: flat time|label ledger over TimelineList DOM.
 // Profiles may tint colors/type; they must not redefine the ledger grid.
+// Hide TimelineList chrome (center line, icon discs, dots) — the ledger reads as
+// text rows only; jewelry-box previously hid icons only for variant=standard.
 .itinerary[data-structural-variant='editorial-ledger'] {
 	--editorial-ledger-rule: rgb(0 0 0 / 14%);
 	--editorial-ledger-spine: rgb(0 0 0 / 20%);
@@ -12,7 +14,9 @@
 		text-align: left;
 	}
 
-	.itinerary__animated-line-container {
+	.itinerary__animated-line-container,
+	.itinerary__item-icon-wrapper,
+	.itinerary__item-dot {
 		display: none;
 	}
 
@@ -22,6 +26,21 @@
 
 	.itinerary__items {
 		gap: 0;
+	}
+
+	// Defeat base TimelineList two-column / absolute-icon layout so rows stack
+	// as a single reading column (time + label inside content).
+	.itinerary__item {
+		display: block;
+		grid-template-columns: none;
+		padding-left: 0;
+	}
+
+	.itinerary__item--left .itinerary__item-content,
+	.itinerary__item--right .itinerary__item-content {
+		grid-column: auto;
+		padding: 0;
+		text-align: left;
 	}
 
 	.itinerary__item-content {
@@ -56,11 +75,6 @@
 			margin-inline: 0 auto;
 		}
 
-		.itinerary__item {
-			display: block;
-			padding-left: 0;
-		}
-
 		.itinerary__item-content {
 			display: grid;
 			grid-template-columns: minmax(7rem, 0.24fr) minmax(0, 1fr);
@@ -88,10 +102,6 @@
 			grid-column: 2;
 			display: block;
 			margin: 0;
-		}
-
-		.itinerary__item-dot {
-			display: none;
 		}
 	}
 }

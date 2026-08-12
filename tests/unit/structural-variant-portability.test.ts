@@ -490,6 +490,10 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 			".gallery-section[data-structural-variant='paired-feature-band']",
 		);
 		expect(combined).toContain(".itinerary[data-structural-variant='editorial-ledger']");
+		expect(editorialLedger).toContain(".itinerary__item-icon-wrapper");
+		expect(editorialLedger).toMatch(
+			/\.itinerary__animated-line-container[\s\S]*?\.itinerary__item-icon-wrapper[\s\S]*?\.itinerary__item-dot[\s\S]*?display:\s*none/,
+		);
 		expect(combined).not.toMatch(/romina|alba-rosa|daniela-y-martin|visualProfileId/i);
 		expect(combined).toMatch(/respond-to\(lg\)|min-width|width\s*>=\s*768px|respond-to\(md\)/);
 		expect(combined).toMatch(/width\s*<\s*768px|respond-below|width\s*<=\s*767px/);
