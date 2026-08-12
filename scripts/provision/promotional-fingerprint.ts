@@ -18,6 +18,9 @@ import {
 	getInvitationAssetSourceDir,
 	type InvitationDefinition,
 } from './invitations/invitation-definition.ts';
+import type { EnvironmentPromotionState } from '../../src/lib/status/types.ts';
+
+export type { EnvironmentPromotionState };
 
 const SHA256_HEX = /^[a-f0-9]{64}$/i;
 
@@ -46,14 +49,6 @@ export interface LiveInvitationRow {
 	publishedContent: unknown;
 	assets: LiveAssetEvidence[];
 }
-
-export type EnvironmentPromotionState =
-	| 'match'
-	| 'behind'
-	| 'absent'
-	| 'diverged'
-	| 'conflict'
-	| 'unknown';
 
 export interface CanonicalFingerprintResult {
 	ok: true;

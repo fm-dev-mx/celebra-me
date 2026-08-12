@@ -35,6 +35,7 @@ const RATE_LIMITS = {
 
 	// Local-only observability dashboard (manual refresh, read-only probes).
 	'admin:observabilidad': { maxHits: 6, windowSec: 60 }, // cached, manual refresh only
+	'admin:estado': { maxHits: 6, windowSec: 60 }, // canonical status, explicit refresh
 
 	// Claim code operations follow the same operational profile.
 	'claimcodes:list': { maxHits: 60, windowSec: 60 },

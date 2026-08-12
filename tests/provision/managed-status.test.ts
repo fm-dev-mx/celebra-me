@@ -151,6 +151,9 @@ describe('managed-status compact composition', () => {
 		expect(status.schema.preview.status).toBe('UNVERIFIED');
 		expect(mockedInvitation).not.toHaveBeenCalled();
 		expect(mockedGeneral.mock.calls[0]?.[0]).toMatchObject({ includeManagedCounts: false });
+		expect(formatCompactManagedStatus(status)).toContain(
+			'connectivity only; not publication state',
+		);
 	});
 
 	it('aggregates worst CONTENT across definitions when requested', async () => {

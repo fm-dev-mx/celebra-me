@@ -159,7 +159,7 @@ function contentFromConnectivity(envStatus: EnvTargetStatus): CompactEnvContentS
 	}
 	const unverified = domainUnverified(
 		'content',
-		'Pass pnpm dbs --compact <slug> for package-hash content classification',
+		'CONTENT is connectivity only; not publication state. Use pnpm dbs for canonical publication status.',
 	);
 	return {
 		environment: envStatus.environment,
@@ -462,6 +462,9 @@ function formatSchemaLabel(schema: CompactEnvSchemaStatus): string {
 /** Human compact formatter matching the operational CONTENT/SCHEMA layout. */
 export function formatCompactManagedStatus(status: CompactManagedStatus): string {
 	const lines: string[] = ['CONTENT'];
+	if (status.contentMode === 'connectivity') {
+		lines.push('(connectivity only; not publication state — use pnpm dbs)');
+	}
 	for (const env of ENVS) {
 		const content = status.content[env];
 		lines.push(`${padLabel(envLabel(env))}${formatContentLabel(content)}`);

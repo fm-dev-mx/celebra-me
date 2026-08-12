@@ -2,37 +2,18 @@
  * dbs-cli.ts — Read-Only Unified Environment Status CLI (dbs)
  *
  * Usage:
- *   pnpm dbs                   # General 3-environment matrix view
- *   pnpm dbs <slug>            # Per-invitation detailed cross-environment status
- *   pnpm dbs --compact         # Compact CONTENT + SCHEMA (connectivity CONTENT; fast)
- *   pnpm dbs --compact <slug>  # Compact CONTENT + SCHEMA for one invitation
- *   pnpm dbs --compact --aggregate-content  # Worst-of all definitions (slower)
- *   pnpm dbs --json            # JSON output
+ *   pnpm dbs                   # Canonical schema + publication + readiness
+ *   pnpm dbs <slug>            # One registry invitation
+ *   pnpm dbs --verbose         # Migration IDs, env states, reasonCode
+ *   pnpm dbs --in-sync         # Include NONE / in-sync slugs
+ *   pnpm dbs --compact         # Connectivity CONTENT + schema (not publication)
+ *   pnpm dbs --json            # CanonicalStatusView JSON
  */
 
-import type { SchemaLifecycleState } from '../db/schema-lifecycle-state.ts';
-import {
-	evaluateGeneralStatus,
-	evaluateInvitationStatus,
-	getOrCreateStatusProbeSession,
-	resetStatusProbeSession,
-} from './dbs-status.ts';
 import {
 	MANAGED_STATUS_DEFAULT_TIMEOUT_MS,
 	runCompactManagedStatusSafe,
 } from './managed-status.ts';
-
-/** Formatter-only schema label (SCHEMA_UNVERIFIED is not a classifier status). */
-function formatSchemaLifecycleLabel(
-	lifecycle: SchemaLifecycleState,
-): 'CURRENT' | 'BEHIND' | 'SCHEMA_DRIFT' | 'SCHEMA_UNVERIFIED' {
-	if (lifecycle === 'UNVERIFIED') return 'SCHEMA_UNVERIFIED';
-	return lifecycle;
-}
-
-function pad(str: string, width: number): string {
-	return str.padEnd(width, ' ');
-}
 
 function readTimeoutMs(args: string[]): number {
 	const idx = args.indexOf('--timeout-ms');
@@ -45,150 +26,39 @@ function readTimeoutMs(args: string[]): number {
 	return Math.floor(parsed);
 }
 
-async function formatGeneralView(jsonMode: boolean): Promise<void> {
-	resetStatusProbeSession();
-	const session = getOrCreateStatusProbeSession();
-	const summary = await evaluateGeneralStatus({
-		includeManagedCounts: true,
-		concurrency: 3,
-		session,
-	});
-	const { evaluateManagedPromotionStatus, formatPromotionsSection } = await import(
-		'./managed-promotion-status.ts'
-	);
-	const promotionStatus = await evaluateManagedPromotionStatus({ session });
+async function formatGeneralView(
+	jsonMode: boolean,
+	verbose: boolean,
+	includeInSync: boolean,
+): Promise<void> {
+	const { buildCanonicalStatusView } = await import('./canonical-status.ts');
+	const { formatCanonicalStatusView } = await import('./canonical-status-format.ts');
+	const view = await buildCanonicalStatusView();
 	if (jsonMode) {
-		console.log(
-			JSON.stringify(
-				{
-					...summary,
-					promotions: promotionStatus.promotions,
-				},
-				null,
-				2,
-			),
-		);
+		console.log(JSON.stringify(view, null, 2));
 		return;
 	}
-
-	const envs = summary.environments;
-	console.log(`\n============================================================`);
-	console.log(` Celebra-me Unified Environment Status (dbs)`);
-	console.log(`============================================================\n`);
-
-	const colW = 16;
-	console.log(pad('', 18) + pad('LOCAL', colW) + pad('PREVIEW', colW) + pad('PRODUCTION', colW));
-	console.log('-'.repeat(18 + colW * 3));
-
-	const connRow =
-		pad('Connection', 18) +
-		pad(envs.local.reachable ? 'OK' : 'UNREACHABLE', colW) +
-		pad(
-			envs.preview.configured
-				? envs.preview.reachable
-					? 'OK'
-					: 'UNREACHABLE'
-				: 'NOT_CONFIGURED',
-			colW,
-		) +
-		pad(
-			envs.production.configured
-				? envs.production.reachable
-					? 'OK'
-					: 'UNREACHABLE'
-				: 'NOT_CONFIGURED',
-			colW,
-		);
-	console.log(connRow);
-
-	const identRow =
-		pad('Identity', 18) +
-		pad(envs.local.targetClassification.toUpperCase(), colW) +
-		pad(envs.preview.targetClassification.toUpperCase(), colW) +
-		pad(envs.production.targetClassification.toUpperCase(), colW);
-	console.log(identRow);
-
-	const managedRow =
-		pad('Managed', 18) +
-		pad(String(envs.local.activeManagedCount), colW) +
-		pad(String(envs.preview.activeManagedCount), colW) +
-		pad(String(envs.production.activeManagedCount), colW);
-	console.log(managedRow);
-
-	const conflictsRow =
-		pad('Conflicts', 18) +
-		pad(String(envs.local.identityConflictsCount), colW) +
-		pad(String(envs.preview.identityConflictsCount), colW) +
-		pad(String(envs.production.identityConflictsCount), colW);
-	console.log(conflictsRow);
-
-	const schemaRow =
-		pad('Schema', 18) +
-		pad(formatSchemaLifecycleLabel(envs.local.schemaLifecycle ?? 'UNVERIFIED'), colW) +
-		pad(formatSchemaLifecycleLabel(envs.preview.schemaLifecycle ?? 'UNVERIFIED'), colW) +
-		pad(formatSchemaLifecycleLabel(envs.production.schemaLifecycle ?? 'UNVERIFIED'), colW);
-	console.log(schemaRow);
-
-	const readinessRow =
-		pad('Op readiness', 18) +
-		pad(envs.local.schemaOperationReadiness ?? 'UNVERIFIED', colW) +
-		pad(envs.preview.schemaOperationReadiness ?? 'UNVERIFIED', colW) +
-		pad(envs.production.schemaOperationReadiness ?? 'UNVERIFIED', colW);
-	console.log(readinessRow);
-	console.log(
-		'(Schema labels use migration_history_parity; Op readiness also requires disposable proof before migrate.)',
-	);
-
-	console.log('\nDefinitions in repo:', summary.totalDefinitionsCount);
-	console.log(
-		'Disposable proof:',
-		summary.disposableProofOk ? 'OK' : `MISSING/STALE — ${summary.disposableProofDetail ?? ''}`,
-	);
-	if (summary.schemaNextAction) {
-		console.log('Next schema action:', summary.schemaNextAction);
-	} else {
-		console.log('Next schema action: (none — schema lifecycle ready)');
-	}
-
-	console.log('');
-	process.stdout.write(formatPromotionsSection(promotionStatus.promotions));
+	process.stdout.write(formatCanonicalStatusView(view, { verbose, includeInSync }));
 }
 
-async function formatInvitationView(slug: string, jsonMode: boolean): Promise<void> {
-	resetStatusProbeSession();
-	const session = getOrCreateStatusProbeSession();
-	const summary = await evaluateInvitationStatus(slug, { session });
-	const { evaluateManagedPromotionStatus, formatSlugPromotionLine } = await import(
-		'./managed-promotion-status.ts'
-	);
-	const promotionStatus = await evaluateManagedPromotionStatus({ session, slugs: [slug] });
-	const promotion = promotionStatus.promotions[0];
+async function formatInvitationView(
+	slug: string,
+	jsonMode: boolean,
+	verbose: boolean,
+): Promise<void> {
+	const { buildCanonicalStatusView } = await import('./canonical-status.ts');
+	const { formatSlugStatusView } = await import('./canonical-status-format.ts');
+	const view = await buildCanonicalStatusView({ slugs: [slug] });
 	if (jsonMode) {
-		const environments = Object.fromEntries(
-			(['local', 'preview', 'production'] as const).map((env) => {
-				const res = summary.environments[env];
-				return [
-					env,
-					{
-						environment: res.environment,
-						status: res.status,
-						activeMatchCount: res.activeMatchCount,
-						provenanceDefinitionSlug: res.provenanceDefinitionSlug,
-						publishedVersion: res.publishedVersion,
-						assetCount: res.assetCount,
-						detail: res.detail,
-					},
-				];
-			}),
-		);
+		const promotion = view.promotions.find((row) => row.slug === slug) ?? null;
 		console.log(
 			JSON.stringify(
 				{
-					slug: summary.slug,
-					title: summary.title,
-					eventType: summary.eventType,
-					environments,
-					promotion: promotion ?? null,
+					slug,
+					inSync: view.inSyncSlugs.includes(slug),
+					promotion,
+					environments: view.environments,
+					evidence: view.evidence,
 				},
 				null,
 				2,
@@ -196,25 +66,7 @@ async function formatInvitationView(slug: string, jsonMode: boolean): Promise<vo
 		);
 		return;
 	}
-
-	console.log(`\n============================================================`);
-	console.log(` Managed Invitation Status: ${summary.title} (${summary.slug})`);
-	console.log(` Event Type: ${summary.eventType}`);
-	console.log(`============================================================\n`);
-	console.log(`${formatSlugPromotionLine(promotion)}\n`);
-
-	for (const env of ['local', 'preview', 'production'] as const) {
-		const res = summary.environments[env];
-		console.log(`--- [${env.toUpperCase()}] ---`);
-		console.log(`Status:            ${res.status}`);
-		console.log(`Active Matches:    ${res.activeMatchCount}`);
-		if (res.provenanceDefinitionSlug)
-			console.log(`Provenance Slug:   ${res.provenanceDefinitionSlug}`);
-		if (res.publishedVersion)
-			console.log(`Published Version: ${res.publishedVersion} (${res.publishedAt || ''})`);
-		if (res.assetCount) console.log(`Assets Count:      ${res.assetCount}`);
-		console.log(`Detail:            ${res.detail}\n`);
-	}
+	process.stdout.write(formatSlugStatusView(view, slug, { verbose }));
 }
 
 async function formatCompactView(
@@ -246,6 +98,8 @@ async function main(): Promise<void> {
 	const args = process.argv.slice(2);
 	const jsonMode = args.includes('--json');
 	const compactMode = args.includes('--compact');
+	const verbose = args.includes('--verbose');
+	const includeInSync = args.includes('--in-sync');
 	const aggregateContent = args.includes('--aggregate-content');
 	const timeoutMs = readTimeoutMs(args);
 	const timeoutIdx = args.indexOf('--timeout-ms');
@@ -261,9 +115,9 @@ async function main(): Promise<void> {
 	}
 
 	if (slug) {
-		await formatInvitationView(slug, jsonMode);
+		await formatInvitationView(slug, jsonMode, verbose);
 	} else {
-		await formatGeneralView(jsonMode);
+		await formatGeneralView(jsonMode, verbose, includeInSync);
 	}
 }
 

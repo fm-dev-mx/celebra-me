@@ -44,7 +44,10 @@ const navItems: DashboardNavItem[] = [
 	{ label: 'Invitados', href: '/dashboard/invitados' },
 	{ label: 'Administración', href: '/dashboard/admin', adminOnly: true },
 	...(showObservabilityNav
-		? [{ label: 'Observabilidad', href: '/dashboard/observabilidad', adminOnly: true }]
+		? [
+				{ label: 'Estado', href: '/dashboard/estado', adminOnly: true },
+				{ label: 'Observabilidad', href: '/dashboard/observabilidad', adminOnly: true },
+			]
 		: []),
 	{ label: 'Publicación de demos', href: '/dashboard/admin/content-sync', adminOnly: true },
 	{ label: 'Códigos de acceso', href: '/dashboard/claimcodes', adminOnly: true },

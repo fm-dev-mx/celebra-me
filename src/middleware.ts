@@ -32,6 +32,7 @@ const TRUST_DEVICE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 const ADMIN_ONLY_PATHS = [
 	'/dashboard/admin',
 	'/dashboard/observabilidad',
+	'/dashboard/estado',
 	'/dashboard/usuarios',
 	'/dashboard/claimcodes',
 	'/dashboard/invitaciones',

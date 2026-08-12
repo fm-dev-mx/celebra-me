@@ -40,9 +40,10 @@ jest.mock('../../scripts/provision/promotional-fingerprint.ts', () => {
 
 import {
 	evaluateManagedPromotionStatus,
-	formatPromotionsSection,
 	formatSlugPromotionLine,
 } from '../../scripts/provision/managed-promotion-status.ts';
+import { formatPromotionsSection } from '../../scripts/provision/canonical-status-format.ts';
+import { presentPromotionRow } from '../../src/lib/status/presentation.ts';
 import { buildGroupedPromotionalEvidenceSql } from '../../scripts/status-core/promotional-evidence.ts';
 
 function definition(slug: string): InvitationDefinition {
@@ -139,33 +140,44 @@ describe('managed promotion status', () => {
 			definitions: [definition('alpha')],
 		});
 		expect(result.promotions).toEqual([]);
-		expect(formatPromotionsSection(result.promotions)).toBe('PROMOTIONS\nCURRENT\n');
+		expect(result.inSyncSlugs).toEqual(['alpha']);
+		expect(formatPromotionsSection(result.promotions)).toBe(
+			'PUBLICATION\nAttention: 0 (in sync or none registered)\n',
+		);
 	});
 
 	it('prints only safe promotion fields', () => {
 		const text = formatPromotionsSection([
-			{
+			presentPromotionRow({
 				slug: 'invitacion-y',
+				title: 'Invitación Y',
 				eventType: 'boda',
 				action: 'BLOCKED',
 				reasonCode: 'MANAGED_DIVERGENCE',
-			},
-			{
+				environments: { local: 'match', preview: 'diverged', production: 'behind' },
+				envEvidence: { local: 'LIVE', preview: 'LIVE', production: 'LIVE' },
+			}),
+			presentPromotionRow({
 				slug: 'boda-perla-y-carlos',
+				title: 'Perla y Carlos',
 				eventType: 'boda',
 				action: 'PROMOTE_PREVIEW',
 				reasonCode: 'PREVIEW_BEHIND_CANONICAL',
-			},
+				environments: { local: 'match', preview: 'behind', production: 'behind' },
+				envEvidence: { local: 'LIVE', preview: 'LIVE', production: 'LIVE' },
+			}),
 		]);
-		expect(text).toContain('action: PROMOTE_PREVIEW');
-		expect(text).toContain('reasonCode: MANAGED_DIVERGENCE');
+		expect(text).toContain('PROMOTE_PREVIEW');
+		expect(text).toContain('BLOCKED');
+		expect(text).not.toContain('PROMOTIONS');
+		expect(text).not.toMatch(/CURRENT\n/);
 		expect(text).not.toMatch(/postgres:\/\//);
 		expect(text).not.toMatch(/service_role/i);
 		expect(text).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-/);
 		expect(text).not.toMatch(/\b[0-9a-f]{64}\b/);
 		expect(text).not.toContain('Cliente');
 		expect(text).not.toContain('secret');
-		expect(formatSlugPromotionLine(undefined)).toBe('Promotion: (none)');
+		expect(formatSlugPromotionLine(undefined)).toBe('Publication: (none)');
 	});
 });
 
@@ -201,8 +213,12 @@ describe('promotion path isolation', () => {
 			'scripts/provision/promotional-fingerprint.ts',
 			'scripts/provision/promotion-decision.ts',
 			'scripts/provision/managed-promotion-status.ts',
+			'scripts/provision/canonical-status.ts',
+			'scripts/provision/canonical-status-format.ts',
 			'scripts/status-core/promotional-evidence.ts',
 			'scripts/provision/dbs-cli.ts',
+			'src/lib/status/decision.ts',
+			'src/lib/status/presentation.ts',
 		];
 		for (const file of files) {
 			const source = readFileSync(resolve(process.cwd(), file), 'utf8');
@@ -212,8 +228,10 @@ describe('promotion path isolation', () => {
 		}
 		const cli = readFileSync(resolve(process.cwd(), 'scripts/provision/dbs-cli.ts'), 'utf8');
 		expect(cli).not.toMatch(/from '\.\/managed-promotion-status\.ts'/);
+		expect(cli).not.toMatch(/from '\.\/canonical-status\.ts'/);
 		const compactFn = cli.slice(cli.indexOf('async function formatCompactView'));
 		expect(compactFn).not.toMatch(/evaluateManagedPromotionStatus/);
+		expect(compactFn).not.toMatch(/buildCanonicalStatusView/);
 	});
 
 	it('does not import promotion status from compact managed-status', () => {

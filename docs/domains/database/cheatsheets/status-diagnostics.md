@@ -9,6 +9,9 @@
 ```bash
 pnpm db:availability:verify -- --targets local,preview,production
 pnpm dbs
+pnpm dbs --verbose
+pnpm dbs --in-sync
+pnpm dbs --json
 pnpm dbs --compact
 pnpm dbs <slug>
 pnpm invitation:content-parity -- --slug <slug> --event-type <type>
@@ -17,6 +20,12 @@ pnpm invitation:inventory-audit
 pnpm invitation:diagnose-identity -- --slug <slug>
 pnpm db:local:audit | db:preview:audit | db:prod:audit
 ```
+
+`pnpm dbs` is the canonical operator matrix: **schema migrations**, **registry publication**, and
+**operation readiness** as separate columns. Disposable-test proof is listed apart from persistent
+schema. `--compact` is connectivity + schema only — not publication state.
+
+Local dashboard: `/dashboard/estado` (explicit remote refresh; same classifiers as `pnpm dbs`).
 
 **Expected result:** Typed availability and lifecycle/parity evidence. `UNVERIFIED` ≠ healthy.
 

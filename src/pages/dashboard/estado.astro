@@ -1,0 +1,40 @@
+---
+export const prerender = false;
+
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import CanonicalStatusPanel from '@/components/dashboard/status/CanonicalStatusPanel';
+import {
+	isLocalObservabilityRuntime,
+	readObservabilityRuntimeEnv,
+} from '@/lib/observability/runtime-gate';
+import { requireAdminStrongDashboardSessionFromLocals } from '@/lib/rsvp/auth/authorization';
+import { ApiError } from '@/lib/rsvp/core/errors';
+import { getCanonicalStatusView } from '@/lib/status/server/canonical-status';
+
+if (!isLocalObservabilityRuntime(readObservabilityRuntimeEnv())) {
+	return Astro.redirect('/404');
+}
+
+try {
+	requireAdminStrongDashboardSessionFromLocals(Astro.locals);
+} catch (error) {
+	if (error instanceof ApiError && error.status === 401) {
+		return Astro.redirect('/login');
+	}
+	if (error instanceof ApiError && error.status === 403) {
+		return Astro.redirect('/dashboard/mfa-setup');
+	}
+	throw error;
+}
+
+let initialView = null;
+try {
+	initialView = await getCanonicalStatusView();
+} catch {
+	initialView = null;
+}
+---
+
+<DashboardLayout title="Estado operacional">
+	<CanonicalStatusPanel client:load initialView={initialView} />
+</DashboardLayout>
