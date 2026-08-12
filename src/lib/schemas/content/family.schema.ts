@@ -65,13 +65,15 @@ const familyBaseSchema = z.object({
 	sectionMessage: z.string().optional(),
 });
 
+const multiGroupFamilySchema = familyBaseSchema.extend({
+	groups: z.array(familyGroupSchema).min(2),
+});
+
 export const familySchema = z
 	.discriminatedUnion('variant', [
 		familyBaseSchema.extend({ variant: z.literal(FAMILY_STRUCTURAL_VARIANTS[0]) }),
-		familyBaseSchema.extend({
-			variant: z.literal(FAMILY_STRUCTURAL_VARIANTS[1]),
-			groups: z.array(familyGroupSchema).min(2),
-		}),
+		multiGroupFamilySchema.extend({ variant: z.literal(FAMILY_STRUCTURAL_VARIANTS[1]) }),
+		multiGroupFamilySchema.extend({ variant: z.literal(FAMILY_STRUCTURAL_VARIANTS[2]) }),
 	])
 	.superRefine((data, ctx) => {
 		if (data.godparents && data.godparentGroups) {

@@ -1,0 +1,78 @@
+@use '../../../global/mixins' as mixins;
+
+// Location stacked-venue-plates: twin venue chapters with illustrated plate rows.
+// Profiles may tint surfaces/pins; they must not redefine the plate grid.
+.event-location[data-structural-variant='stacked-venue-plates'] {
+	--location-container-max-width: 56rem;
+	--location-card-max-width: 26rem;
+	--location-gap: clamp(1.75rem, 4.5vw, 2.85rem);
+	--location-plate-row: minmax(8rem, min(18vw, 16rem));
+	--location-stack-gap: clamp(3rem, 7vw, 4.5rem);
+
+	.event-location__container {
+		align-items: stretch;
+		gap: var(--location-gap);
+	}
+
+	.event-location__card-wrapper {
+		display: flex;
+		flex-direction: column;
+		flex: 1 1 0;
+		align-items: stretch;
+		width: min(100%, var(--location-card-max-width));
+		margin-block: 0;
+		gap: clamp(0.35rem, 1vw, 0.55rem);
+	}
+
+	.event-location__card {
+		width: 100%;
+		flex: 1 1 auto;
+		min-height: 0;
+	}
+
+	.event-location__card-title {
+		position: relative;
+		z-index: 1;
+	}
+
+	.event-location__card-map-preview,
+	.event-location__card-map-preview--link {
+		display: grid;
+		grid-template-columns: 1fr;
+		grid-template-rows: var(--location-plate-row) auto;
+		width: 100%;
+		overflow: hidden;
+	}
+
+	.event-location__card-map-preview[data-map-preview='illustration'] {
+		grid-template-rows: var(--location-plate-row);
+
+		.event-location__card-map-preview-foot,
+		.event-location__card-map-preview-pin {
+			display: none;
+		}
+	}
+
+	.event-location__indications-container {
+		max-width: 42rem;
+		margin-inline: auto;
+	}
+
+	@include mixins.respond-below(md) {
+		.event-location__card-wrapper {
+			width: 100%;
+		}
+
+		.event-location__card-wrapper + .event-location__card-wrapper {
+			margin-block-start: var(--location-stack-gap);
+			padding-block-start: 0.75rem;
+		}
+
+		.event-location__card-map-preview,
+		.event-location__card-map-preview[data-map-preview='illustration'] {
+			--location-plate-row: minmax(7rem, min(18vw, 16rem));
+
+			min-height: 7rem;
+		}
+	}
+}

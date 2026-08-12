@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { ICON_NAMES_TUPLE } from '@/lib/icons/icon-catalog';
-import { ITINERARY_PRESENTATION_BEHAVIORS } from '@/lib/invitation/presentation-options';
+import { ITINERARY_STRUCTURAL_VARIANTS } from '@/lib/invitation/structural-variants';
 
 export const itineraryItemSchema = z.object({
 	iconName: z.enum(ICON_NAMES_TUPLE),
@@ -13,7 +13,7 @@ export const itinerarySchema = z
 	.object({
 		title: z.string().default('Itinerario'),
 		subtitle: z.string().optional(),
-		variant: z.enum(ITINERARY_PRESENTATION_BEHAVIORS),
+		variant: z.enum(ITINERARY_STRUCTURAL_VARIANTS),
 		items: z.array(itineraryItemSchema),
 	})
 	.optional();

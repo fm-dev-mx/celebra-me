@@ -38,8 +38,8 @@ const SECTION_CONTRACTS = {
 	},
 	itinerary: {
 		directory: 'itinerary',
-		source: 'src/lib/invitation/itinerary-presentation.ts',
-		constName: 'ITINERARY_PRESENTATION_BEHAVIORS',
+		source: 'src/lib/invitation/structural-variants.ts',
+		constName: 'ITINERARY_STRUCTURAL_VARIANTS',
 		baseOnly: ['standard'],
 	},
 	gifts: {

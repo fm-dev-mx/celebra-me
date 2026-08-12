@@ -1,0 +1,38 @@
+@use '../../../global/mixins' as mixins;
+
+// Gallery paired-feature-band: portrait pairs with a full-width feature band.
+// Profiles may supply border/shadow/filter tokens; not grid geometry.
+.gallery-section[data-structural-variant='paired-feature-band'] {
+	.gallery-grid {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: clamp(1rem, 2.5vw, 1.5rem);
+		max-width: 880px;
+		margin-inline: auto;
+
+		& > * {
+			grid-column: auto;
+		}
+
+		@include mixins.respond-to(md) {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: clamp(1.15rem, 2.4vw, 1.75rem);
+		}
+	}
+
+	.gallery-grid__item {
+		aspect-ratio: 4 / 5;
+		overflow: hidden;
+	}
+
+	.gallery-grid__item[data-layout-role='feature'] {
+		grid-column: 1 / -1;
+		aspect-ratio: 8 / 5;
+	}
+
+	.gallery-grid__item img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+}

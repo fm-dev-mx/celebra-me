@@ -3,6 +3,7 @@ import {
 	GALLERY_LAYOUT_VARIANTS,
 	GIFTS_STRUCTURAL_VARIANTS,
 	HERO_STRUCTURAL_VARIANTS,
+	ITINERARY_STRUCTURAL_VARIANTS,
 } from './structural-variants';
 import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 
@@ -15,6 +16,22 @@ export interface VariantCompatibilityAlias {
 	knownConsumers: readonly string[];
 	owner: 'variant-input-normalizer';
 	retireWhen: string;
+}
+
+export interface VariantNormalizationConflict {
+	path: string[];
+	message: string;
+	canonical: unknown;
+	legacy: unknown;
+}
+
+export class VariantNormalizationConflictError extends Error {
+	readonly code = 'variant_normalization_conflict' as const;
+
+	constructor(readonly conflicts: readonly VariantNormalizationConflict[]) {
+		super(conflicts.map((conflict) => conflict.message).join('; '));
+		this.name = 'VariantNormalizationConflictError';
+	}
 }
 
 export const VARIANT_COMPATIBILITY_ALIASES: readonly VariantCompatibilityAlias[] = [
@@ -136,6 +153,15 @@ const LEGACY_INTERSECTION_PROFILES: Readonly<Record<string, IntersectionProfile>
 	},
 };
 
+const LEGACY_GALLERY_THEME_LAYOUTS: Readonly<Record<string, string>> = {
+	editorial: 'editorial-mosaic',
+	'editorial-rose': 'editorial-mosaic',
+	'premiere-floral': 'editorial-mosaic',
+	'editorial-magazine': 'magazine-spread',
+	'luxury-hacienda': 'feature-mosaic',
+	'celestial-blue': 'index-choreography',
+};
+
 function isRecord(value: unknown): value is JsonRecord {
 	return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -148,10 +174,42 @@ function isOneOf(value: unknown, values: readonly string[]): value is string {
 	return typeof value === 'string' && values.includes(value);
 }
 
-function canonicalOrLegacy(canonical: unknown, legacy: unknown, fallback: string): unknown {
-	if (canonical !== undefined) return canonical;
-	if (legacy !== undefined) return legacy;
+function resolveCanonicalOrLegacy(
+	conflicts: VariantNormalizationConflict[],
+	path: string[],
+	canonical: unknown,
+	legacy: unknown,
+	fallback: string,
+	areEquivalent: (left: unknown, right: unknown) => boolean = (left, right) => left === right,
+): unknown {
+	const hasCanonical = canonical !== undefined;
+	const hasLegacy = legacy !== undefined;
+
+	if (hasCanonical && hasLegacy) {
+		if (areEquivalent(canonical, legacy)) return canonical;
+		conflicts.push({
+			path,
+			canonical,
+			legacy,
+			message: `Conflicting variant inputs at ${path.join('.')}: canonical=${String(canonical)} legacy=${String(legacy)}`,
+		});
+		return canonical;
+	}
+	if (hasCanonical) return canonical;
+	if (hasLegacy) return legacy;
 	return fallback;
+}
+
+function gallerySemanticsEqual(left: unknown, right: unknown): boolean {
+	const normalize = (value: unknown): unknown => (value === 'single' ? 'single-keepsake' : value);
+	return normalize(left) === normalize(right);
+}
+
+function resolveGalleryLayout(value: unknown): string | undefined {
+	if (value === 'single') return 'single-keepsake';
+	if (isOneOf(value, GALLERY_LAYOUT_VARIANTS)) return value;
+	if (isOneOf(value, THEME_PRESETS)) return LEGACY_GALLERY_THEME_LAYOUTS[value] ?? 'uniform-grid';
+	return undefined;
 }
 
 function normalizeSectionStyles(input: JsonRecord): JsonRecord | undefined {
@@ -180,14 +238,20 @@ function normalizeSectionStyles(input: JsonRecord): JsonRecord | undefined {
 	return result;
 }
 
-function normalizeHero(result: JsonRecord, themePreset: string | undefined): void {
+function normalizeHero(
+	result: JsonRecord,
+	themePreset: string | undefined,
+	conflicts: VariantNormalizationConflict[],
+): void {
 	const hero = cloneRecord(result.hero);
 	if (!hero) return;
 	const rawVariant = hero.variant;
 	const canonical = isOneOf(rawVariant, HERO_STRUCTURAL_VARIANTS) ? rawVariant : undefined;
 	const legacyVisual = isOneOf(rawVariant, THEME_PRESETS) ? rawVariant : undefined;
 	const fallback = themePreset === 'editorial-magazine' ? 'editorial-cover' : 'standard';
-	hero.variant = canonicalOrLegacy(
+	hero.variant = resolveCanonicalOrLegacy(
+		conflicts,
+		['hero', 'variant'],
 		canonical ?? (legacyVisual ? undefined : rawVariant),
 		hero.structuralVariant,
 		fallback,
@@ -197,18 +261,34 @@ function normalizeHero(result: JsonRecord, themePreset: string | undefined): voi
 	result.hero = hero;
 }
 
-function normalizeFamily(result: JsonRecord): void {
+function normalizeFamily(result: JsonRecord, conflicts: VariantNormalizationConflict[]): void {
 	const family = cloneRecord(result.family);
 	if (!family) return;
-	family.variant = canonicalOrLegacy(family.variant, family.structuralVariant, 'standard');
+	family.variant = resolveCanonicalOrLegacy(
+		conflicts,
+		['family', 'variant'],
+		family.variant,
+		family.structuralVariant,
+		'standard',
+	);
 	delete family.structuralVariant;
 	result.family = family;
 }
 
-function normalizeLocation(result: JsonRecord, sectionStyles: JsonRecord | undefined): void {
+function normalizeLocation(
+	result: JsonRecord,
+	sectionStyles: JsonRecord | undefined,
+	conflicts: VariantNormalizationConflict[],
+): void {
 	const location = cloneRecord(result.location);
 	if (!location) return;
-	location.variant = canonicalOrLegacy(location.variant, location.structuralVariant, 'standard');
+	location.variant = resolveCanonicalOrLegacy(
+		conflicts,
+		['location', 'variant'],
+		location.variant,
+		location.structuralVariant,
+		'standard',
+	);
 	delete location.structuralVariant;
 
 	const legacyStyle = cloneRecord(sectionStyles?.location);
@@ -226,33 +306,47 @@ function normalizeLocation(result: JsonRecord, sectionStyles: JsonRecord | undef
 	result.location = location;
 }
 
-const LEGACY_GALLERY_THEME_LAYOUTS: Readonly<Record<string, string>> = {
-	editorial: 'editorial-mosaic',
-	'editorial-rose': 'editorial-mosaic',
-	'premiere-floral': 'editorial-mosaic',
-	'editorial-magazine': 'magazine-spread',
-	'luxury-hacienda': 'feature-mosaic',
-	'celestial-blue': 'index-choreography',
-};
-
 function normalizeGallery(
 	result: JsonRecord,
 	sectionStyles: JsonRecord | undefined,
 	themePreset: string | undefined,
+	conflicts: VariantNormalizationConflict[],
 ): void {
 	const gallery = cloneRecord(result.gallery);
 	if (!gallery) return;
 	const legacyStyleVariant = cloneRecord(sectionStyles?.gallery)?.variant;
 	const rawVariant = gallery.variant;
+	const fromCanonical = resolveGalleryLayout(rawVariant);
+	const fromLegacy = resolveGalleryLayout(legacyStyleVariant);
+	const unknownCanonical =
+		typeof rawVariant === 'string' &&
+		rawVariant !== 'single' &&
+		!isOneOf(rawVariant, GALLERY_LAYOUT_VARIANTS) &&
+		!isOneOf(rawVariant, THEME_PRESETS);
 
-	if (rawVariant === 'single' || legacyStyleVariant === 'single') {
-		gallery.variant = 'single-keepsake';
-	} else if (isOneOf(rawVariant, GALLERY_LAYOUT_VARIANTS)) {
+	if (unknownCanonical) {
+		if (fromLegacy !== undefined) {
+			conflicts.push({
+				path: ['gallery', 'variant'],
+				canonical: rawVariant,
+				legacy: legacyStyleVariant,
+				message: `Conflicting variant inputs at gallery.variant: canonical=${String(rawVariant)} legacy=${String(legacyStyleVariant)}`,
+			});
+		}
 		gallery.variant = rawVariant;
-	} else if (isOneOf(legacyStyleVariant, GALLERY_LAYOUT_VARIANTS)) {
-		gallery.variant = legacyStyleVariant;
-	} else if (isOneOf(rawVariant, THEME_PRESETS)) {
-		gallery.variant = LEGACY_GALLERY_THEME_LAYOUTS[rawVariant] ?? 'uniform-grid';
+	} else if (fromCanonical !== undefined && fromLegacy !== undefined) {
+		gallery.variant = resolveCanonicalOrLegacy(
+			conflicts,
+			['gallery', 'variant'],
+			fromCanonical,
+			fromLegacy,
+			'uniform-grid',
+			gallerySemanticsEqual,
+		);
+	} else if (fromCanonical !== undefined) {
+		gallery.variant = fromCanonical;
+	} else if (fromLegacy !== undefined) {
+		gallery.variant = fromLegacy;
 	} else if (rawVariant === undefined) {
 		gallery.variant = LEGACY_GALLERY_THEME_LAYOUTS[themePreset ?? ''] ?? 'uniform-grid';
 	}
@@ -266,15 +360,28 @@ function normalizeGallery(
 	result.gallery = gallery;
 }
 
-function normalizeItinerary(result: JsonRecord, sectionStyles: JsonRecord | undefined): void {
+function normalizeItinerary(
+	result: JsonRecord,
+	sectionStyles: JsonRecord | undefined,
+	conflicts: VariantNormalizationConflict[],
+): void {
 	const itinerary = cloneRecord(result.itinerary);
 	if (!itinerary) return;
 	const presentation = cloneRecord(itinerary.presentation);
 	const legacyStyleVariant = cloneRecord(sectionStyles?.itinerary)?.variant;
-	const legacyVariant =
-		presentation?.behavior ??
-		(legacyStyleVariant === 'timeline-paper' ? 'timeline-paper' : 'standard');
-	itinerary.variant = canonicalOrLegacy(itinerary.variant, legacyVariant, 'standard');
+	const legacyFromPresentation = presentation?.behavior;
+	const legacyFromStyles = isOneOf(legacyStyleVariant, ITINERARY_STRUCTURAL_VARIANTS)
+		? legacyStyleVariant
+		: undefined;
+	const legacy = legacyFromPresentation !== undefined ? legacyFromPresentation : legacyFromStyles;
+
+	itinerary.variant = resolveCanonicalOrLegacy(
+		conflicts,
+		['itinerary', 'variant'],
+		itinerary.variant,
+		legacy,
+		'standard',
+	);
 	delete itinerary.presentation;
 	result.itinerary = itinerary;
 }
@@ -283,6 +390,7 @@ function normalizeGifts(
 	result: JsonRecord,
 	sectionStyles: JsonRecord | undefined,
 	themePreset: string | undefined,
+	conflicts: VariantNormalizationConflict[],
 ): void {
 	const gifts = cloneRecord(result.gifts);
 	if (!gifts) return;
@@ -294,7 +402,9 @@ function normalizeGifts(
 		legacyVisual === 'editorial-magazine' || themePreset === 'editorial-magazine'
 			? 'editorial-catalog'
 			: 'standard';
-	gifts.variant = canonicalOrLegacy(
+	gifts.variant = resolveCanonicalOrLegacy(
+		conflicts,
+		['gifts', 'variant'],
 		canonical ?? (legacyVisual ? undefined : rawVariant),
 		legacy,
 		fallback,
@@ -306,18 +416,27 @@ function normalizeRsvp(
 	result: JsonRecord,
 	sectionStyles: JsonRecord | undefined,
 	themePreset: string | undefined,
+	conflicts: VariantNormalizationConflict[],
 ): void {
 	const rsvp = cloneRecord(result.rsvp);
 	if (!rsvp) return;
 	const legacyStyle = cloneRecord(sectionStyles?.rsvp);
 	const fallback = themePreset === 'editorial-magazine' ? 'editorial-press-pass' : 'standard';
-	rsvp.variant = canonicalOrLegacy(rsvp.variant, legacyStyle?.structuralVariant, fallback);
+	rsvp.variant = resolveCanonicalOrLegacy(
+		conflicts,
+		['rsvp', 'variant'],
+		rsvp.variant,
+		legacyStyle?.structuralVariant,
+		fallback,
+	);
 	if (rsvp.labels === undefined && legacyStyle?.labels !== undefined)
 		rsvp.labels = legacyStyle.labels;
 
 	const personalizedAccess = cloneRecord(rsvp.personalizedAccess) ?? {};
 	const accessFallback = themePreset === 'editorial-magazine' ? 'editorial-pass' : 'standard';
-	personalizedAccess.variant = canonicalOrLegacy(
+	personalizedAccess.variant = resolveCanonicalOrLegacy(
+		conflicts,
+		['rsvp', 'personalizedAccess', 'variant'],
 		personalizedAccess.variant,
 		personalizedAccess.structuralVariant,
 		accessFallback,
@@ -331,12 +450,19 @@ function normalizeThankYou(
 	result: JsonRecord,
 	sectionStyles: JsonRecord | undefined,
 	themePreset: string | undefined,
+	conflicts: VariantNormalizationConflict[],
 ): void {
 	const thankYou = cloneRecord(result.thankYou);
 	if (!thankYou) return;
 	const legacy = cloneRecord(sectionStyles?.thankYou)?.structuralVariant;
 	const fallback = themePreset === 'editorial-magazine' ? 'editorial-back-cover' : 'standard';
-	thankYou.variant = canonicalOrLegacy(thankYou.variant, legacy, fallback);
+	thankYou.variant = resolveCanonicalOrLegacy(
+		conflicts,
+		['thankYou', 'variant'],
+		thankYou.variant,
+		legacy,
+		fallback,
+	);
 	result.thankYou = thankYou;
 }
 
@@ -351,6 +477,7 @@ function normalizeComposition(result: JsonRecord): void {
 /**
  * Single compatibility boundary for structural variants and composition.
  * Unknown values are preserved deliberately so the canonical schema rejects them.
+ * Conflicting canonical + legacy semantic inputs throw VariantNormalizationConflictError.
  */
 export function normalizeInvitationVariantInput(input: unknown): unknown {
 	if (!isRecord(input)) return input;
@@ -358,19 +485,24 @@ export function normalizeInvitationVariantInput(input: unknown): unknown {
 	const sectionStyles = cloneRecord(input.sectionStyles);
 	const themePreset = cloneRecord(input.theme)?.preset;
 	const themeId = typeof themePreset === 'string' ? themePreset : undefined;
+	const conflicts: VariantNormalizationConflict[] = [];
 
-	normalizeHero(result, themeId);
-	normalizeFamily(result);
-	normalizeLocation(result, sectionStyles);
-	normalizeGallery(result, sectionStyles, themeId);
-	normalizeItinerary(result, sectionStyles);
-	normalizeGifts(result, sectionStyles, themeId);
-	normalizeRsvp(result, sectionStyles, themeId);
-	normalizeThankYou(result, sectionStyles, themeId);
+	normalizeHero(result, themeId, conflicts);
+	normalizeFamily(result, conflicts);
+	normalizeLocation(result, sectionStyles, conflicts);
+	normalizeGallery(result, sectionStyles, themeId, conflicts);
+	normalizeItinerary(result, sectionStyles, conflicts);
+	normalizeGifts(result, sectionStyles, themeId, conflicts);
+	normalizeRsvp(result, sectionStyles, themeId, conflicts);
+	normalizeThankYou(result, sectionStyles, themeId, conflicts);
 	normalizeComposition(result);
 
 	const canonicalStyles = normalizeSectionStyles(result);
 	if (canonicalStyles) result.sectionStyles = canonicalStyles;
 	else delete result.sectionStyles;
+
+	if (conflicts.length > 0) {
+		throw new VariantNormalizationConflictError(conflicts);
+	}
 	return result;
 }

@@ -26,10 +26,18 @@ export const PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS = [
 export type PersonalizedAccessStructuralVariant =
 	(typeof PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS)[number];
 
-export const FAMILY_STRUCTURAL_VARIANTS = ['standard', 'split-groups'] as const;
+export const FAMILY_STRUCTURAL_VARIANTS = [
+	'standard',
+	'split-groups',
+	'asymmetric-groups',
+] as const;
 export type FamilyStructuralVariant = (typeof FAMILY_STRUCTURAL_VARIANTS)[number];
 
-export const LOCATION_STRUCTURAL_VARIANTS = ['standard', 'split-map'] as const;
+export const LOCATION_STRUCTURAL_VARIANTS = [
+	'standard',
+	'split-map',
+	'stacked-venue-plates',
+] as const;
 export type LocationStructuralVariant = (typeof LOCATION_STRUCTURAL_VARIANTS)[number];
 
 /** Gallery owns a layout contract; `variant` is not a theme identity. */
@@ -38,7 +46,16 @@ export const GALLERY_LAYOUT_VARIANTS = [
 	'editorial-mosaic',
 	'magazine-spread',
 	'feature-mosaic',
+	'feature-stack',
+	'paired-feature-band',
 	'index-choreography',
 	'single-keepsake',
 ] as const;
 export type GalleryLayoutVariant = (typeof GALLERY_LAYOUT_VARIANTS)[number];
+
+/** Itinerary structural behaviors (renderer / layout selection). */
+export const ITINERARY_STRUCTURAL_VARIANTS = [
+	'standard',
+	'timeline-paper',
+	'editorial-ledger',
+] as const;

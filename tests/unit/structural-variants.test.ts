@@ -32,8 +32,56 @@ describe('section structural variant contracts', () => {
 		expect(RSVP_STRUCTURAL_VARIANTS).toContain('editorial-press-pass');
 		expect(PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS).toContain('editorial-pass');
 		expect(FAMILY_STRUCTURAL_VARIANTS).toContain('split-groups');
+		expect(FAMILY_STRUCTURAL_VARIANTS).toContain('asymmetric-groups');
 		expect(LOCATION_STRUCTURAL_VARIANTS).toContain('split-map');
+		expect(LOCATION_STRUCTURAL_VARIANTS).toContain('stacked-venue-plates');
 		expect(GALLERY_LAYOUT_VARIANTS).toContain('magazine-spread');
+		expect(GALLERY_LAYOUT_VARIANTS).toContain('feature-stack');
+		expect(GALLERY_LAYOUT_VARIANTS).toContain('paired-feature-band');
+	});
+
+	it('rejects conflicting canonical and legacy structural inputs', () => {
+		const result = eventContentSchema.safeParse({
+			...baseInput,
+			hero: {
+				...baseInput.hero,
+				variant: 'split-cover',
+				structuralVariant: 'standard',
+			},
+		});
+
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			expect(result.error.issues).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						message: expect.stringContaining('Conflicting variant inputs'),
+					}),
+				]),
+			);
+		}
+	});
+
+	it('enforces single-keepsake cardinality', () => {
+		const empty = eventContentSchema.safeParse({
+			...baseInput,
+			gallery: { variant: 'single-keepsake', items: [] },
+		});
+		const tooMany = eventContentSchema.safeParse({
+			...baseInput,
+			gallery: {
+				variant: 'single-keepsake',
+				items: [{ image: '/a.webp' }, { image: '/b.webp' }],
+			},
+		});
+		const exact = eventContentSchema.safeParse({
+			...baseInput,
+			gallery: { variant: 'single-keepsake', items: [{ image: '/a.webp' }] },
+		});
+
+		expect(empty.success).toBe(false);
+		expect(tooMany.success).toBe(false);
+		expect(exact.success).toBe(true);
 	});
 
 	it('rejects an unknown canonical variant instead of silently falling back', () => {
