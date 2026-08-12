@@ -19,9 +19,11 @@ Theme preset, slug, profile identity, and asset identity never select Gallery st
 - `uniform-grid`: regular multi-item grid; base Gallery CSS owns it.
 - `editorial-mosaic`: asymmetrical editorial mosaic.
 - `magazine-spread`: numbered feature/wide magazine composition.
-- `feature-mosaic`: feature-led twelve-column composition.
+- `feature-mosaic`: feature-led twelve-column dense composition.
+- `feature-stack`: primary feature column with stacked support cells.
+- `paired-feature-band`: portrait pairs with a full-width feature band (`layoutRole=feature`).
 - `index-choreography`: index-driven staggered composition.
-- `single-keepsake`: one-image keepsake composition; base Gallery CSS owns it.
+- `single-keepsake`: one-image keepsake composition; base Gallery CSS owns it; exactly one item.
 
 Semantic structural partials live under `src/styles/themes/sections/gallery/` and are loaded by the
 section CSS resolver independently from the active theme bundle. `Gallery.astro` and
@@ -41,18 +43,16 @@ write the semantic layout directly. See the complete alias and retirement regist
 [`variant-compatibility.md`](variant-compatibility.md).
 
 Unknown values are preserved by normalization and rejected by the canonical schema; they do not
-resolve to `uniform-grid` silently.
+resolve to `uniform-grid` silently. Conflicting canonical and legacy layout inputs fail closed with
+a typed conflict error.
 
-## Invitation-specific exceptions
-
-- Abril's profile-scoped 2×2 treatment remains an unresolved invitation-specific extension over
-  explicit `uniform-grid`. It is not a canonical layout because no independent reusable contract
-  proves that exact composition.
-- The `jewelry-box-wedding` nth-child storyboard remains a visual compatibility path. It must not be
-  promoted or deleted without a current consumer inventory and parity proof.
-- Celestial Blue single-keepsake rules are visual compatibility only; the index choreography lives
-  in `_index-choreography.scss`.
+## Invitation-specific visual treatment
 
 Profiles may tint tokens, crops, decoration, and motion. They may not supply a canonical Gallery
 grid required for portability. A new layout needs a semantic name, closed schema value, independent
 SCSS delivery, incompatible-input tests, and a non-origin visual proof.
+
+- The `jewelry-box-wedding` nth-child storyboard remains a visual compatibility path. It must not be
+  promoted or deleted without a current consumer inventory and parity proof.
+- Celestial Blue single-keepsake rules are visual compatibility only; the index choreography lives
+  in `_index-choreography.scss`.

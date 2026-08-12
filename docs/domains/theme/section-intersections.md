@@ -188,8 +188,8 @@ may set visual tokens against these stable attributes; shared mechanics live in
 
 Current explicit mappings:
 
-- Abril retains its two interlude overlaps, gallery → RSVP arch, and atmospheric blends through the
-  `abril-michelle-becerra-rea` visual composition profile.
+- Abril retains its two interlude overlaps, gallery → RSVP arch, and atmospheric blends through
+  content-owned `composition.intersections` (plus invitation profile visual tokens).
 - Celestial uses two photographic bridges (family → tiara and itinerary → lantern), a soft detail →
   gallery blend, the location → architecture arch, and the RSVP → tul atmospheric finale. Its
   remaining boundaries are intentionally neutral.

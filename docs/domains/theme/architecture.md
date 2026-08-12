@@ -205,9 +205,9 @@ composition root (for example, intersection profiles).
 ## Behavior-Named Section Variants
 
 Reusable section mechanics use behavior names instead of borrowing another theme's identity. The
-paper itinerary behavior is `timeline-paper`, selected only via `itinerary.presentation.behavior`.
-The former `celestial-blue` itinerary alias and theme-name fallback are retired; omitted behavior
-resolves to `standard`. Theme presets remain visual skins.
+paper itinerary behavior is `timeline-paper` and the flat ledger is `editorial-ledger`, selected only
+via `itinerary.variant`. Legacy `itinerary.presentation.behavior` remains a compatibility input.
+Omitted behavior resolves to `standard`. Theme presets remain visual skins.
 
 ## Runtime CSS Delivery
 

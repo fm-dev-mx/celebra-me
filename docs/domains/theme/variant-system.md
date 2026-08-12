@@ -39,18 +39,26 @@ canonical CSS, and shared primitives must contain no compatibility branches.
   - `split-cover` uses the shared Hero DOM and owns all required responsive plane/title geometry in
     `_split-cover.scss`.
   - `hero.visualVariant` is an independent visual skin.
-- **Family:** `standard`, `split-groups`.
-  - `split-groups` requires at least two explicit `groups` through a discriminated schema contract.
-- **Location:** `standard`, `split-map`.
+- **Family:** `standard`, `split-groups`, `asymmetric-groups`.
+  - `split-groups` and `asymmetric-groups` require at least two explicit `groups` through a
+    discriminated schema contract.
+  - `split-groups` mirrors parallel groups; `asymmetric-groups` is left-read with staggered groups
+    and optional right-set spanning godparents.
+- **Location:** `standard`, `split-map`, `stacked-venue-plates`.
   - `split-map` requires at least one visible venue with coordinates or image media.
+  - `stacked-venue-plates` requires at least two visible venues and owns twin plate-chapter geometry.
   - Map/navigation media and presentation flags remain explicit section capabilities.
 - **Gallery:** `uniform-grid`, `editorial-mosaic`, `magazine-spread`, `feature-mosaic`,
-  `index-choreography`, `single-keepsake`.
+  `feature-stack`, `paired-feature-band`, `index-choreography`, `single-keepsake`.
   - `gallery.variant` owns layout; `gallery.visualVariant` owns skin.
+  - `single-keepsake` requires exactly one item; `feature-stack` requires ≥3 items;
+    `paired-feature-band` requires ≥3 items and at least one `layoutRole=feature`.
   - Item roles and `presentationOptions.mobileBrowse` remain orthogonal typed capabilities.
-- **Itinerary:** `standard`, `timeline-paper`.
+- **Itinerary:** `standard`, `timeline-paper`, `editorial-ledger`.
   - The value selects the renderer path and is emitted as `data-structural-variant`.
-  - `_timeline-paper.scss` is delivered independently from theme and profile bundles.
+  - `timeline-paper` uses `ItineraryProgram`; `editorial-ledger` and `standard` use `TimelineList`.
+  - `_timeline-paper.scss` and `_editorial-ledger.scss` are delivered independently from theme and
+    profile bundles.
 - **Gifts:** `standard`, `editorial-catalog`.
 - **RSVP:** `standard`, `editorial-press-pass`.
 - **Personalized Access:** `standard`, `ornamented`, `editorial-pass`.
