@@ -143,11 +143,6 @@ export function buildVictoriaPublishedContent(
 			timeZone: VICTORIA_EVENT.timeZone,
 			startsAtUtc: VICTORIA_EVENT.startsAtUtc,
 		},
-		sectionStyles: {
-			gifts: { structuralVariant: 'standard' },
-			rsvp: { structuralVariant: 'standard' },
-			thankYou: { structuralVariant: 'standard' },
-		},
 		sectionOrder: [
 			'quote',
 			'countdown',
@@ -160,6 +155,25 @@ export function buildVictoriaPublishedContent(
 			'rsvp',
 			'thankYou',
 		],
+		composition: {
+			intersections: {
+				quote: { family: 'atmospheric-blend', source: 'hero' },
+				countdown: { family: 'atmospheric-blend', source: 'quote' },
+				'interlude-after-countdown': { family: 'overlap', source: 'countdown' },
+				location: { family: 'arch', source: 'interlude-after-countdown' },
+				itinerary: { family: 'atmospheric-blend', source: 'location' },
+				family: { family: 'atmospheric-blend', source: 'itinerary' },
+				gallery: { family: 'atmospheric-blend', source: 'family' },
+				gifts: { family: 'atmospheric-blend', source: 'gallery' },
+				'interlude-after-gifts': { family: 'atmospheric-blend', source: 'gifts' },
+				'personalized-access': {
+					family: 'atmospheric-blend',
+					source: 'interlude-after-gifts',
+				},
+				rsvp: { family: 'atmospheric-blend', source: 'personalized-access' },
+				thankYou: { family: 'atmospheric-blend', source: 'rsvp' },
+			},
+		},
 		_assetSlug: VICTORIA_EVENT.assetSlug,
 		hero: {
 			name: 'Victoria',
@@ -169,7 +183,7 @@ export function buildVictoriaPublishedContent(
 			backgroundImage: assets['hero-desktop'],
 			backgroundImageMobile: assets['hero-mobile'],
 			backgroundImageDesktop: assets['hero-desktop'],
-			structuralVariant: 'standard',
+			variant: 'standard',
 			focalPoint: '50% 34%',
 			focalPointMobile: '46% 32%',
 			focalPointTablet: '50% 34%',
@@ -209,7 +223,7 @@ export function buildVictoriaPublishedContent(
 			visibility: 'public',
 			// Card composition (plate on top, content below) like daniela-y-martin;
 			// 'simple' forces the illustrated plate presentation.
-			structuralVariant: 'standard',
+			variant: 'standard',
 			presentation: 'simple',
 			presentationOptions: {
 				showFlourishes: true,
@@ -258,11 +272,9 @@ export function buildVictoriaPublishedContent(
 			],
 		},
 		itinerary: {
+			variant: 'standard',
 			title: 'Itinerario de la noche',
 			subtitle: 'Del sí que nos une a cada brindis, acompáñenos a vivirla completa.',
-			presentation: {
-				behavior: 'standard',
-			},
 			items: [
 				{
 					iconName: 'Church',
@@ -295,7 +307,7 @@ export function buildVictoriaPublishedContent(
 		},
 		family: {
 			presentation: 'text-only',
-			structuralVariant: 'split-groups',
+			variant: 'split-groups',
 			groups: [
 				{
 					// "Familia de …" keeps Madre/Padre roles informative instead of
@@ -342,6 +354,7 @@ export function buildVictoriaPublishedContent(
 			],
 		},
 		gifts: {
+			variant: 'standard',
 			title: 'Detalle de invitados',
 			subtitle:
 				'Su presencia llena la mesa. Si desean tener un gesto adicional, habrá un espacio para lluvia de sobres durante la recepción.',
@@ -373,6 +386,7 @@ export function buildVictoriaPublishedContent(
 			},
 		],
 		rsvp: {
+			variant: 'standard',
 			title: 'Confirme su asistencia',
 			subcopy:
 				'Les pedimos registrar su respuesta desde esta invitación para preparar cada lugar con cuidado.',
@@ -395,7 +409,7 @@ export function buildVictoriaPublishedContent(
 				startsAt: VICTORIA_EVENT.startsAtUtc,
 			},
 			personalizedAccess: {
-				structuralVariant: 'ornamented',
+				variant: 'ornamented',
 				title: 'Su invitación personal',
 				noteText:
 					'Esta invitación es válida para {count} {personWord}. Por organización del evento, no serán admitidos niños.',
@@ -403,6 +417,7 @@ export function buildVictoriaPublishedContent(
 			},
 		},
 		thankYou: {
+			variant: 'standard',
 			message:
 				'Guardaremos con cariño el gesto de haber estado presentes en el comienzo de esta etapa juntos.',
 			closingName: 'Victoria & Roberto',

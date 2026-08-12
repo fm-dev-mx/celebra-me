@@ -73,11 +73,11 @@ function RsvpVisibleHeader({
 	eyebrow: string;
 	structuralVariant?: RsvpStructuralVariant;
 }) {
-	const isEditorialMagazine = structuralVariant === 'editorial-press-pass';
+	const isEditorialPressPass = structuralVariant === 'editorial-press-pass';
 
 	return (
 		<>
-			{isEditorialMagazine && (
+			{isEditorialPressPass && (
 				<p className="rsvp__access-kicker">CONFIRMACIÓN DE ASISTENCIA</p>
 			)}
 			<p className="rsvp__eyebrow">{eyebrow}</p>
@@ -85,7 +85,7 @@ function RsvpVisibleHeader({
 				◆
 			</span>
 			<h2 className="rsvp__title">{title}</h2>
-			{isEditorialMagazine && (
+			{isEditorialPressPass && (
 				<p className="rsvp__edition-label">ACCESO PRIVADO · EDICIÓN XV</p>
 			)}
 			{subcopy !== undefined && <p className="rsvp__subcopy">{subcopy}</p>}
@@ -455,7 +455,7 @@ export const RsvpFormView = forwardRef<HTMLElement, RsvpFormViewProps>((props, r
 		onNotesChange,
 		onBlur,
 	} = props;
-	const isEditorialMagazine = structuralVariant === 'editorial-press-pass';
+	const isEditorialPressPass = structuralVariant === 'editorial-press-pass';
 	const [attendanceCollapsed, setAttendanceCollapsed] = useState(false);
 
 	const handleAttendanceCollapse = (status: Exclude<AttendanceStatus, null>) => {
@@ -487,7 +487,7 @@ export const RsvpFormView = forwardRef<HTMLElement, RsvpFormViewProps>((props, r
 			}
 		>
 			<form onSubmit={onSubmit} className="rsvp__form" id="rsvp-form">
-				{isEditorialMagazine && (
+				{isEditorialPressPass && (
 					<div className="rsvp__response-heading" id="rsvp-response-heading">
 						<span>SELECCIONA TU RESPUESTA</span>
 						<span>EDICIÓN XV</span>

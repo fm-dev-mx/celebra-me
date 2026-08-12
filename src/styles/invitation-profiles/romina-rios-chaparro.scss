@@ -59,6 +59,24 @@
 	--hero-label-color: var(--romina-gold);
 	--hero-divider-color: rgb(var(--romina-gold-rgb) / 82%);
 	--hero-overlay: rgb(var(--romina-botanical-rgb) / 48%);
+	--hero-split-plane-bg:
+		radial-gradient(circle at 78% 32%, rgb(var(--romina-sage-rgb) / 28%), transparent 34%),
+		linear-gradient(
+			135deg,
+			rgb(34 53 42) 0%,
+			var(--romina-botanical) 62%,
+			rgb(38 60 48) 100%
+		);
+	--hero-split-overlay-strong: rgb(var(--romina-botanical-rgb) / 96%);
+	--hero-split-overlay-mid: rgb(var(--romina-botanical-rgb) / 82%);
+	--hero-split-overlay-soft: rgb(var(--romina-botanical-rgb) / 18%);
+	--hero-split-title-offset-block: -4rem;
+	--hero-split-title-font: parisienne, cursive;
+	--hero-split-title-style: normal;
+	--hero-split-title-weight: 400;
+	--hero-split-title-size: clamp(8rem, 8vw, 10rem);
+	--hero-split-title-line-height: 0.84;
+	--hero-split-title-letter-spacing: 0;
 	--hero-overlay-gradient: linear-gradient(
 		180deg,
 		rgb(var(--romina-botanical-rgb) / 8%) 0%,
@@ -323,39 +341,4 @@
 		}
 	}
 
-	// split-cover geometry lives in themes/sections/hero/_split-cover.scss.
-	// Profile owns plane color, overlay tint, and invitation typography only.
-	.invitation-hero[data-structural-variant='split-cover'] {
-		--hero-split-plane-bg:
-			radial-gradient(circle at 78% 32%, rgb(var(--romina-sage-rgb) / 28%), transparent 34%),
-			linear-gradient(
-				135deg,
-				rgb(34 53 42) 0%,
-				var(--romina-botanical) 62%,
-				rgb(38 60 48) 100%
-			);
-		--hero-split-overlay-strong: rgb(var(--romina-botanical-rgb) / 96%);
-		--hero-split-overlay-mid: rgb(var(--romina-botanical-rgb) / 82%);
-		--hero-split-overlay-soft: rgb(var(--romina-botanical-rgb) / 18%);
-
-		@include mixins.respond-to(lg) {
-			.invitation-hero__title {
-				position: relative;
-				top: -4rem;
-				font-family: Parisienne, cursive;
-				font-style: normal;
-				font-weight: 400;
-				text-transform: none;
-				font-size: clamp(8rem, 8vw, 10rem);
-				line-height: 0.84;
-				letter-spacing: 0;
-				mix-blend-mode: normal;
-				transform: none;
-			}
-
-			.invitation-hero__details {
-				margin-inline: 0;
-			}
-		}
-	}
 }

@@ -7,7 +7,7 @@ const readSource = (relativePath: string) =>
 describe('editorial cover reveal transition contract', () => {
 	const componentSource = readSource('src/components/invitation/EditorialCoverReveal.astro');
 	const coverStyles = readSource('src/styles/invitation/_editorial-cover.scss');
-	const heroStyles = readSource('src/styles/themes/sections/hero/_editorial-magazine.scss');
+	const heroStyles = readSource('src/styles/themes/sections/hero/_editorial-cover.scss');
 	const headerStyles = readSource('src/styles/themes/sections/header/_editorial-magazine.scss');
 	const valentinaStyles = readSource('src/styles/invitation-profiles/valentina-hernandez.scss');
 

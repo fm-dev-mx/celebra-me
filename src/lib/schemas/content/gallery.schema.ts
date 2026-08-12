@@ -14,9 +14,8 @@ export const gallerySchema = z
 		eyebrow: z.string().max(200).default('Galería'),
 		title: z.string().default('Galería'),
 		subtitle: z.string().optional(),
-		variant: z
-			.union([z.enum(GALLERY_LAYOUT_VARIANTS), z.enum(THEME_PRESETS), z.literal('single')])
-			.optional(),
+		variant: z.enum(GALLERY_LAYOUT_VARIANTS),
+		visualVariant: z.enum(THEME_PRESETS).optional(),
 		presentation: z.enum(GALLERY_PRESENTATIONS).optional(),
 		presentationOptions: z
 			.object({

@@ -38,6 +38,7 @@ import type {
 	RsvpStructuralVariant,
 	ThankYouStructuralVariant,
 } from '@/lib/invitation/structural-variants';
+import type { InvitationComposition } from '@/lib/invitation/composition-contract';
 
 export interface ThemeConfig {
 	preset: ThemePreset;
@@ -57,8 +58,7 @@ export interface HeroViewModel {
 	backgroundImageMobile?: ImageAsset;
 	portrait?: ImageAsset;
 	variant: ThemePreset;
-	structuralVariant?: HeroStructuralVariant;
-	structuralVariantExplicit?: boolean;
+	structuralVariant: HeroStructuralVariant;
 	focalPoint?: string;
 	focalPointMobile?: string;
 	focalPointTablet?: string;
@@ -215,8 +215,7 @@ export interface InvitationViewModelBrandingVisibility {
 export interface LocationSection {
 	visibility?: LocationVisibility;
 	presentation?: LocationPresentation;
-	structuralVariant?: LocationStructuralVariant;
-	structuralVariantExplicit?: boolean;
+	structuralVariant: LocationStructuralVariant;
 	presentationOptions?: {
 		showFlourishes?: boolean;
 		showNavigationButtons?: boolean;
@@ -250,6 +249,7 @@ export interface InvitationViewModel {
 	envelope: EnvelopeViewModel;
 	brandingVisibility: InvitationViewModelBrandingVisibility;
 	sectionOrder?: InvitationRenderSectionKey[];
+	composition?: InvitationComposition;
 
 	// Sections (Normalized and resolved)
 	sections: {
@@ -280,8 +280,7 @@ export interface InvitationViewModel {
 			groups?: FamilyGroup[];
 			featuredImage?: ImageAsset;
 			presentation?: FamilyPresentation;
-			structuralVariant?: FamilyStructuralVariant;
-			structuralVariantExplicit?: boolean;
+			structuralVariant: FamilyStructuralVariant;
 			focalPoint?: string;
 			labels?: FamilyLabels;
 			celebrantName: string;
@@ -303,7 +302,6 @@ export interface InvitationViewModel {
 			}>;
 			variant: GalleryVariant;
 			visualVariant: ThemePreset | 'single';
-			structuralVariantExplicit: boolean;
 			presentation?: GalleryPresentation;
 			mobileBrowse: GalleryMobileBrowseMode;
 		};
@@ -326,8 +324,7 @@ export interface InvitationViewModel {
 			whatsappConfig?: WhatsAppConfig;
 			responseMessages?: RsvpResponseMessages;
 			variant?: SharedSectionVariant;
-			structuralVariant?: RsvpStructuralVariant;
-			structuralVariantExplicit?: boolean;
+			structuralVariant: RsvpStructuralVariant;
 			revealedLocation?: LocationSection;
 			/**
 			 * Controls whether the guest can change their RSVP response after
@@ -345,9 +342,8 @@ export interface InvitationViewModel {
 				attendance?: string;
 				confirmButton?: string;
 			};
-			personalizedAccess?: {
-				structuralVariant?: PersonalizedAccessStructuralVariant;
-				structuralVariantExplicit?: boolean;
+			personalizedAccess: {
+				structuralVariant: PersonalizedAccessStructuralVariant;
 				title?: string;
 				subtitle?: string;
 				footerText?: string;
@@ -360,8 +356,7 @@ export interface InvitationViewModel {
 			presentation: GiftsPresentation;
 			items: GiftItem[];
 			variant?: SharedSectionVariant;
-			structuralVariant?: GiftsStructuralVariant;
-			structuralVariantExplicit?: boolean;
+			structuralVariant: GiftsStructuralVariant;
 		};
 		thankYou?: {
 			message: string;
@@ -378,8 +373,7 @@ export interface InvitationViewModel {
 				height: number;
 			};
 			variant?: SharedSectionVariant;
-			structuralVariant?: ThankYouStructuralVariant;
-			structuralVariantExplicit?: boolean;
+			structuralVariant: ThankYouStructuralVariant;
 		};
 	};
 

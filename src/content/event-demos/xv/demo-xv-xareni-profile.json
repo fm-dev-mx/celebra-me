@@ -22,27 +22,13 @@
         "rsvp",
         "thankYou"
     ],
-    "sectionStyles": {
-        "location": {
-            "showFlourishes": true
-        },
-        "rsvp": {
-            "structuralVariant": "standard"
-        },
-        "thankYou": {
-            "structuralVariant": "editorial-back-cover"
-        },
-        "gifts": {
-            "structuralVariant": "standard"
-        }
-    },
     "hero": {
         "name": "Xareni Demo",
         "label": "Mis XV Años",
         "date": "2027-09-12T19:00:00.000Z",
         "backgroundImage": "hero",
         "portrait": "portrait",
-        "structuralVariant": "standard"
+        "variant": "standard"
     },
     "location": {
         "ceremony": {
@@ -76,7 +62,11 @@
                 "styleVariant": "default",
                 "text": "Confirma tu asistencia <strong>antes del 29 de agosto</strong>."
             }
-        ]
+        ],
+        "variant": "standard",
+        "presentationOptions": {
+            "showFlourishes": true
+        }
     },
     "family": {
         "parents": {
@@ -99,7 +89,8 @@
                 "name": "Daniela Rivas",
                 "role": "Madrina"
             }
-        ]
+        ],
+        "variant": "standard"
     },
     "gallery": {
         "variant": "index-choreography",
@@ -150,7 +141,8 @@
                 "title": "Lluvia de Sobres",
                 "text": "Contaremos con un buzón durante la recepción."
             }
-        ]
+        ],
+        "variant": "standard"
     },
     "rsvp": {
         "title": "Confirma tu asistencia",
@@ -159,8 +151,9 @@
         "confirmationMessage": "Gracias por confirmar. Te esperamos con alegría en esta noche tan especial.",
         "confirmationMode": "api",
         "personalizedAccess": {
-            "structuralVariant": "ornamented"
-        }
+            "variant": "ornamented"
+        },
+        "variant": "standard"
     },
     "quote": {
         "text": "Hoy empieza una nueva historia, y no hay mejor escenario que tenerlos a mi lado.",
@@ -170,13 +163,11 @@
         "message": "Gracias por compartir esta noche conmigo. Su amor y compañía hacen de mis XV años un recuerdo que atesoraré para siempre.",
         "closingName": "Xareni Demo",
         "image": "thankYouPortrait",
-        "focalPoint": "50% 30%"
+        "focalPoint": "50% 30%",
+        "variant": "editorial-back-cover"
     },
     "itinerary": {
         "title": "Programa",
-        "presentation": {
-            "behavior": "timeline-paper"
-        },
         "items": [
             {
                 "iconName": "Church",
@@ -208,7 +199,8 @@
                 "time": "00:00",
                 "description": "Gracias por celebrar con nosotros."
             }
-        ]
+        ],
+        "variant": "timeline-paper"
     },
     "countdown": {
         "title": "La celebración comienza en",

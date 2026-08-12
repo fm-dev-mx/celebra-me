@@ -387,14 +387,15 @@ describe('draft canonicalization', () => {
 			expect(result.removedPublishedOnlyKeys).toContain('rsvp.personalizedAccess.noteText');
 			expect((result.content.rsvp as Record<string, unknown>).personalizedAccess).toEqual({
 				title: 'Acceso',
+				variant: 'standard',
 			});
 		});
 
-		it('strips gifts.variant without changing gift items', () => {
+		it('preserves the canonical Gifts variant with its items', () => {
 			const hybrid = {
 				gifts: {
 					title: 'Mesa de regalos',
-					variant: 'celestial-blue',
+					variant: 'standard',
 					items: [
 						{
 							type: 'cash',
@@ -406,9 +407,10 @@ describe('draft canonicalization', () => {
 			};
 			const result = canonicalizeDraftContent(hybrid);
 			expect(result.issues).toEqual([]);
-			expect(result.removedPublishedOnlyKeys).toContain('gifts.variant');
+			expect(result.removedPublishedOnlyKeys).not.toContain('gifts.variant');
 			expect(result.content.gifts).toEqual({
 				title: 'Mesa de regalos',
+				variant: 'standard',
 				items: hybrid.gifts.items,
 			});
 			expect(canonicalizeDraftContent(result.content).changed).toBe(false);
@@ -554,6 +556,7 @@ describe('draft canonicalization', () => {
 			expect((mapped.rsvp as Record<string, unknown>).personalizedAccess).toEqual({
 				title: 'Acceso editado',
 				noteText: 'Nota interna publicada',
+				variant: 'standard',
 			});
 		});
 

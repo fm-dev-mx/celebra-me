@@ -2,7 +2,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { adaptEvent } from '@/lib/adapters/event';
-import { resolveItineraryPresentation } from '@/lib/invitation/itinerary-presentation';
 import { buildInvitationSectionRenderDescriptors } from '@/lib/invitation/section-render-data';
 import {
 	buildSectionBundleUrlMap,
@@ -10,15 +9,6 @@ import {
 	resolveInvitationCssUrls,
 } from '@/lib/invitation/section-css-resolver-map';
 import { prepareInvitationPageContext } from '@/lib/invitation/page-data';
-import {
-	resolveFamilyStructuralVariant,
-	resolveGalleryLayoutVariant,
-	resolveGiftsStructuralVariant,
-	resolveHeroStructuralVariant,
-	resolveLocationStructuralVariant,
-	resolvePersonalizedAccessStructuralVariant,
-	resolveRsvpStructuralVariant,
-} from '@/lib/invitation/structural-variants';
 
 jest.mock('@/lib/assets/asset-registry', () => {
 	const actual = jest.requireActual('@/lib/assets/asset-registry');
@@ -50,7 +40,7 @@ type PortableOverrides = {
 	giftsStructuralVariant?: string;
 	rsvpStructuralVariant?: string;
 	personalizedAccessStructuralVariant?: string;
-	itineraryBehavior?: 'standard' | 'timeline-paper';
+	itineraryVariant?: 'standard' | 'timeline-paper';
 	/** Optional theme skin; structural selection must not depend on it. */
 	themePreset?: string;
 };
@@ -69,60 +59,58 @@ function buildPortableJewelryBoxEvent(overrides: PortableOverrides = {}) {
 		hero: {
 			...fixture.hero,
 			...(overrides.heroStructuralVariant
-				? { structuralVariant: overrides.heroStructuralVariant }
+				? { variant: overrides.heroStructuralVariant }
 				: {}),
 		},
 		family: {
 			...fixture.family,
 			...(overrides.familyStructuralVariant
-				? { structuralVariant: overrides.familyStructuralVariant }
+				? {
+						variant: overrides.familyStructuralVariant,
+						...(overrides.familyStructuralVariant === 'split-groups'
+							? {
+									groups: [
+										{ title: 'Familia A', items: [{ name: 'Persona A' }] },
+										{ title: 'Familia B', items: [{ name: 'Persona B' }] },
+									],
+								}
+							: {}),
+					}
 				: {}),
 		},
 		location: {
 			...fixture.location,
 			...(overrides.locationStructuralVariant
-				? { structuralVariant: overrides.locationStructuralVariant }
+				? { variant: overrides.locationStructuralVariant }
 				: {}),
 		},
 		gallery: {
 			...fixture.gallery,
 			...(overrides.galleryVariant ? { variant: overrides.galleryVariant } : {}),
 		},
-		sectionStyles: {
-			...fixture.sectionStyles,
+		gifts: {
+			...fixture.gifts,
 			...(overrides.giftsStructuralVariant
-				? {
-						gifts: {
-							...fixture.sectionStyles?.gifts,
-							structuralVariant: overrides.giftsStructuralVariant,
-						},
-					}
-				: {}),
-			...(overrides.rsvpStructuralVariant
-				? {
-						rsvp: {
-							...fixture.sectionStyles?.rsvp,
-							structuralVariant: overrides.rsvpStructuralVariant,
-						},
-					}
+				? { variant: overrides.giftsStructuralVariant }
 				: {}),
 		},
 		rsvp: {
 			...fixture.rsvp,
+			...(overrides.rsvpStructuralVariant
+				? { variant: overrides.rsvpStructuralVariant }
+				: {}),
 			...(overrides.personalizedAccessStructuralVariant
 				? {
 						personalizedAccess: {
 							...fixture.rsvp?.personalizedAccess,
-							structuralVariant: overrides.personalizedAccessStructuralVariant,
+							variant: overrides.personalizedAccessStructuralVariant,
 						},
 					}
 				: {}),
 		},
 		itinerary: {
 			...fixture.itinerary,
-			...(overrides.itineraryBehavior
-				? { presentation: { behavior: overrides.itineraryBehavior } }
-				: {}),
+			...(overrides.itineraryVariant ? { variant: overrides.itineraryVariant } : {}),
 		},
 	};
 
@@ -153,11 +141,9 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 		expect(event.data._assetSlug).toBe('demo-xv-jewelry-box');
 		expect(event.data).not.toHaveProperty('visualProfileId');
 		expect(viewModel.hero.structuralVariant).toBe('split-cover');
-		expect(viewModel.hero.structuralVariantExplicit).toBe(true);
 		expect(viewModel.hero.backgroundImage).toBeTruthy();
 		expect(viewModel.hero.name).toBeTruthy();
 		expect(viewModel.hero.date).toBeTruthy();
-		expect(resolveHeroStructuralVariant('split-cover')).toBe('split-cover');
 	});
 
 	it('applies Hero editorial-cover on jewelry-box without editorial-magazine theme fallback', () => {
@@ -171,11 +157,6 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 		expect(event.data.theme.preset).toBe('jewelry-box');
 		expect(event.data).not.toHaveProperty('visualProfileId');
 		expect(viewModel.hero.structuralVariant).toBe('editorial-cover');
-		expect(viewModel.hero.structuralVariantExplicit).toBe(true);
-		expect(resolveHeroStructuralVariant('editorial-cover')).toBe(
-			'editorial-cover',
-		);
-		expect(resolveHeroStructuralVariant(undefined)).toBe('standard');
 	});
 
 	it('applies Family split-groups without Daniela/Victoria identity', () => {
@@ -184,8 +165,6 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 
 		expect(event.data).not.toHaveProperty('visualProfileId');
 		expect(viewModel.sections.family?.structuralVariant).toBe('split-groups');
-		expect(viewModel.sections.family?.structuralVariantExplicit).toBe(true);
-		expect(resolveFamilyStructuralVariant('split-groups')).toBe('split-groups');
 	});
 
 	it('applies Location split-map to jewelry-box demo content with existing venue/map media', () => {
@@ -194,7 +173,6 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 		const location = viewModel.sections.location;
 
 		expect(location?.structuralVariant).toBe('split-map');
-		expect(location?.structuralVariantExplicit).toBe(true);
 		expect(location?.ceremony?.venueName).toBeTruthy();
 		expect(location?.ceremony?.coordinates).toEqual(
 			expect.objectContaining({ lat: expect.any(Number), lng: expect.any(Number) }),
@@ -204,7 +182,6 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 		expect(location?.reception?.coordinates).toEqual(
 			expect.objectContaining({ lat: expect.any(Number), lng: expect.any(Number) }),
 		);
-		expect(resolveLocationStructuralVariant('split-map')).toBe('split-map');
 	});
 
 	it('ports gallery layouts via adaptEvent on non-origin demos/overrides', () => {
@@ -215,13 +192,11 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 			),
 		);
 		expect(magazine.sections.gallery?.variant).toBe('magazine-spread');
-		expect(magazine.sections.gallery?.structuralVariantExplicit).toBe(true);
 
 		const keepsakeEvent = buildPortableJewelryBoxEvent({ galleryVariant: 'single-keepsake' });
 		const keepsake = adaptEvent(keepsakeEvent);
 		expect(keepsakeEvent.data).not.toHaveProperty('visualProfileId');
 		expect(keepsake.sections.gallery?.variant).toBe('single-keepsake');
-		expect(keepsake.sections.gallery?.structuralVariantExplicit).toBe(true);
 
 		const index = adaptEvent(
 			loadDemoEvent(
@@ -230,7 +205,6 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 			),
 		);
 		expect(index.sections.gallery?.variant).toBe('index-choreography');
-		expect(index.sections.gallery?.structuralVariantExplicit).toBe(true);
 
 		// jewelry-box demo already authors feature-mosaic; re-assert under a non-origin theme skin.
 		const mosaicEvent = buildPortableJewelryBoxEvent({
@@ -240,12 +214,6 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 		const mosaic = adaptEvent(mosaicEvent);
 		expect(mosaic.theme.preset).toBe('premiere-floral');
 		expect(mosaic.sections.gallery?.variant).toBe('feature-mosaic');
-		expect(mosaic.sections.gallery?.structuralVariantExplicit).toBe(true);
-
-		expect(resolveGalleryLayoutVariant('magazine-spread')).toBe('magazine-spread');
-		expect(resolveGalleryLayoutVariant('single-keepsake')).toBe('single-keepsake');
-		expect(resolveGalleryLayoutVariant('index-choreography')).toBe('index-choreography');
-		expect(resolveGalleryLayoutVariant('feature-mosaic')).toBe('feature-mosaic');
 	});
 
 	it('applies Gifts editorial-catalog and RSVP editorial-press-pass without invitation identity', () => {
@@ -257,11 +225,7 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 
 		expect(event.data).not.toHaveProperty('visualProfileId');
 		expect(viewModel.sections.gifts?.structuralVariant).toBe('editorial-catalog');
-		expect(viewModel.sections.gifts?.structuralVariantExplicit).toBe(true);
 		expect(viewModel.sections.rsvp?.structuralVariant).toBe('editorial-press-pass');
-		expect(viewModel.sections.rsvp?.structuralVariantExplicit).toBe(true);
-		expect(resolveGiftsStructuralVariant('editorial-catalog')).toBe('editorial-catalog');
-		expect(resolveRsvpStructuralVariant('editorial-press-pass')).toBe('editorial-press-pass');
 	});
 
 	it('applies Personalized Access ornamented and editorial-pass without invitation identity', () => {
@@ -271,7 +235,6 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 		const ornamented = adaptEvent(ornamentedEvent);
 		expect(ornamentedEvent.data).not.toHaveProperty('visualProfileId');
 		expect(ornamented.sections.rsvp?.personalizedAccess?.structuralVariant).toBe('ornamented');
-		expect(ornamented.sections.rsvp?.personalizedAccess?.structuralVariantExplicit).toBe(true);
 
 		// Second managed consumer of editorial-pass is editorial-magazine demos; jewelry-box proves portability.
 		const editorialPassEvent = buildPortableJewelryBoxEvent({
@@ -281,30 +244,20 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 		expect(editorialPass.sections.rsvp?.personalizedAccess?.structuralVariant).toBe(
 			'editorial-pass',
 		);
-		expect(editorialPass.sections.rsvp?.personalizedAccess?.structuralVariantExplicit).toBe(
-			true,
-		);
-
-		expect(resolvePersonalizedAccessStructuralVariant('ornamented')).toBe('ornamented');
-		expect(resolvePersonalizedAccessStructuralVariant('editorial-pass')).toBe('editorial-pass');
 	});
 
-	it('selects Itinerary timeline-paper and standard from presentation.behavior only', () => {
-		const standardEvent = buildPortableJewelryBoxEvent({ itineraryBehavior: 'standard' });
+	it('selects Itinerary timeline-paper and standard from section.variant only', () => {
+		const standardEvent = buildPortableJewelryBoxEvent({ itineraryVariant: 'standard' });
 		const standard = adaptEvent(standardEvent);
 		expect(standard.sections.itinerary?.variant).toBe('standard');
-		expect(resolveItineraryPresentation({ behavior: 'standard' })).toBe('standard');
 
 		const paperEvent = buildPortableJewelryBoxEvent({
-			itineraryBehavior: 'timeline-paper',
+			itineraryVariant: 'timeline-paper',
 			themePreset: 'jewelry-box',
 		});
 		const paper = adaptEvent(paperEvent);
 		expect(paper.theme.preset).toBe('jewelry-box');
 		expect(paper.sections.itinerary?.variant).toBe('timeline-paper');
-		expect(resolveItineraryPresentation({ behavior: 'timeline-paper' })).toBe('timeline-paper');
-		// Theme name alone must not select paper behavior after alias retirement.
-		expect(resolveItineraryPresentation(undefined)).toBe('standard');
 	});
 
 	it('passes portable structural variants through section render descriptors', () => {
@@ -316,7 +269,7 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 			giftsStructuralVariant: 'editorial-catalog',
 			rsvpStructuralVariant: 'editorial-press-pass',
 			personalizedAccessStructuralVariant: 'editorial-pass',
-			itineraryBehavior: 'timeline-paper',
+			itineraryVariant: 'timeline-paper',
 		});
 		const pageContext = prepareInvitationPageContext({
 			eventEntry: event as Parameters<typeof prepareInvitationPageContext>[0]['eventEntry'],
@@ -333,29 +286,24 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 			component: 'location',
 			props: {
 				structuralVariant: 'split-map',
-				structuralVariantExplicit: true,
 			},
 		});
 		expect(descriptors.find((d) => d.component === 'family')).toMatchObject({
 			props: {
 				structuralVariant: 'split-groups',
-				structuralVariantExplicit: true,
 			},
 		});
 		expect(descriptors.find((d) => d.component === 'gifts')).toMatchObject({
 			props: {
 				structuralVariant: 'editorial-catalog',
-				structuralVariantExplicit: true,
 			},
 		});
 		expect(descriptors.find((d) => d.component === 'rsvp')).toMatchObject({
 			props: {
 				structuralVariant: 'editorial-press-pass',
-				structuralVariantExplicit: true,
 			},
-		});
 	});
-
+});
 	it('delivers structural CSS under jewelry-box without origin profile identity', () => {
 		const bundleUrlMap = buildSectionBundleUrlMap({
 			'/src/styles/invitation-sections-by-preset/jewelry-box.scss': {
@@ -372,8 +320,11 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 			'/src/styles/themes/sections/family/_split-groups.scss': {
 				default: '/_astro/family-split-groups.css',
 			},
-			'/src/styles/themes/sections/gallery/_editorial-magazine.scss': {
+			'/src/styles/themes/sections/gallery/_magazine-spread.scss': {
 				default: '/_astro/gallery-magazine-spread.css',
+			},
+			'/src/styles/themes/sections/itinerary/_timeline-paper.scss': {
+				default: '/_astro/itinerary-timeline-paper.css',
 			},
 		});
 		const profileUrlMap = {
@@ -394,6 +345,7 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 					hero: 'split-cover',
 					location: 'split-map',
 					family: 'split-groups',
+					itinerary: 'timeline-paper',
 				},
 			},
 			profileUrlMap,
@@ -405,6 +357,7 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 			'/_astro/hero-split-cover.css',
 			'/_astro/location-split-map.css',
 			'/_astro/family-split-groups.css',
+			'/_astro/itinerary-timeline-paper.css',
 		]);
 		expect(urls.join('\n')).not.toMatch(/romina|alba-rosa|daniela|victoria|abril|valentina/i);
 	});

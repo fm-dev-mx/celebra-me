@@ -97,8 +97,7 @@ describe('mapDraftToPublished', () => {
 			date: '2027-11-20T00:00:00.000Z',
 			backgroundImage: { type: 'internal', key: 'hero' },
 		});
-		// Variant from demo is not included for non-demo invitations
-		expect(result.hero).not.toHaveProperty('variant');
+		expect(result.hero).toHaveProperty('variant', 'standard');
 	});
 
 	it('includes backgroundImageMobile when draft provides it', () => {
@@ -1407,6 +1406,7 @@ describe('mapDraftToPublished', () => {
 		expect(result.gallery).toEqual({
 			eyebrow: 'Galería',
 			title: 'Nuestros recuerdos',
+			variant: 'uniform-grid',
 			items: [
 				{ image: 'gallery02', caption: 'Segundo recuerdo' },
 				{ image: 'gallery01', caption: 'Primer recuerdo' },
@@ -1436,8 +1436,8 @@ describe('mapDraftToPublished', () => {
 			},
 		});
 
-		expect(result.gallery).toEqual(demoGallery);
-		expect(result.itinerary).toEqual(demoItinerary);
+		expect(result.gallery).toEqual({ ...demoGallery, variant: 'uniform-grid' });
+		expect(result.itinerary).toEqual({ ...demoItinerary, variant: 'standard' });
 	});
 
 	it('passes through present-but-empty client gallery/itinerary shells', () => {
@@ -1453,8 +1453,8 @@ describe('mapDraftToPublished', () => {
 			},
 		});
 
-		expect(result.gallery).toEqual(emptyGallery);
-		expect(result.itinerary).toEqual(emptyItinerary);
+		expect(result.gallery).toEqual({ ...emptyGallery, variant: 'uniform-grid' });
+		expect(result.itinerary).toEqual({ ...emptyItinerary, variant: 'standard' });
 	});
 
 	it('preserves gallery eyebrow from draft content', () => {
@@ -1473,6 +1473,7 @@ describe('mapDraftToPublished', () => {
 		expect(result.gallery).toEqual({
 			eyebrow: 'Recuerdos',
 			title: 'Momentos especiales',
+			variant: 'uniform-grid',
 			items: [{ image: 'gallery01', caption: 'Primer recuerdo' }],
 		});
 	});
@@ -1509,6 +1510,7 @@ describe('mapDraftToPublished', () => {
 		expect(result.itinerary).toEqual({
 			title: 'Programa',
 			items: [{ iconName: 'Party', label: 'Fiesta', time: '21:00' }],
+			variant: 'standard',
 		});
 	});
 
@@ -1527,6 +1529,7 @@ describe('mapDraftToPublished', () => {
 		expect(result.itinerary).toEqual({
 			title: 'Programa',
 			items: [{ icon: 'church', label: 'Misa', time: '18:00' }],
+			variant: 'standard',
 		});
 
 		expect(eventContentSchema.safeParse(result).success).toBe(false);
@@ -1547,6 +1550,7 @@ describe('mapDraftToPublished', () => {
 		expect(result.itinerary).toEqual({
 			title: 'Programa',
 			items: [{ icon: 'unknown-icon', label: 'Misterio', time: '18:00' }],
+			variant: 'standard',
 		});
 
 		const validation = eventContentSchema.safeParse(result);

@@ -10,25 +10,25 @@ import {
 export const rsvpSectionStyleSchema = z
 	.object({
 		variant: z.enum(THEME_PRESETS).optional(),
-		structuralVariant: z.enum(RSVP_STRUCTURAL_VARIANTS).optional(),
-		labels: z
-			.object({
-				name: z.string().optional(),
-				guestCount: z.string().optional(),
-				attendance: z.string().optional(),
-				confirmButton: z.string().optional(),
-				phone: z.string().optional(),
-				notesLabel: z.string().optional(),
-				notesPlaceholder: z.string().optional(),
-			})
-			.strict()
-			.optional(),
 	})
 	.strict()
 	.optional();
 
+export const rsvpLabelsSchema = z
+	.object({
+		name: z.string().optional(),
+		guestCount: z.string().optional(),
+		attendance: z.string().optional(),
+		confirmButton: z.string().optional(),
+		phone: z.string().optional(),
+		notesLabel: z.string().optional(),
+		notesPlaceholder: z.string().optional(),
+	})
+	.strict();
+
 export const rsvpSchema = z
 	.object({
+		variant: z.enum(RSVP_STRUCTURAL_VARIANTS),
 		subcopy: z.string().optional(),
 		title: z.string().default('¿Vienes a celebrar conmigo?'),
 		guestCap: rsvpGuestCapSchema.default(1),
@@ -49,14 +49,14 @@ export const rsvpSchema = z
 			.optional(),
 		personalizedAccess: z
 			.object({
-				structuralVariant: z.enum(PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS).optional(),
+				variant: z.enum(PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS),
 				title: z.string().optional(),
 				subtitle: z.string().optional(),
 				footerText: z.string().optional(),
 				noteText: z.string().optional(),
 			})
-			.strict()
-			.optional(),
+			.strict(),
+		labels: rsvpLabelsSchema.optional(),
 		calendar: z
 			.object({
 				title: z.string().optional(),

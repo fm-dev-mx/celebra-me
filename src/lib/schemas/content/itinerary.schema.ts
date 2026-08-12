@@ -13,12 +13,7 @@ export const itinerarySchema = z
 	.object({
 		title: z.string().default('Itinerario'),
 		subtitle: z.string().optional(),
-		presentation: z
-			.object({
-				behavior: z.enum(ITINERARY_PRESENTATION_BEHAVIORS).optional(),
-			})
-			.strict()
-			.optional(),
+		variant: z.enum(ITINERARY_PRESENTATION_BEHAVIORS),
 		items: z.array(itineraryItemSchema),
 	})
 	.optional();

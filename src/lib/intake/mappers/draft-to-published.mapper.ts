@@ -132,16 +132,31 @@ function buildPersonalizedAccess(
 ): Record<string, unknown> {
 	const prior = clientPriorFields(ctx, priorRsvp, ['personalizedAccess']).personalizedAccess;
 	if (!isNonEmptyObject(draftValue)) {
-		return isNonEmptyObject(prior) ? { personalizedAccess: prior } : {};
+		return isNonEmptyObject(prior)
+			? {
+					personalizedAccess: {
+						...prior,
+						variant: str(prior.variant) ?? 'standard',
+					},
+				}
+			: {};
 	}
 	const carried = isNonEmptyObject(prior)
 		? Object.fromEntries(
 				Object.entries(prior).filter(
-					([key]) => !(PERSONALIZED_ACCESS_DRAFT_KEYS as readonly string[]).includes(key),
+					([key]) =>
+						key !== 'structuralVariant' &&
+						!(PERSONALIZED_ACCESS_DRAFT_KEYS as readonly string[]).includes(key),
 				),
 			)
 		: {};
-	return { personalizedAccess: { ...carried, ...draftValue } };
+	return {
+		personalizedAccess: {
+			...carried,
+			...draftValue,
+			variant: str(draftValue.variant) ?? (isNonEmptyObject(prior) ? str(prior.variant) : undefined) ?? 'standard',
+		},
+	};
 }
 
 /**
@@ -271,14 +286,16 @@ function mapLocationFromDraft(
 	}
 	const result: Record<string, unknown> = {};
 	const demoLocation = demoContent?.location as Record<string, unknown> | undefined;
-	if (draftLocation.visibility) result.visibility = draftLocation.visibility;
-	if (draftLocation.presentation) result.presentation = draftLocation.presentation;
-	if (draftLocation.structuralVariant) result.structuralVariant = draftLocation.structuralVariant;
-	if (draftLocation.presentationOptions)
-		result.presentationOptions = draftLocation.presentationOptions;
-
 	const priorLocation = ctx.priorPublishedContent?.location as
 		Record<string, unknown> | undefined;
+	if (draftLocation.visibility) result.visibility = draftLocation.visibility;
+	if (draftLocation.presentation) result.presentation = draftLocation.presentation;
+	result.variant =
+		draftLocation.variant ??
+		(ctx.isDemo ? demoLocation?.variant : priorLocation?.variant) ??
+		'standard';
+	if (draftLocation.presentationOptions)
+		result.presentationOptions = draftLocation.presentationOptions;
 
 	if (draftLocation.venues && Array.isArray(draftLocation.venues)) {
 		const mappedVenues = draftLocation.venues
@@ -381,10 +398,13 @@ function buildHeroFromDraft(
 		backgroundImageMobile: demoBackgroundImageMobile,
 		portrait: demoPortrait,
 		variant: demoVariant,
+		visualVariant: demoVisualVariant,
 	} = demoHero ?? {};
 
 	const result: Record<string, unknown> = {
-		...clientPriorFields(ctx, priorHero, ['variant', 'structuralVariant']),
+		...clientPriorFields(ctx, priorHero, ['variant', 'visualVariant']),
+		variant:
+			draftHero.variant ?? (ctx.isDemo ? demoVariant : priorHero?.variant) ?? 'standard',
 		name: str(draftHero.name) || demoStr(ctx, demoName as string) || invitationTitle,
 		secondaryName:
 			str(draftHero.secondaryName) || demoStr(ctx, demoSecondaryName as string) || '',
@@ -406,14 +426,14 @@ function buildHeroFromDraft(
 		'focalPointTablet',
 		'focalPointDesktop',
 		'presentation',
-		'structuralVariant',
+		'visualVariant',
 	] as const) {
 		if (draftHero[field] !== undefined) result[field] = draftHero[field];
 		else if (!ctx.isDemo && priorHero?.[field] !== undefined) result[field] = priorHero[field];
 	}
 
-	if (ctx.isDemo && demoVariant) {
-		result.variant = demoVariant as string;
+	if (ctx.isDemo && demoVisualVariant && draftHero.visualVariant === undefined) {
+		result.visualVariant = demoVisualVariant as string;
 	}
 
 	return result;
@@ -484,6 +504,8 @@ function mapRsvpSection(
 	const confirmationDeadline =
 		str(draftRsvp.confirmationDeadline) || demoStr(ctx, demo.confirmationDeadline);
 	return {
+		variant:
+			draftRsvp.variant ?? (ctx.isDemo ? demo.variant : priorRsvp?.variant) ?? 'standard',
 		title: str(draftRsvp.title) || demoStr(ctx, demo.title),
 		guestCap: resolveRsvpGuestCap(draftRsvp, demo, ctx),
 		confirmationMessage:
@@ -520,6 +542,28 @@ function mapMusicSection(
 	return ctx.isDemo && demoMusic ? { ...demoMusic } : undefined;
 }
 
+function mapGallerySection(
+	draftGallery: DraftContent['gallery'],
+	demoGallery: Record<string, unknown> | undefined,
+	priorGallery: Record<string, unknown> | undefined,
+	ctx: PublishCtx,
+): Record<string, unknown> | undefined {
+	const source = isNonEmptyObject(draftGallery)
+		? draftGallery
+		: ctx.isDemo && isNonEmptyObject(demoGallery)
+			? demoGallery
+			: undefined;
+	if (!source) return undefined;
+
+	return {
+		...source,
+		variant:
+			(isNonEmptyObject(draftGallery) ? draftGallery.variant : undefined) ??
+			(ctx.isDemo ? demoGallery?.variant : priorGallery?.variant) ??
+			'uniform-grid',
+	};
+}
+
 function mapGiftsSection(
 	draftGifts: DraftContent['gifts'],
 	demoGifts: Record<string, unknown> | undefined,
@@ -538,6 +582,7 @@ function mapGiftsSection(
 				[];
 
 	return {
+		variant: draftGifts.variant ?? (ctx.isDemo ? demoGifts?.variant : undefined) ?? 'standard',
 		title: str(draftGifts.title) || demoStr(ctx, demoGifts?.title),
 		subtitle: str(draftGifts.subtitle) || demoStr(ctx, demoGifts?.subtitle),
 		...(presentation ? { presentation } : {}),
@@ -560,6 +605,16 @@ function mapQuoteSection(
 	return ctx.isDemo && demoQuote ? { ...demoQuote } : undefined;
 }
 
+function resolveThankYouVariant(
+	draftThankYou: NonNullable<DraftContent['thankYou']>,
+	demoThankYou: Record<string, unknown> | undefined,
+	priorThankYou: Record<string, unknown> | undefined,
+	ctx: PublishCtx,
+): unknown {
+	const fallback = ctx.isDemo ? demoThankYou?.variant : priorThankYou?.variant;
+	return draftThankYou.variant ?? fallback ?? 'standard';
+}
+
 function mapThankYouSection(
 	draftThankYou: DraftContent['thankYou'],
 	demoThankYou: Record<string, unknown> | undefined,
@@ -579,8 +634,10 @@ function mapThankYouSection(
 	if (draftThankYou.overlaySafeArea !== undefined)
 		overlayFields.overlaySafeArea = draftThankYou.overlaySafeArea;
 	if (draftThankYou.date !== undefined) overlayFields.date = draftThankYou.date;
+	const variant = resolveThankYouVariant(draftThankYou, demoThankYou, priorThankYou, ctx);
 	if (message) {
 		return {
+			variant,
 			message,
 			closingName: str(draftThankYou.closingName) || demoStr(ctx, demoThankYou?.closingName),
 			image: draftThankYou.image ?? demoValue(ctx, demoThankYou?.image),
@@ -590,6 +647,7 @@ function mapThankYouSection(
 	}
 	if (draftThankYou.image) {
 		return {
+			variant,
 			message: '',
 			closingName: '',
 			image: draftThankYou.image,
@@ -666,13 +724,22 @@ function mapItineraryFromDraft(
 	ctx: PublishCtx,
 ): DraftContent['itinerary'] | unknown {
 	if (!draftItinerary) {
-		return ctx.isDemo ? demoItinerary : undefined;
+		return ctx.isDemo && isRecord(demoItinerary)
+			? { ...demoItinerary, variant: demoItinerary.variant ?? 'standard' }
+			: undefined;
 	}
 	const items = draftItinerary.items?.map((item) => {
 		const time = publishVenueTime(item.time) ?? item.time;
 		return { ...item, time };
 	});
-	return items ? { ...draftItinerary, items } : draftItinerary;
+	return {
+		...draftItinerary,
+		variant:
+			draftItinerary.variant ??
+			(ctx.isDemo && isRecord(demoItinerary) ? demoItinerary.variant : undefined) ??
+			'standard',
+		...(items ? { items } : {}),
+	};
 }
 
 // eslint-disable-next-line complexity -- The publish mapping covers many sections with optional demo fallback.
@@ -757,7 +824,12 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 		location: locationSection ?? (ctx.isDemo ? demoContent.location : undefined),
 		// Omit empty optional collections for client invites so publish does not
 		// invent sections the editor never edited (preflight noise / false drift).
-		gallery: draftContent.gallery ?? (ctx.isDemo ? demoContent.gallery : undefined),
+		gallery: mapGallerySection(
+			draftContent.gallery,
+			demoContent.gallery as Record<string, unknown> | undefined,
+			priorPublished?.gallery as Record<string, unknown> | undefined,
+			ctx,
+		),
 		itinerary: mapItineraryFromDraft(
 			draftContent.itinerary,
 			priorPublished?.itinerary as Record<string, unknown> | undefined,
@@ -777,6 +849,7 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 		thankYou: thankYouSection,
 
 		interludes: draftContent.interludes ?? (ctx.isDemo ? demoContent.interludes : undefined),
+		composition: ctx.isDemo ? demoContent.composition : priorPublished?.composition,
 		sectionStyles: stripLegacyLocationFlourishes(
 			ctx.isDemo ? demoContent.sectionStyles : priorPublished?.sectionStyles,
 		),

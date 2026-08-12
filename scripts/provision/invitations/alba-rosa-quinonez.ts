@@ -145,6 +145,19 @@ export function buildAlbaPublishedContent(
 			'family',
 			'thankYou',
 		],
+		composition: {
+			intersections: {
+				countdown: { family: 'atmospheric-blend', source: 'hero' },
+				location: { family: 'atmospheric-blend', source: 'countdown' },
+				'interlude-after-location': { family: 'arch', source: 'location' },
+				gallery: { family: 'overlap', source: 'interlude-after-location' },
+				gifts: { family: 'atmospheric-blend', source: 'gallery' },
+				'personalized-access': { family: 'atmospheric-blend', source: 'gifts' },
+				rsvp: { family: 'overlap', source: 'personalized-access' },
+				family: { family: 'atmospheric-blend', source: 'rsvp' },
+				thankYou: { family: 'atmospheric-blend', source: 'family' },
+			},
+		},
 		interludes: [
 			{
 				afterSection: 'location',
@@ -155,11 +168,8 @@ export function buildAlbaPublishedContent(
 			},
 		],
 		sectionStyles: {
-			gifts: { structuralVariant: 'standard' },
-			rsvp: { structuralVariant: 'standard' },
 			thankYou: {
 				variant: 'editorial-magazine',
-				structuralVariant: 'standard',
 			},
 		},
 		_assetSlug: ALBA_EVENT.assetSlug,
@@ -171,7 +181,7 @@ export function buildAlbaPublishedContent(
 			backgroundImage: assets['hero-desktop'],
 			backgroundImageMobile: assets['hero-mobile'],
 			backgroundImageDesktop: assets['hero-desktop'],
-			structuralVariant: 'standard',
+			variant: 'standard',
 			focalPoint: '68% 42%',
 			focalPointMobile: '50% 26%',
 			focalPointTablet: '62% 40%',
@@ -204,7 +214,7 @@ export function buildAlbaPublishedContent(
 		},
 		location: {
 			visibility: 'public',
-			structuralVariant: 'split-map',
+			variant: 'split-map',
 			presentationOptions: { showFlourishes: false },
 			introEyebrow: '12 DE SEPTIEMBRE DE 2026',
 			reception: {
@@ -270,11 +280,13 @@ export function buildAlbaPublishedContent(
 			],
 		},
 		gifts: {
+			variant: 'standard',
 			title: 'Regalos',
 			subtitle: giftsLegend,
 			presentation: 'legend-only',
 		},
 		rsvp: {
+			variant: 'standard',
 			title: 'Confirme su asistencia',
 			subcopy: 'Su confirmación nos ayuda a recibirlo con cariño.',
 			guestCap: 6,
@@ -299,13 +311,14 @@ export function buildAlbaPublishedContent(
 				startsAt: ALBA_EVENT.startsAtUtc,
 			},
 			personalizedAccess: {
-				structuralVariant: 'ornamented',
+				variant: 'ornamented',
 				title: 'Su invitación personal',
 				subtitle: 'Esta invitación ha sido preparada para:',
 				footerText: 'Confirme su asistencia en el formulario.',
 			},
 		},
 		family: {
+			variant: 'standard',
 			presentation: 'with-photo',
 			featuredImage: assets.family,
 			focalPoint: '50% 58%',
@@ -316,6 +329,7 @@ export function buildAlbaPublishedContent(
 			},
 		},
 		thankYou: {
+			variant: 'standard',
 			message:
 				'Gracias por acompañarme en esta celebración. Su presencia hará de esta noche un recuerdo inolvidable.',
 			closingName: 'Alba Rosa',

@@ -277,7 +277,12 @@ describe('schema ownership', () => {
 	});
 
 	it('keeps published-only personalizedAccess.noteText out of the Draft key list', () => {
-		expect(PERSONALIZED_ACCESS_DRAFT_KEYS).toEqual(['footerText', 'subtitle', 'title']);
+		expect(PERSONALIZED_ACCESS_DRAFT_KEYS).toEqual([
+			'variant',
+			'footerText',
+			'subtitle',
+			'title',
+		]);
 		expect(PERSONALIZED_ACCESS_DRAFT_KEYS).not.toContain('noteText');
 	});
 });

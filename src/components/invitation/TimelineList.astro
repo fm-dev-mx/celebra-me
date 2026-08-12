@@ -13,13 +13,12 @@ type TimelineItemData = {
 
 interface Props {
 	items: TimelineItemData[];
-	variant?: import('@/lib/theme/theme-contract').ItineraryVariant;
 }
 
-const { items, variant } = Astro.props;
+const { items } = Astro.props;
 ---
 
-<div class="itinerary__items-wrapper" data-itinerary-wrapper data-variant={variant}>
+<div class="itinerary__items-wrapper" data-itinerary-wrapper>
 	<div class="itinerary__animated-line-container" aria-hidden="true">
 		<svg width="2" height="100%" viewBox="0 0 2 100" preserveAspectRatio="none">
 			<path

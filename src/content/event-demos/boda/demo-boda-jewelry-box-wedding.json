@@ -8,32 +8,15 @@
     "theme": {
         "preset": "jewelry-box-wedding"
     },
-    "sectionStyles": {
-        "location": {
-            "showFlourishes": true
-        },
-        "rsvp": {
-            "structuralVariant": "standard"
-        },
-        "thankYou": {
-            "structuralVariant": "standard"
-        },
-        "gifts": {
-            "structuralVariant": "standard"
-        },
-        "gallery": {
-            "variant": "jewelry-box-wedding"
-        }
-    },
     "hero": {
         "name": "Sofía",
         "secondaryName": "Alejandro",
         "label": "Nuestro enlace",
         "date": "2026-12-12T18:00:00.000Z",
         "backgroundImage": "hero",
-        "structuralVariant": "standard",
         "focalPoint": "50% 38%",
-        "focalPointMobile": "50% 32%"
+        "focalPointMobile": "50% 32%",
+        "variant": "standard"
     },
     "location": {
         "introEyebrow": "Puebla de los Ángeles",
@@ -68,7 +51,11 @@
                 "styleVariant": "reserved",
                 "text": "Celebración reservada para adultos."
             }
-        ]
+        ],
+        "variant": "standard",
+        "presentationOptions": {
+            "showFlourishes": true
+        }
     },
     "rsvp": {
         "title": "Favor de confirmar asistencia",
@@ -78,14 +65,15 @@
         "confirmationMessage": "Gracias por acompañarnos en el inicio de esta nueva etapa.",
         "confirmationMode": "both",
         "personalizedAccess": {
-            "structuralVariant": "ornamented"
+            "variant": "ornamented"
         },
         "whatsappConfig": {
             "phone": "5212221234567",
             "confirmedTemplate": "Hola. Somos {name}. Confirmamos con mucho gusto nuestra asistencia a la boda de Sofía y Alejandro. Asistentes: {guestCount}.",
             "declinedTemplate": "Hola. Somos {name}. Lamentamos no poder acompañarles, pero les enviamos nuestros mejores deseos.",
             "omitTitle": true
-        }
+        },
+        "variant": "standard"
     },
     "quote": {
         "text": "Donde tú vayas, yo iré; donde tú vivas, yo viviré. Tu pueblo será mi pueblo y tu Dios será mi Dios.",
@@ -138,7 +126,8 @@
             "parentsTitle": "Con la bendición de nuestros padres",
             "godparentsTitle": "Padrinos",
             "sectionMessage": "Con gratitud honramos a quienes nos han dado ejemplo, cuidado y bendición para llegar a este día."
-        }
+        },
+        "variant": "standard"
     },
     "gallery": {
         "variant": "uniform-grid",
@@ -166,7 +155,8 @@
                 "image": "gallery05",
                 "caption": "La primera noche."
             }
-        ]
+        ],
+        "visualVariant": "jewelry-box-wedding"
     },
     "gifts": {
         "title": "Mesa de regalos",
@@ -179,13 +169,11 @@
                 "logo": "LIVERPOOL",
                 "description": "Mesa seleccionada para quienes deseen tener un detalle adicional."
             }
-        ]
+        ],
+        "variant": "standard"
     },
     "itinerary": {
         "title": "Programa del día",
-        "presentation": {
-            "behavior": "standard"
-        },
         "items": [
             {
                 "iconName": "Church",
@@ -217,13 +205,15 @@
                 "time": "23:00",
                 "description": "Música, brindis y despedida de la noche."
             }
-        ]
+        ],
+        "variant": "standard"
     },
     "thankYou": {
         "message": "Gracias por acompañarnos en un día que recordaremos siempre con el corazón lleno.",
         "closingName": "Sofía & Alejandro",
         "image": "thankYouPortrait",
-        "focalPoint": "50% 38%"
+        "focalPoint": "50% 38%",
+        "variant": "standard"
     },
     "countdown": {
         "title": "Nuestra boda comienza en",

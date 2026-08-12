@@ -21,8 +21,8 @@ export const heroSchema = z
 			})
 			.strict()
 			.optional(),
-		variant: z.enum(THEME_PRESETS).optional(),
-		structuralVariant: z.enum(HERO_STRUCTURAL_VARIANTS).optional(),
+		variant: z.enum(HERO_STRUCTURAL_VARIANTS),
+		visualVariant: z.enum(THEME_PRESETS).optional(),
 		focalPoint: focalPointSchema.optional(),
 		focalPointMobile: focalPointSchema.optional(),
 		focalPointTablet: focalPointSchema.optional(),

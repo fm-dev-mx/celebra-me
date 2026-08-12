@@ -117,17 +117,17 @@ export function canonicalizeItineraryDraft(
 	return {
 		...(str(itinerary.title) ? { title: str(itinerary.title) } : {}),
 		...(str(itinerary.subtitle) ? { subtitle: str(itinerary.subtitle) } : {}),
-		...(itinerary.presentation !== undefined ? { presentation: itinerary.presentation } : {}),
+		...(itinerary.variant !== undefined ? { variant: itinerary.variant } : {}),
 		...(items !== undefined ? { items } : {}),
 	};
 }
 
 /**
- * Draft gifts owns title/subtitle/items. `gifts.variant` is obsolete on content —
- * presentation variant lives on `sectionStyles.gifts.variant` (published-only).
+ * Draft gifts owns its canonical structural variant and editable presentation data.
  */
 export function mapGiftsToDraft(gifts: Record<string, unknown>): Record<string, unknown> {
 	return {
+		...(str(gifts.variant) ? { variant: str(gifts.variant) } : {}),
 		...(str(gifts.title) ? { title: str(gifts.title) } : {}),
 		...(str(gifts.subtitle) ? { subtitle: str(gifts.subtitle) } : {}),
 		...(str(gifts.presentation) ? { presentation: str(gifts.presentation) } : {}),
@@ -135,13 +135,7 @@ export function mapGiftsToDraft(gifts: Record<string, unknown>): Record<string, 
 	};
 }
 
-export function canonicalizeGiftsDraft(
-	gifts: Record<string, unknown>,
-	removedPublishedOnlyKeys: string[],
-): Record<string, unknown> {
-	if (gifts.variant !== undefined) {
-		removedPublishedOnlyKeys.push('gifts.variant');
-	}
+export function canonicalizeGiftsDraft(gifts: Record<string, unknown>): Record<string, unknown> {
 	return mapGiftsToDraft(gifts);
 }
 
@@ -202,6 +196,7 @@ export function mapRsvpToDraft(rsvp: Record<string, unknown>): Record<string, un
 	const confirmationMode = str(rsvp.confirmationMode);
 
 	return {
+		...(str(rsvp.variant) ? { variant: str(rsvp.variant) } : {}),
 		...(str(rsvp.title) ? { title: str(rsvp.title) } : {}),
 		...(typeof rsvp.guestCap === 'number' ? { guestCap: rsvp.guestCap } : {}),
 		...(str(rsvp.confirmationMessage)

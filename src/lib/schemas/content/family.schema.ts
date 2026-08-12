@@ -5,70 +5,74 @@ import { FAMILY_STRUCTURAL_VARIANTS } from '@/lib/invitation/structural-variants
 
 const familyMemberSchema = z.object({ name: z.string(), role: z.string().optional() });
 
+const familyGroupSchema = z.object({
+	title: z.string(),
+	items: z
+		.array(
+			z.object({
+				name: z.string(),
+				role: z.string().optional(),
+				deceased: z.boolean().optional(),
+			}),
+		)
+		.min(1),
+});
+
+const familyBaseSchema = z.object({
+	parents: z
+		.object({
+			father: z.string().optional(),
+			mother: z.string().optional(),
+			fatherDeceased: z.boolean().optional(),
+			motherDeceased: z.boolean().optional(),
+		})
+		.strict()
+		.optional(),
+	parentsOrder: z.enum(['father-first', 'mother-first']).optional(),
+	labels: z
+		.object({
+			sectionTitle: z.string().optional(),
+			sectionSubtitle: z.string().optional(),
+			spouseTitle: z.string().optional(),
+			spouseRole: z.string().optional(),
+			childrenTitle: z.string().optional(),
+			parentsTitle: z.string().optional(),
+			fatherRole: z.string().optional(),
+			motherRole: z.string().optional(),
+			godparentsTitle: z.string().optional(),
+			sectionMessage: z.string().optional(),
+		})
+		.strict()
+		.optional(),
+	spouse: z.string().optional(),
+	children: z.array(familyMemberSchema).min(1).optional(),
+	godparents: z.array(familyMemberSchema).min(1).optional(),
+	godparentGroups: z
+		.array(
+			z.object({
+				honoreeName: z.string(),
+				label: z.string().optional(),
+				godparents: z.array(familyMemberSchema).min(1),
+			}),
+		)
+		.min(1)
+		.optional(),
+	groups: z.array(familyGroupSchema).min(1).optional(),
+	featuredImage: AssetSchema.optional(),
+	presentation: z.enum(FAMILY_PRESENTATIONS).optional(),
+	focalPoint: focalPointSchema.optional(),
+	visible: z.boolean().optional(),
+	sectionMessage: z.string().optional(),
+});
+
 export const familySchema = z
-	.object({
-		parents: z
-			.object({
-				father: z.string().optional(),
-				mother: z.string().optional(),
-				fatherDeceased: z.boolean().optional(),
-				motherDeceased: z.boolean().optional(),
-			})
-			.strict()
-			.optional(),
-		parentsOrder: z.enum(['father-first', 'mother-first']).optional(),
-		labels: z
-			.object({
-				sectionTitle: z.string().optional(),
-				sectionSubtitle: z.string().optional(),
-				spouseTitle: z.string().optional(),
-				spouseRole: z.string().optional(),
-				childrenTitle: z.string().optional(),
-				parentsTitle: z.string().optional(),
-				fatherRole: z.string().optional(),
-				motherRole: z.string().optional(),
-				godparentsTitle: z.string().optional(),
-				sectionMessage: z.string().optional(),
-			})
-			.strict()
-			.optional(),
-		spouse: z.string().optional(),
-		children: z.array(familyMemberSchema).min(1).optional(),
-		godparents: z.array(familyMemberSchema).min(1).optional(),
-		godparentGroups: z
-			.array(
-				z.object({
-					honoreeName: z.string(),
-					label: z.string().optional(),
-					godparents: z.array(familyMemberSchema).min(1),
-				}),
-			)
-			.min(1)
-			.optional(),
-		groups: z
-			.array(
-				z.object({
-					title: z.string(),
-					items: z
-						.array(
-							z.object({
-								name: z.string(),
-								role: z.string().optional(),
-								deceased: z.boolean().optional(),
-							}),
-						)
-						.min(1),
-				}),
-			)
-			.min(1)
-			.optional(),
-		featuredImage: AssetSchema.optional(),
-		presentation: z.enum(FAMILY_PRESENTATIONS).optional(),
-		structuralVariant: z.enum(FAMILY_STRUCTURAL_VARIANTS).optional(),
-		focalPoint: focalPointSchema.optional(),
-		visible: z.boolean().optional(),
-		sectionMessage: z.string().optional(),
-	})
+	.discriminatedUnion('variant', [
+		familyBaseSchema.extend({ variant: z.literal(FAMILY_STRUCTURAL_VARIANTS[0]) }),
+		familyBaseSchema.extend({
+			variant: z.literal(FAMILY_STRUCTURAL_VARIANTS[1]),
+			groups: z.array(familyGroupSchema).min(2),
+		}),
+	])
 	.superRefine((data, ctx) => {
 		if (data.godparents && data.godparentGroups) {
 			ctx.addIssue({

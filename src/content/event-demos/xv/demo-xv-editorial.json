@@ -9,28 +9,14 @@
         "fontFamily": "serif",
         "preset": "editorial"
     },
-    "sectionStyles": {
-        "location": {
-            "showFlourishes": true
-        },
-        "rsvp": {
-            "structuralVariant": "standard"
-        },
-        "thankYou": {
-            "structuralVariant": "standard"
-        },
-        "gifts": {
-            "structuralVariant": "standard"
-        }
-    },
     "hero": {
         "name": "Valentina Noir",
         "label": "XV Aniversario",
         "date": "2026-09-19T20:00:00.000Z",
         "backgroundImage": "hero",
         "portrait": "portrait",
-        "variant": "editorial",
-        "structuralVariant": "standard"
+        "variant": "standard",
+        "visualVariant": "editorial"
     },
     "location": {
         "reception": {
@@ -56,7 +42,11 @@
                 "styleVariant": "default",
                 "text": "Favor de confirmar antes del 12 de septiembre."
             }
-        ]
+        ],
+        "variant": "standard",
+        "presentationOptions": {
+            "showFlourishes": true
+        }
     },
     "family": {
         "parents": {
@@ -74,7 +64,8 @@
                 "role": "Madrina de honor"
             }
         ],
-        "featuredImage": "family"
+        "featuredImage": "family",
+        "variant": "standard"
     },
     "gallery": {
         "variant": "editorial-mosaic",
@@ -135,7 +126,8 @@
                 "title": "Lluvia de Sobres",
                 "text": "Agradecemos tu detalle en la recepción de la gala."
             }
-        ]
+        ],
+        "variant": "standard"
     },
     "rsvp": {
         "title": "Confirma tu asistencia",
@@ -143,8 +135,9 @@
         "confirmationMessage": "Tu lugar para Noir Premiere XV ha sido reservado. Nos vemos en la gala.",
         "confirmationMode": "api",
         "personalizedAccess": {
-            "structuralVariant": "ornamented"
-        }
+            "variant": "ornamented"
+        },
+        "variant": "standard"
     },
     "quote": {
         "text": "Con luz propia, inicio un nuevo capítulo. Gracias por ser parte de esta noche de quince años.",
@@ -153,13 +146,11 @@
     "thankYou": {
         "message": "Gracias por ser parte de este capítulo. Su presencia convierte esta noche en un recuerdo de luz, estilo y emoción.",
         "closingName": "Valentina",
-        "image": "thankYouPortrait"
+        "image": "thankYouPortrait",
+        "variant": "standard"
     },
     "itinerary": {
         "title": "Programa de la Noche",
-        "presentation": {
-            "behavior": "standard"
-        },
         "items": [
             {
                 "iconName": "Reception",
@@ -197,7 +188,8 @@
                 "time": "23:30",
                 "description": "Música, pista y una noche en grande."
             }
-        ]
+        ],
+        "variant": "standard"
     },
     "countdown": {
         "title": "La Noche Premiere Comienza En",

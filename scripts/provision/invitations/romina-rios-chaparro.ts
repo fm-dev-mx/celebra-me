@@ -134,11 +134,7 @@ export function buildRominaPublishedContent(
 			timeZone: ROMINA_EVENT.timeZone,
 			startsAtUtc: ROMINA_EVENT.startsAtUtc,
 		},
-		sectionStyles: {
-			gifts: { structuralVariant: 'standard' },
-			rsvp: { structuralVariant: 'standard' },
-			thankYou: { structuralVariant: 'standard' },
-		},
+		composition: { intersections: {} },
 		sectionOrder: [
 			'quote',
 			'family',
@@ -158,7 +154,7 @@ export function buildRominaPublishedContent(
 			backgroundImage: assets.hero,
 			backgroundImageMobile: assets.hero,
 			backgroundImageDesktop: assets.hero,
-			structuralVariant: 'split-cover',
+			variant: 'split-cover',
 			focalPoint: '50% 42%',
 			focalPointMobile: '50% 42%',
 			focalPointTablet: '50% 40%',
@@ -185,6 +181,7 @@ export function buildRominaPublishedContent(
 			author: 'Romina',
 		},
 		family: {
+			variant: 'standard',
 			parents: {
 				mother: 'Claudia Chaparro Juárez',
 				father: 'Christian Miguel Ríos',
@@ -207,6 +204,7 @@ export function buildRominaPublishedContent(
 			footerText: 'Ceremonia Religiosa · 5:00 p. m.',
 		},
 		location: {
+			variant: 'standard',
 			visibility: 'public',
 			introEyebrow: 'VIERNES · 14 DE AGOSTO DE 2026',
 			introHeading: 'Ceremonia y recepción',
@@ -263,10 +261,8 @@ export function buildRominaPublishedContent(
 			},
 		],
 		itinerary: {
+			variant: 'standard',
 			title: 'Programa',
-			presentation: {
-				behavior: 'standard',
-			},
 			items: [
 				{ time: '5:00 p. m.', label: 'Ceremonia', iconName: 'Church' },
 				{ time: '8:30 p. m.', label: 'Cena', iconName: 'Dinner' },
@@ -274,7 +270,7 @@ export function buildRominaPublishedContent(
 			],
 		},
 		gallery: {
-			variant: 'uniform-grid',
+			variant: 'editorial-mosaic',
 			eyebrow: 'Recuerdos',
 			title: 'Romina',
 			subtitle: 'Una historia entre naturaleza, familia y sueños',
@@ -318,6 +314,7 @@ export function buildRominaPublishedContent(
 			],
 		},
 		rsvp: {
+			variant: 'standard',
 			title: 'Confirme su asistencia',
 			subcopy:
 				'Nos dará mucho gusto contar con su presencia. Por favor, confirme su asistencia para ayudarnos a preparar cada detalle.',
@@ -327,13 +324,14 @@ export function buildRominaPublishedContent(
 			confirmationMessage:
 				'Gracias por confirmar. Será un gusto compartir este día con usted.',
 			personalizedAccess: {
-				structuralVariant: 'ornamented',
+				variant: 'ornamented',
 				title: 'Pase de acceso',
 				subtitle: 'Esta invitación ha sido preparada especialmente para:',
 				footerText: 'Favor de confirmar su asistencia en la siguiente sección.',
 			},
 		},
 		thankYou: {
+			variant: 'standard',
 			message: 'Gracias por ser parte de este momento tan especial.',
 			closingName: 'Romina',
 			date: '14 de agosto de 2026',

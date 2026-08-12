@@ -1,4 +1,6 @@
 import { InvitationEditorSectionSchemas } from '@/lib/intake/schemas/invitation-editor.schema';
+import { mapNestedToDraftContent } from '@/lib/intake/services/draft-content-mapper';
+import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 
 /**
  * Regression test: every editable section from real published content
@@ -203,10 +205,14 @@ const SECTIONS_TO_TEST: Array<keyof typeof InvitationEditorSectionSchemas> = [
 	'sharing',
 ];
 
-describe('Editor section schema parity with Leah Lexa published content', () => {
+const NORMALIZED_LEAH_LEXA_CONTENT = mapNestedToDraftContent(
+	eventContentSchema.parse(LEAH_LEXA_PUBLISHED_CONTENT) as Record<string, unknown>,
+) as Record<string, unknown>;
+
+describe('Editor section schema parity with normalized Leah Lexa published content', () => {
 	for (const section of SECTIONS_TO_TEST) {
 		it(`accepts merged "${section}" value from real published content`, () => {
-			const value = extractSectionValue(LEAH_LEXA_PUBLISHED_CONTENT, section);
+			const value = extractSectionValue(NORMALIZED_LEAH_LEXA_CONTENT, section);
 			const schema = InvitationEditorSectionSchemas[section];
 			const result = schema.safeParse(value);
 

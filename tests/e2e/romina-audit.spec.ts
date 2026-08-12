@@ -9,7 +9,8 @@ const VIEWPORTS = [
 
 const ARTIFACT_ROOT = path.resolve(
 	process.cwd(),
-	'temp',
+	'output',
+	'playwright',
 	'romina-audit',
 	new Date().toISOString().replaceAll(':', '-'),
 );
@@ -44,13 +45,16 @@ test.describe('Romina Ríos Chaparro XV E2E Audit', () => {
 			// 1. Hero checks
 			const hero = page.locator('#inicio, .hero');
 			await expect(hero).toBeVisible();
+			await expect(hero).toHaveAttribute('data-structural-variant', 'split-cover');
 
 			// 2. Family eyebrow & title
 			const familyEyebrow = page.locator('.family__eyebrow');
-			await expect(familyEyebrow).toHaveText('Familia');
+			await expect(familyEyebrow).toHaveText('Círculo cercano');
 
 			const familyTitle = page.locator('.family__title');
-			await expect(familyTitle).toHaveText('Con el amor de mis padres y la compañía de mis padrinos');
+			await expect(familyTitle).toHaveText(
+				'Con el amor de mis padres y la compañía de mi familia',
+			);
 
 			// 3. Location section and maps
 			const locationSection = page.locator('#event-location, .location');

@@ -8,17 +8,12 @@
     "theme": {
         "preset": "angelic-presence"
     },
-    "sectionStyles": {
-        "location": {
-            "showFlourishes": true
-        },
-        "rsvp": {}
-    },
     "hero": {
         "name": "María Santos",
         "label": "Bautismo",
         "date": "2026-10-18T10:00:00.000Z",
-        "backgroundImage": "hero"
+        "backgroundImage": "hero",
+        "variant": "standard"
     },
     "location": {
         "ceremony": {
@@ -51,7 +46,11 @@
                 "iconName": "DressCode",
                 "text": "<strong>Vestimenta</strong> Tonos claros, formales y suaves."
             }
-        ]
+        ],
+        "variant": "standard",
+        "presentationOptions": {
+            "showFlourishes": true
+        }
     },
     "family": {
         "parents": {
@@ -76,7 +75,8 @@
             "parentsTitle": "Con la bendición de",
             "godparentsTitle": "Padrinos",
             "sectionMessage": "Gracias por acompañarnos en este día de fe y alegría. Su amor, su guía y sus bendiciones hacen más luminoso este sacramento."
-        }
+        },
+        "variant": "standard"
     },
     "gallery": {
         "eyebrow": "Galería",
@@ -115,14 +115,12 @@
                 "title": "Lluvia de Sobres",
                 "text": "Agradecemos su generosidad en el área de recepción."
             }
-        ]
+        ],
+        "variant": "standard"
     },
     "itinerary": {
         "title": "Programa",
         "subtitle": "Bautismo de María",
-        "presentation": {
-            "behavior": "standard"
-        },
         "items": [
             {
                 "iconName": "Reception",
@@ -148,7 +146,8 @@
                 "time": "13:00",
                 "description": "Corte del pastel"
             }
-        ]
+        ],
+        "variant": "standard"
     },
     "countdown": {
         "title": "Nos acercamos con alegría",
@@ -162,13 +161,18 @@
         "title": "Confirma tu asistencia",
         "guestCap": 4,
         "confirmationMessage": "Gracias por acompañarnos en este día de fe y familia.",
-        "confirmationMode": "api"
+        "confirmationMode": "api",
+        "variant": "standard",
+        "personalizedAccess": {
+            "variant": "standard"
+        }
     },
     "thankYou": {
         "message": "Gracias por compartir con nosotros este momento sagrado. Su presencia y sus bendiciones quedarán guardadas con mucho cariño.",
         "closingName": "María Santos",
         "image": "thankYouPortrait",
-        "focalPoint": "50% 50%"
+        "focalPoint": "50% 50%",
+        "variant": "standard"
     },
     "interludes": [
         {

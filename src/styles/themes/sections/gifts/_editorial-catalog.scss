@@ -1,6 +1,5 @@
-// Editorial-magazine gifts: editorial gift guide with flat layout
+// Editorial catalog: flat gift-guide layout.
 
-.gifts-section[data-variant='editorial-magazine'],
 .gifts-section[data-structural-variant='editorial-catalog'] {
 	background: var(--gifts-bg);
 
@@ -9,7 +8,7 @@
 	}
 
 	.gifts-section__eyebrow {
-		color: rgb(var(--editorial-magazine-ink-rgb) / 48%);
+		color: rgb(var(--color-text-primary-rgb) / 48%);
 		font-family: var(--font-label);
 		font-weight: 700;
 		letter-spacing: 0.28em;
@@ -39,20 +38,20 @@
 	}
 
 	.gifts-section__separator {
-		background: rgb(var(--editorial-magazine-ink-rgb) / 14%);
+		background: rgb(var(--color-text-primary-rgb) / 14%);
 	}
 
 	.gifts-grid {
 		gap: 0;
-		border-top: 1px solid rgb(var(--editorial-magazine-ink-rgb) / 14%);
-		border-left: 1px solid rgb(var(--editorial-magazine-ink-rgb) / 14%);
+		border-top: 1px solid rgb(var(--color-text-primary-rgb) / 14%);
+		border-left: 1px solid rgb(var(--color-text-primary-rgb) / 14%);
 	}
 
 	.gift-card {
 		border-radius: 0;
 		border: none;
-		border-right: 1px solid rgb(var(--editorial-magazine-ink-rgb) / 14%);
-		border-bottom: 1px solid rgb(var(--editorial-magazine-ink-rgb) / 14%);
+		border-right: 1px solid rgb(var(--color-text-primary-rgb) / 14%);
+		border-bottom: 1px solid rgb(var(--color-text-primary-rgb) / 14%);
 		background: transparent;
 		box-shadow: none;
 		backdrop-filter: none;
@@ -60,7 +59,7 @@
 		&:hover {
 			transform: none;
 			box-shadow: none;
-			background: rgb(var(--editorial-magazine-ink-rgb) / 2%);
+			background: rgb(var(--color-text-primary-rgb) / 2%);
 		}
 	}
 
@@ -68,7 +67,7 @@
 		width: 36px;
 		height: 36px;
 		border-radius: 0;
-		border: 1px solid rgb(var(--editorial-magazine-ink-rgb) / 22%);
+		border: 1px solid rgb(var(--color-text-primary-rgb) / 22%);
 		background: transparent;
 		box-shadow: none;
 		backdrop-filter: none;
@@ -81,19 +80,19 @@
 	.gift-card__title {
 		font-family: var(--font-display);
 		font-size: 1.3rem;
-		color: var(--editorial-magazine-ink);
+		color: var(--color-text-primary);
 	}
 
 	.gift-card__description {
-		color: rgb(var(--editorial-magazine-ink-rgb) / 62%);
+		color: rgb(var(--color-text-primary-rgb) / 62%);
 	}
 
 	.gift-card__store-label {
-		color: rgb(var(--editorial-magazine-ink-rgb) / 52%);
+		color: rgb(var(--color-text-primary-rgb) / 52%);
 	}
 
 	.gift-card__table-number {
-		color: var(--editorial-magazine-ink);
+		color: var(--color-text-primary);
 		font-family: var(--font-label);
 		font-size: 0.85rem;
 		letter-spacing: 0.1em;
@@ -102,10 +101,10 @@
 	}
 
 	.gift-card__button {
-		border: 1px solid rgb(var(--editorial-magazine-ink-rgb) / 24%);
+		border: 1px solid rgb(var(--color-text-primary-rgb) / 24%);
 		border-radius: 0;
 		background: transparent;
-		color: var(--editorial-magazine-ink);
+		color: var(--color-text-primary);
 		font-family: var(--font-label);
 		font-size: 0.76rem;
 		font-weight: 700;
@@ -113,30 +112,30 @@
 		letter-spacing: 0.16em;
 
 		&:hover {
-			border-color: var(--editorial-magazine-ink);
-			background: var(--editorial-magazine-ink);
-			color: var(--editorial-magazine-white);
+			border-color: var(--color-text-primary);
+			background: var(--color-text-primary);
+			color: var(--color-text-on-dark);
 		}
 	}
 
 	.bank-details {
 		border-radius: 0;
-		background: rgb(var(--editorial-magazine-ink-rgb) / 4%);
+		background: rgb(var(--color-text-primary-rgb) / 4%);
 	}
 
 	.clabe-number {
 		border-radius: 0;
-		background: rgb(var(--editorial-magazine-ink-rgb) / 6%);
+		background: rgb(var(--color-text-primary-rgb) / 6%);
 	}
 
 	.copy-button {
 		border-radius: 0;
-		border-color: rgb(var(--editorial-magazine-ink-rgb) / 24%);
-		color: var(--editorial-magazine-ink);
+		border-color: rgb(var(--color-text-primary-rgb) / 24%);
+		color: var(--color-text-primary);
 
 		&:hover {
-			background: var(--editorial-magazine-ink);
-			color: var(--editorial-magazine-white);
+			background: var(--color-text-primary);
+			color: var(--color-text-on-dark);
 		}
 	}
 }

@@ -310,8 +310,14 @@ describe('getInvitationEditorContext', () => {
 
 	it('uses published value when draft lacks the key but published has it', async () => {
 		const result = await getInvitationEditorContext('proj-1');
-		expect(result.content.gallery).toEqual(published.content.gallery);
-		expect(result.content.itinerary).toEqual(published.content.itinerary);
+		expect(result.content.gallery).toEqual({
+			...published.content.gallery,
+			variant: 'uniform-grid',
+		});
+		expect(result.content.itinerary).toEqual({
+			...published.content.itinerary,
+			variant: 'standard',
+		});
 	});
 
 	it('does not populate keys from demo for client invitations even when draft and published lack them', async () => {
@@ -954,7 +960,7 @@ describe('saveInvitationEditorSection', () => {
 
 		const value = {
 			eyebrow: 'Nuevo',
-			variant: 'single',
+			variant: 'single-keepsake',
 			presentation: 'pet-keepsake',
 			items: [{ image: 'gallery03', caption: 'Original' }],
 		};
@@ -971,7 +977,7 @@ describe('saveInvitationEditorSection', () => {
 				content: expect.objectContaining({
 					gallery: expect.objectContaining({
 						eyebrow: 'Nuevo',
-						variant: 'single',
+						variant: 'single-keepsake',
 						presentation: 'pet-keepsake',
 					}),
 				}),
@@ -1165,7 +1171,7 @@ describe('restoreInvitationEditorFromPublished', () => {
 				draftContent: expect.objectContaining({
 					title: published.content.title,
 					description: published.content.description,
-					gallery: published.content.gallery,
+					gallery: { ...published.content.gallery, variant: 'uniform-grid' },
 				}),
 				context: COMMAND_CONTEXT,
 			}),

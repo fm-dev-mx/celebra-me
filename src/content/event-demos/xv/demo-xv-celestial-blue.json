@@ -10,17 +10,6 @@
         "fontFamily": "serif",
         "preset": "celestial-blue"
     },
-    "sectionStyles": {
-        "rsvp": {
-            "structuralVariant": "standard"
-        },
-        "thankYou": {
-            "structuralVariant": "editorial-back-cover"
-        },
-        "gifts": {
-            "structuralVariant": "standard"
-        }
-    },
     "hero": {
         "name": "Camila Torres Rivas",
         "label": "Mis XV Años",
@@ -28,10 +17,10 @@
         "backgroundImage": "hero",
         "backgroundImageDesktop": "heroDesktop",
         "portrait": "portrait",
-        "structuralVariant": "standard",
         "focalPoint": "50% 32%",
         "focalPointMobile": "50% 30%",
-        "focalPointDesktop": "62% 38%"
+        "focalPointDesktop": "62% 38%",
+        "variant": "standard"
     },
     "location": {
         "ceremony": {
@@ -65,7 +54,8 @@
                 "styleVariant": "default",
                 "text": "Confirma tu asistencia <strong>antes del 29 de agosto</strong>."
             }
-        ]
+        ],
+        "variant": "standard"
     },
     "family": {
         "featuredImage": "family",
@@ -93,7 +83,8 @@
                 "name": "Fernando Castillo López",
                 "role": "Padrino"
             }
-        ]
+        ],
+        "variant": "standard"
     },
     "gallery": {
         "variant": "index-choreography",
@@ -149,7 +140,8 @@
                 "title": "Lluvia de Sobres",
                 "text": "Contaremos con un buzón durante la recepción."
             }
-        ]
+        ],
+        "variant": "standard"
     },
     "rsvp": {
         "title": "Confirma tu asistencia",
@@ -158,11 +150,12 @@
         "confirmationMessage": "Gracias por confirmar. Te esperamos con alegría en esta noche tan especial.",
         "confirmationMode": "api",
         "personalizedAccess": {
-            "structuralVariant": "ornamented",
             "title": "Tu lugar en la celebración",
             "subtitle": "Reservado especialmente para ti",
-            "footerText": "Confirma abajo para asegurar tus lugares"
-        }
+            "footerText": "Confirma abajo para asegurar tus lugares",
+            "variant": "ornamented"
+        },
+        "variant": "standard"
     },
     "quote": {
         "text": "Hoy empieza una nueva historia, y no hay mejor escenario que tenerlos a mi lado.",
@@ -172,13 +165,11 @@
         "message": "Gracias por compartir esta noche conmigo. Su amor y compañía hacen de mis XV años un recuerdo que atesoraré para siempre.",
         "closingName": "Camila Torres Rivas",
         "image": "thankYouPortrait",
-        "focalPoint": "50% 30%"
+        "focalPoint": "50% 30%",
+        "variant": "editorial-back-cover"
     },
     "itinerary": {
         "title": "Programa",
-        "presentation": {
-            "behavior": "timeline-paper"
-        },
         "items": [
             {
                 "iconName": "Church",
@@ -210,7 +201,8 @@
                 "time": "00:00",
                 "description": "Gracias por celebrar con nosotros."
             }
-        ]
+        ],
+        "variant": "timeline-paper"
     },
     "countdown": {
         "title": "La celebración comienza en",
@@ -274,5 +266,29 @@
         "url": "https://res.cloudinary.com/dusxvauvj/video/upload/v1779331586/Ludovico_Einaudi_-_Nuvole_Bianche_z9ltlm.mp3",
         "autoPlay": false,
         "title": "Música de fondo"
+    },
+    "composition": {
+        "intersections": {
+            "interlude-after-family": {
+                "family": "overlap",
+                "source": "family"
+            },
+            "gallery": {
+                "family": "atmospheric-blend",
+                "source": "interlude-after-family"
+            },
+            "interlude-after-location": {
+                "family": "arch",
+                "source": "location"
+            },
+            "interlude-after-itinerary": {
+                "family": "overlap",
+                "source": "itinerary"
+            },
+            "interlude-after-rsvp": {
+                "family": "atmospheric-blend",
+                "source": "rsvp"
+            }
+        }
     }
 }

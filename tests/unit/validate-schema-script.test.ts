@@ -1,46 +1,15 @@
 import { spawnSync } from 'node:child_process';
 
-// Missing-CSS warnings accepted because the renderer falls back to base section styles
-// or (for itinerary) theme-preset / profile-owned skins that no longer use theme-named
-// `data-variant` selectors. Update when theme presets or CSS variant files change.
-const KNOWN_VARIANT_WARNINGS = [
-	"countdown: Contract variant 'jewelry-box-wedding' not found in CSS",
-	"countdown: Contract variant 'editorial-rose' not found in CSS",
-	"location: Contract variant 'jewelry-box' not found in CSS",
-	"location: Contract variant 'jewelry-box-wedding' not found in CSS",
-	"location: Contract variant 'luxury-hacienda' not found in CSS",
-	"location: Contract variant 'editorial' not found in CSS",
-	"location: Contract variant 'editorial-rose' not found in CSS",
-	"location: Contract variant 'premiere-floral' not found in CSS",
-	"location: Contract variant 'celestial-blue' not found in CSS",
-	"location: Contract variant 'sacred-keepsake' not found in CSS",
-	"location: Contract variant 'angelic-presence' not found in CSS",
-	"family: Contract variant 'jewelry-box' not found in CSS",
-	"family: Contract variant 'jewelry-box-wedding' not found in CSS",
-	"family: Contract variant 'luxury-hacienda' not found in CSS",
-	"family: Contract variant 'editorial' not found in CSS",
-	"family: Contract variant 'editorial-rose' not found in CSS",
-	"family: Contract variant 'premiere-floral' not found in CSS",
-	"family: Contract variant 'celestial-blue' not found in CSS",
-	"family: Contract variant 'sacred-keepsake' not found in CSS",
-	"family: Contract variant 'angelic-presence' not found in CSS",
-	"gifts: Contract variant 'editorial-rose' not found in CSS",
-	"gifts: Contract variant 'sacred-keepsake' not found in CSS",
-	"gifts: Contract variant 'angelic-presence' not found in CSS",
-	"thankYou: Contract variant 'jewelry-box-wedding' not found in CSS",
-	"thankYou: Contract variant 'editorial-rose' not found in CSS",
-	// Itinerary skins bind via `.theme-preset--*` + canonical standard|timeline-paper.
-	"itinerary: Contract variant 'jewelry-box' not found in CSS",
-	"itinerary: Contract variant 'jewelry-box-wedding' not found in CSS",
-	"itinerary: Contract variant 'luxury-hacienda' not found in CSS",
-	"itinerary: Contract variant 'editorial' not found in CSS",
-	"itinerary: Contract variant 'editorial-rose' not found in CSS",
-	"itinerary: Contract variant 'editorial-magazine' not found in CSS",
-	"itinerary: Contract variant 'premiere-floral' not found in CSS",
-	"itinerary: Contract variant 'celestial-blue' not found in CSS",
-	"itinerary: Contract variant 'enchanted-rose' not found in CSS",
-	"itinerary: Contract variant 'sacred-keepsake' not found in CSS",
-	"itinerary: Contract variant 'angelic-presence' not found in CSS",
+const KNOWN_BASE_STYLE_FALLBACKS = [
+	"hero: Contract variant 'standard' intentionally uses base section styles",
+	"family: Contract variant 'standard' intentionally uses base section styles",
+	"location: Contract variant 'standard' intentionally uses base section styles",
+	"gallery: Contract variant 'uniform-grid' intentionally uses base section styles",
+	"gifts: Contract variant 'standard' intentionally uses base section styles",
+	"rsvp: Contract variant 'standard' intentionally uses base section styles",
+	"personalizedAccess: Contract variant 'standard' intentionally uses base section styles",
+	"personalizedAccess: Contract variant 'ornamented' intentionally uses base section styles",
+	"thankYou: Contract variant 'standard' intentionally uses base section styles",
 ];
 
 describe('validate-schema script', () => {
@@ -54,13 +23,13 @@ describe('validate-schema script', () => {
 		const stdout = result.stdout;
 
 		expect(stdout).toContain('Errors: 0');
-		const warningCount = Number(stdout.match(/Warnings: (\d+)/)?.[1] ?? 0);
-		expect(warningCount).toBe(KNOWN_VARIANT_WARNINGS.length);
+		expect(stdout).toContain('Warnings: 0');
+		expect(stdout).toContain(
+			`Expected base-style fallbacks: ${KNOWN_BASE_STYLE_FALLBACKS.length}`,
+		);
 
-		expect(stdout).toContain('Expected base-style fallbacks: 0');
-
-		for (const warning of KNOWN_VARIANT_WARNINGS) {
-			expect(stdout).toContain(warning);
+		for (const fallback of KNOWN_BASE_STYLE_FALLBACKS) {
+			expect(stdout).toContain(fallback);
 		}
 	});
 });

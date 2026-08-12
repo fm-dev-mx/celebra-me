@@ -23,6 +23,7 @@ describe('RSVP Component', () => {
 	};
 
 	const revealedLocation = {
+		structuralVariant: 'standard' as const,
 		visibility: 'after-rsvp' as const,
 		introHeading: 'Ubicación',
 		ceremony: {
@@ -1408,6 +1409,7 @@ describe('RSVP Component', () => {
 
 		it('renders Google Maps link when revealedLocation uses venues array path with googleMapsUrl', async () => {
 			const venuesArrayLocation = {
+				structuralVariant: 'standard' as const,
 				visibility: 'after-rsvp' as const,
 				introHeading: 'Ubicación',
 				venues: [

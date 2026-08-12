@@ -1,21 +1,20 @@
-.rsvp[data-variant='editorial-magazine'],
 .rsvp[data-structural-variant='editorial-press-pass'] {
-	--rsvp-radio-label-color: rgb(var(--editorial-magazine-white-rgb) / 72%);
-	--rsvp-radio-label-color-selected: var(--editorial-magazine-white);
+	--rsvp-radio-label-color: rgb(var(--color-text-on-dark-rgb) / 72%);
+	--rsvp-radio-label-color-selected: var(--color-text-on-dark);
 
 	position: relative;
-	border: 1px solid rgb(var(--editorial-magazine-white-rgb) / 18%);
+	border: 1px solid rgb(var(--color-text-on-dark-rgb) / 18%);
 	border-radius: 0;
 	background: var(--rsvp-bg);
 	box-shadow: none;
-	color: var(--editorial-magazine-white);
+	color: var(--color-text-on-dark);
 	overflow: hidden;
 
 	.rsvp__eyebrow,
 	.rsvp__locked-eyebrow,
 	label,
 	legend {
-		color: rgb(var(--editorial-magazine-white-rgb) / 72%);
+		color: rgb(var(--color-text-on-dark-rgb) / 72%);
 		font-family: var(--font-label);
 		font-weight: 700;
 		text-transform: uppercase;
@@ -34,7 +33,7 @@
 
 	.rsvp__edition-label {
 		margin: 0.85rem 0 0;
-		color: rgb(var(--editorial-magazine-white-rgb) / 62%);
+		color: rgb(var(--color-text-on-dark-rgb) / 62%);
 		font-family: var(--font-label);
 		font-weight: 800;
 		font-size: 0.62rem;
@@ -48,8 +47,8 @@
 		justify-content: space-between;
 		gap: 1rem;
 		padding: 0.8rem 0;
-		border-block: 1px solid rgb(var(--editorial-magazine-white-rgb) / 18%);
-		color: rgb(var(--editorial-magazine-white-rgb) / 74%);
+		border-block: 1px solid rgb(var(--color-text-on-dark-rgb) / 18%);
+		color: rgb(var(--color-text-on-dark-rgb) / 74%);
 		font-family: var(--font-label);
 		font-weight: 800;
 		font-size: 0.68rem;
@@ -63,7 +62,7 @@
 	}
 
 	.rsvp__title {
-		color: var(--editorial-magazine-white);
+		color: var(--color-text-on-dark);
 		font-family: var(--font-display);
 		font-size: clamp(1.8rem, 5.5vw, 3.2rem);
 		font-weight: 800;
@@ -76,7 +75,7 @@
 	.rsvp__subcopy,
 	.rsvp__demo-footer,
 	.rsvp__locked-detail {
-		color: rgb(var(--editorial-magazine-white-rgb) / 58%);
+		color: rgb(var(--color-text-on-dark-rgb) / 58%);
 		font-family: var(--font-body);
 	}
 
@@ -86,10 +85,10 @@
 	textarea,
 	select {
 		border: none;
-		border-bottom: 1px solid rgb(var(--editorial-magazine-white-rgb) / 28%);
+		border-bottom: 1px solid rgb(var(--color-text-on-dark-rgb) / 28%);
 		border-radius: 0;
 		background: transparent;
-		color: var(--editorial-magazine-white);
+		color: var(--color-text-on-dark);
 		padding: 0.75rem 0;
 		font-family: var(--font-body);
 		font-size: 1rem;
@@ -98,7 +97,7 @@
 
 		option {
 			background: rgb(13 13 15);
-			color: var(--editorial-magazine-white);
+			color: var(--color-text-on-dark);
 		}
 	}
 
@@ -107,42 +106,42 @@
 	input[type='number']:focus,
 	textarea:focus,
 	select:focus {
-		border-bottom-color: var(--editorial-magazine-white);
+		border-bottom-color: var(--color-text-on-dark);
 		background: transparent;
 		outline: none;
 	}
 
 	.rsvp__radio-card {
-		border: 1px solid rgb(var(--editorial-magazine-white-rgb) / 22%);
+		border: 1px solid rgb(var(--color-text-on-dark-rgb) / 22%);
 		border-radius: 0;
 		background: transparent;
-		color: var(--editorial-magazine-white);
+		color: var(--color-text-on-dark);
 		padding: 1.25rem;
 		transition: all 0.3s ease;
 	}
 
 	.rsvp__radio-card:hover {
-		background: rgb(var(--editorial-magazine-white-rgb) / 6%);
-		border-color: rgb(var(--editorial-magazine-white-rgb) / 48%);
+		background: rgb(var(--color-text-on-dark-rgb) / 6%);
+		border-color: rgb(var(--color-text-on-dark-rgb) / 48%);
 	}
 
 	.rsvp__radio-card:has(input:checked) {
-		border-color: var(--editorial-magazine-white);
-		background: rgb(var(--editorial-magazine-white-rgb) / 10%);
+		border-color: var(--color-text-on-dark);
+		background: rgb(var(--color-text-on-dark-rgb) / 10%);
 	}
 
 	.rsvp__radio-group:has(input:checked) {
 		.rsvp__radio-card:not(:has(input:checked)) {
 			opacity: 45%;
-			border-color: rgb(var(--editorial-magazine-white-rgb) / 10%);
+			border-color: rgb(var(--color-text-on-dark-rgb) / 10%);
 		}
 	}
 
 	.rsvp__button {
-		border: 1px solid rgb(var(--editorial-magazine-white-rgb) / 38%);
+		border: 1px solid rgb(var(--color-text-on-dark-rgb) / 38%);
 		border-radius: 0;
 		background: transparent;
-		color: var(--editorial-magazine-white);
+		color: var(--color-text-on-dark);
 		font-family: var(--font-label);
 		font-weight: 800;
 		text-transform: uppercase;
@@ -152,16 +151,16 @@
 
 	.rsvp__button:hover:not(:disabled),
 	.rsvp__button--success {
-		border-color: var(--editorial-magazine-white);
-		background: var(--editorial-magazine-white);
-		color: var(--editorial-magazine-ink);
+		border-color: var(--color-text-on-dark);
+		background: var(--color-text-on-dark);
+		color: var(--color-text-primary);
 		box-shadow: none;
 	}
 
 	.rsvp__button:disabled {
 		opacity: 46%;
-		border-color: rgb(var(--editorial-magazine-white-rgb) / 22%);
-		color: rgb(var(--editorial-magazine-white-rgb) / 46%);
+		border-color: rgb(var(--color-text-on-dark-rgb) / 22%);
+		color: rgb(var(--color-text-on-dark-rgb) / 46%);
 		background: transparent;
 		cursor: not-allowed;
 	}
@@ -172,10 +171,10 @@
 		align-items: center;
 		justify-content: center;
 		gap: 0.5rem;
-		border: 1px solid rgb(var(--editorial-magazine-white-rgb) / 38%);
+		border: 1px solid rgb(var(--color-text-on-dark-rgb) / 38%);
 		border-radius: 0;
 		background: transparent;
-		color: var(--editorial-magazine-white);
+		color: var(--color-text-on-dark);
 		font-family: var(--font-label);
 		font-weight: 800;
 		text-transform: uppercase;
@@ -192,16 +191,16 @@
 		}
 
 		&:hover {
-			border-color: var(--editorial-magazine-white);
-			background: var(--editorial-magazine-white);
-			color: var(--editorial-magazine-ink);
+			border-color: var(--color-text-on-dark);
+			background: var(--color-text-on-dark);
+			color: var(--color-text-primary);
 		}
 	}
 
 	.rsvp__locked-card {
-		border: 1px solid rgb(var(--editorial-magazine-white-rgb) / 14%);
+		border: 1px solid rgb(var(--color-text-on-dark-rgb) / 14%);
 		border-radius: 0;
-		background: rgb(var(--editorial-magazine-white-rgb) / 4%);
+		background: rgb(var(--color-text-on-dark-rgb) / 4%);
 	}
 
 	@media (width <= 640px) {
@@ -219,12 +218,12 @@
 		padding: 0.75rem 1.5rem 0.75rem 0.5rem; /* Custom arrow padding override */
 		background-color: transparent;
 		border: none;
-		border-bottom: 1px solid rgb(var(--editorial-magazine-white-rgb) / 28%);
+		border-bottom: 1px solid rgb(var(--color-text-on-dark-rgb) / 28%);
 		border-radius: 0;
-		color: var(--editorial-magazine-white);
+		color: var(--color-text-on-dark);
 
 		&:focus {
-			border-bottom-color: var(--editorial-magazine-white);
+			border-bottom-color: var(--color-text-on-dark);
 			background-color: transparent;
 			box-shadow: none;
 		}
@@ -232,13 +231,13 @@
 
 	/* Attendance summary row — compact inline card after selection */
 	.rsvp__attendance-summary {
-		border: 1px solid rgb(var(--editorial-magazine-white-rgb) / 22%);
+		border: 1px solid rgb(var(--color-text-on-dark-rgb) / 22%);
 		border-radius: 0;
-		background: rgb(var(--editorial-magazine-white-rgb) / 5%);
+		background: rgb(var(--color-text-on-dark-rgb) / 5%);
 	}
 
 	.rsvp__attendance-summary-label {
-		color: rgb(var(--editorial-magazine-white-rgb) / 52%);
+		color: rgb(var(--color-text-on-dark-rgb) / 52%);
 		font-size: 0.62rem;
 	}
 
@@ -247,13 +246,13 @@
 		font-size: 0.72rem;
 		font-weight: 700;
 		letter-spacing: 0.12em;
-		color: var(--editorial-magazine-white);
+		color: var(--color-text-on-dark);
 	}
 
 	.rsvp__attendance-change {
-		border: 1px solid rgb(var(--editorial-magazine-white-rgb) / 28%);
+		border: 1px solid rgb(var(--color-text-on-dark-rgb) / 28%);
 		border-radius: 0;
-		color: rgb(var(--editorial-magazine-white-rgb) / 68%);
+		color: rgb(var(--color-text-on-dark-rgb) / 68%);
 		font-size: 0.6rem;
 
 		&:hover {

@@ -5,13 +5,12 @@ import { formatTime12h } from '@/lib/time/time-format';
 
 interface Props {
 	items: ItineraryItem[];
-	variant: string;
 	monogram?: string;
 }
 
-const { items, variant, monogram } = Astro.props;
+const { items, monogram } = Astro.props;
 ---
-<div class="itinerary__program" data-itinerary-wrapper data-variant={variant}>
+<div class="itinerary__program" data-itinerary-wrapper>
 	<div class="itinerary__program-flourish" aria-hidden="true">
 		<span class="flourish-line"></span>
 		<span class="flourish-diamond"></span>

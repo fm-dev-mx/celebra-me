@@ -186,28 +186,15 @@ const activeSectionCssUrls =
 					footerVariant: pageCtx.footerVariant,
 					galleryVariant: pageCtx.viewModel.sections.gallery?.variant,
 					structuralVariants: {
-						hero: pageCtx.viewModel.hero.structuralVariantExplicit
-							? pageCtx.viewModel.hero.structuralVariant
-							: undefined,
-						thankYou: pageCtx.viewModel.sections.thankYou?.structuralVariantExplicit
-							? pageCtx.viewModel.sections.thankYou.structuralVariant
-							: undefined,
-						gifts: pageCtx.viewModel.sections.gifts?.structuralVariantExplicit
-							? pageCtx.viewModel.sections.gifts.structuralVariant
-							: undefined,
-						rsvp: pageCtx.viewModel.sections.rsvp?.structuralVariantExplicit
-							? pageCtx.viewModel.sections.rsvp.structuralVariant
-							: undefined,
+						hero: pageCtx.viewModel.hero.structuralVariant,
+						thankYou: pageCtx.viewModel.sections.thankYou?.structuralVariant,
+						gifts: pageCtx.viewModel.sections.gifts?.structuralVariant,
+						rsvp: pageCtx.viewModel.sections.rsvp?.structuralVariant,
 						personalizedAccess:
-							pageCtx.viewModel.sections.rsvp?.personalizedAccess?.structuralVariantExplicit
-								? pageCtx.viewModel.sections.rsvp.personalizedAccess.structuralVariant
-								: undefined,
-						family: pageCtx.viewModel.sections.family?.structuralVariantExplicit
-							? pageCtx.viewModel.sections.family.structuralVariant
-							: undefined,
-						location: pageCtx.viewModel.sections.location?.structuralVariantExplicit
-							? pageCtx.viewModel.sections.location.structuralVariant
-							: undefined,
+							pageCtx.viewModel.sections.rsvp?.personalizedAccess?.structuralVariant,
+						family: pageCtx.viewModel.sections.family?.structuralVariant,
+						location: pageCtx.viewModel.sections.location?.structuralVariant,
+						itinerary: pageCtx.viewModel.sections.itinerary?.variant,
 					},
 					visualProfileId: pageCtx.viewModel.visualProfileId,
 				slug: invitationRecord?.slug ?? undefined,

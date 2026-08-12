@@ -62,7 +62,7 @@ describe('Romina local invitation content', () => {
 			hero: {
 				portrait?: unknown;
 				backgroundImage?: unknown;
-				structuralVariant?: string;
+				variant?: string;
 			};
 			location: {
 				ceremony: { coordinates: unknown; googleMapsUrl: string; appleMapsUrl: string };
@@ -72,7 +72,7 @@ describe('Romina local invitation content', () => {
 		};
 		expect(typedContent.hero.portrait).toBeUndefined();
 		expect(typedContent.hero.backgroundImage).toBeDefined();
-		expect(typedContent.hero.structuralVariant).toBe('split-cover');
+		expect(typedContent.hero.variant).toBe('split-cover');
 		expect(typedContent.location.ceremony.coordinates).toEqual({
 			lat: expect.any(Number),
 			lng: expect.any(Number),
@@ -121,12 +121,9 @@ describe('Romina local invitation content', () => {
 		expect(page.layout.image).toContain('/invitation-assets/');
 		expect(page.viewModel.hero).toMatchObject({
 			structuralVariant: 'split-cover',
-			structuralVariantExplicit: true,
 		});
 		expect(page.viewModel.sections.itinerary?.variant).toBe('standard');
-		expect(content.itinerary).toMatchObject({
-			presentation: { behavior: 'standard' },
-		});
+		expect(content.itinerary).toMatchObject({ variant: 'standard' });
 		expect(page.renderPlan).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({ type: 'section', section: 'gallery' }),

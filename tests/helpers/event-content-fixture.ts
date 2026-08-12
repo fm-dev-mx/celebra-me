@@ -1,15 +1,14 @@
 import type { CollectionEntry } from 'astro:content';
-import type { z } from 'zod';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 
-type EventContentSchemaInput = z.input<typeof eventContentSchema>;
-type RequiredEventContentFixtureFields = 'eventType' | 'title' | 'theme' | 'hero';
-
-export type EventContentFixtureInput = Pick<
-	EventContentSchemaInput,
-	RequiredEventContentFixtureFields
-> &
-	Partial<Omit<EventContentSchemaInput, RequiredEventContentFixtureFields>>;
+/** Compatibility fixtures intentionally exercise the schema input normalizer. */
+export type EventContentFixtureInput = {
+	eventType: string;
+	title: string;
+	theme: Record<string, unknown>;
+	hero: Record<string, unknown>;
+	[key: string]: unknown;
+};
 
 export function parseEventContentData(input: unknown): CollectionEntry<'event-demos'>['data'] {
 	return eventContentSchema.parse(input);

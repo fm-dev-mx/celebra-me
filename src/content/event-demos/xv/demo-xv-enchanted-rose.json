@@ -23,20 +23,6 @@
         "rsvp",
         "thankYou"
     ],
-    "sectionStyles": {
-        "location": {
-            "showFlourishes": true
-        },
-        "rsvp": {
-            "structuralVariant": "standard"
-        },
-        "thankYou": {
-            "structuralVariant": "editorial-back-cover"
-        },
-        "gifts": {
-            "structuralVariant": "standard"
-        }
-    },
     "hero": {
         "name": "Isabella Rose Valenzuela",
         "label": "Mis XV Años",
@@ -44,11 +30,11 @@
         "scrollLabel": "Continúa",
         "backgroundImage": "hero",
         "portrait": "portrait",
-        "structuralVariant": "standard",
         "focalPoint": "50% 32%",
         "focalPointMobile": "50% 32%",
         "focalPointTablet": "50% 24%",
-        "focalPointDesktop": "50% 21%"
+        "focalPointDesktop": "50% 21%",
+        "variant": "standard"
     },
     "location": {
         "introEyebrow": "Querétaro",
@@ -85,7 +71,11 @@
                 "styleVariant": "default",
                 "text": "Favor de confirmar asistencia <strong>antes del 6 de noviembre de 2027</strong>."
             }
-        ]
+        ],
+        "variant": "standard",
+        "presentationOptions": {
+            "showFlourishes": true
+        }
     },
     "family": {
         "parents": {
@@ -112,7 +102,8 @@
                 "name": "Gabriel Montero López",
                 "role": "Padrino"
             }
-        ]
+        ],
+        "variant": "standard"
     },
     "gallery": {
         "variant": "feature-mosaic",
@@ -151,7 +142,8 @@
                 "title": "Sobre de felicitación",
                 "text": "Habrá un espacio discreto para sobres durante la recepción."
             }
-        ]
+        ],
+        "variant": "standard"
     },
     "rsvp": {
         "title": "Confirme su asistencia",
@@ -161,8 +153,9 @@
         "confirmationMessage": "Gracias por confirmar. Será una alegría recibirles en esta noche especial.",
         "confirmationMode": "api",
         "personalizedAccess": {
-            "structuralVariant": "ornamented"
-        }
+            "variant": "ornamented"
+        },
+        "variant": "standard"
     },
     "quote": {
         "text": "Entre rosas y luz de velas, comienza una noche que guardaré para siempre.",
@@ -172,13 +165,11 @@
         "message": "Gracias por compartir esta noche. Su presencia hará que mis XV años florezcan como un recuerdo lleno de amor y gratitud.",
         "closingName": "Isabella Rose Valenzuela",
         "image": "thankYouPortrait",
-        "focalPoint": "50% 30%"
+        "focalPoint": "50% 30%",
+        "variant": "editorial-back-cover"
     },
     "itinerary": {
         "title": "Programa de la gala",
-        "presentation": {
-            "behavior": "standard"
-        },
         "items": [
             {
                 "iconName": "Church",
@@ -204,7 +195,8 @@
                 "time": "22:00",
                 "description": "Cena, baile y cierre de la noche."
             }
-        ]
+        ],
+        "variant": "standard"
     },
     "countdown": {
         "title": "La gala comienza en",

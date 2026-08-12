@@ -43,14 +43,11 @@ export default function ItineraryEditor({ value, onChange }: Props) {
 				<label className="invitation-editor__field">
 					<span>Presentación</span>
 					<select
-						value={value.presentation?.behavior ?? 'standard'}
+						value={value.variant ?? 'standard'}
 						onChange={(event) =>
 							onChange({
 								...value,
-								presentation: {
-									...value.presentation,
-									behavior: event.target.value as 'standard' | 'timeline-paper',
-								},
+								variant: event.target.value as 'standard' | 'timeline-paper',
 							})
 						}
 					>

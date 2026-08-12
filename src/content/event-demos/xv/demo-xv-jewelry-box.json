@@ -9,12 +9,6 @@
         "fontFamily": "serif",
         "preset": "jewelry-box"
     },
-    "sectionStyles": {
-        "location": {
-            "showFlourishes": true
-        },
-        "rsvp": {}
-    },
     "hero": {
         "name": "Lucía García Pérez",
         "label": "Mis XV Años",
@@ -22,7 +16,8 @@
         "backgroundImage": "hero",
         "portrait": "portrait",
         "focalPoint": "50% 40%",
-        "focalPointMobile": "50% 35%"
+        "focalPointMobile": "50% 35%",
+        "variant": "standard"
     },
     "location": {
         "introEyebrow": "Monterrey nos espera",
@@ -73,7 +68,11 @@
                 "styleVariant": "default",
                 "text": "Celebración sin niños."
             }
-        ]
+        ],
+        "variant": "standard",
+        "presentationOptions": {
+            "showFlourishes": true
+        }
     },
     "family": {
         "parents": {
@@ -98,7 +97,8 @@
             "parentsTitle": "Con la bendición de mis padres",
             "godparentsTitle": "Padrinos",
             "sectionMessage": "Con la bendición de sus padres y padrinos, Lucía comparte esta nueva etapa con gratitud y emoción."
-        }
+        },
+        "variant": "standard"
     },
     "gallery": {
         "eyebrow": "Retratos de una nueva etapa",
@@ -147,7 +147,8 @@
                 "title": "Lluvia de Sobres",
                 "text": "El día del evento habrá un buzón discreto para quienes prefieran compartir un sobre."
             }
-        ]
+        ],
+        "variant": "standard"
     },
     "rsvp": {
         "title": "Confirme su asistencia",
@@ -160,6 +161,10 @@
             "phone": "5218112345678",
             "confirmedTemplate": "Hola, soy {name}. Ya registré mi confirmación para la celebración de Lucía. Asistiremos {guestCount} persona(s).",
             "declinedTemplate": "Hola, soy {name}. Ya registré mi respuesta para la celebración de Lucía, pero no podré asistir."
+        },
+        "variant": "standard",
+        "personalizedAccess": {
+            "variant": "standard"
         }
     },
     "quote": {
@@ -170,7 +175,8 @@
         "message": "Gracias por ser parte de este momento tan especial en mi vida. Su presencia y cariño hacen de este día algo inolvidable. Los espero con todo mi corazón para celebrar juntos.",
         "closingName": "Lucía García",
         "image": "signature",
-        "focalPoint": "50% 50%"
+        "focalPoint": "50% 50%",
+        "variant": "standard"
     },
     "music": {
         "url": "https://pub-651602ccdef14f40bd29dbd4e02c31da.r2.dev/Only-LeeHi.MP3",
@@ -179,9 +185,6 @@
     },
     "itinerary": {
         "title": "Programa de la noche",
-        "presentation": {
-            "behavior": "standard"
-        },
         "items": [
             {
                 "iconName": "Church",
@@ -219,7 +222,8 @@
                 "time": "00:30",
                 "description": "Música y alegría hasta el amanecer."
             }
-        ]
+        ],
+        "variant": "standard"
     },
     "countdown": {
         "title": "La noche más especial comienza en",

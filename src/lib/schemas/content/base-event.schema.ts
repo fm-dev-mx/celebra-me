@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { envelopeSchema } from '@/lib/schemas/content/envelope.schema';
 import { heroSchema } from '@/lib/schemas/content/hero.schema';
 import { gallerySchema } from '@/lib/schemas/content/gallery.schema';
@@ -17,8 +18,9 @@ import {
 	thankYouSchema,
 } from '@/lib/schemas/content/shared.schema';
 import { sectionStylesSchema } from '@/lib/schemas/content/section-styles.schema';
+import { normalizeInvitationVariantInput } from '@/lib/invitation/variant-normalization';
 
-export const eventContentSchema = baseEventFieldsSchema.extend({
+export const canonicalEventContentSchema = baseEventFieldsSchema.extend({
 	sectionStyles: sectionStylesSchema,
 	hero: heroSchema,
 	location: locationSchema.optional(),
@@ -36,3 +38,8 @@ export const eventContentSchema = baseEventFieldsSchema.extend({
 	interludes: interludesSchema,
 	sharing: sharingSchema,
 });
+
+export const eventContentSchema = z.preprocess(
+	normalizeInvitationVariantInput,
+	canonicalEventContentSchema,
+);

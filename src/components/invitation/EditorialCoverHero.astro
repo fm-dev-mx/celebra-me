@@ -1,8 +1,10 @@
 ---
-// src/components/invitation/EditorialMagazineHero.astro
+// Section-owned renderer for the semantic `editorial-cover` Hero variant.
 import { Image, getImage } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
+import type { HeroStructuralVariant } from '@/lib/invitation/structural-variants';
+import type { ThemePreset } from '@/lib/theme/theme-contract';
 
 interface Props {
 	name: string;
@@ -16,8 +18,8 @@ interface Props {
 	backgroundImageDesktop?: { src: string };
 	backgroundImageMobile?: ImageMetadata | ImageAsset;
 	portrait?: ImageMetadata | ImageAsset;
-	variant?: string;
-	structuralVariant?: string;
+	variant?: ThemePreset;
+	structuralVariant?: HeroStructuralVariant;
 	focalPoint?: string;
 	focalPointMobile?: string;
 	focalPointTablet?: string;
@@ -104,7 +106,7 @@ const fpDesktop = focalPointDesktop || fpDefault;
 <section
 	id="inicio"
 	class="invitation-hero"
-	data-variant={variant ?? 'editorial-magazine'}
+	data-variant={variant}
 	data-structural-variant={structuralVariant ?? 'editorial-cover'}
 	data-screenshot="invitation-open-hero"
 	data-screenshot-section="hero"

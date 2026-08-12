@@ -1,71 +1,105 @@
+import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import {
-	resolveFamilyStructuralVariant,
-	resolveGalleryLayoutVariant,
-	resolveGalleryVisualVariant,
-	resolveGiftsStructuralVariant,
-	resolveHeroStructuralVariant,
-	resolveLocationStructuralVariant,
-	resolvePersonalizedAccessStructuralVariant,
-	resolveRsvpStructuralVariant,
-	resolveThankYouStructuralVariant,
+	FAMILY_STRUCTURAL_VARIANTS,
+	GALLERY_LAYOUT_VARIANTS,
+	GIFTS_STRUCTURAL_VARIANTS,
+	HERO_STRUCTURAL_VARIANTS,
+	LOCATION_STRUCTURAL_VARIANTS,
+	PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS,
+	RSVP_STRUCTURAL_VARIANTS,
+	THANK_YOU_STRUCTURAL_VARIANTS,
 } from '@/lib/invitation/structural-variants';
 
+const baseInput = {
+	eventType: 'xv',
+	title: 'Variant contract fixture',
+	isDemo: true,
+	theme: { preset: 'jewelry-box' },
+	hero: {
+		name: 'Fixture',
+		date: '2027-01-01T18:00:00.000Z',
+		backgroundImage: '/fixture.webp',
+		variant: 'standard',
+	},
+	quote: { text: 'Fixture quote' },
+};
+
 describe('section structural variant contracts', () => {
-	it('gives explicit section configuration precedence over defaults', () => {
-		expect(resolveHeroStructuralVariant('standard')).toBe('standard');
-		expect(resolveThankYouStructuralVariant('standard')).toBe('standard');
-		expect(resolveGiftsStructuralVariant('standard')).toBe('standard');
-		expect(resolveRsvpStructuralVariant('standard')).toBe('standard');
-		expect(resolvePersonalizedAccessStructuralVariant('ornamented')).toBe('ornamented');
-		expect(resolveFamilyStructuralVariant('split-groups')).toBe('split-groups');
-		expect(resolveLocationStructuralVariant('split-map')).toBe('split-map');
+	it('keeps section-owned vocabularies explicit and semantic', () => {
+		expect(HERO_STRUCTURAL_VARIANTS).toEqual(['standard', 'editorial-cover', 'split-cover']);
+		expect(THANK_YOU_STRUCTURAL_VARIANTS).toContain('editorial-back-cover');
+		expect(GIFTS_STRUCTURAL_VARIANTS).toContain('editorial-catalog');
+		expect(RSVP_STRUCTURAL_VARIANTS).toContain('editorial-press-pass');
+		expect(PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS).toContain('editorial-pass');
+		expect(FAMILY_STRUCTURAL_VARIANTS).toContain('split-groups');
+		expect(LOCATION_STRUCTURAL_VARIANTS).toContain('split-map');
+		expect(GALLERY_LAYOUT_VARIANTS).toContain('magazine-spread');
 	});
 
-	it('keeps explicit structural selections independent from active theme contract', () => {
-		expect(resolveHeroStructuralVariant('editorial-cover')).toBe('editorial-cover');
-		expect(resolveHeroStructuralVariant('split-cover')).toBe('split-cover');
-		expect(resolveThankYouStructuralVariant('full-bleed-photo')).toBe('full-bleed-photo');
-		expect(resolveGiftsStructuralVariant('editorial-catalog')).toBe('editorial-catalog');
-		expect(resolveRsvpStructuralVariant('editorial-press-pass')).toBe('editorial-press-pass');
-		expect(resolvePersonalizedAccessStructuralVariant('editorial-pass')).toBe(
-			'editorial-pass',
-		);
-		expect(resolveGalleryLayoutVariant('magazine-spread')).toBe('magazine-spread');
-		expect(resolveFamilyStructuralVariant('split-groups')).toBe('split-groups');
-		expect(resolveLocationStructuralVariant('split-map')).toBe('split-map');
+	it('rejects an unknown canonical variant instead of silently falling back', () => {
+		const result = eventContentSchema.safeParse({
+			...baseInput,
+			hero: { ...baseInput.hero, variant: 'not-a-variant' },
+		});
+
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			expect(result.error.issues).toEqual(
+				expect.arrayContaining([expect.objectContaining({ path: ['hero', 'variant'] })]),
+			);
+		}
 	});
 
-	it('defaults omitted or invalid selectors to the canonical standard path', () => {
-		expect(resolveHeroStructuralVariant('not-a-variant')).toBe('standard');
-		expect(resolveHeroStructuralVariant(undefined)).toBe('standard');
-		expect(resolveThankYouStructuralVariant(undefined)).toBe('standard');
-		expect(resolveGiftsStructuralVariant(undefined)).toBe('standard');
-		expect(resolveRsvpStructuralVariant(undefined)).toBe('standard');
-		expect(resolvePersonalizedAccessStructuralVariant(undefined)).toBe('standard');
-		expect(resolveGalleryLayoutVariant('not-a-variant')).toBe('uniform-grid');
-		expect(resolveFamilyStructuralVariant(undefined)).toBe('standard');
-		expect(resolveFamilyStructuralVariant('not-a-variant')).toBe('standard');
-		expect(resolveLocationStructuralVariant(undefined)).toBe('standard');
-		expect(resolveLocationStructuralVariant('not-a-variant')).toBe('standard');
+	it('rejects canonical variants whose required section data is incompatible', () => {
+		const familyResult = eventContentSchema.safeParse({
+			...baseInput,
+			family: {
+				variant: 'split-groups',
+				groups: [{ title: 'Only one group', items: [{ name: 'Person' }] }],
+			},
+		});
+		const locationResult = eventContentSchema.safeParse({
+			...baseInput,
+			location: {
+				variant: 'split-map',
+				ceremony: {
+					venueEvent: 'Ceremony',
+					venueName: 'Venue',
+					address: 'Address',
+					date: '2027-01-01',
+					time: '18:00',
+				},
+			},
+		});
+
+		expect(familyResult.success).toBe(false);
+		expect(locationResult.success).toBe(false);
 	});
 
-	it('keeps the single → single-keepsake gallery alias and ignores theme-named layout inference', () => {
-		expect(resolveGalleryLayoutVariant(undefined, 'editorial-magazine')).toBe('uniform-grid');
-		expect(resolveGalleryLayoutVariant(undefined, 'celestial-blue')).toBe('uniform-grid');
-		expect(resolveGalleryLayoutVariant(undefined, 'single')).toBe('single-keepsake');
-		expect(resolveGalleryLayoutVariant('single')).toBe('single-keepsake');
-		expect(resolveGalleryLayoutVariant(undefined, 'jewelry-box-wedding')).toBe('uniform-grid');
-		expect(resolveGalleryLayoutVariant('uniform-grid', 'editorial-magazine')).toBe(
-			'uniform-grid',
-		);
-		expect(resolveGalleryLayoutVariant('index-choreography', 'celestial-blue')).toBe(
-			'index-choreography',
-		);
-	});
+	it('normalizes documented legacy aliases once at schema ingress', () => {
+		const result = eventContentSchema.parse({
+			...baseInput,
+			theme: { preset: 'editorial-magazine' },
+			hero: {
+				...baseInput.hero,
+				variant: 'editorial-magazine',
+				structuralVariant: 'editorial-cover',
+			},
+			gallery: {
+				variant: 'single',
+				items: [{ image: '/fixture.webp' }],
+			},
+			itinerary: {
+				presentation: { behavior: 'timeline-paper' },
+				items: [{ iconName: 'Calendar', label: 'Evento', time: '18:00' }],
+			},
+		});
 
-	it('keeps the single-keepsake visual skin compatible with the single alias', () => {
-		expect(resolveGalleryVisualVariant('single-keepsake', 'jewelry-box-wedding')).toBe(
-			'single',
-		);
+		expect(result.hero.variant).toBe('editorial-cover');
+		expect(result.hero.visualVariant).toBe('editorial-magazine');
+		expect(result.gallery?.variant).toBe('single-keepsake');
+		expect(result.itinerary?.variant).toBe('timeline-paper');
+		expect(result.hero).not.toHaveProperty('structuralVariant');
+		expect(result.itinerary).not.toHaveProperty('presentation');
 	});
 });

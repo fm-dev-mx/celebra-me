@@ -7,18 +7,13 @@
         "fontFamily": "serif",
         "preset": "jewelry-box"
     },
-    "sectionStyles": {
-        "location": {
-            "showFlourishes": true
-        },
-        "rsvp": {}
-    },
     "hero": {
         "name": "Nombre de la Festejada",
         "label": "Mis XV Años",
         "date": "2026-11-21T01:00:00.000Z",
         "backgroundImage": "https://images.unsplash.com/photo-1469371670807-013ccf25f16a?auto=format&fit=crop&w=1920&q=80",
-        "portrait": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80"
+        "portrait": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80",
+        "variant": "standard"
     },
     "location": {
         "ceremony": {
@@ -45,7 +40,11 @@
                 "styleVariant": "reserved",
                 "text": "El color de la festejada está reservado."
             }
-        ]
+        ],
+        "variant": "standard",
+        "presentationOptions": {
+            "showFlourishes": true
+        }
     },
     "gallery": {
         "title": "Galería",
@@ -71,6 +70,10 @@
             "phone": "5210000000000",
             "confirmedTemplate": "Hola, soy {name}. Confirmo mi asistencia a {title}. Asistiremos {guestCount} persona(s).",
             "declinedTemplate": "Hola, soy {name}. Lamentablemente no podré asistir a {title}."
+        },
+        "variant": "standard",
+        "personalizedAccess": {
+            "variant": "standard"
         }
     },
     "quote": {
@@ -80,13 +83,11 @@
     "thankYou": {
         "message": "Gracias por acompañarme en este día inolvidable.",
         "closingName": "Nombre de la Festejada",
-        "image": "https://images.unsplash.com/photo-1601412436009-d964bd02edbc?auto=format&fit=crop&w=800&q=80"
+        "image": "https://images.unsplash.com/photo-1601412436009-d964bd02edbc?auto=format&fit=crop&w=800&q=80",
+        "variant": "standard"
     },
     "itinerary": {
         "title": "Itinerario",
-        "presentation": {
-            "behavior": "standard"
-        },
         "items": [
             {
                 "iconName": "Church",
@@ -98,7 +99,8 @@
                 "label": "Recepción",
                 "time": "9:00 PM"
             }
-        ]
+        ],
+        "variant": "standard"
     },
     "gifts": {
         "title": "Mesa de Regalos",
@@ -108,7 +110,8 @@
                 "title": "Lluvia de Sobres",
                 "text": "Tu presencia es lo más importante para nosotros."
             }
-        ]
+        ],
+        "variant": "standard"
     },
     "countdown": {
         "title": "¡Cada día falta menos!",

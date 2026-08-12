@@ -5,7 +5,7 @@ import { expect, test, type Page } from '@playwright/test';
 import * as sass from 'sass-embedded';
 
 /**
- * Goal B.1 — non-persisted portability harness.
+ * Non-persisted portability harness.
  *
  * Uses existing demo-xv-jewelry-box content (non-Romina / non-Alba theme jewelry-box).
  * Applies only the canonical structuralVariant marker + compiled canonical structural CSS.
@@ -13,7 +13,12 @@ import * as sass from 'sass-embedded';
  */
 
 const DEMO_PATH = '/xv/demo-xv-jewelry-box?skipEnvelope=true';
-const ARTIFACT_ROOT = path.join(process.cwd(), 'test-results', 'structural-variant-portability');
+const ARTIFACT_ROOT = path.join(
+	process.cwd(),
+	'output',
+	'playwright',
+	'structural-variant-portability',
+);
 
 function compileStructuralPartial(relativePath: string): string {
 	const file = path.resolve(process.cwd(), relativePath);
@@ -46,7 +51,7 @@ async function assertNoOriginStylesheets(page: Page) {
 	expect(hrefs.join('\n')).not.toMatch(/romina-rios-chaparro|alba-rosa-quinonez/i);
 }
 
-test.describe('Goal B.1 non-origin structural variant portability', () => {
+test.describe('non-origin structural variant portability', () => {
 	test('Hero split-cover renders on jewelry-box demo without Romina profile', async ({
 		page,
 	}) => {

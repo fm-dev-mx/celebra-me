@@ -23,7 +23,6 @@ const { lat, lng, zoom = 15, title, mapStyle = 'dark', variant = 'structured' } 
 const isRustic =
 	mapStyle === 'rustic' ||
 	variant === 'premiere-floral' ||
-	variant === 'romina-rios-chaparro' ||
 	variant === 'luxury-hacienda';
 
 let tileGrid: Array<{ x: number; y: number; url: string }> = [];

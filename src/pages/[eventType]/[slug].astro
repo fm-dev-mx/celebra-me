@@ -185,28 +185,15 @@ const activeSectionCssUrls =
 					footerVariant: page.footerVariant,
 					galleryVariant: viewModel.sections.gallery?.variant,
 					structuralVariants: {
-						hero: viewModel.hero.structuralVariantExplicit
-							? viewModel.hero.structuralVariant
-							: undefined,
-						thankYou: viewModel.sections.thankYou?.structuralVariantExplicit
-							? viewModel.sections.thankYou.structuralVariant
-							: undefined,
-						gifts: viewModel.sections.gifts?.structuralVariantExplicit
-							? viewModel.sections.gifts.structuralVariant
-							: undefined,
-						rsvp: viewModel.sections.rsvp?.structuralVariantExplicit
-							? viewModel.sections.rsvp.structuralVariant
-							: undefined,
+						hero: viewModel.hero.structuralVariant,
+						thankYou: viewModel.sections.thankYou?.structuralVariant,
+						gifts: viewModel.sections.gifts?.structuralVariant,
+						rsvp: viewModel.sections.rsvp?.structuralVariant,
 						personalizedAccess:
-							viewModel.sections.rsvp?.personalizedAccess?.structuralVariantExplicit
-								? viewModel.sections.rsvp.personalizedAccess.structuralVariant
-								: undefined,
-						family: viewModel.sections.family?.structuralVariantExplicit
-							? viewModel.sections.family.structuralVariant
-							: undefined,
-						location: viewModel.sections.location?.structuralVariantExplicit
-							? viewModel.sections.location.structuralVariant
-							: undefined,
+							viewModel.sections.rsvp?.personalizedAccess?.structuralVariant,
+						family: viewModel.sections.family?.structuralVariant,
+						location: viewModel.sections.location?.structuralVariant,
+						itinerary: viewModel.sections.itinerary?.variant,
 					},
 				visualProfileId: viewModel.visualProfileId,
 				slug,

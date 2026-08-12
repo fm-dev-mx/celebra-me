@@ -34,6 +34,7 @@ const confirmedContext = {
 };
 
 const protectedLocation = {
+	structuralVariant: 'standard' as const,
 	visibility: 'after-rsvp' as const,
 	introHeading: 'Ubicación',
 	ceremony: {
@@ -59,6 +60,7 @@ beforeEach(() => {
 			title: 'Gated Location Test Event',
 			theme: { preset: 'angelic-presence', themeClass: 'theme-preset--angelic-presence' },
 			hero: {
+				structuralVariant: 'standard',
 				name: 'Test Event',
 				label: 'Test Event',
 				date: '2026-08-01T20:00:00.000Z',
@@ -95,6 +97,7 @@ describe('resolveGatedLocationPayload', () => {
 				title: 'Primera Comunión de Luna y Estrella',
 				theme: { preset: 'angelic-presence', themeClass: 'theme-preset--angelic-presence' },
 				hero: {
+					structuralVariant: 'standard',
 					name: 'Luna y Estrella',
 					label: 'Primera Comunión',
 					date: '2026-08-01T20:00:00.000Z',

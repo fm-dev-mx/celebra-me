@@ -4,6 +4,7 @@ import { rsvpApi } from '@/lib/client/rsvp-api';
 import type { LocationSection } from '@/lib/adapters/types';
 
 const mockLocation: LocationSection = {
+	structuralVariant: 'standard',
 	visibility: 'after-rsvp',
 	introHeading: 'Ubicación',
 	venues: [

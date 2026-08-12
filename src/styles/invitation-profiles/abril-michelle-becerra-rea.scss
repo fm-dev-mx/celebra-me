@@ -1,8 +1,7 @@
 @use '../global/mixins' as mixins;
 @use '../tokens' as tokens;
 
-// Abril uses the behavior-named timeline-paper itinerary with warm profile tokens.
-@use '../themes/sections/itinerary/timeline-paper' as itinerary-timeline-paper;
+// Abril supplies warm tokens for the section-owned timeline-paper itinerary.
 @use '@fontsource-variable/cormorant-garamond/index.css' as cormorant-garamond;
 @use '@fontsource-variable/cormorant-garamond/wght-italic.css' as cormorant-garamond-italic;
 @use '@fontsource-variable/bodoni-moda/wght-italic.css' as bodoni-moda-italic;
@@ -179,7 +178,7 @@ html:has(.event--abril-michelle-becerra-rea) body {
 	--theme-image-filter-gallery: saturate(1.02) contrast(1.02) brightness(1.01);
 
 	// Celestial program: demo-xv-celestial-blue parity (style + colors); Bodoni watermark only.
-	.itinerary[data-variant='timeline-paper'] {
+	.itinerary[data-structural-variant='timeline-paper'] {
 		--itinerary-paper-white: rgb(253 251 247);
 		--itinerary-cream: rgb(245 241 230);
 
@@ -1016,7 +1015,7 @@ html:has(.event--abril-michelle-becerra-rea) body {
 	}
 
 	// Non-paper fallback only — timeline-paper owns its paper gradient above.
-	.itinerary:not([data-variant='timeline-paper']) {
+	.itinerary:not([data-structural-variant='timeline-paper']) {
 		--itinerary-bg:
 			radial-gradient(
 				ellipse 100% var(--abril-transition-blend-depth) at 78% 0%,

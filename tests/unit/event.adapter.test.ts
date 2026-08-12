@@ -121,7 +121,6 @@ describe('adaptEvent', () => {
 		expect(viewModel.sections.location?.ceremony?.venueName).toBeDefined();
 		expect(viewModel.sections.location?.variant).toBe('jewelry-box');
 		expect(viewModel.sections.gallery?.variant).toBe('feature-mosaic');
-		expect(viewModel.sections.gallery?.structuralVariantExplicit).toBe(true);
 		expect(viewModel.hero.backgroundImage.src).toEqual(expect.any(String));
 	});
 
@@ -148,7 +147,6 @@ describe('adaptEvent', () => {
 		const viewModel = adaptEvent(event);
 
 		expect(viewModel.sections.gallery?.variant).toBe('uniform-grid');
-		expect(viewModel.sections.gallery?.structuralVariantExplicit).toBe(true);
 	});
 
 	it('passes location intro copy through to the invitation view model', () => {
@@ -172,9 +170,8 @@ describe('adaptEvent', () => {
 			introEyebrow: 'EL CAMINO AL PALACIO',
 			introHeading: 'Ubicación',
 			introLede: 'Guarda la ruta y llega con calma.',
-		});
 	});
-
+});
 	it('supports normalized object asset references from the schema layer', () => {
 		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
 		const event = {

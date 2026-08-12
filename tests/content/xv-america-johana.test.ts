@@ -22,6 +22,7 @@ type PersonalizedAccessDescriptor = Extract<
 >;
 
 const expectedPersonalizedAccess = {
+	variant: 'standard',
 	title: 'Pase de acceso',
 	subtitle: 'Este pase muestra los accesos asignados para ingresar al evento.',
 	footerText: 'Acceso válido para adultos y niños. Preséntalo al llegar.',
@@ -202,7 +203,8 @@ describe('XV America Johana client invitation preparation', () => {
 		};
 		const viewModelNoCustom = adaptEvent({
 			id: 'event-published/xv/america-johana',
-			data: mockDataNoCustomCopy,
+			collection: 'event-templates',
+			data: eventContentSchema.parse(mockDataNoCustomCopy),
 		} as EventContentEntry);
 		const pageContextNoCustom = buildPageContextFromViewModel({
 			viewModel: viewModelNoCustom,

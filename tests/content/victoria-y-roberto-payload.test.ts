@@ -161,7 +161,7 @@ describe('Boda Victoria y Roberto provision contract', () => {
 		expect(quote.author.trim()).not.toBe('');
 
 		const location = content.location as {
-			structuralVariant?: string;
+			variant?: string;
 			venues?: Array<{
 				type: string;
 				venueName: string;
@@ -170,7 +170,7 @@ describe('Boda Victoria y Roberto provision contract', () => {
 				mapUrl?: string;
 			}>;
 		};
-		expect(location.structuralVariant).toBe('standard');
+		expect(location.variant).toBe('standard');
 		expect(location.venues).toEqual(expect.any(Array));
 		expect(location.venues?.length).toBeGreaterThan(0);
 		expect(
@@ -186,10 +186,10 @@ describe('Boda Victoria y Roberto provision contract', () => {
 		).toBe(true);
 
 		const itinerary = content.itinerary as {
-			presentation?: { behavior?: string };
+			variant?: string;
 			items: Array<{ label: string; time: string }>;
 		};
-		expect(itinerary.presentation?.behavior).toBe('standard');
+		expect(itinerary.variant).toBe('standard');
 		expect(itinerary.items).toEqual(expect.any(Array));
 		expect(itinerary.items.length).toBeGreaterThan(0);
 		expect(
@@ -204,13 +204,13 @@ describe('Boda Victoria y Roberto provision contract', () => {
 
 		const family = content.family as {
 			presentation?: string;
-			structuralVariant?: string;
+			variant?: string;
 			featuredImage?: unknown;
 			groups?: Array<{ title: string; items: Array<{ name: string }> }>;
 			godparents?: Array<{ name: string; role?: string }>;
 		};
 		expect(family.presentation).toBe('text-only');
-		expect(family.structuralVariant).toBe('split-groups');
+		expect(family.variant).toBe('split-groups');
 		expect(family.featuredImage).toBeUndefined();
 		expect(family.groups).toEqual(expect.any(Array));
 		expect(
@@ -255,12 +255,12 @@ describe('Boda Victoria y Roberto provision contract', () => {
 			confirmationMode?: string;
 			accessMode?: string;
 			whatsappConfig?: unknown;
-			personalizedAccess?: { noteText?: string; structuralVariant?: string };
+			personalizedAccess?: { noteText?: string; variant?: string };
 		};
 		expect(rsvp.confirmationMode).toBe('api');
 		expect(rsvp.accessMode).toBe('hybrid');
 		expect(rsvp.whatsappConfig).toBeUndefined();
-		expect(rsvp.personalizedAccess?.structuralVariant).toBe('ornamented');
+		expect(rsvp.personalizedAccess?.variant).toBe('ornamented');
 		expect(rsvp.personalizedAccess?.noteText).toContain('{count}');
 
 		const interludes = content.interludes as Array<{

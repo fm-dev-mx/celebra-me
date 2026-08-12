@@ -6,7 +6,7 @@ import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { ThemePreset } from '@/lib/theme/theme-contract';
 import type { HeroStructuralVariant } from '@/lib/invitation/structural-variants';
 import '@/styles/invitation/_hero.scss';
-import EditorialMagazineHero from './EditorialMagazineHero.astro';
+import EditorialCoverHero from './EditorialCoverHero.astro';
 
 interface Props {
 	name: string;
@@ -52,7 +52,7 @@ const {
 	highPriority = true,
 } = Astro.props;
 
-const isEditorialMagazine = structuralVariant === 'editorial-cover';
+const isEditorialCover = structuralVariant === 'editorial-cover';
 
 let displayLabel: string | undefined;
 let ageLockupMatch: RegExpMatchArray | null = null;
@@ -68,7 +68,7 @@ let fpMobile = fpDefault;
 let fpTablet = fpDefault;
 let fpDesktop = fpDefault;
 
-if (!isEditorialMagazine) {
+if (!isEditorialCover) {
 	displayLabel =
 		label &&
 		(label.toLowerCase().trim() === 'xv edition' || label.toLowerCase().trim() === 'xv edición')
@@ -125,8 +125,8 @@ if (!isEditorialMagazine) {
 ---
 
 {
-	isEditorialMagazine ? (
-	<EditorialMagazineHero {...Astro.props} />
+	isEditorialCover ? (
+	<EditorialCoverHero {...Astro.props} />
 	) : (
 	<section
 		id="inicio"

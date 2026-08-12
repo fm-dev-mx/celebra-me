@@ -124,6 +124,7 @@ describe('Goal C — presentation options', () => {
 		it('allows legend-only without catalog items and rejects items with legend-only', () => {
 			expect(
 				giftsSchema.safeParse({
+					variant: 'standard',
 					title: 'Regalos',
 					subtitle: 'Su presencia es el mejor regalo.',
 					presentation: 'legend-only',
@@ -131,6 +132,7 @@ describe('Goal C — presentation options', () => {
 			).toBe(true);
 			expect(
 				giftsSchema.safeParse({
+					variant: 'standard',
 					presentation: 'legend-only',
 					items: [{ type: 'cash', title: 'Stub' }],
 				}).success,
@@ -238,7 +240,7 @@ describe('Goal C — presentation options', () => {
 			expect(gallery?.visualVariant).not.toBe('valentina-hernandez');
 
 			const canonical = readSource(
-				'src/styles/themes/sections/gallery/_editorial-magazine.scss',
+				'src/styles/themes/sections/gallery/_magazine-spread.scss',
 			);
 			const valentina = readSource('src/styles/invitation-profiles/valentina-hernandez.scss');
 			expect(canonical).toContain("data-mobile-browse='rail'");

@@ -191,14 +191,14 @@ describe('InvitationEditorSectionSchemas.gallery', () => {
 	it('accepts gallery with variant and presentation (premium layout)', () => {
 		const value = {
 			...BASE_GALLERY,
-			variant: 'single',
+			variant: 'single-keepsake',
 			presentation: 'pet-keepsake',
 		};
 
 		const result = InvitationEditorSectionSchemas.gallery.safeParse(value);
 		expect(result.success).toBe(true);
 		if (result.success) {
-			expect(result.data.variant).toBe('single');
+			expect(result.data.variant).toBe('single-keepsake');
 			expect(result.data.presentation).toBe('pet-keepsake');
 			expect(result.data.eyebrow).toBe('Recuerdos');
 		}

@@ -58,10 +58,9 @@ const venueEntrySchema = z.object({
 
 export type VenueEntryInput = z.infer<typeof venueEntrySchema>;
 
-export const locationSchema = z.object({
+const locationBaseSchema = z.object({
 	visibility: z.enum(['public', 'after-rsvp']).default('public'),
 	presentation: z.enum(LOCATION_PRESENTATIONS).optional(),
-	structuralVariant: z.enum(LOCATION_STRUCTURAL_VARIANTS).optional(),
 	presentationOptions: z
 		.object({
 			showFlourishes: z.boolean().optional(),
@@ -95,3 +94,24 @@ export const locationSchema = z.object({
 		)
 		.optional(),
 });
+
+export const locationSchema = z
+	.discriminatedUnion('variant', [
+		locationBaseSchema.extend({ variant: z.literal(LOCATION_STRUCTURAL_VARIANTS[0]) }),
+		locationBaseSchema.extend({ variant: z.literal(LOCATION_STRUCTURAL_VARIANTS[1]) }),
+	])
+	.superRefine((location, context) => {
+		if (location.variant !== 'split-map') return;
+		const venues = [
+			location.ceremony,
+			location.reception,
+			...(location.venues?.filter((venue) => venue.isVisible !== false) ?? []),
+		].filter(Boolean);
+		if (venues.some((venue) => venue?.coordinates || venue?.image)) return;
+		context.addIssue({
+			code: 'custom',
+			path: ['variant'],
+			message:
+				'location.variant=split-map requires at least one visible venue with coordinates or image media',
+		});
+	});

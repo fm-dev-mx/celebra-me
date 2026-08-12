@@ -1,6 +1,6 @@
 @use '../../../global/mixins' as mixins;
 
-.theme-preset--enchanted-rose .itinerary[data-variant='standard'] {
+.theme-preset--enchanted-rose .itinerary[data-structural-variant='standard'] {
 	--itinerary-line-color: rgb(var(--color-antique-gold-rgb) / 74%);
 	--itinerary-item-time-color: rgb(var(--color-candle-gold-rgb) / 84%);
 	--itinerary-item-label-color: rgb(var(--color-warm-ivory-rgb) / 94%);

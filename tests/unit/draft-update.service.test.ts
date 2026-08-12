@@ -143,8 +143,12 @@ describe('updateDraftContentByInvitation', () => {
 			content: {
 				title: 'Original Title',
 				description: 'Original Description',
-				hero: { name: 'Ana', label: 'XV Anos' },
-				location: { ceremony: { venueName: 'Iglesia' } },
+				hero: { name: 'Ana', label: 'XV Anos', variant: 'standard' },
+				location: {
+					ceremony: { venueName: 'Iglesia' },
+					reception: undefined,
+					variant: 'standard',
+				},
 			},
 		};
 		mockFindDraft.mockResolvedValue(draftWithFullContent);
@@ -162,8 +166,12 @@ describe('updateDraftContentByInvitation', () => {
 			content: {
 				title: 'Updated Title',
 				description: 'Original Description',
-				hero: { name: 'Ana', label: 'XV Anos' },
-				location: { ceremony: { venueName: 'Iglesia' } },
+				hero: { name: 'Ana', label: 'XV Anos', variant: 'standard' },
+				location: {
+					ceremony: { venueName: 'Iglesia' },
+					reception: undefined,
+					variant: 'standard',
+				},
 			},
 			status: 'draft',
 		});
@@ -179,8 +187,9 @@ describe('updateDraftContentByInvitation', () => {
 					label: 'XV Anos',
 					nickname: 'Anita',
 					date: '2027-11-20',
+					variant: 'standard',
 				},
-				family: { fatherName: 'Fernando', motherName: 'Maria' },
+				family: { fatherName: 'Fernando', motherName: 'Maria', variant: 'standard' },
 			},
 		};
 		mockFindDraft.mockResolvedValue(draftWithFullContent);
@@ -202,8 +211,9 @@ describe('updateDraftContentByInvitation', () => {
 					label: 'XV Anos',
 					nickname: 'Anita',
 					date: '2027-11-20',
+					variant: 'standard',
 				},
-				family: { fatherName: 'Fernando', motherName: 'Maria' },
+				family: { fatherName: 'Fernando', motherName: 'Maria', variant: 'standard' },
 			},
 			status: 'draft',
 		});
@@ -215,7 +225,7 @@ describe('updateDraftContentByInvitation', () => {
 			content: {
 				title: 'Original Title',
 				description: 'Original Description',
-				hero: { name: 'Ana' },
+				hero: { name: 'Ana', variant: 'standard' },
 			},
 		};
 		mockFindDraft.mockResolvedValue(draftWithFullContent);
@@ -233,7 +243,7 @@ describe('updateDraftContentByInvitation', () => {
 			content: {
 				title: 'Original Title',
 				description: 'Original Description',
-				hero: { name: 'Ana' },
+				hero: { name: 'Ana', variant: 'standard' },
 			},
 			status: 'draft',
 		});

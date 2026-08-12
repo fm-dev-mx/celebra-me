@@ -32,8 +32,8 @@ import {
 } from '../../scripts/provision/invitations/victoria-y-roberto.ts';
 
 /**
- * Goal 3 — consolidated content-level locks for managed invitations / fixtures.
- * Detailed payload suites remain authoritative; this file only pins the canonical
+ * Consolidated content-level locks for managed invitations / fixtures.
+ * Detailed payload suites remain authoritative; this file pins the canonical
  * structural/behavior contracts that must not regress after encapsulation.
  */
 
@@ -67,7 +67,7 @@ describe('canonical corpus structural/behavior contracts', () => {
 		const content = buildAlbaPublishedContent(
 			assetMapFromSpecs<AlbaAssetMap>(ALBA_ASSET_SPECS),
 		);
-		expect(content.location).toMatchObject({ structuralVariant: 'split-map' });
+		expect(content.location).toMatchObject({ variant: 'split-map' });
 		expect(content.countdown).toMatchObject({
 			presentationOptions: { visibleUnits: ['days'] },
 		});
@@ -87,10 +87,8 @@ describe('canonical corpus structural/behavior contracts', () => {
 		const content = buildRominaPublishedContent(
 			assetMapFromSpecs<RominaAssetMap>(ROMINA_ASSET_SPECS),
 		);
-		expect(content.hero).toMatchObject({ structuralVariant: 'split-cover' });
-		expect(content.itinerary).toMatchObject({
-			presentation: { behavior: 'standard' },
-		});
+		expect(content.hero).toMatchObject({ variant: 'split-cover' });
+		expect(content.itinerary).toMatchObject({ variant: 'standard' });
 
 		const viewModel = adaptEvent({
 			id: 'events/romina-rios-chaparro',
@@ -104,11 +102,9 @@ describe('canonical corpus structural/behavior contracts', () => {
 		const content = buildVictoriaPublishedContent(
 			assetMapFromSpecs<VictoriaAssetMap>(VICTORIA_ASSET_SPECS),
 		);
-		expect(content.itinerary).toMatchObject({
-			presentation: { behavior: 'standard' },
-		});
+		expect(content.itinerary).toMatchObject({ variant: 'standard' });
 		expect(content.rsvp).toMatchObject({
-			personalizedAccess: { structuralVariant: 'ornamented' },
+			personalizedAccess: { variant: 'ornamented' },
 		});
 		expect(content.gallery).toMatchObject({ variant: 'single-keepsake' });
 
@@ -125,7 +121,7 @@ describe('canonical corpus structural/behavior contracts', () => {
 		const content = buildDanielaPublishedContent(
 			assetMapFromSpecs<DanielaAssetMap>(DANIELA_ASSET_SPECS),
 		);
-		expect(content.family).toMatchObject({ structuralVariant: 'split-groups' });
+		expect(content.family).toMatchObject({ variant: 'split-groups' });
 		expect(content.gallery).toMatchObject({ variant: 'single-keepsake' });
 
 		const viewModel = adaptEvent({
@@ -140,9 +136,7 @@ describe('canonical corpus structural/behavior contracts', () => {
 		const content = buildAbrilPublishedContent(
 			assetMapFromSpecs<AbrilAssetMap>(ABRIL_ASSET_SPECS),
 		);
-		expect(content.itinerary).toMatchObject({
-			presentation: { behavior: 'timeline-paper' },
-		});
+		expect(content.itinerary).toMatchObject({ variant: 'timeline-paper' });
 
 		const viewModel = adaptEvent({
 			id: 'events/abril-michelle-becerra-rea',

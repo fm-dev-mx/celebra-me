@@ -2,8 +2,9 @@ import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { InvitationViewModel } from '@/lib/adapters/types';
 import {
 	resolveRenderPlanIntersection,
+	type InvitationComposition,
 	type RenderPlanIntersection,
-} from '@/lib/invitation/intersection-profiles';
+} from '@/lib/invitation/composition-contract';
 import { CONTENT_SECTION_KEYS, type ThemePreset } from '@/lib/theme/theme-contract';
 
 type RenderPlanMetadata = {
@@ -50,7 +51,7 @@ function appendSectionWithInterludes(
 	items.push({
 		type: 'section',
 		section,
-		intersection: resolveRenderPlanIntersection(viewModel.visualProfileId, section),
+		intersection: resolveRenderPlanIntersection(viewModel.composition, section),
 	});
 
 	for (const interlude of (viewModel.interludes ?? []).filter(
@@ -60,7 +61,7 @@ function appendSectionWithInterludes(
 			interludeToRenderItem(
 				interlude,
 				viewModel.theme.preset ?? DEFAULT_THEME_PRESET,
-				viewModel.visualProfileId,
+				viewModel.composition,
 			),
 		);
 	}
@@ -69,13 +70,13 @@ function appendSectionWithInterludes(
 function interludeToRenderItem(
 	interlude: NonNullable<InvitationViewModel['interludes']>[number],
 	themePreset: ThemePreset,
-	visualProfileId?: string,
+	composition?: InvitationComposition,
 ): InterludeRenderItem {
 	return {
 		type: 'interlude',
 		afterSection: interlude.afterSection,
 		intersection: resolveRenderPlanIntersection(
-			visualProfileId,
+			composition,
 			`interlude-after-${interlude.afterSection}`,
 		),
 		image: interlude.image,
@@ -108,7 +109,7 @@ export function buildInvitationRenderPlan(
 				items.push({
 					type: 'personalized-access',
 					intersection: resolveRenderPlanIntersection(
-						viewModel.visualProfileId,
+						viewModel.composition,
 						'personalized-access',
 					),
 				});
@@ -126,7 +127,7 @@ export function buildInvitationRenderPlan(
 				items.push({
 					type: 'personalized-access',
 					intersection: resolveRenderPlanIntersection(
-						viewModel.visualProfileId,
+						viewModel.composition,
 						'personalized-access',
 					),
 				});

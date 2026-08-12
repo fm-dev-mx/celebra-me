@@ -44,9 +44,9 @@ const {
 // The adapter resolves canonical/legacy Gallery layout values before this renderer.
 const structuralVariant = variant;
 const renderedVisualVariant = visualVariant ?? variant;
-const isEditorialMagazine = structuralVariant === 'magazine-spread';
+const isMagazineSpread = structuralVariant === 'magazine-spread';
 const resolvedMobileBrowse = mobileBrowse ?? 'stack';
-const usesMobileRail = isEditorialMagazine && resolvedMobileBrowse === 'rail';
+const usesMobileRail = isMagazineSpread && resolvedMobileBrowse === 'rail';
 
 if (!items || items.length === 0) return null;
 ---

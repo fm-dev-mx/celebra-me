@@ -8,6 +8,8 @@ import {
 } from '@/lib/theme/theme-contract';
 import { COLOR_TOKENS } from '@/lib/theme/color-tokens';
 import { UUID_PATTERN } from '@/lib/intake/constants';
+import { invitationCompositionSchema } from '@/lib/invitation/composition-contract';
+import { THANK_YOU_STRUCTURAL_VARIANTS } from '@/lib/invitation/structural-variants';
 
 const secureUrlSchema = z
 	.url()
@@ -115,6 +117,7 @@ export const quoteSchema = z
 
 export const thankYouSchema = z
 	.object({
+		variant: z.enum(THANK_YOU_STRUCTURAL_VARIANTS),
 		message: z.string(),
 		closingName: z.string(),
 		/** Footer closing phrase; falls back to product default when omitted. */
@@ -235,6 +238,7 @@ export const baseEventFieldsSchema = z.object({
 	theme: themeSchema,
 	eventTiming: eventTimingSchema,
 	sectionOrder: sectionOrderSchema,
+	composition: invitationCompositionSchema,
 	_assetSlug: z
 		.string()
 		.regex(

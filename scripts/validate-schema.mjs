@@ -9,28 +9,68 @@ const __dirname = path.dirname(__filename);
 const ERRORS = [];
 const WARNINGS = [];
 
-// Allow legacy section-specific variants beyond THEME_PRESETS. Behavior variants declared by the
-// theme contract are loaded separately below.
-const SECTION_SPECIFIC_VARIANTS = {
-	gallery: ['single'],
-};
-
-// Single source of truth: map section key → SCSS directory under themes/sections/
-const SECTION_DIRECTORIES = {
-	countdown: 'countdown',
-	location: 'location',
-	family: 'family',
-	gifts: 'gifts',
-	gallery: 'gallery',
-	thankYou: 'thank-you',
-	itinerary: 'itinerary',
+// Canonical structural contracts and their isolated SCSS ownership. Variants listed in
+// `baseOnly` intentionally use the shared renderer/base stylesheet and need no dedicated partial.
+const SECTION_CONTRACTS = {
+	hero: {
+		directory: 'hero',
+		source: 'src/lib/invitation/structural-variants.ts',
+		constName: 'HERO_STRUCTURAL_VARIANTS',
+		baseOnly: ['standard'],
+	},
+	family: {
+		directory: 'family',
+		source: 'src/lib/invitation/structural-variants.ts',
+		constName: 'FAMILY_STRUCTURAL_VARIANTS',
+		baseOnly: ['standard'],
+	},
+	location: {
+		directory: 'location',
+		source: 'src/lib/invitation/structural-variants.ts',
+		constName: 'LOCATION_STRUCTURAL_VARIANTS',
+		baseOnly: ['standard'],
+	},
+	gallery: {
+		directory: 'gallery',
+		source: 'src/lib/invitation/structural-variants.ts',
+		constName: 'GALLERY_LAYOUT_VARIANTS',
+		baseOnly: ['uniform-grid', 'single-keepsake'],
+	},
+	itinerary: {
+		directory: 'itinerary',
+		source: 'src/lib/invitation/itinerary-presentation.ts',
+		constName: 'ITINERARY_PRESENTATION_BEHAVIORS',
+		baseOnly: ['standard'],
+	},
+	gifts: {
+		directory: 'gifts',
+		source: 'src/lib/invitation/structural-variants.ts',
+		constName: 'GIFTS_STRUCTURAL_VARIANTS',
+		baseOnly: ['standard'],
+	},
+	rsvp: {
+		directory: 'rsvp',
+		source: 'src/lib/invitation/structural-variants.ts',
+		constName: 'RSVP_STRUCTURAL_VARIANTS',
+		baseOnly: ['standard'],
+	},
+	personalizedAccess: {
+		directory: 'personalized-access',
+		source: 'src/lib/invitation/structural-variants.ts',
+		constName: 'PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS',
+		baseOnly: ['standard', 'ornamented'],
+	},
+	thankYou: {
+		directory: 'thank-you',
+		source: 'src/lib/invitation/structural-variants.ts',
+		constName: 'THANK_YOU_STRUCTURAL_VARIANTS',
+		baseOnly: ['standard'],
+	},
 };
 
 function extractContractVariants() {
-	const contractPath = path.join(__dirname, '..', 'src', 'lib', 'theme', 'theme-contract.ts');
-	const content = fs.readFileSync(contractPath, 'utf8');
-
-	function parseArrayConst(constName) {
+	function parseArrayConst(source, constName) {
+		const content = fs.readFileSync(path.join(__dirname, '..', source), 'utf8');
 		const regex = new RegExp(
 			`export const ${constName}\\s*=\\s*\\[([\\s\\S]*?)\\]\\s*as const;`,
 		);
@@ -40,19 +80,9 @@ function extractContractVariants() {
 		return Array.from(match[1].matchAll(/'([^']+)'/g)).map((m) => m[1]);
 	}
 
-	const themeVariants = parseArrayConst('THEME_PRESETS');
-	const itineraryBehaviorVariants = parseArrayConst('ITINERARY_BEHAVIOR_VARIANTS');
 	const variants = {};
-	for (const key of Object.keys(SECTION_DIRECTORIES)) {
-		variants[key] = new Set(themeVariants);
-		if (SECTION_SPECIFIC_VARIANTS[key]) {
-			for (const v of SECTION_SPECIFIC_VARIANTS[key]) {
-				variants[key].add(v);
-			}
-		}
-		if (key === 'itinerary') {
-			for (const variant of itineraryBehaviorVariants) variants[key].add(variant);
-		}
+	for (const [key, contract] of Object.entries(SECTION_CONTRACTS)) {
+		variants[key] = new Set(parseArrayConst(contract.source, contract.constName));
 	}
 	return variants;
 }
@@ -66,31 +96,21 @@ function collectScssFiles(dir) {
 	});
 }
 
-function extractCSSVariants(contractVariants) {
+function extractCSSVariants() {
 	const themesDir = path.join(__dirname, '..', 'src', 'styles', 'themes', 'sections');
 	const variants = {};
 
-	for (const section of Object.keys(SECTION_DIRECTORIES)) {
+	for (const [section, contract] of Object.entries(SECTION_CONTRACTS)) {
 		variants[section] = new Set();
-		const files = collectScssFiles(path.join(themesDir, SECTION_DIRECTORIES[section]));
+		const files = collectScssFiles(path.join(themesDir, contract.directory));
 
 		for (const filePath of files) {
 			const content = fs.readFileSync(filePath, 'utf8');
 
-			const variantRegex = /\[data-variant=['"]([^'"]+)['"]\]/g;
+			const variantRegex = /\[data-structural-variant=['"]([^'"]+)['"]\]/g;
 			let match;
 			while ((match = variantRegex.exec(content)) !== null) {
 				variants[section].add(match[1]);
-			}
-
-			const variantPrefixRegex = /\[data-variant\^=['"]([^'"]+)['"]\]/g;
-			while ((match = variantPrefixRegex.exec(content)) !== null) {
-				const prefix = match[1];
-				for (const variant of contractVariants[section]) {
-					if (variant.startsWith(prefix)) {
-						variants[section].add(variant);
-					}
-				}
 			}
 		}
 	}
@@ -131,10 +151,10 @@ function main() {
 	console.log('================================');
 
 	const contractVariants = extractContractVariants();
-	const cssVariants = extractCSSVariants(contractVariants);
+	const cssVariants = extractCSSVariants();
 	const EXPECTED_FALLBACKS = [];
 
-	for (const section of Object.keys(SECTION_DIRECTORIES)) {
+	for (const [section, contract] of Object.entries(SECTION_CONTRACTS)) {
 		const contractSet = contractVariants[section];
 		const cssSet = cssVariants[section];
 
@@ -144,16 +164,14 @@ function main() {
 		);
 		console.log(`  CSS variants: ${Array.from(cssSet).sort().join(', ') || '(none)'}`);
 
-		const hasAnyCSSVariants = cssSet.size > 0;
-
 		for (const variant of contractSet) {
 			if (!cssSet.has(variant)) {
-				if (hasAnyCSSVariants) {
-					WARNINGS.push(`${section}: Contract variant '${variant}' not found in CSS`);
-				} else {
+				if (contract.baseOnly.includes(variant)) {
 					EXPECTED_FALLBACKS.push(
 						`${section}: Contract variant '${variant}' intentionally uses base section styles`,
 					);
+				} else {
+					WARNINGS.push(`${section}: Contract variant '${variant}' not found in CSS`);
 				}
 			}
 		}

@@ -426,7 +426,7 @@ describe('Event content schema (real contract)', () => {
 		expect(result.success).toBe(false);
 	});
 
-	it('supports hero portrait and variant as formal content fields', () => {
+	it('normalizes a legacy Hero visual variant into separate structural and visual fields', () => {
 		const result = eventSchema.safeParse(
 			createMinimalEvent({
 				hero: {
@@ -445,7 +445,8 @@ describe('Event content schema (real contract)', () => {
 			type: 'external',
 			src: 'https://example.com/portrait.jpg',
 		});
-		expect(result.data.hero.variant).toBe('editorial');
+		expect(result.data.hero.variant).toBe('standard');
+		expect(result.data.hero.visualVariant).toBe('editorial');
 	});
 
 	it('accepts grouped eventTiming fields', () => {
@@ -515,7 +516,7 @@ describe('Event content schema (real contract)', () => {
 		expect(result.data.interludes?.[0]?.height).toBe('medium');
 	});
 
-	it('preserves the single gallery variant for one-image editorial galleries', () => {
+	it('normalizes the legacy single Gallery alias for one-image editorial galleries', () => {
 		const result = eventSchema.safeParse(
 			createMinimalEvent({
 				gallery: {
@@ -529,7 +530,7 @@ describe('Event content schema (real contract)', () => {
 
 		expect(result.success).toBe(true);
 		if (!result.success) throw new Error('expected parse to succeed');
-		expect(result.data.gallery?.variant).toBe('single');
+		expect(result.data.gallery?.variant).toBe('single-keepsake');
 	});
 
 	it('rejects unsupported RSVP content fields instead of silently stripping them', () => {

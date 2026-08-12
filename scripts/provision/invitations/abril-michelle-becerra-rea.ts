@@ -170,11 +170,6 @@ export function buildAbrilPublishedContent(
 			timeZone: ABRIL_EVENT.timeZone,
 			startsAtUtc: ABRIL_EVENT.startsAtUtc,
 		},
-		sectionStyles: {
-			gifts: { structuralVariant: 'standard' },
-			rsvp: { structuralVariant: 'standard' },
-			thankYou: { structuralVariant: 'standard' },
-		},
 		sectionOrder: [
 			'quote',
 			'family',
@@ -187,6 +182,19 @@ export function buildAbrilPublishedContent(
 			'rsvp',
 			'thankYou',
 		],
+		composition: {
+			intersections: {
+				quote: { family: 'atmospheric-blend', source: 'hero' },
+				'interlude-after-quote': { family: 'overlap', source: 'quote' },
+				family: { family: 'atmospheric-blend', source: 'interlude-after-quote' },
+				countdown: { family: 'atmospheric-blend', source: 'family' },
+				location: { family: 'atmospheric-blend', source: 'countdown' },
+				'interlude-after-location': { family: 'overlap', source: 'location' },
+				itinerary: { family: 'atmospheric-blend', source: 'interlude-after-location' },
+				rsvp: { family: 'arch', source: 'gallery' },
+				thankYou: { family: 'atmospheric-blend', source: 'rsvp' },
+			},
+		},
 		_assetSlug: ABRIL_EVENT.assetSlug,
 		hero: {
 			name: 'Abril Michelle',
@@ -195,7 +203,7 @@ export function buildAbrilPublishedContent(
 			backgroundImage: assets['hero-desktop'],
 			backgroundImageMobile: assets['hero-mobile'],
 			backgroundImageDesktop: assets['hero-desktop'],
-			structuralVariant: 'standard',
+			variant: 'standard',
 			focalPoint: '50% 40%',
 			focalPointMobile: '50% 38%',
 			focalPointTablet: '50% 40%',
@@ -221,6 +229,7 @@ export function buildAbrilPublishedContent(
 			author: 'Abril Michelle',
 		},
 		family: {
+			variant: 'standard',
 			parents: {
 				mother: 'Sandy Guadalupe Rea Mendoza',
 				father: 'José Luis Becerra Ornelas',
@@ -245,6 +254,7 @@ export function buildAbrilPublishedContent(
 			footerText: 'Ceremonia en La Merced · 3:00 p. m.',
 		},
 		location: {
+			variant: 'standard',
 			visibility: 'public',
 			introEyebrow: 'SÁBADO · 12 DE SEPTIEMBRE DE 2026',
 			introHeading: 'De la fe al brindis',
@@ -311,8 +321,8 @@ export function buildAbrilPublishedContent(
 			},
 		],
 		itinerary: {
+			variant: 'timeline-paper',
 			title: 'Momentos de la celebración',
-			presentation: { behavior: 'timeline-paper' },
 			items: [
 				{
 					time: '3:00 p. m.',
@@ -347,6 +357,7 @@ export function buildAbrilPublishedContent(
 			],
 		},
 		gifts: {
+			variant: 'standard',
 			title: 'Lluvia de Sobres',
 			subtitle:
 				'Su presencia es nuestro mayor regalo. Si desea tener un detalle, contaremos con un buzón durante la recepción.',
@@ -409,6 +420,7 @@ export function buildAbrilPublishedContent(
 			],
 		},
 		rsvp: {
+			variant: 'standard',
 			title: 'Reserve su lugar en la celebración',
 			subcopy: 'Reserve su lugar para acompañarnos el 12 de septiembre.',
 			guestCap: 4,
@@ -433,13 +445,14 @@ export function buildAbrilPublishedContent(
 				startsAt: '2026-09-12T23:00:00.000Z',
 			},
 			personalizedAccess: {
-				structuralVariant: 'ornamented',
+				variant: 'ornamented',
 				title: 'Su invitación personal',
 				subtitle: 'Esta invitación ha sido preparada para:',
 				footerText: 'Confirme su asistencia en el formulario.',
 			},
 		},
 		thankYou: {
+			variant: 'standard',
 			message: 'Gracias por hacer más luminosa esta celebración.',
 			closingName: 'Abril Michelle',
 			date: '12 de septiembre de 2026',

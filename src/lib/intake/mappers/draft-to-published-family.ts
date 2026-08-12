@@ -137,6 +137,13 @@ function buildGodparentGroups(draftFamily: FamilyDraft):
 	return mappedGroups.length > 0 ? mappedGroups : undefined;
 }
 
+function resolveFamilyVariant(
+	family: FamilyDraft,
+	priorFamily: Record<string, unknown> | undefined,
+): string {
+	return family.variant ?? str(priorFamily?.variant) ?? 'standard';
+}
+
 export function mapFamilyFromDraft(
 	draftFamily: DraftContent['family'],
 	priorFamily?: Record<string, unknown>,
@@ -184,7 +191,7 @@ export function mapFamilyFromDraft(
 
 	if (typeof family.visible === 'boolean') result.visible = family.visible;
 	if (family.presentation) result.presentation = family.presentation;
-	if (family.structuralVariant) result.structuralVariant = family.structuralVariant;
+	result.variant = resolveFamilyVariant(family, priorFamily);
 	if (family.featuredImage) result.featuredImage = family.featuredImage;
 	return isNonEmptyObject(result) ? result : undefined;
 }

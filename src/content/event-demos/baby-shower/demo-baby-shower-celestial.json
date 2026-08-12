@@ -26,22 +26,6 @@
         "rsvp",
         "thankYou"
     ],
-    "sectionStyles": {
-        "location": {
-            "showFlourishes": true
-        },
-        "rsvp": {
-            "labels": {
-                "name": "Nombre completo",
-                "guestCount": "Personas que asistirán",
-                "attendance": "¿Nos acompañas?",
-                "confirmButton": "Confirmar asistencia"
-            }
-        },
-        "thankYou": {
-            "structuralVariant": "editorial-back-cover"
-        }
-    },
     "hero": {
         "name": "Luna Celeste",
         "label": "Mi Baby Shower",
@@ -49,7 +33,8 @@
         "backgroundImage": "hero",
         "portrait": "hero",
         "focalPoint": "50% 40%",
-        "focalPointMobile": "50% 35%"
+        "focalPointMobile": "50% 35%",
+        "variant": "standard"
     },
     "quote": {
         "text": "Antes de conocer su mirada, ya celebramos la luz que Luna Celeste trae a nuestra familia.",
@@ -72,7 +57,8 @@
             "sectionSubtitle": "Con todo el corazón",
             "parentsTitle": "Papás de Luna Celeste",
             "sectionMessage": "Mateo y Valeria preparan una tarde íntima para recibir a Luna Celeste con las personas que han acompañado esta espera con cariño."
-        }
+        },
+        "variant": "standard"
     },
     "gallery": {
         "eyebrow": "Ensayo de bienvenida",
@@ -123,13 +109,14 @@
                 "styleVariant": "reserved",
                 "text": "Código de vestimenta: <strong>casual elegante en colores pastel.</strong>"
             }
-        ]
+        ],
+        "variant": "standard",
+        "presentationOptions": {
+            "showFlourishes": true
+        }
     },
     "itinerary": {
         "title": "Programa de la tarde",
-        "presentation": {
-            "behavior": "timeline-paper"
-        },
         "items": [
             {
                 "iconName": "Reception",
@@ -155,7 +142,8 @@
                 "time": "18:15",
                 "description": "Palabras de agradecimiento y despedida con la familia reunida."
             }
-        ]
+        ],
+        "variant": "timeline-paper"
     },
     "gifts": {
         "title": "Mesa de regalos",
@@ -166,7 +154,8 @@
                 "title": "Detalles para Luna Celeste",
                 "text": "Pañales, libros infantiles, ropita en tonos neutros o un recuerdo elegido con cariño será bienvenido."
             }
-        ]
+        ],
+        "variant": "standard"
     },
     "rsvp": {
         "title": "Confirme su asistencia",
@@ -174,13 +163,24 @@
         "guestCap": 4,
         "accessMode": "hybrid",
         "confirmationMessage": "Gracias por confirmar. Nos alegra saber que nos acompañarán en esta celebración.",
-        "confirmationMode": "api"
+        "confirmationMode": "api",
+        "variant": "standard",
+        "labels": {
+            "name": "Nombre completo",
+            "guestCount": "Personas que asistirán",
+            "attendance": "¿Nos acompañas?",
+            "confirmButton": "Confirmar asistencia"
+        },
+        "personalizedAccess": {
+            "variant": "standard"
+        }
     },
     "thankYou": {
         "message": "Gracias por acompañarnos en este momento tan especial. Su cariño hace más bonita la espera de nuestra pequeña.",
         "closingName": "Mateo, Valeria y Luna Celeste",
         "image": "thankYouPortrait",
-        "focalPoint": "50% 50%"
+        "focalPoint": "50% 50%",
+        "variant": "editorial-back-cover"
     },
     "envelope": {
         "disabled": false,

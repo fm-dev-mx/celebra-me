@@ -14,6 +14,7 @@ describe('GET /api/invitacion/[inviteId]/location', () => {
 	it('returns no-store headers and a confirmed location payload', async () => {
 		resolveGatedLocationPayloadMock.mockResolvedValue({
 			location: {
+				structuralVariant: 'standard',
 				visibility: 'after-rsvp',
 				introHeading: 'Ubicación',
 				ceremony: {

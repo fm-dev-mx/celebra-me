@@ -266,12 +266,12 @@ describe('Boda Daniela y Martín provision contract', () => {
 
 		const family = content.family as {
 			presentation?: string;
-			structuralVariant?: string;
+			variant?: string;
 			groups?: Array<{ title: string; items: Array<{ name: string }> }>;
 			labels?: { sectionSubtitle?: string; sectionTitle?: string };
 		};
 		expect(family.presentation).toBe('text-only');
-		expect(family.structuralVariant).toBe('split-groups');
+		expect(family.variant).toBe('split-groups');
 		expect(family.labels?.sectionSubtitle).toBe('Familia');
 		expect(family.groups).toHaveLength(2);
 		expect(family.groups?.[0]).toMatchObject({
@@ -304,9 +304,7 @@ describe('Boda Daniela y Martín provision contract', () => {
 		expect(rsvp.confirmationMode).toBe('api');
 		expect(rsvp.accessMode).toBe('hybrid');
 		expect(rsvp.personalizedAccess?.noteText).toContain('{count}');
-		expect((content.sectionStyles as { rsvp?: unknown } | undefined)?.rsvp).toEqual({
-			structuralVariant: 'standard',
-		});
+		expect(rsvp).toMatchObject({ variant: 'standard' });
 
 		const thankYou = content.thankYou as {
 			image?: unknown;

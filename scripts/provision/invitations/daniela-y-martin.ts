@@ -126,11 +126,6 @@ export function buildDanielaPublishedContent(
 			timeZone: DANIELA_EVENT.timeZone,
 			startsAtUtc: DANIELA_EVENT.startsAtUtc,
 		},
-		sectionStyles: {
-			gifts: { structuralVariant: 'standard' },
-			rsvp: { structuralVariant: 'standard' },
-			thankYou: { structuralVariant: 'standard' },
-		},
 		sectionOrder: [
 			'quote',
 			'countdown',
@@ -142,6 +137,21 @@ export function buildDanielaPublishedContent(
 			'rsvp',
 			'thankYou',
 		],
+		composition: {
+			intersections: {
+				quote: { family: 'atmospheric-blend', source: 'hero' },
+				countdown: { family: 'atmospheric-blend', source: 'quote' },
+				'interlude-after-countdown': { family: 'arch', source: 'countdown' },
+				location: { family: 'atmospheric-blend', source: 'interlude-after-countdown' },
+				'personalized-access': { family: 'overlap', source: 'location' },
+				family: { family: 'atmospheric-blend', source: 'personalized-access' },
+				gallery: { family: 'atmospheric-blend', source: 'family' },
+				gifts: { family: 'atmospheric-blend', source: 'gallery' },
+				'interlude-after-gifts': { family: 'atmospheric-blend', source: 'gifts' },
+				rsvp: { family: 'atmospheric-blend', source: 'interlude-after-gifts' },
+				thankYou: { family: 'atmospheric-blend', source: 'rsvp' },
+			},
+		},
 		_assetSlug: DANIELA_EVENT.assetSlug,
 		hero: {
 			name: 'Daniela',
@@ -151,7 +161,7 @@ export function buildDanielaPublishedContent(
 			backgroundImage: assets['hero-desktop'],
 			backgroundImageMobile: assets['hero-mobile'],
 			backgroundImageDesktop: assets['hero-desktop'],
-			structuralVariant: 'standard',
+			variant: 'standard',
 			focalPoint: '50% 32%',
 			focalPointMobile: '50% 26%',
 			focalPointTablet: '50% 30%',
@@ -189,6 +199,7 @@ export function buildDanielaPublishedContent(
 			footerText: 'Huejutla de Reyes, Hidalgo',
 		},
 		location: {
+			variant: 'standard',
 			visibility: 'public',
 			// No coords/image → mediaMode none. With showNavigationButtons=false,
 			// VenueCard uses the canonical linked map-preview surface (not a new
@@ -247,7 +258,7 @@ export function buildDanielaPublishedContent(
 		},
 		family: {
 			presentation: 'text-only',
-			structuralVariant: 'split-groups',
+			variant: 'split-groups',
 			groups: [
 				{
 					title: 'De la Novia',
@@ -281,6 +292,7 @@ export function buildDanielaPublishedContent(
 			],
 		},
 		gifts: {
+			variant: 'standard',
 			title: 'Mesa de regalos',
 			subtitle:
 				'Su presencia es nuestro mejor regalo. Para quienes deseen tener un detalle con nosotros, hemos preparado las siguientes opciones.',
@@ -315,6 +327,7 @@ export function buildDanielaPublishedContent(
 			},
 		],
 		rsvp: {
+			variant: 'standard',
 			title: '¿Podrán acompañarnos?',
 			subcopy:
 				'Será un gusto celebrar con ustedes. Les pedimos confirmar su asistencia desde esta invitación.',
@@ -338,7 +351,7 @@ export function buildDanielaPublishedContent(
 				startsAt: DANIELA_EVENT.startsAtUtc,
 			},
 			personalizedAccess: {
-				structuralVariant: 'ornamented',
+				variant: 'ornamented',
 				title: 'Su invitación personal',
 				noteText:
 					'Esta invitación es válida para {count} {personWord}. Por motivos de logística y capacidad, no será posible admitir acompañantes o invitados adicionales.',
@@ -346,6 +359,7 @@ export function buildDanielaPublishedContent(
 			},
 		},
 		thankYou: {
+			variant: 'standard',
 			message:
 				'Gracias por compartir con nosotros un día que permanecerá siempre en nuestra memoria.',
 			closingName: 'Daniela & Martín',

@@ -33,39 +33,24 @@ import { resolveCountdownVisibleUnits } from '@/lib/invitation/countdown-present
 import { resolveGalleryMobileBrowse } from '@/lib/invitation/gallery-presentation';
 import { resolveGiftsPresentation } from '@/lib/invitation/gifts-presentation';
 import { resolvePortraitEnabled } from '@/lib/invitation/hero-presentation';
-import { resolveItineraryPresentation } from '@/lib/invitation/itinerary-presentation';
 import {
 	resolveLocationShowFlourishes,
 	resolveLocationShowNavigationButtons,
-} from '@/lib/invitation/location-presentation-compatibility';
-import {
-	FAMILY_STRUCTURAL_VARIANTS,
-	GALLERY_LAYOUT_VARIANTS,
-	GIFTS_STRUCTURAL_VARIANTS,
-	HERO_STRUCTURAL_VARIANTS,
-	LOCATION_STRUCTURAL_VARIANTS,
-	PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS,
-	RSVP_STRUCTURAL_VARIANTS,
-	THANK_YOU_STRUCTURAL_VARIANTS,
-	resolveFamilyStructuralVariant,
-	resolveGalleryLayoutVariant,
-	resolveGalleryVisualVariant,
-	resolveGiftsStructuralVariant,
-	resolveHeroStructuralVariant,
-	resolveLocationStructuralVariant,
-	resolvePersonalizedAccessStructuralVariant,
-	resolveRsvpStructuralVariant,
-	resolveThankYouStructuralVariant,
-} from '@/lib/invitation/structural-variants';
+} from '@/lib/invitation/location-presentation';
+import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
+import { normalizeInvitationVariantInput } from '@/lib/invitation/variant-normalization';
+import type { z } from 'zod';
+
+type CanonicalEventContent = z.output<typeof eventContentSchema>;
 
 interface AdaptationContext {
-	data: EventContentEntry['data'];
+	data: CanonicalEventContent;
 	eventSlug: string;
 	normalizedPreset: ThemePreset;
 }
 
 function pickVenueValue(
-	location: EventContentEntry['data']['location'] | undefined,
+	location: CanonicalEventContent['location'] | undefined,
 	key: 'venueName' | 'city',
 ): string | undefined {
 	if (!location) return undefined;
@@ -198,8 +183,8 @@ function sectionVariant(
 function buildHero(context: AdaptationContext): HeroViewModel {
 	const { data, eventSlug, normalizedPreset } = context;
 	const preset = pickVariant(
-		'hero.variant',
-		data.hero.variant ?? normalizedPreset,
+		'hero.visualVariant',
+		data.hero.visualVariant ?? normalizedPreset,
 		THEME_PRESETS,
 		normalizedPreset,
 	);
@@ -219,10 +204,7 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 			? resolveAsset(eventSlug, data.hero.portrait, data.title)
 			: undefined,
 		variant: preset,
-		structuralVariant: resolveHeroStructuralVariant(data.hero.structuralVariant, preset),
-		structuralVariantExplicit: HERO_STRUCTURAL_VARIANTS.includes(
-			data.hero.structuralVariant as (typeof HERO_STRUCTURAL_VARIANTS)[number],
-		),
+		structuralVariant: data.hero.variant,
 		focalPoint: data.hero.focalPoint,
 		focalPointMobile: data.hero.focalPointMobile,
 		focalPointTablet: data.hero.focalPointTablet,
@@ -365,7 +347,7 @@ function buildCountdownSectionData(context: AdaptationContext) {
 }
 
 function formatVenueLocation(
-	location: EventContentEntry['data']['location'] | undefined,
+	location: CanonicalEventContent['location'] | undefined,
 ): string | undefined {
 	const venueName = pickVenueValue(location, 'venueName');
 	const city = pickVenueValue(location, 'city');
@@ -420,10 +402,7 @@ function buildLocationSectionData(context: AdaptationContext) {
 	return {
 		visibility: data.location.visibility,
 		presentation: data.location.presentation,
-		structuralVariant: resolveLocationStructuralVariant(data.location.structuralVariant),
-		structuralVariantExplicit: LOCATION_STRUCTURAL_VARIANTS.includes(
-			data.location.structuralVariant as (typeof LOCATION_STRUCTURAL_VARIANTS)[number],
-		),
+		structuralVariant: data.location.variant,
 		presentationOptions: data.location.presentationOptions,
 		...(rawVenues !== undefined
 			? { venues }
@@ -437,13 +416,9 @@ function buildLocationSectionData(context: AdaptationContext) {
 			data.sectionStyles?.location?.variant,
 			normalizedPreset,
 		),
-		showFlourishes: resolveLocationShowFlourishes(
-			data.location.presentationOptions,
-			data.sectionStyles?.location?.showFlourishes,
-		),
+		showFlourishes: resolveLocationShowFlourishes(data.location.presentationOptions),
 		showNavigationButtons: resolveLocationShowNavigationButtons(
 			data.location.presentationOptions,
-			data.sectionStyles?.location?.showNavigationButtons,
 		),
 		introEyebrow: data.location.introEyebrow,
 		introHeading: data.location.introHeading,
@@ -461,10 +436,7 @@ function buildFamilySectionData(context: AdaptationContext) {
 			? resolveAsset(eventSlug, data.family.featuredImage, data.title)
 			: undefined,
 		celebrantName: data.hero.name,
-		structuralVariant: resolveFamilyStructuralVariant(data.family.structuralVariant),
-		structuralVariantExplicit: FAMILY_STRUCTURAL_VARIANTS.includes(
-			data.family.structuralVariant as (typeof FAMILY_STRUCTURAL_VARIANTS)[number],
-		),
+		structuralVariant: data.family.variant,
 		variant: sectionVariant('family', data.sectionStyles?.family?.variant, normalizedPreset),
 	};
 }
@@ -504,43 +476,24 @@ function buildGallerySectionData(context: AdaptationContext) {
 		)
 		.filter(<T>(i: T | null): i is T => i !== null);
 	if (items.length === 0) return undefined;
-	const rawGalleryVariant = data.gallery.variant;
-	const structuralVariantExplicit =
-		typeof rawGalleryVariant === 'string' &&
-		([...GALLERY_LAYOUT_VARIANTS, 'single'] as readonly string[]).includes(rawGalleryVariant);
-	const structuralVariant = resolveGalleryLayoutVariant(
-		rawGalleryVariant,
-		rawGalleryVariant ?? data.sectionStyles?.gallery?.variant,
-	);
-	const legacyVisualVariant =
-		rawGalleryVariant === 'single-keepsake'
-			? 'single-keepsake'
-			: typeof rawGalleryVariant === 'string' &&
-				  !(GALLERY_LAYOUT_VARIANTS as readonly string[]).includes(rawGalleryVariant)
-				? rawGalleryVariant
-				: data.sectionStyles?.gallery?.variant;
 	return {
 		...data.gallery,
 		items,
-		variant: structuralVariant,
-		visualVariant: resolveGalleryVisualVariant(legacyVisualVariant, normalizedPreset),
-		structuralVariantExplicit,
+		variant: data.gallery.variant,
+		visualVariant: data.gallery.visualVariant ?? normalizedPreset,
 		mobileBrowse: resolveGalleryMobileBrowse(data.gallery.presentationOptions),
 	};
 }
 
 function buildItinerarySectionData(
 	context: AdaptationContext,
-): (EventContentEntry['data']['itinerary'] & { variant: ItineraryVariant }) | undefined {
+): (CanonicalEventContent['itinerary'] & { variant: ItineraryVariant }) | undefined {
 	const { data } = context;
 	if (!data.itinerary) return undefined;
 
-	// Canonical authority: itinerary.presentation.behavior only.
-	// Theme-named sectionStyles.itinerary.variant is no longer consulted.
-	const variant: ItineraryVariant = resolveItineraryPresentation(data.itinerary.presentation);
 	return {
 		...data.itinerary,
-		variant,
+		variant: data.itinerary.variant,
 	};
 }
 
@@ -551,31 +504,15 @@ function buildRsvpSectionData(context: AdaptationContext, entrySlug: string) {
 	const eventStartsAt = calendar?.startsAt ?? data.eventTiming?.startsAtUtc ?? data.hero.date;
 	return {
 		...rsvpRest,
-		personalizedAccess: data.rsvp.personalizedAccess
-			? {
-					...data.rsvp.personalizedAccess,
-					structuralVariant: resolvePersonalizedAccessStructuralVariant(
-						data.rsvp.personalizedAccess.structuralVariant,
-						normalizedPreset,
-					),
-					structuralVariantExplicit: PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS.includes(
-						data.rsvp.personalizedAccess
-							.structuralVariant as (typeof PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS)[number],
-					),
-				}
-			: undefined,
+		personalizedAccess: {
+			...data.rsvp.personalizedAccess,
+			structuralVariant: data.rsvp.personalizedAccess.variant,
+		},
 		eventSlug: entrySlug,
 		eventType: data.eventType,
 		variant: sectionVariant('rsvp', data.sectionStyles?.rsvp?.variant, normalizedPreset),
-		structuralVariant: resolveRsvpStructuralVariant(
-			data.sectionStyles?.rsvp?.structuralVariant,
-			normalizedPreset,
-		),
-		structuralVariantExplicit: RSVP_STRUCTURAL_VARIANTS.includes(
-			data.sectionStyles?.rsvp
-				?.structuralVariant as (typeof RSVP_STRUCTURAL_VARIANTS)[number],
-		),
-		labels: data.sectionStyles?.rsvp?.labels,
+		structuralVariant: data.rsvp.variant,
+		labels: data.rsvp.labels,
 		eventStartsAt,
 		eventTimeZone: data.eventTiming?.timeZone,
 		locationVisibility: data.location?.visibility,
@@ -593,14 +530,7 @@ function buildGiftsSectionData(context: AdaptationContext) {
 		presentation,
 		items: presentation === 'legend-only' ? [] : (data.gifts.items ?? []),
 		variant: sectionVariant('gifts', data.sectionStyles?.gifts?.variant, normalizedPreset),
-		structuralVariant: resolveGiftsStructuralVariant(
-			data.sectionStyles?.gifts?.structuralVariant,
-			normalizedPreset,
-		),
-		structuralVariantExplicit: GIFTS_STRUCTURAL_VARIANTS.includes(
-			data.sectionStyles?.gifts
-				?.structuralVariant as (typeof GIFTS_STRUCTURAL_VARIANTS)[number],
-		),
+		structuralVariant: data.gifts.variant,
 	};
 }
 
@@ -617,14 +547,7 @@ function buildThankYouSectionData(context: AdaptationContext) {
 			data.sectionStyles?.thankYou?.variant,
 			normalizedPreset,
 		),
-		structuralVariant: resolveThankYouStructuralVariant(
-			data.sectionStyles?.thankYou?.structuralVariant,
-			normalizedPreset,
-		),
-		structuralVariantExplicit: THANK_YOU_STRUCTURAL_VARIANTS.includes(
-			data.sectionStyles?.thankYou
-				?.structuralVariant as (typeof THANK_YOU_STRUCTURAL_VARIANTS)[number],
-		),
+		structuralVariant: data.thankYou.variant,
 	};
 }
 
@@ -633,7 +556,10 @@ export function adaptEvent(
 	previewTheme?: ThemePreset,
 	assetSlugOverride?: string,
 ): InvitationViewModel {
-	const { data: originalData, id: contentEntryId } = event;
+	const { data: rawData, id: contentEntryId } = event;
+	// Astro content and publication validate the full schema before adaptation. Direct
+	// adapter callers still share the same input-only compatibility normalizer.
+	const originalData = normalizeInvitationVariantInput(rawData) as CanonicalEventContent;
 	const entrySlug = getContentEntrySlug(contentEntryId);
 	const contentAssetSlug =
 		typeof originalData._assetSlug === 'string' ? originalData._assetSlug : undefined;
@@ -687,6 +613,7 @@ export function adaptEvent(
 		envelope,
 		brandingVisibility: DEFAULT_BRANDING_VISIBILITY,
 		sectionOrder: adapterData.sectionOrder,
+		composition: adapterData.composition,
 		sections,
 		music: adapterData.music
 			? {

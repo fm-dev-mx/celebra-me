@@ -11,29 +11,15 @@
         "fontFamily": "serif",
         "preset": "editorial-rose"
     },
-    "sectionStyles": {
-        "location": {
-            "showFlourishes": true
-        },
-        "rsvp": {
-            "structuralVariant": "standard"
-        },
-        "thankYou": {
-            "structuralVariant": "standard"
-        },
-        "gifts": {
-            "structuralVariant": "standard"
-        }
-    },
     "hero": {
         "name": "Aurora Valencia",
         "label": "XV Edition",
         "date": "2027-08-28T21:00:00.000Z",
         "backgroundImage": "hero",
         "portrait": "portrait",
-        "structuralVariant": "standard",
         "focalPoint": "50% 38%",
-        "focalPointMobile": "50% 32%"
+        "focalPointMobile": "50% 32%",
+        "variant": "standard"
     },
     "location": {
         "introEyebrow": "Ciudad de México",
@@ -69,7 +55,11 @@
                 "styleVariant": "default",
                 "text": "Agradecemos confirmar antes del <strong>14 de agosto de 2027</strong> y llegar con puntualidad para disfrutar cada momento."
             }
-        ]
+        ],
+        "variant": "standard",
+        "presentationOptions": {
+            "showFlourishes": true
+        }
     },
     "family": {
         "featuredImage": "family",
@@ -95,7 +85,8 @@
                 "role": "Padrino"
             }
         ],
-        "focalPoint": "50% 40%"
+        "focalPoint": "50% 40%",
+        "variant": "standard"
     },
     "quote": {
         "text": "Los sueños se vuelven memorables cuando se comparten con quienes han estado cerca en cada etapa. Esta noche celebra el camino recorrido y la ilusión de todo lo que comienza.",
@@ -107,9 +98,6 @@
     },
     "itinerary": {
         "title": "Programa de la noche",
-        "presentation": {
-            "behavior": "standard"
-        },
         "items": [
             {
                 "iconName": "Church",
@@ -129,7 +117,8 @@
                 "time": "20:00",
                 "description": "Cena, brindis y celebración."
             }
-        ]
+        ],
+        "variant": "standard"
     },
     "gallery": {
         "variant": "editorial-mosaic",
@@ -179,7 +168,8 @@
                 "title": "Sobre de felicitación",
                 "text": "Habrá un espacio reservado para sobres durante la recepción."
             }
-        ]
+        ],
+        "variant": "standard"
     },
     "rsvp": {
         "title": "Confirme su asistencia",
@@ -189,14 +179,16 @@
         "confirmationMessage": "Gracias por confirmar. Será una alegría compartir esta noche con ustedes.",
         "confirmationMode": "api",
         "personalizedAccess": {
-            "structuralVariant": "ornamented"
-        }
+            "variant": "ornamented"
+        },
+        "variant": "standard"
     },
     "thankYou": {
         "message": "Gracias por formar parte de una noche pensada para celebrar con elegancia, gratitud y alegría.",
         "closingName": "Aurora Valencia",
         "image": "thankYouPortrait",
-        "focalPoint": "50% 36%"
+        "focalPoint": "50% 36%",
+        "variant": "standard"
     },
     "interludes": [
         {

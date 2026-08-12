@@ -24,6 +24,7 @@ const baseViewModel: InvitationViewModel = {
 		label: 'Mis XV años',
 		date: '2026-08-01T18:00:00Z',
 		variant: 'enchanted-rose',
+		structuralVariant: 'standard',
 		backgroundImage: {
 			src: '/_astro/portrait.CWMjVgq3.webp',
 			alt: 'Retrato de Ayrin Samantha',

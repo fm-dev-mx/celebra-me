@@ -18,6 +18,9 @@ import {
 	assertSupportedGalleryPresentation,
 } from '@/lib/invitation/presentation-options';
 import { GALLERY_LAYOUT_VARIANTS } from '@/lib/invitation/structural-variants';
+import {
+	GIFTS_STRUCTURAL_VARIANTS,
+} from '@/lib/invitation/structural-variants';
 
 export const optionalText = (max = 2000) => z.string().trim().max(max).optional();
 export const optionalUrl = z
@@ -77,9 +80,8 @@ export const gallerySchema = z
 		eyebrow: optionalText(200),
 		title: optionalText(200),
 		subtitle: optionalText(500),
-		variant: z
-			.union([z.enum(GALLERY_LAYOUT_VARIANTS), z.enum(THEME_PRESETS), z.literal('single')])
-			.optional(),
+		variant: z.enum(GALLERY_LAYOUT_VARIANTS).optional(),
+		visualVariant: z.enum(THEME_PRESETS).optional(),
 		presentation: z.enum(GALLERY_PRESENTATIONS).optional(),
 		presentationOptions: z
 			.object({
@@ -132,12 +134,7 @@ export const itinerarySchema = z
 	.object({
 		title: optionalText(200),
 		subtitle: optionalText(500),
-		presentation: z
-			.object({
-				behavior: z.enum(ITINERARY_PRESENTATION_BEHAVIORS).optional(),
-			})
-			.strict()
-			.optional(),
+		variant: z.enum(ITINERARY_PRESENTATION_BEHAVIORS).optional(),
 		items: z
 			.array(
 				z
@@ -159,6 +156,7 @@ export const itinerarySchema = z
 
 export const giftsSchema = z
 	.object({
+		variant: z.enum(GIFTS_STRUCTURAL_VARIANTS).optional(),
 		title: optionalText(200),
 		subtitle: optionalText(500),
 		presentation: z.enum(GIFTS_PRESENTATIONS).optional(),

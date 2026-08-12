@@ -22,18 +22,10 @@
             "variant": "editorial-magazine"
         },
         "location": {
-            "variant": "editorial-magazine",
-            "showFlourishes": false
+            "variant": "editorial-magazine"
         },
         "rsvp": {
-            "variant": "editorial-magazine",
-            "structuralVariant": "editorial-press-pass"
-        },
-        "thankYou": {
-            "structuralVariant": "editorial-back-cover"
-        },
-        "gifts": {
-            "structuralVariant": "editorial-catalog"
+            "variant": "editorial-magazine"
         }
     },
     "hero": {
@@ -42,10 +34,10 @@
         "date": "2027-09-25T21:00:00.000Z",
         "backgroundImage": "hero",
         "portrait": "portrait",
-        "variant": "editorial-magazine",
-        "structuralVariant": "editorial-cover",
+        "variant": "editorial-cover",
         "focalPoint": "54% 38%",
-        "focalPointMobile": "52% 30%"
+        "focalPointMobile": "52% 30%",
+        "visualVariant": "editorial-magazine"
     },
     "quote": {
         "text": "Dicen que la moda es temporal, pero los recuerdos son eternos. Acompáñame a escribir el primer capítulo de mi nueva historia.",
@@ -79,7 +71,8 @@
                 "role": "Padrino"
             }
         ],
-        "focalPoint": "50% 38%"
+        "focalPoint": "50% 38%",
+        "variant": "standard"
     },
     "location": {
         "introEyebrow": "Edición especial",
@@ -126,7 +119,11 @@
                 "styleVariant": "default",
                 "text": "Agradecemos tu puntualidad para disfrutar cada momento de esta edición especial."
             }
-        ]
+        ],
+        "variant": "standard",
+        "presentationOptions": {
+            "showFlourishes": false
+        }
     },
     "rsvp": {
         "title": "Acceso a la celebración",
@@ -136,8 +133,9 @@
         "confirmationMessage": "Tu acceso quedó confirmado. Gracias por ser parte de esta edición XV.",
         "confirmationMode": "api",
         "personalizedAccess": {
-            "structuralVariant": "editorial-pass"
-        }
+            "variant": "editorial-pass"
+        },
+        "variant": "editorial-press-pass"
     },
     "gallery": {
         "variant": "magazine-spread",
@@ -187,13 +185,15 @@
                 "title": "Lluvia de sobres",
                 "text": "Se proporcionará un sobre el día del evento."
             }
-        ]
+        ],
+        "variant": "editorial-catalog"
     },
     "thankYou": {
         "message": "Gracias por acompañarme en una noche hecha de estilo, alegría y recuerdos para siempre.",
         "closingName": "Roberta",
         "image": "thankYouPortrait",
-        "focalPoint": "50% 36%"
+        "focalPoint": "50% 36%",
+        "variant": "editorial-back-cover"
     },
     "interludes": [
         {

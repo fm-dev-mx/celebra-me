@@ -56,7 +56,7 @@ export const familyDraftSchema = z.object({
 	motherRole: optionalText(200),
 	visible: z.boolean().optional(),
 	presentation: z.enum(FAMILY_PRESENTATIONS).optional(),
-	structuralVariant: z.enum(FAMILY_STRUCTURAL_VARIANTS).optional(),
+	variant: z.enum(FAMILY_STRUCTURAL_VARIANTS).optional(),
 	groups: z.array(familyGroupDraftSchema).optional(),
 	godparentGroups: z.array(godparentGroupDraftSchema).optional(),
 	featuredImage: editableAssetSchema.optional(),

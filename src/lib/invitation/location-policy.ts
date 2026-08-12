@@ -110,6 +110,7 @@ function redactProtectedLocation(location: LocationSection): LocationSection {
 		visibility: LOCATION_VISIBILITY_AFTER_RSVP,
 		isLocked: true,
 		variant: location.variant,
+		structuralVariant: location.structuralVariant,
 		showFlourishes: location.showFlourishes,
 		introEyebrow: location.introEyebrow,
 		introHeading: location.introHeading ?? 'Ubicación',

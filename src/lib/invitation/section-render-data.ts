@@ -8,10 +8,7 @@ import {
 	type SectionIntersectionFamily,
 	type ThemePreset,
 } from '@/lib/theme/theme-contract';
-import {
-	resolvePersonalizedAccessStructuralVariant,
-	type PersonalizedAccessStructuralVariant,
-} from '@/lib/invitation/structural-variants';
+import type { PersonalizedAccessStructuralVariant } from '@/lib/invitation/structural-variants';
 import { getContactPhone, isPlaceholderContactPhone } from '@/utils/whatsapp';
 
 type Sections = InvitationPageContext['viewModel']['sections'];
@@ -45,14 +42,6 @@ type PersonalizedAccessProps = {
 
 export const DEMO_GUEST_NAME = 'María Fernanda Solís';
 const DEFAULT_DEMO_GUEST_CAP = 2;
-
-function resolvePersonalizedAccessVariant(
-	pageContext: InvitationPageContext,
-): PersonalizedAccessStructuralVariant {
-	return resolvePersonalizedAccessStructuralVariant(
-		pageContext.viewModel.sections.rsvp?.personalizedAccess?.structuralVariant,
-	);
-}
 
 const SECTION_NAV_TARGETS: Partial<Record<ContentSectionKey, { href: string; label: string }>> = {
 	quote: { href: '#quote-section', label: 'Mensaje' },
@@ -144,6 +133,18 @@ const REVEAL_RECIPES: Record<DescriptorData['component'], InvitationRevealRecipe
 	'personalized-access': 'fade-up',
 };
 
+function resolvePersonalizedAccessConfig(pageContext: InvitationPageContext): {
+	isDemoPreview: boolean;
+	structuralVariant: PersonalizedAccessStructuralVariant;
+} | null {
+	const isDemoPreview = pageContext.isDemoPreview ?? false;
+	if (!isDemoPreview && !pageContext.guestContext) return null;
+
+	const structuralVariant =
+		pageContext.viewModel.sections.rsvp?.personalizedAccess.structuralVariant;
+	return structuralVariant ? { isDemoPreview, structuralVariant } : null;
+}
+
 function renderInterlude(pageContext: InvitationPageContext, block: InterludeBlock) {
 	return {
 		component: 'interlude' as const,
@@ -161,12 +162,12 @@ function renderInterlude(pageContext: InvitationPageContext, block: InterludeBlo
 }
 
 function renderPersonalizedAccess(pageContext: InvitationPageContext): DescriptorData | null {
-	const isDemoPreview = pageContext.isDemoPreview ?? false;
-	if (!isDemoPreview && !pageContext.guestContext) return null;
+	const config = resolvePersonalizedAccessConfig(pageContext);
+	if (!config) return null;
 
+	const { isDemoPreview, structuralVariant } = config;
 	const guestContext = pageContext.guestContext;
 	const variant = pageContext.viewModel.theme.preset ?? THEME_PRESETS[0];
-	const structuralVariant = resolvePersonalizedAccessVariant(pageContext);
 	const eventYear = pageContext.viewModel.hero.date
 		? new Date(pageContext.viewModel.hero.date).getUTCFullYear().toString()
 		: undefined;

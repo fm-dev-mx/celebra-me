@@ -1,6 +1,5 @@
-.personalized-access[data-variant='editorial-magazine'],
 .personalized-access[data-structural-variant='editorial-pass'] {
-	background: var(--editorial-magazine-paper);
+	background: var(--color-surface-primary);
 	position: relative;
 
 	&::before {
@@ -10,7 +9,7 @@
 		height: 1px;
 		width: min(20rem, 80%);
 		margin-inline: auto;
-		background: rgb(var(--editorial-magazine-ink-rgb) / 14%);
+		background: rgb(var(--color-text-primary-rgb) / 14%);
 		pointer-events: none;
 	}
 
@@ -18,8 +17,8 @@
 		font-family: var(--font-label);
 		font-size: 0.62rem;
 		font-weight: 700;
-		color: var(--editorial-magazine-red);
-		border: 1px solid var(--editorial-magazine-red);
+		color: var(--color-action-accent);
+		border: 1px solid var(--color-action-accent);
 		padding: 0.25rem 0.75rem;
 		margin: 0 auto 1.5rem;
 		width: max-content;
@@ -30,8 +29,8 @@
 
 	.access-card {
 		border-radius: 0;
-		border: 1px solid var(--editorial-magazine-ink);
-		background-color: var(--editorial-magazine-white);
+		border: 1px solid var(--color-text-primary);
+		background-color: var(--color-text-on-dark);
 		box-shadow: none;
 		padding: 1.5rem;
 
@@ -55,8 +54,8 @@
 		&__eyebrow {
 			font-family: var(--font-label);
 			font-size: 0.65rem;
-			color: var(--editorial-magazine-red);
-			border: 1px solid var(--editorial-magazine-red);
+			color: var(--color-action-accent);
+			border: 1px solid var(--color-action-accent);
 			padding: 0.18rem 0.5rem;
 			margin-inline: auto;
 			width: max-content;
@@ -77,7 +76,7 @@
 			line-height: 1;
 			letter-spacing: 0.05em;
 			text-transform: uppercase;
-			color: var(--editorial-magazine-ink);
+			color: var(--color-text-primary);
 			text-shadow: none;
 			margin-top: 0.5rem;
 		}
@@ -85,7 +84,7 @@
 		&__subtitle {
 			font-family: var(--font-body);
 			font-size: 0.82rem;
-			color: rgb(var(--editorial-magazine-ink-rgb) / 64%);
+			color: rgb(var(--color-text-primary-rgb) / 64%);
 			font-weight: 500;
 			line-height: 1.5;
 			max-width: 24rem;
@@ -107,14 +106,14 @@
 			font-size: 0.68rem;
 			font-weight: 700;
 			letter-spacing: 0.2em;
-			color: rgb(var(--editorial-magazine-ink-rgb) / 48%);
+			color: rgb(var(--color-text-primary-rgb) / 48%);
 		}
 
 		&__guest {
 			font-family: var(--font-display);
 			font-size: clamp(2rem, 5vw, 3rem);
 			font-weight: 800;
-			color: var(--editorial-magazine-ink);
+			color: var(--color-text-primary);
 			line-height: 1;
 			letter-spacing: 0;
 			text-shadow: none;
@@ -122,7 +121,7 @@
 
 		&__divider {
 			height: 1px;
-			background: rgb(var(--editorial-magazine-ink-rgb) / 14%);
+			background: rgb(var(--color-text-primary-rgb) / 14%);
 			opacity: 100%;
 			margin: 0.5rem 0;
 
@@ -133,8 +132,8 @@
 
 		&__count-frame {
 			border-radius: 0;
-			border: 1px solid var(--editorial-magazine-ink);
-			background: rgb(var(--editorial-magazine-ink-rgb) / 4%);
+			border: 1px solid var(--color-text-primary);
+			background: rgb(var(--color-text-primary-rgb) / 4%);
 			padding: 0.75rem 1.5rem;
 			min-width: 8rem;
 			box-shadow: none;
@@ -148,7 +147,7 @@
 			font-family: var(--font-display);
 			font-size: clamp(3rem, 7vw, 4rem);
 			font-weight: 800;
-			color: var(--editorial-magazine-ink);
+			color: var(--color-text-primary);
 			text-shadow: none;
 		}
 
@@ -165,16 +164,16 @@
 			height: 1.85rem;
 			background: repeating-linear-gradient(
 				90deg,
-				var(--editorial-magazine-ink) 0,
-				var(--editorial-magazine-ink) 1px,
+				var(--color-text-primary) 0,
+				var(--color-text-primary) 1px,
 				transparent 1px,
 				transparent 4px,
-				var(--editorial-magazine-ink) 4px,
-				var(--editorial-magazine-ink) 7px,
+				var(--color-text-primary) 4px,
+				var(--color-text-primary) 7px,
 				transparent 7px,
 				transparent 9px,
-				var(--editorial-magazine-ink) 9px,
-				var(--editorial-magazine-ink) 10px,
+				var(--color-text-primary) 9px,
+				var(--color-text-primary) 10px,
 				transparent 10px,
 				transparent 13px
 			);
@@ -185,19 +184,19 @@
 			font-family: monospace;
 			font-size: 0.72rem;
 			letter-spacing: 0.16em;
-			color: rgb(var(--editorial-magazine-ink-rgb) / 58%);
+			color: rgb(var(--color-text-primary-rgb) / 58%);
 			text-transform: uppercase;
 		}
 
 		&__footer {
-			border-top: 1px solid rgb(var(--editorial-magazine-ink-rgb) / 14%);
+			border-top: 1px solid rgb(var(--color-text-primary-rgb) / 14%);
 			background: transparent;
 			padding: 1.25rem 0 0;
 
 			p {
 				font-family: var(--font-body);
 				font-size: 0.8rem;
-				color: rgb(var(--editorial-magazine-ink-rgb) / 58%);
+				color: rgb(var(--color-text-primary-rgb) / 58%);
 				font-style: italic;
 				line-height: 1.5;
 			}

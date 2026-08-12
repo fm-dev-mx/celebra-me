@@ -1,14 +1,16 @@
-// Editorial-magazine gallery: editorial spread with rectangular crops and visible captions
+// Magazine-spread gallery with rectangular crops and visible captions.
 
-.gallery-section[data-variant='editorial-magazine'],
 .gallery-section[data-structural-variant='magazine-spread'] {
+	background: var(--gallery-section-bg, var(--color-surface-primary));
+	padding-block: var(--section-padding-block);
+
 	.gallery-section__header {
 		margin-bottom: clamp(2.5rem, 7vw, 5rem);
 		text-align: left;
 	}
 
 	.gallery-section__eyebrow {
-		color: rgb(var(--editorial-magazine-ink-rgb) / 48%);
+		color: rgb(var(--color-text-primary-rgb) / 48%);
 		font-family: var(--font-label);
 		font-weight: 700;
 		text-transform: uppercase;
@@ -26,7 +28,7 @@
 	}
 
 	.gallery-section__subtitle {
-		color: rgb(var(--editorial-magazine-ink-rgb) / 58%);
+		color: rgb(var(--color-text-primary-rgb) / 58%);
 		font-family: var(--font-body);
 		font-size: clamp(0.92rem, 1.6vw, 1.08rem);
 		text-transform: none;
@@ -66,7 +68,7 @@
 			height: auto;
 			display: block;
 			border-radius: 0;
-			border: 1px solid rgb(var(--editorial-magazine-ink-rgb) / 14%);
+			border: 1px solid rgb(var(--color-text-primary-rgb) / 14%);
 			filter: var(--gallery-image-filter);
 			transition: filter 0.5s ease;
 		}
@@ -125,27 +127,21 @@
 			letter-spacing: 0.08em;
 			padding: 0;
 			background: transparent;
-			color: rgb(var(--editorial-magazine-ink-rgb) / 62%);
+			color: rgb(var(--color-text-primary-rgb) / 62%);
 
 			&::before {
 				content: 'Fig. 0' counter(fig-counter) ' — ';
 				font-weight: 700;
-				color: var(--editorial-magazine-ink);
+				color: var(--color-text-primary);
 			}
 		}
 	}
 }
 
-.gallery-section[data-variant='editorial-magazine'] {
-	background: var(--gallery-section-bg, var(--editorial-magazine-paper));
-	padding-block: var(--section-padding-block);
-}
-
 // Orthogonal mobile rail presentation for magazine-spread.
 // Desktop retains the canonical 12-col grid; mobile becomes a scroll-snap rail.
 .gallery-section[data-mobile-browse='rail']:is(
-		[data-structural-variant='magazine-spread'],
-		[data-variant='editorial-magazine']
+		[data-structural-variant='magazine-spread']
 	) {
 	.gallery-section__swipe-hint {
 		display: block;

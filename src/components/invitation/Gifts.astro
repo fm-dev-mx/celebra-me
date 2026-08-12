@@ -86,9 +86,9 @@ const {
 	},
 } = Astro.props;
 
-const isEditorialMagazine = structuralVariant === 'editorial-catalog';
+const isEditorialCatalog = structuralVariant === 'editorial-catalog';
 const isLegendOnly = presentation === 'legend-only';
-const displayTitle = isEditorialMagazine ? 'Mesa de cortesía' : title;
+const displayTitle = isEditorialCatalog ? 'Mesa de cortesía' : title;
 
 const ICON_MAP = {
 	store: GiftIcon,
@@ -125,13 +125,13 @@ const ICON_MAP = {
 					return (
 						<div class={`gift-card gift-card--${gift.type}`} data-reveal-item>
 							<div class="gift-card__inner">
-								{isEditorialMagazine && (
+								{isEditorialCatalog && (
 									<div class="gift-card__folio" aria-hidden="true">
 										<span>VH</span>
 										<span>EDICIÓN XV</span>
 									</div>
 								)}
-								{isEditorialMagazine && (
+								{isEditorialCatalog && (
 									<p class="gift-card__issue-label">
 										<span>{giftNumber}</span>
 										<span>{gift.title}</span>

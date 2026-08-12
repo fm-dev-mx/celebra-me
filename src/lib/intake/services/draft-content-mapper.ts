@@ -14,6 +14,7 @@ import {
 	isNonEmptyObject,
 } from '@/lib/shared/data-utils';
 import { foldLocationPresentationOptions } from '@/lib/invitation/location-presentation-compatibility';
+import { normalizeInvitationVariantInput } from '@/lib/invitation/variant-normalization';
 import { VENUE_URL_FIELDS, ENVELOPE_TEXT_FIELDS } from '@/lib/intake/constants';
 import type { IconName } from '@/lib/icons/icon-catalog';
 import {
@@ -307,8 +308,8 @@ function mapFamilyToDraft(
 		visible: typeof family.visible === 'boolean' ? family.visible : undefined,
 		presentation: str(family.presentation) as
 			NonNullable<DraftContent['family']>['presentation'] | undefined,
-		structuralVariant: str(family.structuralVariant) as
-			NonNullable<DraftContent['family']>['structuralVariant'] | undefined,
+		variant: str(family.variant) as
+			NonNullable<DraftContent['family']>['variant'] | undefined,
 		groups: publishedGroups
 			?.filter((g) => g.items && g.items.length > 0)
 			.map((g) => ({
@@ -599,7 +600,7 @@ export function canonicalizeDraftContent(
 	content: DraftContent | Record<string, unknown>,
 ): DraftCanonicalizationResult {
 	const before = JSON.stringify(content ?? {});
-	const result = structuredClone(content) as Record<string, unknown>;
+	const result = structuredClone(normalizeInvitationVariantInput(content)) as Record<string, unknown>;
 	const issues: DraftNormalizationIssue[] = [];
 
 	const removedPublishedOnlyKeys: string[] = [];
@@ -636,7 +637,7 @@ export function canonicalizeDraftContent(
 
 	const gifts = result.gifts;
 	if (isRecord(gifts)) {
-		result.gifts = canonicalizeGiftsDraft(gifts, removedPublishedOnlyKeys);
+		result.gifts = canonicalizeGiftsDraft(gifts);
 	}
 
 	const countdown = result.countdown;
@@ -672,6 +673,7 @@ export function normalizeDraftContent(
 
 // eslint-disable-next-line complexity -- Nested-to-flat mapping covers many field transformations by design.
 export function mapNestedToDraftContent(nestedContent: Record<string, unknown>): DraftContent {
+	nestedContent = normalizeInvitationVariantInput(nestedContent) as Record<string, unknown>;
 	const result: DraftContent = {};
 
 	result.title = str(nestedContent.title);
@@ -685,7 +687,13 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 			label: str(hero.label),
 			nickname: str(hero.nickname),
 			date: normalizeDate(hero.date),
+			variant: str(hero.variant) as NonNullable<DraftContent['hero']>['variant'],
+			visualVariant: str(hero.visualVariant) as NonNullable<DraftContent['hero']>['visualVariant'],
 		};
+		for (const field of ['presentation', 'focalPoint', 'focalPointMobile', 'focalPointTablet', 'focalPointDesktop'] as const) {
+			if (hero[field] !== undefined)
+				(result.hero as Record<string, unknown>)[field] = hero[field];
+		}
 		const HERO_ASSET_FIELDS = [
 			'backgroundImage',
 			'backgroundImageMobile',
@@ -729,7 +737,7 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 		const draftLocationBase: Record<string, unknown> = {
 			visibility: str(location.visibility),
 			presentation: str(location.presentation),
-			structuralVariant: str(location.structuralVariant),
+			variant: str(location.variant),
 			...(isRecord(location.presentationOptions)
 				? { presentationOptions: location.presentationOptions }
 				: {}),
@@ -847,8 +855,11 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 	const thankYou = nestedContent.thankYou as Record<string, unknown> | undefined;
 	if (isNonEmptyObject(thankYou)) {
 		result.thankYou = {
+			variant: str(thankYou.variant) as NonNullable<DraftContent['thankYou']>['variant'],
 			message: str(thankYou.message),
 			closingName: str(thankYou.closingName),
+			closingPhrase: str(thankYou.closingPhrase),
+			date: str(thankYou.date),
 		};
 		if (thankYou.image !== undefined)
 			(result.thankYou as Record<string, unknown>).image = thankYou.image;

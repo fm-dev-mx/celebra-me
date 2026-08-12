@@ -386,6 +386,7 @@ describe('Style boundary governance', () => {
 		const forwarded = getForwardedPartials(dir);
 		const existing = getExistingPartials(dir);
 		const bundleImports = getPresetBundleImports('personalized-access');
+		const structuralResolverPartials = ['editorial-pass'];
 
 		expect(forwarded).toContain('base');
 
@@ -396,7 +397,16 @@ describe('Style boundary governance', () => {
 
 		// Every existing partial must be forwarded or loaded directly by a preset bundle.
 		for (const name of existing) {
-			expect(forwarded.includes(name) || bundleImports.includes(name)).toBe(true);
+			expect(
+				forwarded.includes(name) ||
+					bundleImports.includes(name) ||
+					structuralResolverPartials.includes(name),
+			).toBe(true);
+		}
+
+		const resolver = read('src/lib/invitation/section-css-resolver.ts');
+		for (const name of structuralResolverPartials) {
+			expect(resolver).toContain(`/personalized-access/_${name}.scss`);
 		}
 	});
 
@@ -426,10 +436,15 @@ describe('Style boundary governance', () => {
 		const forwarded = getForwardedPartials(dir);
 		const existing = getExistingPartials(dir);
 		const bundleImports = getPresetBundleImports('personalized-access');
+		const structuralResolverPartials = ['editorial-pass'];
 
 		// Every file on disk must be intentionally forwarded or imported by a bundle.
 		for (const name of existing) {
-			expect(forwarded.includes(name) || bundleImports.includes(name)).toBe(true);
+			expect(
+				forwarded.includes(name) ||
+					bundleImports.includes(name) ||
+					structuralResolverPartials.includes(name),
+			).toBe(true);
 		}
 
 		for (const name of bundleImports) {

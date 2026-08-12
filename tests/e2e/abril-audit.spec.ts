@@ -173,7 +173,10 @@ test.describe('Abril Michelle Becerra Rea XV E2E Visual & Functional Audit', () 
 			// 4. Itinerary / Schedule verification
 			const itinerarySection = page.locator('section.itinerary, .itinerary');
 			await expect(itinerarySection).toBeVisible();
-			await expect(itinerarySection).toHaveAttribute('data-variant', 'timeline-paper');
+			await expect(itinerarySection).toHaveAttribute(
+				'data-structural-variant',
+				'timeline-paper',
+			);
 
 			const paperSurface = itinerarySection.locator('.itinerary__program-paper-surface');
 			await expect(paperSurface).toBeAttached();

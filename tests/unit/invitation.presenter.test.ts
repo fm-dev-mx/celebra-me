@@ -288,6 +288,7 @@ const baseViewModel = {
 	isDemo: false,
 	theme: { preset: 'jewelry-box' as const, themeClass: 'theme-preset--jewelry-box' },
 	hero: {
+		structuralVariant: 'standard' as const,
 		name: 'Test',
 		label: 'Event',
 		date: '2027-01-01',
@@ -415,6 +416,7 @@ describe('buildPageContextFromViewModel', () => {
 			title: 'Venues Hero',
 			sections: {
 				location: {
+					structuralVariant: 'standard',
 					venues: [
 						{
 							time: '2:00 PM',
@@ -443,6 +445,7 @@ describe('buildPageContextFromViewModel', () => {
 			title: 'Legacy Hero',
 			sections: {
 				location: {
+					structuralVariant: 'standard',
 					reception: { time: '6:00 PM', venueName: 'Salón Real' },
 				},
 			},
@@ -716,6 +719,7 @@ describe('buildPageContextFromViewModel', () => {
 			id: 'luna-y-estrella',
 			sections: {
 				location: {
+					structuralVariant: 'standard',
 					visibility: 'after-rsvp',
 					presentationOptions: { revealSurface: 'rsvp' },
 					ceremony: {
@@ -783,6 +787,7 @@ describe('buildPageContextFromViewModel', () => {
 			},
 			sections: {
 				location: {
+					structuralVariant: 'standard',
 					visibility: 'after-rsvp',
 					introHeading: 'Ubicación',
 					ceremony: {
@@ -831,6 +836,7 @@ describe('buildPageContextFromViewModel', () => {
 			title: 'Regression Test — After RSVP Confirmed',
 			sections: {
 				location: {
+					structuralVariant: 'standard',
 					visibility: 'after-rsvp',
 					introHeading: 'Ubicación',
 					ceremony: {

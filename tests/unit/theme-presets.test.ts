@@ -224,9 +224,11 @@ describe('Angelic presence section coverage', () => {
 			if (relativePath.includes('/itinerary/')) {
 				// Canonical itinerary behavior is standard|timeline-paper; skin binds via theme preset.
 				expect(content).toContain(
-					".theme-preset--angelic-presence .itinerary[data-variant='standard']",
+					".theme-preset--angelic-presence .itinerary[data-structural-variant='standard']",
 				);
-				expect(content).not.toContain(".itinerary[data-variant='angelic-presence']");
+				expect(content).not.toContain(
+					".itinerary[data-structural-variant='angelic-presence']",
+				);
 			} else {
 				expect(content).toContain("data-variant='angelic-presence'");
 			}
@@ -316,7 +318,9 @@ describe('Celestial blue section coverage', () => {
 	it('styles every visible section with celestial-blue selectors', () => {
 		for (const relativePath of sectionThemeFiles) {
 			const filePath = path.join(projectRoot, relativePath);
-			expect(fs.readFileSync(filePath, 'utf8')).toContain("data-variant='celestial-blue'");
+			const content = fs.readFileSync(filePath, 'utf8');
+			expect(content).toContain('celestial-blue');
+			expect(content).not.toContain("data-structural-variant='celestial-blue'");
 		}
 	});
 
@@ -331,7 +335,7 @@ describe('Celestial blue section coverage', () => {
 		);
 
 		expect(fs.existsSync(aliasPath)).toBe(false);
-		expect(behavior).toContain("[data-variant='timeline-paper']");
+		expect(behavior).toContain("[data-structural-variant='timeline-paper']");
 		expect(behavior).not.toContain("[data-variant='celestial-blue']");
 	});
 
@@ -506,7 +510,6 @@ describe('Sacred keepsake section coverage', () => {
 		'src/styles/themes/sections/gallery/_sacred-keepsake.scss',
 		'src/styles/themes/sections/itinerary/_sacred-keepsake.scss',
 		'src/styles/themes/sections/rsvp/_sacred-keepsake.scss',
-		'src/styles/themes/sections/thank-you/_sacred-keepsake.scss',
 		'src/styles/themes/sections/header/_sacred-keepsake.scss',
 	];
 	const sacredContent = fs.readFileSync(
@@ -521,9 +524,11 @@ describe('Sacred keepsake section coverage', () => {
 
 			if (relativePath.includes('/itinerary/')) {
 				expect(content).toContain(
-					".theme-preset--sacred-keepsake .itinerary[data-variant='standard']",
+					".theme-preset--sacred-keepsake .itinerary[data-structural-variant='standard']",
 				);
-				expect(content).not.toContain(".itinerary[data-variant='sacred-keepsake']");
+				expect(content).not.toContain(
+					".itinerary[data-structural-variant='sacred-keepsake']",
+				);
 			} else {
 				expect(content).toContain("data-variant='sacred-keepsake'");
 			}

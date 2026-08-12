@@ -33,7 +33,7 @@ const {
 } = Astro.props;
 const structuralVariant = structuralVariantProp ?? 'uniform-grid';
 const renderedVisualVariant = visualVariant ?? structuralVariant;
-const isEditorialMagazine = structuralVariant === 'magazine-spread';
+const isMagazineSpread = structuralVariant === 'magazine-spread';
 
 const resolveImage = (image: ImageMetadata | ImageAsset) => {
 	const src = typeof image.src === 'string' ? image.src : image.src.src;
@@ -74,7 +74,7 @@ const resolveImage = (image: ImageMetadata | ImageAsset) => {
 					fetchpriority={index >= 2 ? 'low' : undefined}
 				/>
 				<!-- "LOOK" is intentionally English — editorial fashion label style -->
-				{isEditorialMagazine && (
+				{isMagazineSpread && (
 					<span class="gallery-grid__editorial-label">
 						LOOK {String(index + 1).padStart(2, '0')}
 					</span>

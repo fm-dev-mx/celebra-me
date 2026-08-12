@@ -13,17 +13,12 @@
         "timeZone": "America/Mexico_City",
         "startsAtUtc": "2026-09-12T17:00:00.000Z"
     },
-    "sectionStyles": {
-        "location": {
-            "showFlourishes": true
-        },
-        "rsvp": {}
-    },
     "hero": {
         "name": "Camila Aurora",
         "label": "Primera Comunión",
         "date": "2026-09-12T11:00:00.000Z",
-        "backgroundImage": "hero"
+        "backgroundImage": "hero",
+        "variant": "standard"
     },
     "location": {
         "visibility": "public",
@@ -57,7 +52,11 @@
                 "iconName": "DressCode",
                 "text": "<strong>Vestimenta</strong> Tonos claros, formales y suaves."
             }
-        ]
+        ],
+        "variant": "standard",
+        "presentationOptions": {
+            "showFlourishes": true
+        }
     },
     "family": {
         "parents": {
@@ -82,7 +81,8 @@
             "parentsTitle": "Con la bendición de",
             "godparentsTitle": "Padrinos",
             "sectionMessage": "Gracias por acompañarnos en este día de fe y alegría. Su amor y sus bendiciones hacen más luminoso este sacramento."
-        }
+        },
+        "variant": "standard"
     },
     "gallery": {
         "eyebrow": "Galería",
@@ -109,14 +109,12 @@
                 "title": "Lluvia de Sobres",
                 "text": "Si desean tener un detalle, podrán hacerlo en el área de recepción."
             }
-        ]
+        ],
+        "variant": "standard"
     },
     "itinerary": {
         "title": "Programa",
         "subtitle": "Primera Comunión",
-        "presentation": {
-            "behavior": "standard"
-        },
         "items": [
             {
                 "iconName": "Reception",
@@ -136,7 +134,8 @@
                 "time": "13:00",
                 "description": "Comida familiar"
             }
-        ]
+        ],
+        "variant": "standard"
     },
     "countdown": {
         "title": "Nos acercamos con alegría",
@@ -150,13 +149,18 @@
         "title": "Confirma tu asistencia",
         "guestCap": 4,
         "confirmationMessage": "Gracias por confirmar y acompañarnos en este día de fe.",
-        "confirmationMode": "api"
+        "confirmationMode": "api",
+        "variant": "standard",
+        "personalizedAccess": {
+            "variant": "standard"
+        }
     },
     "thankYou": {
         "message": "Gracias por compartir este momento sagrado. Su presencia y sus bendiciones quedarán guardadas con mucho cariño.",
         "closingName": "Camila Aurora",
         "image": "thankYouPortrait",
-        "focalPoint": "50% 50%"
+        "focalPoint": "50% 50%",
+        "variant": "standard"
     },
     "interludes": [
         {

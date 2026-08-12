@@ -23,6 +23,7 @@ type InvitationCssInput = {
 		personalizedAccess?: string;
 		family?: string;
 		location?: string;
+		itinerary?: string;
 	};
 	visualProfileId?: string;
 	slug?: string;
@@ -36,37 +37,27 @@ const FOOTER_PRESET_TO_ENTRYPOINT: Record<string, string> = {
 };
 
 const GALLERY_VARIANT_TO_ENTRYPOINT: Record<string, string> = {
-	'editorial-mosaic': 'editorial',
-	'magazine-spread': 'editorial-magazine',
-	'feature-mosaic': 'luxury-hacienda',
-	'index-choreography': 'celestial-blue',
-	editorial: 'editorial',
-	'editorial-rose': 'editorial-rose',
-	'editorial-magazine': 'editorial-magazine',
-	'premiere-floral': 'editorial',
-	'celestial-blue': 'celestial-blue',
-	'enchanted-rose': 'enchanted-rose',
-	'sacred-keepsake': 'sacred-keepsake',
-	'angelic-presence': 'angelic-presence',
-	'luxury-hacienda': 'luxury-hacienda',
-	'jewelry-box': 'jewelry-box',
-	'jewelry-box-wedding': 'jewelry-box',
+	'editorial-mosaic': 'editorial-mosaic',
+	'magazine-spread': 'magazine-spread',
+	'feature-mosaic': 'feature-mosaic',
+	'index-choreography': 'index-choreography',
 };
 
 const STRUCTURAL_VARIANT_TO_ENTRYPOINT: Record<string, Record<string, string>> = {
 	hero: {
-		'editorial-cover': 'editorial-magazine',
+		'editorial-cover': 'editorial-cover',
 		'split-cover': 'split-cover',
 	},
 	thankYou: {
-		'editorial-back-cover': 'editorial-magazine',
-		'full-bleed-photo': 'sacred-keepsake',
+		'editorial-back-cover': 'editorial-back-cover',
+		'full-bleed-photo': 'full-bleed-photo',
 	},
-	gifts: { 'editorial-catalog': 'editorial-magazine' },
-	rsvp: { 'editorial-press-pass': 'editorial-magazine' },
-	personalizedAccess: { 'editorial-pass': 'editorial-magazine' },
+	gifts: { 'editorial-catalog': 'editorial-catalog' },
+	rsvp: { 'editorial-press-pass': 'editorial-press-pass' },
+	personalizedAccess: { 'editorial-pass': 'editorial-pass' },
 	family: { 'split-groups': 'split-groups' },
 	location: { 'split-map': 'split-map' },
+	itinerary: { 'timeline-paper': 'timeline-paper' },
 };
 
 // Only presets with a dedicated footer/*.scss file go here.
@@ -128,7 +119,6 @@ export function resolveGalleryVariantCssUrl(
 	sectionUrlMap: SectionUrlMap,
 	variant: string,
 ): string | undefined {
-	if (variant === 'single') return undefined;
 	return resolveSectionCssUrl(sectionUrlMap, 'gallery', GALLERY_VARIANT_TO_ENTRYPOINT, variant);
 }
 
@@ -151,7 +141,7 @@ function resolveStructuralVariantCssUrls(
 	return Object.entries(input.structuralVariants ?? {}).flatMap(([section, variant]) => {
 		if (!variant) return [];
 		const entrypoint = STRUCTURAL_VARIANT_TO_ENTRYPOINT[section]?.[variant];
-		if (!entrypoint || entrypoint === input.themePreset) return [];
+		if (!entrypoint) return [];
 		const sectionName =
 			section === 'personalizedAccess'
 				? 'personalized-access'
