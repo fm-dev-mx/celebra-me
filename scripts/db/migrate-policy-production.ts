@@ -359,6 +359,8 @@ export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 			const match = matchProductionWritePermit({
 				dbUrl: ctx.dbUrl,
 				bindingHex: ctx.authorizedPlanBindingHex,
+				operationType:
+					ctx.authorizedPermitOperationType ?? PRODUCTION_MIGRATION_OPERATION_TYPE,
 			});
 			if (match !== 'ok') {
 				throw new OperatorError({
@@ -411,9 +413,15 @@ export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 		});
 	},
 
-	execute(_plan, ctx) {
+	execute(plan, ctx) {
 		writeHuman(`${operatorSymbol('info')} Aplicación: empujando migraciones…`);
-		const result = executeSupabasePush(ctx.dbUrl);
+		const result = executeSupabasePush(ctx.dbUrl, {
+			productionPermit: {
+				bindingHex: ctx.authorizedPlanBindingHex ?? plan.planId,
+				operationType:
+					ctx.authorizedPermitOperationType ?? PRODUCTION_MIGRATION_OPERATION_TYPE,
+			},
+		});
 		if (result.status !== 0) {
 			fail(
 				`Production migration push failed: ${(result.stderr || result.stdout).trim() || `exit ${result.status}`}`,

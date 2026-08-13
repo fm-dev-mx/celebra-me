@@ -2,6 +2,10 @@ import { createHash } from 'node:crypto';
 import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
 import { getProdDbUrl, runPsql } from '../db/db-workflow-lib.ts';
 import { requireOwnerProductionApply } from '../db/owner-production-apply.ts';
+import {
+	clearProductionWritePermit,
+	withProductionPermitScope,
+} from '../db/production-write-permit.ts';
 import { evaluatePromotionBackupGate } from './invitation-promote.ts';
 import { canonicalize } from './normalized-invitation-release.ts';
 import {
@@ -175,34 +179,41 @@ async function applyPlan(): Promise<void> {
 		],
 	});
 
-	const applied = applyRominaDraftReset({
-		plan,
-		draftContent: candidate.draft.content as Record<string, unknown>,
-		publishedContent: candidate.published.content as Record<string, unknown>,
-		draftStatus: candidate.draft.status,
-		draftUpdatedAt: candidate.draft.updatedAt,
-		targetDbUrl,
-	});
-	verifyRominaDraftResetOutcome(
-		plan,
-		applied.draftContent,
-		applied.publishedContent,
-	);
-	const result = {
-		status: applied.status,
-		result: applied.result,
-		operationFingerprint: plan.operationFingerprint,
-		operationId: plan.operationId,
-		backupManifest: backup.manifestPath,
-		publishedHash: plan.hashes.published,
-		draftAfter: plan.hashes.draftAfter,
-		transaction: 'committed',
-	};
-	if (json) console.log(JSON.stringify(result, null, 2));
-	else
-		console.log(
-			`Romina draft reset applied: ${applied.status}; operation ${plan.operationId}`,
+	try {
+		const applied = withProductionPermitScope(
+			{
+				bindingHex: plan.operationFingerprint,
+				operationType: ROMINA_DRAFT_RESET_OPERATION_TYPE,
+			},
+			() =>
+				applyRominaDraftReset({
+					plan,
+					draftContent: candidate.draft.content as Record<string, unknown>,
+					publishedContent: candidate.published.content as Record<string, unknown>,
+					draftStatus: candidate.draft.status,
+					draftUpdatedAt: candidate.draft.updatedAt,
+					targetDbUrl,
+				}),
 		);
+		verifyRominaDraftResetOutcome(plan, applied.draftContent, applied.publishedContent);
+		const result = {
+			status: applied.status,
+			result: applied.result,
+			operationFingerprint: plan.operationFingerprint,
+			operationId: plan.operationId,
+			backupManifest: backup.manifestPath,
+			publishedHash: plan.hashes.published,
+			draftAfter: plan.hashes.draftAfter,
+			transaction: 'committed',
+		};
+		if (json) console.log(JSON.stringify(result, null, 2));
+		else
+			console.log(
+				`Romina draft reset applied: ${applied.status}; operation ${plan.operationId}`,
+			);
+	} finally {
+		clearProductionWritePermit();
+	}
 }
 
 function printReplay(identity: {

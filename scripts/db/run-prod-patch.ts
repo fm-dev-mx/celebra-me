@@ -7,13 +7,10 @@ import {
 	validateAndNormalizeSupabaseUrl,
 	validateOwnerUserId,
 	assertSameSupabaseProject,
+	type SqlManifest,
 } from './sql-safety.ts';
 import { getProdDbUrl, runCommand, runPsql } from './db-workflow-lib.ts';
 import { OperatorError } from './operator-cli-ux.ts';
-import {
-	requireOwnerProductionApply,
-	type OwnerProductionApplyInput,
-} from './owner-production-apply.ts';
 import { matchProductionWritePermit } from './production-write-permit.ts';
 
 /**
@@ -22,45 +19,37 @@ import { matchProductionWritePermit } from './production-write-permit.ts';
  * Narrow owner-only path for reviewed manual SQL patches that cannot yet be
  * expressed as versioned supabase/migrations/*. Not a bypass for
  * invitation:release or db:migrate. Default operator mode is lint-only
- * (--dry-run). --apply requires interactive owner TTY confirmation.
+ * (`--dry-run`).
  */
 
 function printUsage(): void {
 	console.error('Usage: pnpm db:prod:patch -- --dry-run --file <production-patch.sql>');
 	console.error(
-		'       pnpm db:prod:patch -- --apply --owner-user-id <UUID> --file <production-patch.sql>',
+		'Production mutation is available only through pnpm prod:apply -- --patch <production-patch.sql> --owner-user-id <UUID> --apply.',
 	);
-	console.error(
-		'Owner-only specialized maintenance. Prefer supabase/migrations + db:migrate for schema and invitation:release for managed content.',
-	);
-	console.error(
-		'Apply requires `pnpm release-check` evidence and an interactive TTY confirmation.',
-	);
+	console.error('This entrypoint is lint-only and never opens a Production database connection.');
 }
 
 interface ParsedPatchInput {
 	dryRun: boolean;
-	apply: boolean;
 	file: string;
 	path: string;
-	ownerUserId: string | undefined;
-	sql: string;
 }
 
 function parsePatchInput(): ParsedPatchInput {
 	const dryRun = process.argv.includes('--dry-run');
 	const apply = process.argv.includes('--apply');
 	const file = argValue('--file');
-	const ownerUserId = argValue('--owner-user-id');
 
-	if (dryRun && apply) {
-		console.error('Cannot specify both --dry-run and --apply. Choose one mode.');
+	if (apply) {
+		printUsage();
+		console.error('DIRECT_PRODUCTION_PATCH_APPLY_BLOCKED: use pnpm prod:apply -- --patch <file> --owner-user-id <uuid> --apply.');
 		process.exit(1);
 	}
 
-	if (!dryRun && !apply) {
+	if (!dryRun) {
 		printUsage();
-		console.error('       Specify --dry-run (lint only) or --apply (execute after validation).');
+		console.error('Specify --dry-run for lint-only validation.');
 		process.exit(1);
 	}
 
@@ -86,7 +75,7 @@ function parsePatchInput(): ParsedPatchInput {
 		process.exit(1);
 	}
 
-	return { dryRun, apply, file, path, ownerUserId, sql };
+	return { dryRun, file, path };
 }
 
 export interface PreparedProductionPatch {
@@ -94,6 +83,7 @@ export interface PreparedProductionPatch {
 	path: string;
 	sql: string;
 	fingerprint: string;
+	manifest: SqlManifest;
 }
 
 /** Lint-only patch preparation. Does not connect to Production. */
@@ -124,18 +114,69 @@ export function prepareProductionPatchFile(file: string): PreparedProductionPatc
 		});
 	}
 	const fingerprint = createHash('sha256').update(`${file}\u001f${sql}`).digest('hex');
-	return { file, path, sql, fingerprint };
+	return { file, path, sql, fingerprint, manifest: result.manifest };
+}
+
+function assertPatchPreviewRowCount(manifest: SqlManifest, rawCount: string): number {
+	const countText = rawCount.trim();
+	if (!/^\d+$/.test(countText)) {
+		throw new OperatorError({
+			title: 'Vista previa del parche no verificable',
+			cause: 'La consulta de vista previa no devolvió un único conteo entero.',
+			code: 'PATCH_PREVIEW_COUNT_INVALID',
+			remediation: ['Corrija @dry-run-query para que identifique un conjunto de filas contable.'],
+		});
+	}
+	const count = Number(countText);
+	const min = Number(manifest['expected-rows-min']);
+	const max = Number(manifest['expected-rows-max']);
+	if (!Number.isSafeInteger(count) || count < min || count > max) {
+		throw new OperatorError({
+			title: 'Vista previa del parche fuera de los límites aprobados',
+			cause: `La vista previa identificó ${count} filas; el manifiesto permite ${min} a ${max}.`,
+			code: 'PATCH_PREVIEW_ROW_COUNT_MISMATCH',
+			remediation: [
+				'No aplique el parche con esta población.',
+				'Revise los predicados y vuelva a generar el plan de Production.',
+			],
+		});
+	}
+	return count;
+}
+
+function preflightPatchPreview(prepared: PreparedProductionPatch, dbUrl: string): number {
+	const preview = prepared.manifest['dry-run-query'];
+	if (!preview) {
+		throw new OperatorError({
+			title: 'Vista previa del parche ausente',
+			cause: 'El parche preparado no tiene @dry-run-query.',
+			code: 'PATCH_PREVIEW_REQUIRED',
+			remediation: ['Vuelva a preparar el parche con un manifiesto válido.'],
+		});
+	}
+	const result = runPsql(`select count(*)::text from (${preview}) as patch_target;`, dbUrl, {
+		tuplesOnly: true,
+		throwOnError: false,
+		redact: [dbUrl],
+	});
+	if (result.status !== 0) {
+		throw new OperatorError({
+			title: 'Vista previa del parche fallida',
+			cause: (result.stderr || result.stdout).trim() || 'La consulta de vista previa falló.',
+			code: 'PATCH_PREVIEW_FAILED',
+			remediation: ['Corrija el manifiesto o el estado de datos antes de aplicar.'],
+		});
+	}
+	return assertPatchPreviewRowCount(prepared.manifest, result.stdout);
 }
 
 /**
- * Execute a linted patch after owner authorization.
- * When authorizedPlanBindingHex is set, asserts the in-process permit instead of prompting.
+ * Execute a linted patch only through the reviewed prod:apply owner workflow.
  */
 export async function applyPreparedProductionPatch(input: {
 	prepared: PreparedProductionPatch;
 	ownerUserId: string;
-	authorizedPlanBindingHex?: string;
-	requireOwnerApply?: (gate: OwnerProductionApplyInput) => Promise<void>;
+	authorizedPlanBindingHex: string;
 }): Promise<void> {
 	const { validatedOwnerId, normalizedUrl, dbUrl } = validateProductionTargetEnv(
 		input.ownerUserId,
@@ -143,54 +184,31 @@ export async function applyPreparedProductionPatch(input: {
 	const ownerConfig = `SELECT set_config('app.owner_user_id', '${validatedOwnerId.replace(/'/g, "''")}', false);\n`;
 	const urlConfig = `SELECT set_config('app.supabase_project_url', '${normalizedUrl.replace(/'/g, "''")}', false);\n`;
 	const fullSql = ownerConfig + urlConfig + input.prepared.sql;
-	const manifestFingerprint = createHash('sha256')
-		.update(
-			`${input.prepared.file}\u001f${validatedOwnerId}\u001f${normalizedUrl}\u001f${fullSql}`,
-		)
-		.digest('hex');
-
-	if (input.authorizedPlanBindingHex) {
-		const match = matchProductionWritePermit({
-			dbUrl,
-			bindingHex: input.authorizedPlanBindingHex,
-		});
-		if (match !== 'ok') {
-			throw new OperatorError({
-				title: 'Autorización de Production no reutilizable',
-				cause: `El permiso interno no coincide con el plan aprobado (${match}).`,
-				code: 'PRODUCTION_WRITE_PERMIT_REQUIRED',
-				remediation: [
-					'Ejecute pnpm prod:apply -- --patch <file> --apply en una TTY del propietario.',
-				],
-			});
-		}
-	} else {
-		await (input.requireOwnerApply ?? requireOwnerProductionApply)({
-			apply: true,
-			dbUrl,
-			operationType: 'production_patch',
-			operationVerb: 'PATCH',
-			bindingHex: manifestFingerprint,
-			applyActionLabel: 'Aplicar',
-			summaryTitle: 'Parche SQL — Production',
-			summary: [
-				['Operación', 'Parche SQL especializado'],
-				['Archivo', input.prepared.file],
-				['Respaldo', 'Responsabilidad del operador antes del apply'],
-				['Autorización', 'Confirmación interactiva del propietario'],
-			],
-			technicalReview: [
-				['Impacto', 'Ejecuta SQL de mantenimiento en Production'],
-				['Archivo', input.prepared.file],
-				['Owner UUID', validatedOwnerId],
-				['Huella', manifestFingerprint],
-				['Tipo interno', 'production_patch'],
-				['Controles', 'TTY · agente bloqueado · release-check · sin token'],
+	const match = matchProductionWritePermit({
+		dbUrl,
+		bindingHex: input.authorizedPlanBindingHex,
+		operationType: 'production_apply',
+	});
+	if (match !== 'ok') {
+		throw new OperatorError({
+			title: 'Autorización de Production no reutilizable',
+			cause: `El permiso interno no coincide con el plan aprobado (${match}).`,
+			code: 'PRODUCTION_WRITE_PERMIT_REQUIRED',
+			remediation: [
+				'Ejecute pnpm prod:apply -- --patch <file> --owner-user-id <uuid> --apply en una TTY del propietario.',
 			],
 		});
 	}
+	preflightPatchPreview(input.prepared, dbUrl);
 
-	executeProductionPatchSql(fullSql, dbUrl, normalizedUrl, input.prepared.file, validatedOwnerId);
+	executeProductionPatchSql(
+		fullSql,
+		dbUrl,
+		normalizedUrl,
+		input.prepared.file,
+		validatedOwnerId,
+		input.authorizedPlanBindingHex,
+	);
 }
 
 interface ValidatedTargetEnv {
@@ -244,7 +262,7 @@ function validateProductionTargetEnv(ownerUserId: string | undefined): Validated
 }
 
 export async function runProdPatchMain(): Promise<void> {
-	const { dryRun, file, path, ownerUserId, sql } = parsePatchInput();
+	const { dryRun, path } = parsePatchInput();
 
 	if (dryRun) {
 		console.info(`Production patch dry-run passed lint: ${path}`);
@@ -255,20 +273,7 @@ export async function runProdPatchMain(): Promise<void> {
 		process.exit(0);
 	}
 
-	if (!ownerUserId) {
-		console.error('--owner-user-id is required for --apply.');
-		process.exit(1);
-	}
-
-	await applyPreparedProductionPatch({
-		prepared: {
-			file,
-			path,
-			sql,
-			fingerprint: createHash('sha256').update(`${file}\u001f${sql}`).digest('hex'),
-		},
-		ownerUserId,
-	});
+	throw new Error('Unreachable: direct production patch execution is blocked.');
 }
 
 function executeProductionPatchSql(
@@ -277,8 +282,15 @@ function executeProductionPatchSql(
 	normalizedUrl: string,
 	file: string,
 	validatedOwnerId: string,
+	authorizedPlanBindingHex: string,
 ): void {
-	const execResult = runPsql(fullSql, dbUrl, [normalizedUrl, dbUrl]);
+	const execResult = runPsql(fullSql, dbUrl, {
+		redact: [normalizedUrl, dbUrl],
+		productionPermit: {
+			bindingHex: authorizedPlanBindingHex,
+			operationType: 'production_apply',
+		},
+	});
 
 	if (execResult.status !== 0) {
 		console.error(`Production patch failed (exit ${execResult.status}):`);

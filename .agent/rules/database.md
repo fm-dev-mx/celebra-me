@@ -76,9 +76,10 @@ task authorization, target classification, and standard guard checks.
   serialize on the target invitation row; do not add receipt row locks that would require `UPDATE`.
 - **No Direct Production SQL**: Direct production SQL execution is not part of the normal workflow.
   Emergency patch files must contain the manifest required by
-  [`manual-sql-manifest.md`](manual-sql-manifest.md). Prefer `pnpm db:prod:patch -- --dry-run`
-  first; owner-only `--apply` is specialized maintenance, not a substitute for versioned migrations
-  or `invitation:release`.
+  [`manual-sql-manifest.md`](manual-sql-manifest.md). Lint with
+  `pnpm db:prod:patch -- --dry-run --file <path>`; mutation is only
+  `pnpm prod:apply -- --patch <path> --owner-user-id <uuid> --apply`. Patches are not a
+  substitute for versioned migrations or `invitation:release`.
 - **One-Time Recovery Tool Removed**: `scripts/db/reconcile-prod-baseline.ts` was a one-time
   recovery tool and is no longer part of the repository.
 - **Production Migration Safety Workflow**: Public owner apply is `pnpm prod:apply` (`APPLY <8-hex>`).
@@ -188,11 +189,12 @@ task authorization, target classification, and standard guard checks.
 - Persistent schema mutation has one lifecycle: versioned `supabase/migrations/` →
   `pnpm db:migrate -- --target` (disposable → Local → Preview → owner `pnpm prod:apply -- --schema`).
   `executePsqlAtomicPending` is Local-only. There is no `apply-migrations` CLI.
-- `pnpm db:prod:patch` disposition is `RESTRICT_OWNER_ONLY` / `KEEP_SPECIALIZED`: `--dry-run` is
-  lint-only; `--apply` is owner-confirmed specialized DML. Persistent DDL (`CREATE TABLE/INDEX`,
-  routines, schema-changing `ALTER`, persistent `DROP`, `GRANT`/`REVOKE`) is rejected. Prefer
-  `pnpm prod:apply -- --patch` as the owner-facing entry. Patches must not bypass
-  `db:migrate -- --target production` or `invitation:release`.
+- `pnpm db:prod:patch` is lint-only and requires `--dry-run`; it never opens Production. Specialized
+  DML is `RESTRICT_OWNER_ONLY` / `KEEP_SPECIALIZED` and can execute only through
+  `pnpm prod:apply -- --patch ... --apply`, which binds the current plan and artifact, validates
+  preview row-count bounds and backup, and prompts the owner. Persistent DDL (`CREATE TABLE/INDEX`,
+  routines, schema-changing `ALTER`, persistent `DROP`, `GRANT`/`REVOKE`) is rejected. Patches must
+  not bypass `db:migrate -- --target production` or `invitation:release`.
 - `invitation:romina-draft-reset` remains a temporary explicit one-off (never `--all-ready`) until
   the owner confirms it is complete.
 - Production patch files must include the manifest required by
@@ -250,8 +252,9 @@ invent a healthy state, or acquire mutation authority.
 - Need to reset a database for tests? Use `tsx scripts/db/disposable-test-env.ts reset`. The guard
   allows all operations on the disposable-test target.
 - Need a manual production SQL patch? Require the [`manual SQL manifest`](manual-sql-manifest.md),
-  run `pnpm db:prod:patch -- --dry-run --file <path>`, and only use owner-confirmed `--apply` for
-  specialized maintenance that cannot yet be a versioned migration.
+  run `pnpm db:prod:patch -- --dry-run --file <path>`, then use only
+  `pnpm prod:apply -- --patch <path> --owner-user-id <uuid> --apply` for owner-confirmed specialized
+  maintenance that cannot yet be a versioned migration.
 - Asked to run `pnpm db:push`, `pnpm db:local:reset`, raw `supabase db push --linked`, or removed
   one-shot ops commands? Do not run them. Report that the path is blocked.
 - Asked to use Supabase MCP `apply_migration` or mutating `execute_sql` against Production? Do not.
@@ -328,7 +331,8 @@ persistent-local database was preserved.
 - Destructive tests (reset, schema drops, truncate, migration rollback) must use the disposable test
   environment (`pnpm db:disposable:reset`).
 - Production is strictly read-only unless the user explicitly authorizes a separate production
-  owner apply with `pnpm prod:apply` (schema via `--schema`, content via `--slug` / `--all-ready`).
+  owner apply with `pnpm prod:apply` (schema via `--schema`, content via `--slug` / `--all-ready`,
+  specialized DML via `--patch`).
 - Unknown database targets must cause an immediate abort of the operation.
 - Dumps and credentials must never enter Git. Dumps live under gitignored `.tmp/` and `.backups/`;
   hosted DB credentials live only in gitignored `.env.preview.local` / `.env.production.local`.
@@ -336,13 +340,14 @@ persistent-local database was preserved.
   `tsx scripts/db/db-guard.ts classify --db-url <url>`.
 - Do not connect to production unless the user explicitly asks for that exact production operation.
 - Do not execute manual production SQL from `scripts/manual/production-patches/` or `scripts/sql/`
-  without the owner-only `db:prod:patch` workflow.
+  without linting via `pnpm db:prod:patch -- --dry-run --file <path>` and applying only through
+  `pnpm prod:apply -- --patch <path> --owner-user-id <uuid> --apply`.
 - Do not run `supabase db push --linked`.
 - Do not use Supabase MCP `apply_migration` or mutating `execute_sql` against Production.
   Agent sessions set `CELEBRA_AGENT_CONTEXT` automatically; that rejects Production owner-apply
   self-authorization. Preview remains agent-operable under its existing scope/TTY policy.
-- For production patches, prefer versioned migrations; use `pnpm db:prod:patch` only as specialized
-  owner maintenance (`RESTRICT_OWNER_ONLY`).
+- For production patches, prefer versioned migrations. `pnpm db:prod:patch` is lint-only
+  (`RESTRICT_OWNER_ONLY`); mutation is only `pnpm prod:apply -- --patch`.
 - Prefer fail-closed behavior over preserving old command compatibility.
 - `pnpm run ci` must never reset or modify the persistent local database.
 - The sentinel must survive the full validation pipeline.

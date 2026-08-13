@@ -22,6 +22,10 @@ import {
 import { getProdDbUrl, runPsql, sqlLiteral } from '../db/db-workflow-lib.ts';
 import { requireOwnerProductionApply } from '../db/owner-production-apply.ts';
 import {
+	clearProductionWritePermit,
+	withProductionPermitScope,
+} from '../db/production-write-permit.ts';
+import {
 	readDraftCanonicalizationState,
 	resolveTargetDbUrl,
 } from './draft-canonicalization-service.ts';
@@ -40,7 +44,8 @@ function value(flag: string): string | undefined {
 
 function requireSlug(): string {
 	const slug = value('--slug');
-	if (!slug || slug.startsWith('--')) throw new Error('SLUG_REQUIRED: pass --slug <invitation-slug>.');
+	if (!slug || slug.startsWith('--'))
+		throw new Error('SLUG_REQUIRED: pass --slug <invitation-slug>.');
 	return slug;
 }
 
@@ -197,8 +202,12 @@ async function applyPlan(): Promise<void> {
 		return;
 	}
 	if (!state.draft.content || !state.published.content) {
-		throw new Error('DRAFT_RESTORE_STATE_UNAVAILABLE: draft and published content are required.');
+		throw new Error(
+			'DRAFT_RESTORE_STATE_UNAVAILABLE: draft and published content are required.',
+		);
 	}
+	const draftContent = state.draft.content;
+	const publishedContent = state.published.content;
 
 	if (target === 'production') {
 		const backupManifestPath = value('--backup-manifest');
@@ -242,24 +251,38 @@ async function applyPlan(): Promise<void> {
 		});
 	}
 
-	applyRestoreSql({
-		slug,
-		before: state.draft.content,
-		after: plan.afterContent as Record<string, unknown>,
-		published: state.published.content,
-		dbUrl,
-	});
+	const isProduction = target === 'production';
+	try {
+		const applyRestore = () =>
+			applyRestoreSql({
+				slug,
+				before: draftContent,
+				after: plan.afterContent as Record<string, unknown>,
+				published: publishedContent,
+				dbUrl,
+			});
+		if (isProduction) {
+			withProductionPermitScope(
+				{ bindingHex: fingerprints.after, operationType: 'draft_restore' },
+				applyRestore,
+			);
+		} else {
+			applyRestore();
+		}
 
-	const summary = {
-		status: 'applied',
-		slug,
-		target,
-		scope: plan.scope,
-		discardedPaths: plan.discardedPaths,
-		draftAfter: fingerprints.after,
-	};
-	if (json) console.log(JSON.stringify(summary, null, 2));
-	else console.log(`Draft restore applied for ${slug} (${target}).`);
+		const summary = {
+			status: 'applied',
+			slug,
+			target,
+			scope: plan.scope,
+			discardedPaths: plan.discardedPaths,
+			draftAfter: fingerprints.after,
+		};
+		if (json) console.log(JSON.stringify(summary, null, 2));
+		else console.log(`Draft restore applied for ${slug} (${target}).`);
+	} finally {
+		if (isProduction) clearProductionWritePermit();
+	}
 }
 
 void (async () => {

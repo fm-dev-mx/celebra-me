@@ -16,6 +16,11 @@ import {
 	requireOwnerProductionApply,
 	type OwnerProductionApplyInput,
 } from '../db/owner-production-apply.ts';
+import {
+	clearProductionWritePermit,
+	withProductionPermitScope,
+	type ProductionPermitBinding,
+} from '../db/production-write-permit.ts';
 import { ensureValidReleaseCheckEvidence } from '../db/release-check.ts';
 import type { AssetPolicy } from './asset-reconciliation.ts';
 import type { InvitationPackageData } from './invitation-package.ts';
@@ -86,6 +91,11 @@ export interface OrchestrateInvitationPromotionInput {
 	revalidateVolatile?: (
 		input: RevalidatePromotionVolatilePreconditionsInput,
 	) => Promise<PromotionPreflightReport>;
+	/**
+	 * Composite prod:apply owns the permit and binds children to its revalidated
+	 * plan. Standalone promotion instead binds to this package hash.
+	 */
+	authorizedProductionPermit?: ProductionPermitBinding;
 }
 
 /**
@@ -300,13 +310,27 @@ export async function orchestrateInvitationPromotion(
 		technicalReview: buildPromotionTechnicalReview(prepared),
 	});
 
-	return runApply({
-		preflight: prepared,
-		packageData: input.packageData,
-		ownerUserId: input.ownerUserId,
-		assetPolicy: input.assetPolicy,
-		pruneAssets: input.pruneAssets,
-		updateScope,
-		conflictResolutions: input.conflictResolutions,
-	});
+	const permitBinding = input.authorizedProductionPermit ?? {
+		bindingHex: input.packageData.packageHash,
+		operationType: PROMOTION_OPERATION_TYPE,
+	};
+	const apply = () =>
+		withProductionPermitScope(permitBinding, () =>
+			runApply({
+				preflight: prepared,
+				packageData: input.packageData,
+				ownerUserId: input.ownerUserId,
+				assetPolicy: input.assetPolicy,
+				pruneAssets: input.pruneAssets,
+				updateScope,
+				conflictResolutions: input.conflictResolutions,
+			}),
+		);
+
+	if (input.authorizedProductionPermit) return apply();
+	try {
+		return await apply();
+	} finally {
+		clearProductionWritePermit();
+	}
 }

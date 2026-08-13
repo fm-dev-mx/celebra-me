@@ -12,12 +12,12 @@ pnpm prod:apply -- --patch <file.sql> --owner-user-id <uuid>   # owner-facing pl
 pnpm prod:apply -- --patch <file.sql> --owner-user-id <uuid> --apply
 pnpm db:sql:lint -- --file <path>
 pnpm db:prod:patch -- --dry-run --file <path>
-pnpm db:prod:patch -- --apply --file <path>     # protected primitive; owner TTY only
 ```
 
-**Expected result:** Lint/dry-run report; apply executes after owner gate. Persistent DDL is
-rejected (CREATE TABLE/INDEX, routines, schema-changing ALTER, persistent DROP, GRANT/REVOKE).
-`CREATE TEMP TABLE` remains allowed.
+**Expected result:** `db:prod:patch` lint/dry-run never opens Production. `prod:apply` validates
+the current manifest preview count, artifact fingerprint, backup, and owner gate before execution.
+Persistent DDL is rejected (CREATE TABLE/INDEX, routines, schema-changing ALTER, persistent DROP,
+GRANT/REVOKE). `CREATE TEMP TABLE` remains allowed.
 
 **Failures:** Missing manifest, lint errors, identity mismatch, agent/non-TTY apply attempt.
 

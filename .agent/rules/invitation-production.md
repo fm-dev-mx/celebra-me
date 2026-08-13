@@ -111,21 +111,74 @@ This matrix is the SSOT for Agent vs Owner operational capabilities. Preview tas
 operational assertion, not cryptographic security; strong control depends on credential and
 execution-boundary separation.
 
-| Capability                              | Agent                                                                                                                                                           | Owner                                                          |
-| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| Canonical invitation source             | Edit with task authorization                                                                                                                                    | Approve and own                                                |
-| Disposable test DB                      | Run guarded tests                                                                                                                                               | Run                                                            |
-| Persistent Local managed mutation       | Yes via managed lifecycle (`invitation:release --targets local`)                                                                                                 | Yes                                                            |
-| Persistent Local raw/ad-hoc DB mutation | Never (unsupported agent workflow)                                                                                                                              | Exceptional only                                               |
-| Preview managed mutation                | Yes with explicit Preview task scope (`CELEBRA_TASK_SCOPE`)                                                                                                     | Yes                                                            |
-| Preview raw DB mutation                 | Never                                                                                                                                                           | Guarded schema workflow only                                   |
-| Production read — safe surfaces         | `pnpm dbs`; `invitation:release --status`; `invitation:content-parity`; `invitation:release --targets production --dry-run`; `pnpm prod:apply` (no `--apply`) | Same safe surfaces                                             |
-| Production read — privileged DB audit   | Never (`db:prod:audit`, backups, Auth/Storage export)                                                                                                           | Owner-only guarded `db:prod:*` audit/backup/export             |
-| Production invitation mutation          | Never (`prod:apply --apply` is owner-TTY only); never via `invitation:reconcile`                                                                            | Owner-only `pnpm prod:apply -- --slug <slug> --apply`          |
-| Production schema / migration           | Never                                                                                                                                                           | Owner-only `pnpm prod:apply -- --schema --apply` (primitive: `db:migrate -- --target production`) |
-| Production specialized SQL patch        | Never (`db:prod:patch --apply` / `prod:apply --patch --apply`)                                                                                                  | Owner-only specialized maintenance (`RESTRICT_OWNER_ONLY`)     |
-| Reconciliation                          | Plan and apply Local/Preview managed decisions                                                                                                                  | Authorize Preview scope and source updates                     |
-| Schema operations                       | Never auto-run from invitation workflows                                                                                                                        | Use `pnpm db:migrate -- --target <env>`; Production owner apply is `pnpm prod:apply -- --schema --apply` |
+### Canonical invitation source
+
+- **Agent:** Edit with task authorization.
+- **Owner:** Approve and own.
+
+### Disposable test DB
+
+- **Agent:** Run guarded tests.
+- **Owner:** Run.
+
+### Persistent Local managed mutation
+
+- **Agent:** Yes, via managed lifecycle (`invitation:release --targets local`).
+- **Owner:** Yes.
+
+### Persistent Local raw/ad-hoc DB mutation
+
+- **Agent:** Never (unsupported agent workflow).
+- **Owner:** Exceptional only.
+
+### Preview managed mutation
+
+- **Agent:** Yes, with explicit Preview task scope (`CELEBRA_TASK_SCOPE`).
+- **Owner:** Yes.
+
+### Preview raw DB mutation
+
+- **Agent:** Never.
+- **Owner:** Guarded schema workflow only.
+
+### Production read - safe surfaces
+
+- **Agent:** `pnpm dbs`; `invitation:release --status`; `invitation:content-parity`;
+  `invitation:release --targets production --dry-run`; `pnpm prod:apply` (no `--apply`).
+- **Owner:** Same safe surfaces.
+
+### Production read - privileged DB audit
+
+- **Agent:** Never (`db:prod:audit`, backups, Auth/Storage export).
+- **Owner:** Owner-only guarded `db:prod:*` audit/backup/export.
+
+### Production invitation mutation
+
+- **Agent:** Never (`prod:apply --apply` is owner-TTY only); never via `invitation:reconcile`.
+- **Owner:** Owner-only `pnpm prod:apply -- --slug <slug> --apply`.
+
+### Production schema / migration
+
+- **Agent:** Never.
+- **Owner:** Owner-only `pnpm prod:apply -- --schema --apply` (primitive:
+  `db:migrate -- --target production`).
+
+### Production specialized SQL patch
+
+- **Agent:** Never (`db:prod:patch` is lint-only; `prod:apply --patch --apply` is owner-TTY
+  only).
+- **Owner:** Owner-only specialized maintenance (`RESTRICT_OWNER_ONLY`).
+
+### Reconciliation
+
+- **Agent:** Plan and apply Local/Preview managed decisions.
+- **Owner:** Authorize Preview scope and source updates.
+
+### Schema operations
+
+- **Agent:** Never auto-run from invitation workflows.
+- **Owner:** Use `pnpm db:migrate -- --target <env>`; Production owner apply is
+  `pnpm prod:apply -- --schema --apply`.
 
 ### Production read surfaces
 

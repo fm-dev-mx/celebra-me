@@ -43,7 +43,7 @@ export interface CommandResult {
 	stderr: string;
 }
 
-interface RunOptions {
+export interface RunOptions {
 	env?: NodeJS.ProcessEnv;
 	input?: string;
 	inherit?: boolean;
@@ -51,6 +51,8 @@ interface RunOptions {
 	throwOnError?: boolean;
 	/** Hard wall-clock timeout for spawnSync (ms). */
 	timeoutMs?: number;
+	/** Exact owner permit required for a Production child mutation. */
+	productionPermit?: { bindingHex: string; operationType: string };
 }
 
 export function quoteIdentifier(identifier: string): string {
@@ -331,7 +333,10 @@ export function runCommand(
 	options: RunOptions = {},
 ): CommandResult {
 	const { throwOnError = true } = options;
-	const boundary = resolveSpawnProductionBoundary(command, args, { input: options.input });
+	const boundary = resolveSpawnProductionBoundary(command, args, {
+		input: options.input,
+		productionPermit: options.productionPermit,
+	});
 	if (boundary.permission === 'deny') {
 		fail(boundary.message ?? 'Production mutation blocked.');
 	}

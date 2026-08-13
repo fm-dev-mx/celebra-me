@@ -16,8 +16,8 @@ Ownership Matrix in [`.agent/index.md`](../.agent/index.md).
 Local development uses local Supabase. Production is the source of real customer data. Production
 can be read for backups/local refreshes. Production **schema and managed invitation content** may
 be mutated only through owner-only `pnpm prod:apply` (delegates to `pnpm db:migrate -- --target
-production` and the invitation promotion orchestrator). Specialized DML remains `pnpm db:prod:patch`
-or `pnpm prod:apply -- --patch`.
+production` and the invitation promotion orchestrator). Specialized DML is linted by
+`pnpm db:prod:patch -- --dry-run` and can mutate only through `pnpm prod:apply -- --patch`.
 
 The workflow is asymmetric:
 
@@ -346,7 +346,7 @@ pnpm db:migrate -- --target production --apply --expected <versions>
 pnpm db:preview:audit
 pnpm db:local:audit
 pnpm db:preview:sync-invitations -- --dry-run
-pnpm db:prod:patch -- --file <path>
+pnpm db:prod:patch -- --dry-run --file <path>
 pnpm db:sql:lint -- --file <path>
 ```
 
@@ -590,15 +590,15 @@ application login substitute. Host invitation flows continue to use real `host_c
 - Owner-facing lint entrypoint for reviewed manual SQL patches.
 - Does not open a database connection and does not execute SQL in dry-run mode.
 
-`pnpm db:prod:patch -- --apply --owner-user-id <UUID> --file <path>`
+`pnpm prod:apply -- --patch <path> --owner-user-id <UUID>`
 
-- **Disposition: `RESTRICT_OWNER_ONLY` / `KEEP_SPECIALIZED`.**
-- After owner confirmation and SQL apply, runs `pnpm db:contract:verify --target production`.
-- Narrow owner-only maintenance for reviewed patches that cannot yet be expressed as versioned
-  `supabase/migrations/*`. Not a bypass for `db:migrate -- --target production` or
-  `invitation:release`.
-- Requires valid `pnpm release-check` evidence and interactive owner TTY confirmation (short bound
-  code from the patch fingerprint); it never auto-runs schema migrations.
+- Read-only owner plan for a reviewed patch. Add `--apply` only after reviewing the current plan.
+- **Disposition: `RESTRICT_OWNER_ONLY` / `KEEP_SPECIALIZED`.** The composite owner workflow
+  revalidates the exact plan and patch artifact, checks the manifest preview row-count bounds,
+  requires a current critical backup, and then requires interactive TTY confirmation.
+- It is narrow maintenance for reviewed DML that cannot yet be expressed as versioned
+  `supabase/migrations/*`; it never auto-runs schema migrations and does not bypass the migration
+  or managed-invitation workflows.
 
 ## Workflows
 
@@ -716,10 +716,13 @@ remains the delegated primitive, not the public owner command.
 ### Check a manual production patch
 
 ```bash
-pnpm db:prod:patch -- --file scripts/manual/production-patches/<script>.sql
+pnpm db:prod:patch -- --dry-run --file scripts/manual/production-patches/<script>.sql
+pnpm prod:apply -- --patch scripts/manual/production-patches/<script>.sql --owner-user-id <uuid>
+pnpm prod:apply -- --patch scripts/manual/production-patches/<script>.sql --owner-user-id <uuid> --apply
 ```
 
-This command only validates the manifest and SQL safety rules. It does not execute the patch. A
+The `db:prod:patch` command only validates the manifest and SQL safety rules; it never executes the
+patch. `prod:apply` plans and, after owner confirmation, executes the exact reviewed artifact. A
 production patch file without the [required manifest](../.agent/rules/manual-sql-manifest.md) is
 blocked.
 

@@ -16,7 +16,7 @@ import { resolve } from 'node:path';
 
 const TEST_PATCH_PATH = resolve(
 	process.cwd(),
-	'scripts/manual/production-patches/20260613_prepare_leah_lexa_baby_shower.sql',
+	'scripts/manual/production-patches/20260812_thankyou_editorial_back_cover_structural_contracts.sql',
 );
 
 const VALID_UUID = '550e8400-e29b-41d4-a716-446655440000';
@@ -104,13 +104,6 @@ describe('run-prod-patch orchestration', () => {
 			expect(exitCode).toBe(1);
 			expect(mockRunPsql).not.toHaveBeenCalled();
 		});
-
-		it('exits 1 when both --dry-run and --apply are specified', async () => {
-			setArgs(['--dry-run', '--apply', '--file', TEST_PATCH_PATH]);
-			await runRunner();
-			expect(exitCode).toBe(1);
-			expect(mockRunPsql).not.toHaveBeenCalled();
-		});
 	});
 
 	describe('dry-run', () => {
@@ -129,168 +122,25 @@ describe('run-prod-patch orchestration', () => {
 		});
 	});
 
-	describe('--apply input validation', () => {
-		it('exits 1 when --owner-user-id is missing', async () => {
-			setArgs(['--apply', '--file', TEST_PATCH_PATH]);
-			setEnv({ SUPABASE_URL: VALID_SUPABASE_URL });
-			await runRunner();
-			expect(exitCode).toBe(1);
-			expect(mockRunPsql).not.toHaveBeenCalled();
-		});
-
-		it('exits 1 when --owner-user-id is not a valid UUID', async () => {
-			setArgs(['--apply', '--owner-user-id', 'not-a-uuid', '--file', TEST_PATCH_PATH]);
-			setEnv({ SUPABASE_URL: VALID_SUPABASE_URL });
-			await runRunner();
-			expect(exitCode).toBe(1);
-			expect(mockRunPsql).not.toHaveBeenCalled();
-		});
-
-		it('exits 1 when SUPABASE_URL is missing', async () => {
-			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
-			await runRunner();
-			expect(exitCode).toBe(1);
-			expect(mockRunPsql).not.toHaveBeenCalled();
-		});
-
-		it('exits 1 when SUPABASE_URL is a postgresql:// string', async () => {
-			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
-			setEnv({ SUPABASE_URL: 'postgresql://postgres:pass@host:5432/db' });
-			await runRunner();
-			expect(exitCode).toBe(1);
-			expect(mockRunPsql).not.toHaveBeenCalled();
-		});
-
-		it('exits 1 when SUPABASE_URL is not a valid URL', async () => {
-			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
-			setEnv({ SUPABASE_URL: 'not-a-url' });
-			await runRunner();
-			expect(exitCode).toBe(1);
-			expect(mockRunPsql).not.toHaveBeenCalled();
-		});
-	});
-
-	describe('project consistency', () => {
-		it('exits 1 when PROD_DB_URL and SUPABASE_URL mismatch', async () => {
-			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
-			setEnv({ SUPABASE_URL: 'https://project-a.supabase.co' });
-			mockGetProdDbUrl.mockReturnValue({
-				url: 'postgresql://postgres:***@db.project-b.supabase.co:5432/postgres',
-				source: 'test-mock',
-			});
-			await runRunner();
-			expect(exitCode).toBe(1);
-			expect(mockRunPsql).not.toHaveBeenCalled();
-		});
-
-		it('exits 1 when PROD_DB_URL format is unsupported', async () => {
-			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
-			setEnv({ SUPABASE_URL: VALID_SUPABASE_URL });
-			mockGetProdDbUrl.mockReturnValue({
-				url: 'postgresql://user:***@unknown-host.com:5432/postgres',
-				source: 'test-mock',
-			});
-			await runRunner();
-			expect(exitCode).toBe(1);
-			expect(mockRunPsql).not.toHaveBeenCalled();
-		});
-	});
-
-	describe('successful execution path', () => {
-		it('calls runPsql exactly once with session config + SQL after owner gate', async () => {
-			const callOrder: string[] = [];
-			mockRequireOwnerProductionApply.mockImplementation(async () => {
-				callOrder.push('gate');
-			});
-			mockRunPsql.mockImplementation(() => {
-				callOrder.push('write');
-				return { status: 0, stdout: '', stderr: '' };
-			});
-			mockRunCommand.mockImplementation(() => {
-				callOrder.push('post-verify');
-				return { status: 0, stdout: '', stderr: '' };
-			});
-
-			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
-			setEnv({
-				SUPABASE_URL: VALID_SUPABASE_URL,
-			});
-			await runRunner();
-
-			// The runner does not call process.exit(0) on success — it falls
-			// off the end. Verify runPsql was called correctly instead.
-			expect(mockRequireOwnerProductionApply).toHaveBeenCalledTimes(1);
-			expect(mockRunPsql).toHaveBeenCalledTimes(1);
-			expect(mockRunCommand).toHaveBeenCalledTimes(1);
-			expect(callOrder).toEqual(['gate', 'write', 'post-verify']);
-
-			const [sqlArg, dbUrlArg, redactArg] = mockRunPsql.mock.calls[0];
-			expect(sqlArg).toContain("set_config('app.owner_user_id'");
-			expect(sqlArg).toContain("set_config('app.supabase_project_url'");
-			expect(sqlArg).toContain('do $$');
-			expect(sqlArg).toContain('begin;');
-			expect(sqlArg).toContain('v_slug');
-			expect(dbUrlArg).toBe(VALID_PROD_DB_URL);
-
-			// Redact array includes both URLs
-			expect(redactArg).toContain(VALID_SUPABASE_URL);
-			expect(redactArg).toContain(VALID_PROD_DB_URL);
-		});
-
-		it('places owner config before URL config before patch SQL', async () => {
-			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
-			setEnv({
-				SUPABASE_URL: VALID_SUPABASE_URL,
-			});
-			await runRunner();
-
-			const [sqlArg] = mockRunPsql.mock.calls[0];
-			const ownerIdx = sqlArg.indexOf("set_config('app.owner_user_id'");
-			const urlIdx = sqlArg.indexOf("set_config('app.supabase_project_url'");
-			const beginIdx = sqlArg.indexOf('begin;');
-
-			expect(ownerIdx).toBeGreaterThanOrEqual(0);
-			expect(urlIdx).toBeGreaterThan(ownerIdx);
-			expect(beginIdx).toBeGreaterThan(urlIdx);
-		});
-
-		it('escapes single quotes in UUID and URL values', async () => {
-			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
-			setEnv({
-				SUPABASE_URL: VALID_SUPABASE_URL,
-			});
-			await runRunner();
-
-			const [sqlArg] = mockRunPsql.mock.calls[0];
-			expect(sqlArg).toContain(`'${VALID_UUID}'`);
-			expect(sqlArg).toContain(`'${VALID_SUPABASE_URL}'`);
-		});
-
-		it('exits 1 when owner boundary rejects apply', async () => {
-			mockRequireOwnerProductionApply.mockImplementation(async () => {
-				console.error('OWNER_APPLY_REQUIRED');
-				process.exit(1);
-			});
+	describe('direct apply rejection', () => {
+		it('rejects --apply before opening a database connection or owner gate', async () => {
 			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
 			setEnv({ SUPABASE_URL: VALID_SUPABASE_URL });
 			await runRunner();
+
 			expect(exitCode).toBe(1);
 			expect(mockRunPsql).not.toHaveBeenCalled();
+			expect(mockGetProdDbUrl).not.toHaveBeenCalled();
+			expect(mockRequireOwnerProductionApply).not.toHaveBeenCalled();
+			expect(mockRunCommand).not.toHaveBeenCalled();
 		});
-	});
 
-	describe('subprocess failure', () => {
-		it('exits 1 when runPsql returns nonzero', async () => {
-			mockRunPsql.mockReturnValue({ status: 1, stdout: '', stderr: 'connection failed' });
-
-			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
-			setEnv({
-				SUPABASE_URL: VALID_SUPABASE_URL,
-			});
+		it('rejects mixed --dry-run and --apply without falling back to lint-only success', async () => {
+			setArgs(['--dry-run', '--apply', '--file', TEST_PATCH_PATH]);
 			await runRunner();
 
 			expect(exitCode).toBe(1);
-			expect(mockRunPsql).toHaveBeenCalledTimes(1);
+			expect(mockRunPsql).not.toHaveBeenCalled();
 		});
 	});
 });

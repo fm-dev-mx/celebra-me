@@ -52,6 +52,8 @@ export interface MigratePolicyContext {
 	 * instead of prompting again.
 	 */
 	authorizedPlanBindingHex?: string;
+	/** Internal permit operation for a composite owner workflow; never accepted from CLI. */
+	authorizedPermitOperationType?: string;
 }
 
 export interface MigrateEnvironmentPolicy {

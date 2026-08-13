@@ -31,7 +31,7 @@ describe('Phase 3 operational contracts', () => {
 		const prepareApplyIdx = workflow.indexOf('prepareApply(ctx)');
 		const beforeWriteIdx = workflow.indexOf('beforeWrite(plan, ctx)');
 		const authorizeIdx = workflow.indexOf('async authorize(plan, ctx)');
-		const migration = workflow.indexOf('executeSupabasePush(ctx.dbUrl)');
+		const execution = workflow.indexOf('\texecute(plan, ctx) {');
 		const afterWriteIdx = workflow.indexOf('afterWrite(plan, ctx)');
 		const ownerRecord = workflow.indexOf('writeOwnerApplyRecord', afterWriteIdx);
 		const contract = workflow.indexOf("runMutationContractVerify('production')", afterWriteIdx);
@@ -40,6 +40,7 @@ describe('Phase 3 operational contracts', () => {
 		expect(workflow).toContain('ensureCriticalProductionBackup');
 		expect(workflow).toContain('revalidateCriticalProductionBackup');
 		expect(workflow).toContain('CRITICAL_BACKUP_RPO_MS');
+		expect(workflow).toContain('productionPermit: {');
 		expect(workflow).not.toContain('daily-critical-production-backup');
 		expect(workflow).not.toContain('assertProductionUnchangedSinceBackup');
 		const sharedBackup = read('scripts/db/critical-production-backup.ts');
@@ -62,8 +63,8 @@ describe('Phase 3 operational contracts', () => {
 		expect(
 			workflow.indexOf('assertPreBackupCoverageBeforeAuthorize', authorizeIdx),
 		).toBeGreaterThan(authorizeIdx);
-		expect(migration).toBeGreaterThan(authorizeIdx);
-		expect(afterWriteIdx).toBeGreaterThan(migration);
+		expect(execution).toBeGreaterThan(authorizeIdx);
+		expect(afterWriteIdx).toBeGreaterThan(execution);
 		expect(ownerRecord).toBeGreaterThan(afterWriteIdx);
 		expect(contract).toBeGreaterThan(ownerRecord);
 		expect(postBackup).toBeGreaterThan(contract);

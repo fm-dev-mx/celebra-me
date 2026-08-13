@@ -4,7 +4,10 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
 import { runPsqlCommand } from '../../scripts/db/apply-migrations.ts';
-import { executePsqlAtomicPending, executeSupabasePush } from '../../scripts/db/migrate-executors.ts';
+import {
+	executePsqlAtomicPending,
+	executeSupabasePush,
+} from '../../scripts/db/migrate-executors.ts';
 import {
 	OWNER_APPLY_LEDGER_GRANDFATHER_THROUGH,
 	listOwnerApplyRecords,
@@ -28,6 +31,7 @@ import {
 	issueProductionWritePermit,
 	matchProductionWritePermit,
 	resolveSpawnProductionBoundary,
+	withProductionPermitScope,
 } from '../../scripts/db/production-write-permit.ts';
 
 const PROD_URL = `postgresql://postgres:secret@db.${SUPABASE_PROJECT_REFS.production}.supabase.co:5432/postgres`;
@@ -64,20 +68,20 @@ describe('production boundary policy', () => {
 		expect(wrapShellCommandWithAgentContext('pnpm db:migrate -- --target preview')).toBe(
 			"$env:CELEBRA_AGENT_CONTEXT='1'; pnpm db:migrate -- --target preview",
 		);
-		expect(
-			wrapShellCommandWithAgentContext("$env:CELEBRA_AGENT_CONTEXT='1'; pnpm dbs"),
-		).toBe("$env:CELEBRA_AGENT_CONTEXT='1'; pnpm dbs");
+		expect(wrapShellCommandWithAgentContext("$env:CELEBRA_AGENT_CONTEXT='1'; pnpm dbs")).toBe(
+			"$env:CELEBRA_AGENT_CONTEXT='1'; pnpm dbs",
+		);
 		expect(
 			wrapShellCommandWithAgentContext(
 				"$env:CELEBRA_AGENT_CONTEXT='false'; pnpm prod:apply --apply",
 			),
 		).toBe("$env:CELEBRA_AGENT_CONTEXT='1'; pnpm prod:apply --apply");
-		expect(
-			wrapShellCommandWithAgentContext('$env:CELEBRA_AGENT_CONTEXT=0; pnpm dbs'),
-		).toBe("$env:CELEBRA_AGENT_CONTEXT='1'; pnpm dbs");
-		expect(
-			wrapShellCommandWithAgentContext('CELEBRA_AGENT_CONTEXT=false pnpm dbs'),
-		).toBe("$env:CELEBRA_AGENT_CONTEXT='1'; pnpm dbs");
+		expect(wrapShellCommandWithAgentContext('$env:CELEBRA_AGENT_CONTEXT=0; pnpm dbs')).toBe(
+			"$env:CELEBRA_AGENT_CONTEXT='1'; pnpm dbs",
+		);
+		expect(wrapShellCommandWithAgentContext('CELEBRA_AGENT_CONTEXT=false pnpm dbs')).toBe(
+			"$env:CELEBRA_AGENT_CONTEXT='1'; pnpm dbs",
+		);
 	});
 
 	it('denies MCP Production writes and allows read-only Production SQL', () => {
@@ -90,54 +94,67 @@ describe('production boundary policy', () => {
 		expect(
 			evaluateMcpProductionMutation({
 				toolName: 'execute_sql',
-				arguments: { project_id: PRODUCTION_PROJECT_REF, query: 'SELECT version FROM supabase_migrations.schema_migrations' },
+				arguments: {
+					project_id: PRODUCTION_PROJECT_REF,
+					query: 'SELECT version FROM supabase_migrations.schema_migrations',
+				},
 			}).permission,
 		).toBe('allow');
 		expect(
 			evaluateMcpProductionMutation({
 				tool_name: 'execute_sql',
-				arguments: { project_id: PRODUCTION_PROJECT_REF, query: 'CREATE TABLE pwned (id int)' },
+				arguments: {
+					project_id: PRODUCTION_PROJECT_REF,
+					query: 'CREATE TABLE pwned (id int)',
+				},
 			}).code,
 		).toBe('MCP_PRODUCTION_SQL_BLOCKED');
 		expect(
 			evaluateMcpProductionMutation({
 				tool_name: 'execute_sql',
-				arguments: { project_id: SUPABASE_PROJECT_REFS.preview, query: 'CREATE TABLE ok (id int)' },
+				arguments: {
+					project_id: SUPABASE_PROJECT_REFS.preview,
+					query: 'CREATE TABLE ok (id int)',
+				},
 			}).permission,
 		).toBe('allow');
 		expect(
-			evaluateMcpProductionMutation({ tool_name: 'list_migrations', arguments: { project_id: PRODUCTION_PROJECT_REF } })
-				.permission,
+			evaluateMcpProductionMutation({
+				tool_name: 'list_migrations',
+				arguments: { project_id: PRODUCTION_PROJECT_REF },
+			}).permission,
 		).toBe('allow');
 	});
 
 	it('denies raw Production CLI and allows canonical owner wrappers and read-only psql', () => {
 		expect(
-			evaluateShellProductionMutation(
-				`supabase db push --db-url ${PROD_URL} --yes`,
-			).code,
+			evaluateShellProductionMutation(`supabase db push --db-url ${PROD_URL} --yes`).code,
 		).toBe('PRODUCTION_RAW_CLI_BLOCKED');
 		expect(evaluateShellProductionMutation('supabase db push --linked --yes').code).toBe(
 			'RAW_SUPABASE_LINKED_PUSH_BLOCKED',
 		);
 		expect(
-			evaluateShellProductionMutation('pnpm db:migrate -- --target production --apply').permission,
+			evaluateShellProductionMutation('pnpm db:migrate -- --target production --apply')
+				.permission,
 		).toBe('allow');
 		expect(
 			evaluateShellProductionMutation(`psql --dbname ${PROD_URL} -c "SELECT 1"`).permission,
 		).toBe('allow');
 		expect(
-			evaluateShellProductionMutation(`psql --dbname ${PROD_URL} -c "DROP TABLE public.invitations"`)
-				.code,
+			evaluateShellProductionMutation(
+				`psql --dbname ${PROD_URL} -c "DROP TABLE public.invitations"`,
+			).code,
 		).toBe('PRODUCTION_RAW_PSQL_BLOCKED');
 		expect(
-			evaluateShellProductionMutation(`supabase db push --db-url ${PROD_URL} --dry-run`).permission,
+			evaluateShellProductionMutation(`supabase db push --db-url ${PROD_URL} --dry-run`)
+				.permission,
 		).toBe('allow');
 	});
 
 	it('denies canonical Production --apply from the agent shell evaluator', () => {
 		expect(
-			evaluateAgentShellProductionMutation('pnpm db:migrate -- --target production --apply').code,
+			evaluateAgentShellProductionMutation('pnpm db:migrate -- --target production --apply')
+				.code,
 		).toBe('AGENT_PRODUCTION_APPLY_BLOCKED');
 		expect(
 			evaluateAgentShellProductionMutation(
@@ -159,7 +176,8 @@ describe('production boundary policy', () => {
 			).permission,
 		).toBe('allow');
 		expect(
-			evaluateAgentShellProductionMutation('pnpm db:migrate -- --target production').permission,
+			evaluateAgentShellProductionMutation('pnpm db:migrate -- --target production')
+				.permission,
 		).toBe('allow');
 		expect(evaluateAgentShellProductionMutation('pnpm db:migrate --apply').code).toBe(
 			'AGENT_PRODUCTION_APPLY_BLOCKED',
@@ -169,9 +187,8 @@ describe('production boundary policy', () => {
 				.permission,
 		).toBe('allow');
 		expect(
-			evaluateAgentShellProductionMutation(
-				'pnpm db:migrate -- --target local --apply',
-			).permission,
+			evaluateAgentShellProductionMutation('pnpm db:migrate -- --target local --apply')
+				.permission,
 		).toBe('allow');
 		expect(
 			evaluateAgentShellProductionMutation(
@@ -212,9 +229,29 @@ describe('production write permit', () => {
 		expect(hasValidProductionWritePermit(PROD_URL, Date.now(), 'abcdef01')).toBe(true);
 		expect(hasValidProductionWritePermit(PROD_URL, Date.now(), 'ffffffff')).toBe(false);
 		expect(
-			resolveSpawnProductionBoundary('supabase', ['db', 'push', '--db-url', PROD_URL, '--yes'])
-				.permission,
+			hasValidProductionWritePermit(PROD_URL, Date.now(), 'abcdef01', 'production_apply'),
+		).toBe(false);
+		expect(
+			resolveSpawnProductionBoundary(
+				'supabase',
+				['db', 'push', '--db-url', PROD_URL, '--yes'],
+				{
+					productionPermit: {
+						bindingHex: 'abcdef01',
+						operationType: 'production_migration',
+					},
+				},
+			).permission,
 		).toBe('allow');
+		expect(
+			resolveSpawnProductionBoundary('supabase', [
+				'db',
+				'push',
+				'--db-url',
+				PROD_URL,
+				'--yes',
+			]).permission,
+		).toBe('deny');
 		expect(
 			evaluateSpawnProductionMutation('npx', [
 				'supabase',
@@ -258,12 +295,59 @@ describe('production write permit', () => {
 		});
 		expect(hasValidProductionWritePermit(PREVIEW_URL)).toBe(false);
 		expect(hasValidProductionWritePermit(PROD_URL, Date.now(), 'plan-cccc')).toBe(false);
-		expect(matchProductionWritePermit({ dbUrl: PROD_URL, bindingHex: 'plan-cccc' })).toBe(
-			'binding',
+		expect(
+			matchProductionWritePermit({
+				dbUrl: PROD_URL,
+				bindingHex: 'plan-cccc',
+				operationType: 'production_apply',
+			}),
+		).toBe('binding');
+		expect(
+			matchProductionWritePermit({
+				dbUrl: PREVIEW_URL,
+				bindingHex: 'plan-bbbb',
+				operationType: 'production_apply',
+			}),
+		).toBe('project');
+		expect(
+			matchProductionWritePermit({
+				dbUrl: PROD_URL,
+				bindingHex: 'plan-bbbb',
+				operationType: 'production_migration',
+			}),
+		).toBe('operation');
+	});
+
+	it('does not let a valid 30-minute permit escape its exact operation scope', () => {
+		issueProductionWritePermit({
+			projectRef: SUPABASE_PROJECT_REFS.production,
+			operationType: 'promotion',
+			bindingHex: 'package-aaaa',
+		});
+		const command = ['--dbname', PROD_URL];
+		expect(
+			resolveSpawnProductionBoundary('psql', command, {
+				input: "UPDATE public.invitations SET title = 'x'",
+			}).permission,
+		).toBe('deny');
+
+		const scopedDecision = withProductionPermitScope(
+			{ bindingHex: 'package-aaaa', operationType: 'promotion' },
+			() =>
+				resolveSpawnProductionBoundary('psql', command, {
+					input: "UPDATE public.invitations SET title = 'x'",
+				}),
 		);
-		expect(matchProductionWritePermit({ dbUrl: PREVIEW_URL, bindingHex: 'plan-bbbb' })).toBe(
-			'project',
+		expect(scopedDecision.permission).toBe('allow');
+
+		const mismatchedScope = withProductionPermitScope(
+			{ bindingHex: 'package-bbbb', operationType: 'promotion' },
+			() =>
+				resolveSpawnProductionBoundary('psql', command, {
+					input: "UPDATE public.invitations SET title = 'x'",
+				}),
 		);
+		expect(mismatchedScope.permission).toBe('deny');
 	});
 });
 
@@ -359,10 +443,7 @@ describe('lowest-level Production write helpers fail closed', () => {
 	});
 
 	it('cannot mutate schema through the removed apply-migrations CLI', () => {
-		const source = readFileSync(
-			join(process.cwd(), 'scripts/db/apply-migrations.ts'),
-			'utf8',
-		);
+		const source = readFileSync(join(process.cwd(), 'scripts/db/apply-migrations.ts'), 'utf8');
 		expect(source).not.toMatch(/function main\s*\(/);
 		expect(source).not.toMatch(/process\.argv\[1\]\?\.endsWith\('apply-migrations\.ts'\)/);
 		expect(source).not.toContain('Applying ${files.length} migrations');

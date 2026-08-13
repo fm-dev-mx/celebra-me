@@ -12,7 +12,13 @@ import {
 	enforceDisposableTargetOnly,
 } from './apply-migrations.ts';
 import { classifyDbTarget } from './db-target-config.ts';
-import { fail, runCommand, runPsql, type CommandResult } from './db-workflow-lib.ts';
+import {
+	fail,
+	runCommand,
+	runPsql,
+	type CommandResult,
+	type RunOptions,
+} from './db-workflow-lib.ts';
 import { extractPendingMigrationVersions } from './migration-pending-set.ts';
 
 export interface DryRunResult {
@@ -31,10 +37,14 @@ export function executeSupabaseDryRun(dbUrl: string): DryRunResult {
 	};
 }
 
-export function executeSupabasePush(dbUrl: string): CommandResult {
+export function executeSupabasePush(
+	dbUrl: string,
+	options: Pick<RunOptions, 'productionPermit'> = {},
+): CommandResult {
 	return runCommand('supabase', ['db', 'push', '--db-url', dbUrl, '--yes'], {
 		redact: [dbUrl],
 		throwOnError: false,
+		...options,
 	});
 }
 

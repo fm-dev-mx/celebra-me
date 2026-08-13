@@ -20,16 +20,35 @@ const CONTENT = { hero: { title: 'Romina' }, gallery: { variant: 'editorial-mosa
 
 function pkg(): InvitationPackageData {
 	return {
+		schemaVersion: '1',
+		packageHash: 'package-hash',
+		sourceHash: 'source-hash',
+		metadataHash: 'metadata-hash',
+		projectionHash: 'projection-hash',
+		assetManifestHash: 'asset-manifest-hash',
+		definitionCreatedAt: '2026-08-12T00:00:00.000Z',
+		sourceSlug: 'romina-rios-chaparro',
 		invitation: {
 			slug: 'romina-rios-chaparro',
 			managedIdentityId: INVITATION_ID,
+			previousSlugs: [],
+			title: 'Romina',
 			eventType: 'xv',
 			baseDemoId: 'demo',
 			themeId: 'theme',
 			kind: 'client',
+			clientName: 'Romina',
+			hostLoginAlias: 'romina',
+			clientEmail: 'romina@example.com',
+			clientWhatsapp: '0000000000',
+			photosReceived: false,
 			snapshot: { title: 'Romina' },
 		},
-	} as unknown as InvitationPackageData;
+		draft: { status: 'draft', content: CONTENT },
+		publishedContent: { content: CONTENT },
+		event: { title: 'Romina', eventType: 'xv', status: 'published' },
+		assets: [],
+	};
 }
 
 function matchingRows(): AppliedHostedTargetIdentityInput {

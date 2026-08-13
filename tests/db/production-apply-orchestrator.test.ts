@@ -11,6 +11,7 @@ import {
 import { toPublicProductionApplyPlan } from '../../scripts/db/production-apply-format.ts';
 import {
 	clearProductionWritePermit,
+	getProductionWritePermit,
 	issueProductionWritePermit,
 	matchProductionWritePermit,
 } from '../../scripts/db/production-write-permit.ts';
@@ -49,13 +50,35 @@ function schemaPlan(pending: string[] = ['20260807120000']): MigrationPlan {
 
 function pkg(slug: string, hash = `hash-${slug}`): InvitationPackageData {
 	return {
+		schemaVersion: '1',
 		packageHash: hash,
 		sourceHash: `src-${slug}`,
 		metadataHash: 'meta',
 		projectionHash: 'proj',
 		assetManifestHash: 'assets',
-		invitation: { slug, eventType: 'boda', title: slug },
-	} as InvitationPackageData;
+		definitionCreatedAt: '2026-08-12T00:00:00.000Z',
+		sourceSlug: slug,
+		invitation: {
+			slug,
+			managedIdentityId: `identity-${slug}`,
+			previousSlugs: [],
+			title: slug,
+			eventType: 'boda',
+			baseDemoId: 'demo',
+			themeId: 'theme',
+			kind: 'client',
+			clientName: 'Test Client',
+			hostLoginAlias: 'test-client',
+			clientEmail: 'test@example.com',
+			clientWhatsapp: '0000000000',
+			photosReceived: false,
+			snapshot: {},
+		},
+		draft: { status: 'draft', content: {} },
+		publishedContent: { content: {} },
+		event: { title: slug, eventType: 'boda', status: 'published' },
+		assets: [],
+	};
 }
 
 function invitationPreflight(
@@ -114,6 +137,19 @@ function baseDeps(options?: {
 			path: file,
 			sql: 'SELECT 1;',
 			fingerprint: `patch-${file}`,
+			manifest: {
+				'script-id': 'test-patch',
+				purpose: 'test',
+				env: 'production',
+				ticket: 'TEST-1',
+				tables: 'public.example',
+				operation: 'update',
+				'expected-rows-min': '0',
+				'expected-rows-max': '1',
+				'requires-backup': 'true',
+				'dry-run-query': 'select 1 from public.example',
+				rollback: 'backup',
+			},
 		}),
 	};
 }
@@ -439,6 +475,7 @@ describe('production apply execution', () => {
 			const match = matchProductionWritePermit({
 				dbUrl: PROD_URL,
 				bindingHex: input.authorizedPlanBindingHex,
+				operationType: 'production_apply',
 			});
 			if (match !== 'ok') {
 				throw new OperatorError({
@@ -458,5 +495,147 @@ describe('production apply execution', () => {
 			}),
 		).rejects.toMatchObject({ code: 'PRODUCTION_WRITE_PERMIT_REQUIRED' });
 		expect(applySchema).toHaveBeenCalled();
+	});
+
+	it('rejects a package changed after authorization before its write and clears the permit', async () => {
+		let resolves = 0;
+		const applyInvitation = jest.fn(async (): Promise<PromotionApplyReport> =>
+			({ ...invitationPreflight('alpha'), status: 'PROMOTED' }) as PromotionApplyReport,
+		);
+		await expect(
+			applyProductionApplyPlan(cli(['--slug', 'alpha', '--apply']), {
+				...baseDeps({ pending: [], preflights: { alpha: invitationPreflight('alpha') } }),
+				resolvePackage: async (slug) => {
+					resolves += 1;
+					return pkg(slug, resolves >= 3 ? 'hash-changed' : 'hash-alpha');
+				},
+				requireOwnerApply: async (input) => {
+					issueProductionWritePermit({
+						projectRef: SUPABASE_PROJECT_REFS.production,
+						operationType: 'production_apply',
+						bindingHex: input.bindingHex,
+					});
+				},
+				applyInvitation,
+			}),
+		).rejects.toMatchObject({ code: 'ARTIFACT_DRIFT' });
+		expect(applyInvitation).not.toHaveBeenCalled();
+		expect(getProductionWritePermit()).toBeNull();
+	});
+
+	it('stops before a changed second package after the first package is applied', async () => {
+		const resolves: Record<string, number> = { alpha: 0, beta: 0 };
+		const applyInvitation = jest.fn(async (input: { packageData: InvitationPackageData }) =>
+			({
+				...invitationPreflight(input.packageData.invitation.slug),
+				status: 'PROMOTED',
+			}) as PromotionApplyReport,
+		);
+		await expect(
+			applyProductionApplyPlan(cli(['--slugs', 'alpha,beta', '--apply']), {
+				...baseDeps({
+					pending: [],
+					preflights: {
+						alpha: invitationPreflight('alpha'),
+						beta: invitationPreflight('beta'),
+					},
+				}),
+				resolvePackage: async (slug) => {
+					resolves[slug] = (resolves[slug] ?? 0) + 1;
+					return pkg(slug, slug === 'beta' && resolves[slug] >= 3 ? 'hash-beta-changed' : `hash-${slug}`);
+				},
+				requireOwnerApply: async (input) => {
+					issueProductionWritePermit({
+						projectRef: SUPABASE_PROJECT_REFS.production,
+						operationType: 'production_apply',
+						bindingHex: input.bindingHex,
+					});
+				},
+				applyInvitation,
+			}),
+		).rejects.toMatchObject({ code: 'ARTIFACT_DRIFT' });
+		expect(applyInvitation).toHaveBeenCalledTimes(1);
+		expect(applyInvitation.mock.calls[0]?.[0].packageData.invitation.slug).toBe('alpha');
+		expect(getProductionWritePermit()).toBeNull();
+	});
+
+	it('rejects a patch changed after authorization before backup or write', async () => {
+		let preparations = 0;
+		const applyPatch = jest.fn(async () => undefined);
+		const ensurePatchBackup: NonNullable<ProductionApplyExecuteDeps['ensurePatchBackup']> =
+			jest.fn(() => ({ manifestPath: '.tmp/test-backup.json' }));
+		await expect(
+			applyProductionApplyPlan(
+				cli([
+					'--patch',
+					'scripts/manual/production-patches/test.sql',
+					'--owner-user-id',
+					'550e8400-e29b-41d4-a716-446655440000',
+					'--apply',
+				]),
+				{
+					...baseDeps({ pending: [] }),
+					preparePatch: (file) => {
+						preparations += 1;
+						return {
+							...baseDeps().preparePatch!(file),
+							fingerprint: preparations >= 3 ? 'patch-drifted' : 'patch-reviewed',
+						};
+					},
+					requireOwnerApply: async (input) => {
+						issueProductionWritePermit({
+							projectRef: SUPABASE_PROJECT_REFS.production,
+							operationType: 'production_apply',
+							bindingHex: input.bindingHex,
+						});
+					},
+					ensurePatchBackup,
+					applyPatch,
+				},
+			),
+		).rejects.toMatchObject({ code: 'ARTIFACT_DRIFT' });
+		expect(ensurePatchBackup).not.toHaveBeenCalled();
+		expect(applyPatch).not.toHaveBeenCalled();
+		expect(getProductionWritePermit()).toBeNull();
+	});
+
+	it('requires and revalidates a current critical backup before applying a patch', async () => {
+		const ensurePatchBackup: NonNullable<ProductionApplyExecuteDeps['ensurePatchBackup']> =
+			jest.fn(() => ({ manifestPath: '.tmp/test-backup.json' }));
+		const revalidatePatchBackup: NonNullable<ProductionApplyExecuteDeps['revalidatePatchBackup']> =
+			jest.fn(() => undefined);
+		const applyPatch = jest.fn(async () => undefined);
+		await applyProductionApplyPlan(
+			cli([
+				'--patch',
+				'scripts/manual/production-patches/test.sql',
+				'--owner-user-id',
+				'550e8400-e29b-41d4-a716-446655440000',
+				'--apply',
+			]),
+			{
+				...baseDeps({ pending: [] }),
+				preparePatch: (file) => ({
+					...baseDeps().preparePatch!(file),
+					fingerprint: 'patch-reviewed',
+				}),
+				requireOwnerApply: async (input) => {
+					issueProductionWritePermit({
+						projectRef: SUPABASE_PROJECT_REFS.production,
+						operationType: 'production_apply',
+						bindingHex: input.bindingHex,
+					});
+				},
+				ensurePatchBackup,
+				revalidatePatchBackup,
+				applyPatch,
+			},
+		);
+		expect(ensurePatchBackup).toHaveBeenCalledTimes(1);
+		expect(revalidatePatchBackup).toHaveBeenCalledWith(
+			expect.objectContaining({ manifestPath: '.tmp/test-backup.json' }),
+		);
+		expect(applyPatch).toHaveBeenCalledTimes(1);
+		expect(getProductionWritePermit()).toBeNull();
 	});
 });

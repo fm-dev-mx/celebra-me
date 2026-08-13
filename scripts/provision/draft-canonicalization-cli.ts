@@ -13,6 +13,10 @@
 import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
 import { requireOwnerProductionApply } from '../db/owner-production-apply.ts';
 import {
+	clearProductionWritePermit,
+	withProductionPermitScope,
+} from '../db/production-write-permit.ts';
+import {
 	buildDraftCanonicalizationPlan,
 	DRAFT_CANONICALIZATION_OPERATION_TYPE,
 	verifyDraftCanonicalizationOutcome,
@@ -151,41 +155,60 @@ async function applyPlan(): Promise<void> {
 			'DRAFT_CANONICALIZATION_FINGERPRINT_MISMATCH: supplied fingerprint differs from the current dry-run.',
 		);
 	}
-	if (plan.target === 'production') await authorizeProduction(plan, dbUrl);
+	const isProduction = plan.target === 'production';
+	if (isProduction) await authorizeProduction(plan, dbUrl);
 
-	const state = readDraftCanonicalizationState(plan.slug, dbUrl);
-	if (!state?.draft.content || !state.published.content) {
-		throw new Error('DRAFT_CANONICALIZATION_STATE_UNAVAILABLE: re-read returned no state.');
-	}
-	if (state.draft.updatedAt !== plan.draftUpdatedAt) {
-		throw new Error(
-			'DRAFT_CANONICALIZATION_STALE_STATE: draft was updated during authorization.',
-		);
-	}
-	const applied = applyDraftCanonicalization({
-		plan,
-		beforeContent: state.draft.content,
-		publishedContent: state.published.content,
-		targetDbUrl: dbUrl,
-	});
-	verifyDraftCanonicalizationOutcome(plan, applied.draftContent, applied.publishedContent);
+	try {
+		const state = readDraftCanonicalizationState(plan.slug, dbUrl);
+		if (!state?.draft.content || !state.published.content) {
+			throw new Error('DRAFT_CANONICALIZATION_STATE_UNAVAILABLE: re-read returned no state.');
+		}
+		const draftContent = state.draft.content;
+		const publishedContent = state.published.content;
+		if (state.draft.updatedAt !== plan.draftUpdatedAt) {
+			throw new Error(
+				'DRAFT_CANONICALIZATION_STALE_STATE: draft was updated during authorization.',
+			);
+		}
+		const applyCanonicalization = () =>
+			applyDraftCanonicalization({
+				plan,
+				beforeContent: draftContent,
+				publishedContent,
+				targetDbUrl: dbUrl,
+			});
+		const applied = isProduction
+			? withProductionPermitScope(
+					{
+						bindingHex: plan.operationFingerprint,
+						operationType: DRAFT_CANONICALIZATION_OPERATION_TYPE,
+					},
+					applyCanonicalization,
+				)
+			: applyCanonicalization();
+		verifyDraftCanonicalizationOutcome(plan, applied.draftContent, applied.publishedContent);
 
-	const verification = loadPlan();
-	const summary = {
-		status: applied.status,
-		operationId: plan.operationId,
-		operationFingerprint: plan.operationFingerprint,
-		draftAfter: plan.hashes.draftAfter,
-		alreadyCanonical: verification.plan.alreadyCanonical,
-		draftDivergenceSections: verification.plan.draftDivergenceSections,
-		transaction: 'committed',
-	};
-	if (json) console.log(JSON.stringify(summary, null, 2));
-	else {
-		console.log(`Draft canonicalization ${applied.status} for ${plan.slug} (${plan.target}).`);
-		console.log(
-			`Sections with unpublished draft differences: ${verification.plan.draftDivergenceSections.map((section) => section.sectionLabel).join(', ') || 'none'}`,
-		);
+		const verification = loadPlan();
+		const summary = {
+			status: applied.status,
+			operationId: plan.operationId,
+			operationFingerprint: plan.operationFingerprint,
+			draftAfter: plan.hashes.draftAfter,
+			alreadyCanonical: verification.plan.alreadyCanonical,
+			draftDivergenceSections: verification.plan.draftDivergenceSections,
+			transaction: 'committed',
+		};
+		if (json) console.log(JSON.stringify(summary, null, 2));
+		else {
+			console.log(
+				`Draft canonicalization ${applied.status} for ${plan.slug} (${plan.target}).`,
+			);
+			console.log(
+				`Sections with unpublished draft differences: ${verification.plan.draftDivergenceSections.map((section) => section.sectionLabel).join(', ') || 'none'}`,
+			);
+		}
+	} finally {
+		if (isProduction) clearProductionWritePermit();
 	}
 }
 

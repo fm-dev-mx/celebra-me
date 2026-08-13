@@ -17,11 +17,16 @@ import {
 	requireOwnerProductionApply,
 	type OwnerProductionApplyInput,
 } from './owner-production-apply.ts';
-import { matchProductionWritePermit } from './production-write-permit.ts';
 import {
-	applyPreparedProductionPatch,
-	prepareProductionPatchFile,
-} from './run-prod-patch.ts';
+	clearProductionWritePermit,
+	matchProductionWritePermit,
+} from './production-write-permit.ts';
+import {
+	ensureCriticalProductionBackup,
+	revalidateCriticalProductionBackup,
+	type CriticalProductionBackupPreparation,
+} from './critical-production-backup.ts';
+import { applyPreparedProductionPatch, prepareProductionPatchFile } from './run-prod-patch.ts';
 import { resolveInvitationPackageInput } from '../provision/invitation-package-input.ts';
 import type { InvitationPackageData } from '../provision/invitation-package.ts';
 import { orchestrateInvitationPromotion } from '../provision/invitation-promotion-orchestrator.ts';
@@ -66,6 +71,18 @@ export interface ProductionApplyExecuteDeps extends ProductionApplyAssemblerDeps
 		authorizedPlanBindingHex: string;
 	}) => Promise<PromotionApplyReport>;
 	applyPatch?: typeof applyPreparedProductionPatch;
+	ensurePatchBackup?: (input: {
+		prodDbUrl: string;
+		purpose: 'standalone';
+		planId: string;
+		retryCommand: string;
+		operationLabel: string;
+	}) => Pick<CriticalProductionBackupPreparation, 'manifestPath'>;
+	revalidatePatchBackup?: (input: {
+		prodDbUrl: string;
+		manifestPath: string;
+		retryCommand: string;
+	}) => unknown;
 }
 
 export interface ProductionApplyOutcomeRow {
@@ -271,7 +288,11 @@ export async function buildProductionApplyPlan(
 }
 
 function assertDelegatedPermit(dbUrl: string, bindingHex: string): void {
-	const match = matchProductionWritePermit({ dbUrl, bindingHex });
+	const match = matchProductionWritePermit({
+		dbUrl,
+		bindingHex,
+		operationType: 'production_apply',
+	});
 	if (match === 'ok') return;
 	throw new OperatorError({
 		title: 'Autorización de Production no reutilizable',
@@ -396,6 +417,7 @@ async function applySchemaMutation(
 					mode: 'apply',
 					expectedPin: null,
 					authorizedPlanBindingHex: input.authorizedPlanBindingHex,
+					authorizedPermitOperationType: 'production_apply',
 				}));
 		const result = await applySchema({ authorizedPlanBindingHex: reviewed.planId });
 		replaceOutcome(outcomes, 'schema', {
@@ -439,14 +461,26 @@ async function applyOneInvitationMutation(
 			return resolved.packageData;
 		});
 	const packageData = await resolvePackage(item.id);
+	if (packageData.packageHash !== item.binding) {
+		throw new OperatorError({
+			title: 'El artefacto de invitación cambió antes de escribir',
+			cause: `La huella actual de ${item.id} no coincide con el plan revisado.`,
+			code: 'ARTIFACT_DRIFT',
+			remediation: [
+				'Vuelva a generar y revisar el plan de Production.',
+				'No reutilice la autorización de un artefacto anterior.',
+			],
+		});
+	}
 	const applyInvitation =
 		deps.applyInvitation ??
-		((input: {
-			packageData: InvitationPackageData;
-			authorizedPlanBindingHex: string;
-		}) =>
+		((input: { packageData: InvitationPackageData; authorizedPlanBindingHex: string }) =>
 			orchestrateInvitationPromotion({
 				packageData: input.packageData,
+				authorizedProductionPermit: {
+					bindingHex: input.authorizedPlanBindingHex,
+					operationType: 'production_apply',
+				},
 				requireOwnerApply: async (gate) => {
 					assertDelegatedPermit(gate.dbUrl, input.authorizedPlanBindingHex);
 				},
@@ -513,6 +547,31 @@ async function applyPatchMutation(
 	}
 	try {
 		const prepared = (deps.preparePatch ?? prepareProductionPatchFile)(patchMutation.id);
+		if (prepared.fingerprint !== patchMutation.binding) {
+			throw new OperatorError({
+				title: 'El artefacto de parche cambió antes de escribir',
+				cause: `La huella actual de ${patchMutation.id} no coincide con el plan revisado.`,
+				code: 'ARTIFACT_DRIFT',
+				remediation: [
+					'Vuelva a generar y revisar el plan de Production.',
+					'No reutilice la autorización de un parche anterior.',
+				],
+			});
+		}
+		const dbUrl = (deps.getProductionDbUrl ?? getProdDbUrl)().url;
+		const ensureBackup = deps.ensurePatchBackup ?? ensureCriticalProductionBackup;
+		const backup = ensureBackup({
+			prodDbUrl: dbUrl,
+			purpose: 'standalone',
+			planId: reviewed.planId,
+			retryCommand: `pnpm prod:apply -- --patch ${patchMutation.id} --owner-user-id <uuid> --apply`,
+			operationLabel: 'la aplicación del parche especializado',
+		});
+		(deps.revalidatePatchBackup ?? revalidateCriticalProductionBackup)({
+			prodDbUrl: dbUrl,
+			manifestPath: backup.manifestPath,
+			retryCommand: `pnpm prod:apply -- --patch ${patchMutation.id} --owner-user-id <uuid> --apply`,
+		});
 		const applyPatch = deps.applyPatch ?? applyPreparedProductionPatch;
 		await applyPatch({
 			prepared,
@@ -548,24 +607,33 @@ export async function applyProductionApplyPlan(
 		return { plan: reviewed, wrote: false, outcomes: reviewed.items.map(outcomeFromItem) };
 	}
 
-	await authorizeReviewedPlan(reviewed, mutations, deps);
-	throwIfPlanDrifted(reviewed, await buildProductionApplyPlan(args, deps));
+	try {
+		await authorizeReviewedPlan(reviewed, mutations, deps);
+		throwIfPlanDrifted(reviewed, await buildProductionApplyPlan(args, deps));
 
-	const outcomes = reviewed.items.map(outcomeFromItem);
-	const wroteSchema = await applySchemaMutation(mutations, reviewed, deps, outcomes);
-	const wroteInvitations = await applyInvitationMutations(mutations, reviewed, deps, outcomes);
-	const wrotePatch = await applyPatchMutation(
-		mutations,
-		reviewed,
-		ownerUserId,
-		deps,
-		outcomes,
-	);
-	return {
-		plan: reviewed,
-		wrote: wroteSchema || wroteInvitations || wrotePatch,
-		outcomes,
-	};
+		const outcomes = reviewed.items.map(outcomeFromItem);
+		const wroteSchema = await applySchemaMutation(mutations, reviewed, deps, outcomes);
+		const wroteInvitations = await applyInvitationMutations(
+			mutations,
+			reviewed,
+			deps,
+			outcomes,
+		);
+		const wrotePatch = await applyPatchMutation(
+			mutations,
+			reviewed,
+			ownerUserId,
+			deps,
+			outcomes,
+		);
+		return {
+			plan: reviewed,
+			wrote: wroteSchema || wroteInvitations || wrotePatch,
+			outcomes,
+		};
+	} finally {
+		clearProductionWritePermit();
+	}
 }
 
 function replaceOutcome(

@@ -3,7 +3,8 @@
  *
  * Discovers every requireOwnerProductionApply caller under scripts/ (all .ts files),
  * compares against the approved mutator registry, and proves gate-before-first-write
- * ordering. Permanent families: schema migrate, managed promote, SQL patch.
+ * ordering. Patch execution is deliberately delegated from the direct lint-only
+ * entrypoint to the composite prod:apply owner gate.
  * Temporary one-offs remain registered until retired (e.g. romina-draft-reset).
  */
 
@@ -38,7 +39,6 @@ interface MutatorSpec {
 	family:
 		| 'schema_migration'
 		| 'managed_promotion'
-		| 'sql_patch'
 		| 'draft_repair'
 		| 'pending_one_off'
 		| 'mixed_production_apply';
@@ -56,12 +56,6 @@ const APPROVED_MUTATORS: MutatorSpec[] = [
 			/revalidateCriticalProductionBackup/,
 		],
 		family: 'schema_migration',
-	},
-	{
-		file: 'scripts/db/run-prod-patch.ts',
-		firstWritePattern: /runPsql\(\s*fullSql/,
-		preflightPatterns: [/lintProductionPatchSql/, /assertSameSupabaseProject/],
-		family: 'sql_patch',
 	},
 	{
 		file: 'scripts/provision/invitation-promotion-orchestrator.ts',
@@ -351,6 +345,13 @@ describe('Production mutator discovery and gate ordering', () => {
 		const discovered = discoverRequireOwnerProductionApplyCallers();
 		const approved = APPROVED_MUTATORS.map((m) => m.file).sort();
 		expect(discovered).toEqual(approved);
+	});
+
+	it('keeps the direct patch entrypoint lint-only and delegates mutation to prod:apply', () => {
+		const source = sourceOf('scripts/db/run-prod-patch.ts');
+		expect(source).toContain('DIRECT_PRODUCTION_PATCH_APPLY_BLOCKED');
+		expect(source).toContain('pnpm prod:apply -- --patch');
+		expect(source).not.toContain('requireOwnerProductionApply');
 	});
 
 	it('wires each approved mutator to requireOwnerProductionApply without legacy crypto auth', () => {

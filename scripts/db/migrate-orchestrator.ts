@@ -66,6 +66,8 @@ export interface OrchestrateMigrateInput {
 	isInteractive?: boolean;
 	/** Internal mixed-plan fingerprint; never a CLI flag. */
 	authorizedPlanBindingHex?: string;
+	/** Internal composite operation type; never a CLI flag. */
+	authorizedPermitOperationType?: string;
 }
 
 export interface OrchestrateMigrateResult {
@@ -84,6 +86,8 @@ function withSeams(
 		isInteractive: input.isInteractive ?? ctx.isInteractive,
 		authorizedPlanBindingHex:
 			input.authorizedPlanBindingHex ?? ctx.authorizedPlanBindingHex,
+		authorizedPermitOperationType:
+			input.authorizedPermitOperationType ?? ctx.authorizedPermitOperationType,
 	};
 }
 
