@@ -38,6 +38,22 @@ Advanced diagnostics are enrichment only (`?diagnostics=1` / `pnpm dbs --diagnos
 missing Production owner-apply evidence, which is a first-class integrity finding (`MISSING`) and
 must not be presented as unqualified `CURRENT`.
 
+## Acción primero
+
+El dashboard muestra una sola cola priorizada: bloqueos confirmados, acciones aplicables,
+verificaciones pendientes y revisión manual. Cada paso expone comando, prerrequisito y si requiere
+Owner/HITL; los comandos solo se copian, nunca se ejecutan desde la UI. El bloque de alcance de
+revalidación (Entorno, Dominio y Diagnóstico avanzado) delimita la siguiente sonda, no filtra la
+información ya visible. Migraciones y parches son dominios distintos: `pnpm prod:apply -- --schema`
+opera el flujo de esquema, mientras `pnpm prod:apply -- --patch <file> --owner-user-id <uuid>` es
+el flujo de parche manual.
+
+`Todo en orden` exige evidencia LIVE en los controles aplicables, disposable-test válido, ninguna
+promoción/migración/parche pendiente y autorización aplicable íntegra. `NOT_APPLICABLE` no bloquea;
+`NOT_NEEDED` significa «0 filas en el detector» y no prueba que un parche fue aplicado. La evidencia
+cached, stale o unverified mantiene el estado fuera de verde. Las secciones de historial y
+diagnósticos quedan colapsadas para que la primera acción sea visible.
+
 **Expected result:** Typed availability and lifecycle/parity evidence. `UNVERIFIED` ≠ healthy.
 
 **Failures:** `CREDENTIALS_REQUIRED`, `IDENTITY_CONFLICT`, `UNREACHABLE`, incomplete evidence under

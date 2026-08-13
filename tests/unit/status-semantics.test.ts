@@ -19,6 +19,10 @@ import type { CanonicalDiagnostic, DiagnosticCode } from '@/lib/status/types';
 import { presentPromotionRow } from '@/lib/status/presentation';
 import { buildCanonicalStatusViewFixture } from '@tests/helpers/canonical-status-fixture';
 
+const commandOf = (remediation: { steps: { command: string | null }[] }) =>
+	remediation.steps.find((step) => step.command)?.command ?? null;
+const typeOf = (remediation: { steps: { type: string }[] }) => remediation.steps[0]?.type ?? null;
+
 describe('status semantics', () => {
 	it('has a presentable, non-authoritative remediation for every canonical diagnostic code', () => {
 		for (const code of Object.keys(DIAGNOSTIC_LABELS) as DiagnosticCode[]) {
@@ -61,7 +65,7 @@ describe('status semantics', () => {
 		expect(authorizationSemantic('UNVERIFIED')).toBe('unverified');
 		const local = authorizationRemediation(buildCanonicalStatusViewFixture().environments.local);
 		expect(local.semantic).toBe('neutral');
-		expect(local.command).toBeNull();
+		expect(commandOf(local)).toBeNull();
 		expect(local.nextAction).toContain('No se requiere');
 	});
 
@@ -74,8 +78,8 @@ describe('status semantics', () => {
 		const remediation = authorizationRemediation(production);
 		expect(remediation.semantic).toBe('blocked');
 		expect(remediation.noCanonicalRemediation).toBe(true);
-		expect(remediation.command).toBeNull();
-		expect(remediation.stepType).toBe('Manual/HITL');
+		expect(remediation.steps.filter((step) => !step.optional).find((step) => step.command)?.command ?? null).toBeNull();
+		expect(typeOf(remediation)).toBe('Manual/HITL');
 	});
 
 	it('does not treat an unverified empty publication queue as in-sync', () => {
@@ -103,7 +107,7 @@ describe('status semantics', () => {
 		});
 		const queue = publicationQueueRemediation(view);
 		expect(queue.semantic).toBe('unverified');
-		expect(queue.command).toBe('pnpm dbs');
+		expect(commandOf(queue)).toBe('pnpm dbs');
 		expect(queue.meaning).not.toMatch(/no hay invitaciones/i);
 	});
 
@@ -115,10 +119,10 @@ describe('status semantics', () => {
 		};
 		const remediation = invitationAttentionRemediation(row);
 		expect(remediation.semantic).toBe('neutral');
-		expect(remediation.command).toBeNull();
+		expect(remediation.steps.filter((step) => !step.optional).find((step) => step.command)?.command ?? null).toBeNull();
 		expect(remediation.noCanonicalRemediation).toBe(true);
 		expect(remediation.nextAction).toContain('cola de publicación');
-		expect(remediation.stepType).toBeNull();
+		expect(remediation.steps).toHaveLength(1);
 	});
 
 	it('surfaces disposable proof as a confirmed gap with the existing migrate command', () => {
@@ -128,7 +132,7 @@ describe('status semantics', () => {
 			evidence: 'LIVE',
 		});
 		expect(remediation.semantic).toBe('blocked');
-		expect(remediation.command).toBe('pnpm db:migrate -- --target disposable-test --apply');
+		expect(commandOf(remediation)).toBe('pnpm db:migrate -- --target disposable-test --apply');
 	});
 
 	it('uses schemaNextAction from readiness instead of inventing a migrate path', () => {
@@ -140,7 +144,7 @@ describe('status semantics', () => {
 			pendingMigrations: ['20260807120000'],
 			evidence: 'LIVE' as const,
 		};
-		expect(schemaRemediation(behind).command).toBe('pnpm db:migrate -- --target local');
+		expect(commandOf(schemaRemediation(behind))).toBe('pnpm db:migrate -- --target local');
 		expect(readinessSemantic('UNVERIFIED')).toBe('unverified');
 		expect(readinessSemantic('PENDING_MIGRATIONS')).toBe('blocked');
 	});
@@ -161,12 +165,12 @@ describe('status semantics', () => {
 		expect(blocked.handoff.applyCommand).toBeNull();
 		const remediation = publicationRemediation(blocked);
 		expect(remediation.semantic).toBe('blocked');
-		expect(remediation.command).toBe('pnpm invitation:diagnose-identity -- --target local');
+		expect(commandOf(remediation)).toBe('pnpm invitation:diagnose-identity -- --target local');
 
 		const promote = publicationRemediation(buildCanonicalStatusViewFixture().promotions[0]!);
 		expect(promote.semantic).toBe('unverified');
-		expect(promote.requiresOwner).toBe(true);
-		expect(promote.command).toContain('invitation:release');
+		expect(promote.steps.some((step) => step.requiresOwner)).toBe(true);
+		expect(commandOf(promote)).toContain('invitation:release');
 	});
 
 	it('does not recommend availability verify when UNKNOWN has live environment evidence', () => {
@@ -181,16 +185,15 @@ describe('status semantics', () => {
 		});
 		row.uncertaintyNotes.push('ASSET_IDENTITY_UNVERIFIED');
 		const remediation = publicationRemediation(row);
-		expect(remediation.command).toBeNull();
+		expect(remediation.steps.filter((step) => !step.optional).find((step) => step.command)?.command ?? null).toBeNull();
 		expect(remediation.noCanonicalRemediation).toBe(true);
-		expect(remediation.optionalDiagnosticCommand).toBe('pnpm dbs --diagnostics');
-		expect(remediation.stepType).toBeNull();
+		expect(remediation.steps.find((step) => step.optional)?.command).toBe('pnpm dbs --diagnostics');
 		expect(JSON.stringify(remediation)).not.toContain('db:availability:verify');
 	});
 
 	it('keeps aggregate publication counts informational without Verify/Diagnose/Apply', () => {
 		const queue = publicationQueueRemediation(buildCanonicalStatusViewFixture());
-		expect(queue.stepType).toBeNull();
-		expect(queue.command).toBeNull();
+		expect(queue.steps).toHaveLength(1);
+		expect(commandOf(queue)).toBeNull();
 	});
 });

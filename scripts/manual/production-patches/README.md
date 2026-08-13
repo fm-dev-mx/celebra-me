@@ -23,6 +23,19 @@ Status refreshes use bounded, read-only transactions and redact connection detai
 They never execute a patch or create an apply receipt. A `PENDING` plan is only a plan; mutation still
 requires the owner TTY workflow with `--apply`.
 
+## Dashboard action hierarchy
+
+`/dashboard/estado` answers in this order: global health, prioritized actions, then technical detail.
+The queue is shared with the CLI semantics and deduplicates repeated read-only refreshes. A green
+`Todo en orden` requires live evidence for every applicable control, valid disposable proof, no
+pending migration/publication/patch action, and intact Production authorization. `NOT_APPLICABLE`
+is neutral; `NOT_NEEDED` is green only when the detector returned zero rows and never means “applied”.
+
+The dashboard is read-only. `Revalidar todo` only refreshes evidence and the `Copiar` buttons only
+copy commands. For a `PENDING` patch, review the plan command first and then run the owner apply
+command with `--apply` from an authorized TTY. Query failures, timeouts, invalid output, or counts
+outside the approved range never recommend applying the patch.
+
 ---
 
 ## Approved patch directory

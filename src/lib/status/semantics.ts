@@ -17,12 +17,22 @@ import type {
 	CanonicalStatusView,
 	DiagnosticCode,
 	EvidenceState,
-	NextStepType,
 	SchemaLifecycleState,
 	SchemaOperationReadiness,
 	StatusSemantic,
 	TargetEnv,
 } from './types';
+
+export type OperatorStepType = 'Diagnose' | 'Verify' | 'Plan' | 'Apply' | 'Manual/HITL';
+
+export interface OperatorActionStep {
+	type: OperatorStepType;
+	label: string;
+	command: string | null;
+	prerequisite: string | null;
+	requiresOwner: boolean;
+	optional: boolean;
+}
 
 export interface OperatorRemediation {
 	semantic: StatusSemantic;
@@ -30,18 +40,26 @@ export interface OperatorRemediation {
 	why: string | null;
 	environmentLabel: string | null;
 	nextAction: string;
-	command: string | null;
+	steps: OperatorActionStep[];
 	verifyWhen: string;
-	requiresOwner: boolean;
 	noCanonicalRemediation: boolean;
-	/** Null when this item is informational and has no concrete operation. */
-	stepType: NextStepType | null;
-	/** Optional Diagnose command that must never be labeled as remediation. */
-	optionalDiagnosticCommand?: string | null;
 }
 
 const REFRESH_COMMAND = 'pnpm dbs';
 const DISPOSABLE_PROOF_COMMAND = 'pnpm db:migrate -- --target disposable-test --apply';
+
+export function step(
+	type: OperatorStepType,
+	command: string | null,
+	prerequisite: string | null,
+	requiresOwner = false,
+	optional = false,
+	label: string = type,
+): OperatorActionStep {
+	return { type, label, command, prerequisite, requiresOwner, optional };
+}
+
+export { manualPatchRemediation } from './manual-patch-semantics';
 
 function noneNeeded(meaning: string, environmentLabel: string | null): OperatorRemediation {
 	return {
@@ -50,11 +68,9 @@ function noneNeeded(meaning: string, environmentLabel: string | null): OperatorR
 		why: null,
 		environmentLabel,
 		nextAction: 'No se requiere intervención.',
-		command: null,
+		steps: [],
 		verifyWhen: meaning,
-		requiresOwner: false,
 		noCanonicalRemediation: false,
-		stepType: 'Verify',
 	};
 }
 
@@ -71,11 +87,9 @@ function unverifiedRefresh(
 		environmentLabel,
 		nextAction:
 			'Obtenga evidencia de solo lectura. Esta consulta no aplica migraciones ni promociones.',
-		command: REFRESH_COMMAND,
+		steps: [step('Diagnose', REFRESH_COMMAND, 'Consulta read-only; no ejecuta mutaciones.', false, false, 'Revalidar evidencia')],
 		verifyWhen,
-		requiresOwner: false,
 		noCanonicalRemediation: false,
-		stepType: 'Diagnose',
 	};
 }
 
@@ -149,11 +163,18 @@ export function schemaRemediation(row: CanonicalEnvSummary): OperatorRemediation
 			environmentLabel,
 			nextAction:
 				'Audite objetos de esquema. No aplique migraciones solo para poner el indicador en verde.',
-			command: row.schemaNextAction ?? `pnpm db:${row.environment === 'production' ? 'prod' : row.environment}:audit`,
+			steps: [
+				step(
+					'Diagnose',
+					row.schemaNextAction ?? `pnpm db:${row.environment === 'production' ? 'prod' : row.environment}:audit`,
+					'No aplique migraciones solo para corregir drift.',
+					false,
+					false,
+					'Auditar esquema',
+				),
+			],
 			verifyWhen: 'Esquema CURRENT sin extraMigrations, con evidencia suficiente.',
-			requiresOwner: false,
 			noCanonicalRemediation: false,
-			stepType: 'Diagnose',
 		};
 	}
 	const pending =
@@ -169,11 +190,26 @@ export function schemaRemediation(row: CanonicalEnvSummary): OperatorRemediation
 		nextAction: productionPreflight
 			? 'Ejecute el preflight de solo lectura. El apply de Production exige TTY del propietario y no corre desde este panel.'
 			: 'Ejecute el preflight de migración. El apply queda fuera de esta vista.',
-		command: row.schemaNextAction,
+		steps: row.schemaNextAction
+			? [
+					step(
+						'Verify',
+						row.schemaNextAction,
+						'Confirme el preflight antes de cualquier apply.',
+						productionPreflight,
+						false,
+						'Verificar migración',
+					),
+					...(productionPreflight
+						? [
+								step('Plan', 'pnpm prod:apply -- --schema', 'Preflight sin mutaciones aprobado.', true, false, 'Planificar apply'),
+								step('Apply', 'pnpm prod:apply -- --schema --apply', 'Plan revisado; requiere TTY del propietario.', true, false, 'Aplicar migración'),
+						  ]
+						: []),
+				  ]
+			: [],
 		verifyWhen: 'Esquema CURRENT con evidencia suficiente.',
-		requiresOwner: productionPreflight,
 		noCanonicalRemediation: row.schemaNextAction == null,
-		stepType: 'Verify',
 	};
 }
 
@@ -198,11 +234,11 @@ export function readinessRemediation(row: CanonicalEnvSummary): OperatorRemediat
 			why: 'deriveSchemaOperationFields clasificó NOT_CONFIGURED.',
 			environmentLabel,
 			nextAction: 'Verifique disponibilidad e identidad. No infiera un estado sano por ausencia de filas.',
-			command: row.schemaNextAction,
+			steps: row.schemaNextAction
+				? [step('Diagnose', row.schemaNextAction, 'Verifique disponibilidad e identidad antes de operar.', false, false, 'Diagnosticar entorno')]
+				: [],
 			verifyWhen: 'El entorno está configurado, alcanzable y clasificado.',
-			requiresOwner: false,
 			noCanonicalRemediation: row.schemaNextAction == null,
-			stepType: 'Diagnose',
 		};
 	}
 	if (row.schemaOperationReadiness === 'UNREACHABLE') {
@@ -212,11 +248,11 @@ export function readinessRemediation(row: CanonicalEnvSummary): OperatorRemediat
 			why: 'La sonda de conectividad falló o expiró.',
 			environmentLabel,
 			nextAction: 'Diagnostique alcance e identidad. No migre ni promocione con evidencia ausente.',
-			command: row.schemaNextAction,
+			steps: row.schemaNextAction
+				? [step('Diagnose', row.schemaNextAction, 'No migre ni promocione con evidencia ausente.', false, false, 'Diagnosticar alcance')]
+				: [],
 			verifyWhen: 'El entorno es alcanzable y la preparación deja de ser UNREACHABLE.',
-			requiresOwner: false,
 			noCanonicalRemediation: row.schemaNextAction == null,
-			stepType: 'Diagnose',
 		};
 	}
 	if (row.schemaOperationReadiness === 'NEEDS_DISPOSABLE_PROOF') {
@@ -227,11 +263,19 @@ export function readinessRemediation(row: CanonicalEnvSummary): OperatorRemediat
 			environmentLabel,
 			nextAction:
 				'Aplique migraciones en disposable-test (no es Local persistente). Luego vuelva a verificar.',
-			command: row.schemaNextAction ?? DISPOSABLE_PROOF_COMMAND,
+			steps: [
+				step(
+					'Apply',
+					row.schemaNextAction ?? DISPOSABLE_PROOF_COMMAND,
+					'Se ejecuta únicamente en disposable-test.',
+					false,
+					false,
+					'Generar prueba disposable',
+				),
+				step('Verify', REFRESH_COMMAND, 'Después de completar la prueba disposable.', false, false, 'Revalidar preparación'),
+			],
 			verifyWhen: 'Prueba disposable VÁLIDA y preparación Lista.',
-			requiresOwner: false,
 			noCanonicalRemediation: false,
-			stepType: 'Apply',
 		};
 	}
 	if (row.schemaOperationReadiness === 'SCHEMA_DRIFT') {
@@ -249,11 +293,19 @@ export function readinessRemediation(row: CanonicalEnvSummary): OperatorRemediat
 			row.environment === 'production'
 				? 'Preflight de solo lectura. El apply de Production exige TTY del propietario.'
 				: 'Ejecute el preflight de migración. El apply queda fuera de esta vista.',
-		command: row.schemaNextAction,
+		steps: row.schemaNextAction
+			? [
+					step('Verify', row.schemaNextAction, 'Confirme el preflight antes de cualquier apply.', row.environment === 'production', false, 'Verificar migración'),
+					...(row.environment === 'production'
+						? [
+								step('Plan', 'pnpm prod:apply -- --schema', 'Preflight sin mutaciones aprobado.', true, false, 'Planificar apply'),
+								step('Apply', 'pnpm prod:apply -- --schema --apply', 'Plan revisado; requiere TTY del propietario.', true, false, 'Aplicar migración'),
+						  ]
+						: []),
+				  ]
+			: [],
 		verifyWhen: 'Preparación Lista y esquema CURRENT.',
-		requiresOwner: row.environment === 'production',
 		noCanonicalRemediation: row.schemaNextAction == null,
-		stepType: 'Verify',
 	};
 }
 
@@ -267,11 +319,9 @@ export function authorizationRemediation(row: CanonicalEnvSummary): OperatorReme
 			why: null,
 			environmentLabel,
 			nextAction: 'No se requiere intervención.',
-			command: null,
+			steps: [],
 			verifyWhen: 'Sigue siendo No aplica en Local y Preview.',
-			requiresOwner: false,
 			noCanonicalRemediation: false,
-			stepType: 'Verify',
 		};
 	}
 	if (row.authorizationIntegrity === 'RECORDED') {
@@ -305,12 +355,10 @@ export function authorizationRemediation(row: CanonicalEnvSummary): OperatorReme
 		environmentLabel,
 		nextAction:
 			'No existe un comando canónico para registrar applies históricos. Un apply futuro de Production escribe el libro. No rellene el libro a mano ni trate CURRENT como autorización.',
-		command: null,
+		steps: [step('Manual/HITL', null, 'No se pueden registrar applies históricos desde este panel.', true, false, 'Revisión Owner')],
 		verifyWhen:
 			'authorizationIntegrity deja de ser MISSING (RECORDED tras un apply autorizado que cubra las versiones, o evidencia equivalente del libro).',
-		requiresOwner: true,
 		noCanonicalRemediation: true,
-		stepType: 'Manual/HITL',
 	};
 }
 
@@ -327,11 +375,9 @@ export function evidenceRemediation(row: CanonicalEnvSummary): OperatorRemediati
 			environmentLabel,
 			nextAction:
 				'Vuelva a consultar si necesita evidencia en vivo. Ejecutar la consulta no implica que los indicadores queden verificados.',
-			command: REFRESH_COMMAND,
+			steps: [step('Diagnose', REFRESH_COMMAND, 'Consulta read-only; no ejecuta mutaciones.', false, false, 'Revalidar evidencia')],
 			verifyWhen: 'Evidencia LIVE para este entorno.',
-			requiresOwner: false,
 			noCanonicalRemediation: false,
-			stepType: 'Diagnose',
 		};
 	}
 	return unverifiedRefresh(
@@ -362,11 +408,9 @@ export function invitationAttentionRemediation(row: CanonicalEnvSummary): Operat
 			nextAction: command
 				? 'Diagnostique identidad en este entorno. No promocione.'
 				: 'El diagnóstico de identidad rechaza Production. No hay un comando canónico contra Production.',
-			command,
+			steps: [step(command ? 'Diagnose' : 'Manual/HITL', command, 'No promocione hasta resolver el conflicto de identidad.', false, false, command ? 'Diagnosticar identidad' : 'Revisión manual')],
 			verifyWhen: 'identityConflictsCount = 0 y classifyLiveInvitation deja de devolver conflict.',
-			requiresOwner: false,
 			noCanonicalRemediation: command == null,
-			stepType: command ? 'Diagnose' : 'Manual/HITL',
 		};
 	}
 	if (row.invitationAttentionCount === 0) {
@@ -378,11 +422,9 @@ export function invitationAttentionRemediation(row: CanonicalEnvSummary): Operat
 		why: 'El conteo incluye behind, absent, diverged, conflict u unknown. La cola de publicación decide la acción.',
 		environmentLabel,
 		nextAction: 'Inspeccione las tarjetas de la cola de publicación. Este conteo no es una operación.',
-		command: null,
+		steps: [step('Manual/HITL', null, 'La cola de publicación define la acción; este conteo no es una operación.', false, false, 'Revisar cola')],
 		verifyWhen: 'invitationAttentionCount = 0 con evidencia suficiente.',
-		requiresOwner: false,
 		noCanonicalRemediation: true,
-		stepType: null,
 	};
 }
 
@@ -400,17 +442,17 @@ export function disposableRemediation(proof: CanonicalDisposableProof): Operator
 		environmentLabel: 'disposable-test',
 		nextAction:
 			'Aplique migraciones en disposable-test. Esto no indica deuda de esquema en Local, Preview o Production.',
-		command: DISPOSABLE_PROOF_COMMAND,
+		steps: [
+			step('Apply', DISPOSABLE_PROOF_COMMAND, 'Se ejecuta únicamente en disposable-test.', false, false, 'Generar prueba disposable'),
+			step('Verify', REFRESH_COMMAND, 'Después de completar disposable-test.', false, false, 'Revalidar estado'),
+		],
 		verifyWhen: 'Prueba disposable VÁLIDA.',
-		requiresOwner: false,
 		noCanonicalRemediation: false,
-		stepType: 'Apply',
 	};
 }
 
-export function publicationRemediation(row: CanonicalPromotionRow): OperatorRemediation {
+function unknownPublicationRemediation(row: CanonicalPromotionRow): OperatorRemediation {
 	const environmentLabel = 'registro';
-	if (row.action === 'UNKNOWN') {
 		if (row.reasonCode === 'CANONICAL_UNAVAILABLE') {
 			return {
 				semantic: 'unverified',
@@ -419,11 +461,9 @@ export function publicationRemediation(row: CanonicalPromotionRow): OperatorReme
 				environmentLabel,
 				nextAction:
 					'No hay remediación canónica en este panel. Corrija la definición del registro de invitaciones en el repositorio.',
-				command: null,
+				steps: [step('Manual/HITL', null, 'Corrija la definición canónica antes de promocionar.', false, false, 'Revisión manual')],
 				verifyWhen: 'La huella canónica se construye y decidePromotionAction deja de ser UNKNOWN.',
-				requiresOwner: false,
 				noCanonicalRemediation: true,
-				stepType: 'Manual/HITL',
 			};
 		}
 		const needsRevalidation = row.handoff.dryRunCommand === 'pnpm dbs';
@@ -438,11 +478,11 @@ export function publicationRemediation(row: CanonicalPromotionRow): OperatorReme
 				environmentLabel,
 				nextAction:
 					'Revalide evidencia en vivo. No promocione mientras el entorno no haya sido sondado.',
-				command: row.handoff.dryRunCommand,
+				steps: row.handoff.dryRunCommand
+					? [step('Diagnose', row.handoff.dryRunCommand, 'No promocione mientras la evidencia esté incompleta.', false, false, 'Revalidar publicación')]
+					: [],
 				verifyWhen: 'decidePromotionAction deja de ser UNKNOWN.',
-				requiresOwner: false,
 				noCanonicalRemediation: false,
-				stepType: 'Diagnose',
 			};
 		}
 		return {
@@ -457,15 +497,19 @@ export function publicationRemediation(row: CanonicalPromotionRow): OperatorReme
 			environmentLabel,
 			nextAction:
 				'No hay remediación canónica. El acceso al entorno tuvo éxito; la clasificación promocional sigue incompleta. No promocione.',
-			command: null,
+			steps: [
+				...(row.handoff.optionalDiagnosticCommand
+					? [step('Diagnose', row.handoff.optionalDiagnosticCommand, 'Opcional; no remedia UNKNOWN.', false, true, 'Diagnóstico opcional')]
+					: []),
+				step('Manual/HITL', null, 'No hay remediación canónica para esta clasificación UNKNOWN.', false, false, 'Revisión manual'),
+			],
 			verifyWhen: 'decidePromotionAction deja de ser UNKNOWN.',
-			requiresOwner: false,
 			noCanonicalRemediation: true,
-			stepType: null,
-			optionalDiagnosticCommand: row.handoff.optionalDiagnosticCommand,
 		};
-	}
-	if (row.action === 'BLOCKED') {
+}
+
+function blockedPublicationRemediation(row: CanonicalPromotionRow): OperatorRemediation {
+	const environmentLabel = 'registro';
 		if (row.reasonCode === 'IDENTITY_CONFLICT') {
 			const conflictEnv = (['local', 'preview', 'production'] as const).find(
 				(env) => row.environments[env] === 'conflict',
@@ -479,11 +523,9 @@ export function publicationRemediation(row: CanonicalPromotionRow): OperatorReme
 				nextAction: command
 					? 'Diagnostique identidad. No promocione.'
 					: 'El diagnóstico de identidad rechaza Production. No hay comando canónico contra Production.',
-				command,
+				steps: [step(command ? 'Diagnose' : 'Manual/HITL', command, 'No promocione hasta resolver el conflicto.', false, false, command ? 'Diagnosticar identidad' : 'Revisión manual')],
 				verifyWhen: 'Ningún entorno queda en conflict.',
-				requiresOwner: false,
 				noCanonicalRemediation: command == null,
-				stepType: command ? 'Diagnose' : 'Manual/HITL',
 			};
 		}
 		if (row.reasonCode === 'MANAGED_DIVERGENCE') {
@@ -494,11 +536,9 @@ export function publicationRemediation(row: CanonicalPromotionRow): OperatorReme
 				environmentLabel,
 				nextAction:
 					'Compare contenido semántico. invitation:reconcile exige un archivo de decisiones y no cubre Production.',
-				command: contentParityCommand(row.slug, row.eventType),
+				steps: [step('Diagnose', contentParityCommand(row.slug, row.eventType), 'Compare el contenido antes de reconciliar.', false, false, 'Comparar contenido')],
 				verifyWhen: 'Ningún entorno queda en diverged.',
-				requiresOwner: false,
 				noCanonicalRemediation: false,
-				stepType: 'Diagnose',
 			};
 		}
 		if (row.reasonCode === 'PRODUCTION_AHEAD_OF_PREVIEW') {
@@ -508,11 +548,9 @@ export function publicationRemediation(row: CanonicalPromotionRow): OperatorReme
 				why: `Preview está ${row.environments.preview}.`,
 				environmentLabel,
 				nextAction: 'No promocione. No hay una ruta canónica Preview-first desde este estado.',
-				command: contentParityCommand(row.slug, row.eventType),
+				steps: [step('Diagnose', contentParityCommand(row.slug, row.eventType), 'No promocione desde un estado Production-ahead.', false, false, 'Comparar contenido')],
 				verifyWhen: 'Preview deja de estar behind/absent mientras Production está match, o la decisión deja de ser BLOCKED.',
-				requiresOwner: false,
 				noCanonicalRemediation: true,
-				stepType: 'Diagnose',
 			};
 		}
 		return {
@@ -521,13 +559,16 @@ export function publicationRemediation(row: CanonicalPromotionRow): OperatorReme
 			why: null,
 			environmentLabel,
 			nextAction: row.handoff.steps.join(' → ') || 'No promocione.',
-			command: row.handoff.dryRunCommand,
+			steps: row.handoff.dryRunCommand
+				? [step('Verify', row.handoff.dryRunCommand, 'Confirme el dry-run antes de cualquier apply.', false, false, 'Verificar promoción')]
+				: [],
 			verifyWhen: 'Local coincide con el canónico, o la decisión deja de ser BLOCKED.',
-			requiresOwner: false,
 			noCanonicalRemediation: row.handoff.dryRunCommand == null && row.handoff.applyCommand == null,
-			stepType: row.handoff.dryRunStepType,
 		};
-	}
+}
+
+function promotionActionRemediation(row: CanonicalPromotionRow): OperatorRemediation {
+	const environmentLabel = 'registro';
 	return {
 		semantic: 'unverified',
 		meaning: PUBLICATION_REASON_LABELS[row.reasonCode],
@@ -536,12 +577,26 @@ export function publicationRemediation(row: CanonicalPromotionRow): OperatorReme
 		nextAction: row.handoff.ownerApplyRequired
 			? 'Ejecute dry-run de solo lectura para verificar. El apply en Producción exige TTY del propietario (no ejecutable desde el panel UI).'
 			: 'Ejecute dry-run para verificar. Luego ejecute apply autorizado para promocionar.',
-		command: row.handoff.dryRunCommand,
+		steps: [
+			...(row.handoff.dryRunCommand
+				? [step(row.handoff.dryRunStepType, row.handoff.dryRunCommand, 'Confirme el dry-run antes de cualquier apply.', row.handoff.ownerApplyRequired, false, 'Verificar promoción')]
+				: []),
+			...(row.handoff.applyCommand
+				? [
+						step('Plan', row.handoff.applyCommand.replace(/\s+--apply\b/, ''), 'Dry-run aprobado.', row.handoff.ownerApplyRequired, false, 'Planificar promoción'),
+						step('Apply', row.handoff.applyCommand, 'Plan revisado; requiere TTY del propietario.', row.handoff.ownerApplyRequired, false, 'Aplicar promoción'),
+				  ]
+				: []),
+		],
 		verifyWhen: 'decidePromotionAction = NONE (IN_SYNC) con evidencia suficiente.',
-		requiresOwner: row.handoff.ownerApplyRequired,
 		noCanonicalRemediation: row.handoff.dryRunCommand == null,
-		stepType: row.handoff.dryRunStepType,
 	};
+}
+
+export function publicationRemediation(row: CanonicalPromotionRow): OperatorRemediation {
+	if (row.action === 'UNKNOWN') return unknownPublicationRemediation(row);
+	if (row.action === 'BLOCKED') return blockedPublicationRemediation(row);
+	return promotionActionRemediation(row);
 }
 
 export function publicationQueueRemediation(view: CanonicalStatusView): OperatorRemediation {
@@ -567,11 +622,9 @@ export function publicationQueueRemediation(view: CanonicalStatusView): Operator
 		why: null,
 		environmentLabel: 'registro',
 		nextAction: 'Siga la acción de cada tarjeta. No promocione filas BLOCKED o UNKNOWN.',
-		command: null,
+		steps: [step('Manual/HITL', null, 'Siga la acción de cada tarjeta; no promocione filas BLOCKED o UNKNOWN.', false, false, 'Revisar cola')],
 		verifyWhen: 'promotions.length = 0 con evidencia suficiente.',
-		requiresOwner: false,
 		noCanonicalRemediation: true,
-		stepType: null,
 	};
 }
 
@@ -595,11 +648,9 @@ export function diagnosticRemediation(item: CanonicalDiagnostic): OperatorRemedi
 			environmentLabel,
 			nextAction:
 				'No existe un comando canónico para registrar applies históricos. Un apply futuro de Production escribe el libro.',
-			command: null,
+			steps: [step('Manual/HITL', null, 'No existe un comando canónico para registrar applies históricos.', true, false, 'Revisión Owner')],
 			verifyWhen: 'authorizationIntegrity deja de ser MISSING.',
-			requiresOwner: true,
 			noCanonicalRemediation: true,
-			stepType: 'Manual/HITL',
 		};
 	}
 	if (item.code === 'ENVIRONMENT_IDENTITY_CONFLICT' && item.environment) {
@@ -609,11 +660,9 @@ export function diagnosticRemediation(item: CanonicalDiagnostic): OperatorRemedi
 			why: item.cause,
 			environmentLabel,
 			nextAction: 'Verifique identidad y alcance del entorno.',
-			command: `pnpm db:availability:verify -- --targets ${item.environment}`,
+			steps: [step('Diagnose', `pnpm db:availability:verify -- --targets ${item.environment}`, 'Verifique identidad y alcance antes de operar.', false, false, 'Verificar disponibilidad')],
 			verifyWhen: 'environmentIdentityOk = true.',
-			requiresOwner: false,
 			noCanonicalRemediation: false,
-			stepType: 'Diagnose',
 		};
 	}
 	if (
@@ -627,11 +676,9 @@ export function diagnosticRemediation(item: CanonicalDiagnostic): OperatorRemedi
 			why: item.cause,
 			environmentLabel,
 			nextAction: command ? 'Diagnostique identidad. No promocione.' : 'No hay diagnóstico de identidad canónico contra Production.',
-			command,
+			steps: [step(command ? 'Diagnose' : 'Manual/HITL', command, 'No promocione hasta resolver el conflicto.', false, false, command ? 'Diagnosticar identidad' : 'Revisión manual')],
 			verifyWhen: 'Los conflictos de identidad quedan en 0.',
-			requiresOwner: false,
 			noCanonicalRemediation: command == null,
-			stepType: command ? 'Diagnose' : 'Manual/HITL',
 		};
 	}
 	if (item.code === 'DRAFT_INVALID' && item.slug && item.environment) {
@@ -641,11 +688,9 @@ export function diagnosticRemediation(item: CanonicalDiagnostic): OperatorRemedi
 			why: item.cause,
 			environmentLabel,
 			nextAction: 'Audite el contrato del borrador. Esta señal no cambia la cola de publicación.',
-			command: draftAuditCommand(item.slug, item.environment),
+			steps: [step('Diagnose', draftAuditCommand(item.slug, item.environment), 'Audite el contrato antes de publicar.', false, false, 'Auditar borrador')],
 			verifyWhen: 'El diagnóstico DRAFT_INVALID desaparece tras corregir el borrador y volver a consultar.',
-			requiresOwner: false,
 			noCanonicalRemediation: false,
-			stepType: 'Diagnose',
 		};
 	}
 	if (item.code === 'MANAGED_DRIFT' && item.slug) {
@@ -656,11 +701,9 @@ export function diagnosticRemediation(item: CanonicalDiagnostic): OperatorRemedi
 			environmentLabel,
 			nextAction:
 				'Consulte el slug y, desde la tarjeta de publicación, compare con invitation:content-parity (requiere --event-type). Esta señal no decide PROMOTE_*.',
-			command: null,
+			steps: [step('Manual/HITL', null, 'Compare desde la tarjeta de publicación con el comando canónico.', false, false, 'Revisión manual')],
 			verifyWhen: 'La señal MANAGED_DRIFT desaparece o la cola deja de estar BLOCKED por divergencia.',
-			requiresOwner: false,
 			noCanonicalRemediation: true,
-			stepType: 'Manual/HITL',
 		};
 	}
 	if (item.code === 'LIFECYCLE_METADATA_STALE') {
@@ -670,11 +713,9 @@ export function diagnosticRemediation(item: CanonicalDiagnostic): OperatorRemedi
 			why: item.cause,
 			environmentLabel,
 			nextAction: 'Señal de enriquecimiento. No cambia IN_SYNC ni autoriza una promoción.',
-			command: null,
+			steps: [step('Manual/HITL', null, 'Es una nota de enriquecimiento; no cambia la decisión de publicación.', false, false, 'Revisión manual')],
 			verifyWhen: 'El metadato de ciclo de vida coincide con la publicación, o se acepta como nota.',
-			requiresOwner: false,
 			noCanonicalRemediation: true,
-			stepType: 'Manual/HITL',
 		};
 	}
 	if (DIAGNOSTIC_GAP.has(item.code)) {
@@ -685,11 +726,9 @@ export function diagnosticRemediation(item: CanonicalDiagnostic): OperatorRemedi
 			environmentLabel,
 			nextAction:
 				'No hay una remediación canónica de un solo comando para esta señal. Sigue siendo enriquecimiento; no cambia la cola ni la idoneidad.',
-			command: null,
+			steps: [step('Manual/HITL', null, 'No hay una remediación canónica de un solo comando.', false, false, 'Revisión manual')],
 			verifyWhen: 'La señal desaparece en un diagnóstico posterior, o se documenta como brecha.',
-			requiresOwner: false,
 			noCanonicalRemediation: true,
-			stepType: 'Manual/HITL',
 		};
 	}
 	return {
@@ -698,10 +737,8 @@ export function diagnosticRemediation(item: CanonicalDiagnostic): OperatorRemedi
 		why: item.cause,
 		environmentLabel,
 		nextAction: 'Señal de enriquecimiento. No cambia la cola de publicación ni la idoneidad.',
-		command: null,
+		steps: [step('Manual/HITL', null, 'Es una señal de enriquecimiento; revise el diagnóstico.', false, false, 'Revisión manual')],
 		verifyWhen: 'La señal desaparece tras una consulta con evidencia suficiente.',
-		requiresOwner: false,
 		noCanonicalRemediation: true,
-		stepType: 'Manual/HITL',
 	};
 }

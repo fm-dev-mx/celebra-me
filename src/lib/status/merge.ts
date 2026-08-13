@@ -285,6 +285,25 @@ function mergeContentDomainState(
 	};
 }
 
+function mergeSchemaEnvironments(
+	environments: Record<TargetEnv, CanonicalEnvSummary>,
+	previous: CanonicalStatusView,
+	incoming: CanonicalStatusView,
+	probedEnvs: TargetEnv[],
+	replaceByEnv: Record<TargetEnv, boolean>,
+): void {
+	for (const env of probedEnvs) {
+		if (replaceByEnv[env]) {
+			environments[env] = {
+				...incoming.environments[env],
+				invitationAttentionCount: previous.environments[env].invitationAttentionCount,
+			};
+		} else {
+			environments[env] = downgradePreserved(previous.environments[env]);
+		}
+	}
+}
+
 export function mergeCanonicalStatusView(input: {
 	previous: CanonicalStatusView | null;
 	incoming: CanonicalStatusView;
@@ -327,18 +346,7 @@ export function mergeCanonicalStatusView(input: {
 		production: { ...previous.environments.production },
 	};
 
-	if (refreshSchema) {
-		for (const env of probedEnvs) {
-			if (replaceByEnv[env]) {
-				environments[env] = {
-					...input.incoming.environments[env],
-					invitationAttentionCount: previous.environments[env].invitationAttentionCount,
-				};
-			} else {
-				environments[env] = downgradePreserved(previous.environments[env]);
-			}
-		}
-	}
+	if (refreshSchema) mergeSchemaEnvironments(environments, previous, input.incoming, probedEnvs, replaceByEnv);
 
 	let promotions = previous.promotions;
 	let inSyncSlugs = previous.inSyncSlugs;

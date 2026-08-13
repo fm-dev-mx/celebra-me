@@ -12,6 +12,7 @@ import {
 	readinessSemantic,
 	schemaLifecycleSemantic,
 } from '../../src/lib/status/semantics.ts';
+import { aggregateManualPatchStatus, buildOperationalActionPlan } from '../../src/lib/status/action-plan.ts';
 import type {
 	CanonicalPromotionRow,
 	CanonicalStatusView,
@@ -20,6 +21,7 @@ import type {
 	StatusSemantic,
 	TargetEnv,
 } from '../../src/lib/status/types.ts';
+import { SEMANTIC_LABELS } from '../../src/lib/status/labels.ts';
 import { useCliColor } from '../db/operator-cli-ux.ts';
 
 const ENVS: TargetEnv[] = ['local', 'preview', 'production'];
@@ -218,15 +220,8 @@ function formatStatusRows(view: CanonicalStatusView, labelCol: number, envCol: n
 	const patchRow =
 		padVisible('Manual patches', labelCol) +
 		ENVS.map((env) => {
-			const statuses = view.manualPatches.map((patch) => patch.environments[env].status);
-			const pending = statuses.filter((status) => status === 'PENDING').length;
-			const blocked = statuses.filter((status) => status === 'BLOCKED').length;
-			const unverified = statuses.filter((status) => status === 'UNVERIFIED').length;
-			const notNeeded = statuses.filter((status) => status === 'NOT_NEEDED').length;
-			const notApplicable = statuses.filter((status) => status === 'NOT_APPLICABLE').length;
-			const label = blocked > 0 ? `${blocked} bloqueado(s)` : unverified > 0 ? `${unverified} sin verificar` : pending > 0 ? `${pending} pendiente(s)` : notNeeded > 0 ? `${notNeeded} no requerido(s)` : `${notApplicable} no aplica`;
-			const semantic: StatusSemantic = blocked > 0 ? 'blocked' : unverified > 0 || pending > 0 ? 'unverified' : notNeeded > 0 ? 'verified' : 'neutral';
-			return padVisible(styleBySemantic(c, semantic, label), envCol);
+			const aggregate = aggregateManualPatchStatus(view, env);
+			return padVisible(styleBySemantic(c, aggregate.semantic, aggregate.label), envCol);
 		}).join('');
 
 	return [schemaRow, invitationRow, readinessRow, evidenceRow, authorizationRow, patchRow];
@@ -434,6 +429,34 @@ function formatDiagnosticsSection(
 	return lines;
 }
 
+function formatOperationalActionPlan(view: CanonicalStatusView, headerWidth: number): string[] {
+	const c = getColors();
+	const plan = buildOperationalActionPlan(view);
+	const healthText = `${plan.health.label} (${plan.health.unresolvedChecks} acción(es))`;
+	const lines = [
+		c.dim('─'.repeat(headerWidth)),
+		`  ${c.bold('OPERATIONAL HEALTH')}: ${styleBySemantic(c, plan.health.status === 'GREEN' ? 'verified' : plan.health.status === 'ACTION_REQUIRED' ? 'blocked' : 'unverified', healthText)}`,
+		`  ${c.dim(plan.health.summary)}`,
+		c.dim('─'.repeat(headerWidth)),
+		`  ${c.bold('NEXT ACTIONS')}`,
+	];
+	if (plan.actions.length === 0) {
+		lines.push(c.brightGreen('  ✓ No hay acciones pendientes.'));
+		return lines;
+	}
+	for (const [index, action] of plan.actions.entries()) {
+		lines.push(`  ${index + 1}. ${c.bold(action.title)} ${styleBySemantic(c, action.semantic, SEMANTIC_LABELS[action.semantic] ?? action.semantic)}`);
+		lines.push(`     ${action.summary}`);
+		for (const step of action.steps) {
+			const owner = step.requiresOwner ? ' 🔒 OWNER / HITL' : '';
+			lines.push(`     ${step.label}: ${step.command ? c.brightCyan(step.command) : c.yellow('Revisión manual; sin comando canónico')}${owner}`);
+			if (step.prerequisite) lines.push(`       Prerequisito: ${step.prerequisite}`);
+		}
+		lines.push(`     Verificar cuando: ${action.verifyWhen}`);
+	}
+	return lines;
+}
+
 export function formatCanonicalStatusView(
 	view: CanonicalStatusView,
 	options?: { verbose?: boolean; includeInSync?: boolean; diagnostics?: boolean },
@@ -452,6 +475,7 @@ export function formatCanonicalStatusView(
 		view.freshnessMeta
 			? `  Evidence freshness: ${view.freshnessMeta.status} (verified ${view.freshnessMeta.lastVerifiedAt})`
 			: `  Evidence: ${view.evidence}`,
+		...formatOperationalActionPlan(view, headerWidth),
 		'',
 		`${padVisible('', labelCol)}${c.brightCyan(padVisible('LOCAL', envCol))}${c.brightCyan(padVisible('PREVIEW', envCol))}${c.brightCyan(padVisible('PRODUCTION', envCol))}`,
 		c.dim('─'.repeat(headerWidth)),
