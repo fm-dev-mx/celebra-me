@@ -56,14 +56,12 @@ export function buildCanonicalStatusViewFixture(
 				envEvidence: { local: 'LIVE', preview: 'LIVE', production: 'LIVE' },
 				uncertaintyNotes: [],
 				handoff: {
-					dryRunCommand:
-						'pnpm invitation:release -- --slug victoria-y-roberto --targets production --dry-run',
-					applyCommand:
-						'pnpm prod:apply -- --slug victoria-y-roberto --apply',
+					dryRunCommand: null,
+					applyCommand: 'pnpm prod:apply -- --slug victoria-y-roberto --apply',
 					ownerApplyRequired: true,
 					optionalDiagnosticCommand: null,
-					steps: ['Verify dry-run', 'OWNER APPLY in TTY', 'Verify match'],
-					dryRunStepType: 'Verify',
+					steps: ['OWNER APPLY in TTY (CLI runs preflight and release-check)'],
+					dryRunStepType: 'Apply',
 					applyStepType: 'Apply',
 				},
 			},

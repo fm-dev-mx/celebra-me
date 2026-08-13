@@ -81,23 +81,41 @@ describe('active manual patch status', () => {
 		});
 	});
 
-	it('blocks published/draft disagreement even when the total is within range', () => {
+	it('does not block when a draft is absent for a published key', () => {
 		const stdout = JSON.stringify([
 			{ store: 'published', key: '["alpha"]' },
 			{ store: 'published', key: '["beta"]' },
 			{ store: 'draft', key: '["alpha"]' },
-			{ store: 'draft', key: '["gamma"]' },
 		]);
 		const classified = classifyPatchPreviewResult({
 			result: { status: 0, stdout },
 			manifest: PAIRED_MANIFEST,
-			min: 4,
+			min: 3,
+			max: 8,
+		});
+		expect(classified).toMatchObject({
+			status: 'PENDING',
+			reason: 'LIVE_ROWS_WITHIN_RANGE',
+			matchingRowCount: 3,
+		});
+	});
+
+	it('blocks duplicate keys within one store', () => {
+		const stdout = JSON.stringify([
+			{ store: 'published', key: '["alpha"]' },
+			{ store: 'published', key: '["alpha"]' },
+			{ store: 'draft', key: '["alpha"]' },
+		]);
+		const classified = classifyPatchPreviewResult({
+			result: { status: 0, stdout },
+			manifest: PAIRED_MANIFEST,
+			min: 1,
 			max: 8,
 		});
 		expect(classified).toMatchObject({
 			status: 'BLOCKED',
 			reason: 'LIVE_STORE_DISAGREEMENT',
-			matchingRowCount: 4,
+			matchingRowCount: 3,
 			planCommand: null,
 		});
 	});

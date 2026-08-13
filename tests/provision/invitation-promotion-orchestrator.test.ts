@@ -11,6 +11,7 @@ import type {
 import { classifyPromotionRecoveryRisk } from '../../scripts/provision/promotion-recovery-risk.ts';
 import {
 	revalidatePromotionVolatilePreconditions,
+	reviewedInvitationIdentityHolds,
 	type RevalidatePromotionVolatilePreconditionsInput,
 } from '../../scripts/provision/promotion-volatile-revalidation.ts';
 
@@ -223,6 +224,66 @@ describe('revalidatePromotionVolatilePreconditions', () => {
 			}),
 		};
 	}
+
+	it('accepts a still-null Production managed identity as the planned backfill', () => {
+		expect(
+			reviewedInvitationIdentityHolds({
+				plannedCreate: false,
+				matches: [
+					{
+						id: '11111111-1111-4111-8111-111111111111',
+						created_by: '22222222-2222-4222-8222-222222222222',
+						managed_identity_id: null,
+						slug: 'demo',
+					},
+				],
+				targetInvitationId: '11111111-1111-4111-8111-111111111111',
+				targetOwnerUserId: '22222222-2222-4222-8222-222222222222',
+				expectedManagedIdentityId: '3c4d5e6f-7081-42a3-b4c5-d6e7f8091a2b',
+				expectedSlug: 'demo',
+			}),
+		).toBe(true);
+	});
+
+	it('rejects a create plan when a Production identity already exists', () => {
+		expect(
+			reviewedInvitationIdentityHolds({
+				plannedCreate: true,
+				matches: [
+					{
+						id: '11111111-1111-4111-8111-111111111111',
+						created_by: '22222222-2222-4222-8222-222222222222',
+						managed_identity_id: null,
+						slug: 'demo',
+					},
+				],
+				targetInvitationId: '11111111-1111-4111-8111-111111111111',
+				targetOwnerUserId: '22222222-2222-4222-8222-222222222222',
+				expectedManagedIdentityId: '3c4d5e6f-7081-42a3-b4c5-d6e7f8091a2b',
+				expectedSlug: 'demo',
+			}),
+		).toBe(false);
+	});
+
+	it('rejects a different Production managed identity as concurrent drift', () => {
+		expect(
+			reviewedInvitationIdentityHolds({
+				plannedCreate: false,
+				matches: [
+					{
+						id: '11111111-1111-4111-8111-111111111111',
+						created_by: '22222222-2222-4222-8222-222222222222',
+						managed_identity_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+						slug: 'demo',
+					},
+				],
+				targetInvitationId: '11111111-1111-4111-8111-111111111111',
+				targetOwnerUserId: '22222222-2222-4222-8222-222222222222',
+				expectedManagedIdentityId: '3c4d5e6f-7081-42a3-b4c5-d6e7f8091a2b',
+				expectedSlug: 'demo',
+			}),
+		).toBe(false);
+	});
 
 	it('accepts retained target, schema, approval, and project evidence (happy path)', async () => {
 		const reviewed = reviewedWithVolatileState();

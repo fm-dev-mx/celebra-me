@@ -109,7 +109,7 @@ describe('invitation promotion candidate discovery', () => {
 		);
 		expect(missing.remediation.join('\n')).toContain('--package-hash');
 		expect(missing.remediation.at(-1)).toContain(
-			'pnpm invitation:release -- --slug demo --targets production',
+			'pnpm prod:apply -- --slug demo',
 		);
 	});
 

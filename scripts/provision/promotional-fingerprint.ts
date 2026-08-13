@@ -244,10 +244,12 @@ export function classifyLiveInvitation(input: {
 		return 'conflict';
 	}
 	const live = buildLivePromotionalFingerprint(row, input.canonicalAssetKeys);
-	if (!live.ok) return 'unknown';
+	if (!live.ok) return 'behind';
 	const publishedMatches = live.fingerprint === input.canonicalFingerprint;
 	const draftDiverged = live.draftDigest != null && live.draftDigest !== live.publishedDigest;
 	if (publishedMatches && draftDiverged) return 'diverged';
-	if (publishedMatches) return 'match';
+	if (publishedMatches && row.managedIdentityId === input.expectedManagedIdentityId) {
+		return 'match';
+	}
 	return 'behind';
 }

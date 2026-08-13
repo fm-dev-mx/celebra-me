@@ -93,7 +93,7 @@ describe('presentation parity with decidePromotionAction', () => {
 		expect(row.handoff.ownerApplyRequired).toBe(false);
 	});
 
-	it('marks Production promotions as OWNER APPLY with separate dry-run and apply commands', () => {
+	it('marks Production promotions as a single OWNER APPLY command', () => {
 		const decision = decidePromotionAction({
 			canonicalAvailable: true,
 			local: 'match',
@@ -111,12 +111,15 @@ describe('presentation parity with decidePromotionAction', () => {
 			envEvidence: { local: 'LIVE', preview: 'LIVE', production: 'LIVE' },
 		});
 		expect(row.action).toBe('PROMOTE_PRODUCTION');
-		expect(row.handoff.dryRunStepType).toBe('Verify');
+		expect(row.handoff.dryRunCommand).toBeNull();
 		expect(row.handoff.applyStepType).toBe('Apply');
 		expect(row.handoff.ownerApplyRequired).toBe(true);
-		expect(row.handoff.dryRunCommand).toContain('--targets production --dry-run');
-		expect(row.handoff.applyCommand).toContain('pnpm prod:apply -- --slug victoria-y-roberto --apply');
-		expect(row.handoff.steps).toEqual(['Verify dry-run', 'OWNER APPLY in TTY', 'Verify match']);
+		expect(row.handoff.applyCommand).toBe(
+			'pnpm prod:apply -- --slug victoria-y-roberto --apply',
+		);
+		expect(row.handoff.steps).toEqual([
+			'OWNER APPLY in TTY (CLI runs preflight and release-check)',
+		]);
 	});
 
 	it('does not treat unknown as a promotion path', () => {

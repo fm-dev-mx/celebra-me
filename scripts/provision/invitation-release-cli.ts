@@ -1553,7 +1553,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 				}
 
 				throw new Error(
-					'PRODUCTION_PROMOTION_REQUIRED: Use --targets production for owner-only Production promote via invitation:release.',
+					'PRODUCTION_PROMOTION_REQUIRED: Use pnpm prod:apply -- --slug <slug> --apply for owner-only Production promote.',
 				);
 			},
 		});
@@ -1602,9 +1602,9 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 					`Aprobación Preview pendiente (package-hash ${pendingPreview.packageHash}).`,
 				);
 				console.log(
-					'Verifique y apruebe Preview en vivo; después promueva con el mismo comando:\n' +
+					'Verifique y apruebe Preview en vivo; después promueva con el mismo paquete:\n' +
 						`  pnpm invitation:release -- --package-hash ${pendingPreview.packageHash} --approve\n` +
-						`  pnpm invitation:release -- --slug ${slug} --targets production --dry-run`,
+						`  pnpm prod:apply -- --slug ${slug} --apply`,
 				);
 			}
 		}

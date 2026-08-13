@@ -53,16 +53,16 @@ function promoteHandoff(
 			? `pnpm prod:apply -- --slug ${slug} --apply`
 			: `pnpm invitation:release -- --slug ${slug} --targets ${destination} --apply`;
 	return {
-		dryRunCommand: `pnpm invitation:release -- --slug ${slug} --targets ${destination} --dry-run`,
-		dryRunStepType: 'Verify',
+		dryRunCommand: null,
+		dryRunStepType: 'Apply',
 		applyCommand,
 		applyStepType: 'Apply',
 		ownerApplyRequired,
 		optionalDiagnosticCommand: null,
 		steps: [
-			'Verify dry-run',
-			ownerApplyRequired ? 'OWNER APPLY in TTY' : `Authorized ${destLabel} apply`,
-			'Verify match',
+			ownerApplyRequired
+				? 'OWNER APPLY in TTY (CLI runs preflight and release-check)'
+				: `Authorized ${destLabel} apply`,
 		],
 	};
 }
@@ -143,22 +143,23 @@ function blockedPromotionHandoff(
 		});
 	}
 	if (reasonCode === 'PREVIEW_APPROVAL_REQUIRED') {
-		return emptyHandoff({
-			dryRunCommand: `pnpm invitation:release -- --slug ${slug} --targets preview --dry-run`,
-			dryRunStepType: 'Verify',
+		return {
+			dryRunCommand: null,
+			dryRunStepType: 'Apply',
+			applyCommand: `pnpm invitation:release -- --slug ${slug} --targets preview --apply`,
+			applyStepType: 'Apply',
+			ownerApplyRequired: false,
+			optionalDiagnosticCommand: null,
 			steps: [
-				'Verify exact Preview plan',
-				'Authorized Preview apply when the plan has changes',
-				'Complete live Preview approval',
-				'Re-run Production dry-run',
+				'Authorized Preview apply records the pending approval even when content is unchanged',
 			],
-		});
+		};
 	}
 	if (reasonCode === 'PRODUCTION_PREFLIGHT_BLOCKED') {
 		return emptyHandoff({
-			dryRunCommand: `pnpm invitation:release -- --slug ${slug} --targets production --dry-run`,
+			dryRunCommand: `pnpm prod:apply -- --slug ${slug}`,
 			dryRunStepType: 'Verify',
-			steps: ['Inspect canonical Production blocker', 'Do not promote'],
+			steps: ['Inspect the canonical Production plan', 'Do not apply while BLOCKED'],
 		});
 	}
 	return emptyHandoff({
@@ -176,11 +177,11 @@ function unknownPromotionHandoff(
 ): PromotionHandoff {
 	if (reasonCode === 'PRODUCTION_PREFLIGHT_UNVERIFIED') {
 		return emptyHandoff({
-			dryRunCommand: `pnpm invitation:release -- --slug ${slug} --targets production --dry-run`,
+			dryRunCommand: `pnpm prod:apply -- --slug ${slug}`,
 			dryRunStepType: 'Verify',
 			steps: [
-				'Re-run canonical Production preflight',
-				'Do not promote without live evidence',
+				'Re-run the canonical Production plan',
+				'Do not apply without live evidence',
 			],
 		});
 	}

@@ -27,7 +27,7 @@ import type { CanonicalPromotionRow, EvidenceState } from '../../src/lib/status/
 
 const ENVS: TargetEnv[] = ['local', 'preview', 'production'];
 const PRODUCTION_PREFLIGHT_CONCURRENCY = 2;
-const PRODUCTION_PREFLIGHT_TIMEOUT_MS = 45_000;
+const PRODUCTION_PREFLIGHT_TIMEOUT_MS = 120_000;
 
 export interface ManagedPromotionStatus {
 	promotions: CanonicalPromotionRow[];
@@ -308,7 +308,6 @@ export async function refineManagedPromotionsWithProductionPreflight(input: {
 		}
 		const environments = input.environmentsBySlug[row.slug] ?? row.environments;
 		if (report instanceof Error) {
-			environments.production = 'unknown';
 			promotions.push(
 				presentPromotionRow({
 					slug: row.slug,
@@ -357,16 +356,29 @@ export async function refineManagedPromotionsWithProductionPreflight(input: {
 			);
 			continue;
 		}
+		if (report.blockCode === 'MISSING_PREVIEW_APPROVAL') {
+			environments.production =
+				environments.production === 'unknown' ? 'behind' : environments.production;
+			promotions.push(
+				presentPromotionRow({
+					slug: row.slug,
+					title: row.title,
+					eventType: row.eventType,
+					action: 'BLOCKED',
+					reasonCode: 'PREVIEW_APPROVAL_REQUIRED',
+					environments,
+					envEvidence: input.envEvidence,
+				}),
+			);
+			continue;
+		}
 		promotions.push(
 			presentPromotionRow({
 				slug: row.slug,
 				title: row.title,
 				eventType: row.eventType,
 				action: 'BLOCKED',
-				reasonCode:
-					report.blockCode === 'MISSING_PREVIEW_APPROVAL'
-						? 'PREVIEW_APPROVAL_REQUIRED'
-						: 'PRODUCTION_PREFLIGHT_BLOCKED',
+				reasonCode: 'PRODUCTION_PREFLIGHT_BLOCKED',
 				environments,
 				envEvidence: input.envEvidence,
 			}),

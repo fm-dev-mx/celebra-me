@@ -195,25 +195,71 @@ function blockedPublicationRemediation(row: CanonicalPromotionRow): OperatorReme
 			noCanonicalRemediation: true,
 		};
 	}
+	if (row.reasonCode === 'PREVIEW_APPROVAL_REQUIRED') {
+		const command = row.handoff.applyCommand;
+		return {
+			semantic: 'blocked',
+			meaning: PUBLICATION_REASON_LABELS.PREVIEW_APPROVAL_REQUIRED,
+			why: null,
+			environmentLabel,
+			nextAction:
+				'Aplique Preview (aunque el contenido no cambie) para registrar la aprobación en vivo. El CLI imprime el --package-hash --approve.',
+			steps: command
+				? [
+						step(
+							'Apply',
+							command,
+							'Preview debe coincidir con el paquete actual antes de Production.',
+							false,
+							false,
+							'Registrar aprobación Preview',
+						),
+					]
+				: [],
+			verifyWhen: 'El preflight de Production deja de exigir PREVIEW_APPROVAL_REQUIRED.',
+			noCanonicalRemediation: command == null,
+		};
+	}
+	if (row.reasonCode === 'LOCAL_BEHIND_PREVIEW_ALIGNED' && row.handoff.applyCommand) {
+		return {
+			semantic: 'blocked',
+			meaning: PUBLICATION_REASON_LABELS.LOCAL_BEHIND_PREVIEW_ALIGNED,
+			why: `Local está ${row.environments.local}.`,
+			environmentLabel,
+			nextAction: 'Aplique Local con el comando canónico. El CLI planifica antes de escribir.',
+			steps: [
+				step(
+					'Apply',
+					row.handoff.applyCommand,
+					'Destino Local autorizado.',
+					false,
+					false,
+					'Aplicar en Local',
+				),
+			],
+			verifyWhen: 'Local coincide con el canónico, o la decisión deja de ser BLOCKED.',
+			noCanonicalRemediation: false,
+		};
+	}
 	return {
 		semantic: 'blocked',
 		meaning: PUBLICATION_REASON_LABELS[row.reasonCode],
 		why: null,
 		environmentLabel,
-		nextAction: row.handoff.steps.join(' → ') || 'No promocione.',
+		nextAction: 'Inspeccione el plan canónico. No aplique mientras el estado sea BLOCKED.',
 		steps: row.handoff.dryRunCommand
 			? [
 					step(
 						'Verify',
 						row.handoff.dryRunCommand,
-						'Confirme el dry-run antes de cualquier apply.',
+						'Plan de solo lectura; no aplica.',
 						false,
 						false,
-						'Verificar promoción',
+						'Inspeccionar plan',
 					),
 				]
 			: [],
-		verifyWhen: 'Local coincide con el canónico, o la decisión deja de ser BLOCKED.',
+		verifyWhen: 'La decisión deja de ser BLOCKED.',
 		noCanonicalRemediation:
 			row.handoff.dryRunCommand == null && row.handoff.applyCommand == null,
 	};
@@ -221,50 +267,32 @@ function blockedPublicationRemediation(row: CanonicalPromotionRow): OperatorReme
 
 function promotionActionRemediation(row: CanonicalPromotionRow): OperatorRemediation {
 	const environmentLabel = 'registro';
+	const command = row.handoff.applyCommand ?? row.handoff.dryRunCommand;
+	const owner = row.handoff.ownerApplyRequired;
 	return {
 		semantic: 'unverified',
 		meaning: PUBLICATION_REASON_LABELS[row.reasonCode],
 		why: row.uncertaintyNotes.length > 0 ? row.uncertaintyNotes.join(' · ') : null,
 		environmentLabel,
-		nextAction: row.handoff.ownerApplyRequired
-			? 'Ejecute dry-run de solo lectura para verificar. El apply en Producción exige TTY del propietario (no ejecutable desde el panel UI).'
-			: 'Ejecute dry-run para verificar. Luego ejecute apply autorizado para promocionar.',
-		steps: [
-			...(row.handoff.dryRunCommand
-				? [
-						step(
-							row.handoff.dryRunStepType,
-							row.handoff.dryRunCommand,
-							'Confirme el dry-run antes de cualquier apply.',
-							row.handoff.ownerApplyRequired,
-							false,
-							'Verificar promoción',
-						),
-					]
-				: []),
-			...(row.handoff.applyCommand
-				? [
-						step(
-							'Plan',
-							row.handoff.applyCommand.replace(/\s+--apply\b/, ''),
-							'Dry-run aprobado.',
-							row.handoff.ownerApplyRequired,
-							false,
-							'Planificar promoción',
-						),
-						step(
-							'Apply',
-							row.handoff.applyCommand,
-							'Plan revisado; requiere TTY del propietario.',
-							row.handoff.ownerApplyRequired,
-							false,
-							'Aplicar promoción',
-						),
-					]
-				: []),
-		],
+		nextAction: owner
+			? 'Ejecute el comando canónico. El CLI hace preflight, reutiliza o corre release-check, y pide una confirmación Owner.'
+			: 'Ejecute el comando canónico. El CLI hace preflight y aplica con la autorización del destino.',
+		steps: command
+			? [
+					step(
+						'Apply',
+						command,
+						owner
+							? 'TTY del propietario; Cancelar es el valor seguro.'
+							: 'Destino autorizado; el CLI planifica antes de escribir.',
+						owner,
+						false,
+						owner ? 'Aplicar en Production' : 'Aplicar',
+					),
+				]
+			: [],
 		verifyWhen: 'decidePromotionAction = NONE (IN_SYNC) con evidencia suficiente.',
-		noCanonicalRemediation: row.handoff.dryRunCommand == null,
+		noCanonicalRemediation: command == null,
 	};
 }
 

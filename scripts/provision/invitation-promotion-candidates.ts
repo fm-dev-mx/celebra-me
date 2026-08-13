@@ -105,10 +105,9 @@ function approvalIdentity(packageData: InvitationPackageData) {
 
 function remediationMissingApproval(slug: string): readonly string[] {
 	return [
-		`Aplique la release actual a Preview: pnpm invitation:release -- --slug ${slug} --targets preview --dry-run`,
-		`Si el plan es correcto: pnpm invitation:release -- --slug ${slug} --targets preview --apply`,
-		`Verifique y apruebe Preview en vivo: pnpm invitation:release -- --package-hash <hash> --approve`,
-		`Reejecute pnpm invitation:release -- --slug ${slug} --targets production`,
+		`Aplique la release actual a Preview: pnpm invitation:release -- --slug ${slug} --targets preview --apply`,
+		`Apruebe Preview en vivo: pnpm invitation:release -- --package-hash <hash> --approve`,
+		`Reejecute pnpm prod:apply -- --slug ${slug}`,
 	];
 }
 
@@ -123,31 +122,31 @@ function remediationProductionStatus(input: {
 			return [
 				`Inspeccione divergencia: ${parity}`,
 				'Resuelva en la definición/Preview o con reconciliación administrada; release no auto-fusiona.',
-				`Reejecute pnpm invitation:release -- --slug ${input.slug} --targets production`,
+				`Reejecute pnpm prod:apply -- --slug ${input.slug}`,
 			];
 		case 'IDENTITY_CONFLICT':
 			return [
 				`Diagnostique identidad en Preview/Local: pnpm invitation:diagnose-identity -- --target preview`,
 				`Revise el slug ${input.slug} en el informe y corrija el conflicto administrado antes de promover.`,
-				`Reejecute pnpm invitation:release -- --slug ${input.slug} --targets production`,
+				`Reejecute pnpm prod:apply -- --slug ${input.slug}`,
 			];
 		case 'UNVERIFIED':
 		case 'CREDENTIALS_REQUIRED':
 			return [
 				'Configure credenciales Production del propietario (PROD_DB_URL / secretos canónicos).',
 				'Verifique alcance con pnpm dbs --compact',
-				`Reejecute pnpm invitation:release -- --slug ${input.slug} --targets production`,
+				`Reejecute pnpm prod:apply -- --slug ${input.slug}`,
 			];
 		case 'UNREACHABLE':
 			return [
 				'Compruebe conectividad y credenciales Production.',
 				'Verifique con pnpm dbs --compact',
-				`Reejecute pnpm invitation:release -- --slug ${input.slug} --targets production`,
+				`Reejecute pnpm prod:apply -- --slug ${input.slug}`,
 			];
 		default:
 			return [
 				`Revise el estado Production con pnpm dbs y ${parity}`,
-				`Corrija el bloqueo reportado y reejecute pnpm invitation:release -- --slug ${input.slug} --targets production`,
+				`Corrija el bloqueo reportado y reejecute pnpm prod:apply -- --slug ${input.slug}`,
 			];
 	}
 }

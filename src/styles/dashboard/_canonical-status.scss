@@ -324,20 +324,6 @@
 	font-weight: 600;
 }
 
-.canonical-status__patch-envs {
-	display: flex;
-	flex-wrap: wrap;
-	gap: var(--spacing-sm);
-	color: var(--color-text-muted);
-	font-size: 0.82rem;
-}
-
-.canonical-status__patch-envs span {
-	display: inline-flex;
-	align-items: center;
-	gap: var(--spacing-xs);
-}
-
 .canonical-status__secondary {
 	padding-block: var(--spacing-xs);
 	border-top: 1px solid var(--dashboard-card-border);

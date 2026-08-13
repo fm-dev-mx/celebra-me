@@ -82,7 +82,7 @@ function failDirtyWorktree(state: GitWorktreeState, cause: string): never {
 				'Ejecute `pnpm release-check` sobre el HEAD limpio.',
 				'Reintente el comando de Production apply.',
 			],
-			retryCommand: 'pnpm release-check && pnpm db:migrate -- --target production',
+			retryCommand: 'pnpm release-check && pnpm prod:apply',
 			affected: {
 				label: 'Archivos afectados',
 				items,
@@ -168,7 +168,7 @@ export function assertValidReleaseCheckEvidence(
 
 /**
  * Reuse valid evidence for the current clean HEAD, or run release-check once.
- * Used by Production migrate apply so operators are not forced into a separate command
+ * Used by Production owner apply so operators are not forced into a separate command
  * when evidence is missing/stale.
  */
 export function ensureValidReleaseCheckEvidence(

@@ -100,9 +100,12 @@ export function formatAttentionCard(
 		? c.bgYellowBold(`🔒 OWNER / HITL REQUIRED (${transition})`)
 		: c.bgCyanBold(`➔ ${transition}`);
 
-	const stepBadge = row.handoff.applyCommand
-		? `[${row.handoff.dryRunStepType} → ${row.handoff.applyStepType}]`
-		: `[${row.handoff.dryRunStepType}]`;
+	const stepBadge =
+		row.handoff.applyCommand &&
+		row.handoff.dryRunCommand &&
+		row.handoff.dryRunStepType !== row.handoff.applyStepType
+			? `[${row.handoff.dryRunStepType} → ${row.handoff.applyStepType}]`
+			: `[${row.handoff.applyCommand ? row.handoff.applyStepType : row.handoff.dryRunStepType}]`;
 
 	const titleLine = `${prefix}${c.bold(row.title)}  ${badge}  ${c.dim(`[${row.action}] ${stepBadge}`)}`;
 	const whyLine = `   ${c.dim('Why:')}     ${formatWhyLine(row)}`;

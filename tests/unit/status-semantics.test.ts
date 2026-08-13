@@ -170,7 +170,9 @@ describe('status semantics', () => {
 		const promote = publicationRemediation(buildCanonicalStatusViewFixture().promotions[0]!);
 		expect(promote.semantic).toBe('unverified');
 		expect(promote.steps.some((step) => step.requiresOwner)).toBe(true);
-		expect(commandOf(promote)).toContain('invitation:release');
+		expect(commandOf(promote)).toContain('prod:apply');
+		expect(promote.steps).toHaveLength(1);
+		expect(promote.steps[0]?.type).toBe('Apply');
 	});
 
 	it('does not recommend availability verify when UNKNOWN has live environment evidence', () => {

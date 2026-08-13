@@ -274,7 +274,11 @@ describe('canonical Production preflight refinement', () => {
 		expect(result.promotions.find((row) => row.slug === 'beta')).toMatchObject({
 			action: 'BLOCKED',
 			reasonCode: 'PREVIEW_APPROVAL_REQUIRED',
-			handoff: { applyCommand: null },
+			environments: { production: 'behind' },
+			handoff: {
+				applyCommand:
+					'pnpm invitation:release -- --slug beta --targets preview --apply',
+			},
 		});
 		expect(result.promotions.find((row) => row.slug === 'delta')).toMatchObject({
 			action: 'BLOCKED',
@@ -313,6 +317,42 @@ describe('canonical Production preflight refinement', () => {
 			environments: { production: 'unknown' },
 			handoff: { applyCommand: null },
 		});
+	});
+
+	it('keeps fingerprint behind when Production preflight is unverified', async () => {
+		const alpha = definition('alpha');
+		const environmentsBySlug = {
+			alpha: { local: 'match', preview: 'match', production: 'behind' },
+		};
+		const row = presentPromotionRow({
+			slug: alpha.slug,
+			title: alpha.title,
+			eventType: alpha.eventType,
+			action: 'PROMOTE_PRODUCTION',
+			reasonCode: 'PREVIEW_ALIGNED_PRODUCTION_BEHIND',
+			environments: environmentsBySlug.alpha,
+			envEvidence,
+		});
+		const result = await refineManagedPromotionsWithProductionPreflight({
+			promotions: [row],
+			inSyncSlugs: [],
+			definitions: [alpha],
+			environmentsBySlug,
+			envEvidence,
+			resolvePackage: async () =>
+				({ invitation: { slug: 'alpha' } }) as InvitationPackageData,
+			runProductionPreflight: async () => {
+				throw new Error('PRODUCTION_PREFLIGHT_TIMEOUT');
+			},
+			timeoutMs: 1_000,
+		});
+		expect(result.promotions[0]).toMatchObject({
+			action: 'UNKNOWN',
+			reasonCode: 'PRODUCTION_PREFLIGHT_UNVERIFIED',
+			environments: { production: 'behind' },
+			handoff: { applyCommand: null, dryRunCommand: 'pnpm prod:apply -- --slug alpha' },
+		});
+		expect(result.promotions[0]?.uncertaintyNotes).not.toContain('PRODUCTION UNKNOWN');
 	});
 });
 

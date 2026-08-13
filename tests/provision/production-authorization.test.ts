@@ -341,6 +341,12 @@ describe('requireOwnerProductionApply', () => {
 });
 
 describe('Production mutator discovery and gate ordering', () => {
+	it('owner Production apply reuses or runs release-check instead of failing closed', () => {
+		const source = sourceOf('scripts/db/owner-production-apply.ts');
+		expect(source).toContain('ensureValidReleaseCheckEvidence');
+		expect(source).not.toContain('assertValidReleaseCheckEvidence');
+	});
+
 	it('matches discovered requireOwnerProductionApply callers to the approved registry', () => {
 		const discovered = discoverRequireOwnerProductionApplyCallers();
 		const approved = APPROVED_MUTATORS.map((m) => m.file).sort();

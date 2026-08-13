@@ -65,7 +65,8 @@ Options:
   --help, -h            Show this help (no database access)
 
 --all-ready excludes draft repair, one-off resets, historical patches, and
-UNKNOWN/BLOCKED items. Agents must stop after the read-only plan.
+UNKNOWN/BLOCKED items. --apply reuses valid release-check evidence for the current
+HEAD or runs pnpm release-check once. Agents must stop after the read-only plan.
 `);
 }
 

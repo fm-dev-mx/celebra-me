@@ -21,7 +21,7 @@ function patchReasonLabel(reason: PatchEvidenceReason): string {
 		LIVE_ROWS_WITHIN_RANGE: 'La consulta en vivo devolvió filas dentro del rango aprobado.',
 		LIVE_ROWS_OUTSIDE_RANGE: 'La consulta en vivo devolvió filas fuera del rango aprobado.',
 		LIVE_STORE_DISAGREEMENT:
-			'Las poblaciones publicadas y de borrador no contienen las mismas invitaciones.',
+			'Hay claves duplicadas en una superficie published o draft; no es seguro aplicar.',
 		QUERY_FAILED: 'La consulta read-only falló.',
 		QUERY_TIMEOUT: 'La consulta read-only expiró.',
 		QUERY_INVALID_OUTPUT: 'La consulta devolvió una salida no verificable.',
@@ -66,20 +66,13 @@ export function manualPatchRemediation(
 			meaning: `Parche pendiente: ${state.matchingRowCount ?? '—'} fila(s) dentro del rango ${patch.expectedRowsMin}–${patch.expectedRowsMax}.`,
 			why: patchReasonLabel(state.reason),
 			environmentLabel,
-			nextAction: 'Planifique el apply y ejecútelo con autorización Owner/HITL.',
+			nextAction:
+				'Ejecute el comando canónico. El CLI planifica, pide una confirmación Owner y aplica sobre las superficies publicadas/draft que existan.',
 			steps: [
-				step(
-					'Plan',
-					command,
-					'Dry-run read-only y revisión Owner.',
-					true,
-					false,
-					'Planificar parche',
-				),
 				step(
 					'Apply',
 					`${command} --apply`,
-					'Plan revisado; requiere TTY del propietario.',
+					'TTY del propietario; Cancelar es el valor seguro. Un draft ausente no bloquea el published.',
 					true,
 					false,
 					'Aplicar parche',
@@ -98,14 +91,14 @@ export function manualPatchRemediation(
 			meaning: catalogInvalid
 				? 'Catálogo de parches inválido.'
 				: storeDisagreement
-					? 'Las poblaciones published/draft no coinciden; no es seguro aplicar.'
+					? 'Hay claves duplicadas en published o draft; no es seguro aplicar.'
 					: 'Conteo fuera del rango aprobado; no es seguro aplicar.',
 			why: patchReasonLabel(state.reason),
 			environmentLabel,
 			nextAction: catalogInvalid
 				? 'Ejecute el lint seguro del parche y corrija el catálogo antes de aplicar.'
 				: storeDisagreement
-					? 'No aplique el parche. Reconcilie las mismas identidades en published y draft.'
+					? 'No aplique el parche. Resuelva las identidades duplicadas en esa superficie.'
 					: 'No aplique el parche. Audite el detector y vuelva a validar el conteo.',
 			steps: catalogInvalid
 				? [
@@ -123,7 +116,7 @@ export function manualPatchRemediation(
 							'Manual/HITL',
 							null,
 							storeDisagreement
-								? 'No aplique hasta que published y draft contengan las mismas identidades.'
+								? 'No aplique hasta resolver las claves duplicadas en esa superficie.'
 								: 'No aplique con un conteo fuera del rango aprobado.',
 							true,
 							false,
@@ -131,7 +124,7 @@ export function manualPatchRemediation(
 						),
 					],
 			verifyWhen: storeDisagreement
-				? 'Published y draft contienen las mismas identidades; el conteo está dentro del rango aprobado o es 0.'
+				? 'Cada superficie no tiene claves duplicadas; el conteo está dentro del rango aprobado o es 0.'
 				: 'Catálogo válido y conteo dentro del rango aprobado o igual a 0.',
 			noCanonicalRemediation: !catalogInvalid,
 		};

@@ -16,8 +16,8 @@ describe('canonical status CLI format', () => {
 		expect(text).not.toContain('PROMOTIONS');
 		expect(text).toContain('OWNER / HITL REQUIRED');
 		expect(text).toContain('Preview → Production');
-		expect(text).toContain('[Verify → Apply]');
-		expect(text).toContain('Verify:');
+		expect(text).toContain('[Apply]');
+		expect(text).not.toContain('Verify:');
 		expect(text).toContain('Apply:');
 		expect(text).toContain('Authorization');
 		expect(text).toContain('GRANDFATHERED');

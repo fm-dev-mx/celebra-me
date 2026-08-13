@@ -97,7 +97,7 @@ export async function orchestrateInvitationPromotion(
 	const revalidateBackup = input.revalidateBackup ?? revalidateCriticalProductionBackup;
 	const classifyRecoveryRisk = input.classifyRecoveryRisk ?? classifyPromotionRecoveryRisk;
 	const revalidateVolatile = input.revalidateVolatile ?? revalidatePromotionVolatilePreconditions;
-	const retryCommand = 'pnpm invitation:release -- --slug <slug> --targets production';
+	const retryCommand = 'pnpm prod:apply -- --slug <slug>';
 
 	if (process.env.CELEBRA_TASK_SCOPE) {
 		throw new OperatorError({

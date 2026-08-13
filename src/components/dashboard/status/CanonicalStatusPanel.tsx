@@ -352,15 +352,15 @@ function EnvironmentCards({ view }: { view: CanonicalStatusView }) {
 
 function PublicationDetails({ view }: { view: CanonicalStatusView }) {
 	return (
-		<section aria-labelledby="publication-title">
-			<div className="canonical-status__section-head">
-				<h2 id="publication-title">Publicación</h2>
-				<p>
-					Registro: {view.registryCount} · En sync: {view.inSyncCount} · Atención:{' '}
-					{view.promotions.length}. Las acciones aparecen una sola vez en la cola
-					superior.
-				</p>
-			</div>
+		<details className="canonical-status__details canonical-status__secondary">
+			<summary id="publication-title">
+				Publicación · registro {view.registryCount} · en sync {view.inSyncCount} · atención{' '}
+				{view.promotions.length}
+			</summary>
+			<p>
+				Evidencia de estados por invitación. Las acciones viven una sola vez en la cola
+				superior.
+			</p>
 			{view.promotions.length > 0 ? (
 				<div className="canonical-status__queue">
 					{view.promotions.map((row) => {
@@ -390,9 +390,6 @@ function PublicationDetails({ view }: { view: CanonicalStatusView }) {
 										{row.uncertaintyNotes.join(' · ')}
 									</p>
 								) : null}
-								<p className="canonical-status__next-text">
-									{remediation.nextAction}
-								</p>
 								<details className="canonical-status__details">
 									<summary>Detalle técnico</summary>
 									<dl>
@@ -425,7 +422,7 @@ function PublicationDetails({ view }: { view: CanonicalStatusView }) {
 					</ul>
 				</details>
 			) : null}
-		</section>
+		</details>
 	);
 }
 
@@ -517,15 +514,24 @@ function RecentMigrationsSection({ items }: { items?: RecentMigrationRecord[] })
 }
 
 function ManualPatchesSection({ items }: { items: ManualPatchStatus[] }) {
+	const pending = items.filter((item) => item.environments.production.status === 'PENDING').length;
+	const blocked = items.filter((item) => item.environments.production.status === 'BLOCKED').length;
+	const unverified = items.filter(
+		(item) => item.environments.production.status === 'UNVERIFIED',
+	).length;
+	const notNeeded = items.filter(
+		(item) => item.environments.production.status === 'NOT_NEEDED',
+	).length;
 	return (
-		<section aria-labelledby="manual-patches-title">
-			<div className="canonical-status__section-head">
-				<h2 id="manual-patches-title">Parches manuales</h2>
-				<p>
-					Detectores activos y separados de las migraciones. «No requerido: 0 filas» es
-					verde, pero no demuestra que el parche fue aplicado.
-				</p>
-			</div>
+		<details className="canonical-status__details canonical-status__secondary">
+			<summary id="manual-patches-title">
+				Parches manuales · {pending} pendiente(s) · {blocked} bloqueado(s) · {unverified} no
+				verificado(s) · {notNeeded} no requerido(s)
+			</summary>
+			<p>
+				Detectores activos, separados de las migraciones. «No requerido: 0 filas» es verde
+				y no demuestra que el parche fue aplicado.
+			</p>
 			<div className="canonical-status__patch-list">
 				{items.map((item) => {
 					const production = item.environments.production;
@@ -556,17 +562,6 @@ function ManualPatchesSection({ items }: { items: ManualPatchStatus[] }) {
 									No requerido: 0 filas. Esto no demuestra que fue aplicado.
 								</p>
 							) : null}
-							<div className="canonical-status__patch-envs">
-								{(['local', 'preview'] as const).map((env) => {
-									const remediation = manualPatchRemediation(item, env);
-									return (
-										<span key={env}>
-											<SemanticBadge semantic={remediation.semantic} />{' '}
-											{ENV_LABELS[env]}: No aplica
-										</span>
-									);
-								})}
-							</div>
 							<details className="canonical-status__details">
 								<summary>Rango y evidencia</summary>
 								<dl>
@@ -582,7 +577,7 @@ function ManualPatchesSection({ items }: { items: ManualPatchStatus[] }) {
 					);
 				})}
 			</div>
-		</section>
+		</details>
 	);
 }
 

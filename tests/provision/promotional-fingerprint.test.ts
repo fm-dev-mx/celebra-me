@@ -149,7 +149,7 @@ describe('promotional fingerprint', () => {
 					}),
 				],
 			}),
-		).toBe('unknown');
+		).toBe('behind');
 	});
 
 	it('detects draft divergence by digest regardless of timestamp ordering', () => {
@@ -170,7 +170,7 @@ describe('promotional fingerprint', () => {
 		).toBe('diverged');
 	});
 
-	it('classifies identity conflicts and missing hashes as blocked/unknown inputs', () => {
+	it('classifies identity conflicts as conflict and unverifiable unique rows as behind', () => {
 		const canonical = computePromotionalFingerprint(fingerprintInput());
 		expect(
 			classifyLiveInvitation({
@@ -200,7 +200,20 @@ describe('promotional fingerprint', () => {
 					}),
 				],
 			}),
-		).toBe('unknown');
+		).toBe('behind');
+	});
+
+	it('treats a missing managed identity as behind, not match or unknown', () => {
+		const canonical = computePromotionalFingerprint(fingerprintInput());
+		expect(
+			classifyLiveInvitation({
+				canonicalFingerprint: canonical,
+				canonicalAssetKeys: ['hero'],
+				expectedSlug: 'demo-slug',
+				expectedManagedIdentityId: '00000000-0000-4000-8000-000000000001',
+				rows: [liveRow({ managedIdentityId: null })],
+			}),
+		).toBe('behind');
 	});
 
 	it('keeps already-semantic asset ids stable', () => {

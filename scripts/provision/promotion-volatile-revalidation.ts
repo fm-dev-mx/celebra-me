@@ -17,7 +17,7 @@ import {
 } from './preview-live-verification.ts';
 import { verifyPlanPreconditions } from './invitation-update-plan.ts';
 
-const RETRY_COMMAND = 'pnpm invitation:release';
+const RETRY_COMMAND = 'pnpm prod:apply -- --slug <slug>';
 
 export interface PromotionVolatileTargetState {
 	targetInvitationId: string;
@@ -57,7 +57,7 @@ function planDrift(cause: string): OperatorError {
 		cause,
 		code: 'PLAN_DRIFT',
 		remediation: [
-			'Vuelva a ejecutar pnpm invitation:release para obtener un plan nuevo.',
+			'Vuelva a ejecutar pnpm prod:apply -- --slug <slug> para obtener un plan nuevo.',
 			'No confirme un plan cuya evidencia volátil ya no coincide.',
 		],
 		retryCommand: RETRY_COMMAND,
@@ -128,6 +128,32 @@ function readJsonObject(stdout: string): Record<string, unknown> {
 	return JSON.parse(raw) as Record<string, unknown>;
 }
 
+/**
+ * Concurrent identity drift vs planned managed-identity backfill.
+ * A still-null Production identity is the planned repair, not PLAN_DRIFT.
+ * A different UUID, extra row, or owner/slug change is concurrent drift.
+ */
+export function reviewedInvitationIdentityHolds(input: {
+	plannedCreate: boolean;
+	matches: ReadonlyArray<Record<string, unknown>>;
+	targetInvitationId: string;
+	targetOwnerUserId: string;
+	expectedManagedIdentityId: string;
+	expectedSlug: string;
+}): boolean {
+	if (input.plannedCreate) return input.matches.length === 0;
+	if (input.matches.length !== 1) return false;
+	const row = input.matches[0]!;
+	const liveIdentity =
+		typeof row.managed_identity_id === 'string' ? row.managed_identity_id : null;
+	return (
+		row.id === input.targetInvitationId &&
+		row.created_by === input.targetOwnerUserId &&
+		row.slug === input.expectedSlug &&
+		(liveIdentity === input.expectedManagedIdentityId || liveIdentity === null)
+	);
+}
+
 function defaultReadTargetState(input: {
 	targetDbUrl: string;
 	reviewed: PromotionPreflightReport;
@@ -191,19 +217,20 @@ select json_build_object(
 	const matches = Array.isArray(state.matches)
 		? (state.matches as Array<Record<string, unknown>>)
 		: [];
-	if (plannedCreate) {
-		if (matches.length !== 0) {
-			throw new Error('A target identity appeared after the create plan was reviewed.');
-		}
-	} else if (
-		matches.length !== 1 ||
-		matches[0]?.id !== targetInvitationId ||
-		matches[0]?.created_by !== targetOwnerUserId ||
-		matches[0]?.managed_identity_id !== input.packageData.invitation.managedIdentityId ||
-		matches[0]?.slug !== plan.invitationSlug
+	if (
+		!reviewedInvitationIdentityHolds({
+			plannedCreate,
+			matches,
+			targetInvitationId,
+			targetOwnerUserId,
+			expectedManagedIdentityId: input.packageData.invitation.managedIdentityId,
+			expectedSlug: plan.invitationSlug,
+		})
 	) {
 		throw new Error(
-			'The active Production invitation identity no longer matches the reviewed plan.',
+			plannedCreate
+				? 'A target identity appeared after the create plan was reviewed.'
+				: 'The active Production invitation identity no longer matches the reviewed plan.',
 		);
 	}
 	if (Boolean(state.ownerExists) === plannedOwnerCreate) {

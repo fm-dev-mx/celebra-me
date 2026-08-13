@@ -103,7 +103,7 @@ describe('operational action plan', () => {
 		expect(patchAction?.steps.every((step) => !step.command?.includes('--apply'))).toBe(true);
 	});
 
-	it('explica un desacuerdo published/draft sin llamarlo conteo fuera de rango', () => {
+	it('explica claves duplicadas en una superficie sin llamarlo conteo fuera de rango', () => {
 		const base = buildCanonicalStatusViewFixture();
 		const patch = base.manualPatches[0]!;
 		const manualPatches = [
@@ -126,9 +126,9 @@ describe('operational action plan', () => {
 		);
 		const action = plan.actions.find((item) => item.domain === 'patch');
 
-		expect(action?.summary).toContain('mismas identidades');
-		expect(action?.steps[0]?.prerequisite).toContain('published y draft');
-		expect(action?.verifyWhen).toContain('mismas identidades');
+		expect(action?.summary).toContain('duplicadas');
+		expect(action?.steps[0]?.prerequisite).toContain('duplicadas');
+		expect(action?.verifyWhen).toContain('duplicadas');
 		expect(action?.summary).not.toContain('conteo fuera del rango');
 	});
 });

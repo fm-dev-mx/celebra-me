@@ -96,19 +96,8 @@ export function parseProductionPatchPreview(
 	return { total: parsed.length, keysByStore };
 }
 
-function storesDisagree(keysByStore: Record<string, string[]>): boolean {
-	const stores = Object.values(keysByStore);
-	const first = stores[0] ?? [];
-	if (new Set(first).size !== first.length) return true;
-	const expected = [...first].sort();
-	return stores.slice(1).some((keys) => {
-		if (new Set(keys).size !== keys.length) return true;
-		const actual = [...keys].sort();
-		return (
-			actual.length !== expected.length ||
-			actual.some((key, index) => key !== expected[index])
-		);
-	});
+function storeHasDuplicateKeys(keysByStore: Record<string, string[]>): boolean {
+	return Object.values(keysByStore).some((keys) => new Set(keys).size !== keys.length);
 }
 
 export function assessProductionPatchPreview(input: {
@@ -119,7 +108,7 @@ export function assessProductionPatchPreview(input: {
 	if (input.evidence.total === 0) {
 		return { state: 'NOT_NEEDED', reason: 'ZERO_ROWS', evidence: input.evidence };
 	}
-	if (input.evidence.keysByStore && storesDisagree(input.evidence.keysByStore)) {
+	if (input.evidence.keysByStore && storeHasDuplicateKeys(input.evidence.keysByStore)) {
 		return {
 			state: 'BLOCKED',
 			reason: 'STORE_DISAGREEMENT',

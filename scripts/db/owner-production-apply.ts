@@ -22,7 +22,7 @@ import {
 } from './operator-cli-ux.ts';
 import { isAgentContext } from './production-boundary-policy.ts';
 import { issueProductionWritePermit } from './production-write-permit.ts';
-import { assertValidReleaseCheckEvidence } from './release-check.ts';
+import { ensureValidReleaseCheckEvidence } from './release-check.ts';
 
 function failGate(input: OperatorFailureInput, env?: NodeJS.ProcessEnv): never {
 	failOperator(input, env);
@@ -126,7 +126,7 @@ export interface OwnerProductionApplyInput {
 	selectIntent?: () => OwnerIntent | Promise<OwnerIntent>;
 	/** Test seam for confirmation input. */
 	readConfirmationLine?: () => string | Promise<string>;
-	/** Test seam for release-check evidence (defaults to assertValidReleaseCheckEvidence). */
+	/** Test seam for release-check evidence (defaults to ensureValidReleaseCheckEvidence). */
 	assertReleaseEvidence?: () => { sha: string };
 }
 
@@ -297,7 +297,7 @@ export async function requireOwnerProductionApply(
 	}
 
 	const projectRef = assertExactProductionProjectRef(input.dbUrl);
-	const releaseEvidence = (input.assertReleaseEvidence ?? assertValidReleaseCheckEvidence)();
+	const releaseEvidence = (input.assertReleaseEvidence ?? ensureValidReleaseCheckEvidence)();
 	const stdin = input.stdin ?? process.stdin;
 	const confirmationCode = buildOwnerConfirmationCode(input.operationVerb, input.bindingHex);
 
