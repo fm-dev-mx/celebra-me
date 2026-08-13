@@ -16,6 +16,7 @@ export interface DestinationReadiness {
 	title: string;
 	packageHash: string;
 	sourceHash: string;
+	/** Exact Preview approval only — not Production apply eligibility (`pnpm prod:apply`). */
 	productionReady: boolean;
 	productionBlockReason?: string;
 	hasPendingPreviewApproval: boolean;

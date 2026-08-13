@@ -115,7 +115,7 @@ describe('presentation parity with decidePromotionAction', () => {
 		expect(row.handoff.applyStepType).toBe('Apply');
 		expect(row.handoff.ownerApplyRequired).toBe(true);
 		expect(row.handoff.dryRunCommand).toContain('--targets production --dry-run');
-		expect(row.handoff.applyCommand).toContain('--targets production --apply');
+		expect(row.handoff.applyCommand).toContain('pnpm prod:apply -- --slug victoria-y-roberto --apply');
 		expect(row.handoff.steps).toEqual(['Verify dry-run', 'OWNER APPLY in TTY', 'Verify match']);
 	});
 

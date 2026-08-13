@@ -14,9 +14,10 @@ Allowed Production database work from an agent:
 
 Forbidden from an agent, even with Production credentials in the environment:
 
+- Canonical Production `--apply` (`pnpm prod:apply -- --apply`, `db:migrate -- --target production --apply`, `invitation:release -- --targets production --apply`, `db:prod:patch --apply`).
 - Supabase MCP `apply_migration`, mutating `execute_sql`, `deploy_edge_function`, or branch mutation tools targeting Production.
 - Raw `supabase db push`, `supabase migration up`, `supabase db reset`, or `psql` writes against Production.
 - Invoking `executeSupabasePush` / `executePsqlAtomicPending` / `apply-migrations.ts` against Production.
 
-Schema apply: `pnpm db:migrate -- --target production` in an owner TTY (not this agent).
+Owner apply: `pnpm prod:apply` from an interactive owner terminal (not this agent).
 Preview remains agent-operable under its existing authorization policy.

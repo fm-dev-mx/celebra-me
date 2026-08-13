@@ -73,13 +73,9 @@ import { runDestinationReleaseWizard } from './invitation-release-wizard.ts';
 import { runPromotionPreflight } from './invitation-promote.ts';
 import {
 	formatPromotionPlanCompact,
-	formatPromotionResult,
 	toPublicPromotionReport,
 } from './invitation-promotion-format.ts';
-import {
-	orchestrateInvitationPromotion,
-	resolvePromotionUpdateScope,
-} from './invitation-promotion-orchestrator.ts';
+import { resolvePromotionUpdateScope } from './invitation-promotion-orchestrator.ts';
 import { operatorSymbol, writeHuman } from '../db/operator-cli-ux.ts';
 import { isTargetDivergenceConflictMessage } from './promotion-comparison.ts';
 
@@ -219,89 +215,16 @@ async function runProductionPreflightDispatch(input: {
 		);
 		if (preflight.status === 'PROMOTABLE') {
 			writeHuman(
-				`${operatorSymbol('info')} Para aplicar: pnpm invitation:release -- --slug ${input.slug} --targets production --apply`,
+				`${operatorSymbol('info')} Para aplicar: pnpm prod:apply -- --slug ${input.slug} --apply`,
 			);
 		}
 		if (preflight.status === 'BLOCKED' && preflight.blockCode === 'SCHEMA_INCOMPATIBLE') {
 			writeHuman(
-				`${operatorSymbol('warn')} Schema incompatible. Ejecute pnpm db:migrate (nunca se migra automáticamente desde invitation:release).`,
+				`${operatorSymbol('warn')} Schema incompatible. Incluya schema en pnpm prod:apply -- --schema --slug ${input.slug} (invitation:release nunca migra).`,
 			);
 		}
 	}
 	if (preflight.status === 'BLOCKED') process.exitCode = 1;
-}
-
-async function runProductionApplyDispatch(input: {
-	slug: string;
-	definition: ReturnType<typeof getInvitationDefinition>;
-	ownerUserId?: string;
-	pruneAssets: boolean;
-	backupManifestPath?: string;
-	json: boolean;
-	packageInput: Awaited<ReturnType<typeof resolveInvitationPackageInput>>;
-	assetPolicy: ReturnType<typeof parseAssetPolicy> | undefined;
-	conflictResolutions: ReturnType<typeof loadConflictResolutionsFile> | undefined;
-	updateScope?: UpdateScope;
-}): Promise<void> {
-	try {
-		const report = await orchestrateInvitationPromotion({
-			packageData: input.packageInput.packageData,
-			ownerUserId: input.ownerUserId,
-			assetPolicy: input.assetPolicy,
-			pruneAssets: input.pruneAssets,
-			updateScope: input.updateScope,
-			conflictResolutions: input.conflictResolutions,
-			backupManifestPath: input.backupManifestPath,
-			deliveryScope: input.definition.deliveryScope,
-			title: input.definition.title,
-			route: `/${input.definition.eventType}/${input.definition.slug}`,
-			quiet: input.json,
-		});
-
-		if (input.json) {
-			console.log(JSON.stringify(toPublicPromotionReport(report), null, 2));
-		} else {
-			if (report.status === 'BLOCKED' && report.reason) {
-				writeHuman(`${operatorSymbol('fail')} ${report.reason}`);
-				if (report.blockCode === 'SCHEMA_INCOMPATIBLE') {
-					writeHuman(
-						`${operatorSymbol('warn')} Ejecute pnpm db:migrate; invitation:release nunca migra el schema.`,
-					);
-				}
-			}
-			if ('verification' in report && report.verification) {
-				writeHuman(formatPromotionResult(report));
-			}
-		}
-		if (report.status === 'BLOCKED' || report.status === 'APPLIED_BUT_VERIFICATION_FAILED') {
-			process.exitCode = 1;
-		}
-	} catch (error: unknown) {
-		const message = sanitizeMessage(error instanceof Error ? error.message : String(error));
-		if (input.json) {
-			console.log(
-				JSON.stringify(
-					{
-						status: 'BLOCKED',
-						blockCode:
-							error instanceof Error && 'code' in error
-								? String(
-										(error as { code?: string }).code ??
-											'PRODUCTION_PLAN_BLOCKED',
-									)
-								: 'PRODUCTION_PLAN_BLOCKED',
-						reason: message,
-						slug: input.slug,
-					},
-					null,
-					2,
-				),
-			);
-		} else {
-			writeHuman(`${operatorSymbol('fail')} ${message}`);
-		}
-		process.exitCode = 1;
-	}
 }
 
 async function runProductionReleaseDispatch(input: {
@@ -375,13 +298,21 @@ async function runProductionReleaseDispatch(input: {
 		return;
 	}
 
-	await runProductionApplyDispatch({
-		...input,
-		packageInput,
-		assetPolicy,
-		conflictResolutions,
-		updateScope,
-	});
+	const command = `pnpm prod:apply -- --slug ${input.slug} --apply`;
+	const message = `Production apply moved to pnpm prod:apply. Use: ${command}`;
+	if (input.json) {
+		console.log(
+			JSON.stringify({
+				status: 'BLOCKED',
+				blockCode: 'USE_PROD_APPLY',
+				reason: message,
+				slug: input.slug,
+			}),
+		);
+	} else {
+		writeHuman(`${operatorSymbol('fail')} ${message}`);
+	}
+	process.exitCode = 1;
 }
 
 export function printHelp(): void {
@@ -392,7 +323,8 @@ Usage:
   pnpm invitation:release                                             Interactive destination wizard (TTY): Update Local | Prepare Preview | Release to Production
   pnpm invitation:release --status [--slug <slug>] [--targets <targets>] [--json]
   pnpm invitation:release --slug <slug> --targets local|preview|local,preview --dry-run|--apply [--non-interactive] [--source-dir <dir>|--package <path>]
-  pnpm invitation:release --slug <slug> --targets production --dry-run|--apply [--package <path>|--source-dir <dir>]
+  pnpm invitation:release --slug <slug> --targets production --dry-run
+  pnpm prod:apply -- --slug <slug> --apply
   pnpm invitation:release --package-hash <hash> --approve
   pnpm invitation:release --preview-provenance --slug <slug> --targets preview --package <path> --dry-run [--json]
   pnpm invitation:release --preview-provenance --slug <slug> --targets preview --package <path> --apply [--json]
@@ -428,8 +360,7 @@ Options:
 Legacy filesystem approval import is retired; approvals are created and finalized in the shared Preview store.
 Schema BEHIND/DRIFT: run pnpm db:migrate (never auto-migrates from this command).
 
-Production promote (approved Preview → Production) is folded into this CLI via --targets production.
-Each Local, Preview content, Preview approval, and Production write uses exactly one env-appropriate authorization.
+Production dry-run: --targets production --dry-run. Owner apply: pnpm prod:apply -- --slug <slug> --apply.
 `);
 }
 

@@ -46,10 +46,14 @@ function promoteHandoff(
 	ownerApplyRequired: boolean,
 ): PromotionHandoff {
 	const destLabel = destination === 'production' ? 'Production' : destination[0]!.toUpperCase() + destination.slice(1);
+	const applyCommand =
+		destination === 'production'
+			? `pnpm prod:apply -- --slug ${slug} --apply`
+			: `pnpm invitation:release -- --slug ${slug} --targets ${destination} --apply`;
 	return {
 		dryRunCommand: `pnpm invitation:release -- --slug ${slug} --targets ${destination} --dry-run`,
 		dryRunStepType: 'Verify',
-		applyCommand: `pnpm invitation:release -- --slug ${slug} --targets ${destination} --apply`,
+		applyCommand,
 		applyStepType: 'Apply',
 		ownerApplyRequired,
 		optionalDiagnosticCommand: null,

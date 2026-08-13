@@ -65,14 +65,8 @@ import {
 } from './semantic-delta.ts';
 import { parseAssetPolicy, type AssetPolicy } from './asset-reconciliation.ts';
 import { runPromotionPreflight } from './invitation-promote.ts';
-import {
-	formatPromotionPlanCompact,
-	formatPromotionResult,
-} from './invitation-promotion-format.ts';
-import {
-	orchestrateInvitationPromotion,
-	resolvePromotionUpdateScope,
-} from './invitation-promotion-orchestrator.ts';
+import { formatPromotionPlanCompact } from './invitation-promotion-format.ts';
+import { resolvePromotionUpdateScope } from './invitation-promotion-orchestrator.ts';
 import { isTargetDivergenceConflictMessage } from './promotion-comparison.ts';
 
 export interface ReleaseWizardSession {
@@ -743,26 +737,9 @@ async function applyProductionOutcome(session: ReleaseWizardSession): Promise<vo
 		return;
 	}
 	writeHuman(formatPromotionPlanCompact(preflight, { title: definition.title }));
-	const decision = await select({
-		message: 'Seleccione una acción',
-		default: 'cancel',
-		choices: [
-			{ name: 'Cancelar', value: 'cancel' as const },
-			{ name: 'Promover a Production (owner)', value: 'apply' as const },
-		],
-	});
-	if (decision !== 'apply') return;
-
-	// Orchestrator re-runs owner gates and volatile preflight; never auto-chain from Preview.
-	const report = await orchestrateInvitationPromotion({
-		packageData: session.packageData,
-		updateScope,
-		assetPolicy: session.assetPolicy,
-		deliveryScope: definition.deliveryScope,
-		title: definition.title,
-		getProductionDbUrl: getProdDbUrl,
-	});
-	console.log(formatPromotionResult(report));
+	writeHuman(
+		`${operatorSymbol('info')} Para aplicar: pnpm prod:apply -- --slug ${session.slug} --apply`,
+	);
 }
 
 async function buildSession(slug: string): Promise<ReleaseWizardSession> {
@@ -822,7 +799,7 @@ export async function runDestinationReleaseWizard(input?: {
 			packagePath: session.packagePath,
 		});
 		const productionLabel = readiness.productionReady
-			? describeDestination('production')
+			? `${describeDestination('production')} (Preview aprobado; apply: pnpm prod:apply)`
 			: `${describeDestination('production')} (requiere Preview aprobado)`;
 
 		const destination = await select({

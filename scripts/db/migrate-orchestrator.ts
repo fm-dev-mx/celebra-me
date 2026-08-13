@@ -64,6 +64,8 @@ export interface OrchestrateMigrateInput {
 	remindConcurrencyRisk?: boolean;
 	readConfirmationLine?: () => string | Promise<string>;
 	isInteractive?: boolean;
+	/** Internal mixed-plan fingerprint; never a CLI flag. */
+	authorizedPlanBindingHex?: string;
 }
 
 export interface OrchestrateMigrateResult {
@@ -80,6 +82,8 @@ function withSeams(
 		session: ctx.session ?? {},
 		readConfirmationLine: input.readConfirmationLine ?? ctx.readConfirmationLine,
 		isInteractive: input.isInteractive ?? ctx.isInteractive,
+		authorizedPlanBindingHex:
+			input.authorizedPlanBindingHex ?? ctx.authorizedPlanBindingHex,
 	};
 }
 

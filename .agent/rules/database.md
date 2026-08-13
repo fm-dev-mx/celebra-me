@@ -34,7 +34,7 @@ Four distinct database targets exist:
 
 | Target               | Identification                                                                  | Usage                                                                             | Destructive ops allowed?                               |
 | -------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| **production**       | Supabase cloud host (`*.supabase.co`, `*.supabase.com`)                         | Read-only inspection and export; schema mutations via `pnpm db:migrate -- --target production` only | NEVER                                                  |
+| **production**       | Supabase cloud host (`*.supabase.co`, `*.supabase.com`)                         | Read-only inspection and export; owner apply via `pnpm prod:apply` (schema primitive: `pnpm db:migrate -- --target production`) | NEVER                                                  |
 | **preview**          | Hosted branch DB (`PREVIEW_DB_URL` or secret files)                             | Provisioned hosted Preview project for Vercel `develop` deployments               | NO — schema mutated via `pnpm db:migrate -- --target preview` only |
 | **persistent-local** | `127.0.0.1:54322` or `localhost:54322`, container `supabase_db_celebra-me-rsvp` | Normal development through `pnpm dev`                                             | NO — protected state                                   |
 | **disposable-test**  | `127.0.0.1:54332` or `localhost:54332`, container `celebra-me-test-db`          | Migration reconstruction/pgTAP/seed/canonical audit reference                     | YES — created/recreated on demand                      |
@@ -81,9 +81,10 @@ task authorization, target classification, and standard guard checks.
   or `invitation:release`.
 - **One-Time Recovery Tool Removed**: `scripts/db/reconcile-prod-baseline.ts` was a one-time
   recovery tool and is no longer part of the repository.
-- **Production Migration Safety Workflow**: Public operator entry is
-  `pnpm db:migrate -- --target production`. Default is read-only preflight; mutation requires
-  `--apply`:
+- **Production Migration Safety Workflow**: Public owner apply is `pnpm prod:apply` (`APPLY <8-hex>`).
+  Schema primitive remains `pnpm db:migrate -- --target production` (used by the owner command;
+  standalone schema confirmation uses `MIGRATE <8-hex>`). Default is read-only preflight; mutation
+  requires `--apply`. The schema primitive sequence:
   1. Production perimeter + exact project-ref identity (in-policy; equivalent to db-guard)
   2. Read-only production schema audit (BEHIND without drift is ready-to-migrate)
   3. Dry-run pending set (optional `--expected` pin must match exactly when provided)
@@ -111,7 +112,8 @@ task authorization, target classification, and standard guard checks.
   intent select + short bound code). No token, secret, or noninteractive confirmation alternative
   exists. `production_authorization_receipts` is historical inert state. Successful Production
   schema applies write a local owner-apply record; schema parity is not authorization evidence.
-  Agent sessions receive `CELEBRA_AGENT_CONTEXT` by default (Cursor session/preToolUse hooks).
+  Agent sessions receive `CELEBRA_AGENT_CONTEXT` by default (Cursor session/preToolUse hooks) and
+  cannot disable it with `false`/`0`/empty. Agent Shell denies canonical Production `--apply`.
   Raw `supabase db push` / mutating `psql` and Supabase MCP writes against Production are blocked
   outside this owner workflow. Read-only Production MCP/SQL remains allowed.
 - **Hosted identity vs environment selection**: Selecting Preview/Production and having credentials
@@ -167,10 +169,14 @@ task authorization, target classification, and standard guard checks.
   Cancelar default; non-TTY requires `--target`; default read-only preflight).
 - Environment-specific migrate aliases are retired. Use
   `pnpm db:migrate -- --target <local|preview|production|disposable-test>`.
-- `pnpm db:migrate -- --target production` is the approved production **schema** mutation workflow.
-- `pnpm invitation:release` is the approved production **managed-content** promotion workflow
-  (owner-only; separate from schema migrate). Canonical human path is TTY with no args (discovery +
-  Cancelar default); `--slug` / `--apply` remain for advanced/non-TTY use.
+- `pnpm prod:apply` is the owner-facing Production apply command (read-only plan by default;
+  `--apply` mutates after one TTY confirmation bound to the plan). Agents may run it without
+  `--apply` for planning; Production `--apply` is denied in agent Shell.
+- `pnpm db:migrate -- --target production` remains the canonical **schema** primitive reused by
+  `prod:apply`.
+- `pnpm invitation:release` remains Local/Preview/approve plus Production **dry-run**. Owner
+  Production content apply is `pnpm prod:apply -- --slug <slug> --apply` (or `--all-ready`).
+  The promotion orchestrator stays the domain primitive.
 - `pnpm db:migrate -- --target preview` preflights Preview (`PREVIEW_DB_URL`); `--apply` applies pending
   migrations after Preview authorization (wrapper over `db:migrate -- --target preview`).
 - Schema status evidence: `pnpm dbs` / observability use **migration_history_parity**;
@@ -224,7 +230,8 @@ invent a healthy state, or acquire mutation authority.
   destroys the persistent-local database.
 - Need a schema change? Create a migration, test it on the disposable environment
   (`tsx scripts/db/disposable-test-env.ts run-tests`), and use
-  `pnpm db:migrate -- --target production` for the reviewed production path.
+  `pnpm prod:apply -- --schema` for the reviewed Production owner path (primitive:
+  `pnpm db:migrate -- --target production`).
 - Need a production backup? Use `PROD_DB_URL=... pnpm db:prod:backup`; keep output gitignored. The
   guard verifies the target is a Supabase cloud host before proceeding.
 - Need the Free-plan daily recovery point? Run `pnpm db:prod:backup:daily` from the authorized
@@ -311,8 +318,7 @@ persistent-local database was preserved.
 - Destructive tests (reset, schema drops, truncate, migration rollback) must use the disposable test
   environment (`pnpm db:disposable:reset`).
 - Production is strictly read-only unless the user explicitly authorizes a separate production
-  schema goal with `pnpm db:migrate -- --target production` or managed-content promotion with
-  `pnpm invitation:release`.
+  owner apply with `pnpm prod:apply` (schema via `--schema`, content via `--slug` / `--all-ready`).
 - Unknown database targets must cause an immediate abort of the operation.
 - Dumps and credentials must never enter Git. Dumps live under gitignored `.tmp/` and `.backups/`;
   hosted DB credentials live only in gitignored `.env.preview.local` / `.env.production.local`.

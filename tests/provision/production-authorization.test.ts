@@ -40,7 +40,8 @@ interface MutatorSpec {
 		| 'managed_promotion'
 		| 'sql_patch'
 		| 'draft_repair'
-		| 'pending_one_off';
+		| 'pending_one_off'
+		| 'mixed_production_apply';
 }
 
 /** Approved Production mutators. Discovery must match this set exactly. */
@@ -90,6 +91,12 @@ const APPROVED_MUTATORS: MutatorSpec[] = [
 		firstWritePattern: /applyRestoreSql\s*\(\s*\{/,
 		preflightPatterns: [/evaluatePromotionBackupGate/, /BACKUP_REQUIRED/],
 		family: 'draft_repair',
+	},
+	{
+		file: 'scripts/db/production-apply-orchestrator.ts',
+		firstWritePattern: /orchestrateMigrate\s*\(\s*\{/,
+		preflightPatterns: [/buildProductionApplyPlan/, /evaluateApplyEligibility/],
+		family: 'mixed_production_apply',
 	},
 ];
 
@@ -199,6 +206,10 @@ describe('owner confirmation helpers', () => {
 });
 
 describe('requireOwnerProductionApply', () => {
+	beforeEach(() => {
+		delete process.env.CELEBRA_AGENT_CONTEXT;
+	});
+
 	it('fails without --apply', async () => {
 		mockExit();
 		await expect(
@@ -219,6 +230,19 @@ describe('requireOwnerProductionApply', () => {
 				readConfirmationLine: () => 'MIGRATE abcdef01',
 			}),
 		).rejects.toThrow('process.exit:1');
+	});
+
+	it('rejects CELEBRA_AGENT_CONTEXT=false, 0, and empty as agent context', async () => {
+		mockExit();
+		for (const value of ['false', '0', '']) {
+			await expect(
+				requireOwnerProductionApply({
+					...baseApplyInput,
+					env: { CELEBRA_AGENT_CONTEXT: value },
+					readConfirmationLine: () => 'MIGRATE abcdef01',
+				}),
+			).rejects.toThrow('process.exit:1');
+		}
 	});
 
 	it('rejects non-Production project URLs', () => {

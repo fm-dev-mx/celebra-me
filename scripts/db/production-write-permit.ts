@@ -53,15 +53,53 @@ export function getProductionWritePermit(): ProductionWritePermit | null {
 export function hasValidProductionWritePermit(
 	dbUrl: string,
 	nowMs: number = Date.now(),
+	expectedBindingHex?: string,
 ): boolean {
 	if (!currentPermit) return false;
 	if (currentPermit.pid !== process.pid) return false;
 	if (currentPermit.expiresAtMs < nowMs) return false;
+	if (
+		typeof expectedBindingHex === 'string' &&
+		expectedBindingHex.length > 0 &&
+		currentPermit.bindingHex !== expectedBindingHex
+	) {
+		return false;
+	}
 	try {
 		return extractSupabaseProjectRef(dbUrl) === currentPermit.projectRef;
 	} catch {
 		return false;
 	}
+}
+
+export type ProductionPermitMatch =
+	| 'ok'
+	| 'missing'
+	| 'expired'
+	| 'pid'
+	| 'project'
+	| 'binding';
+
+/**
+ * Classify why a delegated Production authorization may not be reused.
+ * Does not accept caller-supplied booleans; the in-process permit is the only evidence.
+ */
+export function matchProductionWritePermit(input: {
+	dbUrl: string;
+	bindingHex: string;
+	nowMs?: number;
+}): ProductionPermitMatch {
+	const nowMs = input.nowMs ?? Date.now();
+	if (!currentPermit) return 'missing';
+	if (currentPermit.pid !== process.pid) return 'pid';
+	if (currentPermit.expiresAtMs < nowMs) return 'expired';
+	if (currentPermit.bindingHex !== input.bindingHex) return 'binding';
+	try {
+		if (extractSupabaseProjectRef(input.dbUrl) !== currentPermit.projectRef) return 'project';
+	} catch {
+		return 'project';
+	}
+	return 'ok';
 }
 
 export function resolveSpawnProductionBoundary(

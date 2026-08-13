@@ -14,16 +14,17 @@ Ownership Matrix in [`.agent/index.md`](../.agent/index.md).
 ## Principle
 
 Local development uses local Supabase. Production is the source of real customer data. Production
-can be read for backups/local refreshes. Production **schema** may be mutated only through reviewed
-migrations (`pnpm db:migrate -- --target production`). Production **managed invitation content**
-may be mutated only through owner-only `pnpm invitation:release`.
+can be read for backups/local refreshes. Production **schema and managed invitation content** may
+be mutated only through owner-only `pnpm prod:apply` (delegates to `pnpm db:migrate -- --target
+production` and the invitation promotion orchestrator). Specialized DML remains `pnpm db:prod:patch`
+or `pnpm prod:apply -- --patch`.
 
 The workflow is asymmetric:
 
 ```txt
 Production -> Local: allowed for read-only refreshes, backups, and debug dump restore (not sync).
 Local -> Production (schema): reviewed migrations only.
-Local/Preview package -> Production (content): owner-only invitation:release only.
+Local/Preview package -> Production (content): owner-only pnpm prod:apply only.
 Preview -> Production: forbidden for DB/Storage content copy.
 ```
 
@@ -224,9 +225,10 @@ systems.
 Policy for mirror exclusions, RSVP reset, and Cloudinary vs Supabase Storage boundaries:
 [`docs/core/content-parity-rsvp-isolation.md`](core/content-parity-rsvp-isolation.md).
 
-Production never imports from the Preview DB or Preview Storage. Mirror is never promotion. Normal
-Use `invitation:release --targets local|preview` for content stages and
-`--targets production` for owner-only Production promote.
+Production never imports from the Preview DB or Preview Storage. Mirror is never promotion.
+Use `invitation:release --targets local|preview` for content stages.
+`--targets production --dry-run` is Production preflight only. Owner apply is
+`pnpm prod:apply -- --slug <slug> --apply`.
 Temporary Production one-off (`romina-draft-reset`) and its retirement condition are listed in
 [`.agent/rules/invitation-production.md`](../.agent/rules/invitation-production.md). Credential
 presence, worktree path, runtime target, and UI banners do not authorize mutations.
@@ -243,13 +245,14 @@ presence, worktree path, runtime target, and UI banners do not authorize mutatio
 2. **Promote to Production (owner-only)**:
 
    ```bash
-   pnpm invitation:release -- --slug <slug> --targets production --dry-run
-   pnpm invitation:release -- --slug <slug> --targets production --apply
+   pnpm prod:apply -- --slug <slug>
+   pnpm prod:apply -- --slug <slug> --apply
+   pnpm prod:apply -- --all-ready --apply
    ```
 
-   On a TTY with no args, the CLI discovers pending managed promotions (Cancelar is the default).
-   Flags remain for advanced/non-TTY use. Apply always goes through the shared promotion
-   orchestrator (release-check, critical backup, owner `PROMOTE <8-hex>`, verify).
+   No arguments prints a read-only Production plan and does not write. `--all-ready` includes only
+   evidence-backed READY schema and invitations. Domain dry-run remains available:
+   `pnpm invitation:release -- --slug <slug> --targets production --dry-run`.
 
 3. **Semantic content parity (read-only)**:
    ```bash
@@ -408,11 +411,10 @@ pnpm db:migrate -- --target local|preview|production [--expected <versions>] [--
 CELEBRA_TASK_SCOPE=preview:schema:migrate \
   pnpm db:migrate -- --target preview --apply --expected <versions>
 
-# Production — release identity is the current clean HEAD after pnpm release-check
+# Production — read-only preflight; owner apply is pnpm prod:apply -- --schema --apply
 pnpm release-check
-pnpm db:migrate -- --target production                        # read-only preflight
+pnpm db:migrate -- --target production                        # schema primitive, read-only
 pnpm db:migrate -- --target production --expected <versions> # preflight with exact pin
-pnpm db:migrate -- --target production --apply --expected <versions> # owner TTY apply
 ```
 
 Production apply fails closed without valid `pnpm release-check` evidence for the current clean
@@ -536,9 +538,10 @@ application login substitute. Host invitation flows continue to use real `host_c
 - Canonical schema entry:
   `pnpm db:migrate -- --target <local|preview|production|disposable-test>`.
 - Production commands:
-  - `pnpm db:migrate -- --target production` — read-only preflight
+  - `pnpm prod:apply` — owner-facing read-only mixed plan
+  - `pnpm prod:apply -- --schema --apply` — owner apply (delegates to the schema primitive)
+  - `pnpm db:migrate -- --target production` — schema primitive, read-only preflight
   - `pnpm db:migrate -- --target production --expected <versions>` — preflight with exact pin
-  - `pnpm db:migrate -- --target production --apply --expected <versions>` — owner apply path
 - Shared orchestrator apply sequence: reviewed plan → beforeWrite (backup) → one rebuild + drift
   check → authorize → execute → afterWrite. Human logs on stderr; `--json` plans on stdout only.
 - Non-Production interactive TTY may use Cancel / Revisar / Aplicar; Production authorization is
@@ -697,15 +700,18 @@ PROD_DB_URL=... pnpm db:prod:backup -- --schema-only
 
 ### Push migrations to production
 
+Owner apply is `pnpm prod:apply`. The schema primitive remains `pnpm db:migrate -- --target production`.
+
 ```bash
 pnpm release-check
-PROD_DB_URL=... pnpm db:migrate -- --target production --expected <versions>
-PROD_DB_URL=... pnpm db:migrate -- --target production --apply --expected <versions>
+pnpm prod:apply -- --schema
+pnpm prod:apply -- --schema --apply
 ```
 
-This is the only workflow allowed to mutate production **schema**. Preflight is read-only. Apply
-requires release-check evidence, a verified backup, and exact interactive TTY confirmation. It never
-pushes local data dumps.
+This is the only owner-facing workflow allowed to mutate production **schema**. Preflight is
+read-only. Apply requires release-check evidence, a verified backup, and exact interactive TTY
+confirmation. It never pushes local data dumps. `pnpm db:migrate -- --target production --apply`
+remains the delegated primitive, not the public owner command.
 
 ### Check a manual production patch
 

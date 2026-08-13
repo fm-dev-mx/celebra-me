@@ -20,7 +20,7 @@ import {
 	writeHuman,
 	type OperatorFailureInput,
 } from './operator-cli-ux.ts';
-import { isExplicitAgentContext } from './production-boundary-policy.ts';
+import { isAgentContext } from './production-boundary-policy.ts';
 import { issueProductionWritePermit } from './production-write-permit.ts';
 import { assertValidReleaseCheckEvidence } from './release-check.ts';
 
@@ -165,7 +165,7 @@ export function assertExactProductionProjectRef(dbUrl: string): string {
 export function agentSelfAuthorizationBlocked(
 	env: NodeJS.ProcessEnv = process.env,
 ): boolean {
-	return isExplicitAgentContext(env);
+	return isAgentContext(env);
 }
 
 /**
@@ -288,8 +288,8 @@ export async function requireOwnerProductionApply(
 				cause: 'Los agentes autónomos no pueden autorizar escrituras en Production.',
 				code: 'AGENT_SELF_AUTHORIZATION_BLOCKED',
 				remediation: [
-					'Ejecute el comando en una terminal interactiva del propietario.',
-					'No defina CELEBRA_AGENT_CONTEXT durante el apply de Production.',
+					'Ejecute el comando en una terminal interactiva del propietario (`pnpm prod:apply`).',
+					'No defina CELEBRA_AGENT_CONTEXT en esa terminal. false/0/vacío no desactivan el bloqueo.',
 				],
 			},
 			env,

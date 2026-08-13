@@ -101,8 +101,9 @@ Local and Preview agent browser/Editor access uses real `super_admin` product id
   `docs/env-workflow.md` Playwright Preview auth).
 
 Do not authenticate agents with `service_role`, invent agent-only app permissions, or grant
-Production application access. Production managed promotion remains owner-only via
-`pnpm invitation:release` (`--targets production` for Production content).
+Production application access. Production managed promotion remains owner-only via `pnpm prod:apply` (`--slug` / `--all-ready`
+for Production content). `invitation:release --targets production --dry-run` remains the domain
+preflight.
 
 ## Actor capability matrix (SSOT)
 
@@ -118,30 +119,30 @@ execution-boundary separation.
 | Persistent Local raw/ad-hoc DB mutation | Never (unsupported agent workflow)                                                                                                                              | Exceptional only                                               |
 | Preview managed mutation                | Yes with explicit Preview task scope (`CELEBRA_TASK_SCOPE`)                                                                                                     | Yes                                                            |
 | Preview raw DB mutation                 | Never                                                                                                                                                           | Guarded schema workflow only                                   |
-| Production read — safe surfaces         | `pnpm dbs`; `invitation:release --status` (local inventory; remotes unprobed); `invitation:content-parity`; `invitation:release --targets production --dry-run` | Same safe surfaces                                             |
+| Production read — safe surfaces         | `pnpm dbs`; `invitation:release --status`; `invitation:content-parity`; `invitation:release --targets production --dry-run`; `pnpm prod:apply` (no `--apply`) | Same safe surfaces                                             |
 | Production read — privileged DB audit   | Never (`db:prod:audit`, backups, Auth/Storage export)                                                                                                           | Owner-only guarded `db:prod:*` audit/backup/export             |
-| Production invitation mutation          | Never (`--targets production --apply` is owner-TTY only); never via `invitation:reconcile`                                                                      | Owner-only `pnpm invitation:release -- --targets production --apply` |
-| Production schema / migration           | Never                                                                                                                                                           | Owner-only `db:migrate -- --target production` (separate from content promotion) |
-| Production specialized SQL patch        | Never (`db:prod:patch --apply`)                                                                                                                                 | Owner-only specialized maintenance (`RESTRICT_OWNER_ONLY`)     |
+| Production invitation mutation          | Never (`prod:apply --apply` is owner-TTY only); never via `invitation:reconcile`                                                                            | Owner-only `pnpm prod:apply -- --slug <slug> --apply`          |
+| Production schema / migration           | Never                                                                                                                                                           | Owner-only `pnpm prod:apply -- --schema --apply` (primitive: `db:migrate -- --target production`) |
+| Production specialized SQL patch        | Never (`db:prod:patch --apply` / `prod:apply --patch --apply`)                                                                                                  | Owner-only specialized maintenance (`RESTRICT_OWNER_ONLY`)     |
 | Reconciliation                          | Plan and apply Local/Preview managed decisions                                                                                                                  | Authorize Preview scope and source updates                     |
-| Schema operations                       | Never auto-run from invitation workflows                                                                                                                        | Use separate guarded `db:*:migrate` workflows                  |
+| Schema operations                       | Never auto-run from invitation workflows                                                                                                                        | Use `pnpm db:migrate -- --target <env>`; Production owner apply is `pnpm prod:apply -- --schema --apply` |
 
 ### Production read surfaces
 
 - **Safe Agent (and Owner) read:** `pnpm dbs` / `pnpm dbs --compact`, `invitation:release --status`
-  (including `--targets all|production`), `invitation:content-parity`, and
-  `invitation:release -- --slug <slug> --targets production --dry-run` / preflight. These are
-  redacted / summary-oriented and do not authorize privileged DDL inspection or PII dumps.
+  (including `--targets all|production`), `invitation:content-parity`,
+  `invitation:release -- --slug <slug> --targets production --dry-run` / preflight, and
+  `pnpm prod:apply` without `--apply`. These are redacted / summary-oriented and do not authorize
+  privileged DDL inspection or PII dumps.
 - **Owner-only privileged DB audit:** `pnpm db:prod:audit`, `db:prod:backup*`,
   `db:prod:export-auth`, `db:prod:export-storage`, and any direct Production `psql`/service-role
   inspection. Agents must not run these unless the owner explicitly authorizes that exact privileged
   read.
-- **Owner-only Production content promotion:** Canonical human path is `pnpm invitation:release`
-  (TTY wizard derives next action including Production). Flag form:
-  `--slug` / `--targets production` / `--dry-run` / `--apply`. Apply requires exact Preview
-  approval, schema `CURRENT`, critical backup coverage, valid `pnpm release-check` evidence for the
-  current clean `HEAD`, and typed owner confirmation (`PROMOTE <8-hex>`). Agents must not execute
-  Production `--apply`. Schema incompatibility points to `pnpm db:migrate` (never auto-migrates).
+- **Owner-only Production apply:** Canonical human path is `pnpm prod:apply` (plan by default;
+  `--schema` / `--slug` / `--slugs` / `--all-ready` / `--patch` + `--apply`). It delegates to
+  `db:migrate` and `orchestrateInvitationPromotion`. Agents must not execute Production `--apply`.
+  Schema incompatibility is applied first in a mixed plan, or pointed to `--schema` (never
+  auto-migrated from `invitation:release`).
 
 ## Schema lifecycle contract
 
@@ -165,7 +166,7 @@ require exact Preview task scope before any write (`preview:schema:migrate` /
 Disposable operations are available to **both Agent and Owner** under the guarded disposable-test
 workflows.
 
-## Pending one-off Production maintenance (Goal 4)
+## Pending one-off Production maintenance
 
 Retain each tool only until its operation completes, is verified, or is explicitly abandoned; then
 delete implementation, package alias, tests, and active docs in a code-only cleanup.

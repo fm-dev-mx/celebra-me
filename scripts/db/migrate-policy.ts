@@ -46,6 +46,12 @@ export interface MigratePolicyContext {
 	/** Test seams */
 	readConfirmationLine?: () => string | Promise<string>;
 	isInteractive?: boolean;
+	/**
+	 * Internal plan fingerprint from an already-authorized mixed Production apply.
+	 * Never accepted from CLI. When set, authorize() asserts the in-process permit
+	 * instead of prompting again.
+	 */
+	authorizedPlanBindingHex?: string;
 }
 
 export interface MigrateEnvironmentPolicy {

@@ -9,9 +9,14 @@ phase.
 ## Commands
 
 ```bash
+pnpm prod:apply                                 # read-only Production plan
+pnpm prod:apply -- --schema --apply             # owner TTY schema apply
+pnpm prod:apply -- --slug <slug> --apply        # owner TTY invitation apply
+pnpm prod:apply -- --all-ready --apply          # owner TTY READY schema + invitations
+pnpm prod:apply -- --patch <file> --owner-user-id <uuid> --apply
 pnpm db:migrate                                 # TTY target picker (Cancelar default)
 pnpm db:migrate -- --target <t>                 # read-only preflight (default)
-pnpm db:migrate -- --target production --apply --expected … # owner TTY apply
+pnpm db:migrate -- --target production --apply --expected … # schema primitive
 CELEBRA_TASK_SCOPE=preview:schema:migrate pnpm db:migrate -- --target preview --apply --expected …
 ```
 

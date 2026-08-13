@@ -15,7 +15,7 @@ try {
 const output = {
 	env: { CELEBRA_AGENT_CONTEXT: '1' },
 	additional_context:
-		'This is an agent session. CELEBRA_AGENT_CONTEXT=1. Production writes require the owner TTY workflow (`pnpm db:migrate -- --target production` or another requireOwnerProductionApply entry). Do not use Supabase MCP apply_migration / mutating execute_sql, raw `supabase db push`, or psql against Production.',
+		'This is an agent session. CELEBRA_AGENT_CONTEXT=1. Agents may prepare through Preview and read Production, but must never mutate Production. Owner apply is `pnpm prod:apply` from an interactive owner terminal. Do not use --apply against Production, Supabase MCP apply_migration / mutating execute_sql, raw `supabase db push`, or psql against Production.',
 };
 
 process.stdout.write(`${JSON.stringify(output)}\n`);

@@ -7,6 +7,7 @@
 | Mechanism               | Card                                                                     | Audience                  | Evidence / notes              |
 | ----------------------- | ------------------------------------------------------------------------ | ------------------------- | ----------------------------- |
 | Schema migrate          | [schema-migrate.md](./schema-migrate.md)                                 | Human (+ agent preflight) | Migration history after apply |
+| Owner Production apply  | [schema-migrate.md](./schema-migrate.md)                                 | Owner                     | `pnpm prod:apply` mixed plan  |
 | Preview mirror          | [preview-mirror.md](./preview-mirror.md)                                 | Operator + Preview scope  | Resets Preview RSVP           |
 | Backups / restore       | [backups.md](./backups.md)                                               | Owner / operator          | Critical RPO 15m              |
 | Disposable DB           | [disposable.md](./disposable.md)                                         | Agent / CI                | Port 54332 only               |

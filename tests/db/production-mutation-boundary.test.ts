@@ -13,9 +13,11 @@ import {
 } from '../../scripts/db/owner-apply-record.ts';
 import {
 	PRODUCTION_PROJECT_REF,
+	evaluateAgentShellProductionMutation,
 	evaluateMcpProductionMutation,
 	evaluateShellProductionMutation,
 	evaluateSpawnProductionMutation,
+	isAgentContext,
 	isReadOnlySql,
 	wrapShellCommandWithAgentContext,
 } from '../../scripts/db/production-boundary-policy.ts';
@@ -57,12 +59,23 @@ describe('production boundary policy', () => {
 		expect(isReadOnlySql('SET ROLE postgres')).toBe(false);
 	});
 
-	it('wraps agent shell commands with CELEBRA_AGENT_CONTEXT', () => {
+	it('wraps agent shell commands with CELEBRA_AGENT_CONTEXT and ignores false/0 overrides', () => {
 		expect(wrapShellCommandWithAgentContext('pnpm db:migrate -- --target preview')).toBe(
 			"$env:CELEBRA_AGENT_CONTEXT='1'; pnpm db:migrate -- --target preview",
 		);
 		expect(
 			wrapShellCommandWithAgentContext("$env:CELEBRA_AGENT_CONTEXT='1'; pnpm dbs"),
+		).toBe("$env:CELEBRA_AGENT_CONTEXT='1'; pnpm dbs");
+		expect(
+			wrapShellCommandWithAgentContext(
+				"$env:CELEBRA_AGENT_CONTEXT='false'; pnpm prod:apply --apply",
+			),
+		).toBe("$env:CELEBRA_AGENT_CONTEXT='1'; pnpm prod:apply --apply");
+		expect(
+			wrapShellCommandWithAgentContext('$env:CELEBRA_AGENT_CONTEXT=0; pnpm dbs'),
+		).toBe("$env:CELEBRA_AGENT_CONTEXT='1'; pnpm dbs");
+		expect(
+			wrapShellCommandWithAgentContext('CELEBRA_AGENT_CONTEXT=false pnpm dbs'),
 		).toBe("$env:CELEBRA_AGENT_CONTEXT='1'; pnpm dbs");
 	});
 
@@ -120,6 +133,59 @@ describe('production boundary policy', () => {
 			evaluateShellProductionMutation(`supabase db push --db-url ${PROD_URL} --dry-run`).permission,
 		).toBe('allow');
 	});
+
+	it('denies canonical Production --apply from the agent shell evaluator', () => {
+		expect(
+			evaluateAgentShellProductionMutation('pnpm db:migrate -- --target production --apply').code,
+		).toBe('AGENT_PRODUCTION_APPLY_BLOCKED');
+		expect(
+			evaluateAgentShellProductionMutation(
+				'pnpm invitation:release -- --slug demo --targets production --apply',
+			).code,
+		).toBe('AGENT_PRODUCTION_APPLY_BLOCKED');
+		expect(
+			evaluateAgentShellProductionMutation('pnpm prod:apply -- --all-ready --apply').code,
+		).toBe('AGENT_PRODUCTION_APPLY_BLOCKED');
+		expect(
+			evaluateAgentShellProductionMutation('pnpm db:prod:patch -- --apply --file x.sql').code,
+		).toBe('AGENT_PRODUCTION_APPLY_BLOCKED');
+		expect(
+			evaluateAgentShellProductionMutation('pnpm prod:apply -- --all-ready').permission,
+		).toBe('allow');
+		expect(
+			evaluateAgentShellProductionMutation(
+				'pnpm invitation:release -- --slug demo --targets preview --apply',
+			).permission,
+		).toBe('allow');
+		expect(
+			evaluateAgentShellProductionMutation('pnpm db:migrate -- --target production').permission,
+		).toBe('allow');
+		expect(evaluateAgentShellProductionMutation('pnpm db:migrate --apply').code).toBe(
+			'AGENT_PRODUCTION_APPLY_BLOCKED',
+		);
+		expect(
+			evaluateAgentShellProductionMutation('pnpm db:migrate -- --target preview --apply')
+				.permission,
+		).toBe('allow');
+		expect(
+			evaluateAgentShellProductionMutation(
+				'pnpm db:migrate -- --target local --apply',
+			).permission,
+		).toBe('allow');
+		expect(
+			evaluateAgentShellProductionMutation(
+				'pnpm db:migrate -- --target disposable-test --apply',
+			).permission,
+		).toBe('allow');
+	});
+
+	it('treats false, 0, and empty CELEBRA_AGENT_CONTEXT as agent context', () => {
+		expect(isAgentContext({ CELEBRA_AGENT_CONTEXT: 'false' })).toBe(true);
+		expect(isAgentContext({ CELEBRA_AGENT_CONTEXT: '0' })).toBe(true);
+		expect(isAgentContext({ CELEBRA_AGENT_CONTEXT: '' })).toBe(true);
+		expect(isAgentContext({ CELEBRA_AGENT_CONTEXT: '1' })).toBe(true);
+		expect(isAgentContext({})).toBe(false);
+	});
 });
 
 describe('production write permit', () => {
@@ -135,13 +201,15 @@ describe('production write permit', () => {
 		expect(decision.code).toBe('PRODUCTION_WRITE_PERMIT_REQUIRED');
 	});
 
-	it('allows Production push only after an in-process owner permit', () => {
+	it('allows Production push only after an in-process owner permit bound to the same plan', () => {
 		issueProductionWritePermit({
 			projectRef: SUPABASE_PROJECT_REFS.production,
 			operationType: 'production_migration',
 			bindingHex: 'abcdef01',
 		});
 		expect(hasValidProductionWritePermit(PROD_URL)).toBe(true);
+		expect(hasValidProductionWritePermit(PROD_URL, Date.now(), 'abcdef01')).toBe(true);
+		expect(hasValidProductionWritePermit(PROD_URL, Date.now(), 'ffffffff')).toBe(false);
 		expect(
 			resolveSpawnProductionBoundary('supabase', ['db', 'push', '--db-url', PROD_URL, '--yes'])
 				.permission,

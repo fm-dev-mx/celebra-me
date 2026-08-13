@@ -96,6 +96,7 @@ action before the configured Prettier formatter.
 | `pnpm db:branch:remediate-disposable`      | Agent          | `scripts/db/`  | verify then rebuild disposable-test only                              |
 | `pnpm release-check`                       | Owner          | `scripts/db/`  | clean-HEAD type-check + test + build; writes release evidence         |
 | `pnpm db:migrate`                          | Human/agent    | `scripts/db/`  | Canonical schema migrate CLI (`migrate-cli.ts`; TTY Cancelar default) |
+| `pnpm prod:apply`                          | Owner (+ agent plan) | `scripts/db/` | Owner-only Production plan/apply (`production-apply-cli.ts`) |
 | `pnpm db:local:audit`                      | Human/agent    | `scripts/db/`  | object-audit readiness for persistent-local                           |
 | `pnpm db:preview:audit`                    | Human/agent    | `scripts/db/`  | object-audit readiness for Preview                                    |
 | `pnpm db:preview:sync-invitations`         | Human/agent    | `scripts/db/`  | Prod→Preview content mirror (specialized; RSVP reset)                 |

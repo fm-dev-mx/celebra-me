@@ -48,6 +48,7 @@ import { inferWorktreeLabel, writeOwnerApplyRecord } from './owner-apply-record.
 import { OperatorError, operatorSymbol, shortSha, writeHuman } from './operator-cli-ux.ts';
 import { requireOwnerProductionApply } from './owner-production-apply.ts';
 import { extractSupabaseProjectRef } from './db-target-config.ts';
+import { matchProductionWritePermit } from './production-write-permit.ts';
 import { ensureValidReleaseCheckEvidence, readGitWorktreeState } from './release-check.ts';
 
 export const PRODUCTION_MIGRATION_OPERATION_TYPE = 'production_migration';
@@ -354,6 +355,24 @@ export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 
 	async authorize(plan, ctx) {
 		assertPreBackupCoverageBeforeAuthorize(ctx);
+		if (ctx.authorizedPlanBindingHex) {
+			const match = matchProductionWritePermit({
+				dbUrl: ctx.dbUrl,
+				bindingHex: ctx.authorizedPlanBindingHex,
+			});
+			if (match !== 'ok') {
+				throw new OperatorError({
+					title: 'Autorización de Production no reutilizable',
+					cause: `El permiso interno no coincide con el plan aprobado (${match}).`,
+					code: 'PRODUCTION_WRITE_PERMIT_REQUIRED',
+					remediation: [
+						'Ejecute pnpm prod:apply con --apply en una TTY del propietario.',
+						'No intente reutilizar un permiso de otro plan, proceso o proyecto.',
+					],
+				});
+			}
+			return;
+		}
 		const technicalReview: Array<readonly [string, string]> = [
 			...buildMigrationTechnicalReview(plan, redactDbUrl(ctx.dbUrl)),
 		];

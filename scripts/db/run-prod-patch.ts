@@ -9,7 +9,12 @@ import {
 	assertSameSupabaseProject,
 } from './sql-safety.ts';
 import { getProdDbUrl, runCommand, runPsql } from './db-workflow-lib.ts';
-import { requireOwnerProductionApply } from './owner-production-apply.ts';
+import { OperatorError } from './operator-cli-ux.ts';
+import {
+	requireOwnerProductionApply,
+	type OwnerProductionApplyInput,
+} from './owner-production-apply.ts';
+import { matchProductionWritePermit } from './production-write-permit.ts';
 
 /**
  * db:prod:patch disposition: RESTRICT_OWNER_ONLY / KEEP_SPECIALIZED
@@ -84,6 +89,110 @@ function parsePatchInput(): ParsedPatchInput {
 	return { dryRun, apply, file, path, ownerUserId, sql };
 }
 
+export interface PreparedProductionPatch {
+	file: string;
+	path: string;
+	sql: string;
+	fingerprint: string;
+}
+
+/** Lint-only patch preparation. Does not connect to Production. */
+export function prepareProductionPatchFile(file: string): PreparedProductionPatch {
+	const path = resolve(process.cwd(), file);
+	let sql: string;
+	try {
+		sql = readFileSync(path, 'utf8');
+	} catch {
+		throw new OperatorError({
+			title: 'No se pudo leer el parche',
+			cause: 'No existe o no se puede leer el archivo de parche.',
+			code: 'PRODUCTION_PATCH_UNREADABLE',
+			remediation: ['Verifique la ruta relativa al repositorio y vuelva a planificar.'],
+		});
+	}
+	const result = lintProductionPatchSql(sql);
+	if (!result.ok) {
+		throw new OperatorError({
+			title: 'Parche de Production bloqueado',
+			cause: result.errors.join('; '),
+			code: 'PRODUCTION_PATCH_BLOCKED',
+			remediation: [
+				'Corrija el manifiesto y el SQL según sql-safety.',
+				'Los parches no sustituyen db:migrate ni la promoción administrada.',
+			],
+			affected: { label: 'Errores de lint', items: [...result.errors] },
+		});
+	}
+	const fingerprint = createHash('sha256').update(`${file}\u001f${sql}`).digest('hex');
+	return { file, path, sql, fingerprint };
+}
+
+/**
+ * Execute a linted patch after owner authorization.
+ * When authorizedPlanBindingHex is set, asserts the in-process permit instead of prompting.
+ */
+export async function applyPreparedProductionPatch(input: {
+	prepared: PreparedProductionPatch;
+	ownerUserId: string;
+	authorizedPlanBindingHex?: string;
+	requireOwnerApply?: (gate: OwnerProductionApplyInput) => Promise<void>;
+}): Promise<void> {
+	const { validatedOwnerId, normalizedUrl, dbUrl } = validateProductionTargetEnv(
+		input.ownerUserId,
+	);
+	const ownerConfig = `SELECT set_config('app.owner_user_id', '${validatedOwnerId.replace(/'/g, "''")}', false);\n`;
+	const urlConfig = `SELECT set_config('app.supabase_project_url', '${normalizedUrl.replace(/'/g, "''")}', false);\n`;
+	const fullSql = ownerConfig + urlConfig + input.prepared.sql;
+	const manifestFingerprint = createHash('sha256')
+		.update(
+			`${input.prepared.file}\u001f${validatedOwnerId}\u001f${normalizedUrl}\u001f${fullSql}`,
+		)
+		.digest('hex');
+
+	if (input.authorizedPlanBindingHex) {
+		const match = matchProductionWritePermit({
+			dbUrl,
+			bindingHex: input.authorizedPlanBindingHex,
+		});
+		if (match !== 'ok') {
+			throw new OperatorError({
+				title: 'Autorización de Production no reutilizable',
+				cause: `El permiso interno no coincide con el plan aprobado (${match}).`,
+				code: 'PRODUCTION_WRITE_PERMIT_REQUIRED',
+				remediation: [
+					'Ejecute pnpm prod:apply -- --patch <file> --apply en una TTY del propietario.',
+				],
+			});
+		}
+	} else {
+		await (input.requireOwnerApply ?? requireOwnerProductionApply)({
+			apply: true,
+			dbUrl,
+			operationType: 'production_patch',
+			operationVerb: 'PATCH',
+			bindingHex: manifestFingerprint,
+			applyActionLabel: 'Aplicar',
+			summaryTitle: 'Parche SQL — Production',
+			summary: [
+				['Operación', 'Parche SQL especializado'],
+				['Archivo', input.prepared.file],
+				['Respaldo', 'Responsabilidad del operador antes del apply'],
+				['Autorización', 'Confirmación interactiva del propietario'],
+			],
+			technicalReview: [
+				['Impacto', 'Ejecuta SQL de mantenimiento en Production'],
+				['Archivo', input.prepared.file],
+				['Owner UUID', validatedOwnerId],
+				['Huella', manifestFingerprint],
+				['Tipo interno', 'production_patch'],
+				['Controles', 'TTY · agente bloqueado · release-check · sin token'],
+			],
+		});
+	}
+
+	executeProductionPatchSql(fullSql, dbUrl, normalizedUrl, input.prepared.file, validatedOwnerId);
+}
+
 interface ValidatedTargetEnv {
 	validatedOwnerId: string;
 	normalizedUrl: string;
@@ -146,41 +255,20 @@ export async function runProdPatchMain(): Promise<void> {
 		process.exit(0);
 	}
 
-	const { validatedOwnerId, normalizedUrl, dbUrl } = validateProductionTargetEnv(ownerUserId);
+	if (!ownerUserId) {
+		console.error('--owner-user-id is required for --apply.');
+		process.exit(1);
+	}
 
-	const ownerConfig = `SELECT set_config('app.owner_user_id', '${validatedOwnerId.replace(/'/g, "''")}', false);\n`;
-	const urlConfig = `SELECT set_config('app.supabase_project_url', '${normalizedUrl.replace(/'/g, "''")}', false);\n`;
-	const fullSql = ownerConfig + urlConfig + sql;
-
-	const manifestFingerprint = createHash('sha256')
-		.update(`${file}\u001f${validatedOwnerId}\u001f${normalizedUrl}\u001f${fullSql}`)
-		.digest('hex');
-
-	await requireOwnerProductionApply({
-		apply: true,
-		dbUrl,
-		operationType: 'production_patch',
-		operationVerb: 'PATCH',
-		bindingHex: manifestFingerprint,
-		applyActionLabel: 'Aplicar',
-		summaryTitle: 'Parche SQL — Production',
-		summary: [
-			['Operación', 'Parche SQL especializado'],
-			['Archivo', file],
-			['Respaldo', 'Responsabilidad del operador antes del apply'],
-			['Autorización', 'Confirmación interactiva del propietario'],
-		],
-		technicalReview: [
-			['Impacto', 'Ejecuta SQL de mantenimiento en Production'],
-			['Archivo', file],
-			['Owner UUID', validatedOwnerId],
-			['Huella', manifestFingerprint],
-			['Tipo interno', 'production_patch'],
-			['Controles', 'TTY · agente bloqueado · release-check · sin token'],
-		],
+	await applyPreparedProductionPatch({
+		prepared: {
+			file,
+			path,
+			sql,
+			fingerprint: createHash('sha256').update(`${file}\u001f${sql}`).digest('hex'),
+		},
+		ownerUserId,
 	});
-
-	executeProductionPatchSql(fullSql, dbUrl, normalizedUrl, file, validatedOwnerId);
 }
 
 function executeProductionPatchSql(

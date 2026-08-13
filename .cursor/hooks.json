@@ -9,7 +9,7 @@
 		],
 		"preToolUse": [
 			{
-				"command": "node .cursor/hooks/pre-tool-use-agent-context.mjs",
+				"command": "npx --no-install tsx .cursor/hooks/pre-tool-use-agent-context.ts",
 				"matcher": "Shell",
 				"failClosed": false
 			}
@@ -17,7 +17,7 @@
 		"beforeShellExecution": [
 			{
 				"command": "npx --no-install tsx .cursor/hooks/before-shell-production.ts",
-				"matcher": "supabase|psql|PROD_DB_URL|ineitkdkyrxqyressllp",
+				"matcher": "supabase|psql|PROD_DB_URL|ineitkdkyrxqyressllp|prod:apply|production-apply-cli|db:migrate|migrate-cli|db:prod:patch|run-prod-patch|invitation:release|invitation-release-cli|invitation:romina-draft-reset|romina-draft-reset-cli|invitation:draft-canonicalize|draft-canonicalization-cli|invitation:draft-restore|draft-restore-cli",
 				"failClosed": true
 			}
 		],

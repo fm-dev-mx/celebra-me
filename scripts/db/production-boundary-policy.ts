@@ -54,7 +54,10 @@ const MCP_PRODUCTION_WRITE_TOOLS = new Set([
 ]);
 
 const CANONICAL_OWNER_WORKFLOW =
-	/\b(?:pnpm\s+(?:db:migrate|db:prod:patch|invitation:release|invitation:romina-draft-reset|invitation:draft-canonicalize|invitation:draft-restore)|scripts\/db\/(?:migrate-cli|run-prod-patch)\.ts|scripts\/provision\/(?:invitation-release-cli|romina-draft-reset-cli|draft-canonicalization-cli|draft-restore-cli)\.ts)\b/i;
+	/\b(?:pnpm\s+(?:prod:apply|db:migrate|db:prod:patch|invitation:release|invitation:romina-draft-reset|invitation:draft-canonicalize|invitation:draft-restore)|scripts\/db\/(?:production-apply-cli|migrate-cli|run-prod-patch)\.ts|scripts\/provision\/(?:invitation-release-cli|romina-draft-reset-cli|draft-canonicalization-cli|draft-restore-cli)\.ts)\b/i;
+
+const AGENT_CONTEXT_ASSIGNMENT =
+	/(?:(?:^|[;&\r\n]\s*)(?:export\s+)?(?:\$env:)?|(?:^|[;&\r\n]\s*)\$env:)CELEBRA_AGENT_CONTEXT\s*=\s*(?:'[^']*'|"[^"]*"|\S+)\s*;?/gi;
 
 function deny(code: string, message: string): BoundaryDecision {
 	return {
@@ -69,18 +72,63 @@ function allow(): BoundaryDecision {
 	return { permission: 'allow' };
 }
 
-export function isExplicitAgentContext(env: NodeJS.ProcessEnv = process.env): boolean {
-	const value = env[AGENT_CONTEXT_ENV]?.trim();
-	return Boolean(value && value !== 'false' && value !== '0');
+/**
+ * Any presence of CELEBRA_AGENT_CONTEXT — including false, 0, or empty — is agent
+ * context. Owner TTY processes leave the variable unset. Overrides cannot opt out.
+ */
+export function isAgentContext(env: NodeJS.ProcessEnv = process.env): boolean {
+	return Object.prototype.hasOwnProperty.call(env, AGENT_CONTEXT_ENV);
 }
 
+function stripAgentContextAssignments(command: string): string {
+	return command.replace(AGENT_CONTEXT_ASSIGNMENT, ' ').replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * Force agent Shell commands to CELEBRA_AGENT_CONTEXT=1.
+ * Existing assignments (including false/0/empty) are stripped so they cannot win.
+ */
 export function wrapShellCommandWithAgentContext(command: string): string {
 	const trimmed = command.trim();
 	if (!trimmed) return command;
-	if (new RegExp(`(?:^|[;\\s]|\\$env:)${AGENT_CONTEXT_ENV}\\s*=`).test(trimmed)) {
-		return command;
+	const stripped = stripAgentContextAssignments(trimmed);
+	if (!stripped) return `$env:${AGENT_CONTEXT_ENV}='1'`;
+	return `$env:${AGENT_CONTEXT_ENV}='1'; ${stripped}`;
+}
+
+function commandHasApplyFlag(command: string): boolean {
+	return /(?:^|[\s])--apply(?:[\s]|$)/.test(command);
+}
+
+function commandIsMigrateApplyWithoutSafeTarget(command: string): boolean {
+	if (!/\b(?:db:migrate|migrate-cli)\b/i.test(command)) return false;
+	if (/\bproduction\b/i.test(command)) return true;
+	return !/\b(?:preview|local|disposable-test)\b/i.test(command);
+}
+
+/**
+ * True when a Shell command would mutate Production through a maintained writer.
+ * Preview/Local --apply is not Production apply.
+ */
+function commandIsProductionApply(command: string): boolean {
+	const text = command.trim();
+	if (!text || !commandHasApplyFlag(text)) return false;
+	if (/\bprod:apply\b/i.test(text)) return true;
+	if (/\bproduction-apply-cli\b/i.test(text)) return true;
+	if (/\bdb:prod:patch\b/i.test(text)) return true;
+	if (/\brun-prod-patch\b/i.test(text)) return true;
+	if (/\binvitation:romina-draft-reset\b/i.test(text)) return true;
+	if (/\bromina-draft-reset-cli\b/i.test(text)) return true;
+	if (commandIsMigrateApplyWithoutSafeTarget(text)) return true;
+	if (/\binvitation:release\b/i.test(text) && /\bproduction\b/i.test(text)) return true;
+	if (/\binvitation-release-cli\b/i.test(text) && /\bproduction\b/i.test(text)) return true;
+	if (/\binvitation:draft-canonicalize\b/i.test(text) && /\bproduction\b/i.test(text)) {
+		return true;
 	}
-	return `$env:${AGENT_CONTEXT_ENV}='1'; ${trimmed}`;
+	if (/\bdraft-canonicalization-cli\b/i.test(text) && /\bproduction\b/i.test(text)) return true;
+	if (/\binvitation:draft-restore\b/i.test(text) && /\bproduction\b/i.test(text)) return true;
+	if (/\bdraft-restore-cli\b/i.test(text) && /\bproduction\b/i.test(text)) return true;
+	return false;
 }
 
 export function stripSqlComments(sql: string): string {
@@ -152,7 +200,7 @@ export function commandTargetsProduction(command: string): boolean {
 	);
 }
 
-export function isCanonicalOwnerWorkflowCommand(command: string): boolean {
+function isCanonicalOwnerWorkflowCommand(command: string): boolean {
 	return CANONICAL_OWNER_WORKFLOW.test(command);
 }
 
@@ -273,6 +321,22 @@ function extractCommandSql(command: string): string | undefined {
 	if (commandMatch?.[2]) return commandMatch[2];
 	const bare = command.match(/(?:-c|--command)\s+(\S+)/);
 	return bare?.[1];
+}
+
+/**
+ * Agent-session Shell evaluator. Denies canonical Production --apply before the
+ * process starts. Read-only preflight/dry-run remains allowed.
+ */
+export function evaluateAgentShellProductionMutation(command: string): BoundaryDecision {
+	const text = command.trim();
+	if (!text) return allow();
+	if (commandIsProductionApply(text)) {
+		return deny(
+			'AGENT_PRODUCTION_APPLY_BLOCKED',
+			'Agents cannot mutate Production. Prepare and verify through Preview, then stop. The owner applies with `pnpm prod:apply` from an interactive owner terminal.',
+		);
+	}
+	return evaluateShellProductionMutation(text);
 }
 
 export function evaluateShellProductionMutation(command: string): BoundaryDecision {

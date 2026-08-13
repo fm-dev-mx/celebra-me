@@ -19,6 +19,7 @@ describe('Cursor Production mutation hooks', () => {
 		expect(hooks.hooks.beforeShellExecution?.[0]?.command).toContain('before-shell-production');
 		expect(hooks.hooks.beforeMCPExecution?.[0]?.command).toContain('before-mcp-production');
 		expect(hooks.hooks.preToolUse?.[0]?.matcher).toBe('Shell');
+		expect(hooks.hooks.preToolUse?.[0]?.command).toContain('pre-tool-use-agent-context.ts');
 		expect(hooks.hooks.sessionStart?.[0]?.command).toContain('session-start.mjs');
 	});
 
@@ -26,12 +27,17 @@ describe('Cursor Production mutation hooks', () => {
 		const shellHook = read('.cursor/hooks/before-shell-production.ts');
 		const mcpHook = read('.cursor/hooks/before-mcp-production.ts');
 		const session = read('.cursor/hooks/session-start.mjs');
-		const preTool = read('.cursor/hooks/pre-tool-use-agent-context.mjs');
-		expect(shellHook).toContain('evaluateShellProductionMutation');
+		const preTool = read('.cursor/hooks/pre-tool-use-agent-context.ts');
+		expect(shellHook).toContain('evaluateAgentShellProductionMutation');
 		expect(mcpHook).toContain('evaluateMcpProductionMutation');
 		expect(session).toContain("CELEBRA_AGENT_CONTEXT: '1'");
-		expect(preTool).toContain('CELEBRA_AGENT_CONTEXT');
+		expect(preTool).toContain('wrapShellCommandWithAgentContext');
 		expect(read('.cursor/hooks.json')).toContain(SUPABASE_PROJECT_REFS.production);
+		expect(read('.cursor/hooks.json')).toContain('prod:apply');
+		expect(read('.cursor/hooks.json')).toContain('production-apply-cli');
+		expect(read('.cursor/hooks.json')).toContain('migrate-cli');
+		expect(read('.cursor/hooks.json')).toContain('run-prod-patch');
+		expect(read('.cursor/hooks.json')).toContain('invitation-release-cli');
 		expect(read('scripts/db/production-boundary-policy.ts')).toContain('PRODUCTION_PROJECT_REF');
 	});
 });
