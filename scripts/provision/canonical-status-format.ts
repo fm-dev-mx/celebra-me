@@ -22,6 +22,7 @@ function envLabel(env: TargetEnv): string {
 }
 
 function visibleLength(str: string): number {
+	// eslint-disable-next-line no-control-regex
 	return str.replace(/\x1b\[[0-9;]*m/g, '').length;
 }
 
@@ -113,6 +114,206 @@ export function formatAttentionCard(
 	return lines.join('\n');
 }
 
+function formatStatusRows(view: CanonicalStatusView, labelCol: number, envCol: number): string[] {
+	const c = getColors();
+
+	const schemaRow =
+		padVisible('Schema', labelCol) +
+		ENVS.map((env) => {
+			const label = formatSchemaMigrationsLabel(
+				view.environments[env].schemaLifecycle,
+				view.environments[env].appliedCount,
+				view.environments[env].expectedCount,
+			).replace('Schema migrations: ', '');
+			const isCurrent = label.startsWith('CURRENT');
+			const styled = isCurrent ? c.brightGreen(`✓ ${label}`) : c.brightYellow(`⚠ ${label}`);
+			return padVisible(styled, envCol);
+		}).join('');
+
+	const invitationRow =
+		padVisible('Invitations', labelCol) +
+		ENVS.map((env) => {
+			const count = view.environments[env].invitationAttentionCount;
+			const raw = `${count} attention`;
+			const styled = count === 0 ? c.green(`✓ ${raw}`) : c.brightYellow(`! ${raw}`);
+			return padVisible(styled, envCol);
+		}).join('');
+
+	const readinessRow =
+		padVisible('Readiness', labelCol) +
+		ENVS.map((env) => {
+			const status = view.environments[env].schemaOperationReadiness;
+			const isReady = status === 'READY';
+			const styled = isReady ? c.brightGreen(`✓ ${status}`) : c.brightYellow(`⚠ ${status}`);
+			return padVisible(styled, envCol);
+		}).join('');
+
+	const evidenceRow =
+		padVisible('Evidence', labelCol) +
+		ENVS.map((env) => {
+			const ev = view.environments[env].evidence;
+			const styled = ev === 'LIVE' ? c.green(`✓ ${ev}`) : c.dim(ev);
+			return padVisible(styled, envCol);
+		}).join('');
+
+	const authorizationRow =
+		padVisible('Authorization', labelCol) +
+		ENVS.map((env) => {
+			const status = view.environments[env].authorizationIntegrity;
+			const styled =
+				status === 'RECORDED'
+					? c.brightGreen(`✓ ${status}`)
+					: status === 'MISSING'
+						? c.brightYellow(`⚠ ${status}`)
+						: status === 'GRANDFATHERED'
+							? c.yellow(status)
+							: c.dim(status);
+			return padVisible(styled, envCol);
+		}).join('');
+
+	return [schemaRow, invitationRow, readinessRow, evidenceRow, authorizationRow];
+}
+
+function formatDisposableProofSection(view: CanonicalStatusView, headerWidth: number): string[] {
+	const c = getColors();
+	const lines: string[] = [
+		c.dim('─'.repeat(headerWidth)),
+		`  ${c.bold('DISPOSABLE-TEST (not a persistent schema environment)')}`,
+	];
+
+	const proofStatus = view.disposableProof.status.toUpperCase();
+	const proofBadge =
+		view.disposableProof.status === 'valid'
+			? c.brightGreen(`✓ ${proofStatus}`)
+			: c.brightYellow(`MISSING`);
+
+	lines.push(`  Disposable proof: ${proofStatus}`);
+	lines.push(`  Status: ${proofBadge} ${c.dim('(Required before future migration operations)')}`);
+	if (view.disposableProof.status !== 'valid') {
+		lines.push(c.dim('  (Does not mean Local, Preview, or Production schema is behind.)'));
+		lines.push(
+			`  Remediation: ${c.brightCyan('pnpm db:migrate -- --target disposable-test --apply')}`,
+		);
+	}
+	return lines;
+}
+
+function formatPublicationOverview(view: CanonicalStatusView, headerWidth: number, verbose: boolean): string[] {
+	const c = getColors();
+	const lines: string[] = [];
+
+	if (view.promotions.length === 0) {
+		lines.push(c.dim('─'.repeat(headerWidth)));
+		lines.push(`  ${c.bold('PUBLICATION')}`);
+		lines.push('  Attention: 0 (in sync or none registered)');
+	} else {
+		lines.push(c.dim('─'.repeat(headerWidth)));
+		lines.push(
+			`  ${c.headerTitle('PUBLICATION — NEXT STEPS GUIDE')} ${c.dim(`(${view.promotions.length} pending)`)}`,
+		);
+		lines.push(c.dim('─'.repeat(headerWidth)));
+		lines.push('');
+		lines.push(
+			view.promotions
+				.map((row, idx) => formatAttentionCard(row, verbose, idx + 1))
+				.join('\n\n'),
+		);
+	}
+	return lines;
+}
+
+function formatProductionAuthWarning(
+	productionAuth: CanonicalStatusView['environments']['production'],
+): string[] {
+	if (productionAuth.authorizationIntegrity !== 'MISSING') return [];
+	const c = getColors();
+	return [
+		'',
+		c.brightYellow('PRODUCTION AUTHORIZATION: MISSING'),
+		`Missing versions: ${productionAuth.authorizationMissingVersions.join(', ') || '(unknown)'}`,
+		'Schema CURRENT is not owner-authorization evidence.',
+	];
+}
+
+function formatVerboseSchemaDetails(view: CanonicalStatusView): string[] {
+	const c = getColors();
+	const lines: string[] = [];
+	for (const env of ENVS) {
+		const row = view.environments[env];
+		lines.push('');
+		lines.push(`  ${c.bold(`[${envLabel(env)} schema detail]`)}`);
+		lines.push(`    head: ${row.migrationHead ?? '(none)'}`);
+		lines.push(`    pending: ${row.pendingMigrations.join(', ') || '(none)'}`);
+		lines.push(`    extra: ${row.extraMigrations.join(', ') || '(none)'}`);
+		lines.push(`    probedAt: ${row.probedAt ?? '(none)'}`);
+	}
+	return lines;
+}
+
+function formatRegistrySummarySection(view: CanonicalStatusView, headerWidth: number): string[] {
+	const c = getColors();
+	const lines: string[] = [
+		'',
+		c.dim('─'.repeat(headerWidth)),
+		`  Registry invitations: ${c.bold(String(view.registryCount))}    In sync: ${c.green(String(view.inSyncCount))}    Attention: ${view.promotions.length > 0 ? c.brightYellow(String(view.promotions.length)) : c.green('0')}`,
+		`  Active DB rows (not registry): Local ${c.bold(String(view.activeRowCounts.local))} · Preview ${c.bold(String(view.activeRowCounts.preview))} · Production ${c.bold(String(view.activeRowCounts.production))}`,
+	];
+
+	if (
+		view.identityConflictCounts.local > 0 ||
+		view.identityConflictCounts.preview > 0 ||
+		view.identityConflictCounts.production > 0
+	) {
+		lines.push(
+			c.red(
+				`  Identity conflicts: Local ${view.identityConflictCounts.local} · Preview ${view.identityConflictCounts.preview} · Production ${view.identityConflictCounts.production}`,
+			),
+		);
+	}
+	return lines;
+}
+
+function formatInSyncSection(view: CanonicalStatusView, includeInSync?: boolean): string[] {
+	const c = getColors();
+	const lines: string[] = [];
+	if (includeInSync) {
+		lines.push('');
+		lines.push(`  ${c.bold(`IN SYNC (${view.inSyncCount})`)}`);
+		if (view.inSyncSlugs.length === 0) {
+			lines.push(c.dim('  (none)'));
+		} else {
+			for (const slug of view.inSyncSlugs) lines.push(`    ${slug}`);
+		}
+	} else if (view.inSyncCount > 0) {
+		lines.push('');
+		lines.push(c.dim(`  In sync omitted: ${view.inSyncCount} (pass --in-sync to list)`));
+	}
+	return lines;
+}
+
+function formatDiagnosticsSection(
+	view: CanonicalStatusView,
+	verbose: boolean,
+	diagnosticsOption?: boolean,
+): string[] {
+	const c = getColors();
+	const lines: string[] = [];
+	if ((verbose || diagnosticsOption) && view.diagnostics.length > 0) {
+		lines.push('');
+		lines.push(
+			`  ${c.bold('DIAGNOSTICS (enrichment only; does not change publication or readiness)')}`,
+		);
+		for (const item of view.diagnostics) {
+			const scope = [item.environment, item.slug].filter(Boolean).join(' ');
+			lines.push(`    ${c.yellow(item.code)}${scope ? ` ${scope}` : ''}`);
+			if (item.semanticPaths.length > 0) {
+				lines.push(c.dim(`      paths: ${item.semanticPaths.join(', ')}`));
+			}
+		}
+	}
+	return lines;
+}
+
 export function formatCanonicalStatusView(
 	view: CanonicalStatusView,
 	options?: { verbose?: boolean; includeInSync?: boolean; diagnostics?: boolean },
@@ -131,179 +332,27 @@ export function formatCanonicalStatusView(
 		'',
 		`${padVisible('', labelCol)}${c.brightCyan(padVisible('LOCAL', envCol))}${c.brightCyan(padVisible('PREVIEW', envCol))}${c.brightCyan(padVisible('PRODUCTION', envCol))}`,
 		c.dim('─'.repeat(headerWidth)),
-	];
-
-	const schemaRow =
-		padVisible('Schema', labelCol) +
-		ENVS.map((env) => {
-			const label = formatSchemaMigrationsLabel(
-				view.environments[env].schemaLifecycle,
-				view.environments[env].appliedCount,
-				view.environments[env].expectedCount,
-			).replace('Schema migrations: ', '');
-			const isCurrent = label.startsWith('CURRENT');
-			const styled = isCurrent ? c.brightGreen(`✓ ${label}`) : c.brightYellow(`⚠ ${label}`);
-			return padVisible(styled, envCol);
-		}).join('');
-	lines.push(schemaRow);
-
-	const invitationRow =
-		padVisible('Invitations', labelCol) +
-		ENVS.map((env) => {
-			const count = view.environments[env].invitationAttentionCount;
-			const raw = `${count} attention`;
-			const styled = count === 0 ? c.green(`✓ ${raw}`) : c.brightYellow(`! ${raw}`);
-			return padVisible(styled, envCol);
-		}).join('');
-	lines.push(invitationRow);
-
-	const readinessRow =
-		padVisible('Readiness', labelCol) +
-		ENVS.map((env) => {
-			const status = view.environments[env].schemaOperationReadiness;
-			const isReady = status === 'READY';
-			const styled = isReady ? c.brightGreen(`✓ ${status}`) : c.brightYellow(`⚠ ${status}`);
-			return padVisible(styled, envCol);
-		}).join('');
-	lines.push(readinessRow);
-
-	const evidenceRow =
-		padVisible('Evidence', labelCol) +
-		ENVS.map((env) => {
-			const ev = view.environments[env].evidence;
-			const styled = ev === 'LIVE' ? c.green(`✓ ${ev}`) : c.dim(ev);
-			return padVisible(styled, envCol);
-		}).join('');
-	lines.push(evidenceRow);
-
-	const authorizationRow =
-		padVisible('Authorization', labelCol) +
-		ENVS.map((env) => {
-			const status = view.environments[env].authorizationIntegrity;
-			const styled =
-				status === 'RECORDED'
-					? c.brightGreen(`✓ ${status}`)
-					: status === 'MISSING'
-						? c.brightYellow(`⚠ ${status}`)
-						: status === 'GRANDFATHERED'
-							? c.yellow(status)
-							: c.dim(status);
-			return padVisible(styled, envCol);
-		}).join('');
-	lines.push(authorizationRow);
-
-	lines.push('');
-	lines.push(
+		...formatStatusRows(view, labelCol, envCol),
+		'',
 		c.dim(
 			'(Schema = migration history. Authorization = owner-apply evidence. Invitations = registry publication. Readiness = migrate authorization.)',
 		),
-	);
-
-	const productionAuth = view.environments.production;
-	if (productionAuth.authorizationIntegrity === 'MISSING') {
-		lines.push('');
-		lines.push(c.brightYellow('PRODUCTION AUTHORIZATION: MISSING'));
-		lines.push(
-			`Missing versions: ${productionAuth.authorizationMissingVersions.join(', ') || '(unknown)'}`,
-		);
-		lines.push('Schema CURRENT is not owner-authorization evidence.');
-	}
-	lines.push('');
-	lines.push(c.dim('─'.repeat(headerWidth)));
-	lines.push(`  ${c.bold('DISPOSABLE-TEST (not a persistent schema environment)')}`);
-	const proofStatus = view.disposableProof.status.toUpperCase();
-	const proofBadge =
-		view.disposableProof.status === 'valid'
-			? c.brightGreen(`✓ ${proofStatus}`)
-			: c.brightYellow(`MISSING`);
-
-	lines.push(`  Disposable proof: ${proofStatus}`);
-	lines.push(`  Status: ${proofBadge} ${c.dim('(Required before future migration operations)')}`);
-	if (view.disposableProof.status !== 'valid') {
-		lines.push(c.dim('  (Does not mean Local, Preview, or Production schema is behind.)'));
-		lines.push(
-			`  Remediation: ${c.brightCyan('pnpm db:migrate -- --target disposable-test --apply')}`,
-		);
-	}
+		...formatProductionAuthWarning(view.environments.production),
+		'',
+		...formatDisposableProofSection(view, headerWidth),
+	];
 
 	if (verbose) {
-		for (const env of ENVS) {
-			const row = view.environments[env];
-			lines.push('');
-			lines.push(`  ${c.bold(`[${envLabel(env)} schema detail]`)}`);
-			lines.push(`    head: ${row.migrationHead ?? '(none)'}`);
-			lines.push(`    pending: ${row.pendingMigrations.join(', ') || '(none)'}`);
-			lines.push(`    extra: ${row.extraMigrations.join(', ') || '(none)'}`);
-			lines.push(`    probedAt: ${row.probedAt ?? '(none)'}`);
-		}
+		lines.push(...formatVerboseSchemaDetails(view));
 	}
 
+	lines.push(...formatRegistrySummarySection(view, headerWidth));
 	lines.push('');
-	lines.push(c.dim('─'.repeat(headerWidth)));
-	const registrySummary = `  Registry invitations: ${c.bold(String(view.registryCount))}    In sync: ${c.green(String(view.inSyncCount))}    Attention: ${view.promotions.length > 0 ? c.brightYellow(String(view.promotions.length)) : c.green('0')}`;
-	lines.push(registrySummary);
-	lines.push(
-		`  Active DB rows (not registry): Local ${c.bold(String(view.activeRowCounts.local))} · Preview ${c.bold(String(view.activeRowCounts.preview))} · Production ${c.bold(String(view.activeRowCounts.production))}`,
-	);
-	if (
-		view.identityConflictCounts.local > 0 ||
-		view.identityConflictCounts.preview > 0 ||
-		view.identityConflictCounts.production > 0
-	) {
-		lines.push(
-			c.red(
-				`  Identity conflicts: Local ${view.identityConflictCounts.local} · Preview ${view.identityConflictCounts.preview} · Production ${view.identityConflictCounts.production}`,
-			),
-		);
-	}
-
+	lines.push(...formatPublicationOverview(view, headerWidth, verbose));
+	lines.push(...formatInSyncSection(view, options?.includeInSync));
+	lines.push(...formatDiagnosticsSection(view, verbose, options?.diagnostics));
 	lines.push('');
-	if (view.promotions.length === 0) {
-		lines.push(c.dim('─'.repeat(headerWidth)));
-		lines.push(`  ${c.bold('PUBLICATION')}`);
-		lines.push('  Attention: 0 (in sync or none registered)');
-	} else {
-		lines.push(c.dim('─'.repeat(headerWidth)));
-		lines.push(
-			`  ${c.headerTitle('PUBLICATION — NEXT STEPS GUIDE')} ${c.dim(`(${view.promotions.length} pending)`)}`,
-		);
-		lines.push(c.dim('─'.repeat(headerWidth)));
-		lines.push('');
-		lines.push(
-			view.promotions
-				.map((row, idx) => formatAttentionCard(row, verbose, idx + 1))
-				.join('\n\n'),
-		);
-	}
 
-	if (options?.includeInSync) {
-		lines.push('');
-		lines.push(`  ${c.bold(`IN SYNC (${view.inSyncCount})`)}`);
-		if (view.inSyncSlugs.length === 0) {
-			lines.push(c.dim('  (none)'));
-		} else {
-			for (const slug of view.inSyncSlugs) lines.push(`    ${slug}`);
-		}
-	} else if (view.inSyncCount > 0) {
-		lines.push('');
-		lines.push(c.dim(`  In sync omitted: ${view.inSyncCount} (pass --in-sync to list)`));
-	}
-
-	if ((verbose || options?.diagnostics) && view.diagnostics.length > 0) {
-		lines.push('');
-		lines.push(
-			`  ${c.bold('DIAGNOSTICS (enrichment only; does not change publication or readiness)')}`,
-		);
-		for (const item of view.diagnostics) {
-			const scope = [item.environment, item.slug].filter(Boolean).join(' ');
-			lines.push(`    ${c.yellow(item.code)}${scope ? ` ${scope}` : ''}`);
-			if (item.semanticPaths.length > 0) {
-				lines.push(c.dim(`      paths: ${item.semanticPaths.join(', ')}`));
-			}
-		}
-	}
-
-	lines.push('');
 	return lines.join('\n');
 }
 

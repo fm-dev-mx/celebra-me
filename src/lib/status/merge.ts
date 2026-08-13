@@ -21,13 +21,9 @@ function statesFromView(
 		map.set(slug, { local: 'match', preview: 'match', production: 'match' });
 	}
 	for (const row of view.promotions) {
-		map.set(slugStatesKey(row), row.environments);
+		map.set(row.slug, row.environments);
 	}
 	return map;
-}
-
-function slugStatesKey(row: CanonicalPromotionRow): string {
-	return row.slug;
 }
 
 function metaFromView(view: CanonicalStatusView): Map<string, { title: string; eventType: string }> {
@@ -41,6 +37,89 @@ function metaFromView(view: CanonicalStatusView): Map<string, { title: string; e
 function canonicalAvailableFromView(view: CanonicalStatusView, slug: string): boolean {
 	const row = view.promotions.find((item) => item.slug === slug);
 	return row?.reasonCode !== 'CANONICAL_UNAVAILABLE';
+}
+
+function mergeContentDomainState(
+	previous: CanonicalStatusView,
+	incoming: CanonicalStatusView,
+	probed: TargetEnv,
+	environments: Record<TargetEnv, CanonicalStatusView['environments'][TargetEnv]>,
+): {
+	promotions: CanonicalPromotionRow[];
+	inSyncSlugs: string[];
+	inSyncCount: number;
+} {
+	const previousStates = statesFromView(previous);
+	const incomingStates = statesFromView(incoming);
+	const merged = new Map(previousStates);
+	for (const [slug, states] of incomingStates) {
+		const current = merged.get(slug) ?? {
+			local: 'unknown' as const,
+			preview: 'unknown' as const,
+			production: 'unknown' as const,
+		};
+		merged.set(slug, { ...current, [probed]: states[probed] });
+	}
+	const meta = new Map([...metaFromView(previous), ...metaFromView(incoming)]);
+	const envEvidence: Record<TargetEnv, EvidenceState> = {
+		local:
+			probed === 'local'
+				? 'LIVE'
+				: previous.environments.local.evidence === 'LIVE'
+					? 'CACHED'
+					: previous.environments.local.evidence,
+		preview:
+			probed === 'preview'
+				? 'LIVE'
+				: previous.environments.preview.evidence === 'LIVE'
+					? 'CACHED'
+					: previous.environments.preview.evidence,
+		production:
+			probed === 'production'
+				? 'LIVE'
+				: previous.environments.production.evidence === 'LIVE'
+					? 'CACHED'
+					: previous.environments.production.evidence,
+	};
+	const nextPromotions: CanonicalPromotionRow[] = [];
+	const nextInSync: string[] = [];
+	for (const [slug, environmentsForSlug] of merged) {
+		const info = meta.get(slug) ?? { title: slug, eventType: 'unknown' };
+		const decision = decidePromotionAction({
+			canonicalAvailable:
+				canonicalAvailableFromView(incoming, slug) &&
+				canonicalAvailableFromView(previous, slug),
+			...environmentsForSlug,
+		});
+		if (decision.action === 'NONE') {
+			nextInSync.push(slug);
+			continue;
+		}
+		nextPromotions.push(
+			presentPromotionRow({
+				slug,
+				title: info.title,
+				eventType: info.eventType,
+				action: decision.action,
+				reasonCode: decision.reasonCode,
+				environments: environmentsForSlug,
+				envEvidence,
+			}),
+		);
+	}
+	nextPromotions.sort((left, right) => left.slug.localeCompare(right.slug));
+	nextInSync.sort((left, right) => left.localeCompare(right));
+	for (const env of ENVS) {
+		environments[env].invitationAttentionCount = invitationAttentionCount(merged, env);
+	}
+	environments[probed].identityConflictsCount =
+		incoming.environments[probed].identityConflictsCount;
+
+	return {
+		promotions: nextPromotions,
+		inSyncSlugs: nextInSync,
+		inSyncCount: nextInSync.length,
+	};
 }
 
 export function mergeCanonicalStatusView(input: {
@@ -77,68 +156,10 @@ export function mergeCanonicalStatusView(input: {
 	let inSyncCount = previous.inSyncCount;
 
 	if (domain !== 'schema') {
-		const previousStates = statesFromView(previous);
-		const incomingStates = statesFromView(input.incoming);
-		const merged = new Map(previousStates);
-		for (const [slug, states] of incomingStates) {
-			const current = merged.get(slug) ?? {
-				local: 'unknown' as const,
-				preview: 'unknown' as const,
-				production: 'unknown' as const,
-			};
-			merged.set(slug, { ...current, [probed]: states[probed] });
-		}
-		const meta = new Map([...metaFromView(previous), ...metaFromView(input.incoming)]);
-		const envEvidence: Record<TargetEnv, EvidenceState> = {
-			local: probed === 'local' ? 'LIVE' : previous.environments.local.evidence === 'LIVE' ? 'CACHED' : previous.environments.local.evidence,
-			preview:
-				probed === 'preview'
-					? 'LIVE'
-					: previous.environments.preview.evidence === 'LIVE'
-						? 'CACHED'
-						: previous.environments.preview.evidence,
-			production:
-				probed === 'production'
-					? 'LIVE'
-					: previous.environments.production.evidence === 'LIVE'
-						? 'CACHED'
-						: previous.environments.production.evidence,
-		};
-		const nextPromotions: CanonicalPromotionRow[] = [];
-		const nextInSync: string[] = [];
-		for (const [slug, environmentsForSlug] of merged) {
-			const info = meta.get(slug) ?? { title: slug, eventType: 'unknown' };
-			const decision = decidePromotionAction({
-				canonicalAvailable: canonicalAvailableFromView(input.incoming, slug) &&
-					canonicalAvailableFromView(previous, slug),
-				...environmentsForSlug,
-			});
-			if (decision.action === 'NONE') {
-				nextInSync.push(slug);
-				continue;
-			}
-			nextPromotions.push(
-				presentPromotionRow({
-					slug,
-					title: info.title,
-					eventType: info.eventType,
-					action: decision.action,
-					reasonCode: decision.reasonCode,
-					environments: environmentsForSlug,
-					envEvidence,
-				}),
-			);
-		}
-		nextPromotions.sort((left, right) => left.slug.localeCompare(right.slug));
-		nextInSync.sort((left, right) => left.localeCompare(right));
-		promotions = nextPromotions;
-		inSyncSlugs = nextInSync;
-		inSyncCount = nextInSync.length;
-		for (const env of ENVS) {
-			environments[env].invitationAttentionCount = invitationAttentionCount(merged, env);
-		}
-		environments[probed].identityConflictsCount =
-			input.incoming.environments[probed].identityConflictsCount;
+		const res = mergeContentDomainState(previous, input.incoming, probed, environments);
+		promotions = res.promotions;
+		inSyncSlugs = res.inSyncSlugs;
+		inSyncCount = res.inSyncCount;
 	}
 
 	if (domain !== 'content') {

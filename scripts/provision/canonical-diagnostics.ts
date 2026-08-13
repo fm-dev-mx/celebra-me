@@ -193,15 +193,10 @@ function semanticDiagnostics(
 	return [];
 }
 
-export function enrichCanonicalDiagnostics(input: {
-	view: CanonicalStatusView;
-	definitions: readonly InvitationDefinition[];
-	rowsByEnv: Record<TargetEnv, LiveInvitationEvidenceRow[]>;
-	includeSemanticDetail: boolean;
-}): CanonicalDiagnostic[] {
+function collectEnvironmentSummaryDiagnostics(view: CanonicalStatusView): CanonicalDiagnostic[] {
 	const diagnostics: CanonicalDiagnostic[] = [];
 	for (const env of ENVS) {
-		const summary = input.view.environments[env];
+		const summary = view.environments[env];
 		if (summary.evidence !== 'UNVERIFIED' && !summary.environmentIdentityOk) {
 			diagnostics.push(
 				diagnostic({
@@ -222,9 +217,12 @@ export function enrichCanonicalDiagnostics(input: {
 			);
 		}
 	}
+	return diagnostics;
+}
 
-	const definitionBySlug = new Map(input.definitions.map((item) => [item.slug, item]));
-	for (const row of input.view.promotions) {
+function collectPromotionConflictDiagnostics(view: CanonicalStatusView): CanonicalDiagnostic[] {
+	const diagnostics: CanonicalDiagnostic[] = [];
+	for (const row of view.promotions) {
 		if (row.reasonCode === 'IDENTITY_CONFLICT') {
 			for (const env of ENVS) {
 				if (row.environments[env] !== 'conflict') continue;
@@ -239,9 +237,17 @@ export function enrichCanonicalDiagnostics(input: {
 			}
 		}
 	}
+	return diagnostics;
+}
 
+function collectLiveRowDiagnostics(
+	rowsByEnv: Record<TargetEnv, LiveInvitationEvidenceRow[]>,
+	definitionBySlug: Map<string, InvitationDefinition>,
+	includeSemanticDetail: boolean,
+): CanonicalDiagnostic[] {
+	const diagnostics: CanonicalDiagnostic[] = [];
 	for (const env of ENVS) {
-		for (const live of input.rowsByEnv[env] ?? []) {
+		for (const live of rowsByEnv[env] ?? []) {
 			const definition = definitionBySlug.get(live.slug);
 			if (!definition) continue;
 			if (live.draftContent != null && !eventContentSchema.safeParse(live.draftContent).success) {
@@ -257,18 +263,24 @@ export function enrichCanonicalDiagnostics(input: {
 			diagnostics.push(...assetDiagnostics(definition, live, env));
 			const baseline = baselineDiagnostic(definition, live, env);
 			if (baseline) diagnostics.push(baseline);
-			if (input.includeSemanticDetail) {
+			if (includeSemanticDetail) {
 				diagnostics.push(...semanticDiagnostics(definition, live, env));
 			}
 		}
 	}
+	return diagnostics;
+}
 
-	for (const definition of input.definitions) {
+function collectStaleLifecycleDiagnostics(
+	definitions: readonly InvitationDefinition[],
+	view: CanonicalStatusView,
+): CanonicalDiagnostic[] {
+	const diagnostics: CanonicalDiagnostic[] = [];
+	for (const definition of definitions) {
 		if (definition.lifecycle !== 'in_progress') continue;
-		const promotion = input.view.promotions.find((row) => row.slug === definition.slug);
-		const inSync = input.view.inSyncSlugs.includes(definition.slug);
-		const productionMatch =
-			inSync || promotion?.environments.production === 'match';
+		const promotion = view.promotions.find((row) => row.slug === definition.slug);
+		const inSync = view.inSyncSlugs.includes(definition.slug);
+		const productionMatch = inSync || promotion?.environments.production === 'match';
 		if (productionMatch) {
 			diagnostics.push(
 				diagnostic({
@@ -279,6 +291,22 @@ export function enrichCanonicalDiagnostics(input: {
 			);
 		}
 	}
+	return diagnostics;
+}
+
+export function enrichCanonicalDiagnostics(input: {
+	view: CanonicalStatusView;
+	definitions: readonly InvitationDefinition[];
+	rowsByEnv: Record<TargetEnv, LiveInvitationEvidenceRow[]>;
+	includeSemanticDetail: boolean;
+}): CanonicalDiagnostic[] {
+	const definitionBySlug = new Map(input.definitions.map((item) => [item.slug, item]));
+	const diagnostics: CanonicalDiagnostic[] = [
+		...collectEnvironmentSummaryDiagnostics(input.view),
+		...collectPromotionConflictDiagnostics(input.view),
+		...collectLiveRowDiagnostics(input.rowsByEnv, definitionBySlug, input.includeSemanticDetail),
+		...collectStaleLifecycleDiagnostics(input.definitions, input.view),
+	];
 
 	diagnostics.sort((left, right) => {
 		const env = (left.environment ?? '').localeCompare(right.environment ?? '');
