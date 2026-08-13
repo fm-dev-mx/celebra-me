@@ -106,6 +106,24 @@ function commandIsMigrateApplyWithoutSafeTarget(command: string): boolean {
 	return !/\b(?:preview|local|disposable-test)\b/i.test(command);
 }
 
+const ALWAYS_PRODUCTION_APPLY = [
+	/\bprod:apply\b/i,
+	/\bproduction-apply-cli\b/i,
+	/\bdb:prod:patch\b/i,
+	/\brun-prod-patch\b/i,
+	/\binvitation:romina-draft-reset\b/i,
+	/\bromina-draft-reset-cli\b/i,
+];
+
+const PRODUCTION_TARGETED_APPLY = [
+	/\binvitation:release\b/i,
+	/\binvitation-release-cli\b/i,
+	/\binvitation:draft-canonicalize\b/i,
+	/\bdraft-canonicalization-cli\b/i,
+	/\binvitation:draft-restore\b/i,
+	/\bdraft-restore-cli\b/i,
+];
+
 /**
  * True when a Shell command would mutate Production through a maintained writer.
  * Preview/Local --apply is not Production apply.
@@ -113,22 +131,10 @@ function commandIsMigrateApplyWithoutSafeTarget(command: string): boolean {
 function commandIsProductionApply(command: string): boolean {
 	const text = command.trim();
 	if (!text || !commandHasApplyFlag(text)) return false;
-	if (/\bprod:apply\b/i.test(text)) return true;
-	if (/\bproduction-apply-cli\b/i.test(text)) return true;
-	if (/\bdb:prod:patch\b/i.test(text)) return true;
-	if (/\brun-prod-patch\b/i.test(text)) return true;
-	if (/\binvitation:romina-draft-reset\b/i.test(text)) return true;
-	if (/\bromina-draft-reset-cli\b/i.test(text)) return true;
+	if (ALWAYS_PRODUCTION_APPLY.some((pattern) => pattern.test(text))) return true;
 	if (commandIsMigrateApplyWithoutSafeTarget(text)) return true;
-	if (/\binvitation:release\b/i.test(text) && /\bproduction\b/i.test(text)) return true;
-	if (/\binvitation-release-cli\b/i.test(text) && /\bproduction\b/i.test(text)) return true;
-	if (/\binvitation:draft-canonicalize\b/i.test(text) && /\bproduction\b/i.test(text)) {
-		return true;
-	}
-	if (/\bdraft-canonicalization-cli\b/i.test(text) && /\bproduction\b/i.test(text)) return true;
-	if (/\binvitation:draft-restore\b/i.test(text) && /\bproduction\b/i.test(text)) return true;
-	if (/\bdraft-restore-cli\b/i.test(text) && /\bproduction\b/i.test(text)) return true;
-	return false;
+	if (!/\bproduction\b/i.test(text)) return false;
+	return PRODUCTION_TARGETED_APPLY.some((pattern) => pattern.test(text));
 }
 
 export function stripSqlComments(sql: string): string {

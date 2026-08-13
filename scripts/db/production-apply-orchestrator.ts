@@ -300,39 +300,42 @@ function outcomeFromItem(item: ProductionApplyPlanItem): ProductionApplyOutcomeR
 	return { id: item.id, outcome: 'pending', detail: item.summary };
 }
 
-export async function applyProductionApplyPlan(
-	args: ProductionApplyCliArgs,
-	deps: ProductionApplyExecuteDeps = {},
-): Promise<ProductionApplyExecution> {
-	const reviewed = await buildProductionApplyPlan(args, deps);
-	const eligibility = evaluateApplyEligibility(reviewed);
-	if (!eligibility.ok) {
-		throw new OperatorError({
-			title: 'El plan no es aplicable',
-			cause: eligibility.detail,
-			code: eligibility.code,
-			remediation: [
-				'Corrija los elementos BLOCKED o UNKNOWN.',
-				'Vuelva a ejecutar pnpm prod:apply sin --apply para revisar el plan.',
-			],
-		});
-	}
+function failureDetail(error: unknown): string {
+	return error instanceof Error ? error.message : String(error);
+}
 
-	const mutations = mutationItemsOf(reviewed);
-	const baselineOutcomes = reviewed.items.map(outcomeFromItem);
-	const ownerUserId = args.ownerUserId;
-	if (mutations.some((item) => item.domain === 'patch') && !ownerUserId) {
-		throw new OperatorError({
-			title: 'Falta --owner-user-id',
-			cause: 'El apply de un parche especializado exige --owner-user-id.',
-			code: 'OWNER_USER_ID_REQUIRED',
-			remediation: ['Reintente con --patch <file> --owner-user-id <uuid> --apply.'],
-		});
-	}
-	if (mutations.length === 0) {
-		return { plan: reviewed, wrote: false, outcomes: baselineOutcomes };
-	}
+function throwIfIneligible(plan: ProductionApplyPlan): void {
+	const eligibility = evaluateApplyEligibility(plan);
+	if (eligibility.ok) return;
+	throw new OperatorError({
+		title: 'El plan no es aplicable',
+		cause: eligibility.detail,
+		code: eligibility.code,
+		remediation: [
+			'Corrija los elementos BLOCKED o UNKNOWN.',
+			'Vuelva a ejecutar pnpm prod:apply sin --apply para revisar el plan.',
+		],
+	});
+}
 
+function throwIfPatchMissingOwner(
+	mutations: readonly ProductionApplyPlanItem[],
+	ownerUserId: string | undefined,
+): void {
+	if (!mutations.some((item) => item.domain === 'patch') || ownerUserId) return;
+	throw new OperatorError({
+		title: 'Falta --owner-user-id',
+		cause: 'El apply de un parche especializado exige --owner-user-id.',
+		code: 'OWNER_USER_ID_REQUIRED',
+		remediation: ['Reintente con --patch <file> --owner-user-id <uuid> --apply.'],
+	});
+}
+
+async function authorizeReviewedPlan(
+	reviewed: ProductionApplyPlan,
+	mutations: readonly ProductionApplyPlanItem[],
+	deps: ProductionApplyExecuteDeps,
+): Promise<void> {
 	const getProductionDbUrl = deps.getProductionDbUrl ?? getProdDbUrl;
 	const { url: dbUrl } = getProductionDbUrl();
 	const ownerGateInput: OwnerProductionApplyInput = {
@@ -358,103 +361,126 @@ export async function applyProductionApplyPlan(
 	};
 	if (deps.requireOwnerApply) {
 		await deps.requireOwnerApply(ownerGateInput);
-	} else {
-		await requireOwnerProductionApply(ownerGateInput);
+		return;
 	}
+	await requireOwnerProductionApply(ownerGateInput);
+}
 
-	const live = await buildProductionApplyPlan(args, deps);
-	if (live.planId !== reviewed.planId) {
-		throw new OperatorError({
-			title: 'El plan cambió antes de aplicar',
-			cause: 'La evidencia en vivo ya no coincide con el plan autorizado.',
-			code: 'PLAN_DRIFT',
-			remediation: [
-				'Vuelva a ejecutar pnpm prod:apply sin --apply.',
-				'Revisar el plan nuevo y aplicar de nuevo (no reutilice la autorización anterior).',
-			],
-		});
-	}
+function throwIfPlanDrifted(reviewed: ProductionApplyPlan, live: ProductionApplyPlan): void {
+	if (live.planId === reviewed.planId) return;
+	throw new OperatorError({
+		title: 'El plan cambió antes de aplicar',
+		cause: 'La evidencia en vivo ya no coincide con el plan autorizado.',
+		code: 'PLAN_DRIFT',
+		remediation: [
+			'Vuelva a ejecutar pnpm prod:apply sin --apply.',
+			'Revisar el plan nuevo y aplicar de nuevo (no reutilice la autorización anterior).',
+		],
+	});
+}
 
-	const outcomes: ProductionApplyOutcomeRow[] = reviewed.items.map(outcomeFromItem);
-	let wrote = false;
-
+async function applySchemaMutation(
+	mutations: readonly ProductionApplyPlanItem[],
+	reviewed: ProductionApplyPlan,
+	deps: ProductionApplyExecuteDeps,
+	outcomes: ProductionApplyOutcomeRow[],
+): Promise<boolean> {
 	const schemaMutation = mutations.find((item) => item.domain === 'schema');
-	if (schemaMutation) {
-		try {
-			const applySchema =
-				deps.applySchema ??
-				((input: { authorizedPlanBindingHex: string }) =>
-					orchestrateMigrate({
-						target: 'production',
-						mode: 'apply',
-						expectedPin: null,
-						authorizedPlanBindingHex: input.authorizedPlanBindingHex,
-					}));
-			const result = await applySchema({ authorizedPlanBindingHex: reviewed.planId });
-			wrote = wrote || result.wrote;
-			replaceOutcome(outcomes, 'schema', {
-				id: 'schema',
-				outcome: 'applied_verified',
-				detail: result.plan.pendingVersions.join(', '),
-			});
-		} catch (error) {
-			replaceOutcome(outcomes, 'schema', {
-				id: 'schema',
-				outcome: 'failed',
-				detail: error instanceof Error ? error.message : String(error),
-			});
-			throw error;
-		}
+	if (!schemaMutation) return false;
+	try {
+		const applySchema =
+			deps.applySchema ??
+			((input: { authorizedPlanBindingHex: string }) =>
+				orchestrateMigrate({
+					target: 'production',
+					mode: 'apply',
+					expectedPin: null,
+					authorizedPlanBindingHex: input.authorizedPlanBindingHex,
+				}));
+		const result = await applySchema({ authorizedPlanBindingHex: reviewed.planId });
+		replaceOutcome(outcomes, 'schema', {
+			id: 'schema',
+			outcome: 'applied_verified',
+			detail: result.plan.pendingVersions.join(', '),
+		});
+		return result.wrote;
+	} catch (error) {
+		replaceOutcome(outcomes, 'schema', {
+			id: 'schema',
+			outcome: 'failed',
+			detail: failureDetail(error),
+		});
+		throw error;
 	}
+}
 
-	const invitationMutations = mutations.filter((item) => item.domain === 'invitation');
-	for (const item of invitationMutations) {
+function throwInvitationApplyFailure(report: PromotionApplyReport): never {
+	throw new OperatorError({
+		title: 'Promoción de invitación fallida',
+		cause: report.reason ?? report.status,
+		code: report.blockCode ?? 'INVITATION_APPLY_FAILED',
+		remediation: [
+			'Corrija el bloqueo y vuelva a ejecutar pnpm prod:apply.',
+			'El plan se reconstruye desde el estado vivo; no edite receipts.',
+		],
+	});
+}
+
+async function applyOneInvitationMutation(
+	item: ProductionApplyPlanItem,
+	reviewed: ProductionApplyPlan,
+	deps: ProductionApplyExecuteDeps,
+	outcomes: ProductionApplyOutcomeRow[],
+): Promise<boolean> {
+	const resolvePackage =
+		deps.resolvePackage ??
+		(async (slug: string) => {
+			const resolved = await resolveInvitationPackageInput({ slug });
+			return resolved.packageData;
+		});
+	const packageData = await resolvePackage(item.id);
+	const applyInvitation =
+		deps.applyInvitation ??
+		((input: {
+			packageData: InvitationPackageData;
+			authorizedPlanBindingHex: string;
+		}) =>
+			orchestrateInvitationPromotion({
+				packageData: input.packageData,
+				requireOwnerApply: async (gate) => {
+					assertDelegatedPermit(gate.dbUrl, input.authorizedPlanBindingHex);
+				},
+			}));
+	const report = await applyInvitation({
+		packageData,
+		authorizedPlanBindingHex: reviewed.planId,
+	});
+	if (report.status === 'BLOCKED' || report.status === 'APPLIED_BUT_VERIFICATION_FAILED') {
+		replaceOutcome(outcomes, item.id, {
+			id: item.id,
+			outcome: 'failed',
+			detail: report.reason ?? report.status,
+		});
+		throwInvitationApplyFailure(report);
+	}
+	replaceOutcome(outcomes, item.id, {
+		id: item.id,
+		outcome: report.status === 'IN_SYNC' ? 'already_applied' : 'applied_verified',
+		detail: report.status,
+	});
+	return report.status === 'PROMOTED';
+}
+
+async function applyInvitationMutations(
+	mutations: readonly ProductionApplyPlanItem[],
+	reviewed: ProductionApplyPlan,
+	deps: ProductionApplyExecuteDeps,
+	outcomes: ProductionApplyOutcomeRow[],
+): Promise<boolean> {
+	let wrote = false;
+	for (const item of mutations.filter((entry) => entry.domain === 'invitation')) {
 		try {
-			const resolvePackage =
-				deps.resolvePackage ??
-				(async (slug: string) => {
-					const resolved = await resolveInvitationPackageInput({ slug });
-					return resolved.packageData;
-				});
-			const packageData = await resolvePackage(item.id);
-			const applyInvitation =
-				deps.applyInvitation ??
-				((input: {
-					packageData: InvitationPackageData;
-					authorizedPlanBindingHex: string;
-				}) =>
-					orchestrateInvitationPromotion({
-						packageData: input.packageData,
-						requireOwnerApply: async (gate) => {
-							assertDelegatedPermit(gate.dbUrl, input.authorizedPlanBindingHex);
-						},
-					}));
-			const report = await applyInvitation({
-				packageData,
-				authorizedPlanBindingHex: reviewed.planId,
-			});
-			if (report.status === 'BLOCKED' || report.status === 'APPLIED_BUT_VERIFICATION_FAILED') {
-				replaceOutcome(outcomes, item.id, {
-					id: item.id,
-					outcome: 'failed',
-					detail: report.reason ?? report.status,
-				});
-				throw new OperatorError({
-					title: 'Promoción de invitación fallida',
-					cause: report.reason ?? report.status,
-					code: report.blockCode ?? 'INVITATION_APPLY_FAILED',
-					remediation: [
-						'Corrija el bloqueo y vuelva a ejecutar pnpm prod:apply.',
-						'El plan se reconstruye desde el estado vivo; no edite receipts.',
-					],
-				});
-			}
-			wrote = wrote || report.status === 'PROMOTED';
-			replaceOutcome(outcomes, item.id, {
-				id: item.id,
-				outcome: report.status === 'IN_SYNC' ? 'already_applied' : 'applied_verified',
-				detail: report.status,
-			});
+			wrote = (await applyOneInvitationMutation(item, reviewed, deps, outcomes)) || wrote;
 		} catch (error) {
 			if (
 				!(error instanceof OperatorError) ||
@@ -463,47 +489,83 @@ export async function applyProductionApplyPlan(
 				replaceOutcome(outcomes, item.id, {
 					id: item.id,
 					outcome: 'failed',
-					detail: error instanceof Error ? error.message : String(error),
+					detail: failureDetail(error),
 				});
 			}
 			throw error;
 		}
 	}
+	return wrote;
+}
 
+async function applyPatchMutation(
+	mutations: readonly ProductionApplyPlanItem[],
+	reviewed: ProductionApplyPlan,
+	ownerUserId: string | undefined,
+	deps: ProductionApplyExecuteDeps,
+	outcomes: ProductionApplyOutcomeRow[],
+): Promise<boolean> {
 	const patchMutation = mutations.find((item) => item.domain === 'patch');
-	if (patchMutation) {
-		if (!ownerUserId) {
-			throw new OperatorError({
-				title: 'Falta --owner-user-id',
-				cause: 'El apply de un parche especializado exige --owner-user-id.',
-				code: 'OWNER_USER_ID_REQUIRED',
-				remediation: ['Reintente con --patch <file> --owner-user-id <uuid> --apply.'],
-			});
-		}
-		try {
-			const prepared = (deps.preparePatch ?? prepareProductionPatchFile)(patchMutation.id);
-			const applyPatch = deps.applyPatch ?? applyPreparedProductionPatch;
-			await applyPatch({
-				prepared,
-				ownerUserId,
-				authorizedPlanBindingHex: reviewed.planId,
-			});
-			wrote = true;
-			replaceOutcome(outcomes, patchMutation.id, {
-				id: patchMutation.id,
-				outcome: 'applied_verified',
-			});
-		} catch (error) {
-			replaceOutcome(outcomes, patchMutation.id, {
-				id: patchMutation.id,
-				outcome: 'failed',
-				detail: error instanceof Error ? error.message : String(error),
-			});
-			throw error;
-		}
+	if (!patchMutation) return false;
+	if (!ownerUserId) {
+		throwIfPatchMissingOwner(mutations, ownerUserId);
+		return false;
+	}
+	try {
+		const prepared = (deps.preparePatch ?? prepareProductionPatchFile)(patchMutation.id);
+		const applyPatch = deps.applyPatch ?? applyPreparedProductionPatch;
+		await applyPatch({
+			prepared,
+			ownerUserId,
+			authorizedPlanBindingHex: reviewed.planId,
+		});
+		replaceOutcome(outcomes, patchMutation.id, {
+			id: patchMutation.id,
+			outcome: 'applied_verified',
+		});
+		return true;
+	} catch (error) {
+		replaceOutcome(outcomes, patchMutation.id, {
+			id: patchMutation.id,
+			outcome: 'failed',
+			detail: failureDetail(error),
+		});
+		throw error;
+	}
+}
+
+export async function applyProductionApplyPlan(
+	args: ProductionApplyCliArgs,
+	deps: ProductionApplyExecuteDeps = {},
+): Promise<ProductionApplyExecution> {
+	const reviewed = await buildProductionApplyPlan(args, deps);
+	throwIfIneligible(reviewed);
+
+	const mutations = mutationItemsOf(reviewed);
+	const ownerUserId = args.ownerUserId;
+	throwIfPatchMissingOwner(mutations, ownerUserId);
+	if (mutations.length === 0) {
+		return { plan: reviewed, wrote: false, outcomes: reviewed.items.map(outcomeFromItem) };
 	}
 
-	return { plan: reviewed, wrote, outcomes };
+	await authorizeReviewedPlan(reviewed, mutations, deps);
+	throwIfPlanDrifted(reviewed, await buildProductionApplyPlan(args, deps));
+
+	const outcomes = reviewed.items.map(outcomeFromItem);
+	const wroteSchema = await applySchemaMutation(mutations, reviewed, deps, outcomes);
+	const wroteInvitations = await applyInvitationMutations(mutations, reviewed, deps, outcomes);
+	const wrotePatch = await applyPatchMutation(
+		mutations,
+		reviewed,
+		ownerUserId,
+		deps,
+		outcomes,
+	);
+	return {
+		plan: reviewed,
+		wrote: wroteSchema || wroteInvitations || wrotePatch,
+		outcomes,
+	};
 }
 
 function replaceOutcome(

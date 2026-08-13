@@ -103,6 +103,60 @@ function uniquePreserveOrder(values: readonly string[]): string[] {
 	return out;
 }
 
+function assertKnownCliFlags(args: readonly string[]): void {
+	for (const token of args) {
+		if (!token.startsWith('--') && !token.startsWith('-')) continue;
+		if (AUTHORIZATION_BYPASS_FLAGS.has(token)) {
+			throw new Error(
+				`Authorization cannot be supplied from CLI (${token}). Owner TTY confirmation is the only Production apply gate.`,
+			);
+		}
+		if (token.startsWith('--') && !KNOWN_FLAGS.has(token)) {
+			throw new Error(`Unknown flag: ${token}`);
+		}
+	}
+}
+
+function parseSlugArgs(args: readonly string[]): string[] {
+	const slugsFromList = (flagValue(args, '--slugs') ?? '')
+		.split(',')
+		.map((part) => part.trim())
+		.filter(Boolean);
+	return uniquePreserveOrder([...slugsFromList, ...collectRepeatable(args, '--slug')]);
+}
+
+function isInspectAllScope(input: {
+	schema: boolean;
+	slugs: readonly string[];
+	allReady: boolean;
+	patchFile?: string;
+}): boolean {
+	return !input.schema && input.slugs.length === 0 && !input.allReady && !input.patchFile;
+}
+
+function assertCliCombinations(input: {
+	allReady: boolean;
+	slugs: readonly string[];
+	patchFile?: string;
+	apply: boolean;
+	ownerUserId?: string;
+	inspectAll: boolean;
+}): void {
+	if (input.allReady && (input.slugs.length > 0 || input.patchFile)) {
+		throw new Error(
+			'Cannot combine --all-ready with --slug, --slugs, or --patch. --all-ready includes only READY schema and invitations.',
+		);
+	}
+	if (input.apply && input.patchFile && !input.ownerUserId) {
+		throw new Error('--owner-user-id is required with --patch --apply.');
+	}
+	if (input.apply && input.inspectAll) {
+		throw new Error(
+			'SCOPE_REQUIRED: --apply requires an explicit scope (--schema, --slug/--slugs, --all-ready, or --patch). No arguments never apply.',
+		);
+	}
+}
+
 export function parseProductionApplyCliArgs(argv: string[]): ProductionApplyCliArgs {
 	const args = argv.slice(2);
 	if (args.includes('--help') || args.includes('-h')) {
@@ -117,46 +171,16 @@ export function parseProductionApplyCliArgs(argv: string[]): ProductionApplyCliA
 		};
 	}
 
-	for (const token of args) {
-		if (!token.startsWith('--') && !token.startsWith('-')) continue;
-		if (AUTHORIZATION_BYPASS_FLAGS.has(token)) {
-			throw new Error(
-				`Authorization cannot be supplied from CLI (${token}). Owner TTY confirmation is the only Production apply gate.`,
-			);
-		}
-		if (token.startsWith('--') && !KNOWN_FLAGS.has(token)) {
-			throw new Error(`Unknown flag: ${token}`);
-		}
-	}
-
+	assertKnownCliFlags(args);
 	const schema = args.includes('--schema');
 	const allReady = args.includes('--all-ready');
 	const apply = args.includes('--apply');
 	const json = args.includes('--json');
 	const patchFile = flagValue(args, '--patch');
 	const ownerUserId = flagValue(args, '--owner-user-id');
-	const slugsFromList = (flagValue(args, '--slugs') ?? '')
-		.split(',')
-		.map((part) => part.trim())
-		.filter(Boolean);
-	const slugs = uniquePreserveOrder([...slugsFromList, ...collectRepeatable(args, '--slug')]);
-
-	if (allReady && (slugs.length > 0 || patchFile)) {
-		throw new Error(
-			'Cannot combine --all-ready with --slug, --slugs, or --patch. --all-ready includes only READY schema and invitations.',
-		);
-	}
-
-	if (apply && patchFile && !ownerUserId) {
-		throw new Error('--owner-user-id is required with --patch --apply.');
-	}
-
-	const inspectAll = !schema && slugs.length === 0 && !allReady && !patchFile;
-	if (apply && inspectAll) {
-		throw new Error(
-			'SCOPE_REQUIRED: --apply requires an explicit scope (--schema, --slug/--slugs, --all-ready, or --patch). No arguments never apply.',
-		);
-	}
+	const slugs = parseSlugArgs(args);
+	const inspectAll = isInspectAllScope({ schema, slugs, allReady, patchFile });
+	assertCliCombinations({ allReady, slugs, patchFile, apply, ownerUserId, inspectAll });
 
 	return {
 		help: false,

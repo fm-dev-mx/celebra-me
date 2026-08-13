@@ -20,15 +20,17 @@ describe('invitation:release Production dispatch', () => {
 		expect(() => parseMutationTargets('production')).toThrow(/invitation:release/);
 	});
 
-	it('dispatches Production through orchestrateInvitationPromotion / runPromotionPreflight', () => {
+	it('dispatches Production dry-run through runPromotionPreflight and hands apply to prod:apply', () => {
 		const source = readFileSync(
 			resolve(process.cwd(), 'scripts/provision/invitation-release-cli.ts'),
 			'utf8',
 		);
-		expect(source).toContain('orchestrateInvitationPromotion');
 		expect(source).toContain('runPromotionPreflight');
 		expect(source).toContain("targets[0] === 'production'");
 		expect(source).toContain('runProductionReleaseDispatch');
+		expect(source).toContain('USE_PROD_APPLY');
+		expect(source).toContain('pnpm prod:apply');
+		expect(source).not.toContain('orchestrateInvitationPromotion');
 		expect(source).not.toContain('requireOwnerProductionApply');
 		expect(source).not.toMatch(/runPromotionApply\s*\(/);
 	});
@@ -59,7 +61,9 @@ describe('invitation:release Production dispatch', () => {
 		expect(wizard).toContain("describeDestination('production')");
 		expect(wizard).toContain('expectedSourceHash');
 		expect(wizard).toContain('expectedPackageHash');
-		expect(wizard).toContain('orchestrateInvitationPromotion');
+		expect(wizard).toContain('runPromotionPreflight');
+		expect(wizard).toContain('pnpm prod:apply');
+		expect(wizard).not.toContain('orchestrateInvitationPromotion');
 		expect(wizard).not.toContain('reviewedPreflight');
 	});
 

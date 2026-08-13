@@ -330,19 +330,14 @@ describe('production apply execution', () => {
 	});
 
 	it('stops subsequent invitations after the first failure', async () => {
-		const applyInvitation = jest.fn(
-			async (_input: {
-				packageData: InvitationPackageData;
-				authorizedPlanBindingHex: string;
-			}): Promise<PromotionApplyReport> => {
-				throw new OperatorError({
-					title: 'alpha failed',
-					cause: 'engine failed',
-					code: 'INVITATION_APPLY_FAILED',
-					remediation: ['retry'],
-				});
-			},
-		);
+		const applyInvitation = jest.fn(async (): Promise<PromotionApplyReport> => {
+			throw new OperatorError({
+				title: 'alpha failed',
+				cause: 'engine failed',
+				code: 'INVITATION_APPLY_FAILED',
+				remediation: ['retry'],
+			});
+		});
 
 		await expect(
 			applyProductionApplyPlan(cli(['--slugs', 'alpha,beta', '--apply']), {
