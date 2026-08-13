@@ -4,7 +4,7 @@
  */
 import { readFileSync } from 'node:fs';
 
-let payload = {};
+let payload;
 try {
 	payload = JSON.parse(readFileSync(0, 'utf8') || '{}');
 } catch {
