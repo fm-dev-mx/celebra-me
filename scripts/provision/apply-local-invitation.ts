@@ -91,6 +91,7 @@ interface ApplyLocalOptions {
 	assetPolicy?: AssetPolicy;
 	pruneAssets?: boolean;
 	conflictResolutions?: ConflictResolutions;
+	acknowledgeDiscardUnpublishedDraft?: boolean;
 	/** When set, Local must rebuild the same release identity as the session package. */
 	expectedSourceHash?: string;
 	expectedPackageHash?: string;
@@ -910,6 +911,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			: null,
 		{
 			packageContentHash,
+			acknowledgeDiscardUnpublishedDraft: options.acknowledgeDiscardUnpublishedDraft,
 		},
 	);
 

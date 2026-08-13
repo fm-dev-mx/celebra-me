@@ -130,6 +130,16 @@ export function rewritePackageStorageUrls(val: unknown, targetStorageUrl: string
 // Divergence
 // ---------------------------------------------------------------------------
 
+export const ACKNOWLEDGE_DISCARD_UNPUBLISHED_DRAFT_FLAG =
+	'--acknowledge-discard-unpublished-draft' as const;
+
+export const TARGET_DIVERGENCE_ACKNOWLEDGE_HINT =
+	'Descarte el borrador inédito del destino y aplique el paquete con --acknowledge-discard-unpublished-draft.';
+
+export function isTargetDivergenceConflictMessage(message: string): boolean {
+	return message.includes('Target divergence conflict for');
+}
+
 export function checkTargetDivergenceConflict(
 	slug: string,
 	proposedContent: Record<string, unknown>,
@@ -137,6 +147,7 @@ export function checkTargetDivergenceConflict(
 	existingPub: Record<string, unknown> | null,
 	options?: {
 		packageContentHash?: string;
+		acknowledgeDiscardUnpublishedDraft?: boolean;
 	},
 ): void {
 	if (!existingDraft) return;
@@ -152,12 +163,13 @@ export function checkTargetDivergenceConflict(
 		: null;
 
 	if (targetDraftHash !== proposedHash && targetDraftHash !== targetPubHash) {
+		if (options?.acknowledgeDiscardUnpublishedDraft) return;
 		const publishedVersion =
 			existingPub && existingPub.version !== undefined && existingPub.version !== null
 				? String(existingPub.version)
 				: 'none';
 		throw new Error(
-			`Target divergence conflict for "${slug}": target draft revision ${String(existingDraft.updated_at ?? existingDraft.id ?? 'unknown')}; target published version ${publishedVersion}; package content hash ${packageHash}; proposed merged-content hash ${proposedHash}; target draft hash ${targetDraftHash}; target published hash ${targetPubHash ?? 'none'}.`,
+			`Target divergence conflict for "${slug}": target draft revision ${String(existingDraft.updated_at ?? existingDraft.id ?? 'unknown')}; target published version ${publishedVersion}; package content hash ${packageHash}; proposed merged-content hash ${proposedHash}; target draft hash ${targetDraftHash}; target published hash ${targetPubHash ?? 'none'}. ${TARGET_DIVERGENCE_ACKNOWLEDGE_HINT}`,
 		);
 	}
 }

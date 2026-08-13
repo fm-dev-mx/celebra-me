@@ -31,16 +31,16 @@ describe('Direct Production Publication with Coordinated Local and Preview Synch
 			expect(parseTargets('local,preview')).toEqual(['local', 'preview']);
 		});
 
-		it('accepts non-interactive destructive confirmation flag', () => {
+		it('accepts unpublished-draft discard acknowledgement flag', () => {
 			expect(() =>
 				checkUnknownFlags([
 					'--slug',
-					'romina-rios-chaparro',
+					'daniela-y-martin',
 					'--targets',
-					'local,preview',
+					'preview',
 					'--apply',
 					'--non-interactive',
-					'--confirm-destructive',
+					'--acknowledge-discard-unpublished-draft',
 				]),
 			).not.toThrow();
 		});

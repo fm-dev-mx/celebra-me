@@ -81,6 +81,7 @@ import {
 	resolvePromotionUpdateScope,
 } from './invitation-promotion-orchestrator.ts';
 import { operatorSymbol, writeHuman } from '../db/operator-cli-ux.ts';
+import { isTargetDivergenceConflictMessage } from './promotion-comparison.ts';
 
 function mergeConflictsFromError(error: unknown): TargetPlanData['mergeConflicts'] {
 	let current: unknown = error;
@@ -411,6 +412,8 @@ Options:
   --apply                      Perform actual database and storage updates
   --non-interactive            Skip interactive prompts for non-TTY execution
   --confirm-destructive        Destructive operations acknowledgement required for non-interactive apply when plan contains deletions or overwrites
+  --acknowledge-discard-unpublished-draft
+                               Discard unpublished target-draft edits that diverge from both the package and published content, then apply the package
   --conflict-resolutions <path> JSON { "resolutions": { "<path>": "package"|"target" } } (required when apply has merge conflicts)
   --field-selections <path>    JSON { "resolutions": { "<path>": "package"|"target" } } selective apply (deselected paths keep target)
   --backup-manifest <path>     Optional critical backup manifest for Production promote
@@ -442,6 +445,7 @@ async function executeLocalTargetPlan(input: {
 	assetPolicy?: ReturnType<typeof parseAssetPolicy>;
 	pruneAssets: boolean;
 	conflictResolutions?: ReturnType<typeof loadConflictResolutionsFile>;
+	acknowledgeDiscardUnpublishedDraft?: boolean;
 	reports: StageReport[];
 }): Promise<{
 	executionPlanId: string;
@@ -477,6 +481,7 @@ async function executeLocalTargetPlan(input: {
 		assetPolicy: input.assetPolicy,
 		pruneAssets: input.pruneAssets,
 		conflictResolutions: input.conflictResolutions,
+		acknowledgeDiscardUnpublishedDraft: input.acknowledgeDiscardUnpublishedDraft,
 	});
 	input.reports.push({
 		stage: 'apply',
@@ -531,6 +536,7 @@ async function executePreviewTargetPlan(input: {
 	pruneAssets: boolean;
 	updateScope?: UpdateScope;
 	conflictResolutions?: ReturnType<typeof loadConflictResolutionsFile>;
+	acknowledgeDiscardUnpublishedDraft?: boolean;
 	rekeyFrom?: string;
 	ownerUserId?: string;
 	reports: StageReport[];
@@ -603,6 +609,7 @@ async function executePreviewTargetPlan(input: {
 		pruneAssets: input.pruneAssets,
 		updateScope: input.updateScope,
 		conflictResolutions: input.conflictResolutions,
+		acknowledgeDiscardUnpublishedDraft: input.acknowledgeDiscardUnpublishedDraft,
 		rekeyFrom: input.rekeyFrom,
 		ownerUserId: input.ownerUserId,
 	});
@@ -822,6 +829,9 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 	const rawAssetPolicy =
 		value(args, '--asset-policy') ?? (updateScope === 'content-only' ? 'preserve' : 'missing');
 	const pruneAssets = args.includes('--prune-assets');
+	const acknowledgeDiscardUnpublishedDraft = args.includes(
+		'--acknowledge-discard-unpublished-draft',
+	);
 	const assetPolicy = parseAssetPolicy(rawAssetPolicy);
 	if (assetPolicy === 'preserve' && updateScope === 'content-and-assets') {
 		throw new Error(
@@ -1082,6 +1092,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 						assetPolicy,
 						pruneAssets,
 						conflictResolutions,
+						acknowledgeDiscardUnpublishedDraft,
 					});
 					executionPlans.set('local', localResult.plan);
 					targetPlans.push({
@@ -1194,6 +1205,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 									pruneAssets,
 									updateScope,
 									conflictResolutions,
+									acknowledgeDiscardUnpublishedDraft,
 									rekeyFrom,
 									ownerUserId,
 								}
@@ -1206,6 +1218,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 									pruneAssets,
 									updateScope,
 									conflictResolutions,
+									acknowledgeDiscardUnpublishedDraft,
 									rekeyFrom,
 									ownerUserId,
 								};
@@ -1237,15 +1250,20 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 						const errMsg = sanitizeMessage(
 							error instanceof Error ? error.message : String(error),
 						);
-						const previewReason =
-							'No fue posible inspeccionar Preview de forma segura. Revise credenciales, identidad del proyecto, conectividad y estado remoto antes de volver a planificar.';
+						const previewReason = isTargetDivergenceConflictMessage(errMsg)
+							? errMsg
+							: 'No fue posible inspeccionar Preview de forma segura. Revise credenciales, identidad del proyecto, conectividad y estado remoto antes de volver a planificar.';
 						reports.push({
 							stage: 'plan',
 							environment: 'preview',
 							status: 'BLOCKED',
-							reasonCode: 'PREVIEW_PLAN_BLOCKED',
+							reasonCode: isTargetDivergenceConflictMessage(errMsg)
+								? 'TARGET_DIVERGENCE_CONFLICT'
+								: 'PREVIEW_PLAN_BLOCKED',
 							reason: previewReason,
-							remainingAction: `Detalle técnico sanitizado: ${errMsg}`,
+							remainingAction: isTargetDivergenceConflictMessage(errMsg)
+								? errMsg
+								: `Detalle técnico sanitizado: ${errMsg}`,
 						});
 						targetPlans.push({
 							target: 'preview',
@@ -1568,6 +1586,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 						assetPolicy,
 						pruneAssets,
 						conflictResolutions,
+						acknowledgeDiscardUnpublishedDraft,
 						reports,
 					});
 				}
@@ -1585,6 +1604,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 						pruneAssets,
 						updateScope,
 						conflictResolutions,
+						acknowledgeDiscardUnpublishedDraft,
 						rekeyFrom,
 						ownerUserId,
 						reports,

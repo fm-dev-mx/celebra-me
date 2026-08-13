@@ -123,6 +123,7 @@ const VALID_FLAGS = new Set([
 	'--include-archived',
 	'--include-demos',
 	'--confirm-destructive',
+	'--acknowledge-discard-unpublished-draft',
 	'--conflict-resolutions',
 	'--field-selections',
 	'--verbose',

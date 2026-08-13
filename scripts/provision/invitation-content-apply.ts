@@ -78,6 +78,7 @@ export type ContentApplyOptions = {
 	pruneAssets?: boolean;
 	updateScope?: UpdateScope;
 	conflictResolutions?: ConflictResolutions;
+	acknowledgeDiscardUnpublishedDraft?: boolean;
 	rekeyFrom?: string;
 	ownerUserId?: string;
 	sourceDir?: string;
@@ -98,6 +99,7 @@ export async function planAndApplyLocalContent(
 		pruneAssets: input.pruneAssets,
 		updateScope: input.updateScope,
 		conflictResolutions: input.conflictResolutions,
+		acknowledgeDiscardUnpublishedDraft: input.acknowledgeDiscardUnpublishedDraft,
 		rekeyFrom: input.rekeyFrom,
 		ownerUserId: input.ownerUserId,
 		sourceDir: input.sourceDir,
@@ -127,6 +129,7 @@ export async function planAndApplyPreviewContent(
 		pruneAssets: input.pruneAssets,
 		updateScope: input.updateScope,
 		conflictResolutions: input.conflictResolutions,
+		acknowledgeDiscardUnpublishedDraft: input.acknowledgeDiscardUnpublishedDraft,
 		rekeyFrom: input.rekeyFrom,
 		ownerUserId: input.ownerUserId,
 	};
