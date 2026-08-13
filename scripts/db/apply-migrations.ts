@@ -23,6 +23,14 @@ export const MIGRATIONS_DIR = resolve(PROJECT_ROOT, 'supabase', 'migrations');
 const SAFE_FILENAME_PATTERN = /^(\d{14})_([a-zA-Z0-9_-]+)\.sql$/;
 
 export function runPsqlCommand(dbUrl: string, sqlInput: string): { ok: boolean; output: string } {
+	const classification = classifyDbTarget(dbUrl);
+	if (classification.target === 'production') {
+		return {
+			ok: false,
+			output:
+				'ERROR: apply-migrations psql runner cannot target Production. Use `pnpm db:migrate -- --target production`.',
+		};
+	}
 	const result = spawnSync('psql', ['--set', 'ON_ERROR_STOP=1', '--dbname', dbUrl], {
 		input: sqlInput,
 		encoding: 'utf8',

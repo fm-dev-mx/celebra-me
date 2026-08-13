@@ -101,13 +101,19 @@ task authorization, target classification, and standard guard checks.
   8. Structural coverage confirm before owner gate (`BACKUP_COVERAGE_EXPIRED` /
      `BACKUP_STRUCTURAL_DRIFT`). Shared owner boundary: Cancel-default arrow menu, optional
      technical review, then short bound code `<VERB> <8-hex>` from stable `planId`.
-  9. Migration application (`supabase db push --db-url <url> --yes`)
-  10. Post-migration `schema_migrations` + `pnpm db:contract:verify --target production`
+  9. Migration application (`supabase db push --db-url <url> --yes`) after `requireOwnerProductionApply`
+     issues an in-process write permit
+  10. Post-migration `schema_migrations` + durable owner-apply record (`.backups/prod/owner-apply/`) +
+      `pnpm db:contract:verify --target production`
   11. Verified post-migration critical backup
 - **Owner authorization**: All owner-only Production mutators use `requireOwnerProductionApply`
   (explicit `--apply`, Production project identity, agent rejection, release-check evidence, TTY
   intent select + short bound code). No token, secret, or noninteractive confirmation alternative
-  exists. `production_authorization_receipts` is historical inert state.
+  exists. `production_authorization_receipts` is historical inert state. Successful Production
+  schema applies write a local owner-apply record; schema parity is not authorization evidence.
+  Agent sessions receive `CELEBRA_AGENT_CONTEXT` by default (Cursor session/preToolUse hooks).
+  Raw `supabase db push` / mutating `psql` and Supabase MCP writes against Production are blocked
+  outside this owner workflow. Read-only Production MCP/SQL remains allowed.
 - **Hosted identity vs environment selection**: Selecting Preview/Production and having credentials
   is not authorization. Production and Preview migrate derive release identity from clean `HEAD`
   (Production also requires `pnpm release-check`). Preview URL must match the canonical project ref
@@ -154,6 +160,8 @@ task authorization, target classification, and standard guard checks.
 ## Current Contract
 
 - `pnpm db:push` is intentionally blocked. Do not bypass it with raw `supabase db push`.
+  Cursor hooks and the in-process spawn guard also block raw `supabase db push` / mutating
+  Production `psql`. Production MCP `apply_migration` and mutating `execute_sql` are blocked.
 - `pnpm db:local:reset` is blocked. Use `pnpm db:disposable:reset` for destructive tests.
 - `pnpm db:migrate` is the canonical schema migrate planner/orchestrator (TTY target selector with
   Cancelar default; non-TTY requires `--target`; default read-only preflight).
@@ -166,7 +174,8 @@ task authorization, target classification, and standard guard checks.
 - `pnpm db:migrate -- --target preview` preflights Preview (`PREVIEW_DB_URL`); `--apply` applies pending
   migrations after Preview authorization (wrapper over `db:migrate -- --target preview`).
 - Schema status evidence: `pnpm dbs` / observability use **migration_history_parity**;
-  `pnpm db:*:audit` uses **object_audit_readiness**. Do not treat them as equivalent.
+  `pnpm db:*:audit` uses **object_audit_readiness**. Production **owner-apply evidence** is a
+  third class (`authorizationIntegrity`). Do not treat CURRENT schema parity as authorization.
 - `pnpm db:prod:patch` disposition is `RESTRICT_OWNER_ONLY` / `KEEP_SPECIALIZED`: `--dry-run` is
   lint-only; `--apply` is owner-confirmed specialized maintenance and must not bypass
   `db:migrate -- --target production` or `invitation:release`.
@@ -228,6 +237,8 @@ invent a healthy state, or acquire mutation authority.
   specialized maintenance that cannot yet be a versioned migration.
 - Asked to run `pnpm db:push`, `pnpm db:local:reset`, raw `supabase db push --linked`, or removed
   one-shot ops commands? Do not run them. Report that the path is blocked.
+- Asked to use Supabase MCP `apply_migration` or mutating `execute_sql` against Production? Do not.
+  Read-only Production MCP (`list_migrations`, SELECT) is allowed.
 - Unsure whether a command could touch production or destroy persistent local? Run the guard check:
   `tsx scripts/db/db-guard.ts check --target <target> --operation "<op>"`. Fail closed and ask for a
   narrower, explicit operation.
@@ -311,6 +322,9 @@ persistent-local database was preserved.
 - Do not execute manual production SQL from `scripts/manual/production-patches/` or `scripts/sql/`
   without the owner-only `db:prod:patch` workflow.
 - Do not run `supabase db push --linked`.
+- Do not use Supabase MCP `apply_migration` or mutating `execute_sql` against Production.
+  Agent sessions set `CELEBRA_AGENT_CONTEXT` automatically; that rejects Production owner-apply
+  self-authorization. Preview remains agent-operable under its existing scope/TTY policy.
 - For production patches, prefer versioned migrations; use `pnpm db:prod:patch` only as specialized
   owner maintenance (`RESTRICT_OWNER_ONLY`).
 - Prefer fail-closed behavior over preserving old command compatibility.

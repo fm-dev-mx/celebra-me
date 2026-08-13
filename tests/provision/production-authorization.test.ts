@@ -18,6 +18,10 @@ import {
 	sanitizeOwnerConfirmationInput,
 	shortBindingHex,
 } from '../../scripts/db/owner-production-apply.ts';
+import {
+	clearProductionWritePermit,
+	getProductionWritePermit,
+} from '../../scripts/db/production-write-permit.ts';
 
 const ROOT = process.cwd();
 const originalEnv = { ...process.env };
@@ -43,7 +47,7 @@ interface MutatorSpec {
 const APPROVED_MUTATORS: MutatorSpec[] = [
 	{
 		file: 'scripts/db/migrate-policy-production.ts',
-		firstWritePattern: /runCommand\(\s*'supabase',\s*\[[^\]]*['"]--yes['"]/,
+		firstWritePattern: /executeSupabasePush\s*\(\s*ctx\.dbUrl/,
 		preflightPatterns: [
 			/audit-db\.ts/,
 			/ensureValidReleaseCheckEvidence/,
@@ -155,6 +159,7 @@ const baseApplyInput = {
 };
 
 afterEach(() => {
+	clearProductionWritePermit();
 	for (const key of Object.keys(process.env)) {
 		if (!(key in originalEnv)) delete process.env[key];
 	}
@@ -262,6 +267,10 @@ describe('requireOwnerProductionApply', () => {
 				readConfirmationLine: () => 'MIGRATE abcdef01',
 			}),
 		).resolves.toBeUndefined();
+		const permit = getProductionWritePermit();
+		expect(permit?.projectRef).toBe(SUPABASE_PROJECT_REFS.production);
+		expect(permit?.operationType).toBe('production_migration');
+		expect(permit?.bindingHex).toBe(baseApplyInput.bindingHex);
 	});
 
 	it('accepts pasted short codes wrapped in bracketed-paste sequences', async () => {

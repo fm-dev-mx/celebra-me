@@ -1,0 +1,31 @@
+{
+	"version": 1,
+	"hooks": {
+		"sessionStart": [
+			{
+				"command": "node .cursor/hooks/session-start.mjs",
+				"failClosed": false
+			}
+		],
+		"preToolUse": [
+			{
+				"command": "node .cursor/hooks/pre-tool-use-agent-context.mjs",
+				"matcher": "Shell",
+				"failClosed": false
+			}
+		],
+		"beforeShellExecution": [
+			{
+				"command": "npx --no-install tsx .cursor/hooks/before-shell-production.ts",
+				"matcher": "supabase|psql|PROD_DB_URL|ineitkdkyrxqyressllp",
+				"failClosed": true
+			}
+		],
+		"beforeMCPExecution": [
+			{
+				"command": "npx --no-install tsx .cursor/hooks/before-mcp-production.ts",
+				"failClosed": true
+			}
+		]
+	}
+}

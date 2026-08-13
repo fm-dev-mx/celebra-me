@@ -1,0 +1,256 @@
+import { afterEach, describe, expect, it, jest } from '@jest/globals';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
+import { runPsqlCommand } from '../../scripts/db/apply-migrations.ts';
+import { executePsqlAtomicPending, executeSupabasePush } from '../../scripts/db/migrate-executors.ts';
+import {
+	OWNER_APPLY_LEDGER_GRANDFATHER_THROUGH,
+	listOwnerApplyRecords,
+	parseOwnerApplyRecord,
+	writeOwnerApplyRecord,
+} from '../../scripts/db/owner-apply-record.ts';
+import {
+	PRODUCTION_PROJECT_REF,
+	evaluateMcpProductionMutation,
+	evaluateShellProductionMutation,
+	evaluateSpawnProductionMutation,
+	isReadOnlySql,
+	wrapShellCommandWithAgentContext,
+} from '../../scripts/db/production-boundary-policy.ts';
+import { evaluateProductionAuthorizationIntegrity } from '../../scripts/db/production-authorization-integrity.ts';
+import {
+	clearProductionWritePermit,
+	hasValidProductionWritePermit,
+	issueProductionWritePermit,
+	resolveSpawnProductionBoundary,
+} from '../../scripts/db/production-write-permit.ts';
+
+const PROD_URL = `postgresql://postgres:secret@db.${SUPABASE_PROJECT_REFS.production}.supabase.co:5432/postgres`;
+const PREVIEW_URL = `postgresql://postgres:secret@db.${SUPABASE_PROJECT_REFS.preview}.supabase.co:5432/postgres`;
+
+function mockExit(): void {
+	jest.spyOn(console, 'error').mockImplementation(() => undefined);
+	jest.spyOn(process, 'exit').mockImplementation(((code?: string | number | null) => {
+		throw new Error(`process.exit:${code ?? ''}`);
+	}) as never);
+}
+
+afterEach(() => {
+	clearProductionWritePermit();
+	jest.restoreAllMocks();
+});
+
+describe('production boundary policy', () => {
+	it('pins the Production project ref to the identity SSOT', () => {
+		expect(PRODUCTION_PROJECT_REF).toBe(SUPABASE_PROJECT_REFS.production);
+	});
+
+	it('classifies read-only SQL fail-closed', () => {
+		expect(isReadOnlySql('SELECT 1')).toBe(true);
+		expect(isReadOnlySql('WITH x AS (SELECT 1) SELECT * FROM x')).toBe(true);
+		expect(isReadOnlySql('BEGIN; SELECT 1; COMMIT;')).toBe(true);
+		expect(isReadOnlySql('INSERT INTO t VALUES (1)')).toBe(false);
+		expect(isReadOnlySql('SELECT * INTO tmp FROM t')).toBe(false);
+		expect(isReadOnlySql('SELECT 1; DROP TABLE t')).toBe(false);
+		expect(isReadOnlySql('SET ROLE postgres')).toBe(false);
+	});
+
+	it('wraps agent shell commands with CELEBRA_AGENT_CONTEXT', () => {
+		expect(wrapShellCommandWithAgentContext('pnpm db:migrate -- --target preview')).toBe(
+			"$env:CELEBRA_AGENT_CONTEXT='1'; pnpm db:migrate -- --target preview",
+		);
+		expect(
+			wrapShellCommandWithAgentContext("$env:CELEBRA_AGENT_CONTEXT='1'; pnpm dbs"),
+		).toBe("$env:CELEBRA_AGENT_CONTEXT='1'; pnpm dbs");
+	});
+
+	it('denies MCP Production writes and allows read-only Production SQL', () => {
+		expect(
+			evaluateMcpProductionMutation({
+				tool_name: 'apply_migration',
+				arguments: { project_id: PRODUCTION_PROJECT_REF, name: 'x', query: 'select 1' },
+			}).permission,
+		).toBe('deny');
+		expect(
+			evaluateMcpProductionMutation({
+				toolName: 'execute_sql',
+				arguments: { project_id: PRODUCTION_PROJECT_REF, query: 'SELECT version FROM supabase_migrations.schema_migrations' },
+			}).permission,
+		).toBe('allow');
+		expect(
+			evaluateMcpProductionMutation({
+				tool_name: 'execute_sql',
+				arguments: { project_id: PRODUCTION_PROJECT_REF, query: 'CREATE TABLE pwned (id int)' },
+			}).code,
+		).toBe('MCP_PRODUCTION_SQL_BLOCKED');
+		expect(
+			evaluateMcpProductionMutation({
+				tool_name: 'execute_sql',
+				arguments: { project_id: SUPABASE_PROJECT_REFS.preview, query: 'CREATE TABLE ok (id int)' },
+			}).permission,
+		).toBe('allow');
+		expect(
+			evaluateMcpProductionMutation({ tool_name: 'list_migrations', arguments: { project_id: PRODUCTION_PROJECT_REF } })
+				.permission,
+		).toBe('allow');
+	});
+
+	it('denies raw Production CLI and allows canonical owner wrappers and read-only psql', () => {
+		expect(
+			evaluateShellProductionMutation(
+				`supabase db push --db-url ${PROD_URL} --yes`,
+			).code,
+		).toBe('PRODUCTION_RAW_CLI_BLOCKED');
+		expect(evaluateShellProductionMutation('supabase db push --linked --yes').code).toBe(
+			'RAW_SUPABASE_LINKED_PUSH_BLOCKED',
+		);
+		expect(
+			evaluateShellProductionMutation('pnpm db:migrate -- --target production --apply').permission,
+		).toBe('allow');
+		expect(
+			evaluateShellProductionMutation(`psql --dbname ${PROD_URL} -c "SELECT 1"`).permission,
+		).toBe('allow');
+		expect(
+			evaluateShellProductionMutation(`psql --dbname ${PROD_URL} -c "DROP TABLE public.invitations"`)
+				.code,
+		).toBe('PRODUCTION_RAW_PSQL_BLOCKED');
+		expect(
+			evaluateShellProductionMutation(`supabase db push --db-url ${PROD_URL} --dry-run`).permission,
+		).toBe('allow');
+	});
+});
+
+describe('production write permit', () => {
+	it('does not allow Production push without a permit', () => {
+		const decision = resolveSpawnProductionBoundary('supabase', [
+			'db',
+			'push',
+			'--db-url',
+			PROD_URL,
+			'--yes',
+		]);
+		expect(decision.permission).toBe('deny');
+		expect(decision.code).toBe('PRODUCTION_WRITE_PERMIT_REQUIRED');
+	});
+
+	it('allows Production push only after an in-process owner permit', () => {
+		issueProductionWritePermit({
+			projectRef: SUPABASE_PROJECT_REFS.production,
+			operationType: 'production_migration',
+			bindingHex: 'abcdef01',
+		});
+		expect(hasValidProductionWritePermit(PROD_URL)).toBe(true);
+		expect(
+			resolveSpawnProductionBoundary('supabase', ['db', 'push', '--db-url', PROD_URL, '--yes'])
+				.permission,
+		).toBe('allow');
+		expect(
+			evaluateSpawnProductionMutation('npx', [
+				'supabase',
+				'db',
+				'push',
+				'--db-url',
+				PROD_URL,
+				'--yes',
+			]).code,
+		).toBe('PRODUCTION_WRITE_PERMIT_REQUIRED');
+		expect(
+			evaluateSpawnProductionMutation('supabase', [
+				'db',
+				'push',
+				'--db-url',
+				PREVIEW_URL,
+				'--yes',
+			]).permission,
+		).toBe('allow');
+	});
+
+	it('allows Production SELECT through psql without a permit', () => {
+		expect(
+			resolveSpawnProductionBoundary('psql', ['--dbname', PROD_URL], { input: 'SELECT 1' })
+				.permission,
+		).toBe('allow');
+	});
+});
+
+describe('owner-apply ledger and authorization integrity', () => {
+	it('persists authorization evidence without secrets and distinguishes it from schema parity', () => {
+		const ledgerDir = mkdtempSync(join(tmpdir(), 'owner-apply-'));
+		try {
+			const { record, path } = writeOwnerApplyRecord(
+				{
+					operationType: 'production_migration',
+					operationVerb: 'MIGRATE',
+					migrationVersions: ['20260807120000'],
+					planId: 'aa'.repeat(32),
+					releaseSha: 'abc1234',
+					projectRef: SUPABASE_PROJECT_REFS.production,
+					worktree: 'dev-local',
+				},
+				{ ledgerDir },
+			);
+			const raw = readFileSync(path, 'utf8');
+			expect(raw).not.toMatch(/postgres:\/\//);
+			expect(raw).not.toContain('secret');
+			expect(parseOwnerApplyRecord(JSON.parse(raw))?.authorized).toBe(true);
+			expect(listOwnerApplyRecords({ ledgerDir })).toHaveLength(1);
+			expect(record.result).toBe('authorized_applied');
+
+			const missing = evaluateProductionAuthorizationIntegrity({
+				environment: 'production',
+				evidence: 'LIVE',
+				appliedVersions: [OWNER_APPLY_LEDGER_GRANDFATHER_THROUGH, '20260807120000'],
+				records: [],
+			});
+			expect(missing.status).toBe('MISSING');
+			expect(missing.missingVersions).toEqual(['20260807120000']);
+
+			const recorded = evaluateProductionAuthorizationIntegrity({
+				environment: 'production',
+				evidence: 'LIVE',
+				appliedVersions: [OWNER_APPLY_LEDGER_GRANDFATHER_THROUGH, '20260807120000'],
+				records: [record],
+			});
+			expect(recorded.status).toBe('RECORDED');
+
+			const grandfathered = evaluateProductionAuthorizationIntegrity({
+				environment: 'production',
+				evidence: 'LIVE',
+				appliedVersions: [OWNER_APPLY_LEDGER_GRANDFATHER_THROUGH],
+				records: [],
+			});
+			expect(grandfathered.status).toBe('GRANDFATHERED');
+			expect(
+				evaluateProductionAuthorizationIntegrity({
+					environment: 'preview',
+					evidence: 'LIVE',
+					appliedVersions: ['20260807120000'],
+				}).status,
+			).toBe('NOT_APPLICABLE');
+		} finally {
+			rmSync(ledgerDir, { recursive: true, force: true });
+		}
+	});
+});
+
+describe('lowest-level Production write helpers fail closed', () => {
+	it('refuses apply-migrations psql against Production', () => {
+		const result = runPsqlCommand(PROD_URL, 'SELECT 1');
+		expect(result.ok).toBe(false);
+		expect(result.output).toMatch(/cannot target Production/);
+	});
+
+	it('refuses executePsqlAtomicPending against Production', () => {
+		mockExit();
+		expect(() =>
+			executePsqlAtomicPending({ dbUrl: PROD_URL, pendingVersions: ['20260807120000'] }),
+		).toThrow('process.exit:1');
+	});
+
+	it('refuses executeSupabasePush against Production without a permit', () => {
+		mockExit();
+		expect(() => executeSupabasePush(PROD_URL)).toThrow('process.exit:1');
+	});
+});

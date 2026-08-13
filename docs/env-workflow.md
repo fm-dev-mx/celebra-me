@@ -119,7 +119,9 @@ execution:
   `requireOwnerProductionApply` (arrow menu defaulting to Cancel, optional technical review, then
   short bound code `<VERB> <8-hex>`). Default summary hides URLs, full hashes, executors, and
   internal policy names. There is no approval-token, secret, or noninteractive confirmation env
-  alternative. `CELEBRA_AGENT_CONTEXT` rejects agent self-authorization. Apply also requires valid
+  alternative. `CELEBRA_AGENT_CONTEXT` rejects agent self-authorization and is injected by default
+  in agent sessions (Cursor hooks). It is not a substitute for owner TTY confirmation. Apply also
+  requires valid
   `pnpm release-check` evidence for the current clean `HEAD`.
 - **Preview hosted migrate identity:** clean Git `HEAD` (same release pattern as Production). For
   contract phases, `CELEBRA_DEPLOYED_APP_SHA` / `CELEBRA_DEPLOYED_APP_CAPABILITIES` authorize

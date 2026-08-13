@@ -79,6 +79,10 @@ supabase <group> --help            # Subcommands
 supabase <group> <command> --help  # Flags
 ```
 
+Do **not** run raw `supabase db push` (linked or `--db-url` Production). Use
+`pnpm db:migrate -- --target <local|preview|production|disposable-test>`. Production MCP
+`apply_migration` and mutating `execute_sql` are blocked; read-only Production MCP is allowed.
+
 ### Known Gotchas
 
 - `supabase db query` requires CLI v2.79.0+ — use MCP `execute_sql` or `psql` as fallback.
