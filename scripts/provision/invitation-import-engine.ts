@@ -783,6 +783,35 @@ export function assertDraftRevisionUnchanged(
 	}
 }
 
+export interface HostedAssetUpsertInput {
+	assetId: string;
+	targetInvitationId: string;
+	asset: InvitationPackageAsset;
+	definitionSlug: string;
+	operationId: string;
+}
+
+/**
+ * Insert a new managed asset row, or repair metadata on the existing id.
+ * Storage paths are immutable: conflict updates must not rewrite bucket, storage_path, or invitation_id.
+ */
+export function buildHostedAssetUpsertSql(input: HostedAssetUpsertInput): string {
+	const { assetId, targetInvitationId, asset, definitionSlug, operationId } = input;
+	return (
+		`insert into public.invitation_assets (id, invitation_id, display_name, default_alt_text, bucket, storage_path, mime_type, width, height, file_size, validation_version, original_mime_type, original_file_size, sha256, managed_by_definition_slug, managed_source_key, managed_sha256, managed_operation_id) values ('${assetId}'::uuid, '${targetInvitationId}'::uuid, ${sqlLiteral(asset.displayName)}, ${asset.defaultAltText ? sqlLiteral(asset.defaultAltText) : 'null'}, ${sqlLiteral(asset.bucket)}, ${sqlLiteral(asset.storagePath)}, ${sqlLiteral(asset.mimeType)}, ${asset.width ?? 'null'}, ${asset.height ?? 'null'}, ${asset.fileSize ?? 'null'}, ${asset.validationVersion}, ${asset.originalMimeType ? sqlLiteral(asset.originalMimeType) : 'null'}, ${asset.originalFileSize ?? 'null'}, ${sqlLiteral(asset.sha256)}, ${sqlLiteral(definitionSlug)}, ${sqlLiteral(asset.key)}, ${sqlLiteral(asset.sha256)}, ${sqlLiteral(operationId)}::uuid) ` +
+		`on conflict (id) do update set display_name = excluded.display_name, default_alt_text = excluded.default_alt_text, mime_type = excluded.mime_type, width = excluded.width, height = excluded.height, file_size = excluded.file_size, validation_version = excluded.validation_version, original_mime_type = excluded.original_mime_type, original_file_size = excluded.original_file_size, sha256 = excluded.sha256, managed_by_definition_slug = excluded.managed_by_definition_slug, managed_source_key = excluded.managed_source_key, managed_sha256 = excluded.managed_sha256, managed_operation_id = excluded.managed_operation_id, deleted_at = null, updated_at = now() ` +
+		`where invitation_assets.invitation_id = excluded.invitation_id;`
+	);
+}
+
+export function assertHostedAssetUpsertApplied(stdout: string, assetId: string): void {
+	if (!/\bINSERT 0 1\b/.test(stdout)) {
+		throw new Error(
+			`Hosted asset upsert did not apply for id ${assetId}; the row belongs to another invitation or no write occurred.`,
+		);
+	}
+}
+
 function upsertAssetRows(
 	targetDbUrl: string,
 	targetInvitationId: string,
@@ -796,8 +825,18 @@ function upsertAssetRows(
 		const assetId = assetRefs[pAsset.key]?.assetId;
 		if (!assetId)
 			throw new Error(`Missing target asset UUID for semantic key "${pAsset.key}".`);
-		const assetSql = `insert into public.invitation_assets (id, invitation_id, display_name, default_alt_text, bucket, storage_path, mime_type, width, height, file_size, validation_version, original_mime_type, original_file_size, sha256, managed_by_definition_slug, managed_source_key, managed_sha256, managed_operation_id) values ('${assetId}'::uuid, '${targetInvitationId}'::uuid, ${sqlLiteral(pAsset.displayName)}, ${pAsset.defaultAltText ? sqlLiteral(pAsset.defaultAltText) : 'null'}, ${sqlLiteral(pAsset.bucket)}, ${sqlLiteral(pAsset.storagePath)}, ${sqlLiteral(pAsset.mimeType)}, ${pAsset.width ?? 'null'}, ${pAsset.height ?? 'null'}, ${pAsset.fileSize ?? 'null'}, ${pAsset.validationVersion}, ${pAsset.originalMimeType ? sqlLiteral(pAsset.originalMimeType) : 'null'}, ${pAsset.originalFileSize ?? 'null'}, ${sqlLiteral(pAsset.sha256)}, ${sqlLiteral(definitionSlug)}, ${sqlLiteral(pAsset.key)}, ${sqlLiteral(pAsset.sha256)}, ${sqlLiteral(operationId)}::uuid) on conflict (bucket, storage_path) do update set display_name = excluded.display_name, default_alt_text = excluded.default_alt_text, mime_type = excluded.mime_type, width = excluded.width, height = excluded.height, file_size = excluded.file_size, validation_version = excluded.validation_version, original_mime_type = excluded.original_mime_type, original_file_size = excluded.original_file_size, sha256 = excluded.sha256, managed_by_definition_slug = excluded.managed_by_definition_slug, managed_source_key = excluded.managed_source_key, managed_sha256 = excluded.managed_sha256, managed_operation_id = excluded.managed_operation_id, deleted_at = null, updated_at = now();`;
-		runPsql(assetSql, targetDbUrl);
+		const result = runPsql(
+			buildHostedAssetUpsertSql({
+				assetId,
+				targetInvitationId,
+				asset: pAsset,
+				definitionSlug,
+				operationId,
+			}),
+			targetDbUrl,
+			{ tuplesOnly: false },
+		);
+		assertHostedAssetUpsertApplied(result.stdout, assetId);
 		count++;
 	}
 	return count;
@@ -1323,6 +1362,73 @@ function analyzeTargetDrift(
 	};
 }
 
+export interface HostedAssetIdentityRow {
+	id: string;
+	display_name: string;
+	storage_path: string;
+	bucket?: string | null;
+	deleted_at?: string | null;
+}
+
+function uniqueHostedAssetIdentityRows(
+	candidateRows: readonly HostedAssetIdentityRow[],
+): HostedAssetIdentityRow[] {
+	return [...new Map(candidateRows.map((row) => [row.id, row])).values()];
+}
+
+function throwAmbiguousHostedAssetIdentity(displayName: string): never {
+	throw new Error(
+		`La identidad del archivo "${displayName}" no se puede resolver de forma unívoca en el destino; no se reutilizará una fila arbitraria.`,
+	);
+}
+
+/**
+ * Reuse a live row by path or display name; if none, reuse a soft-deleted row
+ * with the same (bucket, storage_path) so ON CONFLICT (id) can undelete it.
+ * Display-name matching ignores deleted rows to avoid colliding with a live alias.
+ */
+export function selectHostedAssetIdentityRow(input: {
+	asset: Pick<InvitationPackageAsset, 'displayName' | 'storagePath' | 'bucket'>;
+	rows: readonly HostedAssetIdentityRow[];
+	preferredAssetIds?: ReadonlySet<string>;
+}): HostedAssetIdentityRow | null {
+	const liveRows = input.rows.filter((row) => row.deleted_at == null);
+	const byPath = new Map<string, HostedAssetIdentityRow[]>();
+	const byDisplayName = new Map<string, HostedAssetIdentityRow[]>();
+	for (const row of liveRows) {
+		const pathRows = byPath.get(row.storage_path) ?? [];
+		pathRows.push(row);
+		byPath.set(row.storage_path, pathRows);
+		const displayRows = byDisplayName.get(row.display_name) ?? [];
+		displayRows.push(row);
+		byDisplayName.set(row.display_name, displayRows);
+	}
+	const candidates = uniqueHostedAssetIdentityRows([
+		...(byPath.get(input.asset.storagePath) ?? []),
+		...(byDisplayName.get(input.asset.displayName) ?? []),
+	]);
+	const preferredAssetIds = input.preferredAssetIds ?? new Set<string>();
+	const preferred = candidates.filter((row) => preferredAssetIds.has(row.id));
+	if (preferred.length === 1) return preferred[0]!;
+	if (preferred.length > 1 || candidates.length > 1) {
+		throwAmbiguousHostedAssetIdentity(input.asset.displayName);
+	}
+	if (candidates[0]) return candidates[0];
+
+	const deletedPathMatches = uniqueHostedAssetIdentityRows(
+		input.rows.filter(
+			(row) =>
+				row.deleted_at != null &&
+				row.storage_path === input.asset.storagePath &&
+				(typeof row.bucket !== 'string' || row.bucket === input.asset.bucket),
+		),
+	);
+	if (deletedPathMatches.length > 1) {
+		throwAmbiguousHostedAssetIdentity(input.asset.displayName);
+	}
+	return deletedPathMatches[0] ?? null;
+}
+
 function resolveTargetAssetRefs(
 	pkg: InvitationPackageData,
 	targetDbUrl: string,
@@ -1331,46 +1437,32 @@ function resolveTargetAssetRefs(
 	preferredAssetIds: ReadonlySet<string> = new Set(),
 ): UploadedAssetMap {
 	const result = runPsql(
-		`select json_agg(t) from (select id, display_name, storage_path from public.invitation_assets where invitation_id = '${invitationId}'::uuid and deleted_at is null) t;`,
+		`select json_agg(t) from (select id, display_name, storage_path, bucket, deleted_at from public.invitation_assets where invitation_id = '${invitationId}'::uuid) t;`,
 		targetDbUrl,
 		{ tuplesOnly: true, throwOnError: false },
 	);
-	const rows = parsePsqlJsonArray(result.stdout);
-	const byPath = new Map<string, Record<string, unknown>[]>();
-	const byDisplayName = new Map<string, Record<string, unknown>[]>();
-	for (const row of rows) {
-		const pathRows = byPath.get(row.storage_path as string) ?? [];
-		pathRows.push(row);
-		byPath.set(row.storage_path as string, pathRows);
-		const displayRows = byDisplayName.get(row.display_name as string) ?? [];
-		displayRows.push(row);
-		byDisplayName.set(row.display_name as string, displayRows);
-	}
-	const uniqueRows = (candidateRows: Record<string, unknown>[]): Record<string, unknown>[] => [
-		...new Map(candidateRows.map((row) => [row.id as string, row])).values(),
-	];
-	const selectExistingRecord = (
-		asset: InvitationPackageAsset,
-	): Record<string, unknown> | null => {
-		const candidates = uniqueRows([
-			...(byPath.get(asset.storagePath) ?? []),
-			...(byDisplayName.get(asset.displayName) ?? []),
-		]);
-		const preferred = candidates.filter((row) => preferredAssetIds.has(row.id as string));
-		if (preferred.length === 1) return preferred[0]!;
-		if (preferred.length > 1 || candidates.length > 1) {
-			throw new Error(
-				`La identidad del archivo "${asset.displayName}" no se puede resolver de forma unívoca en el destino; no se reutilizará una fila arbitraria.`,
-			);
-		}
-		return candidates[0] ?? null;
-	};
+	const rows: HostedAssetIdentityRow[] = parsePsqlJsonArray(result.stdout).flatMap((row) => {
+		if (typeof row.id !== 'string' || typeof row.storage_path !== 'string') return [];
+		return [
+			{
+				id: row.id,
+				display_name: String(row.display_name ?? ''),
+				storage_path: row.storage_path,
+				bucket: typeof row.bucket === 'string' ? row.bucket : null,
+				deleted_at: typeof row.deleted_at === 'string' ? row.deleted_at : null,
+			},
+		];
+	});
 
 	return Object.fromEntries(
 		pkg.assets.map((asset) => {
-			const existingRecord = selectExistingRecord(asset);
-			const assetId = (existingRecord?.id as string) ?? randomUUID();
-			const storagePath = (existingRecord?.storage_path as string) ?? asset.storagePath;
+			const existingRecord = selectHostedAssetIdentityRow({
+				asset,
+				rows,
+				preferredAssetIds,
+			});
+			const assetId = existingRecord?.id ?? randomUUID();
+			const storagePath = existingRecord?.storage_path ?? asset.storagePath;
 			return [
 				asset.key,
 				{
