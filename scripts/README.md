@@ -111,7 +111,7 @@ action before the configured Prettier formatter.
 | `pnpm db:prod:export-auth`                 | Owner          | `scripts/db/`  | read-only Auth user export                                            |
 | `pnpm db:prod:export-storage`              | Owner          | `scripts/db/`  | Storage bucket export                                                 |
 | `pnpm db:sql:lint -- --file <path>`        | Human/agent    | `scripts/db/`  | lint a manifest-bearing production SQL patch                          |
-| `pnpm db:prod:patch -- --file <path>`      | Owner          | `scripts/db/`  | specialized Production SQL (dry-run default; owner `--apply`)         |
+| `pnpm db:prod:patch -- --file <path>`      | Owner          | `scripts/db/`  | Specialized DML primitive; persistent DDL rejected; prefer `prod:apply --patch` |
 
 Status evidence classes and retention notes:
 [`docs/domains/database/cheatsheets/README.md`](../docs/domains/database/cheatsheets/README.md).

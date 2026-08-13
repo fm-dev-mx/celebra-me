@@ -117,6 +117,26 @@ update public.example set name = 'unsafe';
 		expect(result.errors).toContain('TRUNCATE is blocked for production patches.');
 	});
 
+	it('rejects representative persistent DDL while allowing TEMP tables', () => {
+		const cases: Array<[string, RegExp]> = [
+			['create table public.pwned (id int);', /Persistent CREATE TABLE/],
+			['create index idx_pwned on public.example (id);', /CREATE INDEX belongs/],
+			['create or replace function public.pwned() returns void language sql as $$ select 1 $$;', /Persistent routine creation/],
+			['alter table public.example add column extra text;', /Schema-changing ALTER/],
+			['drop index public.idx_example;', /Persistent DROP belongs/],
+			['grant select on public.example to anon;', /GRANT\/REVOKE belongs/],
+			['revoke select on public.example from anon;', /GRANT\/REVOKE belongs/],
+		];
+		for (const [statement, message] of cases) {
+			const result = lintProductionPatchSql(`${validPatch}\n${statement}`);
+			expect(result.ok).toBe(false);
+			expect(result.errors.some((error) => message.test(error))).toBe(true);
+		}
+
+		const tempAllowed = lintProductionPatchSql(`${validPatch}\ncreate temp table _probe (id int) on commit drop;`);
+		expect(tempAllowed.ok).toBe(true);
+	});
+
 	it('rejects DELETE without WHERE', () => {
 		const result = lintProductionPatchSql(`
 -- @script-id: unsafe-delete

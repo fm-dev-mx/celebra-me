@@ -23,10 +23,30 @@ const REQUIRED_PROD_PATCH_FIELDS = [
 const BLOCKED_PATTERNS: Array<[RegExp, string]> = [
 	[/\btruncate\b/i, 'TRUNCATE is blocked for production patches.'],
 	[
-		/\bdrop\s+(table|schema|database)\b/i,
-		'DROP TABLE/SCHEMA/DATABASE is blocked for production patches.',
+		/\bdrop\s+(table|schema|database|index|function|procedure|routine|view|materialized\s+view|type|domain|sequence|extension|trigger|role)\b/i,
+		'Persistent DROP belongs in reviewed migrations, not production patches.',
 	],
-	[/\balter\s+table\b/i, 'ALTER TABLE belongs in reviewed migrations, not production patches.'],
+	[
+		/\balter\s+(table|index|function|procedure|routine|schema|view|materialized\s+view|type|domain|sequence|database|role)\b/i,
+		'Schema-changing ALTER belongs in reviewed migrations, not production patches.',
+	],
+	[
+		/\bcreate\s+(?!temp(?:orary)?\s+)(?:unlogged\s+)?table\b/i,
+		'Persistent CREATE TABLE belongs in reviewed migrations, not production patches.',
+	],
+	[
+		/\bcreate\s+(unique\s+)?index\b/i,
+		'CREATE INDEX belongs in reviewed migrations, not production patches.',
+	],
+	[
+		/\bcreate\s+(or\s+replace\s+)?(function|procedure|routine)\b/i,
+		'Persistent routine creation belongs in reviewed migrations, not production patches.',
+	],
+	[
+		/\bcreate\s+(or\s+replace\s+)?(view|materialized\s+view|type|domain|sequence|extension|trigger)\b/i,
+		'Persistent schema object creation belongs in reviewed migrations, not production patches.',
+	],
+	[/\b(grant|revoke)\b/i, 'GRANT/REVOKE belongs in reviewed migrations, not production patches.'],
 	[
 		/\bcreate\s+policy\b|\bdrop\s+policy\b|\balter\s+policy\b/i,
 		'RLS policy changes belong in reviewed migrations.',

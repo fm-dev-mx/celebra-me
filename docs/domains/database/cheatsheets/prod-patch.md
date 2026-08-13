@@ -8,12 +8,16 @@ case. Not a substitute for `db:migrate -- --target production` or `invitation:re
 ## Commands
 
 ```bash
+pnpm prod:apply -- --patch <file.sql> --owner-user-id <uuid>   # owner-facing plan
+pnpm prod:apply -- --patch <file.sql> --owner-user-id <uuid> --apply
 pnpm db:sql:lint -- --file <path>
 pnpm db:prod:patch -- --dry-run --file <path>
-pnpm db:prod:patch -- --apply --file <path>     # owner TTY only
+pnpm db:prod:patch -- --apply --file <path>     # protected primitive; owner TTY only
 ```
 
-**Expected result:** Lint/dry-run report; apply executes after owner gate.
+**Expected result:** Lint/dry-run report; apply executes after owner gate. Persistent DDL is
+rejected (CREATE TABLE/INDEX, routines, schema-changing ALTER, persistent DROP, GRANT/REVOKE).
+`CREATE TEMP TABLE` remains allowed.
 
 **Failures:** Missing manifest, lint errors, identity mismatch, agent/non-TTY apply attempt.
 
