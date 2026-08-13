@@ -47,6 +47,16 @@ test.describe('Gallery mobile rail presentation', () => {
 		expect(mobile.firstWidth).toBeGreaterThan(mobile.viewportWidth * 0.7);
 		expect(mobile.firstWidth).toBeLessThan(mobile.viewportWidth * 0.9);
 
+		const firstImg = gallery.locator('.gallery-grid__item img').first();
+		await expect(firstImg).toBeVisible();
+		const imageBox = await firstImg.evaluate((el) => {
+			const styles = window.getComputedStyle(el);
+			const box = el.getBoundingClientRect();
+			return { height: box.height, opacity: Number(styles.opacity) };
+		});
+		expect(imageBox.height).toBeGreaterThan(100);
+		expect(imageBox.opacity).toBeGreaterThan(0);
+
 		const hrefs = await page
 			.locator('link[rel="stylesheet"]')
 			.evaluateAll((nodes) => nodes.map((node) => (node as HTMLLinkElement).href));
@@ -80,5 +90,44 @@ test.describe('Gallery mobile rail presentation', () => {
 		expect(desktop.display).toBe('grid');
 		expect(desktop.columns.split(' ').length).toBeGreaterThanOrEqual(12);
 		expect(desktop.snap === 'none' || desktop.snap === '').toBe(true);
+	});
+});
+
+test.describe('Valentina Hernández gallery mobile visibility', () => {
+	test('first gallery image paints with non-zero height on mobile', async ({ page }) => {
+		const errors: string[] = [];
+		page.on('pageerror', (error) => errors.push(error.message));
+
+		await page.setViewportSize({ width: 390, height: 844 });
+		await page.goto('/xv/valentina-hernandez?skipEnvelope=true', {
+			waitUntil: 'domcontentloaded',
+		});
+
+		const gallery = page.locator('#galeria');
+		await gallery.scrollIntoViewIfNeeded();
+		await expect(gallery).toBeVisible();
+
+		const galleryWrapper = page.locator(
+			'.invitation-section-wrapper[data-section-kind="gallery"]',
+		);
+		await expect(galleryWrapper).toHaveAttribute('data-reveal', 'none');
+
+		const firstImg = gallery.locator('.gallery-grid__item img').first();
+		await expect(firstImg).toBeVisible();
+
+		const metrics = await firstImg.evaluate((el) => {
+			const styles = window.getComputedStyle(el);
+			const box = el.getBoundingClientRect();
+			return {
+				height: box.height,
+				width: box.width,
+				opacity: Number(styles.opacity),
+			};
+		});
+
+		expect(metrics.height).toBeGreaterThan(100);
+		expect(metrics.width).toBeGreaterThan(100);
+		expect(metrics.opacity).toBeGreaterThan(0);
+		expect(errors).toEqual([]);
 	});
 });

@@ -245,6 +245,11 @@ describe('Goal C — presentation options', () => {
 			const valentina = readSource('src/styles/invitation-profiles/valentina-hernandez.scss');
 			expect(canonical).toContain("data-mobile-browse='rail'");
 			expect(canonical).toContain('scroll-snap-type: x mandatory');
+			expect(canonical).toContain('min-width: 0');
+			expect(canonical).toContain('align-items: flex-start');
+			expect(canonical).toContain('overflow: visible');
+			expect(canonical).toContain('aspect-ratio: 3 / 4');
+			expect(canonical).toContain('height: auto');
 			expect(valentina).not.toContain('scroll-snap-type: x mandatory');
 		});
 	});
