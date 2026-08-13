@@ -5,11 +5,10 @@
  */
 import { readFileSync } from 'node:fs';
 
-let payload;
 try {
-	payload = JSON.parse(readFileSync(0, 'utf8') || '{}');
+	void readFileSync(0, 'utf8');
 } catch {
-	payload = {};
+	// Hook stdin may be empty; env output does not depend on it.
 }
 
 const output = {
