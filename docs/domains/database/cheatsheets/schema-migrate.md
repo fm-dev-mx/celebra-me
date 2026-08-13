@@ -20,8 +20,12 @@ pnpm db:migrate -- --target production --apply --expected … # schema primitive
 CELEBRA_TASK_SCOPE=preview:schema:migrate pnpm db:migrate -- --target preview --apply --expected …
 ```
 
+`pnpm db:migrate -- --target production` is the schema **primitive** used by `prod:apply`. It is
+not the routine owner-facing command.
+
 **Expected result:** Preflight prints pending plan; apply runs policy gates then writes schema;
-history + contract verify for hosted.
+history + contract verify for hosted. `pnpm db:*:audit` reports history (`CURRENT`/`BEHIND`) and
+named public object drift independently.
 
 **Failures:** `TARGET_REQUIRED`, missing registry phase, `BACKUP_COVERAGE_EXPIRED`, release-check
 stale, `--expected` mismatch, Preview auth/perimeter failure.

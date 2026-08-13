@@ -32,6 +32,18 @@ import {
 import { fetchRemoteMigrationVersions } from '../status-core/migration-history-reader.ts';
 import { cmdStart, isDisposableDbReady } from './disposable-test-env.ts';
 import { classifySchemaLifecycle } from './schema-lifecycle-state.ts';
+import {
+	diffContractConstraints,
+	diffContractIndexes,
+	diffContractRoutines,
+	formatStructuralFinding,
+	normalizeDef,
+	toContractRoutines,
+	type NamedConstraint,
+	type NamedIndex,
+	type NamedRoutine,
+	type StructuralFinding,
+} from './schema-object-contract.ts';
 
 const MIGRATIONS_DIR = resolve(PROJECT_ROOT, 'supabase', 'migrations');
 
@@ -46,21 +58,6 @@ interface ColumnMetadata {
 	dataType: string;
 	isNullable: string;
 	columnDefault: string | null;
-}
-
-interface ConstraintMetadata {
-	tableName: string;
-	constraintName: string;
-	constraintType: string;
-	columnName: string;
-	foreignTable: string | null;
-	foreignColumn: string | null;
-}
-
-interface IndexMetadata {
-	tableName: string;
-	indexName: string;
-	indexDef: string;
 }
 
 interface PolicyMetadata {
@@ -78,11 +75,6 @@ interface TriggerMetadata {
 	eventManipulation: string;
 	actionStatement: string;
 	actionTiming: string;
-}
-
-interface RoutineMetadata {
-	routineName: string;
-	routineType: string;
 }
 
 interface GrantMetadata {
@@ -130,21 +122,31 @@ function queryColumns(dbUrl: string): ColumnMetadata[] {
 	);
 }
 
-function queryConstraints(dbUrl: string): ConstraintMetadata[] {
-	return queryJson<ConstraintMetadata>(
-		`select tc.table_name as "tableName", tc.constraint_name as "constraintName", tc.constraint_type as "constraintType", kcu.column_name as "columnName", ccu.table_name as "foreignTable", ccu.column_name as "foreignColumn"
-		 from information_schema.table_constraints tc
-		 join information_schema.key_column_usage kcu on tc.constraint_name = kcu.constraint_name and tc.table_schema = kcu.table_schema
-		 left join information_schema.constraint_column_usage ccu on ccu.constraint_name = tc.constraint_name and ccu.table_schema = tc.table_schema
-		 where tc.table_schema = 'public'
-		   and tc.table_name not in ('_db_sentinel', 'tap_funky', 'pg_all_foreign_keys')
-		 order by tc.table_name, tc.constraint_name, kcu.column_name, ccu.table_name, ccu.column_name`,
+function queryConstraints(dbUrl: string): NamedConstraint[] {
+	return queryJson<NamedConstraint>(
+		`select cls.relname as "tableName",
+		        con.conname as "constraintName",
+		        case con.contype
+		          when 'p' then 'PRIMARY KEY'
+		          when 'u' then 'UNIQUE'
+		          when 'f' then 'FOREIGN KEY'
+		          when 'c' then 'CHECK'
+		          else con.contype::text
+		        end as "constraintType",
+		        pg_get_constraintdef(con.oid) as "definition"
+		 from pg_constraint con
+		 join pg_class cls on cls.oid = con.conrelid
+		 join pg_namespace nsp on nsp.oid = cls.relnamespace
+		 where nsp.nspname = 'public'
+		   and cls.relname not in ('_db_sentinel', 'tap_funky', 'pg_all_foreign_keys')
+		   and con.contype in ('p', 'u', 'f', 'c')
+		 order by cls.relname, con.conname`,
 		dbUrl,
 	);
 }
 
-function queryIndexes(dbUrl: string): IndexMetadata[] {
-	return queryJson<IndexMetadata>(
+function queryIndexes(dbUrl: string): NamedIndex[] {
+	return queryJson<NamedIndex>(
 		`select tablename as "tableName", indexname as "indexName", indexdef as "indexDef"
 		 from pg_indexes
 		 where schemaname = 'public'
@@ -176,12 +178,36 @@ function queryTriggers(dbUrl: string): TriggerMetadata[] {
 	);
 }
 
-function queryRoutines(dbUrl: string): RoutineMetadata[] {
-	return queryJson<RoutineMetadata>(
-		`select routine_name as "routineName", routine_type as "routineType"
-		 from information_schema.routines
-		 where routine_schema = 'public'
-		 order by routine_name`,
+function queryRoutines(dbUrl: string): NamedRoutine[] {
+	return queryJson<NamedRoutine>(
+		`select p.proname as "routineName",
+		        case p.prokind
+		          when 'f' then 'FUNCTION'
+		          when 'p' then 'PROCEDURE'
+		          else p.prokind::text
+		        end as "routineType",
+		        pg_get_function_identity_arguments(p.oid) as "identityArgs",
+		        pg_get_functiondef(p.oid) as "definition"
+		 from pg_proc p
+		 join pg_namespace n on n.oid = p.pronamespace
+		 where n.nspname = 'public'
+		   and p.prokind in ('f', 'p')
+		   -- Disposable may expose pgcrypto wrappers in public; hosted keeps them in extensions.
+		   and not exists (
+		     select 1
+		     from pg_depend d
+		     join pg_extension e on e.oid = d.refobjid
+		     where d.objid = p.oid and d.deptype = 'e'
+		   )
+		   and not exists (
+		     select 1
+		     from pg_proc ext
+		     join pg_namespace extn on extn.oid = ext.pronamespace
+		     where extn.nspname = 'extensions'
+		       and ext.proname = p.proname
+		       and pg_get_function_identity_arguments(ext.oid) = pg_get_function_identity_arguments(p.oid)
+		   )
+		 order by p.proname, pg_get_function_identity_arguments(p.oid)`,
 		dbUrl,
 	);
 }
@@ -201,18 +227,6 @@ function queryGrants(dbUrl: string): GrantMetadata[] {
 // Helper functions
 // ---------------------------------------------------------------------------
 
-const normalizeDef = (def: string, name: string) => {
-	return def
-		.replace(new RegExp(name, 'g'), 'NAME_PLACEHOLDER')
-		.replace(/\bauth\.uid\b/g, 'uid')
-		.replace(/\bauth\.jwt\b/g, 'jwt')
-		.replace(/\bauth\.role\b/g, 'role')
-		.replace(/\s+/g, ' ')
-		.replace(/::text/g, '')
-		.replace(/["'()]/g, '')
-		.trim();
-};
-
 function generateFingerprint(data: unknown): string {
 	const str = JSON.stringify(data);
 	return createHash('sha256').update(str).digest('hex');
@@ -221,12 +235,38 @@ function generateFingerprint(data: unknown): string {
 interface SchemaMetadata {
 	tables: TableMetadata[];
 	columns: ColumnMetadata[];
-	constraints: ConstraintMetadata[];
-	indexes: IndexMetadata[];
+	constraints: NamedConstraint[];
+	indexes: NamedIndex[];
 	policies: PolicyMetadata[];
 	triggers: TriggerMetadata[];
-	routines: RoutineMetadata[];
+	routines: NamedRoutine[];
 	grants: GrantMetadata[];
+}
+
+function fingerprintPayload(meta: SchemaMetadata): unknown {
+	return {
+		tables: meta.tables,
+		columns: meta.columns,
+		constraints: meta.constraints.map((c) => ({
+			...c,
+			definition: normalizeDef(c.definition, c.constraintName),
+		})),
+		indexes: meta.indexes.map((i) => ({
+			...i,
+			indexDef: normalizeDef(i.indexDef, i.indexName),
+		})),
+		policies: meta.policies.map((p) => ({
+			...p,
+			qual: normalizeDef(p.qual || '', p.policyName),
+			withCheck: normalizeDef(p.withCheck || '', p.policyName),
+		})),
+		triggers: meta.triggers,
+		routines: meta.routines.map((r) => ({
+			...r,
+			definition: normalizeDef(r.definition, r.routineName),
+		})),
+		grants: meta.grants,
+	};
 }
 
 function fetchSchemaMetadata(dbUrl: string): SchemaMetadata {
@@ -498,21 +538,41 @@ function checkColumns(
 	return errors;
 }
 
-function checkConstraints(
-	prodConstraints: ConstraintMetadata[],
-	localConstraints: ConstraintMetadata[],
+function reportStructuralFindings(
+	findings: readonly StructuralFinding[],
+	blocking: boolean,
 ): number {
-	let errors = 0;
-	const localConstraintNames = new Set(localConstraints.map((c) => c.constraintName));
-	for (const c of prodConstraints) {
-		if (!localConstraintNames.has(c.constraintName)) {
-			console.error(
-				`❌ ERROR: Constraint "${c.constraintName}" on "${c.tableName}" is missing locally!`,
+	if (findings.length === 0) {
+		console.log(
+			'✅ Named public indexes, constraints, and routines match the disposable contract.',
+		);
+		return 0;
+	}
+	for (const finding of findings) {
+		const line = formatStructuralFinding(finding);
+		if (blocking) {
+			console.error(`❌ ERROR: ${line}`);
+		} else {
+			console.log(
+				`   WARN: ${line} (reported while history is BEHIND; does not block migrate)`,
 			);
-			errors++;
 		}
 	}
-	return errors;
+	return blocking ? findings.length : 0;
+}
+
+function collectStructuralFindings(
+	expected: SchemaMetadata,
+	actual: SchemaMetadata,
+): StructuralFinding[] {
+	return [
+		...diffContractIndexes(expected.indexes, actual.indexes),
+		...diffContractConstraints(expected.constraints, actual.constraints),
+		...diffContractRoutines(
+			toContractRoutines(expected.routines),
+			toContractRoutines(actual.routines),
+		),
+	];
 }
 
 function checkPolicies(prodPolicies: PolicyMetadata[], localPolicies: PolicyMetadata[]): number {
@@ -540,7 +600,12 @@ function checkPolicies(prodPolicies: PolicyMetadata[], localPolicies: PolicyMeta
 	return errors;
 }
 
-function runSchemaAudit(target: string, dbUrl: string, initialErrors: number): number {
+function runSchemaAudit(
+	target: string,
+	dbUrl: string,
+	initialErrors: number,
+	historyLifecycle: string,
+): number {
 	if (!existsSync(resolve(PROJECT_ROOT, 'supabase', 'test', 'seed-test-data.sql'))) {
 		console.error('ERROR: Seed data file missing. Pipeline validation cannot run.');
 		process.exit(1);
@@ -548,23 +613,7 @@ function runSchemaAudit(target: string, dbUrl: string, initialErrors: number): n
 
 	const prod = fetchSchemaMetadata(dbUrl);
 
-	const targetFingerprint = generateFingerprint({
-		tables: prod.tables,
-		columns: prod.columns,
-		constraints: prod.constraints,
-		indexes: prod.indexes.map((i) => ({
-			...i,
-			indexDef: normalizeDef(i.indexDef, i.indexName),
-		})),
-		policies: prod.policies.map((p) => ({
-			...p,
-			qual: normalizeDef(p.qual || '', p.policyName),
-			withCheck: normalizeDef(p.withCheck || '', p.policyName),
-		})),
-		triggers: prod.triggers,
-		routines: prod.routines,
-		grants: prod.grants,
-	});
+	const targetFingerprint = generateFingerprint(fingerprintPayload(prod));
 
 	console.log(`Target Schema Fingerprint: ${targetFingerprint}`);
 
@@ -590,23 +639,7 @@ function runSchemaAudit(target: string, dbUrl: string, initialErrors: number): n
 		console.log('Comparing schema against canonical local disposable reference database...');
 		const local = fetchLocalSchemaMetadata();
 
-		const localFingerprint = generateFingerprint({
-			tables: local.tables,
-			columns: local.columns,
-			constraints: local.constraints,
-			indexes: local.indexes.map((i) => ({
-				...i,
-				indexDef: normalizeDef(i.indexDef, i.indexName),
-			})),
-			policies: local.policies.map((p) => ({
-				...p,
-				qual: normalizeDef(p.qual || '', p.policyName),
-				withCheck: normalizeDef(p.withCheck || '', p.policyName),
-			})),
-			triggers: local.triggers,
-			routines: local.routines,
-			grants: local.grants,
-		});
+		const localFingerprint = generateFingerprint(fingerprintPayload(local));
 		console.log(`Local Schema Fingerprint:  ${localFingerprint}`);
 
 		const prodTableNames = new Set(prod.tables.map((t) => t.tableName));
@@ -620,8 +653,13 @@ function runSchemaAudit(target: string, dbUrl: string, initialErrors: number): n
 			localTableNames,
 			target,
 		);
-		errors += checkConstraints(prod.constraints, local.constraints);
 		errors += checkPolicies(prod.policies, local.policies);
+		const structuralFindings = collectStructuralFindings(local, prod);
+		console.log(`Structural findings: ${structuralFindings.length}`);
+		errors += reportStructuralFindings(
+			structuralFindings,
+			historyLifecycle === 'CURRENT' || historyLifecycle === 'SCHEMA_DRIFT',
+		);
 	} else {
 		console.log(
 			'ℹ️  Local disposable database is not running; skipping detailed schema comparison.',
@@ -646,12 +684,8 @@ export interface SchemaAuditVerdict {
 	readyForMigrate: boolean;
 }
 
-export function buildSchemaAuditVerdict(
-	lifecycle: string,
-	errorCount: number,
-): SchemaAuditVerdict {
-	const readyForMigrate =
-		errorCount === 0 && (lifecycle === 'CURRENT' || lifecycle === 'BEHIND');
+export function buildSchemaAuditVerdict(lifecycle: string, errorCount: number): SchemaAuditVerdict {
+	const readyForMigrate = errorCount === 0 && (lifecycle === 'CURRENT' || lifecycle === 'BEHIND');
 	const passedStandalone = errorCount === 0 && lifecycle === 'CURRENT';
 	return {
 		lifecycle,
@@ -713,12 +747,7 @@ function main(): void {
 	// --- 1. MIGRATIONS AUDIT ---
 	console.log('--- 1. Migrations Audit ---');
 	const migrationAudit = runMigrationsAudit(target, dbUrl);
-
-	// --- 2. SCHEMA DRIFT COMPARISON & FINGERPRINT ---
-	console.log('\n--- 2. Schema Comparison & Fingerprint ---');
-	const errors = runSchemaAudit(target, dbUrl, migrationAudit.extraRemoteCount);
-
-	const finalLifecycle = classifySchemaLifecycle({
+	const historyLifecycle = classifySchemaLifecycle({
 		pendingMigrations: migrationAudit.pendingLocal,
 		extraMigrations: migrationAudit.extraRemote,
 		mismatchedMigrations:
@@ -727,17 +756,20 @@ function main(): void {
 					? migrationAudit.extraRemote
 					: ['divergent-history']
 				: [],
-		auditErrors: [
-			...migrationAudit.parityErrors.filter((e) => !e.startsWith('Pending local migrations')),
-			...(errors > migrationAudit.extraRemoteCount
-				? [`schema-object-errors:${errors - migrationAudit.extraRemoteCount}`]
-				: []),
-		],
+		auditErrors: migrationAudit.parityErrors.filter(
+			(e) => !e.startsWith('Pending local migrations'),
+		),
 		verified: true,
 	});
+
+	// --- 2. SCHEMA DRIFT COMPARISON & FINGERPRINT ---
+	console.log('\n--- 2. Schema Comparison & Fingerprint ---');
+	const errors = runSchemaAudit(target, dbUrl, migrationAudit.extraRemoteCount, historyLifecycle);
+
+	const finalLifecycle = historyLifecycle;
 	console.log(`Final schema lifecycle state: ${finalLifecycle}`);
 	console.log(
-		'Evidence class: object_audit_readiness (history parity + disposable object fingerprint). Not equivalent to pnpm dbs migration_history_parity.',
+		'Evidence class: object_audit_readiness (history parity + named public object contract). Not equivalent to pnpm dbs migration_history_parity.',
 	);
 
 	const verdict = buildSchemaAuditVerdict(finalLifecycle, errors);

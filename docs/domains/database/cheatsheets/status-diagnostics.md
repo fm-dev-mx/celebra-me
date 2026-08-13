@@ -25,7 +25,8 @@ pnpm db:local:audit | db:preview:audit | db:prod:audit
 `pnpm dbs` is the canonical operator matrix: **schema migrations**, **registry publication**,
 **operation readiness**, and **Production authorization evidence** as separate columns.
 Disposable-test proof is listed apart from persistent schema. `--compact` is connectivity + schema
-only — not publication state.
+only — not publication state. `CURRENT`/`BEHIND` on that matrix are **migration-history** states.
+Named public object drift is `pnpm db:*:audit` (`object_audit_readiness`).
 
 Local dashboard: `/dashboard/estado` (explicit remote refresh; same classifiers as `pnpm dbs`).
 Advanced diagnostics are enrichment only (`?diagnostics=1` / `pnpm dbs --diagnostics`), except

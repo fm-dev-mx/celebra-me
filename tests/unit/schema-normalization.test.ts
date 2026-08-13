@@ -1,38 +1,27 @@
 /**
  * Schema Normalization Tests
  *
- * Verifies the `normalizeDef` helper in compare-schemas.ts:
- * - Positive equivalence: auth.uid() vs uid() both normalize to the same form
- * - Positive equivalence: auth.jwt() vs jwt(), auth.role() vs role()
- * - Positive equivalence: whitespace and casting differences
- * - Negative tests: genuine policy differences are NOT masked by normalization
- *
- * These tests protect against over-broad normalization that would mask real
- * schema drift between production and the local database.
+ * Verifies normalizeDef in schema-object-contract.ts (used by db:*:audit).
  */
 
-// ---------------------------------------------------------------------------
-// Reproduce the normalizeDef helper from compare-schemas.ts inline.
-// This avoids needing to export it, while ensuring test alignment.
-// If the logic changes in compare-schemas.ts, update this copy.
-// ---------------------------------------------------------------------------
-
-function normalizeDef(def: string, name: string): string {
-	return def
-		.replace(new RegExp(name, 'g'), 'NAME_PLACEHOLDER')
-		.replace(/\bauth\.uid\b/g, 'uid')
-		.replace(/\bauth\.jwt\b/g, 'jwt')
-		.replace(/\bauth\.role\b/g, 'role')
-		.replace(/\s+/g, ' ')
-		.replace(/::text/g, '')
-		.replace(/['"()]/g, '')
-		.trim();
-}
+import { normalizeDef } from '../../scripts/db/schema-object-contract.ts';
 
 describe('normalizeDef — auth prefix normalization (positive equivalence)', () => {
 	it('normalizes auth.uid() to uid()', () => {
 		const a = normalizeDef('(auth.uid() = owner_id)', 'policy_name');
 		const b = normalizeDef('(uid() = owner_id)', 'policy_name');
+		expect(a).toBe(b);
+	});
+
+	it('normalizes hosted auth.users FK qualification to disposable users', () => {
+		const a = normalizeDef(
+			'FOREIGN KEY (owner_user_id) REFERENCES auth.users(id) ON DELETE CASCADE',
+			'events_owner_user_id_fkey',
+		);
+		const b = normalizeDef(
+			'FOREIGN KEY (owner_user_id) REFERENCES users(id) ON DELETE CASCADE',
+			'events_owner_user_id_fkey',
+		);
 		expect(a).toBe(b);
 	});
 
