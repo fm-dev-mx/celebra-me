@@ -32,6 +32,8 @@ describe('canonical status CLI format', () => {
 				diagnostics: [
 					{
 						code: 'MANAGED_DRIFT',
+						domain: 'content',
+						evidence: 'LIVE',
 						slug: 'victoria-y-roberto',
 						environment: 'preview',
 						cause: 'Semantic drift.',

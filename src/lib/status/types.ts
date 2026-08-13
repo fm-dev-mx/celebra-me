@@ -89,9 +89,14 @@ export type DiagnosticCode =
 	| 'DETAIL_BUDGET_EXCEEDED'
 	| 'PRODUCTION_AUTHORIZATION_MISSING';
 
+/** The canonical domain whose evidence directly produced a diagnostic. */
+export type DiagnosticDomain = 'schema' | 'content';
+
 /** Enrichment only — must never carry promotion/schema/readiness authority. */
 export interface CanonicalDiagnostic {
 	code: DiagnosticCode;
+	domain: DiagnosticDomain;
+	evidence: EvidenceState;
 	slug?: string;
 	environment?: TargetEnv;
 	cause: string;

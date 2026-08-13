@@ -92,6 +92,8 @@ function authorizationDiagnostic(production: CanonicalEnvSummary): CanonicalDiag
 	const missing = production.authorizationMissingVersions.slice(0, 8).join(', ');
 	return {
 		code: 'PRODUCTION_AUTHORIZATION_MISSING',
+		domain: 'schema',
+		evidence: production.evidence,
 		environment: 'production',
 		cause: missing
 			? `Production history includes ${missing} without owner-apply evidence.`

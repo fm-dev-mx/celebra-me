@@ -17,8 +17,9 @@ import { CanonicalStatusViewSchema } from '@/lib/status/schema';
 import type { CanonicalStatusView, TargetEnv } from '@/lib/status/types';
 
 const STATUS_SCRIPT = resolve(process.cwd(), 'scripts/provision/print-canonical-status.ts');
-export const CANONICAL_STATUS_TIMEOUT_MS = 30_000;
+const CANONICAL_STATUS_TIMEOUT_MS = 30_000;
 export const CANONICAL_STATUS_MAX_STDOUT_BYTES = 1024 * 1024;
+const CANONICAL_STATUS_MAX_FAILURE_DETAIL_CHARS = 512;
 
 const DEFAULT_CACHE_FILE = resolve(process.cwd(), '.cache/canonical-status.json');
 
@@ -32,6 +33,8 @@ const queue: QueueJob<unknown>[] = [];
 let busy = false;
 let cache: { view: CanonicalStatusView } | null = null;
 let cachePathOverride: string | null = null;
+let statusChildRunnerOverride: ((args: string[], timeoutMs: number) => Promise<unknown>) | null = null;
+const inFlightRefreshes = new Map<string, Promise<CanonicalStatusView>>();
 
 async function withLock<T>(run: () => Promise<T>): Promise<T> {
 	return await new Promise((resolvePromise, rejectPromise) => {
@@ -59,7 +62,35 @@ async function drainQueue(): Promise<void> {
 	}
 }
 
-function runStatusChild(args: string[], timeoutMs: number): Promise<unknown> {
+function redactChildFailureDetail(value: string): string {
+	return value
+		.replace(/postgres(?:ql)?:\/\/[^\s'"`]+/gi, '<redacted-db-url>')
+		.replace(
+			/\b(?:service[_-]?role|supabase[_-]?key|password|token)\s*(?:=|:)?\s*[^\s'"`]+/gi,
+			'<redacted-secret>',
+		)
+		.replace(/\s+/g, ' ')
+		.trim()
+		.slice(0, CANONICAL_STATUS_MAX_FAILURE_DETAIL_CHARS);
+}
+
+function childFailure(
+	status: 500 | 504,
+	diagnosticCode: string,
+	message: string,
+	detail?: string,
+): ApiError {
+	return new ApiError(status, status === 504 ? 'service_unavailable' : 'internal_error', message, {
+		statusProbe: {
+			code: diagnosticCode,
+			domain: 'schema-and-content',
+			evidence: 'UNVERIFIED',
+			detail: detail ? redactChildFailureDetail(detail) : undefined,
+		},
+	});
+}
+
+export function runCanonicalStatusChild(args: string[], timeoutMs: number): Promise<unknown> {
 	return new Promise((resolvePromise, reject) => {
 		const child = spawn(process.execPath, ['--import', 'tsx', STATUS_SCRIPT, ...args], {
 			cwd: process.cwd(),
@@ -69,6 +100,7 @@ function runStatusChild(args: string[], timeoutMs: number): Promise<unknown> {
 		});
 
 		let stdout = '';
+		let stderr = '';
 		let settled = false;
 		let stdoutTruncated = false;
 		const timer = setTimeout(() => {
@@ -76,10 +108,11 @@ function runStatusChild(args: string[], timeoutMs: number): Promise<unknown> {
 			settled = true;
 			child.kill('SIGTERM');
 			reject(
-				new ApiError(
+				childFailure(
 					504,
-					'service_unavailable',
+					'STATUS_PROBE_TIMEOUT',
 					'La consulta de estado excedió el tiempo límite.',
+					stderr,
 				),
 			);
 		}, timeoutMs);
@@ -95,14 +128,22 @@ function runStatusChild(args: string[], timeoutMs: number): Promise<unknown> {
 			}
 			stdout += chunk;
 		});
-		child.stderr.resume();
+		child.stderr.on('data', (chunk: string) => {
+			if (stderr.length >= CANONICAL_STATUS_MAX_FAILURE_DETAIL_CHARS) return;
+			stderr += chunk.slice(0, CANONICAL_STATUS_MAX_FAILURE_DETAIL_CHARS - stderr.length);
+		});
 
-		child.on('error', () => {
+		child.on('error', (error) => {
 			if (settled) return;
 			settled = true;
 			clearTimeout(timer);
 			reject(
-				new ApiError(500, 'internal_error', 'No se pudo iniciar la consulta de estado.'),
+				childFailure(
+					500,
+					'STATUS_PROBE_START_FAILED',
+					'No se pudo iniciar la consulta de estado.',
+					error instanceof Error ? error.message : String(error),
+				),
 			);
 		});
 
@@ -112,19 +153,23 @@ function runStatusChild(args: string[], timeoutMs: number): Promise<unknown> {
 			clearTimeout(timer);
 			if (stdoutTruncated) {
 				reject(
-					new ApiError(
+					childFailure(
 						500,
-						'internal_error',
+						'STATUS_PROBE_OUTPUT_EXCESSIVE',
 						'La consulta de estado excedió el tamaño máximo de salida.',
+						stdout,
 					),
 				);
 				return;
 			}
 			if (code !== 0) {
 				reject(
-					new ApiError(500, 'internal_error', 'La consulta de estado falló de forma controlada.', {
-						exitCode: code ?? -1,
-					}),
+					childFailure(
+						500,
+						'STATUS_PROBE_EXIT_NONZERO',
+						'La consulta de estado falló de forma controlada.',
+						stderr || stdout,
+					),
 				);
 				return;
 			}
@@ -133,15 +178,20 @@ function runStatusChild(args: string[], timeoutMs: number): Promise<unknown> {
 				resolvePromise(parsed);
 			} catch {
 				reject(
-					new ApiError(
+					childFailure(
 						500,
-						'internal_error',
+						'STATUS_PROBE_INVALID_JSON',
 						'La consulta de estado devolvió un resultado inválido.',
+						`stdout bytes=${stdout.length}`,
 					),
 				);
 			}
 		});
 	});
+}
+
+function runStatusChild(args: string[], timeoutMs: number): Promise<unknown> {
+	return (statusChildRunnerOverride ?? runCanonicalStatusChild)(args, timeoutMs);
 }
 
 function operationalCachePath(): string {
@@ -158,6 +208,14 @@ export function setOperationalStatusCachePathForTests(path: string | null): void
 export function resetCanonicalStatusRuntimeForTests(): void {
 	cache = null;
 	cachePathOverride = null;
+	statusChildRunnerOverride = null;
+	inFlightRefreshes.clear();
+}
+
+export function setCanonicalStatusChildRunnerForTests(
+	runner: ((args: string[], timeoutMs: number) => Promise<unknown>) | null,
+): void {
+	statusChildRunnerOverride = runner;
 }
 
 function cacheLooksSecret(serialized: string): boolean {
@@ -228,7 +286,7 @@ export async function writeOperationalStatusCache(view: CanonicalStatusView): Pr
 	}
 }
 
-export async function readCanonicalStatusLocal(): Promise<CanonicalStatusView> {
+async function readCanonicalStatusLocal(): Promise<CanonicalStatusView> {
 	const parsed = await runStatusChild(['--local'], 8_000);
 	return CanonicalStatusViewSchema.parse(parsed);
 }
@@ -254,7 +312,14 @@ export async function refreshCanonicalStatusView(options?: {
 	domain?: 'schema' | 'content';
 	diagnostics?: boolean;
 }): Promise<CanonicalStatusView> {
-	return await withLock(async () => {
+	const key = JSON.stringify({
+		env: options?.env ?? null,
+		domain: options?.domain ?? null,
+		diagnostics: Boolean(options?.diagnostics),
+	});
+	const existing = inFlightRefreshes.get(key);
+	if (existing) return await existing;
+	const refresh = withLock(async () => {
 		const args = [
 			...(options?.env ? [`--env=${options.env}`] : []),
 			...(options?.diagnostics ? ['--diagnostics'] : []),
@@ -275,4 +340,10 @@ export async function refreshCanonicalStatusView(options?: {
 			freshnessMeta: liveFreshnessMeta(merged.generatedAt),
 		};
 	});
+	inFlightRefreshes.set(key, refresh);
+	try {
+		return await refresh;
+	} finally {
+		if (inFlightRefreshes.get(key) === refresh) inFlightRefreshes.delete(key);
+	}
 }

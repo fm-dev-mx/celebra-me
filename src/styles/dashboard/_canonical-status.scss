@@ -115,9 +115,9 @@
 }
 
 .canonical-status__badge--cyan {
-	background: rgba(6, 182, 212, 0.12);
-	color: #0891b2;
-	border: 1px solid rgba(6, 182, 212, 0.3);
+	background: rgb(6 182 212 / 12%);
+	color: rgb(8 145 178);
+	border: 1px solid rgb(6 182 212 / 30%);
 }
 
 .canonical-status__badge--amber {
@@ -187,20 +187,6 @@
 	summary:focus-visible {
 		outline: 2px solid var(--dashboard-focus-ring);
 		outline-offset: 2px;
-	}
-
-	dl {
-		display: grid;
-		grid-template-columns: 10rem 1fr;
-		gap: var(--spacing-xs) var(--spacing-sm);
-	}
-
-	dt {
-		color: var(--color-text-muted);
-	}
-
-	dd {
-		margin: 0;
 	}
 }
 
@@ -516,7 +502,7 @@
 	}
 }
 
-@media (max-width: 48rem) {
+@media (width <= 48rem) {
 	.canonical-status__header {
 		flex-direction: column;
 	}

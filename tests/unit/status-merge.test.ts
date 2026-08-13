@@ -3,6 +3,56 @@ import { mergeCanonicalStatusView } from '@/lib/status/merge';
 import { buildCanonicalStatusViewFixture } from '@tests/helpers/canonical-status-fixture';
 
 describe('canonical status merge', () => {
+	it('replaces only diagnostics from the refreshed domain and environment', () => {
+		const previous = buildCanonicalStatusViewFixture({
+			diagnostics: [
+				{
+					code: 'ENVIRONMENT_IDENTITY_CONFLICT',
+					domain: 'schema',
+					evidence: 'LIVE',
+					environment: 'preview',
+					cause: 'Old schema conflict.',
+					affectedFieldCount: 0,
+					affectedSectionCount: 0,
+					semanticPaths: [],
+				},
+				{
+					code: 'MANAGED_DRIFT',
+					domain: 'content',
+					evidence: 'LIVE',
+					environment: 'preview',
+					cause: 'Content drift remains.',
+					affectedFieldCount: 1,
+					affectedSectionCount: 1,
+					semanticPaths: ['hero.title'],
+				},
+			],
+		});
+		const incoming = buildCanonicalStatusViewFixture({
+			diagnostics: [
+				{
+					code: 'PRODUCTION_AUTHORIZATION_MISSING',
+					domain: 'schema',
+					evidence: 'LIVE',
+					environment: 'preview',
+					cause: 'Current schema diagnostic.',
+					affectedFieldCount: 0,
+					affectedSectionCount: 0,
+					semanticPaths: [],
+				},
+			],
+		});
+
+		const merged = mergeCanonicalStatusView({ previous, incoming, env: 'preview', domain: 'schema' });
+		expect(merged.diagnostics.map((item) => item.code)).toEqual([
+			'MANAGED_DRIFT',
+			'PRODUCTION_AUTHORIZATION_MISSING',
+		]);
+		expect(merged.diagnostics.find((item) => item.code === 'MANAGED_DRIFT')?.evidence).toBe(
+			'LIVE',
+		);
+	});
+
 	it('preserves previous env evidence when a new probe is UNVERIFIED', () => {
 		const previous = buildCanonicalStatusViewFixture({
 			recentMigrations: [

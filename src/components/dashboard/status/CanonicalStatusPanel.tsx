@@ -264,6 +264,10 @@ function DiagnosticsList({ items }: { items: CanonicalDiagnostic[] }) {
 								.filter(Boolean)
 								.join(' · ')}
 						</p>
+						<p className="canonical-status__diagnostic-provenance">
+							Dominio: {item.domain === 'schema' ? 'Esquema' : 'Publicación'} · Evidencia:{' '}
+							{EVIDENCE_LABELS[item.evidence]}
+						</p>
 						<p>{item.cause}</p>
 						<RemediationDetails remediation={remediation} summary="Qué hacer" />
 						{item.semanticPaths.length > 0 ? (

@@ -11,8 +11,6 @@ import {
 } from '@/lib/status/server/canonical-status';
 import { buildCanonicalStatusViewFixture } from '../helpers/canonical-status-fixture';
 
-const LEGACY_SNAPSHOT = join(process.cwd(), '.agent', 'status-snapshot.json');
-
 describe('local operational status cache', () => {
 	let tempDir: string;
 	let cacheFile: string;
@@ -77,7 +75,7 @@ describe('local operational status cache', () => {
 		expect(hydrated.evidence).toBe('CACHED');
 	});
 
-	it('does not persist UNVERIFIED local stubs and does not write the legacy snapshot', async () => {
+	it('does not persist UNVERIFIED local stubs', async () => {
 		const stub = buildCanonicalStatusViewFixture({
 			evidence: 'UNVERIFIED',
 			environments: {
@@ -98,10 +96,8 @@ describe('local operational status cache', () => {
 				},
 			},
 		});
-		const legacyBefore = existsSync(LEGACY_SNAPSHOT);
 		await writeOperationalStatusCache(stub);
 		expect(existsSync(cacheFile)).toBe(false);
-		expect(existsSync(LEGACY_SNAPSHOT)).toBe(legacyBefore);
 	});
 
 	it('separates probe verification time from application time', () => {

@@ -41,8 +41,10 @@ describe('enrichCanonicalDiagnostics', () => {
 	it('rejects diagnostic payloads that carry action authority', () => {
 		const view = buildCanonicalStatusViewFixture({
 			diagnostics: [
-				{
-					code: 'MANAGED_DRIFT',
+					{
+						code: 'MANAGED_DRIFT',
+						domain: 'content',
+						evidence: 'LIVE',
 					cause: 'Semantic drift.',
 					affectedFieldCount: 1,
 					affectedSectionCount: 1,

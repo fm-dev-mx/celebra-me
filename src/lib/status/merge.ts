@@ -257,14 +257,21 @@ export function mergeCanonicalStatusView(input: {
 		}
 	}
 
+	const refreshedDiagnosticDomains = new Set(domain ? [domain] : ['schema', 'content']);
 	let diagnostics = previous.diagnostics;
-	if (domain !== 'schema' && anyReplaced) {
+	if (anyReplaced) {
+		const belongsToReplacedEnvironment = (environment: TargetEnv | undefined): boolean =>
+			!environment || replaceByEnv[environment];
 		diagnostics = [
 			...previous.diagnostics.filter(
-				(item) => !item.environment || !replaceByEnv[item.environment],
+				(item) =>
+					!refreshedDiagnosticDomains.has(item.domain) ||
+					!belongsToReplacedEnvironment(item.environment),
 			),
 			...input.incoming.diagnostics.filter(
-				(item) => !item.environment || replaceByEnv[item.environment],
+				(item) =>
+					refreshedDiagnosticDomains.has(item.domain) &&
+					belongsToReplacedEnvironment(item.environment),
 			),
 		];
 	}

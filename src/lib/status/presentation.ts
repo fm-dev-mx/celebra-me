@@ -39,7 +39,6 @@ function emptyHandoff(
 		...overrides,
 	};
 }
-
 function promoteHandoff(
 	slug: string,
 	destination: 'preview' | 'production' | 'local',
@@ -99,7 +98,7 @@ function unknownPublicationHandoff(
 	});
 }
 
-export function derivePromotionHandoff(
+function derivePromotionHandoff(
 	action: PromotionAction,
 	reasonCode: PromotionReasonCode,
 	slug: string,
@@ -268,4 +267,3 @@ export function presentPromotionRow(input: {
 		),
 	};
 }
-

@@ -69,4 +69,3 @@ export function fetchRemoteMigrationVersions(
 		`Failed to query schema_migrations table: exit code ${result.status}.${details ? `\n${details}` : ''}`,
 	);
 }
-

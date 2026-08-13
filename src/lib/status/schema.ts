@@ -78,6 +78,8 @@ const diagnosticCode = z.enum([
 const diagnostic = z
 	.object({
 		code: diagnosticCode,
+		domain: z.enum(['schema', 'content']),
+		evidence,
 		slug: slug.optional(),
 		environment: targetEnv.optional(),
 		cause: z.string().min(1).max(240),

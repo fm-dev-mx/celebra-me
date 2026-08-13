@@ -12,11 +12,38 @@ import {
 	readinessSemantic,
 	schemaLifecycleSemantic,
 	schemaRemediation,
+	diagnosticRemediation,
 } from '@/lib/status/semantics';
+import { DIAGNOSTIC_LABELS } from '@/lib/status/labels';
+import type { CanonicalDiagnostic, DiagnosticCode } from '@/lib/status/types';
 import { presentPromotionRow } from '@/lib/status/presentation';
 import { buildCanonicalStatusViewFixture } from '@tests/helpers/canonical-status-fixture';
 
 describe('status semantics', () => {
+	it('has a presentable, non-authoritative remediation for every canonical diagnostic code', () => {
+		for (const code of Object.keys(DIAGNOSTIC_LABELS) as DiagnosticCode[]) {
+			const diagnostic: CanonicalDiagnostic = {
+				code,
+				domain:
+					code === 'ENVIRONMENT_IDENTITY_CONFLICT' ||
+					code === 'PRODUCTION_AUTHORIZATION_MISSING'
+						? 'schema'
+						: 'content',
+				evidence: 'LIVE',
+				environment: code === 'LIFECYCLE_METADATA_STALE' ? undefined : 'preview',
+				slug: code === 'ENVIRONMENT_IDENTITY_CONFLICT' || code === 'AUTHORITATIVE_COUNT_MISMATCH' || code === 'PRODUCTION_AUTHORIZATION_MISSING' ? undefined : 'demo',
+				cause: 'Diagnostic test fixture.',
+				affectedFieldCount: 0,
+				affectedSectionCount: 0,
+				semanticPaths: [],
+			};
+			const remediation = diagnosticRemediation(diagnostic);
+			expect(DIAGNOSTIC_LABELS[code]).not.toEqual('');
+			expect(remediation.meaning).toBe(DIAGNOSTIC_LABELS[code]);
+			expect(remediation.nextAction).not.toEqual('');
+		}
+	});
+
 	it('does not treat UNVERIFIED schema as CURRENT green', () => {
 		expect(schemaLifecycleSemantic('CURRENT', 'LIVE')).toBe('verified');
 		expect(schemaLifecycleSemantic('CURRENT', 'CACHED')).toBe('verified');

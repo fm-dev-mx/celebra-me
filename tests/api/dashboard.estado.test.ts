@@ -117,6 +117,36 @@ describe('GET /api/dashboard/estado', () => {
 		expect(mockRefresh).not.toHaveBeenCalled();
 	});
 
+	it('rejects an invalid refresh domain before probing', async () => {
+		mockAccess.mockResolvedValue({ userId: 'admin-1', isSuperAdmin: true } as never);
+		const response = await GET({
+			request: new Request('http://127.0.0.1:4321/api/dashboard/estado?refresh=1&domain=assets'),
+		} as never);
+		expect(response.status).toBe(400);
+		expect(mockRefresh).not.toHaveBeenCalled();
+	});
+
+	it('returns a controlled rate-limit response before probing', async () => {
+		mockAccess.mockResolvedValue({ userId: 'admin-1', isSuperAdmin: true } as never);
+		mockCheckRateLimit.mockResolvedValue(false);
+		const response = await GET({
+			request: new Request('http://127.0.0.1:4321/api/dashboard/estado?refresh=1'),
+		} as never);
+		expect(response.status).toBe(429);
+		expect((await response.json()).error.code).toBe('rate_limited');
+		expect(mockRefresh).not.toHaveBeenCalled();
+	});
+
+	it('preserves controlled not-found access failures without probing', async () => {
+		mockAccess.mockRejectedValue(new ApiError(404, 'not_found', 'Not found.'));
+		const response = await GET({
+			request: new Request('http://127.0.0.1:4321/api/dashboard/estado?refresh=1'),
+		} as never);
+		expect(response.status).toBe(404);
+		expect((await response.json()).error.code).toBe('not_found');
+		expect(mockRefresh).not.toHaveBeenCalled();
+	});
+
 	it('does not import mutation CLIs', () => {
 		const fs = jest.requireActual('fs') as typeof import('node:fs');
 		const text = fs.readFileSync('src/pages/api/dashboard/estado/index.ts', 'utf8');
