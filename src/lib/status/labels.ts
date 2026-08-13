@@ -1,9 +1,8 @@
 /** Spanish operator labels for the canonical status dashboard. */
 import type {
+	AuthorizationIntegrity,
 	DiagnosticCode,
 	DisposableProofStatus,
-	EvidenceState,
-	PromotionAction,
 	SchemaOperationReadiness,
 	TargetEnv,
 } from './types';
@@ -12,12 +11,6 @@ export const ENV_LABELS: Record<TargetEnv, string> = {
 	local: 'Local',
 	preview: 'Preview',
 	production: 'Producción',
-};
-
-export const EVIDENCE_LABELS: Record<EvidenceState, string> = {
-	LIVE: 'LIVE',
-	CACHED: 'CACHED',
-	UNVERIFIED: 'UNVERIFIED',
 };
 
 export const READINESS_LABELS: Record<SchemaOperationReadiness, string> = {
@@ -36,11 +29,12 @@ export const DISPOSABLE_LABELS: Record<DisposableProofStatus, string> = {
 	stale: 'OBSOLETA',
 };
 
-export const ACTION_LABELS: Record<Exclude<PromotionAction, 'NONE'>, string> = {
-	PROMOTE_PREVIEW: 'PROMOTE_PREVIEW',
-	PROMOTE_PRODUCTION: 'PROMOTE_PRODUCTION',
-	BLOCKED: 'BLOCKED',
-	UNKNOWN: 'UNKNOWN',
+export const AUTHORIZATION_LABELS: Record<AuthorizationIntegrity, string> = {
+	RECORDED: 'Registrada',
+	MISSING: 'Ausente',
+	GRANDFATHERED: 'Previa al libro',
+	NOT_APPLICABLE: 'No aplica',
+	UNVERIFIED: 'Sin verificar',
 };
 
 export const DIAGNOSTIC_LABELS: Record<DiagnosticCode, string> = {
@@ -57,4 +51,6 @@ export const DIAGNOSTIC_LABELS: Record<DiagnosticCode, string> = {
 	ASSET_IDENTITY_UNVERIFIED: 'No se pudo verificar la identidad de los assets',
 	LIFECYCLE_METADATA_STALE: 'El ciclo de vida declarado está obsoleto',
 	DETAIL_BUDGET_EXCEEDED: 'El detalle excede el presupuesto seguro',
+	PRODUCTION_AUTHORIZATION_MISSING:
+		'Falta evidencia de autorización del propietario para migraciones de Production',
 };

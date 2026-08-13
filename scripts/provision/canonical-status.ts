@@ -1,7 +1,9 @@
 /**
- * Compose the canonical status view from existing classifiers. No new decision rules.
+ * Compose the canonical status view from existing classifiers.
+ * Authorization integrity is a separate evidence class from schema lifecycle.
  */
 import { assertCurrentDisposableMigrationProof } from '../db/disposable-migration-proof.ts';
+import { evaluateProductionAuthorizationIntegrity } from '../db/production-authorization-integrity.ts';
 import {
 	evaluateGeneralStatus,
 	getOrCreateStatusProbeSession,
@@ -13,8 +15,9 @@ import {
 import { evaluateManagedPromotionStatus } from './managed-promotion-status.ts';
 import { enrichCanonicalDiagnostics } from './canonical-diagnostics.ts';
 import { listInvitationDefinitions } from './invitations/registry.ts';
-import { invitationAttentionCount } from '../../src/lib/status/presentation.ts';
+import { combineEvidence, invitationAttentionCount } from '../../src/lib/status/presentation.ts';
 import type {
+	CanonicalDiagnostic,
 	CanonicalEnvSummary,
 	CanonicalStatusView,
 	DisposableProofStatus,
@@ -34,22 +37,41 @@ function expectedTargetClassification(environment: TargetEnv): string {
 	return environment === 'local' ? 'persistent-local' : environment;
 }
 
+function inferAppliedVersions(
+	expectedVersions: readonly string[],
+	pending: readonly string[],
+	extra: readonly string[],
+): string[] {
+	const pendingSet = new Set(pending);
+	return [...expectedVersions.filter((version) => !pendingSet.has(version)), ...extra];
+}
+
 function envSummary(
 	status: EnvTargetStatus,
-	expectedCount: number,
+	expectedVersions: readonly string[],
 	invitationAttentionCountValue: number,
 ): CanonicalEnvSummary {
 	const reachableLive = status.reachable && status.freshness?.source === 'live';
 	const evidence: EvidenceState = reachableLive ? 'LIVE' : 'UNVERIFIED';
 	const targetClassification = status.targetClassification || 'unknown';
+	const pending = status.pendingMigrations ?? [];
+	const extra = status.extraMigrations ?? [];
+	const appliedVersions = reachableLive
+		? inferAppliedVersions(expectedVersions, pending, extra)
+		: null;
+	const authorization = evaluateProductionAuthorizationIntegrity({
+		environment: status.environment,
+		evidence,
+		appliedVersions,
+	});
 	return {
 		environment: status.environment,
 		schemaLifecycle: (status.schemaLifecycle ?? 'UNVERIFIED') as SchemaLifecycleState,
 		appliedCount: status.appliedMigrationCount ?? null,
-		expectedCount,
+		expectedCount: expectedVersions.length,
 		migrationHead: status.migrationHead ?? null,
-		pendingMigrations: status.pendingMigrations ?? [],
-		extraMigrations: status.extraMigrations ?? [],
+		pendingMigrations: pending,
+		extraMigrations: extra,
 		invitationAttentionCount: invitationAttentionCountValue,
 		identityConflictsCount: status.identityConflictsCount,
 		targetClassification,
@@ -57,8 +79,25 @@ function envSummary(
 			!status.reachable || targetClassification === expectedTargetClassification(status.environment),
 		schemaOperationReadiness: (status.schemaOperationReadiness ??
 			'UNVERIFIED') as SchemaOperationReadiness,
+		authorizationIntegrity: authorization.status,
+		authorizationMissingVersions: authorization.missingVersions,
 		evidence,
 		probedAt: status.freshness?.probedAt ?? null,
+	};
+}
+
+function authorizationDiagnostic(production: CanonicalEnvSummary): CanonicalDiagnostic | null {
+	if (production.authorizationIntegrity !== 'MISSING') return null;
+	const missing = production.authorizationMissingVersions.slice(0, 8).join(', ');
+	return {
+		code: 'PRODUCTION_AUTHORIZATION_MISSING',
+		environment: 'production',
+		cause: missing
+			? `Production history includes ${missing} without owner-apply evidence.`
+			: 'Production history includes migrations without owner-apply evidence.',
+		affectedFieldCount: production.authorizationMissingVersions.length,
+		affectedSectionCount: 1,
+		semanticPaths: production.authorizationMissingVersions.slice(0, 50),
 	};
 }
 
@@ -91,27 +130,22 @@ export async function buildCanonicalStatusView(options?: {
 	const environments = {
 		local: envSummary(
 			general.environments.local,
-			expectedVersions.length,
+			expectedVersions,
 			invitationAttentionCount(envStateMap, 'local'),
 		),
 		preview: envSummary(
 			general.environments.preview,
-			expectedVersions.length,
+			expectedVersions,
 			invitationAttentionCount(envStateMap, 'preview'),
 		),
 		production: envSummary(
 			general.environments.production,
-			expectedVersions.length,
+			expectedVersions,
 			invitationAttentionCount(envStateMap, 'production'),
 		),
 	};
 
-	const evidenceStates: EvidenceState[] = ENVS.map((env) => environments[env].evidence);
-	const overallEvidence: EvidenceState = evidenceStates.every((state) => state === 'LIVE')
-		? 'LIVE'
-		: evidenceStates.some((state) => state === 'LIVE')
-			? 'LIVE'
-			: 'UNVERIFIED';
+	const overallEvidence = combineEvidence(ENVS.map((env) => environments[env].evidence));
 
 	const view: CanonicalStatusView = {
 		schemaVersion: 1,
@@ -150,6 +184,8 @@ export async function buildCanonicalStatusView(options?: {
 		rowsByEnv: promotion.rowsByEnv,
 		includeSemanticDetail: Boolean(options?.diagnostics),
 	});
+	const authFinding = authorizationDiagnostic(environments.production);
+	if (authFinding) view.diagnostics = [authFinding, ...view.diagnostics];
 	return view;
 }
 
@@ -170,6 +206,8 @@ export function buildLocalCanonicalStatusView(): CanonicalStatusView {
 		targetClassification: 'unknown',
 		environmentIdentityOk: true,
 		schemaOperationReadiness: 'UNVERIFIED',
+		authorizationIntegrity: environment === 'production' ? 'UNVERIFIED' : 'NOT_APPLICABLE',
+		authorizationMissingVersions: [],
 		evidence: 'UNVERIFIED',
 		probedAt: null,
 	});

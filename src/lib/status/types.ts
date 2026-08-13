@@ -18,6 +18,14 @@ export type SchemaOperationReadiness =
 	| 'NOT_CONFIGURED'
 	| 'UNVERIFIED';
 
+/** Owner-apply ledger vs live Production history. Independent of schemaLifecycle. */
+export type AuthorizationIntegrity =
+	| 'RECORDED'
+	| 'MISSING'
+	| 'GRANDFATHERED'
+	| 'NOT_APPLICABLE'
+	| 'UNVERIFIED';
+
 export type EnvironmentPromotionState =
 	| 'match'
 	| 'behind'
@@ -69,7 +77,8 @@ export type DiagnosticCode =
 	| 'UNPUBLISHED_ASSET_PENDING'
 	| 'ASSET_IDENTITY_UNVERIFIED'
 	| 'LIFECYCLE_METADATA_STALE'
-	| 'DETAIL_BUDGET_EXCEEDED';
+	| 'DETAIL_BUDGET_EXCEEDED'
+	| 'PRODUCTION_AUTHORIZATION_MISSING';
 
 /** Enrichment only — must never carry promotion/schema/readiness authority. */
 export interface CanonicalDiagnostic {
@@ -95,6 +104,8 @@ export interface CanonicalEnvSummary {
 	targetClassification: string;
 	environmentIdentityOk: boolean;
 	schemaOperationReadiness: SchemaOperationReadiness;
+	authorizationIntegrity: AuthorizationIntegrity;
+	authorizationMissingVersions: string[];
 	evidence: EvidenceState;
 	probedAt: string | null;
 }

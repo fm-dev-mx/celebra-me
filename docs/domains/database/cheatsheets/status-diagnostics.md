@@ -22,12 +22,15 @@ pnpm invitation:diagnose-identity -- --slug <slug>
 pnpm db:local:audit | db:preview:audit | db:prod:audit
 ```
 
-`pnpm dbs` is the canonical operator matrix: **schema migrations**, **registry publication**, and
-**operation readiness** as separate columns. Disposable-test proof is listed apart from persistent
-schema. `--compact` is connectivity + schema only — not publication state.
+`pnpm dbs` is the canonical operator matrix: **schema migrations**, **registry publication**,
+**operation readiness**, and **Production authorization evidence** as separate columns.
+Disposable-test proof is listed apart from persistent schema. `--compact` is connectivity + schema
+only — not publication state.
 
 Local dashboard: `/dashboard/estado` (explicit remote refresh; same classifiers as `pnpm dbs`).
-Advanced diagnostics are enrichment only (`?diagnostics=1` / `pnpm dbs --diagnostics`).
+Advanced diagnostics are enrichment only (`?diagnostics=1` / `pnpm dbs --diagnostics`), except
+missing Production owner-apply evidence, which is a first-class integrity finding (`MISSING`) and
+must not be presented as unqualified `CURRENT`.
 
 **Expected result:** Typed availability and lifecycle/parity evidence. `UNVERIFIED` ≠ healthy.
 

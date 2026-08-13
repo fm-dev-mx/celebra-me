@@ -35,6 +35,7 @@ import {
 } from './migrate-compatibility.ts';
 import {
 	executeSupabaseDryRun,
+	executeSupabasePush,
 	readAppliedMigrationVersions,
 	runMutationContractVerify,
 	verifyVersionsInHistory,
@@ -43,8 +44,10 @@ import type { MigrateEnvironmentPolicy, MigratePolicySession } from './migrate-p
 import { buildMigrationTechnicalReview } from './migrate-plan-format.ts';
 import { buildMigrationPlan, type MigrationPlan } from './migration-plan.ts';
 import { comparePendingSetToExpected } from './migration-pending-set.ts';
+import { inferWorktreeLabel, writeOwnerApplyRecord } from './owner-apply-record.ts';
 import { OperatorError, operatorSymbol, shortSha, writeHuman } from './operator-cli-ux.ts';
 import { requireOwnerProductionApply } from './owner-production-apply.ts';
+import { extractSupabaseProjectRef } from './db-target-config.ts';
 import { ensureValidReleaseCheckEvidence, readGitWorktreeState } from './release-check.ts';
 
 export const PRODUCTION_MIGRATION_OPERATION_TYPE = 'production_migration';
@@ -391,15 +394,32 @@ export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 
 	execute(_plan, ctx) {
 		writeHuman(`${operatorSymbol('info')} Aplicación: empujando migraciones…`);
-		runCommand('supabase', ['db', 'push', '--db-url', ctx.dbUrl, '--yes'], {
-			redact: [ctx.dbUrl],
-		});
+		const result = executeSupabasePush(ctx.dbUrl);
+		if (result.status !== 0) {
+			fail(
+				`Production migration push failed: ${(result.stderr || result.stdout).trim() || `exit ${result.status}`}`,
+			);
+		}
 		writeHuman(`${operatorSymbol('ok')} Migraciones aplicadas.`);
 	},
 
 	afterWrite(plan, ctx) {
 		writeHuman(`${operatorSymbol('info')} Verificación: historial y contrato…`);
 		verifyVersionsInHistory(ctx.dbUrl, plan.pendingVersions);
+		const appliedVersions = plan.pendingVersions.filter((version) => version !== 'none');
+		if (appliedVersions.length > 0) {
+			const worktree = readGitWorktreeState();
+			writeOwnerApplyRecord({
+				operationType: PRODUCTION_MIGRATION_OPERATION_TYPE,
+				operationVerb: 'MIGRATE',
+				migrationVersions: appliedVersions,
+				planId: plan.planId,
+				releaseSha: ctx.session?.releaseEvidenceSha ?? worktree.sha,
+				projectRef: extractSupabaseProjectRef(ctx.dbUrl),
+				gitHead: worktree.sha,
+				worktree: inferWorktreeLabel(),
+			});
+		}
 		runMutationContractVerify('production');
 		writeHuman(
 			`${operatorSymbol('ok')} Verificación aprobada. Schema y contrato de mutación activos.`,

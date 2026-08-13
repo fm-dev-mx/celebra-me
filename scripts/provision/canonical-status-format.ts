@@ -96,7 +96,9 @@ export function formatAttentionCard(
 			`   ${c.yellow(c.dim('Apply:'.padEnd(labelWidth)))} ${c.brightYellow(row.handoff.applyCommand)}`,
 		);
 	} else if (row.handoff.applyCommand && verbose) {
-		lines.push(`   ${c.dim('Apply:'.padEnd(labelWidth))} ${c.brightCyan(row.handoff.applyCommand)}`);
+		lines.push(
+			`   ${c.dim('Apply:'.padEnd(labelWidth))} ${c.brightCyan(row.handoff.applyCommand)}`,
+		);
 	}
 
 	if (verbose) {
@@ -174,12 +176,38 @@ export function formatCanonicalStatusView(
 		}).join('');
 	lines.push(evidenceRow);
 
+	const authorizationRow =
+		padVisible('Authorization', labelCol) +
+		ENVS.map((env) => {
+			const status = view.environments[env].authorizationIntegrity;
+			const styled =
+				status === 'RECORDED'
+					? c.brightGreen(`✓ ${status}`)
+					: status === 'MISSING'
+						? c.brightYellow(`⚠ ${status}`)
+						: status === 'GRANDFATHERED'
+							? c.yellow(status)
+							: c.dim(status);
+			return padVisible(styled, envCol);
+		}).join('');
+	lines.push(authorizationRow);
+
 	lines.push('');
 	lines.push(
 		c.dim(
-			'  (Schema = migration history. Invitations = registry publication. Readiness = migrate authorization.)',
+			'(Schema = migration history. Authorization = owner-apply evidence. Invitations = registry publication. Readiness = migrate authorization.)',
 		),
 	);
+
+	const productionAuth = view.environments.production;
+	if (productionAuth.authorizationIntegrity === 'MISSING') {
+		lines.push('');
+		lines.push(c.brightYellow('PRODUCTION AUTHORIZATION: MISSING'));
+		lines.push(
+			`Missing versions: ${productionAuth.authorizationMissingVersions.join(', ') || '(unknown)'}`,
+		);
+		lines.push('Schema CURRENT is not owner-authorization evidence.');
+	}
 	lines.push('');
 	lines.push(c.dim('─'.repeat(headerWidth)));
 	lines.push(`  ${c.bold('DISPOSABLE-TEST (not a persistent schema environment)')}`);
@@ -242,8 +270,7 @@ export function formatCanonicalStatusView(
 		lines.push(c.dim('─'.repeat(headerWidth)));
 		lines.push('');
 		lines.push(
-			view
-				.promotions
+			view.promotions
 				.map((row, idx) => formatAttentionCard(row, verbose, idx + 1))
 				.join('\n\n'),
 		);

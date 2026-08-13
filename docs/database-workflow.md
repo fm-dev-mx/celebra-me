@@ -561,10 +561,16 @@ application login substitute. Host invitation flows continue to use real `host_c
   a short bound code `<VERB> <8-hex>` (e.g. `MIGRATE 6774a945` from `planId`). Full SHA, pending
   versions, and fingerprints remain in the audit summary. Paste noise (bracketed-paste / zero-width)
   is sanitized. A single Yes/No confirm is never sufficient.
-- Rejects `CELEBRA_AGENT_CONTEXT`. No token, secret, env, or noninteractive confirmation
+- Rejects `CELEBRA_AGENT_CONTEXT`. Agent sessions receive that variable by default; it is not the
+  positive authorization boundary. No token, secret, env, or noninteractive confirmation
   alternative.
+- Successful Production schema apply writes a durable owner-apply record under
+  `.backups/prod/owner-apply/` (gitignored). `pnpm dbs` reports `authorizationIntegrity`
+  separately from schema CURRENT. Versions at or before `20260806120000` are grandfathered.
 - `public.production_authorization_receipts` is historical inert state from migration
   `20260802090000`; no mutation path inserts into or depends on it.
+- Raw `supabase db push`, mutating Production `psql`, and Supabase MCP Production writes are
+  blocked outside this owner workflow. Read-only Production diagnostics remain allowed.
 - This is the only approved production **schema** mutation workflow. Content promotion and
   specialized patches are separate owner workflows that share the same authorization boundary.
 

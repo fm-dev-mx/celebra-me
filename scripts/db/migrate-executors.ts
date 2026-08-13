@@ -11,6 +11,7 @@ import {
 	runPsqlCommand,
 	enforceDisposableTargetOnly,
 } from './apply-migrations.ts';
+import { classifyDbTarget } from './db-target-config.ts';
 import { fail, runCommand, runPsql, type CommandResult } from './db-workflow-lib.ts';
 import { extractPendingMigrationVersions } from './migration-pending-set.ts';
 
@@ -67,7 +68,10 @@ COMMIT;
 `;
 	const initResult = runPsql(initSql, dbUrl, { throwOnError: false });
 	if (initResult.status !== 0) {
-		fail('Failed to initialize schema_migrations tracking table.');
+		const detail = (initResult.stderr || initResult.stdout).trim();
+		fail(
+			`Failed to initialize schema_migrations tracking table${detail ? `: ${detail}` : '.'}`,
+		);
 	}
 }
 
@@ -112,6 +116,12 @@ export function executePsqlAtomicPending(options: {
 	pendingVersions: readonly string[];
 	onProgress?: (filename: string, ok: boolean) => void;
 }): void {
+	const classification = classifyDbTarget(options.dbUrl);
+	if (classification.target === 'production') {
+		fail(
+			'executePsqlAtomicPending cannot target Production. Use `pnpm db:migrate -- --target production`.',
+		);
+	}
 	const files = getValidatedMigrationFiles().filter((f) =>
 		options.pendingVersions.includes(f.version),
 	);

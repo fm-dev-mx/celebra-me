@@ -16,7 +16,11 @@ describe('canonical status CLI format', () => {
 		expect(text).not.toContain('PROMOTIONS');
 		expect(text).toContain('OWNER / HITL REQUIRED');
 		expect(text).toContain('Preview → Production');
-		expect(text).toContain('PROMOTE_PRODUCTION');
+		expect(text).toContain('Authorization');
+		expect(text).toContain('GRANDFATHERED');
+		expect(text).toContain('NOT_APPLICABLE');
+		expect(text).toContain('owner-apply evidence');
+		expect(text).not.toContain('PRODUCTION AUTHORIZATION: MISSING');
 	});
 
 	it('prints diagnostics only as enrichment', () => {
@@ -40,5 +44,25 @@ describe('canonical status CLI format', () => {
 		expect(text).toContain('MANAGED_DRIFT');
 		expect(text).not.toContain('HEALTHY');
 		expect(text).not.toContain('applyNextStep');
+	});
+
+	it('qualifies CURRENT when Production owner-apply evidence is missing', () => {
+		const text = formatCanonicalStatusView(
+			buildCanonicalStatusViewFixture({
+				environments: {
+					...buildCanonicalStatusViewFixture().environments,
+					production: {
+						...buildCanonicalStatusViewFixture().environments.production,
+						schemaLifecycle: 'CURRENT',
+						authorizationIntegrity: 'MISSING',
+						authorizationMissingVersions: ['20260807120000'],
+					},
+				},
+			}),
+		);
+		expect(text).toContain('CURRENT 75/75');
+		expect(text).toContain('PRODUCTION AUTHORIZATION: MISSING');
+		expect(text).toContain('20260807120000');
+		expect(text).toContain('Schema CURRENT is not owner-authorization evidence');
 	});
 });

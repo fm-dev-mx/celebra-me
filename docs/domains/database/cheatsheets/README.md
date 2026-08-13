@@ -17,7 +17,7 @@
 
 | Command                              | Evidence class                                       | Use when                       |
 | ------------------------------------ | ---------------------------------------------------- | ------------------------------ |
-| `pnpm dbs` / `dbs --compact`         | `migration_history_parity` + managed content summary | Fast operator matrix           |
+| `pnpm dbs` / `dbs --compact`         | `migration_history_parity` + managed content summary + Production `authorizationIntegrity` | Fast operator matrix |
 | `pnpm db:*:audit`                    | `object_audit_readiness` vs disposable reference     | Schema object drift            |
 | `pnpm invitation:content-parity`     | Semantic invitation content                          | Content diff without RSVP/PII  |
 | `pnpm invitation:cross-db-reconcile` | Cross-DB inventory                                   | Slug presence / inventory gaps |

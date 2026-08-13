@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { dashboardApi } from '@/lib/dashboard/api-client';
 import {
+	AUTHORIZATION_LABELS,
 	DIAGNOSTIC_LABELS,
 	DISPOSABLE_LABELS,
 	ENV_LABELS,
@@ -149,8 +150,8 @@ export default function CanonicalStatusPanel({ initialView = null }: CanonicalSt
 				<div>
 					<h1 id="canonical-status-title">Estado operacional</h1>
 					<p>
-						Esquema, publicación e idoneidad de operación se muestran por separado.
-						Esta vista no aplica migraciones ni promociones.
+						Esquema, publicación, idoneidad de operación y autorización de Production se
+						muestran por separado. Esta vista no aplica migraciones ni promociones.
 					</p>
 				</div>
 				<div className="canonical-status__controls">
@@ -217,6 +218,18 @@ export default function CanonicalStatusPanel({ initialView = null }: CanonicalSt
 
 			{view ? (
 				<>
+					{view.environments.production.authorizationIntegrity === 'MISSING' ? (
+						<div className="canonical-status__auth-gap" role="status">
+							<strong>Autorización de Production ausente.</strong>
+							<span>
+								La paridad de esquema CURRENT no es evidencia de autorización. Faltan
+								registros de apply del propietario
+								{view.environments.production.authorizationMissingVersions.length > 0
+									? `: ${view.environments.production.authorizationMissingVersions.join(', ')}`
+									: '.'}
+							</span>
+						</div>
+					) : null}
 					<table className="canonical-status__matrix">
 						<caption>Resumen por entorno persistente</caption>
 						<thead>
@@ -225,6 +238,7 @@ export default function CanonicalStatusPanel({ initialView = null }: CanonicalSt
 								<th>Esquema</th>
 								<th>Invitaciones</th>
 								<th>Preparación</th>
+								<th>Autorización</th>
 								<th>Evidencia</th>
 							</tr>
 						</thead>
@@ -243,6 +257,7 @@ export default function CanonicalStatusPanel({ initialView = null }: CanonicalSt
 										</td>
 										<td>{row.invitationAttentionCount} requieren atención</td>
 										<td>{READINESS_LABELS[row.schemaOperationReadiness]}</td>
+										<td>{AUTHORIZATION_LABELS[row.authorizationIntegrity]}</td>
 										<td>
 											{row.evidence}
 											{row.probedAt ? ` · ${formatWhen(row.probedAt)}` : ''}

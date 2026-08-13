@@ -12,6 +12,7 @@ import {
 	validateEnvironmentUrlsPreflight,
 } from './db-target-config.ts';
 import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
+import { resolveSpawnProductionBoundary } from './production-write-permit.ts';
 
 export * from './db-target-config.ts';
 
@@ -330,6 +331,10 @@ export function runCommand(
 	options: RunOptions = {},
 ): CommandResult {
 	const { throwOnError = true } = options;
+	const boundary = resolveSpawnProductionBoundary(command, args, { input: options.input });
+	if (boundary.permission === 'deny') {
+		fail(boundary.message ?? 'Production mutation blocked.');
+	}
 	const isShellCommand = ALLOWED_SHELL_COMMANDS.has(command);
 
 	let cmdToSpawn = command;

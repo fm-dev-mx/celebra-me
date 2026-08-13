@@ -20,6 +20,8 @@ import {
 	writeHuman,
 	type OperatorFailureInput,
 } from './operator-cli-ux.ts';
+import { isExplicitAgentContext } from './production-boundary-policy.ts';
+import { issueProductionWritePermit } from './production-write-permit.ts';
 import { assertValidReleaseCheckEvidence } from './release-check.ts';
 
 function failGate(input: OperatorFailureInput, env?: NodeJS.ProcessEnv): never {
@@ -163,8 +165,7 @@ export function assertExactProductionProjectRef(dbUrl: string): string {
 export function agentSelfAuthorizationBlocked(
 	env: NodeJS.ProcessEnv = process.env,
 ): boolean {
-	const agentContext = env.CELEBRA_AGENT_CONTEXT?.trim();
-	return Boolean(agentContext && agentContext !== 'false' && agentContext !== '0');
+	return isExplicitAgentContext(env);
 }
 
 /**
@@ -401,4 +402,9 @@ export async function requireOwnerProductionApply(
 	writeHuman(
 		`${operatorSymbol('ok', env)} Confirmación del propietario aceptada. Continuando con la primera escritura.`,
 	);
+	issueProductionWritePermit({
+		projectRef,
+		operationType: input.operationType,
+		bindingHex: input.bindingHex,
+	});
 }
