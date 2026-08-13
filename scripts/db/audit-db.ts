@@ -5,6 +5,7 @@
  * Reports:
  *   - Sanitized target connection identity (redacting credentials)
  *   - Local vs remote migration histories (pending/missing/reordered)
+ *   - Canonical disposable reference validity before any target comparison
  *   - Deterministic schema fingerprint SHA-256
  *   - Hard mismatches (errors) and warnings
  *
@@ -31,14 +32,25 @@ import {
 } from './db-workflow-lib.ts';
 import { fetchRemoteMigrationVersions } from '../status-core/migration-history-reader.ts';
 import { cmdStart, isDisposableDbReady } from './disposable-test-env.ts';
+import { assertCurrentDisposableMigrationProof } from './disposable-migration-proof.ts';
+import {
+	REFERENCE_INVALID_LIFECYCLE,
+	type DisposableReferenceVerdict,
+} from './disposable-reference.ts';
+import {
+	runCanonicalObjectAudit,
+	type ColumnMetadata,
+	type GrantMetadata,
+	type PolicyMetadata,
+	type SchemaComparisonResult,
+	type SchemaMetadata,
+	type TableMetadata,
+	type TriggerMetadata,
+} from './audit-object-compare.ts';
 import { classifySchemaLifecycle } from './schema-lifecycle-state.ts';
 import {
-	diffContractConstraints,
-	diffContractIndexes,
-	diffContractRoutines,
 	formatStructuralFinding,
 	normalizeDef,
-	toContractRoutines,
 	type NamedConstraint,
 	type NamedIndex,
 	type NamedRoutine,
@@ -47,41 +59,11 @@ import {
 
 const MIGRATIONS_DIR = resolve(PROJECT_ROOT, 'supabase', 'migrations');
 
-interface TableMetadata {
-	tableName: string;
-	tableType: string;
-}
-
-interface ColumnMetadata {
-	tableName: string;
-	columnName: string;
-	dataType: string;
-	isNullable: string;
-	columnDefault: string | null;
-}
-
-interface PolicyMetadata {
-	tableName: string;
-	policyName: string;
-	roles: string;
-	cmd: string;
-	qual: string | null;
-	withCheck: string | null;
-}
-
-interface TriggerMetadata {
-	tableName: string;
-	triggerName: string;
-	eventManipulation: string;
-	actionStatement: string;
-	actionTiming: string;
-}
-
-interface GrantMetadata {
-	grantee: string;
-	tableName: string;
-	privilegeType: string;
-}
+export type { SchemaMetadata } from './audit-object-compare.ts';
+export {
+	compareTargetToCanonicalReference,
+	runCanonicalObjectAudit,
+} from './audit-object-compare.ts';
 
 function queryJson<T>(sql: string, dbUrl: string): T[] {
 	const jsonSql = `select coalesce(json_agg(sub), '[]'::json)::text from (${sql}) sub;`;
@@ -230,17 +212,6 @@ function queryGrants(dbUrl: string): GrantMetadata[] {
 function generateFingerprint(data: unknown): string {
 	const str = JSON.stringify(data);
 	return createHash('sha256').update(str).digest('hex');
-}
-
-interface SchemaMetadata {
-	tables: TableMetadata[];
-	columns: ColumnMetadata[];
-	constraints: NamedConstraint[];
-	indexes: NamedIndex[];
-	policies: PolicyMetadata[];
-	triggers: TriggerMetadata[];
-	routines: NamedRoutine[];
-	grants: GrantMetadata[];
 }
 
 function fingerprintPayload(meta: SchemaMetadata): unknown {
@@ -455,98 +426,12 @@ function runMigrationsAudit(
 	};
 }
 
-function checkTables(
-	prodTables: TableMetadata[],
-	localTables: TableMetadata[],
-	prodTableNames: Set<string>,
-	localTableNames: Set<string>,
-	target: string,
-): number {
-	let errors = 0;
-	for (const t of prodTables) {
-		if (!localTableNames.has(t.tableName)) {
-			console.error(
-				`❌ ERROR: Table "${t.tableName}" exists in target but is missing locally!`,
-			);
-			errors++;
-		}
-	}
-	for (const t of localTables) {
-		if (!prodTableNames.has(t.tableName)) {
-			if (target === 'production' || target === 'preview') {
-				console.log(
-					`   INFO: Table "${t.tableName}" is local-only (expected addition before release).`,
-				);
-			} else {
-				console.error(`❌ ERROR: Expected table "${t.tableName}" is missing in target!`);
-				errors++;
-			}
-		}
-	}
-	return errors;
-}
-
-function checkColumns(
-	prodCols: ColumnMetadata[],
-	localCols: ColumnMetadata[],
-	prodTableNames: Set<string>,
-	localTableNames: Set<string>,
-	target: string,
-): number {
-	let errors = 0;
-	const localColMap = new Map<string, ColumnMetadata>();
-	for (const col of localCols) {
-		localColMap.set(`${col.tableName}.${col.columnName}`, col);
-	}
-	const prodColMap = new Map<string, ColumnMetadata>();
-	for (const col of prodCols) {
-		prodColMap.set(`${col.tableName}.${col.columnName}`, col);
-	}
-
-	for (const col of prodCols) {
-		const key = `${col.tableName}.${col.columnName}`;
-		const localCol = localColMap.get(key);
-		if (!localCol) {
-			if (localTableNames.has(col.tableName)) {
-				console.error(`❌ ERROR: Column "${key}" exists in target but is missing locally!`);
-				errors++;
-			}
-			continue;
-		}
-		if (col.dataType !== localCol.dataType) {
-			console.error(
-				`❌ ERROR: Column "${key}" type mismatch! Target="${col.dataType}", Local="${localCol.dataType}"`,
-			);
-			errors++;
-		}
-	}
-
-	for (const col of localCols) {
-		const key = `${col.tableName}.${col.columnName}`;
-		const prodCol = prodColMap.get(key);
-		if (!prodCol && prodTableNames.has(col.tableName)) {
-			if (target === 'production' || target === 'preview') {
-				console.log(
-					`   INFO: Column "${key}" is local-only (expected addition before release).`,
-				);
-			} else {
-				console.error(`❌ ERROR: Expected column "${key}" is missing in target!`);
-				errors++;
-			}
-		}
-	}
-	return errors;
-}
-
-function reportStructuralFindings(
-	findings: readonly StructuralFinding[],
-	blocking: boolean,
-): number {
+function reportStructuralFindings(findings: readonly StructuralFinding[], blocking: boolean): void {
 	if (findings.length === 0) {
 		console.log(
 			'✅ Named public indexes, constraints, and routines match the disposable contract.',
 		);
-		return 0;
+		return;
 	}
 	for (const finding of findings) {
 		const line = formatStructuralFinding(finding);
@@ -558,46 +443,106 @@ function reportStructuralFindings(
 			);
 		}
 	}
-	return blocking ? findings.length : 0;
 }
 
-function collectStructuralFindings(
-	expected: SchemaMetadata,
-	actual: SchemaMetadata,
-): StructuralFinding[] {
-	return [
-		...diffContractIndexes(expected.indexes, actual.indexes),
-		...diffContractConstraints(expected.constraints, actual.constraints),
-		...diffContractRoutines(
-			toContractRoutines(expected.routines),
-			toContractRoutines(actual.routines),
-		),
-	];
+function logReferenceFailure(reference: DisposableReferenceVerdict): void {
+	console.error(`❌ ${REFERENCE_INVALID_LIFECYCLE}: ${reference.reason}`);
+	console.error(`   Cause: ${reference.cause}`);
+	if (reference.missingTables.length > 0) {
+		console.error(`   Missing required tables: ${reference.missingTables.join(', ')}`);
+	}
+	console.error(`   Remediation: ${reference.remediation}`);
 }
 
-function checkPolicies(prodPolicies: PolicyMetadata[], localPolicies: PolicyMetadata[]): number {
-	let errors = 0;
-	for (const p of prodPolicies) {
-		const match = localPolicies.find(
-			(lp) => lp.tableName === p.tableName && lp.policyName === p.policyName,
+function logComparison(comparison: SchemaComparisonResult, historyLifecycle: string): void {
+	for (const info of comparison.infos) {
+		console.log(`   INFO: ${info}`);
+	}
+	for (const error of comparison.errors) {
+		console.error(`❌ ERROR: ${error}`);
+	}
+	console.log(`Structural findings: ${comparison.structuralFindings.length}`);
+	reportStructuralFindings(
+		comparison.structuralFindings,
+		historyLifecycle === 'CURRENT' || historyLifecycle === 'SCHEMA_DRIFT',
+	);
+}
+
+function loadDisposableReferenceEvidence(expectedVersions: readonly string[]): {
+	reachable: boolean;
+	classificationTarget: string;
+	liveVersions: string[] | null;
+	liveTableNames: string[] | null;
+	referenceSchema: SchemaMetadata | null;
+	proofOk: boolean;
+	proofAppliedVersions: string[] | null;
+	introspectionError?: string;
+} {
+	const classification = classifyDbTarget(DISPOSABLE_DB_URL);
+	let reachable = isDisposableDbReady();
+	let startError: string | undefined;
+	if (!reachable) {
+		console.log(
+			'Disposable reference database not running on port 54332. Starting disposable environment...',
 		);
-		if (!match) {
-			console.error(
-				`❌ ERROR: RLS Policy "${p.policyName}" on "${p.tableName}" is missing locally!`,
-			);
-			errors++;
-		} else {
-			const normProdQual = normalizeDef(p.qual || '', p.policyName);
-			const normLocalQual = normalizeDef(match.qual || '', match.policyName);
-			if (normProdQual !== normLocalQual) {
-				console.error(
-					`❌ ERROR: RLS Policy "${p.policyName}" on "${p.tableName}" mismatch in target vs local!`,
-				);
-				errors++;
-			}
+		try {
+			cmdStart();
+			reachable = isDisposableDbReady();
+		} catch (err) {
+			startError = err instanceof Error ? err.message : String(err);
+			reachable = false;
 		}
 	}
-	return errors;
+
+	const proof = assertCurrentDisposableMigrationProof();
+
+	if (!reachable) {
+		return {
+			reachable: false,
+			classificationTarget: classification.target,
+			liveVersions: null,
+			liveTableNames: null,
+			referenceSchema: null,
+			proofOk: proof.ok,
+			proofAppliedVersions: proof.proof?.appliedVersions ?? null,
+			introspectionError: startError,
+		};
+	}
+
+	try {
+		const history = fetchRemoteMigrationVersions(DISPOSABLE_DB_URL);
+		const local = fetchLocalSchemaMetadata();
+		const localFingerprint = generateFingerprint(fingerprintPayload(local));
+		console.log(`Local Schema Fingerprint:  ${localFingerprint}`);
+		console.log(
+			`Disposable reference migrations: ${history.remoteVersions.length}/${expectedVersions.length}`,
+		);
+		return {
+			reachable: true,
+			classificationTarget: classification.target,
+			liveVersions: history.remoteVersions,
+			liveTableNames: local.tables.map((table) => table.tableName),
+			referenceSchema: local,
+			proofOk: proof.ok,
+			proofAppliedVersions: proof.proof?.appliedVersions ?? null,
+		};
+	} catch (err) {
+		return {
+			reachable: true,
+			classificationTarget: classification.target,
+			liveVersions: null,
+			liveTableNames: null,
+			referenceSchema: null,
+			proofOk: proof.ok,
+			proofAppliedVersions: proof.proof?.appliedVersions ?? null,
+			introspectionError: err instanceof Error ? err.message : String(err),
+		};
+	}
+}
+
+interface SchemaAuditRun {
+	errors: number;
+	lifecycleOverride?: string;
 }
 
 function runSchemaAudit(
@@ -605,73 +550,54 @@ function runSchemaAudit(
 	dbUrl: string,
 	initialErrors: number,
 	historyLifecycle: string,
-): number {
+	expectedVersions: readonly string[],
+): SchemaAuditRun {
 	if (!existsSync(resolve(PROJECT_ROOT, 'supabase', 'test', 'seed-test-data.sql'))) {
 		console.error('ERROR: Seed data file missing. Pipeline validation cannot run.');
 		process.exit(1);
 	}
 
 	const prod = fetchSchemaMetadata(dbUrl);
-
 	const targetFingerprint = generateFingerprint(fingerprintPayload(prod));
-
 	console.log(`Target Schema Fingerprint: ${targetFingerprint}`);
 
-	let errors = initialErrors;
+	const evidence = loadDisposableReferenceEvidence(expectedVersions);
+	const audit = runCanonicalObjectAudit({
+		target,
+		historyLifecycle,
+		extraRemoteCount: initialErrors,
+		reference: {
+			reachable: evidence.reachable,
+			classificationTarget: evidence.classificationTarget,
+			expectedVersions,
+			liveVersions: evidence.liveVersions,
+			liveTableNames: evidence.liveTableNames,
+			proofOk: evidence.proofOk,
+			proofAppliedVersions: evidence.proofAppliedVersions,
+			introspectionError: evidence.introspectionError,
+		},
+		targetSchema: prod,
+		referenceSchema: evidence.referenceSchema,
+	});
 
-	// Ensure local disposable reference DB is running & reachable for canonical schema comparison
-	let localReachable = isDisposableDbReady();
-	if (!localReachable) {
-		console.log(
-			'Disposable reference database not running on port 54332. Starting disposable environment...',
-		);
-		try {
-			cmdStart();
-			localReachable = isDisposableDbReady();
-		} catch (err) {
-			console.warn(
-				`Failed to start disposable reference database: ${err instanceof Error ? err.message : String(err)}`,
-			);
-		}
+	if (!audit.reference.ok || !audit.comparison) {
+		logReferenceFailure(audit.reference);
+		console.error(`\n============================================================`);
+		console.error(`Audit Verdict for ${target.toUpperCase()}:`);
+		console.error(`Errors:   ${audit.errorCount}`);
+		console.error(`============================================================\n`);
+		return { errors: audit.errorCount, lifecycleOverride: REFERENCE_INVALID_LIFECYCLE };
 	}
 
-	if (localReachable) {
-		console.log('Comparing schema against canonical local disposable reference database...');
-		const local = fetchLocalSchemaMetadata();
-
-		const localFingerprint = generateFingerprint(fingerprintPayload(local));
-		console.log(`Local Schema Fingerprint:  ${localFingerprint}`);
-
-		const prodTableNames = new Set(prod.tables.map((t) => t.tableName));
-		const localTableNames = new Set(local.tables.map((t) => t.tableName));
-
-		errors += checkTables(prod.tables, local.tables, prodTableNames, localTableNames, target);
-		errors += checkColumns(
-			prod.columns,
-			local.columns,
-			prodTableNames,
-			localTableNames,
-			target,
-		);
-		errors += checkPolicies(prod.policies, local.policies);
-		const structuralFindings = collectStructuralFindings(local, prod);
-		console.log(`Structural findings: ${structuralFindings.length}`);
-		errors += reportStructuralFindings(
-			structuralFindings,
-			historyLifecycle === 'CURRENT' || historyLifecycle === 'SCHEMA_DRIFT',
-		);
-	} else {
-		console.log(
-			'ℹ️  Local disposable database is not running; skipping detailed schema comparison.',
-		);
-	}
+	console.log('Comparing schema against validated canonical disposable reference...');
+	logComparison(audit.comparison, historyLifecycle);
 
 	console.log(`\n============================================================`);
 	console.log(`Audit Verdict for ${target.toUpperCase()}:`);
-	console.log(`Errors:   ${errors}`);
+	console.log(`Errors:   ${audit.errorCount}`);
 	console.log(`============================================================\n`);
 
-	return errors;
+	return { errors: audit.errorCount };
 }
 
 /** Shared audit verdict consumed by standalone CLI and migrate preflight. */
@@ -764,17 +690,31 @@ function main(): void {
 
 	// --- 2. SCHEMA DRIFT COMPARISON & FINGERPRINT ---
 	console.log('\n--- 2. Schema Comparison & Fingerprint ---');
-	const errors = runSchemaAudit(target, dbUrl, migrationAudit.extraRemoteCount, historyLifecycle);
+	const localMigrationFiles = readdirSync(MIGRATIONS_DIR)
+		.filter((f) => f.endsWith('.sql'))
+		.sort();
+	const expectedVersions = localMigrationFiles.map((f) => f.split('_')[0]!);
+	const schemaAudit = runSchemaAudit(
+		target,
+		dbUrl,
+		migrationAudit.extraRemoteCount,
+		historyLifecycle,
+		expectedVersions,
+	);
 
-	const finalLifecycle = historyLifecycle;
+	const finalLifecycle = schemaAudit.lifecycleOverride ?? historyLifecycle;
 	console.log(`Final schema lifecycle state: ${finalLifecycle}`);
 	console.log(
 		'Evidence class: object_audit_readiness (history parity + named public object contract). Not equivalent to pnpm dbs migration_history_parity.',
 	);
 
-	const verdict = buildSchemaAuditVerdict(finalLifecycle, errors);
+	const verdict = buildSchemaAuditVerdict(finalLifecycle, schemaAudit.errors);
 	if (!verdict.passedStandalone) {
-		if (verdict.lifecycle === 'BEHIND') {
+		if (verdict.lifecycle === REFERENCE_INVALID_LIFECYCLE) {
+			console.error(
+				`❌ AUDIT FAILED: Canonical disposable reference is invalid (${REFERENCE_INVALID_LIFECYCLE}). Production differences were not classified as schema drift.`,
+			);
+		} else if (verdict.lifecycle === 'BEHIND') {
 			console.error(`❌ AUDIT FAILED: Target schema is BEHIND expected migrations.`);
 		} else {
 			console.error(

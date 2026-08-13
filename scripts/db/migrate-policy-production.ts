@@ -113,14 +113,22 @@ function runProductionAudit(ctx: { session?: MigratePolicySession }, quiet: bool
 	const auditOutput = `${auditResult.stdout}\n${auditResult.stderr}`;
 	const verdict = parseSchemaAuditVerdictFromOutput(auditOutput, auditResult.status ?? 1);
 	if (!verdict.readyForMigrate) {
+		const referenceInvalid = verdict.lifecycle === 'REFERENCE_INVALID';
 		throw new OperatorError({
 			title: 'Auditoría de Production bloqueada',
-			cause: `Estado ${verdict.lifecycle} con ${verdict.errorCount} error(es). Resuelva drift o historial no verificado antes de migrar.`,
+			cause: referenceInvalid
+				? `Referencia disposable canónica inválida (${verdict.errorCount} error(es)). Reconstruya disposable-test antes de planear migrate de Production.`
+				: `Estado ${verdict.lifecycle} con ${verdict.errorCount} error(es). Resuelva drift o historial no verificado antes de migrar.`,
 			code: 'PRODUCTION_AUDIT_FAILED',
-			remediation: [
-				'Ejecute pnpm db:prod:audit y revise el informe.',
-				'Corrija SCHEMA_DRIFT o errores de objetos antes de reintentar.',
-			],
+			remediation: referenceInvalid
+				? [
+						'Ejecute pnpm db:disposable:reset para reconstruir la referencia canónica.',
+						'Ejecute pnpm db:prod:audit y confirme REFERENCE_INVALID resuelto.',
+					]
+				: [
+						'Ejecute pnpm db:prod:audit y revise el informe.',
+						'Corrija SCHEMA_DRIFT o errores de objetos antes de reintentar.',
+					],
 			retryCommand: 'pnpm db:migrate -- --target production',
 		});
 	}
