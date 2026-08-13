@@ -58,7 +58,7 @@ export const VICTORIA_MUSIC = {
 const VICTORIA_INTERLUDE_01 = {
 	alt: 'Victoria y Roberto en un momento íntimo sobre un puente de madera',
 	// Narrow-safe default; responsive refinements live in the visual profile.
-	focalPoint: '42% 34%',
+	focalPoint: '50% 40%',
 } as const;
 
 const VICTORIA_INTERLUDE_02 = {
@@ -355,7 +355,7 @@ export function buildVictoriaPublishedContent(
 					title: 'Familia de Roberto',
 					items: [
 						{ name: 'Socorro Palomares', role: 'Madre' },
-						{ name: 'Nicolas Luviano', role: 'Padre' },
+						{ name: 'Nicolas Luviano', role: 'Padre', deceased: true },
 					],
 				},
 			],

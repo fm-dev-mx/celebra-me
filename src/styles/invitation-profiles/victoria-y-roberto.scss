@@ -318,19 +318,18 @@
 	.invitation-interlude[data-interlude-index='1'] {
 		--interlude-min-height-1: clamp(420px, 72svh, 640px);
 		--interlude-min-height-1-sm: clamp(400px, 68svh, 560px);
-		--interlude-focal-point: 40% 32%;
+		--interlude-focal-point: 20% 68%;
 
 		@media (width >= 640px) {
-			--interlude-focal-point: 42% 34%;
+			--interlude-focal-point: 50% 40%;
 		}
 
 		@media (width >= 768px) {
 			--interlude-min-height-1: clamp(440px, 70svh, 620px);
-			--interlude-focal-point: 46% 38%;
 		}
 
 		@media (width >= 1024px) {
-			--interlude-focal-point: 48% 40%;
+			--interlude-focal-point: 50% 22%;
 		}
 	}
 
@@ -364,7 +363,7 @@
 		}
 
 		@media (width >= 1024px) {
-			--interlude-focal-point: 52% 40%;
+			--interlude-focal-point: 52% 33%;
 		}
 	}
 

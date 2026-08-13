@@ -210,7 +210,7 @@ describe('Boda Victoria y Roberto provision contract', () => {
 			presentation?: string;
 			variant?: string;
 			featuredImage?: unknown;
-			groups?: Array<{ title: string; items: Array<{ name: string }> }>;
+			groups?: Array<{ title: string; items: Array<{ name: string; role?: string; deceased?: boolean }> }>;
 			godparents?: Array<{ name: string; role?: string }>;
 		};
 		expect(family.presentation).toBe('text-only');
@@ -226,6 +226,12 @@ describe('Boda Victoria y Roberto provision contract', () => {
 					),
 			),
 		).toBe(true);
+		const robertoFamily = family.groups?.find((g) => g.title === 'Familia de Roberto');
+		expect(robertoFamily?.items).toContainEqual({
+			name: 'Nicolas Luviano',
+			role: 'Padre',
+			deceased: true,
+		});
 		expect(family.godparents).toEqual(expect.any(Array));
 		expect(
 			family.godparents?.every(
