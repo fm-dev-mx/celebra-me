@@ -6,14 +6,32 @@ import {
 	formatSchemaMigrationsLabel,
 	formatTransitionLabel,
 } from '../../src/lib/status/presentation.ts';
+import {
+	authorizationSemantic,
+	evidenceSemantic,
+	readinessSemantic,
+	schemaLifecycleSemantic,
+} from '../../src/lib/status/semantics.ts';
 import type {
 	CanonicalPromotionRow,
 	CanonicalStatusView,
+	StatusSemantic,
 	TargetEnv,
 } from '../../src/lib/status/types.ts';
 import { useCliColor } from '../db/operator-cli-ux.ts';
 
 const ENVS: TargetEnv[] = ['local', 'preview', 'production'];
+
+function styleBySemantic(
+	c: ReturnType<typeof getColors>,
+	semantic: StatusSemantic,
+	text: string,
+): string {
+	if (semantic === 'verified') return c.brightGreen(`✓ ${text}`);
+	if (semantic === 'blocked') return c.red(`✗ ${text}`);
+	if (semantic === 'neutral') return c.dim(text);
+	return c.brightYellow(`⚠ ${text}`);
+}
 
 function envLabel(env: TargetEnv): string {
 	if (env === 'local') return 'Local';
@@ -120,55 +138,58 @@ function formatStatusRows(view: CanonicalStatusView, labelCol: number, envCol: n
 	const schemaRow =
 		padVisible('Schema', labelCol) +
 		ENVS.map((env) => {
+			const row = view.environments[env];
 			const label = formatSchemaMigrationsLabel(
-				view.environments[env].schemaLifecycle,
-				view.environments[env].appliedCount,
-				view.environments[env].expectedCount,
+				row.schemaLifecycle,
+				row.appliedCount,
+				row.expectedCount,
 			).replace('Schema migrations: ', '');
-			const isCurrent = label.startsWith('CURRENT');
-			const styled = isCurrent ? c.brightGreen(`✓ ${label}`) : c.brightYellow(`⚠ ${label}`);
+			const styled = styleBySemantic(
+				c,
+				schemaLifecycleSemantic(row.schemaLifecycle, row.evidence),
+				label,
+			);
 			return padVisible(styled, envCol);
 		}).join('');
 
 	const invitationRow =
 		padVisible('Invitations', labelCol) +
 		ENVS.map((env) => {
-			const count = view.environments[env].invitationAttentionCount;
-			const raw = `${count} attention`;
-			const styled = count === 0 ? c.green(`✓ ${raw}`) : c.brightYellow(`! ${raw}`);
-			return padVisible(styled, envCol);
+			const row = view.environments[env];
+			const raw =
+				row.evidence === 'UNVERIFIED'
+					? 'UNVERIFIED'
+					: `${row.invitationAttentionCount} attention`;
+			const semantic =
+				row.evidence === 'UNVERIFIED'
+					? 'unverified'
+					: row.identityConflictsCount > 0
+						? 'blocked'
+						: row.invitationAttentionCount === 0
+							? 'verified'
+							: 'unverified';
+			return padVisible(styleBySemantic(c, semantic, raw), envCol);
 		}).join('');
 
 	const readinessRow =
 		padVisible('Readiness', labelCol) +
 		ENVS.map((env) => {
 			const status = view.environments[env].schemaOperationReadiness;
-			const isReady = status === 'READY';
-			const styled = isReady ? c.brightGreen(`✓ ${status}`) : c.brightYellow(`⚠ ${status}`);
-			return padVisible(styled, envCol);
+			return padVisible(styleBySemantic(c, readinessSemantic(status), status), envCol);
 		}).join('');
 
 	const evidenceRow =
 		padVisible('Evidence', labelCol) +
 		ENVS.map((env) => {
 			const ev = view.environments[env].evidence;
-			const styled = ev === 'LIVE' ? c.green(`✓ ${ev}`) : c.dim(ev);
-			return padVisible(styled, envCol);
+			return padVisible(styleBySemantic(c, evidenceSemantic(ev), ev), envCol);
 		}).join('');
 
 	const authorizationRow =
 		padVisible('Authorization', labelCol) +
 		ENVS.map((env) => {
 			const status = view.environments[env].authorizationIntegrity;
-			const styled =
-				status === 'RECORDED'
-					? c.brightGreen(`✓ ${status}`)
-					: status === 'MISSING'
-						? c.brightYellow(`⚠ ${status}`)
-						: status === 'GRANDFATHERED'
-							? c.yellow(status)
-							: c.dim(status);
-			return padVisible(styled, envCol);
+			return padVisible(styleBySemantic(c, authorizationSemantic(status), status), envCol);
 		}).join('');
 
 	return [schemaRow, invitationRow, readinessRow, evidenceRow, authorizationRow];
@@ -185,7 +206,7 @@ function formatDisposableProofSection(view: CanonicalStatusView, headerWidth: nu
 	const proofBadge =
 		view.disposableProof.status === 'valid'
 			? c.brightGreen(`✓ ${proofStatus}`)
-			: c.brightYellow(`MISSING`);
+			: c.red(`✗ ${proofStatus}`);
 
 	lines.push(`  Disposable proof: ${proofStatus}`);
 	lines.push(`  Status: ${proofBadge} ${c.dim('(Required before future migration operations)')}`);
@@ -205,7 +226,16 @@ function formatPublicationOverview(view: CanonicalStatusView, headerWidth: numbe
 	if (view.promotions.length === 0) {
 		lines.push(c.dim('─'.repeat(headerWidth)));
 		lines.push(`  ${c.bold('PUBLICATION')}`);
-		lines.push('  Attention: 0 (in sync or none registered)');
+		const remoteUnverified =
+			view.environments.local.evidence === 'UNVERIFIED' &&
+			view.environments.preview.evidence === 'UNVERIFIED' &&
+			view.environments.production.evidence === 'UNVERIFIED';
+		if (remoteUnverified) {
+			lines.push(c.brightYellow('  Attention: UNVERIFIED (empty queue is not in-sync)'));
+			lines.push(c.dim('  Next: pnpm dbs   Verify when live evidence classifies the registry.'));
+		} else {
+			lines.push('  Attention: 0 (in sync or none registered)');
+		}
 	} else {
 		lines.push(c.dim('─'.repeat(headerWidth)));
 		lines.push(
@@ -229,9 +259,10 @@ function formatProductionAuthWarning(
 	const c = getColors();
 	return [
 		'',
-		c.brightYellow('PRODUCTION AUTHORIZATION: MISSING'),
+		c.red('PRODUCTION AUTHORIZATION: MISSING'),
 		`Missing versions: ${productionAuth.authorizationMissingVersions.join(', ') || '(unknown)'}`,
 		'Schema CURRENT is not owner-authorization evidence.',
+		'No canonical command backfills historical owner-apply records.',
 	];
 }
 

@@ -32,6 +32,7 @@ export function derivePromotionHandoff(
 	action: PromotionAction,
 	reasonCode: PromotionReasonCode,
 	slug: string,
+	eventType?: string,
 ): PromotionHandoff {
 	if (action === 'PROMOTE_PREVIEW') {
 		return {
@@ -57,6 +58,34 @@ export function derivePromotionHandoff(
 			steps: ['Dry-run', 'Authorized Local apply', 'Verify'],
 		};
 	}
+	if (action === 'BLOCKED' && reasonCode === 'IDENTITY_CONFLICT') {
+		return {
+			dryRunCommand: 'pnpm invitation:diagnose-identity -- --target local',
+			applyCommand: null,
+			ownerApplyRequired: false,
+			steps: ['Diagnose identity', 'Do not promote'],
+		};
+	}
+	if (action === 'BLOCKED' && reasonCode === 'MANAGED_DIVERGENCE') {
+		return {
+			dryRunCommand: eventType
+				? `pnpm invitation:content-parity -- --slug ${slug} --event-type ${eventType}`
+				: `pnpm dbs ${slug}`,
+			applyCommand: null,
+			ownerApplyRequired: false,
+			steps: ['Compare semantic content', 'Do not promote'],
+		};
+	}
+	if (action === 'BLOCKED' && reasonCode === 'PRODUCTION_AHEAD_OF_PREVIEW') {
+		return {
+			dryRunCommand: eventType
+				? `pnpm invitation:content-parity -- --slug ${slug} --event-type ${eventType}`
+				: `pnpm dbs ${slug}`,
+			applyCommand: null,
+			ownerApplyRequired: false,
+			steps: ['Investigate', 'Do not promote'],
+		};
+	}
 	if (action === 'BLOCKED') {
 		return {
 			dryRunCommand: null,
@@ -67,7 +96,7 @@ export function derivePromotionHandoff(
 	}
 	if (action === 'UNKNOWN') {
 		return {
-			dryRunCommand: null,
+			dryRunCommand: `pnpm dbs ${slug}`,
 			applyCommand: null,
 			ownerApplyRequired: false,
 			steps: ['Refresh evidence', 'Do not promote'],
@@ -198,7 +227,7 @@ export function presentPromotionRow(input: {
 		evidence: combineEvidence(ENVS.map((env) => input.envEvidence[env])),
 		envEvidence: input.envEvidence,
 		uncertaintyNotes: uncertaintyNotesForEnvironments(input.environments),
-		handoff: derivePromotionHandoff(input.action, input.reasonCode, input.slug),
+		handoff: derivePromotionHandoff(input.action, input.reasonCode, input.slug, input.eventType),
 	};
 }
 

@@ -134,6 +134,16 @@ export interface GeneralStatusSummary {
 	debugCounters?: StatusProbeDebugCounters;
 }
 
+function schemaAuditCommand(env: TargetEnv): string {
+	if (env === 'local') return 'pnpm db:local:audit';
+	if (env === 'preview') return 'pnpm db:preview:audit';
+	return 'pnpm db:prod:audit';
+}
+
+function availabilityVerifyCommand(env: TargetEnv): string {
+	return `pnpm db:availability:verify -- --targets ${env}`;
+}
+
 function deriveSchemaOperationFields(
 	env: TargetEnv,
 	status: Pick<
@@ -147,19 +157,25 @@ function deriveSchemaOperationFields(
 	disposableProofOk: boolean,
 ): Pick<EnvTargetStatus, 'schemaOperationReadiness' | 'schemaNextAction'> {
 	if (!status.configured) {
-		return { schemaOperationReadiness: 'NOT_CONFIGURED', schemaNextAction: null };
+		return {
+			schemaOperationReadiness: 'NOT_CONFIGURED',
+			schemaNextAction: availabilityVerifyCommand(env),
+		};
 	}
 	if (!status.reachable) {
-		return { schemaOperationReadiness: 'UNREACHABLE', schemaNextAction: null };
+		return {
+			schemaOperationReadiness: 'UNREACHABLE',
+			schemaNextAction: availabilityVerifyCommand(env),
+		};
 	}
 	if (status.schemaLifecycle === 'SCHEMA_DRIFT' || (status.extraMigrations?.length ?? 0) > 0) {
 		return {
 			schemaOperationReadiness: 'SCHEMA_DRIFT',
-			schemaNextAction: `Investigate SCHEMA_DRIFT on ${env} (pnpm db:${env === 'local' ? 'local' : env}:audit when available)`,
+			schemaNextAction: schemaAuditCommand(env),
 		};
 	}
 	if (status.schemaLifecycle === 'UNVERIFIED' || status.schemaLifecycle === undefined) {
-		return { schemaOperationReadiness: 'UNVERIFIED', schemaNextAction: null };
+		return { schemaOperationReadiness: 'UNVERIFIED', schemaNextAction: 'pnpm dbs' };
 	}
 	const pending = status.pendingMigrationsCount ?? 0;
 	if (pending > 0) {

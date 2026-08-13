@@ -57,6 +57,9 @@ export type PromotionDestination = 'preview' | 'production' | 'local';
 
 export type DisposableProofStatus = 'valid' | 'missing' | 'stale';
 
+/** Presentation category for operator UI/CLI. Not a classifier. */
+export type StatusSemantic = 'verified' | 'unverified' | 'blocked' | 'neutral';
+
 export interface PromotionHandoff {
 	dryRunCommand: string | null;
 	applyCommand: string | null;
@@ -104,6 +107,8 @@ export interface CanonicalEnvSummary {
 	targetClassification: string;
 	environmentIdentityOk: boolean;
 	schemaOperationReadiness: SchemaOperationReadiness;
+	/** Copied from deriveSchemaOperationFields — presentation only, not a second classifier. */
+	schemaNextAction: string | null;
 	authorizationIntegrity: AuthorizationIntegrity;
 	authorizationMissingVersions: string[];
 	evidence: EvidenceState;
