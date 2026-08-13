@@ -1008,6 +1008,103 @@ function parseReceiptEvidence(
 	};
 }
 
+function buildTargetScanSql(
+	targetInvitationId: string,
+	slug: string,
+	eventType: string,
+	ownerUserId: string,
+): { sql: string; pubQuery: string } {
+	const invitationId = sqlLiteral(targetInvitationId);
+	const pubQuery = `select version, updated_at, published_at, content, slug from public.published_invitation_content where invitation_project_id = ${invitationId}::uuid and deleted_at is null order by version desc limit 1`;
+	const sql = `
+select json_build_object(
+	'draft', (
+		select row_to_json(t) from (
+			select id, status, updated_at, content
+			from public.invitation_content_drafts
+			where invitation_project_id = ${invitationId}::uuid and deleted_at is null
+			limit 1
+		) t
+	),
+	'pubByInvitation', (select row_to_json(t) from (${pubQuery}) t),
+	'pubByRoute', (
+		select row_to_json(t) from (
+			select version, updated_at, published_at, content, slug
+			from public.published_invitation_content
+			where slug = ${sqlLiteral(slug)} and event_type = ${sqlLiteral(eventType)} and deleted_at is null
+			order by version desc
+			limit 1
+		) t
+	),
+	'provenance', (
+		select row_to_json(t) from (
+			select managed_projection, applied_draft_updated_at, applied_operation_id,
+				applied_published_version, applied_published_projection_hash
+			from public.managed_invitation_release_provenance
+			where invitation_id = ${invitationId}::uuid
+		) t
+	),
+	'appliedReceipt', (
+		select row_to_json(t) from (
+			select r.operation_id, r.status, r.command_kind, r.origin, r.completed_steps, r.input_hashes
+			from public.invitation_mutation_operation_receipts r
+			join public.managed_invitation_release_provenance p
+				on p.applied_operation_id = r.operation_id
+			where p.invitation_id = ${invitationId}::uuid
+			limit 1
+		) t
+	),
+	'latestReceipt', (
+		select row_to_json(t) from (
+			select operation_id, status, command_kind, origin, completed_steps, input_hashes
+			from public.invitation_mutation_operation_receipts
+			where invitation_id = ${invitationId}::uuid
+			order by created_at desc, id desc
+			limit 1
+		) t
+	),
+	'eventByInvitation', (
+		select row_to_json(t) from (
+			select id, owner_user_id, slug, event_type, title, status, invitation_project_id
+			from public.events
+			where invitation_project_id = ${invitationId}::uuid and deleted_at is null
+			limit 1
+		) t
+	),
+	'eventBySlug', (
+		select row_to_json(t) from (
+			select id, owner_user_id, slug, event_type, title, status, invitation_project_id
+			from public.events
+			where slug = ${sqlLiteral(slug)} and deleted_at is null
+			limit 1
+		) t
+	),
+	'member', (
+		select row_to_json(t) from (
+			select m.event_id, m.user_id, m.membership_role
+			from public.event_memberships m
+			where m.user_id = ${sqlLiteral(ownerUserId)}::uuid
+				and m.deleted_at is null
+				and m.event_id = coalesce(
+					(
+						select id from public.events
+						where invitation_project_id = ${invitationId}::uuid and deleted_at is null
+						limit 1
+					),
+					(
+						select id from public.events
+						where slug = ${sqlLiteral(slug)} and deleted_at is null
+						limit 1
+					)
+				)
+			limit 1
+		) t
+	)
+);
+`;
+	return { sql, pubQuery };
+}
+
 // eslint-disable-next-line complexity -- Scan classifies independently nullable DB/provenance evidence before any mutation.
 function scanTargetState(
 	targetDbUrl: string,
@@ -1028,37 +1125,26 @@ function scanTargetState(
 				? stableCreateInvitationId
 				: randomUUID();
 
-	const draftResult = runPsql(
-		`select row_to_json(t) from (select id, status, updated_at, content from public.invitation_content_drafts where invitation_project_id = '${targetInvitationId}'::uuid and deleted_at is null limit 1) t;`,
-		targetDbUrl,
-		{ tuplesOnly: true, throwOnError: false },
-	);
-	const existingDraft = draftResult.stdout.trim() ? parsePsqlJson(draftResult.stdout) : null;
-
-	const pubQuery = `select version, updated_at, published_at, content, slug from public.published_invitation_content where invitation_project_id = '${targetInvitationId}'::uuid and deleted_at is null order by version desc limit 1`;
-	const pubByInvitation = runPsql(`select row_to_json(t) from (${pubQuery}) t;`, targetDbUrl, {
-		tuplesOnly: true,
-		throwOnError: false,
-	});
-	const pubByRouteQuery = `select version, updated_at, published_at, content, slug from public.published_invitation_content where slug = ${sqlLiteral(slug)} and event_type = ${sqlLiteral(eventType)} and deleted_at is null order by version desc limit 1`;
-	const pubByRoute = runPsql(`select row_to_json(t) from (${pubByRouteQuery}) t;`, targetDbUrl, {
-		tuplesOnly: true,
-		throwOnError: false,
-	});
-	const existingPub = pubByInvitation.stdout.trim()
-		? parsePsqlJson(pubByInvitation.stdout)
-		: pubByRoute.stdout.trim()
-			? parsePsqlJson(pubByRoute.stdout)
+	const { sql, pubQuery } = buildTargetScanSql(targetInvitationId, slug, eventType, ownerUserId);
+	const scanResult = runPsql(sql, targetDbUrl, { tuplesOnly: true, throwOnError: false });
+	const scanned = scanResult.stdout.trim() ? parsePsqlJson(scanResult.stdout) : {};
+	const existingDraft =
+		scanned.draft && typeof scanned.draft === 'object'
+			? (scanned.draft as Record<string, unknown>)
 			: null;
-
-	const provenanceResult = runPsql(
-		`select row_to_json(t) from (select managed_projection, applied_draft_updated_at, applied_operation_id, applied_published_version, applied_published_projection_hash from public.managed_invitation_release_provenance where invitation_id = '${targetInvitationId}'::uuid) t;`,
-		targetDbUrl,
-		{ tuplesOnly: true, throwOnError: false },
-	);
-	const existingProvenance = provenanceResult.stdout.trim()
-		? parsePsqlJson(provenanceResult.stdout)
-		: null;
+	const pubByInvitation =
+		scanned.pubByInvitation && typeof scanned.pubByInvitation === 'object'
+			? (scanned.pubByInvitation as Record<string, unknown>)
+			: null;
+	const pubByRoute =
+		scanned.pubByRoute && typeof scanned.pubByRoute === 'object'
+			? (scanned.pubByRoute as Record<string, unknown>)
+			: null;
+	const existingPub = pubByInvitation ?? pubByRoute;
+	const existingProvenance =
+		scanned.provenance && typeof scanned.provenance === 'object'
+			? (scanned.provenance as Record<string, unknown>)
+			: null;
 	const managedProjection =
 		existingProvenance?.managed_projection &&
 		typeof existingProvenance.managed_projection === 'object'
@@ -1068,53 +1154,29 @@ function scanTargetState(
 		typeof existingProvenance?.applied_operation_id === 'string'
 			? existingProvenance.applied_operation_id
 			: null;
-	const appliedReceiptResult = appliedOperationId
-		? runPsql(
-				`select row_to_json(t) from (select operation_id, status, command_kind, origin, completed_steps, input_hashes from public.invitation_mutation_operation_receipts where operation_id = ${sqlLiteral(appliedOperationId)}::uuid) t;`,
-				targetDbUrl,
-				{ tuplesOnly: true, throwOnError: false },
-			)
-		: null;
-	const latestReceiptResult = runPsql(
-		`select row_to_json(t) from (select operation_id, status, command_kind, origin, completed_steps, input_hashes from public.invitation_mutation_operation_receipts where invitation_id = '${targetInvitationId}'::uuid order by created_at desc, id desc limit 1) t;`,
-		targetDbUrl,
-		{ tuplesOnly: true, throwOnError: false },
-	);
 	const appliedReceipt = parseReceiptEvidence(
-		appliedReceiptResult?.stdout.trim() ? parsePsqlJson(appliedReceiptResult.stdout) : null,
+		scanned.appliedReceipt && typeof scanned.appliedReceipt === 'object'
+			? (scanned.appliedReceipt as Record<string, unknown>)
+			: null,
 	);
 	const latestMutationReceipt = parseReceiptEvidence(
-		latestReceiptResult.stdout.trim() ? parsePsqlJson(latestReceiptResult.stdout) : null,
+		scanned.latestReceipt && typeof scanned.latestReceipt === 'object'
+			? (scanned.latestReceipt as Record<string, unknown>)
+			: null,
 	);
-
-	const eventByInvitation = runPsql(
-		`select row_to_json(t) from (select id, owner_user_id, slug, event_type, title, status, invitation_project_id from public.events where invitation_project_id = '${targetInvitationId}'::uuid and deleted_at is null limit 1) t;`,
-		targetDbUrl,
-		{ tuplesOnly: true, throwOnError: false },
-	);
-	const eventBySlug = runPsql(
-		`select row_to_json(t) from (select id, owner_user_id, slug, event_type, title, status, invitation_project_id from public.events where slug = ${sqlLiteral(slug)} and deleted_at is null limit 1) t;`,
-		targetDbUrl,
-		{ tuplesOnly: true, throwOnError: false },
-	);
-	const existingEvent = eventByInvitation.stdout.trim()
-		? parsePsqlJson(eventByInvitation.stdout)
-		: eventBySlug.stdout.trim()
-			? parsePsqlJson(eventBySlug.stdout)
-			: null;
+	const existingEvent =
+		scanned.eventByInvitation && typeof scanned.eventByInvitation === 'object'
+			? (scanned.eventByInvitation as Record<string, unknown>)
+			: scanned.eventBySlug && typeof scanned.eventBySlug === 'object'
+				? (scanned.eventBySlug as Record<string, unknown>)
+				: null;
 	if (existingInvitation && existingEvent && existingEvent.owner_user_id !== ownerUserId) {
 		throw new Error(`Target event owner does not match the invitation owner for "${slug}".`);
 	}
-
-	let existingMember: Record<string, unknown> | null = null;
-	if (existingEvent?.id) {
-		const memberResult = runPsql(
-			`select row_to_json(t) from (select event_id, user_id, membership_role from public.event_memberships where event_id = '${existingEvent.id}'::uuid and user_id = '${ownerUserId}'::uuid and deleted_at is null limit 1) t;`,
-			targetDbUrl,
-			{ tuplesOnly: true, throwOnError: false },
-		);
-		existingMember = memberResult.stdout.trim() ? parsePsqlJson(memberResult.stdout) : null;
-	}
+	const existingMember =
+		scanned.member && typeof scanned.member === 'object'
+			? (scanned.member as Record<string, unknown>)
+			: null;
 
 	return {
 		existingInv: existingInvitation,

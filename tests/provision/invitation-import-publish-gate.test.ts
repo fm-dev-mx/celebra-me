@@ -240,11 +240,13 @@ describe('stable create invitation identity', () => {
 		);
 		const scanBlock = source.slice(
 			source.indexOf('function scanTargetState('),
-			source.indexOf('const draftResult = runPsql'),
+			source.indexOf('const { sql, pubQuery } = buildTargetScanSql'),
 		);
 		expect(scanBlock).toMatch(/stableCreateInvitationId/);
 		expect(scanBlock).toMatch(/managedIdentityId → random/);
 		expect(source).toMatch(/pkg\.invitation\.managedIdentityId/);
+		expect(source).toMatch(/function buildTargetScanSql\(/);
+		expect(source).toMatch(/json_build_object\(/);
 	});
 });
 
