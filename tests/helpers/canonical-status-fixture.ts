@@ -16,6 +16,9 @@ export function buildCanonicalStatusViewFixture(
 		targetClassification: environment === 'local' ? 'persistent-local' : environment,
 		environmentIdentityOk: true,
 		schemaOperationReadiness: 'NEEDS_DISPOSABLE_PROOF' as const,
+		authorizationIntegrity:
+			environment === 'production' ? ('GRANDFATHERED' as const) : ('NOT_APPLICABLE' as const),
+		authorizationMissingVersions: [],
 		evidence: 'LIVE' as const,
 		probedAt: '2026-08-12T22:11:46.000Z',
 	});

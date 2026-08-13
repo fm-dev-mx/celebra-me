@@ -31,8 +31,9 @@ describe('Phase 3 operational contracts', () => {
 		const prepareApplyIdx = workflow.indexOf('prepareApply(ctx)');
 		const beforeWriteIdx = workflow.indexOf('beforeWrite(plan, ctx)');
 		const authorizeIdx = workflow.indexOf('async authorize(plan, ctx)');
-		const migration = workflow.indexOf("['db', 'push', '--db-url', ctx.dbUrl, '--yes']");
+		const migration = workflow.indexOf('executeSupabasePush(ctx.dbUrl)');
 		const afterWriteIdx = workflow.indexOf('afterWrite(plan, ctx)');
+		const ownerRecord = workflow.indexOf('writeOwnerApplyRecord', afterWriteIdx);
 		const contract = workflow.indexOf("runMutationContractVerify('production')", afterWriteIdx);
 		const postBackup = workflow.indexOf("runCriticalBackup(ctx.dbUrl, 'post'", afterWriteIdx);
 		expect(workflow).toContain('evaluateHostedCompatibilityForPlan');
@@ -63,7 +64,8 @@ describe('Phase 3 operational contracts', () => {
 		).toBeGreaterThan(authorizeIdx);
 		expect(migration).toBeGreaterThan(authorizeIdx);
 		expect(afterWriteIdx).toBeGreaterThan(migration);
-		expect(contract).toBeGreaterThan(afterWriteIdx);
+		expect(ownerRecord).toBeGreaterThan(afterWriteIdx);
+		expect(contract).toBeGreaterThan(ownerRecord);
 		expect(postBackup).toBeGreaterThan(contract);
 	});
 

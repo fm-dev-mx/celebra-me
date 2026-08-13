@@ -13,6 +13,13 @@ const readiness = z.enum([
 	'NOT_CONFIGURED',
 	'UNVERIFIED',
 ]);
+const authorizationIntegrity = z.enum([
+	'RECORDED',
+	'MISSING',
+	'GRANDFATHERED',
+	'NOT_APPLICABLE',
+	'UNVERIFIED',
+]);
 const envState = z.enum(['match', 'behind', 'absent', 'diverged', 'conflict', 'unknown']);
 const action = z.enum(['PROMOTE_PREVIEW', 'PROMOTE_PRODUCTION', 'BLOCKED', 'UNKNOWN']);
 const reasonCode = z.enum([
@@ -43,6 +50,8 @@ const envSummary = z
 		targetClassification: z.string().min(1).max(80),
 		environmentIdentityOk: z.boolean(),
 		schemaOperationReadiness: readiness,
+		authorizationIntegrity,
+		authorizationMissingVersions: z.array(migrationVersion).max(200),
 		evidence,
 		probedAt: z.iso.datetime({ offset: true }).nullable(),
 	})
@@ -62,6 +71,7 @@ const diagnosticCode = z.enum([
 	'ASSET_IDENTITY_UNVERIFIED',
 	'LIFECYCLE_METADATA_STALE',
 	'DETAIL_BUDGET_EXCEEDED',
+	'PRODUCTION_AUTHORIZATION_MISSING',
 ]);
 
 const diagnostic = z

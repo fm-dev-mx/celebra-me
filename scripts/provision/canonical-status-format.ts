@@ -108,8 +108,25 @@ export function formatCanonicalStatusView(
 		ENVS.map((env) => pad(view.environments[env].evidence, col)).join('');
 	lines.push(evidenceRow);
 
+	const authorizationRow =
+		pad('Authorization', 18) +
+		ENVS.map((env) => pad(view.environments[env].authorizationIntegrity, col)).join('');
+	lines.push(authorizationRow);
+
 	lines.push('');
-	lines.push('(Schema = migration history. Invitations = registry publication. Readiness = migrate authorization.)');
+	lines.push(
+		'(Schema = migration history. Authorization = owner-apply evidence. Invitations = registry publication. Readiness = migrate authorization.)',
+	);
+
+	const productionAuth = view.environments.production;
+	if (productionAuth.authorizationIntegrity === 'MISSING') {
+		lines.push('');
+		lines.push('PRODUCTION AUTHORIZATION: MISSING');
+		lines.push(
+			`Missing versions: ${productionAuth.authorizationMissingVersions.join(', ') || '(unknown)'}`,
+		);
+		lines.push('Schema CURRENT is not owner-authorization evidence.');
+	}
 	lines.push('');
 	lines.push('DISPOSABLE-TEST (not a persistent schema environment)');
 	lines.push(`Disposable proof: ${view.disposableProof.status.toUpperCase()}`);

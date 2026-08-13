@@ -15,6 +15,8 @@ describe('CanonicalStatusPanel', () => {
 		expect(screen.getByRole('heading', { name: 'Estado operacional' })).toBeInTheDocument();
 		expect(screen.getAllByText(/Schema migrations: CURRENT 75\/75/)).toHaveLength(3);
 		expect(screen.getAllByText('Requiere prueba disposable')).toHaveLength(3);
+		expect(screen.getByText('Previa al libro')).toBeInTheDocument();
+		expect(screen.getAllByText('No aplica')).toHaveLength(2);
 		expect(screen.getByText(/AUSENTE/)).toBeInTheDocument();
 		expect(
 			screen.getByText(/No indica deuda de esquema en Local, Preview o Production/),
@@ -68,5 +70,27 @@ describe('CanonicalStatusPanel', () => {
 		expect(screen.queryByText('HEALTHY')).not.toBeInTheDocument();
 		expect(screen.queryByText('ALIGNED')).not.toBeInTheDocument();
 		expect(screen.getByRole('checkbox', { name: 'Diagnóstico avanzado' })).not.toBeChecked();
+	});
+
+	it('surfaces missing Production authorization without treating CURRENT as sufficient', () => {
+		const base = buildCanonicalStatusViewFixture();
+		render(
+			<CanonicalStatusPanel
+				initialView={buildCanonicalStatusViewFixture({
+					environments: {
+						...base.environments,
+						production: {
+							...base.environments.production,
+							authorizationIntegrity: 'MISSING',
+							authorizationMissingVersions: ['20260807120000'],
+						},
+					},
+				})}
+			/>,
+		);
+		expect(screen.getByText('Autorización de Production ausente.')).toBeInTheDocument();
+		expect(screen.getByText(/20260807120000/)).toBeInTheDocument();
+		expect(screen.getByText(/CURRENT no es evidencia de autorización/)).toBeInTheDocument();
+		expect(screen.getAllByText(/Schema migrations: CURRENT 75\/75/)).toHaveLength(3);
 	});
 });
