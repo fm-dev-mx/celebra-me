@@ -50,6 +50,7 @@ const envSummary = z
 		targetClassification: z.string().min(1).max(80),
 		environmentIdentityOk: z.boolean(),
 		schemaOperationReadiness: readiness,
+		schemaNextAction: z.string().max(400).nullable(),
 		authorizationIntegrity,
 		authorizationMissingVersions: z.array(migrationVersion).max(200),
 		evidence,

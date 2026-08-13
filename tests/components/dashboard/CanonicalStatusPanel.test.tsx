@@ -16,15 +16,18 @@ describe('CanonicalStatusPanel', () => {
 		expect(screen.getAllByText(/Schema migrations: CURRENT 75\/75/)).toHaveLength(3);
 		expect(screen.getAllByText('Requiere prueba disposable')).toHaveLength(3);
 		expect(screen.getByText('Previa al libro')).toBeInTheDocument();
-		expect(screen.getAllByText('No aplica')).toHaveLength(2);
+		expect(screen.getAllByText('No aplica').length).toBeGreaterThanOrEqual(2);
+		expect(screen.getAllByText('Requiere corrección').length).toBeGreaterThan(0);
 		expect(screen.getByText(/AUSENTE/)).toBeInTheDocument();
 		expect(
 			screen.getByText(/No indica deuda de esquema en Local, Preview o Production/),
 		).toBeInTheDocument();
 		expect(screen.getByText('Boda de Victoria y Roberto')).toBeInTheDocument();
-		expect(screen.getByText('PROMOTE_PRODUCTION')).toBeInTheDocument();
+		expect(screen.getByText('Promover a Production')).toBeInTheDocument();
 		expect(screen.getByText(/OWNER \/ HITL REQUIRED/)).toBeInTheDocument();
 		expect(screen.getByText(/Filas activas en DB \(no son el registro\)/)).toBeInTheDocument();
+		expect(screen.getByText(/Consultar no pone los indicadores en verde/)).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: 'Actualizar evidencia remota' })).toBeInTheDocument();
 		expect(mockGet).not.toHaveBeenCalled();
 	});
 
@@ -43,6 +46,30 @@ describe('CanonicalStatusPanel', () => {
 		).toBeInTheDocument();
 		expect(screen.queryByText('PROMOTIONS')).not.toBeInTheDocument();
 		expect(screen.queryByText('Managed')).not.toBeInTheDocument();
+	});
+
+	it('does not treat an unverified empty queue as success', () => {
+		const base = buildCanonicalStatusViewFixture();
+		render(
+			<CanonicalStatusPanel
+				initialView={buildCanonicalStatusViewFixture({
+					promotions: [],
+					inSyncCount: 0,
+					inSyncSlugs: [],
+					environments: {
+						local: { ...base.environments.local, evidence: 'UNVERIFIED' },
+						preview: { ...base.environments.preview, evidence: 'UNVERIFIED' },
+						production: { ...base.environments.production, evidence: 'UNVERIFIED' },
+					},
+				})}
+			/>,
+		);
+		expect(screen.getAllByText('La cola de publicación no está verificada.').length).toBeGreaterThan(
+			0,
+		);
+		expect(
+			screen.queryByText('No hay invitaciones del registro que requieran acción.'),
+		).not.toBeInTheDocument();
 	});
 
 	it('keeps advanced diagnostics collapsed and without operational authority', () => {
@@ -89,8 +116,12 @@ describe('CanonicalStatusPanel', () => {
 			/>,
 		);
 		expect(screen.getByText('Autorización de Production ausente.')).toBeInTheDocument();
-		expect(screen.getByText(/20260807120000/)).toBeInTheDocument();
-		expect(screen.getByText(/CURRENT no es evidencia de autorización/)).toBeInTheDocument();
+		expect(screen.getAllByText(/20260807120000/).length).toBeGreaterThan(0);
+		expect(screen.getAllByText(/CURRENT no es evidencia de autorización/).length).toBeGreaterThan(0);
+		expect(
+			screen.getAllByText(/No hay un comando canónico para registrar applies históricos/)
+				.length,
+		).toBeGreaterThan(0);
 		expect(screen.getAllByText(/Schema migrations: CURRENT 75\/75/)).toHaveLength(3);
 	});
 });

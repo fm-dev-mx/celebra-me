@@ -3,7 +3,11 @@ import type {
 	AuthorizationIntegrity,
 	DiagnosticCode,
 	DisposableProofStatus,
+	EvidenceState,
+	PromotionAction,
+	PromotionReasonCode,
 	SchemaOperationReadiness,
+	StatusSemantic,
 	TargetEnv,
 } from './types';
 
@@ -35,6 +39,40 @@ export const AUTHORIZATION_LABELS: Record<AuthorizationIntegrity, string> = {
 	GRANDFATHERED: 'Previa al libro',
 	NOT_APPLICABLE: 'No aplica',
 	UNVERIFIED: 'Sin verificar',
+};
+
+export const SEMANTIC_LABELS: Record<StatusSemantic, string> = {
+	verified: 'Verificado',
+	unverified: 'Sin verificar',
+	blocked: 'Requiere corrección',
+	neutral: 'No aplica',
+};
+
+export const EVIDENCE_LABELS: Record<EvidenceState, string> = {
+	LIVE: 'En vivo',
+	CACHED: 'En caché',
+	UNVERIFIED: 'Sin verificar',
+};
+
+export const PUBLICATION_ACTION_LABELS: Record<Exclude<PromotionAction, 'NONE'>, string> = {
+	PROMOTE_PREVIEW: 'Promover a Preview',
+	PROMOTE_PRODUCTION: 'Promover a Production',
+	BLOCKED: 'Bloqueado',
+	UNKNOWN: 'Sin clasificar',
+};
+
+export const PUBLICATION_REASON_LABELS: Record<PromotionReasonCode, string> = {
+	IN_SYNC: 'Local, Preview y Production coinciden con el canónico.',
+	EVIDENCE_INCOMPLETE: 'La evidencia promocional en vivo está incompleta.',
+	CANONICAL_UNAVAILABLE: 'No se pudo construir la huella canónica desde la definición del registro.',
+	IDENTITY_CONFLICT: 'Hay filas de invitación duplicadas o con conflicto de identidad.',
+	MANAGED_DIVERGENCE:
+		'El contenido publicado coincide con el canónico pero el borrador diverge, o hay conflicto administrado.',
+	PRODUCTION_AHEAD_OF_PREVIEW:
+		'Production coincide con el canónico mientras Preview no. No es una progresión válida.',
+	PREVIEW_ALIGNED_PRODUCTION_BEHIND: 'Local y Preview coinciden con el canónico. Production está detrás.',
+	LOCAL_BEHIND_PREVIEW_ALIGNED: 'Preview y Production coinciden con el canónico. Local está detrás.',
+	PREVIEW_BEHIND_CANONICAL: 'Preview no coincide con el canónico. La promoción válida es Preview-first.',
 };
 
 export const DIAGNOSTIC_LABELS: Record<DiagnosticCode, string> = {

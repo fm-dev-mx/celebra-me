@@ -16,6 +16,7 @@ export function buildCanonicalStatusViewFixture(
 		targetClassification: environment === 'local' ? 'persistent-local' : environment,
 		environmentIdentityOk: true,
 		schemaOperationReadiness: 'NEEDS_DISPOSABLE_PROOF' as const,
+		schemaNextAction: 'pnpm db:migrate -- --target disposable-test --apply',
 		authorizationIntegrity:
 			environment === 'production' ? ('GRANDFATHERED' as const) : ('NOT_APPLICABLE' as const),
 		authorizationMissingVersions: [],

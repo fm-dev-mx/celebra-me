@@ -123,4 +123,32 @@ describe('presentation parity with decidePromotionAction', () => {
 			production: 'unknown',
 		})).toEqual(['PRODUCTION UNVERIFIED']);
 	});
+
+	it('attaches existing diagnostic commands to BLOCKED and UNKNOWN handoffs', () => {
+		const identity = presentPromotionRow({
+			slug: 'demo',
+			title: 'Demo',
+			eventType: 'boda',
+			action: 'BLOCKED',
+			reasonCode: 'IDENTITY_CONFLICT',
+			environments: { local: 'conflict', preview: 'match', production: 'match' },
+			envEvidence: { local: 'LIVE', preview: 'LIVE', production: 'LIVE' },
+		});
+		expect(identity.handoff.dryRunCommand).toBe(
+			'pnpm invitation:diagnose-identity -- --target local',
+		);
+		expect(identity.handoff.steps).toEqual(['Diagnose identity', 'Do not promote']);
+
+		const unknown = presentPromotionRow({
+			slug: 'demo',
+			title: 'Demo',
+			eventType: 'boda',
+			action: 'UNKNOWN',
+			reasonCode: 'EVIDENCE_INCOMPLETE',
+			environments: { local: 'unknown', preview: 'match', production: 'match' },
+			envEvidence: { local: 'UNVERIFIED', preview: 'LIVE', production: 'LIVE' },
+		});
+		expect(unknown.handoff.dryRunCommand).toBe('pnpm dbs demo');
+		expect(unknown.handoff.applyCommand).toBeNull();
+	});
 });
