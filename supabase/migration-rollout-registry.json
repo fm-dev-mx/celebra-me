@@ -38,6 +38,11 @@
             "provides": ["preview_approval_artifacts"],
             "notes": "Creates shared Preview release-approval store (cross-worktree SSOT for promote)."
         },
+        "20260812210000": {
+            "phase": "expand",
+            "provides": ["guest_invitations_phone_objects_canonical"],
+            "notes": "Idempotent reconcile of idx_guest_invitations_phone and guest_invitations_phone_country_code_pair_check across Local/Preview/Production starting states."
+        },
         "__historical_rsvp_dml_revoke__": {
             "phase": "contract",
             "requiresDeployedAppCapabilities": ["public_guest_rsvp_rpc_client"],
