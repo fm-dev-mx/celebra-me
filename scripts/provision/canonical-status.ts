@@ -79,6 +79,7 @@ function envSummary(
 			!status.reachable || targetClassification === expectedTargetClassification(status.environment),
 		schemaOperationReadiness: (status.schemaOperationReadiness ??
 			'UNVERIFIED') as SchemaOperationReadiness,
+		schemaNextAction: status.schemaNextAction ?? null,
 		authorizationIntegrity: authorization.status,
 		authorizationMissingVersions: authorization.missingVersions,
 		evidence,
@@ -206,6 +207,7 @@ export function buildLocalCanonicalStatusView(): CanonicalStatusView {
 		targetClassification: 'unknown',
 		environmentIdentityOk: true,
 		schemaOperationReadiness: 'UNVERIFIED',
+		schemaNextAction: null,
 		authorizationIntegrity: environment === 'production' ? 'UNVERIFIED' : 'NOT_APPLICABLE',
 		authorizationMissingVersions: [],
 		evidence: 'UNVERIFIED',
