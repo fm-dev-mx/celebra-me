@@ -67,6 +67,26 @@ export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] = [
 		visualProfileId: 'romina-rios-chaparro',
 	},
 	{
+		slug: 'daniela-y-martin',
+		eventType: 'boda',
+		classification: 'canonical',
+		remoteParity: 'required',
+		sourceStrategy: 'canonical_definition',
+		assetStrategy: 'VERSIONED_MANAGED_ASSET',
+		themeId: 'jewelry-box-wedding',
+		visualProfileId: 'daniela-y-martin',
+	},
+	{
+		slug: 'victoria-y-roberto',
+		eventType: 'boda',
+		classification: 'canonical',
+		remoteParity: 'required',
+		sourceStrategy: 'canonical_definition',
+		assetStrategy: 'VERSIONED_MANAGED_ASSET',
+		themeId: 'jewelry-box-wedding',
+		visualProfileId: 'victoria-y-roberto',
+	},
+	{
 		slug: 'america-johana',
 		eventType: 'xv',
 		classification: 'legacy',
@@ -176,7 +196,7 @@ export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] = [
 	},
 ] as const;
 
-export const EXPECTED_LOCAL_RENDER_CORPUS_SIZE = 13;
+export const EXPECTED_LOCAL_RENDER_CORPUS_SIZE = 15;
 
 export function listLocalRenderCorpus(): readonly LocalRenderCorpusEntry[] {
 	return LOCAL_RENDER_CORPUS;

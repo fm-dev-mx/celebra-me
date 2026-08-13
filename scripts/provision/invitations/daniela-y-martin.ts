@@ -385,7 +385,7 @@ export const danielaInvitation: InvitationDefinition<DanielaAssetKey> = defineIn
 	managedIdentityId: '8e4f2a1b-6c3d-4e9f-a0b1-2c3d4e5f6a7b',
 	previousSlugs: ['boda-daniela-y-martin'],
 	createdAt: '2026-07-31T12:00:00.000Z',
-	lifecycle: 'in_progress',
+	lifecycle: 'published',
 	deliveryScope: 'content-and-assets',
 	eventType: DANIELA_EVENT.eventType,
 	title: DANIELA_EVENT.title,

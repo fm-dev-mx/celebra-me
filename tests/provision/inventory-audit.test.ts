@@ -109,6 +109,8 @@ function installEvidenceFixtures(): void {
 				verifiedRow('abril-michelle-becerra-rea'),
 				verifiedRow('romina-rios-chaparro'),
 				verifiedRow('alba-rosa-quinonez'),
+				verifiedRow('daniela-y-martin'),
+				verifiedRow('victoria-y-roberto'),
 			]);
 		}
 		if (dbUrl.includes('preview')) {
@@ -116,6 +118,8 @@ function installEvidenceFixtures(): void {
 				verifiedRow('abril-michelle-becerra-rea'),
 				verifiedRow('romina-rios-chaparro'),
 				verifiedRow('alba-rosa-quinonez'),
+				verifiedRow('daniela-y-martin'),
+				verifiedRow('victoria-y-roberto'),
 				emptyRow('alba-rosa-quinones'),
 				emptyRow('e2e-preview-publication'),
 			]);
@@ -124,6 +128,8 @@ function installEvidenceFixtures(): void {
 			verifiedRow('abril-michelle-becerra-rea'),
 			verifiedRow('romina-rios-chaparro'),
 			verifiedRow('alba-rosa-quinonez'),
+			verifiedRow('daniela-y-martin'),
+			verifiedRow('victoria-y-roberto'),
 		]);
 	});
 }
@@ -204,8 +210,8 @@ describe('Inventory Audit & Parity Engine (scripts/provision/inventory-audit.ts)
 
 			const daniela = audit.rows.find((r) => r.slug === 'daniela-y-martin');
 			expect(daniela).toBeDefined();
-			expect(daniela?.category).toBe('canonical_in_progress');
-			expect(daniela?.deliveryState).toBe('IN_PROGRESS');
+			expect(daniela?.category).toBe('canonical_published');
+			expect(daniela?.deliveryState).toBe('ALIGNED');
 
 			const abril = audit.rows.find((r) => r.slug === 'abril-michelle-becerra-rea');
 			expect(abril).toBeDefined();

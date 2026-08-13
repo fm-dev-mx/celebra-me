@@ -146,7 +146,11 @@ describe('Boda Victoria y Roberto provision contract', () => {
 			'thankYou',
 		]);
 		expect(content).toHaveProperty('itinerary');
-		expect(content).not.toHaveProperty('music');
+		expect(content.music).toEqual({
+			url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1786656962/Stephen_Sanchez_-_Until_I_Found_You_ixnss9.mp3',
+			title: 'Stephen Sanchez — Until I Found You',
+			autoPlay: true,
+		});
 
 		const hero = content.hero as { name: string; secondaryName: string };
 		expect(hero.name.trim()).not.toBe('');
