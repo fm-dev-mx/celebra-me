@@ -158,6 +158,11 @@ describe('CanonicalStatusPanel', () => {
 				ok: true,
 				status: 200,
 				data: buildCanonicalStatusViewFixture({ evidence: 'CACHED' }),
+			})
+			.mockResolvedValueOnce({
+				ok: true,
+				status: 200,
+				data: buildCanonicalStatusViewFixture({ evidence: 'LIVE' }),
 			});
 		render(<CanonicalStatusPanel initialView={buildCanonicalStatusViewFixture()} />);
 		await user.click(screen.getByRole('button', { name: 'Revalidar todo' }));
@@ -165,6 +170,33 @@ describe('CanonicalStatusPanel', () => {
 		expect(screen.getByText('Boda de Victoria y Roberto')).toBeInTheDocument();
 		await user.click(screen.getByRole('button', { name: 'Revalidar todo' }));
 		await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
+		expect(mockGet).toHaveBeenCalledTimes(3);
+		expect(mockGet).toHaveBeenNthCalledWith(2, '/api/dashboard/estado?refresh=1', {
+			timeoutMs: 130_000,
+		});
+		expect(mockGet).toHaveBeenNthCalledWith(3, '/api/dashboard/estado?refresh=1&preflight=1', {
+			timeoutMs: 130_000,
+		});
+	});
+
+	it('conserva la oleada rápida si el preflight de Production agota el tiempo', async () => {
+		const user = userEvent.setup();
+		mockGet
+			.mockResolvedValueOnce({
+				ok: true,
+				status: 200,
+				data: buildCanonicalStatusViewFixture({ evidence: 'LIVE' }),
+			})
+			.mockResolvedValueOnce({
+				ok: false,
+				status: 504,
+				code: 'service_unavailable',
+				message: 'La consulta de estado excedió el tiempo límite.',
+			});
+		render(<CanonicalStatusPanel initialView={buildCanonicalStatusViewFixture()} />);
+		await user.click(screen.getByRole('button', { name: 'Revalidar todo' }));
+		expect(await screen.findByRole('alert')).toHaveTextContent('La consulta de estado excedió');
+		expect(screen.getByText('Boda de Victoria y Roberto')).toBeInTheDocument();
 		expect(mockGet).toHaveBeenCalledTimes(2);
 	});
 
@@ -189,11 +221,19 @@ describe('CanonicalStatusPanel', () => {
 		expect(mockGet).toHaveBeenCalledWith('/api/dashboard/estado?refresh=1', {
 			timeoutMs: 130_000,
 		});
+		mockGet.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			data: buildCanonicalStatusViewFixture(),
+		});
 		resolveRefresh?.({
 			ok: true,
 			status: 200,
 			data: buildCanonicalStatusViewFixture(),
 		} as never);
 		await waitFor(() => expect(refresh).not.toBeDisabled());
+		expect(mockGet).toHaveBeenCalledWith('/api/dashboard/estado?refresh=1&preflight=1', {
+			timeoutMs: 130_000,
+		});
 	});
 });

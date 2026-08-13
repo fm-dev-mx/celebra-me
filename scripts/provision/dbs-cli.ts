@@ -27,20 +27,50 @@ function readTimeoutMs(args: string[]): number {
 	return Math.floor(parsed);
 }
 
+async function refineOrKeep<T extends { promotions: unknown }>(
+	fast: T,
+	refine: () => Promise<T>,
+): Promise<T> {
+	try {
+		return await refine();
+	} catch (error) {
+		console.error(
+			error instanceof Error
+				? `Production preflight did not finish: ${error.message}`
+				: 'Production preflight did not finish.',
+		);
+		return fast;
+	}
+}
+
 async function formatGeneralView(
 	jsonMode: boolean,
 	verbose: boolean,
 	includeInSync: boolean,
 	diagnostics: boolean,
 ): Promise<void> {
-	const { buildCanonicalStatusView } = await import('./canonical-status.ts');
-	const { formatCanonicalStatusView } = await import('./canonical-status-format.ts');
-	const view = await buildCanonicalStatusView({ diagnostics });
+	const { buildCanonicalStatusView, refineCanonicalStatusViewPromotions } =
+		await import('./canonical-status.ts');
+	const { formatCanonicalStatusView, formatPromotionsSection } =
+		await import('./canonical-status-format.ts');
+	const fast = await buildCanonicalStatusView({
+		diagnostics,
+		includeProductionPreflight: false,
+	});
+	if (!jsonMode) {
+		process.stdout.write(
+			formatCanonicalStatusView(fast, { verbose, includeInSync, diagnostics }),
+		);
+	}
+	const view = await refineOrKeep(fast, () => refineCanonicalStatusViewPromotions(fast));
 	if (jsonMode) {
 		console.log(JSON.stringify(view, null, 2));
 		return;
 	}
-	process.stdout.write(formatCanonicalStatusView(view, { verbose, includeInSync, diagnostics }));
+	if (view !== fast) {
+		process.stdout.write('\n--- Production preflight ---\n');
+		process.stdout.write(formatPromotionsSection(view.promotions));
+	}
 }
 
 async function formatInvitationView(
@@ -49,9 +79,20 @@ async function formatInvitationView(
 	verbose: boolean,
 	diagnostics: boolean,
 ): Promise<void> {
-	const { buildCanonicalStatusView } = await import('./canonical-status.ts');
+	const { buildCanonicalStatusView, refineCanonicalStatusViewPromotions } =
+		await import('./canonical-status.ts');
 	const { formatSlugStatusView } = await import('./canonical-status-format.ts');
-	const view = await buildCanonicalStatusView({ slugs: [slug], diagnostics });
+	const fast = await buildCanonicalStatusView({
+		slugs: [slug],
+		diagnostics,
+		includeProductionPreflight: false,
+	});
+	if (!jsonMode) {
+		process.stdout.write(formatSlugStatusView(fast, slug, { verbose }));
+	}
+	const view = await refineOrKeep(fast, () =>
+		refineCanonicalStatusViewPromotions(fast, { slugs: [slug] }),
+	);
 	if (jsonMode) {
 		const promotion = view.promotions.find((row) => row.slug === slug) ?? null;
 		console.log(
@@ -69,7 +110,10 @@ async function formatInvitationView(
 		);
 		return;
 	}
-	process.stdout.write(formatSlugStatusView(view, slug, { verbose }));
+	if (view !== fast) {
+		process.stdout.write('\n--- Production preflight ---\n');
+		process.stdout.write(formatSlugStatusView(view, slug, { verbose }));
+	}
 }
 
 async function formatCompactView(
@@ -108,9 +152,7 @@ async function main(): Promise<void> {
 	const timeoutMs = readTimeoutMs(args);
 	const timeoutIdx = args.indexOf('--timeout-ms');
 	const slug = args.find(
-		(arg, index) =>
-			!arg.startsWith('-') &&
-			!(timeoutIdx !== -1 && index === timeoutIdx + 1),
+		(arg, index) => !arg.startsWith('-') && !(timeoutIdx !== -1 && index === timeoutIdx + 1),
 	);
 
 	if (compactMode) {

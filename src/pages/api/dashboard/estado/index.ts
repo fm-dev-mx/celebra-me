@@ -40,11 +40,13 @@ export const GET: APIRoute = async ({ request }) => {
 			throw new ApiError(400, 'bad_request', 'Parámetro domain inválido.');
 		}
 
+		const includeProductionPreflight = url.searchParams.get('preflight') === '1';
 		const view = refresh
 			? await refreshCanonicalStatusView({
 					env: parseEnv(envParam),
 					domain: parseDomain(domainParam),
 					diagnostics,
+					includeProductionPreflight,
 				})
 			: await getCanonicalStatusView();
 		return withPrivateCache(jsonResponse(view));

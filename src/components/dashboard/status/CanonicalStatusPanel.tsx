@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { dashboardApi } from '@/lib/dashboard/api-client';
+import { refreshCanonicalStatusTwoWave } from '@/components/dashboard/status/refresh-canonical-status';
 import {
 	AUTHORIZATION_LABELS,
 	DIAGNOSTIC_LABELS,
@@ -514,8 +514,12 @@ function RecentMigrationsSection({ items }: { items?: RecentMigrationRecord[] })
 }
 
 function ManualPatchesSection({ items }: { items: ManualPatchStatus[] }) {
-	const pending = items.filter((item) => item.environments.production.status === 'PENDING').length;
-	const blocked = items.filter((item) => item.environments.production.status === 'BLOCKED').length;
+	const pending = items.filter(
+		(item) => item.environments.production.status === 'PENDING',
+	).length;
+	const blocked = items.filter(
+		(item) => item.environments.production.status === 'BLOCKED',
+	).length;
 	const unverified = items.filter(
 		(item) => item.environments.production.status === 'UNVERIFIED',
 	).length;
@@ -529,8 +533,8 @@ function ManualPatchesSection({ items }: { items: ManualPatchStatus[] }) {
 				verificado(s) · {notNeeded} no requerido(s)
 			</summary>
 			<p>
-				Detectores activos, separados de las migraciones. «No requerido: 0 filas» es verde
-				y no demuestra que el parche fue aplicado.
+				Detectores activos, separados de las migraciones. «No requerido: 0 filas» es verde y
+				no demuestra que el parche fue aplicado.
 			</p>
 			<div className="canonical-status__patch-list">
 				{items.map((item) => {
@@ -626,8 +630,6 @@ interface CanonicalStatusPanelProps {
 	initialView?: CanonicalStatusView | null;
 }
 
-const CANONICAL_STATUS_REFRESH_TIMEOUT_MS = 130_000;
-
 export default function CanonicalStatusPanel({ initialView = null }: CanonicalStatusPanelProps) {
 	const [view, setView] = useState<CanonicalStatusView | null>(initialView);
 	const [loading, setLoading] = useState(false);
@@ -640,20 +642,13 @@ export default function CanonicalStatusPanel({ initialView = null }: CanonicalSt
 	const refresh = useCallback(async () => {
 		setLoading(true);
 		setError(null);
-		const params = new URLSearchParams({ refresh: '1' });
-		if (envFilter !== 'all') params.set('env', envFilter);
-		if (domainFilter !== 'all') params.set('domain', domainFilter);
-		if (includeDiagnostics) params.set('diagnostics', '1');
-		const result = await dashboardApi.get<CanonicalStatusView>(
-			`/api/dashboard/estado?${params.toString()}`,
-			{ timeoutMs: CANONICAL_STATUS_REFRESH_TIMEOUT_MS },
-		);
-		if (!result.ok) {
-			setError(result.message || 'No se pudo actualizar el estado.');
-			setLoading(false);
-			return;
-		}
-		setView(result.data);
+		const result = await refreshCanonicalStatusTwoWave({
+			envFilter,
+			domainFilter,
+			includeDiagnostics,
+		});
+		if (result.view) setView(result.view);
+		setError(result.error);
 		setLoading(false);
 	}, [domainFilter, envFilter, includeDiagnostics]);
 

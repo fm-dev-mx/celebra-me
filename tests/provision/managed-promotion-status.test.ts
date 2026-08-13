@@ -160,6 +160,27 @@ describe('managed promotion status', () => {
 		expect(result.promotions.every((row) => row.action === 'PROMOTE_PREVIEW')).toBe(true);
 	});
 
+	it('skips Production import-engine refine when includeProductionPreflight is false', async () => {
+		const session = {
+			probeConnectivity: jest.fn(async () => true),
+			psql: jest.fn(),
+		};
+		mockReadGrouped.mockImplementation(async () => ({
+			ok: true,
+			rows: [{ slug: 'alpha' }],
+		}));
+		mockClassify.mockImplementation(() => 'match');
+		const runProductionPreflight = jest.fn(async () => productionReport('alpha', 'PROMOTABLE'));
+		const result = await evaluateManagedPromotionStatus({
+			session: session as never,
+			definitions: [definition('alpha')],
+			includeProductionPreflight: false,
+			runProductionPreflight,
+		});
+		expect(runProductionPreflight).not.toHaveBeenCalled();
+		expect(result.inSyncSlugs).toEqual(['alpha']);
+	});
+
 	it('omits synchronized invitations from output', async () => {
 		const session = {
 			probeConnectivity: jest.fn(async () => true),
@@ -276,8 +297,7 @@ describe('canonical Production preflight refinement', () => {
 			reasonCode: 'PREVIEW_APPROVAL_REQUIRED',
 			environments: { production: 'behind' },
 			handoff: {
-				applyCommand:
-					'pnpm invitation:release -- --slug beta --targets preview --apply',
+				applyCommand: 'pnpm invitation:release -- --slug beta --targets preview --apply',
 			},
 		});
 		expect(result.promotions.find((row) => row.slug === 'delta')).toMatchObject({

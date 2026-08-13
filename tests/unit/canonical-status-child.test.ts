@@ -5,12 +5,15 @@ jest.mock('node:child_process', () => ({ spawn: jest.fn() }));
 
 import { spawn } from 'node:child_process';
 import { ApiError } from '@/lib/rsvp/core/errors';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 import {
 	CANONICAL_STATUS_MAX_STDOUT_BYTES,
 	refreshCanonicalStatusView,
 	resetCanonicalStatusRuntimeForTests,
 	runCanonicalStatusChild,
 	setCanonicalStatusChildRunnerForTests,
+	setOperationalStatusCachePathForTests,
 } from '@/lib/status/server/canonical-status';
 import { buildCanonicalStatusViewFixture } from '@tests/helpers/canonical-status-fixture';
 
@@ -127,5 +130,30 @@ describe('canonical status refresh coalescing', () => {
 		const [one, two] = await Promise.all([first, second]);
 		expect(one).toEqual(two);
 		expect(runner).toHaveBeenCalledTimes(1);
+	});
+
+	it('persists the fast wave and keeps it when Production preflight times out', async () => {
+		const { ApiError: StatusApiError } = await import('@/lib/rsvp/core/errors');
+		setOperationalStatusCachePathForTests(
+			join(tmpdir(), `canonical-status-wave-${process.pid}-${Date.now()}.json`),
+		);
+		const fast = buildCanonicalStatusViewFixture({ evidence: 'LIVE' });
+		const runner = jest
+			.fn<(args: string[], timeoutMs: number) => Promise<unknown>>()
+			.mockResolvedValueOnce(fast)
+			.mockRejectedValueOnce(
+				new StatusApiError(
+					504,
+					'service_unavailable',
+					'La consulta de estado excedió el tiempo límite.',
+				),
+			);
+		setCanonicalStatusChildRunnerForTests(runner);
+
+		const view = await refreshCanonicalStatusView({ includeProductionPreflight: true });
+		expect(view.evidence).toBe('LIVE');
+		expect(runner).toHaveBeenCalledTimes(2);
+		expect(runner.mock.calls[0]?.[0]).toContain('--skip-production-preflight');
+		expect(runner.mock.calls[1]?.[0]).toContain('--preflight-only');
 	});
 });

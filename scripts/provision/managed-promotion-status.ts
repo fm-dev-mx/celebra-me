@@ -27,7 +27,7 @@ import type { CanonicalPromotionRow, EvidenceState } from '../../src/lib/status/
 
 const ENVS: TargetEnv[] = ['local', 'preview', 'production'];
 const PRODUCTION_PREFLIGHT_CONCURRENCY = 2;
-const PRODUCTION_PREFLIGHT_TIMEOUT_MS = 120_000;
+export const PRODUCTION_PREFLIGHT_TIMEOUT_MS = 120_000;
 
 export interface ManagedPromotionStatus {
 	promotions: CanonicalPromotionRow[];
@@ -49,6 +49,8 @@ interface ManagedPromotionStatusOptions {
 		packageData: InvitationPackageData,
 	) => Promise<PromotionPreflightReport>;
 	productionPreflightTimeoutMs?: number;
+	/** When false, skip import-engine Production refine (fast status wave). Default true. */
+	includeProductionPreflight?: boolean;
 }
 
 type CanonicalPromotionFingerprint = { fingerprint: string; assetKeys: readonly string[] };
@@ -127,6 +129,23 @@ export function formatSlugPromotionLine(row: CanonicalPromotionRow | undefined):
 	return `Publication: ${row.action}`;
 }
 
+export function defaultRunProductionPreflight(
+	definitions: readonly InvitationDefinition[],
+): (packageData: InvitationPackageData) => Promise<PromotionPreflightReport> {
+	const definitionBySlug = new Map(
+		definitions.map((definition) => [definition.slug, definition]),
+	);
+	return async (packageData) =>
+		await runPromotionPreflight({
+			packageData,
+			requireBackup: false,
+			updateScope: resolvePromotionUpdateScope({
+				deliveryScope: definitionBySlug.get(packageData.invitation.slug)?.deliveryScope,
+			}),
+			getProductionDbUrl: getProdDbUrl,
+		});
+}
+
 function resolveManagedStatusInput(options: ManagedPromotionStatusOptions): {
 	session: StatusProbeSession;
 	definitions: InvitationDefinition[];
@@ -201,31 +220,24 @@ export async function evaluateManagedPromotionStatus(
 		envEvidence,
 		canonicalAvailableBySlug,
 	});
-	const definitionBySlug = new Map(
-		definitions.map((definition) => [definition.slug, definition]),
-	);
-	const presented = await refineManagedPromotionsWithProductionPreflight({
-		...initiallyPresented,
-		definitions,
-		environmentsBySlug,
-		envEvidence,
-		resolvePackage:
-			options.resolvePackage ??
-			(async (slug) => (await resolveInvitationPackageInput({ slug })).packageData),
-		runProductionPreflight:
-			options.runProductionPreflight ??
-			(async (packageData) =>
-				await runPromotionPreflight({
-					packageData,
-					requireBackup: false,
-					updateScope: resolvePromotionUpdateScope({
-						deliveryScope: definitionBySlug.get(packageData.invitation.slug)
-							?.deliveryScope,
-					}),
-					getProductionDbUrl: getProdDbUrl,
-				})),
-		timeoutMs: options.productionPreflightTimeoutMs ?? PRODUCTION_PREFLIGHT_TIMEOUT_MS,
-	});
+	const includeProductionPreflight = options.includeProductionPreflight !== false;
+	const presented = includeProductionPreflight
+		? await refineManagedPromotionsWithProductionPreflight({
+				...initiallyPresented,
+				definitions,
+				environmentsBySlug,
+				envEvidence,
+				resolvePackage:
+					options.resolvePackage ??
+					((slug) =>
+						resolveInvitationPackageInput({ slug }).then(
+							(resolved) => resolved.packageData,
+						)),
+				runProductionPreflight:
+					options.runProductionPreflight ?? defaultRunProductionPreflight(definitions),
+				timeoutMs: options.productionPreflightTimeoutMs ?? PRODUCTION_PREFLIGHT_TIMEOUT_MS,
+			})
+		: initiallyPresented;
 	return {
 		promotions: presented.promotions,
 		inSyncSlugs: presented.inSyncSlugs,

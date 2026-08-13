@@ -12,10 +12,21 @@ import {
 	type EnvTargetStatus,
 	type TargetEnv,
 } from './dbs-status.ts';
-import { evaluateManagedPromotionStatus } from './managed-promotion-status.ts';
+import {
+	defaultRunProductionPreflight,
+	evaluateManagedPromotionStatus,
+	PRODUCTION_PREFLIGHT_TIMEOUT_MS,
+	refineManagedPromotionsWithProductionPreflight,
+} from './managed-promotion-status.ts';
+import { resolveInvitationPackageInput } from './invitation-package-input.ts';
+import type { EnvironmentPromotionState } from './promotional-fingerprint.ts';
 import { enrichCanonicalDiagnostics } from './canonical-diagnostics.ts';
 import { listInvitationDefinitions } from './invitations/registry.ts';
-import { combineEvidence, invitationAttentionCount, migrationPresenceForEnv } from '../../src/lib/status/evidence.ts';
+import {
+	combineEvidence,
+	invitationAttentionCount,
+	migrationPresenceForEnv,
+} from '../../src/lib/status/evidence.ts';
 import { getValidatedMigrationFiles } from '../db/apply-migrations.ts';
 import {
 	buildUnverifiedManualPatchStatuses,
@@ -80,7 +91,8 @@ function envSummary(
 		identityConflictsCount: status.identityConflictsCount,
 		targetClassification,
 		environmentIdentityOk:
-			!status.reachable || targetClassification === expectedTargetClassification(status.environment),
+			!status.reachable ||
+			targetClassification === expectedTargetClassification(status.environment),
 		schemaOperationReadiness: (status.schemaOperationReadiness ??
 			'UNVERIFIED') as SchemaOperationReadiness,
 		schemaNextAction: status.schemaNextAction ?? null,
@@ -108,12 +120,26 @@ function authorizationDiagnostic(production: CanonicalEnvSummary): CanonicalDiag
 	};
 }
 
+const EMPTY_PROMOTION = {
+	promotions: [],
+	inSyncSlugs: [],
+	environmentsBySlug: {},
+	envEvidence: {
+		local: 'UNVERIFIED' as const,
+		preview: 'UNVERIFIED' as const,
+		production: 'UNVERIFIED' as const,
+	},
+	canonicalAvailableBySlug: {},
+	rowsByEnv: { local: [], preview: [], production: [] },
+};
+
 export async function buildCanonicalStatusView(options?: {
 	slugs?: readonly string[];
 	environments?: readonly TargetEnv[];
 	resetSession?: boolean;
 	diagnostics?: boolean;
 	domain?: 'schema' | 'content' | 'patch';
+	includeProductionPreflight?: boolean;
 }): Promise<CanonicalStatusView> {
 	if (options?.resetSession !== false) resetStatusProbeSession();
 	const session = getOrCreateStatusProbeSession();
@@ -138,37 +164,30 @@ export async function buildCanonicalStatusView(options?: {
 	const refreshPatch = domain !== 'content';
 	const expectedVersions = listExpectedMigrationVersions();
 	const disposable = assertCurrentDisposableMigrationProof();
-	const general = await evaluateGeneralStatus({
-		includeManagedCounts: true,
-		concurrency: 3,
-		session,
-		environments: options?.environments,
-	});
-	const promotion = refreshContent
-		? await evaluateManagedPromotionStatus({
-				session,
-				slugs: options?.slugs,
-				environments: options?.environments,
-				diagnostics: Boolean(options?.diagnostics),
-			})
-		: {
-				promotions: [],
-				inSyncSlugs: [],
-				environmentsBySlug: {},
-				envEvidence: {
-					local: 'UNVERIFIED' as const,
-					preview: 'UNVERIFIED' as const,
-					production: 'UNVERIFIED' as const,
-				},
-				canonicalAvailableBySlug: {},
-				rowsByEnv: { local: [], preview: [], production: [] },
-			};
-	const manualPatches = refreshPatch
-		? await readManualPatchStatuses({
-				session,
-				environments: options?.environments,
-			})
-		: buildUnverifiedManualPatchStatuses();
+	const includeProductionPreflight = options?.includeProductionPreflight === true;
+	const [general, promotion, manualPatches] = await Promise.all([
+		evaluateGeneralStatus({
+			includeManagedCounts: true,
+			concurrency: 3,
+			session,
+			environments: options?.environments,
+		}),
+		refreshContent
+			? evaluateManagedPromotionStatus({
+					session,
+					slugs: options?.slugs,
+					environments: options?.environments,
+					diagnostics: Boolean(options?.diagnostics),
+					includeProductionPreflight,
+				})
+			: Promise.resolve(EMPTY_PROMOTION),
+		refreshPatch
+			? readManualPatchStatuses({
+					session,
+					environments: options?.environments,
+				})
+			: Promise.resolve(buildUnverifiedManualPatchStatuses()),
+	]);
 	const envStateMap = new Map(
 		Object.entries(promotion.environmentsBySlug).map(([slug, states]) => [slug, states]),
 	);
@@ -262,6 +281,62 @@ export async function buildCanonicalStatusView(options?: {
 	if (authFinding) view.diagnostics = [authFinding, ...view.diagnostics];
 	annotateUnknownPublicationCauses(view);
 	return view;
+}
+
+export async function refineCanonicalStatusViewPromotions(
+	view: CanonicalStatusView,
+	options?: {
+		slugs?: readonly string[];
+		resetSession?: boolean;
+	},
+): Promise<CanonicalStatusView> {
+	if (options?.resetSession !== false) resetStatusProbeSession();
+	const session = getOrCreateStatusProbeSession();
+	const definitions = listInvitationDefinitions().filter((definition) =>
+		options?.slugs ? options.slugs.includes(definition.slug) : true,
+	);
+	const environmentsBySlug: Record<
+		string,
+		Record<TargetEnv, EnvironmentPromotionState>
+	> = Object.fromEntries(view.promotions.map((row) => [row.slug, { ...row.environments }]));
+	for (const slug of view.inSyncSlugs) {
+		if (!environmentsBySlug[slug]) {
+			environmentsBySlug[slug] = {
+				local: 'match',
+				preview: 'match',
+				production: 'match',
+			};
+		}
+	}
+	const envEvidence = {
+		local: view.environments.local.evidence,
+		preview: view.environments.preview.evidence,
+		production: view.environments.production.evidence,
+	};
+	const refined = await refineManagedPromotionsWithProductionPreflight({
+		promotions: view.promotions,
+		inSyncSlugs: view.inSyncSlugs,
+		definitions,
+		environmentsBySlug,
+		envEvidence,
+		resolvePackage: async (slug) => (await resolveInvitationPackageInput({ slug })).packageData,
+		runProductionPreflight: defaultRunProductionPreflight(definitions),
+		timeoutMs: PRODUCTION_PREFLIGHT_TIMEOUT_MS,
+	});
+	const next: CanonicalStatusView = {
+		...view,
+		generatedAt: new Date().toISOString(),
+		inSyncSlugs: refined.inSyncSlugs,
+		inSyncCount: refined.inSyncSlugs.length,
+		promotions: refined.promotions,
+		debugCounters: session.debugCounters,
+	};
+	next.freshnessMeta = {
+		status: 'LIVE',
+		lastVerifiedAt: next.generatedAt,
+	};
+	annotateUnknownPublicationCauses(next);
+	return next;
 }
 
 function annotateUnknownPublicationCauses(view: CanonicalStatusView): void {

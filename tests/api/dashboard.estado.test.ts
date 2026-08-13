@@ -21,10 +21,7 @@ import {
 } from '@/lib/status/server/canonical-status';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { ADMIN_RATE_LIMIT_OPERATIONS } from '@/lib/rsvp/security/admin-rate-limit';
-import {
-	GET,
-	CANONICAL_STATUS_RATE_LIMIT_OPERATION,
-} from '@/pages/api/dashboard/estado/index';
+import { GET, CANONICAL_STATUS_RATE_LIMIT_OPERATION } from '@/pages/api/dashboard/estado/index';
 import { buildCanonicalStatusViewFixture } from '../helpers/canonical-status-fixture';
 
 const mockAccess = requireLocalObservabilityAccess as jest.MockedFunction<
@@ -84,6 +81,7 @@ describe('GET /api/dashboard/estado', () => {
 			env: 'preview',
 			domain: 'content',
 			diagnostics: false,
+			includeProductionPreflight: false,
 		});
 		expect(mockGet).not.toHaveBeenCalled();
 	});
@@ -105,6 +103,24 @@ describe('GET /api/dashboard/estado', () => {
 			env: undefined,
 			domain: undefined,
 			diagnostics: true,
+			includeProductionPreflight: false,
+		});
+	});
+
+	it('passes preflight=1 as includeProductionPreflight', async () => {
+		mockAccess.mockResolvedValue({ userId: 'admin-1', isSuperAdmin: true } as never);
+		mockRefresh.mockResolvedValue(buildCanonicalStatusViewFixture());
+		const response = await GET({
+			request: new Request(
+				'http://127.0.0.1:4321/api/dashboard/estado?refresh=1&preflight=1',
+			),
+		} as never);
+		expect(response.status).toBe(200);
+		expect(mockRefresh).toHaveBeenCalledWith({
+			env: undefined,
+			domain: undefined,
+			diagnostics: false,
+			includeProductionPreflight: true,
 		});
 	});
 
@@ -121,6 +137,7 @@ describe('GET /api/dashboard/estado', () => {
 			env: undefined,
 			domain: 'patch',
 			diagnostics: false,
+			includeProductionPreflight: false,
 		});
 	});
 
@@ -136,7 +153,9 @@ describe('GET /api/dashboard/estado', () => {
 	it('rejects an invalid refresh domain before probing', async () => {
 		mockAccess.mockResolvedValue({ userId: 'admin-1', isSuperAdmin: true } as never);
 		const response = await GET({
-			request: new Request('http://127.0.0.1:4321/api/dashboard/estado?refresh=1&domain=assets'),
+			request: new Request(
+				'http://127.0.0.1:4321/api/dashboard/estado?refresh=1&domain=assets',
+			),
 		} as never);
 		expect(response.status).toBe(400);
 		expect(mockRefresh).not.toHaveBeenCalled();

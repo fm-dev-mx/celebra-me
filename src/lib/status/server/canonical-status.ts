@@ -322,39 +322,104 @@ export async function getCanonicalStatusView(): Promise<CanonicalStatusView> {
 	return initial;
 }
 
+function statusChildArgs(options?: {
+	env?: TargetEnv;
+	domain?: 'schema' | 'content' | 'patch';
+	diagnostics?: boolean;
+	preflightOnly?: boolean;
+}): string[] {
+	return [
+		...(options?.env ? [`--env=${options.env}`] : []),
+		...(options?.domain ? [`--domain=${options.domain}`] : []),
+		...(options?.diagnostics ? ['--diagnostics'] : []),
+		...(options?.preflightOnly ? ['--preflight-only'] : ['--skip-production-preflight']),
+	];
+}
+
+async function mergeIncomingStatusView(
+	incomingRaw: unknown,
+	options?: { env?: TargetEnv; domain?: 'schema' | 'content' | 'patch' },
+): Promise<CanonicalStatusView> {
+	const incoming = CanonicalStatusViewSchema.parse(incomingRaw);
+	const previousSnapshot = cache?.view ?? (await readOperationalStatusCache());
+	const merged = mergeCanonicalStatusView({
+		previous: previousSnapshot,
+		incoming,
+		env: options?.env,
+		domain: options?.domain,
+	});
+	cache = { view: merged };
+	await writeOperationalStatusCache(merged);
+	return {
+		...merged,
+		freshnessMeta: liveFreshnessMeta(merged.generatedAt),
+	};
+}
+
+function shouldRefineProductionPreflight(options?: {
+	domain?: 'schema' | 'content' | 'patch';
+	includeProductionPreflight?: boolean;
+}): boolean {
+	if (options?.includeProductionPreflight !== true) return false;
+	return options.domain !== 'schema' && options.domain !== 'patch';
+}
+
 export async function refreshCanonicalStatusView(options?: {
 	env?: TargetEnv;
 	domain?: 'schema' | 'content' | 'patch';
 	diagnostics?: boolean;
+	includeProductionPreflight?: boolean;
 }): Promise<CanonicalStatusView> {
 	const key = JSON.stringify({
 		env: options?.env ?? null,
 		domain: options?.domain ?? null,
 		diagnostics: Boolean(options?.diagnostics),
+		includeProductionPreflight: Boolean(options?.includeProductionPreflight),
 	});
 	const existing = inFlightRefreshes.get(key);
 	if (existing) return await existing;
 	const refresh = withLock(async () => {
-		const args = [
-			...(options?.env ? [`--env=${options.env}`] : []),
-			...(options?.domain ? [`--domain=${options.domain}`] : []),
-			...(options?.diagnostics ? ['--diagnostics'] : []),
-		];
-		const parsed = await runStatusChild(args, CANONICAL_STATUS_TIMEOUT_MS);
-		const incoming = CanonicalStatusViewSchema.parse(parsed);
-		const previousSnapshot = cache?.view ?? (await readOperationalStatusCache());
-		const merged = mergeCanonicalStatusView({
-			previous: previousSnapshot,
-			incoming,
-			env: options?.env,
-			domain: options?.domain,
-		});
-		cache = { view: merged };
-		await writeOperationalStatusCache(merged);
-		return {
-			...merged,
-			freshnessMeta: liveFreshnessMeta(merged.generatedAt),
-		};
+		if (options?.includeProductionPreflight === true) {
+			const previous = cache?.view ?? (await readOperationalStatusCache());
+			if (previous) {
+				try {
+					const refined = await runStatusChild(
+						statusChildArgs({ ...options, preflightOnly: true }),
+						CANONICAL_STATUS_TIMEOUT_MS,
+					);
+					return await mergeIncomingStatusView(refined, {
+						env: options?.env,
+						domain: options?.domain ?? 'content',
+					});
+				} catch (error) {
+					if (error instanceof ApiError && error.status === 504) {
+						return {
+							...previous,
+							freshnessMeta: liveFreshnessMeta(previous.generatedAt),
+						};
+					}
+					throw error;
+				}
+			}
+		}
+
+		const parsed = await runStatusChild(statusChildArgs(options), CANONICAL_STATUS_TIMEOUT_MS);
+		const waveA = await mergeIncomingStatusView(parsed, options);
+		if (!shouldRefineProductionPreflight(options)) return waveA;
+
+		try {
+			const refined = await runStatusChild(
+				statusChildArgs({ ...options, preflightOnly: true }),
+				CANONICAL_STATUS_TIMEOUT_MS,
+			);
+			return await mergeIncomingStatusView(refined, {
+				env: options?.env,
+				domain: options?.domain ?? 'content',
+			});
+		} catch (error) {
+			if (error instanceof ApiError && error.status === 504) return waveA;
+			throw error;
+		}
 	});
 	inFlightRefreshes.set(key, refresh);
 	try {
