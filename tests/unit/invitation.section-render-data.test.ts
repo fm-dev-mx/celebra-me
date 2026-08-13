@@ -74,6 +74,23 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 		expect(descriptor).toMatchObject({ renderMode: 'locked', reveal: 'none' });
 	});
 
+	it('does not stagger magazine-spread gallery items', () => {
+		const magazine = buildInvitationSectionRenderDescriptors(
+			setupDemoPageContext('demo-xv-editorial-magazine'),
+		).find((descriptor) => descriptor.component === 'gallery');
+		expect(magazine).toMatchObject({
+			component: 'gallery',
+			reveal: 'none',
+			props: { variant: 'magazine-spread' },
+		});
+
+		const mosaic = buildInvitationSectionRenderDescriptors(
+			setupDemoPageContext('demo-xv-jewelry-box'),
+		).find((descriptor) => descriptor.component === 'gallery');
+		expect(mosaic?.reveal).toBe('stagger-group');
+		expect(mosaic?.props).not.toMatchObject({ variant: 'magazine-spread' });
+	});
+
 	it('derives the next anchorable section for location navigation from the render plan', () => {
 		const eventEntry = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',

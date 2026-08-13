@@ -416,6 +416,24 @@ function renderBlock(
 	}
 }
 
+function isLockedRsvpDescriptor(descriptor: DescriptorData): boolean {
+	return (
+		descriptor.component === 'rsvp' &&
+		descriptor.props.accessMode === 'personalized-only' &&
+		!descriptor.props.initialGuestData?.inviteId &&
+		!descriptor.props.isDemoPreview
+	);
+}
+
+function resolveSectionReveal(descriptor: DescriptorData): InvitationRevealRecipe {
+	if (isLockedRsvpDescriptor(descriptor)) return 'none';
+	// Magazine-spread can be taller than the stagger observer threshold on mobile.
+	if (descriptor.component === 'gallery' && descriptor.props.variant === 'magazine-spread') {
+		return 'none';
+	}
+	return REVEAL_RECIPES[descriptor.component];
+}
+
 function withRenderMetadata<T extends DescriptorData>(
 	descriptor: T | null,
 	metadata: Pick<
@@ -425,16 +443,12 @@ function withRenderMetadata<T extends DescriptorData>(
 ): InvitationSectionRenderDescriptor | null {
 	if (!descriptor) return null;
 
-	const isLockedRsvp =
-		descriptor.component === 'rsvp' &&
-		descriptor.props.accessMode === 'personalized-only' &&
-		!descriptor.props.initialGuestData?.inviteId &&
-		!descriptor.props.isDemoPreview;
+	const isLockedRsvp = isLockedRsvpDescriptor(descriptor);
 
 	return {
 		...descriptor,
 		...metadata,
-		reveal: isLockedRsvp ? 'none' : REVEAL_RECIPES[descriptor.component],
+		reveal: resolveSectionReveal(descriptor),
 		...(descriptor.component === 'rsvp'
 			? { renderMode: isLockedRsvp ? ('locked' as const) : ('interactive' as const) }
 			: {}),
