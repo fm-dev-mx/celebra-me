@@ -220,10 +220,15 @@ export async function orchestrateMigrate(
 	// Backup / coverage precede final plan rebuild and owner authorization.
 	policy.beforeWrite(reviewed, ctx);
 
-	writeHuman(`${operatorSymbol('info')} Revalidación: evidencia material del plan…`);
-	const plan = policy.buildPlan(ctx, 'apply');
-	assertReviewDrift(reviewed, plan, input.target);
-	writeHuman(`${operatorSymbol('ok')} Revalidación sin cambios materiales en el plan.`);
+	const skipPostBackupRebuild =
+		input.target === 'disposable-test' && reviewed.backupRequirement === 'none';
+	let plan = reviewed;
+	if (!skipPostBackupRebuild) {
+		writeHuman(`${operatorSymbol('info')} Revalidación: evidencia material del plan…`);
+		plan = policy.buildPlan(ctx, 'apply');
+		assertReviewDrift(reviewed, plan, input.target);
+		writeHuman(`${operatorSymbol('ok')} Revalidación sin cambios materiales en el plan.`);
+	}
 
 	await policy.authorize(plan, ctx);
 	try {

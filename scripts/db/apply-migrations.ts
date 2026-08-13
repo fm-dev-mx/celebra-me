@@ -39,9 +39,47 @@ export function runPsqlCommand(dbUrl: string, sqlInput: string): { ok: boolean; 
 	};
 }
 
-export function getValidatedMigrationFiles(
-	maxVersion?: string,
-): { filename: string; version: string; name: string }[] {
+export function runPsqlFileCommand(
+	dbUrl: string,
+	filePath: string,
+): { ok: boolean; output: string } {
+	const classification = classifyDbTarget(dbUrl);
+	if (
+		classification.target === 'production' ||
+		classification.target === 'preview' ||
+		classification.target === 'unknown'
+	) {
+		return {
+			ok: false,
+			output: `ERROR: apply-migrations psql runner cannot target ${classification.target}. Use \`pnpm db:migrate -- --target <local|preview|production|disposable-test>\`.`,
+		};
+	}
+	const result = runPsql(filePath, dbUrl, {
+		throwOnError: false,
+		tuplesOnly: false,
+		isFile: true,
+		redact: [dbUrl],
+	});
+	const stdout = typeof result.stdout === 'string' ? result.stdout : '';
+	const stderr = typeof result.stderr === 'string' ? result.stderr : '';
+	return {
+		ok: result.status === 0,
+		output: (stdout + stderr).trim(),
+	};
+}
+
+type ValidatedMigrationFile = { filename: string; version: string; name: string };
+
+let validatedMigrationFilesCache: {
+	files: ValidatedMigrationFile[];
+	seenVersions: Map<string, string>;
+} | null = null;
+
+function loadValidatedMigrationFiles(): {
+	files: ValidatedMigrationFile[];
+	seenVersions: Map<string, string>;
+} {
+	if (validatedMigrationFilesCache) return validatedMigrationFilesCache;
 	if (!existsSync(MIGRATIONS_DIR)) {
 		console.error(`ERROR: Migrations directory not found: ${MIGRATIONS_DIR}`);
 		process.exit(1);
@@ -49,7 +87,7 @@ export function getValidatedMigrationFiles(
 
 	const allEntries = readdirSync(MIGRATIONS_DIR);
 	const seenVersions = new Map<string, string>();
-	const validFiles: { filename: string; version: string; name: string }[] = [];
+	const validFiles: ValidatedMigrationFile[] = [];
 
 	for (const entry of allEntries) {
 		if (entry.startsWith('.')) continue;
@@ -81,6 +119,12 @@ export function getValidatedMigrationFiles(
 	}
 
 	validFiles.sort((a, b) => (a.version < b.version ? -1 : a.version > b.version ? 1 : 0));
+	validatedMigrationFilesCache = { files: validFiles, seenVersions };
+	return validatedMigrationFilesCache;
+}
+
+export function getValidatedMigrationFiles(maxVersion?: string): ValidatedMigrationFile[] {
+	const { files, seenVersions } = loadValidatedMigrationFiles();
 
 	if (maxVersion) {
 		if (!/^\d{14}$/.test(maxVersion)) {
@@ -95,9 +139,10 @@ export function getValidatedMigrationFiles(
 			);
 			process.exit(1);
 		}
+		return files.filter((f) => f.version <= maxVersion);
 	}
 
-	return maxVersion ? validFiles.filter((f) => f.version <= maxVersion) : validFiles;
+	return [...files];
 }
 
 export function enforceDisposableTargetOnly(dbUrl: string): void {

@@ -6,14 +6,20 @@
  * before authorization, backup, or write.
  */
 
-import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'node:fs';
+import {
+	existsSync,
+	mkdirSync,
+	readFileSync,
+	renameSync,
+	unlinkSync,
+	writeFileSync,
+} from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { getValidatedMigrationFiles } from './apply-migrations.ts';
 import { computeMigrationSetDigest } from './migration-sql-risk.ts';
 import { readGitWorktreeState } from './release-check.ts';
 
-export const DISPOSABLE_MIGRATION_PROOF_RELATIVE =
-	'.agent/tmp/disposable-migration-proof.json';
+export const DISPOSABLE_MIGRATION_PROOF_RELATIVE = '.agent/tmp/disposable-migration-proof.json';
 
 export const DISPOSABLE_MIGRATION_PROOF_VERSION = 1;
 
@@ -38,20 +44,34 @@ function proofPath(cwd: string = process.cwd()): string {
 	return resolve(cwd, DISPOSABLE_MIGRATION_PROOF_RELATIVE);
 }
 
+const migrationSetDigestCache = new Map<
+	string,
+	{
+		digest: string;
+		versions: string[];
+		files: { version: string; filename: string }[];
+	}
+>();
+
 export function computeCurrentMigrationSetDigest(maxVersion?: string): {
 	digest: string;
 	versions: string[];
 	files: { version: string; filename: string }[];
 } {
+	const cacheKey = maxVersion ?? '';
+	const cached = migrationSetDigestCache.get(cacheKey);
+	if (cached) return cached;
 	const files = getValidatedMigrationFiles(maxVersion).map((f) => ({
 		version: f.version,
 		filename: f.filename,
 	}));
-	return {
+	const computed = {
 		digest: computeMigrationSetDigest(files),
 		versions: files.map((f) => f.version),
 		files,
 	};
+	migrationSetDigestCache.set(cacheKey, computed);
+	return computed;
 }
 
 export function readDisposableMigrationProof(
@@ -76,9 +96,7 @@ export function writeDisposableMigrationProof(options: {
 	cwd?: string;
 }): DisposableMigrationProof {
 	const cwd = options.cwd ?? process.cwd();
-	const { digest, versions } = computeCurrentMigrationSetDigest(
-		options.maxVersion ?? undefined,
-	);
+	const { digest, versions } = computeCurrentMigrationSetDigest(options.maxVersion ?? undefined);
 	const worktree = readGitWorktreeState();
 	const proof: DisposableMigrationProof = {
 		version: DISPOSABLE_MIGRATION_PROOF_VERSION,

@@ -3,12 +3,13 @@
  * No authorization, backup, or plan logic.
  */
 
-import { existsSync, readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 import {
 	MIGRATIONS_DIR,
 	getValidatedMigrationFiles,
-	runPsqlCommand,
+	runPsqlFileCommand,
 	enforceDisposableTargetOnly,
 } from './apply-migrations.ts';
 import { classifyDbTarget } from './db-target-config.ts';
@@ -97,26 +98,52 @@ function applyMigrationFilesAtomic(options: {
 	requireFileExists: boolean;
 	failLabel: string;
 	onProgress?: (filename: string, ok: boolean) => void;
+	preambleSql?: string;
 }): void {
+	if (options.files.length === 0 && !options.preambleSql) return;
 	const conflictClause = options.onConflictDoNothing ? ' ON CONFLICT (version) DO NOTHING' : '';
+	const blocks: string[] = [];
+	if (options.preambleSql) blocks.push(options.preambleSql.trim());
 	for (const { filename, version, name } of options.files) {
 		const filePath = resolve(MIGRATIONS_DIR, filename);
 		if (options.requireFileExists && !existsSync(filePath)) {
 			fail(`Migration file not found: ${filePath}`);
 		}
 		const sqlContent = readFileSync(filePath, 'utf8');
-		const atomicSql = `
+		blocks.push(`
+\\echo celebra_migration_start ${filename}
 BEGIN;
 ${sqlContent}
 ;
 INSERT INTO supabase_migrations.schema_migrations (version, name) VALUES ('${version}', '${name}')${conflictClause};
 COMMIT;
-`;
-		const result = runPsqlCommand(options.dbUrl, atomicSql);
-		options.onProgress?.(filename, result.ok);
-		if (!result.ok) {
-			fail(`${options.failLabel} ${filename}: ${result.output}`);
+\\echo celebra_migration_ok ${filename}
+`);
+	}
+
+	const workDir = mkdtempSync(join(tmpdir(), 'celebra-migrate-'));
+	const scriptPath = join(workDir, 'apply.sql');
+	writeFileSync(scriptPath, `${blocks.join('\n')}\n`, 'utf8');
+	try {
+		const result = runPsqlFileCommand(options.dbUrl, scriptPath);
+		const completed = new Set(
+			[...result.output.matchAll(/^celebra_migration_ok (.+)$/gm)].map((match) => match[1]),
+		);
+		const started = [...result.output.matchAll(/^celebra_migration_start (.+)$/gm)].map(
+			(match) => match[1],
+		);
+		for (const file of options.files) {
+			options.onProgress?.(file.filename, completed.has(file.filename));
 		}
+		if (!result.ok) {
+			const failed =
+				started.find((filename) => filename && !completed.has(filename)) ??
+				options.files[0]?.filename ??
+				'batch';
+			fail(`${options.failLabel} ${failed}: ${result.output}`);
+		}
+	} finally {
+		rmSync(workDir, { recursive: true, force: true });
 	}
 }
 
@@ -158,7 +185,6 @@ export function executePsqlAtomicDisposable(options: {
 	maxVersion?: string;
 }): void {
 	enforceDisposableTargetOnly(options.dbUrl);
-	ensureSchemaMigrationsTable(options.dbUrl);
 
 	const files = getValidatedMigrationFiles(options.maxVersion).filter((f) =>
 		options.pendingVersions ? options.pendingVersions.includes(f.version) : true,
@@ -170,6 +196,16 @@ export function executePsqlAtomicDisposable(options: {
 		onConflictDoNothing: false,
 		requireFileExists: true,
 		failLabel: 'Disposable migration failed for',
+		preambleSql: `
+BEGIN;
+CREATE SCHEMA IF NOT EXISTS supabase_migrations;
+CREATE TABLE IF NOT EXISTS supabase_migrations.schema_migrations (
+	version text PRIMARY KEY,
+	name text,
+	statements text[]
+);
+COMMIT;
+`,
 	});
 }
 

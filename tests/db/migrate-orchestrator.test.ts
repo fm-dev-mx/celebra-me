@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import type { MigrationPlan } from '../../scripts/db/migration-plan.ts';
 import { buildMigrationPlan } from '../../scripts/db/migration-plan.ts';
 import {
@@ -114,6 +114,10 @@ describe('migrate orchestrator', () => {
 		jest.spyOn(process.stderr, 'write').mockImplementation(() => true);
 	});
 
+	afterEach(() => {
+		jest.restoreAllMocks();
+	});
+
 	it('routes through prepareApply → backup → rebuild → auth → write', async () => {
 		const { orchestrateMigrate, getMigratePolicy } =
 			await import('../../scripts/db/migrate-orchestrator.ts');
@@ -171,8 +175,8 @@ describe('migrate orchestrator', () => {
 			});
 			expect(order).toEqual(['prepare', 'before', 'auth', 'exec', 'after']);
 			expect(result.state).toBe('APPLIED_AND_VERIFIED');
-			// Direct apply: one initial build + one post-backup rebuild.
-			expect(mockBuildPlan).toHaveBeenCalledTimes(2);
+			// Disposable has no backup, so it skips the post-backup rebuild.
+			expect(mockBuildPlan).toHaveBeenCalledTimes(target === 'disposable-test' ? 1 : 2);
 			expect(mockPrepareApply.mock.invocationCallOrder[0]).toBeLessThan(
 				mockBeforeWrite.mock.invocationCallOrder[0]!,
 			);
