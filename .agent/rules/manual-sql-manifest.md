@@ -1,9 +1,10 @@
 # Manual SQL Manifest
 
-Manual production SQL patch files routed through `pnpm db:prod:patch -- --file <path>` must start
-with a manifest before any SQL statement. Direct production SQL is prohibited as a normal workflow;
-all schema changes must be introduced through versioned migrations in `supabase/migrations/`. The
-patch entrypoint is dry-run lint only; this manifest does not authorize execution.
+Manual production SQL patch files first checked by `pnpm db:prod:patch -- --dry-run --file <path>`
+must start with a manifest before any SQL statement. Direct production SQL is prohibited as a normal
+workflow; all schema changes must be introduced through versioned migrations in
+`supabase/migrations/`. The patch entrypoint is lint-only; this manifest does not authorize
+execution. Owner mutation is available only through `pnpm prod:apply -- --patch <path>`.
 
 Older non-manifest SQL files are historical records only. Do not copy them as templates for new
 production patches.

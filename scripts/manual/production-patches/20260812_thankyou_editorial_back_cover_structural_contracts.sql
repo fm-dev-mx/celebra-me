@@ -7,7 +7,7 @@
 -- @expected-rows-min: 5
 -- @expected-rows-max: 10
 -- @requires-backup: true
--- @dry-run-query: select i.event_type, i.slug, p.version, p.content#>>'{thankYou,variant}' as thank_you_variant, p.content#>>'{sectionStyles,thankYou,structuralVariant}' as styles_thank_you_structural from public.invitations i join public.published_invitation_content p on p.invitation_project_id = i.id where i.archived_at is null and p.deleted_at is null and ((i.event_type = 'xv' and i.slug in ('xareni-iyarit','america-johana','ana-sofia-cota-guillen','ayrin-samantha-lerma-castro')) or (i.event_type = 'baby-shower' and i.slug = 'leah-lexa')) order by i.event_type, i.slug
+-- @dry-run-query: select 'published' as store, i.event_type, i.slug, p.version from public.invitations i join public.published_invitation_content p on p.invitation_project_id = i.id where i.archived_at is null and p.deleted_at is null and ((i.event_type = 'xv' and i.slug in ('xareni-iyarit','america-johana','ana-sofia-cota-guillen','ayrin-samantha-lerma-castro')) or (i.event_type = 'baby-shower' and i.slug = 'leah-lexa')) and (p.content#>>'{thankYou,variant}' is distinct from 'editorial-back-cover' or p.content#>>'{sectionStyles,thankYou,structuralVariant}' is distinct from 'editorial-back-cover') union all select 'draft' as store, i.event_type, i.slug, d.revision from public.invitations i join public.invitation_content_drafts d on d.invitation_project_id = i.id where i.archived_at is null and d.deleted_at is null and ((i.event_type = 'xv' and i.slug in ('xareni-iyarit','america-johana','ana-sofia-cota-guillen','ayrin-samantha-lerma-castro')) or (i.event_type = 'baby-shower' and i.slug = 'leah-lexa')) and (d.content#>>'{thankYou,variant}' is distinct from 'editorial-back-cover' or d.content#>>'{sectionStyles,thankYou,structuralVariant}' is distinct from 'editorial-back-cover')
 -- @rollback: restore public.published_invitation_content and matching invitation_content_drafts for slugs xareni-iyarit, america-johana, ana-sofia-cota-guillen, ayrin-samantha-lerma-castro, and leah-lexa from the pre-apply Production backup
 
 begin;
@@ -15,34 +15,34 @@ begin;
 do $$
 declare
   expected_xv text[] := array['xareni-iyarit','america-johana','ana-sofia-cota-guillen','ayrin-samantha-lerma-castro'];
-  slug text;
+  expected_slug text;
   published_count int;
   thank_you_variant text;
 begin
-  foreach slug in array expected_xv loop
+  foreach expected_slug in array expected_xv loop
     select count(*) into published_count
     from public.invitations i
     join public.published_invitation_content p on p.invitation_project_id = i.id
-    where i.slug = slug
+    where i.slug = expected_slug
       and i.event_type = 'xv'
       and i.archived_at is null
       and p.deleted_at is null;
 
     if published_count <> 1 then
-      raise exception 'THANKYOU_CONTRACT_ABORT: xv/% has % active published rows', slug, published_count;
+      raise exception 'THANKYOU_CONTRACT_ABORT: xv/% has % active published rows', expected_slug, published_count;
     end if;
 
     select p.content#>>'{thankYou,variant}'
     into thank_you_variant
     from public.invitations i
     join public.published_invitation_content p on p.invitation_project_id = i.id
-    where i.slug = slug
+    where i.slug = expected_slug
       and i.event_type = 'xv'
       and i.archived_at is null
       and p.deleted_at is null;
 
     if thank_you_variant is not null and thank_you_variant <> 'editorial-back-cover' then
-      raise exception 'THANKYOU_CONTRACT_ABORT: xv/% thankYou.variant=% contradicts Goal 3', slug, thank_you_variant;
+      raise exception 'THANKYOU_CONTRACT_ABORT: xv/% thankYou.variant=% contradicts Goal 3', expected_slug, thank_you_variant;
     end if;
   end loop;
 

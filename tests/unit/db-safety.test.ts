@@ -17,7 +17,7 @@ describe('SQL production patch manifest', () => {
 -- @expected-rows-min: 1
 -- @expected-rows-max: 1
 -- @requires-backup: true
--- @dry-run-query: select count(*) from public.example;
+-- @dry-run-query: select count(*) from public.example
 -- @rollback: restore from backup
 `);
 
@@ -67,7 +67,7 @@ describe('SQL production patch linting', () => {
 -- @expected-rows-min: 1
 -- @expected-rows-max: 1
 -- @requires-backup: true
--- @dry-run-query: select count(*) from public.example where id = '1';
+-- @dry-run-query: select count(*) from public.example where id = '1'
 -- @rollback: restore row snapshot
 
 begin;
@@ -101,7 +101,7 @@ commit;
 -- @expected-rows-min: 1
 -- @expected-rows-max: 1
 -- @requires-backup: true
--- @dry-run-query: select count(*) from public.example;
+-- @dry-run-query: select count(*) from public.example
 -- @rollback: backup
 update public.example set name = 'unsafe';
 `);
@@ -148,13 +148,105 @@ update public.example set name = 'unsafe';
 -- @expected-rows-min: 1
 -- @expected-rows-max: 1
 -- @requires-backup: true
--- @dry-run-query: select count(*) from public.example;
+-- @dry-run-query: select count(*) from public.example
 -- @rollback: backup
 delete from public.example;
 `);
 
 		expect(result.ok).toBe(false);
 		expect(result.errors).toContain('DELETE statements must include a WHERE clause.');
+	});
+
+	it('does not lose DML after a dollar-quoted guard block', () => {
+		const result = lintProductionPatchSql(`${validPatch}\nupdate public.example set name = 'unsafe';`);
+
+		expect(result.ok).toBe(false);
+		expect(result.errors).toContain('UPDATE statements must include a WHERE clause.');
+	});
+
+	it('parses tagged dollar quotes, strings, line comments, and block comments safely', () => {
+		const result = lintProductionPatchSql(`
+-- @script-id: tagged-quote
+-- @purpose: parser coverage
+-- @env: production
+-- @ticket: OPS-1
+-- @tables: public.example
+-- @operation: update
+-- @expected-rows-min: 0
+-- @expected-rows-max: 1
+-- @requires-backup: true
+-- @dry-run-query: select count(*) from public.example where name is distinct from 'safe'
+-- @rollback: backup
+do $guard$
+begin
+  perform 'a semicolon ; and -- comment';
+  /* block ; comment */
+end
+$guard$;
+update public.example
+set name = 'safe; still a string'
+where name is distinct from 'safe'; -- trailing ; comment
+`);
+
+		expect(result.ok).toBe(true);
+		expect(result.errors).toEqual([]);
+	});
+
+	it('fails closed on malformed quoted and commented SQL', () => {
+		for (const sql of [
+			`${validPatch}\ndo $tag$ begin perform 1; end;`,
+			`${validPatch}\nupdate public.example set name = 'unterminated where id = 1;`,
+			`${validPatch}\n/* unterminated`,
+		]) {
+			const result = lintProductionPatchSql(sql);
+			expect(result.ok).toBe(false);
+			expect(result.errors.some((error) => error.startsWith('SQL_PARSE_UNSAFE:'))).toBe(true);
+		}
+	});
+
+	it('fails closed when DML is hidden in a procedural dollar-quoted block', () => {
+		const result = lintProductionPatchSql(`${validPatch}
+do $guard$
+begin
+  update public.example set name = 'unsafe' where id = '1';
+end
+$guard$;
+`);
+
+		expect(result.ok).toBe(false);
+		expect(result.errors).toContain(
+			'DML must be a top-level UPDATE, INSERT, or DELETE statement that can be verified.',
+		);
+	});
+
+	it('enforces operation, row bounds, target tables, and preview predicate semantics', () => {
+		const result = lintProductionPatchSql(`
+-- @script-id: manifest-semantics
+-- @purpose: invalid manifest
+-- @env: production
+-- @ticket: OPS-1
+-- @tables: public.other
+-- @operation: delete
+-- @expected-rows-min: 2
+-- @expected-rows-max: 1
+-- @requires-backup: true
+-- @dry-run-query: select count(*) from public.other
+-- @rollback: backup
+update public.example set name = 'safe' where name is distinct from 'safe';
+`);
+
+		expect(result.ok).toBe(false);
+		expect(result.errors).toContain(
+			'@expected-rows-min must be less than or equal to @expected-rows-max.',
+		);
+		expect(result.errors).toContain('@operation delete must match every top-level mutation statement.');
+		expect(result.errors).toContain('@tables must match the complete set of mutation target tables.');
+		expect(result.errors).toContain(
+			'@dry-run-query must include mutation target table public.example.',
+		);
+		expect(result.errors).toContain(
+			'@dry-run-query must include the mutation IS DISTINCT FROM predicate semantics.',
+		);
 	});
 });
 

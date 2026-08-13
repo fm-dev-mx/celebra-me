@@ -7,7 +7,7 @@
 -- @expected-rows-min: 4
 -- @expected-rows-max: 8
 -- @requires-backup: true
--- @dry-run-query: select i.slug, p.version, p.content#>>'{itinerary,variant}' as itinerary_variant, p.content#>>'{itinerary,presentation,behavior}' as itinerary_behavior, p.content#>>'{sectionStyles,itinerary,variant}' as section_styles_itinerary, p.content#>>'{gallery,variant}' as gallery_variant from public.invitations i join public.published_invitation_content p on p.invitation_project_id = i.id where i.archived_at is null and p.deleted_at is null and i.event_type = 'xv' and i.slug in ('xareni-iyarit','america-johana','ana-sofia-cota-guillen','abril-michelle-becerra-rea') order by i.slug
+-- @dry-run-query: select 'published' as store, i.slug, p.version from public.invitations i join public.published_invitation_content p on p.invitation_project_id = i.id where i.archived_at is null and p.deleted_at is null and i.event_type = 'xv' and ((i.slug in ('xareni-iyarit','america-johana','ana-sofia-cota-guillen') and (p.content#>>'{itinerary,variant}' is distinct from 'timeline-paper' or p.content#>>'{itinerary,presentation,behavior}' is distinct from 'timeline-paper' or p.content#>>'{gallery,variant}' is distinct from 'index-choreography')) or (i.slug = 'abril-michelle-becerra-rea' and (p.content#>>'{itinerary,variant}' is distinct from 'timeline-paper' or p.content#>>'{itinerary,presentation,behavior}' is distinct from 'timeline-paper'))) union all select 'draft' as store, i.slug, d.revision from public.invitations i join public.invitation_content_drafts d on d.invitation_project_id = i.id where i.archived_at is null and d.deleted_at is null and i.event_type = 'xv' and ((i.slug in ('xareni-iyarit','america-johana','ana-sofia-cota-guillen') and (d.content#>>'{itinerary,variant}' is distinct from 'timeline-paper' or d.content#>>'{itinerary,presentation,behavior}' is distinct from 'timeline-paper' or d.content#>>'{gallery,variant}' is distinct from 'index-choreography')) or (i.slug = 'abril-michelle-becerra-rea' and (d.content#>>'{itinerary,variant}' is distinct from 'timeline-paper' or d.content#>>'{itinerary,presentation,behavior}' is distinct from 'timeline-paper')))
 -- @rollback: restore public.published_invitation_content and matching invitation_content_drafts for slugs xareni-iyarit, america-johana, ana-sofia-cota-guillen, and abril-michelle-becerra-rea from the pre-apply Production backup
 
 begin;
@@ -15,23 +15,23 @@ begin;
 do $$
 declare
   expected text[] := array['xareni-iyarit','america-johana','ana-sofia-cota-guillen','abril-michelle-becerra-rea'];
-  slug text;
+  expected_slug text;
   published_count int;
   itinerary_variant text;
   itinerary_behavior text;
   gallery_variant text;
 begin
-  foreach slug in array expected loop
+  foreach expected_slug in array expected loop
     select count(*) into published_count
     from public.invitations i
     join public.published_invitation_content p on p.invitation_project_id = i.id
-    where i.slug = slug
+    where i.slug = expected_slug
       and i.event_type = 'xv'
       and i.archived_at is null
       and p.deleted_at is null;
 
     if published_count <> 1 then
-      raise exception 'P0_CONTRACT_ABORT: % has % active published rows', slug, published_count;
+      raise exception 'P0_CONTRACT_ABORT: % has % active published rows', expected_slug, published_count;
     end if;
 
     select
@@ -41,23 +41,23 @@ begin
     into itinerary_variant, itinerary_behavior, gallery_variant
     from public.invitations i
     join public.published_invitation_content p on p.invitation_project_id = i.id
-    where i.slug = slug
+    where i.slug = expected_slug
       and i.event_type = 'xv'
       and i.archived_at is null
       and p.deleted_at is null;
 
     if itinerary_variant is not null and itinerary_variant <> 'timeline-paper' then
-      raise exception 'P0_CONTRACT_ABORT: % itinerary.variant=% contradicts Goal 1', slug, itinerary_variant;
+      raise exception 'P0_CONTRACT_ABORT: % itinerary.variant=% contradicts Goal 1', expected_slug, itinerary_variant;
     end if;
 
     if itinerary_behavior is not null and itinerary_behavior <> 'timeline-paper' then
-      raise exception 'P0_CONTRACT_ABORT: % itinerary.presentation.behavior=% contradicts Goal 1', slug, itinerary_behavior;
+      raise exception 'P0_CONTRACT_ABORT: % itinerary.presentation.behavior=% contradicts Goal 1', expected_slug, itinerary_behavior;
     end if;
 
-    if slug <> 'abril-michelle-becerra-rea'
+    if expected_slug <> 'abril-michelle-becerra-rea'
        and gallery_variant is not null
        and gallery_variant <> 'index-choreography' then
-      raise exception 'P0_CONTRACT_ABORT: % gallery.variant=% contradicts Goal 1', slug, gallery_variant;
+      raise exception 'P0_CONTRACT_ABORT: % gallery.variant=% contradicts Goal 1', expected_slug, gallery_variant;
     end if;
   end loop;
 end $$;

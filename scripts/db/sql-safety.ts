@@ -6,6 +6,21 @@ export interface LintResult {
 	manifest: SqlManifest;
 }
 
+interface ParsedSqlStatement {
+	inspection: string;
+	dollarBodies: string[];
+}
+
+interface ParsedBlockComment {
+	inspection: string;
+	nextIndex: number;
+}
+
+interface ParsedDollarBlock {
+	body: string;
+	nextIndex: number;
+}
+
 const REQUIRED_PROD_PATCH_FIELDS = [
 	'script-id',
 	'purpose',
@@ -72,62 +87,215 @@ export function parseSqlManifest(sql: string): SqlManifest {
 	return manifest;
 }
 
-export function validateProductionPatchManifest(manifest: SqlManifest): string[] {
+function validateRequiredManifestFields(manifest: SqlManifest): string[] {
 	const errors: string[] = [];
 	for (const field of REQUIRED_PROD_PATCH_FIELDS) {
 		if (!manifest[field]) errors.push(`Missing required manifest field: @${field}`);
 	}
+	return errors;
+}
 
+function validateManifestEnvironment(manifest: SqlManifest): string[] {
+	const errors: string[] = [];
 	if (manifest.env && manifest.env !== 'production') {
 		errors.push('@env must be "production" for this entrypoint.');
 	}
 	if (manifest['requires-backup'] && manifest['requires-backup'].toLowerCase() !== 'true') {
 		errors.push('@requires-backup must be "true" for production patches.');
 	}
+	return errors;
+}
 
+function validateManifestExpectedRows(manifest: SqlManifest): string[] {
+	const errors: string[] = [];
 	for (const field of ['expected-rows-min', 'expected-rows-max'] as const) {
 		const value = manifest[field];
 		if (value && !/^\d+$/.test(value)) errors.push(`@${field} must be a non-negative integer.`);
 	}
 
+	const min = manifest['expected-rows-min'];
+	const max = manifest['expected-rows-max'];
+	if (min && max && /^\d+$/.test(min) && /^\d+$/.test(max) && BigInt(min) > BigInt(max)) {
+		errors.push('@expected-rows-min must be less than or equal to @expected-rows-max.');
+	}
 	return errors;
 }
 
-function stripSqlComments(sql: string): string {
-	return sql
-		.split(/\r?\n/)
-		.map((line) => line.replace(/--.*$/, ''))
-		.join('\n');
+function validateManifestOperation(manifest: SqlManifest): string[] {
+	const errors: string[] = [];
+	const operation = manifest.operation?.toLowerCase();
+	if (operation && !['update', 'insert', 'delete', 'select-only'].includes(operation)) {
+		errors.push('@operation must be one of UPDATE, INSERT, DELETE, or SELECT-ONLY.');
+	}
+	return errors;
 }
 
-function splitStatements(sql: string): string[] {
-	const clean = stripSqlComments(sql)
-		.split(';')
-		.map((statement) => statement.trim())
-		.filter(Boolean);
-
-	const result: string[] = [];
-	let buffer = '';
-	let depth = 0;
-
-	for (const part of clean) {
-		const dollarOpens = (part.match(/\$\$/g) || []).length;
-		if (dollarOpens % 2 !== 0) depth += dollarOpens;
-
-		if (depth > 0) {
-			buffer += (buffer ? ';' : '') + part;
-			if (depth === 0) {
-				result.push(buffer);
-				buffer = '';
-			}
-		} else {
-			result.push(part);
+function validateManifestTables(manifest: SqlManifest): string[] {
+	const errors: string[] = [];
+	const tables = manifest.tables;
+	if (tables) {
+		const entries = tables
+			.split(',')
+			.map((value) => value.trim())
+			.filter(Boolean);
+		if (
+			entries.length === 0 ||
+			entries.some((table) => !/^public\.[a-z_][a-z0-9_]*$/i.test(table)) ||
+			new Set(entries.map((table) => table.toLowerCase())).size !== entries.length
+		) {
+			errors.push(
+				'@tables must be a unique comma-separated list of public.<table> identifiers.',
+			);
 		}
 	}
+	return errors;
+}
 
-	if (buffer) result.push(buffer);
+function validateManifestPreview(manifest: SqlManifest): string[] {
+	const errors: string[] = [];
+	const preview = manifest['dry-run-query'];
+	if (preview) {
+		if (/;/.test(preview) || !/^\s*(?:select\b|with\b[\s\S]+\bselect\b)/i.test(preview)) {
+			errors.push('@dry-run-query must be one read-only SELECT query without a semicolon.');
+		}
+		if (
+			/\b(?:insert|update|delete|merge|call|do|copy|create|alter|drop|truncate)\b/i.test(
+				preview,
+			)
+		) {
+			errors.push('@dry-run-query must not contain a mutating or procedural statement.');
+		}
+	}
+	return errors;
+}
 
-	return depth === 0 ? result : result.concat(buffer ? [buffer] : []);
+export function validateProductionPatchManifest(manifest: SqlManifest): string[] {
+	return [
+		...validateRequiredManifestFields(manifest),
+		...validateManifestEnvironment(manifest),
+		...validateManifestExpectedRows(manifest),
+		...validateManifestOperation(manifest),
+		...validateManifestTables(manifest),
+		...validateManifestPreview(manifest),
+	];
+}
+
+function consumeLineComment(sql: string, index: number): number {
+	let nextIndex = index + 2;
+	while (nextIndex < sql.length && sql[nextIndex] !== '\n') nextIndex += 1;
+	return nextIndex;
+}
+
+function consumeBlockComment(sql: string, index: number): ParsedBlockComment {
+	let depth = 1;
+	let inspection = '';
+	let nextIndex = index + 2;
+	while (nextIndex < sql.length && depth > 0) {
+		if (sql[nextIndex] === '/' && sql[nextIndex + 1] === '*') {
+			depth += 1;
+			nextIndex += 2;
+			continue;
+		}
+		if (sql[nextIndex] === '*' && sql[nextIndex + 1] === '/') {
+			depth -= 1;
+			nextIndex += 2;
+			continue;
+		}
+		inspection += sql[nextIndex] === '\n' ? '\n' : ' ';
+		nextIndex += 1;
+	}
+	if (depth !== 0) throw new Error('Unclosed block comment.');
+	return { inspection, nextIndex };
+}
+
+function parseDollarBlock(sql: string, index: number): ParsedDollarBlock | null {
+	const tag = sql.slice(index).match(/^\$(?:[A-Za-z_][A-Za-z0-9_]*)?\$/)?.[0];
+	if (!tag) return null;
+	const bodyStart = index + tag.length;
+	const bodyEnd = sql.indexOf(tag, bodyStart);
+	if (bodyEnd === -1) throw new Error(`Unclosed dollar-quoted block ${tag}.`);
+	return { body: sql.slice(bodyStart, bodyEnd), nextIndex: bodyEnd + tag.length };
+}
+
+function parseProductionPatchStatements(sql: string): ParsedSqlStatement[] {
+	const statements: ParsedSqlStatement[] = [];
+	let inspection = '';
+	let dollarBodies: string[] = [];
+	let index = 0;
+
+	const appendMaskedQuoted = (quote: "'" | '"'): void => {
+		inspection += quote;
+		index += 1;
+		while (index < sql.length) {
+			const char = sql[index];
+			if (char === '\\' && index + 1 < sql.length) {
+				inspection += '  ';
+				index += 2;
+				continue;
+			}
+			if (char === quote) {
+				if (sql[index + 1] === quote) {
+					inspection += '  ';
+					index += 2;
+					continue;
+				}
+				inspection += quote;
+				index += 1;
+				return;
+			}
+			inspection += char === '\n' ? '\n' : ' ';
+			index += 1;
+		}
+		throw new Error(
+			`Unclosed ${quote === "'" ? 'single-quoted string' : 'quoted identifier'}.`,
+		);
+	};
+
+	const finishStatement = (): void => {
+		const normalized = inspection.trim();
+		if (normalized) statements.push({ inspection: normalized, dollarBodies });
+		inspection = '';
+		dollarBodies = [];
+	};
+
+	while (index < sql.length) {
+		const char = sql[index];
+		const next = sql[index + 1];
+		if (char === '-' && next === '-') {
+			index = consumeLineComment(sql, index);
+			inspection += ' ';
+			continue;
+		}
+		if (char === '/' && next === '*') {
+			const comment = consumeBlockComment(sql, index);
+			index = comment.nextIndex;
+			inspection += comment.inspection;
+			inspection += ' ';
+			continue;
+		}
+		if (char === "'" || char === '"') {
+			appendMaskedQuoted(char);
+			continue;
+		}
+		if (char === '$') {
+			const block = parseDollarBlock(sql, index);
+			if (block) {
+				dollarBodies.push(block.body);
+				inspection += '$body$';
+				index = block.nextIndex;
+				continue;
+			}
+		}
+		if (char === ';') {
+			finishStatement();
+			index += 1;
+			continue;
+		}
+		inspection += char;
+		index += 1;
+	}
+	finishStatement();
+	return statements;
 }
 
 function statementHasWhere(statement: string): boolean {
@@ -142,13 +310,142 @@ function checkBlockedPatterns(sql: string, blockedPatterns: Array<[RegExp, strin
 	return errors;
 }
 
-function checkWhereClauses(sql: string): string[] {
+type MutationVerb = 'update' | 'insert' | 'delete';
+
+function mutationVerb(statement: ParsedSqlStatement): MutationVerb | null {
+	const inspection = statement.inspection.trim();
+	if (/^update\b/i.test(inspection)) return 'update';
+	if (/^insert\s+into\b/i.test(inspection)) return 'insert';
+	if (/^delete\s+from\b/i.test(inspection)) return 'delete';
+	return null;
+}
+
+function collectMutationVerbs(statements: ParsedSqlStatement[]): MutationVerb[] {
+	return statements.map(mutationVerb).filter((value): value is MutationVerb => value !== null);
+}
+
+function hasUnverifiableDml(statements: ParsedSqlStatement[]): boolean {
+	return statements.some((statement) => {
+		const code = statement.inspection;
+		return /\b(?:update|insert|delete|merge)\b/i.test(code) && mutationVerb(statement) === null;
+	});
+}
+
+function hasDmlInDollarBlock(statements: ParsedSqlStatement[]): boolean {
+	return statements.some((statement) =>
+		statement.dollarBodies.some((body) => /\b(?:update|insert|delete|merge)\b/i.test(body)),
+	);
+}
+
+function checkDeclaredOperation(manifest: SqlManifest, mutations: MutationVerb[]): string[] {
 	const errors: string[] = [];
-	for (const statement of splitStatements(sql)) {
-		if (/^update\b/i.test(statement) && !statementHasWhere(statement)) {
+	const operation = manifest.operation?.toLowerCase();
+	if (operation === 'select-only' && mutations.length > 0) {
+		errors.push('@operation SELECT-ONLY must not include mutating statements.');
+	}
+	if (
+		operation &&
+		operation !== 'select-only' &&
+		(mutations.length === 0 || mutations.some((verb) => verb !== operation))
+	) {
+		errors.push(
+			`@operation ${manifest.operation} must match every top-level mutation statement.`,
+		);
+	}
+	return errors;
+}
+
+function declaredMutationTables(manifest: SqlManifest): Set<string> {
+	return new Set(
+		(manifest.tables ?? '')
+			.split(',')
+			.map((table) => table.trim().toLowerCase())
+			.filter(Boolean),
+	);
+}
+
+function mutationTargetTables(statements: ParsedSqlStatement[]): Set<string> {
+	const mutationTables = new Set<string>();
+	for (const statement of statements) {
+		const match = statement.inspection.match(
+			/^\s*(?:update|insert\s+into|delete\s+from)\s+(?:only\s+)?(public\.[a-z_][a-z0-9_]*)\b/i,
+		);
+		if (match?.[1]) mutationTables.add(match[1].toLowerCase());
+	}
+	return mutationTables;
+}
+
+function checkMutationTables(declaredTables: Set<string>, mutationTables: Set<string>): string[] {
+	const errors: string[] = [];
+	if (
+		mutationTables.size > 0 &&
+		([...mutationTables].some((table) => !declaredTables.has(table)) ||
+			[...declaredTables].some((table) => !mutationTables.has(table)))
+	) {
+		errors.push('@tables must match the complete set of mutation target tables.');
+	}
+	return errors;
+}
+
+function checkPreviewCoversMutationTables(
+	manifest: SqlManifest,
+	mutationTables: Set<string>,
+): string[] {
+	const errors: string[] = [];
+	const preview = manifest['dry-run-query']?.toLowerCase() ?? '';
+	for (const table of mutationTables) {
+		if (!new RegExp(`\\b${table.replace('.', '\\.')}\\b`, 'i').test(preview)) {
+			errors.push(`@dry-run-query must include mutation target table ${table}.`);
+		}
+	}
+	return errors;
+}
+
+function checkPreviewDistinctPredicate(
+	manifest: SqlManifest,
+	statements: ParsedSqlStatement[],
+): string[] {
+	const errors: string[] = [];
+	const preview = manifest['dry-run-query']?.toLowerCase() ?? '';
+	const mutationUsesDistinct = statements.some((statement) =>
+		/\bis\s+distinct\s+from\b/i.test(statement.inspection),
+	);
+	if (mutationUsesDistinct && !/\bis\s+distinct\s+from\b/i.test(preview)) {
+		errors.push(
+			'@dry-run-query must include the mutation IS DISTINCT FROM predicate semantics.',
+		);
+	}
+	return errors;
+}
+
+function checkPatchOperationAndTables(
+	manifest: SqlManifest,
+	statements: ParsedSqlStatement[],
+): string[] {
+	const errors: string[] = [];
+	const mutations = collectMutationVerbs(statements);
+	if (hasUnverifiableDml(statements) || hasDmlInDollarBlock(statements)) {
+		errors.push(
+			'DML must be a top-level UPDATE, INSERT, or DELETE statement that can be verified.',
+		);
+	}
+	errors.push(...checkDeclaredOperation(manifest, mutations));
+	const declaredTables = declaredMutationTables(manifest);
+	const mutationTables = mutationTargetTables(statements);
+	errors.push(...checkMutationTables(declaredTables, mutationTables));
+	errors.push(...checkPreviewCoversMutationTables(manifest, mutationTables));
+	errors.push(...checkPreviewDistinctPredicate(manifest, statements));
+	return errors;
+}
+
+function checkWhereClauses(statements: ParsedSqlStatement[]): string[] {
+	const errors: string[] = [];
+	for (const statement of statements) {
+		const verb = mutationVerb(statement);
+		if (verb === 'update' && !statementHasWhere(statement.inspection)) {
 			errors.push('UPDATE statements must include a WHERE clause.');
 		}
-		if (/^delete\s+from\b/i.test(statement) && !statementHasWhere(statement)) {
+		if (verb === 'delete' && !statementHasWhere(statement.inspection)) {
 			errors.push('DELETE statements must include a WHERE clause.');
 		}
 	}
@@ -158,10 +455,16 @@ function checkWhereClauses(sql: string): string[] {
 export function lintProductionPatchSql(sql: string): LintResult {
 	const manifest = parseSqlManifest(sql);
 	const errors = validateProductionPatchManifest(manifest);
-	const sqlWithoutComments = stripSqlComments(sql);
-
-	errors.push(...checkBlockedPatterns(sqlWithoutComments, BLOCKED_PATTERNS));
-	errors.push(...checkWhereClauses(sql));
+	try {
+		const statements = parseProductionPatchStatements(sql);
+		const inspectedSql = statements.map((statement) => statement.inspection).join('\n');
+		errors.push(...checkBlockedPatterns(inspectedSql, BLOCKED_PATTERNS));
+		errors.push(...checkWhereClauses(statements));
+		errors.push(...checkPatchOperationAndTables(manifest, statements));
+	} catch (error) {
+		const detail = error instanceof Error ? error.message : String(error);
+		errors.push(`SQL_PARSE_UNSAFE: ${detail}`);
+	}
 
 	return { ok: errors.length === 0, errors, manifest };
 }
@@ -193,9 +496,7 @@ export function validateAndNormalizeSupabaseUrl(rawUrl: string): string {
 		throw new Error('SUPABASE_URL must not contain query string or fragment.');
 	}
 	if (!url.hostname.endsWith('.supabase.co')) {
-		throw new Error(
-			'SUPABASE_URL hostname must be a Supabase project (.supabase.co).',
-		);
+		throw new Error('SUPABASE_URL hostname must be a Supabase project (.supabase.co).');
 	}
 
 	return rawUrl.replace(/\/+$/, '');
@@ -240,10 +541,7 @@ export function validateOwnerUserId(raw: string | undefined): string {
  *   - SUPABASE_URL: hostname (<ref>.supabase.co)
  *   - PROD_DB_URL:  hostname OR username depending on format
  */
-export function assertSameSupabaseProject(
-	supabaseUrl: string,
-	prodDbUrl: string,
-): void {
+export function assertSameSupabaseProject(supabaseUrl: string, prodDbUrl: string): void {
 	try {
 		const supParsed = new URL(supabaseUrl);
 		const dbParsed = new URL(prodDbUrl);
@@ -289,11 +587,13 @@ export function assertSameSupabaseProject(
 		if (error instanceof Error && error.message.includes('SUPABASE_URL')) {
 			throw error;
 		}
-		if (error instanceof TypeError || (error instanceof Error && /invalid url/i.test(error.message))) {
-			throw new Error(
-				'PROD_DB_URL is not a valid URL. Cannot verify project consistency.',
-				{ cause: error },
-			);
+		if (
+			error instanceof TypeError ||
+			(error instanceof Error && /invalid url/i.test(error.message))
+		) {
+			throw new Error('PROD_DB_URL is not a valid URL. Cannot verify project consistency.', {
+				cause: error,
+			});
 		}
 		throw error;
 	}

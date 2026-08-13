@@ -67,7 +67,7 @@ No credentials or project URLs are printed in logs.
 3. **Prepare invitation** through the dashboard workflow (slug, event type, correct owner, assets).
 4. **Configure environment**: set `SUPABASE_URL` and ensure `PROD_DB_URL` is available.
 5. **Dry-run** (recommended — no database connection).
-6. **Apply** with `--owner-user-id <UUID> --file <patch.sql>`.
+6. **Plan and apply** only through owner `prod:apply --patch`.
 7. **Verify** with read-only queries.
 
 ## Commands
@@ -87,17 +87,20 @@ Production patch dry-run passed lint: .../<patch-file>.sql
 No database connection was opened and no SQL was executed.
 ```
 
-### Apply (PowerShell)
+### Owner plan and apply (PowerShell)
 
-Set the required **environment variables**, then run apply:
+Set the required **environment variables**, then first review the owner plan and only then apply:
 
 ```powershell
 $env:SUPABASE_URL = "https://<project-ref>.supabase.co"
 $env:PROD_DB_URL = "<POSTGRESQL_CONNECTION_STRING>"
 
-pnpm db:prod:patch -- --apply `
+pnpm prod:apply -- --patch "scripts/manual/production-patches/<patch-file>.sql" `
+  --owner-user-id "<PRODUCTION_OWNER_USER_ID>"
+
+pnpm prod:apply -- --patch "scripts/manual/production-patches/<patch-file>.sql" `
   --owner-user-id "<PRODUCTION_OWNER_USER_ID>" `
-  --file "scripts/manual/production-patches/<patch-file>.sql"
+  --apply
 ```
 
 > ⚠️ **Never paste credentials into logs, documentation or chat.** The runner redacts
@@ -109,14 +112,16 @@ pnpm db:prod:patch -- --apply `
 
 ### Verification
 
-The runner validates inputs in sequence before any connection attempt:
+The direct `db:prod:patch` runner is lint-only. `prod:apply` validates the owner workflow before
+any mutation:
 
-1. `--dry-run` and `--apply` are mutually exclusive
-2. `--owner-user-id` must be a valid UUID
+1. the manifest, SQL safety rules, and preview row-count bounds are valid
+2. `--owner-user-id` must be a valid UUID and the artifact must match the reviewed plan
 3. `SUPABASE_URL` must be `https://<project>.supabase.co` (rejects `postgresql://`)
 4. `PROD_DB_URL` must be available from environment or gitignored secret file
 5. `SUPABASE_URL` and `PROD_DB_URL` must reference the same Supabase project
-6. All session settings (`app.owner_user_id`, `app.supabase_project_url`) and the patch SQL are sent in a single `psql` invocation
+6. a current critical backup and interactive owner confirmation exist immediately before the write
+7. all session settings (`app.owner_user_id`, `app.supabase_project_url`) and the patch SQL are sent in a single `psql` invocation
 
 ## Ownership conflict handling
 
