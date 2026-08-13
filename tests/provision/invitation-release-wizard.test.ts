@@ -53,6 +53,8 @@ describe('invitation-release wizard package binding', () => {
 		expect(wizard).toContain('runLiveApproval');
 		expect(wizard).toContain('applyProductionOutcome');
 		expect(wizard).toContain('maybeRecoverConflicts');
+		expect(wizard).toContain('maybeRecoverUnpublishedDraftDivergence');
+		expect(wizard).toContain('acknowledgeDiscardUnpublishedDraft');
 		// Review preflight defers backup; orchestrator classifies recovery risk.
 		expect(wizard).toContain('requireBackup: false');
 		// Production must not auto-run after Preview approve.

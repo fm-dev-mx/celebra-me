@@ -19,6 +19,7 @@ export async function runPreviewApply(input: {
 	pruneAssets?: boolean;
 	updateScope?: UpdateScope;
 	conflictResolutions?: ConflictResolutions;
+	acknowledgeDiscardUnpublishedDraft?: boolean;
 	rekeyFrom?: string;
 	ownerUserId?: string;
 	runEngine?: (options: ImportEngineOptions) => Promise<ImportEngineResult>;
@@ -34,6 +35,7 @@ export async function runPreviewApply(input: {
 		pruneAssets: input.pruneAssets,
 		updateScope: input.updateScope,
 		conflictResolutions: input.conflictResolutions,
+		acknowledgeDiscardUnpublishedDraft: input.acknowledgeDiscardUnpublishedDraft,
 		rekeyFrom: input.rekeyFrom,
 		ownerUserId: input.ownerUserId,
 	});

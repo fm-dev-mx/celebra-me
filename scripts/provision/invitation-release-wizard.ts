@@ -73,6 +73,7 @@ import {
 	orchestrateInvitationPromotion,
 	resolvePromotionUpdateScope,
 } from './invitation-promotion-orchestrator.ts';
+import { isTargetDivergenceConflictMessage } from './promotion-comparison.ts';
 
 export interface ReleaseWizardSession {
 	slug: string;
@@ -83,6 +84,7 @@ export interface ReleaseWizardSession {
 	updateScope: UpdateScope;
 	assetPolicy: AssetPolicy;
 	conflictResolutions?: ConflictResolutions;
+	acknowledgeDiscardUnpublishedDraft?: boolean;
 }
 
 function persistSessionPackage(packageData: InvitationPackageData): string {
@@ -156,6 +158,7 @@ async function planLocal(
 			updateScope: session.updateScope,
 			assetPolicy: session.assetPolicy,
 			conflictResolutions: session.conflictResolutions,
+			acknowledgeDiscardUnpublishedDraft: session.acknowledgeDiscardUnpublishedDraft,
 			expectedSourceHash: session.sourceHash,
 			expectedPackageHash: session.packageHash,
 		});
@@ -229,6 +232,7 @@ async function planPreview(
 			updateScope: session.updateScope,
 			assetPolicy: session.assetPolicy,
 			conflictResolutions: session.conflictResolutions,
+			acknowledgeDiscardUnpublishedDraft: session.acknowledgeDiscardUnpublishedDraft,
 		});
 		return {
 			plan: result.plan,
@@ -339,6 +343,28 @@ async function maybeRecoverConflicts(
 	return true;
 }
 
+async function maybeRecoverUnpublishedDraftDivergence(
+	session: ReleaseWizardSession,
+	targetPlans: TargetPlanData[],
+): Promise<boolean> {
+	if (session.acknowledgeDiscardUnpublishedDraft) return false;
+	const blocked = targetPlans.filter((tp) => tp.status === 'BLOQUEADO');
+	if (blocked.length === 0) return false;
+	const allDivergence = blocked.every((tp) =>
+		isTargetDivergenceConflictMessage(tp.reason ?? ''),
+	);
+	if (!allDivergence) return false;
+
+	const confirmed = await confirm({
+		message:
+			'El destino tiene un borrador inédito distinto del paquete y de lo publicado. ¿Descartar esas ediciones y aplicar el paquete?',
+		default: false,
+	});
+	if (!confirmed) return false;
+	session.acknowledgeDiscardUnpublishedDraft = true;
+	return true;
+}
+
 async function runLiveApproval(session: ReleaseWizardSession): Promise<void> {
 	const pending = getDefaultPreviewApprovalStore().get(session.packageHash);
 	if (!pending) {
@@ -394,6 +420,8 @@ async function applyLocalOutcome(session: ReleaseWizardSession): Promise<void> {
 		if (targetPlan.status === 'BLOQUEADO') {
 			const recovered = await maybeRecoverConflicts(session, [targetPlan]);
 			if (recovered) continue;
+			const discarded = await maybeRecoverUnpublishedDraftDivergence(session, [targetPlan]);
+			if (discarded) continue;
 			console.log(formatDryRunPlan(planData, { verbose: false }));
 			return;
 		}
@@ -420,6 +448,7 @@ async function applyLocalOutcome(session: ReleaseWizardSession): Promise<void> {
 			updateScope: session.updateScope,
 			assetPolicy: session.assetPolicy,
 			conflictResolutions: session.conflictResolutions,
+			acknowledgeDiscardUnpublishedDraft: session.acknowledgeDiscardUnpublishedDraft,
 			expectedSourceHash: session.sourceHash,
 			expectedPackageHash: session.packageHash,
 		});
@@ -470,6 +499,8 @@ async function applyPreparePreviewOutcome(session: ReleaseWizardSession): Promis
 		if (targetPlans.some((tp) => tp.status === 'BLOQUEADO')) {
 			const recovered = await maybeRecoverConflicts(session, targetPlans);
 			if (recovered) continue;
+			const discarded = await maybeRecoverUnpublishedDraftDivergence(session, targetPlans);
+			if (discarded) continue;
 			const blocked = buildPreflightBlockedResults(['local', 'preview'], targetPlans);
 			console.log(formatDryRunPlan(planData, { verbose: false }));
 			if (blocked) {
@@ -525,6 +556,7 @@ async function applyPreparePreviewOutcome(session: ReleaseWizardSession): Promis
 						updateScope: session.updateScope,
 						assetPolicy: session.assetPolicy,
 						conflictResolutions: session.conflictResolutions,
+						acknowledgeDiscardUnpublishedDraft: session.acknowledgeDiscardUnpublishedDraft,
 						expectedSourceHash: session.sourceHash,
 						expectedPackageHash: session.packageHash,
 					});
@@ -589,6 +621,7 @@ async function applyPreparePreviewOutcome(session: ReleaseWizardSession): Promis
 					updateScope: session.updateScope,
 					assetPolicy: session.assetPolicy,
 					conflictResolutions: session.conflictResolutions,
+					acknowledgeDiscardUnpublishedDraft: session.acknowledgeDiscardUnpublishedDraft,
 				});
 				const appliedPlan = executed.plan;
 				if (!appliedPlan) {

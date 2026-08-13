@@ -88,6 +88,7 @@ export interface ImportEngineOptions {
 	conflictResolutions?: ConflictResolutions;
 	/** Explicit slug rekey source. Preview + Local only; never inferred from title/client_name. */
 	rekeyFrom?: string;
+	acknowledgeDiscardUnpublishedDraft?: boolean;
 }
 
 export interface ResourcePlanAction {
@@ -1176,6 +1177,7 @@ function analyzeTargetDrift(
 	preferredInvitationId?: string,
 	conflictResolutions?: ConflictResolutions,
 	rekeyFrom?: string,
+	acknowledgeDiscardUnpublishedDraft?: boolean,
 ) {
 	// Explicit rekey targets the package/canonical slug; otherwise preserve hosted slug.
 	const slug = rekeyFrom
@@ -1285,7 +1287,10 @@ function analyzeTargetDrift(
 		targetDraftContent,
 		scanned.existingDraft,
 		scanned.existingPub,
-		{ packageContentHash },
+		{
+			packageContentHash,
+			acknowledgeDiscardUnpublishedDraft,
+		},
 	);
 
 	const isInvMetadataIdentical = checkInvitationMetadataIdentical(
@@ -1612,6 +1617,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		initialScan.targetInvitationId,
 		options.conflictResolutions,
 		rekeyFrom,
+		options.acknowledgeDiscardUnpublishedDraft,
 	);
 	const {
 		assetsToUpload,
@@ -2158,6 +2164,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			drift.targetInvitationId,
 			options.conflictResolutions,
 			rekeyFrom,
+			options.acknowledgeDiscardUnpublishedDraft,
 		);
 		const finalAssets = await scanAssetStatus(
 			pkg.assets,
