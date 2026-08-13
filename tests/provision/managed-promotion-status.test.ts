@@ -322,7 +322,7 @@ describe('canonical Production preflight refinement', () => {
 	it('keeps fingerprint behind when Production preflight is unverified', async () => {
 		const alpha = definition('alpha');
 		const environmentsBySlug = {
-			alpha: { local: 'match', preview: 'match', production: 'behind' },
+			alpha: { local: 'match', preview: 'match', production: 'behind' } as const,
 		};
 		const row = presentPromotionRow({
 			slug: alpha.slug,
