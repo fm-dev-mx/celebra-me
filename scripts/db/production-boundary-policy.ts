@@ -168,8 +168,7 @@ function splitSqlStatements(sql: string): string[] {
 	return statements;
 }
 
-const SESSION_ONLY =
-	/^(BEGIN|START\s+TRANSACTION|COMMIT|ROLLBACK|ABORT|END|SET|RESET|SHOW)\b/i;
+const SESSION_ONLY = /^(BEGIN|START\s+TRANSACTION|COMMIT|ROLLBACK|ABORT|END|SET|RESET|SHOW)\b/i;
 const READ_HEAD = /^(SELECT|EXPLAIN|VALUES|TABLE|WITH)\b/i;
 const WRITE_TOKEN =
 	/\b(INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|TRUNCATE|GRANT|REVOKE|CALL|DO|VACUUM|REINDEX|CLUSTER|REFRESH\s+MATERIALIZED|LOCK|COPY|SECURITY|REASSIGN|DISCARD|LISTEN|NOTIFY|UNLISTEN|LOAD)\b/i;
@@ -182,12 +181,17 @@ export function isReadOnlySql(sql: string): boolean {
 	return statements.every((statement) => {
 		const normalized = statement.replace(/^\(+/, '').trim();
 		if (!normalized) return true;
-		if (/^SET\s+(SESSION\s+)?AUTHORIZATION\b/i.test(normalized) || /^SET\s+ROLE\b/i.test(normalized)) {
+		if (
+			/^SET\s+(SESSION\s+)?AUTHORIZATION\b/i.test(normalized) ||
+			/^SET\s+ROLE\b/i.test(normalized)
+		) {
 			return false;
 		}
 		if (SESSION_ONLY.test(normalized)) return true;
 		if (/^COPY\b/i.test(normalized)) {
-			return /\bTO\b/i.test(normalized) && !/\bFROM\b/i.test(normalized);
+			// COPY TO STDOUT is a client export. Inner SELECT ... FROM must not look like COPY FROM.
+			if (/\bFROM\s+(STDIN|PROGRAM)\b/i.test(normalized)) return false;
+			return /\bTO\s+STDOUT\b/i.test(normalized);
 		}
 		if (!READ_HEAD.test(normalized)) return false;
 		if (/\bINTO\b/i.test(normalized)) return false;
@@ -436,9 +440,11 @@ export function extractMcpInvocation(payload: unknown): {
 		'mcp_tool_name',
 		'mcpToolName',
 	]).replace(/^.*\//, '');
-	const projectId = stringField(nested, ['project_id', 'projectId', 'project']) ||
+	const projectId =
+		stringField(nested, ['project_id', 'projectId', 'project']) ||
 		stringField(root, ['project_id', 'projectId', 'project']);
-	const sql = stringField(nested, ['query', 'sql', 'statement', 'contents']) ||
+	const sql =
+		stringField(nested, ['query', 'sql', 'statement', 'contents']) ||
 		stringField(root, ['query', 'sql', 'statement']);
 	return { toolName, projectId, sql };
 }

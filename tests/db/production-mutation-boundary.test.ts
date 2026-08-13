@@ -62,6 +62,13 @@ describe('production boundary policy', () => {
 		expect(isReadOnlySql('SELECT * INTO tmp FROM t')).toBe(false);
 		expect(isReadOnlySql('SELECT 1; DROP TABLE t')).toBe(false);
 		expect(isReadOnlySql('SET ROLE postgres')).toBe(false);
+		expect(
+			isReadOnlySql(
+				'COPY (select version::text from supabase_migrations.schema_migrations order by version) TO STDOUT',
+			),
+		).toBe(true);
+		expect(isReadOnlySql('COPY public.invitations FROM STDIN')).toBe(false);
+		expect(isReadOnlySql("COPY public.invitations FROM '/tmp/invitations.csv'")).toBe(false);
 	});
 
 	it('wraps agent shell commands with CELEBRA_AGENT_CONTEXT and ignores false/0 overrides', () => {

@@ -20,6 +20,7 @@ import {
 import {
 	clearProductionWritePermit,
 	matchProductionWritePermit,
+	withProductionPermitScope,
 } from './production-write-permit.ts';
 import {
 	ensureCriticalProductionBackup,
@@ -49,6 +50,8 @@ import {
 	type ProductionApplyScope,
 } from './production-apply-plan.ts';
 import type { ProductionApplyCliArgs } from './production-apply-cli-args.ts';
+
+const PRODUCTION_APPLY_OPERATION_TYPE = 'production_apply';
 
 export interface ProductionApplyAssemblerDeps {
 	preflightSchema?: () => MigrationPlan;
@@ -291,7 +294,7 @@ function assertDelegatedPermit(dbUrl: string, bindingHex: string): void {
 	const match = matchProductionWritePermit({
 		dbUrl,
 		bindingHex,
-		operationType: 'production_apply',
+		operationType: PRODUCTION_APPLY_OPERATION_TYPE,
 	});
 	if (match === 'ok') return;
 	throw new OperatorError({
@@ -362,7 +365,7 @@ async function authorizeReviewedPlan(
 	const ownerGateInput: OwnerProductionApplyInput = {
 		apply: true,
 		dbUrl,
-		operationType: 'production_apply',
+		operationType: PRODUCTION_APPLY_OPERATION_TYPE,
 		operationVerb: 'APPLY',
 		bindingHex: reviewed.planId,
 		applyActionLabel: 'Aplicar plan',
@@ -417,7 +420,7 @@ async function applySchemaMutation(
 					mode: 'apply',
 					expectedPin: null,
 					authorizedPlanBindingHex: input.authorizedPlanBindingHex,
-					authorizedPermitOperationType: 'production_apply',
+					authorizedPermitOperationType: PRODUCTION_APPLY_OPERATION_TYPE,
 				}));
 		const result = await applySchema({ authorizedPlanBindingHex: reviewed.planId });
 		replaceOutcome(outcomes, 'schema', {
@@ -479,7 +482,7 @@ async function applyOneInvitationMutation(
 				packageData: input.packageData,
 				authorizedProductionPermit: {
 					bindingHex: input.authorizedPlanBindingHex,
-					operationType: 'production_apply',
+					operationType: PRODUCTION_APPLY_OPERATION_TYPE,
 				},
 				requireOwnerApply: async (gate) => {
 					assertDelegatedPermit(gate.dbUrl, input.authorizedPlanBindingHex);
@@ -612,23 +615,32 @@ export async function applyProductionApplyPlan(
 		throwIfPlanDrifted(reviewed, await buildProductionApplyPlan(args, deps));
 
 		const outcomes = reviewed.items.map(outcomeFromItem);
-		const wroteSchema = await applySchemaMutation(mutations, reviewed, deps, outcomes);
-		const wroteInvitations = await applyInvitationMutations(
-			mutations,
-			reviewed,
-			deps,
-			outcomes,
-		);
-		const wrotePatch = await applyPatchMutation(
-			mutations,
-			reviewed,
-			ownerUserId,
-			deps,
-			outcomes,
+		const wrote = await withProductionPermitScope(
+			{
+				bindingHex: reviewed.planId,
+				operationType: PRODUCTION_APPLY_OPERATION_TYPE,
+			},
+			async () => {
+				const wroteSchema = await applySchemaMutation(mutations, reviewed, deps, outcomes);
+				const wroteInvitations = await applyInvitationMutations(
+					mutations,
+					reviewed,
+					deps,
+					outcomes,
+				);
+				const wrotePatch = await applyPatchMutation(
+					mutations,
+					reviewed,
+					ownerUserId,
+					deps,
+					outcomes,
+				);
+				return wroteSchema || wroteInvitations || wrotePatch;
+			},
 		);
 		return {
 			plan: reviewed,
-			wrote: wroteSchema || wroteInvitations || wrotePatch,
+			wrote,
 			outcomes,
 		};
 	} finally {
