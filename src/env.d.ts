@@ -36,6 +36,8 @@ interface ImportMetaEnv {
 	readonly PREVIEW_ADMIN_EMAILS: string;
 	/** Local-process runtime target: `local` | `preview`. Never forges Vercel identity. */
 	readonly CELEBRA_RUNTIME_TARGET: string;
+	/** Optional override for the durable canonical-status cache file. */
+	readonly CELEBRA_STATUS_CACHE_PATH: string;
 	readonly VERCEL: string;
 	readonly VERCEL_ENV: string;
 	readonly VERCEL_GIT_COMMIT_REF: string;

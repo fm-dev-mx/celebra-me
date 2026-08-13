@@ -98,6 +98,8 @@ execution:
 - **Lane runtime target:** `CELEBRA_RUNTIME_TARGET` is `local` or `preview` for local Astro
   processes. Lane detection sets it automatically; shell override is allowed for intentional tests.
   It never forges Vercel identity and is not mutation authorization.
+- **Canonical-status cache path:** `CELEBRA_STATUS_CACHE_PATH` optionally overrides the durable
+  status cache file used by the app/runtime status server. Default is `.cache/canonical-status.json`.
 - **Preview-only operational:** `PREVIEW_DB_URL`, `PREVIEW_SUPABASE_URL`, and
   `PREVIEW_SUPABASE_SERVICE_ROLE_KEY` are used by Preview DB workflows and never by Production. They
   live in `.env.preview.local` (see `.env.preview.local.example`), not ordinary Local `.env.local`
