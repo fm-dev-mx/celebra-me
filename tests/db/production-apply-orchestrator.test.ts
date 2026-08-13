@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, jest } from '@jest/globals';
 import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
 import { buildMigrationPlan, type MigrationPlan } from '../../scripts/db/migration-plan.ts';
 import { OperatorError } from '../../scripts/db/operator-cli-ux.ts';
+import { MigrateApplyError } from '../../scripts/db/migrate-orchestrator.ts';
 import { parseProductionApplyCliArgs } from '../../scripts/db/production-apply-cli-args.ts';
 import {
 	applyProductionApplyPlan,
@@ -20,6 +21,7 @@ import type {
 	PromotionApplyReport,
 	PromotionPreflightReport,
 } from '../../scripts/provision/invitation-promote.ts';
+import type { UpdateScope } from '../../scripts/provision/semantic-delta.ts';
 
 const PROD_URL = `postgresql://postgres:super-secret@db.${SUPABASE_PROJECT_REFS.production}.supabase.co:5432/postgres`;
 
@@ -174,7 +176,9 @@ describe('production apply planning', () => {
 		expect(plan.items.find((item) => item.domain === 'schema')?.readiness).toBe('READY');
 		expect(plan.items.find((item) => item.id === 'alpha')?.readiness).toBe('READY');
 		expect(plan.items.find((item) => item.id === 'beta')?.readiness).toBe('IN_SYNC');
-		expect(JSON.stringify(toPublicProductionApplyPlan(plan))).not.toMatch(/postgres(ql)?:\/\//i);
+		expect(JSON.stringify(toPublicProductionApplyPlan(plan))).not.toMatch(
+			/postgres(ql)?:\/\//i,
+		);
 		expect(JSON.stringify(plan)).not.toContain('super-secret');
 	});
 
@@ -204,6 +208,28 @@ describe('production apply planning', () => {
 		expect(plan.items.find((item) => item.id === 'demo')?.readiness).toBe('BLOCKED');
 		expect(plan.items.find((item) => item.domain === 'schema')?.readiness).toBe(
 			'NOT_APPLICABLE',
+		);
+	});
+
+	it('uses the definition scope for both Production planning and preflight', async () => {
+		const runInvitationPreflight = jest.fn(
+			async (packageData: InvitationPackageData, updateScope?: UpdateScope) => {
+				void updateScope;
+				return invitationPreflight(packageData.invitation.slug);
+			},
+		);
+		const plan = await buildProductionApplyPlan(cli(['--slug', 'demo']), {
+			...baseDeps({ pending: [] }),
+			resolveInvitationUpdateScope: () => 'content-and-assets',
+			runInvitationPreflight,
+		});
+
+		expect(runInvitationPreflight).toHaveBeenCalledWith(
+			expect.objectContaining({ invitation: expect.objectContaining({ slug: 'demo' }) }),
+			'content-and-assets',
+		);
+		expect(plan.items.find((item) => item.id === 'demo')?.updateScope).toBe(
+			'content-and-assets',
 		);
 	});
 
@@ -246,10 +272,7 @@ describe('production apply planning', () => {
 	});
 
 	it('excludes already-applied schema from mutation', async () => {
-		const plan = await buildProductionApplyPlan(
-			cli(['--schema']),
-			baseDeps({ pending: [] }),
-		);
+		const plan = await buildProductionApplyPlan(cli(['--schema']), baseDeps({ pending: [] }));
 		expect(plan.items[0]?.readiness).toBe('IN_SYNC');
 		expect(plan.planId).toBe(
 			(await buildProductionApplyPlan(cli(['--schema']), baseDeps({ pending: [] }))).planId,
@@ -272,13 +295,19 @@ describe('production apply execution', () => {
 			order.push('schema');
 			return { plan: schemaPlan(), wrote: true };
 		});
-		const applyInvitation = jest.fn(async (input: { packageData: InvitationPackageData }) => {
-			order.push(input.packageData.invitation.slug);
-			return {
-				...invitationPreflight(input.packageData.invitation.slug),
-				status: 'PROMOTED',
-			} as PromotionApplyReport;
-		});
+		const applyInvitation = jest.fn(
+			async (input: {
+				packageData: InvitationPackageData;
+				authorizedPlanBindingHex: string;
+				updateScope?: UpdateScope;
+			}) => {
+				order.push(input.packageData.invitation.slug);
+				return {
+					...invitationPreflight(input.packageData.invitation.slug),
+					status: 'PROMOTED',
+				} as PromotionApplyReport;
+			},
+		);
 		const result = await applyProductionApplyPlan(cli(['--all-ready', '--apply']), {
 			...baseDeps({
 				preflights: {
@@ -286,6 +315,7 @@ describe('production apply execution', () => {
 					beta: invitationPreflight('beta'),
 				},
 			}),
+			resolveInvitationUpdateScope: () => 'content-and-assets',
 			requireOwnerApply,
 			applySchema,
 			applyInvitation,
@@ -293,8 +323,14 @@ describe('production apply execution', () => {
 		expect(requireOwnerApply).toHaveBeenCalledTimes(1);
 		expect(order).toEqual(['authorize', 'schema', 'alpha', 'beta']);
 		expect(result.wrote).toBe(true);
-		expect(result.outcomes.find((row) => row.id === 'schema')?.outcome).toBe('applied_verified');
+		expect(result.outcomes.find((row) => row.id === 'schema')?.outcome).toBe(
+			'APPLIED_AND_VERIFIED',
+		);
 		expect(applySchema).toHaveBeenCalledTimes(1);
+		expect(applyInvitation.mock.calls.map((call) => call[0].updateScope)).toEqual([
+			'content-and-assets',
+			'content-and-assets',
+		]);
 		const schemaCall = applySchema.mock.calls[0] as unknown as [
 			{ authorizedPlanBindingHex: string },
 		];
@@ -311,6 +347,48 @@ describe('production apply execution', () => {
 		expect(requireOwnerApply).not.toHaveBeenCalled();
 		expect(result.wrote).toBe(false);
 		expect(result.outcomes[0]?.outcome).toBe('already_applied');
+	});
+
+	it('replans read-only after APPLIED_VERIFICATION_FAILED and never repeats the schema write', async () => {
+		let pending = ['20260807120000'];
+		const applySchema = jest.fn(async () => {
+			pending = [];
+			throw new MigrateApplyError({
+				state: 'APPLIED_VERIFICATION_FAILED',
+				plan: schemaPlan(['20260807120000']),
+				error: new Error('post-write verifier failed'),
+			});
+		});
+		const deps: ProductionApplyExecuteDeps = {
+			...baseDeps(),
+			preflightSchema: () => schemaPlan(pending),
+			requireOwnerApply: async (input) => {
+				issueProductionWritePermit({
+					projectRef: SUPABASE_PROJECT_REFS.production,
+					operationType: 'production_apply',
+					bindingHex: input.bindingHex,
+				});
+			},
+			applySchema,
+		};
+
+		await expect(
+			applyProductionApplyPlan(cli(['--schema', '--apply']), deps),
+		).rejects.toMatchObject({
+			state: 'APPLIED_VERIFICATION_FAILED',
+			code: 'APPLIED_VERIFICATION_FAILED',
+		});
+		expect(applySchema).toHaveBeenCalledTimes(1);
+
+		const retryOwnerGate = jest.fn(async () => undefined);
+		const retry = await applyProductionApplyPlan(cli(['--schema', '--apply']), {
+			...deps,
+			requireOwnerApply: retryOwnerGate,
+		});
+		expect(retry.wrote).toBe(false);
+		expect(retry.outcomes[0]?.outcome).toBe('already_applied');
+		expect(retryOwnerGate).not.toHaveBeenCalled();
+		expect(applySchema).toHaveBeenCalledTimes(1);
 	});
 
 	it('refuses inspect-all --apply before any writer', async () => {
@@ -337,7 +415,8 @@ describe('production apply execution', () => {
 
 	it('stops dependent invitations when schema apply fails', async () => {
 		const applyInvitation = jest.fn(
-			async (): Promise<PromotionApplyReport> => invitationPreflight('alpha') as PromotionApplyReport,
+			async (): Promise<PromotionApplyReport> =>
+				invitationPreflight('alpha') as PromotionApplyReport,
 		);
 		await expect(
 			applyProductionApplyPlan(cli(['--all-ready', '--apply']), {
@@ -420,7 +499,8 @@ describe('production apply execution', () => {
 
 	it('rejects UNKNOWN and BLOCKED explicit scopes before any writer', async () => {
 		const applyInvitation = jest.fn(
-			async (): Promise<PromotionApplyReport> => invitationPreflight('demo') as PromotionApplyReport,
+			async (): Promise<PromotionApplyReport> =>
+				invitationPreflight('demo') as PromotionApplyReport,
 		);
 		await expect(
 			applyProductionApplyPlan(cli(['--slug', 'demo', '--apply']), {
@@ -499,8 +579,9 @@ describe('production apply execution', () => {
 
 	it('rejects a package changed after authorization before its write and clears the permit', async () => {
 		let resolves = 0;
-		const applyInvitation = jest.fn(async (): Promise<PromotionApplyReport> =>
-			({ ...invitationPreflight('alpha'), status: 'PROMOTED' }) as PromotionApplyReport,
+		const applyInvitation = jest.fn(
+			async (): Promise<PromotionApplyReport> =>
+				({ ...invitationPreflight('alpha'), status: 'PROMOTED' }) as PromotionApplyReport,
 		);
 		await expect(
 			applyProductionApplyPlan(cli(['--slug', 'alpha', '--apply']), {
@@ -525,11 +606,12 @@ describe('production apply execution', () => {
 
 	it('stops before a changed second package after the first package is applied', async () => {
 		const resolves: Record<string, number> = { alpha: 0, beta: 0 };
-		const applyInvitation = jest.fn(async (input: { packageData: InvitationPackageData }) =>
-			({
-				...invitationPreflight(input.packageData.invitation.slug),
-				status: 'PROMOTED',
-			}) as PromotionApplyReport,
+		const applyInvitation = jest.fn(
+			async (input: { packageData: InvitationPackageData }) =>
+				({
+					...invitationPreflight(input.packageData.invitation.slug),
+					status: 'PROMOTED',
+				}) as PromotionApplyReport,
 		);
 		await expect(
 			applyProductionApplyPlan(cli(['--slugs', 'alpha,beta', '--apply']), {
@@ -542,7 +624,12 @@ describe('production apply execution', () => {
 				}),
 				resolvePackage: async (slug) => {
 					resolves[slug] = (resolves[slug] ?? 0) + 1;
-					return pkg(slug, slug === 'beta' && resolves[slug] >= 3 ? 'hash-beta-changed' : `hash-${slug}`);
+					return pkg(
+						slug,
+						slug === 'beta' && resolves[slug] >= 3
+							? 'hash-beta-changed'
+							: `hash-${slug}`,
+					);
 				},
 				requireOwnerApply: async (input) => {
 					issueProductionWritePermit({
@@ -561,7 +648,7 @@ describe('production apply execution', () => {
 
 	it('rejects a patch changed after authorization before backup or write', async () => {
 		let preparations = 0;
-		const applyPatch = jest.fn(async () => undefined);
+		const applyPatch = jest.fn(async () => ({ state: 'APPLIED_AND_VERIFIED' as const }));
 		const ensurePatchBackup: NonNullable<ProductionApplyExecuteDeps['ensurePatchBackup']> =
 			jest.fn(() => ({ manifestPath: '.tmp/test-backup.json' }));
 		await expect(
@@ -602,9 +689,10 @@ describe('production apply execution', () => {
 	it('requires and revalidates a current critical backup before applying a patch', async () => {
 		const ensurePatchBackup: NonNullable<ProductionApplyExecuteDeps['ensurePatchBackup']> =
 			jest.fn(() => ({ manifestPath: '.tmp/test-backup.json' }));
-		const revalidatePatchBackup: NonNullable<ProductionApplyExecuteDeps['revalidatePatchBackup']> =
-			jest.fn(() => undefined);
-		const applyPatch = jest.fn(async () => undefined);
+		const revalidatePatchBackup: NonNullable<
+			ProductionApplyExecuteDeps['revalidatePatchBackup']
+		> = jest.fn(() => undefined);
+		const applyPatch = jest.fn(async () => ({ state: 'APPLIED_AND_VERIFIED' as const }));
 		await applyProductionApplyPlan(
 			cli([
 				'--patch',

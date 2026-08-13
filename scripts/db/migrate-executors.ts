@@ -20,6 +20,9 @@ import {
 	type RunOptions,
 } from './db-workflow-lib.ts';
 import { extractPendingMigrationVersions } from './migration-pending-set.ts';
+import { OperatorError } from './operator-cli-ux.ts';
+
+export const MUTATION_CONTRACT_VERIFY_TIMEOUT_MS = 30_000;
 
 export interface DryRunResult {
 	output: string;
@@ -182,6 +185,53 @@ export function verifyVersionsInHistory(dbUrl: string, versions: readonly string
 	}
 }
 
+export function assertMutationContractVerifyResult(
+	result: CommandResult,
+	target: 'production' | 'preview',
+): void {
+	if (result.status === null) {
+		throw new OperatorError({
+			title: 'La verificación del contrato excedió el tiempo límite',
+			cause: `El verificador de ${target} no terminó en ${MUTATION_CONTRACT_VERIFY_TIMEOUT_MS} ms.`,
+			code: 'MUTATION_CONTRACT_VERIFY_TIMEOUT',
+			remediation: [
+				'Revalide conectividad y ejecute únicamente el verificador de solo lectura.',
+				'No reintente la mutación hasta confirmar el estado vivo.',
+			],
+		});
+	}
+	if (result.status !== 0) {
+		throw new OperatorError({
+			title: 'Falló la verificación del contrato de mutación',
+			cause:
+				(result.stderr || result.stdout).trim().slice(0, 1_000) ||
+				`El verificador terminó con código ${result.status}.`,
+			code: 'MUTATION_CONTRACT_VERIFY_FAILED',
+			remediation: [
+				'Inspeccione la evidencia del verificador de solo lectura.',
+				'No repita la mutación hasta confirmar historial y contrato.',
+			],
+		});
+	}
+	const sentinel = `Mutation schema contract verified for ${target}.`;
+	if (!result.stdout.split(/\r?\n/).some((line) => line.trim() === sentinel)) {
+		throw new OperatorError({
+			title: 'La salida del verificador no es válida',
+			cause: 'El proceso terminó correctamente pero no emitió la confirmación estructural esperada.',
+			code: 'MUTATION_CONTRACT_VERIFY_INVALID_OUTPUT',
+			remediation: [
+				'Revise el proceso hijo y ejecute de nuevo el verificador de solo lectura.',
+				'No interprete una salida vacía o incompleta como verificación aprobada.',
+			],
+		});
+	}
+}
+
 export function runMutationContractVerify(target: 'production' | 'preview'): void {
-	runCommand('npx', ['tsx', 'scripts/db/verify-mutation-schema-contract.ts', '--target', target]);
+	const result = runCommand(
+		'npx',
+		['tsx', 'scripts/db/verify-mutation-schema-contract.ts', '--target', target],
+		{ throwOnError: false, timeoutMs: MUTATION_CONTRACT_VERIFY_TIMEOUT_MS },
+	);
+	assertMutationContractVerifyResult(result, target);
 }

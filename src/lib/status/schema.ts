@@ -12,6 +12,7 @@ const patchReason = z.enum([
 	'LIVE_ZERO_ROWS',
 	'LIVE_ROWS_WITHIN_RANGE',
 	'LIVE_ROWS_OUTSIDE_RANGE',
+	'LIVE_STORE_DISAGREEMENT',
 	'QUERY_FAILED',
 	'QUERY_TIMEOUT',
 	'QUERY_INVALID_OUTPUT',
@@ -45,6 +46,9 @@ const reasonCode = z.enum([
 	'PREVIEW_ALIGNED_PRODUCTION_BEHIND',
 	'LOCAL_BEHIND_PREVIEW_ALIGNED',
 	'PREVIEW_BEHIND_CANONICAL',
+	'PREVIEW_APPROVAL_REQUIRED',
+	'PRODUCTION_PREFLIGHT_BLOCKED',
+	'PRODUCTION_PREFLIGHT_UNVERIFIED',
 ]);
 const slug = z.string().regex(/^[a-z0-9-]{1,100}$/);
 const migrationVersion = z.string().regex(/^\d{14}$/);

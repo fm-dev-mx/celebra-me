@@ -23,6 +23,7 @@ import {
 	parseReleaseMutationTargets,
 	parseTargets,
 	checkUnknownFlags,
+	resolvePromotionUpdateScope,
 	validateUpdateOptions,
 	type InvitationUpdateTarget,
 } from './invitation-update-options.ts';
@@ -75,7 +76,6 @@ import {
 	formatPromotionPlanCompact,
 	toPublicPromotionReport,
 } from './invitation-promotion-format.ts';
-import { resolvePromotionUpdateScope } from './invitation-promotion-orchestrator.ts';
 import { operatorSymbol, writeHuman } from '../db/operator-cli-ux.ts';
 import { isTargetDivergenceConflictMessage } from './promotion-comparison.ts';
 
@@ -515,10 +515,9 @@ async function executePreviewTargetPlan(input: {
 		assertPreviewDbUrl(resolved.url);
 		dbUrl = resolved.url;
 	} catch {
-		throw Object.assign(
-			new Error('PREVIEW_DB_URL no configurada o perímetro inválido.'),
-			{ mutationStarted: false },
-		) as LifecycleExecutionError;
+		throw Object.assign(new Error('PREVIEW_DB_URL no configurada o perímetro inválido.'), {
+			mutationStarted: false,
+		}) as LifecycleExecutionError;
 	}
 	const previewPlan = input.executionPlans.get('preview');
 	if (!previewPlan) {
@@ -527,9 +526,12 @@ async function executePreviewTargetPlan(input: {
 		}) as LifecycleExecutionError;
 	}
 	if (!currentConfirmationPackage) {
-		throw Object.assign(new Error('No existe un paquete de confirmación resuelto para Preview.'), {
-			mutationStarted: false,
-		}) as LifecycleExecutionError;
+		throw Object.assign(
+			new Error('No existe un paquete de confirmación resuelto para Preview.'),
+			{
+				mutationStarted: false,
+			},
+		) as LifecycleExecutionError;
 	}
 	const result = await planAndApplyPreviewContent({
 		packageData: currentConfirmationPackage,

@@ -8,11 +8,7 @@ export type TargetEnv = 'local' | 'preview' | 'production';
 export type EvidenceState = 'LIVE' | 'CACHED' | 'UNVERIFIED';
 
 export type PatchApplicability =
-	| 'NOT_APPLICABLE'
-	| 'NOT_NEEDED'
-	| 'PENDING'
-	| 'BLOCKED'
-	| 'UNVERIFIED';
+	'NOT_APPLICABLE' | 'NOT_NEEDED' | 'PENDING' | 'BLOCKED' | 'UNVERIFIED';
 
 export type PatchEvidenceReason =
 	| 'CATALOG_VALID'
@@ -22,6 +18,7 @@ export type PatchEvidenceReason =
 	| 'LIVE_ZERO_ROWS'
 	| 'LIVE_ROWS_WITHIN_RANGE'
 	| 'LIVE_ROWS_OUTSIDE_RANGE'
+	| 'LIVE_STORE_DISAGREEMENT'
 	| 'QUERY_FAILED'
 	| 'QUERY_TIMEOUT'
 	| 'QUERY_INVALID_OUTPUT';
@@ -58,26 +55,13 @@ export type SchemaOperationReadiness =
 
 /** Owner-apply ledger vs live Production history. Independent of schemaLifecycle. */
 export type AuthorizationIntegrity =
-	| 'RECORDED'
-	| 'MISSING'
-	| 'GRANDFATHERED'
-	| 'NOT_APPLICABLE'
-	| 'UNVERIFIED';
+	'RECORDED' | 'MISSING' | 'GRANDFATHERED' | 'NOT_APPLICABLE' | 'UNVERIFIED';
 
 export type EnvironmentPromotionState =
-	| 'match'
-	| 'behind'
-	| 'absent'
-	| 'diverged'
-	| 'conflict'
-	| 'unknown';
+	'match' | 'behind' | 'absent' | 'diverged' | 'conflict' | 'unknown';
 
 export type PromotionAction =
-	| 'PROMOTE_PREVIEW'
-	| 'PROMOTE_PRODUCTION'
-	| 'BLOCKED'
-	| 'UNKNOWN'
-	| 'NONE';
+	'PROMOTE_PREVIEW' | 'PROMOTE_PRODUCTION' | 'BLOCKED' | 'UNKNOWN' | 'NONE';
 
 export type PromotionReasonCode =
 	| 'IN_SYNC'
@@ -88,7 +72,10 @@ export type PromotionReasonCode =
 	| 'PRODUCTION_AHEAD_OF_PREVIEW'
 	| 'PREVIEW_ALIGNED_PRODUCTION_BEHIND'
 	| 'LOCAL_BEHIND_PREVIEW_ALIGNED'
-	| 'PREVIEW_BEHIND_CANONICAL';
+	| 'PREVIEW_BEHIND_CANONICAL'
+	| 'PREVIEW_APPROVAL_REQUIRED'
+	| 'PRODUCTION_PREFLIGHT_BLOCKED'
+	| 'PRODUCTION_PREFLIGHT_UNVERIFIED';
 
 export type PromotionSource = 'canonical' | 'preview' | 'local';
 export type PromotionDestination = 'preview' | 'production' | 'local';

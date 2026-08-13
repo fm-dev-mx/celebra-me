@@ -631,6 +631,8 @@ interface CanonicalStatusPanelProps {
 	initialView?: CanonicalStatusView | null;
 }
 
+const CANONICAL_STATUS_REFRESH_TIMEOUT_MS = 130_000;
+
 export default function CanonicalStatusPanel({ initialView = null }: CanonicalStatusPanelProps) {
 	const [view, setView] = useState<CanonicalStatusView | null>(initialView);
 	const [loading, setLoading] = useState(false);
@@ -649,7 +651,7 @@ export default function CanonicalStatusPanel({ initialView = null }: CanonicalSt
 		if (includeDiagnostics) params.set('diagnostics', '1');
 		const result = await dashboardApi.get<CanonicalStatusView>(
 			`/api/dashboard/estado?${params.toString()}`,
-			{ timeoutMs: 30_000 },
+			{ timeoutMs: CANONICAL_STATUS_REFRESH_TIMEOUT_MS },
 		);
 		if (!result.ok) {
 			setError(result.message || 'No se pudo actualizar el estado.');

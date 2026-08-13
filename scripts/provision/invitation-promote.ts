@@ -40,15 +40,17 @@ import {
 	runProductionPreflight,
 	type ProductionPreflightResult,
 } from './production-preflight.ts';
-import {
-	MergeConflictError,
-	listDriftConflicts,
-	type ConflictResolutions,
-	type SemanticFieldDelta,
-	type UpdateScope,
-} from './semantic-delta.ts';
+import { type ConflictResolutions, type UpdateScope } from './semantic-delta.ts';
 import type { AssetPolicy } from './asset-reconciliation.ts';
 import type { OperationalPlan } from './invitation-update-plan.ts';
+import {
+	divergenceFromManagedBaseline,
+	divergenceFromMergeConflict,
+	emptyDivergence,
+	type PromotionDivergenceSummary,
+} from './promotion-divergence.ts';
+
+export { classifyPromotionDifferences } from './promotion-divergence.ts';
 
 export type PromotionTerminalStatus =
 	'PROMOTABLE' | 'PROMOTED' | 'IN_SYNC' | 'BLOCKED' | 'APPLIED_BUT_VERIFICATION_FAILED';
@@ -63,21 +65,6 @@ export type PromotionBlockCode =
 	| 'MANAGED_DIVERGENCE'
 	| 'CONFIRMATION_REQUIRED'
 	| 'VERIFICATION_FAILED';
-
-export type PromotionDifferenceClass =
-	| 'SAFE_MANAGED_CHANGE'
-	| 'TARGET_OWNED_DIFFERENCE'
-	| 'MANAGED_DIVERGENCE'
-	| 'CONFLICT_REQUIRES_REVIEW';
-
-export interface PromotionDifference {
-	classification: PromotionDifferenceClass;
-	path: string;
-	detail: string;
-	previousCanonicalValue?: unknown;
-	packageValue?: unknown;
-	targetValue?: unknown;
-}
 
 export interface PromotionSchemaGateResult {
 	state: SchemaLifecycleState;
@@ -98,14 +85,6 @@ export interface PromotionBackupGateResult {
 	canonicalCommand: string;
 	blockCode?: PromotionBlockCode;
 	detail: string;
-}
-
-export interface PromotionDivergenceSummary {
-	safeManagedChanges: PromotionDifference[];
-	targetOwnedDifferences: PromotionDifference[];
-	managedDivergences: PromotionDifference[];
-	conflicts: PromotionDifference[];
-	blocksPromotion: boolean;
 }
 
 export interface PromotionPreflightReport {
@@ -320,91 +299,6 @@ export function evaluatePromotionBackupGate(input: {
 	}
 }
 
-export function classifyPromotionDifferences(
-	deltas: SemanticFieldDelta[],
-): PromotionDivergenceSummary {
-	const safeManagedChanges: PromotionDifference[] = [];
-	const targetOwnedDifferences: PromotionDifference[] = [];
-	const managedDivergences: PromotionDifference[] = [];
-	const conflicts: PromotionDifference[] = [];
-
-	for (const delta of deltas) {
-		const base = {
-			path: delta.path,
-			previousCanonicalValue: delta.previousCanonicalValue,
-			packageValue: delta.currentCanonicalValue,
-			targetValue: delta.currentTargetValue,
-		};
-		if (delta.status === 'APPLY') {
-			safeManagedChanges.push({
-				...base,
-				classification: 'SAFE_MANAGED_CHANGE',
-				detail: `Managed field will apply (${delta.operation}).`,
-			});
-		} else if (delta.status === 'BLOCKED_BY_SCOPE') {
-			targetOwnedDifferences.push({
-				...base,
-				classification: 'TARGET_OWNED_DIFFERENCE',
-				detail: 'Target-owned / out-of-scope difference preserved.',
-			});
-		} else if (delta.status === 'DRIFT') {
-			managedDivergences.push({
-				...base,
-				classification: 'MANAGED_DIVERGENCE',
-				detail: 'Unresolved managed divergence blocks promotion.',
-			});
-		}
-	}
-
-	return {
-		safeManagedChanges,
-		targetOwnedDifferences,
-		managedDivergences,
-		conflicts,
-		blocksPromotion: managedDivergences.length > 0 || conflicts.length > 0,
-	};
-}
-
-export function divergenceFromMergeConflict(error: unknown): PromotionDivergenceSummary | null {
-	let current: unknown = error;
-	while (current) {
-		if (current instanceof MergeConflictError) {
-			const summary = classifyPromotionDifferences(listDriftConflicts(current.deltas));
-			if (summary.managedDivergences.length === 0 && summary.conflicts.length === 0) {
-				// Fail closed: any merge conflict without classified DRIFT still blocks.
-				return {
-					...summary,
-					conflicts: [
-						{
-							classification: 'CONFLICT_REQUIRES_REVIEW',
-							path: '(merge)',
-							detail: current.message,
-						},
-					],
-					blocksPromotion: true,
-				};
-			}
-			return summary;
-		}
-		if (current instanceof Error && 'cause' in current && current.cause) {
-			current = current.cause;
-			continue;
-		}
-		break;
-	}
-	return null;
-}
-
-function emptyDivergence(): PromotionDivergenceSummary {
-	return {
-		safeManagedChanges: [],
-		targetOwnedDifferences: [],
-		managedDivergences: [],
-		conflicts: [],
-		blocksPromotion: false,
-	};
-}
-
 function requireApprovedRelease(
 	packageData: InvitationPackageData,
 	approvalsDirs?: string[],
@@ -570,8 +464,9 @@ export async function runPromotionPreflight(input: {
 			liveRecheck,
 		});
 	} catch (error) {
-		const fromMerge = divergenceFromMergeConflict(error);
-		if (fromMerge?.blocksPromotion) {
+		const divergence =
+			divergenceFromMergeConflict(error) ?? divergenceFromManagedBaseline(error);
+		if (divergence?.blocksPromotion) {
 			return {
 				...base,
 				status: 'BLOCKED',
@@ -586,7 +481,7 @@ export async function runPromotionPreflight(input: {
 					required: input.requireBackup !== false,
 					now: input.now,
 				}),
-				divergence: fromMerge,
+				divergence,
 				targetDbUrl,
 			};
 		}
@@ -614,7 +509,7 @@ export async function runPromotionPreflight(input: {
 				required: input.requireBackup !== false,
 				now: input.now,
 			}),
-			divergence: fromMerge ?? emptyDivergence(),
+			divergence: emptyDivergence(),
 			targetDbUrl,
 		};
 	}

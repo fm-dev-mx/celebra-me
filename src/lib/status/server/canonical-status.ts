@@ -17,7 +17,7 @@ import { CanonicalStatusViewSchema } from '@/lib/status/schema';
 import type { CanonicalStatusView, TargetEnv } from '@/lib/status/types';
 
 const STATUS_SCRIPT = resolve(process.cwd(), 'scripts/provision/print-canonical-status.ts');
-const CANONICAL_STATUS_TIMEOUT_MS = 30_000;
+const CANONICAL_STATUS_TIMEOUT_MS = 120_000;
 export const CANONICAL_STATUS_MAX_STDOUT_BYTES = 1024 * 1024;
 const CANONICAL_STATUS_MAX_FAILURE_DETAIL_CHARS = 512;
 
@@ -33,7 +33,8 @@ const queue: QueueJob<unknown>[] = [];
 let busy = false;
 let cache: { view: CanonicalStatusView } | null = null;
 let cachePathOverride: string | null = null;
-let statusChildRunnerOverride: ((args: string[], timeoutMs: number) => Promise<unknown>) | null = null;
+let statusChildRunnerOverride: ((args: string[], timeoutMs: number) => Promise<unknown>) | null =
+	null;
 const inFlightRefreshes = new Map<string, Promise<CanonicalStatusView>>();
 
 async function withLock<T>(run: () => Promise<T>): Promise<T> {
@@ -80,14 +81,19 @@ function childFailure(
 	message: string,
 	detail?: string,
 ): ApiError {
-	return new ApiError(status, status === 504 ? 'service_unavailable' : 'internal_error', message, {
-		statusProbe: {
-			code: diagnosticCode,
-			domain: 'schema-and-content',
-			evidence: 'UNVERIFIED',
-			detail: detail ? redactChildFailureDetail(detail) : undefined,
+	return new ApiError(
+		status,
+		status === 504 ? 'service_unavailable' : 'internal_error',
+		message,
+		{
+			statusProbe: {
+				code: diagnosticCode,
+				domain: 'schema-and-content',
+				evidence: 'UNVERIFIED',
+				detail: detail ? redactChildFailureDetail(detail) : undefined,
+			},
 		},
-	});
+	);
 }
 
 export function runCanonicalStatusChild(args: string[], timeoutMs: number): Promise<unknown> {
@@ -226,7 +232,10 @@ function isPersistableView(view: CanonicalStatusView): boolean {
 	return ENVS.some((env) => hasPersistableOperationalEvidence(view.environments[env].evidence));
 }
 
-function asHydratedCache(view: CanonicalStatusView, nowMs: number = Date.now()): CanonicalStatusView {
+function asHydratedCache(
+	view: CanonicalStatusView,
+	nowMs: number = Date.now(),
+): CanonicalStatusView {
 	const lastVerifiedAt = view.freshnessMeta?.lastVerifiedAt ?? view.generatedAt;
 	return {
 		...view,
@@ -235,16 +244,20 @@ function asHydratedCache(view: CanonicalStatusView, nowMs: number = Date.now()):
 		environments: {
 			local: {
 				...view.environments.local,
-				evidence: view.environments.local.evidence === 'UNVERIFIED' ? 'UNVERIFIED' : 'CACHED',
+				evidence:
+					view.environments.local.evidence === 'UNVERIFIED' ? 'UNVERIFIED' : 'CACHED',
 			},
 			preview: {
 				...view.environments.preview,
-				evidence: view.environments.preview.evidence === 'UNVERIFIED' ? 'UNVERIFIED' : 'CACHED',
+				evidence:
+					view.environments.preview.evidence === 'UNVERIFIED' ? 'UNVERIFIED' : 'CACHED',
 			},
 			production: {
 				...view.environments.production,
 				evidence:
-					view.environments.production.evidence === 'UNVERIFIED' ? 'UNVERIFIED' : 'CACHED',
+					view.environments.production.evidence === 'UNVERIFIED'
+						? 'UNVERIFIED'
+						: 'CACHED',
 			},
 		},
 		promotions: view.promotions.map((row) => ({
@@ -272,7 +285,9 @@ export async function writeOperationalStatusCache(view: CanonicalStatusView): Pr
 	try {
 		const serialized = JSON.stringify(view, null, 2);
 		if (cacheLooksSecret(serialized)) {
-			console.warn('[canonical-status] Refusing to persist a status payload that looks secret.');
+			console.warn(
+				'[canonical-status] Refusing to persist a status payload that looks secret.',
+			);
 			return;
 		}
 		const file = operationalCachePath();

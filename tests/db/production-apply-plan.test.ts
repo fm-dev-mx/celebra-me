@@ -141,6 +141,20 @@ describe('production apply plan fingerprint and eligibility', () => {
 		expect(buildProductionApplyPlanId([ready, sync])).toBe(buildProductionApplyPlanId([ready]));
 	});
 
+	it('binds the managed update scope into the exact Production plan', () => {
+		const contentOnly = item({
+			id: 'alpha',
+			readiness: 'READY',
+			binding: 'pkg-a',
+			updateScope: 'content-only',
+		});
+		const contentAndAssets = { ...contentOnly, updateScope: 'content-and-assets' as const };
+
+		expect(buildProductionApplyPlanId([contentOnly])).not.toBe(
+			buildProductionApplyPlanId([contentAndAssets]),
+		);
+	});
+
 	it('keeps --all-ready BLOCKED out of mutation but refuses UNKNOWN', () => {
 		const allReadyScope: ProductionApplyScope = {
 			schema: true,

@@ -8,6 +8,7 @@
 import { getProdDbUrl } from './db-workflow-lib.ts';
 import { OperatorError } from './operator-cli-ux.ts';
 import {
+	MigrateApplyError,
 	orchestrateMigrate,
 	preflightMigrate,
 	type OrchestrateMigrateResult,
@@ -27,7 +28,11 @@ import {
 	revalidateCriticalProductionBackup,
 	type CriticalProductionBackupPreparation,
 } from './critical-production-backup.ts';
-import { applyPreparedProductionPatch, prepareProductionPatchFile } from './run-prod-patch.ts';
+import {
+	applyPreparedProductionPatch,
+	prepareProductionPatchFile,
+	ProductionPatchApplyError,
+} from './run-prod-patch.ts';
 import { resolveInvitationPackageInput } from '../provision/invitation-package-input.ts';
 import type { InvitationPackageData } from '../provision/invitation-package.ts';
 import { orchestrateInvitationPromotion } from '../provision/invitation-promotion-orchestrator.ts';
@@ -37,6 +42,8 @@ import {
 	type PromotionPreflightReport,
 } from '../provision/invitation-promote.ts';
 import { listInvitationDefinitions } from '../provision/invitations/registry.ts';
+import { resolvePromotionUpdateScope } from '../provision/invitation-update-options.ts';
+import type { UpdateScope } from '../provision/semantic-delta.ts';
 import {
 	assembleProductionApplyPlan,
 	classifyInvitationPreflight,
@@ -57,8 +64,10 @@ export interface ProductionApplyAssemblerDeps {
 	preflightSchema?: () => MigrationPlan;
 	listSlugs?: () => string[];
 	resolvePackage?: (slug: string) => Promise<InvitationPackageData>;
+	resolveInvitationUpdateScope?: (slug: string) => UpdateScope | undefined;
 	runInvitationPreflight?: (
 		packageData: InvitationPackageData,
+		updateScope?: UpdateScope,
 	) => Promise<PromotionPreflightReport>;
 	preparePatch?: typeof prepareProductionPatchFile;
 }
@@ -68,10 +77,13 @@ export interface ProductionApplyExecuteDeps extends ProductionApplyAssemblerDeps
 	requireOwnerApply?: (input: OwnerProductionApplyInput) => Promise<void>;
 	applySchema?: (input: {
 		authorizedPlanBindingHex: string;
-	}) => Promise<OrchestrateMigrateResult>;
+	}) => Promise<
+		Omit<OrchestrateMigrateResult, 'state'> & Partial<Pick<OrchestrateMigrateResult, 'state'>>
+	>;
 	applyInvitation?: (input: {
 		packageData: InvitationPackageData;
 		authorizedPlanBindingHex: string;
+		updateScope?: UpdateScope;
 	}) => Promise<PromotionApplyReport>;
 	applyPatch?: typeof applyPreparedProductionPatch;
 	ensurePatchBackup?: (input: {
@@ -104,6 +116,11 @@ function defaultListSlugs(): string[] {
 	return listInvitationDefinitions()
 		.map((definition) => definition.slug)
 		.sort((a, b) => a.localeCompare(b));
+}
+
+function defaultInvitationUpdateScope(slug: string): UpdateScope | undefined {
+	const definition = listInvitationDefinitions().find((candidate) => candidate.slug === slug);
+	return resolvePromotionUpdateScope({ deliveryScope: definition?.deliveryScope });
 }
 
 function scopeFromArgs(args: ProductionApplyCliArgs): ProductionApplyScope {
@@ -188,15 +205,19 @@ async function inspectInvitation(
 				return resolved.packageData;
 			});
 		const packageData = await resolvePackage(slug);
+		const updateScope = (deps.resolveInvitationUpdateScope ?? defaultInvitationUpdateScope)(
+			slug,
+		);
 		const runPreflight =
 			deps.runInvitationPreflight ??
-			((data: InvitationPackageData) =>
+			((data: InvitationPackageData, scope?: UpdateScope) =>
 				runPromotionPreflight({
 					packageData: data,
 					requireBackup: false,
+					updateScope: scope,
 					getProductionDbUrl: getProdDbUrl,
 				}));
-		const preflight = await runPreflight(packageData);
+		const preflight = await runPreflight(packageData, updateScope);
 		const readiness = classifyInvitationPreflight({
 			status: preflight.status,
 			blockCode: preflight.blockCode,
@@ -212,6 +233,7 @@ async function inspectInvitation(
 			blockCode: preflight.blockCode,
 			binding: packageData.packageHash,
 			packageHash: packageData.packageHash,
+			updateScope,
 		};
 	} catch (error) {
 		const classified = classifySchemaError(error);
@@ -425,14 +447,14 @@ async function applySchemaMutation(
 		const result = await applySchema({ authorizedPlanBindingHex: reviewed.planId });
 		replaceOutcome(outcomes, 'schema', {
 			id: 'schema',
-			outcome: 'applied_verified',
+			outcome: 'APPLIED_AND_VERIFIED',
 			detail: result.plan.pendingVersions.join(', '),
 		});
 		return result.wrote;
 	} catch (error) {
 		replaceOutcome(outcomes, 'schema', {
 			id: 'schema',
-			outcome: 'failed',
+			outcome: error instanceof MigrateApplyError ? error.state : 'NOT_APPLIED',
 			detail: failureDetail(error),
 		});
 		throw error;
@@ -477,9 +499,14 @@ async function applyOneInvitationMutation(
 	}
 	const applyInvitation =
 		deps.applyInvitation ??
-		((input: { packageData: InvitationPackageData; authorizedPlanBindingHex: string }) =>
+		((input: {
+			packageData: InvitationPackageData;
+			authorizedPlanBindingHex: string;
+			updateScope?: UpdateScope;
+		}) =>
 			orchestrateInvitationPromotion({
 				packageData: input.packageData,
+				updateScope: input.updateScope,
 				authorizedProductionPermit: {
 					bindingHex: input.authorizedPlanBindingHex,
 					operationType: PRODUCTION_APPLY_OPERATION_TYPE,
@@ -491,18 +518,22 @@ async function applyOneInvitationMutation(
 	const report = await applyInvitation({
 		packageData,
 		authorizedPlanBindingHex: reviewed.planId,
+		updateScope: item.updateScope,
 	});
 	if (report.status === 'BLOCKED' || report.status === 'APPLIED_BUT_VERIFICATION_FAILED') {
 		replaceOutcome(outcomes, item.id, {
 			id: item.id,
-			outcome: 'failed',
+			outcome:
+				report.status === 'APPLIED_BUT_VERIFICATION_FAILED'
+					? 'APPLIED_VERIFICATION_FAILED'
+					: 'NOT_APPLIED',
 			detail: report.reason ?? report.status,
 		});
 		throwInvitationApplyFailure(report);
 	}
 	replaceOutcome(outcomes, item.id, {
 		id: item.id,
-		outcome: report.status === 'IN_SYNC' ? 'already_applied' : 'applied_verified',
+		outcome: report.status === 'IN_SYNC' ? 'already_applied' : 'APPLIED_AND_VERIFIED',
 		detail: report.status,
 	});
 	return report.status === 'PROMOTED';
@@ -521,11 +552,13 @@ async function applyInvitationMutations(
 		} catch (error) {
 			if (
 				!(error instanceof OperatorError) ||
-				outcomes.find((row) => row.id === item.id)?.outcome !== 'failed'
+				!['NOT_APPLIED', 'APPLIED_VERIFICATION_FAILED'].includes(
+					outcomes.find((row) => row.id === item.id)?.outcome ?? '',
+				)
 			) {
 				replaceOutcome(outcomes, item.id, {
 					id: item.id,
-					outcome: 'failed',
+					outcome: 'NOT_APPLIED',
 					detail: failureDetail(error),
 				});
 			}
@@ -583,13 +616,16 @@ async function applyPatchMutation(
 		});
 		replaceOutcome(outcomes, patchMutation.id, {
 			id: patchMutation.id,
-			outcome: 'applied_verified',
+			outcome: 'APPLIED_AND_VERIFIED',
 		});
 		return true;
 	} catch (error) {
 		replaceOutcome(outcomes, patchMutation.id, {
 			id: patchMutation.id,
-			outcome: 'failed',
+			outcome:
+				error instanceof ProductionPatchApplyError
+					? 'APPLIED_VERIFICATION_FAILED'
+					: 'NOT_APPLIED',
 			detail: failureDetail(error),
 		});
 		throw error;

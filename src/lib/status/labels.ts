@@ -91,15 +91,25 @@ export const PUBLICATION_ACTION_LABELS: Record<Exclude<PromotionAction, 'NONE'>,
 export const PUBLICATION_REASON_LABELS: Record<PromotionReasonCode, string> = {
 	IN_SYNC: 'Local, Preview y Production coinciden con el canónico.',
 	EVIDENCE_INCOMPLETE: 'La evidencia promocional en vivo está incompleta.',
-	CANONICAL_UNAVAILABLE: 'No se pudo construir la huella canónica desde la definición del registro.',
+	CANONICAL_UNAVAILABLE:
+		'No se pudo construir la huella canónica desde la definición del registro.',
 	IDENTITY_CONFLICT: 'Hay filas de invitación duplicadas o con conflicto de identidad.',
 	MANAGED_DIVERGENCE:
 		'El contenido publicado coincide con el canónico pero el borrador diverge, o hay conflicto administrado.',
 	PRODUCTION_AHEAD_OF_PREVIEW:
 		'Production coincide con el canónico mientras Preview no. No es una progresión válida.',
-	PREVIEW_ALIGNED_PRODUCTION_BEHIND: 'Local y Preview coinciden con el canónico. Production está detrás.',
-	LOCAL_BEHIND_PREVIEW_ALIGNED: 'Preview y Production coinciden con el canónico. Local está detrás.',
-	PREVIEW_BEHIND_CANONICAL: 'Preview no coincide con el canónico. La promoción válida es Preview-first.',
+	PREVIEW_ALIGNED_PRODUCTION_BEHIND:
+		'Local y Preview coinciden con el canónico. Production está detrás.',
+	LOCAL_BEHIND_PREVIEW_ALIGNED:
+		'Preview y Production coinciden con el canónico. Local está detrás.',
+	PREVIEW_BEHIND_CANONICAL:
+		'Preview no coincide con el canónico. La promoción válida es Preview-first.',
+	PREVIEW_APPROVAL_REQUIRED:
+		'Production está bloqueado hasta que exista una aprobación Preview exacta y verificada.',
+	PRODUCTION_PREFLIGHT_BLOCKED:
+		'El preflight canónico de Production encontró un bloqueo que impide promocionar.',
+	PRODUCTION_PREFLIGHT_UNVERIFIED:
+		'El preflight canónico de Production no produjo evidencia verificable.',
 };
 
 export const DIAGNOSTIC_LABELS: Record<DiagnosticCode, string> = {

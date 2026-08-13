@@ -1,7 +1,24 @@
 import { domainUnverified } from '../db/schema-lifecycle-state.ts';
 import { listInvitationDefinitions } from './invitations/registry.ts';
+import type { UpdateScope } from './semantic-delta.ts';
 
 export type InvitationUpdateTarget = 'local' | 'preview' | 'production';
+
+/** Resolve the canonical managed update scope from an explicit override or definition policy. */
+export function resolvePromotionUpdateScope(input: {
+	updateScope?: UpdateScope;
+	deliveryScope?: string;
+}): UpdateScope | undefined {
+	if (input.updateScope) return input.updateScope;
+	if (
+		input.deliveryScope === 'content-only' ||
+		input.deliveryScope === 'content-and-assets' ||
+		input.deliveryScope === 'assets-only'
+	) {
+		return input.deliveryScope;
+	}
+	return undefined;
+}
 
 export function parseTargets(raw: string | undefined): InvitationUpdateTarget[] {
 	if (!raw) return [];

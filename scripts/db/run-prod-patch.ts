@@ -9,9 +9,18 @@ import {
 	assertSameSupabaseProject,
 	type SqlManifest,
 } from './sql-safety.ts';
-import { getProdDbUrl, runCommand, runPsql } from './db-workflow-lib.ts';
+import { getProdDbUrl, runPsql } from './db-workflow-lib.ts';
 import { OperatorError } from './operator-cli-ux.ts';
 import { matchProductionWritePermit } from './production-write-permit.ts';
+import {
+	assessProductionPatchPreview,
+	buildProductionPatchPreviewSql,
+	parseProductionPatchPreview,
+	type ProductionPatchPreviewAssessment,
+} from './production-patch-preview.ts';
+import { runMutationContractVerify } from './migrate-executors.ts';
+
+const PRODUCTION_PATCH_PREVIEW_TIMEOUT_MS = 30_000;
 
 /**
  * db:prod:patch disposition: RESTRICT_OWNER_ONLY / KEEP_SPECIALIZED
@@ -43,7 +52,9 @@ function parsePatchInput(): ParsedPatchInput {
 
 	if (apply) {
 		printUsage();
-		console.error('DIRECT_PRODUCTION_PATCH_APPLY_BLOCKED: use pnpm prod:apply -- --patch <file> --owner-user-id <uuid> --apply.');
+		console.error(
+			'DIRECT_PRODUCTION_PATCH_APPLY_BLOCKED: use pnpm prod:apply -- --patch <file> --owner-user-id <uuid> --apply.',
+		);
 		process.exit(1);
 	}
 
@@ -117,47 +128,15 @@ export function prepareProductionPatchFile(file: string): PreparedProductionPatc
 	return { file, path, sql, fingerprint, manifest: result.manifest };
 }
 
-function assertPatchPreviewRowCount(manifest: SqlManifest, rawCount: string): number {
-	const countText = rawCount.trim();
-	if (!/^\d+$/.test(countText)) {
-		throw new OperatorError({
-			title: 'Vista previa del parche no verificable',
-			cause: 'La consulta de vista previa no devolvió un único conteo entero.',
-			code: 'PATCH_PREVIEW_COUNT_INVALID',
-			remediation: ['Corrija @dry-run-query para que identifique un conjunto de filas contable.'],
-		});
-	}
-	const count = Number(countText);
-	const min = Number(manifest['expected-rows-min']);
-	const max = Number(manifest['expected-rows-max']);
-	if (!Number.isSafeInteger(count) || count < min || count > max) {
-		throw new OperatorError({
-			title: 'Vista previa del parche fuera de los límites aprobados',
-			cause: `La vista previa identificó ${count} filas; el manifiesto permite ${min} a ${max}.`,
-			code: 'PATCH_PREVIEW_ROW_COUNT_MISMATCH',
-			remediation: [
-				'No aplique el parche con esta población.',
-				'Revise los predicados y vuelva a generar el plan de Production.',
-			],
-		});
-	}
-	return count;
-}
-
-function preflightPatchPreview(prepared: PreparedProductionPatch, dbUrl: string): number {
-	const preview = prepared.manifest['dry-run-query'];
-	if (!preview) {
-		throw new OperatorError({
-			title: 'Vista previa del parche ausente',
-			cause: 'El parche preparado no tiene @dry-run-query.',
-			code: 'PATCH_PREVIEW_REQUIRED',
-			remediation: ['Vuelva a preparar el parche con un manifiesto válido.'],
-		});
-	}
-	const result = runPsql(`select count(*)::text from (${preview}) as patch_target;`, dbUrl, {
+function inspectPatchPreview(
+	prepared: PreparedProductionPatch,
+	dbUrl: string,
+): ProductionPatchPreviewAssessment {
+	const result = runPsql(buildProductionPatchPreviewSql(prepared.manifest), dbUrl, {
 		tuplesOnly: true,
 		throwOnError: false,
 		redact: [dbUrl],
+		timeoutMs: PRODUCTION_PATCH_PREVIEW_TIMEOUT_MS,
 	});
 	if (result.status !== 0) {
 		throw new OperatorError({
@@ -167,7 +146,74 @@ function preflightPatchPreview(prepared: PreparedProductionPatch, dbUrl: string)
 			remediation: ['Corrija el manifiesto o el estado de datos antes de aplicar.'],
 		});
 	}
-	return assertPatchPreviewRowCount(prepared.manifest, result.stdout);
+	try {
+		return assessProductionPatchPreview({
+			evidence: parseProductionPatchPreview(prepared.manifest, result.stdout),
+			min: Number(prepared.manifest['expected-rows-min']),
+			max: Number(prepared.manifest['expected-rows-max']),
+		});
+	} catch {
+		throw new OperatorError({
+			title: 'Vista previa del parche no verificable',
+			cause: 'La consulta de vista previa devolvió evidencia incompleta o malformada.',
+			code: 'PATCH_PREVIEW_INVALID_OUTPUT',
+			remediation: ['Corrija @dry-run-query antes de volver a planificar.'],
+		});
+	}
+}
+
+function preflightPatchPreview(
+	prepared: PreparedProductionPatch,
+	dbUrl: string,
+): ProductionPatchPreviewAssessment {
+	const assessment = inspectPatchPreview(prepared, dbUrl);
+	if (assessment.state === 'PENDING') return assessment;
+	const storeConflict = assessment.reason === 'STORE_DISAGREEMENT';
+	throw new OperatorError({
+		title: storeConflict
+			? 'Las poblaciones published/draft del parche no coinciden'
+			: assessment.state === 'NOT_NEEDED'
+				? 'El parche ya no requiere cambios'
+				: 'Vista previa del parche fuera de los límites aprobados',
+		cause: storeConflict
+			? 'Las mismas identidades no están presentes en todos los stores declarados.'
+			: assessment.state === 'NOT_NEEDED'
+				? 'La vista previa en vivo devolvió cero filas.'
+				: `La vista previa identificó ${assessment.evidence.total} filas fuera del rango aprobado.`,
+		code: storeConflict
+			? 'PATCH_PREVIEW_STORE_DISAGREEMENT'
+			: assessment.state === 'NOT_NEEDED'
+				? 'PATCH_NOT_NEEDED'
+				: 'PATCH_PREVIEW_ROW_COUNT_MISMATCH',
+		remediation: [
+			'No aplique el parche con esta población.',
+			'Revise la evidencia viva y genere un plan nuevo solo si aún corresponde.',
+		],
+	});
+}
+
+export interface ProductionPatchApplyResult {
+	state: 'APPLIED_AND_VERIFIED';
+}
+
+export class ProductionPatchApplyError extends OperatorError {
+	readonly state = 'APPLIED_VERIFICATION_FAILED' as const;
+
+	constructor(error: unknown) {
+		const detail = error instanceof Error ? error.message : String(error);
+		super({
+			title: 'El parche pudo aplicarse, pero no quedó verificado',
+			cause: detail,
+			code: 'APPLIED_VERIFICATION_FAILED',
+			remediation: [
+				'Ejecute el preflight read-only del parche y verifique el contrato antes de reintentar.',
+				'No reutilice la autorización ni el plan anterior.',
+			],
+			noChangesMessage:
+				'El write pudo completarse. No se considera seguro reintentar sin evidencia viva.',
+		});
+		this.name = 'ProductionPatchApplyError';
+	}
 }
 
 /**
@@ -177,7 +223,7 @@ export async function applyPreparedProductionPatch(input: {
 	prepared: PreparedProductionPatch;
 	ownerUserId: string;
 	authorizedPlanBindingHex: string;
-}): Promise<void> {
+}): Promise<ProductionPatchApplyResult> {
 	const { validatedOwnerId, normalizedUrl, dbUrl } = validateProductionTargetEnv(
 		input.ownerUserId,
 	);
@@ -201,12 +247,11 @@ export async function applyPreparedProductionPatch(input: {
 	}
 	preflightPatchPreview(input.prepared, dbUrl);
 
-	executeProductionPatchSql(
+	return executeProductionPatchSql(
 		fullSql,
 		dbUrl,
 		normalizedUrl,
-		input.prepared.file,
-		validatedOwnerId,
+		input.prepared,
 		input.authorizedPlanBindingHex,
 	);
 }
@@ -222,30 +267,41 @@ function validateProductionTargetEnv(ownerUserId: string | undefined): Validated
 	try {
 		validatedOwnerId = validateOwnerUserId(ownerUserId);
 	} catch (error: unknown) {
-		const message = error instanceof Error ? error.message : String(error);
-		console.error(message);
-		process.exit(1);
+		throw new OperatorError({
+			title: 'Propietario del parche inválido',
+			cause: error instanceof Error ? error.message : String(error),
+			code: 'OWNER_USER_ID_INVALID',
+			remediation: ['Proporcione el UUID válido del propietario al generar un plan nuevo.'],
+		});
 	}
 
 	const rawSupabaseUrl = process.env.SUPABASE_URL || '';
 	if (!rawSupabaseUrl) {
-		console.error('SUPABASE_URL environment variable is required for --apply.');
-		process.exit(1);
+		throw new OperatorError({
+			title: 'Falta la identidad API de Production',
+			cause: 'SUPABASE_URL es obligatoria para aplicar.',
+			code: 'SUPABASE_URL_REQUIRED',
+			remediation: ['Configure la URL API canónica antes de generar un plan nuevo.'],
+		});
 	}
 	if (rawSupabaseUrl.startsWith('postgresql://')) {
-		console.error(
-			'SUPABASE_URL must be the Supabase API URL (https://<project>.supabase.co), not a PostgreSQL connection string. ' +
-				'Set PROD_DB_URL for the database connection string.',
-		);
-		process.exit(1);
+		throw new OperatorError({
+			title: 'Identidad API de Production inválida',
+			cause: 'SUPABASE_URL debe ser una URL HTTPS de Supabase, no una conexión PostgreSQL.',
+			code: 'SUPABASE_URL_INVALID',
+			remediation: ['Use PROD_DB_URL para PostgreSQL y SUPABASE_URL para la API.'],
+		});
 	}
 	let normalizedUrl: string;
 	try {
 		normalizedUrl = validateAndNormalizeSupabaseUrl(rawSupabaseUrl);
 	} catch (error: unknown) {
-		const message = error instanceof Error ? error.message : String(error);
-		console.error(message);
-		process.exit(1);
+		throw new OperatorError({
+			title: 'Identidad API de Production inválida',
+			cause: error instanceof Error ? error.message : String(error),
+			code: 'SUPABASE_URL_INVALID',
+			remediation: ['Corrija SUPABASE_URL antes de generar un plan nuevo.'],
+		});
 	}
 
 	const { url: dbUrl } = getProdDbUrl();
@@ -253,9 +309,12 @@ function validateProductionTargetEnv(ownerUserId: string | undefined): Validated
 	try {
 		assertSameSupabaseProject(normalizedUrl, dbUrl);
 	} catch (error: unknown) {
-		const message = error instanceof Error ? error.message : String(error);
-		console.error(message);
-		process.exit(1);
+		throw new OperatorError({
+			title: 'Las identidades de Production no coinciden',
+			cause: error instanceof Error ? error.message : String(error),
+			code: 'PRODUCTION_PROJECT_MISMATCH',
+			remediation: ['Corrija las credenciales; no aplique a un proyecto ambiguo.'],
+		});
 	}
 
 	return { validatedOwnerId, normalizedUrl, dbUrl };
@@ -280,12 +339,12 @@ function executeProductionPatchSql(
 	fullSql: string,
 	dbUrl: string,
 	normalizedUrl: string,
-	file: string,
-	validatedOwnerId: string,
+	prepared: PreparedProductionPatch,
 	authorizedPlanBindingHex: string,
-): void {
+): ProductionPatchApplyResult {
 	const execResult = runPsql(fullSql, dbUrl, {
 		redact: [normalizedUrl, dbUrl],
+		throwOnError: false,
 		productionPermit: {
 			bindingHex: authorizedPlanBindingHex,
 			operationType: 'production_apply',
@@ -293,33 +352,29 @@ function executeProductionPatchSql(
 	});
 
 	if (execResult.status !== 0) {
-		console.error(`Production patch failed (exit ${execResult.status}):`);
-		console.error(execResult.stderr || execResult.stdout);
-		process.exit(1);
+		throw new ProductionPatchApplyError(
+			`Production patch process failed (exit ${execResult.status ?? 'unknown'}).`,
+		);
 	}
 
-	console.info(`Owner UUID validated and applied: ${validatedOwnerId}`);
-	console.info(`Production patch applied successfully: ${file}`);
+	console.info(`Production patch applied successfully: ${prepared.file}`);
 	if (execResult.stdout) console.info(execResult.stdout);
 
-	console.info('Running post-apply mutation schema contract verification...');
-	const contractResult = runCommand(
-		'npx',
-		['tsx', 'scripts/db/verify-mutation-schema-contract.ts', '--target', 'production'],
-		{
-			env: { ...process.env, PROD_DB_URL: dbUrl },
-			redact: [dbUrl],
-			throwOnError: false,
-		},
-	);
-	if (contractResult.status !== 0) {
-		console.error(
-			`POST_APPLY_CONTRACT_FAILED: Production patch SQL succeeded but mutation schema contract verification failed (exit ${contractResult.status}).`,
-		);
-		console.error(contractResult.stderr || contractResult.stdout);
-		process.exit(1);
+	try {
+		console.info('Running post-apply mutation schema contract verification...');
+		runMutationContractVerify('production');
+		const finalPreview = inspectPatchPreview(prepared, dbUrl);
+		if (finalPreview.state !== 'NOT_NEEDED') {
+			throw new Error(
+				`PATCH_POST_APPLY_ROWS_REMAIN: ${finalPreview.evidence.total} target rows remain.`,
+			);
+		}
+	} catch (error) {
+		if (error instanceof ProductionPatchApplyError) throw error;
+		throw new ProductionPatchApplyError(error);
 	}
 	console.info('✅ Post-apply mutation schema contract verification passed.');
+	return { state: 'APPLIED_AND_VERIFIED' };
 }
 
 function isMain(): boolean {

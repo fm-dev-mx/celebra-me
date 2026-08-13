@@ -73,6 +73,50 @@ export interface OrchestrateMigrateInput {
 export interface OrchestrateMigrateResult {
 	plan: MigrationPlan;
 	wrote: boolean;
+	state: 'APPLIED_AND_VERIFIED';
+}
+
+export type MigrateApplyState =
+	'NOT_APPLIED' | 'APPLIED_AND_VERIFIED' | 'APPLIED_VERIFICATION_FAILED';
+
+/**
+ * A failed apply with an explicit write state. Callers must never infer
+ * NOT_APPLIED from a non-zero exit after the mutation boundary was crossed.
+ */
+export class MigrateApplyError extends OperatorError {
+	readonly state: Exclude<MigrateApplyState, 'APPLIED_AND_VERIFIED'>;
+	readonly plan: MigrationPlan;
+
+	constructor(input: {
+		state: Exclude<MigrateApplyState, 'APPLIED_AND_VERIFIED'>;
+		plan: MigrationPlan;
+		error: unknown;
+	}) {
+		const detail = input.error instanceof Error ? input.error.message : String(input.error);
+		const mayHaveApplied = input.state === 'APPLIED_VERIFICATION_FAILED';
+		super({
+			title: mayHaveApplied
+				? 'La migración se aplicó o pudo aplicarse, pero no quedó verificada'
+				: 'La migración no se aplicó',
+			cause: detail,
+			code: input.state,
+			remediation: mayHaveApplied
+				? [
+						'Ejecute de nuevo el preflight de solo lectura antes de considerar cualquier apply.',
+						'Verifique historial y contrato; no reutilice la autorización ni el plan anterior.',
+					]
+				: [
+						'Corrija la causa antes de generar un plan nuevo.',
+						'Vuelva a ejecutar el preflight; no reutilice la autorización anterior.',
+					],
+			noChangesMessage: mayHaveApplied
+				? 'El write pudo completarse. No se considera seguro reintentar sin evidencia viva.'
+				: 'No se aplicaron migraciones.',
+		});
+		this.name = 'MigrateApplyError';
+		this.state = input.state;
+		this.plan = input.plan;
+	}
 }
 
 function withSeams(
@@ -84,8 +128,7 @@ function withSeams(
 		session: ctx.session ?? {},
 		readConfirmationLine: input.readConfirmationLine ?? ctx.readConfirmationLine,
 		isInteractive: input.isInteractive ?? ctx.isInteractive,
-		authorizedPlanBindingHex:
-			input.authorizedPlanBindingHex ?? ctx.authorizedPlanBindingHex,
+		authorizedPlanBindingHex: input.authorizedPlanBindingHex ?? ctx.authorizedPlanBindingHex,
 		authorizedPermitOperationType:
 			input.authorizedPermitOperationType ?? ctx.authorizedPermitOperationType,
 	};
@@ -183,8 +226,39 @@ export async function orchestrateMigrate(
 	writeHuman(`${operatorSymbol('ok')} Revalidación sin cambios materiales en el plan.`);
 
 	await policy.authorize(plan, ctx);
-	policy.execute(plan, ctx);
-	policy.afterWrite(plan, ctx);
+	try {
+		policy.execute(plan, ctx);
+	} catch (error) {
+		let state: Exclude<MigrateApplyState, 'APPLIED_AND_VERIFIED'> =
+			'APPLIED_VERIFICATION_FAILED';
+		try {
+			const observed = policy.buildPlan(ctx, 'preflight');
+			const attempted = plan.pendingVersions.filter((version) => version !== 'none');
+			const remaining = new Set(
+				observed.pendingVersions.filter((version) => version !== 'none'),
+			);
+			if (attempted.length > 0 && attempted.every((version) => remaining.has(version))) {
+				state = 'NOT_APPLIED';
+			}
+		} catch {
+			// Fail closed: an unreadable post-failure state may already contain the write.
+		}
+		throw new MigrateApplyError({ state, plan, error });
+	}
 
-	return { plan, wrote: plan.pendingVersions.length > 0 };
+	try {
+		policy.afterWrite(plan, ctx);
+	} catch (error) {
+		throw new MigrateApplyError({
+			state: 'APPLIED_VERIFICATION_FAILED',
+			plan,
+			error,
+		});
+	}
+
+	return {
+		plan,
+		wrote: plan.pendingVersions.some((version) => version !== 'none'),
+		state: 'APPLIED_AND_VERIFIED',
+	};
 }

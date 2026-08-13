@@ -3,25 +3,22 @@
  * No database I/O, credentials, or side effects.
  */
 import { createHash } from 'node:crypto';
+import type { UpdateScope } from '../provision/semantic-delta.ts';
 
 export type ProductionApplyReadiness =
-	| 'READY'
-	| 'READY_AFTER_SCHEMA'
-	| 'IN_SYNC'
-	| 'BLOCKED'
-	| 'UNKNOWN'
-	| 'NOT_APPLICABLE';
+	'READY' | 'READY_AFTER_SCHEMA' | 'IN_SYNC' | 'BLOCKED' | 'UNKNOWN' | 'NOT_APPLICABLE';
 
 export type ProductionApplyDomain = 'schema' | 'invitation' | 'patch';
 
 export type ProductionApplyItemOutcome =
 	| 'pending'
-	| 'applied_verified'
+	| 'APPLIED_AND_VERIFIED'
+	| 'APPLIED_VERIFICATION_FAILED'
+	| 'NOT_APPLIED'
 	| 'already_applied'
 	| 'skipped_out_of_scope'
 	| 'blocked'
-	| 'unknown'
-	| 'failed';
+	| 'unknown';
 
 export interface ProductionApplyScope {
 	schema: boolean;
@@ -43,6 +40,7 @@ export interface ProductionApplyPlanItem {
 	binding?: string;
 	pendingVersions?: readonly string[];
 	packageHash?: string;
+	updateScope?: UpdateScope;
 }
 
 export interface ProductionApplyPlan {
@@ -51,17 +49,13 @@ export interface ProductionApplyPlan {
 	items: ProductionApplyPlanItem[];
 }
 
-const PLAN_ID_VERSION = 1;
+const PLAN_ID_VERSION = 2;
 
-function isMutationReadiness(
-	readiness: ProductionApplyReadiness,
-): boolean {
+function isMutationReadiness(readiness: ProductionApplyReadiness): boolean {
 	return readiness === 'READY' || readiness === 'READY_AFTER_SCHEMA';
 }
 
-export function mutationItemsOf(
-	plan: ProductionApplyPlan,
-): ProductionApplyPlanItem[] {
+export function mutationItemsOf(plan: ProductionApplyPlan): ProductionApplyPlanItem[] {
 	return plan.items.filter((item) => {
 		if (!isMutationReadiness(item.readiness)) return false;
 		if (plan.scope.allReady && item.domain === 'patch') return false;
@@ -69,15 +63,14 @@ export function mutationItemsOf(
 	});
 }
 
-export function buildProductionApplyPlanId(
-	items: readonly ProductionApplyPlanItem[],
-): string {
+export function buildProductionApplyPlanId(items: readonly ProductionApplyPlanItem[]): string {
 	const mutation = items
 		.filter((item) => isMutationReadiness(item.readiness))
 		.map((item) => ({
 			domain: item.domain,
 			id: item.id,
 			binding: item.binding ?? '',
+			updateScope: item.updateScope ?? '',
 		}))
 		.sort((a, b) => a.domain.localeCompare(b.domain) || a.id.localeCompare(b.id));
 	return createHash('sha256')
@@ -163,8 +156,7 @@ export function evaluateApplyEligibility(
 		return {
 			ok: false,
 			code: 'SCOPE_REQUIRED',
-			detail:
-				'--apply requires an explicit scope (--schema, --slug/--slugs, --all-ready, or --patch). No arguments never apply.',
+			detail: '--apply requires an explicit scope (--schema, --slug/--slugs, --all-ready, or --patch). No arguments never apply.',
 		};
 	}
 

@@ -145,8 +145,12 @@ describe('preview migrate via shared orchestrator', () => {
 			if (cmdArgs.includes('--yes')) {
 				return { status: 0, stdout: 'Applied', stderr: '' };
 			}
-			if (cmdArgs.includes('verify-mutation-schema-contract.ts')) {
-				return { status: 0, stdout: '', stderr: '' };
+			if (cmdArgs.some((arg) => arg.endsWith('verify-mutation-schema-contract.ts'))) {
+				return {
+					status: 0,
+					stdout: 'Mutation schema contract verified for preview.\n',
+					stderr: '',
+				};
 			}
 			return { status: 0, stdout: '', stderr: '' };
 		});
@@ -193,9 +197,13 @@ describe('preview migrate via shared orchestrator', () => {
 				callOrder.push('write');
 				return { status: 0, stdout: 'Applied', stderr: '' };
 			}
-			if (cmdArgs.includes('verify-mutation-schema-contract.ts')) {
+			if (cmdArgs.some((arg) => arg.endsWith('verify-mutation-schema-contract.ts'))) {
 				callOrder.push('verify');
-				return { status: 0, stdout: '', stderr: '' };
+				return {
+					status: 0,
+					stdout: 'Mutation schema contract verified for preview.\n',
+					stderr: '',
+				};
 			}
 			return { status: 0, stdout: '', stderr: '' };
 		});

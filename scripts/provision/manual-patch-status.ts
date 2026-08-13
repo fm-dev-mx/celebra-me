@@ -3,6 +3,12 @@ import { resolve, relative, sep } from 'node:path';
 import { prepareProductionPatchFile, type PreparedProductionPatch } from '../db/run-prod-patch.ts';
 import { resolveDbUrlForEnv, type TargetEnv } from './dbs-status.ts';
 import { mapPool, type StatusProbeSession } from '../status-core/index.ts';
+import {
+	assessProductionPatchPreview,
+	buildProductionPatchPreviewSql,
+	parseProductionPatchPreview,
+} from '../db/production-patch-preview.ts';
+import type { SqlManifest } from '../db/sql-safety.ts';
 import type {
 	EvidenceState,
 	ManualPatchEnvironmentStatus,
@@ -63,18 +69,31 @@ export function validateManualPatchCatalog(
 		if (ids.has(entry.scriptId)) errors.push('DUPLICATE_SCRIPT_ID');
 		ids.add(entry.scriptId);
 		if (!isApprovedPath(entry.file)) errors.push('UNAPPROVED_PATCH_PATH');
-		if (entry.targetEnvironments.length === 0 || entry.targetEnvironments.some((env) => env !== 'production')) {
+		if (
+			entry.targetEnvironments.length === 0 ||
+			entry.targetEnvironments.some((env) => env !== 'production')
+		) {
 			errors.push('INVALID_PATCH_TARGET');
 		}
-		if (!Number.isSafeInteger(entry.expectedRowsMin) || !Number.isSafeInteger(entry.expectedRowsMax) || entry.expectedRowsMin > entry.expectedRowsMax) {
+		if (
+			!Number.isSafeInteger(entry.expectedRowsMin) ||
+			!Number.isSafeInteger(entry.expectedRowsMax) ||
+			entry.expectedRowsMin > entry.expectedRowsMax
+		) {
 			errors.push('INVALID_EXPECTED_ROW_RANGE');
 		}
 		try {
 			const prepared = prepareProductionPatchFile(entry.file);
-			if (prepared.manifest['script-id'] !== entry.scriptId) errors.push('SCRIPT_ID_MANIFEST_MISMATCH');
-			if (prepared.manifest.env !== 'production') errors.push('ENVIRONMENT_MANIFEST_MISMATCH');
+			if (prepared.manifest['script-id'] !== entry.scriptId)
+				errors.push('SCRIPT_ID_MANIFEST_MISMATCH');
+			if (prepared.manifest.env !== 'production')
+				errors.push('ENVIRONMENT_MANIFEST_MISMATCH');
 			if (!prepared.manifest['dry-run-query']) errors.push('DRY_RUN_QUERY_MISSING');
-			if (Number(prepared.manifest['expected-rows-min']) !== entry.expectedRowsMin || Number(prepared.manifest['expected-rows-max']) !== entry.expectedRowsMax) errors.push('ROW_RANGE_MANIFEST_MISMATCH');
+			if (
+				Number(prepared.manifest['expected-rows-min']) !== entry.expectedRowsMin ||
+				Number(prepared.manifest['expected-rows-max']) !== entry.expectedRowsMax
+			)
+				errors.push('ROW_RANGE_MANIFEST_MISMATCH');
 		} catch {
 			errors.push('MANIFEST_OR_SQL_INVALID');
 		}
@@ -86,7 +105,8 @@ function entryHasCatalogError(
 	entry: ActiveManualPatchCatalogEntry,
 	catalog: readonly ActiveManualPatchCatalogEntry[],
 ): boolean {
-	const duplicateId = catalog.filter((candidate) => candidate.scriptId === entry.scriptId).length > 1;
+	const duplicateId =
+		catalog.filter((candidate) => candidate.scriptId === entry.scriptId).length > 1;
 	return (
 		duplicateId ||
 		!isApprovedPath(entry.file) ||
@@ -131,7 +151,8 @@ export function buildUnverifiedManualPatchStatuses(
 	const valid = validateManualPatchCatalog(catalog).valid;
 	return catalog.map((entry) => {
 		const status = baseStatus(entry);
-		if (!valid) status.environments.production = staticStatus('BLOCKED', 'LIVE', 'CATALOG_INVALID');
+		if (!valid)
+			status.environments.production = staticStatus('BLOCKED', 'LIVE', 'CATALOG_INVALID');
 		return status;
 	});
 }
@@ -146,6 +167,7 @@ export function classifyPatchPreviewResult(input: {
 	result: PatchPreviewResult;
 	min: number;
 	max: number;
+	manifest?: SqlManifest;
 	timedOut?: boolean;
 	verifiedAt?: string;
 }): ManualPatchEnvironmentStatus {
@@ -156,18 +178,25 @@ export function classifyPatchPreviewResult(input: {
 	if (input.result.status !== 0) {
 		return staticStatus('UNVERIFIED', 'UNVERIFIED', 'QUERY_FAILED', null, verifiedAt);
 	}
-	const text = input.result.stdout.trim();
-	if (!/^\d+$/.test(text)) {
+	let assessment;
+	try {
+		const evidence = parseProductionPatchPreview(input.manifest ?? {}, input.result.stdout);
+		assessment = assessProductionPatchPreview({
+			evidence,
+			min: input.min,
+			max: input.max,
+		});
+	} catch {
 		return staticStatus('UNVERIFIED', 'UNVERIFIED', 'QUERY_INVALID_OUTPUT', null, verifiedAt);
 	}
-	const count = Number(text);
-	if (!Number.isSafeInteger(count)) {
-		return staticStatus('UNVERIFIED', 'UNVERIFIED', 'QUERY_INVALID_OUTPUT', null, verifiedAt);
-	}
-	if (count === 0) {
+	const count = assessment.evidence.total;
+	if (assessment.state === 'NOT_NEEDED') {
 		return staticStatus('NOT_NEEDED', 'LIVE', 'LIVE_ZERO_ROWS', count, verifiedAt);
 	}
-	if (count < input.min || count > input.max) {
+	if (assessment.reason === 'STORE_DISAGREEMENT') {
+		return staticStatus('BLOCKED', 'LIVE', 'LIVE_STORE_DISAGREEMENT', count, verifiedAt);
+	}
+	if (assessment.state === 'BLOCKED') {
 		return staticStatus('BLOCKED', 'LIVE', 'LIVE_ROWS_OUTSIDE_RANGE', count, verifiedAt);
 	}
 	return staticStatus(
@@ -180,15 +209,20 @@ export function classifyPatchPreviewResult(input: {
 	);
 }
 
-function preparedForEntry(entry: ActiveManualPatchCatalogEntry):
-	| { prepared: PreparedProductionPatch; error: null }
-	| { prepared: null; error: string } {
+function preparedForEntry(
+	entry: ActiveManualPatchCatalogEntry,
+): { prepared: PreparedProductionPatch; error: null } | { prepared: null; error: string } {
 	try {
 		const prepared = prepareProductionPatchFile(entry.file);
 		const manifest = prepared.manifest;
-		if (manifest['script-id'] !== entry.scriptId) return { prepared: null, error: 'SCRIPT_ID_MISMATCH' };
-		if (manifest.env !== 'production') return { prepared: null, error: 'ENVIRONMENT_MANIFEST_MISMATCH' };
-		if (Number(manifest['expected-rows-min']) !== entry.expectedRowsMin || Number(manifest['expected-rows-max']) !== entry.expectedRowsMax) {
+		if (manifest['script-id'] !== entry.scriptId)
+			return { prepared: null, error: 'SCRIPT_ID_MISMATCH' };
+		if (manifest.env !== 'production')
+			return { prepared: null, error: 'ENVIRONMENT_MANIFEST_MISMATCH' };
+		if (
+			Number(manifest['expected-rows-min']) !== entry.expectedRowsMin ||
+			Number(manifest['expected-rows-max']) !== entry.expectedRowsMax
+		) {
 			return { prepared: null, error: 'ROW_RANGE_MANIFEST_MISMATCH' };
 		}
 		if (!manifest['dry-run-query']) return { prepared: null, error: 'DRY_RUN_QUERY_MISSING' };
@@ -218,17 +252,27 @@ export async function readManualPatchStatuses(options: {
 			for (const env of ENVS) {
 				if (!entry.targetEnvironments.includes(env)) continue;
 				if (!requested.has(env)) {
-					status.environments[env] = staticStatus('UNVERIFIED', 'UNVERIFIED', 'ENVIRONMENT_NOT_PROBED');
+					status.environments[env] = staticStatus(
+						'UNVERIFIED',
+						'UNVERIFIED',
+						'ENVIRONMENT_NOT_PROBED',
+					);
 					continue;
 				}
 				const { dbUrl } = resolveDbUrlForEnv(env);
 				if (!dbUrl) {
-					status.environments[env] = staticStatus('UNVERIFIED', 'UNVERIFIED', 'QUERY_FAILED', null, new Date().toISOString());
+					status.environments[env] = staticStatus(
+						'UNVERIFIED',
+						'UNVERIFIED',
+						'QUERY_FAILED',
+						null,
+						new Date().toISOString(),
+					);
 					continue;
 				}
 				const verifiedAt = new Date().toISOString();
 				const result = await options.session.psql(
-					`select count(*)::text from (${preparedResult.prepared.manifest['dry-run-query']}) as patch_target;`,
+					buildProductionPatchPreviewSql(preparedResult.prepared.manifest),
 					dbUrl,
 					{ tuplesOnly: true },
 				);
@@ -236,6 +280,7 @@ export async function readManualPatchStatuses(options: {
 					result,
 					min: entry.expectedRowsMin,
 					max: entry.expectedRowsMax,
+					manifest: preparedResult.prepared.manifest,
 					verifiedAt,
 				});
 			}

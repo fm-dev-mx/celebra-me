@@ -6,11 +6,7 @@ import { confirm, select } from '@inquirer/prompts';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { LOCAL_DB_URL } from '../db/db-target-config.ts';
-import {
-	assertPreviewDbUrl,
-	getPreviewDbUrl,
-	getProdDbUrl,
-} from '../db/db-workflow-lib.ts';
+import { assertPreviewDbUrl, getPreviewDbUrl, getProdDbUrl } from '../db/db-workflow-lib.ts';
 import { operatorSymbol, writeHuman } from '../db/operator-cli-ux.ts';
 import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
 import {
@@ -25,10 +21,7 @@ import {
 	type LifecycleExecutionError,
 	type TargetExecutionOutcome,
 } from './invitation-lifecycle-execution.ts';
-import {
-	getInvitationDefinition,
-	listInvitationDefinitions,
-} from './invitations/registry.ts';
+import { getInvitationDefinition, listInvitationDefinitions } from './invitations/registry.ts';
 import { resolveInvitationPackageInput } from './invitation-package-input.ts';
 import type { InvitationPackageData } from './invitation-package.ts';
 import {
@@ -53,10 +46,7 @@ import {
 	type TargetApplyResultData,
 } from './invitation-update-presenter.ts';
 import type { OperationalPlan } from './invitation-update-plan.ts';
-import {
-	mergePathPolicies,
-	suggestConflictResolutionsFile,
-} from './conflict-resolutions.ts';
+import { mergePathPolicies, suggestConflictResolutionsFile } from './conflict-resolutions.ts';
 import {
 	MergeConflictError,
 	listDriftConflicts,
@@ -66,7 +56,6 @@ import {
 import { parseAssetPolicy, type AssetPolicy } from './asset-reconciliation.ts';
 import { runPromotionPreflight } from './invitation-promote.ts';
 import { formatPromotionPlanCompact } from './invitation-promotion-format.ts';
-import { resolvePromotionUpdateScope } from './invitation-promotion-orchestrator.ts';
 import { isTargetDivergenceConflictMessage } from './promotion-comparison.ts';
 
 export interface ReleaseWizardSession {
@@ -269,7 +258,9 @@ async function planPreview(
 	}
 }
 
-async function reviewAndConfirm(planData: OperationalPlanData): Promise<'apply' | 'back' | 'cancel'> {
+async function reviewAndConfirm(
+	planData: OperationalPlanData,
+): Promise<'apply' | 'back' | 'cancel'> {
 	console.log(formatDryRunPlan(planData, { verbose: false }));
 	console.log('');
 	console.log(formatApplyConfirmation(planData, { verbose: false }));
@@ -317,9 +308,7 @@ async function maybeRecoverUnpublishedDraftDivergence(
 	if (session.acknowledgeDiscardUnpublishedDraft) return false;
 	const blocked = targetPlans.filter((tp) => tp.status === 'BLOQUEADO');
 	if (blocked.length === 0) return false;
-	const allDivergence = blocked.every((tp) =>
-		isTargetDivergenceConflictMessage(tp.reason ?? ''),
-	);
+	const allDivergence = blocked.every((tp) => isTargetDivergenceConflictMessage(tp.reason ?? ''));
 	if (!allDivergence) return false;
 
 	const confirmed = await confirm({
@@ -523,7 +512,8 @@ async function applyPreparePreviewOutcome(session: ReleaseWizardSession): Promis
 						updateScope: session.updateScope,
 						assetPolicy: session.assetPolicy,
 						conflictResolutions: session.conflictResolutions,
-						acknowledgeDiscardUnpublishedDraft: session.acknowledgeDiscardUnpublishedDraft,
+						acknowledgeDiscardUnpublishedDraft:
+							session.acknowledgeDiscardUnpublishedDraft,
 						expectedSourceHash: session.sourceHash,
 						expectedPackageHash: session.packageHash,
 					});
@@ -624,9 +614,18 @@ async function applyPreparePreviewOutcome(session: ReleaseWizardSession): Promis
 					0,
 				),
 				databaseWrites: {
-					inserts: summary.targetResults.reduce((s, r) => s + r.databaseWrites.inserts, 0),
-					updates: summary.targetResults.reduce((s, r) => s + r.databaseWrites.updates, 0),
-					deletes: summary.targetResults.reduce((s, r) => s + r.databaseWrites.deletes, 0),
+					inserts: summary.targetResults.reduce(
+						(s, r) => s + r.databaseWrites.inserts,
+						0,
+					),
+					updates: summary.targetResults.reduce(
+						(s, r) => s + r.databaseWrites.updates,
+						0,
+					),
+					deletes: summary.targetResults.reduce(
+						(s, r) => s + r.databaseWrites.deletes,
+						0,
+					),
 				},
 				storageMutations: {
 					uploads: summary.targetResults.reduce(
@@ -686,15 +685,11 @@ async function applyProductionOutcome(session: ReleaseWizardSession): Promise<vo
 	}
 
 	const definition = getInvitationDefinition(session.slug);
-	const updateScope = resolvePromotionUpdateScope({
-		updateScope: session.updateScope,
-		deliveryScope: definition.deliveryScope,
-	});
 	writeHuman(`${operatorSymbol('info')} Preflight Production…`);
 	// Match CLI dry-run: defer critical backup to the orchestrator recovery classifier.
 	const preflight = await runPromotionPreflight({
 		packageData: session.packageData,
-		updateScope,
+		updateScope: session.updateScope,
 		assetPolicy: session.assetPolicy,
 		requireBackup: false,
 		getProductionDbUrl: getProdDbUrl,
@@ -725,9 +720,7 @@ async function buildSession(slug: string): Promise<ReleaseWizardSession> {
 		definition.deliveryScope === 'content-only'
 			? definition.deliveryScope
 			: 'content-only';
-	const assetPolicy = parseAssetPolicy(
-		updateScope === 'content-only' ? 'preserve' : 'missing',
-	);
+	const assetPolicy = parseAssetPolicy(updateScope === 'content-only' ? 'preserve' : 'missing');
 	return {
 		slug,
 		packageData: packageInput.packageData,
@@ -743,9 +736,7 @@ async function buildSession(slug: string): Promise<ReleaseWizardSession> {
  * Interactive destination-driven release session.
  * Returns after the operator cancels or finishes working with the invitation.
  */
-export async function runDestinationReleaseWizard(input?: {
-	slug?: string;
-}): Promise<void> {
+export async function runDestinationReleaseWizard(input?: { slug?: string }): Promise<void> {
 	writeHuman('=== Celebra-me · Asistente de publicación administrada ===\n');
 
 	let slug = input?.slug;

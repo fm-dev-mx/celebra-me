@@ -3,7 +3,7 @@
  * run-prod-patch.ts up to the mocked database boundary.
  *
  * These tests mock runPsql and getProdDbUrl to isolate the runner's
- * argument parsing, validation chain, SQL assembly and error handling
+ * argument parsing, validation chain, SQL assembly and post-write verification
  * from real database access.
  *
  * NOTE: jest.mock() calls are hoisted by Jest and must be at the top
@@ -26,7 +26,6 @@ const VALID_PROD_DB_URL = 'postgresql://postgres:***@db.abcdefghijklm.supabase.c
 // These are mutable variables that the mock closures capture.
 let mockRunPsql: jest.Mock;
 let mockGetProdDbUrl: jest.Mock;
-let mockRequireOwnerProductionApply: jest.Mock;
 let mockRunCommand: jest.Mock;
 
 jest.mock('../../scripts/db/db-workflow-lib', () => ({
@@ -39,23 +38,21 @@ jest.mock('../../scripts/db/db-workflow-lib', () => ({
 	},
 }));
 
-jest.mock('../../scripts/db/owner-production-apply', () => ({
-	requireOwnerProductionApply: (...args: unknown[]) => mockRequireOwnerProductionApply(...args),
-}));
-
 let exitCode: number | null;
 
 beforeEach(() => {
 	jest.resetModules();
 
 	mockRunPsql = jest.fn().mockReturnValue({ status: 0, stdout: '', stderr: '' });
-	mockRunCommand = jest.fn().mockReturnValue({ status: 0, stdout: '', stderr: '' });
+	mockRunCommand = jest.fn().mockReturnValue({
+		status: 0,
+		stdout: 'Mutation schema contract verified for production.\n',
+		stderr: '',
+	});
 	mockGetProdDbUrl = jest.fn().mockReturnValue({
 		url: VALID_PROD_DB_URL,
 		source: 'test-mock',
 	});
-	mockRequireOwnerProductionApply = jest.fn().mockResolvedValue(undefined);
-
 	exitCode = null;
 	// Clear env vars that could interfere with tests
 	delete process.env.SUPABASE_URL;
@@ -123,7 +120,7 @@ describe('run-prod-patch orchestration', () => {
 	});
 
 	describe('direct apply rejection', () => {
-		it('rejects --apply before opening a database connection or owner gate', async () => {
+		it('rejects --apply before opening a database connection', async () => {
 			setArgs(['--apply', '--owner-user-id', VALID_UUID, '--file', TEST_PATCH_PATH]);
 			setEnv({ SUPABASE_URL: VALID_SUPABASE_URL });
 			await runRunner();
@@ -131,7 +128,6 @@ describe('run-prod-patch orchestration', () => {
 			expect(exitCode).toBe(1);
 			expect(mockRunPsql).not.toHaveBeenCalled();
 			expect(mockGetProdDbUrl).not.toHaveBeenCalled();
-			expect(mockRequireOwnerProductionApply).not.toHaveBeenCalled();
 			expect(mockRunCommand).not.toHaveBeenCalled();
 		});
 
@@ -141,6 +137,79 @@ describe('run-prod-patch orchestration', () => {
 
 			expect(exitCode).toBe(1);
 			expect(mockRunPsql).not.toHaveBeenCalled();
+		});
+	});
+
+	describe('delegated owner apply', () => {
+		const bindingHex = 'a'.repeat(64);
+		const pairedRows = JSON.stringify([
+			{ store: 'draft', key: '["xv","alpha"]' },
+			{ store: 'draft', key: '["xv","beta"]' },
+			{ store: 'draft', key: '["xv","gamma"]' },
+			{ store: 'published', key: '["xv","alpha"]' },
+			{ store: 'published', key: '["xv","beta"]' },
+			{ store: 'published', key: '["xv","gamma"]' },
+		]);
+
+		async function prepareDelegatedApply() {
+			setEnv({ SUPABASE_URL: VALID_SUPABASE_URL });
+			const patchModule = await import('../../scripts/db/run-prod-patch.ts');
+			const permitModule = await import('../../scripts/db/production-write-permit.ts');
+			permitModule.issueProductionWritePermit({
+				projectRef: 'abcdefghijklm',
+				operationType: 'production_apply',
+				bindingHex,
+			});
+			return {
+				patchModule,
+				prepared: patchModule.prepareProductionPatchFile(TEST_PATCH_PATH),
+			};
+		}
+
+		it('returns APPLIED_AND_VERIFIED only after contract and zero-row verification', async () => {
+			mockRunPsql
+				.mockReturnValueOnce({ status: 0, stdout: pairedRows, stderr: '' })
+				.mockReturnValueOnce({ status: 0, stdout: 'UPDATE 6', stderr: '' })
+				.mockReturnValueOnce({ status: 0, stdout: '[]', stderr: '' });
+			const { patchModule, prepared } = await prepareDelegatedApply();
+
+			await expect(
+				patchModule.applyPreparedProductionPatch({
+					prepared,
+					ownerUserId: VALID_UUID,
+					authorizedPlanBindingHex: bindingHex,
+				}),
+			).resolves.toEqual({ state: 'APPLIED_AND_VERIFIED' });
+			expect(mockRunCommand).toHaveBeenCalledWith(
+				'npx',
+				['tsx', 'scripts/db/verify-mutation-schema-contract.ts', '--target', 'production'],
+				expect.objectContaining({ throwOnError: false, timeoutMs: 30_000 }),
+			);
+			expect(mockRunPsql).toHaveBeenCalledTimes(3);
+		});
+
+		it('reports APPLIED_VERIFICATION_FAILED when the write completes but verification fails', async () => {
+			mockRunPsql
+				.mockReturnValueOnce({ status: 0, stdout: pairedRows, stderr: '' })
+				.mockReturnValueOnce({ status: 0, stdout: 'UPDATE 6', stderr: '' });
+			mockRunCommand.mockReturnValueOnce({
+				status: 1,
+				stdout: '',
+				stderr: 'contract mismatch',
+			});
+			const { patchModule, prepared } = await prepareDelegatedApply();
+
+			await expect(
+				patchModule.applyPreparedProductionPatch({
+					prepared,
+					ownerUserId: VALID_UUID,
+					authorizedPlanBindingHex: bindingHex,
+				}),
+			).rejects.toMatchObject({
+				state: 'APPLIED_VERIFICATION_FAILED',
+				code: 'APPLIED_VERIFICATION_FAILED',
+			});
+			expect(mockRunPsql).toHaveBeenCalledTimes(2);
 		});
 	});
 });

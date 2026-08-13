@@ -44,7 +44,10 @@ function promoteHandoff(
 	destination: 'preview' | 'production' | 'local',
 	ownerApplyRequired: boolean,
 ): PromotionHandoff {
-	const destLabel = destination === 'production' ? 'Production' : destination[0]!.toUpperCase() + destination.slice(1);
+	const destLabel =
+		destination === 'production'
+			? 'Production'
+			: destination[0]!.toUpperCase() + destination.slice(1);
 	const applyCommand =
 		destination === 'production'
 			? `pnpm prod:apply -- --slug ${slug} --apply`
@@ -98,22 +101,17 @@ function unknownPublicationHandoff(
 	});
 }
 
-function derivePromotionHandoff(
-	action: PromotionAction,
+function blockedPromotionHandoff(
 	reasonCode: PromotionReasonCode,
 	slug: string,
 	eventType?: string,
 	environments?: Record<TargetEnv, EnvironmentPromotionState>,
-	envEvidence?: Record<TargetEnv, EvidenceState>,
 ): PromotionHandoff {
-	if (action === 'PROMOTE_PREVIEW') return promoteHandoff(slug, 'preview', false);
-	if (action === 'PROMOTE_PRODUCTION') return promoteHandoff(slug, 'production', true);
-	if (action === 'BLOCKED' && reasonCode === 'LOCAL_BEHIND_PREVIEW_ALIGNED') {
+	if (reasonCode === 'LOCAL_BEHIND_PREVIEW_ALIGNED') {
 		return promoteHandoff(slug, 'local', false);
 	}
-	if (action === 'BLOCKED' && reasonCode === 'IDENTITY_CONFLICT') {
-		const conflictEnv =
-			ENVS.find((env) => environments?.[env] === 'conflict') ?? 'local';
+	if (reasonCode === 'IDENTITY_CONFLICT') {
+		const conflictEnv = ENVS.find((env) => environments?.[env] === 'conflict') ?? 'local';
 		const dryRunCommand =
 			conflictEnv === 'production'
 				? null
@@ -124,7 +122,7 @@ function derivePromotionHandoff(
 			steps: ['Diagnose identity conflict', 'Do not promote'],
 		});
 	}
-	if (action === 'BLOCKED' && reasonCode === 'MANAGED_DIVERGENCE') {
+	if (reasonCode === 'MANAGED_DIVERGENCE') {
 		const dryRunCommand = eventType
 			? `pnpm invitation:content-parity -- --slug ${slug} --event-type ${eventType}`
 			: null;
@@ -134,7 +132,7 @@ function derivePromotionHandoff(
 			steps: ['Diagnose semantic content divergence', 'Do not promote'],
 		});
 	}
-	if (action === 'BLOCKED' && reasonCode === 'PRODUCTION_AHEAD_OF_PREVIEW') {
+	if (reasonCode === 'PRODUCTION_AHEAD_OF_PREVIEW') {
 		const dryRunCommand = eventType
 			? `pnpm invitation:content-parity -- --slug ${slug} --event-type ${eventType}`
 			: null;
@@ -144,15 +142,66 @@ function derivePromotionHandoff(
 			steps: ['Diagnose content parity', 'Update Preview before Production'],
 		});
 	}
-	if (action === 'BLOCKED') {
+	if (reasonCode === 'PREVIEW_APPROVAL_REQUIRED') {
 		return emptyHandoff({
-			dryRunCommand: null,
-			dryRunStepType: 'Manual/HITL',
-			steps: ['Investigate blocker', 'Do not promote'],
+			dryRunCommand: `pnpm invitation:release -- --slug ${slug} --targets preview --dry-run`,
+			dryRunStepType: 'Verify',
+			steps: [
+				'Verify exact Preview plan',
+				'Authorized Preview apply when the plan has changes',
+				'Complete live Preview approval',
+				'Re-run Production dry-run',
+			],
 		});
 	}
+	if (reasonCode === 'PRODUCTION_PREFLIGHT_BLOCKED') {
+		return emptyHandoff({
+			dryRunCommand: `pnpm invitation:release -- --slug ${slug} --targets production --dry-run`,
+			dryRunStepType: 'Verify',
+			steps: ['Inspect canonical Production blocker', 'Do not promote'],
+		});
+	}
+	return emptyHandoff({
+		dryRunCommand: null,
+		dryRunStepType: 'Manual/HITL',
+		steps: ['Investigate blocker', 'Do not promote'],
+	});
+}
+
+function unknownPromotionHandoff(
+	reasonCode: PromotionReasonCode,
+	slug: string,
+	environments?: Record<TargetEnv, EnvironmentPromotionState>,
+	envEvidence?: Record<TargetEnv, EvidenceState>,
+): PromotionHandoff {
+	if (reasonCode === 'PRODUCTION_PREFLIGHT_UNVERIFIED') {
+		return emptyHandoff({
+			dryRunCommand: `pnpm invitation:release -- --slug ${slug} --targets production --dry-run`,
+			dryRunStepType: 'Verify',
+			steps: [
+				'Re-run canonical Production preflight',
+				'Do not promote without live evidence',
+			],
+		});
+	}
+	return unknownPublicationHandoff(reasonCode, environments, envEvidence);
+}
+
+function derivePromotionHandoff(
+	action: PromotionAction,
+	reasonCode: PromotionReasonCode,
+	slug: string,
+	eventType?: string,
+	environments?: Record<TargetEnv, EnvironmentPromotionState>,
+	envEvidence?: Record<TargetEnv, EvidenceState>,
+): PromotionHandoff {
+	if (action === 'PROMOTE_PREVIEW') return promoteHandoff(slug, 'preview', false);
+	if (action === 'PROMOTE_PRODUCTION') return promoteHandoff(slug, 'production', true);
+	if (action === 'BLOCKED') {
+		return blockedPromotionHandoff(reasonCode, slug, eventType, environments);
+	}
 	if (action === 'UNKNOWN') {
-		return unknownPublicationHandoff(reasonCode, environments, envEvidence);
+		return unknownPromotionHandoff(reasonCode, slug, environments, envEvidence);
 	}
 	return emptyHandoff({
 		dryRunCommand: null,
@@ -190,7 +239,8 @@ export function formatTransitionLabel(
 	destination: PromotionDestination | null,
 ): string {
 	if (!source || !destination) return 'No valid promotion path';
-	const sourceLabel = source === 'canonical' ? 'Canonical' : source[0]!.toUpperCase() + source.slice(1);
+	const sourceLabel =
+		source === 'canonical' ? 'Canonical' : source[0]!.toUpperCase() + source.slice(1);
 	const destLabel = destination[0]!.toUpperCase() + destination.slice(1);
 	return `${sourceLabel} → ${destLabel}`;
 }
@@ -225,6 +275,15 @@ export function formatPublicationReason(
 	}
 	if (reasonCode === 'EVIDENCE_INCOMPLETE') {
 		return 'Live promotional evidence is incomplete.';
+	}
+	if (reasonCode === 'PREVIEW_APPROVAL_REQUIRED') {
+		return 'Production requires an exact, live-verified Preview approval for this package.';
+	}
+	if (reasonCode === 'PRODUCTION_PREFLIGHT_BLOCKED') {
+		return 'The canonical Production preflight blocked this promotion.';
+	}
+	if (reasonCode === 'PRODUCTION_PREFLIGHT_UNVERIFIED') {
+		return 'The canonical Production preflight did not return verifiable evidence.';
 	}
 	if (reasonCode === 'IN_SYNC') {
 		return 'Local, Preview, and Production match canonical.';

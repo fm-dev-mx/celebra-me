@@ -154,6 +154,28 @@ function validateManifestTables(manifest: SqlManifest): string[] {
 function validateManifestPreview(manifest: SqlManifest): string[] {
 	const errors: string[] = [];
 	const preview = manifest['dry-run-query'];
+	const pairedStores = manifest['paired-stores'];
+	const pairKey = manifest['pair-key'];
+	if (Boolean(pairedStores) !== Boolean(pairKey)) {
+		errors.push('@paired-stores and @pair-key must be declared together.');
+	}
+	for (const [field, value] of [
+		['paired-stores', pairedStores],
+		['pair-key', pairKey],
+	] as const) {
+		if (
+			value &&
+			value
+				.split(',')
+				.map((entry) => entry.trim())
+				.some((entry) => !/^[a-z][a-z0-9_]*$/i.test(entry))
+		) {
+			errors.push(`@${field} must contain comma-separated SQL identifiers.`);
+		}
+	}
+	if (pairedStores && new Set(pairedStores.split(',').map((entry) => entry.trim())).size < 2) {
+		errors.push('@paired-stores must contain at least two distinct stores.');
+	}
 	if (preview) {
 		if (/;/.test(preview) || !/^\s*(?:select\b|with\b[\s\S]+\bselect\b)/i.test(preview)) {
 			errors.push('@dry-run-query must be one read-only SELECT query without a semicolon.');

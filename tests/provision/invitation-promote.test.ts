@@ -34,6 +34,7 @@ import {
 	parseReleaseMutationTargets,
 } from '../../scripts/provision/invitation-update-options.ts';
 import { MergeConflictError } from '../../scripts/provision/semantic-delta.ts';
+import { ManagedBaselineError } from '../../scripts/provision/managed-merge-baseline.ts';
 
 const dirs: string[] = [];
 const now = new Date('2026-07-23T12:00:00.000Z');
@@ -483,6 +484,42 @@ describe('runPromotionPreflight / apply', () => {
 		expect(report.status).toBe('BLOCKED');
 		expect(report.blockCode).toBe('MANAGED_DIVERGENCE');
 		expect(report.divergence.blocksPromotion).toBe(true);
+	});
+
+	it('preserves managed baseline drift as MANAGED_DIVERGENCE', async () => {
+		const approvalsDir = writeApproval();
+		const report = await runPromotionPreflight({
+			packageData: packageData(),
+			approvalsDirs: [approvalsDir],
+			requireBackup: false,
+			now,
+			getProductionDbUrl: () => ({
+				url: 'postgresql://user@db.productionproject.supabase.co/postgres',
+			}),
+			evaluateSchema: () => ({
+				state: 'CURRENT',
+				migrationHead: '2',
+				pendingMigrations: [],
+				extraMigrations: [],
+				compatible: true,
+				detail: 'ok',
+			}),
+			runEngine: async () => {
+				throw new ManagedBaselineError(
+					'publication_after_baseline',
+					'Published projection differs from managed evidence.',
+				);
+			},
+		});
+		expect(report).toMatchObject({
+			status: 'BLOCKED',
+			blockCode: 'MANAGED_DIVERGENCE',
+			divergence: { blocksPromotion: true },
+		});
+		expect(report.divergence.managedDivergences[0]).toMatchObject({
+			classification: 'MANAGED_DIVERGENCE',
+			path: '(managed baseline)',
+		});
 	});
 
 	it('reports PROMOTABLE for approved exact release with CURRENT schema', async () => {

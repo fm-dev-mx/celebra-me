@@ -44,27 +44,9 @@ import {
 	type RevalidatePromotionVolatilePreconditionsInput,
 } from './promotion-volatile-revalidation.ts';
 import type { ConflictResolutions, UpdateScope } from './semantic-delta.ts';
+import { resolvePromotionUpdateScope } from './invitation-update-options.ts';
 
 const PROMOTION_OPERATION_TYPE = 'promotion';
-
-/**
- * Prefer explicit --update-scope; otherwise honor definition deliveryScope so first-time
- * Production promotes with content-and-assets upload missing binaries (not preserve-block).
- */
-export function resolvePromotionUpdateScope(input: {
-	updateScope?: UpdateScope;
-	deliveryScope?: string;
-}): UpdateScope | undefined {
-	if (input.updateScope) return input.updateScope;
-	if (
-		input.deliveryScope === 'content-only' ||
-		input.deliveryScope === 'content-and-assets' ||
-		input.deliveryScope === 'assets-only'
-	) {
-		return input.deliveryScope;
-	}
-	return undefined;
-}
 
 export interface OrchestrateInvitationPromotionInput {
 	packageData: InvitationPackageData;

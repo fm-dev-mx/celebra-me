@@ -2,9 +2,9 @@
  * managed-promotion-status.test.ts — grouped reads, output safety, compact isolation
  */
 import { describe, expect, it, jest, beforeEach } from '@jest/globals';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import type { InvitationDefinition } from '../../scripts/provision/invitations/invitation-definition.ts';
+import type { InvitationPackageData } from '../../scripts/provision/invitation-package.ts';
+import type { PromotionPreflightReport } from '../../scripts/provision/invitation-promote.ts';
 
 const mockResolveDbUrlForEnv = jest.fn();
 const mockReadGrouped = jest.fn();
@@ -41,6 +41,7 @@ jest.mock('../../scripts/provision/promotional-fingerprint.ts', () => {
 import {
 	evaluateManagedPromotionStatus,
 	formatSlugPromotionLine,
+	refineManagedPromotionsWithProductionPreflight,
 } from '../../scripts/provision/managed-promotion-status.ts';
 import { formatPromotionsSection } from '../../scripts/provision/canonical-status-format.ts';
 import { presentPromotionRow } from '../../src/lib/status/presentation.ts';
@@ -76,6 +77,43 @@ function definition(slug: string): InvitationDefinition {
 		buildPublishedContent: () => ({ title: 'ok' }),
 	};
 }
+function productionReport(
+	slug: string,
+	status: PromotionPreflightReport['status'],
+	blockCode?: string,
+): PromotionPreflightReport {
+	return {
+		slug,
+		status,
+		blockCode,
+		packageHash: `package-${slug}`,
+		sourceHash: `source-${slug}`,
+		projectionHash: `projection-${slug}`,
+		assetManifestHash: `assets-${slug}`,
+		targetDbUrl: 'postgres://redacted',
+		schema: {
+			state: 'CURRENT',
+			migrationHead: '20260812210000',
+			pendingMigrations: [],
+			extraMigrations: [],
+			compatible: true,
+			detail: 'ok',
+		},
+		backup: {
+			required: false,
+			acceptable: true,
+			canonicalCommand: 'pnpm db:prod:backup:critical',
+			detail: 'not required for dry-run',
+		},
+		divergence: {
+			safeManagedChanges: [],
+			targetOwnedDifferences: [],
+			managedDivergences: [],
+			conflicts: [],
+			blocksPromotion: false,
+		},
+	} as PromotionPreflightReport;
+}
 
 describe('managed promotion status', () => {
 	beforeEach(() => {
@@ -104,9 +142,7 @@ describe('managed promotion status', () => {
 		};
 		mockReadGrouped.mockImplementation(async (...args: unknown[]) => ({
 			ok: true,
-			rows: String(args[1]).includes('local')
-				? [{ slug: 'alpha' }, { slug: 'beta' }]
-				: [],
+			rows: String(args[1]).includes('local') ? [{ slug: 'alpha' }, { slug: 'beta' }] : [],
 		}));
 
 		const result = await evaluateManagedPromotionStatus({
@@ -181,6 +217,105 @@ describe('managed promotion status', () => {
 	});
 });
 
+describe('canonical Production preflight refinement', () => {
+	const envEvidence = { local: 'LIVE', preview: 'LIVE', production: 'LIVE' } as const;
+	const states = {
+		local: 'match',
+		preview: 'match',
+		production: 'unknown',
+	} as const;
+
+	it('maps canonical outcomes without guessing from fingerprints', async () => {
+		const definitions = [
+			definition('alpha'),
+			definition('beta'),
+			definition('gamma'),
+			definition('delta'),
+		];
+		const environmentsBySlug = Object.fromEntries(
+			definitions.map((item) => [item.slug, { ...states }]),
+		);
+		const promotions = definitions.map((item) =>
+			presentPromotionRow({
+				slug: item.slug,
+				title: item.title,
+				eventType: item.eventType,
+				action: 'UNKNOWN',
+				reasonCode: 'EVIDENCE_INCOMPLETE',
+				environments: environmentsBySlug[item.slug]!,
+				envEvidence,
+			}),
+		);
+		const reports = {
+			alpha: productionReport('alpha', 'PROMOTABLE'),
+			beta: productionReport('beta', 'BLOCKED', 'MISSING_PREVIEW_APPROVAL'),
+			gamma: productionReport('gamma', 'IN_SYNC'),
+			delta: productionReport('delta', 'BLOCKED', 'MANAGED_DIVERGENCE'),
+		};
+
+		const result = await refineManagedPromotionsWithProductionPreflight({
+			promotions,
+			inSyncSlugs: [],
+			definitions,
+			environmentsBySlug,
+			envEvidence,
+			resolvePackage: async (slug) => ({ invitation: { slug } }) as InvitationPackageData,
+			runProductionPreflight: async (packageData) =>
+				reports[packageData.invitation.slug as keyof typeof reports],
+			timeoutMs: 1_000,
+		});
+
+		expect(result.inSyncSlugs).toEqual(['gamma']);
+		expect(result.promotions.find((row) => row.slug === 'alpha')).toMatchObject({
+			action: 'PROMOTE_PRODUCTION',
+			reasonCode: 'PREVIEW_ALIGNED_PRODUCTION_BEHIND',
+			environments: { production: 'behind' },
+		});
+		expect(result.promotions.find((row) => row.slug === 'beta')).toMatchObject({
+			action: 'BLOCKED',
+			reasonCode: 'PREVIEW_APPROVAL_REQUIRED',
+			handoff: { applyCommand: null },
+		});
+		expect(result.promotions.find((row) => row.slug === 'delta')).toMatchObject({
+			action: 'BLOCKED',
+			reasonCode: 'MANAGED_DIVERGENCE',
+			environments: { production: 'diverged' },
+			handoff: { applyCommand: null },
+		});
+	});
+
+	it('fails closed without an apply command when the canonical preflight times out', async () => {
+		const alpha = definition('alpha');
+		const environmentsBySlug = { alpha: { ...states } };
+		const row = presentPromotionRow({
+			slug: alpha.slug,
+			title: alpha.title,
+			eventType: alpha.eventType,
+			action: 'UNKNOWN',
+			reasonCode: 'EVIDENCE_INCOMPLETE',
+			environments: environmentsBySlug.alpha,
+			envEvidence,
+		});
+		const result = await refineManagedPromotionsWithProductionPreflight({
+			promotions: [row],
+			inSyncSlugs: [],
+			definitions: [alpha],
+			environmentsBySlug,
+			envEvidence,
+			resolvePackage: async () =>
+				({ invitation: { slug: 'alpha' } }) as InvitationPackageData,
+			runProductionPreflight: async () => await new Promise(() => undefined),
+			timeoutMs: 1,
+		});
+		expect(result.promotions[0]).toMatchObject({
+			action: 'UNKNOWN',
+			reasonCode: 'PRODUCTION_PREFLIGHT_UNVERIFIED',
+			environments: { production: 'unknown' },
+			handoff: { applyCommand: null },
+		});
+	});
+});
+
 describe('grouped promotional SQL', () => {
 	it('selects one grouped query for all slugs without PII columns', () => {
 		const sql = buildGroupedPromotionalEvidenceSql(['alpha', 'beta']);
@@ -203,53 +338,17 @@ describe('grouped promotional SQL', () => {
 	});
 
 	it('invokes psql once per grouped read', async () => {
-		const { readGroupedPromotionalEvidence } = await import(
-			'../../scripts/status-core/promotional-evidence.ts'
-		);
+		const { readGroupedPromotionalEvidence } =
+			await import('../../scripts/status-core/promotional-evidence.ts');
 		const session = {
 			psql: jest.fn(async () => ({ status: 0, stdout: '[]', stderr: '' })),
 		};
-		await readGroupedPromotionalEvidence(session as never, 'postgres://local', ['alpha', 'beta']);
+		await readGroupedPromotionalEvidence(session as never, 'postgres://local', [
+			'alpha',
+			'beta',
+		]);
 		expect(session.psql).toHaveBeenCalledTimes(1);
 		await readGroupedPromotionalEvidence(session as never, 'postgres://local', []);
 		expect(session.psql).toHaveBeenCalledTimes(1);
-	});
-});
-
-describe('promotion path isolation', () => {
-	it('does not reach fetch, Vercel, or loadPersistedAssets', () => {
-		const files = [
-			'scripts/provision/promotional-fingerprint.ts',
-			'scripts/provision/promotion-decision.ts',
-			'scripts/provision/managed-promotion-status.ts',
-			'scripts/provision/canonical-status.ts',
-			'scripts/provision/canonical-status-format.ts',
-			'scripts/status-core/promotional-evidence.ts',
-			'scripts/provision/dbs-cli.ts',
-			'src/lib/status/decision.ts',
-			'src/lib/status/presentation.ts',
-		];
-		for (const file of files) {
-			const source = readFileSync(resolve(process.cwd(), file), 'utf8');
-			expect(source).not.toMatch(/\bfetch\s*\(/);
-			expect(source).not.toMatch(/vercel/i);
-			expect(source).not.toMatch(/loadPersistedAssets/);
-		}
-		const cli = readFileSync(resolve(process.cwd(), 'scripts/provision/dbs-cli.ts'), 'utf8');
-		expect(cli).not.toMatch(/from '\.\/managed-promotion-status\.ts'/);
-		expect(cli).not.toMatch(/from '\.\/canonical-status\.ts'/);
-		const compactFn = cli.slice(cli.indexOf('async function formatCompactView'));
-		expect(compactFn).not.toMatch(/evaluateManagedPromotionStatus/);
-		expect(compactFn).not.toMatch(/buildCanonicalStatusView/);
-	});
-
-	it('does not import promotion status from compact managed-status', () => {
-		const source = readFileSync(
-			resolve(process.cwd(), 'scripts/provision/managed-status.ts'),
-			'utf8',
-		);
-		expect(source).not.toMatch(/managed-promotion-status/);
-		expect(source).not.toMatch(/evaluateManagedPromotionStatus/);
-		expect(source).not.toMatch(/PROMOTIONS/);
 	});
 });

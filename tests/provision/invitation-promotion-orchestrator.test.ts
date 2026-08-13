@@ -2,10 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { OperatorError } from '../../scripts/db/operator-cli-ux.ts';
-import {
-	orchestrateInvitationPromotion,
-	resolvePromotionUpdateScope,
-} from '../../scripts/provision/invitation-promotion-orchestrator.ts';
+import { orchestrateInvitationPromotion } from '../../scripts/provision/invitation-promotion-orchestrator.ts';
+import { resolvePromotionUpdateScope } from '../../scripts/provision/invitation-update-options.ts';
 import type {
 	PromotionApplyReport,
 	PromotionPreflightReport,

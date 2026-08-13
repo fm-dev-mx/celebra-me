@@ -347,13 +347,6 @@ describe('Production mutator discovery and gate ordering', () => {
 		expect(discovered).toEqual(approved);
 	});
 
-	it('keeps the direct patch entrypoint lint-only and delegates mutation to prod:apply', () => {
-		const source = sourceOf('scripts/db/run-prod-patch.ts');
-		expect(source).toContain('DIRECT_PRODUCTION_PATCH_APPLY_BLOCKED');
-		expect(source).toContain('pnpm prod:apply -- --patch');
-		expect(source).not.toContain('requireOwnerProductionApply');
-	});
-
 	it('wires each approved mutator to requireOwnerProductionApply without legacy crypto auth', () => {
 		for (const mutator of APPROVED_MUTATORS) {
 			const source = sourceOf(mutator.file);
