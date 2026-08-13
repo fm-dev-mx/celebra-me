@@ -47,7 +47,7 @@ BEGIN
     AND (
       SELECT a.attname
       FROM pg_attribute a
-      WHERE a.attrelid = table_oid AND a.attnum = x.indkey[1]
+      WHERE a.attrelid = table_oid AND a.attnum = x.indkey[0]
     ) = 'phone'
     AND i.relname NOT IN ('idx_guest_invitations_phone', 'idx_guest_invitations_phone_e164')
   LIMIT 1;
@@ -80,7 +80,7 @@ BEGIN
       AND (
         SELECT a.attname
         FROM pg_attribute a
-        WHERE a.attrelid = table_oid AND a.attnum = canonical_idx.indkey[1]
+        WHERE a.attrelid = table_oid AND a.attnum = canonical_idx.indkey[0]
       ) = 'phone'
     ) THEN
       RAISE EXCEPTION 'PHONE_INDEX_INCOMPATIBLE: idx_guest_invitations_phone exists with an incompatible definition (%)',
@@ -114,7 +114,7 @@ BEGIN
       AND (
         SELECT a.attname
         FROM pg_attribute a
-        WHERE a.attrelid = table_oid AND a.attnum = legacy_idx.indkey[1]
+        WHERE a.attrelid = table_oid AND a.attnum = legacy_idx.indkey[0]
       ) = 'phone'
     ) THEN
       RAISE EXCEPTION 'PHONE_INDEX_INCOMPATIBLE: idx_guest_invitations_phone_e164 exists with an incompatible definition (%)',
