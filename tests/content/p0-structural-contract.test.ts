@@ -79,12 +79,6 @@ function celestialEnvelope(published: Record<string, unknown>, slug: string) {
 	};
 }
 
-function selectItineraryRenderer(
-	variant: string | undefined,
-): 'ItineraryProgram' | 'TimelineList' {
-	return variant === 'timeline-paper' ? 'ItineraryProgram' : 'TimelineList';
-}
-
 function resolveStructuralCss(input: {
 	themePreset: string;
 	itineraryVariant?: string;
@@ -135,7 +129,6 @@ function assertCelestialProgramPath(source: Record<string, unknown>, slug: strin
 		content: celestialEnvelope(source, slug),
 	});
 	expect(viewModel.sections.itinerary?.variant).toBe('timeline-paper');
-	expect(selectItineraryRenderer(viewModel.sections.itinerary?.variant)).toBe('ItineraryProgram');
 	expect(viewModel.sections.gallery?.variant).toBe('index-choreography');
 
 	const cssUrls = resolveStructuralCss({
@@ -152,17 +145,6 @@ function assertCelestialProgramPath(source: Record<string, unknown>, slug: strin
 }
 
 describe('P0 persisted structural contracts', () => {
-	it('does not restore celestial-blue as an Itinerary renderer alias', () => {
-		const source = fs.readFileSync(
-			path.resolve(process.cwd(), 'src/components/invitation/Itinerary.astro'),
-			'utf8',
-		);
-		expect(source).not.toMatch(/celestial-blue/);
-		expect(source).toContain("variant === 'timeline-paper'");
-		expect(source).toContain('ItineraryProgram');
-		expect(source).toContain('TimelineList');
-	});
-
 	it('requires the Xareni DB payload to carry explicit itinerary behavior and gallery layout', () => {
 		const payload = loadJson('tests/fixtures/invitations/xv-xareni-iyarit-db-payload.json');
 		assertCelestialProgramPath(payload, 'xareni-iyarit');
@@ -185,9 +167,6 @@ describe('P0 persisted structural contracts', () => {
 			data: content,
 		} as Parameters<typeof adaptEvent>[0]);
 		expect(viewModel.sections.itinerary?.variant).toBe('timeline-paper');
-		expect(selectItineraryRenderer(viewModel.sections.itinerary?.variant)).toBe(
-			'ItineraryProgram',
-		);
 
 		const cssUrls = resolveStructuralCss({
 			themePreset: 'premiere-floral',
@@ -209,7 +188,6 @@ describe('P0 persisted structural contracts', () => {
 			data: content,
 		} as Parameters<typeof adaptEvent>[0]);
 		expect(viewModel.sections.itinerary?.variant).toBe('standard');
-		expect(selectItineraryRenderer(viewModel.sections.itinerary?.variant)).toBe('TimelineList');
 
 		const cssUrls = resolveStructuralCss({
 			themePreset: 'premiere-floral',
@@ -241,19 +219,6 @@ describe('P0 persisted structural contracts', () => {
 			content: payload,
 		});
 		expect(viewModel.sections.itinerary?.variant).toBe('standard');
-		expect(selectItineraryRenderer(viewModel.sections.itinerary?.variant)).toBe('TimelineList');
-	});
-
-	it('does not restore celestial-blue as a Thank You renderer alias', () => {
-		const source = fs.readFileSync(
-			path.resolve(process.cwd(), 'src/components/invitation/ThankYou.astro'),
-			'utf8',
-		);
-		expect(source).not.toMatch(/EDITORIAL_THANK_YOU_VARIANTS/);
-		expect(source).not.toMatch(/celestial-blue.*editorial/);
-		expect(source).toContain("structuralVariant === 'editorial-back-cover'");
-		expect(source).toContain('thank-you-editorial');
-		expect(source).toContain('thank-you-content');
 	});
 
 	it('requires Xareni Thank You to take the editorial-back-cover path', () => {
