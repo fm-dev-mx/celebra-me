@@ -113,6 +113,20 @@ describe('migrate orchestrator', () => {
 		expect(getMigratePolicy('production').target).toBe('production');
 		expect(getMigratePolicy('disposable-test').target).toBe('disposable-test');
 
+		const { readFileSync } = await import('node:fs');
+		expect(readFileSync('scripts/db/migrate-policy-local.ts', 'utf8')).toContain(
+			'executePsqlAtomicPending',
+		);
+		expect(readFileSync('scripts/db/migrate-policy-disposable.ts', 'utf8')).toContain(
+			'executePsqlAtomicDisposable',
+		);
+		expect(readFileSync('scripts/db/migrate-policy-preview.ts', 'utf8')).toContain(
+			'executeSupabasePush',
+		);
+		expect(readFileSync('scripts/db/migrate-policy-production.ts', 'utf8')).toContain(
+			'executeSupabasePush',
+		);
+
 		for (const target of ['local', 'preview', 'production', 'disposable-test'] as const) {
 			jest.clearAllMocks();
 			const stable = plan({ target, mode: 'apply' });

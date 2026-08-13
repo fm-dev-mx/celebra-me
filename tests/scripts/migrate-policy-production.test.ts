@@ -22,6 +22,15 @@ describe('Production migration helpers', () => {
 		).toBe(false);
 	});
 
+	it('still allowlists BEHIND when structural findings are reported as non-blocking', () => {
+		const output = [
+			'Final schema lifecycle state: BEHIND',
+			'Structural findings: 2 (non-blocking while BEHIND)',
+			'Errors: 0',
+		].join('\n');
+		expect(isAllowlistedBehindAuditOutput(output, 1)).toBe(true);
+	});
+
 	it('extracts unique pending versions from dry-run output', () => {
 		const output =
 			'Would apply 20260802090000_production_authorization_receipts.sql\n' +

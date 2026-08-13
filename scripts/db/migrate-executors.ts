@@ -117,9 +117,9 @@ export function executePsqlAtomicPending(options: {
 	onProgress?: (filename: string, ok: boolean) => void;
 }): void {
 	const classification = classifyDbTarget(options.dbUrl);
-	if (classification.target === 'production') {
+	if (classification.target !== 'persistent-local') {
 		fail(
-			'executePsqlAtomicPending cannot target Production. Use `pnpm db:migrate -- --target production`.',
+			`executePsqlAtomicPending is Local-only. Target "${classification.target}" is rejected. Use \`pnpm db:migrate -- --target <local|preview|production|disposable-test>\`.`,
 		);
 	}
 	const files = getValidatedMigrationFiles().filter((f) =>

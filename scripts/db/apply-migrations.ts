@@ -1,22 +1,14 @@
 /**
- * apply-migrations.ts — Apply repository migrations to disposable test database
+ * Shared migration file helpers and guarded psql execution for disposable-test
+ * and persistent-local. Not a public apply CLI.
  *
- * RESTRICTED: Strictly allowed against the `disposable-test` target only.
- * Prohibited against production, preview, persistent-local, or unknown targets.
- *
- * Uses atomic single-transaction execution combining the migration SQL and
- * its schema_migrations record. Fails closed immediately on any error.
- *
- * Usage:
- *   tsx scripts/db/apply-migrations.ts --db-url <connection-string>
- *   tsx scripts/db/apply-migrations.ts --db-url <url> --file <single-migration.sql>
- *   tsx scripts/db/apply-migrations.ts --db-url <url> --max-version <timestamp>
+ * Canonical apply: `pnpm db:migrate -- --target <disposable-test|local|preview|production>`.
  */
 
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { spawnSync } from 'node:child_process';
-import { classifyDbTarget, redactDbUrl } from './db-guard.ts';
+import { classifyDbTarget, redactDbUrl } from './db-target-config.ts';
+import { runPsql } from './db-workflow-lib.ts';
 
 export const PROJECT_ROOT = process.cwd();
 export const MIGRATIONS_DIR = resolve(PROJECT_ROOT, 'supabase', 'migrations');
@@ -24,17 +16,20 @@ const SAFE_FILENAME_PATTERN = /^(\d{14})_([a-zA-Z0-9_-]+)\.sql$/;
 
 export function runPsqlCommand(dbUrl: string, sqlInput: string): { ok: boolean; output: string } {
 	const classification = classifyDbTarget(dbUrl);
-	if (classification.target === 'production') {
+	if (
+		classification.target === 'production' ||
+		classification.target === 'preview' ||
+		classification.target === 'unknown'
+	) {
 		return {
 			ok: false,
-			output:
-				'ERROR: apply-migrations psql runner cannot target Production. Use `pnpm db:migrate -- --target production`.',
+			output: `ERROR: apply-migrations psql runner cannot target ${classification.target}. Use \`pnpm db:migrate -- --target <local|preview|production|disposable-test>\`.`,
 		};
 	}
-	const result = spawnSync('psql', ['--set', 'ON_ERROR_STOP=1', '--dbname', dbUrl], {
-		input: sqlInput,
-		encoding: 'utf8',
-		stdio: 'pipe',
+	const result = runPsql(sqlInput, dbUrl, {
+		throwOnError: false,
+		tuplesOnly: false,
+		redact: [dbUrl],
 	});
 	const stdout = typeof result.stdout === 'string' ? result.stdout : '';
 	const stderr = typeof result.stderr === 'string' ? result.stderr : '';
@@ -109,133 +104,11 @@ export function enforceDisposableTargetOnly(dbUrl: string): void {
 	const classification = classifyDbTarget(dbUrl);
 	if (classification.target !== 'disposable-test') {
 		console.error(
-			`ERROR: apply-migrations.ts is strictly restricted to the disposable-test environment.`,
+			`ERROR: apply-migrations helpers are strictly restricted to the disposable-test environment when enforceDisposableTargetOnly is used.`,
 		);
 		console.error(
 			`Target evaluated as "${classification.target}" for ${redactDbUrl(dbUrl)}. Operation blocked.`,
 		);
 		process.exit(1);
 	}
-}
-
-function main(): void {
-	const args = process.argv.slice(2);
-	const dbUrlIdx = args.indexOf('--db-url');
-	const fileIdx = args.indexOf('--file');
-	const maxVersionIdx = args.indexOf('--max-version');
-	const maxVersion = maxVersionIdx !== -1 ? args[maxVersionIdx + 1] : undefined;
-
-	if (dbUrlIdx === -1) {
-		console.error(
-			'Usage: tsx scripts/db/apply-migrations.ts --db-url <url> [--file <path>] [--max-version <timestamp>]',
-		);
-		process.exit(1);
-	}
-
-	const dbUrl = args[dbUrlIdx + 1];
-	if (!dbUrl) {
-		console.error('ERROR: Missing --db-url value');
-		process.exit(1);
-	}
-
-	// Safety Enforcement: Target MUST be disposable-test
-	enforceDisposableTargetOnly(dbUrl);
-
-	// Ensure migration tracking table exists
-	const initSql = `
-BEGIN;
-CREATE SCHEMA IF NOT EXISTS supabase_migrations;
-CREATE TABLE IF NOT EXISTS supabase_migrations.schema_migrations (
-	version text PRIMARY KEY,
-	name text,
-	statements text[]
-);
-COMMIT;
-`;
-	const initResult = runPsqlCommand(dbUrl, initSql);
-	if (!initResult.ok) {
-		console.error('ERROR: Failed to initialize supabase_migrations.schema_migrations table.');
-		console.error(initResult.output);
-		process.exit(1);
-	}
-
-	// Single-file mode
-	if (fileIdx !== -1) {
-		const rawPath = args[fileIdx + 1];
-		if (!rawPath) {
-			console.error('ERROR: Missing --file path value');
-			process.exit(1);
-		}
-		const filePath = resolve(PROJECT_ROOT, rawPath);
-		if (!existsSync(filePath)) {
-			console.error(`ERROR: Migration file not found: ${filePath}`);
-			process.exit(1);
-		}
-		const filename = filePath.split(/[/\\]/).pop()!;
-		const match = filename.match(SAFE_FILENAME_PATTERN);
-		if (!match) {
-			console.error(
-				`ERROR: Single migration file "${filename}" does not match pattern <14-digits>_<name>.sql`,
-			);
-			process.exit(1);
-		}
-		const version = match[1]!;
-		const name = match[2]!;
-		const fileContent = readFileSync(filePath, 'utf8');
-
-		const atomicSql = `
-BEGIN;
-${fileContent}
-;
-INSERT INTO supabase_migrations.schema_migrations (version, name) VALUES ('${version}', '${name}');
-COMMIT;
-`;
-		const result = runPsqlCommand(dbUrl, atomicSql);
-		if (!result.ok) {
-			console.error(`FAILED: ${filePath}`);
-			console.error(result.output);
-			process.exit(1);
-		}
-		console.info(`OK: ${filePath}`);
-		return;
-	}
-
-	// All-migrations mode
-	const files = getValidatedMigrationFiles(maxVersion);
-
-	console.info(
-		`Applying ${files.length} migrations to disposable-test database ${redactDbUrl(dbUrl)}${maxVersion ? ` (up to version ${maxVersion})` : ''}`,
-	);
-
-	let applied = 0;
-	for (const { filename, version, name } of files) {
-		const filePath = resolve(MIGRATIONS_DIR, filename);
-		process.stdout.write(`  ${filename}: `);
-		const fileContent = readFileSync(filePath, 'utf8');
-
-		const atomicSql = `
-BEGIN;
-${fileContent}
-;
-INSERT INTO supabase_migrations.schema_migrations (version, name) VALUES ('${version}', '${name}');
-COMMIT;
-`;
-		const result = runPsqlCommand(dbUrl, atomicSql);
-		if (!result.ok) {
-			console.info('FAIL');
-			console.error(`    ERROR executing migration ${filename}:`);
-			console.error(result.output);
-			console.error('Migration execution halted on first failure.');
-			process.exit(1);
-		}
-		console.info('OK');
-		applied++;
-	}
-
-	console.info(`\nResult: ${applied}/${files.length} applied successfully.`);
-}
-
-// Execute CLI when invoked directly
-if (process.argv[1]?.endsWith('apply-migrations.ts')) {
-	main();
 }

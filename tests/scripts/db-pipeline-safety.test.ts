@@ -1,4 +1,5 @@
 import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
+import { readFileSync } from 'node:fs';
 import { classifyDbTarget, guardProduction } from '../../scripts/db/db-guard';
 import { enforceDisposableTargetOnly } from '../../scripts/db/apply-migrations';
 import { evaluateMigrationHistoryParity } from '../../scripts/db/audit-db';
@@ -115,6 +116,16 @@ describe('Database Pipeline Safety & Hardening Regression Tests', () => {
 			const unknownUrl = 'postgresql://user:secret@some-random-host.com:5432/postgres';
 			expect(() => enforceDisposableTargetOnly(unknownUrl)).toThrow('process.exit(1) called');
 			expect(mockExit).toHaveBeenCalledWith(1);
+		});
+
+		it('has no apply-migrations package alias', () => {
+			const pkg = JSON.parse(readFileSync('package.json', 'utf8')) as {
+				scripts: Record<string, string>;
+			};
+			expect(Object.keys(pkg.scripts).some((name) => /apply-migrations/i.test(name))).toBe(
+				false,
+			);
+			expect(JSON.stringify(pkg.scripts)).not.toContain('apply-migrations.ts');
 		});
 
 		it('allows disposable-test environment', () => {

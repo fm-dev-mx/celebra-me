@@ -731,6 +731,7 @@ blocked.
 - Do not use production as the default target for local development.
 - Do not mutate production during local refresh.
 - Do not run `pnpm db:push`; it is blocked because raw Supabase push can target a linked remote.
+- Do not invoke `tsx scripts/db/apply-migrations.ts`; that CLI was removed. Use `pnpm db:migrate`.
 - Do not run `pnpm db:local:reset` — it is blocked. Use `pnpm db:disposable:reset` for destructive
   tests.
 - Do not run `pnpm db:local:refresh-from-prod` or `pnpm db:local:refresh-from-prod-preserve-local` —

@@ -26,6 +26,7 @@ import {
 	clearProductionWritePermit,
 	hasValidProductionWritePermit,
 	issueProductionWritePermit,
+	matchProductionWritePermit,
 	resolveSpawnProductionBoundary,
 } from '../../scripts/db/production-write-permit.ts';
 
@@ -241,6 +242,29 @@ describe('production write permit', () => {
 				.permission,
 		).toBe('allow');
 	});
+
+	it('rejects expired, wrong-project, and wrong-plan permits', () => {
+		issueProductionWritePermit({
+			projectRef: SUPABASE_PROJECT_REFS.production,
+			operationType: 'production_apply',
+			bindingHex: 'plan-aaaa',
+			nowMs: 1_000,
+		});
+		expect(hasValidProductionWritePermit(PROD_URL, 1_000 + 31 * 60 * 1000)).toBe(false);
+		issueProductionWritePermit({
+			projectRef: SUPABASE_PROJECT_REFS.production,
+			operationType: 'production_apply',
+			bindingHex: 'plan-bbbb',
+		});
+		expect(hasValidProductionWritePermit(PREVIEW_URL)).toBe(false);
+		expect(hasValidProductionWritePermit(PROD_URL, Date.now(), 'plan-cccc')).toBe(false);
+		expect(matchProductionWritePermit({ dbUrl: PROD_URL, bindingHex: 'plan-cccc' })).toBe(
+			'binding',
+		);
+		expect(matchProductionWritePermit({ dbUrl: PREVIEW_URL, bindingHex: 'plan-bbbb' })).toBe(
+			'project',
+		);
+	});
 });
 
 describe('owner-apply ledger and authorization integrity', () => {
@@ -307,14 +331,41 @@ describe('lowest-level Production write helpers fail closed', () => {
 	it('refuses apply-migrations psql against Production', () => {
 		const result = runPsqlCommand(PROD_URL, 'SELECT 1');
 		expect(result.ok).toBe(false);
-		expect(result.output).toMatch(/cannot target Production/);
+		expect(result.output).toMatch(/cannot target production/);
 	});
 
-	it('refuses executePsqlAtomicPending against Production', () => {
+	it('refuses apply-migrations psql against Preview and unknown targets', () => {
+		expect(runPsqlCommand(PREVIEW_URL, 'SELECT 1').ok).toBe(false);
+		expect(runPsqlCommand(PREVIEW_URL, 'SELECT 1').output).toMatch(/cannot target preview/);
+		expect(
+			runPsqlCommand('postgresql://user:secret@example.com:5432/postgres', 'SELECT 1').ok,
+		).toBe(false);
+	});
+
+	it('refuses executePsqlAtomicPending against Production, Preview, and invalid targets', () => {
 		mockExit();
 		expect(() =>
 			executePsqlAtomicPending({ dbUrl: PROD_URL, pendingVersions: ['20260807120000'] }),
 		).toThrow('process.exit:1');
+		expect(() =>
+			executePsqlAtomicPending({ dbUrl: PREVIEW_URL, pendingVersions: ['20260807120000'] }),
+		).toThrow('process.exit:1');
+		expect(() =>
+			executePsqlAtomicPending({
+				dbUrl: 'postgresql://postgres:postgres@127.0.0.1:54332/postgres',
+				pendingVersions: ['20260807120000'],
+			}),
+		).toThrow('process.exit:1');
+	});
+
+	it('cannot mutate schema through the removed apply-migrations CLI', () => {
+		const source = readFileSync(
+			join(process.cwd(), 'scripts/db/apply-migrations.ts'),
+			'utf8',
+		);
+		expect(source).not.toMatch(/function main\s*\(/);
+		expect(source).not.toMatch(/process\.argv\[1\]\?\.endsWith\('apply-migrations\.ts'\)/);
+		expect(source).not.toContain('Applying ${files.length} migrations');
 	});
 
 	it('refuses executeSupabasePush against Production without a permit', () => {

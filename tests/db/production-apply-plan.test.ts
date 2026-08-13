@@ -156,6 +156,18 @@ describe('production apply plan fingerprint and eligibility', () => {
 		expect(mutationItemsOf(plan).map((row) => row.id)).toEqual(['schema', 'a']);
 		expect(evaluateApplyEligibility(plan)).toEqual({ ok: true });
 
+		const withPatch = assembleProductionApplyPlan(allReadyScope, [
+			item({ id: 'schema', domain: 'schema', readiness: 'READY', binding: 's' }),
+			item({ id: 'a', readiness: 'READY', binding: 'a' }),
+			item({
+				id: 'scripts/manual/x.sql',
+				domain: 'patch',
+				readiness: 'READY',
+				binding: 'patch',
+			}),
+		]);
+		expect(mutationItemsOf(withPatch).map((row) => row.id)).toEqual(['schema', 'a']);
+
 		const unknownPlan = assembleProductionApplyPlan(allReadyScope, [
 			item({ id: 'schema', domain: 'schema', readiness: 'IN_SYNC' }),
 			item({ id: 'a', readiness: 'UNKNOWN', blockCode: 'UNVERIFIED' }),

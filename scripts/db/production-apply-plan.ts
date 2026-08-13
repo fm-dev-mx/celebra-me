@@ -62,7 +62,11 @@ function isMutationReadiness(
 export function mutationItemsOf(
 	plan: ProductionApplyPlan,
 ): ProductionApplyPlanItem[] {
-	return plan.items.filter((item) => isMutationReadiness(item.readiness));
+	return plan.items.filter((item) => {
+		if (!isMutationReadiness(item.readiness)) return false;
+		if (plan.scope.allReady && item.domain === 'patch') return false;
+		return true;
+	});
 }
 
 export function buildProductionApplyPlanId(
