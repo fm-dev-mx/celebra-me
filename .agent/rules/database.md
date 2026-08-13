@@ -34,7 +34,7 @@ Four distinct database targets exist:
 
 | Target               | Identification                                                                  | Usage                                                                             | Destructive ops allowed?                               |
 | -------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| **production**       | Supabase cloud host (`*.supabase.co`, `*.supabase.com`)                         | Read-only inspection and export; owner apply via `pnpm prod:apply` (schema primitive: `pnpm db:migrate -- --target production`) | NEVER                                                  |
+| **production**       | Supabase cloud host (`*.supabase.co`, `*.supabase.com`)                         | Read-only inspection; owner apply via `pnpm prod:apply`                           | NEVER                                                  |
 | **preview**          | Hosted branch DB (`PREVIEW_DB_URL` or secret files)                             | Provisioned hosted Preview project for Vercel `develop` deployments               | NO — schema mutated via `pnpm db:migrate -- --target preview` only |
 | **persistent-local** | `127.0.0.1:54322` or `localhost:54322`, container `supabase_db_celebra-me-rsvp` | Normal development through `pnpm dev`                                             | NO — protected state                                   |
 | **disposable-test**  | `127.0.0.1:54332` or `localhost:54332`, container `celebra-me-test-db`          | Migration reconstruction/pgTAP/seed/canonical audit reference                     | YES — created/recreated on demand                      |
@@ -179,12 +179,22 @@ task authorization, target classification, and standard guard checks.
   The promotion orchestrator stays the domain primitive.
 - `pnpm db:migrate -- --target preview` preflights Preview (`PREVIEW_DB_URL`); `--apply` applies pending
   migrations after Preview authorization (wrapper over `db:migrate -- --target preview`).
-- Schema status evidence: `pnpm dbs` / observability use **migration_history_parity**;
-  `pnpm db:*:audit` uses **object_audit_readiness**. Production **owner-apply evidence** is a
-  third class (`authorizationIntegrity`). Do not treat CURRENT schema parity as authorization.
+- Schema status evidence: `pnpm dbs` / observability use **migration_history_parity** (`CURRENT` /
+  `BEHIND` are history-only). `pnpm db:*:audit` uses **object_audit_readiness** and must fail a
+  `CURRENT` history when named public indexes, constraints, or contract routines drift. While
+  history is `BEHIND`, those structural findings are reported but do not block `readyForMigrate`.
+  Production **owner-apply evidence** is a third class (`authorizationIntegrity`). Do not treat
+  CURRENT schema parity as authorization.
+- Persistent schema mutation has one lifecycle: versioned `supabase/migrations/` →
+  `pnpm db:migrate -- --target` (disposable → Local → Preview → owner `pnpm prod:apply -- --schema`).
+  `executePsqlAtomicPending` is Local-only. There is no `apply-migrations` CLI.
 - `pnpm db:prod:patch` disposition is `RESTRICT_OWNER_ONLY` / `KEEP_SPECIALIZED`: `--dry-run` is
-  lint-only; `--apply` is owner-confirmed specialized maintenance and must not bypass
+  lint-only; `--apply` is owner-confirmed specialized DML. Persistent DDL (`CREATE TABLE/INDEX`,
+  routines, schema-changing `ALTER`, persistent `DROP`, `GRANT`/`REVOKE`) is rejected. Prefer
+  `pnpm prod:apply -- --patch` as the owner-facing entry. Patches must not bypass
   `db:migrate -- --target production` or `invitation:release`.
+- `invitation:romina-draft-reset` remains a temporary explicit one-off (never `--all-ready`) until
+  the owner confirms it is complete.
 - Production patch files must include the manifest required by
   [`manual-sql-manifest.md`](manual-sql-manifest.md).
 - Non-manifest SQL patch files are historical records only and must not be copied as templates.
