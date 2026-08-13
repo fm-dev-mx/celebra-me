@@ -83,13 +83,13 @@ export function runPsqlAsync(
 		let stdout = '';
 		let stderr = '';
 		let settled = false;
-		const finish = (status: number | null) => {
+		const finish = (status: number | null, forcedStderr?: string) => {
 			if (settled) return;
 			settled = true;
 			resolve({
 				status,
 				stdout: redactProbeIo(stdout, secrets),
-				stderr: redactProbeIo(stderr, secrets),
+				stderr: forcedStderr ?? redactProbeIo(stderr, secrets),
 			});
 		};
 
@@ -97,7 +97,7 @@ export function runPsqlAsync(
 			typeof options.timeoutMs === 'number' && options.timeoutMs > 0
 				? setTimeout(() => {
 						child.kill('SIGKILL');
-						finish(1);
+						finish(1, 'STATUS_PROBE_TIMEOUT');
 					}, options.timeoutMs)
 				: undefined;
 

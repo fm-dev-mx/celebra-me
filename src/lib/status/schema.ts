@@ -3,6 +3,19 @@ import type { CanonicalStatusView } from './types';
 
 const targetEnv = z.enum(['local', 'preview', 'production']);
 const evidence = z.enum(['LIVE', 'CACHED', 'UNVERIFIED']);
+const patchStatus = z.enum(['NOT_APPLICABLE', 'NOT_NEEDED', 'PENDING', 'BLOCKED', 'UNVERIFIED']);
+const patchReason = z.enum([
+	'CATALOG_VALID',
+	'CATALOG_INVALID',
+	'ENVIRONMENT_NOT_TARGET',
+	'ENVIRONMENT_NOT_PROBED',
+	'LIVE_ZERO_ROWS',
+	'LIVE_ROWS_WITHIN_RANGE',
+	'LIVE_ROWS_OUTSIDE_RANGE',
+	'QUERY_FAILED',
+	'QUERY_TIMEOUT',
+	'QUERY_INVALID_OUTPUT',
+]);
 const schemaLifecycle = z.enum(['CURRENT', 'BEHIND', 'SCHEMA_DRIFT', 'UNVERIFIED']);
 const readiness = z.enum([
 	'READY',
@@ -160,9 +173,38 @@ const recentMigrationRecord = z
 	})
 	.strict();
 
+const manualPatchEnvironmentStatus = z
+	.object({
+		status: patchStatus,
+		evidence,
+		matchingRowCount: z.number().int().nonnegative().nullable(),
+		verifiedAt: z.iso.datetime({ offset: true }).nullable(),
+		reason: patchReason,
+		planCommand: z.string().max(500).nullable(),
+	})
+	.strict();
+
+const manualPatchStatus = z
+	.object({
+		scriptId: z.string().regex(/^[a-z0-9][a-z0-9_-]{2,100}$/),
+		file: z.string().regex(/^scripts\/manual\/production-patches\/[A-Za-z0-9_.-]+\.sql$/),
+		purpose: z.string().min(1).max(240),
+		targetEnvironments: z.array(targetEnv).min(1).max(3),
+		expectedRowsMin: z.number().int().nonnegative(),
+		expectedRowsMax: z.number().int().nonnegative(),
+		environments: z
+			.object({
+				local: manualPatchEnvironmentStatus,
+				preview: manualPatchEnvironmentStatus,
+				production: manualPatchEnvironmentStatus,
+			})
+			.strict(),
+	})
+	.strict();
+
 export const CanonicalStatusViewSchema: z.ZodType<CanonicalStatusView> = z
 	.object({
-		schemaVersion: z.literal(1),
+		schemaVersion: z.literal(2),
 		generatedAt: z.iso.datetime({ offset: true }),
 		evidence,
 		freshnessMeta: freshnessMeta.optional(),
@@ -201,6 +243,7 @@ export const CanonicalStatusViewSchema: z.ZodType<CanonicalStatusView> = z
 			})
 			.strict(),
 		recentMigrations: z.array(recentMigrationRecord).max(50).optional(),
+		manualPatches: z.array(manualPatchStatus).max(50),
 		diagnostics: z.array(diagnostic).max(200),
 		debugCounters: z
 			.object({

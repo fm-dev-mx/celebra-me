@@ -1,4 +1,4 @@
-import { mkdtempSync, existsSync, rmSync } from 'node:fs';
+import { mkdtempSync, existsSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
@@ -98,6 +98,12 @@ describe('local operational status cache', () => {
 		});
 		await writeOperationalStatusCache(stub);
 		expect(existsSync(cacheFile)).toBe(false);
+	});
+
+	it('discards schema v1 caches safely', async () => {
+		const v1 = { ...buildCanonicalStatusViewFixture(), schemaVersion: 1 };
+		writeFileSync(cacheFile, JSON.stringify(v1), 'utf8');
+		expect(await readOperationalStatusCache()).toBeNull();
 	});
 
 	it('separates probe verification time from application time', () => {

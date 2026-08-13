@@ -18,8 +18,8 @@ function parseEnv(value: string | null): TargetEnv | undefined {
 	return undefined;
 }
 
-function parseDomain(value: string | null): 'schema' | 'content' | undefined {
-	if (value === 'schema' || value === 'content') return value;
+function parseDomain(value: string | null): 'schema' | 'content' | 'patch' | undefined {
+	if (value === 'schema' || value === 'content' || value === 'patch') return value;
 	return undefined;
 }
 

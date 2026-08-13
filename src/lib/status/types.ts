@@ -7,6 +7,44 @@ export type TargetEnv = 'local' | 'preview' | 'production';
 
 export type EvidenceState = 'LIVE' | 'CACHED' | 'UNVERIFIED';
 
+export type PatchApplicability =
+	| 'NOT_APPLICABLE'
+	| 'NOT_NEEDED'
+	| 'PENDING'
+	| 'BLOCKED'
+	| 'UNVERIFIED';
+
+export type PatchEvidenceReason =
+	| 'CATALOG_VALID'
+	| 'CATALOG_INVALID'
+	| 'ENVIRONMENT_NOT_TARGET'
+	| 'ENVIRONMENT_NOT_PROBED'
+	| 'LIVE_ZERO_ROWS'
+	| 'LIVE_ROWS_WITHIN_RANGE'
+	| 'LIVE_ROWS_OUTSIDE_RANGE'
+	| 'QUERY_FAILED'
+	| 'QUERY_TIMEOUT'
+	| 'QUERY_INVALID_OUTPUT';
+
+export interface ManualPatchEnvironmentStatus {
+	status: PatchApplicability;
+	evidence: EvidenceState;
+	matchingRowCount: number | null;
+	verifiedAt: string | null;
+	reason: PatchEvidenceReason;
+	planCommand: string | null;
+}
+
+export interface ManualPatchStatus {
+	scriptId: string;
+	file: string;
+	purpose: string;
+	targetEnvironments: TargetEnv[];
+	expectedRowsMin: number;
+	expectedRowsMax: number;
+	environments: Record<TargetEnv, ManualPatchEnvironmentStatus>;
+}
+
 export type SchemaLifecycleState = 'CURRENT' | 'BEHIND' | 'SCHEMA_DRIFT' | 'UNVERIFIED';
 
 export type SchemaOperationReadiness =
@@ -171,7 +209,7 @@ export interface FreshnessMeta {
 }
 
 export interface CanonicalStatusView {
-	schemaVersion: 1;
+	schemaVersion: 2;
 	generatedAt: string;
 	evidence: EvidenceState;
 	freshnessMeta?: FreshnessMeta;
@@ -186,6 +224,7 @@ export interface CanonicalStatusView {
 	activeRowCounts: Record<TargetEnv, number>;
 	identityConflictCounts: Record<TargetEnv, number>;
 	recentMigrations?: RecentMigrationRecord[];
+	manualPatches: ManualPatchStatus[];
 	diagnostics: CanonicalDiagnostic[];
 	debugCounters?: {
 		invocations: number;

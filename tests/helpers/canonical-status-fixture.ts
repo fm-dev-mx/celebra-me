@@ -24,7 +24,7 @@ export function buildCanonicalStatusViewFixture(
 		probedAt: '2026-08-12T22:11:46.000Z',
 	});
 	return {
-		schemaVersion: 1,
+		schemaVersion: 2,
 		generatedAt: '2026-08-12T22:11:54.000Z',
 		evidence: 'LIVE',
 		expectedMigrationHead: '20260806120000',
@@ -70,6 +70,34 @@ export function buildCanonicalStatusViewFixture(
 		],
 		activeRowCounts: { local: 26, preview: 27, production: 26 },
 		identityConflictCounts: { local: 0, preview: 0, production: 0 },
+		manualPatches: [
+			{
+				scriptId: '20260812_p0_itinerary_gallery_structural_contracts',
+				file: 'scripts/manual/production-patches/20260812_p0_itinerary_gallery_structural_contracts.sql',
+				purpose: 'Persist itinerary timeline-paper and celestial gallery structural contracts.',
+				targetEnvironments: ['production'],
+				expectedRowsMin: 4,
+				expectedRowsMax: 8,
+				environments: {
+					local: { status: 'NOT_APPLICABLE', evidence: 'LIVE', matchingRowCount: null, verifiedAt: null, reason: 'ENVIRONMENT_NOT_TARGET', planCommand: null },
+					preview: { status: 'NOT_APPLICABLE', evidence: 'LIVE', matchingRowCount: null, verifiedAt: null, reason: 'ENVIRONMENT_NOT_TARGET', planCommand: null },
+					production: { status: 'PENDING', evidence: 'LIVE', matchingRowCount: 4, verifiedAt: '2026-08-12T22:11:46.000Z', reason: 'LIVE_ROWS_WITHIN_RANGE', planCommand: 'pnpm prod:apply -- --patch <file> --owner-user-id <uuid>' },
+				},
+			},
+			{
+				scriptId: '20260812_thankyou_editorial_back_cover_structural_contracts',
+				file: 'scripts/manual/production-patches/20260812_thankyou_editorial_back_cover_structural_contracts.sql',
+				purpose: 'Persist thank-you editorial back-cover structural contracts.',
+				targetEnvironments: ['production'],
+				expectedRowsMin: 5,
+				expectedRowsMax: 10,
+				environments: {
+					local: { status: 'NOT_APPLICABLE', evidence: 'LIVE', matchingRowCount: null, verifiedAt: null, reason: 'ENVIRONMENT_NOT_TARGET', planCommand: null },
+					preview: { status: 'NOT_APPLICABLE', evidence: 'LIVE', matchingRowCount: null, verifiedAt: null, reason: 'ENVIRONMENT_NOT_TARGET', planCommand: null },
+					production: { status: 'NOT_NEEDED', evidence: 'LIVE', matchingRowCount: 0, verifiedAt: '2026-08-12T22:11:46.000Z', reason: 'LIVE_ZERO_ROWS', planCommand: null },
+				},
+			},
+		],
 		diagnostics: [],
 		...overrides,
 	};

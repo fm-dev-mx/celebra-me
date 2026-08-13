@@ -59,7 +59,7 @@ describe('GET /api/dashboard/estado', () => {
 		expect(response.status).toBe(200);
 		expect(response.headers.get('Cache-Control')).toContain('no-store');
 		const body = await response.json();
-		expect(body.schemaVersion).toBe(1);
+		expect(body.schemaVersion).toBe(2);
 		expect(body.evidence).toBe('CACHED');
 		expect(mockRefresh).not.toHaveBeenCalled();
 		const serialized = JSON.stringify(body);
@@ -105,6 +105,22 @@ describe('GET /api/dashboard/estado', () => {
 			env: undefined,
 			domain: undefined,
 			diagnostics: true,
+		});
+	});
+
+	it('accepts the independent patch refresh domain', async () => {
+		mockAccess.mockResolvedValue({ userId: 'admin-1', isSuperAdmin: true } as never);
+		mockRefresh.mockResolvedValue(buildCanonicalStatusViewFixture());
+		const response = await GET({
+			request: new Request(
+				'http://127.0.0.1:4321/api/dashboard/estado?refresh=1&domain=patch',
+			),
+		} as never);
+		expect(response.status).toBe(200);
+		expect(mockRefresh).toHaveBeenCalledWith({
+			env: undefined,
+			domain: 'patch',
+			diagnostics: false,
 		});
 	});
 

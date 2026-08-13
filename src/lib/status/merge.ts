@@ -16,9 +16,112 @@ import type {
 	CanonicalStatusView,
 	EnvironmentPromotionState,
 	EvidenceState,
+	ManualPatchEnvironmentStatus,
 	RecentMigrationRecord,
+	ManualPatchStatus,
 	TargetEnv,
 } from './types';
+
+function incomingPatchReplacesPrevious(
+	incoming: ManualPatchEnvironmentStatus,
+	previous: ManualPatchEnvironmentStatus,
+): boolean {
+	if (incoming.evidence === 'UNVERIFIED' && hasPersistableOperationalEvidence(previous.evidence)) {
+		return false;
+	}
+	return true;
+}
+
+function mergeManualPatches(
+	previous: ManualPatchStatus[] | undefined,
+	incoming: ManualPatchStatus[],
+	probedByEnv: Record<TargetEnv, boolean>,
+): ManualPatchStatus[] {
+	if (!previous || previous.length === 0) return incoming;
+	const previousById = new Map(previous.map((item) => [item.scriptId, item]));
+	return incoming.map((item) => {
+		const old = previousById.get(item.scriptId);
+		if (!old) return item;
+		const environments = { ...old.environments };
+		for (const env of ENVS) {
+			if (!probedByEnv[env]) continue;
+			if (incomingPatchReplacesPrevious(item.environments[env], old.environments[env])) {
+				environments[env] = item.environments[env];
+			}
+		}
+		return { ...item, environments };
+	});
+}
+
+function refreshesSchemaDomain(domain: 'schema' | 'content' | 'patch' | undefined): boolean {
+	return domain !== 'content' && domain !== 'patch';
+}
+
+function refreshesContentDomain(domain: 'schema' | 'content' | 'patch' | undefined): boolean {
+	return domain !== 'schema' && domain !== 'patch';
+}
+
+function refreshesPatchDomain(domain: 'schema' | 'content' | 'patch' | undefined): boolean {
+	return domain !== 'schema' && domain !== 'content';
+}
+
+function preservesRecentMigrations(domain: 'schema' | 'content' | 'patch' | undefined): boolean {
+	return domain === 'content' || domain === 'patch';
+}
+
+function didAcceptPatchProbe(
+	previous: ManualPatchStatus[] | undefined,
+	incoming: ManualPatchStatus[],
+	probedByEnv: Record<TargetEnv, boolean>,
+): boolean {
+	if (!ENVS.some((env) => probedByEnv[env])) return false;
+	if (!previous || previous.length === 0) return incoming.length > 0;
+	if (incoming.length !== previous.length) return true;
+	const previousById = new Map(previous.map((item) => [item.scriptId, item]));
+	if (incoming.some((item) => !previousById.has(item.scriptId))) return true;
+	for (const item of incoming) {
+		const old = previousById.get(item.scriptId);
+		if (!old) continue;
+		for (const env of ENVS) {
+			if (!probedByEnv[env]) continue;
+			const next = item.environments[env];
+			const current = old.environments[env];
+			if (next.status === 'NOT_APPLICABLE' && current.status === 'NOT_APPLICABLE') continue;
+			if (incomingPatchReplacesPrevious(next, current)) return true;
+		}
+	}
+	return false;
+}
+
+function downgradeUnreplacedEnvironments(
+	environments: Record<TargetEnv, CanonicalEnvSummary>,
+	replaceByEnv: Record<TargetEnv, boolean>,
+): void {
+	for (const env of ENVS) {
+		if (replaceByEnv[env]) continue;
+		if (environments[env].evidence === 'LIVE') environments[env].evidence = 'CACHED';
+	}
+}
+
+function mergedDisposableProof(
+	previous: CanonicalStatusView,
+	incoming: CanonicalStatusView,
+	domain: 'schema' | 'content' | 'patch' | undefined,
+	anyReplaced: boolean,
+): CanonicalStatusView['disposableProof'] {
+	if (domain === 'patch' || !anyReplaced) return previous.disposableProof;
+	return incoming.disposableProof;
+}
+
+function mergedPatchState(
+	previous: CanonicalStatusView,
+	incoming: CanonicalStatusView,
+	domain: 'schema' | 'content' | 'patch' | undefined,
+	probedByEnv: Record<TargetEnv, boolean>,
+): ManualPatchStatus[] {
+	if (!refreshesPatchDomain(domain)) return previous.manualPatches;
+	return mergeManualPatches(previous.manualPatches, incoming.manualPatches, probedByEnv);
+}
 
 function statesFromView(
 	view: CanonicalStatusView,
@@ -186,32 +289,45 @@ export function mergeCanonicalStatusView(input: {
 	previous: CanonicalStatusView | null;
 	incoming: CanonicalStatusView;
 	env?: TargetEnv;
-	domain?: 'schema' | 'content';
+	domain?: 'schema' | 'content' | 'patch';
 }): CanonicalStatusView {
 	const previous = input.previous;
 	if (!previous) return input.incoming;
 
 	const probedEnvs: TargetEnv[] = input.env ? [input.env] : [...ENVS];
 	const domain = input.domain;
+	const refreshSchema = refreshesSchemaDomain(domain);
+	const refreshContent = refreshesContentDomain(domain);
+	const refreshPatch = refreshesPatchDomain(domain);
+	const preserveRecent = preservesRecentMigrations(domain);
+	const probedByEnv: Record<TargetEnv, boolean> = {
+		local: false,
+		preview: false,
+		production: false,
+	};
 	const replaceByEnv: Record<TargetEnv, boolean> = {
 		local: false,
 		preview: false,
 		production: false,
 	};
 	for (const env of probedEnvs) {
+		probedByEnv[env] = true;
 		replaceByEnv[env] = incomingReplacesPrevious(
 			input.incoming.environments[env],
 			previous.environments[env],
 		);
 	}
 	const replacedEnvs = ENVS.filter((env) => replaceByEnv[env]);
+	const anyPatchAccepted =
+		refreshPatch &&
+		didAcceptPatchProbe(previous.manualPatches, input.incoming.manualPatches, probedByEnv);
 	const environments = {
 		local: { ...previous.environments.local },
 		preview: { ...previous.environments.preview },
 		production: { ...previous.environments.production },
 	};
 
-	if (domain !== 'content') {
+	if (refreshSchema) {
 		for (const env of probedEnvs) {
 			if (replaceByEnv[env]) {
 				environments[env] = {
@@ -228,29 +344,27 @@ export function mergeCanonicalStatusView(input: {
 	let inSyncSlugs = previous.inSyncSlugs;
 	let inSyncCount = previous.inSyncCount;
 
-	if (domain !== 'schema') {
+	if (refreshContent) {
 		const res = mergeContentDomainState(previous, input.incoming, replacedEnvs, environments);
 		promotions = res.promotions;
 		inSyncSlugs = res.inSyncSlugs;
 		inSyncCount = res.inSyncCount;
 	}
 
-	if (domain !== 'content') {
+	if (refreshSchema) {
 		for (const env of replacedEnvs) {
 			environments[env].evidence = 'LIVE';
 			environments[env].probedAt = input.incoming.environments[env].probedAt;
 		}
 	}
 
-	for (const env of ENVS) {
-		if (replaceByEnv[env]) continue;
-		if (environments[env].evidence === 'LIVE') environments[env].evidence = 'CACHED';
-	}
+	if (domain !== 'patch') downgradeUnreplacedEnvironments(environments, replaceByEnv);
 
-	const anyReplaced = replacedEnvs.length > 0;
+	const anyReplaced = (refreshSchema || refreshContent) && replacedEnvs.length > 0;
+	const anyAccepted = anyReplaced || anyPatchAccepted;
 	const activeRowCounts = { ...previous.activeRowCounts };
 	const identityConflictCounts = { ...previous.identityConflictCounts };
-	if (domain !== 'schema') {
+	if (refreshContent) {
 		for (const env of replacedEnvs) {
 			activeRowCounts[env] = input.incoming.activeRowCounts[env];
 			identityConflictCounts[env] = input.incoming.identityConflictCounts[env];
@@ -278,23 +392,23 @@ export function mergeCanonicalStatusView(input: {
 
 	return {
 		...previous,
-		generatedAt: anyReplaced ? input.incoming.generatedAt : previous.generatedAt,
+		generatedAt: anyAccepted ? input.incoming.generatedAt : previous.generatedAt,
 		evidence: combineEvidence(ENVS.map((env) => environments[env].evidence)),
 		environments,
 		promotions,
 		inSyncSlugs,
 		inSyncCount,
-		disposableProof: anyReplaced ? input.incoming.disposableProof : previous.disposableProof,
+		disposableProof: mergedDisposableProof(previous, input.incoming, domain, anyReplaced),
 		activeRowCounts,
 		identityConflictCounts,
-		recentMigrations:
-			domain === 'content'
-				? previous.recentMigrations
-				: mergeRecentMigrations(
-						previous.recentMigrations,
-						input.incoming.recentMigrations,
-						replaceByEnv,
-					),
+		recentMigrations: preserveRecent
+			? previous.recentMigrations
+			: mergeRecentMigrations(
+					previous.recentMigrations,
+					input.incoming.recentMigrations,
+					replaceByEnv,
+				),
+		manualPatches: mergedPatchState(previous, input.incoming, domain, probedByEnv),
 		diagnostics,
 		debugCounters: input.incoming.debugCounters,
 	};

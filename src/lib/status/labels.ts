@@ -10,7 +10,16 @@ import type {
 	SchemaOperationReadiness,
 	StatusSemantic,
 	TargetEnv,
+	PatchApplicability,
 } from './types';
+
+export const PATCH_STATUS_LABELS: Record<PatchApplicability, string> = {
+	NOT_APPLICABLE: 'No aplica',
+	NOT_NEEDED: 'No requerido',
+	PENDING: 'Pendiente',
+	BLOCKED: 'Bloqueado',
+	UNVERIFIED: 'Sin verificar',
+};
 
 export const ENV_LABELS: Record<TargetEnv, string> = {
 	local: 'Local',

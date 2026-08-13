@@ -17,6 +17,10 @@ import { enrichCanonicalDiagnostics } from './canonical-diagnostics.ts';
 import { listInvitationDefinitions } from './invitations/registry.ts';
 import { combineEvidence, invitationAttentionCount, migrationPresenceForEnv } from '../../src/lib/status/evidence.ts';
 import { getValidatedMigrationFiles } from '../db/apply-migrations.ts';
+import {
+	buildUnverifiedManualPatchStatuses,
+	readManualPatchStatuses,
+} from './manual-patch-status.ts';
 import type {
 	CanonicalDiagnostic,
 	CanonicalEnvSummary,
@@ -109,9 +113,29 @@ export async function buildCanonicalStatusView(options?: {
 	environments?: readonly TargetEnv[];
 	resetSession?: boolean;
 	diagnostics?: boolean;
+	domain?: 'schema' | 'content' | 'patch';
 }): Promise<CanonicalStatusView> {
 	if (options?.resetSession !== false) resetStatusProbeSession();
 	const session = getOrCreateStatusProbeSession();
+	const domain = options?.domain;
+	if (domain === 'patch') {
+		const generatedAt = new Date().toISOString();
+		return {
+			...buildLocalCanonicalStatusView(),
+			generatedAt,
+			freshnessMeta: {
+				status: 'LIVE',
+				lastVerifiedAt: generatedAt,
+			},
+			manualPatches: await readManualPatchStatuses({
+				session,
+				environments: options?.environments,
+			}),
+			debugCounters: session.debugCounters,
+		};
+	}
+	const refreshContent = domain !== 'schema';
+	const refreshPatch = domain !== 'content';
 	const expectedVersions = listExpectedMigrationVersions();
 	const disposable = assertCurrentDisposableMigrationProof();
 	const general = await evaluateGeneralStatus({
@@ -120,12 +144,31 @@ export async function buildCanonicalStatusView(options?: {
 		session,
 		environments: options?.environments,
 	});
-	const promotion = await evaluateManagedPromotionStatus({
-		session,
-		slugs: options?.slugs,
-		environments: options?.environments,
-		diagnostics: Boolean(options?.diagnostics),
-	});
+	const promotion = refreshContent
+		? await evaluateManagedPromotionStatus({
+				session,
+				slugs: options?.slugs,
+				environments: options?.environments,
+				diagnostics: Boolean(options?.diagnostics),
+			})
+		: {
+				promotions: [],
+				inSyncSlugs: [],
+				environmentsBySlug: {},
+				envEvidence: {
+					local: 'UNVERIFIED' as const,
+					preview: 'UNVERIFIED' as const,
+					production: 'UNVERIFIED' as const,
+				},
+				canonicalAvailableBySlug: {},
+				rowsByEnv: { local: [], preview: [], production: [] },
+			};
+	const manualPatches = refreshPatch
+		? await readManualPatchStatuses({
+				session,
+				environments: options?.environments,
+			})
+		: buildUnverifiedManualPatchStatuses();
 	const envStateMap = new Map(
 		Object.entries(promotion.environmentsBySlug).map(([slug, states]) => [slug, states]),
 	);
@@ -173,7 +216,7 @@ export async function buildCanonicalStatusView(options?: {
 	const generatedAt = new Date().toISOString();
 
 	const view: CanonicalStatusView = {
-		schemaVersion: 1,
+		schemaVersion: 2,
 		generatedAt,
 		evidence: overallEvidence,
 		freshnessMeta: {
@@ -203,6 +246,7 @@ export async function buildCanonicalStatusView(options?: {
 			production: general.environments.production.identityConflictsCount,
 		},
 		recentMigrations,
+		manualPatches,
 		diagnostics: [],
 		debugCounters: session.debugCounters,
 	};
@@ -256,7 +300,7 @@ export function buildLocalCanonicalStatusView(): CanonicalStatusView {
 		probedAt: null,
 	});
 	return {
-		schemaVersion: 1,
+		schemaVersion: 2,
 		generatedAt: new Date().toISOString(),
 		evidence: 'UNVERIFIED',
 		expectedMigrationHead: expectedVersions.at(-1) ?? null,
@@ -277,6 +321,7 @@ export function buildLocalCanonicalStatusView(): CanonicalStatusView {
 		promotions: [],
 		activeRowCounts: { local: 0, preview: 0, production: 0 },
 		identityConflictCounts: { local: 0, preview: 0, production: 0 },
+		manualPatches: buildUnverifiedManualPatchStatuses(),
 		diagnostics: [],
 	};
 }

@@ -3,6 +3,26 @@
 This directory contains generated SQL patches for manual production execution.
 **You (the operator) execute these patches.** The agent never connects to production.
 
+## Active status catalog
+
+`pnpm dbs` and `/dashboard/estado` read the versioned active catalog in
+`scripts/provision/manual-patch-status.ts`. It currently contains only the two structural
+contracts dated 2026-08-12. Older SQL files remain historical and are not probed automatically.
+The catalog checks the approved path, unique `@script-id`, manifest, `@env`, row bounds and
+`@dry-run-query` before any read-only query is issued.
+
+Each active patch is reported independently per environment:
+
+- `NOT_APPLICABLE`: the environment is not a declared target (Local and Preview for these patches).
+- `NOT_NEEDED`: the live detector returned zero rows. This does **not** prove the patch was applied.
+- `PENDING`: a positive live count is inside the approved range; the output includes an owner plan command.
+- `BLOCKED`: the catalog/manifest is invalid or the live count is outside the approved range.
+- `UNVERIFIED`: the target could not be queried, timed out, failed, or returned an invalid count.
+
+Status refreshes use bounded, read-only transactions and redact connection details and raw SQL/errors.
+They never execute a patch or create an apply receipt. A `PENDING` plan is only a plan; mutation still
+requires the owner TTY workflow with `--apply`.
+
 ---
 
 ## Approved patch directory

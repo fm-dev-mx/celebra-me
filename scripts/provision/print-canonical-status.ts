@@ -17,6 +17,7 @@ import type { TargetEnv } from './dbs-status.ts';
 const localOnly = process.argv.includes('--local');
 const diagnostics = process.argv.includes('--diagnostics');
 const envArg = process.argv.find((arg) => arg.startsWith('--env='))?.slice('--env='.length);
+const domainArg = process.argv.find((arg) => arg.startsWith('--domain='))?.slice('--domain='.length);
 
 function parseEnv(value: string | undefined): TargetEnv | undefined {
 	if (value === 'local' || value === 'preview' || value === 'production') return value;
@@ -30,6 +31,10 @@ if (localOnly) {
 	const view = await buildCanonicalStatusView({
 		environments: env ? [env] : undefined,
 		diagnostics,
+		domain:
+			domainArg === 'schema' || domainArg === 'content' || domainArg === 'patch'
+				? domainArg
+				: undefined,
 	});
 	process.stdout.write(JSON.stringify(view));
 }

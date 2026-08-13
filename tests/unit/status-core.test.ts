@@ -126,7 +126,11 @@ describe('status-core probe session memoization', () => {
 	it('propagates timeoutMs into runPsql options', () => {
 		const session = new StatusProbeSession({ timeoutMs: 1234 });
 		session.psqlSync('select 1;', 'postgres://local');
-		expect(mockRunPsql.mock.calls[0]?.[2]).toMatchObject({ timeoutMs: 1234 });
+		expect(session.readOnly).toBe(true);
+		expect(mockRunPsql.mock.calls[0]?.[2]).toMatchObject({
+			timeoutMs: 1234,
+			env: expect.objectContaining({ PGOPTIONS: expect.stringContaining('default_transaction_read_only=on') }),
+		});
 	});
 });
 

@@ -16,6 +16,7 @@ import type {
 	CanonicalPromotionRow,
 	CanonicalStatusView,
 	MigrationPresence,
+	PatchApplicability,
 	StatusSemantic,
 	TargetEnv,
 } from '../../src/lib/status/types.ts';
@@ -214,7 +215,21 @@ function formatStatusRows(view: CanonicalStatusView, labelCol: number, envCol: n
 			return padVisible(styleBySemantic(c, authorizationSemantic(status), status), envCol);
 		}).join('');
 
-	return [schemaRow, invitationRow, readinessRow, evidenceRow, authorizationRow];
+	const patchRow =
+		padVisible('Manual patches', labelCol) +
+		ENVS.map((env) => {
+			const statuses = view.manualPatches.map((patch) => patch.environments[env].status);
+			const pending = statuses.filter((status) => status === 'PENDING').length;
+			const blocked = statuses.filter((status) => status === 'BLOCKED').length;
+			const unverified = statuses.filter((status) => status === 'UNVERIFIED').length;
+			const notNeeded = statuses.filter((status) => status === 'NOT_NEEDED').length;
+			const notApplicable = statuses.filter((status) => status === 'NOT_APPLICABLE').length;
+			const label = blocked > 0 ? `${blocked} bloqueado(s)` : unverified > 0 ? `${unverified} sin verificar` : pending > 0 ? `${pending} pendiente(s)` : notNeeded > 0 ? `${notNeeded} no requerido(s)` : `${notApplicable} no aplica`;
+			const semantic: StatusSemantic = blocked > 0 ? 'blocked' : unverified > 0 || pending > 0 ? 'unverified' : notNeeded > 0 ? 'verified' : 'neutral';
+			return padVisible(styleBySemantic(c, semantic, label), envCol);
+		}).join('');
+
+	return [schemaRow, invitationRow, readinessRow, evidenceRow, authorizationRow, patchRow];
 }
 
 function formatDisposableProofSection(view: CanonicalStatusView, headerWidth: number): string[] {
@@ -263,6 +278,32 @@ function formatRecentMigrationsSection(view: CanonicalStatusView, headerWidth: n
 		const prod = formatMigrationPresence(rec.presence.production, c);
 		const name = rec.name ? ` (${rec.name})` : '';
 		lines.push(`  - ${rec.version}${name}: local=${local} preview=${preview} prod=${prod}`);
+	}
+	return lines;
+}
+
+function formatPatchStatus(status: PatchApplicability, c: ReturnType<typeof getColors>): string {
+	if (status === 'PENDING') return c.brightYellow(status);
+	if (status === 'BLOCKED') return c.red(status);
+	if (status === 'UNVERIFIED') return c.brightYellow(status);
+	if (status === 'NOT_NEEDED') return c.brightGreen(status);
+	return c.dim(status);
+}
+
+function formatManualPatchesSection(view: CanonicalStatusView, headerWidth: number): string[] {
+	const c = getColors();
+	const lines = [
+		c.dim('─'.repeat(headerWidth)),
+		`  ${c.bold('ACTIVE MANUAL PATCHES (0 rows = NOT_NEEDED, not applied)')}`,
+	];
+	for (const patch of view.manualPatches) {
+		const envs = ENVS.map((env) => `${envLabel(env)}=${formatPatchStatus(patch.environments[env].status, c)}`).join(' ');
+		const production = patch.environments.production;
+		lines.push(`  - ${patch.scriptId}: ${envs}`);
+		lines.push(`    File: ${patch.file}`);
+		lines.push(`    Reason: ${production.reason}`);
+		if (production.matchingRowCount !== null) lines.push(`    Count: ${production.matchingRowCount} (approved ${patch.expectedRowsMin}-${patch.expectedRowsMax})`);
+		if (production.planCommand) lines.push(`    Plan: ${c.brightCyan(production.planCommand.replace('<file>', patch.file))}`);
 	}
 	return lines;
 }
@@ -423,6 +464,7 @@ export function formatCanonicalStatusView(
 		'',
 		...formatDisposableProofSection(view, headerWidth),
 		...formatRecentMigrationsSection(view, headerWidth),
+		...formatManualPatchesSection(view, headerWidth),
 	];
 
 	if (verbose) {

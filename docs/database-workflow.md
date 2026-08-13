@@ -36,6 +36,13 @@ probe. Canonical classification stays in TypeScript. Diagnostics may request the
 payload of the same SQL family; they never run a second content query in the same cycle and never
 override publication, schema, or readiness.
 
+The same view includes the active manual-patch catalog. These detectors add one bounded
+`@dry-run-query` count per targeted patch/environment (Production only for the current catalog), in
+the existing read-only session. `NOT_NEEDED` is a live zero-row result, not proof of application;
+`PENDING` is a positive count within the manifest range and `BLOCKED` is an invalid manifest or
+out-of-range count. A patch refresh is an independent `domain=patch` merge and does not discard
+schema/content evidence from other environments. Version-1 status caches are rejected and rebuilt.
+
 The current projection remains application-owned SQL rather than a database view. A view would not
 reduce the one content invocation per environment, would add an independently grantable object, and
 could broaden access to draft or managed-projection JSON. Introduce a view only after measurement

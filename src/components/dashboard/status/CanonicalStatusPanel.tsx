@@ -10,6 +10,7 @@ import {
 	MIGRATION_PRESENCE_LABELS,
 	PUBLICATION_ACTION_LABELS,
 	PUBLICATION_REASON_LABELS,
+	PATCH_STATUS_LABELS,
 	READINESS_LABELS,
 	SEMANTIC_LABELS,
 } from '@/lib/status/labels';
@@ -37,6 +38,8 @@ import type {
 	RecentMigrationRecord,
 	StatusSemantic,
 	TargetEnv,
+	ManualPatchStatus,
+	PatchApplicability,
 } from '@/lib/status/types';
 import { copyToClipboard } from '@/utils/clipboard';
 
@@ -358,6 +361,47 @@ function RecentMigrationsSection({ items }: { items?: RecentMigrationRecord[] })
 	);
 }
 
+function patchSemantic(status: PatchApplicability): StatusSemantic {
+	if (status === 'BLOCKED') return 'blocked';
+	if (status === 'PENDING' || status === 'UNVERIFIED') return 'unverified';
+	if (status === 'NOT_NEEDED') return 'verified';
+	return 'neutral';
+}
+
+function ManualPatchesSection({ items }: { items: ManualPatchStatus[] }) {
+	return (
+		<section aria-labelledby="manual-patches-title">
+			<div className="canonical-status__section-head">
+				<h2 id="manual-patches-title">Parches manuales activos</h2>
+				<p>
+					Catálogo explícito de detectores de Production. Cero filas significa «no requerido»,
+					no que el parche haya sido aplicado. Las consultas son de solo lectura.
+				</p>
+			</div>
+			<table className="canonical-status__matrix">
+				<caption>Estado por entorno</caption>
+				<thead><tr><th>Parche</th><th>Local</th><th>Preview</th><th>Producción</th></tr></thead>
+				<tbody>{items.map((item) => <tr key={item.scriptId}>
+					<th scope="row"><strong>{item.scriptId}</strong><p>{item.purpose}</p></th>
+					{ENVS.map((env) => {
+						const state = item.environments[env];
+						return <td key={env}><SemanticBadge semantic={patchSemantic(state.status)} /><div>{PATCH_STATUS_LABELS[state.status]}</div>{state.matchingRowCount !== null ? <small>{state.matchingRowCount} filas</small> : null}</td>;
+					})}
+				</tr>)}</tbody>
+			</table>
+			{items.map((item) => {
+				const state = item.environments.production;
+				return <article className="canonical-status__card" key={`${item.scriptId}-detail`}>
+					<h3>{item.scriptId}</h3>
+					<p>{item.file} · rango aprobado: {item.expectedRowsMin}–{item.expectedRowsMax} filas</p>
+					<p>Evidencia: <strong>{EVIDENCE_LABELS[state.evidence]}</strong> · {PATCH_STATUS_LABELS[state.status]} · motivo técnico: {state.reason}</p>
+					{state.planCommand ? <CopyableCommand command={state.planCommand.replace('<file>', item.file)} /> : null}
+				</article>;
+			})}
+		</section>
+	);
+}
+
 interface CanonicalStatusPanelProps {
 	initialView?: CanonicalStatusView | null;
 }
@@ -367,7 +411,7 @@ export default function CanonicalStatusPanel({ initialView = null }: CanonicalSt
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [envFilter, setEnvFilter] = useState<'all' | TargetEnv>('all');
-	const [domainFilter, setDomainFilter] = useState<'all' | 'schema' | 'content'>('all');
+	const [domainFilter, setDomainFilter] = useState<'all' | 'schema' | 'content' | 'patch'>('all');
 	const [includeDiagnostics, setIncludeDiagnostics] = useState(false);
 	const [showInSync, setShowInSync] = useState(false);
 
@@ -448,12 +492,13 @@ export default function CanonicalStatusPanel({ initialView = null }: CanonicalSt
 						<select
 							value={domainFilter}
 							onChange={(event) =>
-								setDomainFilter(event.target.value as 'all' | 'schema' | 'content')
+								setDomainFilter(event.target.value as 'all' | 'schema' | 'content' | 'patch')
 							}
 						>
 							<option value="all">Todos</option>
 							<option value="schema">Esquema</option>
 							<option value="content">Publicación</option>
+							<option value="patch">Parches manuales</option>
 						</select>
 					</label>
 					<label className="canonical-status__check">
@@ -645,6 +690,8 @@ export default function CanonicalStatusPanel({ initialView = null }: CanonicalSt
 					</section>
 
 					<RecentMigrationsSection items={view.recentMigrations} />
+
+					<ManualPatchesSection items={view.manualPatches} />
 
 					<aside className="canonical-status__disposable" aria-labelledby="disposable-title">
 						<h2 id="disposable-title">Prueba disposable-test</h2>

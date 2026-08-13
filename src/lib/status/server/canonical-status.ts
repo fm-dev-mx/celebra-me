@@ -309,7 +309,7 @@ export async function getCanonicalStatusView(): Promise<CanonicalStatusView> {
 
 export async function refreshCanonicalStatusView(options?: {
 	env?: TargetEnv;
-	domain?: 'schema' | 'content';
+	domain?: 'schema' | 'content' | 'patch';
 	diagnostics?: boolean;
 }): Promise<CanonicalStatusView> {
 	const key = JSON.stringify({
@@ -322,6 +322,7 @@ export async function refreshCanonicalStatusView(options?: {
 	const refresh = withLock(async () => {
 		const args = [
 			...(options?.env ? [`--env=${options.env}`] : []),
+			...(options?.domain ? [`--domain=${options.domain}`] : []),
 			...(options?.diagnostics ? ['--diagnostics'] : []),
 		];
 		const parsed = await runStatusChild(args, CANONICAL_STATUS_TIMEOUT_MS);

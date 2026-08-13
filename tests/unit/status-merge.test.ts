@@ -172,4 +172,124 @@ describe('canonical status merge', () => {
 		expect(merged.environments.local.evidence).toBe('LIVE');
 		expect(merged.environments.production.evidence).toBe('LIVE');
 	});
+
+	it('merges patch evidence by environment without replacing other domains', () => {
+		const previous = buildCanonicalStatusViewFixture();
+		const incoming = buildCanonicalStatusViewFixture({
+			generatedAt: '2026-08-13T00:00:00.000Z',
+			manualPatches: withProductionPatch(previous.manualPatches, {
+				status: 'NOT_NEEDED',
+				matchingRowCount: 0,
+				reason: 'LIVE_ZERO_ROWS',
+			}),
+			environments: {
+				...previous.environments,
+				production: { ...previous.environments.production, evidence: 'LIVE' },
+			},
+		});
+		const merged = mergeCanonicalStatusView({ previous, incoming, domain: 'patch' });
+		expect(merged.manualPatches[0]?.environments.production.status).toBe('NOT_NEEDED');
+		expect(merged.manualPatches[0]?.environments.local.status).toBe('NOT_APPLICABLE');
+		expect(merged.promotions).toEqual(previous.promotions);
+		expect(merged.recentMigrations).toEqual(previous.recentMigrations);
+	});
+
+	it('updates patches on a full refresh without a domain filter', () => {
+		const previous = buildCanonicalStatusViewFixture();
+		const incoming = buildCanonicalStatusViewFixture({
+			generatedAt: '2026-08-13T00:00:00.000Z',
+			manualPatches: withProductionPatch(previous.manualPatches, {
+				status: 'NOT_NEEDED',
+				matchingRowCount: 0,
+				reason: 'LIVE_ZERO_ROWS',
+			}),
+		});
+		const merged = mergeCanonicalStatusView({ previous, incoming });
+		expect(merged.manualPatches[0]?.environments.production.status).toBe('NOT_NEEDED');
+		expect(merged.manualPatches[0]?.environments.production.matchingRowCount).toBe(0);
+	});
+
+	it('keeps live patch counts when a patch refresh has unverified schema evidence', () => {
+		const previous = buildCanonicalStatusViewFixture();
+		const incoming = buildCanonicalStatusViewFixture({
+			generatedAt: '2026-08-13T00:00:00.000Z',
+			environments: {
+				...previous.environments,
+				production: {
+					...previous.environments.production,
+					evidence: 'UNVERIFIED',
+					schemaLifecycle: 'UNVERIFIED',
+					appliedCount: null,
+					probedAt: null,
+				},
+			},
+			manualPatches: withProductionPatch(previous.manualPatches, {
+				status: 'NOT_NEEDED',
+				matchingRowCount: 0,
+				reason: 'LIVE_ZERO_ROWS',
+			}),
+		});
+		const merged = mergeCanonicalStatusView({ previous, incoming, domain: 'patch' });
+		expect(merged.manualPatches[0]?.environments.production.status).toBe('NOT_NEEDED');
+		expect(merged.environments.production.evidence).toBe('LIVE');
+		expect(merged.environments.production.schemaLifecycle).toBe('CURRENT');
+		expect(merged.generatedAt).toBe('2026-08-13T00:00:00.000Z');
+	});
+
+	it('preserves previous live patches when incoming patch evidence is unverified', () => {
+		const previous = buildCanonicalStatusViewFixture();
+		const incoming = buildCanonicalStatusViewFixture({
+			generatedAt: '2026-08-13T00:00:00.000Z',
+			manualPatches: previous.manualPatches.map((item) => ({
+				...item,
+				environments: {
+					...item.environments,
+					production: {
+						...item.environments.production,
+						status: 'UNVERIFIED',
+						evidence: 'UNVERIFIED',
+						matchingRowCount: null,
+						reason: 'QUERY_FAILED',
+						planCommand: null,
+					},
+				},
+			})),
+		});
+		const merged = mergeCanonicalStatusView({ previous, incoming, domain: 'patch' });
+		expect(merged.manualPatches[0]?.environments.production.status).toBe('PENDING');
+		expect(merged.manualPatches[0]?.environments.production.matchingRowCount).toBe(4);
+		expect(merged.generatedAt).toBe(previous.generatedAt);
+	});
+
+	it('does not replace patches during a schema-only refresh', () => {
+		const previous = buildCanonicalStatusViewFixture();
+		const incoming = buildCanonicalStatusViewFixture({
+			generatedAt: '2026-08-13T00:00:00.000Z',
+			manualPatches: withProductionPatch(previous.manualPatches, {
+				status: 'NOT_NEEDED',
+				matchingRowCount: 0,
+				reason: 'LIVE_ZERO_ROWS',
+			}),
+		});
+		const merged = mergeCanonicalStatusView({ previous, incoming, domain: 'schema' });
+		expect(merged.manualPatches[0]?.environments.production.status).toBe('PENDING');
+		expect(merged.manualPatches[0]?.environments.production.matchingRowCount).toBe(4);
+	});
 });
+
+function withProductionPatch(
+	patches: ReturnType<typeof buildCanonicalStatusViewFixture>['manualPatches'],
+	production: Partial<(typeof patches)[number]['environments']['production']>,
+) {
+	return patches.map((item, index) =>
+		index === 0
+			? {
+					...item,
+					environments: {
+						...item.environments,
+						production: { ...item.environments.production, ...production },
+					},
+				}
+			: item,
+	);
+}

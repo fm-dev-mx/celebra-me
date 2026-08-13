@@ -24,6 +24,11 @@ pnpm db:local:audit | db:preview:audit | db:prod:audit
 
 `pnpm dbs` is the canonical operator matrix: **schema migrations**, **registry publication**,
 **operation readiness**, and **Production authorization evidence** as separate columns.
+It also shows the active manual-patch catalog. Patch rows are read-only detectors: `PENDING` means
+the detector found rows inside the approved range, `NOT_NEEDED` means it found zero rows (not
+"applied"), and `NOT_APPLICABLE` means the environment is outside the patch target. The detailed
+section includes the owner planning command for `PENDING`; applying still requires the owner TTY
+workflow and `--apply`. Historical SQL files outside the catalog are intentionally excluded.
 Disposable-test proof is listed apart from persistent schema. `--compact` is connectivity + schema
 only — not publication state. `CURRENT`/`BEHIND` on that matrix are **migration-history** states.
 Named public object drift is `pnpm db:*:audit` (`object_audit_readiness`).
