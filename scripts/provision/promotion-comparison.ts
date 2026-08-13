@@ -54,7 +54,9 @@ export function checkInvitationMetadataIdentical(
 ): boolean {
 	if (!existingInv) return false;
 	const existingManagedIdentity =
-		typeof existingInv.managed_identity_id === 'string' ? existingInv.managed_identity_id : null;
+		typeof existingInv.managed_identity_id === 'string'
+			? existingInv.managed_identity_id
+			: null;
 	// Missing managed identity is drift: backfill even when content/metadata otherwise match.
 	if (pkgInv.managedIdentityId && existingManagedIdentity !== pkgInv.managedIdentityId) {
 		return false;
@@ -102,6 +104,79 @@ export function checkEventAndMembershipIdentical(
 		existingMember.user_id === ownerUserId &&
 		existingMember.membership_role === 'owner'
 	);
+}
+
+export const APPLIED_HOSTED_TARGET_IDENTITY_FAILURE =
+	'Final target verification failed; managed-release provenance was not recorded.';
+
+export interface AppliedHostedTargetIdentityInput {
+	pkg: InvitationPackageData;
+	ownerUserId: string;
+	targetInvitationId: string;
+	targetStorageUrl: string;
+	expectedDraftContent: Record<string, unknown>;
+	expectedPublishedContent: Record<string, unknown>;
+	existingInv: Record<string, unknown> | null;
+	existingDraft: Record<string, unknown> | null;
+	existingPub: Record<string, unknown> | null;
+	existingEvent: Record<string, unknown> | null;
+	existingMember: Record<string, unknown> | null;
+}
+
+export interface AppliedHostedTargetIdentity {
+	isInvMetadataIdentical: boolean;
+	isDraftIdentical: boolean;
+	isPubIdentical: boolean;
+	isEventAndMemberIdentical: boolean;
+}
+
+/**
+ * Hosted identity without merge-baseline revision tokens.
+ * Compares invitation metadata, draft/published content, and event/membership
+ * to expected rows. Must not consult `updated_at` vs `applied_draft_updated_at`;
+ * those tokens belong to merge-baseline planning, not this comparison.
+ */
+export function evaluateAppliedHostedTargetIdentity(
+	input: AppliedHostedTargetIdentityInput,
+): AppliedHostedTargetIdentity {
+	const isInvMetadataIdentical = checkInvitationMetadataIdentical(
+		input.pkg.invitation,
+		input.existingInv,
+		input.targetStorageUrl,
+	);
+	return {
+		isInvMetadataIdentical,
+		isDraftIdentical: checkDraftContentIdentical(
+			input.expectedDraftContent,
+			input.existingDraft,
+			input.targetStorageUrl,
+		),
+		isPubIdentical: checkPublishedContentIdentical(
+			input.expectedPublishedContent,
+			input.existingPub,
+			input.targetStorageUrl,
+			isInvMetadataIdentical,
+		),
+		isEventAndMemberIdentical: checkEventAndMembershipIdentical(
+			input.pkg,
+			input.ownerUserId,
+			input.targetInvitationId,
+			input.existingEvent,
+			input.existingMember,
+		),
+	};
+}
+
+export function assertAppliedHostedTargetIdentity(input: AppliedHostedTargetIdentityInput): void {
+	const identity = evaluateAppliedHostedTargetIdentity(input);
+	if (
+		!identity.isInvMetadataIdentical ||
+		!identity.isDraftIdentical ||
+		!identity.isPubIdentical ||
+		!identity.isEventAndMemberIdentical
+	) {
+		throw new Error(APPLIED_HOSTED_TARGET_IDENTITY_FAILURE);
+	}
 }
 
 // ---------------------------------------------------------------------------

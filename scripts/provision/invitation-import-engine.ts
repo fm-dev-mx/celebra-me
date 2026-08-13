@@ -28,13 +28,11 @@ import {
 	hashPublicationProjection,
 } from '../../src/lib/intake/services/publication-diff.service.ts';
 import {
-	checkInvitationMetadataIdentical,
-	checkDraftContentIdentical,
-	checkPublishedContentIdentical,
-	checkEventAndMembershipIdentical,
 	rewritePackageStorageUrls,
 	checkTargetDivergenceConflict,
 	buildResourceActions,
+	assertAppliedHostedTargetIdentity,
+	evaluateAppliedHostedTargetIdentity,
 } from './promotion-comparison.ts';
 import {
 	isRecoverableManagedPartial,
@@ -1293,29 +1291,19 @@ function analyzeTargetDrift(
 		},
 	);
 
-	const isInvMetadataIdentical = checkInvitationMetadataIdentical(
-		pkg.invitation,
-		scanned.existingInv,
-		targetStorageUrl,
-	);
-	const isDraftIdentical = checkDraftContentIdentical(
-		targetDraftContent,
-		scanned.existingDraft,
-		targetStorageUrl,
-	);
-	const isPubIdentical = checkPublishedContentIdentical(
-		targetPublishedContent,
-		scanned.existingPub,
-		targetStorageUrl,
-		isInvMetadataIdentical,
-	);
-	const isEventAndMemberIdentical = checkEventAndMembershipIdentical(
+	const identity = evaluateAppliedHostedTargetIdentity({
 		pkg,
 		ownerUserId,
-		scanned.targetInvitationId,
-		scanned.existingEvent,
-		scanned.existingMember,
-	);
+		targetInvitationId: scanned.targetInvitationId,
+		targetStorageUrl,
+		expectedDraftContent: targetDraftContent,
+		expectedPublishedContent: targetPublishedContent,
+		existingInv: scanned.existingInv,
+		existingDraft: scanned.existingDraft,
+		existingPub: scanned.existingPub,
+		existingEvent: scanned.existingEvent,
+		existingMember: scanned.existingMember,
+	});
 
 	return {
 		slug,
@@ -1330,10 +1318,7 @@ function analyzeTargetDrift(
 		existingMember: scanned.existingMember,
 		targetDraftContent,
 		targetPublishedContent,
-		isInvMetadataIdentical,
-		isDraftIdentical,
-		isPubIdentical,
-		isEventAndMemberIdentical,
+		...identity,
 		latestMutationReceipt: scanned.latestMutationReceipt,
 	};
 }
@@ -2140,47 +2125,44 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 				? verifyPostPublication(drift.pubQuery, targetDbUrl, drift.route)
 				: targetVersion;
 		completedSteps.push('published');
-		const finalAssetRefs = resolveTargetAssetRefs(
-			pkg,
-			targetDbUrl,
-			drift.targetInvitationId,
-			targetStorageUrl,
-			collectUploadedAssetIds(drift.targetDraftContent),
-		);
 		// Re-load invitation identity after apply. Creates start with existingInvitation=null;
 		// reusing that null here made final verification invent a new ID and always fail.
 		const postApplyInvitation =
 			loadTargetInvitationRows(pkg.invitation.slug, targetDbUrl).find(
 				(row) => row.archived_at === null,
 			) ?? null;
-		const finalDrift = analyzeTargetDrift(
-			pkg,
-			targetStorageUrl,
+		const postApplyScan = scanTargetState(
 			targetDbUrl,
+			drift.slug,
+			drift.eventType,
 			ownerUserId,
-			finalAssetRefs,
 			postApplyInvitation,
-			updateScope,
 			drift.targetInvitationId,
-			options.conflictResolutions,
-			rekeyFrom,
-			options.acknowledgeDiscardUnpublishedDraft,
 		);
+		assertAppliedHostedTargetIdentity({
+			pkg,
+			ownerUserId,
+			targetInvitationId: drift.targetInvitationId,
+			targetStorageUrl,
+			expectedDraftContent: drift.targetDraftContent,
+			expectedPublishedContent: drift.targetPublishedContent,
+			existingInv: postApplyScan.existingInv,
+			existingDraft: postApplyScan.existingDraft,
+			existingPub: postApplyScan.existingPub,
+			existingEvent: postApplyScan.existingEvent,
+			existingMember: postApplyScan.existingMember,
+		});
 		const finalAssets = await scanAssetStatus(
 			pkg.assets,
 			targetStorageUrl,
 			targetDbUrl,
-			finalDrift.targetInvitationId,
+			drift.targetInvitationId,
 			assetPolicy,
 			options.pruneAssets ?? false,
 			pkg.sourceSlug,
-			finalDrift.targetDraftContent,
+			drift.targetDraftContent,
 		);
 		if (
-			!finalDrift.isInvMetadataIdentical ||
-			!finalDrift.isDraftIdentical ||
-			!finalDrift.isPubIdentical ||
-			!finalDrift.isEventAndMemberIdentical ||
 			finalAssets.assetsToUpload.length > 0 ||
 			finalAssets.assetsToUpsertDbOnly.length > 0 ||
 			finalAssets.assetsToDelete.length > 0
