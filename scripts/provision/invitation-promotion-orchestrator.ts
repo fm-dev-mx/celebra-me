@@ -78,6 +78,8 @@ export interface OrchestrateInvitationPromotionInput {
 	 * plan. Standalone promotion instead binds to this package hash.
 	 */
 	authorizedProductionPermit?: ProductionPermitBinding;
+	/** When set, skip the initial full preflight and keep this reviewed report. */
+	reviewedPreflight?: PromotionPreflightReport;
 }
 
 /**
@@ -123,18 +125,20 @@ export async function orchestrateInvitationPromotion(
 			);
 		}
 	}
-	const reviewed = await runPreflight({
-		packageData: input.packageData,
-		ownerUserId: input.ownerUserId,
-		approvalsDirs: input.approvalsDirs,
-		assetPolicy: input.assetPolicy,
-		pruneAssets: input.pruneAssets,
-		updateScope,
-		conflictResolutions: input.conflictResolutions,
-		backupManifestPath: input.backupManifestPath,
-		requireBackup: false,
-		getProductionDbUrl,
-	});
+	const reviewed =
+		input.reviewedPreflight ??
+		(await runPreflight({
+			packageData: input.packageData,
+			ownerUserId: input.ownerUserId,
+			approvalsDirs: input.approvalsDirs,
+			assetPolicy: input.assetPolicy,
+			pruneAssets: input.pruneAssets,
+			updateScope,
+			conflictResolutions: input.conflictResolutions,
+			backupManifestPath: input.backupManifestPath,
+			requireBackup: false,
+			getProductionDbUrl,
+		}));
 
 	if (reviewed.status === 'BLOCKED') {
 		return {

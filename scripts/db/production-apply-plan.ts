@@ -4,6 +4,7 @@
  */
 import { createHash } from 'node:crypto';
 import type { UpdateScope } from '../provision/semantic-delta.ts';
+import type { PromotionPreflightReport } from '../provision/invitation-promote.ts';
 
 export type ProductionApplyReadiness =
 	'READY' | 'READY_AFTER_SCHEMA' | 'IN_SYNC' | 'BLOCKED' | 'UNKNOWN' | 'NOT_APPLICABLE';
@@ -41,6 +42,8 @@ export interface ProductionApplyPlanItem {
 	pendingVersions?: readonly string[];
 	packageHash?: string;
 	updateScope?: UpdateScope;
+	/** In-process only; stripped from public JSON. Not part of planId. */
+	preflight?: PromotionPreflightReport;
 }
 
 export interface ProductionApplyPlan {

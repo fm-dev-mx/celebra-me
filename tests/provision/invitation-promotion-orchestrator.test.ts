@@ -479,6 +479,31 @@ describe('invitation promotion orchestrator', () => {
 		);
 	});
 
+	it('reuses a reviewed preflight from prod:apply without calling runPreflight', async () => {
+		const reviewed = preflight();
+		await orchestrateInvitationPromotion({
+			packageData: packageData() as never,
+			deliveryScope: 'content-and-assets',
+			quiet: true,
+			reviewedPreflight: reviewed,
+			runPreflight: runPreflight as never,
+			runApply: runApply as never,
+			requireOwnerApply: requireOwnerApply as never,
+			ensureReleaseEvidence: ensureReleaseEvidence as never,
+			ensureBackup: ensureBackup as never,
+			revalidateBackup: revalidateBackup as never,
+			revalidateVolatile,
+		});
+		expect(runPreflight).not.toHaveBeenCalled();
+		expect(revalidateVolatile).toHaveBeenCalledWith(
+			expect.objectContaining({
+				reviewed,
+				packageData: packageData(),
+			}),
+		);
+		expect(runApply).toHaveBeenCalled();
+	});
+
 	it('retains the reviewed plan and runs compact revalidation without a second preflight', async () => {
 		const reviewed = preflight();
 		runPreflight.mockResolvedValueOnce(reviewed);

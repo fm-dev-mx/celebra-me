@@ -133,6 +133,7 @@ function baseDeps(options?: {
 			const slug = packageData.invitation.slug;
 			return preflights[slug] ?? invitationPreflight(slug);
 		},
+		revalidateInvitationPlan: async () => undefined,
 		getProductionDbUrl: () => ({ url: PROD_URL }),
 		preparePatch: (file) => ({
 			file,
@@ -179,7 +180,7 @@ describe('production apply planning', () => {
 		expect(JSON.stringify(toPublicProductionApplyPlan(plan))).not.toMatch(
 			/postgres(ql)?:\/\//i,
 		);
-		expect(JSON.stringify(plan)).not.toContain('super-secret');
+		expect(JSON.stringify(toPublicProductionApplyPlan(plan))).not.toContain('super-secret');
 	});
 
 	it('discovers pending schema for --schema', async () => {
@@ -335,6 +336,39 @@ describe('production apply execution', () => {
 			{ authorizedPlanBindingHex: string },
 		];
 		expect(schemaCall[0].authorizedPlanBindingHex).toBe(result.plan.planId);
+		expect(JSON.stringify(result)).not.toMatch(/postgres(ql)?:\/\/postgres:super-secret/);
+	});
+
+	it('reuses the reviewed invitation preflight instead of rebuilding the import engine', async () => {
+		const runInvitationPreflight = jest.fn(async (packageData: InvitationPackageData) =>
+			invitationPreflight(packageData.invitation.slug),
+		);
+		const applyInvitation = jest.fn(
+			async (input: {
+				packageData: InvitationPackageData;
+				reviewedPreflight?: PromotionPreflightReport;
+			}) =>
+				({
+					...invitationPreflight(input.packageData.invitation.slug),
+					status: 'PROMOTED',
+				}) as PromotionApplyReport,
+		);
+		const result = await applyProductionApplyPlan(cli(['--slug', 'demo', '--apply']), {
+			...baseDeps({ pending: [], preflights: { demo: invitationPreflight('demo') } }),
+			runInvitationPreflight,
+			requireOwnerApply: async (input) => {
+				issueProductionWritePermit({
+					projectRef: SUPABASE_PROJECT_REFS.production,
+					operationType: 'production_apply',
+					bindingHex: input.bindingHex,
+				});
+			},
+			applyInvitation,
+		});
+		expect(runInvitationPreflight).toHaveBeenCalledTimes(1);
+		expect(applyInvitation).toHaveBeenCalledTimes(1);
+		expect(applyInvitation.mock.calls[0]?.[0].reviewedPreflight?.slug).toBe('demo');
+		expect(result.wrote).toBe(true);
 		expect(JSON.stringify(result)).not.toMatch(/postgres(ql)?:\/\/postgres:super-secret/);
 	});
 
@@ -588,7 +622,7 @@ describe('production apply execution', () => {
 				...baseDeps({ pending: [], preflights: { alpha: invitationPreflight('alpha') } }),
 				resolvePackage: async (slug) => {
 					resolves += 1;
-					return pkg(slug, resolves >= 3 ? 'hash-changed' : 'hash-alpha');
+					return pkg(slug, resolves >= 2 ? 'hash-changed' : 'hash-alpha');
 				},
 				requireOwnerApply: async (input) => {
 					issueProductionWritePermit({
@@ -626,7 +660,7 @@ describe('production apply execution', () => {
 					resolves[slug] = (resolves[slug] ?? 0) + 1;
 					return pkg(
 						slug,
-						slug === 'beta' && resolves[slug] >= 3
+						slug === 'beta' && resolves[slug] >= 2
 							? 'hash-beta-changed'
 							: `hash-${slug}`,
 					);

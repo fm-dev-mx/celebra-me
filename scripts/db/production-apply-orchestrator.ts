@@ -43,6 +43,7 @@ import {
 } from '../provision/invitation-promote.ts';
 import { listInvitationDefinitions } from '../provision/invitations/registry.ts';
 import { resolvePromotionUpdateScope } from '../provision/invitation-update-options.ts';
+import { revalidatePromotionVolatilePreconditions } from '../provision/promotion-volatile-revalidation.ts';
 import type { UpdateScope } from '../provision/semantic-delta.ts';
 import {
 	assembleProductionApplyPlan,
@@ -57,6 +58,7 @@ import {
 	type ProductionApplyScope,
 } from './production-apply-plan.ts';
 import type { ProductionApplyCliArgs } from './production-apply-cli-args.ts';
+import { toPublicProductionApplyPlan } from './production-apply-format.ts';
 
 const PRODUCTION_APPLY_OPERATION_TYPE = 'production_apply';
 
@@ -84,7 +86,9 @@ export interface ProductionApplyExecuteDeps extends ProductionApplyAssemblerDeps
 		packageData: InvitationPackageData;
 		authorizedPlanBindingHex: string;
 		updateScope?: UpdateScope;
+		reviewedPreflight?: PromotionPreflightReport;
 	}) => Promise<PromotionApplyReport>;
+	revalidateInvitationPlan?: (reviewed: ProductionApplyPlan) => Promise<void>;
 	applyPatch?: typeof applyPreparedProductionPatch;
 	ensurePatchBackup?: (input: {
 		prodDbUrl: string;
@@ -234,6 +238,7 @@ async function inspectInvitation(
 			binding: packageData.packageHash,
 			packageHash: packageData.packageHash,
 			updateScope,
+			preflight,
 		};
 	} catch (error) {
 		const classified = classifySchemaError(error);
@@ -425,6 +430,50 @@ function throwIfPlanDrifted(reviewed: ProductionApplyPlan, live: ProductionApply
 	});
 }
 
+function isInvitationOnlyPlan(plan: ProductionApplyPlan): boolean {
+	return (
+		!plan.scope.schema &&
+		!plan.scope.patchFile &&
+		plan.items.some((item) => item.domain === 'invitation')
+	);
+}
+
+async function revalidateInvitationOnlyPlan(
+	reviewed: ProductionApplyPlan,
+	deps: ProductionApplyExecuteDeps,
+): Promise<void> {
+	if (deps.revalidateInvitationPlan) {
+		await deps.revalidateInvitationPlan(reviewed);
+		return;
+	}
+	const resolvePackage =
+		deps.resolvePackage ??
+		(async (target: string) => {
+			const resolved = await resolveInvitationPackageInput({ slug: target });
+			return resolved.packageData;
+		});
+	for (const item of reviewed.items.filter((entry) => entry.domain === 'invitation')) {
+		const packageData = await resolvePackage(item.id);
+		if (item.packageHash && packageData.packageHash !== item.packageHash) {
+			throw new OperatorError({
+				title: 'El artefacto de invitación cambió antes de aplicar',
+				cause: `La huella actual de ${item.id} no coincide con el plan autorizado.`,
+				code: 'PLAN_DRIFT',
+				remediation: [
+					'Vuelva a ejecutar pnpm prod:apply sin --apply.',
+					'Revisar el plan nuevo y aplicar de nuevo (no reutilice la autorización anterior).',
+				],
+			});
+		}
+		if (!item.preflight) continue;
+		await revalidatePromotionVolatilePreconditions({
+			reviewed: item.preflight,
+			packageData,
+			getProductionDbUrl: deps.getProductionDbUrl ?? getProdDbUrl,
+		});
+	}
+}
+
 async function applySchemaMutation(
 	mutations: readonly ProductionApplyPlanItem[],
 	reviewed: ProductionApplyPlan,
@@ -503,10 +552,12 @@ async function applyOneInvitationMutation(
 			packageData: InvitationPackageData;
 			authorizedPlanBindingHex: string;
 			updateScope?: UpdateScope;
+			reviewedPreflight?: PromotionPreflightReport;
 		}) =>
 			orchestrateInvitationPromotion({
 				packageData: input.packageData,
 				updateScope: input.updateScope,
+				reviewedPreflight: input.reviewedPreflight,
 				authorizedProductionPermit: {
 					bindingHex: input.authorizedPlanBindingHex,
 					operationType: PRODUCTION_APPLY_OPERATION_TYPE,
@@ -519,6 +570,7 @@ async function applyOneInvitationMutation(
 		packageData,
 		authorizedPlanBindingHex: reviewed.planId,
 		updateScope: item.updateScope,
+		reviewedPreflight: item.preflight,
 	});
 	if (report.status === 'BLOCKED' || report.status === 'APPLIED_BUT_VERIFICATION_FAILED') {
 		replaceOutcome(outcomes, item.id, {
@@ -643,12 +695,20 @@ export async function applyProductionApplyPlan(
 	const ownerUserId = args.ownerUserId;
 	throwIfPatchMissingOwner(mutations, ownerUserId);
 	if (mutations.length === 0) {
-		return { plan: reviewed, wrote: false, outcomes: reviewed.items.map(outcomeFromItem) };
+		return {
+			plan: toPublicProductionApplyPlan(reviewed),
+			wrote: false,
+			outcomes: reviewed.items.map(outcomeFromItem),
+		};
 	}
 
 	try {
 		await authorizeReviewedPlan(reviewed, mutations, deps);
-		throwIfPlanDrifted(reviewed, await buildProductionApplyPlan(args, deps));
+		if (isInvitationOnlyPlan(reviewed)) {
+			await revalidateInvitationOnlyPlan(reviewed, deps);
+		} else {
+			throwIfPlanDrifted(reviewed, await buildProductionApplyPlan(args, deps));
+		}
 
 		const outcomes = reviewed.items.map(outcomeFromItem);
 		const wrote = await withProductionPermitScope(
@@ -675,7 +735,7 @@ export async function applyProductionApplyPlan(
 			},
 		);
 		return {
-			plan: reviewed,
+			plan: toPublicProductionApplyPlan(reviewed),
 			wrote,
 			outcomes,
 		};

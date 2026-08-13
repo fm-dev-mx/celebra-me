@@ -95,6 +95,9 @@ export function toPublicProductionApplyPlan(plan: ProductionApplyPlan): Producti
 	return {
 		planId: plan.planId,
 		scope: { ...plan.scope, slugs: [...plan.scope.slugs] },
-		items: plan.items.map((item) => ({ ...item })),
+		items: plan.items.map((item) => {
+			const { preflight: _preflight, ...rest } = item;
+			return rest;
+		}),
 	};
 }
