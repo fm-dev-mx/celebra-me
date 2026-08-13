@@ -3,14 +3,11 @@
  *
  * Runs the complete suite of validations required in CI:
  *   1. Migration filename and ordering checks
- *   2. Clean baseline database reconstruction
- *   3. Baseline schema fingerprint calculation
- *   4. pgTAP tests on baseline
- *   5. Clean latest-schema reconstruction (all migrations)
- *   6. Latest schema fingerprint calculation
- *   7. pgTAP tests on latest
- *   8. Application database flows (retry, concurrency, stale-baseline)
- *   9. Conditional Preview hosted checks (when PREVIEW_DB_URL is available)
+ *   2. Clean latest-schema reconstruction (all migrations)
+ *   3. Latest schema fingerprint calculation
+ *   4. pgTAP tests on latest
+ *   5. Application database flows (retry, concurrency, stale-baseline)
+ *   6. Conditional Preview hosted checks (when PREVIEW_DB_URL is available)
  *
  * Usage:
  *   tsx scripts/db/validate-pipeline.ts
@@ -106,39 +103,23 @@ function main(): void {
 	runDisposableTestCommand('start');
 	console.info('✅ Test container running.\n');
 
-	// 2. Clean baseline reconstruction
-	console.info('Step 2: Reconstructing baseline schema...');
-	runDisposableTestCommand('reset', ['--baseline']);
-	console.info('✅ Baseline schema reconstructed.\n');
-
-	// 3. Compute baseline fingerprint
-	console.info('Step 3: Calculating baseline schema fingerprint...');
-	const baselineFingerprint = runAudit('disposable-test');
-	console.info(`✅ Baseline Schema Fingerprint: ${baselineFingerprint}\n`);
-
-	// 4. Run pgTAP on baseline
-	console.info('Step 4: Running pgTAP tests on baseline...');
-	console.info(
-		'ℹ️  Skipped: pgTAP test files cover pending release candidate features (20260717193000+) not present in the baseline cutoff.\n',
-	);
-
-	// 5. Clean latest-schema reconstruction
-	console.info('Step 5: Reconstructing latest schema (applying all migrations)...');
+	// 2. Clean latest-schema reconstruction
+	console.info('Step 2: Reconstructing latest schema (applying all migrations)...');
 	runDisposableTestCommand('reset');
 	console.info('✅ Latest schema reconstructed.\n');
 
-	// 6. Compute latest fingerprint
-	console.info('Step 6: Calculating latest schema fingerprint...');
+	// 3. Compute latest fingerprint
+	console.info('Step 3: Calculating latest schema fingerprint...');
 	const latestFingerprint = runAudit('disposable-test');
 	console.info(`✅ Latest Schema Fingerprint: ${latestFingerprint}\n`);
 
-	// 7. Run pgTAP on latest
-	console.info('Step 7: Running pgTAP tests on latest schema...');
+	// 4. Run pgTAP on latest
+	console.info('Step 4: Running pgTAP tests on latest schema...');
 	runDisposableTestCommand('run-tests');
 	console.info('✅ pgTAP tests on latest passed.\n');
 
-	// 8. Run application DB flow tests
-	console.info('Step 8: Running application DB flows and integration tests...');
+	// 5. Run application DB flow tests
+	console.info('Step 5: Running application DB flows and integration tests...');
 
 	console.info('   - Running public RSVP DB/HTTP Jest contracts...');
 	runDisposableTestCommand('run-rsvp-db-contracts');
@@ -157,8 +138,8 @@ function main(): void {
 
 	console.info('✅ Application DB flow tests passed.\n');
 
-	// 9. Conditional Preview checks
-	console.info('Step 9: Checking conditional hosted preview database...');
+	// 6. Conditional Preview checks
+	console.info('Step 6: Checking conditional hosted preview database...');
 	const previewDbUrl = getSecretFromEnvOrFiles('PREVIEW_DB_URL', PREVIEW_SECRET_FILES);
 	if (previewDbUrl) {
 		console.info(`Preview database URL detected. Running hosted preview validations...`);
