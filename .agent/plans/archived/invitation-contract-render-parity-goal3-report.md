@@ -1,12 +1,12 @@
 ---
 title: Invitation Contract Render-Parity Goal 3 Final Audit
-status: active
+status: final
 created: 2026-08-12
 updated: 2026-08-12
 type: diagnostic
 autonomy: 3
 related_docs:
-  - .agent/plans/active/invitation-contract-render-parity-goal1-audit.md
+  - .agent/plans/archived/invitation-contract-render-parity-goal1-audit.md
   - .agent/plans/active/invitation-contract-render-parity-goal2-implementation.md
   - docs/domains/theme/variant-system.md
   - docs/core/content-parity-rsvp-isolation.md

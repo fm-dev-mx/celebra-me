@@ -6,7 +6,7 @@ updated: 2026-08-12
 related_docs:
   - docs/domains/database/cheatsheets/status-diagnostics.md
   - docs/core/architecture.md
-  - .agent/plans/active/status-surface-consolidation-goal1-audit.md
+  - .agent/plans/archived/status-surface-consolidation-goal1-audit.md
 supersedes:
   - status-surface-consolidation-goal1-audit.md
 ---

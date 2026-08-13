@@ -4,13 +4,13 @@ status: implemented
 created: 2026-08-12
 updated: 2026-08-12
 related_docs:
-  - .agent/plans/active/canonical-migration-invitation-state-goal1-audit.md
+  - .agent/plans/archived/canonical-migration-invitation-state-goal1-audit.md
   - docs/domains/database/cheatsheets/status-diagnostics.md
 ---
 
 # Goal 2 — Unified status UX and safe handoffs
 
-Goal 1 contract: `.agent/plans/active/canonical-migration-invitation-state-goal1-audit.md`.
+Goal 1 contract: `.agent/plans/archived/canonical-migration-invitation-state-goal1-audit.md`.
 No classifier redesign. `decidePromotionAction` and `classifySchemaLifecycle` are unchanged
 in behavior (the decision function moved to `src/lib/status/decision.ts` so CLI and UI import
 the same module).

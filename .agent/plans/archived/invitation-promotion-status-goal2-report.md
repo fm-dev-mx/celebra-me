@@ -4,12 +4,12 @@ status: implemented
 created: 2026-08-12
 updated: 2026-08-12
 related_docs:
-  - .agent/plans/active/invitation-promotion-status-goal1-audit.md
+  - .agent/plans/archived/invitation-promotion-status-goal1-audit.md
 ---
 
 # Goal 2 — Canonical invitation promotion status in `pnpm dbs`
 
-Goal 1 contract: `.agent/plans/active/invitation-promotion-status-goal1-audit.md`.
+Goal 1 contract: `.agent/plans/archived/invitation-promotion-status-goal1-audit.md`.
 No architectural deviation. Clarifications below are output/column details, not a redesign.
 
 ## Files changed

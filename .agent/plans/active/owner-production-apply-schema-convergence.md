@@ -13,9 +13,9 @@ related_skills:
   - production-sql-patches
   - supabase
 related_plans:
-  - .agent/plans/active/schema-change-lifecycle-convergence-goal1-audit.md
+  - .agent/plans/archived/schema-change-lifecycle-convergence-goal1-audit.md
   - .agent/plans/archived/production-owner-apply-convergence-goal2-report.md
-  - .agent/plans/active/production-mutation-boundary-goal2-report.md
+  - .agent/plans/archived/production-mutation-boundary-goal2-report.md
 ---
 
 # Finalize Owner-Only Production Apply and Canonical Schema Convergence

@@ -1,6 +1,6 @@
 ---
 title: Forensic Audit of Production Migration Paths — Goal 1
-status: active
+status: final
 created: 2026-08-12
 updated: 2026-08-12
 type: diagnostic
@@ -489,4 +489,3 @@ consolidation commit present in the lane). No Git mutation by this goal.
 
 Goal 2 implemented the §7 minimum (MCP/raw-CLI lockdown, agent fail-closed context, durable
 owner-apply records, status authorization integrity). Goal 3 is cleanup + final verification only.
-

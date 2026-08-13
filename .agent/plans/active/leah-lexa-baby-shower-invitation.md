@@ -149,7 +149,7 @@ Architecture, content model, and `_assetSlug` remain unchanged.
 Required before continuing:
 
 - `pnpm db:sql:lint -- --file scripts/manual/production-patches/20260613_prepare_leah_lexa_baby_shower.sql`
-- `pnpm db:prod:patch -- --file scripts/manual/production-patches/20260613_prepare_leah_lexa_baby_shower.sql`
+- `pnpm db:prod:patch -- --dry-run --file scripts/manual/production-patches/20260613_prepare_leah_lexa_baby_shower.sql`
 - `pnpm type-check`
 - `pnpm lint`
 - `pnpm validate:event-parity`

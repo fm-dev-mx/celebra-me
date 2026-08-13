@@ -8,7 +8,7 @@ autonomy: 2
 related_docs:
   - docs/database-workflow.md
   - .agent/rules/database.md
-  - .agent/plans/active/production-migration-path-forensics-goal1-audit.md
+  - .agent/plans/archived/production-migration-path-forensics-goal1-audit.md
 related_skills:
   - database-parity
   - production-sql-patches

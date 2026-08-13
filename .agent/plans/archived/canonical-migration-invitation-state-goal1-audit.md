@@ -1,13 +1,13 @@
 ---
 title: Canonical Migration & Invitation-State — Goal 1 Audit
-status: active
+status: final
 created: 2026-08-12
 updated: 2026-08-12
 related_docs:
   - docs/domains/database/cheatsheets/status-diagnostics.md
   - docs/core/content-parity-rsvp-isolation.md
-  - .agent/plans/active/invitation-promotion-status-goal1-audit.md
-  - .agent/plans/active/invitation-promotion-status-goal2-report.md
+  - .agent/plans/archived/invitation-promotion-status-goal1-audit.md
+  - .agent/plans/archived/invitation-promotion-status-goal2-report.md
 ---
 
 # Goal 1 — Canonical Migration & Invitation-State Audit
@@ -193,4 +193,4 @@ Must not:
 | Validation not run | `db:*:audit` object-audit class (out of scope); Production fingerprint-failure subtype for the three `unknown` rows (fail-closed is enough for action) |
 | Residual risks | Production `unknown` on Alba/Abril/Romina hides whether Production is behind vs unhashable; Preview `--apply` still needs task scope; Victoria Production apply still needs owner gates |
 | Authorization | None for writes |
-| Next | Goal 2 implemented: `.agent/plans/active/canonical-migration-invitation-state-goal2-report.md` |
+| Next | Goal 2 implemented: `.agent/plans/archived/canonical-migration-invitation-state-goal2-report.md` |

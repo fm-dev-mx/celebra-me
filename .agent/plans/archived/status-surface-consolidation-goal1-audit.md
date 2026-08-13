@@ -6,9 +6,9 @@ updated: 2026-08-12
 related_docs:
   - docs/domains/database/cheatsheets/status-diagnostics.md
   - docs/core/architecture.md
-  - .agent/plans/active/canonical-migration-invitation-state-goal1-audit.md
-  - .agent/plans/active/canonical-migration-invitation-state-goal2-report.md
-  - .agent/plans/active/invitation-promotion-status-goal1-audit.md
+  - .agent/plans/archived/canonical-migration-invitation-state-goal1-audit.md
+  - .agent/plans/archived/canonical-migration-invitation-state-goal2-report.md
+  - .agent/plans/archived/invitation-promotion-status-goal1-audit.md
 supersedes: []
 superseded_by:
   - status-surface-consolidation-goal2-report.md
@@ -588,34 +588,34 @@ CLI and UI keep separate presentation (`canonical-status-format.ts` vs React/SCS
 
 Do not delete the Observabilidad route until steps 1–6 are done. Do not add probes.
 
-1. **Stop the competing compact publication classifier**  
+1. **Stop the competing compact publication classifier**
    `--compact <slug>` / `--aggregate-content` must not emit package-hash MATCH/BEHIND as publication. Compact remains connectivity+schema (git hook unchanged). Point slug publication at default `pnpm dbs <slug>`.
 
-2. **Extend `CanonicalStatusView` minimally**  
+2. **Extend `CanonicalStatusView` minimally**
    Add identity-conflict counts (already computed). Add optional `diagnostics[]` (reason, slug, env, semanticPaths, impact) with a Zod schema that **cannot** carry a promotion `action`. Wire `ENVIRONMENT_IDENTITY_CONFLICT` from `classifyDbTarget`.
 
-3. **Put Observability collectors on `StatusProbeSession`**  
+3. **Put Observability collectors on `StatusProbeSession`**
    No raw `runPsql` content path. No new session per migration env. Prove memo hits in one cycle.
 
-4. **Define one content SQL family**  
+4. **Define one content SQL family**
    Default = existing promotional-evidence. Diagnostics = superset including sha256 **and** slot/baseline fields. Never run both in one cycle. Do not add Vercel. Do not add per-invitation fallback queries.
 
-5. **Diagnostic enricher after canonical decisions**  
+5. **Diagnostic enricher after canonical decisions**
    Move `DRAFT_INVALID`, baseline, asset signals, semantic paths, `LIFECYCLE_METADATA_STALE` behind `buildCanonicalStatusView({ diagnostics: true })`. Strip `applyNextStep` / dual-axis aggregation. Assert with tests that enrichment does not change `decidePromotionAction`.
 
-6. **Estado UI progressive disclosure**  
+6. **Estado UI progressive disclosure**
    Grouped diagnostic list under the existing attention queue / env matrix. Explicit refresh only. Optional `diagnostics=1` on the existing Estado API (same child, same session). No second rate-limit key required if it stays `admin:estado`.
 
-7. **Migrate non-UI consumers**  
+7. **Migrate non-UI consumers**
    `inventory-audit-cli.ts` stops calling `buildObservabilitySnapshot`. Uses shared session + canonical view / reporting envelope. `inventory-audit.ts` switches off `database-projection.ts` once the shared collector exists.
 
-8. **Delete Observabilidad human surface**  
+8. **Delete Observabilidad human surface**
    Page, API, panel, SCSS, nav, middleware path, `admin:observabilidad`, server snapshot wrapper, print-snapshot, v3 wire types, tests listed DELETE. Keep `access.ts`, `runtime-gate.ts`, validation-evidence, fingerprints, source-state, regression runner.
 
-9. **Docs**  
+9. **Docs**
    Replace route references. Observational-only + Local runtime rules now describe `/dashboard/estado`. Corpus doc no longer cites Observabilidad.
 
-10. **Verify resource budget**  
+10. **Verify resource budget**
     Compare debugCounters / invocation counts: default Estado refresh ≤ current dbs; diagnostics refresh ≤ current Observabilidad detail (6) plus not more than current dbs; opening Estado does not probe remotes; no Vercel.
 
 ### Goal 2 stop conditions

@@ -6,7 +6,7 @@ updated: 2026-08-12
 type: implementation
 autonomy: 3
 related_docs:
-  - .agent/plans/active/invitation-contract-render-parity-goal1-audit.md
+  - .agent/plans/archived/invitation-contract-render-parity-goal1-audit.md
   - docs/core/content-parity-rsvp-isolation.md
   - .agent/rules/invitation-production.md
 ---
@@ -15,7 +15,7 @@ related_docs:
 
 **Lifecycle:** Implementation applied to Local (skip) and Preview (celestial P0). Production apply is owner-TTY only and has not been executed. Goal 3 must not treat Production as repaired until the owner apply below is verified.
 
-**Authority:** `.agent/plans/active/invitation-contract-render-parity-goal1-audit.md` plus the Goal 2 task contract. Canonical persisted fields written:
+**Authority:** `.agent/plans/archived/invitation-contract-render-parity-goal1-audit.md` plus the Goal 2 task contract. Canonical persisted fields written:
 
 ```text
 itinerary.variant = "timeline-paper"
@@ -37,7 +37,7 @@ P1 (Romina `split-cover`, Alba `split-map`, Abril gallery) was not touched.
 | Authorized | Local skip/repair; Preview mutation of celestial P0 slugs; author Production patch + dry-run lint; tests/fixtures; read-only Production probe. Not authorized: Production `--apply` (agent-rejected) |
 | Scope | `xareni-iyarit`, `america-johana`, `ana-sofia-cota-guillen` (itinerary + gallery); `abril-michelle-becerra-rea` (itinerary only) |
 | Non-goals | Restore `celestial-blue` renderer alias; slug-specific runtime branches; P1 promote; visual redesign; full managed package promote |
-| Stop | Production remains unrepaired until owner `db:prod:patch --apply` |
+| Stop | Production remains unrepaired until owner `prod:apply --patch ... --apply` |
 
 HEAD at implementation: `286f072dae9dced0248029cff7463788a0c45c60` (`dev-local`). Same SHA as Goal 1.
 
@@ -66,7 +66,7 @@ These P0 consumers are **not** all managed definitions. Xareni / América / Ana 
 | Local | **Skipped** | Already held the required contract. `invitation:local-corpus` would rewrite entire published JSON. |
 | Preview celestial | Surgical `jsonb` merge on `published_invitation_content` (+ matching drafts if present), Preview write auth `CELEBRA_TASK_SCOPE=preview:<slug>:apply` | No managed release path for these slugs; no `db:preview:patch`. Same field merge as the Production patch. |
 | Preview Abril | **Skipped** | Already `presentation.behavior=timeline-paper`. |
-| Production | `pnpm db:prod:patch` file `scripts/manual/production-patches/20260812_p0_itinerary_gallery_structural_contracts.sql` | Canonical owner-authorized SQL repair for editor-native published JSON. Lint dry-run passed. `--apply` not executed (agent rejection / owner TTY). |
+| Production | `pnpm prod:apply -- --patch` using `scripts/manual/production-patches/20260812_p0_itinerary_gallery_structural_contracts.sql` | Canonical owner-authorized SQL repair for editor-native published JSON. Direct lint dry-run passed; owner apply was not executed. |
 
 Fields changed per celestial row: `itinerary.variant`, `itinerary.presentation.behavior`, `gallery.variant`. Unrelated keys merged in place (`||`), including Ana Sofía `sectionStyles.itinerary.variant=celestial-blue`. Abril Production patch changes only the two itinerary fields.
 
@@ -155,7 +155,7 @@ Structural HTML dumps above are the reproducible renderer evidence for all four 
 | Local all four | Already correct vs Goal 1 |
 | Preview Abril itinerary | Already `presentation.behavior=timeline-paper` |
 | Preview/Production Romina, Alba, Victoria, Daniela | Out of P0 scope |
-| Production all four | Owner-only `db:prod:patch --apply`; agent must not execute it |
+| Production all four | Owner-only `prod:apply --patch --apply`; agent must not execute it |
 
 ---
 
@@ -174,10 +174,11 @@ Structural HTML dumps above are the reproducible renderer evidence for all four 
 
 ```powershell
 pnpm db:prod:patch -- --dry-run --file scripts/manual/production-patches/20260812_p0_itinerary_gallery_structural_contracts.sql
-pnpm db:prod:patch -- --apply --owner-user-id <PRODUCTION_OWNER_UUID> --file scripts/manual/production-patches/20260812_p0_itinerary_gallery_structural_contracts.sql
+pnpm prod:apply -- --patch scripts/manual/production-patches/20260812_p0_itinerary_gallery_structural_contracts.sql --owner-user-id <PRODUCTION_OWNER_UUID>
+pnpm prod:apply -- --patch scripts/manual/production-patches/20260812_p0_itinerary_gallery_structural_contracts.sql --owner-user-id <PRODUCTION_OWNER_UUID> --apply
 ```
 
-`--apply` requires interactive TTY (`PATCH <8-hex>`), Production project identity, and `pnpm release-check` evidence. After apply, re-probe:
+`--apply` requires the revalidated plan/artifact, preview row-count bounds, current backup, Production project identity, and interactive owner confirmation. After apply, re-probe:
 
 ```text
 itinerary.variant = timeline-paper

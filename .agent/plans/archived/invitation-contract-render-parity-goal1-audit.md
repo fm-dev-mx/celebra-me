@@ -1,6 +1,6 @@
 ---
 title: Invitation Contract and Render-Parity Audit
-status: active
+status: final
 created: 2026-08-12
 updated: 2026-08-12
 type: diagnostic
