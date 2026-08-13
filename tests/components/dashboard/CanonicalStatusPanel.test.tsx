@@ -26,8 +26,7 @@ describe('CanonicalStatusPanel', () => {
 		expect(screen.getByText('Promover a Production')).toBeInTheDocument();
 		expect(screen.getByText(/OWNER \/ HITL REQUIRED/)).toBeInTheDocument();
 		expect(screen.getByText(/Filas activas en DB \(no son el registro\)/)).toBeInTheDocument();
-		expect(screen.getByText(/Consultar no pone los indicadores en verde/)).toBeInTheDocument();
-		expect(screen.getByRole('button', { name: 'Actualizar evidencia remota' })).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: 'Revalidar ahora' })).toBeInTheDocument();
 		expect(mockGet).not.toHaveBeenCalled();
 	});
 

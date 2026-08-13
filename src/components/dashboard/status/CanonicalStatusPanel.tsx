@@ -31,6 +31,7 @@ import type {
 	CanonicalDiagnostic,
 	CanonicalPromotionRow,
 	CanonicalStatusView,
+	RecentMigrationRecord,
 	StatusSemantic,
 	TargetEnv,
 } from '@/lib/status/types';
@@ -73,6 +74,17 @@ function SemanticBadge({ semantic }: { semantic: StatusSemantic }) {
 	);
 }
 
+function StepTypeBadge({ stepType }: { stepType: string }) {
+	const modifiers: Record<string, string> = {
+		Diagnose: 'canonical-status__badge--amber',
+		Verify: 'canonical-status__badge--cyan',
+		Apply: 'canonical-status__badge--green',
+		'Manual/HITL': 'canonical-status__badge--red',
+	};
+	const cls = modifiers[stepType] ?? 'canonical-status__badge--neutral';
+	return <span className={`canonical-status__badge ${cls}`}>{stepType}</span>;
+}
+
 function RemediationDetails({
 	remediation,
 	summary,
@@ -85,40 +97,22 @@ function RemediationDetails({
 	return (
 		<details className="canonical-status__remediation">
 			<summary>{summary}</summary>
-			<dl>
-				<dt>Significado</dt>
-				<dd>{remediation.meaning}</dd>
-				{remediation.why ? (
-					<>
-						<dt>Por qué</dt>
-						<dd>{remediation.why}</dd>
-					</>
-				) : null}
-				{remediation.environmentLabel ? (
-					<>
-						<dt>Contexto</dt>
-						<dd>{remediation.environmentLabel}</dd>
-					</>
-				) : null}
-				<dt>Siguiente paso</dt>
-				<dd>{remediation.nextAction}</dd>
+			<div className="canonical-status__remediation-content">
+				<p className="canonical-status__remediation-action">
+					<StepTypeBadge stepType={remediation.stepType} />
+					<span>{remediation.nextAction}</span>
+				</p>
 				{remediation.noCanonicalRemediation ? (
-					<>
-						<dt>Brecha</dt>
-						<dd>No hay una remediación canónica que cierre este estado por sí sola.</dd>
-					</>
+					<p className="canonical-status__gap">
+						No hay remediación canónica directa para este elemento.
+					</p>
 				) : null}
 				{remediation.command ? (
-					<>
-						<dt>{remediation.requiresOwner ? 'Comando (no aplica desde el agente)' : 'Comando'}</dt>
-						<dd>
-							<CopyableCommand command={remediation.command} />
-						</dd>
-					</>
+					<div className="canonical-status__remediation-cmd">
+						<CopyableCommand command={remediation.command} />
+					</div>
 				) : null}
-				<dt>Queda verificado cuando</dt>
-				<dd>{remediation.verifyWhen}</dd>
-			</dl>
+			</div>
 		</details>
 	);
 }
@@ -139,7 +133,7 @@ function Indicator({
 				<span>{label}</span>
 			</div>
 			{detail ? <p className="canonical-status__indicator-detail">{detail}</p> : null}
-			<RemediationDetails remediation={remediation} summary="Qué hacer" />
+			<RemediationDetails remediation={remediation} summary="Siguiente paso" />
 		</div>
 	);
 }
@@ -149,35 +143,72 @@ function AttentionCard({ row }: { row: CanonicalPromotionRow }) {
 	return (
 		<article className={`canonical-status__card canonical-status__card--${remediation.semantic}`}>
 			<header className="canonical-status__card-head">
-				<h3>{row.title}</h3>
-				<p>
-					{formatTransitionLabel(row.source, row.destination)}
+				<h3>
+					{row.title} <span className="canonical-status__slug">({row.slug})</span>
+				</h3>
+				<p className="canonical-status__card-badges">
+					<span>{formatTransitionLabel(row.source, row.destination)}</span>
 					<span className="canonical-status__action">{PUBLICATION_ACTION_LABELS[row.action]}</span>
+					<StepTypeBadge stepType={row.handoff.dryRunStepType} />
+					{row.handoff.applyCommand ? (
+						<>
+							<span>➔</span>
+							<StepTypeBadge stepType={row.handoff.applyStepType} />
+						</>
+					) : null}
 					<SemanticBadge semantic={remediation.semantic} />
 				</p>
 			</header>
-			<p>{PUBLICATION_REASON_LABELS[row.reasonCode]}</p>
+			<p className="canonical-status__reason">{PUBLICATION_REASON_LABELS[row.reasonCode]}</p>
 			{row.uncertaintyNotes.length > 0 ? (
 				<p className="canonical-status__unverified">{row.uncertaintyNotes.join(' · ')}</p>
 			) : null}
-			<p>
-				Evidencia: {EVIDENCE_LABELS[row.evidence]}
+			<p className="canonical-status__evidence-line">
+				Evidencia: <strong>{EVIDENCE_LABELS[row.evidence]}</strong>
 				{row.handoff.ownerApplyRequired ? (
-					<strong className="canonical-status__owner"> OWNER / HITL REQUIRED</strong>
+					<strong className="canonical-status__owner"> 🔒 OWNER / HITL REQUIRED</strong>
 				) : null}
 			</p>
-			<p>Siguiente: {remediation.nextAction}</p>
+			<p className="canonical-status__next-text">Paso inmediato: {remediation.nextAction}</p>
+
 			{remediation.noCanonicalRemediation ? (
-				<p>No hay una remediación canónica que cierre este estado por sí sola.</p>
+				<p className="canonical-status__gap">No hay una remediación canónica directa disponible.</p>
 			) : null}
-			{remediation.command ? <CopyableCommand command={remediation.command} /> : null}
-			{row.handoff.ownerApplyRequired && row.handoff.applyCommand ? (
-				<CopyableCommand command={row.handoff.applyCommand} />
+
+			{row.handoff.dryRunCommand ? (
+				<div className="canonical-status__op-block">
+					<p className="canonical-status__command-label">
+						<StepTypeBadge stepType={row.handoff.dryRunStepType} />
+						<span>
+							{row.handoff.dryRunStepType === 'Diagnose'
+								? 'Diagnóstico (solo lectura):'
+								: 'Verificar (dry-run):'}
+						</span>
+					</p>
+					<CopyableCommand command={row.handoff.dryRunCommand} />
+				</div>
 			) : null}
+
+			{row.handoff.applyCommand ? (
+				<div className="canonical-status__op-block">
+					<p className="canonical-status__command-label">
+						<StepTypeBadge stepType={row.handoff.applyStepType} />
+						<span>
+							{row.handoff.ownerApplyRequired
+								? 'Aplicar (🔒 OWNER / HITL en TTY):'
+								: 'Aplicar (autorizado):'}
+						</span>
+					</p>
+					<CopyableCommand command={row.handoff.applyCommand} />
+				</div>
+			) : null}
+
 			<p className="canonical-status__verify">Queda verificado cuando: {remediation.verifyWhen}</p>
 			<details className="canonical-status__details">
 				<summary>Detalle técnico</summary>
 				<dl>
+					<dt>Acción canónica</dt>
+					<dd>{row.action}</dd>
 					<dt>reasonCode</dt>
 					<dd>{row.reasonCode}</dd>
 					<dt>Estados</dt>
@@ -185,14 +216,6 @@ function AttentionCard({ row }: { row: CanonicalPromotionRow }) {
 						Local {row.environments.local} · Preview {row.environments.preview} ·
 						Producción {row.environments.production}
 					</dd>
-					{row.handoff.applyCommand && !row.handoff.ownerApplyRequired ? (
-						<>
-							<dt>Apply autorizado</dt>
-							<dd>
-								<CopyableCommand command={row.handoff.applyCommand} />
-							</dd>
-						</>
-					) : null}
 				</dl>
 			</details>
 		</article>
@@ -233,6 +256,78 @@ function DiagnosticsList({ items }: { items: CanonicalDiagnostic[] }) {
 	);
 }
 
+function RecentMigrationsSection({ items }: { items?: RecentMigrationRecord[] }) {
+	if (!items || items.length === 0) return null;
+	return (
+		<section className="canonical-status__recent-migrations" aria-labelledby="migrations-title">
+			<div className="canonical-status__section-head">
+				<h2 id="migrations-title">Migraciones recientes autoritativas</h2>
+				<p>
+					Registro de <code>supabase_migrations.schema_migrations</code> en cada base de datos
+					persistente (últimas 5 migraciones).
+				</p>
+			</div>
+			<table className="canonical-status__matrix">
+				<thead>
+					<tr>
+						<th>Versión / Nombre</th>
+						<th>Local</th>
+						<th>Preview</th>
+						<th>Producción</th>
+						<th>Verificado por el panel</th>
+					</tr>
+				</thead>
+				<tbody>
+					{items.map((rec) => (
+						<tr key={rec.version}>
+							<th scope="row">
+								<strong>{rec.version}</strong>
+								{rec.name ? (
+									<span className="canonical-status__migration-name"> · {rec.name}</span>
+								) : null}
+							</th>
+							<td>
+								{rec.applied.local ? (
+									<span className="canonical-status__applied-badge canonical-status__applied-badge--yes">
+										Aplicada {rec.appliedAt.local ? `(${formatWhen(rec.appliedAt.local)})` : ''}
+									</span>
+								) : (
+									<span className="canonical-status__applied-badge canonical-status__applied-badge--no">
+										No aplicada
+									</span>
+								)}
+							</td>
+							<td>
+								{rec.applied.preview ? (
+									<span className="canonical-status__applied-badge canonical-status__applied-badge--yes">
+										Aplicada {rec.appliedAt.preview ? `(${formatWhen(rec.appliedAt.preview)})` : ''}
+									</span>
+								) : (
+									<span className="canonical-status__applied-badge canonical-status__applied-badge--no">
+										Sin aplicar / No verificada
+									</span>
+								)}
+							</td>
+							<td>
+								{rec.applied.production ? (
+									<span className="canonical-status__applied-badge canonical-status__applied-badge--yes">
+										Aplicada {rec.appliedAt.production ? `(${formatWhen(rec.appliedAt.production)})` : ''}
+									</span>
+								) : (
+									<span className="canonical-status__applied-badge canonical-status__applied-badge--no">
+										Sin aplicar / No verificada
+									</span>
+								)}
+							</td>
+							<td>{formatWhen(rec.verifiedAt)}</td>
+						</tr>
+					))}
+				</tbody>
+			</table>
+		</section>
+	);
+}
+
 interface CanonicalStatusPanelProps {
 	initialView?: CanonicalStatusView | null;
 }
@@ -269,6 +364,21 @@ export default function CanonicalStatusPanel({ initialView = null }: CanonicalSt
 	const generated = useMemo(() => (view ? formatWhen(view.generatedAt) : null), [view]);
 	const queueRemediation = view ? publicationQueueRemediation(view) : null;
 
+	const freshnessLabel = useMemo(() => {
+		if (!view?.freshnessMeta) return null;
+		switch (view.freshnessMeta.status) {
+			case 'LIVE':
+				return 'En vivo (evidencia reciente)';
+			case 'CACHED':
+			case 'STALE':
+				return `Caché duradera (${formatWhen(view.freshnessMeta.lastVerifiedAt)})`;
+			case 'REVALIDATING':
+				return 'Revalidando…';
+			default:
+				return 'Sin verificar';
+		}
+	}, [view]);
+
 	return (
 		<section className="canonical-status" aria-labelledby="canonical-status-title">
 			<header className="canonical-status__header">
@@ -279,6 +389,11 @@ export default function CanonicalStatusPanel({ initialView = null }: CanonicalSt
 						muestran por separado. Esta vista no aplica migraciones ni promociones. El color
 						lo determina la evidencia, no el hecho de consultar.
 					</p>
+					{freshnessLabel ? (
+						<p className="canonical-status__freshness">
+							<strong>Frescura de evidencia:</strong> {freshnessLabel}
+						</p>
+					) : null}
 				</div>
 				<div className="canonical-status__controls">
 					<label>
@@ -319,9 +434,9 @@ export default function CanonicalStatusPanel({ initialView = null }: CanonicalSt
 						className="btn-secondary"
 						onClick={() => void refresh()}
 						disabled={loading}
-						title="Consulta de solo lectura. El estado lo determina la evidencia resultante."
+						title="Revalida evidencia remota de solo lectura."
 					>
-						{loading ? 'Consultando evidencia…' : 'Actualizar evidencia remota'}
+						{loading ? 'Consultando evidencia…' : 'Revalidar ahora'}
 					</button>
 				</div>
 			</header>
@@ -331,7 +446,7 @@ export default function CanonicalStatusPanel({ initialView = null }: CanonicalSt
 					<SemanticBadge semantic="verified" /> evidencia suficiente y vigente
 				</li>
 				<li>
-					<SemanticBadge semantic="unverified" /> evidencia ausente, incompleta o no vigente, o una acción pendiente que no es un bloqueo
+					<SemanticBadge semantic="unverified" /> evidencia ausente, incompleta o no vigente
 				</li>
 				<li>
 					<SemanticBadge semantic="blocked" /> la evidencia confirma un bloqueo
@@ -345,7 +460,7 @@ export default function CanonicalStatusPanel({ initialView = null }: CanonicalSt
 				<div className="canonical-status__error" role="alert">
 					<strong>No se pudo actualizar.</strong>
 					<span>
-						{error} La vista anterior se conserva. Consultar no implica éxito.
+						{error} La vista duradera anterior se conserva. Consultar no implica éxito.
 					</span>
 				</div>
 			) : null}
@@ -354,8 +469,8 @@ export default function CanonicalStatusPanel({ initialView = null }: CanonicalSt
 				{loading
 					? 'Consulta de solo lectura a bases persistentes. El resultado de la evidencia determinará cada indicador.'
 					: view
-						? `Evidencia ${EVIDENCE_LABELS[view.evidence]}. Generado ${generated}. Consultar no pone los indicadores en verde.`
-						: 'Sin evidencia remota. Actualice para consultar Local, Preview y Production. Esa acción no implica éxito.'}
+						? `Evidencia ${EVIDENCE_LABELS[view.evidence]}. Generado ${generated}.`
+						: 'Sin evidencia remota. Revalide para consultar Local, Preview y Production.'}
 			</p>
 
 			{view ? (
@@ -443,19 +558,6 @@ export default function CanonicalStatusPanel({ initialView = null }: CanonicalSt
 						</tbody>
 					</table>
 
-					<aside className="canonical-status__disposable" aria-labelledby="disposable-title">
-						<h2 id="disposable-title">Prueba disposable-test</h2>
-						<Indicator
-							remediation={disposableRemediation(view.disposableProof)}
-							label={`Disposable proof: ${DISPOSABLE_LABELS[view.disposableProof.status]}`}
-							detail="No indica deuda de esquema en Local, Preview o Production."
-						/>
-						<p>
-							Evidencia: {EVIDENCE_LABELS[view.disposableProof.evidence]}. Requerida antes
-							de futuras operaciones de migración.
-						</p>
-					</aside>
-
 					<section aria-labelledby="publication-title">
 						<div className="canonical-status__section-head">
 							<h2 id="publication-title">Cola de publicación</h2>
@@ -506,6 +608,21 @@ export default function CanonicalStatusPanel({ initialView = null }: CanonicalSt
 							</details>
 						) : null}
 					</section>
+
+					<RecentMigrationsSection items={view.recentMigrations} />
+
+					<aside className="canonical-status__disposable" aria-labelledby="disposable-title">
+						<h2 id="disposable-title">Prueba disposable-test</h2>
+						<Indicator
+							remediation={disposableRemediation(view.disposableProof)}
+							label={`Disposable proof: ${DISPOSABLE_LABELS[view.disposableProof.status]}`}
+							detail="No indica deuda de esquema en Local, Preview o Production."
+						/>
+						<p>
+							Evidencia: {EVIDENCE_LABELS[view.disposableProof.evidence]}. Requerida antes
+							de futuras operaciones de migración.
+						</p>
+					</aside>
 
 					<section aria-labelledby="diagnostics-title">
 						<details className="canonical-status__details">

@@ -114,6 +114,30 @@
 	border: 1px solid var(--color-state-neutral-border);
 }
 
+.canonical-status__badge--cyan {
+	background: rgba(6, 182, 212, 0.12);
+	color: #0891b2;
+	border: 1px solid rgba(6, 182, 212, 0.3);
+}
+
+.canonical-status__badge--amber {
+	background: var(--color-state-warning-bg);
+	color: var(--color-state-warning-text);
+	border: 1px solid var(--color-state-warning-border);
+}
+
+.canonical-status__badge--green {
+	background: var(--color-state-success-bg);
+	color: var(--color-state-success-text);
+	border: 1px solid var(--color-state-success-border);
+}
+
+.canonical-status__badge--red {
+	background: var(--color-state-danger-bg);
+	color: var(--color-state-danger-text);
+	border: 1px solid var(--color-state-danger-border);
+}
+
 .canonical-status__indicator {
 	display: grid;
 	gap: var(--spacing-xs);
@@ -227,6 +251,44 @@
 	}
 }
 
+.canonical-status__freshness {
+	margin-top: var(--spacing-xs);
+	font-size: 0.85rem;
+	color: var(--color-text-secondary);
+}
+
+.canonical-status__recent-migrations {
+	display: grid;
+	gap: var(--spacing-md);
+}
+
+.canonical-status__migration-name {
+	font-weight: normal;
+	color: var(--color-text-tertiary);
+	font-size: 0.85rem;
+}
+
+.canonical-status__applied-badge {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.1rem 0.45rem;
+	border-radius: 4px;
+	font-size: 0.75rem;
+	font-weight: 500;
+}
+
+.canonical-status__applied-badge--yes {
+	background: var(--color-state-success-bg);
+	color: var(--color-state-success-text);
+	border: 1px solid var(--color-state-success-border);
+}
+
+.canonical-status__applied-badge--no {
+	background: var(--color-state-neutral-bg);
+	color: var(--color-state-neutral-text);
+	border: 1px solid var(--color-state-neutral-border);
+}
+
 .canonical-status__matrix {
 	width: 100%;
 	border-collapse: collapse;
@@ -328,6 +390,34 @@
 	color: var(--color-state-danger-text);
 }
 
+.canonical-status__slug {
+	font-size: 0.85rem;
+	font-weight: normal;
+	color: var(--color-text-tertiary);
+}
+
+.canonical-status__op-block {
+	margin-top: var(--spacing-xs);
+	display: grid;
+	gap: var(--spacing-2xs);
+}
+
+.canonical-status__command-label {
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-xs);
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--color-text-secondary);
+	margin: 0;
+}
+
+.canonical-status__gap {
+	font-style: italic;
+	color: var(--color-state-warning-text);
+	margin: var(--spacing-2xs) 0;
+}
+
 .canonical-status__command {
 	margin: 0;
 	padding: var(--spacing-sm);
@@ -335,6 +425,7 @@
 	border-radius: 0.5rem;
 	background: var(--color-surface-elevated);
 	white-space: pre-wrap;
+	word-break: break-all;
 }
 
 .canonical-status__details {
