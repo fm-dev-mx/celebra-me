@@ -14,11 +14,13 @@ import {
 	GALLERY_MOBILE_BROWSE_MODES,
 	GALLERY_PRESENTATIONS,
 	GIFTS_PRESENTATIONS,
-	ITINERARY_PRESENTATION_BEHAVIORS,
 	assertSupportedGalleryPresentation,
 } from '@/lib/invitation/presentation-options';
-import { GALLERY_LAYOUT_VARIANTS } from '@/lib/invitation/structural-variants';
-import { GIFTS_STRUCTURAL_VARIANTS } from '@/lib/invitation/structural-variants';
+import {
+	GALLERY_LAYOUT_VARIANTS,
+	GIFTS_STRUCTURAL_VARIANTS,
+	ITINERARY_STRUCTURAL_VARIANTS,
+} from '@/lib/invitation/structural-variants';
 
 export const optionalText = (max = 2000) => z.string().trim().max(max).optional();
 export const optionalUrl = z
@@ -168,7 +170,7 @@ export const itinerarySchema = z
 	.object({
 		title: optionalText(200),
 		subtitle: optionalText(500),
-		variant: z.enum(ITINERARY_PRESENTATION_BEHAVIORS).optional(),
+		variant: z.enum(ITINERARY_STRUCTURAL_VARIANTS).optional(),
 		items: z
 			.array(
 				z
