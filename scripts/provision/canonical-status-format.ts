@@ -96,27 +96,42 @@ export function formatAttentionCard(
 		? c.bgYellowBold(`🔒 OWNER / HITL REQUIRED (${transition})`)
 		: c.bgCyanBold(`➔ ${transition}`);
 
-	const titleLine = `${prefix}${c.bold(row.title)}  ${badge}  ${c.dim(`[${row.action}]`)}`;
+	const stepBadge = row.handoff.applyCommand
+		? `[${row.handoff.dryRunStepType} → ${row.handoff.applyStepType}]`
+		: `[${row.handoff.dryRunStepType}]`;
+
+	const titleLine = `${prefix}${c.bold(row.title)}  ${badge}  ${c.dim(`[${row.action}] ${stepBadge}`)}`;
 	const whyLine = `   ${c.dim('Why:')}     ${formatWhyLine(row)}`;
 
 	const lines: string[] = [titleLine, whyLine];
 
-	const labelWidth = 9;
+	const labelWidth = 10;
 
 	if (row.handoff.dryRunCommand) {
-		const rawLabel = row.handoff.ownerApplyRequired ? 'Dry-run:' : 'Action:';
+		const label =
+			row.handoff.dryRunStepType === 'Diagnose'
+				? 'Diagnose:'
+				: row.handoff.dryRunStepType === 'Verify'
+					? 'Verify:'
+					: 'Action:';
 		lines.push(
-			`   ${c.dim(rawLabel.padEnd(labelWidth))} ${c.brightCyan(row.handoff.dryRunCommand)}`,
+			`   ${c.dim(label.padEnd(labelWidth))} ${c.brightCyan(row.handoff.dryRunCommand)}`,
 		);
 	}
 
-	if (row.handoff.ownerApplyRequired && row.handoff.applyCommand) {
+	if (row.handoff.applyCommand) {
+		if (row.handoff.ownerApplyRequired) {
+			lines.push(
+				`   ${c.yellow(c.dim('Apply:'.padEnd(labelWidth)))} ${c.brightYellow(row.handoff.applyCommand)} ${c.yellow('(🔒 OWNER / HITL REQUIRED)')}`,
+			);
+		} else {
+			lines.push(
+				`   ${c.dim('Apply:'.padEnd(labelWidth))} ${c.brightCyan(row.handoff.applyCommand)}`,
+			);
+		}
+	} else if (!row.handoff.dryRunCommand) {
 		lines.push(
-			`   ${c.yellow(c.dim('Apply:'.padEnd(labelWidth)))} ${c.brightYellow(row.handoff.applyCommand)}`,
-		);
-	} else if (row.handoff.applyCommand && verbose) {
-		lines.push(
-			`   ${c.dim('Apply:'.padEnd(labelWidth))} ${c.brightCyan(row.handoff.applyCommand)}`,
+			`   ${c.dim('Remedy:'.padEnd(labelWidth))} ${c.yellow('No canonical command available')}`,
 		);
 	}
 
@@ -215,6 +230,23 @@ function formatDisposableProofSection(view: CanonicalStatusView, headerWidth: nu
 		lines.push(
 			`  Remediation: ${c.brightCyan('pnpm db:migrate -- --target disposable-test --apply')}`,
 		);
+	}
+	return lines;
+}
+
+function formatRecentMigrationsSection(view: CanonicalStatusView, headerWidth: number): string[] {
+	if (!view.recentMigrations || view.recentMigrations.length === 0) return [];
+	const c = getColors();
+	const lines: string[] = [
+		c.dim('─'.repeat(headerWidth)),
+		`  ${c.bold('RECENT MIGRATIONS (Authoritative DB records)')}`,
+	];
+	for (const rec of view.recentMigrations) {
+		const local = rec.applied.local ? c.brightGreen('Applied') : c.dim('Not applied');
+		const preview = rec.applied.preview ? c.brightGreen('Applied') : c.dim('Not applied');
+		const prod = rec.applied.production ? c.brightGreen('Applied') : c.dim('Not applied');
+		const name = rec.name ? ` (${rec.name})` : '';
+		lines.push(`  - ${rec.version}${name}: local=${local} preview=${preview} prod=${prod}`);
 	}
 	return lines;
 }
@@ -371,6 +403,7 @@ export function formatCanonicalStatusView(
 		...formatProductionAuthWarning(view.environments.production),
 		'',
 		...formatDisposableProofSection(view, headerWidth),
+		...formatRecentMigrationsSection(view, headerWidth),
 	];
 
 	if (verbose) {

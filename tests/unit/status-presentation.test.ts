@@ -93,7 +93,7 @@ describe('presentation parity with decidePromotionAction', () => {
 		expect(row.handoff.ownerApplyRequired).toBe(false);
 	});
 
-	it('marks Production promotions as OWNER APPLY', () => {
+	it('marks Production promotions as OWNER APPLY with separate dry-run and apply commands', () => {
 		const decision = decidePromotionAction({
 			canonicalAvailable: true,
 			local: 'match',
@@ -111,9 +111,12 @@ describe('presentation parity with decidePromotionAction', () => {
 			envEvidence: { local: 'LIVE', preview: 'LIVE', production: 'LIVE' },
 		});
 		expect(row.action).toBe('PROMOTE_PRODUCTION');
+		expect(row.handoff.dryRunStepType).toBe('Verify');
+		expect(row.handoff.applyStepType).toBe('Apply');
 		expect(row.handoff.ownerApplyRequired).toBe(true);
+		expect(row.handoff.dryRunCommand).toContain('--targets production --dry-run');
 		expect(row.handoff.applyCommand).toContain('--targets production --apply');
-		expect(row.handoff.steps).toEqual(['Dry-run', 'OWNER APPLY', 'Verify']);
+		expect(row.handoff.steps).toEqual(['Verify dry-run', 'OWNER APPLY in TTY', 'Verify match']);
 	});
 
 	it('does not treat unknown as a promotion path', () => {
@@ -124,7 +127,7 @@ describe('presentation parity with decidePromotionAction', () => {
 		})).toEqual(['PRODUCTION UNVERIFIED']);
 	});
 
-	it('attaches existing diagnostic commands to BLOCKED and UNKNOWN handoffs', () => {
+	it('attaches existing diagnostic commands to BLOCKED and UNKNOWN handoffs without self-loops', () => {
 		const identity = presentPromotionRow({
 			slug: 'demo',
 			title: 'Demo',
@@ -134,10 +137,11 @@ describe('presentation parity with decidePromotionAction', () => {
 			environments: { local: 'conflict', preview: 'match', production: 'match' },
 			envEvidence: { local: 'LIVE', preview: 'LIVE', production: 'LIVE' },
 		});
+		expect(identity.handoff.dryRunStepType).toBe('Diagnose');
 		expect(identity.handoff.dryRunCommand).toBe(
 			'pnpm invitation:diagnose-identity -- --target local',
 		);
-		expect(identity.handoff.steps).toEqual(['Diagnose identity', 'Do not promote']);
+		expect(identity.handoff.steps).toEqual(['Diagnose identity conflict', 'Do not promote']);
 
 		const unknown = presentPromotionRow({
 			slug: 'demo',
@@ -148,7 +152,22 @@ describe('presentation parity with decidePromotionAction', () => {
 			environments: { local: 'unknown', preview: 'match', production: 'match' },
 			envEvidence: { local: 'UNVERIFIED', preview: 'LIVE', production: 'LIVE' },
 		});
-		expect(unknown.handoff.dryRunCommand).toBe('pnpm dbs demo');
+		expect(unknown.handoff.dryRunStepType).toBe('Diagnose');
+		expect(unknown.handoff.dryRunCommand).toBe('pnpm db:availability:verify -- --targets local');
+		expect(unknown.handoff.dryRunCommand).not.toBe('pnpm dbs demo');
 		expect(unknown.handoff.applyCommand).toBeNull();
+
+		const canonicalUnavailable = presentPromotionRow({
+			slug: 'demo',
+			title: 'Demo',
+			eventType: 'boda',
+			action: 'UNKNOWN',
+			reasonCode: 'CANONICAL_UNAVAILABLE',
+			environments: { local: 'match', preview: 'match', production: 'match' },
+			envEvidence: { local: 'LIVE', preview: 'LIVE', production: 'LIVE' },
+		});
+		expect(canonicalUnavailable.handoff.dryRunStepType).toBe('Manual/HITL');
+		expect(canonicalUnavailable.handoff.dryRunCommand).toBeNull();
+		expect(canonicalUnavailable.handoff.applyCommand).toBeNull();
 	});
 });

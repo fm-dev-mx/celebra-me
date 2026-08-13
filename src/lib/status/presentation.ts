@@ -33,78 +33,123 @@ export function derivePromotionHandoff(
 	reasonCode: PromotionReasonCode,
 	slug: string,
 	eventType?: string,
+	environments?: Record<TargetEnv, EnvironmentPromotionState>,
 ): PromotionHandoff {
 	if (action === 'PROMOTE_PREVIEW') {
 		return {
 			dryRunCommand: `pnpm invitation:release -- --slug ${slug} --targets preview --dry-run`,
+			dryRunStepType: 'Verify',
 			applyCommand: `pnpm invitation:release -- --slug ${slug} --targets preview --apply`,
+			applyStepType: 'Apply',
 			ownerApplyRequired: false,
-			steps: ['Dry-run', 'Authorized Preview apply', 'Verify'],
+			steps: ['Verify dry-run', 'Authorized Preview apply', 'Verify match'],
 		};
 	}
 	if (action === 'PROMOTE_PRODUCTION') {
 		return {
 			dryRunCommand: `pnpm invitation:release -- --slug ${slug} --targets production --dry-run`,
+			dryRunStepType: 'Verify',
 			applyCommand: `pnpm invitation:release -- --slug ${slug} --targets production --apply`,
+			applyStepType: 'Apply',
 			ownerApplyRequired: true,
-			steps: ['Dry-run', 'OWNER APPLY', 'Verify'],
+			steps: ['Verify dry-run', 'OWNER APPLY in TTY', 'Verify match'],
 		};
 	}
 	if (action === 'BLOCKED' && reasonCode === 'LOCAL_BEHIND_PREVIEW_ALIGNED') {
 		return {
 			dryRunCommand: `pnpm invitation:release -- --slug ${slug} --targets local --dry-run`,
+			dryRunStepType: 'Verify',
 			applyCommand: `pnpm invitation:release -- --slug ${slug} --targets local --apply`,
+			applyStepType: 'Apply',
 			ownerApplyRequired: false,
-			steps: ['Dry-run', 'Authorized Local apply', 'Verify'],
+			steps: ['Verify dry-run', 'Authorized Local apply', 'Verify match'],
 		};
 	}
 	if (action === 'BLOCKED' && reasonCode === 'IDENTITY_CONFLICT') {
+		const conflictEnv = (['local', 'preview', 'production'] as const).find(
+			(env) => environments?.[env] === 'conflict',
+		) ?? 'local';
+		const dryRunCommand =
+			conflictEnv === 'production'
+				? null
+				: `pnpm invitation:diagnose-identity -- --target ${conflictEnv}`;
 		return {
-			dryRunCommand: 'pnpm invitation:diagnose-identity -- --target local',
+			dryRunCommand,
+			dryRunStepType: dryRunCommand ? 'Diagnose' : 'Manual/HITL',
 			applyCommand: null,
+			applyStepType: 'Manual/HITL',
 			ownerApplyRequired: false,
-			steps: ['Diagnose identity', 'Do not promote'],
+			steps: ['Diagnose identity conflict', 'Do not promote'],
 		};
 	}
 	if (action === 'BLOCKED' && reasonCode === 'MANAGED_DIVERGENCE') {
+		const dryRunCommand = eventType
+			? `pnpm invitation:content-parity -- --slug ${slug} --event-type ${eventType}`
+			: null;
 		return {
-			dryRunCommand: eventType
-				? `pnpm invitation:content-parity -- --slug ${slug} --event-type ${eventType}`
-				: `pnpm dbs ${slug}`,
+			dryRunCommand,
+			dryRunStepType: dryRunCommand ? 'Diagnose' : 'Manual/HITL',
 			applyCommand: null,
+			applyStepType: 'Manual/HITL',
 			ownerApplyRequired: false,
-			steps: ['Compare semantic content', 'Do not promote'],
+			steps: ['Diagnose semantic content divergence', 'Do not promote'],
 		};
 	}
 	if (action === 'BLOCKED' && reasonCode === 'PRODUCTION_AHEAD_OF_PREVIEW') {
+		const dryRunCommand = eventType
+			? `pnpm invitation:content-parity -- --slug ${slug} --event-type ${eventType}`
+			: null;
 		return {
-			dryRunCommand: eventType
-				? `pnpm invitation:content-parity -- --slug ${slug} --event-type ${eventType}`
-				: `pnpm dbs ${slug}`,
+			dryRunCommand,
+			dryRunStepType: dryRunCommand ? 'Diagnose' : 'Manual/HITL',
 			applyCommand: null,
+			applyStepType: 'Manual/HITL',
 			ownerApplyRequired: false,
-			steps: ['Investigate', 'Do not promote'],
+			steps: ['Diagnose content parity', 'Update Preview before Production'],
 		};
 	}
 	if (action === 'BLOCKED') {
 		return {
 			dryRunCommand: null,
+			dryRunStepType: 'Manual/HITL',
 			applyCommand: null,
+			applyStepType: 'Manual/HITL',
 			ownerApplyRequired: false,
-			steps: ['Investigate', 'Do not promote'],
+			steps: ['Investigate blocker', 'Do not promote'],
 		};
 	}
 	if (action === 'UNKNOWN') {
+		if (reasonCode === 'CANONICAL_UNAVAILABLE') {
+			return {
+				dryRunCommand: null,
+				dryRunStepType: 'Manual/HITL',
+				applyCommand: null,
+				applyStepType: 'Manual/HITL',
+				ownerApplyRequired: false,
+				steps: ['Fix canonical registry definition', 'Do not promote'],
+			};
+		}
+		const unverifiedEnvs = (['local', 'preview', 'production'] as const).filter(
+			(env) => environments?.[env] === 'unknown',
+		);
+		const dryRunCommand =
+			unverifiedEnvs.length > 0
+				? `pnpm db:availability:verify -- --targets ${unverifiedEnvs.join(',')}`
+				: null;
 		return {
-			dryRunCommand: `pnpm dbs ${slug}`,
+			dryRunCommand,
+			dryRunStepType: dryRunCommand ? 'Diagnose' : 'Manual/HITL',
 			applyCommand: null,
+			applyStepType: 'Manual/HITL',
 			ownerApplyRequired: false,
-			steps: ['Refresh evidence', 'Do not promote'],
+			steps: ['Diagnose target database availability', 'Do not promote'],
 		};
 	}
 	return {
 		dryRunCommand: null,
+		dryRunStepType: 'Verify',
 		applyCommand: null,
+		applyStepType: 'Verify',
 		ownerApplyRequired: false,
 		steps: [],
 	};
@@ -227,7 +272,13 @@ export function presentPromotionRow(input: {
 		evidence: combineEvidence(ENVS.map((env) => input.envEvidence[env])),
 		envEvidence: input.envEvidence,
 		uncertaintyNotes: uncertaintyNotesForEnvironments(input.environments),
-		handoff: derivePromotionHandoff(input.action, input.reasonCode, input.slug, input.eventType),
+		handoff: derivePromotionHandoff(
+			input.action,
+			input.reasonCode,
+			input.slug,
+			input.eventType,
+			input.environments,
+		),
 	};
 }
 

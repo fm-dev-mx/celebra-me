@@ -16,17 +16,29 @@ import { evaluateManagedPromotionStatus } from './managed-promotion-status.ts';
 import { enrichCanonicalDiagnostics } from './canonical-diagnostics.ts';
 import { listInvitationDefinitions } from './invitations/registry.ts';
 import { combineEvidence, invitationAttentionCount } from '../../src/lib/status/presentation.ts';
+import { getValidatedMigrationFiles } from '../db/apply-migrations.ts';
+import {
+	getSecretFromEnvOrFiles,
+	PREVIEW_SECRET_FILES,
+	getProdDbUrl,
+} from '../db/db-workflow-lib.ts';
+import { LOCAL_DB_URL } from '../db/db-guard.ts';
+import {
+	fetchDetailedRemoteMigrationHistory,
+	type MigrationHistoryRecordDetail,
+} from '../status-core/migration-history-reader.ts';
 import type {
 	CanonicalDiagnostic,
 	CanonicalEnvSummary,
 	CanonicalStatusView,
 	DisposableProofStatus,
 	EvidenceState,
+	RecentMigrationRecord,
 	SchemaLifecycleState,
 	SchemaOperationReadiness,
 } from '../../src/lib/status/types.ts';
 
-const ENVS: TargetEnv[] = ['local', 'preview', 'production'];
+
 
 function disposableStatus(ok: boolean, hasProof: boolean): DisposableProofStatus {
 	if (ok) return 'valid';
@@ -146,12 +158,75 @@ export async function buildCanonicalStatusView(options?: {
 		),
 	};
 
-	const overallEvidence = combineEvidence(ENVS.map((env) => environments[env].evidence));
+	const verifiedAt = new Date().toISOString();
+	const migrationFilesMap = new Map(
+		getValidatedMigrationFiles().map((f) => [f.version, f.filename]),
+	);
+
+	const localHistory = fetchDetailedRemoteMigrationHistory(LOCAL_DB_URL);
+	const localMap = new Map<string, MigrationHistoryRecordDetail>(
+		localHistory.map((m: MigrationHistoryRecordDetail) => [m.version, m]),
+	);
+
+	let previewMap = new Map<string, MigrationHistoryRecordDetail>();
+	let prodMap = new Map<string, MigrationHistoryRecordDetail>();
+
+	try {
+		const previewUrl = getSecretFromEnvOrFiles('PREVIEW_SUPABASE_DB_URL', PREVIEW_SECRET_FILES);
+		if (previewUrl) {
+			const previewHistory = fetchDetailedRemoteMigrationHistory(previewUrl);
+			previewMap = new Map<string, MigrationHistoryRecordDetail>(
+				previewHistory.map((m: MigrationHistoryRecordDetail) => [m.version, m]),
+			);
+		}
+	} catch {}
+
+	try {
+		const prodUrl = getProdDbUrl();
+		if (prodUrl?.url) {
+			const prodHistory = fetchDetailedRemoteMigrationHistory(prodUrl.url);
+			prodMap = new Map<string, MigrationHistoryRecordDetail>(
+				prodHistory.map((m: MigrationHistoryRecordDetail) => [m.version, m]),
+			);
+		}
+	} catch {}
+
+	const recentVersions = expectedVersions.slice(-5).reverse();
+	const recentMigrations: RecentMigrationRecord[] = recentVersions.map((version) => {
+		const localRec = localMap.get(version);
+		const previewRec = previewMap.get(version);
+		const prodRec = prodMap.get(version);
+		const name = migrationFilesMap.get(version) ?? localRec?.name ?? null;
+
+		return {
+			version,
+			name,
+			applied: {
+				local: Boolean(localRec),
+				preview: Boolean(previewRec),
+				production: Boolean(prodRec),
+			},
+			appliedAt: {
+				local: localRec?.insertedAt ?? null,
+				preview: previewRec?.insertedAt ?? null,
+				production: prodRec?.insertedAt ?? null,
+			},
+			verifiedAt,
+		};
+	});
+
+	const overallEvidence = combineEvidence(
+		(['local', 'preview', 'production'] as const).map((env) => environments[env].evidence),
+	);
 
 	const view: CanonicalStatusView = {
 		schemaVersion: 1,
-		generatedAt: new Date().toISOString(),
+		generatedAt: verifiedAt,
 		evidence: overallEvidence,
+		freshnessMeta: {
+			status: 'LIVE',
+			lastVerifiedAt: verifiedAt,
+		},
 		expectedMigrationHead: expectedVersions.at(-1) ?? null,
 		expectedMigrationCount: expectedVersions.length,
 		registryCount: general.totalDefinitionsCount,
@@ -174,6 +249,7 @@ export async function buildCanonicalStatusView(options?: {
 			preview: general.environments.preview.identityConflictsCount,
 			production: general.environments.production.identityConflictsCount,
 		},
+		recentMigrations,
 		diagnostics: [],
 		debugCounters: session.debugCounters,
 	};

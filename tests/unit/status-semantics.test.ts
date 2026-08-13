@@ -47,8 +47,8 @@ describe('status semantics', () => {
 		const remediation = authorizationRemediation(production);
 		expect(remediation.semantic).toBe('blocked');
 		expect(remediation.noCanonicalRemediation).toBe(true);
-		expect(remediation.command).toBe('pnpm dbs');
-		expect(remediation.command).not.toContain('--apply');
+		expect(remediation.command).toBeNull();
+		expect(remediation.stepType).toBe('Manual/HITL');
 	});
 
 	it('does not treat an unverified empty publication queue as in-sync', () => {
@@ -80,15 +80,18 @@ describe('status semantics', () => {
 		expect(queue.meaning).not.toMatch(/no hay invitaciones/i);
 	});
 
-	it('does not treat invitation attention 0 as verified without evidence', () => {
+	it('returns command null for aggregate invitation attention > 0 without fake remediation command', () => {
 		const row = {
 			...buildCanonicalStatusViewFixture().environments.preview,
-			evidence: 'UNVERIFIED' as const,
-			invitationAttentionCount: 0,
+			evidence: 'LIVE' as const,
+			invitationAttentionCount: 2,
 		};
 		const remediation = invitationAttentionRemediation(row);
 		expect(remediation.semantic).toBe('unverified');
-		expect(remediation.command).toBe('pnpm dbs');
+		expect(remediation.command).toBeNull();
+		expect(remediation.noCanonicalRemediation).toBe(true);
+		expect(remediation.nextAction).toContain('cola de publicación');
+		expect(remediation.stepType).toBe('Verify');
 	});
 
 	it('surfaces disposable proof as a confirmed gap with the existing migrate command', () => {
