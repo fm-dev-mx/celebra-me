@@ -87,6 +87,8 @@ const diagnostic = z
 	})
 	.strict();
 
+const nextStepType = z.enum(['Diagnose', 'Verify', 'Apply', 'Manual/HITL']);
+
 const promotionRow = z
 	.object({
 		slug,
@@ -115,11 +117,42 @@ const promotionRow = z
 		handoff: z
 			.object({
 				dryRunCommand: z.string().max(400).nullable(),
+				dryRunStepType: nextStepType,
 				applyCommand: z.string().max(400).nullable(),
+				applyStepType: nextStepType,
 				ownerApplyRequired: z.boolean(),
 				steps: z.array(z.string().min(1).max(80)).max(8),
 			})
 			.strict(),
+	})
+	.strict();
+
+const freshnessMeta = z
+	.object({
+		status: z.enum(['LIVE', 'CACHED', 'STALE', 'REVALIDATING', 'UNVERIFIED']),
+		lastVerifiedAt: z.iso.datetime({ offset: true }),
+	})
+	.strict();
+
+const recentMigrationRecord = z
+	.object({
+		version: migrationVersion,
+		name: z.string().nullable(),
+		applied: z
+			.object({
+				local: z.boolean(),
+				preview: z.boolean(),
+				production: z.boolean(),
+			})
+			.strict(),
+		appliedAt: z
+			.object({
+				local: z.string().nullable(),
+				preview: z.string().nullable(),
+				production: z.string().nullable(),
+			})
+			.strict(),
+		verifiedAt: z.iso.datetime({ offset: true }),
 	})
 	.strict();
 
@@ -128,6 +161,7 @@ export const CanonicalStatusViewSchema: z.ZodType<CanonicalStatusView> = z
 		schemaVersion: z.literal(1),
 		generatedAt: z.iso.datetime({ offset: true }),
 		evidence,
+		freshnessMeta: freshnessMeta.optional(),
 		expectedMigrationHead: migrationVersion.nullable(),
 		expectedMigrationCount: z.number().int().nonnegative(),
 		registryCount: z.number().int().nonnegative().max(1000),
@@ -162,6 +196,7 @@ export const CanonicalStatusViewSchema: z.ZodType<CanonicalStatusView> = z
 				production: z.number().int().nonnegative().max(100_000),
 			})
 			.strict(),
+		recentMigrations: z.array(recentMigrationRecord).max(50).optional(),
 		diagnostics: z.array(diagnostic).max(200),
 		debugCounters: z
 			.object({

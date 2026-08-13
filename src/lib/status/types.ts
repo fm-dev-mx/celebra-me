@@ -60,9 +60,13 @@ export type DisposableProofStatus = 'valid' | 'missing' | 'stale';
 /** Presentation category for operator UI/CLI. Not a classifier. */
 export type StatusSemantic = 'verified' | 'unverified' | 'blocked' | 'neutral';
 
+export type NextStepType = 'Diagnose' | 'Verify' | 'Apply' | 'Manual/HITL';
+
 export interface PromotionHandoff {
 	dryRunCommand: string | null;
+	dryRunStepType: NextStepType;
 	applyCommand: string | null;
+	applyStepType: NextStepType;
 	ownerApplyRequired: boolean;
 	steps: string[];
 }
@@ -136,10 +140,32 @@ export interface CanonicalDisposableProof {
 	evidence: EvidenceState;
 }
 
+export interface RecentMigrationRecord {
+	version: string;
+	name: string | null;
+	applied: {
+		local: boolean;
+		preview: boolean;
+		production: boolean;
+	};
+	appliedAt: {
+		local: string | null;
+		preview: string | null;
+		production: string | null;
+	};
+	verifiedAt: string;
+}
+
+export interface FreshnessMeta {
+	status: 'LIVE' | 'CACHED' | 'STALE' | 'REVALIDATING' | 'UNVERIFIED';
+	lastVerifiedAt: string;
+}
+
 export interface CanonicalStatusView {
 	schemaVersion: 1;
 	generatedAt: string;
 	evidence: EvidenceState;
+	freshnessMeta?: FreshnessMeta;
 	expectedMigrationHead: string | null;
 	expectedMigrationCount: number;
 	registryCount: number;
@@ -150,6 +176,7 @@ export interface CanonicalStatusView {
 	promotions: CanonicalPromotionRow[];
 	activeRowCounts: Record<TargetEnv, number>;
 	identityConflictCounts: Record<TargetEnv, number>;
+	recentMigrations?: RecentMigrationRecord[];
 	diagnostics: CanonicalDiagnostic[];
 	debugCounters?: {
 		invocations: number;

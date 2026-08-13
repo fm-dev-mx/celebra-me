@@ -135,10 +135,44 @@ function runStatusChild(args: string[], timeoutMs: number): Promise<unknown> {
 	});
 }
 
-function labelCached(view: CanonicalStatusView): CanonicalStatusView {
+import { existsSync, promises as fsPromises } from 'node:fs';
+
+const SNAPSHOT_FILE = resolve(process.cwd(), '.agent/status-snapshot.json');
+
+export async function readDurableStatusSnapshot(): Promise<CanonicalStatusView | null> {
+	try {
+		if (!existsSync(SNAPSHOT_FILE)) return null;
+		const raw = await fsPromises.readFile(SNAPSHOT_FILE, 'utf8');
+		const parsed: unknown = JSON.parse(raw);
+		return CanonicalStatusViewSchema.parse(parsed);
+	} catch {
+		return null;
+	}
+}
+
+export async function writeDurableStatusSnapshot(view: CanonicalStatusView): Promise<void> {
+	try {
+		const dir = resolve(process.cwd(), '.agent');
+		if (!existsSync(dir)) {
+			await fsPromises.mkdir(dir, { recursive: true });
+		}
+		await fsPromises.writeFile(SNAPSHOT_FILE, JSON.stringify(view, null, 2), 'utf8');
+	} catch (error) {
+		console.warn('[canonical-status] Unable to write durable snapshot:', error);
+	}
+}
+
+function labelCached(
+	view: CanonicalStatusView,
+	freshnessStatus: 'LIVE' | 'CACHED' | 'STALE' | 'REVALIDATING' | 'UNVERIFIED' = 'CACHED',
+): CanonicalStatusView {
 	return {
 		...view,
 		evidence: view.evidence === 'UNVERIFIED' ? 'UNVERIFIED' : 'CACHED',
+		freshnessMeta: {
+			status: freshnessStatus,
+			lastVerifiedAt: view.generatedAt,
+		},
 		environments: {
 			local: {
 				...view.environments.local,
@@ -167,10 +201,24 @@ export async function readCanonicalStatusLocal(): Promise<CanonicalStatusView> {
 }
 
 export async function getCanonicalStatusView(): Promise<CanonicalStatusView> {
-	if (cache && Date.now() - cache.createdAtMs < CANONICAL_STATUS_CACHE_TTL_MS) {
-		return labelCached(cache.view);
+	if (cache) {
+		const ageMs = Date.now() - cache.createdAtMs;
+		const freshnessStatus = ageMs < CANONICAL_STATUS_CACHE_TTL_MS ? 'LIVE' : 'STALE';
+		return labelCached(cache.view, freshnessStatus);
 	}
-	return await readCanonicalStatusLocal();
+
+	const durable = await readDurableStatusSnapshot();
+	if (durable) {
+		const ageMs = Date.now() - new Date(durable.generatedAt).getTime();
+		const freshnessStatus = ageMs < CANONICAL_STATUS_CACHE_TTL_MS ? 'LIVE' : 'STALE';
+		cache = { view: durable, createdAtMs: new Date(durable.generatedAt).getTime() };
+		return labelCached(durable, freshnessStatus);
+	}
+
+	const initial = await readCanonicalStatusLocal();
+	cache = { view: initial, createdAtMs: Date.now() };
+	void writeDurableStatusSnapshot(initial);
+	return initial;
 }
 
 export async function refreshCanonicalStatusView(options?: {
@@ -185,13 +233,21 @@ export async function refreshCanonicalStatusView(options?: {
 		];
 		const parsed = await runStatusChild(args, CANONICAL_STATUS_TIMEOUT_MS);
 		const incoming = CanonicalStatusViewSchema.parse(parsed);
+		const previousSnapshot = cache?.view ?? (await readDurableStatusSnapshot());
 		const merged = mergeCanonicalStatusView({
-			previous: cache?.view ?? null,
+			previous: previousSnapshot,
 			incoming,
 			env: options?.env,
 			domain: options?.domain,
 		});
 		cache = { view: merged, createdAtMs: Date.now() };
-		return merged;
+		await writeDurableStatusSnapshot(merged);
+		return {
+			...merged,
+			freshnessMeta: {
+				status: 'LIVE',
+				lastVerifiedAt: merged.generatedAt,
+			},
+		};
 	});
 }

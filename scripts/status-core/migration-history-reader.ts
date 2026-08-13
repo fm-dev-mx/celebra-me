@@ -69,3 +69,68 @@ export function fetchRemoteMigrationVersions(
 		`Failed to query schema_migrations table: exit code ${result.status}.${details ? `\n${details}` : ''}`,
 	);
 }
+
+export interface MigrationHistoryRecordDetail {
+	version: string;
+	name: string | null;
+	insertedAt: string | null;
+}
+
+const DETAILED_MIGRATIONS_SQL = `
+select version, coalesce(name, ''), coalesce(inserted_at::text, '')
+from supabase_migrations.schema_migrations
+order by version desc;
+`;
+
+export function fetchDetailedRemoteMigrationHistory(
+	dbUrl: string,
+	runner: typeof runCommand = runCommand,
+): MigrationHistoryRecordDetail[] {
+	try {
+		const result = runner(
+			'psql',
+			[
+				'--set',
+				'ON_ERROR_STOP=1',
+				'--no-align',
+				'--tuples-only',
+				'--field-separator',
+				'|',
+				'--dbname',
+				dbUrl,
+			],
+			{
+				input: DETAILED_MIGRATIONS_SQL,
+				throwOnError: false,
+				redact: [dbUrl],
+			},
+		);
+		if (result.status === 0) {
+			return result.stdout
+				.split(/\r?\n/)
+				.map((line) => line.trim())
+				.filter(Boolean)
+				.map((line) => {
+					const [version = '', name = '', insertedAt = ''] = line.split('|');
+					return {
+						version: version.trim(),
+						name: name.trim() || null,
+						insertedAt: insertedAt.trim() || null,
+					};
+				});
+		}
+	} catch {
+		// Fallback if inserted_at / name column is absent in custom schema
+	}
+
+	try {
+		const simple = fetchRemoteMigrationVersions(dbUrl, runner);
+		return simple.remoteVersions.map((v) => ({
+			version: v,
+			name: null,
+			insertedAt: null,
+		}));
+	} catch {
+		return [];
+	}
+}
