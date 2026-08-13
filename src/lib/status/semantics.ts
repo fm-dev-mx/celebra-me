@@ -34,7 +34,10 @@ export interface OperatorRemediation {
 	verifyWhen: string;
 	requiresOwner: boolean;
 	noCanonicalRemediation: boolean;
-	stepType: NextStepType;
+	/** Null when this item is informational and has no concrete operation. */
+	stepType: NextStepType | null;
+	/** Optional Diagnose command that must never be labeled as remediation. */
+	optionalDiagnosticCommand?: string | null;
 }
 
 const REFRESH_COMMAND = 'pnpm dbs';
@@ -370,16 +373,16 @@ export function invitationAttentionRemediation(row: CanonicalEnvSummary): Operat
 		return noneNeeded('Las invitaciones del registro coinciden con el canónico en este entorno.', environmentLabel);
 	}
 	return {
-		semantic: 'unverified',
+		semantic: 'neutral',
 		meaning: `${row.invitationAttentionCount} invitación(es) del registro no están en match.`,
 		why: 'El conteo incluye behind, absent, diverged, conflict u unknown. La cola de publicación decide la acción.',
 		environmentLabel,
-		nextAction: 'Consulte la tarjeta correspondiente en la cola de publicación para ver la acción requerida.',
+		nextAction: 'Inspeccione las tarjetas de la cola de publicación. Este conteo no es una operación.',
 		command: null,
 		verifyWhen: 'invitationAttentionCount = 0 con evidencia suficiente.',
 		requiresOwner: false,
 		noCanonicalRemediation: true,
-		stepType: 'Verify',
+		stepType: null,
 	};
 }
 
@@ -423,20 +426,43 @@ export function publicationRemediation(row: CanonicalPromotionRow): OperatorReme
 				stepType: 'Manual/HITL',
 			};
 		}
-		const hasDiagCommand = row.handoff.dryRunCommand != null;
+		const needsRevalidation = row.handoff.dryRunCommand === 'pnpm dbs';
+		const diagnosticCause = row.uncertaintyNotes.find((note) =>
+			/^[A-Z][A-Z0-9_]+$/.test(note),
+		);
+		if (needsRevalidation) {
+			return {
+				semantic: 'unverified',
+				meaning: PUBLICATION_REASON_LABELS.EVIDENCE_INCOMPLETE,
+				why: row.uncertaintyNotes.length > 0 ? row.uncertaintyNotes.join(' · ') : null,
+				environmentLabel,
+				nextAction:
+					'Revalide evidencia en vivo. No promocione mientras el entorno no haya sido sondado.',
+				command: row.handoff.dryRunCommand,
+				verifyWhen: 'decidePromotionAction deja de ser UNKNOWN.',
+				requiresOwner: false,
+				noCanonicalRemediation: false,
+				stepType: 'Diagnose',
+			};
+		}
 		return {
 			semantic: 'unverified',
 			meaning: PUBLICATION_REASON_LABELS.EVIDENCE_INCOMPLETE,
-			why: row.uncertaintyNotes.length > 0 ? row.uncertaintyNotes.join(' · ') : null,
+			why:
+				row.uncertaintyNotes.length > 0
+					? row.uncertaintyNotes.join(' · ')
+					: diagnosticCause
+						? `Causa: ${diagnosticCause}.`
+						: 'El entorno está en vivo pero no se pudo construir la huella promocional.',
 			environmentLabel,
-			nextAction: hasDiagCommand
-				? 'Diagnostique disponibilidad del entorno de bases de datos antes de evaluar la promoción.'
-				: 'Falta configurar credenciales o conectividad de entorno. No promocione con UNKNOWN.',
-			command: row.handoff.dryRunCommand,
+			nextAction:
+				'No hay remediación canónica. El acceso al entorno tuvo éxito; la clasificación promocional sigue incompleta. No promocione.',
+			command: null,
 			verifyWhen: 'decidePromotionAction deja de ser UNKNOWN.',
 			requiresOwner: false,
-			noCanonicalRemediation: !hasDiagCommand,
-			stepType: row.handoff.dryRunStepType,
+			noCanonicalRemediation: true,
+			stepType: null,
+			optionalDiagnosticCommand: row.handoff.optionalDiagnosticCommand,
 		};
 	}
 	if (row.action === 'BLOCKED') {
@@ -536,16 +562,16 @@ export function publicationQueueRemediation(view: CanonicalStatusView): Operator
 	}
 	const blocked = view.promotions.some((row) => row.action === 'BLOCKED');
 	return {
-		semantic: blocked ? 'blocked' : 'unverified',
+		semantic: blocked ? 'blocked' : 'neutral',
 		meaning: `${view.promotions.length} invitación(es) del registro requieren atención.`,
 		why: null,
 		environmentLabel: 'registro',
 		nextAction: 'Siga la acción de cada tarjeta. No promocione filas BLOCKED o UNKNOWN.',
-		command: REFRESH_COMMAND,
+		command: null,
 		verifyWhen: 'promotions.length = 0 con evidencia suficiente.',
-		requiresOwner: view.promotions.some((row) => row.handoff.ownerApplyRequired),
-		noCanonicalRemediation: false,
-		stepType: blocked ? 'Diagnose' : 'Verify',
+		requiresOwner: false,
+		noCanonicalRemediation: true,
+		stepType: null,
 	};
 }
 

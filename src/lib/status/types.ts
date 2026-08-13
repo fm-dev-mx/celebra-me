@@ -68,6 +68,8 @@ export interface PromotionHandoff {
 	applyCommand: string | null;
 	applyStepType: NextStepType;
 	ownerApplyRequired: boolean;
+	/** Optional read-only diagnostic. Never a remediation and never implied to resolve UNKNOWN. */
+	optionalDiagnosticCommand: string | null;
 	steps: string[];
 }
 
@@ -140,20 +142,22 @@ export interface CanonicalDisposableProof {
 	evidence: EvidenceState;
 }
 
+export type MigrationPresence = 'APPLIED' | 'NOT_APPLIED' | 'UNVERIFIED';
+
 export interface RecentMigrationRecord {
 	version: string;
 	name: string | null;
-	applied: {
-		local: boolean;
-		preview: boolean;
-		production: boolean;
+	presence: {
+		local: MigrationPresence;
+		preview: MigrationPresence;
+		production: MigrationPresence;
 	};
-	appliedAt: {
+	/** Verification timestamp of the migration probe per environment — not an apply time. */
+	verifiedAt: {
 		local: string | null;
 		preview: string | null;
 		production: string | null;
 	};
-	verifiedAt: string;
 }
 
 export interface FreshnessMeta {

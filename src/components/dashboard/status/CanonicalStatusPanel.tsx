@@ -6,6 +6,8 @@ import {
 	DISPOSABLE_LABELS,
 	ENV_LABELS,
 	EVIDENCE_LABELS,
+	FRESHNESS_LABELS,
+	MIGRATION_PRESENCE_LABELS,
 	PUBLICATION_ACTION_LABELS,
 	PUBLICATION_REASON_LABELS,
 	READINESS_LABELS,
@@ -31,6 +33,7 @@ import type {
 	CanonicalDiagnostic,
 	CanonicalPromotionRow,
 	CanonicalStatusView,
+	MigrationPresence,
 	RecentMigrationRecord,
 	StatusSemantic,
 	TargetEnv,
@@ -92,16 +95,19 @@ function RemediationDetails({
 	remediation: OperatorRemediation;
 	summary: string;
 }) {
+	const hasOptional = Boolean(remediation.optionalDiagnosticCommand);
 	const actionable = remediation.semantic === 'unverified' || remediation.semantic === 'blocked';
-	if (!actionable) return null;
+	if (!actionable && !hasOptional) return null;
 	return (
 		<details className="canonical-status__remediation">
 			<summary>{summary}</summary>
 			<div className="canonical-status__remediation-content">
-				<p className="canonical-status__remediation-action">
-					<StepTypeBadge stepType={remediation.stepType} />
-					<span>{remediation.nextAction}</span>
-				</p>
+				{actionable ? (
+					<p className="canonical-status__remediation-action">
+						{remediation.stepType ? <StepTypeBadge stepType={remediation.stepType} /> : null}
+						<span>{remediation.nextAction}</span>
+					</p>
+				) : null}
 				{remediation.noCanonicalRemediation ? (
 					<p className="canonical-status__gap">
 						No hay remediación canónica directa para este elemento.
@@ -110,6 +116,12 @@ function RemediationDetails({
 				{remediation.command ? (
 					<div className="canonical-status__remediation-cmd">
 						<CopyableCommand command={remediation.command} />
+					</div>
+				) : null}
+				{remediation.optionalDiagnosticCommand ? (
+					<div className="canonical-status__optional-diagnostic">
+						<p>Diagnóstico opcional (no remedia UNKNOWN):</p>
+						<CopyableCommand command={remediation.optionalDiagnosticCommand} />
 					</div>
 				) : null}
 			</div>
@@ -149,7 +161,9 @@ function AttentionCard({ row }: { row: CanonicalPromotionRow }) {
 				<p className="canonical-status__card-badges">
 					<span>{formatTransitionLabel(row.source, row.destination)}</span>
 					<span className="canonical-status__action">{PUBLICATION_ACTION_LABELS[row.action]}</span>
-					<StepTypeBadge stepType={row.handoff.dryRunStepType} />
+					{row.handoff.dryRunCommand ? (
+						<StepTypeBadge stepType={row.handoff.dryRunStepType} />
+					) : null}
 					{row.handoff.applyCommand ? (
 						<>
 							<span>➔</span>
@@ -186,6 +200,15 @@ function AttentionCard({ row }: { row: CanonicalPromotionRow }) {
 						</span>
 					</p>
 					<CopyableCommand command={row.handoff.dryRunCommand} />
+				</div>
+			) : null}
+
+			{row.handoff.optionalDiagnosticCommand ? (
+				<div className="canonical-status__optional-diagnostic">
+					<p className="canonical-status__command-label">
+						<span>Diagnóstico opcional (no remedia UNKNOWN):</span>
+					</p>
+					<CopyableCommand command={row.handoff.optionalDiagnosticCommand} />
 				</div>
 			) : null}
 
@@ -256,6 +279,25 @@ function DiagnosticsList({ items }: { items: CanonicalDiagnostic[] }) {
 	);
 }
 
+function MigrationPresenceCell({
+	presence,
+	verifiedAt,
+}: {
+	presence: MigrationPresence;
+	verifiedAt: string | null;
+}) {
+	const modifier =
+		presence === 'APPLIED' ? 'yes' : presence === 'NOT_APPLIED' ? 'no' : 'unverified';
+	return (
+		<span className={`canonical-status__applied-badge canonical-status__applied-badge--${modifier}`}>
+			{MIGRATION_PRESENCE_LABELS[presence]}
+			{verifiedAt && presence !== 'UNVERIFIED' ? (
+				<span className="canonical-status__probe-time"> Sonda: {formatWhen(verifiedAt)}</span>
+			) : null}
+		</span>
+	);
+}
+
 function RecentMigrationsSection({ items }: { items?: RecentMigrationRecord[] }) {
 	if (!items || items.length === 0) return null;
 	return (
@@ -264,7 +306,8 @@ function RecentMigrationsSection({ items }: { items?: RecentMigrationRecord[] })
 				<h2 id="migrations-title">Migraciones recientes autoritativas</h2>
 				<p>
 					Registro de <code>supabase_migrations.schema_migrations</code> en cada base de datos
-					persistente (últimas 5 migraciones).
+					persistente (últimas 5 migraciones). La marca de tiempo es la de la sonda, no de
+					aplicación.
 				</p>
 			</div>
 			<table className="canonical-status__matrix">
@@ -274,7 +317,6 @@ function RecentMigrationsSection({ items }: { items?: RecentMigrationRecord[] })
 						<th>Local</th>
 						<th>Preview</th>
 						<th>Producción</th>
-						<th>Verificado por el panel</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -287,39 +329,23 @@ function RecentMigrationsSection({ items }: { items?: RecentMigrationRecord[] })
 								) : null}
 							</th>
 							<td>
-								{rec.applied.local ? (
-									<span className="canonical-status__applied-badge canonical-status__applied-badge--yes">
-										Aplicada {rec.appliedAt.local ? `(${formatWhen(rec.appliedAt.local)})` : ''}
-									</span>
-								) : (
-									<span className="canonical-status__applied-badge canonical-status__applied-badge--no">
-										No aplicada
-									</span>
-								)}
+								<MigrationPresenceCell
+									presence={rec.presence.local}
+									verifiedAt={rec.verifiedAt.local}
+								/>
 							</td>
 							<td>
-								{rec.applied.preview ? (
-									<span className="canonical-status__applied-badge canonical-status__applied-badge--yes">
-										Aplicada {rec.appliedAt.preview ? `(${formatWhen(rec.appliedAt.preview)})` : ''}
-									</span>
-								) : (
-									<span className="canonical-status__applied-badge canonical-status__applied-badge--no">
-										Sin aplicar / No verificada
-									</span>
-								)}
+								<MigrationPresenceCell
+									presence={rec.presence.preview}
+									verifiedAt={rec.verifiedAt.preview}
+								/>
 							</td>
 							<td>
-								{rec.applied.production ? (
-									<span className="canonical-status__applied-badge canonical-status__applied-badge--yes">
-										Aplicada {rec.appliedAt.production ? `(${formatWhen(rec.appliedAt.production)})` : ''}
-									</span>
-								) : (
-									<span className="canonical-status__applied-badge canonical-status__applied-badge--no">
-										Sin aplicar / No verificada
-									</span>
-								)}
+								<MigrationPresenceCell
+									presence={rec.presence.production}
+									verifiedAt={rec.verifiedAt.production}
+								/>
 							</td>
-							<td>{formatWhen(rec.verifiedAt)}</td>
 						</tr>
 					))}
 				</tbody>
@@ -366,16 +392,18 @@ export default function CanonicalStatusPanel({ initialView = null }: CanonicalSt
 
 	const freshnessLabel = useMemo(() => {
 		if (!view?.freshnessMeta) return null;
+		const when = formatWhen(view.freshnessMeta.lastVerifiedAt);
 		switch (view.freshnessMeta.status) {
 			case 'LIVE':
-				return 'En vivo (evidencia reciente)';
+				return `${FRESHNESS_LABELS.LIVE} (sonda de esta consulta)`;
 			case 'CACHED':
+				return `${FRESHNESS_LABELS.CACHED} (verificado ${when})`;
 			case 'STALE':
-				return `Caché duradera (${formatWhen(view.freshnessMeta.lastVerifiedAt)})`;
+				return `${FRESHNESS_LABELS.STALE} (verificado ${when}; revalide para evidencia vigente)`;
 			case 'REVALIDATING':
-				return 'Revalidando…';
+				return `${FRESHNESS_LABELS.REVALIDATING}…`;
 			default:
-				return 'Sin verificar';
+				return FRESHNESS_LABELS.UNVERIFIED;
 		}
 	}, [view]);
 
@@ -390,7 +418,10 @@ export default function CanonicalStatusPanel({ initialView = null }: CanonicalSt
 						lo determina la evidencia, no el hecho de consultar.
 					</p>
 					{freshnessLabel ? (
-						<p className="canonical-status__freshness">
+						<p
+							className="canonical-status__freshness"
+							data-freshness={view?.freshnessMeta?.status ?? 'UNVERIFIED'}
+						>
 							<strong>Frescura de evidencia:</strong> {freshnessLabel}
 						</p>
 					) : null}
@@ -523,7 +554,7 @@ export default function CanonicalStatusPanel({ initialView = null }: CanonicalSt
 												)}
 											/>
 										</td>
-										<td>
+										<td className="canonical-status__attention-count">
 											<Indicator
 												remediation={invitationAttentionRemediation(row)}
 												label={

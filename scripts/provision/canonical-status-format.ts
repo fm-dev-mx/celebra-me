@@ -15,6 +15,7 @@ import {
 import type {
 	CanonicalPromotionRow,
 	CanonicalStatusView,
+	MigrationPresence,
 	StatusSemantic,
 	TargetEnv,
 } from '../../src/lib/status/types.ts';
@@ -135,6 +136,12 @@ export function formatAttentionCard(
 		);
 	}
 
+	if (row.handoff.optionalDiagnosticCommand) {
+		lines.push(
+			`   ${c.dim('Optional:'.padEnd(labelWidth))} ${c.brightCyan(row.handoff.optionalDiagnosticCommand)} ${c.dim('(diagnostic only; does not remediate UNKNOWN)')}`,
+		);
+	}
+
 	if (verbose) {
 		lines.push(`   ${c.dim('Evidence:'.padEnd(labelWidth))} ${row.evidence}`);
 		lines.push(`   ${c.dim('Steps:'.padEnd(labelWidth))} ${row.handoff.steps.join(' → ')}`);
@@ -234,17 +241,26 @@ function formatDisposableProofSection(view: CanonicalStatusView, headerWidth: nu
 	return lines;
 }
 
+function formatMigrationPresence(
+	presence: MigrationPresence,
+	c: ReturnType<typeof getColors>,
+): string {
+	if (presence === 'APPLIED') return c.brightGreen('APPLIED');
+	if (presence === 'NOT_APPLIED') return c.dim('NOT_APPLIED');
+	return c.brightYellow('UNVERIFIED');
+}
+
 function formatRecentMigrationsSection(view: CanonicalStatusView, headerWidth: number): string[] {
 	if (!view.recentMigrations || view.recentMigrations.length === 0) return [];
 	const c = getColors();
 	const lines: string[] = [
 		c.dim('─'.repeat(headerWidth)),
-		`  ${c.bold('RECENT MIGRATIONS (Authoritative DB records)')}`,
+		`  ${c.bold('RECENT MIGRATIONS (Authoritative DB records; probe time is not apply time)')}`,
 	];
 	for (const rec of view.recentMigrations) {
-		const local = rec.applied.local ? c.brightGreen('Applied') : c.dim('Not applied');
-		const preview = rec.applied.preview ? c.brightGreen('Applied') : c.dim('Not applied');
-		const prod = rec.applied.production ? c.brightGreen('Applied') : c.dim('Not applied');
+		const local = formatMigrationPresence(rec.presence.local, c);
+		const preview = formatMigrationPresence(rec.presence.preview, c);
+		const prod = formatMigrationPresence(rec.presence.production, c);
 		const name = rec.name ? ` (${rec.name})` : '';
 		lines.push(`  - ${rec.version}${name}: local=${local} preview=${preview} prod=${prod}`);
 	}
@@ -392,6 +408,9 @@ export function formatCanonicalStatusView(
 		c.dim('─'.repeat(headerWidth)),
 		`  ${c.headerTitle('CELEBRA-ME OPERATIONAL STATUS')}`,
 		c.dim('─'.repeat(headerWidth)),
+		view.freshnessMeta
+			? `  Evidence freshness: ${view.freshnessMeta.status} (verified ${view.freshnessMeta.lastVerifiedAt})`
+			: `  Evidence: ${view.evidence}`,
 		'',
 		`${padVisible('', labelCol)}${c.brightCyan(padVisible('LOCAL', envCol))}${c.brightCyan(padVisible('PREVIEW', envCol))}${c.brightCyan(padVisible('PRODUCTION', envCol))}`,
 		c.dim('─'.repeat(headerWidth)),

@@ -68,7 +68,7 @@ describe('presentation parity with decidePromotionAction', () => {
 		).toBe('MANAGED_DIVERGENCE');
 	});
 
-	it('surfaces PRODUCTION UNVERIFIED without changing Preview-first promotion', () => {
+	it('surfaces PRODUCTION UNKNOWN without changing Preview-first promotion', () => {
 		const decision = decidePromotionAction({
 			canonicalAvailable: true,
 			local: 'match',
@@ -88,7 +88,7 @@ describe('presentation parity with decidePromotionAction', () => {
 			environments: { local: 'match', preview: 'behind', production: 'unknown' },
 			envEvidence: { local: 'LIVE', preview: 'LIVE', production: 'LIVE' },
 		});
-		expect(row.uncertaintyNotes).toContain('PRODUCTION UNVERIFIED');
+		expect(row.uncertaintyNotes).toContain('PRODUCTION UNKNOWN');
 		expect(row.action).toBe('PROMOTE_PREVIEW');
 		expect(row.handoff.ownerApplyRequired).toBe(false);
 	});
@@ -124,7 +124,7 @@ describe('presentation parity with decidePromotionAction', () => {
 			local: 'match',
 			preview: 'match',
 			production: 'unknown',
-		})).toEqual(['PRODUCTION UNVERIFIED']);
+		})).toEqual(['PRODUCTION UNKNOWN']);
 	});
 
 	it('attaches existing diagnostic commands to BLOCKED and UNKNOWN handoffs without self-loops', () => {
@@ -143,7 +143,7 @@ describe('presentation parity with decidePromotionAction', () => {
 		);
 		expect(identity.handoff.steps).toEqual(['Diagnose identity conflict', 'Do not promote']);
 
-		const unknown = presentPromotionRow({
+		const unknownUnprobed = presentPromotionRow({
 			slug: 'demo',
 			title: 'Demo',
 			eventType: 'boda',
@@ -152,10 +152,26 @@ describe('presentation parity with decidePromotionAction', () => {
 			environments: { local: 'unknown', preview: 'match', production: 'match' },
 			envEvidence: { local: 'UNVERIFIED', preview: 'LIVE', production: 'LIVE' },
 		});
-		expect(unknown.handoff.dryRunStepType).toBe('Diagnose');
-		expect(unknown.handoff.dryRunCommand).toBe('pnpm db:availability:verify -- --targets local');
-		expect(unknown.handoff.dryRunCommand).not.toBe('pnpm dbs demo');
-		expect(unknown.handoff.applyCommand).toBeNull();
+		expect(unknownUnprobed.handoff.dryRunStepType).toBe('Diagnose');
+		expect(unknownUnprobed.handoff.dryRunCommand).toBe('pnpm dbs');
+		expect(unknownUnprobed.handoff.dryRunCommand).not.toContain('db:availability:verify');
+		expect(unknownUnprobed.handoff.optionalDiagnosticCommand).toBeNull();
+		expect(unknownUnprobed.handoff.applyCommand).toBeNull();
+
+		const unknownLiveFingerprint = presentPromotionRow({
+			slug: 'demo',
+			title: 'Demo',
+			eventType: 'boda',
+			action: 'UNKNOWN',
+			reasonCode: 'EVIDENCE_INCOMPLETE',
+			environments: { local: 'unknown', preview: 'match', production: 'match' },
+			envEvidence: { local: 'LIVE', preview: 'LIVE', production: 'LIVE' },
+		});
+		expect(unknownLiveFingerprint.handoff.dryRunCommand).toBeNull();
+		expect(unknownLiveFingerprint.handoff.optionalDiagnosticCommand).toBe(
+			'pnpm dbs --diagnostics',
+		);
+		expect(unknownLiveFingerprint.handoff.applyCommand).toBeNull();
 
 		const canonicalUnavailable = presentPromotionRow({
 			slug: 'demo',

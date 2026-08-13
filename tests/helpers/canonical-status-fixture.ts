@@ -61,6 +61,7 @@ export function buildCanonicalStatusViewFixture(
 					applyCommand:
 						'pnpm invitation:release -- --slug victoria-y-roberto --targets production --apply',
 					ownerApplyRequired: true,
+					optionalDiagnosticCommand: null,
 					steps: ['Verify dry-run', 'OWNER APPLY in TTY', 'Verify match'],
 					dryRunStepType: 'Verify',
 					applyStepType: 'Apply',

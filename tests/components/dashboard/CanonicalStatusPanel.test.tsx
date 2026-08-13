@@ -123,4 +123,36 @@ describe('CanonicalStatusPanel', () => {
 		).toBeGreaterThan(0);
 		expect(screen.getAllByText(/Schema migrations: CURRENT 75\/75/)).toHaveLength(3);
 	});
+
+	it('distinguishes cached freshness from stale and migration UNVERIFIED from not applied', () => {
+		render(
+			<CanonicalStatusPanel
+				initialView={buildCanonicalStatusViewFixture({
+					freshnessMeta: {
+						status: 'CACHED',
+						lastVerifiedAt: '2026-08-12T22:11:54.000Z',
+					},
+					recentMigrations: [
+						{
+							version: '20260806120000',
+							name: 'base.sql',
+							presence: { local: 'APPLIED', preview: 'UNVERIFIED', production: 'NOT_APPLIED' },
+							verifiedAt: {
+								local: '2026-08-12T22:11:54.000Z',
+								preview: null,
+								production: '2026-08-12T22:11:54.000Z',
+							},
+						},
+					],
+				})}
+			/>,
+		);
+		expect(screen.getByText(/En caché \(verificado/)).toBeInTheDocument();
+		expect(screen.queryByText(/Caché duradera/)).not.toBeInTheDocument();
+		expect(screen.getByRole('heading', { name: 'Migraciones recientes autoritativas' })).toBeInTheDocument();
+		expect(screen.getByText(/Aplicada/)).toBeInTheDocument();
+		expect(screen.getByText(/No aplicada/)).toBeInTheDocument();
+		expect(screen.queryByText(/Sin aplicar \/ No verificada/)).not.toBeInTheDocument();
+		expect(screen.getAllByText(/Sonda:/).length).toBeGreaterThan(0);
+	});
 });

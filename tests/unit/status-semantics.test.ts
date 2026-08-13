@@ -87,11 +87,11 @@ describe('status semantics', () => {
 			invitationAttentionCount: 2,
 		};
 		const remediation = invitationAttentionRemediation(row);
-		expect(remediation.semantic).toBe('unverified');
+		expect(remediation.semantic).toBe('neutral');
 		expect(remediation.command).toBeNull();
 		expect(remediation.noCanonicalRemediation).toBe(true);
 		expect(remediation.nextAction).toContain('cola de publicación');
-		expect(remediation.stepType).toBe('Verify');
+		expect(remediation.stepType).toBeNull();
 	});
 
 	it('surfaces disposable proof as a confirmed gap with the existing migrate command', () => {
@@ -140,5 +140,30 @@ describe('status semantics', () => {
 		expect(promote.semantic).toBe('unverified');
 		expect(promote.requiresOwner).toBe(true);
 		expect(promote.command).toContain('invitation:release');
+	});
+
+	it('does not recommend availability verify when UNKNOWN has live environment evidence', () => {
+		const row = presentPromotionRow({
+			slug: 'demo',
+			title: 'Demo',
+			eventType: 'boda',
+			action: 'UNKNOWN',
+			reasonCode: 'EVIDENCE_INCOMPLETE',
+			environments: { local: 'unknown', preview: 'match', production: 'match' },
+			envEvidence: { local: 'LIVE', preview: 'LIVE', production: 'LIVE' },
+		});
+		row.uncertaintyNotes.push('ASSET_IDENTITY_UNVERIFIED');
+		const remediation = publicationRemediation(row);
+		expect(remediation.command).toBeNull();
+		expect(remediation.noCanonicalRemediation).toBe(true);
+		expect(remediation.optionalDiagnosticCommand).toBe('pnpm dbs --diagnostics');
+		expect(remediation.stepType).toBeNull();
+		expect(JSON.stringify(remediation)).not.toContain('db:availability:verify');
+	});
+
+	it('keeps aggregate publication counts informational without Verify/Diagnose/Apply', () => {
+		const queue = publicationQueueRemediation(buildCanonicalStatusViewFixture());
+		expect(queue.stepType).toBeNull();
+		expect(queue.command).toBeNull();
 	});
 });

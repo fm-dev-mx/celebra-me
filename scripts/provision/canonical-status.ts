@@ -15,18 +15,8 @@ import {
 import { evaluateManagedPromotionStatus } from './managed-promotion-status.ts';
 import { enrichCanonicalDiagnostics } from './canonical-diagnostics.ts';
 import { listInvitationDefinitions } from './invitations/registry.ts';
-import { combineEvidence, invitationAttentionCount } from '../../src/lib/status/presentation.ts';
+import { combineEvidence, invitationAttentionCount, migrationPresenceForEnv } from '../../src/lib/status/evidence.ts';
 import { getValidatedMigrationFiles } from '../db/apply-migrations.ts';
-import {
-	getSecretFromEnvOrFiles,
-	PREVIEW_SECRET_FILES,
-	getProdDbUrl,
-} from '../db/db-workflow-lib.ts';
-import { LOCAL_DB_URL } from '../db/db-guard.ts';
-import {
-	fetchDetailedRemoteMigrationHistory,
-	type MigrationHistoryRecordDetail,
-} from '../status-core/migration-history-reader.ts';
 import type {
 	CanonicalDiagnostic,
 	CanonicalEnvSummary,
@@ -37,8 +27,6 @@ import type {
 	SchemaLifecycleState,
 	SchemaOperationReadiness,
 } from '../../src/lib/status/types.ts';
-
-
 
 function disposableStatus(ok: boolean, hasProof: boolean): DisposableProofStatus {
 	if (ok) return 'valid';
@@ -158,74 +146,37 @@ export async function buildCanonicalStatusView(options?: {
 		),
 	};
 
-	const verifiedAt = new Date().toISOString();
 	const migrationFilesMap = new Map(
-		getValidatedMigrationFiles().map((f) => [f.version, f.filename]),
+		getValidatedMigrationFiles().map((file) => [file.version, file.filename]),
 	);
-
-	const localHistory = fetchDetailedRemoteMigrationHistory(LOCAL_DB_URL);
-	const localMap = new Map<string, MigrationHistoryRecordDetail>(
-		localHistory.map((m: MigrationHistoryRecordDetail) => [m.version, m]),
-	);
-
-	let previewMap = new Map<string, MigrationHistoryRecordDetail>();
-	let prodMap = new Map<string, MigrationHistoryRecordDetail>();
-
-	try {
-		const previewUrl = getSecretFromEnvOrFiles('PREVIEW_SUPABASE_DB_URL', PREVIEW_SECRET_FILES);
-		if (previewUrl) {
-			const previewHistory = fetchDetailedRemoteMigrationHistory(previewUrl);
-			previewMap = new Map<string, MigrationHistoryRecordDetail>(
-				previewHistory.map((m: MigrationHistoryRecordDetail) => [m.version, m]),
-			);
-		}
-	} catch {}
-
-	try {
-		const prodUrl = getProdDbUrl();
-		if (prodUrl?.url) {
-			const prodHistory = fetchDetailedRemoteMigrationHistory(prodUrl.url);
-			prodMap = new Map<string, MigrationHistoryRecordDetail>(
-				prodHistory.map((m: MigrationHistoryRecordDetail) => [m.version, m]),
-			);
-		}
-	} catch {}
-
 	const recentVersions = expectedVersions.slice(-5).reverse();
-	const recentMigrations: RecentMigrationRecord[] = recentVersions.map((version) => {
-		const localRec = localMap.get(version);
-		const previewRec = previewMap.get(version);
-		const prodRec = prodMap.get(version);
-		const name = migrationFilesMap.get(version) ?? localRec?.name ?? null;
-
-		return {
-			version,
-			name,
-			applied: {
-				local: Boolean(localRec),
-				preview: Boolean(previewRec),
-				production: Boolean(prodRec),
-			},
-			appliedAt: {
-				local: localRec?.insertedAt ?? null,
-				preview: previewRec?.insertedAt ?? null,
-				production: prodRec?.insertedAt ?? null,
-			},
-			verifiedAt,
-		};
-	});
+	const recentMigrations: RecentMigrationRecord[] = recentVersions.map((version) => ({
+		version,
+		name: migrationFilesMap.get(version) ?? null,
+		presence: {
+			local: migrationPresenceForEnv(environments.local, version),
+			preview: migrationPresenceForEnv(environments.preview, version),
+			production: migrationPresenceForEnv(environments.production, version),
+		},
+		verifiedAt: {
+			local: environments.local.probedAt,
+			preview: environments.preview.probedAt,
+			production: environments.production.probedAt,
+		},
+	}));
 
 	const overallEvidence = combineEvidence(
 		(['local', 'preview', 'production'] as const).map((env) => environments[env].evidence),
 	);
+	const generatedAt = new Date().toISOString();
 
 	const view: CanonicalStatusView = {
 		schemaVersion: 1,
-		generatedAt: verifiedAt,
+		generatedAt,
 		evidence: overallEvidence,
 		freshnessMeta: {
 			status: 'LIVE',
-			lastVerifiedAt: verifiedAt,
+			lastVerifiedAt: generatedAt,
 		},
 		expectedMigrationHead: expectedVersions.at(-1) ?? null,
 		expectedMigrationCount: expectedVersions.length,
@@ -263,7 +214,20 @@ export async function buildCanonicalStatusView(options?: {
 	});
 	const authFinding = authorizationDiagnostic(environments.production);
 	if (authFinding) view.diagnostics = [authFinding, ...view.diagnostics];
+	annotateUnknownPublicationCauses(view);
 	return view;
+}
+
+function annotateUnknownPublicationCauses(view: CanonicalStatusView): void {
+	for (const row of view.promotions) {
+		if (row.action !== 'UNKNOWN') continue;
+		for (const item of view.diagnostics) {
+			if (item.slug !== row.slug) continue;
+			if (row.uncertaintyNotes.includes(item.code)) continue;
+			if (row.uncertaintyNotes.length >= 8) break;
+			row.uncertaintyNotes.push(item.code);
+		}
+	}
 }
 
 export function buildLocalCanonicalStatusView(): CanonicalStatusView {

@@ -4,6 +4,7 @@ import type {
 	DiagnosticCode,
 	DisposableProofStatus,
 	EvidenceState,
+	MigrationPresence,
 	PromotionAction,
 	PromotionReasonCode,
 	SchemaOperationReadiness,
@@ -51,6 +52,23 @@ export const SEMANTIC_LABELS: Record<StatusSemantic, string> = {
 export const EVIDENCE_LABELS: Record<EvidenceState, string> = {
 	LIVE: 'En vivo',
 	CACHED: 'En caché',
+	UNVERIFIED: 'Sin verificar',
+};
+
+export const FRESHNESS_LABELS: Record<
+	'LIVE' | 'CACHED' | 'STALE' | 'REVALIDATING' | 'UNVERIFIED',
+	string
+> = {
+	LIVE: 'En vivo',
+	CACHED: 'En caché',
+	STALE: 'Obsoleta',
+	REVALIDATING: 'Revalidando',
+	UNVERIFIED: 'Sin verificar',
+};
+
+export const MIGRATION_PRESENCE_LABELS: Record<MigrationPresence, string> = {
+	APPLIED: 'Aplicada',
+	NOT_APPLIED: 'No aplicada',
 	UNVERIFIED: 'Sin verificar',
 };
 

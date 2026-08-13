@@ -3,8 +3,15 @@
  * Child process keeps psql probes off the Astro event loop.
  */
 import { spawn } from 'node:child_process';
-import { resolve } from 'node:path';
+import { existsSync, promises as fsPromises } from 'node:fs';
+import { dirname, resolve } from 'node:path';
 import { ApiError } from '@/lib/rsvp/core/errors';
+import {
+	ENVS,
+	freshnessFromCachedTimestamp,
+	hasPersistableOperationalEvidence,
+	liveFreshnessMeta,
+} from '@/lib/status/evidence';
 import { mergeCanonicalStatusView } from '@/lib/status/merge';
 import { CanonicalStatusViewSchema } from '@/lib/status/schema';
 import type { CanonicalStatusView, TargetEnv } from '@/lib/status/types';
@@ -12,7 +19,8 @@ import type { CanonicalStatusView, TargetEnv } from '@/lib/status/types';
 const STATUS_SCRIPT = resolve(process.cwd(), 'scripts/provision/print-canonical-status.ts');
 export const CANONICAL_STATUS_TIMEOUT_MS = 30_000;
 export const CANONICAL_STATUS_MAX_STDOUT_BYTES = 1024 * 1024;
-export const CANONICAL_STATUS_CACHE_TTL_MS = 60_000;
+
+const DEFAULT_CACHE_FILE = resolve(process.cwd(), '.cache/canonical-status.json');
 
 type QueueJob<T> = {
 	run: () => Promise<T>;
@@ -22,7 +30,8 @@ type QueueJob<T> = {
 
 const queue: QueueJob<unknown>[] = [];
 let busy = false;
-let cache: { view: CanonicalStatusView; createdAtMs: number } | null = null;
+let cache: { view: CanonicalStatusView } | null = null;
+let cachePathOverride: string | null = null;
 
 async function withLock<T>(run: () => Promise<T>): Promise<T> {
 	return await new Promise((resolvePromise, rejectPromise) => {
@@ -135,44 +144,36 @@ function runStatusChild(args: string[], timeoutMs: number): Promise<unknown> {
 	});
 }
 
-import { existsSync, promises as fsPromises } from 'node:fs';
-
-const SNAPSHOT_FILE = resolve(process.cwd(), '.agent/status-snapshot.json');
-
-export async function readDurableStatusSnapshot(): Promise<CanonicalStatusView | null> {
-	try {
-		if (!existsSync(SNAPSHOT_FILE)) return null;
-		const raw = await fsPromises.readFile(SNAPSHOT_FILE, 'utf8');
-		const parsed: unknown = JSON.parse(raw);
-		return CanonicalStatusViewSchema.parse(parsed);
-	} catch {
-		return null;
-	}
+function operationalCachePath(): string {
+	if (cachePathOverride) return cachePathOverride;
+	const fromEnv = process.env.CELEBRA_STATUS_CACHE_PATH?.trim();
+	if (fromEnv) return fromEnv;
+	return DEFAULT_CACHE_FILE;
 }
 
-export async function writeDurableStatusSnapshot(view: CanonicalStatusView): Promise<void> {
-	try {
-		const dir = resolve(process.cwd(), '.agent');
-		if (!existsSync(dir)) {
-			await fsPromises.mkdir(dir, { recursive: true });
-		}
-		await fsPromises.writeFile(SNAPSHOT_FILE, JSON.stringify(view, null, 2), 'utf8');
-	} catch (error) {
-		console.warn('[canonical-status] Unable to write durable snapshot:', error);
-	}
+export function setOperationalStatusCachePathForTests(path: string | null): void {
+	cachePathOverride = path;
 }
 
-function labelCached(
-	view: CanonicalStatusView,
-	freshnessStatus: 'LIVE' | 'CACHED' | 'STALE' | 'REVALIDATING' | 'UNVERIFIED' = 'CACHED',
-): CanonicalStatusView {
+export function resetCanonicalStatusRuntimeForTests(): void {
+	cache = null;
+	cachePathOverride = null;
+}
+
+function cacheLooksSecret(serialized: string): boolean {
+	return /postgres(ql)?:\/\//i.test(serialized) || /service_role/i.test(serialized);
+}
+
+function isPersistableView(view: CanonicalStatusView): boolean {
+	return ENVS.some((env) => hasPersistableOperationalEvidence(view.environments[env].evidence));
+}
+
+function asHydratedCache(view: CanonicalStatusView, nowMs: number = Date.now()): CanonicalStatusView {
+	const lastVerifiedAt = view.freshnessMeta?.lastVerifiedAt ?? view.generatedAt;
 	return {
 		...view,
 		evidence: view.evidence === 'UNVERIFIED' ? 'UNVERIFIED' : 'CACHED',
-		freshnessMeta: {
-			status: freshnessStatus,
-			lastVerifiedAt: view.generatedAt,
-		},
+		freshnessMeta: freshnessFromCachedTimestamp(lastVerifiedAt, nowMs),
 		environments: {
 			local: {
 				...view.environments.local,
@@ -195,6 +196,38 @@ function labelCached(
 	};
 }
 
+export async function readOperationalStatusCache(): Promise<CanonicalStatusView | null> {
+	try {
+		const file = operationalCachePath();
+		if (!existsSync(file)) return null;
+		const raw = await fsPromises.readFile(file, 'utf8');
+		if (cacheLooksSecret(raw)) return null;
+		const parsed: unknown = JSON.parse(raw);
+		return CanonicalStatusViewSchema.parse(parsed);
+	} catch {
+		return null;
+	}
+}
+
+export async function writeOperationalStatusCache(view: CanonicalStatusView): Promise<void> {
+	if (!isPersistableView(view)) return;
+	try {
+		const serialized = JSON.stringify(view, null, 2);
+		if (cacheLooksSecret(serialized)) {
+			console.warn('[canonical-status] Refusing to persist a status payload that looks secret.');
+			return;
+		}
+		const file = operationalCachePath();
+		const dir = dirname(file);
+		if (!existsSync(dir)) {
+			await fsPromises.mkdir(dir, { recursive: true });
+		}
+		await fsPromises.writeFile(file, serialized, 'utf8');
+	} catch (error) {
+		console.warn('[canonical-status] Unable to write operational cache:', error);
+	}
+}
+
 export async function readCanonicalStatusLocal(): Promise<CanonicalStatusView> {
 	const parsed = await runStatusChild(['--local'], 8_000);
 	return CanonicalStatusViewSchema.parse(parsed);
@@ -202,22 +235,17 @@ export async function readCanonicalStatusLocal(): Promise<CanonicalStatusView> {
 
 export async function getCanonicalStatusView(): Promise<CanonicalStatusView> {
 	if (cache) {
-		const ageMs = Date.now() - cache.createdAtMs;
-		const freshnessStatus = ageMs < CANONICAL_STATUS_CACHE_TTL_MS ? 'LIVE' : 'STALE';
-		return labelCached(cache.view, freshnessStatus);
+		return asHydratedCache(cache.view);
 	}
 
-	const durable = await readDurableStatusSnapshot();
+	const durable = await readOperationalStatusCache();
 	if (durable) {
-		const ageMs = Date.now() - new Date(durable.generatedAt).getTime();
-		const freshnessStatus = ageMs < CANONICAL_STATUS_CACHE_TTL_MS ? 'LIVE' : 'STALE';
-		cache = { view: durable, createdAtMs: new Date(durable.generatedAt).getTime() };
-		return labelCached(durable, freshnessStatus);
+		cache = { view: durable };
+		return asHydratedCache(durable);
 	}
 
 	const initial = await readCanonicalStatusLocal();
-	cache = { view: initial, createdAtMs: Date.now() };
-	void writeDurableStatusSnapshot(initial);
+	cache = { view: initial };
 	return initial;
 }
 
@@ -233,21 +261,18 @@ export async function refreshCanonicalStatusView(options?: {
 		];
 		const parsed = await runStatusChild(args, CANONICAL_STATUS_TIMEOUT_MS);
 		const incoming = CanonicalStatusViewSchema.parse(parsed);
-		const previousSnapshot = cache?.view ?? (await readDurableStatusSnapshot());
+		const previousSnapshot = cache?.view ?? (await readOperationalStatusCache());
 		const merged = mergeCanonicalStatusView({
 			previous: previousSnapshot,
 			incoming,
 			env: options?.env,
 			domain: options?.domain,
 		});
-		cache = { view: merged, createdAtMs: Date.now() };
-		await writeDurableStatusSnapshot(merged);
+		cache = { view: merged };
+		await writeOperationalStatusCache(merged);
 		return {
 			...merged,
-			freshnessMeta: {
-				status: 'LIVE',
-				lastVerifiedAt: merged.generatedAt,
-			},
+			freshnessMeta: liveFreshnessMeta(merged.generatedAt),
 		};
 	});
 }

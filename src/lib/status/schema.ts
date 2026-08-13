@@ -121,6 +121,7 @@ const promotionRow = z
 				applyCommand: z.string().max(400).nullable(),
 				applyStepType: nextStepType,
 				ownerApplyRequired: z.boolean(),
+				optionalDiagnosticCommand: z.string().max(400).nullable(),
 				steps: z.array(z.string().min(1).max(80)).max(8),
 			})
 			.strict(),
@@ -134,25 +135,26 @@ const freshnessMeta = z
 	})
 	.strict();
 
+const migrationPresence = z.enum(['APPLIED', 'NOT_APPLIED', 'UNVERIFIED']);
+
 const recentMigrationRecord = z
 	.object({
 		version: migrationVersion,
 		name: z.string().nullable(),
-		applied: z
+		presence: z
 			.object({
-				local: z.boolean(),
-				preview: z.boolean(),
-				production: z.boolean(),
+				local: migrationPresence,
+				preview: migrationPresence,
+				production: migrationPresence,
 			})
 			.strict(),
-		appliedAt: z
+		verifiedAt: z
 			.object({
-				local: z.string().nullable(),
-				preview: z.string().nullable(),
-				production: z.string().nullable(),
+				local: z.iso.datetime({ offset: true }).nullable(),
+				preview: z.iso.datetime({ offset: true }).nullable(),
+				production: z.iso.datetime({ offset: true }).nullable(),
 			})
 			.strict(),
-		verifiedAt: z.iso.datetime({ offset: true }),
 	})
 	.strict();
 
