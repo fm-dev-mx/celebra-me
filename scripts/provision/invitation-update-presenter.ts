@@ -266,6 +266,33 @@ export function formatTargetsSpanish(targets: string[]): string {
 	return `${labels.slice(0, -1).join(', ')} y ${labels.at(-1)}`;
 }
 
+export function toOperationalPlanData(
+	invitation: string,
+	targets: Array<'local' | 'preview'>,
+	targetPlans: TargetPlanData[],
+): OperationalPlanData {
+	return {
+		invitation,
+		targets,
+		isZeroDrift: targetPlans.every((tp) => tp.status === 'SIN CAMBIOS'),
+		plannedOperations: targetPlans.reduce((sum, tp) => sum + tp.plannedOperations, 0),
+		expectedDatabaseWrites: {
+			inserts: targetPlans.reduce((s, tp) => s + tp.expectedDatabaseWrites.inserts, 0),
+			updates: targetPlans.reduce((s, tp) => s + tp.expectedDatabaseWrites.updates, 0),
+			deletes: targetPlans.reduce((s, tp) => s + tp.expectedDatabaseWrites.deletes, 0),
+		},
+		expectedStorageMutations: {
+			uploads: targetPlans.reduce((s, tp) => s + tp.expectedStorageMutations.uploads, 0),
+			overwrites: targetPlans.reduce((s, tp) => s + tp.expectedStorageMutations.overwrites, 0),
+			moves: targetPlans.reduce((s, tp) => s + (tp.expectedStorageMutations.moves ?? 0), 0),
+			deletes: targetPlans.reduce((s, tp) => s + tp.expectedStorageMutations.deletes, 0),
+		},
+		actions: targetPlans.flatMap((tp) => tp.actions),
+		functionalChanges: consolidateTargetFunctionalChanges(targetPlans),
+		targetPlans,
+	};
+}
+
 export function consolidateTargetFunctionalChanges(
 	targetPlans: TargetPlanData[],
 ): OperationalPlanData['functionalChanges'] {
