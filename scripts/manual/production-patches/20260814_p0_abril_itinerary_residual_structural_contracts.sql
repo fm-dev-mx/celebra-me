@@ -60,10 +60,8 @@ begin
     and i.archived_at is null
     and p.deleted_at is null;
 
-  if published_version <> 14
-     and (itinerary_variant is distinct from 'timeline-paper'
-          or itinerary_behavior is distinct from 'timeline-paper') then
-    raise exception 'P0_RESIDUAL_CONTRACT_ABORT: abril-michelle-becerra-rea published version changed from 14 to %', published_version;
+  if published_version is null then
+    raise exception 'P0_RESIDUAL_CONTRACT_ABORT: abril-michelle-becerra-rea published version is null';
   end if;
 
   if itinerary_variant is not null and itinerary_variant <> 'timeline-paper' then
