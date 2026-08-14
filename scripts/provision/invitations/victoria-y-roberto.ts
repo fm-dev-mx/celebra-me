@@ -48,10 +48,17 @@ const receptionAddress = 'Carretera Mochis - Topo Km8';
 const EVENT_DATE_LONG = '30 de octubre de 2026';
 const EVENT_DATE_HEADING = 'Viernes, 30 de octubre de 2026';
 
+/** Confirmed Production music; keep the existing Cloudinary delivery URL. */
+export const VICTORIA_MUSIC = {
+	url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1786656962/Stephen_Sanchez_-_Until_I_Found_You_ixnss9.mp3',
+	title: 'Stephen Sanchez — Until I Found You',
+	autoPlay: true,
+} as const;
+
 const VICTORIA_INTERLUDE_01 = {
 	alt: 'Victoria y Roberto en un momento íntimo sobre un puente de madera',
 	// Narrow-safe default; responsive refinements live in the visual profile.
-	focalPoint: '42% 34%',
+	focalPoint: '50% 40%',
 } as const;
 
 const VICTORIA_INTERLUDE_02 = {
@@ -139,9 +146,9 @@ export function buildVictoriaPublishedContent(
 			'Invitación a la boda de Victoria y Roberto el 30 de octubre de 2026 en Los Mochis, Sinaloa.',
 		theme: { preset: VICTORIA_EVENT.themeId },
 		music: {
-			url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1786656962/Stephen_Sanchez_-_Until_I_Found_You_ixnss9.mp3',
-			title: 'Stephen Sanchez — Until I Found You',
-			autoPlay: true,
+			url: VICTORIA_MUSIC.url,
+			title: VICTORIA_MUSIC.title,
+			autoPlay: VICTORIA_MUSIC.autoPlay,
 		},
 		eventTiming: {
 			localDateTime: VICTORIA_EVENT.localDateTime,
@@ -348,7 +355,7 @@ export function buildVictoriaPublishedContent(
 					title: 'Familia de Roberto',
 					items: [
 						{ name: 'Socorro Palomares', role: 'Madre' },
-						{ name: 'Nicolas Luviano', role: 'Padre' },
+						{ name: 'Nicolas Luviano', role: 'Padre', deceased: true },
 					],
 				},
 			],
@@ -464,7 +471,7 @@ export const victoriaInvitation: InvitationDefinition<VictoriaAssetKey> = define
 	slug: VICTORIA_EVENT.slug,
 	managedIdentityId: 'c4e8a1d2-7f3b-4a9e-8b2c-1d5e6f7a8b9c',
 	createdAt: '2026-08-08T04:00:00.000Z',
-	lifecycle: 'in_progress',
+	lifecycle: 'published',
 	deliveryScope: 'content-and-assets',
 	eventType: VICTORIA_EVENT.eventType,
 	title: VICTORIA_EVENT.title,

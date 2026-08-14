@@ -64,10 +64,32 @@ function cloneContent(content: Record<string, unknown>): Record<string, unknown>
 	return JSON.parse(JSON.stringify(content)) as Record<string, unknown>;
 }
 
+function storedDraftLooksPublishedShaped(content: Record<string, unknown> | undefined): boolean {
+	if (!content) return false;
+	return (
+		'theme' in content ||
+		'templateId' in content ||
+		'isDemo' in content ||
+		'_assetSlug' in content ||
+		'visualProfileId' in content
+	);
+}
+
 function toCanonicalBaseline(
-	draftContent: Record<string, unknown> | undefined,
+	draft: InvitationContentDraft | null | undefined,
 	publishedContent: Record<string, unknown> | undefined,
 ): Record<string, unknown> {
+	const draftContent = draft?.content as Record<string, unknown> | undefined;
+	// After managed apply the drafts row is `approved` and may store the
+	// published document. Rebase from the live published revision so a later
+	// section save cannot flatten that blob and republish obsolete managed fields.
+	if (
+		draft?.status === 'approved' &&
+		publishedContent &&
+		storedDraftLooksPublishedShaped(draftContent)
+	) {
+		return mapNestedToDraftContent(publishedContent) as Record<string, unknown>;
+	}
 	try {
 		if (draftContent) return normalizeDraftContent(draftContent) as Record<string, unknown>;
 	} catch (error) {
@@ -151,7 +173,7 @@ export async function applyDraftMutation(
 	// revision must go through the canonical nested → flat mapping, and an existing
 	// draft is canonicalized so legacy hybrid documents converge on every write.
 	const baseline = toCanonicalBaseline(
-		draft?.content as Record<string, unknown> | undefined,
+		draft,
 		published?.content as Record<string, unknown> | undefined,
 	);
 

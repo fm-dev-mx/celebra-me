@@ -190,4 +190,74 @@ describe('applyDraftMutation', () => {
 		expect(savedContent.gallery.items[0]?.aspectRatio).toBe('8 / 5');
 		expect(savedContent.gallery.items[0]?.focalPoint).toBe('72% 36%');
 	});
+
+	it('rebases an approved managed draft from published content before a section save', async () => {
+		findDraftMock.mockResolvedValue({
+			id: 'draft-1',
+			invitationId: 'inv-1',
+			content: {
+				eventType: 'boda',
+				isDemo: false,
+				templateId: 'boda-jewelry-box-wedding',
+				theme: { preset: 'jewelry-box-wedding' },
+				title: 'Stale managed draft',
+				hero: { name: 'Obsolete' },
+			},
+			status: 'approved',
+			updatedAt: '2026-08-13T21:18:05.000Z',
+			createdAt: '2026-08-11T20:30:00.000Z',
+			submissionId: null,
+		});
+		findPublishedMock.mockResolvedValue({
+			id: 'pub-1',
+			invitationId: 'inv-1',
+			slug: 'victoria-y-roberto',
+			eventType: 'boda',
+			isDemo: false,
+			content: {
+				eventType: 'boda',
+				title: 'Boda de Victoria y Roberto',
+				hero: { name: 'Victoria', secondaryName: 'Roberto' },
+			},
+			version: 4,
+			publishedAt: '2026-08-13T21:18:05.000Z',
+			createdAt: '2026-08-11T20:30:00.000Z',
+			updatedAt: '2026-08-13T21:18:05.000Z',
+		});
+		updateDraftMock.mockImplementation(async (_id, _expected, input) => ({
+			id: 'draft-1',
+			invitationId: 'inv-1',
+			content: input.content,
+			status: 'draft',
+			updatedAt: '2026-08-13T21:37:15.000Z',
+			createdAt: '2026-08-11T20:30:00.000Z',
+			submissionId: null,
+		}));
+
+		await applyDraftMutation({
+			invitationId: 'inv-1',
+			expectedDraftUpdatedAt: '2026-08-13T21:18:05.000Z',
+			patch: {
+				kind: 'section',
+				section: 'music',
+				value: {
+					url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1786656962/Stephen_Sanchez_-_Until_I_Found_You_ixnss9.mp3',
+					title: 'Stephen Sanchez — Until I Found You',
+					autoPlay: true,
+				},
+			},
+			actor: 'editor',
+			skipDocumentSchema: true,
+		});
+
+		const savedContent = updateDraftMock.mock.calls[0]![2]!.content as {
+			title?: string;
+			hero?: { name?: string };
+			music?: { title?: string; autoPlay?: boolean };
+		};
+		expect(savedContent.title).toBe('Boda de Victoria y Roberto');
+		expect(savedContent.hero?.name).toBe('Victoria');
+		expect(savedContent.music?.title).toBe('Stephen Sanchez — Until I Found You');
+		expect(savedContent.music?.autoPlay).toBe(true);
+	});
 });

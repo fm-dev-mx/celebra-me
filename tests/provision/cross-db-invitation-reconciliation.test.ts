@@ -48,7 +48,7 @@ describe('cross-db-invitation-reconciliation findings', () => {
 
 		expect(typo?.kind).toBe('extra');
 		expect(canonical?.kind).toBe('aligned');
-		expect(findings.some((f) => f.canonicalKey === 'daniela-y-martin')).toBe(false);
+		expect(findings.find((f) => f.canonicalKey === 'daniela-y-martin')?.kind).toBe('missing');
 	});
 
 	it('marks title/packageHash drift as divergent', () => {
