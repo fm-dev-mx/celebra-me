@@ -591,7 +591,7 @@ export function buildPostgrestDockerArgs(isLinux: boolean): string[] {
 		'-p',
 		`${DISPOSABLE_PORTS.api}:3000`,
 		'-e',
-		`PGRST_DB_URI=postgresql://${DISPOSABLE_TEST.dbUser}:${DISPOSABLE_TEST.dbPassword}@host.docker.internal:54332/postgres`,
+		`PGRST_DB_URI=postgresql://${DISPOSABLE_TEST.dbUser}:${DISPOSABLE_TEST.dbPassword}@host.docker.internal:${DISPOSABLE_TEST.dbPort}/postgres`,
 		'-e',
 		'PGRST_DB_SCHEMAS=public',
 		'-e',
