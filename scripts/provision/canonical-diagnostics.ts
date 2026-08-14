@@ -13,6 +13,7 @@ import type {
 	TargetEnv,
 } from '../../src/lib/status/types.ts';
 import {
+	diagnoseManagedBaselineError,
 	ManagedBaselineError,
 	resolveVerifiedManagedBaseline,
 } from './managed-merge-baseline.ts';
@@ -120,6 +121,7 @@ function baselineDiagnostic(
 		);
 		return null;
 	} catch (error) {
+		const baseline = diagnoseManagedBaselineError(error);
 		const code: DiagnosticCode =
 			error instanceof ManagedBaselineError &&
 			error.classification === 'incompatible_normalization_version'
@@ -132,7 +134,7 @@ function baselineDiagnostic(
 			cause:
 				code === 'BASELINE_VERSION_INCOMPATIBLE'
 					? 'The stored baseline used a different normalization version.'
-					: 'No verified managed baseline is available for this row.',
+					: `No verified managed baseline is available for this row (${baseline.classification}).`,
 			slug: definition.slug,
 			environment,
 		});
@@ -279,7 +281,10 @@ function collectLiveRowDiagnostics(
 		for (const live of rowsByEnv[env] ?? []) {
 			const definition = definitionBySlug.get(live.slug);
 			if (!definition) continue;
-			if (live.draftContent != null && !eventContentSchema.safeParse(live.draftContent).success) {
+			if (
+				live.draftContent != null &&
+				!eventContentSchema.safeParse(live.draftContent).success
+			) {
 				diagnostics.push(
 					diagnostic({
 						code: 'DRAFT_INVALID',
@@ -337,7 +342,12 @@ export function enrichCanonicalDiagnostics(input: {
 	const diagnostics: CanonicalDiagnostic[] = [
 		...collectEnvironmentSummaryDiagnostics(input.view),
 		...collectPromotionConflictDiagnostics(input.view),
-		...collectLiveRowDiagnostics(input.view, input.rowsByEnv, definitionBySlug, input.includeSemanticDetail),
+		...collectLiveRowDiagnostics(
+			input.view,
+			input.rowsByEnv,
+			definitionBySlug,
+			input.includeSemanticDetail,
+		),
 		...collectStaleLifecycleDiagnostics(input.definitions, input.view),
 	];
 

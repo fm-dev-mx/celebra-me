@@ -35,7 +35,12 @@ describe('status semantics', () => {
 						: 'content',
 				evidence: 'LIVE',
 				environment: code === 'LIFECYCLE_METADATA_STALE' ? undefined : 'preview',
-				slug: code === 'ENVIRONMENT_IDENTITY_CONFLICT' || code === 'AUTHORITATIVE_COUNT_MISMATCH' || code === 'PRODUCTION_AUTHORIZATION_MISSING' ? undefined : 'demo',
+				slug:
+					code === 'ENVIRONMENT_IDENTITY_CONFLICT' ||
+					code === 'AUTHORITATIVE_COUNT_MISMATCH' ||
+					code === 'PRODUCTION_AUTHORIZATION_MISSING'
+						? undefined
+						: 'demo',
 				cause: 'Diagnostic test fixture.',
 				affectedFieldCount: 0,
 				affectedSectionCount: 0,
@@ -63,7 +68,9 @@ describe('status semantics', () => {
 		expect(authorizationSemantic('GRANDFATHERED')).toBe('verified');
 		expect(authorizationSemantic('MISSING')).toBe('blocked');
 		expect(authorizationSemantic('UNVERIFIED')).toBe('unverified');
-		const local = authorizationRemediation(buildCanonicalStatusViewFixture().environments.local);
+		const local = authorizationRemediation(
+			buildCanonicalStatusViewFixture().environments.local,
+		);
 		expect(local.semantic).toBe('neutral');
 		expect(commandOf(local)).toBeNull();
 		expect(local.nextAction).toContain('No se requiere');
@@ -78,7 +85,10 @@ describe('status semantics', () => {
 		const remediation = authorizationRemediation(production);
 		expect(remediation.semantic).toBe('blocked');
 		expect(remediation.noCanonicalRemediation).toBe(true);
-		expect(remediation.steps.filter((step) => !step.optional).find((step) => step.command)?.command ?? null).toBeNull();
+		expect(
+			remediation.steps.filter((step) => !step.optional).find((step) => step.command)
+				?.command ?? null,
+		).toBeNull();
 		expect(typeOf(remediation)).toBe('Manual/HITL');
 	});
 
@@ -119,7 +129,10 @@ describe('status semantics', () => {
 		};
 		const remediation = invitationAttentionRemediation(row);
 		expect(remediation.semantic).toBe('neutral');
-		expect(remediation.steps.filter((step) => !step.optional).find((step) => step.command)?.command ?? null).toBeNull();
+		expect(
+			remediation.steps.filter((step) => !step.optional).find((step) => step.command)
+				?.command ?? null,
+		).toBeNull();
 		expect(remediation.noCanonicalRemediation).toBe(true);
 		expect(remediation.nextAction).toContain('cola de publicación');
 		expect(remediation.steps).toHaveLength(1);
@@ -167,6 +180,23 @@ describe('status semantics', () => {
 		expect(remediation.semantic).toBe('blocked');
 		expect(commandOf(remediation)).toBe('pnpm invitation:diagnose-identity -- --target local');
 
+		const approvalRequired = presentPromotionRow({
+			slug: 'abril-michelle-becerra-rea',
+			title: 'Abril',
+			eventType: 'boda',
+			action: 'BLOCKED',
+			reasonCode: 'PREVIEW_APPROVAL_REQUIRED',
+			environments: { local: 'match', preview: 'match', production: 'behind' },
+			envEvidence: { local: 'LIVE', preview: 'LIVE', production: 'LIVE' },
+		});
+		const approvalRemediation = publicationRemediation(approvalRequired);
+		expect(commandOf(approvalRemediation)).toBe(
+			'pnpm invitation:release -- --preview-provenance --slug abril-michelle-becerra-rea --targets preview --dry-run',
+		);
+		expect(approvalRequired.handoff.applyCommand).toBeNull();
+		expect(approvalRemediation.steps[0]?.type).toBe('Verify');
+		expect(JSON.stringify(approvalRemediation)).not.toContain('--targets preview --apply');
+
 		const promote = publicationRemediation(buildCanonicalStatusViewFixture().promotions[0]!);
 		expect(promote.semantic).toBe('unverified');
 		expect(promote.steps.some((step) => step.requiresOwner)).toBe(true);
@@ -187,9 +217,14 @@ describe('status semantics', () => {
 		});
 		row.uncertaintyNotes.push('ASSET_IDENTITY_UNVERIFIED');
 		const remediation = publicationRemediation(row);
-		expect(remediation.steps.filter((step) => !step.optional).find((step) => step.command)?.command ?? null).toBeNull();
+		expect(
+			remediation.steps.filter((step) => !step.optional).find((step) => step.command)
+				?.command ?? null,
+		).toBeNull();
 		expect(remediation.noCanonicalRemediation).toBe(true);
-		expect(remediation.steps.find((step) => step.optional)?.command).toBe('pnpm dbs --diagnostics');
+		expect(remediation.steps.find((step) => step.optional)?.command).toBe(
+			'pnpm dbs --diagnostics',
+		);
 		expect(JSON.stringify(remediation)).not.toContain('db:availability:verify');
 	});
 

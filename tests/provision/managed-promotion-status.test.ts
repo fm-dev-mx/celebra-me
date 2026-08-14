@@ -297,7 +297,9 @@ describe('canonical Production preflight refinement', () => {
 			reasonCode: 'PREVIEW_APPROVAL_REQUIRED',
 			environments: { production: 'behind' },
 			handoff: {
-				applyCommand: 'pnpm invitation:release -- --slug beta --targets preview --apply',
+				dryRunCommand:
+					'pnpm invitation:release -- --preview-provenance --slug beta --targets preview --dry-run',
+				applyCommand: null,
 			},
 		});
 		expect(result.promotions.find((row) => row.slug === 'delta')).toMatchObject({

@@ -144,14 +144,16 @@ function blockedPromotionHandoff(
 	}
 	if (reasonCode === 'PREVIEW_APPROVAL_REQUIRED') {
 		return {
-			dryRunCommand: null,
-			dryRunStepType: 'Apply',
-			applyCommand: `pnpm invitation:release -- --slug ${slug} --targets preview --apply`,
-			applyStepType: 'Apply',
+			dryRunCommand: `pnpm invitation:release -- --preview-provenance --slug ${slug} --targets preview --dry-run`,
+			dryRunStepType: 'Verify',
+			applyCommand: null,
+			applyStepType: 'Manual/HITL',
 			ownerApplyRequired: false,
 			optionalDiagnosticCommand: null,
 			steps: [
-				'Authorized Preview apply records the pending approval even when content is unchanged',
+				'Verifique primero la provenance de Preview; esta lectura no escribe en Supabase.',
+				'Si el diagnóstico permite adopción, ejecute el mismo comando con --apply para registrar solo metadata.',
+				'Después verifique y apruebe el paquete exacto en Preview antes de Production.',
 			],
 		};
 	}
@@ -179,10 +181,7 @@ function unknownPromotionHandoff(
 		return emptyHandoff({
 			dryRunCommand: `pnpm prod:apply -- --slug ${slug}`,
 			dryRunStepType: 'Verify',
-			steps: [
-				'Re-run the canonical Production plan',
-				'Do not apply without live evidence',
-			],
+			steps: ['Re-run the canonical Production plan', 'Do not apply without live evidence'],
 		});
 	}
 	return unknownPublicationHandoff(reasonCode, environments, envEvidence);

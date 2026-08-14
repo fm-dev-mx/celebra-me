@@ -196,23 +196,23 @@ function blockedPublicationRemediation(row: CanonicalPromotionRow): OperatorReme
 		};
 	}
 	if (row.reasonCode === 'PREVIEW_APPROVAL_REQUIRED') {
-		const command = row.handoff.applyCommand;
+		const command = row.handoff.dryRunCommand;
 		return {
 			semantic: 'blocked',
 			meaning: PUBLICATION_REASON_LABELS.PREVIEW_APPROVAL_REQUIRED,
 			why: null,
 			environmentLabel,
 			nextAction:
-				'Aplique Preview (aunque el contenido no cambie) para registrar la aprobación en vivo. El CLI imprime el --package-hash --approve.',
+				'Verifique primero la provenance de Preview; no aplique Production mientras falte evidencia aprobada.',
 			steps: command
 				? [
 						step(
-							'Apply',
+							'Verify',
 							command,
-							'Preview debe coincidir con el paquete actual antes de Production.',
+							'La lectura clasifica la provenance sin escribir contenido, metadata ni Storage.',
 							false,
 							false,
-							'Registrar aprobación Preview',
+							'Verificar provenance Preview',
 						),
 					]
 				: [],
@@ -226,7 +226,8 @@ function blockedPublicationRemediation(row: CanonicalPromotionRow): OperatorReme
 			meaning: PUBLICATION_REASON_LABELS.LOCAL_BEHIND_PREVIEW_ALIGNED,
 			why: `Local está ${row.environments.local}.`,
 			environmentLabel,
-			nextAction: 'Aplique Local con el comando canónico. El CLI planifica antes de escribir.',
+			nextAction:
+				'Aplique Local con el comando canónico. El CLI planifica antes de escribir.',
 			steps: [
 				step(
 					'Apply',
