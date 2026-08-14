@@ -593,11 +593,6 @@ html:has(.event--renata.theme-preset--editorial) body {
 	}
 
 	.itinerary {
-		--editorial-program-paper: var(--renata-cream);
-		--editorial-program-ink: var(--renata-ink);
-		--editorial-program-ink-rgb: var(--renata-ink-rgb);
-		--editorial-program-accent: var(--renata-coral);
-
 		overflow: visible;
 		padding-block: var(--renata-space-emphasis);
 		background: var(--renata-cream);
@@ -1005,10 +1000,6 @@ html:has(.event--renata.theme-preset--editorial) body {
 		}
 
 		.thank-you-content {
-			color: rgb(var(--renata-cream-rgb) / 92%);
-		}
-
-		.thank-you-content {
 			place-self: start;
 			width: min(100%, var(--thank-you-overlay-width));
 			max-width: var(--thank-you-overlay-width);
@@ -1016,6 +1007,7 @@ html:has(.event--renata.theme-preset--editorial) body {
 			padding: 0;
 			gap: var(--renata-thank-you-lockup-gap);
 			text-align: left;
+			color: rgb(var(--renata-cream-rgb) / 92%);
 		}
 
 		.message-container,
