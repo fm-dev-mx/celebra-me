@@ -52,6 +52,13 @@ describe('itinerary canonical behavior adapter', () => {
 		expect(viewModel.sections.itinerary?.variant).toBe('standard');
 	});
 
+	it('lets explicit editorial-program variant select TimelineList behavior', () => {
+		const viewModel = adaptEvent(
+			eventWith({ itinerary: { ...baseItinerary, variant: 'editorial-program' } }),
+		);
+		expect(viewModel.sections.itinerary?.variant).toBe('editorial-program');
+	});
+
 	it('lets explicit presentation behavior select the structural renderer', () => {
 		const viewModel = adaptEvent(
 			eventWith({

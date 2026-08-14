@@ -126,6 +126,7 @@ export const ITINERARY_BEHAVIOR_VARIANTS = [
 	'standard',
 	'timeline-paper',
 	'editorial-ledger',
+	'editorial-program',
 ] as const;
 /**
  * Theme-named values remain in this union only for legacy sectionStyles

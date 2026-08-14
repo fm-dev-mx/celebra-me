@@ -40,7 +40,7 @@ type PortableOverrides = {
 	giftsStructuralVariant?: string;
 	rsvpStructuralVariant?: string;
 	personalizedAccessStructuralVariant?: string;
-	itineraryVariant?: 'standard' | 'timeline-paper' | 'editorial-ledger';
+	itineraryVariant?: 'standard' | 'timeline-paper' | 'editorial-ledger' | 'editorial-program';
 	/** Optional theme skin; structural selection must not depend on it. */
 	themePreset?: string;
 	galleryItems?: Array<Record<string, unknown>>;
@@ -289,7 +289,7 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 		);
 	});
 
-	it('selects Itinerary timeline-paper, editorial-ledger, and standard from section.variant only', () => {
+	it('selects Itinerary timeline-paper, editorial-ledger, editorial-program, and standard from section.variant only', () => {
 		const standardEvent = buildPortableJewelryBoxEvent({ itineraryVariant: 'standard' });
 		const standard = adaptEvent(standardEvent);
 		expect(standard.sections.itinerary?.variant).toBe('standard');
@@ -308,6 +308,13 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 		const ledger = adaptEvent(ledgerEvent);
 		expect(ledgerEvent.data).not.toHaveProperty('visualProfileId');
 		expect(ledger.sections.itinerary?.variant).toBe('editorial-ledger');
+
+		const programEvent = buildPortableJewelryBoxEvent({
+			itineraryVariant: 'editorial-program',
+		});
+		const program = adaptEvent(programEvent);
+		expect(programEvent.data).not.toHaveProperty('visualProfileId');
+		expect(program.sections.itinerary?.variant).toBe('editorial-program');
 	});
 
 	it('passes portable structural variants through section render descriptors', () => {
@@ -391,6 +398,9 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 			'/src/styles/themes/sections/itinerary/_editorial-ledger.scss': {
 				default: '/_astro/itinerary-editorial-ledger.css',
 			},
+			'/src/styles/themes/sections/itinerary/_editorial-program.scss': {
+				default: '/_astro/itinerary-editorial-program.css',
+			},
 		});
 		const profileUrlMap = {
 			'romina-rios-chaparro': '/_astro/romina-profile.css',
@@ -448,6 +458,21 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 				'/_astro/itinerary-timeline-paper.css',
 			]),
 		);
+
+		const programUrls = resolveInvitationCssUrls(
+			bundleUrlMap,
+			sectionUrlMap,
+			{
+				themePreset: 'jewelry-box',
+				structuralVariants: { itinerary: 'editorial-program' },
+			},
+			profileUrlMap,
+		);
+		expect(programUrls).toEqual([
+			'/_astro/jewelry-bundle.css',
+			'/_astro/itinerary-editorial-program.css',
+		]);
+		expect(programUrls.join('\n')).not.toMatch(/valentina|renata/i);
 	});
 
 	it('keeps canonical structural CSS free of origin slug/profile/theme identity', () => {
@@ -467,6 +492,9 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 		const editorialLedger = readSource(
 			'src/styles/themes/sections/itinerary/_editorial-ledger.scss',
 		);
+		const editorialProgram = readSource(
+			'src/styles/themes/sections/itinerary/_editorial-program.scss',
+		);
 		const combined = [
 			splitCover,
 			splitMap,
@@ -476,6 +504,7 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 			featureStack,
 			pairedBand,
 			editorialLedger,
+			editorialProgram,
 		].join('\n');
 
 		expect(combined).toContain(".invitation-hero[data-structural-variant='split-cover']");
@@ -490,10 +519,13 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 			".gallery-section[data-structural-variant='paired-feature-band']",
 		);
 		expect(combined).toContain(".itinerary[data-structural-variant='editorial-ledger']");
+		expect(combined).toContain(".itinerary[data-structural-variant='editorial-program']");
 		expect(editorialLedger).toContain(".itinerary__item-icon-wrapper");
 		expect(editorialLedger).toMatch(
 			/\.itinerary__animated-line-container[\s\S]*?\.itinerary__item-icon-wrapper[\s\S]*?\.itinerary__item-dot[\s\S]*?display:\s*none/,
 		);
+		expect(editorialProgram).toContain('counter-reset: editorial-program');
+		expect(editorialProgram).toContain('--editorial-program-display');
 		expect(combined).not.toMatch(/romina|alba-rosa|daniela-y-martin|visualProfileId/i);
 		expect(combined).toMatch(/respond-to\(lg\)|min-width|width\s*>=\s*768px|respond-to\(md\)/);
 		expect(combined).toMatch(/width\s*<\s*768px|respond-below|width\s*<=\s*767px/);
@@ -512,5 +544,10 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 		expect(alba).not.toContain('--location-split-content-basis');
 		expect(alba).not.toContain('grid-template-areas:');
 		expect(alba).not.toMatch(/grid-template-areas:\s*['"]content map['"]/);
+
+		const renata = readSource('src/styles/invitation-profiles/renata.scss');
+		expect(renata).not.toContain('--editorial-program-paper');
+		expect(renata).not.toContain('counter-reset: editorial-program');
+		expect(renata).not.toContain("data-structural-variant='editorial-program'");
 	});
 });

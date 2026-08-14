@@ -75,6 +75,7 @@ const STRUCTURAL_VARIANT_TO_ENTRYPOINT: Record<string, Record<string, string>> =
 	itinerary: {
 		'timeline-paper': 'timeline-paper',
 		'editorial-ledger': 'editorial-ledger',
+		'editorial-program': 'editorial-program',
 	},
 };
 

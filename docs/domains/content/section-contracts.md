@@ -146,9 +146,10 @@ structural variants without new executable evidence.
 - **Purpose**: Timeline of event activities (ceremony, reception, dinner, party, toast).
 - **Required Inputs**: `items` array with `time`, `title`.
 - **Optional Inputs**: `subtitle`, `description`, `icon`, `variant`.
-- **Variant Contract**: Canonical `itinerary.variant` values are `standard`, `timeline-paper`, and
-  `editorial-ledger`. `timeline-paper` selects `ItineraryProgram`; `editorial-ledger` and `standard`
-  select `TimelineList`. Legacy `itinerary.presentation.behavior` is compatibility-only.
+- **Variant Contract**: Canonical `itinerary.variant` values are `standard`, `timeline-paper`,
+  `editorial-ledger`, and `editorial-program`. `timeline-paper` selects `ItineraryProgram`;
+  `editorial-ledger`, `editorial-program`, and `standard` select `TimelineList`. Legacy
+  `itinerary.presentation.behavior` is compatibility-only.
 - **Rendering & Omission**: Optional section.
 
 ---
