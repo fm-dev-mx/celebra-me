@@ -146,6 +146,13 @@ describe('invitation package', () => {
 		expect(pkg.packageHash).toBe(computePackageHash(pkg));
 		expect(pkg.sourceHash).toBe(release.sourceHash);
 		expect(pkg.assets.every((asset) => !asset.storagePath.includes('127.0.0.1'))).toBe(true);
+		expect(pkg.assets.every((asset) => asset.provider === 'cloudinary')).toBe(true);
+		expect(pkg.assets[0]?.providerPublicId).toBe(
+			`xv/test-invitation/assets/hero-${hash.slice(0, 12)}`,
+		);
+		expect(pkg.assets[0]?.secureUrl).toContain(
+			`/xv/test-invitation/assets/hero-${hash.slice(0, 12)}.webp`,
+		);
 	});
 
 	it('accepts an in-memory package only when every integrity hash is present and correct', () => {

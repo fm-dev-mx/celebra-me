@@ -8,7 +8,7 @@ import {
 	buildCloudinaryPublicId,
 	buildCloudinaryOgImageUrl,
 	uploadOrReconcileCloudinaryAsset,
-} from '../../scripts/provision/cloudinary-adapter.ts';
+} from '../../src/lib/intake/services/cloudinary-assets.ts';
 import {
 	ABRIL_ASSET_SPECS,
 	buildAbrilPublishedContent,
@@ -31,13 +31,14 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 	});
 
 	describe('Public ID & Hierarchy Generation', () => {
-		it('builds deterministic immutable public ID under xv/abril-michelle-becerra-rea/assets without leading slash or extension', () => {
+		it('builds deterministic immutable public ID under {eventType}/{slug}/assets without leading slash or extension', () => {
 			const dummySha = createHash('sha256').update('hello-world').digest('hex');
-			const publicId = buildCloudinaryPublicId(
-				'abril-michelle-becerra-rea',
-				'hero-desktop',
-				dummySha,
-			);
+			const publicId = buildCloudinaryPublicId({
+				eventType: 'xv',
+				slug: 'abril-michelle-becerra-rea',
+				key: 'hero-desktop',
+				sha256: dummySha,
+			});
 			expect(publicId).toBe(
 				`xv/abril-michelle-becerra-rea/assets/hero-desktop-${dummySha.slice(0, 12)}`,
 			);
@@ -45,14 +46,27 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 			expect(publicId.endsWith('.webp')).toBe(false);
 		});
 
+		it('uses eventType for non-XV invitations', () => {
+			const dummySha = createHash('sha256').update('hello-world').digest('hex');
+			expect(
+				buildCloudinaryPublicId({
+					eventType: 'boda',
+					slug: 'victoria-y-roberto',
+					key: 'hero-desktop',
+					sha256: dummySha,
+				}),
+			).toBe(`boda/victoria-y-roberto/assets/hero-desktop-${dummySha.slice(0, 12)}`);
+		});
+
 		it('supports explicit custom assetFolder override without leading/trailing slashes', () => {
 			const dummySha = createHash('sha256').update('test-folder').digest('hex');
-			const publicId = buildCloudinaryPublicId(
-				'abril-michelle-becerra-rea',
-				'gallery-02-bw-cake',
-				dummySha,
-				'/xv/abril-michelle-becerra-rea/assets/',
-			);
+			const publicId = buildCloudinaryPublicId({
+				eventType: 'xv',
+				slug: 'abril-michelle-becerra-rea',
+				key: 'gallery-02-bw-cake',
+				sha256: dummySha,
+				assetFolder: '/xv/abril-michelle-becerra-rea/assets/',
+			});
 			expect(publicId).toBe(
 				`xv/abril-michelle-becerra-rea/assets/gallery-02-bw-cake-${dummySha.slice(0, 12)}`,
 			);
@@ -86,6 +100,7 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 
 			await expect(
 				uploadOrReconcileCloudinaryAsset({
+					eventType: 'xv',
 					slug: 'abril-michelle-becerra-rea',
 					key: 'hero-desktop',
 					displayName: 'Hero Desktop',
@@ -101,24 +116,33 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 		it('returns predicted outcome without error during dryRun even when credentials are missing', async () => {
 			const dummyBytes = new Uint8Array([1, 2, 3, 4]);
 			const dummySha = createHash('sha256').update(dummyBytes).digest('hex');
+			const cloudinaryModule = await import('cloudinary');
+			const resourceSpy = jest
+				.spyOn(cloudinaryModule.v2.api, 'resource')
+				.mockRejectedValue(Object.assign(new Error('Not Found'), { http_code: 404 }));
 
-			const res = await uploadOrReconcileCloudinaryAsset({
-				slug: 'abril-michelle-becerra-rea',
-				key: 'hero-desktop',
-				displayName: 'Hero Desktop',
-				alt: 'Hero Alt',
-				bytes: dummyBytes,
-				sha256: dummySha,
-				mimeType: 'image/webp',
-				dryRun: true,
-			});
+			try {
+				const res = await uploadOrReconcileCloudinaryAsset({
+					eventType: 'xv',
+					slug: 'abril-michelle-becerra-rea',
+					key: 'hero-desktop',
+					displayName: 'Hero Desktop',
+					alt: 'Hero Alt',
+					bytes: dummyBytes,
+					sha256: dummySha,
+					mimeType: 'image/webp',
+					dryRun: true,
+				});
 
-			expect(res.action).toBe('UPLOAD');
-			expect(res.provider).toBe('cloudinary');
-			expect(res.secureUrl).toContain('res.cloudinary.com');
-			expect(res.publicId).toBe(
-				`xv/abril-michelle-becerra-rea/assets/hero-desktop-${dummySha.slice(0, 12)}`,
-			);
+				expect(res.action).toBe('UPLOAD');
+				expect(res.provider).toBe('cloudinary');
+				expect(res.secureUrl).toContain('res.cloudinary.com');
+				expect(res.publicId).toBe(
+					`xv/abril-michelle-becerra-rea/assets/hero-desktop-${dummySha.slice(0, 12)}`,
+				);
+			} finally {
+				resourceSpy.mockRestore();
+			}
 		});
 	});
 
@@ -135,9 +159,9 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 			}
 		});
 
-		it('explicitly specifies provider: "cloudinary" on every asset specification', () => {
+		it('does not declare a per-asset provider; Cloudinary is the global image host', () => {
 			for (const spec of ABRIL_ASSET_SPECS) {
-				expect(spec.provider).toBe('cloudinary');
+				expect('provider' in spec).toBe(false);
 			}
 		});
 
@@ -231,6 +255,7 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 			}));
 
 			const res = await uploadOrReconcileCloudinaryAsset({
+				eventType: 'xv',
 				slug: 'abril-michelle-becerra-rea',
 				key: 'hero-desktop',
 				displayName: 'Hero Desktop',
@@ -267,6 +292,7 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 
 			await expect(
 				uploadOrReconcileCloudinaryAsset({
+					eventType: 'xv',
 					slug: 'abril-michelle-becerra-rea',
 					key: 'hero-desktop',
 					displayName: 'Hero Desktop',

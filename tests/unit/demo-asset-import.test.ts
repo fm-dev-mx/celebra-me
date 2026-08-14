@@ -4,7 +4,7 @@ const mockResolveAssetSlug = jest.fn();
 const mockGetEventAsset = jest.fn();
 const mockIsEventAssetKey = jest.fn();
 const mockIsValidEvent = jest.fn();
-const mockUploadToStorage = jest.fn();
+const mockUploadOrReconcile = jest.fn();
 const mockCreateAsset = jest.fn();
 
 jest.mock('@/lib/intake/repositories/invitation.repository', () => ({
@@ -26,9 +26,12 @@ jest.mock('@/lib/assets/asset-registry', () => ({
 }));
 
 jest.mock('@/lib/intake/storage', () => ({
-	uploadToStorage: mockUploadToStorage,
 	getPublicUrl: jest.fn().mockReturnValue('https://cdn.test/asset.webp'),
 	DEFAULT_BUCKET: 'invitation-assets',
+}));
+
+jest.mock('@/lib/intake/services/cloudinary-assets', () => ({
+	uploadOrReconcileCloudinaryAsset: (...args: unknown[]) => mockUploadOrReconcile(...args),
 }));
 
 jest.mock('@/lib/intake/repositories/asset.repository', () => ({
@@ -37,7 +40,10 @@ jest.mock('@/lib/intake/repositories/asset.repository', () => ({
 
 jest.mock('@/lib/intake/services/asset-policy', () => ({
 	normalizeInvitationImage: jest.fn().mockResolvedValue({
-		blob: new Blob(['optimized'], { type: 'image/webp' }),
+		blob: {
+			arrayBuffer: async () => new Uint8Array([1, 2, 3, 4]).buffer,
+			type: 'image/webp',
+		},
 		width: 1080,
 		height: 1920,
 		fileSize: 9,
@@ -52,6 +58,7 @@ import { importDemoAsset } from '@/lib/intake/services/asset.service';
 
 const INVITATION_ID = 'inv-1';
 const DEFAULT_METADATA = { src: '/assets/hero.webp', width: 1080, height: 1920, format: 'webp' };
+const originalFetch = globalThis.fetch;
 
 function mockFetch() {
 	globalThis.fetch = jest.fn().mockResolvedValue({
@@ -67,7 +74,11 @@ function createMockAssetResult(overrides: Record<string, unknown> = {}) {
 		invitationId: INVITATION_ID,
 		displayName: 'hero',
 		bucket: 'invitation-assets',
-		storagePath: `invitations/${INVITATION_ID}/optimized/new-asset-id.webp`,
+		storagePath: 'xv/demo/assets/hero-abc',
+		provider: 'cloudinary',
+		providerPublicId: 'xv/demo/assets/hero-abc',
+		secureUrl: 'https://res.cloudinary.com/demo/image/upload/v1/xv/demo/assets/hero-abc.webp',
+		sha256: 'abc',
 		mimeType: 'image/webp',
 		width: 1080,
 		height: 1920,
@@ -81,7 +92,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-	delete (globalThis as any).fetch;
+	globalThis.fetch = originalFetch;
 });
 
 describe('importDemoAsset', () => {
@@ -123,13 +134,27 @@ describe('importDemoAsset', () => {
 			mockIsEventAssetKey.mockReturnValue(true);
 			mockIsValidEvent.mockReturnValue(true);
 			mockFindPublishedContent.mockResolvedValue(null);
-			mockUploadToStorage.mockResolvedValue(undefined);
+			mockUploadOrReconcile.mockResolvedValue({
+				provider: 'cloudinary',
+				publicId: 'xv/demo/assets/hero-abc',
+				version: '1',
+				secureUrl: 'https://res.cloudinary.com/demo/image/upload/v1/xv/demo/assets/hero-abc.webp',
+				sha256: 'abc',
+				width: 1080,
+				height: 1920,
+				bytes: 9,
+				format: 'webp',
+				metadata: {},
+				action: 'UPLOAD',
+			});
 			mockFetch();
 		});
 
 		it('imports a demo asset with basic invitation', async () => {
 			mockFindInvitation.mockResolvedValue({
 				id: INVITATION_ID,
+				eventType: 'xv',
+				slug: null,
 				snapshot: { previewSlug: 'demo-xv-test' },
 			});
 			mockResolveAssetSlug.mockReturnValue('demo-xv-test');
@@ -140,8 +165,7 @@ describe('importDemoAsset', () => {
 
 			expect(result.asset.id).toBe('new-asset-id');
 			expect(result.asset.displayName).toBe('hero');
-			expect(result.src).toBe('https://cdn.test/asset.webp');
-			expect(mockUploadToStorage).toHaveBeenCalled();
+			expect(mockUploadOrReconcile).toHaveBeenCalled();
 			expect(mockFindPublishedContent).toHaveBeenCalledWith(INVITATION_ID);
 			expect(mockResolveAssetSlug).toHaveBeenCalled();
 			expect(mockCreateAsset).toHaveBeenCalledWith(
@@ -150,6 +174,11 @@ describe('importDemoAsset', () => {
 					displayName: 'hero',
 					width: 1080,
 					height: 1920,
+					provider: 'cloudinary',
+					providerPublicId: 'xv/demo/assets/hero-abc',
+					secureUrl:
+						'https://res.cloudinary.com/demo/image/upload/v1/xv/demo/assets/hero-abc.webp',
+					storagePath: 'xv/demo/assets/hero-abc',
 				}),
 			);
 		});

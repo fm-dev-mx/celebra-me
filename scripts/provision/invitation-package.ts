@@ -3,6 +3,10 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import {
+	buildCloudinaryDeliveryUrl,
+	buildCloudinaryPublicId,
+} from '../../src/lib/intake/services/cloudinary-assets.ts';
+import {
 	buildNormalizedInvitationRelease,
 	canonicalize,
 	RELEASE_SCHEMA_VERSION,
@@ -28,6 +32,9 @@ export interface InvitationPackageAsset {
 	originalFileSize: number | null;
 	sha256: string;
 	dataBase64: string;
+	provider?: 'supabase' | 'cloudinary';
+	providerPublicId?: string;
+	secureUrl?: string;
 }
 export interface InvitationPackageData {
 	schemaVersion: string;
@@ -132,23 +139,35 @@ export function serializeInvitationPackage(
 			eventType: release.metadata.eventType,
 			status: 'published',
 		},
-		assets: release.assets.map((asset) => ({
-			key: asset.key,
-			displayName: asset.displayName,
-			defaultAltText: asset.alt,
-			focalPoint: asset.focalPoint,
-			bucket: 'invitation-assets',
-			storagePath: `managed/${release.slug}/${asset.key}.webp`,
-			mimeType: asset.mimeType,
-			width: asset.width,
-			height: asset.height,
-			fileSize: asset.fileSize,
-			validationVersion: asset.validationVersion,
-			originalMimeType: asset.originalMimeType,
-			originalFileSize: asset.originalFileSize,
-			sha256: asset.sha256,
-			dataBase64: asset.dataBase64,
-		})),
+		assets: release.assets.map((asset) => {
+			const providerPublicId = buildCloudinaryPublicId({
+				eventType: release.metadata.eventType,
+				slug: release.slug,
+				key: asset.key,
+				sha256: asset.sha256,
+			});
+			const cloudName = process.env.CLOUDINARY_CLOUD_NAME?.trim() || 'unconfigured';
+			return {
+				key: asset.key,
+				displayName: asset.displayName,
+				defaultAltText: asset.alt,
+				focalPoint: asset.focalPoint,
+				bucket: 'invitation-assets',
+				storagePath: `managed/${release.slug}/${asset.key}.webp`,
+				mimeType: asset.mimeType,
+				width: asset.width,
+				height: asset.height,
+				fileSize: asset.fileSize,
+				validationVersion: asset.validationVersion,
+				originalMimeType: asset.originalMimeType,
+				originalFileSize: asset.originalFileSize,
+				sha256: asset.sha256,
+				dataBase64: asset.dataBase64,
+				provider: 'cloudinary' as const,
+				providerPublicId,
+				secureUrl: buildCloudinaryDeliveryUrl(cloudName, providerPublicId),
+			};
+		}),
 	};
 	const payload = JSON.parse(JSON.stringify(rawPayload)) as Omit<
 		InvitationPackageData,

@@ -7,7 +7,7 @@ import {
 } from '../../scripts/provision/asset-reconciliation.ts';
 import type { InvitationPackageAsset } from '../../scripts/provision/invitation-package.ts';
 
-const mockCanonicalAsset: InvitationPackageAsset = {
+const mockStorageCanonicalAsset: InvitationPackageAsset = {
 	key: 'hero',
 	displayName: 'Romina — portada',
 	defaultAltText: 'Romina portada',
@@ -22,6 +22,12 @@ const mockCanonicalAsset: InvitationPackageAsset = {
 	originalFileSize: 60000,
 	sha256: 'b7a4f50f723982d06b5b5335b807e2dfa4e15558a4af7c0dff5bffe54c544fd6',
 	dataBase64: 'mockbase64',
+};
+
+const mockCanonicalAsset: InvitationPackageAsset = {
+	...mockStorageCanonicalAsset,
+	provider: 'cloudinary',
+	providerPublicId: 'xv/romina-rios-chaparro/assets/hero-b7a4f50f7239',
 };
 
 const mockTargetDbRecord: TargetAssetRecord = {
@@ -57,7 +63,7 @@ describe('asset-reconciliation engine', () => {
 		};
 
 		const result = reconcileAssets({
-			canonicalAssets: [mockCanonicalAsset],
+			canonicalAssets: [mockStorageCanonicalAsset],
 			targetDbAssets: [mockTargetDbRecord],
 			observedStorage,
 			policy: 'missing',
@@ -71,6 +77,56 @@ describe('asset-reconciliation engine', () => {
 		expect(result.reconciledAssets[0]?.plannedAction).toBe('REUSE');
 	});
 
+	it('plans Cloudinary upload when the target row is still on Supabase Storage', () => {
+		const result = reconcileAssets({
+			canonicalAssets: [
+				{
+					...mockCanonicalAsset,
+					provider: 'cloudinary',
+					providerPublicId: 'xv/romina-rios-chaparro/assets/hero-b7a4f50f7239',
+				},
+			],
+			targetDbAssets: [mockTargetDbRecord],
+			observedStorage: {
+				'invitations/3d14155c-5c1e-4b47-a87a-0aa8af25e795/optimized/hero.webp': {
+					present: true,
+					sha256: mockCanonicalAsset.sha256,
+				},
+			},
+			policy: 'missing',
+		});
+
+		expect(result.blocked).toBe(false);
+		expect(result.reconciledAssets[0]?.plannedAction).toBe('UPLOAD');
+		expect(result.reconciledAssets[0]?.reasonCode).toBe('ASSET_CLOUDINARY_UPLOAD');
+	});
+
+	it('classifies MATCH and plans REUSE when the target row is already Cloudinary', () => {
+		const result = reconcileAssets({
+			canonicalAssets: [mockCanonicalAsset],
+			targetDbAssets: [
+				{
+					...mockTargetDbRecord,
+					provider: 'cloudinary',
+					providerPublicId: mockCanonicalAsset.providerPublicId,
+					secureUrl:
+						'https://res.cloudinary.com/demo/image/upload/v1/xv/romina-rios-chaparro/assets/hero-b7a4f50f7239.webp',
+					sha256: mockCanonicalAsset.sha256,
+					managedByDefinitionSlug: 'romina-rios-chaparro',
+					managedSourceKey: 'hero',
+				},
+			],
+			observedStorage: {},
+			policy: 'missing',
+			definitionSlug: 'romina-rios-chaparro',
+		});
+
+		expect(result.blocked).toBe(false);
+		expect(result.reconciledAssets[0]?.classification).toBe('MATCH');
+		expect(result.reconciledAssets[0]?.plannedAction).toBe('REUSE');
+		expect(result.reconciledAssets[0]?.reasonCode).toBe('ASSET_MATCH_EXISTS');
+	});
+
 	it('selects the referenced duplicate and repairs its semantic key without pruning peers', () => {
 		const referenced: TargetAssetRecord = {
 			...mockTargetDbRecord,
@@ -82,7 +138,7 @@ describe('asset-reconciliation engine', () => {
 			storagePath: 'invitations/duplicate/optimized/hero.webp',
 		};
 		const result = reconcileAssets({
-			canonicalAssets: [mockCanonicalAsset],
+			canonicalAssets: [mockStorageCanonicalAsset],
 			targetDbAssets: [referenced, duplicate],
 			observedStorage: {
 				[referenced.storagePath]: { present: true, sha256: mockCanonicalAsset.sha256 },
@@ -114,7 +170,7 @@ describe('asset-reconciliation engine', () => {
 		};
 
 		const result = reconcileAssets({
-			canonicalAssets: [mockCanonicalAsset],
+			canonicalAssets: [mockStorageCanonicalAsset],
 			targetDbAssets: [],
 			observedStorage,
 			policy: 'missing',
@@ -137,7 +193,7 @@ describe('asset-reconciliation engine', () => {
 		};
 
 		const result = reconcileAssets({
-			canonicalAssets: [mockCanonicalAsset],
+			canonicalAssets: [mockStorageCanonicalAsset],
 			targetDbAssets: [],
 			observedStorage,
 			policy: 'verify',
@@ -151,7 +207,7 @@ describe('asset-reconciliation engine', () => {
 		const observedStorage: Record<string, ObservedStorageState> = {};
 
 		const result = reconcileAssets({
-			canonicalAssets: [mockCanonicalAsset],
+			canonicalAssets: [mockStorageCanonicalAsset],
 			targetDbAssets: [],
 			observedStorage,
 			policy: 'missing',
@@ -168,7 +224,7 @@ describe('asset-reconciliation engine', () => {
 		const observedStorage: Record<string, ObservedStorageState> = {};
 
 		const result = reconcileAssets({
-			canonicalAssets: [mockCanonicalAsset],
+			canonicalAssets: [mockStorageCanonicalAsset],
 			targetDbAssets: [],
 			observedStorage,
 			policy: 'verify',
@@ -187,7 +243,7 @@ describe('asset-reconciliation engine', () => {
 		};
 
 		const result = reconcileAssets({
-			canonicalAssets: [mockCanonicalAsset],
+			canonicalAssets: [mockStorageCanonicalAsset],
 			targetDbAssets: [mockTargetDbRecord],
 			observedStorage,
 			policy: 'missing',
@@ -207,7 +263,7 @@ describe('asset-reconciliation engine', () => {
 		};
 
 		const result = reconcileAssets({
-			canonicalAssets: [mockCanonicalAsset],
+			canonicalAssets: [mockStorageCanonicalAsset],
 			targetDbAssets: [mockTargetDbRecord],
 			observedStorage,
 			policy: 'sync',
@@ -239,7 +295,7 @@ describe('asset-reconciliation engine', () => {
 		};
 
 		const resultRetain = reconcileAssets({
-			canonicalAssets: [mockCanonicalAsset],
+			canonicalAssets: [mockStorageCanonicalAsset],
 			targetDbAssets: [mockTargetDbRecord, unreferencedRecord],
 			observedStorage: {
 				'invitations/3d14155c-5c1e-4b47-a87a-0aa8af25e795/optimized/hero.webp': {
@@ -256,7 +312,7 @@ describe('asset-reconciliation engine', () => {
 		expect(resultRetain.unreferencedAssets[0]?.plannedAction).toBe('RETAIN');
 
 		const resultPrune = reconcileAssets({
-			canonicalAssets: [mockCanonicalAsset],
+			canonicalAssets: [mockStorageCanonicalAsset],
 			targetDbAssets: [mockTargetDbRecord, unreferencedRecord],
 			observedStorage: {
 				'invitations/3d14155c-5c1e-4b47-a87a-0aa8af25e795/optimized/hero.webp': {
@@ -290,7 +346,7 @@ describe('asset-reconciliation engine', () => {
 			managedByDefinitionSlug: null,
 		};
 		const result = reconcileAssets({
-			canonicalAssets: [mockCanonicalAsset],
+			canonicalAssets: [mockStorageCanonicalAsset],
 			targetDbAssets: [mockTargetDbRecord, unmanaged],
 			observedStorage: {
 				[mockTargetDbRecord.storagePath]: {
@@ -326,7 +382,7 @@ describe('asset-reconciliation engine', () => {
 			managedOperationId: '11111111-1111-4111-8111-111111111111',
 		};
 		const result = reconcileAssets({
-			canonicalAssets: [mockCanonicalAsset],
+			canonicalAssets: [mockStorageCanonicalAsset],
 			targetDbAssets: [mockTargetDbRecord, stale],
 			observedStorage: {
 				[mockTargetDbRecord.storagePath]: {
@@ -360,7 +416,7 @@ describe('asset-reconciliation engine', () => {
 			managedOperationId: '11111111-1111-4111-8111-111111111111',
 		};
 		const result = reconcileAssets({
-			canonicalAssets: [mockCanonicalAsset],
+			canonicalAssets: [mockStorageCanonicalAsset],
 			targetDbAssets: [mockTargetDbRecord, referenced],
 			observedStorage: {
 				[mockTargetDbRecord.storagePath]: {
