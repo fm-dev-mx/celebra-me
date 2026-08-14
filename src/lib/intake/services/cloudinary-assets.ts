@@ -166,9 +166,24 @@ function buildAssetResult(
 	};
 }
 
-function getCloudinaryErrorStatus(error: unknown): number | undefined {
-	if (typeof error !== 'object' || error === null || !('http_code' in error)) return undefined;
-	return typeof error.http_code === 'number' ? error.http_code : undefined;
+/** Cloudinary Node SDK may put http_code on the root or on a nested `error` object. */
+export function getCloudinaryErrorStatus(error: unknown): number | undefined {
+	if (typeof error !== 'object' || error === null) return undefined;
+	if ('http_code' in error && typeof error.http_code === 'number') {
+		return error.http_code;
+	}
+	if ('error' in error) {
+		const nested = error.error;
+		if (
+			typeof nested === 'object' &&
+			nested !== null &&
+			'http_code' in nested &&
+			typeof nested.http_code === 'number'
+		) {
+			return nested.http_code;
+		}
+	}
+	return undefined;
 }
 
 function isCollisionError(error: unknown): boolean {

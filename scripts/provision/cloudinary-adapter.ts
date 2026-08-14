@@ -24,7 +24,7 @@ const FILE_KEYS = [
 	'CLOUDINARY_API_SECRET',
 ] as const;
 
-function hydrateCloudinaryEnvFromFiles(): void {
+export function hydrateCloudinaryEnvFromFiles(): void {
 	const missing = FILE_KEYS.filter((key) => !process.env[key]?.trim());
 	if (missing.length === 0) return;
 

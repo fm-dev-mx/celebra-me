@@ -97,4 +97,25 @@ describe('invitation host owner planning', () => {
 			ownerUserId: null,
 		});
 	});
+
+	it('keeps plan→apply owner identity stable only when preferredCreateOwnerId is forwarded', () => {
+		const first = planInvitationHostOwner({
+			slug: 'new-invitation',
+			hostLoginAlias: 'new_invitation',
+		});
+		const second = planInvitationHostOwner({
+			slug: 'new-invitation',
+			hostLoginAlias: 'new_invitation',
+		});
+		expect(first.action).toBe('OWNER_CREATE_PLANNED');
+		expect(second.action).toBe('OWNER_CREATE_PLANNED');
+		expect(first.plannedOwnerUserId).not.toBe(second.plannedOwnerUserId);
+
+		const apply = planInvitationHostOwner({
+			slug: 'new-invitation',
+			hostLoginAlias: 'new_invitation',
+			preferredCreateOwnerId: first.plannedOwnerUserId ?? undefined,
+		});
+		expect(apply.plannedOwnerUserId).toBe(first.plannedOwnerUserId);
+	});
 });

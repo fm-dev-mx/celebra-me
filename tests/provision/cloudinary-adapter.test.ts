@@ -7,6 +7,7 @@ import { createHash } from 'node:crypto';
 import {
 	buildCloudinaryPublicId,
 	buildCloudinaryOgImageUrl,
+	getCloudinaryErrorStatus,
 	uploadOrReconcileCloudinaryAsset,
 } from '../../src/lib/intake/services/cloudinary-assets.ts';
 import {
@@ -70,6 +71,19 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 			expect(publicId).toBe(
 				`xv/abril-michelle-becerra-rea/assets/gallery-02-bw-cake-${dummySha.slice(0, 12)}`,
 			);
+		});
+	});
+
+	describe('Cloudinary error status', () => {
+		it('reads http_code from the SDK nested error object used on missing resources', () => {
+			expect(
+				getCloudinaryErrorStatus({
+					request_options: {},
+					error: { message: 'Resource not found - example', http_code: 404 },
+				}),
+			).toBe(404);
+			expect(getCloudinaryErrorStatus({ http_code: 401 })).toBe(401);
+			expect(getCloudinaryErrorStatus({ error: {} })).toBeUndefined();
 		});
 	});
 

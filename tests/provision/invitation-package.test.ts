@@ -1,4 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
+import { hydrateCloudinaryEnvFromFiles } from '../../scripts/provision/cloudinary-adapter.ts';
 import {
 	computePackageHash,
 	serializeInvitationPackage,
@@ -153,6 +154,72 @@ describe('invitation package', () => {
 		expect(pkg.assets[0]?.secureUrl).toContain(
 			`/xv/test-invitation/assets/hero-${hash.slice(0, 12)}.webp`,
 		);
+	});
+
+	it('keeps packageHash stable after Cloudinary env hydration', () => {
+		const release: NormalizedInvitationRelease = {
+			schemaVersion: '2.0.0',
+			slug: 'test-invitation',
+			definitionCreatedAt: '2026-07-20T00:00:00.000Z',
+			sourceHash: hash,
+			metadataHash: hash,
+			projectionHash: md5hash,
+			assetManifestHash: hash,
+			metadata: {
+				managedIdentityId: '11111111-1111-4111-8111-111111111111',
+				previousSlugs: [],
+				title: 'Test',
+				eventType: 'xv',
+				baseDemoId: 'demo',
+				themeId: 'theme',
+				visualProfileId: 'profile',
+				clientName: 'Client',
+				hostLoginAlias: 'client',
+				clientEmail: '',
+				clientWhatsapp: '',
+				photosReceived: true,
+				snapshot: {},
+			},
+			draftContent: { hero: { title: 'Test' } },
+			publishedProjection: { hero: { title: 'Test' } },
+			assets: [
+				{
+					key: 'hero',
+					displayName: 'Hero',
+					alt: 'Hero',
+					bytes: new Uint8Array([0]),
+					dataBase64: 'AA==',
+					sha256: hash,
+					mimeType: 'image/webp',
+					width: 1,
+					height: 1,
+					fileSize: 1,
+					validationVersion: 1,
+					originalMimeType: 'image/jpeg',
+					originalFileSize: 1,
+				},
+			],
+		};
+		const previousName = process.env.CLOUDINARY_CLOUD_NAME;
+		const previousKey = process.env.CLOUDINARY_API_KEY;
+		const previousSecret = process.env.CLOUDINARY_API_SECRET;
+		delete process.env.CLOUDINARY_CLOUD_NAME;
+		delete process.env.CLOUDINARY_API_KEY;
+		delete process.env.CLOUDINARY_API_SECRET;
+		try {
+			const first = serializeInvitationPackage(release);
+			hydrateCloudinaryEnvFromFiles();
+			const second = serializeInvitationPackage(release);
+			expect(second.packageHash).toBe(first.packageHash);
+			expect(second.assets[0]?.secureUrl).toBe(first.assets[0]?.secureUrl);
+		} finally {
+			if (previousName === undefined) delete process.env.CLOUDINARY_CLOUD_NAME;
+			else process.env.CLOUDINARY_CLOUD_NAME = previousName;
+			if (previousKey === undefined) delete process.env.CLOUDINARY_API_KEY;
+			else process.env.CLOUDINARY_API_KEY = previousKey;
+			if (previousSecret === undefined) delete process.env.CLOUDINARY_API_SECRET;
+			else process.env.CLOUDINARY_API_SECRET = previousSecret;
+		}
 	});
 
 	it('accepts an in-memory package only when every integrity hash is present and correct', () => {

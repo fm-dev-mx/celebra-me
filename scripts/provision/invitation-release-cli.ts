@@ -1021,6 +1021,8 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 						slug,
 						apply: false,
 						rekeyFrom,
+						sourceDir,
+						ownerUserId,
 						updateScope,
 						assetPolicy,
 						pruneAssets,

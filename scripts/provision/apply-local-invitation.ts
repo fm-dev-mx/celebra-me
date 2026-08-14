@@ -43,20 +43,14 @@ import { serializeInvitationPackage } from './invitation-package.ts';
 import type { UploadedAssetMap } from './invitations/invitation-definition.ts';
 import { cleanupLocalResources, type TrackedResource } from './managed-invitation-cleanup.ts';
 import { resolveLocalEnv } from './local-provision-env.ts';
-import {
-	buildCloudinaryPublicId,
-	uploadOrReconcileCloudinaryAsset,
-} from './cloudinary-adapter.ts';
+import { buildCloudinaryPublicId, uploadOrReconcileCloudinaryAsset } from './cloudinary-adapter.ts';
 import { resolveAndEnsureInvitationHostOwner } from './invitation-host-owner.ts';
 import { verifySupabaseApiCredential } from './supabase-credential-verification.ts';
 import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
 import { resolveManagedInvitationMetadata } from '../../src/lib/intake/mutations/ownership.ts';
 import { operationIdFromPlanId } from '../../src/lib/intake/mutations/outcome.ts';
 
-import {
-	decideRekeyIdentity,
-	resolveIdentityWithoutRekey,
-} from './managed-identity-guards.ts';
+import { decideRekeyIdentity, resolveIdentityWithoutRekey } from './managed-identity-guards.ts';
 import {
 	buildSemanticFunctionalChanges,
 	computePlanId,
@@ -142,6 +136,7 @@ async function resolveLocalOwner(options: {
 	dbUrl: string;
 	apply: boolean;
 	existingOwnerUserId?: string | null;
+	preferredCreateOwnerId?: string;
 }): Promise<string> {
 	const hostPlan = await resolveAndEnsureInvitationHostOwner({
 		slug: options.slug,
@@ -152,6 +147,7 @@ async function resolveLocalOwner(options: {
 		serviceRoleKey: options.serviceRoleKey,
 		explicitOwnerId: options.explicitOwnerId,
 		existingOwnerUserId: options.existingOwnerUserId,
+		preferredCreateOwnerId: options.preferredCreateOwnerId,
 		dryRun: !options.apply,
 	});
 	return hostPlan.ownerUserId;
@@ -343,9 +339,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		const { data: existingProvenanceLink } = await supabase
 			.from('managed_invitation_release_provenance')
 			.select('invitation_id, managed_identity_id')
-			.or(
-				`definition_slug.eq.${slug},managed_identity_id.eq.${definition.managedIdentityId}`,
-			)
+			.or(`definition_slug.eq.${slug},managed_identity_id.eq.${definition.managedIdentityId}`)
 			.maybeSingle();
 		const { data: invBySlug } = await supabase
 			.from('invitations')
@@ -445,6 +439,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		dbUrl: env.dbUrl,
 		apply: isApply,
 		existingOwnerUserId: existingInv?.created_by ? String(existingInv.created_by) : null,
+		preferredCreateOwnerId: options.plan?.targetPreconditions.targetOwnerUserId,
 	});
 	const resolvedMetadata = resolveManagedInvitationMetadata(
 		{
@@ -701,7 +696,9 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 					: existingPub?.content
 						? hashPublicationProjection(existingPub.content as Record<string, unknown>)
 						: null,
-				appliedReceipt: toReceiptEvidence(appliedReceiptRow as Record<string, unknown> | null),
+				appliedReceipt: toReceiptEvidence(
+					appliedReceiptRow as Record<string, unknown> | null,
+				),
 				latestMutationReceipt: recoveringPartial
 					? toReceiptEvidence(appliedReceiptRow as Record<string, unknown> | null)
 					: latestReceiptEvidence,
@@ -1641,9 +1638,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 				metadata_hash: release.metadataHash,
 				// The provenance table requires 64-char SHA-256; release.projectionHash is the
 				// 32-char MD5 projection used by the publish RPC.
-				projection_hash: createHash('sha256')
-					.update(release.projectionHash)
-					.digest('hex'),
+				projection_hash: createHash('sha256').update(release.projectionHash).digest('hex'),
 				asset_manifest_hash: release.assetManifestHash,
 				managed_projection: proposedContent,
 				applied_draft_updated_at: appliedDraftUpdatedAt,
