@@ -188,6 +188,8 @@ export function buildRenataPublishedContent(
 				family: { family: 'atmospheric-blend', source: 'hero' },
 				countdown: { family: 'atmospheric-blend', source: 'family' },
 				'interlude-after-location': { family: 'overlap', source: 'location' },
+				'personalized-access': { family: 'overlap', source: 'gifts' },
+				rsvp: { family: 'atmospheric-blend', source: 'personalized-access' },
 			},
 		},
 		_assetSlug: RENATA_EVENT.assetSlug,
@@ -246,7 +248,7 @@ export function buildRenataPublishedContent(
 			visibility: 'public',
 			presentation: 'simple',
 			presentationOptions: {
-				showFlourishes: false,
+				showFlourishes: true,
 				showNavigationButtons: false,
 			},
 			indicationsHeading: 'Indicaciones',
