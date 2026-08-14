@@ -169,14 +169,14 @@ Demo remains the gold base template. Real invite identity lives in Lane A. Real 
 
 ## Creative Direction & Acceptance
 
-| concern                                                  | decision / evidence                                                                   | status                         |
-| -------------------------------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------ |
-| Typography roles (display, heading, body, metadata)      | Editorial display retained; cream type on photos; ink type on light surfaces          | accepted after 390/1440 review |
-| Vertical rhythm and density                              | Preset padding reduced; itinerary uses editorial-program; RSVP plates flattened       | accepted after 390/1440 review |
-| Surface hierarchy (open flow vs cards/containers)        | Open flow; Location/Gifts/RSVP/itinerary paper chrome neutralized                     | accepted after 390/1440 review |
-| Photographic treatment (role, crop, focal point, filter) | Color preserved; hero filter none; unique roles; thank-you is full-bleed not circular | accepted after 390/1440 review |
-| Section-intersection intent and narrative cadence        | family blend from hero; overlap after location; remaining seams neutral               | accepted after 390/1440 review |
-| Local exceptions to the selected preset                  | Gold remap, hero cascade reset, card/paper flatten, thank-you editorial circle reset  | documented                     |
+| concern                                                  | decision / evidence                                                                                           | status                         |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| Typography roles (display, heading, body, metadata)      | Editorial display retained; cream type on photos; ink type on light surfaces                                  | accepted after 390/1440 review |
+| Vertical rhythm and density                              | Preset padding reduced; itinerary uses editorial-program; PA/RSVP use formal-pass / formal-register           | accepted after 390/1440 review |
+| Surface hierarchy (open flow vs cards/containers)        | Open flow; Location/Gifts/itinerary paper chrome neutralized; PA/RSVP consume the shared confirmation chapter | accepted after 390/1440 review |
+| Photographic treatment (role, crop, focal point, filter) | Color preserved; hero filter none; unique roles; thank-you is full-bleed not circular                         | accepted after 390/1440 review |
+| Section-intersection intent and narrative cadence        | family blend from hero; overlap after location; remaining seams neutral                                       | accepted after 390/1440 review |
+| Local exceptions to the selected preset                  | Gold remap, hero cascade reset, card/paper flatten, thank-you editorial circle reset                          | documented                     |
 
 ### Creative acceptance record
 
@@ -233,16 +233,17 @@ hero. Feature frame is `_DSC5939`, not file-order first.
 - Helper prepReadiness is `NOT_READY` while RSVP mode/cap are missing. Goal 2 Local authoring is an
   explicit current-task exception; `assertImplementationAllowed` must not be called.
 - Lane A inheritance resets: `--hero-image-filter`, gold/metallic tokens, hero cascade
-  (grid/mix-blend/absolute details), gifts/RSVP card chrome. Olive is the action accent outside
-  Event Location; `--color-text-emphasis` stays ink and is not aliased to `--color-action-accent`.
-  Event Location consumes `stacked-venue-plates` with section-scoped type/palette so the chapter
-  matches the shared plate presentation. Yellow is not a UI color on surrounding sections.
-  Cream/blush are light surfaces; silver is line/detail; coral is rare (wax highlight).
+  (grid/mix-blend/absolute details), gifts card chrome. Olive is the action accent outside Event
+  Location; `--color-text-emphasis` stays ink and is not aliased to `--color-action-accent`. Event
+  Location consumes `stacked-venue-plates` with section-scoped type/palette so the chapter matches
+  the shared plate presentation. Yellow is not a UI color on surrounding sections. Cream/blush are
+  light surfaces; silver is line/detail; coral is rare (wax highlight).
 - Structural selections: itinerary `editorial-program`; gallery `paired-feature-band` without a
   feature `aspectRatio` override and item order `gallery-01`, `gallery-02`, `gallery-feature`,
-  `gallery-03`, `gallery-04`; personalized access `standard`; location `stacked-venue-plates` with
-  `presentation: 'simple'`, `presentationOptions.showNavigationButtons: false`, and
-  `showFlourishes: true`; keep `ceremony` + `reception` (no `venues[]`); envelope
+  `gallery-03`, `gallery-04`; location `stacked-venue-plates` with `presentation: 'simple'`,
+  `presentationOptions.showNavigationButtons: false`, and `showFlourishes: true`; keep `ceremony` +
+  `reception` (no `venues[]`); personalized access `formal-pass`; RSVP `formal-register`
+  (presentation only — do not persist `accessMode`, `confirmationMode`, or `guestCap`); envelope
   `variant: 'premiere-floral'` with `sealIcon: 'monogram'`, `microcopy: 'Abra su invitación'`, and
   omitted `teaserDetails` so the closed teaser derives from Renata’s date and venue. Do not set
   `closedPalette`. Reveal appearance is owned by the premiere-floral envelope variant, not the

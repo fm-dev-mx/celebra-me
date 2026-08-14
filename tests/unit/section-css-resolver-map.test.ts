@@ -277,6 +277,36 @@ describe('section-css-resolver-map', () => {
 		]);
 	});
 
+	it('delivers formal-pass and formal-register independently of theme identity', () => {
+		const bundleUrlMap = buildSectionBundleUrlMap({
+			'/src/styles/invitation-sections-by-preset/editorial.scss': {
+				default: '/_astro/editorial-bundle.css',
+			},
+		});
+		const sectionUrlMap = buildSectionUrlMap({
+			'/src/styles/themes/sections/personalized-access/_formal-pass.scss': {
+				default: '/_astro/access-formal-pass.css',
+			},
+			'/src/styles/themes/sections/rsvp/_formal-register.scss': {
+				default: '/_astro/rsvp-formal-register.css',
+			},
+		});
+
+		expect(
+			resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
+				themePreset: 'editorial',
+				structuralVariants: {
+					rsvp: 'formal-register',
+					personalizedAccess: 'formal-pass',
+				},
+			}),
+		).toEqual([
+			'/_astro/editorial-bundle.css',
+			'/_astro/rsvp-formal-register.css',
+			'/_astro/access-formal-pass.css',
+		]);
+	});
+
 	it('does not load magazine thank-you geometry as a celestial structural override', () => {
 		const bundleUrlMap = buildSectionBundleUrlMap({
 			'/src/styles/invitation-sections-by-preset/celestial-blue.scss': {

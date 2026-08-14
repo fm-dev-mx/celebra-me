@@ -57,14 +57,19 @@ canonical CSS, and shared primitives must contain no compatibility branches.
   - Item roles and `presentationOptions.mobileBrowse` remain orthogonal typed capabilities.
 - **Itinerary:** `standard`, `timeline-paper`, `editorial-ledger`, `editorial-program`.
   - The value selects the renderer path and is emitted as `data-structural-variant`.
-  - `timeline-paper` uses `ItineraryProgram`; `editorial-ledger`, `editorial-program`, and `standard`
-    use `TimelineList`.
+  - `timeline-paper` uses `ItineraryProgram`; `editorial-ledger`, `editorial-program`, and
+    `standard` use `TimelineList`.
   - `_timeline-paper.scss`, `_editorial-ledger.scss`, and `_editorial-program.scss` are delivered
     independently from theme and profile bundles. `editorial-program` owns the numbered magazine
     program layout, type metrics, and section-scoped chroma.
 - **Gifts:** `standard`, `editorial-catalog`.
-- **RSVP:** `standard`, `editorial-press-pass`.
-- **Personalized Access:** `standard`, `ornamented`, `editorial-pass`.
+- **RSVP:** `standard`, `editorial-press-pass`, `formal-register`.
+  - `formal-register` uses the shared RSVP renderer and owns the underline confirmation-register
+    layout, type metrics, controls, feedback, and section-scoped chapter chroma.
+- **Personalized Access:** `standard`, `ornamented`, `editorial-pass`, `formal-pass`.
+  - `formal-pass` uses the shared Personalized Access renderer (ornaments included) and owns the
+    credential-card geometry, type metrics, and the same section-scoped chapter chroma as
+    `formal-register`.
 - **Thank You:** `standard`, `editorial-back-cover`, `full-bleed-photo`.
 - **Envelope / reveal:** `envelope.variant` is a `THEME_PRESETS` design selector. It is independent
   of `themeId`. When omitted, resolution falls back to the invitation `theme.preset`.

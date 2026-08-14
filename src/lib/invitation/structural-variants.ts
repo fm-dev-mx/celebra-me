@@ -15,13 +15,18 @@ export type ThankYouStructuralVariant = (typeof THANK_YOU_STRUCTURAL_VARIANTS)[n
 export const GIFTS_STRUCTURAL_VARIANTS = ['standard', 'editorial-catalog'] as const;
 export type GiftsStructuralVariant = (typeof GIFTS_STRUCTURAL_VARIANTS)[number];
 
-export const RSVP_STRUCTURAL_VARIANTS = ['standard', 'editorial-press-pass'] as const;
+export const RSVP_STRUCTURAL_VARIANTS = [
+	'standard',
+	'editorial-press-pass',
+	'formal-register',
+] as const;
 export type RsvpStructuralVariant = (typeof RSVP_STRUCTURAL_VARIANTS)[number];
 
 export const PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS = [
 	'standard',
 	'ornamented',
 	'editorial-pass',
+	'formal-pass',
 ] as const;
 export type PersonalizedAccessStructuralVariant =
 	(typeof PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS)[number];

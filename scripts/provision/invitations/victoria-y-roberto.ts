@@ -419,7 +419,7 @@ export function buildVictoriaPublishedContent(
 			},
 		],
 		rsvp: {
-			variant: 'standard',
+			variant: 'formal-register',
 			title: 'Confirme su asistencia',
 			subcopy:
 				'Les pedimos registrar su respuesta desde esta invitación para preparar cada lugar con cuidado.',
@@ -442,7 +442,7 @@ export function buildVictoriaPublishedContent(
 				startsAt: VICTORIA_EVENT.startsAtUtc,
 			},
 			personalizedAccess: {
-				variant: 'ornamented',
+				variant: 'formal-pass',
 				title: 'Su invitación personal',
 				noteText:
 					'Esta invitación es válida para {count} {personWord}. Por organización del evento, no serán admitidos niños.',

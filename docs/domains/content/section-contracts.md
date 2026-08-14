@@ -23,11 +23,11 @@ compatibility aliases, and profile exceptions is maintained in
 
 Structural renderer selections are section-owned and bounded via each section's `variant` field.
 Hero accepts `standard`, `editorial-cover`, or `split-cover`; Thank You accepts `standard`,
-`editorial-back-cover`, or `full-bleed-photo`; Gifts and RSVP use `editorial-catalog` and
-`editorial-press-pass` respectively. `rsvp.personalizedAccess` uses `standard`, `ornamented`, or
-`editorial-pass`. These fields select markup/layout only; `visualVariant` / theme preset remains the
-visual skin. Legacy `*.structuralVariant` inputs are compatibility-only (see
-[`variant-compatibility.md`](../theme/variant-compatibility.md)).
+`editorial-back-cover`, or `full-bleed-photo`; Gifts uses `editorial-catalog`; RSVP uses
+`editorial-press-pass` or `formal-register`. `rsvp.personalizedAccess` uses `standard`,
+`ornamented`, `editorial-pass`, or `formal-pass`. These fields select markup/layout only;
+`visualVariant` / theme preset remains the visual skin. Legacy `*.structuralVariant` inputs are
+compatibility-only (see [`variant-compatibility.md`](../theme/variant-compatibility.md)).
 
 Countdown and Footer have no structural selector in the current contract: their theme branches are
 presentation skins only. They continue to consume the visual `variant` and must not be promoted to
@@ -160,6 +160,10 @@ structural variants without new executable evidence.
   WhatsApp/API submission.
 - **Required Inputs**: `confirmationMode` (`api` | `whatsapp`), `deadlineIso`, `guestCap`.
 - **Optional Inputs**: `title`, `subtitle`, `whatsappConfig`, `personalizedAccess`.
+- **Variant Contract**: Canonical `rsvp.variant` values are `standard`, `editorial-press-pass`, and
+  `formal-register`. `formal-register` keeps the shared RSVP renderer and owns the underline
+  confirmation-register presentation. `rsvp.personalizedAccess.variant` values are `standard`,
+  `ornamented`, `editorial-pass`, and `formal-pass`.
 - **Rendering & Omission**: Mandatory for invitations requiring RSVP confirmation. A public
   `personalized-only` RSVP without guest context renders a static locked Astro state; demo and
   guest-backed states render the interactive React island.

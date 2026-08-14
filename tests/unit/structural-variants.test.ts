@@ -30,7 +30,9 @@ describe('section structural variant contracts', () => {
 		expect(THANK_YOU_STRUCTURAL_VARIANTS).toContain('editorial-back-cover');
 		expect(GIFTS_STRUCTURAL_VARIANTS).toContain('editorial-catalog');
 		expect(RSVP_STRUCTURAL_VARIANTS).toContain('editorial-press-pass');
+		expect(RSVP_STRUCTURAL_VARIANTS).toContain('formal-register');
 		expect(PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS).toContain('editorial-pass');
+		expect(PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS).toContain('formal-pass');
 		expect(FAMILY_STRUCTURAL_VARIANTS).toContain('split-groups');
 		expect(FAMILY_STRUCTURAL_VARIANTS).toContain('asymmetric-groups');
 		expect(LOCATION_STRUCTURAL_VARIANTS).toContain('split-map');

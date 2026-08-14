@@ -360,10 +360,14 @@ test.describe('Renata XV local visual and content audit', () => {
 			if ((await personalizedAccess.count()) > 0) {
 				await expect(personalizedAccess).toHaveAttribute(
 					'data-structural-variant',
-					'standard',
+					'formal-pass',
 				);
-				expect(await personalizedAccess.locator('.access-card__ornaments').count()).toBe(0);
+				expect(await personalizedAccess.locator('.access-card__ornaments').count()).toBe(1);
 			}
+
+			const rsvp = page.locator('.rsvp').first();
+			await expect(rsvp).toHaveAttribute('data-structural-variant', 'formal-register');
+			await expect(rsvp).toHaveAttribute('data-state', 'locked');
 
 			expect(await page.locator('.event-location__card-flourish').count()).toBe(2);
 			expect(
