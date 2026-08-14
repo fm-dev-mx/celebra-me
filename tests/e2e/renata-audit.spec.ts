@@ -157,13 +157,13 @@ test.describe('Renata XV local visual and content audit', () => {
 			expect(pageText).toMatch(/no vestir de color rosa/i);
 			expect(pageText).toMatch(/lluvia de sobres/i);
 			expect(pageText).toContain('Parroquia Santa Inés');
-			expect(pageText).toContain('InHouse Select · Salón La Cabaña del Abuelo');
+			expect(pageText).toContain('InHouse Select · Hacienda Tres Ríos');
 
 			const hero = page.locator('.invitation-hero');
 			await expect(hero).toBeVisible();
 			await expect(page.locator('.invitation-hero__title')).toHaveText('Renata');
 			await expect(hero).toContainText(/7:00\s*p\.\s*m\./i);
-			await expect(hero).toContainText(/Cabaña del Abuelo/i);
+			await expect(hero).toContainText(/Hacienda Tres Ríos/i);
 			await expect(hero).toHaveAttribute('data-structural-variant', 'standard');
 			const family = page.locator('.family').first();
 			await expect(family).toHaveAttribute('data-structural-variant', 'asymmetric-groups');
@@ -296,7 +296,7 @@ test.describe('Renata XV local visual and content audit', () => {
 				.allTextContents();
 			expect(venueNames.map((name) => name.trim())).toEqual([
 				'Parroquia Santa Inés',
-				'InHouse Select · Salón La Cabaña del Abuelo',
+				'InHouse Select · Hacienda Tres Ríos',
 			]);
 			expect(await location.getByText('Ver mapa').count()).toBe(2);
 
@@ -365,17 +365,10 @@ test.describe('Renata XV local visual and content audit', () => {
 				expect(boxes[3].top).toBeGreaterThan(boxes[2].top + 8);
 			}
 
-			const personalizedAccess = page.locator('.personalized-access').first();
-			if ((await personalizedAccess.count()) > 0) {
-				await expect(personalizedAccess).toHaveAttribute(
-					'data-structural-variant',
-					'standard',
-				);
-				expect(await personalizedAccess.locator('.access-card__ornaments').count()).toBe(0);
-			}
+			expect(await page.locator('.personalized-access').count()).toBe(0);
 
 			const rsvp = page.locator('.rsvp').first();
-			await expect(rsvp).toHaveAttribute('data-structural-variant', 'standard');
+			await expect(rsvp).toHaveAttribute('data-structural-variant', 'formal-register');
 			await expect(rsvp).toHaveAttribute('data-state', 'locked');
 
 			expect(await page.locator('.event-location__card-flourish').count()).toBe(0);
@@ -428,12 +421,14 @@ test.describe('Renata XV local visual and content audit', () => {
 				.evaluate((node) => getComputedStyle(node).backgroundColor);
 			expect(familyBg).not.toMatch(/rgb\(\s*(18|22)\s*,\s*(16|20)\s*,\s*(14|18)\s*\)/i);
 
-			const rsvpBg = await page
-				.locator('.rsvp')
-				.first()
-				.evaluate((node) => getComputedStyle(node).backgroundColor);
-			expect(rsvpBg).not.toMatch(/rgb\(\s*14\s*,\s*12\s*,\s*10\s*\)/i);
-			expect(rsvpBg).not.toMatch(/rgb\(\s*(18|22)\s*,\s*(16|20)\s*,\s*(14|18)\s*\)/i);
+			const rsvpChapter = page
+				.locator('.invitation-section-wrapper[data-section-kind="rsvp"]')
+				.first();
+			const rsvpChapterBg = await rsvpChapter.evaluate(
+				(node) => getComputedStyle(node).backgroundColor,
+			);
+			expect(rsvpChapterBg).toMatch(/rgb\(\s*70\s*,\s*86\s*,\s*56\s*\)/i);
+			expect(rsvpChapterBg).not.toMatch(/rgb\(\s*120\s*,\s*56\s*,\s*38\s*\)/i);
 
 			const galleryImages = gallery.locator('img');
 			expect(await galleryImages.count()).toBeGreaterThanOrEqual(5);
@@ -566,7 +561,7 @@ test.describe('Renata XV local visual and content audit', () => {
 				timeout: 8_000,
 			});
 			await expect(page.locator('.invitation-hero')).toContainText(/7:00\s*p\.\s*m\./i);
-			await expect(page.locator('.invitation-hero')).toContainText(/Cabaña del Abuelo/i);
+			await expect(page.locator('.invitation-hero')).toContainText(/Hacienda Tres Ríos/i);
 		});
 	}
 
@@ -614,6 +609,70 @@ test.describe('Renata XV local visual and content audit', () => {
 				path: path.join(ARTIFACT_ROOT, `${viewport.name}-reveal-letter.png`),
 			});
 			await assertRenataLeakScan(page);
+		});
+	}
+
+	for (const viewport of VIEWPORTS) {
+		test(`public RSVP stays locked formal-register at ${viewport.name}`, async ({ page }) => {
+			await page.setViewportSize({ width: viewport.width, height: viewport.height });
+			await page.emulateMedia({ reducedMotion: 'reduce' });
+
+			const response = await page.goto('/xv/renata?skipEnvelope=true', {
+				waitUntil: 'networkidle',
+			});
+			expect(response?.status()).toBe(200);
+
+			expect(await page.locator('.personalized-access').count()).toBe(0);
+			const rsvp = page.locator('.rsvp').first();
+			await expect(rsvp).toHaveAttribute('data-structural-variant', 'formal-register');
+			await expect(rsvp).toHaveAttribute('data-state', 'locked');
+			expect(
+				await page
+					.locator('.rsvp input, .rsvp textarea, .rsvp button[type="submit"]')
+					.count(),
+			).toBe(0);
+			const rsvpChapter = page
+				.locator('.invitation-section-wrapper[data-section-kind="rsvp"]')
+				.first();
+			const rsvpChapterBg = await rsvpChapter.evaluate(
+				(node) => getComputedStyle(node).backgroundColor,
+			);
+			expect(rsvpChapterBg).toMatch(/rgb\(\s*70\s*,\s*86\s*,\s*56\s*\)/i);
+			expect(rsvpChapterBg).not.toMatch(/rgb\(\s*120\s*,\s*56\s*,\s*38\s*\)/i);
+			await assertRenataLeakScan(page);
+			await rsvp.screenshot({
+				path: path.join(ARTIFACT_ROOT, `${viewport.name}-rsvp-locked.png`),
+			});
+		});
+	}
+
+	for (const viewport of VIEWPORTS) {
+		test(`screenshot preview shows formal-pass at ${viewport.name}`, async ({ page }) => {
+			await page.setViewportSize({ width: viewport.width, height: viewport.height });
+			await page.emulateMedia({ reducedMotion: 'reduce' });
+
+			const response = await page.goto('/xv/renata?skipEnvelope=true&screenshot', {
+				waitUntil: 'networkidle',
+			});
+			expect(response?.status()).toBe(200);
+
+			const personalizedAccess = page.locator('.personalized-access').first();
+			await expect(personalizedAccess).toBeVisible();
+			await expect(personalizedAccess).toHaveAttribute(
+				'data-structural-variant',
+				'formal-pass',
+			);
+			expect(
+				await personalizedAccess.locator('.access-card__ornaments').count(),
+			).toBeGreaterThan(0);
+			await expect(page.locator('.rsvp').first()).toHaveAttribute(
+				'data-structural-variant',
+				'formal-register',
+			);
+			await assertRenataLeakScan(page);
+			await personalizedAccess.screenshot({
+				path: path.join(ARTIFACT_ROOT, `${viewport.name}-personalized-access.png`),
+			});
 		});
 	}
 

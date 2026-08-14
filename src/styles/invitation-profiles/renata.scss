@@ -27,6 +27,7 @@ html:has(.event--renata.theme-preset--editorial) body {
 	--renata-olive: rgb(86 102 70);
 	--renata-olive-rgb: 86 102 70;
 	--renata-olive-deep: rgb(70 86 56);
+	--renata-olive-deep-rgb: 70 86 56;
 	--renata-coral: rgb(196 126 118);
 	--renata-coral-rgb: 196 126 118;
 	--renata-silver: rgb(168 170 166);
@@ -78,6 +79,19 @@ html:has(.event--renata.theme-preset--editorial) body {
 	--renata-space-emphasis: clamp(3.15rem, 7vw, 5.15rem);
 	--section-padding-block: var(--renata-space-standard);
 	--section-gap: clamp(1.75rem, 4.5vw, 3.25rem);
+	--formal-chapter-band: var(--renata-olive-deep);
+	--formal-chapter-band-rgb: var(--renata-olive-deep-rgb);
+	--formal-chapter-cream: var(--renata-cream);
+	--formal-chapter-cream-rgb: var(--renata-cream-rgb);
+	--formal-chapter-sand: var(--renata-blush);
+	--formal-chapter-sand-rgb: var(--renata-blush-rgb);
+	--formal-chapter-metal: var(--renata-silver);
+	--formal-chapter-metal-rgb: var(--renata-silver-rgb);
+	--formal-chapter-ink: var(--renata-ink);
+	--formal-chapter-ink-rgb: var(--renata-ink-rgb);
+	--formal-chapter-title: var(--renata-olive-deep);
+	--formal-chapter-muted: rgb(var(--renata-ink-rgb) / 62%);
+	--formal-chapter-meta: var(--renata-olive);
 	--section-title-size: var(--renata-section-title-size);
 	--section-subtitle-color: rgb(var(--renata-ink-rgb) / 58%);
 	--hero-image-filter: none;
@@ -923,97 +937,6 @@ html:has(.event--renata.theme-preset--editorial) body {
 			max-width: 36rem;
 			margin-inline: 0;
 			text-align: left;
-		}
-	}
-
-	.rsvp-section {
-		min-block-size: auto;
-		place-items: start center;
-		padding-block: var(--renata-space-standard);
-		background: var(--renata-cream);
-	}
-
-	.rsvp,
-	.personalized-access {
-		--rsvp-bg: var(--renata-cream);
-		--color-glass-bg: transparent;
-		--color-glass-border: transparent;
-		--shadow-premium: none;
-		--rsvp-radius-card: 0;
-		--rsvp-card-max-width: 34rem;
-		--rsvp-title-color: var(--renata-ink);
-		--rsvp-title-size: var(--renata-section-title-size);
-		--rsvp-title-letter-spacing: 0.02em;
-		--rsvp-radio-bg: transparent;
-		--rsvp-radio-bg-hover: transparent;
-		--rsvp-radio-border: rgb(var(--renata-olive-rgb) / 28%);
-		--rsvp-radio-selected-bg: transparent;
-		--rsvp-radio-selected-border: var(--renata-olive);
-		--rsvp-radio-selected-shadow: none;
-		--rsvp-button-shadow-rest: none;
-		--rsvp-button-shadow-hover: none;
-
-		color: var(--renata-ink);
-		background: transparent;
-		border: 0;
-		box-shadow: none;
-		backdrop-filter: none;
-	}
-
-	.rsvp {
-		padding-block: 0;
-		text-align: left;
-
-		.rsvp__header,
-		.rsvp__title {
-			text-align: left;
-		}
-
-		.rsvp__separator {
-			display: none;
-		}
-
-		&[data-state='locked'] {
-			max-width: var(--rsvp-card-max-width);
-		}
-
-		.rsvp__locked-card {
-			display: grid;
-			gap: 0.75rem;
-			padding: 1.35rem 0 0;
-			border: 0;
-			border-radius: 0;
-			background: none;
-			box-shadow: none;
-			color: var(--renata-ink);
-			text-align: left;
-			backdrop-filter: none;
-
-			&::before {
-				display: none;
-			}
-		}
-
-		.rsvp__locked-message {
-			font-family: var(--font-display);
-			font-size: var(--renata-secondary-title-size);
-			line-height: 1.25;
-			color: var(--renata-ink);
-		}
-
-		.rsvp__locked-detail {
-			max-width: 36rem;
-			margin-inline: 0;
-			font-size: var(--renata-body-size);
-			line-height: 1.6;
-			color: rgb(var(--renata-ink-rgb) / 68%);
-		}
-	}
-
-	.personalized-access {
-		.personalized-access__container {
-			width: min(100%, 34rem);
-			margin-inline: 0 auto;
 		}
 	}
 

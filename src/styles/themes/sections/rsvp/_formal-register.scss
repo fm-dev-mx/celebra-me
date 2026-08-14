@@ -5,15 +5,21 @@
 // RSVP formal-register: underline confirmation register on a dark chapter.
 // Owns layout, type metrics, controls, feedback, and section-scoped chroma so
 // any host theme can consume the same presentation. Profiles must not redefine
-// the register geometry, type scale, or chapter band.
+// the register geometry, type scale, or chapter band. Chroma defaults live on
+// :where() so a host profile can retint at the event root without forking geometry.
 
-.invitation-section-wrapper[data-section-kind='rsvp']:has(
-		.rsvp[data-structural-variant='formal-register']
-	) {
+:where(.event-theme-wrapper) {
 	--formal-chapter-band: rgb(120 56 38);
 	--formal-chapter-band-rgb: 120 56 38;
 	--formal-chapter-cream: rgb(247 241 233);
 	--formal-chapter-cream-rgb: 247 241 233;
+	--formal-chapter-metal: rgb(176 142 96);
+	--formal-chapter-metal-rgb: 176 142 96;
+}
+
+.invitation-section-wrapper[data-section-kind='rsvp']:has(
+		.rsvp[data-structural-variant='formal-register']
+	) {
 	--color-text-primary: var(--formal-chapter-cream);
 	--color-text-primary-rgb: var(--formal-chapter-cream-rgb);
 	--color-text-secondary: rgb(var(--formal-chapter-cream-rgb) / 82%);
@@ -28,7 +34,7 @@
 // `.rsvp-section` wrappers used by the interactive island. A child combinator
 // would leave the outer shell on the shared full-viewport RSVP padding.
 .rsvp-section:has(.rsvp[data-structural-variant='formal-register']) {
-	--rsvp-bg: rgb(120 56 38);
+	--rsvp-bg: var(--formal-chapter-band);
 
 	display: grid;
 	grid-template-columns: minmax(0, 64rem);
@@ -40,12 +46,6 @@
 }
 
 .rsvp[data-structural-variant='formal-register'] {
-	--formal-chapter-band: rgb(120 56 38);
-	--formal-chapter-band-rgb: 120 56 38;
-	--formal-chapter-cream: rgb(247 241 233);
-	--formal-chapter-cream-rgb: 247 241 233;
-	--formal-chapter-metal: rgb(176 142 96);
-	--formal-chapter-metal-rgb: 176 142 96;
 	--formal-chapter-display: 'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
 	--formal-chapter-body: 'Instrument Sans Variable', system-ui, sans-serif;
 	--formal-chapter-label: 'Bodoni Moda Variable', 'Playfair Display Variable', georgia, serif;

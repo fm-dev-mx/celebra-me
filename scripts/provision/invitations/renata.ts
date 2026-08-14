@@ -394,11 +394,11 @@ export function buildRenataPublishedContent(
 			],
 		},
 		rsvp: {
-			variant: 'standard',
+			variant: 'formal-register',
 			title: 'Confirme su asistencia',
 			subcopy: 'Pronto podrá reservar su lugar para el 5 de septiembre.',
 			personalizedAccess: {
-				variant: 'standard',
+				variant: 'formal-pass',
 				title: 'Su invitación personal',
 				subtitle: 'Esta invitación ha sido preparada para:',
 				footerText: 'La confirmación se habilitará cuando el anfitrión complete los datos.',
