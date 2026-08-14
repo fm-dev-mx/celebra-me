@@ -211,7 +211,7 @@ describe('XV Renata provision contract', () => {
 		expect(location.venues).toBeUndefined();
 		expect(location.ceremony?.venueName).toBe('Parroquia Santa Inés');
 		expect(location.ceremony?.address).toBe('Blvd. Pedro Infante 2550, Los Álamos, Culiacán');
-		expect(location.reception?.venueName).toBe('InHouse Select · Salón La Cabaña del Abuelo');
+		expect(location.reception?.venueName).toBe('InHouse Select · Hacienda Tres Ríos');
 		expect(location.reception?.address).toBe('Blvd. José Limón 910 Nte., Tres Ríos, Culiacán');
 		expect(location.indicationsHeading).toBe('Indicaciones');
 		expect(location.presentationOptions?.showFlourishes).toBe(false);
