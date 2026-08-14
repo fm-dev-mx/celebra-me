@@ -66,19 +66,26 @@ html:has(.event--renata.theme-preset--editorial) body {
 	--section-subtitle-color: rgb(var(--renata-ink-rgb) / 58%);
 	--hero-image-filter: none;
 	--hero-portrait-filter: none;
-	--hero-overlay: rgb(var(--renata-ink-rgb) / 12%);
-	--hero-overlay-gradient: linear-gradient(
+	--hero-overlay: linear-gradient(
 		180deg,
-		rgb(var(--renata-ink-rgb) / 28%) 0%,
-		transparent 34%,
-		transparent 52%,
-		rgb(var(--renata-ink-rgb) / 58%) 100%
+		rgb(var(--renata-ink-rgb) / 14%) 0%,
+		transparent 42%,
+		rgb(var(--renata-ink-rgb) / 32%) 100%
 	);
 	--hero-title-color-start: var(--renata-cream);
 	--hero-title-color-mid: var(--renata-cream);
 	--hero-title-color-end: var(--renata-cream);
+	--renata-hero-display-font: var(--font-display);
+	--renata-hero-meta-font: 'EB Garamond Variable', 'EB Garamond', georgia, serif;
+	--renata-hero-ui-font: var(--font-ui, 'Montserrat', system-ui, sans-serif);
+	--renata-hero-title-color: var(--renata-cream);
+	--renata-hero-label-color: rgb(var(--renata-blush-rgb) / 92%);
+	--renata-hero-date-color: var(--renata-cream);
+	--renata-hero-time-color: rgb(var(--renata-blush-rgb) / 88%);
+	--renata-hero-venue-color: rgb(var(--renata-silver-rgb) / 94%);
+	--renata-hero-scroll-color: rgb(var(--renata-silver-rgb) / 88%);
 	--hero-title-size: clamp(2.85rem, 9vw, 5.75rem);
-	--hero-label-color: var(--renata-cream);
+	--hero-label-color: var(--renata-hero-label-color);
 	--hero-meta-color: var(--renata-cream);
 	--hero-divider-color: rgb(var(--renata-silver-rgb) / 42%);
 	--hero-badge-bg: transparent;
@@ -169,7 +176,7 @@ html:has(.event--renata.theme-preset--editorial) body {
 	--wax-seal-deep: var(--renata-ink);
 	--wax-seal-letter: var(--renata-cream);
 	--wax-seal-shadow: var(--renata-ink);
-	--intersection-depth: clamp(2rem, 4vw, 3.5rem);
+	--intersection-depth: clamp(2.5rem, 6vw, 4rem);
 	--header-nav-title-color: var(--renata-olive);
 	--header-nav-color: var(--renata-cream);
 	--header-nav-color-transparent: var(--renata-cream);
@@ -278,16 +285,19 @@ html:has(.event--renata.theme-preset--editorial) body {
 			width: min(100%, 38rem);
 			height: 100%;
 			margin: 0 auto 0 0;
-			padding-block: 0 clamp(4.25rem, 10vh, 6.5rem);
+			padding-block: 0 clamp(5rem, 12vh, 7rem);
 			padding-inline: clamp(1.25rem, 4vw, 2.75rem);
-			gap: 0.7rem;
+			gap: clamp(0.7rem, 1.3vw, 1rem);
 			text-align: left;
 			grid-template-columns: none;
 			grid-template-areas: none;
 			transform: none;
+			color: var(--renata-hero-title-color);
 		}
 
 		.invitation-hero__label {
+			font-family: var(--renata-hero-ui-font);
+			font-weight: 600;
 			margin-bottom: 0;
 			justify-self: start;
 			letter-spacing: 0.22em;
@@ -299,6 +309,8 @@ html:has(.event--renata.theme-preset--editorial) body {
 		}
 
 		.invitation-hero__title {
+			font-family: var(--renata-hero-display-font);
+			font-weight: 500;
 			mix-blend-mode: normal;
 			transform: none;
 			background: none;
@@ -329,12 +341,28 @@ html:has(.event--renata.theme-preset--editorial) body {
 			background: transparent;
 			backdrop-filter: none;
 			border: 0;
-			gap: 0.35rem;
+			gap: clamp(0.55rem, 1.4vw, 0.9rem);
+			max-width: min(100%, 34rem);
 
 			p {
-				letter-spacing: 0.12em;
+				letter-spacing: 0.1em;
 				font-style: normal;
+				line-height: 1.3;
 			}
+		}
+
+		.invitation-hero__date {
+			font-family: var(--renata-hero-meta-font);
+			font-size: clamp(1rem, 1.4vw, 1.15rem);
+			font-weight: 600;
+			color: var(--renata-hero-date-color);
+		}
+
+		.invitation-hero__time {
+			font-family: var(--renata-hero-meta-font);
+			font-size: clamp(0.95rem, 1.2vw, 1.05rem);
+			font-weight: 500;
+			color: var(--renata-hero-time-color);
 		}
 
 		.calligraphy-accent {
@@ -343,20 +371,67 @@ html:has(.event--renata.theme-preset--editorial) body {
 
 		.invitation-hero__venue {
 			font-style: normal;
-			font-family: var(--font-label);
-			letter-spacing: 0.12em;
+			font-family: var(--renata-hero-ui-font);
+			font-size: clamp(0.85rem, 1.1vw, 0.95rem);
+			font-weight: 500;
+			line-height: 1.35;
+			letter-spacing: 0.1em;
+			max-width: min(100%, 30ch);
+			margin-top: 0.4rem;
+			color: var(--renata-hero-venue-color);
+			overflow-wrap: anywhere;
+			text-wrap: pretty;
+		}
+
+		.invitation-hero__scroll-indicator {
+			bottom: clamp(1.25rem, 4vh, 2.5rem);
+			z-index: 11;
+			opacity: 88%;
+			font-family: var(--renata-hero-ui-font);
+			color: var(--renata-hero-scroll-color);
+		}
+
+		.invitation-hero__scroll-text {
+			display: block;
 		}
 
 		@media (width <= 860px) {
 			.invitation-hero__content {
 				width: 100%;
-				padding-block: 0 clamp(2.75rem, 7vh, 4rem);
+				padding-block: 0 clamp(5.5rem, 13vh, 7.5rem);
 				padding-inline: 1.25rem;
 			}
 
 			.invitation-hero__title {
 				font-size: clamp(2.6rem, 14vw, 3.6rem);
 			}
+		}
+
+		@media (width <= 540px) {
+			.invitation-hero__scroll-indicator {
+				bottom: clamp(1.25rem, 3vh, 1.75rem);
+			}
+		}
+	}
+
+	// The shared atmospheric blend is painted behind opaque section children.
+	// Keying this handoff only to source=hero keeps the treatment independent of
+	// whichever section is ordered first after the hero.
+	.invitation-section-wrapper[data-intersection='atmospheric-blend'][data-intersection-source='hero'] {
+		--intersection-surface: var(--renata-cream);
+		--intersection-blend: linear-gradient(
+			180deg,
+			rgb(var(--renata-ink-rgb) / 18%) 0%,
+			rgb(var(--renata-cream-rgb) / 76%) 52%,
+			var(--renata-cream) 100%
+		);
+
+		> * {
+			background-color: var(--intersection-surface);
+			background-image: var(--intersection-blend);
+			background-position: top;
+			background-repeat: no-repeat;
+			background-size: 100% var(--intersection-depth);
 		}
 	}
 

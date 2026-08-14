@@ -18,6 +18,51 @@ async function assertRenataLeakScan(page: Page) {
 	expect(pageText).toContain('Renata');
 }
 
+type RenataHeroLayout = {
+	details: { top: number; bottom: number; width: number };
+	venue: { top: number; bottom: number; width: number };
+	scroll: { top: number; bottom: number; width: number };
+	scrollTextDisplay: string;
+	titleFontSize: number;
+	dateFontSize: number;
+	venueFontSize: number;
+	titleFontFamily: string;
+	dateFontFamily: string;
+	venueFontFamily: string;
+	scrollFontFamily: string;
+	titleColor: string;
+	dateColor: string;
+	timeColor: string;
+	venueColor: string;
+	scrollColor: string;
+	venueOverflow: number;
+};
+
+function assertRenataHeroLayout(layout: RenataHeroLayout | null) {
+	expect(layout).toBeTruthy();
+	if (!layout) return;
+
+	expect(layout.scrollTextDisplay).not.toBe('none');
+	expect(layout.scroll.top - layout.details.bottom).toBeGreaterThanOrEqual(16);
+	expect(layout.scroll.top - layout.venue.bottom).toBeGreaterThanOrEqual(16);
+	expect(layout.titleFontSize).toBeGreaterThan(layout.dateFontSize);
+	expect(layout.dateFontSize).toBeGreaterThan(layout.venueFontSize);
+	expect(layout.titleFontFamily).toMatch(/Playfair Display/i);
+	expect(layout.dateFontFamily).toMatch(/EB Garamond/i);
+	expect(layout.venueFontFamily).toMatch(/Montserrat/i);
+	expect(layout.scrollFontFamily).toMatch(/Montserrat/i);
+	expect(layout.venueOverflow).toBeLessThanOrEqual(1);
+	expect(
+		new Set([
+			layout.titleColor,
+			layout.dateColor,
+			layout.timeColor,
+			layout.venueColor,
+			layout.scrollColor,
+		]).size,
+	).toBeGreaterThanOrEqual(4);
+}
+
 test.describe('Renata XV local visual and content audit', () => {
 	test.beforeAll(() => {
 		fs.mkdirSync(ARTIFACT_ROOT, { recursive: true });
@@ -70,6 +115,67 @@ test.describe('Renata XV local visual and content audit', () => {
 
 			const heroFilter = await heroImage.evaluate((img) => getComputedStyle(img).filter);
 			expect(heroFilter === 'none' || heroFilter === '').toBe(true);
+
+			const heroLayout = await hero.evaluate((node) => {
+				const details = node.querySelector('.invitation-hero__details');
+				const venue = node.querySelector('.invitation-hero__venue');
+				const scroll = node.querySelector('.invitation-hero__scroll-indicator');
+				const scrollText = node.querySelector('.invitation-hero__scroll-text');
+				const title = node.querySelector('.invitation-hero__title');
+				const date = node.querySelector('.invitation-hero__date');
+				const time = node.querySelector('.invitation-hero__time');
+				if (
+					!(details instanceof HTMLElement) ||
+					!(venue instanceof HTMLElement) ||
+					!(scroll instanceof HTMLElement) ||
+					!(scrollText instanceof HTMLElement) ||
+					!(title instanceof HTMLElement) ||
+					!(date instanceof HTMLElement) ||
+					!(time instanceof HTMLElement)
+				) {
+					return null;
+				}
+
+				const box = (element: HTMLElement) => {
+					const rect = element.getBoundingClientRect();
+					return { top: rect.top, bottom: rect.bottom, width: rect.width };
+				};
+
+				return {
+					details: box(details),
+					venue: box(venue),
+					scroll: box(scroll),
+					scrollTextDisplay: getComputedStyle(scrollText).display,
+					titleFontSize: parseFloat(getComputedStyle(title).fontSize),
+					dateFontSize: parseFloat(getComputedStyle(date).fontSize),
+					venueFontSize: parseFloat(getComputedStyle(venue).fontSize),
+					titleFontFamily: getComputedStyle(title).fontFamily,
+					dateFontFamily: getComputedStyle(date).fontFamily,
+					venueFontFamily: getComputedStyle(venue).fontFamily,
+					scrollFontFamily: getComputedStyle(scrollText).fontFamily,
+					titleColor: getComputedStyle(title).color,
+					dateColor: getComputedStyle(date).color,
+					timeColor: getComputedStyle(time).color,
+					venueColor: getComputedStyle(venue).color,
+					scrollColor: getComputedStyle(scroll).color,
+					venueOverflow: venue.scrollWidth - venue.clientWidth,
+				};
+			});
+			assertRenataHeroLayout(heroLayout);
+
+			const heroBoundary = page
+				.locator(".invitation-section-wrapper[data-intersection-source='hero']")
+				.first();
+			await expect(heroBoundary).toHaveAttribute('data-intersection', 'atmospheric-blend');
+			const boundaryStyle = await heroBoundary.locator(':scope > *').evaluate((node) => {
+				const style = getComputedStyle(node);
+				return {
+					backgroundImage: style.backgroundImage,
+					backgroundSize: style.backgroundSize,
+				};
+			});
+			expect(boundaryStyle.backgroundImage).toContain('linear-gradient');
+			expect(boundaryStyle.backgroundSize).toMatch(/100%/);
 
 			const tokens = await page.locator('.event--renata').evaluate((root) => {
 				const style = getComputedStyle(root);
