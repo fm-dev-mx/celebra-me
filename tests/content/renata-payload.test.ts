@@ -68,9 +68,15 @@ describe('XV Renata provision contract', () => {
 	it('ships a Lane A profile that separates accent from emphasis and resets hero cascade', () => {
 		const profile = fs.readFileSync(profilePath, 'utf8');
 		expect(profile).toContain('.event--renata.theme-preset--editorial');
-		expect(profile).toContain('--renata-yellow');
-		expect(profile).toContain('--color-action-accent: var(--renata-yellow)');
-		expect(profile).toContain('--color-text-emphasis: var(--renata-ivory)');
+		expect(profile).toContain('--renata-cream');
+		expect(profile).toContain('--renata-blush');
+		expect(profile).toContain('--renata-olive');
+		expect(profile).toContain('--renata-coral');
+		expect(profile).toContain('--renata-silver');
+		expect(profile).toContain('--color-action-accent: var(--renata-olive)');
+		expect(profile).toContain('--color-text-emphasis: var(--renata-ink)');
+		expect(profile).not.toContain('--renata-yellow');
+		expect(profile).not.toContain('232 190 48');
 		expect(profile).toContain('--hero-image-filter: none');
 		expect(profile).toContain('mix-blend-mode: normal');
 		expect(profile).toContain(".itinerary[data-structural-variant='editorial-ledger']");
@@ -103,9 +109,6 @@ describe('XV Renata provision contract', () => {
 		const content = buildRenataPublishedContent(buildTestAssets());
 		const result = eventContentSchema.safeParse(content);
 		expect(result.success).toBe(true);
-		if (!result.success) {
-			console.error(result.error.issues);
-		}
 
 		expect(content.quote).toBeUndefined();
 		expect(content.music).toBeUndefined();

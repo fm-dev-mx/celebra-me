@@ -67,7 +67,7 @@ only; do not require or infer a surname.
 | dressCode             | FORMAL; no vestir color rosa                                                               | verified       | wa-export         | Clothing restriction; not an automatic UI-pink ban                                          |
 | gifts                 | lluvia de sobres / efectivo                                                                | verified       | wa-export         |                                                                                             |
 | musicUrl              | —                                                                                          | not_applicable | wa-export         | No music supplied; section omitted                                                          |
-| clientColors          | —                                                                                          | missing        | wa-export         | Black/yellow are session outfits, not a client palette brief                                |
+| clientColors          | cream, blush, olive, coral, silver                                                         | verified       | owner-session     | Floral/stationery brief; session yellow stays in photography only                           |
 | rsvpConfirmationMode  | —                                                                                          | missing        | —                 | Do not invent                                                                               |
 | rsvpGuestCap          | —                                                                                          | missing        | —                 | Do not invent                                                                               |
 | rsvpWhatsappPhone     | —                                                                                          | not_applicable | —                 | WhatsApp destination not invented while confirmation mode is unresolved                     |
@@ -84,15 +84,15 @@ Rules:
 
 Contract maturity for this event type: `evidence-backed` (`xv`).
 
-| requirement | fields                                                                                                                                            | status                 |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| required    | slug, celebrantName, eventLabel, eventDate, eventTime, timeZone, baseDemoId, sourceAssetPath, sectionOrder, primaryVenueName, primaryVenueAddress | resolved               |
-| required    | rsvpConfirmationMode, rsvpGuestCap                                                                                                                | **blocking missing**   |
-| conditional | receptionVenueName, receptionVenueAddress                                                                                                         | resolved               |
-| recommended | fatherName, motherName, godparents, ceremonyMapUrl                                                                                                | resolved               |
-| optional    | dressCode, gifts                                                                                                                                  | resolved               |
-| optional    | musicUrl                                                                                                                                          | not_applicable         |
-| optional    | clientColors                                                                                                                                      | missing (non-blocking) |
+| requirement | fields                                                                                                                                            | status               |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
+| required    | slug, celebrantName, eventLabel, eventDate, eventTime, timeZone, baseDemoId, sourceAssetPath, sectionOrder, primaryVenueName, primaryVenueAddress | resolved             |
+| required    | rsvpConfirmationMode, rsvpGuestCap                                                                                                                | **blocking missing** |
+| conditional | receptionVenueName, receptionVenueAddress                                                                                                         | resolved             |
+| recommended | fatherName, motherName, godparents, ceremonyMapUrl                                                                                                | resolved             |
+| optional    | dressCode, gifts                                                                                                                                  | resolved             |
+| optional    | musicUrl                                                                                                                                          | not_applicable       |
+| optional    | clientColors                                                                                                                                      | resolved             |
 
 ### Missing blockers
 
@@ -101,7 +101,6 @@ Contract maturity for this event type: `evidence-backed` (`xv`).
 
 ### Non-blocking gaps
 
-- Invitation palette never answered
 - Quote omitted
 - Music omitted
 - Untranscribed voice note
@@ -133,11 +132,11 @@ No `[[PENDIENTE:]]` tokens. RSVP gaps are recorded as missing facts, not placeho
 
 ## Agent Recommendations
 
-| topic   | recommendation                                   | basis                                                            | status                    |
-| ------- | ------------------------------------------------ | ---------------------------------------------------------------- | ------------------------- |
-| demo    | demo-xv-editorial                                | photograph-forward editorial; Goal 2 lock                        | accepted by owner session |
-| palette | ink + session yellow + foliage; no metallic gold | client forbids gold lettering/ornaments; photos are yellow/black | accepted for Lane A       |
-| hero    | 1000511838 as production hero                    | only worn-sunglasses frame is WhatsApp-class                     | accepted                  |
+| topic   | recommendation                                         | basis                                                | status                    |
+| ------- | ------------------------------------------------------ | ---------------------------------------------------- | ------------------------- |
+| demo    | demo-xv-editorial                                      | photograph-forward editorial; Goal 2 lock            | accepted by owner session |
+| palette | cream/blush/olive/coral/silver; ink for photo chapters | client floral brief; no gold; yellow stays in photos | accepted for Goal 2B      |
+| hero    | 1000511838 as production hero                          | only worn-sunglasses frame is WhatsApp-class         | accepted                  |
 
 ---
 
@@ -159,8 +158,8 @@ No `[[PENDIENTE:]]` tokens. RSVP gaps are recorded as missing facts, not placeho
 | Owner-selected base demo          | demo-xv-editorial                                                             | verified            |
 | Recommended demo alternatives     | editorial-magazine rejected (grayscale); premiere-floral rejected (rose+gold) | recommendation only |
 | Selected variant / visual profile | visualProfileId `renata`; theme `editorial`                                   | verified            |
-| Client color requirements         | no gold lettering or ornaments                                                | verified            |
-| Recommended palette               | editorial ink + session yellow + foliage                                      | recommendation only |
+| Client color requirements         | no gold; floral cream/blush/olive/coral/silver                                | verified            |
+| Recommended palette               | dark photo chapters + light floral editorial surfaces                         | verified            |
 | Unresolved visual decisions       | none material beyond RSVP                                                     | —                   |
 
 Demo remains the gold base template. Real invite identity lives in Lane A. Real `_assetSlug` is
@@ -170,14 +169,14 @@ Demo remains the gold base template. Real invite identity lives in Lane A. Real 
 
 ## Creative Direction & Acceptance
 
-| concern                                                  | decision / evidence                                                                    | status                         |
-| -------------------------------------------------------- | -------------------------------------------------------------------------------------- | ------------------------------ |
-| Typography roles (display, heading, body, metadata)      | Editorial display retained; hero title ivory with ink shadow; labels in session yellow | accepted after 390/1440 review |
-| Vertical rhythm and density                              | Preset padding reduced; editorial-ledger and RSVP plates flattened                     | accepted after 390/1440 review |
-| Surface hierarchy (open flow vs cards/containers)        | Open flow; Location/Gifts/RSVP/itinerary paper chrome neutralized                      | accepted after 390/1440 review |
-| Photographic treatment (role, crop, focal point, filter) | Color preserved; hero filter none; unique roles; thank-you is full-bleed not circular  | accepted after 390/1440 review |
-| Section-intersection intent and narrative cadence        | family blend from hero; overlap after location; remaining seams neutral                | accepted after 390/1440 review |
-| Local exceptions to the selected preset                  | Gold remap, hero cascade reset, card/paper flatten, thank-you editorial circle reset   | documented                     |
+| concern                                                  | decision / evidence                                                                   | status                         |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------ |
+| Typography roles (display, heading, body, metadata)      | Editorial display retained; cream type on photos; ink type on light surfaces          | accepted after 390/1440 review |
+| Vertical rhythm and density                              | Preset padding reduced; editorial-ledger and RSVP plates flattened                    | accepted after 390/1440 review |
+| Surface hierarchy (open flow vs cards/containers)        | Open flow; Location/Gifts/RSVP/itinerary paper chrome neutralized                     | accepted after 390/1440 review |
+| Photographic treatment (role, crop, focal point, filter) | Color preserved; hero filter none; unique roles; thank-you is full-bleed not circular | accepted after 390/1440 review |
+| Section-intersection intent and narrative cadence        | family blend from hero; overlap after location; remaining seams neutral               | accepted after 390/1440 review |
+| Local exceptions to the selected preset                  | Gold remap, hero cascade reset, card/paper flatten, thank-you editorial circle reset  | documented                     |
 
 ### Creative acceptance record
 
@@ -187,7 +186,7 @@ Demo remains the gold base template. Real invite identity lives in Lane A. Real 
 | Whole-invitation responsive inspection      | 390×844 and 1440×900 completed                                                               |
 | Section boundaries and narrative continuity | Hypothesis order retained; one interlude after location                                      |
 | Human creative outcome                      | `ACCEPTED_LOCAL` — publication still blocked by RSVP                                         |
-| Reviewer and date                           | Goal 2 implementation, 2026-08-14                                                            |
+| Reviewer and date                           | Goal 2B palette correction, 2026-08-14                                                       |
 | Blocking reason or owner follow-up          | RSVP mode/cap; parish name inferred                                                          |
 
 ---
@@ -234,8 +233,9 @@ hero. Feature frame is `_DSC5939`, not file-order first.
 - Helper prepReadiness is `NOT_READY` while RSVP mode/cap are missing. Goal 2 Local authoring is an
   explicit current-task exception; `assertImplementationAllowed` must not be called.
 - Lane A inheritance resets: `--hero-image-filter`, gold/metallic tokens, hero cascade
-  (grid/mix-blend/absolute details), location/gifts/RSVP card chrome. Yellow is a scarce accent;
-  `--color-text-emphasis` stays ivory and is not aliased to `--color-action-accent`.
+  (grid/mix-blend/absolute details), location/gifts/RSVP card chrome. Olive is the action accent;
+  `--color-text-emphasis` stays ink and is not aliased to `--color-action-accent`. Yellow is not a
+  UI color. Cream/blush are light surfaces; silver is line/detail; coral is rare (wax highlight).
 - Structural selections: itinerary `editorial-ledger`; gallery `paired-feature-band` without a
   feature `aspectRatio` override; personalized access `standard`; location `standard` with
   `presentationOptions.showFlourishes: false`.
