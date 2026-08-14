@@ -30,7 +30,6 @@ export const ABRIL_ASSET_SPECS = [
 	{
 		key: 'hero-desktop',
 		relativePath: 'hero-desktop.webp',
-		provider: 'cloudinary',
 		displayName: 'Abril Michelle — portada desktop',
 		alt: 'Abril Michelle con vestido rosa palo y tiara',
 		focalPoint: {
@@ -39,12 +38,10 @@ export const ABRIL_ASSET_SPECS = [
 			tablet: '50% 40%',
 			desktop: '50% 42%',
 		},
-		ogTransformation: 'c_fill,g_auto,w_1200,h_630,q_auto,f_auto',
 	},
 	{
 		key: 'hero-mobile',
 		relativePath: 'hero-mobile.webp',
-		provider: 'cloudinary',
 		displayName: 'Abril Michelle — portada móvil',
 		alt: 'Abril Michelle con vestido rosa palo retrato vertical',
 		focalPoint: {
@@ -57,7 +54,6 @@ export const ABRIL_ASSET_SPECS = [
 	{
 		key: 'family-portrait',
 		relativePath: 'family-portrait.webp',
-		provider: 'cloudinary',
 		displayName: 'Abril Michelle — familia y tiara',
 		alt: 'Abril Michelle luciendo tiara y guantes',
 		focalPoint: {
@@ -67,7 +63,6 @@ export const ABRIL_ASSET_SPECS = [
 	{
 		key: 'interlude-crown',
 		relativePath: 'interlude-crown.webp',
-		provider: 'cloudinary',
 		displayName: 'Abril Michelle — interludio corona',
 		alt: 'Corona sobre tela satinada',
 		focalPoint: {
@@ -77,7 +72,6 @@ export const ABRIL_ASSET_SPECS = [
 	{
 		key: 'interlude-palace',
 		relativePath: 'interlude-palace.webp',
-		provider: 'cloudinary',
 		displayName: 'Abril Michelle — interludio palacio oriental',
 		alt: 'Palacio oriental y lámpara de época',
 		focalPoint: {
@@ -87,7 +81,6 @@ export const ABRIL_ASSET_SPECS = [
 	{
 		key: 'thank-you-confetti',
 		relativePath: 'thank-you-confetti.webp',
-		provider: 'cloudinary',
 		displayName: 'Abril Michelle — agradecimiento confeti',
 		alt: 'Abril Michelle con vestido rosa y confeti',
 		focalPoint: {
@@ -97,14 +90,12 @@ export const ABRIL_ASSET_SPECS = [
 	{
 		key: 'gallery-01-candles',
 		relativePath: 'gallery-01-candles.webp',
-		provider: 'cloudinary',
 		displayName: 'Abril Michelle — velas 15',
 		alt: 'Primer plano oscuro con velas 1 y 5',
 	},
 	{
 		key: 'gallery-02-bw-cake',
 		relativePath: 'gallery-02-bw-cake.webp',
-		provider: 'cloudinary',
 		displayName: 'Abril Michelle — retrato blanco y negro pastel',
 		alt: 'Retrato en blanco y negro con el pastel',
 		focalPoint: {
@@ -117,21 +108,18 @@ export const ABRIL_ASSET_SPECS = [
 	{
 		key: 'gallery-03-seated-balloons',
 		relativePath: 'gallery-03-seated-balloons.webp',
-		provider: 'cloudinary',
 		displayName: 'Abril Michelle — globos dorados y pastel',
 		alt: 'Abril Michelle sentada con globos dorados y pastel',
 	},
 	{
 		key: 'gallery-04-white-suit',
 		relativePath: 'gallery-04-white-suit.webp',
-		provider: 'cloudinary',
 		displayName: 'Abril Michelle — traje blanco globos 15',
 		alt: 'Abril Michelle con traje blanco y globos 15',
 	},
 	{
 		key: 'gallery-05-white-dress',
 		relativePath: 'gallery-05-white-dress.webp',
-		provider: 'cloudinary',
 		displayName: 'Abril Michelle — vestido blanco y pastel',
 		alt: 'Abril Michelle con vestido blanco, pastel y globos',
 		focalPoint: {

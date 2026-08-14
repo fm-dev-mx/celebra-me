@@ -138,6 +138,11 @@ export function buildVictoriaPublishedContent(
 		description:
 			'Invitación a la boda de Victoria y Roberto el 30 de octubre de 2026 en Los Mochis, Sinaloa.',
 		theme: { preset: VICTORIA_EVENT.themeId },
+		music: {
+			url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1786656962/Stephen_Sanchez_-_Until_I_Found_You_ixnss9.mp3',
+			title: 'Stephen Sanchez — Until I Found You',
+			autoPlay: true,
+		},
 		eventTiming: {
 			localDateTime: VICTORIA_EVENT.localDateTime,
 			timeZone: VICTORIA_EVENT.timeZone,
