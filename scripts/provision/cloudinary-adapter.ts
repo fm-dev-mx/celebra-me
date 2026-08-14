@@ -18,27 +18,33 @@ export {
 	buildCloudinaryPublicId,
 } from '../../src/lib/intake/services/cloudinary-assets.ts';
 
-const FILE_KEYS = [
-	'CLOUDINARY_CLOUD_NAME',
-	'CLOUDINARY_API_KEY',
-	'CLOUDINARY_API_SECRET',
-] as const;
+const FILE_KEYS = ['CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET'] as const;
+type CloudinaryEnvKey = (typeof FILE_KEYS)[number];
 
-function hydrateCloudinaryEnvFromFiles(): void {
-	const missing = FILE_KEYS.filter((key) => !process.env[key]?.trim());
-	if (missing.length === 0) return;
+export function hydrateCloudinaryEnvFromFiles(
+	options: {
+		cwd?: string;
+		env?: NodeJS.ProcessEnv;
+		keys?: readonly CloudinaryEnvKey[];
+	} = {},
+): NodeJS.ProcessEnv {
+	const env = options.env ?? process.env;
+	const keys = options.keys ?? FILE_KEYS;
+	const missing = keys.filter((key) => !env[key]?.trim());
+	if (missing.length === 0) return env;
 
 	const envCandidates = ['.env.local', '.env', '.secrets/cloudinary.env'];
 	for (const candidate of envCandidates) {
-		const fullPath = resolve(process.cwd(), candidate);
+		const fullPath = resolve(options.cwd ?? process.cwd(), candidate);
 		if (!existsSync(fullPath)) continue;
 		const parsed = parseEnvContent(readFileSync(fullPath, 'utf8'));
 		for (const key of missing) {
-			if (!process.env[key]?.trim() && parsed[key]?.trim()) {
-				process.env[key] = parsed[key];
+			if (!env[key]?.trim() && parsed[key]?.trim()) {
+				env[key] = parsed[key];
 			}
 		}
 	}
+	return env;
 }
 
 export async function uploadOrReconcileCloudinaryAsset(

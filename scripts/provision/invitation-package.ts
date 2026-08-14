@@ -6,6 +6,7 @@ import {
 	buildCloudinaryDeliveryUrl,
 	buildCloudinaryPublicId,
 } from '../../src/lib/intake/services/cloudinary-assets.ts';
+import { hydrateCloudinaryEnvFromFiles } from './cloudinary-adapter.ts';
 import {
 	buildNormalizedInvitationRelease,
 	canonicalize,
@@ -107,6 +108,10 @@ export function computePackageHash(
 export function serializeInvitationPackage(
 	release: NormalizedInvitationRelease,
 ): InvitationPackageData {
+	const cloudName =
+		hydrateCloudinaryEnvFromFiles({
+			keys: ['CLOUDINARY_CLOUD_NAME'],
+		}).CLOUDINARY_CLOUD_NAME?.trim() || 'unconfigured';
 	const rawPayload: Omit<InvitationPackageData, 'packageHash'> = {
 		schemaVersion: release.schemaVersion,
 		sourceHash: release.sourceHash,
@@ -146,7 +151,6 @@ export function serializeInvitationPackage(
 				key: asset.key,
 				sha256: asset.sha256,
 			});
-			const cloudName = process.env.CLOUDINARY_CLOUD_NAME?.trim() || 'unconfigured';
 			return {
 				key: asset.key,
 				displayName: asset.displayName,
