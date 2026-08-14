@@ -137,6 +137,8 @@ describe('XV Renata provision contract', () => {
 		expect(byKey['thank-you'].relativePath).not.toBe(byKey['hero-desktop'].relativePath);
 		expect(byKey['gallery-feature'].relativePath).not.toBe(byKey['hero-desktop'].relativePath);
 		expect(byKey.interlude.relativePath).not.toBe(byKey['hero-desktop'].relativePath);
+		expect(byKey['interlude-02'].relativePath).not.toBe(byKey.interlude.relativePath);
+		expect(byKey['interlude-02'].relativePath).not.toBe(byKey['hero-desktop'].relativePath);
 		expect(RENATA_ASSET_SPECS.some((spec) => spec.relativePath.includes('WA0194'))).toBe(false);
 	});
 
@@ -168,26 +170,36 @@ describe('XV Renata provision contract', () => {
 		]);
 
 		const family = content.family as { variant?: string; presentation?: string };
-		expect(family.variant).toBe('standard');
+		expect(family.variant).toBe('asymmetric-groups');
 		expect(family.presentation).toBe('text-only');
 
-		const itinerary = content.itinerary as { variant: string; items: unknown[] };
+		const itinerary = content.itinerary as {
+			variant: string;
+			title?: string;
+			items: unknown[];
+		};
 		expect(itinerary.variant).toBe('editorial-program');
-		expect(itinerary.items).toHaveLength(2);
+		expect(itinerary.title).toBe('Momentos');
+		expect(itinerary.items).toHaveLength(5);
 
 		const interludes = content.interludes as Array<{
+			afterSection?: string;
 			focalPoint?: string;
 			focalPointDesktop?: string;
 		}>;
-		expect(interludes[0]?.focalPoint).toBe('50% 78%');
-		expect(interludes[0]?.focalPointDesktop).toBe('50% 52%');
+		expect(interludes).toHaveLength(2);
+		expect(interludes[0]?.focalPoint).toBe('32% 52%');
+		expect(interludes[0]?.focalPointDesktop).toBe('38% 48%');
+		expect(interludes[1]?.afterSection).toBe('gallery');
+		expect(interludes[1]?.focalPoint).toBe('50% 32%');
+		expect(interludes[1]?.focalPointDesktop).toBe('50% 28%');
 
 		const location = content.location as {
 			variant: string;
 			presentation?: string;
 			venues?: unknown;
-			ceremony?: { venueName: string };
-			reception?: { venueName: string };
+			ceremony?: { venueName: string; address?: string };
+			reception?: { venueName: string; address?: string };
 			indicationsHeading?: string;
 			presentationOptions?: {
 				showFlourishes?: boolean;
@@ -198,13 +210,16 @@ describe('XV Renata provision contract', () => {
 		expect(location.presentation).toBe('simple');
 		expect(location.venues).toBeUndefined();
 		expect(location.ceremony?.venueName).toBe('Parroquia Santa Inés');
-		expect(location.reception?.venueName).toBe('InHouse Select Hacienda Tres Ríos');
+		expect(location.ceremony?.address).toBe('Blvd. Pedro Infante 2550, Los Álamos, Culiacán');
+		expect(location.reception?.venueName).toBe('InHouse Select · Salón La Cabaña del Abuelo');
+		expect(location.reception?.address).toBe('Blvd. José Limón 910 Nte., Tres Ríos, Culiacán');
 		expect(location.indicationsHeading).toBe('Indicaciones');
 		expect(location.presentationOptions?.showFlourishes).toBe(false);
 		expect(location.presentationOptions?.showNavigationButtons).toBe(false);
 
 		const envelope = content.envelope as {
 			variant?: string;
+			cardLabel?: string;
 			microcopy: string;
 			sealIcon?: string;
 			sealInitials: string;
@@ -214,12 +229,13 @@ describe('XV Renata provision contract', () => {
 			closedPalette?: unknown;
 		};
 		expect(envelope.variant).toBe('premiere-floral');
-		expect(envelope.microcopy).toBe('');
+		expect(envelope.cardLabel).toBe('MIS XV');
+		expect(envelope.microcopy).toBe('Abra su invitación');
 		expect(envelope.sealIcon).toBe('monogram');
 		expect(envelope.sealInitials).toBe('R');
-		expect(envelope.cardTagline).toBeUndefined();
-		expect(envelope.teaserDetails).toBe('');
-		expect(envelope.documentLabel).toBe('CELEBRO MIS XV');
+		expect(envelope.cardTagline).toBe('05 · 09 · 2026');
+		expect(envelope.teaserDetails).toBeUndefined();
+		expect(envelope.documentLabel).toBeUndefined();
 		expect(envelope.closedPalette).toBeUndefined();
 
 		const gallery = content.gallery as {

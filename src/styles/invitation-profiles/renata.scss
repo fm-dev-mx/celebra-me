@@ -67,18 +67,27 @@ html:has(.event--renata.theme-preset--editorial) body {
 	--section-card-radius: 0;
 	--section-card-border-alt: transparent;
 	--section-border-subtle: rgb(var(--renata-silver-rgb) / 36%);
-	--section-padding-block: clamp(2.75rem, 6.5vw, 5.25rem);
-	--section-gap: clamp(2rem, 5vw, 3.75rem);
-	--section-title-size: clamp(1.85rem, 4.6vw, 3rem);
+	--renata-display-size: clamp(3.25rem, 10vw, 6.5rem);
+	--renata-section-title-size: clamp(1.85rem, 4.2vw, 2.75rem);
+	--renata-secondary-title-size: clamp(1.35rem, 3vw, 1.85rem);
+	--renata-body-size: clamp(0.95rem, 1.5vw, 1.05rem);
+	--renata-meta-size: 0.68rem;
+	--renata-meta-tracking: 0.22em;
+	--renata-space-compact: clamp(1.75rem, 4vw, 2.75rem);
+	--renata-space-standard: clamp(2.5rem, 5.5vw, 4rem);
+	--renata-space-emphasis: clamp(3.15rem, 7vw, 5.15rem);
+	--section-padding-block: var(--renata-space-standard);
+	--section-gap: clamp(1.75rem, 4.5vw, 3.25rem);
+	--section-title-size: var(--renata-section-title-size);
 	--section-subtitle-color: rgb(var(--renata-ink-rgb) / 58%);
 	--hero-image-filter: none;
 	--hero-portrait-filter: none;
 	--hero-overlay: linear-gradient(
 		180deg,
-		rgb(var(--renata-ink-rgb) / 22%) 0%,
-		rgb(var(--renata-ink-rgb) / 8%) 28%,
-		rgb(var(--renata-ink-rgb) / 10%) 58%,
-		rgb(var(--renata-ink-rgb) / 38%) 100%
+		rgb(var(--renata-ink-rgb) / 18%) 0%,
+		rgb(var(--renata-ink-rgb) / 6%) 32%,
+		rgb(var(--renata-ink-rgb) / 12%) 62%,
+		rgb(var(--renata-ink-rgb) / 34%) 100%
 	);
 	--hero-title-color-start: var(--renata-cream);
 	--hero-title-color-mid: var(--renata-cream);
@@ -87,12 +96,12 @@ html:has(.event--renata.theme-preset--editorial) body {
 	--renata-hero-meta-font: 'EB Garamond Variable', 'EB Garamond', georgia, serif;
 	--renata-hero-ui-font: var(--font-ui, 'Montserrat', system-ui, sans-serif);
 	--renata-hero-title-color: var(--renata-cream);
-	--renata-hero-label-color: rgb(var(--renata-blush-rgb) / 92%);
+	--renata-hero-label-color: rgb(var(--renata-blush-rgb) / 78%);
 	--renata-hero-date-color: var(--renata-cream);
-	--renata-hero-time-color: rgb(var(--renata-blush-rgb) / 88%);
-	--renata-hero-venue-color: rgb(var(--renata-cream-rgb) / 88%);
-	--renata-hero-scroll-color: rgb(var(--renata-silver-rgb) / 72%);
-	--hero-title-size: clamp(3.15rem, 10vw, 6.4rem);
+	--renata-hero-time-color: rgb(var(--renata-blush-rgb) / 70%);
+	--renata-hero-venue-color: rgb(var(--renata-cream-rgb) / 78%);
+	--renata-hero-scroll-color: rgb(var(--renata-silver-rgb) / 40%);
+	--hero-title-size: clamp(3.5rem, 11vw, 7rem);
 	--hero-label-color: var(--renata-hero-label-color);
 	--hero-meta-color: var(--renata-cream);
 	--hero-divider-color: rgb(var(--renata-silver-rgb) / 42%);
@@ -120,14 +129,18 @@ html:has(.event--renata.theme-preset--editorial) body {
 	--family-eyebrow-color: var(--renata-olive);
 	--family-group-title-color: rgb(var(--renata-ink-rgb) / 52%);
 	--family-title-color: var(--renata-ink);
-	--family-padding-block: clamp(2.25rem, 5vw, 3.75rem);
+	--family-padding-block: var(--renata-space-compact);
 	--family-header-max-width: 28rem;
-	--family-title-size: clamp(1.85rem, 4.2vw, 2.65rem);
+	--family-title-size: var(--renata-section-title-size);
 	--family-title-max-width: 16ch;
 	--family-message-max-width: 34rem;
-	--family-message-size: clamp(0.95rem, 1.5vw, 1.05rem);
-	--family-group-title-size: 0.68rem;
-	--family-group-padding: clamp(0.55rem, 1.4vw, 0.85rem) 0;
+	--family-message-size: var(--renata-body-size);
+	--family-group-title-size: var(--renata-meta-size);
+	--family-group-padding: clamp(0.4rem, 1.1vw, 0.7rem) 0;
+	--family-name-size: clamp(1.35rem, 2.6vw, 1.85rem);
+	--family-lead-name-size: clamp(1.45rem, 2.8vw, 1.95rem);
+	--family-meta-size: var(--renata-meta-size);
+	--family-meta-letter-spacing: var(--renata-meta-tracking);
 	--family-divider-opacity: 42%;
 	--family-divider-width: clamp(2.5rem, 8vw, 4.5rem);
 	--family-group-text-align: left;
@@ -142,7 +155,7 @@ html:has(.event--renata.theme-preset--editorial) body {
 	--gifts-title-color: var(--renata-ink);
 	--gifts-subtitle-color: rgb(var(--renata-ink-rgb) / 68%);
 	--gifts-title-letter-spacing: 0.04em;
-	--gifts-padding-block: clamp(1.75rem, 4vw, 3rem);
+	--gifts-padding-block: var(--renata-space-compact);
 	--gifts-card-bg: transparent;
 	--gifts-card-border: 0;
 	--gifts-card-radius: 0;
@@ -158,14 +171,38 @@ html:has(.event--renata.theme-preset--editorial) body {
 	--wax-seal-letter: var(--renata-cream);
 	--wax-seal-shadow: var(--renata-ink);
 	--intersection-depth: clamp(2rem, 5vw, 3.25rem);
-	--pa-padding-block: clamp(2.25rem, 5vw, 3.5rem);
-	--pa-padding-block-lg: clamp(2.75rem, 6vw, 4.25rem);
+	--pa-padding-block: var(--renata-space-compact);
+	--pa-padding-block-lg: clamp(2rem, 4.5vw, 3rem);
 	--pa-card-border-radius: 0;
 	--pa-card-border: 0;
 	--pa-card-inner-border: 0;
 	--pa-card-bg-color: transparent;
+	--pa-card-bg-image: none;
 	--pa-card-shadow: none;
 	--pa-card-glow: none;
+	--pa-card-inset: 0;
+	--pa-corner-opacity: 0%;
+	--pa-title-size: var(--renata-meta-size);
+	--pa-title-tracking: var(--renata-meta-tracking);
+	--pa-title-color: var(--renata-olive);
+	--pa-subtitle-color: rgb(var(--renata-ink-rgb) / 58%);
+	--pa-guest-color: var(--renata-ink);
+	--pa-guest-weight: 500;
+	--pa-label-color: rgb(var(--renata-ink-rgb) / 48%);
+	--pa-label-tracking: var(--renata-meta-tracking);
+	--pa-count-color: var(--renata-olive);
+	--pa-count-frame-border: 0;
+	--pa-count-frame-radius: 0;
+	--pa-count-frame-bg: transparent;
+	--pa-count-frame-shadow: none;
+	--pa-count-frame-inner-display: none;
+	--pa-divider-opacity: 0%;
+	--pa-divider-diamond-bg: transparent;
+	--pa-divider-diamond-border-color: transparent;
+	--pa-divider-diamond-shadow: none;
+	--pa-footer-border-top: 0;
+	--pa-footer-text-color: rgb(var(--renata-ink-rgb) / 52%);
+	--pa-footer-text-font-style: normal;
 	--header-nav-title-color: var(--renata-olive);
 	--header-nav-color: var(--renata-cream);
 	--header-nav-color-transparent: var(--renata-cream);
@@ -192,10 +229,7 @@ html:has(.event--renata.theme-preset--editorial) body {
 	background: var(--renata-cream);
 
 	.envelope-wrapper {
-		--env-title-size: clamp(1.7rem, 6.5cqw, 2.55rem);
 		--env-text-primary: var(--renata-ink);
-		--env-container-width: min(90vw, 580px);
-		--env-container-max-height: min(64svh, 500px);
 	}
 
 	.invitation-hero[data-variant='editorial'] {
@@ -219,9 +253,9 @@ html:has(.event--renata.theme-preset--editorial) body {
 			width: min(100%, 42rem);
 			height: 100%;
 			margin: 0 auto 0 0;
-			padding-block: clamp(5.5rem, 12vh, 7.5rem) clamp(4.25rem, 9vh, 5.75rem);
+			padding-block: clamp(5.25rem, 11vh, 7.25rem) clamp(4rem, 8.5vh, 5.5rem);
 			padding-inline: clamp(1.25rem, 4vw, 2.75rem);
-			gap: clamp(1rem, 2.2vw, 1.65rem);
+			gap: clamp(0.85rem, 2vw, 1.45rem);
 			text-align: left;
 			grid-template-columns: none;
 			grid-template-areas: none;
@@ -234,7 +268,8 @@ html:has(.event--renata.theme-preset--editorial) body {
 			font-weight: 600;
 			margin-bottom: 0;
 			justify-self: start;
-			letter-spacing: 0.22em;
+			letter-spacing: 0.26em;
+			font-size: 0.68rem;
 
 			&::before,
 			&::after {
@@ -287,14 +322,14 @@ html:has(.event--renata.theme-preset--editorial) body {
 
 		.invitation-hero__date {
 			font-family: var(--renata-hero-meta-font);
-			font-size: clamp(1rem, 1.4vw, 1.15rem);
+			font-size: clamp(1.05rem, 1.5vw, 1.25rem);
 			font-weight: 600;
 			color: var(--renata-hero-date-color);
 		}
 
 		.invitation-hero__time {
 			font-family: var(--renata-hero-meta-font);
-			font-size: clamp(0.95rem, 1.2vw, 1.05rem);
+			font-size: clamp(0.88rem, 1.1vw, 0.98rem);
 			font-weight: 500;
 			color: var(--renata-hero-time-color);
 		}
@@ -306,12 +341,12 @@ html:has(.event--renata.theme-preset--editorial) body {
 		.invitation-hero__venue {
 			font-style: normal;
 			font-family: var(--renata-hero-ui-font);
-			font-size: clamp(0.85rem, 1.1vw, 0.95rem);
+			font-size: clamp(0.72rem, 0.95vw, 0.82rem);
 			font-weight: 500;
 			line-height: 1.35;
-			letter-spacing: 0.1em;
+			letter-spacing: 0.12em;
 			max-width: min(100%, 36ch);
-			margin-top: 0.55rem;
+			margin-top: 0.4rem;
 			color: var(--renata-hero-venue-color);
 			overflow-wrap: anywhere;
 			text-wrap: pretty;
@@ -320,11 +355,11 @@ html:has(.event--renata.theme-preset--editorial) body {
 		.invitation-hero__scroll-indicator {
 			bottom: clamp(1rem, 3vh, 1.75rem);
 			z-index: 11;
-			opacity: 64%;
+			opacity: 40%;
 			font-family: var(--renata-hero-ui-font);
 			color: var(--renata-hero-scroll-color);
 			letter-spacing: 0.28em;
-			font-size: 0.68rem;
+			font-size: 0.58rem;
 		}
 
 		.invitation-hero__scroll-text {
@@ -339,7 +374,7 @@ html:has(.event--renata.theme-preset--editorial) body {
 			}
 
 			.invitation-hero__title {
-				font-size: clamp(2.85rem, 15vw, 3.85rem);
+				font-size: clamp(3.05rem, 16vw, 4.05rem);
 			}
 		}
 
@@ -371,59 +406,70 @@ html:has(.event--renata.theme-preset--editorial) body {
 		}
 	}
 
-	.family {
-		.family__header {
-			margin-inline: 0 auto;
-			text-align: left;
-		}
+	.family[data-structural-variant='asymmetric-groups'] {
+		--family-bg: var(--renata-cream);
+		--family-split-divider: rgb(var(--renata-silver-rgb) / 36%);
+		--family-accent: var(--renata-olive);
+		--family-text-primary: var(--renata-ink);
+		--family-text-muted: rgb(var(--renata-ink-rgb) / 64%);
+		--family-eyebrow-color: var(--renata-olive);
+		--family-title-color: var(--renata-ink);
 
-		.family__header-inner {
-			align-items: flex-start;
+		background: var(--family-bg);
+		padding-block: var(--family-padding-block);
+
+		.family__eyebrow,
+		.family__meta,
+		.family__godparent-label {
+			font-family: var(--font-label);
+			color: var(--family-eyebrow-color);
 		}
 
 		.family__title {
 			margin-inline: 0;
-		}
-
-		.family__header-divider {
-			margin-inline: 0;
-			width: clamp(3.5rem, 12vw, 6rem);
-			opacity: 0%;
+			font-family: var(--font-display);
+			font-size: var(--family-title-size);
+			color: var(--family-title-color);
 		}
 
 		.family__message {
 			margin-inline: 0;
-			text-align: left;
-		}
-
-		.family__group + .family__group::before {
-			left: 0;
-			width: min(7.5rem, 34%);
-			transform: none;
+			font-family: var(--font-body);
+			font-size: var(--family-message-size);
+			color: var(--family-text-muted);
 		}
 
 		.family__group-title {
-			margin-bottom: 0.45rem;
+			font-family: var(--font-label);
+			font-size: var(--family-group-title-size);
+			letter-spacing: var(--family-meta-letter-spacing);
+			color: var(--family-group-title-color);
 		}
 
 		.family__name {
-			justify-content: flex-start;
+			font-family: var(--font-display);
+			font-size: var(--family-name-size);
+			color: var(--family-text-primary);
 		}
 	}
 
-	// Countdown keeps shared editorial chrome. Tint only with Renata olive/cream/coral.
+	// Countdown keeps shared editorial units (2x2 on mobile, 4 across on desktop).
 	// Envelope gold stays on premiere-floral reveal, not this opened section.
 	.countdown-section {
-		--section-padding-block: clamp(3.25rem, 7vw, 5.5rem);
+		--section-padding-block: var(--renata-space-emphasis);
 		--color-action-accent: var(--renata-coral);
 		--color-action-accent-rgb: var(--renata-coral-rgb);
 		--countdown-segment-bg: transparent;
+		--countdown-value-size-mobile: clamp(1.85rem, 7.5vw, 2.55rem);
+		--countdown-value-size-desktop: clamp(3.15rem, 5.4vw, 4.6rem);
 
+		min-height: 0;
+		padding-block: var(--renata-space-emphasis);
 		background: linear-gradient(145deg, var(--renata-ink) 0%, var(--countdown-bg) 100%);
 		color: var(--renata-cream);
 
 		&::before {
-			opacity: 28%;
+			opacity: 16%;
 		}
 
 		.countdown-title {
@@ -431,39 +477,28 @@ html:has(.event--renata.theme-preset--editorial) body {
 			background-clip: unset;
 			-webkit-text-fill-color: var(--renata-coral);
 			color: var(--renata-coral);
+			font-size: var(--renata-section-title-size);
+			letter-spacing: 0.08em;
+			margin-bottom: 2.35rem;
 		}
 
 		.countdown-date {
 			display: none;
 		}
 
-		.countdown__segment {
-			border-color: rgb(var(--renata-cream-rgb) / 14%);
-			box-shadow: none;
-			backdrop-filter: none;
-
-			&:hover {
-				transform: none;
-				box-shadow: none;
-				background: transparent;
-			}
-		}
-
 		.countdown__value {
-			color: var(--renata-coral);
-			text-shadow: none;
+			color: var(--renata-cream);
 		}
 
 		.countdown__label {
-			color: var(--renata-cream);
-			opacity: 78%;
+			color: rgb(var(--renata-cream-rgb) / 72%);
+			opacity: 100%;
 		}
 
 		.countdown-invitation-text {
-			color: var(--renata-cream);
-			opacity: 88%;
-			max-inline-size: 36ch;
-			margin-top: 2.25rem;
+			color: rgb(var(--renata-cream-rgb) / 78%);
+			opacity: 100%;
+			font-style: normal;
 		}
 	}
 
@@ -500,8 +535,55 @@ html:has(.event--renata.theme-preset--editorial) body {
 		--location-card-hover-shadow: none;
 		--location-card-radius: 0;
 		--location-card-radius-xs: 0;
-		--location-stack-gap: clamp(2.25rem, 5vw, 3.25rem);
-		--location-padding-block: clamp(3.25rem, 7vw, 5.25rem);
+		--location-stack-gap: clamp(3.25rem, 7vw, 4.75rem);
+		--location-padding-block: var(--renata-space-emphasis);
+		--location-plate-row: minmax(5.25rem, min(13vw, 10.5rem));
+		--location-indications-spacing: clamp(2rem, 4.5vw, 3rem);
+		--location-indications-panel-bg: transparent;
+		--location-indications-panel-border: none;
+		--location-copy-button-border: 0;
+		--location-copy-button-opacity: 62%;
+		--location-map-preview-copy-bg: transparent;
+		--location-map-preview-copy-border: transparent;
+
+		.event-location__intro {
+			margin-inline: 0;
+			text-align: left;
+		}
+
+		.event-location__heading {
+			margin-inline: 0;
+			font-size: var(--renata-section-title-size);
+			font-weight: 500;
+		}
+
+		.event-location__card-wrapper:first-of-type {
+			.event-location__card-content-place {
+				font-size: clamp(1.45rem, 3.2vw, 1.95rem);
+			}
+		}
+
+		.event-location__card-wrapper:last-of-type {
+			.event-location__card-content-place {
+				font-size: clamp(1.2rem, 2.6vw, 1.55rem);
+			}
+
+			.event-location__card-map-preview-grid {
+				opacity: 16%;
+			}
+		}
+
+		.event-location__card-map-preview-grid {
+			opacity: 18%;
+		}
+
+		.event-location__indications-container {
+			max-width: none;
+			margin-inline: 0;
+			padding: 1.15rem 0 0;
+			border: 0;
+			background: transparent;
+		}
 	}
 
 	.invitation-interlude {
@@ -511,12 +593,36 @@ html:has(.event--renata.theme-preset--editorial) body {
 	}
 
 	.itinerary {
-		padding-block: clamp(3.5rem, 8vw, 5.75rem);
+		--editorial-program-paper: var(--renata-cream);
+		--editorial-program-ink: var(--renata-ink);
+		--editorial-program-ink-rgb: var(--renata-ink-rgb);
+		--editorial-program-accent: var(--renata-coral);
+
+		overflow: visible;
+		padding-block: var(--renata-space-emphasis);
 		background: var(--renata-cream);
 		color: var(--renata-ink);
 
+		.itinerary__header {
+			margin-bottom: clamp(1.75rem, 4.5vw, 2.75rem);
+		}
+
 		.itinerary__title {
+			overflow-wrap: normal;
+			word-break: normal;
+			hyphens: none;
+			padding-block: 0.12em 0.16em;
 			color: var(--renata-ink);
+			line-height: 1.05;
+		}
+
+		.itinerary__items {
+			border-top-color: rgb(var(--renata-ink-rgb) / 10%);
+		}
+
+		.itinerary__item {
+			padding-block: clamp(0.95rem, 3vw, 1.55rem);
+			border-bottom-color: rgb(var(--renata-ink-rgb) / 8%);
 		}
 
 		.itinerary__item::before {
@@ -529,24 +635,69 @@ html:has(.event--renata.theme-preset--editorial) body {
 		--gallery-item-shadow: none;
 		--gallery-item-border: 0;
 
-		padding-block: clamp(2.5rem, 6vw, 4.25rem);
+		padding-block: var(--renata-space-standard);
 		background: var(--renata-blush);
 
 		.gallery-section__header {
-			margin-bottom: clamp(1.25rem, 3vw, 2rem);
+			max-width: 22rem;
+			margin-bottom: clamp(0.85rem, 2.2vw, 1.35rem);
 			text-align: left;
 		}
 
+		.gallery-section__title {
+			font-size: var(--renata-section-title-size);
+		}
+
 		.gallery-grid {
-			gap: clamp(0.65rem, 1.6vw, 1.05rem);
+			gap: clamp(0.45rem, 1.2vw, 0.85rem);
 		}
 
 		.gallery-grid__item {
 			border-radius: 0;
+			aspect-ratio: 1 / 1;
+
+			img {
+				border-radius: 0;
+			}
+		}
+
+		.gallery-grid__item:nth-child(2),
+		.gallery-grid__item:nth-child(5) {
+			aspect-ratio: 4 / 5;
+		}
+
+		.gallery-grid__item:nth-child(4) {
+			aspect-ratio: 5 / 6;
 		}
 
 		.gallery-grid__item[data-layout-role='feature'] {
 			border-radius: 0;
+			aspect-ratio: 3 / 4;
+		}
+
+		@include mixins.respond-to(md) {
+			.gallery-grid {
+				gap: clamp(0.7rem, 1.5vw, 1.15rem);
+			}
+
+			.gallery-grid__item:nth-child(1) {
+				aspect-ratio: 3 / 4;
+			}
+
+			.gallery-grid__item:nth-child(2) {
+				aspect-ratio: 4 / 5;
+				margin-top: 1.65rem;
+			}
+
+			.gallery-grid__item[data-layout-role='feature'] {
+				aspect-ratio: 5 / 4;
+				margin-block: 0.35rem;
+			}
+
+			.gallery-grid__item:nth-child(5) {
+				aspect-ratio: 3 / 4;
+				margin-top: 1.35rem;
+			}
 		}
 	}
 
@@ -557,11 +708,6 @@ html:has(.event--renata.theme-preset--editorial) body {
 		background: var(--renata-cream);
 		color: var(--renata-ink);
 
-		.gifts-section__flourish,
-		.gifts-section__separator {
-			display: none;
-		}
-
 		.gifts-section__title {
 			text-transform: none;
 			letter-spacing: 0.02em;
@@ -569,8 +715,16 @@ html:has(.event--renata.theme-preset--editorial) body {
 		}
 
 		.gifts-section__header {
-			margin-bottom: 0.65rem;
+			margin-bottom: 1.15rem;
 			text-align: left;
+		}
+
+		.gifts-section__flourish {
+			justify-content: flex-start;
+		}
+
+		.gifts-section__separator {
+			background: rgb(var(--renata-silver-rgb) / 42%);
 		}
 
 		.gifts-section__subtitle {
@@ -580,7 +734,7 @@ html:has(.event--renata.theme-preset--editorial) body {
 		}
 
 		.gift-card {
-			padding: 0.5rem 0 0;
+			padding: 1.15rem 0 0;
 			transform: none;
 			border: 0;
 			border-radius: 0;
@@ -590,6 +744,7 @@ html:has(.event--renata.theme-preset--editorial) body {
 				transform: none;
 				box-shadow: none;
 				border-color: transparent;
+				background: transparent;
 			}
 
 			&::before {
@@ -598,15 +753,18 @@ html:has(.event--renata.theme-preset--editorial) body {
 		}
 
 		.gift-card__title {
-			display: none;
+			color: var(--renata-ink);
+			text-align: left;
 		}
 
 		.gift-card__icon-medallion {
-			display: none;
+			border-color: rgb(var(--renata-olive-rgb) / 28%);
+			background: transparent;
+			box-shadow: none;
 		}
 
 		.gift-card__inner {
-			gap: 0.45rem;
+			gap: 0.75rem;
 			align-items: flex-start;
 			text-align: left;
 		}
@@ -621,21 +779,159 @@ html:has(.event--renata.theme-preset--editorial) body {
 	.rsvp-section {
 		min-block-size: auto;
 		place-items: start center;
-		padding-block: clamp(2.5rem, 6vw, 4rem);
+		padding-block: var(--renata-space-standard);
 		background: var(--renata-cream);
 	}
 
 	.rsvp,
 	.personalized-access {
 		--rsvp-bg: var(--renata-cream);
+		--color-glass-bg: transparent;
+		--color-glass-border: transparent;
+		--shadow-premium: none;
+		--rsvp-radius-card: 0;
+		--rsvp-card-max-width: 34rem;
+		--rsvp-title-color: var(--renata-ink);
+		--rsvp-title-size: var(--renata-section-title-size);
+		--rsvp-title-letter-spacing: 0.02em;
+		--rsvp-radio-bg: transparent;
+		--rsvp-radio-bg-hover: transparent;
+		--rsvp-radio-border: rgb(var(--renata-olive-rgb) / 28%);
+		--rsvp-radio-selected-bg: transparent;
+		--rsvp-radio-selected-border: var(--renata-olive);
+		--rsvp-radio-selected-shadow: none;
+		--rsvp-button-shadow-rest: none;
+		--rsvp-button-shadow-hover: none;
 
 		color: var(--renata-ink);
 		background: transparent;
+		border: 0;
+		box-shadow: none;
+		backdrop-filter: none;
+	}
+
+	.rsvp {
+		padding-block: 0;
+		text-align: left;
+
+		.rsvp__header,
+		.rsvp__title {
+			text-align: left;
+		}
+
+		.rsvp__separator {
+			display: none;
+		}
+
+		.rsvp__radio-card {
+			border-radius: 0;
+			min-height: 2.35rem;
+			justify-content: flex-start;
+		}
+
+		&[data-state='locked'] {
+			max-width: var(--rsvp-card-max-width);
+		}
+
+		.rsvp__locked-card {
+			display: grid;
+			gap: 0.75rem;
+			padding: 1.35rem 0 0;
+			border: 0;
+			border-radius: 0;
+			background: none;
+			box-shadow: none;
+			color: var(--renata-ink);
+			text-align: left;
+			backdrop-filter: none;
+
+			&::before {
+				display: none;
+			}
+		}
+
+		.rsvp__locked-message {
+			font-family: var(--font-display);
+			font-size: var(--renata-secondary-title-size);
+			line-height: 1.25;
+			color: var(--renata-ink);
+		}
+
+		.rsvp__locked-detail {
+			max-width: 36rem;
+			margin-inline: 0;
+			font-size: var(--renata-body-size);
+			line-height: 1.6;
+			color: rgb(var(--renata-ink-rgb) / 68%);
+		}
 	}
 
 	.personalized-access {
+		.personalized-access__container {
+			width: min(100%, 34rem);
+			margin-inline: 0 auto;
+		}
+
+		.access-card {
+			border-radius: 0;
+			background-image: none;
+		}
+
 		.access-card::before,
 		.access-card::after {
+			display: none;
+		}
+
+		.access-card__header,
+		.access-card__body,
+		.access-card__footer,
+		.access-card__field,
+		.access-card__quota {
+			justify-items: start;
+			text-align: left;
+		}
+
+		.access-card__header {
+			padding: 0 0 1rem;
+			gap: 0.45rem;
+		}
+
+		.access-card__subtitle {
+			margin: 0;
+		}
+
+		.access-card__body {
+			padding: 0;
+			gap: 1rem;
+		}
+
+		.access-card__guest {
+			max-width: none;
+		}
+
+		.access-card__divider {
+			display: none;
+		}
+
+		.access-card__count-frame {
+			min-width: 0;
+			padding: 0;
+		}
+
+		.access-card__count {
+			font-size: clamp(2.15rem, 5vw, 3.15rem);
+		}
+
+		.access-card__note {
+			margin: 0;
+			text-align: left;
+		}
+
+		.access-card__footer {
+			padding: 0.85rem 0 0;
+		}
+
+		.access-card__seal {
 			display: none;
 		}
 	}
@@ -645,18 +941,18 @@ html:has(.event--renata.theme-preset--editorial) body {
 	// overlayAnchor=left is honored for width; vertical start is local because
 	// full-bleed-photo centers (desktop) / ends (mobile) at equal specificity.
 	.thank-you-section[data-variant='editorial'][data-structural-variant='full-bleed-photo'] {
-		--thank-you-overlay-width: 24rem;
+		--thank-you-overlay-width: 20rem;
 		--thank-you-overlay-gap: clamp(1.25rem, 3vw, 2.25rem);
 		--thank-you-focal-point: 48% 36%;
-		--renata-thank-you-message-size: clamp(1.25rem, 1rem + 1.2vw, 1.95rem);
-		--renata-thank-you-name-size: clamp(3.1rem, 1.6rem + 5vw, 6.15rem);
-		--renata-thank-you-date-size: clamp(0.7rem, 0.62rem + 0.28vw, 0.86rem);
-		--renata-thank-you-lockup-gap: clamp(0.45rem, 1vw, 0.85rem);
+		--renata-thank-you-message-size: clamp(1.05rem, 0.92rem + 0.7vw, 1.35rem);
+		--renata-thank-you-name-size: clamp(2.35rem, 1.4rem + 3.2vw, 4.25rem);
+		--renata-thank-you-date-size: clamp(0.68rem, 0.6rem + 0.24vw, 0.8rem);
+		--renata-thank-you-lockup-gap: clamp(0.4rem, 1vw, 0.75rem);
 
 		background: var(--renata-ink);
-		padding-block: calc(var(--invitation-header-offset, 5.5rem) + 1.25rem)
-			clamp(2.25rem, 6vw, 3.75rem);
-		padding-inline: clamp(1.5rem, 5vw, 3.75rem);
+		padding-block: calc(var(--invitation-header-offset, 5.5rem) + 1.75rem)
+			clamp(2.5rem, 6vw, 4rem);
+		padding-inline: clamp(1.65rem, 5.5vw, 4.25rem);
 
 		@include mixins.respond-to(md) {
 			--thank-you-focal-point: 46% 22%;
@@ -672,25 +968,44 @@ html:has(.event--renata.theme-preset--editorial) body {
 				linear-gradient(
 					90deg,
 					rgb(var(--renata-ink-rgb) / 82%) 0%,
-					rgb(var(--renata-ink-rgb) / 48%) 26%,
-					rgb(var(--renata-ink-rgb) / 16%) 46%,
-					transparent 68%
+					rgb(var(--renata-ink-rgb) / 42%) 18%,
+					rgb(var(--renata-ink-rgb) / 12%) 32%,
+					transparent 48%
 				),
 				linear-gradient(
 					180deg,
-					rgb(var(--renata-ink-rgb) / 62%) 0%,
-					rgb(var(--renata-ink-rgb) / 24%) 24%,
-					transparent 48%
-				);
+					rgb(var(--renata-ink-rgb) / 54%) 0%,
+					rgb(var(--renata-ink-rgb) / 18%) 22%,
+					transparent 44%
+				),
+				linear-gradient(180deg, transparent 58%, rgb(var(--renata-ink-rgb) / 28%) 100%);
+		}
+
+		@media (width <= 860px) {
+			&::before {
+				background:
+					linear-gradient(
+						180deg,
+						rgb(var(--renata-ink-rgb) / 78%) 0%,
+						rgb(var(--renata-ink-rgb) / 42%) 28%,
+						rgb(var(--renata-ink-rgb) / 12%) 52%,
+						transparent 68%
+					),
+					linear-gradient(
+						90deg,
+						rgb(var(--renata-ink-rgb) / 62%) 0%,
+						rgb(var(--renata-ink-rgb) / 22%) 48%,
+						transparent 78%
+					);
+			}
 		}
 
 		&::after {
 			display: none;
 		}
 
-		.thank-you-content,
-		.thank-you-message {
-			color: var(--renata-cream);
+		.thank-you-content {
+			color: rgb(var(--renata-cream-rgb) / 92%);
 		}
 
 		.thank-you-content {
@@ -727,12 +1042,12 @@ html:has(.event--renata.theme-preset--editorial) body {
 		.thank-you-message {
 			max-width: 12.5em;
 			margin: 0;
-			color: var(--renata-cream);
+			color: rgb(var(--renata-cream-rgb) / 90%);
 			font-size: var(--renata-thank-you-message-size);
 			font-weight: 400;
 			letter-spacing: 0.012em;
-			line-height: 1.22;
-			text-shadow: 0 6px 22px rgb(var(--renata-ink-rgb) / 42%);
+			line-height: 1.28;
+			text-shadow: 0 8px 28px rgb(var(--renata-ink-rgb) / 72%);
 		}
 
 		.thank-you-message .drop-cap {
@@ -774,14 +1089,56 @@ html:has(.event--renata.theme-preset--editorial) body {
 			font-size: var(--renata-thank-you-name-size);
 			font-weight: 500;
 			letter-spacing: 0.01em;
-			line-height: 0.94;
-			text-shadow: 0 10px 28px rgb(var(--renata-ink-rgb) / 48%);
+			line-height: 1;
+			text-shadow: 0 12px 32px rgb(var(--renata-ink-rgb) / 70%);
 		}
 
 		.closing-date {
 			margin: 0.2rem 0 0;
 			color: rgb(var(--renata-cream-rgb) / 78%);
 			font-size: var(--renata-thank-you-date-size);
+		}
+	}
+
+	.invitation-footer[data-variant='editorial'] {
+		background-color: var(--renata-ink);
+		background-image: linear-gradient(
+			180deg,
+			rgb(var(--renata-ink-rgb) / 0%) 0%,
+			rgb(var(--renata-ink-rgb) / 88%) 100%
+		);
+		border-top-color: rgb(var(--renata-olive-rgb) / 42%);
+		box-shadow: 0 -10px 40px rgb(var(--renata-ink-rgb) / 28%);
+
+		.footer__info .powered-by {
+			color: rgb(var(--renata-cream-rgb) / 72%);
+		}
+
+		.footer-brand-logo.logo {
+			filter: brightness(1.15);
+		}
+
+		.whatsapp-button {
+			border-color: rgb(var(--renata-olive-rgb) / 48%);
+			color: var(--renata-olive);
+
+			.footer-action__icon-media {
+				filter: none;
+			}
+
+			&:hover {
+				border-color: var(--renata-olive);
+				background: rgb(var(--renata-olive-rgb) / 16%);
+				color: var(--renata-cream);
+			}
+		}
+
+		.footer__replay-link {
+			color: rgb(var(--renata-cream-rgb) / 78%);
+
+			&:hover {
+				color: var(--renata-olive);
+			}
 		}
 	}
 

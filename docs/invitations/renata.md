@@ -205,7 +205,10 @@ WhatsApp-compressed files are `provisional-whatsapp` or `unusable` and were not 
 | 1000511822          | 4024×6048 | jpeg   | portrait    | HR     | production-ready | gallery         | no                           | downscale 2560 long edge, no upscale | gallery-03-source.jpg      |
 | _DSC5759            | 3734×5611 | jpeg   | portrait    | HR     | production-ready | gallery         | no                           | downscale 2560 long edge, no upscale | gallery-04-source.jpg      |
 | _DSC5878            | 5390×3586 | jpeg   | landscape   | HR     | production-ready | interlude       | no                           | downscale 2560 long edge, no upscale | interlude-source.jpg       |
+| _DSC5914            | 6002×3993 | jpeg   | landscape   | HR     | production-ready | interlude-02    | no                           | downscale 2560 long edge, no upscale | interlude-02-source.jpg    |
 | 1000511840          | 4024×6048 | jpeg   | portrait    | HR     | production-ready | thankYou        | no                           | downscale 2560 long edge, no upscale | thank-you-source.jpg       |
+| _DSC5820            | 5298×3526 | jpeg   | landscape   | HR     | unused           | none            | unused HR reserve            | not ingested                         | —                          |
+| _DSC5907            | 5476×3643 | jpeg   | landscape   | HR     | unused           | none            | unused HR reserve            | not ingested                         | —                          |
 | IMG-20260424-WA0194 | 1006×1512 | jpeg   | portrait    | WA     | unusable         | none            | worn-sunglasses concept only | not ingested                         | —                          |
 | 1001086433          | 1070×1600 | jpeg   | portrait    | WA     | unusable         | none            | near-dup yellow              | not ingested                         | —                          |
 | 1000511882          | 1080×2400 | jpeg   | portrait    | weak   | unusable         | none            | insufficient for desktop     | not ingested                         | —                          |
@@ -221,6 +224,7 @@ WhatsApp-compressed files are `provisional-whatsapp` or `unusable` and were not 
 | gallery-03      | 1000511822 | gallery-03-source.jpg      | no                      |
 | gallery-04      | _DSC5759   | gallery-04-source.jpg      | no                      |
 | interlude       | _DSC5878   | interlude-source.jpg       | no                      |
+| interlude-02    | _DSC5914   | interlude-02-source.jpg    | no                      |
 | thankYou        | 1000511840 | thank-you-source.jpg       | no                      |
 
 Hero desktop and hero mobile share `hero-source.jpg` with different focals. Closing image is not the
@@ -243,11 +247,12 @@ hero. Feature frame is `_DSC5939`, not file-order first.
   `gallery-03`, `gallery-04`; location `stacked-venue-plates` with `presentation: 'simple'`,
   `presentationOptions.showNavigationButtons: false`, and `showFlourishes: false`; keep `ceremony` +
   `reception` (no `venues[]`); personalized access `standard`; RSVP `standard` (presentation only —
-  do not persist `accessMode`, `confirmationMode`, or `guestCap`); family `standard` + `text-only`;
-  envelope `variant: 'premiere-floral'` with `sealIcon: 'monogram'`, `envelopeName: 'Renata'`,
-  `documentLabel: 'CELEBRO MIS XV'`, empty `microcopy` and `teaserDetails`, and no `cardTagline`. Do
-  not set `closedPalette`. Reveal appearance is owned by the premiere-floral envelope variant, not
-  the Renata profile. Interlude crop is owned by provision `focalPoint` / `focalPointDesktop`.
+  do not persist `accessMode`, `confirmationMode`, or `guestCap`); family `asymmetric-groups` +
+  `text-only`; envelope `variant: 'premiere-floral'` with `sealIcon: 'monogram'`,
+  `envelopeName: 'Renata'`, `cardLabel: 'MIS XV'`, `cardTagline: '05 · 09 · 2026'`, and
+  `microcopy: 'Abra su invitación'`. Do not set `documentLabel`, `teaserDetails`, or
+  `closedPalette`. Reveal appearance is owned by the premiere-floral envelope variant, not the
+  Renata profile. Interlude crop is owned by provision `focalPoint` / `focalPointDesktop`.
 - Lane B: none. Demo stays the gold editorial template.
 - Music omit / include: omitted (`not_applicable`).
 - Other: no `renata` key in `LEGACY_INTERSECTION_PROFILES`. No shared renderer/variant branches.

@@ -41,11 +41,10 @@ export const RENATA_EVENT = {
 } as const;
 
 const EVENT_DATE_LONG = '5 de septiembre de 2026';
-const CEREMONY_ADDRESS = 'Blvd. Pedro Infante 2550, Los Alamos, 80100 Culiacán, Sinaloa';
-const RECEPTION_ADDRESS =
-	'Blvd. José Limon 910 norte, Desarrollo Urbano Tres Ríos, 80020 Culiacán Rosales, Sinaloa';
-const CEREMONY_MAP_URL = 'https://maps.app.goo.gl/jkS3UvSKdTzcZxu9A';
-const RECEPTION_MAP_URL = 'https://maps.app.goo.gl/oEA3Y3DhgMEGn6Lc7';
+const CEREMONY_ADDRESS = 'Blvd. Pedro Infante 2550, Los Álamos, Culiacán';
+const RECEPTION_ADDRESS = 'Blvd. José Limón 910 Nte., Tres Ríos, Culiacán';
+const CEREMONY_MAP_URL = 'https://maps.app.goo.gl/AS7ufXbUyZdyJJU4A';
+const RECEPTION_MAP_URL = 'https://maps.app.goo.gl/yzDo1Azex7AfmyGX8';
 
 export const RENATA_ASSET_SPECS = [
 	{
@@ -125,9 +124,20 @@ export const RENATA_ASSET_SPECS = [
 		displayName: 'Renata — interludio',
 		alt: 'Renata recostada con vestido amarillo en un estudio floral',
 		focalPoint: {
-			default: '50% 62%',
-			mobile: '50% 78%',
-			desktop: '50% 52%',
+			default: '32% 52%',
+			mobile: '32% 52%',
+			desktop: '38% 48%',
+		},
+	},
+	{
+		key: 'interlude-02',
+		relativePath: 'interlude-02-source.jpg',
+		displayName: 'Renata — segundo interludio',
+		alt: 'Renata sentada con vestido amarillo entre arreglos florales',
+		focalPoint: {
+			default: '50% 30%',
+			mobile: '50% 32%',
+			desktop: '50% 28%',
 		},
 	},
 	{
@@ -197,18 +207,17 @@ export function buildRenataPublishedContent(
 		envelope: {
 			disabled: false,
 			variant: 'premiere-floral',
-			cardLabel: 'CELEBRO MIS XV',
+			cardLabel: 'MIS XV',
 			envelopeName: 'Renata',
 			cardName: 'Renata',
-			documentLabel: 'CELEBRO MIS XV',
+			cardTagline: '05 · 09 · 2026',
 			sealStyle: 'wax',
 			sealIcon: 'monogram',
 			sealInitials: 'R',
-			microcopy: '',
-			teaserDetails: '',
+			microcopy: 'Abra su invitación',
 		},
 		family: {
-			variant: 'standard',
+			variant: 'asymmetric-groups',
 			presentation: 'text-only',
 			parents: {
 				father: 'Ramón Arturo Sainz Quevedo',
@@ -241,7 +250,7 @@ export function buildRenataPublishedContent(
 			},
 			indicationsHeading: 'Indicaciones',
 			introEyebrow: 'SÁBADO · 5 DE SEPTIEMBRE DE 2026',
-			introHeading: 'De la misa a la fiesta',
+			introHeading: 'Misa y recepción',
 			ceremony: {
 				venueEvent: 'Misa',
 				venueName: 'Parroquia Santa Inés',
@@ -251,29 +260,25 @@ export function buildRenataPublishedContent(
 				time: '5:00 p. m.',
 				mapUrl: CEREMONY_MAP_URL,
 				googleMapsUrl: CEREMONY_MAP_URL,
-				appleMapsUrl:
-					'https://maps.apple.com/?q=Parroquia+Santa+Ines+Blvd+Pedro+Infante+2550+Culiacan',
 			},
 			reception: {
 				venueEvent: 'Recepción',
-				venueName: 'InHouse Select Hacienda Tres Ríos',
-				address: `${RECEPTION_ADDRESS}. Salón la cabaña del abuelo.`,
+				venueName: 'InHouse Select · Hacienda Tres Ríos',
+				address: RECEPTION_ADDRESS,
 				city: 'Culiacán, Sinaloa',
 				date: EVENT_DATE_LONG,
 				time: '7:00 p. m.',
 				mapUrl: RECEPTION_MAP_URL,
 				googleMapsUrl: RECEPTION_MAP_URL,
-				appleMapsUrl:
-					'https://maps.apple.com/?q=InHouse+Select+Hacienda+Tres+Rios+Culiacan',
 			},
 			indications: [
 				{
-					text: 'Código de vestimenta: <strong>formal</strong>.',
+					text: 'Código de vestimenta: formal.',
 					iconName: 'DressCode',
 					styleVariant: 'default',
 				},
 				{
-					text: 'Se pide <strong>no vestir de color rosa</strong>.',
+					text: 'Se pide no vestir de color rosa.',
 					iconName: 'Crown',
 					styleVariant: 'default',
 				},
@@ -285,13 +290,21 @@ export function buildRenataPublishedContent(
 				afterSection: 'location',
 				alt: 'Renata recostada con vestido amarillo en un estudio floral',
 				height: 'tall',
-				focalPoint: '50% 78%',
-				focalPointDesktop: '50% 52%',
+				focalPoint: '32% 52%',
+				focalPointDesktop: '38% 48%',
+			},
+			{
+				image: assets['interlude-02'],
+				afterSection: 'gallery',
+				alt: 'Renata sentada con vestido amarillo entre arreglos florales',
+				height: 'tall',
+				focalPoint: '50% 32%',
+				focalPointDesktop: '50% 28%',
 			},
 		],
 		itinerary: {
 			variant: 'editorial-program',
-			title: 'Momentos de la celebración',
+			title: 'Momentos',
 			items: [
 				{
 					time: '5:00 p. m.',
@@ -304,6 +317,24 @@ export function buildRenataPublishedContent(
 					label: 'Recepción',
 					description: 'Continuamos la celebración en Hacienda Tres Ríos.',
 					iconName: 'Reception',
+				},
+				{
+					time: 'Por confirmar',
+					label: 'Vals',
+					description: 'El primer baile de esta noche.',
+					iconName: 'Waltz',
+				},
+				{
+					time: 'Por confirmar',
+					label: 'Cena',
+					description: 'Compartimos la mesa para continuar la celebración.',
+					iconName: 'Dinner',
+				},
+				{
+					time: 'Por confirmar',
+					label: 'Cierre',
+					description: 'Cerramos la fiesta con los últimos momentos juntos.',
+					iconName: 'Party',
 				},
 			],
 		},

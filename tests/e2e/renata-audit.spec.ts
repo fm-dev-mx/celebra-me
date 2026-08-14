@@ -157,16 +157,16 @@ test.describe('Renata XV local visual and content audit', () => {
 			expect(pageText).toMatch(/no vestir de color rosa/i);
 			expect(pageText).toMatch(/lluvia de sobres/i);
 			expect(pageText).toContain('Parroquia Santa Inés');
-			expect(pageText).toContain('InHouse Select Hacienda Tres Ríos');
+			expect(pageText).toContain('InHouse Select · Salón La Cabaña del Abuelo');
 
 			const hero = page.locator('.invitation-hero');
 			await expect(hero).toBeVisible();
 			await expect(page.locator('.invitation-hero__title')).toHaveText('Renata');
 			await expect(hero).toContainText(/7:00\s*p\.\s*m\./i);
-			await expect(hero).toContainText(/Hacienda Tres Ríos/i);
+			await expect(hero).toContainText(/Cabaña del Abuelo/i);
 			await expect(hero).toHaveAttribute('data-structural-variant', 'standard');
 			const family = page.locator('.family').first();
-			await expect(family).toHaveAttribute('data-structural-variant', 'standard');
+			await expect(family).toHaveAttribute('data-structural-variant', 'asymmetric-groups');
 			await expect(family).toHaveAttribute('data-presentation', 'text-only');
 			expect(await page.locator('[data-screenshot-section="quote"]').count()).toBe(0);
 			expect(await page.locator('audio, [data-screenshot-section="music"]').count()).toBe(0);
@@ -296,7 +296,7 @@ test.describe('Renata XV local visual and content audit', () => {
 				.allTextContents();
 			expect(venueNames.map((name) => name.trim())).toEqual([
 				'Parroquia Santa Inés',
-				'InHouse Select Hacienda Tres Ríos',
+				'InHouse Select · Salón La Cabaña del Abuelo',
 			]);
 			expect(await location.getByText('Ver mapa').count()).toBe(2);
 
@@ -315,10 +315,14 @@ test.describe('Renata XV local visual and content audit', () => {
 			const itineraryItems = page.locator(
 				'.itinerary__item, .itinerary__program-row, [data-itinerary-item]',
 			);
-			expect(await itineraryItems.count()).toBe(2);
+			expect(await itineraryItems.count()).toBe(5);
 			await expect(itinerary.locator('.itinerary__item-icon-wrapper').first()).toBeHidden();
 			await expect(itinerary.getByText('Misa', { exact: true })).toBeVisible();
 			await expect(itinerary.getByText('Recepción', { exact: true })).toBeVisible();
+			await expect(itinerary.getByText('Vals', { exact: true })).toBeVisible();
+			await expect(itinerary.getByText('Cena', { exact: true })).toBeVisible();
+			await expect(itinerary.getByText('Cierre', { exact: true })).toBeVisible();
+			expect(await itinerary.getByText('Por confirmar').count()).toBe(3);
 
 			const gallery = page.locator('.gallery-section').first();
 			await expect(gallery).toBeVisible();
@@ -338,7 +342,9 @@ test.describe('Renata XV local visual and content audit', () => {
 			const featureRatio = await feature.evaluate(
 				(node) => getComputedStyle(node).aspectRatio,
 			);
-			expect(featureRatio.replace(/\s+/g, '')).toMatch(/^8\/5$|^1\.6$/);
+			expect(featureRatio.replace(/\s+/g, '')).toMatch(
+				viewport.width >= 1440 ? /^5\/4$|^1\.25$/ : /^3\/4$|^0\.75$/,
+			);
 
 			if (viewport.width >= 1440) {
 				const boxes = await galleryItems.evaluateAll((nodes) =>
@@ -351,11 +357,11 @@ test.describe('Renata XV local visual and content audit', () => {
 						};
 					}),
 				);
-				expect(Math.abs(boxes[0].top - boxes[1].top)).toBeLessThan(2);
+				expect(Math.abs(boxes[0].top - boxes[1].top)).toBeLessThan(40);
 				expect(boxes[2].key).toBe('gallery-feature');
 				expect(boxes[2].width).toBeGreaterThan(boxes[0].width * 1.5);
 				expect(boxes[2].top).toBeGreaterThan(boxes[0].top + 8);
-				expect(Math.abs(boxes[3].top - boxes[4].top)).toBeLessThan(2);
+				expect(Math.abs(boxes[3].top - boxes[4].top)).toBeLessThan(40);
 				expect(boxes[3].top).toBeGreaterThan(boxes[2].top + 8);
 			}
 
@@ -414,7 +420,7 @@ test.describe('Renata XV local visual and content audit', () => {
 				/244,\s*228,\s*224|199,\s*173,\s*118/i,
 			);
 			expect(Number.parseFloat(countdownMetrics.titleMarginBottom)).toBeGreaterThan(32);
-			expect(countdownMetrics.firstRowCount).toBe(viewport.width <= 390 ? 2 : 4);
+			expect(countdownMetrics.firstRowCount).toBe(viewport.width >= 1440 ? 4 : 2);
 
 			const familyBg = await page
 				.locator('.family')
@@ -527,22 +533,23 @@ test.describe('Renata XV local visual and content audit', () => {
 			expect(response?.status()).toBe(200);
 
 			const openControls = page.locator('[data-envelope-open]');
-			await expect(openControls).toHaveCount(1);
+			await expect(openControls).toHaveCount(2);
+			await expect(page.locator('.envelope-seal-button')).toHaveCount(1);
 			await expect(page.locator('.envelope-wrapper')).toHaveAttribute(
 				'data-variant',
 				'premiere-floral',
 			);
-			await expect(page.locator('.envelope-external-instruction')).toHaveCount(0);
+			await expect(page.locator('.envelope-external-instruction')).toHaveText(
+				'Abra su invitación',
+			);
 			await expect(page.locator('.envelope-name')).toHaveText('Renata');
-			await expect(page.locator('.envelope-manifest-label')).toHaveText('CELEBRO MIS XV');
-			await expect(page.locator('.envelope-details')).toHaveCount(0);
+			await expect(page.locator('.envelope-manifest-label')).toHaveCount(0);
+			await expect(page.locator('.envelope-details')).toContainText(/2026/);
 			await expect(page.locator('[data-envelope-open]').first()).toHaveAttribute(
 				'data-seal-icon',
 				'monogram',
 			);
-			await expect(page.locator('.invitation-reveal-card__label')).toHaveText(
-				'CELEBRO MIS XV',
-			);
+			await expect(page.locator('.invitation-reveal-card__label')).toHaveText('MIS XV');
 			await expect(page.locator('.invitation-reveal-card__name')).toHaveText('Renata');
 			await assertRenataLeakScan(page);
 
@@ -559,7 +566,7 @@ test.describe('Renata XV local visual and content audit', () => {
 				timeout: 8_000,
 			});
 			await expect(page.locator('.invitation-hero')).toContainText(/7:00\s*p\.\s*m\./i);
-			await expect(page.locator('.invitation-hero')).toContainText(/Hacienda Tres Ríos/i);
+			await expect(page.locator('.invitation-hero')).toContainText(/Cabaña del Abuelo/i);
 		});
 	}
 
@@ -578,12 +585,12 @@ test.describe('Renata XV local visual and content audit', () => {
 
 			const card = page.locator('.invitation-reveal-card');
 			await expect(card).toBeVisible();
-			await expect(page.locator('.invitation-reveal-card__label')).toHaveText(
-				'CELEBRO MIS XV',
-			);
+			await expect(page.locator('.invitation-reveal-card__label')).toHaveText('MIS XV');
 			await expect(page.locator('.invitation-reveal-card__name')).toHaveText('Renata');
 			await expect(page.locator('.invitation-reveal-card__date')).toContainText(/2026/);
-			await expect(page.locator('.invitation-reveal-card__tagline')).toHaveCount(0);
+			await expect(page.locator('.invitation-reveal-card__tagline')).toHaveText(
+				'05 · 09 · 2026',
+			);
 
 			const contrast = await card.evaluate((node) => {
 				const name = node.querySelector('.invitation-reveal-card__name');
@@ -628,7 +635,7 @@ test.describe('Renata XV local visual and content audit', () => {
 
 			expect(renata.variant).toBe('editorial');
 			expect(renata.segmentCount).toBe(4);
-			expect(renata.firstRowCount).toBe(viewport.width <= 390 ? 2 : 4);
+			expect(renata.firstRowCount).toBe(viewport.width >= 1440 ? 4 : 2);
 		});
 	}
 });
