@@ -175,6 +175,12 @@ atmosphere and each section owns its canonical structural variant.
 Source label: `source:hr-photos` (opaque). Originals are preserved in the client namespace. Every
 source photo is assigned once in the visible invitation narrative.
 
+The managed release reads the one-to-one delivery derivatives `delivery/01.webp` through
+`delivery/15.webp`. Each derivative preserves the source order and is normalized for delivery
+(orientation applied, maximum dimension 2560 px, WebP output within the asset policy). The original
+JPG files remain at the namespace root as source evidence and are not used as the declared release
+inputs while they exceed the intake limit.
+
 | source filename | dims      | format | orientation | quality          | role            | processing                                  |
 | --------------- | --------- | ------ | ----------- | ---------------- | --------------- | ------------------------------------------- |
 | 01.jpg          | 3920×5616 | JPG    | vertical    | production-ready | Hero background | Responsive focal crop; preserve original.   |
@@ -211,12 +217,14 @@ No demo fallback asset is referenced by the Leslie definition.
 - Keep `lifecycle: in_progress` and `deliveryScope: content-and-assets` in the local definition.
 - Keep the asset namespace under `src/assets/invitations/leslie-perez`; reference assets only by
   semantic keys declared in the definition.
-- Preserve the original 01–15 filenames and order; do not create duplicate binaries.
+- Preserve the original 01–15 filenames and order; use only the matching `delivery/01.webp`–
+  `delivery/15.webp` derivatives as declared release inputs. Do not create alternate copies for
+  different invitation roles.
 - Keep `themeId`, `baseDemoId`, `templateId`, and structural variants aligned to the catalog and
   canonical schemas.
 - Omit music, gifts, ceremony, godparents, and interludes until explicitly needed.
-- Do not run `invitation:release`, mutate a database, use Preview/Production, publish, stage, or
-  commit as part of this handoff.
+- Do not apply `invitation:release`, mutate a database, use Preview/Production, publish, stage, or
+  commit as part of this handoff. Read-only dry-runs may be used to verify package readiness.
 - The event-time placeholder is a release blocker; replace it in event timing and all affected
   section copy before any managed release plan is generated.
 
