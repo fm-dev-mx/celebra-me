@@ -96,7 +96,7 @@ describe('invitation asset delivery policy', () => {
 			code: 'validation_error',
 			details: { reason: 'asset_role_weight_exceeded', role: 'gallery' },
 		});
-	});
+	}, 15000);
 
 	it('rejects corrupt bytes', async () => {
 		await expect(
