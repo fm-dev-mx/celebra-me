@@ -51,26 +51,20 @@ async function formatGeneralView(
 ): Promise<void> {
 	const { buildCanonicalStatusView, refineCanonicalStatusViewPromotions } =
 		await import('./canonical-status.ts');
-	const { formatCanonicalStatusView, formatPromotionsSection } =
+	const { formatCanonicalStatusView } =
 		await import('./canonical-status-format.ts');
 	const fast = await buildCanonicalStatusView({
 		diagnostics,
 		includeProductionPreflight: false,
 	});
-	if (!jsonMode) {
-		process.stdout.write(
-			formatCanonicalStatusView(fast, { verbose, includeInSync, diagnostics }),
-		);
-	}
 	const view = await refineOrKeep(fast, () => refineCanonicalStatusViewPromotions(fast));
 	if (jsonMode) {
 		console.log(JSON.stringify(view, null, 2));
 		return;
 	}
-	if (view !== fast) {
-		process.stdout.write('\n--- Production preflight ---\n');
-		process.stdout.write(formatPromotionsSection(view.promotions));
-	}
+	process.stdout.write(
+		formatCanonicalStatusView(view, { verbose, includeInSync, diagnostics }),
+	);
 }
 
 async function formatInvitationView(
@@ -87,9 +81,6 @@ async function formatInvitationView(
 		diagnostics,
 		includeProductionPreflight: false,
 	});
-	if (!jsonMode) {
-		process.stdout.write(formatSlugStatusView(fast, slug, { verbose }));
-	}
 	const view = await refineOrKeep(fast, () =>
 		refineCanonicalStatusViewPromotions(fast, { slugs: [slug] }),
 	);
@@ -110,10 +101,7 @@ async function formatInvitationView(
 		);
 		return;
 	}
-	if (view !== fast) {
-		process.stdout.write('\n--- Production preflight ---\n');
-		process.stdout.write(formatSlugStatusView(view, slug, { verbose }));
-	}
+	process.stdout.write(formatSlugStatusView(view, slug, { verbose }));
 }
 
 async function formatCompactView(
