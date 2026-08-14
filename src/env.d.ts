@@ -46,6 +46,8 @@ interface ImportMetaEnv {
 	readonly NODE_ENV: string;
 	readonly CONTACT_WHATSAPP: string;
 	readonly CLOUDINARY_CLOUD_NAME: string;
+	readonly CLOUDINARY_API_KEY: string;
+	readonly CLOUDINARY_API_SECRET: string;
 }
 
 interface ImportMeta {

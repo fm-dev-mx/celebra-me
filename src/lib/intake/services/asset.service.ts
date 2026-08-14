@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import {
 	createAsset,
@@ -9,10 +9,11 @@ import {
 	restoreAsset as restoreAssetRepo,
 	softDeleteAsset,
 } from '@/lib/intake/repositories/asset.repository';
-import { uploadToStorage, DEFAULT_BUCKET } from '@/lib/intake/storage';
+import { DEFAULT_BUCKET } from '@/lib/intake/storage';
 import {
 	resolveAssetDeliveryUrl,
 } from '@/lib/intake/services/asset-delivery';
+import { uploadOrReconcileCloudinaryAsset } from '@/lib/intake/services/cloudinary-assets';
 import {
 	collectAssetUsage,
 	collectAssetUsagesByInvitation,
@@ -41,6 +42,71 @@ export interface UploadAssetResult {
 	src: string;
 }
 
+async function persistCloudinaryInvitationImage(input: {
+	invitationId: string;
+	eventType: string;
+	slug: string;
+	key: string;
+	displayName: string;
+	defaultAltText?: string;
+	normalized: {
+		blob: Blob;
+		mimeType: string;
+		width: number;
+		height: number;
+		fileSize: number;
+		validationVersion: number;
+		originalMimeType: string;
+		originalFileSize: number;
+	};
+}): Promise<UploadAssetResult> {
+	const bytes = new Uint8Array(await input.normalized.blob.arrayBuffer());
+	const sha256 = createHash('sha256').update(bytes).digest('hex');
+
+	let uploaded;
+	try {
+		uploaded = await uploadOrReconcileCloudinaryAsset({
+			eventType: input.eventType,
+			slug: input.slug,
+			key: input.key,
+			displayName: input.displayName,
+			alt: input.defaultAltText ?? input.displayName,
+			bytes,
+			sha256,
+			mimeType: input.normalized.mimeType,
+			width: input.normalized.width,
+			height: input.normalized.height,
+		});
+	} catch (error) {
+		const message = error instanceof Error ? error.message : String(error);
+		if (message.includes('Stop before mutation')) {
+			throw new ApiError(502, 'config_error', 'La carga de imágenes no está disponible en este momento.');
+		}
+		throw new ApiError(502, 'internal_error', 'No se pudo subir la imagen. Intenta nuevamente.');
+	}
+
+	const asset = await createAsset({
+		invitationId: input.invitationId,
+		displayName: input.displayName,
+		defaultAltText: input.defaultAltText,
+		bucket: DEFAULT_BUCKET,
+		storagePath: uploaded.publicId,
+		mimeType: input.normalized.mimeType,
+		width: uploaded.width,
+		height: uploaded.height,
+		fileSize: uploaded.bytes,
+		validationVersion: input.normalized.validationVersion,
+		originalMimeType: input.normalized.originalMimeType,
+		originalFileSize: input.normalized.originalFileSize,
+		provider: 'cloudinary',
+		providerPublicId: uploaded.publicId,
+		secureUrl: uploaded.secureUrl,
+		sha256,
+	});
+
+	return { asset, src: resolveAssetDeliveryUrl(deliverySourceFromAsset(asset)) };
+}
+
 export async function uploadAsset(
 	invitationId: string,
 	file: Blob,
@@ -48,30 +114,22 @@ export async function uploadAsset(
 	displayName?: string,
 	defaultAltText?: string,
 ): Promise<UploadAssetResult> {
+	const invitation = await findInvitationById(invitationId);
+	if (!invitation?.slug) {
+		throw new ApiError(404, 'not_found', 'No se encontró la invitación.');
+	}
+
 	const normalized = await normalizeInvitationImage(file, mimeType);
 	const assetId = randomUUID();
-	const storagePath = `invitations/${invitationId}/optimized/${assetId}.webp`;
-
-	await uploadToStorage(DEFAULT_BUCKET, storagePath, normalized.blob, normalized.mimeType);
-
-	const asset = await createAsset({
+	return persistCloudinaryInvitationImage({
 		invitationId,
+		eventType: invitation.eventType,
+		slug: invitation.slug,
+		key: `library-${assetId}`,
 		displayName: displayName ?? `Imagen ${assetId.slice(0, 8)}`,
 		defaultAltText,
-		bucket: DEFAULT_BUCKET,
-		storagePath,
-		mimeType: normalized.mimeType,
-		width: normalized.width,
-		height: normalized.height,
-		fileSize: normalized.fileSize,
-		validationVersion: normalized.validationVersion,
-		originalMimeType: normalized.originalMimeType,
-		originalFileSize: normalized.originalFileSize,
+		normalized,
 	});
-
-	const src = resolveAssetDeliveryUrl(deliverySourceFromAsset(asset));
-
-	return { asset, src };
 }
 
 export interface AssetUsageInfo {
@@ -274,8 +332,12 @@ export async function importDemoAsset(
 		);
 	}
 
+	const deliverySlug = invitation.slug ?? assetSlug;
+	if (!deliverySlug) {
+		throw new ApiError(422, 'bad_request', 'La invitación no tiene una ruta pública.');
+	}
+
 	const assetId = randomUUID();
-	const storagePath = `invitations/${invitationId}/optimized/${assetId}.webp`;
 
 	let imageSrc = metadata.src;
 	if (typeof imageSrc === 'string' && imageSrc.startsWith('/') && requestUrl) {
@@ -297,25 +359,14 @@ export async function importDemoAsset(
 		response.headers.get('content-type') || blob.type || `image/${metadata.format ?? 'webp'}`,
 	);
 
-	await uploadToStorage(DEFAULT_BUCKET, storagePath, normalized.blob, normalized.mimeType);
-
-	const asset = await createAsset({
+	return persistCloudinaryInvitationImage({
 		invitationId,
+		eventType: invitation.eventType,
+		slug: deliverySlug,
+		key: `demo-${demoKey}-${assetId.slice(0, 8)}`,
 		displayName: demoKey,
-		bucket: DEFAULT_BUCKET,
-		storagePath,
-		mimeType: normalized.mimeType,
-		width: normalized.width,
-		height: normalized.height,
-		fileSize: normalized.fileSize,
-		validationVersion: normalized.validationVersion,
-		originalMimeType: normalized.originalMimeType,
-		originalFileSize: normalized.originalFileSize,
+		normalized,
 	});
-
-	const src = resolveAssetDeliveryUrl(deliverySourceFromAsset(asset));
-
-	return { asset, src };
 }
 
 export async function deleteAsset(invitationId: string, assetId: string): Promise<void> {

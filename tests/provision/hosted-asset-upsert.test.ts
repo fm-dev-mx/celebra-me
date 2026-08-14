@@ -8,6 +8,8 @@ import type { InvitationPackageAsset } from '../../scripts/provision/invitation-
 import {
 	assertHostedAssetUpsertApplied,
 	buildHostedAssetUpsertSql,
+	resolveHostedUploadedAssetSrc,
+	rewriteUploadedDeliverySrcs,
 	selectHostedAssetIdentityRow,
 	type HostedAssetIdentityRow,
 } from '../../scripts/provision/invitation-import-engine.ts';
@@ -172,5 +174,59 @@ describe('resolveTargetAssetRefs wiring', () => {
 	it('loads soft-deleted rows so prune-then-reimport can reuse id', () => {
 		expect(resolveFn).toContain('selectHostedAssetIdentityRow');
 		expect(resolveFn).not.toMatch(/deleted_at is null/);
+	});
+
+	it('uses Cloudinary delivery src instead of Supabase Storage for invitation images', () => {
+		expect(resolveFn).toContain('resolveHostedUploadedAssetSrc');
+		expect(resolveFn).not.toContain('`${targetStorageUrl}/${storagePath}`');
+	});
+});
+
+describe('resolveHostedUploadedAssetSrc', () => {
+	const storageUrl = 'https://preview.supabase.co/storage/v1/object/public/invitation-assets';
+
+	it('uses packaged Cloudinary secureUrl and never a Storage host', () => {
+		const src = resolveHostedUploadedAssetSrc(
+			{
+				...familyAsset,
+				provider: 'cloudinary',
+				providerPublicId: 'cumple/alba-rosa-quinonez/assets/family-aaaaaaaaaaaa',
+				secureUrl:
+					'https://res.cloudinary.com/dusxvauvj/image/upload/v1/cumple/alba-rosa-quinonez/assets/family-aaaaaaaaaaaa.webp',
+			},
+			null,
+			storageUrl,
+		);
+		expect(src).toContain('res.cloudinary.com');
+		expect(src).not.toContain('supabase.co/storage');
+	});
+
+	it('fails closed when Cloudinary identity is missing', () => {
+		expect(() =>
+			resolveHostedUploadedAssetSrc(
+				{ ...familyAsset, provider: 'cloudinary' },
+				null,
+				storageUrl,
+			),
+		).toThrow(/missing secureUrl and providerPublicId/);
+	});
+});
+
+describe('rewriteUploadedDeliverySrcs', () => {
+	it('rewrites uploaded src and applies the OG Cloudinary transform', () => {
+		const assetId = '7bce748d-8c86-40e3-b28e-0b5523640034';
+		const storageHost =
+			'https://preview.supabase.co/storage/v1/object/public/invitation-assets';
+		const cloudinarySrc =
+			'https://res.cloudinary.com/dusxvauvj/image/upload/v1/cumple/alba/assets/hero-aaa.webp';
+		const rewritten = rewriteUploadedDeliverySrcs(
+			{
+				hero: { type: 'uploaded', assetId, src: `${storageHost}/managed/alba/hero.webp` },
+				ogImage: { type: 'uploaded', assetId, src: `${storageHost}/managed/alba/hero.webp` },
+			},
+			{ hero: { type: 'uploaded', assetId, src: cloudinarySrc } },
+		) as Record<string, { src: string }>;
+		expect(rewritten.hero.src).toBe(cloudinarySrc);
+		expect(rewritten.ogImage.src).toContain('c_fill,g_auto,w_1200,h_630');
 	});
 });

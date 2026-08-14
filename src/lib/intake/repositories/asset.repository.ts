@@ -67,6 +67,10 @@ export async function createAsset(input: {
 	validationVersion?: number;
 	originalMimeType?: string;
 	originalFileSize?: number;
+	provider?: 'supabase' | 'cloudinary';
+	providerPublicId?: string;
+	secureUrl?: string;
+	sha256?: string;
 }): Promise<InvitationAsset> {
 	const body: Record<string, unknown> = {
 		invitation_id: input.invitationId,
@@ -83,6 +87,10 @@ export async function createAsset(input: {
 	if (input.validationVersion !== undefined) body.validation_version = input.validationVersion;
 	if (input.originalMimeType !== undefined) body.original_mime_type = input.originalMimeType;
 	if (input.originalFileSize !== undefined) body.original_file_size = input.originalFileSize;
+	if (input.provider !== undefined) body.provider = input.provider;
+	if (input.providerPublicId !== undefined) body.provider_public_id = input.providerPublicId;
+	if (input.secureUrl !== undefined) body.secure_url = input.secureUrl;
+	if (input.sha256 !== undefined) body.sha256 = input.sha256;
 
 	const rows = await supabaseRestRequest<AssetRow[]>({
 		pathWithQuery: `invitation_assets?select=${SELECT_COLUMNS}`,

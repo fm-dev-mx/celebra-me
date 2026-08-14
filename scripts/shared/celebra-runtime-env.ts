@@ -56,6 +56,8 @@ export const RUNTIME_OVERRIDE_KEYS = new Set([
 	'META_TEST_EVENT_CODE',
 	'CELEBRA_RUNTIME_TARGET',
 	'CLOUDINARY_CLOUD_NAME',
+	'CLOUDINARY_API_KEY',
+	'CLOUDINARY_API_SECRET',
 ]);
 
 /** Runtime Supabase keys that Preview lane must source from `.env.preview.local`. */
