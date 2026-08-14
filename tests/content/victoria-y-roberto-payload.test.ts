@@ -69,6 +69,9 @@ describe('Boda Victoria y Roberto provision contract', () => {
 		expect(profile).toContain("data-reveal-state='sealed'");
 		expect(profile).toContain("data-reveal-state='revealed'");
 		expect(profile).toContain('--gallery-single-label-font');
+		expect(profile).toContain('--location-title-color: var(--victoria-meta)');
+		expect(profile).toContain('--location-date-display: none');
+		expect(profile).not.toContain('.event-location__card-map-preview-artwork');
 		expect(profile).not.toContain("data-variant='single'");
 		expect(fs.readFileSync(galleryStylesPath, 'utf8')).toContain(
 			".gallery-section[data-structural-variant='single-keepsake']",
@@ -210,7 +213,10 @@ describe('Boda Victoria y Roberto provision contract', () => {
 			presentation?: string;
 			variant?: string;
 			featuredImage?: unknown;
-			groups?: Array<{ title: string; items: Array<{ name: string; role?: string; deceased?: boolean }> }>;
+			groups?: Array<{
+				title: string;
+				items: Array<{ name: string; role?: string; deceased?: boolean }>;
+			}>;
 			godparents?: Array<{ name: string; role?: string }>;
 		};
 		expect(family.presentation).toBe('text-only');

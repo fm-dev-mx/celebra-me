@@ -195,7 +195,7 @@ test.describe('Renata XV local visual and content audit', () => {
 				expect(await personalizedAccess.locator('.access-card__ornaments').count()).toBe(0);
 			}
 
-			expect(await page.locator('.event-location__card-flourish').count()).toBe(0);
+			expect(await page.locator('.event-location__card-flourish').count()).toBe(2);
 			expect(
 				await page
 					.locator('.rsvp input, .rsvp textarea, .rsvp button[type="submit"]')

@@ -777,23 +777,9 @@
 			}
 		}
 
-		// Map preview — full-width plate, two venue-specific
-		// compositions (ceremony = sanctuary silhouette,
-		// reception = hall silhouette). Sole primary map link.
-		.event-location__card-map-preview {
-			background: linear-gradient(
-				180deg,
-				rgb(var(--daniela-beige-rgb) / 60%) 0%,
-				rgb(var(--daniela-cream-rgb) / 100%) 100%
-			);
-		}
-
+		// Plate grid/artwork/foot live in _stacked-venue-plates.scss.
+		// Profile keeps pin placement, link focus, and card-hover foot tint.
 		.event-location__card-map-preview--link {
-			border: 0;
-			color: inherit;
-			text-decoration: none;
-			isolation: isolate;
-
 			&:hover .event-location__card-map-preview-pin,
 			&:focus-visible .event-location__card-map-preview-pin {
 				transform: translate(-50%, -50%) scale(1.05);
@@ -803,65 +789,6 @@
 				outline: 2px solid var(--daniela-gold);
 				outline-offset: 3px;
 			}
-		}
-
-		.event-location__card-map-preview-art {
-			min-height: 0;
-			overflow: hidden;
-			background: linear-gradient(
-				180deg,
-				rgb(var(--daniela-cream-rgb) / 100%) 0%,
-				rgb(var(--daniela-beige-rgb) / 70%) 100%
-			);
-		}
-
-		.event-location__card-map-preview--link .event-location__card-map-preview-grid {
-			inset: 0;
-			transform: none;
-			opacity: 32%;
-			background:
-				repeating-linear-gradient(
-					90deg,
-					transparent 0 1.85rem,
-					rgb(var(--daniela-gold-rgb) / 22%) 1.9rem 1.96rem
-				),
-				repeating-linear-gradient(
-					0deg,
-					transparent 0 1.55rem,
-					rgb(var(--daniela-gold-rgb) / 18%) 1.6rem 1.66rem
-				);
-		}
-
-		.event-location__card-map-preview-artwork {
-			position: absolute;
-			inset: 8% 8% 4%;
-			z-index: 1;
-			width: 84%;
-			height: 88%;
-			overflow: visible;
-			color: var(--daniela-olive-deep);
-		}
-
-		.event-location__card-map-preview-artwork-silhouette {
-			fill: currentcolor;
-			opacity: 58%;
-		}
-
-		.event-location__card-map-preview-artwork-detail {
-			fill: var(--daniela-cream);
-			opacity: 92%;
-		}
-
-		.event-location__card-map-preview-artwork-cross {
-			fill: var(--daniela-olive-deep);
-			opacity: 78%;
-		}
-
-		.event-location__card-map-preview-artwork-horizon {
-			fill: none;
-			stroke: var(--daniela-gold);
-			stroke-width: 1.5;
-			opacity: 52%;
 		}
 
 		.event-location__card-map-preview-pin {
@@ -877,30 +804,6 @@
 				0 4px 12px rgb(var(--daniela-olive-rgb) / 16%),
 				inset 0 0 0 1.5px rgb(var(--daniela-cream-rgb) / 100%);
 			z-index: 2;
-		}
-
-		.event-location__card-map-preview-foot {
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			padding: 0.85rem 1.1rem;
-			border-top: 1px solid rgb(var(--daniela-gold-rgb) / 22%);
-			color: var(--daniela-olive);
-			letter-spacing: 0.2em;
-			transition: color var(--duration-fast) var(--ease-standard);
-
-			svg {
-				width: 14px;
-				height: 14px;
-				transition: transform var(--duration-fast) var(--ease-standard);
-			}
-		}
-
-		.event-location__card-map-preview-action {
-			display: inline-flex;
-			align-items: center;
-			justify-content: center;
-			gap: 0.45rem;
 		}
 
 		.event-location__card--ceremony:hover .event-location__card-map-preview-foot,
@@ -946,10 +849,6 @@
 		@include mixins.respond-to(md) {
 			.event-location__card-content {
 				padding: clamp(1.55rem, 3.4vw, 2rem) clamp(1.4rem, 3.4vw, 1.85rem);
-			}
-
-			.event-location__card-map-preview-art {
-				min-height: clamp(7.5rem, 12vw, 11rem);
 			}
 		}
 
@@ -1750,14 +1649,25 @@
 		--location-hour-color: var(--daniela-ink);
 		--location-address-font-size: 0.88rem;
 		--location-address-line-height: 1.55;
-		--location-map-preview-bg: var(--daniela-beige);
-		--location-map-preview-art-bg: rgb(var(--daniela-cream-rgb) / 72%);
+		--location-map-preview-bg: linear-gradient(
+			180deg,
+			rgb(var(--daniela-beige-rgb) / 60%) 0%,
+			rgb(var(--daniela-cream-rgb) / 100%) 100%
+		);
+		--location-map-preview-art-bg: linear-gradient(
+			180deg,
+			rgb(var(--daniela-cream-rgb) / 100%) 0%,
+			rgb(var(--daniela-beige-rgb) / 70%) 100%
+		);
 		--location-map-preview-road: rgb(var(--daniela-ivory-rgb) / 88%);
 		--location-map-preview-line: rgb(var(--daniela-gold-rgb) / 20%);
 		--location-map-preview-copy-bg: rgb(var(--daniela-ivory-rgb) / 78%);
 		--location-map-preview-copy-border: rgb(var(--daniela-gold-rgb) / 22%);
 		--location-map-preview-pin-bg: var(--daniela-cream);
 		--location-map-preview-pin-color: var(--daniela-olive);
+		--location-map-preview-artwork-color: var(--daniela-olive-deep);
+		--location-map-preview-artwork-detail: var(--daniela-cream);
+		--location-map-preview-artwork-horizon: var(--daniela-gold);
 
 		:where(.event-location__intro) {
 			margin-block-end: var(--daniela-location-heading-gap);
@@ -1807,6 +1717,8 @@
 			align-items: flex-start;
 			text-align: left;
 		}
+
+		--location-indication-item-divider: none;
 
 		:where(.event-location__indication-icon) {
 			flex: 0 0 2rem;

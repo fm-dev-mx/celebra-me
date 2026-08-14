@@ -235,7 +235,7 @@ export function buildRenataPublishedContent(
 			visibility: 'public',
 			presentation: 'simple',
 			presentationOptions: {
-				showFlourishes: false,
+				showFlourishes: true,
 				showNavigationButtons: false,
 			},
 			indicationsHeading: 'Indicaciones',

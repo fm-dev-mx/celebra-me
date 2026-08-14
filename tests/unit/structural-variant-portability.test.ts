@@ -483,6 +483,12 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 		expect(combined).toContain(
 			".event-location[data-structural-variant='stacked-venue-plates']",
 		);
+		expect(stackedPlates).toContain('.event-location__intro');
+		expect(stackedPlates).toContain('.event-location__indications-container');
+		expect(stackedPlates).toContain('--location-plate-row');
+		expect(stackedPlates).toContain('--location-place-letter-spacing');
+		expect(stackedPlates).toContain('--location-copy-button-radius');
+		expect(stackedPlates).toContain('--location-indication-icon-svg-size');
 		expect(combined).toContain(".family[data-structural-variant='split-groups']");
 		expect(combined).toContain(".family[data-structural-variant='asymmetric-groups']");
 		expect(combined).toContain(".gallery-section[data-structural-variant='feature-stack']");
@@ -490,7 +496,7 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 			".gallery-section[data-structural-variant='paired-feature-band']",
 		);
 		expect(combined).toContain(".itinerary[data-structural-variant='editorial-ledger']");
-		expect(editorialLedger).toContain(".itinerary__item-icon-wrapper");
+		expect(editorialLedger).toContain('.itinerary__item-icon-wrapper');
 		expect(editorialLedger).toMatch(
 			/\.itinerary__animated-line-container[\s\S]*?\.itinerary__item-icon-wrapper[\s\S]*?\.itinerary__item-dot[\s\S]*?display:\s*none/,
 		);

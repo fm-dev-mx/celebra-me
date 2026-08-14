@@ -107,6 +107,7 @@
 	--location-title-color: var(--color-text-secondary);
 	--location-title-font-family: var(--font-body);
 	--location-title-font-size: 0.85rem;
+	--location-title-font-weight: 600;
 	--location-title-letter-spacing: 0.25em;
 	--location-title-margin-bottom: 0.35rem;
 	--location-title-margin-bottom-xs: var(--location-title-margin-bottom);
@@ -132,12 +133,15 @@
 	--location-date-text-transform: uppercase;
 	--location-date-margin-bottom: 0.4rem;
 	--location-date-white-space: nowrap;
+	--location-date-display: block;
 
 	// Hour
 	--location-hour-color: var(--color-text-secondary);
 	--location-hour-font-family: var(--font-body);
 	--location-hour-font-size: 0.85rem;
+	--location-hour-font-weight: 500;
 	--location-hour-letter-spacing: 0.12em;
+	--location-hour-text-transform: none;
 	--location-hour-margin-bottom: 0.85rem;
 	--location-hour-margin-bottom-xs: var(--location-hour-margin-bottom);
 
@@ -150,6 +154,8 @@
 	--location-address-padding-top: 0.75rem;
 	--location-address-border-top: 1px solid transparent;
 	--location-address-align-items: center;
+	--location-address-justify: center;
+	--location-address-text-align: center;
 	--location-address-gap: 0.8rem;
 	--location-address-text-max-width: 80%;
 	--location-address-align-items-xs: var(--location-address-align-items);
@@ -251,9 +257,12 @@
 
 	// Indications heading
 	--location-indications-heading-color: var(--color-text-secondary);
+	--location-indications-heading-font-family: var(--font-label);
+	--location-indications-heading-font-size: 0.65rem;
 	--location-indications-heading-letter-spacing: 0.2em;
 	--location-indications-heading-margin-bottom: 1rem;
 	--location-indications-heading-font-weight: 400;
+	--location-indications-heading-text-align: center;
 
 	// Indication item
 	--location-indication-item-bg: transparent;
@@ -281,6 +290,7 @@
 
 	// Indication icon
 	--location-indication-icon-bg: transparent;
+	--location-indication-icon-border: none;
 	--location-indication-icon-color: var(--color-action-accent);
 	--location-indication-icon-opacity: 100%;
 	--location-indication-icon-radius: 999px;
@@ -426,7 +436,7 @@
 		letter-spacing: var(--location-title-letter-spacing);
 		text-transform: uppercase;
 		margin-bottom: var(--location-title-margin-bottom);
-		font-weight: 600;
+		font-weight: var(--location-title-font-weight);
 	}
 
 	&__card-flourish {
@@ -731,14 +741,15 @@
 		color: var(--location-date-color);
 		margin-bottom: var(--location-date-margin-bottom);
 		white-space: var(--location-date-white-space);
-		display: block;
+		display: var(--location-date-display);
 	}
 
 	&__card-content-hour {
 		font-family: var(--location-hour-font-family);
 		font-size: var(--location-hour-font-size);
 		letter-spacing: var(--location-hour-letter-spacing);
-		font-weight: 500;
+		font-weight: var(--location-hour-font-weight);
+		text-transform: var(--location-hour-text-transform);
 		color: var(--location-hour-color);
 		margin-bottom: var(--location-hour-margin-bottom);
 		display: block;
@@ -751,16 +762,18 @@
 		line-height: var(--location-address-line-height);
 		display: flex;
 		align-items: var(--location-address-align-items);
-		justify-content: center;
+		justify-content: var(--location-address-justify);
 		gap: var(--location-address-gap);
 		font-style: normal;
 		letter-spacing: var(--location-address-letter-spacing);
 		padding-top: var(--location-address-padding-top);
 		border-top: var(--location-address-border-top);
+		text-align: var(--location-address-text-align);
 	}
 
 	&__card-content-address-text {
 		max-width: var(--location-address-text-max-width);
+		text-align: var(--location-address-text-align);
 	}
 
 	&__card-content-copy-button {
@@ -966,14 +979,14 @@
 	}
 
 	&__indications-heading {
-		font-family: var(--font-label);
-		font-size: 0.65rem;
+		font-family: var(--location-indications-heading-font-family);
+		font-size: var(--location-indications-heading-font-size);
 		letter-spacing: var(--location-indications-heading-letter-spacing);
 		text-transform: uppercase;
 		color: var(--location-indications-heading-color);
 		font-weight: var(--location-indications-heading-font-weight);
 		margin-bottom: var(--location-indications-heading-margin-bottom);
-		text-align: center;
+		text-align: var(--location-indications-heading-text-align);
 	}
 
 	&__divider {
@@ -1056,6 +1069,7 @@
 		flex-shrink: 0;
 		font-size: var(--location-indication-icon-font-size);
 		background: var(--location-indication-icon-bg);
+		border: var(--location-indication-icon-border);
 		display: grid;
 		place-items: center;
 		width: var(--location-indication-icon-size);
@@ -1165,17 +1179,5 @@
 		&__indications-container {
 			margin-top: var(--location-indications-spacing-xs);
 		}
-	}
-}
-
-@keyframes invitation-location-fade-in-up-soft {
-	from {
-		opacity: 0%;
-		transform: translateY(12px);
-	}
-
-	to {
-		opacity: 100%;
-		transform: translateY(0);
 	}
 }

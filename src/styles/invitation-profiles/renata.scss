@@ -1,7 +1,13 @@
 @use '../global/mixins' as mixins;
+@use '@fontsource-variable/cormorant-garamond/index.css' as cormorant-garamond;
+@use '@fontsource-variable/cormorant-garamond/wght-italic.css' as cormorant-garamond-italic;
+@use '@fontsource-variable/instrument-sans/index.css' as instrument-sans;
+@use '@fontsource-variable/bodoni-moda/index.css' as bodoni-moda;
 
 // Renata — dark fashion photography contrasted with restrained floral editorial surfaces.
 // Client palette roles: cream, pale blush, olive, rare coral, silver. No gold, no session yellow as UI.
+// Event Location is an exception: it consumes stacked-venue-plates with a section-scoped
+// type/palette so the chapter matches the shared plate presentation without remapping the theme.
 
 html:has(.event--renata.theme-preset--editorial),
 html:has(.event--renata.theme-preset--editorial) body {
@@ -114,65 +120,6 @@ html:has(.event--renata.theme-preset--editorial) body {
 		rgb(var(--renata-silver-rgb) / 12%),
 		transparent
 	);
-	--location-bg: var(--renata-cream);
-	--location-card-bg: transparent;
-	--location-card-border: none;
-	--location-card-shadow: none;
-	--location-card-backdrop-filter: none;
-	--location-card-hover-transform: none;
-	--location-card-hover-shadow: none;
-	--location-card-before-bg: none;
-	--location-image-filter: none;
-	--location-outer-frame-border-bottom: 1px solid rgb(var(--renata-silver-rgb) / 36%);
-	--location-title-color: rgb(var(--renata-ink-rgb) / 58%);
-	--location-date-color: rgb(var(--renata-ink-rgb) / 58%);
-	--location-place-color: var(--renata-ink);
-	--location-hour-color: rgb(var(--renata-ink-rgb) / 55%);
-	--location-address-color: rgb(var(--renata-ink-rgb) / 58%);
-	--location-indication-item-border: 0;
-	--location-indication-item-box-shadow: none;
-	--location-indication-item-hover-bg: transparent;
-	--location-indication-item-hover-border-color: transparent;
-	--location-indication-item-hover-transform: none;
-	--location-indication-item-hover-box-shadow: none;
-	--location-indication-item-after-bg: none;
-	--location-indication-text-color: rgb(var(--renata-ink-rgb) / 68%);
-	--location-indication-strong-color: var(--renata-ink);
-	--location-nav-bg: var(--renata-olive);
-	--location-nav-color: var(--renata-cream);
-	--location-nav-border: 1px solid var(--renata-olive);
-	--location-nav-maps-border: var(--renata-olive);
-	--location-nav-hover-border-color: rgb(var(--renata-olive-rgb) / 78%);
-	--location-nav-hover-shadow: none;
-	--location-nav-hover-transform: none;
-	--location-nav-primary-bg: var(--renata-olive);
-	--location-nav-primary-color: var(--renata-cream);
-	--location-nav-apple-bg: transparent;
-	--location-nav-apple-color: var(--renata-ink);
-	--location-nav-apple-border: rgb(var(--renata-silver-rgb) / 62%);
-	--location-nav-apple-hover-bg: rgb(var(--renata-olive-rgb) / 10%);
-	--location-nav-apple-hover-border-color: var(--renata-olive);
-	--location-nav-maps-bg: var(--renata-olive);
-	--location-nav-maps-hover-bg: var(--renata-olive-deep);
-	--location-nav-maps-hover-border-color: var(--renata-olive-deep);
-	--location-nav-maps-color: var(--renata-cream);
-	--location-image-hover-scale: 1;
-	--location-map-preview-border: 0;
-	--location-map-preview-bg: var(--renata-blush);
-	--location-map-preview-art-bg: var(--renata-cream);
-	--location-map-preview-road: rgb(var(--renata-cream-rgb) / 82%);
-	--location-map-preview-line: rgb(var(--renata-silver-rgb) / 28%);
-	--location-map-preview-copy-bg: var(--renata-cream);
-	--location-map-preview-copy-border: rgb(var(--renata-silver-rgb) / 36%);
-	--location-map-preview-pin-bg: var(--renata-cream);
-	--location-map-preview-pin-color: var(--renata-olive);
-	--location-map-preview-pin-border: rgb(var(--renata-olive-rgb) / 42%);
-	--location-map-preview-link-color: var(--renata-olive);
-	--location-map-preview-label-color: rgb(var(--renata-ink-rgb) / 58%);
-	--location-map-preview-artwork-color: var(--renata-olive);
-	--location-map-preview-artwork-detail: var(--renata-cream);
-	--location-map-preview-artwork-horizon: rgb(var(--renata-silver-rgb) / 55%);
-	--location-indications-heading-color: var(--renata-olive);
 	--gifts-bg: var(--renata-cream);
 	--gifts-title-color: var(--renata-ink);
 	--gifts-subtitle-color: rgb(var(--renata-ink-rgb) / 68%);
@@ -479,8 +426,34 @@ html:has(.event--renata.theme-preset--editorial) body {
 		}
 	}
 
-	.event-location,
-	.event-location__card,
+	// Event Location consumes stacked-venue-plates. Rebind type and palette only
+	// inside the section so surrounding chapters keep Renata's editorial voice.
+	.event-location[data-structural-variant='stacked-venue-plates'] {
+		--font-display: 'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
+		--font-display-elegant: var(--font-display);
+		--font-body: 'Instrument Sans Variable', system-ui, sans-serif;
+		--font-label: 'Bodoni Moda Variable', 'Playfair Display Variable', georgia, serif;
+		--color-text-primary: rgb(48 43 40);
+		--color-text-primary-rgb: 48 43 40;
+		--color-text-secondary: rgb(95 87 81);
+		--color-text-emphasis: rgb(91 46 42);
+		--color-action-accent: rgb(176 142 96);
+		--color-action-accent-rgb: 176 142 96;
+		--color-action-primary: rgb(120 56 38);
+		--color-action-primary-rgb: 120 56 38;
+		--color-surface-primary: rgb(247 241 233);
+		--color-surface-primary-rgb: 247 241 233;
+		--color-surface-elevated: rgb(252 248 242);
+		--color-surface-elevated-rgb: 252 248 242;
+		--color-surface-secondary: rgb(224 208 190);
+		--color-surface-secondary-rgb: 224 208 190;
+		--color-surface-soft: rgb(224 208 190 / 55%);
+		--location-title-color: rgb(114 80 46);
+		--location-hour-color: rgb(114 80 46);
+		--location-indications-heading-color: rgb(114 80 46);
+		--location-date-display: none;
+	}
+
 	.gifts-section,
 	.personalized-access,
 	.rsvp[data-variant='editorial'] {
@@ -489,19 +462,6 @@ html:has(.event--renata.theme-preset--editorial) body {
 		backdrop-filter: none;
 		background: var(--renata-cream);
 		color: var(--renata-ink);
-	}
-
-	.event-location__card {
-		transform: none;
-
-		&::before {
-			display: none;
-		}
-
-		&:hover {
-			transform: none;
-			box-shadow: none;
-		}
 	}
 
 	.invitation-interlude {

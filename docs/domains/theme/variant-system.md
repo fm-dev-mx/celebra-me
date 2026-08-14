@@ -47,7 +47,7 @@ canonical CSS, and shared primitives must contain no compatibility branches.
 - **Location:** `standard`, `split-map`, `stacked-venue-plates`.
   - `split-map` requires at least one visible venue with coordinates or image media.
   - `stacked-venue-plates` requires at least two visible venues and owns twin plate-chapter
-    geometry.
+    geometry, intro hierarchy, illustrated map-preview surfaces, and the indication panel.
   - Map/navigation media and presentation flags remain explicit section capabilities.
 - **Gallery:** `uniform-grid`, `editorial-mosaic`, `magazine-spread`, `feature-mosaic`,
   `feature-stack`, `paired-feature-band`, `index-choreography`, `single-keepsake`.

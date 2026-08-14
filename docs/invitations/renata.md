@@ -233,14 +233,16 @@ hero. Feature frame is `_DSC5939`, not file-order first.
 - Helper prepReadiness is `NOT_READY` while RSVP mode/cap are missing. Goal 2 Local authoring is an
   explicit current-task exception; `assertImplementationAllowed` must not be called.
 - Lane A inheritance resets: `--hero-image-filter`, gold/metallic tokens, hero cascade
-  (grid/mix-blend/absolute details), location/gifts/RSVP card chrome. Olive is the action accent;
-  `--color-text-emphasis` stays ink and is not aliased to `--color-action-accent`. Yellow is not a
-  UI color. Cream/blush are light surfaces; silver is line/detail; coral is rare (wax highlight).
+  (grid/mix-blend/absolute details), gifts/RSVP card chrome. Olive is the action accent outside
+  Event Location; `--color-text-emphasis` stays ink and is not aliased to `--color-action-accent`.
+  Event Location consumes `stacked-venue-plates` with section-scoped type/palette so the chapter
+  matches the shared plate presentation. Yellow is not a UI color on surrounding sections.
+  Cream/blush are light surfaces; silver is line/detail; coral is rare (wax highlight).
 - Structural selections: itinerary `editorial-ledger`; gallery `paired-feature-band` without a
   feature `aspectRatio` override and item order `gallery-01`, `gallery-02`, `gallery-feature`,
   `gallery-03`, `gallery-04`; personalized access `standard`; location `stacked-venue-plates` with
   `presentation: 'simple'`, `presentationOptions.showNavigationButtons: false`, and
-  `showFlourishes: false`; keep `ceremony` + `reception` (no `venues[]`); envelope
+  `showFlourishes: true`; keep `ceremony` + `reception` (no `venues[]`); envelope
   `variant: 'premiere-floral'` with `sealIcon: 'monogram'`, `microcopy: 'Abra su invitación'`, and
   omitted `teaserDetails` so the closed teaser derives from Renata’s date and venue. Do not set
   `closedPalette`. Reveal appearance is owned by the premiere-floral envelope variant, not the

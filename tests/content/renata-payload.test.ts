@@ -95,7 +95,12 @@ describe('XV Renata provision contract', () => {
 		expect(profile).not.toContain('itinerary__program-paper-surface');
 		expect(profile).toContain("data-structural-variant='full-bleed-photo'");
 		expect(profile).toContain('clip-path: none');
-		expect(profile).toContain('--location-map-preview-artwork-color: var(--renata-olive)');
+		expect(profile).toContain(
+			".event-location[data-structural-variant='stacked-venue-plates']",
+		);
+		expect(profile).toContain('--location-date-display: none');
+		expect(profile).not.toContain('--location-map-preview-artwork-color: var(--renata-olive)');
+		expect(profile).not.toContain('.event-location__card-map-preview-artwork');
 		expect(profile).not.toContain('--reveal-card-text-primary: var(--renata-ink)');
 		expect(profile).not.toContain(".envelope-wrapper[data-variant='editorial']");
 		expect(profile).not.toContain(".envelope-wrapper[data-variant='premiere-floral']");
@@ -173,7 +178,7 @@ describe('XV Renata provision contract', () => {
 		expect(location.ceremony?.venueName).toBe('Parroquia Santa Inés');
 		expect(location.reception?.venueName).toBe('InHouse Select Hacienda Tres Ríos');
 		expect(location.indicationsHeading).toBe('Indicaciones');
-		expect(location.presentationOptions?.showFlourishes).toBe(false);
+		expect(location.presentationOptions?.showFlourishes).toBe(true);
 		expect(location.presentationOptions?.showNavigationButtons).toBe(false);
 
 		const envelope = content.envelope as {
