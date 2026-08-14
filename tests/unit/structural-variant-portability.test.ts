@@ -271,6 +271,18 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 		expect(viewModel.sections.rsvp?.structuralVariant).toBe('editorial-press-pass');
 	});
 
+	it('applies Personalized Access formal-pass and RSVP formal-register without invitation identity', () => {
+		const event = buildPortableJewelryBoxEvent({
+			personalizedAccessStructuralVariant: 'formal-pass',
+			rsvpStructuralVariant: 'formal-register',
+		});
+		const viewModel = adaptEvent(event);
+
+		expect(event.data).not.toHaveProperty('visualProfileId');
+		expect(viewModel.sections.rsvp?.personalizedAccess?.structuralVariant).toBe('formal-pass');
+		expect(viewModel.sections.rsvp?.structuralVariant).toBe('formal-register');
+	});
+
 	it('applies Personalized Access ornamented and editorial-pass without invitation identity', () => {
 		const ornamentedEvent = buildPortableJewelryBoxEvent({
 			personalizedAccessStructuralVariant: 'ornamented',
@@ -495,6 +507,10 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 		const editorialProgram = readSource(
 			'src/styles/themes/sections/itinerary/_editorial-program.scss',
 		);
+		const formalPass = readSource(
+			'src/styles/themes/sections/personalized-access/_formal-pass.scss',
+		);
+		const formalRegister = readSource('src/styles/themes/sections/rsvp/_formal-register.scss');
 		const combined = [
 			splitCover,
 			splitMap,
@@ -505,6 +521,8 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 			pairedBand,
 			editorialLedger,
 			editorialProgram,
+			formalPass,
+			formalRegister,
 		].join('\n');
 
 		expect(combined).toContain(".invitation-hero[data-structural-variant='split-cover']");
@@ -526,6 +544,8 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 		);
 		expect(combined).toContain(".itinerary[data-structural-variant='editorial-ledger']");
 		expect(combined).toContain(".itinerary[data-structural-variant='editorial-program']");
+		expect(combined).toContain(".personalized-access[data-structural-variant='formal-pass']");
+		expect(combined).toContain(".rsvp[data-structural-variant='formal-register']");
 		expect(editorialLedger).toContain('.itinerary__item-icon-wrapper');
 		expect(editorialLedger).toMatch(
 			/\.itinerary__animated-line-container[\s\S]*?\.itinerary__item-icon-wrapper[\s\S]*?\.itinerary__item-dot[\s\S]*?display:\s*none/,

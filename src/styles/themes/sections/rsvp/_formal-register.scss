@@ -1,0 +1,338 @@
+@use '@fontsource-variable/cormorant-garamond/index.css' as cormorant-garamond;
+@use '@fontsource-variable/bodoni-moda/index.css' as bodoni-moda;
+@use '@fontsource-variable/instrument-sans/index.css' as instrument-sans;
+
+// RSVP formal-register: underline confirmation register on a dark chapter.
+// Owns layout, type metrics, controls, feedback, and section-scoped chroma so
+// any host theme can consume the same presentation. Profiles must not redefine
+// the register geometry, type scale, or chapter band.
+
+.invitation-section-wrapper[data-section-kind='rsvp']:has(
+		.rsvp[data-structural-variant='formal-register']
+	) {
+	--formal-chapter-band: rgb(120 56 38);
+	--formal-chapter-band-rgb: 120 56 38;
+	--formal-chapter-cream: rgb(247 241 233);
+	--formal-chapter-cream-rgb: 247 241 233;
+	--color-text-primary: var(--formal-chapter-cream);
+	--color-text-primary-rgb: var(--formal-chapter-cream-rgb);
+	--color-text-secondary: rgb(var(--formal-chapter-cream-rgb) / 82%);
+	--color-text-muted: rgb(var(--formal-chapter-cream-rgb) / 64%);
+
+	padding-block: 0;
+	background: var(--formal-chapter-band);
+	color: var(--formal-chapter-cream);
+}
+
+// Match every shell that contains the register, including the nested
+// `.rsvp-section` wrappers used by the interactive island. A child combinator
+// would leave the outer shell on the shared full-viewport RSVP padding.
+.rsvp-section:has(.rsvp[data-structural-variant='formal-register']) {
+	--rsvp-bg: rgb(120 56 38);
+
+	display: grid;
+	grid-template-columns: minmax(0, 64rem);
+	justify-content: center;
+	justify-items: start;
+	min-block-size: auto;
+	padding-block: clamp(3rem, 6vh, 4.75rem);
+	background: var(--rsvp-bg);
+}
+
+.rsvp[data-structural-variant='formal-register'] {
+	--formal-chapter-band: rgb(120 56 38);
+	--formal-chapter-band-rgb: 120 56 38;
+	--formal-chapter-cream: rgb(247 241 233);
+	--formal-chapter-cream-rgb: 247 241 233;
+	--formal-chapter-metal: rgb(176 142 96);
+	--formal-chapter-metal-rgb: 176 142 96;
+	--formal-chapter-display: 'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
+	--formal-chapter-body: 'Instrument Sans Variable', system-ui, sans-serif;
+	--formal-chapter-label: 'Bodoni Moda Variable', 'Playfair Display Variable', georgia, serif;
+	--formal-chapter-measure: min(100%, 34rem);
+	--formal-chapter-control-radius: 2px;
+	--rsvp-radio-columns: 1fr;
+	--rsvp-label-color: rgb(var(--formal-chapter-cream-rgb) / 92%);
+	--rsvp-placeholder-color: rgb(var(--formal-chapter-cream-rgb) / 58%);
+	--rsvp-radio-indicator-border: rgb(var(--formal-chapter-metal-rgb) / 50%);
+	--rsvp-radio-indicator-dot: var(--formal-chapter-metal);
+	--rsvp-radio-selected-border: var(--formal-chapter-metal);
+	--rsvp-radio-label-color: rgb(var(--formal-chapter-cream-rgb) / 88%);
+	--rsvp-radio-label-color-selected: var(--formal-chapter-cream);
+	--rsvp-field-bg-focus: transparent;
+	--rsvp-editorial-gold-glow: none;
+	--color-border-light: rgb(var(--formal-chapter-metal-rgb) / 28%);
+	--rsvp-button-color: var(--formal-chapter-band);
+	--rsvp-button-color-hover: var(--formal-chapter-band);
+	--rsvp-button-bg: var(--formal-chapter-metal);
+	--rsvp-button-bg-hover: rgb(var(--formal-chapter-metal-rgb) / 88%);
+	--rsvp-button-border: var(--formal-chapter-metal);
+	--rsvp-button-border-hover: var(--formal-chapter-metal);
+	--rsvp-title-letter-spacing: normal;
+
+	width: min(100%, 40rem);
+	max-width: 40rem;
+	margin: 0;
+	padding: 0;
+	overflow: visible;
+	background: transparent;
+	border: 0;
+	border-radius: 0;
+	box-shadow: none;
+	backdrop-filter: none;
+	color: var(--formal-chapter-cream);
+
+	.rsvp__header {
+		max-width: 36rem;
+		margin-bottom: clamp(1.75rem, 3.5vw, 2.5rem);
+		text-align: left;
+	}
+
+	.rsvp__eyebrow {
+		font-family: var(--formal-chapter-label);
+		font-size: 0.68rem;
+		letter-spacing: 0.24em;
+		color: rgb(var(--formal-chapter-metal-rgb) / 88%);
+	}
+
+	.rsvp__separator {
+		display: none;
+	}
+
+	.rsvp__title {
+		font-family: var(--formal-chapter-display);
+		font-size: clamp(2rem, 4.4vw, 3.25rem);
+		font-weight: 600;
+		letter-spacing: normal;
+		line-height: 1.06;
+		color: var(--formal-chapter-cream);
+		text-align: left;
+		text-wrap: balance;
+
+		&::after {
+			display: none;
+		}
+	}
+
+	.rsvp__subcopy {
+		max-width: var(--formal-chapter-measure);
+		margin-inline: 0;
+		font-family: var(--formal-chapter-body);
+		font-size: clamp(0.9rem, 1.6vw, 0.98rem);
+		line-height: 1.55;
+		color: rgb(var(--formal-chapter-cream-rgb) / 78%);
+		text-align: left;
+		text-wrap: pretty;
+	}
+
+	.rsvp__form {
+		width: var(--formal-chapter-measure);
+	}
+
+	.rsvp__label,
+	.rsvp__legend {
+		font-family: var(--formal-chapter-label);
+		font-size: 0.7rem;
+		font-weight: 500;
+		letter-spacing: 0.16em;
+		color: var(--rsvp-label-color);
+	}
+
+	.rsvp__legend {
+		margin-bottom: 0.35rem;
+		text-align: left;
+	}
+
+	.rsvp__radio-group {
+		gap: 0;
+		margin: 0;
+	}
+
+	.rsvp__radio-group .rsvp__radio-card {
+		min-height: 3.25rem;
+		justify-content: flex-start;
+		gap: 0.95rem;
+		padding: 1.05rem 0.35rem;
+		background: transparent;
+		border: 0;
+		border-top: 1px solid rgb(var(--formal-chapter-metal-rgb) / 22%);
+		border-radius: 0;
+
+		&:last-child {
+			border-bottom: 1px solid rgb(var(--formal-chapter-metal-rgb) / 22%);
+		}
+
+		&:hover {
+			background: rgb(var(--formal-chapter-cream-rgb) / 8%);
+			border-color: rgb(var(--formal-chapter-metal-rgb) / 22%);
+		}
+
+		&:focus-within {
+			outline: none;
+			box-shadow: inset 0 0 0 2px rgb(var(--formal-chapter-metal-rgb) / 55%);
+		}
+
+		&:has(input:checked) {
+			background: rgb(var(--formal-chapter-cream-rgb) / 12%);
+			border-color: rgb(var(--formal-chapter-metal-rgb) / 22%);
+			box-shadow: none;
+		}
+	}
+
+	.rsvp__radio-label {
+		font-family: var(--formal-chapter-body);
+		font-size: clamp(0.95rem, 1.6vw, 1.05rem);
+		font-weight: 500;
+		letter-spacing: 0.01em;
+		color: var(--rsvp-radio-label-color);
+	}
+
+	.rsvp__field:focus-within .rsvp__field-line {
+		background: var(--formal-chapter-metal);
+	}
+
+	.rsvp__field input[type='text'],
+	.rsvp__field input[type='tel'],
+	.rsvp__field input[type='number'],
+	.rsvp__field textarea {
+		padding-inline: 0.15rem;
+		background: transparent;
+		border: 0;
+		border-radius: 0;
+		color: var(--formal-chapter-cream);
+		caret-color: var(--formal-chapter-metal);
+
+		&::placeholder {
+			color: var(--rsvp-placeholder-color);
+		}
+	}
+
+	.rsvp__field input[type='text']:focus,
+	.rsvp__field input[type='tel']:focus,
+	.rsvp__field input[type='number']:focus {
+		background: transparent;
+		box-shadow: 0 1px 0 0 var(--formal-chapter-metal);
+	}
+
+	.rsvp__field textarea {
+		border-bottom: 1px solid rgb(var(--formal-chapter-metal-rgb) / 28%);
+	}
+
+	.rsvp__field textarea:focus {
+		background: transparent;
+		border-bottom-color: var(--formal-chapter-metal);
+		box-shadow: none;
+	}
+
+	.rsvp__field--phone .rsvp__country-code {
+		background: transparent;
+		border: 0;
+		border-bottom: 1px solid rgb(var(--formal-chapter-metal-rgb) / 28%);
+		border-radius: 0;
+		color: var(--formal-chapter-cream);
+
+		&:focus {
+			border-bottom-color: var(--formal-chapter-metal);
+			box-shadow: none;
+		}
+	}
+
+	.rsvp__guest-hint {
+		padding: 0;
+		color: rgb(var(--formal-chapter-cream-rgb) / 58%);
+	}
+
+	.rsvp__attendance-summary {
+		padding: 0.85rem 0.15rem;
+		background: transparent;
+		border: 0;
+		border-block: 1px solid rgb(var(--formal-chapter-metal-rgb) / 22%);
+		border-radius: 0;
+	}
+
+	.rsvp__attendance-summary-label {
+		color: rgb(var(--formal-chapter-cream-rgb) / 72%);
+	}
+
+	.rsvp__attendance-change {
+		padding: 0.2rem 0;
+		border: 0;
+		color: var(--formal-chapter-metal);
+		text-decoration: underline;
+		text-underline-offset: 3px;
+
+		&:hover {
+			color: rgb(var(--formal-chapter-cream-rgb) / 92%);
+		}
+	}
+
+	.rsvp__button {
+		color: var(--rsvp-button-color);
+		background: var(--rsvp-button-bg);
+		border-color: var(--rsvp-button-border);
+		border-radius: var(--formal-chapter-control-radius);
+		box-shadow: none;
+		letter-spacing: 0.24em;
+	}
+
+	.rsvp__button:hover:not(:disabled) {
+		color: var(--rsvp-button-color-hover);
+		background: var(--rsvp-button-bg-hover);
+		border-color: var(--rsvp-button-border-hover);
+		transform: none;
+	}
+
+	.rsvp__greeting-icon {
+		color: var(--formal-chapter-metal);
+	}
+
+	.rsvp__greeting-message {
+		color: var(--formal-chapter-cream);
+	}
+
+	.rsvp__demo-footer {
+		color: rgb(var(--formal-chapter-cream-rgb) / 55%);
+	}
+
+	&[data-state='locked'] {
+		max-width: 40rem;
+
+		.rsvp__locked-card {
+			display: grid;
+			gap: 0.9rem;
+			padding: 0;
+			background: transparent;
+			border: 0;
+			border-radius: 0;
+			box-shadow: none;
+			backdrop-filter: none;
+			text-align: left;
+			overflow: visible;
+
+			&::before {
+				display: none;
+			}
+		}
+
+		.rsvp__locked-message {
+			max-width: var(--formal-chapter-measure);
+			margin: 0;
+			font-family: var(--formal-chapter-display);
+			font-size: clamp(1.35rem, 3.2vw, 1.85rem);
+			font-weight: 500;
+			line-height: 1.2;
+			color: var(--formal-chapter-cream);
+			text-align: left;
+		}
+
+		.rsvp__locked-detail {
+			max-width: var(--formal-chapter-measure);
+			margin: 0;
+			font-family: var(--formal-chapter-body);
+			font-size: clamp(0.9rem, 1.6vw, 0.98rem);
+			line-height: 1.55;
+			color: rgb(var(--formal-chapter-cream-rgb) / 78%);
+			text-align: left;
+		}
+	}
+}

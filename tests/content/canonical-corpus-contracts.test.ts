@@ -108,7 +108,8 @@ describe('canonical corpus structural/behavior contracts', () => {
 		expect(content.family).toMatchObject({ variant: 'asymmetric-groups' });
 		expect(content.location).toMatchObject({ variant: 'stacked-venue-plates' });
 		expect(content.rsvp).toMatchObject({
-			personalizedAccess: { variant: 'ornamented' },
+			variant: 'formal-register',
+			personalizedAccess: { variant: 'formal-pass' },
 		});
 		expect(content.gallery).toMatchObject({ variant: 'single-keepsake' });
 
@@ -119,7 +120,8 @@ describe('canonical corpus structural/behavior contracts', () => {
 		expect(viewModel.sections.itinerary?.variant).toBe('editorial-ledger');
 		expect(viewModel.sections.family?.structuralVariant).toBe('asymmetric-groups');
 		expect(viewModel.sections.location?.structuralVariant).toBe('stacked-venue-plates');
-		expect(viewModel.sections.rsvp?.personalizedAccess?.structuralVariant).toBe('ornamented');
+		expect(viewModel.sections.rsvp?.structuralVariant).toBe('formal-register');
+		expect(viewModel.sections.rsvp?.personalizedAccess?.structuralVariant).toBe('formal-pass');
 		expect(viewModel.sections.gallery?.variant).toBe('single-keepsake');
 	});
 

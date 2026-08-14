@@ -58,7 +58,9 @@ const canonicalVariantCss = [
 	'src/styles/themes/sections/itinerary/_editorial-program.scss',
 	'src/styles/themes/sections/gifts/_editorial-catalog.scss',
 	'src/styles/themes/sections/rsvp/_editorial-press-pass.scss',
+	'src/styles/themes/sections/rsvp/_formal-register.scss',
 	'src/styles/themes/sections/personalized-access/_editorial-pass.scss',
+	'src/styles/themes/sections/personalized-access/_formal-pass.scss',
 	'src/styles/themes/sections/thank-you/_editorial-back-cover.scss',
 	'src/styles/themes/sections/thank-you/_full-bleed-photo.scss',
 ] as const;
@@ -149,6 +151,8 @@ describe('canonical variant governance', () => {
 		expect(structuralMap).toContain("'timeline-paper': 'timeline-paper'");
 		expect(structuralMap).toContain("'editorial-ledger': 'editorial-ledger'");
 		expect(structuralMap).toContain("'editorial-program': 'editorial-program'");
+		expect(structuralMap).toContain("'formal-register': 'formal-register'");
+		expect(structuralMap).toContain("'formal-pass': 'formal-pass'");
 		expect(structuralMap).toContain("'stacked-venue-plates': 'stacked-venue-plates'");
 		expect(structuralMap).toContain("'asymmetric-groups': 'asymmetric-groups'");
 		expect(galleryMap).toContain("'feature-stack': 'feature-stack'");
@@ -177,6 +181,35 @@ describe('canonical variant governance', () => {
 	it('propagates canonical variants to an explicit DOM contract', () => {
 		for (const relativePath of reusableRendererSurfaces) {
 			expect(read(relativePath)).toContain('data-structural-variant');
+		}
+	});
+
+	it('keeps formal-pass and formal-register geometry in the variants instead of client profiles', () => {
+		const formalPass = read('src/styles/themes/sections/personalized-access/_formal-pass.scss');
+		const formalRegister = read('src/styles/themes/sections/rsvp/_formal-register.scss');
+		const victoria = read('src/styles/invitation-profiles/victoria-y-roberto.scss');
+		const renata = read('src/styles/invitation-profiles/renata.scss');
+
+		expect(formalPass).toContain("data-structural-variant='formal-pass'");
+		expect(formalPass).toContain('--formal-chapter-band');
+		expect(formalPass).toContain('.access-card');
+		expect(formalRegister).toContain("data-structural-variant='formal-register'");
+		expect(formalRegister).toContain('--formal-chapter-band');
+		expect(formalRegister).toContain('.rsvp__radio-card');
+		expect(formalRegister).toContain(
+			".rsvp-section:has(.rsvp[data-structural-variant='formal-register'])",
+		);
+		expect(formalRegister).not.toContain(
+			".rsvp-section:has(> .rsvp[data-structural-variant='formal-register'])",
+		);
+		expect(formalRegister).toMatch(/\.rsvp__title[\s\S]*letter-spacing:\s*normal/);
+
+		for (const profile of [victoria, renata]) {
+			expect(profile).not.toMatch(/data-structural-variant=['"]formal-pass/);
+			expect(profile).not.toMatch(/data-structural-variant=['"]formal-register/);
+			expect(profile).not.toMatch(/@use .*formal-pass|@use .*formal-register/);
+			expect(profile).not.toContain('.access-card');
+			expect(profile).not.toContain('.rsvp__radio-card');
 		}
 	});
 

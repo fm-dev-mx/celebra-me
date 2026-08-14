@@ -62,8 +62,14 @@ const STRUCTURAL_VARIANT_TO_ENTRYPOINT: Record<string, Record<string, string>> =
 		'full-bleed-photo': 'full-bleed-photo',
 	},
 	gifts: { 'editorial-catalog': 'editorial-catalog' },
-	rsvp: { 'editorial-press-pass': 'editorial-press-pass' },
-	personalizedAccess: { 'editorial-pass': 'editorial-pass' },
+	rsvp: {
+		'editorial-press-pass': 'editorial-press-pass',
+		'formal-register': 'formal-register',
+	},
+	personalizedAccess: {
+		'editorial-pass': 'editorial-pass',
+		'formal-pass': 'formal-pass',
+	},
 	family: {
 		'split-groups': 'split-groups',
 		'asymmetric-groups': 'asymmetric-groups',

@@ -205,10 +205,13 @@ composition root (for example, intersection profiles).
 ## Behavior-Named Section Variants
 
 Reusable section mechanics use behavior names instead of borrowing another theme's identity. The
-paper itinerary behavior is `timeline-paper`, the flat ledger is `editorial-ledger`, and the numbered
-magazine program is `editorial-program`, selected only via `itinerary.variant`. Legacy
-`itinerary.presentation.behavior` remains a compatibility input. Omitted behavior resolves to
-`standard`. Theme presets remain visual skins.
+paper itinerary behavior is `timeline-paper`, the flat ledger is `editorial-ledger`, the numbered
+magazine program is `editorial-program`, the credential pass is `formal-pass`, and the underline
+confirmation register is `formal-register`. Itinerary variants are selected only via
+`itinerary.variant`; Personalized Access and RSVP variants are selected only via
+`rsvp.personalizedAccess.variant` and `rsvp.variant`. Legacy `itinerary.presentation.behavior`
+remains a compatibility input. Omitted behavior resolves to `standard`. Theme presets remain visual
+skins.
 
 ## Runtime CSS Delivery
 

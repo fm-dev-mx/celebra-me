@@ -229,15 +229,19 @@ describe('XV Renata provision contract', () => {
 		expect(gallery.items[2]?.layoutRole).toBe('feature');
 
 		const rsvp = content.rsvp as {
+			variant?: string;
 			guestCap?: number;
 			confirmationMode?: string;
+			accessMode?: string;
 			whatsappConfig?: unknown;
 			personalizedAccess?: { variant?: string };
 		};
+		expect(rsvp.variant).toBe('formal-register');
 		expect(rsvp.guestCap).toBeUndefined();
 		expect(rsvp.confirmationMode).toBeUndefined();
+		expect(rsvp.accessMode).toBeUndefined();
 		expect(rsvp.whatsappConfig).toBeUndefined();
-		expect(rsvp.personalizedAccess?.variant).toBe('standard');
+		expect(rsvp.personalizedAccess?.variant).toBe('formal-pass');
 
 		const thankYou = content.thankYou as {
 			variant: string;

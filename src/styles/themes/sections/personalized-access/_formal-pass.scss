@@ -1,0 +1,208 @@
+@use '@fontsource-variable/cormorant-garamond/index.css' as cormorant-garamond;
+@use '@fontsource-variable/bodoni-moda/index.css' as bodoni-moda;
+@use '@fontsource-variable/instrument-sans/index.css' as instrument-sans;
+
+// Personalized Access formal-pass: credential card on a dark confirmation chapter.
+// Owns layout, type metrics, ornaments, and section-scoped chroma so any host
+// theme can consume the same presentation. Profiles must not redefine the card
+// geometry, type scale, or chapter band.
+
+.invitation-section-wrapper[data-section-kind='personalized-access']:has(
+		.personalized-access[data-structural-variant='formal-pass']
+	) {
+	--formal-chapter-band: rgb(120 56 38);
+	--formal-chapter-band-rgb: 120 56 38;
+	--formal-chapter-cream: rgb(247 241 233);
+	--formal-chapter-cream-rgb: 247 241 233;
+	--color-text-primary: var(--formal-chapter-cream);
+	--color-text-primary-rgb: var(--formal-chapter-cream-rgb);
+	--color-text-secondary: rgb(var(--formal-chapter-cream-rgb) / 82%);
+	--color-text-muted: rgb(var(--formal-chapter-cream-rgb) / 64%);
+
+	background: var(--formal-chapter-band);
+	color: var(--formal-chapter-cream);
+	padding-block-end: clamp(1.5rem, 3.5vw, 2.5rem);
+}
+
+.personalized-access[data-structural-variant='formal-pass'] {
+	--formal-chapter-band: rgb(120 56 38);
+	--formal-chapter-band-rgb: 120 56 38;
+	--formal-chapter-cream: rgb(247 241 233);
+	--formal-chapter-cream-rgb: 247 241 233;
+	--formal-chapter-sand: rgb(224 208 190);
+	--formal-chapter-sand-rgb: 224 208 190;
+	--formal-chapter-metal: rgb(176 142 96);
+	--formal-chapter-metal-rgb: 176 142 96;
+	--formal-chapter-ink: rgb(48 43 40);
+	--formal-chapter-ink-rgb: 48 43 40;
+	--formal-chapter-title: rgb(91 46 42);
+	--formal-chapter-muted: rgb(95 87 81);
+	--formal-chapter-meta: rgb(114 80 46);
+	--formal-chapter-display: 'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
+	--formal-chapter-body: 'Instrument Sans Variable', system-ui, sans-serif;
+	--formal-chapter-label: 'Bodoni Moda Variable', 'Playfair Display Variable', georgia, serif;
+	--pa-padding-block: clamp(3rem, 6vw, 4.5rem);
+	--pa-padding-block-lg: clamp(4rem, 7vw, 5.5rem);
+	--pa-card-border-radius: 0.875rem;
+	--pa-card-bg-color: var(--formal-chapter-band);
+	--pa-card-bg-image: linear-gradient(
+		165deg,
+		rgb(var(--formal-chapter-cream-rgb) / 98%) 0%,
+		rgb(var(--formal-chapter-sand-rgb) / 90%) 52%,
+		rgb(var(--formal-chapter-cream-rgb) / 98%) 100%
+	);
+	--pa-card-border: 1px solid rgb(var(--formal-chapter-metal-rgb) / 32%);
+	--pa-card-shadow: 0 14px 36px rgb(0 0 0 / 14%);
+	--pa-card-inner-border: none;
+	--pa-card-glow: none;
+	--pa-count-frame-border: none;
+	--pa-count-frame-radius: 0;
+	--pa-count-frame-bg: transparent;
+	--pa-count-frame-shadow: none;
+	--pa-count-frame-inner-border: none;
+	--pa-count-color: var(--formal-chapter-band);
+	--pa-corner-opacity: 30%;
+	--pa-corner-color: var(--formal-chapter-metal);
+	--pa-corner-glow-blur: 0;
+	--pa-eyebrow-color: var(--formal-chapter-meta);
+	--pa-title-color: var(--formal-chapter-title);
+	--pa-title-tracking: 0.12em;
+	--pa-subtitle-color: var(--formal-chapter-muted);
+	--pa-label-color: var(--formal-chapter-meta);
+	--pa-guest-color: var(--formal-chapter-ink);
+	--pa-divider-gradient: linear-gradient(
+		90deg,
+		transparent 0%,
+		rgb(var(--formal-chapter-metal-rgb) / 45%) 50%,
+		transparent 100%
+	);
+	--pa-divider-diamond-bg: var(--formal-chapter-cream);
+	--pa-divider-diamond-border-color: var(--formal-chapter-metal);
+	--pa-divider-diamond-shadow: none;
+	--pa-footer-border-top: 1px solid rgb(var(--formal-chapter-metal-rgb) / 24%);
+	--pa-footer-text-color: rgb(var(--formal-chapter-ink-rgb) / 80%);
+	--pa-footer-text-font-style: normal;
+
+	padding-block: clamp(1rem, 2.5vw, 2rem);
+	padding-inline: clamp(1rem, 3.5vw, 2.25rem);
+	background: transparent;
+
+	.personalized-access__container {
+		width: min(100%, 34rem);
+	}
+
+	.access-card {
+		border-radius: 0.875rem;
+
+		&__header {
+			padding: 2rem 1.5rem 1.15rem;
+			gap: 0.45rem;
+		}
+
+		&__eyebrow {
+			font-family: var(--formal-chapter-label);
+			font-size: 0.65rem;
+			letter-spacing: 0.22em;
+		}
+
+		&__seal {
+			width: 2.5rem;
+			padding: 0;
+			margin-block-end: 0.15rem;
+			color: var(--formal-chapter-metal);
+			opacity: 55%;
+
+			&::before {
+				background: transparent;
+			}
+
+			svg {
+				opacity: 55%;
+			}
+		}
+
+		&__title {
+			font-family: var(--formal-chapter-display);
+			font-size: clamp(1rem, 1.4vw + 0.5rem, 1.25rem);
+			font-weight: 500;
+			letter-spacing: 0.12em;
+			text-transform: uppercase;
+		}
+
+		&__subtitle {
+			max-width: 22rem;
+			font-family: var(--formal-chapter-body);
+			font-size: 0.825rem;
+			font-weight: 400;
+			line-height: 1.55;
+		}
+
+		&__body {
+			padding: 1.25rem 1.5rem 1.65rem;
+			gap: 1.35rem;
+		}
+
+		&__field {
+			gap: 0.4rem;
+		}
+
+		&__label {
+			font-family: var(--formal-chapter-label);
+			font-size: 0.68rem;
+			letter-spacing: 0.22em;
+		}
+
+		&__guest {
+			max-width: 16ch;
+			font-family: var(--formal-chapter-display);
+			font-size: clamp(2.25rem, 4.5vw + 0.8rem, 3.25rem);
+			font-weight: 500;
+			line-height: 1.05;
+			letter-spacing: 0.01em;
+		}
+
+		&__divider {
+			margin-block: 0.15rem;
+		}
+
+		&__quota {
+			gap: 0.35rem;
+		}
+
+		&__count-frame {
+			min-width: 0;
+			padding: 0.15rem 0 0;
+			margin: 0 auto;
+		}
+
+		&__count {
+			font-family: var(--formal-chapter-display);
+			font-size: clamp(4.75rem, 6vw + 0.5rem, 5.5rem);
+			font-weight: 600;
+			line-height: 0.9;
+		}
+
+		&__note {
+			max-width: 25.5rem;
+			margin-inline: auto;
+			margin-top: 0.85rem;
+			font-family: var(--formal-chapter-body);
+			font-size: clamp(0.825rem, 1.8vw, 0.92rem);
+			line-height: 1.55;
+			color: rgb(var(--formal-chapter-band-rgb) / 88%);
+			text-align: center;
+			text-wrap: balance;
+		}
+
+		&__footer {
+			padding: 0.9rem 1.5rem 1.35rem;
+
+			p {
+				max-width: 23rem;
+				font-size: 0.78rem;
+				line-height: 1.5;
+				color: rgb(var(--formal-chapter-ink-rgb) / 72%);
+			}
+		}
+	}
+}
