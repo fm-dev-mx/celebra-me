@@ -184,8 +184,9 @@ Helpers: `createPlaceholderToken`, `findPlaceholderTokens`, `validatePlaceholder
 4. Classify WhatsApp-compressed material as `provisional-whatsapp`.
 5. Produce a **photo uniqueness** map: each production role has a distinct source unless intentional
    multi-role reuse is documented.
-6. Produce a role-aware optimization **plan** using transfer-weight targets in
-   `image-optimization.ts` (targets, not hard limits).
+6. Produce a role-aware optimization **plan** using the canonical transfer-weight targets in
+   `image-optimization.ts`; role-aware managed delivery enforces those targets while generic and
+   historical assets retain the hard safety limits for compatibility.
 7. Do not recompress already suitable images solely for process theater.
 8. Generate derivatives only when crop/DPR/role weight justifies it.
 9. **Double-encode note:** Prefer delivering already-normalized managed-release WebPs without a

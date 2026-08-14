@@ -243,13 +243,17 @@ Uploads are enforced server-side by `asset-policy.ts`:
 - Output is WebP, at most 2560 × 2560 without enlargement and at most 2,500,000 bytes.
 - The encoder attempts qualities 84, 76, then 68 and rejects an output that remains too large.
 - Stored metadata includes output MIME, dimensions and size, original MIME and size, and
-  `validation_version = 1`.
+  `validation_version = 1` for generic uploads. Role-aware managed definitions use
+  `validation_version = 2`, apply the canonical role budgets from `image-optimization.ts`, try
+  dimensions from largest to smallest before lowering quality, and use a quality floor of 72.
 
 Publication requires current-policy metadata, WebP output, positive dimensions, dimensions no larger
-than 2560, and output no larger than 2,500,000 bytes. A legacy asset with `validation_version = 0`
-is grandfathered only when the same asset ID already exists in the prior published snapshot; newly
-referenced or changed legacy assets are blocked. Missing required asset keys and unresolved uploaded
-assets also block publication.
+than 2560, and output no larger than 2,500,000 bytes. Role-aware assets with `validation_version = 2`
+must also remain within the budget of the published visual role. Existing version 1 assets retain
+the hard safety gate for compatibility. A legacy asset with `validation_version = 0` is grandfathered
+only when the same asset ID already exists in the prior published snapshot; newly referenced or
+changed legacy assets are blocked. Missing required asset keys and unresolved uploaded assets also
+block publication.
 
 The system does not choose art direction. Designers/developers must still select an appropriate
 source, confirm semantic role and alt text, choose focal points, and review desktop and mobile

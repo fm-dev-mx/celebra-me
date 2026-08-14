@@ -20,9 +20,14 @@ export {
 
 export {
 	IMAGE_ROLE_WEIGHT_TARGETS,
+	IMAGE_ROLE_MAX_DIMENSION_STEPS,
+	IMAGE_ENCODING_QUALITIES,
 	IMAGE_QUALITY_STATES,
 	NON_PRODUCTION_IMAGE_STATES,
 	evaluateWeightAgainstTarget,
+	getImageDimensionCandidates,
+	getImageOptimizationRoleForPath,
+	getWeightTargetBytes,
 	getWeightTargetKb,
 	isImageQualityState,
 	isProductionAuthoritativeImage,
