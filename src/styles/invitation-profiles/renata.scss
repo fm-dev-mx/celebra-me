@@ -1,74 +1,90 @@
 @use '../global/mixins' as mixins;
 
-// Renata — editorial ink + session yellow. Loaded only through this profile.
-// Gold metallic, inherited hero grayscale, and frosted hero/location plates are reset here.
+// Renata — dark fashion photography contrasted with restrained floral editorial surfaces.
+// Client palette roles: cream, pale blush, olive, rare coral, silver. No gold, no session yellow as UI.
 
-html:has(.event--renata),
-html:has(.event--renata) body {
+html:has(.event--renata.theme-preset--editorial),
+html:has(.event--renata.theme-preset--editorial) body {
 	scrollbar-gutter: auto;
+	background-color: var(--renata-cream);
 
 	@include mixins.hide-scrollbar;
 }
 
 .event--renata.theme-preset--editorial {
-	--renata-ink: rgb(18 16 14);
-	--renata-ink-rgb: 18 16 14;
-	--renata-yellow: rgb(232 190 48);
-	--renata-yellow-rgb: 232 190 48;
-	--renata-foliage: rgb(52 78 58);
-	--renata-foliage-rgb: 52 78 58;
-	--renata-ivory: rgb(252 248 240);
-	--renata-ivory-rgb: 252 248 240;
-	--color-surface-primary: var(--renata-ink);
-	--color-surface-primary-rgb: var(--renata-ink-rgb);
-	--color-surface-soft: rgb(32 28 24);
+	--renata-ink: rgb(22 20 18);
+	--renata-ink-rgb: 22 20 18;
+	--renata-cream: rgb(250 244 234);
+	--renata-cream-rgb: 250 244 234;
+	--renata-blush: rgb(244 228 224);
+	--renata-blush-rgb: 244 228 224;
+	--renata-olive: rgb(86 102 70);
+	--renata-olive-rgb: 86 102 70;
+	--renata-olive-deep: rgb(70 86 56);
+	--renata-coral: rgb(196 126 118);
+	--renata-coral-rgb: 196 126 118;
+	--renata-silver: rgb(168 170 166);
+	--renata-silver-rgb: 168 170 166;
+	--color-surface-primary: var(--renata-cream);
+	--color-surface-primary-rgb: var(--renata-cream-rgb);
+	--color-surface-secondary: var(--renata-blush);
+	--color-surface-secondary-rgb: var(--renata-blush-rgb);
+	--color-surface-soft: var(--renata-blush);
+	--color-surface-elevated: var(--renata-cream);
+	--color-surface-elevated-rgb: var(--renata-cream-rgb);
+	--color-surface-canvas: var(--renata-ink);
 	--color-surface-dark: var(--renata-ink);
 	--color-surface-dark-rgb: var(--renata-ink-rgb);
-	--color-action-primary: var(--renata-ivory);
-	--color-action-accent: var(--renata-yellow);
-	--color-action-accent-rgb: var(--renata-yellow-rgb);
-	--color-gold-500: var(--renata-yellow);
-	--color-gold-500-rgb: var(--renata-yellow-rgb);
-	--color-text-primary: var(--renata-ivory);
-	--color-text-primary-rgb: var(--renata-ivory-rgb);
-	--color-text-emphasis: var(--renata-yellow);
-	--color-text-secondary: rgb(var(--renata-ivory-rgb) / 72%);
-	--color-text-on-dark: var(--renata-ivory);
-	--color-border-subtle: rgb(var(--renata-yellow-rgb) / 22%);
-	--color-glass-bg: rgb(var(--renata-ink-rgb) / 20%);
-	--color-glass-border: rgb(var(--renata-ivory-rgb) / 18%);
+	--color-action-primary: var(--renata-cream);
+	--color-action-accent: var(--renata-olive);
+	--color-action-accent-rgb: var(--renata-olive-rgb);
+	--color-gold-500: var(--renata-silver);
+	--color-gold-500-rgb: var(--renata-silver-rgb);
+	--color-text-primary: var(--renata-ink);
+	--color-text-primary-rgb: var(--renata-ink-rgb);
+	--color-text-emphasis: var(--renata-ink);
+	--color-text-secondary: rgb(var(--renata-ink-rgb) / 68%);
+	--color-text-on-dark: var(--renata-cream);
+	--color-text-on-dark-rgb: var(--renata-cream-rgb);
+	--color-text-on-light: var(--renata-ink);
+	--color-border-subtle: rgb(var(--renata-silver-rgb) / 42%);
+	--color-border-premium: rgb(var(--renata-silver-rgb) / 48%);
+	--color-border-emphasis: var(--renata-silver);
+	--color-glass-bg: transparent;
+	--color-glass-border: rgb(var(--renata-silver-rgb) / 38%);
 	--glass-blur: 0;
 	--gold-metallic: var(--renata-ink);
 	--light-sweep: none;
-	--editorial-global-bg: var(--renata-ink);
+	--editorial-global-bg: var(--renata-cream);
 	--shadow-premium: none;
 	--section-card-bg: transparent;
 	--section-card-radius: 0;
 	--section-card-border-alt: transparent;
-	--section-padding-block: clamp(3.5rem, 8vw, 6.5rem);
-	--section-gap: clamp(2.5rem, 6vw, 4.5rem);
-	--section-title-size: clamp(2.1rem, 5.4vw, 3.6rem);
-	--section-subtitle-color: var(--renata-yellow);
+	--section-border-subtle: rgb(var(--renata-silver-rgb) / 36%);
+	--section-padding-block: clamp(2.75rem, 6.5vw, 5.25rem);
+	--section-gap: clamp(2rem, 5vw, 3.75rem);
+	--section-title-size: clamp(1.85rem, 4.6vw, 3rem);
+	--section-subtitle-color: rgb(var(--renata-ink-rgb) / 58%);
 	--hero-image-filter: none;
 	--hero-portrait-filter: none;
-	--hero-overlay: rgb(var(--renata-ink-rgb) / 22%);
+	--hero-overlay: rgb(var(--renata-ink-rgb) / 12%);
 	--hero-overlay-gradient: linear-gradient(
 		180deg,
-		rgb(var(--renata-ink-rgb) / 46%) 0%,
-		transparent 38%,
-		transparent 72%,
-		rgb(var(--renata-ink-rgb) / 38%) 100%
+		rgb(var(--renata-ink-rgb) / 28%) 0%,
+		transparent 34%,
+		transparent 52%,
+		rgb(var(--renata-ink-rgb) / 58%) 100%
 	);
-	--hero-title-color-start: var(--renata-ivory);
-	--hero-title-color-mid: var(--renata-ivory);
-	--hero-title-color-end: var(--renata-ivory);
-	--hero-title-size: clamp(3.4rem, 11vw, 7.2rem);
-	--hero-label-color: var(--renata-yellow);
-	--hero-meta-color: var(--renata-ivory);
-	--hero-divider-color: rgb(var(--renata-ivory-rgb) / 35%);
+	--hero-title-color-start: var(--renata-cream);
+	--hero-title-color-mid: var(--renata-cream);
+	--hero-title-color-end: var(--renata-cream);
+	--hero-title-size: clamp(2.85rem, 9vw, 5.75rem);
+	--hero-label-color: var(--renata-cream);
+	--hero-meta-color: var(--renata-cream);
+	--hero-divider-color: rgb(var(--renata-silver-rgb) / 42%);
 	--hero-badge-bg: transparent;
 	--hero-badge-border: transparent;
-	--hero-badge-text: var(--renata-yellow);
+	--hero-badge-text: var(--renata-cream);
 	--hero-card-bg: transparent;
 	--hero-card-border-hairline: transparent;
 	--hero-card-border-old-gold-start: transparent;
@@ -76,21 +92,30 @@ html:has(.event--renata) body {
 	--hero-card-border-old-gold-end: transparent;
 	--hero-card-shadow-contact: none;
 	--hero-card-shadow-ambient: none;
-	--family-bg: var(--renata-ink);
+	--family-bg: var(--renata-cream);
 	--family-panel-bg: transparent;
 	--family-panel-border: none;
 	--family-panel-shadow: none;
 	--family-panel-radius: 0;
 	--family-media-bg: transparent;
 	--family-media-filter: none;
-	--family-accent: var(--renata-yellow);
+	--family-vignette-bg: transparent;
+	--family-text-primary: var(--renata-ink);
+	--family-text-muted: rgb(var(--renata-ink-rgb) / 64%);
+	--family-accent: var(--renata-olive);
+	--family-eyebrow-color: var(--renata-olive);
+	--family-group-title-color: rgb(var(--renata-ink-rgb) / 52%);
+	--family-title-color: var(--renata-ink);
+	--family-padding-block: clamp(2.75rem, 6vw, 4.75rem);
+	--family-group-text-align: left;
+	--family-list-align-items: flex-start;
 	--family-divider: linear-gradient(
 		90deg,
-		transparent,
-		rgb(var(--renata-yellow-rgb) / 45%),
+		rgb(var(--renata-silver-rgb) / 55%),
+		rgb(var(--renata-silver-rgb) / 12%),
 		transparent
 	);
-	--location-bg: var(--renata-ink);
+	--location-bg: var(--renata-cream);
 	--location-card-bg: transparent;
 	--location-card-border: none;
 	--location-card-shadow: none;
@@ -99,25 +124,192 @@ html:has(.event--renata) body {
 	--location-card-hover-shadow: none;
 	--location-card-before-bg: none;
 	--location-image-filter: none;
-	--location-outer-frame-border-bottom: 1px solid rgb(var(--renata-ivory-rgb) / 12%);
-	--gifts-bg: var(--renata-ink);
-	--gallery-section-bg: var(--renata-ink);
+	--location-outer-frame-border-bottom: 1px solid rgb(var(--renata-silver-rgb) / 36%);
+	--location-title-color: rgb(var(--renata-ink-rgb) / 58%);
+	--location-date-color: rgb(var(--renata-ink-rgb) / 58%);
+	--location-place-color: var(--renata-ink);
+	--location-hour-color: rgb(var(--renata-ink-rgb) / 55%);
+	--location-address-color: rgb(var(--renata-ink-rgb) / 58%);
+	--location-indication-item-border: 0;
+	--location-indication-item-box-shadow: none;
+	--location-indication-item-hover-bg: transparent;
+	--location-indication-item-hover-border-color: transparent;
+	--location-indication-item-hover-transform: none;
+	--location-indication-item-hover-box-shadow: none;
+	--location-indication-item-after-bg: none;
+	--location-indication-text-color: rgb(var(--renata-ink-rgb) / 68%);
+	--location-indication-strong-color: var(--renata-ink);
+	--location-nav-bg: var(--renata-olive);
+	--location-nav-color: var(--renata-cream);
+	--location-nav-border: 1px solid var(--renata-olive);
+	--location-nav-maps-border: var(--renata-olive);
+	--location-nav-hover-border-color: rgb(var(--renata-olive-rgb) / 78%);
+	--location-nav-hover-shadow: none;
+	--location-nav-hover-transform: none;
+	--location-nav-primary-bg: var(--renata-olive);
+	--location-nav-primary-color: var(--renata-cream);
+	--location-nav-apple-bg: transparent;
+	--location-nav-apple-color: var(--renata-ink);
+	--location-nav-apple-border: rgb(var(--renata-silver-rgb) / 62%);
+	--location-nav-apple-hover-bg: rgb(var(--renata-olive-rgb) / 10%);
+	--location-nav-apple-hover-border-color: var(--renata-olive);
+	--location-nav-maps-bg: var(--renata-olive);
+	--location-nav-maps-hover-bg: var(--renata-olive-deep);
+	--location-nav-maps-hover-border-color: var(--renata-olive-deep);
+	--location-nav-maps-color: var(--renata-cream);
 	--location-image-hover-scale: 1;
-	--wax-seal-highlight: rgb(64 58 48);
-	--wax-seal-mid: var(--renata-foliage);
+	--gifts-bg: var(--renata-cream);
+	--gifts-title-color: var(--renata-ink);
+	--gifts-subtitle-color: rgb(var(--renata-ink-rgb) / 68%);
+	--gifts-title-letter-spacing: 0.04em;
+	--gifts-padding-block: clamp(2.5rem, 6vw, 4.5rem);
+	--gifts-card-bg: transparent;
+	--gifts-card-border: 0;
+	--gifts-card-radius: 0;
+	--gifts-card-shadow: none;
+	--gifts-icon-color: var(--renata-olive);
+	--gallery-section-bg: var(--renata-blush);
+	--gallery-title-color: var(--renata-ink);
+	--gallery-subtitle-color: rgb(var(--renata-ink-rgb) / 64%);
+	--countdown-bg: var(--renata-blush);
+	--countdown-segment-bg: transparent;
+	--wax-seal-highlight: var(--renata-coral);
+	--wax-seal-mid: var(--renata-olive);
 	--wax-seal-deep: var(--renata-ink);
-	--wax-seal-letter: var(--renata-yellow);
+	--wax-seal-letter: var(--renata-cream);
 	--wax-seal-shadow: var(--renata-ink);
-	--intersection-depth: clamp(2.5rem, 5vw, 4.5rem);
+	--intersection-depth: clamp(2rem, 4vw, 3.5rem);
+	--header-nav-title-color: var(--renata-olive);
+	--header-nav-color: var(--renata-cream);
+	--header-nav-color-transparent: var(--renata-cream);
+	--header-nav-color-scrolled: var(--renata-cream);
+	--header-nav-hover-color: var(--renata-cream);
+	--header-nav-cta-bg: transparent;
+	--header-nav-cta-color: var(--renata-cream);
+	--header-nav-cta-border: rgb(var(--renata-silver-rgb) / 48%);
 	--header-nav-cta-shadow: none;
-	--header-nav-cta-border: rgb(var(--renata-yellow-rgb) / 42%);
-	--itinerary-paper-white: var(--renata-ink);
-	--itinerary-cream: var(--renata-ink);
-	--itinerary-ink-dark: var(--renata-ivory);
-	--itinerary-ink-dark-rgb: var(--renata-ivory-rgb);
-	--itinerary-slate: var(--renata-yellow);
+	--header-nav-cta-hover-bg: rgb(var(--renata-olive-rgb) / 18%);
+	--header-nav-cta-hover-color: var(--renata-cream);
+	--header-nav-cta-hover-border: var(--renata-olive);
+	--hamburger-color: var(--renata-cream);
+	--hamburger-color-menu-open: var(--renata-cream);
+	--mobile-drawer-link-color: var(--renata-cream);
+	--mobile-drawer-link-hover: var(--renata-olive);
+	--mobile-drawer-cta-bg: var(--renata-olive);
+	--mobile-drawer-cta-color: var(--renata-cream);
+	--mobile-drawer-cta-border: 1px solid var(--renata-olive);
+	--mobile-drawer-cta-hover-bg: var(--renata-olive-deep);
+	--mobile-drawer-cta-hover-color: var(--renata-cream);
+	--editorial-ledger-rule: rgb(var(--renata-silver-rgb) / 42%);
+	--editorial-ledger-spine: rgb(var(--renata-silver-rgb) / 48%);
+	--env-bg: var(--renata-ink);
+	--env-paper-bg: rgb(28 26 24);
+	--env-paper-border: rgb(var(--renata-silver-rgb) / 28%);
+	--env-text-primary: var(--renata-cream);
+	--env-text-secondary: rgb(var(--renata-cream-rgb) / 62%);
+	--env-accent: var(--renata-olive);
+	--env-container-ratio: 1.28;
+	--env-container-max-height: min(62svh, 460px);
+	--env-seal-size-min: 42px;
+	--env-seal-size-max: 72px;
+	--env-title-size: clamp(1.55rem, 5.4cqw, 2.2rem);
+	--reveal-card-bg: rgb(24 22 20);
+	--reveal-card-border: rgb(var(--renata-silver-rgb) / 26%);
+	--reveal-card-text-primary: var(--renata-cream);
+	--reveal-card-text-secondary: rgb(var(--renata-cream-rgb) / 68%);
+	--reveal-card-accent: rgb(var(--renata-silver-rgb) / 28%);
+	--reveal-card-grain-opacity: 0.28;
+	--interlude-image-filter: none;
+	--interlude-focal-point: 50% 62%;
+	--interlude-focal-point-desktop: 50% 52%;
+	--pa-padding-block: clamp(2.5rem, 6vw, 4.25rem);
+	--pa-padding-block-lg: clamp(3rem, 7vw, 5rem);
+	--pa-card-border-radius: 0;
+	--pa-card-border: 0;
+	--pa-card-bg-color: transparent;
+	--pa-card-bg-image: none;
+	--pa-card-shadow: none;
+	--pa-card-inset: 0;
+	--pa-card-inner-border: 0;
+	--pa-card-glow: none;
+	--pa-eyebrow-color: var(--renata-olive);
+	--pa-title-color: var(--renata-ink);
+	--pa-title-tracking: 0.06em;
+	--pa-subtitle-color: rgb(var(--renata-ink-rgb) / 64%);
+	--pa-guest-color: var(--renata-ink);
+	--pa-divider-gradient: linear-gradient(
+		90deg,
+		transparent,
+		rgb(var(--renata-silver-rgb) / 42%),
+		transparent
+	);
+	--pa-divider-opacity: 100%;
+	--pa-divider-diamond-bg: transparent;
+	--pa-divider-diamond-border-color: transparent;
+	--pa-divider-diamond-shadow: none;
+	--pa-count-frame-radius: 0;
+	--pa-count-frame-border: 0;
+	--pa-count-frame-bg: transparent;
+	--pa-count-frame-shadow: none;
+	--pa-count-color: var(--renata-ink);
+	--pa-footer-border-top: 1px solid rgb(var(--renata-silver-rgb) / 36%);
+	--pa-footer-bg: transparent;
+	--pa-footer-text-color: rgb(var(--renata-ink-rgb) / 58%);
+	--pa-footer-text-font-style: normal;
+	--pa-label-color: rgb(var(--renata-ink-rgb) / 52%);
+	--rsvp-bg: var(--renata-cream);
+	--rsvp-title-color: var(--renata-ink);
+	--rsvp-label-color: rgb(var(--renata-ink-rgb) / 62%);
+	--rsvp-field-bg: transparent;
+	--rsvp-field-bg-focus: transparent;
+	--rsvp-field-border: rgb(var(--renata-silver-rgb) / 48%);
+	--rsvp-placeholder-color: rgb(var(--renata-ink-rgb) / 42%);
+	--rsvp-radio-bg: transparent;
+	--rsvp-radio-bg-hover: transparent;
+	--rsvp-radio-border: rgb(var(--renata-silver-rgb) / 48%);
+	--rsvp-radio-selected-bg: transparent;
+	--rsvp-radio-selected-border: var(--renata-olive);
+	--rsvp-radio-selected-shadow: none;
+	--rsvp-radio-indicator-border: rgb(var(--renata-silver-rgb) / 55%);
+	--rsvp-radio-indicator-dot: var(--renata-olive);
+	--rsvp-radio-label-color: rgb(var(--renata-ink-rgb) / 72%);
+	--rsvp-radio-label-color-selected: var(--renata-ink);
+	--rsvp-button-color: var(--renata-cream);
+	--rsvp-button-bg: var(--renata-olive);
+	--rsvp-button-border: var(--renata-olive);
+	--rsvp-button-color-hover: var(--renata-cream);
+	--rsvp-button-bg-hover: var(--renata-olive-deep);
+	--rsvp-button-border-hover: var(--renata-olive-deep);
+
+	background: var(--renata-cream);
+
+	.envelope-wrapper,
+	.envelope-wrapper[data-variant='editorial'] {
+		--env-accent: var(--renata-cream);
+		--env-seal-accent: var(--renata-olive);
+
+		gap: 1.35rem;
+	}
+
+	.invitation-reveal-card__inner {
+		min-height: min(26svh, 220px);
+		padding: clamp(1.25rem, 3.5vw, 1.75rem) clamp(1.15rem, 3.5vw, 1.65rem);
+	}
+
+	.invitation-reveal-card__name {
+		font-size: clamp(1.85rem, 6.2vw, 2.55rem);
+		color: var(--renata-cream);
+	}
+
+	.invitation-reveal-card__label,
+	.invitation-reveal-card__date {
+		letter-spacing: 0.16em;
+		color: rgb(var(--renata-cream-rgb) / 62%);
+	}
 
 	.invitation-hero[data-variant='editorial'] {
+		justify-content: flex-end;
+
 		&::before {
 			display: none;
 		}
@@ -131,14 +323,15 @@ html:has(.event--renata) body {
 			inset: auto;
 			display: flex;
 			flex-direction: column;
-			align-items: center;
-			justify-content: flex-start;
-			width: min(100%, 42rem);
-			height: auto;
-			margin: 0 auto;
-			padding-block-start: clamp(4.5rem, 12vh, 8rem);
-			gap: 0.85rem;
-			text-align: center;
+			align-items: flex-start;
+			justify-content: flex-end;
+			width: min(100%, 38rem);
+			height: 100%;
+			margin: 0 auto 0 0;
+			padding-block: 0 clamp(4.25rem, 10vh, 6.5rem);
+			padding-inline: clamp(1.25rem, 4vw, 2.75rem);
+			gap: 0.7rem;
+			text-align: left;
 			grid-template-columns: none;
 			grid-template-areas: none;
 			transform: none;
@@ -146,6 +339,13 @@ html:has(.event--renata) body {
 
 		.invitation-hero__label {
 			margin-bottom: 0;
+			justify-self: start;
+			letter-spacing: 0.22em;
+
+			&::before,
+			&::after {
+				content: none;
+			}
 		}
 
 		.invitation-hero__title {
@@ -153,10 +353,12 @@ html:has(.event--renata) body {
 			transform: none;
 			background: none;
 			background-clip: unset;
-			-webkit-text-fill-color: var(--renata-ivory);
-			color: var(--renata-ivory);
+			-webkit-text-fill-color: var(--renata-cream);
+			color: var(--renata-cream);
 			text-transform: none;
-			letter-spacing: 0.02em;
+			letter-spacing: 0.01em;
+			text-align: left;
+			margin: 0;
 			text-shadow: 0 10px 28px rgb(var(--renata-ink-rgb) / 55%);
 		}
 
@@ -168,26 +370,151 @@ html:has(.event--renata) body {
 			position: static;
 			inset: auto;
 			display: flex;
-			flex-flow: row wrap;
-			justify-content: center;
+			flex-flow: column nowrap;
+			align-items: flex-start;
+			justify-content: flex-start;
 			width: auto;
 			margin: 0;
 			padding: 0;
 			background: transparent;
 			backdrop-filter: none;
 			border: 0;
-			gap: 0.65rem 1.1rem;
+			gap: 0.35rem;
+
+			p {
+				letter-spacing: 0.12em;
+				font-style: normal;
+			}
+		}
+
+		.calligraphy-accent {
+			display: none;
+		}
+
+		.invitation-hero__venue {
+			font-style: normal;
+			font-family: var(--font-label);
+			letter-spacing: 0.12em;
+		}
+
+		@media (width <= 860px) {
+			.invitation-hero__content {
+				width: 100%;
+				padding-block: 0 clamp(2.75rem, 7vh, 4rem);
+				padding-inline: 1.25rem;
+			}
+
+			.invitation-hero__title {
+				font-size: clamp(2.6rem, 14vw, 3.6rem);
+			}
+		}
+	}
+
+	.family {
+		.family__header {
+			margin-inline: 0 auto;
+			text-align: left;
+		}
+
+		.family__header-inner {
+			align-items: flex-start;
+		}
+
+		.family__title {
+			margin-inline: 0;
+		}
+
+		.family__header-divider {
+			margin-inline: 0;
+			width: clamp(3.5rem, 12vw, 6rem);
+		}
+
+		.family__message {
+			margin-inline: 0;
+			text-align: left;
+		}
+
+		.family__group + .family__group::before {
+			left: 0;
+			width: min(11rem, 42%);
+			transform: none;
+		}
+
+		.family__name {
+			justify-content: flex-start;
+		}
+	}
+
+	.countdown-section:is([data-variant='editorial'], [data-variant='premiere-floral']) {
+		color: var(--renata-ink);
+
+		&::before {
+			display: none;
+		}
+
+		.countdown-title {
+			background: none;
+			background-clip: unset;
+			-webkit-text-fill-color: var(--renata-ink);
+			color: var(--renata-ink);
+			letter-spacing: 0.04em;
+			margin-bottom: 1.5rem;
+		}
+
+		.countdown__timer {
+			margin-top: 1.75rem;
+			gap: 0.85rem;
+		}
+
+		.countdown__segment {
+			background: transparent;
+			backdrop-filter: none;
+			border: 0;
+			padding: clamp(0.85rem, 2vw, 1.35rem) 0.5rem;
+			border-radius: 0;
+			box-shadow: none;
+
+			&:hover {
+				transform: none;
+				border-color: transparent;
+				background: transparent;
+				box-shadow: none;
+			}
+		}
+
+		.countdown__value-wrapper {
+			margin-bottom: 0.35rem;
+		}
+
+		.countdown__value {
+			color: var(--renata-ink);
+			text-shadow: none;
+		}
+
+		.countdown__label {
+			color: var(--renata-olive);
+			letter-spacing: 0.18em;
+		}
+
+		.countdown-invitation-text {
+			margin-top: 1.75rem;
+			letter-spacing: 0.04em;
+			font-weight: 400;
+			max-inline-size: 36ch;
+			color: rgb(var(--renata-ink-rgb) / 62%);
 		}
 	}
 
 	.event-location,
 	.event-location__card,
 	.gifts-section,
+	.personalized-access,
 	.rsvp[data-variant='editorial'] {
 		border: 0;
 		box-shadow: none;
 		backdrop-filter: none;
-		background: var(--renata-ink);
+		background: var(--renata-cream);
+		color: var(--renata-ink);
 	}
 
 	.event-location__card {
@@ -203,13 +530,161 @@ html:has(.event--renata) body {
 		}
 	}
 
+	.invitation-interlude {
+		--interlude-focal-point: 42% 62%;
+		--interlude-focal-point-desktop: 48% 52%;
+
+		.invitation-interlude__image {
+			filter: none;
+			object-position: var(--interlude-focal-point);
+		}
+
+		@media (width <= 767px) {
+			--interlude-focal-point: 38% 70%;
+
+			.invitation-interlude__image {
+				object-position: 38% 70%;
+			}
+		}
+	}
+
+	.gallery-section {
+		--gallery-item-bg: transparent;
+		--gallery-item-shadow: none;
+		--gallery-item-border: 0;
+
+		background: var(--renata-blush);
+	}
+
+	.itinerary[data-structural-variant='editorial-ledger'] {
+		background: var(--renata-cream);
+		padding-block: var(--section-padding-block);
+
+		.itinerary__header-flourish,
+		.itinerary__line-start,
+		.itinerary__line-end {
+			display: none;
+		}
+
+		.itinerary__title {
+			color: var(--renata-ink);
+			letter-spacing: 0.02em;
+		}
+
+		.itinerary__item-time {
+			color: var(--renata-olive);
+			font-family: var(--font-label);
+			letter-spacing: 0.08em;
+		}
+
+		.itinerary__item-label {
+			color: var(--renata-ink);
+			font-family: var(--font-display);
+			font-style: normal;
+		}
+
+		.itinerary__item-description {
+			color: rgb(var(--renata-ink-rgb) / 68%);
+			font-family: var(--font-body);
+		}
+	}
+
+	.gifts-section {
+		.gifts-section__flourish,
+		.gifts-section__separator {
+			display: none;
+		}
+
+		.gifts-section__title {
+			text-transform: none;
+			letter-spacing: 0.02em;
+		}
+
+		.gifts-section__header {
+			margin-bottom: 1rem;
+		}
+
+		.gift-card {
+			padding: 0.5rem 0 0;
+			transform: none;
+			border: 0;
+			border-radius: 0;
+			background: transparent;
+
+			&:hover {
+				transform: none;
+				box-shadow: none;
+				border-color: transparent;
+			}
+
+			&::before {
+				display: none;
+			}
+		}
+
+		.gift-card__title {
+			display: none;
+		}
+
+		.gift-card__icon-medallion {
+			display: none;
+		}
+
+		.gift-card__inner {
+			gap: 0.75rem;
+		}
+	}
+
+	.personalized-access {
+		.access-card__seal {
+			color: rgb(var(--renata-silver-rgb) / 72%);
+			width: 2.35rem;
+			padding: 0;
+
+			&::before {
+				background: transparent;
+			}
+
+			svg {
+				opacity: 55%;
+			}
+		}
+
+		.access-card__title {
+			text-transform: none;
+			letter-spacing: 0.03em;
+		}
+	}
+
 	.rsvp[data-variant='editorial'] {
 		--rsvp-editorial-gold-glow: none;
 		--rsvp-radius-card: 0;
 
-		background: var(--renata-ink);
-		border: 0;
-		box-shadow: none;
+		background: var(--renata-cream);
+		color: var(--renata-ink);
+
+		.rsvp__eyebrow {
+			color: var(--renata-olive);
+			letter-spacing: 0.22em;
+		}
+
+		.rsvp__separator {
+			color: rgb(var(--renata-silver-rgb) / 55%);
+		}
+
+		.rsvp__title {
+			color: var(--renata-ink);
+		}
+
+		.rsvp__subcopy {
+			color: rgb(var(--renata-ink-rgb) / 62%);
+		}
+
+		label,
+		legend,
+		.rsvp__locked-eyebrow {
+			color: rgb(var(--renata-ink-rgb) / 58%);
+		}
 
 		.rsvp__locked-card {
 			border: 0;
@@ -221,74 +696,48 @@ html:has(.event--renata) body {
 				display: none;
 			}
 		}
-	}
 
-	.itinerary[data-structural-variant='timeline-paper'] {
-		background: var(--renata-ink);
-		color: var(--renata-ivory);
-
-		.itinerary__title {
-			color: var(--renata-ivory);
-			filter: none;
-		}
-
-		.itinerary__subtitle {
-			color: rgb(var(--renata-yellow-rgb) / 78%);
-		}
-
-		.itinerary__program-panel {
-			transform: none;
-			padding-inline: 0;
-			max-width: 42rem;
-
-			&::before {
-				display: none;
-			}
-		}
-
-		.itinerary__program-paper-surface {
+		input[type='text'],
+		input[type='number'],
+		textarea {
 			background: transparent;
-			filter: none;
-			border-radius: 0;
-			box-shadow: none;
+			border-color: rgb(var(--renata-silver-rgb) / 48%);
+			color: var(--renata-ink);
 
-			&::before,
-			&::after {
-				display: none;
+			&:focus {
+				background: transparent;
+				border-color: var(--renata-olive);
+				box-shadow: 0 0 0 1px rgb(var(--renata-olive-rgb) / 28%);
 			}
 		}
 
-		.itinerary__program-monogram {
-			color: var(--renata-yellow);
-			opacity: 8%;
+		.rsvp__radio-card {
+			background: transparent;
+			border-color: rgb(var(--renata-silver-rgb) / 48%);
+
+			&:hover {
+				border-color: rgb(var(--renata-olive-rgb) / 48%);
+				background: transparent;
+			}
+
+			&:has(input:checked) {
+				background: transparent;
+				border-color: var(--renata-olive);
+				box-shadow: none;
+			}
 		}
 
-		.itinerary__program-list::before,
-		.itinerary__program-list::after,
-		.itinerary__program-flourish {
-			display: none;
+		.rsvp__radio-card:has(input:checked) .rsvp__radio-indicator {
+			border-color: var(--renata-olive);
+			background: var(--renata-olive);
 		}
 
-		.itinerary__program-row {
-			border-bottom-color: rgb(var(--renata-ivory-rgb) / 12%);
+		.rsvp__radio-card:has(input:checked) .rsvp__radio-label {
+			color: var(--renata-ink);
 		}
 
-		.itinerary__program-row-num,
-		.itinerary__program-row-time {
-			color: var(--renata-yellow);
-			opacity: 100%;
-			filter: none;
-		}
-
-		.itinerary__program-row-title {
-			color: var(--renata-ivory);
-			filter: none;
-			text-shadow: none;
-		}
-
-		.itinerary__program-row-desc {
-			color: rgb(var(--renata-ivory-rgb) / 72%);
-			filter: none;
+		.rsvp__radio-indicator {
+			border-color: rgb(var(--renata-silver-rgb) / 55%);
 		}
 	}
 
@@ -303,7 +752,7 @@ html:has(.event--renata) body {
 			filter: none;
 			background: linear-gradient(
 				180deg,
-				rgb(var(--renata-ink-rgb) / 18%) 0%,
+				rgb(var(--renata-ink-rgb) / 10%) 0%,
 				transparent 36%,
 				rgb(var(--renata-ink-rgb) / 42%) 100%
 			);
@@ -316,7 +765,13 @@ html:has(.event--renata) body {
 		.thank-you-content,
 		.thank-you-message,
 		.closing-date {
-			color: var(--renata-ivory);
+			color: var(--renata-cream);
+		}
+
+		.thank-you-content {
+			align-self: end;
+			margin: 0;
+			padding-block-end: clamp(1.5rem, 4vw, 2.5rem);
 		}
 
 		.message-container {
@@ -332,7 +787,7 @@ html:has(.event--renata) body {
 		}
 
 		.thank-you-message .drop-cap {
-			color: var(--renata-yellow);
+			color: var(--renata-cream);
 			text-shadow: none;
 		}
 
@@ -364,17 +819,20 @@ html:has(.event--renata) body {
 		.closing-name {
 			background: none;
 			background-clip: unset;
-			-webkit-text-fill-color: var(--renata-ivory);
-			color: var(--renata-ivory);
+			-webkit-text-fill-color: var(--renata-cream);
+			color: var(--renata-cream);
 			text-shadow: none;
 		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.invitation-hero[data-variant='editorial'] .invitation-hero__portrait,
 		.event-location__card,
 		.rsvp[data-variant='editorial'] {
 			transition: none;
+		}
+
+		.invitation-interlude .invitation-interlude__image {
+			animation: none;
 		}
 	}
 }

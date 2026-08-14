@@ -60,15 +60,42 @@ test.describe('Renata XV local visual and content audit', () => {
 
 			const tokens = await page.locator('.event--renata').evaluate((root) => {
 				const style = getComputedStyle(root);
+				const read = (name: string) => style.getPropertyValue(name).trim();
+				const resolve = (value: string) => {
+					const probe = document.createElement('span');
+					probe.style.color = value;
+					root.appendChild(probe);
+					const resolved = getComputedStyle(probe).color;
+					probe.remove();
+					return resolved;
+				};
 				return {
-					gold: style.getPropertyValue('--color-gold-500').trim(),
-					metallic: style.getPropertyValue('--gold-metallic').trim(),
-					heroFilter: style.getPropertyValue('--hero-image-filter').trim(),
+					gold: read('--color-gold-500'),
+					metallic: read('--gold-metallic'),
+					heroFilter: read('--hero-image-filter'),
+					actionAccent: resolve(read('--color-action-accent')),
+					textEmphasis: resolve(read('--color-text-emphasis')),
+					cream: resolve(read('--renata-cream')),
+					blush: resolve(read('--renata-blush')),
+					olive: resolve(read('--renata-olive')),
+					coral: resolve(read('--renata-coral')),
+					silver: resolve(read('--renata-silver')),
 				};
 			});
 			expect(tokens.gold).not.toMatch(/#d4af37|#c9a227|linear-gradient/i);
 			expect(tokens.metallic).not.toMatch(/linear-gradient|#d4af37|#c9a227/i);
 			expect(tokens.heroFilter).toBe('none');
+			expect(tokens.actionAccent).not.toBe(tokens.textEmphasis);
+			expect(tokens.actionAccent).toBe(tokens.olive);
+			expect(tokens.textEmphasis).not.toMatch(/232 190 48|#e8be30/i);
+			expect(tokens.cream).toBeTruthy();
+			expect(tokens.blush).toBeTruthy();
+			expect(tokens.coral).toBeTruthy();
+			expect(tokens.silver).toBeTruthy();
+			expect(
+				new Set([tokens.cream, tokens.blush, tokens.olive, tokens.coral, tokens.silver])
+					.size,
+			).toBe(5);
 
 			const ceremonyMap = page.locator('a[href="https://maps.app.goo.gl/jkS3UvSKdTzcZxu9A"]');
 			const receptionMap = page.locator(
@@ -77,22 +104,61 @@ test.describe('Renata XV local visual and content audit', () => {
 			await expect(ceremonyMap.first()).toBeVisible();
 			await expect(receptionMap.first()).toBeVisible();
 
+			const itinerary = page.locator('.itinerary').first();
+			await expect(itinerary).toHaveAttribute('data-structural-variant', 'editorial-ledger');
+			expect(await page.locator('.itinerary__program-monogram').count()).toBe(0);
+			expect(await page.locator('.itinerary__program-paper-surface').count()).toBe(0);
+
 			const itineraryItems = page.locator(
-				'.itinerary__program-row, .itinerary-item, [data-itinerary-item]',
+				'.itinerary__item, .itinerary__program-row, [data-itinerary-item]',
 			);
-			const itineraryCount = await itineraryItems.count();
-			if (itineraryCount === 0) {
-				await expect(page.getByText('Misa', { exact: true }).first()).toBeVisible();
-				await expect(page.getByText('Recepción', { exact: true }).first()).toBeVisible();
-				await expect(page.getByText('5:00 p. m.').first()).toBeVisible();
-				await expect(page.getByText('7:00 p. m.').first()).toBeVisible();
-			} else {
-				expect(itineraryCount).toBe(2);
-			}
+			expect(await itineraryItems.count()).toBe(2);
 
 			const gallery = page.locator('.gallery-section, [data-variant="paired-feature-band"]');
 			await expect(gallery.first()).toBeVisible();
 			await gallery.first().scrollIntoViewIfNeeded();
+			const feature = gallery
+				.locator('.gallery-grid__item[data-layout-role="feature"]')
+				.first();
+			await expect(feature).toBeVisible();
+			const featureRatio = await feature.evaluate(
+				(node) => getComputedStyle(node).aspectRatio,
+			);
+			expect(featureRatio.replace(/\s+/g, '')).toMatch(/^8\/5$|^1\.6$/);
+
+			const personalizedAccess = page.locator('.personalized-access').first();
+			if ((await personalizedAccess.count()) > 0) {
+				await expect(personalizedAccess).toHaveAttribute(
+					'data-structural-variant',
+					'standard',
+				);
+				expect(await personalizedAccess.locator('.access-card__ornaments').count()).toBe(0);
+			}
+
+			expect(await page.locator('.event-location__card-flourish').count()).toBe(0);
+
+			const countdownTitle = page.locator('.countdown-title').first();
+			if ((await countdownTitle.count()) > 0) {
+				const titleFill = await countdownTitle.evaluate(
+					(node) => getComputedStyle(node).webkitTextFillColor,
+				);
+				expect(titleFill).not.toBe('transparent');
+				expect(titleFill).not.toMatch(/232,\s*190,\s*48/i);
+			}
+
+			const familyBg = await page
+				.locator('.family')
+				.first()
+				.evaluate((node) => getComputedStyle(node).backgroundColor);
+			expect(familyBg).not.toMatch(/rgb\(\s*(18|22)\s*,\s*(16|20)\s*,\s*(14|18)\s*\)/i);
+
+			const rsvpBg = await page
+				.locator('.rsvp')
+				.first()
+				.evaluate((node) => getComputedStyle(node).backgroundColor);
+			expect(rsvpBg).not.toMatch(/rgb\(\s*14\s*,\s*12\s*,\s*10\s*\)/i);
+			expect(rsvpBg).not.toMatch(/rgb\(\s*(18|22)\s*,\s*(16|20)\s*,\s*(14|18)\s*\)/i);
+
 			const galleryImages = gallery.locator('img');
 			expect(await galleryImages.count()).toBeGreaterThanOrEqual(5);
 			for (const img of await galleryImages.all()) {
@@ -131,6 +197,17 @@ test.describe('Renata XV local visual and content audit', () => {
 			});
 			expect(overflow.horizontal).toBeLessThanOrEqual(1);
 			expect(overflow.hasGoldLettering).toBe(false);
+
+			const yellowUi = await page.evaluate(() => {
+				const yellow = /rgb\(\s*232\s*,\s*190\s*,\s*48\s*\)|#e8be30/i;
+				return [...document.querySelectorAll('*')].some((node) => {
+					const style = getComputedStyle(node);
+					return yellow.test(
+						`${style.color} ${style.borderColor} ${style.backgroundColor}`,
+					);
+				});
+			});
+			expect(yellowUi).toBe(false);
 
 			const sections = [
 				{ name: 'hero', locator: '.invitation-hero' },

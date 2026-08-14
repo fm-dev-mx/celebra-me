@@ -125,9 +125,9 @@ export const RENATA_ASSET_SPECS = [
 		displayName: 'Renata — interludio',
 		alt: 'Renata recostada con vestido amarillo en un estudio floral',
 		focalPoint: {
-			default: '50% 42%',
-			mobile: '52% 40%',
-			desktop: '48% 44%',
+			default: '50% 62%',
+			mobile: '50% 78%',
+			desktop: '50% 52%',
 		},
 	},
 	{
@@ -205,7 +205,7 @@ export function buildRenataPublishedContent(
 			sealColor: 'champagne',
 			microcopy: 'Descubra su invitación',
 			closedPalette: {
-				primary: 'surfacePrimary',
+				primary: 'actionPrimary',
 				accent: 'actionAccent',
 				background: 'surfaceDark',
 			},
@@ -237,6 +237,9 @@ export function buildRenataPublishedContent(
 		location: {
 			variant: 'standard',
 			visibility: 'public',
+			presentationOptions: {
+				showFlourishes: false,
+			},
 			introEyebrow: 'SÁBADO · 5 DE SEPTIEMBRE DE 2026',
 			introHeading: 'De la misa a la fiesta',
 			ceremony: {
@@ -282,11 +285,11 @@ export function buildRenataPublishedContent(
 				afterSection: 'location',
 				alt: 'Renata recostada con vestido amarillo en un estudio floral',
 				height: 'tall',
-				focalPoint: '50% 42%',
+				focalPoint: '50% 78%',
 			},
 		],
 		itinerary: {
-			variant: 'timeline-paper',
+			variant: 'editorial-ledger',
 			title: 'Momentos de la celebración',
 			items: [
 				{
@@ -331,7 +334,6 @@ export function buildRenataPublishedContent(
 				{
 					key: 'gallery-feature',
 					layoutRole: 'feature',
-					aspectRatio: '4 / 5',
 					image: assets['gallery-feature'],
 					alt: 'Renata con vestido amarillo bajo un arco de flores',
 					focalPoint: '50% 28%',
@@ -363,7 +365,7 @@ export function buildRenataPublishedContent(
 			title: 'Confirme su asistencia',
 			subcopy: 'Pronto podrá reservar su lugar para el 5 de septiembre.',
 			personalizedAccess: {
-				variant: 'ornamented',
+				variant: 'standard',
 				title: 'Su invitación personal',
 				subtitle: 'Esta invitación ha sido preparada para:',
 				footerText: 'La confirmación se habilitará cuando el anfitrión complete los datos.',
