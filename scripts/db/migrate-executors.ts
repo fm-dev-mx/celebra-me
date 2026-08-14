@@ -263,11 +263,18 @@ export function assertMutationContractVerifyResult(
 	}
 }
 
-export function runMutationContractVerify(target: 'production' | 'preview'): void {
+export function runMutationContractVerify(
+	target: 'production' | 'preview',
+	productionPermit?: RunOptions['productionPermit'],
+): void {
 	const result = runCommand(
 		'npx',
 		['tsx', 'scripts/db/verify-mutation-schema-contract.ts', '--target', target],
-		{ throwOnError: false, timeoutMs: MUTATION_CONTRACT_VERIFY_TIMEOUT_MS },
+		{
+			throwOnError: false,
+			timeoutMs: MUTATION_CONTRACT_VERIFY_TIMEOUT_MS,
+			...(productionPermit ? { productionPermit } : {}),
+		},
 	);
 	assertMutationContractVerifyResult(result, target);
 }

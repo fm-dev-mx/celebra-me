@@ -362,7 +362,10 @@ function executeProductionPatchSql(
 
 	try {
 		console.info('Running post-apply mutation schema contract verification...');
-		runMutationContractVerify('production');
+		runMutationContractVerify('production', {
+			bindingHex: authorizedPlanBindingHex,
+			operationType: 'production_apply',
+		});
 		const finalPreview = inspectPatchPreview(prepared, dbUrl);
 		if (finalPreview.state !== 'NOT_NEEDED') {
 			throw new Error(

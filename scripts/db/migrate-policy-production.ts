@@ -455,7 +455,10 @@ export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 				worktree: inferWorktreeLabel(),
 			});
 		}
-		runMutationContractVerify('production');
+		runMutationContractVerify('production', {
+			bindingHex: ctx.authorizedPlanBindingHex ?? plan.planId,
+			operationType: ctx.authorizedPermitOperationType ?? PRODUCTION_MIGRATION_OPERATION_TYPE,
+		});
 		writeHuman(
 			`${operatorSymbol('ok')} Verificación aprobada. Schema y contrato de mutación activos.`,
 		);
