@@ -352,6 +352,19 @@ function reconcileBinaryAbsent(
 	};
 }
 
+function isCloudinaryReady(
+	canonical: InvitationPackageAsset,
+	dbRecord: TargetAssetRecord | undefined,
+): boolean {
+	if (!dbRecord || dbRecord.provider !== 'cloudinary') {
+		return false;
+	}
+	const hashMatch =
+		dbRecord.sha256 === canonical.sha256 || dbRecord.managedSha256 === canonical.sha256;
+	const hasBinary = Boolean(dbRecord.secureUrl || dbRecord.providerPublicId);
+	return hashMatch && hasBinary;
+}
+
 function reconcileCloudinaryCanonical(
 	canonical: InvitationPackageAsset,
 	dbRecord: TargetAssetRecord | undefined,
@@ -359,15 +372,12 @@ function reconcileCloudinaryCanonical(
 	definitionSlug?: string,
 ): { item: ReconciledAsset; blocked: boolean; blockReason?: string } {
 	const targetPath = canonical.providerPublicId || canonical.storagePath;
-	const cloudinaryReady =
-		dbRecord?.provider === 'cloudinary' &&
-		(dbRecord.sha256 === canonical.sha256 || dbRecord.managedSha256 === canonical.sha256) &&
-		Boolean(dbRecord.secureUrl || dbRecord.providerPublicId);
-	const metadataMatch = dbRecord
-		? checkManagedMetadataMatch(canonical, dbRecord, definitionSlug)
-		: false;
+	const cloudinaryReady = isCloudinaryReady(canonical, dbRecord);
+	const metadataMatch = Boolean(
+		dbRecord && checkManagedMetadataMatch(canonical, dbRecord, definitionSlug),
+	);
 
-	if (cloudinaryReady && metadataMatch) {
+	if (cloudinaryReady && metadataMatch && dbRecord) {
 		return {
 			item: {
 				key: canonical.key,
@@ -410,6 +420,32 @@ function reconcileCloudinaryCanonical(
 	}
 
 	const isBlock = policy === 'verify';
+	const classification = cloudinaryReady ? 'BINARY_MATCH_METADATA_DRIFT' : 'MISSING';
+	const observedHash = dbRecord?.sha256 ?? null;
+	const observedSize = dbRecord?.fileSize ?? null;
+
+	if (isBlock) {
+		return {
+			item: {
+				key: canonical.key,
+				displayName: canonical.displayName,
+				canonicalHash: canonical.sha256,
+				canonicalSize: canonical.fileSize,
+				canonicalMimeType: canonical.mimeType,
+				targetStoragePath: targetPath,
+				targetAssetId: dbRecord?.id,
+				classification,
+				plannedAction: 'BLOCK',
+				reasonCode: 'ASSET_MISSING_VERIFY_BLOCKED',
+				reason: `El archivo Cloudinary para "${canonical.displayName}" no está listo (bloqueado bajo política verify).`,
+				observedHash,
+				observedSize,
+			},
+			blocked: true,
+			blockReason: `Archivo Cloudinary requerido ausente bajo la política verify: "${canonical.displayName}".`,
+		};
+	}
+
 	return {
 		item: {
 			key: canonical.key,
@@ -419,19 +455,14 @@ function reconcileCloudinaryCanonical(
 			canonicalMimeType: canonical.mimeType,
 			targetStoragePath: targetPath,
 			targetAssetId: dbRecord?.id,
-			classification: cloudinaryReady ? 'BINARY_MATCH_METADATA_DRIFT' : 'MISSING',
-			plannedAction: isBlock ? 'BLOCK' : 'UPLOAD',
-			reasonCode: isBlock ? 'ASSET_MISSING_VERIFY_BLOCKED' : 'ASSET_CLOUDINARY_UPLOAD',
-			reason: isBlock
-				? `El archivo Cloudinary para "${canonical.displayName}" no está listo (bloqueado bajo política verify).`
-				: `El archivo "${canonical.displayName}" se subirá o reconciliará en Cloudinary.`,
-			observedHash: dbRecord?.sha256 ?? null,
-			observedSize: dbRecord?.fileSize ?? null,
+			classification,
+			plannedAction: 'UPLOAD',
+			reasonCode: 'ASSET_CLOUDINARY_UPLOAD',
+			reason: `El archivo "${canonical.displayName}" se subirá o reconciliará en Cloudinary.`,
+			observedHash,
+			observedSize,
 		},
-		blocked: isBlock,
-		blockReason: isBlock
-			? `Archivo Cloudinary requerido ausente bajo la política verify: "${canonical.displayName}".`
-			: undefined,
+		blocked: false,
 	};
 }
 
