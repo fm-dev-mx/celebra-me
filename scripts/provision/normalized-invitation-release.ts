@@ -7,7 +7,9 @@ import {
 	detectFileMimeType,
 	normalizeInvitationImage,
 	extractBlobRawBytes,
+	ROLE_AWARE_ASSET_POLICY_VERSION,
 } from '../../src/lib/intake/services/asset-policy.ts';
+import { getWeightTargetBytes } from '../../src/lib/invitation-preparation/image-optimization.ts';
 import { findDemoPreset } from '../../src/lib/intake/demo-preset-catalog.ts';
 import { hashPublicationProjection } from '../../src/lib/intake/services/publication-diff.service.ts';
 import { eventContentSchema } from '../../src/lib/schemas/content/base-event.schema.ts';
@@ -185,6 +187,17 @@ async function loadPersistedAssets(
 			);
 
 		const bytes = new Uint8Array(await fileData.arrayBuffer());
+		const validationVersion = Number(match.validation_version ?? 1);
+		const fileSize = Number(match.file_size);
+		if (
+			spec.optimizationRole &&
+			validationVersion >= ROLE_AWARE_ASSET_POLICY_VERSION &&
+			fileSize > getWeightTargetBytes(spec.optimizationRole)
+		) {
+			throw new Error(
+				`Persisted asset "${spec.key}" exceeds its ${spec.optimizationRole} delivery budget.`,
+			);
+		}
 		assets.push({
 			key: spec.key,
 			displayName: spec.displayName,
@@ -196,8 +209,8 @@ async function loadPersistedAssets(
 			mimeType: match.mime_type as string,
 			width: Number(match.width),
 			height: Number(match.height),
-			fileSize: Number(match.file_size),
-			validationVersion: Number(match.validation_version ?? 1),
+			fileSize,
+			validationVersion,
 			originalMimeType: (match.original_mime_type as string) || (match.mime_type as string),
 			originalFileSize: Number(match.original_file_size ?? match.file_size),
 		});
@@ -238,6 +251,7 @@ export async function loadSourceAssetDigests(
 		const normalized = await normalizeInvitationImage(
 			new Blob([sourceBytes], { type: declaredMime }),
 			declaredMime,
+			asset.optimizationRole,
 		);
 		const raw = await extractBlobRawBytes(normalized.blob);
 		if (!raw) throw new Error('Could not extract bytes from Blob.');
@@ -275,6 +289,7 @@ export async function buildNormalizedInvitationRelease(options: {
 			const normalized = await normalizeInvitationImage(
 				new Blob([sourceBytes], { type: declaredMime }),
 				declaredMime,
+				asset.optimizationRole,
 			);
 			const raw = await extractBlobRawBytes(normalized.blob);
 			if (!raw) throw new Error('Could not extract bytes from Blob.');
