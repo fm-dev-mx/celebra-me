@@ -1,0 +1,380 @@
+@use '../global/mixins' as mixins;
+
+// Renata — editorial ink + session yellow. Loaded only through this profile.
+// Gold metallic, inherited hero grayscale, and frosted hero/location plates are reset here.
+
+html:has(.event--renata),
+html:has(.event--renata) body {
+	scrollbar-gutter: auto;
+
+	@include mixins.hide-scrollbar;
+}
+
+.event--renata.theme-preset--editorial {
+	--renata-ink: rgb(18 16 14);
+	--renata-ink-rgb: 18 16 14;
+	--renata-yellow: rgb(232 190 48);
+	--renata-yellow-rgb: 232 190 48;
+	--renata-foliage: rgb(52 78 58);
+	--renata-foliage-rgb: 52 78 58;
+	--renata-ivory: rgb(252 248 240);
+	--renata-ivory-rgb: 252 248 240;
+	--color-surface-primary: var(--renata-ink);
+	--color-surface-primary-rgb: var(--renata-ink-rgb);
+	--color-surface-soft: rgb(32 28 24);
+	--color-surface-dark: var(--renata-ink);
+	--color-surface-dark-rgb: var(--renata-ink-rgb);
+	--color-action-primary: var(--renata-ivory);
+	--color-action-accent: var(--renata-yellow);
+	--color-action-accent-rgb: var(--renata-yellow-rgb);
+	--color-gold-500: var(--renata-yellow);
+	--color-gold-500-rgb: var(--renata-yellow-rgb);
+	--color-text-primary: var(--renata-ivory);
+	--color-text-primary-rgb: var(--renata-ivory-rgb);
+	--color-text-emphasis: var(--renata-yellow);
+	--color-text-secondary: rgb(var(--renata-ivory-rgb) / 72%);
+	--color-text-on-dark: var(--renata-ivory);
+	--color-border-subtle: rgb(var(--renata-yellow-rgb) / 22%);
+	--color-glass-bg: rgb(var(--renata-ink-rgb) / 20%);
+	--color-glass-border: rgb(var(--renata-ivory-rgb) / 18%);
+	--glass-blur: 0;
+	--gold-metallic: var(--renata-ink);
+	--light-sweep: none;
+	--editorial-global-bg: var(--renata-ink);
+	--shadow-premium: none;
+	--section-card-bg: transparent;
+	--section-card-radius: 0;
+	--section-card-border-alt: transparent;
+	--section-padding-block: clamp(3.5rem, 8vw, 6.5rem);
+	--section-gap: clamp(2.5rem, 6vw, 4.5rem);
+	--section-title-size: clamp(2.1rem, 5.4vw, 3.6rem);
+	--section-subtitle-color: var(--renata-yellow);
+	--hero-image-filter: none;
+	--hero-portrait-filter: none;
+	--hero-overlay: rgb(var(--renata-ink-rgb) / 22%);
+	--hero-overlay-gradient: linear-gradient(
+		180deg,
+		rgb(var(--renata-ink-rgb) / 46%) 0%,
+		transparent 38%,
+		transparent 72%,
+		rgb(var(--renata-ink-rgb) / 38%) 100%
+	);
+	--hero-title-color-start: var(--renata-ivory);
+	--hero-title-color-mid: var(--renata-ivory);
+	--hero-title-color-end: var(--renata-ivory);
+	--hero-title-size: clamp(3.4rem, 11vw, 7.2rem);
+	--hero-label-color: var(--renata-yellow);
+	--hero-meta-color: var(--renata-ivory);
+	--hero-divider-color: rgb(var(--renata-ivory-rgb) / 35%);
+	--hero-badge-bg: transparent;
+	--hero-badge-border: transparent;
+	--hero-badge-text: var(--renata-yellow);
+	--hero-card-bg: transparent;
+	--hero-card-border-hairline: transparent;
+	--hero-card-border-old-gold-start: transparent;
+	--hero-card-border-old-gold-mid: transparent;
+	--hero-card-border-old-gold-end: transparent;
+	--hero-card-shadow-contact: none;
+	--hero-card-shadow-ambient: none;
+	--family-bg: var(--renata-ink);
+	--family-panel-bg: transparent;
+	--family-panel-border: none;
+	--family-panel-shadow: none;
+	--family-panel-radius: 0;
+	--family-media-bg: transparent;
+	--family-media-filter: none;
+	--family-accent: var(--renata-yellow);
+	--family-divider: linear-gradient(
+		90deg,
+		transparent,
+		rgb(var(--renata-yellow-rgb) / 45%),
+		transparent
+	);
+	--location-bg: var(--renata-ink);
+	--location-card-bg: transparent;
+	--location-card-border: none;
+	--location-card-shadow: none;
+	--location-card-backdrop-filter: none;
+	--location-card-hover-transform: none;
+	--location-card-hover-shadow: none;
+	--location-card-before-bg: none;
+	--location-image-filter: none;
+	--location-outer-frame-border-bottom: 1px solid rgb(var(--renata-ivory-rgb) / 12%);
+	--gifts-bg: var(--renata-ink);
+	--gallery-section-bg: var(--renata-ink);
+	--location-image-hover-scale: 1;
+	--wax-seal-highlight: rgb(64 58 48);
+	--wax-seal-mid: var(--renata-foliage);
+	--wax-seal-deep: var(--renata-ink);
+	--wax-seal-letter: var(--renata-yellow);
+	--wax-seal-shadow: var(--renata-ink);
+	--intersection-depth: clamp(2.5rem, 5vw, 4.5rem);
+	--header-nav-cta-shadow: none;
+	--header-nav-cta-border: rgb(var(--renata-yellow-rgb) / 42%);
+	--itinerary-paper-white: var(--renata-ink);
+	--itinerary-cream: var(--renata-ink);
+	--itinerary-ink-dark: var(--renata-ivory);
+	--itinerary-ink-dark-rgb: var(--renata-ivory-rgb);
+	--itinerary-slate: var(--renata-yellow);
+
+	.invitation-hero[data-variant='editorial'] {
+		&::before {
+			display: none;
+		}
+
+		.invitation-hero__background img {
+			filter: none;
+		}
+
+		.invitation-hero__content {
+			position: relative;
+			inset: auto;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: flex-start;
+			width: min(100%, 42rem);
+			height: auto;
+			margin: 0 auto;
+			padding-block-start: clamp(4.5rem, 12vh, 8rem);
+			gap: 0.85rem;
+			text-align: center;
+			grid-template-columns: none;
+			grid-template-areas: none;
+			transform: none;
+		}
+
+		.invitation-hero__label {
+			margin-bottom: 0;
+		}
+
+		.invitation-hero__title {
+			mix-blend-mode: normal;
+			transform: none;
+			background: none;
+			background-clip: unset;
+			-webkit-text-fill-color: var(--renata-ivory);
+			color: var(--renata-ivory);
+			text-transform: none;
+			letter-spacing: 0.02em;
+			text-shadow: 0 10px 28px rgb(var(--renata-ink-rgb) / 55%);
+		}
+
+		.invitation-hero__portrait {
+			display: none;
+		}
+
+		.invitation-hero__details {
+			position: static;
+			inset: auto;
+			display: flex;
+			flex-flow: row wrap;
+			justify-content: center;
+			width: auto;
+			margin: 0;
+			padding: 0;
+			background: transparent;
+			backdrop-filter: none;
+			border: 0;
+			gap: 0.65rem 1.1rem;
+		}
+	}
+
+	.event-location,
+	.event-location__card,
+	.gifts-section,
+	.rsvp[data-variant='editorial'] {
+		border: 0;
+		box-shadow: none;
+		backdrop-filter: none;
+		background: var(--renata-ink);
+	}
+
+	.event-location__card {
+		transform: none;
+
+		&::before {
+			display: none;
+		}
+
+		&:hover {
+			transform: none;
+			box-shadow: none;
+		}
+	}
+
+	.rsvp[data-variant='editorial'] {
+		--rsvp-editorial-gold-glow: none;
+		--rsvp-radius-card: 0;
+
+		background: var(--renata-ink);
+		border: 0;
+		box-shadow: none;
+
+		.rsvp__locked-card {
+			border: 0;
+			box-shadow: none;
+			background: transparent;
+			backdrop-filter: none;
+
+			&::before {
+				display: none;
+			}
+		}
+	}
+
+	.itinerary[data-structural-variant='timeline-paper'] {
+		background: var(--renata-ink);
+		color: var(--renata-ivory);
+
+		.itinerary__title {
+			color: var(--renata-ivory);
+			filter: none;
+		}
+
+		.itinerary__subtitle {
+			color: rgb(var(--renata-yellow-rgb) / 78%);
+		}
+
+		.itinerary__program-panel {
+			transform: none;
+			padding-inline: 0;
+			max-width: 42rem;
+
+			&::before {
+				display: none;
+			}
+		}
+
+		.itinerary__program-paper-surface {
+			background: transparent;
+			filter: none;
+			border-radius: 0;
+			box-shadow: none;
+
+			&::before,
+			&::after {
+				display: none;
+			}
+		}
+
+		.itinerary__program-monogram {
+			color: var(--renata-yellow);
+			opacity: 8%;
+		}
+
+		.itinerary__program-list::before,
+		.itinerary__program-list::after,
+		.itinerary__program-flourish {
+			display: none;
+		}
+
+		.itinerary__program-row {
+			border-bottom-color: rgb(var(--renata-ivory-rgb) / 12%);
+		}
+
+		.itinerary__program-row-num,
+		.itinerary__program-row-time {
+			color: var(--renata-yellow);
+			opacity: 100%;
+			filter: none;
+		}
+
+		.itinerary__program-row-title {
+			color: var(--renata-ivory);
+			filter: none;
+			text-shadow: none;
+		}
+
+		.itinerary__program-row-desc {
+			color: rgb(var(--renata-ivory-rgb) / 72%);
+			filter: none;
+		}
+	}
+
+	.thank-you-section[data-variant='editorial'][data-structural-variant='full-bleed-photo'] {
+		background: var(--renata-ink);
+
+		&::before {
+			inset: 0;
+			width: 100%;
+			height: 100%;
+			transform: none;
+			filter: none;
+			background: linear-gradient(
+				180deg,
+				rgb(var(--renata-ink-rgb) / 18%) 0%,
+				transparent 36%,
+				rgb(var(--renata-ink-rgb) / 42%) 100%
+			);
+		}
+
+		&::after {
+			display: none;
+		}
+
+		.thank-you-content,
+		.thank-you-message,
+		.closing-date {
+			color: var(--renata-ivory);
+		}
+
+		.message-container {
+			background: none;
+			box-shadow: none;
+			backdrop-filter: none;
+			border: 0;
+			padding-inline: 0;
+
+			&::before {
+				display: none;
+			}
+		}
+
+		.thank-you-message .drop-cap {
+			color: var(--renata-yellow);
+			text-shadow: none;
+		}
+
+		.photo-frame {
+			position: absolute;
+			inset: 0;
+			width: 100%;
+			height: 100%;
+			margin: 0;
+			border-radius: 0;
+			overflow: hidden;
+			box-shadow: none;
+
+			&::before,
+			&::after {
+				display: none;
+			}
+
+			.photo-image {
+				width: 100%;
+				height: 100%;
+				border-radius: 0;
+				clip-path: none;
+				filter: none;
+				object-fit: cover;
+			}
+		}
+
+		.closing-name {
+			background: none;
+			background-clip: unset;
+			-webkit-text-fill-color: var(--renata-ivory);
+			color: var(--renata-ivory);
+			text-shadow: none;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.invitation-hero[data-variant='editorial'] .invitation-hero__portrait,
+		.event-location__card,
+		.rsvp[data-variant='editorial'] {
+			transition: none;
+		}
+	}
+}
