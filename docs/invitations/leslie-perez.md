@@ -181,6 +181,10 @@ The managed release reads the one-to-one delivery derivatives `delivery/01.webp`
 JPG files remain at the namespace root as source evidence and are not used as the declared release
 inputs while they exceed the intake limit.
 
+Role-aware delivery budgets are enforced for this invitation: `photo-01` uses `hero-desktop` with a
+500 KB maximum, `photo-02` through `photo-14` use `gallery` with a 180 KB maximum each, and
+`photo-15` uses `editorial-featured` with a 300 KB maximum.
+
 | source filename | dims      | format | orientation | quality          | role            | processing                                  |
 | --------------- | --------- | ------ | ----------- | ---------------- | --------------- | ------------------------------------------- |
 | 01.jpg          | 3920×5616 | JPG    | vertical    | production-ready | Hero background | Responsive focal crop; preserve original.   |

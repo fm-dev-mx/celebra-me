@@ -37,6 +37,7 @@ export const LESLIE_ASSET_SPECS = [
 	{
 		key: 'photo-01',
 		relativePath: 'delivery/01.webp',
+		optimizationRole: 'hero-desktop',
 		displayName: 'Leslie — portada con Save the Date',
 		alt: 'Leslie sostiene un letrero de Save the Date con la fecha 26.09.26',
 		focalPoint: {
@@ -49,6 +50,7 @@ export const LESLIE_ASSET_SPECS = [
 	{
 		key: 'photo-02',
 		relativePath: 'delivery/02.webp',
+		optimizationRole: 'gallery',
 		displayName: 'Leslie — calendario de septiembre',
 		alt: 'Leslie posa junto a un calendario de septiembre de 2026',
 		focalPoint: { default: '50% 38%' },
@@ -56,6 +58,7 @@ export const LESLIE_ASSET_SPECS = [
 	{
 		key: 'photo-03',
 		relativePath: 'delivery/03.webp',
+		optimizationRole: 'gallery',
 		displayName: 'Leslie — retrato al aire libre',
 		alt: 'Leslie posa al aire libre bajo un cielo azul',
 		focalPoint: { default: '50% 44%' },
@@ -63,6 +66,7 @@ export const LESLIE_ASSET_SPECS = [
 	{
 		key: 'photo-04',
 		relativePath: 'delivery/04.webp',
+		optimizationRole: 'gallery',
 		displayName: 'Leslie — retrato editorial',
 		alt: 'Retrato cercano de Leslie frente a un fondo de luces circulares',
 		focalPoint: { default: '50% 50%' },
@@ -70,6 +74,7 @@ export const LESLIE_ASSET_SPECS = [
 	{
 		key: 'photo-05',
 		relativePath: 'delivery/05.webp',
+		optimizationRole: 'gallery',
 		displayName: 'Leslie — globos y septiembre',
 		alt: 'Leslie posa junto a globos y un calendario de septiembre de 2026',
 		focalPoint: { default: '50% 38%' },
@@ -77,6 +82,7 @@ export const LESLIE_ASSET_SPECS = [
 	{
 		key: 'photo-06',
 		relativePath: 'delivery/06.webp',
+		optimizationRole: 'gallery',
 		displayName: 'Leslie — carrusel',
 		alt: 'Leslie posa frente a una estructura de carrusel bajo el cielo azul',
 		focalPoint: { default: '50% 65%' },
@@ -84,6 +90,7 @@ export const LESLIE_ASSET_SPECS = [
 	{
 		key: 'photo-07',
 		relativePath: 'delivery/07.webp',
+		optimizationRole: 'gallery',
 		displayName: 'Leslie — flores',
 		alt: 'Leslie posa entre flores en un retrato vertical',
 		focalPoint: { default: '55% 34%' },
@@ -91,6 +98,7 @@ export const LESLIE_ASSET_SPECS = [
 	{
 		key: 'photo-08',
 		relativePath: 'delivery/08.webp',
+		optimizationRole: 'gallery',
 		displayName: 'Leslie — retrato con humo',
 		alt: 'Retrato cercano de Leslie junto a una composición con humo',
 		focalPoint: { default: '50% 45%' },
@@ -98,6 +106,7 @@ export const LESLIE_ASSET_SPECS = [
 	{
 		key: 'photo-09',
 		relativePath: 'delivery/09.webp',
+		optimizationRole: 'gallery',
 		displayName: 'Leslie — silla y esferas',
 		alt: 'Leslie posa junto a una silla roja y esferas disco',
 		focalPoint: { default: '50% 50%' },
@@ -105,6 +114,7 @@ export const LESLIE_ASSET_SPECS = [
 	{
 		key: 'photo-10',
 		relativePath: 'delivery/10.webp',
+		optimizationRole: 'gallery',
 		displayName: 'Leslie — columpio',
 		alt: 'Leslie posa en un columpio al aire libre',
 		focalPoint: { default: '50% 40%' },
@@ -112,6 +122,7 @@ export const LESLIE_ASSET_SPECS = [
 	{
 		key: 'photo-11',
 		relativePath: 'delivery/11.webp',
+		optimizationRole: 'gallery',
 		displayName: 'Leslie — caballo',
 		alt: 'Leslie posa a caballo bajo un follaje verde',
 		focalPoint: { default: '50% 44%' },
@@ -119,6 +130,7 @@ export const LESLIE_ASSET_SPECS = [
 	{
 		key: 'photo-12',
 		relativePath: 'delivery/12.webp',
+		optimizationRole: 'gallery',
 		displayName: 'Leslie — humo azul y rosa',
 		alt: 'Leslie sostiene un dispositivo de humo frente al cielo azul',
 		focalPoint: { default: '50% 55%' },
@@ -126,6 +138,7 @@ export const LESLIE_ASSET_SPECS = [
 	{
 		key: 'photo-13',
 		relativePath: 'delivery/13.webp',
+		optimizationRole: 'gallery',
 		displayName: 'Leslie — caballo en el establo',
 		alt: 'Leslie posa junto a un caballo en un establo',
 		focalPoint: { default: '65% 50%' },
@@ -133,6 +146,7 @@ export const LESLIE_ASSET_SPECS = [
 	{
 		key: 'photo-14',
 		relativePath: 'delivery/14.webp',
+		optimizationRole: 'gallery',
 		displayName: 'Leslie — retrato ecuestre',
 		alt: 'Leslie posa junto a un caballo en un espacio ecuestre',
 		focalPoint: { default: '40% 50%' },
@@ -140,6 +154,7 @@ export const LESLIE_ASSET_SPECS = [
 	{
 		key: 'photo-15',
 		relativePath: 'delivery/15.webp',
+		optimizationRole: 'editorial-featured',
 		displayName: 'Leslie — cierre Save the Date',
 		alt: 'Leslie aparece de espaldas junto a globos y un letrero de Save the Date',
 		focalPoint: { default: '50% 48%' },
