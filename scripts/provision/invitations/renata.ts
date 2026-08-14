@@ -198,16 +198,17 @@ export function buildRenataPublishedContent(
 			disabled: false,
 			variant: 'premiere-floral',
 			cardLabel: 'CELEBRO MIS XV',
-			envelopeName: 'XV años de Renata',
+			envelopeName: 'Renata',
 			cardName: 'Renata',
-			cardTagline: '05 · 09 · 2026',
+			documentLabel: 'CELEBRO MIS XV',
 			sealStyle: 'wax',
 			sealIcon: 'monogram',
 			sealInitials: 'R',
-			microcopy: 'Abra su invitación',
+			microcopy: '',
+			teaserDetails: '',
 		},
 		family: {
-			variant: 'asymmetric-groups',
+			variant: 'standard',
 			presentation: 'text-only',
 			parents: {
 				father: 'Ramón Arturo Sainz Quevedo',
@@ -235,7 +236,7 @@ export function buildRenataPublishedContent(
 			visibility: 'public',
 			presentation: 'simple',
 			presentationOptions: {
-				showFlourishes: true,
+				showFlourishes: false,
 				showNavigationButtons: false,
 			},
 			indicationsHeading: 'Indicaciones',
@@ -285,6 +286,7 @@ export function buildRenataPublishedContent(
 				alt: 'Renata recostada con vestido amarillo en un estudio floral',
 				height: 'tall',
 				focalPoint: '50% 78%',
+				focalPointDesktop: '50% 52%',
 			},
 		],
 		itinerary: {
@@ -360,11 +362,11 @@ export function buildRenataPublishedContent(
 			],
 		},
 		rsvp: {
-			variant: 'formal-register',
+			variant: 'standard',
 			title: 'Confirme su asistencia',
 			subcopy: 'Pronto podrá reservar su lugar para el 5 de septiembre.',
 			personalizedAccess: {
-				variant: 'formal-pass',
+				variant: 'standard',
 				title: 'Su invitación personal',
 				subtitle: 'Esta invitación ha sido preparada para:',
 				footerText: 'La confirmación se habilitará cuando el anfitrión complete los datos.',

@@ -22,11 +22,12 @@
 	--env-paper-bg: var(--reveal-stationery-ivory);
 	--env-paper-border: rgb(var(--reveal-stationery-gold-rgb) / 18%);
 	--env-text-primary: var(--reveal-stationery-ink);
-	--env-text-secondary: rgb(var(--reveal-stationery-ink-rgb) / 72%);
+	--env-text-secondary: rgb(var(--reveal-stationery-ink-rgb) / 58%);
 	--env-accent: var(--reveal-stationery-gold);
 	--env-seal-accent: var(--reveal-stationery-gold);
-	--env-seal-icon: rgb(var(--reveal-stationery-botanical-rgb) / 75%);
+	--env-seal-icon: var(--reveal-stationery-botanical);
 	--env-font-display: var(--reveal-stationery-display);
+	--env-title-size: clamp(1.55rem, 6cqw, 2.35rem);
 	--env-container-radius: 5px;
 	--env-focus-ring: var(--reveal-stationery-gold);
 	--font-body: var(--reveal-stationery-body);
@@ -35,11 +36,11 @@
 	--reveal-card-font-display: var(--reveal-stationery-display);
 	--reveal-card-radius: 4px;
 	--reveal-card-text-primary: var(--reveal-stationery-ink);
-	--reveal-card-text-secondary: rgb(var(--reveal-stationery-ink-rgb) / 58%);
-	--reveal-card-accent: rgb(var(--reveal-stationery-gold-rgb) / 28%);
-	--reveal-card-border: rgb(var(--reveal-stationery-gold-rgb) / 16%);
-	--monogram-font-size: 7.5px;
-	--monogram-letter-spacing: 1.2px;
+	--reveal-card-text-secondary: rgb(var(--reveal-stationery-ink-rgb) / 52%);
+	--reveal-card-accent: rgb(var(--reveal-stationery-gold-rgb) / 34%);
+	--reveal-card-border: rgb(var(--reveal-stationery-gold-rgb) / 22%);
+	--monogram-font-size: 9px;
+	--monogram-letter-spacing: 0.8px;
 
 	// Selectable monogram seal — not applied to wax-organic / wax-medallion.
 	.envelope-seal-button[data-seal-renderer='monogram'] .envelope-seal-button__visual,
@@ -60,5 +61,29 @@
 			color: var(--reveal-stationery-botanical);
 			filter: drop-shadow(0 1px 1px rgb(255 255 255 / 40%));
 		}
+	}
+
+	.envelope-name {
+		font-weight: 400;
+		letter-spacing: 0.02em;
+		line-height: 0.92;
+	}
+
+	.envelope-manifest-label {
+		color: rgb(var(--reveal-stationery-ink-rgb) / 62%);
+		font-family: var(--reveal-stationery-body);
+		font-size: 0.62rem;
+		font-weight: 600;
+		letter-spacing: 0.22em;
+	}
+
+	.invitation-reveal-card__name {
+		letter-spacing: 0.01em;
+		line-height: 0.9;
+	}
+
+	.invitation-reveal-card__label {
+		letter-spacing: 0.28em;
+		opacity: 78%;
 	}
 }
