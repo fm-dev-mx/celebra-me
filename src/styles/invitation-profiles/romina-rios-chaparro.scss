@@ -61,12 +61,7 @@
 	--hero-overlay: rgb(var(--romina-botanical-rgb) / 48%);
 	--hero-split-plane-bg:
 		radial-gradient(circle at 78% 32%, rgb(var(--romina-sage-rgb) / 28%), transparent 34%),
-		linear-gradient(
-			135deg,
-			rgb(34 53 42) 0%,
-			var(--romina-botanical) 62%,
-			rgb(38 60 48) 100%
-		);
+		linear-gradient(135deg, rgb(34 53 42) 0%, var(--romina-botanical) 62%, rgb(38 60 48) 100%);
 	--hero-split-overlay-strong: rgb(var(--romina-botanical-rgb) / 96%);
 	--hero-split-overlay-mid: rgb(var(--romina-botanical-rgb) / 82%);
 	--hero-split-overlay-soft: rgb(var(--romina-botanical-rgb) / 18%);
@@ -165,29 +160,6 @@
 	--pa-guest-color: var(--romina-ink);
 	--pa-count-color: var(--romina-botanical);
 	--pa-divider-diamond-bg: var(--romina-ivory);
-
-	// Envelope seal — elevated gold wax seal with RC monogram
-	--monogram-font-size: 7.5px;
-	--monogram-letter-spacing: 1.2px;
-
-	.envelope-seal-button__visual {
-		background: radial-gradient(
-			circle at 34% 32%,
-			rgb(244 231 198) 0%,
-			var(--romina-gold) 48%,
-			rgb(138 114 70) 100%
-		);
-		border: 1px solid rgb(var(--romina-gold-rgb) / 64%);
-		box-shadow:
-			0 12px 28px rgb(var(--romina-botanical-rgb) / 32%),
-			inset 0 2px 5px rgb(255 255 255 / 65%),
-			inset 0 -3px 7px rgb(0 0 0 / 48%);
-
-		.seal-icon {
-			color: var(--romina-botanical);
-			filter: drop-shadow(0 1px 1px rgb(255 255 255 / 40%));
-		}
-	}
 
 	// Hero section — responsive typography for single-image cover
 	.invitation-hero {
@@ -340,5 +312,4 @@
 			}
 		}
 	}
-
 }

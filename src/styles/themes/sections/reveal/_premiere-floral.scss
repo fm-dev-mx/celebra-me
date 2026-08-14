@@ -1,18 +1,64 @@
+@use '@fontsource/the-nautigal/index.css' as the-nautigal;
+
 .envelope-wrapper[data-variant='premiere-floral'] {
+	// Stationery language scoped to the reveal. Independent of the host theme
+	// semantic tokens so editorial (or any other) invitations can consume this
+	// variant without remapping global surfaces.
+	--reveal-stationery-ivory: rgb(246 241 232);
+	--reveal-stationery-warm-white: rgb(255 253 248);
+	--reveal-stationery-gold: rgb(199 173 118);
+	--reveal-stationery-gold-rgb: 199 173 118;
+	--reveal-stationery-botanical: rgb(49 73 58);
+	--reveal-stationery-botanical-rgb: 49 73 58;
+	--reveal-stationery-ink: rgb(44 42 39);
+	--reveal-stationery-ink-rgb: 44 42 39;
+	--reveal-stationery-display: 'The Nautigal', cursive;
+	--reveal-stationery-body: 'Montserrat Variable', 'Montserrat', sans-serif;
 	--env-bg: radial-gradient(
 		ellipse at 50% 38%,
-		var(--color-surface-primary) 0%,
-		var(--color-surface-soft) 100%
+		var(--reveal-stationery-ivory) 0%,
+		var(--reveal-stationery-warm-white) 100%
 	);
-	--env-paper-bg: var(--color-surface-primary);
-	--env-paper-border: color-mix(in srgb, var(--color-action-accent) 18%, transparent);
-	--env-text-primary: var(--color-text-primary);
-	--env-text-secondary: color-mix(in srgb, var(--color-text-primary) 72%, transparent);
-	--env-accent: var(--color-action-accent);
-	--env-seal-icon: color-mix(in srgb, var(--color-surface-dark) 25%, transparent);
-	--env-font-display: var(--font-calligraphy);
+	--env-paper-bg: var(--reveal-stationery-ivory);
+	--env-paper-border: rgb(var(--reveal-stationery-gold-rgb) / 18%);
+	--env-text-primary: var(--reveal-stationery-ink);
+	--env-text-secondary: rgb(var(--reveal-stationery-ink-rgb) / 72%);
+	--env-accent: var(--reveal-stationery-gold);
+	--env-seal-accent: var(--reveal-stationery-gold);
+	--env-seal-icon: rgb(var(--reveal-stationery-botanical-rgb) / 75%);
+	--env-font-display: var(--reveal-stationery-display);
 	--env-container-radius: 5px;
-	--reveal-card-bg: var(--color-surface-primary);
-	--reveal-card-font-display: var(--font-calligraphy);
+	--env-focus-ring: var(--reveal-stationery-gold);
+	--font-body: var(--reveal-stationery-body);
+	--font-calligraphy: var(--reveal-stationery-display);
+	--reveal-card-bg: var(--reveal-stationery-ivory);
+	--reveal-card-font-display: var(--reveal-stationery-display);
 	--reveal-card-radius: 4px;
+	--reveal-card-text-primary: var(--reveal-stationery-ink);
+	--reveal-card-text-secondary: rgb(var(--reveal-stationery-ink-rgb) / 58%);
+	--reveal-card-accent: rgb(var(--reveal-stationery-gold-rgb) / 28%);
+	--reveal-card-border: rgb(var(--reveal-stationery-gold-rgb) / 16%);
+	--monogram-font-size: 7.5px;
+	--monogram-letter-spacing: 1.2px;
+
+	// Selectable monogram seal — not applied to wax-organic / wax-medallion.
+	.envelope-seal-button[data-seal-renderer='monogram'] .envelope-seal-button__visual,
+	.envelope-seal-button[data-seal-icon='monogram'] .envelope-seal-button__visual {
+		background: radial-gradient(
+			circle at 34% 32%,
+			rgb(244 231 198) 0%,
+			var(--reveal-stationery-gold) 48%,
+			rgb(138 114 70) 100%
+		);
+		border: 1px solid rgb(var(--reveal-stationery-gold-rgb) / 64%);
+		box-shadow:
+			0 12px 28px rgb(var(--reveal-stationery-botanical-rgb) / 32%),
+			inset 0 2px 5px rgb(255 255 255 / 65%),
+			inset 0 -3px 7px rgb(0 0 0 / 48%);
+
+		.seal-icon {
+			color: var(--reveal-stationery-botanical);
+			filter: drop-shadow(0 1px 1px rgb(255 255 255 / 40%));
+		}
+	}
 }

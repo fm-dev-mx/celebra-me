@@ -22,7 +22,6 @@ html:has(.event--renata.theme-preset--editorial) body {
 	--renata-olive-rgb: 86 102 70;
 	--renata-olive-deep: rgb(70 86 56);
 	--renata-coral: rgb(196 126 118);
-	--renata-coral-rgb: 196 126 118;
 	--renata-silver: rgb(168 170 166);
 	--renata-silver-rgb: 168 170 166;
 	--color-surface-primary: var(--renata-cream);
@@ -158,6 +157,22 @@ html:has(.event--renata.theme-preset--editorial) body {
 	--location-nav-maps-hover-border-color: var(--renata-olive-deep);
 	--location-nav-maps-color: var(--renata-cream);
 	--location-image-hover-scale: 1;
+	--location-map-preview-border: 0;
+	--location-map-preview-bg: var(--renata-blush);
+	--location-map-preview-art-bg: var(--renata-cream);
+	--location-map-preview-road: rgb(var(--renata-cream-rgb) / 82%);
+	--location-map-preview-line: rgb(var(--renata-silver-rgb) / 28%);
+	--location-map-preview-copy-bg: var(--renata-cream);
+	--location-map-preview-copy-border: rgb(var(--renata-silver-rgb) / 36%);
+	--location-map-preview-pin-bg: var(--renata-cream);
+	--location-map-preview-pin-color: var(--renata-olive);
+	--location-map-preview-pin-border: rgb(var(--renata-olive-rgb) / 42%);
+	--location-map-preview-link-color: var(--renata-olive);
+	--location-map-preview-label-color: rgb(var(--renata-ink-rgb) / 58%);
+	--location-map-preview-artwork-color: var(--renata-olive);
+	--location-map-preview-artwork-detail: var(--renata-cream);
+	--location-map-preview-artwork-horizon: rgb(var(--renata-silver-rgb) / 55%);
+	--location-indications-heading-color: var(--renata-olive);
 	--gifts-bg: var(--renata-cream);
 	--gifts-title-color: var(--renata-ink);
 	--gifts-subtitle-color: rgb(var(--renata-ink-rgb) / 68%);
@@ -202,23 +217,6 @@ html:has(.event--renata.theme-preset--editorial) body {
 	--mobile-drawer-cta-hover-color: var(--renata-cream);
 	--editorial-ledger-rule: rgb(var(--renata-silver-rgb) / 42%);
 	--editorial-ledger-spine: rgb(var(--renata-silver-rgb) / 48%);
-	--env-bg: var(--renata-ink);
-	--env-paper-bg: rgb(28 26 24);
-	--env-paper-border: rgb(var(--renata-silver-rgb) / 28%);
-	--env-text-primary: var(--renata-cream);
-	--env-text-secondary: rgb(var(--renata-cream-rgb) / 62%);
-	--env-accent: var(--renata-olive);
-	--env-container-ratio: 1.28;
-	--env-container-max-height: min(62svh, 460px);
-	--env-seal-size-min: 42px;
-	--env-seal-size-max: 72px;
-	--env-title-size: clamp(1.55rem, 5.4cqw, 2.2rem);
-	--reveal-card-bg: rgb(24 22 20);
-	--reveal-card-border: rgb(var(--renata-silver-rgb) / 26%);
-	--reveal-card-text-primary: var(--renata-cream);
-	--reveal-card-text-secondary: rgb(var(--renata-cream-rgb) / 68%);
-	--reveal-card-accent: rgb(var(--renata-silver-rgb) / 28%);
-	--reveal-card-grain-opacity: 0.28;
 	--interlude-image-filter: none;
 	--interlude-focal-point: 50% 62%;
 	--interlude-focal-point-desktop: 50% 52%;
@@ -282,30 +280,6 @@ html:has(.event--renata.theme-preset--editorial) body {
 	--rsvp-button-border-hover: var(--renata-olive-deep);
 
 	background: var(--renata-cream);
-
-	.envelope-wrapper,
-	.envelope-wrapper[data-variant='editorial'] {
-		--env-accent: var(--renata-cream);
-		--env-seal-accent: var(--renata-olive);
-
-		gap: 1.35rem;
-	}
-
-	.invitation-reveal-card__inner {
-		min-height: min(26svh, 220px);
-		padding: clamp(1.25rem, 3.5vw, 1.75rem) clamp(1.15rem, 3.5vw, 1.65rem);
-	}
-
-	.invitation-reveal-card__name {
-		font-size: clamp(1.85rem, 6.2vw, 2.55rem);
-		color: var(--renata-cream);
-	}
-
-	.invitation-reveal-card__label,
-	.invitation-reveal-card__date {
-		letter-spacing: 0.16em;
-		color: rgb(var(--renata-cream-rgb) / 62%);
-	}
 
 	.invitation-hero[data-variant='editorial'] {
 		justify-content: flex-end;

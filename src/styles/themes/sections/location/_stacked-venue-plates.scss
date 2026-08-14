@@ -35,13 +35,75 @@
 		z-index: 1;
 	}
 
-	.event-location__card-map-preview,
+	.event-location__card-map-preview[data-map-preview='illustration'],
 	.event-location__card-map-preview--link {
 		display: grid;
 		grid-template-columns: 1fr;
 		grid-template-rows: var(--location-plate-row) auto;
 		width: 100%;
 		overflow: hidden;
+		text-decoration: none;
+		color: inherit;
+	}
+
+	.event-location__card-map-preview-art {
+		position: relative;
+		min-height: 0;
+		overflow: hidden;
+	}
+
+	.event-location__card-map-preview-artwork {
+		position: absolute;
+		inset: 8% 8% 4%;
+		z-index: 1;
+		width: 84%;
+		height: 88%;
+		overflow: visible;
+		color: var(--location-map-preview-artwork-color, var(--color-action-accent));
+	}
+
+	.event-location__card-map-preview-artwork-silhouette {
+		fill: currentcolor;
+		opacity: 52%;
+	}
+
+	.event-location__card-map-preview-artwork-detail {
+		fill: var(--location-map-preview-artwork-detail, var(--color-surface-primary));
+		opacity: 88%;
+	}
+
+	.event-location__card-map-preview-artwork-cross {
+		fill: currentcolor;
+		opacity: 72%;
+	}
+
+	.event-location__card-map-preview-artwork-horizon {
+		fill: none;
+		stroke: var(--location-map-preview-artwork-horizon, var(--color-border-subtle));
+		stroke-width: 1.5;
+		opacity: 55%;
+	}
+
+	.event-location__card-map-preview-foot {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.7rem 1rem;
+		border-top: 1px solid var(--location-map-preview-copy-border, var(--color-border-subtle));
+		background: var(--location-map-preview-copy-bg, var(--color-surface-primary));
+		color: var(--location-map-preview-link-color, var(--color-action-accent));
+	}
+
+	.event-location__card-map-preview-action {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.45rem;
+		color: inherit;
+		text-decoration: none;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
 	}
 
 	.event-location__card-map-preview[data-map-preview='illustration'] {
@@ -68,8 +130,8 @@
 			padding-block-start: 0.75rem;
 		}
 
-		.event-location__card-map-preview,
-		.event-location__card-map-preview[data-map-preview='illustration'] {
+		.event-location__card-map-preview[data-map-preview='illustration'],
+		.event-location__card-map-preview--link {
 			--location-plate-row: minmax(7rem, min(18vw, 16rem));
 
 			min-height: 7rem;
