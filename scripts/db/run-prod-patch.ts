@@ -128,7 +128,7 @@ export function prepareProductionPatchFile(file: string): PreparedProductionPatc
 	return { file, path, sql, fingerprint, manifest: result.manifest };
 }
 
-function inspectPatchPreview(
+export function inspectProductionPatchPreview(
 	prepared: PreparedProductionPatch,
 	dbUrl: string,
 ): ProductionPatchPreviewAssessment {
@@ -166,7 +166,7 @@ function preflightPatchPreview(
 	prepared: PreparedProductionPatch,
 	dbUrl: string,
 ): ProductionPatchPreviewAssessment {
-	const assessment = inspectPatchPreview(prepared, dbUrl);
+	const assessment = inspectProductionPatchPreview(prepared, dbUrl);
 	if (assessment.state === 'PENDING') return assessment;
 	const storeConflict = assessment.reason === 'STORE_DISAGREEMENT';
 	throw new OperatorError({
@@ -366,7 +366,7 @@ function executeProductionPatchSql(
 			bindingHex: authorizedPlanBindingHex,
 			operationType: 'production_apply',
 		});
-		const finalPreview = inspectPatchPreview(prepared, dbUrl);
+		const finalPreview = inspectProductionPatchPreview(prepared, dbUrl);
 		if (finalPreview.state !== 'NOT_NEEDED') {
 			throw new Error(
 				`PATCH_POST_APPLY_ROWS_REMAIN: ${finalPreview.evidence.total} target rows remain.`,
