@@ -5,6 +5,10 @@
 import { createHash } from 'node:crypto';
 import type { UpdateScope } from '../provision/semantic-delta.ts';
 import type { PromotionPreflightReport } from '../provision/invitation-promote.ts';
+import type {
+	ProductionPatchPreviewReason,
+	ProductionPatchPreviewState,
+} from './production-patch-preview.ts';
 
 export type ProductionApplyReadiness =
 	'READY' | 'READY_AFTER_SCHEMA' | 'IN_SYNC' | 'BLOCKED' | 'UNKNOWN' | 'NOT_APPLICABLE';
@@ -42,8 +46,26 @@ export interface ProductionApplyPlanItem {
 	pendingVersions?: readonly string[];
 	packageHash?: string;
 	updateScope?: UpdateScope;
+	patchPreview?: ProductionApplyPatchPreview;
 	/** In-process only; stripped from public JSON. Not part of planId. */
 	preflight?: PromotionPreflightReport;
+}
+
+export interface ProductionApplyPatchPreview {
+	state: ProductionPatchPreviewState;
+	reason: ProductionPatchPreviewReason;
+	total: number;
+	expectedRowsMin: number;
+	expectedRowsMax: number;
+	keysByStore: Record<string, string[]> | null;
+	affectedRows: Array<{
+		store: string;
+		key: string;
+		slug: string | null;
+		version: number | null;
+	}> | null;
+	verifiedAt: string;
+	projectRef: string | null;
 }
 
 export interface ProductionApplyPlan {
@@ -74,6 +96,15 @@ export function buildProductionApplyPlanId(items: readonly ProductionApplyPlanIt
 			id: item.id,
 			binding: item.binding ?? '',
 			updateScope: item.updateScope ?? '',
+			patchPreview:
+				item.domain === 'patch' && item.readiness === 'READY'
+					? {
+							state: item.patchPreview?.state ?? null,
+							reason: item.patchPreview?.reason ?? null,
+							total: item.patchPreview?.total ?? null,
+							keysByStore: item.patchPreview?.keysByStore ?? null,
+						}
+					: null,
 		}))
 		.sort((a, b) => a.domain.localeCompare(b.domain) || a.id.localeCompare(b.id));
 	return createHash('sha256')

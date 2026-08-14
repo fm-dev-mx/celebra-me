@@ -154,6 +154,11 @@ function baseDeps(options?: {
 				rollback: 'backup',
 			},
 		}),
+		inspectPatchPreview: () => ({
+			state: 'PENDING',
+			reason: 'ROWS_WITHIN_RANGE',
+			evidence: { total: 1, keysByStore: null, rows: null },
+		}),
 	};
 }
 
@@ -278,6 +283,55 @@ describe('production apply planning', () => {
 		expect(plan.planId).toBe(
 			(await buildProductionApplyPlan(cli(['--schema']), baseDeps({ pending: [] }))).planId,
 		);
+	});
+
+	it('uses one LIVE patch preview and reports IN_SYNC when no rows remain', async () => {
+		const inspectPatchPreview = jest.fn(() => ({
+			state: 'NOT_NEEDED' as const,
+			reason: 'ZERO_ROWS' as const,
+			evidence: { total: 0, keysByStore: { draft: [], published: [] }, rows: [] },
+		}));
+		const plan = await buildProductionApplyPlan(cli(['--patch', 'scripts/manual/x.sql']), {
+			...baseDeps({ pending: [] }),
+			inspectPatchPreview,
+		});
+		const patch = plan.items.find((item) => item.domain === 'patch');
+		expect(inspectPatchPreview).toHaveBeenCalledTimes(1);
+		expect(patch).toMatchObject({
+			readiness: 'IN_SYNC',
+			patchPreview: { state: 'NOT_NEEDED', total: 0 },
+		});
+	});
+
+	it('blocks an explicit patch when LIVE evidence is outside its approved range', async () => {
+		const plan = await buildProductionApplyPlan(cli(['--patch', 'scripts/manual/x.sql']), {
+			...baseDeps({ pending: [] }),
+			inspectPatchPreview: () => ({
+				state: 'BLOCKED',
+				reason: 'ROWS_OUTSIDE_RANGE',
+				evidence: { total: 2, keysByStore: null, rows: null },
+			}),
+		});
+		expect(plan.items.find((item) => item.domain === 'patch')).toMatchObject({
+			readiness: 'BLOCKED',
+			blockCode: 'PATCH_PREVIEW_ROW_COUNT_MISMATCH',
+			patchPreview: { state: 'BLOCKED', total: 2 },
+		});
+	});
+
+	it('reports UNKNOWN when the LIVE patch preview cannot be verified', async () => {
+		const plan = await buildProductionApplyPlan(cli(['--patch', 'scripts/manual/x.sql']), {
+			...baseDeps({ pending: [] }),
+			inspectPatchPreview: () => {
+				throw Object.assign(new Error('connection unavailable'), {
+					code: 'PATCH_PREVIEW_FAILED',
+				});
+			},
+		});
+		expect(plan.items.find((item) => item.domain === 'patch')).toMatchObject({
+			readiness: 'UNKNOWN',
+			blockCode: 'PATCH_PREVIEW_FAILED',
+		});
 	});
 });
 

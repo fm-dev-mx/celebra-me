@@ -33,6 +33,9 @@ import {
 	prepareProductionPatchFile,
 	ProductionPatchApplyError,
 } from './run-prod-patch.ts';
+import type { PreparedProductionPatch } from './run-prod-patch.ts';
+import type { ProductionPatchPreviewAssessment } from './production-patch-preview.ts';
+import { inspectPatch } from './production-apply-patch-plan.ts';
 import { resolveInvitationPackageInput } from '../provision/invitation-package-input.ts';
 import type { InvitationPackageData } from '../provision/invitation-package.ts';
 import { orchestrateInvitationPromotion } from '../provision/invitation-promotion-orchestrator.ts';
@@ -67,6 +70,8 @@ export interface ProductionApplyAssemblerDeps {
 	listSlugs?: () => string[];
 	resolvePackage?: (slug: string) => Promise<InvitationPackageData>;
 	resolveInvitationUpdateScope?: (slug: string) => UpdateScope | undefined;
+	getProductionDbUrl?: () => { url: string };
+	inspectPatchPreview?: (prepared: PreparedProductionPatch) => ProductionPatchPreviewAssessment;
 	runInvitationPreflight?: (
 		packageData: InvitationPackageData,
 		updateScope?: UpdateScope,
@@ -75,7 +80,6 @@ export interface ProductionApplyAssemblerDeps {
 }
 
 export interface ProductionApplyExecuteDeps extends ProductionApplyAssemblerDeps {
-	getProductionDbUrl?: () => { url: string };
 	requireOwnerApply?: (input: OwnerProductionApplyInput) => Promise<void>;
 	applySchema?: (input: {
 		authorizedPlanBindingHex: string;
@@ -251,34 +255,6 @@ async function inspectInvitation(
 			domain: 'invitation',
 			id: slug,
 			readiness,
-			summary: classified.detail,
-			detail: classified.detail,
-			blockCode: classified.blockCode,
-		};
-	}
-}
-
-function inspectPatch(
-	file: string | undefined,
-	deps: ProductionApplyAssemblerDeps,
-): ProductionApplyPlanItem | null {
-	if (!file) return null;
-	try {
-		const prepared = (deps.preparePatch ?? prepareProductionPatchFile)(file);
-		return {
-			domain: 'patch',
-			id: file,
-			readiness: 'READY',
-			summary: 'Lint de parche aprobado (SQL no ejecutado)',
-			binding: prepared.fingerprint,
-			detail: 'Parche especializado; no forma parte de --all-ready',
-		};
-	} catch (error) {
-		const classified = classifySchemaError(error);
-		return {
-			domain: 'patch',
-			id: file,
-			readiness: 'BLOCKED',
 			summary: classified.detail,
 			detail: classified.detail,
 			blockCode: classified.blockCode,

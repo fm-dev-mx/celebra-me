@@ -1,7 +1,7 @@
 import type { SqlManifest } from './sql-safety.ts';
 
-type ProductionPatchPreviewState = 'NOT_NEEDED' | 'PENDING' | 'BLOCKED';
-type ProductionPatchPreviewReason =
+export type ProductionPatchPreviewState = 'NOT_NEEDED' | 'PENDING' | 'BLOCKED';
+export type ProductionPatchPreviewReason =
 	'ZERO_ROWS' | 'ROWS_WITHIN_RANGE' | 'ROWS_OUTSIDE_RANGE' | 'STORE_DISAGREEMENT';
 
 export interface ProductionPatchPreviewRow {
