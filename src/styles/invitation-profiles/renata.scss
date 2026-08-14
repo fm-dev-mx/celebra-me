@@ -90,30 +90,6 @@ html:has(.event--renata.theme-preset--editorial) body {
 	--hero-card-border-old-gold-mid: transparent;
 	--hero-card-border-old-gold-end: transparent;
 	--hero-card-shadow-contact: none;
-	--hero-card-shadow-ambient: none;
-	--family-bg: var(--renata-cream);
-	--family-panel-bg: transparent;
-	--family-panel-border: none;
-	--family-panel-shadow: none;
-	--family-panel-radius: 0;
-	--family-media-bg: transparent;
-	--family-media-filter: none;
-	--family-vignette-bg: transparent;
-	--family-text-primary: var(--renata-ink);
-	--family-text-muted: rgb(var(--renata-ink-rgb) / 64%);
-	--family-accent: var(--renata-olive);
-	--family-eyebrow-color: var(--renata-olive);
-	--family-group-title-color: rgb(var(--renata-ink-rgb) / 52%);
-	--family-title-color: var(--renata-ink);
-	--family-padding-block: clamp(2.75rem, 6vw, 4.75rem);
-	--family-group-text-align: left;
-	--family-list-align-items: flex-start;
-	--family-divider: linear-gradient(
-		90deg,
-		rgb(var(--renata-silver-rgb) / 55%),
-		rgb(var(--renata-silver-rgb) / 12%),
-		transparent
-	);
 	--location-bg: var(--renata-cream);
 	--location-card-bg: transparent;
 	--location-card-border: none;
@@ -381,41 +357,6 @@ html:has(.event--renata.theme-preset--editorial) body {
 			.invitation-hero__title {
 				font-size: clamp(2.6rem, 14vw, 3.6rem);
 			}
-		}
-	}
-
-	.family {
-		.family__header {
-			margin-inline: 0 auto;
-			text-align: left;
-		}
-
-		.family__header-inner {
-			align-items: flex-start;
-		}
-
-		.family__title {
-			margin-inline: 0;
-		}
-
-		.family__header-divider {
-			margin-inline: 0;
-			width: clamp(3.5rem, 12vw, 6rem);
-		}
-
-		.family__message {
-			margin-inline: 0;
-			text-align: left;
-		}
-
-		.family__group + .family__group::before {
-			left: 0;
-			width: min(11rem, 42%);
-			transform: none;
-		}
-
-		.family__name {
-			justify-content: flex-start;
 		}
 	}
 

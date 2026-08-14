@@ -207,7 +207,7 @@ export function buildRenataPublishedContent(
 			microcopy: 'Abra su invitación',
 		},
 		family: {
-			variant: 'standard',
+			variant: 'asymmetric-groups',
 			presentation: 'text-only',
 			parents: {
 				father: 'Ramón Arturo Sainz Quevedo',
