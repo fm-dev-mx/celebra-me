@@ -90,7 +90,8 @@ New managed content must follow the canonical
 
 - Select structural or behavioral choices with the owning `section.variant` field. Do not author
   `sectionStyles.*.structuralVariant`, theme-named Gallery layouts, or
-  `itinerary.presentation.behavior` in new content.
+  `itinerary.presentation.behavior` in new content. `envelope.variant` selects the reveal design
+  independently of `themeId`; omit it to keep the current theme-preset resolution.
 - Treat `theme.preset` and `visualVariant` as visual skin inputs only. Neither may select a
   renderer, structural layout, required DOM, or section behavior.
 - Supply every variant-specific field required by its discriminated section schema. Unknown and

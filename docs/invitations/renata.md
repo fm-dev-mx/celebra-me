@@ -237,8 +237,14 @@ hero. Feature frame is `_DSC5939`, not file-order first.
   `--color-text-emphasis` stays ink and is not aliased to `--color-action-accent`. Yellow is not a
   UI color. Cream/blush are light surfaces; silver is line/detail; coral is rare (wax highlight).
 - Structural selections: itinerary `editorial-ledger`; gallery `paired-feature-band` without a
-  feature `aspectRatio` override; personalized access `standard`; location `standard` with
-  `presentationOptions.showFlourishes: false`.
+  feature `aspectRatio` override and item order `gallery-01`, `gallery-02`, `gallery-feature`,
+  `gallery-03`, `gallery-04`; personalized access `standard`; location `stacked-venue-plates` with
+  `presentation: 'simple'`, `presentationOptions.showNavigationButtons: false`, and
+  `showFlourishes: false`; keep `ceremony` + `reception` (no `venues[]`); envelope
+  `variant: 'premiere-floral'` with `sealIcon: 'monogram'`, `microcopy: 'Abra su invitación'`, and
+  omitted `teaserDetails` so the closed teaser derives from Renata’s date and venue. Do not set
+  `closedPalette`. Reveal appearance is owned by the premiere-floral envelope variant, not the
+  Renata profile.
 - Lane B: none. Demo stays the gold editorial template.
 - Music omit / include: omitted (`not_applicable`).
 - Other: no `renata` key in `LEGACY_INTERSECTION_PROFILES`. No shared renderer/variant branches.

@@ -46,7 +46,8 @@ canonical CSS, and shared primitives must contain no compatibility branches.
     and optional right-set spanning godparents.
 - **Location:** `standard`, `split-map`, `stacked-venue-plates`.
   - `split-map` requires at least one visible venue with coordinates or image media.
-  - `stacked-venue-plates` requires at least two visible venues and owns twin plate-chapter geometry.
+  - `stacked-venue-plates` requires at least two visible venues and owns twin plate-chapter
+    geometry.
   - Map/navigation media and presentation flags remain explicit section capabilities.
 - **Gallery:** `uniform-grid`, `editorial-mosaic`, `magazine-spread`, `feature-mosaic`,
   `feature-stack`, `paired-feature-band`, `index-choreography`, `single-keepsake`.
@@ -63,6 +64,12 @@ canonical CSS, and shared primitives must contain no compatibility branches.
 - **RSVP:** `standard`, `editorial-press-pass`.
 - **Personalized Access:** `standard`, `ornamented`, `editorial-pass`.
 - **Thank You:** `standard`, `editorial-back-cover`, `full-bleed-photo`.
+- **Envelope / reveal:** `envelope.variant` is a `THEME_PRESETS` design selector. It is independent
+  of `themeId`. When omitted, resolution falls back to the invitation `theme.preset`.
+  `premiere-floral` owns reveal-scoped stationery tokens, typography, and the selectable monogram
+  seal treatment. Shared envelope DOM, geometry, and animation stay in `_envelope-reveal.scss`.
+  Isolated CSS delivery loads `_premiere-floral.scss` only when the selected envelope variant
+  differs from the host theme bundle.
 
 Sections without a structural choice use their shared renderer and do not receive a synthetic
 variant abstraction merely for symmetry.

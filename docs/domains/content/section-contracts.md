@@ -39,8 +39,13 @@ structural variants without new executable evidence.
 
 - **Purpose**: Interactive wax-sealed envelope opening experience for guests.
 - **Required Inputs**: `enabled` (boolean), `sealStyle`, `documentLabel`, `stampText`, `stampYear`.
-- **Optional Inputs**: `sealIcon`, `sealInitials`, `sealVariant`, `sealColor`, `sealImage`,
-  `closedPalette`, `coverEdition`, `revealVariant`.
+- **Optional Inputs**: `variant`, `sealIcon`, `sealInitials`, `sealVariant`, `sealColor`,
+  `sealImage`, `closedPalette`, `coverEdition`, `revealVariant`.
+- **Reveal variant**: `envelope.variant` selects the reveal design independently of `themeId`.
+  Omitted values resolve to the invitation `theme.preset` (backward-compatible). `premiere-floral`
+  owns its stationery palette, calligraphy, and monogram seal treatment in
+  `src/styles/themes/sections/reveal/_premiere-floral.scss` and is delivered independently when the
+  host theme is not `premiere-floral`.
 - **Seal Renderer Model**:
   - `wax-organic` (default for new invitations): Organic melted-wax geometry with shape-conforming
     die relief.

@@ -1,0 +1,147 @@
+---
+title: Renata Goal 1 — Variant Selection Matrix
+status: active
+created: 2026-08-14
+updated: 2026-08-14
+type: diagnostic
+related_skills:
+  - client-invitation-audit
+  - theme-architecture
+related_docs:
+  - docs/invitations/renata.md
+  - docs/invitations/daniela-y-martin.md
+  - docs/domains/theme/variant-system.md
+  - docs/domains/content/section-contracts.md
+  - scripts/provision/invitations/renata.ts
+  - scripts/provision/invitations/daniela-y-martin.ts
+---
+
+# Renata Goal 1 — Audit, Variant Selection, and Implementation Contract
+
+**Objective:** Select a reusable section variant (or a justified generic extension) for every
+Renata surface, using Daniela y Martín as the primary reference and existing XV invitations as the
+fallback, while preserving Renata’s content and assets.
+
+**Authorization:** Audit and specification only. Do not implement in this goal. Do not publish.
+Do not call `assertImplementationAllowed`. Production mutation remains forbidden.
+
+**Non-goals:** Payload/SCSS edits, RSVP mode/cap invention, parish-name confirmation, Preview or
+Production apply, new variants, slug branches, invitation-to-invitation imports.
+
+## Invariants for Goal 2
+
+- No `renata` (or any slug) conditions in shared renderers, variant SCSS, or primitives.
+- No forks named after Renata, Daniela, Abril, or any client.
+- No assets, copy, initials, venues, or dates from reference invitations in Renata.
+- `section.variant` is the structural selector. Theme preset and `visualProfileId` are skin only.
+- Profile SCSS may tint tokens; it may not redeclare canonical grid, order, or required breakpoints.
+- Keep Renata data: names, times, venues, maps, dress notes, cash-only gifts, unique photo roles.
+- `venues[]` is forbidden for Renata. `pickHeroValue` prefers `venues[0]` over reception; reception
+  is Renata’s primary hero/countdown instant (`19:00` / Hacienda). Ceremony-first `venues[]` would
+  leak ceremony into the hero. Reception-first `venues[]` would invert Location order. Existing
+  `ceremony` + `reception` plus `stacked-venue-plates` already yields two visible venues.
+- Do not write `rsvp.confirmationMode`, `rsvp.guestCap`, or `rsvp.accessMode` from Daniela. Those
+  facts are still missing. Schema defaults must not be published as owner decisions.
+- No generic variant extension is required. Every selected value already exists in the closed
+  vocabularies in `docs/domains/theme/variant-system.md`.
+
+## Evidence (Goal 1)
+
+Local routes returned 200. Mobile-first captures at 390×844 and desktop 1440×900 for Renata,
+Daniela y Martín, Abril, Victoria y Roberto, and Romina (390). DOM contracts recorded
+`data-structural-variant`, envelope open-control counts, location actions, and leak scans
+(Daniela/Abril strings absent from Renata).
+
+Observed public DOM (Renata, revealed):
+
+| Surface | Structural variant | Notes |
+| --- | --- | --- |
+| Envelope sealed | n/a | **2** `[data-envelope-open]` controls (seal + CTA) |
+| Hero | `standard` | Reception 7:00 p. m. / Hacienda in the fold |
+| Family | `standard` + `text-only` | Parents then godparents; no photo |
+| Countdown | none | Four units; footer misa + recepción |
+| Location | `standard` | 2 venues; Apple Maps + Google Maps × 2; copy × 2 |
+| Interlude | n/a | One client frame after location |
+| Itinerary | `editorial-ledger` | Two described moments |
+| Gallery | `paired-feature-band` | Five unique photos; feature currently 2nd |
+| Gifts | `standard` / catalog | Cash only |
+| Personalized access | omitted publicly | Requires guest context |
+| RSVP | locked preview | `rsvpInteractiveCount: 0` |
+| Thank you | `full-bleed-photo` | Unique closing portrait |
+| Quote / music | omitted | |
+
+Daniela public DOM: envelope **1** open control; hero `standard` (ceremony-first via `venues[0]`);
+location `stacked-venue-plates` (Ver mapa + copy only); family `split-groups`; gallery
+`single-keepsake`; gifts `standard` (store + cash); RSVP interactive (`rsvpInteractiveCount: 2`);
+thank you `standard` without photo; quote present; two stock interludes; no itinerary; PA omitted
+without guest.
+
+## Authoritative matrix
+
+Legend — **compatibility:** `reuse-daniela` | `xv-fallback` | `canonical-keep` | `omit`.
+
+| section | source invitation | variant | compatibility | required adaptation | data mapping | risks | acceptance criteria |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Envelope | Daniela y Martín (behavior) + Abril (XV identity) | `envelope.variant: 'premiere-floral'` (design selector, not a structural section variant) | reuse-daniela (behavior) + premiere-floral reveal | Keep seal + CTA: `microcopy: 'Abra su invitación'` so both `[data-envelope-open]` controls remain. Set `variant: 'premiere-floral'`, `sealIcon: 'monogram'`, `sealInitials: 'R'`, `envelopeName: 'XV años de Renata'`, `cardName: 'Renata'`, `cardTagline: '05 · 09 · 2026'`. Omit `teaserDetails` (derived date/venue) and `closedPalette`. Do not copy Daniela `D·M`, `BODA`, cream jewelry skin, or `guestPlacement` unless already required by schema defaults. | Renata: `CELEBRO MIS XV`, card name `Renata`, envelope name `XV años de Renata`, initials `R`. Tooltip may stay `Abrir invitación` / product seal hint. | Reveal appearance is owned by the premiere-floral envelope variant, not the Renata profile. Do not retarget envelope geometry to jewelry-box. | 390 sealed: two `[data-envelope-open]` controls (seal + CTA); seal visible and ≥48px hit; no Daniela names/initials; card shows Renata / CELEBRO MIS XV / 5 SEP 2026. Open → revealed hero title `Renata`. 1440: same two controls. |
+| Hero | Daniela y Martín | `standard` | reuse-daniela | Keep `standard`. Keep `presentation.portraitEnabled: false`. Do not select `split-cover` (Romina) or `editorial-cover`. Do not copy couple ampersand chrome from jewelry-box profile. | `name: Renata`; no `secondaryName`; `label: CELEBRO MIS XV`; `date` = Renata `heroDate`; unique `hero-source.jpg` focals as provisioned. Hero time/venue must continue to resolve from **reception** (`7:00 p. m.`, Hacienda) via `ceremony`/`reception` (see Location). | Shared `hero.date` UTC-wall-clock workaround in `renata.ts` remains a known display defect; out of variant scope. Jewelry-box hero chrome must not be copied into `renata.scss`. | 390/1440: `data-structural-variant="standard"`; title `Renata` only (no surname); reception time + Hacienda visible; unique hero photo; filter none; face in crop; no split plane; no Daniela names. |
+| Quote | — | omit | omit | Do not add a quote. Daniela’s quote is couple voice and is not Renata data. | none | Copying Daniela or Abril quote would be content leakage. | No `[data-screenshot-section="quote"]`. No quote text from any reference invitation. |
+| Family | Abril / Romina (XV `standard`) | `standard` + `presentation: 'text-only'` | xv-fallback | Do **not** use Daniela `split-groups` (novia/novio parallel columns; requires `groups[]` ≥ 2). Do **not** use Victoria `asymmetric-groups` (two family sides + spanning godparents). Do **not** enable Abril `with-photo` (would consume a gallery frame and break uniqueness). Keep current parents + godparents contract. | `parents.father` / `parents.mother` / `parentsOrder: 'father-first'` / `godparents[]` as provisioned. Labels stay Renata Spanish. No `groups[]`. No `featuredImage`. | Mapping padres\|padrinos into `split-groups` would apply wedding column semantics and drop the `parents`/`godparents` titles contract. | 390: stacked parents then padrinos; names exact; roles Padre/Madre; no photo. 1440: same blocks; godparents may sit two-up; no vertical couple divider. `data-structural-variant="standard"` `data-presentation="text-only"`. |
+| Countdown | Daniela y Martín | none (shared renderer) | reuse-daniela | Keep four units. Do not copy Alba `visibleUnits: ['days']`. Do not copy Daniela title/footer. | `title: El día se acerca`; `footerText` misa 5:00 p. m. · recepción 7:00 p. m. Target remains `eventTiming.startsAtUtc` (reception). | Footer duplicates itinerary/location times by design. | 390: 2×2 units; date Saturday 5 Sep 2026; footer both times; no Huejutla copy. 1440: readable, no overflow. |
+| Location | Daniela y Martín | `stacked-venue-plates` | reuse-daniela | Change from current `standard`. Set `presentation: 'simple'`, `presentationOptions.showNavigationButtons: false`, keep `showFlourishes: false`. **Do not introduce `venues[]`.** Keep `ceremony` + `reception` so `pickHeroValue` still prefers reception. Plate geometry comes from section SCSS; profile may tint, must not copy Daniela `D·M` plate overlay or jewelry illustrations as invitation-owned art. Set `indicationsHeading: 'Indicaciones'` (generic UI label, not Daniela copy). Do not copy Daniela’s civil/RSVP-deadline indications. | Ceremony → Parroquia Santa Inés, 5:00 p. m., client Maps URL, inferred parish name stays classified inferred. Reception → InHouse Select Hacienda Tres Ríos + salón la cabaña del abuelo, 7:00 p. m., client Maps URL. Indications: formal + no vestir de color rosa only. Apple URLs may remain in data; they are not shown when nav buttons are off. Preview link uses `googleMapsUrl`/`mapUrl`. | Illustrated plates can inherit jewelry-box look if profile copies Daniela art/initials. `showFlourishes: true` would fight Renata’s flattened chrome. `venues[]` would break hero reception-first **or** location ceremony-first. | 390: two stacked plates; each exposes Ver mapa + copy (no Apple/Google/Waze row); ceremony then reception; dress notes below both, not under one card. 1440: twin plates. `data-structural-variant="stacked-venue-plates"`. Hero still shows Hacienda 7:00 p. m. Zero Daniela venue strings. |
+| Interlude | Renata current (not Daniela) | none | canonical-keep | Keep **one** interlude after `location`, `height: 'tall'`, client `interlude-source.jpg`. Do not copy Daniela’s two stock `screen` interludes, their after-countdown/after-gifts cadence, or Victoria’s second interlude. Do not reuse gallery/hero/thank-you frames. | Existing interlude asset + focals only. `composition.intersections['interlude-after-location'] = overlap` may stay. | Extra interludes would duplicate unique photos or import foreign stock. | One interlude after location; unique landscape/studio frame; 390/1440 crop keeps face/body; no Daniela/Victoria stock. |
+| Itinerary | Canonical inventory (live consumer: Victoria); XV Abril/Romina evaluated | `editorial-ledger` | xv-fallback then canonical-keep | Daniela has **no** itinerary (times live in Location). XV Abril `timeline-paper` is a 5-beat paper program — rejected for two items. XV Romina `standard` is icon-spine without the described ledger — weaker for Renata’s two `description` lines. Keep `editorial-ledger` (already generic; TimelineList + ledger SCSS). Do not add Abril paper chrome or Victoria’s 8-item boda program. | Two items only: Misa 5:00 p. m. + Recepción 7:00 p. m. with current labels/descriptions/icons. Title `Momentos de la celebración`. | Two-item ledger can look sparse if Goal 2 reintroduces paper flourishes. Do not omit the section to “match Daniela”; it is requested. | `data-structural-variant="editorial-ledger"`; two rows; descriptions visible; 390 left spine readable; 1440 not a paper booklet; no Victoria/Abril event copy. |
+| Gallery | Abril | `paired-feature-band` | xv-fallback | Daniela `single-keepsake` is incompatible (exactly one item; would drop four unique photos). Romina/demo `editorial-mosaic` is a weaker fit because Renata has an explicit feature frame. Keep `paired-feature-band` with one `layoutRole: 'feature'`. **Reorder items to Abril’s 2 + band + 2:** `[gallery-01, gallery-02, gallery-feature, gallery-03, gallery-04]` so desktop is a pair, full-width feature, pair. Do not set Abril’s `aspectRatio: '8 / 5'` unless schema requires it — variant CSS already sets feature `8 / 5`. No feature crop override beyond current focals. | Five unique assets only. Feature remains `_DSC5939` / `gallery-feature`. Do not import Abril photos or jewelry-box storyboard nth-child rules. | Current order (feature 2nd) yields 1 + band + 3 on 1440 (orphan). Mobile stack is acceptable either order; desktop 2-1-2 is the acceptance target. | `data-structural-variant="paired-feature-band"`; five Renata photos; 390 stacked including one landscape feature band; 1440 2-1-2; lightbox/browse if already generic; no single-keepsake; no Abril faces. |
+| Gifts | Daniela y Martín | `standard` | reuse-daniela | Keep `standard` catalog. Do **not** add Daniela’s Amazon `store` item. Do not use Alba `legend-only`. Profile may keep muted card chrome (hidden medallion/title) as Lane A tokens, not a new variant. | One `type: 'cash'` item; current title/subtitle/text. No URL. | Copying Amazon URL/description is leakage. | Cash-only copy; no store button; 390/1440; `data-structural-variant="standard"`. |
+| Personalized Access | Abril/Romina evaluated; keep current | `standard` | xv-fallback (reject Daniela `ornamented`) | Daniela `ornamented` is data-compatible but adds corner ornaments that fight Renata’s flattened editorial chrome (Victoria previously selected `ornamented` then hid ornaments in profile — forbidden pattern). XV Abril/Romina also use `ornamented`; reject for the same chrome reason. Keep `standard`. Section remains guest-gated (`resolvePersonalizedAccessConfig` returns null without guest/demo preview). Do not force a public PA to mimic Daniela’s order. | Keep current title/subtitle/footer. Do not copy Daniela `{count}`/`{personWord}` note unless owner supplies a guest-cap policy (still missing). | Public page will not show PA until a guest link exists — expected. Do not invent `guestCap` to preview seats. | With guest context: `data-structural-variant="standard"`; no `.access-card__ornaments`; Renata copy only. Public without guest: PA absent; RSVP locked shell remains. |
+| RSVP | Daniela y Martín | `standard` | reuse-daniela (structure only) | Keep `standard`. Do **not** copy `accessMode: 'hybrid'`, `confirmationMode: 'api'`, `guestCap: 8`, or Daniela’s olive interactive card as a reason to enable the form. Leave the public locked personalized shell until owner decides RSVP-MODE/RSVP-CAP. Do not select `editorial-press-pass`. | Keep Renata title/subcopy/responseMessages/calendar (XV de Renata, Hacienda, 7:00 p. m.). Calendar `startsAt` = Renata `startsAtUtc`. | Schema defaults `confirmationMode: 'api'` and `accessMode: 'personalized-only'` / `guestCap: 1` if fields are omitted. Goal 2 must not persist those defaults as client facts in docs or publication copy. | Public 390/1440: locked message, **0** radio/submit controls; no Daniela “¿Podrán acompañarnos?”; no guest cap number. `data-structural-variant` remains `standard` when the interactive island is later enabled. |
+| Thank You | Canonical inventory (current Renata); XV Abril/Romina evaluated | `full-bleed-photo` | canonical-keep | Daniela `standard` has **no** image — incompatible (would drop the unique closing portrait). XV Abril/Romina `standard` **with** image renders a contained/circular portrait — rejected; Goal 2B already accepted full-bleed over circular. Keep `full-bleed-photo`. | Unique `thank-you-source.jpg`; message `Gracias por acompañar este día.`; `closingName: Renata`; date `5 de septiembre de 2026`; current focals. | Profile must not restore editorial circular frame. Do not reuse hero as closing. | `data-structural-variant="full-bleed-photo"`; unique sofa/floral closing frame; cream overlay text; 390/1440 face-safe crop; no circular clip; no Daniela script names. |
+| Music | — | omit | omit | Keep omitted (`not_applicable`). | none | Abril/Victoria floating play control must not appear. | No audio control, no `music` section. |
+| Section order | Renata requested / XV Abril–Romina | n/a | canonical-keep | Do **not** adopt Daniela’s boda order (quote → countdown → location → PA → family …). Keep: family, countdown, location, itinerary, gallery, gifts, personalizedAccess, rsvp, thankYou (+ hero/envelope implicit). | `sectionOrder` as in `renata.ts`. | Reordering family after location would copy boda narrative. | Public sequence matches the list; PA still guest-gated; itinerary remains. |
+| Composition | Renata current (restraint) | `atmospheric-blend` on family from hero; `overlap` on interlude after location; remaining seams neutral | canonical-keep | Do **not** copy Daniela’s full-blend map (every boundary). `section-intersections.md` limits geometric treatments to one or two. | Existing `composition.intersections` only. No `LEGACY_INTERSECTION_PROFILES.renata`. | Painting every seam would be jewelry-box cadence, not a variant. | Family blends from hero; one overlap into the location interlude; other seams neutral; no slug intersection table. |
+
+## Evaluated and rejected (do not reopen in Goal 2)
+
+| Candidate | Why rejected |
+| --- | --- |
+| Hero `split-cover` / `editorial-cover` | Split plane or magazine cover fights the approved full-bleed fashion portrait. |
+| Family `split-groups` | Couple-column contract; Renata is one parent pair + padrinos, not novia/novio. |
+| Family `asymmetric-groups` | Requires two family sides; would invent a second group. |
+| Family Abril `with-photo` | No unique family photograph; would steal a gallery role. |
+| Location `standard` (current) | Compatible XV (Abril/Romina) but Daniela dual-venue plates match purpose and reduce 8 map actions to 4. |
+| Location `split-map` (Alba) | Needs coordinates/image media; single-venue pattern. |
+| Location `venues[]` | Conflicts with reception-first hero vs ceremony-first cards (`pickHeroValue`). |
+| Itinerary omit (Daniela) | Requested section; would drop described moments. |
+| Itinerary `timeline-paper` (Abril) | Paper program for ≥5 beats. |
+| Itinerary `standard` (Romina) | Icon spine; weaker for two descriptions. |
+| Gallery `single-keepsake` (Daniela) | One item only. |
+| Gallery `editorial-mosaic` (Romina / demo-xv-editorial) | No first-class feature band for `_DSC5939`. |
+| PA `ornamented` (Daniela/Abril) | Ornament DOM + profile-hide anti-pattern. |
+| Thank you `standard` without image (Daniela) | Drops unique closing photo. |
+| Thank you `standard` circular (Abril) | Fights full-bleed closing. |
+| New variant / slug fork | Unnecessary; closed vocabularies already cover every row. |
+
+## Goal 2 implementation boundary
+
+Lane A only (provision content + `renata.scss` tokens). Lane B: none. Demo `demo-xv-editorial` stays the gold editorial template and must not receive Renata assets.
+
+Concrete content edits Goal 2 may make (and nothing else structural):
+
+1. Envelope `variant: 'premiere-floral'`, `sealIcon: 'monogram'`, `microcopy: 'Abra su invitación'`; omit `teaserDetails` and `closedPalette`.
+2. Location `variant: 'stacked-venue-plates'`, `presentation: 'simple'`, `showNavigationButtons: false`; keep `ceremony`/`reception`; keep `showFlourishes: false`.
+3. Gallery item order so the feature is third.
+4. Profile token pass so plates/ledger/RSVP stay flattened olive/cream/silver — no Daniela gold, `D·M`, or jewelry plate art.
+
+Do not invent RSVP mode/cap. Do not confirm parish name. Do not add quote, music, Amazon, or extra interludes.
+
+## Verification strategy (Goal 2)
+
+- 390×844 then 1440×900 on `/xv/renata?skipEnvelope=true` plus sealed envelope.
+- Assert matrix DOM markers (`data-structural-variant`, two envelope controls seal + CTA, location actions without Apple/Google rows, gallery 2-1-2 at 1440).
+- Leak scan: no Daniela/Abril/Victoria names, venues, or initials.
+- Photo uniqueness table unchanged.
+- Focused payload/schema tests for Renata; then `pnpm validate:changed`.
+- No Production apply.
+
+## Stop conditions
+
+Stop and report if Goal 2 believes a new variant, `venues[]`, RSVP defaults-as-facts, or a slug branch is required. Those are out of contract, not “small follow-ups.”
