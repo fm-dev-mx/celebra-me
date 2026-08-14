@@ -11,6 +11,7 @@ import { danielaInvitation } from './daniela-y-martin.ts';
 import { rominaInvitation } from './romina-rios-chaparro.ts';
 import { victoriaInvitation } from './victoria-y-roberto.ts';
 import { renataInvitation } from './renata.ts';
+import { leslieInvitation } from './leslie-perez.ts';
 
 const registry = new Map<string, InvitationDefinition>();
 const hostLoginAliases = new Map<string, string>();
@@ -66,6 +67,7 @@ registerInvitation(danielaInvitation);
 registerInvitation(rominaInvitation);
 registerInvitation(victoriaInvitation);
 registerInvitation(renataInvitation);
+registerInvitation(leslieInvitation);
 
 /**
  * Resolve an invitation definition by slug.
