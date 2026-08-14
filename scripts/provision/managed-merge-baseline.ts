@@ -12,6 +12,15 @@ export type ManagedBaselineClassification =
 	| 'publication_after_baseline'
 	| 'manual_or_unmanaged_drift';
 
+export type ManagedBaselineDiagnosticClassification = ManagedBaselineClassification | 'unknown';
+export type ManagedBaselineDiagnosticDisposition = 'verified' | 'adoptable' | 'blocked';
+
+export interface ManagedBaselineDiagnostic {
+	classification: ManagedBaselineDiagnosticClassification;
+	disposition: ManagedBaselineDiagnosticDisposition;
+	adoptionEligible: boolean;
+}
+
 export interface ManagedBaselineReceiptEvidence {
 	operationId: string;
 	status: 'not_applied' | 'applied' | 'partial' | 'replayed';
@@ -66,6 +75,55 @@ export class ManagedBaselineError extends Error {
 	) {
 		super(`${classification}: ${message}`);
 		this.name = 'ManagedBaselineError';
+	}
+}
+
+/**
+ * Converts a baseline failure into a stable, non-throwing operator decision.
+ * Only missing/legacy evidence can be considered for a metadata-only adoption;
+ * every other classification remains fail-closed until an operator reconciles it.
+ */
+export function diagnoseManagedBaselineError(error: unknown): ManagedBaselineDiagnostic {
+	if (!(error instanceof ManagedBaselineError)) {
+		return {
+			classification: 'unknown',
+			disposition: 'blocked',
+			adoptionEligible: false,
+		};
+	}
+	const adoptionEligible =
+		error.classification === 'missing_provenance' ||
+		error.classification === 'legacy_provenance';
+	return {
+		classification: error.classification,
+		disposition: adoptionEligible ? 'adoptable' : 'blocked',
+		adoptionEligible,
+	};
+}
+
+/**
+ * Evaluates the durable baseline contract without exposing its implementation exception.
+ * This is intentionally pure from the caller's perspective and performs no database I/O.
+ */
+export function diagnoseManagedBaseline(
+	input: ManagedMergeBaselineInput,
+	expectedNormalizationVersion: string,
+): ManagedBaselineDiagnostic {
+	try {
+		resolveVerifiedManagedBaseline(input, expectedNormalizationVersion, {
+			requireProjection: false,
+		});
+		// Verification of the stored artifact is not enough for reconciliation:
+		// inspect the live revision tokens as well so publication/editor races are
+		// surfaced before any adoption decision.
+		resolveManagedMergeBaseline(input);
+		return {
+			classification: 'verified_current',
+			disposition: 'verified',
+			adoptionEligible: false,
+		};
+	} catch (error) {
+		return diagnoseManagedBaselineError(error);
 	}
 }
 

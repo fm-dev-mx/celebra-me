@@ -1,5 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 import {
+	diagnoseManagedBaseline,
+	diagnoseManagedBaselineError,
 	ManagedBaselineError,
 	isRecoverableManagedPartial,
 	resolveManagedMergeBaseline,
@@ -35,6 +37,7 @@ describe('managed partial resume evidence', () => {
 
 const completeInput: ManagedMergeBaselineInput = {
 	managedProjection: projection,
+	releaseSchemaVersion: '2.0.0',
 	appliedDraftUpdatedAt: '2026-07-29T15:00:00.000Z',
 	appliedOperationId: operationId,
 	appliedPublishedVersion: 4,
@@ -179,5 +182,38 @@ describe('resolveManagedMergeBaseline', () => {
 				},
 			}),
 		).toBe(projection);
+	});
+});
+
+describe('managed baseline diagnostics', () => {
+	it.each([
+		['missing provenance', { managedProjection: null }, 'missing_provenance', true],
+		['legacy identity', { appliedOperationId: null }, 'legacy_provenance', true],
+		['missing receipt', { appliedReceipt: null }, 'missing_receipt', false],
+		['publication race', { currentPublishedVersion: 5 }, 'publication_after_baseline', false],
+	] as const)(
+		'classifies %s as %s with adoption eligibility %s',
+		(_label, overrides, classification, adoptionEligible) => {
+			const result = diagnoseManagedBaseline({ ...completeInput, ...overrides }, '2.0.0');
+			expect(result.classification).toBe(classification);
+			expect(result.adoptionEligible).toBe(adoptionEligible);
+			expect(result.disposition).toBe(adoptionEligible ? 'adoptable' : 'blocked');
+		},
+	);
+
+	it('returns verified for a complete baseline', () => {
+		expect(diagnoseManagedBaseline(completeInput, '2.0.0')).toEqual({
+			classification: 'verified_current',
+			disposition: 'verified',
+			adoptionEligible: false,
+		});
+	});
+
+	it('fails closed for an unexpected error type', () => {
+		expect(diagnoseManagedBaselineError(new Error('query failed'))).toEqual({
+			classification: 'unknown',
+			disposition: 'blocked',
+			adoptionEligible: false,
+		});
 	});
 });

@@ -326,8 +326,8 @@ Usage:
   pnpm invitation:release --slug <slug> --targets production --dry-run
   pnpm prod:apply -- --slug <slug> --apply
   pnpm invitation:release --package-hash <hash> --approve
-  pnpm invitation:release --preview-provenance --slug <slug> --targets preview --package <path> --dry-run [--json]
-  pnpm invitation:release --preview-provenance --slug <slug> --targets preview --package <path> --apply [--json]
+  pnpm invitation:release --preview-provenance --slug <slug> --targets preview [--package <path>] --dry-run [--json]
+  pnpm invitation:release --preview-provenance --slug <slug> --targets preview [--package <path>] --apply [--json]
 
 Options:
   --asset-policy <policy>     Asset handling policy: verify, missing (default), sync, preserve
@@ -587,6 +587,34 @@ async function executePreviewTargetPlan(input: {
 	};
 }
 
+type PreviewProvenanceResult = Awaited<ReturnType<typeof establishPreviewProvenanceBaseline>>;
+
+function formatPreviewProvenanceResult(result: PreviewProvenanceResult): string {
+	const statusLabel =
+		result.status === 'BASELINED'
+			? 'registrada'
+			: result.status === 'IN_SYNC'
+				? 'ya verificada'
+				: result.status === 'EVIDENCE_UNAVAILABLE'
+					? 'sin evidencia suficiente'
+					: 'planificada';
+	const lines = [
+		`Provenance de Preview: ${statusLabel}.`,
+		`· Clasificación: ${result.diagnostic.classification} (${result.diagnostic.disposition}).`,
+		`· ${result.diagnostic.message}`,
+		`· Siguiente paso: ${result.diagnostic.nextAction}`,
+		`· Escrituras previstas/realizadas: ${result.writes} metadata; contenido y Storage: 0.`,
+	];
+	if (result.uncertainty) lines.push(`· Incertidumbre: ${result.uncertainty}`);
+	return lines.join('\n');
+}
+
+function previewProvenanceApplyError(result: PreviewProvenanceResult): Error {
+	return new Error(
+		`PREVIEW_PROVENANCE_NOT_APPLICABLE: ${result.diagnostic.classification}. ${result.diagnostic.message} ${result.diagnostic.nextAction}`,
+	);
+}
+
 // eslint-disable-next-line complexity -- CLI handles mode dispatch, interactive prompts, and hosted environment flow gates.
 export async function main(argv = process.argv.slice(2)): Promise<void> {
 	const args = argv;
@@ -606,37 +634,59 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 	if (previewProvenance) {
 		const slug = value(args, '--slug');
 		const targets = parseTargets(value(args, '--targets'));
-		const packagePath = value(args, '--package');
+		let packagePath = value(args, '--package');
 		const apply = args.includes('--apply');
 		if (
 			args.includes('--status') ||
 			(!apply && !args.includes('--dry-run')) ||
 			!slug ||
 			targets.length !== 1 ||
-			targets[0] !== 'preview' ||
-			!packagePath
+			targets[0] !== 'preview'
 		) {
 			throw new Error(
-				'La reconstrucción de baseline requiere Preview, slug, paquete y --dry-run o --apply.',
+				'La reconstrucción de baseline requiere Preview, slug y --dry-run o --apply. El paquete puede generarse automáticamente.',
 			);
 		}
-		if (apply) {
-			await authorizePreviewWriteApply({
+		if (!packagePath) {
+			const generated = await exportInvitationPackage({
 				slug,
-				operation: 'provenance-baseline',
-				confirmPrompt: `Confirm Preview provenance baseline for "${slug}"? Type YES to proceed: `,
-				isInteractive: !nonInteractive && isTTY,
+				sourceDir: '',
+				dryRun: false,
+			});
+			packagePath = generated.packagePath ?? undefined;
+			if (!packagePath) throw new Error('No fue posible generar el paquete administrado.');
+		}
+		let result: PreviewProvenanceResult;
+		if (apply) {
+			// Diagnose first. The Owner gate must never appear for blocked evidence,
+			// and the apply path revalidates the target immediately before writing.
+			const preflight = await establishPreviewProvenanceBaseline({
+				packagePath,
+				apply: false,
+			});
+			if (preflight.status === 'IN_SYNC') {
+				result = preflight;
+			} else {
+				if (preflight.status !== 'PLANNED') throw previewProvenanceApplyError(preflight);
+				await authorizePreviewWriteApply({
+					slug,
+					operation: 'provenance-baseline',
+					confirmPrompt: `Confirm Preview provenance baseline for "${slug}"? Type YES to proceed: `,
+					isInteractive: !nonInteractive && isTTY,
+				});
+				result = await establishPreviewProvenanceBaseline({
+					packagePath,
+					apply: true,
+				});
+			}
+		} else {
+			result = await establishPreviewProvenanceBaseline({
+				packagePath,
+				apply: false,
 			});
 		}
-		const result = await establishPreviewProvenanceBaseline({
-			packagePath,
-			apply,
-		});
 		if (json) console.log(JSON.stringify(result, null, 2));
-		else
-			console.log(
-				`Provenance de Preview: ${result.status === 'BASELINED' ? 'registrada' : result.status === 'IN_SYNC' ? 'ya verificada' : result.status === 'EVIDENCE_UNAVAILABLE' ? 'sin evidencia suficiente' : 'planificada'}.`,
-			);
+		else console.log(formatPreviewProvenanceResult(result));
 		return;
 	}
 

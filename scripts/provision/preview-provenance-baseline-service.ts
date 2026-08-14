@@ -5,8 +5,11 @@ import { resolve } from 'node:path';
 import { assertPreviewDbUrl, getPreviewDbUrl, runPsql, sqlLiteral } from '../db/db-workflow-lib.ts';
 import { validatePackageData, runImportEngine } from './invitation-import-engine.ts';
 import type { InvitationPackageData } from './invitation-package.ts';
-import { verifyPreviewApprovalArtifact } from './preview-approval-service.ts';
-import { ManagedBaselineError } from './managed-merge-baseline.ts';
+import {
+	diagnoseManagedBaselineError,
+	ManagedBaselineError,
+	type ManagedBaselineDiagnostic,
+} from './managed-merge-baseline.ts';
 
 interface PreviewRow {
 	invitationId: string;
@@ -21,6 +24,83 @@ interface PreviewRow {
 	asset_manifest_hash?: string;
 	managed_projection?: unknown;
 	applied_operation_id?: string;
+}
+
+export interface PreviewProvenanceDiagnostic extends ManagedBaselineDiagnostic {
+	message: string;
+	nextAction: string;
+}
+
+function provenanceDiagnosticMessage(
+	diagnostic: ManagedBaselineDiagnostic,
+): Pick<PreviewProvenanceDiagnostic, 'message' | 'nextAction'> {
+	switch (diagnostic.classification) {
+		case 'missing_provenance':
+			return {
+				message: 'No existe un baseline administrado verificable.',
+				nextAction:
+					'Revise la paridad exacta de Preview; solo después puede registrarse metadata de baseline.',
+			};
+		case 'legacy_provenance':
+			return {
+				message: 'El baseline existente no contiene la identidad Phase 2 completa.',
+				nextAction:
+					'Confirme draft, publicación y assets; la adopción requiere una confirmación Owner explícita.',
+			};
+		case 'missing_receipt':
+			return {
+				message: 'La provenance no tiene un recibo durable coincidente.',
+				nextAction: 'No adopte el baseline; reconcilie la operación con revisión Owner.',
+			};
+		case 'partial_previous_operation':
+			return {
+				message: 'Existe una operación administrada parcial pendiente.',
+				nextAction: 'No adopte el baseline; reanude o reconcilie la operación parcial.',
+			};
+		case 'stale_provenance':
+			return {
+				message: 'La provenance no representa la operación administrada más reciente.',
+				nextAction:
+					'No adopte el baseline; confirme la operación más reciente con revisión Owner.',
+			};
+		case 'editor_mutation_after_baseline':
+			return {
+				message: 'El borrador cambió después del baseline desde el Editor.',
+				nextAction: 'No adopte el baseline; compare y documente la decisión editorial.',
+			};
+		case 'publication_after_baseline':
+			return {
+				message: 'La publicación cambió después del baseline.',
+				nextAction:
+					'No adopte el baseline; confirme la publicación vigente antes de continuar.',
+			};
+		case 'manual_or_unmanaged_drift':
+			return {
+				message: 'El draft difiere sin evidencia de una operación administrada.',
+				nextAction:
+					'No adopte el baseline; ejecute una comparación semántica y revisión Owner.',
+			};
+		case 'incompatible_normalization_version':
+			return {
+				message: 'El baseline usa una versión de normalización incompatible.',
+				nextAction:
+					'Regenerar el paquete y resolver la incompatibilidad antes de continuar.',
+			};
+		default:
+			return {
+				message: 'No fue posible clasificar la evidencia de provenance.',
+				nextAction: 'Detenerse y solicitar revisión técnica antes de cualquier escritura.',
+			};
+	}
+}
+
+function buildPreviewProvenanceDiagnostic(
+	diagnostic: ManagedBaselineDiagnostic,
+): PreviewProvenanceDiagnostic {
+	return {
+		...diagnostic,
+		...provenanceDiagnosticMessage(diagnostic),
+	};
 }
 
 function readPackage(path: string): InvitationPackageData {
@@ -43,24 +123,12 @@ function publicationHash(content: Record<string, unknown>): string {
 	return createHash('md5').update(JSON.stringify(content)).digest('hex');
 }
 
-function verifyApprovalForApply(input: { apply?: boolean }, pkg: InvitationPackageData): void {
-	if (!input.apply) return;
-	const identity = {
-		packageHash: pkg.packageHash,
-		sourceHash: pkg.sourceHash,
-		metadataHash: pkg.metadataHash,
-		projectionHash: pkg.projectionHash,
-		assetManifestHash: pkg.assetManifestHash,
-		slug: pkg.invitation.slug,
-		route: `/${pkg.invitation.eventType}/${pkg.invitation.slug}`,
-	};
-	verifyPreviewApprovalArtifact(identity);
-}
-
 async function verifyPreviewTarget(
 	pkg: InvitationPackageData,
 	dbUrl: string,
-): Promise<{ unavailable: true } | { unavailable: false }> {
+): Promise<
+	{ unavailable: true; diagnostic: PreviewProvenanceDiagnostic } | { unavailable: false }
+> {
 	try {
 		const verified = await runImportEngine({
 			packageData: pkg,
@@ -77,7 +145,11 @@ async function verifyPreviewTarget(
 			);
 		return { unavailable: false };
 	} catch (error) {
-		if (error instanceof ManagedBaselineError) return { unavailable: true };
+		if (error instanceof ManagedBaselineError)
+			return {
+				unavailable: true,
+				diagnostic: buildPreviewProvenanceDiagnostic(diagnoseManagedBaselineError(error)),
+			};
 		throw error;
 	}
 }
@@ -165,10 +237,10 @@ export async function establishPreviewProvenanceBaseline(input: {
 	invitationId: string | null;
 	writes: number;
 	evidence: 'package_and_target_parity' | 'legacy_provenance';
+	diagnostic: PreviewProvenanceDiagnostic;
 	uncertainty?: string;
 }> {
 	const pkg = readPackage(resolve(process.cwd(), input.packagePath));
-	verifyApprovalForApply(input, pkg);
 	const { url: dbUrl } = getPreviewDbUrl();
 	assertPreviewDbUrl(dbUrl);
 	const verification = await verifyPreviewTarget(pkg, dbUrl);
@@ -178,8 +250,8 @@ export async function establishPreviewProvenanceBaseline(input: {
 			invitationId: null,
 			writes: 0,
 			evidence: 'legacy_provenance',
-			uncertainty:
-				'La procedencia previa no permite reconstruir una comparación determinista del destino.',
+			diagnostic: verification.diagnostic,
+			uncertainty: verification.diagnostic.message,
 		};
 	const row = loadPreviewRow(pkg, dbUrl);
 	const expectedProjection = projectionProvenanceHash(pkg.projectionHash);
@@ -189,6 +261,13 @@ export async function establishPreviewProvenanceBaseline(input: {
 			invitationId: row.invitationId,
 			writes: 0,
 			evidence: 'package_and_target_parity',
+			diagnostic: {
+				classification: 'verified_current',
+				disposition: 'verified',
+				adoptionEligible: false,
+				message: 'La provenance actual coincide con el paquete y el destino.',
+				nextAction: 'No se requiere intervención.',
+			},
 		};
 	}
 	assertReconstructableRow(row);
@@ -198,6 +277,14 @@ export async function establishPreviewProvenanceBaseline(input: {
 			invitationId: row.invitationId,
 			writes: 2,
 			evidence: 'package_and_target_parity',
+			diagnostic: {
+				classification: 'missing_provenance',
+				disposition: 'adoptable',
+				adoptionEligible: true,
+				message: 'La paridad está verificada y falta registrar el baseline administrado.',
+				nextAction:
+					'Confirme explícitamente el baseline de Preview para registrar solo metadata.',
+			},
 		};
 	writeBaseline(row, pkg, expectedProjection, dbUrl);
 	return {
@@ -205,5 +292,13 @@ export async function establishPreviewProvenanceBaseline(input: {
 		invitationId: row.invitationId,
 		writes: 2,
 		evidence: 'package_and_target_parity',
+		diagnostic: {
+			classification: 'missing_provenance',
+			disposition: 'adoptable',
+			adoptionEligible: true,
+			message: 'Baseline de Preview registrado con paridad verificada.',
+			nextAction:
+				'Ejecute la verificación Preview y solicite la aprobación del paquete exacto.',
+		},
 	};
 }
