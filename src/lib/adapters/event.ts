@@ -308,6 +308,7 @@ function buildInterludes(context: AdaptationContext): Interlude[] {
 				height: interlude.height,
 				variant: interlude.variant,
 				focalPoint: interlude.focalPoint,
+				focalPointDesktop: interlude.focalPointDesktop,
 				lightX: interlude.lightX,
 				lightY: interlude.lightY,
 				overlayOpacity: interlude.overlayOpacity,

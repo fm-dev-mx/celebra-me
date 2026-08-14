@@ -202,6 +202,7 @@ export interface Interlude {
 	height: 'screen' | 'tall' | 'medium';
 	variant?: SharedSectionVariant;
 	focalPoint?: string;
+	focalPointDesktop?: string;
 	lightX?: string;
 	lightY?: string;
 	overlayOpacity?: string;

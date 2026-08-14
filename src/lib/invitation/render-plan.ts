@@ -19,6 +19,7 @@ export type InterludeRenderItem = RenderPlanMetadata & {
 	height: 'screen' | 'tall' | 'medium';
 	variant?: ThemePreset;
 	focalPoint?: string;
+	focalPointDesktop?: string;
 	lightX?: string;
 	lightY?: string;
 	overlayOpacity?: string;
@@ -84,6 +85,7 @@ function interludeToRenderItem(
 		height: interlude.height,
 		variant: interlude.variant ?? themePreset,
 		focalPoint: interlude.focalPoint,
+		focalPointDesktop: interlude.focalPointDesktop,
 		lightX: interlude.lightX,
 		lightY: interlude.lightY,
 		overlayOpacity: interlude.overlayOpacity,
