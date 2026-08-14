@@ -75,9 +75,10 @@ html:has(.event--renata.theme-preset--editorial) body {
 	--hero-portrait-filter: none;
 	--hero-overlay: linear-gradient(
 		180deg,
-		rgb(var(--renata-ink-rgb) / 14%) 0%,
-		transparent 42%,
-		rgb(var(--renata-ink-rgb) / 32%) 100%
+		rgb(var(--renata-ink-rgb) / 22%) 0%,
+		rgb(var(--renata-ink-rgb) / 8%) 28%,
+		rgb(var(--renata-ink-rgb) / 10%) 58%,
+		rgb(var(--renata-ink-rgb) / 38%) 100%
 	);
 	--hero-title-color-start: var(--renata-cream);
 	--hero-title-color-mid: var(--renata-cream);
@@ -89,9 +90,9 @@ html:has(.event--renata.theme-preset--editorial) body {
 	--renata-hero-label-color: rgb(var(--renata-blush-rgb) / 92%);
 	--renata-hero-date-color: var(--renata-cream);
 	--renata-hero-time-color: rgb(var(--renata-blush-rgb) / 88%);
-	--renata-hero-venue-color: rgb(var(--renata-silver-rgb) / 94%);
-	--renata-hero-scroll-color: rgb(var(--renata-silver-rgb) / 88%);
-	--hero-title-size: clamp(2.85rem, 9vw, 5.75rem);
+	--renata-hero-venue-color: rgb(var(--renata-cream-rgb) / 88%);
+	--renata-hero-scroll-color: rgb(var(--renata-silver-rgb) / 72%);
+	--hero-title-size: clamp(3.15rem, 10vw, 6.4rem);
 	--hero-label-color: var(--renata-hero-label-color);
 	--hero-meta-color: var(--renata-cream);
 	--hero-divider-color: rgb(var(--renata-silver-rgb) / 42%);
@@ -119,7 +120,16 @@ html:has(.event--renata.theme-preset--editorial) body {
 	--family-eyebrow-color: var(--renata-olive);
 	--family-group-title-color: rgb(var(--renata-ink-rgb) / 52%);
 	--family-title-color: var(--renata-ink);
-	--family-padding-block: clamp(2.75rem, 6vw, 4.75rem);
+	--family-padding-block: clamp(2.25rem, 5vw, 3.75rem);
+	--family-header-max-width: 28rem;
+	--family-title-size: clamp(1.85rem, 4.2vw, 2.65rem);
+	--family-title-max-width: 16ch;
+	--family-message-max-width: 34rem;
+	--family-message-size: clamp(0.95rem, 1.5vw, 1.05rem);
+	--family-group-title-size: 0.68rem;
+	--family-group-padding: clamp(0.55rem, 1.4vw, 0.85rem) 0;
+	--family-divider-opacity: 42%;
+	--family-divider-width: clamp(2.5rem, 8vw, 4.5rem);
 	--family-group-text-align: left;
 	--family-list-align-items: flex-start;
 	--family-divider: linear-gradient(
@@ -132,7 +142,7 @@ html:has(.event--renata.theme-preset--editorial) body {
 	--gifts-title-color: var(--renata-ink);
 	--gifts-subtitle-color: rgb(var(--renata-ink-rgb) / 68%);
 	--gifts-title-letter-spacing: 0.04em;
-	--gifts-padding-block: clamp(2.5rem, 6vw, 4.5rem);
+	--gifts-padding-block: clamp(1.75rem, 4vw, 3rem);
 	--gifts-card-bg: transparent;
 	--gifts-card-border: 0;
 	--gifts-card-radius: 0;
@@ -147,7 +157,15 @@ html:has(.event--renata.theme-preset--editorial) body {
 	--wax-seal-deep: var(--renata-ink);
 	--wax-seal-letter: var(--renata-cream);
 	--wax-seal-shadow: var(--renata-ink);
-	--intersection-depth: clamp(2.5rem, 6vw, 4rem);
+	--intersection-depth: clamp(2rem, 5vw, 3.25rem);
+	--pa-padding-block: clamp(2.25rem, 5vw, 3.5rem);
+	--pa-padding-block-lg: clamp(2.75rem, 6vw, 4.25rem);
+	--pa-card-border-radius: 0;
+	--pa-card-border: 0;
+	--pa-card-inner-border: 0;
+	--pa-card-bg-color: transparent;
+	--pa-card-shadow: none;
+	--pa-card-glow: none;
 	--header-nav-title-color: var(--renata-olive);
 	--header-nav-color: var(--renata-cream);
 	--header-nav-color-transparent: var(--renata-cream);
@@ -170,10 +188,15 @@ html:has(.event--renata.theme-preset--editorial) body {
 	--mobile-drawer-cta-hover-bg: var(--renata-olive-deep);
 	--mobile-drawer-cta-hover-color: var(--renata-cream);
 	--interlude-image-filter: none;
-	--interlude-focal-point: 50% 62%;
-	--interlude-focal-point-desktop: 50% 52%;
 
 	background: var(--renata-cream);
+
+	.envelope-wrapper {
+		--env-title-size: clamp(1.7rem, 6.5cqw, 2.55rem);
+		--env-text-primary: var(--renata-ink);
+		--env-container-width: min(90vw, 580px);
+		--env-container-max-height: min(64svh, 500px);
+	}
 
 	.invitation-hero[data-variant='editorial'] {
 		justify-content: flex-end;
@@ -193,12 +216,12 @@ html:has(.event--renata.theme-preset--editorial) body {
 			flex-direction: column;
 			align-items: flex-start;
 			justify-content: flex-end;
-			width: min(100%, 38rem);
+			width: min(100%, 42rem);
 			height: 100%;
 			margin: 0 auto 0 0;
-			padding-block: 0 clamp(5rem, 12vh, 7rem);
+			padding-block: clamp(5.5rem, 12vh, 7.5rem) clamp(4.25rem, 9vh, 5.75rem);
 			padding-inline: clamp(1.25rem, 4vw, 2.75rem);
-			gap: clamp(0.7rem, 1.3vw, 1rem);
+			gap: clamp(1rem, 2.2vw, 1.65rem);
 			text-align: left;
 			grid-template-columns: none;
 			grid-template-areas: none;
@@ -252,8 +275,8 @@ html:has(.event--renata.theme-preset--editorial) body {
 			background: transparent;
 			backdrop-filter: none;
 			border: 0;
-			gap: clamp(0.55rem, 1.4vw, 0.9rem);
-			max-width: min(100%, 34rem);
+			gap: clamp(0.35rem, 1vw, 0.55rem);
+			max-width: min(100%, 36rem);
 
 			p {
 				letter-spacing: 0.1em;
@@ -287,19 +310,21 @@ html:has(.event--renata.theme-preset--editorial) body {
 			font-weight: 500;
 			line-height: 1.35;
 			letter-spacing: 0.1em;
-			max-width: min(100%, 30ch);
-			margin-top: 0.4rem;
+			max-width: min(100%, 36ch);
+			margin-top: 0.55rem;
 			color: var(--renata-hero-venue-color);
 			overflow-wrap: anywhere;
 			text-wrap: pretty;
 		}
 
 		.invitation-hero__scroll-indicator {
-			bottom: clamp(1.25rem, 4vh, 2.5rem);
+			bottom: clamp(1rem, 3vh, 1.75rem);
 			z-index: 11;
-			opacity: 88%;
+			opacity: 64%;
 			font-family: var(--renata-hero-ui-font);
 			color: var(--renata-hero-scroll-color);
+			letter-spacing: 0.28em;
+			font-size: 0.68rem;
 		}
 
 		.invitation-hero__scroll-text {
@@ -309,12 +334,12 @@ html:has(.event--renata.theme-preset--editorial) body {
 		@media (width <= 860px) {
 			.invitation-hero__content {
 				width: 100%;
-				padding-block: 0 clamp(5.5rem, 13vh, 7.5rem);
+				padding-block: clamp(4.75rem, 10vh, 6.5rem) clamp(4.5rem, 10vh, 6rem);
 				padding-inline: 1.25rem;
 			}
 
 			.invitation-hero__title {
-				font-size: clamp(2.6rem, 14vw, 3.6rem);
+				font-size: clamp(2.85rem, 15vw, 3.85rem);
 			}
 		}
 
@@ -363,6 +388,7 @@ html:has(.event--renata.theme-preset--editorial) body {
 		.family__header-divider {
 			margin-inline: 0;
 			width: clamp(3.5rem, 12vw, 6rem);
+			opacity: 0%;
 		}
 
 		.family__message {
@@ -372,8 +398,12 @@ html:has(.event--renata.theme-preset--editorial) body {
 
 		.family__group + .family__group::before {
 			left: 0;
-			width: min(11rem, 42%);
+			width: min(7.5rem, 34%);
 			transform: none;
+		}
+
+		.family__group-title {
+			margin-bottom: 0.45rem;
 		}
 
 		.family__name {
@@ -384,12 +414,17 @@ html:has(.event--renata.theme-preset--editorial) body {
 	// Countdown keeps shared editorial chrome. Tint only with Renata olive/cream/coral.
 	// Envelope gold stays on premiere-floral reveal, not this opened section.
 	.countdown-section {
-		--section-padding-block: clamp(4rem, 10vw, 8rem);
+		--section-padding-block: clamp(3.25rem, 7vw, 5.5rem);
 		--color-action-accent: var(--renata-coral);
 		--color-action-accent-rgb: var(--renata-coral-rgb);
+		--countdown-segment-bg: transparent;
 
 		background: linear-gradient(145deg, var(--renata-ink) 0%, var(--countdown-bg) 100%);
 		color: var(--renata-cream);
+
+		&::before {
+			opacity: 28%;
+		}
 
 		.countdown-title {
 			background: none;
@@ -398,22 +433,37 @@ html:has(.event--renata.theme-preset--editorial) body {
 			color: var(--renata-coral);
 		}
 
-		.countdown-date .event-date {
-			color: var(--renata-cream);
+		.countdown-date {
+			display: none;
+		}
+
+		.countdown__segment {
+			border-color: rgb(var(--renata-cream-rgb) / 14%);
+			box-shadow: none;
+			backdrop-filter: none;
+
+			&:hover {
+				transform: none;
+				box-shadow: none;
+				background: transparent;
+			}
 		}
 
 		.countdown__value {
 			color: var(--renata-coral);
+			text-shadow: none;
 		}
 
 		.countdown__label {
 			color: var(--renata-cream);
-			opacity: 85%;
+			opacity: 78%;
 		}
 
 		.countdown-invitation-text {
 			color: var(--renata-cream);
-			opacity: 90%;
+			opacity: 88%;
+			max-inline-size: 36ch;
+			margin-top: 2.25rem;
 		}
 	}
 
@@ -424,42 +474,53 @@ html:has(.event--renata.theme-preset--editorial) body {
 		--font-display-elegant: var(--font-display);
 		--font-body: 'Instrument Sans Variable', system-ui, sans-serif;
 		--font-label: 'Bodoni Moda Variable', 'Playfair Display Variable', georgia, serif;
-		--color-text-primary: rgb(48 43 40);
-		--color-text-primary-rgb: 48 43 40;
-		--color-text-secondary: rgb(95 87 81);
-		--color-text-emphasis: rgb(91 46 42);
-		--color-action-accent: rgb(176 142 96);
-		--color-action-accent-rgb: 176 142 96;
-		--color-action-primary: rgb(120 56 38);
-		--color-action-primary-rgb: 120 56 38;
-		--color-surface-primary: rgb(247 241 233);
-		--color-surface-primary-rgb: 247 241 233;
-		--color-surface-elevated: rgb(252 248 242);
-		--color-surface-elevated-rgb: 252 248 242;
-		--color-surface-secondary: rgb(224 208 190);
-		--color-surface-secondary-rgb: 224 208 190;
-		--color-surface-soft: rgb(224 208 190 / 55%);
-		--location-title-color: rgb(114 80 46);
-		--location-hour-color: rgb(114 80 46);
-		--location-indications-heading-color: rgb(114 80 46);
+		--color-text-primary: var(--renata-ink);
+		--color-text-primary-rgb: var(--renata-ink-rgb);
+		--color-text-secondary: rgb(var(--renata-ink-rgb) / 64%);
+		--color-text-emphasis: var(--renata-olive-deep);
+		--color-action-accent: var(--renata-olive);
+		--color-action-accent-rgb: var(--renata-olive-rgb);
+		--color-action-primary: var(--renata-olive-deep);
+		--color-action-primary-rgb: 70 86 56;
+		--color-surface-primary: var(--renata-cream);
+		--color-surface-primary-rgb: var(--renata-cream-rgb);
+		--color-surface-elevated: var(--renata-cream);
+		--color-surface-elevated-rgb: var(--renata-cream-rgb);
+		--color-surface-secondary: var(--renata-blush);
+		--color-surface-secondary-rgb: var(--renata-blush-rgb);
+		--color-surface-soft: rgb(var(--renata-blush-rgb) / 55%);
+		--location-title-color: var(--renata-olive);
+		--location-hour-color: var(--renata-olive-deep);
+		--location-indications-heading-color: var(--renata-olive);
 		--location-date-display: none;
+		--location-bg: var(--renata-cream);
+		--location-card-bg: transparent;
+		--location-card-border: 0;
+		--location-card-shadow: none;
+		--location-card-hover-shadow: none;
+		--location-card-radius: 0;
+		--location-card-radius-xs: 0;
+		--location-stack-gap: clamp(2.25rem, 5vw, 3.25rem);
+		--location-padding-block: clamp(3.25rem, 7vw, 5.25rem);
 	}
 
 	.invitation-interlude {
-		--interlude-focal-point: 42% 62%;
-		--interlude-focal-point-desktop: 48% 52%;
-
 		.invitation-interlude__image {
 			filter: none;
-			object-position: var(--interlude-focal-point);
+		}
+	}
+
+	.itinerary {
+		padding-block: clamp(3.5rem, 8vw, 5.75rem);
+		background: var(--renata-cream);
+		color: var(--renata-ink);
+
+		.itinerary__title {
+			color: var(--renata-ink);
 		}
 
-		@media (width <= 767px) {
-			--interlude-focal-point: 38% 70%;
-
-			.invitation-interlude__image {
-				object-position: 38% 70%;
-			}
+		.itinerary__item::before {
+			color: var(--renata-coral);
 		}
 	}
 
@@ -468,7 +529,25 @@ html:has(.event--renata.theme-preset--editorial) body {
 		--gallery-item-shadow: none;
 		--gallery-item-border: 0;
 
+		padding-block: clamp(2.5rem, 6vw, 4.25rem);
 		background: var(--renata-blush);
+
+		.gallery-section__header {
+			margin-bottom: clamp(1.25rem, 3vw, 2rem);
+			text-align: left;
+		}
+
+		.gallery-grid {
+			gap: clamp(0.65rem, 1.6vw, 1.05rem);
+		}
+
+		.gallery-grid__item {
+			border-radius: 0;
+		}
+
+		.gallery-grid__item[data-layout-role='feature'] {
+			border-radius: 0;
+		}
 	}
 
 	.gifts-section {
@@ -486,10 +565,18 @@ html:has(.event--renata.theme-preset--editorial) body {
 		.gifts-section__title {
 			text-transform: none;
 			letter-spacing: 0.02em;
+			text-align: left;
 		}
 
 		.gifts-section__header {
-			margin-bottom: 1rem;
+			margin-bottom: 0.65rem;
+			text-align: left;
+		}
+
+		.gifts-section__subtitle {
+			max-width: 38rem;
+			margin-inline: 0;
+			text-align: left;
 		}
 
 		.gift-card {
@@ -519,7 +606,37 @@ html:has(.event--renata.theme-preset--editorial) body {
 		}
 
 		.gift-card__inner {
-			gap: 0.75rem;
+			gap: 0.45rem;
+			align-items: flex-start;
+			text-align: left;
+		}
+
+		.gift-card__description {
+			max-width: 36rem;
+			margin-inline: 0;
+			text-align: left;
+		}
+	}
+
+	.rsvp-section {
+		min-block-size: auto;
+		place-items: start center;
+		padding-block: clamp(2.5rem, 6vw, 4rem);
+		background: var(--renata-cream);
+	}
+
+	.rsvp,
+	.personalized-access {
+		--rsvp-bg: var(--renata-cream);
+
+		color: var(--renata-ink);
+		background: transparent;
+	}
+
+	.personalized-access {
+		.access-card::before,
+		.access-card::after {
+			display: none;
 		}
 	}
 
@@ -528,18 +645,18 @@ html:has(.event--renata.theme-preset--editorial) body {
 	// overlayAnchor=left is honored for width; vertical start is local because
 	// full-bleed-photo centers (desktop) / ends (mobile) at equal specificity.
 	.thank-you-section[data-variant='editorial'][data-structural-variant='full-bleed-photo'] {
-		--thank-you-overlay-width: 22.5rem;
+		--thank-you-overlay-width: 24rem;
 		--thank-you-overlay-gap: clamp(1.25rem, 3vw, 2.25rem);
 		--thank-you-focal-point: 48% 36%;
-		--renata-thank-you-message-size: clamp(1.4rem, 1.05rem + 1.5vw, 2.35rem);
-		--renata-thank-you-name-size: clamp(2.55rem, 1.35rem + 4.1vw, 5.15rem);
+		--renata-thank-you-message-size: clamp(1.25rem, 1rem + 1.2vw, 1.95rem);
+		--renata-thank-you-name-size: clamp(3.1rem, 1.6rem + 5vw, 6.15rem);
 		--renata-thank-you-date-size: clamp(0.7rem, 0.62rem + 0.28vw, 0.86rem);
-		--renata-thank-you-lockup-gap: clamp(0.35rem, 0.8vw, 0.7rem);
+		--renata-thank-you-lockup-gap: clamp(0.45rem, 1vw, 0.85rem);
 
 		background: var(--renata-ink);
-		padding-block: calc(var(--invitation-header-offset, 5.5rem) + 0.35rem)
-			clamp(2rem, 5vw, 3.25rem);
-		padding-inline: clamp(1.15rem, 4vw, 3.25rem);
+		padding-block: calc(var(--invitation-header-offset, 5.5rem) + 1.25rem)
+			clamp(2.25rem, 6vw, 3.75rem);
+		padding-inline: clamp(1.5rem, 5vw, 3.75rem);
 
 		@include mixins.respond-to(md) {
 			--thank-you-focal-point: 46% 22%;
@@ -554,15 +671,15 @@ html:has(.event--renata.theme-preset--editorial) body {
 			background:
 				linear-gradient(
 					90deg,
-					rgb(var(--renata-ink-rgb) / 62%) 0%,
-					rgb(var(--renata-ink-rgb) / 32%) 26%,
-					rgb(var(--renata-ink-rgb) / 10%) 46%,
+					rgb(var(--renata-ink-rgb) / 82%) 0%,
+					rgb(var(--renata-ink-rgb) / 48%) 26%,
+					rgb(var(--renata-ink-rgb) / 16%) 46%,
 					transparent 68%
 				),
 				linear-gradient(
 					180deg,
-					rgb(var(--renata-ink-rgb) / 46%) 0%,
-					rgb(var(--renata-ink-rgb) / 18%) 24%,
+					rgb(var(--renata-ink-rgb) / 62%) 0%,
+					rgb(var(--renata-ink-rgb) / 24%) 24%,
 					transparent 48%
 				);
 		}

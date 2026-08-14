@@ -151,6 +151,28 @@ describe('buildInvitationRenderPlan', () => {
 		}
 	});
 
+	it('forwards authored interlude desktop focal points into the render plan', () => {
+		const data = loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json') as {
+			interludes?: Array<Record<string, unknown>>;
+		};
+		const firstInterlude = data.interludes?.[0];
+		expect(firstInterlude).toBeDefined();
+		firstInterlude!.focalPointDesktop = '50% 52%';
+
+		const event = {
+			id: 'event-demos/xv/demo-xv-enchanted-rose',
+			data,
+		} as Parameters<typeof adaptEvent>[0];
+
+		const plan = buildInvitationRenderPlan(adaptEvent(event), { hasGuestContext: false });
+		const interlude = plan.find((item) => item.type === 'interlude');
+
+		expect(interlude).toMatchObject({
+			type: 'interlude',
+			focalPointDesktop: '50% 52%',
+		});
+	});
+
 	it('publishes the five approved Celestial editorial intersection treatments', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv-celestial-blue',

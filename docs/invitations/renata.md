@@ -169,14 +169,14 @@ Demo remains the gold base template. Real invite identity lives in Lane A. Real 
 
 ## Creative Direction & Acceptance
 
-| concern                                                  | decision / evidence                                                                                           | status                         |
-| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------ |
-| Typography roles (display, heading, body, metadata)      | Editorial display retained; cream type on photos; ink type on light surfaces                                  | accepted after 390/1440 review |
-| Vertical rhythm and density                              | Preset padding reduced; itinerary uses editorial-program; PA/RSVP use formal-pass / formal-register           | accepted after 390/1440 review |
-| Surface hierarchy (open flow vs cards/containers)        | Open flow; Location/Gifts/itinerary paper chrome neutralized; PA/RSVP consume the shared confirmation chapter | accepted after 390/1440 review |
-| Photographic treatment (role, crop, focal point, filter) | Color preserved; hero filter none; unique roles; thank-you is full-bleed not circular                         | accepted after 390/1440 review |
-| Section-intersection intent and narrative cadence        | family blend from hero; overlap after location; remaining seams neutral                                       | accepted after 390/1440 review |
-| Local exceptions to the selected preset                  | Gold remap, hero cascade reset, card/paper flatten, thank-you editorial circle reset                          | documented                     |
+| concern                                                  | decision / evidence                                                                                | status                         |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------ |
+| Typography roles (display, heading, body, metadata)      | Editorial display retained; cream type on photos; ink type on light surfaces                       | accepted after 390/1440 review |
+| Vertical rhythm and density                              | Preset padding reduced; itinerary uses editorial-program; PA/RSVP use standard                     | accepted after 390/1440 review |
+| Surface hierarchy (open flow vs cards/containers)        | Open flow; Location/Gifts/itinerary paper chrome neutralized; PA/RSVP use the shared standard card | accepted after 390/1440 review |
+| Photographic treatment (role, crop, focal point, filter) | Color preserved; hero filter none; unique roles; thank-you is full-bleed not circular              | accepted after 390/1440 review |
+| Section-intersection intent and narrative cadence        | family blend from hero; overlap after location; remaining seams neutral                            | accepted after 390/1440 review |
+| Local exceptions to the selected preset                  | Gold remap, hero cascade reset, card/paper flatten, thank-you editorial circle reset               | documented                     |
 
 ### Creative acceptance record
 
@@ -241,13 +241,13 @@ hero. Feature frame is `_DSC5939`, not file-order first.
 - Structural selections: itinerary `editorial-program`; gallery `paired-feature-band` without a
   feature `aspectRatio` override and item order `gallery-01`, `gallery-02`, `gallery-feature`,
   `gallery-03`, `gallery-04`; location `stacked-venue-plates` with `presentation: 'simple'`,
-  `presentationOptions.showNavigationButtons: false`, and `showFlourishes: true`; keep `ceremony` +
-  `reception` (no `venues[]`); personalized access `formal-pass`; RSVP `formal-register`
-  (presentation only — do not persist `accessMode`, `confirmationMode`, or `guestCap`); envelope
-  `variant: 'premiere-floral'` with `sealIcon: 'monogram'`, `microcopy: 'Abra su invitación'`, and
-  omitted `teaserDetails` so the closed teaser derives from Renata’s date and venue. Do not set
-  `closedPalette`. Reveal appearance is owned by the premiere-floral envelope variant, not the
-  Renata profile.
+  `presentationOptions.showNavigationButtons: false`, and `showFlourishes: false`; keep `ceremony` +
+  `reception` (no `venues[]`); personalized access `standard`; RSVP `standard` (presentation only —
+  do not persist `accessMode`, `confirmationMode`, or `guestCap`); family `standard` + `text-only`;
+  envelope `variant: 'premiere-floral'` with `sealIcon: 'monogram'`, `envelopeName: 'Renata'`,
+  `documentLabel: 'CELEBRO MIS XV'`, empty `microcopy` and `teaserDetails`, and no `cardTagline`. Do
+  not set `closedPalette`. Reveal appearance is owned by the premiere-floral envelope variant, not
+  the Renata profile. Interlude crop is owned by provision `focalPoint` / `focalPointDesktop`.
 - Lane B: none. Demo stays the gold editorial template.
 - Music omit / include: omitted (`not_applicable`).
 - Other: no `renata` key in `LEGACY_INTERSECTION_PROFILES`. No shared renderer/variant branches.

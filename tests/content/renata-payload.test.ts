@@ -91,7 +91,7 @@ describe('XV Renata provision contract', () => {
 		expect(profile).toContain('--hero-image-filter: none');
 		expect(profile).toContain('mix-blend-mode: normal');
 		expect(profile).not.toContain(".itinerary[data-structural-variant='editorial-ledger']");
-		expect(profile).not.toContain('editorial-program');
+		expect(profile).not.toContain("data-structural-variant='editorial-program'");
 		expect(profile).not.toContain('timeline-paper');
 		expect(profile).not.toContain('itinerary__program-paper-surface');
 		expect(profile).toContain("data-structural-variant='full-bleed-photo'");
@@ -152,9 +152,7 @@ describe('XV Renata provision contract', () => {
 		expect((content.envelope as { cardName: string; envelopeName: string }).cardName).toBe(
 			'Renata',
 		);
-		expect((content.envelope as { envelopeName: string }).envelopeName).toBe(
-			'XV años de Renata',
-		);
+		expect((content.envelope as { envelopeName: string }).envelopeName).toBe('Renata');
 		expect(content.title as string).toBe('XV años de Renata');
 
 		expect(content.sectionOrder).toEqual([
@@ -169,9 +167,20 @@ describe('XV Renata provision contract', () => {
 			'thankYou',
 		]);
 
+		const family = content.family as { variant?: string; presentation?: string };
+		expect(family.variant).toBe('standard');
+		expect(family.presentation).toBe('text-only');
+
 		const itinerary = content.itinerary as { variant: string; items: unknown[] };
 		expect(itinerary.variant).toBe('editorial-program');
 		expect(itinerary.items).toHaveLength(2);
+
+		const interludes = content.interludes as Array<{
+			focalPoint?: string;
+			focalPointDesktop?: string;
+		}>;
+		expect(interludes[0]?.focalPoint).toBe('50% 78%');
+		expect(interludes[0]?.focalPointDesktop).toBe('50% 52%');
 
 		const location = content.location as {
 			variant: string;
@@ -191,7 +200,7 @@ describe('XV Renata provision contract', () => {
 		expect(location.ceremony?.venueName).toBe('Parroquia Santa Inés');
 		expect(location.reception?.venueName).toBe('InHouse Select Hacienda Tres Ríos');
 		expect(location.indicationsHeading).toBe('Indicaciones');
-		expect(location.presentationOptions?.showFlourishes).toBe(true);
+		expect(location.presentationOptions?.showFlourishes).toBe(false);
 		expect(location.presentationOptions?.showNavigationButtons).toBe(false);
 
 		const envelope = content.envelope as {
@@ -201,14 +210,16 @@ describe('XV Renata provision contract', () => {
 			sealInitials: string;
 			cardTagline?: string;
 			teaserDetails?: string;
+			documentLabel?: string;
 			closedPalette?: unknown;
 		};
 		expect(envelope.variant).toBe('premiere-floral');
-		expect(envelope.microcopy).toBe('Abra su invitación');
+		expect(envelope.microcopy).toBe('');
 		expect(envelope.sealIcon).toBe('monogram');
 		expect(envelope.sealInitials).toBe('R');
-		expect(envelope.cardTagline).toBe('05 · 09 · 2026');
-		expect(envelope.teaserDetails).toBeUndefined();
+		expect(envelope.cardTagline).toBeUndefined();
+		expect(envelope.teaserDetails).toBe('');
+		expect(envelope.documentLabel).toBe('CELEBRO MIS XV');
 		expect(envelope.closedPalette).toBeUndefined();
 
 		const gallery = content.gallery as {
@@ -236,12 +247,12 @@ describe('XV Renata provision contract', () => {
 			whatsappConfig?: unknown;
 			personalizedAccess?: { variant?: string };
 		};
-		expect(rsvp.variant).toBe('formal-register');
+		expect(rsvp.variant).toBe('standard');
 		expect(rsvp.guestCap).toBeUndefined();
 		expect(rsvp.confirmationMode).toBeUndefined();
 		expect(rsvp.accessMode).toBeUndefined();
 		expect(rsvp.whatsappConfig).toBeUndefined();
-		expect(rsvp.personalizedAccess?.variant).toBe('formal-pass');
+		expect(rsvp.personalizedAccess?.variant).toBe('standard');
 
 		const thankYou = content.thankYou as {
 			variant: string;

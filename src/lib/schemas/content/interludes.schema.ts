@@ -10,6 +10,7 @@ export const interludeSchema = z.object({
 	height: z.enum(['screen', 'tall', 'medium']).default('screen'),
 	variant: z.enum(THEME_PRESETS).optional(),
 	focalPoint: focalPointSchema.optional(),
+	focalPointDesktop: focalPointSchema.optional(),
 	lightX: z.string().optional(),
 	lightY: z.string().optional(),
 	overlayOpacity: z.string().optional(),

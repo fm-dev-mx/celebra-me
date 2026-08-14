@@ -165,6 +165,9 @@ test.describe('Renata XV local visual and content audit', () => {
 			await expect(hero).toContainText(/7:00\s*p\.\s*m\./i);
 			await expect(hero).toContainText(/Hacienda Tres Ríos/i);
 			await expect(hero).toHaveAttribute('data-structural-variant', 'standard');
+			const family = page.locator('.family').first();
+			await expect(family).toHaveAttribute('data-structural-variant', 'standard');
+			await expect(family).toHaveAttribute('data-presentation', 'text-only');
 			expect(await page.locator('[data-screenshot-section="quote"]').count()).toBe(0);
 			expect(await page.locator('audio, [data-screenshot-section="music"]').count()).toBe(0);
 
@@ -360,16 +363,16 @@ test.describe('Renata XV local visual and content audit', () => {
 			if ((await personalizedAccess.count()) > 0) {
 				await expect(personalizedAccess).toHaveAttribute(
 					'data-structural-variant',
-					'formal-pass',
+					'standard',
 				);
-				expect(await personalizedAccess.locator('.access-card__ornaments').count()).toBe(1);
+				expect(await personalizedAccess.locator('.access-card__ornaments').count()).toBe(0);
 			}
 
 			const rsvp = page.locator('.rsvp').first();
-			await expect(rsvp).toHaveAttribute('data-structural-variant', 'formal-register');
+			await expect(rsvp).toHaveAttribute('data-structural-variant', 'standard');
 			await expect(rsvp).toHaveAttribute('data-state', 'locked');
 
-			expect(await page.locator('.event-location__card-flourish').count()).toBe(2);
+			expect(await page.locator('.event-location__card-flourish').count()).toBe(0);
 			expect(
 				await page
 					.locator('.rsvp input, .rsvp textarea, .rsvp button[type="submit"]')
@@ -511,7 +514,7 @@ test.describe('Renata XV local visual and content audit', () => {
 	}
 
 	for (const viewport of VIEWPORTS) {
-		test(`sealed envelope uses seal and CTA at ${viewport.name}`, async ({ page }) => {
+		test(`sealed envelope uses a single seal control at ${viewport.name}`, async ({ page }) => {
 			await page.setViewportSize({ width: viewport.width, height: viewport.height });
 			await page.emulateMedia({ reducedMotion: 'reduce' });
 			await page.addInitScript(() => {
@@ -524,17 +527,15 @@ test.describe('Renata XV local visual and content audit', () => {
 			expect(response?.status()).toBe(200);
 
 			const openControls = page.locator('[data-envelope-open]');
-			await expect(openControls).toHaveCount(2);
+			await expect(openControls).toHaveCount(1);
 			await expect(page.locator('.envelope-wrapper')).toHaveAttribute(
 				'data-variant',
 				'premiere-floral',
 			);
-			await expect(page.locator('.envelope-external-instruction')).toContainText(
-				'Abra su invitación',
-			);
-			await expect(page.locator('.envelope-name')).toHaveText('XV años de Renata');
-			await expect(page.locator('.envelope-details')).toContainText(/2026/);
-			await expect(page.locator('.envelope-details')).toContainText(/Hacienda/i);
+			await expect(page.locator('.envelope-external-instruction')).toHaveCount(0);
+			await expect(page.locator('.envelope-name')).toHaveText('Renata');
+			await expect(page.locator('.envelope-manifest-label')).toHaveText('CELEBRO MIS XV');
+			await expect(page.locator('.envelope-details')).toHaveCount(0);
 			await expect(page.locator('[data-envelope-open]').first()).toHaveAttribute(
 				'data-seal-icon',
 				'monogram',
@@ -582,6 +583,7 @@ test.describe('Renata XV local visual and content audit', () => {
 			);
 			await expect(page.locator('.invitation-reveal-card__name')).toHaveText('Renata');
 			await expect(page.locator('.invitation-reveal-card__date')).toContainText(/2026/);
+			await expect(page.locator('.invitation-reveal-card__tagline')).toHaveCount(0);
 
 			const contrast = await card.evaluate((node) => {
 				const name = node.querySelector('.invitation-reveal-card__name');
@@ -609,58 +611,24 @@ test.describe('Renata XV local visual and content audit', () => {
 	}
 
 	for (const viewport of VIEWPORTS) {
-		test(`countdown architecture matches Romina at ${viewport.name}`, async ({ page }) => {
+		test(`countdown keeps shared editorial units at ${viewport.name}`, async ({ page }) => {
 			await page.setViewportSize({ width: viewport.width, height: viewport.height });
 			await page.emulateMedia({ reducedMotion: 'reduce' });
 
-			const readArchitecture = async (url: string) => {
-				const response = await page.goto(url, { waitUntil: 'networkidle' });
-				expect(response?.status()).toBe(200);
-				const section = page.locator('.countdown-section').first();
-				await section.scrollIntoViewIfNeeded();
-				return section.evaluate(measureCountdownArchitecture);
-			};
+			const response = await page.goto('/xv/renata?skipEnvelope=true', {
+				waitUntil: 'networkidle',
+			});
+			expect(response?.status()).toBe(200);
+			const section = page.locator('.countdown-section').first();
+			await section.scrollIntoViewIfNeeded();
+			const renata = await section.evaluate(measureCountdownArchitecture);
+			await section.screenshot({
+				path: path.join(ARTIFACT_ROOT, `${viewport.name}-countdown-renata.png`),
+			});
 
-			const romina = await readArchitecture('/xv/romina-rios-chaparro?skipEnvelope=true');
-			await page
-				.locator('.countdown-section')
-				.first()
-				.screenshot({
-					path: path.join(ARTIFACT_ROOT, `${viewport.name}-countdown-romina.png`),
-				});
-
-			const renata = await readArchitecture('/xv/renata?skipEnvelope=true');
-			await page
-				.locator('.countdown-section')
-				.first()
-				.screenshot({
-					path: path.join(ARTIFACT_ROOT, `${viewport.name}-countdown-renata.png`),
-				});
-
-			const architectureKeys = [
-				'segmentCount',
-				'firstRowCount',
-				'titleFontSize',
-				'titleLetterSpacing',
-				'titleMarginBottom',
-				'timerGap',
-				'timerMarginTop',
-				'segmentPadding',
-				'segmentRadius',
-				'segmentBorderWidth',
-				'valueFontSize',
-				'labelFontSize',
-				'labelLetterSpacing',
-				'footerMarginTop',
-				'sectionPaddingBlock',
-				'sectionMinHeight',
-			] as const;
-			expect(romina.segmentCount).toBe(4);
-			for (const key of architectureKeys) {
-				expect(renata[key]).toBe(romina[key]);
-			}
-			expect(romina.variant).toBe('premiere-floral');
 			expect(renata.variant).toBe('editorial');
+			expect(renata.segmentCount).toBe(4);
+			expect(renata.firstRowCount).toBe(viewport.width <= 390 ? 2 : 4);
 		});
 	}
 });

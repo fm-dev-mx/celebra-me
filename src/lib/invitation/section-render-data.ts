@@ -64,6 +64,7 @@ type DescriptorData =
 				height: InterludeBlock['height'];
 				variant: ThemePreset;
 				focalPoint?: string;
+				focalPointDesktop?: string;
 				lightX?: string;
 				lightY?: string;
 				overlayOpacity?: string;
@@ -154,6 +155,7 @@ function renderInterlude(pageContext: InvitationPageContext, block: InterludeBlo
 			height: block.height,
 			variant: block.variant ?? pageContext.viewModel.theme.preset ?? THEME_PRESETS[0],
 			focalPoint: block.focalPoint,
+			focalPointDesktop: block.focalPointDesktop,
 			lightX: block.lightX,
 			lightY: block.lightY,
 			overlayOpacity: block.overlayOpacity,
