@@ -186,6 +186,7 @@ export function buildRenataPublishedContent(
 		composition: {
 			intersections: {
 				family: { family: 'atmospheric-blend', source: 'hero' },
+				countdown: { family: 'atmospheric-blend', source: 'family' },
 				'interlude-after-location': { family: 'overlap', source: 'location' },
 			},
 		},
