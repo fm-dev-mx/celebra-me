@@ -28,6 +28,7 @@ html:has(.event--renata.theme-preset--editorial) body {
 	--renata-olive-rgb: 86 102 70;
 	--renata-olive-deep: rgb(70 86 56);
 	--renata-coral: rgb(196 126 118);
+	--renata-coral-rgb: 196 126 118;
 	--renata-silver: rgb(168 170 166);
 	--renata-silver-rgb: 168 170 166;
 	--color-surface-primary: var(--renata-cream);
@@ -72,19 +73,26 @@ html:has(.event--renata.theme-preset--editorial) body {
 	--section-subtitle-color: rgb(var(--renata-ink-rgb) / 58%);
 	--hero-image-filter: none;
 	--hero-portrait-filter: none;
-	--hero-overlay: rgb(var(--renata-ink-rgb) / 12%);
-	--hero-overlay-gradient: linear-gradient(
+	--hero-overlay: linear-gradient(
 		180deg,
-		rgb(var(--renata-ink-rgb) / 28%) 0%,
-		transparent 34%,
-		transparent 52%,
-		rgb(var(--renata-ink-rgb) / 58%) 100%
+		rgb(var(--renata-ink-rgb) / 14%) 0%,
+		transparent 42%,
+		rgb(var(--renata-ink-rgb) / 32%) 100%
 	);
 	--hero-title-color-start: var(--renata-cream);
 	--hero-title-color-mid: var(--renata-cream);
 	--hero-title-color-end: var(--renata-cream);
+	--renata-hero-display-font: var(--font-display);
+	--renata-hero-meta-font: 'EB Garamond Variable', 'EB Garamond', georgia, serif;
+	--renata-hero-ui-font: var(--font-ui, 'Montserrat', system-ui, sans-serif);
+	--renata-hero-title-color: var(--renata-cream);
+	--renata-hero-label-color: rgb(var(--renata-blush-rgb) / 92%);
+	--renata-hero-date-color: var(--renata-cream);
+	--renata-hero-time-color: rgb(var(--renata-blush-rgb) / 88%);
+	--renata-hero-venue-color: rgb(var(--renata-silver-rgb) / 94%);
+	--renata-hero-scroll-color: rgb(var(--renata-silver-rgb) / 88%);
 	--hero-title-size: clamp(2.85rem, 9vw, 5.75rem);
-	--hero-label-color: var(--renata-cream);
+	--hero-label-color: var(--renata-hero-label-color);
 	--hero-meta-color: var(--renata-cream);
 	--hero-divider-color: rgb(var(--renata-silver-rgb) / 42%);
 	--hero-badge-bg: transparent;
@@ -133,14 +141,13 @@ html:has(.event--renata.theme-preset--editorial) body {
 	--gallery-section-bg: var(--renata-blush);
 	--gallery-title-color: var(--renata-ink);
 	--gallery-subtitle-color: rgb(var(--renata-ink-rgb) / 64%);
-	--countdown-bg: var(--renata-blush);
-	--countdown-segment-bg: transparent;
+	--countdown-bg: var(--renata-olive-deep);
 	--wax-seal-highlight: var(--renata-coral);
 	--wax-seal-mid: var(--renata-olive);
 	--wax-seal-deep: var(--renata-ink);
 	--wax-seal-letter: var(--renata-cream);
 	--wax-seal-shadow: var(--renata-ink);
-	--intersection-depth: clamp(2rem, 4vw, 3.5rem);
+	--intersection-depth: clamp(2.5rem, 6vw, 4rem);
 	--header-nav-title-color: var(--renata-olive);
 	--header-nav-color: var(--renata-cream);
 	--header-nav-color-transparent: var(--renata-cream);
@@ -162,8 +169,6 @@ html:has(.event--renata.theme-preset--editorial) body {
 	--mobile-drawer-cta-border: 1px solid var(--renata-olive);
 	--mobile-drawer-cta-hover-bg: var(--renata-olive-deep);
 	--mobile-drawer-cta-hover-color: var(--renata-cream);
-	--editorial-ledger-rule: rgb(var(--renata-silver-rgb) / 42%);
-	--editorial-ledger-spine: rgb(var(--renata-silver-rgb) / 48%);
 	--interlude-image-filter: none;
 	--interlude-focal-point: 50% 62%;
 	--interlude-focal-point-desktop: 50% 52%;
@@ -249,16 +254,19 @@ html:has(.event--renata.theme-preset--editorial) body {
 			width: min(100%, 38rem);
 			height: 100%;
 			margin: 0 auto 0 0;
-			padding-block: 0 clamp(4.25rem, 10vh, 6.5rem);
+			padding-block: 0 clamp(5rem, 12vh, 7rem);
 			padding-inline: clamp(1.25rem, 4vw, 2.75rem);
-			gap: 0.7rem;
+			gap: clamp(0.7rem, 1.3vw, 1rem);
 			text-align: left;
 			grid-template-columns: none;
 			grid-template-areas: none;
 			transform: none;
+			color: var(--renata-hero-title-color);
 		}
 
 		.invitation-hero__label {
+			font-family: var(--renata-hero-ui-font);
+			font-weight: 600;
 			margin-bottom: 0;
 			justify-self: start;
 			letter-spacing: 0.22em;
@@ -270,6 +278,8 @@ html:has(.event--renata.theme-preset--editorial) body {
 		}
 
 		.invitation-hero__title {
+			font-family: var(--renata-hero-display-font);
+			font-weight: 500;
 			mix-blend-mode: normal;
 			transform: none;
 			background: none;
@@ -300,12 +310,28 @@ html:has(.event--renata.theme-preset--editorial) body {
 			background: transparent;
 			backdrop-filter: none;
 			border: 0;
-			gap: 0.35rem;
+			gap: clamp(0.55rem, 1.4vw, 0.9rem);
+			max-width: min(100%, 34rem);
 
 			p {
-				letter-spacing: 0.12em;
+				letter-spacing: 0.1em;
 				font-style: normal;
+				line-height: 1.3;
 			}
+		}
+
+		.invitation-hero__date {
+			font-family: var(--renata-hero-meta-font);
+			font-size: clamp(1rem, 1.4vw, 1.15rem);
+			font-weight: 600;
+			color: var(--renata-hero-date-color);
+		}
+
+		.invitation-hero__time {
+			font-family: var(--renata-hero-meta-font);
+			font-size: clamp(0.95rem, 1.2vw, 1.05rem);
+			font-weight: 500;
+			color: var(--renata-hero-time-color);
 		}
 
 		.calligraphy-accent {
@@ -314,20 +340,67 @@ html:has(.event--renata.theme-preset--editorial) body {
 
 		.invitation-hero__venue {
 			font-style: normal;
-			font-family: var(--font-label);
-			letter-spacing: 0.12em;
+			font-family: var(--renata-hero-ui-font);
+			font-size: clamp(0.85rem, 1.1vw, 0.95rem);
+			font-weight: 500;
+			line-height: 1.35;
+			letter-spacing: 0.1em;
+			max-width: min(100%, 30ch);
+			margin-top: 0.4rem;
+			color: var(--renata-hero-venue-color);
+			overflow-wrap: anywhere;
+			text-wrap: pretty;
+		}
+
+		.invitation-hero__scroll-indicator {
+			bottom: clamp(1.25rem, 4vh, 2.5rem);
+			z-index: 11;
+			opacity: 88%;
+			font-family: var(--renata-hero-ui-font);
+			color: var(--renata-hero-scroll-color);
+		}
+
+		.invitation-hero__scroll-text {
+			display: block;
 		}
 
 		@media (width <= 860px) {
 			.invitation-hero__content {
 				width: 100%;
-				padding-block: 0 clamp(2.75rem, 7vh, 4rem);
+				padding-block: 0 clamp(5.5rem, 13vh, 7.5rem);
 				padding-inline: 1.25rem;
 			}
 
 			.invitation-hero__title {
 				font-size: clamp(2.6rem, 14vw, 3.6rem);
 			}
+		}
+
+		@media (width <= 540px) {
+			.invitation-hero__scroll-indicator {
+				bottom: clamp(1.25rem, 3vh, 1.75rem);
+			}
+		}
+	}
+
+	// The shared atmospheric blend is painted behind opaque section children.
+	// Keying this handoff only to source=hero keeps the treatment independent of
+	// whichever section is ordered first after the hero.
+	.invitation-section-wrapper[data-intersection='atmospheric-blend'][data-intersection-source='hero'] {
+		--intersection-surface: var(--renata-cream);
+		--intersection-blend: linear-gradient(
+			180deg,
+			rgb(var(--renata-ink-rgb) / 18%) 0%,
+			rgb(var(--renata-cream-rgb) / 76%) 52%,
+			var(--renata-cream) 100%
+		);
+
+		> * {
+			background-color: var(--intersection-surface);
+			background-image: var(--intersection-blend);
+			background-position: top;
+			background-repeat: no-repeat;
+			background-size: 100% var(--intersection-depth);
 		}
 	}
 
@@ -366,63 +439,39 @@ html:has(.event--renata.theme-preset--editorial) body {
 		}
 	}
 
-	.countdown-section:is([data-variant='editorial'], [data-variant='premiere-floral']) {
-		color: var(--renata-ink);
+	// Countdown keeps shared editorial chrome. Tint only with Renata olive/cream/coral.
+	// Envelope gold stays on premiere-floral reveal, not this opened section.
+	.countdown-section {
+		--section-padding-block: clamp(4rem, 10vw, 8rem);
+		--color-action-accent: var(--renata-coral);
+		--color-action-accent-rgb: var(--renata-coral-rgb);
 
-		&::before {
-			display: none;
-		}
+		background: linear-gradient(145deg, var(--renata-ink) 0%, var(--countdown-bg) 100%);
+		color: var(--renata-cream);
 
 		.countdown-title {
 			background: none;
 			background-clip: unset;
-			-webkit-text-fill-color: var(--renata-ink);
-			color: var(--renata-ink);
-			letter-spacing: 0.04em;
-			margin-bottom: 1.5rem;
+			-webkit-text-fill-color: var(--renata-coral);
+			color: var(--renata-coral);
 		}
 
-		.countdown__timer {
-			margin-top: 1.75rem;
-			gap: 0.85rem;
-		}
-
-		.countdown__segment {
-			background: transparent;
-			backdrop-filter: none;
-			border: 0;
-			padding: clamp(0.85rem, 2vw, 1.35rem) 0.5rem;
-			border-radius: 0;
-			box-shadow: none;
-
-			&:hover {
-				transform: none;
-				border-color: transparent;
-				background: transparent;
-				box-shadow: none;
-			}
-		}
-
-		.countdown__value-wrapper {
-			margin-bottom: 0.35rem;
+		.countdown-date .event-date {
+			color: var(--renata-cream);
 		}
 
 		.countdown__value {
-			color: var(--renata-ink);
-			text-shadow: none;
+			color: var(--renata-coral);
 		}
 
 		.countdown__label {
-			color: var(--renata-olive);
-			letter-spacing: 0.18em;
+			color: var(--renata-cream);
+			opacity: 85%;
 		}
 
 		.countdown-invitation-text {
-			margin-top: 1.75rem;
-			letter-spacing: 0.04em;
-			font-weight: 400;
-			max-inline-size: 36ch;
-			color: rgb(var(--renata-ink-rgb) / 62%);
+			color: var(--renata-cream);
+			opacity: 90%;
 		}
 	}
 
@@ -488,39 +537,6 @@ html:has(.event--renata.theme-preset--editorial) body {
 		--gallery-item-border: 0;
 
 		background: var(--renata-blush);
-	}
-
-	.itinerary[data-structural-variant='editorial-ledger'] {
-		background: var(--renata-cream);
-		padding-block: var(--section-padding-block);
-
-		.itinerary__header-flourish,
-		.itinerary__line-start,
-		.itinerary__line-end {
-			display: none;
-		}
-
-		.itinerary__title {
-			color: var(--renata-ink);
-			letter-spacing: 0.02em;
-		}
-
-		.itinerary__item-time {
-			color: var(--renata-olive);
-			font-family: var(--font-label);
-			letter-spacing: 0.08em;
-		}
-
-		.itinerary__item-label {
-			color: var(--renata-ink);
-			font-family: var(--font-display);
-			font-style: normal;
-		}
-
-		.itinerary__item-description {
-			color: rgb(var(--renata-ink-rgb) / 68%);
-			font-family: var(--font-body);
-		}
 	}
 
 	.gifts-section {

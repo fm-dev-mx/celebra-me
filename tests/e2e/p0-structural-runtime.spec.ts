@@ -40,7 +40,7 @@ test.describe('P0 structural variants render through the live invitation route',
 			expect(stylesheets).toMatch(/celestial-blue/);
 			expect(stylesheets).toMatch(/timeline-paper/);
 			expect(stylesheets).toMatch(/index-choreography/);
-			expect(stylesheets).not.toMatch(/editorial-ledger|split-cover/);
+			expect(stylesheets).not.toMatch(/editorial-ledger|editorial-program|split-cover/);
 		});
 	}
 
@@ -65,6 +65,8 @@ test.describe('P0 structural variants render through the live invitation route',
 
 		const stylesheets = (await stylesheetHrefs(page)).join('\n');
 		expect(stylesheets).toMatch(/jewelry-box/);
-		expect(stylesheets).not.toMatch(/timeline-paper|index-choreography|editorial-ledger/);
+		expect(stylesheets).not.toMatch(
+			/timeline-paper|index-choreography|editorial-ledger|editorial-program/,
+		);
 	});
 });

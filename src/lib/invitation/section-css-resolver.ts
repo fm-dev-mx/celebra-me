@@ -39,6 +39,7 @@ const structuralVariantModules = import.meta.glob(
 		'/src/styles/themes/sections/location/_stacked-venue-plates.scss',
 		'/src/styles/themes/sections/itinerary/_timeline-paper.scss',
 		'/src/styles/themes/sections/itinerary/_editorial-ledger.scss',
+		'/src/styles/themes/sections/itinerary/_editorial-program.scss',
 		'/src/styles/themes/sections/reveal/_premiere-floral.scss',
 	],
 	{ query: '?url', eager: true },

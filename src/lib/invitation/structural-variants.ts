@@ -58,4 +58,5 @@ export const ITINERARY_STRUCTURAL_VARIANTS = [
 	'standard',
 	'timeline-paper',
 	'editorial-ledger',
+	'editorial-program',
 ] as const;

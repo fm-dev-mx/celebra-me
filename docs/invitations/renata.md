@@ -172,7 +172,7 @@ Demo remains the gold base template. Real invite identity lives in Lane A. Real 
 | concern                                                  | decision / evidence                                                                   | status                         |
 | -------------------------------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------ |
 | Typography roles (display, heading, body, metadata)      | Editorial display retained; cream type on photos; ink type on light surfaces          | accepted after 390/1440 review |
-| Vertical rhythm and density                              | Preset padding reduced; editorial-ledger and RSVP plates flattened                    | accepted after 390/1440 review |
+| Vertical rhythm and density                              | Preset padding reduced; itinerary uses editorial-program; RSVP plates flattened       | accepted after 390/1440 review |
 | Surface hierarchy (open flow vs cards/containers)        | Open flow; Location/Gifts/RSVP/itinerary paper chrome neutralized                     | accepted after 390/1440 review |
 | Photographic treatment (role, crop, focal point, filter) | Color preserved; hero filter none; unique roles; thank-you is full-bleed not circular | accepted after 390/1440 review |
 | Section-intersection intent and narrative cadence        | family blend from hero; overlap after location; remaining seams neutral               | accepted after 390/1440 review |
@@ -238,7 +238,7 @@ hero. Feature frame is `_DSC5939`, not file-order first.
   Event Location consumes `stacked-venue-plates` with section-scoped type/palette so the chapter
   matches the shared plate presentation. Yellow is not a UI color on surrounding sections.
   Cream/blush are light surfaces; silver is line/detail; coral is rare (wax highlight).
-- Structural selections: itinerary `editorial-ledger`; gallery `paired-feature-band` without a
+- Structural selections: itinerary `editorial-program`; gallery `paired-feature-band` without a
   feature `aspectRatio` override and item order `gallery-01`, `gallery-02`, `gallery-feature`,
   `gallery-03`, `gallery-04`; personalized access `standard`; location `stacked-venue-plates` with
   `presentation: 'simple'`, `presentationOptions.showNavigationButtons: false`, and

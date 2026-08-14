@@ -55,6 +55,7 @@ const canonicalVariantCss = [
 	'src/styles/themes/sections/gallery/_index-choreography.scss',
 	'src/styles/themes/sections/itinerary/_timeline-paper.scss',
 	'src/styles/themes/sections/itinerary/_editorial-ledger.scss',
+	'src/styles/themes/sections/itinerary/_editorial-program.scss',
 	'src/styles/themes/sections/gifts/_editorial-catalog.scss',
 	'src/styles/themes/sections/rsvp/_editorial-press-pass.scss',
 	'src/styles/themes/sections/personalized-access/_editorial-pass.scss',
@@ -147,6 +148,7 @@ describe('canonical variant governance', () => {
 		expect(structuralMap).toContain("'split-cover': 'split-cover'");
 		expect(structuralMap).toContain("'timeline-paper': 'timeline-paper'");
 		expect(structuralMap).toContain("'editorial-ledger': 'editorial-ledger'");
+		expect(structuralMap).toContain("'editorial-program': 'editorial-program'");
 		expect(structuralMap).toContain("'stacked-venue-plates': 'stacked-venue-plates'");
 		expect(structuralMap).toContain("'asymmetric-groups': 'asymmetric-groups'");
 		expect(galleryMap).toContain("'feature-stack': 'feature-stack'");

@@ -1,0 +1,109 @@
+@use '@fontsource-variable/bodoni-moda/index.css' as bodoni-moda;
+@use '@fontsource-variable/playfair-display/index.css' as playfair-display;
+@use '@fontsource-variable/instrument-sans/index.css' as instrument-sans;
+
+// Itinerary editorial-program: numbered magazine program over TimelineList DOM.
+// Owns layout, type metrics, and section-scoped chroma so any host theme can
+// consume the same presentation. Profiles must not redefine the program grid.
+.itinerary[data-structural-variant='editorial-program'] {
+	--editorial-program-paper: rgb(255 253 253);
+	--editorial-program-ink: rgb(31 31 34);
+	--editorial-program-ink-rgb: 31 31 34;
+	--editorial-program-accent: rgb(232 180 184);
+	--editorial-program-display: 'Bodoni Moda Variable', 'Playfair Display Variable', georgia, serif;
+	--editorial-program-label: 'Instrument Sans Variable', system-ui, sans-serif;
+	--editorial-program-body: 'Instrument Sans Variable', system-ui, sans-serif;
+
+	background: var(--editorial-program-paper);
+	color: var(--editorial-program-ink);
+	padding-block: clamp(5.5rem, 12vw, 8rem);
+
+	.itinerary__header {
+		margin-bottom: clamp(3rem, 8vw, 5rem);
+		text-align: left;
+	}
+
+	.itinerary__title {
+		color: var(--editorial-program-ink);
+		font-family: var(--editorial-program-display);
+		font-size: clamp(3.2rem, 10vw, 7rem);
+		font-weight: 800;
+		line-height: 0.84;
+		letter-spacing: 0;
+		text-transform: uppercase;
+	}
+
+	.itinerary__header-flourish,
+	.itinerary__animated-line-container,
+	.itinerary__item-icon-wrapper,
+	.itinerary__item-dot,
+	.itinerary__line-start,
+	.itinerary__line-end {
+		display: none;
+	}
+
+	.itinerary__timeline {
+		padding: 0;
+	}
+
+	.itinerary__items {
+		counter-reset: editorial-program;
+		gap: 0;
+		border-top: 1px solid rgb(var(--editorial-program-ink-rgb) / 18%);
+	}
+
+	.itinerary__item {
+		counter-increment: editorial-program;
+		display: grid;
+		grid-template-columns: minmax(4.5rem, 0.32fr) minmax(0, 1fr);
+		gap: clamp(1rem, 4vw, 2.5rem);
+		align-items: start;
+		padding: clamp(1.2rem, 4vw, 2rem) 0;
+		padding-left: 0;
+		border-bottom: 1px solid rgb(var(--editorial-program-ink-rgb) / 14%);
+	}
+
+	.itinerary__item::before {
+		content: '0' counter(editorial-program);
+		color: var(--editorial-program-accent);
+		font-family: var(--editorial-program-label);
+		font-size: clamp(1.35rem, 6vw, 3rem);
+		font-weight: 800;
+		line-height: 0.9;
+	}
+
+	.itinerary__item--left .itinerary__item-content,
+	.itinerary__item--right .itinerary__item-content {
+		grid-column: 2;
+		padding: 0;
+		text-align: left;
+	}
+
+	.itinerary__item-time {
+		color: rgb(var(--editorial-program-ink-rgb) / 68%);
+		font-family: var(--editorial-program-label);
+		font-weight: 800;
+		letter-spacing: 0.18em;
+	}
+
+	.itinerary__item-label {
+		color: var(--editorial-program-ink);
+		font-family: var(--editorial-program-display);
+		font-size: clamp(1.55rem, 5vw, 2.6rem);
+		font-weight: 700;
+		line-height: 0.98;
+	}
+
+	.itinerary__item-description {
+		max-width: 36rem;
+		color: rgb(var(--editorial-program-ink-rgb) / 76%);
+		font-family: var(--editorial-program-body);
+		line-height: 1.65;
+	}
+}
+
+@media (width <= 480px) {
+	.itinerary[data-structural-variant='editorial-program'] {
+		padding-inline: clamp(1rem, 5vw, 1.35rem);
+	}
+}

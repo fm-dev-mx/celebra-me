@@ -1,12 +1,80 @@
 @use '../../../global/mixins' as mixins;
 
+
 // Family asymmetric-groups: left-read staggered groups with optional right-set
-// spanning godparents block. Shares the multi-group DOM with split-groups.
+// spanning godparents block. Shared canonical implementation.
 .family[data-structural-variant='asymmetric-groups'] {
 	--family-split-gap-inline: clamp(2rem, 6vw, 5rem);
 	--family-split-gap-block: clamp(1.25rem, 3.5vw, 1.65rem);
-	--family-split-divider: rgb(0 0 0 / 18%);
+	--family-split-divider: rgb(166 84 58 / 18%);
 	--family-split-content-max-width: 58rem;
+	--family-bg: linear-gradient(
+		177deg,
+		rgb(224 208 190 / 46%) 0%,
+		rgb(247 241 233) 48%,
+		rgb(224 208 190 / 56%) 100%
+	);
+	--family-texture-opacity: 0%;
+	--family-vignette-bg: transparent;
+	--family-panel-bg: transparent;
+	--family-panel-border: none;
+	--family-panel-shadow: none;
+	--family-header-filter: none;
+	--family-media-filter: none;
+	--family-accent: rgb(176 142 96);
+	--family-text-primary: rgb(48 43 40);
+	--family-text-muted: rgb(48 43 40 / 64%);
+	--family-eyebrow-color: rgb(114 80 46);
+	--family-title-color: rgb(91 46 42);
+
+	padding-block: clamp(4.25rem, 8vw, 6.25rem);
+	background: var(--family-bg);
+	color: var(--family-text-primary);
+
+	.family__eyebrow {
+		padding-left: 2rem;
+		font-family: 'Bodoni Moda Variable', 'Playfair Display Variable', georgia, serif;
+		color: var(--family-eyebrow-color);
+	}
+
+	.family__header {
+		max-width: 36rem;
+		margin: 0 0 clamp(2.5rem, 5vw, 3.75rem);
+		text-align: left;
+	}
+
+	.family__header-inner {
+		align-items: flex-start;
+	}
+
+	.family__header-divider {
+		width: clamp(3rem, 8vw, 4.5rem);
+		margin-inline: 0;
+	}
+
+	.family__title {
+		max-width: 20ch;
+		margin-inline: 0;
+		font-family: 'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
+		font-size: clamp(1.75rem, 3.8vw, 2.45rem);
+		font-weight: 600;
+		line-height: 1.15;
+		color: var(--family-title-color);
+	}
+
+	.family__message {
+		max-width: 30rem;
+		margin-inline: 0;
+		padding-left: 2rem;
+		font-family: 'Instrument Sans Variable', system-ui, sans-serif;
+		color: var(--family-text-muted);
+	}
+
+	.family__panel--no-media {
+		max-width: 58rem;
+		margin-inline: 0;
+		padding: 0;
+	}
 
 	.family__content {
 		position: relative;
@@ -28,7 +96,8 @@
 	}
 
 	.family__group--group-0,
-	.family__group--group-1 {
+	.family__group--group-1,
+	.family__group--parents {
 		padding-top: clamp(1.25rem, 2.5vw, 1.75rem);
 		border-top: 1px solid var(--family-split-divider);
 		text-align: left;
@@ -37,19 +106,24 @@
 	.family__group--group-0 .family__group-title,
 	.family__group--group-0 .family__meta,
 	.family__group--group-1 .family__group-title,
-	.family__group--group-1 .family__meta {
+	.family__group--group-1 .family__meta,
+	.family__group--parents .family__group-title,
+	.family__group--parents .family__meta {
 		text-align: left;
 	}
 
 	.family__group--group-0 .family__list,
 	.family__group--group-0 .family__item,
 	.family__group--group-1 .family__list,
-	.family__group--group-1 .family__item {
+	.family__group--group-1 .family__item,
+	.family__group--parents .family__list,
+	.family__group--parents .family__item {
 		align-items: flex-start;
 	}
 
 	.family__group--group-0 .family__name,
-	.family__group--group-1 .family__name {
+	.family__group--group-1 .family__name,
+	.family__group--parents .family__name {
 		justify-content: flex-start;
 		text-align: left;
 		width: 100%;
@@ -61,6 +135,23 @@
 
 	.family__group--group-1::before {
 		content: none;
+	}
+
+	.family__group-title {
+		font-family: 'Bodoni Moda Variable', 'Playfair Display Variable', georgia, serif;
+		color: rgb(114 80 46);
+	}
+
+	.family__name {
+		font-family: 'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
+		font-size: clamp(1.45rem, 3vw, 2.05rem);
+		font-weight: 500;
+		color: rgb(48 43 40);
+	}
+
+	.family__meta,
+	.family__godparent-label {
+		font-family: 'Bodoni Moda Variable', 'Playfair Display Variable', georgia, serif;
 	}
 
 	.family__group--godparents {

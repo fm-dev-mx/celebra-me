@@ -207,7 +207,7 @@ export function buildRenataPublishedContent(
 			microcopy: 'Abra su invitación',
 		},
 		family: {
-			variant: 'standard',
+			variant: 'asymmetric-groups',
 			presentation: 'text-only',
 			parents: {
 				father: 'Ramón Arturo Sainz Quevedo',
@@ -288,7 +288,7 @@ export function buildRenataPublishedContent(
 			},
 		],
 		itinerary: {
-			variant: 'editorial-ledger',
+			variant: 'editorial-program',
 			title: 'Momentos de la celebración',
 			items: [
 				{
