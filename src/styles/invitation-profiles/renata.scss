@@ -691,8 +691,27 @@ html:has(.event--renata.theme-preset--editorial) body {
 		}
 	}
 
+	// Closing lockup: cream type over a top-left ink scrim. Do not restore the
+	// shared glass card, gold monogram, or editorial circular frame.
+	// overlayAnchor=left is honored for width; vertical start is local because
+	// full-bleed-photo centers (desktop) / ends (mobile) at equal specificity.
 	.thank-you-section[data-variant='editorial'][data-structural-variant='full-bleed-photo'] {
+		--thank-you-overlay-width: 22.5rem;
+		--thank-you-overlay-gap: clamp(1.25rem, 3vw, 2.25rem);
+		--thank-you-focal-point: 48% 36%;
+		--renata-thank-you-message-size: clamp(1.4rem, 1.05rem + 1.5vw, 2.35rem);
+		--renata-thank-you-name-size: clamp(2.55rem, 1.35rem + 4.1vw, 5.15rem);
+		--renata-thank-you-date-size: clamp(0.7rem, 0.62rem + 0.28vw, 0.86rem);
+		--renata-thank-you-lockup-gap: clamp(0.35rem, 0.8vw, 0.7rem);
+
 		background: var(--renata-ink);
+		padding-block: calc(var(--invitation-header-offset, 5.5rem) + 0.35rem)
+			clamp(2rem, 5vw, 3.25rem);
+		padding-inline: clamp(1.15rem, 4vw, 3.25rem);
+
+		@include mixins.respond-to(md) {
+			--thank-you-focal-point: 46% 22%;
+		}
 
 		&::before {
 			inset: 0;
@@ -700,12 +719,20 @@ html:has(.event--renata.theme-preset--editorial) body {
 			height: 100%;
 			transform: none;
 			filter: none;
-			background: linear-gradient(
-				180deg,
-				rgb(var(--renata-ink-rgb) / 10%) 0%,
-				transparent 36%,
-				rgb(var(--renata-ink-rgb) / 42%) 100%
-			);
+			background:
+				linear-gradient(
+					90deg,
+					rgb(var(--renata-ink-rgb) / 62%) 0%,
+					rgb(var(--renata-ink-rgb) / 32%) 26%,
+					rgb(var(--renata-ink-rgb) / 10%) 46%,
+					transparent 68%
+				),
+				linear-gradient(
+					180deg,
+					rgb(var(--renata-ink-rgb) / 46%) 0%,
+					rgb(var(--renata-ink-rgb) / 18%) 24%,
+					transparent 48%
+				);
 		}
 
 		&::after {
@@ -713,27 +740,50 @@ html:has(.event--renata.theme-preset--editorial) body {
 		}
 
 		.thank-you-content,
-		.thank-you-message,
-		.closing-date {
+		.thank-you-message {
 			color: var(--renata-cream);
 		}
 
 		.thank-you-content {
-			align-self: end;
+			place-self: start;
+			width: min(100%, var(--thank-you-overlay-width));
+			max-width: var(--thank-you-overlay-width);
 			margin: 0;
-			padding-block-end: clamp(1.5rem, 4vw, 2.5rem);
+			padding: 0;
+			gap: var(--renata-thank-you-lockup-gap);
+			text-align: left;
+		}
+
+		.message-container,
+		.signature-block {
+			justify-self: start;
+			margin-left: 0;
+			max-width: var(--thank-you-overlay-width);
 		}
 
 		.message-container {
+			width: min(100%, var(--thank-you-overlay-width));
+			margin: 0;
+			padding: 0;
+			border: 0;
 			background: none;
 			box-shadow: none;
 			backdrop-filter: none;
-			border: 0;
-			padding-inline: 0;
 
 			&::before {
 				display: none;
 			}
+		}
+
+		.thank-you-message {
+			max-width: 12.5em;
+			margin: 0;
+			color: var(--renata-cream);
+			font-size: var(--renata-thank-you-message-size);
+			font-weight: 400;
+			letter-spacing: 0.012em;
+			line-height: 1.22;
+			text-shadow: 0 6px 22px rgb(var(--renata-ink-rgb) / 42%);
 		}
 
 		.thank-you-message .drop-cap {
@@ -741,12 +791,11 @@ html:has(.event--renata.theme-preset--editorial) body {
 			text-shadow: none;
 		}
 
+		.signature-block {
+			margin-top: 0.15rem;
+		}
+
 		.photo-frame {
-			position: absolute;
-			inset: 0;
-			width: 100%;
-			height: 100%;
-			margin: 0;
 			border-radius: 0;
 			overflow: hidden;
 			box-shadow: none;
@@ -757,21 +806,33 @@ html:has(.event--renata.theme-preset--editorial) body {
 			}
 
 			.photo-image {
-				width: 100%;
-				height: 100%;
 				border-radius: 0;
 				clip-path: none;
 				filter: none;
 				object-fit: cover;
+				object-position: var(--thank-you-focal-point);
 			}
 		}
 
 		.closing-name {
+			display: block;
+			margin: 0;
 			background: none;
 			background-clip: unset;
 			-webkit-text-fill-color: var(--renata-cream);
 			color: var(--renata-cream);
-			text-shadow: none;
+			font-family: var(--font-display);
+			font-size: var(--renata-thank-you-name-size);
+			font-weight: 500;
+			letter-spacing: 0.01em;
+			line-height: 0.94;
+			text-shadow: 0 10px 28px rgb(var(--renata-ink-rgb) / 48%);
+		}
+
+		.closing-date {
+			margin: 0.2rem 0 0;
+			color: rgb(var(--renata-cream-rgb) / 78%);
+			font-size: var(--renata-thank-you-date-size);
 		}
 	}
 

@@ -136,9 +136,9 @@ export const RENATA_ASSET_SPECS = [
 		displayName: 'Renata — cierre',
 		alt: 'Renata recostada en un sofá floral con vestido negro',
 		focalPoint: {
-			default: '46% 38%',
+			default: '46% 22%',
 			mobile: '48% 36%',
-			desktop: '44% 40%',
+			desktop: '46% 22%',
 		},
 	},
 ] as const;
@@ -392,7 +392,14 @@ export function buildRenataPublishedContent(
 			closingName: 'Renata',
 			date: EVENT_DATE_LONG,
 			image: assets['thank-you'],
-			focalPoint: '46% 38%',
+			focalPoint: '46% 22%',
+			overlayAnchor: 'left',
+			overlaySafeArea: {
+				x: 0.36,
+				y: 0.16,
+				width: 0.5,
+				height: 0.58,
+			},
 		},
 		sharing: {
 			ogImage: assets['hero-desktop'],

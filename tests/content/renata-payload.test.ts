@@ -239,9 +239,27 @@ describe('XV Renata provision contract', () => {
 		expect(rsvp.whatsappConfig).toBeUndefined();
 		expect(rsvp.personalizedAccess?.variant).toBe('standard');
 
-		const thankYou = content.thankYou as { variant: string; closingName: string };
+		const thankYou = content.thankYou as {
+			variant: string;
+			closingName: string;
+			message: string;
+			date: string;
+			focalPoint: string;
+			overlayAnchor: string;
+			overlaySafeArea: { x: number; y: number; width: number; height: number };
+		};
 		expect(thankYou.variant).toBe('full-bleed-photo');
 		expect(thankYou.closingName).toBe('Renata');
+		expect(thankYou.message).toBe('Gracias por acompañar este día.');
+		expect(thankYou.date).toBe('5 de septiembre de 2026');
+		expect(thankYou.focalPoint).toBe('46% 22%');
+		expect(thankYou.overlayAnchor).toBe('left');
+		expect(thankYou.overlaySafeArea).toEqual({
+			x: 0.36,
+			y: 0.16,
+			width: 0.5,
+			height: 0.58,
+		});
 	});
 
 	it('keeps preparation Markdown helper-aligned and free of absolute client paths', () => {
