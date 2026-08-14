@@ -214,7 +214,7 @@ describe('XV Renata provision contract', () => {
 		expect(location.reception?.venueName).toBe('InHouse Select · Hacienda Tres Ríos');
 		expect(location.reception?.address).toBe('Blvd. José Limón 910 Nte., Tres Ríos, Culiacán');
 		expect(location.indicationsHeading).toBe('Indicaciones');
-		expect(location.presentationOptions?.showFlourishes).toBe(false);
+		expect(location.presentationOptions?.showFlourishes).toBe(true);
 		expect(location.presentationOptions?.showNavigationButtons).toBe(false);
 
 		const envelope = content.envelope as {
