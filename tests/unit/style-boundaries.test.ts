@@ -386,7 +386,7 @@ describe('Style boundary governance', () => {
 		const forwarded = getForwardedPartials(dir);
 		const existing = getExistingPartials(dir);
 		const bundleImports = getPresetBundleImports('personalized-access');
-		const structuralResolverPartials = ['editorial-pass'];
+		const structuralResolverPartials = ['editorial-pass', 'formal-pass'];
 
 		expect(forwarded).toContain('base');
 
@@ -436,7 +436,7 @@ describe('Style boundary governance', () => {
 		const forwarded = getForwardedPartials(dir);
 		const existing = getExistingPartials(dir);
 		const bundleImports = getPresetBundleImports('personalized-access');
-		const structuralResolverPartials = ['editorial-pass'];
+		const structuralResolverPartials = ['editorial-pass', 'formal-pass'];
 
 		// Every file on disk must be intentionally forwarded or imported by a bundle.
 		for (const name of existing) {
