@@ -22,8 +22,10 @@ import {
 	evaluateSpawnProductionMutation,
 	isAgentContext,
 	isReadOnlySql,
+	maskSqlLiterals,
 	wrapShellCommandWithAgentContext,
 } from '../../scripts/db/production-boundary-policy.ts';
+import { buildMutationSchemaContractQuery } from '../../scripts/db/mutation-schema-contract-query.ts';
 import { evaluateProductionAuthorizationIntegrity } from '../../scripts/db/production-authorization-integrity.ts';
 import {
 	clearProductionWritePermit,
@@ -69,6 +71,15 @@ describe('production boundary policy', () => {
 		).toBe(true);
 		expect(isReadOnlySql('COPY public.invitations FROM STDIN')).toBe(false);
 		expect(isReadOnlySql("COPY public.invitations FROM '/tmp/invitations.csv'")).toBe(false);
+		expect(isReadOnlySql("SELECT 'UPDATE; DROP TABLE x; LOCK TABLE y' AS text")).toBe(true);
+		expect(isReadOnlySql('SELECT $$UPDATE; DROP TABLE x;$$ AS text')).toBe(true);
+		expect(isReadOnlySql("SELECT 'x''UPDATE y SET z = 1' AS text")).toBe(true);
+		expect(isReadOnlySql('SELECT 1 FROM t FOR UPDATE')).toBe(false);
+		expect(
+			isReadOnlySql('WITH changed AS (UPDATE t SET x = 1 RETURNING *) SELECT * FROM changed'),
+		).toBe(false);
+		expect(isReadOnlySql(buildMutationSchemaContractQuery())).toBe(true);
+		expect(maskSqlLiterals("SELECT 'UPDATE' AS value")).not.toContain('UPDATE');
 	});
 
 	it('wraps agent shell commands with CELEBRA_AGENT_CONTEXT and ignores false/0 overrides', () => {

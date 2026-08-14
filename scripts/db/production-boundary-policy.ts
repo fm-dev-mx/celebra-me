@@ -137,24 +137,129 @@ function commandIsProductionApply(command: string): boolean {
 	return PRODUCTION_TARGETED_APPLY.some((pattern) => pattern.test(text));
 }
 
+function sqlDollarTagAt(sql: string, index: number): string | null {
+	return sql.slice(index).match(/^\$[A-Za-z_][A-Za-z0-9_]*\$|^\$\$/)?.[0] ?? null;
+}
+
+function consumeSqlQuoted(sql: string, index: number): { text: string; nextIndex: number } {
+	const quote = sql[index]!;
+	let nextIndex = index + 1;
+	while (nextIndex < sql.length) {
+		if (sql[nextIndex] === '\\' && nextIndex + 1 < sql.length) {
+			nextIndex += 2;
+			continue;
+		}
+		if (sql[nextIndex] === quote) {
+			if (sql[nextIndex + 1] === quote) {
+				nextIndex += 2;
+				continue;
+			}
+			nextIndex += 1;
+			break;
+		}
+		nextIndex += 1;
+	}
+	return { text: sql.slice(index, nextIndex), nextIndex };
+}
+
+function consumeSqlDollarQuoted(
+	sql: string,
+	index: number,
+	tag: string,
+): { text: string; nextIndex: number } {
+	const closing = sql.indexOf(tag, index + tag.length);
+	const nextIndex = closing === -1 ? sql.length : closing + tag.length;
+	return { text: sql.slice(index, nextIndex), nextIndex };
+}
+
+function consumeSqlComment(sql: string, index: number): { text: string; nextIndex: number } | null {
+	if (sql[index] === '-' && sql[index + 1] === '-') {
+		let nextIndex = index + 2;
+		while (nextIndex < sql.length && sql[nextIndex] !== '\n' && sql[nextIndex] !== '\r') {
+			nextIndex += 1;
+		}
+		return { text: ' '.repeat(nextIndex - index), nextIndex };
+	}
+	if (sql[index] === '/' && sql[index + 1] === '*') {
+		const closing = sql.indexOf('*/', index + 2);
+		const nextIndex = closing === -1 ? sql.length : closing + 2;
+		return { text: ' '.repeat(nextIndex - index), nextIndex };
+	}
+	return null;
+}
+
 export function stripSqlComments(sql: string): string {
-	return sql.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/--[^\n\r]*/g, ' ');
+	let output = '';
+	for (let i = 0; i < sql.length;) {
+		const ch = sql[i]!;
+		if (ch === "'" || ch === '"') {
+			const segment = consumeSqlQuoted(sql, i);
+			output += segment.text;
+			i = segment.nextIndex;
+			continue;
+		}
+		const dollar = sqlDollarTagAt(sql, i);
+		if (dollar) {
+			const segment = consumeSqlDollarQuoted(sql, i, dollar);
+			output += segment.text;
+			i = segment.nextIndex;
+			continue;
+		}
+		const comment = consumeSqlComment(sql, i);
+		if (comment) {
+			output += comment.text;
+			i = comment.nextIndex;
+			continue;
+		}
+		output += ch;
+		i += 1;
+	}
+	return output;
 }
 
 function splitSqlStatements(sql: string): string[] {
 	const statements: string[] = [];
 	let current = '';
 	let quote: "'" | '"' | null = null;
+	let dollarTag: string | null = null;
 	for (let i = 0; i < sql.length; i += 1) {
 		const ch = sql[i]!;
+		if (dollarTag) {
+			current += ch;
+			if (sql.startsWith(dollarTag, i)) {
+				current += sql.slice(i + 1, i + dollarTag.length);
+				i += dollarTag.length - 1;
+				dollarTag = null;
+			}
+			continue;
+		}
 		if (quote) {
 			current += ch;
-			if (ch === quote && sql[i - 1] !== '\\') quote = null;
+			if (ch === '\\' && sql[i + 1] !== undefined) {
+				current += sql[i + 1]!;
+				i += 1;
+				continue;
+			}
+			if (ch === quote) {
+				if (sql[i + 1] === quote) {
+					current += sql[i + 1]!;
+					i += 1;
+				} else {
+					quote = null;
+				}
+			}
 			continue;
 		}
 		if (ch === "'" || ch === '"') {
 			quote = ch;
 			current += ch;
+			continue;
+		}
+		const dollar = sql.slice(i).match(/^\$[A-Za-z_][A-Za-z0-9_]*\$|^\$\$/)?.[0];
+		if (dollar) {
+			dollarTag = dollar;
+			current += dollar;
+			i += dollar.length - 1;
 			continue;
 		}
 		if (ch === ';') {
@@ -166,6 +271,59 @@ function splitSqlStatements(sql: string): string[] {
 	}
 	if (current.trim()) statements.push(current);
 	return statements;
+}
+
+/** Replace literal contents with spaces before scanning executable SQL tokens. */
+export function maskSqlLiterals(sql: string): string {
+	let output = '';
+	let quote: "'" | '"' | null = null;
+	let dollarTag: string | null = null;
+	for (let i = 0; i < sql.length; i += 1) {
+		const ch = sql[i]!;
+		if (dollarTag) {
+			if (sql.startsWith(dollarTag, i)) {
+				output += ' '.repeat(dollarTag.length);
+				i += dollarTag.length - 1;
+				dollarTag = null;
+			} else {
+				output += ' ';
+			}
+			continue;
+		}
+		if (quote) {
+			if (ch === '\\' && sql[i + 1] !== undefined) {
+				output += '  ';
+				i += 1;
+				continue;
+			}
+			if (ch === quote) {
+				if (sql[i + 1] === quote) {
+					output += '  ';
+					i += 1;
+				} else {
+					output += ' ';
+					quote = null;
+				}
+			} else {
+				output += ' ';
+			}
+			continue;
+		}
+		if (ch === "'" || ch === '"') {
+			quote = ch;
+			output += ' ';
+			continue;
+		}
+		const dollar = sql.slice(i).match(/^\$[A-Za-z_][A-Za-z0-9_]*\$|^\$\$/)?.[0];
+		if (dollar) {
+			dollarTag = dollar;
+			output += ' '.repeat(dollar.length);
+			i += dollar.length - 1;
+			continue;
+		}
+		output += ch;
+	}
+	return output;
 }
 
 const SESSION_ONLY = /^(BEGIN|START\s+TRANSACTION|COMMIT|ROLLBACK|ABORT|END|SET|RESET|SHOW)\b/i;
@@ -180,23 +338,24 @@ export function isReadOnlySql(sql: string): boolean {
 	if (statements.length === 0) return true;
 	return statements.every((statement) => {
 		const normalized = statement.replace(/^\(+/, '').trim();
+		const executable = maskSqlLiterals(normalized);
 		if (!normalized) return true;
 		if (
-			/^SET\s+(SESSION\s+)?AUTHORIZATION\b/i.test(normalized) ||
-			/^SET\s+ROLE\b/i.test(normalized)
+			/^SET\s+(SESSION\s+)?AUTHORIZATION\b/i.test(executable) ||
+			/^SET\s+ROLE\b/i.test(executable)
 		) {
 			return false;
 		}
-		if (SESSION_ONLY.test(normalized)) return true;
-		if (/^COPY\b/i.test(normalized)) {
+		if (SESSION_ONLY.test(executable)) return true;
+		if (/^COPY\b/i.test(executable)) {
 			// COPY TO STDOUT is a client export. Inner SELECT ... FROM must not look like COPY FROM.
-			if (/\bFROM\s+(STDIN|PROGRAM)\b/i.test(normalized)) return false;
-			return /\bTO\s+STDOUT\b/i.test(normalized);
+			if (/\bFROM\s+(STDIN|PROGRAM)\b/i.test(executable)) return false;
+			return /\bTO\s+STDOUT\b/i.test(executable);
 		}
-		if (!READ_HEAD.test(normalized)) return false;
-		if (/\bINTO\b/i.test(normalized)) return false;
-		if (/\bFOR\s+UPDATE\b/i.test(normalized)) return false;
-		if (WRITE_TOKEN.test(normalized)) return false;
+		if (!READ_HEAD.test(executable)) return false;
+		if (/\bINTO\b/i.test(executable)) return false;
+		if (/\bFOR\s+UPDATE\b/i.test(executable)) return false;
+		if (WRITE_TOKEN.test(executable)) return false;
 		return true;
 	});
 }
