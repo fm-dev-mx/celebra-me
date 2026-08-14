@@ -126,6 +126,20 @@ describe('Middleware: Authentication & Authorization', () => {
 		consoleErrorSpy.mockRestore();
 	});
 
+	it('does not redirect to /login when /login auth validation fails (prevents redirect loop)', async () => {
+		const context = createContext('/login');
+		mockCookies.get.mockReturnValue({ value: 'stale-token' });
+		mockFetch.mockRejectedValue(new Error('connect ECONNREFUSED 127.0.0.1:54321'));
+		const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+		await middleware(context as unknown as APIContext, mockNext);
+
+		expect(mockRedirect).not.toHaveBeenCalled();
+		expect(mockNext).toHaveBeenCalled();
+		expect(mockCookies.delete).toHaveBeenCalledWith('sb-access-token', { path: '/' });
+		consoleErrorSpy.mockRestore();
+	});
+
 	it('returns structured JSON for dashboard API auth-provider failures', async () => {
 		const context = createContext('/api/dashboard/commercial/timeline');
 		mockCookies.get.mockReturnValue({ value: 'valid-token' });
