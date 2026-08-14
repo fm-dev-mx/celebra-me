@@ -940,22 +940,21 @@ html:has(.event--renata.theme-preset--editorial) body {
 		}
 	}
 
-	// Closing lockup: cream type over a top-left ink scrim. Do not restore the
-	// shared glass card, gold monogram, or editorial circular frame.
-	// overlayAnchor=left is honored for width; vertical start is local because
-	// full-bleed-photo centers (desktop) / ends (mobile) at equal specificity.
+	// Closing lockup: use the existing message surface as a controlled dark
+	// reading plane over the bright upper-left of the photograph. Keep the
+	// full-bleed image, semantic lockup, and local top-left composition intact.
 	.thank-you-section[data-variant='editorial'][data-structural-variant='full-bleed-photo'] {
-		--thank-you-overlay-width: 20rem;
+		--thank-you-overlay-width: 30rem;
 		--thank-you-overlay-gap: clamp(1.25rem, 3vw, 2.25rem);
 		--thank-you-focal-point: 48% 36%;
-		--renata-thank-you-message-size: clamp(1.05rem, 0.92rem + 0.7vw, 1.35rem);
-		--renata-thank-you-name-size: clamp(2.35rem, 1.4rem + 3.2vw, 4.25rem);
+		--renata-thank-you-message-size: clamp(1.2rem, 0.95rem + 1.1vw, 1.75rem);
+		--renata-thank-you-name-size: clamp(2.55rem, 1.5rem + 4.2vw, 4.5rem);
 		--renata-thank-you-date-size: clamp(0.68rem, 0.6rem + 0.24vw, 0.8rem);
-		--renata-thank-you-lockup-gap: clamp(0.4rem, 1vw, 0.75rem);
+		--renata-thank-you-lockup-gap: clamp(1.3rem, 2.7vw, 2.25rem);
 
 		background: var(--renata-ink);
 		padding-block: calc(var(--invitation-header-offset, 5.5rem) + 1.75rem)
-			clamp(2.5rem, 6vw, 4rem);
+			clamp(4rem, 8vw, 7rem);
 		padding-inline: clamp(1.65rem, 5.5vw, 4.25rem);
 
 		@include mixins.respond-to(md) {
@@ -971,15 +970,15 @@ html:has(.event--renata.theme-preset--editorial) body {
 			background:
 				linear-gradient(
 					90deg,
-					rgb(var(--renata-ink-rgb) / 82%) 0%,
-					rgb(var(--renata-ink-rgb) / 42%) 18%,
-					rgb(var(--renata-ink-rgb) / 12%) 32%,
-					transparent 48%
+					rgb(var(--renata-ink-rgb) / 62%) 0%,
+					rgb(var(--renata-ink-rgb) / 30%) 18%,
+					rgb(var(--renata-ink-rgb) / 8%) 34%,
+					transparent 50%
 				),
 				linear-gradient(
 					180deg,
-					rgb(var(--renata-ink-rgb) / 54%) 0%,
-					rgb(var(--renata-ink-rgb) / 18%) 22%,
+					rgb(var(--renata-ink-rgb) / 38%) 0%,
+					rgb(var(--renata-ink-rgb) / 12%) 22%,
 					transparent 44%
 				),
 				linear-gradient(180deg, transparent 58%, rgb(var(--renata-ink-rgb) / 28%) 100%);
@@ -990,17 +989,18 @@ html:has(.event--renata.theme-preset--editorial) body {
 				background:
 					linear-gradient(
 						180deg,
-						rgb(var(--renata-ink-rgb) / 78%) 0%,
-						rgb(var(--renata-ink-rgb) / 42%) 28%,
-						rgb(var(--renata-ink-rgb) / 12%) 52%,
-						transparent 68%
+						rgb(var(--renata-ink-rgb) / 56%) 0%,
+						rgb(var(--renata-ink-rgb) / 26%) 28%,
+						rgb(var(--renata-ink-rgb) / 8%) 52%,
+						transparent 70%
 					),
 					linear-gradient(
 						90deg,
-						rgb(var(--renata-ink-rgb) / 62%) 0%,
-						rgb(var(--renata-ink-rgb) / 22%) 48%,
-						transparent 78%
-					);
+						rgb(var(--renata-ink-rgb) / 48%) 0%,
+						rgb(var(--renata-ink-rgb) / 16%) 48%,
+						transparent 80%
+					),
+					linear-gradient(180deg, transparent 58%, rgb(var(--renata-ink-rgb) / 32%) 100%);
 			}
 		}
 
@@ -1011,7 +1011,6 @@ html:has(.event--renata.theme-preset--editorial) body {
 		.thank-you-content {
 			place-self: start;
 			width: min(100%, var(--thank-you-overlay-width));
-			max-width: var(--thank-you-overlay-width);
 			margin: 0;
 			padding: 0;
 			gap: var(--renata-thank-you-lockup-gap);
@@ -1027,13 +1026,21 @@ html:has(.event--renata.theme-preset--editorial) body {
 		}
 
 		.message-container {
-			width: min(100%, var(--thank-you-overlay-width));
+			width: 100%;
 			margin: 0;
-			padding: 0;
-			border: 0;
-			background: none;
-			box-shadow: none;
-			backdrop-filter: none;
+			padding: clamp(1.1rem, 2.4vw, 1.5rem) clamp(1.15rem, 2.6vw, 2rem)
+				clamp(1.05rem, 2.2vw, 1.4rem);
+			border-left: 1px solid rgb(var(--renata-cream-rgb) / 56%);
+			background: linear-gradient(
+				135deg,
+				rgb(var(--renata-ink-rgb) / 88%) 0%,
+				rgb(var(--renata-ink-rgb) / 76%) 68%,
+				rgb(var(--renata-ink-rgb) / 54%) 100%
+			);
+			box-shadow:
+				0 18px 48px -34px rgb(var(--renata-ink-rgb) / 78%),
+				inset 0 1px 0 rgb(var(--renata-cream-rgb) / 24%);
+			backdrop-filter: blur(6px) saturate(105%);
 
 			&::before {
 				display: none;
@@ -1041,13 +1048,12 @@ html:has(.event--renata.theme-preset--editorial) body {
 		}
 
 		.thank-you-message {
-			max-width: 12.5em;
 			margin: 0;
-			color: rgb(var(--renata-cream-rgb) / 90%);
+			color: rgb(var(--renata-cream-rgb) / 96%);
 			font-size: var(--renata-thank-you-message-size);
-			font-weight: 400;
-			letter-spacing: 0.012em;
-			line-height: 1.28;
+			font-weight: 500;
+			letter-spacing: 0.01em;
+			line-height: 1.34;
 			text-shadow: 0 8px 28px rgb(var(--renata-ink-rgb) / 72%);
 		}
 
@@ -1082,6 +1088,7 @@ html:has(.event--renata.theme-preset--editorial) body {
 		.closing-name {
 			display: block;
 			margin: 0;
+			padding: 0;
 			background: none;
 			background-clip: unset;
 			-webkit-text-fill-color: var(--renata-cream);
@@ -1095,9 +1102,20 @@ html:has(.event--renata.theme-preset--editorial) body {
 		}
 
 		.closing-date {
-			margin: 0.2rem 0 0;
-			color: rgb(var(--renata-cream-rgb) / 78%);
+			margin: 0.45rem 0 0;
+			color: rgb(var(--renata-cream-rgb) / 88%);
 			font-size: var(--renata-thank-you-date-size);
+			text-shadow: 0 8px 24px rgb(var(--renata-ink-rgb) / 80%);
+		}
+
+		@media (width > 860px) {
+			.message-container,
+			.signature-block {
+				max-width: min(
+					var(--thank-you-overlay-width),
+					calc(50vw - var(--thank-you-overlay-gap))
+				);
+			}
 		}
 	}
 
