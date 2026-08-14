@@ -461,6 +461,11 @@ export const onRequest = defineMiddleware(
 				response.headers.set('Cache-Control', 'no-store, private');
 				return response;
 			}
+			if (url.pathname === '/login') {
+				clearPrimaryAuthCookies(cookies);
+				const response = await next();
+				return applyShortId404Headers(url.pathname, response);
+			}
 			return applyShortId404Headers(url.pathname, privateRedirect(redirect, '/login'));
 		}
 
