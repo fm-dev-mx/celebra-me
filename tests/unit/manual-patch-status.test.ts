@@ -81,6 +81,37 @@ describe('active manual patch status', () => {
 		});
 	});
 
+	it('preserves exact paired rows and selected version metadata', () => {
+		const stdout = JSON.stringify([
+			{
+				store: 'published',
+				key: '["abril-michelle-becerra-rea"]',
+				row: { store: 'published', slug: 'abril-michelle-becerra-rea', version: 12 },
+			},
+			{
+				store: 'draft',
+				key: '["abril-michelle-becerra-rea"]',
+				row: { store: 'draft', slug: 'abril-michelle-becerra-rea', version: null },
+			},
+		]);
+		const classified = classifyPatchPreviewResult({
+			result: { status: 0, stdout },
+			manifest: PAIRED_MANIFEST,
+			min: 2,
+			max: 2,
+			projectRef: 'ineitkdkyrxqyressllp',
+		});
+		expect(classified).toMatchObject({
+			status: 'PENDING',
+			matchingRowCount: 2,
+			projectRef: 'ineitkdkyrxqyressllp',
+			affectedRows: [
+				{ store: 'published', slug: 'abril-michelle-becerra-rea', version: 12 },
+				{ store: 'draft', slug: 'abril-michelle-becerra-rea', version: null },
+			],
+		});
+	});
+
 	it('does not block when a draft is absent for a published key', () => {
 		const stdout = JSON.stringify([
 			{ store: 'published', key: '["alpha"]' },

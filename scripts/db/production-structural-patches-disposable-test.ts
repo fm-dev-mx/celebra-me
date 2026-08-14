@@ -19,9 +19,20 @@ interface PatchCase {
 	failureCode: string;
 	conflictContent: string;
 	canonicalPredicate: string;
+	initialVersion?: number;
+	galleryCanonicalCount?: number;
 }
 
 const PATCHES: PatchCase[] = [
+	{
+		name: 'abril residual itinerary structural contract',
+		file: '20260814_p0_abril_itinerary_residual_structural_contracts.sql',
+		rows: [{ slug: 'abril-michelle-becerra-rea', eventType: 'xv' }],
+		failureCode: 'P0_RESIDUAL_CONTRACT_ABORT',
+		conflictContent: `jsonb_build_object('itinerary', jsonb_build_object('variant', 'standard'))`,
+		canonicalPredicate: `content#>>'{itinerary,variant}' = 'timeline-paper' and content#>>'{itinerary,presentation,behavior}' = 'timeline-paper'`,
+		initialVersion: 12,
+	},
 	{
 		name: 'itinerary and gallery structural contracts',
 		file: '20260812_p0_itinerary_gallery_structural_contracts.sql',
@@ -34,6 +45,7 @@ const PATCHES: PatchCase[] = [
 		failureCode: 'P0_CONTRACT_ABORT',
 		conflictContent: `jsonb_build_object('itinerary', jsonb_build_object('variant', 'standard'))`,
 		canonicalPredicate: `content#>>'{itinerary,variant}' = 'timeline-paper' and content#>>'{itinerary,presentation,behavior}' = 'timeline-paper'`,
+		galleryCanonicalCount: 3,
 	},
 	{
 		name: 'thank-you editorial back-cover contracts',
@@ -112,9 +124,9 @@ CREATE TABLE public.invitation_content_drafts (
   updated_at timestamptz,
   deleted_at timestamptz
 );
-INSERT INTO public.invitations (id, slug, event_type) VALUES ${invitations};
-INSERT INTO public.published_invitation_content (invitation_project_id)
-SELECT id FROM public.invitations;
+	INSERT INTO public.invitations (id, slug, event_type) VALUES ${invitations};
+INSERT INTO public.published_invitation_content (invitation_project_id, version)
+SELECT id, ${patch.initialVersion ?? 1} FROM public.invitations;
 INSERT INTO public.invitation_content_drafts (invitation_project_id)
 SELECT id FROM public.invitations;
 `,
@@ -155,14 +167,14 @@ function assertCanonicalRows(patch: PatchCase): void {
 			fail(`${patch.name} expected ${patch.rows.length} canonical ${table} rows, got ${count}.`);
 		}
 	}
-	if (patch.file.startsWith('20260812_p0_itinerary')) {
+	if (patch.galleryCanonicalCount !== undefined) {
 		const galleryCount = Number(
 			query(
 				`select count(*)::text from public.published_invitation_content where content#>>'{gallery,variant}' = 'index-choreography';`,
 				'gallery canonical count',
 			),
 		);
-		if (galleryCount !== 3) fail(`Itinerary patch expected 3 canonical gallery rows, got ${galleryCount}.`);
+		if (galleryCount !== patch.galleryCanonicalCount) fail(`Itinerary patch expected ${patch.galleryCanonicalCount} canonical gallery rows, got ${galleryCount}.`);
 	}
 }
 

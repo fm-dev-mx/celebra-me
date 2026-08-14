@@ -512,7 +512,6 @@ function RecentMigrationsSection({ items }: { items?: RecentMigrationRecord[] })
 		</details>
 	);
 }
-
 function ManualPatchesSection({ items }: { items: ManualPatchStatus[] }) {
 	const pending = items.filter(
 		(item) => item.environments.production.status === 'PENDING',
@@ -557,15 +556,11 @@ function ManualPatchesSection({ items }: { items: ManualPatchStatus[] }) {
 								Producción:{' '}
 								<strong>{PATCH_STATUS_LABELS[production.status]}</strong>
 								{production.matchingRowCount !== null
-									? ` · ${production.matchingRowCount} filas`
+									? ` · ${production.matchingRowCount} filas (rango ${item.expectedRowsMin}–${item.expectedRowsMax})`
 									: ''}{' '}
 								· Evidencia: {EVIDENCE_LABELS[production.evidence]}
 							</p>
-							{production.status === 'NOT_NEEDED' ? (
-								<p className="canonical-status__patch-note">
-									No requerido: 0 filas. Esto no demuestra que fue aplicado.
-								</p>
-							) : null}
+							{production.affectedRows?.length ? <p className="canonical-status__patch-note">Filas detectadas: {production.affectedRows.map((row) => `${row.store}/${row.slug ?? row.key}${row.version === null ? '' : ` · versión ${row.version}`}`).join(', ')}</p> : null}
 							<details className="canonical-status__details">
 								<summary>Rango y evidencia</summary>
 								<dl>
@@ -575,6 +570,8 @@ function ManualPatchesSection({ items }: { items: ManualPatchStatus[] }) {
 									</dd>
 									<dt>Motivo técnico</dt>
 									<dd>{production.reason}</dd>
+									{production.verifiedAt ? <><dt>Última verificación LIVE</dt><dd>{production.verifiedAt}</dd></> : null}
+									{production.projectRef ? <><dt>Proyecto</dt><dd>{production.projectRef}</dd></> : null}
 								</dl>
 							</details>
 						</article>
@@ -584,7 +581,6 @@ function ManualPatchesSection({ items }: { items: ManualPatchStatus[] }) {
 		</details>
 	);
 }
-
 function DiagnosticsList({ items }: { items: CanonicalDiagnostic[] }) {
 	if (items.length === 0)
 		return (

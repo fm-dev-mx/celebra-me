@@ -23,6 +23,13 @@ export type PatchEvidenceReason =
 	| 'QUERY_TIMEOUT'
 	| 'QUERY_INVALID_OUTPUT';
 
+export interface ManualPatchAffectedRow {
+	store: string;
+	key: string;
+	slug: string | null;
+	version: number | null;
+}
+
 export interface ManualPatchEnvironmentStatus {
 	status: PatchApplicability;
 	evidence: EvidenceState;
@@ -30,6 +37,10 @@ export interface ManualPatchEnvironmentStatus {
 	verifiedAt: string | null;
 	reason: PatchEvidenceReason;
 	planCommand: string | null;
+	/** Exact rows returned by a paired live detector; absent for legacy/unverified snapshots. */
+	affectedRows?: ManualPatchAffectedRow[] | null;
+	/** Supabase project ref observed from the probed DB URL, never a credential. */
+	projectRef?: string | null;
 }
 
 export interface ManualPatchStatus {

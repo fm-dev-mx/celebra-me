@@ -301,6 +301,14 @@ function formatManualPatchesSection(view: CanonicalStatusView, headerWidth: numb
 		lines.push(`    File: ${patch.file}`);
 		lines.push(`    Reason: ${production.reason}`);
 		if (production.matchingRowCount !== null) lines.push(`    Count: ${production.matchingRowCount} (approved ${patch.expectedRowsMin}-${patch.expectedRowsMax})`);
+		if (production.verifiedAt) lines.push(`    Verified: ${production.verifiedAt}`);
+		if (production.projectRef) lines.push(`    Project: ${production.projectRef}`);
+		if (production.affectedRows && production.affectedRows.length > 0) {
+			const rows = production.affectedRows
+				.map((row) => `${row.store}/${row.slug ?? row.key}${row.version === null ? '' : `@v${row.version}`}`)
+				.join(', ');
+			lines.push(`    Rows: ${rows}`);
+		}
 		if (production.planCommand) lines.push(`    Plan: ${c.brightCyan(production.planCommand.replace('<file>', patch.file))}`);
 	}
 	return lines;

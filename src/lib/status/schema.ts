@@ -185,6 +185,21 @@ const manualPatchEnvironmentStatus = z
 		verifiedAt: z.iso.datetime({ offset: true }).nullable(),
 		reason: patchReason,
 		planCommand: z.string().max(500).nullable(),
+		affectedRows: z
+			.array(
+				z
+					.object({
+						store: z.string().min(1).max(64),
+						key: z.string().min(1).max(500),
+						slug: z.string().min(1).max(200).nullable(),
+						version: z.number().int().nonnegative().nullable(),
+					})
+					.strict(),
+			)
+			.max(100)
+			.nullable()
+			.optional(),
+		projectRef: z.string().regex(/^[a-z0-9-]+$/).nullable().optional(),
 	})
 	.strict();
 

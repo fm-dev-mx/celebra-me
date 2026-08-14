@@ -29,6 +29,14 @@ function patchReasonLabel(reason: PatchEvidenceReason): string {
 	return labels[reason];
 }
 
+function affectedRowsLabel(patch: ManualPatchStatus, environment: TargetEnv): string | null {
+	const rows = patch.environments[environment].affectedRows;
+	if (!rows || rows.length === 0) return null;
+	return rows
+		.map((row) => `${row.store}/${row.slug ?? row.key}${row.version === null ? '' : `@v${row.version}`}`)
+		.join(', ');
+}
+
 export function manualPatchRemediation(
 	patch: ManualPatchStatus,
 	environment: TargetEnv,
@@ -86,20 +94,27 @@ export function manualPatchRemediation(
 		const lintCommand = `pnpm db:prod:patch -- --dry-run --file ${patch.file}`;
 		const catalogInvalid = state.reason === 'CATALOG_INVALID';
 		const storeDisagreement = state.reason === 'LIVE_STORE_DISAGREEMENT';
+		const affectedRows = affectedRowsLabel(patch, environment);
+		const outsideRangeMeaning =
+			state.matchingRowCount === null
+				? 'Conteo fuera del rango aprobado; no es seguro aplicar.'
+				: `Conteo fuera del rango aprobado: ${state.matchingRowCount} fila(s), rango ${patch.expectedRowsMin}–${patch.expectedRowsMax}.`;
 		return {
 			semantic: 'blocked',
 			meaning: catalogInvalid
 				? 'Catálogo de parches inválido.'
 				: storeDisagreement
 					? 'Hay claves duplicadas en published o draft; no es seguro aplicar.'
-					: 'Conteo fuera del rango aprobado; no es seguro aplicar.',
-			why: patchReasonLabel(state.reason),
+					: outsideRangeMeaning,
 			environmentLabel,
 			nextAction: catalogInvalid
 				? 'Ejecute el lint seguro del parche y corrija el catálogo antes de aplicar.'
 				: storeDisagreement
 					? 'No aplique el parche. Resuelva las identidades duplicadas en esa superficie.'
 					: 'No aplique el parche. Audite el detector y vuelva a validar el conteo.',
+			why: affectedRows
+				? `${patchReasonLabel(state.reason)} Filas detectadas: ${affectedRows}.`
+				: patchReasonLabel(state.reason),
 			steps: catalogInvalid
 				? [
 						step(

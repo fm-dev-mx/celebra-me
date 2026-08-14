@@ -2,6 +2,7 @@
 import { resolve, relative, sep } from 'node:path';
 import { prepareProductionPatchFile, type PreparedProductionPatch } from '../db/run-prod-patch.ts';
 import { resolveDbUrlForEnv, type TargetEnv } from './dbs-status.ts';
+import { extractSupabaseProjectRef } from '../db/db-target-config.ts';
 import { mapPool, type StatusProbeSession } from '../status-core/index.ts';
 import {
 	assessProductionPatchPreview,
@@ -12,6 +13,7 @@ import type { SqlManifest } from '../db/sql-safety.ts';
 import type {
 	EvidenceState,
 	ManualPatchEnvironmentStatus,
+	ManualPatchAffectedRow,
 	ManualPatchStatus,
 	PatchApplicability,
 	PatchEvidenceReason,
@@ -28,12 +30,12 @@ export interface ActiveManualPatchCatalogEntry {
 
 export const ACTIVE_MANUAL_PATCH_CATALOG: readonly ActiveManualPatchCatalogEntry[] = [
 	{
-		scriptId: '20260812_p0_itinerary_gallery_structural_contracts',
-		file: 'scripts/manual/production-patches/20260812_p0_itinerary_gallery_structural_contracts.sql',
-		purpose: 'Persist itinerary timeline-paper and celestial gallery structural contracts.',
+		scriptId: '20260814_p0_abril_itinerary_residual_structural_contracts',
+		file: 'scripts/manual/production-patches/20260814_p0_abril_itinerary_residual_structural_contracts.sql',
+		purpose: 'Reconcile the two LIVE residual itinerary contract rows for abril-michelle-becerra-rea.',
 		targetEnvironments: ['production'],
-		expectedRowsMin: 4,
-		expectedRowsMax: 8,
+		expectedRowsMin: 2,
+		expectedRowsMax: 2,
 	},
 	{
 		scriptId: '20260812_thankyou_editorial_back_cover_structural_contracts',
@@ -125,8 +127,20 @@ function staticStatus(
 	matchingRowCount: number | null = null,
 	verifiedAt: string | null = null,
 	planCommand: string | null = null,
+	affectedRows?: ManualPatchAffectedRow[] | null,
+	projectRef?: string | null,
 ): ManualPatchEnvironmentStatus {
-	return { status, evidence, matchingRowCount, verifiedAt, reason, planCommand };
+	const result: ManualPatchEnvironmentStatus = {
+		status,
+		evidence,
+		matchingRowCount,
+		verifiedAt,
+		reason,
+		planCommand,
+	};
+	if (affectedRows !== undefined) result.affectedRows = affectedRows;
+	if (projectRef !== undefined) result.projectRef = projectRef;
+	return result;
 }
 
 function baseStatus(entry: ActiveManualPatchCatalogEntry): ManualPatchStatus {
@@ -170,13 +184,32 @@ export function classifyPatchPreviewResult(input: {
 	manifest?: SqlManifest;
 	timedOut?: boolean;
 	verifiedAt?: string;
+	projectRef?: string | null;
 }): ManualPatchEnvironmentStatus {
 	const verifiedAt = input.verifiedAt ?? new Date().toISOString();
 	if (input.timedOut || input.result.stderr?.includes('STATUS_PROBE_TIMEOUT')) {
-		return staticStatus('UNVERIFIED', 'UNVERIFIED', 'QUERY_TIMEOUT', null, verifiedAt);
+		return staticStatus(
+			'UNVERIFIED',
+			'UNVERIFIED',
+			'QUERY_TIMEOUT',
+			null,
+			verifiedAt,
+			null,
+			null,
+			input.projectRef,
+		);
 	}
 	if (input.result.status !== 0) {
-		return staticStatus('UNVERIFIED', 'UNVERIFIED', 'QUERY_FAILED', null, verifiedAt);
+		return staticStatus(
+			'UNVERIFIED',
+			'UNVERIFIED',
+			'QUERY_FAILED',
+			null,
+			verifiedAt,
+			null,
+			null,
+			input.projectRef,
+		);
 	}
 	let assessment;
 	try {
@@ -187,17 +220,78 @@ export function classifyPatchPreviewResult(input: {
 			max: input.max,
 		});
 	} catch {
-		return staticStatus('UNVERIFIED', 'UNVERIFIED', 'QUERY_INVALID_OUTPUT', null, verifiedAt);
+		return staticStatus(
+			'UNVERIFIED',
+			'UNVERIFIED',
+			'QUERY_INVALID_OUTPUT',
+			null,
+			verifiedAt,
+			null,
+			null,
+			input.projectRef,
+		);
 	}
 	const count = assessment.evidence.total;
+	const affectedRows = assessment.evidence.rows?.map((row) => {
+		const selectedSlug = row.row?.slug;
+		const keyParts = (() => {
+			try {
+				const parsed = JSON.parse(row.key) as unknown;
+				return Array.isArray(parsed) ? parsed : [];
+			} catch {
+				return [];
+			}
+		})();
+		const slug =
+			typeof selectedSlug === 'string'
+				? selectedSlug
+				: keyParts.length === 1 && typeof keyParts[0] === 'string'
+					? keyParts[0]
+					: null;
+		const selectedVersion = row.row?.version;
+		const version =
+			typeof selectedVersion === 'number' &&
+				Number.isSafeInteger(selectedVersion) &&
+				selectedVersion >= 0
+				? selectedVersion
+				: null;
+		return { store: row.store, key: row.key, slug, version };
+	}) ?? null;
 	if (assessment.state === 'NOT_NEEDED') {
-		return staticStatus('NOT_NEEDED', 'LIVE', 'LIVE_ZERO_ROWS', count, verifiedAt);
+		return staticStatus(
+			'NOT_NEEDED',
+			'LIVE',
+			'LIVE_ZERO_ROWS',
+			count,
+			verifiedAt,
+			null,
+			affectedRows,
+			input.projectRef,
+		);
 	}
 	if (assessment.reason === 'STORE_DISAGREEMENT') {
-		return staticStatus('BLOCKED', 'LIVE', 'LIVE_STORE_DISAGREEMENT', count, verifiedAt);
+		return staticStatus(
+			'BLOCKED',
+			'LIVE',
+			'LIVE_STORE_DISAGREEMENT',
+			count,
+			verifiedAt,
+			null,
+			affectedRows,
+			input.projectRef,
+		);
 	}
 	if (assessment.state === 'BLOCKED') {
-		return staticStatus('BLOCKED', 'LIVE', 'LIVE_ROWS_OUTSIDE_RANGE', count, verifiedAt);
+		return staticStatus(
+			'BLOCKED',
+			'LIVE',
+			'LIVE_ROWS_OUTSIDE_RANGE',
+			count,
+			verifiedAt,
+			null,
+			affectedRows,
+			input.projectRef,
+		);
 	}
 	return staticStatus(
 		'PENDING',
@@ -206,7 +300,17 @@ export function classifyPatchPreviewResult(input: {
 		count,
 		verifiedAt,
 		'pnpm prod:apply -- --patch <file> --owner-user-id <uuid>',
+		affectedRows,
+		input.projectRef,
 	);
+}
+
+function projectRefFromDbUrl(dbUrl: string): string | null {
+	try {
+		return extractSupabaseProjectRef(dbUrl);
+	} catch {
+		return null;
+	}
 }
 
 function preparedForEntry(
@@ -271,6 +375,7 @@ export async function readManualPatchStatuses(options: {
 					continue;
 				}
 				const verifiedAt = new Date().toISOString();
+				const projectRef = projectRefFromDbUrl(dbUrl);
 				const result = await options.session.psql(
 					buildProductionPatchPreviewSql(preparedResult.prepared.manifest),
 					dbUrl,
@@ -282,6 +387,7 @@ export async function readManualPatchStatuses(options: {
 					max: entry.expectedRowsMax,
 					manifest: preparedResult.prepared.manifest,
 					verifiedAt,
+					projectRef,
 				});
 			}
 		} catch {
