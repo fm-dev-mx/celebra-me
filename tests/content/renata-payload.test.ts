@@ -57,6 +57,17 @@ describe('XV Renata provision contract', () => {
 		).toEqual({ ok: true });
 	});
 
+	it('consumes shared premiere-floral reveal tokens instead of reconstructing them', () => {
+		const reveal = fs.readFileSync(
+			path.join(process.cwd(), 'src/styles/themes/sections/reveal/_premiere-floral.scss'),
+			'utf8',
+		);
+		expect(reveal).toContain('--reveal-stationery-ivory');
+		expect(reveal).toContain('--reveal-stationery-gold');
+		expect(reveal).toContain("data-seal-renderer='monogram'");
+		expect(reveal).not.toMatch(/romina|renata/i);
+	});
+
 	it('does not register a Renata key in shared legacy intersection profiles', () => {
 		const shared = fs.readFileSync(
 			path.join(process.cwd(), 'src/lib/invitation/variant-normalization.ts'),
@@ -84,6 +95,12 @@ describe('XV Renata provision contract', () => {
 		expect(profile).not.toContain('itinerary__program-paper-surface');
 		expect(profile).toContain("data-structural-variant='full-bleed-photo'");
 		expect(profile).toContain('clip-path: none');
+		expect(profile).toContain('--location-map-preview-artwork-color: var(--renata-olive)');
+		expect(profile).not.toContain('--reveal-card-text-primary: var(--renata-ink)');
+		expect(profile).not.toContain(".envelope-wrapper[data-variant='editorial']");
+		expect(profile).not.toContain(".envelope-wrapper[data-variant='premiere-floral']");
+		expect(profile).not.toContain('inset: 8% 8% 4%');
+		expect(profile).not.toContain('D·M');
 		expect(profile).not.toContain('OneDrive');
 		expect(profile).not.toContain('Clientes\\');
 		expect(profile).not.toContain('gold-metallic: linear-gradient');
@@ -117,7 +134,9 @@ describe('XV Renata provision contract', () => {
 		expect((content.envelope as { cardName: string; envelopeName: string }).cardName).toBe(
 			'Renata',
 		);
-		expect((content.envelope as { envelopeName: string }).envelopeName).toBe('Renata');
+		expect((content.envelope as { envelopeName: string }).envelopeName).toBe(
+			'XV años de Renata',
+		);
 		expect(content.title as string).toBe('XV años de Renata');
 
 		expect(content.sectionOrder).toEqual([
@@ -136,21 +155,60 @@ describe('XV Renata provision contract', () => {
 		expect(itinerary.variant).toBe('editorial-ledger');
 		expect(itinerary.items).toHaveLength(2);
 
+		const location = content.location as {
+			variant: string;
+			presentation?: string;
+			venues?: unknown;
+			ceremony?: { venueName: string };
+			reception?: { venueName: string };
+			indicationsHeading?: string;
+			presentationOptions?: {
+				showFlourishes?: boolean;
+				showNavigationButtons?: boolean;
+			};
+		};
+		expect(location.variant).toBe('stacked-venue-plates');
+		expect(location.presentation).toBe('simple');
+		expect(location.venues).toBeUndefined();
+		expect(location.ceremony?.venueName).toBe('Parroquia Santa Inés');
+		expect(location.reception?.venueName).toBe('InHouse Select Hacienda Tres Ríos');
+		expect(location.indicationsHeading).toBe('Indicaciones');
+		expect(location.presentationOptions?.showFlourishes).toBe(false);
+		expect(location.presentationOptions?.showNavigationButtons).toBe(false);
+
+		const envelope = content.envelope as {
+			variant?: string;
+			microcopy: string;
+			sealIcon?: string;
+			sealInitials: string;
+			cardTagline?: string;
+			teaserDetails?: string;
+			closedPalette?: unknown;
+		};
+		expect(envelope.variant).toBe('premiere-floral');
+		expect(envelope.microcopy).toBe('Abra su invitación');
+		expect(envelope.sealIcon).toBe('monogram');
+		expect(envelope.sealInitials).toBe('R');
+		expect(envelope.cardTagline).toBe('05 · 09 · 2026');
+		expect(envelope.teaserDetails).toBeUndefined();
+		expect(envelope.closedPalette).toBeUndefined();
+
 		const gallery = content.gallery as {
 			variant: string;
-			items: Array<{ layoutRole?: string; aspectRatio?: string }>;
+			items: Array<{ key?: string; layoutRole?: string; aspectRatio?: string }>;
 		};
 		expect(gallery.variant).toBe('paired-feature-band');
+		expect(gallery.items.map((item) => item.key)).toEqual([
+			'gallery-01',
+			'gallery-02',
+			'gallery-feature',
+			'gallery-03',
+			'gallery-04',
+		]);
 		const feature = gallery.items.find((item) => item.layoutRole === 'feature');
 		expect(feature).toBeDefined();
 		expect(feature?.aspectRatio).toBeUndefined();
-
-		const location = content.location as {
-			variant: string;
-			presentationOptions?: { showFlourishes?: boolean };
-		};
-		expect(location.variant).toBe('standard');
-		expect(location.presentationOptions?.showFlourishes).toBe(false);
+		expect(gallery.items[2]?.layoutRole).toBe('feature');
 
 		const rsvp = content.rsvp as {
 			guestCap?: number;
@@ -173,6 +231,7 @@ describe('XV Renata provision contract', () => {
 		expect(markdown).toContain('**Preparation Readiness (prepReadiness):** `NOT_READY`');
 		expect(markdown).toContain('**Event Type**');
 		expect(markdown).toContain('`xv`');
+		expect(markdown).toContain('stacked-venue-plates');
 		expect(markdown).not.toContain('OneDrive');
 		expect(markdown).not.toContain('C:\\Users\\');
 		expect(markdown).not.toContain('Clientes\\');

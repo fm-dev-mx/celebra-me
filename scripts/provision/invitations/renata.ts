@@ -196,19 +196,15 @@ export function buildRenataPublishedContent(
 		},
 		envelope: {
 			disabled: false,
+			variant: 'premiere-floral',
 			cardLabel: 'CELEBRO MIS XV',
-			envelopeName: 'Renata',
+			envelopeName: 'XV años de Renata',
 			cardName: 'Renata',
+			cardTagline: '05 · 09 · 2026',
 			sealStyle: 'wax',
-			sealIcon: 'wax-monogram',
+			sealIcon: 'monogram',
 			sealInitials: 'R',
-			sealColor: 'champagne',
-			microcopy: 'Descubra su invitación',
-			closedPalette: {
-				primary: 'actionPrimary',
-				accent: 'actionAccent',
-				background: 'surfaceDark',
-			},
+			microcopy: 'Abra su invitación',
 		},
 		family: {
 			variant: 'standard',
@@ -235,11 +231,14 @@ export function buildRenataPublishedContent(
 			footerText: 'Misa a las 5:00 p. m. · Recepción a las 7:00 p. m.',
 		},
 		location: {
-			variant: 'standard',
+			variant: 'stacked-venue-plates',
 			visibility: 'public',
+			presentation: 'simple',
 			presentationOptions: {
 				showFlourishes: false,
+				showNavigationButtons: false,
 			},
+			indicationsHeading: 'Indicaciones',
 			introEyebrow: 'SÁBADO · 5 DE SEPTIEMBRE DE 2026',
 			introHeading: 'De la misa a la fiesta',
 			ceremony: {
@@ -332,6 +331,12 @@ export function buildRenataPublishedContent(
 					focalPoint: '48% 36%',
 				},
 				{
+					key: 'gallery-02',
+					image: assets['gallery-02'],
+					alt: 'Renata de pie con vestido amarillo y ramo, frente a flores claras',
+					focalPoint: '50% 30%',
+				},
+				{
 					key: 'gallery-feature',
 					layoutRole: 'feature',
 					image: assets['gallery-feature'],
@@ -339,12 +344,6 @@ export function buildRenataPublishedContent(
 					focalPoint: '50% 28%',
 					focalPointMobile: '50% 26%',
 					focalPointDesktop: '50% 30%',
-				},
-				{
-					key: 'gallery-02',
-					image: assets['gallery-02'],
-					alt: 'Renata de pie con vestido amarillo y ramo, frente a flores claras',
-					focalPoint: '50% 30%',
 				},
 				{
 					key: 'gallery-03',
