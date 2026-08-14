@@ -780,8 +780,9 @@
 		}
 	}
 
-	// Profile presentation on canonical TimelineList (`standard` behavior).
-	.itinerary {
+	// Compatibility skin for persisted `standard` itinerary content.
+	// Canonical numbered program lives in itinerary/_editorial-program.scss.
+	.itinerary[data-structural-variant='standard'] {
 		background: var(--v-paper);
 		color: var(--v-ink);
 		padding-block: clamp(5.5rem, 12vw, 8rem);

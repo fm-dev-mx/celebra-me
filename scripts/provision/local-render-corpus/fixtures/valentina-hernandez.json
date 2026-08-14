@@ -237,9 +237,7 @@
         "eventType": "xv",
         "itinerary": {
             "title": "Programa",
-            "presentation": {
-                "behavior": "standard"
-            },
+            "variant": "editorial-program",
             "items": [
                 {
                     "time": "15:45",

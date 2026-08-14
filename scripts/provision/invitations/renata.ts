@@ -288,7 +288,7 @@ export function buildRenataPublishedContent(
 			},
 		],
 		itinerary: {
-			variant: 'editorial-ledger',
+			variant: 'editorial-program',
 			title: 'Momentos de la celebración',
 			items: [
 				{

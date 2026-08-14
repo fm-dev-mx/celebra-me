@@ -11,6 +11,67 @@ const ARTIFACT_ROOT = path.resolve(process.cwd(), 'temp', 'renata-audit-screensh
 const FOREIGN_CONTENT =
 	/Daniela|Martín|Huejutla|Abril Michelle|Victoria y Roberto|Romina|Amazon|D·M|¿Podrán acompañarnos\?/i;
 
+type CountdownArchitecture = {
+	variant: string | null;
+	segmentCount: number;
+	firstRowCount: number;
+	titleFontSize: string;
+	titleLetterSpacing: string;
+	titleMarginBottom: string;
+	timerGap: string;
+	timerMarginTop: string;
+	segmentPadding: string;
+	segmentRadius: string;
+	segmentBorderWidth: string;
+	valueFontSize: string;
+	labelFontSize: string;
+	labelLetterSpacing: string;
+	footerMarginTop: string;
+	dateLetterSpacing: string;
+	sectionPaddingBlock: string;
+	sectionMinHeight: string;
+};
+
+function measureCountdownArchitecture(node: Element): CountdownArchitecture {
+	const styleOf = (selector: string) => {
+		const el = node.querySelector(selector);
+		if (!el) throw new Error(`Missing ${selector}`);
+		return getComputedStyle(el);
+	};
+	const title = styleOf('.countdown-title');
+	const timer = styleOf('.countdown__timer');
+	const segment = styleOf('.countdown__segment');
+	const value = styleOf('.countdown__value');
+	const label = styleOf('.countdown__label');
+	const footer = styleOf('.countdown-invitation-text');
+	const date = styleOf('.countdown-date .event-date');
+	const section = getComputedStyle(node);
+	const segments = [...node.querySelectorAll('.countdown__segment')];
+	const firstRowTop = segments[0]?.getBoundingClientRect().top ?? 0;
+	return {
+		variant: node.getAttribute('data-variant'),
+		segmentCount: segments.length,
+		firstRowCount: segments.filter(
+			(item) => Math.abs(item.getBoundingClientRect().top - firstRowTop) < 2,
+		).length,
+		titleFontSize: title.fontSize,
+		titleLetterSpacing: title.letterSpacing,
+		titleMarginBottom: title.marginBottom,
+		timerGap: timer.gap,
+		timerMarginTop: timer.marginTop,
+		segmentPadding: segment.padding,
+		segmentRadius: segment.borderRadius,
+		segmentBorderWidth: segment.borderWidth,
+		valueFontSize: value.fontSize,
+		labelFontSize: label.fontSize,
+		labelLetterSpacing: label.letterSpacing,
+		footerMarginTop: footer.marginTop,
+		dateLetterSpacing: date.letterSpacing,
+		sectionPaddingBlock: `${section.paddingTop} ${section.paddingBottom}`,
+		sectionMinHeight: section.minHeight,
+	};
+}
+
 async function assertRenataLeakScan(page: Page) {
 	const pageText = await page.locator('body').innerText();
 	expect(pageText).not.toMatch(FOREIGN_CONTENT);
@@ -244,7 +305,7 @@ test.describe('Renata XV local visual and content audit', () => {
 			await expect(receptionMap.first()).toBeVisible();
 
 			const itinerary = page.locator('.itinerary').first();
-			await expect(itinerary).toHaveAttribute('data-structural-variant', 'editorial-ledger');
+			await expect(itinerary).toHaveAttribute('data-structural-variant', 'editorial-program');
 			expect(await page.locator('.itinerary__program-monogram').count()).toBe(0);
 			expect(await page.locator('.itinerary__program-paper-surface').count()).toBe(0);
 
@@ -252,6 +313,9 @@ test.describe('Renata XV local visual and content audit', () => {
 				'.itinerary__item, .itinerary__program-row, [data-itinerary-item]',
 			);
 			expect(await itineraryItems.count()).toBe(2);
+			await expect(itinerary.locator('.itinerary__item-icon-wrapper').first()).toBeHidden();
+			await expect(itinerary.getByText('Misa', { exact: true })).toBeVisible();
+			await expect(itinerary.getByText('Recepción', { exact: true })).toBeVisible();
 
 			const gallery = page.locator('.gallery-section').first();
 			await expect(gallery).toBeVisible();
@@ -308,14 +372,42 @@ test.describe('Renata XV local visual and content audit', () => {
 					.count(),
 			).toBe(0);
 
-			const countdownTitle = page.locator('.countdown-title').first();
-			if ((await countdownTitle.count()) > 0) {
-				const titleFill = await countdownTitle.evaluate(
-					(node) => getComputedStyle(node).webkitTextFillColor,
-				);
-				expect(titleFill).not.toBe('transparent');
-				expect(titleFill).not.toMatch(/232,\s*190,\s*48/i);
-			}
+			const countdown = page.locator('.countdown-section').first();
+			await expect(countdown).toHaveAttribute('data-variant', 'editorial');
+			await expect(countdown.locator('.countdown-title')).toHaveText('El día se acerca');
+			await expect(countdown.locator('.countdown-invitation-text')).toHaveText(
+				'Misa a las 5:00 p. m. · Recepción a las 7:00 p. m.',
+			);
+			expect(await countdown.locator('.countdown__segment').count()).toBe(4);
+			const countdownMetrics = await countdown.evaluate((node) => {
+				const title = node.querySelector('.countdown-title');
+				const titleStyle = title ? getComputedStyle(title) : null;
+				const segments = [...node.querySelectorAll('.countdown__segment')];
+				const firstRowTop = segments[0]?.getBoundingClientRect().top ?? 0;
+				return {
+					titleFill: titleStyle?.webkitTextFillColor ?? '',
+					titleColor: titleStyle?.color ?? '',
+					titleBackground: titleStyle?.backgroundImage ?? '',
+					titleMarginBottom: titleStyle?.marginBottom ?? '',
+					firstRowCount: segments.filter(
+						(segment) =>
+							Math.abs(segment.getBoundingClientRect().top - firstRowTop) < 2,
+					).length,
+					sectionBackground: getComputedStyle(node).backgroundImage,
+				};
+			});
+			expect(
+				`${countdownMetrics.titleFill} ${countdownMetrics.titleColor} ${countdownMetrics.titleBackground}`,
+			).toMatch(/196,\s*126,\s*118/i);
+			expect(
+				`${countdownMetrics.titleFill} ${countdownMetrics.titleColor} ${countdownMetrics.titleBackground}`,
+			).not.toMatch(/199,\s*173,\s*118|232,\s*190,\s*48/i);
+			expect(countdownMetrics.sectionBackground).toMatch(/linear-gradient/i);
+			expect(countdownMetrics.sectionBackground).not.toMatch(
+				/244,\s*228,\s*224|199,\s*173,\s*118/i,
+			);
+			expect(Number.parseFloat(countdownMetrics.titleMarginBottom)).toBeGreaterThan(32);
+			expect(countdownMetrics.firstRowCount).toBe(viewport.width <= 390 ? 2 : 4);
 
 			const familyBg = await page
 				.locator('.family')
@@ -383,6 +475,7 @@ test.describe('Renata XV local visual and content audit', () => {
 			const sections = [
 				{ name: 'hero', locator: '.invitation-hero' },
 				{ name: 'family', locator: '.family, .family-section' },
+				{ name: 'countdown', locator: '.countdown-section' },
 				{ name: 'location', locator: '.event-location' },
 				{ name: 'itinerary', locator: '.itinerary' },
 				{ name: 'gallery', locator: '.gallery-section' },
@@ -508,6 +601,62 @@ test.describe('Renata XV local visual and content audit', () => {
 				path: path.join(ARTIFACT_ROOT, `${viewport.name}-reveal-letter.png`),
 			});
 			await assertRenataLeakScan(page);
+		});
+	}
+
+	for (const viewport of VIEWPORTS) {
+		test(`countdown architecture matches Romina at ${viewport.name}`, async ({ page }) => {
+			await page.setViewportSize({ width: viewport.width, height: viewport.height });
+			await page.emulateMedia({ reducedMotion: 'reduce' });
+
+			const readArchitecture = async (url: string) => {
+				const response = await page.goto(url, { waitUntil: 'networkidle' });
+				expect(response?.status()).toBe(200);
+				const section = page.locator('.countdown-section').first();
+				await section.scrollIntoViewIfNeeded();
+				return section.evaluate(measureCountdownArchitecture);
+			};
+
+			const romina = await readArchitecture('/xv/romina-rios-chaparro?skipEnvelope=true');
+			await page
+				.locator('.countdown-section')
+				.first()
+				.screenshot({
+					path: path.join(ARTIFACT_ROOT, `${viewport.name}-countdown-romina.png`),
+				});
+
+			const renata = await readArchitecture('/xv/renata?skipEnvelope=true');
+			await page
+				.locator('.countdown-section')
+				.first()
+				.screenshot({
+					path: path.join(ARTIFACT_ROOT, `${viewport.name}-countdown-renata.png`),
+				});
+
+			const architectureKeys = [
+				'segmentCount',
+				'firstRowCount',
+				'titleFontSize',
+				'titleLetterSpacing',
+				'titleMarginBottom',
+				'timerGap',
+				'timerMarginTop',
+				'segmentPadding',
+				'segmentRadius',
+				'segmentBorderWidth',
+				'valueFontSize',
+				'labelFontSize',
+				'labelLetterSpacing',
+				'footerMarginTop',
+				'sectionPaddingBlock',
+				'sectionMinHeight',
+			] as const;
+			expect(romina.segmentCount).toBe(4);
+			for (const key of architectureKeys) {
+				expect(renata[key]).toBe(romina[key]);
+			}
+			expect(romina.variant).toBe('premiere-floral');
+			expect(renata.variant).toBe('editorial');
 		});
 	}
 });

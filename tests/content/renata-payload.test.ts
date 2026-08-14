@@ -90,7 +90,8 @@ describe('XV Renata provision contract', () => {
 		expect(profile).not.toContain('232 190 48');
 		expect(profile).toContain('--hero-image-filter: none');
 		expect(profile).toContain('mix-blend-mode: normal');
-		expect(profile).toContain(".itinerary[data-structural-variant='editorial-ledger']");
+		expect(profile).not.toContain(".itinerary[data-structural-variant='editorial-ledger']");
+		expect(profile).not.toContain('editorial-program');
 		expect(profile).not.toContain('timeline-paper');
 		expect(profile).not.toContain('itinerary__program-paper-surface');
 		expect(profile).toContain("data-structural-variant='full-bleed-photo'");
@@ -103,7 +104,19 @@ describe('XV Renata provision contract', () => {
 		expect(profile).not.toContain('D·M');
 		expect(profile).not.toContain('OneDrive');
 		expect(profile).not.toContain('Clientes\\');
-		expect(profile).not.toContain('gold-metallic: linear-gradient');
+
+		const countdownStart = profile.indexOf('.countdown-section {');
+		expect(countdownStart).toBeGreaterThan(-1);
+		const rootTokens = profile.slice(0, countdownStart);
+		const countdownSkin = profile.slice(countdownStart);
+		expect(rootTokens).not.toContain('gold-metallic: linear-gradient');
+		expect(rootTokens).toContain('--gold-metallic: var(--renata-ink)');
+		expect(countdownSkin).not.toContain('gold-metallic: linear-gradient');
+		expect(countdownSkin).not.toContain('--reveal-stationery');
+		expect(countdownSkin).not.toContain('199 173 118');
+		expect(countdownSkin).not.toContain('232 190 48');
+		expect(countdownSkin).toContain('var(--renata-coral)');
+		expect(countdownSkin).toContain('var(--countdown-bg)');
 	});
 
 	it('has a source file for every declared asset path', () => {
@@ -152,7 +165,7 @@ describe('XV Renata provision contract', () => {
 		]);
 
 		const itinerary = content.itinerary as { variant: string; items: unknown[] };
-		expect(itinerary.variant).toBe('editorial-ledger');
+		expect(itinerary.variant).toBe('editorial-program');
 		expect(itinerary.items).toHaveLength(2);
 
 		const location = content.location as {

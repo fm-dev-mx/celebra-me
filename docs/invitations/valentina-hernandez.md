@@ -69,7 +69,9 @@ being eternal.
 - Section order is quote, family, countdown, itinerary, location, gallery, gifts, personalized
   access, RSVP, and thank-you.
 - Ceremony and reception intentionally share the Finca Las Palmas location while retaining their
-  distinct times in the itinerary.
+  distinct times in the itinerary. The numbered magazine program is `itinerary.variant:
+  editorial-program` (TimelineList). Persisted `standard` content still receives the same skin from
+  the Valentina profile until that row is migrated.
 - The gifts section contains “Regalo Sorpresa,” “Lluvia de Sobres,” and the Liverpool registry.
 - RSVP uses `accessMode: "hybrid"` and `confirmationMode: "both"`.
 - The editorial envelope uses `revealVariant: "editorial-cover"`, edition `XV`, issue `2026`, and
