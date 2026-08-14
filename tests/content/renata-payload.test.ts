@@ -65,14 +65,17 @@ describe('XV Renata provision contract', () => {
 		expect(shared).not.toMatch(/^\s*renata\s*:/m);
 	});
 
-	it('ships a Lane A profile that remaps gold and resets hero cascade', () => {
+	it('ships a Lane A profile that separates accent from emphasis and resets hero cascade', () => {
 		const profile = fs.readFileSync(profilePath, 'utf8');
 		expect(profile).toContain('.event--renata.theme-preset--editorial');
 		expect(profile).toContain('--renata-yellow');
+		expect(profile).toContain('--color-action-accent: var(--renata-yellow)');
+		expect(profile).toContain('--color-text-emphasis: var(--renata-ivory)');
 		expect(profile).toContain('--hero-image-filter: none');
 		expect(profile).toContain('mix-blend-mode: normal');
-		expect(profile).toContain(".itinerary[data-structural-variant='timeline-paper']");
-		expect(profile).toContain('itinerary__program-paper-surface');
+		expect(profile).toContain(".itinerary[data-structural-variant='editorial-ledger']");
+		expect(profile).not.toContain('timeline-paper');
+		expect(profile).not.toContain('itinerary__program-paper-surface');
 		expect(profile).toContain("data-structural-variant='full-bleed-photo'");
 		expect(profile).toContain('clip-path: none');
 		expect(profile).not.toContain('OneDrive');
@@ -127,24 +130,35 @@ describe('XV Renata provision contract', () => {
 		]);
 
 		const itinerary = content.itinerary as { variant: string; items: unknown[] };
-		expect(itinerary.variant).toBe('timeline-paper');
+		expect(itinerary.variant).toBe('editorial-ledger');
 		expect(itinerary.items).toHaveLength(2);
 
 		const gallery = content.gallery as {
 			variant: string;
-			items: Array<{ layoutRole?: string }>;
+			items: Array<{ layoutRole?: string; aspectRatio?: string }>;
 		};
 		expect(gallery.variant).toBe('paired-feature-band');
-		expect(gallery.items.some((item) => item.layoutRole === 'feature')).toBe(true);
+		const feature = gallery.items.find((item) => item.layoutRole === 'feature');
+		expect(feature).toBeDefined();
+		expect(feature?.aspectRatio).toBeUndefined();
+
+		const location = content.location as {
+			variant: string;
+			presentationOptions?: { showFlourishes?: boolean };
+		};
+		expect(location.variant).toBe('standard');
+		expect(location.presentationOptions?.showFlourishes).toBe(false);
 
 		const rsvp = content.rsvp as {
 			guestCap?: number;
 			confirmationMode?: string;
 			whatsappConfig?: unknown;
+			personalizedAccess?: { variant?: string };
 		};
 		expect(rsvp.guestCap).toBeUndefined();
 		expect(rsvp.confirmationMode).toBeUndefined();
 		expect(rsvp.whatsappConfig).toBeUndefined();
+		expect(rsvp.personalizedAccess?.variant).toBe('standard');
 
 		const thankYou = content.thankYou as { variant: string; closingName: string };
 		expect(thankYou.variant).toBe('full-bleed-photo');

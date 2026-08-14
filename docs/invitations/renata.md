@@ -173,7 +173,7 @@ Demo remains the gold base template. Real invite identity lives in Lane A. Real 
 | concern                                                  | decision / evidence                                                                    | status                         |
 | -------------------------------------------------------- | -------------------------------------------------------------------------------------- | ------------------------------ |
 | Typography roles (display, heading, body, metadata)      | Editorial display retained; hero title ivory with ink shadow; labels in session yellow | accepted after 390/1440 review |
-| Vertical rhythm and density                              | Preset padding reduced; timeline-paper and RSVP plates flattened                       | accepted after 390/1440 review |
+| Vertical rhythm and density                              | Preset padding reduced; editorial-ledger and RSVP plates flattened                     | accepted after 390/1440 review |
 | Surface hierarchy (open flow vs cards/containers)        | Open flow; Location/Gifts/RSVP/itinerary paper chrome neutralized                      | accepted after 390/1440 review |
 | Photographic treatment (role, crop, focal point, filter) | Color preserved; hero filter none; unique roles; thank-you is full-bleed not circular  | accepted after 390/1440 review |
 | Section-intersection intent and narrative cadence        | family blend from hero; overlap after location; remaining seams neutral                | accepted after 390/1440 review |
@@ -234,7 +234,11 @@ hero. Feature frame is `_DSC5939`, not file-order first.
 - Helper prepReadiness is `NOT_READY` while RSVP mode/cap are missing. Goal 2 Local authoring is an
   explicit current-task exception; `assertImplementationAllowed` must not be called.
 - Lane A inheritance resets: `--hero-image-filter`, gold/metallic tokens, hero cascade
-  (grid/mix-blend/absolute details), location/gifts/RSVP card chrome.
+  (grid/mix-blend/absolute details), location/gifts/RSVP card chrome. Yellow is a scarce accent;
+  `--color-text-emphasis` stays ivory and is not aliased to `--color-action-accent`.
+- Structural selections: itinerary `editorial-ledger`; gallery `paired-feature-band` without a
+  feature `aspectRatio` override; personalized access `standard`; location `standard` with
+  `presentationOptions.showFlourishes: false`.
 - Lane B: none. Demo stays the gold editorial template.
 - Music omit / include: omitted (`not_applicable`).
 - Other: no `renata` key in `LEGACY_INTERSECTION_PROFILES`. No shared renderer/variant branches.

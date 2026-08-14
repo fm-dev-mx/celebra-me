@@ -64,11 +64,14 @@ test.describe('Renata XV local visual and content audit', () => {
 					gold: style.getPropertyValue('--color-gold-500').trim(),
 					metallic: style.getPropertyValue('--gold-metallic').trim(),
 					heroFilter: style.getPropertyValue('--hero-image-filter').trim(),
+					actionAccent: style.getPropertyValue('--color-action-accent').trim(),
+					textEmphasis: style.getPropertyValue('--color-text-emphasis').trim(),
 				};
 			});
 			expect(tokens.gold).not.toMatch(/#d4af37|#c9a227|linear-gradient/i);
 			expect(tokens.metallic).not.toMatch(/linear-gradient|#d4af37|#c9a227/i);
 			expect(tokens.heroFilter).toBe('none');
+			expect(tokens.actionAccent).not.toBe(tokens.textEmphasis);
 
 			const ceremonyMap = page.locator('a[href="https://maps.app.goo.gl/jkS3UvSKdTzcZxu9A"]');
 			const receptionMap = page.locator(
@@ -77,22 +80,46 @@ test.describe('Renata XV local visual and content audit', () => {
 			await expect(ceremonyMap.first()).toBeVisible();
 			await expect(receptionMap.first()).toBeVisible();
 
+			const itinerary = page.locator('.itinerary').first();
+			await expect(itinerary).toHaveAttribute('data-structural-variant', 'editorial-ledger');
+			expect(await page.locator('.itinerary__program-monogram').count()).toBe(0);
+			expect(await page.locator('.itinerary__program-paper-surface').count()).toBe(0);
+
 			const itineraryItems = page.locator(
-				'.itinerary__program-row, .itinerary-item, [data-itinerary-item]',
+				'.itinerary__item, .itinerary__program-row, [data-itinerary-item]',
 			);
-			const itineraryCount = await itineraryItems.count();
-			if (itineraryCount === 0) {
-				await expect(page.getByText('Misa', { exact: true }).first()).toBeVisible();
-				await expect(page.getByText('Recepción', { exact: true }).first()).toBeVisible();
-				await expect(page.getByText('5:00 p. m.').first()).toBeVisible();
-				await expect(page.getByText('7:00 p. m.').first()).toBeVisible();
-			} else {
-				expect(itineraryCount).toBe(2);
-			}
+			expect(await itineraryItems.count()).toBe(2);
 
 			const gallery = page.locator('.gallery-section, [data-variant="paired-feature-band"]');
 			await expect(gallery.first()).toBeVisible();
 			await gallery.first().scrollIntoViewIfNeeded();
+			const feature = gallery
+				.locator('.gallery-grid__item[data-layout-role="feature"]')
+				.first();
+			await expect(feature).toBeVisible();
+			const featureRatio = await feature.evaluate(
+				(node) => getComputedStyle(node).aspectRatio,
+			);
+			expect(featureRatio.replace(/\s+/g, '')).toMatch(/^8\/5$|^1\.6$/);
+
+			const personalizedAccess = page.locator('.personalized-access').first();
+			if ((await personalizedAccess.count()) > 0) {
+				await expect(personalizedAccess).toHaveAttribute(
+					'data-structural-variant',
+					'standard',
+				);
+				expect(await personalizedAccess.locator('.access-card__ornaments').count()).toBe(0);
+			}
+
+			expect(await page.locator('.event-location__card-flourish').count()).toBe(0);
+
+			const countdownTitle = page.locator('.countdown-title').first();
+			if ((await countdownTitle.count()) > 0) {
+				const titleFill = await countdownTitle.evaluate(
+					(node) => getComputedStyle(node).webkitTextFillColor,
+				);
+				expect(titleFill).not.toBe('transparent');
+			}
 			const galleryImages = gallery.locator('img');
 			expect(await galleryImages.count()).toBeGreaterThanOrEqual(5);
 			for (const img of await galleryImages.all()) {
