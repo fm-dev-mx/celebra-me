@@ -1,5 +1,11 @@
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { ALLOWED_MIME_TYPES, MAX_FILE_SIZE } from '@/lib/intake/constants';
+import {
+	IMAGE_ENCODING_QUALITIES,
+	getImageDimensionCandidates,
+	getWeightTargetBytes,
+	type ImageOptimizationRole,
+} from '@/lib/invitation-preparation/image-optimization';
 
 /** Lazy-load so read-only importers (mime sniffing, observability) do not require native sharp at module eval. */
 async function loadSharp() {
@@ -7,7 +13,50 @@ async function loadSharp() {
 	return mod.default;
 }
 
+interface EncodedInvitationImage {
+	data: Buffer;
+	info: { width: number; height: number; size: number };
+	maxBytes: number;
+}
+
+async function encodeInvitationImage(
+	input: Buffer,
+	optimizationRole?: ImageOptimizationRole,
+): Promise<EncodedInvitationImage> {
+	const maxBytes = optimizationRole ? getWeightTargetBytes(optimizationRole) : MAX_OUTPUT_BYTES;
+	const dimensionCandidates = optimizationRole
+		? getImageDimensionCandidates(optimizationRole)
+		: [MAX_OUTPUT_DIMENSION];
+	const qualityCandidates = optimizationRole ? IMAGE_ENCODING_QUALITIES : [84, 76, 68];
+	const sharp = await loadSharp();
+	let output: EncodedInvitationImage | undefined;
+
+	for (const quality of qualityCandidates) {
+		for (const dimension of dimensionCandidates) {
+			const result = await sharp(input, {
+				failOn: 'error',
+				limitInputPixels: MAX_INPUT_PIXELS,
+			})
+				.rotate()
+				.resize({
+					width: dimension,
+					height: dimension,
+					fit: 'inside',
+					withoutEnlargement: true,
+				})
+				.webp({ quality, effort: 4 })
+				.toBuffer({ resolveWithObject: true });
+			output = { ...result, maxBytes };
+			if (result.info.size <= maxBytes) return output;
+		}
+	}
+
+	if (!output) throw new Error('No image encoding candidate was produced.');
+	return output;
+}
+
 export const ASSET_POLICY_VERSION = 1;
+export const ROLE_AWARE_ASSET_POLICY_VERSION = 2;
 export const OUTPUT_MIME_TYPE = 'image/webp';
 export const MAX_OUTPUT_BYTES = 2_500_000;
 export const MAX_OUTPUT_DIMENSION = 2560;
@@ -90,6 +139,7 @@ export async function extractBlobRawBytes(file: Blob): Promise<Uint8Array | unde
 export async function normalizeInvitationImage(
 	file: Blob,
 	declaredMimeType: string,
+	optimizationRole?: ImageOptimizationRole,
 ): Promise<NormalizedInvitationImage> {
 	const normalizedDeclaredMime = declaredMimeType.split(';', 1)[0].trim().toLowerCase();
 	if (!ALLOWED_MIME_TYPES.includes(normalizedDeclaredMime)) {
@@ -154,31 +204,26 @@ export async function normalizeInvitationImage(
 			);
 		}
 
-		let output:
-			{ data: Buffer; info: { width: number; height: number; size: number } } | undefined;
-		for (const quality of [84, 76, 68]) {
-			const result = await sharp(input, {
-				failOn: 'error',
-				limitInputPixels: MAX_INPUT_PIXELS,
-			})
-				.rotate()
-				.resize({
-					width: MAX_OUTPUT_DIMENSION,
-					height: MAX_OUTPUT_DIMENSION,
-					fit: 'inside',
-					withoutEnlargement: true,
-				})
-				.webp({ quality, effort: 4 })
-				.toBuffer({ resolveWithObject: true });
-			output = result;
-			if (result.info.size <= MAX_OUTPUT_BYTES) break;
-		}
+		const output = await encodeInvitationImage(input, optimizationRole);
 
-		if (!output || output.info.size > MAX_OUTPUT_BYTES) {
+		if (output.info.size > MAX_OUTPUT_BYTES) {
 			throw new ApiError(
 				422,
 				'validation_error',
 				'La imagen sigue siendo demasiado pesada después de optimizarla. Usa una imagen más simple.',
+			);
+		}
+		if (optimizationRole && output.info.size > output.maxBytes) {
+			throw new ApiError(
+				422,
+				'validation_error',
+				'La imagen no puede alcanzar el peso recomendado para su sección sin perder demasiada calidad. Usa una imagen más simple o solicita una revisión.',
+				{
+					reason: 'asset_role_weight_exceeded',
+					role: optimizationRole,
+					maxBytes: output.maxBytes,
+					fileSize: output.info.size,
+				},
 			);
 		}
 
@@ -190,7 +235,9 @@ export async function normalizeInvitationImage(
 			mimeType: OUTPUT_MIME_TYPE,
 			originalMimeType: detectedMime,
 			originalFileSize: file.size,
-			validationVersion: ASSET_POLICY_VERSION,
+			validationVersion: optimizationRole
+				? ROLE_AWARE_ASSET_POLICY_VERSION
+				: ASSET_POLICY_VERSION,
 		};
 	} catch (error) {
 		if (error instanceof ApiError) throw error;

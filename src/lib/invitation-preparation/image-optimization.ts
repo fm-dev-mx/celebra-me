@@ -1,9 +1,4 @@
-/**
- * Preparation-level WebP transfer-weight targets by visual role.
- * These are guidance targets for optimization plans — not hard publish limits.
- * Existing normalize/publish gates in asset-policy and publishing.service remain authoritative
- * for runtime enforcement.
- */
+/** Canonical WebP delivery budgets by visual role. */
 
 export const IMAGE_ROLE_WEIGHT_TARGETS = {
 	'hero-desktop': { minKb: 250, maxKb: 500 },
@@ -16,6 +11,23 @@ export const IMAGE_ROLE_WEIGHT_TARGETS = {
 } as const;
 
 export type ImageOptimizationRole = keyof typeof IMAGE_ROLE_WEIGHT_TARGETS;
+
+/**
+ * Dimension candidates are tried from largest to smallest before lowering quality.
+ * Final aspect-specific minimums remain enforced by the publication validator.
+ */
+export const IMAGE_ROLE_MAX_DIMENSION_STEPS: Record<ImageOptimizationRole, readonly number[]> = {
+	'hero-desktop': [2560, 2304, 2048, 1792, 1536, 1280],
+	'hero-mobile': [1920, 1600, 1440, 1280],
+	'editorial-featured': [2200, 1920, 1600, 1280, 1024, 960],
+	'standard-section': [1920, 1600, 1440, 1280, 1024, 960, 800],
+	gallery: [1800, 1600, 1440, 1280, 1120, 960, 800],
+	'small-card': [1200, 1024, 960, 800],
+	thumbnail: [800, 640, 480],
+};
+
+/** Quality floor for role-aware delivery. The generic legacy ladder remains unchanged. */
+export const IMAGE_ENCODING_QUALITIES = [84, 80, 76, 72] as const;
 
 export const IMAGE_QUALITY_STATES = [
 	'production-ready',
@@ -45,6 +57,30 @@ export function isProductionAuthoritativeImage(state: ImageQualityState): boolea
 
 export function getWeightTargetKb(role: ImageOptimizationRole): { minKb: number; maxKb: number } {
 	return IMAGE_ROLE_WEIGHT_TARGETS[role];
+}
+
+export function getWeightTargetBytes(role: ImageOptimizationRole): number {
+	return Math.round(getWeightTargetKb(role).maxKb * 1024);
+}
+
+export function getImageDimensionCandidates(role: ImageOptimizationRole): readonly number[] {
+	return IMAGE_ROLE_MAX_DIMENSION_STEPS[role];
+}
+
+/** Maps the canonical published-content path to the delivery budget for that visual role. */
+export function getImageOptimizationRoleForPath(path: string): ImageOptimizationRole {
+	if (path === 'hero.backgroundImageMobile') return 'hero-mobile';
+	if (path.startsWith('hero.backgroundImage')) return 'hero-desktop';
+	if (
+		path === 'hero.portrait' ||
+		path === 'family.featuredImage' ||
+		path === 'thankYou.image' ||
+		path.startsWith('interludes[')
+	) {
+		return 'editorial-featured';
+	}
+	if (path.startsWith('gallery.items[')) return 'gallery';
+	return 'standard-section';
 }
 
 export function evaluateWeightAgainstTarget(

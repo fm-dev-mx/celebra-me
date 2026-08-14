@@ -104,6 +104,7 @@ import {
 	recordInvitationMutationOutcome,
 } from '@/lib/intake/services/mutation-operation.service';
 import { ApiError } from '@/lib/rsvp/core/errors';
+import { ROLE_AWARE_ASSET_POLICY_VERSION } from '@/lib/intake/services/asset-policy';
 import { mapDraftToPublished } from '@/lib/intake/mappers/draft-to-published.mapper';
 import { mapNestedToDraftContent } from '@/lib/intake/services/draft-content-mapper';
 import type { DemoPreset } from '@/lib/intake/types';
@@ -1677,6 +1678,47 @@ describe('publishDraft', () => {
 			code: 'validation_error',
 			message: expect.stringContaining('resolución'),
 			details: { reason: 'asset_dimensions_insufficient', path: 'hero.backgroundImage' },
+		});
+		expect(mockCommitAtomic).not.toHaveBeenCalled();
+	});
+
+	it('blocks publication when a role-aware asset exceeds its transfer-weight budget', async () => {
+		mockGetProject.mockResolvedValue(baseProject as any);
+		mockFindDraft.mockResolvedValue({
+			...validDraft,
+			content: {
+				...validDraft.content,
+				gallery: {
+					items: [{ image: { type: 'uploaded', assetId: VALID_UUID_1 } }],
+				},
+			},
+		} as any);
+		mockFindAssets.mockResolvedValue([
+			{
+				id: VALID_UUID_1,
+				invitationId: 'proj-1',
+				displayName: 'Galería pesada',
+				bucket: 'invitation-assets',
+				storagePath: 'invitations/proj-1/optimized/heavy.webp',
+				mimeType: 'image/webp',
+				width: 1200,
+				height: 800,
+				fileSize: 200 * 1024,
+				validationVersion: ROLE_AWARE_ASSET_POLICY_VERSION,
+				createdAt: '2026-01-01T00:00:00.000Z',
+				updatedAt: '2026-01-01T00:00:00.000Z',
+			},
+		] as any);
+
+		await expect(publishDraft('proj-1')).rejects.toMatchObject({
+			status: 422,
+			code: 'validation_error',
+			message: expect.stringContaining('peso recomendado'),
+			details: {
+				reason: 'asset_role_weight_exceeded',
+				path: 'gallery.items[0].image',
+				role: 'gallery',
+			},
 		});
 		expect(mockCommitAtomic).not.toHaveBeenCalled();
 	});

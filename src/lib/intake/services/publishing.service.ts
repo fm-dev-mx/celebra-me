@@ -43,7 +43,12 @@ import {
 	MAX_OUTPUT_BYTES,
 	MAX_OUTPUT_DIMENSION,
 	OUTPUT_MIME_TYPE,
+	ROLE_AWARE_ASSET_POLICY_VERSION,
 } from '@/lib/intake/services/asset-policy';
+import {
+	getImageOptimizationRoleForPath,
+	getWeightTargetBytes,
+} from '@/lib/invitation-preparation/image-optimization';
 import type { InvitationMutationCommandContext } from '@/lib/intake/mutations/command-context';
 import { createMutationOutcome, type MutationOutcome } from '@/lib/intake/mutations/outcome';
 import {
@@ -461,6 +466,26 @@ function assertUploadedAssetPolicy(
 			'Una imagen no tiene metadatos de entrega válidos. Vuelve a subirla antes de publicar.',
 			{ reason: 'asset_metadata_invalid', assetId: asset.id, path },
 		);
+	}
+
+	if ((asset.validationVersion ?? ASSET_POLICY_VERSION) >= ROLE_AWARE_ASSET_POLICY_VERSION) {
+		const role = getImageOptimizationRoleForPath(path);
+		const maxBytes = getWeightTargetBytes(role);
+		if (asset.fileSize > maxBytes) {
+			throw new ApiError(
+				422,
+				'validation_error',
+				'Una imagen supera el peso recomendado para su sección. Vuelve a optimizarla antes de publicar.',
+				{
+					reason: 'asset_role_weight_exceeded',
+					assetId: asset.id,
+					path,
+					role,
+					maxBytes,
+					fileSize: asset.fileSize,
+				},
+			);
+		}
 	}
 
 	const longSide = Math.max(asset.width, asset.height);

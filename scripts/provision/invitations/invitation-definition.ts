@@ -10,12 +10,14 @@
  */
 
 import { isCanonicalHostLoginAlias } from '../../../src/lib/auth/login-alias.ts';
+import type { ImageOptimizationRole } from '../../../src/lib/invitation-preparation/image-optimization.ts';
 
 export interface InvitationAssetSpec {
 	key: string;
 	relativePath: string;
 	displayName: string;
 	alt: string;
+	optimizationRole?: ImageOptimizationRole;
 	focalPoint?: {
 		default?: string;
 		mobile?: string;
