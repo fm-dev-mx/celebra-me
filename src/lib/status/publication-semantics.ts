@@ -214,6 +214,18 @@ function blockedPublicationRemediation(row: CanonicalPromotionRow): OperatorReme
 							false,
 							'Verificar provenance Preview',
 						),
+						...(row.handoff.optionalDiagnosticCommand
+							? [
+									step(
+										'Diagnose',
+										row.handoff.optionalDiagnosticCommand,
+										'Inspección read-only de receipts; no ejecuta recovery ni Apply.',
+										false,
+										true,
+										'Diagnosticar stale provenance',
+									),
+								]
+							: []),
 					]
 				: [],
 			verifyWhen: 'El preflight de Production deja de exigir PREVIEW_APPROVAL_REQUIRED.',

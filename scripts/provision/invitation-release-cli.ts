@@ -16,6 +16,7 @@ import {
 	type LifecycleExecutionError,
 } from './invitation-lifecycle-execution.ts';
 import { getInvitationDefinition, listInvitationDefinitions } from './invitations/registry.ts';
+import { getInvitationAssetSourceDir } from './invitations/invitation-definition.ts';
 import { parseAssetPolicy } from './asset-reconciliation.ts';
 import type { UpdateScope } from './semantic-delta.ts';
 import {
@@ -58,6 +59,11 @@ import {
 	type TargetApplyResultData,
 } from './invitation-update-presenter.ts';
 import { establishPreviewProvenanceBaseline } from './preview-provenance-baseline-service.ts';
+import {
+	inspectPreviewProvenanceReceipt,
+	reconcileStalePreviewProvenance,
+	PreviewProvenanceRecoveryError,
+} from './preview-provenance-receipt-service.ts';
 import type { OperationalPlan } from './invitation-update-plan.ts';
 import {
 	loadConflictResolutionsFile,
@@ -328,6 +334,9 @@ Usage:
   pnpm invitation:release --package-hash <hash> --approve
   pnpm invitation:release --preview-provenance --slug <slug> --targets preview [--package <path>] --dry-run [--json]
   pnpm invitation:release --preview-provenance --slug <slug> --targets preview [--package <path>] --apply [--json]
+  pnpm invitation:release --preview-provenance --diagnose-receipt --slug <slug> --targets preview [--package <path>] --dry-run [--json]
+  pnpm invitation:release --preview-provenance --reconcile-stale --slug <slug> --targets preview [--package <path>] --dry-run [--json]
+  pnpm invitation:release --preview-provenance --reconcile-stale --slug <slug> --targets preview [--package <path>] --apply [--json]
 
 Options:
   --asset-policy <policy>     Asset handling policy: verify, missing (default), sync, preserve
@@ -355,6 +364,8 @@ Options:
   --package-hash <hash>        Shared-store package hash for direct live Preview approval
   --approve                    Run live Preview checks, then request one Cancel-default owner approval
   --preview-provenance         Establish the Preview provenance baseline without changing content (specialized)
+  --diagnose-receipt            Inspect the linked/latest Preview receipts without writes (package local opcional)
+  --reconcile-stale             Plan or apply strict metadata-only stale provenance recovery (package local opcional)
   --help, -h                   Show this help message
 
 Legacy filesystem approval import is retired; approvals are created and finalized in the shared Preview store.
@@ -609,6 +620,28 @@ function formatPreviewProvenanceResult(result: PreviewProvenanceResult): string 
 	return lines.join('\n');
 }
 
+function formatPreviewReceiptDiagnosis(
+	result: Awaited<ReturnType<typeof inspectPreviewProvenanceReceipt>>,
+): string {
+	const shortHash = (value: string | null): string => (value ? `${value.slice(0, 12)}…` : 'n/a');
+	const lines = [
+		`Diagnóstico de receipts Preview: ${result.status}.`,
+		`· Clasificación: ${result.classification} · código: ${result.reasonCode}.`,
+		`· Operación vinculada: ${result.linkedOperationId ?? 'ninguna'}.`,
+		`· Última operación: ${result.latestOperationId ?? 'ninguna'}.`,
+		`· Estado receipts: linked ${result.receipts.linked?.status ?? 'ninguno'} · latest ${result.receipts.latest?.status ?? 'ninguno'}.`,
+		`· Pasos latest: ${result.completedSteps.latest.join(', ') || 'ninguno'}.`,
+		`· Paridad contenido: draft ${result.parity.content.draft ? 'OK' : 'FALLO'}, publicación ${result.parity.content.publication ? 'OK' : 'FALLO'}, provenance ${result.parity.content.managedProjection ? 'OK' : 'FALLO'}.`,
+		`· Paridad assets metadata: ${result.parity.assets ? 'OK' : 'FALLO'} (sin descargas ni Storage).`,
+		`· Hashes comparables: publicación ${shortHash(result.parity.comparableHashes.currentPublication)}, draft ${shortHash(result.parity.comparableHashes.currentDraft)}, assets ${shortHash(result.parity.comparableHashes.currentAssetMetadata)}.`,
+		`· Escrituras previstas: contenido 0 · Storage 0 · metadata ${result.writes.metadata}.`,
+		`· ${result.message}`,
+		`· Siguiente paso: ${result.nextAction}`,
+	];
+	if (result.blockers.length > 0) lines.push(`· Bloqueos: ${result.blockers.join(', ')}.`);
+	return lines.join('\n');
+}
+
 function previewProvenanceApplyError(result: PreviewProvenanceResult): Error {
 	return new Error(
 		`PREVIEW_PROVENANCE_NOT_APPLICABLE: ${result.diagnostic.classification}. ${result.diagnostic.message} ${result.diagnostic.nextAction}`,
@@ -631,11 +664,71 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 	}
 
 	const previewProvenance = args.includes('--preview-provenance');
+	if (
+		(args.includes('--diagnose-receipt') || args.includes('--reconcile-stale')) &&
+		!previewProvenance
+	) {
+		throw new Error(
+			'--diagnose-receipt y --reconcile-stale solo pueden usarse junto con --preview-provenance.',
+		);
+	}
 	if (previewProvenance) {
 		const slug = value(args, '--slug');
 		const targets = parseTargets(value(args, '--targets'));
 		let packagePath = value(args, '--package');
 		const apply = args.includes('--apply');
+		const diagnoseReceipt = args.includes('--diagnose-receipt');
+		const reconcileStale = args.includes('--reconcile-stale');
+		if (diagnoseReceipt || reconcileStale) {
+			if (
+				!slug ||
+				targets.length !== 1 ||
+				targets[0] !== 'preview' ||
+				(diagnoseReceipt && apply) ||
+				(!apply && !args.includes('--dry-run')) ||
+				(diagnoseReceipt && reconcileStale)
+			) {
+				throw new Error(
+					'El diagnóstico/recovery de receipts requiere Preview, slug y --dry-run; --reconcile-stale permite --apply y es exclusivo de --diagnose-receipt.',
+				);
+			}
+			if (!packagePath) {
+				const definition = getInvitationDefinition(slug);
+				const generated = await exportInvitationPackage({
+					slug,
+					sourceDir: getInvitationAssetSourceDir(definition),
+					dryRun: false,
+				});
+				packagePath = generated.packagePath ?? undefined;
+			}
+			if (!packagePath)
+				throw new Error('No fue posible preparar el paquete local para diagnóstico.');
+			const result = diagnoseReceipt
+				? await inspectPreviewProvenanceReceipt({ packagePath })
+				: await reconcileStalePreviewProvenance({ packagePath, apply: false });
+			if (apply) {
+				if (!result.recoveryEligible) {
+					throw new PreviewProvenanceRecoveryError(
+						'PREVIEW_RECONCILE_BLOCKED',
+						result.message,
+					);
+				}
+				await authorizePreviewWriteApply({
+					slug,
+					operation: 'provenance-recovery',
+					confirmPrompt: `Confirme la recuperación metadata-only de Preview para "${slug}". Escriba YES para continuar: `,
+					isInteractive: !nonInteractive && isTTY,
+				});
+				const applied = await reconcileStalePreviewProvenance({ packagePath, apply: true });
+				if (json) console.log(JSON.stringify(applied, null, 2));
+				else console.log(formatPreviewReceiptDiagnosis(applied));
+				return;
+			}
+			if (json) console.log(JSON.stringify(result, null, 2));
+			else console.log(formatPreviewReceiptDiagnosis(result));
+			if (result.status === 'BLOCKED') process.exitCode = 1;
+			return;
+		}
 		if (
 			args.includes('--status') ||
 			(!apply && !args.includes('--dry-run')) ||
@@ -1669,6 +1762,10 @@ if (
 ) {
 	main().catch((error: unknown) => {
 		const message = sanitizeMessage(error instanceof Error ? error.message : String(error));
+		const reasonCode =
+			error instanceof PreviewProvenanceRecoveryError
+				? error.code
+				: 'PREFLIGHT_OR_EXECUTION_FAILED';
 		const argv = process.argv.slice(2);
 		const slug = value(argv, '--slug') ?? 'no especificada';
 		if (argv.includes('--apply')) {
@@ -1692,7 +1789,7 @@ if (
 						{
 							invitation: slug,
 							status: 'BLOQUEADO',
-							reasonCode: 'PREFLIGHT_OR_EXECUTION_FAILED',
+							reasonCode,
 							reason: message,
 							targetResults,
 						},

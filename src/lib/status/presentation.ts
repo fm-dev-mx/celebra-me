@@ -149,10 +149,10 @@ function blockedPromotionHandoff(
 			applyCommand: null,
 			applyStepType: 'Manual/HITL',
 			ownerApplyRequired: false,
-			optionalDiagnosticCommand: null,
+			optionalDiagnosticCommand: `pnpm invitation:release -- --preview-provenance --diagnose-receipt --slug ${slug} --targets preview --dry-run`,
 			steps: [
 				'Verifique primero la provenance de Preview; esta lectura no escribe en Supabase.',
-				'Si el diagnóstico permite adopción, ejecute el mismo comando con --apply para registrar solo metadata.',
+				'Cuando el bloqueo sea stale_provenance, ejecute el diagnóstico de receipts; la planificación de recovery solo ofrece metadata y nunca Storage.',
 				'Después verifique y apruebe el paquete exacto en Preview antes de Production.',
 			],
 		};

@@ -132,6 +132,8 @@ const VALID_FLAGS = new Set([
 	'--package-hash',
 	'--approve',
 	'--preview-provenance',
+	'--diagnose-receipt',
+	'--reconcile-stale',
 	'--asset-policy',
 	'--update-scope',
 	'--content-only',
