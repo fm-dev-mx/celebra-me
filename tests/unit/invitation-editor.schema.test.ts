@@ -270,6 +270,7 @@ describe('InvitationEditorSectionSchemas.envelope', () => {
 			stampYear: '2026',
 			tooltipText: 'Open invitation',
 			teaserDetails: TEASER,
+			variant: 'premiere-floral',
 			revealVariant: 'editorial-cover',
 			coverEdition: COVER_EDITION,
 			coverVolume: 'Vol. I',
@@ -291,6 +292,7 @@ describe('InvitationEditorSectionSchemas.envelope', () => {
 			expect(result.data.closedPalette?.primary).toBe('surfacePrimary');
 			expect(result.data.sealColor).toBe('roseGold');
 			expect(result.data.teaserDetails).toBe(TEASER);
+			expect(result.data.variant).toBe('premiere-floral');
 			expect(result.data.revealVariant).toBe('editorial-cover');
 			expect(result.data.coverEdition).toBe(COVER_EDITION);
 		}
@@ -314,6 +316,14 @@ describe('InvitationEditorSectionSchemas.envelope', () => {
 			const unknownIssue = result.error.issues.find((i) => i.code === 'unrecognized_keys');
 			expect(unknownIssue).toBeDefined();
 		}
+	});
+
+	it('rejects an unknown envelope.variant', () => {
+		const result = InvitationEditorSectionSchemas.envelope.safeParse({
+			variant: 'romina-reveal',
+		});
+
+		expect(result.success).toBe(false);
 	});
 
 	it('rejects raw CSS seal colors', () => {
@@ -661,9 +671,9 @@ describe('InvitationEditorSectionSchemas — managed identity field allowlist', 
 	});
 
 	it('still rejects unknown keys on expanded sections', () => {
-		expect(
-			InvitationEditorSectionSchemas.envelope.safeParse({ mystery: true }).success,
-		).toBe(false);
+		expect(InvitationEditorSectionSchemas.envelope.safeParse({ mystery: true }).success).toBe(
+			false,
+		);
 		expect(
 			InvitationEditorSectionSchemas.sharing.safeParse({
 				ogDescription: 'x',

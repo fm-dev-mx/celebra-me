@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { AssetSchema, ColorTokenSchema } from '@/lib/schemas/content/shared.schema';
 import { ENVELOPE_SEAL_COLORS } from '@/lib/invitation/reveal-card';
+import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 
 export const envelopeRevealVariantSchema = z.enum(['celestial-blue', 'editorial-cover']);
 export type EnvelopeRevealVariant = z.infer<typeof envelopeRevealVariantSchema>;
@@ -8,6 +9,7 @@ export type EnvelopeRevealVariant = z.infer<typeof envelopeRevealVariantSchema>;
 export const envelopeSchema = z
 	.object({
 		disabled: z.boolean().optional().default(false),
+		variant: z.enum(THEME_PRESETS).optional(),
 		sealStyle: z.enum(['wax', 'ribbon', 'flower', 'monogram']).default('wax'),
 		sealIcon: z
 			.enum([

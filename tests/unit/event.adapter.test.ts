@@ -163,8 +163,8 @@ describe('adaptEvent', () => {
 			introEyebrow: 'EL CAMINO AL PALACIO',
 			introHeading: 'Ubicación',
 			introLede: 'Guarda la ruta y llega con calma.',
+		});
 	});
-});
 	it('supports normalized object asset references from the schema layer', () => {
 		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
 		const event = {
@@ -794,6 +794,68 @@ describe('adaptEvent', () => {
 			expect(viewModel.sections.location?.introHeading).toBeUndefined();
 			expect(viewModel.sections.location?.introLede).toBeUndefined();
 			expect(viewModel.sections.location?.indicationsHeading).toBe('');
+		});
+	});
+
+	describe('envelope variant resolution', () => {
+		it('falls back to the invitation theme preset when envelope.variant is omitted', () => {
+			const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+			const viewModel = adaptEvent({
+				id: 'event-demos/xv/demo-xv-jewelry-box',
+				data: fixture,
+			} as Parameters<typeof adaptEvent>[0]);
+
+			expect(viewModel.theme.preset).toBe('jewelry-box');
+			expect(viewModel.envelope.data?.variant).toBe('jewelry-box');
+		});
+
+		it('honors an explicit envelope.variant independently of the theme preset', () => {
+			const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+			const viewModel = adaptEvent({
+				id: 'event-demos/xv/demo-xv-jewelry-box',
+				data: {
+					...fixture,
+					theme: { ...fixture.theme, preset: 'editorial' },
+					envelope: {
+						...fixture.envelope,
+						variant: 'premiere-floral',
+					},
+				},
+			} as Parameters<typeof adaptEvent>[0]);
+
+			expect(viewModel.theme.preset).toBe('editorial');
+			expect(viewModel.envelope.data?.variant).toBe('premiere-floral');
+		});
+	});
+
+	describe('envelope teaser derivation', () => {
+		it('derives a date and venue teaser when teaserDetails is omitted', () => {
+			const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+			const viewModel = adaptEvent({
+				id: 'event-demos/xv/demo-xv-jewelry-box',
+				data: fixture,
+			} as Parameters<typeof adaptEvent>[0]);
+
+			expect(viewModel.envelope.enabled).toBe(true);
+			expect(viewModel.envelope.data?.teaserDetails).toBeTruthy();
+			expect(viewModel.envelope.data?.teaserDetails).toMatch(/•/);
+		});
+
+		it('honors an explicit empty teaser instead of deriving date and venue', () => {
+			const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+			const viewModel = adaptEvent({
+				id: 'event-demos/xv/demo-xv-jewelry-box',
+				data: {
+					...fixture,
+					envelope: {
+						...fixture.envelope,
+						teaserDetails: '',
+					},
+				},
+			} as Parameters<typeof adaptEvent>[0]);
+
+			expect(viewModel.envelope.enabled).toBe(true);
+			expect(viewModel.envelope.data?.teaserDetails).toBe('');
 		});
 	});
 });

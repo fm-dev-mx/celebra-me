@@ -132,10 +132,14 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 
 			<div class="envelope-zone--identity" aria-hidden="true">
 				<h2 class="envelope-name">{name}</h2>
-				<div class="tease-details-group">
-					<div class="tease-divider"></div>
-					{teaserDetails && <p class="envelope-details">{teaserDetails}</p>}
-				</div>
+				{
+					teaserDetails && (
+						<div class="tease-details-group">
+							<div class="tease-divider"></div>
+							<p class="envelope-details">{teaserDetails}</p>
+						</div>
+					)
+				}
 
 				{
 					guestPlacement === 'inside-envelope' && card.guestName && (

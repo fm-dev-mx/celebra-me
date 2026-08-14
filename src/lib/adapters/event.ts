@@ -237,9 +237,12 @@ function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 		: venueCity
 			? `${teaserDate} • ${venueCity}`
 			: teaserDate;
-	const explicitTeaser =
-		typeof data.envelope.teaserDetails === 'string' ? data.envelope.teaserDetails.trim() : '';
-	const teaserDetails = explicitTeaser || derivedTeaser;
+	// Explicit `teaserDetails`, including '', is authorial. Empty omits the
+	// closed date/venue line the same way `microcopy: ''` omits the CTA.
+	const teaserDetails =
+		typeof data.envelope.teaserDetails === 'string'
+			? data.envelope.teaserDetails.trim()
+			: derivedTeaser;
 
 	return {
 		enabled: true,
@@ -258,7 +261,12 @@ function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 			stampText: data.envelope.stampText,
 			stampYear: data.envelope.stampYear,
 			tooltipText: data.envelope.tooltipText,
-			variant: normalizedPreset,
+			variant: pickVariant(
+				'envelope.variant',
+				data.envelope.variant,
+				THEME_PRESETS,
+				normalizedPreset,
+			),
 			name: opening.envelope.name,
 			guestPlacement: data.envelope.guestPlacement,
 			card: opening.card,

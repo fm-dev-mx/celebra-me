@@ -25,6 +25,7 @@ type InvitationCssInput = {
 		location?: string;
 		itinerary?: string;
 	};
+	envelopeVariant?: string;
 	visualProfileId?: string;
 	slug?: string;
 };
@@ -43,6 +44,10 @@ const GALLERY_VARIANT_TO_ENTRYPOINT: Record<string, string> = {
 	'feature-stack': 'feature-stack',
 	'paired-feature-band': 'paired-feature-band',
 	'index-choreography': 'index-choreography',
+};
+
+const ENVELOPE_VARIANT_TO_ENTRYPOINT: Record<string, string> = {
+	'premiere-floral': 'premiere-floral',
 };
 
 const STRUCTURAL_VARIANT_TO_ENTRYPOINT: Record<string, Record<string, string>> = {
@@ -199,6 +204,16 @@ export function resolveInvitationCssUrls(
 		const galleryUrl = resolveGalleryVariantCssUrl(sectionUrlMap, input.galleryVariant);
 		const galleryEntrypoint = GALLERY_VARIANT_TO_ENTRYPOINT[input.galleryVariant];
 		if (galleryUrl && galleryEntrypoint !== input.themePreset) urls.push(galleryUrl);
+	}
+
+	if (input.envelopeVariant && input.envelopeVariant !== input.themePreset) {
+		const revealUrl = resolveSectionCssUrl(
+			sectionUrlMap,
+			'reveal',
+			ENVELOPE_VARIANT_TO_ENTRYPOINT,
+			input.envelopeVariant,
+		);
+		if (revealUrl) urls.push(revealUrl);
 	}
 
 	urls.push(...resolveStructuralVariantCssUrls(sectionUrlMap, input));

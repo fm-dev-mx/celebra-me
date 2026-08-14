@@ -378,6 +378,46 @@ describe('section-css-resolver-map', () => {
 		expect(resolveGalleryVariantCssUrl(sectionUrlMap, 'not-a-gallery-variant')).toBeUndefined();
 	});
 
+	it('loads premiere-floral reveal CSS when envelope.variant differs from the theme', () => {
+		const bundleUrlMap = buildSectionBundleUrlMap({
+			'/src/styles/invitation-sections-by-preset/editorial.scss': {
+				default: '/_astro/editorial-bundle.css',
+			},
+		});
+		const sectionUrlMap = buildSectionUrlMap({
+			'/src/styles/themes/sections/reveal/_premiere-floral.scss': {
+				default: '/_astro/reveal-premiere-floral.css',
+			},
+		});
+
+		expect(
+			resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
+				themePreset: 'editorial',
+				envelopeVariant: 'premiere-floral',
+			}),
+		).toEqual(['/_astro/editorial-bundle.css', '/_astro/reveal-premiere-floral.css']);
+	});
+
+	it('does not add duplicate reveal CSS when envelope.variant matches the theme preset', () => {
+		const bundleUrlMap = buildSectionBundleUrlMap({
+			'/src/styles/invitation-sections-by-preset/premiere-floral.scss': {
+				default: '/_astro/premiere-floral-bundle.css',
+			},
+		});
+		const sectionUrlMap = buildSectionUrlMap({
+			'/src/styles/themes/sections/reveal/_premiere-floral.scss': {
+				default: '/_astro/reveal-premiere-floral.css',
+			},
+		});
+
+		expect(
+			resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
+				themePreset: 'premiere-floral',
+				envelopeVariant: 'premiere-floral',
+			}),
+		).toEqual(['/_astro/premiere-floral-bundle.css']);
+	});
+
 	it('does not add duplicate footer CSS when the footer follows the theme preset', () => {
 		const bundleUrlMap = buildSectionBundleUrlMap({
 			'/src/styles/invitation-sections-by-preset/editorial.scss': {

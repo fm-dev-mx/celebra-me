@@ -125,7 +125,8 @@ export const gallerySchema = z
 			context.addIssue({
 				code: 'custom',
 				path: ['items'],
-				message: 'La variante single-keepsake requiere exactamente un elemento en la galería.',
+				message:
+					'La variante single-keepsake requiere exactamente un elemento en la galería.',
 			});
 		}
 
@@ -133,7 +134,8 @@ export const gallerySchema = z
 			context.addIssue({
 				code: 'custom',
 				path: ['items'],
-				message: 'La variante feature-stack requiere al menos tres elementos en la galería.',
+				message:
+					'La variante feature-stack requiere al menos tres elementos en la galería.',
 			});
 		}
 
@@ -285,6 +287,7 @@ export const envelopeSchema = z
 		stampYear: z.string().max(10).optional(),
 		tooltipText: z.string().max(100).optional(),
 		teaserDetails: z.string().trim().max(500).optional(),
+		variant: z.enum(THEME_PRESETS).optional(),
 		revealVariant: z.enum(['celestial-blue', 'editorial-cover']).optional(),
 		coverEdition: z.string().trim().max(80).optional(),
 		coverVolume: z.string().trim().max(40).optional(),

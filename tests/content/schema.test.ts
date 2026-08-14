@@ -588,6 +588,41 @@ describe('Event content schema (real contract)', () => {
 		expect(result.success).toBe(false);
 	});
 
+	it('accepts an explicit envelope.variant independently of the theme preset', () => {
+		const result = eventSchema.safeParse(
+			createMinimalEvent({
+				theme: { preset: 'editorial' },
+				envelope: {
+					disabled: false,
+					variant: 'premiere-floral',
+					sealStyle: 'wax',
+					microcopy: 'Abra su invitación',
+				},
+			}),
+		);
+
+		expect(result.success).toBe(true);
+		if (result.success) {
+			expect(result.data.theme?.preset).toBe('editorial');
+			expect(result.data.envelope?.variant).toBe('premiere-floral');
+		}
+	});
+
+	it('rejects an unknown envelope.variant', () => {
+		const result = eventSchema.safeParse(
+			createMinimalEvent({
+				envelope: {
+					disabled: false,
+					variant: 'romina-reveal',
+					sealStyle: 'wax',
+					microcopy: 'Abrir',
+				},
+			}),
+		);
+
+		expect(result.success).toBe(false);
+	});
+
 	it('accepts sealVariant premium-rose and passes through sealInitials', () => {
 		const result = eventSchema.safeParse(
 			createMinimalEvent({
