@@ -180,13 +180,14 @@ provisioning path (`pnpm test:e2e:preview:provision` and
 
 ## Cloudinary vs Supabase Storage boundary
 
-Invitation assets may use Supabase Storage (`storage_path` / public Storage URLs) or Cloudinary
-(`provider: cloudinary`, `secure_url`). Mirror and release do **not** add a Cloudinary transfer
-engine.
+Invitation images are uploaded to Cloudinary (`provider: cloudinary`, `secure_url`). Legacy
+Supabase Storage rows may remain until a later managed prune. Mirror does **not** copy Cloudinary
+binaries; it preserves `secure_url`. Release uploads or reconciles through the shared Cloudinary
+adapter and fails closed without credentials.
 
 | Flow                               | Supabase Storage                                                                              | Cloudinary                                                                                                                  |
 | ---------------------------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Update / promote (managed package) | Package/asset manifest + import engine                                                        | References preserved when present in package/definition; no CDN rewrite                                                     |
+| Update / promote (managed package) | Legacy Storage rows may remain until prune                                                    | Shared adapter uploads/reconciles; package carries `provider` + `secure_url`                                                |
 | Compare / content-parity           | Storage hosts canonicalized for semantic equality                                             | Remote CDN URLs compared as semantic asset identity (key + sha256 when present)                                             |
 | Production→Preview mirror          | Binary copy for rows with `storage_path`; rewrite public Storage URLs in `content`/`snapshot` | `secure_url` and Cloudinary hosts are **copied/preserved**, not rewritten; rows without `storage_path` skip binary transfer |
 

@@ -152,9 +152,8 @@ Storage mutations when content is unchanged.
     against `undefined` targets.
   - `GoogleMap.astro`: Generic `isRustic` mapping uses `variant === 'premiere-floral'` without
     hardcoded invitation slugs.
-- **Media Provider Strategy:** Supabase Storage
-  (`CLOUDINARY EXECUTION BLOCKED — ROTATED CREDENTIALS NOT CONFIGURED`). Asset specs may still
-  declare `provider: 'cloudinary'` for future readiness.
+- **Media Provider Strategy:** Cloudinary for invitation images (shared server adapter). Music
+  remains a content URL. Legacy Supabase binaries are pruned in a later managed step.
 
 ---
 

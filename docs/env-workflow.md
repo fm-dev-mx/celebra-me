@@ -105,8 +105,8 @@ execution:
   live in `.env.preview.local` (see `.env.preview.local.example`), not ordinary Local `.env.local`
   files.
 - **Operational script-only:** Command confirmations (e.g. `CONFIRM_REMOTE_SERVICE_ROLE`), DB
-  workflow inputs, one-off script filters, and Cloudinary provisioning credentials. These can use
-  script-owned local file loaders and are intentionally omitted from `ImportMetaEnv`.
+  workflow inputs, and one-off script filters. These can use script-owned local file loaders and
+  are intentionally omitted from `ImportMetaEnv`.
   `pnpm invitation:release` treats Preview and Production URLs/credentials as script-only values;
   packages and invitation definitions must contain semantic asset references, never those values.
 - **Platform-provided app/runtime:** Vercel supplies `VERCEL`, `VERCEL_ENV`, and
@@ -140,11 +140,13 @@ with app/runtime typing:
 
 | Contract category           | Variables                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Relationship                                          |
 | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| `operational-script-only`   | `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `LOCAL_SUPER_ADMIN_PASSWORD`, `RSVP_ADMIN_PASSWORD`, `RSVP_ADMIN_USER`, `PLAYWRIGHT_BASE_URL`, `PLAYWRIGHT_APPROVED_PREVIEW_DEPLOYMENT_HOST`, `PLAYWRIGHT_PREVIEW_SUPABASE_URL`, `PLAYWRIGHT_HOST_LOGIN`, `PLAYWRIGHT_HOST_PASSWORD`, `VERCEL_AUTOMATION_BYPASS_SECRET`, `PLAYWRIGHT_PREVIEW_INVITATION_ID`, `PLAYWRIGHT_ALLOW_PREVIEW_PUBLICATION`, `PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING`, `PLAYWRIGHT_PREVIEW_DEBUG_ARTIFACTS` | Present in `.env.example`; omitted from typing.       |
+| `operational-script-only`   | `LOCAL_SUPER_ADMIN_PASSWORD`, `RSVP_ADMIN_PASSWORD`, `RSVP_ADMIN_USER`, `PLAYWRIGHT_BASE_URL`, `PLAYWRIGHT_APPROVED_PREVIEW_DEPLOYMENT_HOST`, `PLAYWRIGHT_PREVIEW_SUPABASE_URL`, `PLAYWRIGHT_HOST_LOGIN`, `PLAYWRIGHT_HOST_PASSWORD`, `VERCEL_AUTOMATION_BYPASS_SECRET`, `PLAYWRIGHT_PREVIEW_INVITATION_ID`, `PLAYWRIGHT_ALLOW_PREVIEW_PUBLICATION`, `PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING`, `PLAYWRIGHT_PREVIEW_DEBUG_ARTIFACTS` | Present in `.env.example`; omitted from typing.       |
 | `platform-provided-runtime` | `VERCEL`, `VERCEL_ENV`, `VERCEL_GIT_COMMIT_REF`                                                                                                                                                                                                                                                                                                                                                                                                                                           | Present in app/runtime typing; omitted from template. |
 
-The Cloudinary variables are server-only operational inputs for trusted provisioning scripts. Never
-create `PUBLIC_CLOUDINARY_*` equivalents or place real Cloudinary values in tracked files.
+`CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET` are server-only runtime
+secrets for invitation image upload (Astro API + `invitation:release` CLI). Never create
+`PUBLIC_CLOUDINARY_*` equivalents or place real Cloudinary values in tracked files. Missing values
+fail closed: invitation image uploads do not fall back to Supabase Storage.
 
 ## Rules
 
@@ -187,9 +189,9 @@ create `PUBLIC_CLOUDINARY_*` equivalents or place real Cloudinary values in trac
 - DB workflow scripts centralize local app env loading in `scripts/db/db-workflow-lib.ts`, with
   `.env.local`/`.env` merged and `process.env` overriding file values. Local DB workflows refuse
   remote Supabase URLs inside `.env.local`.
-- Cloudinary provisioning has its own operational loader: existing `process.env` values win, then
-  missing values may be filled from `.env.local`, `.env`, and `.secrets/cloudinary.env` in that
-  order.
+- Cloudinary runtime reads `process.env` only. The release CLI may fill missing values from
+  `.env.local`, `.env`, and `.secrets/cloudinary.env` in that order before calling the shared
+  server module.
 - Older operational scripts still load env files locally and are guarded case-by-case. Broad
   precedence normalization is intentionally deferred to avoid changing deployment behavior.
 
