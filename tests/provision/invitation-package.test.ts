@@ -1,5 +1,7 @@
-import { describe, expect, it } from '@jest/globals';
-import { hydrateCloudinaryEnvFromFiles } from '../../scripts/provision/cloudinary-adapter.ts';
+import { describe, expect, it, jest } from '@jest/globals';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import {
 	computePackageHash,
 	serializeInvitationPackage,
@@ -74,6 +76,50 @@ const basePayload: Omit<InvitationPackageData, 'packageHash'> = {
 	],
 };
 
+const baseRelease: NormalizedInvitationRelease = {
+	schemaVersion: '2.0.0',
+	slug: 'test-invitation',
+	definitionCreatedAt: '2026-07-20T00:00:00.000Z',
+	sourceHash: hash,
+	metadataHash: hash,
+	projectionHash: md5hash,
+	assetManifestHash: hash,
+	metadata: {
+		managedIdentityId: '11111111-1111-4111-8111-111111111111',
+		previousSlugs: [],
+		title: 'Test',
+		eventType: 'xv',
+		baseDemoId: 'demo',
+		themeId: 'theme',
+		visualProfileId: 'profile',
+		clientName: 'Client',
+		hostLoginAlias: 'client',
+		clientEmail: '',
+		clientWhatsapp: '',
+		photosReceived: true,
+		snapshot: {},
+	},
+	draftContent: {},
+	publishedProjection: {},
+	assets: [
+		{
+			key: 'hero',
+			displayName: 'Hero',
+			alt: 'Hero',
+			bytes: new Uint8Array([0]),
+			dataBase64: 'AA==',
+			sha256: hash,
+			mimeType: 'image/webp',
+			width: 1,
+			height: 1,
+			fileSize: 1,
+			validationVersion: 1,
+			originalMimeType: 'image/jpeg',
+			originalFileSize: 1,
+		},
+	],
+};
+
 describe('invitation package', () => {
 	it('hashes the complete deterministic payload independent of asset order', () => {
 		expect(computePackageHash(basePayload)).toBe(
@@ -89,28 +135,7 @@ describe('invitation package', () => {
 
 	it('uses the serialized package hash as the normalized release provenance identity', () => {
 		const release: NormalizedInvitationRelease = {
-			schemaVersion: '2.0.0',
-			slug: 'test-invitation',
-			definitionCreatedAt: '2026-07-20T00:00:00.000Z',
-			sourceHash: hash,
-			metadataHash: hash,
-			projectionHash: md5hash,
-			assetManifestHash: hash,
-			metadata: {
-				managedIdentityId: '11111111-1111-4111-8111-111111111111',
-				previousSlugs: [],
-				title: 'Test',
-				eventType: 'xv',
-				baseDemoId: 'demo',
-				themeId: 'theme',
-				visualProfileId: 'profile',
-				clientName: 'Client',
-				hostLoginAlias: 'client',
-				clientEmail: '',
-				clientWhatsapp: '',
-				photosReceived: true,
-				snapshot: {},
-			},
+			...baseRelease,
 			draftContent: {
 				hero: {
 					type: 'uploaded',
@@ -125,23 +150,6 @@ describe('invitation package', () => {
 					src: '__STORAGE_URL__/__INVITATION_ASSET_KEY__:hero',
 				},
 			},
-			assets: [
-				{
-					key: 'hero',
-					displayName: 'Hero',
-					alt: 'Hero',
-					bytes: new Uint8Array([0]),
-					dataBase64: 'AA==',
-					sha256: hash,
-					mimeType: 'image/webp',
-					width: 1,
-					height: 1,
-					fileSize: 1,
-					validationVersion: 1,
-					originalMimeType: 'image/jpeg',
-					originalFileSize: 1,
-				},
-			],
 		};
 		const pkg = serializeInvitationPackage(release);
 		expect(pkg.packageHash).toBe(computePackageHash(pkg));
@@ -156,69 +164,23 @@ describe('invitation package', () => {
 		);
 	});
 
-	it('keeps packageHash stable after Cloudinary env hydration', () => {
-		const release: NormalizedInvitationRelease = {
-			schemaVersion: '2.0.0',
-			slug: 'test-invitation',
-			definitionCreatedAt: '2026-07-20T00:00:00.000Z',
-			sourceHash: hash,
-			metadataHash: hash,
-			projectionHash: md5hash,
-			assetManifestHash: hash,
-			metadata: {
-				managedIdentityId: '11111111-1111-4111-8111-111111111111',
-				previousSlugs: [],
-				title: 'Test',
-				eventType: 'xv',
-				baseDemoId: 'demo',
-				themeId: 'theme',
-				visualProfileId: 'profile',
-				clientName: 'Client',
-				hostLoginAlias: 'client',
-				clientEmail: '',
-				clientWhatsapp: '',
-				photosReceived: true,
-				snapshot: {},
-			},
-			draftContent: { hero: { title: 'Test' } },
-			publishedProjection: { hero: { title: 'Test' } },
-			assets: [
-				{
-					key: 'hero',
-					displayName: 'Hero',
-					alt: 'Hero',
-					bytes: new Uint8Array([0]),
-					dataBase64: 'AA==',
-					sha256: hash,
-					mimeType: 'image/webp',
-					width: 1,
-					height: 1,
-					fileSize: 1,
-					validationVersion: 1,
-					originalMimeType: 'image/jpeg',
-					originalFileSize: 1,
-				},
-			],
-		};
-		const previousName = process.env.CLOUDINARY_CLOUD_NAME;
-		const previousKey = process.env.CLOUDINARY_API_KEY;
-		const previousSecret = process.env.CLOUDINARY_API_SECRET;
-		delete process.env.CLOUDINARY_CLOUD_NAME;
-		delete process.env.CLOUDINARY_API_KEY;
-		delete process.env.CLOUDINARY_API_SECRET;
+	it('hydrates Cloudinary configuration before deriving the package identity', () => {
+		const tempRoot = mkdtempSync(join(tmpdir(), 'invitation-package-env-'));
+		const originalCloudName = process.env.CLOUDINARY_CLOUD_NAME;
+		const cwdSpy = jest.spyOn(process, 'cwd').mockReturnValue(tempRoot);
+		writeFileSync(join(tempRoot, '.env.local'), 'CLOUDINARY_CLOUD_NAME=stable-cloud\n', 'utf8');
+
 		try {
-			const first = serializeInvitationPackage(release);
-			hydrateCloudinaryEnvFromFiles();
-			const second = serializeInvitationPackage(release);
-			expect(second.packageHash).toBe(first.packageHash);
-			expect(second.assets[0]?.secureUrl).toBe(first.assets[0]?.secureUrl);
+			delete process.env.CLOUDINARY_CLOUD_NAME;
+			const pkg = serializeInvitationPackage(baseRelease);
+			expect(pkg.packageHash).toBe(computePackageHash(pkg));
+			expect(pkg.assets[0]?.secureUrl).toContain('res.cloudinary.com/stable-cloud/');
+			expect(process.env.CLOUDINARY_CLOUD_NAME).toBe('stable-cloud');
 		} finally {
-			if (previousName === undefined) delete process.env.CLOUDINARY_CLOUD_NAME;
-			else process.env.CLOUDINARY_CLOUD_NAME = previousName;
-			if (previousKey === undefined) delete process.env.CLOUDINARY_API_KEY;
-			else process.env.CLOUDINARY_API_KEY = previousKey;
-			if (previousSecret === undefined) delete process.env.CLOUDINARY_API_SECRET;
-			else process.env.CLOUDINARY_API_SECRET = previousSecret;
+			cwdSpy.mockRestore();
+			if (originalCloudName === undefined) delete process.env.CLOUDINARY_CLOUD_NAME;
+			else process.env.CLOUDINARY_CLOUD_NAME = originalCloudName;
+			rmSync(tempRoot, { recursive: true, force: true });
 		}
 	});
 

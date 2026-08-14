@@ -108,8 +108,10 @@ export function computePackageHash(
 export function serializeInvitationPackage(
 	release: NormalizedInvitationRelease,
 ): InvitationPackageData {
-	hydrateCloudinaryEnvFromFiles();
-	const cloudName = process.env.CLOUDINARY_CLOUD_NAME?.trim() || 'unconfigured';
+	const cloudName =
+		hydrateCloudinaryEnvFromFiles({
+			keys: ['CLOUDINARY_CLOUD_NAME'],
+		}).CLOUDINARY_CLOUD_NAME?.trim() || 'unconfigured';
 	const rawPayload: Omit<InvitationPackageData, 'packageHash'> = {
 		schemaVersion: release.schemaVersion,
 		sourceHash: release.sourceHash,
