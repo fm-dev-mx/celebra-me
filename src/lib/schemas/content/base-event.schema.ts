@@ -29,7 +29,8 @@ export const canonicalEventContentSchema = baseEventFieldsSchema.extend({
 	location: locationSchema.optional(),
 	family: familySchema,
 	rsvp: rsvpSchema,
-	quote: quoteSchema,
+	// Optional: sectionOrder may omit quote; do not require invented copy.
+	quote: quoteSchema.optional(),
 	thankYou: thankYouSchema,
 	music: musicSchema,
 	gallery: gallerySchema,
