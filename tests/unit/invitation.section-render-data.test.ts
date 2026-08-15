@@ -118,6 +118,45 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 		});
 	});
 
+	it('omits the location next-section cue when an interlude is the next visual plane', () => {
+		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+		const eventEntry = {
+			id: 'event-demos/xv/demo-xv-jewelry-box',
+			data: {
+				...fixture,
+				interludes: [
+					...fixture.interludes,
+					{
+						image: 'gallery02',
+						afterSection: 'location',
+						alt: 'Interlude after location',
+						height: 'tall',
+					},
+				],
+			},
+		} as Parameters<typeof prepareInvitationPageContext>[0]['eventEntry'];
+
+		const pageContext = prepareInvitationPageContext({
+			eventEntry,
+			slug: 'demo-xv-jewelry-box',
+		});
+
+		const descriptors = buildInvitationSectionRenderDescriptors(pageContext);
+		const locationDescriptor = descriptors.find(
+			(descriptor) => descriptor.component === 'location',
+		);
+
+		expect(locationDescriptor?.props).not.toMatchObject({
+			nextSectionLink: {
+				href: '#itinerary',
+				label: 'Itinerario',
+			},
+		});
+		expect(
+			(locationDescriptor?.props as { nextSectionLink?: unknown }).nextSectionLink,
+		).toBeUndefined();
+	});
+
 	it('preserves section variants already resolved by the adapter', () => {
 		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
 		const eventEntry = {

@@ -491,6 +491,11 @@ function findNextSectionLink(
 	renderPlan: InvitationRenderPlanItem[],
 	index: number,
 ): LocationProps['nextSectionLink'] {
+	const immediateNext = renderPlan[index + 1];
+	if (immediateNext?.type === 'interlude') {
+		return undefined;
+	}
+
 	for (let nextIndex = index + 1; nextIndex < renderPlan.length; nextIndex += 1) {
 		const block = renderPlan[nextIndex];
 		if (block.type !== 'section') continue;
