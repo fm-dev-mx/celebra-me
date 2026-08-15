@@ -85,8 +85,10 @@ describe('resolveOwnerPromptIo', () => {
 		expect(() => destroyOwnerPromptIo(ttyIo)).not.toThrow();
 
 		const consoleIo = fakeConsole();
-		const inputDestroy = jest.spyOn(consoleIo.input, 'destroy');
-		const outputEnd = jest.spyOn(consoleIo.output, 'end');
+		const input = consoleIo.input as NodeJS.ReadableStream & { destroy: () => void };
+		const output = consoleIo.output as NodeJS.WritableStream & { end: () => void };
+		const inputDestroy = jest.spyOn(input, 'destroy');
+		const outputEnd = jest.spyOn(output, 'end');
 		destroyOwnerPromptIo({
 			...consoleIo,
 			source: 'win32-console',

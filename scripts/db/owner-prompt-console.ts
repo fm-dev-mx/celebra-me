@@ -88,11 +88,17 @@ export function resolveOwnerPromptIo(
 	};
 }
 
+function destroyReadable(stream: NodeJS.ReadableStream): void {
+	if ('destroy' in stream && typeof stream.destroy === 'function') {
+		stream.destroy();
+	}
+}
+
 export function destroyOwnerPromptIo(io: OwnerPromptIo | null | undefined): void {
 	if (!io || io.source !== 'win32-console') {
 		return;
 	}
-	io.input.destroy();
+	destroyReadable(io.input);
 	if ('end' in io.output && typeof io.output.end === 'function') {
 		io.output.end();
 	}
