@@ -432,11 +432,6 @@ BEGIN
           "iconName": "CheckSeal",
           "styleVariant": "default",
           "text": "Acceso únicamente con pase. Aplica para adultos y niños."
-        },
-        {
-          "iconName": "Calendar",
-          "styleVariant": "default",
-          "text": "Agradecemos confirmar tu asistencia antes del 1 de agosto de 2026."
         }
       ]
     },
@@ -501,6 +496,7 @@ BEGIN
           "type": "store",
           "title": "Mesa de regalos",
           "description": "Puedes consultar mis listas en Sears y Liverpool.",
+          "tableNumber": "Sears 237993 · Liverpool 52006296",
           "links": [
             {
               "label": "Sears",
