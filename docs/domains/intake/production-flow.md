@@ -7,7 +7,8 @@ verification, and recovery (how production works).
 and migrations remain authoritative for executable behavior.
 
 Identity requirements:
-[`docs/core/invitation-creation-contract.md`](../../core/invitation-creation-contract.md). Safety constraints:
+[`docs/core/invitation-creation-contract.md`](../../core/invitation-creation-contract.md). Safety
+constraints:
 [`.agent/rules/invitation-production.md`](../../../.agent/rules/invitation-production.md). Content
 shape: [`docs/core/content-schema.md`](../../core/content-schema.md). Content promote/mirror vs RSVP
 isolation:
@@ -17,15 +18,15 @@ Architecture: [`docs/core/architecture.md`](../../core/architecture.md). Authori
 
 ## Roles and responsibility
 
-| Concern                     | System                                                           | Agent/developer                                 | Designer                       | Manual/production operator                 |
-| --------------------------- | ---------------------------------------------------------------- | ----------------------------------------------- | ------------------------------ | ------------------------------------------ |
-| Validate managed definition | Definition registry + CLI dry-run invariants                     | Author/verify definition + preset match         | —                              | —                                          |
-| Create managed invitation   | Definition registry + `invitation:release`                       | Inspect dry-run/apply reports                   | Dry-run / Local+Preview apply  | Owner-only Production release              |
-| Write content               | Editor schemas and optimistic locking                            | Enter accurate Spanish copy and structured data | Review narrative and hierarchy | Confirm client facts                       |
-| Prepare assets              | Server decode, normalize, resize, WebP conversion, metadata      | Upload through the editor; never bypass policy  | Choose crop and focal point    | Review mobile crops                        |
-| Preview                     | Internal SSR preview                                             | Exercise all content states                     | Approve visual direction       | Verify links and client facts              |
-| Publish                     | Validation plus atomic RPC                                       | Resolve all blockers and initiate publish       | —                              | Apply required production migrations first |
-| Deploy and verify           | Vercel and Supabase runtime                                      | Run checks and capture evidence                 | Review deployed visuals        | Authorize production-only actions          |
+| Concern                     | System                                                      | Agent/developer                                 | Designer                       | Manual/production operator                 |
+| --------------------------- | ----------------------------------------------------------- | ----------------------------------------------- | ------------------------------ | ------------------------------------------ |
+| Validate managed definition | Definition registry + CLI dry-run invariants                | Author/verify definition + preset match         | —                              | —                                          |
+| Create managed invitation   | Definition registry + `invitation:release`                  | Inspect dry-run/apply reports                   | Dry-run / Local+Preview apply  | Owner-only Production release              |
+| Write content               | Editor schemas and optimistic locking                       | Enter accurate Spanish copy and structured data | Review narrative and hierarchy | Confirm client facts                       |
+| Prepare assets              | Server decode, normalize, resize, WebP conversion, metadata | Upload through the editor; never bypass policy  | Choose crop and focal point    | Review mobile crops                        |
+| Preview                     | Internal SSR preview                                        | Exercise all content states                     | Approve visual direction       | Verify links and client facts              |
+| Publish                     | Validation plus atomic RPC                                  | Resolve all blockers and initiate publish       | —                              | Apply required production migrations first |
+| Deploy and verify           | Vercel and Supabase runtime                                 | Run checks and capture evidence                 | Review deployed visuals        | Authorize production-only actions          |
 
 Production database mutations, deployments, and rollbacks require explicit human authorization.
 
@@ -39,9 +40,16 @@ Define -> Plan -> Release Local -> Package -> Release Preview -> Approve -> Owne
 ```
 
 `pnpm invitation:release` is the sole managed release entrypoint. Start with `--dry-run`, inspect
-every selected target, and apply only the retained plan after exact target authorization. Any source,
-package, target, or asset drift requires a new dry run. Treat failed or unavailable inspection as
-blocked, never unchanged, and verify database, Storage, and published state per target.
+every selected target, and apply only the retained plan after exact target authorization. Any
+source, package, target, or asset drift requires a new dry run. Treat failed or unavailable
+inspection as blocked, never unchanged, and verify database, Storage, and published state per
+target.
+
+Local and Preview inherit the definition `deliveryScope` (`content-only`, `content-and-assets`, or
+`assets-only`) unless `--update-scope` or `--content-only` overrides it. First-time Preview applies
+that must upload files need `content-and-assets` — usually from the definition, not a flag. The
+default asset policy is `preserve` for `content-only` and `missing` otherwise. `content-only` fails
+at plan time if any asset create, replace, or delete is planned.
 
 ```bash
 pnpm invitation:release -- --slug <slug> --targets local,preview --source-dir <path> --dry-run
@@ -59,13 +67,13 @@ blocks), typed owner confirmation (`PROMOTE <8-hex>`), managed import/publicatio
 mandatory post-apply verification. Worktree files under `.agent/tmp/approvals` are not the SSOT; use
 `pnpm invitation:release -- --package-hash <hash> --approve` for direct live Preview verification
 and approval. Legacy filesystem approval import is retired. The guided TTY path uses the shared
-promotion orchestrator. Existing target
-invitations resolve and preserve their owner by slug. New target invitations ensure a dedicated Auth
-host from the definition `hostLoginAlias` (`{alias}@clientes.celebra.invalid`) before plan/apply;
-`--owner-user-id` is an optional override/assertion, not required on the happy path. Dry-run reports
-owner action as `OWNER_REUSE`, `OWNER_CREATE_PLANNED`, or `OWNER_CONFLICT` (blocked). Every selected
-target is inspected and planned before any mutation; a blocked or unevaluated target aborts the
-complete apply phase across all targets.
+promotion orchestrator. Existing target invitations resolve and preserve their owner by slug. New
+target invitations ensure a dedicated Auth host from the definition `hostLoginAlias`
+(`{alias}@clientes.celebra.invalid`) before plan/apply; `--owner-user-id` is an optional
+override/assertion, not required on the happy path. Dry-run reports owner action as `OWNER_REUSE`,
+`OWNER_CREATE_PLANNED`, or `OWNER_CONFLICT` (blocked). Every selected target is inspected and
+planned before any mutation; a blocked or unevaluated target aborts the complete apply phase across
+all targets.
 
 ### Package freshness (definition vs `--package`)
 
@@ -145,9 +153,9 @@ Before creating a record, collect:
 
 Choose the event type from `EVENT_TYPES` and a compatible editor preset from `DEMO_PRESET_CATALOG`
 (or the managed definition's `baseDemoId`). The preset's `eventType` must match the invitation event
-type. Managed definitions are validated by the `invitation:release` dry-run before
-apply. Low-level `createInvitation()` still enforces the same preset invariant for demos, tests, and
-internal callers — not for Dashboard client creates.
+type. Managed definitions are validated by the `invitation:release` dry-run before apply. Low-level
+`createInvitation()` still enforces the same preset invariant for demos, tests, and internal callers
+— not for Dashboard client creates.
 
 Choose slug roles independently:
 
@@ -248,12 +256,12 @@ Uploads are enforced server-side by `asset-policy.ts`:
   dimensions from largest to smallest before lowering quality, and use a quality floor of 72.
 
 Publication requires current-policy metadata, WebP output, positive dimensions, dimensions no larger
-than 2560, and output no larger than 2,500,000 bytes. Role-aware assets with `validation_version = 2`
-must also remain within the budget of the published visual role. Existing version 1 assets retain
-the hard safety gate for compatibility. A legacy asset with `validation_version = 0` is grandfathered
-only when the same asset ID already exists in the prior published snapshot; newly referenced or
-changed legacy assets are blocked. Missing required asset keys and unresolved uploaded assets also
-block publication.
+than 2560, and output no larger than 2,500,000 bytes. Role-aware assets with
+`validation_version = 2` must also remain within the budget of the published visual role. Existing
+version 1 assets retain the hard safety gate for compatibility. A legacy asset with
+`validation_version = 0` is grandfathered only when the same asset ID already exists in the prior
+published snapshot; newly referenced or changed legacy assets are blocked. Missing required asset
+keys and unresolved uploaded assets also block publication.
 
 The system does not choose art direction. Designers/developers must still select an appropriate
 source, confirm semantic role and alt text, choose focal points, and review desktop and mobile
@@ -273,14 +281,13 @@ Minimum viewports:
 - 1440 × 900 desktop.
 
 The technical checks below are not the creative acceptance decision. Before final acceptance or
-release, complete the Creative Direction & Acceptance record in
-`docs/invitations/<slug>.md` (optionally backed by `.agent/templates/creative/creative-qa-report.md`).
-The reviewer must inspect the invitation as a whole at representative responsive viewports,
-confirm section boundaries and narrative continuity, and record an explicit human outcome:
-`ACCEPTED`, `ACCEPTED_WITH_BLOCKERS`, or `REJECTED`. A successful screenshot or browser run proves
-capture/runtime integrity only; it does not imply aesthetic acceptance. `ACCEPTED_WITH_BLOCKERS`
-remains blocking for the applicable release boundary when the blocker is owner data or another
-non-creative dependency.
+release, complete the Creative Direction & Acceptance record in `docs/invitations/<slug>.md`
+(optionally backed by `.agent/templates/creative/creative-qa-report.md`). The reviewer must inspect
+the invitation as a whole at representative responsive viewports, confirm section boundaries and
+narrative continuity, and record an explicit human outcome: `ACCEPTED`, `ACCEPTED_WITH_BLOCKERS`, or
+`REJECTED`. A successful screenshot or browser run proves capture/runtime integrity only; it does
+not imply aesthetic acceptance. `ACCEPTED_WITH_BLOCKERS` remains blocking for the applicable release
+boundary when the blocker is owner data or another non-creative dependency.
 
 Required cases:
 

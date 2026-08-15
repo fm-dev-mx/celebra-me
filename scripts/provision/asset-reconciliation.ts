@@ -419,7 +419,7 @@ function reconcileCloudinaryCanonical(
 		};
 	}
 
-	const isBlock = policy === 'verify';
+	const isBlock = policy === 'verify' || policy === 'preserve';
 	const classification = cloudinaryReady ? 'BINARY_MATCH_METADATA_DRIFT' : 'MISSING';
 	const observedHash = dbRecord?.sha256 ?? null;
 	const observedSize = dbRecord?.fileSize ?? null;
@@ -437,12 +437,12 @@ function reconcileCloudinaryCanonical(
 				classification,
 				plannedAction: 'BLOCK',
 				reasonCode: 'ASSET_MISSING_VERIFY_BLOCKED',
-				reason: `El archivo Cloudinary para "${canonical.displayName}" no está listo (bloqueado bajo política verify).`,
+				reason: `El archivo Cloudinary para "${canonical.displayName}" no está listo (bloqueado bajo política ${policy}).`,
 				observedHash,
 				observedSize,
 			},
 			blocked: true,
-			blockReason: `Archivo Cloudinary requerido ausente bajo la política verify: "${canonical.displayName}".`,
+			blockReason: `Archivo Cloudinary requerido ausente bajo la política ${policy}: "${canonical.displayName}".`,
 		};
 	}
 

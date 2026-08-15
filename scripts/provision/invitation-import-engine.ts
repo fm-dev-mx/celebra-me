@@ -73,6 +73,10 @@ import {
 	type UpdateScope,
 } from './semantic-delta.ts';
 import { operationIdFromPlanId } from '../../src/lib/intake/mutations/outcome.ts';
+import {
+	assertContentOnlyAllowsNoAssetMutations,
+	defaultAssetPolicy,
+} from './invitation-update-options.ts';
 import { sortPathPolicy } from './conflict-resolutions.ts';
 import { verifySupabaseApiCredential } from './supabase-credential-verification.ts';
 import { assertManagedContentSchema } from './managed-content-validation.ts';
@@ -1812,8 +1816,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		collectUploadedAssetIds(initialScan.existingDraft?.content),
 	);
 	const updateScope = options.updateScope ?? 'content-only';
-	const assetPolicy =
-		options.assetPolicy ?? (updateScope === 'content-only' ? 'preserve' : 'missing');
+	const assetPolicy = options.assetPolicy ?? defaultAssetPolicy(updateScope);
 
 	const drift = analyzeTargetDrift(
 		pkg,
@@ -1845,6 +1848,11 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		pkg.sourceSlug,
 		drift.targetDraftContent,
 	);
+	assertContentOnlyAllowsNoAssetMutations({
+		updateScope,
+		plannedAssetMutations:
+			assetsToUpload.length + assetsToUpsertDbOnly.length + assetsToDelete.length,
+	});
 	const actions = buildResourceActions({
 		slug: drift.slug,
 		route: drift.route,

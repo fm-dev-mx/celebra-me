@@ -58,7 +58,8 @@ Every managed digital invitation must define:
   explicit and is not inferred from timestamps or environment presence.
 - **Delivery Scope** (`deliveryScope`): `content-only`, `content-and-assets`, or `assets-only`.
   Three-way reconciliation must use this declared scope and report out-of-scope changes rather than
-  applying or hiding them.
+  applying or hiding them. `pnpm invitation:release` inherits this value unless the operator passes
+  `--update-scope` or `--content-only`.
 - **Client Details**: Client name, client email, client WhatsApp number, and photo reception status.
 - **Owner Policy**:
   - **All targets**: Preserve the existing invitation owner on updates.

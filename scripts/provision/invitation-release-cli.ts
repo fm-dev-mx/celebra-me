@@ -21,9 +21,12 @@ import { parseAssetPolicy } from './asset-reconciliation.ts';
 import type { UpdateScope } from './semantic-delta.ts';
 import {
 	buildStatusReport,
+	defaultAssetPolicy,
+	parseCliUpdateScope,
 	parseReleaseMutationTargets,
 	parseTargets,
 	checkUnknownFlags,
+	requireResolvedUpdateScope,
 	resolvePromotionUpdateScope,
 	validateUpdateOptions,
 	type InvitationUpdateTarget,
@@ -336,7 +339,11 @@ Usage:
   pnpm invitation:release --preview-provenance --reconcile-stale --slug <slug> --targets preview [--package <path>] --apply [--json]
 
 Options:
-  --asset-policy <policy>     Asset handling policy: verify, missing (default), sync, preserve
+  --asset-policy <policy>     Asset handling policy: verify, missing, sync, preserve.
+                               Default: preserve for content-only, missing otherwise
+  --update-scope <scope>      content-only | content-and-assets | assets-only.
+                               Default: the invitation definition deliveryScope
+  --content-only               Explicit override equivalent to --update-scope content-only
   --prune-assets               Enable explicit removal of unreferenced managed assets (requires confirmation)
   --status                     Local inventory status (remotes unprobed; use pnpm dbs for matrix)
   --targets <targets>          Mutations: local, preview, local,preview, or production (exclusive).
@@ -807,9 +814,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 		}
 	}
 
-	const rawScope = value(args, '--update-scope');
-	const updateScope: UpdateScope =
-		rawScope === 'content-and-assets' || rawScope === 'assets-only' ? rawScope : 'content-only';
+	const parsedScope = parseCliUpdateScope(args);
 
 	const conflictResolutionsPath = value(args, '--conflict-resolutions');
 	const fieldSelectionsPath = value(args, '--field-selections');
@@ -822,18 +827,10 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 		: undefined;
 	conflictResolutions = mergePathPolicies(fileFieldSelections, fileConflictResolutions);
 
-	const rawAssetPolicy =
-		value(args, '--asset-policy') ?? (updateScope === 'content-only' ? 'preserve' : 'missing');
 	const pruneAssets = args.includes('--prune-assets');
 	const acknowledgeDiscardUnpublishedDraft = args.includes(
 		'--acknowledge-discard-unpublished-draft',
 	);
-	const assetPolicy = parseAssetPolicy(rawAssetPolicy);
-	if (assetPolicy === 'preserve' && updateScope === 'content-and-assets') {
-		throw new Error(
-			'Asset policy "preserve" conflicts with update scope "content-and-assets". Choose verify, missing, or sync.',
-		);
-	}
 
 	// Default targets to local if interactive or unassigned
 	if (targets.length === 0 && (slug || statusMode)) {
@@ -921,6 +918,18 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 	}
 
 	const definition = getInvitationDefinition(slug);
+	const updateScope = requireResolvedUpdateScope({
+		updateScope: parsedScope,
+		deliveryScope: definition.deliveryScope,
+	});
+	const assetPolicy = parseAssetPolicy(
+		value(args, '--asset-policy') ?? defaultAssetPolicy(updateScope),
+	);
+	if (assetPolicy === 'preserve' && updateScope === 'content-and-assets') {
+		throw new Error(
+			'Asset policy "preserve" conflicts with update scope "content-and-assets". Choose verify, missing, or sync.',
+		);
+	}
 
 	// ── Production promote (approved Preview → Production) ───────────────────
 	if (targets.length === 1 && targets[0] === 'production') {
@@ -933,14 +942,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 			ownerUserId: value(args, '--owner-user-id'),
 			assetPolicyRaw: value(args, '--asset-policy'),
 			pruneAssets: args.includes('--prune-assets'),
-			updateScope: (() => {
-				const raw = value(args, '--update-scope');
-				return raw === 'content-and-assets' ||
-					raw === 'assets-only' ||
-					raw === 'content-only'
-					? raw
-					: undefined;
-			})(),
+			updateScope: parsedScope,
 			conflictResolutionsPath: value(args, '--conflict-resolutions'),
 			backupManifestPath: value(args, '--backup-manifest'),
 			apply: Boolean(apply),
@@ -1291,6 +1293,8 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 			planId: localResult?.plan?.planId,
 			invitation: slug,
 			targets,
+			updateScope,
+			assetPolicy,
 			isZeroDrift,
 			plannedOperations,
 			expectedDatabaseWrites: {
@@ -1646,6 +1650,8 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 					invitation: slug,
 					status: deriveLifecycleFinalStatus(targetResults),
 					environment: targets.join(', '),
+					updateScope,
+					assetPolicy,
 					completedOperations: targetResults.reduce(
 						(sum, tr) => sum + tr.completedOperations,
 						0,

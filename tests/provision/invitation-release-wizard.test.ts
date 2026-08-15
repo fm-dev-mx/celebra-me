@@ -66,6 +66,16 @@ describe('invitation-release wizard package binding', () => {
 		expect(afterApprove).not.toContain('orchestrateInvitationPromotion');
 	});
 
+	it('inherits deliveryScope through resolvePromotionUpdateScope', () => {
+		const wizard = readFileSync(
+			resolve(process.cwd(), 'scripts/provision/invitation-release-wizard.ts'),
+			'utf8',
+		);
+		expect(wizard).toContain('requireResolvedUpdateScope');
+		expect(wizard).toContain('defaultAssetPolicy');
+		expect(wizard).not.toContain("definition.deliveryScope === 'content-and-assets'");
+	});
+
 	it('enforces Local PLAN_DRIFT when expected hashes mismatch', () => {
 		const applyLocal = readFileSync(
 			resolve(process.cwd(), 'scripts/provision/apply-local-invitation.ts'),
@@ -74,5 +84,19 @@ describe('invitation-release wizard package binding', () => {
 		expect(applyLocal).toContain('expectedSourceHash');
 		expect(applyLocal).toContain('expectedPackageHash');
 		expect(applyLocal).toContain('PLAN_DRIFT');
+	});
+
+	it('resolves updateScope before Cloudinary work and fails closed on content-only mutations', () => {
+		const applyLocal = readFileSync(
+			resolve(process.cwd(), 'scripts/provision/apply-local-invitation.ts'),
+			'utf8',
+		);
+		const scopeIdx = applyLocal.indexOf('const updateScope: UpdateScope = options.updateScope');
+		const uploadIdx = applyLocal.indexOf('await uploadOrReconcileCloudinaryAsset');
+		expect(scopeIdx).toBeGreaterThan(0);
+		expect(uploadIdx).toBeGreaterThan(scopeIdx);
+		expect(applyLocal).toContain('assertContentOnlyAllowsNoAssetMutations');
+		expect(applyLocal).toContain("updateScope === 'content-only'");
+		expect(applyLocal).toContain('Missing local asset under content-only');
 	});
 });

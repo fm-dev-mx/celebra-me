@@ -1,8 +1,34 @@
 import { domainUnverified } from '../db/schema-lifecycle-state.ts';
+import type { AssetPolicy } from './asset-reconciliation.ts';
 import { listInvitationDefinitions } from './invitations/registry.ts';
 import type { UpdateScope } from './semantic-delta.ts';
 
 export type InvitationUpdateTarget = 'local' | 'preview' | 'production';
+
+function flagValue(args: string[], flag: string): string | undefined {
+	const index = args.indexOf(flag);
+	return index >= 0 ? args[index + 1] : undefined;
+}
+
+function isUpdateScope(value: string | undefined): value is UpdateScope {
+	return value === 'content-only' || value === 'content-and-assets' || value === 'assets-only';
+}
+
+/** Parse an explicit CLI scope override. Omitted flags inherit definition deliveryScope. */
+export function parseCliUpdateScope(args: string[]): UpdateScope | undefined {
+	const hasContentOnly = args.includes('--content-only');
+	const hasUpdateScope = args.includes('--update-scope');
+	if (hasContentOnly && hasUpdateScope) {
+		throw new Error('UPDATE_SCOPE_CONFLICT: Use --update-scope o --content-only, no ambos.');
+	}
+	if (hasContentOnly) return 'content-only';
+	if (!hasUpdateScope) return undefined;
+	const raw = flagValue(args, '--update-scope');
+	if (isUpdateScope(raw)) return raw;
+	throw new Error(
+		`UPDATE_SCOPE_INVALID: "${raw ?? ''}" no es un alcance válido. Use content-only, content-and-assets o assets-only.`,
+	);
+}
 
 /** Resolve the canonical managed update scope from an explicit override or definition policy. */
 export function resolvePromotionUpdateScope(input: {
@@ -10,14 +36,37 @@ export function resolvePromotionUpdateScope(input: {
 	deliveryScope?: string;
 }): UpdateScope | undefined {
 	if (input.updateScope) return input.updateScope;
-	if (
-		input.deliveryScope === 'content-only' ||
-		input.deliveryScope === 'content-and-assets' ||
-		input.deliveryScope === 'assets-only'
-	) {
-		return input.deliveryScope;
-	}
+	if (isUpdateScope(input.deliveryScope)) return input.deliveryScope;
 	return undefined;
+}
+
+export function requireResolvedUpdateScope(input: {
+	updateScope?: UpdateScope;
+	deliveryScope?: string;
+}): UpdateScope {
+	const resolved = resolvePromotionUpdateScope(input);
+	if (!resolved) {
+		throw new Error(
+			'UPDATE_SCOPE_UNRESOLVED: No se pudo resolver el alcance. Declare deliveryScope en la definición o pase --update-scope.',
+		);
+	}
+	return resolved;
+}
+
+/** Default asset policy for a resolved update scope. */
+export function defaultAssetPolicy(scope: UpdateScope): AssetPolicy {
+	return scope === 'content-only' ? 'preserve' : 'missing';
+}
+
+/** Fail at plan time when content-only would create, replace, or delete assets. */
+export function assertContentOnlyAllowsNoAssetMutations(input: {
+	updateScope: UpdateScope;
+	plannedAssetMutations: number;
+}): void {
+	if (input.updateScope !== 'content-only' || input.plannedAssetMutations <= 0) return;
+	throw new Error(
+		'CONTENT_ONLY_ASSET_MUTATION: El alcance content-only no permite cambios de archivos. Use --update-scope content-and-assets o el deliveryScope de la definición.',
+	);
 }
 
 export function parseTargets(raw: string | undefined): InvitationUpdateTarget[] {

@@ -77,6 +77,22 @@ describe('invitation:release Production dispatch', () => {
 		expect(JSON.stringify(publicReport)).not.toContain('secret');
 	});
 
+	it('inherits definition deliveryScope instead of defaulting Local/Preview to content-only', () => {
+		const source = readFileSync(
+			resolve(process.cwd(), 'scripts/provision/invitation-release-cli.ts'),
+			'utf8',
+		);
+		expect(source).toContain('parseCliUpdateScope');
+		expect(source).toContain('requireResolvedUpdateScope');
+		expect(source).toContain('defaultAssetPolicy');
+		expect(source).not.toContain(
+			"rawScope === 'content-and-assets' || rawScope === 'assets-only' ? rawScope : 'content-only'",
+		);
+		expect(source).not.toMatch(
+			/raw === 'content-and-assets' \|\|[\s\S]*raw === 'content-only'[\s\S]*\? raw[\s\S]*: undefined/,
+		);
+	});
+
 	it('registers invitation:release as the public package script', () => {
 		const pkg = JSON.parse(readFileSync('package.json', 'utf8')) as {
 			scripts: Record<string, string>;
