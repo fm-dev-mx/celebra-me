@@ -211,7 +211,7 @@ export function buildRenataPublishedContent(
 			disabled: false,
 			variant: 'premiere-floral',
 			cardLabel: 'MIS XV',
-			envelopeName: 'Renata',
+			envelopeName: 'Renata - Mis XV años',
 			cardName: 'Renata',
 			cardTagline: '05 · 09 · 2026',
 			sealStyle: 'wax',

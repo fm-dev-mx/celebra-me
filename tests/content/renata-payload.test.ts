@@ -154,7 +154,9 @@ describe('XV Renata provision contract', () => {
 		expect((content.envelope as { cardName: string; envelopeName: string }).cardName).toBe(
 			'Renata',
 		);
-		expect((content.envelope as { envelopeName: string }).envelopeName).toBe('Renata');
+		expect((content.envelope as { envelopeName: string }).envelopeName).toBe(
+			'Renata - Mis XV años',
+		);
 		expect(content.title as string).toBe('XV años de Renata');
 
 		expect(content.sectionOrder).toEqual([
