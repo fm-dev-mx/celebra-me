@@ -35,6 +35,9 @@ production patches.
 - `@expected-rows-min` and `@expected-rows-max` must bound the intended row count.
 - `@requires-backup` must be `true`.
 - `@dry-run-query` must be a read-only preview query with the same targeting predicate.
+- Residual: after the intended state exists, `@dry-run-query` returns 0 rows.
+- Paired: when `@paired-stores` is set, the dry-run must select `store` and every `@pair-key`
+  column. Those files are auto-discovered into `pnpm dbs`.
 - `@rollback` must be actionable enough for review; if rollback is impossible, say why.
 
 Keep the SQL narrowly scoped. Broad destructive operations, schema changes, RLS changes,

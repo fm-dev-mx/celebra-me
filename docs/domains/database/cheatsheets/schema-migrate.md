@@ -13,15 +13,15 @@ pnpm prod:apply                                 # read-only Production plan
 pnpm prod:apply -- --schema --apply             # owner TTY schema apply
 pnpm prod:apply -- --slug <slug> --apply        # owner TTY invitation apply
 pnpm prod:apply -- --all-ready --apply          # owner TTY READY schema + invitations
-pnpm prod:apply -- --patch <file> --owner-user-id <uuid> --apply
+pnpm prod:apply -- --patch <file> --apply
 pnpm db:migrate                                 # TTY target picker (Cancelar default)
 pnpm db:migrate -- --target <t>                 # read-only preflight (default)
 pnpm db:migrate -- --target production --apply --expected … # schema primitive
 CELEBRA_TASK_SCOPE=preview:schema:migrate pnpm db:migrate -- --target preview --apply --expected …
 ```
 
-`pnpm db:migrate -- --target production` is the schema **primitive** used by `prod:apply`. It is
-not the routine owner-facing command.
+`pnpm db:migrate -- --target production` is the schema **primitive** used by `prod:apply`. It is not
+the routine owner-facing command.
 
 **Expected result:** Preflight prints pending plan; apply runs policy gates then writes schema;
 history + contract verify for hosted. `pnpm db:*:audit` reports history (`CURRENT`/`BEHIND`) and

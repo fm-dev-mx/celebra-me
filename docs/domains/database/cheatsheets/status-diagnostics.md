@@ -23,9 +23,9 @@ pnpm db:local:audit | db:preview:audit | db:prod:audit
 ```
 
 `pnpm dbs` is the canonical operator matrix: **schema migrations**, **registry publication**,
-**operation readiness**, and **Production authorization evidence** as separate columns.
-It also shows the active manual-patch catalog. Patch rows are read-only detectors: `PENDING` means
-the detector found rows inside the approved range, `NOT_NEEDED` means it found zero rows (not
+**operation readiness**, and **Production authorization evidence** as separate columns. It also
+shows the active manual-patch catalog. Patch rows are read-only detectors: `PENDING` means the
+detector found rows inside the approved range, `NOT_NEEDED` means it found zero rows (not
 "applied"), and `NOT_APPLICABLE` means the environment is outside the patch target. The detailed
 section includes the owner planning command for `PENDING`; applying still requires the owner TTY
 workflow and `--apply`. Historical SQL files outside the catalog are intentionally excluded.
@@ -45,8 +45,8 @@ verificaciones pendientes y revisión manual. Cada paso expone comando, prerrequ
 Owner/HITL; los comandos solo se copian, nunca se ejecutan desde la UI. El bloque de alcance de
 revalidación (Entorno, Dominio y Diagnóstico avanzado) delimita la siguiente sonda, no filtra la
 información ya visible. Migraciones y parches son dominios distintos: `pnpm prod:apply -- --schema`
-opera el flujo de esquema, mientras `pnpm prod:apply -- --patch <file> --owner-user-id <uuid>` es
-el flujo de parche manual.
+opera el flujo de esquema, mientras `pnpm prod:apply -- --patch <file>` es el flujo de parche
+manual.
 
 `Todo en orden` exige evidencia LIVE en los controles aplicables, disposable-test válido, ninguna
 promoción/migración/parche pendiente y autorización aplicable íntegra. `NOT_APPLICABLE` no bloquea;

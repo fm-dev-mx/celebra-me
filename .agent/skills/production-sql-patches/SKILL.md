@@ -70,7 +70,8 @@ way between DO blocks.
 ### 5. Manifest
 
 Every new patch starts with the `@script-id` / `@purpose` / `@env: production` / dry-run / rollback
-header from `manual-sql-manifest.md`. `@expected-rows-min` may be `0` for continuation.
+header from `manual-sql-manifest.md`. `@expected-rows-min` may be `0` for continuation. Residual and
+paired-store discovery rules live in that manifest; do not restate them here.
 
 ### 6. Canonical payload sync
 

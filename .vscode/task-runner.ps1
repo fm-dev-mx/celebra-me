@@ -195,7 +195,7 @@ $commandDetails = @{
     "prod:apply"                = @{
         Desc    = "Aplicacion controlada de parches en produccion."
         UseCase = "Ejecutar parches SQL autorizados con guardas de seguridad en BD produccion."
-        Help    = "Ingrese solo argumentos. Ejemplos: --slug <slug>  |  --patch <file> --owner-user-id <uuid>"
+        Help    = "Ingrese solo argumentos. Ejemplos: --slug <slug>  |  --patch <file>"
     }
     "screenshot"                = @{
         Desc    = "Generacion automatizada de capturas de pantalla visuales."

@@ -32,12 +32,12 @@ asks you to change, backfill, replay, or manually invoke them.
 
 Four distinct database targets exist:
 
-| Target               | Identification                                                                  | Usage                                                                             | Destructive ops allowed?                               |
-| -------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| **production**       | Supabase cloud host (`*.supabase.co`, `*.supabase.com`)                         | Read-only inspection; owner apply via `pnpm prod:apply`                           | NEVER                                                  |
-| **preview**          | Hosted branch DB (`PREVIEW_DB_URL` or secret files)                             | Provisioned hosted Preview project for Vercel `develop` deployments               | NO — schema mutated via `pnpm db:migrate -- --target preview` only |
-| **persistent-local** | `127.0.0.1:54322` or `localhost:54322`, container `supabase_db_celebra-me-rsvp` | Normal development through `pnpm dev`                                             | NO — protected state                                   |
-| **disposable-test**  | `127.0.0.1:54332` or `localhost:54332`, container `celebra-me-test-db`          | Migration reconstruction/pgTAP/seed/canonical audit reference                     | YES — created/recreated on demand                      |
+| Target               | Identification                                                                  | Usage                                                               | Destructive ops allowed?                                           |
+| -------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| **production**       | Supabase cloud host (`*.supabase.co`, `*.supabase.com`)                         | Read-only inspection; owner apply via `pnpm prod:apply`             | NEVER                                                              |
+| **preview**          | Hosted branch DB (`PREVIEW_DB_URL` or secret files)                             | Provisioned hosted Preview project for Vercel `develop` deployments | NO — schema mutated via `pnpm db:migrate -- --target preview` only |
+| **persistent-local** | `127.0.0.1:54322` or `localhost:54322`, container `supabase_db_celebra-me-rsvp` | Normal development through `pnpm dev`                               | NO — protected state                                               |
+| **disposable-test**  | `127.0.0.1:54332` or `localhost:54332`, container `celebra-me-test-db`          | Migration reconstruction/pgTAP/seed/canonical audit reference       | YES — created/recreated on demand                                  |
 
 Unknown targets cause an immediate abort. The guard script `scripts/db/db-guard.ts` enforces these
 boundaries through classification, identity verification, and per-target policy checks.
@@ -78,14 +78,14 @@ task authorization, target classification, and standard guard checks.
   Emergency patch files must contain the manifest required by
   [`manual-sql-manifest.md`](manual-sql-manifest.md). Lint with
   `pnpm db:prod:patch -- --dry-run --file <path>`; mutation is only
-  `pnpm prod:apply -- --patch <path> --owner-user-id <uuid> --apply`. Patches are not a
-  substitute for versioned migrations or `invitation:release`.
+  `pnpm prod:apply -- --patch <path> --apply`. Patches are not a substitute for versioned migrations
+  or `invitation:release`.
 - **One-Time Recovery Tool Removed**: `scripts/db/reconcile-prod-baseline.ts` was a one-time
   recovery tool and is no longer part of the repository.
-- **Production Migration Safety Workflow**: Public owner apply is `pnpm prod:apply` (`APPLY <8-hex>`).
-  Schema primitive remains `pnpm db:migrate -- --target production` (used by the owner command;
-  standalone schema confirmation uses `MIGRATE <8-hex>`). Default is read-only preflight; mutation
-  requires `--apply`. The schema primitive sequence:
+- **Production Migration Safety Workflow**: Public owner apply is `pnpm prod:apply`
+  (`APPLY <8-hex>`). Schema primitive remains `pnpm db:migrate -- --target production` (used by the
+  owner command; standalone schema confirmation uses `MIGRATE <8-hex>`). Default is read-only
+  preflight; mutation requires `--apply`. The schema primitive sequence:
   1. Production perimeter + exact project-ref identity (in-policy; equivalent to db-guard)
   2. Read-only production schema audit (BEHIND without drift is ready-to-migrate)
   3. Dry-run pending set (optional `--expected` pin must match exactly when provided)
@@ -103,10 +103,10 @@ task authorization, target classification, and standard guard checks.
   8. Structural coverage confirm before owner gate (`BACKUP_COVERAGE_EXPIRED` /
      `BACKUP_STRUCTURAL_DRIFT`). Shared owner boundary: Cancel-default arrow menu, optional
      technical review, then short bound code `<VERB> <8-hex>` from stable `planId`.
-  9. Migration application (`supabase db push --db-url <url> --yes`) after `requireOwnerProductionApply`
-     issues an in-process write permit
-  10. Post-migration `schema_migrations` + durable owner-apply record (`.backups/prod/owner-apply/`) +
-      `pnpm db:contract:verify --target production`
+  9. Migration application (`supabase db push --db-url <url> --yes`) after
+     `requireOwnerProductionApply` issues an in-process write permit
+  10. Post-migration `schema_migrations` + durable owner-apply record
+      (`.backups/prod/owner-apply/`) + `pnpm db:contract:verify --target production`
   11. Verified post-migration critical backup
 - **Owner authorization**: All owner-only Production mutators use `requireOwnerProductionApply`
   (explicit `--apply`, Production project identity, agent rejection, release-check evidence, TTY
@@ -114,8 +114,8 @@ task authorization, target classification, and standard guard checks.
   exists. `production_authorization_receipts` is historical inert state. Successful Production
   schema applies write a local owner-apply record; schema parity is not authorization evidence.
   Agent sessions receive `CELEBRA_AGENT_CONTEXT` by default (Cursor session/preToolUse hooks) and
-  cannot disable it with `false`/`0`/empty. Agent Shell denies canonical Production `--apply`.
-  Raw `supabase db push` / mutating `psql` and Supabase MCP writes against Production are blocked
+  cannot disable it with `false`/`0`/empty. Agent Shell denies canonical Production `--apply`. Raw
+  `supabase db push` / mutating `psql` and Supabase MCP writes against Production are blocked
   outside this owner workflow. Read-only Production MCP/SQL remains allowed.
 - **Hosted identity vs environment selection**: Selecting Preview/Production and having credentials
   is not authorization. Production and Preview migrate derive release identity from clean `HEAD`
@@ -142,11 +142,11 @@ task authorization, target classification, and standard guard checks.
   against the canonical reference without mutating Preview or persistent local. Report the live
   remote/pending migration counts from the audit; never freeze a hosted pending total in this rule.
 - **Separation of Operations**: Migration (`pnpm db:migrate -- --target preview`), seed, and audit
-  (`pnpm db:preview:audit`) are separate
-  operations. Preview migrate defaults to read-only preflight; mutations require explicit `--apply`
-  plus Preview authorization (`CELEBRA_TASK_SCOPE=preview:schema:migrate` or interactive TTY
-  confirmation) after dry-run, optional `--expected` pin, exact Preview perimeter, clean-HEAD
-  release identity, and the compatibility contract. It does not automatically seed or audit.
+  (`pnpm db:preview:audit`) are separate operations. Preview migrate defaults to read-only
+  preflight; mutations require explicit `--apply` plus Preview authorization
+  (`CELEBRA_TASK_SCOPE=preview:schema:migrate` or interactive TTY confirmation) after dry-run,
+  optional `--expected` pin, exact Preview perimeter, clean-HEAD release identity, and the
+  compatibility contract. It does not automatically seed or audit.
 - **Preview mirror**: `pnpm db:preview:sync-invitations --dry-run` performs zero DB, role, profile,
   Storage, or report-file writes. `--apply` requires Preview authorization
   (`CELEBRA_TASK_SCOPE=preview:content-mirror:sync-invitations` or interactive confirmation).
@@ -162,9 +162,9 @@ task authorization, target classification, and standard guard checks.
 
 ## Current Contract
 
-- `pnpm db:push` is intentionally blocked. Do not bypass it with raw `supabase db push`.
-  Cursor hooks and the in-process spawn guard also block raw `supabase db push` / mutating
-  Production `psql`. Production MCP `apply_migration` and mutating `execute_sql` are blocked.
+- `pnpm db:push` is intentionally blocked. Do not bypass it with raw `supabase db push`. Cursor
+  hooks and the in-process spawn guard also block raw `supabase db push` / mutating Production
+  `psql`. Production MCP `apply_migration` and mutating `execute_sql` are blocked.
 - `pnpm db:local:reset` is blocked. Use `pnpm db:disposable:reset` for destructive tests.
 - `pnpm db:migrate` is the canonical schema migrate planner/orchestrator (TTY target selector with
   Cancelar default; non-TTY requires `--target`; default read-only preflight).
@@ -176,10 +176,10 @@ task authorization, target classification, and standard guard checks.
 - `pnpm db:migrate -- --target production` remains the canonical **schema** primitive reused by
   `prod:apply`.
 - `pnpm invitation:release` remains Local/Preview/approve plus Production **dry-run**. Owner
-  Production content apply is `pnpm prod:apply -- --slug <slug> --apply` (or `--all-ready`).
-  The promotion orchestrator stays the domain primitive.
-- `pnpm db:migrate -- --target preview` preflights Preview (`PREVIEW_DB_URL`); `--apply` applies pending
-  migrations after Preview authorization (wrapper over `db:migrate -- --target preview`).
+  Production content apply is `pnpm prod:apply -- --slug <slug> --apply` (or `--all-ready`). The
+  promotion orchestrator stays the domain primitive.
+- `pnpm db:migrate -- --target preview` preflights Preview (`PREVIEW_DB_URL`); `--apply` applies
+  pending migrations after Preview authorization (wrapper over `db:migrate -- --target preview`).
 - Schema status evidence: `pnpm dbs` / observability use **migration_history_parity** (`CURRENT` /
   `BEHIND` are history-only). `pnpm db:*:audit` uses **object_audit_readiness** and must fail a
   `CURRENT` history when named public indexes, constraints, or contract routines drift. While
@@ -187,8 +187,9 @@ task authorization, target classification, and standard guard checks.
   Production **owner-apply evidence** is a third class (`authorizationIntegrity`). Do not treat
   CURRENT schema parity as authorization.
 - Persistent schema mutation has one lifecycle: versioned `supabase/migrations/` →
-  `pnpm db:migrate -- --target` (disposable → Local → Preview → owner `pnpm prod:apply -- --schema`).
-  `executePsqlAtomicPending` is Local-only. There is no `apply-migrations` CLI.
+  `pnpm db:migrate -- --target` (disposable → Local → Preview → owner
+  `pnpm prod:apply -- --schema`). `executePsqlAtomicPending` is Local-only. There is no
+  `apply-migrations` CLI.
 - `pnpm db:prod:patch` is lint-only and requires `--dry-run`; it never opens Production. Specialized
   DML is `RESTRICT_OWNER_ONLY` / `KEEP_SPECIALIZED` and can execute only through
   `pnpm prod:apply -- --patch ... --apply`, which binds the current plan and artifact, validates
@@ -241,9 +242,8 @@ invent a healthy state, or acquire mutation authority.
   `pnpm db:local:refresh-from-prod-preserve-local` are blocked — they run `supabase db reset` which
   destroys the persistent-local database.
 - Need a schema change? Create a migration, test it on the disposable environment
-  (`tsx scripts/db/disposable-test-env.ts run-tests`), and use
-  `pnpm prod:apply -- --schema` for the reviewed Production owner path (primitive:
-  `pnpm db:migrate -- --target production`).
+  (`tsx scripts/db/disposable-test-env.ts run-tests`), and use `pnpm prod:apply -- --schema` for the
+  reviewed Production owner path (primitive: `pnpm db:migrate -- --target production`).
 - Need a production backup? Use `PROD_DB_URL=... pnpm db:prod:backup`; keep output gitignored. The
   guard verifies the target is a Supabase cloud host before proceeding.
 - Need the Free-plan daily recovery point? Run `pnpm db:prod:backup:daily` from the authorized
@@ -253,8 +253,8 @@ invent a healthy state, or acquire mutation authority.
   allows all operations on the disposable-test target.
 - Need a manual production SQL patch? Require the [`manual SQL manifest`](manual-sql-manifest.md),
   run `pnpm db:prod:patch -- --dry-run --file <path>`, then use only
-  `pnpm prod:apply -- --patch <path> --owner-user-id <uuid> --apply` for owner-confirmed specialized
-  maintenance that cannot yet be a versioned migration.
+  `pnpm prod:apply -- --patch <path> --apply` for owner-confirmed specialized maintenance that
+  cannot yet be a versioned migration.
 - Asked to run `pnpm db:push`, `pnpm db:local:reset`, raw `supabase db push --linked`, or removed
   one-shot ops commands? Do not run them. Report that the path is blocked.
 - Asked to use Supabase MCP `apply_migration` or mutating `execute_sql` against Production? Do not.
@@ -330,8 +330,8 @@ persistent-local database was preserved.
   target classification passing the guard.
 - Destructive tests (reset, schema drops, truncate, migration rollback) must use the disposable test
   environment (`pnpm db:disposable:reset`).
-- Production is strictly read-only unless the user explicitly authorizes a separate production
-  owner apply with `pnpm prod:apply` (schema via `--schema`, content via `--slug` / `--all-ready`,
+- Production is strictly read-only unless the user explicitly authorizes a separate production owner
+  apply with `pnpm prod:apply` (schema via `--schema`, content via `--slug` / `--all-ready`,
   specialized DML via `--patch`).
 - Unknown database targets must cause an immediate abort of the operation.
 - Dumps and credentials must never enter Git. Dumps live under gitignored `.tmp/` and `.backups/`;
@@ -341,10 +341,10 @@ persistent-local database was preserved.
 - Do not connect to production unless the user explicitly asks for that exact production operation.
 - Do not execute manual production SQL from `scripts/manual/production-patches/` or `scripts/sql/`
   without linting via `pnpm db:prod:patch -- --dry-run --file <path>` and applying only through
-  `pnpm prod:apply -- --patch <path> --owner-user-id <uuid> --apply`.
+  `pnpm prod:apply -- --patch <path> --apply`.
 - Do not run `supabase db push --linked`.
-- Do not use Supabase MCP `apply_migration` or mutating `execute_sql` against Production.
-  Agent sessions set `CELEBRA_AGENT_CONTEXT` automatically; that rejects Production owner-apply
+- Do not use Supabase MCP `apply_migration` or mutating `execute_sql` against Production. Agent
+  sessions set `CELEBRA_AGENT_CONTEXT` automatically; that rejects Production owner-apply
   self-authorization. Preview remains agent-operable under its existing scope/TTY policy.
 - For production patches, prefer versioned migrations. `pnpm db:prod:patch` is lint-only
   (`RESTRICT_OWNER_ONLY`); mutation is only `pnpm prod:apply -- --patch`.
