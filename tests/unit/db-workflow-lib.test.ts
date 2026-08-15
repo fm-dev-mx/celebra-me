@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import {
 	ALLOWED_SHELL_COMMANDS,
+	runCommandSequencesInParallel,
 	PSQL_REQUIRED_MESSAGE,
 	REFRESH_PARITY_TABLES,
 	assertAppEnvIsLocal,
@@ -18,9 +19,13 @@ import {
 	validateRefreshParity,
 } from '../../scripts/db/db-workflow-lib.ts';
 
-jest.mock('node:child_process', () => ({
-	spawnSync: jest.fn(() => ({ status: 0, stdout: '', stderr: '', error: undefined })),
-}));
+jest.mock('node:child_process', () => {
+	const actual = jest.requireActual('node:child_process') as typeof import('node:child_process');
+	return {
+		...actual,
+		spawnSync: jest.fn(() => ({ status: 0, stdout: '', stderr: '', error: undefined })),
+	};
+});
 
 jest.mock('node:fs', () => {
 	const actual = jest.requireActual('node:fs');
@@ -640,5 +645,19 @@ describe('runCommand security & allowlisting', () => {
 
 		errorSpy.mockRestore();
 		jest.restoreAllMocks();
+	});
+});
+
+describe('runCommandSequencesInParallel', () => {
+	it('runs independent sequences at the same time', () => {
+		const started = Date.now();
+		const delay = 'Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 250)';
+		const results = runCommandSequencesInParallel([
+			[{ command: process.execPath, args: ['-e', delay] }],
+			[{ command: process.execPath, args: ['-e', delay] }],
+		]);
+		expect(results[0]?.[0]?.status).toBe(0);
+		expect(results[1]?.[0]?.status).toBe(0);
+		expect(Date.now() - started).toBeLessThan(500);
 	});
 });

@@ -113,14 +113,13 @@ describe('release-check evidence', () => {
 		expect(runner).not.toHaveBeenCalled();
 	});
 
-	it('runs type-check → test → build:app (not nested type-check via build)', () => {
-		const source = readFileSync(
-			resolve(process.cwd(), 'scripts/db/release-check.ts'),
-			'utf8',
-		);
+	it('runs test in parallel with type-check → build:app (not nested type-check via build)', () => {
+		const source = readFileSync(resolve(process.cwd(), 'scripts/db/release-check.ts'), 'utf8');
 		expect(source).toContain("args: ['build:app']");
 		expect(source).not.toMatch(/args:\s*\[['"]build['"]\]/);
 		expect(source).toContain("args: ['type-check']");
 		expect(source).toContain("args: ['test']");
+		expect(source).toContain('runCommandSequencesInParallel');
+		expect(source).toContain('pnpm test || (type-check → build:app)');
 	});
 });

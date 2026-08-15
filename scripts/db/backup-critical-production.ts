@@ -22,6 +22,7 @@ import {
 	captureRecoveryIntegrity,
 	compareRecoveryIntegrity,
 	computeRecoveryStateDigest,
+	parsePsqlJsonPayload,
 	wrapRecoveryIntegrityPsqlInput,
 	type RecoveryIntegritySnapshot,
 } from './recovery-integrity.ts';
@@ -42,31 +43,31 @@ import {
 	assertProductionDbUrl,
 	getProdDbUrl,
 	redactDbUrl,
-	runCommand,
+	runCommandAsync,
 	timestamp,
 } from './db-workflow-lib.ts';
 
-function runBackupCommand(
+async function runBackupCommand(
 	command: string,
 	args: string[],
 	options: { redact?: string[] } = {},
-): ReturnType<typeof runCommand> {
-	const result = runCommand(command, args, { ...options, throwOnError: false });
+): Promise<void> {
+	const result = await runCommandAsync(command, args, { ...options, throwOnError: false });
 	if (result.status !== 0) {
 		throw new Error(`Critical backup subprocess failed with status ${String(result.status)}.`);
 	}
-	return result;
 }
 
 let incompleteOutputDir: string | null = null;
 
-function queryJson<T>(dbUrl: string, sql: string): T {
-	const result = runCommand(
+async function queryJson<T>(dbUrl: string, sql: string): Promise<T> {
+	const result = await runCommandAsync(
 		'psql',
 		[
 			'--set',
 			'ON_ERROR_STOP=1',
 			'--no-psqlrc',
+			'--quiet',
 			'--tuples-only',
 			'--no-align',
 			'--dbname',
@@ -85,9 +86,7 @@ function queryJson<T>(dbUrl: string, sql: string): T {
 			}`,
 		);
 	}
-	const value = result.stdout.trim();
-	if (!value) throw new Error('Production backup query returned no JSON result.');
-	return JSON.parse(value) as T;
+	return parsePsqlJsonPayload<T>(result.stdout, 'Production backup query result');
 }
 
 function verifyProductionSecrets(prodDbUrl: string): {
@@ -124,27 +123,29 @@ function verifyProductionSecrets(prodDbUrl: string): {
 	return { prodSupabaseUrl, prodServiceRole };
 }
 
-function backupAuthData(
+async function backupAuthData(
 	prodDbUrl: string,
 	authPath: string,
-): { usersLength: number; identitiesLength: number } {
-	const users = queryJson<AuthUser[]>(
-		prodDbUrl,
-		`select coalesce(json_agg(sub order by created_at), '[]'::json)::text from (
+): Promise<{ usersLength: number; identitiesLength: number }> {
+	const [users, identities] = await Promise.all([
+		queryJson<AuthUser[]>(
+			prodDbUrl,
+			`select coalesce(json_agg(sub order by created_at), '[]'::json)::text from (
 		  select id, aud, role, email, email_confirmed_at, raw_app_meta_data,
 		         raw_user_meta_data, is_super_admin, phone, phone_confirmed_at,
 		         banned_until, deleted_at, is_sso_user, is_anonymous, created_at, updated_at
 		  from auth.users
 		) sub;`,
-	);
-	const identities = queryJson<AuthIdentity[]>(
-		prodDbUrl,
-		`select coalesce(json_agg(sub order by created_at), '[]'::json)::text from (
+		),
+		queryJson<AuthIdentity[]>(
+			prodDbUrl,
+			`select coalesce(json_agg(sub order by created_at), '[]'::json)::text from (
 		  select id, user_id, identity_data, provider, provider_id,
 		         last_sign_in_at, created_at, updated_at
 		  from auth.identities
 		) sub;`,
-	);
+		),
+	]);
 	writeFileSync(authPath, generateAuthDump(users, identities), { mode: 0o600 });
 	return { usersLength: users.length, identitiesLength: identities.length };
 }
@@ -156,25 +157,26 @@ async function backupStorageData(
 	storageMetadataPath: string,
 	storageObjectsPath: string,
 ): Promise<number> {
-	runBackupCommand(
-		'pg_dump',
-		[
-			'--data-only',
-			'--table',
-			'storage.buckets',
-			'--table',
-			'storage.objects',
-			'--no-owner',
-			'--no-privileges',
-			'--file',
-			storageMetadataPath,
-			'--dbname',
-			prodDbUrl,
-		],
-		{ redact: [prodDbUrl] },
-	);
-
-	const inventory = queryJson<StorageInventoryRow[]>(prodDbUrl, STORAGE_INVENTORY_SQL);
+	const [, inventory] = await Promise.all([
+		runBackupCommand(
+			'pg_dump',
+			[
+				'--data-only',
+				'--table',
+				'storage.buckets',
+				'--table',
+				'storage.objects',
+				'--no-owner',
+				'--no-privileges',
+				'--file',
+				storageMetadataPath,
+				'--dbname',
+				prodDbUrl,
+			],
+			{ redact: [prodDbUrl] },
+		),
+		queryJson<StorageInventoryRow[]>(prodDbUrl, STORAGE_INVENTORY_SQL),
+	]);
 	writeBackupPhase(BACKUP_PHASE_LABELS.storageObjects, `0/${inventory.length}`);
 	const archive = emptyStorageArchive();
 	archive.objects = await downloadStorageInventory({
@@ -268,34 +270,34 @@ async function main(): Promise<void> {
 	writeBackupPhase(BACKUP_PHASE_LABELS.integrityBefore);
 	const before = captureRecoveryIntegrity(prodDbUrl);
 
-	writeBackupPhase(BACKUP_PHASE_LABELS.dumpPublic);
-	runBackupCommand(
-		'pg_dump',
-		[
-			'--data-only',
-			'--schema',
-			'public',
-			'--no-owner',
-			'--no-privileges',
-			'--file',
-			databasePath,
-			'--dbname',
+	writeBackupPhase(
+		`${BACKUP_PHASE_LABELS.dumpPublic} · ${BACKUP_PHASE_LABELS.auth} · ${BACKUP_PHASE_LABELS.storageMetadata}`,
+	);
+	const [, { usersLength, identitiesLength }, storageObjectsCount] = await Promise.all([
+		runBackupCommand(
+			'pg_dump',
+			[
+				'--data-only',
+				'--schema',
+				'public',
+				'--no-owner',
+				'--no-privileges',
+				'--file',
+				databasePath,
+				'--dbname',
+				prodDbUrl,
+			],
+			{ redact: [prodDbUrl] },
+		),
+		backupAuthData(prodDbUrl, authPath),
+		backupStorageData(
 			prodDbUrl,
-		],
-		{ redact: [prodDbUrl] },
-	);
-
-	writeBackupPhase(BACKUP_PHASE_LABELS.auth);
-	const { usersLength, identitiesLength } = backupAuthData(prodDbUrl, authPath);
-
-	writeBackupPhase(BACKUP_PHASE_LABELS.storageMetadata);
-	const storageObjectsCount = await backupStorageData(
-		prodDbUrl,
-		prodSupabaseUrl,
-		prodServiceRole,
-		storageMetadataPath,
-		storageObjectsPath,
-	);
+			prodSupabaseUrl,
+			prodServiceRole,
+			storageMetadataPath,
+			storageObjectsPath,
+		),
+	]);
 
 	writeBackupPhase(BACKUP_PHASE_LABELS.integrityAfter);
 	const after = captureRecoveryIntegrity(prodDbUrl);

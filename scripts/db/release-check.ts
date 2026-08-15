@@ -1,15 +1,21 @@
 /**
  * release-check.ts — Canonical release validation bound to clean HEAD.
  *
- * Runs type-check → tests → build:app against a clean working tree, then writes
- * gitignored evidence under .agent/tmp/ for Production apply gates.
- * Uses build:app (not build) so type-check is not executed twice.
+ * Runs tests in parallel with type-check → build:app against a clean working
+ * tree, then writes gitignored evidence under .agent/tmp/ for Production apply
+ * gates. Uses build:app (not build) so type-check is not executed twice.
+ * type-check and build:app stay sequential because both write `.astro/`.
  */
 
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
-import { fail, runCommand, type CommandResult } from './db-workflow-lib.ts';
+import {
+	fail,
+	runCommand,
+	runCommandSequencesInParallel,
+	type CommandResult,
+} from './db-workflow-lib.ts';
 import { formatOperatorFailure, parsePorcelainDirtyFiles } from './operator-cli-ux.ts';
 
 export const RELEASE_CHECK_EVIDENCE_PATH = resolve(
@@ -202,7 +208,7 @@ export function runReleaseCheck(
 		worktree?: GitWorktreeState;
 	} = {},
 ): ReleaseCheckEvidence {
-	const runner = options.runner ?? runCommand;
+	const runner = options.runner;
 	const worktree = options.worktree ?? readGitWorktreeState();
 	const sha = assertCleanGitWorktree(worktree);
 	const evidencePath = options.evidencePath ?? RELEASE_CHECK_EVIDENCE_PATH;
@@ -210,20 +216,52 @@ export function runReleaseCheck(
 	clearReleaseCheckEvidence(evidencePath);
 
 	// build:app avoids the nested type-check inside `pnpm build`.
-	const steps: Array<{ label: 'typeCheck' | 'test' | 'build'; args: string[] }> = [
-		{ label: 'typeCheck', args: ['type-check'] },
+	// Tests run beside type-check → build:app; those two share `.astro/`.
+	const steps: Array<{ label: string; args: string[] }> = [
+		{ label: 'type-check', args: ['type-check'] },
 		{ label: 'test', args: ['test'] },
-		{ label: 'build', args: ['build:app'] },
+		{ label: 'build:app', args: ['build:app'] },
 	];
 
-	for (const step of steps) {
-		console.info(`release-check: running pnpm ${step.args.join(' ')}...`);
-		const result: CommandResult = runner('pnpm', step.args, { throwOnError: false });
-		if (result.status !== 0) {
+	if (runner) {
+		for (const step of steps) {
+			console.info(`release-check: running pnpm ${step.args.join(' ')}...`);
+			const result: CommandResult = runner('pnpm', step.args, { throwOnError: false });
+			if (result.status !== 0) {
+				clearReleaseCheckEvidence(evidencePath);
+				fail(
+					`release-check failed during pnpm ${step.args.join(' ')} (exit ${String(result.status)}).`,
+				);
+			}
+		}
+	} else {
+		console.info('release-check: running pnpm test || (type-check → build:app)...');
+		const [testResults, compileResults] = runCommandSequencesInParallel([
+			[{ command: 'pnpm', args: ['test'], options: { throwOnError: false, inherit: true } }],
+			[
+				{
+					command: 'pnpm',
+					args: ['type-check'],
+					options: { throwOnError: false, inherit: true },
+				},
+				{
+					command: 'pnpm',
+					args: ['build:app'],
+					options: { throwOnError: false, inherit: true },
+				},
+			],
+		]);
+		const failures: string[] = [];
+		if (testResults[0]?.status !== 0)
+			failures.push(`pnpm test (exit ${String(testResults[0]?.status)})`);
+		if (compileResults[0]?.status !== 0) {
+			failures.push(`pnpm type-check (exit ${String(compileResults[0]?.status)})`);
+		} else if (compileResults[1]?.status !== 0) {
+			failures.push(`pnpm build:app (exit ${String(compileResults[1]?.status)})`);
+		}
+		if (failures.length > 0) {
 			clearReleaseCheckEvidence(evidencePath);
-			fail(
-				`release-check failed during pnpm ${step.args.join(' ')} (exit ${result.status}).`,
-			);
+			fail(`release-check failed during ${failures.join('; ')}.`);
 		}
 	}
 

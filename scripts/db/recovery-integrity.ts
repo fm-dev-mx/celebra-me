@@ -91,6 +91,17 @@ export function wrapRecoveryIntegrityPsqlInput(sql: string): string {
 	return `SET statement_timeout = '0';\n${statement}\n`;
 }
 
+/** psql prints command tags such as SET even with --tuples-only. */
+export function parsePsqlJsonPayload<T>(output: string, label: string): T {
+	const value = output.trim();
+	if (!value) throw new Error(`Recovery integrity query returned no ${label}.`);
+	const jsonStart = value.search(/[[{]/);
+	if (jsonStart < 0) {
+		throw new Error(`Recovery integrity query returned no JSON ${label}.`);
+	}
+	return JSON.parse(value.slice(jsonStart)) as T;
+}
+
 function psqlCopy(dbUrl: string, sql: string): string {
 	const result = runCommand(
 		'psql',
@@ -98,6 +109,7 @@ function psqlCopy(dbUrl: string, sql: string): string {
 			'--set',
 			'ON_ERROR_STOP=1',
 			'--no-psqlrc',
+			'--quiet',
 			'--tuples-only',
 			'--no-align',
 			'--dbname',
@@ -121,12 +133,6 @@ function psqlCopy(dbUrl: string, sql: string): string {
 
 function sha256(value: string): string {
 	return createHash('sha256').update(value).digest('hex');
-}
-
-function parseSingleJson<T>(output: string, label: string): T {
-	const value = output.trim();
-	if (!value) throw new Error(`Recovery integrity query returned no ${label}.`);
-	return JSON.parse(value) as T;
 }
 
 const AUTH_USERS_SOURCE = `(
@@ -225,7 +231,7 @@ export function captureRecoveryIntegrity(
 ): RecoveryIntegritySnapshot {
 	const profile = options.profile ?? 'phase3';
 	const copy = options.copy ?? ((sql: string) => psqlCopy(dbUrl, sql));
-	const payload = parseSingleJson<RecoveryIntegrityCapturePayload>(
+	const payload = parsePsqlJsonPayload<RecoveryIntegrityCapturePayload>(
 		copy(buildRecoveryIntegrityCaptureSql(profile)),
 		'recovery integrity snapshot',
 	);

@@ -6,6 +6,7 @@ import {
 	captureRecoveryIntegrity,
 	compareRecoveryIntegrity,
 	CRITICAL_RECOVERY_TABLES,
+	parsePsqlJsonPayload,
 	wrapRecoveryIntegrityPsqlInput,
 	type RecoveryIntegritySnapshot,
 } from '../../scripts/db/recovery-integrity';
@@ -110,12 +111,23 @@ describe('recovery integrity capture SQL', () => {
 			'utf8',
 		);
 		expect(source).toContain('input: wrapRecoveryIntegrityPsqlInput(sql)');
+		expect(source).toContain("'--quiet'");
 		expect(source).not.toMatch(/--command[\s\S]*COPY/);
 		const sessionSql = wrapRecoveryIntegrityPsqlInput(
 			buildRecoveryIntegrityCaptureSql('phase3'),
 		);
 		expect(isReadOnlySql(sessionSql)).toBe(true);
 		expect(sessionSql.startsWith("SET statement_timeout = '0';")).toBe(true);
+	});
+
+	it('parses JSON after psql command tags such as SET', () => {
+		expect(
+			parsePsqlJsonPayload<{ tables: { 'public.rsvp_records': { rowCount: number } } }>(
+				'SET\n{"tables":{"public.rsvp_records":{"rowCount":1}}}\n',
+				'recovery integrity snapshot',
+			).tables['public.rsvp_records'].rowCount,
+		).toBe(1);
+		expect(parsePsqlJsonPayload<number[]>(`SET\n[1,2]\n`, 'array result')).toEqual([1, 2]);
 	});
 
 	it('captures a snapshot with a single copy() call', () => {
@@ -125,13 +137,14 @@ describe('recovery integrity capture SQL', () => {
 				{ rowCount: 1, sha256: 'b'.repeat(64) },
 			]),
 		);
-		const copy = jest.fn(() =>
-			JSON.stringify({
-				tables,
-				migrationsText: '20260729152113\n',
-				invariants: { orphanGuests: 0 },
-				businessState: { guestAttendeeTotal: 0 },
-			}),
+		const copy = jest.fn(
+			() =>
+				`SET\n${JSON.stringify({
+					tables,
+					migrationsText: '20260729152113\n',
+					invariants: { orphanGuests: 0 },
+					businessState: { guestAttendeeTotal: 0 },
+				})}\n`,
 		);
 		const captured = captureRecoveryIntegrity('postgresql://unused', { copy });
 		expect(copy).toHaveBeenCalledTimes(1);

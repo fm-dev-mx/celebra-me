@@ -71,6 +71,8 @@ describe('Phase 3 operational contracts', () => {
 		expect(workflow).toContain('STORAGE_INVENTORY_SQL');
 		expect(workflow).toContain('writeBackupPhase');
 		expect(workflow).toContain('BACKUP_PHASE_LABELS.dumpPublic');
+		expect(workflow).toContain('Promise.all');
+		expect(workflow).toContain('runCommandAsync');
 		const storage = read('scripts/db/critical-backup-storage.ts');
 		expect(storage).toContain('/storage/v1/object/public/');
 		expect(storage).not.toContain('/storage/v1/object/authenticated/');

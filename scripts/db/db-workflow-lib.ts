@@ -1,6 +1,8 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
-import { spawnSync, type SpawnSyncOptions } from 'node:child_process';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join, resolve } from 'node:path';
+import { spawn, spawnSync, type SpawnOptions, type SpawnSyncOptions } from 'node:child_process';
+import { Worker } from 'node:worker_threads';
 import {
 	PROD_SECRET_FILES,
 	PREVIEW_SECRET_FILES,
@@ -329,12 +331,30 @@ export type AllowedShellCommand = 'npx' | 'supabase' | 'pnpm' | 'npm';
 
 export const ALLOWED_SHELL_COMMANDS = new Set<string>(['npx', 'supabase', 'pnpm', 'npm']);
 
-export function runCommand(
+export interface CommandJob {
+	command: string;
+	args: string[];
+	options?: RunOptions;
+}
+
+interface PreparedCommandJob {
+	file: string;
+	args: string[];
+	cwd: string;
+	env: NodeJS.ProcessEnv;
+	shell: boolean;
+	stdio: SpawnOptions['stdio'];
+	input?: string;
+	timeoutMs?: number;
+}
+
+const PARALLEL_COMMAND_WAIT_MS = 40 * 60 * 1000;
+
+function prepareCommandJob(
 	command: string,
 	args: string[],
 	options: RunOptions = {},
-): CommandResult {
-	const { throwOnError = true } = options;
+): PreparedCommandJob {
 	const boundary = resolveSpawnProductionBoundary(command, args, {
 		input: options.input,
 		productionPermit: options.productionPermit,
@@ -343,58 +363,176 @@ export function runCommand(
 		fail(boundary.message ?? 'Production mutation blocked.');
 	}
 	const isShellCommand = ALLOWED_SHELL_COMMANDS.has(command);
-
-	let cmdToSpawn = command;
-	let argsToSpawn = args;
+	let file = command;
+	let spawnArgs = args;
 	let useShell = false;
-
 	if (isShellCommand) {
 		if (process.platform === 'win32') {
-			cmdToSpawn = 'cmd.exe';
-			argsToSpawn = ['/d', '/s', '/c', command, ...args];
+			file = 'cmd.exe';
+			spawnArgs = ['/d', '/s', '/c', command, ...args];
 		} else {
 			useShell = true;
 		}
-	} else {
-		useShell = false;
 	}
-
-	const spawnOptions: SpawnSyncOptions = {
+	return {
+		file,
+		args: spawnArgs,
 		cwd: PROJECT_ROOT,
 		env: { ...(options.env ?? process.env) },
-		input: options.input,
 		shell: useShell,
-		encoding: 'utf8',
 		stdio: options.inherit
 			? 'inherit'
 			: options.inheritStderr
 				? ['pipe', 'pipe', 'inherit']
 				: 'pipe',
-		...(typeof options.timeoutMs === 'number' && options.timeoutMs > 0
-			? { timeout: options.timeoutMs, killSignal: 'SIGKILL' as const }
+		input: options.input,
+		timeoutMs: options.timeoutMs,
+	};
+}
+
+function failClosedCommand(
+	command: string,
+	args: string[],
+	options: RunOptions,
+	result: CommandResult,
+): never {
+	const fullCmd = `${command} ${args.join(' ')}`;
+	const redactedCmd = options.redact
+		? options.redact.reduce((cmd, secret) => cmd.replaceAll(secret, '<redacted>'), fullCmd)
+		: fullCmd;
+	const redactedStderr = options.redact
+		? options.redact.reduce(
+				(err, secret) => err.replaceAll(secret, '<redacted>'),
+				result.stderr,
+			)
+		: result.stderr;
+	fail(`Command failed (${String(result.status)}): ${redactedCmd}\n${redactedStderr}`);
+}
+
+export function runCommand(
+	command: string,
+	args: string[],
+	options: RunOptions = {},
+): CommandResult {
+	const { throwOnError = true } = options;
+	const job = prepareCommandJob(command, args, options);
+	const spawnOptions: SpawnSyncOptions = {
+		cwd: job.cwd,
+		env: job.env,
+		input: job.input,
+		shell: job.shell,
+		encoding: 'utf8',
+		stdio: job.stdio,
+		...(typeof job.timeoutMs === 'number' && job.timeoutMs > 0
+			? { timeout: job.timeoutMs, killSignal: 'SIGKILL' as const }
 			: {}),
 	};
 
-	const result = spawnSync(cmdToSpawn, argsToSpawn, spawnOptions);
-	const stdout = typeof result.stdout === 'string' ? result.stdout : '';
-	const stderr = typeof result.stderr === 'string' ? result.stderr : '';
+	const result = spawnSync(job.file, job.args, spawnOptions);
+	const commandResult: CommandResult = {
+		status: result.status,
+		stdout: typeof result.stdout === 'string' ? result.stdout : '',
+		stderr: typeof result.stderr === 'string' ? result.stderr : '',
+	};
 
-	if (result.status !== 0 && throwOnError) {
-		const fullCmd = `${command} ${args.join(' ')}`;
-		const redactedCmd = options.redact
-			? options.redact.reduce((cmd, secret) => cmd.replaceAll(secret, '<redacted>'), fullCmd)
-			: fullCmd;
-		const redactedStderr = options.redact
-			? options.redact.reduce((err, secret) => err.replaceAll(secret, '<redacted>'), stderr)
-			: stderr;
-		fail(`Command failed (${result.status}): ${redactedCmd}\n${redactedStderr}`);
+	if (commandResult.status !== 0 && throwOnError) {
+		failClosedCommand(command, args, options, commandResult);
 	}
 
-	return {
-		status: result.status,
-		stdout,
-		stderr,
-	};
+	return commandResult;
+}
+
+export function runCommandAsync(
+	command: string,
+	args: string[],
+	options: RunOptions = {},
+): Promise<CommandResult> {
+	const { throwOnError = true } = options;
+	const job = prepareCommandJob(command, args, options);
+	return new Promise((resolve, reject) => {
+		const child = spawn(job.file, job.args, {
+			cwd: job.cwd,
+			env: job.env,
+			shell: job.shell,
+			stdio: job.stdio,
+		});
+		let stdout = '';
+		let stderr = '';
+		if (child.stdout) {
+			child.stdout.setEncoding('utf8');
+			child.stdout.on('data', (chunk) => {
+				stdout += chunk;
+			});
+		}
+		if (child.stderr) {
+			child.stderr.setEncoding('utf8');
+			child.stderr.on('data', (chunk) => {
+				stderr += chunk;
+			});
+		}
+		if (job.input != null && child.stdin) {
+			child.stdin.end(job.input);
+		}
+		const timer =
+			typeof job.timeoutMs === 'number' && job.timeoutMs > 0
+				? setTimeout(() => {
+						child.kill('SIGKILL');
+					}, job.timeoutMs)
+				: undefined;
+		child.on('error', (error) => {
+			if (timer) clearTimeout(timer);
+			reject(error);
+		});
+		child.on('close', (status) => {
+			if (timer) clearTimeout(timer);
+			const commandResult: CommandResult = { status, stdout, stderr };
+			if (commandResult.status !== 0 && throwOnError) {
+				try {
+					failClosedCommand(command, args, options, commandResult);
+				} catch (error) {
+					reject(error);
+				}
+				return;
+			}
+			resolve(commandResult);
+		});
+	});
+}
+
+/**
+ * Run independent command sequences at the same time. Each sequence stays
+ * ordered; sequences do not share a Node event loop with the caller.
+ */
+export function runCommandSequencesInParallel(sequences: CommandJob[][]): CommandResult[][] {
+	const prepared = sequences.map((sequence) =>
+		sequence.map((job) => prepareCommandJob(job.command, job.args, job.options)),
+	);
+	const resultDir = mkdtempSync(join(tmpdir(), 'celebra-parallel-'));
+	const resultPath = join(resultDir, 'results.json');
+	const sab = new SharedArrayBuffer(4);
+	const lock = new Int32Array(sab);
+	const worker = new Worker(
+		resolve(PROJECT_ROOT, 'scripts/db/run-command-sequences-worker.cjs'),
+		{
+			workerData: { sequences: prepared, resultPath, sab },
+		},
+	);
+	try {
+		const wait = Atomics.wait(lock, 0, 0, PARALLEL_COMMAND_WAIT_MS);
+		if (wait === 'timed-out') {
+			void worker.terminate();
+			fail('Parallel command sequences timed out.');
+		}
+		const parsed = JSON.parse(readFileSync(resultPath, 'utf8')) as
+			{ error: string } | CommandResult[][];
+		if (parsed && typeof parsed === 'object' && 'error' in parsed) {
+			fail(`Parallel command sequences failed: ${parsed.error}`);
+		}
+		return parsed;
+	} finally {
+		void worker.terminate();
+		rmSync(resultDir, { recursive: true, force: true });
+	}
 }
 
 export function tryRunCommand(
