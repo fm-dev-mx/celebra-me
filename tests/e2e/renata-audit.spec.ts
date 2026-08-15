@@ -281,6 +281,7 @@ test.describe('Renata XV local visual and content audit', () => {
 			).toBe(5);
 
 			const location = page.locator('.event-location').first();
+			await location.scrollIntoViewIfNeeded();
 			await expect(location).toHaveAttribute(
 				'data-structural-variant',
 				'stacked-venue-plates',
@@ -304,7 +305,9 @@ test.describe('Renata XV local visual and content audit', () => {
 			const receptionMap = page.locator(
 				'a[href="https://maps.app.goo.gl/oEA3Y3DhgMEGn6Lc7"]',
 			);
+			await ceremonyMap.first().scrollIntoViewIfNeeded();
 			await expect(ceremonyMap.first()).toBeVisible();
+			await receptionMap.first().scrollIntoViewIfNeeded();
 			await expect(receptionMap.first()).toBeVisible();
 
 			const itinerary = page.locator('.itinerary').first();
