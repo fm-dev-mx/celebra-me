@@ -69,10 +69,10 @@ html:has(.event--renata.theme-preset--editorial) body {
 	--section-card-border-alt: transparent;
 	--section-border-subtle: rgb(var(--renata-silver-rgb) / 36%);
 	--renata-display-size: clamp(3.25rem, 10vw, 6.5rem);
-	--renata-section-title-size: clamp(1.85rem, 4.2vw, 2.75rem);
-	--renata-secondary-title-size: clamp(1.35rem, 3vw, 1.85rem);
-	--renata-body-size: clamp(0.95rem, 1.5vw, 1.05rem);
-	--renata-meta-size: 0.68rem;
+	--renata-section-title-size: clamp(1.75rem, 1.35rem + 2.2vw, 2.55rem);
+	--renata-secondary-title-size: clamp(1.25rem, 1.05rem + 1.15vw, 1.75rem);
+	--renata-body-size: clamp(1rem, 0.96rem + 0.2vw, 1.0625rem);
+	--renata-meta-size: clamp(0.75rem, 0.72rem + 0.12vw, 0.8125rem);
 	--renata-meta-tracking: 0.22em;
 	--renata-space-compact: clamp(1.75rem, 4vw, 2.75rem);
 	--renata-space-standard: clamp(2.5rem, 5.5vw, 4rem);
@@ -152,14 +152,14 @@ html:has(.event--renata.theme-preset--editorial) body {
 	--family-title-color: var(--renata-ink);
 	--family-padding-block: clamp(2.85rem, 6.5vw, 4.5rem);
 	--family-header-max-width: 34rem;
-	--family-title-size: clamp(2.35rem, 5.4vw, 3.65rem);
+	--family-title-size: clamp(1.95rem, 1.5rem + 2.2vw, 2.85rem);
 	--family-title-max-width: 18ch;
 	--family-message-max-width: 28em;
-	--family-message-size: clamp(0.92rem, 1.35vw, 1.02rem);
-	--family-group-title-size: 0.62rem;
+	--family-message-size: var(--renata-body-size);
+	--family-group-title-size: var(--renata-meta-size);
 	--family-group-padding: 0;
-	--family-name-size: clamp(1.55rem, 3vw, 2.15rem);
-	--family-lead-name-size: clamp(1.55rem, 3vw, 2.15rem);
+	--family-name-size: clamp(1.45rem, 1.2rem + 1.1vw, 1.95rem);
+	--family-lead-name-size: clamp(1.45rem, 1.2rem + 1.1vw, 1.95rem);
 	--family-meta-size: var(--renata-meta-size);
 	--family-meta-letter-spacing: var(--renata-meta-tracking);
 	--family-divider-opacity: 42%;
@@ -199,6 +199,7 @@ html:has(.event--renata.theme-preset--editorial) body {
 	--pa-corner-color: var(--renata-silver);
 	--pa-corner-opacity: 25%;
 	--pa-corner-glow-blur: 0;
+	--pa-title-size: var(--renata-section-title-size);
 	--pa-eyebrow-color: var(--renata-olive);
 	--pa-title-color: var(--renata-olive);
 	--pa-subtitle-color: rgb(var(--renata-ink-rgb) / 78%);
@@ -220,7 +221,6 @@ html:has(.event--renata.theme-preset--editorial) body {
 	--pa-count-color: var(--renata-olive-deep);
 	--pa-footer-border-top: 1px solid rgb(var(--renata-silver-rgb) / 24%);
 	--pa-footer-text-color: rgb(var(--renata-ink-rgb) / 80%);
-	--renata-pa-cut: clamp(1.25rem, 3vw, 2.25rem);
 	--header-nav-title-color: var(--renata-olive);
 	--header-nav-color: var(--renata-cream);
 	--header-nav-color-transparent: var(--renata-cream);
@@ -291,7 +291,7 @@ html:has(.event--renata.theme-preset--editorial) body {
 			padding-inline-start: 0.08em;
 			justify-self: start;
 			letter-spacing: 0.18em;
-			font-size: 0.62rem;
+			font-size: var(--renata-meta-size);
 			color: var(--renata-hero-label-color);
 
 			&::before,
@@ -354,14 +354,14 @@ html:has(.event--renata.theme-preset--editorial) body {
 
 		.invitation-hero__date {
 			font-family: var(--renata-hero-meta-font);
-			font-size: clamp(0.7rem, 0.5vw + 0.65rem, 1rem);
+			font-size: clamp(0.875rem, 0.78rem + 0.28vw, 1.05rem);
 			font-weight: 500;
 			color: var(--renata-hero-date-color);
 		}
 
 		.invitation-hero__time {
 			font-family: var(--renata-hero-meta-font);
-			font-size: clamp(0.76rem, 0.12vw + 0.74rem, 0.86rem);
+			font-size: clamp(0.8125rem, 0.74rem + 0.2vw, 0.9375rem);
 			font-weight: 400;
 			color: var(--renata-hero-time-color);
 		}
@@ -373,7 +373,7 @@ html:has(.event--renata.theme-preset--editorial) body {
 		.invitation-hero__venue {
 			font-style: normal;
 			font-family: var(--renata-hero-ui-font);
-			font-size: clamp(0.64rem, 0.1vw + 0.62rem, 0.72rem);
+			font-size: clamp(0.75rem, 0.7rem + 0.16vw, 0.8125rem);
 			font-weight: 500;
 			line-height: 1.35;
 			letter-spacing: 0.1em;
@@ -390,7 +390,7 @@ html:has(.event--renata.theme-preset--editorial) body {
 			font-family: var(--renata-hero-ui-font);
 			color: var(--renata-hero-scroll-color);
 			letter-spacing: 0.22em;
-			font-size: 0.62rem;
+			font-size: var(--renata-meta-size);
 		}
 
 		.invitation-hero__scroll-text {
@@ -432,8 +432,8 @@ html:has(.event--renata.theme-preset--editorial) body {
 		padding-block: var(--family-padding-block);
 
 		.family__header {
-			max-width: var(--family-header-max-width);
-			margin: 0 0 clamp(1.85rem, 4.2vw, 2.65rem);
+			max-width: var(--family-split-content-max-width);
+			margin: 0 auto clamp(1.85rem, 4.2vw, 2.65rem);
 		}
 
 		.family__eyebrow,
@@ -446,7 +446,7 @@ html:has(.event--renata.theme-preset--editorial) body {
 		.family__eyebrow {
 			padding-left: 0.06em;
 			margin-bottom: 0.4rem;
-			font-size: 0.62rem;
+			font-size: var(--renata-meta-size);
 			font-weight: 500;
 			letter-spacing: 0.24em;
 			opacity: 72%;
@@ -482,12 +482,13 @@ html:has(.event--renata.theme-preset--editorial) body {
 
 		.family__panel--no-media {
 			max-width: var(--family-split-content-max-width);
-			margin-inline: 0;
+			margin-inline: auto;
 		}
 
 		.family__content {
 			grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
 			max-width: var(--family-split-content-max-width);
+			margin-inline: auto;
 		}
 
 		.family__group--group-0,
@@ -505,7 +506,7 @@ html:has(.event--renata.theme-preset--editorial) body {
 		.family__group--godparents {
 			grid-column: 2;
 			grid-row: 1;
-			margin-top: clamp(2.15rem, 4.8vw, 3.35rem);
+			margin-top: 0;
 			text-align: left;
 		}
 
@@ -522,6 +523,8 @@ html:has(.event--renata.theme-preset--editorial) body {
 		.family__group--godparents .family__name {
 			justify-content: flex-start;
 			text-align: left;
+			font-size: clamp(1.2rem, 1.05rem + 0.7vw, 1.5rem);
+			color: rgb(var(--renata-ink-rgb) / 78%);
 		}
 
 		.family__group--godparents .family__list--godparents {
@@ -561,13 +564,8 @@ html:has(.event--renata.theme-preset--editorial) body {
 			color: var(--family-text-primary);
 		}
 
-		.family__group--godparents .family__name {
-			font-size: clamp(1.18rem, 2.2vw, 1.5rem);
-			color: rgb(var(--renata-ink-rgb) / 78%);
-		}
-
 		.family__meta {
-			font-size: 0.58rem;
+			font-size: var(--renata-meta-size);
 			font-weight: 500;
 			letter-spacing: 0.2em;
 			color: rgb(var(--renata-olive-rgb) / 78%);
@@ -769,17 +767,12 @@ html:has(.event--renata.theme-preset--editorial) body {
 			.countdown__value {
 				text-shadow: 0 4px 24px rgb(var(--renata-coral-rgb) / 40%);
 			}
-
-			.countdown__label {
-				color: var(--renata-coral);
-				font-weight: 600;
-			}
 		}
 
 		.countdown__label {
 			color: rgb(var(--renata-cream-rgb) / 62%);
 			font-family: var(--font-label);
-			font-size: clamp(0.6rem, 1vw, 0.7rem);
+			font-size: var(--renata-meta-size);
 			font-weight: 500;
 			letter-spacing: 0.32em;
 			margin-top: 0.45rem;
@@ -804,7 +797,7 @@ html:has(.event--renata.theme-preset--editorial) body {
 			margin-inline: auto;
 			max-inline-size: min(100%, 32ch);
 			font-family: var(--font-body);
-			font-size: clamp(0.85rem, 1.2vw, 0.98rem);
+			font-size: var(--renata-body-size);
 			font-weight: 400;
 			line-height: 1.55;
 			letter-spacing: 0.08em;
@@ -850,12 +843,12 @@ html:has(.event--renata.theme-preset--editorial) body {
 		--location-bg: var(--renata-cream);
 		--location-card-bg: var(--renata-cream);
 		--location-card-border: 1px solid rgb(var(--renata-silver-rgb) / 48%);
-		--location-card-shadow: 0 8px 24px rgb(var(--renata-ink-rgb) / 6%);
-		--location-card-hover-shadow: 0 12px 28px rgb(var(--renata-ink-rgb) / 10%);
-		--location-card-radius: 6px;
+		--location-card-shadow: none;
+		--location-card-hover-shadow: none;
+		--location-card-radius: 0;
 		--location-stack-gap: clamp(3.25rem, 7vw, 4.75rem);
 		--location-padding-block: var(--renata-space-emphasis);
-		--location-plate-row: minmax(7.5rem, min(16vw, 14rem));
+		--location-plate-row: minmax(5.25rem, min(11vw, 9.5rem));
 		--location-indications-spacing: clamp(2rem, 4.5vw, 3rem);
 		--location-indications-panel-bg: transparent;
 		--location-indications-panel-border: none;
@@ -863,6 +856,10 @@ html:has(.event--renata.theme-preset--editorial) body {
 		--location-copy-button-opacity: 70%;
 		--location-map-preview-copy-bg: transparent;
 		--location-map-preview-copy-border: transparent;
+		--location-address-font-size: var(--renata-body-size);
+		--location-indication-text-font-size: var(--renata-body-size);
+		--location-indications-heading-font-size: var(--renata-meta-size);
+		--location-title-font-size: var(--renata-meta-size);
 
 		.event-location__card {
 			background: var(--location-card-bg);
@@ -882,9 +879,22 @@ html:has(.event--renata.theme-preset--editorial) body {
 			gap: 0.25rem;
 		}
 
+		.event-location__eyebrow {
+			font-size: var(--renata-meta-size);
+		}
+
+		.event-location__heading {
+			font-size: var(--renata-section-title-size);
+			font-weight: 400;
+		}
+
+		.event-location__lede {
+			font-size: var(--renata-body-size);
+		}
+
 		.event-location__card-content-address {
 			font-family: var(--font-body);
-			font-size: 0.88rem;
+			font-size: var(--renata-body-size);
 			color: rgb(var(--renata-ink-rgb) / 82%);
 			padding-top: 0.6rem;
 			border-top: 1px solid rgb(var(--renata-silver-rgb) / 38%);
@@ -967,8 +977,12 @@ html:has(.event--renata.theme-preset--editorial) body {
 			word-break: normal;
 			hyphens: none;
 			padding-block: 0.12em 0.16em;
-			color: var(--renata-ink);
+			color: var(--renata-olive);
+			font-size: var(--renata-section-title-size);
+			font-weight: 400;
+			letter-spacing: -0.02em;
 			line-height: 1.05;
+			text-transform: none;
 		}
 
 		.itinerary__items {
@@ -982,6 +996,48 @@ html:has(.event--renata.theme-preset--editorial) body {
 
 		.itinerary__item::before {
 			color: var(--renata-coral);
+			font-size: clamp(1.05rem, 0.9rem + 0.8vw, 1.45rem);
+			font-weight: 500;
+		}
+
+		.itinerary__item-time {
+			font-size: var(--renata-meta-size);
+			font-weight: 500;
+		}
+
+		.itinerary__item-label {
+			font-size: var(--renata-secondary-title-size);
+			font-weight: 500;
+		}
+
+		.itinerary__item-description {
+			font-size: var(--renata-body-size);
+		}
+
+		.itinerary__item[data-time-status='pending'] {
+			.itinerary__item-time--pending {
+				font-size: var(--renata-meta-size);
+				font-weight: 500;
+				letter-spacing: 0.16em;
+				text-transform: uppercase;
+				color: rgb(var(--renata-ink-rgb) / 46%);
+			}
+
+			.itinerary__item-label {
+				font-size: clamp(1.15rem, 1rem + 0.7vw, 1.45rem);
+				font-weight: 400;
+				color: rgb(var(--renata-ink-rgb) / 58%);
+			}
+
+			.itinerary__item-description {
+				color: rgb(var(--renata-ink-rgb) / 48%);
+			}
+
+			&::before {
+				font-size: clamp(0.95rem, 0.85rem + 0.5vw, 1.2rem);
+				font-weight: 500;
+				color: rgb(var(--renata-coral-rgb) / 52%);
+			}
 		}
 	}
 
@@ -995,39 +1051,40 @@ html:has(.event--renata.theme-preset--editorial) body {
 
 		.gallery-section__header {
 			max-width: 22rem;
-			margin-bottom: clamp(0.85rem, 2.2vw, 1.35rem);
+			margin-bottom: clamp(1.15rem, 2.8vw, 1.75rem);
 			text-align: left;
+		}
+
+		.gallery-section__eyebrow {
+			font-size: var(--renata-meta-size);
 		}
 
 		.gallery-section__title {
 			font-size: var(--renata-section-title-size);
+			color: var(--renata-olive);
+			letter-spacing: -0.02em;
+			text-transform: none;
+		}
+
+		.gallery-section__subtitle {
+			font-size: var(--renata-body-size);
 		}
 
 		.gallery-grid {
-			gap: clamp(0.45rem, 1.2vw, 0.85rem);
+			gap: clamp(0.7rem, 1.8vw, 1.15rem);
 		}
 
 		.gallery-grid__item {
 			border-radius: 0;
-			aspect-ratio: 1 / 1;
 
 			img {
 				border-radius: 0;
 			}
 		}
 
-		.gallery-grid__item:nth-child(2),
-		.gallery-grid__item:nth-child(5) {
-			aspect-ratio: 4 / 5;
-		}
-
-		.gallery-grid__item:nth-child(4) {
-			aspect-ratio: 5 / 6;
-		}
-
 		.gallery-grid__item[data-layout-role='feature'] {
 			border-radius: 0;
-			aspect-ratio: 3 / 4;
+			margin-block: clamp(0.35rem, 1.2vw, 0.75rem);
 		}
 
 		@include mixins.respond-to(md) {
@@ -1035,22 +1092,11 @@ html:has(.event--renata.theme-preset--editorial) body {
 				gap: clamp(0.7rem, 1.5vw, 1.15rem);
 			}
 
-			.gallery-grid__item:nth-child(1) {
-				aspect-ratio: 3 / 4;
-			}
-
 			.gallery-grid__item:nth-child(2) {
-				aspect-ratio: 4 / 5;
 				margin-top: 1.65rem;
 			}
 
-			.gallery-grid__item[data-layout-role='feature'] {
-				aspect-ratio: 5 / 4;
-				margin-block: 0.35rem;
-			}
-
 			.gallery-grid__item:nth-child(5) {
-				aspect-ratio: 3 / 4;
 				margin-top: 1.35rem;
 			}
 		}
@@ -1060,10 +1106,7 @@ html:has(.event--renata.theme-preset--editorial) body {
 	// Personalized access + RSVP — deep olive action chapter
 	// -------------------------------------------------------------------------
 	.invitation-section-wrapper[data-section-kind='personalized-access'][data-intersection='overlap'] {
-		--intersection-depth: clamp(2.25rem, 5.5vw, 4.25rem);
-
-		clip-path: polygon(0 var(--renata-pa-cut), 100% 0, 100% 100%, 0 100%);
-		padding-block-start: calc(clamp(1.15rem, 2.5vw, 1.85rem) + var(--renata-pa-cut));
+		--intersection-depth: clamp(1.5rem, 3.5vw, 2.5rem);
 	}
 
 	.invitation-section-wrapper[data-section-kind='personalized-access'],
@@ -1144,12 +1187,22 @@ html:has(.event--renata.theme-preset--editorial) body {
 
 		.rsvp__title {
 			font-family: var(--font-display);
+			font-size: var(--renata-section-title-size);
+			font-weight: 400;
 		}
 
 		.rsvp__subcopy,
 		.rsvp__label,
 		.rsvp__button {
 			font-family: var(--font-body);
+		}
+
+		.rsvp__subcopy {
+			font-size: var(--renata-body-size);
+		}
+
+		.rsvp__label {
+			font-size: var(--renata-meta-size);
 		}
 	}
 
@@ -1225,7 +1278,7 @@ html:has(.event--renata.theme-preset--editorial) body {
 			display: block;
 			color: var(--renata-olive);
 			font-family: var(--font-body);
-			font-size: clamp(0.65rem, 1.5vw, 0.72rem);
+			font-size: var(--renata-meta-size);
 			letter-spacing: 0.24em;
 			font-weight: 500;
 			text-transform: uppercase;
@@ -1234,7 +1287,7 @@ html:has(.event--renata.theme-preset--editorial) body {
 
 		&__title {
 			font-family: var(--font-display);
-			font-size: clamp(2.15rem, 5.5vw, 3.25rem);
+			font-size: var(--renata-section-title-size);
 			font-weight: 300;
 			letter-spacing: 0.05em;
 			text-transform: uppercase;
@@ -1249,7 +1302,7 @@ html:has(.event--renata.theme-preset--editorial) body {
 
 		&__subtitle {
 			font-family: var(--font-body);
-			font-size: clamp(0.92rem, 1.8vw, 1.02rem);
+			font-size: var(--renata-body-size);
 			line-height: 1.65;
 			color: rgb(var(--renata-ink-rgb) / 72%);
 			max-inline-size: min(100%, 36ch);
@@ -1335,7 +1388,7 @@ html:has(.event--renata.theme-preset--editorial) body {
 
 		&__title {
 			font-family: var(--font-display);
-			font-size: clamp(1.5rem, 3.6vw, 1.95rem);
+			font-size: var(--renata-secondary-title-size);
 			font-weight: 400;
 			letter-spacing: 0.02em;
 			color: var(--renata-olive-deep);
@@ -1351,7 +1404,7 @@ html:has(.event--renata.theme-preset--editorial) body {
 		&__description,
 		&__store-label {
 			font-family: var(--font-body);
-			font-size: clamp(0.82rem, 1.6vw, 0.88rem);
+			font-size: var(--renata-body-size);
 			line-height: 1.55;
 			color: rgb(var(--renata-ink-rgb) / 64%);
 			margin-top: 0.15rem;
@@ -1364,7 +1417,7 @@ html:has(.event--renata.theme-preset--editorial) body {
 
 		&__button {
 			font-family: var(--font-body);
-			font-size: 0.78rem;
+			font-size: var(--renata-meta-size);
 			letter-spacing: 0.12em;
 			text-transform: uppercase;
 			padding: 0.6rem 1.35rem;
@@ -1412,15 +1465,19 @@ html:has(.event--renata.theme-preset--editorial) body {
 		--thank-you-overlay-width: 18.5rem;
 		--thank-you-overlay-gap: clamp(1.5rem, 3.4vw, 2.5rem);
 		--thank-you-focal-point: 48% 36%;
-		--renata-thank-you-message-size: clamp(0.98rem, 0.88rem + 0.48vw, 1.2rem);
+		--renata-thank-you-message-size: clamp(1rem, 0.94rem + 0.32vw, 1.2rem);
 		--renata-thank-you-name-size: clamp(2.7rem, 1.55rem + 3.6vw, 4.85rem);
-		--renata-thank-you-date-size: clamp(0.7rem, 0.62rem + 0.26vw, 0.86rem);
+		--renata-thank-you-date-size: clamp(0.75rem, 0.7rem + 0.2vw, 0.875rem);
 		--renata-thank-you-lockup-gap: clamp(1.35rem, 3.2vh, 2.35rem);
 
 		background: var(--renata-ink);
-		padding-block: calc(var(--invitation-header-offset, 5.5rem) + 0.45rem)
-			clamp(1.35rem, 3.2vw, 2.15rem);
+		padding-block: clamp(1.35rem, 3.2vw, 2.15rem);
 		padding-inline: clamp(1.25rem, 4.2vw, 3.25rem);
+
+		@include mixins.respond-below(md) {
+			--renata-thank-you-lockup-gap: clamp(0.7rem, 1.6vh, 1.05rem);
+			--renata-thank-you-name-size: clamp(2.35rem, 1.35rem + 3.1vw, 3.35rem);
+		}
 
 		@include mixins.respond-to(md) {
 			--thank-you-focal-point: 46% 22%;
@@ -1559,7 +1616,7 @@ html:has(.event--renata.theme-preset--editorial) body {
 
 		.closing-date {
 			margin: clamp(0.55rem, 1.4vh, 0.9rem) 0 0;
-			color: rgb(var(--renata-ink-rgb) / 56%);
+			color: rgb(var(--renata-ink-rgb) / 72%);
 			font-size: var(--renata-thank-you-date-size);
 			letter-spacing: 0.22em;
 		}
@@ -1637,7 +1694,7 @@ html:has(.event--renata.theme-preset--editorial) body {
 
 		.powered-by {
 			display: none;
-			font-size: 0.6rem;
+			font-size: var(--renata-meta-size);
 			font-weight: 400;
 			letter-spacing: 0.18em;
 			color: var(--renata-cream);
@@ -1672,7 +1729,7 @@ html:has(.event--renata.theme-preset--editorial) body {
 			background: rgb(var(--renata-olive-rgb) / 8%);
 			box-shadow: none;
 			color: var(--renata-cream);
-			font-size: 0.7rem;
+			font-size: 0.8125rem;
 			font-weight: 500;
 			letter-spacing: 0.12em;
 
@@ -1699,7 +1756,7 @@ html:has(.event--renata.theme-preset--editorial) body {
 		.footer__replay-link {
 			padding: 0.5rem 0.75rem;
 			color: rgb(var(--renata-cream-rgb) / 70%);
-			font-size: 0.65rem;
+			font-size: var(--renata-meta-size);
 			font-weight: 400;
 			letter-spacing: 0.12em;
 			opacity: 70%;

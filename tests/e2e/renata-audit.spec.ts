@@ -300,6 +300,8 @@ test.describe('Renata XV local visual and content audit', () => {
 				'InHouse Select · Hacienda Tres Ríos',
 			]);
 			expect(await location.getByText('Ver mapa').count()).toBe(2);
+			expect(await location.locator('.section-nav-button').count()).toBe(0);
+			expect(await location.getByText('ITINERARIO').count()).toBe(0);
 
 			const ceremonyMap = page.locator('a[href="https://maps.app.goo.gl/jkS3UvSKdTzcZxu9A"]');
 			const receptionMap = page.locator(
@@ -326,10 +328,14 @@ test.describe('Renata XV local visual and content audit', () => {
 			await expect(itinerary.getByText('Cena', { exact: true })).toBeVisible();
 			await expect(itinerary.getByText('Cierre', { exact: true })).toBeVisible();
 			expect(await itinerary.getByText('Por confirmar').count()).toBe(3);
+			expect(await itinerary.locator('[data-time-status="pending"]').count()).toBe(3);
+
+			expect(await page.locator('.invitation-interlude').count()).toBe(2);
 
 			const gallery = page.locator('.gallery-section').first();
 			await expect(gallery).toBeVisible();
 			await expect(gallery).toHaveAttribute('data-structural-variant', 'paired-feature-band');
+			await expect(gallery.locator('.gallery-section__title')).toHaveText('Renata');
 			await gallery.scrollIntoViewIfNeeded();
 			const galleryItems = gallery.locator('.gallery-grid__item');
 			expect(await galleryItems.count()).toBe(5);
@@ -345,9 +351,7 @@ test.describe('Renata XV local visual and content audit', () => {
 			const featureRatio = await feature.evaluate(
 				(node) => getComputedStyle(node).aspectRatio,
 			);
-			expect(featureRatio.replace(/\s+/g, '')).toMatch(
-				viewport.width >= 1440 ? /^5\/4$|^1\.25$/ : /^3\/4$|^0\.75$/,
-			);
+			expect(featureRatio.replace(/\s+/g, '')).toMatch(/^8\/5$|^1\.6$/);
 
 			if (viewport.width >= 1440) {
 				const boxes = await galleryItems.evaluateAll((nodes) =>

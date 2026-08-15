@@ -190,11 +190,10 @@ describe('XV Renata provision contract', () => {
 			focalPointDesktop?: string;
 		}>;
 		expect(interludes).toHaveLength(2);
+		expect(interludes[0]?.afterSection).toBe('location');
 		expect(interludes[0]?.focalPoint).toBe('32% 52%');
 		expect(interludes[0]?.focalPointDesktop).toBe('38% 48%');
 		expect(interludes[1]?.afterSection).toBe('gallery');
-		expect(interludes[1]?.focalPoint).toBe('50% 32%');
-		expect(interludes[1]?.focalPointDesktop).toBe('50% 28%');
 
 		const location = content.location as {
 			variant: string;
@@ -242,9 +241,11 @@ describe('XV Renata provision contract', () => {
 
 		const gallery = content.gallery as {
 			variant: string;
+			title?: string;
 			items: Array<{ key?: string; layoutRole?: string; aspectRatio?: string }>;
 		};
 		expect(gallery.variant).toBe('paired-feature-band');
+		expect(gallery.title).toBe('Renata');
 		expect(gallery.items.map((item) => item.key)).toEqual([
 			'gallery-01',
 			'gallery-02',

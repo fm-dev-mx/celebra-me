@@ -251,9 +251,8 @@ hero. Feature frame is `_DSC5939`, not file-order first.
   `asymmetric-groups` + `text-only`; envelope `variant: 'premiere-floral'` with
   `sealIcon: 'monogram'`, `envelopeName: 'Renata'`, `cardLabel: 'MIS XV'`,
   `cardTagline: '05 · 09 · 2026'`, and `microcopy: 'Abra su invitación'`. Do not set
-  `documentLabel`, `teaserDetails`, or `closedPalette`. Reveal appearance is owned by the
-  premiere-floral envelope variant, not the Renata profile. Interlude crop is owned by provision
-  `focalPoint` / `focalPointDesktop`.
+  `documentLabel`, `teaserDetails`, or `closedPalette`. Reveal appearance is owned by the premiere-floral envelope variant, not the
+  Renata profile. Interlude crop is owned by provision `focalPoint` / `focalPointDesktop`.
 - Lane B: none. Demo stays the gold editorial template.
 - Music omit / include: omitted (`not_applicable`).
 - Other: no `renata` key in `LEGACY_INTERSECTION_PROFILES`. No shared renderer/variant branches.
