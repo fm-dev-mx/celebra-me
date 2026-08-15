@@ -27,6 +27,7 @@ function pairedStoreScriptIds(): string[] {
 			lines.push(line);
 		}
 		const header = lines.join('\n');
+		if (/--\s*@catalog:\s*historical\b/i.test(header)) continue;
 		if (!/--\s*@paired-stores:\s*\S+/.test(header)) continue;
 		const scriptId = header.match(/^--\s*@script-id:\s*(\S+)/m)?.[1];
 		if (scriptId) ids.push(scriptId);
@@ -44,6 +45,7 @@ describe('active manual patch status', () => {
 				'20260815_america_johana_ceremony_coordinates',
 			]),
 		);
+		expect(discovered).not.toContain('20260812_p0_itinerary_gallery_structural_contracts');
 		expect(
 			ACTIVE_MANUAL_PATCH_CATALOG.every(
 				(item) => item.targetEnvironments.join(',') === 'production',

@@ -49,7 +49,9 @@ function headerField(header: string, name: string): string | null {
 }
 
 function declaresPairedStores(sql: string): boolean {
-	return /--\s*@paired-stores:\s*\S+/.test(headerLines(sql));
+	const header = headerLines(sql);
+	if (/--\s*@catalog:\s*historical\b/i.test(header)) return false;
+	return /--\s*@paired-stores:\s*\S+/.test(header);
 }
 
 function fallbackCatalogEntry(file: string, sql: string): ActiveManualPatchCatalogEntry {
