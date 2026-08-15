@@ -115,8 +115,8 @@ describe('XV America Johana client invitation preparation', () => {
 			'https://maps.app.goo.gl/ViMYiHRgQ5HLaqGe8',
 		);
 		expect(result.data.location?.ceremony?.coordinates).toEqual({
-			lat: 19.3278767,
-			lng: -99.1468354,
+			lat: 19.2759461,
+			lng: -99.5176924,
 		});
 		expect(result.data.location?.reception?.googleMapsUrl).toBe(
 			'https://maps.app.goo.gl/6xwP3zGbBPEsrTjn9',

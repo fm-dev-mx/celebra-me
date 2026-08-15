@@ -405,8 +405,8 @@ BEGIN
         "time": "5:30 p.m.",
         "googleMapsUrl": "https://maps.app.goo.gl/ViMYiHRgQ5HLaqGe8",
         "coordinates": {
-          "lat": 19.3278767,
-          "lng": -99.1468354
+          "lat": 19.2759461,
+          "lng": -99.5176924
         }
       },
       "reception": {
