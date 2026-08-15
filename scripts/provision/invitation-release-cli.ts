@@ -6,7 +6,11 @@ import { type LocalApplyResult } from './apply-local-invitation.ts';
 import { exportInvitationPackage, type InvitationPackageData } from './invitation-package.ts';
 import { runImportEngine } from './invitation-import-engine.ts';
 import { assertEngineResult } from './invitation-engine-result.ts';
-import { PackageInputError, resolveInvitationPackageInput } from './invitation-package-input.ts';
+import {
+	PackageInputError,
+	requireConfirmedPreviewPackage,
+	resolveInvitationPackageInput,
+} from './invitation-package-input.ts';
 import {
 	buildCancellationResults,
 	buildPreflightBlockedResults,
@@ -38,6 +42,7 @@ import {
 import {
 	formatInvitationGuidance,
 	rejectPastedCommandPrefix,
+	translatePreconditionFailure,
 } from './invitation-operator-guidance.ts';
 import { readFastInvitationInventory } from './invitation-status-inventory.ts';
 import { evaluateInvitationReadiness } from './invitation-readiness.ts';
@@ -174,13 +179,13 @@ function assetCounts(actions: Array<{ resource: string; action: string }>): {
 }
 
 function sanitizeMessage(message: string): string {
-	const translated = message.includes('PRECONDITION_FAILED')
-		? 'El origen, el paquete o el estado del destino cambió después de confirmar el plan. Genere y confirme un plan nuevo.'
-		: message.includes('INVALID_ENGINE_RESULT')
+	const translated =
+		translatePreconditionFailure(message) ??
+		(message.includes('INVALID_ENGINE_RESULT')
 			? 'El motor no devolvió el plan y recibo confirmados. No se puede acreditar la ejecución; revise el resultado antes de reintentar.'
 			: message.includes('Final target verification failed')
 				? 'La verificación final del destino no coincidió con el plan. Revise el estado antes de reintentar.'
-				: message;
+				: message);
 	return redactCredentials(translated)
 		.replace(/\b[a-f0-9]{64}\b/gi, (hash) => `${hash.slice(0, 8)}…`)
 		.replace(/[A-Za-z]:\\[^\s"']+/g, '[ruta interna]');
@@ -478,8 +483,6 @@ async function executePreviewTargetPlan(input: {
 	slug: string;
 	isTTY: boolean;
 	nonInteractive: boolean;
-	resolvedPackage: unknown;
-	sourceDir?: string;
 	confirmationPackage: InvitationPackageData | undefined;
 	executionPlans: Map<InvitationUpdateTarget, OperationalPlan>;
 	assetPolicy?: ReturnType<typeof parseAssetPolicy>;
@@ -513,20 +516,13 @@ async function executePreviewTargetPlan(input: {
 		}
 		throw error;
 	}
-	let currentConfirmationPackage = input.confirmationPackage;
-	if (!input.resolvedPackage) {
-		const packaged = await exportInvitationPackage({
-			slug: input.slug,
-			sourceDir: input.sourceDir ?? '',
-			dryRun: false,
-		});
-		currentConfirmationPackage = packaged.packageData;
-		input.reports.push({
-			stage: 'package',
-			environment: 'local',
-			status: 'UPDATED',
-			packageHash: packaged.stats.packageHash,
-		});
+	let currentConfirmationPackage: InvitationPackageData;
+	try {
+		currentConfirmationPackage = requireConfirmedPreviewPackage(input.confirmationPackage);
+	} catch (error) {
+		throw Object.assign(error instanceof Error ? error : new Error(String(error)), {
+			mutationStarted: false,
+		}) as LifecycleExecutionError;
 	}
 	let dbUrl: string;
 	try {
@@ -543,14 +539,6 @@ async function executePreviewTargetPlan(input: {
 		throw Object.assign(new Error('No existe un plan confirmado de Preview.'), {
 			mutationStarted: false,
 		}) as LifecycleExecutionError;
-	}
-	if (!currentConfirmationPackage) {
-		throw Object.assign(
-			new Error('No existe un paquete de confirmación resuelto para Preview.'),
-			{
-				mutationStarted: false,
-			},
-		) as LifecycleExecutionError;
 	}
 	const result = await planAndApplyPreviewContent({
 		packageData: currentConfirmationPackage,
@@ -1603,8 +1591,6 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 						slug,
 						isTTY,
 						nonInteractive,
-						resolvedPackage,
-						sourceDir,
 						confirmationPackage,
 						executionPlans,
 						assetPolicy,

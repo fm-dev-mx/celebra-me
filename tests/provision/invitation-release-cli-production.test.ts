@@ -93,6 +93,21 @@ describe('invitation:release Production dispatch', () => {
 		);
 	});
 
+	it('applies the confirmed Preview package and does not export after YES', () => {
+		const source = readFileSync(
+			resolve(process.cwd(), 'scripts/provision/invitation-release-cli.ts'),
+			'utf8',
+		);
+		const start = source.indexOf('async function executePreviewTargetPlan');
+		const end = source.indexOf('function formatPreviewReceiptDiagnosis');
+		expect(start).toBeGreaterThan(-1);
+		expect(end).toBeGreaterThan(start);
+		const applyFn = source.slice(start, end);
+		expect(applyFn).toContain('requireConfirmedPreviewPackage');
+		expect(applyFn).toContain('authorizePreviewWriteApply');
+		expect(applyFn).not.toContain('exportInvitationPackage');
+	});
+
 	it('registers invitation:release as the public package script', () => {
 		const pkg = JSON.parse(readFileSync('package.json', 'utf8')) as {
 			scripts: Record<string, string>;

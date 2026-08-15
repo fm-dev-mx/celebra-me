@@ -110,3 +110,12 @@ export async function resolveInvitationPackageInput(input: {
 		);
 	}
 }
+
+export function requireConfirmedPreviewPackage(
+	confirmationPackage: InvitationPackageData | undefined,
+): InvitationPackageData {
+	if (!confirmationPackage) {
+		throw new Error('No existe un paquete de confirmación resuelto para Preview.');
+	}
+	return confirmationPackage;
+}

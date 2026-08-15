@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
 	PackageInputError,
+	requireConfirmedPreviewPackage,
 	resolveInvitationPackageInput,
 } from '../../scripts/provision/invitation-package-input.ts';
 import {
@@ -155,5 +156,13 @@ describe('managed invitation package input integration', () => {
 				packagePath: 'fixture.json',
 			}),
 		).rejects.toMatchObject({ code: 'PACKAGE_SOURCE_CONFLICT' });
+	});
+
+	it('reuses the confirmed Preview package and does not require a second export', () => {
+		const confirmed = validPackage();
+		expect(requireConfirmedPreviewPackage(confirmed)).toBe(confirmed);
+		expect(() => requireConfirmedPreviewPackage(undefined)).toThrow(
+			'No existe un paquete de confirmación resuelto para Preview.',
+		);
 	});
 });
