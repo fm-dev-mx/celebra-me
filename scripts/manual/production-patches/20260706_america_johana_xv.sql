@@ -405,8 +405,8 @@ BEGIN
         "time": "5:30 p.m.",
         "googleMapsUrl": "https://maps.app.goo.gl/ViMYiHRgQ5HLaqGe8",
         "coordinates": {
-          "lat": 19.3278767,
-          "lng": -99.1468354
+          "lat": 19.2759461,
+          "lng": -99.5176924
         }
       },
       "reception": {
@@ -432,11 +432,6 @@ BEGIN
           "iconName": "CheckSeal",
           "styleVariant": "default",
           "text": "Acceso únicamente con pase. Aplica para adultos y niños."
-        },
-        {
-          "iconName": "Calendar",
-          "styleVariant": "default",
-          "text": "Agradecemos confirmar tu asistencia antes del 1 de agosto de 2026."
         }
       ]
     },
@@ -501,6 +496,7 @@ BEGIN
           "type": "store",
           "title": "Mesa de regalos",
           "description": "Puedes consultar mis listas en Sears y Liverpool.",
+          "tableNumber": "Sears 237993 · Liverpool 52006296",
           "links": [
             {
               "label": "Sears",

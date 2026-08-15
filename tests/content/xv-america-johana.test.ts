@@ -56,6 +56,24 @@ const expectedAssets = [
 	'thank-you-portrait.webp',
 ] as const;
 
+function loadAmericaJohanaPublishedPayload() {
+	const sqlContent = fs.readFileSync(sqlPath, 'utf8');
+	// NOTE: This regex assumes v_new_content uses '...'::jsonb (single-quote delimiters).
+	// If the SQL quoting style changes to $$...$$::jsonb (dollar quoting),
+	// update both the regex pattern and this comment.
+	const match = sqlContent.match(/v_new_content\s*:=\s*'(?<json>[\s\S]*?)'\s*::jsonb;/);
+	if (!match?.groups?.json) {
+		throw new Error('Could not find v_content JSON payload in America Johana SQL patch.');
+	}
+	const result = eventContentSchema.safeParse(JSON.parse(match.groups.json));
+	if (!result.success) {
+		throw new Error(
+			`America Johana DB payload failed schema validation:\n${JSON.stringify(result.error.issues, null, 2)}`,
+		);
+	}
+	return result.data;
+}
+
 describe('XV America Johana client invitation preparation', () => {
 	it('exports the client asset namespace with original-photo derivatives', () => {
 		for (const filename of expectedAssets) {
@@ -77,61 +95,17 @@ describe('XV America Johana client invitation preparation', () => {
 		expect(styles).not.toMatch(/glitter|princess/i);
 	});
 
-	it('validates the local DB payload artifact and renders the America event scope', () => {
-		const sqlContent = fs.readFileSync(sqlPath, 'utf8');
-		// NOTE: This regex assumes v_new_content uses '...'::jsonb (single-quote delimiters).
-		// If the SQL quoting style changes to $$...$$::jsonb (dollar quoting),
-		// update both the regex pattern and this comment.
-		const match = sqlContent.match(/v_new_content\s*:=\s*'(?<json>[\s\S]*?)'\s*::jsonb;/);
-		if (!match?.groups?.json) {
-			throw new Error('Could not find v_content JSON payload in America Johana SQL patch.');
-		}
-		const payload = JSON.parse(match.groups.json);
-		const result = eventContentSchema.safeParse(payload);
+	it('omits the past RSVP deadline and shows Sears and Liverpool event numbers', () => {
+		const data = loadAmericaJohanaPublishedPayload();
+		const indicationText = data.location?.indications?.map((item) => item.text).join(' ') ?? '';
 
-		if (!result.success) {
-			throw new Error(
-				`America Johana DB payload failed schema validation:\n${JSON.stringify(result.error.issues, null, 2)}`,
-			);
-		}
-
-		expect(result.data.eventType).toBe('xv');
-		expect(result.data.isDemo).toBe(false);
-		expect(result.data.visualProfileId).toBe('america-johana');
-		expect(result.data._assetSlug).toBe('xv-america-johana');
-		expect(result.data.theme.preset).toBe('celestial-blue');
-		expect(result.data.templateId).toBe('xv-celestial-blue');
-		expect(result.data.hero.name).toBe('América');
-		expect(result.data.hero.backgroundImage).toMatchObject({ key: 'hero' });
-		expect(result.data.hero.backgroundImageDesktop).toMatchObject({ key: 'heroDesktop' });
-		expect(result.data.hero.portrait).toMatchObject({ key: 'portrait' });
-		expect(result.data.music).toMatchObject(expectedMusic);
-		expect(result.data.rsvp?.accessMode).toBe('hybrid');
-		expect(result.data.rsvp?.confirmationMode).toBe('api');
-		expect(result.data.rsvp?.subcopy).toContain('Este pase corresponde a tu grupo.');
-		expect(result.data.rsvp?.subcopy).toContain('Preséntalo al ingresar al evento.');
-		expect(result.data.rsvp?.personalizedAccess).toEqual(expectedPersonalizedAccess);
-		expect(result.data.location?.ceremony?.googleMapsUrl).toBe(
-			'https://maps.app.goo.gl/ViMYiHRgQ5HLaqGe8',
-		);
-		expect(result.data.location?.ceremony?.coordinates).toEqual({
-			lat: 19.3278767,
-			lng: -99.1468354,
-		});
-		expect(result.data.location?.reception?.googleMapsUrl).toBe(
-			'https://maps.app.goo.gl/6xwP3zGbBPEsrTjn9',
-		);
-		expect(result.data.location?.reception?.coordinates).toEqual({
-			lat: 19.291035,
-			lng: -99.1314772,
-		});
-		expect(result.data.location?.indications?.map((item) => item.text).join(' ')).toContain(
-			'El color rojo está reservado para la quinceañera.',
-		);
-		expect(result.data.gifts?.items).toHaveLength(2);
-		expect(result.data.gifts?.items?.[0]).toMatchObject({
+		expect(indicationText).toContain('El color rojo está reservado para la quinceañera.');
+		expect(indicationText).not.toContain('1 de agosto de 2026');
+		expect(data.gifts?.items).toHaveLength(2);
+		expect(data.gifts?.items?.[0]).toMatchObject({
 			type: 'store',
 			title: 'Mesa de regalos',
+			tableNumber: 'Sears 237993 · Liverpool 52006296',
 			links: [
 				{
 					label: 'Sears',
@@ -142,6 +116,41 @@ describe('XV America Johana client invitation preparation', () => {
 					url: 'https://mesaderegalos.liverpool.com.mx/milistaderegalos/52006296',
 				},
 			],
+		});
+	});
+
+	it('validates the local DB payload artifact and renders the America event scope', () => {
+		const data = loadAmericaJohanaPublishedPayload();
+
+		expect(data.eventType).toBe('xv');
+		expect(data.isDemo).toBe(false);
+		expect(data.visualProfileId).toBe('america-johana');
+		expect(data._assetSlug).toBe('xv-america-johana');
+		expect(data.theme.preset).toBe('celestial-blue');
+		expect(data.templateId).toBe('xv-celestial-blue');
+		expect(data.hero.name).toBe('América');
+		expect(data.hero.backgroundImage).toMatchObject({ key: 'hero' });
+		expect(data.hero.backgroundImageDesktop).toMatchObject({ key: 'heroDesktop' });
+		expect(data.hero.portrait).toMatchObject({ key: 'portrait' });
+		expect(data.music).toMatchObject(expectedMusic);
+		expect(data.rsvp?.accessMode).toBe('hybrid');
+		expect(data.rsvp?.confirmationMode).toBe('api');
+		expect(data.rsvp?.subcopy).toContain('Este pase corresponde a tu grupo.');
+		expect(data.rsvp?.subcopy).toContain('Preséntalo al ingresar al evento.');
+		expect(data.rsvp?.personalizedAccess).toEqual(expectedPersonalizedAccess);
+		expect(data.location?.ceremony?.googleMapsUrl).toBe(
+			'https://maps.app.goo.gl/ViMYiHRgQ5HLaqGe8',
+		);
+		expect(data.location?.ceremony?.coordinates).toEqual({
+			lat: 19.2759461,
+			lng: -99.5176924,
+		});
+		expect(data.location?.reception?.googleMapsUrl).toBe(
+			'https://maps.app.goo.gl/6xwP3zGbBPEsrTjn9',
+		);
+		expect(data.location?.reception?.coordinates).toEqual({
+			lat: 19.291035,
+			lng: -99.1314772,
 		});
 
 		const mockGuestContext = {
@@ -161,7 +170,7 @@ describe('XV America Johana client invitation preparation', () => {
 
 		const viewModel = adaptEvent({
 			id: 'event-published/xv/america-johana',
-			data: result.data,
+			data,
 		} as EventContentEntry);
 		const pageContext = buildPageContextFromViewModel({
 			viewModel,
@@ -195,9 +204,9 @@ describe('XV America Johana client invitation preparation', () => {
 
 		// Test PersonalizedAccess custom copy fallback behavior when personalizedAccess configuration is omitted
 		const mockDataNoCustomCopy = {
-			...result.data,
+			...data,
 			rsvp: {
-				...result.data.rsvp,
+				...data.rsvp,
 				personalizedAccess: undefined,
 			},
 		};

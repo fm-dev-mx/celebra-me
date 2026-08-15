@@ -233,6 +233,9 @@ describe('canonical variant governance', () => {
 		expect(composition).not.toMatch(originIdentity);
 		expect(renderPlan).not.toMatch(/visualProfileId|eventSlug|slug/);
 		expect(googleMap).not.toContain("variant === 'romina-rios-chaparro'");
+		expect(googleMap).not.toContain('<iframe');
+		expect(googleMap).not.toContain('output=embed');
+		expect(googleMap).toContain('data-map-preview="static"');
 		expect(
 			fs.existsSync(path.join(process.cwd(), 'src/lib/invitation/intersection-profiles.ts')),
 		).toBe(false);
