@@ -69,12 +69,12 @@ $commandDetails = @{
     "dbs"                       = @{
         Desc    = "CLI de operaciones de base de datos y provisionamiento."
         UseCase = "Consultar el estado de las BD locales/remotas y verificar conectividad."
-        Help    = "Ingrese 'status' o '--help' para ver todas las suboperaciones disponibles"
+        Help    = "Ingrese solo argumentos. Ejemplos: <slug>  |  --diagnostics  |  --help"
     }
     "db:migrate"                = @{
         Desc    = "CLI de ejecucion de migraciones de base de datos."
         UseCase = "Aplicar migraciones de esquema en la base de datos local o destino."
-        Help    = "Ingrese '--help' (o 'up' / 'status' para ver el estado de migraciones)"
+        Help    = "Ingrese solo argumentos. Ejemplos: -- --target preview  |  -- --target disposable-test --apply"
     }
     "db:branch:parity"          = @{
         Desc    = "Verificacion de paridad de migraciones entre ramas/worktrees."
@@ -89,7 +89,7 @@ $commandDetails = @{
     "invitation:release"        = @{
         Desc    = "CLI de preparacion y publicacion de versiones de invitaciones."
         UseCase = "Publicar o actualizar una version oficial de invitacion (ej: Daniela y Martin)."
-        Help    = "Ingrese '--help' (o '--slug <nombre>' para indicar la invitacion a lanzar)"
+        Help    = "Ingrese solo argumentos. Ejemplo: -- --slug <slug> --targets preview --apply"
     }
     "invitation:reconcile"      = @{
         Desc    = "Reconciliacion e integridad entre borrador y publicado."
@@ -104,7 +104,7 @@ $commandDetails = @{
     "prod:apply"                = @{
         Desc    = "Aplicacion controlada de parches en produccion."
         UseCase = "Ejecutar parches SQL autorizados con guardas de seguridad en BD produccion."
-        Help    = "Ingrese '--help' (o '--patch-id <id>' para seleccionar un parche especifico)"
+        Help    = "Ingrese solo argumentos. Ejemplos: -- --slug <slug>  |  -- --patch <file> --owner-user-id <uuid>"
     }
     "screenshot"                = @{
         Desc    = "Generacion automatizada de capturas de pantalla visuales."
@@ -162,6 +162,7 @@ while ($true) {
             Write-Host "  Proposito : $desc" -ForegroundColor White
             Write-Host "  Caso Uso  : $useCase" -ForegroundColor Yellow
             Write-Host "  Ayuda/Doc : $help" -ForegroundColor DarkCyan
+            Write-Host "  Prompt    : No repita 'pnpm $Command'. Escriba solo los argumentos." -ForegroundColor DarkCyan
             Write-Host "  Contexto  : Worktree: $worktreeName  |  Config: .vscode/tasks.json" -ForegroundColor DarkGray
 
             # Mostrar ultimas ejecuciones del historial persistente si existen
@@ -257,7 +258,7 @@ while ($true) {
         Add-Content -Path $historyFile -Value $logEntry -Encoding UTF8
 
         Write-Host ""
-        Write-Host "  [*] Presione ENTER para reiniciar o ingrese nuevos argumentos." -ForegroundColor DarkCyan
+        Write-Host "  [*] Presione ENTER para reiniciar o ingrese nuevos argumentos. No escriba 'pnpm $Command'." -ForegroundColor DarkCyan
 
     } catch [System.Management.Automation.PipelineStoppedException], [System.OperationCanceledException] {
         Write-Host ""
