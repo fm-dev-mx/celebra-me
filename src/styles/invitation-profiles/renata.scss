@@ -1133,22 +1133,9 @@ html:has(.event--renata.theme-preset--editorial) body {
 			}
 		}
 
-		.gallery-grid__item[data-layout-role='feature'] {
-			border-radius: 0;
-			margin-block: clamp(0.35rem, 1.2vw, 0.75rem);
-		}
-
 		@include mixins.respond-to(md) {
 			.gallery-grid {
 				gap: clamp(0.7rem, 1.5vw, 1.15rem);
-			}
-
-			.gallery-grid__item:nth-child(2) {
-				margin-top: 1.65rem;
-			}
-
-			.gallery-grid__item:nth-child(5) {
-				margin-top: 1.35rem;
 			}
 		}
 	}

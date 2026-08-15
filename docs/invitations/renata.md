@@ -198,37 +198,37 @@ WhatsApp-compressed files are `provisional-whatsapp` or `unusable` and were not 
 
 | source filename     | dims      | format | orientation | weight | quality          | role            | duplicate                    | processing                           | derivative                 |
 | ------------------- | --------- | ------ | ----------- | ------ | ---------------- | --------------- | ---------------------------- | ------------------------------------ | -------------------------- |
-| 1000511838          | 3900×5861 | jpeg   | portrait    | HR     | production-ready | hero            | no                           | downscale 2560 long edge, no upscale | hero-source.jpg            |
+| 1000511838          | 3900×5861 | jpeg   | portrait    | HR     | production-ready | interlude-03    | former hero reused           | downscale 2560 long edge, no upscale | hero-source.jpg            |
 | _DSC5939            | 4024×6048 | jpeg   | portrait    | HR     | production-ready | gallery-feature | no                           | downscale 2560 long edge, no upscale | gallery-feature-source.jpg |
 | 1000511828          | 4024×6048 | jpeg   | portrait    | HR     | production-ready | gallery         | no                           | downscale 2560 long edge, no upscale | gallery-01-source.jpg      |
-| _DSC5847            | 3995×6004 | jpeg   | portrait    | HR     | production-ready | gallery         | no                           | downscale 2560 long edge, no upscale | gallery-02-source.jpg      |
+| _DSC5847            | 3995×6004 | jpeg   | portrait    | HR     | unused           | none            | removed from gallery         | not referenced                       | gallery-02-source.jpg      |
 | 1000511822          | 4024×6048 | jpeg   | portrait    | HR     | production-ready | gallery         | no                           | downscale 2560 long edge, no upscale | gallery-03-source.jpg      |
-| _DSC5759            | 3734×5611 | jpeg   | portrait    | HR     | production-ready | gallery         | no                           | downscale 2560 long edge, no upscale | gallery-04-source.jpg      |
+| _DSC5759            | 3734×5611 | jpeg   | portrait    | HR     | unused           | none            | removed from gallery         | not referenced                       | gallery-04-source.jpg      |
 | _DSC5878            | 5390×3586 | jpeg   | landscape   | HR     | production-ready | interlude       | no                           | downscale 2560 long edge, no upscale | interlude-source.jpg       |
 | _DSC5914            | 6002×3993 | jpeg   | landscape   | HR     | production-ready | interlude-02    | no                           | downscale 2560 long edge, no upscale | interlude-02-source.jpg    |
 | 1000511840          | 4024×6048 | jpeg   | portrait    | HR     | production-ready | thankYou        | no                           | downscale 2560 long edge, no upscale | thank-you-source.jpg       |
 | _DSC5820            | 5298×3526 | jpeg   | landscape   | HR     | unused           | none            | unused HR reserve            | not ingested                         | —                          |
 | _DSC5907            | 5476×3643 | jpeg   | landscape   | HR     | unused           | none            | unused HR reserve            | not ingested                         | —                          |
-| IMG-20260424-WA0194 | 1006×1512 | jpeg   | portrait    | WA     | unusable         | none            | worn-sunglasses concept only | not ingested                         | —                          |
+| client-hero-seated  | 1006×1512 | jpeg   | portrait    | WA     | provisional-whatsapp | hero         | no                           | ingested as provided, no upscale     | hero-02-source.jpg         |
 | 1001086433          | 1070×1600 | jpeg   | portrait    | WA     | unusable         | none            | near-dup yellow              | not ingested                         | —                          |
 | 1000511882          | 1080×2400 | jpeg   | portrait    | weak   | unusable         | none            | insufficient for desktop     | not ingested                         | —                          |
 
 ### Uniqueness table
 
-| role            | source     | derivative                 | intentional multi-role? |
-| --------------- | ---------- | -------------------------- | ----------------------- |
-| hero            | 1000511838 | hero-source.jpg            | no                      |
-| gallery-feature | _DSC5939   | gallery-feature-source.jpg | no                      |
-| gallery-01      | 1000511828 | gallery-01-source.jpg      | no                      |
-| gallery-02      | _DSC5847   | gallery-02-source.jpg      | no                      |
-| gallery-03      | 1000511822 | gallery-03-source.jpg      | no                      |
-| gallery-04      | _DSC5759   | gallery-04-source.jpg      | no                      |
-| interlude       | _DSC5878   | interlude-source.jpg       | no                      |
-| interlude-02    | _DSC5914   | interlude-02-source.jpg    | no                      |
-| thankYou        | 1000511840 | thank-you-source.jpg       | no                      |
+| role            | source            | derivative                 | intentional multi-role? |
+| --------------- | ----------------- | -------------------------- | ----------------------- |
+| hero            | client-hero-seated | hero-02-source.jpg        | no                      |
+| interlude-03    | 1000511838        | hero-source.jpg            | former hero reused      |
+| gallery-feature | _DSC5939          | gallery-feature-source.jpg | no                      |
+| gallery-01      | 1000511828        | gallery-01-source.jpg      | no                      |
+| gallery-03      | 1000511822        | gallery-03-source.jpg      | no                      |
+| interlude       | _DSC5878          | interlude-source.jpg       | no                      |
+| interlude-02    | _DSC5914          | interlude-02-source.jpg    | no                      |
+| thankYou        | 1000511840        | thank-you-source.jpg       | no                      |
 
-Hero desktop and hero mobile share `hero-source.jpg` with different focals. Closing image is not the
-hero. Feature frame is `_DSC5939`, not file-order first.
+Hero desktop and hero mobile share `hero-02-source.jpg` with independent focals. The former hero
+file `hero-source.jpg` is reused only as `interlude-03`. Closing image is not the hero. Gallery
+uses `feature-stack` with `gallery-01`, `gallery-feature`, and `gallery-03`.
 
 ---
 
@@ -242,9 +242,8 @@ hero. Feature frame is `_DSC5939`, not file-order first.
   Location consumes `stacked-venue-plates` with section-scoped type/palette so the chapter matches
   the shared plate presentation. Yellow is not a UI color on surrounding sections. Cream/blush are
   light surfaces; silver is line/detail; coral is rare (wax highlight).
-- Structural selections: itinerary `editorial-program`; gallery `paired-feature-band` without a
-  feature `aspectRatio` override and item order `gallery-01`, `gallery-02`, `gallery-feature`,
-  `gallery-03`, `gallery-04`; location `stacked-venue-plates` with `presentation: 'simple'`,
+- Structural selections: itinerary `editorial-program`; gallery `feature-stack` with item order
+  `gallery-01` (feature, 3/4), `gallery-feature` (standard, 4/5), `gallery-03` (wide, 5/4); location `stacked-venue-plates` with `presentation: 'simple'`,
   `presentationOptions.showNavigationButtons: false`, and `showFlourishes: false`; keep `ceremony` +
   `reception` (no `venues[]`); personalized access `formal-pass`; RSVP `formal-register`
   (presentation only — do not persist `accessMode`, `confirmationMode`, or `guestCap`); family
