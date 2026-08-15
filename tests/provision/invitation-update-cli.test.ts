@@ -1,6 +1,13 @@
 import { describe, expect, it } from '@jest/globals';
-import { buildStatusReport, parseStatusOptions } from '../../scripts/provision/invitation-update-options.ts';
-import { formatStatusReport, formatDryRunPlan, formatApplyResult } from '../../scripts/provision/invitation-update-presenter.ts';
+import {
+	buildStatusReport,
+	parseStatusOptions,
+} from '../../scripts/provision/invitation-update-options.ts';
+import {
+	formatStatusReport,
+	formatDryRunPlan,
+	formatApplyResult,
+} from '../../scripts/provision/invitation-update-presenter.ts';
 
 describe('Managed Invitation CLI Dispatcher & Presenter Contracts', () => {
 	it('preserves target and slug selection in options model', () => {
@@ -30,13 +37,26 @@ describe('Managed Invitation CLI Dispatcher & Presenter Contracts', () => {
 					title: 'Romina Ríos Chaparro',
 					createdAt: '2026-07-20T00:00:00Z',
 					classification: 'MANAGED',
-					environments: { local: { status: 'MANAGED', managedStatus: 'MANAGED', syncStatus: 'UNEVALUATED' } },
+					environments: {
+						local: {
+							status: 'MANAGED',
+							managedStatus: 'MANAGED',
+							syncStatus: 'UNEVALUATED',
+						},
+					},
 				},
 			],
 			inventory: {
 				local: {
 					verified: true,
-					rows: [{ slug: 'romina-rios-chaparro', status: 'MANAGED', hasProvenance: true, assetComplete: true }],
+					rows: [
+						{
+							slug: 'romina-rios-chaparro',
+							status: 'MANAGED',
+							hasProvenance: true,
+							assetComplete: true,
+						},
+					],
 				},
 			},
 		});
@@ -68,6 +88,23 @@ describe('Managed Invitation CLI Dispatcher & Presenter Contracts', () => {
 		expect(planFormatted).toContain('1 subida');
 		expect(planFormatted).toContain('2 sobrescrituras');
 		expect(planFormatted).toContain('Ninguna modificación fue realizada');
+	});
+
+	it('prints resolved update scope and asset policy on dry-run plans', () => {
+		const planFormatted = formatDryRunPlan({
+			invitation: 'leslie-perez',
+			targets: ['preview'],
+			updateScope: 'content-and-assets',
+			assetPolicy: 'missing',
+			isZeroDrift: false,
+			plannedOperations: 1,
+			expectedDatabaseWrites: { inserts: 1, updates: 0, deletes: 0 },
+			expectedStorageMutations: { uploads: 1, overwrites: 0, deletes: 0 },
+			actions: [],
+		});
+
+		expect(planFormatted).toContain('Alcance      : content-and-assets');
+		expect(planFormatted).toContain('Política     : missing');
 	});
 
 	it('formats compact content summary by section and expands with verbose', () => {
@@ -130,12 +167,17 @@ describe('Managed Invitation CLI Dispatcher & Presenter Contracts', () => {
 
 		expect(applyFormatted).toContain('Resultado de Ejecución');
 		expect(applyFormatted).toContain('YA ESTÁ AL DÍA');
-		expect(applyFormatted).toContain('La invitación ya está sincronizada. No hay cambios por aplicar.');
+		expect(applyFormatted).toContain(
+			'La invitación ya está sincronizada. No hay cambios por aplicar.',
+		);
 		expect(applyFormatted).toContain('Versión pública                 : v1');
 	});
 
 	it('validates target isolation: local target does not request preview or production', () => {
-		const parsedLocal = parseStatusOptions({ slug: 'romina-rios-chaparro', targets: ['local'] });
+		const parsedLocal = parseStatusOptions({
+			slug: 'romina-rios-chaparro',
+			targets: ['local'],
+		});
 		expect(parsedLocal.targets).toEqual(['local']);
 		expect(parsedLocal.targets).not.toContain('preview');
 		expect(parsedLocal.targets).not.toContain('production');

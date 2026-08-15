@@ -1,7 +1,7 @@
 /**
  * managed-promotion-status.test.ts — grouped reads, output safety, compact isolation
  */
-import { describe, expect, it, jest, beforeEach } from '@jest/globals';
+import { afterEach, describe, expect, it, jest, beforeEach } from '@jest/globals';
 import type { InvitationDefinition } from '../../scripts/provision/invitations/invitation-definition.ts';
 import type { InvitationPackageData } from '../../scripts/provision/invitation-package.ts';
 import type { PromotionPreflightReport } from '../../scripts/provision/invitation-promote.ts';
@@ -46,6 +46,11 @@ import {
 import { formatPromotionsSection } from '../../scripts/provision/canonical-status-format.ts';
 import { presentPromotionRow } from '../../src/lib/status/presentation.ts';
 import { buildGroupedPromotionalEvidenceSql } from '../../scripts/status-core/promotional-evidence.ts';
+import {
+	createMemoryPreviewApprovalStore,
+	setDefaultPreviewApprovalStoreForTests,
+} from '../../scripts/provision/preview-approval-store.ts';
+import type { PreviewApprovalArtifact } from '../../scripts/provision/preview-approval-service.ts';
 
 function definition(slug: string): InvitationDefinition {
 	return {
@@ -239,6 +244,9 @@ describe('managed promotion status', () => {
 });
 
 describe('canonical Production preflight refinement', () => {
+	afterEach(() => {
+		setDefaultPreviewApprovalStoreForTests(null);
+	});
 	const envEvidence = { local: 'LIVE', preview: 'LIVE', production: 'LIVE' } as const;
 	const states = {
 		local: 'match',
@@ -297,9 +305,8 @@ describe('canonical Production preflight refinement', () => {
 			reasonCode: 'PREVIEW_APPROVAL_REQUIRED',
 			environments: { production: 'behind' },
 			handoff: {
-				dryRunCommand:
-					'pnpm invitation:release -- --preview-provenance --slug beta --targets preview --dry-run',
-				applyCommand: null,
+				dryRunCommand: 'pnpm invitation:release -- --slug beta --targets preview --dry-run',
+				applyCommand: 'pnpm invitation:release -- --slug beta --targets preview --apply',
 			},
 		});
 		expect(result.promotions.find((row) => row.slug === 'delta')).toMatchObject({
@@ -307,6 +314,59 @@ describe('canonical Production preflight refinement', () => {
 			reasonCode: 'MANAGED_DIVERGENCE',
 			environments: { production: 'diverged' },
 			handoff: { applyCommand: null },
+		});
+	});
+
+	it('offers --approve when a pending Preview artifact exists for the package', async () => {
+		const beta = definition('beta');
+		const environmentsBySlug = { beta: { ...states } };
+		setDefaultPreviewApprovalStoreForTests(
+			createMemoryPreviewApprovalStore([
+				{
+					approvalState: 'pending_hosted_validation',
+					schemaVersion: '2.1.0',
+					packageHash: 'package-beta',
+					sourceHash: 'source-beta',
+					metadataHash: 'metadata-beta',
+					canonicalProjectionHash: 'c'.repeat(32),
+					materializedProjectionHash: 'd'.repeat(32),
+					assetManifestHash: 'assets-beta',
+					slug: 'beta',
+					previewProjectRef: 'preview',
+					createdAt: '2026-08-15T00:00:00.000Z',
+					route: '/boda/beta',
+					expectedAssetHashes: {},
+				} as PreviewApprovalArtifact,
+			]),
+		);
+		const result = await refineManagedPromotionsWithProductionPreflight({
+			promotions: [
+				presentPromotionRow({
+					slug: beta.slug,
+					title: beta.title,
+					eventType: beta.eventType,
+					action: 'UNKNOWN',
+					reasonCode: 'EVIDENCE_INCOMPLETE',
+					environments: environmentsBySlug.beta!,
+					envEvidence,
+				}),
+			],
+			inSyncSlugs: [],
+			definitions: [beta],
+			environmentsBySlug,
+			envEvidence,
+			resolvePackage: async (slug) => ({ invitation: { slug } }) as InvitationPackageData,
+			runProductionPreflight: async () =>
+				productionReport('beta', 'BLOCKED', 'MISSING_PREVIEW_APPROVAL'),
+			timeoutMs: 1_000,
+		});
+		expect(result.promotions[0]).toMatchObject({
+			action: 'BLOCKED',
+			reasonCode: 'PREVIEW_APPROVAL_REQUIRED',
+			handoff: {
+				dryRunCommand: 'pnpm invitation:release -- --slug beta --targets preview --dry-run',
+				applyCommand: 'pnpm invitation:release -- --package-hash package-beta --approve',
+			},
 		});
 	});
 

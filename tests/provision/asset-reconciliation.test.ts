@@ -127,6 +127,43 @@ describe('asset-reconciliation engine', () => {
 		expect(result.reconciledAssets[0]?.reasonCode).toBe('ASSET_MATCH_EXISTS');
 	});
 
+	it('reuses a ready Cloudinary row under preserve', () => {
+		const result = reconcileAssets({
+			canonicalAssets: [mockCanonicalAsset],
+			targetDbAssets: [
+				{
+					...mockTargetDbRecord,
+					provider: 'cloudinary',
+					providerPublicId: mockCanonicalAsset.providerPublicId,
+					secureUrl:
+						'https://res.cloudinary.com/demo/image/upload/v1/xv/romina-rios-chaparro/assets/hero-b7a4f50f7239.webp',
+					sha256: mockCanonicalAsset.sha256,
+					managedByDefinitionSlug: 'romina-rios-chaparro',
+					managedSourceKey: 'hero',
+				},
+			],
+			observedStorage: {},
+			policy: 'preserve',
+			definitionSlug: 'romina-rios-chaparro',
+		});
+
+		expect(result.blocked).toBe(false);
+		expect(result.reconciledAssets[0]?.plannedAction).toBe('REUSE');
+	});
+
+	it('blocks Cloudinary missing binaries under preserve instead of uploading', () => {
+		const result = reconcileAssets({
+			canonicalAssets: [mockCanonicalAsset],
+			targetDbAssets: [],
+			observedStorage: {},
+			policy: 'preserve',
+		});
+
+		expect(result.blocked).toBe(true);
+		expect(result.reconciledAssets[0]?.plannedAction).toBe('BLOCK');
+		expect(result.blockReason).toMatch(/preserve/);
+	});
+
 	it('selects the referenced duplicate and repairs its semantic key without pruning peers', () => {
 		const referenced: TargetAssetRecord = {
 			...mockTargetDbRecord,

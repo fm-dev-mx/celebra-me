@@ -250,6 +250,21 @@ describe('stable create invitation identity', () => {
 	});
 });
 
+describe('content-only asset mutation contract', () => {
+	it('fails closed at plan time before apply when content-only plans asset writes', () => {
+		const source = readFileSync(
+			resolve(process.cwd(), 'scripts/provision/invitation-import-engine.ts'),
+			'utf8',
+		);
+		const scanIdx = source.indexOf('await scanAssetStatus(');
+		const assertIdx = source.indexOf('assertContentOnlyAllowsNoAssetMutations({', scanIdx);
+		const applyIdx = source.indexOf('if (assetsToUpload.length > 0)', assertIdx);
+		expect(scanIdx).toBeGreaterThan(0);
+		expect(assertIdx).toBeGreaterThan(scanIdx);
+		expect(applyIdx).toBeGreaterThan(assertIdx);
+	});
+});
+
 describe('publish path ordering contract', () => {
 	it('resets draft before publish_invitation_atomic when republishing identical draft content', () => {
 		const source = readFileSync(

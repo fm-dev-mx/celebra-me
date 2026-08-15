@@ -111,8 +111,7 @@ function formatEnvironmentStatus(
 		| { status: string; managedStatus?: string; syncStatus?: string; reason?: string }
 		| undefined,
 	inventoryLocal:
-		| { verified: boolean; rows: Array<{ slug: string; status: string }> }
-		| undefined,
+		{ verified: boolean; rows: Array<{ slug: string; status: string }> } | undefined,
 ): string {
 	let localRowStatus: string | undefined;
 	if (target === 'local' && inventoryLocal?.verified) {
@@ -241,6 +240,8 @@ export interface OperationalPlanData {
 	planId?: string;
 	invitation: string;
 	targets: string[];
+	updateScope?: string;
+	assetPolicy?: string;
 	isZeroDrift: boolean;
 	plannedOperations: number;
 	expectedDatabaseWrites: { inserts: number; updates: number; deletes: number };
@@ -258,7 +259,13 @@ export interface OperationalPlanData {
 
 export function formatTargetsSpanish(targets: string[]): string {
 	const labels = targets.map((t) =>
-		t === 'local' ? 'Local' : t === 'preview' ? 'Preview' : t === 'production' ? 'Producción' : t,
+		t === 'local'
+			? 'Local'
+			: t === 'preview'
+				? 'Preview'
+				: t === 'production'
+					? 'Producción'
+					: t,
 	);
 	if (labels.length === 0) return '';
 	if (labels.length === 1) return labels[0]!;
@@ -266,14 +273,25 @@ export function formatTargetsSpanish(targets: string[]): string {
 	return `${labels.slice(0, -1).join(', ')} y ${labels.at(-1)}`;
 }
 
+function formatScopePolicyLines(input: { updateScope?: string; assetPolicy?: string }): string[] {
+	if (!input.updateScope && !input.assetPolicy) return [];
+	const lines: string[] = [];
+	if (input.updateScope) lines.push(`Alcance      : ${input.updateScope}`);
+	if (input.assetPolicy) lines.push(`Política     : ${input.assetPolicy}`);
+	return lines;
+}
+
 export function toOperationalPlanData(
 	invitation: string,
 	targets: Array<'local' | 'preview'>,
 	targetPlans: TargetPlanData[],
+	scope?: { updateScope?: string; assetPolicy?: string },
 ): OperationalPlanData {
 	return {
 		invitation,
 		targets,
+		updateScope: scope?.updateScope,
+		assetPolicy: scope?.assetPolicy,
 		isZeroDrift: targetPlans.every((tp) => tp.status === 'SIN CAMBIOS'),
 		plannedOperations: targetPlans.reduce((sum, tp) => sum + tp.plannedOperations, 0),
 		expectedDatabaseWrites: {
@@ -283,7 +301,10 @@ export function toOperationalPlanData(
 		},
 		expectedStorageMutations: {
 			uploads: targetPlans.reduce((s, tp) => s + tp.expectedStorageMutations.uploads, 0),
-			overwrites: targetPlans.reduce((s, tp) => s + tp.expectedStorageMutations.overwrites, 0),
+			overwrites: targetPlans.reduce(
+				(s, tp) => s + tp.expectedStorageMutations.overwrites,
+				0,
+			),
 			moves: targetPlans.reduce((s, tp) => s + (tp.expectedStorageMutations.moves ?? 0), 0),
 			deletes: targetPlans.reduce((s, tp) => s + tp.expectedStorageMutations.deletes, 0),
 		},
@@ -414,17 +435,21 @@ export function formatFunctionalChanges(
 		lines.push('');
 		for (const u of updates) {
 			lines.push(`  • ${u.section} — ${u.entity}`);
-			const targetPrevEntries = u.targetPreviousValues ? Object.entries(u.targetPreviousValues) : [];
+			const targetPrevEntries = u.targetPreviousValues
+				? Object.entries(u.targetPreviousValues)
+				: [];
 			const distinctPrevValues = new Set(targetPrevEntries.map(([, v]) => String(v)));
 
 			if (targetPrevEntries.length > 1 && distinctPrevValues.size > 1) {
 				for (const [t, prev] of targetPrevEntries) {
-					const envLabel = t === 'local' ? 'Local' : t === 'preview' ? 'Preview' : 'Producción';
+					const envLabel =
+						t === 'local' ? 'Local' : t === 'preview' ? 'Preview' : 'Producción';
 					lines.push(`    ${envLabel.padEnd(10)} : ${String(prev ?? '(vacío)')}`);
 				}
 				if (u.newValue !== undefined) lines.push(`    Nuevo      : ${String(u.newValue)}`);
 			} else {
-				if (u.previousValue !== undefined) lines.push(`    Antes    : ${String(u.previousValue)}`);
+				if (u.previousValue !== undefined)
+					lines.push(`    Antes    : ${String(u.previousValue)}`);
 				if (u.newValue !== undefined) lines.push(`    Ahora    : ${String(u.newValue)}`);
 				if (u.targets && u.targets.length > 1) {
 					lines.push(`    Entornos : ${formatTargetsSpanish(u.targets)}`);
@@ -565,6 +590,7 @@ export function formatDryRunPlan(plan: OperationalPlanData, options?: PresenterO
 	lines.push('');
 	lines.push(`Invitación   : ${colors.bold(plan.invitation)}`);
 	lines.push(`Entorno(s)   : ${plan.targets.join(', ')}`);
+	lines.push(...formatScopePolicyLines(plan));
 	lines.push('');
 
 	if (plan.targetPlans && plan.targetPlans.length > 0) {
@@ -689,6 +715,7 @@ export function formatApplyConfirmation(
 	lines.push(
 		`Se aplicarán los siguientes cambios a la invitación "${colors.bold(plan.invitation)}" en ${plan.targets.join(', ')}:`,
 	);
+	lines.push(...formatScopePolicyLines(plan));
 	if (plan.targetPlans?.length) {
 		for (const target of plan.targetPlans.filter(
 			(candidate) => candidate.status === 'CAMBIOS PENDIENTES',
@@ -698,7 +725,9 @@ export function formatApplyConfirmation(
 				lines.push(`  ID de Plan   : ${colors.dim(target.planId ?? 'NO DISPONIBLE')}`);
 			}
 			lines.push(
-				...formatContentChanges(target.functionalChanges, options).map((line) => `  ${line}`),
+				...formatContentChanges(target.functionalChanges, options).map(
+					(line) => `  ${line}`,
+				),
 			);
 			lines.push(
 				...formatPhysicalImpact(
@@ -775,6 +804,8 @@ export interface ApplyResultData {
 	storageMutations: { uploads: number; overwrites: number; moves?: number; deletes: number };
 	publishedVersion?: number;
 	reason?: string;
+	updateScope?: string;
+	assetPolicy?: string;
 	functionalChanges?: OperationalPlanData['functionalChanges'];
 	targetResults?: TargetApplyResultData[];
 }
@@ -786,6 +817,7 @@ export function formatApplyResult(result: ApplyResultData): string {
 	lines.push('');
 	lines.push(`Invitación   : ${colors.bold(result.invitation)}`);
 	lines.push(`Entorno(s)   : ${result.environment}`);
+	lines.push(...formatScopePolicyLines(result));
 	lines.push('');
 
 	if (result.targetResults && result.targetResults.length > 0) {

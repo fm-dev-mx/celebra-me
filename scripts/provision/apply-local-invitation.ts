@@ -37,6 +37,7 @@ import {
 	buildNormalizedInvitationRelease,
 	canonicalize,
 	materializeAssetReferences,
+	provenanceProjectionHash,
 	type NormalizedInvitationAsset,
 } from './normalized-invitation-release.ts';
 import { serializeInvitationPackage } from './invitation-package.ts';
@@ -64,6 +65,10 @@ import {
 	type ConflictResolutions,
 	type UpdateScope,
 } from './semantic-delta.ts';
+import {
+	assertContentOnlyAllowsNoAssetMutations,
+	defaultAssetPolicy,
+} from './invitation-update-options.ts';
 import {
 	collectUploadedAssetIds,
 	reconcileAssets,
@@ -578,6 +583,8 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 
 	const assetRows = Array.isArray(existingAssetRows) ? existingAssetRows : [];
 	const existingAssetIndexes = indexLocalAssetRows(assetRows as Array<Record<string, unknown>>);
+	const updateScope: UpdateScope = options.updateScope ?? 'content-only';
+	const assetPolicy = options.assetPolicy ?? defaultAssetPolicy(updateScope);
 
 	for (const norm of normalizedPhotos) {
 		const existingAsset = resolveLocalAssetRow(
@@ -588,6 +595,49 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		const assetId =
 			(existingAsset?.id as string) ||
 			deriveDeterministicUuid('asset', `${slug}:${norm.key}`);
+
+		if (updateScope === 'content-only') {
+			const existingUrl =
+				typeof existingAsset?.secure_url === 'string' ? existingAsset.secure_url : '';
+			const canReuse =
+				Boolean(existingAsset) &&
+				existingAsset?.provider === 'cloudinary' &&
+				existingUrl.startsWith('https://res.cloudinary.com') &&
+				existingAsset.sha256 === norm.imageHash &&
+				existingAsset.default_alt_text === norm.alt &&
+				existingAsset.mime_type === norm.mimeType &&
+				Number(existingAsset.validation_version) === norm.validationVersion;
+			if (canReuse && existingAsset) {
+				assetMap[norm.key] = {
+					type: 'uploaded',
+					assetId,
+					src: existingUrl,
+				};
+				currentAssetStates.push({
+					key: norm.key,
+					storagePath: existingAsset.provider_public_id ?? existingAsset.storage_path,
+					storageHash: existingAsset.sha256 ?? norm.imageHash,
+					metadata: existingAsset,
+				});
+				assetActions.push({
+					resource: 'invitation_assets',
+					name: norm.displayName,
+					action: 'reuse',
+					detail: `Cloudinary asset preserved under content-only (${(norm.fileSize / 1024).toFixed(1)} KB WebP)`,
+				});
+			} else {
+				assetActions.push({
+					resource: 'invitation_assets',
+					name: norm.displayName,
+					action: existingAsset ? 'replace' : 'create',
+					detail: existingAsset
+						? 'Local asset would change under content-only'
+						: 'Missing local asset under content-only',
+				});
+			}
+			continue;
+		}
+
 		const cRes = await uploadOrReconcileCloudinaryAsset({
 			eventType: definition.eventType,
 			slug,
@@ -645,9 +695,12 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		}
 	}
 
-	const updateScope: UpdateScope = options.updateScope ?? 'content-only';
-	const assetPolicy =
-		options.assetPolicy ?? (updateScope === 'content-only' ? 'preserve' : 'missing');
+	assertContentOnlyAllowsNoAssetMutations({
+		updateScope,
+		plannedAssetMutations: assetActions.filter(
+			(action) => action.action === 'create' || action.action === 'replace',
+		).length,
+	});
 	const packageCanonicalContent = materializeAssetReferences(
 		release.draftContent,
 		assetMap,
@@ -1223,88 +1276,90 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		}
 
 		// 2. Storage Uploads & Metadata Upserts
-		for (const norm of normalizedPhotos) {
-			const assetRef = assetMap[norm.key];
-			const existing = resolveLocalAssetRow(
-				existingAssetIndexes,
-				{ key: norm.key, displayName: norm.displayName, sha256: norm.sha256 },
-				{ eventType: definition.eventType, slug },
-			);
-			const cRes = await uploadOrReconcileCloudinaryAsset({
-				eventType: definition.eventType,
-				slug,
-				key: norm.key,
-				displayName: norm.displayName,
-				alt: norm.alt,
-				bytes: norm.bytes,
-				sha256: norm.sha256,
-				mimeType: norm.mimeType,
-				dryRun: false,
-			});
-			if (cRes.action === 'UPLOAD') {
-				mutationStarted = true;
-				completedSteps.push(`asset_uploaded:${norm.key}`);
-			}
-
-			const isIdentical =
-				Boolean(existing) &&
-				existing?.provider === 'cloudinary' &&
-				(existing.secure_url === cRes.secureUrl ||
-					existing.provider_public_id === cRes.publicId) &&
-				existing.sha256 === norm.imageHash &&
-				existing.default_alt_text === norm.alt &&
-				existing.mime_type === norm.mimeType &&
-				Number(existing.file_size) === cRes.bytes &&
-				Number(existing.width) === cRes.width &&
-				Number(existing.height) === cRes.height &&
-				Number(existing.validation_version) === norm.validationVersion;
-
-			if (!isIdentical) {
-				const assetMetadata = {
-					invitation_id: invitationId,
-					display_name: norm.displayName,
-					default_alt_text: norm.alt,
-					bucket: BUCKET,
-					storage_path: cRes.publicId,
-					mime_type: norm.mimeType,
-					width: cRes.width,
-					height: cRes.height,
-					file_size: cRes.bytes,
-					validation_version: norm.validationVersion,
-					original_mime_type: norm.originalMimeType,
-					original_file_size: norm.originalFileSize,
-					provider: 'cloudinary',
-					provider_public_id: cRes.publicId,
-					provider_version: cRes.version,
-					secure_url: cRes.secureUrl,
+		if (updateScope !== 'content-only') {
+			for (const norm of normalizedPhotos) {
+				const assetRef = assetMap[norm.key];
+				const existing = resolveLocalAssetRow(
+					existingAssetIndexes,
+					{ key: norm.key, displayName: norm.displayName, sha256: norm.sha256 },
+					{ eventType: definition.eventType, slug },
+				);
+				const cRes = await uploadOrReconcileCloudinaryAsset({
+					eventType: definition.eventType,
+					slug,
+					key: norm.key,
+					displayName: norm.displayName,
+					alt: norm.alt,
+					bytes: norm.bytes,
 					sha256: norm.sha256,
-					provider_metadata: cRes.metadata,
-					managed_by_definition_slug: release.slug,
-					managed_source_key: norm.key,
-					managed_sha256: norm.sha256,
-					managed_operation_id: activeOperationId,
-				};
-
-				if (existing) {
-					const { error } = await supabase
-						.from('invitation_assets')
-						.update(assetMetadata)
-						.eq('id', assetRef.assetId);
-					if (error) throw error;
-					markOverwritten('invitation_asset', assetRef.assetId);
-				} else {
-					const { error } = await supabase
-						.from('invitation_assets')
-						.insert({ id: assetRef.assetId, ...assetMetadata });
-					if (error) throw error;
-					trackedResources.push({
-						type: 'invitation_asset',
-						id: assetRef.assetId,
-						isPreExisting: false,
-					});
+					mimeType: norm.mimeType,
+					dryRun: false,
+				});
+				if (cRes.action === 'UPLOAD') {
+					mutationStarted = true;
+					completedSteps.push(`asset_uploaded:${norm.key}`);
 				}
-				mutationStarted = true;
-				completedSteps.push(`asset_metadata_saved:${norm.key}`);
+
+				const isIdentical =
+					Boolean(existing) &&
+					existing?.provider === 'cloudinary' &&
+					(existing.secure_url === cRes.secureUrl ||
+						existing.provider_public_id === cRes.publicId) &&
+					existing.sha256 === norm.imageHash &&
+					existing.default_alt_text === norm.alt &&
+					existing.mime_type === norm.mimeType &&
+					Number(existing.file_size) === cRes.bytes &&
+					Number(existing.width) === cRes.width &&
+					Number(existing.height) === cRes.height &&
+					Number(existing.validation_version) === norm.validationVersion;
+
+				if (!isIdentical) {
+					const assetMetadata = {
+						invitation_id: invitationId,
+						display_name: norm.displayName,
+						default_alt_text: norm.alt,
+						bucket: BUCKET,
+						storage_path: cRes.publicId,
+						mime_type: norm.mimeType,
+						width: cRes.width,
+						height: cRes.height,
+						file_size: cRes.bytes,
+						validation_version: norm.validationVersion,
+						original_mime_type: norm.originalMimeType,
+						original_file_size: norm.originalFileSize,
+						provider: 'cloudinary',
+						provider_public_id: cRes.publicId,
+						provider_version: cRes.version,
+						secure_url: cRes.secureUrl,
+						sha256: norm.sha256,
+						provider_metadata: cRes.metadata,
+						managed_by_definition_slug: release.slug,
+						managed_source_key: norm.key,
+						managed_sha256: norm.sha256,
+						managed_operation_id: activeOperationId,
+					};
+
+					if (existing) {
+						const { error } = await supabase
+							.from('invitation_assets')
+							.update(assetMetadata)
+							.eq('id', assetRef.assetId);
+						if (error) throw error;
+						markOverwritten('invitation_asset', assetRef.assetId);
+					} else {
+						const { error } = await supabase
+							.from('invitation_assets')
+							.insert({ id: assetRef.assetId, ...assetMetadata });
+						if (error) throw error;
+						trackedResources.push({
+							type: 'invitation_asset',
+							id: assetRef.assetId,
+							isPreExisting: false,
+						});
+					}
+					mutationStarted = true;
+					completedSteps.push(`asset_metadata_saved:${norm.key}`);
+				}
 			}
 		}
 
@@ -1638,7 +1693,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 				metadata_hash: release.metadataHash,
 				// The provenance table requires 64-char SHA-256; release.projectionHash is the
 				// 32-char MD5 projection used by the publish RPC.
-				projection_hash: createHash('sha256').update(release.projectionHash).digest('hex'),
+				projection_hash: provenanceProjectionHash(release.projectionHash),
 				asset_manifest_hash: release.assetManifestHash,
 				managed_projection: proposedContent,
 				applied_draft_updated_at: appliedDraftUpdatedAt,

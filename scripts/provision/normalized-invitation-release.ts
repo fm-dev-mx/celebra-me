@@ -87,6 +87,11 @@ function hash(value: unknown): string {
 		.update(typeof value === 'string' ? value : canonicalize(value))
 		.digest('hex');
 }
+
+/** SHA-256 of the package MD5 projection hash. Provenance rows require 64-char hex. */
+export function provenanceProjectionHash(md5ProjectionHash: string): string {
+	return hash(md5ProjectionHash);
+}
 export function semanticAssetRef(key: string): UploadedAssetRef {
 	return {
 		type: 'uploaded',

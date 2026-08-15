@@ -106,6 +106,8 @@ function blockedPromotionHandoff(
 	slug: string,
 	eventType?: string,
 	environments?: Record<TargetEnv, EnvironmentPromotionState>,
+	packageHash?: string,
+	hasPendingPreviewApproval?: boolean,
 ): PromotionHandoff {
 	if (reasonCode === 'LOCAL_BEHIND_PREVIEW_ALIGNED') {
 		return promoteHandoff(slug, 'local', false);
@@ -143,18 +145,29 @@ function blockedPromotionHandoff(
 		});
 	}
 	if (reasonCode === 'PREVIEW_APPROVAL_REQUIRED') {
+		const approveCommand =
+			hasPendingPreviewApproval && packageHash
+				? `pnpm invitation:release -- --package-hash ${packageHash} --approve`
+				: null;
 		return {
-			dryRunCommand: `pnpm invitation:release -- --preview-provenance --slug ${slug} --targets preview --dry-run`,
+			dryRunCommand: `pnpm invitation:release -- --slug ${slug} --targets preview --dry-run`,
 			dryRunStepType: 'Verify',
-			applyCommand: null,
-			applyStepType: 'Manual/HITL',
+			applyCommand:
+				approveCommand ??
+				`pnpm invitation:release -- --slug ${slug} --targets preview --apply`,
+			applyStepType: approveCommand ? 'Manual/HITL' : 'Apply',
 			ownerApplyRequired: false,
-			optionalDiagnosticCommand: `pnpm invitation:release -- --preview-provenance --diagnose-receipt --slug ${slug} --targets preview --dry-run`,
-			steps: [
-				'Verifique primero la provenance de Preview; esta lectura no escribe en Supabase.',
-				'Cuando el bloqueo sea stale_provenance, ejecute el diagnóstico de receipts; la planificación de recovery solo ofrece metadata y nunca Storage.',
-				'Después verifique y apruebe el paquete exacto en Preview antes de Production.',
-			],
+			optionalDiagnosticCommand: null,
+			steps: approveCommand
+				? [
+						'Confirme paridad Preview con el dry-run canónico.',
+						'Apruebe el package-hash exacto en Preview antes de Production.',
+					]
+				: [
+						'Confirme paridad Preview con el dry-run canónico.',
+						'Aplique Preview para crear o refrescar el artefacto pending (cero escrituras de contenido si ya está IN_SYNC).',
+						'Apruebe el package-hash impreso antes de Production.',
+					],
 		};
 	}
 	if (reasonCode === 'PRODUCTION_PREFLIGHT_BLOCKED') {
@@ -194,11 +207,20 @@ function derivePromotionHandoff(
 	eventType?: string,
 	environments?: Record<TargetEnv, EnvironmentPromotionState>,
 	envEvidence?: Record<TargetEnv, EvidenceState>,
+	packageHash?: string,
+	hasPendingPreviewApproval?: boolean,
 ): PromotionHandoff {
 	if (action === 'PROMOTE_PREVIEW') return promoteHandoff(slug, 'preview', false);
 	if (action === 'PROMOTE_PRODUCTION') return promoteHandoff(slug, 'production', true);
 	if (action === 'BLOCKED') {
-		return blockedPromotionHandoff(reasonCode, slug, eventType, environments);
+		return blockedPromotionHandoff(
+			reasonCode,
+			slug,
+			eventType,
+			environments,
+			packageHash,
+			hasPendingPreviewApproval,
+		);
 	}
 	if (action === 'UNKNOWN') {
 		return unknownPromotionHandoff(reasonCode, slug, environments, envEvidence);
@@ -302,6 +324,8 @@ export function presentPromotionRow(input: {
 	reasonCode: PromotionReasonCode;
 	environments: Record<TargetEnv, EnvironmentPromotionState>;
 	envEvidence: Record<TargetEnv, EvidenceState>;
+	packageHash?: string;
+	hasPendingPreviewApproval?: boolean;
 }): CanonicalPromotionRow {
 	const route = derivePromotionRoute(input.action, input.reasonCode);
 	return {
@@ -323,6 +347,8 @@ export function presentPromotionRow(input: {
 			input.eventType,
 			input.environments,
 			input.envEvidence,
+			input.packageHash,
+			input.hasPendingPreviewApproval,
 		),
 	};
 }

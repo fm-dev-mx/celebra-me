@@ -3,7 +3,6 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { OperatorError } from '../../scripts/db/operator-cli-ux.ts';
 import { orchestrateInvitationPromotion } from '../../scripts/provision/invitation-promotion-orchestrator.ts';
-import { resolvePromotionUpdateScope } from '../../scripts/provision/invitation-update-options.ts';
 import type {
 	PromotionApplyReport,
 	PromotionPreflightReport,
@@ -76,23 +75,6 @@ function preflight(overrides: Partial<PromotionPreflightReport> = {}): Promotion
 		...overrides,
 	} as PromotionPreflightReport;
 }
-
-describe('resolvePromotionUpdateScope', () => {
-	it('prefers explicit updateScope over deliveryScope', () => {
-		expect(
-			resolvePromotionUpdateScope({
-				updateScope: 'content-only',
-				deliveryScope: 'content-and-assets',
-			}),
-		).toBe('content-only');
-	});
-
-	it('uses definition deliveryScope when updateScope is omitted', () => {
-		expect(resolvePromotionUpdateScope({ deliveryScope: 'content-and-assets' })).toBe(
-			'content-and-assets',
-		);
-	});
-});
 
 describe('classifyPromotionRecoveryRisk', () => {
 	it('classifies routine content-only plans without destructive asset or identity work', () => {

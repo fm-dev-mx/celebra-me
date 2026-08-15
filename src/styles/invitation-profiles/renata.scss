@@ -178,7 +178,12 @@ html:has(.event--renata.theme-preset--editorial) body {
 	--gallery-section-bg: var(--renata-blush);
 	--gallery-title-color: var(--renata-ink);
 	--gallery-subtitle-color: rgb(var(--renata-ink-rgb) / 64%);
-	--countdown-bg: var(--renata-olive-deep);
+	--countdown-bg: var(--renata-cream);
+	--renata-ornament-spray: url('../../assets/invitations/renata/ornament-spray.webp');
+	--renata-ornament-cluster: url('../../assets/invitations/renata/ornament-cluster.webp');
+	--renata-ornament-inset: clamp(1.35rem, 3.6vw, 2.15rem);
+	--renata-ornament-spray-size: auto clamp(14rem, 32vh, 17.5rem);
+	--renata-ornament-cluster-size: clamp(8.5rem, 19vw, 13.5rem) auto;
 	--wax-seal-highlight: var(--renata-coral);
 	--wax-seal-mid: var(--renata-olive);
 	--wax-seal-deep: var(--renata-ink);
@@ -431,6 +436,27 @@ html:has(.event--renata.theme-preset--editorial) body {
 		background: var(--family-bg);
 		padding-block: var(--family-padding-block);
 
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 0;
+			z-index: 0;
+			right: -0.1rem;
+			top: -1rem;
+			background: var(--renata-ornament-spray) right top / var(--renata-ornament-spray-size)
+				no-repeat;
+			background-origin: content-box;
+			opacity: 78%;
+			pointer-events: none;
+		}
+
+		.family__header,
+		.family__panel,
+		.family__content {
+			position: relative;
+			z-index: 1;
+		}
+
 		.family__header {
 			max-width: var(--family-split-content-max-width);
 			margin: 0 auto clamp(1.85rem, 4.2vw, 2.65rem);
@@ -589,16 +615,13 @@ html:has(.event--renata.theme-preset--editorial) body {
 		}
 	}
 
-	// Asymmetric Atmospheric Intersection Handoff for Countdown:
-	// Top Entry (Family -> Countdown): A subtle, shallow light-to-dark transition (180deg)
-	// that softly eases the cream canvas into the dark ink section without heavy shadow pooling.
-	// Bottom Exit (Countdown -> Next section): A centered bottom light sweep (radial at 50% 100%)
-	// and softened base gradient easing the dark section into any subsequent surface order-safely.
+	// Cream-to-cream handoff: Family and Countdown share the stationery field.
 	.invitation-section-wrapper[data-section-kind='countdown'][data-intersection='atmospheric-blend'] {
+		--intersection-depth: clamp(1.25rem, 3vw, 2rem);
 		--intersection-blend: linear-gradient(
 			180deg,
 			var(--renata-cream) 0%,
-			rgb(var(--renata-cream-rgb) / 30%) 40%,
+			rgb(var(--renata-blush-rgb) / 22%) 55%,
 			transparent 100%
 		);
 
@@ -609,54 +632,44 @@ html:has(.event--renata.theme-preset--editorial) body {
 			position: absolute;
 			top: 0;
 			inset-inline: 0;
-			height: clamp(2rem, 4vw, 3.25rem);
+			height: var(--intersection-depth);
 			background: var(--intersection-blend);
 			pointer-events: none;
 			z-index: 2;
-			opacity: 50%;
+			opacity: 28%;
 		}
 	}
 
 	.countdown-section {
-		--section-padding-block: clamp(3.5rem, 8vw, 5.25rem);
-		--color-action-accent: var(--renata-coral);
-		--color-action-accent-rgb: var(--renata-coral-rgb);
+		--section-padding-block: clamp(4.5rem, 10vw, 6.75rem);
 		--countdown-segment-bg: transparent;
-		--countdown-value-size-mobile: clamp(2.85rem, 10.5vw, 3.75rem);
-		--countdown-value-size-desktop: clamp(4.5rem, 6.2vw, 6rem);
+		--countdown-value-size-mobile: clamp(1.75rem, 6.4vw, 2.25rem);
+		--countdown-value-size-desktop: clamp(4.25rem, 5.6vw, 5.5rem);
 
 		min-height: 0;
 		padding-block: var(--section-padding-block);
+		padding-block-end: calc(var(--section-padding-block) + 2.25rem);
 		background:
 			radial-gradient(
-				ellipse 80% 40% at 50% 0%,
-				rgb(var(--renata-cream-rgb) / 10%) 0%,
-				rgb(var(--renata-coral-rgb) / 10%) 40%,
-				transparent 75%
+				ellipse 70% 42% at 50% 0%,
+				rgb(var(--renata-blush-rgb) / 34%) 0%,
+				transparent 72%
 			),
-			radial-gradient(
-				ellipse 90% 55% at 50% 100%,
-				rgb(var(--renata-cream-rgb) / 16%) 0%,
-				rgb(var(--renata-olive-rgb) / 8%) 45%,
-				transparent 75%
-			),
-			radial-gradient(
-				circle at 50% 45%,
-				rgb(var(--renata-olive-rgb) / 18%) 0%,
-				transparent 60%
-			),
-			linear-gradient(
-				180deg,
-				rgb(42 46 36) 0%,
-				rgb(32 36 28) 30%,
-				var(--countdown-bg) 65%,
-				rgb(26 30 22) 88%,
-				rgb(34 38 30) 100%
-			);
-		color: var(--renata-cream);
+			linear-gradient(180deg, var(--countdown-bg) 0%, var(--countdown-bg) 100%);
+		color: var(--renata-ink);
 
 		&::before {
-			opacity: 10%;
+			opacity: 0%;
+			background: none;
+		}
+
+		.countdown-texture {
+			padding: var(--renata-ornament-inset);
+			left: -3rem;
+			background: var(--renata-ornament-cluster) left bottom / clamp(10rem, 20vw, 18rem) auto
+				no-repeat;
+			background-origin: content-box;
+			opacity: 75%;
 		}
 
 		.countdown-container {
@@ -666,36 +679,35 @@ html:has(.event--renata.theme-preset--editorial) body {
 		.countdown-title {
 			background: none;
 			background-clip: unset;
-			-webkit-text-fill-color: var(--renata-coral);
-			color: var(--renata-coral);
-			font-family: var(--font-display);
-			font-size: var(--renata-section-title-size);
-			font-weight: 400;
-			font-style: italic;
-			letter-spacing: 0.05em;
-			margin-bottom: clamp(1.5rem, 3.5vw, 2.5rem);
+			-webkit-text-fill-color: var(--renata-olive);
+			color: var(--renata-olive);
+			font-family: var(--font-label);
+			font-size: var(--renata-meta-size);
+			font-weight: 500;
+			font-style: normal;
+			letter-spacing: var(--renata-meta-tracking);
+			margin-bottom: clamp(2.15rem, 4.5vw, 3.25rem);
+			text-wrap: balance;
 		}
 
 		.countdown-timer-wrapper {
-			margin: 0 0 clamp(1.75rem, 4vw, 2.75rem);
+			margin: 0 0 clamp(2rem, 4.5vw, 3rem);
 		}
 
 		.countdown__timer {
 			margin-top: 0;
 			gap: 0;
-
-			@media (width <= 860px) {
-				grid-template-columns: repeat(2, 1fr);
-			}
+			grid-template-columns: repeat(4, minmax(0, 1fr));
 		}
 
 		.countdown__segment {
 			position: relative;
+			min-width: 0;
 			background: transparent;
 			backdrop-filter: none;
 			border: 0;
 			border-radius: 0;
-			padding: clamp(0.85rem, 2.2vw, 1.4rem) clamp(0.5rem, 2vw, 1.25rem);
+			padding: clamp(0.2rem, 1.2vw, 0.55rem) 0.2rem;
 
 			&:hover {
 				transform: none;
@@ -703,27 +715,19 @@ html:has(.event--renata.theme-preset--editorial) body {
 				border-color: transparent;
 				background: transparent;
 			}
-		}
 
-		@media (width <= 860px) {
-			.countdown__segment[data-unit='days'],
-			.countdown__segment[data-unit='hours'] {
-				border-bottom: 1px solid rgb(var(--renata-silver-rgb) / 11%);
-			}
-
-			.countdown__segment[data-unit='days']::after,
-			.countdown__segment[data-unit='minutes']::after {
+			&:not(:last-child)::after {
 				content: '';
 				position: absolute;
-				top: 18%;
+				top: 22%;
 				right: 0;
-				height: 64%;
+				height: 56%;
 				width: 1px;
 				background: linear-gradient(
 					to bottom,
 					transparent 0%,
-					rgb(var(--renata-silver-rgb) / 14%) 30%,
-					rgb(var(--renata-silver-rgb) / 14%) 70%,
+					rgb(var(--renata-silver-rgb) / 36%) 28%,
+					rgb(var(--renata-silver-rgb) / 36%) 72%,
 					transparent 100%
 				);
 				pointer-events: none;
@@ -731,53 +735,41 @@ html:has(.event--renata.theme-preset--editorial) body {
 		}
 
 		@media (width > 860px) {
-			.countdown__segment:not(:last-child)::after {
-				content: '';
-				position: absolute;
-				top: 20%;
-				right: 0;
-				height: 60%;
-				width: 1px;
-				background: linear-gradient(
-					to bottom,
-					transparent 0%,
-					rgb(var(--renata-silver-rgb) / 14%) 25%,
-					rgb(var(--renata-silver-rgb) / 14%) 75%,
-					transparent 100%
-				);
-				pointer-events: none;
+			.countdown__segment {
+				padding: clamp(0.85rem, 2vw, 1.35rem) clamp(0.65rem, 1.8vw, 1.25rem);
 			}
 		}
 
 		.countdown__value-wrapper {
-			margin-bottom: 0.25rem;
+			margin-bottom: 0.2rem;
 		}
 
 		.countdown__value {
-			color: var(--renata-cream);
+			color: var(--renata-ink);
 			font-family: var(--font-display);
 			font-variant-numeric: tabular-nums;
 			font-weight: 300;
 			line-height: 0.92;
 			letter-spacing: -0.02em;
-			text-shadow: 0 4px 20px rgb(var(--renata-ink-rgb) / 75%);
-		}
-
-		.countdown__segment[data-unit='days'] {
-			.countdown__value {
-				text-shadow: 0 4px 24px rgb(var(--renata-coral-rgb) / 40%);
-			}
+			text-shadow: none;
 		}
 
 		.countdown__label {
-			color: rgb(var(--renata-cream-rgb) / 62%);
+			color: rgb(var(--renata-olive-rgb) / 62%);
 			font-family: var(--font-label);
-			font-size: var(--renata-meta-size);
+			font-size: clamp(0.5rem, 1.35vw, 0.68rem);
 			font-weight: 500;
-			letter-spacing: 0.32em;
-			margin-top: 0.45rem;
+			letter-spacing: 0.08em;
+			margin-top: 0.32rem;
 			opacity: 100%;
 			text-transform: uppercase;
+			white-space: nowrap;
+
+			@media (width > 860px) {
+				font-size: var(--renata-meta-size);
+				letter-spacing: 0.22em;
+				margin-top: 0.5rem;
+			}
 		}
 
 		.countdown-date {
@@ -785,23 +777,35 @@ html:has(.event--renata.theme-preset--editorial) body {
 		}
 
 		.countdown-footer {
-			margin-top: clamp(1.75rem, 4vw, 2.75rem);
-			border-top: 1px solid rgb(var(--renata-silver-rgb) / 14%);
-			padding-top: clamp(1.25rem, 3vw, 1.75rem);
+			margin-top: clamp(2.25rem, 5vw, 3.5rem);
+			border-top: 0;
+			padding-top: clamp(1.5rem, 3.5vw, 2.25rem);
 			max-width: 30rem;
 			margin-inline: auto;
+			position: relative;
+
+			&::before {
+				content: '';
+				position: absolute;
+				top: 0;
+				left: 50%;
+				width: min(4.5rem, 28%);
+				height: 1px;
+				transform: translateX(-50%);
+				background: rgb(var(--renata-silver-rgb) / 42%);
+			}
 		}
 
 		.countdown-invitation-text {
 			margin-top: 0;
 			margin-inline: auto;
-			max-inline-size: min(100%, 32ch);
+			max-inline-size: min(100%, 46ch);
 			font-family: var(--font-body);
 			font-size: var(--renata-body-size);
 			font-weight: 400;
 			line-height: 1.55;
 			letter-spacing: 0.08em;
-			color: rgb(var(--renata-blush-rgb) / 88%);
+			color: rgb(var(--renata-ink-rgb) / 62%);
 			opacity: 100%;
 			font-style: normal;
 			text-wrap: balance;
@@ -860,6 +864,31 @@ html:has(.event--renata.theme-preset--editorial) body {
 		--location-indication-text-font-size: var(--renata-body-size);
 		--location-indications-heading-font-size: var(--renata-meta-size);
 		--location-title-font-size: var(--renata-meta-size);
+
+		overflow: hidden;
+
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 0;
+			right: -2.5rem;
+			z-index: 0;
+			padding: calc(var(--renata-ornament-inset) + 2.35rem) var(--renata-ornament-inset)
+				var(--renata-ornament-inset);
+			background: var(--renata-ornament-spray) right top / auto clamp(12rem, 18vh, 16rem)
+				no-repeat;
+			background-origin: content-box;
+			opacity: 72%;
+			pointer-events: none;
+		}
+
+		.event-location__heading,
+		.event-location__lede,
+		.event-location__card,
+		.event-location__indications {
+			position: relative;
+			z-index: 1;
+		}
 
 		.event-location__card {
 			background: var(--location-card-bg);
@@ -963,10 +992,32 @@ html:has(.event--renata.theme-preset--editorial) body {
 	}
 
 	.itinerary {
-		overflow: visible;
+		overflow: hidden;
 		padding-block: var(--renata-space-emphasis);
+		padding-block-end: calc(var(--renata-space-emphasis) + 6.75rem);
 		background: var(--renata-cream);
 		color: var(--renata-ink);
+
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 0;
+			left: -3rem;
+			z-index: 0;
+			padding: var(--renata-ornament-inset);
+			background: var(--renata-ornament-cluster) left bottom / clamp(11.5rem, 17vw, 14.5rem)
+				auto no-repeat;
+			background-origin: content-box;
+			opacity: 50%;
+			pointer-events: none;
+		}
+
+		.itinerary__header,
+		.itinerary__timeline,
+		.itinerary__items {
+			position: relative;
+			z-index: 1;
+		}
 
 		.itinerary__header {
 			margin-bottom: clamp(1.75rem, 4.5vw, 2.75rem);
@@ -1249,9 +1300,26 @@ html:has(.event--renata.theme-preset--editorial) body {
 	// Gifts Section — Refined composition & visual hierarchy for Renata
 	// -------------------------------------------------------------------------
 	.gifts-section {
+		overflow: hidden;
 		padding-block: var(--gifts-padding-block);
 
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 0;
+			left: -3rem;
+			z-index: 0;
+			padding: var(--renata-ornament-inset);
+			background: var(--renata-ornament-cluster) left bottom /
+				var(--renata-ornament-cluster-size) no-repeat;
+			background-origin: content-box;
+			opacity: 72%;
+			pointer-events: none;
+		}
+
 		&__container {
+			position: relative;
+			z-index: 1;
 			max-width: 46rem;
 			margin-inline: auto;
 		}

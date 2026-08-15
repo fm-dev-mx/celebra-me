@@ -53,7 +53,8 @@ import {
 	type ConflictResolutions,
 	type UpdateScope,
 } from './semantic-delta.ts';
-import { parseAssetPolicy, type AssetPolicy } from './asset-reconciliation.ts';
+import type { AssetPolicy } from './asset-reconciliation.ts';
+import { defaultAssetPolicy, requireResolvedUpdateScope } from './invitation-update-options.ts';
 import { runPromotionPreflight } from './invitation-promote.ts';
 import { formatPromotionPlanCompact } from './invitation-promotion-format.ts';
 import { isTargetDivergenceConflictMessage } from './promotion-comparison.ts';
@@ -372,7 +373,10 @@ async function runLiveApproval(session: ReleaseWizardSession): Promise<void> {
 async function applyLocalOutcome(session: ReleaseWizardSession): Promise<void> {
 	for (;;) {
 		const { plan, targetPlan } = await planLocal(session);
-		const planData = toOperationalPlanData(session.slug, ['local'], [targetPlan]);
+		const planData = toOperationalPlanData(session.slug, ['local'], [targetPlan], {
+			updateScope: session.updateScope,
+			assetPolicy: session.assetPolicy,
+		});
 		if (targetPlan.status === 'BLOQUEADO') {
 			const recovered = await maybeRecoverConflicts(session, [targetPlan]);
 			if (recovered) continue;
@@ -450,7 +454,10 @@ async function applyPreparePreviewOutcome(session: ReleaseWizardSession): Promis
 		const local = await planLocal(session);
 		const preview = await planPreview(session);
 		const targetPlans = [local.targetPlan, preview.targetPlan];
-		const planData = toOperationalPlanData(session.slug, ['local', 'preview'], targetPlans);
+		const planData = toOperationalPlanData(session.slug, ['local', 'preview'], targetPlans, {
+			updateScope: session.updateScope,
+			assetPolicy: session.assetPolicy,
+		});
 
 		if (targetPlans.some((tp) => tp.status === 'BLOQUEADO')) {
 			const recovered = await maybeRecoverConflicts(session, targetPlans);
@@ -714,13 +721,10 @@ async function buildSession(slug: string): Promise<ReleaseWizardSession> {
 	const packageInput = await resolveInvitationPackageInput({ slug });
 	const packagePath = persistSessionPackage(packageInput.packageData);
 	const definition = getInvitationDefinition(slug);
-	const updateScope: UpdateScope =
-		definition.deliveryScope === 'content-and-assets' ||
-		definition.deliveryScope === 'assets-only' ||
-		definition.deliveryScope === 'content-only'
-			? definition.deliveryScope
-			: 'content-only';
-	const assetPolicy = parseAssetPolicy(updateScope === 'content-only' ? 'preserve' : 'missing');
+	const updateScope = requireResolvedUpdateScope({
+		deliveryScope: definition.deliveryScope,
+	});
+	const assetPolicy = defaultAssetPolicy(updateScope);
 	return {
 		slug,
 		packageData: packageInput.packageData,

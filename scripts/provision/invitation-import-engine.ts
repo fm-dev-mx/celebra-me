@@ -45,7 +45,10 @@ import {
 	ManagedBaselineError,
 	type ManagedBaselineReceiptEvidence,
 } from './managed-merge-baseline.ts';
-import { materializeAssetReferences } from './normalized-invitation-release.ts';
+import {
+	materializeAssetReferences,
+	provenanceProjectionHash,
+} from './normalized-invitation-release.ts';
 import type { UploadedAssetMap } from './invitations/invitation-definition.ts';
 import { cleanupHostedPsqlResources, type TrackedResource } from './managed-invitation-cleanup.ts';
 import {
@@ -70,6 +73,10 @@ import {
 	type UpdateScope,
 } from './semantic-delta.ts';
 import { operationIdFromPlanId } from '../../src/lib/intake/mutations/outcome.ts';
+import {
+	assertContentOnlyAllowsNoAssetMutations,
+	defaultAssetPolicy,
+} from './invitation-update-options.ts';
 import { sortPathPolicy } from './conflict-resolutions.ts';
 import { verifySupabaseApiCredential } from './supabase-credential-verification.ts';
 import { assertManagedContentSchema } from './managed-content-validation.ts';
@@ -1530,7 +1537,9 @@ export function rewriteUploadedDeliverySrcs(
 	if (value === null || typeof value !== 'object') return value;
 	const record = value as Record<string, unknown>;
 	if (record.type === 'uploaded' && typeof record.assetId === 'string') {
-		const ref = Object.values(assetRefs).find((candidate) => candidate.assetId === record.assetId);
+		const ref = Object.values(assetRefs).find(
+			(candidate) => candidate.assetId === record.assetId,
+		);
 		if (!ref) return record;
 		const src =
 			parentKey === 'ogImage' && ref.src.includes('cloudinary.com')
@@ -1807,8 +1816,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		collectUploadedAssetIds(initialScan.existingDraft?.content),
 	);
 	const updateScope = options.updateScope ?? 'content-only';
-	const assetPolicy =
-		options.assetPolicy ?? (updateScope === 'content-only' ? 'preserve' : 'missing');
+	const assetPolicy = options.assetPolicy ?? defaultAssetPolicy(updateScope);
 
 	const drift = analyzeTargetDrift(
 		pkg,
@@ -1840,6 +1848,11 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		pkg.sourceSlug,
 		drift.targetDraftContent,
 	);
+	assertContentOnlyAllowsNoAssetMutations({
+		updateScope,
+		plannedAssetMutations:
+			assetsToUpload.length + assetsToUpsertDbOnly.length + assetsToDelete.length,
+	});
 	const actions = buildResourceActions({
 		slug: drift.slug,
 		route: drift.route,
@@ -2409,13 +2422,11 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		}
 		// managed_invitation_release_provenance.projection_hash has a check constraint requiring
 		// 64-char SHA-256 hex. The package carries an MD5 projectionHash (32 chars) for the
-		// publish_invitation_atomic RPC. Derive the provenance value by SHA-256 hashing the MD5.
-		const provenanceProjectionHash = createHash('sha256')
-			.update(pkg.projectionHash)
-			.digest('hex');
+		// publish_invitation_atomic RPC.
+		const storedProjectionHash = provenanceProjectionHash(pkg.projectionHash);
 		markResourceOverwritten('managed_invitation_release_provenance', drift.targetInvitationId);
 		runPsql(
-			`insert into public.managed_invitation_release_provenance (invitation_id, definition_slug, managed_identity_id, previous_slugs, release_schema_version, source_hash, package_hash, metadata_hash, projection_hash, asset_manifest_hash, managed_projection, applied_draft_updated_at, applied_operation_id, applied_published_version, applied_published_projection_hash, applied_at) values ('${drift.targetInvitationId}'::uuid, ${sqlLiteral(pkg.sourceSlug)}, ${sqlLiteral(managedIdentityId)}::uuid, ${sqlTextArray(previousSlugs)}, ${sqlLiteral(pkg.schemaVersion)}, ${sqlLiteral(pkg.sourceHash)}, ${sqlLiteral(pkg.packageHash)}, ${sqlLiteral(pkg.metadataHash)}, ${sqlLiteral(provenanceProjectionHash)}, ${sqlLiteral(pkg.assetManifestHash)}, ${sqlLiteral(JSON.stringify(targetDraftContent))}::jsonb, (select updated_at from public.invitation_content_drafts where invitation_project_id = '${drift.targetInvitationId}'::uuid and deleted_at is null limit 1), '${activeOperationId}'::uuid, ${finalPublishedVersion}, ${sqlLiteral(hashPublicationProjection(targetPublishedContent))}, now()) on conflict (invitation_id) do update set definition_slug = excluded.definition_slug, managed_identity_id = coalesce(public.managed_invitation_release_provenance.managed_identity_id, excluded.managed_identity_id), previous_slugs = excluded.previous_slugs, release_schema_version = excluded.release_schema_version, source_hash = excluded.source_hash, package_hash = excluded.package_hash, metadata_hash = excluded.metadata_hash, projection_hash = excluded.projection_hash, asset_manifest_hash = excluded.asset_manifest_hash, managed_projection = excluded.managed_projection, applied_draft_updated_at = excluded.applied_draft_updated_at, applied_operation_id = excluded.applied_operation_id, applied_published_version = excluded.applied_published_version, applied_published_projection_hash = excluded.applied_published_projection_hash, applied_at = excluded.applied_at;`,
+			`insert into public.managed_invitation_release_provenance (invitation_id, definition_slug, managed_identity_id, previous_slugs, release_schema_version, source_hash, package_hash, metadata_hash, projection_hash, asset_manifest_hash, managed_projection, applied_draft_updated_at, applied_operation_id, applied_published_version, applied_published_projection_hash, applied_at) values ('${drift.targetInvitationId}'::uuid, ${sqlLiteral(pkg.sourceSlug)}, ${sqlLiteral(managedIdentityId)}::uuid, ${sqlTextArray(previousSlugs)}, ${sqlLiteral(pkg.schemaVersion)}, ${sqlLiteral(pkg.sourceHash)}, ${sqlLiteral(pkg.packageHash)}, ${sqlLiteral(pkg.metadataHash)}, ${sqlLiteral(storedProjectionHash)}, ${sqlLiteral(pkg.assetManifestHash)}, ${sqlLiteral(JSON.stringify(targetDraftContent))}::jsonb, (select updated_at from public.invitation_content_drafts where invitation_project_id = '${drift.targetInvitationId}'::uuid and deleted_at is null limit 1), '${activeOperationId}'::uuid, ${finalPublishedVersion}, ${sqlLiteral(hashPublicationProjection(targetPublishedContent))}, now()) on conflict (invitation_id) do update set definition_slug = excluded.definition_slug, managed_identity_id = coalesce(public.managed_invitation_release_provenance.managed_identity_id, excluded.managed_identity_id), previous_slugs = excluded.previous_slugs, release_schema_version = excluded.release_schema_version, source_hash = excluded.source_hash, package_hash = excluded.package_hash, metadata_hash = excluded.metadata_hash, projection_hash = excluded.projection_hash, asset_manifest_hash = excluded.asset_manifest_hash, managed_projection = excluded.managed_projection, applied_draft_updated_at = excluded.applied_draft_updated_at, applied_operation_id = excluded.applied_operation_id, applied_published_version = excluded.applied_published_version, applied_published_projection_hash = excluded.applied_published_projection_hash, applied_at = excluded.applied_at;`,
 			targetDbUrl,
 		);
 		completedSteps.push('provenance_recorded');

@@ -6,6 +6,7 @@ import { assertPreviewDbUrl, getPreviewDbUrl, runPsql, sqlLiteral } from '../db/
 import {
 	canonicalize,
 	materializeAssetReferences,
+	provenanceProjectionHash,
 	RELEASE_SCHEMA_VERSION,
 } from './normalized-invitation-release.ts';
 import type { UploadedAssetRef } from './invitations/invitation-definition.ts';
@@ -497,7 +498,7 @@ function buildDiagnosis(
 		source: provenance?.source_hash === pkg.sourceHash,
 		package: provenance?.package_hash === pkg.packageHash,
 		metadata: provenance?.metadata_hash === pkg.metadataHash,
-		projection: provenance?.projection_hash === hashValue(pkg.projectionHash),
+		projection: provenance?.projection_hash === provenanceProjectionHash(pkg.projectionHash),
 		assetManifest: provenance?.asset_manifest_hash === pkg.assetManifestHash,
 	};
 	const latestHashes = {
@@ -751,7 +752,7 @@ do $$ begin
   if not exists (select 1 from public.published_invitation_content where invitation_project_id = ${sqlLiteral(diagnosis.invitationId)}::uuid and deleted_at is null and version = ${Number(diagnosis.parity.revisions.publicationCurrent ?? 0)} and content = ${sqlLiteral(JSON.stringify(expectedPublication))}::jsonb) then raise exception 'PREVIEW_RECONCILE_PRECONDITION_FAILED: publication changed'; end if;
   if not (${buildAssetChecks(pkg, diagnosis.invitationId) || 'false'}) then raise exception 'PREVIEW_RECONCILE_PRECONDITION_FAILED: asset metadata changed'; end if;
 end $$;
-update public.managed_invitation_release_provenance set definition_slug = ${sqlLiteral(pkg.sourceSlug)}, managed_identity_id = ${sqlLiteral(pkg.invitation.managedIdentityId)}::uuid, previous_slugs = ${sqlTextArray(pkg.invitation.previousSlugs)}, release_schema_version = ${sqlLiteral(pkg.schemaVersion)}, source_hash = ${sqlLiteral(pkg.sourceHash)}, package_hash = ${sqlLiteral(pkg.packageHash)}, metadata_hash = ${sqlLiteral(pkg.metadataHash)}, projection_hash = ${sqlLiteral(hashValue(pkg.projectionHash))}, asset_manifest_hash = ${sqlLiteral(pkg.assetManifestHash)}, managed_projection = ${sqlLiteral(JSON.stringify(expectedDraft))}::jsonb, applied_draft_updated_at = ${sqlLiteral(String(diagnosis.parity.revisions.draftCurrent ?? ''))}::timestamptz, applied_operation_id = ${sqlLiteral(operationId)}::uuid, applied_published_version = ${Number(diagnosis.parity.revisions.publicationCurrent ?? 0)}, applied_published_projection_hash = ${sqlLiteral(String(diagnosis.parity.comparableHashes.currentPublication ?? ''))}, applied_at = now() where invitation_id = ${sqlLiteral(diagnosis.invitationId)}::uuid and applied_operation_id = ${sqlLiteral(diagnosis.linkedOperationId ?? '')}::uuid;
+update public.managed_invitation_release_provenance set definition_slug = ${sqlLiteral(pkg.sourceSlug)}, managed_identity_id = ${sqlLiteral(pkg.invitation.managedIdentityId)}::uuid, previous_slugs = ${sqlTextArray(pkg.invitation.previousSlugs)}, release_schema_version = ${sqlLiteral(pkg.schemaVersion)}, source_hash = ${sqlLiteral(pkg.sourceHash)}, package_hash = ${sqlLiteral(pkg.packageHash)}, metadata_hash = ${sqlLiteral(pkg.metadataHash)}, projection_hash = ${sqlLiteral(provenanceProjectionHash(pkg.projectionHash))}, asset_manifest_hash = ${sqlLiteral(pkg.assetManifestHash)}, managed_projection = ${sqlLiteral(JSON.stringify(expectedDraft))}::jsonb, applied_draft_updated_at = ${sqlLiteral(String(diagnosis.parity.revisions.draftCurrent ?? ''))}::timestamptz, applied_operation_id = ${sqlLiteral(operationId)}::uuid, applied_published_version = ${Number(diagnosis.parity.revisions.publicationCurrent ?? 0)}, applied_published_projection_hash = ${sqlLiteral(String(diagnosis.parity.comparableHashes.currentPublication ?? ''))}, applied_at = now() where invitation_id = ${sqlLiteral(diagnosis.invitationId)}::uuid and applied_operation_id = ${sqlLiteral(diagnosis.linkedOperationId ?? '')}::uuid;
 insert into public.invitation_mutation_operation_receipts (operation_id, invitation_id, environment, project_ref, actor_type, origin, command_kind, input_hashes, expected_state, status, completed_steps, result, retry_of_operation_id) values (${sqlLiteral(operationId)}::uuid, ${sqlLiteral(diagnosis.invitationId)}::uuid, 'preview', 'preview', 'recovery', 'recovery', 'managed_baseline_adoption', ${sqlLiteral(JSON.stringify({ sourceHash: pkg.sourceHash, packageHash: pkg.packageHash, adoptedFromOperationId: diagnosis.latestOperationId }))}::jsonb, ${sqlLiteral(JSON.stringify(expectedState))}::jsonb, 'applied', ${sqlTextArray(['target_verified', 'provenance_recorded'])}, ${sqlLiteral(JSON.stringify({ metadataOnly: true, contentWrites: 0, storageWrites: 0 }))}::jsonb, ${sqlLiteral(diagnosis.latestOperationId)}::uuid);
 commit;`;
 	runPsql(sql, dbUrl);
