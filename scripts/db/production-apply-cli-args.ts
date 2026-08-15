@@ -3,6 +3,8 @@
  * Must not import orchestrator, credentials, or mutation code.
  */
 
+import { normalizeOperatorArgv } from '../lib/operator-argv.ts';
+
 const KNOWN_FLAGS = new Set([
 	'--schema',
 	'--slug',
@@ -159,7 +161,7 @@ function assertCliCombinations(input: {
 }
 
 export function parseProductionApplyCliArgs(argv: string[]): ProductionApplyCliArgs {
-	const args = argv.slice(2);
+	const args = normalizeOperatorArgv(argv.slice(2));
 	if (args.includes('--help') || args.includes('-h')) {
 		return {
 			help: true,

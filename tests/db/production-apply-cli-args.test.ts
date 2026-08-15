@@ -40,8 +40,12 @@ describe('prod:apply CLI arguments', () => {
 	});
 
 	it('rejects --all-ready combined with slugs or patch', () => {
-		expect(() => parse(['--all-ready', '--slug', 'demo'])).toThrow(/Cannot combine --all-ready/);
-		expect(() => parse(['--all-ready', '--patch', 'x.sql'])).toThrow(/Cannot combine --all-ready/);
+		expect(() => parse(['--all-ready', '--slug', 'demo'])).toThrow(
+			/Cannot combine --all-ready/,
+		);
+		expect(() => parse(['--all-ready', '--patch', 'x.sql'])).toThrow(
+			/Cannot combine --all-ready/,
+		);
 	});
 
 	it('rejects CLI authorization bypass flags', () => {
@@ -63,5 +67,20 @@ describe('prod:apply CLI arguments', () => {
 
 	it('requires --owner-user-id with --patch --apply', () => {
 		expect(() => parse(['--patch', 'x.sql', '--apply'])).toThrow(/--owner-user-id is required/);
+	});
+
+	it('consumes a leading pnpm separator before parsing scope', () => {
+		expect(parse(['--', '--slug', 'leslie-perez'])).toMatchObject({
+			slugs: ['leslie-perez'],
+			apply: false,
+			inspectAll: false,
+		});
+		expect(parse(['--', '--help']).help).toBe(true);
+	});
+
+	it('rejects a pasted prod:apply prefix', () => {
+		expect(() => parse(['pnpm', 'prod:apply', '--', '--slug', 'x'])).toThrow(
+			/PASTED_SCRIPT_PREFIX/,
+		);
 	});
 });

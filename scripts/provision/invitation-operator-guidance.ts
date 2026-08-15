@@ -4,21 +4,6 @@
  */
 import { formatOperatorFailure, type OperatorFailureInput } from '../db/operator-cli-ux.ts';
 
-const PASTED_COMMAND_TOKENS = new Set([
-	'pnpm',
-	'invitation:release',
-	'prod:apply',
-	'db:migrate',
-	'dbs',
-]);
-
-function flagValue(args: readonly string[], flag: string): string | undefined {
-	const index = args.indexOf(flag);
-	const next = index >= 0 ? args[index + 1] : undefined;
-	if (!next || next.startsWith('-')) return undefined;
-	return next;
-}
-
 function taskPromptRetry(slug: string, targets: string): string {
 	return `--slug ${slug} --targets ${targets} --apply`;
 }
@@ -47,22 +32,6 @@ export function translatePreconditionFailure(message: string): string | null {
 	return 'El origen, el paquete o el estado del destino cambió después de confirmar el plan. Genere y confirme un plan nuevo.';
 }
 
-export function rejectPastedCommandPrefix(args: readonly string[]): void {
-	const pasted: string[] = [];
-	let index = 0;
-	while (index < args.length && PASTED_COMMAND_TOKENS.has(args[index] ?? '')) {
-		pasted.push(args[index] ?? '');
-		index += 1;
-	}
-	if (pasted.length === 0) return;
-	const rest = args.slice(index);
-	const slug = flagValue(rest, '--slug') ?? '<slug>';
-	const targets = flagValue(rest, '--targets') ?? 'preview';
-	throw new Error(
-		`PASTED_SCRIPT_PREFIX: No repita ${pasted.join(' ')} en esta task. Escriba solo: ${taskPromptRetry(slug, targets)}`,
-	);
-}
-
 export function invitationFailureGuidance(
 	reason: string,
 	invitation?: string,
@@ -71,16 +40,25 @@ export function invitationFailureGuidance(
 	const slug = invitation && invitation !== 'no especificada' ? invitation : '<slug>';
 	const target = environment?.split(',')[0]?.trim() || 'preview';
 
-	if (reason.includes('PASTED_SCRIPT_PREFIX') || reason.includes('PASTED_PNPM_SEPARATOR')) {
-		const pastedCommand = reason.includes('PASTED_PNPM_SEPARATOR');
+	if (reason.includes('PASTED_SCRIPT_PREFIX')) {
 		return {
-			title: pastedCommand
-				? 'No pegue el comando completo'
-				: 'No repita el nombre del comando',
-			cause: pastedCommand
-				? '`--` es el separador de pnpm, no una opción de este CLI.'
-				: 'Esta task ya ejecuta el script. Solo se aceptan sus argumentos.',
-			code: pastedCommand ? 'PASTED_PNPM_SEPARATOR' : 'PASTED_SCRIPT_PREFIX',
+			title: 'No repita el nombre del comando',
+			cause: 'Esta task ya ejecuta el script. Solo se aceptan sus argumentos.',
+			code: 'PASTED_SCRIPT_PREFIX',
+			remediation: ['En el prompt de la task escriba únicamente los argumentos.'],
+			retryCommand: taskPromptRetry(
+				slug,
+				target === 'preview' || target === 'local' ? target : 'preview',
+			),
+			noChangesMessage: 'No se escribió nada.',
+		};
+	}
+
+	if (reason.includes('UNEXPECTED_PNPM_SEPARATOR') || reason.includes('PASTED_PNPM_SEPARATOR')) {
+		return {
+			title: 'Separador inesperado',
+			cause: 'Hay un -- extra entre los argumentos. No es una opción de este CLI.',
+			code: 'UNEXPECTED_PNPM_SEPARATOR',
 			remediation: ['En el prompt de la task escriba únicamente los argumentos.'],
 			retryCommand: taskPromptRetry(
 				slug,

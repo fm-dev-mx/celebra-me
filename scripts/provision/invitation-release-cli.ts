@@ -39,9 +39,9 @@ import {
 	authorizePreviewWriteApply,
 	verifyPreviewWriteAuthorization,
 } from './preview-write-auth.ts';
+import { normalizeOperatorArgv } from '../lib/operator-argv.ts';
 import {
 	formatInvitationGuidance,
-	rejectPastedCommandPrefix,
 	translatePreconditionFailure,
 } from './invitation-operator-guidance.ts';
 import { readFastInvitationInventory } from './invitation-status-inventory.ts';
@@ -618,8 +618,7 @@ function formatPreviewReceiptDiagnosis(
 
 // eslint-disable-next-line complexity -- CLI handles mode dispatch, interactive prompts, and hosted environment flow gates.
 export async function main(argv = process.argv.slice(2)): Promise<void> {
-	const args = argv;
-	rejectPastedCommandPrefix(args);
+	const args = normalizeOperatorArgv(argv);
 	checkUnknownFlags(args);
 	const json = args.includes('--json');
 	const nonInteractive = args.includes('--non-interactive');

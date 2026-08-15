@@ -1,32 +1,29 @@
 import { describe, expect, it } from '@jest/globals';
+import { normalizeOperatorArgv } from '../../scripts/lib/operator-argv.ts';
 import {
 	formatInvitationGuidance,
-	rejectPastedCommandPrefix,
 	translatePreconditionFailure,
 } from '../../scripts/provision/invitation-operator-guidance.ts';
 import { checkUnknownFlags } from '../../scripts/provision/invitation-update-options.ts';
 import { formatApplyResult } from '../../scripts/provision/invitation-update-presenter.ts';
 
 describe('invitation operator guidance', () => {
-	it('rejects a pasted script prefix without accepting it', () => {
-		expect(() =>
-			rejectPastedCommandPrefix([
-				'pnpm',
-				'invitation:release',
-				'--',
-				'--slug',
-				'renata',
-				'--targets',
-				'preview',
-				'--apply',
-			]),
-		).toThrow(/PASTED_SCRIPT_PREFIX[\s\S]*--slug renata --targets preview --apply/);
+
+	it('consumes a leading pnpm separator instead of treating it as a paste', () => {
+		expect(normalizeOperatorArgv(['--', '--slug', 'renata'])).toEqual(['--slug', 'renata']);
+		expect(() => checkUnknownFlags(['--slug', 'renata'])).not.toThrow();
 	});
 
-	it('rejects a lone pnpm separator with the task prompt', () => {
-		expect(() => checkUnknownFlags(['--', '--slug', 'renata'])).toThrow(
-			/PASTED_PNPM_SEPARATOR[\s\S]*--slug <slug> --targets preview --apply/,
+	it('explains a leftover separator without calling it a pasted command', () => {
+		const text = formatInvitationGuidance(
+			'UNEXPECTED_PNPM_SEPARATOR: leftover separator',
+			'renata',
+			'preview',
 		);
+		expect(text).toContain('UNEXPECTED_PNPM_SEPARATOR');
+		expect(text).toContain('--slug renata --targets preview --apply');
+		expect(text).not.toContain('No pegue el comando completo');
+		expect(text).not.toContain('pnpm invitation:release');
 	});
 
 	it('explains Preview auth with the invitation:release task prompt', () => {

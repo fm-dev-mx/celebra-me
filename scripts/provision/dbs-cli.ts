@@ -11,6 +11,7 @@
  *   pnpm dbs --json            # CanonicalStatusView JSON
  */
 
+import { normalizeOperatorArgv } from '../lib/operator-argv.ts';
 import {
 	MANAGED_STATUS_DEFAULT_TIMEOUT_MS,
 	runCompactManagedStatusSafe,
@@ -51,8 +52,7 @@ async function formatGeneralView(
 ): Promise<void> {
 	const { buildCanonicalStatusView, refineCanonicalStatusViewPromotions } =
 		await import('./canonical-status.ts');
-	const { formatCanonicalStatusView } =
-		await import('./canonical-status-format.ts');
+	const { formatCanonicalStatusView } = await import('./canonical-status-format.ts');
 	const fast = await buildCanonicalStatusView({
 		diagnostics,
 		includeProductionPreflight: false,
@@ -62,9 +62,7 @@ async function formatGeneralView(
 		console.log(JSON.stringify(view, null, 2));
 		return;
 	}
-	process.stdout.write(
-		formatCanonicalStatusView(view, { verbose, includeInSync, diagnostics }),
-	);
+	process.stdout.write(formatCanonicalStatusView(view, { verbose, includeInSync, diagnostics }));
 }
 
 async function formatInvitationView(
@@ -130,7 +128,7 @@ async function formatCompactView(
 }
 
 async function main(): Promise<void> {
-	const args = process.argv.slice(2);
+	const args = normalizeOperatorArgv(process.argv.slice(2));
 	const jsonMode = args.includes('--json');
 	const compactMode = args.includes('--compact');
 	const verbose = args.includes('--verbose');

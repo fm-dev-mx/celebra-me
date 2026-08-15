@@ -165,7 +165,7 @@ $commandDetails = @{
     "db:migrate"                = @{
         Desc    = "CLI de ejecucion de migraciones de base de datos."
         UseCase = "Aplicar migraciones de esquema en la base de datos local o destino."
-        Help    = "Ingrese solo argumentos. Ejemplos: -- --target preview  |  -- --target disposable-test --apply"
+        Help    = "Ingrese solo argumentos. Ejemplos: --target preview  |  --target disposable-test --apply"
     }
     "db:branch:parity"          = @{
         Desc    = "Verificacion de paridad de migraciones entre ramas/worktrees."
@@ -195,7 +195,7 @@ $commandDetails = @{
     "prod:apply"                = @{
         Desc    = "Aplicacion controlada de parches en produccion."
         UseCase = "Ejecutar parches SQL autorizados con guardas de seguridad en BD produccion."
-        Help    = "Ingrese solo argumentos. Ejemplos: -- --slug <slug>  |  -- --patch <file> --owner-user-id <uuid>"
+        Help    = "Ingrese solo argumentos. Ejemplos: --slug <slug>  |  --patch <file> --owner-user-id <uuid>"
     }
     "screenshot"                = @{
         Desc    = "Generacion automatizada de capturas de pantalla visuales."
@@ -305,6 +305,7 @@ while ($true) {
         }
 
         $runCount++
+        # Mirrors scripts/lib/operator-argv.ts (normalizeTaskPrompt + buildRestrictedTaskCommand).
         $preserveTty = $Command -eq 'invitation:release'
         $scriptArgs = if ($null -eq $argsInput) { '' } else { $argsInput.Trim() }
 

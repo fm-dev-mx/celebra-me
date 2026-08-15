@@ -3,6 +3,7 @@
  * Must not import orchestrator, policies, executors, or other mutation code.
  */
 
+import { normalizeOperatorArgv } from '../lib/operator-argv.ts';
 import type { MigrateMode, MigrateTarget } from './migration-plan.ts';
 
 export interface MigrateCliArgs {
@@ -48,7 +49,7 @@ owner menu → bound code → write. After a failed apply, re-run preflight.
 }
 
 export function parseMigrateCliArgs(argv: string[]): MigrateCliArgs {
-	const args = argv.slice(2);
+	const args = normalizeOperatorArgv(argv.slice(2));
 	if (args.includes('--help') || args.includes('-h')) {
 		return {
 			help: true,

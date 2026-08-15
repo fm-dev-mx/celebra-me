@@ -206,11 +206,6 @@ export function checkUnknownFlags(args: string[]): void {
 	for (let i = 0; i < args.length; i++) {
 		const arg = args[i];
 		if (arg.startsWith('-')) {
-			if (arg === '--') {
-				throw new Error(
-					'PASTED_PNPM_SEPARATOR: `--` es el separador de pnpm, no una opción de este CLI. En la task escriba solo: --slug <slug> --targets preview --apply',
-				);
-			}
 			if (!VALID_FLAGS.has(arg)) {
 				throw new Error(
 					`Opción no reconocida: "${arg}". Use --help para ver las opciones permitidas.`,
@@ -234,6 +229,10 @@ export function checkUnknownFlags(args: string[]): void {
 			) {
 				i++;
 			}
+		} else {
+			throw new Error(
+				`Opción no reconocida: "${arg}". Use --help para ver las opciones permitidas.`,
+			);
 		}
 	}
 }

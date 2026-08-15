@@ -16,6 +16,25 @@ describe('migrate-cli-args', () => {
 		expect(parsed.json).toBe(false);
 	});
 
+	it('consumes a leading pnpm separator before parsing the target', () => {
+		const parsed = parseMigrateCliArgs(['node', 'migrate-cli.ts', '--', '--target', 'preview']);
+		expect(parsed.target).toBe('preview');
+		expect(parsed.mode).toBe('preflight');
+	});
+
+	it('rejects a pasted db:migrate prefix', () => {
+		expect(() =>
+			parseMigrateCliArgs([
+				'node',
+				'migrate-cli.ts',
+				'pnpm',
+				'db:migrate',
+				'--target',
+				'preview',
+			]),
+		).toThrow(/PASTED_SCRIPT_PREFIX/);
+	});
+
 	it('keeps help/parse module free of mutation imports', () => {
 		const source = readFileSync(
 			resolve(process.cwd(), 'scripts/db/migrate-cli-args.ts'),
