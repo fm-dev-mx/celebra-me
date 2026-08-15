@@ -150,16 +150,16 @@ html:has(.event--renata.theme-preset--editorial) body {
 	--family-eyebrow-color: var(--renata-olive);
 	--family-group-title-color: rgb(var(--renata-ink-rgb) / 52%);
 	--family-title-color: var(--renata-ink);
-	--family-padding-block: var(--renata-space-compact);
-	--family-header-max-width: 28rem;
-	--family-title-size: var(--renata-section-title-size);
-	--family-title-max-width: 16ch;
-	--family-message-max-width: 34rem;
-	--family-message-size: var(--renata-body-size);
-	--family-group-title-size: var(--renata-meta-size);
-	--family-group-padding: clamp(0.4rem, 1.1vw, 0.7rem) 0;
-	--family-name-size: clamp(1.35rem, 2.6vw, 1.85rem);
-	--family-lead-name-size: clamp(1.45rem, 2.8vw, 1.95rem);
+	--family-padding-block: clamp(2.85rem, 6.5vw, 4.5rem);
+	--family-header-max-width: 34rem;
+	--family-title-size: clamp(2.35rem, 5.4vw, 3.65rem);
+	--family-title-max-width: 18ch;
+	--family-message-max-width: 28em;
+	--family-message-size: clamp(0.92rem, 1.35vw, 1.02rem);
+	--family-group-title-size: 0.62rem;
+	--family-group-padding: 0;
+	--family-name-size: clamp(1.55rem, 3vw, 2.15rem);
+	--family-lead-name-size: clamp(1.55rem, 3vw, 2.15rem);
 	--family-meta-size: var(--renata-meta-size);
 	--family-meta-letter-spacing: var(--renata-meta-tracking);
 	--family-divider-opacity: 42%;
@@ -422,11 +422,22 @@ html:has(.event--renata.theme-preset--editorial) body {
 		}
 	}
 
+	// Credits spread: title owns the opening; parents sit left as the
+	// primary lockup; godparents occupy the right column, quieter and
+	// slightly lower. No stacked rules, no empty second column.
 	.family[data-structural-variant='asymmetric-groups'] {
-		--family-split-divider: rgb(var(--renata-silver-rgb) / 36%);
+		--family-split-divider: transparent;
+		--family-split-gap-inline: clamp(2.25rem, 6vw, 4.75rem);
+		--family-split-gap-block: clamp(1.65rem, 4vw, 2.25rem);
+		--family-split-content-max-width: 52rem;
 
 		background: var(--family-bg);
 		padding-block: var(--family-padding-block);
+
+		.family__header {
+			max-width: var(--family-header-max-width);
+			margin: 0 0 clamp(1.85rem, 4.2vw, 2.65rem);
+		}
 
 		.family__eyebrow,
 		.family__meta,
@@ -435,31 +446,151 @@ html:has(.event--renata.theme-preset--editorial) body {
 			color: var(--family-eyebrow-color);
 		}
 
+		.family__eyebrow {
+			padding-left: 0.06em;
+			margin-bottom: 0.4rem;
+			font-size: 0.62rem;
+			font-weight: 500;
+			letter-spacing: 0.24em;
+			opacity: 72%;
+		}
+
 		.family__title {
+			max-width: var(--family-title-max-width);
 			margin-inline: 0;
 			font-family: var(--font-display);
 			font-size: var(--family-title-size);
+			font-weight: 400;
+			line-height: 1.02;
+			letter-spacing: -0.022em;
 			color: var(--family-title-color);
 		}
 
+		.family__header-divider {
+			display: none;
+		}
+
 		.family__message {
-			margin-inline: 0;
-			font-family: var(--font-body);
+			max-width: var(--family-message-max-width);
+			margin: 0.8rem 0 0;
+			padding-left: 0.12em;
+			font-family: var(--font-display);
 			font-size: var(--family-message-size);
-			color: var(--family-text-muted);
+			font-style: italic;
+			font-weight: 400;
+			line-height: 1.42;
+			letter-spacing: 0.01em;
+			color: rgb(var(--renata-ink-rgb) / 52%);
+		}
+
+		.family__panel--no-media {
+			max-width: var(--family-split-content-max-width);
+			margin-inline: 0;
+		}
+
+		.family__content {
+			grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+			max-width: var(--family-split-content-max-width);
+		}
+
+		.family__group--group-0,
+		.family__group--group-1,
+		.family__group--parents,
+		.family__group--godparents {
+			padding-top: 0;
+			border-top: 0;
+		}
+
+		.family__group--parents {
+			grid-column: 1;
+		}
+
+		.family__group--godparents {
+			grid-column: 2;
+			grid-row: 1;
+			margin-top: clamp(2.15rem, 4.8vw, 3.35rem);
+			text-align: left;
+		}
+
+		.family__group--godparents .family__group-title,
+		.family__group--godparents .family__meta {
+			text-align: left;
+		}
+
+		.family__group--godparents .family__list,
+		.family__group--godparents .family__item {
+			align-items: flex-start;
+		}
+
+		.family__group--godparents .family__name {
+			justify-content: flex-start;
+			text-align: left;
+		}
+
+		.family__group--godparents .family__list--godparents {
+			grid-template-columns: 1fr;
+			gap: clamp(0.7rem, 1.8vw, 0.95rem);
 		}
 
 		.family__group-title {
+			margin: 0 0 0.85rem;
 			font-family: var(--font-label);
 			font-size: var(--family-group-title-size);
-			letter-spacing: var(--family-meta-letter-spacing);
+			font-weight: 500;
+			letter-spacing: 0.2em;
 			color: var(--family-group-title-color);
 		}
 
+		.family__group--godparents .family__group-title {
+			margin-bottom: 0.7rem;
+			color: rgb(var(--renata-ink-rgb) / 42%);
+		}
+
+		.family__group--parents .family__list {
+			gap: clamp(1.05rem, 2.4vw, 1.4rem);
+		}
+
+		.family__group--parents .family__item {
+			align-items: flex-start;
+			gap: 0.16rem;
+		}
+
 		.family__name {
+			max-width: 22ch;
 			font-family: var(--font-display);
 			font-size: var(--family-name-size);
+			font-weight: 400;
+			letter-spacing: -0.012em;
 			color: var(--family-text-primary);
+		}
+
+		.family__group--godparents .family__name {
+			font-size: clamp(1.18rem, 2.2vw, 1.5rem);
+			color: rgb(var(--renata-ink-rgb) / 78%);
+		}
+
+		.family__meta {
+			font-size: 0.58rem;
+			font-weight: 500;
+			letter-spacing: 0.2em;
+			color: rgb(var(--renata-olive-rgb) / 78%);
+		}
+
+		.family__group--godparents .family__meta {
+			color: rgb(var(--renata-ink-rgb) / 40%);
+		}
+
+		@include mixins.respond-below(sm) {
+			.family__content {
+				grid-template-columns: 1fr;
+			}
+
+			.family__group--godparents {
+				grid-column: 1;
+				grid-row: auto;
+				margin-top: 0;
+				padding-top: 0.15rem;
+			}
 		}
 	}
 
