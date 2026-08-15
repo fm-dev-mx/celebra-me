@@ -221,24 +221,27 @@ export async function evaluateManagedPromotionStatus(
 		envEvidence,
 		canonicalAvailableBySlug,
 	});
+	const resolvePackage =
+		options.resolvePackage ??
+		((slug) =>
+			resolveInvitationPackageInput({ slug }).then((resolved) => resolved.packageData));
+	const withPendingApproval = await refineManagedPromotionsWithPendingPreviewApproval({
+		...initiallyPresented,
+		resolvePackage,
+	});
 	const includeProductionPreflight = options.includeProductionPreflight !== false;
 	const presented = includeProductionPreflight
 		? await refineManagedPromotionsWithProductionPreflight({
-				...initiallyPresented,
+				...withPendingApproval,
 				definitions,
 				environmentsBySlug,
 				envEvidence,
-				resolvePackage:
-					options.resolvePackage ??
-					((slug) =>
-						resolveInvitationPackageInput({ slug }).then(
-							(resolved) => resolved.packageData,
-						)),
+				resolvePackage,
 				runProductionPreflight:
 					options.runProductionPreflight ?? defaultRunProductionPreflight(definitions),
 				timeoutMs: options.productionPreflightTimeoutMs ?? PRODUCTION_PREFLIGHT_TIMEOUT_MS,
 			})
-		: initiallyPresented;
+		: withPendingApproval;
 	return {
 		promotions: presented.promotions,
 		inSyncSlugs: presented.inSyncSlugs,
@@ -401,27 +404,84 @@ export async function refineManagedPromotionsWithProductionPreflight(input: {
 	};
 }
 
+export async function refineManagedPromotionsWithPendingPreviewApproval(input: {
+	promotions: CanonicalPromotionRow[];
+	inSyncSlugs: string[];
+	resolvePackage: (slug: string) => Promise<InvitationPackageData>;
+}): Promise<Pick<ManagedPromotionStatus, 'promotions' | 'inSyncSlugs'>> {
+	const candidates = input.promotions.filter((row) => row.action === 'PROMOTE_PREVIEW');
+	if (candidates.length === 0) {
+		return { promotions: input.promotions, inSyncSlugs: input.inSyncSlugs };
+	}
+
+	const packageHashes = new Map<string, string>();
+	await mapPool(candidates, PRODUCTION_PREFLIGHT_CONCURRENCY, async (row) => {
+		try {
+			const packageData = await input.resolvePackage(row.slug);
+			if (packageData.packageHash) packageHashes.set(row.slug, packageData.packageHash);
+		} catch {
+			// Keep PROMOTE_PREVIEW when the current package cannot be resolved.
+		}
+	});
+
+	const promotions = input.promotions.map((row) => {
+		const packageHash = packageHashes.get(row.slug);
+		if (row.action !== 'PROMOTE_PREVIEW' || !packageHash) return row;
+		const approvalState = previewApprovalState(packageHash);
+		if (approvalState === 'pending') {
+			return presentPromotionRow({
+				slug: row.slug,
+				title: row.title,
+				eventType: row.eventType,
+				action: 'BLOCKED',
+				reasonCode: 'PREVIEW_APPROVAL_REQUIRED',
+				environments: row.environments,
+				envEvidence: row.envEvidence,
+				packageHash,
+				hasPendingPreviewApproval: true,
+			});
+		}
+		if (approvalState === 'approved') {
+			return presentPromotionRow({
+				slug: row.slug,
+				title: row.title,
+				eventType: row.eventType,
+				action: 'PROMOTE_PRODUCTION',
+				reasonCode: 'PREVIEW_ALIGNED_PRODUCTION_BEHIND',
+				environments: row.environments,
+				envEvidence: row.envEvidence,
+			});
+		}
+		return row;
+	});
+	return { promotions, inSyncSlugs: input.inSyncSlugs };
+}
+
 /** Preview-aligned rows still need Production preflight when Production is not match. */
 function isProductionPreflightCandidate(row: CanonicalPromotionRow): boolean {
 	const production = row.environments.production;
-	return (
-		row.environments.local === 'match' &&
-		row.environments.preview === 'match' &&
-		(production === 'behind' || production === 'absent' || production === 'unknown')
-	);
+	const productionNeedsWork =
+		production === 'behind' || production === 'absent' || production === 'unknown';
+	if (!productionNeedsWork) return false;
+	if (row.environments.local === 'match' && row.environments.preview === 'match') return true;
+	return row.action === 'PROMOTE_PRODUCTION';
+}
+
+function previewApprovalState(packageHash: string | undefined): 'pending' | 'approved' | null {
+	if (!packageHash) return null;
+	try {
+		const artifact = getDefaultPreviewApprovalStore().get(packageHash);
+		if (!artifact || artifact.packageHash !== packageHash) return null;
+		if (artifact.approvalState === 'pending_hosted_validation') return 'pending';
+		if (artifact.approvalState === 'approved') return 'approved';
+		return null;
+	} catch {
+		return null;
+	}
 }
 
 function hasPendingPreviewApproval(packageHash: string | undefined): boolean {
-	if (!packageHash) return false;
-	try {
-		const pending = getDefaultPreviewApprovalStore().get(packageHash);
-		return (
-			pending?.approvalState === 'pending_hosted_validation' &&
-			pending.packageHash === packageHash
-		);
-	} catch {
-		return false;
-	}
+	return previewApprovalState(packageHash) === 'pending';
 }
 
 function presentManagedPromotions(input: {

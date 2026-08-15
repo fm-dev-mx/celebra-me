@@ -41,6 +41,7 @@ jest.mock('../../scripts/provision/promotional-fingerprint.ts', () => {
 import {
 	evaluateManagedPromotionStatus,
 	formatSlugPromotionLine,
+	refineManagedPromotionsWithPendingPreviewApproval,
 	refineManagedPromotionsWithProductionPreflight,
 } from '../../scripts/provision/managed-promotion-status.ts';
 import { formatPromotionsSection } from '../../scripts/provision/canonical-status-format.ts';
@@ -153,6 +154,7 @@ describe('managed promotion status', () => {
 		const result = await evaluateManagedPromotionStatus({
 			session: session as never,
 			definitions: [definition('alpha'), definition('beta')],
+			resolvePackage: async (slug) => ({ invitation: { slug } }) as InvitationPackageData,
 		});
 
 		expect(session.probeConnectivity).toHaveBeenCalledTimes(3);
@@ -240,6 +242,124 @@ describe('managed promotion status', () => {
 		expect(text).not.toContain('Cliente');
 		expect(text).not.toContain('secret');
 		expect(formatSlugPromotionLine(undefined)).toBe('Publication: (none)');
+	});
+});
+
+describe('pending Preview approval refinement', () => {
+	afterEach(() => {
+		setDefaultPreviewApprovalStoreForTests(null);
+	});
+
+	const envEvidence = { local: 'LIVE', preview: 'LIVE', production: 'LIVE' } as const;
+
+	function pendingArtifact(packageHash: string, slug: string): PreviewApprovalArtifact {
+		return {
+			approvalState: 'pending_hosted_validation',
+			schemaVersion: '2.1.0',
+			packageHash,
+			sourceHash: `source-${slug}`,
+			metadataHash: `metadata-${slug}`,
+			canonicalProjectionHash: 'c'.repeat(32),
+			materializedProjectionHash: 'd'.repeat(32),
+			assetManifestHash: `assets-${slug}`,
+			slug,
+			previewProjectRef: 'preview',
+			createdAt: '2026-08-15T00:00:00.000Z',
+			route: `/boda/${slug}`,
+			expectedAssetHashes: {},
+		} as PreviewApprovalArtifact;
+	}
+
+	it('rewrites PROMOTE_PREVIEW to PREVIEW_APPROVAL_REQUIRED when pending matches the current package', async () => {
+		const renata = definition('renata');
+		setDefaultPreviewApprovalStoreForTests(
+			createMemoryPreviewApprovalStore([pendingArtifact('package-renata', 'renata')]),
+		);
+		const result = await refineManagedPromotionsWithPendingPreviewApproval({
+			promotions: [
+				presentPromotionRow({
+					slug: renata.slug,
+					title: renata.title,
+					eventType: renata.eventType,
+					action: 'PROMOTE_PREVIEW',
+					reasonCode: 'PREVIEW_BEHIND_CANONICAL',
+					environments: { local: 'behind', preview: 'behind', production: 'behind' },
+					envEvidence,
+				}),
+			],
+			inSyncSlugs: [],
+			resolvePackage: async (slug) =>
+				({ invitation: { slug }, packageHash: 'package-renata' }) as InvitationPackageData,
+		});
+		expect(result.promotions[0]).toMatchObject({
+			action: 'BLOCKED',
+			reasonCode: 'PREVIEW_APPROVAL_REQUIRED',
+			handoff: {
+				applyCommand: 'pnpm invitation:release -- --package-hash package-renata --approve',
+			},
+		});
+	});
+
+	it('rewrites PROMOTE_PREVIEW to PROMOTE_PRODUCTION when Preview is already approved', async () => {
+		const renata = definition('renata');
+		setDefaultPreviewApprovalStoreForTests(
+			createMemoryPreviewApprovalStore([
+				{ ...pendingArtifact('package-renata', 'renata'), approvalState: 'approved' },
+			]),
+		);
+		const result = await refineManagedPromotionsWithPendingPreviewApproval({
+			promotions: [
+				presentPromotionRow({
+					slug: renata.slug,
+					title: renata.title,
+					eventType: renata.eventType,
+					action: 'PROMOTE_PREVIEW',
+					reasonCode: 'PREVIEW_BEHIND_CANONICAL',
+					environments: { local: 'behind', preview: 'behind', production: 'behind' },
+					envEvidence,
+				}),
+			],
+			inSyncSlugs: [],
+			resolvePackage: async (slug) =>
+				({ invitation: { slug }, packageHash: 'package-renata' }) as InvitationPackageData,
+		});
+		expect(result.promotions[0]).toMatchObject({
+			action: 'PROMOTE_PRODUCTION',
+			reasonCode: 'PREVIEW_ALIGNED_PRODUCTION_BEHIND',
+			handoff: {
+				applyCommand: 'pnpm prod:apply -- --slug renata --apply',
+			},
+		});
+	});
+
+	it('keeps PROMOTE_PREVIEW when the pending hash does not match the current package', async () => {
+		const renata = definition('renata');
+		setDefaultPreviewApprovalStoreForTests(
+			createMemoryPreviewApprovalStore([pendingArtifact('package-old', 'renata')]),
+		);
+		const result = await refineManagedPromotionsWithPendingPreviewApproval({
+			promotions: [
+				presentPromotionRow({
+					slug: renata.slug,
+					title: renata.title,
+					eventType: renata.eventType,
+					action: 'PROMOTE_PREVIEW',
+					reasonCode: 'PREVIEW_BEHIND_CANONICAL',
+					environments: { local: 'behind', preview: 'behind', production: 'behind' },
+					envEvidence,
+				}),
+			],
+			inSyncSlugs: [],
+			resolvePackage: async (slug) =>
+				({ invitation: { slug }, packageHash: 'package-current' }) as InvitationPackageData,
+		});
+		expect(result.promotions[0]).toMatchObject({
+			action: 'PROMOTE_PREVIEW',
+			reasonCode: 'PREVIEW_BEHIND_CANONICAL',
+			handoff: {
+				applyCommand: 'pnpm invitation:release -- --slug renata --targets preview --apply',
+			},
+		});
 	});
 });
 

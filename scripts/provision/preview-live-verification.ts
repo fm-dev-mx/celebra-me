@@ -91,6 +91,47 @@ function parseRows(stdout: string): PreviewLiveRow[] {
 	return Array.isArray(parsed) ? (parsed as PreviewLiveRow[]) : [];
 }
 
+export function requiredPreviewApprovalAssetKeys(
+	liveAssets: readonly PreviewLiveAssetRow[],
+	expectedAssetHashes: Record<string, string>,
+): { required: string[]; missingFromPreview: string[] } {
+	const required: string[] = [];
+	const missingFromPreview: string[] = [];
+	for (const key of Object.keys(expectedAssetHashes)) {
+		const storageMatch = liveAssets.some((asset) => asset.storagePath === key);
+		if (storageMatch) {
+			required.push(key);
+			continue;
+		}
+		const publicIdOnly = liveAssets.some(
+			(asset) => !asset.storagePath && asset.providerPublicId === key,
+		);
+		if (publicIdOnly) {
+			required.push(key);
+			continue;
+		}
+		const leftoverPublicId = liveAssets.some(
+			(asset) => Boolean(asset.storagePath) && asset.providerPublicId === key,
+		);
+		if (leftoverPublicId) continue;
+		if (key.startsWith('managed/')) missingFromPreview.push(key);
+	}
+	return { required, missingFromPreview };
+}
+
+export function formatPreviewLiveVerificationFailures(
+	live: PreviewLiveVerificationResult,
+): string[] {
+	const lines: string[] = [];
+	for (const [path, reason] of Object.entries(live.details.assetFailures)) {
+		lines.push(`  ${path}: ${reason}`);
+	}
+	for (const error of live.details.errors) {
+		lines.push(`  ${error}`);
+	}
+	return lines;
+}
+
 function assetUrl(projectRef: string, expectedPath: string, assets: PreviewLiveAssetRow[]): string {
 	const row = assets.find(
 		(asset) =>
@@ -236,12 +277,28 @@ export async function verifyPreviewArtifactLive(
 			row.provenanceProjectionHash === projectionHash;
 
 		const fetchImpl = options.fetch ?? fetch;
-		const expectedAssets = Object.entries(artifact.expectedAssetHashes);
-		for (const [expectedPath, expectedHash] of expectedAssets) {
+		const liveAssets = row.assets ?? [];
+		const expectedEntries = Object.entries(artifact.expectedAssetHashes);
+		const { required, missingFromPreview } = requiredPreviewApprovalAssetKeys(
+			liveAssets,
+			artifact.expectedAssetHashes,
+		);
+		for (const path of missingFromPreview) {
+			details.assetFailures[path] = 'Missing from hosted Preview';
+		}
+		if (
+			expectedEntries.length > 0 &&
+			required.length === 0 &&
+			missingFromPreview.length === 0
+		) {
+			details.errors.push(
+				'Approval artifact lists asset hashes but Preview has no required package storage paths.',
+			);
+		}
+		for (const expectedPath of required) {
+			const expectedHash = artifact.expectedAssetHashes[expectedPath]!;
 			try {
-				const response = await fetchImpl(
-					assetUrl(projectRef, expectedPath, row.assets ?? []),
-				);
+				const response = await fetchImpl(assetUrl(projectRef, expectedPath, liveAssets));
 				if (!response.ok) {
 					details.assetFailures[expectedPath] = `HTTP ${response.status}`;
 					continue;
@@ -259,11 +316,12 @@ export async function verifyPreviewArtifactLive(
 			}
 		}
 		checklistResults.storage =
-			expectedAssets.length === 0 ||
-			(expectedAssets.every(
-				([path, expectedHash]) => storageHashVerification[path] === expectedHash,
-			) &&
-				Object.keys(details.assetFailures).length === 0);
+			missingFromPreview.length === 0 &&
+			Object.keys(details.assetFailures).length === 0 &&
+			(required.length > 0 || expectedEntries.length === 0) &&
+			required.every(
+				(path) => storageHashVerification[path] === artifact.expectedAssetHashes[path],
+			);
 	} catch (error) {
 		details.errors.push(error instanceof Error ? error.message : String(error));
 	}

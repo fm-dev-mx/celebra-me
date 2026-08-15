@@ -36,6 +36,7 @@ function pkg(): InvitationPackageData {
 		metadataHash: 'c'.repeat(64),
 		assetManifestHash: 'd'.repeat(64),
 		projectionHash: 'c'.repeat(32),
+		assets: [{ storagePath: 'managed/fixture/hero.webp' }],
 	} as InvitationPackageData;
 }
 
@@ -130,6 +131,33 @@ describe('Preview apply adapter integration', () => {
 				target: 'preview',
 				dryRun: false,
 				ownerUserId,
+			}),
+		);
+	});
+
+	it('writes only package storagePath hashes into the pending approval artifact', async () => {
+		const createPendingApproval: NonNullable<
+			Parameters<typeof runPreviewApply>[0]['createPendingApproval']
+		> = jest.fn((input) => {
+			void input;
+			return { packageHash: 'a'.repeat(64) } as PreviewApprovalArtifact;
+		});
+		await runPreviewApply({
+			packageData: pkg(),
+			targetDbUrl: 'postgresql://redacted@preview.invalid/db',
+			plan: plan(),
+			runEngine: async () => ({
+				...result(),
+				verifiedAssetHashes: {
+					'managed/fixture/hero.webp': 'f'.repeat(64),
+					'xv/fixture/assets/hero-34522c50d513': '1'.repeat(64),
+				},
+			}),
+			createPendingApproval,
+		});
+		expect(createPendingApproval).toHaveBeenCalledWith(
+			expect.objectContaining({
+				expectedAssetHashes: { 'managed/fixture/hero.webp': 'f'.repeat(64) },
 			}),
 		);
 	});

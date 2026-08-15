@@ -7,6 +7,7 @@ import { randomUUID, createHash } from 'node:crypto';
 import { readFileSync, existsSync } from 'node:fs';
 import type { InvitationPackageData, InvitationPackageAsset } from './invitation-package.ts';
 import { computePackageHash, PACKAGE_SCHEMA_VERSION } from './invitation-package.ts';
+import { selectPackageApprovalAssetHashes } from './approval-asset-hashes.ts';
 import {
 	buildCloudinaryDeliveryUrl,
 	buildCloudinaryOgImageUrl,
@@ -54,6 +55,9 @@ import { cleanupHostedPsqlResources, type TrackedResource } from './managed-invi
 import {
 	buildSemanticFunctionalChanges,
 	computePlanId,
+	formatPlanIdentityMismatch,
+	isPlanIdentityAction,
+	planIdentityChangeKeys,
 	verifyPlanPreconditions,
 	type FunctionalChange,
 	type OperationalPlan,
@@ -386,7 +390,7 @@ async function probeStorageStates(
 	verifiedAssetHashes: Record<string, string>;
 }> {
 	const observedStorage: Record<string, ObservedStorageState> = {};
-	const verifiedAssetHashes: Record<string, string> = {};
+	const probedHashes: Record<string, string> = {};
 	const pathsToProbe = Array.from(
 		new Set([
 			...assets.map((a) => a.storagePath),
@@ -417,7 +421,7 @@ async function probeStorageStates(
 							sha256: hash,
 							httpStatus: fetchRes.status,
 						};
-						verifiedAssetHashes[storagePath] = hash;
+						probedHashes[storagePath] = hash;
 					} else {
 						observedStorage[storagePath] = {
 							present: false,
@@ -431,7 +435,10 @@ async function probeStorageStates(
 			}),
 		);
 	}
-	return { observedStorage, verifiedAssetHashes };
+	return {
+		observedStorage,
+		verifiedAssetHashes: selectPackageApprovalAssetHashes(probedHashes, assets),
+	};
 }
 
 function hashTargetAssetState(
@@ -1984,7 +1991,14 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 	const operationFingerprint = createHash('sha256')
 		.update(
 			JSON.stringify({
-				actions: actions.map(({ resource, name, action }) => ({ resource, name, action })),
+				actions: actions
+					.filter(isPlanIdentityAction)
+					.map(({ resource, action }) => ({ resource, action }))
+					.sort((left, right) =>
+						`${left.resource}:${left.action}`.localeCompare(
+							`${right.resource}:${right.action}`,
+						),
+					),
 				conflictResolutions: sortPathPolicy(options.conflictResolutions),
 			}),
 		)
@@ -2055,9 +2069,11 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		});
 		if (!precheck.ok) throw new Error(precheck.reason);
 		if (options.plan.planId !== currentPlan.planId) {
-			throw new Error(
-				'PRECONDITION_FAILED: The planned functional or technical operation set changed before execution.',
-			);
+			const confirmedKeys = planIdentityChangeKeys(options.plan.functionalChanges).join('|');
+			const currentKeys = planIdentityChangeKeys(currentPlan.functionalChanges).join('|');
+			if (confirmedKeys !== currentKeys) {
+				throw new Error(formatPlanIdentityMismatch(options.plan, currentPlan));
+			}
 		}
 	}
 	// Dry-run may receive a plan only to bind create identity; always surface the recomputed plan

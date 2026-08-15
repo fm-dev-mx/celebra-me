@@ -2,13 +2,13 @@ import { describe, expect, it } from '@jest/globals';
 import { normalizeOperatorArgv } from '../../scripts/lib/operator-argv.ts';
 import {
 	formatInvitationGuidance,
+	formatPreviewApplyApprovalGuidance,
 	translatePreconditionFailure,
 } from '../../scripts/provision/invitation-operator-guidance.ts';
 import { checkUnknownFlags } from '../../scripts/provision/invitation-update-options.ts';
 import { formatApplyResult } from '../../scripts/provision/invitation-update-presenter.ts';
 
 describe('invitation operator guidance', () => {
-
 	it('consumes a leading pnpm separator instead of treating it as a paste', () => {
 		expect(normalizeOperatorArgv(['--', '--slug', 'renata'])).toEqual(['--slug', 'renata']);
 		expect(() => checkUnknownFlags(['--slug', 'renata'])).not.toThrow();
@@ -131,5 +131,31 @@ describe('invitation operator guidance', () => {
 		expect(text).toContain('0 inserciones');
 		expect(text).not.toContain('ACTUALIZACIONES');
 		expect(text).not.toContain('9:00 p. m.');
+	});
+});
+
+describe('Preview apply approval guidance', () => {
+	it('points pending Preview apply at --approve', () => {
+		expect(
+			formatPreviewApplyApprovalGuidance({
+				slug: 'renata',
+				packageHash: '7e5d5860d7d9e3e5b467bcb79f727e269edf60439c2e3f6f12e0f0506ae64e5e',
+				approvalState: 'pending_hosted_validation',
+			}),
+		).toContain(
+			'--package-hash 7e5d5860d7d9e3e5b467bcb79f727e269edf60439c2e3f6f12e0f0506ae64e5e --approve',
+		);
+	});
+
+	it('points an already-approved Preview apply at Production plan, not another Preview apply', () => {
+		const text = formatPreviewApplyApprovalGuidance({
+			slug: 'renata',
+			packageHash: '7e5d5860d7d9e3e5b467bcb79f727e269edf60439c2e3f6f12e0f0506ae64e5e',
+			approvalState: 'approved',
+		});
+		expect(text).toContain('Preview ya está aprobado');
+		expect(text).toContain('pnpm prod:apply -- --slug renata');
+		expect(text).not.toContain('--approve');
+		expect(text).not.toContain('--targets preview --apply');
 	});
 });

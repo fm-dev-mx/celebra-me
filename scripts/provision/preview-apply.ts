@@ -1,4 +1,5 @@
 import type { InvitationPackageData } from './invitation-package.ts';
+import { selectPackageApprovalAssetHashes } from './approval-asset-hashes.ts';
 import {
 	runImportEngine,
 	type ImportEngineOptions,
@@ -24,7 +25,12 @@ export async function runPreviewApply(input: {
 	ownerUserId?: string;
 	runEngine?: (options: ImportEngineOptions) => Promise<ImportEngineResult>;
 	createPendingApproval?: typeof createPendingPreviewApprovalArtifact;
-}): Promise<ImportEngineResult & { plan: OperationalPlan }> {
+}): Promise<
+	ImportEngineResult & {
+		plan: OperationalPlan;
+		approvalState: 'pending_hosted_validation' | 'approved';
+	}
+> {
 	const result = await (input.runEngine ?? runImportEngine)({
 		packageData: input.packageData,
 		target: 'preview',
@@ -40,7 +46,7 @@ export async function runPreviewApply(input: {
 		ownerUserId: input.ownerUserId,
 	});
 	assertEngineResult(result, input.plan.planId, 'Preview', true);
-	(input.createPendingApproval ?? createPendingPreviewApprovalArtifact)({
+	const approval = (input.createPendingApproval ?? createPendingPreviewApprovalArtifact)({
 		packageHash: result.packageHash,
 		sourceHash: input.packageData.sourceHash,
 		metadataHash: input.packageData.metadataHash,
@@ -51,7 +57,13 @@ export async function runPreviewApply(input: {
 		route: result.route,
 		canonicalProjectionHash: input.packageData.projectionHash,
 		materializedProjectionHash: result.projectionHash,
-		expectedAssetHashes: result.verifiedAssetHashes,
+		expectedAssetHashes: selectPackageApprovalAssetHashes(
+			result.verifiedAssetHashes,
+			input.packageData.assets ?? [],
+		),
 	});
-	return result;
+	return {
+		...result,
+		approvalState: approval.approvalState ?? 'pending_hosted_validation',
+	};
 }

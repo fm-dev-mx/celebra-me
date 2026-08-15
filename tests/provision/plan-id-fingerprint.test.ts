@@ -4,7 +4,11 @@
  */
 
 import { describe, expect, it } from '@jest/globals';
-import { computePlanId } from '../../scripts/provision/invitation-update-plan.ts';
+import {
+	computePlanId,
+	formatPlanIdentityMismatch,
+	planIdentityChangeKeys,
+} from '../../scripts/provision/invitation-update-plan.ts';
 
 const baseParams = {
 	slug: 'sample-slug',
@@ -32,6 +36,68 @@ const baseParams = {
 };
 
 describe('computePlanId conflictResolutions fingerprint', () => {
+	it('ignores storage-scope changes and equivalent draft timestamps', () => {
+		const contentChange = baseParams.changes[0]!;
+		const storageChange = {
+			section: 'Storage',
+			entity: 'hero',
+			label: 'Subida: hero',
+			operation: 'upload' as const,
+			newValue: 'Upload binary to Cloudinary (120 KB WebP)',
+			scope: 'storage' as const,
+			technicalWriteCount: 1,
+		};
+		const postgresTimestamp = '2026-07-28 12:00:00+00';
+		const withoutStorage = computePlanId(baseParams);
+		const withStorage = computePlanId({
+			...baseParams,
+			changes: [contentChange, storageChange],
+		});
+		const postgresDraft = computePlanId({
+			...baseParams,
+			preconditions: {
+				...baseParams.preconditions,
+				existingDraftUpdatedAt: postgresTimestamp,
+			},
+		});
+		expect(withStorage).toBe(withoutStorage);
+		expect(postgresDraft).toBe(withoutStorage);
+		expect(
+			computePlanId({
+				...baseParams,
+				changes: [
+					{
+						...contentChange,
+						newValue: 'changed',
+					},
+				],
+			}),
+		).toBe(withoutStorage);
+		expect(
+			computePlanId({
+				...baseParams,
+				changes: [
+					{
+						...contentChange,
+						field: 'otherField',
+					},
+				],
+			}),
+		).not.toBe(withoutStorage);
+	});
+
+	it('treats matching content operation keys as the same plan identity', () => {
+		expect(planIdentityChangeKeys(baseParams.changes)).toEqual([
+			'database:update:tooltipText',
+		]);
+		expect(
+			formatPlanIdentityMismatch(
+				{ functionalChanges: baseParams.changes },
+				{ functionalChanges: baseParams.changes },
+			),
+		).toContain('volatile technical fingerprint');
+	});
+
 	it('produces distinct planIds for distinct conflictResolutions fingerprints', () => {
 		const packagePlanId = computePlanId({
 			...baseParams,

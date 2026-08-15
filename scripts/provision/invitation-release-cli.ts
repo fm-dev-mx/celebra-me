@@ -42,6 +42,7 @@ import {
 import { normalizeOperatorArgv } from '../lib/operator-argv.ts';
 import {
 	formatInvitationGuidance,
+	formatPreviewApplyApprovalGuidance,
 	translatePreconditionFailure,
 } from './invitation-operator-guidance.ts';
 import { readFastInvitationInventory } from './invitation-status-inventory.ts';
@@ -51,6 +52,7 @@ import { assertPreviewDbUrl, getPreviewDbUrl, getProdDbUrl } from '../db/db-work
 import { approvePreviewArtifactFromLiveVerification } from './preview-approval-service.ts';
 import { getDefaultPreviewApprovalStore } from './preview-approval-store.ts';
 import {
+	formatPreviewLiveVerificationFailures,
 	PREVIEW_LIVE_CHECKLIST_KEYS,
 	verifyPreviewArtifactLive,
 } from './preview-live-verification.ts';
@@ -575,7 +577,7 @@ async function executePreviewTargetPlan(input: {
 		assetCounts: assetCounts(result.actions),
 		publishedVersion: result.publishedVersion,
 		packageHash: result.packageHash,
-		approvalState: 'pending_hosted_validation',
+		approvalState: result.approvalState ?? 'pending_hosted_validation',
 	});
 	return {
 		executionPlanId: appliedPlan.planId,
@@ -719,6 +721,27 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 				`No pending Preview approval exists in the shared store for package ${packageHash}.`,
 			);
 		}
+		if (pending.approvalState === 'approved') {
+			const already = {
+				approval: pending.approvalState,
+				packageHash: pending.packageHash,
+				slug: pending.slug,
+			};
+			if (json) console.log(JSON.stringify(already, null, 2));
+			else {
+				console.log(
+					`Aprobación ya registrada: ${already.approval} · ${already.slug} · ${already.packageHash.slice(0, 16)}`,
+				);
+				console.log(
+					formatPreviewApplyApprovalGuidance({
+						slug: pending.slug,
+						packageHash: pending.packageHash,
+						approvalState: 'approved',
+					}),
+				);
+			}
+			return;
+		}
 		const live = await verifyPreviewArtifactLive(pending);
 		if (!json) {
 			console.log(`Verificación Preview en vivo · ${pending.slug}`);
@@ -727,6 +750,11 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 			}
 		}
 		if (!live.ok) {
+			if (!json) {
+				for (const line of formatPreviewLiveVerificationFailures(live)) {
+					console.log(line);
+				}
+			}
 			const failed = PREVIEW_LIVE_CHECKLIST_KEYS.filter((key) => !live.checklistResults[key]);
 			throw new Error(`LIVE_PREVIEW_VERIFICATION_FAILED: ${failed.join(', ')}.`);
 		}
@@ -1651,22 +1679,20 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 					targetResults,
 				}),
 			);
-			const pendingPreview = reports.find(
+			const previewReport = reports.find(
 				(report) =>
-					report.environment === 'preview' &&
-					report.approvalState === 'pending_hosted_validation' &&
-					typeof report.packageHash === 'string',
+					report.environment === 'preview' && typeof report.packageHash === 'string',
 			);
-			if (pendingPreview?.packageHash) {
+			const guidance = previewReport?.packageHash
+				? formatPreviewApplyApprovalGuidance({
+						slug,
+						packageHash: previewReport.packageHash,
+						approvalState: previewReport.approvalState,
+					})
+				: null;
+			if (guidance) {
 				console.log('');
-				console.log(
-					`Aprobación Preview pendiente (package-hash ${pendingPreview.packageHash}).`,
-				);
-				console.log(
-					'Verifique y apruebe Preview en vivo; después promueva con el mismo paquete:\n' +
-						`  pnpm invitation:release -- --package-hash ${pendingPreview.packageHash} --approve\n` +
-						`  pnpm prod:apply -- --slug ${slug} --apply`,
-				);
+				console.log(guidance);
 			}
 		}
 	}

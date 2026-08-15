@@ -105,6 +105,50 @@ export interface OperationalPlan {
 	receipt?: ExecutionReceipt;
 }
 
+const VOLATILE_PLAN_ACTION_RESOURCES = new Set([
+	'invitation_assets',
+	'auth_host',
+	'preview_identity',
+	'managed_invitation_release_provenance',
+]);
+
+/** Probe/admin/bookkeeping actions are reconciled at apply; they must not fail-close plan identity. */
+export function isPlanIdentityAction(action: { resource: string }): boolean {
+	return !VOLATILE_PLAN_ACTION_RESOURCES.has(action.resource);
+}
+
+/** Storage-scope diffs inherit probe volatility; keep them out of planId. */
+export function isPlanIdentityChange(change: FunctionalChange): boolean {
+	return change.scope !== 'storage';
+}
+
+export function planIdentityChangeKey(change: FunctionalChange): string {
+	return `${change.scope}:${change.operation}:${change.field ?? change.entity}`;
+}
+
+export function planIdentityChangeKeys(changes: readonly FunctionalChange[]): string[] {
+	return changes.filter(isPlanIdentityChange).map(planIdentityChangeKey).sort();
+}
+
+export function formatPlanIdentityMismatch(
+	confirmed: Pick<OperationalPlan, 'functionalChanges'>,
+	current: Pick<OperationalPlan, 'functionalChanges'>,
+): string {
+	const confirmedKeys = new Set(planIdentityChangeKeys(confirmed.functionalChanges));
+	const currentKeys = new Set(planIdentityChangeKeys(current.functionalChanges));
+	const added = [...currentKeys].filter((key) => !confirmedKeys.has(key));
+	const removed = [...confirmedKeys].filter((key) => !currentKeys.has(key));
+	const parts = [
+		'PRECONDITION_FAILED: The planned functional or technical operation set changed before execution.',
+	];
+	if (removed.length > 0) parts.push(`Removed: ${removed.slice(0, 8).join(', ')}.`);
+	if (added.length > 0) parts.push(`Added: ${added.slice(0, 8).join(', ')}.`);
+	if (added.length === 0 && removed.length === 0) {
+		parts.push('Content operation set is unchanged; a volatile technical fingerprint drifted.');
+	}
+	return parts.join(' ');
+}
+
 export function computePlanId(params: {
 	slug: string;
 	sourceHash: string;
@@ -114,21 +158,17 @@ export function computePlanId(params: {
 	preconditions: TargetPreconditions;
 	operationFingerprint?: string;
 }): string {
+	const stablePreconditions = stableTargetPreconditions(params.preconditions);
 	const raw = JSON.stringify({
 		slug: params.slug,
 		sourceHash: params.sourceHash,
 		targetEnv: params.targetEnvironment,
 		projectRef: params.projectRef,
-		changes: params.changes.map((c) => ({
-			s: c.section,
-			e: c.entity,
-			op: c.operation,
-			f: c.field,
-			before: c.previousValue,
-			after: c.newValue,
-			scope: c.scope,
-		})),
-		preconditions: stableTargetPreconditions(params.preconditions),
+		changes: planIdentityChangeKeys(params.changes),
+		preconditions: {
+			...stablePreconditions,
+			existingDraftUpdatedAt: normalizeTimestamp(stablePreconditions.existingDraftUpdatedAt),
+		},
 		operationFingerprint: params.operationFingerprint,
 	});
 	return createHash('sha256').update(raw).digest('hex').slice(0, 32);

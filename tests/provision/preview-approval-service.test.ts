@@ -8,9 +8,9 @@ import {
 } from '../../scripts/provision/preview-approval-service.ts';
 import * as previewApprovalModule from '../../scripts/provision/preview-approval-service.ts';
 
-const writePendingApprovalEvidenceScaffold = (
-	previewApprovalModule as Record<string, any>
-)['writePendingApprovalEvidenceScaffold'];
+const writePendingApprovalEvidenceScaffold = (previewApprovalModule as Record<string, any>)[
+	'writePendingApprovalEvidenceScaffold'
+];
 import type { PreviewLiveVerificationResult } from '../../scripts/provision/preview-live-verification.ts';
 import {
 	createMemoryPreviewApprovalStore,
@@ -161,6 +161,21 @@ describe('Preview approval artifact (shared store)', () => {
 		expect(() =>
 			approve(liveVerification({ projectionHash: CANONICAL_PROJECTION_HASH })),
 		).toThrow(/does not match/i);
+	});
+
+	it('approves when leftover Cloudinary public IDs are absent from live storage evidence', () => {
+		const leftoverPublicId = 'xv/renata/assets/interlude-6f1f940883a7';
+		createPending({
+			[ASSET_PATH]: ASSET_HASH,
+			[leftoverPublicId]: '2'.repeat(64),
+		});
+		const approved = approve(
+			liveVerification({ storageHashVerification: { [ASSET_PATH]: ASSET_HASH } }),
+		);
+		expect(approved.approvalState).toBe('approved');
+		expect(approved.hostedValidation?.storageHashVerification).toEqual({
+			[ASSET_PATH]: ASSET_HASH,
+		});
 	});
 
 	it('rejects incomplete downloaded asset hashes', () => {

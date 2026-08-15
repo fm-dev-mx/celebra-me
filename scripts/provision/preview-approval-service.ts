@@ -14,6 +14,7 @@ import {
 	PREVIEW_LIVE_CHECKLIST_KEYS,
 	type PreviewLiveVerificationResult,
 } from './preview-live-verification.ts';
+import { selectEnforcedApprovalAssetPaths } from './approval-asset-hashes.ts';
 
 /** Current Preview approval artifact contract. Older schemas are rejected, not migrated. */
 export const PREVIEW_APPROVAL_SCHEMA_VERSION = '2.1.0' as const;
@@ -107,7 +108,18 @@ function validateStorageEvidence(
 	if (!evidence.storageHashVerification || typeof evidence.storageHashVerification !== 'object') {
 		throw new Error('Hosted Preview evidence is missing required storage hash verification.');
 	}
-	for (const [assetPath, expectedHash] of expectedEntries) {
+	for (const assetPath of Object.keys(evidence.storageHashVerification)) {
+		if (!(assetPath in artifact.expectedAssetHashes)) {
+			throw new Error(
+				'Hosted preview evidence contains unexpected storage hash verification entries.',
+			);
+		}
+	}
+	for (const assetPath of selectEnforcedApprovalAssetPaths(
+		artifact.expectedAssetHashes,
+		evidence.storageHashVerification,
+	)) {
+		const expectedHash = artifact.expectedAssetHashes[assetPath]!;
 		if (!(assetPath in evidence.storageHashVerification)) {
 			throw new Error(
 				`Hosted preview evidence is missing storage hash verification for asset: ${assetPath}.`,
@@ -124,11 +136,6 @@ function validateStorageEvidence(
 				`Hosted preview evidence has a storage hash mismatch for asset: ${assetPath}.`,
 			);
 		}
-	}
-	if (Object.keys(evidence.storageHashVerification).length > expectedEntries.length) {
-		throw new Error(
-			'Hosted preview evidence contains unexpected storage hash verification entries.',
-		);
 	}
 }
 
@@ -155,8 +162,11 @@ function assertLiveVerificationMatches(
 	if (!Number.isFinite(verificationTime)) {
 		throw new Error('Live Preview verification has an invalid review timestamp.');
 	}
-	for (const [path, expectedHash] of Object.entries(artifact.expectedAssetHashes)) {
-		if (live.storageHashVerification[path] !== expectedHash) {
+	for (const path of selectEnforcedApprovalAssetPaths(
+		artifact.expectedAssetHashes,
+		live.storageHashVerification,
+	)) {
+		if (live.storageHashVerification[path] !== artifact.expectedAssetHashes[path]) {
 			throw new Error(`Live Preview storage verification failed for asset: ${path}.`);
 		}
 	}

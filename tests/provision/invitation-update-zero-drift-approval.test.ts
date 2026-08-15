@@ -31,8 +31,7 @@ describe('invitation:release zero-drift Preview approval gate', () => {
 			resolve(process.cwd(), 'scripts/provision/invitation-release-cli.ts'),
 			'utf8',
 		);
-		expect(source).toMatch(/Aprobación Preview pendiente \(package-hash/);
-		expect(source).toMatch(/--package-hash \$\{pendingPreview\.packageHash\} --approve/);
+		expect(source).toContain('formatPreviewApplyApprovalGuidance');
 		expect(source).toContain('invitation:release');
 	});
 
@@ -41,7 +40,9 @@ describe('invitation:release zero-drift Preview approval gate', () => {
 			resolve(process.cwd(), 'scripts/provision/invitation-release-cli.ts'),
 			'utf8',
 		);
-		expect(source).toMatch(/¿Aplicar la release administrada de "\$\{(input\.)?slug\}" en Local\?/);
+		expect(source).toMatch(
+			/¿Aplicar la release administrada de "\$\{(input\.)?slug\}" en Local\?/,
+		);
 		expect(source).toMatch(/authorizePreviewWriteApply/);
 		expect(source).toMatch(/Exactly one environment-appropriate authorization/);
 	});

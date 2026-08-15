@@ -55,6 +55,8 @@ import { decideRekeyIdentity, resolveIdentityWithoutRekey } from './managed-iden
 import {
 	buildSemanticFunctionalChanges,
 	computePlanId,
+	formatPlanIdentityMismatch,
+	planIdentityChangeKeys,
 	verifyPlanPreconditions,
 	type FunctionalChange,
 	type OperationalPlan,
@@ -1122,9 +1124,11 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			);
 		}
 		if (options.plan.planId !== currentPlan.planId) {
-			throw new Error(
-				'PRECONDITION_FAILED: The planned functional or technical operation set changed before execution.',
-			);
+			const confirmedKeys = planIdentityChangeKeys(options.plan.functionalChanges).join('|');
+			const currentKeys = planIdentityChangeKeys(currentPlan.functionalChanges).join('|');
+			if (confirmedKeys !== currentKeys) {
+				throw new Error(formatPlanIdentityMismatch(options.plan, currentPlan));
+			}
 		}
 	}
 

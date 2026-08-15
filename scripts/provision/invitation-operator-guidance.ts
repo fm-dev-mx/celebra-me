@@ -95,6 +95,29 @@ export function invitationFailureGuidance(
 	return null;
 }
 
+export function formatPreviewApplyApprovalGuidance(input: {
+	slug: string;
+	packageHash: string;
+	approvalState?: string;
+}): string | null {
+	if (input.approvalState === 'approved') {
+		return (
+			`Preview ya está aprobado (package-hash ${input.packageHash}).\n` +
+			'Siguiente: inspeccione Production; use --apply solo si el plan queda READY:\n' +
+			`  pnpm prod:apply -- --slug ${input.slug}`
+		);
+	}
+	if (input.approvalState === 'pending_hosted_validation') {
+		return (
+			`Aprobación Preview pendiente (package-hash ${input.packageHash}).\n` +
+			'Verifique y apruebe Preview en vivo; después promueva con el mismo paquete:\n' +
+			`  pnpm invitation:release -- --package-hash ${input.packageHash} --approve\n` +
+			`  pnpm prod:apply -- --slug ${input.slug}`
+		);
+	}
+	return null;
+}
+
 export function formatInvitationGuidance(
 	reason: string,
 	invitation?: string,

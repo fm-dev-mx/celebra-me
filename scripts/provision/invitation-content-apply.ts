@@ -121,7 +121,12 @@ export async function planAndApplyPreviewContent(
 		apply: boolean;
 		plan?: OperationalPlan;
 	} & ContentApplyOptions,
-): Promise<ImportEngineResult & { plan?: OperationalPlan }> {
+): Promise<
+	ImportEngineResult & {
+		plan?: OperationalPlan;
+		approvalState?: 'pending_hosted_validation' | 'approved';
+	}
+> {
 	const shared = {
 		packageData: input.packageData,
 		targetDbUrl: input.targetDbUrl,
