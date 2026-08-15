@@ -317,6 +317,49 @@ describe('canonical Production preflight refinement', () => {
 		});
 	});
 
+	it('refines first-time Production (absent) MISSING_PREVIEW_APPROVAL instead of leaving PROMOTE_PRODUCTION', async () => {
+		const leslie = definition('leslie-perez');
+		const environmentsBySlug = {
+			'leslie-perez': { local: 'match', preview: 'match', production: 'absent' } as const,
+		};
+		const result = await refineManagedPromotionsWithProductionPreflight({
+			promotions: [
+				presentPromotionRow({
+					slug: leslie.slug,
+					title: leslie.title,
+					eventType: leslie.eventType,
+					action: 'PROMOTE_PRODUCTION',
+					reasonCode: 'PREVIEW_ALIGNED_PRODUCTION_BEHIND',
+					environments: environmentsBySlug['leslie-perez'],
+					envEvidence,
+				}),
+			],
+			inSyncSlugs: [],
+			definitions: [leslie],
+			environmentsBySlug,
+			envEvidence,
+			resolvePackage: async (slug) =>
+				({
+					invitation: { slug },
+					packageHash: 'package-leslie',
+				}) as InvitationPackageData,
+			runProductionPreflight: async () =>
+				productionReport('leslie-perez', 'BLOCKED', 'MISSING_PREVIEW_APPROVAL'),
+			timeoutMs: 1_000,
+		});
+		expect(result.promotions[0]).toMatchObject({
+			action: 'BLOCKED',
+			reasonCode: 'PREVIEW_APPROVAL_REQUIRED',
+			environments: { production: 'absent' },
+			handoff: {
+				dryRunCommand:
+					'pnpm invitation:release -- --slug leslie-perez --targets preview --dry-run',
+				applyCommand:
+					'pnpm invitation:release -- --slug leslie-perez --targets preview --apply',
+			},
+		});
+	});
+
 	it('offers --approve when a pending Preview artifact exists for the package', async () => {
 		const beta = definition('beta');
 		const environmentsBySlug = { beta: { ...states } };

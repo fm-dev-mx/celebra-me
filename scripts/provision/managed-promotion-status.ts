@@ -281,12 +281,7 @@ export async function refineManagedPromotionsWithProductionPreflight(input: {
 	if (input.envEvidence.production !== 'LIVE') {
 		return { promotions: input.promotions, inSyncSlugs: input.inSyncSlugs };
 	}
-	const candidates = input.promotions.filter(
-		(row) =>
-			row.environments.local === 'match' &&
-			row.environments.preview === 'match' &&
-			(row.environments.production === 'behind' || row.environments.production === 'unknown'),
-	);
+	const candidates = input.promotions.filter(isProductionPreflightCandidate);
 	if (candidates.length === 0) {
 		return { promotions: input.promotions, inSyncSlugs: input.inSyncSlugs };
 	}
@@ -404,6 +399,16 @@ export async function refineManagedPromotionsWithProductionPreflight(input: {
 		promotions: promotions.sort((left, right) => left.slug.localeCompare(right.slug)),
 		inSyncSlugs: [...inSync].sort((left, right) => left.localeCompare(right)),
 	};
+}
+
+/** Preview-aligned rows still need Production preflight when Production is not match. */
+function isProductionPreflightCandidate(row: CanonicalPromotionRow): boolean {
+	const production = row.environments.production;
+	return (
+		row.environments.local === 'match' &&
+		row.environments.preview === 'match' &&
+		(production === 'behind' || production === 'absent' || production === 'unknown')
+	);
 }
 
 function hasPendingPreviewApproval(packageHash: string | undefined): boolean {
