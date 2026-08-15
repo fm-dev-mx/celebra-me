@@ -388,7 +388,7 @@ describe('runPromotionPreflight / apply', () => {
 					secureUrl: null,
 				},
 			],
-		} as InvitationPackageData;
+		} as unknown as InvitationPackageData;
 		const report = await runPromotionPreflight({
 			packageData: eraPackage,
 			requireBackup: false,
