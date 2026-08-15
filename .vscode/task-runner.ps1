@@ -336,7 +336,13 @@ while ($true) {
         $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
         # Forzar emision de colores ANSI. invitation:release keeps a real TTY (no pipe).
+        # The CLI binds this task identity to preview:<slug>:<operation>; it is not a credential.
         $env:FORCE_COLOR = "3"
+        if ($Command -eq 'invitation:release') {
+            $env:CELEBRA_OPERATOR_TASK = 'invitation:release'
+        } else {
+            Remove-Item Env:CELEBRA_OPERATOR_TASK -ErrorAction SilentlyContinue
+        }
         if ($isTerminalMode) {
             $capturedOutput = @()
             $global:LASTEXITCODE = $null

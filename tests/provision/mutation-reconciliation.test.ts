@@ -15,7 +15,10 @@ import {
 	parseTargets,
 	validateUpdateOptions,
 } from '../../scripts/provision/invitation-update-options.ts';
-import { verifyPreviewWriteAuthorization } from '../../scripts/provision/preview-write-auth.ts';
+import {
+	resolvePreviewWriteAuthToken,
+	verifyPreviewWriteAuthorization,
+} from '../../scripts/provision/preview-write-auth.ts';
 import {
 	computeReconciliationState,
 	filterManagedDivergenceDeltas,
@@ -78,14 +81,97 @@ describe('Preview Write Scoped Authorization (PREVIEW_WRITE_AUTH_REQUIRED)', () 
 	});
 
 	it('fails closed for automated non-interactive Preview write when authorization token is missing', () => {
-		expect(() =>
-			verifyPreviewWriteAuthorization({
-				slug: 'romina-rios-chaparro',
+		const previousOperatorTask = process.env.CELEBRA_OPERATOR_TASK;
+		delete process.env.CELEBRA_OPERATOR_TASK;
+		try {
+			expect(() =>
+				verifyPreviewWriteAuthorization({
+					slug: 'romina-rios-chaparro',
+					targets: ['preview'],
+					apply: true,
+					isInteractive: false,
+				}),
+			).toThrow(/PREVIEW_WRITE_AUTH_REQUIRED[\s\S]*CELEBRA_TASK_SCOPE/);
+		} finally {
+			if (previousOperatorTask === undefined) delete process.env.CELEBRA_OPERATOR_TASK;
+			else process.env.CELEBRA_OPERATOR_TASK = previousOperatorTask;
+		}
+	});
+
+	it('mints preview:<slug>:<operation> from the invitation:release operator task', () => {
+		expect(
+			resolvePreviewWriteAuthToken({
+				slug: 'renata',
+				operation: 'approve',
+				env: { CELEBRA_OPERATOR_TASK: 'invitation:release' },
+			}),
+		).toBe('preview:renata:approve');
+		expect(
+			resolvePreviewWriteAuthToken({
+				slug: 'renata',
+				operation: 'apply',
+				env: { CELEBRA_OPERATOR_TASK: 'dbs' },
+			}),
+		).toBeUndefined();
+	});
+
+	it('binds the invitation:release operator task to the exact Preview slug and operation', () => {
+		const previous = process.env.CELEBRA_OPERATOR_TASK;
+		process.env.CELEBRA_OPERATOR_TASK = 'invitation:release';
+		try {
+			const result = verifyPreviewWriteAuthorization({
+				slug: 'renata',
 				targets: ['preview'],
 				apply: true,
 				isInteractive: false,
-			}),
-		).toThrow(/PREVIEW_WRITE_AUTH_REQUIRED[\s\S]*CELEBRA_TASK_SCOPE/);
+				operation: 'apply',
+			});
+			expect(result.authorized).toBe(true);
+			expect(result.actor).toBe('automated_scoped_token');
+		} finally {
+			if (previous === undefined) delete process.env.CELEBRA_OPERATOR_TASK;
+			else process.env.CELEBRA_OPERATOR_TASK = previous;
+		}
+	});
+
+	it('keeps an explicit CELEBRA_TASK_SCOPE ahead of the operator task', () => {
+		const previousScope = process.env.CELEBRA_TASK_SCOPE;
+		const previousTask = process.env.CELEBRA_OPERATOR_TASK;
+		process.env.CELEBRA_OPERATOR_TASK = 'invitation:release';
+		process.env.CELEBRA_TASK_SCOPE = 'preview:other-slug:apply';
+		try {
+			expect(() =>
+				verifyPreviewWriteAuthorization({
+					slug: 'renata',
+					targets: ['preview'],
+					apply: true,
+					isInteractive: false,
+				}),
+			).toThrow(/token mismatch/);
+		} finally {
+			if (previousScope === undefined) delete process.env.CELEBRA_TASK_SCOPE;
+			else process.env.CELEBRA_TASK_SCOPE = previousScope;
+			if (previousTask === undefined) delete process.env.CELEBRA_OPERATOR_TASK;
+			else process.env.CELEBRA_OPERATOR_TASK = previousTask;
+		}
+	});
+
+	it('does not treat a different operator task as Preview write authorization', () => {
+		const previous = process.env.CELEBRA_OPERATOR_TASK;
+		process.env.CELEBRA_OPERATOR_TASK = 'dbs';
+		try {
+			expect(() =>
+				verifyPreviewWriteAuthorization({
+					slug: 'renata',
+					targets: ['preview'],
+					apply: true,
+					isInteractive: false,
+				}),
+			).toThrow(/PREVIEW_WRITE_AUTH_REQUIRED/);
+		} finally {
+			if (previous === undefined) delete process.env.CELEBRA_OPERATOR_TASK;
+			else process.env.CELEBRA_OPERATOR_TASK = previous;
+		}
 	});
 
 	it('accepts CELEBRA_TASK_SCOPE as the canonical Preview task assertion', () => {

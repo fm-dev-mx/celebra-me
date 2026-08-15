@@ -133,7 +133,8 @@ execution-boundary separation.
 
 ### Preview managed mutation
 
-- **Agent:** Yes, with explicit Preview task scope (`CELEBRA_TASK_SCOPE`).
+- **Agent:** Yes, with explicit Preview task scope (`CELEBRA_TASK_SCOPE`) or the
+  `invitation:release` operator task (`CELEBRA_OPERATOR_TASK`).
 - **Owner:** Yes.
 
 ### Preview raw DB mutation

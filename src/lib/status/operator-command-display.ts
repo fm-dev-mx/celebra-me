@@ -2,8 +2,10 @@
  * Presentation-only split of canonical `pnpm <script> -- <args>` strings into
  * VS Code task prompt args. Does not rewrite stored applyCommand / step.command.
  *
- * invitation:release Preview apply uses the TTY task. db:migrate Preview apply
- * stays in terminal form with CELEBRA_TASK_SCOPE (that task is still piped).
+ * invitation:release Preview apply uses the operator task, which binds
+ * CELEBRA_OPERATOR_TASK so the CLI can mint preview:<slug>:<operation>.
+ * db:migrate Preview apply stays in terminal form with CELEBRA_TASK_SCOPE
+ * (that task is still piped).
  */
 
 export const OPERATOR_TASK_SCRIPTS = [

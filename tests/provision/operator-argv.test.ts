@@ -195,4 +195,10 @@ describe('operator argv contract', () => {
 		expect(source).toContain('Ejemplo: --slug <slug> --targets preview --apply');
 		expect(source).toContain('Ejemplos: <slug>  |  --diagnostics  |  --help');
 	});
+
+	it('marks the invitation:release task so Preview apply can bind operator scope', () => {
+		const source = readFileSync(resolve(process.cwd(), '.vscode/task-runner.ps1'), 'utf8');
+		expect(source).toContain("$env:CELEBRA_OPERATOR_TASK = 'invitation:release'");
+		expect(source).toContain("if ($Command -eq 'invitation:release')");
+	});
 });

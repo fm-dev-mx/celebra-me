@@ -8,6 +8,8 @@
  * Authorization model:
  *  - Human (interactive): verify short-circuits; caller MUST still confirm (YES).
  *  - Automation (canonical): CELEBRA_TASK_SCOPE="preview:<slug>:<operation>".
+ *  - Operator task: CELEBRA_OPERATOR_TASK=invitation:release (VS Code task) binds
+ *    the exact preview:<slug>:<operation> token from the parsed release identity.
  *  - Exact operation match only — tokens ending in `apply` authorize only `apply`,
  *    never migrate / sync-invitations / purge / other operations. No `*` wildcard.
  *  - Lane/worktree/branch/environment identity alone IS NOT AUTHORIZATION.
@@ -33,6 +35,32 @@ export interface PreviewWriteAuthResult {
 	reason?: string;
 }
 
+/** Set by the VS Code invitation:release task. Not a credential. */
+export const INVITATION_RELEASE_OPERATOR_TASK = 'invitation:release';
+
+export function resolvePreviewWriteAuthToken(input: {
+	slug: string;
+	operation: string;
+	authToken?: string;
+	env?: NodeJS.ProcessEnv;
+}): string | undefined {
+	const env = input.env ?? process.env;
+	if (typeof input.authToken === 'string' && input.authToken.length > 0) {
+		return input.authToken;
+	}
+	if (typeof env.CELEBRA_TASK_SCOPE === 'string' && env.CELEBRA_TASK_SCOPE.length > 0) {
+		return env.CELEBRA_TASK_SCOPE;
+	}
+	if (
+		env.CELEBRA_OPERATOR_TASK === INVITATION_RELEASE_OPERATOR_TASK &&
+		input.slug &&
+		input.operation
+	) {
+		return `preview:${input.slug}:${input.operation}`;
+	}
+	return undefined;
+}
+
 export function verifyPreviewWriteAuthorization(input: PreviewWriteAuthInput): PreviewWriteAuthResult {
 	const { slug, targets, apply = false, isInteractive = false, authToken, operation = 'apply' } = input;
 
@@ -50,7 +78,7 @@ export function verifyPreviewWriteAuthorization(input: PreviewWriteAuthInput): P
 	}
 
 	// Automated / non-interactive writes require an explicit task-scoped assertion.
-	const token = process.env.CELEBRA_TASK_SCOPE ?? authToken;
+	const token = resolvePreviewWriteAuthToken({ slug, operation, authToken });
 	if (!token || typeof token !== 'string') {
 		throw new Error(
 			`PREVIEW_WRITE_AUTH_REQUIRED: Automated Preview mutation for "${slug}" requires an explicit task scope. ` +
