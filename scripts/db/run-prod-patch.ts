@@ -7,6 +7,7 @@ import {
 	validateAndNormalizeSupabaseUrl,
 	validateOwnerUserId,
 	assertSameSupabaseProject,
+	patchSqlRequiresOwnerUserId,
 	type SqlManifest,
 } from './sql-safety.ts';
 import { getProdDbUrl, runPsql } from './db-workflow-lib.ts';
@@ -53,7 +54,7 @@ function parsePatchInput(): ParsedPatchInput {
 	if (apply) {
 		printUsage();
 		console.error(
-			'DIRECT_PRODUCTION_PATCH_APPLY_BLOCKED: use pnpm prod:apply -- --patch <file> --owner-user-id <uuid> --apply.',
+			'DIRECT_PRODUCTION_PATCH_APPLY_BLOCKED: use pnpm prod:apply -- --patch <file> --apply.',
 		);
 		process.exit(1);
 	}
@@ -221,13 +222,17 @@ export class ProductionPatchApplyError extends OperatorError {
  */
 export async function applyPreparedProductionPatch(input: {
 	prepared: PreparedProductionPatch;
-	ownerUserId: string;
+	ownerUserId?: string;
 	authorizedPlanBindingHex: string;
 }): Promise<ProductionPatchApplyResult> {
+	const requiresOwner = patchSqlRequiresOwnerUserId(input.prepared.sql);
 	const { validatedOwnerId, normalizedUrl, dbUrl } = validateProductionTargetEnv(
 		input.ownerUserId,
+		requiresOwner,
 	);
-	const ownerConfig = `SELECT set_config('app.owner_user_id', '${validatedOwnerId.replace(/'/g, "''")}', false);\n`;
+	const ownerConfig = validatedOwnerId
+		? `SELECT set_config('app.owner_user_id', '${validatedOwnerId.replace(/'/g, "''")}', false);\n`
+		: '';
 	const urlConfig = `SELECT set_config('app.supabase_project_url', '${normalizedUrl.replace(/'/g, "''")}', false);\n`;
 	const fullSql = ownerConfig + urlConfig + input.prepared.sql;
 	const match = matchProductionWritePermit({
@@ -241,7 +246,7 @@ export async function applyPreparedProductionPatch(input: {
 			cause: `El permiso interno no coincide con el plan aprobado (${match}).`,
 			code: 'PRODUCTION_WRITE_PERMIT_REQUIRED',
 			remediation: [
-				'Ejecute pnpm prod:apply -- --patch <file> --owner-user-id <uuid> --apply en una TTY del propietario.',
+				'Ejecute pnpm prod:apply -- --patch <file> --apply en una TTY del propietario.',
 			],
 		});
 	}
@@ -257,22 +262,31 @@ export async function applyPreparedProductionPatch(input: {
 }
 
 interface ValidatedTargetEnv {
-	validatedOwnerId: string;
+	validatedOwnerId: string | null;
 	normalizedUrl: string;
 	dbUrl: string;
 }
 
-function validateProductionTargetEnv(ownerUserId: string | undefined): ValidatedTargetEnv {
-	let validatedOwnerId: string;
-	try {
-		validatedOwnerId = validateOwnerUserId(ownerUserId);
-	} catch (error: unknown) {
-		throw new OperatorError({
-			title: 'Propietario del parche inválido',
-			cause: error instanceof Error ? error.message : String(error),
-			code: 'OWNER_USER_ID_INVALID',
-			remediation: ['Proporcione el UUID válido del propietario al generar un plan nuevo.'],
-		});
+function validateProductionTargetEnv(
+	ownerUserId: string | undefined,
+	requiresOwner: boolean,
+): ValidatedTargetEnv {
+	let validatedOwnerId: string | null = null;
+	if (requiresOwner || ownerUserId) {
+		try {
+			validatedOwnerId = validateOwnerUserId(ownerUserId);
+		} catch (error: unknown) {
+			throw new OperatorError({
+				title: 'Propietario del parche inválido',
+				cause: error instanceof Error ? error.message : String(error),
+				code: 'OWNER_USER_ID_INVALID',
+				remediation: [
+					requiresOwner
+						? 'Este parche asigna dueño: pase --owner-user-id <uuid> al generar un plan nuevo.'
+						: 'Si pasa --owner-user-id, debe ser un UUID válido.',
+				],
+			});
+		}
 	}
 
 	const rawSupabaseUrl = process.env.SUPABASE_URL || '';

@@ -529,6 +529,15 @@ export function validateAndNormalizeSupabaseUrl(rawUrl: string): string {
  * Returns the validated UUID on success.
  * Throws an Error with a user-facing message on validation failure.
  */
+export function patchSqlRequiresOwnerUserId(sql: string): boolean {
+	return /app\.owner_user_id/.test(sql);
+}
+
+export function productionPatchApplyCommand(file: string, sql: string): string {
+	const owner = patchSqlRequiresOwnerUserId(sql) ? ' --owner-user-id <uuid>' : '';
+	return `pnpm prod:apply -- --patch ${file}${owner}`;
+}
+
 export function validateOwnerUserId(raw: string | undefined): string {
 	if (!raw || raw.trim() === '') {
 		throw new Error(

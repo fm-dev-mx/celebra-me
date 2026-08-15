@@ -6,8 +6,7 @@ const REFRESH_COMMAND = 'pnpm dbs';
 
 function patchPlanCommand(patch: ManualPatchStatus): string {
 	const command =
-		patch.environments.production.planCommand ??
-		`pnpm prod:apply -- --patch ${patch.file} --owner-user-id <uuid>`;
+		patch.environments.production.planCommand ?? `pnpm prod:apply -- --patch ${patch.file}`;
 	return command.replace('<file>', patch.file);
 }
 
@@ -33,7 +32,10 @@ function affectedRowsLabel(patch: ManualPatchStatus, environment: TargetEnv): st
 	const rows = patch.environments[environment].affectedRows;
 	if (!rows || rows.length === 0) return null;
 	return rows
-		.map((row) => `${row.store}/${row.slug ?? row.key}${row.version === null ? '' : `@v${row.version}`}`)
+		.map(
+			(row) =>
+				`${row.store}/${row.slug ?? row.key}${row.version === null ? '' : `@v${row.version}`}`,
+		)
 		.join(', ');
 }
 

@@ -1,6 +1,10 @@
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it, jest } from '@jest/globals';
 import {
 	ACTIVE_MANUAL_PATCH_CATALOG,
+	MANUAL_PATCH_DIRECTORY,
+	MAX_ACTIVE_MANUAL_PATCHES,
 	classifyPatchPreviewResult,
 	readManualPatchStatuses,
 	validateManualPatchCatalog,
@@ -11,16 +15,54 @@ const PAIRED_MANIFEST = prepareProductionPatchFile(
 	'scripts/manual/production-patches/20260812_p0_itinerary_gallery_structural_contracts.sql',
 ).manifest;
 
+function pairedStoreScriptIds(): string[] {
+	const directory = join(process.cwd(), MANUAL_PATCH_DIRECTORY);
+	const ids: string[] = [];
+	for (const name of readdirSync(directory)) {
+		if (!name.endsWith('.sql')) continue;
+		const lines: string[] = [];
+		for (const line of readFileSync(join(directory, name), 'utf8').split(/\r?\n/)) {
+			const trimmed = line.trim();
+			if (trimmed !== '' && !trimmed.startsWith('--')) break;
+			lines.push(line);
+		}
+		const header = lines.join('\n');
+		if (!/--\s*@paired-stores:\s*\S+/.test(header)) continue;
+		const scriptId = header.match(/^--\s*@script-id:\s*(\S+)/m)?.[1];
+		if (scriptId) ids.push(scriptId);
+	}
+	return ids;
+}
+
 describe('active manual patch status', () => {
-	it('contains only the two approved production detectors and valid manifests', () => {
-		expect(ACTIVE_MANUAL_PATCH_CATALOG).toHaveLength(2);
-		expect(new Set(ACTIVE_MANUAL_PATCH_CATALOG.map((item) => item.scriptId)).size).toBe(2);
+	it('discovers every paired-store production patch, including America residuals', () => {
+		const discovered = ACTIVE_MANUAL_PATCH_CATALOG.map((item) => item.scriptId);
+		expect(new Set(discovered)).toEqual(new Set(pairedStoreScriptIds()));
+		expect(discovered).toEqual(
+			expect.arrayContaining([
+				'20260815_america_johana_gifts_rsvp_copy',
+				'20260815_america_johana_ceremony_coordinates',
+			]),
+		);
 		expect(
 			ACTIVE_MANUAL_PATCH_CATALOG.every(
 				(item) => item.targetEnvironments.join(',') === 'production',
 			),
 		).toBe(true);
+		expect(ACTIVE_MANUAL_PATCH_CATALOG.length).toBeLessThanOrEqual(MAX_ACTIVE_MANUAL_PATCHES);
 		expect(validateManualPatchCatalog()).toEqual({ valid: true, errors: [] });
+	});
+
+	it('rejects a catalog that exceeds the status schema maximum', () => {
+		const overflow = Array.from({ length: MAX_ACTIVE_MANUAL_PATCHES + 1 }, (_, index) => ({
+			scriptId: `overflow-${index}`,
+			file: `${MANUAL_PATCH_DIRECTORY}/overflow-${index}.sql`,
+			purpose: 'overflow',
+			targetEnvironments: ['production'] as const,
+			expectedRowsMin: 0,
+			expectedRowsMax: 0,
+		}));
+		expect(validateManualPatchCatalog(overflow).errors).toContain('CATALOG_OVERFLOW');
 	});
 
 	it.each([
@@ -35,9 +77,7 @@ describe('active manual patch status', () => {
 		expect(classified.status).toBe(status);
 		expect(classified.reason).toBe(reason);
 		expect(classified.planCommand).toBe(
-			status === 'PENDING'
-				? 'pnpm prod:apply -- --patch <file> --owner-user-id <uuid>'
-				: null,
+			status === 'PENDING' ? 'pnpm prod:apply -- --patch <file>' : null,
 		);
 	});
 

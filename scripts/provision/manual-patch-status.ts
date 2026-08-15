@@ -1,5 +1,6 @@
-/** Read-only operational evidence for the explicitly active manual-patch catalog. */
-import { resolve, relative, sep } from 'node:path';
+/** Read-only operational evidence for paired-store production patches. */
+import { readdirSync, readFileSync } from 'node:fs';
+import { basename, relative, resolve, sep } from 'node:path';
 import { prepareProductionPatchFile, type PreparedProductionPatch } from '../db/run-prod-patch.ts';
 import { resolveDbUrlForEnv, type TargetEnv } from './dbs-status.ts';
 import { extractSupabaseProjectRef } from '../db/db-target-config.ts';
@@ -9,7 +10,7 @@ import {
 	buildProductionPatchPreviewSql,
 	parseProductionPatchPreview,
 } from '../db/production-patch-preview.ts';
-import type { SqlManifest } from '../db/sql-safety.ts';
+import { productionPatchApplyCommand, type SqlManifest } from '../db/sql-safety.ts';
 import type {
 	EvidenceState,
 	ManualPatchEnvironmentStatus,
@@ -28,24 +29,77 @@ export interface ActiveManualPatchCatalogEntry {
 	expectedRowsMax: number;
 }
 
-export const ACTIVE_MANUAL_PATCH_CATALOG: readonly ActiveManualPatchCatalogEntry[] = [
-	{
-		scriptId: '20260814_p0_abril_itinerary_residual_structural_contracts',
-		file: 'scripts/manual/production-patches/20260814_p0_abril_itinerary_residual_structural_contracts.sql',
-		purpose: 'Reconcile the two LIVE residual itinerary contract rows for abril-michelle-becerra-rea.',
+export const MANUAL_PATCH_DIRECTORY = 'scripts/manual/production-patches';
+export const MAX_ACTIVE_MANUAL_PATCHES = 50;
+
+function headerLines(sql: string): string {
+	const lines: string[] = [];
+	for (const line of sql.split(/\r?\n/)) {
+		const trimmed = line.trim();
+		if (trimmed !== '' && !trimmed.startsWith('--')) break;
+		lines.push(line);
+	}
+	return lines.join('\n');
+}
+
+function headerField(header: string, name: string): string | null {
+	const match = header.match(new RegExp(`^--\\s*@${name}:\\s*(.+)$`, 'im'));
+	const value = match?.[1]?.trim();
+	return value ? value : null;
+}
+
+function declaresPairedStores(sql: string): boolean {
+	return /--\s*@paired-stores:\s*\S+/.test(headerLines(sql));
+}
+
+function fallbackCatalogEntry(file: string, sql: string): ActiveManualPatchCatalogEntry {
+	const header = headerLines(sql);
+	const min = Number(headerField(header, 'expected-rows-min') ?? '0');
+	const max = Number(headerField(header, 'expected-rows-max') ?? '0');
+	return {
+		scriptId: headerField(header, 'script-id') ?? basename(file, '.sql'),
+		file,
+		purpose: headerField(header, 'purpose') ?? 'Invalid paired-store production patch',
 		targetEnvironments: ['production'],
-		expectedRowsMin: 2,
-		expectedRowsMax: 2,
-	},
-	{
-		scriptId: '20260812_thankyou_editorial_back_cover_structural_contracts',
-		file: 'scripts/manual/production-patches/20260812_thankyou_editorial_back_cover_structural_contracts.sql',
-		purpose: 'Persist thank-you editorial back-cover structural contracts.',
-		targetEnvironments: ['production'],
-		expectedRowsMin: 5,
-		expectedRowsMax: 10,
-	},
-];
+		expectedRowsMin: Number.isSafeInteger(min) ? min : 0,
+		expectedRowsMax: Number.isSafeInteger(max) ? max : 0,
+	};
+}
+
+export function discoverActiveManualPatches(
+	rootDir: string = process.cwd(),
+): ActiveManualPatchCatalogEntry[] {
+	const directory = resolve(rootDir, MANUAL_PATCH_DIRECTORY);
+	const names = readdirSync(directory)
+		.filter((name) => name.endsWith('.sql'))
+		.sort((left, right) => left.localeCompare(right));
+	const entries: ActiveManualPatchCatalogEntry[] = [];
+	for (const name of names) {
+		const file = `${MANUAL_PATCH_DIRECTORY}/${name}`;
+		const sql = readFileSync(resolve(directory, name), 'utf8');
+		if (!declaresPairedStores(sql)) continue;
+		try {
+			const prepared = prepareProductionPatchFile(file);
+			entries.push({
+				scriptId: prepared.manifest['script-id'] ?? basename(name, '.sql'),
+				file,
+				purpose: prepared.manifest.purpose ?? 'Paired-store production patch',
+				targetEnvironments: ['production'],
+				expectedRowsMin: Number(prepared.manifest['expected-rows-min']),
+				expectedRowsMax: Number(prepared.manifest['expected-rows-max']),
+			});
+		} catch {
+			entries.push(fallbackCatalogEntry(file, sql));
+		}
+	}
+	if (entries.length > MAX_ACTIVE_MANUAL_PATCHES) {
+		throw new Error('ACTIVE_MANUAL_PATCH_CATALOG_OVERFLOW');
+	}
+	return entries;
+}
+
+export const ACTIVE_MANUAL_PATCH_CATALOG: readonly ActiveManualPatchCatalogEntry[] =
+	discoverActiveManualPatches();
 
 const ENVS: readonly TargetEnv[] = ['local', 'preview', 'production'];
 
@@ -66,6 +120,7 @@ export function validateManualPatchCatalog(
 	catalog: readonly ActiveManualPatchCatalogEntry[] = ACTIVE_MANUAL_PATCH_CATALOG,
 ): ManualPatchCatalogValidation {
 	const errors: string[] = [];
+	if (catalog.length > MAX_ACTIVE_MANUAL_PATCHES) errors.push('CATALOG_OVERFLOW');
 	const ids = new Set<string>();
 	for (const entry of catalog) {
 		if (ids.has(entry.scriptId)) errors.push('DUPLICATE_SCRIPT_ID');
@@ -182,6 +237,7 @@ export function classifyPatchPreviewResult(input: {
 	min: number;
 	max: number;
 	manifest?: SqlManifest;
+	sql?: string;
 	timedOut?: boolean;
 	verifiedAt?: string;
 	projectRef?: string | null;
@@ -232,31 +288,32 @@ export function classifyPatchPreviewResult(input: {
 		);
 	}
 	const count = assessment.evidence.total;
-	const affectedRows = assessment.evidence.rows?.map((row) => {
-		const selectedSlug = row.row?.slug;
-		const keyParts = (() => {
-			try {
-				const parsed = JSON.parse(row.key) as unknown;
-				return Array.isArray(parsed) ? parsed : [];
-			} catch {
-				return [];
-			}
-		})();
-		const slug =
-			typeof selectedSlug === 'string'
-				? selectedSlug
-				: keyParts.length === 1 && typeof keyParts[0] === 'string'
-					? keyParts[0]
-					: null;
-		const selectedVersion = row.row?.version;
-		const version =
-			typeof selectedVersion === 'number' &&
+	const affectedRows =
+		assessment.evidence.rows?.map((row) => {
+			const selectedSlug = row.row?.slug;
+			const keyParts = (() => {
+				try {
+					const parsed = JSON.parse(row.key) as unknown;
+					return Array.isArray(parsed) ? parsed : [];
+				} catch {
+					return [];
+				}
+			})();
+			const slug =
+				typeof selectedSlug === 'string'
+					? selectedSlug
+					: keyParts.length === 1 && typeof keyParts[0] === 'string'
+						? keyParts[0]
+						: null;
+			const selectedVersion = row.row?.version;
+			const version =
+				typeof selectedVersion === 'number' &&
 				Number.isSafeInteger(selectedVersion) &&
 				selectedVersion >= 0
-				? selectedVersion
-				: null;
-		return { store: row.store, key: row.key, slug, version };
-	}) ?? null;
+					? selectedVersion
+					: null;
+			return { store: row.store, key: row.key, slug, version };
+		}) ?? null;
 	if (assessment.state === 'NOT_NEEDED') {
 		return staticStatus(
 			'NOT_NEEDED',
@@ -299,7 +356,7 @@ export function classifyPatchPreviewResult(input: {
 		'LIVE_ROWS_WITHIN_RANGE',
 		count,
 		verifiedAt,
-		'pnpm prod:apply -- --patch <file> --owner-user-id <uuid>',
+		productionPatchApplyCommand('<file>', input.sql ?? ''),
 		affectedRows,
 		input.projectRef,
 	);
@@ -386,6 +443,7 @@ export async function readManualPatchStatuses(options: {
 					min: entry.expectedRowsMin,
 					max: entry.expectedRowsMax,
 					manifest: preparedResult.prepared.manifest,
+					sql: preparedResult.prepared.sql,
 					verifiedAt,
 					projectRef,
 				});

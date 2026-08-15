@@ -607,9 +607,10 @@ describe('production apply execution', () => {
 		expect(applyInvitation).not.toHaveBeenCalled();
 	});
 
-	it('requires --owner-user-id before writers when a patch is in the plan', async () => {
+	it('requires --owner-user-id before writers when the patch SQL assigns an owner', async () => {
 		const requireOwnerApply = jest.fn(async () => undefined);
 		const applySchema = jest.fn(async () => ({ plan: schemaPlan(), wrote: true }));
+		const deps = baseDeps({ pending: [] });
 		await expect(
 			applyProductionApplyPlan(
 				{
@@ -623,7 +624,11 @@ describe('production apply execution', () => {
 					patchFile: 'scripts/manual/x.sql',
 				},
 				{
-					...baseDeps({ pending: [] }),
+					...deps,
+					preparePatch: (file) => ({
+						...deps.preparePatch!(file),
+						sql: "SELECT set_config('app.owner_user_id', 'x', false);",
+					}),
 					requireOwnerApply,
 					applySchema,
 				},

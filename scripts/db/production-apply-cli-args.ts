@@ -51,7 +51,7 @@ Absence of scope never means apply everything.
   pnpm prod:apply -- --slug <slug>
   pnpm prod:apply -- --slugs <slug,slug>
   pnpm prod:apply -- --all-ready
-  pnpm prod:apply -- --patch <file.sql> [--owner-user-id <uuid>]
+  pnpm prod:apply -- --patch <file.sql>
   pnpm prod:apply -- --schema --slugs a,b --apply
   pnpm prod:apply -- --all-ready --apply
 
@@ -62,7 +62,7 @@ Options:
   --all-ready           Include READY schema + READY invitations only
   --patch <file>        Explicit specialized DML (never implied by --all-ready)
   --apply               Mutate Production after one owner TTY confirmation
-  --owner-user-id <id>  Required with --patch --apply
+  --owner-user-id <id>  Only when the patch SQL reads app.owner_user_id
   --json                Emit the secret-free plan on stdout
   --help, -h            Show this help (no database access)
 
@@ -142,16 +142,12 @@ function assertCliCombinations(input: {
 	slugs: readonly string[];
 	patchFile?: string;
 	apply: boolean;
-	ownerUserId?: string;
 	inspectAll: boolean;
 }): void {
 	if (input.allReady && (input.slugs.length > 0 || input.patchFile)) {
 		throw new Error(
 			'Cannot combine --all-ready with --slug, --slugs, or --patch. --all-ready includes only READY schema and invitations.',
 		);
-	}
-	if (input.apply && input.patchFile && !input.ownerUserId) {
-		throw new Error('--owner-user-id is required with --patch --apply.');
 	}
 	if (input.apply && input.inspectAll) {
 		throw new Error(
@@ -183,7 +179,7 @@ export function parseProductionApplyCliArgs(argv: string[]): ProductionApplyCliA
 	const ownerUserId = flagValue(args, '--owner-user-id');
 	const slugs = parseSlugArgs(args);
 	const inspectAll = isInspectAllScope({ schema, slugs, allReady, patchFile });
-	assertCliCombinations({ allReady, slugs, patchFile, apply, ownerUserId, inspectAll });
+	assertCliCombinations({ allReady, slugs, patchFile, apply, inspectAll });
 
 	return {
 		help: false,

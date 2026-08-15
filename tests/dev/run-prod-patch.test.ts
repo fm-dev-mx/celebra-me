@@ -2,19 +2,21 @@ import {
 	validateAndNormalizeSupabaseUrl,
 	validateOwnerUserId,
 	assertSameSupabaseProject,
+	patchSqlRequiresOwnerUserId,
+	productionPatchApplyCommand,
 } from '../../scripts/db/sql-safety';
 
 describe('validateAndNormalizeSupabaseUrl', () => {
 	it('accepts a valid Supabase project URL', () => {
-		expect(
-			validateAndNormalizeSupabaseUrl('https://abcdefghijklm.supabase.co'),
-		).toBe('https://abcdefghijklm.supabase.co');
+		expect(validateAndNormalizeSupabaseUrl('https://abcdefghijklm.supabase.co')).toBe(
+			'https://abcdefghijklm.supabase.co',
+		);
 	});
 
 	it('normalizes a trailing slash', () => {
-		expect(
-			validateAndNormalizeSupabaseUrl('https://abcdefghijklm.supabase.co/'),
-		).toBe('https://abcdefghijklm.supabase.co');
+		expect(validateAndNormalizeSupabaseUrl('https://abcdefghijklm.supabase.co/')).toBe(
+			'https://abcdefghijklm.supabase.co',
+		);
 	});
 
 	it('rejects an empty string', () => {
@@ -30,9 +32,9 @@ describe('validateAndNormalizeSupabaseUrl', () => {
 	});
 
 	it('rejects HTTP protocol', () => {
-		expect(() =>
-			validateAndNormalizeSupabaseUrl('http://abcdefghijklm.supabase.co'),
-		).toThrow('must use HTTPS protocol');
+		expect(() => validateAndNormalizeSupabaseUrl('http://abcdefghijklm.supabase.co')).toThrow(
+			'must use HTTPS protocol',
+		);
 	});
 
 	it('rejects URLs with credentials', () => {
@@ -54,53 +56,67 @@ describe('validateAndNormalizeSupabaseUrl', () => {
 	});
 
 	it('rejects non-Supabase origins', () => {
-		expect(() =>
-			validateAndNormalizeSupabaseUrl('https://example.com'),
-		).toThrow('hostname must be a Supabase project');
+		expect(() => validateAndNormalizeSupabaseUrl('https://example.com')).toThrow(
+			'hostname must be a Supabase project',
+		);
+	});
+});
+
+describe('patch owner requirement', () => {
+	it('requires an owner UUID only when the SQL reads app.owner_user_id', () => {
+		expect(patchSqlRequiresOwnerUserId('update public.x set y = 1')).toBe(false);
+		expect(
+			patchSqlRequiresOwnerUserId(
+				"v_owner_id := current_setting('app.owner_user_id')::uuid;",
+			),
+		).toBe(true);
+		expect(
+			productionPatchApplyCommand('scripts/manual/a.sql', 'update public.x set y = 1'),
+		).toBe('pnpm prod:apply -- --patch scripts/manual/a.sql');
+		expect(
+			productionPatchApplyCommand(
+				'scripts/manual/b.sql',
+				"SELECT current_setting('app.owner_user_id')",
+			),
+		).toBe('pnpm prod:apply -- --patch scripts/manual/b.sql --owner-user-id <uuid>');
 	});
 });
 
 describe('validateOwnerUserId', () => {
 	it('accepts a valid UUID', () => {
-		expect(
-			validateOwnerUserId('550e8400-e29b-41d4-a716-446655440000'),
-		).toBe('550e8400-e29b-41d4-a716-446655440000');
+		expect(validateOwnerUserId('550e8400-e29b-41d4-a716-446655440000')).toBe(
+			'550e8400-e29b-41d4-a716-446655440000',
+		);
 	});
 
 	it('trims whitespace from a UUID', () => {
-		expect(
-			validateOwnerUserId('  550e8400-e29b-41d4-a716-446655440000  '),
-		).toBe('550e8400-e29b-41d4-a716-446655440000');
+		expect(validateOwnerUserId('  550e8400-e29b-41d4-a716-446655440000  ')).toBe(
+			'550e8400-e29b-41d4-a716-446655440000',
+		);
 	});
 
 	it('rejects undefined', () => {
-		expect(() => validateOwnerUserId(undefined)).toThrow(
-			'--owner-user-id is required',
-		);
+		expect(() => validateOwnerUserId(undefined)).toThrow('--owner-user-id is required');
 	});
 
 	it('rejects an empty string', () => {
-		expect(() => validateOwnerUserId('')).toThrow(
-			'--owner-user-id is required',
-		);
+		expect(() => validateOwnerUserId('')).toThrow('--owner-user-id is required');
 	});
 
 	it('rejects a non-UUID string', () => {
-		expect(() => validateOwnerUserId('not-a-uuid')).toThrow(
+		expect(() => validateOwnerUserId('not-a-uuid')).toThrow('not a valid UUID');
+	});
+
+	it('rejects a malformed UUID (missing dashes)', () => {
+		expect(() => validateOwnerUserId('550e8400e29b41d4a716446655440000')).toThrow(
 			'not a valid UUID',
 		);
 	});
 
-	it('rejects a malformed UUID (missing dashes)', () => {
-		expect(() =>
-			validateOwnerUserId('550e8400e29b41d4a716446655440000'),
-		).toThrow('not a valid UUID');
-	});
-
 	it('rejects a UUID with invalid characters', () => {
-		expect(() =>
-			validateOwnerUserId('zzzzzzzz-zzzz-zzzz-zzzz-zzzzzzzzzzzz'),
-		).toThrow('not a valid UUID');
+		expect(() => validateOwnerUserId('zzzzzzzz-zzzz-zzzz-zzzz-zzzzzzzzzzzz')).toThrow(
+			'not a valid UUID',
+		);
 	});
 });
 
@@ -208,10 +224,7 @@ describe('assertSameSupabaseProject', () => {
 
 	it('rejects invalid PROD_DB_URL', () => {
 		expect(() =>
-			assertSameSupabaseProject(
-				'https://abcdefg.supabase.co',
-				'not-a-url',
-			),
+			assertSameSupabaseProject('https://abcdefg.supabase.co', 'not-a-url'),
 		).toThrow();
 	});
 

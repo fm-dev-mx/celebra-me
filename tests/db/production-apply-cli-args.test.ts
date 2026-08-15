@@ -65,8 +65,12 @@ describe('prod:apply CLI arguments', () => {
 		expect(() => parse(['--schema', '--apply', '--dry-run'])).toThrow(/Unknown flag/);
 	});
 
-	it('requires --owner-user-id with --patch --apply', () => {
-		expect(() => parse(['--patch', 'x.sql', '--apply'])).toThrow(/--owner-user-id is required/);
+	it('allows --patch --apply without --owner-user-id at parse time', () => {
+		expect(parse(['--patch', 'x.sql', '--apply'])).toMatchObject({
+			patchFile: 'x.sql',
+			apply: true,
+			ownerUserId: undefined,
+		});
 	});
 
 	it('consumes a leading pnpm separator before parsing scope', () => {

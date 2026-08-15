@@ -33,6 +33,7 @@ import {
 	prepareProductionPatchFile,
 	ProductionPatchApplyError,
 } from './run-prod-patch.ts';
+import { patchSqlRequiresOwnerUserId, productionPatchApplyCommand } from './sql-safety.ts';
 import type { PreparedProductionPatch } from './run-prod-patch.ts';
 import type { ProductionPatchPreviewAssessment } from './production-patch-preview.ts';
 import { inspectPatch } from './production-apply-patch-plan.ts';
@@ -348,13 +349,20 @@ function throwIfIneligible(plan: ProductionApplyPlan): void {
 function throwIfPatchMissingOwner(
 	mutations: readonly ProductionApplyPlanItem[],
 	ownerUserId: string | undefined,
+	deps: ProductionApplyExecuteDeps,
 ): void {
-	if (!mutations.some((item) => item.domain === 'patch') || ownerUserId) return;
+	if (ownerUserId) return;
+	const patch = mutations.find((item) => item.domain === 'patch');
+	if (!patch) return;
+	const prepared = (deps.preparePatch ?? prepareProductionPatchFile)(patch.id);
+	if (!patchSqlRequiresOwnerUserId(prepared.sql)) return;
 	throw new OperatorError({
 		title: 'Falta --owner-user-id',
-		cause: 'El apply de un parche especializado exige --owner-user-id.',
+		cause: 'Este parche asigna dueño y exige --owner-user-id.',
 		code: 'OWNER_USER_ID_REQUIRED',
-		remediation: ['Reintente con --patch <file> --owner-user-id <uuid> --apply.'],
+		remediation: [
+			`Reintente con ${productionPatchApplyCommand(patch.id, prepared.sql)} --apply.`,
+		],
 	});
 }
 
@@ -605,10 +613,6 @@ async function applyPatchMutation(
 ): Promise<boolean> {
 	const patchMutation = mutations.find((item) => item.domain === 'patch');
 	if (!patchMutation) return false;
-	if (!ownerUserId) {
-		throwIfPatchMissingOwner(mutations, ownerUserId);
-		return false;
-	}
 	try {
 		const prepared = (deps.preparePatch ?? prepareProductionPatchFile)(patchMutation.id);
 		if (prepared.fingerprint !== patchMutation.binding) {
@@ -628,13 +632,13 @@ async function applyPatchMutation(
 			prodDbUrl: dbUrl,
 			purpose: 'standalone',
 			planId: reviewed.planId,
-			retryCommand: `pnpm prod:apply -- --patch ${patchMutation.id} --owner-user-id <uuid> --apply`,
+			retryCommand: `${productionPatchApplyCommand(patchMutation.id, prepared.sql)} --apply`,
 			operationLabel: 'la aplicación del parche especializado',
 		});
 		(deps.revalidatePatchBackup ?? revalidateCriticalProductionBackup)({
 			prodDbUrl: dbUrl,
 			manifestPath: backup.manifestPath,
-			retryCommand: `pnpm prod:apply -- --patch ${patchMutation.id} --owner-user-id <uuid> --apply`,
+			retryCommand: `${productionPatchApplyCommand(patchMutation.id, prepared.sql)} --apply`,
 		});
 		const applyPatch = deps.applyPatch ?? applyPreparedProductionPatch;
 		await applyPatch({
@@ -669,7 +673,7 @@ export async function applyProductionApplyPlan(
 
 	const mutations = mutationItemsOf(reviewed);
 	const ownerUserId = args.ownerUserId;
-	throwIfPatchMissingOwner(mutations, ownerUserId);
+	throwIfPatchMissingOwner(mutations, ownerUserId, deps);
 	if (mutations.length === 0) {
 		return {
 			plan: toPublicProductionApplyPlan(reviewed),
