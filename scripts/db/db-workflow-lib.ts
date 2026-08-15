@@ -47,6 +47,8 @@ export interface RunOptions {
 	env?: NodeJS.ProcessEnv;
 	input?: string;
 	inherit?: boolean;
+	/** Stream child stderr live while still capturing stdout (backup progress). */
+	inheritStderr?: boolean;
 	redact?: string[];
 	throwOnError?: boolean;
 	/** Hard wall-clock timeout for spawnSync (ms). */
@@ -363,7 +365,11 @@ export function runCommand(
 		input: options.input,
 		shell: useShell,
 		encoding: 'utf8',
-		stdio: options.inherit ? 'inherit' : 'pipe',
+		stdio: options.inherit
+			? 'inherit'
+			: options.inheritStderr
+				? ['pipe', 'pipe', 'inherit']
+				: 'pipe',
 		...(typeof options.timeoutMs === 'number' && options.timeoutMs > 0
 			? { timeout: options.timeoutMs, killSignal: 'SIGKILL' as const }
 			: {}),

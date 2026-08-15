@@ -110,53 +110,75 @@ function parseSingleJson<T>(output: string, label: string): T {
 	return JSON.parse(value) as T;
 }
 
-function getPrimaryKeyOrder(dbUrl: string, schema: string, table: string): string {
-	const output = psqlCopy(
-		dbUrl,
-		`select coalesce(string_agg(format('t.%I', a.attname), ', ' order by key_columns.ordinality), '')
-		 from pg_index i
-		 join pg_class c on c.oid = i.indrelid
-		 join pg_namespace n on n.oid = c.relnamespace
-		 cross join lateral unnest(i.indkey) with ordinality as key_columns(attnum, ordinality)
-		 join pg_attribute a on a.attrelid = c.oid and a.attnum = key_columns.attnum
-		 where i.indisprimary and n.nspname = ${sqlLiteral(schema)} and c.relname = ${sqlLiteral(table)}`,
-	).trim();
-	return output || 'row_to_json(t)::text';
-}
+const TABLE_FINGERPRINT_ORDER: Record<string, string> = {
+	'public.invitations': 't.id',
+	'public.events': 't.id',
+	'public.event_memberships': 't.id',
+	'public.event_claim_codes': 't.id',
+	'public.guest_invitations': 't.id',
+	'public.guest_invitation_audit': 't.id',
+	'public.rsvp_records': 't.id',
+	'public.rsvp_audit_log': 't.id',
+	'public.rsvp_channel_log': 't.id',
+	'public.invitation_content_drafts': 't.id',
+	'public.published_invitation_content': 't.id',
+	'public.invitation_publication_idempotency': 't.id',
+	'public.managed_invitation_release_provenance': 't.id',
+	'public.invitation_mutation_operation_receipts': 't.id',
+	'public.invitation_assets': 't.id',
+	'auth.users': 't.id',
+	'auth.identities': 't.id',
+	'storage.buckets': 't.id',
+	'storage.objects': 't.bucket_id, t.name',
+};
 
-function sqlLiteral(value: string): string {
-	return `'${value.replaceAll("'", "''")}'`;
-}
-
-function fingerprintTable(dbUrl: string, schema: string, table: string): RecoveryTableFingerprint {
-	const qualified = `${quoteIdentifier(schema)}.${quoteIdentifier(table)}`;
-	let source = qualified;
-	let orderBy: string;
-	if (schema === 'auth' && table === 'users') {
-		source = `(
+const AUTH_USERS_SOURCE = `(
 			  select id, aud, role, email, email_confirmed_at, raw_app_meta_data,
 			         raw_user_meta_data, is_super_admin, phone, phone_confirmed_at,
 			         banned_until, deleted_at, is_sso_user, is_anonymous, created_at, updated_at
 			  from auth.users
 			)`;
-		orderBy = 't.id';
-	} else {
-		orderBy = getPrimaryKeyOrder(dbUrl, schema, table);
-	}
-	return parseSingleJson<RecoveryTableFingerprint>(
-		psqlCopy(
-			dbUrl,
-			`select json_build_object(
+
+function fingerprintSubquery(schema: string, table: string): string {
+	const qualified = `${schema}.${table}`;
+	const orderBy = TABLE_FINGERPRINT_ORDER[qualified] ?? 'row_to_json(t)::text';
+	const source =
+		schema === 'auth' && table === 'users'
+			? AUTH_USERS_SOURCE
+			: `${quoteIdentifier(schema)}.${quoteIdentifier(table)}`;
+	return `(select json_build_object(
 		  'rowCount', count(*),
 		  'sha256', encode(digest(
 		    coalesce(string_agg(to_jsonb(t)::text, E'\\n' order by ${orderBy}), '') ||
 		    case when count(*) > 0 then E'\\n' else '' end,
 		    'sha256'
 		  ), 'hex')
-		)::text from ${source} t`,
-		),
-		`${schema}.${table} fingerprint`,
-	);
+		) from ${source} t)`;
+}
+
+export function buildRecoveryIntegrityCaptureSql(
+	profile: RecoveryIntegrityProfile = 'phase3',
+): string {
+	const tableEntries = CRITICAL_RECOVERY_TABLES.filter(
+		({ table }) =>
+			!(profile === 'pre-phase3' && table === 'invitation_mutation_operation_receipts'),
+	).map(({ schema, table }) => `'${schema}.${table}', ${fingerprintSubquery(schema, table)}`);
+	return `select json_build_object(
+	  'tables', json_build_object(${tableEntries.join(',\n	  ')}),
+	  'migrationsText', coalesce((
+	    select string_agg(version::text, E'\\n' order by version) || E'\\n'
+	    from supabase_migrations.schema_migrations
+	  ), ''),
+	  'invariants', (${INVARIANT_SQL.replace(/::text\s*$/, '')}),
+	  'businessState', (${businessStateSql(profile).replace(/::text\s*$/, '')})
+	)::text`;
+}
+
+interface RecoveryIntegrityCapturePayload {
+	tables: Record<string, RecoveryTableFingerprint>;
+	migrationsText: string;
+	invariants: Record<string, number>;
+	businessState: unknown;
 }
 
 const INVARIANT_SQL = `
@@ -200,25 +222,23 @@ select json_build_object(
 
 export function captureRecoveryIntegrity(
 	dbUrl: string,
-	options: { profile?: RecoveryIntegrityProfile } = {},
+	options: {
+		profile?: RecoveryIntegrityProfile;
+		copy?: (sql: string) => string;
+	} = {},
 ): RecoveryIntegritySnapshot {
 	const profile = options.profile ?? 'phase3';
-	const tables: Record<string, RecoveryTableFingerprint> = {};
-	for (const { schema, table } of CRITICAL_RECOVERY_TABLES) {
-		if (profile === 'pre-phase3' && table === 'invitation_mutation_operation_receipts')
-			continue;
-		tables[`${schema}.${table}`] = fingerprintTable(dbUrl, schema, table);
-	}
-	const migrations = psqlCopy(
-		dbUrl,
-		'select version::text from supabase_migrations.schema_migrations order by version',
+	const copy = options.copy ?? ((sql: string) => psqlCopy(dbUrl, sql));
+	const payload = parseSingleJson<RecoveryIntegrityCapturePayload>(
+		copy(buildRecoveryIntegrityCaptureSql(profile)),
+		'recovery integrity snapshot',
 	);
-	const invariants = parseSingleJson<Record<string, number>>(
-		psqlCopy(dbUrl, INVARIANT_SQL),
-		'invariant evidence',
-	);
+	const migrations = payload.migrationsText;
 	const migrationVersions = migrations.length === 0 ? [] : migrations.trimEnd().split(/\r?\n/);
-	const businessState = psqlCopy(dbUrl, businessStateSql(profile));
+	const businessState =
+		typeof payload.businessState === 'string'
+			? payload.businessState
+			: JSON.stringify(payload.businessState);
 	return {
 		version: 1,
 		profile,
@@ -226,9 +246,9 @@ export function captureRecoveryIntegrity(
 		migrationCount: migrationVersions.length,
 		migrationVersions,
 		migrationSha256: sha256(migrations),
-		tables,
+		tables: payload.tables,
 		businessStateSha256: sha256(businessState),
-		invariants,
+		invariants: payload.invariants,
 	};
 }
 

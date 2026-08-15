@@ -75,6 +75,7 @@ function captureOnce(input: EnsureCriticalProductionBackupInput): CommandResult 
 		env,
 		redact: [input.prodDbUrl],
 		throwOnError: false,
+		inheritStderr: true,
 	});
 }
 

@@ -1,4 +1,3 @@
-import { createHash } from 'node:crypto';
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, resolve } from 'node:path';
 import {
@@ -25,12 +24,14 @@ import {
 	computeRecoveryStateDigest,
 	type RecoveryIntegritySnapshot,
 } from './recovery-integrity.ts';
+import { writeStorageObjectArchive } from './storage-object-archive.ts';
+import { BACKUP_PHASE_LABELS, writeBackupPhase } from './critical-backup-progress.ts';
 import {
-	classifyStorageDownloadFailure,
-	createStorageObjectArchiveEntry,
-	writeStorageObjectArchive,
-	type StorageObjectArchive,
-} from './storage-object-archive.ts';
+	downloadStorageInventory,
+	emptyStorageArchive,
+	STORAGE_INVENTORY_SQL,
+	type StorageInventoryRow,
+} from './critical-backup-storage.ts';
 import {
 	assertWindowsEfsEncrypted,
 	prepareEncryptedLocalDirectory,
@@ -42,14 +43,6 @@ import {
 	runCommand,
 	timestamp,
 } from './db-workflow-lib.ts';
-
-interface StorageInventoryRow {
-	bucketId: string;
-	name: string;
-	contentType: string | null;
-	declaredBytes: number | null;
-	declaredSha256: string | null;
-}
 
 function runBackupCommand(
 	command: string,
@@ -84,16 +77,6 @@ function queryJson<T>(dbUrl: string, sql: string): T {
 	const value = result.stdout.trim();
 	if (!value) throw new Error('Production backup query returned no JSON result.');
 	return JSON.parse(value) as T;
-}
-
-function parseNumeric(value: number | string | null): number | null {
-	if (value === null) return null;
-	const parsed = Number(value);
-	return Number.isFinite(parsed) ? parsed : null;
-}
-
-function storageObjectRef(bucketId: string, name: string): string {
-	return createHash('sha256').update(`${bucketId}/${name}`).digest('hex').slice(0, 16);
 }
 
 function verifyProductionSecrets(prodDbUrl: string): {
@@ -180,78 +163,17 @@ async function backupStorageData(
 		{ redact: [prodDbUrl] },
 	);
 
-	const inventory = queryJson<StorageInventoryRow[]>(
-		prodDbUrl,
-		`select coalesce(json_agg(source order by "bucketId", name), '[]'::json)::text
-		 from (
-		   select distinct on (bucket_id, object_name)
-		          bucket_id as "bucketId", object_name as name, content_type as "contentType",
-		          declared_bytes as "declaredBytes", declared_sha256 as "declaredSha256"
-		   from (
-		     select a.bucket as bucket_id, a.storage_path as object_name,
-		            coalesce(a.mime_type, o.metadata->>'mimetype') as content_type,
-		            a.file_size as declared_bytes, a.sha256 as declared_sha256, 0 as priority
-		     from public.invitation_assets a
-		     left join storage.objects o on o.bucket_id = a.bucket and o.name = a.storage_path
-		     where a.deleted_at is null and a.provider = 'supabase'
-		     union all
-		     select o.bucket_id, o.name, o.metadata->>'mimetype',
-		            nullif(o.metadata->>'size', '')::bigint, null::text, 1
-		     from storage.objects o
-		     where o.bucket_id = 'invitation-assets'
-		       and (
-		         exists (
-		           select 1 from public.published_invitation_content p
-		           where p.content::text like '%' || o.name || '%'
-		         )
-		         or exists (
-		           select 1 from public.invitation_content_drafts d
-		           where d.content::text like '%' || o.name || '%'
-		         )
-		       )
-		   ) candidates
-		   order by bucket_id, object_name, priority
-		 ) source;`,
-	);
-	const archive: StorageObjectArchive = {
-		version: 1,
-		createdAt: new Date().toISOString(),
-		objects: [],
-	};
-	for (const object of inventory) {
-		const objectRef = storageObjectRef(object.bucketId, object.name);
-		const encodedPath = object.name.split('/').map(encodeURIComponent).join('/');
-		const response = await fetch(
-			`${prodSupabaseUrl.replace(/\/$/, '')}/storage/v1/object/public/${encodeURIComponent(object.bucketId)}/${encodedPath}`,
-			{
-				headers: {
-					Authorization: `Bearer ${prodServiceRole}`,
-					apikey: prodServiceRole,
-				},
-			},
-		);
-		if (!response.ok) {
-			const failureCategory = classifyStorageDownloadFailure(await response.text());
-			throw new Error(
-				`Critical Storage object download failed (${response.status}, ${failureCategory}, ref ${objectRef}).`,
-			);
-		}
-		const content = new Uint8Array(await response.arrayBuffer());
-		const entry = createStorageObjectArchiveEntry(
-			object.bucketId,
-			object.name,
-			content,
-			object.contentType,
-		);
-		const declaredBytes = parseNumeric(object.declaredBytes);
-		if (declaredBytes !== null && declaredBytes !== entry.bytes) {
-			throw new Error(`Storage object size mismatch (ref ${objectRef}).`);
-		}
-		if (object.declaredSha256 && object.declaredSha256 !== entry.sha256) {
-			throw new Error(`Storage object checksum mismatch (ref ${objectRef}).`);
-		}
-		archive.objects.push(entry);
-	}
+	const inventory = queryJson<StorageInventoryRow[]>(prodDbUrl, STORAGE_INVENTORY_SQL);
+	writeBackupPhase(BACKUP_PHASE_LABELS.storageObjects, `0/${inventory.length}`);
+	const archive = emptyStorageArchive();
+	archive.objects = await downloadStorageInventory({
+		inventory,
+		prodSupabaseUrl,
+		prodServiceRole,
+		onProgress: (index, total) => {
+			writeBackupPhase(BACKUP_PHASE_LABELS.storageObjects, `${index}/${total}`);
+		},
+	});
 	writeStorageObjectArchive(storageObjectsPath, archive);
 	return archive.objects.length;
 }
@@ -328,8 +250,10 @@ async function main(): Promise<void> {
 	console.info('- Environment identity: verified Production project');
 	console.info('- Output: ignored, access-restricted local backup directory');
 
+	writeBackupPhase(BACKUP_PHASE_LABELS.integrityBefore);
 	const before = captureRecoveryIntegrity(prodDbUrl);
 
+	writeBackupPhase(BACKUP_PHASE_LABELS.dumpPublic);
 	runBackupCommand(
 		'pg_dump',
 		[
@@ -346,8 +270,10 @@ async function main(): Promise<void> {
 		{ redact: [prodDbUrl] },
 	);
 
+	writeBackupPhase(BACKUP_PHASE_LABELS.auth);
 	const { usersLength, identitiesLength } = backupAuthData(prodDbUrl, authPath);
 
+	writeBackupPhase(BACKUP_PHASE_LABELS.storageMetadata);
 	const storageObjectsCount = await backupStorageData(
 		prodDbUrl,
 		prodSupabaseUrl,
@@ -356,6 +282,7 @@ async function main(): Promise<void> {
 		storageObjectsPath,
 	);
 
+	writeBackupPhase(BACKUP_PHASE_LABELS.integrityAfter);
 	const after = captureRecoveryIntegrity(prodDbUrl);
 	const coherence = compareRecoveryIntegrity(before, after, { requireValidInvariants: false });
 	if (!coherence.ok) {
@@ -364,6 +291,7 @@ async function main(): Promise<void> {
 		);
 	}
 
+	writeBackupPhase(BACKUP_PHASE_LABELS.manifest);
 	writeBackupManifest(
 		databasePath,
 		authPath,

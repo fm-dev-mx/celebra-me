@@ -1,5 +1,8 @@
 import {
+	buildRecoveryIntegrityCaptureSql,
+	captureRecoveryIntegrity,
 	compareRecoveryIntegrity,
+	CRITICAL_RECOVERY_TABLES,
 	type RecoveryIntegritySnapshot,
 } from '../../scripts/db/recovery-integrity';
 
@@ -61,5 +64,43 @@ describe('recovery integrity comparison', () => {
 		expect(compareRecoveryIntegrity(expected, actual).failures).toEqual([
 			'Recovery integrity profile mismatch: expected phase3, got pre-phase3.',
 		]);
+	});
+});
+
+describe('recovery integrity capture SQL', () => {
+	it('batches every critical table into one query without per-table PK lookups', () => {
+		const sql = buildRecoveryIntegrityCaptureSql('phase3');
+		expect(sql).not.toMatch(/pg_index/);
+		for (const { schema, table } of CRITICAL_RECOVERY_TABLES) {
+			expect(sql).toContain(`'${schema}.${table}'`);
+		}
+		expect(sql).toContain('invitation_mutation_operation_receipts');
+		expect(buildRecoveryIntegrityCaptureSql('pre-phase3')).not.toContain(
+			'invitation_mutation_operation_receipts',
+		);
+	});
+
+	it('captures a snapshot with a single copy() call', () => {
+		const tables = Object.fromEntries(
+			CRITICAL_RECOVERY_TABLES.map(({ schema, table }) => [
+				`${schema}.${table}`,
+				{ rowCount: 1, sha256: 'b'.repeat(64) },
+			]),
+		);
+		const copy = jest.fn(() =>
+			JSON.stringify({
+				tables,
+				migrationsText: '20260729152113\n',
+				invariants: { orphanGuests: 0 },
+				businessState: { guestAttendeeTotal: 0 },
+			}),
+		);
+		const captured = captureRecoveryIntegrity('postgresql://unused', { copy });
+		expect(copy).toHaveBeenCalledTimes(1);
+		expect(captured.migrationCount).toBe(1);
+		expect(captured.migrationVersions).toEqual(['20260729152113']);
+		expect(captured.tables['public.guest_invitations']?.rowCount).toBe(1);
+		expect(captured.invariants.orphanGuests).toBe(0);
+		expect(captured.businessStateSha256).toHaveLength(64);
 	});
 });

@@ -41,6 +41,7 @@ describe('Phase 3 operational contracts', () => {
 		expect(sharedBackup).toContain('assertCriticalBackupStructuralCoverage');
 		expect(sharedBackup).toContain('BACKUP_CAPTURE_UNSTABLE');
 		expect(sharedBackup).toContain("'scripts/db/backup-critical-production.ts'");
+		expect(sharedBackup).toContain('inheritStderr: true');
 		// Phase 3 is fully applied in Production; the stale pre-phase3 profile must not return.
 		expect(workflow).not.toContain('--integrity-profile=pre-phase3');
 		expect(beforeWriteIdx).toBeGreaterThan(0);
@@ -64,12 +65,15 @@ describe('Phase 3 operational contracts', () => {
 		const workflow = read('scripts/db/backup-critical-production.ts');
 		expect(workflow).toContain('rmSync(incompleteOutputDir, { recursive: true, force: true })');
 		expect(workflow).not.toMatch(/console\.(?:info|log|error)\([^\n]*prodServiceRole/);
-		expect(workflow).toContain('/storage/v1/object/public/');
-		expect(workflow).not.toContain('/storage/v1/object/authenticated/');
-		expect(workflow).not.toMatch(/failed[^\n]*object\.name|mismatch[^\n]*object\.name/);
-		expect(workflow).toContain("a.deleted_at is null and a.provider = 'supabase'");
-		expect(workflow).toContain('from public.published_invitation_content p');
-		expect(workflow).toContain('from public.invitation_content_drafts d');
+		expect(workflow).toContain('STORAGE_INVENTORY_SQL');
+		expect(workflow).toContain('writeBackupPhase');
+		expect(workflow).toContain('BACKUP_PHASE_LABELS.dumpPublic');
+		const storage = read('scripts/db/critical-backup-storage.ts');
+		expect(storage).toContain('/storage/v1/object/public/');
+		expect(storage).not.toContain('/storage/v1/object/authenticated/');
+		expect(storage).not.toMatch(/failed[^\n]*object\.name|mismatch[^\n]*object\.name/);
+		expect(storage).toContain("a.deleted_at is null and a.provider = 'supabase'");
+		expect(storage).not.toMatch(/content\s*::\s*text\s+like/i);
 	});
 
 	it('classifies Storage failures without retaining response details', () => {
