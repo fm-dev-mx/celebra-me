@@ -208,7 +208,7 @@ export function checkUnknownFlags(args: string[]): void {
 		if (arg.startsWith('-')) {
 			if (arg === '--') {
 				throw new Error(
-					'PASTED_PNPM_SEPARATOR: `--` es el separador de pnpm, no una opción de este CLI. En la task escriba solo: -- --slug <slug> --targets preview --apply',
+					'PASTED_PNPM_SEPARATOR: `--` es el separador de pnpm, no una opción de este CLI. En la task escriba solo: --slug <slug> --targets preview --apply',
 				);
 			}
 			if (!VALID_FLAGS.has(arg)) {

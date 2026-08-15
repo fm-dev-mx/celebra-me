@@ -6,19 +6,17 @@ import {
 } from '@/lib/status/operator-command-display';
 
 describe('displayOperatorCommand', () => {
-	it('shows Preview apply as a terminal command with task scope', () => {
+	it('shows Preview apply as invitation:release task args', () => {
 		const command = 'pnpm invitation:release -- --slug renata --targets preview --apply';
 		const display = displayOperatorCommand(command);
 		expect(display).toEqual({
-			task: null,
-			prompt: command,
-			keepFullCommand: true,
-			surface: 'terminal',
-			envAssignment: '$env:CELEBRA_TASK_SCOPE="preview:renata:apply"',
+			task: 'invitation:release',
+			prompt: '--slug renata --targets preview --apply',
+			keepFullCommand: false,
+			surface: 'task',
+			envAssignment: null,
 		});
-		expect(operatorCommandCopyValue(display)).toBe(
-			'$env:CELEBRA_TASK_SCOPE="preview:renata:apply"\n' + command,
-		);
+		expect(operatorCommandCopyValue(display)).toBe('--slug renata --targets preview --apply');
 	});
 
 	it('keeps Local apply as task prompt args', () => {
@@ -28,7 +26,7 @@ describe('displayOperatorCommand', () => {
 			),
 		).toEqual({
 			task: 'invitation:release',
-			prompt: '-- --slug renata --targets local --apply',
+			prompt: '--slug renata --targets local --apply',
 			keepFullCommand: false,
 			surface: 'task',
 			envAssignment: null,
@@ -40,18 +38,18 @@ describe('displayOperatorCommand', () => {
 			displayOperatorCommand(
 				'pnpm invitation:release -- --slug renata --targets preview --dry-run',
 			).prompt,
-		).toBe('-- --slug renata --targets preview --dry-run');
+		).toBe('--slug renata --targets preview --dry-run');
 		expect(
 			displayOperatorCommand('pnpm invitation:release -- --package-hash abc123 --approve')
 				.prompt,
-		).toBe('-- --package-hash abc123 --approve');
+		).toBe('--package-hash abc123 --approve');
 	});
 
-	it('adds the pnpm separator when Local invitation:release flags omit it', () => {
+	it('does not add a leading pnpm separator to Local invitation:release flags', () => {
 		expect(
 			displayOperatorCommand('pnpm invitation:release --slug renata --targets local --apply')
 				.prompt,
-		).toBe('-- --slug renata --targets local --apply');
+		).toBe('--slug renata --targets local --apply');
 	});
 
 	it('shows Preview schema apply with the migrate task scope', () => {
@@ -65,7 +63,7 @@ describe('displayOperatorCommand', () => {
 	it('splits prod:apply plan and patch apply', () => {
 		expect(displayOperatorCommand('pnpm prod:apply -- --slug leslie-perez')).toEqual({
 			task: 'prod:apply',
-			prompt: '-- --slug leslie-perez',
+			prompt: '--slug leslie-perez',
 			keepFullCommand: false,
 			surface: 'task',
 			envAssignment: null,
@@ -75,17 +73,17 @@ describe('displayOperatorCommand', () => {
 				'pnpm prod:apply -- --patch scripts/manual/production-patches/example.sql --owner-user-id <uuid> --apply',
 			).prompt,
 		).toBe(
-			'-- --patch scripts/manual/production-patches/example.sql --owner-user-id <uuid> --apply',
+			'--patch scripts/manual/production-patches/example.sql --owner-user-id <uuid> --apply',
 		);
 	});
 
 	it('splits db:migrate targets', () => {
 		expect(displayOperatorCommand('pnpm db:migrate -- --target preview').prompt).toBe(
-			'-- --target preview',
+			'--target preview',
 		);
 		expect(
 			displayOperatorCommand('pnpm db:migrate -- --target disposable-test --apply').prompt,
-		).toBe('-- --target disposable-test --apply');
+		).toBe('--target disposable-test --apply');
 	});
 
 	it('keeps dbs positional args and diagnostics without repeating the script', () => {

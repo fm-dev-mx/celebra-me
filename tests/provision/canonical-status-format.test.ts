@@ -24,10 +24,10 @@ describe('canonical status CLI format', () => {
 		expect(text).not.toContain('Verify:');
 		expect(text).toContain('Apply:');
 		expect(text).toContain('Task: prod:apply');
-		expect(text).toContain('Escribir: -- --slug victoria-y-roberto --apply');
+		expect(text).toContain('Escribir: --slug victoria-y-roberto --apply');
 		expect(text).not.toContain('pnpm prod:apply -- --slug victoria-y-roberto --apply');
 		expect(text).toContain('Task: db:migrate');
-		expect(text).toContain('Escribir: -- --target disposable-test --apply');
+		expect(text).toContain('Escribir: --target disposable-test --apply');
 		expect(text).toContain('Authorization');
 		expect(text).toContain('GRANDFATHERED');
 		expect(text).toContain('NOT_APPLICABLE');
@@ -81,7 +81,7 @@ describe('canonical status CLI format', () => {
 		expect(text).toContain('Schema CURRENT is not owner-authorization evidence');
 	});
 
-	it('prints Preview apply as a terminal command with CELEBRA_TASK_SCOPE', () => {
+	it('prints Preview apply as invitation:release task args', () => {
 		const base = buildCanonicalStatusViewFixture();
 		const promotion = base.promotions[0];
 		if (!promotion) throw new Error('expected fixture promotion');
@@ -107,11 +107,12 @@ describe('canonical status CLI format', () => {
 			}),
 			{ env: NO_COLOR_ENV },
 		);
-		expect(text).toContain('Terminal');
-		expect(text).toContain('$env:CELEBRA_TASK_SCOPE="preview:renata:apply"');
-		expect(text).toContain(
+		expect(text).toContain('Task: invitation:release');
+		expect(text).toContain('Escribir: --slug renata --targets preview --apply');
+		expect(text).not.toContain('Terminal');
+		expect(text).not.toContain('$env:CELEBRA_TASK_SCOPE');
+		expect(text).not.toContain(
 			'pnpm invitation:release -- --slug renata --targets preview --apply',
 		);
-		expect(text).not.toContain('Task: invitation:release');
 	});
 });

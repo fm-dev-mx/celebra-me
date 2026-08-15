@@ -89,7 +89,7 @@ $commandDetails = @{
     "invitation:release"        = @{
         Desc    = "CLI de preparacion y publicacion de versiones de invitaciones."
         UseCase = "Publicar o actualizar una version oficial de invitacion (ej: Daniela y Martin)."
-        Help    = "Ingrese solo argumentos. Ejemplo: -- --slug <slug> --targets preview --apply"
+        Help    = "Ingrese solo argumentos. Ejemplo: --slug <slug> --targets preview --apply"
     }
     "invitation:reconcile"      = @{
         Desc    = "Reconciliacion e integridad entre borrador y publicado."
@@ -206,7 +206,15 @@ while ($true) {
         }
 
         $runCount++
-        $fullCmd = if ([string]::IsNullOrWhiteSpace($argsInput)) { "pnpm $Command" } else { "pnpm $Command $argsInput" }
+        $preserveTty = $Command -eq 'invitation:release'
+        $scriptArgs = if ($null -eq $argsInput) { '' } else { $argsInput.Trim() }
+        if ($scriptArgs -eq '--') { $scriptArgs = '' }
+        elseif ($scriptArgs.StartsWith('-- ')) { $scriptArgs = $scriptArgs.Substring(3).Trim() }
+        if ($preserveTty) {
+            $fullCmd = if ([string]::IsNullOrWhiteSpace($scriptArgs)) { "pnpm $Command" } else { "pnpm $Command -- $scriptArgs" }
+        } else {
+            $fullCmd = if ([string]::IsNullOrWhiteSpace($argsInput)) { "pnpm $Command" } else { "pnpm $Command $argsInput" }
+        }
 
         $startTime = Get-Date
         Write-Host ""
@@ -216,16 +224,20 @@ while ($true) {
         # Iniciar cronometro de alta precision
         $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
-        # Forzar emision de colores ANSI y capturar salida con codificacion UTF-8 sin perdida de iconos
+        # Forzar emision de colores ANSI. invitation:release keeps a real TTY (no pipe).
         $env:FORCE_COLOR = "3"
-        $capturedOutput = @()
-        cmd /c "$fullCmd 2>&1" | Tee-Object -Variable capturedOutput
-        $exitCode = $LASTEXITCODE
-
-        if ($capturedOutput.Count -gt 0) {
-            try {
-                [System.IO.File]::WriteAllLines($lastOutputFile, $capturedOutput, [System.Text.Encoding]::UTF8)
-            } catch {}
+        if ($preserveTty) {
+            cmd /c "$fullCmd"
+            $exitCode = $LASTEXITCODE
+        } else {
+            $capturedOutput = @()
+            cmd /c "$fullCmd 2>&1" | Tee-Object -Variable capturedOutput
+            $exitCode = $LASTEXITCODE
+            if ($capturedOutput.Count -gt 0) {
+                try {
+                    [System.IO.File]::WriteAllLines($lastOutputFile, $capturedOutput, [System.Text.Encoding]::UTF8)
+                } catch {}
+            }
         }
 
         $stopwatch.Stop()
