@@ -2,7 +2,34 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "pnpm dev",
+            "label": "Terminal (otros comandos)",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/.vscode/task-runner.ps1",
+                "terminal"
+            ],
+            "isBackground": true,
+            "problemMatcher": [],
+            "icon": {
+                "id": "terminal-powershell",
+                "color": "terminal.ansiCyan"
+            },
+            "presentation": {
+                "echo": false,
+                "clear": false,
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": false
+            },
+            "runOptions": { "runOn": "folderOpen" }
+        },
+        {
+            "label": "Servidor dev (pnpm dev)",
             "type": "shell",
             "command": "powershell",
             "args": [
@@ -13,6 +40,12 @@
                 "${workspaceFolder}/.vscode/task-runner.ps1",
                 "dev"
             ],
+            "isBackground": true,
+            "problemMatcher": [],
+            "icon": {
+                "id": "play",
+                "color": "terminal.ansiGreen"
+            },
             "presentation": {
                 "echo": false,
                 "clear": false,
@@ -23,7 +56,7 @@
             "runOptions": { "runOn": "folderOpen" }
         },
         {
-            "label": "pnpm type-check",
+            "label": "Tipos (type-check)",
             "type": "shell",
             "command": "powershell",
             "args": [
@@ -34,6 +67,12 @@
                 "${workspaceFolder}/.vscode/task-runner.ps1",
                 "type-check"
             ],
+            "isBackground": true,
+            "problemMatcher": [],
+            "icon": {
+                "id": "check-all",
+                "color": "terminal.ansiBlue"
+            },
             "presentation": {
                 "echo": false,
                 "clear": false,
@@ -44,7 +83,7 @@
             "runOptions": { "runOn": "folderOpen" }
         },
         {
-            "label": "pnpm test",
+            "label": "Pruebas (test)",
             "type": "shell",
             "command": "powershell",
             "args": [
@@ -55,6 +94,12 @@
                 "${workspaceFolder}/.vscode/task-runner.ps1",
                 "test"
             ],
+            "isBackground": true,
+            "problemMatcher": [],
+            "icon": {
+                "id": "beaker",
+                "color": "terminal.ansiGreen"
+            },
             "presentation": {
                 "echo": false,
                 "clear": false,
@@ -65,7 +110,7 @@
             "runOptions": { "runOn": "folderOpen" }
         },
         {
-            "label": "pnpm test:changed",
+            "label": "Pruebas cambiadas (test:changed)",
             "type": "shell",
             "command": "powershell",
             "args": [
@@ -76,6 +121,12 @@
                 "${workspaceFolder}/.vscode/task-runner.ps1",
                 "test:changed"
             ],
+            "isBackground": true,
+            "problemMatcher": [],
+            "icon": {
+                "id": "beaker",
+                "color": "terminal.ansiGreen"
+            },
             "presentation": {
                 "echo": false,
                 "clear": false,
@@ -86,7 +137,7 @@
             "runOptions": { "runOn": "folderOpen" }
         },
         {
-            "label": "pnpm lint",
+            "label": "Linter JS/TS (lint)",
             "type": "shell",
             "command": "powershell",
             "args": [
@@ -97,6 +148,12 @@
                 "${workspaceFolder}/.vscode/task-runner.ps1",
                 "lint"
             ],
+            "isBackground": true,
+            "problemMatcher": [],
+            "icon": {
+                "id": "search",
+                "color": "terminal.ansiYellow"
+            },
             "presentation": {
                 "echo": false,
                 "clear": false,
@@ -107,7 +164,7 @@
             "runOptions": { "runOn": "folderOpen" }
         },
         {
-            "label": "pnpm validate:changed",
+            "label": "Validar cambios (validate:changed)",
             "type": "shell",
             "command": "powershell",
             "args": [
@@ -118,6 +175,12 @@
                 "${workspaceFolder}/.vscode/task-runner.ps1",
                 "validate:changed"
             ],
+            "isBackground": true,
+            "problemMatcher": [],
+            "icon": {
+                "id": "verified",
+                "color": "terminal.ansiBlue"
+            },
             "presentation": {
                 "echo": false,
                 "clear": false,
@@ -128,7 +191,7 @@
             "runOptions": { "runOn": "folderOpen" }
         },
         {
-            "label": "pnpm dbs",
+            "label": "Consola BD (dbs)",
             "type": "shell",
             "command": "powershell",
             "args": [
@@ -139,6 +202,12 @@
                 "${workspaceFolder}/.vscode/task-runner.ps1",
                 "dbs"
             ],
+            "isBackground": true,
+            "problemMatcher": [],
+            "icon": {
+                "id": "database",
+                "color": "terminal.ansiCyan"
+            },
             "presentation": {
                 "echo": false,
                 "clear": false,
@@ -149,7 +218,7 @@
             "runOptions": { "runOn": "folderOpen" }
         },
         {
-            "label": "pnpm invitation:release",
+            "label": "Publicar invitación (release)",
             "type": "shell",
             "command": "powershell",
             "args": [
@@ -160,6 +229,12 @@
                 "${workspaceFolder}/.vscode/task-runner.ps1",
                 "invitation:release"
             ],
+            "isBackground": true,
+            "problemMatcher": [],
+            "icon": {
+                "id": "rocket",
+                "color": "terminal.ansiMagenta"
+            },
             "presentation": {
                 "echo": false,
                 "clear": false,
@@ -170,7 +245,7 @@
             "runOptions": { "runOn": "folderOpen" }
         },
         {
-            "label": "pnpm prod:apply",
+            "label": "Aplicar Producción (prod:apply)",
             "type": "shell",
             "command": "powershell",
             "args": [
@@ -181,6 +256,12 @@
                 "${workspaceFolder}/.vscode/task-runner.ps1",
                 "prod:apply"
             ],
+            "isBackground": true,
+            "problemMatcher": [],
+            "icon": {
+                "id": "shield",
+                "color": "terminal.ansiRed"
+            },
             "presentation": {
                 "echo": false,
                 "clear": false,
@@ -191,7 +272,7 @@
             "runOptions": { "runOn": "folderOpen" }
         },
         {
-            "label": "pnpm db:migrate",
+            "label": "Migraciones BD (db:migrate)",
             "type": "shell",
             "command": "powershell",
             "args": [
@@ -202,6 +283,12 @@
                 "${workspaceFolder}/.vscode/task-runner.ps1",
                 "db:migrate"
             ],
+            "isBackground": true,
+            "problemMatcher": [],
+            "icon": {
+                "id": "database",
+                "color": "terminal.ansiCyan"
+            },
             "presentation": {
                 "echo": false,
                 "clear": false,
@@ -212,7 +299,7 @@
             "runOptions": { "runOn": "folderOpen" }
         },
         {
-            "label": "pnpm lint:styles",
+            "label": "Linter estilos (lint:styles)",
             "type": "shell",
             "command": "powershell",
             "args": [
@@ -223,6 +310,12 @@
                 "${workspaceFolder}/.vscode/task-runner.ps1",
                 "lint:styles"
             ],
+            "isBackground": true,
+            "problemMatcher": [],
+            "icon": {
+                "id": "paintcan",
+                "color": "terminal.ansiYellow"
+            },
             "presentation": {
                 "echo": false,
                 "clear": false,
@@ -232,7 +325,7 @@
             }
         },
         {
-            "label": "pnpm db:branch:parity",
+            "label": "Paridad de rama (db:branch:parity)",
             "type": "shell",
             "command": "powershell",
             "args": [
@@ -243,6 +336,12 @@
                 "${workspaceFolder}/.vscode/task-runner.ps1",
                 "db:branch:parity"
             ],
+            "isBackground": true,
+            "problemMatcher": [],
+            "icon": {
+                "id": "git-compare",
+                "color": "terminal.ansiCyan"
+            },
             "presentation": {
                 "echo": false,
                 "clear": false,
@@ -252,7 +351,7 @@
             }
         },
         {
-            "label": "pnpm db:prod:backup",
+            "label": "Respaldo Producción (db:prod:backup)",
             "type": "shell",
             "command": "powershell",
             "args": [
@@ -263,6 +362,12 @@
                 "${workspaceFolder}/.vscode/task-runner.ps1",
                 "db:prod:backup"
             ],
+            "isBackground": true,
+            "problemMatcher": [],
+            "icon": {
+                "id": "archive",
+                "color": "terminal.ansiRed"
+            },
             "presentation": {
                 "echo": false,
                 "clear": false,
@@ -272,7 +377,7 @@
             }
         },
         {
-            "label": "pnpm invitation:reconcile",
+            "label": "Reconciliar (reconcile)",
             "type": "shell",
             "command": "powershell",
             "args": [
@@ -283,6 +388,12 @@
                 "${workspaceFolder}/.vscode/task-runner.ps1",
                 "invitation:reconcile"
             ],
+            "isBackground": true,
+            "problemMatcher": [],
+            "icon": {
+                "id": "sync",
+                "color": "terminal.ansiMagenta"
+            },
             "presentation": {
                 "echo": false,
                 "clear": false,
@@ -292,7 +403,7 @@
             }
         },
         {
-            "label": "pnpm invitation:published-audit",
+            "label": "Auditoría PII (published-audit)",
             "type": "shell",
             "command": "powershell",
             "args": [
@@ -303,6 +414,12 @@
                 "${workspaceFolder}/.vscode/task-runner.ps1",
                 "invitation:published-audit"
             ],
+            "isBackground": true,
+            "problemMatcher": [],
+            "icon": {
+                "id": "eye",
+                "color": "terminal.ansiMagenta"
+            },
             "presentation": {
                 "echo": false,
                 "clear": false,
@@ -312,7 +429,7 @@
             }
         },
         {
-            "label": "pnpm screenshot",
+            "label": "Capturas visuales (screenshot)",
             "type": "shell",
             "command": "powershell",
             "args": [
@@ -323,6 +440,12 @@
                 "${workspaceFolder}/.vscode/task-runner.ps1",
                 "screenshot"
             ],
+            "isBackground": true,
+            "problemMatcher": [],
+            "icon": {
+                "id": "camera",
+                "color": "terminal.ansiMagenta"
+            },
             "presentation": {
                 "echo": false,
                 "clear": false,
@@ -332,7 +455,7 @@
             }
         },
         {
-            "label": "pnpm test:e2e:landing",
+            "label": "Pruebas E2E (e2e:landing)",
             "type": "shell",
             "command": "powershell",
             "args": [
@@ -343,6 +466,12 @@
                 "${workspaceFolder}/.vscode/task-runner.ps1",
                 "test:e2e:landing"
             ],
+            "isBackground": true,
+            "problemMatcher": [],
+            "icon": {
+                "id": "device-desktop",
+                "color": "terminal.ansiGreen"
+            },
             "presentation": {
                 "echo": false,
                 "clear": false,

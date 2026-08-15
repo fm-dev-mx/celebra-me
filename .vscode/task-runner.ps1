@@ -4,12 +4,14 @@
 
 .DESCRIPTION
     Este script actúa como interfaz segura (Task Runner) en VS Code. Bloquea el shell a la
-    ejecución exclusiva del comando asignado (`pnpm <Command>`), soporta el paso de argumentos
-    dinámicos, mide la duración exacta de ejecución, previene el encadenamiento de comandos
-    no autorizados y registra un historial persistente en disco (.vscode/history/).
+    ejecución exclusiva del comando asignado (`pnpm <Command>`) o provee una terminal por defecto
+    para comandos generales (`pwsh`), soporta el paso de argumentos dinámicos, mide la duración
+    exacta de ejecución, previene el encadenamiento de comandos no autorizados y registra un
+    historial persistente de las últimas 3 ejecuciones en disco (.vscode/history/).
 
 .PARAMETER Command
-    El nombre del subcomando de pnpm a ejecutar exclusivamente (ej: type-check, test, dev, dbs).
+    El nombre del subcomando de pnpm a ejecutar (ej: type-check, test, dev, dbs) o 'terminal'/'pwsh'
+    para otros comandos generales.
 
 .NOTES
     Proyecto: Celebra-me (Astro, TypeScript, Supabase)
@@ -18,12 +20,96 @@
 
 [CmdletBinding()]
 param (
-    [Parameter(Mandatory = $true, HelpMessage = "Subcomando de pnpm asignado a esta terminal")]
+    [Parameter(Mandatory = $true, HelpMessage = "Subcomando asignado a esta terminal o 'terminal'/'pwsh'")]
     [string]$Command
 )
 
+# Determinar si se trata de la terminal por defecto para otros comandos
+$isTerminalMode = ($Command -eq "terminal" -or $Command -eq "pwsh")
+
+# Cargar perfiles del usuario (PowerShell 7 y WindowsPowerShell) para asegurar funciones como lanes
+if ($isTerminalMode) {
+    $profileCandidates = @(
+        $PROFILE,
+        "$HOME\OneDrive\Documentos\PowerShell\Microsoft.PowerShell_profile.ps1",
+        "$HOME\Documents\PowerShell\Microsoft.PowerShell_profile.ps1",
+        "$HOME\OneDrive\Documentos\WindowsPowerShell\Microsoft.PowerShell_profile.ps1",
+        "$HOME\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
+    ) | Where-Object { [string]::IsNullOrWhiteSpace($_) -eq $false -and (Test-Path $_) } | Select-Object -Unique
+
+    $prevLoc = Get-Location
+    $origEap = $ErrorActionPreference
+    $ErrorActionPreference = 'SilentlyContinue'
+    foreach ($p in $profileCandidates) {
+        try {
+            Set-Location (Split-Path $p)
+            . $p 2>$null
+        } catch {}
+    }
+    $ErrorActionPreference = $origEap
+    Set-Location $prevLoc
+
+    # Fallback nativo: Garantizar disponibilidad de funciones Celebra-me Lanes
+    if (-not (Get-Command lanes -ErrorAction SilentlyContinue)) {
+        $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+        $worktreesRoot = Join-Path (Split-Path $repoRoot) "celebra-me-worktrees"
+
+        $script:CelebraLanes = [ordered]@{
+            main    = @{ Path = $repoRoot; Description = "Repositorio principal e integración." }
+            local   = @{ Path = (Join-Path $worktreesRoot "dev-local"); Description = "Desarrollo persistente con entorno y base de datos Local." }
+            preview = @{ Path = (Join-Path $worktreesRoot "dev-preview"); Description = "Validación persistente contra el entorno Preview." }
+            extra   = @{ Path = (Join-Path $worktreesRoot "dev-extra"); Description = "Lane auxiliar para trabajo paralelo o temporal." }
+        }
+
+        function global:lanes {
+            Write-Host ""
+            Write-Host " CELEBRA-ME WORKTREES" -ForegroundColor Cyan
+            Write-Host " --------------------" -ForegroundColor DarkGray
+            Write-Host ""
+            foreach ($name in $script:CelebraLanes.Keys) {
+                $laneInfo = $script:CelebraLanes[$name]
+                $p = $laneInfo.Path
+                if (-not (Test-Path -LiteralPath $p)) {
+                    Write-Host (" {0,-8} {1,-22} MISSING" -f $name, "-") -ForegroundColor Red
+                    Write-Host ("          {0}" -f $laneInfo.Description) -ForegroundColor DarkGray
+                    continue
+                }
+                $branch = git -C $p branch --show-current 2>$null
+                if (-not $branch) { $branch = "detached@" + (git -C $p rev-parse --short HEAD 2>$null) }
+                $changes = @(git -C $p status --porcelain 2>$null | Where-Object { $_ })
+                $statusText = if ($changes.Count -eq 0) { "CLEAN" } else { "CHANGES ($($changes.Count))" }
+                $statusColor = if ($changes.Count -eq 0) { "Green" } else { "Yellow" }
+
+                Write-Host (" {0,-8}" -f $name) -NoNewline -ForegroundColor White
+                Write-Host (" {0,-22}" -f $branch) -NoNewline -ForegroundColor DarkGray
+                Write-Host $statusText -ForegroundColor $statusColor
+                Write-Host ("          {0}" -f $laneInfo.Description) -ForegroundColor DarkGray
+            }
+            Write-Host ""
+            Write-Host " Commands: lane <name> | laneW <name> | lanes | laneHelp" -ForegroundColor DarkGray
+            Write-Host ""
+        }
+
+        function global:lane {
+            param([ValidateSet("main", "local", "preview", "extra")][string]$Name = "main")
+            $target = $script:CelebraLanes[$Name].Path
+            if (Test-Path -LiteralPath $target) {
+                Set-Location -LiteralPath $target
+                Write-Host "`n Celebra-me / $Name`n $target`n" -ForegroundColor Cyan
+                git status -sb
+            } else {
+                Write-Error "Worktree '$Name' no existe en: $target"
+            }
+        }
+    }
+}
+
 # Establecer título de la pestaña en VS Code y codificación UTF-8 global (Code Page 65001)
-$Host.UI.RawUI.WindowTitle = "pnpm $Command"
+if ($isTerminalMode) {
+    $Host.UI.RawUI.WindowTitle = "terminal"
+} else {
+    $Host.UI.RawUI.WindowTitle = "pnpm $Command"
+}
 [Console]::InputEncoding = [System.Text.Encoding]::UTF8
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding = [System.Text.Encoding]::UTF8
@@ -31,6 +117,11 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 #region Metadata & Dictionaries
 # Catálogo de metadatos, propósitos y guías de ayuda por comando
 $commandDetails = @{
+    "terminal"                  = @{
+        Desc    = "Terminal por defecto para la ejecucion de otros comandos generales."
+        UseCase = "Ejecutar comandos ad-hoc (git, pnpm, node, etc.) con cronometro e historial."
+        Help    = "Escriba cualquier comando shell completo (ej: git status, pnpm add <pkg>, node script.js)"
+    }
     "type-check"                = @{
         Desc    = "Verificacion de tipos TypeScript y esquemas Astro sin compilar."
         UseCase = "Detectar errores de sintaxis y tipos TS antes de abrir un PR o subir cambios."
@@ -117,6 +208,7 @@ $commandDetails = @{
         Help    = "Ingrese '--help' (o '--headed' / '--ui' para modo visual interactivo)"
     }
 }
+$commandDetails["pwsh"] = $commandDetails["terminal"]
 
 # Comandos de alto impacto que requieren advertencia visual de seguridad
 $sensitiveCommands = @("dbs", "prod:apply", "invitation:release", "db:prod:backup", "db:migrate")
@@ -152,7 +244,9 @@ while ($true) {
             Write-Host ""
             Write-Host "+--------------------------------------------------------------------------+" -ForegroundColor Cyan
             
-            if ($isSensitive) {
+            if ($isTerminalMode) {
+                Write-Host "|  [*] CELEBRA-ME TERMINAL ::  terminal (otros comandos)  [Rama: $gitBranch]" -ForegroundColor Cyan
+            } elseif ($isSensitive) {
                 Write-Host "|  [!] CELEBRA-ME BD/PROD  ::  pnpm $Command  [Rama: $gitBranch]" -ForegroundColor Red
             } else {
                 Write-Host "|  [*] CELEBRA-ME DEV      ::  pnpm $Command  [Rama: $gitBranch]" -ForegroundColor Yellow
@@ -162,14 +256,18 @@ while ($true) {
             Write-Host "  Proposito : $desc" -ForegroundColor White
             Write-Host "  Caso Uso  : $useCase" -ForegroundColor Yellow
             Write-Host "  Ayuda/Doc : $help" -ForegroundColor DarkCyan
-            Write-Host "  Prompt    : No repita 'pnpm $Command'. Escriba solo los argumentos." -ForegroundColor DarkCyan
+            if ($isTerminalMode) {
+                Write-Host "  Prompt    : Escriba el comando completo a ejecutar (ej: git status, lanes)." -ForegroundColor DarkCyan
+            } else {
+                Write-Host "  Prompt    : No repita 'pnpm $Command'. Escriba solo los argumentos." -ForegroundColor DarkCyan
+            }
             Write-Host "  Contexto  : Worktree: $worktreeName  |  Config: .vscode/tasks.json" -ForegroundColor DarkGray
 
-            # Mostrar ultimas ejecuciones del historial persistente si existen
+            # Mostrar las ultimas 3 ejecuciones del historial persistente si existen
             if (Test-Path $historyFile) {
-                $recentLogs = Get-Content $historyFile -Tail 15 -Encoding utf8
+                $recentLogs = Get-Content $historyFile -Tail 3 -Encoding utf8
                 if ($recentLogs.Count -gt 0) {
-                    Write-Host "  Historial Ejecuciones :" -ForegroundColor Magenta
+                    Write-Host "  Historial Ultimas 3 Ejecuciones :" -ForegroundColor Magenta
                     foreach ($logLine in $recentLogs) {
                         $cleanLine = $logLine -replace '•', '*' -replace 'â¢', '*'
                         Write-Host "    $cleanLine" -ForegroundColor Gray
@@ -194,10 +292,11 @@ while ($true) {
         }
 
         # --- Prompt Interactivo en ejecuciones posteriores ---
-        $argsInput = Read-Host "[$gitBranch] pnpm $Command"
+        $promptLabel = if ($isTerminalMode) { "[$gitBranch] terminal> " } else { "[$gitBranch] pnpm $Command" }
+        $argsInput = Read-Host $promptLabel
         
-        # Guardas de Seguridad: Prevenir encadenamiento de comandos prohibidos (; & |)
-        if ($argsInput -match '[;&|]') {
+        # Guardas de Seguridad: Prevenir encadenamiento de comandos prohibidos (; & |) solo en modo restringido
+        if (-not $isTerminalMode -and $argsInput -match '[;&|]') {
             Write-Host ""
             Write-Host "[!] SEGURIDAD: Operadores de encadenamiento (;, &, |) no estan permitidos." -ForegroundColor Red
             Write-Host "    Esta terminal ejecuta exclusivamente 'pnpm $Command [sus argumentos]'." -ForegroundColor Red
@@ -208,12 +307,23 @@ while ($true) {
         $runCount++
         $preserveTty = $Command -eq 'invitation:release'
         $scriptArgs = if ($null -eq $argsInput) { '' } else { $argsInput.Trim() }
-        if ($scriptArgs -eq '--') { $scriptArgs = '' }
-        elseif ($scriptArgs.StartsWith('-- ')) { $scriptArgs = $scriptArgs.Substring(3).Trim() }
-        if ($preserveTty) {
-            $fullCmd = if ([string]::IsNullOrWhiteSpace($scriptArgs)) { "pnpm $Command" } else { "pnpm $Command -- $scriptArgs" }
+
+        if ($isTerminalMode) {
+            if ([string]::IsNullOrWhiteSpace($scriptArgs)) {
+                Write-Host ""
+                Write-Host "  [*] Ingrese un comando valido para ejecutar." -ForegroundColor Yellow
+                Start-Sleep -Milliseconds 500
+                continue
+            }
+            $fullCmd = $scriptArgs
         } else {
-            $fullCmd = if ([string]::IsNullOrWhiteSpace($argsInput)) { "pnpm $Command" } else { "pnpm $Command $argsInput" }
+            if ($scriptArgs -eq '--') { $scriptArgs = '' }
+            elseif ($scriptArgs.StartsWith('-- ')) { $scriptArgs = $scriptArgs.Substring(3).Trim() }
+            if ($preserveTty) {
+                $fullCmd = if ([string]::IsNullOrWhiteSpace($scriptArgs)) { "pnpm $Command" } else { "pnpm $Command -- $scriptArgs" }
+            } else {
+                $fullCmd = if ([string]::IsNullOrWhiteSpace($scriptArgs)) { "pnpm $Command" } else { "pnpm $Command $scriptArgs" }
+            }
         }
 
         $startTime = Get-Date
@@ -226,7 +336,17 @@ while ($true) {
 
         # Forzar emision de colores ANSI. invitation:release keeps a real TTY (no pipe).
         $env:FORCE_COLOR = "3"
-        if ($preserveTty) {
+        if ($isTerminalMode) {
+            $capturedOutput = @()
+            $global:LASTEXITCODE = $null
+            Invoke-Expression "$fullCmd 2>&1" | Tee-Object -Variable capturedOutput
+            $exitCode = if ($?) { if ($LASTEXITCODE -ne $null) { $LASTEXITCODE } else { 0 } } else { if ($LASTEXITCODE -and $LASTEXITCODE -ne 0) { $LASTEXITCODE } else { 1 } }
+            if ($capturedOutput.Count -gt 0) {
+                try {
+                    [System.IO.File]::WriteAllLines($lastOutputFile, $capturedOutput, [System.Text.Encoding]::UTF8)
+                } catch {}
+            }
+        } elseif ($preserveTty) {
             cmd /c "$fullCmd"
             $exitCode = $LASTEXITCODE
         } else {
@@ -270,7 +390,11 @@ while ($true) {
         Add-Content -Path $historyFile -Value $logEntry -Encoding UTF8
 
         Write-Host ""
-        Write-Host "  [*] Presione ENTER para reiniciar o ingrese nuevos argumentos. No escriba 'pnpm $Command'." -ForegroundColor DarkCyan
+        if ($isTerminalMode) {
+            Write-Host "  [*] Presione ENTER para reiniciar o ingrese un nuevo comando." -ForegroundColor DarkCyan
+        } else {
+            Write-Host "  [*] Presione ENTER para reiniciar o ingrese nuevos argumentos. No escriba 'pnpm $Command'." -ForegroundColor DarkCyan
+        }
 
     } catch [System.Management.Automation.PipelineStoppedException], [System.OperationCanceledException] {
         Write-Host ""
