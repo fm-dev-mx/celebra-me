@@ -79,7 +79,7 @@ describe('active manual patch status', () => {
 		expect(classified.status).toBe(status);
 		expect(classified.reason).toBe(reason);
 		expect(classified.planCommand).toBe(
-			status === 'PENDING' ? 'pnpm prod:apply -- --patch <file>' : null,
+			status === 'PENDING' ? 'pnpm prod:apply -- --patch <file> --apply' : null,
 		);
 	});
 

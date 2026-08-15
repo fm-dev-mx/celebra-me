@@ -6,7 +6,8 @@ const REFRESH_COMMAND = 'pnpm dbs';
 
 function patchPlanCommand(patch: ManualPatchStatus): string {
 	const command =
-		patch.environments.production.planCommand ?? `pnpm prod:apply -- --patch ${patch.file}`;
+		patch.environments.production.planCommand ??
+		`pnpm prod:apply -- --patch ${patch.file} --apply`;
 	return command.replace('<file>', patch.file);
 }
 
@@ -81,7 +82,7 @@ export function manualPatchRemediation(
 			steps: [
 				step(
 					'Apply',
-					`${command} --apply`,
+					command,
 					'TTY del propietario; Cancelar es el valor seguro. Un draft ausente no bloquea el published.',
 					true,
 					false,

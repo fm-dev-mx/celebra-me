@@ -69,6 +69,20 @@ describe('operational action plan', () => {
 		).toBe(false);
 	});
 
+	it('PENDING patch apply step includes --apply once', () => {
+		const plan = buildOperationalActionPlan(buildCanonicalStatusViewFixture());
+		const patchAction = plan.actions.find(
+			(action) =>
+				action.domain === 'patch' &&
+				action.steps.some((step) => step.command?.includes('--patch')),
+		);
+		const commands = patchAction?.steps.map((step) => step.command).filter(Boolean) ?? [];
+		expect(commands).toEqual([
+			'pnpm prod:apply -- --patch scripts/manual/production-patches/20260812_p0_itinerary_gallery_structural_contracts.sql --apply',
+		]);
+		expect(commands.some((command) => command?.includes('--apply --apply'))).toBe(false);
+	});
+
 	it('prioriza bloqueo y deduplica disposable/refresh compartidos', () => {
 		const plan = buildOperationalActionPlan(buildCanonicalStatusViewFixture());
 		expect(plan.health.status).toBe('ACTION_REQUIRED');

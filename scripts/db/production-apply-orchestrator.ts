@@ -360,9 +360,7 @@ function throwIfPatchMissingOwner(
 		title: 'Falta --owner-user-id',
 		cause: 'Este parche asigna dueño y exige --owner-user-id.',
 		code: 'OWNER_USER_ID_REQUIRED',
-		remediation: [
-			`Reintente con ${productionPatchApplyCommand(patch.id, prepared.sql)} --apply.`,
-		],
+		remediation: [`Reintente con ${productionPatchApplyCommand(patch.id, prepared.sql)}.`],
 	});
 }
 
@@ -632,13 +630,13 @@ async function applyPatchMutation(
 			prodDbUrl: dbUrl,
 			purpose: 'standalone',
 			planId: reviewed.planId,
-			retryCommand: `${productionPatchApplyCommand(patchMutation.id, prepared.sql)} --apply`,
+			retryCommand: productionPatchApplyCommand(patchMutation.id, prepared.sql),
 			operationLabel: 'la aplicación del parche especializado',
 		});
 		(deps.revalidatePatchBackup ?? revalidateCriticalProductionBackup)({
 			prodDbUrl: dbUrl,
 			manifestPath: backup.manifestPath,
-			retryCommand: `${productionPatchApplyCommand(patchMutation.id, prepared.sql)} --apply`,
+			retryCommand: productionPatchApplyCommand(patchMutation.id, prepared.sql),
 		});
 		const applyPatch = deps.applyPatch ?? applyPreparedProductionPatch;
 		await applyPatch({

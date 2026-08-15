@@ -100,7 +100,7 @@ export function buildCanonicalStatusViewFixture(
 						matchingRowCount: 4,
 						verifiedAt: '2026-08-12T22:11:46.000Z',
 						reason: 'LIVE_ROWS_WITHIN_RANGE',
-						planCommand: 'pnpm prod:apply -- --patch <file>',
+						planCommand: 'pnpm prod:apply -- --patch <file> --apply',
 					},
 				},
 			},

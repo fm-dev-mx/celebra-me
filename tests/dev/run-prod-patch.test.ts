@@ -72,13 +72,13 @@ describe('patch owner requirement', () => {
 		).toBe(true);
 		expect(
 			productionPatchApplyCommand('scripts/manual/a.sql', 'update public.x set y = 1'),
-		).toBe('pnpm prod:apply -- --patch scripts/manual/a.sql');
+		).toBe('pnpm prod:apply -- --patch scripts/manual/a.sql --apply');
 		expect(
 			productionPatchApplyCommand(
 				'scripts/manual/b.sql',
 				"SELECT current_setting('app.owner_user_id')",
 			),
-		).toBe('pnpm prod:apply -- --patch scripts/manual/b.sql --owner-user-id <uuid>');
+		).toBe('pnpm prod:apply -- --patch scripts/manual/b.sql --owner-user-id <uuid> --apply');
 	});
 });
 

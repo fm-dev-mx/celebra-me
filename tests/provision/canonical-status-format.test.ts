@@ -26,6 +26,11 @@ describe('canonical status CLI format', () => {
 		expect(text).toContain('Task: prod:apply');
 		expect(text).toContain('Escribir: --slug victoria-y-roberto --apply');
 		expect(text).not.toContain('pnpm prod:apply -- --slug victoria-y-roberto --apply');
+		expect(text).toContain('Aplicar:');
+		expect(text).toContain(
+			'Escribir: --patch scripts/manual/production-patches/20260812_p0_itinerary_gallery_structural_contracts.sql --apply',
+		);
+		expect(text).not.toContain('--apply --apply');
 		expect(text).toContain('Task: db:migrate');
 		expect(text).toContain('Escribir: --target disposable-test --apply');
 		expect(text).toContain('Authorization');

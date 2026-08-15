@@ -535,7 +535,7 @@ export function patchSqlRequiresOwnerUserId(sql: string): boolean {
 
 export function productionPatchApplyCommand(file: string, sql: string): string {
 	const owner = patchSqlRequiresOwnerUserId(sql) ? ' --owner-user-id <uuid>' : '';
-	return `pnpm prod:apply -- --patch ${file}${owner}`;
+	return `pnpm prod:apply -- --patch ${file}${owner} --apply`;
 }
 
 export function validateOwnerUserId(raw: string | undefined): string {

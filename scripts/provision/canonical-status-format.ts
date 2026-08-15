@@ -373,7 +373,7 @@ function formatManualPatchesSection(
 		if (production.planCommand) {
 			lines.push(
 				...formatTaskPromptCommand(
-					'Plan',
+					'Aplicar',
 					production.planCommand.replace('<file>', patch.file),
 					'    ',
 					c.brightCyan,
