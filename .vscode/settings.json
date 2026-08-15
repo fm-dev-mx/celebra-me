@@ -1,51 +1,59 @@
 {
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.detectIndentation": false,
+  "editor.formatOnSave": true,
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[astro]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[markdown]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.detectIndentation": false,
-    "editor.formatOnSave": true,
-    "[typescript]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.codeActionsOnSave": {
+      "source.fixAll.markdownlint": "explicit"
     },
-    "[javascript]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
-    "[json]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
-    "[jsonc]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
-    "[astro]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
-    "[markdown]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode",
-        "editor.codeActionsOnSave": {
-            "source.fixAll.markdownlint": "explicit"
-        },
-        "editor.insertSpaces": true,
-        "editor.tabSize": 2,
-        "prettier.useTabs": false,
-        "prettier.tabWidth": 2
-    },
-    "prettier.documentSelectors": ["**/*.astro", "**/*.json", "**/*.jsonc", "**/*.md"],
-    "files.associations": {
-        "*.astro": "astro"
-    },
-    "markdown.preview.openMarkdownLinks": "inEditor",
-    "files.exclude": {
-        "**/bin": false
-    },
-    "explorer.excludeGitIgnore": false,
-    "cssVariables.lookupFiles": ["src/**/*.scss", "src/**/*.css", "src/**/*.astro"],
-    "cssVariables.blacklistFolders": [
-        "**/.git",
-        "**/node_modules",
-        "**/dist",
-        "**/.astro",
-        "**/.vercel"
-    ],
-
-    "scm.repositories.selectionMode": "single",
-    "scm.repositories.explorer": true,
-    "git.detectWorktrees": true
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "prettier.useTabs": false,
+    "prettier.tabWidth": 2
+  },
+  "prettier.documentSelectors": [
+    "**/*.astro",
+    "**/*.json",
+    "**/*.jsonc",
+    "**/*.md"
+  ],
+  "files.associations": {
+    "*.astro": "astro"
+  },
+  "files.exclude": {
+    "**/bin": false
+  },
+  "explorer.excludeGitIgnore": false,
+  "cssVariables.lookupFiles": [
+    "src/**/*.scss",
+    "src/**/*.css",
+    "src/**/*.astro"
+  ],
+  "cssVariables.blacklistFolders": [
+    "**/.git",
+    "**/node_modules",
+    "**/dist",
+    "**/.astro",
+    "**/.vercel"
+  ],
+  "markdown.preview.openMarkdownLinks": "inEditor",
+  "scm.repositories.selectionMode": "single",
+  "scm.repositories.explorer": true,
+  "git.detectWorktrees": true
 }

@@ -1,0 +1,326 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "pnpm dev",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/.vscode/task-runner.ps1",
+                "dev"
+            ],
+            "presentation": {
+                "echo": false,
+                "clear": true,
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": false
+            },
+            "runOptions": { "runOn": "folderOpen" }
+        },
+        {
+            "label": "pnpm type-check",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/.vscode/task-runner.ps1",
+                "type-check"
+            ],
+            "presentation": {
+                "echo": false,
+                "clear": true,
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": false
+            }
+        },
+        {
+            "label": "pnpm test",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/.vscode/task-runner.ps1",
+                "test"
+            ],
+            "presentation": {
+                "echo": false,
+                "clear": true,
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": false
+            }
+        },
+        {
+            "label": "pnpm test:changed",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/.vscode/task-runner.ps1",
+                "test:changed"
+            ],
+            "presentation": {
+                "echo": false,
+                "clear": true,
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": false
+            }
+        },
+        {
+            "label": "pnpm lint",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/.vscode/task-runner.ps1",
+                "lint"
+            ],
+            "presentation": {
+                "echo": false,
+                "clear": true,
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": false
+            }
+        },
+        {
+            "label": "pnpm validate:changed",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/.vscode/task-runner.ps1",
+                "validate:changed"
+            ],
+            "presentation": {
+                "echo": false,
+                "clear": true,
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": false
+            }
+        },
+        {
+            "label": "pnpm dbs",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/.vscode/task-runner.ps1",
+                "dbs"
+            ],
+            "presentation": {
+                "echo": false,
+                "clear": true,
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": false
+            }
+        },
+        {
+            "label": "pnpm lint:styles",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/.vscode/task-runner.ps1",
+                "lint:styles"
+            ],
+            "presentation": {
+                "echo": false,
+                "clear": true,
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": false
+            }
+        },
+        {
+            "label": "pnpm db:branch:parity",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/.vscode/task-runner.ps1",
+                "db:branch:parity"
+            ],
+            "presentation": {
+                "echo": false,
+                "clear": true,
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": false
+            }
+        },
+        {
+            "label": "pnpm db:prod:backup",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/.vscode/task-runner.ps1",
+                "db:prod:backup"
+            ],
+            "presentation": {
+                "echo": false,
+                "clear": true,
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": false
+            }
+        },
+        {
+            "label": "pnpm invitation:release",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/.vscode/task-runner.ps1",
+                "invitation:release"
+            ],
+            "presentation": {
+                "echo": false,
+                "clear": true,
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": false
+            }
+        },
+        {
+            "label": "pnpm invitation:reconcile",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/.vscode/task-runner.ps1",
+                "invitation:reconcile"
+            ],
+            "presentation": {
+                "echo": false,
+                "clear": true,
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": false
+            }
+        },
+        {
+            "label": "pnpm invitation:published-audit",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/.vscode/task-runner.ps1",
+                "invitation:published-audit"
+            ],
+            "presentation": {
+                "echo": false,
+                "clear": true,
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": false
+            }
+        },
+        {
+            "label": "pnpm prod:apply",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/.vscode/task-runner.ps1",
+                "prod:apply"
+            ],
+            "presentation": {
+                "echo": false,
+                "clear": true,
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": false
+            }
+        },
+        {
+            "label": "pnpm screenshot",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/.vscode/task-runner.ps1",
+                "screenshot"
+            ],
+            "presentation": {
+                "echo": false,
+                "clear": true,
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": false
+            }
+        },
+        {
+            "label": "pnpm test:e2e:landing",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/.vscode/task-runner.ps1",
+                "test:e2e:landing"
+            ],
+            "presentation": {
+                "echo": false,
+                "clear": true,
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": false
+            }
+        }
+    ]
+}

@@ -61,11 +61,14 @@ output/playwright/
 .worktrees/
 
 # IDE/Editor specific settings
-# Keep shared VS Code workspace files tracked while ignoring other local editor files.
+# Keep shared VS Code workspace files tracked while ignoring local editor history.
 .vscode/*
 !.vscode/settings.json
 !.vscode/launch.json
 !.vscode/extensions.json
+!.vscode/tasks.json
+!.vscode/task-runner.ps1
+.vscode/history/
 .idea/
 *.swp
 *.swo
