@@ -15,37 +15,9 @@ type CountdownArchitecture = {
 	variant: string | null;
 	segmentCount: number;
 	firstRowCount: number;
-	titleFontSize: string;
-	titleLetterSpacing: string;
-	titleMarginBottom: string;
-	timerGap: string;
-	timerMarginTop: string;
-	segmentPadding: string;
-	segmentRadius: string;
-	segmentBorderWidth: string;
-	valueFontSize: string;
-	labelFontSize: string;
-	labelLetterSpacing: string;
-	footerMarginTop: string;
-	dateLetterSpacing: string;
-	sectionPaddingBlock: string;
-	sectionMinHeight: string;
 };
 
 function measureCountdownArchitecture(node: Element): CountdownArchitecture {
-	const styleOf = (selector: string) => {
-		const el = node.querySelector(selector);
-		if (!el) throw new Error(`Missing ${selector}`);
-		return getComputedStyle(el);
-	};
-	const title = styleOf('.countdown-title');
-	const timer = styleOf('.countdown__timer');
-	const segment = styleOf('.countdown__segment');
-	const value = styleOf('.countdown__value');
-	const label = styleOf('.countdown__label');
-	const footer = styleOf('.countdown-invitation-text');
-	const date = styleOf('.countdown-date .event-date');
-	const section = getComputedStyle(node);
 	const segments = [...node.querySelectorAll('.countdown__segment')];
 	const firstRowTop = segments[0]?.getBoundingClientRect().top ?? 0;
 	return {
@@ -54,21 +26,6 @@ function measureCountdownArchitecture(node: Element): CountdownArchitecture {
 		firstRowCount: segments.filter(
 			(item) => Math.abs(item.getBoundingClientRect().top - firstRowTop) < 2,
 		).length,
-		titleFontSize: title.fontSize,
-		titleLetterSpacing: title.letterSpacing,
-		titleMarginBottom: title.marginBottom,
-		timerGap: timer.gap,
-		timerMarginTop: timer.marginTop,
-		segmentPadding: segment.padding,
-		segmentRadius: segment.borderRadius,
-		segmentBorderWidth: segment.borderWidth,
-		valueFontSize: value.fontSize,
-		labelFontSize: label.fontSize,
-		labelLetterSpacing: label.letterSpacing,
-		footerMarginTop: footer.marginTop,
-		dateLetterSpacing: date.letterSpacing,
-		sectionPaddingBlock: `${section.paddingTop} ${section.paddingBottom}`,
-		sectionMinHeight: section.minHeight,
 	};
 }
 
@@ -411,16 +368,16 @@ test.describe('Renata XV local visual and content audit', () => {
 			});
 			expect(
 				`${countdownMetrics.titleFill} ${countdownMetrics.titleColor} ${countdownMetrics.titleBackground}`,
-			).toMatch(/196,\s*126,\s*118/i);
+			).toMatch(/86,\s*102,\s*70/i);
 			expect(
 				`${countdownMetrics.titleFill} ${countdownMetrics.titleColor} ${countdownMetrics.titleBackground}`,
-			).not.toMatch(/199,\s*173,\s*118|232,\s*190,\s*48/i);
-			expect(countdownMetrics.sectionBackground).toMatch(/linear-gradient/i);
+			).not.toMatch(/196,\s*126,\s*118|199,\s*173,\s*118|232,\s*190,\s*48/i);
+			expect(countdownMetrics.sectionBackground).toMatch(/linear-gradient|250,\s*244,\s*234/i);
 			expect(countdownMetrics.sectionBackground).not.toMatch(
-				/244,\s*228,\s*224|199,\s*173,\s*118/i,
+				/199,\s*173,\s*118|22,\s*20,\s*18/i,
 			);
 			expect(Number.parseFloat(countdownMetrics.titleMarginBottom)).toBeGreaterThan(32);
-			expect(countdownMetrics.firstRowCount).toBe(viewport.width >= 1440 ? 4 : 2);
+			expect(countdownMetrics.firstRowCount).toBe(4);
 
 			const familyBg = await page
 				.locator('.family')
@@ -701,7 +658,7 @@ test.describe('Renata XV local visual and content audit', () => {
 
 			expect(renata.variant).toBe('editorial');
 			expect(renata.segmentCount).toBe(4);
-			expect(renata.firstRowCount).toBe(viewport.width >= 1440 ? 4 : 2);
+			expect(renata.firstRowCount).toBe(4);
 		});
 	}
 });

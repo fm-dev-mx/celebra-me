@@ -120,8 +120,14 @@ describe('XV Renata provision contract', () => {
 		expect(countdownSkin).not.toContain('--reveal-stationery');
 		expect(countdownSkin).not.toContain('199 173 118');
 		expect(countdownSkin).not.toContain('232 190 48');
-		expect(countdownSkin).toContain('var(--renata-coral)');
+		expect(countdownSkin).not.toContain('-webkit-text-fill-color: var(--renata-coral)');
 		expect(countdownSkin).toContain('var(--countdown-bg)');
+		expect(countdownSkin).toContain('var(--renata-olive)');
+		expect(countdownSkin).toContain('var(--renata-silver-rgb)');
+		expect(countdownSkin).toContain('repeat(4, minmax(0, 1fr))');
+		expect(profile).toContain('ornament-spray.webp');
+		expect(profile).toContain('ornament-cluster.webp');
+		expect(rootTokens).toContain('--countdown-bg: var(--renata-cream)');
 	});
 
 	it('has a source file for every declared asset path', () => {
