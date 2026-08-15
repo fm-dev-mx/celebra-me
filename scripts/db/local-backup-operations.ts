@@ -1,5 +1,5 @@
-import { readdirSync, rmSync, statSync } from 'node:fs';
-import { basename, dirname, resolve } from 'node:path';
+import { existsSync, readdirSync, rmSync, statSync } from 'node:fs';
+import { basename, dirname, join, resolve } from 'node:path';
 import { runCommand } from './db-workflow-lib.ts';
 
 const CRITICAL_DIRECTORY_PATTERN = /^critical-(\d{4})-(\d{2})-(\d{2})T/;
@@ -102,4 +102,18 @@ export function applyCriticalBackupRetention(root: string, plan: RetentionPlan):
 		assertCriticalBackupChild(resolvedRoot, candidate.path);
 		rmSync(candidate.path, { recursive: true, force: true });
 	}
+}
+
+/** Remove kill-orphaned critical-* directories that never wrote a manifest. */
+export function removeIncompleteCriticalBackups(root: string): string[] {
+	const resolvedRoot = resolve(root);
+	if (!existsSync(resolvedRoot)) return [];
+	const removed: string[] = [];
+	for (const candidate of listCriticalBackups(resolvedRoot)) {
+		if (existsSync(join(candidate.path, 'manifest.json'))) continue;
+		assertCriticalBackupChild(resolvedRoot, candidate.path);
+		rmSync(candidate.path, { recursive: true, force: true });
+		removed.push(candidate.path);
+	}
+	return removed;
 }

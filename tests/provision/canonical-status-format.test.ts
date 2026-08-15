@@ -8,11 +8,23 @@ describe('canonical status CLI format', () => {
 	it('scopes CURRENT to schema and keeps disposable separate', () => {
 		const text = formatCanonicalStatusView(buildCanonicalStatusViewFixture(), {
 			env: NO_COLOR_ENV,
+			backupHealth: {
+				newestManifestPath: null,
+				newestCreatedAt: null,
+				newestAgeMs: null,
+				lastDailyReportAt: null,
+				lastDailyOutcome: null,
+				orphanCount: 0,
+				attention: true,
+				summary: 'daily ausente · sin set completo',
+			},
 		});
 		expect(text).toContain('CURRENT 75/75');
 		expect(text).toContain('Readiness');
 		expect(text).toContain('NEEDS_DISPOSABLE_PROOF');
 		expect(text).toContain('DISPOSABLE-TEST (not a persistent schema environment)');
+		expect(text).toContain('CRITICAL BACKUP');
+		expect(text).toContain('daily ausente · sin set completo');
 		expect(text).toContain('Disposable proof: MISSING');
 		expect(text).toContain('Does not mean Local, Preview, or Production schema is behind');
 		expect(text).toContain('Active DB rows (not registry)');

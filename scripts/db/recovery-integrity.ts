@@ -78,6 +78,11 @@ export function computeRecoveryStateDigest(integrity: RecoveryIntegritySnapshot)
 		.digest('hex');
 }
 
+export function wrapRecoveryIntegrityPsqlInput(sql: string): string {
+	const statement = sql.trim().endsWith(';') ? sql.trim() : `${sql.trim()};`;
+	return `SET statement_timeout = '0';\n${statement}\n`;
+}
+
 function psqlCopy(dbUrl: string, sql: string): string {
 	const result = runCommand(
 		'psql',
@@ -85,16 +90,22 @@ function psqlCopy(dbUrl: string, sql: string): string {
 			'--set',
 			'ON_ERROR_STOP=1',
 			'--no-psqlrc',
+			'--tuples-only',
+			'--no-align',
 			'--dbname',
 			dbUrl,
-			'--command',
-			`COPY (${sql}) TO STDOUT`,
 		],
-		{ redact: [dbUrl], throwOnError: false },
+		{ input: wrapRecoveryIntegrityPsqlInput(sql), redact: [dbUrl], throwOnError: false },
 	);
 	if (result.status !== 0) {
+		const detail = [result.stderr, result.stdout]
+			.map((part) => part.trim())
+			.filter(Boolean)
+			.join('\n');
 		throw new Error(
-			`Recovery integrity query failed with process status ${String(result.status)}.`,
+			`Recovery integrity query failed with process status ${String(result.status)}.${
+				detail ? ` ${detail}` : ''
+			}`,
 		);
 	}
 	return result.stdout;

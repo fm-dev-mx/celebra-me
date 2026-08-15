@@ -179,10 +179,12 @@ provisioning path (`pnpm test:e2e:preview:provision` and
 
 ## Cloudinary vs Supabase Storage boundary
 
-Invitation images are uploaded to Cloudinary (`provider: cloudinary`, `secure_url`). Legacy Supabase
-Storage rows may remain until a later managed prune. Mirror does **not** copy Cloudinary binaries;
-it preserves `secure_url`. Release uploads or reconciles through the shared Cloudinary adapter and
-fails closed without credentials.
+Invitation images are uploaded to Cloudinary (`provider: cloudinary`, `secure_url`). Client
+invitations created or published on/after 2026-07-26, and all later ones, must keep referenced
+images on Cloudinary (publish/promote fail closed). Legacy Supabase Storage rows may remain until a
+later managed prune. Mirror does **not** copy Cloudinary binaries; it preserves `secure_url`.
+Release uploads or reconciles through the shared Cloudinary adapter and fails closed without
+credentials.
 
 | Flow                               | Supabase Storage                                                                              | Cloudinary                                                                                                                  |
 | ---------------------------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |

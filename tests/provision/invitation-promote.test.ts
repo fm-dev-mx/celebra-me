@@ -372,6 +372,35 @@ describe('classifyPromotionDifferences', () => {
 });
 
 describe('runPromotionPreflight / apply', () => {
+	it('blocks Cloudinary-era packages whose assets are still on Supabase', async () => {
+		const eraPackage = {
+			...packageData(),
+			definitionCreatedAt: '2026-08-06T00:00:00.000Z',
+			invitation: {
+				...packageData().invitation,
+				kind: 'client',
+			},
+			assets: [
+				{
+					key: 'hero-desktop',
+					displayName: 'Hero',
+					provider: 'supabase',
+					secureUrl: null,
+				},
+			],
+		} as InvitationPackageData;
+		const report = await runPromotionPreflight({
+			packageData: eraPackage,
+			requireBackup: false,
+			getProductionDbUrl: () => ({
+				url: 'postgresql://user@db.productionproject.supabase.co/postgres',
+			}),
+		});
+		expect(report.status).toBe('BLOCKED');
+		expect(report.blockCode).toBe('CLOUDINARY_ERA_HOSTING');
+		expect(report.reason).toMatch(/Cloudinary/);
+	});
+
 	it('blocks when exact approval is missing', async () => {
 		setDefaultPreviewApprovalStoreForTests(createMemoryPreviewApprovalStore());
 		const report = await runPromotionPreflight({

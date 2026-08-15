@@ -20,6 +20,10 @@ import {
 } from '../../scripts/db/production-apply-orchestrator.ts';
 import { evaluateSpawnProductionMutation } from '../../scripts/db/production-boundary-policy.ts';
 import {
+	buildRecoveryIntegrityCaptureSql,
+	wrapRecoveryIntegrityPsqlInput,
+} from '../../scripts/db/recovery-integrity.ts';
+import {
 	clearProductionWritePermit,
 	getProductionWritePermit,
 	issueProductionWritePermit,
@@ -211,6 +215,13 @@ describe('backup evaluation vs write-protected psql', () => {
 				'--command',
 				RECOVERY_COPY_SQL,
 			]).permission,
+		).toBe('allow');
+		expect(
+			evaluateSpawnProductionMutation(
+				'psql',
+				['--dbname', PROD_URL, '--no-psqlrc', '--tuples-only', '--no-align'],
+				{ input: wrapRecoveryIntegrityPsqlInput(buildRecoveryIntegrityCaptureSql()) },
+			).permission,
 		).toBe('allow');
 		expect(
 			evaluateSpawnProductionMutation('psql', [

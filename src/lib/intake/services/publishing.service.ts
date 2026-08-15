@@ -10,6 +10,13 @@ import { ApiError } from '@/lib/rsvp/core/errors';
 import { getPublicSlug } from '@/lib/intake/slug';
 import { findAssetsByInvitationId } from '@/lib/intake/repositories/asset.repository';
 import { preferUploadedDeliverySrc } from '@/lib/intake/services/asset-delivery';
+import {
+	cloudinaryEraHostingMessage,
+	findSupabaseStorageUrls,
+	isCloudinaryEraInvitation,
+	isCloudinaryHostedAsset,
+	isSupabaseStorageUrl,
+} from '@/lib/intake/services/cloudinary-era-hosting';
 import type {
 	Invitation,
 	InvitationAsset,
@@ -278,6 +285,8 @@ async function validatePublication(
 		publicationProjection,
 		invitationId,
 		priorPublished?.content,
+		invitation,
+		priorPublished?.publishedAt,
 	);
 
 	assertCountdownHasTiming(frozenContent);
@@ -371,10 +380,19 @@ async function freezeUploadedContentRefs(
 	content: Record<string, unknown>,
 	invitationId: string,
 	priorPublishedContent?: Record<string, unknown>,
+	invitation?: Invitation,
+	publishedAt?: string | null,
 ): Promise<Record<string, unknown>> {
 	const assets = await findAssetsByInvitationId(invitationId);
 	const assetMap = new Map(assets.map((a) => [a.id, a]));
 	const legacyPublishedAssetIds = collectUploadedAssetIds(priorPublishedContent);
+	const requireCloudinary = invitation
+		? isCloudinaryEraInvitation({
+				kind: invitation.kind,
+				createdAt: invitation.createdAt,
+				publishedAt,
+			})
+		: false;
 
 	function walk(value: unknown, path = ''): unknown {
 		if (!value || typeof value !== 'object') return value;
@@ -403,6 +421,20 @@ async function freezeUploadedContentRefs(
 				},
 				frozenSrc,
 			});
+			if (requireCloudinary && !isCloudinaryHostedAsset(asset)) {
+				throw new ApiError(
+					422,
+					'bad_request',
+					cloudinaryEraHostingMessage([asset.displayName || assetId.slice(0, 8)]),
+				);
+			}
+			if (requireCloudinary && isSupabaseStorageUrl(src)) {
+				throw new ApiError(
+					422,
+					'bad_request',
+					cloudinaryEraHostingMessage([asset.displayName || assetId.slice(0, 8)]),
+				);
+			}
 			return { ...obj, src };
 		}
 
@@ -417,7 +449,18 @@ async function freezeUploadedContentRefs(
 		return result;
 	}
 
-	return walk(content) as Record<string, unknown>;
+	const frozen = walk(content) as Record<string, unknown>;
+	if (requireCloudinary) {
+		const leftover = findSupabaseStorageUrls(frozen);
+		if (leftover.length > 0) {
+			throw new ApiError(
+				422,
+				'bad_request',
+				cloudinaryEraHostingMessage(['contenido publicado']),
+			);
+		}
+	}
+	return frozen;
 }
 
 function collectUploadedAssetIds(content?: Record<string, unknown>): Set<string> {

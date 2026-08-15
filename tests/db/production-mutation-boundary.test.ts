@@ -26,6 +26,10 @@ import {
 	wrapShellCommandWithAgentContext,
 } from '../../scripts/db/production-boundary-policy.ts';
 import { buildMutationSchemaContractQuery } from '../../scripts/db/mutation-schema-contract-query.ts';
+import {
+	buildRecoveryIntegrityCaptureSql,
+	wrapRecoveryIntegrityPsqlInput,
+} from '../../scripts/db/recovery-integrity.ts';
 import { evaluateProductionAuthorizationIntegrity } from '../../scripts/db/production-authorization-integrity.ts';
 import {
 	clearProductionWritePermit,
@@ -79,6 +83,11 @@ describe('production boundary policy', () => {
 			isReadOnlySql('WITH changed AS (UPDATE t SET x = 1 RETURNING *) SELECT * FROM changed'),
 		).toBe(false);
 		expect(isReadOnlySql(buildMutationSchemaContractQuery())).toBe(true);
+		expect(
+			isReadOnlySql(
+				wrapRecoveryIntegrityPsqlInput(buildRecoveryIntegrityCaptureSql('phase3')),
+			),
+		).toBe(true);
 		expect(maskSqlLiterals("SELECT 'UPDATE' AS value")).not.toContain('UPDATE');
 	});
 

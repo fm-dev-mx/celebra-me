@@ -510,7 +510,9 @@ application login substitute. Host invitation flows continue to use real `host_c
 - Reads production `public` data and writes a timestamped dump under `.backups/prod/`.
 - Touches production read-only.
 - Does not mutate production.
-- Use before migration windows or whenever a manual protected backup is needed.
+- Use for local refresh / debug dump restore only. It is **not** the critical recovery set.
+- For migrate/patch/promote gates or the 24h RPO, use `pnpm db:prod:backup:critical` or
+  `pnpm db:prod:backup:daily`.
 - Backups contain real customer data and must not be committed.
 
 `pnpm db:prod:backup:critical`

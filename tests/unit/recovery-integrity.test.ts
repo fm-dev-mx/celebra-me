@@ -1,8 +1,12 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { isReadOnlySql } from '../../scripts/db/production-boundary-policy';
 import {
 	buildRecoveryIntegrityCaptureSql,
 	captureRecoveryIntegrity,
 	compareRecoveryIntegrity,
 	CRITICAL_RECOVERY_TABLES,
+	wrapRecoveryIntegrityPsqlInput,
 	type RecoveryIntegritySnapshot,
 } from '../../scripts/db/recovery-integrity';
 
@@ -78,6 +82,20 @@ describe('recovery integrity capture SQL', () => {
 		expect(buildRecoveryIntegrityCaptureSql('pre-phase3')).not.toContain(
 			'invitation_mutation_operation_receipts',
 		);
+	});
+
+	it('sends the batched snapshot through stdin as read-only SQL, not --command', () => {
+		const source = readFileSync(
+			resolve(process.cwd(), 'scripts/db/recovery-integrity.ts'),
+			'utf8',
+		);
+		expect(source).toContain('input: wrapRecoveryIntegrityPsqlInput(sql)');
+		expect(source).not.toMatch(/--command[\s\S]*COPY/);
+		const sessionSql = wrapRecoveryIntegrityPsqlInput(
+			buildRecoveryIntegrityCaptureSql('phase3'),
+		);
+		expect(isReadOnlySql(sessionSql)).toBe(true);
+		expect(sessionSql.startsWith("SET statement_timeout = '0';")).toBe(true);
 	});
 
 	it('captures a snapshot with a single copy() call', () => {

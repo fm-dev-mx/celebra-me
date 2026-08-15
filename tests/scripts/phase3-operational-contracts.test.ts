@@ -64,6 +64,9 @@ describe('Phase 3 operational contracts', () => {
 	it('removes incomplete critical backup output and never logs service credentials', () => {
 		const workflow = read('scripts/db/backup-critical-production.ts');
 		expect(workflow).toContain('rmSync(incompleteOutputDir, { recursive: true, force: true })');
+		expect(workflow).toContain('removeIncompleteCriticalBackups');
+		expect(workflow).toContain('wrapRecoveryIntegrityPsqlInput');
+		expect(workflow).not.toMatch(/--command[\s\S]*sql/);
 		expect(workflow).not.toMatch(/console\.(?:info|log|error)\([^\n]*prodServiceRole/);
 		expect(workflow).toContain('STORAGE_INVENTORY_SQL');
 		expect(workflow).toContain('writeBackupPhase');

@@ -30,6 +30,10 @@ import {
 	operatorCommandWriteLabel,
 } from '../../src/lib/status/operator-command-display.ts';
 import { useCliColor } from '../db/operator-cli-ux.ts';
+import {
+	evaluateCriticalBackupHealth,
+	type CriticalBackupHealth,
+} from '../db/critical-backup-health.ts';
 
 const ENVS: TargetEnv[] = ['local', 'preview', 'production'];
 
@@ -264,6 +268,24 @@ function formatStatusRows(
 		}).join('');
 
 	return [schemaRow, invitationRow, readinessRow, evidenceRow, authorizationRow, patchRow];
+}
+
+function formatCriticalBackupHealthSection(
+	headerWidth: number,
+	options?: { env?: NodeJS.ProcessEnv; backupHealth?: CriticalBackupHealth },
+): string[] {
+	const c = getColors(options);
+	const health = options?.backupHealth ?? evaluateCriticalBackupHealth();
+	const badge = health.attention
+		? styleBySemantic(c, 'unverified', health.summary)
+		: styleBySemantic(c, 'verified', health.summary);
+	return [
+		c.dim('─'.repeat(headerWidth)),
+		`  ${c.bold('CRITICAL BACKUP')}: ${badge}`,
+		c.dim(
+			'  Daily = RPO 24h (pnpm db:prod:backup:daily). Mutation gates reuse a critical set ≤15m.',
+		),
+	];
 }
 
 function formatDisposableProofSection(
@@ -584,6 +606,7 @@ export function formatCanonicalStatusView(
 		includeInSync?: boolean;
 		diagnostics?: boolean;
 		env?: NodeJS.ProcessEnv;
+		backupHealth?: CriticalBackupHealth;
 	},
 ): string {
 	const verbose = Boolean(options?.verbose);
@@ -612,6 +635,7 @@ export function formatCanonicalStatusView(
 		...formatProductionAuthWarning(view.environments.production, options),
 		'',
 		...formatDisposableProofSection(view, headerWidth, options),
+		...formatCriticalBackupHealthSection(headerWidth, options),
 		...formatRecentMigrationsSection(view, headerWidth, options),
 		...formatManualPatchesSection(view, headerWidth, options),
 	];

@@ -21,6 +21,11 @@ import {
 import { PROJECT_ROOT } from '../db/db-workflow-lib.ts';
 import type { InvitationPackageData } from './invitation-package.ts';
 import {
+	cloudinaryEraHostingMessage,
+	findCloudinaryEraHostingViolations,
+	isCloudinaryEraInvitation,
+} from '../../src/lib/intake/services/cloudinary-era-hosting.ts';
+import {
 	runImportEngine,
 	type ImportEngineOptions,
 	type ImportEngineResult,
@@ -64,7 +69,8 @@ export type PromotionBlockCode =
 	| 'BACKUP_REQUIRED'
 	| 'MANAGED_DIVERGENCE'
 	| 'CONFIRMATION_REQUIRED'
-	| 'VERIFICATION_FAILED';
+	| 'VERIFICATION_FAILED'
+	| 'CLOUDINARY_ERA_HOSTING';
 
 export interface PromotionSchemaGateResult {
 	state: SchemaLifecycleState;
@@ -354,6 +360,42 @@ export async function runPromotionPreflight(input: {
 	runLiveVerification?: typeof verifyPreviewArtifactLive;
 }): Promise<PromotionPreflightReport> {
 	const slug = input.packageData.invitation.slug;
+	if (
+		isCloudinaryEraInvitation({
+			kind: input.packageData.invitation.kind,
+			createdAt: input.packageData.definitionCreatedAt,
+		})
+	) {
+		const violations = findCloudinaryEraHostingViolations(input.packageData.assets);
+		if (violations.length > 0) {
+			return {
+				slug,
+				packageHash: input.packageData.packageHash,
+				sourceHash: input.packageData.sourceHash,
+				projectionHash: input.packageData.projectionHash,
+				assetManifestHash: input.packageData.assetManifestHash,
+				status: 'BLOCKED',
+				blockCode: 'CLOUDINARY_ERA_HOSTING',
+				reason: cloudinaryEraHostingMessage(violations),
+				schema: {
+					state: 'UNVERIFIED',
+					migrationHead: null,
+					pendingMigrations: [],
+					extraMigrations: [],
+					compatible: false,
+					blockCode: 'SCHEMA_INCOMPATIBLE',
+					detail: 'Promotion blocked before schema classification.',
+				},
+				backup: {
+					required: false,
+					acceptable: true,
+					canonicalCommand: CANONICAL_BACKUP_COMMAND,
+					detail: 'Backup gate skipped because Cloudinary hosting is incomplete.',
+				},
+				divergence: emptyDivergence(),
+			};
+		}
+	}
 	const base = {
 		slug,
 		packageHash: input.packageData.packageHash,

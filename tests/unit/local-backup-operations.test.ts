@@ -1,5 +1,9 @@
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import {
 	planCriticalBackupRetention,
+	removeIncompleteCriticalBackups,
 	type RetentionCandidate,
 } from '../../scripts/db/local-backup-operations';
 
@@ -34,5 +38,21 @@ describe('local critical backup retention', () => {
 	it('rejects invalid retention counts', () => {
 		expect(() => planCriticalBackupRetention([], 0, 12)).toThrow(/positive integer/);
 		expect(() => planCriticalBackupRetention([], 30, -1)).toThrow(/non-negative integer/);
+	});
+
+	it('removes critical directories that never wrote a manifest', () => {
+		const root = mkdtempSync(join(tmpdir(), 'critical-orphans-'));
+		const complete = join(root, 'critical-2026-08-15T22-08-28-817Z');
+		const orphan = join(root, 'critical-2026-08-15T21-48-06-699Z');
+		mkdirSync(complete, { recursive: true });
+		mkdirSync(orphan, { recursive: true });
+		writeFileSync(join(complete, 'manifest.json'), '{}\n');
+		writeFileSync(join(orphan, 'database.sql'), 'partial\n');
+		try {
+			expect(removeIncompleteCriticalBackups(root)).toEqual([orphan]);
+			expect(removeIncompleteCriticalBackups(root)).toEqual([]);
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
 	});
 });

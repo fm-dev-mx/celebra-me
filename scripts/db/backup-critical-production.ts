@@ -22,6 +22,7 @@ import {
 	captureRecoveryIntegrity,
 	compareRecoveryIntegrity,
 	computeRecoveryStateDigest,
+	wrapRecoveryIntegrityPsqlInput,
 	type RecoveryIntegritySnapshot,
 } from './recovery-integrity.ts';
 import { writeStorageObjectArchive } from './storage-object-archive.ts';
@@ -35,6 +36,7 @@ import {
 import {
 	assertWindowsEfsEncrypted,
 	prepareEncryptedLocalDirectory,
+	removeIncompleteCriticalBackups,
 } from './local-backup-operations.ts';
 import {
 	assertProductionDbUrl,
@@ -59,7 +61,7 @@ function runBackupCommand(
 let incompleteOutputDir: string | null = null;
 
 function queryJson<T>(dbUrl: string, sql: string): T {
-	const result = runBackupCommand(
+	const result = runCommand(
 		'psql',
 		[
 			'--set',
@@ -69,11 +71,20 @@ function queryJson<T>(dbUrl: string, sql: string): T {
 			'--no-align',
 			'--dbname',
 			dbUrl,
-			'--command',
-			sql,
 		],
-		{ redact: [dbUrl] },
+		{ input: wrapRecoveryIntegrityPsqlInput(sql), redact: [dbUrl], throwOnError: false },
 	);
+	if (result.status !== 0) {
+		const detail = [result.stderr, result.stdout]
+			.map((part) => part.trim())
+			.filter(Boolean)
+			.join('\n');
+		throw new Error(
+			`Critical backup subprocess failed with status ${String(result.status)}.${
+				detail ? ` ${detail}` : ''
+			}`,
+		);
+	}
 	const value = result.stdout.trim();
 	if (!value) throw new Error('Production backup query returned no JSON result.');
 	return JSON.parse(value) as T;
@@ -234,7 +245,11 @@ async function main(): Promise<void> {
 	assertProductionDbUrl(prodDbUrl);
 	const { prodSupabaseUrl, prodServiceRole } = verifyProductionSecrets(prodDbUrl);
 
-	const outputDir = resolve('.backups', 'prod', `critical-${timestamp()}`);
+	const backupRoot = resolve('.backups', 'prod');
+	mkdirSync(backupRoot, { recursive: true });
+	removeIncompleteCriticalBackups(backupRoot);
+
+	const outputDir = resolve(backupRoot, `critical-${timestamp()}`);
 	incompleteOutputDir = outputDir;
 	mkdirSync(outputDir, { recursive: true });
 	prepareEncryptedLocalDirectory(outputDir);
