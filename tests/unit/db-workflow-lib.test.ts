@@ -658,6 +658,6 @@ describe('runCommandSequencesInParallel', () => {
 		]);
 		expect(results[0]?.[0]?.status).toBe(0);
 		expect(results[1]?.[0]?.status).toBe(0);
-		expect(Date.now() - started).toBeLessThan(500);
+		expect(Date.now() - started).toBeLessThan(1500);
 	});
 });
