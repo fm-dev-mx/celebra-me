@@ -14,6 +14,7 @@ import {
 	READINESS_LABELS,
 	SEMANTIC_LABELS,
 } from '@/lib/status/labels';
+import { CopyableCommand } from '@/components/dashboard/status/CopyableCommand';
 import { formatSchemaMigrationsLabel, formatTransitionLabel } from '@/lib/status/presentation';
 import {
 	authorizationRemediation,
@@ -40,7 +41,6 @@ import type {
 	TargetEnv,
 	ManualPatchStatus,
 } from '@/lib/status/types';
-import { copyToClipboard } from '@/utils/clipboard';
 
 const ENVS: TargetEnv[] = ['local', 'preview', 'production'];
 const ACTION_DOMAIN_LABELS: Record<OperationalActionDomain, string> = {
@@ -56,28 +56,6 @@ const ACTION_DOMAIN_LABELS: Record<OperationalActionDomain, string> = {
 function formatWhen(value: string | null): string {
 	if (!value) return 'sin marca de tiempo';
 	return new Date(value).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
-}
-
-function CopyableCommand({ command }: { command: string }) {
-	const [copied, setCopied] = useState(false);
-	return (
-		<div className="canonical-status__copy">
-			<pre className="canonical-status__command">{command}</pre>
-			<button
-				type="button"
-				className="btn-ghost"
-				onClick={() => {
-					void copyToClipboard(command).then((ok) => {
-						if (!ok) return;
-						setCopied(true);
-						window.setTimeout(() => setCopied(false), 1600);
-					});
-				}}
-			>
-				{copied ? 'Copiado' : 'Copiar'}
-			</button>
-		</div>
-	);
 }
 
 function SemanticBadge({ semantic }: { semantic: StatusSemantic }) {
@@ -560,7 +538,17 @@ function ManualPatchesSection({ items }: { items: ManualPatchStatus[] }) {
 									: ''}{' '}
 								· Evidencia: {EVIDENCE_LABELS[production.evidence]}
 							</p>
-							{production.affectedRows?.length ? <p className="canonical-status__patch-note">Filas detectadas: {production.affectedRows.map((row) => `${row.store}/${row.slug ?? row.key}${row.version === null ? '' : ` · versión ${row.version}`}`).join(', ')}</p> : null}
+							{production.affectedRows?.length ? (
+								<p className="canonical-status__patch-note">
+									Filas detectadas:{' '}
+									{production.affectedRows
+										.map(
+											(row) =>
+												`${row.store}/${row.slug ?? row.key}${row.version === null ? '' : ` · versión ${row.version}`}`,
+										)
+										.join(', ')}
+								</p>
+							) : null}
 							<details className="canonical-status__details">
 								<summary>Rango y evidencia</summary>
 								<dl>
@@ -570,8 +558,18 @@ function ManualPatchesSection({ items }: { items: ManualPatchStatus[] }) {
 									</dd>
 									<dt>Motivo técnico</dt>
 									<dd>{production.reason}</dd>
-									{production.verifiedAt ? <><dt>Última verificación LIVE</dt><dd>{production.verifiedAt}</dd></> : null}
-									{production.projectRef ? <><dt>Proyecto</dt><dd>{production.projectRef}</dd></> : null}
+									{production.verifiedAt ? (
+										<>
+											<dt>Última verificación LIVE</dt>
+											<dd>{production.verifiedAt}</dd>
+										</>
+									) : null}
+									{production.projectRef ? (
+										<>
+											<dt>Proyecto</dt>
+											<dd>{production.projectRef}</dd>
+										</>
+									) : null}
 								</dl>
 							</details>
 						</article>

@@ -458,6 +458,13 @@
 	}
 }
 
+.canonical-status__task {
+	grid-column: 1 / -1;
+	margin: 0;
+	color: var(--color-text-muted);
+	font-size: 0.85rem;
+}
+
 .canonical-status__verify {
 	color: var(--color-text-muted);
 	font-size: 0.85rem;

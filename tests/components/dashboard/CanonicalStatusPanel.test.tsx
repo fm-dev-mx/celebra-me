@@ -22,7 +22,13 @@ describe('CanonicalStatusPanel', () => {
 		expect(screen.getByText('Acciones necesarias')).toBeInTheDocument();
 		expect(screen.getByRole('heading', { name: 'Qué hacer ahora' })).toBeInTheDocument();
 		expect(screen.getByText('Boda de Victoria y Roberto')).toBeInTheDocument();
-		expect(screen.getAllByText(/prod:apply/).length).toBeGreaterThan(0);
+		expect(screen.getAllByText(/Task: prod:apply/).length).toBeGreaterThan(0);
+		expect(screen.getAllByText(/-- --slug victoria-y-roberto --apply/).length).toBeGreaterThan(
+			0,
+		);
+		expect(
+			screen.queryByText('pnpm prod:apply -- --slug victoria-y-roberto --apply'),
+		).not.toBeInTheDocument();
 		expect(screen.getAllByRole('button', { name: 'Copiar' }).length).toBeGreaterThan(0);
 		expect(screen.getByRole('button', { name: 'Revalidar todo' })).toBeInTheDocument();
 	});
