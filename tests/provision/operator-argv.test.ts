@@ -77,6 +77,25 @@ describe('operator argv contract', () => {
 			expect(() => checkUnknownFlags([...RENATA_PREVIEW_APPLY])).not.toThrow();
 		});
 
+		it('rebuilds the prod:apply TTY command and parses the forwarded argv', () => {
+			const prompt = '--slug renata --apply';
+			expect(
+				buildRestrictedTaskCommand('prod:apply', prompt, {
+					injectPnpmSeparator: true,
+				}),
+			).toBe('pnpm prod:apply -- --slug renata --apply');
+			expect(
+				parseProductionApplyCliArgs([
+					'node',
+					'production-apply-cli.ts',
+					'--',
+					'--slug',
+					'renata',
+					'--apply',
+				]).apply,
+			).toBe(true);
+		});
+
 		it('parses prod:apply the same with or without a leading separator', () => {
 			const without = parseProductionApplyCliArgs([
 				'node',
@@ -200,5 +219,11 @@ describe('operator argv contract', () => {
 		const source = readFileSync(resolve(process.cwd(), '.vscode/task-runner.ps1'), 'utf8');
 		expect(source).toContain("$env:CELEBRA_OPERATOR_TASK = 'invitation:release'");
 		expect(source).toContain("if ($Command -eq 'invitation:release')");
+	});
+
+	it('preserves a real TTY for prod:apply without binding Preview operator scope', () => {
+		const source = readFileSync(resolve(process.cwd(), '.vscode/task-runner.ps1'), 'utf8');
+		expect(source).toContain("@('invitation:release', 'prod:apply') -contains $Command");
+		expect(source).not.toContain("$env:CELEBRA_OPERATOR_TASK = 'prod:apply'");
 	});
 });

@@ -306,7 +306,7 @@ while ($true) {
 
         $runCount++
         # Mirrors scripts/lib/operator-argv.ts (normalizeTaskPrompt + buildRestrictedTaskCommand).
-        $preserveTty = $Command -eq 'invitation:release'
+        $preserveTty = @('invitation:release', 'prod:apply') -contains $Command
         $scriptArgs = if ($null -eq $argsInput) { '' } else { $argsInput.Trim() }
 
         if ($isTerminalMode) {
@@ -335,8 +335,9 @@ while ($true) {
         # Iniciar cronometro de alta precision
         $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
-        # Forzar emision de colores ANSI. invitation:release keeps a real TTY (no pipe).
-        # The CLI binds this task identity to preview:<slug>:<operation>; it is not a credential.
+        # Forzar emision de colores ANSI. invitation:release and prod:apply keep a real TTY (no pipe).
+        # invitation:release binds CELEBRA_OPERATOR_TASK for Preview scope only; that is not a credential.
+        # prod:apply still requires the owner confirmation code. TTY here is not a Production bypass.
         $env:FORCE_COLOR = "3"
         if ($Command -eq 'invitation:release') {
             $env:CELEBRA_OPERATOR_TASK = 'invitation:release'
