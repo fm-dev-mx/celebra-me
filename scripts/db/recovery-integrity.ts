@@ -1,26 +1,34 @@
 import { createHash } from 'node:crypto';
 import { quoteIdentifier, runCommand } from './db-workflow-lib.ts';
 
+/**
+ * Fingerprint ORDER BY must follow each table's primary key. Several critical
+ * tables have no `id` column; a hardcoded `t.id` aborts the batched snapshot.
+ */
 export const CRITICAL_RECOVERY_TABLES = [
-	{ schema: 'public', table: 'invitations' },
-	{ schema: 'public', table: 'events' },
-	{ schema: 'public', table: 'event_memberships' },
-	{ schema: 'public', table: 'event_claim_codes' },
-	{ schema: 'public', table: 'guest_invitations' },
-	{ schema: 'public', table: 'guest_invitation_audit' },
-	{ schema: 'public', table: 'rsvp_records' },
-	{ schema: 'public', table: 'rsvp_audit_log' },
-	{ schema: 'public', table: 'rsvp_channel_log' },
-	{ schema: 'public', table: 'invitation_content_drafts' },
-	{ schema: 'public', table: 'published_invitation_content' },
-	{ schema: 'public', table: 'invitation_publication_idempotency' },
-	{ schema: 'public', table: 'managed_invitation_release_provenance' },
-	{ schema: 'public', table: 'invitation_mutation_operation_receipts' },
-	{ schema: 'public', table: 'invitation_assets' },
-	{ schema: 'auth', table: 'users' },
-	{ schema: 'auth', table: 'identities' },
-	{ schema: 'storage', table: 'buckets' },
-	{ schema: 'storage', table: 'objects' },
+	{ schema: 'public', table: 'invitations', orderBy: 't.id' },
+	{ schema: 'public', table: 'events', orderBy: 't.id' },
+	{ schema: 'public', table: 'event_memberships', orderBy: 't.id' },
+	{ schema: 'public', table: 'event_claim_codes', orderBy: 't.id' },
+	{ schema: 'public', table: 'guest_invitations', orderBy: 't.id' },
+	{ schema: 'public', table: 'guest_invitation_audit', orderBy: 't.id' },
+	{ schema: 'public', table: 'rsvp_records', orderBy: 't.store_key' },
+	{ schema: 'public', table: 'rsvp_audit_log', orderBy: 't.audit_id' },
+	{ schema: 'public', table: 'rsvp_channel_log', orderBy: 't.channel_event_id' },
+	{ schema: 'public', table: 'invitation_content_drafts', orderBy: 't.id' },
+	{ schema: 'public', table: 'published_invitation_content', orderBy: 't.id' },
+	{ schema: 'public', table: 'invitation_publication_idempotency', orderBy: 't.idempotency_key' },
+	{
+		schema: 'public',
+		table: 'managed_invitation_release_provenance',
+		orderBy: 't.invitation_id',
+	},
+	{ schema: 'public', table: 'invitation_mutation_operation_receipts', orderBy: 't.id' },
+	{ schema: 'public', table: 'invitation_assets', orderBy: 't.id' },
+	{ schema: 'auth', table: 'users', orderBy: 't.id' },
+	{ schema: 'auth', table: 'identities', orderBy: 't.id' },
+	{ schema: 'storage', table: 'buckets', orderBy: 't.id' },
+	{ schema: 'storage', table: 'objects', orderBy: 't.id' },
 ] as const;
 
 export interface RecoveryTableFingerprint {
@@ -121,28 +129,6 @@ function parseSingleJson<T>(output: string, label: string): T {
 	return JSON.parse(value) as T;
 }
 
-const TABLE_FINGERPRINT_ORDER: Record<string, string> = {
-	'public.invitations': 't.id',
-	'public.events': 't.id',
-	'public.event_memberships': 't.id',
-	'public.event_claim_codes': 't.id',
-	'public.guest_invitations': 't.id',
-	'public.guest_invitation_audit': 't.id',
-	'public.rsvp_records': 't.id',
-	'public.rsvp_audit_log': 't.id',
-	'public.rsvp_channel_log': 't.id',
-	'public.invitation_content_drafts': 't.id',
-	'public.published_invitation_content': 't.id',
-	'public.invitation_publication_idempotency': 't.id',
-	'public.managed_invitation_release_provenance': 't.id',
-	'public.invitation_mutation_operation_receipts': 't.id',
-	'public.invitation_assets': 't.id',
-	'auth.users': 't.id',
-	'auth.identities': 't.id',
-	'storage.buckets': 't.id',
-	'storage.objects': 't.bucket_id, t.name',
-};
-
 const AUTH_USERS_SOURCE = `(
 			  select id, aud, role, email, email_confirmed_at, raw_app_meta_data,
 			         raw_user_meta_data, is_super_admin, phone, phone_confirmed_at,
@@ -150,9 +136,8 @@ const AUTH_USERS_SOURCE = `(
 			  from auth.users
 			)`;
 
-function fingerprintSubquery(schema: string, table: string): string {
-	const qualified = `${schema}.${table}`;
-	const orderBy = TABLE_FINGERPRINT_ORDER[qualified] ?? 'row_to_json(t)::text';
+function fingerprintSubquery(entry: (typeof CRITICAL_RECOVERY_TABLES)[number]): string {
+	const { schema, table, orderBy } = entry;
 	const source =
 		schema === 'auth' && table === 'users'
 			? AUTH_USERS_SOURCE
@@ -173,7 +158,7 @@ export function buildRecoveryIntegrityCaptureSql(
 	const tableEntries = CRITICAL_RECOVERY_TABLES.filter(
 		({ table }) =>
 			!(profile === 'pre-phase3' && table === 'invitation_mutation_operation_receipts'),
-	).map(({ schema, table }) => `'${schema}.${table}', ${fingerprintSubquery(schema, table)}`);
+	).map((entry) => `'${entry.schema}.${entry.table}', ${fingerprintSubquery(entry)}`);
 	return `select json_build_object(
 	  'tables', json_build_object(${tableEntries.join(',\n	  ')}),
 	  'migrationsText', coalesce((

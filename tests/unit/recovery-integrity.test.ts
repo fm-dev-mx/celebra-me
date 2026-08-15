@@ -84,6 +84,26 @@ describe('recovery integrity capture SQL', () => {
 		);
 	});
 
+	it('orders fingerprints by each table primary key instead of assuming t.id', () => {
+		const sql = buildRecoveryIntegrityCaptureSql('phase3');
+		const nonIdPrimaryKeys = {
+			'public.rsvp_records': 't.store_key',
+			'public.rsvp_audit_log': 't.audit_id',
+			'public.rsvp_channel_log': 't.channel_event_id',
+			'public.invitation_publication_idempotency': 't.idempotency_key',
+			'public.managed_invitation_release_provenance': 't.invitation_id',
+		} as const;
+		for (const { schema, table, orderBy } of CRITICAL_RECOVERY_TABLES) {
+			expect(sql).toContain(`order by ${orderBy}`);
+			const qualified = `${schema}.${table}` as keyof typeof nonIdPrimaryKeys;
+			if (qualified in nonIdPrimaryKeys) {
+				expect(orderBy).toBe(nonIdPrimaryKeys[qualified]);
+				expect(orderBy).not.toBe('t.id');
+			}
+		}
+		expect(sql).toMatch(/order by t\.store_key[\s\S]*from "public"\."rsvp_records" t/);
+	});
+
 	it('sends the batched snapshot through stdin as read-only SQL, not --command', () => {
 		const source = readFileSync(
 			resolve(process.cwd(), 'scripts/db/recovery-integrity.ts'),
