@@ -243,7 +243,7 @@ while ($true) {
         if ($runCount -eq 0) {
             Write-Host ""
             Write-Host "+--------------------------------------------------------------------------+" -ForegroundColor Cyan
-            
+
             if ($isTerminalMode) {
                 Write-Host "|  [*] CELEBRA-ME TERMINAL ::  terminal (otros comandos)  [Rama: $gitBranch]" -ForegroundColor Cyan
             } elseif ($isSensitive) {
@@ -262,6 +262,9 @@ while ($true) {
                 Write-Host "  Prompt    : No repita 'pnpm $Command'. Escriba solo los argumentos." -ForegroundColor DarkCyan
             }
             Write-Host "  Contexto  : Worktree: $worktreeName  |  Config: .vscode/tasks.json" -ForegroundColor DarkGray
+            if ($Command -eq 'prod:apply') {
+                Write-Host "  TTY Owner : conservada (v3)." -ForegroundColor Yellow
+            }
 
             # Mostrar las ultimas 3 ejecuciones del historial persistente si existen
             if (Test-Path $historyFile) {
@@ -294,7 +297,7 @@ while ($true) {
         # --- Prompt Interactivo en ejecuciones posteriores ---
         $promptLabel = if ($isTerminalMode) { "[$gitBranch] terminal> " } else { "[$gitBranch] pnpm $Command" }
         $argsInput = Read-Host $promptLabel
-        
+
         # Guardas de Seguridad: Prevenir encadenamiento de comandos prohibidos (; & |) solo en modo restringido
         if (-not $isTerminalMode -and $argsInput -match '[;&|]') {
             Write-Host ""
@@ -355,8 +358,28 @@ while ($true) {
                 } catch {}
             }
         } elseif ($preserveTty) {
-            cmd /c "$fullCmd"
-            $exitCode = $LASTEXITCODE
+            # Inherit this task console. cmd /c + pnpm shim can drop stdin/stderr isTTY on Windows.
+            if ($Command -eq 'prod:apply') {
+                try {
+                    $ttyProbe = & node -e "process.stdout.write('stdin=' + !!process.stdin.isTTY + ' stdout=' + !!process.stdout.isTTY + ' stderr=' + !!process.stderr.isTTY)"
+                    Write-Host "  TTY probe : $ttyProbe" -ForegroundColor DarkGray
+                } catch {
+                    Write-Host "  TTY probe : unavailable" -ForegroundColor DarkGray
+                }
+            }
+            # Native PowerShell array + splat. List.ToArray() wrapped in @() becomes one argument
+            # ("prod:apply -- --slug …"), which pnpm then reports as command-not-found.
+            $pnpmArgs = @($Command)
+            if (-not [string]::IsNullOrWhiteSpace($scriptArgs)) {
+                $pnpmArgs += '--'
+                foreach ($match in [regex]::Matches($scriptArgs, '"([^"]*)"|(\S+)')) {
+                    if ($match.Groups[1].Success) { $pnpmArgs += $match.Groups[1].Value }
+                    else { $pnpmArgs += $match.Groups[2].Value }
+                }
+            }
+            $global:LASTEXITCODE = 0
+            & pnpm @pnpmArgs
+            $exitCode = if ($null -ne $LASTEXITCODE) { $LASTEXITCODE } else { 0 }
         } else {
             $capturedOutput = @()
             cmd /c "$fullCmd 2>&1" | Tee-Object -Variable capturedOutput

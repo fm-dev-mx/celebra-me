@@ -191,7 +191,8 @@ describe('owner confirmation helpers', () => {
 		const source = sourceOf('scripts/db/owner-production-apply.ts');
 		expect(source).toContain('promptOwnerConfirmationCode');
 		expect(source).toContain("import('@inquirer/prompts')");
-		expect(source).toContain('input({');
+		expect(source).toContain('input(');
+		expect(source).toContain('inquirerContext(io)');
 		expect(source).not.toMatch(/from ['"]node:fs['"]/);
 		expect(source).not.toMatch(
 			/const typedRaw = await \(input\.readConfirmationLine \?\? readTty/,
@@ -251,7 +252,45 @@ describe('requireOwnerProductionApply', () => {
 			requireOwnerProductionApply({
 				...baseApplyInput,
 				stdin: fakeStdin,
+				stderr: { isTTY: false } as NodeJS.WriteStream,
+				platform: 'win32',
+				openWindowsConsole: () => null,
 				selectIntent: undefined,
+			}),
+		).rejects.toThrow('process.exit:1');
+	});
+
+	it('fails closed on a pipe when the platform cannot attach a Windows console', async () => {
+		mockExit();
+		const pipeStdin = { isTTY: false } as NodeJS.ReadStream;
+		await expect(
+			requireOwnerProductionApply({
+				...baseApplyInput,
+				stdin: pipeStdin,
+				stderr: { isTTY: false } as NodeJS.WriteStream,
+				platform: 'linux',
+				openWindowsConsole: () => ({
+					input: pipeStdin,
+					output: { isTTY: false } as NodeJS.WriteStream,
+				}),
+				selectIntent: undefined,
+			}),
+		).rejects.toThrow('process.exit:1');
+	});
+
+	it('rejects agent contexts even when a Windows console can be attached', async () => {
+		mockExit();
+		await expect(
+			requireOwnerProductionApply({
+				...baseApplyInput,
+				env: { CELEBRA_AGENT_CONTEXT: 'true' },
+				stdin: { isTTY: false } as NodeJS.ReadStream,
+				platform: 'win32',
+				openWindowsConsole: () => ({
+					input: { isTTY: true } as NodeJS.ReadStream,
+					output: { isTTY: true } as NodeJS.WriteStream,
+				}),
+				readConfirmationLine: () => 'MIGRATE abcdef01',
 			}),
 		).rejects.toThrow('process.exit:1');
 	});
@@ -337,6 +376,14 @@ describe('requireOwnerProductionApply', () => {
 		expect(source).toMatch(/default:\s*'cancel'/);
 		expect(source).toContain("name: 'Cancelar'");
 		expect(source).toContain("name: 'Revisar cambios'");
+	});
+
+	it('does not bind CELEBRA_OPERATOR_TASK for Production confirmation', () => {
+		const source = sourceOf('scripts/db/owner-production-apply.ts');
+		expect(source).toContain('resolveOwnerPromptIo');
+		expect(source).toContain('inquirerContext(io)');
+		expect(source).not.toContain('CELEBRA_OPERATOR_TASK');
+		expect(source).not.toMatch(/from ['"]node:fs['"]/);
 	});
 });
 

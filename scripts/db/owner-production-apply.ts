@@ -6,11 +6,18 @@
  * deterministic operation summary, and a two-step TTY confirmation
  * (arrow intent defaulting to Cancel, optional technical review, then
  * short bound code) immediately before the first write.
- * No env/token/secret confirmation alternatives.
+ * Windows tasks may attach CONIN$/CONOUT$ for those prompts only.
+ * No env/token/secret/operator-task confirmation alternatives.
  */
 
 import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
 import { extractSupabaseProjectRef, redactDbUrl } from './db-target-config.ts';
+import {
+	destroyOwnerPromptIo,
+	resolveOwnerPromptIo,
+	type OwnerPromptIo,
+	type WindowsOwnerConsole,
+} from './owner-prompt-console.ts';
 import {
 	failOperator,
 	formatKeyValueBlock,
@@ -122,6 +129,10 @@ export interface OwnerProductionApplyInput {
 	omitSummary?: boolean;
 	env?: NodeJS.ProcessEnv;
 	stdin?: NodeJS.ReadStream;
+	stderr?: NodeJS.WriteStream;
+	platform?: NodeJS.Platform;
+	/** Test seam for Windows CONIN$/CONOUT$ attach. */
+	openWindowsConsole?: () => WindowsOwnerConsole | null;
 	/** Test seam for arrow intent menu. */
 	selectIntent?: () => OwnerIntent | Promise<OwnerIntent>;
 	/** Test seam for confirmation input. */
@@ -176,33 +187,48 @@ export function agentSelfAuthorizationBlocked(
  * skipped CR and waited for LF forever, so the operator appeared stuck and the
  * eventual buffer (often with control bytes) failed the exact match.
  */
+function inquirerContext(io: OwnerPromptIo | null):
+	| { input: NodeJS.ReadableStream; output: NodeJS.WritableStream }
+	| undefined {
+	if (!io) return undefined;
+	return { input: io.input, output: io.output };
+}
+
 async function promptOwnerConfirmationCode(
 	env: NodeJS.ProcessEnv = process.env,
+	io: OwnerPromptIo | null = null,
 ): Promise<string> {
 	const { input } = await import('@inquirer/prompts');
-	return input({
-		message: 'Código de confirmación',
-		required: true,
-		theme: inquirerTheme(env),
-	});
+	return input(
+		{
+			message: 'Código de confirmación',
+			required: true,
+			theme: inquirerTheme(env),
+		},
+		inquirerContext(io),
+	);
 }
 
 async function promptOwnerIntent(
 	applyActionLabel: string,
 	env: NodeJS.ProcessEnv = process.env,
+	io: OwnerPromptIo | null = null,
 ): Promise<OwnerIntent> {
 	// Dynamic import keeps Jest/CJS consumers free of @inquirer ESM parse issues.
 	const { select } = await import('@inquirer/prompts');
-	return select({
-		message: 'Seleccione una acción',
-		default: 'cancel',
-		choices: [
-			{ name: 'Cancelar', value: 'cancel' as const },
-			{ name: 'Revisar cambios', value: 'review' as const },
-			{ name: applyActionLabel, value: 'proceed' as const },
-		],
-		theme: inquirerTheme(env),
-	});
+	return select(
+		{
+			message: 'Seleccione una acción',
+			default: 'cancel',
+			choices: [
+				{ name: 'Cancelar', value: 'cancel' as const },
+				{ name: 'Revisar cambios', value: 'review' as const },
+				{ name: applyActionLabel, value: 'proceed' as const },
+			],
+			theme: inquirerTheme(env),
+		},
+		inquirerContext(io),
+	);
 }
 
 function defaultTechnicalReview(input: {
@@ -313,8 +339,16 @@ export async function requireOwnerProductionApply(
 
 	const hasIntentSeam = Boolean(input.selectIntent);
 	const hasLineSeam = Boolean(input.readConfirmationLine);
-	const ttyOk = Boolean(stdin.isTTY && process.stderr.isTTY);
-	if (!hasIntentSeam && !hasLineSeam && !ttyOk) {
+	const needsRealPrompts = !hasIntentSeam || !hasLineSeam;
+	const promptIo = needsRealPrompts
+		? resolveOwnerPromptIo({
+				stdin,
+				stderr: input.stderr ?? process.stderr,
+				platform: input.platform,
+				openWindowsConsole: input.openWindowsConsole,
+			})
+		: null;
+	if (!hasIntentSeam && !hasLineSeam && !promptIo) {
 		failGate(
 			{
 				title: 'Se requiere una TTY interactiva',
@@ -322,6 +356,7 @@ export async function requireOwnerProductionApply(
 				code: 'TTY_REQUIRED',
 				remediation: [
 					'Ejecute el comando en una terminal interactiva.',
+					'Si usó la task Aplicar Producción y TTY_REQUIRED, esa pestaña cargó el runner viejo: ciérrela y reláncela. El runner nuevo anuncia TTY Owner v3 y ejecuta `pnpm prod:apply -- …`.',
 					'No use CI, pipes ni automatización para autorizar Production.',
 				],
 			},
@@ -329,82 +364,86 @@ export async function requireOwnerProductionApply(
 		);
 	}
 
-	for (;;) {
-		const intent = input.selectIntent
-			? await input.selectIntent()
-			: hasLineSeam
-				? 'proceed'
-				: await promptOwnerIntent(input.applyActionLabel, env);
+	try {
+		for (;;) {
+			const intent = input.selectIntent
+				? await input.selectIntent()
+				: hasLineSeam
+					? 'proceed'
+					: await promptOwnerIntent(input.applyActionLabel, env, promptIo);
 
-		if (intent === 'cancel') {
+			if (intent === 'cancel') {
+				failGate(
+					{
+						title: 'Operación cancelada',
+						cause: 'El operador canceló en el menú de intención.',
+						code: 'OWNER_CONFIRMATION_CANCELLED',
+						remediation: [
+							'Si la escritura era intencional, vuelva a ejecutar el comando.',
+							'Revise el plan y seleccione Aplicar de forma explícita.',
+						],
+					},
+					env,
+				);
+			}
+
+			if (intent === 'review') {
+				writeTechnicalReviewCard(
+					defaultTechnicalReview({
+						operationType: input.operationType,
+						projectRef,
+						releaseSha: releaseEvidence.sha,
+						dbUrl: input.dbUrl,
+						bindingHex: input.bindingHex,
+						confirmationCode,
+						summary: input.summary,
+						technicalReview: input.technicalReview,
+					}),
+					env,
+				);
+				continue;
+			}
+
+			break;
+		}
+
+		writeHuman(`Escriba el código de confirmación exactamente:`);
+		writeHuman(`  ${confirmationCode}`);
+		writeHuman(
+			`${operatorSymbol('info', env)} Enlace: plan ${shortSha(input.bindingHex)} · release ${shortSha(releaseEvidence.sha)}`,
+		);
+
+		const typedRaw = await (input.readConfirmationLine
+			? input.readConfirmationLine()
+			: promptOwnerConfirmationCode(env, promptIo));
+		const typed = sanitizeOwnerConfirmationInput(typedRaw);
+		if (typed !== confirmationCode) {
 			failGate(
 				{
-					title: 'Operación cancelada',
-					cause: 'El operador canceló en el menú de intención.',
-					code: 'OWNER_CONFIRMATION_CANCELLED',
+					title: 'Código de confirmación incorrecto',
+					cause:
+						`El texto ingresado no coincide con el desafío vinculado al plan. ` +
+						`Esperado ${confirmationCode.length} caracteres; recibido ${typed.length}.`,
+					code: 'OWNER_CONFIRMATION_MISMATCH',
 					remediation: [
-						'Si la escritura era intencional, vuelva a ejecutar el comando.',
-						'Revise el plan y seleccione Aplicar de forma explícita.',
+						'Escriba exactamente el código mostrado (VERB + espacio + 8 hex), sin caracteres de control.',
+						'No use Ctrl+Z para “desbloquear” el prompt; use solo Enter tras el código.',
+						'Si el plan cambió, cancele, vuelva a revisar y genere un nuevo código.',
 					],
 				},
 				env,
 			);
 		}
 
-		if (intent === 'review') {
-			writeTechnicalReviewCard(
-				defaultTechnicalReview({
-					operationType: input.operationType,
-					projectRef,
-					releaseSha: releaseEvidence.sha,
-					dbUrl: input.dbUrl,
-					bindingHex: input.bindingHex,
-					confirmationCode,
-					summary: input.summary,
-					technicalReview: input.technicalReview,
-				}),
-				env,
-			);
-			continue;
-		}
-
-		break;
-	}
-
-	writeHuman(`Escriba el código de confirmación exactamente:`);
-	writeHuman(`  ${confirmationCode}`);
-	writeHuman(
-		`${operatorSymbol('info', env)} Enlace: plan ${shortSha(input.bindingHex)} · release ${shortSha(releaseEvidence.sha)}`,
-	);
-
-	const typedRaw = await (input.readConfirmationLine
-		? input.readConfirmationLine()
-		: promptOwnerConfirmationCode(env));
-	const typed = sanitizeOwnerConfirmationInput(typedRaw);
-	if (typed !== confirmationCode) {
-		failGate(
-			{
-				title: 'Código de confirmación incorrecto',
-				cause:
-					`El texto ingresado no coincide con el desafío vinculado al plan. ` +
-					`Esperado ${confirmationCode.length} caracteres; recibido ${typed.length}.`,
-				code: 'OWNER_CONFIRMATION_MISMATCH',
-				remediation: [
-					'Escriba exactamente el código mostrado (VERB + espacio + 8 hex), sin caracteres de control.',
-					'No use Ctrl+Z para “desbloquear” el prompt; use solo Enter tras el código.',
-					'Si el plan cambió, cancele, vuelva a revisar y genere un nuevo código.',
-				],
-			},
-			env,
+		writeHuman(
+			`${operatorSymbol('ok', env)} Confirmación del propietario aceptada. Continuando con la primera escritura.`,
 		);
+		issueProductionWritePermit({
+			projectRef,
+			operationType: input.operationType,
+			bindingHex: input.bindingHex,
+		});
+	} finally {
+		destroyOwnerPromptIo(promptIo);
 	}
-
-	writeHuman(
-		`${operatorSymbol('ok', env)} Confirmación del propietario aceptada. Continuando con la primera escritura.`,
-	);
-	issueProductionWritePermit({
-		projectRef,
-		operationType: input.operationType,
-		bindingHex: input.bindingHex,
-	});
 }

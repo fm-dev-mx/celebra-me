@@ -224,6 +224,11 @@ describe('operator argv contract', () => {
 	it('preserves a real TTY for prod:apply without binding Preview operator scope', () => {
 		const source = readFileSync(resolve(process.cwd(), '.vscode/task-runner.ps1'), 'utf8');
 		expect(source).toContain("@('invitation:release', 'prod:apply') -contains $Command");
+		expect(source).toContain('TTY Owner : conservada (v3)');
+		expect(source).toContain('TTY probe :');
+		expect(source).toContain('process.stdin.isTTY');
+		expect(source).toContain('& pnpm @pnpmArgs');
+		expect(source).not.toContain('& pnpm @($pnpmArgs.ToArray())');
 		expect(source).not.toContain("$env:CELEBRA_OPERATOR_TASK = 'prod:apply'");
 	});
 });
