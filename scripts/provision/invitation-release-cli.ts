@@ -35,6 +35,10 @@ import {
 	authorizePreviewWriteApply,
 	verifyPreviewWriteAuthorization,
 } from './preview-write-auth.ts';
+import {
+	formatInvitationGuidance,
+	rejectPastedCommandPrefix,
+} from './invitation-operator-guidance.ts';
 import { readFastInvitationInventory } from './invitation-status-inventory.ts';
 import { evaluateInvitationReadiness } from './invitation-readiness.ts';
 import { LOCAL_DB_URL, redactCredentials } from '../db/db-target-config.ts';
@@ -627,6 +631,7 @@ function formatPreviewReceiptDiagnosis(
 // eslint-disable-next-line complexity -- CLI handles mode dispatch, interactive prompts, and hosted environment flow gates.
 export async function main(argv = process.argv.slice(2)): Promise<void> {
 	const args = argv;
+	rejectPastedCommandPrefix(args);
 	checkUnknownFlags(args);
 	const json = args.includes('--json');
 	const nonInteractive = args.includes('--non-interactive');
@@ -1738,7 +1743,7 @@ if (
 				);
 			}
 		} else {
-			console.error(message);
+			console.error(formatInvitationGuidance(message, slug) ?? message);
 		}
 		process.exitCode = 1;
 	});

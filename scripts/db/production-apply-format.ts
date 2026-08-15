@@ -2,6 +2,10 @@
  * Spanish operator presentation for pnpm prod:apply.
  * Never include URLs, credentials, or raw connection strings.
  */
+import {
+	displayOperatorCommand,
+	operatorCommandWriteLabel,
+} from '../../src/lib/status/operator-command-display.ts';
 import { formatKeyValueBlock, operatorSymbol, shortSha } from './operator-cli-ux.ts';
 import {
 	mutationItemsOf,
@@ -55,9 +59,15 @@ export function formatProductionApplyPlan(plan: ProductionApplyPlan): string {
 	lines.push('');
 	lines.push(`${operatorSymbol('info')} ${productionApplyHandoff(plan)}`);
 	if (mutations.length > 0 && !plan.scope.inspectAll) {
-		lines.push(
-			`${operatorSymbol('info')} Para aplicar: pnpm prod:apply -- ${describeScope(plan)} --apply`,
-		);
+		const applyCommand = `pnpm prod:apply -- ${describeScope(plan)} --apply`;
+		const display = displayOperatorCommand(applyCommand);
+		lines.push(`${operatorSymbol('info')} Para aplicar:`);
+		if (display.keepFullCommand) {
+			lines.push(`  ${applyCommand}`);
+		} else {
+			lines.push(`  Task: ${display.task}`);
+			lines.push(`  Escribir: ${operatorCommandWriteLabel(display)}`);
+		}
 	}
 	lines.push(
 		`${operatorSymbol('info')} Sin --apply no hay escrituras. Enter no autoriza Production.`,

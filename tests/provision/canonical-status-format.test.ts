@@ -19,6 +19,11 @@ describe('canonical status CLI format', () => {
 		expect(text).toContain('[Apply]');
 		expect(text).not.toContain('Verify:');
 		expect(text).toContain('Apply:');
+		expect(text).toContain('Task: prod:apply');
+		expect(text).toContain('Escribir: -- --slug victoria-y-roberto --apply');
+		expect(text).not.toContain('pnpm prod:apply -- --slug victoria-y-roberto --apply');
+		expect(text).toContain('Task: db:migrate');
+		expect(text).toContain('Escribir: -- --target disposable-test --apply');
 		expect(text).toContain('Authorization');
 		expect(text).toContain('GRANDFATHERED');
 		expect(text).toContain('NOT_APPLICABLE');
@@ -69,5 +74,38 @@ describe('canonical status CLI format', () => {
 		expect(text).toContain('PRODUCTION AUTHORIZATION: MISSING');
 		expect(text).toContain('20260807120000');
 		expect(text).toContain('Schema CURRENT is not owner-authorization evidence');
+	});
+
+	it('prints Preview apply as a terminal command with CELEBRA_TASK_SCOPE', () => {
+		const base = buildCanonicalStatusViewFixture();
+		const promotion = base.promotions[0];
+		if (!promotion) throw new Error('expected fixture promotion');
+		const text = formatCanonicalStatusView(
+			buildCanonicalStatusViewFixture({
+				promotions: [
+					{
+						...promotion,
+						slug: 'renata',
+						title: 'XV años de Renata',
+						action: 'PROMOTE_PREVIEW',
+						reasonCode: 'PREVIEW_BEHIND_CANONICAL',
+						source: 'canonical',
+						destination: 'preview',
+						handoff: {
+							...promotion.handoff,
+							ownerApplyRequired: false,
+							applyCommand:
+								'pnpm invitation:release -- --slug renata --targets preview --apply',
+						},
+					},
+				],
+			}),
+		);
+		expect(text).toContain('Terminal');
+		expect(text).toContain('$env:CELEBRA_TASK_SCOPE="preview:renata:apply"');
+		expect(text).toContain(
+			'pnpm invitation:release -- --slug renata --targets preview --apply',
+		);
+		expect(text).not.toContain('Task: invitation:release');
 	});
 });

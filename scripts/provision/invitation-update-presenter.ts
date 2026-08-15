@@ -7,6 +7,7 @@
 /* eslint-disable max-lines */
 
 import type { FunctionalChange } from './invitation-update-plan.ts';
+import { formatInvitationGuidance } from './invitation-operator-guidance.ts';
 
 const useColor = (): boolean => {
 	if (process.env.NO_COLOR || !process.stdout.isTTY) return false;
@@ -565,6 +566,20 @@ function formatPhysicalImpact(
 	];
 }
 
+function isUnwrittenFailure(
+	status: TargetPlanData['status'] | ApplyResultData['status'],
+	completedOperations: number,
+): boolean {
+	if (completedOperations !== 0) return false;
+	return (
+		status === 'ERROR — REQUIERE REVISIÓN' ||
+		status === 'ERROR — CAMBIOS REVERTIDOS' ||
+		status === 'BLOQUEADO' ||
+		status === 'BLOCKED' ||
+		status === 'FAILED'
+	);
+}
+
 function resolveStatusColor(status: TargetPlanData['status']): string {
 	switch (status) {
 		case 'CAMBIOS APLICADOS':
@@ -847,14 +862,27 @@ export function formatApplyResult(result: ApplyResultData): string {
 					? colors.yellow('CANCELADO POR EL OPERADOR')
 					: resolveStatusColor(normStatus);
 			lines.push(`  Estado Final : ${targetStatusText}`);
-			if (tr.reason) {
+			const guidance = tr.reason
+				? formatInvitationGuidance(tr.reason, result.invitation, tr.target)
+				: null;
+			if (guidance) {
+				lines.push(guidance);
+			} else if (tr.reason) {
 				lines.push(`  Motivo       : ${tr.reason}`);
 			}
 			lines.push('');
 
-			const functionalLines = formatFunctionalChanges(tr.functionalChanges);
+			const hidePlannedDiff = isUnwrittenFailure(normStatus, tr.completedOperations);
+			const functionalLines = hidePlannedDiff
+				? []
+				: formatFunctionalChanges(tr.functionalChanges);
 			if (functionalLines.length > 0) {
 				lines.push(...functionalLines.map((l) => `  ${l}`));
+			} else if (hidePlannedDiff && (tr.functionalChanges?.length ?? 0) > 0) {
+				lines.push(
+					colors.dim('  Plan no aplicado. El detalle ya se mostró en la confirmación.'),
+				);
+				lines.push('');
 			}
 
 			lines.push(`  Resumen Técnico de Ejecución (${tr.target}):`);
@@ -908,11 +936,25 @@ export function formatApplyResult(result: ApplyResultData): string {
 										);
 
 		lines.push(`Estado Final : ${statusText}`);
+		const guidance = result.reason
+			? formatInvitationGuidance(result.reason, result.invitation, result.environment)
+			: null;
+		if (guidance) {
+			lines.push(guidance);
+		} else if (result.reason && !statusText.includes(result.reason)) {
+			lines.push(`Motivo       : ${result.reason}`);
+		}
 		lines.push('');
 
-		const functionalLines = formatFunctionalChanges(result.functionalChanges);
+		const hidePlannedDiff = isUnwrittenFailure(normalizedStatus, result.completedOperations);
+		const functionalLines = hidePlannedDiff
+			? []
+			: formatFunctionalChanges(result.functionalChanges);
 		if (functionalLines.length > 0) {
 			lines.push(...functionalLines);
+		} else if (hidePlannedDiff && (result.functionalChanges?.length ?? 0) > 0) {
+			lines.push(colors.dim('Plan no aplicado. El detalle ya se mostró en la confirmación.'));
+			lines.push('');
 		}
 
 		if (normalizedStatus === 'SIN CAMBIOS') {

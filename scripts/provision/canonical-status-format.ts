@@ -12,7 +12,10 @@ import {
 	readinessSemantic,
 	schemaLifecycleSemantic,
 } from '../../src/lib/status/semantics.ts';
-import { aggregateManualPatchStatus, buildOperationalActionPlan } from '../../src/lib/status/action-plan.ts';
+import {
+	aggregateManualPatchStatus,
+	buildOperationalActionPlan,
+} from '../../src/lib/status/action-plan.ts';
 import type {
 	CanonicalPromotionRow,
 	CanonicalStatusView,
@@ -22,6 +25,10 @@ import type {
 	TargetEnv,
 } from '../../src/lib/status/types.ts';
 import { SEMANTIC_LABELS } from '../../src/lib/status/labels.ts';
+import {
+	displayOperatorCommand,
+	operatorCommandWriteLabel,
+} from '../../src/lib/status/operator-command-display.ts';
 import { useCliColor } from '../db/operator-cli-ux.ts';
 
 const ENVS: TargetEnv[] = ['local', 'preview', 'production'];
@@ -71,6 +78,27 @@ function getColors() {
 	};
 }
 
+function formatTaskPromptCommand(
+	label: string,
+	command: string,
+	indent: string,
+	color: (value: string) => string,
+	suffix = '',
+): string[] {
+	const display = displayOperatorCommand(command);
+	if (display.surface === 'terminal') {
+		const lines = [`${indent}${label}:${suffix}`, `${indent}  Terminal`];
+		if (display.envAssignment) lines.push(`${indent}  ${color(display.envAssignment)}`);
+		lines.push(`${indent}  ${color(display.prompt)}`);
+		return lines;
+	}
+	return [
+		`${indent}${label}:${suffix}`,
+		`${indent}  Task: ${display.task}`,
+		`${indent}  Escribir: ${color(operatorCommandWriteLabel(display))}`,
+	];
+}
+
 export function formatPromotionsSection(promotions: readonly CanonicalPromotionRow[]): string {
 	if (promotions.length === 0) {
 		return 'PUBLICATION\nAttention: 0 (in sync or none registered)\n';
@@ -112,43 +140,42 @@ export function formatAttentionCard(
 
 	const lines: string[] = [titleLine, whyLine];
 
-	const labelWidth = 10;
-
 	if (row.handoff.dryRunCommand) {
 		const label =
 			row.handoff.dryRunStepType === 'Diagnose'
-				? 'Diagnose:'
+				? 'Diagnose'
 				: row.handoff.dryRunStepType === 'Verify'
-					? 'Verify:'
-					: 'Action:';
+					? 'Verify'
+					: 'Action';
 		lines.push(
-			`   ${c.dim(label.padEnd(labelWidth))} ${c.brightCyan(row.handoff.dryRunCommand)}`,
+			...formatTaskPromptCommand(label, row.handoff.dryRunCommand, '   ', c.brightCyan),
 		);
 	}
 
 	if (row.handoff.applyCommand) {
-		if (row.handoff.ownerApplyRequired) {
-			lines.push(
-				`   ${c.yellow(c.dim('Apply:'.padEnd(labelWidth)))} ${c.brightYellow(row.handoff.applyCommand)} ${c.yellow('(🔒 OWNER / HITL REQUIRED)')}`,
-			);
-		} else {
-			lines.push(
-				`   ${c.dim('Apply:'.padEnd(labelWidth))} ${c.brightCyan(row.handoff.applyCommand)}`,
-			);
-		}
-	} else if (!row.handoff.dryRunCommand) {
+		const owner = row.handoff.ownerApplyRequired ? ' (🔒 OWNER / HITL REQUIRED)' : '';
+		const color = row.handoff.ownerApplyRequired ? c.brightYellow : c.brightCyan;
 		lines.push(
-			`   ${c.dim('Remedy:'.padEnd(labelWidth))} ${c.yellow('No canonical command available')}`,
+			...formatTaskPromptCommand('Apply', row.handoff.applyCommand, '   ', color, owner),
 		);
+	} else if (!row.handoff.dryRunCommand) {
+		lines.push(`   ${c.dim('Remedy:')} ${c.yellow('No canonical command available')}`);
 	}
 
 	if (row.handoff.optionalDiagnosticCommand) {
 		lines.push(
-			`   ${c.dim('Optional:'.padEnd(labelWidth))} ${c.brightCyan(row.handoff.optionalDiagnosticCommand)} ${c.dim('(diagnostic only; does not remediate UNKNOWN)')}`,
+			...formatTaskPromptCommand(
+				'Optional',
+				row.handoff.optionalDiagnosticCommand,
+				'   ',
+				c.brightCyan,
+				' (diagnostic only; does not remediate UNKNOWN)',
+			),
 		);
 	}
 
 	if (verbose) {
+		const labelWidth = 10;
 		lines.push(`   ${c.dim('Evidence:'.padEnd(labelWidth))} ${row.evidence}`);
 		lines.push(`   ${c.dim('Steps:'.padEnd(labelWidth))} ${row.handoff.steps.join(' → ')}`);
 		lines.push(`   ${c.dim('Reason:'.padEnd(labelWidth))} ${row.reasonCode}`);
@@ -248,7 +275,12 @@ function formatDisposableProofSection(view: CanonicalStatusView, headerWidth: nu
 	if (view.disposableProof.status !== 'valid') {
 		lines.push(c.dim('  (Does not mean Local, Preview, or Production schema is behind.)'));
 		lines.push(
-			`  Remediation: ${c.brightCyan('pnpm db:migrate -- --target disposable-test --apply')}`,
+			...formatTaskPromptCommand(
+				'Remediation',
+				'pnpm db:migrate -- --target disposable-test --apply',
+				'  ',
+				c.brightCyan,
+			),
 		);
 	}
 	return lines;
@@ -295,26 +327,47 @@ function formatManualPatchesSection(view: CanonicalStatusView, headerWidth: numb
 		`  ${c.bold('ACTIVE MANUAL PATCHES (0 rows = NOT_NEEDED, not applied)')}`,
 	];
 	for (const patch of view.manualPatches) {
-		const envs = ENVS.map((env) => `${envLabel(env)}=${formatPatchStatus(patch.environments[env].status, c)}`).join(' ');
+		const envs = ENVS.map(
+			(env) => `${envLabel(env)}=${formatPatchStatus(patch.environments[env].status, c)}`,
+		).join(' ');
 		const production = patch.environments.production;
 		lines.push(`  - ${patch.scriptId}: ${envs}`);
 		lines.push(`    File: ${patch.file}`);
 		lines.push(`    Reason: ${production.reason}`);
-		if (production.matchingRowCount !== null) lines.push(`    Count: ${production.matchingRowCount} (approved ${patch.expectedRowsMin}-${patch.expectedRowsMax})`);
+		if (production.matchingRowCount !== null)
+			lines.push(
+				`    Count: ${production.matchingRowCount} (approved ${patch.expectedRowsMin}-${patch.expectedRowsMax})`,
+			);
 		if (production.verifiedAt) lines.push(`    Verified: ${production.verifiedAt}`);
 		if (production.projectRef) lines.push(`    Project: ${production.projectRef}`);
 		if (production.affectedRows && production.affectedRows.length > 0) {
 			const rows = production.affectedRows
-				.map((row) => `${row.store}/${row.slug ?? row.key}${row.version === null ? '' : `@v${row.version}`}`)
+				.map(
+					(row) =>
+						`${row.store}/${row.slug ?? row.key}${row.version === null ? '' : `@v${row.version}`}`,
+				)
 				.join(', ');
 			lines.push(`    Rows: ${rows}`);
 		}
-		if (production.planCommand) lines.push(`    Plan: ${c.brightCyan(production.planCommand.replace('<file>', patch.file))}`);
+		if (production.planCommand) {
+			lines.push(
+				...formatTaskPromptCommand(
+					'Plan',
+					production.planCommand.replace('<file>', patch.file),
+					'    ',
+					c.brightCyan,
+				),
+			);
+		}
 	}
 	return lines;
 }
 
-function formatPublicationOverview(view: CanonicalStatusView, headerWidth: number, verbose: boolean): string[] {
+function formatPublicationOverview(
+	view: CanonicalStatusView,
+	headerWidth: number,
+	verbose: boolean,
+): string[] {
 	const c = getColors();
 	const lines: string[] = [];
 
@@ -327,7 +380,8 @@ function formatPublicationOverview(view: CanonicalStatusView, headerWidth: numbe
 			view.environments.production.evidence === 'UNVERIFIED';
 		if (remoteUnverified) {
 			lines.push(c.brightYellow('  Attention: UNVERIFIED (empty queue is not in-sync)'));
-			lines.push(c.dim('  Next: pnpm dbs   Verify when live evidence classifies the registry.'));
+			lines.push(...formatTaskPromptCommand('Next', 'pnpm dbs', '  ', c.brightCyan));
+			lines.push(c.dim('  Verify when live evidence classifies the registry.'));
 		} else {
 			lines.push('  Attention: 0 (in sync or none registered)');
 		}
@@ -456,11 +510,27 @@ function formatOperationalActionPlan(view: CanonicalStatusView, headerWidth: num
 		return lines;
 	}
 	for (const [index, action] of plan.actions.entries()) {
-		lines.push(`  ${index + 1}. ${c.bold(action.title)} ${styleBySemantic(c, action.semantic, SEMANTIC_LABELS[action.semantic] ?? action.semantic)}`);
+		lines.push(
+			`  ${index + 1}. ${c.bold(action.title)} ${styleBySemantic(c, action.semantic, SEMANTIC_LABELS[action.semantic] ?? action.semantic)}`,
+		);
 		lines.push(`     ${action.summary}`);
 		for (const step of action.steps) {
 			const owner = step.requiresOwner ? ' 🔒 OWNER / HITL' : '';
-			lines.push(`     ${step.label}: ${step.command ? c.brightCyan(step.command) : c.yellow('Revisión manual; sin comando canónico')}${owner}`);
+			if (!step.command) {
+				lines.push(
+					`     ${step.label}: ${c.yellow('Revisión manual; sin comando canónico')}${owner}`,
+				);
+			} else {
+				lines.push(
+					...formatTaskPromptCommand(
+						step.label,
+						step.command,
+						'     ',
+						c.brightCyan,
+						owner,
+					),
+				);
+			}
 			if (step.prerequisite) lines.push(`       Prerequisito: ${step.prerequisite}`);
 		}
 		lines.push(`     Verificar cuando: ${action.verifyWhen}`);
