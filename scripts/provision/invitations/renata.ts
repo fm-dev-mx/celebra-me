@@ -343,14 +343,14 @@ export function buildRenataPublishedContent(
 		},
 		gifts: {
 			variant: 'standard',
-			title: 'Lluvia de sobres',
+			title: 'Mesa de regalos',
 			subtitle:
-				'Su compañía es el centro de esta noche. Si desea tener un detalle, la celebración recibirá una lluvia de sobres.',
+				'Su presencia es mi mejor regalo. Si desea compartir un detalle conmigo, habrá un lugar dispuesto en la fiesta.',
 			items: [
 				{
 					type: 'cash',
 					title: 'Lluvia de sobres',
-					text: 'El detalle se recibirá en efectivo durante la recepción.',
+					text: 'Si desea compartir un obsequio conmigo, habrá un espacio especial durante la recepción.',
 				},
 			],
 		},

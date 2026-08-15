@@ -109,22 +109,22 @@
     },
     "gifts": {
         "title": "Mesa de Regalos",
-        "subtitle": "Tu generosidad acompaña esta noche de estreno.",
+        "subtitle": "Su presencia es nuestro mayor obsequio; quienes deseen expresar un gesto especial encontrarán aquí las alternativas.",
         "items": [
             {
                 "type": "store",
-                "title": "Mesa de Regalos Liverpool",
+                "title": "Liverpool",
                 "url": "https://www.liverpool.com.mx/tienda/mesa-de-regalos/demo-xv-editorial"
             },
             {
                 "type": "cash",
-                "title": "Depósito o Transferencia",
-                "text": "Los detalles de depósito o transferencia pueden mostrarse aquí cuando el anfitrión decide compartirlos."
+                "title": "Transferencia Bancaria",
+                "text": "Los datos de la cuenta se mostrarán cuando el anfitrión disponga compartirlos."
             },
             {
                 "type": "cash",
-                "title": "Lluvia de Sobres",
-                "text": "Agradecemos tu detalle en la recepción de la gala."
+                "title": "Lluvia de sobres",
+                "text": "Podrá entregarse al llegar a la recepción."
             }
         ],
         "variant": "standard"
