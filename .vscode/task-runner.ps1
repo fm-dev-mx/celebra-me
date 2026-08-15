@@ -22,8 +22,11 @@ param (
     [string]$Command
 )
 
-# Establecer título de la pestaña en VS Code
+# Establecer título de la pestaña en VS Code y codificación UTF-8 global (Code Page 65001)
 $Host.UI.RawUI.WindowTitle = "pnpm $Command"
+[Console]::InputEncoding = [System.Text.Encoding]::UTF8
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
 
 #region Metadata & Dictionaries
 # Catálogo de metadatos, propósitos y guías de ayuda por comando
@@ -68,6 +71,11 @@ $commandDetails = @{
         UseCase = "Consultar el estado de las BD locales/remotas y verificar conectividad."
         Help    = "Ingrese 'status' o '--help' para ver todas las suboperaciones disponibles"
     }
+    "db:migrate"                = @{
+        Desc    = "CLI de ejecucion de migraciones de base de datos."
+        UseCase = "Aplicar migraciones de esquema en la base de datos local o destino."
+        Help    = "Ingrese '--help' (o 'up' / 'status' para ver el estado de migraciones)"
+    }
     "db:branch:parity"          = @{
         Desc    = "Verificacion de paridad de migraciones entre ramas/worktrees."
         UseCase = "Confirmar que la secuencia de migraciones de tu rama coincide con develop/main."
@@ -111,7 +119,7 @@ $commandDetails = @{
 }
 
 # Comandos de alto impacto que requieren advertencia visual de seguridad
-$sensitiveCommands = @("dbs", "prod:apply", "invitation:release", "db:prod:backup")
+$sensitiveCommands = @("dbs", "prod:apply", "invitation:release", "db:prod:backup", "db:migrate")
 $isSensitive = $sensitiveCommands -contains $Command
 
 # Obtener metadata del comando actual
@@ -121,60 +129,70 @@ $useCase = if ($meta) { $meta.UseCase } else { "Ejecucion del comando en el work
 $help = if ($meta) { $meta.Help } else { "Ingrese '--help' para ver la ayuda disponible." }
 
 # Directorio y archivo de historial persistente en disco
-$historyDir = Join-Path (Get-Location) ".vscode\history"
+$historyDir = Join-Path $PSScriptRoot "history"
 if (-not (Test-Path $historyDir)) {
     New-Item -ItemType Directory -Path $historyDir -Force | Out-Null
 }
 $safeCmdName = $Command -replace ':', '_'
 $historyFile = Join-Path $historyDir "$safeCmdName.log"
+$lastOutputFile = Join-Path $historyDir "$safeCmdName`_last_output.log"
 #endregion
 
 #region Loop Principal de Ejecucion
 $runCount = 0
-$shouldClearOnNextLoop = $true
 
 while ($true) {
     try {
-        if ($shouldClearOnNextLoop) {
-            Clear-Host
-        }
-        $shouldClearOnNextLoop = $true
-
         $worktreeName = Split-Path (Get-Location) -Leaf
         $gitBranch = try { (git branch --show-current 2>$null) } catch { "" }
         if ([string]::IsNullOrWhiteSpace($gitBranch)) { $gitBranch = "detached/N/A" }
 
-        # --- Renderizado de Cabecera Visual ---
-        Write-Host ""
-        Write-Host "+--------------------------------------------------------------------------+" -ForegroundColor Cyan
-        
-        if ($isSensitive) {
-            Write-Host "|  [!] CELEBRA-ME BD/PROD  ::  pnpm $Command  [Rama: $gitBranch]" -ForegroundColor Red
-        } else {
-            Write-Host "|  [*] CELEBRA-ME DEV      ::  pnpm $Command  [Rama: $gitBranch]" -ForegroundColor Yellow
-        }
+        # --- Renderizado de Cabecera Visual (Solo en el inicio) ---
+        if ($runCount -eq 0) {
+            Write-Host ""
+            Write-Host "+--------------------------------------------------------------------------+" -ForegroundColor Cyan
+            
+            if ($isSensitive) {
+                Write-Host "|  [!] CELEBRA-ME BD/PROD  ::  pnpm $Command  [Rama: $gitBranch]" -ForegroundColor Red
+            } else {
+                Write-Host "|  [*] CELEBRA-ME DEV      ::  pnpm $Command  [Rama: $gitBranch]" -ForegroundColor Yellow
+            }
 
-        Write-Host "+--------------------------------------------------------------------------+" -ForegroundColor Cyan
-        Write-Host "  Proposito : $desc" -ForegroundColor White
-        Write-Host "  Caso Uso  : $useCase" -ForegroundColor Yellow
-        Write-Host "  Ayuda/Doc : $help" -ForegroundColor DarkCyan
-        Write-Host "  Contexto  : Worktree: $worktreeName  |  Ejecucion: #$runCount  |  Config: .vscode/tasks.json" -ForegroundColor DarkGray
+            Write-Host "+--------------------------------------------------------------------------+" -ForegroundColor Cyan
+            Write-Host "  Proposito : $desc" -ForegroundColor White
+            Write-Host "  Caso Uso  : $useCase" -ForegroundColor Yellow
+            Write-Host "  Ayuda/Doc : $help" -ForegroundColor DarkCyan
+            Write-Host "  Contexto  : Worktree: $worktreeName  |  Config: .vscode/tasks.json" -ForegroundColor DarkGray
 
-        # Mostrar ultimas ejecuciones del historial persistente si existen
-        if (Test-Path $historyFile) {
-            $recentLogs = Get-Content $historyFile -Tail 3
-            if ($recentLogs.Count -gt 0) {
-                Write-Host "  Historial :" -ForegroundColor Magenta
-                foreach ($logLine in $recentLogs) {
-                    Write-Host "    $logLine" -ForegroundColor Gray
+            # Mostrar ultimas ejecuciones del historial persistente si existen
+            if (Test-Path $historyFile) {
+                $recentLogs = Get-Content $historyFile -Tail 15 -Encoding utf8
+                if ($recentLogs.Count -gt 0) {
+                    Write-Host "  Historial Ejecuciones :" -ForegroundColor Magenta
+                    foreach ($logLine in $recentLogs) {
+                        $cleanLine = $logLine -replace '•', '*' -replace 'â¢', '*'
+                        Write-Host "    $cleanLine" -ForegroundColor Gray
+                    }
                 }
             }
+
+            Write-Host "+--------------------------------------------------------------------------+" -ForegroundColor Cyan
+
+            # Restaurar la ultima salida de consola exacta (con colores ANSI) al reiniciar VS Code
+            if (Test-Path $lastOutputFile) {
+                Write-Host ""
+                Write-Host "  Ultimo Resultado Registrado de Consola :" -ForegroundColor DarkYellow
+                Write-Host "==========================================================================" -ForegroundColor DarkGray
+                try {
+                    $savedAnsiText = [System.IO.File]::ReadAllText($lastOutputFile, [System.Text.Encoding]::UTF8)
+                    [Console]::Out.Write($savedAnsiText)
+                } catch {}
+                Write-Host "==========================================================================" -ForegroundColor DarkGray
+            }
+            Write-Host ""
         }
 
-        Write-Host "+--------------------------------------------------------------------------+" -ForegroundColor Cyan
-        Write-Host ""
-
-        # --- Prompt Interactivo ---
+        # --- Prompt Interactivo en ejecuciones posteriores ---
         $argsInput = Read-Host "[$gitBranch] pnpm $Command"
         
         # Guardas de Seguridad: Prevenir encadenamiento de comandos prohibidos (; & |)
@@ -197,9 +215,17 @@ while ($true) {
         # Iniciar cronometro de alta precision
         $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
-        # Ejecutar subcomando asignado
-        cmd /c $fullCmd
+        # Forzar emision de colores ANSI y capturar salida con codificacion UTF-8 sin perdida de iconos
+        $env:FORCE_COLOR = "3"
+        $capturedOutput = @()
+        cmd /c "$fullCmd 2>&1" | Tee-Object -Variable capturedOutput
         $exitCode = $LASTEXITCODE
+
+        if ($capturedOutput.Count -gt 0) {
+            try {
+                [System.IO.File]::WriteAllLines($lastOutputFile, $capturedOutput, [System.Text.Encoding]::UTF8)
+            } catch {}
+        }
 
         $stopwatch.Stop()
         $endTime = Get-Date
@@ -227,25 +253,20 @@ while ($true) {
         }
 
         # Registrar entrada en el log persistente (.vscode/history/$safeCmdName.log)
-        $logEntry = "• [$($endTime.ToString('dd/MM HH:mm:ss'))] [$gitBranch] [$fullCmd] -> $statusText ($durationFormatted)"
+        $logEntry = "* [$($endTime.ToString('dd/MM HH:mm:ss'))] [$gitBranch] > $fullCmd -> $statusText ($durationFormatted)"
         Add-Content -Path $historyFile -Value $logEntry -Encoding UTF8
 
         Write-Host ""
-        Write-Host "💡 Presione ENTER para reiniciar o ingrese nuevos argumentos." -ForegroundColor DarkCyan
-        
-        # En la siguiente iteracion no limpiamos la pantalla inmediatamente para que el usuario pueda leer los logs de salida
-        $shouldClearOnNextLoop = $false
+        Write-Host "  [*] Presione ENTER para reiniciar o ingrese nuevos argumentos." -ForegroundColor DarkCyan
 
     } catch [System.Management.Automation.PipelineStoppedException], [System.OperationCanceledException] {
         Write-Host ""
         Write-Host "[i] Interrupcion capturada (Ctrl+C). La pestaña permanece activa." -ForegroundColor Yellow
-        Write-Host "💡 Presione ENTER para reiniciar '$fullCmd'." -ForegroundColor DarkCyan
-        $shouldClearOnNextLoop = $false
+        Write-Host "  [*] Presione ENTER para reiniciar '$fullCmd'." -ForegroundColor DarkCyan
         Start-Sleep -Milliseconds 500
         continue
     } catch {
         Write-Host "[!] Error imprevisto en el runner: $_" -ForegroundColor Red
-        $shouldClearOnNextLoop = $false
         Start-Sleep -Seconds 2
     }
 }

@@ -15,7 +15,7 @@
             ],
             "presentation": {
                 "echo": false,
-                "clear": true,
+                "clear": false,
                 "reveal": "always",
                 "panel": "dedicated",
                 "focus": false
@@ -36,11 +36,12 @@
             ],
             "presentation": {
                 "echo": false,
-                "clear": true,
+                "clear": false,
                 "reveal": "always",
                 "panel": "dedicated",
                 "focus": false
-            }
+            },
+            "runOptions": { "runOn": "folderOpen" }
         },
         {
             "label": "pnpm test",
@@ -56,11 +57,12 @@
             ],
             "presentation": {
                 "echo": false,
-                "clear": true,
+                "clear": false,
                 "reveal": "always",
                 "panel": "dedicated",
                 "focus": false
-            }
+            },
+            "runOptions": { "runOn": "folderOpen" }
         },
         {
             "label": "pnpm test:changed",
@@ -76,11 +78,12 @@
             ],
             "presentation": {
                 "echo": false,
-                "clear": true,
+                "clear": false,
                 "reveal": "always",
                 "panel": "dedicated",
                 "focus": false
-            }
+            },
+            "runOptions": { "runOn": "folderOpen" }
         },
         {
             "label": "pnpm lint",
@@ -96,11 +99,12 @@
             ],
             "presentation": {
                 "echo": false,
-                "clear": true,
+                "clear": false,
                 "reveal": "always",
                 "panel": "dedicated",
                 "focus": false
-            }
+            },
+            "runOptions": { "runOn": "folderOpen" }
         },
         {
             "label": "pnpm validate:changed",
@@ -116,11 +120,12 @@
             ],
             "presentation": {
                 "echo": false,
-                "clear": true,
+                "clear": false,
                 "reveal": "always",
                 "panel": "dedicated",
                 "focus": false
-            }
+            },
+            "runOptions": { "runOn": "folderOpen" }
         },
         {
             "label": "pnpm dbs",
@@ -136,11 +141,75 @@
             ],
             "presentation": {
                 "echo": false,
-                "clear": true,
+                "clear": false,
                 "reveal": "always",
                 "panel": "dedicated",
                 "focus": false
-            }
+            },
+            "runOptions": { "runOn": "folderOpen" }
+        },
+        {
+            "label": "pnpm invitation:release",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/.vscode/task-runner.ps1",
+                "invitation:release"
+            ],
+            "presentation": {
+                "echo": false,
+                "clear": false,
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": false
+            },
+            "runOptions": { "runOn": "folderOpen" }
+        },
+        {
+            "label": "pnpm prod:apply",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/.vscode/task-runner.ps1",
+                "prod:apply"
+            ],
+            "presentation": {
+                "echo": false,
+                "clear": false,
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": false
+            },
+            "runOptions": { "runOn": "folderOpen" }
+        },
+        {
+            "label": "pnpm db:migrate",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/.vscode/task-runner.ps1",
+                "db:migrate"
+            ],
+            "presentation": {
+                "echo": false,
+                "clear": false,
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": false
+            },
+            "runOptions": { "runOn": "folderOpen" }
         },
         {
             "label": "pnpm lint:styles",
@@ -156,7 +225,7 @@
             ],
             "presentation": {
                 "echo": false,
-                "clear": true,
+                "clear": false,
                 "reveal": "always",
                 "panel": "dedicated",
                 "focus": false
@@ -176,7 +245,7 @@
             ],
             "presentation": {
                 "echo": false,
-                "clear": true,
+                "clear": false,
                 "reveal": "always",
                 "panel": "dedicated",
                 "focus": false
@@ -196,27 +265,7 @@
             ],
             "presentation": {
                 "echo": false,
-                "clear": true,
-                "reveal": "always",
-                "panel": "dedicated",
-                "focus": false
-            }
-        },
-        {
-            "label": "pnpm invitation:release",
-            "type": "shell",
-            "command": "powershell",
-            "args": [
-                "-NoProfile",
-                "-ExecutionPolicy",
-                "Bypass",
-                "-File",
-                "${workspaceFolder}/.vscode/task-runner.ps1",
-                "invitation:release"
-            ],
-            "presentation": {
-                "echo": false,
-                "clear": true,
+                "clear": false,
                 "reveal": "always",
                 "panel": "dedicated",
                 "focus": false
@@ -236,7 +285,7 @@
             ],
             "presentation": {
                 "echo": false,
-                "clear": true,
+                "clear": false,
                 "reveal": "always",
                 "panel": "dedicated",
                 "focus": false
@@ -256,27 +305,7 @@
             ],
             "presentation": {
                 "echo": false,
-                "clear": true,
-                "reveal": "always",
-                "panel": "dedicated",
-                "focus": false
-            }
-        },
-        {
-            "label": "pnpm prod:apply",
-            "type": "shell",
-            "command": "powershell",
-            "args": [
-                "-NoProfile",
-                "-ExecutionPolicy",
-                "Bypass",
-                "-File",
-                "${workspaceFolder}/.vscode/task-runner.ps1",
-                "prod:apply"
-            ],
-            "presentation": {
-                "echo": false,
-                "clear": true,
+                "clear": false,
                 "reveal": "always",
                 "panel": "dedicated",
                 "focus": false
@@ -296,7 +325,7 @@
             ],
             "presentation": {
                 "echo": false,
-                "clear": true,
+                "clear": false,
                 "reveal": "always",
                 "panel": "dedicated",
                 "focus": false
@@ -316,7 +345,7 @@
             ],
             "presentation": {
                 "echo": false,
-                "clear": true,
+                "clear": false,
                 "reveal": "always",
                 "panel": "dedicated",
                 "focus": false

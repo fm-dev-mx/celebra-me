@@ -70,7 +70,8 @@ function streamIsTty(): boolean {
 
 export function useCliColor(env: NodeJS.ProcessEnv = process.env): boolean {
 	if (env.NO_COLOR) return false;
-	if (env.FORCE_COLOR === '0') return false;
+	if (env.FORCE_COLOR === '0' || env.FORCE_COLOR === 'false') return false;
+	if (env.FORCE_COLOR !== undefined && env.FORCE_COLOR !== '') return true;
 	return streamIsTty();
 }
 

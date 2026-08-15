@@ -68,6 +68,7 @@ output/playwright/
 !.vscode/extensions.json
 !.vscode/tasks.json
 !.vscode/task-runner.ps1
+!.vscode/README.md
 .vscode/history/
 .idea/
 *.swp
