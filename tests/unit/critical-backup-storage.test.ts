@@ -2,16 +2,16 @@ import {
 	downloadStorageInventory,
 	STORAGE_INVENTORY_SQL,
 } from '../../scripts/db/critical-backup-storage';
-import {
-	BACKUP_PHASE_LABELS,
-	formatBackupPhase,
-} from '../../scripts/db/critical-backup-progress';
+import { BACKUP_PHASE_LABELS, formatBackupPhase } from '../../scripts/db/critical-backup-progress';
 
 describe('critical backup storage inventory', () => {
 	it('does not scan invitation JSON with LIKE', () => {
 		expect(STORAGE_INVENTORY_SQL).not.toMatch(/content\s*::\s*text\s+like/i);
 		expect(STORAGE_INVENTORY_SQL).toContain('invitation_assets');
-		expect(STORAGE_INVENTORY_SQL).toContain("o.bucket_id = 'invitation-assets'");
+		expect(STORAGE_INVENTORY_SQL).toContain("a.provider = 'supabase'");
+		expect(STORAGE_INVENTORY_SQL).toContain('inner join storage.objects');
+		expect(STORAGE_INVENTORY_SQL).not.toMatch(/union all/i);
+		expect(STORAGE_INVENTORY_SQL).not.toContain("o.bucket_id = 'invitation-assets'");
 		expect(STORAGE_INVENTORY_SQL).not.toContain('published_invitation_content');
 		expect(STORAGE_INVENTORY_SQL).not.toContain('invitation_content_drafts');
 	});
@@ -95,4 +95,3 @@ describe('critical backup progress copy', () => {
 		);
 	});
 });
-

@@ -1,6 +1,8 @@
 /**
  * Critical-backup Storage inventory and bounded-parallel download.
- * Inventory uses invitation_assets + storage.objects identity, not JSON LIKE.
+ * Inventory is live `invitation_assets` with provider supabase plus a catalog
+ * row in `storage.objects`. Leftover bucket objects (Cloudinary-era managed
+ * paths) are not recovery binaries. Do not scan invitation JSON with LIKE.
  */
 import { createHash } from 'node:crypto';
 import {
@@ -14,23 +16,12 @@ export const STORAGE_DOWNLOAD_CONCURRENCY = 6;
 
 export const STORAGE_INVENTORY_SQL = `select coalesce(json_agg(source order by "bucketId", name), '[]'::json)::text
 		 from (
-		   select distinct on (bucket_id, object_name)
-		          bucket_id as "bucketId", object_name as name, content_type as "contentType",
-		          declared_bytes as "declaredBytes", declared_sha256 as "declaredSha256"
-		   from (
-		     select a.bucket as bucket_id, a.storage_path as object_name,
-		            coalesce(a.mime_type, o.metadata->>'mimetype') as content_type,
-		            a.file_size as declared_bytes, a.sha256 as declared_sha256, 0 as priority
-		     from public.invitation_assets a
-		     left join storage.objects o on o.bucket_id = a.bucket and o.name = a.storage_path
-		     where a.deleted_at is null and a.provider = 'supabase'
-		     union all
-		     select o.bucket_id, o.name, o.metadata->>'mimetype',
-		            nullif(o.metadata->>'size', '')::bigint, null::text, 1
-		     from storage.objects o
-		     where o.bucket_id = 'invitation-assets'
-		   ) candidates
-		   order by bucket_id, object_name, priority
+		   select a.bucket as "bucketId", a.storage_path as name,
+		          coalesce(a.mime_type, o.metadata->>'mimetype') as "contentType",
+		          a.file_size as "declaredBytes", a.sha256 as "declaredSha256"
+		   from public.invitation_assets a
+		   inner join storage.objects o on o.bucket_id = a.bucket and o.name = a.storage_path
+		   where a.deleted_at is null and a.provider = 'supabase'
 		 ) source`;
 
 export interface StorageInventoryRow {

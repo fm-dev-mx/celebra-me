@@ -78,6 +78,8 @@ describe('Phase 3 operational contracts', () => {
 		expect(storage).not.toContain('/storage/v1/object/authenticated/');
 		expect(storage).not.toMatch(/failed[^\n]*object\.name|mismatch[^\n]*object\.name/);
 		expect(storage).toContain("a.deleted_at is null and a.provider = 'supabase'");
+		expect(storage).toContain('inner join storage.objects');
+		expect(storage).not.toMatch(/union all/i);
 		expect(storage).not.toMatch(/content\s*::\s*text\s+like/i);
 	});
 
