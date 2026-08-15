@@ -5,6 +5,8 @@ import {
 	patchSqlRequiresOwnerUserId,
 	productionPatchApplyCommand,
 } from '../../scripts/db/sql-safety';
+import { resolveProductionPatchApiUrl } from '../../scripts/db/run-prod-patch';
+import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity';
 
 describe('validateAndNormalizeSupabaseUrl', () => {
 	it('accepts a valid Supabase project URL', () => {
@@ -79,6 +81,38 @@ describe('patch owner requirement', () => {
 				"SELECT current_setting('app.owner_user_id')",
 			),
 		).toBe('pnpm prod:apply -- --patch scripts/manual/b.sql --owner-user-id <uuid> --apply');
+	});
+});
+
+describe('resolveProductionPatchApiUrl', () => {
+	const prodDbUrl = `postgresql://postgres:secret@db.${SUPABASE_PROJECT_REFS.production}.supabase.co:5432/postgres`;
+	const derived = `https://${SUPABASE_PROJECT_REFS.production}.supabase.co`;
+
+	afterEach(() => {
+		delete process.env.PROD_SUPABASE_URL;
+		delete process.env.SUPABASE_URL;
+	});
+
+	it('derives the API origin from PROD_DB_URL without SUPABASE_URL', () => {
+		delete process.env.SUPABASE_URL;
+		expect(resolveProductionPatchApiUrl(prodDbUrl)).toBe(derived);
+	});
+
+	it('ignores local SUPABASE_URL', () => {
+		process.env.SUPABASE_URL = 'http://127.0.0.1:54321';
+		expect(resolveProductionPatchApiUrl(prodDbUrl)).toBe(derived);
+	});
+
+	it('accepts a matching PROD_SUPABASE_URL', () => {
+		process.env.PROD_SUPABASE_URL = `${derived}/`;
+		expect(resolveProductionPatchApiUrl(prodDbUrl)).toBe(derived);
+	});
+
+	it('rejects a PROD_SUPABASE_URL for a different project', () => {
+		process.env.PROD_SUPABASE_URL = 'https://otherprojectrefxx.supabase.co';
+		expect(() => resolveProductionPatchApiUrl(prodDbUrl)).toThrow(
+			'must reference the same Supabase project',
+		);
 	});
 });
 

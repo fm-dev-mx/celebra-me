@@ -32,6 +32,7 @@ import {
 	applyPreparedProductionPatch,
 	prepareProductionPatchFile,
 	ProductionPatchApplyError,
+	resolveProductionPatchApiUrl,
 } from './run-prod-patch.ts';
 import { patchSqlRequiresOwnerUserId, productionPatchApplyCommand } from './sql-safety.ts';
 import type { PreparedProductionPatch } from './run-prod-patch.ts';
@@ -364,6 +365,28 @@ function throwIfPatchMissingOwner(
 	});
 }
 
+function throwIfPatchApiIdentityInvalid(
+	mutations: readonly ProductionApplyPlanItem[],
+	deps: ProductionApplyExecuteDeps,
+): void {
+	if (!mutations.some((item) => item.domain === 'patch')) return;
+	const dbUrl = (deps.getProductionDbUrl ?? getProdDbUrl)().url;
+	try {
+		resolveProductionPatchApiUrl(dbUrl);
+	} catch (error: unknown) {
+		throw new OperatorError({
+			title: 'Falta la identidad API de Production',
+			cause: error instanceof Error ? error.message : String(error),
+			code: 'PRODUCTION_API_IDENTITY_INVALID',
+			remediation: [
+				'PROD_DB_URL debe apuntar al proyecto Production allowlisted.',
+				'Si define PROD_SUPABASE_URL, debe coincidir con ese proyecto.',
+				'No use SUPABASE_URL local. Este chequeo corre antes del respaldo.',
+			],
+		});
+	}
+}
+
 async function authorizeReviewedPlan(
 	reviewed: ProductionApplyPlan,
 	mutations: readonly ProductionApplyPlanItem[],
@@ -672,6 +695,7 @@ export async function applyProductionApplyPlan(
 	const mutations = mutationItemsOf(reviewed);
 	const ownerUserId = args.ownerUserId;
 	throwIfPatchMissingOwner(mutations, ownerUserId, deps);
+	throwIfPatchApiIdentityInvalid(mutations, deps);
 	if (mutations.length === 0) {
 		return {
 			plan: toPublicProductionApplyPlan(reviewed),

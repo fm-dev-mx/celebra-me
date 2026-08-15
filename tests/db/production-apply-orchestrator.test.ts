@@ -779,6 +779,26 @@ describe('production apply execution', () => {
 		expect(getProductionWritePermit()).toBeNull();
 	});
 
+	it('rejects a mismatched PROD_SUPABASE_URL before backup', async () => {
+		const ensurePatchBackup: NonNullable<ProductionApplyExecuteDeps['ensurePatchBackup']> =
+			jest.fn(() => ({ manifestPath: '.tmp/test-backup.json' }));
+		process.env.PROD_SUPABASE_URL = 'https://otherprojectrefxx.supabase.co';
+		try {
+			await expect(
+				applyProductionApplyPlan(
+					cli(['--patch', 'scripts/manual/production-patches/test.sql', '--apply']),
+					{
+						...baseDeps({ pending: [] }),
+						ensurePatchBackup,
+					},
+				),
+			).rejects.toMatchObject({ code: 'PRODUCTION_API_IDENTITY_INVALID' });
+		} finally {
+			delete process.env.PROD_SUPABASE_URL;
+		}
+		expect(ensurePatchBackup).not.toHaveBeenCalled();
+	});
+
 	it('requires and revalidates a current critical backup before applying a patch', async () => {
 		const ensurePatchBackup: NonNullable<ProductionApplyExecuteDeps['ensurePatchBackup']> =
 			jest.fn(() => ({ manifestPath: '.tmp/test-backup.json' }));

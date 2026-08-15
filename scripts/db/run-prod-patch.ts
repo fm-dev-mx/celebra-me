@@ -11,6 +11,7 @@ import {
 	type SqlManifest,
 } from './sql-safety.ts';
 import { getProdDbUrl, runPsql } from './db-workflow-lib.ts';
+import { extractSupabaseProjectRef } from './db-target-config.ts';
 import { OperatorError } from './operator-cli-ux.ts';
 import { matchProductionWritePermit } from './production-write-permit.ts';
 import {
@@ -289,49 +290,42 @@ function validateProductionTargetEnv(
 		}
 	}
 
-	const rawSupabaseUrl = process.env.SUPABASE_URL || '';
-	if (!rawSupabaseUrl) {
-		throw new OperatorError({
-			title: 'Falta la identidad API de Production',
-			cause: 'SUPABASE_URL es obligatoria para aplicar.',
-			code: 'SUPABASE_URL_REQUIRED',
-			remediation: ['Configure la URL API canónica antes de generar un plan nuevo.'],
-		});
-	}
-	if (rawSupabaseUrl.startsWith('postgresql://')) {
-		throw new OperatorError({
-			title: 'Identidad API de Production inválida',
-			cause: 'SUPABASE_URL debe ser una URL HTTPS de Supabase, no una conexión PostgreSQL.',
-			code: 'SUPABASE_URL_INVALID',
-			remediation: ['Use PROD_DB_URL para PostgreSQL y SUPABASE_URL para la API.'],
-		});
-	}
+	const { url: dbUrl } = getProdDbUrl();
 	let normalizedUrl: string;
 	try {
-		normalizedUrl = validateAndNormalizeSupabaseUrl(rawSupabaseUrl);
+		normalizedUrl = resolveProductionPatchApiUrl(dbUrl);
 	} catch (error: unknown) {
+		const message = error instanceof Error ? error.message : String(error);
 		throw new OperatorError({
-			title: 'Identidad API de Production inválida',
-			cause: error instanceof Error ? error.message : String(error),
-			code: 'SUPABASE_URL_INVALID',
-			remediation: ['Corrija SUPABASE_URL antes de generar un plan nuevo.'],
-		});
-	}
-
-	const { url: dbUrl } = getProdDbUrl();
-
-	try {
-		assertSameSupabaseProject(normalizedUrl, dbUrl);
-	} catch (error: unknown) {
-		throw new OperatorError({
-			title: 'Las identidades de Production no coinciden',
-			cause: error instanceof Error ? error.message : String(error),
-			code: 'PRODUCTION_PROJECT_MISMATCH',
-			remediation: ['Corrija las credenciales; no aplique a un proyecto ambiguo.'],
+			title: 'Falta la identidad API de Production',
+			cause: message,
+			code: message.includes('must reference the same')
+				? 'PRODUCTION_PROJECT_MISMATCH'
+				: 'PRODUCTION_API_IDENTITY_INVALID',
+			remediation: [
+				'PROD_DB_URL debe apuntar al proyecto Production allowlisted.',
+				'Si define PROD_SUPABASE_URL, debe ser https://<ref>.supabase.co del mismo proyecto.',
+				'No use SUPABASE_URL local para un apply de Production.',
+			],
 		});
 	}
 
 	return { validatedOwnerId, normalizedUrl, dbUrl };
+}
+
+/** Derive the Production API origin from PROD_DB_URL. Never reads local SUPABASE_URL. */
+export function resolveProductionPatchApiUrl(dbUrl: string): string {
+	const projectRef = extractSupabaseProjectRef(dbUrl);
+	const derived = `https://${projectRef}.supabase.co`;
+	const explicit = process.env.PROD_SUPABASE_URL?.trim();
+	if (explicit?.startsWith('postgresql://')) {
+		throw new Error(
+			'PROD_SUPABASE_URL debe ser una URL HTTPS de Supabase, no una conexión PostgreSQL.',
+		);
+	}
+	const normalized = validateAndNormalizeSupabaseUrl(explicit || derived);
+	assertSameSupabaseProject(normalized, dbUrl);
+	return normalized;
 }
 
 export async function runProdPatchMain(): Promise<void> {

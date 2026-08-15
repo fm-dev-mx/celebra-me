@@ -56,6 +56,7 @@ beforeEach(() => {
 	exitCode = null;
 	// Clear env vars that could interfere with tests
 	delete process.env.SUPABASE_URL;
+	delete process.env.PROD_SUPABASE_URL;
 	delete process.env.PROD_DB_URL;
 	delete process.env.CELEBRA_TASK_SCOPE;
 
