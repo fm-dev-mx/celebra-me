@@ -53,10 +53,10 @@ export const RENATA_ASSET_SPECS = [
 		displayName: 'Renata — portada',
 		alt: 'Renata de pie con vestido negro y lentes al pecho, frente a un muro verde',
 		focalPoint: {
-			default: '50% 40%',
-			mobile: '50% 42%',
-			tablet: '50% 40%',
-			desktop: '50% 38%',
+			default: '50% 34%',
+			mobile: '50% 40%',
+			tablet: '50% 32%',
+			desktop: '50% 26%',
 		},
 	},
 	{
@@ -65,10 +65,10 @@ export const RENATA_ASSET_SPECS = [
 		displayName: 'Renata — portada móvil',
 		alt: 'Renata de pie con vestido negro y lentes al pecho, frente a un muro verde',
 		focalPoint: {
-			default: '50% 42%',
-			mobile: '50% 42%',
-			tablet: '50% 40%',
-			desktop: '50% 38%',
+			default: '50% 40%',
+			mobile: '50% 40%',
+			tablet: '50% 32%',
+			desktop: '50% 26%',
 		},
 	},
 	{
@@ -202,10 +202,10 @@ export function buildRenataPublishedContent(
 			backgroundImageDesktop: assets['hero-desktop'],
 			variant: 'standard',
 			presentation: { portraitEnabled: false },
-			focalPoint: '50% 40%',
-			focalPointMobile: '50% 42%',
-			focalPointTablet: '50% 40%',
-			focalPointDesktop: '50% 38%',
+			focalPoint: '50% 34%',
+			focalPointMobile: '50% 40%',
+			focalPointTablet: '50% 32%',
+			focalPointDesktop: '50% 26%',
 		},
 		envelope: {
 			disabled: false,
@@ -424,7 +424,7 @@ export function buildRenataPublishedContent(
 		},
 		thankYou: {
 			variant: 'full-bleed-photo',
-			message: 'Gracias por acompañar este día.',
+			message: 'Gracias por acompañarme este día.',
 			closingName: 'Renata',
 			date: EVENT_DATE_LONG,
 			image: assets['thank-you'],

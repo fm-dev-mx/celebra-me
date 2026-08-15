@@ -281,7 +281,7 @@ describe('XV Renata provision contract', () => {
 		};
 		expect(thankYou.variant).toBe('full-bleed-photo');
 		expect(thankYou.closingName).toBe('Renata');
-		expect(thankYou.message).toBe('Gracias por acompañar este día.');
+		expect(thankYou.message).toBe('Gracias por acompañarme este día.');
 		expect(thankYou.date).toBe('5 de septiembre de 2026');
 		expect(thankYou.focalPoint).toBe('46% 22%');
 		expect(thankYou.overlayAnchor).toBe('left');
