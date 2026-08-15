@@ -2,9 +2,13 @@ import { describe, expect, it } from '@jest/globals';
 import { formatCanonicalStatusView } from '../../scripts/provision/canonical-status-format.ts';
 import { buildCanonicalStatusViewFixture } from '../helpers/canonical-status-fixture.ts';
 
+const NO_COLOR_ENV = { NO_COLOR: '1' };
+
 describe('canonical status CLI format', () => {
 	it('scopes CURRENT to schema and keeps disposable separate', () => {
-		const text = formatCanonicalStatusView(buildCanonicalStatusViewFixture());
+		const text = formatCanonicalStatusView(buildCanonicalStatusViewFixture(), {
+			env: NO_COLOR_ENV,
+		});
 		expect(text).toContain('CURRENT 75/75');
 		expect(text).toContain('Readiness');
 		expect(text).toContain('NEEDS_DISPOSABLE_PROOF');
@@ -48,7 +52,7 @@ describe('canonical status CLI format', () => {
 					},
 				],
 			}),
-			{ diagnostics: true },
+			{ diagnostics: true, env: NO_COLOR_ENV },
 		);
 		expect(text).toContain('DIAGNOSTICS (enrichment only');
 		expect(text).toContain('MANAGED_DRIFT');
@@ -69,6 +73,7 @@ describe('canonical status CLI format', () => {
 					},
 				},
 			}),
+			{ env: NO_COLOR_ENV },
 		);
 		expect(text).toContain('CURRENT 75/75');
 		expect(text).toContain('PRODUCTION AUTHORIZATION: MISSING');
@@ -100,6 +105,7 @@ describe('canonical status CLI format', () => {
 					},
 				],
 			}),
+			{ env: NO_COLOR_ENV },
 		);
 		expect(text).toContain('Terminal');
 		expect(text).toContain('$env:CELEBRA_TASK_SCOPE="preview:renata:apply"');

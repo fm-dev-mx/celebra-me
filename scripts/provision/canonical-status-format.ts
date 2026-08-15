@@ -61,8 +61,8 @@ function padVisible(value: string, width: number): string {
 	return value + ' '.repeat(width - len);
 }
 
-function getColors() {
-	const enabled = useCliColor();
+function getColors(options?: { env?: NodeJS.ProcessEnv }) {
+	const enabled = useCliColor(options?.env);
 	return {
 		bold: (s: string) => (enabled ? `\x1b[1m${s}\x1b[0m` : s),
 		dim: (s: string) => (enabled ? `\x1b[2m${s}\x1b[0m` : s),
@@ -99,11 +99,14 @@ function formatTaskPromptCommand(
 	];
 }
 
-export function formatPromotionsSection(promotions: readonly CanonicalPromotionRow[]): string {
+export function formatPromotionsSection(
+	promotions: readonly CanonicalPromotionRow[],
+	options?: { env?: NodeJS.ProcessEnv },
+): string {
 	if (promotions.length === 0) {
 		return 'PUBLICATION\nAttention: 0 (in sync or none registered)\n';
 	}
-	const blocks = promotions.map((row, idx) => formatAttentionCard(row, false, idx + 1));
+	const blocks = promotions.map((row, idx) => formatAttentionCard(row, false, idx + 1, options));
 	return `PUBLICATION — NEXT STEPS GUIDE\n\n${blocks.join('\n\n')}\n`;
 }
 
@@ -119,8 +122,9 @@ export function formatAttentionCard(
 	row: CanonicalPromotionRow,
 	verbose: boolean,
 	index?: number,
+	options?: { env?: NodeJS.ProcessEnv },
 ): string {
-	const c = getColors();
+	const c = getColors(options);
 	const prefix = index != null ? `${c.dim(String(index) + '.')} ` : '';
 	const transition = formatTransitionLabel(row.source, row.destination);
 
@@ -187,8 +191,13 @@ export function formatAttentionCard(
 	return lines.join('\n');
 }
 
-function formatStatusRows(view: CanonicalStatusView, labelCol: number, envCol: number): string[] {
-	const c = getColors();
+function formatStatusRows(
+	view: CanonicalStatusView,
+	labelCol: number,
+	envCol: number,
+	options?: { env?: NodeJS.ProcessEnv },
+): string[] {
+	const c = getColors(options);
 
 	const schemaRow =
 		padVisible('Schema', labelCol) +
@@ -257,8 +266,12 @@ function formatStatusRows(view: CanonicalStatusView, labelCol: number, envCol: n
 	return [schemaRow, invitationRow, readinessRow, evidenceRow, authorizationRow, patchRow];
 }
 
-function formatDisposableProofSection(view: CanonicalStatusView, headerWidth: number): string[] {
-	const c = getColors();
+function formatDisposableProofSection(
+	view: CanonicalStatusView,
+	headerWidth: number,
+	options?: { env?: NodeJS.ProcessEnv },
+): string[] {
+	const c = getColors(options);
 	const lines: string[] = [
 		c.dim('─'.repeat(headerWidth)),
 		`  ${c.bold('DISPOSABLE-TEST (not a persistent schema environment)')}`,
@@ -295,9 +308,13 @@ function formatMigrationPresence(
 	return c.brightYellow('UNVERIFIED');
 }
 
-function formatRecentMigrationsSection(view: CanonicalStatusView, headerWidth: number): string[] {
+function formatRecentMigrationsSection(
+	view: CanonicalStatusView,
+	headerWidth: number,
+	options?: { env?: NodeJS.ProcessEnv },
+): string[] {
 	if (!view.recentMigrations || view.recentMigrations.length === 0) return [];
-	const c = getColors();
+	const c = getColors(options);
 	const lines: string[] = [
 		c.dim('─'.repeat(headerWidth)),
 		`  ${c.bold('RECENT MIGRATIONS (Authoritative DB records; probe time is not apply time)')}`,
@@ -320,8 +337,12 @@ function formatPatchStatus(status: PatchApplicability, c: ReturnType<typeof getC
 	return c.dim(status);
 }
 
-function formatManualPatchesSection(view: CanonicalStatusView, headerWidth: number): string[] {
-	const c = getColors();
+function formatManualPatchesSection(
+	view: CanonicalStatusView,
+	headerWidth: number,
+	options?: { env?: NodeJS.ProcessEnv },
+): string[] {
+	const c = getColors(options);
 	const lines = [
 		c.dim('─'.repeat(headerWidth)),
 		`  ${c.bold('ACTIVE MANUAL PATCHES (0 rows = NOT_NEEDED, not applied)')}`,
@@ -367,8 +388,9 @@ function formatPublicationOverview(
 	view: CanonicalStatusView,
 	headerWidth: number,
 	verbose: boolean,
+	options?: { env?: NodeJS.ProcessEnv },
 ): string[] {
-	const c = getColors();
+	const c = getColors(options);
 	const lines: string[] = [];
 
 	if (view.promotions.length === 0) {
@@ -394,7 +416,7 @@ function formatPublicationOverview(
 		lines.push('');
 		lines.push(
 			view.promotions
-				.map((row, idx) => formatAttentionCard(row, verbose, idx + 1))
+				.map((row, idx) => formatAttentionCard(row, verbose, idx + 1, options))
 				.join('\n\n'),
 		);
 	}
@@ -403,9 +425,10 @@ function formatPublicationOverview(
 
 function formatProductionAuthWarning(
 	productionAuth: CanonicalStatusView['environments']['production'],
+	options?: { env?: NodeJS.ProcessEnv },
 ): string[] {
 	if (productionAuth.authorizationIntegrity !== 'MISSING') return [];
-	const c = getColors();
+	const c = getColors(options);
 	return [
 		'',
 		c.red('PRODUCTION AUTHORIZATION: MISSING'),
@@ -415,8 +438,11 @@ function formatProductionAuthWarning(
 	];
 }
 
-function formatVerboseSchemaDetails(view: CanonicalStatusView): string[] {
-	const c = getColors();
+function formatVerboseSchemaDetails(
+	view: CanonicalStatusView,
+	options?: { env?: NodeJS.ProcessEnv },
+): string[] {
+	const c = getColors(options);
 	const lines: string[] = [];
 	for (const env of ENVS) {
 		const row = view.environments[env];
@@ -430,8 +456,12 @@ function formatVerboseSchemaDetails(view: CanonicalStatusView): string[] {
 	return lines;
 }
 
-function formatRegistrySummarySection(view: CanonicalStatusView, headerWidth: number): string[] {
-	const c = getColors();
+function formatRegistrySummarySection(
+	view: CanonicalStatusView,
+	headerWidth: number,
+	options?: { env?: NodeJS.ProcessEnv },
+): string[] {
+	const c = getColors(options);
 	const lines: string[] = [
 		'',
 		c.dim('─'.repeat(headerWidth)),
@@ -453,8 +483,12 @@ function formatRegistrySummarySection(view: CanonicalStatusView, headerWidth: nu
 	return lines;
 }
 
-function formatInSyncSection(view: CanonicalStatusView, includeInSync?: boolean): string[] {
-	const c = getColors();
+function formatInSyncSection(
+	view: CanonicalStatusView,
+	includeInSync?: boolean,
+	options?: { env?: NodeJS.ProcessEnv },
+): string[] {
+	const c = getColors(options);
 	const lines: string[] = [];
 	if (includeInSync) {
 		lines.push('');
@@ -475,8 +509,9 @@ function formatDiagnosticsSection(
 	view: CanonicalStatusView,
 	verbose: boolean,
 	diagnosticsOption?: boolean,
+	options?: { env?: NodeJS.ProcessEnv },
 ): string[] {
-	const c = getColors();
+	const c = getColors(options);
 	const lines: string[] = [];
 	if ((verbose || diagnosticsOption) && view.diagnostics.length > 0) {
 		lines.push('');
@@ -494,8 +529,12 @@ function formatDiagnosticsSection(
 	return lines;
 }
 
-function formatOperationalActionPlan(view: CanonicalStatusView, headerWidth: number): string[] {
-	const c = getColors();
+function formatOperationalActionPlan(
+	view: CanonicalStatusView,
+	headerWidth: number,
+	options?: { env?: NodeJS.ProcessEnv },
+): string[] {
+	const c = getColors(options);
 	const plan = buildOperationalActionPlan(view);
 	const healthText = `${plan.health.label} (${plan.health.unresolvedChecks} acción(es))`;
 	const lines = [
@@ -540,10 +579,15 @@ function formatOperationalActionPlan(view: CanonicalStatusView, headerWidth: num
 
 export function formatCanonicalStatusView(
 	view: CanonicalStatusView,
-	options?: { verbose?: boolean; includeInSync?: boolean; diagnostics?: boolean },
+	options?: {
+		verbose?: boolean;
+		includeInSync?: boolean;
+		diagnostics?: boolean;
+		env?: NodeJS.ProcessEnv;
+	},
 ): string {
 	const verbose = Boolean(options?.verbose);
-	const c = getColors();
+	const c = getColors(options);
 	const labelCol = 18;
 	const envCol = 28;
 	const headerWidth = labelCol + envCol * 3;
@@ -556,31 +600,31 @@ export function formatCanonicalStatusView(
 		view.freshnessMeta
 			? `  Evidence freshness: ${view.freshnessMeta.status} (verified ${view.freshnessMeta.lastVerifiedAt})`
 			: `  Evidence: ${view.evidence}`,
-		...formatOperationalActionPlan(view, headerWidth),
+		...formatOperationalActionPlan(view, headerWidth, options),
 		'',
 		`${padVisible('', labelCol)}${c.brightCyan(padVisible('LOCAL', envCol))}${c.brightCyan(padVisible('PREVIEW', envCol))}${c.brightCyan(padVisible('PRODUCTION', envCol))}`,
 		c.dim('─'.repeat(headerWidth)),
-		...formatStatusRows(view, labelCol, envCol),
+		...formatStatusRows(view, labelCol, envCol, options),
 		'',
 		c.dim(
 			'(Schema = migration history. Authorization = owner-apply evidence. Invitations = registry publication. Readiness = migrate authorization.)',
 		),
-		...formatProductionAuthWarning(view.environments.production),
+		...formatProductionAuthWarning(view.environments.production, options),
 		'',
-		...formatDisposableProofSection(view, headerWidth),
-		...formatRecentMigrationsSection(view, headerWidth),
-		...formatManualPatchesSection(view, headerWidth),
+		...formatDisposableProofSection(view, headerWidth, options),
+		...formatRecentMigrationsSection(view, headerWidth, options),
+		...formatManualPatchesSection(view, headerWidth, options),
 	];
 
 	if (verbose) {
-		lines.push(...formatVerboseSchemaDetails(view));
+		lines.push(...formatVerboseSchemaDetails(view, options));
 	}
 
-	lines.push(...formatRegistrySummarySection(view, headerWidth));
+	lines.push(...formatRegistrySummarySection(view, headerWidth, options));
 	lines.push('');
-	lines.push(...formatPublicationOverview(view, headerWidth, verbose));
-	lines.push(...formatInSyncSection(view, options?.includeInSync));
-	lines.push(...formatDiagnosticsSection(view, verbose, options?.diagnostics));
+	lines.push(...formatPublicationOverview(view, headerWidth, verbose, options));
+	lines.push(...formatInSyncSection(view, options?.includeInSync, options));
+	lines.push(...formatDiagnosticsSection(view, verbose, options?.diagnostics, options));
 	lines.push('');
 
 	return lines.join('\n');
@@ -589,7 +633,7 @@ export function formatCanonicalStatusView(
 export function formatSlugStatusView(
 	view: CanonicalStatusView,
 	slug: string,
-	options?: { verbose?: boolean },
+	options?: { verbose?: boolean; env?: NodeJS.ProcessEnv },
 ): string {
 	const row = view.promotions.find((item) => item.slug === slug);
 	const inSync = view.inSyncSlugs.includes(slug);
@@ -611,7 +655,7 @@ export function formatSlugStatusView(
 		lines.push('');
 		return lines.join('\n');
 	}
-	lines.push(formatAttentionCard(row, Boolean(options?.verbose)));
+	lines.push(formatAttentionCard(row, Boolean(options?.verbose), undefined, options));
 	lines.push('');
 	return lines.join('\n');
 }
