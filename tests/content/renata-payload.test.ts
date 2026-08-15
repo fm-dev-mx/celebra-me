@@ -109,6 +109,9 @@ describe('XV Renata provision contract', () => {
 		expect(profile).not.toContain('D·M');
 		expect(profile).not.toContain('OneDrive');
 		expect(profile).not.toContain('Clientes\\');
+		expect(profile).not.toContain('.gallery-grid__item:nth-child(2)');
+		expect(profile).not.toContain('.gallery-grid__item:nth-child(5)');
+		expect(profile).not.toContain(".gallery-grid__item[data-layout-role='feature']");
 
 		const countdownStart = profile.indexOf('.countdown-section {');
 		expect(countdownStart).toBeGreaterThan(-1);
@@ -131,15 +134,23 @@ describe('XV Renata provision contract', () => {
 		}
 	});
 
-	it('keeps distinct photograph roles and does not reuse the hero as the close', () => {
+	it('keeps distinct photograph roles and reuses the former hero only as interlude-03', () => {
 		const byKey = Object.fromEntries(RENATA_ASSET_SPECS.map((spec) => [spec.key, spec]));
+		expect(byKey['hero-desktop'].relativePath).toBe('hero-02-source.jpg');
 		expect(byKey['hero-desktop'].relativePath).toBe(byKey['hero-mobile'].relativePath);
+		expect(byKey['interlude-03'].relativePath).toBe('hero-source.jpg');
+		expect(byKey['interlude-03'].relativePath).not.toBe(byKey['hero-desktop'].relativePath);
 		expect(byKey['thank-you'].relativePath).not.toBe(byKey['hero-desktop'].relativePath);
 		expect(byKey['gallery-feature'].relativePath).not.toBe(byKey['hero-desktop'].relativePath);
 		expect(byKey.interlude.relativePath).not.toBe(byKey['hero-desktop'].relativePath);
 		expect(byKey['interlude-02'].relativePath).not.toBe(byKey.interlude.relativePath);
 		expect(byKey['interlude-02'].relativePath).not.toBe(byKey['hero-desktop'].relativePath);
+		expect(byKey['gallery-02']).toBeUndefined();
+		expect(byKey['gallery-04']).toBeUndefined();
 		expect(RENATA_ASSET_SPECS.some((spec) => spec.relativePath.includes('WA0194'))).toBe(false);
+		expect(RENATA_ASSET_SPECS.some((spec) => spec.relativePath.includes('OneDrive'))).toBe(
+			false,
+		);
 	});
 
 	it('builds schema-valid published content without inventing RSVP operations or a surname', () => {
@@ -171,29 +182,74 @@ describe('XV Renata provision contract', () => {
 			'thankYou',
 		]);
 
-		const family = content.family as { variant?: string; presentation?: string };
+		const family = content.family as {
+			variant?: string;
+			presentation?: string;
+			parents?: { father?: string; mother?: string };
+			godparents?: Array<{ name?: string }>;
+			labels?: {
+				sectionSubtitle?: string;
+				sectionTitle?: string;
+				parentsTitle?: string;
+				godparentsTitle?: string;
+				sectionMessage?: string;
+			};
+		};
 		expect(family.variant).toBe('asymmetric-groups');
 		expect(family.presentation).toBe('text-only');
+		expect(family.parents).toEqual({
+			father: 'Ramón Arturo Sainz Quevedo',
+			mother: 'Dulce Patricia Echevarria Espinoza',
+		});
+		expect(family.godparents?.map((item) => item.name)).toEqual([
+			'Saul Chaidez García',
+			'Yuliana Argelia González Beltrán',
+		]);
+		expect(family.labels).toEqual({
+			sectionSubtitle: 'Familia',
+			sectionTitle: 'Quienes me acompañan en este día',
+			parentsTitle: 'Junto a mis padres',
+			godparentsTitle: 'Con el cariño de mis padrinos',
+			sectionMessage:
+				'Este momento también reúne a quienes han sido parte de mi historia y hoy lo comparten conmigo.',
+		});
 
 		const itinerary = content.itinerary as {
 			variant: string;
 			title?: string;
-			items: unknown[];
+			items: Array<{ time?: string; label?: string }>;
 		};
 		expect(itinerary.variant).toBe('editorial-program');
 		expect(itinerary.title).toBe('Momentos');
 		expect(itinerary.items).toHaveLength(5);
+		expect(itinerary.items.map((item) => [item.label, item.time])).toEqual([
+			['Misa', '5:00 p. m.'],
+			['Recepción', '7:00 p. m.'],
+			['Vals', '7:30 p. m.'],
+			['Cena', '9:00 p. m.'],
+			['Cierre', '12:00 a. m.'],
+		]);
 
 		const interludes = content.interludes as Array<{
 			afterSection?: string;
 			focalPoint?: string;
 			focalPointDesktop?: string;
 		}>;
-		expect(interludes).toHaveLength(2);
+		expect(interludes).toHaveLength(3);
 		expect(interludes[0]?.afterSection).toBe('location');
 		expect(interludes[0]?.focalPoint).toBe('32% 52%');
 		expect(interludes[0]?.focalPointDesktop).toBe('38% 48%');
 		expect(interludes[1]?.afterSection).toBe('gallery');
+		expect(interludes[2]?.afterSection).toBe('gifts');
+		expect(interludes[2]?.focalPoint).toBe('50% 32%');
+		expect(interludes[2]?.focalPointDesktop).toBe('50% 24%');
+
+		const composition = content.composition as {
+			intersections?: Record<string, { source?: string }>;
+		};
+		expect(composition.intersections?.['personalized-access']?.source).toBe(
+			'interlude-after-gifts',
+		);
 
 		const location = content.location as {
 			variant: string;
@@ -244,19 +300,39 @@ describe('XV Renata provision contract', () => {
 			title?: string;
 			items: Array<{ key?: string; layoutRole?: string; aspectRatio?: string }>;
 		};
-		expect(gallery.variant).toBe('paired-feature-band');
+		expect(gallery.variant).toBe('feature-stack');
 		expect(gallery.title).toBe('Renata');
 		expect(gallery.items.map((item) => item.key)).toEqual([
 			'gallery-01',
-			'gallery-02',
 			'gallery-feature',
 			'gallery-03',
-			'gallery-04',
 		]);
-		const feature = gallery.items.find((item) => item.layoutRole === 'feature');
-		expect(feature).toBeDefined();
-		expect(feature?.aspectRatio).toBeUndefined();
-		expect(gallery.items[2]?.layoutRole).toBe('feature');
+		expect(gallery.items.map((item) => item.layoutRole)).toEqual([
+			'feature',
+			'standard',
+			'wide',
+		]);
+		expect(gallery.items.map((item) => item.aspectRatio)).toEqual(['3 / 4', '4 / 5', '5 / 4']);
+		expect(gallery.items.some((item) => item.key === 'gallery-02')).toBe(false);
+		expect(gallery.items.some((item) => item.key === 'gallery-04')).toBe(false);
+
+		const hero = content.hero as {
+			focalPoint?: string;
+			focalPointMobile?: string;
+			focalPointTablet?: string;
+			focalPointDesktop?: string;
+			backgroundImage?: { src?: string };
+		};
+		expect(hero.focalPoint).toBe('50% 32%');
+		expect(hero.focalPointMobile).toBe('50% 34%');
+		expect(hero.focalPointTablet).toBe('48% 30%');
+		expect(hero.focalPointDesktop).toBe('48% 28%');
+		expect(content.sharing).toMatchObject({
+			ogImage: expect.objectContaining({
+				assetId: (content.hero as { backgroundImage?: { assetId?: string } })
+					.backgroundImage?.assetId,
+			}),
+		});
 
 		const rsvp = content.rsvp as {
 			variant?: string;
@@ -305,5 +381,6 @@ describe('XV Renata provision contract', () => {
 		expect(markdown).not.toContain('OneDrive');
 		expect(markdown).not.toContain('C:\\Users\\');
 		expect(markdown).not.toContain('Clientes\\');
+		expect(markdown).not.toContain('WA0194');
 	});
 });

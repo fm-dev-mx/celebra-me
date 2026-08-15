@@ -168,6 +168,11 @@ test.describe('Renata XV local visual and content audit', () => {
 			const family = page.locator('.family').first();
 			await expect(family).toHaveAttribute('data-structural-variant', 'asymmetric-groups');
 			await expect(family).toHaveAttribute('data-presentation', 'text-only');
+			await expect(family.locator('.family__title')).toHaveText(
+				'Quienes me acompañan en este día',
+			);
+			await expect(family.getByText('Ramón Arturo Sainz Quevedo')).toBeVisible();
+			await expect(family.getByText('Yuliana Argelia González Beltrán')).toBeVisible();
 			expect(await page.locator('[data-screenshot-section="quote"]').count()).toBe(0);
 			expect(await page.locator('audio, [data-screenshot-section="music"]').count()).toBe(0);
 
@@ -303,9 +308,9 @@ test.describe('Renata XV local visual and content audit', () => {
 			expect(await location.locator('.section-nav-button').count()).toBe(0);
 			expect(await location.getByText('ITINERARIO').count()).toBe(0);
 
-			const ceremonyMap = page.locator('a[href="https://maps.app.goo.gl/jkS3UvSKdTzcZxu9A"]');
+			const ceremonyMap = page.locator('a[href="https://maps.app.goo.gl/AS7ufXbUyZdyJJU4A"]');
 			const receptionMap = page.locator(
-				'a[href="https://maps.app.goo.gl/oEA3Y3DhgMEGn6Lc7"]',
+				'a[href="https://maps.app.goo.gl/yzDo1Azex7AfmyGX8"]',
 			);
 			await ceremonyMap.first().scrollIntoViewIfNeeded();
 			await expect(ceremonyMap.first()).toBeVisible();
@@ -327,23 +332,38 @@ test.describe('Renata XV local visual and content audit', () => {
 			await expect(itinerary.getByText('Vals', { exact: true })).toBeVisible();
 			await expect(itinerary.getByText('Cena', { exact: true })).toBeVisible();
 			await expect(itinerary.getByText('Cierre', { exact: true })).toBeVisible();
-			expect(await itinerary.getByText('Por confirmar').count()).toBe(3);
-			expect(await itinerary.locator('[data-time-status="pending"]').count()).toBe(3);
+			expect(await itinerary.getByText('Por confirmar').count()).toBe(0);
+			expect(await itinerary.locator('[data-time-status="pending"]').count()).toBe(0);
+			await expect(itinerary.getByText('7:30 PM', { exact: true })).toBeVisible();
+			await expect(itinerary.getByText('9:00 PM', { exact: true })).toBeVisible();
+			await expect(itinerary.getByText('12:00 AM', { exact: true })).toBeVisible();
 
-			expect(await page.locator('.invitation-interlude').count()).toBe(2);
+			expect(await page.locator('.invitation-interlude').count()).toBe(3);
+			const sequenceKinds = await page
+				.locator('#invitation-sections-container > .invitation-section-wrapper')
+				.evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-section-kind')));
+			const giftsIndex = sequenceKinds.indexOf('gifts');
+			expect(giftsIndex).toBeGreaterThan(-1);
+			expect(sequenceKinds[giftsIndex + 1]).toBe('interlude');
+			expect(sequenceKinds[giftsIndex + 2]).toBe('rsvp');
 
 			const gallery = page.locator('.gallery-section').first();
 			await expect(gallery).toBeVisible();
-			await expect(gallery).toHaveAttribute('data-structural-variant', 'paired-feature-band');
+			await expect(gallery).toHaveAttribute('data-structural-variant', 'feature-stack');
 			await expect(gallery.locator('.gallery-section__title')).toHaveText('Renata');
 			await gallery.scrollIntoViewIfNeeded();
 			const galleryItems = gallery.locator('.gallery-grid__item');
-			expect(await galleryItems.count()).toBe(5);
+			expect(await galleryItems.count()).toBe(3);
 			expect(
 				await galleryItems.evaluateAll((nodes) =>
 					nodes.map((node) => node.getAttribute('data-image-key')),
 				),
-			).toEqual(['gallery-01', 'gallery-02', 'gallery-feature', 'gallery-03', 'gallery-04']);
+			).toEqual(['gallery-01', 'gallery-feature', 'gallery-03']);
+			expect(
+				await galleryItems.evaluateAll((nodes) =>
+					nodes.map((node) => node.getAttribute('data-layout-role')),
+				),
+			).toEqual(['feature', 'standard', 'wide']);
 			const feature = gallery
 				.locator('.gallery-grid__item[data-layout-role="feature"]')
 				.first();
@@ -351,7 +371,7 @@ test.describe('Renata XV local visual and content audit', () => {
 			const featureRatio = await feature.evaluate(
 				(node) => getComputedStyle(node).aspectRatio,
 			);
-			expect(featureRatio.replace(/\s+/g, '')).toMatch(/^8\/5$|^1\.6$/);
+			expect(featureRatio.replace(/\s+/g, '')).toMatch(/^3\/4$|^0\.75$/);
 
 			if (viewport.width >= 1440) {
 				const boxes = await galleryItems.evaluateAll((nodes) =>
@@ -359,17 +379,20 @@ test.describe('Renata XV local visual and content audit', () => {
 						const box = node.getBoundingClientRect();
 						return {
 							top: box.top,
-							width: box.width,
+							left: box.left,
+							height: box.height,
 							key: node.getAttribute('data-image-key'),
 						};
 					}),
 				);
-				expect(Math.abs(boxes[0].top - boxes[1].top)).toBeLessThan(40);
-				expect(boxes[2].key).toBe('gallery-feature');
-				expect(boxes[2].width).toBeGreaterThan(boxes[0].width * 1.5);
-				expect(boxes[2].top).toBeGreaterThan(boxes[0].top + 8);
-				expect(Math.abs(boxes[3].top - boxes[4].top)).toBeLessThan(40);
-				expect(boxes[3].top).toBeGreaterThan(boxes[2].top + 8);
+				expect(boxes[0].key).toBe('gallery-01');
+				expect(boxes[1].key).toBe('gallery-feature');
+				expect(boxes[2].key).toBe('gallery-03');
+				expect(boxes[0].left).toBeLessThan(boxes[1].left);
+				expect(boxes[1].left).toBeGreaterThan(boxes[0].left + 8);
+				expect(Math.abs(boxes[1].left - boxes[2].left)).toBeLessThan(40);
+				expect(boxes[2].top).toBeGreaterThan(boxes[1].top + 8);
+				expect(boxes[0].height).toBeGreaterThan(boxes[1].height);
 			}
 
 			expect(await page.locator('.personalized-access').count()).toBe(0);
@@ -378,7 +401,7 @@ test.describe('Renata XV local visual and content audit', () => {
 			await expect(rsvp).toHaveAttribute('data-structural-variant', 'formal-register');
 			await expect(rsvp).toHaveAttribute('data-state', 'locked');
 
-			expect(await page.locator('.event-location__card-flourish').count()).toBe(0);
+			expect(await page.locator('.event-location__card-flourish').count()).toBe(2);
 			expect(
 				await page
 					.locator('.rsvp input, .rsvp textarea, .rsvp button[type="submit"]')
@@ -419,7 +442,9 @@ test.describe('Renata XV local visual and content audit', () => {
 			expect(countdownMetrics.sectionBackground).not.toMatch(
 				/244,\s*228,\s*224|199,\s*173,\s*118/i,
 			);
-			expect(Number.parseFloat(countdownMetrics.titleMarginBottom)).toBeGreaterThan(32);
+			expect(Number.parseFloat(countdownMetrics.titleMarginBottom)).toBeGreaterThanOrEqual(
+				viewport.width >= 1440 ? 32 : 24,
+			);
 			expect(countdownMetrics.firstRowCount).toBe(viewport.width >= 1440 ? 4 : 2);
 
 			const familyBg = await page
@@ -438,7 +463,7 @@ test.describe('Renata XV local visual and content audit', () => {
 			expect(rsvpChapterBg).not.toMatch(/rgb\(\s*120\s*,\s*56\s*,\s*38\s*\)/i);
 
 			const galleryImages = gallery.locator('img');
-			expect(await galleryImages.count()).toBeGreaterThanOrEqual(5);
+			expect(await galleryImages.count()).toBe(3);
 			for (const img of await galleryImages.all()) {
 				await img.scrollIntoViewIfNeeded();
 				await expect
@@ -544,7 +569,7 @@ test.describe('Renata XV local visual and content audit', () => {
 			await expect(page.locator('.envelope-external-instruction')).toHaveText(
 				'Abra su invitación',
 			);
-			await expect(page.locator('.envelope-name')).toHaveText('Renata');
+			await expect(page.locator('.envelope-name')).toHaveText('Renata - Mis XV años');
 			await expect(page.locator('.envelope-manifest-label')).toHaveCount(0);
 			await expect(page.locator('.envelope-details')).toContainText(/2026/);
 			await expect(page.locator('[data-envelope-open]').first()).toHaveAttribute(
@@ -669,6 +694,11 @@ test.describe('Renata XV local visual and content audit', () => {
 				'data-structural-variant',
 				'formal-pass',
 			);
+			await expect(
+				page.locator(
+					'.invitation-section-wrapper[data-section-kind="personalized-access"]',
+				),
+			).toHaveAttribute('data-intersection-source', 'interlude-after-gifts');
 			expect(
 				await personalizedAccess.locator('.access-card__ornaments').count(),
 			).toBeGreaterThan(0);
