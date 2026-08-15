@@ -24,6 +24,7 @@ import {
 import { decidePromotionAction } from '../../src/lib/status/decision.ts';
 import { presentPromotionRow } from '../../src/lib/status/presentation.ts';
 import type { CanonicalPromotionRow, EvidenceState } from '../../src/lib/status/types.ts';
+import { getDefaultPreviewApprovalStore } from './preview-approval-store.ts';
 
 const ENVS: TargetEnv[] = ['local', 'preview', 'production'];
 const PRODUCTION_PREFLIGHT_CONCURRENCY = 2;
@@ -371,6 +372,7 @@ export async function refineManagedPromotionsWithProductionPreflight(input: {
 		if (report.blockCode === 'MISSING_PREVIEW_APPROVAL') {
 			environments.production =
 				environments.production === 'unknown' ? 'behind' : environments.production;
+			const packageHash = report.packageHash;
 			promotions.push(
 				presentPromotionRow({
 					slug: row.slug,
@@ -380,6 +382,8 @@ export async function refineManagedPromotionsWithProductionPreflight(input: {
 					reasonCode: 'PREVIEW_APPROVAL_REQUIRED',
 					environments,
 					envEvidence: input.envEvidence,
+					packageHash,
+					hasPendingPreviewApproval: hasPendingPreviewApproval(packageHash),
 				}),
 			);
 			continue;
@@ -400,6 +404,19 @@ export async function refineManagedPromotionsWithProductionPreflight(input: {
 		promotions: promotions.sort((left, right) => left.slug.localeCompare(right.slug)),
 		inSyncSlugs: [...inSync].sort((left, right) => left.localeCompare(right)),
 	};
+}
+
+function hasPendingPreviewApproval(packageHash: string | undefined): boolean {
+	if (!packageHash) return false;
+	try {
+		const pending = getDefaultPreviewApprovalStore().get(packageHash);
+		return (
+			pending?.approvalState === 'pending_hosted_validation' &&
+			pending.packageHash === packageHash
+		);
+	} catch {
+		return false;
+	}
 }
 
 function presentManagedPromotions(input: {

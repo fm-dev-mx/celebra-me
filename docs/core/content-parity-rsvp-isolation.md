@@ -34,13 +34,13 @@ Content parity is **semantic**, not raw database equality.
 
 ## Flows (terminology)
 
-| Term              | Meaning                                          | Direction                     | Command                                             |
-| ----------------- | ------------------------------------------------ | ----------------------------- | --------------------------------------------------- |
-| **Update**        | Managed invitation apply to Local and/or Preview | Definition → Local / Preview  | `pnpm invitation:release`                            |
-| **Promote**       | Owner-only managed content release to Production | Approved package → Production | `pnpm invitation:release`                           |
-| **Mirror**        | Invitation-facing content regression copy        | Production → Preview only     | `pnpm db:preview:sync-invitations`                  |
-| **Restore**       | Debugging import of a Production dump into Local | Production backup → Local     | `pnpm db:local:restore-from-dump`                   |
-| **RSVP mutation** | Guest/claim/attendance/view/delivery writes      | Within one environment        | Authenticated RSVP/dashboard services               |
+| Term              | Meaning                                          | Direction                     | Command                               |
+| ----------------- | ------------------------------------------------ | ----------------------------- | ------------------------------------- |
+| **Update**        | Managed invitation apply to Local and/or Preview | Definition → Local / Preview  | `pnpm invitation:release`             |
+| **Promote**       | Owner-only managed content release to Production | Approved package → Production | `pnpm invitation:release`             |
+| **Mirror**        | Invitation-facing content regression copy        | Production → Preview only     | `pnpm db:preview:sync-invitations`    |
+| **Restore**       | Debugging import of a Production dump into Local | Production backup → Local     | `pnpm db:local:restore-from-dump`     |
+| **RSVP mutation** | Guest/claim/attendance/view/delivery writes      | Within one environment        | Authenticated RSVP/dashboard services |
 
 Use `pnpm dbs` for read-only managed status, `pnpm invitation:release` for managed content, and
 `pnpm db:migrate` for schema. Demo Content Sync, Git lane sync, Preview mirror, and
@@ -156,10 +156,9 @@ Executable exclusion list for the Preview mirror: `EXCLUDED_TABLES` in
 ## Preview mirror and RSVP reset
 
 `pnpm db:preview:sync-invitations` mirrors invitation-facing tables and Storage, remaps ownership to
-the dedicated Preview admin,
-rewrites Supabase Storage URLs, and does **not** copy Production guests, claims, Auth, intake, or
-commercial data. `--dry-run` performs zero writes (including role/profile and report files).
-`--apply` requires Preview authorization
+the dedicated Preview admin, rewrites Supabase Storage URLs, and does **not** copy Production
+guests, claims, Auth, intake, or commercial data. `--dry-run` performs zero writes (including
+role/profile and report files). `--apply` requires Preview authorization
 (`CELEBRA_TASK_SCOPE=preview:content-mirror:sync-invitations` or interactive confirmation).
 
 It replaces Preview `events` with `TRUNCATE … CASCADE` then reinserts Production event shells. That
@@ -180,10 +179,10 @@ provisioning path (`pnpm test:e2e:preview:provision` and
 
 ## Cloudinary vs Supabase Storage boundary
 
-Invitation images are uploaded to Cloudinary (`provider: cloudinary`, `secure_url`). Legacy
-Supabase Storage rows may remain until a later managed prune. Mirror does **not** copy Cloudinary
-binaries; it preserves `secure_url`. Release uploads or reconciles through the shared Cloudinary
-adapter and fails closed without credentials.
+Invitation images are uploaded to Cloudinary (`provider: cloudinary`, `secure_url`). Legacy Supabase
+Storage rows may remain until a later managed prune. Mirror does **not** copy Cloudinary binaries;
+it preserves `secure_url`. Release uploads or reconciles through the shared Cloudinary adapter and
+fails closed without credentials.
 
 | Flow                               | Supabase Storage                                                                              | Cloudinary                                                                                                                  |
 | ---------------------------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
@@ -242,7 +241,7 @@ the repository’s guarded operation confirmations. See `docs/env-workflow.md` a
 | `pnpm ops optimize-assets`         | **REMOVED** — no longer registered                        |
 | `pnpm ops new-invitation`          | **REMOVED** — no longer registered                        |
 | `pnpm ops dbs`                     | **REMOVED** alias — use canonical `pnpm dbs`              |
-| `--preview-provenance`             | `KEEP_SPECIALIZED` Preview baseline helper                |
+| `--preview-provenance`             | `KEEP_SPECIALIZED` Preview receipt diagnose/recovery only |
 | `pnpm db:local:refresh-from-prod*` | Fail-closed — use backup + restore-from-dump              |
 | Manual production SQL patches      | `RESTRICT_OWNER_ONLY` via `pnpm db:prod:patch`            |
 | `pnpm invitation:release`          | Canonical owner-only Production managed-content promotion |

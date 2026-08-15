@@ -37,6 +37,7 @@ import {
 	buildNormalizedInvitationRelease,
 	canonicalize,
 	materializeAssetReferences,
+	provenanceProjectionHash,
 	type NormalizedInvitationAsset,
 } from './normalized-invitation-release.ts';
 import { serializeInvitationPackage } from './invitation-package.ts';
@@ -1638,7 +1639,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 				metadata_hash: release.metadataHash,
 				// The provenance table requires 64-char SHA-256; release.projectionHash is the
 				// 32-char MD5 projection used by the publish RPC.
-				projection_hash: createHash('sha256').update(release.projectionHash).digest('hex'),
+				projection_hash: provenanceProjectionHash(release.projectionHash),
 				asset_manifest_hash: release.assetManifestHash,
 				managed_projection: proposedContent,
 				applied_draft_updated_at: appliedDraftUpdatedAt,

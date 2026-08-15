@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
-import { createHash } from 'node:crypto';
 import { hashPublicationProjection } from '../../src/lib/intake/services/publication-diff.service.ts';
+import { provenanceProjectionHash } from '../../scripts/provision/normalized-invitation-release.ts';
 import {
 	evaluatePreviewReceiptState,
 	type PreviewReceiptState,
@@ -80,9 +80,7 @@ function state(
 			source_hash: pkg.sourceHash,
 			package_hash: pkg.packageHash,
 			metadata_hash: pkg.metadataHash,
-			projection_hash: createHash('sha256')
-				.update(JSON.stringify(pkg.projectionHash))
-				.digest('hex'),
+			projection_hash: provenanceProjectionHash(pkg.projectionHash),
 			asset_manifest_hash: pkg.assetManifestHash,
 			managed_projection: content,
 			applied_draft_updated_at: '2026-08-13T00:00:00.000Z',
@@ -121,7 +119,7 @@ describe('Preview receipt stale provenance evaluator', () => {
 			...staleState.provenance!,
 			source_hash: 'e'.repeat(64),
 			package_hash: 'f'.repeat(64),
-			projection_hash: createHash('sha256').update(JSON.stringify('old')).digest('hex'),
+			projection_hash: provenanceProjectionHash('old'),
 			asset_manifest_hash: '1'.repeat(64),
 		};
 
@@ -149,7 +147,7 @@ describe('Preview receipt stale provenance evaluator', () => {
 			...staleState.provenance!,
 			source_hash: 'e'.repeat(64),
 			package_hash: 'f'.repeat(64),
-			projection_hash: createHash('sha256').update(JSON.stringify('old')).digest('hex'),
+			projection_hash: provenanceProjectionHash('old'),
 			asset_manifest_hash: '1'.repeat(64),
 		};
 

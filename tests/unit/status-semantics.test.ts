@@ -191,11 +191,33 @@ describe('status semantics', () => {
 		});
 		const approvalRemediation = publicationRemediation(approvalRequired);
 		expect(commandOf(approvalRemediation)).toBe(
-			'pnpm invitation:release -- --preview-provenance --slug abril-michelle-becerra-rea --targets preview --dry-run',
+			'pnpm invitation:release -- --slug abril-michelle-becerra-rea --targets preview --dry-run',
 		);
-		expect(approvalRequired.handoff.applyCommand).toBeNull();
+		expect(approvalRequired.handoff.applyCommand).toBe(
+			'pnpm invitation:release -- --slug abril-michelle-becerra-rea --targets preview --apply',
+		);
 		expect(approvalRemediation.steps[0]?.type).toBe('Verify');
-		expect(JSON.stringify(approvalRemediation)).not.toContain('--targets preview --apply');
+		expect(JSON.stringify(approvalRemediation)).toContain('--targets preview --apply');
+		expect(JSON.stringify(approvalRemediation)).not.toContain('--preview-provenance');
+
+		const pendingApproval = presentPromotionRow({
+			slug: 'victoria-y-roberto',
+			title: 'Victoria',
+			eventType: 'boda',
+			action: 'BLOCKED',
+			reasonCode: 'PREVIEW_APPROVAL_REQUIRED',
+			environments: { local: 'match', preview: 'match', production: 'behind' },
+			envEvidence: { local: 'LIVE', preview: 'LIVE', production: 'LIVE' },
+			packageHash: '3c0a950f373076b76ff40336b7d65f508f9d65c380508fcab92e763586390a1b',
+			hasPendingPreviewApproval: true,
+		});
+		const pendingRemediation = publicationRemediation(pendingApproval);
+		expect(pendingApproval.handoff.applyCommand).toBe(
+			'pnpm invitation:release -- --package-hash 3c0a950f373076b76ff40336b7d65f508f9d65c380508fcab92e763586390a1b --approve',
+		);
+		expect(pendingRemediation.steps.some((step) => step.command?.includes('--approve'))).toBe(
+			true,
+		);
 
 		const promote = publicationRemediation(buildCanonicalStatusViewFixture().promotions[0]!);
 		expect(promote.semantic).toBe('unverified');

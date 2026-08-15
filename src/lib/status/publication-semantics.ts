@@ -196,40 +196,46 @@ function blockedPublicationRemediation(row: CanonicalPromotionRow): OperatorReme
 		};
 	}
 	if (row.reasonCode === 'PREVIEW_APPROVAL_REQUIRED') {
-		const command = row.handoff.dryRunCommand;
+		const dryRun = row.handoff.dryRunCommand;
+		const apply = row.handoff.applyCommand;
+		const approve = apply?.includes('--approve') === true;
 		return {
 			semantic: 'blocked',
 			meaning: PUBLICATION_REASON_LABELS.PREVIEW_APPROVAL_REQUIRED,
 			why: null,
 			environmentLabel,
 			nextAction:
-				'Verifique primero la provenance de Preview; no aplique Production mientras falte evidencia aprobada.',
-			steps: command
-				? [
-						step(
-							'Verify',
-							command,
-							'La lectura clasifica la provenance sin escribir contenido, metadata ni Storage.',
-							false,
-							false,
-							'Verificar provenance Preview',
-						),
-						...(row.handoff.optionalDiagnosticCommand
-							? [
-									step(
-										'Diagnose',
-										row.handoff.optionalDiagnosticCommand,
-										'Inspección read-only de receipts; no ejecuta recovery ni Apply.',
-										false,
-										true,
-										'Diagnosticar stale provenance',
-									),
-								]
-							: []),
-					]
-				: [],
+				'Apruebe el paquete Preview exacto; no aplique Production mientras falte evidencia aprobada.',
+			steps: [
+				...(dryRun
+					? [
+							step(
+								row.handoff.dryRunStepType,
+								dryRun,
+								'Confirme paridad Preview sin escribir contenido, metadata ni Storage.',
+								false,
+								false,
+								'Verificar Preview',
+							),
+						]
+					: []),
+				...(apply
+					? [
+							step(
+								row.handoff.applyStepType,
+								apply,
+								approve
+									? 'TTY; Cancelar es el valor seguro. No escribe contenido ni Storage.'
+									: 'Crea o refresca el artefacto pending. Cero escrituras de contenido si ya está IN_SYNC.',
+								false,
+								false,
+								approve ? 'Aprobar Preview' : 'Aplicar en Preview',
+							),
+						]
+					: []),
+			],
 			verifyWhen: 'El preflight de Production deja de exigir PREVIEW_APPROVAL_REQUIRED.',
-			noCanonicalRemediation: command == null,
+			noCanonicalRemediation: dryRun == null && apply == null,
 		};
 	}
 	if (row.reasonCode === 'LOCAL_BEHIND_PREVIEW_ALIGNED' && row.handoff.applyCommand) {

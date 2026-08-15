@@ -58,7 +58,6 @@ import {
 	type TargetPlanData,
 	type TargetApplyResultData,
 } from './invitation-update-presenter.ts';
-import { establishPreviewProvenanceBaseline } from './preview-provenance-baseline-service.ts';
 import {
 	inspectPreviewProvenanceReceipt,
 	reconcileStalePreviewProvenance,
@@ -332,8 +331,6 @@ Usage:
   pnpm invitation:release --slug <slug> --targets production --dry-run
   pnpm prod:apply -- --slug <slug> --apply
   pnpm invitation:release --package-hash <hash> --approve
-  pnpm invitation:release --preview-provenance --slug <slug> --targets preview [--package <path>] --dry-run [--json]
-  pnpm invitation:release --preview-provenance --slug <slug> --targets preview [--package <path>] --apply [--json]
   pnpm invitation:release --preview-provenance --diagnose-receipt --slug <slug> --targets preview [--package <path>] --dry-run [--json]
   pnpm invitation:release --preview-provenance --reconcile-stale --slug <slug> --targets preview [--package <path>] --dry-run [--json]
   pnpm invitation:release --preview-provenance --reconcile-stale --slug <slug> --targets preview [--package <path>] --apply [--json]
@@ -363,7 +360,7 @@ Options:
   --owner-user-id <uuid>       Optional override/assertion; new invites default to a dedicated host ({hostLoginAlias}@clientes.celebra.invalid)
   --package-hash <hash>        Shared-store package hash for direct live Preview approval
   --approve                    Run live Preview checks, then request one Cancel-default owner approval
-  --preview-provenance         Establish the Preview provenance baseline without changing content (specialized)
+  --preview-provenance         Receipt diagnose/recovery namespace (requires --diagnose-receipt or --reconcile-stale)
   --diagnose-receipt            Inspect the linked/latest Preview receipts without writes (package local opcional)
   --reconcile-stale             Plan or apply strict metadata-only stale provenance recovery (package local opcional)
   --help, -h                   Show this help message
@@ -598,28 +595,6 @@ async function executePreviewTargetPlan(input: {
 	};
 }
 
-type PreviewProvenanceResult = Awaited<ReturnType<typeof establishPreviewProvenanceBaseline>>;
-
-function formatPreviewProvenanceResult(result: PreviewProvenanceResult): string {
-	const statusLabel =
-		result.status === 'BASELINED'
-			? 'registrada'
-			: result.status === 'IN_SYNC'
-				? 'ya verificada'
-				: result.status === 'EVIDENCE_UNAVAILABLE'
-					? 'sin evidencia suficiente'
-					: 'planificada';
-	const lines = [
-		`Provenance de Preview: ${statusLabel}.`,
-		`· Clasificación: ${result.diagnostic.classification} (${result.diagnostic.disposition}).`,
-		`· ${result.diagnostic.message}`,
-		`· Siguiente paso: ${result.diagnostic.nextAction}`,
-		`· Escrituras previstas/realizadas: ${result.writes} metadata; contenido y Storage: 0.`,
-	];
-	if (result.uncertainty) lines.push(`· Incertidumbre: ${result.uncertainty}`);
-	return lines.join('\n');
-}
-
 function formatPreviewReceiptDiagnosis(
 	result: Awaited<ReturnType<typeof inspectPreviewProvenanceReceipt>>,
 ): string {
@@ -640,12 +615,6 @@ function formatPreviewReceiptDiagnosis(
 	];
 	if (result.blockers.length > 0) lines.push(`· Bloqueos: ${result.blockers.join(', ')}.`);
 	return lines.join('\n');
-}
-
-function previewProvenanceApplyError(result: PreviewProvenanceResult): Error {
-	return new Error(
-		`PREVIEW_PROVENANCE_NOT_APPLICABLE: ${result.diagnostic.classification}. ${result.diagnostic.message} ${result.diagnostic.nextAction}`,
-	);
 }
 
 // eslint-disable-next-line complexity -- CLI handles mode dispatch, interactive prompts, and hosted environment flow gates.
@@ -729,58 +698,9 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 			if (result.status === 'BLOCKED') process.exitCode = 1;
 			return;
 		}
-		if (
-			args.includes('--status') ||
-			(!apply && !args.includes('--dry-run')) ||
-			!slug ||
-			targets.length !== 1 ||
-			targets[0] !== 'preview'
-		) {
-			throw new Error(
-				'La reconstrucción de baseline requiere Preview, slug y --dry-run o --apply. El paquete puede generarse automáticamente.',
-			);
-		}
-		if (!packagePath) {
-			const generated = await exportInvitationPackage({
-				slug,
-				sourceDir: '',
-				dryRun: false,
-			});
-			packagePath = generated.packagePath ?? undefined;
-			if (!packagePath) throw new Error('No fue posible generar el paquete administrado.');
-		}
-		let result: PreviewProvenanceResult;
-		if (apply) {
-			// Diagnose first. The Owner gate must never appear for blocked evidence,
-			// and the apply path revalidates the target immediately before writing.
-			const preflight = await establishPreviewProvenanceBaseline({
-				packagePath,
-				apply: false,
-			});
-			if (preflight.status === 'IN_SYNC') {
-				result = preflight;
-			} else {
-				if (preflight.status !== 'PLANNED') throw previewProvenanceApplyError(preflight);
-				await authorizePreviewWriteApply({
-					slug,
-					operation: 'provenance-baseline',
-					confirmPrompt: `Confirm Preview provenance baseline for "${slug}"? Type YES to proceed: `,
-					isInteractive: !nonInteractive && isTTY,
-				});
-				result = await establishPreviewProvenanceBaseline({
-					packagePath,
-					apply: true,
-				});
-			}
-		} else {
-			result = await establishPreviewProvenanceBaseline({
-				packagePath,
-				apply: false,
-			});
-		}
-		if (json) console.log(JSON.stringify(result, null, 2));
-		else console.log(formatPreviewProvenanceResult(result));
-		return;
+		throw new Error(
+			'--preview-provenance requiere --diagnose-receipt o --reconcile-stale. El baseline se registra con el apply canónico de Preview; para Production use --package-hash <hash> --approve.',
+		);
 	}
 
 	const packageHash = value(args, '--package-hash');
