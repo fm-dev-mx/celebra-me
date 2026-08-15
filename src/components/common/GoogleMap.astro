@@ -1,5 +1,7 @@
 ---
-// Custom Google Map component with CSS filter styling & clean static tile option.
+// Static venue-map preview. Never embed maps.google.com: iOS/WebKit injects
+// an "Open in Maps" / "Abrir en Maps" control over that iframe and opens the
+// coordinate query, not the invitation's approved googleMapsUrl.
 /* eslint-disable no-restricted-syntax -- dynamic transforms require inline style */
 interface Props {
 	lat: number;
@@ -25,78 +27,64 @@ const isRustic =
 	variant === 'premiere-floral' ||
 	variant === 'luxury-hacienda';
 
-let tileGrid: Array<{ x: number; y: number; url: string }> = [];
-let shiftX = 0;
-let shiftY = 0;
+const { x, y } = latLngToPixel(lat, lng, zoom);
+const centerTileX = Math.floor(x / 256);
+const centerTileY = Math.floor(y / 256);
+const offsetX = x % 256;
+const offsetY = y % 256;
+const shiftX = Math.round(128 - offsetX);
+const shiftY = Math.round(128 - offsetY);
 
-if (isRustic) {
-	const { x, y } = latLngToPixel(lat, lng, zoom);
-	const centerTileX = Math.floor(x / 256);
-	const centerTileY = Math.floor(y / 256);
-	const offsetX = x % 256;
-	const offsetY = y % 256;
-
-	shiftX = Math.round(128 - offsetX);
-	shiftY = Math.round(128 - offsetY);
-
-	const subdomains = ['a', 'b', 'c'];
-	let subIdx = 0;
-	for (let dy = -1; dy <= 1; dy++) {
-		for (let dx = -1; dx <= 1; dx++) {
-			const tx = centerTileX + dx;
-			const ty = centerTileY + dy;
-			const sub = subdomains[subIdx % subdomains.length];
-			subIdx++;
-			tileGrid.push({
-				x: dx + 2,
-				y: dy + 2,
-				url: `https://${sub}.basemaps.cartocdn.com/rastertiles/voyager/${zoom}/${tx}/${ty}.png`,
-			});
-		}
+const subdomains = ['a', 'b', 'c'];
+const tileGrid: Array<{ x: number; y: number; url: string }> = [];
+let subIdx = 0;
+for (let dy = -1; dy <= 1; dy++) {
+	for (let dx = -1; dx <= 1; dx++) {
+		const tx = centerTileX + dx;
+		const ty = centerTileY + dy;
+		const sub = subdomains[subIdx % subdomains.length];
+		subIdx++;
+		tileGrid.push({
+			x: dx + 2,
+			y: dy + 2,
+			url: `https://${sub}.basemaps.cartocdn.com/rastertiles/voyager/${zoom}/${tx}/${ty}.png`,
+		});
 	}
 }
 ---
 
-<div class="google-map-container" data-map-style={isRustic ? 'rustic' : mapStyle} data-variant={variant}>
-	{
-		isRustic ? (
-			<div class="rustic-map-wrapper">
-				<div
-					class="rustic-map-tiles"
-					style={`transform: translate(-50%, -50%) translate(${shiftX}px, ${shiftY}px);`}
-				>
-					{tileGrid.map((tile) => (
-						<img
-							src={tile.url}
-							alt=""
-							loading="lazy"
-							decoding="async"
-							class="rustic-map-tile"
-							data-col={tile.x}
-							data-row={tile.y}
-						/>
-					))}
-				</div>
-				<div class="rustic-map-marker" title={title} aria-label={title}>
-					<div class="rustic-map-pin">
-						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 32" fill="currentColor">
-							<path d="M12 0C5.37 0 0 5.37 0 12c0 9 12 20 12 20s12-11 12-20c0-6.63-5.37-12-12-12zm0 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" />
-						</svg>
-					</div>
-					<div class="rustic-map-pulse" />
-				</div>
+<div
+	class="google-map-container"
+	data-map-style={isRustic ? 'rustic' : mapStyle}
+	data-map-preview="static"
+	data-variant={variant}
+>
+	<div class="rustic-map-wrapper">
+		<div
+			class="rustic-map-tiles"
+			style={`transform: translate(-50%, -50%) translate(${shiftX}px, ${shiftY}px);`}
+		>
+			{tileGrid.map((tile) => (
+				<img
+					src={tile.url}
+					alt=""
+					loading="lazy"
+					decoding="async"
+					class="rustic-map-tile"
+					data-col={tile.x}
+					data-row={tile.y}
+				/>
+			))}
+		</div>
+		<div class="rustic-map-marker" title={title} aria-label={title}>
+			<div class="rustic-map-pin">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 32" fill="currentColor">
+					<path d="M12 0C5.37 0 0 5.37 0 12c0 9 12 20 12 20s12-11 12-20c0-6.63-5.37-12-12-12zm0 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" />
+				</svg>
 			</div>
-		) : (
-			<iframe
-				width="100%"
-				height="100%"
-				src={`https://maps.google.com/maps?q=${lat},${lng}&z=${zoom}&output=embed`}
-				title={title}
-				aria-label={title}
-				loading="lazy"
-			/>
-		)
-	}
+			<div class="rustic-map-pulse" />
+		</div>
+	</div>
 	<div class="map-overlay" aria-hidden="true"></div>
 </div>
 
@@ -115,14 +103,6 @@ if (isRustic) {
 		border-radius: var(--radius-md, 8px);
 		background-color: var(--map-surface);
 		isolation: isolate;
-
-		iframe {
-			width: 100%;
-			height: 100%;
-			border: 0;
-			filter: var(--map-frame-filter);
-			transition: filter var(--duration-standard, 400ms) var(--ease-standard, ease);
-		}
 
 		.rustic-map-wrapper {
 			position: absolute;
@@ -291,7 +271,6 @@ if (isRustic) {
 			);
 		}
 
-		&:hover iframe,
 		&:hover .rustic-map-tiles {
 			filter: saturate(1.02) contrast(1.01) brightness(0.98);
 		}
@@ -300,7 +279,7 @@ if (isRustic) {
 			filter: sepia(0.28) saturate(0.8) contrast(0.98) brightness(0.98);
 		}
 
-		&[data-variant='celestial-blue']:hover iframe {
+		&[data-variant='celestial-blue']:hover .rustic-map-tiles {
 			filter: sepia(0.08) saturate(0.86) contrast(0.96) brightness(0.92);
 		}
 	}
