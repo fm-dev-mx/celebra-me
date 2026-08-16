@@ -7,7 +7,10 @@ import Analytics from '@vercel/analytics/astro';
 import SpeedInsights from '@vercel/speed-insights/astro';
 import ConsentBanner from '@/components/common/ConsentBanner.astro';
 import SvgFilters from '@/components/common/SvgFilters.astro';
-import { resolvePublicSiteOrigin } from '@/lib/invitation/social-metadata';
+import {
+	buildSocialImageMetadata,
+	resolvePublicSiteOrigin,
+} from '@/lib/invitation/social-metadata';
 import { classifyTrackingRoute } from '@/lib/tracking/route-policy';
 
 // Typography: Montserrat UI font is loaded globally. Preset-specific fonts are loaded dynamically.
@@ -59,7 +62,8 @@ if (canonicalUrl.pathname !== '/' && canonicalUrl.pathname.endsWith('/')) {
 	canonicalUrl.pathname = canonicalUrl.pathname.replace(/\/+$/, '');
 }
 
-const ogImage = new URL(resolvedImageSrc, canonicalOrigin);
+const socialImage = buildSocialImageMetadata(resolvedImageSrc, { origin: canonicalOrigin });
+const ogImage = socialImage.url;
 
 const routePolicy = classifyTrackingRoute(Astro.url);
 const loadCommercialTracking = isVercelProduction && routePolicy.internalAllowed;
@@ -81,10 +85,12 @@ const loadCommercialTracking = isVercelProduction && routePolicy.internalAllowed
 		<meta property="og:title" content={title} />
 		<meta property="og:description" content={description} />
 		<meta property="og:image" content={ogImage} />
+		<meta property="og:image:secure_url" content={ogImage} />
+		<meta property="og:image:width" content={String(socialImage.width)} />
+		<meta property="og:image:height" content={String(socialImage.height)} />
+		<meta property="og:image:type" content={socialImage.type} />
 		<meta property="og:image:alt" content={title} />
 		<link rel="canonical" href={canonicalUrl} />
-		<meta property="og:image:width" content="1200" />
-		<meta property="og:image:height" content="630" />
 		<meta property="og:locale" content="es_MX" />
 		<meta property="og:site_name" content="Celebra.me" />
 
