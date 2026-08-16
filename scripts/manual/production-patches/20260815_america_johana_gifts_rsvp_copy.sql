@@ -18,8 +18,8 @@ update public.published_invitation_content
 set content = jsonb_set(
   jsonb_set(
     content,
-    '{gifts,items,0,tableNumber}',
-    '"Sears 237993 · Liverpool 52006296"'::jsonb
+    '{gifts,items}',
+    '[{"type": "store", "title": "Liverpool", "description": "Mesa de regalos digital Liverpool", "tableNumber": "52006296", "url": "https://mesaderegalos.liverpool.com.mx/milistaderegalos/52006296"}, {"type": "store", "title": "Sears", "description": "Mesa de regalos digital Sears", "tableNumber": "237993", "url": "https://www.sears.com.mx/Mesa-de-Regalos/237993/te-invito-a-mi-xv-anos-america"}, {"type": "cash", "title": "Lluvia de sobres", "text": "También contaremos con un espacio especial durante la recepción."}]'::jsonb
   ),
   '{location,indications}',
   coalesce(
@@ -35,22 +35,14 @@ set content = jsonb_set(
     published_at = now()
 where slug = 'america-johana'
   and event_type = 'xv'
-  and deleted_at is null
-  and (
-    content#>>'{gifts,items,0,tableNumber}' is distinct from 'Sears 237993 · Liverpool 52006296'
-    or exists (
-      select 1
-      from jsonb_array_elements(coalesce(content->'location'->'indications', '[]'::jsonb)) as elem
-      where elem->>'text' like '%1 de agosto de 2026%'
-    )
-  );
+  and deleted_at is null;
 
 update public.invitation_content_drafts d
 set content = jsonb_set(
   jsonb_set(
     d.content,
-    '{gifts,items,0,tableNumber}',
-    '"Sears 237993 · Liverpool 52006296"'::jsonb
+    '{gifts,items}',
+    '[{"type": "store", "title": "Liverpool", "description": "Mesa de regalos digital Liverpool", "tableNumber": "52006296", "url": "https://mesaderegalos.liverpool.com.mx/milistaderegalos/52006296"}, {"type": "store", "title": "Sears", "description": "Mesa de regalos digital Sears", "tableNumber": "237993", "url": "https://www.sears.com.mx/Mesa-de-Regalos/237993/te-invito-a-mi-xv-anos-america"}, {"type": "cash", "title": "Lluvia de sobres", "text": "También contaremos con un espacio especial durante la recepción."}]'::jsonb
   ),
   '{location,indications}',
   coalesce(
@@ -66,14 +58,6 @@ from public.invitations i
 where d.invitation_project_id = i.id
   and i.slug = 'america-johana'
   and i.event_type = 'xv'
-  and d.deleted_at is null
-  and (
-    d.content#>>'{gifts,items,0,tableNumber}' is distinct from 'Sears 237993 · Liverpool 52006296'
-    or exists (
-      select 1
-      from jsonb_array_elements(coalesce(d.content->'location'->'indications', '[]'::jsonb)) as elem
-      where elem->>'text' like '%1 de agosto de 2026%'
-    )
-  );
+  and d.deleted_at is null;
 
 commit;

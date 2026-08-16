@@ -494,19 +494,17 @@ BEGIN
       "items": [
         {
           "type": "store",
-          "title": "Mesa de regalos",
-          "description": "Puedes consultar mis listas en Sears y Liverpool.",
-          "tableNumber": "Sears 237993 · Liverpool 52006296",
-          "links": [
-            {
-              "label": "Sears",
-              "url": "https://www.sears.com.mx/Mesa-de-Regalos/237993/te-invito-a-mi-xv-anos-america"
-            },
-            {
-              "label": "Liverpool",
-              "url": "https://mesaderegalos.liverpool.com.mx/milistaderegalos/52006296"
-            }
-          ]
+          "title": "Liverpool",
+          "description": "Mesa de regalos digital Liverpool",
+          "tableNumber": "52006296",
+          "url": "https://mesaderegalos.liverpool.com.mx/milistaderegalos/52006296"
+        },
+        {
+          "type": "store",
+          "title": "Sears",
+          "description": "Mesa de regalos digital Sears",
+          "tableNumber": "237993",
+          "url": "https://www.sears.com.mx/Mesa-de-Regalos/237993/te-invito-a-mi-xv-anos-america"
         },
         {
           "type": "cash",
