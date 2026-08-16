@@ -9,7 +9,7 @@
 -- @requires-backup: true
 -- @paired-stores: published,draft
 -- @pair-key: slug
--- @dry-run-query: select 'published' as store, slug from public.published_invitation_content where slug = 'america-johana' and event_type = 'xv' and deleted_at is null and (content#>>'{gifts,items,0,tableNumber}' is distinct from 'Sears 237993 · Liverpool 52006296' or exists (select 1 from jsonb_array_elements(coalesce(content->'location'->'indications', '[]'::jsonb)) elem where elem->>'text' like '%1 de agosto de 2026%')) union all select 'draft' as store, i.slug from public.invitation_content_drafts d join public.invitations i on i.id = d.invitation_project_id where i.slug = 'america-johana' and i.event_type = 'xv' and d.deleted_at is null and (d.content#>>'{gifts,items,0,tableNumber}' is distinct from 'Sears 237993 · Liverpool 52006296' or exists (select 1 from jsonb_array_elements(coalesce(d.content->'location'->'indications', '[]'::jsonb)) elem where elem->>'text' like '%1 de agosto de 2026%'))
+-- @dry-run-query: select 'published' as store, slug from public.published_invitation_content where slug = 'america-johana' and event_type = 'xv' and deleted_at is null and (jsonb_array_length(coalesce(content->'gifts'->'items', '[]'::jsonb)) is distinct from 3 or content#>>'{gifts,items,0,tableNumber}' is distinct from '52006296' or exists (select 1 from jsonb_array_elements(coalesce(content->'location'->'indications', '[]'::jsonb)) elem where elem->>'text' like '%1 de agosto de 2026%')) union all select 'draft' as store, i.slug from public.invitation_content_drafts d join public.invitations i on i.id = d.invitation_project_id where i.slug = 'america-johana' and i.event_type = 'xv' and d.deleted_at is null and (jsonb_array_length(coalesce(d.content->'gifts'->'items', '[]'::jsonb)) is distinct from 3 or d.content#>>'{gifts,items,0,tableNumber}' is distinct from '52006296' or exists (select 1 from jsonb_array_elements(coalesce(d.content->'location'->'indications', '[]'::jsonb)) elem where elem->>'text' like '%1 de agosto de 2026%'))
 -- @rollback: restore public.published_invitation_content and matching invitation_content_drafts for america-johana from the pre-apply Production backup
 
 begin;
@@ -35,7 +35,16 @@ set content = jsonb_set(
     published_at = now()
 where slug = 'america-johana'
   and event_type = 'xv'
-  and deleted_at is null;
+  and deleted_at is null
+  and (
+    jsonb_array_length(coalesce(content->'gifts'->'items', '[]'::jsonb)) is distinct from 3
+    or content#>>'{gifts,items,0,tableNumber}' is distinct from '52006296'
+    or exists (
+      select 1
+      from jsonb_array_elements(coalesce(content->'location'->'indications', '[]'::jsonb)) elem
+      where elem->>'text' like '%1 de agosto de 2026%'
+    )
+  );
 
 update public.invitation_content_drafts d
 set content = jsonb_set(
@@ -58,6 +67,15 @@ from public.invitations i
 where d.invitation_project_id = i.id
   and i.slug = 'america-johana'
   and i.event_type = 'xv'
-  and d.deleted_at is null;
+  and d.deleted_at is null
+  and (
+    jsonb_array_length(coalesce(d.content->'gifts'->'items', '[]'::jsonb)) is distinct from 3
+    or d.content#>>'{gifts,items,0,tableNumber}' is distinct from '52006296'
+    or exists (
+      select 1
+      from jsonb_array_elements(coalesce(d.content->'location'->'indications', '[]'::jsonb)) elem
+      where elem->>'text' like '%1 de agosto de 2026%'
+    )
+  );
 
 commit;
