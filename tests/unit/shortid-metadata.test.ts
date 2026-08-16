@@ -205,4 +205,77 @@ describe('shortId route metadata (social crawler path)', () => {
 
 		expect(metadata.ogTitle).toBe('Invitación para Francisco Prueba');
 	});
+
+	describe('social image optimization and Cloudinary transformations', () => {
+		it('transforms raw Cloudinary image URLs into lightweight 1200x630 JPGs', () => {
+			const cloudinaryViewModel: InvitationViewModel = {
+				...baseViewModel,
+				hero: {
+					...baseViewModel.hero,
+					backgroundImage: {
+						src: 'https://res.cloudinary.com/celebra-me/image/upload/v1/events/xv-renata/hero.webp',
+						alt: 'Hero Renata',
+					},
+				},
+			};
+
+			const metadata = simulateShortIdMetadata({
+				viewModel: cloudinaryViewModel,
+				shortId: 'JBZT9UE9',
+				eventType: 'xv',
+				eventSlug: 'xv-renata',
+			});
+
+			expect(metadata.ogImage).toBe(
+				'https://res.cloudinary.com/celebra-me/image/upload/c_fill,w_1200,h_630,g_auto,q_auto:good,f_jpg/v1/events/xv-renata/hero.jpg',
+			);
+			expect(metadata.twitterImage).toBe(
+				'https://res.cloudinary.com/celebra-me/image/upload/c_fill,w_1200,h_630,g_auto,q_auto:good,f_jpg/v1/events/xv-renata/hero.jpg',
+			);
+		});
+
+		it('does not duplicate transformation if Cloudinary URL is already transformed', () => {
+			const alreadyTransformedUrl =
+				'https://res.cloudinary.com/celebra-me/image/upload/c_fill,w_1200,h_630,g_auto,q_auto:good,f_jpg/v1/events/xv-renata/hero.jpg';
+
+			const imageMeta = buildSocialImageMetadata(alreadyTransformedUrl, {
+				origin: PRODUCTION_ORIGIN,
+			});
+
+			expect(imageMeta.url).toBe(alreadyTransformedUrl);
+			expect(imageMeta.width).toBe(1200);
+			expect(imageMeta.height).toBe(630);
+			expect(imageMeta.type).toBe('image/jpeg');
+		});
+
+		it('rewrites provisioned f_auto OG URLs to the social JPEG transform', () => {
+			const provisionedUrl =
+				'https://res.cloudinary.com/celebra-me/image/upload/c_fill,g_auto,w_1200,h_630,q_auto,f_auto/v1/events/xv-renata/hero.webp';
+
+			const imageMeta = buildSocialImageMetadata(provisionedUrl, {
+				origin: PRODUCTION_ORIGIN,
+			});
+
+			expect(imageMeta.url).toBe(
+				'https://res.cloudinary.com/celebra-me/image/upload/c_fill,w_1200,h_630,g_auto,q_auto:good,f_jpg/v1/events/xv-renata/hero.jpg',
+			);
+			expect(imageMeta.type).toBe('image/jpeg');
+		});
+
+		it('preserves non-Cloudinary images without injecting Cloudinary parameters', () => {
+			const localImageMeta = buildSocialImageMetadata('/images/og-image.webp', {
+				origin: PRODUCTION_ORIGIN,
+			});
+			expect(localImageMeta.url).toBe(`${PRODUCTION_ORIGIN}/images/og-image.webp`);
+			expect(localImageMeta.type).toBe('image/webp');
+
+			const supabaseUrl =
+				'https://proj.supabase.co/storage/v1/object/public/invitations/hero.png';
+			const supabaseMeta = buildSocialImageMetadata(supabaseUrl, {
+				origin: PRODUCTION_ORIGIN,
+			});
+			expect(supabaseMeta.url).toBe(supabaseUrl);
+			expect(supabaseMeta.type).toBe('image/png');
+		});
+	});
 });
