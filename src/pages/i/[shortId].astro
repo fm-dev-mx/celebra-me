@@ -8,10 +8,6 @@ import InvitationOGShell from '@/lib/invitation/InvitationOGShell.astro';
 const SITE_ORIGIN = resolvePublicSiteOrigin();
 const { shortId } = Astro.params;
 
-// Personalized metadata and its redirects must never enter a shared cache.
-Astro.response.headers.set('Cache-Control', 'no-store, private');
-Astro.response.headers.set('Vary', 'User-Agent');
-
 const result = await resolveShortIdPage(shortId, Astro.request, SITE_ORIGIN);
 
 if (result.kind === 'error') {
@@ -19,8 +15,14 @@ if (result.kind === 'error') {
 }
 
 if (result.kind === 'redirect') {
+  Astro.response.headers.set('Cache-Control', 'no-store, private');
+  Astro.response.headers.set('Vary', 'User-Agent');
   return Astro.redirect(result.target);
 }
+
+// Personalized metadata must never enter a shared cache.
+Astro.response.headers.set('Cache-Control', 'no-store, private');
+Astro.response.headers.set('Vary', 'User-Agent');
 ---
 
 <InvitationOGShell
