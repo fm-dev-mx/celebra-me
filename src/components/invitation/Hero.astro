@@ -1,7 +1,12 @@
 ---
 // src/components/invitation/Hero.astro
-import { Image, getImage } from 'astro:assets';
+import { getImage } from 'astro:assets';
+import CacheSafeImage from '@/components/common/CacheSafeImage.astro';
 import type { ImageMetadata } from 'astro';
+import {
+	plainImgSrc,
+	shouldOptimizeThroughVercelImage,
+} from '@/lib/assets/vercel-image-policy';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { ThemePreset } from '@/lib/theme/theme-contract';
 import type { HeroStructuralVariant } from '@/lib/invitation/structural-variants';
@@ -56,10 +61,10 @@ const isEditorialCover = structuralVariant === 'editorial-cover';
 
 let displayLabel: string | undefined;
 let ageLockupMatch: RegExpMatchArray | null = null;
-let bgSrc: ImageMetadata | undefined;
+let bgSrc: ImageMetadata | string | undefined;
 let mobileBgSrc: string | null = null;
 let desktopBgSrc: string | null = null;
-let portraitSrc: ImageMetadata | null = null;
+let portraitSrc: ImageMetadata | string | null = null;
 let formattedDate = '';
 let firstName = '';
 let surnames: string[] = [];
@@ -77,8 +82,8 @@ if (!isEditorialCover) {
 
 	ageLockupMatch = displayLabel ? displayLabel.trim().match(/^(\d+)\s+(AÑOS)$/iu) : null;
 
-	const resolveImage = (image: ImageMetadata | ImageAsset): ImageMetadata =>
-		'src' in image ? (image.src as ImageMetadata) : image;
+	const resolveImage = (image: ImageMetadata | ImageAsset): ImageMetadata | string =>
+		'src' in image ? image.src : image;
 
 	bgSrc = resolveImage(backgroundImage);
 	const resolvedMobileBg = backgroundImageMobile ? resolveImage(backgroundImageMobile) : null;
@@ -92,14 +97,19 @@ if (!isEditorialCover) {
 	mobileBgSrc = resolvedMobileBg
 		? remoteMobileBgSrc
 			? remoteMobileBgSrc
-			: (
-					await getImage({
-						src: resolvedMobileBg,
-						width: Math.min(1080, resolvedMobileBg.width),
-						format: 'webp',
-						quality: 84,
-					})
-				).src
+			: shouldOptimizeThroughVercelImage(resolvedMobileBg)
+				? (
+						await getImage({
+							src: resolvedMobileBg,
+							width:
+								typeof resolvedMobileBg === 'object' && 'width' in resolvedMobileBg
+									? Math.min(1080, resolvedMobileBg.width)
+									: 1080,
+							format: 'webp',
+							quality: 84,
+						})
+					).src
+				: plainImgSrc(resolvedMobileBg)
 		: null;
 
 	desktopBgSrc = backgroundImageDesktop ? backgroundImageDesktop.src : null;
@@ -145,7 +155,7 @@ if (!isEditorialCover) {
 						<source media="(min-width: 992px)" srcset={desktopBgSrc} />
 					)}
 					{bgSrc && (
-						<Image
+						<CacheSafeImage
 							src={bgSrc}
 							alt={name}
 							width={1080}
@@ -214,7 +224,7 @@ if (!isEditorialCover) {
 
 				{portraitSrc && (
 					<div class="invitation-hero__portrait">
-						<Image
+						<CacheSafeImage
 							src={portraitSrc}
 							alt={`Retrato de ${name}`}
 							width={600}

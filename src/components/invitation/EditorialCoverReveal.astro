@@ -1,6 +1,6 @@
 ---
 // Editorial Cover Reveal — replaces the envelope when revealVariant === 'editorial-cover'.
-import { Image } from 'astro:assets';
+import CacheSafeImage from '@/components/common/CacheSafeImage.astro';
 import type { ImageMetadata } from 'astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 
@@ -60,8 +60,8 @@ if (coverIssue) issueParts.push({ label: 'NÚM.', value: coverIssue });
 if (coverEdition) issueParts.push({ label: 'EDICIÓN', value: coverEdition });
 
 // Resolve cover image from background image or fallback to portrait
-const resolveImage = (image: ImageMetadata | ImageAsset): ImageMetadata =>
-	'src' in image ? (image.src as ImageMetadata) : image;
+const resolveImage = (image: ImageMetadata | ImageAsset): ImageMetadata | string =>
+	'src' in image ? image.src : image;
 
 const resolvedImage = backgroundImage ? resolveImage(backgroundImage) : (portrait ? resolveImage(portrait) : null);
 
@@ -85,7 +85,7 @@ const shouldRenderHidden =
 		<!-- Photographic cover background -->
 		{resolvedImage && (
 			<div class="editorial-cover__background" aria-hidden="true">
-				<Image
+				<CacheSafeImage
 					src={resolvedImage}
 					alt=""
 					width={1080}

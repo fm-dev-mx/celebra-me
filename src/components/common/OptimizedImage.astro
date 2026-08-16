@@ -1,5 +1,5 @@
 ---
-import { Image } from 'astro:assets';
+import CacheSafeImage from '@/components/common/CacheSafeImage.astro';
 import type { ImageMetadata } from 'astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 
@@ -48,13 +48,13 @@ const finalSrc = resolveSrc(imagePath);
 
 {
 	finalSrc ? (
-		<Image
-			src={finalSrc as any}
+		<CacheSafeImage
+			src={finalSrc as ImageMetadata | string}
 			alt={alt}
 			{...widths ? { widths: widths as number[], sizes } : {}}
 			width={width}
 			height={height}
-			class:list={[rounded, className]}
+			class={[rounded, className].filter(Boolean).join(' ')}
 			loading={loading}
 			decoding={decoding}
 			fetchpriority={fetchpriority}

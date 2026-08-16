@@ -1,7 +1,12 @@
 ---
 // Section-owned renderer for the semantic `editorial-cover` Hero variant.
-import { Image, getImage } from 'astro:assets';
+import { getImage } from 'astro:assets';
+import CacheSafeImage from '@/components/common/CacheSafeImage.astro';
 import type { ImageMetadata } from 'astro';
+import {
+	plainImgSrc,
+	shouldOptimizeThroughVercelImage,
+} from '@/lib/assets/vercel-image-policy';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { HeroStructuralVariant } from '@/lib/invitation/structural-variants';
 import type { ThemePreset } from '@/lib/theme/theme-contract';
@@ -52,8 +57,8 @@ const displayLabel = label && (label.toLowerCase().trim() === 'xv edition' || la
 	? 'CAPÍTULO XV'
 	: label;
 
-const resolveImage = (image: ImageMetadata | ImageAsset): ImageMetadata =>
-	'src' in image ? (image.src as ImageMetadata) : image;
+const resolveImage = (image: ImageMetadata | ImageAsset): ImageMetadata | string =>
+	'src' in image ? image.src : image;
 
 const bgSrc = resolveImage(backgroundImage);
 const resolvedMobileBg = backgroundImageMobile ? resolveImage(backgroundImageMobile) : null;
@@ -66,14 +71,19 @@ const remoteMobileBgSrc =
 const mobileBgSrc = resolvedMobileBg
 	? remoteMobileBgSrc
 		? remoteMobileBgSrc
-		: (
-				await getImage({
-					src: resolvedMobileBg,
-					width: Math.min(1080, resolvedMobileBg.width),
-					format: 'webp',
-					quality: 84,
-				})
-			).src
+		: shouldOptimizeThroughVercelImage(resolvedMobileBg)
+			? (
+					await getImage({
+						src: resolvedMobileBg,
+						width:
+							typeof resolvedMobileBg === 'object' && 'width' in resolvedMobileBg
+								? Math.min(1080, resolvedMobileBg.width)
+								: 1080,
+						format: 'webp',
+						quality: 84,
+					})
+				).src
+			: plainImgSrc(resolvedMobileBg)
 	: null;
 
 const desktopBgSrc = backgroundImageDesktop?.src ?? null;
@@ -122,7 +132,7 @@ const fpDesktop = focalPointDesktop || fpDefault;
 			{desktopBgSrc && (
 				<source media="(min-width: 992px)" srcset={desktopBgSrc} />
 			)}
-			<Image
+			<CacheSafeImage
 				src={bgSrc}
 				alt={name}
 				width={1080}
@@ -145,7 +155,7 @@ const fpDesktop = focalPointDesktop || fpDefault;
 	<div class="invitation-hero__content">
 		{portraitSrc && (
 			<div class="invitation-hero__portrait">
-				<Image
+				<CacheSafeImage
 					src={portraitSrc}
 					alt={`Retrato de ${name}`}
 					width={600}
