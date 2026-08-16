@@ -5,6 +5,8 @@ import { GiftIcon } from '@/components/common/icons/invitation/Gift';
 import { BankCardIcon } from '@/components/common/icons/ui/BankCard';
 import { CashIcon } from '@/components/common/icons/ui/Cash';
 import { PayPalIcon } from '@/components/common/icons/social/PayPal';
+import { CopyIcon } from '@/components/common/icons/ui/Copy';
+import { CheckIcon } from '@/components/common/icons/ui/Check';
 import type { GiftsPresentation } from '@/lib/invitation/gifts-presentation';
 import type { GiftsStructuralVariant } from '@/lib/invitation/structural-variants';
 
@@ -20,7 +22,7 @@ interface GiftStore {
 	links?: GiftStoreLink[];
 	logo?: string;
 	description?: string;
-	// Labeled as 'Evento:' in the template (line 163). Field name kept as tableNumber
+	// Labeled as 'Evento:' in the template (line 186). Field name kept as tableNumber
 	// for backward compatibility with the data model.
 	tableNumber?: string;
 }
@@ -96,6 +98,29 @@ const ICON_MAP = {
 	paypal: PayPalIcon,
 	cash: CashIcon,
 };
+
+function getTableNumberEntries(tableNumberStr?: string) {
+	if (!tableNumberStr) return [];
+	const parts = tableNumberStr.split(/·|,|;/).map((p) => p.trim()).filter(Boolean);
+	return parts.map((part) => {
+		// Strictly match digits first (e.g. "237993" or "52006296" from "Sears 237993")
+		const digitMatch = part.match(/\b(\d{4,})\b/);
+		if (digitMatch) {
+			return {
+				displayLabel: part,
+				cleanNumber: digitMatch[1],
+			};
+		}
+		// Fallback: strip common store/label prefixes
+		const cleanNumber = part
+			.replace(/^(sears|liverpool|palacio|amazon|evento|no\.?|n°)\s*/i, '')
+			.replace(/\s+/g, '');
+		return {
+			displayLabel: part,
+			cleanNumber: cleanNumber || part,
+		};
+	});
+}
 ---
 
 <section id="regalos" class="gifts-section" data-screenshot-section="gifts" data-variant={variant} data-structural-variant={structuralVariant} data-presentation={presentation}>
@@ -125,33 +150,88 @@ const ICON_MAP = {
 					return (
 						<div class={`gift-card gift-card--${gift.type}`} data-reveal-item>
 							<div class="gift-card__inner">
-								{isEditorialCatalog && (
-									<div class="gift-card__folio" aria-hidden="true">
-										<span>VH</span>
-										<span>EDICIÓN XV</span>
-									</div>
-								)}
-								{isEditorialCatalog && (
-									<p class="gift-card__issue-label">
-										<span>{giftNumber}</span>
-										<span>{gift.title}</span>
-									</p>
-								)}
+								<div class="gift-card__content-head">
+									{isEditorialCatalog && (
+										<div class="gift-card__folio" aria-hidden="true">
+											<span>VH</span>
+											<span>EDICIÓN XV</span>
+										</div>
+									)}
+									{isEditorialCatalog && (
+										<p class="gift-card__issue-label">
+											<span>{giftNumber}</span>
+											<span>{gift.title}</span>
+										</p>
+									)}
 
-								<div class="gift-card__icon-medallion">
-									<div class="gift-card__icon-inner">
-										<Icon size={24} />
+									<div class="gift-card__icon-medallion">
+										<div class="gift-card__icon-inner">
+											<Icon size={24} />
+										</div>
 									</div>
+
+									<h3 class="gift-card__title">{gift.title}</h3>
+
+									{gift.type === 'store' && gift.description && (
+										<p class="gift-card__store-label">{gift.description}</p>
+									)}
+
+									{gift.type === 'cash' && gift.text && (
+										<p class="gift-card__description">{gift.text}</p>
+									)}
 								</div>
 
-								<h3 class="gift-card__title">{gift.title}</h3>
-
-								{gift.type === 'store' && gift.description && (
-									<p class="gift-card__store-label">{gift.description}</p>
+								{gift.type === 'store' && gift.tableNumber && (
+									<div class="gift-card__table-number-wrapper">
+										<span class="gift-card__table-number-label">Evento:</span>
+										{getTableNumberEntries(gift.tableNumber).map((entry) => (
+											<span class="gift-card__number-pill">
+												<span class="gift-card__table-number-code">{entry.displayLabel}</span>
+												<button
+													type="button"
+													class="copy-icon-button"
+													data-copy-text={entry.cleanNumber}
+													aria-label={`Copiar evento ${entry.cleanNumber}`}
+													title="Copiar número"
+												>
+													<CopyIcon size={14} className="icon-copy" />
+													<CheckIcon size={14} className="icon-check" />
+												</button>
+											</span>
+										))}
+									</div>
 								)}
 
+								{gift.type === 'bank' && (
+									<div class="bank-details">
+										<p class="bank-details__item">
+											<strong>{labels.bank}:</strong>
+											<span data-status={gift.bankName.includes('PENDIENTE') ? 'pending' : undefined}>{gift.bankName}</span>
+										</p>
+										<p class="bank-details__item">
+											<strong>{labels.titular}:</strong>
+											<span data-status={gift.accountHolder.includes('PENDIENTE') ? 'pending' : undefined}>{gift.accountHolder}</span>
+										</p>
+										<div class="bank-details__clabe-wrapper">
+											<p class="bank-details__item">
+												<strong>{labels.clabe}:</strong>
+												<span class="clabe-number">{gift.clabe}</span>
+											</p>
+											<button
+												type="button"
+												class="copy-icon-button"
+												data-copy-text={gift.clabe.replace(/\s+/g, '')}
+												aria-label="Copiar número CLABE"
+												title="Copiar CLABE"
+											>
+												<CopyIcon size={14} className="icon-copy" />
+												<CheckIcon size={14} className="icon-check" />
+											</button>
+										</div>
+									</div>
+								)}
 
-								{gift.type === 'store' && (
+								{gift.type === 'store' && ((gift.links && gift.links.length > 0) || gift.url) && (
 									<div class="gift-card__actions">
 										{gift.links && gift.links.length > 0 ? (
 											gift.links.map((link) => (
@@ -172,41 +252,12 @@ const ICON_MAP = {
 									</div>
 								)}
 
-								{gift.type === 'store' && gift.tableNumber && (
-									<p class="gift-card__table-number">Evento: {gift.tableNumber}</p>
-								)}
-
-								{gift.type === 'bank' && (
-									<div class="bank-details">
-										<p class="bank-details__item">
-											<strong>{labels.bank}:</strong>
-											<span data-status={gift.bankName.includes('PENDIENTE') ? 'pending' : undefined}>{gift.bankName}</span>
-										</p>
-										<p class="bank-details__item">
-											<strong>{labels.titular}:</strong>
-											<span data-status={gift.accountHolder.includes('PENDIENTE') ? 'pending' : undefined}>{gift.accountHolder}</span>
-										</p>
-										<div class="bank-details__clabe-wrapper">
-											<p class="bank-details__item">
-												<strong>{labels.clabe}:</strong>
-												<span class="clabe-number">{gift.clabe}</span>
-											</p>
-											<button class="copy-button" data-clabe={gift.clabe} data-label-copy={labels.copy} data-label-copied={labels.copied} aria-label="Copiar número CLABE">
-												{labels.copy}
-											</button>
-										</div>
-									</div>
-								)}
-
-
 								{gift.type === 'paypal' && (
-									<a href={gift.url} target="_blank" rel="noopener noreferrer" class="gift-card__button gift-card__button--paypal">
-										{labels.sendGift}
-									</a>
-								)}
-
-								{gift.type === 'cash' && gift.text && (
-									<p class="gift-card__description">{gift.text}</p>
+									<div class="gift-card__actions">
+										<a href={gift.url} target="_blank" rel="noopener noreferrer" class="gift-card__button gift-card__button--paypal">
+											{labels.sendGift}
+										</a>
+									</div>
 								)}
 							</div>
 						</div>
@@ -220,24 +271,23 @@ const ICON_MAP = {
 </section>
 <script>
 
-	document.querySelectorAll('.copy-button').forEach((button) => {
-		const labelCopy = button.getAttribute('data-label-copy') || 'Copiar';
-		const labelCopied = button.getAttribute('data-label-copied') || '¡Copiado!';
-
+	document.querySelectorAll('.copy-icon-button, .copy-button').forEach((button) => {
 		button.addEventListener('click', async () => {
-			const clabe = button.getAttribute('data-clabe');
-			if (!clabe) {
+			const textToCopy = button.getAttribute('data-copy-text') || button.getAttribute('data-clabe');
+			if (!textToCopy) {
 				return;
 			}
 
-			const normalizedClabe = clabe.replace(/\s+/g, '');
-			await navigator.clipboard.writeText(normalizedClabe);
-			button.textContent = labelCopied;
-			button.classList.add('copy-button--success');
-			window.setTimeout(() => {
-				button.textContent = labelCopy;
-				button.classList.remove('copy-button--success');
-			}, 2000);
+			const normalizedText = textToCopy.replace(/\s+/g, '').trim();
+			try {
+				await navigator.clipboard.writeText(normalizedText);
+				button.classList.add('copy-success', 'copy-button--success');
+				window.setTimeout(() => {
+					button.classList.remove('copy-success', 'copy-button--success');
+				}, 2000);
+			} catch (err) {
+				console.error('Failed to copy text', err);
+			}
 		});
 	});
 </script>

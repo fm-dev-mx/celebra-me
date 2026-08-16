@@ -41,24 +41,22 @@
             "items": [
                 {
                     "type": "store",
-                    "links": [
-                        {
-                            "url": "https://www.sears.com.mx/Mesa-de-Regalos/237993/te-invito-a-mi-xv-anos-america",
-                            "label": "Sears"
-                        },
-                        {
-                            "url": "https://mesaderegalos.liverpool.com.mx/milistaderegalos/52006296",
-                            "label": "Liverpool"
-                        }
-                    ],
-                    "title": "Mesa de regalos",
-                    "description": "Puedes consultar mis listas en Sears y Liverpool.",
-                    "tableNumber": "Sears 237993 · Liverpool 52006296"
+                    "title": "Liverpool",
+                    "description": "Mesa de regalos digital Liverpool",
+                    "tableNumber": "52006296",
+                    "url": "https://mesaderegalos.liverpool.com.mx/milistaderegalos/52006296"
                 },
                 {
-                    "text": "También contaremos con un espacio especial durante la recepción.",
+                    "type": "store",
+                    "title": "Sears",
+                    "description": "Mesa de regalos digital Sears",
+                    "tableNumber": "237993",
+                    "url": "https://www.sears.com.mx/Mesa-de-Regalos/237993/te-invito-a-mi-xv-anos-america"
+                },
+                {
                     "type": "cash",
-                    "title": "Lluvia de sobres"
+                    "title": "Lluvia de sobres",
+                    "text": "También contaremos con un espacio especial durante la recepción."
                 }
             ],
             "title": "Mesa de regalos",

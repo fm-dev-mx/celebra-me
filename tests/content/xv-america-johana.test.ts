@@ -101,21 +101,18 @@ describe('XV America Johana client invitation preparation', () => {
 
 		expect(indicationText).toContain('El color rojo está reservado para la quinceañera.');
 		expect(indicationText).not.toContain('1 de agosto de 2026');
-		expect(data.gifts?.items).toHaveLength(2);
+		expect(data.gifts?.items).toHaveLength(3);
 		expect(data.gifts?.items?.[0]).toMatchObject({
 			type: 'store',
-			title: 'Mesa de regalos',
-			tableNumber: 'Sears 237993 · Liverpool 52006296',
-			links: [
-				{
-					label: 'Sears',
-					url: 'https://www.sears.com.mx/Mesa-de-Regalos/237993/te-invito-a-mi-xv-anos-america',
-				},
-				{
-					label: 'Liverpool',
-					url: 'https://mesaderegalos.liverpool.com.mx/milistaderegalos/52006296',
-				},
-			],
+			title: 'Liverpool',
+			tableNumber: '52006296',
+			url: 'https://mesaderegalos.liverpool.com.mx/milistaderegalos/52006296',
+		});
+		expect(data.gifts?.items?.[1]).toMatchObject({
+			type: 'store',
+			title: 'Sears',
+			tableNumber: '237993',
+			url: 'https://www.sears.com.mx/Mesa-de-Regalos/237993/te-invito-a-mi-xv-anos-america',
 		});
 	});
 
