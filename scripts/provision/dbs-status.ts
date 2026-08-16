@@ -18,9 +18,7 @@ import {
 	getProdDbUrl,
 } from '../db/db-workflow-lib.ts';
 import { LOCAL_DB_URL, classifyDbTarget, redactDbUrl } from '../db/db-guard.ts';
-import {
-	assertCurrentDisposableMigrationProof,
-} from '../db/disposable-migration-proof.ts';
+import { assertCurrentDisposableMigrationProof } from '../db/disposable-migration-proof.ts';
 import type { SchemaLifecycleState } from '../db/schema-lifecycle-state.ts';
 import {
 	StatusProbeSession,
@@ -182,25 +180,14 @@ function deriveSchemaOperationFields(
 		if (!disposableProofOk) {
 			return {
 				schemaOperationReadiness: 'NEEDS_DISPOSABLE_PROOF',
-				schemaNextAction:
-					'pnpm db:migrate -- --target disposable-test --apply',
+				schemaNextAction: 'pnpm db:migrate -- --target disposable-test --apply',
 			};
 		}
 		const targetFlag =
-			env === 'production'
-				? 'production'
-				: env === 'preview'
-					? 'preview'
-					: 'local';
+			env === 'production' ? 'production' : env === 'preview' ? 'preview' : 'local';
 		return {
 			schemaOperationReadiness: 'PENDING_MIGRATIONS',
 			schemaNextAction: `pnpm db:migrate -- --target ${targetFlag}`,
-		};
-	}
-	if (!disposableProofOk) {
-		return {
-			schemaOperationReadiness: 'NEEDS_DISPOSABLE_PROOF',
-			schemaNextAction: 'pnpm db:migrate -- --target disposable-test --apply',
 		};
 	}
 	return { schemaOperationReadiness: 'READY', schemaNextAction: null };
@@ -211,7 +198,12 @@ function deriveGlobalSchemaNextAction(
 	disposableProofOk: boolean,
 ): string | null {
 	if (!disposableProofOk) {
-		return 'pnpm db:migrate -- --target disposable-test --apply';
+		const anyPending = (['local', 'preview', 'production'] as const).some(
+			(env) => (environments[env].pendingMigrationsCount ?? 0) > 0,
+		);
+		if (anyPending) {
+			return 'pnpm db:migrate -- --target disposable-test --apply';
+		}
 	}
 	for (const env of ['local', 'preview', 'production'] as const) {
 		const action = environments[env].schemaNextAction;
@@ -311,8 +303,7 @@ export function getGeneralEnvStatus(
 	options: GeneralEnvStatusOptions = {},
 ): EnvTargetStatus {
 	const includeManagedCounts = options.includeManagedCounts !== false;
-	const session =
-		options.session ?? getOrCreateStatusProbeSession(statusProbeTimeoutMs);
+	const session = options.session ?? getOrCreateStatusProbeSession(statusProbeTimeoutMs);
 	const started = performance.now();
 	const freshness = createLiveFreshness(Boolean(options.timeoutDegraded));
 
@@ -386,8 +377,7 @@ async function getGeneralEnvStatusAsync(
 	options: GeneralEnvStatusOptions = {},
 ): Promise<EnvTargetStatus> {
 	const includeManagedCounts = options.includeManagedCounts !== false;
-	const session =
-		options.session ?? getOrCreateStatusProbeSession(statusProbeTimeoutMs);
+	const session = options.session ?? getOrCreateStatusProbeSession(statusProbeTimeoutMs);
 	const started = performance.now();
 	const freshness = createLiveFreshness(Boolean(options.timeoutDegraded));
 
@@ -531,8 +521,7 @@ export async function evaluateGeneralStatus(
 		: ['local', 'preview', 'production'];
 	const includeManagedCounts = options?.includeManagedCounts !== false;
 	const concurrency = options?.concurrency ?? 3;
-	const session =
-		options?.session ?? getOrCreateStatusProbeSession(statusProbeTimeoutMs);
+	const session = options?.session ?? getOrCreateStatusProbeSession(statusProbeTimeoutMs);
 	activeSession = session;
 
 	const definitions = listInvitationDefinitions();
@@ -609,8 +598,7 @@ export function evaluateSingleTargetStatus(
 	canonicalHash: string | null,
 	options: { session?: StatusProbeSession; timeoutDegraded?: boolean } = {},
 ): PerInvitationTargetStatus {
-	const session =
-		options.session ?? getOrCreateStatusProbeSession(statusProbeTimeoutMs);
+	const session = options.session ?? getOrCreateStatusProbeSession(statusProbeTimeoutMs);
 	const started = performance.now();
 	const freshness = createLiveFreshness(Boolean(options.timeoutDegraded));
 	const { dbUrl, error } = resolveDbUrlForEnv(env);
@@ -673,8 +661,7 @@ async function evaluateSingleTargetStatusAsync(
 	canonicalHash: string | null,
 	options: { session?: StatusProbeSession; timeoutDegraded?: boolean } = {},
 ): Promise<PerInvitationTargetStatus> {
-	const session =
-		options.session ?? getOrCreateStatusProbeSession(statusProbeTimeoutMs);
+	const session = options.session ?? getOrCreateStatusProbeSession(statusProbeTimeoutMs);
 	const started = performance.now();
 	const freshness = createLiveFreshness(Boolean(options.timeoutDegraded));
 	const { dbUrl, error } = resolveDbUrlForEnv(env);
@@ -760,8 +747,7 @@ export async function evaluateInvitationStatus(
 ): Promise<PerInvitationStatusSummary> {
 	const definition = getInvitationDefinition(slug);
 	const envs: TargetEnv[] = ['local', 'preview', 'production'];
-	const session =
-		options?.session ?? getOrCreateStatusProbeSession(statusProbeTimeoutMs);
+	const session = options?.session ?? getOrCreateStatusProbeSession(statusProbeTimeoutMs);
 	activeSession = session;
 	const concurrency = options?.concurrency ?? 3;
 

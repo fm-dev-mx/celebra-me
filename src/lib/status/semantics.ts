@@ -53,6 +53,7 @@ export function authorizationSemantic(status: AuthorizationIntegrity): StatusSem
 	if (status === 'NOT_APPLICABLE') return 'neutral';
 	if (status === 'RECORDED' || status === 'GRANDFATHERED') return 'verified';
 	if (status === 'UNVERIFIED') return 'unverified';
+	if (status === 'MISSING') return 'neutral';
 	return 'blocked';
 }
 
@@ -222,6 +223,12 @@ export function readinessRemediation(row: CanonicalEnvSummary): OperatorRemediat
 		};
 	}
 	if (row.schemaOperationReadiness === 'NEEDS_DISPOSABLE_PROOF') {
+		if (row.schemaLifecycle === 'CURRENT' && row.pendingMigrations.length === 0) {
+			return noneNeeded(
+				'El historial está CURRENT. La prueba disposable solo autoriza migraciones futuras.',
+				environmentLabel,
+			);
+		}
 		return {
 			semantic: 'blocked',
 			meaning:
@@ -306,8 +313,7 @@ export function readinessRemediation(row: CanonicalEnvSummary): OperatorRemediat
 
 export function authorizationRemediation(row: CanonicalEnvSummary): OperatorRemediation {
 	const environmentLabel = ENV_LABELS[row.environment];
-	const semantic = authorizationSemantic(row.authorizationIntegrity);
-	if (semantic === 'neutral') {
+	if (row.authorizationIntegrity === 'NOT_APPLICABLE') {
 		return {
 			semantic: 'neutral',
 			meaning: 'La integridad de autorización del propietario solo aplica a Production.',
@@ -344,22 +350,14 @@ export function authorizationRemediation(row: CanonicalEnvSummary): OperatorReme
 			? `Versiones sin registro: ${row.authorizationMissingVersions.join(', ')}.`
 			: 'Hay historial de Production posterior al corte sin evidencia de apply del propietario.';
 	return {
-		semantic: 'blocked',
-		meaning: 'CURRENT no es evidencia de autorización del propietario.',
+		semantic: 'neutral',
+		meaning:
+			'CURRENT no es evidencia de autorización del propietario. El libro es local al worktree.',
 		why: missing,
 		environmentLabel,
 		nextAction:
-			'No existe un comando canónico para registrar applies históricos. Un apply futuro de Production escribe el libro. No rellene el libro a mano ni trate CURRENT como autorización.',
-		steps: [
-			step(
-				'Manual/HITL',
-				null,
-				'No se pueden registrar applies históricos desde este panel.',
-				true,
-				false,
-				'Revisión Owner',
-			),
-		],
+			'No hay comando canónico de backfill. Un apply futuro de Production escribe el libro. No rellene el libro a mano.',
+		steps: [],
 		verifyWhen:
 			'authorizationIntegrity deja de ser MISSING (RECORDED tras un apply autorizado que cubra las versiones, o evidencia equivalente del libro).',
 		noCanonicalRemediation: true,
@@ -515,23 +513,15 @@ export function diagnosticRemediation(item: CanonicalDiagnostic): OperatorRemedi
 	const environmentLabel = item.environment ? ENV_LABELS[item.environment] : null;
 	if (item.code === 'PRODUCTION_AUTHORIZATION_MISSING') {
 		return {
-			semantic: 'blocked',
+			semantic: 'neutral',
 			meaning: DIAGNOSTIC_LABELS[item.code],
 			why: item.cause,
 			environmentLabel,
 			nextAction:
-				'No existe un comando canónico para registrar applies históricos. Un apply futuro de Production escribe el libro.',
-			steps: [
-				step(
-					'Manual/HITL',
-					null,
-					'No existe un comando canónico para registrar applies históricos.',
-					true,
-					false,
-					'Revisión Owner',
-				),
-			],
-			verifyWhen: 'authorizationIntegrity deja de ser MISSING.',
+				'No hay comando canónico de backfill. El libro es local al worktree. No rellene el libro a mano.',
+			steps: [],
+			verifyWhen:
+				'authorizationIntegrity deja de ser MISSING, o se acepta como nota informativa del worktree.',
 			noCanonicalRemediation: true,
 		};
 	}

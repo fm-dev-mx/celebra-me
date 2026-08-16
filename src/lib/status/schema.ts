@@ -113,6 +113,7 @@ const promotionRow = z
 		slug,
 		title: z.string().min(1).max(200),
 		eventType: z.string().min(1).max(40),
+		lifecycle: z.enum(['in_progress', 'published']).default('published'),
 		action,
 		reasonCode,
 		environments: z
@@ -133,6 +134,8 @@ const promotionRow = z
 			})
 			.strict(),
 		uncertaintyNotes: z.array(z.string().min(1).max(80)).max(8),
+		preflightBlockCode: z.string().min(1).max(80).nullable().default(null),
+		preflightReason: z.string().min(1).max(400).nullable().default(null),
 		handoff: z
 			.object({
 				dryRunCommand: z.string().max(400).nullable(),
@@ -199,7 +202,11 @@ const manualPatchEnvironmentStatus = z
 			.max(100)
 			.nullable()
 			.optional(),
-		projectRef: z.string().regex(/^[a-z0-9-]+$/).nullable().optional(),
+		projectRef: z
+			.string()
+			.regex(/^[a-z0-9-]+$/)
+			.nullable()
+			.optional(),
 	})
 	.strict();
 

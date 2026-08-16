@@ -599,6 +599,80 @@ describe('canonical Production preflight refinement', () => {
 		});
 		expect(result.promotions[0]?.uncertaintyNotes).not.toContain('PRODUCTION UNKNOWN');
 	});
+
+	it('propagates the canonical preflight blockCode instead of an opaque BLOCKED', async () => {
+		const alpha = definition('alpha');
+		const environmentsBySlug = {
+			alpha: { local: 'match', preview: 'match', production: 'behind' } as const,
+		};
+		const result = await refineManagedPromotionsWithProductionPreflight({
+			promotions: [
+				presentPromotionRow({
+					slug: alpha.slug,
+					title: alpha.title,
+					eventType: alpha.eventType,
+					lifecycle: 'published',
+					action: 'PROMOTE_PRODUCTION',
+					reasonCode: 'PREVIEW_ALIGNED_PRODUCTION_BEHIND',
+					environments: environmentsBySlug.alpha,
+					envEvidence,
+				}),
+			],
+			inSyncSlugs: [],
+			definitions: [alpha],
+			environmentsBySlug,
+			envEvidence,
+			resolvePackage: async (slug) => ({ invitation: { slug } }) as InvitationPackageData,
+			runProductionPreflight: async () => ({
+				...productionReport('alpha', 'BLOCKED', 'BACKUP_REQUIRED'),
+				reason: 'Critical backup coverage expired.',
+			}),
+			timeoutMs: 1_000,
+		});
+		expect(result.promotions[0]).toMatchObject({
+			action: 'BLOCKED',
+			reasonCode: 'PRODUCTION_PREFLIGHT_BLOCKED',
+			preflightBlockCode: 'BACKUP_REQUIRED',
+			preflightReason: 'Critical backup coverage expired.',
+		});
+	});
+
+	it('does not run Production preflight for in_progress authoring rows', async () => {
+		const leslie = definition('leslie-perez');
+		leslie.lifecycle = 'in_progress';
+		const environmentsBySlug = {
+			'leslie-perez': { local: 'match', preview: 'match', production: 'behind' } as const,
+		};
+		const runProductionPreflight = jest.fn(async () =>
+			productionReport('leslie-perez', 'BLOCKED', 'BACKUP_REQUIRED'),
+		);
+		const result = await refineManagedPromotionsWithProductionPreflight({
+			promotions: [
+				presentPromotionRow({
+					slug: leslie.slug,
+					title: leslie.title,
+					eventType: leslie.eventType,
+					lifecycle: 'in_progress',
+					action: 'PROMOTE_PRODUCTION',
+					reasonCode: 'PREVIEW_ALIGNED_PRODUCTION_BEHIND',
+					environments: environmentsBySlug['leslie-perez'],
+					envEvidence,
+				}),
+			],
+			inSyncSlugs: [],
+			definitions: [leslie],
+			environmentsBySlug,
+			envEvidence,
+			resolvePackage: async (slug) => ({ invitation: { slug } }) as InvitationPackageData,
+			runProductionPreflight,
+			timeoutMs: 1_000,
+		});
+		expect(runProductionPreflight).not.toHaveBeenCalled();
+		expect(result.promotions[0]).toMatchObject({
+			action: 'PROMOTE_PRODUCTION',
+			lifecycle: 'in_progress',
+		});
+	});
 });
 
 describe('grouped promotional SQL', () => {

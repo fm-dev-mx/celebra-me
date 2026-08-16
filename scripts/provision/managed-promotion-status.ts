@@ -23,6 +23,7 @@ import {
 } from './promotional-fingerprint.ts';
 import { decidePromotionAction } from '../../src/lib/status/decision.ts';
 import { presentPromotionRow } from '../../src/lib/status/presentation.ts';
+import { isAuthoringPromotion } from '../../src/lib/status/promotion-lifecycle.ts';
 import type { CanonicalPromotionRow, EvidenceState } from '../../src/lib/status/types.ts';
 import { getDefaultPreviewApprovalStore } from './preview-approval-store.ts';
 
@@ -324,6 +325,7 @@ export async function refineManagedPromotionsWithProductionPreflight(input: {
 					slug: row.slug,
 					title: row.title,
 					eventType: row.eventType,
+					lifecycle: row.lifecycle,
 					action: 'UNKNOWN',
 					reasonCode: 'PRODUCTION_PREFLIGHT_UNVERIFIED',
 					environments,
@@ -344,6 +346,7 @@ export async function refineManagedPromotionsWithProductionPreflight(input: {
 					slug: row.slug,
 					title: row.title,
 					eventType: row.eventType,
+					lifecycle: row.lifecycle,
 					action: 'PROMOTE_PRODUCTION',
 					reasonCode: 'PREVIEW_ALIGNED_PRODUCTION_BEHIND',
 					environments,
@@ -359,6 +362,7 @@ export async function refineManagedPromotionsWithProductionPreflight(input: {
 					slug: row.slug,
 					title: row.title,
 					eventType: row.eventType,
+					lifecycle: row.lifecycle,
 					action: 'BLOCKED',
 					reasonCode: 'MANAGED_DIVERGENCE',
 					environments,
@@ -376,6 +380,7 @@ export async function refineManagedPromotionsWithProductionPreflight(input: {
 					slug: row.slug,
 					title: row.title,
 					eventType: row.eventType,
+					lifecycle: row.lifecycle,
 					action: 'BLOCKED',
 					reasonCode: 'PREVIEW_APPROVAL_REQUIRED',
 					environments,
@@ -391,10 +396,13 @@ export async function refineManagedPromotionsWithProductionPreflight(input: {
 				slug: row.slug,
 				title: row.title,
 				eventType: row.eventType,
+				lifecycle: row.lifecycle,
 				action: 'BLOCKED',
 				reasonCode: 'PRODUCTION_PREFLIGHT_BLOCKED',
 				environments,
 				envEvidence: input.envEvidence,
+				preflightBlockCode: report.blockCode ?? null,
+				preflightReason: report.reason ?? null,
 			}),
 		);
 	}
@@ -409,7 +417,9 @@ export async function refineManagedPromotionsWithPendingPreviewApproval(input: {
 	inSyncSlugs: string[];
 	resolvePackage: (slug: string) => Promise<InvitationPackageData>;
 }): Promise<Pick<ManagedPromotionStatus, 'promotions' | 'inSyncSlugs'>> {
-	const candidates = input.promotions.filter((row) => row.action === 'PROMOTE_PREVIEW');
+	const candidates = input.promotions.filter(
+		(row) => row.action === 'PROMOTE_PREVIEW' && !isAuthoringPromotion(row),
+	);
 	if (candidates.length === 0) {
 		return { promotions: input.promotions, inSyncSlugs: input.inSyncSlugs };
 	}
@@ -433,6 +443,7 @@ export async function refineManagedPromotionsWithPendingPreviewApproval(input: {
 				slug: row.slug,
 				title: row.title,
 				eventType: row.eventType,
+				lifecycle: row.lifecycle,
 				action: 'BLOCKED',
 				reasonCode: 'PREVIEW_APPROVAL_REQUIRED',
 				environments: row.environments,
@@ -446,6 +457,7 @@ export async function refineManagedPromotionsWithPendingPreviewApproval(input: {
 				slug: row.slug,
 				title: row.title,
 				eventType: row.eventType,
+				lifecycle: row.lifecycle,
 				action: 'PROMOTE_PRODUCTION',
 				reasonCode: 'PREVIEW_ALIGNED_PRODUCTION_BEHIND',
 				environments: row.environments,
@@ -459,6 +471,7 @@ export async function refineManagedPromotionsWithPendingPreviewApproval(input: {
 
 /** Preview-aligned rows still need Production preflight when Production is not match. */
 function isProductionPreflightCandidate(row: CanonicalPromotionRow): boolean {
+	if (isAuthoringPromotion(row)) return false;
 	const production = row.environments.production;
 	const productionNeedsWork =
 		production === 'behind' || production === 'absent' || production === 'unknown';
@@ -513,6 +526,7 @@ function presentManagedPromotions(input: {
 				slug: definition.slug,
 				title: definition.title,
 				eventType: definition.eventType,
+				lifecycle: definition.lifecycle,
 				action: decision.action,
 				reasonCode: decision.reasonCode,
 				environments,

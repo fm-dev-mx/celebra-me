@@ -2,6 +2,7 @@ import { describe, expect, it } from '@jest/globals';
 import {
 	combineEvidence,
 	freshnessFromCachedTimestamp,
+	invitationAttentionCount,
 	migrationPresenceForEnv,
 } from '@/lib/status/evidence';
 import { buildCanonicalStatusViewFixture } from '@tests/helpers/canonical-status-fixture';
@@ -42,5 +43,22 @@ describe('canonical evidence aggregation', () => {
 				'20260806120000',
 			),
 		).toBe('NOT_APPLIED');
+	});
+
+	it('excludes in_progress slugs from invitation attention counts', () => {
+		const environmentsBySlug = new Map([
+			[
+				'abril-michelle-becerra-rea',
+				{ local: 'match', preview: 'match', production: 'match' } as const,
+			],
+			['renata', { local: 'behind', preview: 'behind', production: 'behind' } as const],
+			['leslie-perez', { local: 'behind', preview: 'match', production: 'behind' } as const],
+		]);
+		const excludeSlugs = new Set(['renata', 'leslie-perez']);
+		expect(invitationAttentionCount(environmentsBySlug, 'local', { excludeSlugs })).toBe(0);
+		expect(invitationAttentionCount(environmentsBySlug, 'production', { excludeSlugs })).toBe(
+			0,
+		);
+		expect(invitationAttentionCount(environmentsBySlug, 'local')).toBe(2);
 	});
 });

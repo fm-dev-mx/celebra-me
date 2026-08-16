@@ -1,8 +1,6 @@
 import {
 	authorizationRemediation,
-	authorizationSemantic,
 	disposableRemediation,
-	evidenceSemantic,
 	evidenceRemediation,
 	manualPatchRemediation,
 	publicationQueueRemediation,
@@ -13,20 +11,21 @@ import {
 	type OperatorRemediation,
 } from './semantics';
 import { ENV_LABELS } from './labels';
-import type {
-	CanonicalStatusView,
-	StatusSemantic,
-	TargetEnv,
-} from './types';
+import { ENVS } from './evidence';
+import { releasePromotions } from './promotion-lifecycle';
+import type { CanonicalStatusView, StatusSemantic, TargetEnv } from './types';
+
+export {
+	authoringPromotions,
+	authoringSlugSet,
+	isAuthoringLifecycle,
+	isAuthoringPromotion,
+	partitionPromotions,
+	releasePromotions,
+} from './promotion-lifecycle';
 
 export type OperationalActionDomain =
-	| 'schema'
-	| 'readiness'
-	| 'authorization'
-	| 'evidence'
-	| 'publication'
-	| 'patch'
-	| 'disposable';
+	'schema' | 'readiness' | 'authorization' | 'evidence' | 'publication' | 'patch' | 'disposable';
 
 export type OperationalHealth = 'GREEN' | 'ACTION_REQUIRED' | 'UNVERIFIED';
 
@@ -56,7 +55,16 @@ export interface OperationalActionPlan {
 	actions: OperationalAction[];
 }
 
-const ENVS: readonly TargetEnv[] = ['local', 'preview', 'production'];
+export function hasPendingSchemaWork(view: CanonicalStatusView): boolean {
+	return ENVS.some((environment) => {
+		const row = view.environments[environment];
+		return (
+			row.schemaLifecycle === 'BEHIND' ||
+			row.pendingMigrations.length > 0 ||
+			row.schemaOperationReadiness === 'PENDING_MIGRATIONS'
+		);
+	});
+}
 
 function actionPriority(remediation: OperatorRemediation): number {
 	if (remediation.semantic === 'blocked') return 0;
@@ -99,12 +107,14 @@ function mergeActions(actions: OperationalAction[]): OperationalAction[] {
 		existing.environments = [...new Set([...existing.environments, ...action.environments])];
 		existing.steps = uniqueSteps([...existing.steps, ...action.steps]);
 		existing.priority = Math.min(existing.priority, action.priority);
-		existing.semantic = existing.semantic === 'blocked' || action.semantic === 'blocked'
-			? 'blocked'
-			: existing.semantic === 'unverified' || action.semantic === 'unverified'
-				? 'unverified'
-				: existing.semantic;
-		existing.noCanonicalRemediation = existing.noCanonicalRemediation && action.noCanonicalRemediation;
+		existing.semantic =
+			existing.semantic === 'blocked' || action.semantic === 'blocked'
+				? 'blocked'
+				: existing.semantic === 'unverified' || action.semantic === 'unverified'
+					? 'unverified'
+					: existing.semantic;
+		existing.noCanonicalRemediation =
+			existing.noCanonicalRemediation && action.noCanonicalRemediation;
 		if (existing.why !== action.why && action.why) {
 			existing.why = existing.why ? `${existing.why} · ${action.why}` : action.why;
 		}
@@ -141,7 +151,10 @@ function addAction(actions: OperationalAction[], action: OperationalAction | nul
 	if (action) actions.push(action);
 }
 
-export function aggregateManualPatchStatus(view: CanonicalStatusView, environment: TargetEnv): {
+export function aggregateManualPatchStatus(
+	view: CanonicalStatusView,
+	environment: TargetEnv,
+): {
 	label: string;
 	semantic: StatusSemantic;
 } {
@@ -159,16 +172,15 @@ export function aggregateManualPatchStatus(view: CanonicalStatusView, environmen
 }
 
 function isControlHealthy(view: CanonicalStatusView): boolean {
-	if (view.evidence !== 'LIVE' || view.disposableProof.evidence !== 'LIVE' || view.disposableProof.status !== 'valid') return false;
+	if (view.evidence !== 'LIVE') return false;
 	for (const environment of ENVS) {
 		const row = view.environments[environment];
 		if (row.evidence !== 'LIVE') return false;
 		if (schemaRemediation(row).semantic !== 'verified') return false;
 		if (readinessRemediation(row).semantic !== 'verified') return false;
-		if (evidenceSemantic(row.evidence) !== 'verified') return false;
-		if (authorizationSemantic(row.authorizationIntegrity) === 'blocked' || authorizationSemantic(row.authorizationIntegrity) === 'unverified') return false;
+		if (row.authorizationIntegrity === 'UNVERIFIED') return false;
 	}
-	if (view.promotions.length > 0) return false;
+	if (releasePromotions(view.promotions).length > 0) return false;
 	return view.manualPatches.every((patch) =>
 		ENVS.every((environment) => {
 			const status = patch.environments[environment].status;
@@ -179,43 +191,129 @@ function isControlHealthy(view: CanonicalStatusView): boolean {
 
 export function buildOperationalActionPlan(view: CanonicalStatusView): OperationalActionPlan {
 	const actions: OperationalAction[] = [];
-	addAction(actions, toAction('disposable-proof', 'disposable', 'Prueba disposable', disposableRemediation(view.disposableProof), 'disposable-test'));
+	if (hasPendingSchemaWork(view)) {
+		addAction(
+			actions,
+			toAction(
+				'disposable-proof',
+				'disposable',
+				'Prueba disposable',
+				disposableRemediation(view.disposableProof),
+				'disposable-test',
+			),
+		);
+	}
 
 	for (const environment of ENVS) {
 		const row = view.environments[environment];
-		addAction(actions, toAction(`schema-${environment}`, 'schema', `Migraciones · ${ENV_LABELS[environment]}`, schemaRemediation(row), ENV_LABELS[environment]));
-		addAction(actions, toAction(`readiness-${environment}`, 'readiness', `Preparación · ${ENV_LABELS[environment]}`, readinessRemediation(row), ENV_LABELS[environment]));
-		addAction(actions, toAction(`evidence-${environment}`, 'evidence', `Evidencia · ${ENV_LABELS[environment]}`, evidenceRemediation(row), ENV_LABELS[environment]));
-		addAction(actions, toAction(`authorization-${environment}`, 'authorization', `Autorización · ${ENV_LABELS[environment]}`, authorizationRemediation(row), ENV_LABELS[environment]));
+		addAction(
+			actions,
+			toAction(
+				`schema-${environment}`,
+				'schema',
+				`Migraciones · ${ENV_LABELS[environment]}`,
+				schemaRemediation(row),
+				ENV_LABELS[environment],
+			),
+		);
+		addAction(
+			actions,
+			toAction(
+				`readiness-${environment}`,
+				'readiness',
+				`Preparación · ${ENV_LABELS[environment]}`,
+				readinessRemediation(row),
+				ENV_LABELS[environment],
+			),
+		);
+		addAction(
+			actions,
+			toAction(
+				`evidence-${environment}`,
+				'evidence',
+				`Evidencia · ${ENV_LABELS[environment]}`,
+				evidenceRemediation(row),
+				ENV_LABELS[environment],
+			),
+		);
+		addAction(
+			actions,
+			toAction(
+				`authorization-${environment}`,
+				'authorization',
+				`Autorización · ${ENV_LABELS[environment]}`,
+				authorizationRemediation(row),
+				ENV_LABELS[environment],
+			),
+		);
 	}
 
-	if (view.promotions.length === 0) {
-		addAction(actions, toAction('publication-queue', 'publication', 'Publicación', publicationQueueRemediation(view), 'registro'));
+	const queue = releasePromotions(view.promotions);
+	if (queue.length === 0) {
+		addAction(
+			actions,
+			toAction(
+				'publication-queue',
+				'publication',
+				'Publicación',
+				publicationQueueRemediation(view),
+				'registro',
+			),
+		);
 	} else {
-		for (const promotion of view.promotions) {
-			addAction(actions, toAction(`publication-${promotion.slug}`, 'publication', `Publicación · ${promotion.title}`, publicationRemediation(promotion), 'registro', promotion.slug));
+		for (const promotion of queue) {
+			addAction(
+				actions,
+				toAction(
+					`publication-${promotion.slug}`,
+					'publication',
+					`Publicación · ${promotion.title}`,
+					publicationRemediation(promotion),
+					'registro',
+					promotion.slug,
+				),
+			);
 		}
 	}
 
 	for (const patch of view.manualPatches) {
 		for (const environment of ENVS) {
 			const remediation = manualPatchRemediation(patch, environment);
-			addAction(actions, toAction(`patch-${patch.scriptId}-${environment}`, 'patch', `Parche · ${patch.file.split('/').at(-1) ?? patch.scriptId}`, remediation, ENV_LABELS[environment], patch.scriptId));
+			addAction(
+				actions,
+				toAction(
+					`patch-${patch.scriptId}-${environment}`,
+					'patch',
+					`Parche · ${patch.file.split('/').at(-1) ?? patch.scriptId}`,
+					remediation,
+					ENV_LABELS[environment],
+					patch.scriptId,
+				),
+			);
 		}
 	}
 
 	const mergedActions = mergeActions(actions);
 	const unresolvedChecks = mergedActions.length;
-	const applicableChecks = ENVS.length * 4 + 2 + view.promotions.length + view.manualPatches.length;
+	const applicableChecks = ENVS.length * 4 + 2 + queue.length + view.manualPatches.length;
 	const hasBlocked = mergedActions.some((action) => action.semantic === 'blocked');
 	const status: OperationalHealth = isControlHealthy(view)
 		? 'GREEN'
 		: hasBlocked
 			? 'ACTION_REQUIRED'
 			: 'UNVERIFIED';
-	const label = status === 'GREEN' ? 'Todo en orden' : status === 'ACTION_REQUIRED' ? 'Acciones necesarias' : 'Verificación pendiente';
-	const summary = status === 'GREEN'
-		? 'Controles aplicables verificados con evidencia en vivo; no hay migraciones, promociones ni parches pendientes.'
-		: `${unresolvedChecks} acción(es) priorizada(s) para alcanzar un estado operativo verde.`;
-	return { health: { status, label, summary, applicableChecks, unresolvedChecks }, actions: mergedActions };
+	const label =
+		status === 'GREEN'
+			? 'Todo en orden'
+			: status === 'ACTION_REQUIRED'
+				? 'Acciones necesarias'
+				: 'Verificación pendiente';
+	const summary =
+		status === 'GREEN'
+			? 'Controles aplicables verificados con evidencia en vivo; no hay migraciones, promociones ni parches pendientes.'
+			: `${unresolvedChecks} acción(es) priorizada(s) para alcanzar un estado operativo verde.`;
+	return {
+		health: { status, label, summary, applicableChecks, unresolvedChecks },
+		actions: mergedActions,
+	};
 }

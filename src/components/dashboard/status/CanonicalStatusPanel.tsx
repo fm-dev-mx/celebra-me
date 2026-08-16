@@ -9,20 +9,18 @@ import {
 	FRESHNESS_LABELS,
 	MIGRATION_PRESENCE_LABELS,
 	PATCH_STATUS_LABELS,
-	PUBLICATION_ACTION_LABELS,
-	PUBLICATION_REASON_LABELS,
 	READINESS_LABELS,
-	SEMANTIC_LABELS,
 } from '@/lib/status/labels';
 import { CopyableCommand } from '@/components/dashboard/status/CopyableCommand';
-import { formatSchemaMigrationsLabel, formatTransitionLabel } from '@/lib/status/presentation';
+import { formatSchemaMigrationsLabel } from '@/lib/status/presentation';
+import { PublicationDetails } from '@/components/dashboard/status/PublicationDetails';
+import { StatusSemanticBadge } from '@/components/dashboard/status/StatusSemanticBadge';
 import {
 	authorizationRemediation,
 	diagnosticRemediation,
 	disposableRemediation,
 	evidenceRemediation,
 	manualPatchRemediation,
-	publicationRemediation,
 	readinessRemediation,
 	schemaRemediation,
 	type OperatorActionStep,
@@ -56,14 +54,6 @@ const ACTION_DOMAIN_LABELS: Record<OperationalActionDomain, string> = {
 function formatWhen(value: string | null): string {
 	if (!value) return 'sin marca de tiempo';
 	return new Date(value).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
-}
-
-function SemanticBadge({ semantic }: { semantic: StatusSemantic }) {
-	return (
-		<span className={`canonical-status__badge canonical-status__badge--${semantic}`}>
-			{SEMANTIC_LABELS[semantic]}
-		</span>
-	);
 }
 
 function StepTypeBadge({ type }: { type: OperatorActionStep['type'] }) {
@@ -196,7 +186,7 @@ function ActionCard({ action }: { action: OperationalAction }) {
 					</p>
 					<h3>{action.title}</h3>
 				</div>
-				<SemanticBadge semantic={action.semantic} />
+				<StatusSemanticBadge semantic={action.semantic} />
 			</header>
 			<p className="canonical-status__action-summary">{action.summary}</p>
 			{action.environments.length > 0 ? (
@@ -256,7 +246,7 @@ function StatusRow({
 	return (
 		<div className="canonical-status__status-row">
 			<div>
-				<SemanticBadge semantic={semantic} />
+				<StatusSemanticBadge semantic={semantic} />
 				<strong>{label}</strong>
 			</div>
 			<span>{value}</span>
@@ -285,7 +275,7 @@ function EnvironmentCards({ view }: { view: CanonicalStatusView }) {
 									<p className="canonical-status__eyebrow">Entorno</p>
 									<h3>{ENV_LABELS[env]}</h3>
 								</div>
-								<SemanticBadge
+								<StatusSemanticBadge
 									semantic={row.evidence === 'LIVE' ? 'verified' : 'unverified'}
 								/>
 							</header>
@@ -325,82 +315,6 @@ function EnvironmentCards({ view }: { view: CanonicalStatusView }) {
 				})}
 			</div>
 		</section>
-	);
-}
-
-function PublicationDetails({ view }: { view: CanonicalStatusView }) {
-	return (
-		<details className="canonical-status__details canonical-status__secondary">
-			<summary id="publication-title">
-				Publicación · registro {view.registryCount} · en sync {view.inSyncCount} · atención{' '}
-				{view.promotions.length}
-			</summary>
-			<p>
-				Evidencia de estados por invitación. Las acciones viven una sola vez en la cola
-				superior.
-			</p>
-			{view.promotions.length > 0 ? (
-				<div className="canonical-status__queue">
-					{view.promotions.map((row) => {
-						const remediation = publicationRemediation(row);
-						return (
-							<article
-								className={`canonical-status__card canonical-status__card--${remediation.semantic}`}
-								key={row.slug}
-							>
-								<header className="canonical-status__card-head">
-									<h3>
-										{row.title}{' '}
-										<span className="canonical-status__slug">({row.slug})</span>
-									</h3>
-									<SemanticBadge semantic={remediation.semantic} />
-								</header>
-								<p className="canonical-status__reason">
-									{PUBLICATION_REASON_LABELS[row.reasonCode]}
-								</p>
-								<p>
-									{formatTransitionLabel(row.source, row.destination)} ·{' '}
-									{PUBLICATION_ACTION_LABELS[row.action]} · Evidencia:{' '}
-									<strong>{EVIDENCE_LABELS[row.evidence]}</strong>
-								</p>
-								{row.uncertaintyNotes.length > 0 ? (
-									<p className="canonical-status__unverified">
-										{row.uncertaintyNotes.join(' · ')}
-									</p>
-								) : null}
-								<details className="canonical-status__details">
-									<summary>Detalle técnico</summary>
-									<dl>
-										<dt>reasonCode</dt>
-										<dd>{row.reasonCode}</dd>
-										<dt>Estados</dt>
-										<dd>
-											Local {row.environments.local} · Preview{' '}
-											{row.environments.preview} · Producción{' '}
-											{row.environments.production}
-										</dd>
-									</dl>
-								</details>
-							</article>
-						);
-					})}
-				</div>
-			) : (
-				<p className="canonical-status__empty-success">
-					✓ No hay invitaciones que requieran promoción.
-				</p>
-			)}
-			{view.inSyncCount > 0 ? (
-				<details className="canonical-status__details">
-					<summary>Invitaciones en sync ({view.inSyncCount})</summary>
-					<ul>
-						{view.inSyncSlugs.map((slug) => (
-							<li key={slug}>{slug}</li>
-						))}
-					</ul>
-				</details>
-			) : null}
-		</details>
 	);
 }
 
@@ -527,7 +441,7 @@ function ManualPatchesSection({ items }: { items: ManualPatchStatus[] }) {
 									<h3>{item.file.split('/').at(-1) ?? item.scriptId}</h3>
 									<p className="canonical-status__slug">{item.scriptId}</p>
 								</div>
-								<SemanticBadge semantic={productionRemediation.semantic} />
+								<StatusSemanticBadge semantic={productionRemediation.semantic} />
 							</header>
 							<p>{item.purpose}</p>
 							<p>
@@ -593,7 +507,7 @@ function DiagnosticsList({ items }: { items: CanonicalDiagnostic[] }) {
 				return (
 					<li key={`${item.code}:${item.environment ?? ''}:${item.slug ?? ''}:${index}`}>
 						<div className="canonical-status__indicator-head">
-							<SemanticBadge semantic={remediation.semantic} />
+							<StatusSemanticBadge semantic={remediation.semantic} />
 							<strong>{DIAGNOSTIC_LABELS[item.code]}</strong>
 						</div>
 						<p>
@@ -740,16 +654,16 @@ export default function CanonicalStatusPanel({ initialView = null }: CanonicalSt
 			) : null}
 			<ul className="canonical-status__legend" aria-label="Semántica de estado">
 				<li>
-					<SemanticBadge semantic="verified" /> saludable / evidencia suficiente
+					<StatusSemanticBadge semantic="verified" /> saludable / evidencia suficiente
 				</li>
 				<li>
-					<SemanticBadge semantic="unverified" /> requiere verificación
+					<StatusSemanticBadge semantic="unverified" /> requiere verificación
 				</li>
 				<li>
-					<SemanticBadge semantic="blocked" /> bloqueo confirmado
+					<StatusSemanticBadge semantic="blocked" /> bloqueo confirmado
 				</li>
 				<li>
-					<SemanticBadge semantic="neutral" /> no aplica
+					<StatusSemanticBadge semantic="neutral" /> no aplica
 				</li>
 			</ul>
 			{error ? (

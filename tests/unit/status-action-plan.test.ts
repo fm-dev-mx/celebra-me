@@ -83,16 +83,86 @@ describe('operational action plan', () => {
 		expect(commands.some((command) => command?.includes('--apply --apply'))).toBe(false);
 	});
 
-	it('prioriza bloqueo y deduplica disposable/refresh compartidos', () => {
+	it('prioriza el parche bloqueante y no inventa disposable cuando el esquema está CURRENT', () => {
 		const plan = buildOperationalActionPlan(buildCanonicalStatusViewFixture());
 		expect(plan.health.status).toBe('ACTION_REQUIRED');
 		expect(plan.actions[0]?.semantic).toBe('blocked');
+		expect(plan.actions[0]?.domain).toBe('patch');
 		const disposable = plan.actions.filter((action) =>
 			action.steps.some(
 				(step) => step.command === 'pnpm db:migrate -- --target disposable-test --apply',
 			),
 		);
-		expect(disposable).toHaveLength(1);
+		expect(disposable).toHaveLength(0);
+	});
+
+	it('queda verde con disposable ausente, autorización MISSING e in_progress si no hay deuda de release', () => {
+		const base = buildCanonicalStatusViewFixture();
+		const environments = Object.fromEntries(
+			Object.entries(base.environments).map(([environment, row]) => [
+				environment,
+				{
+					...row,
+					schemaOperationReadiness: 'READY' as const,
+					schemaLifecycle: 'CURRENT' as const,
+					schemaNextAction: null,
+					invitationAttentionCount: 0,
+					authorizationIntegrity:
+						environment === 'production'
+							? ('MISSING' as const)
+							: ('NOT_APPLICABLE' as const),
+					authorizationMissingVersions:
+						environment === 'production' ? ['20260812210000'] : [],
+				},
+			]),
+		) as typeof base.environments;
+		const promotion = base.promotions[0]!;
+		const plan = buildOperationalActionPlan(
+			buildCanonicalStatusViewFixture({
+				environments,
+				disposableProof: {
+					status: 'missing',
+					reason: 'Missing disposable migration proof.',
+					evidence: 'LIVE',
+				},
+				promotions: [
+					{
+						...promotion,
+						slug: 'renata',
+						title: 'XV años de Renata',
+						lifecycle: 'in_progress',
+						action: 'PROMOTE_PREVIEW',
+						reasonCode: 'PREVIEW_BEHIND_CANONICAL',
+						source: 'canonical',
+						destination: 'preview',
+					},
+					{
+						...promotion,
+						slug: 'leslie-perez',
+						title: 'XV años de Leslie',
+						lifecycle: 'in_progress',
+						action: 'BLOCKED',
+						reasonCode: 'PRODUCTION_PREFLIGHT_BLOCKED',
+						source: null,
+						destination: null,
+					},
+				],
+				manualPatches: base.manualPatches.map((patch) => ({
+					...patch,
+					environments: {
+						...patch.environments,
+						production: {
+							...patch.environments.production,
+							status: 'NOT_NEEDED' as const,
+							matchingRowCount: 0,
+							reason: 'LIVE_ZERO_ROWS' as const,
+						},
+					},
+				})),
+			}),
+		);
+		expect(plan.health.status).toBe('GREEN');
+		expect(plan.actions).toHaveLength(0);
 	});
 
 	it('no recomienda apply cuando el parche está sin verificar o fuera de rango', () => {

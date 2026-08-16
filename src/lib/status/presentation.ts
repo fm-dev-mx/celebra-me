@@ -2,10 +2,12 @@
  * Pure presentation of canonical status. Does not classify schema or promotions.
  */
 import { combineEvidence, ENVS } from './evidence';
+import { isAuthoringLifecycle } from './promotion-lifecycle';
 import type {
 	CanonicalPromotionRow,
 	EnvironmentPromotionState,
 	EvidenceState,
+	InvitationLifecycle,
 	PromotionAction,
 	PromotionDestination,
 	PromotionHandoff,
@@ -270,6 +272,7 @@ export function formatTransitionLabel(
 export function formatPublicationReason(
 	environments: Record<TargetEnv, EnvironmentPromotionState>,
 	reasonCode: PromotionReasonCode,
+	details?: { preflightBlockCode?: string | null; preflightReason?: string | null },
 ): string {
 	const local = environments.local;
 	const preview = environments.preview;
@@ -302,6 +305,10 @@ export function formatPublicationReason(
 		return 'Production requires an exact, live-verified Preview approval for this package.';
 	}
 	if (reasonCode === 'PRODUCTION_PREFLIGHT_BLOCKED') {
+		const code = details?.preflightBlockCode;
+		const detail = details?.preflightReason;
+		if (code && detail) return `Production preflight blocked: ${code} — ${detail}`;
+		if (code) return `Production preflight blocked: ${code}`;
 		return 'The canonical Production preflight blocked this promotion.';
 	}
 	if (reasonCode === 'PRODUCTION_PREFLIGHT_UNVERIFIED') {
@@ -320,18 +327,42 @@ export function presentPromotionRow(input: {
 	slug: string;
 	title: string;
 	eventType: string;
+	lifecycle?: InvitationLifecycle;
 	action: Exclude<PromotionAction, 'NONE'>;
 	reasonCode: PromotionReasonCode;
 	environments: Record<TargetEnv, EnvironmentPromotionState>;
 	envEvidence: Record<TargetEnv, EvidenceState>;
 	packageHash?: string;
 	hasPendingPreviewApproval?: boolean;
+	preflightBlockCode?: string | null;
+	preflightReason?: string | null;
 }): CanonicalPromotionRow {
+	const lifecycle = input.lifecycle ?? 'published';
 	const route = derivePromotionRoute(input.action, input.reasonCode);
+	const handoff = isAuthoringLifecycle(lifecycle)
+		? emptyHandoff({
+				dryRunCommand: null,
+				dryRunStepType: 'Manual/HITL',
+				steps: [
+					'Authoring in_progress',
+					'Do not invitation:release or prod:apply until lifecycle is published',
+				],
+			})
+		: derivePromotionHandoff(
+				input.action,
+				input.reasonCode,
+				input.slug,
+				input.eventType,
+				input.environments,
+				input.envEvidence,
+				input.packageHash,
+				input.hasPendingPreviewApproval,
+			);
 	return {
 		slug: input.slug,
 		title: input.title,
 		eventType: input.eventType,
+		lifecycle,
 		action: input.action,
 		reasonCode: input.reasonCode,
 		environments: input.environments,
@@ -340,15 +371,8 @@ export function presentPromotionRow(input: {
 		evidence: combineEvidence(ENVS.map((env) => input.envEvidence[env])),
 		envEvidence: input.envEvidence,
 		uncertaintyNotes: uncertaintyNotesForEnvironments(input.environments),
-		handoff: derivePromotionHandoff(
-			input.action,
-			input.reasonCode,
-			input.slug,
-			input.eventType,
-			input.environments,
-			input.envEvidence,
-			input.packageHash,
-			input.hasPendingPreviewApproval,
-		),
+		handoff,
+		preflightBlockCode: input.preflightBlockCode ?? null,
+		preflightReason: input.preflightReason ?? null,
 	};
 }

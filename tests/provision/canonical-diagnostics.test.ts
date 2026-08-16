@@ -41,10 +41,10 @@ describe('enrichCanonicalDiagnostics', () => {
 	it('rejects diagnostic payloads that carry action authority', () => {
 		const view = buildCanonicalStatusViewFixture({
 			diagnostics: [
-					{
-						code: 'MANAGED_DRIFT',
-						domain: 'content',
-						evidence: 'LIVE',
+				{
+					code: 'MANAGED_DRIFT',
+					domain: 'content',
+					evidence: 'LIVE',
 					cause: 'Semantic drift.',
 					affectedFieldCount: 1,
 					affectedSectionCount: 1,
@@ -53,6 +53,22 @@ describe('enrichCanonicalDiagnostics', () => {
 			],
 		});
 		expect(() => CanonicalStatusViewSchema.parse(view)).not.toThrow();
+		const promotion = view.promotions[0];
+		if (!promotion) throw new Error('expected fixture promotion');
+		const legacyRow: Record<string, unknown> = { ...promotion };
+		delete legacyRow.lifecycle;
+		delete legacyRow.preflightBlockCode;
+		delete legacyRow.preflightReason;
+		expect(
+			CanonicalStatusViewSchema.parse({
+				...view,
+				promotions: [legacyRow],
+			}).promotions[0],
+		).toMatchObject({
+			lifecycle: 'published',
+			preflightBlockCode: null,
+			preflightReason: null,
+		});
 		expect(() =>
 			CanonicalStatusViewSchema.parse({
 				...view,

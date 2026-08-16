@@ -10,6 +10,7 @@ import {
 	invitationAttentionCount,
 } from './evidence';
 import { presentPromotionRow } from './presentation';
+import { authoringSlugSet } from './promotion-lifecycle';
 import type {
 	CanonicalEnvSummary,
 	CanonicalPromotionRow,
@@ -26,7 +27,10 @@ function incomingPatchReplacesPrevious(
 	incoming: ManualPatchEnvironmentStatus,
 	previous: ManualPatchEnvironmentStatus,
 ): boolean {
-	if (incoming.evidence === 'UNVERIFIED' && hasPersistableOperationalEvidence(previous.evidence)) {
+	if (
+		incoming.evidence === 'UNVERIFIED' &&
+		hasPersistableOperationalEvidence(previous.evidence)
+	) {
 		return false;
 	}
 	return true;
@@ -136,10 +140,22 @@ function statesFromView(
 	return map;
 }
 
-function metaFromView(view: CanonicalStatusView): Map<string, { title: string; eventType: string }> {
-	const map = new Map<string, { title: string; eventType: string }>();
+function metaFromView(
+	view: CanonicalStatusView,
+): Map<
+	string,
+	{ title: string; eventType: string; lifecycle: CanonicalPromotionRow['lifecycle'] }
+> {
+	const map = new Map<
+		string,
+		{ title: string; eventType: string; lifecycle: CanonicalPromotionRow['lifecycle'] }
+	>();
 	for (const row of view.promotions) {
-		map.set(row.slug, { title: row.title, eventType: row.eventType });
+		map.set(row.slug, {
+			title: row.title,
+			eventType: row.eventType,
+			lifecycle: row.lifecycle,
+		});
 	}
 	return map;
 }
@@ -246,7 +262,11 @@ function mergeContentDomainState(
 	const nextPromotions: CanonicalPromotionRow[] = [];
 	const nextInSync: string[] = [];
 	for (const [slug, environmentsForSlug] of merged) {
-		const info = meta.get(slug) ?? { title: slug, eventType: 'unknown' };
+		const info = meta.get(slug) ?? {
+			title: slug,
+			eventType: 'unknown',
+			lifecycle: 'published' as const,
+		};
 		const decision = decidePromotionAction({
 			canonicalAvailable:
 				canonicalAvailableFromView(incoming, slug) &&
@@ -262,6 +282,7 @@ function mergeContentDomainState(
 				slug,
 				title: info.title,
 				eventType: info.eventType,
+				lifecycle: info.lifecycle,
 				action: decision.action,
 				reasonCode: decision.reasonCode,
 				environments: environmentsForSlug,
@@ -271,11 +292,17 @@ function mergeContentDomainState(
 	}
 	nextPromotions.sort((left, right) => left.slug.localeCompare(right.slug));
 	nextInSync.sort((left, right) => left.localeCompare(right));
+	const authoringSlugs = authoringSlugSet(
+		[...meta.entries()].map(([slug, info]) => ({ slug, lifecycle: info.lifecycle })),
+	);
 	for (const env of ENVS) {
-		environments[env].invitationAttentionCount = invitationAttentionCount(merged, env);
+		environments[env].invitationAttentionCount = invitationAttentionCount(merged, env, {
+			excludeSlugs: authoringSlugs,
+		});
 	}
 	for (const env of replacedEnvs) {
-		environments[env].identityConflictsCount = incoming.environments[env].identityConflictsCount;
+		environments[env].identityConflictsCount =
+			incoming.environments[env].identityConflictsCount;
 	}
 
 	return {
@@ -346,7 +373,8 @@ export function mergeCanonicalStatusView(input: {
 		production: { ...previous.environments.production },
 	};
 
-	if (refreshSchema) mergeSchemaEnvironments(environments, previous, input.incoming, probedEnvs, replaceByEnv);
+	if (refreshSchema)
+		mergeSchemaEnvironments(environments, previous, input.incoming, probedEnvs, replaceByEnv);
 
 	let promotions = previous.promotions;
 	let inSyncSlugs = previous.inSyncSlugs;

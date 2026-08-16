@@ -91,6 +91,9 @@ export type PromotionReasonCode =
 export type PromotionSource = 'canonical' | 'preview' | 'local';
 export type PromotionDestination = 'preview' | 'production' | 'local';
 
+/** Registry delivery lifecycle. Authoring rows are not release debt. */
+export type InvitationLifecycle = 'in_progress' | 'published';
+
 export type DisposableProofStatus = 'valid' | 'missing' | 'stale';
 
 /** Presentation category for operator UI/CLI. Not a classifier. */
@@ -166,6 +169,7 @@ export interface CanonicalPromotionRow {
 	slug: string;
 	title: string;
 	eventType: string;
+	lifecycle: InvitationLifecycle;
 	action: Exclude<PromotionAction, 'NONE'>;
 	reasonCode: PromotionReasonCode;
 	environments: Record<TargetEnv, EnvironmentPromotionState>;
@@ -175,6 +179,10 @@ export interface CanonicalPromotionRow {
 	envEvidence: Record<TargetEnv, EvidenceState>;
 	uncertaintyNotes: string[];
 	handoff: PromotionHandoff;
+	/** Canonical Production preflight blockCode when reason is PRODUCTION_PREFLIGHT_BLOCKED. */
+	preflightBlockCode: string | null;
+	/** Canonical Production preflight reason when reason is PRODUCTION_PREFLIGHT_BLOCKED. */
+	preflightReason: string | null;
 }
 
 export interface CanonicalDisposableProof {

@@ -41,7 +41,9 @@ describe('CanonicalStatusPanel', () => {
 				})}
 			/>,
 		);
-		expect(screen.getByText(/No hay invitaciones que requieran promoción/)).toBeInTheDocument();
+		expect(
+			screen.getByText(/No hay invitaciones publicadas que requieran promoción/),
+		).toBeInTheDocument();
 		expect(screen.getAllByText('No aplica').length).toBeGreaterThanOrEqual(2);
 		expect(screen.queryByText('PROMOTIONS')).not.toBeInTheDocument();
 	});
@@ -95,7 +97,7 @@ describe('CanonicalStatusPanel', () => {
 		expect(screen.getByText(/Esta vista es read-only/)).toBeInTheDocument();
 	});
 
-	it('muestra autorización Owner ausente como bloqueo sin inventar comando', () => {
+	it('no convierte autorización Owner ausente en acción ni inventa backfill', () => {
 		const base = buildCanonicalStatusViewFixture();
 		render(
 			<CanonicalStatusPanel
@@ -111,11 +113,12 @@ describe('CanonicalStatusPanel', () => {
 				})}
 			/>,
 		);
-		expect(screen.getByText(/Autorización · Producción/)).toBeInTheDocument();
+		expect(screen.queryByText(/Autorización · Producción/)).not.toBeInTheDocument();
+		expect(screen.getAllByText('Ausente').length).toBeGreaterThan(0);
 		expect(
-			screen.getAllByText(/No se pueden registrar applies históricos/).length,
-		).toBeGreaterThan(0);
-		expect(screen.getAllByText('Revisión Owner').length).toBeGreaterThan(0);
+			screen.queryByText(/No se pueden registrar applies históricos/),
+		).not.toBeInTheDocument();
+		expect(screen.queryByText('Revisión Owner')).not.toBeInTheDocument();
 	});
 
 	it('distingue caché de evidencia live y conserva historial colapsado', () => {

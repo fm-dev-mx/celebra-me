@@ -15,6 +15,10 @@ import {
 import {
 	aggregateManualPatchStatus,
 	buildOperationalActionPlan,
+	hasPendingSchemaWork,
+	isAuthoringPromotion,
+	partitionPromotions,
+	releasePromotions,
 } from '../../src/lib/status/action-plan.ts';
 import type {
 	CanonicalPromotionRow,
@@ -110,12 +114,19 @@ export function formatPromotionsSection(
 	if (promotions.length === 0) {
 		return 'PUBLICATION\nAttention: 0 (in sync or none registered)\n';
 	}
-	const blocks = promotions.map((row, idx) => formatAttentionCard(row, false, idx + 1, options));
+	const blocks = promotions.map((row, idx) =>
+		isAuthoringPromotion(row)
+			? formatAuthoringCard(row, idx + 1, options)
+			: formatAttentionCard(row, false, idx + 1, options),
+	);
 	return `PUBLICATION — NEXT STEPS GUIDE\n\n${blocks.join('\n\n')}\n`;
 }
 
 function formatWhyLine(row: CanonicalPromotionRow): string {
-	let reason = formatPublicationReason(row.environments, row.reasonCode);
+	let reason = formatPublicationReason(row.environments, row.reasonCode, {
+		preflightBlockCode: row.preflightBlockCode,
+		preflightReason: row.preflightReason,
+	});
 	if (row.uncertaintyNotes.length > 0) {
 		reason += ` (${row.uncertaintyNotes.join(', ')})`;
 	}
@@ -300,23 +311,21 @@ function formatDisposableProofSection(
 	];
 
 	const proofStatus = view.disposableProof.status.toUpperCase();
+	const pendingSchema = hasPendingSchemaWork(view);
 	const proofBadge =
 		view.disposableProof.status === 'valid'
 			? c.brightGreen(`✓ ${proofStatus}`)
-			: c.red(`✗ ${proofStatus}`);
+			: pendingSchema
+				? c.red(`✗ ${proofStatus}`)
+				: c.brightYellow(`⚠ ${proofStatus}`);
 
 	lines.push(`  Disposable proof: ${proofStatus}`);
 	lines.push(`  Status: ${proofBadge} ${c.dim('(Required before future migration operations)')}`);
 	if (view.disposableProof.status !== 'valid') {
 		lines.push(c.dim('  (Does not mean Local, Preview, or Production schema is behind.)'));
-		lines.push(
-			...formatTaskPromptCommand(
-				'Remediation',
-				'pnpm db:migrate -- --target disposable-test --apply',
-				'  ',
-				c.brightCyan,
-			),
-		);
+		if (pendingSchema) {
+			lines.push(c.dim('  Remediation is listed once in NEXT ACTIONS.'));
+		}
 	}
 	return lines;
 }
@@ -392,30 +401,51 @@ function formatManualPatchesSection(
 				.join(', ');
 			lines.push(`    Rows: ${rows}`);
 		}
-		if (production.planCommand) {
-			lines.push(
-				...formatTaskPromptCommand(
-					'Aplicar',
-					production.planCommand.replace('<file>', patch.file),
-					'    ',
-					c.brightCyan,
-				),
-			);
+		if (production.status === 'PENDING' || production.status === 'BLOCKED') {
+			lines.push(c.dim('    Apply command lives once in NEXT ACTIONS.'));
 		}
 	}
 	return lines;
 }
 
+function formatPublicationSummaryCard(
+	row: CanonicalPromotionRow,
+	index: number,
+	options?: { env?: NodeJS.ProcessEnv },
+): string {
+	const c = getColors(options);
+	const transition = formatTransitionLabel(row.source, row.destination);
+	const lines = [
+		`${c.dim(String(index) + '.')} ${c.bold(row.title)}  ${c.dim(`[${row.action}] ${transition}`)}`,
+		`   ${c.dim('Why:')}     ${formatWhyLine(row)}`,
+	];
+	lines.push(`   ${c.dim('Command lives once in NEXT ACTIONS.')}`);
+	return lines.join('\n');
+}
+
+function formatAuthoringCard(
+	row: CanonicalPromotionRow,
+	index: number,
+	options?: { env?: NodeJS.ProcessEnv },
+): string {
+	const c = getColors(options);
+	return [
+		`${c.dim(String(index) + '.')} ${c.bold(row.title)}  ${c.dim('[in_progress] Authoring')}`,
+		`   ${c.dim('Why:')}     ${formatWhyLine(row)}`,
+		`   ${c.dim('Not a release obligation. Do not invitation:release or prod:apply until lifecycle is published.')}`,
+	].join('\n');
+}
+
 function formatPublicationOverview(
 	view: CanonicalStatusView,
 	headerWidth: number,
-	verbose: boolean,
 	options?: { env?: NodeJS.ProcessEnv },
 ): string[] {
 	const c = getColors(options);
 	const lines: string[] = [];
+	const { release: queue, authoring } = partitionPromotions(view.promotions);
 
-	if (view.promotions.length === 0) {
+	if (queue.length === 0 && authoring.length === 0) {
 		lines.push(c.dim('─'.repeat(headerWidth)));
 		lines.push(`  ${c.bold('PUBLICATION')}`);
 		const remoteUnverified =
@@ -429,17 +459,33 @@ function formatPublicationOverview(
 		} else {
 			lines.push('  Attention: 0 (in sync or none registered)');
 		}
-	} else {
+		return lines;
+	}
+
+	if (queue.length > 0) {
 		lines.push(c.dim('─'.repeat(headerWidth)));
 		lines.push(
-			`  ${c.headerTitle('PUBLICATION — NEXT STEPS GUIDE')} ${c.dim(`(${view.promotions.length} pending)`)}`,
+			`  ${c.headerTitle('PUBLICATION')} ${c.dim(`(${queue.length} release · commands in NEXT ACTIONS)`)}`,
 		);
 		lines.push(c.dim('─'.repeat(headerWidth)));
 		lines.push('');
 		lines.push(
-			view.promotions
-				.map((row, idx) => formatAttentionCard(row, verbose, idx + 1, options))
+			queue
+				.map((row, idx) => formatPublicationSummaryCard(row, idx + 1, options))
 				.join('\n\n'),
+		);
+	}
+
+	if (authoring.length > 0) {
+		if (lines.length > 0) lines.push('');
+		lines.push(c.dim('─'.repeat(headerWidth)));
+		lines.push(
+			`  ${c.headerTitle('AUTHORING')} ${c.dim(`(${authoring.length} in_progress · not release debt)`)}`,
+		);
+		lines.push(c.dim('─'.repeat(headerWidth)));
+		lines.push('');
+		lines.push(
+			authoring.map((row, idx) => formatAuthoringCard(row, idx + 1, options)).join('\n\n'),
 		);
 	}
 	return lines;
@@ -453,10 +499,10 @@ function formatProductionAuthWarning(
 	const c = getColors(options);
 	return [
 		'',
-		c.red('PRODUCTION AUTHORIZATION: MISSING'),
+		c.brightYellow('PRODUCTION AUTHORIZATION: MISSING (informational)'),
 		`Missing versions: ${productionAuth.authorizationMissingVersions.join(', ') || '(unknown)'}`,
 		'Schema CURRENT is not owner-authorization evidence.',
-		'No canonical command backfills historical owner-apply records.',
+		'The owner-apply ledger is local to this worktree. No canonical command backfills historical records.',
 	];
 }
 
@@ -484,10 +530,11 @@ function formatRegistrySummarySection(
 	options?: { env?: NodeJS.ProcessEnv },
 ): string[] {
 	const c = getColors(options);
+	const attention = releasePromotions(view.promotions).length;
 	const lines: string[] = [
 		'',
 		c.dim('─'.repeat(headerWidth)),
-		`  Registry invitations: ${c.bold(String(view.registryCount))}    In sync: ${c.green(String(view.inSyncCount))}    Attention: ${view.promotions.length > 0 ? c.brightYellow(String(view.promotions.length)) : c.green('0')}`,
+		`  Registry invitations: ${c.bold(String(view.registryCount))}    In sync: ${c.green(String(view.inSyncCount))}    Attention: ${attention > 0 ? c.brightYellow(String(attention)) : c.green('0')}`,
 		`  Active DB rows (not registry): Local ${c.bold(String(view.activeRowCounts.local))} · Preview ${c.bold(String(view.activeRowCounts.preview))} · Production ${c.bold(String(view.activeRowCounts.production))}`,
 	];
 
@@ -646,7 +693,7 @@ export function formatCanonicalStatusView(
 
 	lines.push(...formatRegistrySummarySection(view, headerWidth, options));
 	lines.push('');
-	lines.push(...formatPublicationOverview(view, headerWidth, verbose, options));
+	lines.push(...formatPublicationOverview(view, headerWidth, options));
 	lines.push(...formatInSyncSection(view, options?.includeInSync, options));
 	lines.push(...formatDiagnosticsSection(view, verbose, options?.diagnostics, options));
 	lines.push('');
@@ -679,7 +726,11 @@ export function formatSlugStatusView(
 		lines.push('');
 		return lines.join('\n');
 	}
-	lines.push(formatAttentionCard(row, Boolean(options?.verbose), undefined, options));
+	lines.push(
+		isAuthoringPromotion(row)
+			? formatAuthoringCard(row, 1, options)
+			: formatAttentionCard(row, Boolean(options?.verbose), undefined, options),
+	);
 	lines.push('');
 	return lines.join('\n');
 }

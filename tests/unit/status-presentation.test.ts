@@ -5,6 +5,7 @@ import { describe, expect, it } from '@jest/globals';
 import { decidePromotionAction } from '@/lib/status/decision';
 import {
 	derivePromotionRoute,
+	formatPublicationReason,
 	presentPromotionRow,
 	uncertaintyNotesForEnvironments,
 } from '@/lib/status/presentation';
@@ -123,11 +124,13 @@ describe('presentation parity with decidePromotionAction', () => {
 	});
 
 	it('does not treat unknown as a promotion path', () => {
-		expect(uncertaintyNotesForEnvironments({
-			local: 'match',
-			preview: 'match',
-			production: 'unknown',
-		})).toEqual(['PRODUCTION UNKNOWN']);
+		expect(
+			uncertaintyNotesForEnvironments({
+				local: 'match',
+				preview: 'match',
+				production: 'unknown',
+			}),
+		).toEqual(['PRODUCTION UNKNOWN']);
 	});
 
 	it('attaches existing diagnostic commands to BLOCKED and UNKNOWN handoffs without self-loops', () => {
@@ -188,5 +191,36 @@ describe('presentation parity with decidePromotionAction', () => {
 		expect(canonicalUnavailable.handoff.dryRunStepType).toBe('Manual/HITL');
 		expect(canonicalUnavailable.handoff.dryRunCommand).toBeNull();
 		expect(canonicalUnavailable.handoff.applyCommand).toBeNull();
+	});
+
+	it('does not attach release apply commands to in_progress authoring rows', () => {
+		const row = presentPromotionRow({
+			slug: 'leslie-perez',
+			title: 'Leslie',
+			eventType: 'xv',
+			lifecycle: 'in_progress',
+			action: 'PROMOTE_PRODUCTION',
+			reasonCode: 'PREVIEW_ALIGNED_PRODUCTION_BEHIND',
+			environments: { local: 'match', preview: 'match', production: 'behind' },
+			envEvidence: { local: 'LIVE', preview: 'LIVE', production: 'LIVE' },
+		});
+		expect(row.lifecycle).toBe('in_progress');
+		expect(row.action).toBe('PROMOTE_PRODUCTION');
+		expect(row.handoff.applyCommand).toBeNull();
+		expect(row.handoff.dryRunCommand).toBeNull();
+		expect(row.handoff.ownerApplyRequired).toBe(false);
+	});
+
+	it('includes the Production preflight blockCode in the publication reason', () => {
+		const environments = { local: 'match', preview: 'match', production: 'behind' } as const;
+		expect(formatPublicationReason(environments, 'PRODUCTION_PREFLIGHT_BLOCKED')).toBe(
+			'The canonical Production preflight blocked this promotion.',
+		);
+		expect(
+			formatPublicationReason(environments, 'PRODUCTION_PREFLIGHT_BLOCKED', {
+				preflightBlockCode: 'BACKUP_REQUIRED',
+				preflightReason: 'Critical backup coverage expired.',
+			}),
+		).toBe('Production preflight blocked: BACKUP_REQUIRED — Critical backup coverage expired.');
 	});
 });

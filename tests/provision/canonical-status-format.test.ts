@@ -1,5 +1,8 @@
 import { describe, expect, it } from '@jest/globals';
-import { formatCanonicalStatusView } from '../../scripts/provision/canonical-status-format.ts';
+import {
+	formatCanonicalStatusView,
+	formatSlugStatusView,
+} from '../../scripts/provision/canonical-status-format.ts';
 import { buildCanonicalStatusViewFixture } from '../helpers/canonical-status-fixture.ts';
 
 const NO_COLOR_ENV = { NO_COLOR: '1' };
@@ -21,7 +24,7 @@ describe('canonical status CLI format', () => {
 		});
 		expect(text).toContain('CURRENT 75/75');
 		expect(text).toContain('Readiness');
-		expect(text).toContain('NEEDS_DISPOSABLE_PROOF');
+		expect(text).toContain('READY');
 		expect(text).toContain('DISPOSABLE-TEST (not a persistent schema environment)');
 		expect(text).toContain('CRITICAL BACKUP');
 		expect(text).toContain('daily ausente · sin set completo');
@@ -30,21 +33,18 @@ describe('canonical status CLI format', () => {
 		expect(text).toContain('Active DB rows (not registry)');
 		expect(text).not.toMatch(/\bManaged\b/);
 		expect(text).not.toContain('PROMOTIONS');
-		expect(text).toContain('OWNER / HITL REQUIRED');
+		expect(text).toContain('OWNER / HITL');
 		expect(text).toContain('Preview → Production');
-		expect(text).toContain('[Apply]');
-		expect(text).not.toContain('Verify:');
-		expect(text).toContain('Apply:');
 		expect(text).toContain('Task: prod:apply');
 		expect(text).toContain('Escribir: --slug victoria-y-roberto --apply');
 		expect(text).not.toContain('pnpm prod:apply -- --slug victoria-y-roberto --apply');
-		expect(text).toContain('Aplicar:');
+		expect(text).toContain('Aplicar parche:');
 		expect(text).toContain(
 			'Escribir: --patch scripts/manual/production-patches/20260812_p0_itinerary_gallery_structural_contracts.sql --apply',
 		);
 		expect(text).not.toContain('--apply --apply');
-		expect(text).toContain('Task: db:migrate');
-		expect(text).toContain('Escribir: --target disposable-test --apply');
+		expect(text).not.toContain('Escribir: --target disposable-test --apply');
+		expect(text).toContain('Command lives once in NEXT ACTIONS');
 		expect(text).toContain('Authorization');
 		expect(text).toContain('GRANDFATHERED');
 		expect(text).toContain('NOT_APPLICABLE');
@@ -93,9 +93,10 @@ describe('canonical status CLI format', () => {
 			{ env: NO_COLOR_ENV },
 		);
 		expect(text).toContain('CURRENT 75/75');
-		expect(text).toContain('PRODUCTION AUTHORIZATION: MISSING');
+		expect(text).toContain('PRODUCTION AUTHORIZATION: MISSING (informational)');
 		expect(text).toContain('20260807120000');
 		expect(text).toContain('Schema CURRENT is not owner-authorization evidence');
+		expect(text).toContain('local to this worktree');
 	});
 
 	it('prints Preview apply as invitation:release task args', () => {
@@ -131,5 +132,37 @@ describe('canonical status CLI format', () => {
 		expect(text).not.toContain(
 			'pnpm invitation:release -- --slug renata --targets preview --apply',
 		);
+	});
+
+	it('does not emit release apply commands for in_progress authoring in the slug view', () => {
+		const base = buildCanonicalStatusViewFixture();
+		const promotion = base.promotions[0];
+		if (!promotion) throw new Error('expected fixture promotion');
+		const text = formatSlugStatusView(
+			buildCanonicalStatusViewFixture({
+				promotions: [
+					{
+						...promotion,
+						slug: 'leslie-perez',
+						title: 'XV años de Leslie',
+						lifecycle: 'in_progress',
+						action: 'BLOCKED',
+						reasonCode: 'PRODUCTION_PREFLIGHT_BLOCKED',
+						source: null,
+						destination: null,
+						handoff: {
+							...promotion.handoff,
+							applyCommand: 'pnpm prod:apply -- --slug leslie-perez --apply',
+						},
+					},
+				],
+			}),
+			'leslie-perez',
+			{ env: NO_COLOR_ENV },
+		);
+		expect(text).toContain('[in_progress] Authoring');
+		expect(text).toContain('Not a release obligation');
+		expect(text).not.toContain('Task: prod:apply');
+		expect(text).not.toContain('--slug leslie-perez --apply');
 	});
 });

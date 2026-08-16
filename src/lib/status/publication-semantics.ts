@@ -6,6 +6,7 @@ import {
 	type OperatorRemediation,
 	unverifiedRefresh,
 } from './operator-remediation';
+import { releasePromotions } from './promotion-lifecycle';
 import type { CanonicalPromotionRow, CanonicalStatusView } from './types';
 
 function contentParityCommand(slug: string, eventType: string): string {
@@ -334,13 +335,14 @@ export function publicationQueueRemediation(view: CanonicalStatusView): Operator
 			'Cola clasificada con evidencia LIVE o en caché vigente.',
 		);
 	}
-	if (view.promotions.length === 0) {
+	const releaseQueue = releasePromotions(view.promotions);
+	if (releaseQueue.length === 0) {
 		return noneNeeded('No hay invitaciones del registro que requieran acción.', 'registro');
 	}
-	const blocked = view.promotions.some((row) => row.action === 'BLOCKED');
+	const blocked = releaseQueue.some((row) => row.action === 'BLOCKED');
 	return {
 		semantic: blocked ? 'blocked' : 'neutral',
-		meaning: `${view.promotions.length} invitación(es) del registro requieren atención.`,
+		meaning: `${releaseQueue.length} invitación(es) del registro requieren atención.`,
 		why: null,
 		environmentLabel: 'registro',
 		nextAction: 'Siga la acción de cada tarjeta. No promocione filas BLOCKED o UNKNOWN.',

@@ -31,9 +31,11 @@ export function combineEvidence(states: readonly EvidenceState[]): EvidenceState
 export function invitationAttentionCount(
 	environmentsBySlug: ReadonlyMap<string, Record<TargetEnv, EnvironmentPromotionState>>,
 	env: TargetEnv,
+	options?: { excludeSlugs?: ReadonlySet<string> },
 ): number {
 	let count = 0;
-	for (const states of environmentsBySlug.values()) {
+	for (const [slug, states] of environmentsBySlug) {
+		if (options?.excludeSlugs?.has(slug)) continue;
 		if (states[env] !== 'match') count += 1;
 	}
 	return count;

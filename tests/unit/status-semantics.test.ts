@@ -21,7 +21,6 @@ import { buildCanonicalStatusViewFixture } from '@tests/helpers/canonical-status
 
 const commandOf = (remediation: { steps: { command: string | null }[] }) =>
 	remediation.steps.find((step) => step.command)?.command ?? null;
-const typeOf = (remediation: { steps: { type: string }[] }) => remediation.steps[0]?.type ?? null;
 
 describe('status semantics', () => {
 	it('has a presentable, non-authoritative remediation for every canonical diagnostic code', () => {
@@ -66,7 +65,7 @@ describe('status semantics', () => {
 		expect(authorizationSemantic('NOT_APPLICABLE')).toBe('neutral');
 		expect(authorizationSemantic('RECORDED')).toBe('verified');
 		expect(authorizationSemantic('GRANDFATHERED')).toBe('verified');
-		expect(authorizationSemantic('MISSING')).toBe('blocked');
+		expect(authorizationSemantic('MISSING')).toBe('neutral');
 		expect(authorizationSemantic('UNVERIFIED')).toBe('unverified');
 		const local = authorizationRemediation(
 			buildCanonicalStatusViewFixture().environments.local,
@@ -83,13 +82,26 @@ describe('status semantics', () => {
 			authorizationMissingVersions: ['20260807120000'],
 		};
 		const remediation = authorizationRemediation(production);
-		expect(remediation.semantic).toBe('blocked');
+		expect(remediation.semantic).toBe('neutral');
 		expect(remediation.noCanonicalRemediation).toBe(true);
+		expect(remediation.steps).toHaveLength(0);
 		expect(
 			remediation.steps.filter((step) => !step.optional).find((step) => step.command)
 				?.command ?? null,
 		).toBeNull();
-		expect(typeOf(remediation)).toBe('Manual/HITL');
+		const diagnostic = diagnosticRemediation({
+			code: 'PRODUCTION_AUTHORIZATION_MISSING',
+			domain: 'schema',
+			evidence: 'LIVE',
+			environment: 'production',
+			cause: 'Production history includes 20260807120000 without owner-apply evidence.',
+			affectedFieldCount: 1,
+			affectedSectionCount: 1,
+			semanticPaths: ['20260807120000'],
+		});
+		expect(diagnostic.semantic).toBe('neutral');
+		expect(diagnostic.steps).toHaveLength(0);
+		expect(diagnostic.noCanonicalRemediation).toBe(true);
 	});
 
 	it('does not treat an unverified empty publication queue as in-sync', () => {

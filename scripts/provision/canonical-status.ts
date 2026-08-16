@@ -27,13 +27,13 @@ import {
 	invitationAttentionCount,
 	migrationPresenceForEnv,
 } from '../../src/lib/status/evidence.ts';
+import { authoringSlugSet } from '../../src/lib/status/promotion-lifecycle.ts';
 import { getValidatedMigrationFiles } from '../db/apply-migrations.ts';
 import {
 	buildUnverifiedManualPatchStatuses,
 	readManualPatchStatuses,
 } from './manual-patch-status.ts';
 import type {
-	CanonicalDiagnostic,
 	CanonicalEnvSummary,
 	CanonicalStatusView,
 	DisposableProofStatus,
@@ -100,23 +100,6 @@ function envSummary(
 		authorizationMissingVersions: authorization.missingVersions,
 		evidence,
 		probedAt: status.freshness?.probedAt ?? null,
-	};
-}
-
-function authorizationDiagnostic(production: CanonicalEnvSummary): CanonicalDiagnostic | null {
-	if (production.authorizationIntegrity !== 'MISSING') return null;
-	const missing = production.authorizationMissingVersions.slice(0, 8).join(', ');
-	return {
-		code: 'PRODUCTION_AUTHORIZATION_MISSING',
-		domain: 'schema',
-		evidence: production.evidence,
-		environment: 'production',
-		cause: missing
-			? `Production history includes ${missing} without owner-apply evidence.`
-			: 'Production history includes migrations without owner-apply evidence.',
-		affectedFieldCount: production.authorizationMissingVersions.length,
-		affectedSectionCount: 1,
-		semanticPaths: production.authorizationMissingVersions.slice(0, 50),
 	};
 }
 
@@ -191,22 +174,27 @@ export async function buildCanonicalStatusView(options?: {
 	const envStateMap = new Map(
 		Object.entries(promotion.environmentsBySlug).map(([slug, states]) => [slug, states]),
 	);
+	const authoringSlugs = authoringSlugSet(
+		listInvitationDefinitions().filter((definition) =>
+			options?.slugs ? options.slugs.includes(definition.slug) : true,
+		),
+	);
 
 	const environments = {
 		local: envSummary(
 			general.environments.local,
 			expectedVersions,
-			invitationAttentionCount(envStateMap, 'local'),
+			invitationAttentionCount(envStateMap, 'local', { excludeSlugs: authoringSlugs }),
 		),
 		preview: envSummary(
 			general.environments.preview,
 			expectedVersions,
-			invitationAttentionCount(envStateMap, 'preview'),
+			invitationAttentionCount(envStateMap, 'preview', { excludeSlugs: authoringSlugs }),
 		),
 		production: envSummary(
 			general.environments.production,
 			expectedVersions,
-			invitationAttentionCount(envStateMap, 'production'),
+			invitationAttentionCount(envStateMap, 'production', { excludeSlugs: authoringSlugs }),
 		),
 	};
 
@@ -277,8 +265,6 @@ export async function buildCanonicalStatusView(options?: {
 		rowsByEnv: promotion.rowsByEnv,
 		includeSemanticDetail: Boolean(options?.diagnostics),
 	});
-	const authFinding = authorizationDiagnostic(environments.production);
-	if (authFinding) view.diagnostics = [authFinding, ...view.diagnostics];
 	annotateUnknownPublicationCauses(view);
 	return view;
 }
