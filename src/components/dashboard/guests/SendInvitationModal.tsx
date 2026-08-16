@@ -266,6 +266,10 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 					Sin teléfono registrado. Al compartir, WhatsApp te permitirá elegir el contacto.
 				</span>
 			)}
+			<span className="guest-field-hint">
+				Tip: Al abrirse WhatsApp, espere un momento a que aparezca la foto antes de
+				presionar Enviar.
+			</span>
 		</div>
 	);
 
