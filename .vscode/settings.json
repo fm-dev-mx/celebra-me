@@ -55,5 +55,6 @@
   "markdown.preview.openMarkdownLinks": "inEditor",
   "scm.repositories.selectionMode": "single",
   "scm.repositories.explorer": true,
-  "git.detectWorktrees": true
+  "git.detectWorktrees": true,
+  "terminal.integrated.defaultProfile.windows": "PowerShell"
 }

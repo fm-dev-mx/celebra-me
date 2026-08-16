@@ -22,7 +22,7 @@
             "presentation": {
                 "echo": false,
                 "clear": false,
-                "reveal": "always",
+                "reveal": "silent",
                 "panel": "dedicated",
                 "focus": false
             },
@@ -49,7 +49,7 @@
             "presentation": {
                 "echo": false,
                 "clear": false,
-                "reveal": "always",
+                "reveal": "silent",
                 "panel": "dedicated",
                 "focus": false
             },
@@ -76,7 +76,7 @@
             "presentation": {
                 "echo": false,
                 "clear": false,
-                "reveal": "always",
+                "reveal": "silent",
                 "panel": "dedicated",
                 "focus": false
             },
@@ -103,7 +103,7 @@
             "presentation": {
                 "echo": false,
                 "clear": false,
-                "reveal": "always",
+                "reveal": "silent",
                 "panel": "dedicated",
                 "focus": false
             },
@@ -130,7 +130,7 @@
             "presentation": {
                 "echo": false,
                 "clear": false,
-                "reveal": "always",
+                "reveal": "silent",
                 "panel": "dedicated",
                 "focus": false
             },
@@ -157,7 +157,7 @@
             "presentation": {
                 "echo": false,
                 "clear": false,
-                "reveal": "always",
+                "reveal": "silent",
                 "panel": "dedicated",
                 "focus": false
             },
@@ -184,7 +184,7 @@
             "presentation": {
                 "echo": false,
                 "clear": false,
-                "reveal": "always",
+                "reveal": "silent",
                 "panel": "dedicated",
                 "focus": false
             },
@@ -211,7 +211,7 @@
             "presentation": {
                 "echo": false,
                 "clear": false,
-                "reveal": "always",
+                "reveal": "silent",
                 "panel": "dedicated",
                 "focus": false
             },
@@ -238,7 +238,7 @@
             "presentation": {
                 "echo": false,
                 "clear": false,
-                "reveal": "always",
+                "reveal": "silent",
                 "panel": "dedicated",
                 "focus": false
             },
@@ -265,7 +265,7 @@
             "presentation": {
                 "echo": false,
                 "clear": false,
-                "reveal": "always",
+                "reveal": "silent",
                 "panel": "dedicated",
                 "focus": false
             },
@@ -292,7 +292,7 @@
             "presentation": {
                 "echo": false,
                 "clear": false,
-                "reveal": "always",
+                "reveal": "silent",
                 "panel": "dedicated",
                 "focus": false
             }
@@ -318,7 +318,7 @@
             "presentation": {
                 "echo": false,
                 "clear": false,
-                "reveal": "always",
+                "reveal": "silent",
                 "panel": "dedicated",
                 "focus": false
             }
@@ -344,7 +344,7 @@
             "presentation": {
                 "echo": false,
                 "clear": false,
-                "reveal": "always",
+                "reveal": "silent",
                 "panel": "dedicated",
                 "focus": false
             }
@@ -370,7 +370,7 @@
             "presentation": {
                 "echo": false,
                 "clear": false,
-                "reveal": "always",
+                "reveal": "silent",
                 "panel": "dedicated",
                 "focus": false
             }
@@ -396,7 +396,7 @@
             "presentation": {
                 "echo": false,
                 "clear": false,
-                "reveal": "always",
+                "reveal": "silent",
                 "panel": "dedicated",
                 "focus": false
             }
@@ -416,13 +416,13 @@
             "isBackground": true,
             "problemMatcher": [],
             "icon": {
-                "id": "camera",
+                "id": "device-camera",
                 "color": "terminal.ansiMagenta"
             },
             "presentation": {
                 "echo": false,
                 "clear": false,
-                "reveal": "always",
+                "reveal": "silent",
                 "panel": "dedicated",
                 "focus": false
             }
@@ -448,7 +448,7 @@
             "presentation": {
                 "echo": false,
                 "clear": false,
-                "reveal": "always",
+                "reveal": "silent",
                 "panel": "dedicated",
                 "focus": false
             }
