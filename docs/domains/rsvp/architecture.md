@@ -146,6 +146,13 @@ live tree.
 Older docs may mention `/admin/rsvp` or `/api/invitation/*`. Those are historical references and
 must not be treated as active system entrypoints.
 
+## Related
+
+Operation counts per RSVP submit, duplicate-submit UI, and how RSVP reliability relates to
+invitation LCP/TTFB are documented in
+[`../invitations/performance-metrics.md`](../invitations/performance-metrics.md). This file remains
+the RSVP route and layer SSOT.
+
 ## Source-of-Truth Files
 
 - `src/pages/dashboard/**`

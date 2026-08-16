@@ -112,6 +112,19 @@ ownership:
           - 'Creation contract'
           - 'Agent workflow'
 
+    - aspect: 'Public invitation cache-header contract'
+      owner: 'docs/domains/invitations/public-response-cache-policy.md'
+      non_owners:
+          - 'Performance metric catalog'
+          - 'Archived performance plans'
+
+    - aspect: 'Invitation delivery performance metrics'
+      owner: 'docs/domains/invitations/performance-metrics.md'
+      non_owners:
+          - 'Cache-header contract'
+          - 'Provider dashboards as policy'
+          - 'Archived performance plans'
+
     - aspect: 'Database/invitation operational cheatsheets'
       owner: 'docs/domains/database/cheatsheets/'
       non_owners:

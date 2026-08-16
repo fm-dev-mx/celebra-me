@@ -64,6 +64,10 @@ context resolution, use `.agent/routing-matrix.yaml` and `.agent/ownership.yaml`
   production runbook
 - [`docs/invitations/README.md`](../docs/invitations/README.md) — Per-client invitation Markdown
   state index
+- [`docs/domains/invitations/public-response-cache-policy.md`](../docs/domains/invitations/public-response-cache-policy.md)
+  — Public and private invitation cache-header contract
+- [`docs/domains/invitations/performance-metrics.md`](../docs/domains/invitations/performance-metrics.md)
+  — Canonical delivery metrics, budgets, and monitoring
 
 ## Planning & Governance
 

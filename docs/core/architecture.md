@@ -64,7 +64,10 @@ the hybrid TypeScript 7 CLI / TypeScript 6 tooling-API arrangement) lives in
 ### Default Strategy
 
 - Pages execute through the Astro SSR adapter. Public pages may opt into cache headers, while
-  personalized and protected responses remain private or non-cacheable.
+  personalized and protected responses remain private or non-cacheable. Invitation cache headers are
+  specified in [`docs/domains/invitations/public-response-cache-policy.md`](../domains/invitations/public-response-cache-policy.md).
+  Delivery metrics, HTML budgets, and runtime monitoring are specified in
+  [`docs/domains/invitations/performance-metrics.md`](../domains/invitations/performance-metrics.md).
 - Runtime server execution covers:
   - user input,
   - side effects,

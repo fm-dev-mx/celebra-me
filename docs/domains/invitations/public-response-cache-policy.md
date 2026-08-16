@@ -55,6 +55,10 @@ without a separate freshness decision and validation plan.
 
 ## Related planning
 
+Canonical delivery metrics, HTML budgets, and runtime monitoring live in
+[`performance-metrics.md`](performance-metrics.md). This file remains the cache-header correctness
+SSOT; do not duplicate budget numbers here.
+
 Actionable public-invitation performance or section-contract work is tracked under
 `.agent/plans/active/` (see `section-architecture-refactor-plan.md`) while a next step remains.
 Plan governance and Task Contract semantics live in `.agent/plans/README.md`.
