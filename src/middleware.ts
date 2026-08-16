@@ -9,6 +9,7 @@ import { verifyTrustedDeviceToken } from '@/lib/rsvp/security/trusted-device';
 import { setCsrfToken } from '@/lib/rsvp/security/csrf';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { errorResponse } from '@/lib/rsvp/core/http';
+import { isPrivateNoStorePath, PRIVATE_CACHE_CONTROL } from '@/lib/http/private-cache-path';
 import { isDevMfaBypassEnabled } from '@/lib/server/dev-mfa-bypass';
 import { isPreviewMfaBypassEnabled } from '@/lib/server/preview-mfa-bypass';
 
@@ -72,7 +73,7 @@ function applyShortId404Headers(pathname: string, response: Response): Response 
 		return response;
 	}
 
-	response.headers.set('Cache-Control', 'no-store, private');
+	response.headers.set('Cache-Control', PRIVATE_CACHE_CONTROL);
 	appendVaryHeader(response, 'User-Agent');
 	return response;
 }
@@ -83,7 +84,7 @@ function isPreviewRoute(pathname: string): boolean {
 
 function privateRedirect(redirect: (path: string) => Response, path: string): Response {
 	const response = redirect(path);
-	if (response instanceof Response) response.headers.set('Cache-Control', 'no-store, private');
+	if (response instanceof Response) response.headers.set('Cache-Control', PRIVATE_CACHE_CONTROL);
 	return response;
 }
 
@@ -92,8 +93,26 @@ function applyInvitationRoute404Headers(pathname: string, response: Response): R
 		return response;
 	}
 
-	response.headers.set('Cache-Control', 'no-store, private');
+	response.headers.set('Cache-Control', PRIVATE_CACHE_CONTROL);
 	return response;
+}
+
+function applyPrivateNoStore(pathname: string, response: Response): Response {
+	if (!isPrivateNoStorePath(pathname)) {
+		return response;
+	}
+	if (typeof response?.headers?.set !== 'function') {
+		return response;
+	}
+	response.headers.set('Cache-Control', PRIVATE_CACHE_CONTROL);
+	return response;
+}
+
+function finalizeMiddlewareResponse(pathname: string, response: Response): Response {
+	return applyPrivateNoStore(
+		pathname,
+		applyInvitationRoute404Headers(pathname, applyShortId404Headers(pathname, response)),
+	);
 }
 
 function buildCookieOptions(maxAge: number) {
@@ -381,7 +400,7 @@ async function handleProtectedAuthRequest(
 				'Es necesario cambiar la contraseña temporal para continuar.',
 			),
 		);
-		response.headers.set('Cache-Control', 'no-store, private');
+		response.headers.set('Cache-Control', PRIVATE_CACHE_CONTROL);
 		return response;
 	}
 
@@ -401,12 +420,7 @@ async function handleProtectedAuthRequest(
 
 	syncPostAuthCookies(cookies, authContext, trustCookie, now);
 
-	locals.session = buildSessionFromUser(
-		user,
-		accessToken,
-		authContext.role,
-		mustChangePassword,
-	);
+	locals.session = buildSessionFromUser(user, accessToken, authContext.role, mustChangePassword);
 	locals.hasAdminStrongAuth = effectiveAdminStrongAuth;
 	if (!isApiRoute && !isPreviewRoute(url.pathname)) {
 		locals.csrfToken = setCsrfToken(cookies);
@@ -437,10 +451,7 @@ export const onRequest = defineMiddleware(
 
 		if (!shouldHandleAuth(url.pathname)) {
 			const response = await next();
-			return applyInvitationRoute404Headers(
-				url.pathname,
-				applyShortId404Headers(url.pathname, response),
-			);
+			return finalizeMiddlewareResponse(url.pathname, response);
 		}
 
 		let authRedirect: Response | null;
@@ -458,22 +469,22 @@ export const onRequest = defineMiddleware(
 				const response = errorResponse(
 					new ApiError(500, 'internal_error', 'No fue posible validar la sesión.'),
 				);
-				response.headers.set('Cache-Control', 'no-store, private');
+				response.headers.set('Cache-Control', PRIVATE_CACHE_CONTROL);
 				return response;
 			}
 			if (url.pathname === '/login') {
 				clearPrimaryAuthCookies(cookies);
 				const response = await next();
-				return applyShortId404Headers(url.pathname, response);
+				return finalizeMiddlewareResponse(url.pathname, response);
 			}
-			return applyShortId404Headers(url.pathname, privateRedirect(redirect, '/login'));
+			return finalizeMiddlewareResponse(url.pathname, privateRedirect(redirect, '/login'));
 		}
 
 		if (authRedirect) {
-			return applyShortId404Headers(url.pathname, authRedirect);
+			return finalizeMiddlewareResponse(url.pathname, authRedirect);
 		}
 
 		const response = await next();
-		return applyShortId404Headers(url.pathname, response);
+		return finalizeMiddlewareResponse(url.pathname, response);
 	},
 );

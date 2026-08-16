@@ -153,6 +153,7 @@ describe('auth endpoints', () => {
 			request: createMockRequest(),
 		} as never);
 		expect(response.status).toBe(401);
+		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
 	});
 
 	it('session endpoint returns auth dto when session exists', async () => {
@@ -172,6 +173,7 @@ describe('auth endpoints', () => {
 			request: createMockRequest(),
 		} as never);
 		expect(response.status).toBe(200);
+		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
 	});
 
 	it('session endpoint returns debug payload when debug mode is enabled', async () => {

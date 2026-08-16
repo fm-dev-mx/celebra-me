@@ -4,7 +4,12 @@ import {
 	getHostSessionFromRequest,
 	getSessionDebugSnapshotFromRequest,
 } from '@/lib/rsvp/auth/auth';
-import { errorResponse, jsonResponse, unauthorizedResponse } from '@/lib/rsvp/core/http';
+import {
+	errorResponse,
+	jsonResponse,
+	unauthorizedResponse,
+	withPrivateCache,
+} from '@/lib/rsvp/core/http';
 import { buildAuthSessionDto } from '@/lib/rsvp/services/auth-access.service';
 import { findEventBySlugService } from '@/lib/rsvp/repositories/event.repository';
 
@@ -57,15 +62,17 @@ export const GET: APIRoute = async ({ request }) => {
 			: null;
 		const session = sessionSnapshot?.context ?? (await getHostSessionFromRequest(request));
 		if (!session) {
-			if (!debugEnabled || !sessionSnapshot) return unauthorizedResponse();
-			return errorResponse(
-				new ApiError(401, 'unauthorized', 'Unauthorized.', {
-					debug: {
-						hasAccessToken: sessionSnapshot.hasAccessToken,
-						tokenSource: sessionSnapshot.tokenSource,
-						reason: sessionSnapshot.reason,
-					},
-				}),
+			if (!debugEnabled || !sessionSnapshot) return withPrivateCache(unauthorizedResponse());
+			return withPrivateCache(
+				errorResponse(
+					new ApiError(401, 'unauthorized', 'Unauthorized.', {
+						debug: {
+							hasAccessToken: sessionSnapshot.hasAccessToken,
+							tokenSource: sessionSnapshot.tokenSource,
+							reason: sessionSnapshot.reason,
+						},
+					}),
+				),
 			);
 		}
 		const dto = await buildAuthSessionDto({
@@ -74,11 +81,11 @@ export const GET: APIRoute = async ({ request }) => {
 			accessToken: session.accessToken,
 		});
 		if (!debugEnabled) {
-			return jsonResponse(dto);
+			return withPrivateCache(jsonResponse(dto));
 		}
 		const payload = await buildDebugPayload(dto, sessionSnapshot!, requestedSlug);
-		return jsonResponse(payload);
+		return withPrivateCache(jsonResponse(payload));
 	} catch (error) {
-		return errorResponse(error);
+		return withPrivateCache(errorResponse(error));
 	}
 };

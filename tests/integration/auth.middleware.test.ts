@@ -517,4 +517,119 @@ describe('Middleware: Authentication & Authorization', () => {
 
 		expect(mockRedirect).not.toHaveBeenCalled();
 	});
+
+	it('marks authenticated dashboard HTML as private no-store without changing the body', async () => {
+		const context = createContext('/dashboard/invitados');
+		mockCookies.get.mockReturnValue({ value: 'valid-token' });
+		mockSupabaseResponse({
+			id: 'user-1',
+			email: 'host@test.com',
+			app_metadata: { role: 'host_client' },
+			amr: [{ method: 'password' }],
+		});
+		mockNext.mockReturnValue(new Response('<html>dashboard</html>', { status: 200 }));
+
+		const response = await middleware(context as unknown as APIContext, mockNext);
+
+		expect(response).toBeInstanceOf(Response);
+		if (!(response instanceof Response)) throw new Error('Expected a response.');
+		expect(response.status).toBe(200);
+		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
+		expect(await response.text()).toBe('<html>dashboard</html>');
+	});
+
+	it('marks dashboard JSON as private no-store including unauthenticated route-guard errors', async () => {
+		const context = createContext('/api/dashboard/guests');
+		mockCookies.get.mockReturnValue(null);
+		mockNext.mockReturnValue(
+			new Response(JSON.stringify({ success: false, error: { code: 'unauthorized' } }), {
+				status: 401,
+				headers: { 'Content-Type': 'application/json' },
+			}),
+		);
+
+		const response = await middleware(context as unknown as APIContext, mockNext);
+
+		expect(response).toBeInstanceOf(Response);
+		if (!(response instanceof Response)) throw new Error('Expected a response.');
+		expect(response.status).toBe(401);
+		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
+		expect(await response.json()).toEqual({
+			success: false,
+			error: { code: 'unauthorized' },
+		});
+	});
+
+	it('marks GET /api/auth/session as private no-store without changing status or payload', async () => {
+		const context = createContext('/api/auth/session');
+		mockNext.mockReturnValue(
+			new Response(JSON.stringify({ success: false }), {
+				status: 401,
+				headers: { 'Content-Type': 'application/json' },
+			}),
+		);
+
+		const response = await middleware(context as unknown as APIContext, mockNext);
+
+		expect(mockNext).toHaveBeenCalled();
+		expect(response).toBeInstanceOf(Response);
+		if (!(response instanceof Response)) throw new Error('Expected a response.');
+		expect(response.status).toBe(401);
+		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
+		expect(await response.json()).toEqual({ success: false });
+	});
+
+	it('does not rewrite public login or health responses', async () => {
+		const loginContext = createContext('/login');
+		mockNext.mockReturnValue(new Response('<html>login</html>', { status: 200 }));
+
+		const loginResponse = await middleware(loginContext as unknown as APIContext, mockNext);
+
+		expect(loginResponse).toBeInstanceOf(Response);
+		if (!(loginResponse instanceof Response)) throw new Error('Expected a login response.');
+		expect(loginResponse.headers.get('Cache-Control')).toBeNull();
+
+		const healthContext = createContext('/api/health');
+		mockNext.mockReturnValue(
+			new Response(JSON.stringify({ status: 'healthy' }), {
+				status: 200,
+				headers: { 'Content-Type': 'application/json' },
+			}),
+		);
+
+		const healthResponse = await middleware(healthContext as unknown as APIContext, mockNext);
+
+		expect(healthResponse).toBeInstanceOf(Response);
+		if (!(healthResponse instanceof Response)) throw new Error('Expected a health response.');
+		expect(healthResponse.headers.get('Cache-Control')).toBeNull();
+		expect(await healthResponse.json()).toEqual({ status: 'healthy' });
+	});
+
+	it('preserves anonymous invitation origin-revalidate headers', async () => {
+		const context = createContext('/xv/romina-rios-chaparro');
+		mockNext.mockReturnValue(
+			new Response('<html>invitation</html>', {
+				status: 200,
+				headers: {
+					'Cache-Control': 'public, max-age=0, s-maxage=0, must-revalidate',
+				},
+			}),
+		);
+
+		const response = await middleware(context as unknown as APIContext, mockNext);
+
+		expect(response).toBeInstanceOf(Response);
+		if (!(response instanceof Response)) throw new Error('Expected a response.');
+		expect(response.headers.get('Cache-Control')).toBe(
+			'public, max-age=0, s-maxage=0, must-revalidate',
+		);
+	});
+
+	it('does not throw when next() returns a headerless mock for a private path', async () => {
+		const context = createContext('/api/auth/session');
+
+		const response = await middleware(context as unknown as APIContext, mockNext);
+
+		expect(response).toEqual({ status: 200 });
+	});
 });
