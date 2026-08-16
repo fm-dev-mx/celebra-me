@@ -45,4 +45,13 @@ describe('anonymous invitation HTML cache contract', () => {
 		expect(source).not.toContain('stale-while-revalidate');
 		expect(source).not.toMatch(/s-maxage=[1-9]/);
 	});
+
+	it('forces private no-store when an invite query is present', () => {
+		const source = readFileSync(
+			join(process.cwd(), 'src/pages/[eventType]/[slug].astro'),
+			'utf8',
+		);
+		expect(source).toContain('hasInviteParam');
+		expect(source).toMatch(/!hasInviteParam[\s\S]{0,200}'no-store, private'/);
+	});
 });

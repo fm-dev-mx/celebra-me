@@ -47,6 +47,19 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 			expect(publicId.endsWith('.webp')).toBe(false);
 		});
 
+		it('changes the public ID when the content hash changes', () => {
+			const first = createHash('sha256').update('hero-bytes-v1').digest('hex');
+			const second = createHash('sha256').update('hero-bytes-v2').digest('hex');
+			const input = {
+				eventType: 'xv',
+				slug: 'renata',
+				key: 'hero-desktop',
+			};
+			expect(buildCloudinaryPublicId({ ...input, sha256: first })).not.toBe(
+				buildCloudinaryPublicId({ ...input, sha256: second }),
+			);
+		});
+
 		it('uses eventType for non-XV invitations', () => {
 			const dummySha = createHash('sha256').update('hello-world').digest('hex');
 			expect(

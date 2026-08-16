@@ -81,6 +81,7 @@
         "test:db:managed-contracts": "tsx scripts/db/disposable-test-env.ts run-managed-db-contracts",
         "test:local-render-corpus": "tsx scripts/observability/run-local-render-corpus-regression.ts",
         "invitation:local-corpus": "tsx scripts/provision/local-render-corpus/cli.ts",
+        "invitation:delivery:baseline": "tsx scripts/invitation/measure-delivery-baseline.ts",
         "db:disposable:phase3-concurrency": "tsx scripts/db/disposable-test-env.ts run-phase3-concurrency-test",
         "lane:sync": "tsx scripts/agent/lane-sync.ts",
         "db:validate:pipeline": "tsx scripts/db/validate-pipeline.ts",

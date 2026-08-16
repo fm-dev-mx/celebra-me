@@ -91,6 +91,8 @@ describe('resolveInvitationContent', () => {
 		expect(mockAdaptDbEvent).toHaveBeenCalled();
 		expect(mockAdaptEvent).not.toHaveBeenCalled();
 		expect(mockGetRoutable).not.toHaveBeenCalled();
+		expect(mockFindPublishedBySlugAndEventType).toHaveBeenCalledTimes(1);
+		expect(mockFindInvitationBySlug).not.toHaveBeenCalled();
 	});
 
 	it('resolves static demo when Supabase credentials are missing', async () => {

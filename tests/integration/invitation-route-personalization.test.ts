@@ -90,10 +90,25 @@ describe('invitation route personalization', () => {
 			guestContext: null,
 			redirectPath: null,
 		});
+		expect(getInvitationContextByInviteIdMock).toHaveBeenCalledTimes(1);
 		expect(trackInvitationViewMock).not.toHaveBeenCalled();
 	});
 
-	it('allows matched live routes and records invitation views once context resolves', async () => {
+	it('does not look up a guest when the invite id is empty', async () => {
+		const result = await resolveRoutePersonalization({
+			inviteId: '',
+			currentPathWithQuery: '/xv/renata?invite=',
+			routeEventType: 'xv',
+			routeSlug: 'renata',
+			routeIsDemo: false,
+		});
+
+		expect(result).toEqual({ guestContext: null, redirectPath: null });
+		expect(getInvitationContextByInviteIdMock).not.toHaveBeenCalled();
+		expect(trackInvitationViewMock).not.toHaveBeenCalled();
+	});
+
+	it('looks up guest context once for a live invite and does not retry on success', async () => {
 		getInvitationContextByInviteIdMock.mockResolvedValue({
 			inviteId: 'invite-1',
 			eventSlug: 'ximena-meza-trasvina',
@@ -119,6 +134,8 @@ describe('invitation route personalization', () => {
 
 		expect(result.redirectPath).toBeNull();
 		expect(result.guestContext?.inviteId).toBe('invite-1');
+		expect(getInvitationContextByInviteIdMock).toHaveBeenCalledTimes(1);
+		expect(trackInvitationViewMock).toHaveBeenCalledTimes(1);
 		expect(trackInvitationViewMock).toHaveBeenCalledWith('invite-1');
 	});
 });
