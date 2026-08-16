@@ -4,6 +4,11 @@ import {
 } from '@/lib/invitation/route-personalization';
 import { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
 import { trackInvitationView } from '@/lib/rsvp/services/rsvp-submission.service';
+import {
+	PERSONALIZED_CONTEXT_SERVICE_CALLS_ON_LOOKUP,
+	PERSONALIZED_VIEW_TRACK_WRITES_ON_HIT,
+	assertObservedOperationCount,
+} from '@/lib/invitation/delivery-contract';
 
 jest.mock('@/lib/rsvp/services/invitation-context.service', () => ({
 	getInvitationContextByInviteId: jest.fn(),
@@ -90,7 +95,11 @@ describe('invitation route personalization', () => {
 			guestContext: null,
 			redirectPath: null,
 		});
-		expect(getInvitationContextByInviteIdMock).toHaveBeenCalledTimes(1);
+		assertObservedOperationCount(
+			getInvitationContextByInviteIdMock.mock.calls.length,
+			PERSONALIZED_CONTEXT_SERVICE_CALLS_ON_LOOKUP,
+			'personalized-context-service',
+		);
 		expect(trackInvitationViewMock).not.toHaveBeenCalled();
 	});
 
@@ -134,8 +143,16 @@ describe('invitation route personalization', () => {
 
 		expect(result.redirectPath).toBeNull();
 		expect(result.guestContext?.inviteId).toBe('invite-1');
-		expect(getInvitationContextByInviteIdMock).toHaveBeenCalledTimes(1);
-		expect(trackInvitationViewMock).toHaveBeenCalledTimes(1);
+		assertObservedOperationCount(
+			getInvitationContextByInviteIdMock.mock.calls.length,
+			PERSONALIZED_CONTEXT_SERVICE_CALLS_ON_LOOKUP,
+			'personalized-context-service',
+		);
+		assertObservedOperationCount(
+			trackInvitationViewMock.mock.calls.length,
+			PERSONALIZED_VIEW_TRACK_WRITES_ON_HIT,
+			'view-track',
+		);
 		expect(trackInvitationViewMock).toHaveBeenCalledWith('invite-1');
 	});
 });

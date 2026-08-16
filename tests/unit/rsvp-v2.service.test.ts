@@ -7,6 +7,7 @@ import {
 	RSVP_SUBMIT_BY_INVITE_MUTATION_RPCS,
 	RSVP_SUBMIT_BY_INVITE_SERVICE_LOOKUPS,
 } from '@/lib/rsvp/rsvp-operation-contract';
+import { assertObservedOperationCount } from '@/lib/invitation/delivery-contract';
 import type { GuestInvitationRecord } from '@/interfaces/rsvp/domain.interface';
 
 jest.mock('@/lib/rsvp/repositories/guest.repository');
@@ -69,11 +70,15 @@ describe('rsvp service unit', () => {
 
 		expect(result.attendanceStatus).toBe('declined');
 		expect(result.attendeeCount).toBe(0);
-		expect(findGuestByInviteIdPublicMock).toHaveBeenCalledTimes(
+		assertObservedOperationCount(
+			findGuestByInviteIdPublicMock.mock.calls.length,
 			RSVP_SUBMIT_BY_INVITE_SERVICE_LOOKUPS,
+			'rsvp-lookup',
 		);
-		expect(submitGuestRsvpPublicRpcMock).toHaveBeenCalledTimes(
+		assertObservedOperationCount(
+			submitGuestRsvpPublicRpcMock.mock.calls.length,
 			RSVP_SUBMIT_BY_INVITE_MUTATION_RPCS,
+			'rsvp-rpc',
 		);
 	});
 

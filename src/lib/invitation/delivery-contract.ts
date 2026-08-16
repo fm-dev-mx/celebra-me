@@ -1,4 +1,7 @@
-import { isMutableInPlaceMediaUrl } from '@/lib/assets/vercel-image-policy';
+import {
+	isCloudinaryDeliveryHostname,
+	isMutableInPlaceMediaUrl,
+} from '@/lib/assets/vercel-image-policy';
 
 export type DeliveryResourceKind =
 	'vercel-image' | 'supabase-storage' | 'cloudinary' | 'astro-hashed' | 'other';
@@ -27,14 +30,30 @@ export interface InvitationHtmlInventory {
 }
 
 /**
- * Anonymous published invitation: one published-content read.
- * Personalized lookup (success): guest row + event row, then a view-track write.
- * Personalized miss: guest lookup only; no view-track.
+ * Persistence-layer counts for a published anonymous invitation and a
+ * personalized lookup. Route-layer service call counts are 1 context lookup
+ * (or 0 when the invite id is empty). See performance-metrics.md.
  */
 export const ANONYMOUS_PUBLISHED_CONTENT_READS = 1;
 export const PERSONALIZED_GUEST_CONTEXT_READS_ON_HIT = 2;
 export const PERSONALIZED_GUEST_CONTEXT_READS_ON_MISS = 1;
 export const PERSONALIZED_VIEW_TRACK_WRITES_ON_HIT = 1;
+export const PERSONALIZED_CONTEXT_SERVICE_CALLS_ON_LOOKUP = 1;
+
+export function assertObservedOperationCount(
+	observed: number,
+	expected: number,
+	label: string,
+): void {
+	if (observed !== expected) {
+		throw new Error(`${label}: observed ${observed} operations, expected ${expected}`);
+	}
+}
+
+/** Canonical HTML budget unit: UTF-8 byte length of the decoded document body. */
+export function decodedHtmlUtf8ByteLength(html: string): number {
+	return Buffer.byteLength(html, 'utf8');
+}
 
 const POSITIVE_S_MAXAGE = /(?:^|,)\s*s-maxage\s*=\s*([1-9]\d*)\b/i;
 const MAX_AGE_ZERO = /(?:^|,)\s*max-age\s*=\s*0\b/i;
@@ -89,7 +108,7 @@ export function classifyDeliveryUrl(rawUrl: string): DeliveryResourceKind {
 	}
 	if (/\/_vercel\/image(?:\?|$)/i.test(url)) return 'vercel-image';
 	if (isMutableInPlaceMediaUrl(url)) return 'supabase-storage';
-	if (/res\.cloudinary\.com/i.test(url)) return 'cloudinary';
+	if (isCloudinaryDeliveryHostname(url)) return 'cloudinary';
 	if (/\/_astro\//i.test(url)) return 'astro-hashed';
 	return 'other';
 }

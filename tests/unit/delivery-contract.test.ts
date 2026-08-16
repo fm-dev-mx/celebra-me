@@ -3,7 +3,9 @@ import {
 	PERSONALIZED_GUEST_CONTEXT_READS_ON_HIT,
 	PERSONALIZED_GUEST_CONTEXT_READS_ON_MISS,
 	PERSONALIZED_VIEW_TRACK_WRITES_ON_HIT,
+	assertObservedOperationCount,
 	classifyDeliveryUrl,
+	decodedHtmlUtf8ByteLength,
 	hasPositiveSharedCacheTtl,
 	inventoryInvitationHtml,
 	isOriginRevalidatePublicDocument,
@@ -13,6 +15,7 @@ import {
 } from '@/lib/invitation/delivery-contract';
 import {
 	assertDeliveryBudgets,
+	DELIVERY_BENCHMARK_SCENARIOS,
 	DELIVERY_HTML_BUDGETS,
 	MEASURED_PRODUCTION_HTML,
 } from '@/lib/invitation/delivery-budget';
@@ -77,6 +80,20 @@ describe('invitation HTML delivery inventory', () => {
 		expect(selectHeroResource(inventory)?.highPriority).toBe(true);
 	});
 
+	it('classifies query strings, malformed URLs, and lookalike hosts by hostname', () => {
+		expect(classifyDeliveryUrl(`${CLOUDINARY_HERO}?_a=1`)).toBe('cloudinary');
+		expect(classifyDeliveryUrl(`${STORAGE_HERO}?token=abc`)).toBe('supabase-storage');
+		expect(classifyDeliveryUrl('not a url')).toBe('other');
+		expect(
+			classifyDeliveryUrl('https://res.cloudinary.com.evil.example/image/upload/x.webp'),
+		).toBe('other');
+		expect(
+			classifyDeliveryUrl(
+				'https://evil.example/.supabase.co/storage/v1/object/public/x.webp',
+			),
+		).toBe('other');
+	});
+
 	it('does not treat hashed /_astro assets as mutable storage', () => {
 		expect(classifyDeliveryUrl('/_astro/hero.DEXMG-Os.png')).toBe('astro-hashed');
 		expect(
@@ -87,14 +104,22 @@ describe('invitation HTML delivery inventory', () => {
 });
 
 describe('invitation delivery query budgets', () => {
-	it('keeps published anonymous resolution to a single content read', () => {
-		expect(ANONYMOUS_PUBLISHED_CONTENT_READS).toBe(1);
-	});
-
-	it('documents the extra personalized lookup without implying anonymous caching', () => {
-		expect(PERSONALIZED_GUEST_CONTEXT_READS_ON_HIT).toBe(2);
-		expect(PERSONALIZED_GUEST_CONTEXT_READS_ON_MISS).toBe(1);
-		expect(PERSONALIZED_VIEW_TRACK_WRITES_ON_HIT).toBe(1);
+	it('detects an extra observed persistence call without comparing constants alone', () => {
+		expect(() =>
+			assertObservedOperationCount(2, ANONYMOUS_PUBLISHED_CONTENT_READS, 'published-content'),
+		).toThrow(/observed 2 operations, expected 1/);
+		assertObservedOperationCount(1, ANONYMOUS_PUBLISHED_CONTENT_READS, 'published-content');
+		assertObservedOperationCount(
+			2,
+			PERSONALIZED_GUEST_CONTEXT_READS_ON_HIT,
+			'personalized-hit',
+		);
+		assertObservedOperationCount(
+			1,
+			PERSONALIZED_GUEST_CONTEXT_READS_ON_MISS,
+			'personalized-miss',
+		);
+		assertObservedOperationCount(1, PERSONALIZED_VIEW_TRACK_WRITES_ON_HIT, 'view-track');
 	});
 });
 
@@ -163,5 +188,64 @@ describe('invitation delivery HTML budgets', () => {
 				},
 			]),
 		).toThrow(/html 95000 B exceeds budget/);
+	});
+
+	it('accepts the HTML ceiling boundary and rejects one extra byte', () => {
+		const ceiling = DELIVERY_HTML_BUDGETS.versionedAnonymous.htmlBytes;
+		expect(() =>
+			assertDeliveryBudgets([
+				{
+					id: 'versionedAnonymous',
+					htmlBytes: ceiling,
+					cacheControl: 'public, max-age=0, must-revalidate',
+					personalized: false,
+					vercelCache: 'MISS',
+				},
+			]),
+		).not.toThrow();
+		expect(() =>
+			assertDeliveryBudgets([
+				{
+					id: 'versionedAnonymous',
+					htmlBytes: ceiling + 1,
+					cacheControl: 'public, max-age=0, must-revalidate',
+					personalized: false,
+					vercelCache: 'MISS',
+				},
+			]),
+		).toThrow(/exceeds budget/);
+	});
+
+	it('accepts a valid personalized private no-store document', () => {
+		expect(() =>
+			assertDeliveryBudgets([
+				{
+					id: 'personalizedLookupMiss',
+					htmlBytes: 80_000,
+					cacheControl: 'no-store, private',
+					personalized: true,
+					vercelCache: 'MISS',
+				},
+			]),
+		).not.toThrow();
+	});
+
+	it('rejects a personalized document that is shared-cacheable', () => {
+		expect(() =>
+			assertDeliveryBudgets([
+				{
+					id: 'personalizedLookupMiss',
+					htmlBytes: 80_000,
+					cacheControl: 'public, max-age=0, must-revalidate',
+					personalized: true,
+					vercelCache: 'MISS',
+				},
+			]),
+		).toThrow(/private no-store/);
+	});
+
+	it('treats HTML budget bytes as decoded UTF-8 body length', () => {
+		expect(decodedHtmlUtf8ByteLength('á')).toBe(2);
+		expect(DELIVERY_BENCHMARK_SCENARIOS.versionedAnonymous.architecture).toMatch(/Cloudinary/);
 	});
 });

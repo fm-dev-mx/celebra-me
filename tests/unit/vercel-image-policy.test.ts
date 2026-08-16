@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { ImageMetadata } from 'astro';
 import {
+	isCloudinaryDeliveryHostname,
 	isMutableInPlaceMediaUrl,
 	plainImgSrc,
 	shouldOptimizeThroughVercelImage,
@@ -23,6 +24,27 @@ describe('vercel image optimization policy', () => {
 				'https://xyz.supabase.co/storage/v1/object/public/invitations/gallery.webp',
 			),
 		).toBe(true);
+	});
+
+	it('still classifies Storage URLs that carry query strings', () => {
+		expect(
+			isMutableInPlaceMediaUrl(
+				'https://xyz.supabase.co/storage/v1/object/public/invitations/hero.webp?v=2',
+			),
+		).toBe(true);
+		expect(shouldOptimizeThroughVercelImage(`${SUPABASE_STORAGE_URL}#fragment`)).toBe(false);
+	});
+
+	it('rejects malformed URLs and similar but unrelated hosts', () => {
+		expect(isMutableInPlaceMediaUrl('not a url')).toBe(false);
+		expect(isMutableInPlaceMediaUrl('https://example.com/storage/hero.webp')).toBe(false);
+		expect(
+			isMutableInPlaceMediaUrl('https://evil.example/.supabase.co/storage/hero.webp'),
+		).toBe(false);
+		expect(isCloudinaryDeliveryHostname('https://res.cloudinary.com.evil.example/image')).toBe(
+			false,
+		);
+		expect(isCloudinaryDeliveryHostname(CLOUDINARY_VERSIONED_URL)).toBe(true);
 	});
 
 	it('keeps versioned Cloudinary, hashed /_astro, and unrelated remotes eligible for optimization', () => {

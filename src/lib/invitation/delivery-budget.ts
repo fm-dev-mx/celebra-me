@@ -6,6 +6,45 @@ import {
 export type DeliveryBudgetScenario =
 	'versionedAnonymous' | 'legacyStorageAnonymous' | 'personalizedLookupMiss';
 
+export interface DeliveryBenchmarkScenario {
+	id: DeliveryBudgetScenario;
+	path: string;
+	personalized: boolean;
+	architecture: string;
+	currentInvitation: string;
+}
+
+/**
+ * Benchmark roles are architectural. Reassign `path` when the named invitation
+ * no longer represents that architecture.
+ */
+export const DELIVERY_BENCHMARK_SCENARIOS: Record<
+	DeliveryBudgetScenario,
+	DeliveryBenchmarkScenario
+> = {
+	versionedAnonymous: {
+		id: 'versionedAnonymous',
+		path: '/xv/renata',
+		personalized: false,
+		architecture: 'Hashed Cloudinary public IDs; Storage is not the LCP media path',
+		currentInvitation: 'renata',
+	},
+	legacyStorageAnonymous: {
+		id: 'legacyStorageAnonymous',
+		path: '/xv/romina-rios-chaparro',
+		personalized: false,
+		architecture: 'Mutable in-place Supabase Storage media URLs',
+		currentInvitation: 'romina-rios-chaparro',
+	},
+	personalizedLookupMiss: {
+		id: 'personalizedLookupMiss',
+		path: '/xv/renata?invite=fixture-not-a-guest',
+		personalized: true,
+		architecture: 'Same versioned document with a synthetic invite lookup miss',
+		currentInvitation: 'renata',
+	},
+};
+
 export interface DeliveryBudgetCeiling {
 	htmlBytes: number;
 }
@@ -19,8 +58,8 @@ export interface DeliveryHtmlSnapshot {
 /**
  * Canonical policy: `docs/domains/invitations/performance-metrics.md`.
  *
- * HTML-size ceilings from production measurements on 2026-08-16
- * (www.celebra-me.com), plus a provisional ~35% regression margin.
+ * HTML-size ceilings are decoded UTF-8 body bytes from production measurements
+ * on 2026-08-16 (www.celebra-me.com), plus a provisional ~35% regression margin.
  * Enforced only by `pnpm invitation:delivery:baseline --assert-budget`.
  * Unique URL counts and timing metrics are intentionally absent.
  */

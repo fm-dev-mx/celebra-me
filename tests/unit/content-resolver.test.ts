@@ -53,6 +53,10 @@ import { findInvitationBySlug } from '@/lib/intake/repositories/invitation.repos
 import { adaptEvent } from '@/lib/adapters/event';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import validPublishedContentJson from '@/content/event-demos/xv/demo-xv-jewelry-box.json';
+import {
+	ANONYMOUS_PUBLISHED_CONTENT_READS,
+	assertObservedOperationCount,
+} from '@/lib/invitation/delivery-contract';
 
 const validPublishedContent = validPublishedContentJson as unknown as Record<string, unknown>;
 
@@ -91,7 +95,11 @@ describe('resolveInvitationContent', () => {
 		expect(mockAdaptDbEvent).toHaveBeenCalled();
 		expect(mockAdaptEvent).not.toHaveBeenCalled();
 		expect(mockGetRoutable).not.toHaveBeenCalled();
-		expect(mockFindPublishedBySlugAndEventType).toHaveBeenCalledTimes(1);
+		assertObservedOperationCount(
+			mockFindPublishedBySlugAndEventType.mock.calls.length,
+			ANONYMOUS_PUBLISHED_CONTENT_READS,
+			'published-content',
+		);
 		expect(mockFindInvitationBySlug).not.toHaveBeenCalled();
 	});
 

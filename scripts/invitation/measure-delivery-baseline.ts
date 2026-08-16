@@ -13,6 +13,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import {
+	decodedHtmlUtf8ByteLength,
 	inventoryInvitationHtml,
 	isOriginRevalidatePublicDocument,
 	isPrivateNoStoreCacheContract,
@@ -22,6 +23,7 @@ import {
 import { isMutableInPlaceMediaUrl } from '../../src/lib/assets/vercel-image-policy.ts';
 import {
 	assertDeliveryBudgets,
+	DELIVERY_BENCHMARK_SCENARIOS,
 	type DeliveryBudgetScenario,
 } from '../../src/lib/invitation/delivery-budget.ts';
 
@@ -34,6 +36,8 @@ interface CliOptions {
 interface DocumentSample {
 	ttfbMs: number;
 	htmlBytes: number;
+	contentLengthHeader: number | null;
+	contentEncoding: string | null;
 	cacheControl: string | null;
 	vercelCache: string | null;
 	renderTiming: string | null;
@@ -59,6 +63,8 @@ interface ScenarioReport {
 		samples: DocumentSample[];
 		ttfbMs: { min: number; median: number; max: number };
 		htmlBytes: number;
+		contentEncoding: string | null;
+		contentLengthHeader: number | null;
 		cacheControl: string | null;
 		vercelCacheFirst: string | null;
 		vercelCacheRepeat: string | null;
@@ -140,11 +146,14 @@ async function fetchDocument(url: string): Promise<{ sample: DocumentSample; htm
 	});
 	const ttfbMs = Math.round(performance.now() - started);
 	const html = await response.text();
+	const contentLengthHeader = response.headers.get('content-length');
 	return {
 		html,
 		sample: {
 			ttfbMs,
-			htmlBytes: Buffer.byteLength(html),
+			htmlBytes: decodedHtmlUtf8ByteLength(html),
+			contentLengthHeader: contentLengthHeader ? Number.parseInt(contentLengthHeader, 10) : null,
+			contentEncoding: response.headers.get('content-encoding'),
 			cacheControl: response.headers.get('cache-control'),
 			vercelCache: response.headers.get('x-vercel-cache'),
 			renderTiming: response.headers.get('x-render-timing'),
@@ -257,6 +266,8 @@ function summarizeDocument(
 			max: Math.max(...ttfbValues),
 		},
 		htmlBytes: last?.htmlBytes ?? 0,
+		contentEncoding: last?.contentEncoding ?? null,
+		contentLengthHeader: last?.contentLengthHeader ?? null,
 		cacheControl: last?.cacheControl ?? null,
 		vercelCacheFirst: documentSamples[0]?.vercelCache ?? null,
 		vercelCacheRepeat: repeat.vercelCache,
@@ -296,7 +307,7 @@ function printScenario(report: ScenarioReport): void {
 	console.log(`\n[${report.id}] ${report.path}`);
 	console.log(`  cache: ${report.document.cacheControl ?? '(none)'} ${cacheOk ? 'OK' : 'FAIL'}`);
 	console.log(
-		`  html: ${report.document.htmlBytes} B | ttfb ms min/median/max ${report.document.ttfbMs.min}/${report.document.ttfbMs.median}/${report.document.ttfbMs.max}`,
+		`  html decoded-utf8=${report.document.htmlBytes} B content-length=${report.document.contentLengthHeader ?? 'n/a'} encoding=${report.document.contentEncoding ?? 'identity'} | ttfb ms min/median/max ${report.document.ttfbMs.min}/${report.document.ttfbMs.median}/${report.document.ttfbMs.max}`,
 	);
 	console.log(
 		`  vercel-cache document first/repeat: ${report.document.vercelCacheFirst}/${report.document.vercelCacheRepeat}`,
@@ -313,29 +324,18 @@ function printScenario(report: ScenarioReport): void {
 async function main(): Promise<void> {
 	const options = parseArgs(process.argv.slice(2));
 	const startedAt = new Date().toISOString();
-	const reports = [
-		await measureScenario(
-			options.origin,
-			'versionedAnonymous',
-			'/xv/renata',
-			false,
-			options.samples,
-		),
-		await measureScenario(
-			options.origin,
-			'legacyStorageAnonymous',
-			'/xv/romina-rios-chaparro',
-			false,
-			options.samples,
-		),
-		await measureScenario(
-			options.origin,
-			'personalizedLookupMiss',
-			'/xv/renata?invite=fixture-not-a-guest',
-			true,
-			options.samples,
-		),
-	];
+	const reports = [];
+	for (const scenario of Object.values(DELIVERY_BENCHMARK_SCENARIOS)) {
+		reports.push(
+			await measureScenario(
+				options.origin,
+				scenario.id,
+				scenario.path,
+				scenario.personalized,
+				options.samples,
+			),
+		);
+	}
 
 	for (const report of reports) printScenario(report);
 
@@ -349,7 +349,7 @@ async function main(): Promise<void> {
 			'Policy: docs/domains/invitations/performance-metrics.md',
 			'Personalized scenario uses a synthetic invite id; no guest PII is requested or stored.',
 			'LCP is not measured here; use Vercel Speed Insights or a browser trace for paint timing.',
-			'Unique HTML URL counts are diagnostic; --assert-budget checks HTML bytes and cache contracts only.',
+			'htmlBytes is decoded UTF-8 body length after fetch decompression, not Content-Length.',
 			'Production HTML may still wrap legacy Storage URLs in /_vercel/image until the cache-safe image change is deployed.',
 		],
 		scenarios: reports,
