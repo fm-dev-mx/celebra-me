@@ -2,33 +2,6 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Terminal (otros comandos)",
-            "type": "shell",
-            "command": "powershell",
-            "args": [
-                "-NoProfile",
-                "-ExecutionPolicy",
-                "Bypass",
-                "-File",
-                "${workspaceFolder}/.vscode/task-runner.ps1",
-                "terminal"
-            ],
-            "isBackground": true,
-            "problemMatcher": [],
-            "icon": {
-                "id": "terminal-powershell",
-                "color": "terminal.ansiCyan"
-            },
-            "presentation": {
-                "echo": false,
-                "clear": false,
-                "reveal": "always",
-                "panel": "dedicated",
-                "focus": false
-            },
-            "runOptions": { "runOn": "folderOpen" }
-        },
-        {
             "label": "Servidor dev (pnpm dev)",
             "type": "shell",
             "command": "powershell",

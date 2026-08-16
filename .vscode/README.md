@@ -9,13 +9,11 @@ Temáticos** para el proyecto Celebra-me en VS Code.
 
 ### 1. `.vscode/tasks.json`
 
-Define las 18 tareas del proyecto registrándolas en VS Code con sus respectivos **Iconos Codicons y
+Define las 17 tareas del proyecto registrándolas en VS Code con sus respectivos **Iconos Codicons y
 Colores ANSI**:
 
-- **11 Tareas Core Automáticas (`folderOpen`):** Se abren en modo Standby al iniciar cualquier
+- **10 Tareas Core Automáticas (`folderOpen`):** Se abren en modo Standby al iniciar cualquier
   worktree:
-  - `Terminal (otros comandos)` — Terminal por defecto para comandos generales (`git`, `pnpm`,
-    `node`, etc.)
   - `Servidor dev (pnpm dev)` — Servidor de desarrollo local (`play`, verde)
   - `Tipos (type-check)` — Verificación de tipos TS (`check-all`, azul)
   - `Pruebas (test)` — Pruebas unitarias Jest (`beaker`, verde)
@@ -57,16 +55,12 @@ Carpeta local que contiene los archivos de historial de ejecuciones en disco.
 
 ## 🚀 Cómo Usar
 
-1. **Pestañas Automáticas:** Al abrir cualquier worktree en VS Code, se abrirán las 11 pestañas
+1. **Pestañas Automáticas:** Al abrir cualquier worktree en VS Code, se abrirán las 10 pestañas
    principales en reposo.
-2. **Terminal por Defecto (Otros Comandos):**
-   - Selecciona la pestaña `Terminal (otros comandos)`.
-   - Escribe cualquier comando shell completo (ej: `git status`, `pnpm add -D <pkg>`,
-     `node script.js`).
-3. **Ejecutar Tareas Restringidas:**
+2. **Ejecutar Tareas Restringidas:**
    - Haz clic en la pestaña deseada (ej. `pnpm test`).
    - Escribe argumentos opcionales (ej: `tests/unit/git-safety.test.ts` o `--watch`).
    - Presiona `ENTER`.
-4. **Ejecutar Tareas Secundarias:**
+3. **Ejecutar Tareas Secundarias:**
    - Presiona `Ctrl + Shift + P` -> `Tasks: Run Task` -> Selecciona la tarea deseada (ej.
      `pnpm screenshot` o `pnpm lint:styles`).
