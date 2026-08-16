@@ -144,13 +144,16 @@ backup, date of the latest successful restore drill, and restore duration. Measu
 before considering incremental Storage capture. Backups never route through Vercel and must not poll
 Production or download an object more than once within one recovery operation.
 
-## Production Reconciliation Status (point-in-time)
+## Production Reconciliation Status (historical point-in-time)
+
+Do **not** use the counts or heads in this section for migrate decisions. Obtain live pending sets
+from `pnpm db:prod:audit` / `pnpm db:preview:audit`.
 
 - **Reconciliation Complete**: Production migration-history reconciliation is complete.
 - **Phase 3 hosted alignment complete (2026-07-29)**: Preview was migrated and verified first, then
-  Production was migrated through the guarded canonical workflow. Both environments reported all
-  **67** repository migrations with `20260729152113` latest. The hosted contract verifier passed for
-  both targets, including atomic Editor RPCs, managed baseline fields, append-only mutation
+  Production was migrated through the guarded canonical workflow. Both environments then reported
+  all **67** repository migrations with `20260729152113` latest. The hosted contract verifier passed
+  for both targets, including atomic Editor RPCs, managed baseline fields, append-only mutation
   receipts, and revocation of `service_role` writes to guest confirmations and guest audit/history.
 - **Receipt-lock serialization (`20260730101500`)**: Atomic metadata/restore RPCs serialize on the
   invitation row and must not row-lock append-only receipts. Promote that migration through Local →
@@ -535,20 +538,21 @@ application login substitute. Host invitation flows continue to use real `host_c
 `pnpm release-check`
 
 - Requires a clean working tree.
-- Runs `pnpm type-check`, `pnpm test`, and `pnpm build:app` against the full current `HEAD`
-  (`build:app` avoids a nested type-check).
+- Runs `pnpm test` in parallel with (`pnpm type-check` → `pnpm build:app`) against the full current
+  `HEAD` (`build:app` avoids a nested type-check).
 - Writes gitignored evidence to `.agent/tmp/release-check-evidence.json` (SHA + pass metadata).
 - Evidence is rejected when `HEAD` changes, the tree becomes dirty, or required checks did not pass.
-- Production migrate apply may reuse valid evidence or run release-check once when missing/stale.
+- Production apply may reuse valid evidence or run release-check once when missing/stale.
 
 `pnpm db:migrate`
 
 - Canonical schema entry: `pnpm db:migrate -- --target <local|preview|production|disposable-test>`.
 - Production commands:
   - `pnpm prod:apply` — owner-facing read-only mixed plan
-  - `pnpm prod:apply -- --schema --apply` — owner apply (delegates to the schema primitive)
+  - `pnpm prod:apply -- --schema --apply` — owner schema apply (delegates to the schema primitive)
+  - `pnpm prod:apply -- --schema --expected <versions> --apply` — owner apply with exact pin
   - `pnpm db:migrate -- --target production` — schema primitive, read-only preflight
-  - `pnpm db:migrate -- --target production --expected <versions>` — preflight with exact pin
+  - `pnpm db:migrate -- --target production --apply` — redirects to `prod:apply -- --schema --apply`
 - Shared orchestrator apply sequence: reviewed plan → beforeWrite (backup) → one rebuild + drift
   check → authorize → execute → afterWrite. Human logs on stderr; `--json` plans on stdout only.
 - Non-Production interactive TTY may use Cancel / Revisar / Aplicar; Production authorization is
@@ -568,9 +572,9 @@ application login substitute. Host invitation flows continue to use real `host_c
 - Release identity for Production is the current clean `HEAD` (not `CELEBRA_TARGET_RELEASE_SHA`).
 - Shared owner boundary: `requireOwnerProductionApply` (also used by promote/patch/draft-reset). The
   gate is two-step and TTY-only: (1) arrow-key intent select defaulting to Cancel; (2) type or paste
-  a short bound code `<VERB> <8-hex>` (e.g. `MIGRATE 6774a945` from `planId`). Full SHA, pending
-  versions, and fingerprints remain in the audit summary. Paste noise (bracketed-paste / zero-width)
-  is sanitized. A single Yes/No confirm is never sufficient.
+  a short bound code `<VERB> <8-hex>` (e.g. `APPLY` plus the first 8 hex characters of the current
+  `planId`). Full SHA, pending versions, and fingerprints remain in the audit summary. Paste noise
+  (bracketed-paste / zero-width) is sanitized. A single Yes/No confirm is never sufficient.
 - Rejects `CELEBRA_AGENT_CONTEXT`. Agent sessions receive that variable by default; it is not the
   positive authorization boundary. No token, secret, env, or noninteractive confirmation
   alternative.
@@ -599,7 +603,9 @@ application login substitute. Host invitation flows continue to use real `host_c
 
 `pnpm prod:apply -- --patch <path> --owner-user-id <UUID>`
 
-- Read-only owner plan for a reviewed patch. Add `--apply` only after reviewing the current plan.
+- Read-only owner plan for a reviewed patch. This plan **does** open Production in read-only mode to
+  run the manifest `@dry-run-query` (LIVE preview). Add `--apply` only after reviewing the current
+  plan.
 - **Disposition: `RESTRICT_OWNER_ONLY` / `KEEP_SPECIALIZED`.** The composite owner workflow
   revalidates the exact plan and patch artifact, checks the manifest preview row-count bounds,
   requires a current critical backup, and then requires interactive TTY confirmation.
@@ -686,9 +692,9 @@ pnpm db:local:bootstrap-admin
 ```
 
 To bootstrap or repair the local admin without resetting the persistent database, run the command
-above. The first `SUPER_ADMIN_EMAILS` entry must be `celebra.me.com@gmail.com`. The password must be
-set in `LOCAL_SUPER_ADMIN_PASSWORD` or `RSVP_ADMIN_PASSWORD`. Do not hardcode real passwords in
-source code.
+above. The first `SUPER_ADMIN_EMAILS` entry (see `.env.example`) is the local super-admin identity.
+The password must be set in `LOCAL_SUPER_ADMIN_PASSWORD` or `RSVP_ADMIN_PASSWORD`. Do not hardcode
+real emails or passwords in source or docs.
 
 ### Backup production
 
@@ -746,8 +752,7 @@ blocked.
 - Do not run `pnpm db:local:reset` — it is blocked. Use `pnpm db:disposable:reset` for destructive
   tests.
 - Do not run `pnpm db:local:refresh-from-prod` or `pnpm db:local:refresh-from-prod-preserve-local` —
-  these are blocked because they call `supabase db reset`. Use `pnpm db:prod:backup` +
-  `pnpm db:local:restore-from-dump` instead.
+  these are blocked (see [Blocked refresh aliases](#blocked-refresh-aliases)).
 - Do not run `supabase db reset --local --yes` directly — this destroys the persistent local
   database.
 - Do not delete persistent Docker volumes (`supabase_db_celebra-me-rsvp`).

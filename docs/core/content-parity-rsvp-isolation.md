@@ -37,18 +37,21 @@ Content parity is **semantic**, not raw database equality.
 | Term              | Meaning                                          | Direction                     | Command                               |
 | ----------------- | ------------------------------------------------ | ----------------------------- | ------------------------------------- |
 | **Update**        | Managed invitation apply to Local and/or Preview | Definition → Local / Preview  | `pnpm invitation:release`             |
-| **Promote**       | Owner-only managed content release to Production | Approved package → Production | `pnpm invitation:release`             |
+| **Promote**       | Owner-only managed content release to Production | Approved package → Production | `pnpm prod:apply -- --slug <slug>`    |
 | **Mirror**        | Invitation-facing content regression copy        | Production → Preview only     | `pnpm db:preview:sync-invitations`    |
 | **Restore**       | Debugging import of a Production dump into Local | Production backup → Local     | `pnpm db:local:restore-from-dump`     |
 | **RSVP mutation** | Guest/claim/attendance/view/delivery writes      | Within one environment        | Authenticated RSVP/dashboard services |
 
-Use `pnpm dbs` for read-only managed status, `pnpm invitation:release` for managed content, and
-`pnpm db:migrate` for schema. Demo Content Sync, Git lane sync, Preview mirror, and
-`pnpm db:local:restore-from-dump` remain separate systems.
+Use `pnpm dbs` for read-only managed status, `pnpm invitation:release` for Local/Preview managed
+content, `pnpm prod:apply` for owner Production apply, and `pnpm db:migrate` for non-Production
+schema. Demo Content Sync, Git lane sync, Preview mirror, and `pnpm db:local:restore-from-dump`
+remain separate systems.
 
 Canonical workflow: managed creation via definition registry → Local/Preview with
-`pnpm invitation:release` → Production only with `pnpm invitation:release`. `invitation:release`
-rejects Production mutation targets.
+`pnpm invitation:release` → Production dry-run with
+`invitation:release --targets production --dry-run` → Production apply with
+`pnpm prod:apply -- --slug <slug> --apply`. `invitation:release` rejects Production mutation
+targets.
 
 Production never imports content from the Preview database or Preview Storage. Mirror is never a
 promotion path.
@@ -60,7 +63,7 @@ promotion path.
 ### Managed invitations
 
 Canonical writers: `scripts/provision/invitations/<slug>.ts`, the immutable package/provenance
-model, `pnpm invitation:release` (Local/Preview), and owner-only `pnpm invitation:release`
+model, `pnpm invitation:release` (Local/Preview), and owner-only `pnpm prod:apply -- --slug`
 (Production). Independent editor edits against the same managed published state are target
 divergence; existing managed reconciliation/merge behavior remains the intentional resolution path.
 Editor changes must not silently become a second source of truth for a managed slug.
@@ -237,16 +240,16 @@ the repository’s guarded operation confirmations. See `docs/env-workflow.md` a
 
 ## Legacy / specialized paths
 
-| Path                               | Status                                                    |
-| ---------------------------------- | --------------------------------------------------------- |
-| `pnpm ops adopt-legacy-events`     | **REMOVED** — no longer registered                        |
-| `pnpm ops optimize-assets`         | **REMOVED** — no longer registered                        |
-| `pnpm ops new-invitation`          | **REMOVED** — no longer registered                        |
-| `pnpm ops dbs`                     | **REMOVED** alias — use canonical `pnpm dbs`              |
-| `--preview-provenance`             | `KEEP_SPECIALIZED` Preview receipt diagnose/recovery only |
-| `pnpm db:local:refresh-from-prod*` | Fail-closed — use backup + restore-from-dump              |
-| Manual production SQL patches      | `RESTRICT_OWNER_ONLY` via `pnpm db:prod:patch`            |
-| `pnpm invitation:release`          | Canonical owner-only Production managed-content promotion |
+| Path                               | Status                                                                                   |
+| ---------------------------------- | ---------------------------------------------------------------------------------------- |
+| `pnpm ops adopt-legacy-events`     | **REMOVED** — no longer registered                                                       |
+| `pnpm ops optimize-assets`         | **REMOVED** — no longer registered                                                       |
+| `pnpm ops new-invitation`          | **REMOVED** — no longer registered                                                       |
+| `pnpm ops dbs`                     | **REMOVED** alias — use canonical `pnpm dbs`                                             |
+| `--preview-provenance`             | `KEEP_SPECIALIZED` Preview receipt diagnose/recovery only                                |
+| `pnpm db:local:refresh-from-prod*` | Fail-closed — use backup + restore-from-dump                                             |
+| Manual production SQL patches      | Lint via `pnpm db:prod:patch -- --dry-run`; mutate only via `pnpm prod:apply -- --patch` |
+| `pnpm invitation:release`          | Local/Preview apply + Production dry-run; Production apply is `pnpm prod:apply`          |
 
 ---
 
@@ -257,5 +260,3 @@ the repository’s guarded operation confirmations. See `docs/env-workflow.md` a
 - Invitation production runbook:
   [`docs/domains/intake/production-flow.md`](../domains/intake/production-flow.md)
 - Agent DB safety: [`.agent/rules/database.md`](../../.agent/rules/database.md)
-- Managed lifecycle procedure:
-  [`docs/domains/intake/production-flow.md`](../domains/intake/production-flow.md)

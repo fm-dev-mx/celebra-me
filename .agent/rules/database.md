@@ -64,10 +64,9 @@ task authorization, target classification, and standard guard checks.
 ## Production Status & Governance
 
 - **Reconciliation Complete**: Production migration-history reconciliation is 100% complete.
-- **Hosted migration state**: Never freeze an applied/pending count in active guidance. Obtain the
-  current state with the read-only Production audit before any migration decision.
-- **Pending Migrations**: Do not freeze a hosted pending count here. Obtain live pending sets from
-  `pnpm db:prod:audit` / `pnpm db:preview:audit` before any migrate decision.
+- **Hosted migration state**: Never freeze applied or pending migration counts in active guidance.
+  Obtain live pending/applied sets from `pnpm db:prod:audit` / `pnpm db:preview:audit` before any
+  migration decision.
 - **Migration Ownership**: All schema changes must be introduced through versioned migrations under
   `supabase/migrations/` and promoted Local → Preview → Production through the guarded workflows. Do
   not repair schema or privilege drift with manual Supabase dashboard SQL/grants.
@@ -93,8 +92,8 @@ task authorization, target classification, and standard guard checks.
      (`supabase/migration-rollout-registry.json`; SSOT
      `scripts/db/migration-deployment-compatibility.ts`). Hosted candidates without an explicit
      registry phase fail closed.
-  5. Apply `prepareApply`: valid `pnpm release-check` evidence for the current clean `HEAD`
-     (`type-check` → `test` → `build:app`; ordinary preflight does not run the suite)
+  5. Apply `prepareApply`: valid `pnpm release-check` evidence for the current clean `HEAD` (`test`
+     in parallel with `type-check` → `build:app`; ordinary preflight does not run the suite)
   6. Verified pre-migration critical backup coverage (`.backups/prod/...`) with bounded RPO (default
      15 minutes). Reuse when project/artifacts/EFS/profile/migration-history match and age ≤ RPO;
      business-row drift after capture is allowed (online RSVP traffic). Otherwise capture a new set
@@ -174,7 +173,7 @@ task authorization, target classification, and standard guard checks.
   `--apply` mutates after one TTY confirmation bound to the plan). Agents may run it without
   `--apply` for planning; Production `--apply` is denied in agent Shell.
 - `pnpm db:migrate -- --target production` remains the canonical **schema** primitive reused by
-  `prod:apply`.
+  `prod:apply`. The CLI Production `--apply` redirects to `pnpm prod:apply -- --schema --apply`.
 - `pnpm invitation:release` remains Local/Preview/approve plus Production **dry-run**. Owner
   Production content apply is `pnpm prod:apply -- --slug <slug> --apply` (or `--all-ready`). The
   promotion orchestrator stays the domain primitive.
@@ -195,7 +194,7 @@ task authorization, target classification, and standard guard checks.
   `pnpm prod:apply -- --patch ... --apply`, which binds the current plan and artifact, validates
   preview row-count bounds and backup, and prompts the owner. Persistent DDL (`CREATE TABLE/INDEX`,
   routines, schema-changing `ALTER`, persistent `DROP`, `GRANT`/`REVOKE`) is rejected. Patches must
-  not bypass `db:migrate -- --target production` or `invitation:release`.
+  not bypass `pnpm prod:apply -- --schema` or `pnpm prod:apply -- --slug`.
 - `invitation:romina-draft-reset` remains a temporary explicit one-off (never `--all-ready`) until
   the owner confirms it is complete.
 - Production patch files must include the manifest required by
@@ -341,15 +340,14 @@ persistent-local database was preserved.
 - Before any database operation, classify the target using
   `tsx scripts/db/db-guard.ts classify --db-url <url>`.
 - Do not connect to production unless the user explicitly asks for that exact production operation.
-- Do not execute manual production SQL from `scripts/manual/production-patches/` or `scripts/sql/`
-  without linting via `pnpm db:prod:patch -- --dry-run --file <path>` and applying only through
+- For production patches, prefer versioned migrations. Manual SQL from
+  `scripts/manual/production-patches/` or `scripts/sql/` requires linting via
+  `pnpm db:prod:patch -- --dry-run --file <path>` (`RESTRICT_OWNER_ONLY`) and mutates only through
   `pnpm prod:apply -- --patch <path> --apply`.
 - Do not run `supabase db push --linked`.
 - Do not use Supabase MCP `apply_migration` or mutating `execute_sql` against Production. Agent
   sessions set `CELEBRA_AGENT_CONTEXT` automatically; that rejects Production owner-apply
   self-authorization. Preview remains agent-operable under its existing scope/TTY policy.
-- For production patches, prefer versioned migrations. `pnpm db:prod:patch` is lint-only
-  (`RESTRICT_OWNER_ONLY`); mutation is only `pnpm prod:apply -- --patch`.
 - Prefer fail-closed behavior over preserving old command compatibility.
 - `pnpm run ci` must never reset or modify the persistent local database.
 - The sentinel must survive the full validation pipeline.

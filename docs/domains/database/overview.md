@@ -226,9 +226,10 @@ erDiagram
 ### Invitation Creation
 
 Managed client invitations are created only through the definition registry +
-`pnpm invitation:release` (Local/Preview and owner-only Production).
-`POST /api/dashboard/intake` and Dashboard duplicate reject client creation (`403`). Demo rows are
-synchronized by `synchronizeDemoInvitations`, not by Dashboard create.
+`pnpm invitation:release` (Local/Preview). Owner Production apply is
+`pnpm prod:apply -- --slug <slug> --apply`. `POST /api/dashboard/intake` and Dashboard duplicate
+reject client creation (`403`). Demo rows are synchronized by `synchronizeDemoInvitations`, not by
+Dashboard create.
 
 ### Internal Admin Editing
 
@@ -295,10 +296,10 @@ Admin clicks "Restaurar" → `restore_invitation()` RPC:
 Dashboard HTTP create and duplicate are rejected. Client invitations are provisioned only through
 canonical/internal managed workflows (definition registry + provision CLIs), not Dashboard UI/API:
 
-| Surface                                         | Behavior                                                                              |
-| ----------------------------------------------- | ------------------------------------------------------------------------------------- |
-| `POST /api/dashboard/invitation`                | 403 `canonical_creation_required` (`via: 'create'`)                                   |
-| `POST /api/dashboard/invitation/[id]/duplicate` | 403 `canonical_creation_required` (`via: 'duplicate'`)                                |
+| Surface                                         | Behavior                                                                               |
+| ----------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `POST /api/dashboard/invitation`                | 403 `canonical_creation_required` (`via: 'create'`)                                    |
+| `POST /api/dashboard/invitation/[id]/duplicate` | 403 `canonical_creation_required` (`via: 'duplicate'`)                                 |
 | Managed create / Preview E2E fixture            | Canonical scripts (`invitation:release`, `invitation:preview-fixture`, import engines) |
 
 `duplicateInvitationFromDemo()` may still exist as an internal service primitive, but it is not an
@@ -344,26 +345,25 @@ active Dashboard workflow and must not be invoked for managed client creation.
 
 ## Migration Strategy
 
-Do not freeze a migration count in active documentation. Production uses
-`pnpm db:migrate -- --target production` to
-apply reviewed migrations only, and hosted state must be read through `pnpm db:prod:audit`.
+Do not freeze a migration count in active documentation. Production owner apply is
+`pnpm prod:apply -- --schema --apply` (schema primitive: `pnpm db:migrate -- --target production`).
+Hosted state must be read through `pnpm db:prod:audit`.
 
-**For persistent-local**: use `pnpm db:migrate -- --target local`
-(preflight-first), then explicit `--apply` after review. Then run `pnpm db:local:validate`. To
-import production-shaped data, use the non-destructive backup and restore workflow in
-`docs/database-workflow.md`.
+**For persistent-local**: use `pnpm db:migrate -- --target local` (preflight-first), then explicit
+`--apply` after review. Then run `pnpm db:local:validate`. To import production-shaped data, use the
+non-destructive backup and restore workflow in `docs/database-workflow.md`.
 
 **For destructive reconstruction tests**: use `pnpm db:disposable:reset`. It targets the isolated
 disposable database, never persistent-local. Full reset applies migrations via the shared disposable
 migrate policy; truncated `--baseline` / `--max-version` remain disposable-only.
 
-**For Preview**: use `pnpm db:migrate -- --target preview` with the
-exact Preview project perimeter and clean-HEAD release identity.
+**For Preview**: use `pnpm db:migrate -- --target preview` with the exact Preview project perimeter
+and clean-HEAD release identity.
 
 **For production**: never rewrite, delete, or squash already-applied migrations. Always add
 corrective migrations. Migration history is append-only. Do not push local data dumps to production;
-use `pnpm db:migrate -- --target production`. Hosted candidates require an explicit rollout
-registry phase.
+use `pnpm prod:apply -- --schema --apply`. Hosted candidates require an explicit rollout registry
+phase.
 
 **Fresh bootstrap**: A `supabase/baseline.sql` schema dump can be generated via
 `supabase db dump --schema public > supabase/baseline.sql` for environments that should not replay

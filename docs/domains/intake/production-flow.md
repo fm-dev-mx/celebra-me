@@ -56,15 +56,20 @@ pnpm invitation:release -- --slug <slug> --targets local,preview --source-dir <p
 pnpm invitation:release -- --slug <slug> --targets local,preview --source-dir <path> --apply
 pnpm invitation:release
 pnpm invitation:release -- --slug <slug> --targets production --dry-run
-pnpm invitation:release -- --slug <slug> --targets production --apply
+pnpm prod:apply -- --slug <slug>
+pnpm prod:apply -- --slug <slug> --apply
 ```
+
+`invitation:release --targets production --apply` is blocked. Production mutation is owner-only
+`pnpm prod:apply`. Domain dry-run remains `invitation:release --targets production --dry-run`.
 
 Promotion requires an exact Preview-approved release identity from the **shared Preview DB store**
 (`public.preview_approval_artifacts`, read via `PREVIEW_DB_URL`), schema compatibility (`CURRENT`),
 critical backup coverage (shared prepare/revalidate; optional `--backup-manifest`), semantic
 comparison against current Production (target-owned state preserved; unresolved managed divergence
-blocks), typed owner confirmation (`PROMOTE <8-hex>`), managed import/publication apply, and
-mandatory post-apply verification. Worktree files under `.agent/tmp/approvals` are not the SSOT; use
+blocks), typed owner confirmation (`APPLY <8-hex>` via `pnpm prod:apply`), managed
+import/publication apply, and mandatory post-apply verification. Worktree files under
+`.agent/tmp/approvals` are not the SSOT; use
 `pnpm invitation:release -- --package-hash <hash> --approve` for direct live Preview verification
 and approval. Legacy filesystem approval import is retired. The guided TTY path uses the shared
 promotion orchestrator. Existing target invitations resolve and preserve their owner by slug. New
@@ -188,15 +193,16 @@ Dashboard “Nueva invitación” UI or `POST /api/dashboard/intake`.
 ```text
 managed creation → scripts/provision/invitations/<slug>.ts (registry)
 Local / Preview updates → pnpm invitation:release
-Production promotion → pnpm invitation:release (owner-only)
+Production promotion → pnpm prod:apply -- --slug <slug> --apply (owner-only)
 ```
 
 1. Ensure preparation readiness (`docs/invitations/<slug>.md`) and register the definition under
    `scripts/provision/invitations/`.
 2. Apply Local (and Preview when ready) with `pnpm invitation:release` using `--dry-run` then
    `--apply`. The engines resolve host owner, assets, draft/published content, and provenance.
-3. Promote Production only with `pnpm invitation:release -- --targets production` after Preview
-   approval, schema `CURRENT`, and a verified critical backup.
+3. Promote Production only with `pnpm prod:apply -- --slug <slug> --apply` after Preview approval,
+   schema `CURRENT`, and a verified critical backup. Domain preflight remains
+   `pnpm invitation:release -- --slug <slug> --targets production --dry-run`.
 4. Open the Editor from `/dashboard/invitaciones/{id}/editar` for environment overrides; those edits
    are divergence against the managed package and must be reconciled deliberately.
 
@@ -399,14 +405,15 @@ RPC signatures, grants, append-only receipt contract, invitation-row serializati
 privilege revocations before dependent application code is deployed. Preview uses the same check.
 Schema fixes ship only as versioned migrations and promote Local → Preview → Production.
 
-The 2026-07-29 Phase 3 cutover completed this order: Preview and Production both reported 67/67
-migrations with `20260729152113` latest, and both hosted mutation-contract verifiers passed. Direct
-hosted privilege inspection also confirmed that `service_role` has no `INSERT`, `UPDATE`, or
-`DELETE` privilege on `guest_invitations` or `guest_invitation_audit`; invitation mutation receipts
-remain select/insert-only and protected by their append-only trigger. Treat this as point-in-time
-evidence. The later receipt-lock serialization migration (`20260730101500`) must be audited and
-promoted through the same Local → Preview → Production process before dependent runtime reliance;
-rerun the canonical audit and contract verifier before a future dependent deployment.
+The 2026-07-29 Phase 3 cutover is **historical point-in-time evidence** (both hosted targets then
+reported 67 migrations with `20260729152113` latest). Do not use those counts for migrate decisions.
+Obtain live pending sets from `pnpm db:preview:audit` / `pnpm db:prod:audit`. Direct hosted
+privilege inspection also confirmed that `service_role` has no `INSERT`, `UPDATE`, or `DELETE`
+privilege on `guest_invitations` or `guest_invitation_audit`; invitation mutation receipts remain
+select/insert-only and protected by their append-only trigger. The later receipt-lock serialization
+migration (`20260730101500`) must be audited and promoted through the same Local → Preview →
+Production process before dependent runtime reliance; rerun the canonical audit and contract
+verifier before a future dependent deployment.
 
 Production migration state is never inferred from files or local state. If it was not checked with
 authorized production access, report it as **unverified/pending**. Do not apply production

@@ -15,7 +15,7 @@ pnpm dbs --in-sync
 pnpm dbs --json
 pnpm dbs --compact
 pnpm dbs <slug>
-pnpm invitation:content-parity -- --slug <slug> --event-type <type>
+pnpm invitation:content-parity -- --slug <slug> --event-type <type> --envs local,preview,production
 pnpm invitation:cross-db-reconcile
 pnpm invitation:inventory-audit
 pnpm invitation:diagnose-identity -- --slug <slug>

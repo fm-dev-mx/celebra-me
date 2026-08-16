@@ -14,11 +14,12 @@ pnpm db:sql:lint -- --file <path>
 pnpm db:prod:patch -- --dry-run --file <path>
 ```
 
-**Expected result:** `db:prod:patch` lint/dry-run never opens Production. `prod:apply` validates the
-current manifest preview count, artifact fingerprint, backup, and owner gate before execution.
-`--owner-user-id` is required only when the patch SQL reads `app.owner_user_id`. Persistent DDL is
-rejected (CREATE TABLE/INDEX, routines, schema-changing ALTER, persistent DROP, GRANT/REVOKE).
-`CREATE TEMP TABLE` remains allowed.
+**Expected result:** `db:prod:patch` lint/dry-run never opens Production. `prod:apply -- --patch`
+(plan, no `--apply`) **does** run the manifest `@dry-run-query` against Production in read-only
+mode. `--apply` then validates the current preview count, artifact fingerprint, backup, and owner
+gate before execution. `--owner-user-id` is required only when the patch SQL reads
+`app.owner_user_id`. Persistent DDL is rejected (CREATE TABLE/INDEX, routines, schema-changing
+ALTER, persistent DROP, GRANT/REVOKE). `CREATE TEMP TABLE` remains allowed.
 
 **Failures:** Missing manifest, lint errors, identity mismatch, agent/non-TTY apply attempt.
 

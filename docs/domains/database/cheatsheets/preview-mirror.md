@@ -14,7 +14,8 @@ CELEBRA_TASK_SCOPE=preview:content-mirror:sync-invitations \
 
 **Expected result:** Mirrored invitation tables/assets; Preview RSVP children wiped.
 
-**Failures:** Auth denied, schema not `CURRENT`, partial upsert, missing Storage bytes.
+**Failures:** Auth denied, partial upsert, missing transferable Storage bytes, missing Preview
+service-role key when transferable assets exist, residual Production Storage URLs after rewrite.
 
 **Recovery:** Fix blockers and re-run. Then re-seed fixtures:
 `pnpm invitation:preview-fixture -- --apply` and Preview E2E provision as needed. See
