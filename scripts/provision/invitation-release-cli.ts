@@ -95,7 +95,12 @@ import {
 	formatPromotionPlanCompact,
 	toPublicPromotionReport,
 } from './invitation-promotion-format.ts';
-import { operatorSymbol, writeHuman } from '../db/operator-cli-ux.ts';
+import {
+	OperatorError,
+	operatorSymbol,
+	renderOperatorError,
+	writeHuman,
+} from '../db/operator-cli-ux.ts';
 import { isTargetDivergenceConflictMessage } from './promotion-comparison.ts';
 
 function mergeConflictsFromError(error: unknown): TargetPlanData['mergeConflicts'] {
@@ -318,7 +323,7 @@ async function runProductionReleaseDispatch(input: {
 	}
 
 	const command = `pnpm prod:apply -- --slug ${input.slug} --apply`;
-	const message = `Production apply moved to pnpm prod:apply. Use: ${command}`;
+	const message = `Production apply se hace con pnpm prod:apply. Use: ${command}`;
 	if (input.json) {
 		console.log(
 			JSON.stringify({
@@ -329,7 +334,18 @@ async function runProductionReleaseDispatch(input: {
 			}),
 		);
 	} else {
-		writeHuman(`${operatorSymbol('fail')} ${message}`);
+		renderOperatorError(
+			new OperatorError({
+				title: 'Apply de Production no disponible aquí',
+				cause: message,
+				code: 'USE_PROD_APPLY',
+				remediation: [
+					`Ejecute ${command} en una TTY del propietario.`,
+					'El dry-run de dominio sigue siendo pnpm invitation:release -- --targets production --dry-run.',
+				],
+				retryCommand: command,
+			}),
+		);
 	}
 	process.exitCode = 1;
 }

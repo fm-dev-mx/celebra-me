@@ -170,7 +170,7 @@ function runCriticalBackup(
 		planId: plan?.planId,
 		pendingVersions: plan?.pendingVersions,
 		reuseExisting: phase === 'pre',
-		retryCommand: 'pnpm db:migrate -- --target production --apply',
+		retryCommand: 'pnpm prod:apply -- --schema --apply',
 		operationLabel:
 			phase === 'pre'
 				? 'la autorización de la migración'
@@ -201,7 +201,7 @@ function assertPreBackupCoverageBeforeAuthorize(ctx: {
 		prodDbUrl: ctx.dbUrl,
 		manifestPath,
 		maxAgeMs: ctx.session?.preBackupMaxAgeMs ?? CRITICAL_BACKUP_RPO_MS,
-		retryCommand: 'pnpm db:migrate -- --target production --apply',
+		retryCommand: 'pnpm prod:apply -- --schema --apply',
 	});
 	rememberCoverage(ctx.session, check, ctx.session?.preBackupReused === true);
 }
@@ -358,6 +358,16 @@ export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 	},
 
 	beforeWrite(plan, ctx) {
+		if (ctx.preparedCriticalBackupManifestPath) {
+			const check = revalidateCriticalProductionBackup({
+				prodDbUrl: ctx.dbUrl,
+				manifestPath: ctx.preparedCriticalBackupManifestPath,
+				maxAgeMs: ctx.session?.preBackupMaxAgeMs ?? CRITICAL_BACKUP_RPO_MS,
+				retryCommand: 'pnpm prod:apply -- --schema --apply',
+			});
+			rememberCoverage(ctx.session, check, true);
+			return;
+		}
 		runCriticalBackup(ctx.dbUrl, 'pre', plan, ctx.session);
 	},
 
@@ -371,12 +381,15 @@ export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 					ctx.authorizedPermitOperationType ?? PRODUCTION_MIGRATION_OPERATION_TYPE,
 			});
 			if (match !== 'ok') {
+				const delegated = ctx.authorizedPermitOperationType === 'production_apply';
 				throw new OperatorError({
 					title: 'Autorización de Production no reutilizable',
 					cause: `El permiso interno no coincide con el plan aprobado (${match}).`,
 					code: 'PRODUCTION_WRITE_PERMIT_REQUIRED',
 					remediation: [
-						'Ejecute pnpm prod:apply con --apply en una TTY del propietario.',
+						delegated
+							? 'Vuelva a ejecutar pnpm prod:apply -- --schema --apply en una TTY del propietario.'
+							: 'Ejecute pnpm prod:apply -- --schema --apply en una TTY del propietario.',
 						'No intente reutilizar un permiso de otro plan, proceso o proyecto.',
 					],
 				});

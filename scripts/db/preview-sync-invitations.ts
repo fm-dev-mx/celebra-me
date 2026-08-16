@@ -62,6 +62,7 @@ import {
 	type SyncReport,
 } from './preview-sync-report.ts';
 import { authorizePreviewWriteApply } from '../provision/preview-write-auth.ts';
+import { operatorSymbol, renderOperatorError } from './operator-cli-ux.ts';
 
 /** Stable Preview auth slug for the content mirror (CELEBRA_TASK_SCOPE). */
 const PREVIEW_MIRROR_AUTH_SLUG = 'content-mirror';
@@ -611,7 +612,7 @@ function buildPhases(
 				});
 				if (total > 0) {
 					const msg = `MIRROR_URL_AUDIT: ${total} content row(s) still contain Production Storage URLs after mirror`;
-					console.warn(`   ❌ ${msg}`);
+					console.warn(`   ${operatorSymbol('fail')} ${msg}`);
 					for (const r of rows) {
 						console.warn(`       ${r.table}:${r.id}`);
 					}
@@ -619,7 +620,9 @@ function buildPhases(
 					report.failures.push(msg);
 					throw new Error(msg);
 				}
-				console.info('   ✅ No Production Storage URLs found in mirrored Preview content.');
+				console.info(
+					`   ${operatorSymbol('ok')} No Production Storage URLs found in mirrored Preview content.`,
+				);
 			},
 		},
 
@@ -708,7 +711,7 @@ export async function runPreviewMirror(options: PreviewMirrorOptions): Promise<S
 			operation: PREVIEW_MIRROR_AUTH_OPERATION,
 			confirmPrompt: 'Confirm Preview content mirror apply? Type YES to proceed: ',
 		});
-		console.info('✅ Preview write authorized.\n');
+		console.info(`${operatorSymbol('ok')} Preview write authorized.\n`);
 	}
 
 	const prodCtx: ProdContext = {
@@ -745,7 +748,7 @@ export async function runPreviewMirror(options: PreviewMirrorOptions): Promise<S
 			if (!report.failures.includes(`${phase.name}: ${msg}`)) {
 				report.failures.push(`${phase.name}: ${msg}`);
 			}
-			console.warn(`\n❌ Phase "${phase.name}" failed: ${msg}`);
+			console.warn(`\n${operatorSymbol('fail')} Phase "${phase.name}" failed: ${msg}`);
 			break;
 		}
 	}
@@ -774,8 +777,11 @@ if (
 	/preview-sync-invitations\.(ts|js|mjs|cjs)$/.test(process.argv[1])
 ) {
 	void main().catch((err: unknown) => {
-		console.error('\n❌ UNEXPECTED ERROR:');
-		console.error(err instanceof Error ? err.message : String(err));
+		renderOperatorError(err, {
+			title: 'El espejo Preview no se pudo completar',
+			retryCommand: 'pnpm db:preview:sync-invitations -- --dry-run',
+			noChangesMessage: 'Revise el informe; no asuma un sync completo.',
+		});
 		process.exit(1);
 	});
 }

@@ -25,7 +25,7 @@ function writeError(error: unknown, target: MigrateCliArgs['target'] = null): vo
 		title: 'No se pudo completar la operación',
 		retryCommand:
 			target === 'production'
-				? 'pnpm db:migrate -- --target production'
+				? 'pnpm prod:apply -- --schema'
 				: target
 					? `pnpm db:migrate -- --target ${target}`
 					: 'pnpm db:migrate -- --help',
@@ -69,7 +69,7 @@ function writeApplyHint(
 ): void {
 	const expectedSuffix = expectedPin ? ` --expected ${expectedPin.join(',')}` : '';
 	if (target === 'production') {
-		writeHuman(`Para aplicar: pnpm db:migrate -- --target production --apply${expectedSuffix}`);
+		writeHuman(`Para aplicar: pnpm prod:apply -- --schema${expectedSuffix} --apply`);
 		return;
 	}
 	if (target === 'preview') {
@@ -179,25 +179,37 @@ async function runPreflightOrGuided(options: {
 }
 
 async function runProductionApply(options: {
-	orchestrator: OrchestratorModule;
-	baseInput: BaseMigrateInput;
+	expectedPin: readonly string[] | null;
 	json: boolean;
 }): Promise<void> {
-	const previewPlan = options.orchestrator.preflightMigrate({
-		...options.baseInput,
-		mode: 'preflight',
+	const expectedSuffix = options.expectedPin
+		? ` --expected ${options.expectedPin.join(',')}`
+		: '';
+	writeHuman(
+		`${operatorSymbol('info')} Production apply usa pnpm prod:apply -- --schema${expectedSuffix} --apply.`,
+	);
+	const { applyProductionApplyPlan } = await import('./production-apply-orchestrator.ts');
+	const { formatProductionApplyResult, toPublicProductionApplyPlan } =
+		await import('./production-apply-format.ts');
+	const execution = await applyProductionApplyPlan({
+		help: false,
+		json: options.json,
+		apply: true,
+		schema: true,
+		slugs: [],
+		allReady: false,
+		inspectAll: false,
+		expectedPin: options.expectedPin ? [...options.expectedPin] : null,
 	});
-	emitPlan(options.orchestrator, previewPlan, options.json, true);
-	if (previewPlan.pendingVersions.length === 0) {
-		writeHuman(`${operatorSymbol('ok')} No hay migraciones pendientes. No se escribió schema.`);
+	if (options.json) {
+		writeJson({
+			plan: toPublicProductionApplyPlan(execution.plan),
+			wrote: execution.wrote,
+			outcomes: execution.outcomes,
+		});
 		return;
 	}
-	const result = await options.orchestrator.orchestrateMigrate({
-		...options.baseInput,
-		mode: 'apply',
-		reviewedPlan: previewPlan,
-	});
-	writeApplyCompleted(result.wrote);
+	writeHuman(formatProductionApplyResult(execution));
 }
 
 function writeMissingTargetFailure(): void {
@@ -208,7 +220,7 @@ function writeMissingTargetFailure(): void {
 			code: 'TARGET_REQUIRED',
 			remediation: [
 				'En terminal interactiva: pnpm db:migrate (selector con Cancelar por defecto)',
-				'Para Production: pnpm db:migrate -- --target production',
+				'Para Production: pnpm db:migrate -- --target production (preflight) o pnpm prod:apply -- --schema',
 				'Ayuda: pnpm db:migrate -- --help',
 			],
 			retryCommand: 'pnpm db:migrate -- --help',
@@ -289,10 +301,9 @@ export async function runMigrateCli(argv: string[] = process.argv): Promise<void
 			return;
 		}
 
-		if (parsed.target === 'production') {
+		if (target === 'production') {
 			await runProductionApply({
-				orchestrator,
-				baseInput,
+				expectedPin,
 				json: parsed.json,
 			});
 			return;

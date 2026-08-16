@@ -12,7 +12,12 @@ import {
 } from './sql-safety.ts';
 import { getProdDbUrl, runPsql } from './db-workflow-lib.ts';
 import { extractSupabaseProjectRef } from './db-target-config.ts';
-import { OperatorError } from './operator-cli-ux.ts';
+import {
+	OperatorError,
+	operatorSymbol,
+	renderOperatorError,
+	writeHuman,
+} from './operator-cli-ux.ts';
 import { matchProductionWritePermit } from './production-write-permit.ts';
 import {
 	assessProductionPatchPreview,
@@ -34,11 +39,9 @@ const PRODUCTION_PATCH_PREVIEW_TIMEOUT_MS = 30_000;
  */
 
 function printUsage(): void {
-	console.error('Usage: pnpm db:prod:patch -- --dry-run --file <production-patch.sql>');
-	console.error(
-		'Production mutation is available only through pnpm prod:apply -- --patch <production-patch.sql> --owner-user-id <UUID> --apply.',
-	);
-	console.error('This entrypoint is lint-only and never opens a Production database connection.');
+	writeHuman('Uso: pnpm db:prod:patch -- --dry-run --file <production-patch.sql>');
+	writeHuman('La mutación es solo pnpm prod:apply -- --patch <production-patch.sql> --apply.');
+	writeHuman('Este comando solo hace lint y no abre Production.');
 }
 
 interface ParsedPatchInput {
@@ -54,15 +57,29 @@ function parsePatchInput(): ParsedPatchInput {
 
 	if (apply) {
 		printUsage();
-		console.error(
-			'DIRECT_PRODUCTION_PATCH_APPLY_BLOCKED: use pnpm prod:apply -- --patch <file> --apply.',
+		renderOperatorError(
+			new OperatorError({
+				title: 'Apply directo de parche bloqueado',
+				cause: 'db:prod:patch no muta Production.',
+				code: 'DIRECT_PRODUCTION_PATCH_APPLY_BLOCKED',
+				remediation: ['Use pnpm prod:apply -- --patch <file> --apply.'],
+				retryCommand: 'pnpm prod:apply -- --patch <file> --apply',
+			}),
 		);
 		process.exit(1);
 	}
 
 	if (!dryRun) {
 		printUsage();
-		console.error('Specify --dry-run for lint-only validation.');
+		renderOperatorError(
+			new OperatorError({
+				title: 'Falta --dry-run',
+				cause: 'db:prod:patch solo valida lint.',
+				code: 'DRY_RUN_REQUIRED',
+				remediation: ['Ejecute pnpm db:prod:patch -- --dry-run --file <path>.'],
+				retryCommand: 'pnpm db:prod:patch -- --dry-run --file <path>',
+			}),
+		);
 		process.exit(1);
 	}
 
@@ -76,15 +93,28 @@ function parsePatchInput(): ParsedPatchInput {
 	try {
 		sql = readFileSync(path, 'utf8');
 	} catch {
-		console.error(`Cannot read file: ${path}`);
+		renderOperatorError(
+			new OperatorError({
+				title: 'No se pudo leer el parche',
+				cause: `No se puede leer ${path}.`,
+				code: 'PATCH_FILE_UNREADABLE',
+				remediation: ['Confirme la ruta del archivo SQL.'],
+			}),
+		);
 		process.exit(1);
 	}
 
 	const result = lintProductionPatchSql(sql);
 
 	if (!result.ok) {
-		console.error(`Production patch blocked: ${path}`);
-		for (const error of result.errors) console.error(`- ${error}`);
+		renderOperatorError(
+			new OperatorError({
+				title: 'Parche bloqueado por lint',
+				cause: `El archivo ${path} no pasó la validación.`,
+				code: 'PATCH_LINT_FAILED',
+				remediation: result.errors,
+			}),
+		);
 		process.exit(1);
 	}
 
@@ -332,10 +362,10 @@ export async function runProdPatchMain(): Promise<void> {
 	const { dryRun, path } = parsePatchInput();
 
 	if (dryRun) {
-		console.info(`Production patch dry-run passed lint: ${path}`);
-		console.info('No database connection was opened and no SQL was executed.');
-		console.info(
-			'Disposition: RESTRICT_OWNER_ONLY specialized maintenance — not invitation:release and not db:migrate.',
+		writeHuman(`${operatorSymbol('ok')} Lint de parche correcto: ${path}`);
+		writeHuman('No se abrió Production y no se ejecutó SQL.');
+		writeHuman(
+			`${operatorSymbol('info')} Mutación: pnpm prod:apply -- --patch <file> --apply.`,
 		);
 		process.exit(0);
 	}
@@ -365,11 +395,11 @@ function executeProductionPatchSql(
 		);
 	}
 
-	console.info(`Production patch applied successfully: ${prepared.file}`);
-	if (execResult.stdout) console.info(execResult.stdout);
+	writeHuman(`${operatorSymbol('ok')} Parche aplicado: ${prepared.file}`);
+	if (execResult.stdout) writeHuman(execResult.stdout);
 
 	try {
-		console.info('Running post-apply mutation schema contract verification...');
+		writeHuman(`${operatorSymbol('info')} Verificando contrato de schema…`);
 		runMutationContractVerify('production', {
 			bindingHex: authorizedPlanBindingHex,
 			operationType: 'production_apply',
@@ -384,7 +414,7 @@ function executeProductionPatchSql(
 		if (error instanceof ProductionPatchApplyError) throw error;
 		throw new ProductionPatchApplyError(error);
 	}
-	console.info('✅ Post-apply mutation schema contract verification passed.');
+	writeHuman(`${operatorSymbol('ok')} Contrato de schema verificado.`);
 	return { state: 'APPLIED_AND_VERIFIED' };
 }
 
@@ -395,7 +425,10 @@ function isMain(): boolean {
 
 if (isMain()) {
 	void runProdPatchMain().catch((error: unknown) => {
-		console.error(error instanceof Error ? error.message : String(error));
+		renderOperatorError(error, {
+			title: 'No se pudo completar el lint del parche',
+			retryCommand: 'pnpm db:prod:patch -- --dry-run --file <path>',
+		});
 		process.exit(1);
 	});
 }

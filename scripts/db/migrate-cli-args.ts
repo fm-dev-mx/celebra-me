@@ -27,7 +27,8 @@ Canonical entry:
   pnpm db:migrate                           # TTY: select target (Cancelar default)
   pnpm db:migrate -- --target <local|preview|production|disposable-test> [options]
   pnpm db:migrate -- --target production    # Production read-only preflight
-  pnpm db:migrate -- --target production --apply # owner TTY apply (release-check + backup)
+  pnpm db:migrate -- --target production --apply
+    # redirects to pnpm prod:apply -- --schema --apply
 
 Options:
   --target <target>     Migration target (TTY selector when omitted; required without TTY)
@@ -41,10 +42,10 @@ Options:
 Environment:
   Preview apply (non-TTY): CELEBRA_TASK_SCOPE=preview:schema:migrate
   Preview release identity: clean Git HEAD (derived automatically; no manual SHA export)
-  Production apply: release-check evidence + interactive owner TTY (no token path)
+  Production apply: use pnpm prod:apply -- --schema --apply (owner TTY; no token path)
 
-Default mode is read-only planning. Production apply: backup → one revalidation →
-owner menu → bound code → write. After a failed apply, re-run preflight.
+Default mode is read-only planning. Production --apply delegates to prod:apply.
+After a failed apply, re-run preflight.
 `);
 }
 

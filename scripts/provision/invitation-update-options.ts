@@ -100,7 +100,7 @@ export function parseMutationTargets(raw: string | undefined): InvitationUpdateT
 	const targets = parseTargets(raw);
 	if (targets.includes('production')) {
 		throw new Error(
-			'PRODUCTION_PROMOTION_REQUIRED: Use pnpm invitation:release -- --slug <slug> --targets production for owner-only Production releases.',
+			'PRODUCTION_PROMOTION_REQUIRED: Use pnpm prod:apply -- --slug <slug> for owner-only Production releases. Domain dry-run remains pnpm invitation:release -- --slug <slug> --targets production --dry-run.',
 		);
 	}
 	return targets;
@@ -159,7 +159,7 @@ export function validateUpdateOptions(input: {
 		!input.allowProductionMutation
 	) {
 		throw new Error(
-			'PRODUCTION_PROMOTION_REQUIRED: Use pnpm invitation:release -- --slug <slug> --targets production for owner-only Production releases.',
+			'PRODUCTION_PROMOTION_REQUIRED: Use pnpm prod:apply -- --slug <slug> for owner-only Production releases. Domain dry-run remains pnpm invitation:release -- --slug <slug> --targets production --dry-run.',
 		);
 	}
 }

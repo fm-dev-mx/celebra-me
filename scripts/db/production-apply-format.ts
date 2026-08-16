@@ -43,6 +43,17 @@ function itemLine(item: ProductionApplyPlanItem): string {
 	return `${item.domain}:${item.id}  ${readinessLabel(item.readiness)}${extra}${reason}`;
 }
 
+const READINESS_GROUPS: ReadonlyArray<{
+	readiness: ProductionApplyReadiness;
+	label: string;
+}> = [
+	{ readiness: 'READY', label: 'Listo' },
+	{ readiness: 'READY_AFTER_SCHEMA', label: 'Listo después de schema' },
+	{ readiness: 'IN_SYNC', label: 'En sync' },
+	{ readiness: 'BLOCKED', label: 'Bloqueado' },
+	{ readiness: 'UNKNOWN', label: 'Desconocido' },
+];
+
 export function formatProductionApplyPlan(plan: ProductionApplyPlan): string {
 	const mutations = mutationItemsOf(plan);
 	const rows: Array<readonly [string, string]> = [
@@ -52,9 +63,23 @@ export function formatProductionApplyPlan(plan: ProductionApplyPlan): string {
 		['Alcance', plan.scope.inspectAll ? 'inspección (sin apply)' : describeScope(plan)],
 	];
 	const lines = [formatKeyValueBlock('Plan Production (solo lectura)', rows)];
-	for (const item of plan.items) {
-		if (item.readiness === 'NOT_APPLICABLE') continue;
-		lines.push(itemLine(item));
+	const visible = plan.items.filter((item) => item.readiness !== 'NOT_APPLICABLE');
+	for (const group of READINESS_GROUPS) {
+		const grouped = visible.filter((item) => item.readiness === group.readiness);
+		if (grouped.length === 0) continue;
+		lines.push('');
+		const mark =
+			group.readiness === 'BLOCKED'
+				? 'fail'
+				: group.readiness === 'UNKNOWN'
+					? 'warn'
+					: group.readiness === 'IN_SYNC'
+						? 'ok'
+						: 'info';
+		lines.push(`${operatorSymbol(mark)} ${group.label}`);
+		for (const item of grouped) {
+			lines.push(`  ${itemLine(item)}`);
+		}
 	}
 	lines.push('');
 	lines.push(`${operatorSymbol('info')} ${productionApplyHandoff(plan)}`);

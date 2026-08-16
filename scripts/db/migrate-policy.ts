@@ -54,6 +54,11 @@ export interface MigratePolicyContext {
 	authorizedPlanBindingHex?: string;
 	/** Internal permit operation for a composite owner workflow; never accepted from CLI. */
 	authorizedPermitOperationType?: string;
+	/**
+	 * Manifest from a composite prod:apply backup. When set, beforeWrite
+	 * revalidates instead of capturing again.
+	 */
+	preparedCriticalBackupManifestPath?: string;
 }
 
 export interface MigrateEnvironmentPolicy {

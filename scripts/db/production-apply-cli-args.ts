@@ -4,6 +4,7 @@
  */
 
 import { normalizeOperatorArgv } from '../lib/operator-argv.ts';
+import { parseExpectedConstraint } from './migrate-expected.ts';
 
 const KNOWN_FLAGS = new Set([
 	'--schema',
@@ -11,6 +12,7 @@ const KNOWN_FLAGS = new Set([
 	'--slugs',
 	'--all-ready',
 	'--patch',
+	'--expected',
 	'--apply',
 	'--json',
 	'--help',
@@ -38,6 +40,7 @@ export interface ProductionApplyCliArgs {
 	patchFile?: string;
 	ownerUserId?: string;
 	inspectAll: boolean;
+	expectedPin: string[] | null;
 }
 
 export function printProductionApplyHelp(): void {
@@ -53,6 +56,7 @@ Absence of scope never means apply everything.
   pnpm prod:apply -- --all-ready
   pnpm prod:apply -- --patch <file.sql>
   pnpm prod:apply -- --schema --slugs a,b --apply
+  pnpm prod:apply -- --schema --expected <versions> --apply
   pnpm prod:apply -- --all-ready --apply
 
 Options:
@@ -61,6 +65,7 @@ Options:
   --slugs <a,b>         Include an explicit invitation set (order preserved)
   --all-ready           Include READY schema + READY invitations only
   --patch <file>        Explicit specialized DML (never implied by --all-ready)
+  --expected <versions> Optional exact pending-set pin (requires --schema)
   --apply               Mutate Production after one owner TTY confirmation
   --owner-user-id <id>  Only when the patch SQL reads app.owner_user_id
   --json                Emit the secret-free plan on stdout
@@ -139,15 +144,20 @@ function isInspectAllScope(input: {
 
 function assertCliCombinations(input: {
 	allReady: boolean;
+	schema: boolean;
 	slugs: readonly string[];
 	patchFile?: string;
 	apply: boolean;
 	inspectAll: boolean;
+	expectedPin: string[] | null;
 }): void {
 	if (input.allReady && (input.slugs.length > 0 || input.patchFile)) {
 		throw new Error(
 			'Cannot combine --all-ready with --slug, --slugs, or --patch. --all-ready includes only READY schema and invitations.',
 		);
+	}
+	if (input.expectedPin && !input.schema && !input.allReady) {
+		throw new Error('--expected requires --schema or --all-ready.');
 	}
 	if (input.apply && input.inspectAll) {
 		throw new Error(
@@ -167,6 +177,7 @@ export function parseProductionApplyCliArgs(argv: string[]): ProductionApplyCliA
 			slugs: [],
 			allReady: false,
 			inspectAll: true,
+			expectedPin: null,
 		};
 	}
 
@@ -179,7 +190,16 @@ export function parseProductionApplyCliArgs(argv: string[]): ProductionApplyCliA
 	const ownerUserId = flagValue(args, '--owner-user-id');
 	const slugs = parseSlugArgs(args);
 	const inspectAll = isInspectAllScope({ schema, slugs, allReady, patchFile });
-	assertCliCombinations({ allReady, slugs, patchFile, apply, inspectAll });
+	const expectedPin = parseExpectedConstraint(args).expectedPin;
+	assertCliCombinations({
+		allReady,
+		schema,
+		slugs,
+		patchFile,
+		apply,
+		inspectAll,
+		expectedPin,
+	});
 
 	return {
 		help: false,
@@ -191,5 +211,6 @@ export function parseProductionApplyCliArgs(argv: string[]): ProductionApplyCliA
 		patchFile,
 		ownerUserId,
 		inspectAll,
+		expectedPin,
 	};
 }

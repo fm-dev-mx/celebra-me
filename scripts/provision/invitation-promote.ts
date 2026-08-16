@@ -156,7 +156,7 @@ export function evaluatePromotionSchemaGate(input: {
 				extraMigrations: [],
 				compatible: false,
 				blockCode: 'SCHEMA_INCOMPATIBLE',
-				detail: `SCHEMA_INCOMPATIBLE / OWNER_ACTION_REQUIRED: Production schema is uninitialized relative to ${expectedVersions.length} expected migrations. Run pnpm db:migrate, then rerun invitation:release --targets production.`,
+				detail: `SCHEMA_INCOMPATIBLE / OWNER_ACTION_REQUIRED: Production schema is uninitialized relative to ${expectedVersions.length} expected migrations. Run pnpm prod:apply -- --schema, then rerun pnpm prod:apply -- --slug <slug>.`,
 			};
 		}
 		const parity = evaluateMigrationHistoryParity(expectedVersions, remote.remoteVersions);
@@ -184,7 +184,7 @@ export function evaluatePromotionSchemaGate(input: {
 			blockCode: compatible ? undefined : 'SCHEMA_INCOMPATIBLE',
 			detail: compatible
 				? `Schema lifecycle ${state}; Production matches expected migration head ${remote.remoteVersions.at(-1) ?? '(none)'}.`
-				: `SCHEMA_INCOMPATIBLE / OWNER_ACTION_REQUIRED: schema lifecycle is ${state}. Promotion never runs migrations. Owner must execute pnpm db:migrate (or remediate SCHEMA_DRIFT), then rerun invitation:release --targets production.`,
+				: `SCHEMA_INCOMPATIBLE / OWNER_ACTION_REQUIRED: schema lifecycle is ${state}. Promotion never runs migrations. Owner must execute pnpm prod:apply -- --schema (or remediate SCHEMA_DRIFT), then rerun pnpm prod:apply -- --slug <slug>.`,
 		};
 	} catch (error) {
 		return {

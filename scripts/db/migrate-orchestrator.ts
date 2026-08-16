@@ -68,6 +68,8 @@ export interface OrchestrateMigrateInput {
 	authorizedPlanBindingHex?: string;
 	/** Internal composite operation type; never a CLI flag. */
 	authorizedPermitOperationType?: string;
+	/** Shared critical backup from prod:apply; never a CLI flag. */
+	preparedCriticalBackupManifestPath?: string;
 }
 
 export interface OrchestrateMigrateResult {
@@ -131,6 +133,8 @@ function withSeams(
 		authorizedPlanBindingHex: input.authorizedPlanBindingHex ?? ctx.authorizedPlanBindingHex,
 		authorizedPermitOperationType:
 			input.authorizedPermitOperationType ?? ctx.authorizedPermitOperationType,
+		preparedCriticalBackupManifestPath:
+			input.preparedCriticalBackupManifestPath ?? ctx.preparedCriticalBackupManifestPath,
 	};
 }
 

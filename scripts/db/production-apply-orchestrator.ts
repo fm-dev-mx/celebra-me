@@ -108,6 +108,8 @@ export interface ProductionApplyExecuteDeps extends ProductionApplyAssemblerDeps
 		manifestPath: string;
 		retryCommand: string;
 	}) => unknown;
+	ensureSharedBackup?: typeof ensureCriticalProductionBackup;
+	preparedCriticalBackupManifestPath?: string;
 }
 
 export interface ProductionApplyOutcomeRow {
@@ -178,6 +180,7 @@ function schemaItemFromError(error: unknown): ProductionApplyPlanItem {
 async function inspectSchema(
 	include: boolean,
 	deps: ProductionApplyAssemblerDeps,
+	expectedPin: readonly string[] | null = null,
 ): Promise<ProductionApplyPlanItem> {
 	if (!include) {
 		return {
@@ -194,7 +197,7 @@ async function inspectSchema(
 				preflightMigrate({
 					target: 'production',
 					mode: 'preflight',
-					expectedPin: null,
+					expectedPin,
 				}));
 		return schemaItemFromPlan(build());
 	} catch (error) {
@@ -269,7 +272,7 @@ export async function buildProductionApplyPlan(
 	deps: ProductionApplyAssemblerDeps = {},
 ): Promise<ProductionApplyPlan> {
 	const scope = scopeFromArgs(args);
-	const schemaItem = await inspectSchema(scope.schema, deps);
+	const schemaItem = await inspectSchema(scope.schema, deps, args.expectedPin);
 	const schemaReadyInPlan = schemaItem.readiness === 'READY';
 
 	const slugList =
@@ -484,6 +487,7 @@ async function applySchemaMutation(
 	reviewed: ProductionApplyPlan,
 	deps: ProductionApplyExecuteDeps,
 	outcomes: ProductionApplyOutcomeRow[],
+	expectedPin: readonly string[] | null = null,
 ): Promise<boolean> {
 	const schemaMutation = mutations.find((item) => item.domain === 'schema');
 	if (!schemaMutation) return false;
@@ -494,9 +498,10 @@ async function applySchemaMutation(
 				orchestrateMigrate({
 					target: 'production',
 					mode: 'apply',
-					expectedPin: null,
+					expectedPin,
 					authorizedPlanBindingHex: input.authorizedPlanBindingHex,
 					authorizedPermitOperationType: PRODUCTION_APPLY_OPERATION_TYPE,
+					preparedCriticalBackupManifestPath: deps.preparedCriticalBackupManifestPath,
 				}));
 		const result = await applySchema({ authorizedPlanBindingHex: reviewed.planId });
 		replaceOutcome(outcomes, 'schema', {
@@ -648,18 +653,20 @@ async function applyPatchMutation(
 			});
 		}
 		const dbUrl = (deps.getProductionDbUrl ?? getProdDbUrl)().url;
-		const ensureBackup = deps.ensurePatchBackup ?? ensureCriticalProductionBackup;
-		const backup = ensureBackup({
-			prodDbUrl: dbUrl,
-			purpose: 'standalone',
-			planId: reviewed.planId,
-			retryCommand: productionPatchApplyCommand(patchMutation.id, prepared.sql),
-			operationLabel: 'la aplicación del parche especializado',
-		});
+		const retryCommand = productionPatchApplyCommand(patchMutation.id, prepared.sql);
+		const manifestPath =
+			deps.preparedCriticalBackupManifestPath ??
+			(deps.ensurePatchBackup ?? ensureCriticalProductionBackup)({
+				prodDbUrl: dbUrl,
+				purpose: 'standalone',
+				planId: reviewed.planId,
+				retryCommand,
+				operationLabel: 'la aplicación del parche especializado',
+			}).manifestPath;
 		(deps.revalidatePatchBackup ?? revalidateCriticalProductionBackup)({
 			prodDbUrl: dbUrl,
-			manifestPath: backup.manifestPath,
-			retryCommand: productionPatchApplyCommand(patchMutation.id, prepared.sql),
+			manifestPath,
+			retryCommand,
 		});
 		const applyPatch = deps.applyPatch ?? applyPreparedProductionPatch;
 		await applyPatch({
@@ -704,12 +711,55 @@ export async function applyProductionApplyPlan(
 		};
 	}
 
+	const hasSchema = mutations.some((item) => item.domain === 'schema');
+	const hasPatch = mutations.some((item) => item.domain === 'patch');
+	const shouldPrepareSharedBackup =
+		(hasSchema || hasPatch) &&
+		Boolean(
+			deps.ensureSharedBackup ||
+			deps.ensurePatchBackup ||
+			(hasSchema && !deps.applySchema) ||
+			(hasPatch && !deps.applyPatch),
+		);
+	let sharedBackupManifest: string | undefined;
+	if (shouldPrepareSharedBackup) {
+		const dbUrl = (deps.getProductionDbUrl ?? getProdDbUrl)().url;
+		const sharedInput = {
+			prodDbUrl: dbUrl,
+			planId: reviewed.planId,
+			retryCommand: 'pnpm prod:apply',
+			operationLabel: 'la autorización del plan Production',
+		};
+		const backup = deps.ensureSharedBackup
+			? deps.ensureSharedBackup({
+					...sharedInput,
+					purpose: hasSchema ? 'migrate-pre' : 'standalone',
+					reuseExisting: true,
+				})
+			: deps.ensurePatchBackup
+				? deps.ensurePatchBackup({
+						...sharedInput,
+						purpose: 'standalone',
+					})
+				: ensureCriticalProductionBackup({
+						...sharedInput,
+						purpose: hasSchema ? 'migrate-pre' : 'standalone',
+						reuseExisting: true,
+					});
+		sharedBackupManifest = backup.manifestPath;
+	}
+	const executeDeps: ProductionApplyExecuteDeps = {
+		...deps,
+		preparedCriticalBackupManifestPath:
+			sharedBackupManifest ?? deps.preparedCriticalBackupManifestPath,
+	};
+
 	try {
-		await authorizeReviewedPlan(reviewed, mutations, deps);
+		await authorizeReviewedPlan(reviewed, mutations, executeDeps);
 		if (isInvitationOnlyPlan(reviewed)) {
-			await revalidateInvitationOnlyPlan(reviewed, deps);
+			await revalidateInvitationOnlyPlan(reviewed, executeDeps);
 		} else {
-			throwIfPlanDrifted(reviewed, await buildProductionApplyPlan(args, deps));
+			throwIfPlanDrifted(reviewed, await buildProductionApplyPlan(args, executeDeps));
 		}
 
 		const outcomes = reviewed.items.map(outcomeFromItem);
@@ -719,18 +769,24 @@ export async function applyProductionApplyPlan(
 				operationType: PRODUCTION_APPLY_OPERATION_TYPE,
 			},
 			async () => {
-				const wroteSchema = await applySchemaMutation(mutations, reviewed, deps, outcomes);
+				const wroteSchema = await applySchemaMutation(
+					mutations,
+					reviewed,
+					executeDeps,
+					outcomes,
+					args.expectedPin,
+				);
 				const wroteInvitations = await applyInvitationMutations(
 					mutations,
 					reviewed,
-					deps,
+					executeDeps,
 					outcomes,
 				);
 				const wrotePatch = await applyPatchMutation(
 					mutations,
 					reviewed,
 					ownerUserId,
-					deps,
+					executeDeps,
 					outcomes,
 				);
 				return wroteSchema || wroteInvitations || wrotePatch;
