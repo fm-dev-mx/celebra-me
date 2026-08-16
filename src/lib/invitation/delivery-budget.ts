@@ -8,26 +8,30 @@ export type DeliveryBudgetScenario =
 
 export interface DeliveryBudgetCeiling {
 	htmlBytes: number;
+}
+
+export interface DeliveryHtmlSnapshot {
+	htmlBytes: number;
+	/** Diagnostic only. Unique HTML URLs are not a budget. */
 	uniqueUrlCount: number;
 }
 
 /**
- * Document-size and discovered-URL ceilings from production measurements
- * on 2026-08-16 (www.celebra-me.com), plus ~35% headroom.
- * Enforced only by `pnpm invitation:delivery:baseline --assert-budget`.
- * Timing metrics are intentionally absent.
+ * Canonical policy: `docs/domains/invitations/performance-metrics.md`.
  *
- * Measured HTML bytes: versioned 69_382, legacy 75_902, personalized 69_413.
- * Measured unique document URLs: 40 / 54 / 40.
+ * HTML-size ceilings from production measurements on 2026-08-16
+ * (www.celebra-me.com), plus a provisional ~35% regression margin.
+ * Enforced only by `pnpm invitation:delivery:baseline --assert-budget`.
+ * Unique URL counts and timing metrics are intentionally absent.
  */
 export const DELIVERY_HTML_BUDGETS: Record<DeliveryBudgetScenario, DeliveryBudgetCeiling> = {
-	versionedAnonymous: { htmlBytes: 94_000, uniqueUrlCount: 55 },
-	legacyStorageAnonymous: { htmlBytes: 103_000, uniqueUrlCount: 75 },
-	personalizedLookupMiss: { htmlBytes: 94_000, uniqueUrlCount: 55 },
+	versionedAnonymous: { htmlBytes: 94_000 },
+	legacyStorageAnonymous: { htmlBytes: 103_000 },
+	personalizedLookupMiss: { htmlBytes: 94_000 },
 };
 
 /** Production document snapshot used to derive the ceilings above. Not a CI fetch. */
-export const MEASURED_PRODUCTION_HTML: Record<DeliveryBudgetScenario, DeliveryBudgetCeiling> = {
+export const MEASURED_PRODUCTION_HTML: Record<DeliveryBudgetScenario, DeliveryHtmlSnapshot> = {
 	versionedAnonymous: { htmlBytes: 69_382, uniqueUrlCount: 40 },
 	legacyStorageAnonymous: { htmlBytes: 75_902, uniqueUrlCount: 54 },
 	personalizedLookupMiss: { htmlBytes: 69_413, uniqueUrlCount: 40 },
@@ -36,7 +40,6 @@ export const MEASURED_PRODUCTION_HTML: Record<DeliveryBudgetScenario, DeliveryBu
 export interface DeliveryBudgetObservation {
 	id: DeliveryBudgetScenario;
 	htmlBytes: number;
-	uniqueUrlCount: number;
 	cacheControl: string | null;
 	personalized: boolean;
 	vercelCache: string | null;
@@ -49,11 +52,6 @@ export function assertDeliveryBudgets(observations: DeliveryBudgetObservation[])
 		if (observation.htmlBytes > ceiling.htmlBytes) {
 			failures.push(
 				`${observation.id} html ${observation.htmlBytes} B exceeds budget ${ceiling.htmlBytes} B`,
-			);
-		}
-		if (observation.uniqueUrlCount > ceiling.uniqueUrlCount) {
-			failures.push(
-				`${observation.id} unique URLs ${observation.uniqueUrlCount} exceed budget ${ceiling.uniqueUrlCount}`,
 			);
 		}
 		const cache = observation.cacheControl ?? '';

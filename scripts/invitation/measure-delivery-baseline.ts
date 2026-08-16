@@ -346,8 +346,10 @@ async function main(): Promise<void> {
 		viewport: 'document-only (no browser layout)',
 		connection: 'unthrottled operator network',
 		notes: [
+			'Policy: docs/domains/invitations/performance-metrics.md',
 			'Personalized scenario uses a synthetic invite id; no guest PII is requested or stored.',
-			'LCP is not measured here; use a browser trace for paint timing.',
+			'LCP is not measured here; use Vercel Speed Insights or a browser trace for paint timing.',
+			'Unique HTML URL counts are diagnostic; --assert-budget checks HTML bytes and cache contracts only.',
 			'Production HTML may still wrap legacy Storage URLs in /_vercel/image until the cache-safe image change is deployed.',
 		],
 		scenarios: reports,
@@ -366,7 +368,6 @@ async function main(): Promise<void> {
 			reports.map((report) => ({
 				id: report.id,
 				htmlBytes: report.document.htmlBytes,
-				uniqueUrlCount: report.inventory.uniqueUrlCount,
 				cacheControl: report.document.cacheControl,
 				personalized: report.personalized,
 				vercelCache: report.document.vercelCacheRepeat,

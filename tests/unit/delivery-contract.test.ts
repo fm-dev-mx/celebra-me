@@ -108,10 +108,22 @@ describe('invitation delivery HTML budgets', () => {
 			expect(DELIVERY_HTML_BUDGETS[id].htmlBytes).toBeGreaterThan(
 				MEASURED_PRODUCTION_HTML[id].htmlBytes,
 			);
-			expect(DELIVERY_HTML_BUDGETS[id].uniqueUrlCount).toBeGreaterThan(
-				MEASURED_PRODUCTION_HTML[id].uniqueUrlCount,
-			);
 		}
+	});
+
+	it('does not treat unique HTML URL counts as a budget', () => {
+		expect(() =>
+			assertDeliveryBudgets([
+				{
+					id: 'legacyStorageAnonymous',
+					htmlBytes: 80_000,
+					cacheControl: 'public, max-age=0, must-revalidate',
+					personalized: false,
+					vercelCache: 'MISS',
+				},
+			]),
+		).not.toThrow();
+		expect(MEASURED_PRODUCTION_HTML.legacyStorageAnonymous.uniqueUrlCount).toBe(54);
 	});
 
 	it('accepts observations inside the measured ceilings and rejects a shared-cache HIT', () => {
@@ -120,7 +132,6 @@ describe('invitation delivery HTML budgets', () => {
 				{
 					id: 'versionedAnonymous',
 					htmlBytes: 80_000,
-					uniqueUrlCount: 40,
 					cacheControl: 'public, max-age=0, must-revalidate',
 					personalized: false,
 					vercelCache: 'MISS',
@@ -132,7 +143,6 @@ describe('invitation delivery HTML budgets', () => {
 				{
 					id: 'versionedAnonymous',
 					htmlBytes: 80_000,
-					uniqueUrlCount: 40,
 					cacheControl: 'public, max-age=0, must-revalidate',
 					personalized: false,
 					vercelCache: 'HIT',
@@ -147,7 +157,6 @@ describe('invitation delivery HTML budgets', () => {
 				{
 					id: 'versionedAnonymous',
 					htmlBytes: 95_000,
-					uniqueUrlCount: 40,
 					cacheControl: 'public, max-age=0, must-revalidate',
 					personalized: false,
 					vercelCache: 'MISS',
