@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals
 const mockSelect = jest.fn<(...args: unknown[]) => Promise<unknown>>();
 const mockPreflightMigrate = jest.fn<(...args: unknown[]) => unknown>();
 const mockOrchestrateMigrate = jest.fn<(...args: unknown[]) => Promise<unknown>>();
+const mockApplyProductionApplyPlan = jest.fn<(...args: unknown[]) => Promise<unknown>>();
 
 jest.mock('@inquirer/prompts', () => ({
 	select: (...args: unknown[]) => mockSelect(...args),
@@ -24,10 +25,23 @@ jest.mock('../../scripts/db/migrate-expected.ts', () => ({
 	parseExpectedConstraint: () => ({ expectedPin: null }),
 }));
 
+jest.mock('../../scripts/db/production-apply-orchestrator.ts', () => ({
+	applyProductionApplyPlan: (...args: unknown[]) => mockApplyProductionApplyPlan(...args),
+	buildProductionApplyPlan: jest.fn(),
+}));
+
+jest.mock('../../scripts/db/production-apply-format.ts', () => ({
+	formatProductionApplyResult: () => 'prod-apply-result',
+	toPublicProductionApplyPlan: (plan: unknown) => plan,
+}));
+
 describe('migrate CLI behavioral contracts', () => {
 	const originalEnv = { ...process.env };
 	let stderr = '';
 	let writeErr: (chunk: string | Uint8Array) => boolean;
+
+	const originalStdinDescriptor = Object.getOwnPropertyDescriptor(process.stdin, 'isTTY');
+	const originalStderrDescriptor = Object.getOwnPropertyDescriptor(process.stderr, 'isTTY');
 
 	beforeEach(() => {
 		jest.resetModules();
@@ -48,6 +62,16 @@ describe('migrate CLI behavioral contracts', () => {
 		process.env = { ...originalEnv };
 		process.stderr.write = writeErr;
 		process.exitCode = undefined;
+		if (originalStdinDescriptor) {
+			Object.defineProperty(process.stdin, 'isTTY', originalStdinDescriptor);
+		} else {
+			delete (process.stdin as { isTTY?: boolean }).isTTY;
+		}
+		if (originalStderrDescriptor) {
+			Object.defineProperty(process.stderr, 'isTTY', originalStderrDescriptor);
+		} else {
+			delete (process.stderr as { isTTY?: boolean }).isTTY;
+		}
 	});
 
 	it('fails closed without --target when non-TTY', async () => {
@@ -102,5 +126,43 @@ describe('migrate CLI behavioral contracts', () => {
 		);
 		expect(mockOrchestrateMigrate).not.toHaveBeenCalled();
 		expect(stderr).toMatch(/Cancelado/);
+	});
+
+	it('redirects Production --apply to prod:apply --schema and never orchestrates migrate apply', async () => {
+		mockApplyProductionApplyPlan.mockResolvedValue({
+			plan: { planId: 'plan-prod', items: [], scope: { schema: true, slugs: [] } },
+			wrote: true,
+			outcomes: [{ id: 'schema', outcome: 'APPLIED_AND_VERIFIED' }],
+		});
+
+		const { runMigrateCli } = await import('../../scripts/db/migrate-cli.ts');
+		await runMigrateCli(['node', 'migrate-cli.ts', '--target', 'production', '--apply']);
+
+		expect(mockOrchestrateMigrate).not.toHaveBeenCalled();
+		expect(mockApplyProductionApplyPlan).toHaveBeenCalledWith(
+			expect.objectContaining({
+				apply: true,
+				schema: true,
+				inspectAll: false,
+			}),
+		);
+		expect(stderr).toMatch(/prod:apply -- --schema/);
+	});
+
+	it('keeps Production preflight on the schema primitive without issuing a permit', async () => {
+		mockPreflightMigrate.mockReturnValue({
+			target: 'production',
+			mode: 'preflight',
+			pendingVersions: ['20260812210000'],
+			planId: 'plan-prod-preflight',
+		});
+
+		const { runMigrateCli } = await import('../../scripts/db/migrate-cli.ts');
+		await runMigrateCli(['node', 'migrate-cli.ts', '--target', 'production']);
+
+		expect(mockPreflightMigrate).toHaveBeenCalled();
+		expect(mockOrchestrateMigrate).not.toHaveBeenCalled();
+		expect(mockApplyProductionApplyPlan).not.toHaveBeenCalled();
+		expect(stderr).toMatch(/prod:apply -- --schema/);
 	});
 });

@@ -82,6 +82,16 @@ describe('prod:apply CLI arguments', () => {
 		expect(parse(['--', '--help']).help).toBe(true);
 	});
 
+	it('parses --expected only with --schema or --all-ready', () => {
+		expect(parse(['--schema', '--expected', '20260812210000'])).toMatchObject({
+			schema: true,
+			expectedPin: ['20260812210000'],
+		});
+		expect(() => parse(['--expected', '20260812210000'])).toThrow(
+			/--expected requires --schema/,
+		);
+	});
+
 	it('rejects a pasted prod:apply prefix', () => {
 		expect(() => parse(['pnpm', 'prod:apply', '--', '--slug', 'x'])).toThrow(
 			/PASTED_SCRIPT_PREFIX/,

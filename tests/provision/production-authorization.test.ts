@@ -316,6 +316,43 @@ describe('requireOwnerProductionApply', () => {
 		).rejects.toThrow('process.exit:1');
 	});
 
+	it('rejects the wrong operation verb even when the hex matches', async () => {
+		mockExit();
+		await expect(
+			requireOwnerProductionApply({
+				...baseApplyInput,
+				operationVerb: 'APPLY',
+				readConfirmationLine: () => 'MIGRATE abcdef01',
+			}),
+		).rejects.toThrow('process.exit:1');
+	});
+
+	it('rejects a confirmation code bound to a previous planId', async () => {
+		mockExit();
+		await expect(
+			requireOwnerProductionApply({
+				...baseApplyInput,
+				bindingHex: 'ffffffffffff0001',
+				readConfirmationLine: () => 'MIGRATE abcdef01',
+			}),
+		).rejects.toThrow('process.exit:1');
+	});
+
+	it('still requires the current binding after an intervening review', async () => {
+		mockExit();
+		let calls = 0;
+		await expect(
+			requireOwnerProductionApply({
+				...baseApplyInput,
+				selectIntent: () => {
+					calls += 1;
+					return calls === 1 ? 'review' : 'proceed';
+				},
+				readConfirmationLine: () => 'MIGRATE deadbeef',
+			}),
+		).rejects.toThrow('process.exit:1');
+	});
+
 	it('accepts short confirmation code after identity and release evidence', async () => {
 		jest.spyOn(process.stderr, 'write').mockImplementation(() => true);
 		await expect(

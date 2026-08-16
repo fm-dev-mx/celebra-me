@@ -17,7 +17,7 @@ describe('invitation:release Production dispatch', () => {
 		expect(() => parseReleaseMutationTargets('local,production')).toThrow(
 			/PRODUCTION_TARGET_EXCLUSIVE/,
 		);
-		expect(() => parseMutationTargets('production')).toThrow(/invitation:release/);
+		expect(() => parseMutationTargets('production')).toThrow(/prod:apply/);
 	});
 
 	it('dispatches Production dry-run through runPromotionPreflight and hands apply to prod:apply', () => {
@@ -42,6 +42,28 @@ describe('invitation:release Production dispatch', () => {
 		);
 		expect(source).toContain('pnpm db:migrate');
 		expect(source).toMatch(/nunca migra/i);
+	});
+
+	it('does not tell operators to apply Production with invitation:release', () => {
+		const cli = readFileSync(
+			resolve(process.cwd(), 'scripts/provision/invitation-release-cli.ts'),
+			'utf8',
+		);
+		const promote = readFileSync(
+			resolve(process.cwd(), 'scripts/provision/invitation-promote.ts'),
+			'utf8',
+		);
+		const options = readFileSync(
+			resolve(process.cwd(), 'scripts/provision/invitation-update-options.ts'),
+			'utf8',
+		);
+		expect(cli).not.toMatch(/invitation:release[^\n]*--targets production --apply/);
+		expect(promote).toContain('pnpm prod:apply -- --schema');
+		expect(promote).not.toContain('rerun invitation:release --targets production');
+		expect(options).toContain('pnpm prod:apply -- --slug');
+		expect(options).not.toMatch(
+			/Use pnpm invitation:release -- --slug <slug> --targets production for owner-only/,
+		);
 	});
 
 	it('TTY modeCount===0 delegates to destination wizard (not next-action chain)', () => {

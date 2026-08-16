@@ -113,6 +113,33 @@ describe('release-check evidence', () => {
 		expect(runner).not.toHaveBeenCalled();
 	});
 
+	it('clears evidence when a runner step fails', () => {
+		const dir = mkdtempSync(join(tmpdir(), 'release-check-'));
+		tempDirs.push(dir);
+		const path = join(dir, 'evidence.json');
+		writeReleaseCheckEvidence(evidence('abc1234deadbeef'), path);
+		jest.spyOn(console, 'info').mockImplementation(() => undefined);
+		jest.spyOn(console, 'error').mockImplementation(() => undefined);
+		jest.spyOn(process.stderr, 'write').mockImplementation(() => true);
+		jest.spyOn(process, 'exit').mockImplementation(((code?: string | number | null) => {
+			throw new Error(`process.exit:${code ?? ''}`);
+		}) as never);
+		expect(() =>
+			ensureValidReleaseCheckEvidence({
+				evidencePath: path,
+				worktree: { sha: 'newsha0000003', clean: true, dirtySummary: '' },
+				runner: (command, args) => {
+					void command;
+					if (args[0] === 'test') {
+						return { status: 1, stdout: '', stderr: 'failed' };
+					}
+					return { status: 0, stdout: '', stderr: '' };
+				},
+			}),
+		).toThrow('process.exit:1');
+		expect(readReleaseCheckEvidence(path)).toBeNull();
+	});
+
 	it('runs test in parallel with type-check → build:app (not nested type-check via build)', () => {
 		const source = readFileSync(resolve(process.cwd(), 'scripts/db/release-check.ts'), 'utf8');
 		expect(source).toContain("args: ['build:app']");

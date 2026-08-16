@@ -130,6 +130,14 @@ describe('recovery integrity capture SQL', () => {
 		expect(parsePsqlJsonPayload<number[]>(`SET\n[1,2]\n`, 'array result')).toEqual([1, 2]);
 	});
 
+	it('fails closed on empty, NOTICE-only, or truncated JSON', () => {
+		expect(() => parsePsqlJsonPayload('   ', 'snapshot')).toThrow(/no snapshot/);
+		expect(() =>
+			parsePsqlJsonPayload('NOTICE:  relation already exists\n', 'snapshot'),
+		).toThrow(/no JSON snapshot/);
+		expect(() => parsePsqlJsonPayload('SET\n{"tables":', 'snapshot')).toThrow(SyntaxError);
+	});
+
 	it('captures a snapshot with a single copy() call', () => {
 		const tables = Object.fromEntries(
 			CRITICAL_RECOVERY_TABLES.map(({ schema, table }) => [

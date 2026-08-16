@@ -491,6 +491,7 @@ describe('production apply execution', () => {
 					slugs: [],
 					allReady: false,
 					inspectAll: true,
+					expectedPin: null,
 				},
 				{
 					...baseDeps(),
@@ -621,6 +622,7 @@ describe('production apply execution', () => {
 					slugs: [],
 					allReady: false,
 					inspectAll: false,
+					expectedPin: null,
 					patchFile: 'scripts/manual/x.sql',
 				},
 				{
@@ -739,7 +741,7 @@ describe('production apply execution', () => {
 		expect(getProductionWritePermit()).toBeNull();
 	});
 
-	it('rejects a patch changed after authorization before backup or write', async () => {
+	it('rejects a patch changed after authorization before write', async () => {
 		let preparations = 0;
 		const applyPatch = jest.fn(async () => ({ state: 'APPLIED_AND_VERIFIED' as const }));
 		const ensurePatchBackup: NonNullable<ProductionApplyExecuteDeps['ensurePatchBackup']> =
@@ -774,7 +776,7 @@ describe('production apply execution', () => {
 				},
 			),
 		).rejects.toMatchObject({ code: 'ARTIFACT_DRIFT' });
-		expect(ensurePatchBackup).not.toHaveBeenCalled();
+		expect(ensurePatchBackup).toHaveBeenCalledTimes(1);
 		expect(applyPatch).not.toHaveBeenCalled();
 		expect(getProductionWritePermit()).toBeNull();
 	});
@@ -838,5 +840,117 @@ describe('production apply execution', () => {
 		);
 		expect(applyPatch).toHaveBeenCalledTimes(1);
 		expect(getProductionWritePermit()).toBeNull();
+	});
+
+	it('applies a mixed schema+invitation+patch plan in order with one gate and one backup', async () => {
+		const order: string[] = [];
+		const requireOwnerApply = jest.fn(async (input: { bindingHex: string }) => {
+			order.push('authorize');
+			issueProductionWritePermit({
+				projectRef: SUPABASE_PROJECT_REFS.production,
+				operationType: 'production_apply',
+				bindingHex: input.bindingHex,
+			});
+		});
+		const ensureSharedBackup = jest.fn(() => {
+			order.push('backup');
+			return {
+				manifestPath: '.tmp/shared-backup.json',
+				reused: true,
+				coverage: {
+					covered: true,
+					reason: 'covered' as const,
+					maxAgeMs: 86400000,
+					manifestPath: '.tmp/shared-backup.json',
+				},
+			};
+		});
+		const ensurePatchBackup = jest.fn(() => ({
+			manifestPath: '.tmp/patch-backup.json',
+		}));
+		const applySchema = jest.fn(async () => {
+			order.push('schema');
+			return { plan: schemaPlan(), wrote: true };
+		});
+		const applyInvitation = jest.fn(async () => {
+			order.push('alpha');
+			return {
+				...invitationPreflight('alpha'),
+				status: 'PROMOTED',
+			} as PromotionApplyReport;
+		});
+		const applyPatch = jest.fn(async () => {
+			order.push('patch');
+			return { state: 'APPLIED_AND_VERIFIED' as const };
+		});
+		const revalidatePatchBackup = jest.fn(() => undefined);
+		const result = await applyProductionApplyPlan(
+			cli(['--schema', '--slug', 'alpha', '--patch', 'scripts/manual/x.sql', '--apply']),
+			{
+				...baseDeps({
+					preflights: { alpha: invitationPreflight('alpha') },
+				}),
+				requireOwnerApply,
+				ensureSharedBackup,
+				ensurePatchBackup,
+				revalidatePatchBackup,
+				applySchema,
+				applyInvitation,
+				applyPatch,
+			},
+		);
+		expect(requireOwnerApply).toHaveBeenCalledTimes(1);
+		expect(ensureSharedBackup).toHaveBeenCalledTimes(1);
+		expect(ensurePatchBackup).not.toHaveBeenCalled();
+		expect(order).toEqual(['backup', 'authorize', 'schema', 'alpha', 'patch']);
+		expect(result.wrote).toBe(true);
+		expect(result.plan.planId.length).toBeGreaterThan(8);
+	});
+
+	it('stops invitation and patch when schema apply fails', async () => {
+		const applyInvitation = jest.fn(async () => {
+			throw new Error('invitation should not run');
+		});
+		const applyPatch = jest.fn(async () => {
+			throw new Error('patch should not run');
+		});
+		await expect(
+			applyProductionApplyPlan(
+				cli(['--schema', '--slug', 'alpha', '--patch', 'scripts/manual/x.sql', '--apply']),
+				{
+					...baseDeps({
+						preflights: { alpha: invitationPreflight('alpha') },
+					}),
+					requireOwnerApply: async (input) => {
+						issueProductionWritePermit({
+							projectRef: SUPABASE_PROJECT_REFS.production,
+							operationType: 'production_apply',
+							bindingHex: input.bindingHex,
+						});
+					},
+					ensureSharedBackup: () => ({
+						manifestPath: '.tmp/shared-backup.json',
+						reused: true,
+						coverage: {
+							covered: true,
+							reason: 'covered' as const,
+							maxAgeMs: 86400000,
+							manifestPath: '.tmp/shared-backup.json',
+						},
+					}),
+					applySchema: async () => {
+						throw new MigrateApplyError({
+							state: 'NOT_APPLIED',
+							plan: schemaPlan(),
+							error: new Error('push failed'),
+						});
+					},
+					applyInvitation,
+					applyPatch,
+				},
+			),
+		).rejects.toMatchObject({ code: 'NOT_APPLIED' });
+		expect(applyInvitation).not.toHaveBeenCalled();
+		expect(applyPatch).not.toHaveBeenCalled();
 	});
 });
