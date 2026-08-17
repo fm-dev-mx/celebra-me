@@ -19,6 +19,16 @@
 	--hero-split-title-line-height: 0.9;
 	--hero-split-title-letter-spacing: 0;
 
+	.invitation-hero__title {
+		font-family: var(--hero-split-title-font, var(--font-display));
+		font-style: var(--hero-split-title-style, normal);
+		font-weight: var(--hero-split-title-weight, 400);
+		font-size: var(--hero-split-title-size);
+		line-height: var(--hero-split-title-line-height, 0.9);
+		letter-spacing: var(--hero-split-title-letter-spacing, 0);
+		text-transform: var(--hero-split-title-transform, none);
+	}
+
 	@include mixins.respond-to(lg) {
 		align-items: flex-start;
 		justify-content: center;

@@ -1,4 +1,4 @@
-.personalized-access[data-variant='celestial-blue'] {
+.personalized-access[data-variant='celestial-blue']:not([data-structural-variant='formal-pass']) {
 	--pa-paper-tilt: -0.55deg;
 
 	position: relative;
@@ -169,14 +169,15 @@
 			animation: pa-celestial-seal-drift 16s var(--ease-premium, ease) infinite alternate;
 		}
 	}
-
 }
 
 // The document coordinator owns state on the section wrapper, not on the section itself.
 // Keep the card's paper tilt while it enters, then reveal the reservation count as a second beat.
 @media (prefers-reduced-motion: no-preference) {
 	#invitation-sections-container
-		> .invitation-section-wrapper[data-section-kind='personalized-access'].has-motion:not(.is-visible)
+		> .invitation-section-wrapper[data-section-kind='personalized-access'].has-motion:not(
+			.is-visible
+		)
 		.personalized-access[data-variant='celestial-blue']
 		.access-card {
 		opacity: 0%;

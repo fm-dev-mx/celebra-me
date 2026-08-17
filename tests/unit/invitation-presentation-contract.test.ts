@@ -1,3 +1,5 @@
+import { gallerySchema } from '@/lib/intake/schemas/shared-content.schema';
+import { resolveLocationShowFlourishes as resolveCanonicalLocationShowFlourishes } from '@/lib/invitation/location-presentation';
 import {
 	assertSupportedGalleryPresentation,
 	resolveItineraryPresentation,
@@ -5,11 +7,12 @@ import {
 	resolveLocationShowNavigationButtons,
 	resolvePortraitEnabled,
 } from '@/lib/invitation/presentation-options';
-import { gallerySchema } from '@/lib/intake/schemas/shared-content.schema';
 
 describe('invitation presentation contract', () => {
 	it('resolves the structural presentation couplings from section content', () => {
 		expect(resolveLocationShowFlourishes({ showFlourishes: false })).toBe(false);
+		expect(resolveCanonicalLocationShowFlourishes(undefined, 'split-map')).toBe(false);
+		expect(resolveCanonicalLocationShowFlourishes(undefined, 'standard')).toBe(true);
 		expect(resolveLocationShowNavigationButtons({ showNavigationButtons: false }, true)).toBe(
 			false,
 		);
