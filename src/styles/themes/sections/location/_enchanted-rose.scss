@@ -1,6 +1,6 @@
 @use '../../../global/mixins' as mixins;
 
-.theme-preset--enchanted-rose .event-location[data-variant='standard'] {
+.theme-preset--enchanted-rose .event-location {
 	--location-er-frame-bg: linear-gradient(
 		145deg,
 		rgb(var(--color-midnight-navy-rgb) / 74%),

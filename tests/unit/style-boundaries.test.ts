@@ -276,7 +276,7 @@ describe('Style boundary governance', () => {
 		expect(footerBase).not.toContain("[data-variant='editorial']");
 		expect(footerBase).not.toContain('premiere-floral');
 		expect(footerTheme).toContain("[data-variant='editorial']");
-		expect(footerTheme).toContain("[data-variant='premiere-floral']");
+		expect(footerTheme).toContain('.theme-preset--premiere-floral');
 
 		for (const file of baseSectionFiles) {
 			expect(read(file)).not.toContain('premiere-floral');
@@ -293,7 +293,7 @@ describe('Style boundary governance', () => {
 		expect(locationIndex).toContain("@forward 'base';");
 		expect(locationIndex).not.toContain("@forward 'enchanted-rose';");
 		expect(locationBundleImports).toContain('enchanted-rose');
-		expect(locationVariant).toContain(".event-location[data-variant='enchanted-rose']");
+		expect(locationVariant).toContain('.theme-preset--enchanted-rose .event-location');
 		expect(locationVariant).toContain('--location-er-frame-bg');
 		expect(locationVariant).toContain(':focus-visible');
 	});
@@ -316,10 +316,10 @@ describe('Style boundary governance', () => {
 			.map(read)
 			.join('\n');
 
-		expect(rsvpBase).not.toContain("[data-variant='premiere-floral']");
-		expect(rsvpBase).not.toContain("[data-variant='editorial']");
-		expect(rsvpTheme).toContain("[data-variant='premiere-floral']");
-		expect(rsvpTheme).toContain("[data-variant='editorial']");
+		expect(rsvpBase).not.toContain('.theme-preset--premiere-floral');
+		expect(rsvpBase).not.toContain('.theme-preset--editorial');
+		expect(rsvpTheme).toContain('.theme-preset--premiere-floral');
+		expect(rsvpTheme).toContain('.theme-preset--editorial');
 	});
 
 	it('rsvp variant partials do not override structural layout tokens', () => {

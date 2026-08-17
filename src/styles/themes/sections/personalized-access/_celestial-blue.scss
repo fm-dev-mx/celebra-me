@@ -1,4 +1,4 @@
-.theme-preset--celestial-blue .personalized-access[data-variant='standard'] {
+.theme-preset--celestial-blue .personalized-access {
 	--pa-paper-tilt: -0.55deg;
 
 	position: relative;
@@ -178,7 +178,7 @@
 		> .invitation-section-wrapper[data-section-kind='personalized-access'].has-motion:not(
 			.is-visible
 		)
-		.personalized-access[data-variant='standard']
+		.personalized-access
 		.access-card {
 		opacity: 0%;
 		transform: translateY(var(--motion-reveal-distance, 16px)) rotate(var(--pa-paper-tilt));
@@ -194,7 +194,7 @@
 
 	.theme-preset--celestial-blue #invitation-sections-container
 		> .invitation-section-wrapper[data-section-kind='personalized-access'].has-motion.is-visible
-		.personalized-access[data-variant='standard']
+		.personalized-access
 		.access-card {
 		opacity: 100%;
 		transform: translateY(0) rotate(var(--pa-paper-tilt));
@@ -203,7 +203,7 @@
 
 	.theme-preset--celestial-blue #invitation-sections-container
 		> .invitation-section-wrapper[data-section-kind='personalized-access'].has-motion.is-visible
-		.personalized-access[data-variant='standard']
+		.personalized-access
 		.access-card__count {
 		animation: pa-celestial-count-in 0.55s var(--ease-premium, ease) 0.12s both;
 	}

@@ -1,6 +1,6 @@
 @use '../../../global/mixins' as mixins;
 
-.theme-preset--enchanted-rose .gallery-section[data-variant='standard'] {
+.theme-preset--enchanted-rose .gallery-section {
 	position: relative;
 
 	--gallery-section-bg:
@@ -495,7 +495,7 @@
 	}
 }
 
-.theme-preset--enchanted-rose .gallery-lightbox[data-variant='standard'] {
+.theme-preset--enchanted-rose .gallery-lightbox {
 	.gallery-lightbox__footer {
 		bottom: auto;
 		top: calc(100% + 0.875rem);

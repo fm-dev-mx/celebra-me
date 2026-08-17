@@ -4,8 +4,8 @@
 
 // Visual skin ownership: theme preset context + canonical standard behavior.
 // Renderer authority remains itinerary.presentation.behavior (not theme name).
-.theme-preset--jewelry-box .itinerary[data-variant='standard'],
-.theme-preset--jewelry-box-wedding .itinerary[data-variant='standard'] {
+.theme-preset--jewelry-box .itinerary,
+.theme-preset--jewelry-box-wedding .itinerary {
 	--itinerary-bg: radial-gradient(
 		circle at center,
 		rgb(var(--color-surface-primary-rgb) / 5%) 0%,
@@ -35,7 +35,7 @@
 	}
 }
 
-.theme-preset--jewelry-box-wedding .itinerary[data-variant='standard'] {
+.theme-preset--jewelry-box-wedding .itinerary {
 	--itinerary-bg: linear-gradient(
 		180deg,
 		rgb(var(--color-surface-primary-rgb) / 92%) 0%,

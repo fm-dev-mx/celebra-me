@@ -25,14 +25,14 @@
 
 .theme-preset--enchanted-rose
 	.event-theme-wrapper[data-reveal-state='revealed']
-	.invitation-hero[data-variant='standard'] {
+	.invitation-hero {
 	.invitation-hero__content {
 		animation-duration: 1.15s;
 		animation-timing-function: var(--ease-premium);
 	}
 }
 
-.theme-preset--enchanted-rose .invitation-hero[data-variant='standard'] {
+.theme-preset--enchanted-rose .invitation-hero {
 	justify-content: flex-end;
 	min-height: 100svh;
 	background: var(--color-midnight-navy);
@@ -464,7 +464,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.theme-preset--enchanted-rose .invitation-hero[data-variant='standard'] {
+	.theme-preset--enchanted-rose .invitation-hero {
 		.invitation-hero__background::before {
 			animation: none;
 			opacity: 20%;

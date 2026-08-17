@@ -1,7 +1,7 @@
 @use '../../../tokens' as tokens;
 @use '../../../global/mixins' as mixins;
 
-.theme-preset--angelic-presence .rsvp[data-variant='standard'] {
+.theme-preset--angelic-presence .rsvp {
 	--color-glass-bg: rgb(var(--color-pure-ivory-rgb) / 72%);
 	--color-glass-border: rgb(var(--color-sacred-gold-rgb) / 26%);
 	--shadow-premium:

@@ -1,6 +1,6 @@
 @use '../../../global/mixins' as mixins;
 
-.theme-preset--enchanted-rose .thank-you-section[data-variant='standard'] {
+.theme-preset--enchanted-rose .thank-you-section {
 	min-height: 100svh;
 	align-items: stretch;
 	padding: clamp(7rem, 17svh, 9.5rem) clamp(1.15rem, 5vw, 4.5rem) clamp(6.25rem, 13svh, 9rem);

@@ -263,10 +263,14 @@ if (!hasContent) return;
 				</figure>
 			)}
 
-			<div class="family__groups">
+			<div class:list={['family__groups', 'family__content']}>
 				{familyBlocks.map((block) => (
 					<div
-						class="family__group family__reveal"
+						class:list={[
+							'family__group',
+							'family__reveal',
+							block.id && `family__group--${block.id}`,
+						]}
 						data-family-group={block.id}
 						data-reveal-item
 					>
@@ -279,12 +283,12 @@ if (!hasContent) return;
 											{group.label ? `${group.label}: ` : ''}
 											<span>{group.honoreeName}</span>
 										</p>
-										<ul class="family__members">
+										<ul class:list={['family__members', 'family__list']}>
 											{group.entries.map((member) => (
-												<li class="family__member">
-													<span class="family__member-name">{member.name}</span>
+												<li class:list={['family__member', 'family__item']}>
+													<span class:list={['family__member-name', 'family__name']}>{member.name}</span>
 													{member.role && !shouldHideRoleVisually(member.role) && (
-														<span class="family__member-role">{member.role}</span>
+														<span class:list={['family__member-role', 'family__meta']}>{member.role}</span>
 													)}
 												</li>
 											))}
@@ -293,18 +297,19 @@ if (!hasContent) return;
 								))}
 							</div>
 						) : (
-							<ul class="family__members">
+							<ul class:list={['family__members', 'family__list']}>
 								{block.entries.map((entry) => (
 									<li
 										class:list={[
 											'family__member',
+											'family__item',
 											entry.lead && 'family__member--lead',
 											entry.deceased && 'family__member--deceased',
 										]}
 									>
-										<span class="family__member-name">{entry.name}</span>
+										<span class:list={['family__member-name', 'family__name']}>{entry.name}</span>
 										{entry.role && !shouldHideRoleVisually(entry.role) && (
-											<span class="family__member-role">{entry.role}</span>
+											<span class:list={['family__member-role', 'family__meta']}>{entry.role}</span>
 										)}
 									</li>
 								))}

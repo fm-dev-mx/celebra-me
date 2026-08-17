@@ -15,11 +15,13 @@
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
 
-		.event-location[data-variant='standard'] &,
-		.event-quote[data-variant='luxury-hacienda'] &,
-		.event-gifts[data-variant='luxury-hacienda'] &,
-		.event-rsvp[data-variant='luxury-hacienda'] &,
-		.event-itinerary[data-variant='luxury-hacienda'] &,
+		.event-location &,
+		.quote-section &,
+		.gifts-section &,
+		.rsvp &,
+		.itinerary &,
+		.family &,
+		.thank-you-section &,
 		.event-interlude--dark &,
 		&.rsvp__title {
 			color: var(--color-action-accent);

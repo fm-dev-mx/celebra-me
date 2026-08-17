@@ -2,7 +2,7 @@
 
 // CELESTIAL BLUE THANK YOU
 
-.theme-preset--celestial-blue .thank-you-section[data-variant='standard'] {
+.theme-preset--celestial-blue .thank-you-section {
 	--ty-ambient-blush: none;
 
 	min-height: 100svh;
@@ -285,7 +285,7 @@
 @media (prefers-reduced-motion: no-preference) {
 	#invitation-sections-container
 		> .invitation-section-wrapper[data-section-kind='thankYou'].has-motion:not(.is-visible)
-		.theme-preset--celestial-blue .thank-you-section[data-variant='standard']
+		.theme-preset--celestial-blue .thank-you-section
 		.signature-block {
 		opacity: 0%;
 		transform: translateY(10px);
@@ -297,7 +297,7 @@
 
 	#invitation-sections-container
 		> .invitation-section-wrapper[data-section-kind='thankYou'].has-motion.is-visible
-		.theme-preset--celestial-blue .thank-you-section[data-variant='standard']
+		.theme-preset--celestial-blue .thank-you-section
 		.signature-block {
 		opacity: 100%;
 		transform: translateY(0);

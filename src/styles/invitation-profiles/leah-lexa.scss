@@ -16,6 +16,7 @@
 	}
 
 	// Pet-keepsake gallery (single variant)
+	.gallery-section[data-variant='single-keepsake'],
 	.gallery-section[data-variant='single'] {
 		--gallery-section-padding-block: clamp(3.5rem, 8vw, 5.5rem);
 	}
@@ -281,6 +282,7 @@
 // LEAH LEXA — PET KEEPSAKE REFINEMENT
 // Scoped via .event--leah-lexa on the <main> wrapper.
 // Tighter image sizing, warmer tonal balance, more refined paper frame.
+.event--leah-lexa .gallery-section[data-variant='single-keepsake'][data-presentation='pet-keepsake'],
 .event--leah-lexa .gallery-section[data-variant='single'][data-presentation='pet-keepsake'] {
 	--gallery-item-padding: clamp(0.35rem, 1vw, 0.55rem);
 	--gallery-item-shadow:

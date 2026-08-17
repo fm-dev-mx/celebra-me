@@ -55,7 +55,7 @@ canonical CSS, and shared primitives must contain no compatibility branches.
     `paired-feature-band` requires ≥3 items and at least one `layoutRole=feature`.
   - Item roles and `presentationOptions.mobileBrowse` remain orthogonal typed capabilities.
 - **Itinerary:** `standard`, `timeline-paper`, `editorial-ledger`, `editorial-program`.
-  - The value selects the renderer path and is emitted as `data-structural-variant`.
+  - The value selects the renderer path and is emitted as `data-variant`.
   - `timeline-paper` uses `ItineraryProgram`; `editorial-ledger`, `editorial-program`, and
     `standard` use `TimelineList`.
   - `_timeline-paper.scss`, `_editorial-ledger.scss`, and `_editorial-program.scss` are delivered

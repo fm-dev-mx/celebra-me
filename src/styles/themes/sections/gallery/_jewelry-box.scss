@@ -1,7 +1,7 @@
 @use '../../../tokens' as tokens;
 @use '../../../global/mixins' as mixins;
 
-.theme-preset--jewelry-box .gallery-section[data-variant='standard'] {
+.theme-preset--jewelry-box .gallery-section {
 	--gallery-section-bg: var(--gallery-section-bg);
 	--gallery-title-font: var(--gallery-title-font);
 	--gallery-title-color: var(--gallery-title-color);
@@ -57,7 +57,7 @@
 	}
 }
 
-.theme-preset--jewelry-box-wedding .gallery-section[data-variant='standard'] {
+.theme-preset--jewelry-box-wedding .gallery-section {
 	--gallery-section-bg: linear-gradient(
 		180deg,
 		rgb(var(--color-surface-primary-rgb) / 96%) 0%,

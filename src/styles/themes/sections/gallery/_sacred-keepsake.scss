@@ -1,6 +1,6 @@
 @use '../../../global/mixins' as mixins;
 
-.theme-preset--sacred-keepsake .gallery-section[data-variant='standard'] {
+.theme-preset--sacred-keepsake .gallery-section {
 	--gallery-section-bg:
 		radial-gradient(
 			ellipse at 12% 8%,

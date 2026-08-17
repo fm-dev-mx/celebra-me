@@ -78,7 +78,7 @@
 	// --ec-* variables are declared inside the wrapper scope to avoid CSS custom
 	// property shadowing: the component (_editorial-cover.scss) sets --ec-* on
 	// .editorial-cover-wrapper, so ancestor-level overrides are invisible.
-	.editorial-cover-wrapper[data-variant='editorial-magazine'] {
+	.editorial-cover-wrapper {
 		--ec-bg:
 			linear-gradient(90deg, rgb(var(--v-blush-rgb) / 78%) 0 18%, transparent 22%),
 			radial-gradient(ellipse at 72% 24%, rgb(var(--v-white-rgb) / 10%), transparent 34%),
@@ -291,7 +291,7 @@
 			pointer-events: none;
 		}
 
-		> .family[data-variant='editorial-magazine'] {
+		> .family {
 			position: relative;
 			z-index: 1;
 		}
@@ -307,7 +307,7 @@
 	}
 
 	// Gallery — ensure interactive states respect no-filter
-	.gallery-section[data-variant='editorial-magazine'] {
+	.gallery-section {
 		padding-inline: 0;
 
 		.gallery-section__header {
@@ -424,7 +424,7 @@
 	--music-player-ring-color: rgb(var(--v-accent-rgb) / 34%);
 
 	// Opened hero — mobile editorial spread composition.
-	.invitation-hero[data-variant='editorial-magazine'] {
+	.invitation-hero {
 		// Avoid overlap with top header menu across all viewport sizes
 		.invitation-hero__folio-header {
 			top: clamp(4.5rem, 7svh, 5.5rem);
@@ -631,7 +631,7 @@
 		}
 	}
 
-	.family[data-variant='editorial-magazine'] {
+	.family {
 		--family-panel-border: none;
 		--family-panel-bg: transparent;
 		--family-panel-shadow: none;
@@ -866,7 +866,7 @@
 		}
 	}
 
-	.event-location[data-variant='editorial-magazine'] {
+	.event-location {
 		background:
 			linear-gradient(90deg, rgb(var(--v-ink-rgb) / 4%) 0 1px, transparent 1px 100%),
 			var(--v-paper);
@@ -1190,7 +1190,7 @@
 		}
 	}
 
-	.gifts-section[data-variant='editorial-magazine'] {
+	.gifts-section {
 		background:
 			linear-gradient(180deg, var(--v-paper), rgb(var(--v-blush-rgb) / 62%)), var(--v-paper);
 
@@ -1354,13 +1354,13 @@
 
 	@media (width <= 480px) {
 		.itinerary,
-		.event-location[data-variant='editorial-magazine'],
-		.gifts-section[data-variant='editorial-magazine'] {
+		.event-location,
+		.gifts-section {
 			padding-inline: clamp(1rem, 5vw, 1.35rem);
 		}
 	}
 
-	.rsvp[data-variant='editorial-magazine'] {
+	.rsvp {
 		outline: 1px solid rgb(var(--v-white-rgb) / 14%);
 		outline-offset: -1.25rem;
 		overflow: visible;
@@ -1737,7 +1737,7 @@
 		}
 	}
 
-	.invitation-footer[data-variant='editorial-magazine'] {
+	.invitation-footer {
 		&::after {
 			content: 'EDICIÓN XV — MMXXVI';
 			display: block;
@@ -1749,7 +1749,7 @@
 		}
 	}
 
-	.quote-section[data-variant='editorial-magazine'] {
+	.quote-section {
 		&::before {
 			display: none;
 		}
@@ -1786,7 +1786,7 @@
 
 @media (prefers-reduced-motion: reduce) {
 	.event--valentina-hernandez.theme-preset--editorial-magazine {
-		.gallery-section[data-variant='editorial-magazine'] {
+		.gallery-section {
 			.gallery-grid__item[data-gallery-index='0']::after {
 				animation: none;
 				opacity: 60%;
@@ -1794,9 +1794,9 @@
 			}
 		}
 
-		.rsvp[data-variant='editorial-magazine'],
-		.event-location[data-variant='editorial-magazine'],
-		.gifts-section[data-variant='editorial-magazine'] {
+		.rsvp,
+		.event-location,
+		.gifts-section {
 			*,
 			*::before,
 			*::after {
