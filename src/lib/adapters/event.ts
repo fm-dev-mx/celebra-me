@@ -612,6 +612,8 @@ export function adaptEvent(
 	// order is handled once by the render-plan legacy path; derived section data
 	// must never opt a section back into an explicit configuration.
 
+	const playableMusicUrl = adapterData.music?.url?.trim() ?? '';
+
 	return {
 		id: entrySlug,
 		isDemo,
@@ -628,9 +630,11 @@ export function adaptEvent(
 		sectionOrder: adapterData.sectionOrder,
 		composition: adapterData.composition,
 		sections,
-		music: hasPlayableMusicUrl(adapterData.music?.url)
+		music: hasPlayableMusicUrl(playableMusicUrl)
 			? {
-					...adapterData.music,
+					url: playableMusicUrl,
+					autoPlay: adapterData.music?.autoPlay ?? false,
+					title: adapterData.music?.title,
 					revealMode: envelope.enabled ? 'envelope' : 'immediate',
 				}
 			: undefined,
