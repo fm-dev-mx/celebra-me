@@ -137,8 +137,10 @@ Profile LAYOUT removal (geometry / direct section `background` / `font-family` p
   location map max-height) still retained.
 - `theme-base/_editorial.scss` and `theme-base/_luxury-hacienda.scss`: fully absorbed into presets;
   `theme-base/` directory empty/removed.
-- Baselines captured under `.tmp/css-visual-parity/<slug>/baseline/` for remaining mega corpus slugs
-  as harness runs complete (artifacts local-only, not committed).
+- Baselines captured under `.tmp/css-visual-parity/<slug>/baseline/` (local artifacts, not
+  committed) for: `leah-lexa`, `america-johana`, `abril-michelle-becerra-rea`,
+  `alba-rosa-quinonez`, `daniela-y-martin`, `victoria-y-roberto`, `valentina-hernandez`,
+  `luna-y-estrella`, `demo-xv-celestial-blue`, `renata`.
 
 ### Still LAYOUT-retained (needs per-slug promote + compare)
 
