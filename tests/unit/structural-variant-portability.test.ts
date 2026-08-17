@@ -33,13 +33,13 @@ function readSource(relativePath: string) {
 }
 
 type PortableOverrides = {
-	heroStructuralVariant?: string;
-	familyStructuralVariant?: string;
-	locationStructuralVariant?: string;
+	heroVariant?: string;
+	familyVariant?: string;
+	locationVariant?: string;
 	galleryVariant?: string;
-	giftsStructuralVariant?: string;
-	rsvpStructuralVariant?: string;
-	personalizedAccessStructuralVariant?: string;
+	giftsVariant?: string;
+	rsvpVariant?: string;
+	personalizedAccessVariant?: string;
 	itineraryVariant?: 'standard' | 'timeline-paper' | 'editorial-ledger' | 'editorial-program';
 	/** Optional theme skin; structural selection must not depend on it. */
 	themePreset?: string;
@@ -59,17 +59,17 @@ function buildPortableJewelryBoxEvent(overrides: PortableOverrides = {}) {
 			: {}),
 		hero: {
 			...fixture.hero,
-			...(overrides.heroStructuralVariant
-				? { variant: overrides.heroStructuralVariant }
+			...(overrides.heroVariant
+				? { variant: overrides.heroVariant }
 				: {}),
 		},
 		family: {
 			...fixture.family,
-			...(overrides.familyStructuralVariant
+			...(overrides.familyVariant
 				? {
-						variant: overrides.familyStructuralVariant,
-						...(overrides.familyStructuralVariant === 'split-groups' ||
-						overrides.familyStructuralVariant === 'asymmetric-groups'
+						variant: overrides.familyVariant,
+						...(overrides.familyVariant === 'split-groups' ||
+						overrides.familyVariant === 'asymmetric-groups'
 							? {
 									groups: [
 										{ title: 'Familia A', items: [{ name: 'Persona A' }] },
@@ -82,8 +82,8 @@ function buildPortableJewelryBoxEvent(overrides: PortableOverrides = {}) {
 		},
 		location: {
 			...fixture.location,
-			...(overrides.locationStructuralVariant
-				? { variant: overrides.locationStructuralVariant }
+			...(overrides.locationVariant
+				? { variant: overrides.locationVariant }
 				: {}),
 		},
 		gallery: {
@@ -93,20 +93,20 @@ function buildPortableJewelryBoxEvent(overrides: PortableOverrides = {}) {
 		},
 		gifts: {
 			...fixture.gifts,
-			...(overrides.giftsStructuralVariant
-				? { variant: overrides.giftsStructuralVariant }
+			...(overrides.giftsVariant
+				? { variant: overrides.giftsVariant }
 				: {}),
 		},
 		rsvp: {
 			...fixture.rsvp,
-			...(overrides.rsvpStructuralVariant
-				? { variant: overrides.rsvpStructuralVariant }
+			...(overrides.rsvpVariant
+				? { variant: overrides.rsvpVariant }
 				: {}),
-			...(overrides.personalizedAccessStructuralVariant
+			...(overrides.personalizedAccessVariant
 				? {
 						personalizedAccess: {
 							...fixture.rsvp?.personalizedAccess,
-							variant: overrides.personalizedAccessStructuralVariant,
+							variant: overrides.personalizedAccessVariant,
 						},
 					}
 				: {}),
@@ -137,13 +137,13 @@ function loadDemoEvent(relativePath: string, id: string) {
 
 describe('Goal 3 — non-origin structural variant portability', () => {
 	it('applies Hero split-cover to jewelry-box demo content without schema transformation', () => {
-		const event = buildPortableJewelryBoxEvent({ heroStructuralVariant: 'split-cover' });
+		const event = buildPortableJewelryBoxEvent({ heroVariant: 'split-cover' });
 		const viewModel = adaptEvent(event);
 
 		expect(event.data.theme.preset).toBe('jewelry-box');
 		expect(event.data._assetSlug).toBe('demo-xv-jewelry-box');
 		expect(event.data).not.toHaveProperty('visualProfileId');
-		expect(viewModel.hero.structuralVariant).toBe('split-cover');
+		expect(viewModel.hero.variant).toBe('split-cover');
 		expect(viewModel.hero.backgroundImage).toBeTruthy();
 		expect(viewModel.hero.name).toBeTruthy();
 		expect(viewModel.hero.date).toBeTruthy();
@@ -152,40 +152,40 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 	it('applies Hero editorial-cover on jewelry-box without editorial-magazine theme fallback', () => {
 		// Origin consumer remains editorial-magazine demos; jewelry-box proves identity-free portability.
 		const event = buildPortableJewelryBoxEvent({
-			heroStructuralVariant: 'editorial-cover',
+			heroVariant: 'editorial-cover',
 			themePreset: 'jewelry-box',
 		});
 		const viewModel = adaptEvent(event);
 
 		expect(event.data.theme.preset).toBe('jewelry-box');
 		expect(event.data).not.toHaveProperty('visualProfileId');
-		expect(viewModel.hero.structuralVariant).toBe('editorial-cover');
+		expect(viewModel.hero.variant).toBe('editorial-cover');
 	});
 
 	it('applies Family split-groups without Daniela/Victoria identity', () => {
-		const event = buildPortableJewelryBoxEvent({ familyStructuralVariant: 'split-groups' });
+		const event = buildPortableJewelryBoxEvent({ familyVariant: 'split-groups' });
 		const viewModel = adaptEvent(event);
 
 		expect(event.data).not.toHaveProperty('visualProfileId');
-		expect(viewModel.sections.family?.structuralVariant).toBe('split-groups');
+		expect(viewModel.sections.family?.variant).toBe('split-groups');
 	});
 
 	it('applies Family asymmetric-groups without Victoria identity', () => {
 		const event = buildPortableJewelryBoxEvent({
-			familyStructuralVariant: 'asymmetric-groups',
+			familyVariant: 'asymmetric-groups',
 		});
 		const viewModel = adaptEvent(event);
 
 		expect(event.data).not.toHaveProperty('visualProfileId');
-		expect(viewModel.sections.family?.structuralVariant).toBe('asymmetric-groups');
+		expect(viewModel.sections.family?.variant).toBe('asymmetric-groups');
 	});
 
 	it('applies Location split-map to jewelry-box demo content with existing venue/map media', () => {
-		const event = buildPortableJewelryBoxEvent({ locationStructuralVariant: 'split-map' });
+		const event = buildPortableJewelryBoxEvent({ locationVariant: 'split-map' });
 		const viewModel = adaptEvent(event);
 		const location = viewModel.sections.location;
 
-		expect(location?.structuralVariant).toBe('split-map');
+		expect(location?.variant).toBe('split-map');
 		expect(location?.ceremony?.venueName).toBeTruthy();
 		expect(location?.ceremony?.coordinates).toEqual(
 			expect.objectContaining({ lat: expect.any(Number), lng: expect.any(Number) }),
@@ -199,12 +199,12 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 
 	it('applies Location stacked-venue-plates without Daniela/Victoria identity', () => {
 		const event = buildPortableJewelryBoxEvent({
-			locationStructuralVariant: 'stacked-venue-plates',
+			locationVariant: 'stacked-venue-plates',
 		});
 		const viewModel = adaptEvent(event);
 
 		expect(event.data).not.toHaveProperty('visualProfileId');
-		expect(viewModel.sections.location?.structuralVariant).toBe('stacked-venue-plates');
+		expect(viewModel.sections.location?.variant).toBe('stacked-venue-plates');
 	});
 
 	it('ports gallery layouts via adaptEvent on non-origin demos/overrides', () => {
@@ -261,42 +261,42 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 
 	it('applies Gifts editorial-catalog and RSVP editorial-press-pass without invitation identity', () => {
 		const event = buildPortableJewelryBoxEvent({
-			giftsStructuralVariant: 'editorial-catalog',
-			rsvpStructuralVariant: 'editorial-press-pass',
+			giftsVariant: 'editorial-catalog',
+			rsvpVariant: 'editorial-press-pass',
 		});
 		const viewModel = adaptEvent(event);
 
 		expect(event.data).not.toHaveProperty('visualProfileId');
-		expect(viewModel.sections.gifts?.structuralVariant).toBe('editorial-catalog');
-		expect(viewModel.sections.rsvp?.structuralVariant).toBe('editorial-press-pass');
+		expect(viewModel.sections.gifts?.variant).toBe('editorial-catalog');
+		expect(viewModel.sections.rsvp?.variant).toBe('editorial-press-pass');
 	});
 
 	it('applies Personalized Access formal-pass and RSVP formal-register without invitation identity', () => {
 		const event = buildPortableJewelryBoxEvent({
-			personalizedAccessStructuralVariant: 'formal-pass',
-			rsvpStructuralVariant: 'formal-register',
+			personalizedAccessVariant: 'formal-pass',
+			rsvpVariant: 'formal-register',
 		});
 		const viewModel = adaptEvent(event);
 
 		expect(event.data).not.toHaveProperty('visualProfileId');
-		expect(viewModel.sections.rsvp?.personalizedAccess?.structuralVariant).toBe('formal-pass');
-		expect(viewModel.sections.rsvp?.structuralVariant).toBe('formal-register');
+		expect(viewModel.sections.rsvp?.personalizedAccess?.variant).toBe('formal-pass');
+		expect(viewModel.sections.rsvp?.variant).toBe('formal-register');
 	});
 
 	it('applies Personalized Access ornamented and editorial-pass without invitation identity', () => {
 		const ornamentedEvent = buildPortableJewelryBoxEvent({
-			personalizedAccessStructuralVariant: 'ornamented',
+			personalizedAccessVariant: 'ornamented',
 		});
 		const ornamented = adaptEvent(ornamentedEvent);
 		expect(ornamentedEvent.data).not.toHaveProperty('visualProfileId');
-		expect(ornamented.sections.rsvp?.personalizedAccess?.structuralVariant).toBe('ornamented');
+		expect(ornamented.sections.rsvp?.personalizedAccess?.variant).toBe('ornamented');
 
 		// Second managed consumer of editorial-pass is editorial-magazine demos; jewelry-box proves portability.
 		const editorialPassEvent = buildPortableJewelryBoxEvent({
-			personalizedAccessStructuralVariant: 'editorial-pass',
+			personalizedAccessVariant: 'editorial-pass',
 		});
 		const editorialPass = adaptEvent(editorialPassEvent);
-		expect(editorialPass.sections.rsvp?.personalizedAccess?.structuralVariant).toBe(
+		expect(editorialPass.sections.rsvp?.personalizedAccess?.variant).toBe(
 			'editorial-pass',
 		);
 	});
@@ -331,13 +331,13 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 
 	it('passes portable structural variants through section render descriptors', () => {
 		const event = buildPortableJewelryBoxEvent({
-			heroStructuralVariant: 'split-cover',
-			locationStructuralVariant: 'split-map',
-			familyStructuralVariant: 'split-groups',
+			heroVariant: 'split-cover',
+			locationVariant: 'split-map',
+			familyVariant: 'split-groups',
 			galleryVariant: 'magazine-spread',
-			giftsStructuralVariant: 'editorial-catalog',
-			rsvpStructuralVariant: 'editorial-press-pass',
-			personalizedAccessStructuralVariant: 'editorial-pass',
+			giftsVariant: 'editorial-catalog',
+			rsvpVariant: 'editorial-press-pass',
+			personalizedAccessVariant: 'editorial-pass',
 			itineraryVariant: 'timeline-paper',
 		});
 		const pageContext = prepareInvitationPageContext({
@@ -345,7 +345,7 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 			slug: 'demo-xv-jewelry-box',
 		});
 
-		expect(pageContext.viewModel.hero.structuralVariant).toBe('split-cover');
+		expect(pageContext.viewModel.hero.variant).toBe('split-cover');
 		expect(pageContext.viewModel.theme.preset).toBe('jewelry-box');
 		expect(pageContext.viewModel.sections.itinerary?.variant).toBe('timeline-paper');
 		expect(pageContext.viewModel.sections.gallery?.variant).toBe('magazine-spread');
@@ -354,22 +354,22 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 		expect(descriptors.find((d) => d.component === 'location')).toMatchObject({
 			component: 'location',
 			props: {
-				structuralVariant: 'split-map',
+				variant: 'split-map',
 			},
 		});
 		expect(descriptors.find((d) => d.component === 'family')).toMatchObject({
 			props: {
-				structuralVariant: 'split-groups',
+				variant: 'split-groups',
 			},
 		});
 		expect(descriptors.find((d) => d.component === 'gifts')).toMatchObject({
 			props: {
-				structuralVariant: 'editorial-catalog',
+				variant: 'editorial-catalog',
 			},
 		});
 		expect(descriptors.find((d) => d.component === 'rsvp')).toMatchObject({
 			props: {
-				structuralVariant: 'editorial-press-pass',
+				variant: 'editorial-press-pass',
 			},
 		});
 	});
