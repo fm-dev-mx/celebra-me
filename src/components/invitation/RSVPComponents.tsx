@@ -22,7 +22,7 @@ import AddToCalendarButton from '@/components/invitation/AddToCalendarButton';
 import { buildCalendarEventInput } from '@/lib/calendar/build-calendar-event-input';
 import { isNavigableVenueMapUrl } from '@/lib/invitation/location-helper';
 import { formatVenueTimeForDisplay } from '@/lib/invitation/venue-datetime';
-import type { RsvpStructuralVariant } from '@/lib/invitation/structural-variants';
+import type { RsvpVariant } from '@/lib/invitation/section-variants';
 
 export type RevealedLocation = LocationSection;
 
@@ -34,22 +34,21 @@ const RsvpShell = forwardRef<
 	HTMLElement,
 	{
 		state: RsvpShellState;
-		variant?: string;
-		structuralVariant?: RsvpStructuralVariant;
+		variant?: RsvpVariant;
 		onFocusCapture?: FocusEventHandler<HTMLElement>;
 		header: ReactNode;
 		children: ReactNode;
 		demoFooter?: ReactNode;
 	}
 >(function RsvpShell(
-	{ state, variant, structuralVariant, onFocusCapture, header, children, demoFooter },
+	{ state, variant = 'standard', onFocusCapture, header, children, demoFooter },
 	ref,
 ) {
 	return (
 		<section id="rsvp" ref={ref} className="rsvp-section" onFocusCapture={onFocusCapture}>
 			<div
 				className="rsvp"
-				data-variant={structuralVariant || variant || 'standard'}
+				data-variant={variant}
 				data-state={state}
 			>
 				<header className="rsvp__header">{header}</header>
@@ -65,14 +64,14 @@ function RsvpVisibleHeader({
 	title,
 	subcopy,
 	eyebrow,
-	structuralVariant,
+	variant,
 }: {
 	title: string;
 	subcopy?: string;
 	eyebrow: string;
-	structuralVariant?: RsvpStructuralVariant;
+	variant?: RsvpVariant;
 }) {
-	const isEditorialPressPass = structuralVariant === 'editorial-press-pass';
+	const isEditorialPressPass = variant === 'editorial-press-pass';
 
 	return (
 		<>
@@ -209,8 +208,7 @@ export const SubmittedState = forwardRef<
 	HTMLDivElement,
 	{
 		title: string;
-		variant?: string;
-		structuralVariant?: RsvpStructuralVariant;
+		variant?: RsvpVariant;
 		onFocusCapture?: React.FocusEventHandler<HTMLElement>;
 		name: string;
 		attendanceStatus: AttendanceStatus;
@@ -234,7 +232,6 @@ export const SubmittedState = forwardRef<
 	const {
 		title,
 		variant,
-		structuralVariant,
 		name,
 		attendanceStatus,
 		confirmationMessage,
@@ -269,7 +266,6 @@ export const SubmittedState = forwardRef<
 		<RsvpShell
 			state={isConfirmed ? 'confirmed' : 'declined'}
 			variant={variant}
-			structuralVariant={structuralVariant}
 			onFocusCapture={onFocusCapture}
 			header={<RsvpStatusHeader title={title} />}
 		>
@@ -363,8 +359,7 @@ SubmittedState.displayName = 'SubmittedState';
 interface RsvpFormViewProps {
 	title: string;
 	subcopy: string;
-	variant?: string;
-	structuralVariant?: RsvpStructuralVariant;
+	variant?: RsvpVariant;
 	onFocusCapture?: FocusEventHandler<HTMLElement>;
 	eyebrow?: string;
 	prefersReducedMotion: boolean;
@@ -412,7 +407,6 @@ export const RsvpFormView = forwardRef<HTMLElement, RsvpFormViewProps>((props, r
 		title,
 		subcopy,
 		variant,
-		structuralVariant,
 		onFocusCapture,
 		eyebrow = 'RSVP PRIVADO',
 		prefersReducedMotion,
@@ -454,7 +448,7 @@ export const RsvpFormView = forwardRef<HTMLElement, RsvpFormViewProps>((props, r
 		onNotesChange,
 		onBlur,
 	} = props;
-	const isEditorialPressPass = structuralVariant === 'editorial-press-pass';
+	const isEditorialPressPass = variant === 'editorial-press-pass';
 	const [attendanceCollapsed, setAttendanceCollapsed] = useState(false);
 
 	const handleAttendanceCollapse = (status: Exclude<AttendanceStatus, null>) => {
@@ -467,14 +461,13 @@ export const RsvpFormView = forwardRef<HTMLElement, RsvpFormViewProps>((props, r
 			ref={ref}
 			state="form"
 			variant={variant}
-			structuralVariant={structuralVariant}
 			onFocusCapture={onFocusCapture}
 			header={
 				<RsvpVisibleHeader
 					title={title}
 					subcopy={subcopy}
 					eyebrow={eyebrow}
-					structuralVariant={structuralVariant}
+					variant={variant}
 				/>
 			}
 			demoFooter={

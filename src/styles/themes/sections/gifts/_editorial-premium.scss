@@ -1,6 +1,6 @@
 // editorial + premiere-floral: shimmer card hover with glow and slide-fill button
-.gifts-section[data-variant='editorial'],
-.gifts-section[data-variant='premiere-floral'] {
+.theme-preset--editorial .gifts-section[data-variant='standard'],
+.theme-preset--premiere-floral .gifts-section[data-variant='standard'] {
 	.gift-card {
 		&__shimmer {
 			display: block;

@@ -398,11 +398,10 @@ function buildHeroFromDraft(
 		backgroundImageMobile: demoBackgroundImageMobile,
 		portrait: demoPortrait,
 		variant: demoVariant,
-		visualVariant: demoVisualVariant,
 	} = demoHero ?? {};
 
 	const result: Record<string, unknown> = {
-		...clientPriorFields(ctx, priorHero, ['variant', 'visualVariant']),
+		...clientPriorFields(ctx, priorHero, ['variant']),
 		variant:
 			draftHero.variant ?? (ctx.isDemo ? demoVariant : priorHero?.variant) ?? 'standard',
 		name: str(draftHero.name) || demoStr(ctx, demoName as string) || invitationTitle,
@@ -426,14 +425,9 @@ function buildHeroFromDraft(
 		'focalPointTablet',
 		'focalPointDesktop',
 		'presentation',
-		'visualVariant',
 	] as const) {
 		if (draftHero[field] !== undefined) result[field] = draftHero[field];
 		else if (!ctx.isDemo && priorHero?.[field] !== undefined) result[field] = priorHero[field];
-	}
-
-	if (ctx.isDemo && demoVisualVariant && draftHero.visualVariant === undefined) {
-		result.visualVariant = demoVisualVariant as string;
 	}
 
 	return result;

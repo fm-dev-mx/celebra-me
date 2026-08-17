@@ -1,14 +1,12 @@
 ---
-// src/components/invitation/PersonalizedAccess.astro
-import type { PersonalizedAccessStructuralVariant } from '@/lib/invitation/structural-variants';
+import type { PersonalizedAccessVariant } from '@/lib/invitation/section-variants';
 
 interface Props {
 	maxAllowedAttendees: number;
 	guestName: string;
 	eventYear?: string;
 	isDemoPreview?: boolean;
-	variant?: string;
-	structuralVariant?: PersonalizedAccessStructuralVariant;
+	variant?: PersonalizedAccessVariant;
 	title?: string;
 	subtitle?: string;
 	footerText?: string;
@@ -21,7 +19,6 @@ const {
 	eventYear,
 	isDemoPreview,
 	variant = 'standard',
-	structuralVariant = 'standard',
 	title = 'Pase de acceso',
 	subtitle = 'Este pase te identifica como invitado y muestra el número de lugares reservados.',
 	footerText = 'Confirma tu asistencia en la sección de RSVP al final de la invitación.',
@@ -41,17 +38,17 @@ const formattedNoteText = noteText
 const accessAriaLabel = `Pase de acceso para ${guestName}. ${maxAllowedAttendees} ${seatsLabel.toLowerCase()}.`;
 
 // Decorative ornaments are variant-specific
-const showOrnaments = structuralVariant !== 'standard';
+const showOrnaments = variant !== 'standard';
 ---
 
 <section
 	class="personalized-access"
 	aria-labelledby="personalized-access-title"
 	data-screenshot-section="personalized-access"
-	data-variant={structuralVariant || variant || 'standard'}
+	data-variant={variant}
 >
 	<div class="personalized-access__container">
-		{isDemoPreview && structuralVariant === 'editorial-pass' && (
+		{isDemoPreview && variant === 'editorial-pass' && (
 			<div class="personalized-access__demo-badge" aria-hidden="true">
 				VISTA PREVIA DEMO
 			</div>
@@ -70,7 +67,7 @@ const showOrnaments = structuralVariant !== 'standard';
 
 			<header class="access-card__header">
 				<span class="access-card__eyebrow" data-demo-label>
-					{isDemoPreview && structuralVariant !== 'editorial-pass' ? 'Vista previa' : null}
+					{isDemoPreview && variant !== 'editorial-pass' ? 'Vista previa' : null}
 				</span>
 				<div class="access-card__seal" aria-hidden="true">
 					<svg
@@ -130,7 +127,7 @@ const showOrnaments = structuralVariant !== 'standard';
 				}
 			</div>
 
-			{structuralVariant === 'editorial-pass' && (
+			{variant === 'editorial-pass' && (
 				<div class="access-card__barcode-wrapper" aria-hidden="true">
 					<div class="access-card__barcode"></div>
 					<span class="access-card__serial">

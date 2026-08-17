@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { INVITATION_RENDER_SECTION_KEYS, THEME_PRESETS } from '@/lib/theme/theme-contract';
+import { INVITATION_RENDER_SECTION_KEYS } from '@/lib/theme/theme-contract';
 import { INVITATION_STATUSES } from '@/lib/intake/types';
 import {
 	focalPointSchema,
@@ -8,12 +8,12 @@ import {
 } from '@/lib/schemas/content/shared.schema';
 import { LOCATION_PRESENTATIONS } from '@/lib/invitation/presentation-options';
 import {
-	HERO_STRUCTURAL_VARIANTS,
-	LOCATION_STRUCTURAL_VARIANTS,
-	PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS,
-	RSVP_STRUCTURAL_VARIANTS,
-	THANK_YOU_STRUCTURAL_VARIANTS,
-} from '@/lib/invitation/structural-variants';
+	HERO_VARIANTS,
+	LOCATION_VARIANTS,
+	PERSONALIZED_ACCESS_VARIANTS,
+	RSVP_VARIANTS,
+	THANK_YOU_VARIANTS,
+} from '@/lib/invitation/section-variants';
 import {
 	optionalText,
 	optionalUrl,
@@ -67,8 +67,7 @@ export const InvitationEditorSectionSchemas = {
 			backgroundImageMobile: editableAssetSchema.optional(),
 			portrait: editableAssetSchema.optional(),
 			presentation: z.object({ portraitEnabled: z.boolean().optional() }).strict().optional(),
-			variant: z.enum(HERO_STRUCTURAL_VARIANTS).optional(),
-			visualVariant: z.enum(THEME_PRESETS).optional(),
+			variant: z.enum(HERO_VARIANTS).optional(),
 			focalPoint: focalPointSchema.optional(),
 			focalPointMobile: focalPointSchema.optional(),
 			focalPointTablet: focalPointSchema.optional(),
@@ -79,7 +78,7 @@ export const InvitationEditorSectionSchemas = {
 	location: z.object({
 		visibility: z.enum(['public', 'after-rsvp']).optional(),
 		presentation: z.enum(LOCATION_PRESENTATIONS).optional(),
-		variant: z.enum(LOCATION_STRUCTURAL_VARIANTS).optional(),
+		variant: z.enum(LOCATION_VARIANTS).optional(),
 		presentationOptions: z
 			.object({
 				showFlourishes: z.boolean().optional(),
@@ -102,7 +101,7 @@ export const InvitationEditorSectionSchemas = {
 	itinerary: itinerarySchema,
 	rsvp: z
 		.object({
-			variant: z.enum(RSVP_STRUCTURAL_VARIANTS).optional(),
+			variant: z.enum(RSVP_VARIANTS).optional(),
 			title: optionalText(200),
 			guestCap: rsvpGuestCapSchema.optional(),
 			confirmationMessage: optionalText(1000),
@@ -114,7 +113,7 @@ export const InvitationEditorSectionSchemas = {
 			accessMode: z.enum(['personalized-only', 'hybrid']).optional(),
 			personalizedAccess: z
 				.object({
-					variant: z.enum(PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS).optional(),
+					variant: z.enum(PERSONALIZED_ACCESS_VARIANTS).optional(),
 					title: optionalText(200),
 					subtitle: optionalText(500),
 					footerText: optionalText(500),
@@ -154,7 +153,7 @@ export const InvitationEditorSectionSchemas = {
 		quote: z.object({ text: optionalText(1000), author: optionalText(200) }).optional(),
 		thankYou: z
 			.object({
-				variant: z.enum(THANK_YOU_STRUCTURAL_VARIANTS).optional(),
+				variant: z.enum(THANK_YOU_VARIANTS).optional(),
 				message: optionalText(2000),
 				closingName: optionalText(200),
 				closingPhrase: optionalText(200),

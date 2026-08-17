@@ -8,8 +8,7 @@ import {
 	shouldOptimizeThroughVercelImage,
 } from '@/lib/assets/vercel-image-policy';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
-import type { HeroStructuralVariant } from '@/lib/invitation/structural-variants';
-import type { ThemePreset } from '@/lib/theme/theme-contract';
+import type { HeroVariant } from '@/lib/invitation/section-variants';
 
 interface Props {
 	name: string;
@@ -23,8 +22,7 @@ interface Props {
 	backgroundImageDesktop?: { src: string };
 	backgroundImageMobile?: ImageMetadata | ImageAsset;
 	portrait?: ImageMetadata | ImageAsset;
-	variant?: ThemePreset;
-	structuralVariant?: HeroStructuralVariant;
+	variant?: HeroVariant;
 	focalPoint?: string;
 	focalPointMobile?: string;
 	focalPointTablet?: string;
@@ -44,8 +42,7 @@ const {
 	backgroundImageDesktop,
 	backgroundImageMobile,
 	portrait,
-	variant,
-	structuralVariant,
+	variant = 'editorial-cover',
 	focalPoint,
 	focalPointMobile,
 	focalPointTablet,
@@ -116,7 +113,7 @@ const fpDesktop = focalPointDesktop || fpDefault;
 <section
 	id="inicio"
 	class="invitation-hero"
-	data-variant={structuralVariant ?? variant ?? 'editorial-cover'}
+	data-variant={variant}
 	data-screenshot="invitation-open-hero"
 	data-screenshot-section="hero"
 >

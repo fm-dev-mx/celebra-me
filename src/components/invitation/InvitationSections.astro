@@ -78,7 +78,7 @@ const expectedSectionIds = [
 					{component === 'countdown' && <Countdown {...props} />}
 					{component === 'location' && <EventLocation {...props} />}
 					{component === 'itinerary' && <Itinerary {...props} />}
-					{component === 'rsvp' && renderMode === 'locked' && <LockedRsvpPreview title={props.title} variant={props.variant} structuralVariant={props.structuralVariant} />}
+					{component === 'rsvp' && renderMode === 'locked' && <LockedRsvpPreview title={props.title} variant={props.variant} />}
 					{component === 'rsvp' && renderMode !== 'locked' && <RSVP client:visible {...props} />}
 					{component === 'gifts' && <Gifts {...props} />}
 					{component === 'thankYou' && <ThankYou {...props} />}

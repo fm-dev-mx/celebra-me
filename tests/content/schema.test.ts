@@ -434,7 +434,7 @@ describe('Event content schema (real contract)', () => {
 					date: '2026-01-01T00:00:00.000Z',
 					backgroundImage: 'https://example.com/hero.jpg',
 					portrait: 'https://example.com/portrait.jpg',
-					variant: 'editorial',
+					variant: 'editorial-cover',
 				},
 			}),
 		);
@@ -445,8 +445,7 @@ describe('Event content schema (real contract)', () => {
 			type: 'external',
 			src: 'https://example.com/portrait.jpg',
 		});
-		expect(result.data.hero.variant).toBe('standard');
-		expect(result.data.hero.visualVariant).toBe('editorial');
+		expect(result.data.hero.variant).toBe('editorial-cover');
 	});
 
 	it('accepts grouped eventTiming fields', () => {

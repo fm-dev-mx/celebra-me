@@ -1,5 +1,4 @@
 ---
-// src/components/invitation/Gallery.astro
 import type { ImageMetadata } from 'astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import PhotoGallery from './PhotoGallery.astro';
@@ -9,7 +8,7 @@ import type {
 	GalleryMobileBrowseMode,
 	GalleryPresentation,
 } from '@/lib/invitation/gallery-presentation';
-import type { GalleryLayoutVariant } from '@/lib/invitation/structural-variants';
+import type { GalleryVariant } from '@/lib/invitation/section-variants';
 
 interface GalleryItem {
 	image: ImageMetadata | ImageAsset;
@@ -25,8 +24,7 @@ interface Props {
 	title?: string;
 	subtitle?: string;
 	items: GalleryItem[];
-	variant?: GalleryLayoutVariant;
-	visualVariant?: string;
+	variant?: GalleryVariant;
 	presentation?: GalleryPresentation;
 	mobileBrowse?: GalleryMobileBrowseMode;
 }
@@ -37,14 +35,10 @@ const {
 	subtitle,
 	items,
 	variant = 'uniform-grid',
-	visualVariant,
 	presentation,
 	mobileBrowse,
 } = Astro.props;
-// The adapter resolves canonical/legacy Gallery layout values before this renderer.
-const structuralVariant = variant;
-const renderedVisualVariant = visualVariant ?? variant;
-const isMagazineSpread = structuralVariant === 'magazine-spread';
+const isMagazineSpread = variant === 'magazine-spread';
 const resolvedMobileBrowse = mobileBrowse ?? 'stack';
 const usesMobileRail = isMagazineSpread && resolvedMobileBrowse === 'rail';
 
@@ -62,8 +56,8 @@ if (!items || items.length === 0) return null;
 			)}
 		</header>
 
-		<PhotoGallery items={items} structuralVariant={structuralVariant} />
+		<PhotoGallery items={items} variant={variant} />
 	</div>
 </section>
 
-<GalleryLightbox variant={renderedVisualVariant} />
+<GalleryLightbox variant={variant} />

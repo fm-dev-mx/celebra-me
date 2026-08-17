@@ -256,8 +256,8 @@ function normalizeHero(
 		hero.structuralVariant,
 		fallback,
 	);
-	if (hero.visualVariant === undefined && legacyVisual) hero.visualVariant = legacyVisual;
 	delete hero.structuralVariant;
+	delete hero.visualVariant;
 	result.hero = hero;
 }
 
@@ -351,12 +351,7 @@ function normalizeGallery(
 		gallery.variant = LEGACY_GALLERY_THEME_LAYOUTS[themePreset ?? ''] ?? 'uniform-grid';
 	}
 
-	if (gallery.visualVariant === undefined) {
-		if (isOneOf(rawVariant, THEME_PRESETS)) gallery.visualVariant = rawVariant;
-		else if (isOneOf(legacyStyleVariant, THEME_PRESETS)) {
-			gallery.visualVariant = legacyStyleVariant;
-		}
-	}
+	delete gallery.visualVariant;
 	result.gallery = gallery;
 }
 
@@ -409,6 +404,7 @@ function normalizeGifts(
 		legacy,
 		fallback,
 	);
+	delete gifts.structuralVariant;
 	result.gifts = gifts;
 }
 
@@ -429,6 +425,7 @@ function normalizeRsvp(
 		legacyStyle?.structuralVariant,
 		fallback,
 	);
+	delete rsvp.structuralVariant;
 	if (rsvp.labels === undefined && legacyStyle?.labels !== undefined)
 		rsvp.labels = legacyStyle.labels;
 
@@ -463,6 +460,7 @@ function normalizeThankYou(
 		legacy,
 		fallback,
 	);
+	delete thankYou.structuralVariant;
 	result.thankYou = thankYou;
 }
 

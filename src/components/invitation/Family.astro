@@ -1,14 +1,12 @@
 ---
-// src/components/invitation/Family.astro
 import '@/styles/invitation/_family.scss';
 import Container from '@/components/layout/Container.astro';
 import OptimizedImage from '@/components/common/OptimizedImage.astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
-import type { ThemePreset } from '@/lib/theme/theme-contract';
+import type { FamilyVariant } from '@/lib/invitation/section-variants';
 import { DEFAULT_PARENTS_ORDER, type ParentsOrder } from '@/lib/invitation/family-contract';
 import { shouldHideRoleVisually } from '@/lib/invitation/family-helper';
 import { shouldRenderFamilyMedia, type FamilyPresentation } from '@/lib/invitation/family-presentation';
-import type { FamilyStructuralVariant } from '@/lib/invitation/structural-variants';
 
 interface Props {
 	parents?: {
@@ -45,7 +43,7 @@ interface Props {
 	}>;
 	featuredImage?: string | ImageAsset;
 	presentation?: FamilyPresentation;
-	structuralVariant?: FamilyStructuralVariant;
+	variant?: FamilyVariant;
 	celebrantName: string;
 	labels?: {
 		sectionTitle?: string;
@@ -60,7 +58,6 @@ interface Props {
 		sectionMessage?: string;
 	};
 	focalPoint?: string;
-	variant?: ThemePreset;
 	visible?: boolean;
 }
 
@@ -92,11 +89,10 @@ const {
 	groups,
 	featuredImage,
 	presentation,
-	structuralVariant = 'standard',
+	variant = 'standard',
 	celebrantName,
 	labels,
 	focalPoint,
-	variant,
 	visible = true,
 } = Astro.props;
 
@@ -121,6 +117,7 @@ const shouldRenderMedia = shouldRenderFamilyMedia(presentation, Boolean(featured
 const imagePath = featuredImage
 	? (typeof featuredImage === 'string' ? featuredImage : (featuredImage.src as string))
 	: undefined;
+
 const resolvedFocalPoint = focalPoint || 'center';
 
 const initials = celebrantName
@@ -228,7 +225,7 @@ if (!hasContent) return;
 	id="family-section"
 	class="family"
 	data-screenshot-section="family"
-	data-variant={structuralVariant || variant || 'standard'}
+	data-variant={variant}
 	data-presentation={presentation}
 >
 	<div class="family__bg-texture" aria-hidden="true"></div>
@@ -266,69 +263,54 @@ if (!hasContent) return;
 				</figure>
 			)}
 
-			<div class="family__content">
+			<div class="family__groups">
 				{familyBlocks.map((block) => (
-					<section
-						class:list={[
-							'family__group',
-							`family__group--${block.id}`,
-							'family__reveal',
-						]}
+					<div
+						class="family__group family__reveal"
+						data-family-group={block.id}
 						data-reveal-item
 					>
 						<h3 class="family__group-title">{block.title}</h3>
-						{block.godparentGroups ? (
+						{block.godparentGroups && block.godparentGroups.length > 0 ? (
 							<div class="family__godparent-groups">
 								{block.godparentGroups.map((group) => (
-									<section class="family__godparent-subgroup">
-										<div class="family__godparent-label">
-											{group.label ?? group.honoreeName}
-										</div>
-										<div class="family__godparent-names">
-											<ul class="family__list family__list--godparents family__list--godparents-grouped">
-												{group.entries.map((entry) => (
-													<li class:list={['family__item', 'family__item--godparent', entry.name === 'Por confirmar' && 'family__item--pending']}>
-														<p class="family__name">
-															<span>{entry.name}</span>
-														</p>
-														{entry.role && (
-															<span class={shouldHideRoleVisually(group.label ?? block.title, entry.role) ? 'sr-only' : 'family__meta'}>
-																{entry.role}
-															</span>
-														)}
-													</li>
-												))}
-											</ul>
-										</div>
-									</section>
+									<div class="family__godparent-group">
+										<p class="family__godparent-honoree">
+											{group.label ? `${group.label}: ` : ''}
+											<span>{group.honoreeName}</span>
+										</p>
+										<ul class="family__members">
+											{group.entries.map((member) => (
+												<li class="family__member">
+													<span class="family__member-name">{member.name}</span>
+													{member.role && !shouldHideRoleVisually(member.role) && (
+														<span class="family__member-role">{member.role}</span>
+													)}
+												</li>
+											))}
+										</ul>
+									</div>
 								))}
 							</div>
 						) : (
-							<ul
-								class:list={[
-									'family__list',
-									block.id === 'children' && 'family__list--children',
-									block.id === 'godparents' && 'family__list--godparents',
-								]}
-							>
+							<ul class="family__members">
 								{block.entries.map((entry) => (
-									<li class:list={['family__item', entry.lead && 'family__item--lead', block.id === 'godparents' && 'family__item--godparent', entry.name === 'Por confirmar' && 'family__item--pending']}>
-										<p class="family__name">
-											<span>{entry.name}</span>
-											{entry.deceased && (
-												<span class="family__deceased-indicator" aria-hidden="true">†</span>
-											)}
-										</p>
-										{entry.role && (
-											<span class={shouldHideRoleVisually(block.title, entry.role) ? 'sr-only' : 'family__meta'}>
-												{entry.role}
-											</span>
+									<li
+										class:list={[
+											'family__member',
+											entry.lead && 'family__member--lead',
+											entry.deceased && 'family__member--deceased',
+										]}
+									>
+										<span class="family__member-name">{entry.name}</span>
+										{entry.role && !shouldHideRoleVisually(entry.role) && (
+											<span class="family__member-role">{entry.role}</span>
 										)}
 									</li>
 								))}
 							</ul>
 						)}
-					</section>
+					</div>
 				))}
 			</div>
 		</div>

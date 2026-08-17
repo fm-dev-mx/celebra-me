@@ -137,8 +137,7 @@ describe('XV Xareni Iyarit client invitation preparation', () => {
 
 			expect(viewModel.sections.itinerary?.variant).toBe('timeline-paper');
 			expect(viewModel.sections.gallery?.variant).toBe('index-choreography');
-			expect(viewModel.sections.thankYou?.structuralVariant).toBe('editorial-back-cover');
-			expect(viewModel.sections.thankYou?.variant).toBe('celestial-blue');
+			expect(viewModel.sections.thankYou?.variant).toBe('editorial-back-cover');
 			expect(pageContext.wrapper.className.split(' ')).toEqual(
 				expect.arrayContaining([
 					'event-theme-wrapper',

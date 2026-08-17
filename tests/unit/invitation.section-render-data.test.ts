@@ -200,13 +200,12 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 			const descriptor = descriptors.find((item) => item.component === component);
 			if (component === 'gallery') {
 				expect(descriptor).toMatchObject({
-					props: { variant: 'editorial-mosaic', visualVariant: 'editorial' },
+					props: { variant: 'editorial-mosaic', visualVariant: 'jewelry-box' },
 				});
-			} else if (component === 'itinerary') {
-				// Canonical itinerary authority is presentation.behavior, not sectionStyles skin.
-				expect(descriptor).toMatchObject({ props: { variant: 'standard' } });
-			} else {
+			} else if (component === 'quote' || component === 'countdown') {
 				expect(descriptor).toMatchObject({ props: { variant: 'editorial' } });
+			} else {
+				expect(descriptor).toMatchObject({ props: { variant: 'standard' } });
 			}
 		}
 	});

@@ -1,9 +1,9 @@
-import { ITINERARY_STRUCTURAL_VARIANTS } from './structural-variants';
+import { ITINERARY_VARIANTS } from './section-variants';
 
-/** @deprecated Prefer ITINERARY_STRUCTURAL_VARIANTS — kept as the presentation-options export surface. */
-export const ITINERARY_PRESENTATION_BEHAVIORS = ITINERARY_STRUCTURAL_VARIANTS;
+/** @deprecated Prefer ITINERARY_VARIANTS — kept as the presentation-options export surface. */
+export const ITINERARY_PRESENTATION_BEHAVIORS = ITINERARY_VARIANTS;
 
-export type ItineraryPresentationBehavior = (typeof ITINERARY_STRUCTURAL_VARIANTS)[number];
+export type ItineraryPresentationBehavior = (typeof ITINERARY_VARIANTS)[number];
 
 export interface ItineraryPresentationOptions {
 	behavior?: ItineraryPresentationBehavior;

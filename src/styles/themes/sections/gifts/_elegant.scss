@@ -1,7 +1,7 @@
 // jewelry-box + celestial-blue: inset border decoration
-.gifts-section[data-variant='jewelry-box'],
-.gifts-section[data-variant='celestial-blue'],
-.gifts-section[data-variant='jewelry-box-wedding'] {
+.theme-preset--jewelry-box .gifts-section[data-variant='standard'],
+.theme-preset--celestial-blue .gifts-section[data-variant='standard'],
+.theme-preset--jewelry-box-wedding .gifts-section[data-variant='standard'] {
 	.gift-card {
 		&::after {
 			content: '';
@@ -51,7 +51,7 @@
 	}
 }
 
-.gifts-section[data-variant='jewelry-box-wedding'] {
+.theme-preset--jewelry-box-wedding .gifts-section[data-variant='standard'] {
 	.gifts-section__container {
 		max-width: 50rem;
 	}

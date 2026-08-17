@@ -3,9 +3,9 @@ import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 import { rsvpResponseMessagesSchema } from '@/lib/intake/schemas/shared-content.schema';
 import { rsvpGuestCapSchema } from '@/lib/rsvp/guest-cap';
 import {
-	PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS,
-	RSVP_STRUCTURAL_VARIANTS,
-} from '@/lib/invitation/structural-variants';
+	PERSONALIZED_ACCESS_VARIANTS,
+	RSVP_VARIANTS,
+} from '@/lib/invitation/section-variants';
 
 export const rsvpSectionStyleSchema = z
 	.object({
@@ -28,7 +28,7 @@ export const rsvpLabelsSchema = z
 
 export const rsvpSchema = z
 	.object({
-		variant: z.enum(RSVP_STRUCTURAL_VARIANTS),
+		variant: z.enum(RSVP_VARIANTS),
 		subcopy: z.string().optional(),
 		title: z.string().default('¿Vienes a celebrar conmigo?'),
 		guestCap: rsvpGuestCapSchema.default(1),
@@ -49,7 +49,7 @@ export const rsvpSchema = z
 			.optional(),
 		personalizedAccess: z
 			.object({
-				variant: z.enum(PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS),
+				variant: z.enum(PERSONALIZED_ACCESS_VARIANTS),
 				title: z.string().optional(),
 				subtitle: z.string().optional(),
 				footerText: z.string().optional(),

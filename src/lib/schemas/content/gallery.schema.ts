@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 import { AssetSchema, focalPointSchema } from '@/lib/schemas/content/shared.schema';
 import {
 	GALLERY_LAYOUT_ROLES,
@@ -7,15 +6,14 @@ import {
 	GALLERY_PRESENTATIONS,
 	assertSupportedGalleryPresentation,
 } from '@/lib/invitation/presentation-options';
-import { GALLERY_LAYOUT_VARIANTS } from '@/lib/invitation/structural-variants';
+import { GALLERY_VARIANTS } from '@/lib/invitation/section-variants';
 
 export const gallerySchema = z
 	.object({
 		eyebrow: z.string().max(200).default('Galería'),
 		title: z.string().default('Galería'),
 		subtitle: z.string().optional(),
-		variant: z.enum(GALLERY_LAYOUT_VARIANTS),
-		visualVariant: z.enum(THEME_PRESETS).optional(),
+		variant: z.enum(GALLERY_VARIANTS),
 		presentation: z.enum(GALLERY_PRESENTATIONS).optional(),
 		presentationOptions: z
 			.object({

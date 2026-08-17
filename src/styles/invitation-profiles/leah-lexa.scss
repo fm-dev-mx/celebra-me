@@ -31,7 +31,7 @@
 // Rebalances the Google Map as a secondary visual, converts indications
 // from card blocks to editorial notes.
 
-.event--leah-lexa .event-location[data-variant='celestial-blue'] {
+.event--leah-lexa .event-location[data-variant='standard'] {
 	// -----------------------------------------------------------------------
 	// Map: visually secondary, softer frame
 	// -----------------------------------------------------------------------
@@ -95,7 +95,7 @@
 // Makes the subtitle the emotional anchor, refines the flourish.
 // Adds Liverpool-inspired editorial magenta accents to CTA, store label, and card border.
 
-.event--leah-lexa .gifts-section[data-variant='celestial-blue'] {
+.event--leah-lexa .gifts-section[data-variant='standard'] {
 	--gifts-title-letter-spacing: 0.18em;
 
 	// Liverpool-inspired editorial magenta
@@ -165,7 +165,7 @@
 // Extends the celestial-blue base with a contained card composition.
 // Blush-pink atmospheric glow is injected via --ty-ambient-blush.
 
-.event--leah-lexa .thank-you-section[data-variant='celestial-blue'] {
+.event--leah-lexa .thank-you-section[data-variant='standard'] {
 	--ty-ambient-blush: radial-gradient(
 		circle at 50% 28%,
 		rgb(244 201 216 / 48%) 0%,

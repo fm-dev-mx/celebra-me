@@ -21,7 +21,7 @@
 	--celestial-family-overlap-depth: clamp(2rem, 8vw, 4rem);
 	--celestial-itinerary-overlap-depth: clamp(2.25rem, 9vw, 4rem);
 
-	.invitation-hero[data-variant='celestial-blue'] {
+	.invitation-hero[data-variant='standard'] {
 		isolation: isolate;
 
 		&::before {

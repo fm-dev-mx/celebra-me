@@ -1,10 +1,9 @@
 ---
-// src/components/invitation/Itinerary.astro
 import '@/styles/invitation/_itinerary.scss';
 import TimelineList from './TimelineList.astro';
 import ItineraryProgram from './ItineraryProgram.astro';
 import type { ItineraryItem } from '@/lib/adapters/types';
-import type { ItineraryVariant } from '@/lib/theme/theme-contract';
+import type { ItineraryVariant } from '@/lib/invitation/section-variants';
 
 interface Props {
 	title?: string;
@@ -14,10 +13,10 @@ interface Props {
 	monogram?: string;
 }
 
-const { title = "Itinerario", items, variant, monogram, subtitle } = Astro.props;
+const { title = "Itinerario", items, variant = 'standard', monogram, subtitle } = Astro.props;
 ---
 
-<section class="itinerary" id="itinerary" data-screenshot-section="itinerary" data-variant={variant || 'standard'}>
+<section class="itinerary" id="itinerary" data-screenshot-section="itinerary" data-variant={variant}>
 	<div class="itinerary__container">
 		{title && (
 			<div class="itinerary__header">

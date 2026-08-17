@@ -21,7 +21,7 @@ const baseViewModel: InvitationViewModel = {
 		secondaryName: '',
 		label: 'Invitación Especial',
 		date: '2026-12-31',
-		variant: 'enchanted-rose',
+		variant: 'standard',
 		backgroundImage: {
 			src: 'https://example.com/hero.jpg',
 			alt: 'Portada de Test Event',

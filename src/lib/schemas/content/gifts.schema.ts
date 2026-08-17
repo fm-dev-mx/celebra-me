@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { GIFTS_PRESENTATIONS } from '@/lib/invitation/presentation-options';
-import { GIFTS_STRUCTURAL_VARIANTS } from '@/lib/invitation/structural-variants';
+import { GIFTS_VARIANTS } from '@/lib/invitation/section-variants';
 
 // Canonical gift item schemas — used as the single source of truth for the
 // gift data shape. The discriminated union type GiftItem is derived from
@@ -65,7 +65,7 @@ export const giftItemSchema = z.discriminatedUnion('type', [
 
 export const giftsSchema = z
 	.object({
-		variant: z.enum(GIFTS_STRUCTURAL_VARIANTS),
+		variant: z.enum(GIFTS_VARIANTS),
 		title: z.string().optional(),
 		subtitle: z.string().optional(),
 		presentation: z.enum(GIFTS_PRESENTATIONS).optional(),

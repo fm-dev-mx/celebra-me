@@ -5,8 +5,8 @@
 // EDITORIAL HERO
 // ==========================================================================
 
-.invitation-hero[data-variant='editorial'],
-.invitation-hero[data-variant='premiere-floral'] {
+.theme-preset--editorial .invitation-hero[data-variant='standard'],
+.theme-preset--premiere-floral .invitation-hero[data-variant='standard'] {
 	position: relative;
 	height: 100svh;
 	display: flex;

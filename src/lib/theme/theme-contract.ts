@@ -117,26 +117,16 @@ export const SECTION_INTERSECTION_FAMILIES = [
 
 export type SectionIntersectionFamily = (typeof SECTION_INTERSECTION_FAMILIES)[number];
 
-/**
- * Canonical itinerary presentation behaviors emitted on `data-variant`.
- * Visual skins bind through theme-preset / profile ownership, not theme-named
- * structural selectors.
- */
-export const ITINERARY_BEHAVIOR_VARIANTS = [
-	'standard',
-	'timeline-paper',
-	'editorial-ledger',
-	'editorial-program',
-] as const;
-/**
- * Theme-named values remain in this union only for legacy sectionStyles
- * compatibility; they are not canonical itinerary behaviors.
- */
-export const ITINERARY_VARIANTS = [...ITINERARY_BEHAVIOR_VARIANTS, ...THEME_PRESETS] as const;
+export type {
+	LocationVariant,
+	ItineraryVariant,
+} from '@/lib/invitation/section-variants';
+export {
+	ITINERARY_VARIANTS,
+	ITINERARY_BEHAVIOR_VARIANTS,
+} from '@/lib/invitation/section-variants';
 
 // Semantic aliases for section-specific variations (all now match the main preset)
 export type QuoteVariant = ThemePreset;
 export type CountdownVariant = ThemePreset;
-export type LocationVariant = ThemePreset;
 export type SharedSectionVariant = ThemePreset;
-export type ItineraryVariant = (typeof ITINERARY_VARIANTS)[number];

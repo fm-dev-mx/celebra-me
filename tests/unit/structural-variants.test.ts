@@ -146,7 +146,6 @@ describe('section structural variant contracts', () => {
 		});
 
 		expect(result.hero.variant).toBe('editorial-cover');
-		expect(result.hero.visualVariant).toBe('editorial-magazine');
 		expect(result.gallery?.variant).toBe('single-keepsake');
 		expect(result.itinerary?.variant).toBe('timeline-paper');
 		expect(result.hero).not.toHaveProperty('structuralVariant');

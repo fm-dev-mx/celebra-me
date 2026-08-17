@@ -183,12 +183,7 @@ function sectionVariant(
 
 function buildHero(context: AdaptationContext): HeroViewModel {
 	const { data, eventSlug, normalizedPreset } = context;
-	const preset = pickVariant(
-		'hero.visualVariant',
-		data.hero.visualVariant ?? normalizedPreset,
-		THEME_PRESETS,
-		normalizedPreset,
-	);
+	const preset = normalizedPreset;
 	return {
 		name: data.hero.name,
 		secondaryName: data.hero.secondaryName,
@@ -204,7 +199,7 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 		portrait: resolvePortraitEnabled(data.hero.presentation, themeSupportsPortrait(preset))
 			? resolveAsset(eventSlug, data.hero.portrait, data.title)
 			: undefined,
-		variant: preset,
+		variant: data.hero.variant,
 		structuralVariant: data.hero.variant,
 		focalPoint: data.hero.focalPoint,
 		focalPointMobile: data.hero.focalPointMobile,
@@ -401,7 +396,7 @@ function toVenueEntry(v: VenueEntryInput, eventSlug: string, eventTitle: string)
 }
 
 function buildLocationSectionData(context: AdaptationContext) {
-	const { data, eventSlug, normalizedPreset } = context;
+	const { data, eventSlug } = context;
 	if (!data.location) return undefined;
 
 	const rawVenues = data.location.venues;
@@ -412,6 +407,7 @@ function buildLocationSectionData(context: AdaptationContext) {
 	return {
 		visibility: data.location.visibility,
 		presentation: data.location.presentation,
+		variant: data.location.variant,
 		structuralVariant: data.location.variant,
 		presentationOptions: data.location.presentationOptions,
 		...(rawVenues !== undefined
@@ -421,11 +417,6 @@ function buildLocationSectionData(context: AdaptationContext) {
 					reception: resolveVenueData(eventSlug, data.location.reception, data.title),
 				}),
 		indications: data.location.indications,
-		variant: sectionVariant(
-			'location',
-			data.sectionStyles?.location?.variant,
-			normalizedPreset,
-		),
 		showFlourishes: resolveLocationShowFlourishes(
 			data.location.presentationOptions,
 			data.location.variant,
@@ -441,7 +432,7 @@ function buildLocationSectionData(context: AdaptationContext) {
 }
 
 function buildFamilySectionData(context: AdaptationContext) {
-	const { data, eventSlug, normalizedPreset } = context;
+	const { data, eventSlug } = context;
 	if (!data.family) return undefined;
 	return {
 		...data.family,
@@ -449,8 +440,8 @@ function buildFamilySectionData(context: AdaptationContext) {
 			? resolveAsset(eventSlug, data.family.featuredImage, data.title)
 			: undefined,
 		celebrantName: data.hero.name,
+		variant: data.family.variant,
 		structuralVariant: data.family.variant,
-		variant: sectionVariant('family', data.sectionStyles?.family?.variant, normalizedPreset),
 	};
 }
 
@@ -493,7 +484,7 @@ function buildGallerySectionData(context: AdaptationContext) {
 		...data.gallery,
 		items,
 		variant: data.gallery.variant,
-		visualVariant: data.gallery.visualVariant ?? normalizedPreset,
+		visualVariant: normalizedPreset,
 		mobileBrowse: resolveGalleryMobileBrowse(data.gallery.presentationOptions),
 	};
 }
@@ -511,7 +502,7 @@ function buildItinerarySectionData(
 }
 
 function buildRsvpSectionData(context: AdaptationContext, entrySlug: string) {
-	const { data, normalizedPreset } = context;
+	const { data } = context;
 	if (!data.rsvp) return undefined;
 	const { calendar, ...rsvpRest } = data.rsvp;
 	const eventStartsAt = calendar?.startsAt ?? data.eventTiming?.startsAtUtc ?? data.hero.date;
@@ -519,11 +510,12 @@ function buildRsvpSectionData(context: AdaptationContext, entrySlug: string) {
 		...rsvpRest,
 		personalizedAccess: {
 			...data.rsvp.personalizedAccess,
+			variant: data.rsvp.personalizedAccess.variant,
 			structuralVariant: data.rsvp.personalizedAccess.variant,
 		},
 		eventSlug: entrySlug,
 		eventType: data.eventType,
-		variant: sectionVariant('rsvp', data.sectionStyles?.rsvp?.variant, normalizedPreset),
+		variant: data.rsvp.variant,
 		structuralVariant: data.rsvp.variant,
 		labels: data.rsvp.labels,
 		eventStartsAt,
@@ -535,31 +527,27 @@ function buildRsvpSectionData(context: AdaptationContext, entrySlug: string) {
 }
 
 function buildGiftsSectionData(context: AdaptationContext) {
-	const { data, normalizedPreset } = context;
+	const { data } = context;
 	if (!data.gifts) return undefined;
 	const presentation = resolveGiftsPresentation(data.gifts.presentation);
 	return {
 		...data.gifts,
 		presentation,
 		items: presentation === 'legend-only' ? [] : (data.gifts.items ?? []),
-		variant: sectionVariant('gifts', data.sectionStyles?.gifts?.variant, normalizedPreset),
+		variant: data.gifts.variant,
 		structuralVariant: data.gifts.variant,
 	};
 }
 
 function buildThankYouSectionData(context: AdaptationContext) {
-	const { data, eventSlug, normalizedPreset } = context;
+	const { data, eventSlug } = context;
 	if (!data.thankYou) return undefined;
 	return {
 		...data.thankYou,
 		image: data.thankYou.image
 			? resolveAsset(eventSlug, data.thankYou.image, data.title)
 			: undefined,
-		variant: sectionVariant(
-			'thankYou',
-			data.sectionStyles?.thankYou?.variant,
-			normalizedPreset,
-		),
+		variant: data.thankYou.variant,
 		structuralVariant: data.thankYou.variant,
 	};
 }
