@@ -46,7 +46,7 @@ describe('Leslie Perez provision contract', () => {
 	it('owns celestial-bookend cadence intersections and formal-register RSVP', () => {
 		expect(content.rsvp).toMatchObject({ variant: 'formal-register' });
 		expect(content.family).toMatchObject({
-			labels: { sectionTitle: 'Mis padres' },
+			labels: { sectionTitle: 'Quienes me acompañan en este día' },
 		});
 		expect(content.composition).toEqual({
 			intersections: {
@@ -66,7 +66,7 @@ describe('Leslie Perez provision contract', () => {
 		const interludes = content.interludes as Array<{ afterSection: string }>;
 		const galleryKeys = gallery.items.map((item) => item.key);
 
-		expect(gallery.variant).toBe('editorial-mosaic');
+		expect(gallery.variant).toBe('index-choreography');
 		expect(galleryKeys).toEqual([
 			'photo-02',
 			'photo-03',
@@ -107,10 +107,10 @@ describe('Leslie Perez provision contract', () => {
 		expect(content.family).toMatchObject({
 			variant: 'asymmetric-groups',
 			presentation: 'text-only',
-			groups: [
-				{ title: 'Madre', items: [{ name: 'Leticia Perez Moreno' }] },
-				{ title: 'Padre', items: [{ name: 'Luis Enrique Zacarias Oviedo' }] },
-			],
+			parents: {
+				father: 'Luis Enrique Zacarias Oviedo',
+				mother: 'Leticia Perez Moreno',
+			},
 		});
 		expect(content.gifts).toMatchObject({
 			variant: 'standard',
@@ -148,7 +148,7 @@ describe('Leslie Perez provision contract', () => {
 		expect(viewModel.sections.family?.variant).toBe('asymmetric-groups');
 		expect(viewModel.sections.location?.variant).toBe('split-map');
 		expect(viewModel.sections.location?.showFlourishes).toBe(false);
-		expect(viewModel.sections.gallery?.variant).toBe('editorial-mosaic');
+		expect(viewModel.sections.gallery?.variant).toBe('index-choreography');
 		expect(viewModel.sections.gifts?.variant).toBe('standard');
 		expect(viewModel.sections.rsvp?.variant).toBe('formal-register');
 		expect(viewModel.sections.rsvp?.personalizedAccess.variant).toBe('formal-pass');

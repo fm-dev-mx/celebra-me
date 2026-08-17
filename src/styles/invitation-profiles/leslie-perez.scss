@@ -1,8 +1,8 @@
 @use '../global/mixins' as mixins;
 
 // Leslie Perez — celestial-bookend rhythm profile.
-// Owns cadence documentation, atmospheric-blend tokens, dark-surface tracking,
-// and reduced reveal distance on blend arrivals. Does not redefine variant geometry.
+// Owns section styling overrides, atmospheric-blend tokens, dark-surface tracking,
+// and reduced reveal distance on blend arrivals.
 // Loaded only through invitation-profiles/leslie-perez.scss.
 
 .event--leslie-perez.theme-preset--celestial-blue {
@@ -113,7 +113,7 @@
 				flex-direction: column;
 				align-items: center;
 				text-align: center;
-				margin: auto 0 3rem 0;
+				margin: auto 0 3rem;
 				max-width: min(80vw, 320px);
 				gap: 0.3rem;
 			}
@@ -160,72 +160,810 @@
 		}
 	}
 
-	// Cadence map — non-neutral boundaries only
-	// [sectionA] → [sectionB] : [role] [pattern]
-	// quote → family : bridge atmospheric-blend
-	// location → interlude-after-location : bridge overlap
-	// interlude-after-location → itinerary : bridge atmospheric-blend
-	// gallery → interlude-after-gallery : bridge overlap
-	// interlude-after-gallery → gifts : bridge atmospheric-blend
-	// gifts → personalized-access : bridge atmospheric-blend
-	// rsvp → thankYou : bridge atmospheric-blend
-	// Neutral (hero→quote, family→countdown→location, itinerary→gallery,
-	// personalized-access→rsvp) omitted on purpose. Band: celestial-bookend.
+	// Quote — High-Fashion Italic Editorial (Optimized legibility & celestial mood)
+	.quote-section {
+		--quote-bg: radial-gradient(
+			ellipse 100% 70% at 50% 50%,
+			rgb(18 36 60) 0%,
+			rgb(10 20 34) 100%
+		);
+		--quote-content-font: var(--font-display);
+		--quote-content-style: italic;
+		--quote-content-size: clamp(1.35rem, 3.2vw, 2.15rem);
+		--quote-content-line-height: 1.5;
+		--quote-content-letter-spacing: -0.01em;
+		--quote-text-color: rgb(var(--color-diamond-white-rgb, 255 255 255) / 92%);
+		--quote-padding-block: clamp(4.5rem, 9vw, 7rem);
+		--quote-content-max-width: 680px;
 
+		.quote-content {
+			font-weight: 300;
+			text-shadow: 0 4px 24px rgb(var(--color-satin-blue-rgb, 140 175 215) / 35%);
+		}
+
+		.quote-author {
+			font-family: var(--font-label);
+			font-size: clamp(0.72rem, 1.2vw, 0.82rem);
+			font-weight: 500;
+			letter-spacing: 0.28em;
+			text-transform: uppercase;
+			color: rgb(var(--color-satin-blue-rgb, 140 175 215) / 90%);
+			margin-top: 1.25rem;
+		}
+
+		.quote-ornament {
+			background: linear-gradient(
+				90deg,
+				transparent,
+				rgb(var(--color-satin-blue-rgb, 140 175 215) / 60%),
+				transparent
+			);
+			height: 1px;
+			width: clamp(24px, 5vw, 40px);
+		}
+	}
+
+	// Family — asymmetric-groups editorial styling with high-jewelry stationery panel
+	.family[data-variant='asymmetric-groups'] {
+		--family-split-divider: transparent;
+		--family-split-gap-inline: clamp(2.25rem, 6vw, 4.75rem);
+		--family-split-gap-block: clamp(1.65rem, 4vw, 2.25rem);
+		--family-split-content-max-width: 54rem;
+		--family-bg:
+			radial-gradient(ellipse 90% 55% at 50% 0%, rgb(255 255 255) 0%, transparent 65%),
+			radial-gradient(
+				ellipse 80% 50% at 85% 85%,
+				rgb(var(--color-satin-blue-rgb, 140 175 215) / 18%) 0%,
+				transparent 50%
+			),
+			linear-gradient(
+				180deg,
+				rgb(252 253 255) 0%,
+				rgb(242 246 252) 50%,
+				rgb(234 240 248) 100%
+			);
+		--family-texture-opacity: 0;
+		--family-vignette-bg: transparent;
+		--family-panel-border: none;
+		--family-panel-radius: 0;
+		--family-panel-spacing: 0;
+		--family-panel-rotate: none;
+		--family-panel-shadow-extra-display: none;
+		--family-panel-watermark-opacity: 0;
+		--family-panel-surface-after-opacity: 0;
+		--family-panel-surface-bg: transparent;
+		--family-panel-surface-opacity: 0;
+		--family-header-filter: none;
+		--family-group-filter: none;
+
+		padding-block: clamp(5rem, 9.5vw, 7.5rem);
+		background: var(--family-bg);
+
+		&::before,
+		&::after {
+			display: none;
+		}
+
+		.family__bg-texture {
+			display: none;
+		}
+
+		.family__header,
+		.family__panel,
+		.family__content {
+			position: relative;
+			z-index: 1;
+		}
+
+		.family__header {
+			max-width: var(--family-split-content-max-width);
+			margin: 0 auto clamp(1.85rem, 4.2vw, 2.65rem);
+			text-align: left;
+		}
+
+		.family__header-inner {
+			align-items: flex-start;
+		}
+
+		.family__eyebrow {
+			font-family: var(--font-label);
+			color: rgb(var(--color-soft-graphite-rgb, 85 105 130) / 72%);
+			padding-left: 0.06em;
+			margin-bottom: 0.4rem;
+			font-size: clamp(0.68rem, 1.2vw, 0.76rem);
+			font-weight: 500;
+			letter-spacing: 0.22em;
+			text-transform: uppercase;
+			opacity: 75%;
+		}
+
+		.family__title {
+			max-width: 14ch;
+			margin-inline: 0;
+			font-family: var(--font-display);
+			font-size: clamp(2.35rem, 5.4vw, 3.6rem);
+			font-weight: 400;
+			line-height: 1;
+			letter-spacing: -0.024em;
+			color: var(--color-deep-blue-graphite, rgb(20 30 45));
+			text-shadow: none;
+		}
+
+		.family__header-divider {
+			display: none;
+		}
+
+		.family__message {
+			max-width: 30ch;
+			margin: 0.9rem 0 0;
+			padding-left: 0.12em;
+			font-family: var(--font-display);
+			font-size: clamp(1.02rem, 2.2vw, 1.25rem);
+			font-style: italic;
+			font-weight: 400;
+			line-height: 1.42;
+			letter-spacing: 0.01em;
+			color: rgb(var(--color-deep-blue-graphite-rgb, 20 30 45) / 54%);
+		}
+
+		.family__panel,
+		.family__panel--no-media {
+			width: 100%;
+			max-width: var(--family-split-content-max-width);
+			margin-inline: auto;
+			padding: clamp(2.2rem, 5vw, 3.8rem) clamp(1.6rem, 4vw, 3.2rem);
+			border: 1px solid rgb(var(--color-satin-blue-rgb, 140 175 215) / 42%);
+			border-radius: 24px;
+			background: linear-gradient(
+				165deg,
+				rgb(255 255 255 / 96%) 0%,
+				rgb(246 249 254 / 88%) 60%,
+				rgb(238 244 252 / 92%) 100%
+			);
+			box-shadow:
+				0 24px 58px rgb(20 30 45 / 9%),
+				0 4px 16px rgb(20 30 45 / 4%),
+				inset 0 1.5px 0 rgb(255 255 255);
+			position: relative;
+			transform: none;
+
+			&::before {
+				content: '';
+				position: absolute;
+				inset: 6px;
+				border: 1px solid rgb(var(--color-satin-blue-rgb, 140 175 215) / 20%);
+				border-radius: 18px;
+				pointer-events: none;
+			}
+		}
+
+		.family__content-overlay {
+			display: none;
+		}
+
+		.family__content {
+			grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+			gap: 0 var(--family-split-gap-inline);
+			max-width: 100%;
+			margin-inline: auto;
+		}
+
+		.family__group--parents {
+			grid-column: 1;
+			padding-top: 0;
+			border-top: 0;
+			text-align: left;
+			margin-top: 0;
+		}
+
+		.family__group-title {
+			margin: 0 0 0.9rem;
+			font-family: var(--font-label);
+			font-size: clamp(0.66rem, 1.1vw, 0.74rem);
+			font-weight: 500;
+			letter-spacing: 0.22em;
+			text-transform: uppercase;
+			color: rgb(var(--color-soft-graphite-rgb, 85 105 130) / 72%);
+		}
+
+		.family__list {
+			gap: clamp(1.15rem, 2.6vw, 1.55rem);
+		}
+
+		.family__item {
+			align-items: flex-start;
+			gap: 0.16rem;
+		}
+
+		.family__name {
+			max-width: 14ch;
+			font-family: var(--font-display);
+			font-size: clamp(1.65rem, 3.6vw, 2.35rem);
+			font-weight: 400;
+			line-height: 1.08;
+			letter-spacing: -0.014em;
+			color: var(--color-deep-blue-graphite, rgb(20 30 45));
+			text-shadow: none;
+			justify-content: flex-start;
+			text-align: left;
+			width: 100%;
+		}
+
+		.family__meta {
+			font-family: var(--font-label);
+			font-size: 0.64rem;
+			font-weight: 500;
+			letter-spacing: 0.22em;
+			text-transform: uppercase;
+			color: rgb(var(--color-soft-graphite-rgb, 85 105 130) / 72%);
+			margin-top: 0.22rem;
+		}
+
+		@include mixins.respond-below(sm) {
+			.family__content {
+				grid-template-columns: 1fr;
+				gap: var(--family-split-gap-block);
+			}
+
+			.family__group--parents {
+				margin-top: clamp(1.8rem, 4vw, 2.6rem);
+			}
+		}
+	}
+
+	// Countdown — Modern Youthful Editorial (Luminous Aurora & Volumetric Stardust)
+	.countdown-section {
+		position: relative;
+		background: radial-gradient(
+			circle at 50% 25%,
+			rgb(30 56 90) 0%,
+			rgb(14 26 44) 65%,
+			rgb(8 16 26) 100%
+		);
+		color: rgb(var(--color-diamond-white-rgb, 255 255 255));
+		padding-block: clamp(6rem, 11.5vw, 9rem);
+		overflow: hidden;
+		text-align: center;
+
+		// Stardust central glow aura
+		&::before {
+			content: '';
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			width: min(92vw, 820px);
+			height: 420px;
+			background: radial-gradient(
+				ellipse at center,
+				rgb(var(--color-satin-blue-rgb, 140 175 215) / 32%) 0%,
+				transparent 70%
+			);
+			filter: blur(44px);
+			pointer-events: none;
+		}
+
+		// Constellation micro-dots
+		.countdown-texture {
+			opacity: 22%;
+			background-image: radial-gradient(rgb(255 255 255) 1px, transparent 1px);
+			background-size: 32px 32px;
+			pointer-events: none;
+		}
+
+		.countdown-container {
+			position: relative;
+			z-index: 1;
+			max-width: 920px;
+			margin-inline: auto;
+			padding-inline: clamp(1rem, 4vw, 2.5rem);
+		}
+
+		.countdown-title {
+			font-family: var(--font-display);
+			font-size: clamp(2rem, 5.5vw, 3.8rem);
+			font-style: italic;
+			font-weight: 400;
+			line-height: 1.08;
+			letter-spacing: -0.01em;
+			text-transform: none;
+			color: rgb(var(--color-diamond-white-rgb, 255 255 255));
+			margin-bottom: clamp(2.5rem, 6vw, 4.2rem);
+			text-shadow: 0 4px 30px rgb(var(--color-satin-blue-rgb, 140 175 215) / 45%);
+		}
+
+		.countdown__timer {
+			display: grid;
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+			gap: clamp(1rem, 3.5vw, 3rem);
+			align-items: flex-end;
+			justify-content: center;
+			margin-inline: auto;
+			max-width: 820px;
+
+			@include mixins.respond-below(xs) {
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+				gap: 2rem 1.5rem;
+			}
+		}
+
+		// Clean, floating editorial segment
+		.countdown__segment {
+			background: transparent;
+			border: none;
+			box-shadow: none;
+			border-radius: 0;
+			padding: 0;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			position: relative;
+			transform: none;
+			transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+			&::before,
+			&::after {
+				display: none;
+			}
+
+			&:hover {
+				transform: translateY(-4px);
+			}
+		}
+
+		.countdown__value-wrapper {
+			height: auto;
+			width: auto;
+			overflow: visible;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		// Monumental, Chic High-Fashion Numerals
+		.countdown__value {
+			font-family: var(--font-display);
+			font-size: clamp(3.4rem, 8.8vw, 6.2rem);
+			font-weight: 300;
+			font-variant-numeric: tabular-nums;
+			line-height: 0.88;
+			letter-spacing: -0.03em;
+			color: rgb(var(--color-diamond-white-rgb, 255 255 255));
+			background: linear-gradient(
+				180deg,
+				rgb(255 255 255) 20%,
+				rgb(var(--color-satin-blue-rgb, 140 175 215)) 100%
+			);
+			background-clip: text;
+			-webkit-text-fill-color: transparent;
+			filter: drop-shadow(0 6px 24px rgb(var(--color-satin-blue-rgb, 140 175 215) / 50%));
+			transition: filter 0.3s ease;
+		}
+
+		// Modern minimalist label
+		.countdown__label {
+			font-family: var(--font-label);
+			font-size: clamp(0.65rem, 1.1vw, 0.78rem);
+			font-weight: 500;
+			letter-spacing: 0.32em;
+			text-transform: uppercase;
+			color: rgb(var(--color-satin-blue-rgb, 140 175 215) / 90%);
+			background: transparent;
+			border: none;
+			padding: 0;
+			margin-top: clamp(0.75rem, 1.6vw, 1.2rem);
+			box-shadow: none;
+		}
+
+		.countdown-date {
+			margin-top: clamp(3rem, 6vw, 4.5rem);
+
+			.subtitle-line {
+				height: 1px;
+				width: clamp(28px, 6vw, 48px);
+				background: linear-gradient(
+					90deg,
+					transparent,
+					rgb(var(--color-satin-blue-rgb, 140 175 215) / 60%),
+					transparent
+				);
+			}
+
+			.event-date {
+				font-family: var(--font-label);
+				font-size: clamp(0.72rem, 1.2vw, 0.84rem);
+				font-weight: 500;
+				letter-spacing: 0.26em;
+				text-transform: uppercase;
+				color: rgb(var(--color-diamond-white-rgb, 255 255 255) / 80%);
+			}
+		}
+
+		.countdown-footer {
+			margin-top: 1.4rem;
+		}
+
+		.countdown-invitation-text {
+			font-family: var(--font-display);
+			font-style: italic;
+			font-size: clamp(1rem, 2vw, 1.2rem);
+			color: rgb(var(--color-diamond-white-rgb, 255 255 255) / 60%);
+		}
+	}
+
+	// Location — Split-Map (Tangible Multi-Layer Stationery Plate & Glass Map Frame)
+	.event-location[data-variant='split-map'] {
+		--location-split-gap: clamp(1.75rem, 3.5vw, 2.5rem);
+
+		background:
+			radial-gradient(ellipse 90% 55% at 50% 0%, rgb(255 255 255) 0%, transparent 65%),
+			linear-gradient(
+				180deg,
+				rgb(252 253 255) 0%,
+				rgb(242 246 252) 50%,
+				rgb(234 240 248) 100%
+			);
+		padding-block: clamp(5rem, 9.5vw, 7.5rem)
+			max(clamp(5rem, 9.5vw, 7.5rem), calc(clamp(3.2rem, 7vw, 5.5rem) + 2.5rem));
+
+		// Hide redundant intermediate headings/flourishes
+		.event-location__card-title,
+		.event-location__card-flourish {
+			display: none;
+		}
+
+		.event-location__intro-eyebrow {
+			font-family: var(--font-label);
+			font-size: clamp(0.68rem, 1.2vw, 0.78rem);
+			font-weight: 500;
+			letter-spacing: 0.24em;
+			text-transform: uppercase;
+			color: rgb(var(--color-soft-graphite-rgb, 85 105 130) / 78%);
+			margin-bottom: 0.5rem;
+		}
+
+		.event-location__intro-heading {
+			font-family: var(--font-display);
+			font-size: clamp(2.4rem, 5.5vw, 3.8rem);
+			font-weight: 400;
+			line-height: 1;
+			letter-spacing: -0.02em;
+			color: var(--color-deep-blue-graphite, rgb(20 30 45));
+			margin-bottom: clamp(2rem, 4vw, 3rem);
+		}
+
+		.event-location__card-content-place {
+			font-family: var(--font-display);
+			font-size: clamp(2.1rem, 5vw, 3.2rem);
+			font-weight: 400;
+			color: var(--color-deep-blue-graphite, rgb(20 30 45));
+			line-height: 1.05;
+			letter-spacing: -0.015em;
+			margin-bottom: 0.5rem;
+		}
+
+		.event-location__card-content-address {
+			font-family: var(--font-body);
+			font-size: clamp(0.95rem, 1.8vw, 1.1rem);
+			line-height: 1.5;
+			color: rgb(var(--color-deep-blue-graphite-rgb, 20 30 45) / 72%);
+		}
+
+		.event-location__card-image-inner-frame {
+			padding: 0;
+			border: 1.5px solid rgb(var(--color-satin-blue-rgb, 140 175 215) / 45%);
+			border-radius: 18px;
+			overflow: hidden;
+			box-shadow:
+				0 24px 60px rgb(20 30 45 / 12%),
+				0 6px 18px rgb(20 30 45 / 6%),
+				inset 0 1.5px 0 rgb(255 255 255 / 90%);
+		}
+
+		.event-location__card-image-container {
+			background: rgb(240 242 248);
+
+			@media (width < 768px) {
+				aspect-ratio: 16 / 9;
+			}
+		}
+
+		.event-location__button {
+			background: linear-gradient(
+				135deg,
+				rgb(var(--color-satin-blue-rgb, 140 175 215)) 0%,
+				rgb(105 145 195) 100%
+			);
+			color: rgb(var(--color-diamond-white-rgb, 255 255 255));
+			border: 1px solid rgb(255 255 255 / 30%);
+			border-radius: 999px;
+			font-family: var(--font-label);
+			font-size: 0.78rem;
+			font-weight: 600;
+			letter-spacing: 0.16em;
+			text-transform: uppercase;
+			box-shadow:
+				0 10px 24px rgb(var(--color-satin-blue-rgb, 140 175 215) / 38%),
+				inset 0 1px 0 rgb(255 255 255 / 45%);
+			transition:
+				transform 0.2s ease,
+				box-shadow 0.2s ease;
+
+			&:hover {
+				transform: translateY(-2px);
+				box-shadow:
+					0 14px 30px rgb(var(--color-satin-blue-rgb, 140 175 215) / 50%),
+					inset 0 1px 0 rgb(255 255 255 / 60%);
+			}
+		}
+	}
+
+	// Itinerary — Standard Celestial Timeline (3D Tactile Gem Badges & Luminous Pulse)
+	.itinerary[data-variant='standard'] {
+		background:
+			radial-gradient(ellipse 90% 55% at 50% 0%, rgb(255 255 255) 0%, transparent 65%),
+			radial-gradient(
+				ellipse 80% 50% at 15% 85%,
+				rgb(var(--color-satin-blue-rgb, 140 175 215) / 16%) 0%,
+				transparent 50%
+			),
+			linear-gradient(
+				180deg,
+				rgb(252 253 255) 0%,
+				rgb(242 246 252) 50%,
+				rgb(234 240 248) 100%
+			);
+		padding-block: clamp(5.5rem, 10vw, 8rem);
+
+		.itinerary__title {
+			font-family: var(--font-display);
+			font-size: clamp(2.4rem, 5.5vw, 3.8rem);
+			font-weight: 400;
+			line-height: 1;
+			letter-spacing: -0.02em;
+			color: var(--color-deep-blue-graphite, rgb(20 30 45));
+		}
+
+		.itinerary__subtitle {
+			font-family: var(--font-display);
+			font-style: italic;
+			font-size: clamp(1rem, 2vw, 1.25rem);
+			color: rgb(var(--color-deep-blue-graphite-rgb, 20 30 45) / 58%);
+			margin-top: 0.5rem;
+		}
+
+		.itinerary__header-flourish {
+			display: none;
+		}
+
+		.itinerary__item-time {
+			font-family: var(--font-label);
+			font-size: 0.76rem;
+			font-weight: 600;
+			letter-spacing: 0.16em;
+			text-transform: uppercase;
+			color: var(--color-satin-blue, rgb(140 175 215));
+			margin-bottom: 0.35rem;
+		}
+
+		.itinerary__item-label {
+			font-family: var(--font-display);
+			font-size: clamp(1.4rem, 3.2vw, 1.9rem);
+			font-weight: 400;
+			letter-spacing: -0.01em;
+			color: var(--color-deep-blue-graphite, rgb(20 30 45));
+		}
+
+		.itinerary__item-icon-wrapper {
+			background: radial-gradient(
+				circle at 35% 35%,
+				rgb(255 255 255) 0%,
+				rgb(220 234 250) 70%,
+				rgb(185 208 235) 100%
+			);
+			border: 2px solid rgb(255 255 255);
+			border-radius: 50%;
+			box-shadow:
+				0 10px 28px rgb(20 30 45 / 14%),
+				0 2px 8px rgb(20 30 45 / 8%),
+				inset 0 2px 4px rgb(255 255 255 / 80%);
+			color: var(--color-deep-blue-graphite, rgb(20 30 45));
+			transition:
+				transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+				box-shadow 0.3s ease;
+
+			&:hover {
+				transform: scale(1.08);
+				box-shadow:
+					0 14px 34px rgb(var(--color-satin-blue-rgb, 140 175 215) / 45%),
+					0 2px 8px rgb(20 30 45 / 8%),
+					inset 0 2px 4px rgb(255 255 255 / 90%);
+			}
+		}
+
+		.itinerary__animated-line-container svg path {
+			stroke: rgb(var(--color-satin-blue-rgb, 140 175 215) / 50%);
+		}
+	}
+
+	// Gallery — Index Choreography (Dimensional Micro-Framing & Subtle Hover Elevation)
+	.gallery-section {
+		background:
+			radial-gradient(ellipse 90% 55% at 50% 0%, rgb(255 255 255) 0%, transparent 65%),
+			linear-gradient(
+				180deg,
+				rgb(252 253 255) 0%,
+				rgb(242 246 252) 50%,
+				rgb(234 240 248) 100%
+			);
+		padding-block: clamp(5.5rem, 10vw, 8rem);
+	}
+
+	// Gifts — Dimensional Luxury Stationery Card
+	.gifts-section {
+		background:
+			radial-gradient(ellipse 90% 55% at 50% 0%, rgb(255 255 255) 0%, transparent 65%),
+			linear-gradient(
+				180deg,
+				rgb(252 253 255) 0%,
+				rgb(242 246 252) 50%,
+				rgb(234 240 248) 100%
+			);
+		padding-block: clamp(5rem, 9.5vw, 7.5rem);
+
+		.gift-card {
+			background: linear-gradient(
+				165deg,
+				rgb(255 255 255 / 96%) 0%,
+				rgb(246 249 254 / 88%) 60%,
+				rgb(238 244 252 / 92%) 100%
+			);
+			border: 1px solid rgb(var(--color-satin-blue-rgb, 140 175 215) / 40%);
+			border-radius: 20px;
+			box-shadow:
+				0 22px 54px rgb(20 30 45 / 8%),
+				0 4px 14px rgb(20 30 45 / 3%),
+				inset 0 1.5px 0 rgb(255 255 255);
+		}
+	}
+
+	// Formal Chapter — High-Jewelry Access Pass & Nocturnal Velvet RSVP
+	.invitation-section-wrapper[data-section-kind='personalized-access'],
+	.invitation-section-wrapper[data-section-kind='rsvp'] {
+		background: radial-gradient(
+			ellipse 100% 70% at 50% 30%,
+			rgb(24 44 72) 0%,
+			rgb(12 22 36) 70%,
+			rgb(8 14 24) 100%
+		);
+	}
+
+	// Photographic Interludes
+	// Interlude 01 (after Location): Bespoke Portal matching the exact tilt angle of the mirror
+	.invitation-section-wrapper[data-intersection='overlap'][data-section-kind='interlude'][data-intersection-source='location'] {
+		--intersection-depth: clamp(3.5rem, 9vw, 6.5rem);
+
+		.invitation-interlude {
+			position: relative;
+			overflow: visible;
+			mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath fill='%23000' d='M0 34 C16 22, 42 9, 62 9 C80 9, 92 17, 100 26 L100 100 L0 100 Z'/%3E%3C/svg%3E")
+				center top / 100% 100% no-repeat;
+			filter: drop-shadow(0 -22px 48px rgb(10 20 35 / 14%))
+				drop-shadow(0 -6px 14px rgb(10 20 35 / 8%))
+				drop-shadow(0 -1px 3px rgb(10 20 35 / 5%));
+			border-radius: 0;
+			box-shadow: none;
+
+			// Hairline liquid-silver metallic highlight precisely along the mirror crest
+			&::before {
+				content: '';
+				position: absolute;
+				inset: 0;
+				z-index: 2;
+				background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='metallicGrad' x1='0' y1='0' x2='1' y2='0'%3E%3Cstop offset='0%25' stop-color='%238cafd7' stop-opacity='0.15'/%3E%3Cstop offset='45%25' stop-color='%23ffffff' stop-opacity='0.85'/%3E%3Cstop offset='62%25' stop-color='%23ffffff' stop-opacity='0.95'/%3E%3Cstop offset='80%25' stop-color='%238cafd7' stop-opacity='0.5'/%3E%3Cstop offset='100%25' stop-color='%238cafd7' stop-opacity='0.15'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='none' stroke='url(%23metallicGrad)' stroke-width='1.2' d='M0 34 C16 22, 42 9, 62 9 C80 9, 92 17, 100 26'/%3E%3C/svg%3E")
+					center top / 100% 100% no-repeat;
+				filter: drop-shadow(0 0 10px rgb(var(--color-satin-blue-rgb, 140 175 215) / 50%));
+				pointer-events: none;
+			}
+
+			// Soft bottom exit vignette into the itinerary paper
+			&::after {
+				content: '';
+				position: absolute;
+				inset: auto 0 0;
+				height: clamp(3rem, 8vw, 6rem);
+				background: linear-gradient(
+					180deg,
+					transparent 0%,
+					rgb(var(--color-deep-blue-graphite-rgb) / 45%) 100%
+				);
+				pointer-events: none;
+			}
+		}
+
+		.invitation-interlude__image {
+			object-position: 50% 50%;
+			transform: none;
+			filter: saturate(1.04) contrast(1.03) brightness(0.97);
+		}
+	}
+
+	.invitation-section-wrapper[data-intersection='overlap'][data-section-kind='interlude'][data-intersection-source='gallery'] {
+		--intersection-depth: 0;
+
+		.invitation-interlude {
+			position: relative;
+			overflow: hidden;
+			clip-path: none;
+
+			&::after {
+				content: '';
+				position: absolute;
+				inset: 0;
+				background: linear-gradient(
+					180deg,
+					rgb(10 20 34 / 28%) 0%,
+					transparent 20%,
+					transparent 80%,
+					rgb(10 20 34 / 35%) 100%
+				);
+				pointer-events: none;
+			}
+		}
+	}
+
+	// Velvety Soft Atmospheric Blends (Haute Couture Luxury standard)
 	.invitation-section-wrapper[data-intersection='atmospheric-blend'] {
-		--motion-reveal-distance: 12px;
+		--motion-reveal-distance: 8px;
 
 		&[data-section-kind='family'] {
 			// Quote dark graphite → family light ivory
-			--intersection-depth: clamp(1.75rem, 3.5vw, 2.75rem);
-			--intersection-blend: radial-gradient(
-				ellipse 140% 80% at 42% 0%,
-				rgb(var(--color-deep-blue-graphite-rgb) / 72%) 0%,
-				rgb(var(--color-cool-ivory-rgb) / 36%) 44%,
+			--intersection-depth: clamp(2rem, 4vw, 3rem);
+			--intersection-blend: linear-gradient(
+				180deg,
+				rgb(var(--color-deep-blue-graphite-rgb) / 20%) 0%,
 				transparent 100%
 			);
 		}
 
 		&[data-section-kind='itinerary'] {
-			// Interlude photo → timeline-paper cream
-			--intersection-depth: clamp(1.75rem, 3.5vw, 2.75rem);
-			--intersection-blend: radial-gradient(
-				ellipse 135% 78% at 58% 0%,
-				rgb(var(--color-deep-blue-graphite-rgb) / 68%) 0%,
-				rgb(var(--color-cool-ivory-rgb) / 40%) 42%,
+			// Interlude photo 04 → timeline paper
+			--intersection-depth: clamp(2rem, 4vw, 3rem);
+			--intersection-blend: linear-gradient(
+				180deg,
+				rgb(var(--color-deep-blue-graphite-rgb) / 25%) 0%,
 				transparent 100%
 			);
 		}
 
 		&[data-section-kind='gifts'] {
-			// Interlude photo → gifts ivory
-			--intersection-depth: clamp(1.75rem, 3.5vw, 2.75rem);
-			--intersection-blend: radial-gradient(
-				ellipse 130% 76% at 38% 0%,
-				rgb(var(--color-deep-blue-graphite-rgb) / 64%) 0%,
-				rgb(var(--color-cool-ivory-rgb) / 38%) 44%,
+			// Interlude photo 08 → gifts ivory
+			--intersection-depth: clamp(2rem, 4vw, 3rem);
+			--intersection-blend: linear-gradient(
+				180deg,
+				rgb(var(--color-deep-blue-graphite-rgb) / 22%) 0%,
 				transparent 100%
 			);
 		}
 
 		&[data-section-kind='personalized-access'] {
-			// Gifts light → formal chapter dark
-			--intersection-depth: clamp(1.75rem, 3.5vw, 2.75rem);
+			// Gifts light → formal chapter dark (Climax)
+			--intersection-depth: clamp(2.5rem, 5vw, 4rem);
 			--intersection-blend: radial-gradient(
-				ellipse 145% 82% at 62% 0%,
-				rgb(var(--color-cool-ivory-rgb) / 78%) 0%,
-				rgb(var(--color-deep-blue-graphite-rgb) / 42%) 40%,
+				ellipse 140% 90% at 50% 0%,
+				rgb(var(--color-cool-ivory-rgb) / 60%) 0%,
+				rgb(var(--color-deep-blue-graphite-rgb) / 40%) 40%,
 				transparent 100%
 			);
 		}
 
 		&[data-section-kind='thankYou'] {
-			// Formal chapter → full-bleed thank-you ink
-			--intersection-depth: clamp(1.75rem, 3.5vw, 2.75rem);
-			--intersection-blend: radial-gradient(
-				ellipse 140% 80% at 44% 0%,
-				rgb(var(--color-deep-blue-graphite-rgb) / 88%) 0%,
-				rgb(var(--color-deep-blue-graphite-rgb) / 36%) 42%,
+			// Formal chapter → full-bleed thank-you
+			--intersection-depth: clamp(2rem, 4vw, 3rem);
+			--intersection-blend: linear-gradient(
+				180deg,
+				rgb(var(--color-deep-blue-graphite-rgb) / 60%) 0%,
 				transparent 100%
 			);
 		}

@@ -248,31 +248,22 @@ export function buildLesliePublishedContent(
 			variant: 'asymmetric-groups',
 			presentation: 'text-only',
 			parents: {
-				mother: 'Leticia Perez Moreno',
 				father: 'Luis Enrique Zacarias Oviedo',
+				mother: 'Leticia Perez Moreno',
 			},
-			parentsOrder: 'mother-first',
-			groups: [
-				{
-					title: 'Madre',
-					items: [{ name: 'Leticia Perez Moreno' }],
-				},
-				{
-					title: 'Padre',
-					items: [{ name: 'Luis Enrique Zacarias Oviedo' }],
-				},
-			],
+			parentsOrder: 'father-first',
 			labels: {
-				sectionSubtitle: 'Con el amor de mi familia',
-				sectionTitle: 'Mis padres',
-				parentsTitle: 'Mis padres',
-				sectionMessage: 'Gracias por acompañarme en este día tan especial.',
+				sectionSubtitle: 'Familia',
+				sectionTitle: 'Quienes me acompañan en este día',
+				parentsTitle: 'Junto a mis padres',
+				sectionMessage:
+					'Este momento también reúne a quienes han sido parte de mi historia y hoy lo comparten conmigo.',
 			},
 		},
 		countdown: {
-			title: 'LA CELEBRACIÓN COMIENZA EN',
+			variant: 'editorial-folio',
+			title: 'La celebración comienza en',
 			footerText: 'Hora del evento: [[PENDIENTE:HORA_EVENTO]]',
-			presentationOptions: { visibleUnits: ['days'] },
 		},
 		location: {
 			variant: 'split-map',
@@ -299,9 +290,9 @@ export function buildLesliePublishedContent(
 			],
 		},
 		itinerary: {
-			variant: 'timeline-paper',
-			title: 'Momentos de la celebración',
-			subtitle: 'Recepción y fiesta',
+			variant: 'standard',
+			title: 'Momentos',
+			subtitle: 'Itinerario de la celebración',
 			items: [
 				{ time: '[[PENDIENTE:HORA_RECEPCION]]', label: 'Recepción', iconName: 'Reception' },
 				{ time: '[[PENDIENTE:HORA_CENA]]', label: 'Cena', iconName: 'Dinner' },
@@ -328,7 +319,7 @@ export function buildLesliePublishedContent(
 			},
 		],
 		gallery: {
-			variant: 'editorial-mosaic',
+			variant: 'index-choreography',
 			eyebrow: 'Recuerdos',
 			title: 'Leslie',
 			subtitle: 'Momentos para celebrar esta nueva etapa',
