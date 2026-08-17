@@ -222,8 +222,14 @@ skins.
   modules directly. Their import order is the emitted cascade order, and a bundle may explicitly
   compose multiple canonical modules when a variant depends on both.
 - `src/lib/invitation/section-css-resolver.ts` emits one active section bundle plus requested
-  canonical Gallery/structural partials, a footer visual override, and the active visual profile.
-  Canonical section partials are not exposed through a general per-section passthrough directory.
+  canonical Gallery/structural partials, a footer visual override, envelope reveal CSS, and the
+  active visual profile. Canonical section partials are not exposed through a general per-section
+  passthrough directory.
+- Invitation routes keep preset, envelope-reveal, and visual-profile stylesheets render-blocking for
+  the sealed-envelope first paint. Section bundles, gallery/footer overrides, and structural
+  partials start as `media="not all"` and are promoted after first paint, or immediately when the
+  envelope is skipped (`skipEnvelope`, returning `envelope-opened-{slug}`, or no envelope). Document
+  order is unchanged so profile CSS still wins the cascade.
 
 Gallery CSS starts with the theme-preset bundle. When an explicit semantic `gallery.variant` differs
 from the active theme, the section CSS resolver emits the matching layout partial independently.

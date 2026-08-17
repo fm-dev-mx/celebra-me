@@ -65,7 +65,8 @@ the hybrid TypeScript 7 CLI / TypeScript 6 tooling-API arrangement) lives in
 
 - Pages execute through the Astro SSR adapter. Public pages may opt into cache headers, while
   personalized and protected responses remain private or non-cacheable. Invitation cache headers are
-  specified in [`docs/domains/invitations/public-response-cache-policy.md`](../domains/invitations/public-response-cache-policy.md).
+  specified in
+  [`docs/domains/invitations/public-response-cache-policy.md`](../domains/invitations/public-response-cache-policy.md).
   Delivery metrics, HTML budgets, and runtime monitoring are specified in
   [`docs/domains/invitations/performance-metrics.md`](../domains/invitations/performance-metrics.md).
 - Runtime server execution covers:
@@ -264,11 +265,15 @@ They are not a temporary fallback for real/client invitations.
   preset-specific font packages.
 - `src/styles/invitation-sections-by-preset/*.scss` are runtime section-bundle entrypoints. They
   import canonical `src/styles/themes/sections/**` modules directly in cascade order.
-- `src/lib/invitation/section-css-resolver.ts` resolves one preset bundle, an optional visual
-  profile, and only the requested canonical footer override. It does not discover every section
-  variant as an independent asset.
+- `src/lib/invitation/section-css-resolver.ts` resolves one preset bundle, envelope reveal CSS when
+  the variant has a dedicated partial, an optional visual profile, and only the requested canonical
+  footer/gallery/structural overrides. It does not discover every section variant as an independent
+  asset.
 - Public invitation and dashboard preview routes use the same resolver and preserve stylesheet
-  order: preset, section bundle, optional footer override, then optional visual profile.
+  document order: preset, section bundle, optional footer/gallery override, envelope reveal,
+  optional structural partials, then optional visual profile. Sheets not required to paint the
+  sealed envelope are non-blocking (`media="not all"`) until first paint or an envelope-skipped
+  visit.
 
 ---
 
