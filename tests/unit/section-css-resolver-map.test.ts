@@ -581,7 +581,6 @@ describe('section-css-resolver-map', () => {
 		expect(
 			resolveInvitationCssLoadPlan(bundleUrlMap, sectionUrlMap, {
 				themePreset: 'editorial',
-				revealVariant: 'editorial-cover',
 				structuralVariants: { hero: 'editorial-cover' },
 			}),
 		).toEqual([

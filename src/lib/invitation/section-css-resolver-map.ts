@@ -26,8 +26,6 @@ type InvitationCssInput = {
 		itinerary?: string;
 	};
 	envelopeVariant?: string;
-	/** First-visit reveal mechanism. Editorial cover needs hero structural CSS immediately. */
-	revealVariant?: string;
 	visualProfileId?: string;
 	slug?: string;
 };
@@ -43,7 +41,7 @@ export type InvitationCssOwner =
 export interface InvitationCssLoadItem {
 	href: string;
 	owner: InvitationCssOwner;
-	/** True when the sheet is required to paint the sealed envelope (or editorial-cover first visual). */
+	/** True when the sheet is required to paint the sealed envelope or hero structural CSS. */
 	blocking: boolean;
 }
 
@@ -206,7 +204,7 @@ function resolveStructuralVariantLoadItems(
 			{
 				href: url,
 				owner: 'structural-variant' as const,
-				blocking: input.revealVariant === 'editorial-cover' && section === 'hero',
+				blocking: section === 'hero',
 			},
 		];
 	});

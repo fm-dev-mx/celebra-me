@@ -97,7 +97,6 @@ type InvitationCssResolverInput = {
 		itinerary?: string;
 	};
 	envelopeVariant?: string;
-	revealVariant?: string;
 	visualProfileId?: string;
 	slug?: string;
 };
