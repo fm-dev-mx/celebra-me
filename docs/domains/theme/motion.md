@@ -1,7 +1,7 @@
 # Invitation Motion System
 
 **Status:** Sole normative authority for invitation motion
-**Last updated:** 2026-07-27
+**Last updated:** 2026-08-17
 
 This document owns invitation motion categories, timing limits, reveal recipes, observer behavior,
 ambient decoration, hero sequencing, and reduced motion. Operational skills and other domain docs
@@ -46,6 +46,12 @@ The closed recipe set is:
 - `fade-up`: opacity plus a small vertical entrance.
 - `media-scale`: one-time media reveal followed by optional ambient decoration.
 - `stagger-group`: one observed section whose marked items use CSS delays.
+
+### Stagger placement rule
+
+Assign `stagger-group` to at most one section in any consecutive pair. Two adjacent sections
+with `stagger-group` create compounded visual noise. Place at least one section using a
+different recipe between any two stagger groups.
 
 `InvitationSections.astro` publishes the selected recipe as `data-reveal`. Shared mechanics live in
 `src/styles/invitation/_motion-system.scss`. Sections may provide tokens and `data-reveal-item`
