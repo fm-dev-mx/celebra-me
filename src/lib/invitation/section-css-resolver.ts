@@ -3,8 +3,8 @@ import {
 	buildSectionUrlMap,
 	buildSectionBundleUrlMap,
 	buildInvitationProfileUrlMap,
-	resolveInvitationCssUrls as resolveInvitationCssUrlsFromMaps,
-	resolveSectionBundleCssUrl as resolveBundleCssUrl,
+	resolveInvitationCssLoadPlan as resolveInvitationCssLoadPlanFromMaps,
+	type InvitationCssLoadItem,
 } from '@/lib/invitation/section-css-resolver-map';
 
 const footerVariantModules = import.meta.glob(
@@ -43,6 +43,9 @@ const structuralVariantModules = import.meta.glob(
 		'/src/styles/themes/sections/itinerary/_editorial-ledger.scss',
 		'/src/styles/themes/sections/itinerary/_editorial-program.scss',
 		'/src/styles/themes/sections/reveal/_premiere-floral.scss',
+		'/src/styles/themes/sections/reveal/_editorial.scss',
+		'/src/styles/themes/sections/reveal/_luxury-hacienda.scss',
+		'/src/styles/themes/sections/reveal/_shared-light.scss',
 	],
 	{ query: '?url', eager: true },
 ) as Record<string, { default: string }>;
@@ -59,8 +62,14 @@ const invitationProfileModules = import.meta.glob('/src/styles/invitation-profil
 
 const footerVariantUrlMap = buildSectionUrlMap(footerVariantModules);
 const galleryVariantUrlMap = buildSectionUrlMap(galleryVariantModules);
+const structuralVariantUrlMap = buildSectionUrlMap(structuralVariantModules);
 const sectionBundleUrlMap = buildSectionBundleUrlMap(sectionBundleModules);
 const invitationProfileUrlMap = buildInvitationProfileUrlMap(invitationProfileModules);
+const invitationSectionUrlMap = {
+	...footerVariantUrlMap,
+	...galleryVariantUrlMap,
+	...structuralVariantUrlMap,
+};
 
 if (import.meta.env.DEV) {
 	const map = new Map(Object.entries(sectionBundleUrlMap));
@@ -73,11 +82,7 @@ if (import.meta.env.DEV) {
 	}
 }
 
-export function resolveSectionBundleCssUrl(preset: string): string | undefined {
-	return resolveBundleCssUrl(sectionBundleUrlMap, preset);
-}
-
-export function resolveInvitationCssUrls(input: {
+type InvitationCssResolverInput = {
 	themePreset: string;
 	footerVariant?: string;
 	galleryVariant?: string;
@@ -92,16 +97,17 @@ export function resolveInvitationCssUrls(input: {
 		itinerary?: string;
 	};
 	envelopeVariant?: string;
+	revealVariant?: string;
 	visualProfileId?: string;
 	slug?: string;
-}): string[] {
-	return resolveInvitationCssUrlsFromMaps(
+};
+
+export function resolveInvitationCssLoadPlan(
+	input: InvitationCssResolverInput,
+): InvitationCssLoadItem[] {
+	return resolveInvitationCssLoadPlanFromMaps(
 		sectionBundleUrlMap,
-		{
-			...footerVariantUrlMap,
-			...galleryVariantUrlMap,
-			...buildSectionUrlMap(structuralVariantModules),
-		},
+		invitationSectionUrlMap,
 		input,
 		invitationProfileUrlMap,
 	);

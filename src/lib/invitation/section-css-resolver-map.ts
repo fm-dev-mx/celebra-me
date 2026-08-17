@@ -26,10 +26,29 @@ type InvitationCssInput = {
 		itinerary?: string;
 	};
 	envelopeVariant?: string;
+	/** First-visit reveal mechanism. Editorial cover needs hero structural CSS immediately. */
+	revealVariant?: string;
 	visualProfileId?: string;
 	slug?: string;
 };
 
+export type InvitationCssOwner =
+	| 'section-bundle'
+	| 'footer-variant'
+	| 'gallery-variant'
+	| 'envelope-reveal'
+	| 'structural-variant'
+	| 'visual-profile';
+
+export interface InvitationCssLoadItem {
+	href: string;
+	owner: InvitationCssOwner;
+	/** True when the sheet is required to paint the sealed envelope (or editorial-cover first visual). */
+	blocking: boolean;
+}
+
+// Only presets with a dedicated footer/*.scss file go here.
+// All other presets fall back to the bundle default footer.
 const FOOTER_PRESET_TO_ENTRYPOINT: Record<string, string> = {
 	editorial: 'editorial',
 	'premiere-floral': 'premiere-floral',
@@ -48,6 +67,12 @@ const GALLERY_VARIANT_TO_ENTRYPOINT: Record<string, string> = {
 
 const ENVELOPE_VARIANT_TO_ENTRYPOINT: Record<string, string> = {
 	'premiere-floral': 'premiere-floral',
+	editorial: 'editorial',
+	'luxury-hacienda': 'luxury-hacienda',
+	'jewelry-box': 'shared-light',
+	'jewelry-box-wedding': 'shared-light',
+	'celestial-blue': 'shared-light',
+	'enchanted-rose': 'shared-light',
 };
 
 const STRUCTURAL_VARIANT_TO_ENTRYPOINT: Record<string, Record<string, string>> = {
@@ -84,9 +109,6 @@ const STRUCTURAL_VARIANT_TO_ENTRYPOINT: Record<string, Record<string, string>> =
 		'editorial-program': 'editorial-program',
 	},
 };
-
-// Only presets with a dedicated footer/*.scss file go here.
-// All other presets fall back to the bundle default footer.
 
 export function buildSectionUrlMap(modules: Record<string, CssModule>): SectionUrlMap {
 	const sectionUrlMap: SectionUrlMap = {};
@@ -159,10 +181,10 @@ export function resolveSectionCssUrls(
 	});
 }
 
-function resolveStructuralVariantCssUrls(
+function resolveStructuralVariantLoadItems(
 	sectionUrlMap: SectionUrlMap,
 	input: InvitationCssInput,
-): string[] {
+): InvitationCssLoadItem[] {
 	return Object.entries(input.structuralVariants ?? {}).flatMap(([section, variant]) => {
 		if (!variant) return [];
 		const entrypoint = STRUCTURAL_VARIANT_TO_ENTRYPOINT[section]?.[variant];
@@ -179,21 +201,33 @@ function resolveStructuralVariantCssUrls(
 			{ [variant]: entrypoint },
 			variant,
 		);
-		return url ? [url] : [];
+		if (!url) return [];
+		return [
+			{
+				href: url,
+				owner: 'structural-variant' as const,
+				blocking: input.revealVariant === 'editorial-cover' && section === 'hero',
+			},
+		];
 	});
 }
 
-export function resolveInvitationCssUrls(
+export function resolveInvitationCssLoadPlan(
 	sectionBundleUrlMap: SectionBundleUrlMap,
 	sectionUrlMap: SectionUrlMap,
 	input: InvitationCssInput,
 	profileUrlMap: InvitationProfileUrlMap = {},
-): string[] {
-	const urls: string[] = [];
+): InvitationCssLoadItem[] {
+	const items: InvitationCssLoadItem[] = [];
+	const seen = new Set<string>();
+	const push = (item: InvitationCssLoadItem | undefined) => {
+		if (!item?.href || seen.has(item.href)) return;
+		seen.add(item.href);
+		items.push(item);
+	};
+
 	const bundleUrl = resolveSectionBundleCssUrl(sectionBundleUrlMap, input.themePreset);
-	if (bundleUrl) {
-		urls.push(bundleUrl);
-	}
+	push(bundleUrl ? { href: bundleUrl, owner: 'section-bundle', blocking: false } : undefined);
 
 	if (input.footerVariant && input.footerVariant !== input.themePreset) {
 		const footerUrl = resolveSectionCssUrl(
@@ -202,33 +236,47 @@ export function resolveInvitationCssUrls(
 			FOOTER_PRESET_TO_ENTRYPOINT,
 			input.footerVariant,
 		);
-		if (footerUrl) {
-			urls.push(footerUrl);
-		}
+		push(footerUrl ? { href: footerUrl, owner: 'footer-variant', blocking: false } : undefined);
 	}
 
 	if (input.galleryVariant && input.galleryVariant !== input.themePreset) {
 		const galleryUrl = resolveGalleryVariantCssUrl(sectionUrlMap, input.galleryVariant);
 		const galleryEntrypoint = GALLERY_VARIANT_TO_ENTRYPOINT[input.galleryVariant];
-		if (galleryUrl && galleryEntrypoint !== input.themePreset) urls.push(galleryUrl);
+		if (galleryUrl && galleryEntrypoint !== input.themePreset) {
+			push({ href: galleryUrl, owner: 'gallery-variant', blocking: false });
+		}
 	}
 
-	if (input.envelopeVariant && input.envelopeVariant !== input.themePreset) {
+	if (input.envelopeVariant) {
 		const revealUrl = resolveSectionCssUrl(
 			sectionUrlMap,
 			'reveal',
 			ENVELOPE_VARIANT_TO_ENTRYPOINT,
 			input.envelopeVariant,
 		);
-		if (revealUrl) urls.push(revealUrl);
+		push(revealUrl ? { href: revealUrl, owner: 'envelope-reveal', blocking: true } : undefined);
 	}
 
-	urls.push(...resolveStructuralVariantCssUrls(sectionUrlMap, input));
+	for (const item of resolveStructuralVariantLoadItems(sectionUrlMap, input)) {
+		push(item);
+	}
 
 	const profileUrl = resolveInvitationProfileCssUrl(profileUrlMap, input);
-	if (profileUrl) {
-		urls.push(profileUrl);
-	}
+	push(profileUrl ? { href: profileUrl, owner: 'visual-profile', blocking: true } : undefined);
 
-	return [...new Set(urls)];
+	return items;
+}
+
+export function resolveInvitationCssUrls(
+	sectionBundleUrlMap: SectionBundleUrlMap,
+	sectionUrlMap: SectionUrlMap,
+	input: InvitationCssInput,
+	profileUrlMap: InvitationProfileUrlMap = {},
+): string[] {
+	return resolveInvitationCssLoadPlan(
+		sectionBundleUrlMap,
+		sectionUrlMap,
+		input,
+		profileUrlMap,
+	).map((item) => item.href);
 }

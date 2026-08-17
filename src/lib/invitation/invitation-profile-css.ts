@@ -15,3 +15,14 @@ export function resolveInvitationProfileCssUrl(
 	const profileId = resolveInvitationProfileId(input);
 	return profileId ? profileUrlMap[profileId] : undefined;
 }
+
+/** Google Fonts Parisienne is required only by the Romina hero, not by the sealed envelope. */
+const PARISIENNE_PROFILE_IDS = new Set(['romina-rios-chaparro']);
+
+export const PARISIENNE_GOOGLE_FONTS_HREF =
+	'https://fonts.googleapis.com/css2?family=Parisienne&display=swap';
+
+export function invitationProfileNeedsParisienne(input: InvitationProfileIdentity): boolean {
+	const profileId = resolveInvitationProfileId(input);
+	return Boolean(profileId && PARISIENNE_PROFILE_IDS.has(profileId));
+}
