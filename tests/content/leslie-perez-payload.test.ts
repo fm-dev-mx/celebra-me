@@ -144,14 +144,14 @@ describe('Leslie Perez provision contract', () => {
 			data: content,
 		} as Parameters<typeof adaptEvent>[0]);
 
-		expect(viewModel.hero.structuralVariant).toBe('split-cover');
-		expect(viewModel.sections.family?.structuralVariant).toBe('asymmetric-groups');
-		expect(viewModel.sections.location?.structuralVariant).toBe('split-map');
+		expect(viewModel.hero.variant).toBe('split-cover');
+		expect(viewModel.sections.family?.variant).toBe('asymmetric-groups');
+		expect(viewModel.sections.location?.variant).toBe('split-map');
 		expect(viewModel.sections.location?.showFlourishes).toBe(false);
 		expect(viewModel.sections.gallery?.variant).toBe('editorial-mosaic');
-		expect(viewModel.sections.gifts?.structuralVariant).toBe('standard');
-		expect(viewModel.sections.rsvp?.structuralVariant).toBe('formal-register');
-		expect(viewModel.sections.rsvp?.personalizedAccess.structuralVariant).toBe('formal-pass');
+		expect(viewModel.sections.gifts?.variant).toBe('standard');
+		expect(viewModel.sections.rsvp?.variant).toBe('formal-register');
+		expect(viewModel.sections.rsvp?.personalizedAccess.variant).toBe('formal-pass');
 		expect(viewModel.music).toBeUndefined();
 		expect(viewModel.interludes).toHaveLength(2);
 

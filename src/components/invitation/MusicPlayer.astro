@@ -19,7 +19,7 @@ const {
 } = Astro.props;
 
 const hasAudio = Boolean(url.trim());
-const pendingLabel = 'La canción se anunciará pronto';
+const promptText = 'Toca para escuchar música';
 ---
 
 <div
@@ -29,21 +29,19 @@ const pendingLabel = 'La canción se anunciará pronto';
 	data-reveal-mode={revealMode}
 	data-variant={variant}
 	data-has-audio={hasAudio ? 'true' : 'false'}
-	data-title={title}
-	data-pending-label={pendingLabel}
+	data-title={title || promptText}
+	data-pending-label={promptText}
 >
 	{hasAudio ? <audio src={url} loop preload="none" data-music-audio></audio> : null}
 
-	<span class="music-player__prompt" data-music-prompt
-		>{hasAudio ? 'Toca para escuchar música' : pendingLabel}</span
-	>
+	<span class="music-player__prompt" data-music-prompt>{promptText}</span>
 
 	<div class="music-player__controls">
 		<button
 			type="button"
 			class="music-player__button music-player__button--play music-player__button--pulsing"
 			data-music-toggle
-			aria-label={hasAudio ? title : pendingLabel}
+			aria-label={title || promptText}
 		>
 			<span data-icon-play><Icon name="Play" size={24} /></span>
 			<span data-icon-pause hidden><Icon name="Pause" size={24} /></span>

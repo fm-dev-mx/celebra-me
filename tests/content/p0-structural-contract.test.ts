@@ -270,7 +270,7 @@ describe('P0 persisted structural contracts', () => {
 			id: 'events/romina-rios-chaparro',
 			data: content,
 		} as Parameters<typeof adaptEvent>[0]);
-		expect(viewModel.sections.thankYou?.structuralVariant).toBe('standard');
+		expect(viewModel.sections.thankYou?.variant).toBe('standard');
 	});
 
 	it('still defaults omitted celestial Thank You structure to standard', () => {
@@ -293,6 +293,6 @@ describe('P0 persisted structural contracts', () => {
 			isDemo: false,
 			content: payload,
 		});
-		expect(viewModel.sections.thankYou?.structuralVariant).toBe('standard');
+		expect(viewModel.sections.thankYou?.variant).toBe('standard');
 	});
 });

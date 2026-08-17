@@ -97,19 +97,20 @@ function buildEnvelopeData(
 	};
 }
 
-function resolveFooterVariant(themePreset: ThemePreset): ThemePreset {
-	return themePreset;
-}
-
 function pickHeroValue(
 	sections: InvitationPageContext['viewModel']['sections'] | undefined,
 	field: 'time' | 'venueName',
 ): string | undefined {
-	return (
+	const val =
 		sections?.location?.venues?.[0]?.[field] ||
 		sections?.location?.reception?.[field] ||
-		sections?.location?.ceremony?.[field]
-	);
+		sections?.location?.ceremony?.[field];
+
+	if (typeof val === 'string' && val.startsWith('[[PENDIENTE:')) {
+		return undefined;
+	}
+
+	return val;
 }
 
 export function buildPageContextFromViewModel(input: {
@@ -119,13 +120,7 @@ export function buildPageContextFromViewModel(input: {
 	eventType: string;
 	screenshotMode?: boolean;
 }): InvitationPageContext {
-	const {
-		viewModel,
-		slug,
-		guestContext,
-		eventType,
-		screenshotMode = false,
-	} = input;
+	const { viewModel, slug, guestContext, eventType, screenshotMode = false } = input;
 	const renderViewModel = applyLocationPolicy({
 		viewModel,
 		isConfirmedGuest: guestContext?.guest.attendanceStatus === 'confirmed',
@@ -182,7 +177,7 @@ export function buildPageContextFromViewModel(input: {
 		heroTime,
 		heroVenueName,
 		envelope: envelopeData,
-		footerVariant: resolveFooterVariant(theme.preset),
+		footerVariant: theme.preset,
 		footerClosingPhrase:
 			renderViewModel.sections.thankYou?.closingPhrase?.trim() ||
 			DEFAULT_FOOTER_CLOSING_PHRASE,
