@@ -7,6 +7,7 @@
  * `src/lib/invitation/local-preview-config.ts` (not published content).
  */
 
+import { deriveStartsAtUtc } from '../../../src/lib/time/event-time.ts';
 import { defineInvitation } from './invitation-definition.ts';
 import type {
 	InvitationDefinition,
@@ -15,8 +16,15 @@ import type {
 } from './invitation-definition.ts';
 
 const EVENT_DATE_LONG = '26 de septiembre de 2026';
-const EVENT_DATE_ISO = '2026-09-26T00:00:00.000Z';
+const EVENT_DATE_ISO = '2026-09-26T19:00:00.000Z';
 const TIME_ZONE = 'America/Monterrey';
+const RECEPTION_LOCAL = '2026-09-26T19:00';
+const EVENT_TIME_DISPLAY = '7:00 p. m.';
+const derivedStartsAtUtc = deriveStartsAtUtc(RECEPTION_LOCAL, TIME_ZONE);
+if (!derivedStartsAtUtc) {
+	throw new Error('Leslie eventTiming.startsAtUtc could not be derived from America/Monterrey.');
+}
+
 const VENUE_ADDRESS =
 	'Blvd. Julián Treviño Elizondo #500, Col. Huinalá, Apodaca, Nuevo León, 66645';
 const VENUE_MAP_URL =
@@ -32,7 +40,10 @@ export const LESLIE_EVENT = {
 	title: 'XV años de Leslie',
 	eventDateLong: EVENT_DATE_LONG,
 	eventDateIso: EVENT_DATE_ISO,
+	localDateTime: RECEPTION_LOCAL,
 	timeZone: TIME_ZONE,
+	startsAtUtc: derivedStartsAtUtc,
+	eventTimeDisplay: EVENT_TIME_DISPLAY,
 } as const;
 
 export const LESLIE_ASSET_SPECS = [
@@ -186,8 +197,11 @@ export function buildLesliePublishedContent(
 		title: LESLIE_EVENT.title,
 		description: 'Invitación a los XV años de Leslie en San Carlos Eventos.',
 		theme: { preset: LESLIE_EVENT.themeId },
-		// Date is confirmed; time remains intentionally unresolved until owner handoff.
-		eventTiming: { timeZone: LESLIE_EVENT.timeZone },
+		eventTiming: {
+			localDateTime: LESLIE_EVENT.localDateTime,
+			timeZone: LESLIE_EVENT.timeZone,
+			startsAtUtc: LESLIE_EVENT.startsAtUtc,
+		},
 		sectionOrder: [
 			'quote',
 			'family',
@@ -263,7 +277,7 @@ export function buildLesliePublishedContent(
 		countdown: {
 			variant: 'editorial-folio',
 			title: 'La celebración comienza en',
-			footerText: 'Hora del evento: [[PENDIENTE:HORA_EVENTO]]',
+			footerText: `Hora del evento: ${EVENT_TIME_DISPLAY}`,
 		},
 		location: {
 			variant: 'split-map',
@@ -276,12 +290,16 @@ export function buildLesliePublishedContent(
 				address: VENUE_ADDRESS,
 				city: 'Apodaca, Nuevo León',
 				date: EVENT_DATE_LONG,
-				time: '[[PENDIENTE:HORA_EVENTO]]',
+				time: EVENT_TIME_DISPLAY,
 				mapUrl: VENUE_MAP_URL,
 				googleMapsUrl: VENUE_MAP_URL,
 				coordinates: { lat: 25.7444444, lng: -100.1725 },
 			},
 			indications: [
+				{
+					text: 'Código de vestimenta: formal.',
+					iconName: 'DressCode',
+				},
 				{
 					text: 'El azul marino está reservado para Leslie.',
 					iconName: 'FlowerSeal',
@@ -294,7 +312,7 @@ export function buildLesliePublishedContent(
 			title: 'Momentos',
 			subtitle: 'Itinerario de la celebración',
 			items: [
-				{ time: '[[PENDIENTE:HORA_RECEPCION]]', label: 'Recepción', iconName: 'Reception' },
+				{ time: EVENT_TIME_DISPLAY, label: 'Recepción', iconName: 'Reception' },
 				{ time: '[[PENDIENTE:HORA_CENA]]', label: 'Cena', iconName: 'Dinner' },
 				{ time: '[[PENDIENTE:HORA_VALS]]', label: 'Vals', iconName: 'Waltz' },
 				{ time: '[[PENDIENTE:HORA_BRINDIS]]', label: 'Brindis', iconName: 'Toast' },
@@ -308,14 +326,14 @@ export function buildLesliePublishedContent(
 				afterSection: 'location',
 				alt: 'Retrato cercano de Leslie frente a un fondo de luces circulares',
 				height: 'tall',
-				focalPoint: '50% 50%',
+				focalPoint: '50% 36%',
 			},
 			{
 				image: assets['photo-08'],
 				afterSection: 'gallery',
 				alt: 'Retrato cercano de Leslie junto a una composición con humo',
 				height: 'tall',
-				focalPoint: '50% 45%',
+				focalPoint: '34% 40%',
 			},
 		],
 		gallery: {
@@ -424,9 +442,8 @@ export function buildLesliePublishedContent(
 			variant: 'full-bleed-photo',
 			message: 'Gracias por ser parte de este momento tan especial.',
 			closingName: 'Leslie',
-			date: EVENT_DATE_LONG,
 			image: assets['photo-15'],
-			focalPoint: '50% 48%',
+			focalPoint: '50% 38%',
 		},
 	};
 }
@@ -448,9 +465,9 @@ export const leslieInvitation: InvitationDefinition<LeslieAssetKey> = defineInvi
 	themeId: LESLIE_EVENT.themeId,
 	visualProfileId: LESLIE_EVENT.visualProfileId,
 	eventTiming: {
-		localDateTime: '',
+		localDateTime: LESLIE_EVENT.localDateTime,
 		timeZone: LESLIE_EVENT.timeZone,
-		startsAtUtc: '',
+		startsAtUtc: LESLIE_EVENT.startsAtUtc,
 	},
 	assets: LESLIE_ASSET_SPECS,
 	buildPublishedContent(assets) {
