@@ -237,7 +237,7 @@ export function buildLesliePublishedContent(
 			backgroundImageDesktop: assets['photo-01'],
 			variant: 'split-cover',
 			focalPoint: '55% 45%',
-			focalPointMobile: '60% 44%',
+			focalPointMobile: '40% 44%',
 			focalPointTablet: '56% 44%',
 			focalPointDesktop: '54% 45%',
 		},
@@ -257,8 +257,8 @@ export function buildLesliePublishedContent(
 			},
 		},
 		quote: {
-			text: 'Porque yo sé los planes que tengo para ustedes —afirma el Señor—, planes de bienestar y no de calamidad, a fin de darles un futuro y una esperanza.',
-			author: 'Jeremías 29:11',
+			text: 'Hoy celebro el regalo de la vida, la belleza del presente y la promesa de un nuevo amanecer.',
+			author: 'Leslie',
 		},
 		family: {
 			variant: 'asymmetric-groups',
@@ -270,16 +270,16 @@ export function buildLesliePublishedContent(
 			parentsOrder: 'father-first',
 			labels: {
 				sectionSubtitle: 'Familia',
-				sectionTitle: 'Quienes me acompañan en este día',
-				parentsTitle: 'Junto a mis padres',
+				sectionTitle: 'Con la guía y el amor de mis padres',
+				parentsTitle: 'Mis Padres',
 				sectionMessage:
-					'Este momento también reúne a quienes han sido parte de mi historia y hoy lo comparten conmigo.',
+					'Gracias a su entrega, ejemplo y cariño incondicional, hoy inicio este nuevo camino con profunda gratitud.',
 			},
 		},
 		countdown: {
 			variant: 'editorial-folio',
-			title: 'La celebración comienza en',
-			footerText: `Hora del evento: ${EVENT_TIME_DISPLAY}`,
+			title: 'La cuenta regresiva hacia el gran día',
+			footerText: `Sábado, 26 de septiembre · ${EVENT_TIME_DISPLAY}`,
 		},
 		location: {
 			variant: 'split-map',
@@ -303,7 +303,7 @@ export function buildLesliePublishedContent(
 					iconName: 'DressCode',
 				},
 				{
-					text: 'El azul marino está reservado para Leslie.',
+					text: 'El color azul marino está reservado exclusivamente para la quinceañera.',
 					iconName: 'FlowerSeal',
 					styleVariant: 'reserved',
 				},
@@ -311,43 +311,31 @@ export function buildLesliePublishedContent(
 		},
 		itinerary: {
 			variant: 'standard',
-			title: 'Momentos',
+			title: 'Programa',
 			subtitle: 'Itinerario de la celebración',
 			items: [
 				{
 					time: '19:00',
 					label: 'Recepción',
-					description: 'Bienvenida y cóctel de inicio.',
+					description: 'Llegada de invitados y cóctel de bienvenida.',
 					iconName: 'Diamond',
-				},
-				{
-					time: '20:30',
-					label: 'Cena',
-					description: 'Un momento para compartir en la mesa.',
-					iconName: 'Dinner',
 				},
 				{
 					time: '21:45',
 					label: 'Vals',
-					description: 'El baile principal junto a la familia.',
+					description: 'Tradicional vals familiar.',
 					iconName: 'Crown',
 				},
 				{
 					time: '22:30',
-					label: 'Brindis',
-					description: 'Unas palabras para celebrar este día.',
-					iconName: 'Toast',
-				},
-				{
-					time: '23:00',
-					label: 'Baile',
-					description: 'Música, sorpresas y pista abierta.',
-					iconName: 'Party',
+					label: 'Cena',
+					description: 'Servicio de banquete en honor a la festejada.',
+					iconName: 'Dinner',
 				},
 				{
 					time: '02:00',
 					label: 'Cierre',
-					description: 'Despedida y agradecimiento.',
+					description: 'Muchas gracias por acompañarnos.',
 					iconName: 'Sparkles',
 				},
 			],
@@ -370,9 +358,9 @@ export function buildLesliePublishedContent(
 		],
 		gallery: {
 			variant: 'index-choreography',
-			eyebrow: 'Recuerdos',
+			eyebrow: 'Sesión Fotográfica',
 			title: 'Leslie',
-			subtitle: 'Momentos para celebrar esta nueva etapa',
+			subtitle: 'Postales de una etapa llena de luz y juventud',
 			items: [
 				galleryItem(
 					assets,
@@ -441,38 +429,39 @@ export function buildLesliePublishedContent(
 			variant: 'standard',
 			title: 'Lluvia de Sobres',
 			subtitle:
-				'Su presencia es nuestro mayor regalo. Si desea tener un detalle, contaremos con un buzón durante la recepción.',
+				'Su presencia en esta fecha tan significativa es nuestra mayor alegría. Si desea tener una muestra de aprecio con Leslie, dispondremos de un buzón en el salón.',
 			items: [
 				{
 					type: 'cash',
 					title: 'Lluvia de Sobres',
-					text: 'Contaremos con un buzón durante la recepción en San Carlos Eventos.',
+					text: 'Habrá un espacio destinado para sobres durante la recepción en San Carlos Eventos.',
 				},
 			],
 		},
 		rsvp: {
 			variant: 'formal-register',
 			title: 'Confirme su asistencia',
-			subcopy:
-				'Agradeceremos confirmar su asistencia antes de [[PENDIENTE:FECHA_LIMITE_RSVP]].',
+			subcopy: 'Agradeceremos confirmar su asistencia antes del 15 de septiembre.',
 			guestCap: 1,
 			accessMode: 'personalized-only',
 			confirmationMode: 'api',
-			confirmationMessage: 'Gracias por confirmar. Será un gusto celebrar con usted.',
+			confirmationMessage:
+				'¡Confirmación registrada con éxito! Será un verdadero honor recibirle.',
 			responseMessages: {
-				confirmed: { title: '¡Gracias por confirmar, {guestName}!' },
-				declined: { title: 'Gracias por avisarnos, {guestName}.' },
+				confirmed: { title: '¡Asistencia confirmada, {guestName}!' },
+				declined: { title: 'Agradecemos su gentil notificación, {guestName}.' },
 			},
 			personalizedAccess: {
 				variant: 'formal-pass',
-				title: 'Su invitación personal',
-				subtitle: 'Esta invitación ha sido preparada especialmente para:',
+				title: 'Pase de acceso',
+				subtitle: 'Extendemos una cordial invitación a:',
+				noteText: 'Presentar digitalmente al ingresar a San Carlos Eventos.',
 				footerText: 'Confirme su asistencia en la siguiente sección.',
 			},
 		},
 		thankYou: {
 			variant: 'full-bleed-photo',
-			message: 'Gracias por ser parte de este momento tan especial.',
+			message: 'Gracias por formar parte de este momento.',
 			closingName: 'Leslie',
 			image: assets['photo-15'],
 			focalPoint: '50% 38%',

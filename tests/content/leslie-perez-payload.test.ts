@@ -46,7 +46,7 @@ describe('Leslie Perez provision contract', () => {
 	it('owns celestial-bookend cadence intersections and formal-register RSVP', () => {
 		expect(content.rsvp).toMatchObject({ variant: 'formal-register' });
 		expect(content.family).toMatchObject({
-			labels: { sectionTitle: 'Quienes me acompañan en este día' },
+			labels: { sectionTitle: 'Con la guía y el amor de mis padres' },
 		});
 		expect(content.composition).toEqual({
 			intersections: {
@@ -60,6 +60,30 @@ describe('Leslie Perez provision contract', () => {
 				thankYou: { family: 'atmospheric-blend', source: 'rsvp' },
 			},
 		});
+	});
+
+	it('keeps the finalized itinerary, RSVP deadline, and reserved-color copy aligned', () => {
+		const itinerary = content.itinerary as {
+			items: Array<{ label: string; time: string }>;
+		};
+
+		expect(itinerary.items.map(({ label, time }) => ({ label, time }))).toEqual([
+			{ label: 'Recepción', time: '19:00' },
+			{ label: 'Vals', time: '21:45' },
+			{ label: 'Cena', time: '22:30' },
+			{ label: 'Cierre', time: '02:00' },
+		]);
+		expect(content.location).toMatchObject({
+			indications: [
+				expect.anything(),
+				expect.objectContaining({
+					text: 'El color azul marino está reservado exclusivamente para la quinceañera.',
+				}),
+			],
+		});
+		expect((content.rsvp as { subcopy: string }).subcopy).toBe(
+			'Agradeceremos confirmar su asistencia antes del 15 de septiembre.',
+		);
 	});
 
 	it('keeps unique photo roles across hero, gallery, interludes, and thank-you', () => {
@@ -95,9 +119,9 @@ describe('Leslie Perez provision contract', () => {
 
 	it('includes quote, gifts, and family groups without repeating guest thanks', () => {
 		expect(content.quote).toMatchObject({
-			author: 'Jeremías 29:11',
+			author: 'Leslie',
 		});
-		expect(String((content.quote as { text: string }).text)).toContain('planes');
+		expect(String((content.quote as { text: string }).text)).toContain('regalo de la vida');
 		expect(String((content.quote as { text: string }).text)).not.toContain('PENDIENTE');
 		expect(String((content.quote as { text: string }).text)).not.toContain(
 			'Gracias por acompañarme',
