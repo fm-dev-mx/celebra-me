@@ -265,10 +265,10 @@ Visitor → `/{eventType}/{slug}` → `resolveInvitationContent()`:
 ### Asset Library
 
 Admin uploads through `/api/dashboard/intake/[id]/assets/**` create `invitation_assets` metadata
-rows for a specific invitation. The actual image files live in the Supabase Storage
-`invitation-assets` bucket; Postgres stores display names, alt text, object paths, MIME type, size,
-dimensions, and soft-delete state. Local databases may legitimately have zero `invitation_assets`
-rows when invitations only use bundled internal assets.
+rows for a specific invitation. In Local (`dev-local`), binaries are stored in Supabase Storage local
+(`invitation-assets` bucket); in Preview and Production, binaries are hosted on Cloudinary with SHA-256
+deduplication. Postgres stores provider, display names, alt text, object paths, MIME type, size,
+dimensions, secure URLs, and soft-delete state.
 
 ### RSVP Linkage
 

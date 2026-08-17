@@ -9,11 +9,8 @@ import {
 	restoreAsset as restoreAssetRepo,
 	softDeleteAsset,
 } from '@/lib/intake/repositories/asset.repository';
-import { DEFAULT_BUCKET } from '@/lib/intake/storage';
-import {
-	resolveAssetDeliveryUrl,
-} from '@/lib/intake/services/asset-delivery';
-import { uploadOrReconcileCloudinaryAsset } from '@/lib/intake/services/cloudinary-assets';
+import { resolveAssetDeliveryUrl } from '@/lib/intake/services/asset-delivery';
+import { getStorageProvider } from '@/lib/intake/services/storage-provider';
 import {
 	collectAssetUsage,
 	collectAssetUsagesByInvitation,
@@ -42,7 +39,7 @@ export interface UploadAssetResult {
 	src: string;
 }
 
-async function persistCloudinaryInvitationImage(input: {
+async function persistInvitationImage(input: {
 	invitationId: string;
 	eventType: string;
 	slug: string;
@@ -63,48 +60,66 @@ async function persistCloudinaryInvitationImage(input: {
 	const bytes = new Uint8Array(await input.normalized.blob.arrayBuffer());
 	const sha256 = createHash('sha256').update(bytes).digest('hex');
 
-	let uploaded;
+	const provider = getStorageProvider();
+	let stored;
 	try {
-		uploaded = await uploadOrReconcileCloudinaryAsset({
+		stored = await provider.uploadAsset({
+			invitationId: input.invitationId,
 			eventType: input.eventType,
 			slug: input.slug,
 			key: input.key,
 			displayName: input.displayName,
-			alt: input.defaultAltText ?? input.displayName,
-			bytes,
-			sha256,
+			defaultAltText: input.defaultAltText,
+			blob: input.normalized.blob,
 			mimeType: input.normalized.mimeType,
 			width: input.normalized.width,
 			height: input.normalized.height,
+			fileSize: input.normalized.fileSize,
+			validationVersion: input.normalized.validationVersion,
+			originalMimeType: input.normalized.originalMimeType,
+			originalFileSize: input.normalized.originalFileSize,
+			sha256,
 		});
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);
 		if (message.includes('Stop before mutation')) {
-			throw new ApiError(502, 'config_error', 'La carga de imágenes no está disponible en este momento.');
+			throw new ApiError(
+				502,
+				'config_error',
+				'La carga de imágenes no está disponible en este momento.',
+			);
 		}
-		throw new ApiError(502, 'internal_error', 'No se pudo subir la imagen. Intenta nuevamente.');
+		if (error instanceof ApiError) {
+			throw error;
+		}
+		throw new ApiError(
+			502,
+			'internal_error',
+			'No se pudo subir la imagen. Intenta nuevamente.',
+		);
 	}
 
 	const asset = await createAsset({
 		invitationId: input.invitationId,
 		displayName: input.displayName,
 		defaultAltText: input.defaultAltText,
-		bucket: DEFAULT_BUCKET,
-		storagePath: uploaded.publicId,
+		bucket: stored.bucket,
+		storagePath: stored.storagePath,
 		mimeType: input.normalized.mimeType,
-		width: uploaded.width,
-		height: uploaded.height,
-		fileSize: uploaded.bytes,
+		width: stored.width,
+		height: stored.height,
+		fileSize: stored.fileSize,
 		validationVersion: input.normalized.validationVersion,
 		originalMimeType: input.normalized.originalMimeType,
 		originalFileSize: input.normalized.originalFileSize,
-		provider: 'cloudinary',
-		providerPublicId: uploaded.publicId,
-		secureUrl: uploaded.secureUrl,
+		provider: stored.provider,
+		providerPublicId: stored.providerPublicId ?? stored.storagePath,
+		secureUrl:
+			stored.secureUrl ?? (stored.provider === 'supabase' ? stored.deliveryUrl : undefined),
 		sha256,
 	});
 
-	return { asset, src: resolveAssetDeliveryUrl(deliverySourceFromAsset(asset)) };
+	return { asset, src: stored.deliveryUrl };
 }
 
 export async function uploadAsset(
@@ -121,7 +136,7 @@ export async function uploadAsset(
 
 	const normalized = await normalizeInvitationImage(file, mimeType);
 	const assetId = randomUUID();
-	return persistCloudinaryInvitationImage({
+	return persistInvitationImage({
 		invitationId,
 		eventType: invitation.eventType,
 		slug: invitation.slug,
@@ -359,7 +374,7 @@ export async function importDemoAsset(
 		response.headers.get('content-type') || blob.type || `image/${metadata.format ?? 'webp'}`,
 	);
 
-	return persistCloudinaryInvitationImage({
+	return persistInvitationImage({
 		invitationId,
 		eventType: invitation.eventType,
 		slug: deliverySlug,

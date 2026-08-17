@@ -1,5 +1,4 @@
 import {
-	CLOUDINARY_ERA_CUTOFF,
 	cloudinaryEraHostingMessage,
 	findCloudinaryEraHostingViolations,
 	findSupabaseStorageUrls,
@@ -8,31 +7,15 @@ import {
 } from '../../src/lib/intake/services/cloudinary-era-hosting';
 
 describe('cloudinary-era hosting', () => {
-	it('applies to client invitations created or published on or after the Abril cutoff', () => {
+	it('applies to client invitations in hosted environments and excludes demos', () => {
 		expect(
 			isCloudinaryEraInvitation({
 				kind: 'client',
-				createdAt: '2026-07-26T00:00:00.000Z',
 			}),
 		).toBe(true);
-		expect(
-			isCloudinaryEraInvitation({
-				kind: 'client',
-				createdAt: '2026-07-17T00:00:00.000Z',
-				publishedAt: '2026-08-13T00:00:00.000Z',
-			}),
-		).toBe(true);
-		expect(
-			isCloudinaryEraInvitation({
-				kind: 'client',
-				createdAt: '2026-06-21T00:00:00.000Z',
-				publishedAt: '2026-07-01T00:00:00.000Z',
-			}),
-		).toBe(false);
 		expect(
 			isCloudinaryEraInvitation({
 				kind: 'demo',
-				createdAt: '2026-08-15T00:00:00.000Z',
 			}),
 		).toBe(false);
 	});
@@ -68,7 +51,16 @@ describe('cloudinary-era hosting', () => {
 				src: 'https://ineitkdkyrxqyressllp.supabase.co/storage/v1/object/public/x',
 			}),
 		).toHaveLength(1);
+		expect(
+			findSupabaseStorageUrls({
+				src: 'http://127.0.0.1:54321/storage/v1/object/public/invitation-assets/test.webp',
+			}),
+		).toHaveLength(1);
+		expect(
+			findSupabaseStorageUrls({
+				src: 'http://localhost:54321/storage/v1/object/public/invitation-assets/test.webp',
+			}),
+		).toHaveLength(1);
 		expect(cloudinaryEraHostingMessage(['hero-desktop'])).toMatch(/Cloudinary/);
-		expect(CLOUDINARY_ERA_CUTOFF).toBe('2026-07-26T00:00:00.000Z');
 	});
 });

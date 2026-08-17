@@ -17,6 +17,7 @@ import {
 	isCloudinaryHostedAsset,
 	isSupabaseStorageUrl,
 } from '@/lib/intake/services/cloudinary-era-hosting';
+import { resolveEffectiveTarget } from '@/lib/intake/services/storage-provider';
 import type {
 	Invitation,
 	InvitationAsset,
@@ -386,13 +387,16 @@ async function freezeUploadedContentRefs(
 	const assets = await findAssetsByInvitationId(invitationId);
 	const assetMap = new Map(assets.map((a) => [a.id, a]));
 	const legacyPublishedAssetIds = collectUploadedAssetIds(priorPublishedContent);
-	const requireCloudinary = invitation
-		? isCloudinaryEraInvitation({
-				kind: invitation.kind,
-				createdAt: invitation.createdAt,
-				publishedAt,
-			})
-		: false;
+	const isLocal = resolveEffectiveTarget() === 'local';
+	const requireCloudinary =
+		!isLocal &&
+		(invitation
+			? isCloudinaryEraInvitation({
+					kind: invitation.kind,
+					createdAt: invitation.createdAt,
+					publishedAt,
+				})
+			: false);
 
 	function walk(value: unknown, path = ''): unknown {
 		if (!value || typeof value !== 'object') return value;

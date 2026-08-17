@@ -2,6 +2,7 @@
 /* eslint-disable no-restricted-syntax -- item-level focal points must override theme crop fallbacks */
 import type { ImageMetadata } from 'astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
+import CacheSafeImage from '@/components/common/CacheSafeImage.astro';
 import { getGalleryPreviewRole } from '@/lib/components/gallery/gallery-presentation';
 import type { GalleryLayoutRole } from '@/lib/invitation/gallery-presentation';
 import type { GalleryLayoutVariant } from '@/lib/invitation/structural-variants';
@@ -36,16 +37,20 @@ const renderedVisualVariant = visualVariant ?? structuralVariant;
 const isMagazineSpread = structuralVariant === 'magazine-spread';
 
 const resolveImage = (image: ImageMetadata | ImageAsset) => {
-	const src = typeof image.src === 'string' ? image.src : image.src.src;
-	const meta = 'width' in image ? image : (typeof image.src !== 'string' ? image.src : null);
-	return { src, width: meta?.width ?? 800, height: meta?.height ?? 1000 };
+	const rawSource =
+		typeof image === 'object' && 'src' in image && !('width' in image)
+			? (image as ImageAsset).src
+			: (image as ImageMetadata | string);
+	const src = typeof rawSource === 'string' ? rawSource : rawSource.src;
+	const meta = typeof image === 'object' && 'width' in image ? image : (typeof rawSource !== 'string' ? rawSource : null);
+	return { rawSource, src, width: meta?.width ?? 800, height: meta?.height ?? 1000 };
 };
 ---
 
 <div class="gallery-grid" data-gallery data-variant={renderedVisualVariant} data-structural-variant={structuralVariant}>
 	{
 		items.map((item, index) => {
-			const { src, width, height } = resolveImage(item.image);
+			const { rawSource, src, width, height } = resolveImage(item.image);
 			const layoutRole = getGalleryPreviewRole(index, structuralVariant, item.layoutRole);
 			const layoutClass = `gallery-grid__item--${layoutRole}`;
 			const aspectStyle = item.aspectRatio ? `aspect-ratio: ${item.aspectRatio};` : '';
@@ -64,8 +69,8 @@ const resolveImage = (image: ImageMetadata | ImageAsset) => {
 				role="button"
 				aria-label={item.alt || item.caption || `Ver imagen ${index + 1}`}
 			>
-			<img
-					src={src}
+				<CacheSafeImage
+					src={rawSource}
 					alt={item.alt || item.caption || `Imagen ${index + 1}`}
 					width={width}
 					height={height}

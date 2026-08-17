@@ -32,6 +32,46 @@ function isHttpUrl(value: string): boolean {
 	return /^https?:\/\//i.test(value.trim());
 }
 
+function resolveCloudinaryAssetUrl(asset: AssetDeliverySource, provider: string): string {
+	const secure = asset.secureUrl?.trim();
+	if (secure && isHttpUrl(secure)) return secure;
+
+	const publicId = (asset.providerPublicId ?? asset.storagePath)?.trim();
+	if (!publicId) {
+		throw new AssetDeliveryResolutionError(
+			'Cloudinary asset is missing secure_url and provider_public_id.',
+			{ assetId: asset.id, provider },
+		);
+	}
+
+	const cloudName = process.env.CLOUDINARY_CLOUD_NAME?.trim();
+	if (!cloudName) {
+		throw new AssetDeliveryResolutionError(
+			'Cloudinary asset cannot be resolved without CLOUDINARY_CLOUD_NAME or secure_url.',
+			{ assetId: asset.id, provider, publicId },
+		);
+	}
+
+	const extensionSource = (asset.storagePath || publicId).replace(/^\/+/, '');
+	const extensionMatch = extensionSource.match(/\.([a-z0-9]+)$/i);
+	const extension = extensionMatch?.[1]?.toLowerCase() ?? 'webp';
+	const normalizedId = publicId.replace(/^\/+/, '').replace(/\.[a-z0-9]+$/i, '');
+	return `https://res.cloudinary.com/${cloudName}/image/upload/v1/${normalizedId}.${extension}`;
+}
+
+function resolveSupabaseAssetUrl(asset: AssetDeliverySource, provider: string): string {
+	const secure = asset.secureUrl?.trim();
+	if (secure && isHttpUrl(secure)) return secure;
+
+	if (!asset.bucket?.trim() || !asset.storagePath?.trim()) {
+		throw new AssetDeliveryResolutionError(
+			'Supabase asset is missing bucket or storage_path.',
+			{ assetId: asset.id, provider },
+		);
+	}
+	return getPublicUrl(asset.bucket, asset.storagePath);
+}
+
 /**
  * Resolve a public delivery URL for an invitation asset.
  * Cloudinary must never be overridden by a generated Supabase Storage URL.
@@ -40,42 +80,11 @@ export function resolveAssetDeliveryUrl(asset: AssetDeliverySource): string {
 	const provider = (asset.provider ?? 'supabase').toLowerCase();
 
 	if (provider === 'cloudinary') {
-		const secure = asset.secureUrl?.trim();
-		if (secure && isHttpUrl(secure)) return secure;
-
-		const publicId = (asset.providerPublicId ?? asset.storagePath)?.trim();
-		if (!publicId) {
-			throw new AssetDeliveryResolutionError(
-				'Cloudinary asset is missing secure_url and provider_public_id.',
-				{ assetId: asset.id, provider },
-			);
-		}
-
-		const cloudName = process.env.CLOUDINARY_CLOUD_NAME?.trim();
-		if (!cloudName) {
-			throw new AssetDeliveryResolutionError(
-				'Cloudinary asset cannot be resolved without CLOUDINARY_CLOUD_NAME or secure_url.',
-				{ assetId: asset.id, provider, publicId },
-			);
-		}
-
-		const extensionSource = (asset.storagePath || publicId).replace(/^\/+/, '');
-		const extensionMatch = extensionSource.match(/\.([a-z0-9]+)$/i);
-		const extension = extensionMatch?.[1]?.toLowerCase() ?? 'webp';
-		const normalizedId = publicId
-			.replace(/^\/+/, '')
-			.replace(/\.[a-z0-9]+$/i, '');
-		return `https://res.cloudinary.com/${cloudName}/image/upload/v1/${normalizedId}.${extension}`;
+		return resolveCloudinaryAssetUrl(asset, provider);
 	}
 
 	if (provider === 'supabase') {
-		if (!asset.bucket?.trim() || !asset.storagePath?.trim()) {
-			throw new AssetDeliveryResolutionError(
-				'Supabase asset is missing bucket or storage_path.',
-				{ assetId: asset.id, provider },
-			);
-		}
-		return getPublicUrl(asset.bucket, asset.storagePath);
+		return resolveSupabaseAssetUrl(asset, provider);
 	}
 
 	throw new AssetDeliveryResolutionError(`Unsupported asset provider "${provider}".`, {

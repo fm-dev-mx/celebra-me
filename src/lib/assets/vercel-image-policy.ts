@@ -20,7 +20,11 @@ function parseHttpUrl(src: string): URL | null {
 export function isMutableInPlaceMediaUrl(src: string): boolean {
 	const parsed = parseHttpUrl(src);
 	if (!parsed) return false;
-	return /\.supabase\.co$/i.test(parsed.hostname) && parsed.pathname.includes('/storage/');
+	const isSupabaseHost =
+		/\.supabase\.co$/i.test(parsed.hostname) ||
+		parsed.hostname === '127.0.0.1' ||
+		parsed.hostname === 'localhost';
+	return isSupabaseHost && parsed.pathname.includes('/storage/');
 }
 
 /**
