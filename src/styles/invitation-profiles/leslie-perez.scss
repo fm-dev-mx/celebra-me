@@ -9,7 +9,6 @@
 .event--leslie-perez.theme-preset--celestial-blue {
 	// Dark-surface optical tracking (rhythm §2).
 	--hero-split-title-letter-spacing: 0.06em;
-	--quote-content-letter-spacing: 0.06em;
 
 	// Hero → Family → Countdown seam tokens.
 	--leslie-hero-family-overlap: clamp(#{tokens.$spacing-12}, 7vw, #{tokens.$spacing-16});
@@ -1669,7 +1668,7 @@
 		}
 	}
 
-	// Cadence map — Hero/Quote → Family → Countdown editorial sheet.
+	// Cadence map — Hero → Family → Countdown editorial sheet.
 	// Paper / navy lips via arch-style ::before. Filter on the WRAPPER
 	// (mask+filter on the same node clips the drop-shadow).
 	.invitation-section-wrapper[data-section-kind='family'] {
