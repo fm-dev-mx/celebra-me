@@ -84,7 +84,7 @@
 	// 3. SECTION CONTRACT OVERRIDES
 	// ==========================================================================
 
-	// Page wash (moved from theme-base; motion/z-index remain there)
+	// Page wash tokens (consumed by the shared theme shell)
 	--preset-page-background:
 		radial-gradient(
 			circle at 10% 10%,
@@ -388,62 +388,9 @@
 	--pa-label-opacity: 1;
 	--pa-label-tracking: 0.24em;
 
-	// Page shell (absorbed from theme-base)
+	// Page shell
 	background: var(--preset-page-background);
 	color: var(--preset-page-color, var(--color-text-primary));
 	min-height: 100svh;
 	padding-bottom: env(safe-area-inset-bottom, 0);
-
-	@media (width >= 768px) {
-		padding-bottom: env(safe-area-inset-bottom, 0);
-	}
-
-	// Motion / stacking (absorbed from theme-base)
-	&.has-motion {
-		[class*='__reveal'] {
-			opacity: 0%;
-			transform: translateY(40px);
-			transition:
-				opacity var(--duration-reveal) var(--ease-premium),
-				transform var(--duration-reveal) var(--ease-premium);
-			will-change: opacity, transform;
-		}
-
-		&.is-visible {
-			[class*='__reveal'] {
-				opacity: 100%;
-				transform: translateY(0);
-			}
-		}
-
-		.family__item,
-		.itinerary__item,
-		.gift-card {
-			@for $i from 1 through 10 {
-				&:nth-child(#{$i}) {
-					transition-delay: #{$i * 0.2s};
-				}
-			}
-		}
-	}
-
-	.family,
-	.gallery-section,
-	.countdown-section,
-	.gifts-section,
-	.rsvp,
-	.thank-you-section,
-	.event-location,
-	.itinerary {
-		position: relative;
-		z-index: 2;
-	}
-}
-
-.theme-preset--editorial .event-location__card:hover {
-	transform: var(--location-card-hover-transform) rotateX(2deg);
-}
-
-.theme-preset--editorial .event-location__card::before {
-	transition: background-position var(--duration-slower) var(--ease-premium);
 }

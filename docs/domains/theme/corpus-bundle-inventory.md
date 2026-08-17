@@ -117,10 +117,10 @@ demo-only presets (`editorial`, `editorial-rose`, `jewelry-box`) are in scope.
 | jewelry-box         | merged (removed)     | `--countdown-section-background`                 | jeweled-panel                         |
 | jewelry-box-wedding | none                 | same jeweled-panel tokens                        | mega LAYOUT retained                  |
 | premiere-floral     | none                 | `--countdown-bg` / `--section-padding-block`     | romina countdown via `--countdown-bg` |
-| editorial           | absorbed into preset | `--countdown-bg` / `--section-padding-block`     | includes renata                       |
+| editorial           | isolated theme-shell | `--countdown-bg` / `--section-padding-block`     | includes renata                       |
 | editorial-magazine  | none                 | `--countdown-bg` already                         | mega LAYOUT retained                  |
 | editorial-rose      | none                 | n/a                                              | gallery bg on preset only             |
-| luxury-hacienda     | absorbed into preset | `--countdown-section-*`                          | mega LAYOUT retained                  |
+| luxury-hacienda     | isolated theme-shell | `--countdown-section-*`                          | mega LAYOUT retained                  |
 | angelic-presence    | none                 | `--countdown-section-*`                          |                                       |
 | sacred-keepsake     | none                 | `--countdown-section-*`                          | no profile SCSS                       |
 | enchanted-rose      | none                 | `--countdown-section-*`                          | no profile SCSS                       |
@@ -135,8 +135,9 @@ Profile LAYOUT removal (geometry / direct section `background` / `font-family` p
 - `leah-lexa`: thank-you section padding moved to `--thank-you-section-padding`; css-parity
   baseline+compare **passed**. Remaining child LAYOUT (gifts CTA, thank-you editorial chrome,
   location map max-height) still retained.
-- `theme-base/_editorial.scss` and `theme-base/_luxury-hacienda.scss`: fully absorbed into presets;
-  `theme-base/` directory empty/removed.
+- Former `theme-base` selector rules for editorial and luxury hacienda remain in isolated
+  `themes/sections/theme-shell/` files; their semantic and component values remain in the presets.
+  The old `theme-base/` directory is empty/removed.
 - Baselines captured under `.tmp/css-visual-parity/<slug>/baseline/` (local artifacts, not
   committed) for: `leah-lexa`, `america-johana`, `abril-michelle-becerra-rea`, `alba-rosa-quinonez`,
   `daniela-y-martin`, `victoria-y-roberto`, `valentina-hernandez`, `luna-y-estrella`,

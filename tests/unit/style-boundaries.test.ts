@@ -617,9 +617,9 @@ describe('Style boundary governance', () => {
 	});
 
 	it('luxury heading chrome does not force thank-you accent color', () => {
-		const luxury = read('src/styles/themes/presets/_luxury-hacienda.scss');
+		const luxury = read('src/styles/themes/sections/theme-shell/_luxury-hacienda.scss');
 		const headingChrome = luxury.slice(
-			luxury.indexOf('// Component chrome (absorbed from theme-base)'),
+			luxury.indexOf('// Component chrome'),
 			luxury.indexOf('.card,'),
 		);
 		expect(headingChrome).toContain('.event-location &');
