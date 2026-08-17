@@ -111,25 +111,36 @@ demo-only presets (`editorial`, `editorial-rose`, `jewelry-box`) are in scope.
 
 ## Bundle classification (actionable)
 
-| preset              | theme-base                     | countdown surface                                         | notes                                            |
-| ------------------- | ------------------------------ | --------------------------------------------------------- | ------------------------------------------------ |
-| celestial-blue      | merged                         | `--countdown-section-*` + RSVP/PA/thank-you/hero surfaces | layout skins remain in section modules           |
-| jewelry-box         | merged `--color-border-subtle` | `--countdown-section-background`                          | jeweled-panel                                    |
-| jewelry-box-wedding | none                           | same jeweled-panel tokens                                 | mega-profiles need css-parity for LAYOUT deletes |
-| premiere-floral     | none                           | `--countdown-bg` / `--section-padding-block`              |                                                  |
-| editorial           | page wash → preset             | same countdown tokens                                     | includes renata                                  |
-| editorial-magazine  | none                           | `--countdown-bg` already                                  | mega-profile valentina                           |
-| editorial-rose      | none                           | n/a                                                       | gallery bg on preset only                        |
-| luxury-hacienda     | page bg token                  | `--countdown-section-*`                                   | mega-profile alba                                |
-| angelic-presence    | none                           | `--countdown-section-*`                                   |                                                  |
-| sacred-keepsake     | none                           | `--countdown-section-*`                                   | no profile SCSS                                  |
-| enchanted-rose      | none                           | `--countdown-section-*`                                   | no profile SCSS                                  |
+| preset              | theme-base           | countdown surface                                | notes                                 |
+| ------------------- | -------------------- | ------------------------------------------------ | ------------------------------------- |
+| celestial-blue      | merged (removed)     | `--countdown-section-*` + RSVP/PA/thank-you/hero | section module geometry remains       |
+| jewelry-box         | merged (removed)     | `--countdown-section-background`                 | jeweled-panel                         |
+| jewelry-box-wedding | none                 | same jeweled-panel tokens                        | mega LAYOUT retained                  |
+| premiere-floral     | none                 | `--countdown-bg` / `--section-padding-block`     | romina countdown via `--countdown-bg` |
+| editorial           | absorbed into preset | `--countdown-bg` / `--section-padding-block`     | includes renata                       |
+| editorial-magazine  | none                 | `--countdown-bg` already                         | mega LAYOUT retained                  |
+| editorial-rose      | none                 | n/a                                              | gallery bg on preset only             |
+| luxury-hacienda     | absorbed into preset | `--countdown-section-*`                          | mega LAYOUT retained                  |
+| angelic-presence    | none                 | `--countdown-section-*`                          |                                       |
+| sacred-keepsake     | none                 | `--countdown-section-*`                          | no profile SCSS                       |
+| enchanted-rose      | none                 | `--countdown-section-*`                          | no profile SCSS                       |
 
 ## LAYOUT deletion policy
 
 Profile LAYOUT removal (geometry / direct section `background` / `font-family` paint) requires
 `pnpm screenshot:css-parity` for that slug. Token-only remaps and dead-selector removal do not.
 
-Mega-profiles still carrying LAYOUT until parity baselines exist: `daniela-y-martin`,
-`victoria-y-roberto`, `alba-rosa-quinonez`, `valentina-hernandez`, `abril-michelle-becerra-rea`,
-`america-johana`, `leah-lexa`, `demo-xv-celestial-blue`, `renata`.
+### Progress (2026-08-17)
+
+- `leah-lexa`: thank-you section padding moved to `--thank-you-section-padding`; css-parity
+  baseline+compare **passed**. Remaining child LAYOUT (gifts CTA, thank-you editorial chrome,
+  location map max-height) still retained.
+- `theme-base/_editorial.scss` and `theme-base/_luxury-hacienda.scss`: fully absorbed into presets;
+  `theme-base/` directory empty/removed.
+- Baselines captured under `.tmp/css-visual-parity/<slug>/baseline/` for remaining mega corpus slugs
+  as harness runs complete (artifacts local-only, not committed).
+
+### Still LAYOUT-retained (needs per-slug promote + compare)
+
+`daniela-y-martin`, `victoria-y-roberto`, `alba-rosa-quinonez`, `valentina-hernandez`,
+`abril-michelle-becerra-rea`, `america-johana`, `demo-xv-celestial-blue`, `renata`.

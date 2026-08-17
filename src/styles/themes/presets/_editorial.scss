@@ -9,6 +9,10 @@
  * Aesthetic: Noir Premiere / High-Fashion Cinematographic
  */
 
+:root:has(.theme-preset--editorial) {
+	background-color: #{sys.$sys-color-onyx-950};
+}
+
 .theme-preset--editorial {
 	// ==========================================================================
 	// 1. SEMANTIC OVERRIDES (Layer 1 -> Layer 2)
@@ -383,6 +387,57 @@
 	--pa-label-color: rgb(var(--color-action-accent-rgb) / 80%);
 	--pa-label-opacity: 1;
 	--pa-label-tracking: 0.24em;
+
+	// Page shell (absorbed from theme-base)
+	background: var(--preset-page-background);
+	color: var(--preset-page-color, var(--color-text-primary));
+	min-height: 100svh;
+	padding-bottom: env(safe-area-inset-bottom, 0);
+
+	@media (width >= 768px) {
+		padding-bottom: env(safe-area-inset-bottom, 0);
+	}
+
+	// Motion / stacking (absorbed from theme-base)
+	&.has-motion {
+		[class*='__reveal'] {
+			opacity: 0%;
+			transform: translateY(40px);
+			transition:
+				opacity var(--duration-reveal) var(--ease-premium),
+				transform var(--duration-reveal) var(--ease-premium);
+			will-change: opacity, transform;
+		}
+
+		&.is-visible {
+			[class*='__reveal'] {
+				opacity: 100%;
+				transform: translateY(0);
+			}
+		}
+
+		.family__item,
+		.itinerary__item,
+		.gift-card {
+			@for $i from 1 through 10 {
+				&:nth-child(#{$i}) {
+					transition-delay: #{$i * 0.2s};
+				}
+			}
+		}
+	}
+
+	.family,
+	.gallery-section,
+	.countdown-section,
+	.gifts-section,
+	.rsvp,
+	.thank-you-section,
+	.event-location,
+	.itinerary {
+		position: relative;
+		z-index: 2;
+	}
 }
 
 .theme-preset--editorial .event-location__card:hover {
