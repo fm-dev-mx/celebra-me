@@ -127,7 +127,7 @@ const displayVenues = groupVenues(rawVenues);
 const isSingleVenue = displayVenues.length === 1;
 ---
 
-<section class="event-location" id="event-location" data-screenshot-section="location" data-variant={variant} data-presentation={presentation} data-structural-variant={structuralVariant}>
+<section class="event-location" id="event-location" data-screenshot-section="location" data-variant={structuralVariant || variant || 'standard'} data-presentation={presentation}>
 	<span class="event-location__anchor" id="location" aria-hidden="true"></span>
 	{(introEyebrow || introHeading || introLede) && (
 		<header class="event-location__intro">

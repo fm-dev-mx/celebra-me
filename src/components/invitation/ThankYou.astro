@@ -81,8 +81,7 @@ const imageConfig = IMAGE_CONFIGS[configKey];
 	id="thank-you-section"
 	data-screenshot-section="thankYou"
 	class="thank-you-section"
-	data-variant={variant}
-	data-structural-variant={structuralVariant}
+	data-variant={structuralVariant || variant || 'standard'}
 	data-overlay-anchor={overlayAnchor}
 	data-has-overlay-safe-area={overlaySafeArea ? 'true' : undefined}
 >

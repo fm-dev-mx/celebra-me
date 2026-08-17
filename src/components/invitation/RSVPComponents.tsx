@@ -49,8 +49,7 @@ const RsvpShell = forwardRef<
 		<section id="rsvp" ref={ref} className="rsvp-section" onFocusCapture={onFocusCapture}>
 			<div
 				className="rsvp"
-				data-variant={variant}
-				data-structural-variant={structuralVariant}
+				data-variant={structuralVariant || variant || 'standard'}
 				data-state={state}
 			>
 				<header className="rsvp__header">{header}</header>

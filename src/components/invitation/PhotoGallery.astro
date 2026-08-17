@@ -24,16 +24,13 @@ interface Props {
 	items: GalleryItem[];
 	/** Already-normalized canonical Gallery layout. */
 	structuralVariant?: GalleryLayoutVariant;
-	visualVariant?: string;
 }
 
 const {
 	items,
 	structuralVariant: structuralVariantProp,
-	visualVariant,
 } = Astro.props;
 const structuralVariant = structuralVariantProp ?? 'uniform-grid';
-const renderedVisualVariant = visualVariant ?? structuralVariant;
 const isMagazineSpread = structuralVariant === 'magazine-spread';
 
 const resolveImage = (image: ImageMetadata | ImageAsset) => {
@@ -47,7 +44,7 @@ const resolveImage = (image: ImageMetadata | ImageAsset) => {
 };
 ---
 
-<div class="gallery-grid" data-gallery data-variant={renderedVisualVariant} data-structural-variant={structuralVariant}>
+<div class="gallery-grid" data-gallery data-variant={structuralVariant || 'uniform-grid'}>
 	{
 		items.map((item, index) => {
 			const { rawSource, src, width, height } = resolveImage(item.image);

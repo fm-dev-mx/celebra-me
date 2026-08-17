@@ -224,10 +224,10 @@ describe('Angelic presence section coverage', () => {
 			if (relativePath.includes('/itinerary/')) {
 				// Canonical itinerary behavior is standard|timeline-paper; skin binds via theme preset.
 				expect(content).toContain(
-					".theme-preset--angelic-presence .itinerary[data-structural-variant='standard']",
+					".theme-preset--angelic-presence .itinerary[data-variant='standard']",
 				);
 				expect(content).not.toContain(
-					".itinerary[data-structural-variant='angelic-presence']",
+					".itinerary[data-variant='angelic-presence']",
 				);
 			} else {
 				expect(content).toContain("data-variant='angelic-presence'");
@@ -320,7 +320,6 @@ describe('Celestial blue section coverage', () => {
 			const filePath = path.join(projectRoot, relativePath);
 			const content = fs.readFileSync(filePath, 'utf8');
 			expect(content).toContain('celestial-blue');
-			expect(content).not.toContain("data-structural-variant='celestial-blue'");
 		}
 	});
 
@@ -335,7 +334,7 @@ describe('Celestial blue section coverage', () => {
 		);
 
 		expect(fs.existsSync(aliasPath)).toBe(false);
-		expect(behavior).toContain("[data-structural-variant='timeline-paper']");
+		expect(behavior).toContain("[data-variant='timeline-paper']");
 		expect(behavior).not.toContain("[data-variant='celestial-blue']");
 	});
 
@@ -524,10 +523,10 @@ describe('Sacred keepsake section coverage', () => {
 
 			if (relativePath.includes('/itinerary/')) {
 				expect(content).toContain(
-					".theme-preset--sacred-keepsake .itinerary[data-structural-variant='standard']",
+					".theme-preset--sacred-keepsake .itinerary[data-variant='standard']",
 				);
 				expect(content).not.toContain(
-					".itinerary[data-structural-variant='sacred-keepsake']",
+					".itinerary[data-variant='sacred-keepsake']",
 				);
 			} else {
 				expect(content).toContain("data-variant='sacred-keepsake'");

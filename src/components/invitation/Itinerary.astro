@@ -17,7 +17,7 @@ interface Props {
 const { title = "Itinerario", items, variant, monogram, subtitle } = Astro.props;
 ---
 
-<section class="itinerary" id="itinerary" data-screenshot-section="itinerary" data-structural-variant={variant}>
+<section class="itinerary" id="itinerary" data-screenshot-section="itinerary" data-variant={variant || 'standard'}>
 	<div class="itinerary__container">
 		{title && (
 			<div class="itinerary__header">

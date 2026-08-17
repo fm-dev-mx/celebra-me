@@ -48,8 +48,7 @@ const showOrnaments = structuralVariant !== 'standard';
 	class="personalized-access"
 	aria-labelledby="personalized-access-title"
 	data-screenshot-section="personalized-access"
-	data-variant={variant}
-	data-structural-variant={structuralVariant}
+	data-variant={structuralVariant || variant || 'standard'}
 >
 	<div class="personalized-access__container">
 		{isDemoPreview && structuralVariant === 'editorial-pass' && (

@@ -174,7 +174,7 @@ test.describe('Abril Michelle Becerra Rea XV E2E Visual & Functional Audit', () 
 			const itinerarySection = page.locator('section.itinerary, .itinerary');
 			await expect(itinerarySection).toBeVisible();
 			await expect(itinerarySection).toHaveAttribute(
-				'data-structural-variant',
+				'data-variant',
 				'timeline-paper',
 			);
 

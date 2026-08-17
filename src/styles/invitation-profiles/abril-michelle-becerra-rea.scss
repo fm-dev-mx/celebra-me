@@ -178,7 +178,7 @@ html:has(.event--abril-michelle-becerra-rea) body {
 	--theme-image-filter-gallery: saturate(1.02) contrast(1.02) brightness(1.01);
 
 	// Celestial program: demo-xv-celestial-blue parity (style + colors); Bodoni watermark only.
-	.itinerary[data-structural-variant='timeline-paper'] {
+	.itinerary[data-variant='timeline-paper'] {
 		--itinerary-paper-white: rgb(253 251 247);
 		--itinerary-cream: rgb(245 241 230);
 
@@ -1015,7 +1015,7 @@ html:has(.event--abril-michelle-becerra-rea) body {
 	}
 
 	// Non-paper fallback only — timeline-paper owns its paper gradient above.
-	.itinerary:not([data-structural-variant='timeline-paper']) {
+	.itinerary:not([data-variant='timeline-paper']) {
 		--itinerary-bg:
 			radial-gradient(
 				ellipse 100% var(--abril-transition-blend-depth) at 78% 0%,
@@ -1083,14 +1083,14 @@ html:has(.event--abril-michelle-becerra-rea) body {
 
 	// paired-feature-band geometry lives in themes/sections/gallery/_paired-feature-band.scss;
 	// profile supplies frame, filter, and focal tokens only.
-	.gallery-section[data-structural-variant='paired-feature-band'] .gallery-grid__item {
+	.gallery-section[data-variant='paired-feature-band'] .gallery-grid__item {
 		border-radius: 12px;
 		border: 1px solid rgb(var(--abril-antique-gold-rgb) / 28%);
 		box-shadow: 0 16px 40px rgb(var(--abril-wine-dark-rgb) / 14%);
 		overflow: hidden;
 	}
 
-	.gallery-section[data-structural-variant='paired-feature-band'] .gallery-grid__item img {
+	.gallery-section[data-variant='paired-feature-band'] .gallery-grid__item img {
 		object-position: var(
 			--gallery-item-focal-point-mobile,
 			var(--gallery-item-focal-point, 50% 40%)
@@ -1102,7 +1102,7 @@ html:has(.event--abril-michelle-becerra-rea) body {
 	}
 
 	@include mixins.respond-to(md) {
-		.gallery-section[data-structural-variant='paired-feature-band'] .gallery-grid__item img {
+		.gallery-section[data-variant='paired-feature-band'] .gallery-grid__item img {
 			object-position: var(
 				--gallery-item-focal-point-desktop,
 				var(--gallery-item-focal-point, 50% 40%)
@@ -1110,7 +1110,7 @@ html:has(.event--abril-michelle-becerra-rea) body {
 		}
 	}
 
-	.gallery-section[data-structural-variant='paired-feature-band'] .gallery-grid__item:hover img {
+	.gallery-section[data-variant='paired-feature-band'] .gallery-grid__item:hover img {
 		transform: scale(1.03);
 		filter: saturate(1.08) contrast(1.05) brightness(1.02) grayscale(0);
 	}

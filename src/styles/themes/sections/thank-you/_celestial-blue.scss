@@ -2,9 +2,7 @@
 
 // CELESTIAL BLUE THANK YOU
 
-.thank-you-section[data-variant='celestial-blue']:not(
-		[data-structural-variant='full-bleed-photo']
-	) {
+.thank-you-section[data-variant='celestial-blue'] {
 	--ty-ambient-blush: none;
 
 	min-height: 100svh;

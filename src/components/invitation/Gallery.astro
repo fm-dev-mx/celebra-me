@@ -51,7 +51,7 @@ const usesMobileRail = isMagazineSpread && resolvedMobileBrowse === 'rail';
 if (!items || items.length === 0) return null;
 ---
 
-<section id="galeria" class="gallery-section" data-variant={renderedVisualVariant} data-structural-variant={structuralVariant} data-screenshot-section="gallery" {...(presentation && { 'data-presentation': presentation })} data-mobile-browse={resolvedMobileBrowse}>
+<section id="galeria" class="gallery-section" data-variant={variant} data-screenshot-section="gallery" {...(presentation && { 'data-presentation': presentation })} data-mobile-browse={resolvedMobileBrowse}>
 	<div class="gallery-section__container">
 		<header class="gallery-section__header">
 			{eyebrow && <span class="gallery-section__eyebrow">{eyebrow}</span>}
@@ -62,7 +62,7 @@ if (!items || items.length === 0) return null;
 			)}
 		</header>
 
-		<PhotoGallery items={items} structuralVariant={structuralVariant} visualVariant={renderedVisualVariant} />
+		<PhotoGallery items={items} structuralVariant={structuralVariant} />
 	</div>
 </section>
 

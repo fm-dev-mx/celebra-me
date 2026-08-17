@@ -4,7 +4,7 @@
 // Profiles may tint colors/type; they must not redefine the ledger grid.
 // Hide TimelineList chrome (center line, icon discs, dots) — the ledger reads as
 // text rows only; jewelry-box previously hid icons only for variant=standard.
-.itinerary[data-structural-variant='editorial-ledger'] {
+.itinerary[data-variant='editorial-ledger'] {
 	--editorial-ledger-rule: rgb(0 0 0 / 14%);
 	--editorial-ledger-spine: rgb(0 0 0 / 20%);
 	--editorial-ledger-max-width: 52rem;

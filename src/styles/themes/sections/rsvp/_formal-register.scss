@@ -18,7 +18,7 @@
 }
 
 .invitation-section-wrapper[data-section-kind='rsvp']:has(
-		.rsvp[data-structural-variant='formal-register']
+		.rsvp[data-variant='formal-register']
 	) {
 	--color-text-primary: var(--formal-chapter-cream);
 	--color-text-primary-rgb: var(--formal-chapter-cream-rgb);
@@ -33,7 +33,7 @@
 // Match every shell that contains the register, including the nested
 // `.rsvp-section` wrappers used by the interactive island. A child combinator
 // would leave the outer shell on the shared full-viewport RSVP padding.
-.rsvp-section:has(.rsvp[data-structural-variant='formal-register']) {
+.rsvp-section:has(.rsvp[data-variant='formal-register']) {
 	--rsvp-bg: var(--formal-chapter-band);
 
 	display: grid;
@@ -45,7 +45,7 @@
 	background: var(--rsvp-bg);
 }
 
-.rsvp[data-structural-variant='formal-register'] {
+.rsvp[data-variant='formal-register'] {
 	--formal-chapter-display: 'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
 	--formal-chapter-body: 'Instrument Sans Variable', system-ui, sans-serif;
 	--formal-chapter-label: 'Bodoni Moda Variable', 'Playfair Display Variable', georgia, serif;

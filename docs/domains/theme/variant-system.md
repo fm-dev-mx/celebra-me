@@ -20,7 +20,7 @@ must remain independent of that client.
 Each participating section owns a closed `section.variant` vocabulary in its schema. Canonical
 content must select that value explicitly. The schema validates the selection before the adapter,
 the adapter exposes a typed section view-model, the render descriptor propagates it, and the section
-emits `data-structural-variant` when the value affects structure or renderer behavior.
+emits `data-variant={variant}` on its root element.
 
 Canonical selection must never read `theme.preset`, invitation slug, client or person name,
 `visualProfileId`, `_assetSlug`, event-specific identifiers, another invitation's configuration, or

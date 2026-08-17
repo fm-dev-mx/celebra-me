@@ -1,8 +1,7 @@
 @use '../../../global/mixins' as mixins;
 
 // Celestial single-keepsake presentation compatibility.
-[data-theme-preset='celestial-blue'] .gallery-section[data-variant='single'],
-[data-theme-preset='celestial-blue'] .gallery-section[data-structural-variant='single-keepsake'] {
+[data-theme-preset='celestial-blue'] .gallery-section[data-variant='single-keepsake'] {
 	--gallery-section-padding-block: clamp(3.5rem, 7vw, 5.5rem);
 	--gallery-section-bg: linear-gradient(
 		180deg,

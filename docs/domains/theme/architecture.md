@@ -232,7 +232,7 @@ skins.
 Gallery CSS starts with the theme-preset bundle. When an explicit semantic `gallery.variant` differs
 from the active theme, the section CSS resolver emits the matching layout partial independently.
 Theme preset alone does not select gallery structure; the renderer always emits
-`data-structural-variant` for the resolved layout ID. See
+`data-variant` for the resolved layout ID. See
 [`gallery-variants.md`](gallery-variants.md) for the current map, compatibility boundary, and
 retained profile exceptions.
 

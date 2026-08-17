@@ -96,6 +96,21 @@ function collectScssFiles(dir) {
 	});
 }
 
+const THEME_PRESET_SKINS = new Set([
+	'angelic-presence',
+	'celestial-blue',
+	'editorial',
+	'editorial-rose',
+	'editorial-magazine',
+	'enchanted-rose',
+	'jewelry-box',
+	'jewelry-box-wedding',
+	'luxury-hacienda',
+	'premiere-floral',
+	'sacred-keepsake',
+	'single',
+]);
+
 function extractCSSVariants() {
 	const themesDir = path.join(__dirname, '..', 'src', 'styles', 'themes', 'sections');
 	const variants = {};
@@ -107,10 +122,13 @@ function extractCSSVariants() {
 		for (const filePath of files) {
 			const content = fs.readFileSync(filePath, 'utf8');
 
-			const variantRegex = /\[data-structural-variant=['"]([^'"]+)['"]\]/g;
+			const variantRegex = /\[data-variant=['"]([^'"]+)['"]\]/g;
 			let match;
 			while ((match = variantRegex.exec(content)) !== null) {
-				variants[section].add(match[1]);
+				const v = match[1];
+				if (!THEME_PRESET_SKINS.has(v)) {
+					variants[section].add(v);
+				}
 			}
 		}
 	}

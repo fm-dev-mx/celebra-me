@@ -13,8 +13,7 @@ const { title, variant, structuralVariant } = Astro.props;
 <section id="rsvp" data-screenshot-section="rsvp" class="rsvp-section">
 	<div
 		class="rsvp"
-		data-variant={variant}
-		data-structural-variant={structuralVariant}
+		data-variant={structuralVariant || variant || 'standard'}
 		data-state="locked"
 	>
 		<header class="rsvp__header">

@@ -5,7 +5,7 @@
 // Itinerary editorial-program: numbered magazine program over TimelineList DOM.
 // Owns layout, type metrics, and section-scoped chroma so any host theme can
 // consume the same presentation. Profiles must not redefine the program grid.
-.itinerary[data-structural-variant='editorial-program'] {
+.itinerary[data-variant='editorial-program'] {
 	--editorial-program-paper: rgb(255 253 253);
 	--editorial-program-ink: rgb(31 31 34);
 	--editorial-program-ink-rgb: 31 31 34;
@@ -103,7 +103,7 @@
 }
 
 @media (width <= 480px) {
-	.itinerary[data-structural-variant='editorial-program'] {
+	.itinerary[data-variant='editorial-program'] {
 		padding-inline: clamp(1rem, 5vw, 1.35rem);
 	}
 }

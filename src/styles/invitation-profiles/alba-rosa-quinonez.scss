@@ -1190,7 +1190,7 @@ html:has(.event--alba-rosa-quinonez) body {
 		}
 
 		// split-map geometry lives in themes/sections/location/_split-map.scss.
-		&[data-structural-variant='split-map'] {
+		&[data-variant='split-map'] {
 			--location-split-gap: clamp(1.75rem, 3.5vw, 2.5rem);
 		}
 
@@ -1607,7 +1607,7 @@ html:has(.event--alba-rosa-quinonez) body {
 
 	// feature-stack geometry lives in themes/sections/gallery/_feature-stack.scss;
 	// profile supplies crop focal tokens only.
-	.gallery-section[data-structural-variant='feature-stack'] {
+	.gallery-section[data-variant='feature-stack'] {
 		// Albert Memorial frame: keep Alba fully inside the crop
 		.gallery-grid__item[data-gallery-index='2'] img {
 			object-position: 60% 84%;

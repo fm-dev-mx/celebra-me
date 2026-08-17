@@ -53,7 +53,7 @@ describe('Abril Michelle local invitation content', () => {
 		expect(profile).toContain(
 			"@use '@fontsource-variable/bodoni-moda/wght-italic.css' as bodoni-moda-italic;",
 		);
-		expect(profile).toContain(".itinerary[data-structural-variant='timeline-paper']");
+		expect(profile).toContain(".itinerary[data-variant='timeline-paper']");
 		expect(profile).toContain('--itinerary-paper-white: rgb(253 251 247);');
 		// Paper and metal stay at demo parity, but the ink is deliberately re-tinted warm so
 		// the reused celestial variant stops clashing with Abril's palette.
@@ -68,14 +68,14 @@ describe('Abril Michelle local invitation content', () => {
 		expect(profile).toContain('padding-top: 5.25rem;');
 		expect(profile).toContain('--countdown-value-size-desktop: 4.5rem;');
 		expect(profile).toContain('font-size: 5.25rem;');
-		expect(profile).toContain(".itinerary:not([data-structural-variant='timeline-paper'])");
+		expect(profile).toContain(".itinerary:not([data-variant='timeline-paper'])");
 	});
 
 	it('keeps Gallery paired-feature-band section-owned without profile geometry', () => {
 		const profile = fs.readFileSync(abrilProfilePath, 'utf8');
 		const galleryContract = fs.readFileSync(galleryContractPath, 'utf8');
 
-		expect(profile).toContain("[data-structural-variant='paired-feature-band']");
+		expect(profile).toContain("[data-variant='paired-feature-band']");
 		expect(profile).not.toMatch(/grid-template-columns|grid-column:\s*1\s*\/\s*-1/);
 		expect(profile).not.toContain("[data-variant='premiere-floral']");
 		expect(galleryContract).toContain('paired-feature-band');

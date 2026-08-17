@@ -81,7 +81,7 @@ describe('Boda Daniela y Martín provision contract', () => {
 				path.join(process.cwd(), 'src/styles/themes/sections/family/_split-groups.scss'),
 				'utf8',
 			),
-		).toContain(".family[data-structural-variant='split-groups']");
+		).toContain(".family[data-variant='split-groups']");
 		expect(profile).not.toContain('interlude-free');
 		expect(profile).toMatch(/--env-bg:[\s\S]*var\(--daniela-sand\)/);
 	});

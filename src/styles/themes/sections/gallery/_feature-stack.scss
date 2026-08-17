@@ -1,6 +1,6 @@
 // Gallery feature-stack: primary feature column + stacked support cells.
 // Profiles may tint crops/shadows; they must not redefine this grid.
-.gallery-section[data-structural-variant='feature-stack'] {
+.gallery-section[data-variant='feature-stack'] {
 	--gallery-grid-columns-mobile: 1;
 	--gallery-grid-columns-tablet: 2;
 	--gallery-grid-columns-desktop: 2;
