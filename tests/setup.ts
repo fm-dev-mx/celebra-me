@@ -277,3 +277,8 @@ jest.mock('@/utils/whatsapp', () => ({
 			`https://wa.me/521000000000${message ? `?text=${encodeURIComponent(message)}` : ''}`,
 	),
 }));
+
+// Mock @/lib/environment to prevent import.meta syntax errors in Jest CJS runtime
+jest.mock('@/lib/environment', () => ({
+	isDevEnvironment: jest.fn(() => false),
+}));

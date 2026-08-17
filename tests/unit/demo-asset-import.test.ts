@@ -27,6 +27,8 @@ jest.mock('@/lib/assets/asset-registry', () => ({
 
 jest.mock('@/lib/intake/storage', () => ({
 	getPublicUrl: jest.fn().mockReturnValue('https://cdn.test/asset.webp'),
+	uploadToStorage: jest.fn().mockResolvedValue('https://cdn.test/asset.webp'),
+	deleteFromStorage: jest.fn().mockResolvedValue(undefined),
 	DEFAULT_BUCKET: 'invitation-assets',
 }));
 
@@ -138,7 +140,8 @@ describe('importDemoAsset', () => {
 				provider: 'cloudinary',
 				publicId: 'xv/demo/assets/hero-abc',
 				version: '1',
-				secureUrl: 'https://res.cloudinary.com/demo/image/upload/v1/xv/demo/assets/hero-abc.webp',
+				secureUrl:
+					'https://res.cloudinary.com/demo/image/upload/v1/xv/demo/assets/hero-abc.webp',
 				sha256: 'abc',
 				width: 1080,
 				height: 1920,
@@ -165,9 +168,36 @@ describe('importDemoAsset', () => {
 
 			expect(result.asset.id).toBe('new-asset-id');
 			expect(result.asset.displayName).toBe('hero');
-			expect(mockUploadOrReconcile).toHaveBeenCalled();
 			expect(mockFindPublishedContent).toHaveBeenCalledWith(INVITATION_ID);
 			expect(mockResolveAssetSlug).toHaveBeenCalled();
+			expect(mockCreateAsset).toHaveBeenCalledWith(
+				expect.objectContaining({
+					invitationId: INVITATION_ID,
+					displayName: 'hero',
+					width: 1080,
+					height: 1920,
+					provider: 'supabase',
+					bucket: 'invitation-assets',
+				}),
+			);
+		});
+
+		it('imports a demo asset to Cloudinary when in preview environment', async () => {
+			process.env.CELEBRA_RUNTIME_TARGET = 'preview';
+			mockFindInvitation.mockResolvedValue({
+				id: INVITATION_ID,
+				eventType: 'xv',
+				slug: null,
+				snapshot: { previewSlug: 'demo-xv-test' },
+			});
+			mockResolveAssetSlug.mockReturnValue('demo-xv-test');
+			mockGetEventAsset.mockReturnValue(DEFAULT_METADATA);
+			mockCreateAsset.mockResolvedValue(createMockAssetResult({ displayName: 'hero' }));
+
+			const result = await importDemoAsset(INVITATION_ID, 'hero');
+
+			expect(result.asset.id).toBe('new-asset-id');
+			expect(mockUploadOrReconcile).toHaveBeenCalled();
 			expect(mockCreateAsset).toHaveBeenCalledWith(
 				expect.objectContaining({
 					invitationId: INVITATION_ID,
@@ -181,6 +211,7 @@ describe('importDemoAsset', () => {
 					storagePath: 'xv/demo/assets/hero-abc',
 				}),
 			);
+			delete process.env.CELEBRA_RUNTIME_TARGET;
 		});
 
 		it('falls back to snapshot.previewSlug for demo/legacy invitations', async () => {

@@ -1,11 +1,8 @@
 /**
  * Cloudinary-era invitation image hosting.
- * Client invitations created or published on/after 2026-07-26, and all later ones,
+ * Client invitations in hosted/remote environments (Preview and Production)
  * must deliver referenced images from Cloudinary.
  */
-
-export const CLOUDINARY_ERA_CUTOFF = '2026-07-26T00:00:00.000Z';
-export const CLOUDINARY_ERA_CUTOFF_MS = Date.parse(CLOUDINARY_ERA_CUTOFF);
 
 export interface CloudinaryEraInvitationInput {
 	kind?: string | null;
@@ -20,23 +17,13 @@ export interface CloudinaryHostedAssetInput {
 	secureUrl?: string | null;
 }
 
-function toMs(value: string | Date | null | undefined): number | null {
-	if (value == null) return null;
-	const ms = value instanceof Date ? value.getTime() : Date.parse(value);
-	return Number.isFinite(ms) ? ms : null;
-}
-
 function isHttpUrl(value: string): boolean {
 	return /^https?:\/\//i.test(value.trim());
 }
 
 export function isCloudinaryEraInvitation(input: CloudinaryEraInvitationInput): boolean {
 	if (input.kind && input.kind !== 'client') return false;
-	const created = toMs(input.createdAt);
-	const published = toMs(input.publishedAt);
-	if (created != null && created >= CLOUDINARY_ERA_CUTOFF_MS) return true;
-	if (published != null && published >= CLOUDINARY_ERA_CUTOFF_MS) return true;
-	return false;
+	return true;
 }
 
 export function isCloudinaryHostedAsset(asset: CloudinaryHostedAssetInput): boolean {
@@ -46,13 +33,16 @@ export function isCloudinaryHostedAsset(asset: CloudinaryHostedAssetInput): bool
 }
 
 export function isSupabaseStorageUrl(value: string): boolean {
-	return /\.supabase\.co\/storage\//i.test(value);
+	return (
+		/\.supabase\.co\/storage\//i.test(value) ||
+		/(?:127\.0\.0\.1|localhost):\d+\/storage\//i.test(value)
+	);
 }
 
 export function findCloudinaryEraHostingViolations(
-	assets: readonly CloudinaryHostedAssetInput[],
+	assets?: readonly CloudinaryHostedAssetInput[] | null,
 ): string[] {
-	return assets
+	return (assets ?? [])
 		.filter((asset) => !isCloudinaryHostedAsset(asset))
 		.map((asset) => asset.key?.trim() || asset.id?.trim() || 'imagen');
 }

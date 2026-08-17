@@ -94,4 +94,29 @@ export async function uploadToStorage(
 	return getPublicUrl(bucket, path);
 }
 
+export async function deleteFromStorage(bucket: string, path: string): Promise<void> {
+	const { supabaseUrl, serviceRoleKey } = resolveStorageConfig();
+	const url = `${supabaseUrl}/storage/v1/object/${bucket}/${path}`;
+
+	const response = await fetch(url, {
+		method: 'DELETE',
+		headers: {
+			apikey: serviceRoleKey,
+			Authorization: `Bearer ${serviceRoleKey}`,
+		},
+	});
+
+	if (!response.ok && response.status !== 404) {
+		const text = await response.text();
+		console.error('[storage] Storage delete failed:', {
+			status: response.status,
+			statusText: response.statusText,
+			bucket,
+			path,
+			body: text,
+		});
+		throw sanitizeStorageError(response.status, text, response.statusText);
+	}
+}
+
 export { DEFAULT_BUCKET };

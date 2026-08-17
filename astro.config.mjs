@@ -81,6 +81,18 @@ export default defineConfig({
 				hostname: PROD_SUPABASE_HOST,
 				pathname: supabaseStoragePathname,
 			},
+			{
+				protocol: 'http',
+				hostname: '127.0.0.1',
+				port: '54321',
+				pathname: supabaseStoragePathname,
+			},
+			{
+				protocol: 'http',
+				hostname: 'localhost',
+				port: '54321',
+				pathname: supabaseStoragePathname,
+			},
 			...(supabaseStorageRemotePattern ? [supabaseStorageRemotePattern] : []),
 		],
 	},

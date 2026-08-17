@@ -180,25 +180,19 @@ provisioning path (`pnpm test:e2e:preview:provision` and
 
 ---
 
-## Cloudinary vs Supabase Storage boundary
+## Storage Provider Boundary (Local vs Preview/Production)
 
-Invitation images are uploaded to Cloudinary (`provider: cloudinary`, `secure_url`). Client
-invitations created or published on/after 2026-07-26, and all later ones, must keep referenced
-images on Cloudinary (publish/promote fail closed). Legacy Supabase Storage rows may remain until a
-later managed prune. Mirror does **not** copy Cloudinary binaries; it preserves `secure_url`.
-Release uploads or reconciles through the shared Cloudinary adapter and fails closed without
-credentials.
+Image storage and delivery follows an environment-deterministic abstraction (`StorageProvider`):
+- **Local (`dev-local`):** Uses **Supabase Storage local** (`http://127.0.0.1:54321` / bucket `invitation-assets`). Dashboard uploads and `pnpm invitation:apply:local` persist locally with `provider: 'supabase'` and require zero third-party credentials.
+- **Preview & Production:** Uses **Cloudinary** (`provider: 'cloudinary'`, `secure_url`). Client invitations published in Preview/Production must deliver referenced images from Cloudinary (publish and promote fail closed if local or Supabase Storage URLs are referenced).
+- **Demos / Templates:** Resolve through Astro/Vite static image pipeline across all environments.
 
-| Flow                               | Supabase Storage                                                                              | Cloudinary                                                                                                                  |
-| ---------------------------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Update / promote (managed package) | Legacy Storage rows may remain until prune                                                    | Shared adapter uploads/reconciles; package carries `provider` + `secure_url`                                                |
-| Compare / content-parity           | Storage hosts canonicalized for semantic equality                                             | Remote CDN URLs compared as semantic asset identity (key + sha256 when present)                                             |
+| Flow                               | Local (`dev-local`)                                                                        | Preview / Production                                                                                                        |
+| ---------------------------------- | ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Dashboard Intake / Upload          | Uploads to Supabase Storage local (`127.0.0.1:54321/storage/...`)                          | Uploads to Cloudinary with SHA-256 deduplication                                                                           |
+| Provision (`invitation:apply:local`) | Uploads normalized binaries to local Supabase Storage (`managed/<slug>/<key>.webp`)         | N/A (local provision only)                                                                                                 |
+| Release / Promote (`prod:apply`)   | N/A                                                                                       | Uploads/reconciles canonical binaries to Cloudinary; freezes immutable CDN URLs                                             |
 | Production→Preview mirror          | Binary copy for rows with `storage_path`; rewrite public Storage URLs in `content`/`snapshot` | `secure_url` and Cloudinary hosts are **copied/preserved**, not rewritten; rows without `storage_path` skip binary transfer |
-
-Completeness claims for mirror apply cover allowlisted tables plus transferable Supabase Storage
-objects. Cloudinary remote resources are **not** verified for Preview reachability and must not be
-reported as Supabase Storage sync success. Do not invent provider-specific slug branches in the
-mirror path.
 
 ---
 
