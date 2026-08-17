@@ -140,7 +140,7 @@ describe('canonical variant governance', () => {
 		const resolver = read('src/lib/invitation/section-css-resolver-map.ts');
 		const structuralMap = resolver.slice(
 			resolver.indexOf('const STRUCTURAL_VARIANT_TO_ENTRYPOINT'),
-			resolver.indexOf('// Only presets with a dedicated footer'),
+			resolver.indexOf('export function buildSectionUrlMap'),
 		);
 		const galleryMap = resolver.slice(
 			resolver.indexOf('const GALLERY_VARIANT_TO_ENTRYPOINT'),
