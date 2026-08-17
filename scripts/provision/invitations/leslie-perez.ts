@@ -3,6 +3,8 @@
  *
  * The structural variants are reused from existing invitations. No
  * invitation-specific component or stylesheet is introduced here.
+ * Local-only music/PA preview switches live in
+ * `src/lib/invitation/local-preview-config.ts` (not published content).
  */
 
 import { defineInvitation } from './invitation-definition.ts';
@@ -193,17 +195,25 @@ export function buildLesliePublishedContent(
 			'location',
 			'itinerary',
 			'gallery',
+			'gifts',
 			'personalizedAccess',
 			'rsvp',
 			'thankYou',
 		],
-		composition: { intersections: {} },
+		composition: {
+			intersections: {
+				'interlude-after-location': { family: 'overlap', source: 'location' },
+				'interlude-after-gallery': { family: 'overlap', source: 'gallery' },
+			},
+		},
 		_assetSlug: LESLIE_EVENT.assetSlug,
 		hero: {
 			name: 'Leslie',
 			label: 'MIS XV',
 			date: LESLIE_EVENT.eventDateIso,
 			backgroundImage: assets['photo-01'],
+			backgroundImageMobile: assets['photo-01'],
+			backgroundImageDesktop: assets['photo-01'],
 			variant: 'split-cover',
 			focalPoint: '55% 45%',
 			focalPointMobile: '60% 44%',
@@ -218,7 +228,7 @@ export function buildLesliePublishedContent(
 			cardTagline: '26 · 09 · 2026',
 			sealStyle: 'wax',
 			sealIcon: 'wax-monogram',
-			microcopy: 'Abre mi invitación',
+			microcopy: 'Abrir mi invitación',
 			closedPalette: {
 				primary: 'surfacePrimary',
 				accent: 'actionAccent',
@@ -226,8 +236,8 @@ export function buildLesliePublishedContent(
 			},
 		},
 		quote: {
-			text: '[[PENDIENTE:TEXTO_INVITACION]]',
-			author: 'Leslie',
+			text: 'Porque yo sé los planes que tengo para ustedes —afirma el Señor—, planes de bienestar y no de calamidad, a fin de darles un futuro y una esperanza.',
+			author: 'Jeremías 29:11',
 		},
 		family: {
 			variant: 'asymmetric-groups',
@@ -237,6 +247,16 @@ export function buildLesliePublishedContent(
 				father: 'Luis Enrique Zacarias Oviedo',
 			},
 			parentsOrder: 'mother-first',
+			groups: [
+				{
+					title: 'Madre',
+					items: [{ name: 'Leticia Perez Moreno' }],
+				},
+				{
+					title: 'Padre',
+					items: [{ name: 'Luis Enrique Zacarias Oviedo' }],
+				},
+			],
 			labels: {
 				sectionSubtitle: 'Con el amor de mi familia',
 				sectionTitle: 'Mis XV años',
@@ -276,6 +296,7 @@ export function buildLesliePublishedContent(
 		itinerary: {
 			variant: 'timeline-paper',
 			title: 'Momentos de la celebración',
+			subtitle: 'Recepción y fiesta',
 			items: [
 				{ time: '[[PENDIENTE:HORA_RECEPCION]]', label: 'Recepción', iconName: 'Reception' },
 				{ time: '[[PENDIENTE:HORA_CENA]]', label: 'Cena', iconName: 'Dinner' },
@@ -285,11 +306,27 @@ export function buildLesliePublishedContent(
 				{ time: '[[PENDIENTE:HORA_CIERRE]]', label: 'Cierre', iconName: 'Sparkles' },
 			],
 		},
+		interludes: [
+			{
+				image: assets['photo-04'],
+				afterSection: 'location',
+				alt: 'Retrato cercano de Leslie frente a un fondo de luces circulares',
+				height: 'tall',
+				focalPoint: '50% 50%',
+			},
+			{
+				image: assets['photo-08'],
+				afterSection: 'gallery',
+				alt: 'Retrato cercano de Leslie junto a una composición con humo',
+				height: 'tall',
+				focalPoint: '50% 45%',
+			},
+		],
 		gallery: {
-			variant: 'index-choreography',
+			variant: 'editorial-mosaic',
 			eyebrow: 'Recuerdos',
 			title: 'Leslie',
-			subtitle: 'Quince momentos para celebrar esta nueva etapa',
+			subtitle: 'Momentos para celebrar esta nueva etapa',
 			items: [
 				galleryItem(
 					assets,
@@ -305,12 +342,6 @@ export function buildLesliePublishedContent(
 				),
 				galleryItem(
 					assets,
-					'photo-04',
-					'Retrato cercano de Leslie frente a luces circulares',
-					'50% 50%',
-				),
-				galleryItem(
-					assets,
 					'photo-05',
 					'Leslie posa junto a globos y un calendario de septiembre',
 					'50% 38%',
@@ -322,12 +353,6 @@ export function buildLesliePublishedContent(
 					'50% 65%',
 				),
 				galleryItem(assets, 'photo-07', 'Leslie posa entre flores', '55% 34%'),
-				galleryItem(
-					assets,
-					'photo-08',
-					'Retrato editorial de Leslie junto a humo',
-					'50% 45%',
-				),
 				galleryItem(
 					assets,
 					'photo-09',
@@ -366,24 +391,37 @@ export function buildLesliePublishedContent(
 				),
 			],
 		},
+		gifts: {
+			variant: 'standard',
+			title: 'Lluvia de Sobres',
+			subtitle:
+				'Su presencia es nuestro mayor regalo. Si desea tener un detalle, contaremos con un buzón durante la recepción.',
+			items: [
+				{
+					type: 'cash',
+					title: 'Lluvia de Sobres',
+					text: 'Contaremos con un buzón durante la recepción en San Carlos Eventos.',
+				},
+			],
+		},
 		rsvp: {
 			variant: 'standard',
-			title: 'Confirma tu asistencia',
+			title: 'Confirme su asistencia',
 			subcopy:
-				'Agradeceremos confirmar tu asistencia antes de [[PENDIENTE:FECHA_LIMITE_RSVP]].',
+				'Agradeceremos confirmar su asistencia antes de [[PENDIENTE:FECHA_LIMITE_RSVP]].',
 			guestCap: 1,
 			accessMode: 'personalized-only',
 			confirmationMode: 'api',
-			confirmationMessage: 'Gracias por confirmar. Será un gusto celebrar contigo.',
+			confirmationMessage: 'Gracias por confirmar. Será un gusto celebrar con usted.',
 			responseMessages: {
 				confirmed: { title: '¡Gracias por confirmar, {guestName}!' },
 				declined: { title: 'Gracias por avisarnos, {guestName}.' },
 			},
 			personalizedAccess: {
 				variant: 'formal-pass',
-				title: 'Tu invitación personal',
+				title: 'Su invitación personal',
 				subtitle: 'Esta invitación ha sido preparada especialmente para:',
-				footerText: 'Confirma tu asistencia en la siguiente sección.',
+				footerText: 'Confirme su asistencia en la siguiente sección.',
 			},
 		},
 		thankYou: {

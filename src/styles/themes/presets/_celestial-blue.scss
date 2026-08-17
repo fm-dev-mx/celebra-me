@@ -329,6 +329,10 @@
 	--hero-card-bg: transparent;
 	--hero-card-border-hairline: rgb(var(--color-liquid-silver-rgb) / 58%);
 	--hero-card-shadow-ambient: none;
+	--hero-split-plane-bg: var(--color-surface-dark);
+	--hero-split-overlay-strong: rgb(var(--color-deep-blue-graphite-rgb) / 94%);
+	--hero-split-overlay-mid: rgb(var(--color-deep-blue-graphite-rgb) / 72%);
+	--hero-split-overlay-soft: rgb(var(--color-deep-blue-graphite-rgb) / 18%);
 	--hero-title-color-start: rgb(var(--color-cool-ivory-rgb) / 92%);
 	--hero-title-color-mid: var(--color-satin-blue);
 	--hero-title-color-end: rgb(var(--color-pearl-gray-rgb) / 75%);
@@ -755,4 +759,21 @@
 	--pa-label-color: rgb(var(--color-soft-graphite-rgb) / 48%);
 	--pa-label-opacity: 1;
 	--pa-label-tracking: 0.22em;
+
+	// ---------------------------------------------------------------------
+	// Formal Chapter tokens (for formal-pass / formal-register)
+	// ---------------------------------------------------------------------
+	--formal-chapter-band: rgb(var(--color-deep-blue-graphite-rgb));
+	--formal-chapter-band-rgb: var(--color-deep-blue-graphite-rgb);
+	--formal-chapter-cream: var(--color-cool-ivory);
+	--formal-chapter-cream-rgb: var(--color-cool-ivory-rgb);
+	--formal-chapter-sand: var(--color-pearl-gray);
+	--formal-chapter-sand-rgb: var(--color-pearl-gray-rgb);
+	--formal-chapter-metal: var(--color-satin-blue);
+	--formal-chapter-metal-rgb: var(--color-satin-blue-rgb);
+	--formal-chapter-ink: var(--color-deep-blue-graphite);
+	--formal-chapter-ink-rgb: var(--color-deep-blue-graphite-rgb);
+	--formal-chapter-title: var(--color-deep-blue-graphite);
+	--formal-chapter-muted: rgb(var(--color-soft-graphite-rgb) / 68%);
+	--formal-chapter-meta: var(--color-satin-blue);
 }

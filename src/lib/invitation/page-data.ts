@@ -8,6 +8,11 @@ import { resolveShareDescription } from '@/lib/rsvp/services/shared/share-messag
 import type { ThemePreset } from '@/lib/theme/theme-contract';
 import { generateThemeScopedStyles } from '@/lib/invitation/theme-styles.utils';
 import { isEventEligibleForBrandingRemoval } from '@/lib/constants/branding-removal-rules';
+import {
+	resolveInvitationMusicPlayer,
+	shouldShowLocalPersonalizedAccessPreview,
+	type InvitationMusicPlayerProps,
+} from '@/lib/invitation/local-preview-config';
 import { buildInvitationRenderPlan } from './render-plan';
 import type { InterludeRenderItem, InvitationRenderPlanItem } from './render-plan';
 import {
@@ -48,8 +53,9 @@ export interface InvitationPageContext {
 		  })
 		| undefined;
 	footerVariant: ThemePreset;
-	/** Invitation-specific footer closing; defaults to product phrase. */
+	/** Footer closing phrase; defaults to product phrase. */
 	footerClosingPhrase: string;
+	musicPlayer?: InvitationMusicPlayerProps;
 }
 
 const DEFAULT_FOOTER_CLOSING_PHRASE = 'Con cariño';
@@ -156,7 +162,8 @@ export function buildPageContextFromViewModel(input: {
 	const heroTime = pickHeroValue(sections, 'time');
 	const heroVenueName = pickHeroValue(sections, 'venueName');
 
-	const isDemoPreview = (isDemo || screenshotMode) && !guestContext;
+	const localAccessPreview = shouldShowLocalPersonalizedAccessPreview();
+	const isDemoPreview = (isDemo || screenshotMode || localAccessPreview) && !guestContext;
 	const confirmed = guestContext?.guest.attendanceStatus === 'confirmed';
 	const shouldRedactEnvelopeLocationTeaser = shouldRedactEnvelopeTeaser({
 		originalLocation: viewModel.sections.location,
@@ -167,6 +174,11 @@ export function buildPageContextFromViewModel(input: {
 		buildEnvelopeData(styles.showEnvelope, envelope, renderViewModel.id, guestName, isDemo),
 		shouldRedactEnvelopeLocationTeaser,
 	);
+	const musicPlayer = resolveInvitationMusicPlayer({
+		music: renderViewModel.music,
+		envelopeEnabled: renderViewModel.envelope.enabled,
+		themePreset: theme.preset,
+	});
 
 	return {
 		guestContext,
@@ -186,6 +198,7 @@ export function buildPageContextFromViewModel(input: {
 		footerClosingPhrase:
 			renderViewModel.sections.thankYou?.closingPhrase?.trim() ||
 			DEFAULT_FOOTER_CLOSING_PHRASE,
+		musicPlayer,
 		viewModel: renderViewModel,
 		renderPlan: buildInvitationRenderPlan(renderViewModel, {
 			hasGuestContext: Boolean(guestContext),

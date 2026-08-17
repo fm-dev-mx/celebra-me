@@ -43,8 +43,10 @@ export function resolveLocationMediaMode(
 /** Renderer-facing canonical default for venue-card flourishes. */
 export function resolveLocationShowFlourishes(
 	options: LocationPresentationOptions | undefined,
+	structuralVariant?: string,
 ): boolean {
-	return options?.showFlourishes ?? true;
+	if (options?.showFlourishes !== undefined) return options.showFlourishes;
+	return structuralVariant !== 'split-map';
 }
 
 /** Renderer-facing canonical default for venue navigation buttons. */

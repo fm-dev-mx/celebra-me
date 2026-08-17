@@ -86,13 +86,13 @@ describe('invitation-release wizard package binding', () => {
 		expect(applyLocal).toContain('PLAN_DRIFT');
 	});
 
-	it('resolves updateScope before Cloudinary work and fails closed on content-only mutations', () => {
+	it('resolves updateScope before storage upload work and fails closed on content-only mutations', () => {
 		const applyLocal = readFileSync(
 			resolve(process.cwd(), 'scripts/provision/apply-local-invitation.ts'),
 			'utf8',
 		);
 		const scopeIdx = applyLocal.indexOf('const updateScope: UpdateScope = options.updateScope');
-		const uploadIdx = applyLocal.indexOf('await uploadOrReconcileCloudinaryAsset');
+		const uploadIdx = applyLocal.indexOf('// 2. Storage Uploads & Metadata Upserts');
 		expect(scopeIdx).toBeGreaterThan(0);
 		expect(uploadIdx).toBeGreaterThan(scopeIdx);
 		expect(applyLocal).toContain('assertContentOnlyAllowsNoAssetMutations');
