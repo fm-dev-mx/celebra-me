@@ -24,7 +24,6 @@ const {
 	showContactCta = true,
 } = Astro.props;
 const hasReplay = Boolean(showEnvelope && eventSlug);
-const logoVariant = (variant === 'editorial' || variant === 'editorial-magazine') ? 'footer' : 'default';
 
 const whatsappMessage = 'Hola, estoy interesado en crear una invitación digital.';
 const whatsappLink = getWhatsAppLink(whatsappMessage);
@@ -47,11 +46,7 @@ const shouldShowContactCta = showContactCta && !isPlaceholderContactPhone(getCon
 			{showFooterBranding && (
 			<div class="footer__info">
 				<p class="powered-by">Powered by</p>
-				<Logo
-					variant={logoVariant}
-					altText="Celebra-me"
-					class:list={[{ 'footer-brand-logo': variant === 'editorial' || variant === 'editorial-magazine' }]}
-				/>
+				<Logo altText="Celebra-me" class="footer-brand-logo" />
 			</div>
 			)}
 
@@ -68,11 +63,7 @@ const shouldShowContactCta = showContactCta && !isPlaceholderContactPhone(getCon
 						alt="WhatsApp"
 						width={16}
 						height={16}
-						class:list={[
-							{
-								'footer-action__icon-media': variant === 'editorial' || variant === 'editorial-magazine',
-							},
-						]}
+						class="footer-action__icon-media"
 					/>
 					<span>Contáctanos</span>
 				</a>

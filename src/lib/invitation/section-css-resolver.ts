@@ -42,6 +42,11 @@ const structuralVariantModules = import.meta.glob(
 		'/src/styles/themes/sections/itinerary/_timeline-paper.scss',
 		'/src/styles/themes/sections/itinerary/_editorial-ledger.scss',
 		'/src/styles/themes/sections/itinerary/_editorial-program.scss',
+		'/src/styles/themes/sections/countdown/_editorial-folio.scss',
+		'/src/styles/themes/sections/countdown/_magazine-folio.scss',
+		'/src/styles/themes/sections/countdown/_jeweled-panel.scss',
+		'/src/styles/themes/sections/countdown/_rose-ornament.scss',
+		'/src/styles/themes/sections/countdown/_hacienda-ornament.scss',
 		'/src/styles/themes/sections/reveal/_premiere-floral.scss',
 		'/src/styles/themes/sections/reveal/_editorial.scss',
 		'/src/styles/themes/sections/reveal/_luxury-hacienda.scss',
@@ -95,6 +100,7 @@ type InvitationCssResolverInput = {
 		family?: string;
 		location?: string;
 		itinerary?: string;
+		countdown?: string;
 	};
 	envelopeVariant?: string;
 	visualProfileId?: string;

@@ -9,7 +9,7 @@ import {
 import { COLOR_TOKENS } from '@/lib/theme/color-tokens';
 import { UUID_PATTERN } from '@/lib/intake/constants';
 import { invitationCompositionSchema } from '@/lib/invitation/composition-contract';
-import { THANK_YOU_VARIANTS } from '@/lib/invitation/section-variants';
+import { THANK_YOU_VARIANTS, COUNTDOWN_VARIANTS } from '@/lib/invitation/section-variants';
 
 const secureUrlSchema = z
 	.url()
@@ -142,6 +142,7 @@ export const countdownSchema = z
 	.object({
 		title: z.string().default('¡Falta muy poco!'),
 		footerText: z.string().default('Prepárate para una noche inolvidable'),
+		variant: z.enum(COUNTDOWN_VARIANTS).optional(),
 		presentationOptions: z
 			.object({
 				visibleUnits: z.array(z.enum(COUNTDOWN_UNITS)).min(1).max(4).optional(),

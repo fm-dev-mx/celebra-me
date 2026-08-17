@@ -240,7 +240,7 @@
 
 // LEAH LEXA — HEADER REFINEMENT
 // Softer scrolled background, refined monogram, subtler hamburger.
-.event--leah-lexa .header-base[data-variant='celestial-blue'] {
+.event--leah-lexa .header-base {
 	--header-bg-scrolled: rgb(var(--color-cool-ivory-rgb) / 85%);
 	--header-nav-title-color: rgb(var(--color-diamond-white-rgb) / 92%);
 	--hamburger-color: rgb(var(--color-diamond-white-rgb) / 78%);
@@ -282,7 +282,8 @@
 // LEAH LEXA — PET KEEPSAKE REFINEMENT
 // Scoped via .event--leah-lexa on the <main> wrapper.
 // Tighter image sizing, warmer tonal balance, more refined paper frame.
-.event--leah-lexa .gallery-section[data-variant='single-keepsake'][data-presentation='pet-keepsake'],
+.event--leah-lexa
+	.gallery-section[data-variant='single-keepsake'][data-presentation='pet-keepsake'],
 .event--leah-lexa .gallery-section[data-variant='single'][data-presentation='pet-keepsake'] {
 	--gallery-item-padding: clamp(0.35rem, 1vw, 0.55rem);
 	--gallery-item-shadow:

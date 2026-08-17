@@ -24,6 +24,7 @@ type InvitationCssInput = {
 		family?: string;
 		location?: string;
 		itinerary?: string;
+		countdown?: string;
 	};
 	envelopeVariant?: string;
 	visualProfileId?: string;
@@ -105,6 +106,13 @@ const STRUCTURAL_VARIANT_TO_ENTRYPOINT: Record<string, Record<string, string>> =
 		'timeline-paper': 'timeline-paper',
 		'editorial-ledger': 'editorial-ledger',
 		'editorial-program': 'editorial-program',
+	},
+	countdown: {
+		'editorial-folio': 'editorial-folio',
+		'magazine-folio': 'magazine-folio',
+		'jeweled-panel': 'jeweled-panel',
+		'rose-ornament': 'rose-ornament',
+		'hacienda-ornament': 'hacienda-ornament',
 	},
 };
 

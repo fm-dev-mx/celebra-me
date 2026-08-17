@@ -294,7 +294,7 @@ describe('adaptEvent', () => {
 		});
 	});
 
-	it('preserves explicit interlude variants for editorial content blocks', () => {
+	it('emits standard interlude variants independent of theme preset', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv-editorial',
 			data: loadFixture('src/content/event-demos/xv/demo-xv-editorial.json'),
@@ -303,9 +303,8 @@ describe('adaptEvent', () => {
 		const viewModel = adaptEvent(event);
 
 		expect(viewModel.theme.preset).toBe('editorial');
-		expect(viewModel.interludes?.find((i) => i.variant === 'editorial')).toMatchObject({
-			variant: 'editorial',
-		});
+		expect(viewModel.interludes?.every((i) => i.variant === 'standard')).toBe(true);
+		expect(viewModel.interludes?.length).toBeGreaterThan(0);
 	});
 
 	it('countdown prefers eventTiming.startsAtUtc over hero date', () => {

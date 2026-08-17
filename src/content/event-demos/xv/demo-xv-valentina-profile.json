@@ -23,20 +23,8 @@
         "thankYou"
     ],
     "sectionStyles": {
-        "quote": {
-            "variant": "editorial-magazine"
-        },
-        "countdown": {
-            "variant": "editorial-magazine"
-        },
-        "family": {
-            "variant": "editorial-magazine"
-        },
         "location": {
-            "variant": "editorial-magazine"
-        },
-        "rsvp": {
-            "variant": "editorial-magazine"
+            "showFlourishes": false
         }
     },
     "hero": {
@@ -47,8 +35,7 @@
         "portrait": "portrait",
         "variant": "editorial-cover",
         "focalPoint": "54% 38%",
-        "focalPointMobile": "52% 30%",
-        "visualVariant": "editorial-magazine"
+        "focalPointMobile": "52% 30%"
     },
     "quote": {
         "text": "Dicen que los momentos más bellos se vuelven eternos cuando se comparten. Acompáñame a escribir el primer capítulo de mi nueva historia.",
@@ -56,7 +43,8 @@
     },
     "countdown": {
         "title": "Reserve la fecha",
-        "footerText": "25 de septiembre de 2027 · Ciudad de México"
+        "footerText": "25 de septiembre de 2027 · Ciudad de México",
+        "variant": "magazine-folio"
     },
     "family": {
         "featuredImage": "family",

@@ -170,9 +170,12 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 					...fixture.gallery,
 					variant: 'editorial-mosaic',
 				},
+				countdown: {
+					...fixture.countdown,
+					variant: 'editorial-folio',
+				},
 				sectionStyles: {
 					quote: { variant: 'editorial' },
-					countdown: { variant: 'editorial' },
 					location: { variant: 'editorial', showFlourishes: false },
 					family: { variant: 'editorial' },
 					gallery: { variant: 'editorial' },
@@ -202,8 +205,10 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 				expect(descriptor).toMatchObject({
 					props: { variant: 'editorial-mosaic', visualVariant: 'jewelry-box' },
 				});
-			} else if (component === 'quote' || component === 'countdown') {
-				expect(descriptor).toMatchObject({ props: { variant: 'editorial' } });
+			} else if (component === 'countdown') {
+				expect(descriptor).toMatchObject({ props: { variant: 'editorial-folio' } });
+			} else if (component === 'quote') {
+				expect(descriptor).toMatchObject({ props: { variant: 'standard' } });
 			} else {
 				expect(descriptor).toMatchObject({ props: { variant: 'standard' } });
 			}

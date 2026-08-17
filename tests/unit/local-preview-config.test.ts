@@ -33,7 +33,6 @@ describe('local invitation preview config', () => {
 			resolveInvitationMusicPlayer({
 				music: undefined,
 				envelopeEnabled: true,
-				themePreset: 'celestial-blue',
 			}),
 		).toBeUndefined();
 	});
@@ -48,14 +47,13 @@ describe('local invitation preview config', () => {
 			resolveInvitationMusicPlayer({
 				music: undefined,
 				envelopeEnabled: true,
-				themePreset: 'celestial-blue',
 			}),
 		).toEqual({
 			url: '',
 			autoPlay: false,
 			title: undefined,
 			revealMode: 'envelope',
-			variant: 'celestial-blue',
+			variant: 'standard',
 		});
 	});
 });

@@ -323,7 +323,7 @@ html:has(.event--alba-rosa-quinonez) body {
 	// 2a. HEADER & MOBILE MENU — GRAPHITE / IVORY / CHAMPAGNE (NO CAFÉ)
 	// Declared on the element to outrank the hacienda header theme hooks.
 	// ==========================================================================
-	.header-base[data-variant='luxury-hacienda'] {
+	.header-base {
 		--header-bg: linear-gradient(
 			180deg,
 			rgb(var(--alba-rsvp-surface-rgb) / 40%) 0%,
@@ -1794,13 +1794,6 @@ html:has(.event--alba-rosa-quinonez) body {
 		--rsvp-radio-card-padding: 0.85rem 1rem;
 
 		background: transparent;
-
-		&[data-variant='luxury-hacienda'] {
-			background: transparent;
-			border: none;
-			box-shadow: none;
-			backdrop-filter: none;
-		}
 
 		&__eyebrow {
 			color: rgb(var(--alba-champagne-rgb) / 86%);

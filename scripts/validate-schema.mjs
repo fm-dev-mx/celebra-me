@@ -66,6 +66,12 @@ const SECTION_CONTRACTS = {
 		constName: 'THANK_YOU_VARIANTS',
 		baseOnly: ['standard'],
 	},
+	countdown: {
+		directory: 'countdown',
+		source: 'src/lib/invitation/section-variants.ts',
+		constName: 'COUNTDOWN_VARIANTS',
+		baseOnly: ['standard'],
+	},
 };
 
 function extractContractVariants() {
@@ -111,6 +117,9 @@ const THEME_PRESET_SKINS = new Set([
 	'single',
 ]);
 
+/** In-scope dirs scanned for forbidden theme-as-data-variant (beyond SECTION_CONTRACTS). */
+const EXTRA_IN_SCOPE_VARIANT_DIRS = ['header', 'quote', 'music-player', 'footer'];
+
 function extractCSSVariants() {
 	const themesDir = path.join(__dirname, '..', 'src', 'styles', 'themes', 'sections');
 	const variants = {};
@@ -121,18 +130,44 @@ function extractCSSVariants() {
 
 		for (const filePath of files) {
 			const content = fs.readFileSync(filePath, 'utf8');
+			const relative = path.relative(themesDir, filePath).replace(/\\/g, '/');
 
 			const variantRegex = /\[data-variant=['"]([^'"]+)['"]\]/g;
 			let match;
 			while ((match = variantRegex.exec(content)) !== null) {
 				const v = match[1];
-				if (!THEME_PRESET_SKINS.has(v)) {
-					variants[section].add(v);
+				if (THEME_PRESET_SKINS.has(v)) {
+					ERRORS.push(
+						`${section}: CSS uses theme preset as data-variant '${v}' in ${relative}`,
+					);
+					continue;
 				}
+				variants[section].add(v);
 			}
 		}
 	}
 	return variants;
+}
+
+function checkExtraInScopeThemeAsVariant() {
+	const themesDir = path.join(__dirname, '..', 'src', 'styles', 'themes', 'sections');
+	for (const dir of EXTRA_IN_SCOPE_VARIANT_DIRS) {
+		const files = collectScssFiles(path.join(themesDir, dir));
+		for (const filePath of files) {
+			const content = fs.readFileSync(filePath, 'utf8');
+			const relative = path.relative(themesDir, filePath).replace(/\\/g, '/');
+			const variantRegex = /\[data-variant=['"]([^'"]+)['"]\]/g;
+			let match;
+			while ((match = variantRegex.exec(content)) !== null) {
+				const v = match[1];
+				if (THEME_PRESET_SKINS.has(v)) {
+					ERRORS.push(
+						`${dir}: CSS uses theme preset as data-variant '${v}' in ${relative}`,
+					);
+				}
+			}
+		}
+	}
 }
 
 function checkPresetIsolation() {
@@ -170,6 +205,7 @@ function main() {
 
 	const contractVariants = extractContractVariants();
 	const cssVariants = extractCSSVariants();
+	checkExtraInScopeThemeAsVariant();
 	const EXPECTED_FALLBACKS = [];
 
 	for (const [section, contract] of Object.entries(SECTION_CONTRACTS)) {

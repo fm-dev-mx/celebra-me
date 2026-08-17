@@ -1,4 +1,5 @@
-.countdown-section[data-variant='editorial-magazine'] {
+.theme-preset--editorial-magazine .countdown-section,
+.countdown-section[data-variant='magazine-folio'] {
 	position: relative;
 	background: var(--countdown-bg);
 	color: var(--editorial-magazine-ink);

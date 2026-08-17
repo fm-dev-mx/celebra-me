@@ -16,7 +16,6 @@ import EnvelopeReveal from '@/components/invitation/EnvelopeReveal.astro';
 import EditorialCoverReveal from '@/components/invitation/EditorialCoverReveal.astro';
 import type { InvitationGuestContext } from '@/lib/invitation/page-data';
 import type { InvitationViewModel } from '@/lib/adapters/types';
-import type { ThemePreset } from '@/lib/theme/theme-contract';
 import { resolvePresetCssUrl } from '@/lib/invitation/preset-css-resolver';
 import { resolveInvitationCssLoadPlan } from '@/lib/invitation/section-css-resolver';
 import { buildInvitationStylesheetHeadLinks } from '@/lib/invitation/invitation-css-head-links';
@@ -129,9 +128,6 @@ try {
 					slug,
 					guestContext,
 					eventType: routeEventType,
-					sectionStyles: resolution.rawContent?.sectionStyles as
-						| { footer?: { variant?: ThemePreset } }
-						| undefined,
 					screenshotMode,
 				});
 				pagePrepareDur = performance.now() - prepareStart;
@@ -196,6 +192,7 @@ const activeSectionCssPlan =
 					family: viewModel.sections.family?.variant,
 					location: viewModel.sections.location?.variant,
 					itinerary: viewModel.sections.itinerary?.variant,
+					countdown: viewModel.sections.countdown?.variant,
 				},
 				envelopeVariant: page.envelope?.variant,
 				visualProfileId: viewModel.visualProfileId,
@@ -335,7 +332,7 @@ const wrapperDataAttributes = page
 						<div data-screenshot="invitation-content">
 							<EventHeader
 								links={page.viewModel.navigation ?? []}
-								variant={page.viewModel.theme.preset}
+								variant="standard"
 								initials={page.viewModel.envelope?.data?.sealInitials}
 								eventName={page.viewModel.hero?.name}
 								eventSubtitle={page.viewModel.hero?.label}
@@ -378,7 +375,7 @@ const wrapperDataAttributes = page
 							<Footer
 								eventSlug={page.viewModel.id}
 								showEnvelope={page.wrapper.showEnvelope}
-								variant={page.footerVariant}
+								variant="standard"
 								closingPhrase={page.footerClosingPhrase}
 								showFooterBranding={page.viewModel.brandingVisibility.showFooterBranding}
 								showContactCta={page.viewModel.brandingVisibility.showContactCta}

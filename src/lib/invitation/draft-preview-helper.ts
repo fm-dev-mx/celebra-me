@@ -146,7 +146,6 @@ export async function buildDraftPreviewPageContext(
 			viewModel,
 			slug: contentSlug,
 			eventType: invitation.eventType,
-			isPreview: true,
 		});
 
 		return {

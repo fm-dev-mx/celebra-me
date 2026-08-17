@@ -5,7 +5,9 @@
 // EDITORIAL & PREMIERE FLORAL (dark background, gold accents)
 // ==========================================================================
 
-.countdown-section:is([data-variant='editorial'], [data-variant='premiere-floral']) {
+.theme-preset--editorial .countdown-section,
+.theme-preset--premiere-floral .countdown-section,
+.countdown-section[data-variant='editorial-folio'] {
 	--countdown-editorial-segment-shadow-hover:
 		0 30px 60px rgb(0 0 0 / 40%), 0 0 20px rgb(var(--color-action-accent-rgb) / 10%);
 

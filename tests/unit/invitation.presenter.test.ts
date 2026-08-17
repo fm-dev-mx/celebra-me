@@ -85,7 +85,7 @@ describe('prepareInvitationPageContext', () => {
 		expect(context.renderPlan).toContainEqual(
 			expect.objectContaining({
 				type: 'interlude',
-				variant: 'editorial',
+				variant: 'standard',
 			}),
 		);
 	});
@@ -373,7 +373,7 @@ describe('buildPageContextFromViewModel', () => {
 		expect(plan).toContain('rsvp');
 	});
 
-	it('resolves footerVariant from sectionStyles when not preview', () => {
+	it('resolves footerVariant from theme.preset', () => {
 		const viewModel = {
 			...baseViewModel,
 			id: 'footer-test',
@@ -386,10 +386,9 @@ describe('buildPageContextFromViewModel', () => {
 			viewModel,
 			slug: 'footer-test',
 			eventType: 'xv',
-			sectionStyles: { footer: { variant: 'enchanted-rose' as const } },
 		});
 
-		expect(context.footerVariant).toBe('enchanted-rose');
+		expect(context.footerVariant).toBe('editorial');
 	});
 
 	it('sets data-reveal-state to sealed when envelope is enabled (non-embedded)', () => {

@@ -11,7 +11,6 @@ import {
 	RSVP_STRUCTURAL_VARIANTS,
 	THANK_YOU_STRUCTURAL_VARIANTS,
 } from '@/lib/invitation/structural-variants';
-import { VARIANT_COMPATIBILITY_ALIASES } from '@/lib/invitation/variant-normalization';
 
 const read = (relativePath: string) =>
 	fs.readFileSync(path.join(process.cwd(), relativePath), 'utf8');
@@ -91,10 +90,10 @@ describe('canonical variant governance', () => {
 			expect(inventory).toContain(identifier);
 		}
 
-		for (const alias of VARIANT_COMPATIBILITY_ALIASES) {
-			expect(compatibility).toContain(alias.legacy);
-			expect(compatibility).toContain(alias.target);
-		}
+		expect(compatibility).toContain('Removed (no theme→variant remapping)');
+		expect(compatibility).toContain('Still accepted (input → canonical)');
+		expect(compatibility).toContain('*.structuralVariant');
+		expect(compatibility).not.toContain('VARIANT_COMPATIBILITY_ALIASES');
 
 		expect(inventory).toContain(
 			'Invitation configuration → section-owned typed variant → renderer + isolated variant SCSS → shared primitives',

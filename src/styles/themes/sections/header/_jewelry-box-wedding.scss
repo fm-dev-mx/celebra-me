@@ -4,7 +4,7 @@
  * but that are populated differently by each theme preset.
  */
 
-.header-base[data-variant='jewelry-box-wedding'] {
+.theme-preset--jewelry-box-wedding .header-base {
 	--header-bg: transparent;
 	--header-bg-scrolled: var(--color-surface-primary);
 	--header-border-scrolled: 1px solid var(--color-action-accent);
@@ -42,6 +42,6 @@
 	--hamburger-color-menu-open: var(--color-text-primary);
 }
 
-.header-base[data-variant='jewelry-box-wedding'].header-base--transparent {
+.theme-preset--jewelry-box-wedding .header-base.header-base--transparent {
 	--header-nav-title-color: var(--color-text-on-dark);
 }

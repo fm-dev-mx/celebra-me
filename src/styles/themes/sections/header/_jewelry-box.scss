@@ -6,7 +6,7 @@
 
 // Default Header Variables (Safe Fallbacks)
 
-.header-base[data-variant='jewelry-box'] {
+.theme-preset--jewelry-box .header-base {
 	--header-bg: rgb(var(--color-surface-primary-rgb) / 60%);
 	--header-bg-scrolled: rgb(var(--color-surface-primary-rgb) / 95%);
 	--header-nav-color: var(--color-surface-dark);

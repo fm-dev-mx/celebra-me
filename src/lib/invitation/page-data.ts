@@ -97,14 +97,7 @@ function buildEnvelopeData(
 	};
 }
 
-function resolveFooterVariant(
-	sectionStyles: { footer?: { variant?: ThemePreset } } | undefined,
-	themePreset: ThemePreset,
-	isPreview: boolean,
-): ThemePreset {
-	if (!isPreview && sectionStyles?.footer?.variant) {
-		return sectionStyles.footer.variant;
-	}
+function resolveFooterVariant(themePreset: ThemePreset): ThemePreset {
 	return themePreset;
 }
 
@@ -124,8 +117,6 @@ export function buildPageContextFromViewModel(input: {
 	slug: string;
 	guestContext?: InvitationGuestContext | null;
 	eventType: string;
-	sectionStyles?: { footer?: { variant?: ThemePreset } };
-	isPreview?: boolean;
 	screenshotMode?: boolean;
 }): InvitationPageContext {
 	const {
@@ -133,8 +124,6 @@ export function buildPageContextFromViewModel(input: {
 		slug,
 		guestContext,
 		eventType,
-		sectionStyles,
-		isPreview = false,
 		screenshotMode = false,
 	} = input;
 	const renderViewModel = applyLocationPolicy({
@@ -177,7 +166,6 @@ export function buildPageContextFromViewModel(input: {
 	const musicPlayer = resolveInvitationMusicPlayer({
 		music: renderViewModel.music,
 		envelopeEnabled: renderViewModel.envelope.enabled,
-		themePreset: theme.preset,
 	});
 
 	return {
@@ -194,7 +182,7 @@ export function buildPageContextFromViewModel(input: {
 		heroTime,
 		heroVenueName,
 		envelope: envelopeData,
-		footerVariant: resolveFooterVariant(sectionStyles, theme.preset, isPreview),
+		footerVariant: resolveFooterVariant(theme.preset),
 		footerClosingPhrase:
 			renderViewModel.sections.thankYou?.closingPhrase?.trim() ||
 			DEFAULT_FOOTER_CLOSING_PHRASE,
@@ -220,8 +208,6 @@ export function prepareInvitationPageContext(input: {
 		slug: input.slug,
 		guestContext: input.guestContext,
 		eventType: input.eventEntry.data.eventType,
-		sectionStyles: input.eventEntry.data.sectionStyles,
-		isPreview: Boolean(input.previewTheme),
 	});
 }
 

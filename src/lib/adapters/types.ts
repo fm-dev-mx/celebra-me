@@ -6,6 +6,7 @@ import type {
 	InvitationRenderSectionKey,
 	EventType,
 	QuoteVariant,
+	SharedSectionVariant,
 	ThemePreset,
 } from '@/lib/theme/theme-contract';
 import type { ParentsOrder } from '@/lib/invitation/family-contract';
@@ -197,7 +198,7 @@ export interface Interlude {
 	afterSection: ContentSectionKey;
 	alt?: string;
 	height: 'screen' | 'tall' | 'medium';
-	variant?: ThemePreset;
+	variant?: SharedSectionVariant;
 	focalPoint?: string;
 	focalPointDesktop?: string;
 	lightX?: string;

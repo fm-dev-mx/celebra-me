@@ -5,7 +5,7 @@ import {
 	type InvitationComposition,
 	type RenderPlanIntersection,
 } from '@/lib/invitation/composition-contract';
-import { CONTENT_SECTION_KEYS, type ThemePreset } from '@/lib/theme/theme-contract';
+import { CONTENT_SECTION_KEYS, type SharedSectionVariant } from '@/lib/theme/theme-contract';
 
 type RenderPlanMetadata = {
 	intersection: RenderPlanIntersection;
@@ -17,7 +17,7 @@ export type InterludeRenderItem = RenderPlanMetadata & {
 	image: ImageAsset;
 	alt?: string;
 	height: 'screen' | 'tall' | 'medium';
-	variant?: ThemePreset;
+	variant?: SharedSectionVariant;
 	focalPoint?: string;
 	focalPointDesktop?: string;
 	lightX?: string;
@@ -34,8 +34,6 @@ export type InvitationRenderPlanItem =
 			type: 'personalized-access';
 	  })
 	| InterludeRenderItem;
-
-const DEFAULT_THEME_PRESET: ThemePreset = 'jewelry-box';
 
 function hasRenderableSection(
 	viewModel: InvitationViewModel,
@@ -58,19 +56,12 @@ function appendSectionWithInterludes(
 	for (const interlude of (viewModel.interludes ?? []).filter(
 		(i) => i.afterSection === section,
 	)) {
-		items.push(
-			interludeToRenderItem(
-				interlude,
-				viewModel.theme.preset ?? DEFAULT_THEME_PRESET,
-				viewModel.composition,
-			),
-		);
+		items.push(interludeToRenderItem(interlude, viewModel.composition));
 	}
 }
 
 function interludeToRenderItem(
 	interlude: NonNullable<InvitationViewModel['interludes']>[number],
-	themePreset: ThemePreset,
 	composition?: InvitationComposition,
 ): InterludeRenderItem {
 	return {
@@ -83,7 +74,7 @@ function interludeToRenderItem(
 		image: interlude.image,
 		alt: interlude.alt,
 		height: interlude.height,
-		variant: interlude.variant ?? themePreset,
+		variant: interlude.variant ?? 'standard',
 		focalPoint: interlude.focalPoint,
 		focalPointDesktop: interlude.focalPointDesktop,
 		lightX: interlude.lightX,

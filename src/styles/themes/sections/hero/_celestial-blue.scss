@@ -8,14 +8,14 @@
 // ==========================================================================
 
 .event-theme-wrapper.theme-preset--celestial-blue[data-reveal-state='revealed']
-	.invitation-hero {
+	.invitation-hero[data-variant='standard'] {
 	.invitation-hero__content {
 		animation-duration: var(--motion-hero-media-duration);
 		animation-timing-function: var(--ease-premium);
 	}
 }
 
-.theme-preset--celestial-blue .invitation-hero {
+.theme-preset--celestial-blue .invitation-hero[data-variant='standard'] {
 	justify-content: flex-end;
 	min-height: 100svh;
 	background: var(--color-surface-dark);

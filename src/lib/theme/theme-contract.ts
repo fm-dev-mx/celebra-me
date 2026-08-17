@@ -117,16 +117,12 @@ export const SECTION_INTERSECTION_FAMILIES = [
 
 export type SectionIntersectionFamily = (typeof SECTION_INTERSECTION_FAMILIES)[number];
 
-export type {
-	LocationVariant,
-	ItineraryVariant,
-} from '@/lib/invitation/section-variants';
-export {
-	ITINERARY_VARIANTS,
-	ITINERARY_BEHAVIOR_VARIANTS,
-} from '@/lib/invitation/section-variants';
+export type { LocationVariant, ItineraryVariant } from '@/lib/invitation/section-variants';
+export { ITINERARY_VARIANTS, ITINERARY_BEHAVIOR_VARIANTS } from '@/lib/invitation/section-variants';
 
-// Semantic aliases for section-specific variations (all now match the main preset)
-export type QuoteVariant = ThemePreset;
-export type CountdownVariant = ThemePreset;
-export type SharedSectionVariant = ThemePreset;
+export type {
+	CountdownVariant,
+	QuoteVariant,
+	SharedSectionVariant,
+} from '@/lib/invitation/section-variants';
+export { COUNTDOWN_VARIANTS, STANDARD_SECTION_VARIANTS } from '@/lib/invitation/section-variants';

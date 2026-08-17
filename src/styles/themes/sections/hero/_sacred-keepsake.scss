@@ -1,6 +1,6 @@
 @use '../../../global/mixins' as mixins;
 
-.theme-preset--sacred-keepsake .invitation-hero {
+.theme-preset--sacred-keepsake .invitation-hero[data-variant='standard'] {
 	--hero-sacred-title-shadow:
 		0 4px 18px rgb(var(--color-eternal-ink-rgb) / 55%),
 		0 14px 34px rgb(var(--color-eternal-ink-rgb) / 28%);

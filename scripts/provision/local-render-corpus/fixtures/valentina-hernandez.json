@@ -15,13 +15,12 @@
             "date": "2026-08-29T21:45:00.000Z",
             "name": "Valentina Hernández Almaguer",
             "label": "XV Edition",
-            "variant": "editorial-magazine",
+            "variant": "editorial-cover",
             "portrait": "portrait",
             "focalPoint": "50% 38%",
             "backgroundImage": "hero",
             "focalPointMobile": "50% 32%",
-            "backgroundImageMobile": "portrait",
-            "structuralVariant": "editorial-cover"
+            "backgroundImageMobile": "portrait"
         },
         "rsvp": {
             "title": "Confirma tu asistencia",
@@ -32,7 +31,11 @@
                 "phone": "0000000000"
             },
             "confirmationMode": "both",
-            "confirmationMessage": "Gracias por confirmar. Me dará mucha alegría compartir esta noche contigo."
+            "confirmationMessage": "Gracias por confirmar. Me dará mucha alegría compartir esta noche contigo.",
+            "variant": "editorial-press-pass",
+            "personalizedAccess": {
+                "variant": "editorial-pass"
+            }
         },
         "gifts": {
             "items": [
@@ -60,7 +63,8 @@
                 }
             ],
             "title": "Regalos",
-            "subtitle": "Su presencia es mi mejor regalo, pero si desean tener un detalle conmigo, les comparto estas opciones."
+            "subtitle": "Su presencia es mi mejor regalo, pero si desean tener un detalle conmigo, les comparto estas opciones.",
+            "variant": "editorial-catalog"
         },
         "music": {
             "url": "https://res.cloudinary.com/dusxvauvj/video/upload/v1782619626/Justin_Timberlake_-_CAN_T_STOP_THE_FEELING_mscvhn.m4a",
@@ -228,11 +232,13 @@
             "image": "thankYouPortrait",
             "message": "Que la alegría de este día sea el inicio de un futuro lleno de luz, magia y momentos inolvidables.",
             "focalPoint": "50% 36%",
-            "closingName": "Valentina Hernández Almaguer"
+            "closingName": "Valentina Hernández Almaguer",
+            "variant": "editorial-back-cover"
         },
         "countdown": {
             "title": "La celebración comienza en",
-            "footerText": "29 de agosto de 2026, Texcoco, Estado de México"
+            "footerText": "29 de agosto de 2026, Texcoco, Estado de México",
+            "variant": "magazine-folio"
         },
         "eventType": "xv",
         "itinerary": {
@@ -317,33 +323,10 @@
                     "attendance": "¿Me acompañas?",
                     "guestCount": "Personas que asistirán",
                     "confirmButton": "Confirmar asistencia"
-                },
-                "variant": "editorial-magazine",
-                "structuralVariant": "editorial-press-pass"
-            },
-            "gifts": {
-                "variant": "editorial-magazine",
-                "structuralVariant": "editorial-catalog"
-            },
-            "quote": {
-                "variant": "editorial-magazine"
-            },
-            "family": {
-                "variant": "editorial-magazine"
-            },
-            "gallery": {
-                "variant": "editorial-magazine"
+                }
             },
             "location": {
-                "variant": "editorial-magazine",
                 "showFlourishes": false
-            },
-            "thankYou": {
-                "variant": "editorial-magazine",
-                "structuralVariant": "editorial-back-cover"
-            },
-            "countdown": {
-                "variant": "editorial-magazine"
             }
         }
     },

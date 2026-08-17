@@ -1,11 +1,10 @@
 import type { InvitationPageContext } from '@/lib/invitation/page-data';
 import type { InvitationRenderPlanItem } from '@/lib/invitation/render-plan';
 import type { ContentSectionKey } from '@/lib/theme/theme-contract';
-import {
-	THEME_PRESETS,
-	type InvitationRevealRecipe,
-	type SectionIntersectionFamily,
-	type ThemePreset,
+import type {
+	InvitationRevealRecipe,
+	SectionIntersectionFamily,
+	SharedSectionVariant,
 } from '@/lib/theme/theme-contract';
 import type { PersonalizedAccessVariant } from '@/lib/invitation/section-variants';
 import { getContactPhone, isPlaceholderContactPhone } from '@/utils/whatsapp';
@@ -60,7 +59,7 @@ type DescriptorData =
 				image: InterludeBlock['image'];
 				alt: InterludeBlock['alt'];
 				height: InterludeBlock['height'];
-				variant: ThemePreset;
+				variant: SharedSectionVariant;
 				focalPoint?: string;
 				focalPointDesktop?: string;
 				lightX?: string;
@@ -135,19 +134,18 @@ function resolvePersonalizedAccessConfig(pageContext: InvitationPageContext): {
 	const isDemoPreview = pageContext.isDemoPreview ?? false;
 	if (!isDemoPreview && !pageContext.guestContext) return null;
 
-	const variant =
-		pageContext.viewModel.sections.rsvp?.personalizedAccess.variant;
+	const variant = pageContext.viewModel.sections.rsvp?.personalizedAccess.variant;
 	return variant ? { isDemoPreview, variant } : null;
 }
 
-function renderInterlude(pageContext: InvitationPageContext, block: InterludeBlock) {
+function renderInterlude(block: InterludeBlock) {
 	return {
 		component: 'interlude' as const,
 		props: {
 			image: block.image,
 			alt: block.alt,
 			height: block.height,
-			variant: block.variant ?? pageContext.viewModel.theme.preset ?? THEME_PRESETS[0],
+			variant: (block.variant ?? 'standard') as SharedSectionVariant,
 			focalPoint: block.focalPoint,
 			focalPointDesktop: block.focalPointDesktop,
 			lightX: block.lightX,
@@ -188,9 +186,7 @@ function renderPersonalizedAccess(pageContext: InvitationPageContext): Descripto
 	};
 }
 
-function renderRsvpSection(
-	pageContext: InvitationPageContext,
-): DescriptorData | null {
+function renderRsvpSection(pageContext: InvitationPageContext): DescriptorData | null {
 	const { sections, hero } = pageContext.viewModel;
 
 	if (!sections.rsvp) return null;
@@ -361,7 +357,7 @@ function renderBlock(
 	switch (block.type) {
 		case 'interlude':
 			return {
-				...renderInterlude(pageContext, block),
+				...renderInterlude(block),
 				...metadata,
 				reveal: REVEAL_RECIPES.interlude,
 			};

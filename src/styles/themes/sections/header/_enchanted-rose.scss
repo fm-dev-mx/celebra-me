@@ -1,6 +1,6 @@
 @use '../../../global/mixins' as mixins;
 
-.header-base[data-variant='enchanted-rose'] {
+.theme-preset--enchanted-rose .header-base {
 	--header-bg: linear-gradient(
 		180deg,
 		rgb(var(--color-midnight-navy-rgb) / 38%) 0%,

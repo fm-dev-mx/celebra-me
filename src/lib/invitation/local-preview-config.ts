@@ -40,7 +40,6 @@ export function resolveInvitationMusicPlayer(input: {
 		revealMode?: 'envelope' | 'immediate';
 	};
 	envelopeEnabled: boolean;
-	themePreset: string;
 }): InvitationMusicPlayerProps | undefined {
 	const url = input.music?.url;
 	if (!shouldShowMusicPlayer(url)) return undefined;
@@ -49,6 +48,6 @@ export function resolveInvitationMusicPlayer(input: {
 		autoPlay: input.music?.autoPlay ?? false,
 		title: input.music?.title,
 		revealMode: input.music?.revealMode ?? (input.envelopeEnabled ? 'envelope' : 'immediate'),
-		variant: input.themePreset,
+		variant: 'standard',
 	};
 }

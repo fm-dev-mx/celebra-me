@@ -1,6 +1,6 @@
 @use '../../../global/mixins' as mixins;
 
-.quote-section[data-variant='enchanted-rose'] {
+.theme-preset--enchanted-rose .quote-section {
 	--quote-corner-opacity: 30%;
 	--quote-corner-color: rgb(var(--color-antique-gold-rgb) / var(--quote-corner-opacity));
 
@@ -100,7 +100,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.quote-section[data-variant='enchanted-rose'] {
+	.theme-preset--enchanted-rose .quote-section {
 		.quote-line.is-visible {
 			opacity: 100%;
 			transform: none;

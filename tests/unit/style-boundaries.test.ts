@@ -275,7 +275,8 @@ describe('Style boundary governance', () => {
 
 		expect(footerBase).not.toContain("[data-variant='editorial']");
 		expect(footerBase).not.toContain('premiere-floral');
-		expect(footerTheme).toContain("[data-variant='editorial']");
+		expect(footerTheme).not.toContain("[data-variant='editorial']");
+		expect(footerTheme).toContain('.theme-preset--editorial');
 		expect(footerTheme).toContain('.theme-preset--premiere-floral');
 
 		for (const file of baseSectionFiles) {
@@ -522,5 +523,64 @@ describe('Style boundary governance', () => {
 		for (const name of structuralResolverPartials) {
 			expect(resolver).toContain(`/family/_${name}.scss`);
 		}
+	});
+
+	it('in-scope sections do not use ThemePreset names as data-variant', () => {
+		const themePresets = [
+			'angelic-presence',
+			'celestial-blue',
+			'editorial',
+			'editorial-rose',
+			'editorial-magazine',
+			'enchanted-rose',
+			'jewelry-box',
+			'jewelry-box-wedding',
+			'luxury-hacienda',
+			'premiere-floral',
+			'sacred-keepsake',
+		];
+		const dirs = [
+			'header',
+			'quote',
+			'music-player',
+			'footer',
+			'countdown',
+			'family',
+			'location',
+			'gallery',
+			'gifts',
+			'rsvp',
+			'hero',
+		];
+		const files = dirs.flatMap((dir) =>
+			getFilesRecursively(`src/styles/themes/sections/${dir}`, ['.scss']),
+		);
+		const joined = files.map(read).join('\n');
+		for (const preset of themePresets) {
+			expect(joined).not.toContain(`[data-variant='${preset}']`);
+		}
+	});
+
+	it('hero theme skins scope structural layout to standard variant', () => {
+		const editorial = read('src/styles/themes/sections/hero/_editorial.scss');
+		expect(editorial).toContain(
+			".theme-preset--editorial .invitation-hero[data-variant='standard']",
+		);
+		expect(editorial).toContain(
+			".theme-preset--premiere-floral .invitation-hero[data-variant='standard']",
+		);
+		expect(editorial).not.toMatch(/\.theme-preset--editorial\s+\.invitation-hero\s*[,{]/);
+	});
+
+	it('header and music player runtime emit standard, not theme.preset', () => {
+		const slugPage = read('src/pages/[eventType]/[slug].astro');
+		const previewPage = read('src/pages/dashboard/invitaciones/[id]/preview.astro');
+		const music = read('src/lib/invitation/local-preview-config.ts');
+		expect(slugPage).toContain('variant="standard"');
+		expect(previewPage).toContain('variant="standard"');
+		expect(slugPage).not.toContain('variant={page.viewModel.theme.preset}');
+		expect(previewPage).not.toContain('variant={pageCtx.viewModel.theme.preset}');
+		expect(music).toContain("variant: 'standard'");
+		expect(music).not.toContain('variant: input.themePreset');
 	});
 });

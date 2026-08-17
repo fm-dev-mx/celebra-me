@@ -1,5 +1,5 @@
 @use '../themes/sections/quote/editorial-magazine' as quote-editorial-magazine;
-@use '../themes/sections/countdown/editorial-magazine' as countdown-editorial-magazine;
+@use '../themes/sections/countdown/magazine-folio' as countdown-editorial-magazine;
 @use '../themes/sections/family/editorial-magazine' as family-editorial-magazine;
 @use '../themes/sections/location/editorial-magazine' as location-editorial-magazine;
 @use '../themes/sections/header/editorial-magazine' as header-editorial-magazine;
@@ -7,12 +7,12 @@
 @use '../themes/sections/thank-you/editorial-back-cover' as thank-you-editorial-back-cover;
 
 /* Semantic Folios for Editorial Magazine Theme */
-.countdown-section[data-variant='editorial-magazine'],
-.event-location[data-variant='editorial-magazine'],
-.gifts-section[data-variant='editorial-magazine'],
-.gallery-section[data-variant='editorial-magazine'],
-.family[data-variant='editorial-magazine'],
-.rsvp[data-variant='editorial-magazine'] {
+.theme-preset--editorial-magazine .countdown-section,
+.theme-preset--editorial-magazine .event-location,
+.theme-preset--editorial-magazine .gifts-section,
+.theme-preset--editorial-magazine .gallery-section,
+.theme-preset--editorial-magazine .family,
+.theme-preset--editorial-magazine .rsvp {
 	position: relative;
 	padding-bottom: clamp(6.5rem, 15vw, 9.5rem);
 
@@ -42,27 +42,27 @@
 	}
 }
 
-.countdown-section[data-variant='editorial-magazine']::before {
+.theme-preset--editorial-magazine .countdown-section::before {
 	content: 'CELEBRA-ME | EDICIÓN XV · SAVE THE DATE';
 }
 
-.family[data-variant='editorial-magazine']::before {
+.theme-preset--editorial-magazine .family::before {
 	content: 'CELEBRA-ME | EDICIÓN XV · CRÉDITOS';
 }
 
-.event-location[data-variant='editorial-magazine']::before {
+.theme-preset--editorial-magazine .event-location::before {
 	content: 'CELEBRA-ME | EDICIÓN XV · CRÓNICA DE LA JORNADA';
 }
 
-.gallery-section[data-variant='editorial-magazine']::before {
+.theme-preset--editorial-magazine .gallery-section::before {
 	content: 'CELEBRA-ME | EDICIÓN XV · EDITORIAL DE MODA';
 }
 
-.gifts-section[data-variant='editorial-magazine']::before {
+.theme-preset--editorial-magazine .gifts-section::before {
 	content: 'CELEBRA-ME | EDICIÓN XV · GUÍA DE REGALOS';
 }
 
-.rsvp[data-variant='editorial-magazine'] {
+.theme-preset--editorial-magazine .rsvp {
 	&::after {
 		background: rgb(var(--editorial-magazine-white-rgb) / 14%);
 	}

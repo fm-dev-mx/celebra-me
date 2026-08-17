@@ -3,7 +3,7 @@
 // Editorial full-bleed hero with refined rose/silver palette
 // ==========================================================================
 
-.invitation-hero[data-variant='editorial-rose'] {
+.theme-preset--editorial-rose .invitation-hero[data-variant='standard'] {
 	justify-content: flex-end;
 	min-height: 100svh;
 	background: var(--color-surface-dark);

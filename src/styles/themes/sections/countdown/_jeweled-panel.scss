@@ -1,4 +1,6 @@
-.countdown-section[data-variant='jewelry-box'] {
+.theme-preset--jewelry-box .countdown-section,
+.theme-preset--jewelry-box-wedding .countdown-section,
+.countdown-section[data-variant='jeweled-panel'] {
 	background: linear-gradient(
 		180deg,
 		var(--color-surface-primary) 0%,

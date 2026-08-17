@@ -197,6 +197,7 @@ const activeSectionCssPlan =
 						family: pageCtx.viewModel.sections.family?.variant,
 						location: pageCtx.viewModel.sections.location?.variant,
 						itinerary: pageCtx.viewModel.sections.itinerary?.variant,
+						countdown: pageCtx.viewModel.sections.countdown?.variant,
 					},
 					envelopeVariant: pageCtx.envelope?.variant,
 					visualProfileId: pageCtx.viewModel.visualProfileId,
@@ -305,7 +306,7 @@ const headLinks = buildInvitationStylesheetHeadLinks({
 
 				<EventHeader
 					links={pageCtx.viewModel.navigation ?? []}
-					variant={pageCtx.viewModel.theme.preset}
+					variant="standard"
 					initials={pageCtx.viewModel.envelope?.data?.sealInitials}
 					eventName={pageCtx.viewModel.hero?.name}
 					eventSubtitle={pageCtx.viewModel.hero?.label}
@@ -323,7 +324,7 @@ const headLinks = buildInvitationStylesheetHeadLinks({
 				<Footer
 					eventSlug={pageCtx.viewModel.id}
 					showEnvelope={pageCtx.wrapper.showEnvelope}
-					variant={pageCtx.footerVariant}
+					variant="standard"
 					closingPhrase={pageCtx.footerClosingPhrase}
 					showFooterBranding={pageCtx.viewModel.brandingVisibility.showFooterBranding}
 					showContactCta={pageCtx.viewModel.brandingVisibility.showContactCta}

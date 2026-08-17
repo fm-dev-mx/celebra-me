@@ -6,7 +6,7 @@
 
 // Default Header Variables (Safe Fallbacks)
 
-.header-base[data-variant='celestial-blue'] {
+.theme-preset--celestial-blue .header-base {
 	--header-bg: rgb(var(--color-deep-blue-graphite-rgb) / 0%);
 	--header-bg-scrolled: rgb(var(--color-deep-blue-graphite-rgb) / 92%);
 	--header-border-color: rgb(var(--color-liquid-silver-rgb) / 14%);

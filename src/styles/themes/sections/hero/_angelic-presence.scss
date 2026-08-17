@@ -7,7 +7,7 @@
 // Ivory/champagne gradients instead of dark scrims
 // ==========================================================================
 
-.theme-preset--angelic-presence .invitation-hero {
+.theme-preset--angelic-presence .invitation-hero[data-variant='standard'] {
 	--hero-angelic-title-shadow: 0 8px 24px rgb(var(--color-eternal-ink-rgb) / 14%);
 
 	min-height: 100svh;

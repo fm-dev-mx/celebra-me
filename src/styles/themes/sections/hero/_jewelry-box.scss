@@ -5,7 +5,7 @@
 // JEWELRY BOX HERO
 // ==========================================================================
 
-.theme-preset--jewelry-box .invitation-hero {
+.theme-preset--jewelry-box .invitation-hero[data-variant='standard'] {
 	.invitation-hero__background::after {
 		background:
 			radial-gradient(

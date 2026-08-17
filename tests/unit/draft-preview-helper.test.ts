@@ -183,16 +183,16 @@ describe('buildDraftPreviewPageContext', () => {
 		expect(callArgs.content).toBeDefined();
 	});
 
-	it('calls buildPageContextFromViewModel with isPreview=true', async () => {
+	it('calls buildPageContextFromViewModel with the adapted view model', async () => {
 		const invitation = makeProject();
 
 		await buildDraftPreviewPageContext(invitation, validDraftContent, validDemoContent);
 
 		expect(mockBuildPageContext).toHaveBeenCalledTimes(1);
 		const callArgs = mockBuildPageContext.mock.calls[0][0];
-		expect(callArgs.isPreview).toBe(true);
 		expect(callArgs.viewModel).toBe(mockViewModel);
 		expect(callArgs.eventType).toBe('xv');
+		expect(callArgs.slug).toBeDefined();
 	});
 
 	it('returns RENDER_FAILED when adaptDbEvent throws', async () => {

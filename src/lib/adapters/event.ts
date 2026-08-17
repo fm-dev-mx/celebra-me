@@ -14,6 +14,7 @@ import {
 	type ThemePreset,
 	themeSupportsPortrait,
 } from '@/lib/theme/theme-contract';
+import { COUNTDOWN_VARIANTS } from '@/lib/invitation/section-variants';
 import { getContentEntrySlug, type EventContentEntry } from '@/lib/content/events';
 import type {
 	InvitationViewModel,
@@ -173,14 +174,6 @@ function pickPreset(candidate: string | undefined): ThemePreset {
 	);
 }
 
-function sectionVariant(
-	section: string,
-	candidate: string | undefined,
-	fallback: ThemePreset,
-): ThemePreset {
-	return pickVariant(`sectionStyles.${section}.variant`, candidate, THEME_PRESETS, fallback);
-}
-
 function buildHero(context: AdaptationContext): HeroViewModel {
 	const { data, eventSlug, normalizedPreset } = context;
 	const preset = normalizedPreset;
@@ -302,7 +295,7 @@ function buildInterludes(context: AdaptationContext): Interlude[] {
 				afterSection: interlude.afterSection,
 				alt: interlude.alt,
 				height: interlude.height,
-				variant: interlude.variant,
+				variant: 'standard' as const,
 				focalPoint: interlude.focalPoint,
 				focalPointDesktop: interlude.focalPointDesktop,
 				lightX: interlude.lightX,
@@ -315,16 +308,16 @@ function buildInterludes(context: AdaptationContext): Interlude[] {
 }
 
 function buildQuoteSectionData(context: AdaptationContext) {
-	const { data, normalizedPreset } = context;
+	const { data } = context;
 	if (!data.quote) return undefined;
 	return {
 		...data.quote,
-		variant: sectionVariant('quote', data.sectionStyles?.quote?.variant, normalizedPreset),
+		variant: 'standard' as const,
 	};
 }
 
 function buildCountdownSectionData(context: AdaptationContext) {
-	const { data, normalizedPreset } = context;
+	const { data } = context;
 
 	const target = resolveCountdownTarget(data.eventTiming, data.hero.date);
 	if (!target) return undefined;
@@ -342,10 +335,11 @@ function buildCountdownSectionData(context: AdaptationContext) {
 		targetSource: target.source,
 		eventTimeZone: data.eventTiming?.timeZone,
 		visibleUnits: resolveCountdownVisibleUnits(data.countdown?.presentationOptions),
-		variant: sectionVariant(
-			'countdown',
-			data.sectionStyles?.countdown?.variant,
-			normalizedPreset,
+		variant: pickVariant(
+			'countdown.variant',
+			data.countdown?.variant,
+			COUNTDOWN_VARIANTS,
+			'standard',
 		),
 		isDemo: data.isDemo,
 	};
