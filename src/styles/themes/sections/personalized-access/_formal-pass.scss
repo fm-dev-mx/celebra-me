@@ -79,8 +79,9 @@
 	--pa-divider-diamond-bg: var(--formal-chapter-cream);
 	--pa-divider-diamond-border-color: var(--formal-chapter-metal);
 	--pa-divider-diamond-shadow: none;
-	--pa-footer-border-top: 1px solid rgb(var(--formal-chapter-metal-rgb) / 24%);
-	--pa-footer-text-color: rgb(var(--formal-chapter-ink-rgb) / 80%);
+	--pa-footer-bg: transparent;
+	--pa-footer-border-top: 1px solid rgb(var(--formal-chapter-metal-rgb) / 20%);
+	--pa-footer-text-color: rgb(var(--formal-chapter-ink-rgb) / 72%);
 	--pa-footer-text-font-style: normal;
 
 	padding-block: clamp(1rem, 2.5vw, 2rem);
@@ -195,13 +196,14 @@
 		}
 
 		&__footer {
-			padding: 0.9rem 1.5rem 1.35rem;
+			padding: 1rem 1.5rem 1.4rem;
 
 			p {
-				max-width: 23rem;
-				font-size: 0.78rem;
-				line-height: 1.5;
-				color: rgb(var(--formal-chapter-ink-rgb) / 72%);
+				max-width: 24rem;
+				font-family: var(--formal-chapter-body);
+				font-size: clamp(0.76rem, 1.5vw, 0.82rem);
+				line-height: 1.55;
+				letter-spacing: 0.02em;
 			}
 		}
 	}

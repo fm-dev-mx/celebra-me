@@ -140,11 +140,13 @@ const showOrnaments = structuralVariant !== 'standard';
 				</div>
 			)}
 
-			<footer class="access-card__footer">
-				<p>
-					{footerText}
-				</p>
-			</footer>
+			{
+				footerText && footerText.trim().length > 0 && (
+					<footer class="access-card__footer">
+						<p>{footerText}</p>
+					</footer>
+				)
+			}
 		</article>
 	</div>
 </section>
