@@ -492,13 +492,14 @@
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
 
+		// Thank-you keeps profile/module typography (calligraphy closing names, ivory body).
+		// Do not force accent chrome onto `.thank-you-section` headings.
 		.event-location &,
 		.quote-section &,
 		.gifts-section &,
 		.rsvp &,
 		.itinerary &,
 		.family &,
-		.thank-you-section &,
 		.event-interlude--dark &,
 		&.rsvp__title {
 			color: var(--color-action-accent);

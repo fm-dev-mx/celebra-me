@@ -5,8 +5,12 @@
 // EDITORIAL HERO
 // ==========================================================================
 
+// Premiere + split-cover: Production still paints theme skin via the legacy
+// dual-attr era (`data-variant=premiere-floral` + structural split-cover).
+// After decoupling, structural is `data-variant=split-cover`; keep the skin.
 .theme-preset--editorial .invitation-hero[data-variant='standard'],
-.theme-preset--premiere-floral .invitation-hero[data-variant='standard'] {
+.theme-preset--premiere-floral .invitation-hero[data-variant='standard'],
+.theme-preset--premiere-floral .invitation-hero[data-variant='split-cover'] {
 	position: relative;
 	height: 100svh;
 	display: flex;

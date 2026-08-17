@@ -2076,6 +2076,49 @@ html:has(.event--alba-rosa-quinonez) body {
 			content: none;
 		}
 
+		// Restore circular premium frame (shared-premium), not luxury square card chrome.
+		.photo-frame {
+			width: var(--thank-you-frame-size-mobile, clamp(260px, 40vw, 320px));
+			height: var(--thank-you-frame-size-mobile, clamp(260px, 40vw, 320px));
+			border: none;
+			border-radius: 50%;
+			background: transparent;
+			padding: 0;
+			box-shadow: var(--thank-you-photo-frame-shadow, 0 18px 42px rgb(0 0 0 / 34%));
+			transform: none;
+			overflow: visible;
+			margin-bottom: 2rem;
+
+			@media (width >= 768px) {
+				width: var(--thank-you-frame-size-desktop, clamp(260px, 40vw, 320px));
+				height: var(--thank-you-frame-size-desktop, clamp(260px, 40vw, 320px));
+			}
+
+			&::before {
+				content: none;
+			}
+
+			&::after {
+				content: '';
+				position: absolute;
+				inset: 6px;
+				border-radius: 50%;
+				border: 1px solid rgb(var(--alba-gold-rgb) / 35%);
+				pointer-events: none;
+				z-index: 3;
+			}
+
+			.photo-image {
+				width: 100%;
+				height: 100%;
+				border-radius: 50%;
+				object-fit: cover;
+				clip-path: circle(calc(50% - 6px) at 50% 50%);
+				filter: var(--alba-photo-filter);
+				box-shadow: none;
+			}
+		}
+
 		.thank-you-message {
 			color: rgb(var(--alba-ivory-rgb) / 94%);
 			font-family: var(--font-body);
@@ -2083,6 +2126,11 @@ html:has(.event--alba-rosa-quinonez) body {
 			line-height: 1.8;
 			letter-spacing: -0.01em;
 			margin: 0;
+			padding: 0;
+			background: none;
+			border: none;
+			border-radius: 0;
+			box-shadow: none;
 
 			&::before,
 			&::after {
@@ -2113,8 +2161,14 @@ html:has(.event--alba-rosa-quinonez) body {
 		.closing-name {
 			font-family: var(--font-calligraphy);
 			font-size: clamp(2.6rem, 6.5vw, 3.8rem);
+			font-weight: 400;
+			letter-spacing: normal;
+			text-transform: none;
 			color: var(--alba-gold);
+			background: none;
 			-webkit-text-fill-color: currentcolor;
+			text-shadow: none;
+			animation: none;
 			line-height: 1.1;
 			margin: 0;
 		}

@@ -1,5 +1,7 @@
 @use '../../../global/mixins' as mixins;
 
+// Split-cover defaults use `var(--font-display)`. Profiles that need a custom
+// title face must re-set `--hero-split-title-*` on this same selector (or later).
 .invitation-hero[data-variant='split-cover'] {
 	--hero-split-plane-bg: var(--color-surface-dark, rgb(28 36 32));
 	--hero-split-overlay-strong: rgb(0 0 0 / 92%);
@@ -8,20 +10,16 @@
 	--hero-split-photo-width: min(58vw, 760px);
 	--hero-split-content-width: min(42vw, 560px);
 	--hero-split-content-inline-start: clamp(3rem, 7vw, 8rem);
+
+	// Do not reset --hero-split-title-* here: profiles set them on the event
+	// wrapper and must inherit. Property fallbacks below cover demos without a profile.
 	--hero-split-title-offset-block: 0;
-	--hero-split-title-font: var(--font-display);
-	--hero-split-title-style: normal;
-	--hero-split-title-weight: 600;
-	--hero-split-title-transform: none;
-	--hero-split-title-size: clamp(4rem, 7vw, 8rem);
-	--hero-split-title-line-height: 0.9;
-	--hero-split-title-letter-spacing: 0;
 
 	.invitation-hero__title {
 		font-family: var(--hero-split-title-font, var(--font-display));
 		font-style: var(--hero-split-title-style, normal);
-		font-weight: var(--hero-split-title-weight, 400);
-		font-size: var(--hero-split-title-size);
+		font-weight: var(--hero-split-title-weight, 600);
+		font-size: var(--hero-split-title-size, clamp(4rem, 7vw, 8rem));
 		line-height: var(--hero-split-title-line-height, 0.9);
 		letter-spacing: var(--hero-split-title-letter-spacing, 0);
 		text-transform: var(--hero-split-title-transform, none);

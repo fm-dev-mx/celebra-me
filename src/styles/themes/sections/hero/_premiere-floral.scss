@@ -1,7 +1,15 @@
 @use '../../../tokens' as tokens;
 @use '../../../global/mixins' as mixins;
 
+// Standard premiere heroes: neutralize preset `--section-padding-block` bleed.
+// Split-cover (Romina) must keep editorial mobile `padding: 1rem` — Production
+// dual-attr era painted `16px` inset; `padding: 0` shifts the cover crop.
 .theme-preset--premiere-floral .invitation-hero[data-variant='standard'] {
+	padding: 0;
+}
+
+.theme-preset--premiere-floral .invitation-hero[data-variant='standard'],
+.theme-preset--premiere-floral .invitation-hero[data-variant='split-cover'] {
 	&::before {
 		animation: none;
 		opacity: 6%;

@@ -152,7 +152,7 @@
 		font-weight: 400;
 		line-height: 1.48;
 		letter-spacing: 0;
-		color: rgb(var(--color-deep-blue-graphite-rgb) / 88%);
+		color: var(--thank-you-message-color, rgb(var(--color-deep-blue-graphite-rgb) / 88%));
 		text-wrap: pretty;
 
 		.drop-cap {
@@ -163,10 +163,12 @@
 			font-size: clamp(3.3rem, 16vw, 5.25rem);
 			font-weight: 300;
 			line-height: 0.9;
-			color: rgb(var(--color-deep-blue-graphite-rgb) / 78%);
-			text-shadow:
+			color: var(--thank-you-drop-cap-color, rgb(var(--color-deep-blue-graphite-rgb) / 78%));
+			text-shadow: var(
+				--thank-you-drop-cap-shadow,
 				0 1px 0 rgb(var(--color-diamond-white-rgb) / 72%),
-				0 18px 36px rgb(var(--color-satin-blue-rgb) / 22%);
+				0 18px 36px rgb(var(--color-satin-blue-rgb) / 22%)
+			);
 		}
 	}
 
@@ -183,12 +185,15 @@
 		line-height: 1.25;
 		letter-spacing: 0;
 		text-transform: none;
-		color: var(--color-deep-blue-graphite);
-		background: linear-gradient(
-			110deg,
-			rgb(var(--color-deep-blue-graphite-rgb) / 88%) 0%,
-			rgb(var(--color-soft-graphite-rgb) / 78%) 42%,
-			rgb(var(--color-satin-blue-rgb) / 92%) 100%
+		color: var(--thank-you-closing-color, var(--color-deep-blue-graphite));
+		background: var(
+			--thank-you-closing-gradient,
+			linear-gradient(
+				110deg,
+				rgb(var(--color-deep-blue-graphite-rgb) / 88%) 0%,
+				rgb(var(--color-soft-graphite-rgb) / 78%) 42%,
+				rgb(var(--color-satin-blue-rgb) / 92%) 100%
+			)
 		);
 
 		@include mixins.text-gradient-clip;

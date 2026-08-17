@@ -163,14 +163,23 @@
 	--countdown-bg: linear-gradient(145deg, rgb(38 57 46) 0%, var(--romina-botanical) 100%);
 	--countdown-section-color: var(--romina-ivory);
 
-	// Hero section — responsive typography for single-image cover
-	.invitation-hero {
-		&__label {
+	// Split-cover paint must beat premiere editorial skin specificity
+	// (`.theme-preset--premiere-floral .invitation-hero[data-variant=split-cover] …`).
+	.invitation-hero[data-variant='split-cover'] {
+		--hero-split-title-font: parisienne, cursive;
+		--hero-split-title-style: normal;
+		--hero-split-title-weight: 400;
+		--hero-split-title-size: clamp(3.5rem, 11vw, 5.5rem);
+		--hero-split-title-line-height: 0.84;
+		--hero-split-title-letter-spacing: 0;
+		--hero-split-title-transform: none;
+
+		.invitation-hero__label {
 			font-size: clamp(0.75rem, 2.5vw, 0.95rem);
 			letter-spacing: 0.35em;
 		}
 
-		&__title {
+		.invitation-hero__title {
 			font-family: var(--hero-split-title-font);
 			font-style: var(--hero-split-title-style);
 			font-weight: var(--hero-split-title-weight);
@@ -178,9 +187,17 @@
 			font-size: clamp(3.5rem, 11vw, 5.5rem);
 			line-height: 0.84;
 			letter-spacing: 0;
+			color: var(--romina-ivory);
+			background: none;
+			background-clip: border-box;
+			-webkit-text-fill-color: var(--romina-ivory);
+			// Keep editorial mobile `translateY(-20%)` (Production). Only neutralize
+			// in the 600–860px band below, matching pre-decouple profile.
 			text-shadow:
 				0 4px 20px rgb(var(--romina-botanical-rgb) / 55%),
 				0 1px 3px rgb(0 0 0 / 40%);
+			animation: motion-fade-in-up var(--motion-hero-title-duration) var(--ease-out)
+				var(--motion-hero-title-delay) forwards;
 
 			.invitation-hero__title-line {
 				display: inline-block;
@@ -188,7 +205,7 @@
 			}
 		}
 
-		&__details {
+		.invitation-hero__details {
 			gap: 0.35rem;
 			bottom: 0;
 			margin-bottom: 7.5rem;
@@ -209,26 +226,29 @@
 			}
 		}
 
-		&__date {
+		.invitation-hero__date {
 			font-size: clamp(0.9rem, 2.8vw, 1.1rem);
 			letter-spacing: 0.18em;
 			font-weight: 600;
+			text-transform: uppercase;
 			color: var(--romina-ivory);
 			text-shadow: 0 2px 6px rgb(0 0 0 / 60%);
 		}
 
-		&__time {
+		.invitation-hero__time {
 			font-size: clamp(0.9rem, 2.8vw, 1.05rem);
 			font-weight: 500;
+			text-transform: uppercase;
 			color: var(--romina-gold);
 			opacity: 100%;
 			text-shadow: 0 2px 6px rgb(0 0 0 / 60%);
 		}
 
-		&__venue {
+		.invitation-hero__venue {
 			margin-top: 0.3rem;
 			font-size: clamp(0.95rem, 3vw, 1.15rem);
 			font-style: italic;
+			text-transform: uppercase;
 			color: var(--romina-warm-white);
 			opacity: 100%;
 			text-shadow: 0 2px 6px rgb(0 0 0 / 60%);
@@ -298,12 +318,15 @@
 	}
 
 	@media (width >= 600px) and (width <= 860px) {
-		.invitation-hero {
-			&__title {
-				margin-bottom: 5vh;
-				font-size: clamp(3rem, 11vw, 5rem);
-				transform: none;
-			}
+		.invitation-hero[data-variant='split-cover'] .invitation-hero__title {
+			margin-bottom: 5vh;
+			font-family: var(--hero-split-title-font);
+			font-style: var(--hero-split-title-style);
+			font-weight: var(--hero-split-title-weight);
+			font-size: clamp(3rem, 11vw, 5rem);
+			line-height: var(--hero-split-title-line-height);
+			letter-spacing: var(--hero-split-title-letter-spacing);
+			transform: none;
 		}
 	}
 }
