@@ -592,8 +592,9 @@ gallery thumb is not.
 
 Invitation routes split that critical path: preset, envelope-reveal, and visual-profile stylesheets
 remain render-blocking. Section bundles, gallery/footer overrides, structural partials, and the
-Romina-only Parisienne stylesheet use `media="not all"` until first contentful paint (or immediately
-when the envelope is skipped). Do not treat remaining deferred `<link rel="stylesheet">` tags as
+Romina-only Parisienne stylesheet use `media="not all"` until first contentful paint, until
+`envelope:opened` if paint timing is missing, after a bounded paint-observer timeout, or immediately
+when the envelope is skipped. Do not treat remaining deferred `<link rel="stylesheet">` tags as
 blocking. Google Fonts Parisienne is not injected on invitations that do not use it.
 
 **Use case.** After adding global CSS/JS or preload/prefetch (preload changes are out of scope

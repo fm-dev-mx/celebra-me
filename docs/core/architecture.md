@@ -272,8 +272,8 @@ They are not a temporary fallback for real/client invitations.
 - Public invitation and dashboard preview routes use the same resolver and preserve stylesheet
   document order: preset, section bundle, optional footer/gallery override, envelope reveal,
   optional structural partials, then optional visual profile. Sheets not required to paint the
-  sealed envelope are non-blocking (`media="not all"`) until first paint or an envelope-skipped
-  visit.
+  sealed envelope are non-blocking (`media="not all"`) until first paint, envelope open, a bounded
+  paint fallback, or an envelope-skipped visit.
 
 ---
 

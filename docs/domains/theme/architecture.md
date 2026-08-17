@@ -227,9 +227,10 @@ skins.
   passthrough directory.
 - Invitation routes keep preset, envelope-reveal, and visual-profile stylesheets render-blocking for
   the sealed-envelope first paint. Section bundles, gallery/footer overrides, and structural
-  partials start as `media="not all"` and are promoted after first paint, or immediately when the
-  envelope is skipped (`skipEnvelope`, returning `envelope-opened-{slug}`, or no envelope). Document
-  order is unchanged so profile CSS still wins the cascade.
+  partials start as `media="not all"` and are promoted after first paint, when `envelope:opened`
+  fires, after a bounded paint-observer fallback, or immediately when the envelope is skipped
+  (`skipEnvelope`, returning `envelope-opened-{slug}`, or no envelope). Document order is unchanged
+  so profile CSS still wins the cascade.
 
 Gallery CSS starts with the theme-preset bundle. When an explicit semantic `gallery.variant` differs
 from the active theme, the section CSS resolver emits the matching layout partial independently.

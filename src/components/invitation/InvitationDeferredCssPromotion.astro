@@ -1,70 +1,16 @@
 ---
+import { buildInvitationDeferredCssPromotionInlineScript } from '@/lib/invitation/invitation-deferred-css-promotion';
+
 interface Props {
 	eventSlug: string;
 	isDemo: boolean;
 }
 
 const { eventSlug, isDemo } = Astro.props;
-const storageKey = `envelope-opened-${eventSlug}`;
+const promotionScript = buildInvitationDeferredCssPromotionInlineScript({
+	storageKey: `envelope-opened-${eventSlug}`,
+	isDemo,
+});
 ---
 
-<script is:inline define:vars={{ storageKey, isDemo }}>
-	(function () {
-		const links = document.querySelectorAll('link[data-invitation-deferred-css]');
-		if (!links.length) return;
-
-		let applied = false;
-		function applyDeferredCss() {
-			if (applied) return;
-			applied = true;
-			for (let i = 0; i < links.length; i++) {
-				links[i].media = 'all';
-			}
-		}
-
-		try {
-			const params = new URLSearchParams(window.location.search);
-			const skip = params.get('skipEnvelope') === 'true';
-			const force = params.get('forceEnvelope') === 'true';
-			const revealed =
-				skip || (!isDemo && !force && window.localStorage.getItem(storageKey) === 'true');
-			if (revealed) {
-				applyDeferredCss();
-				return;
-			}
-		} catch {
-			// Ignore localStorage access errors and apply after first paint.
-		}
-
-		if (typeof PerformanceObserver === 'function') {
-			try {
-				const observer = new PerformanceObserver(function (list) {
-					const entries = list.getEntries();
-					for (let i = 0; i < entries.length; i++) {
-						if (entries[i].name === 'first-contentful-paint') {
-							observer.disconnect();
-							applyDeferredCss();
-							return;
-						}
-					}
-				});
-				observer.observe({ type: 'paint', buffered: true });
-				window.setTimeout(applyDeferredCss, 8000);
-				return;
-			} catch {
-				// Fall through to rAF.
-			}
-		}
-
-		const run = function () {
-			requestAnimationFrame(function () {
-				requestAnimationFrame(applyDeferredCss);
-			});
-		};
-		if (document.readyState === 'loading') {
-			document.addEventListener('DOMContentLoaded', run);
-		} else {
-			run();
-		}
-	})();
-</script>
+<script is:inline set:html={promotionScript}></script>
