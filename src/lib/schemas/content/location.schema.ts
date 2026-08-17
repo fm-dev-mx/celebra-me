@@ -89,6 +89,7 @@ const locationBaseSchema = z.object({
 			z.object({
 				iconName: z.enum(ICON_NAMES_TUPLE),
 				styleVariant: z.enum(INDICATION_STYLE_VARIANTS).default('default'),
+				title: z.string().optional(),
 				text: z.string(),
 			}),
 		)

@@ -199,26 +199,31 @@
             },
             "indications": [
                 {
+                    "title": "Código de vestimenta",
                     "text": "Código de vestimenta: <strong>formal</strong>. Quiero que te veas <strong>INCREÍBLE</strong>. Damas: Divinas (Reserva el color <strong>rosa y lila</strong> para la XV). Caballeros: Guapos.",
                     "iconName": "DressCode",
                     "styleVariant": "reserved"
                 },
                 {
+                    "title": "Confirmación",
                     "text": "Agradecemos confirmar asistencia con anticipación para preparar cada detalle con cariño.",
                     "iconName": "Calendar",
                     "styleVariant": "default"
                 },
                 {
+                    "title": "Puntualidad",
                     "text": "Agradecemos tu puntualidad para disfrutar juntos cada momento mágico de esta noche.",
                     "iconName": "Enveloped",
                     "styleVariant": "default"
                 },
                 {
+                    "title": "Ambiente",
                     "text": "Prepárate para una noche llena de magia, sueños y mucha diversión.",
                     "iconName": "Sparkles",
                     "styleVariant": "default"
                 },
                 {
+                    "title": "Recuerdos",
                     "text": "Comparte tus mejores fotos y videos de la fiesta etiquetándome en <strong>@val27_0811</strong>. ¡Me encantará ver la celebración desde tu perspectiva!",
                     "iconName": "Photo",
                     "styleVariant": "default"
@@ -226,7 +231,7 @@
             ],
             "introEyebrow": "Te esperamos en Texcoco",
             "introHeading": "Sábado, 29 de agosto de 2026",
-            "indicationsHeading": "Detalles para mis invitados"
+            "indicationsHeading": "Guía privada para invitados"
         },
         "thankYou": {
             "image": "thankYouPortrait",

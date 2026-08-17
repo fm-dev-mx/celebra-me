@@ -163,6 +163,7 @@ export const draftIndicationSchema = z
 	.object({
 		iconName: z.enum(ICON_NAMES_TUPLE),
 		styleVariant: z.enum(INDICATION_STYLE_VARIANTS).optional(),
+		title: optionalText(120),
 		text: z.string().trim().max(500),
 	})
 	.strict();
