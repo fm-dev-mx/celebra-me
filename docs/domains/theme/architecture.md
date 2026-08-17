@@ -15,7 +15,8 @@ Gallery section variants (as-is catalog, compatibility aliases, and the canonica
 contract) are documented in [`gallery-variants.md`](gallery-variants.md).
 
 CSS visual parity before profile LAYOUT deletion is gated by
-[`css-visual-parity.md`](css-visual-parity.md). The celestial-blue thinning pilot inventory is
+[`css-visual-parity.md`](css-visual-parity.md). Full invitation/preset ownership inventory:
+[`corpus-bundle-inventory.md`](corpus-bundle-inventory.md). Celestial-blue pilot detail:
 [`celestial-blue-bundle-inventory.md`](celestial-blue-bundle-inventory.md).
 
 ## Invitation CSS ownership (normative)

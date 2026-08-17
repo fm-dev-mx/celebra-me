@@ -182,12 +182,19 @@
 	// 8. GALLERY SECTION
 	// ==========================================================================
 
-	--gallery-section-bg: radial-gradient(
-		circle at 50% 10%,
-		rgb(var(--v-blush-rgb) / 62%) 0%,
-		var(--v-white) 56%,
-		rgb(var(--v-silver-rgb) / 72%) 100%
-	);
+	--gallery-section-bg:
+		radial-gradient(
+			circle at 16% 8%,
+			rgb(var(--color-diamond-white-rgb) / 94%) 0%,
+			rgb(var(--color-ice-blue-rgb) / 46%) 30%,
+			transparent 58%
+		),
+		linear-gradient(
+			145deg,
+			rgb(var(--color-cool-ivory-rgb) / 96%) 0%,
+			rgb(var(--color-pearl-gray-rgb) / 72%) 42%,
+			rgb(var(--color-ice-blue-rgb) / 44%) 100%
+		);
 	--gallery-card-bg: rgb(var(--v-white-rgb) / 64%);
 	--gallery-card-radius: 6px;
 	--gallery-card-padding: 7px;

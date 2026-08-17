@@ -83,9 +83,16 @@
 	// ---------------------------------------------------------------------
 	// Countdown section tokens
 	// ---------------------------------------------------------------------
+	--countdown-section-background: linear-gradient(
+		180deg,
+		var(--color-surface-primary) 0%,
+		var(--color-surface-soft) 50%,
+		var(--color-surface-primary) 100%
+	);
 	--countdown-value-size-mobile: clamp(2.8rem, 12vw, 4.5rem);
 	--countdown-value-size-desktop: clamp(4rem, 8vw, 6rem);
 	--countdown-label-letter-spacing: 0.25em;
+	--color-border-subtle: rgb(var(--color-action-accent-rgb) / 10%);
 
 	// ---------------------------------------------------------------------
 	// Family section tokens

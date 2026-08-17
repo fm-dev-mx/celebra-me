@@ -81,6 +81,59 @@
 	--countdown-section-color: var(--color-text-primary);
 	--countdown-section-padding-block: clamp(5rem, 9vw, 8rem);
 
+	// Hero / RSVP / PA / thank-you section surfaces (geometry stays in section modules)
+	--hero-section-background: var(--color-surface-dark);
+	--hero-section-color: var(--color-text-on-dark);
+	--rsvp-section-background:
+		linear-gradient(
+			145deg,
+			rgb(var(--color-diamond-white-rgb) / 72%),
+			rgb(var(--color-pearl-gray-rgb) / 58%)
+		),
+		var(--color-surface-primary);
+	--rsvp-section-color: var(--color-text-primary);
+	--rsvp-section-border: 1px solid rgb(var(--color-liquid-silver-rgb) / 54%);
+	--pa-section-background:
+		radial-gradient(
+			ellipse 70% 45% at 50% 0%,
+			rgb(var(--color-ice-blue-rgb) / 38%) 0%,
+			transparent 68%
+		),
+		linear-gradient(
+			180deg,
+			var(--color-cool-ivory) 0%,
+			rgb(var(--color-pearl-gray-rgb) / 42%) 100%
+		);
+	--thank-you-section-background:
+		var(--ty-ambient-blush, none),
+		linear-gradient(
+			180deg,
+			rgb(var(--color-deep-blue-graphite-rgb) / 10%) 0%,
+			transparent 16%,
+			rgb(var(--color-diamond-white-rgb) / 28%) 48%,
+			rgb(var(--color-ice-blue-rgb) / 32%) 100%
+		),
+		radial-gradient(
+			ellipse at 80% 8%,
+			rgb(var(--color-diamond-white-rgb) / 82%) 0%,
+			rgb(var(--color-ice-blue-rgb) / 34%) 34%,
+			transparent 62%
+		),
+		radial-gradient(
+			ellipse at 8% 82%,
+			rgb(var(--color-satin-blue-rgb) / 22%) 0%,
+			transparent 48%
+		),
+		linear-gradient(
+			140deg,
+			var(--color-cool-ivory) 0%,
+			rgb(var(--color-pearl-gray-rgb) / 92%) 52%,
+			rgb(var(--color-ice-blue-rgb) / 76%) 100%
+		);
+	--thank-you-section-color: var(--color-text-primary);
+	--thank-you-section-padding: clamp(7rem, 17svh, 9.5rem) clamp(1.15rem, 5vw, 4.5rem)
+		clamp(6.25rem, 13svh, 9rem);
+
 	// ---------------------------------------------------------------------
 	// Typography
 	// ---------------------------------------------------------------------

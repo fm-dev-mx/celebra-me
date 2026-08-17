@@ -296,6 +296,18 @@
 	// ---------------------------------------------------------------------
 	// Countdown section
 	// ---------------------------------------------------------------------
+	--countdown-section-background:
+		radial-gradient(
+			circle at 50% 8%,
+			rgb(var(--color-sacred-gold-rgb) / 10%) 0%,
+			transparent 55%
+		),
+		linear-gradient(
+			180deg,
+			var(--color-angelic-white) 0%,
+			var(--color-pure-ivory) 48%,
+			var(--color-soft-sand) 100%
+		);
 	--countdown-value-size-mobile: clamp(2.5rem, 12vw, 3.5rem);
 	--countdown-value-size-desktop: clamp(3.2rem, 5vw, 4.5rem);
 	--countdown-label-letter-spacing: 0.28em;

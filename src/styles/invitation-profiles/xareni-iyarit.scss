@@ -109,6 +109,7 @@
 		var(--xareni-ivory),
 		rgb(var(--xareni-blush-rgb) / 38%)
 	);
+	--gallery-section-bg: var(--gallery-background);
 	--interlude-overlay: linear-gradient(
 		180deg,
 		rgb(var(--xareni-plum-rgb) / 12%),
@@ -117,9 +118,16 @@
 	--rsvp-background:
 		radial-gradient(circle at 75% 20%, rgb(var(--xareni-blush-rgb) / 50%), transparent 32%),
 		linear-gradient(160deg, var(--xareni-ivory), rgb(var(--xareni-champagne-rgb) / 68%));
+	--rsvp-section-background: var(--rsvp-background);
 	--rsvp-active-background: var(--xareni-deep-mauve);
 	--rsvp-active-color: var(--xareni-white);
 	--rsvp-focus-ring: rgb(var(--xareni-deep-mauve-rgb) / 28%);
+	--hero-section-background: var(--xareni-plum);
+	--pa-section-background: var(--card-background);
+	--thank-you-section-background:
+		radial-gradient(circle at 20% 10%, rgb(var(--xareni-blush-rgb) / 32%), transparent 34%),
+		linear-gradient(150deg, var(--xareni-plum), var(--xareni-deep-mauve));
+	--thank-you-section-color: var(--xareni-white);
 
 	background:
 		radial-gradient(circle at top left, rgb(var(--xareni-blush-rgb) / 34%), transparent 36rem),
@@ -133,7 +141,7 @@
 
 	// Section surfaces — only selectors that match current invitation markup.
 	.invitation-hero {
-		background-color: var(--xareni-plum);
+		background-color: var(--hero-section-background);
 
 		&::before {
 			background:
@@ -175,20 +183,12 @@
 		border-color: var(--countdown-border);
 	}
 
-	.gallery-section {
-		background: var(--gallery-background);
-	}
-
 	.invitation-interlude {
 		background-color: var(--xareni-ivory);
 
 		&::after {
 			background: var(--interlude-overlay);
 		}
-	}
-
-	.rsvp-section {
-		background: var(--rsvp-background);
 	}
 
 	.event-location {
@@ -199,13 +199,6 @@
 				rgb(var(--xareni-blush-rgb) / 24%)
 			),
 			var(--xareni-ivory);
-	}
-
-	.thank-you-section {
-		background:
-			radial-gradient(circle at 20% 10%, rgb(var(--xareni-blush-rgb) / 32%), transparent 34%),
-			linear-gradient(150deg, var(--xareni-plum), var(--xareni-deep-mauve));
-		color: var(--xareni-white);
 	}
 
 	hr {

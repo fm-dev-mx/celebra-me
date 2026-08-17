@@ -1,22 +1,6 @@
 .theme-preset--sacred-keepsake .countdown-section {
-	padding: clamp(5rem, 12vh, 8rem) 1.5rem;
-	background:
-		radial-gradient(
-			ellipse at 15% 10%,
-			rgb(var(--color-sacred-gold-rgb) / 6%) 0%,
-			transparent 40%
-		),
-		radial-gradient(
-			ellipse at 85% 90%,
-			rgb(var(--color-sacred-blue-rgb) / 8%) 0%,
-			transparent 40%
-		),
-		linear-gradient(
-			180deg,
-			var(--color-pure-ivory) 0%,
-			var(--color-ivory-warm) 50%,
-			var(--color-soft-sand) 100%
-		);
+	padding: var(--countdown-section-padding, clamp(5rem, 12vh, 8rem) 1.5rem);
+	background: var(--countdown-section-background);
 
 	.countdown-texture {
 		opacity: 12%;

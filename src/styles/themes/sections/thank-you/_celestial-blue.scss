@@ -7,34 +7,9 @@
 
 	min-height: 100svh;
 	align-items: stretch;
-	padding: clamp(7rem, 17svh, 9.5rem) clamp(1.15rem, 5vw, 4.5rem) clamp(6.25rem, 13svh, 9rem);
-	background:
-		var(--ty-ambient-blush),
-		linear-gradient(
-			180deg,
-			rgb(var(--color-deep-blue-graphite-rgb) / 10%) 0%,
-			transparent 16%,
-			rgb(var(--color-diamond-white-rgb) / 28%) 48%,
-			rgb(var(--color-ice-blue-rgb) / 32%) 100%
-		),
-		radial-gradient(
-			ellipse at 80% 8%,
-			rgb(var(--color-diamond-white-rgb) / 82%) 0%,
-			rgb(var(--color-ice-blue-rgb) / 34%) 34%,
-			transparent 62%
-		),
-		radial-gradient(
-			ellipse at 8% 82%,
-			rgb(var(--color-satin-blue-rgb) / 22%) 0%,
-			transparent 48%
-		),
-		linear-gradient(
-			140deg,
-			var(--color-cool-ivory) 0%,
-			rgb(var(--color-pearl-gray-rgb) / 92%) 52%,
-			rgb(var(--color-ice-blue-rgb) / 76%) 100%
-		);
-	color: var(--color-text-primary);
+	padding: var(--thank-you-section-padding);
+	background: var(--thank-you-section-background);
+	color: var(--thank-you-section-color, var(--color-text-primary));
 
 	&::before {
 		background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)' opacity='0.34'/%3E%3C/svg%3E");
@@ -285,7 +260,8 @@
 @media (prefers-reduced-motion: no-preference) {
 	#invitation-sections-container
 		> .invitation-section-wrapper[data-section-kind='thankYou'].has-motion:not(.is-visible)
-		.theme-preset--celestial-blue .thank-you-section
+		.theme-preset--celestial-blue
+		.thank-you-section
 		.signature-block {
 		opacity: 0%;
 		transform: translateY(10px);
@@ -297,7 +273,8 @@
 
 	#invitation-sections-container
 		> .invitation-section-wrapper[data-section-kind='thankYou'].has-motion.is-visible
-		.theme-preset--celestial-blue .thank-you-section
+		.theme-preset--celestial-blue
+		.thank-you-section
 		.signature-block {
 		opacity: 100%;
 		transform: translateY(0);

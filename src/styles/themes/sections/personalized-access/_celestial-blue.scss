@@ -2,17 +2,7 @@
 	--pa-paper-tilt: -0.55deg;
 
 	position: relative;
-	background:
-		radial-gradient(
-			ellipse 70% 45% at 50% 0%,
-			rgb(var(--color-ice-blue-rgb) / 38%) 0%,
-			transparent 68%
-		),
-		linear-gradient(
-			180deg,
-			var(--color-cool-ivory) 0%,
-			rgb(var(--color-pearl-gray-rgb) / 42%) 100%
-		);
+	background: var(--pa-section-background);
 
 	&::before {
 		content: '';
@@ -174,7 +164,8 @@
 // The document coordinator owns state on the section wrapper, not on the section itself.
 // Keep the card's paper tilt while it enters, then reveal the reservation count as a second beat.
 @media (prefers-reduced-motion: no-preference) {
-	.theme-preset--celestial-blue #invitation-sections-container
+	.theme-preset--celestial-blue
+		#invitation-sections-container
 		> .invitation-section-wrapper[data-section-kind='personalized-access'].has-motion:not(
 			.is-visible
 		)
@@ -192,7 +183,8 @@
 				var(--motion-reveal-ease, var(--ease-premium));
 	}
 
-	.theme-preset--celestial-blue #invitation-sections-container
+	.theme-preset--celestial-blue
+		#invitation-sections-container
 		> .invitation-section-wrapper[data-section-kind='personalized-access'].has-motion.is-visible
 		.personalized-access
 		.access-card {
@@ -201,7 +193,8 @@
 		filter: blur(0);
 	}
 
-	.theme-preset--celestial-blue #invitation-sections-container
+	.theme-preset--celestial-blue
+		#invitation-sections-container
 		> .invitation-section-wrapper[data-section-kind='personalized-access'].has-motion.is-visible
 		.personalized-access
 		.access-card__count {

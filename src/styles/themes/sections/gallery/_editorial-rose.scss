@@ -7,19 +7,6 @@
 	padding-block: clamp(6rem, 10vw, 10rem);
 	background: var(--gallery-section-bg);
 
-	--gallery-section-bg:
-		radial-gradient(
-			circle at 16% 8%,
-			rgb(var(--color-diamond-white-rgb) / 94%) 0%,
-			rgb(var(--color-ice-blue-rgb) / 46%) 30%,
-			transparent 58%
-		),
-		linear-gradient(
-			145deg,
-			rgb(var(--color-cool-ivory-rgb) / 96%) 0%,
-			rgb(var(--color-pearl-gray-rgb) / 72%) 42%,
-			rgb(var(--color-ice-blue-rgb) / 44%) 100%
-		);
 	--gallery-container-max-width: 1180px;
 	--gallery-grid-columns-tablet: 6;
 	--gallery-grid-columns-desktop: 12;

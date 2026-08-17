@@ -18,8 +18,8 @@
 .theme-preset--celestial-blue .invitation-hero[data-variant='standard'] {
 	justify-content: flex-end;
 	min-height: 100svh;
-	background: var(--color-surface-dark);
-	color: var(--color-text-on-dark);
+	background: var(--hero-section-background, var(--color-surface-dark));
+	color: var(--hero-section-color, var(--color-text-on-dark));
 
 	.invitation-hero__background {
 		&::after {

@@ -1,7 +1,7 @@
 @use '../../../tokens' as tokens;
 
 .theme-preset--luxury-hacienda {
-	background-color: var(--color-surface-primary);
+	background-color: var(--preset-page-background-color, var(--color-surface-primary));
 	min-height: 100svh;
 	font-family: var(--font-body-hacienda, #{tokens.$font-body-hacienda});
 
