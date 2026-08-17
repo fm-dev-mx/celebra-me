@@ -2,7 +2,7 @@
 
 // Magazine-spread gallery with rectangular crops and visible captions.
 
-.gallery-section[data-structural-variant='magazine-spread'] {
+.gallery-section[data-variant='magazine-spread'] {
 	background: var(--gallery-section-bg, var(--color-surface-primary));
 	padding-block: var(--section-padding-block);
 
@@ -142,9 +142,7 @@
 
 // Orthogonal mobile rail presentation for magazine-spread.
 // Desktop retains the canonical 12-col grid; mobile becomes a scroll-snap rail.
-.gallery-section[data-mobile-browse='rail']:is(
-		[data-structural-variant='magazine-spread']
-	) {
+.gallery-section[data-mobile-browse='rail'][data-variant='magazine-spread'] {
 	@include mixins.respond-below(md) {
 		overflow: visible;
 	}

@@ -170,9 +170,12 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 					...fixture.gallery,
 					variant: 'editorial-mosaic',
 				},
+				countdown: {
+					...fixture.countdown,
+					variant: 'editorial-folio',
+				},
 				sectionStyles: {
 					quote: { variant: 'editorial' },
-					countdown: { variant: 'editorial' },
 					location: { variant: 'editorial', showFlourishes: false },
 					family: { variant: 'editorial' },
 					gallery: { variant: 'editorial' },
@@ -200,13 +203,14 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 			const descriptor = descriptors.find((item) => item.component === component);
 			if (component === 'gallery') {
 				expect(descriptor).toMatchObject({
-					props: { variant: 'editorial-mosaic', visualVariant: 'editorial' },
+					props: { variant: 'editorial-mosaic', visualVariant: 'jewelry-box' },
 				});
-			} else if (component === 'itinerary') {
-				// Canonical itinerary authority is presentation.behavior, not sectionStyles skin.
+			} else if (component === 'countdown') {
+				expect(descriptor).toMatchObject({ props: { variant: 'editorial-folio' } });
+			} else if (component === 'quote') {
 				expect(descriptor).toMatchObject({ props: { variant: 'standard' } });
 			} else {
-				expect(descriptor).toMatchObject({ props: { variant: 'editorial' } });
+				expect(descriptor).toMatchObject({ props: { variant: 'standard' } });
 			}
 		}
 	});

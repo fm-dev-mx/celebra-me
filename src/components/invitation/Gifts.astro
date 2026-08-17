@@ -1,5 +1,4 @@
 ---
-// src/components/invitation/Gifts.astro
 import '@/styles/invitation/_gifts.scss';
 import { GiftIcon } from '@/components/common/icons/invitation/Gift';
 import { BankCardIcon } from '@/components/common/icons/ui/BankCard';
@@ -8,7 +7,7 @@ import { PayPalIcon } from '@/components/common/icons/social/PayPal';
 import { CopyIcon } from '@/components/common/icons/ui/Copy';
 import { CheckIcon } from '@/components/common/icons/ui/Check';
 import type { GiftsPresentation } from '@/lib/invitation/gifts-presentation';
-import type { GiftsStructuralVariant } from '@/lib/invitation/structural-variants';
+import type { GiftsVariant } from '@/lib/invitation/section-variants';
 
 interface GiftStoreLink {
 	label: string;
@@ -52,8 +51,7 @@ type Gift = GiftStore | GiftBank | GiftPaypal | GiftCash;
 
 interface Props {
 	gifts: Gift[];
-	variant?: string;
-	structuralVariant?: GiftsStructuralVariant;
+	variant?: GiftsVariant;
 	presentation: GiftsPresentation;
 	eyebrow?: string;
 	title?: string;
@@ -72,7 +70,6 @@ interface Props {
 const {
 	gifts,
 	variant = 'standard',
-	structuralVariant = 'standard',
 	presentation,
 	eyebrow,
 	title = 'Mesa de Regalos',
@@ -88,7 +85,7 @@ const {
 	},
 } = Astro.props;
 
-const isEditorialCatalog = structuralVariant === 'editorial-catalog';
+const isEditorialCatalog = variant === 'editorial-catalog';
 const isLegendOnly = presentation === 'legend-only';
 const displayTitle = isEditorialCatalog ? 'Mesa de cortesía' : title;
 
@@ -123,7 +120,7 @@ function getTableNumberEntries(tableNumberStr?: string) {
 }
 ---
 
-<section id="regalos" class="gifts-section" data-screenshot-section="gifts" data-variant={variant} data-structural-variant={structuralVariant} data-presentation={presentation}>
+<section id="regalos" class="gifts-section" data-screenshot-section="gifts" data-variant={variant} data-presentation={presentation}>
 	<div class="gifts-section__container">
 		<header class="gifts-section__header">
 			{eyebrow && <span class="gifts-section__eyebrow">{eyebrow}</span>}

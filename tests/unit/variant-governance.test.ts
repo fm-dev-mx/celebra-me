@@ -11,7 +11,6 @@ import {
 	RSVP_STRUCTURAL_VARIANTS,
 	THANK_YOU_STRUCTURAL_VARIANTS,
 } from '@/lib/invitation/structural-variants';
-import { VARIANT_COMPATIBILITY_ALIASES } from '@/lib/invitation/variant-normalization';
 
 const read = (relativePath: string) =>
 	fs.readFileSync(path.join(process.cwd(), relativePath), 'utf8');
@@ -91,10 +90,10 @@ describe('canonical variant governance', () => {
 			expect(inventory).toContain(identifier);
 		}
 
-		for (const alias of VARIANT_COMPATIBILITY_ALIASES) {
-			expect(compatibility).toContain(alias.legacy);
-			expect(compatibility).toContain(alias.target);
-		}
+		expect(compatibility).toContain('Removed (no theme→variant remapping)');
+		expect(compatibility).toContain('Still accepted (input → canonical)');
+		expect(compatibility).toContain('*.structuralVariant');
+		expect(compatibility).not.toContain('VARIANT_COMPATIBILITY_ALIASES');
 
 		expect(inventory).toContain(
 			'Invitation configuration → section-owned typed variant → renderer + isolated variant SCSS → shared primitives',
@@ -129,7 +128,7 @@ describe('canonical variant governance', () => {
 		for (const relativePath of canonicalVariantCss) {
 			expect(fs.existsSync(path.join(process.cwd(), relativePath))).toBe(true);
 			const source = read(relativePath);
-			expect(source).toContain('data-structural-variant');
+			expect(source).toContain('data-variant');
 			expect(source).not.toMatch(originIdentity);
 			expect(source).not.toMatch(historicalThemeIdentity);
 			expect(source).not.toMatch(/invitation-profiles|assets\/images\/events/iu);
@@ -180,7 +179,7 @@ describe('canonical variant governance', () => {
 
 	it('propagates canonical variants to an explicit DOM contract', () => {
 		for (const relativePath of reusableRendererSurfaces) {
-			expect(read(relativePath)).toContain('data-structural-variant');
+			expect(read(relativePath)).toContain('data-variant');
 		}
 	});
 
@@ -190,23 +189,23 @@ describe('canonical variant governance', () => {
 		const victoria = read('src/styles/invitation-profiles/victoria-y-roberto.scss');
 		const renata = read('src/styles/invitation-profiles/renata.scss');
 
-		expect(formalPass).toContain("data-structural-variant='formal-pass'");
+		expect(formalPass).toContain("data-variant='formal-pass'");
 		expect(formalPass).toContain('--formal-chapter-band');
 		expect(formalPass).toContain('.access-card');
-		expect(formalRegister).toContain("data-structural-variant='formal-register'");
+		expect(formalRegister).toContain("data-variant='formal-register'");
 		expect(formalRegister).toContain('--formal-chapter-band');
 		expect(formalRegister).toContain('.rsvp__radio-card');
 		expect(formalRegister).toContain(
-			".rsvp-section:has(.rsvp[data-structural-variant='formal-register'])",
+			".rsvp-section:has(.rsvp[data-variant='formal-register'])",
 		);
 		expect(formalRegister).not.toContain(
-			".rsvp-section:has(> .rsvp[data-structural-variant='formal-register'])",
+			".rsvp-section:has(> .rsvp[data-variant='formal-register'])",
 		);
 		expect(formalRegister).toMatch(/\.rsvp__title[\s\S]*letter-spacing:\s*normal/);
 
 		for (const profile of [victoria, renata]) {
-			expect(profile).not.toMatch(/data-structural-variant=['"]formal-pass/);
-			expect(profile).not.toMatch(/data-structural-variant=['"]formal-register/);
+			expect(profile).not.toMatch(/data-variant=['"]formal-pass/);
+			expect(profile).not.toMatch(/data-variant=['"]formal-register/);
 			expect(profile).not.toMatch(/@use .*formal-pass|@use .*formal-register/);
 			expect(profile).not.toContain('.access-card');
 			expect(profile).not.toContain('.rsvp__radio-card');
@@ -220,7 +219,7 @@ describe('canonical variant governance', () => {
 		expect(variant).toMatch(/respond-to\(lg\)|width\s*>=\s*992px/u);
 		expect(variant).toContain('--hero-split-title-size');
 		expect(variant).toContain('.invitation-hero__content');
-		expect(profile).not.toMatch(/data-structural-variant=['"]split-cover/);
+		expect(profile).not.toMatch(/data-variant=['"]split-cover/);
 		expect(profile).not.toMatch(/@use .*hero\/split-cover/);
 		expect(profile).not.toMatch(/grid-template|display:\s*none/);
 	});

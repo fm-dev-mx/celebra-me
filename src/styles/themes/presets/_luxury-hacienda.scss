@@ -22,6 +22,15 @@
 	--color-text-on-light: #{sys.$sys-color-parchment-500};
 	--color-surface-primary: #{sys.$sys-color-parchment-100};
 	--color-surface-primary-rgb: #{tools.rgb-channels(sys.$sys-color-parchment-100)};
+	--preset-page-background-color: var(--color-surface-primary);
+	--countdown-section-background:
+		radial-gradient(
+			ellipse at 50% 18%,
+			rgb(var(--color-action-accent-rgb) / 12%),
+			transparent 42%
+		),
+		linear-gradient(145deg, rgb(48 34 24) 0%, rgb(24 17 12) 100%);
+	--countdown-section-padding: clamp(7rem, 12vw, 10rem) 1rem;
 	--color-surface-secondary: #{sys.$sys-color-coffee-300};
 	--color-surface-dark: var(--color-text-primary);
 	--color-surface-dark-rgb: var(--color-text-primary-rgb);

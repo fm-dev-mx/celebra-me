@@ -81,9 +81,11 @@
 	--hero-date-color: rgb(var(--xareni-white-rgb) / 90%);
 	--hero-scroll-color: var(--xareni-white);
 	--countdown-surface: rgb(var(--xareni-white-rgb) / 90%);
+	--countdown-section-background: var(--countdown-surface);
 	--countdown-border: rgb(var(--xareni-rose-gold-rgb) / 34%);
 	--countdown-number: var(--xareni-deep-mauve);
 	--countdown-label: rgb(var(--xareni-plum-rgb) / 70%);
+	--countdown-section-color: var(--countdown-number);
 	--section-kicker-color: var(--xareni-deep-mauve);
 	--section-title-color: var(--xareni-plum);
 	--section-divider-color: var(--xareni-rose-gold);
@@ -107,6 +109,7 @@
 		var(--xareni-ivory),
 		rgb(var(--xareni-blush-rgb) / 38%)
 	);
+	--gallery-section-bg: var(--gallery-background);
 	--interlude-overlay: linear-gradient(
 		180deg,
 		rgb(var(--xareni-plum-rgb) / 12%),
@@ -115,9 +118,16 @@
 	--rsvp-background:
 		radial-gradient(circle at 75% 20%, rgb(var(--xareni-blush-rgb) / 50%), transparent 32%),
 		linear-gradient(160deg, var(--xareni-ivory), rgb(var(--xareni-champagne-rgb) / 68%));
+	--rsvp-section-background: var(--rsvp-background);
 	--rsvp-active-background: var(--xareni-deep-mauve);
 	--rsvp-active-color: var(--xareni-white);
 	--rsvp-focus-ring: rgb(var(--xareni-deep-mauve-rgb) / 28%);
+	--hero-section-background: var(--xareni-plum);
+	--pa-section-background: var(--card-background);
+	--thank-you-section-background:
+		radial-gradient(circle at 20% 10%, rgb(var(--xareni-blush-rgb) / 32%), transparent 34%),
+		linear-gradient(150deg, var(--xareni-plum), var(--xareni-deep-mauve));
+	--thank-you-section-color: var(--xareni-white);
 
 	background:
 		radial-gradient(circle at top left, rgb(var(--xareni-blush-rgb) / 34%), transparent 36rem),
@@ -129,10 +139,9 @@
 		);
 	color: var(--xareni-plum);
 
-	.invitation-hero,
-	.hero,
-	[data-section='hero'] {
-		background-color: var(--xareni-plum);
+	// Section surfaces — only selectors that match current invitation markup.
+	.invitation-hero {
+		background-color: var(--hero-section-background);
 
 		&::before {
 			background:
@@ -150,37 +159,19 @@
 		}
 	}
 
-	.section,
-	.invitation-section,
-	[data-section] {
-		--surface: var(--xareni-ivory);
-		--accent: var(--xareni-rose-gold);
-		--accent-strong: var(--xareni-deep-mauve);
-	}
-
-	.button,
-	.btn,
-	button[type='submit'],
-	.rsvp-submit,
-	.rsvp-option.is-selected,
-	[aria-pressed='true'],
-	[data-active='true'] {
+	button[type='submit'] {
 		background: var(--xareni-deep-mauve);
 		border-color: var(--xareni-deep-mauve);
 		box-shadow: 0 14px 36px rgb(var(--xareni-deep-mauve-rgb) / 20%);
 		color: var(--xareni-white);
+
+		&:hover {
+			background: var(--color-action-primary-hover);
+			border-color: var(--color-action-primary-hover);
+		}
 	}
 
-	.button:hover,
-	.btn:hover,
-	button[type='submit']:hover {
-		background: var(--color-action-primary-hover);
-		border-color: var(--color-action-primary-hover);
-	}
-
-	.card,
 	.gift-card,
-	.rsvp-card,
 	.personalized-access {
 		background: var(--card-background);
 		border-color: var(--card-border);
@@ -188,22 +179,11 @@
 		color: var(--xareni-plum);
 	}
 
-	.countdown,
-	.countdown__item {
-		background: var(--countdown-surface);
+	.countdown-section {
 		border-color: var(--countdown-border);
-		color: var(--countdown-number);
 	}
 
-	.gallery,
-	.gallery-section,
-	[data-section='gallery'] {
-		background: var(--gallery-background);
-	}
-
-	.interlude,
-	.interlude-section,
-	[data-section*='interlude'] {
+	.invitation-interlude {
 		background-color: var(--xareni-ivory);
 
 		&::after {
@@ -211,16 +191,7 @@
 		}
 	}
 
-	.rsvp,
-	.rsvp-section,
-	[data-section='rsvp'] {
-		background: var(--rsvp-background);
-	}
-
-	.location,
-	[data-section='location'],
-	[data-section='ceremony'],
-	[data-section='reception'] {
+	.event-location {
 		background:
 			linear-gradient(
 				180deg,
@@ -230,29 +201,6 @@
 			var(--xareni-ivory);
 	}
 
-	.thank-you,
-	[data-section='thank-you'] {
-		background:
-			radial-gradient(circle at 20% 10%, rgb(var(--xareni-blush-rgb) / 32%), transparent 34%),
-			linear-gradient(150deg, var(--xareni-plum), var(--xareni-deep-mauve));
-		color: var(--xareni-white);
-	}
-
-	.invitation-section a,
-	.card a,
-	[data-section] a,
-	.section-kicker,
-	.kicker,
-	.location-time,
-	.gift-title,
-	.family-role,
-	.rsvp-title,
-	.thank-you-title {
-		color: var(--xareni-deep-mauve);
-	}
-
-	.divider,
-	.section-divider,
 	hr {
 		border-color: rgb(var(--xareni-rose-gold-rgb) / 42%);
 	}

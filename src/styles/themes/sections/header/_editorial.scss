@@ -6,7 +6,7 @@
 
 // Default Header Variables (Safe Fallbacks)
 
-.header-base[data-variant='editorial'] {
+.theme-preset--editorial .header-base {
 	--header-bg: transparent;
 	--header-bg-scrolled: rgb(8 8 10 / 94%);
 	--header-border-scrolled: 1px solid rgb(var(--color-action-accent-rgb) / 30%);

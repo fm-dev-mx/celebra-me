@@ -20,7 +20,7 @@ must remain independent of that client.
 Each participating section owns a closed `section.variant` vocabulary in its schema. Canonical
 content must select that value explicitly. The schema validates the selection before the adapter,
 the adapter exposes a typed section view-model, the render descriptor propagates it, and the section
-emits `data-structural-variant` when the value affects structure or renderer behavior.
+emits `data-variant={variant}` on its root element.
 
 Canonical selection must never read `theme.preset`, invitation slug, client or person name,
 `visualProfileId`, `_assetSlug`, event-specific identifiers, another invitation's configuration, or
@@ -38,7 +38,6 @@ canonical CSS, and shared primitives must contain no compatibility branches.
   - `editorial-cover` owns its specialized renderer and semantic stylesheet.
   - `split-cover` uses the shared Hero DOM and owns all required responsive plane/title geometry in
     `_split-cover.scss`.
-  - `hero.visualVariant` is an independent visual skin.
 - **Family:** `standard`, `split-groups`, `asymmetric-groups`.
   - `split-groups` and `asymmetric-groups` require at least two explicit `groups` through a
     discriminated schema contract.
@@ -51,12 +50,15 @@ canonical CSS, and shared primitives must contain no compatibility branches.
   - Map/navigation media and presentation flags remain explicit section capabilities.
 - **Gallery:** `uniform-grid`, `editorial-mosaic`, `magazine-spread`, `feature-mosaic`,
   `feature-stack`, `paired-feature-band`, `index-choreography`, `single-keepsake`.
-  - `gallery.variant` owns layout; `gallery.visualVariant` owns skin.
+  - `gallery.variant` owns layout; all visual styling is derived from the active theme preset
+    tokens.
+  - Theme-named gallery inputs are not remapped; omitted/theme-named values normalize to
+    `uniform-grid`. Write an explicit layout when a non-default layout is required.
   - `single-keepsake` requires exactly one item; `feature-stack` requires ≥3 items;
     `paired-feature-band` requires ≥3 items and at least one `layoutRole=feature`.
   - Item roles and `presentationOptions.mobileBrowse` remain orthogonal typed capabilities.
 - **Itinerary:** `standard`, `timeline-paper`, `editorial-ledger`, `editorial-program`.
-  - The value selects the renderer path and is emitted as `data-structural-variant`.
+  - The value selects the renderer path and is emitted as `data-variant`.
   - `timeline-paper` uses `ItineraryProgram`; `editorial-ledger`, `editorial-program`, and
     `standard` use `TimelineList`.
   - `_timeline-paper.scss`, `_editorial-ledger.scss`, and `_editorial-program.scss` are delivered
@@ -71,6 +73,19 @@ canonical CSS, and shared primitives must contain no compatibility branches.
     credential-card geometry, type metrics, and the same section-scoped chapter chroma as
     `formal-register`.
 - **Thank You:** `standard`, `editorial-back-cover`, `full-bleed-photo`.
+- **Countdown (skin):** `standard`, `editorial-folio`, `magazine-folio`, `jeweled-panel`,
+  `rose-ornament`, `hacienda-ornament`.
+  - Skin is independent of `theme.preset`. Atmosphere for celestial/angelic/sacred lives on
+    `.theme-preset--*` with Countdown `standard`.
+  - Theme-named countdown inputs are not remapped; omitted/theme-named values normalize to
+    `standard`. Write an explicit `countdown.variant` when a non-default skin is required.
+- **Hero / Gifts / RSVP / Personalized Access / Thank You:** omitted or theme-named inputs normalize
+  to `standard`. Non-default looks (`editorial-cover`, `editorial-catalog`, `editorial-press-pass`,
+  `editorial-pass`, `editorial-back-cover`, …) must be authored explicitly — `theme.preset` never
+  invents them.
+- **Header / Quote / MusicPlayer / Footer / Interlude:** emit `standard` only. Atmosphere comes from
+  `.theme-preset--*` (and footer override CSS load when configured). `data-variant` is never the
+  theme preset name.
 - **Envelope / reveal:** `envelope.variant` is a `THEME_PRESETS` design selector. It is independent
   of `themeId`. When omitted, resolution falls back to the invitation `theme.preset`.
   `premiere-floral` owns reveal-scoped stationery tokens, typography, and the selectable monogram
@@ -78,8 +93,8 @@ canonical CSS, and shared primitives must contain no compatibility branches.
   Isolated CSS delivery loads `_premiere-floral.scss` only when the selected envelope variant
   differs from the host theme bundle.
 
-Sections without a structural choice use their shared renderer and do not receive a synthetic
-variant abstraction merely for symmetry.
+`data-variant` is never a `ThemePreset` and is never derived from `theme.preset`. Theme bundles may
+still load by preset; that load path is not `data-variant`.
 
 ## Data and configuration compatibility
 
@@ -98,10 +113,14 @@ Semantic variant entrypoints live at
 responsive breakpoints, and visibility required for that variant. The section CSS resolver loads
 these entrypoints independently from the active theme bundle.
 
-Theme bundles and invitation profiles may supply palette, typography, crop, decoration, motion
-timing, and documented custom-property values. They may not import a canonical structural partial,
-redeclare its grid/order/required breakpoint, hide required elements, or make the canonical variant
-meaningful only under a particular profile.
+Theme presets may supply palette, typography, crop, decoration, motion timing, and documented
+custom-property values under `.theme-preset--*`. Invitation profiles may remap those tokens for one
+client and may override intersection/rhythm tokens. Neither presets nor profiles may import a
+canonical structural partial, redeclare its grid/order/required breakpoint, hide required elements,
+set `font-family` / `background` directly on section element classes (use tokens), or make the
+canonical variant meaningful only under a particular profile.
+
+Normative ownership table: [`architecture.md`](architecture.md#invitation-css-ownership-normative).
 
 ## Assets and shared primitives
 

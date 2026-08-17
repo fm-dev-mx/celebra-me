@@ -525,10 +525,10 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 			formalRegister,
 		].join('\n');
 
-		expect(combined).toContain(".invitation-hero[data-structural-variant='split-cover']");
-		expect(combined).toContain(".event-location[data-structural-variant='split-map']");
+		expect(combined).toContain(".invitation-hero[data-variant='split-cover']");
+		expect(combined).toContain(".event-location[data-variant='split-map']");
 		expect(combined).toContain(
-			".event-location[data-structural-variant='stacked-venue-plates']",
+			".event-location[data-variant='stacked-venue-plates']",
 		);
 		expect(stackedPlates).toContain('.event-location__intro');
 		expect(stackedPlates).toContain('.event-location__indications-container');
@@ -536,16 +536,16 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 		expect(stackedPlates).toContain('--location-place-letter-spacing');
 		expect(stackedPlates).toContain('--location-copy-button-radius');
 		expect(stackedPlates).toContain('--location-indication-icon-svg-size');
-		expect(combined).toContain(".family[data-structural-variant='split-groups']");
-		expect(combined).toContain(".family[data-structural-variant='asymmetric-groups']");
-		expect(combined).toContain(".gallery-section[data-structural-variant='feature-stack']");
+		expect(combined).toContain(".family[data-variant='split-groups']");
+		expect(combined).toContain(".family[data-variant='asymmetric-groups']");
+		expect(combined).toContain(".gallery-section[data-variant='feature-stack']");
 		expect(combined).toContain(
-			".gallery-section[data-structural-variant='paired-feature-band']",
+			".gallery-section[data-variant='paired-feature-band']",
 		);
-		expect(combined).toContain(".itinerary[data-structural-variant='editorial-ledger']");
-		expect(combined).toContain(".itinerary[data-structural-variant='editorial-program']");
-		expect(combined).toContain(".personalized-access[data-structural-variant='formal-pass']");
-		expect(combined).toContain(".rsvp[data-structural-variant='formal-register']");
+		expect(combined).toContain(".itinerary[data-variant='editorial-ledger']");
+		expect(combined).toContain(".itinerary[data-variant='editorial-program']");
+		expect(combined).toContain(".personalized-access[data-variant='formal-pass']");
+		expect(combined).toContain(".rsvp[data-variant='formal-register']");
 		expect(editorialLedger).toContain('.itinerary__item-icon-wrapper');
 		expect(editorialLedger).toMatch(
 			/\.itinerary__animated-line-container[\s\S]*?\.itinerary__item-icon-wrapper[\s\S]*?\.itinerary__item-dot[\s\S]*?display:\s*none/,
@@ -574,6 +574,6 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 		const renata = readSource('src/styles/invitation-profiles/renata.scss');
 		expect(renata).not.toContain('--editorial-program-paper');
 		expect(renata).not.toContain('counter-reset: editorial-program');
-		expect(renata).not.toContain("data-structural-variant='editorial-program'");
+		expect(renata).not.toContain("data-variant='editorial-program'");
 	});
 });

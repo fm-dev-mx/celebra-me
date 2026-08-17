@@ -1,14 +1,12 @@
 import type { InvitationPageContext } from '@/lib/invitation/page-data';
 import type { InvitationRenderPlanItem } from '@/lib/invitation/render-plan';
 import type { ContentSectionKey } from '@/lib/theme/theme-contract';
-import {
-	THEME_PRESETS,
-	type ItineraryVariant,
-	type InvitationRevealRecipe,
-	type SectionIntersectionFamily,
-	type ThemePreset,
+import type {
+	InvitationRevealRecipe,
+	SectionIntersectionFamily,
+	SharedSectionVariant,
 } from '@/lib/theme/theme-contract';
-import type { PersonalizedAccessStructuralVariant } from '@/lib/invitation/structural-variants';
+import type { PersonalizedAccessVariant } from '@/lib/invitation/section-variants';
 import { getContactPhone, isPlaceholderContactPhone } from '@/utils/whatsapp';
 
 type Sections = InvitationPageContext['viewModel']['sections'];
@@ -32,8 +30,7 @@ type PersonalizedAccessProps = {
 	maxAllowedAttendees: number;
 	eventYear?: string;
 	isDemoPreview?: boolean;
-	variant?: ThemePreset;
-	structuralVariant?: PersonalizedAccessStructuralVariant;
+	variant?: PersonalizedAccessVariant;
 	title?: string;
 	subtitle?: string;
 	footerText?: string;
@@ -62,7 +59,7 @@ type DescriptorData =
 				image: InterludeBlock['image'];
 				alt: InterludeBlock['alt'];
 				height: InterludeBlock['height'];
-				variant: ThemePreset;
+				variant: SharedSectionVariant;
 				focalPoint?: string;
 				focalPointDesktop?: string;
 				lightX?: string;
@@ -71,20 +68,18 @@ type DescriptorData =
 				interludeIndex?: number;
 			};
 	  }
-	| { component: 'quote'; props: SectionData<'quote'> & { variant: ThemePreset } }
-	| { component: 'family'; props: SectionData<'family'> & { variant: ThemePreset } }
+	| { component: 'quote'; props: SectionData<'quote'> }
+	| { component: 'family'; props: SectionData<'family'> }
 	| {
 			component: 'gallery';
 			props: SectionData<'gallery'>;
 	  }
-	| { component: 'countdown'; props: SectionData<'countdown'> & { variant: ThemePreset } }
-	| { component: 'location'; props: LocationProps & { variant: ThemePreset } }
+	| { component: 'countdown'; props: SectionData<'countdown'> }
+	| { component: 'location'; props: LocationProps }
 	| {
 			component: 'itinerary';
 			props: SectionData<'itinerary'> & {
-				variant: ItineraryVariant;
 				monogram: string;
-				subtitle?: string;
 			};
 	  }
 	| {
@@ -106,9 +101,7 @@ type DescriptorData =
 	| { component: 'gifts'; props: GiftsProps }
 	| {
 			component: 'thankYou';
-			props: SectionData<'thankYou'> & {
-				variant: ThemePreset;
-			};
+			props: Omit<SectionData<'thankYou'>, 'closingPhrase'>;
 	  }
 	| { component: 'personalized-access'; props: PersonalizedAccessProps };
 
@@ -136,24 +129,23 @@ const REVEAL_RECIPES: Record<DescriptorData['component'], InvitationRevealRecipe
 
 function resolvePersonalizedAccessConfig(pageContext: InvitationPageContext): {
 	isDemoPreview: boolean;
-	structuralVariant: PersonalizedAccessStructuralVariant;
+	variant: PersonalizedAccessVariant;
 } | null {
 	const isDemoPreview = pageContext.isDemoPreview ?? false;
 	if (!isDemoPreview && !pageContext.guestContext) return null;
 
-	const structuralVariant =
-		pageContext.viewModel.sections.rsvp?.personalizedAccess.structuralVariant;
-	return structuralVariant ? { isDemoPreview, structuralVariant } : null;
+	const variant = pageContext.viewModel.sections.rsvp?.personalizedAccess.variant;
+	return variant ? { isDemoPreview, variant } : null;
 }
 
-function renderInterlude(pageContext: InvitationPageContext, block: InterludeBlock) {
+function renderInterlude(block: InterludeBlock) {
 	return {
 		component: 'interlude' as const,
 		props: {
 			image: block.image,
 			alt: block.alt,
 			height: block.height,
-			variant: block.variant ?? pageContext.viewModel.theme.preset ?? THEME_PRESETS[0],
+			variant: (block.variant ?? 'standard') as SharedSectionVariant,
 			focalPoint: block.focalPoint,
 			focalPointDesktop: block.focalPointDesktop,
 			lightX: block.lightX,
@@ -167,9 +159,8 @@ function renderPersonalizedAccess(pageContext: InvitationPageContext): Descripto
 	const config = resolvePersonalizedAccessConfig(pageContext);
 	if (!config) return null;
 
-	const { isDemoPreview, structuralVariant } = config;
+	const { isDemoPreview, variant } = config;
 	const guestContext = pageContext.guestContext;
-	const variant = pageContext.viewModel.theme.preset ?? THEME_PRESETS[0];
 	const eventYear = pageContext.viewModel.hero.date
 		? new Date(pageContext.viewModel.hero.date).getUTCFullYear().toString()
 		: undefined;
@@ -187,7 +178,6 @@ function renderPersonalizedAccess(pageContext: InvitationPageContext): Descripto
 			eventYear,
 			isDemoPreview,
 			variant,
-			structuralVariant,
 			title: rsvpSection?.personalizedAccess?.title,
 			subtitle: rsvpSection?.personalizedAccess?.subtitle,
 			footerText: rsvpSection?.personalizedAccess?.footerText,
@@ -196,10 +186,7 @@ function renderPersonalizedAccess(pageContext: InvitationPageContext): Descripto
 	};
 }
 
-function renderRsvpSection(
-	pageContext: InvitationPageContext,
-	themePreset: ThemePreset,
-): DescriptorData | null {
+function renderRsvpSection(pageContext: InvitationPageContext): DescriptorData | null {
 	const { sections, hero } = pageContext.viewModel;
 
 	if (!sections.rsvp) return null;
@@ -228,7 +215,6 @@ function renderRsvpSection(
 		component: 'rsvp' as const,
 		props: {
 			...rsvpProps,
-			variant: resolveSectionVariant(rsvpProps, themePreset),
 			celebrantName: hero.name,
 			guestCap: guestContext?.guest.maxAllowedAttendees ?? rsvpProps.guestCap,
 			initialGuestData: guestContext
@@ -271,35 +257,19 @@ function getMonogram(name: string): string {
 		.toUpperCase();
 }
 
-/**
- * Resolves section variant by checking the section's own variant field.
- * Unlike adapters/event.ts sectionVariant(), this does NOT validate against
- * THEME_PRESETS — it is a simple null-coalescing for the render descriptor.
- */
-function resolveSectionVariant<TVariant extends string, T extends { variant?: TVariant }>(
-	sectionData: T,
-	fallback: TVariant,
-): TVariant {
-	return sectionData.variant ?? fallback;
-}
-
 function renderSection(
 	pageContext: InvitationPageContext,
 	section: RenderableSectionKey,
 	nextSectionLink?: LocationProps['nextSectionLink'],
 ): DescriptorData | null {
-	const { sections, theme, hero } = pageContext.viewModel;
-	const variant = theme?.preset ?? THEME_PRESETS[0];
+	const { sections, hero } = pageContext.viewModel;
 
 	switch (section) {
 		case 'quote':
 			return sections.quote
 				? {
 						component: 'quote' as const,
-						props: {
-							...sections.quote,
-							variant: resolveSectionVariant(sections.quote, variant),
-						},
+						props: sections.quote,
 					}
 				: null;
 
@@ -310,7 +280,6 @@ function renderSection(
 						props: {
 							...sections.family,
 							celebrantName: hero.name,
-							variant: resolveSectionVariant(sections.family, variant),
 						},
 					}
 				: null;
@@ -319,7 +288,6 @@ function renderSection(
 			return sections.gallery
 				? {
 						component: 'gallery' as const,
-						// variant already resolved by adapter; spread includes it
 						props: sections.gallery,
 					}
 				: null;
@@ -328,10 +296,7 @@ function renderSection(
 			return sections.countdown
 				? {
 						component: 'countdown' as const,
-						props: {
-							...sections.countdown,
-							variant: resolveSectionVariant(sections.countdown, variant),
-						},
+						props: sections.countdown,
 					}
 				: null;
 
@@ -342,7 +307,6 @@ function renderSection(
 						props: {
 							...sections.location,
 							nextSectionLink,
-							variant: resolveSectionVariant(sections.location, variant),
 						},
 					}
 				: null;
@@ -353,16 +317,14 @@ function renderSection(
 						component: 'itinerary' as const,
 						props: {
 							...sections.itinerary,
-							variant: sections.itinerary.variant ?? variant,
 							monogram: getMonogram(hero.name),
-							subtitle: sections.itinerary.subtitle,
 						},
 					}
 				: null;
 		}
 
 		case 'rsvp':
-			return renderRsvpSection(pageContext, variant);
+			return renderRsvpSection(pageContext);
 
 		case 'gifts':
 			return renderGiftsSection(sections);
@@ -373,10 +335,7 @@ function renderSection(
 				const { closingPhrase: _closingPhrase, ...thankYouProps } = sections.thankYou;
 				return {
 					component: 'thankYou' as const,
-					props: {
-						...thankYouProps,
-						variant: resolveSectionVariant(sections.thankYou, variant),
-					},
+					props: thankYouProps,
 				};
 			}
 	}
@@ -398,7 +357,7 @@ function renderBlock(
 	switch (block.type) {
 		case 'interlude':
 			return {
-				...renderInterlude(pageContext, block),
+				...renderInterlude(block),
 				...metadata,
 				reveal: REVEAL_RECIPES.interlude,
 			};

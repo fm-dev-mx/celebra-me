@@ -5,7 +5,7 @@
 // LUXURY HACIENDA HERO
 // ==========================================================================
 
-.invitation-hero[data-variant='luxury-hacienda'] {
+.theme-preset--luxury-hacienda .invitation-hero[data-variant='standard'] {
 	.invitation-hero__background::after {
 		background:
 			radial-gradient(
@@ -248,7 +248,7 @@
 }
 
 // Music player theme override (header rules live under themes/sections/header/)
-.music-player[data-variant='luxury-hacienda'] .music-player__button {
+.theme-preset--luxury-hacienda .music-player .music-player__button {
 	transform: scale(0.85);
 	opacity: 70%;
 

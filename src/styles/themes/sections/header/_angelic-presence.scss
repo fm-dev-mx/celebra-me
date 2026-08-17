@@ -6,7 +6,7 @@
 
 // Default Header Variables (Safe Fallbacks)
 
-.header-base[data-variant='angelic-presence'] {
+.theme-preset--angelic-presence .header-base {
 	--header-bg: transparent;
 	--header-bg-scrolled: rgb(var(--color-angelic-white-rgb) / 96%);
 	--header-border-scrolled: 1px solid rgb(var(--color-sacred-gold-rgb) / 24%);

@@ -2,7 +2,7 @@
 
 // Family split-groups: two parallel semantic groups with optional spanning block.
 // Divider color/materiality and typography remain profile/theme tokens.
-.family[data-structural-variant='split-groups'] {
+.family[data-variant='split-groups'] {
 	--family-split-gap-inline: clamp(1.5rem, 5vw, 3.5rem);
 	--family-split-gap-block: clamp(1.25rem, 3.5vw, 1.65rem);
 	--family-split-divider: rgb(0 0 0 / 18%);

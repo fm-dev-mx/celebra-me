@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { AssetSchema, focalPointSchema } from '@/lib/schemas/content/shared.schema';
 import { FAMILY_PRESENTATIONS } from '@/lib/invitation/presentation-options';
-import { FAMILY_STRUCTURAL_VARIANTS } from '@/lib/invitation/structural-variants';
+import { FAMILY_VARIANTS } from '@/lib/invitation/section-variants';
 
 const familyMemberSchema = z.object({ name: z.string(), role: z.string().optional() });
 
@@ -79,9 +79,9 @@ const structuredFamilySchema = familyBaseSchema.superRefine((data, ctx) => {
 
 export const familySchema = z
 	.discriminatedUnion('variant', [
-		familyBaseSchema.extend({ variant: z.literal(FAMILY_STRUCTURAL_VARIANTS[0]) }),
-		structuredFamilySchema.extend({ variant: z.literal(FAMILY_STRUCTURAL_VARIANTS[1]) }),
-		structuredFamilySchema.extend({ variant: z.literal(FAMILY_STRUCTURAL_VARIANTS[2]) }),
+		familyBaseSchema.extend({ variant: z.literal(FAMILY_VARIANTS[0]) }),
+		structuredFamilySchema.extend({ variant: z.literal(FAMILY_VARIANTS[1]) }),
+		structuredFamilySchema.extend({ variant: z.literal(FAMILY_VARIANTS[2]) }),
 	])
 	.superRefine((data, ctx) => {
 		if (data.godparents && data.godparentGroups) {

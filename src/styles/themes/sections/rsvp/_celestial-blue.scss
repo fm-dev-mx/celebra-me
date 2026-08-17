@@ -1,7 +1,4 @@
-@use '../../../tokens' as tokens;
-@use '../../../global/mixins' as mixins;
-
-.rsvp[data-variant='celestial-blue'] {
+.theme-preset--celestial-blue .rsvp {
 	--rsvp-emoji-yes: 'Si';
 	--rsvp-emoji-no: 'No';
 	--color-glass-bg: var(--color-glass-bg, rgb(255 255 255 / 45%));
@@ -34,16 +31,10 @@
 	--rsvp-button-bg-hover: rgb(var(--color-surface-dark-rgb) / 88%);
 	--rsvp-button-filter-hover: none;
 
-	background:
-		linear-gradient(
-			145deg,
-			rgb(var(--color-diamond-white-rgb) / 72%),
-			rgb(var(--color-pearl-gray-rgb) / 58%)
-		),
-		var(--color-surface-primary);
-	border: 1px solid rgb(var(--color-liquid-silver-rgb) / 54%);
+	background: var(--rsvp-section-background);
+	border: var(--rsvp-section-border, 1px solid rgb(var(--color-liquid-silver-rgb) / 54%));
 	box-shadow: var(--shadow-editorial, var(--shadow-premium));
-	color: var(--color-text-primary);
+	color: var(--rsvp-section-color, var(--color-text-primary));
 
 	.rsvp__title {
 		font-family: var(--font-display);

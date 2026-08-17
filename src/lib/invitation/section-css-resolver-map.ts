@@ -24,10 +24,9 @@ type InvitationCssInput = {
 		family?: string;
 		location?: string;
 		itinerary?: string;
+		countdown?: string;
 	};
 	envelopeVariant?: string;
-	/** First-visit reveal mechanism. Editorial cover needs hero structural CSS immediately. */
-	revealVariant?: string;
 	visualProfileId?: string;
 	slug?: string;
 };
@@ -43,7 +42,7 @@ export type InvitationCssOwner =
 export interface InvitationCssLoadItem {
 	href: string;
 	owner: InvitationCssOwner;
-	/** True when the sheet is required to paint the sealed envelope (or editorial-cover first visual). */
+	/** True when the sheet is required to paint the sealed envelope or hero structural CSS. */
 	blocking: boolean;
 }
 
@@ -107,6 +106,13 @@ const STRUCTURAL_VARIANT_TO_ENTRYPOINT: Record<string, Record<string, string>> =
 		'timeline-paper': 'timeline-paper',
 		'editorial-ledger': 'editorial-ledger',
 		'editorial-program': 'editorial-program',
+	},
+	countdown: {
+		'editorial-folio': 'editorial-folio',
+		'magazine-folio': 'magazine-folio',
+		'jeweled-panel': 'jeweled-panel',
+		'rose-ornament': 'rose-ornament',
+		'hacienda-ornament': 'hacienda-ornament',
 	},
 };
 
@@ -206,7 +212,7 @@ function resolveStructuralVariantLoadItems(
 			{
 				href: url,
 				owner: 'structural-variant' as const,
-				blocking: input.revealVariant === 'editorial-cover' && section === 'hero',
+				blocking: section === 'hero',
 			},
 		];
 	});

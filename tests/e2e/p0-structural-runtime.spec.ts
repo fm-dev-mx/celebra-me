@@ -23,14 +23,14 @@ test.describe('P0 structural variants render through the live invitation route',
 			expect(response?.status()).toBe(200);
 
 			const itinerary = page.locator('#itinerary');
-			await expect(itinerary).toHaveAttribute('data-structural-variant', 'timeline-paper');
+			await expect(itinerary).toHaveAttribute('data-variant', 'timeline-paper');
 			await expect(itinerary.locator('.itinerary__program')).toBeVisible();
 			await expect(itinerary.locator('.itinerary__program-row')).toHaveCount(5);
 			await expect(itinerary.locator('.itinerary__items-wrapper')).toHaveCount(0);
 
 			const thankYou = page.locator('#thank-you-section');
 			await expect(thankYou).toHaveAttribute(
-				'data-structural-variant',
+				'data-variant',
 				'editorial-back-cover',
 			);
 			await expect(thankYou.locator('.thank-you-editorial')).toBeVisible();
@@ -54,12 +54,12 @@ test.describe('P0 structural variants render through the live invitation route',
 		expect(response?.status()).toBe(200);
 
 		const itinerary = page.locator('#itinerary');
-		await expect(itinerary).toHaveAttribute('data-structural-variant', 'standard');
+		await expect(itinerary).toHaveAttribute('data-variant', 'standard');
 		await expect(itinerary.locator('.itinerary__items-wrapper')).toBeVisible();
 		await expect(itinerary.locator('.itinerary__program')).toHaveCount(0);
 
 		const thankYou = page.locator('#thank-you-section');
-		await expect(thankYou).toHaveAttribute('data-structural-variant', 'standard');
+		await expect(thankYou).toHaveAttribute('data-variant', 'standard');
 		await expect(thankYou.locator('.thank-you-content')).toBeVisible();
 		await expect(thankYou.locator('.thank-you-editorial')).toHaveCount(0);
 

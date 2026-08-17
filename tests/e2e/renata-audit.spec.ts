@@ -121,9 +121,9 @@ test.describe('Renata XV local visual and content audit', () => {
 			await expect(page.locator('.invitation-hero__title')).toHaveText('Renata');
 			await expect(hero).toContainText(/7:00\s*p\.\s*m\./i);
 			await expect(hero).toContainText(/Hacienda Tres Ríos/i);
-			await expect(hero).toHaveAttribute('data-structural-variant', 'standard');
+			await expect(hero).toHaveAttribute('data-variant', 'standard');
 			const family = page.locator('.family').first();
-			await expect(family).toHaveAttribute('data-structural-variant', 'asymmetric-groups');
+			await expect(family).toHaveAttribute('data-variant', 'asymmetric-groups');
 			await expect(family).toHaveAttribute('data-presentation', 'text-only');
 			await expect(family.locator('.family__title')).toHaveText(
 				'Quienes me acompañan en este día',
@@ -245,7 +245,7 @@ test.describe('Renata XV local visual and content audit', () => {
 			const location = page.locator('.event-location').first();
 			await location.scrollIntoViewIfNeeded();
 			await expect(location).toHaveAttribute(
-				'data-structural-variant',
+				'data-variant',
 				'stacked-venue-plates',
 			);
 			await expect(location).toHaveAttribute('data-presentation', 'simple');
@@ -275,7 +275,7 @@ test.describe('Renata XV local visual and content audit', () => {
 			await expect(receptionMap.first()).toBeVisible();
 
 			const itinerary = page.locator('.itinerary').first();
-			await expect(itinerary).toHaveAttribute('data-structural-variant', 'editorial-program');
+			await expect(itinerary).toHaveAttribute('data-variant', 'editorial-program');
 			expect(await page.locator('.itinerary__program-monogram').count()).toBe(0);
 			expect(await page.locator('.itinerary__program-paper-surface').count()).toBe(0);
 
@@ -306,7 +306,7 @@ test.describe('Renata XV local visual and content audit', () => {
 
 			const gallery = page.locator('.gallery-section').first();
 			await expect(gallery).toBeVisible();
-			await expect(gallery).toHaveAttribute('data-structural-variant', 'feature-stack');
+			await expect(gallery).toHaveAttribute('data-variant', 'feature-stack');
 			await expect(gallery.locator('.gallery-section__title')).toHaveText('Renata');
 			await gallery.scrollIntoViewIfNeeded();
 			const galleryItems = gallery.locator('.gallery-grid__item');
@@ -355,7 +355,7 @@ test.describe('Renata XV local visual and content audit', () => {
 			expect(await page.locator('.personalized-access').count()).toBe(0);
 
 			const rsvp = page.locator('.rsvp').first();
-			await expect(rsvp).toHaveAttribute('data-structural-variant', 'formal-register');
+			await expect(rsvp).toHaveAttribute('data-variant', 'formal-register');
 			await expect(rsvp).toHaveAttribute('data-state', 'locked');
 
 			expect(await page.locator('.event-location__card-flourish').count()).toBe(2);
@@ -611,7 +611,7 @@ test.describe('Renata XV local visual and content audit', () => {
 
 			expect(await page.locator('.personalized-access').count()).toBe(0);
 			const rsvp = page.locator('.rsvp').first();
-			await expect(rsvp).toHaveAttribute('data-structural-variant', 'formal-register');
+			await expect(rsvp).toHaveAttribute('data-variant', 'formal-register');
 			await expect(rsvp).toHaveAttribute('data-state', 'locked');
 			expect(
 				await page
@@ -646,7 +646,7 @@ test.describe('Renata XV local visual and content audit', () => {
 			const personalizedAccess = page.locator('.personalized-access').first();
 			await expect(personalizedAccess).toBeVisible();
 			await expect(personalizedAccess).toHaveAttribute(
-				'data-structural-variant',
+				'data-variant',
 				'formal-pass',
 			);
 			await expect(
@@ -658,7 +658,7 @@ test.describe('Renata XV local visual and content audit', () => {
 				await personalizedAccess.locator('.access-card__ornaments').count(),
 			).toBeGreaterThan(0);
 			await expect(page.locator('.rsvp').first()).toHaveAttribute(
-				'data-structural-variant',
+				'data-variant',
 				'formal-register',
 			);
 			await assertRenataLeakScan(page);

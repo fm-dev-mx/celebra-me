@@ -688,7 +688,6 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 			nickname: str(hero.nickname),
 			date: normalizeDate(hero.date),
 			variant: str(hero.variant) as NonNullable<DraftContent['hero']>['variant'],
-			visualVariant: str(hero.visualVariant) as NonNullable<DraftContent['hero']>['visualVariant'],
 		};
 		for (const field of ['presentation', 'focalPoint', 'focalPointMobile', 'focalPointTablet', 'focalPointDesktop'] as const) {
 			if (hero[field] !== undefined)

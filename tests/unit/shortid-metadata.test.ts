@@ -23,7 +23,7 @@ const baseViewModel: InvitationViewModel = {
 		secondaryName: '',
 		label: 'Mis XV años',
 		date: '2026-08-01T18:00:00Z',
-		variant: 'enchanted-rose',
+		variant: 'standard',
 		structuralVariant: 'standard',
 		backgroundImage: {
 			src: '/_astro/portrait.CWMjVgq3.webp',

@@ -1,7 +1,7 @@
 @use '../../../global/mixins' as mixins;
 @use '../../../invitation/section-primitives' as primitives;
 
-.gallery-section[data-variant='angelic-presence'] {
+.theme-preset--angelic-presence .gallery-section {
 	@include primitives.normalized-section-spacing;
 
 	--gallery-title-font: var(--font-display);

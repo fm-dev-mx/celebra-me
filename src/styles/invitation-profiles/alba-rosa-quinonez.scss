@@ -323,7 +323,7 @@ html:has(.event--alba-rosa-quinonez) body {
 	// 2a. HEADER & MOBILE MENU — GRAPHITE / IVORY / CHAMPAGNE (NO CAFÉ)
 	// Declared on the element to outrank the hacienda header theme hooks.
 	// ==========================================================================
-	.header-base[data-variant='luxury-hacienda'] {
+	.header-base {
 		--header-bg: linear-gradient(
 			180deg,
 			rgb(var(--alba-rsvp-surface-rgb) / 40%) 0%,
@@ -726,7 +726,7 @@ html:has(.event--alba-rosa-quinonez) body {
 	// 3. HERO RESPONSIVENESS & TYPOGRAPHY HIERARCHY
 	// Sequence: age → name → separator → date. Overlay carries contrast.
 	// ==========================================================================
-	.invitation-hero[data-variant='luxury-hacienda'] {
+	.invitation-hero[data-variant='standard'] {
 		position: relative;
 		overflow: hidden;
 
@@ -1190,7 +1190,7 @@ html:has(.event--alba-rosa-quinonez) body {
 		}
 
 		// split-map geometry lives in themes/sections/location/_split-map.scss.
-		&[data-structural-variant='split-map'] {
+		&[data-variant='split-map'] {
 			--location-split-gap: clamp(1.75rem, 3.5vw, 2.5rem);
 		}
 
@@ -1607,7 +1607,7 @@ html:has(.event--alba-rosa-quinonez) body {
 
 	// feature-stack geometry lives in themes/sections/gallery/_feature-stack.scss;
 	// profile supplies crop focal tokens only.
-	.gallery-section[data-structural-variant='feature-stack'] {
+	.gallery-section[data-variant='feature-stack'] {
 		// Albert Memorial frame: keep Alba fully inside the crop
 		.gallery-grid__item[data-gallery-index='2'] img {
 			object-position: 60% 84%;
@@ -1794,13 +1794,6 @@ html:has(.event--alba-rosa-quinonez) body {
 		--rsvp-radio-card-padding: 0.85rem 1rem;
 
 		background: transparent;
-
-		&[data-variant='luxury-hacienda'] {
-			background: transparent;
-			border: none;
-			box-shadow: none;
-			backdrop-filter: none;
-		}
 
 		&__eyebrow {
 			color: rgb(var(--alba-champagne-rgb) / 86%);
@@ -2070,7 +2063,7 @@ html:has(.event--alba-rosa-quinonez) body {
 		z-index: 2;
 	}
 
-	.thank-you-section[data-variant='editorial-magazine'] {
+	.thank-you-section {
 		background: var(--alba-rsvp-surface);
 		color: var(--alba-ivory);
 		min-height: auto;

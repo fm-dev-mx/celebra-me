@@ -188,18 +188,18 @@ const activeSectionCssPlan =
 					footerVariant: pageCtx.footerVariant,
 					galleryVariant: pageCtx.viewModel.sections.gallery?.variant,
 					structuralVariants: {
-						hero: pageCtx.viewModel.hero.structuralVariant,
-						thankYou: pageCtx.viewModel.sections.thankYou?.structuralVariant,
-						gifts: pageCtx.viewModel.sections.gifts?.structuralVariant,
-						rsvp: pageCtx.viewModel.sections.rsvp?.structuralVariant,
+						hero: pageCtx.viewModel.hero.variant,
+						thankYou: pageCtx.viewModel.sections.thankYou?.variant,
+						gifts: pageCtx.viewModel.sections.gifts?.variant,
+						rsvp: pageCtx.viewModel.sections.rsvp?.variant,
 						personalizedAccess:
-							pageCtx.viewModel.sections.rsvp?.personalizedAccess?.structuralVariant,
-						family: pageCtx.viewModel.sections.family?.structuralVariant,
-						location: pageCtx.viewModel.sections.location?.structuralVariant,
+							pageCtx.viewModel.sections.rsvp?.personalizedAccess?.variant,
+						family: pageCtx.viewModel.sections.family?.variant,
+						location: pageCtx.viewModel.sections.location?.variant,
 						itinerary: pageCtx.viewModel.sections.itinerary?.variant,
+						countdown: pageCtx.viewModel.sections.countdown?.variant,
 					},
 					envelopeVariant: pageCtx.envelope?.variant,
-					revealVariant: pageCtx.envelope?.revealVariant,
 					visualProfileId: pageCtx.viewModel.visualProfileId,
 				slug: invitationRecord?.slug ?? undefined,
 			})
@@ -306,7 +306,7 @@ const headLinks = buildInvitationStylesheetHeadLinks({
 
 				<EventHeader
 					links={pageCtx.viewModel.navigation ?? []}
-					variant={pageCtx.viewModel.theme.preset}
+					variant="standard"
 					initials={pageCtx.viewModel.envelope?.data?.sealInitials}
 					eventName={pageCtx.viewModel.hero?.name}
 					eventSubtitle={pageCtx.viewModel.hero?.label}
@@ -324,7 +324,7 @@ const headLinks = buildInvitationStylesheetHeadLinks({
 				<Footer
 					eventSlug={pageCtx.viewModel.id}
 					showEnvelope={pageCtx.wrapper.showEnvelope}
-					variant={pageCtx.footerVariant}
+					variant="standard"
 					closingPhrase={pageCtx.footerClosingPhrase}
 					showFooterBranding={pageCtx.viewModel.brandingVisibility.showFooterBranding}
 					showContactCta={pageCtx.viewModel.brandingVisibility.showContactCta}

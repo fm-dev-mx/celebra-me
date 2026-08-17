@@ -17,7 +17,7 @@ test.describe('canonical managed invitation route contracts', () => {
 		await expect(countdown.locator('[data-unit="days"]')).toBeVisible();
 
 		const location = page.locator('#event-location');
-		await expect(location).toHaveAttribute('data-structural-variant', 'split-map');
+		await expect(location).toHaveAttribute('data-variant', 'split-map');
 		const mobileLayout = await location.locator('.event-location__card').evaluate((element) => {
 			const style = getComputedStyle(element);
 			return { display: style.display, flexDirection: style.flexDirection };
@@ -47,7 +47,7 @@ test.describe('canonical managed invitation route contracts', () => {
 		expect(response?.status()).toBe(200);
 
 		const hero = page.locator('#inicio');
-		await expect(hero).toHaveAttribute('data-structural-variant', 'split-cover');
+		await expect(hero).toHaveAttribute('data-variant', 'split-cover');
 		const desktopLayout = await hero
 			.locator('.invitation-hero__background img')
 			.evaluate((element) => {
@@ -60,7 +60,7 @@ test.describe('canonical managed invitation route contracts', () => {
 		expect(desktopLayout.height).toBeGreaterThan(0);
 
 		await page.setViewportSize({ width: 390, height: 844 });
-		await expect(hero).toHaveAttribute('data-structural-variant', 'split-cover');
+		await expect(hero).toHaveAttribute('data-variant', 'split-cover');
 		const mobileObjectFit = await hero
 			.locator('.invitation-hero__background img')
 			.evaluate((element) => getComputedStyle(element).objectFit);

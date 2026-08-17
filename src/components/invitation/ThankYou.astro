@@ -1,17 +1,15 @@
 ---
-// src/components/invitation/ThankYou.astro
 import '@/styles/invitation/_thank-you.scss';
 import OptimizedImage from '@/components/common/OptimizedImage.astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
-import type { ThankYouStructuralVariant } from '@/lib/invitation/structural-variants';
+import type { ThankYouVariant } from '@/lib/invitation/section-variants';
 
 interface Props {
 	message: string;
 	closingName: string;
 	date?: string;
 	image?: string | ImageAsset;
-	variant?: string;
-	structuralVariant?: ThankYouStructuralVariant;
+	variant?: ThankYouVariant;
 	focalPoint?: string;
 	overlayAnchor?: 'left' | 'right' | 'top' | 'bottom';
 	overlaySafeArea?: {
@@ -28,12 +26,11 @@ const {
 	date,
 	image,
 	variant = 'standard',
-	structuralVariant = 'standard',
 	focalPoint,
 	overlayAnchor,
 	overlaySafeArea,
 } = Astro.props;
-const usesEditorialLayout = structuralVariant === 'editorial-back-cover';
+const usesEditorialLayout = variant === 'editorial-back-cover';
 const hasSubjectAwareOverlay = Boolean(overlayAnchor || overlaySafeArea);
 
 const firstLetter = message.charAt(0);
@@ -49,21 +46,6 @@ const IMAGE_CONFIGS = {
 		quality: 90,
 		class: 'photo-image',
 	},
-	'celestial-blue': {
-		width: 800,
-		height: 1000,
-		class: 'photo-image thank-you-editorial__image',
-	},
-	'enchanted-rose': {
-		width: 700,
-		height: 1050,
-		class: 'photo-image thank-you-editorial__image',
-	},
-	'editorial-magazine': {
-		width: 800,
-		height: 1000,
-		class: 'photo-image thank-you-editorial__image',
-	},
 	standard: {
 		width: 400,
 		height: 400,
@@ -71,8 +53,8 @@ const IMAGE_CONFIGS = {
 	},
 } as const;
 
-const needsLargePhoto = hasSubjectAwareOverlay || structuralVariant === 'full-bleed-photo';
-const configKey: keyof typeof IMAGE_CONFIGS = needsLargePhoto ? 'subject-aware' : (variant in IMAGE_CONFIGS ? (variant as keyof typeof IMAGE_CONFIGS) : 'standard');
+const needsLargePhoto = hasSubjectAwareOverlay || variant === 'full-bleed-photo';
+const configKey: keyof typeof IMAGE_CONFIGS = needsLargePhoto ? 'subject-aware' : 'standard';
 const imageConfig = IMAGE_CONFIGS[configKey];
 
 ---
@@ -82,7 +64,6 @@ const imageConfig = IMAGE_CONFIGS[configKey];
 	data-screenshot-section="thankYou"
 	class="thank-you-section"
 	data-variant={variant}
-	data-structural-variant={structuralVariant}
 	data-overlay-anchor={overlayAnchor}
 	data-has-overlay-safe-area={overlaySafeArea ? 'true' : undefined}
 >

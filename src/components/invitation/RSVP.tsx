@@ -21,7 +21,7 @@ import {
 	RsvpFormView,
 	type RevealedLocation,
 } from '@/components/invitation/RSVPComponents';
-import type { RsvpStructuralVariant } from '@/lib/invitation/structural-variants';
+import type { RsvpVariant } from '@/lib/invitation/section-variants';
 
 interface RSVPProps {
 	eventType: EventRecord['eventType'];
@@ -41,8 +41,7 @@ interface RSVPProps {
 		phone?: string;
 	};
 	locationVisibility?: LocationVisibility;
-	variant?: string;
-	structuralVariant?: RsvpStructuralVariant;
+	variant?: RsvpVariant;
 	confirmationMode?: 'api' | 'whatsapp' | 'both';
 	whatsappConfig?: WhatsAppConfig;
 	initialGuestData?: {
@@ -126,7 +125,6 @@ const RSVP: React.FC<RSVPProps> = ({
 	responseMessages,
 	labels,
 	variant,
-	structuralVariant,
 	confirmationMode = 'api',
 	whatsappConfig,
 	initialGuestData,
@@ -190,7 +188,7 @@ const RSVP: React.FC<RSVPProps> = ({
 	const showIdentityFields = isPublicRsvp
 		? attendanceStatus !== null && !nameLocked
 		: !nameLocked;
-	const labelsResolved = resolveLabels(labels, celebrantName, structuralVariant);
+	const labelsResolved = resolveLabels(labels, celebrantName, variant);
 	const resolvedSubcopy = subcopy ?? getDefaultRsvpSubcopy(eventType);
 	const showWhatsAppCta =
 		submitted &&
@@ -318,7 +316,6 @@ const RSVP: React.FC<RSVPProps> = ({
 								ref={successRef}
 								title={title}
 								variant={variant}
-								structuralVariant={structuralVariant}
 								onFocusCapture={scheduleRsvpRecenter}
 								name={name}
 								attendanceStatus={attendanceStatus}
@@ -360,7 +357,6 @@ const RSVP: React.FC<RSVPProps> = ({
 								title={title}
 								subcopy={resolvedSubcopy}
 								variant={variant}
-								structuralVariant={structuralVariant}
 								onFocusCapture={scheduleRsvpRecenter}
 								prefersReducedMotion={!!prefersReducedMotion}
 								nameLocked={nameLocked}

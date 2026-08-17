@@ -906,7 +906,7 @@
 	}
 
 	// single-keepsake structure is canonical; profile supplies frame/tokens only.
-	.gallery-section[data-structural-variant='single-keepsake'] {
+	.gallery-section[data-variant='single-keepsake'] {
 		--gallery-section-padding-block: clamp(3.25rem, 6.5vw, 5.25rem);
 		--gallery-item-image-position: 50% 38%;
 		--gallery-single-label-font: var(--font-body);

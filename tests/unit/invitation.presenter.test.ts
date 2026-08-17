@@ -78,14 +78,14 @@ describe('prepareInvitationPageContext', () => {
 
 		expect(context.wrapper.dataAttributes['data-theme-preset']).toBe('editorial');
 		expect(context.viewModel.theme.preset).toBe('editorial');
-		expect(context.viewModel.hero.variant).toBe('editorial');
+		expect(context.viewModel.hero.variant).toBe('standard');
 		expect(context.envelope?.variant).toBe('editorial');
 		expect(context.footerVariant).toBe('editorial');
-		expect(context.viewModel.sections.location?.variant).toBe('editorial');
+		expect(context.viewModel.sections.location?.variant).toBe('standard');
 		expect(context.renderPlan).toContainEqual(
 			expect.objectContaining({
 				type: 'interlude',
-				variant: 'editorial',
+				variant: 'standard',
 			}),
 		);
 	});
@@ -293,7 +293,7 @@ const baseViewModel = {
 		label: 'Event',
 		date: '2027-01-01',
 		backgroundImage: { src: '/img.jpg', alt: 'Test image' },
-		variant: 'jewelry-box' as const,
+		variant: 'standard' as const,
 	},
 	envelope: { enabled: false },
 	brandingVisibility: {
@@ -373,7 +373,7 @@ describe('buildPageContextFromViewModel', () => {
 		expect(plan).toContain('rsvp');
 	});
 
-	it('resolves footerVariant from sectionStyles when not preview', () => {
+	it('resolves footerVariant from theme.preset', () => {
 		const viewModel = {
 			...baseViewModel,
 			id: 'footer-test',
@@ -386,10 +386,9 @@ describe('buildPageContextFromViewModel', () => {
 			viewModel,
 			slug: 'footer-test',
 			eventType: 'xv',
-			sectionStyles: { footer: { variant: 'enchanted-rose' as const } },
 		});
 
-		expect(context.footerVariant).toBe('enchanted-rose');
+		expect(context.footerVariant).toBe('editorial');
 	});
 
 	it('sets data-reveal-state to sealed when envelope is enabled (non-embedded)', () => {
@@ -788,8 +787,9 @@ describe('buildPageContextFromViewModel', () => {
 			},
 			sections: {
 				location: {
-					structuralVariant: 'standard',
-					visibility: 'after-rsvp',
+					variant: 'standard' as const,
+					structuralVariant: 'standard' as const,
+					visibility: 'after-rsvp' as const,
 					introHeading: 'Ubicación',
 					ceremony: {
 						venueEvent: 'Celebración',
@@ -837,8 +837,9 @@ describe('buildPageContextFromViewModel', () => {
 			title: 'Regression Test — After RSVP Confirmed',
 			sections: {
 				location: {
-					structuralVariant: 'standard',
-					visibility: 'after-rsvp',
+					variant: 'standard' as const,
+					structuralVariant: 'standard' as const,
+					visibility: 'after-rsvp' as const,
 					introHeading: 'Ubicación',
 					ceremony: {
 						venueEvent: 'Celebración',

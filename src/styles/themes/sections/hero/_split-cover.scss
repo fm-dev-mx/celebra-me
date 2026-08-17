@@ -1,8 +1,6 @@
 @use '../../../global/mixins' as mixins;
 
-// Hero split-cover: independent type plane + contained lateral photograph.
-// Profiles may override plane/overlay tokens; they must not redefine the grid.
-.invitation-hero[data-structural-variant='split-cover'] {
+.invitation-hero[data-variant='split-cover'] {
 	--hero-split-plane-bg: var(--color-surface-dark, rgb(28 36 32));
 	--hero-split-overlay-strong: rgb(0 0 0 / 92%);
 	--hero-split-overlay-mid: rgb(0 0 0 / 72%);

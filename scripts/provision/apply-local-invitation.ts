@@ -45,6 +45,10 @@ import type { UploadedAssetMap } from './invitations/invitation-definition.ts';
 import { cleanupLocalResources, type TrackedResource } from './managed-invitation-cleanup.ts';
 import { resolveLocalEnv } from './local-provision-env.ts';
 import { buildCloudinaryPublicId } from './cloudinary-adapter.ts';
+import {
+	canReuseExistingLocalAsset,
+	isAcceptableLocalFinalAssetRow,
+} from './local-final-asset-verification.ts';
 import { resolveAndEnsureInvitationHostOwner } from './invitation-host-owner.ts';
 import { verifySupabaseApiCredential } from './supabase-credential-verification.ts';
 import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
@@ -245,13 +249,22 @@ async function verifyFinalAsset({
 	);
 	if (!row || !hasMatchingAssetMetadata(row, asset)) return false;
 
-	if (row.provider !== 'cloudinary' && !row.secure_url) return false;
-
-	const secureUrl = row.secure_url as string;
-	const rowSha = row.sha256 as string;
-	if (!secureUrl || !secureUrl.startsWith('https://res.cloudinary.com')) return false;
-	if (rowSha && rowSha !== asset.imageHash) return false;
-	return isReachable(secureUrl);
+	const secureUrl = typeof row.secure_url === 'string' ? row.secure_url : null;
+	const rowSha = typeof row.sha256 === 'string' ? row.sha256 : null;
+	const provider = typeof row.provider === 'string' ? row.provider : null;
+	if (
+		!isAcceptableLocalFinalAssetRow({
+			provider,
+			secureUrl,
+			sha256: rowSha,
+			expectedSha256: asset.imageHash,
+			slug,
+			key: asset.key,
+		})
+	) {
+		return false;
+	}
+	return isReachable(secureUrl as string);
 }
 
 // ---------------------------------------------------------------------------
@@ -523,7 +536,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	const { data: existingProvenance } = await supabase
 		.from('managed_invitation_release_provenance')
 		.select(
-			'invitation_id, managed_projection, applied_draft_updated_at, applied_operation_id, applied_published_version, applied_published_projection_hash',
+			'invitation_id, definition_slug, source_hash, package_hash, projection_hash, managed_projection, applied_draft_updated_at, applied_operation_id, applied_published_version, applied_published_projection_hash',
 		)
 		.eq('invitation_id', invitationId)
 		.maybeSingle();
@@ -603,12 +616,21 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 				typeof existingAsset?.secure_url === 'string' ? existingAsset.secure_url : '';
 			const canReuse =
 				Boolean(existingAsset) &&
-				existingAsset?.provider === 'cloudinary' &&
-				existingUrl.startsWith('https://res.cloudinary.com') &&
-				existingAsset.sha256 === norm.imageHash &&
-				existingAsset.default_alt_text === norm.alt &&
-				existingAsset.mime_type === norm.mimeType &&
-				Number(existingAsset.validation_version) === norm.validationVersion;
+				canReuseExistingLocalAsset({
+					provider:
+						typeof existingAsset?.provider === 'string' ? existingAsset.provider : null,
+					secureUrl: existingUrl,
+					sha256: existingAsset?.sha256,
+					expectedSha256: norm.imageHash,
+					alt: existingAsset?.default_alt_text,
+					expectedAlt: norm.alt,
+					mimeType: existingAsset?.mime_type,
+					expectedMimeType: norm.mimeType,
+					validationVersion: existingAsset?.validation_version,
+					expectedValidationVersion: norm.validationVersion,
+					slug,
+					key: norm.key,
+				});
 			if (canReuse && existingAsset) {
 				assetMap[norm.key] = {
 					type: 'uploaded',
@@ -621,11 +643,13 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 					storageHash: existingAsset.sha256 ?? norm.imageHash,
 					metadata: existingAsset,
 				});
+				const reuseProvider =
+					existingAsset.provider === 'cloudinary' ? 'Cloudinary' : 'Supabase Storage';
 				assetActions.push({
 					resource: 'invitation_assets',
 					name: norm.displayName,
 					action: 'reuse',
-					detail: `Cloudinary asset preserved under content-only (${(norm.fileSize / 1024).toFixed(1)} KB WebP)`,
+					detail: `${reuseProvider} asset preserved under content-only (${(norm.fileSize / 1024).toFixed(1)} KB WebP)`,
 				});
 			} else {
 				assetActions.push({
@@ -981,12 +1005,23 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		(action) =>
 			action.action === 'create' || action.action === 'replace' || action.action === 'delete',
 	);
-	if (hasManagedChanges) {
+	const expectedProvenanceProjectionHash = provenanceProjectionHash(release.projectionHash);
+	const isProvenanceCurrent = Boolean(
+		existingProvenance &&
+			existingProvenance.definition_slug === release.slug &&
+			existingProvenance.source_hash === release.sourceHash &&
+			existingProvenance.package_hash === packageHash &&
+			existingProvenance.projection_hash === expectedProvenanceProjectionHash,
+	);
+	const needsProvenanceRecord = !isProvenanceCurrent;
+	if (hasManagedChanges || needsProvenanceRecord) {
 		actions.push({
 			resource: 'managed_invitation_release_provenance',
 			name: 'Procedencia de la versión administrada',
 			action: existingProvenance ? 'replace' : 'create',
-			detail: 'Registrar la identidad del paquete ejecutado',
+			detail: needsProvenanceRecord && !hasManagedChanges
+				? 'Registrar provenance pendiente (contenido ya sincronizado)'
+				: 'Registrar la identidad del paquete ejecutado',
 		});
 	}
 
@@ -1009,14 +1044,14 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		(!isPubContentIdentical || !existingPub ? 1 : 0) +
 		(!existingEvent ? 1 : 0) +
 		(!existingMembership ? 1 : 0) +
-		(hasManagedChanges && !existingProvenance ? 1 : 0);
+		(needsProvenanceRecord && !existingProvenance ? 1 : 0);
 	const estUpdates =
 		(existingInv && !isInvitationIdentical ? 1 : 0) +
 		assetActions.filter((a) => a.action === 'replace').length +
 		(existingDraft && !isDraftContentIdentical ? 1 : 0) +
 		(existingEvent && !isEventIdentical ? 1 : 0) +
 		(existingMembership && !isMembershipIdentical ? 1 : 0) +
-		(hasManagedChanges && existingProvenance ? 1 : 0);
+		(needsProvenanceRecord && existingProvenance ? 1 : 0);
 	const estUploads = assetActions.filter((a) => a.action === 'create').length;
 	const estOverwrites = assetActions.filter((a) => a.action === 'replace').length;
 
@@ -1161,7 +1196,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 
 	// ── APPLY MUTATIONS ──────────────────────────────────────────────────
 	const trackedResources: TrackedResource[] = [];
-	if (hasManagedChanges && existingProvenance)
+	if (needsProvenanceRecord && existingProvenance)
 		trackedResources.push({
 			type: 'managed_invitation_release_provenance',
 			id: invitationId,
@@ -1246,7 +1281,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		};
 
 		if (existingInv && !isInvitationIdentical) {
-			// Already flagged as isPreExisting at line 387 — no tracking push needed.
+			// Already tracked as isPreExisting above — no tracking push needed.
 			const { error } = await supabase
 				.from('invitations')
 				.update(invMetadata)
@@ -1385,6 +1420,8 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 				markOverwritten('invitation_content_draft', existingDraft.id as string);
 				draftId = data.id as string;
 				draftUpdatedAt = data.updated_at as string;
+				mutationStarted = true;
+				completedSteps.push('content_applied');
 			} else {
 				const newId = randomUUID();
 				const { data, error } = await supabase
@@ -1401,6 +1438,8 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 				if (error) throw error;
 				draftId = data.id as string;
 				draftUpdatedAt = data.updated_at as string;
+				mutationStarted = true;
+				completedSteps.push('content_applied');
 				trackedResources.push({
 					type: 'invitation_content_draft',
 					id: newId,
@@ -1495,6 +1534,8 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 
 			if (pubError) throw pubError;
 			if (existingPub) markOverwritten('published_invitation_content', invitationId);
+			mutationStarted = true;
+			completedSteps.push('published');
 			finalVersion = pubResult?.publishedContent?.version ?? targetVersion;
 		} else if (rekeyFrom && existingPub && existingPub.slug !== targetSlug) {
 			// Pure identity rekey: keep published version/content, sync route slug only.
@@ -1600,7 +1641,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			supabase
 				.from('invitation_assets')
 				.select(
-					'display_name, default_alt_text, storage_path, mime_type, file_size, width, height, validation_version, original_mime_type, original_file_size, provider, provider_public_id, secure_url, sha256',
+					'display_name, default_alt_text, storage_path, mime_type, file_size, width, height, validation_version, original_mime_type, original_file_size, provider, provider_public_id, secure_url, sha256, managed_source_key',
 				)
 				.eq('invitation_id', invitationId)
 				.is('deleted_at', null),
@@ -1717,12 +1758,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 				input_hashes: { sourceHash: release.sourceHash, packageHash },
 				expected_state: constructedPlan.targetPreconditions,
 				status: 'applied',
-				completed_steps: [
-					...completedSteps,
-					'content_applied',
-					'published',
-					'provenance_recorded',
-				],
+				completed_steps: [...completedSteps, 'provenance_recorded'],
 				result: { planId: constructedPlan.planId, publishedVersion: finalVersion },
 				retry_of_operation_id: retryParentOperationId ?? null,
 			});

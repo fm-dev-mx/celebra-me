@@ -186,7 +186,8 @@ describe('Invitation header navigation contract', () => {
 	it('maps celestial-blue header tokens onto HeaderBase consumed variables', () => {
 		const source = read('src/styles/themes/sections/header/_celestial-blue.scss');
 
-		expect(source).toMatch(/\.header-base\[data-variant=['"]celestial-blue['"]\]/);
+		// Header atmosphere is owned by theme preset scope, never data-variant=theme.
+		expect(source).toMatch(/\.theme-preset--celestial-blue\s+\.header-base/);
 		expect(source).toMatch(/--header-bg:/);
 		expect(source).toMatch(/--header-bg-scrolled:/);
 		expect(source).toMatch(/--header-border-color:/);

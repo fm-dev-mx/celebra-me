@@ -25,7 +25,7 @@
 }
 
 .invitation-section-wrapper[data-section-kind='personalized-access']:has(
-		.personalized-access[data-structural-variant='formal-pass']
+		.personalized-access[data-variant='formal-pass']
 	) {
 	--color-text-primary: var(--formal-chapter-cream);
 	--color-text-primary-rgb: var(--formal-chapter-cream-rgb);
@@ -37,7 +37,7 @@
 	padding-block-end: clamp(1.5rem, 3.5vw, 2.5rem);
 }
 
-.personalized-access[data-structural-variant='formal-pass'] {
+.personalized-access[data-variant='formal-pass'] {
 	--formal-chapter-display: 'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
 	--formal-chapter-body: 'Instrument Sans Variable', system-ui, sans-serif;
 	--formal-chapter-label: 'Bodoni Moda Variable', 'Playfair Display Variable', georgia, serif;

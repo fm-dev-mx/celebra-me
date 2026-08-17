@@ -34,6 +34,7 @@ const confirmedContext = {
 };
 
 const protectedLocation = {
+	variant: 'standard' as const,
 	structuralVariant: 'standard' as const,
 	visibility: 'after-rsvp' as const,
 	introHeading: 'Ubicación',
@@ -65,7 +66,7 @@ beforeEach(() => {
 				label: 'Test Event',
 				date: '2026-08-01T20:00:00.000Z',
 				backgroundImage: { src: '/hero.webp', alt: 'Test Event' },
-				variant: 'angelic-presence',
+				variant: 'standard',
 			},
 			envelope: { enabled: false },
 			brandingVisibility: {
@@ -102,7 +103,7 @@ describe('resolveGatedLocationPayload', () => {
 					label: 'Primera Comunión',
 					date: '2026-08-01T20:00:00.000Z',
 					backgroundImage: { src: '/hero.webp', alt: 'Luna y Estrella' },
-					variant: 'angelic-presence',
+					variant: 'standard',
 				},
 				envelope: { enabled: false },
 				brandingVisibility: {

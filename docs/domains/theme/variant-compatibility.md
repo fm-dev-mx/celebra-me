@@ -1,59 +1,63 @@
 # Variant Compatibility Inventory
 
-**Status:** Active, input-only compatibility register
+**Status:** Documentation-only register of remaining input-normalization behaviors
 
 **Runtime owner:** `src/lib/invitation/variant-normalization.ts`
 
-This inventory exists to keep legacy acceptance visible and removable. It is not a second variant
-system. Canonical schemas, adapters, descriptors, renderers, CSS, and shared primitives consume only
-the normalized section contracts described in [`variant-system.md`](variant-system.md).
+This inventory documents what the single input normalizer still accepts or strips. It is not a
+second variant system and is not mirrored by a TypeScript alias array. Canonical schemas, adapters,
+descriptors, renderers, CSS, and shared primitives consume only the normalized section contracts in
+[`variant-system.md`](variant-system.md).
 
-## Supported aliases
+## Still accepted (input → canonical)
 
-- **Legacy:** `hero.structuralVariant`
-  - **Canonical target:** `hero.variant`
-  - **Known consumers:** persisted published content and legacy fixtures
-  - **Retire when:** the repository and persisted corpus use `hero.variant`
-- **Legacy:** `sectionStyles.*.structuralVariant`
-  - **Canonical target:** `owning section.variant`
-  - **Known consumers:** persisted published content and legacy fixtures
-  - **Retire when:** managed and persisted content use section-owned variants
-- **Legacy:** `gallery.variant=single`
+- **`*.structuralVariant` / `sectionStyles.*.structuralVariant`**
+  - **Canonical target:** owning section `variant`
+  - **Behavior:** merged via dual-path resolve; then deleted from normalized output
+  - **Retire when:** repository and persisted corpus write only `variant`
+- **`gallery.variant=single`**
   - **Canonical target:** `gallery.variant=single-keepsake`
-  - **Known consumers:** persisted legacy gallery content
-  - **Retire when:** the repository and persisted corpus have zero `single` aliases
-- **Legacy:** `gallery.variant=<theme preset>`
-  - **Canonical target:** `matching semantic gallery layout + gallery.visualVariant=<theme preset>`
-  - **Known consumers:** legacy Gallery fixtures
-  - **Retire when:** the repository and persisted corpus separate Gallery layout and skin
-- **Legacy:** `gifts.variant=<theme preset>`
-  - **Canonical target:** `gifts.variant=standard or editorial-catalog`
-  - **Known consumers:** persisted published content and legacy Gifts fixtures
-  - **Retire when:** the repository and persisted corpus use a semantic Gifts variant
-- **Legacy:** `itinerary.presentation.behavior`
+  - **Retire when:** zero `single` aliases remain in corpus and persisted content
+- **`itinerary.presentation.behavior`**
   - **Canonical target:** `itinerary.variant`
-  - **Known consumers:** persisted published content and legacy fixtures
-  - **Retire when:** all persisted and fixture content carries `itinerary.variant`
-- **Legacy:** `theme.preset=editorial-magazine with omitted structural variant`
-  - **Canonical target:** explicit editorial section variants
-  - **Known consumers:** legacy editorial-magazine payloads
-  - **Retire when:** all persisted editorial-magazine payloads carry explicit variants
-- **Legacy:** `visualProfileId intersection profile`
+  - **Retire when:** all payloads carry `itinerary.variant`
+- **`visualProfileId` intersection profile table**
   - **Canonical target:** `composition.intersections`
-  - **Known consumers:** persisted managed rows pending canonical promotion
-  - **Retire when:** all persisted managed rows carry explicit `composition.intersections`
+  - **Behavior:** only when `composition` is omitted; managed definitions must author intersections
+    explicitly
+  - **Retire when:** all persisted managed rows carry `composition.intersections`
+- **`sectionStyles.{quote,footer,…}.variant=<theme preset>`**
+  - **Canonical target:** strip; section `data-variant=standard`; atmosphere via `.theme-preset--*`
+  - **Retire when:** writers stop emitting theme-named style variants
 
-Every alias above is normalized by the same pure input function. Canonical producers must not write
-these fields. Unknown canonical values are deliberately preserved by normalization so the schema
-rejects them instead of converting them to a default.
+## Removed (no theme→variant remapping)
 
-The identity-keyed intersection table is retained only to read already-persisted content. Managed
-repository definitions author `composition.intersections` explicitly, and the render plan never
-reads `visualProfileId`.
+Theme preset names are **never** used to invent section variants. Omitted or theme-named inputs
+default as follows; non-default looks require an explicit canonical `variant`:
+
+| Section | Default when omitted / theme-named | Author explicitly when needed |
+| --- | --- | --- |
+| Gallery | `uniform-grid` | layout ids (`editorial-mosaic`, `magazine-spread`, …) |
+| Countdown | `standard` | `editorial-folio`, `magazine-folio`, `jeweled-panel`, … |
+| Hero | `standard` | `editorial-cover`, `split-cover` |
+| Gifts | `standard` | `editorial-catalog` |
+| RSVP | `standard` | `editorial-press-pass`, `formal-register` |
+| Personalized Access | `standard` | `editorial-pass`, `formal-pass`, `ornamented` |
+| Thank You | `standard` | `editorial-back-cover`, `full-bleed-photo` |
+
+Formerly removed alias registers (no longer in code):
+
+- `gallery.variant=<theme preset>`
+- `sectionStyles.countdown.variant=<theme preset>`
+- `theme.preset=editorial-magazine` implied structural variants (hero/gifts/rsvp/thankYou)
+- TypeScript alias inventory array (documentation is the SSOT for remaining input behaviors)
+
+Unknown non-theme canonical values are deliberately preserved so the schema rejects them instead of
+silently converting them.
 
 ## Removal evidence
 
-Immediately before removing an alias, search managed definitions, the local render corpus, demos,
-templates, intake/editor schemas, draft/publication mappers, adapters, renderers, styles, fixtures,
-tests, and active documentation. Record the search and affected smoke result with the change. A
-repository-only zero count is insufficient when persisted content is a known consumer.
+Before retiring a remaining dual-path or the intersection profile table, search managed definitions,
+local render corpus, demos, templates, intake/editor schemas, draft/publication mappers, adapters,
+renderers, styles, fixtures, tests, and active documentation. A repository-only zero count is
+insufficient when persisted content is a known consumer.

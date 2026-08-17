@@ -40,6 +40,7 @@ describe('isRsvpRevealLocation', () => {
 describe('isLocationLocked', () => {
 	it('returns true when location has after-rsvp visibility and guest is not confirmed', () => {
 		const location = {
+			variant: 'standard' as const,
 			structuralVariant: 'standard' as const,
 			visibility: 'after-rsvp' as const,
 		};
@@ -48,6 +49,7 @@ describe('isLocationLocked', () => {
 
 	it('returns false when guest is confirmed regardless of visibility', () => {
 		const location = {
+			variant: 'standard' as const,
 			structuralVariant: 'standard' as const,
 			visibility: 'after-rsvp' as const,
 		};
@@ -59,7 +61,7 @@ describe('isLocationLocked', () => {
 	});
 
 	it('returns false when location has public visibility', () => {
-		const location = { structuralVariant: 'standard' as const, visibility: 'public' as const };
+		const location = { variant: 'standard' as const, structuralVariant: 'standard' as const, visibility: 'public' as const };
 		expect(isLocationLocked(location, false)).toBe(false);
 	});
 });

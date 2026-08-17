@@ -74,7 +74,7 @@ describe('Boda Victoria y Roberto provision contract', () => {
 		expect(profile).not.toContain('.event-location__card-map-preview-artwork');
 		expect(profile).not.toContain("data-variant='single'");
 		expect(fs.readFileSync(galleryStylesPath, 'utf8')).toContain(
-			".gallery-section[data-structural-variant='single-keepsake']",
+			".gallery-section[data-variant='single-keepsake']",
 		);
 		expect(profile).not.toContain("data-presentation='text-only'");
 		expect(profile).not.toContain('OneDrive');

@@ -1,6 +1,6 @@
 @use '../../../global/mixins' as mixins;
 
-.invitation-footer[data-variant='premiere-floral'] {
+.theme-preset--premiere-floral .invitation-footer {
 	padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
 	background-color: var(--color-surface-soft);
 	border-top: 1px solid var(--color-border-subtle);

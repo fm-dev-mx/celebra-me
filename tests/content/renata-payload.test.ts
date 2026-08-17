@@ -90,14 +90,14 @@ describe('XV Renata provision contract', () => {
 		expect(profile).not.toContain('232 190 48');
 		expect(profile).toContain('--hero-image-filter: none');
 		expect(profile).toContain('mix-blend-mode: normal');
-		expect(profile).not.toContain(".itinerary[data-structural-variant='editorial-ledger']");
-		expect(profile).not.toContain("data-structural-variant='editorial-program'");
+		expect(profile).not.toContain(".itinerary[data-variant='editorial-ledger']");
+		expect(profile).not.toContain("data-variant='editorial-program'");
 		expect(profile).not.toContain('timeline-paper');
 		expect(profile).not.toContain('itinerary__program-paper-surface');
-		expect(profile).toContain("data-structural-variant='full-bleed-photo'");
+		expect(profile).toContain("data-variant='full-bleed-photo'");
 		expect(profile).toContain('clip-path: none');
 		expect(profile).toContain(
-			".event-location[data-structural-variant='stacked-venue-plates']",
+			".event-location[data-variant='stacked-venue-plates']",
 		);
 		expect(profile).toContain('--location-date-display: none');
 		expect(profile).not.toContain('--location-map-preview-artwork-color: var(--renata-olive)');

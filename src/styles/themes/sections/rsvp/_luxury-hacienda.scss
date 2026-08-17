@@ -1,7 +1,7 @@
 @use '../../../tokens' as tokens;
 @use '../../../global/mixins' as mixins;
 
-.rsvp[data-variant='luxury-hacienda'] {
+.theme-preset--luxury-hacienda .rsvp {
 	--rsvp-emoji-yes: '🌵';
 	--rsvp-emoji-no: '🙏';
 	--color-glass-bg: rgb(var(--color-surface-primary-rgb) / 24%);

@@ -23,6 +23,7 @@ describe('RSVP Component', () => {
 	};
 
 	const revealedLocation = {
+		variant: 'standard' as const,
 		structuralVariant: 'standard' as const,
 		visibility: 'after-rsvp' as const,
 		introHeading: 'Ubicación',
@@ -397,12 +398,12 @@ describe('RSVP Component', () => {
 
 	describe('Canonical Copy', () => {
 		it('all variants use "No podré" for decline option', () => {
-			render(<RSVP {...defaultProps} variant="editorial" />);
+			render(<RSVP {...defaultProps} variant="editorial-press-pass" />);
 			expect(screen.getByLabelText(/No podré/i)).toBeInTheDocument();
 		});
 
 		it('all variants use "Confirmar asistencia" for submit button', async () => {
-			for (const variant of ['editorial', 'premiere-floral', 'celestial-blue'] as const) {
+			for (const variant of ['standard', 'editorial-press-pass', 'formal-register'] as const) {
 				const user = userEvent.setup();
 				const { unmount } = render(<RSVP {...defaultProps} variant={variant} />);
 				await user.click(screen.getByLabelText(/Sí, asistiré/i));
@@ -1409,6 +1410,7 @@ describe('RSVP Component', () => {
 
 		it('renders Google Maps link when revealedLocation uses venues array path with googleMapsUrl', async () => {
 			const venuesArrayLocation = {
+				variant: 'standard' as const,
 				structuralVariant: 'standard' as const,
 				visibility: 'after-rsvp' as const,
 				introHeading: 'Ubicación',

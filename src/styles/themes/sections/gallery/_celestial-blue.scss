@@ -1,8 +1,7 @@
 @use '../../../global/mixins' as mixins;
 
 // Celestial single-keepsake presentation compatibility.
-[data-theme-preset='celestial-blue'] .gallery-section[data-variant='single'],
-[data-theme-preset='celestial-blue'] .gallery-section[data-structural-variant='single-keepsake'] {
+.theme-preset--celestial-blue .gallery-section[data-variant='single-keepsake'] {
 	--gallery-section-padding-block: clamp(3.5rem, 7vw, 5.5rem);
 	--gallery-section-bg: linear-gradient(
 		180deg,
@@ -31,8 +30,8 @@
 	}
 }
 
-[data-theme-preset='celestial-blue']
-	.gallery-section[data-variant='single'][data-presentation='pet-keepsake'] {
+.theme-preset--celestial-blue
+	.gallery-section[data-variant='single-keepsake'][data-presentation='pet-keepsake'] {
 	--gallery-section-bg:
 		radial-gradient(ellipse 55% 35% at 50% 65%, rgb(234 183 200 / 12%) 0%, transparent 100%),
 		radial-gradient(ellipse 45% 30% at 28% 62%, rgb(210 185 160 / 10%) 0%, transparent 100%),

@@ -5,7 +5,7 @@
 // Indexed editorial layout with section-owned responsive geometry.
 // ==========================================================================
 
-.gallery-section[data-structural-variant='index-choreography'] {
+.gallery-section[data-variant='index-choreography'] {
 	padding-block: clamp(6rem, 10vw, 10rem);
 	background: var(--gallery-section-bg);
 

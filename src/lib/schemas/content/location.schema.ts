@@ -3,7 +3,7 @@ import { ICON_NAMES_TUPLE } from '@/lib/icons/icon-catalog';
 import { INDICATION_STYLE_VARIANTS } from '@/lib/theme/theme-contract';
 import { AssetSchema, focalPointSchema } from '@/lib/schemas/content/shared.schema';
 import { LOCATION_PRESENTATIONS } from '@/lib/invitation/presentation-options';
-import { LOCATION_STRUCTURAL_VARIANTS } from '@/lib/invitation/structural-variants';
+import { LOCATION_VARIANTS } from '@/lib/invitation/section-variants';
 
 const locationCoordinatesSchema = z
 	.object({
@@ -109,9 +109,9 @@ function collectVisibleVenues(location: {
 
 export const locationSchema = z
 	.discriminatedUnion('variant', [
-		locationBaseSchema.extend({ variant: z.literal(LOCATION_STRUCTURAL_VARIANTS[0]) }),
-		locationBaseSchema.extend({ variant: z.literal(LOCATION_STRUCTURAL_VARIANTS[1]) }),
-		locationBaseSchema.extend({ variant: z.literal(LOCATION_STRUCTURAL_VARIANTS[2]) }),
+		locationBaseSchema.extend({ variant: z.literal(LOCATION_VARIANTS[0]) }),
+		locationBaseSchema.extend({ variant: z.literal(LOCATION_VARIANTS[1]) }),
+		locationBaseSchema.extend({ variant: z.literal(LOCATION_VARIANTS[2]) }),
 	])
 	.superRefine((location, context) => {
 		if (location.variant === 'split-map') {

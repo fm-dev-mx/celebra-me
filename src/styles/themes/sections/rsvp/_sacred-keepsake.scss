@@ -1,6 +1,6 @@
 @use '../../../global/mixins' as mixins;
 
-.rsvp[data-variant='sacred-keepsake'] {
+.theme-preset--sacred-keepsake .rsvp {
 	--color-glass-bg: rgb(var(--color-pure-ivory-rgb) / 78%);
 	--color-glass-border: rgb(var(--color-sacred-blue-rgb) / 34%);
 	--shadow-premium: var(--sacred-soft-shadow);

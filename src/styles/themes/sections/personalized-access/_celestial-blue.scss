@@ -1,18 +1,8 @@
-.personalized-access[data-variant='celestial-blue']:not([data-structural-variant='formal-pass']) {
+.theme-preset--celestial-blue .personalized-access {
 	--pa-paper-tilt: -0.55deg;
 
 	position: relative;
-	background:
-		radial-gradient(
-			ellipse 70% 45% at 50% 0%,
-			rgb(var(--color-ice-blue-rgb) / 38%) 0%,
-			transparent 68%
-		),
-		linear-gradient(
-			180deg,
-			var(--color-cool-ivory) 0%,
-			rgb(var(--color-pearl-gray-rgb) / 42%) 100%
-		);
+	background: var(--pa-section-background);
 
 	&::before {
 		content: '';
@@ -174,11 +164,12 @@
 // The document coordinator owns state on the section wrapper, not on the section itself.
 // Keep the card's paper tilt while it enters, then reveal the reservation count as a second beat.
 @media (prefers-reduced-motion: no-preference) {
-	#invitation-sections-container
+	.theme-preset--celestial-blue
+		#invitation-sections-container
 		> .invitation-section-wrapper[data-section-kind='personalized-access'].has-motion:not(
 			.is-visible
 		)
-		.personalized-access[data-variant='celestial-blue']
+		.personalized-access
 		.access-card {
 		opacity: 0%;
 		transform: translateY(var(--motion-reveal-distance, 16px)) rotate(var(--pa-paper-tilt));
@@ -192,18 +183,20 @@
 				var(--motion-reveal-ease, var(--ease-premium));
 	}
 
-	#invitation-sections-container
+	.theme-preset--celestial-blue
+		#invitation-sections-container
 		> .invitation-section-wrapper[data-section-kind='personalized-access'].has-motion.is-visible
-		.personalized-access[data-variant='celestial-blue']
+		.personalized-access
 		.access-card {
 		opacity: 100%;
 		transform: translateY(0) rotate(var(--pa-paper-tilt));
 		filter: blur(0);
 	}
 
-	#invitation-sections-container
+	.theme-preset--celestial-blue
+		#invitation-sections-container
 		> .invitation-section-wrapper[data-section-kind='personalized-access'].has-motion.is-visible
-		.personalized-access[data-variant='celestial-blue']
+		.personalized-access
 		.access-card__count {
 		animation: pa-celestial-count-in 0.55s var(--ease-premium, ease) 0.12s both;
 	}

@@ -150,7 +150,7 @@ describe('Theme Delivery Integration', () => {
 		expect(pageContext.viewModel.theme.preset).toBe('editorial');
 		expect(pageContext.viewModel.envelope.data?.variant).toBe('editorial');
 		expect(pageContext.footerVariant).toBe('editorial');
-		expect(pageContext.viewModel.sections.location?.variant).toBe('editorial');
+		expect(pageContext.viewModel.sections.location?.variant).toBe('standard');
 	});
 
 	it('should deliver angelic-presence preset with correct wrapper attributes', () => {

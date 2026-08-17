@@ -57,12 +57,13 @@ failures. A partial or failed run is never reported as passed.
 
 ## Commands
 
-| Command                               | Description                                                     | Status                                  |
-| ------------------------------------- | --------------------------------------------------------------- | --------------------------------------- |
-| `pnpm screenshot`                     | Interactive mode when no direct flags are supplied              | ✅                                      |
-| `pnpm screenshot:invite --url=...`    | Direct invitation capture                                       | ✅ Verified                             |
-| `pnpm screenshot --url=...`           | Direct page capture (invitation / landing / dashboard / custom) | ⚠️ Landing verified, auth pages pending |
-| `pnpm screenshot:local-render-corpus` | Runs the registered Local Render Corpus (`--corpus`)            | ✅                                      |
+| Command                               | Description                                                     | Status                                           |
+| ------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------ |
+| `pnpm screenshot`                     | Interactive mode when no direct flags are supplied              | ✅                                               |
+| `pnpm screenshot:invite --url=...`    | Direct invitation capture                                       | ✅ Verified                                      |
+| `pnpm screenshot --url=...`           | Direct page capture (invitation / landing / dashboard / custom) | ⚠️ Landing verified, auth pages pending          |
+| `pnpm screenshot:local-render-corpus` | Runs the registered Local Render Corpus (`--corpus`)            | ✅                                               |
+| `pnpm screenshot:css-parity`          | Baseline/compare gate before profile LAYOUT deletion            | ✅ See `docs/domains/theme/css-visual-parity.md` |
 
 ### Single invitation vs corpus
 

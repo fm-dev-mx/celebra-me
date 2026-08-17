@@ -174,7 +174,7 @@
 // Canonical single-keepsake structure. Invitation profiles may supply the
 // visual tokens below, but the section-owned composition stays independent of
 // a profile or theme identity.
-.gallery-section[data-structural-variant='single-keepsake'] {
+.gallery-section[data-variant='single-keepsake'] {
 	--gallery-item-aspect-ratio: 2 / 3;
 	--gallery-item-aspect-ratio-feature: 2 / 3;
 	--gallery-item-radius: 0;

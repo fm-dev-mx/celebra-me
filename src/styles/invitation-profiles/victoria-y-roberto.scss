@@ -896,7 +896,7 @@
 
 	// editorial-ledger geometry lives in themes/sections/itinerary/_editorial-ledger.scss;
 	// profile tints ledger colors, type, and pending-entry emphasis.
-	.itinerary[data-structural-variant='editorial-ledger'] {
+	.itinerary[data-variant='editorial-ledger'] {
 		--editorial-ledger-rule: rgb(var(--victoria-terracota-rgb) / 14%);
 		--editorial-ledger-spine: rgb(var(--victoria-terracota-rgb) / 20%);
 
@@ -946,7 +946,7 @@
 		}
 	}
 
-	.gallery-section[data-structural-variant='single-keepsake'] {
+	.gallery-section[data-variant='single-keepsake'] {
 		padding-block: clamp(3.75rem, 7.5vw, 5.75rem);
 		background:
 			radial-gradient(
@@ -987,7 +987,7 @@
 		}
 	}
 
-	.gifts-section[data-variant='jewelry-box-wedding'] {
+	.gifts-section[data-variant='standard'] {
 		.gift-card {
 			padding: 1.25rem 0;
 			border-radius: 0;

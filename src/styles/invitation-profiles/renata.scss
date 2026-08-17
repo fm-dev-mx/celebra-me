@@ -258,7 +258,7 @@ html:has(.event--renata.theme-preset--editorial) body {
 
 	// Essence: cream display in the upper green-wall negative space; compact
 	// lockup; atmospheric veil; figure remains the photographic authority.
-	.invitation-hero[data-variant='editorial'] {
+	.invitation-hero[data-variant='standard'] {
 		justify-content: flex-start;
 		padding: 0;
 
@@ -428,7 +428,7 @@ html:has(.event--renata.theme-preset--editorial) body {
 	// Credits spread: title owns the opening; parents sit left as the
 	// primary lockup; godparents occupy the right column, quieter and
 	// slightly lower. No stacked rules, no empty second column.
-	.family[data-structural-variant='asymmetric-groups'] {
+	.family[data-variant='asymmetric-groups'] {
 		--family-split-divider: transparent;
 		--family-split-gap-inline: clamp(2.25rem, 6vw, 4.75rem);
 		--family-split-gap-block: clamp(1.65rem, 4vw, 2.25rem);
@@ -820,7 +820,7 @@ html:has(.event--renata.theme-preset--editorial) body {
 
 	// Event Location consumes stacked-venue-plates. Rebind type and palette only
 	// inside the section so surrounding chapters keep Renata's editorial voice.
-	.event-location[data-structural-variant='stacked-venue-plates'] {
+	.event-location[data-variant='stacked-venue-plates'] {
 		--font-display: 'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
 		--font-display-elegant: var(--font-display);
 		--font-body: 'Instrument Sans Variable', system-ui, sans-serif;
@@ -1517,7 +1517,7 @@ html:has(.event--renata.theme-preset--editorial) body {
 	// or editorial circular frame. overlayAnchor=left is honored for width;
 	// vertical start is local because full-bleed-photo centers (desktop) / ends
 	// (mobile) at equal specificity.
-	.thank-you-section[data-variant='editorial'][data-structural-variant='full-bleed-photo'] {
+	.thank-you-section[data-variant='full-bleed-photo'] {
 		--thank-you-overlay-width: 18.5rem;
 		--thank-you-overlay-gap: clamp(1.5rem, 3.4vw, 2.5rem);
 		--thank-you-focal-point: 48% 36%;

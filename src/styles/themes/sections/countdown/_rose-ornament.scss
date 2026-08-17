@@ -1,6 +1,7 @@
 @use '../../../global/mixins' as mixins;
 
-.countdown-section[data-variant='enchanted-rose'] {
+.theme-preset--enchanted-rose .countdown-section,
+.countdown-section[data-variant='rose-ornament'] {
 	--countdown-grid-columns-mobile: 2;
 	--countdown-grid-columns-tablet: 4;
 	--countdown-segment-padding-mobile: clamp(1.25rem, 4.5vw, 1.65rem) 0.75rem;
@@ -11,25 +12,9 @@
 	--countdown-value-wrapper-height-desktop: auto;
 
 	min-height: min(54rem, 82svh);
-	padding: clamp(5.5rem, 11vw, 8.5rem) clamp(1rem, 4vw, 2rem);
-	background:
-		radial-gradient(
-			ellipse at 50% 0%,
-			rgb(var(--color-candle-gold-rgb) / 14%) 0%,
-			transparent 48%
-		),
-		radial-gradient(
-			ellipse at 50% 100%,
-			rgb(var(--color-rose-shadow-rgb) / 40%) 0%,
-			transparent 52%
-		),
-		linear-gradient(
-			180deg,
-			rgb(var(--color-candle-shadow-rgb) / 98%) 0%,
-			rgb(var(--color-velvet-burgundy-rgb) / 96%) 40%,
-			rgb(var(--color-rose-shadow-rgb) / 98%) 100%
-		);
-	color: var(--color-text-on-dark);
+	padding: var(--countdown-section-padding, clamp(5.5rem, 11vw, 8.5rem) clamp(1rem, 4vw, 2rem));
+	background: var(--countdown-section-background);
+	color: var(--countdown-section-color, var(--color-text-on-dark));
 	position: relative;
 	box-shadow:
 		inset 0 1px 0 rgb(var(--color-antique-gold-rgb) / 16%),

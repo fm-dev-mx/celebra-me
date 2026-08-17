@@ -1,6 +1,6 @@
 @use '../../../global/mixins' as mixins;
 
-.gifts-section[data-variant='enchanted-rose'] {
+.theme-preset--enchanted-rose .gifts-section {
 	--gifts-padding-block: clamp(4.4rem, 8vw, 6.6rem);
 	--gifts-padding-inline: clamp(1rem, 4vw, 2rem);
 	--gifts-bg:

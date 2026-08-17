@@ -1,4 +1,4 @@
-.rsvp-section:has(.rsvp[data-variant='enchanted-rose']) {
+.theme-preset--enchanted-rose .rsvp-section:has(.rsvp) {
 	isolation: isolate;
 	overflow: hidden;
 	background:
@@ -61,7 +61,7 @@
 	}
 }
 
-.rsvp[data-variant='enchanted-rose'] {
+.theme-preset--enchanted-rose .rsvp {
 	--rsvp-er-frame-bg:
 		linear-gradient(155deg, rgb(var(--color-midnight-navy-rgb) / 96%) 0%, transparent 38%),
 		radial-gradient(

@@ -2,7 +2,7 @@
 
 // Location split-map: cardless venue record + lateral map/actions planes.
 // Map materiality, button chrome, and typography remain profile/theme skins.
-.event-location[data-structural-variant='split-map'] {
+.event-location[data-variant='split-map'] {
 	--location-split-gap: clamp(1.75rem, 3.5vw, 2.5rem);
 	--location-split-desktop-gap-block: 0.75rem;
 	--location-split-desktop-gap-inline: clamp(2.5rem, 6vw, 5rem);

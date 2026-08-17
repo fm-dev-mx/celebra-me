@@ -3,7 +3,7 @@
 
 // PREMIERE FLORAL THANK YOU
 
-.thank-you-section[data-variant='premiere-floral'] {
+.theme-preset--premiere-floral .thank-you-section {
 	@include premium.thank-you-premium-base;
 
 	.photo-frame {

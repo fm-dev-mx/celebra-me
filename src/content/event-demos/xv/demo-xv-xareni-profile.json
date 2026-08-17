@@ -203,6 +203,7 @@
         "variant": "timeline-paper"
     },
     "countdown": {
+        "variant": "standard",
         "title": "La celebración comienza en",
         "footerText": "12 de septiembre de 2027, Cuernavaca, Morelos"
     },

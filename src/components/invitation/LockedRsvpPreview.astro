@@ -1,20 +1,18 @@
 ---
-import type { RsvpStructuralVariant } from '@/lib/invitation/structural-variants';
+import type { RsvpVariant } from '@/lib/invitation/section-variants';
 
 interface Props {
 	title: string;
-	variant?: string;
-	structuralVariant?: RsvpStructuralVariant;
+	variant?: RsvpVariant;
 }
 
-const { title, variant, structuralVariant } = Astro.props;
+const { title, variant = 'standard' } = Astro.props;
 ---
 
 <section id="rsvp" data-screenshot-section="rsvp" class="rsvp-section">
 	<div
 		class="rsvp"
 		data-variant={variant}
-		data-structural-variant={structuralVariant}
 		data-state="locked"
 	>
 		<header class="rsvp__header">

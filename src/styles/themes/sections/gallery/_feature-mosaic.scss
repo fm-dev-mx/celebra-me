@@ -1,7 +1,7 @@
 
 @use '../../../global/mixins' as mixins;
 
-.gallery-section[data-structural-variant='feature-mosaic'] {
+.gallery-section[data-variant='feature-mosaic'] {
 	--gallery-section-bg:
 		radial-gradient(
 			ellipse at 50% 0%,

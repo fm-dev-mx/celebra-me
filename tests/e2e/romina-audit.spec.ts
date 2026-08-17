@@ -45,7 +45,7 @@ test.describe('Romina Ríos Chaparro XV E2E Audit', () => {
 			// 1. Hero checks
 			const hero = page.locator('#inicio, .hero');
 			await expect(hero).toBeVisible();
-			await expect(hero).toHaveAttribute('data-structural-variant', 'split-cover');
+			await expect(hero).toHaveAttribute('data-variant', 'split-cover');
 
 			// 2. Family eyebrow & title
 			const familyEyebrow = page.locator('.family__eyebrow');

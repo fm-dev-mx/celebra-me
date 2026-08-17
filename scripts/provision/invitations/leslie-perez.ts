@@ -1,8 +1,8 @@
 /**
  * leslie-perez.ts — Local draft invitation definition for Leslie XV
  *
- * The structural variants are reused from existing invitations. No
- * invitation-specific component or stylesheet is introduced here.
+ * The structural variants are reused from existing invitations. Cadence and
+ * dark-surface rhythm tokens live in `invitation-profiles/leslie-perez.scss`.
  * Local-only music/PA preview switches live in
  * `src/lib/invitation/local-preview-config.ts` (not published content).
  */
@@ -202,8 +202,13 @@ export function buildLesliePublishedContent(
 		],
 		composition: {
 			intersections: {
+				family: { family: 'atmospheric-blend', source: 'quote' },
 				'interlude-after-location': { family: 'overlap', source: 'location' },
+				itinerary: { family: 'atmospheric-blend', source: 'interlude-after-location' },
 				'interlude-after-gallery': { family: 'overlap', source: 'gallery' },
+				gifts: { family: 'atmospheric-blend', source: 'interlude-after-gallery' },
+				'personalized-access': { family: 'atmospheric-blend', source: 'gifts' },
+				thankYou: { family: 'atmospheric-blend', source: 'rsvp' },
 			},
 		},
 		_assetSlug: LESLIE_EVENT.assetSlug,
@@ -259,7 +264,7 @@ export function buildLesliePublishedContent(
 			],
 			labels: {
 				sectionSubtitle: 'Con el amor de mi familia',
-				sectionTitle: 'Mis XV años',
+				sectionTitle: 'Mis padres',
 				parentsTitle: 'Mis padres',
 				sectionMessage: 'Gracias por acompañarme en este día tan especial.',
 			},
@@ -405,7 +410,7 @@ export function buildLesliePublishedContent(
 			],
 		},
 		rsvp: {
-			variant: 'standard',
+			variant: 'formal-register',
 			title: 'Confirme su asistencia',
 			subcopy:
 				'Agradeceremos confirmar su asistencia antes de [[PENDIENTE:FECHA_LIMITE_RSVP]].',

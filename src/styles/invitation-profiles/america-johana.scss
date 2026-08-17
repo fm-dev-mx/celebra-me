@@ -133,7 +133,7 @@
 		--hero-focal-point-desktop: 52% 42%;
 	}
 
-	.invitation-hero[data-variant='celestial-blue'] {
+	.invitation-hero[data-variant='standard'] {
 		// --- Responsive layout design tokens (CSS custom properties) ---
 		--hero-title-scale: clamp(2.6rem, 6.5vw, 4.4rem);
 		--hero-details-scale: clamp(0.58rem, 1.2vw, 0.7rem);
@@ -183,7 +183,7 @@
 			-webkit-text-fill-color: var(--america-gold);
 			color: var(--america-gold);
 			text-shadow: 0 4px 18px rgb(var(--america-ink-rgb) / 80%);
-			font-family: 'Cormorant Garamond', serif;
+			font-family: var(--font-display);
 			font-weight: var(--hero-title-font-weight);
 			font-size: var(--hero-title-scale);
 			line-height: var(--hero-title-line-height);
@@ -370,7 +370,7 @@
 	// TOP CHROME
 	// ==========================================================================
 
-	.header-base[data-variant='celestial-blue'] {
+	.header-base {
 		.event-header__title-initials {
 			font-family: var(--font-display);
 			font-weight: 400;

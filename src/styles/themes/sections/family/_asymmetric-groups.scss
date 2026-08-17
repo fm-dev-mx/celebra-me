@@ -2,7 +2,7 @@
 
 // Family asymmetric-groups: left-read staggered groups with optional right-set
 // spanning godparents block. Shared canonical implementation.
-.family[data-structural-variant='asymmetric-groups'] {
+.family[data-variant='asymmetric-groups'] {
 	--family-split-gap-inline: clamp(2rem, 6vw, 5rem);
 	--family-split-gap-block: clamp(1.25rem, 3.5vw, 1.65rem);
 	--family-split-divider: var(--color-border-subtle, rgb(166 84 58 / 18%));

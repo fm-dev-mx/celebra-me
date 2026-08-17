@@ -216,6 +216,7 @@
         "variant": "standard"
     },
     "countdown": {
+        "variant": "standard",
         "title": "Nuestra boda comienza en",
         "footerText": "Puebla, Puebla"
     },

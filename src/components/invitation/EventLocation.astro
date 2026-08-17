@@ -13,12 +13,9 @@ import { sanitizeIndicationHtml } from '@/lib/invitation/indication-html';
 import type { ImageMetadata } from 'astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { IconName } from '@/lib/icons/icon-catalog';
-import type {
-	IndicationStyleVariant,
-	LocationVariant,
-} from '@/lib/theme/theme-contract';
+import type { IndicationStyleVariant } from '@/lib/theme/theme-contract';
 import type { LocationPresentation } from '@/lib/invitation/location-presentation';
-import type { LocationStructuralVariant } from '@/lib/invitation/structural-variants';
+import type { LocationVariant } from '@/lib/invitation/section-variants';
 
 interface VenueData {
 	venueEvent: string;
@@ -66,7 +63,6 @@ interface Props {
 	indications?: Indication[];
 	variant?: LocationVariant;
 	presentation?: LocationPresentation;
-	structuralVariant?: LocationStructuralVariant;
 	showFlourishes?: boolean;
 	showNavigationButtons?: boolean;
 	indicationsHeading?: string;
@@ -88,9 +84,8 @@ const {
 	reception,
 	venues: venueEntries,
 	indications,
-	variant = 'structured',
+	variant = 'standard',
 	presentation,
-	structuralVariant = 'standard',
 	showFlourishes = true,
 	showNavigationButtons = true,
 	indicationsHeading,
@@ -99,20 +94,6 @@ const {
 	introHeading,
 	introLede,
 } = Astro.props;
-
-// 5-entry limit — indications beyond index 4 without explicit title
-// gracefully degrade to no title display (undefined → hidden by && guard)
-const EDITORIAL_GUEST_NOTE_TITLES = [
-	'CÓDIGO DE VESTIMENTA',
-	'CONFIRMACIÓN',
-	'PUNTUALIDAD',
-	'CELEBRACIÓN',
-	'MOMENTOS',
-] as const;
-const resolvedIndicationsHeading =
-	variant === 'editorial-magazine'
-		? 'GUÍA PRIVADA PARA INVITADOS'
-		: indicationsHeading;
 
 // Use venues array if present, otherwise fall back to legacy ceremony/reception
 const rawVenues = venueEntries && venueEntries.length > 0
@@ -127,7 +108,7 @@ const displayVenues = groupVenues(rawVenues);
 const isSingleVenue = displayVenues.length === 1;
 ---
 
-<section class="event-location" id="event-location" data-screenshot-section="location" data-variant={variant} data-presentation={presentation} data-structural-variant={structuralVariant}>
+<section class="event-location" id="event-location" data-screenshot-section="location" data-variant={variant} data-presentation={presentation}>
 	<span class="event-location__anchor" id="location" aria-hidden="true"></span>
 	{(introEyebrow || introHeading || introLede) && (
 		<header class="event-location__intro">
@@ -147,7 +128,7 @@ const isSingleVenue = displayVenues.length === 1;
 		</div>
 	) : (
 		<div class={`event-location__container ${isSingleVenue ? 'event-location__container--single' : ''}`}>
-			{displayVenues.map((venue: GroupedVenue, index) => (
+			{displayVenues.map((venue: GroupedVenue) => (
 				<VenueCard
 					venue={venue}
 					type={venue.type === 'ceremony' || venue.type === 'reception' || venue.type === 'grouped' ? venue.type : 'custom'}
@@ -155,7 +136,6 @@ const isSingleVenue = displayVenues.length === 1;
 					presentation={presentation}
 					showFlourishes={showFlourishes}
 					showNavigationButtons={showNavigationButtons}
-					accessLabel={variant === 'editorial-magazine' ? `ACCESO ${String(index + 1).padStart(2, '0')}` : undefined}
 				/>
 			))}
 		</div>
@@ -164,16 +144,13 @@ const isSingleVenue = displayVenues.length === 1;
 	{indications && indications.length > 0 && (
 		<div class="event-location__indications-container">
 			<div class="event-location__divider" aria-hidden="true"></div>
-			{resolvedIndicationsHeading && (
-				<p class="event-location__indications-heading">{resolvedIndicationsHeading}</p>
+			{indicationsHeading && (
+				<p class="event-location__indications-heading">{indicationsHeading}</p>
 			)}
 			<div class="event-location__indications">
 				{indications.map((indication, index) => {
 					const isReserved = indication.styleVariant === 'reserved';
-					const editorialNoteTitle =
-						variant === 'editorial-magazine'
-							? indication.title ?? EDITORIAL_GUEST_NOTE_TITLES[index]
-							: indication.title;
+					const editorialNoteTitle = indication.title;
 					return (
 						<div class={`event-location__indication-item ${isReserved ? 'event-location__indication-item--reserved' : ''}`}>
 							<div class="event-location__indication-icon">

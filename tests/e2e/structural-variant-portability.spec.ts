@@ -62,13 +62,13 @@ test.describe('non-origin structural variant portability', () => {
 		await expect(hero).toBeVisible();
 
 		await hero.evaluate((el) => {
-			el.setAttribute('data-structural-variant', 'split-cover');
+			el.setAttribute('data-variant', 'split-cover');
 		});
 		await page.addStyleTag({
 			content: compileStructuralPartial('src/styles/themes/sections/hero/_split-cover.scss'),
 		});
 
-		await expect(hero).toHaveAttribute('data-structural-variant', 'split-cover');
+		await expect(hero).toHaveAttribute('data-variant', 'split-cover');
 
 		// Desktop (≥ lg / 992px): independent type plane + contained lateral image.
 		await page.setViewportSize({ width: 1280, height: 800 });
@@ -146,7 +146,7 @@ test.describe('non-origin structural variant portability', () => {
 		await expect(location).toBeVisible();
 
 		await location.evaluate((el) => {
-			el.setAttribute('data-structural-variant', 'split-map');
+			el.setAttribute('data-variant', 'split-map');
 		});
 		await page.addStyleTag({
 			content: compileStructuralPartial(
@@ -154,7 +154,7 @@ test.describe('non-origin structural variant portability', () => {
 			),
 		});
 
-		await expect(location).toHaveAttribute('data-structural-variant', 'split-map');
+		await expect(location).toHaveAttribute('data-variant', 'split-map');
 		await expect(location.locator('.event-location__card')).toHaveCount(2);
 		await expect(location.locator('.event-location__card-image-outer-frame')).toHaveCount(2);
 		await expect(location.locator('.event-location__card-navigation-buttons')).toHaveCount(2);

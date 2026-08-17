@@ -3,7 +3,7 @@
 
 // EDITORIAL THANK YOU
 
-.thank-you-section[data-variant='editorial'] {
+.theme-preset--editorial .thank-you-section {
 	@include premium.thank-you-premium-base;
 
 	.photo-frame {

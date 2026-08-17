@@ -205,6 +205,7 @@
         "variant": "timeline-paper"
     },
     "countdown": {
+        "variant": "standard",
         "title": "La celebración comienza en",
         "footerText": "Cuernavaca, Morelos"
     },

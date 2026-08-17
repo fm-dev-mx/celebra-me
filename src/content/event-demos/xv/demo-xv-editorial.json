@@ -192,6 +192,7 @@
         "variant": "standard"
     },
     "countdown": {
+        "variant": "standard",
         "title": "La Noche Premiere Comienza En",
         "footerText": "Ciudad de Mexico."
     },

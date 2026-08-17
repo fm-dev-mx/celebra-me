@@ -23,14 +23,14 @@
 	}
 }
 
-.event-theme-wrapper[data-reveal-state='revealed'] .invitation-hero[data-variant='enchanted-rose'] {
+.theme-preset--enchanted-rose .event-theme-wrapper[data-reveal-state='revealed'] .invitation-hero {
 	.invitation-hero__content {
 		animation-duration: 1.15s;
 		animation-timing-function: var(--ease-premium);
 	}
 }
 
-.invitation-hero[data-variant='enchanted-rose'] {
+.theme-preset--enchanted-rose .invitation-hero[data-variant='standard'] {
 	justify-content: flex-end;
 	min-height: 100svh;
 	background: var(--color-midnight-navy);
@@ -462,7 +462,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.invitation-hero[data-variant='enchanted-rose'] {
+	.theme-preset--enchanted-rose .invitation-hero[data-variant='standard'] {
 		.invitation-hero__background::before {
 			animation: none;
 			opacity: 20%;

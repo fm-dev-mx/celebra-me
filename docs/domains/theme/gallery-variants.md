@@ -27,8 +27,7 @@ Theme preset, slug, profile identity, and asset identity never select Gallery st
 
 Semantic structural partials live under `src/styles/themes/sections/gallery/` and are loaded by the
 section CSS resolver independently from the active theme bundle. `Gallery.astro` and
-`PhotoGallery.astro` always emit the layout through `data-structural-variant` and keep the visual
-skin in `data-variant`.
+`PhotoGallery.astro` always emit the section variant through `data-variant`.
 
 Item `layoutRole` (`feature`, `wide`, or `standard`) may refine placement inside a compatible
 layout. The existing presentation validator rejects incompatible item-role combinations. Mobile

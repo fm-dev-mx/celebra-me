@@ -4,7 +4,7 @@
 // Owns plate geometry, intro/chapter composition, map-preview surfaces, and
 // indication-panel layout. Profiles may tint --location-* / semantic tokens;
 // they must not redefine the plate grid or duplicate these selectors.
-.event-location[data-structural-variant='stacked-venue-plates'] {
+.event-location[data-variant='stacked-venue-plates'] {
 	--location-container-max-width: 56rem;
 	--location-content-alignment: stretch;
 	--location-card-max-width: 26rem;

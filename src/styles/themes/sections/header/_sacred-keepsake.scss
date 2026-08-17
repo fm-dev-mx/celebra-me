@@ -4,7 +4,7 @@
  * but that are populated differently by each theme preset.
  */
 
-.header-base[data-variant='sacred-keepsake'] {
+.theme-preset--sacred-keepsake .header-base {
 	--header-bg-scrolled: rgb(var(--color-ivory-warm-rgb) / 86%);
 	--header-border-scrolled: 1px solid rgb(var(--color-sacred-gold-rgb) / 16%);
 	--header-nav-title-color: rgb(var(--color-sacred-gold-rgb) / 90%);

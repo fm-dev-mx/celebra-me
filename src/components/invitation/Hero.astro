@@ -1,5 +1,4 @@
 ---
-// src/components/invitation/Hero.astro
 import { getImage } from 'astro:assets';
 import CacheSafeImage from '@/components/common/CacheSafeImage.astro';
 import type { ImageMetadata } from 'astro';
@@ -8,8 +7,7 @@ import {
 	shouldOptimizeThroughVercelImage,
 } from '@/lib/assets/vercel-image-policy';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
-import type { ThemePreset } from '@/lib/theme/theme-contract';
-import type { HeroStructuralVariant } from '@/lib/invitation/structural-variants';
+import type { HeroVariant } from '@/lib/invitation/section-variants';
 import '@/styles/invitation/_hero.scss';
 import EditorialCoverHero from './EditorialCoverHero.astro';
 
@@ -25,8 +23,7 @@ interface Props {
 	backgroundImageDesktop?: { src: string };
 	backgroundImageMobile?: ImageMetadata | ImageAsset;
 	portrait?: ImageMetadata | ImageAsset;
-	variant?: ThemePreset;
-	structuralVariant?: HeroStructuralVariant;
+	variant?: HeroVariant;
 	scrollLabel?: string;
 	focalPoint?: string;
 	focalPointMobile?: string;
@@ -47,8 +44,7 @@ const {
 	backgroundImageDesktop,
 	backgroundImageMobile,
 	portrait,
-	variant,
-	structuralVariant = 'standard',
+	variant = 'standard',
 	scrollLabel,
 	focalPoint,
 	focalPointMobile,
@@ -57,7 +53,7 @@ const {
 	highPriority = true,
 } = Astro.props;
 
-const isEditorialCover = structuralVariant === 'editorial-cover';
+const isEditorialCover = variant === 'editorial-cover';
 
 let displayLabel: string | undefined;
 let ageLockupMatch: RegExpMatchArray | null = null;
@@ -142,7 +138,6 @@ if (!isEditorialCover) {
 		id="inicio"
 		class="invitation-hero"
 		data-variant={variant}
-		data-structural-variant={structuralVariant}
 		data-screenshot="invitation-open-hero"
 		data-screenshot-section="hero"
 	>

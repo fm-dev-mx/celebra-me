@@ -1,0 +1,81 @@
+// Leslie Perez — celestial-bookend rhythm profile.
+// Owns cadence documentation, atmospheric-blend tokens, dark-surface tracking,
+// and reduced reveal distance on blend arrivals. Does not redefine variant geometry.
+// Loaded only through invitation-profiles/leslie-perez.scss.
+
+.event--leslie-perez.theme-preset--celestial-blue {
+	// Dark-surface optical tracking (rhythm §2).
+	--hero-split-title-letter-spacing: 0.06em;
+	--quote-content-letter-spacing: 0.06em;
+
+	// Cadence map — non-neutral boundaries only
+	// [sectionA] → [sectionB] : [role] [pattern]
+	// quote → family : bridge atmospheric-blend
+	// location → interlude-after-location : bridge overlap
+	// interlude-after-location → itinerary : bridge atmospheric-blend
+	// gallery → interlude-after-gallery : bridge overlap
+	// interlude-after-gallery → gifts : bridge atmospheric-blend
+	// gifts → personalized-access : bridge atmospheric-blend
+	// rsvp → thankYou : bridge atmospheric-blend
+	// Neutral (hero→quote, family→countdown→location, itinerary→gallery,
+	// personalized-access→rsvp) omitted on purpose. Band: celestial-bookend.
+
+	.invitation-section-wrapper[data-intersection='atmospheric-blend'] {
+		--motion-reveal-distance: 12px;
+
+		&[data-section-kind='family'] {
+			// Quote dark graphite → family light ivory
+			--intersection-depth: clamp(1.75rem, 3.5vw, 2.75rem);
+			--intersection-blend: radial-gradient(
+				ellipse 140% 80% at 42% 0%,
+				rgb(var(--color-deep-blue-graphite-rgb) / 72%) 0%,
+				rgb(var(--color-cool-ivory-rgb) / 36%) 44%,
+				transparent 100%
+			);
+		}
+
+		&[data-section-kind='itinerary'] {
+			// Interlude photo → timeline-paper cream
+			--intersection-depth: clamp(1.75rem, 3.5vw, 2.75rem);
+			--intersection-blend: radial-gradient(
+				ellipse 135% 78% at 58% 0%,
+				rgb(var(--color-deep-blue-graphite-rgb) / 68%) 0%,
+				rgb(var(--color-cool-ivory-rgb) / 40%) 42%,
+				transparent 100%
+			);
+		}
+
+		&[data-section-kind='gifts'] {
+			// Interlude photo → gifts ivory
+			--intersection-depth: clamp(1.75rem, 3.5vw, 2.75rem);
+			--intersection-blend: radial-gradient(
+				ellipse 130% 76% at 38% 0%,
+				rgb(var(--color-deep-blue-graphite-rgb) / 64%) 0%,
+				rgb(var(--color-cool-ivory-rgb) / 38%) 44%,
+				transparent 100%
+			);
+		}
+
+		&[data-section-kind='personalized-access'] {
+			// Gifts light → formal chapter dark
+			--intersection-depth: clamp(1.75rem, 3.5vw, 2.75rem);
+			--intersection-blend: radial-gradient(
+				ellipse 145% 82% at 62% 0%,
+				rgb(var(--color-cool-ivory-rgb) / 78%) 0%,
+				rgb(var(--color-deep-blue-graphite-rgb) / 42%) 40%,
+				transparent 100%
+			);
+		}
+
+		&[data-section-kind='thankYou'] {
+			// Formal chapter → full-bleed thank-you ink
+			--intersection-depth: clamp(1.75rem, 3.5vw, 2.75rem);
+			--intersection-blend: radial-gradient(
+				ellipse 140% 80% at 44% 0%,
+				rgb(var(--color-deep-blue-graphite-rgb) / 88%) 0%,
+				rgb(var(--color-deep-blue-graphite-rgb) / 36%) 42%,
+				transparent 100%
+			);
+		}
+	}
+}

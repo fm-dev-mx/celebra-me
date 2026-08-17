@@ -235,8 +235,7 @@ describe('P0 persisted structural contracts', () => {
 			isDemo: false,
 			content: payload,
 		});
-		expect(viewModel.sections.thankYou?.structuralVariant).toBe('editorial-back-cover');
-		expect(viewModel.sections.thankYou?.variant).toBe('celestial-blue');
+		expect(viewModel.sections.thankYou?.variant).toBe('editorial-back-cover');
 	});
 
 	it('requires celestial and enchanted-rose corpus Thank You contracts to stay explicit', () => {

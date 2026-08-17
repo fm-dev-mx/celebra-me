@@ -14,6 +14,7 @@ import {
 	type ThemePreset,
 	themeSupportsPortrait,
 } from '@/lib/theme/theme-contract';
+import { COUNTDOWN_VARIANTS } from '@/lib/invitation/section-variants';
 import { getContentEntrySlug, type EventContentEntry } from '@/lib/content/events';
 import type {
 	InvitationViewModel,
@@ -173,22 +174,9 @@ function pickPreset(candidate: string | undefined): ThemePreset {
 	);
 }
 
-function sectionVariant(
-	section: string,
-	candidate: string | undefined,
-	fallback: ThemePreset,
-): ThemePreset {
-	return pickVariant(`sectionStyles.${section}.variant`, candidate, THEME_PRESETS, fallback);
-}
-
 function buildHero(context: AdaptationContext): HeroViewModel {
 	const { data, eventSlug, normalizedPreset } = context;
-	const preset = pickVariant(
-		'hero.visualVariant',
-		data.hero.visualVariant ?? normalizedPreset,
-		THEME_PRESETS,
-		normalizedPreset,
-	);
+	const preset = normalizedPreset;
 	return {
 		name: data.hero.name,
 		secondaryName: data.hero.secondaryName,
@@ -204,7 +192,7 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 		portrait: resolvePortraitEnabled(data.hero.presentation, themeSupportsPortrait(preset))
 			? resolveAsset(eventSlug, data.hero.portrait, data.title)
 			: undefined,
-		variant: preset,
+		variant: data.hero.variant,
 		structuralVariant: data.hero.variant,
 		focalPoint: data.hero.focalPoint,
 		focalPointMobile: data.hero.focalPointMobile,
@@ -307,7 +295,7 @@ function buildInterludes(context: AdaptationContext): Interlude[] {
 				afterSection: interlude.afterSection,
 				alt: interlude.alt,
 				height: interlude.height,
-				variant: interlude.variant,
+				variant: 'standard' as const,
 				focalPoint: interlude.focalPoint,
 				focalPointDesktop: interlude.focalPointDesktop,
 				lightX: interlude.lightX,
@@ -320,16 +308,16 @@ function buildInterludes(context: AdaptationContext): Interlude[] {
 }
 
 function buildQuoteSectionData(context: AdaptationContext) {
-	const { data, normalizedPreset } = context;
+	const { data } = context;
 	if (!data.quote) return undefined;
 	return {
 		...data.quote,
-		variant: sectionVariant('quote', data.sectionStyles?.quote?.variant, normalizedPreset),
+		variant: 'standard' as const,
 	};
 }
 
 function buildCountdownSectionData(context: AdaptationContext) {
-	const { data, normalizedPreset } = context;
+	const { data } = context;
 
 	const target = resolveCountdownTarget(data.eventTiming, data.hero.date);
 	if (!target) return undefined;
@@ -347,10 +335,11 @@ function buildCountdownSectionData(context: AdaptationContext) {
 		targetSource: target.source,
 		eventTimeZone: data.eventTiming?.timeZone,
 		visibleUnits: resolveCountdownVisibleUnits(data.countdown?.presentationOptions),
-		variant: sectionVariant(
-			'countdown',
-			data.sectionStyles?.countdown?.variant,
-			normalizedPreset,
+		variant: pickVariant(
+			'countdown.variant',
+			data.countdown?.variant,
+			COUNTDOWN_VARIANTS,
+			'standard',
 		),
 		isDemo: data.isDemo,
 	};
@@ -401,7 +390,7 @@ function toVenueEntry(v: VenueEntryInput, eventSlug: string, eventTitle: string)
 }
 
 function buildLocationSectionData(context: AdaptationContext) {
-	const { data, eventSlug, normalizedPreset } = context;
+	const { data, eventSlug } = context;
 	if (!data.location) return undefined;
 
 	const rawVenues = data.location.venues;
@@ -412,6 +401,7 @@ function buildLocationSectionData(context: AdaptationContext) {
 	return {
 		visibility: data.location.visibility,
 		presentation: data.location.presentation,
+		variant: data.location.variant,
 		structuralVariant: data.location.variant,
 		presentationOptions: data.location.presentationOptions,
 		...(rawVenues !== undefined
@@ -421,11 +411,6 @@ function buildLocationSectionData(context: AdaptationContext) {
 					reception: resolveVenueData(eventSlug, data.location.reception, data.title),
 				}),
 		indications: data.location.indications,
-		variant: sectionVariant(
-			'location',
-			data.sectionStyles?.location?.variant,
-			normalizedPreset,
-		),
 		showFlourishes: resolveLocationShowFlourishes(
 			data.location.presentationOptions,
 			data.location.variant,
@@ -441,7 +426,7 @@ function buildLocationSectionData(context: AdaptationContext) {
 }
 
 function buildFamilySectionData(context: AdaptationContext) {
-	const { data, eventSlug, normalizedPreset } = context;
+	const { data, eventSlug } = context;
 	if (!data.family) return undefined;
 	return {
 		...data.family,
@@ -449,8 +434,8 @@ function buildFamilySectionData(context: AdaptationContext) {
 			? resolveAsset(eventSlug, data.family.featuredImage, data.title)
 			: undefined,
 		celebrantName: data.hero.name,
+		variant: data.family.variant,
 		structuralVariant: data.family.variant,
-		variant: sectionVariant('family', data.sectionStyles?.family?.variant, normalizedPreset),
 	};
 }
 
@@ -493,7 +478,7 @@ function buildGallerySectionData(context: AdaptationContext) {
 		...data.gallery,
 		items,
 		variant: data.gallery.variant,
-		visualVariant: data.gallery.visualVariant ?? normalizedPreset,
+		visualVariant: normalizedPreset,
 		mobileBrowse: resolveGalleryMobileBrowse(data.gallery.presentationOptions),
 	};
 }
@@ -511,7 +496,7 @@ function buildItinerarySectionData(
 }
 
 function buildRsvpSectionData(context: AdaptationContext, entrySlug: string) {
-	const { data, normalizedPreset } = context;
+	const { data } = context;
 	if (!data.rsvp) return undefined;
 	const { calendar, ...rsvpRest } = data.rsvp;
 	const eventStartsAt = calendar?.startsAt ?? data.eventTiming?.startsAtUtc ?? data.hero.date;
@@ -519,11 +504,12 @@ function buildRsvpSectionData(context: AdaptationContext, entrySlug: string) {
 		...rsvpRest,
 		personalizedAccess: {
 			...data.rsvp.personalizedAccess,
+			variant: data.rsvp.personalizedAccess.variant,
 			structuralVariant: data.rsvp.personalizedAccess.variant,
 		},
 		eventSlug: entrySlug,
 		eventType: data.eventType,
-		variant: sectionVariant('rsvp', data.sectionStyles?.rsvp?.variant, normalizedPreset),
+		variant: data.rsvp.variant,
 		structuralVariant: data.rsvp.variant,
 		labels: data.rsvp.labels,
 		eventStartsAt,
@@ -535,31 +521,27 @@ function buildRsvpSectionData(context: AdaptationContext, entrySlug: string) {
 }
 
 function buildGiftsSectionData(context: AdaptationContext) {
-	const { data, normalizedPreset } = context;
+	const { data } = context;
 	if (!data.gifts) return undefined;
 	const presentation = resolveGiftsPresentation(data.gifts.presentation);
 	return {
 		...data.gifts,
 		presentation,
 		items: presentation === 'legend-only' ? [] : (data.gifts.items ?? []),
-		variant: sectionVariant('gifts', data.sectionStyles?.gifts?.variant, normalizedPreset),
+		variant: data.gifts.variant,
 		structuralVariant: data.gifts.variant,
 	};
 }
 
 function buildThankYouSectionData(context: AdaptationContext) {
-	const { data, eventSlug, normalizedPreset } = context;
+	const { data, eventSlug } = context;
 	if (!data.thankYou) return undefined;
 	return {
 		...data.thankYou,
 		image: data.thankYou.image
 			? resolveAsset(eventSlug, data.thankYou.image, data.title)
 			: undefined,
-		variant: sectionVariant(
-			'thankYou',
-			data.sectionStyles?.thankYou?.variant,
-			normalizedPreset,
-		),
+		variant: data.thankYou.variant,
 		structuralVariant: data.thankYou.variant,
 	};
 }
@@ -612,6 +594,8 @@ export function adaptEvent(
 	// order is handled once by the render-plan legacy path; derived section data
 	// must never opt a section back into an explicit configuration.
 
+	const playableMusicUrl = adapterData.music?.url?.trim() ?? '';
+
 	return {
 		id: entrySlug,
 		isDemo,
@@ -628,10 +612,11 @@ export function adaptEvent(
 		sectionOrder: adapterData.sectionOrder,
 		composition: adapterData.composition,
 		sections,
-		music:
-			adapterData.music && hasPlayableMusicUrl(adapterData.music.url)
+		music: hasPlayableMusicUrl(playableMusicUrl)
 			? {
-					...adapterData.music,
+					url: playableMusicUrl,
+					autoPlay: adapterData.music?.autoPlay ?? false,
+					title: adapterData.music?.title,
 					revealMode: envelope.enabled ? 'envelope' : 'immediate',
 				}
 			: undefined,

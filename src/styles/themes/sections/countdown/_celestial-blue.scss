@@ -1,4 +1,4 @@
-.countdown-section[data-variant='celestial-blue'] {
+.theme-preset--celestial-blue .countdown-section {
 	--countdown-grid-columns-mobile: 2;
 	--countdown-grid-columns-tablet: 4;
 	--countdown-segment-padding-mobile: clamp(1.4rem, 3vw, 1.8rem) clamp(0.6rem, 2vw, 1rem);
@@ -8,25 +8,14 @@
 	--countdown-value-wrapper-height-desktop: auto;
 	--countdown-value-wrapper-width-desktop: 100%;
 
-	background:
-		radial-gradient(
-			circle at 50% 8%,
-			rgb(var(--color-diamond-white-rgb) / 82%) 0%,
-			transparent 55%
-		),
-		linear-gradient(
-			180deg,
-			var(--color-ice-blue) 0%,
-			var(--color-cool-ivory) 58%,
-			var(--color-pearl-gray) 100%
-		);
+	background: var(--countdown-section-background);
 
 	@supports (background-attachment: fixed) {
 		background-attachment: fixed;
 	}
 
-	color: var(--color-text-primary);
-	padding-block: clamp(5rem, 9vw, 8rem);
+	color: var(--countdown-section-color);
+	padding-block: var(--countdown-section-padding-block);
 	position: relative;
 	overflow: hidden;
 

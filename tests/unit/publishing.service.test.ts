@@ -827,6 +827,7 @@ describe('publishDraft', () => {
 		expect(publishedContent.countdown).toEqual({
 			title: '¡Cada día falta menos!',
 			footerText: 'Te esperamos.',
+			variant: 'standard',
 		});
 	});
 

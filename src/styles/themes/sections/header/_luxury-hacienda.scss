@@ -6,7 +6,7 @@
 
 // Default Header Variables (Safe Fallbacks)
 
-.header-base[data-variant='luxury-hacienda'] {
+.theme-preset--luxury-hacienda .header-base {
 	--header-bg: linear-gradient(180deg, rgb(20 14 10 / 40%) 0%, rgb(20 14 10 / 0%) 100%);
 	--header-bg-scrolled: linear-gradient(180deg, rgb(29 20 14 / 92%) 0%, rgb(42 31 22 / 88%) 100%);
 	--header-nav-color: rgb(241 223 187 / 92%);

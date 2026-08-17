@@ -2,7 +2,7 @@
 
 // Gallery paired-feature-band: portrait pairs with a full-width feature band.
 // Profiles may supply border/shadow/filter tokens; not grid geometry.
-.gallery-section[data-structural-variant='paired-feature-band'] {
+.gallery-section[data-variant='paired-feature-band'] {
 	.gallery-grid {
 		display: grid;
 		grid-template-columns: 1fr;

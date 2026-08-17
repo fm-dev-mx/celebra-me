@@ -226,6 +226,7 @@
         "variant": "standard"
     },
     "countdown": {
+        "variant": "standard",
         "title": "La noche más especial comienza en",
         "footerText": "Monterrey, Nuevo León"
     },

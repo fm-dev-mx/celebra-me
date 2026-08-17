@@ -107,7 +107,6 @@ describe('Xareni presentation options', () => {
 				viewModel,
 				slug: 'xareni-client-slug',
 				eventType: 'xv',
-				isPreview: true,
 			});
 
 			expect(pageContext.wrapper.scopedStyles).not.toContain('--xareni-');

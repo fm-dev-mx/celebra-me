@@ -93,6 +93,7 @@
         "author": "Aurora Valencia"
     },
     "countdown": {
+        "variant": "standard",
         "title": "La celebración comienza en",
         "footerText": "28 de agosto de 2027, Ciudad de México"
     },

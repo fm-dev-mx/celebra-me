@@ -32,7 +32,7 @@ describe('Style and Schema Resolver Parity', () => {
 				...basePayload,
 				hero: {
 					...basePayload.hero,
-					variant: 'editorial-magazine',
+					variant: 'editorial-cover',
 				},
 			};
 			const res = eventContentSchema.safeParse(payload);
@@ -44,7 +44,7 @@ describe('Style and Schema Resolver Parity', () => {
 				...basePayload,
 				hero: {
 					...basePayload.hero,
-					variant: 'editorial-magazine',
+					variant: 'editorial-cover',
 				},
 				sectionStyles: {
 					unknownSectionKey: {
@@ -65,7 +65,7 @@ describe('Style and Schema Resolver Parity', () => {
 				...basePayload,
 				hero: {
 					...basePayload.hero,
-					variant: 'editorial-magazine',
+					variant: 'editorial-cover',
 				},
 				sectionStyles: {
 					rsvp: {

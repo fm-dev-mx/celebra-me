@@ -221,17 +221,8 @@ describe('Angelic presence section coverage', () => {
 		for (const relativePath of sectionThemeFiles) {
 			const filePath = path.join(projectRoot, relativePath);
 			const content = fs.readFileSync(filePath, 'utf8');
-			if (relativePath.includes('/itinerary/')) {
-				// Canonical itinerary behavior is standard|timeline-paper; skin binds via theme preset.
-				expect(content).toContain(
-					".theme-preset--angelic-presence .itinerary[data-structural-variant='standard']",
-				);
-				expect(content).not.toContain(
-					".itinerary[data-structural-variant='angelic-presence']",
-				);
-			} else {
-				expect(content).toContain("data-variant='angelic-presence'");
-			}
+			expect(content).toContain('.theme-preset--angelic-presence');
+			expect(content).not.toContain("[data-variant='angelic-presence']");
 		}
 	});
 
@@ -319,8 +310,11 @@ describe('Celestial blue section coverage', () => {
 		for (const relativePath of sectionThemeFiles) {
 			const filePath = path.join(projectRoot, relativePath);
 			const content = fs.readFileSync(filePath, 'utf8');
-			expect(content).toContain('celestial-blue');
-			expect(content).not.toContain("data-structural-variant='celestial-blue'");
+			expect(
+				content.includes('.theme-preset--celestial-blue') ||
+					content.includes("[data-theme-preset='celestial-blue']"),
+			).toBe(true);
+			expect(content).not.toContain("[data-variant='celestial-blue']");
 		}
 	});
 
@@ -335,7 +329,7 @@ describe('Celestial blue section coverage', () => {
 		);
 
 		expect(fs.existsSync(aliasPath)).toBe(false);
-		expect(behavior).toContain("[data-structural-variant='timeline-paper']");
+		expect(behavior).toContain("[data-variant='timeline-paper']");
 		expect(behavior).not.toContain("[data-variant='celestial-blue']");
 	});
 
@@ -424,7 +418,9 @@ describe('Enchanted rose section coverage', () => {
 	it('styles every intentionally created section with enchanted-rose selectors', () => {
 		for (const relativePath of sectionThemeFiles) {
 			const filePath = path.join(projectRoot, relativePath);
-			expect(fs.readFileSync(filePath, 'utf8')).toContain("data-variant='enchanted-rose'");
+			const content = fs.readFileSync(filePath, 'utf8');
+			expect(content).toContain('.theme-preset--enchanted-rose');
+			expect(content).not.toContain("[data-variant='enchanted-rose']");
 		}
 	});
 
@@ -459,6 +455,15 @@ describe('Enchanted rose section coverage', () => {
 		);
 		expect(enchantedGalleryContent).toContain('--gallery-item-aspect-ratio-portrait-tall');
 		expect(enchantedGalleryContent).toContain('--gallery-item-position-portrait-tall');
+	});
+
+	it('does not re-introduce removed selectors/variables', () => {
+		expect(enchantedContent).not.toContain('.enchanted-rose');
+		expect(enchantedContent).not.toContain('.theme-enchanted-rose');
+		expect(enchantedContent).not.toContain('--font-enchanted-display');
+		expect(enchantedContent).not.toContain('--enchanted-navy');
+		expect(enchantedContent).not.toContain('--enchanted-pink');
+		expect(enchantedContent).not.toContain('--enchanted-gold');
 	});
 });
 
@@ -495,23 +500,17 @@ describe('Sacred keepsake theme isolation', () => {
 	});
 });
 
-describe('Sacred keepsake section coverage', () => {
-	// Sections intentionally absent (use base section styles per architecture docs):
-	//   - quote (documented base-style fallback)
-	//   - gifts (documented base-style fallback)
-	//   - music (uses base music player contract and preset variables)
-	//   - interlude (uses base interlude contract and preset variables)
-	//   - footer (uses base footer styles)
-	//   - location (uses base location contract and preset --location-* variables)
-	//   - family (uses base family contract and preset --family-* variables)
+describe('Theme preset: sacred-keepsake', () => {
+	// Sections intentionally absent (use base section styles / legacy header data-variant):
+	//   - quote, gifts, music, interlude, footer, location, family, header
 	const sectionThemeFiles = [
 		'src/styles/themes/sections/hero/_sacred-keepsake.scss',
-		'src/styles/themes/sections/countdown/_sacred-keepsake.scss',
 		'src/styles/themes/sections/gallery/_sacred-keepsake.scss',
+		'src/styles/themes/sections/countdown/_sacred-keepsake.scss',
 		'src/styles/themes/sections/itinerary/_sacred-keepsake.scss',
 		'src/styles/themes/sections/rsvp/_sacred-keepsake.scss',
-		'src/styles/themes/sections/header/_sacred-keepsake.scss',
 	];
+
 	const sacredContent = fs.readFileSync(
 		path.join(projectRoot, 'src/styles/themes/presets/_sacred-keepsake.scss'),
 		'utf8',
@@ -522,16 +521,8 @@ describe('Sacred keepsake section coverage', () => {
 			const filePath = path.join(projectRoot, relativePath);
 			const content = fs.readFileSync(filePath, 'utf8');
 
-			if (relativePath.includes('/itinerary/')) {
-				expect(content).toContain(
-					".theme-preset--sacred-keepsake .itinerary[data-structural-variant='standard']",
-				);
-				expect(content).not.toContain(
-					".itinerary[data-structural-variant='sacred-keepsake']",
-				);
-			} else {
-				expect(content).toContain("data-variant='sacred-keepsake'");
-			}
+			expect(content).toContain('.theme-preset--sacred-keepsake');
+			expect(content).not.toContain("[data-variant='sacred-keepsake']");
 			expect(content).not.toContain('cesar-ramses');
 			expect(content).not.toContain('Cesar Ramses');
 			expect(content).not.toContain('César Ramses');

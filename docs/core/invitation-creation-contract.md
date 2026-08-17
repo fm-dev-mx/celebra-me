@@ -94,12 +94,16 @@ New managed content must follow the canonical
   `itinerary.presentation.behavior` in new content. `envelope.variant` selects the reveal design
   independently of `themeId`; omit it to keep the current theme-preset resolution.
 - Treat `theme.preset` and `visualVariant` as visual skin inputs only. Neither may select a
-  renderer, structural layout, required DOM, or section behavior.
+  renderer, structural layout, required DOM, or section behavior. Omitted section variants default
+  to the section's canonical default (`standard` / `uniform-grid`); never derive them from
+  `theme.preset`.
 - Supply every variant-specific field required by its discriminated section schema. Unknown and
   incompatible configurations must fail publication validation.
-- Keep profile SCSS limited to tokens, palette, typography, crop, decoration, and timing. Canonical
-  grid, order, required visibility, and structural breakpoints belong to the section variant's
-  semantic SCSS entrypoint.
+- Keep profile SCSS limited to client palette token remap and rhythm/intersection overrides. Do not
+  set `font-family` / `background` directly on section element classes (use tokens). Canonical grid,
+  order, required visibility, and structural breakpoints belong to the section variant's semantic
+  SCSS entrypoint. See
+  [`docs/domains/theme/architecture.md`](../domains/theme/architecture.md#invitation-css-ownership-normative).
 - Reference client photographs and artwork through the invitation's typed semantic asset keys. Do
   not import another invitation's files from reusable code or styles.
 - Author non-neutral boundary choices in typed `composition.intersections`; do not derive them from

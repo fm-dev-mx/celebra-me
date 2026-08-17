@@ -7,19 +7,19 @@
 // Uses portrait as full-bleed background for clean luxury editorial cover aesthetic
 // ==========================================================================
 
-.event-theme-wrapper[data-reveal-state='revealed']
-	.invitation-hero[data-variant='celestial-blue']:not([data-structural-variant='split-cover']) {
+.event-theme-wrapper.theme-preset--celestial-blue[data-reveal-state='revealed']
+	.invitation-hero[data-variant='standard'] {
 	.invitation-hero__content {
 		animation-duration: var(--motion-hero-media-duration);
 		animation-timing-function: var(--ease-premium);
 	}
 }
 
-.invitation-hero[data-variant='celestial-blue']:not([data-structural-variant='split-cover']) {
+.theme-preset--celestial-blue .invitation-hero[data-variant='standard'] {
 	justify-content: flex-end;
 	min-height: 100svh;
-	background: var(--color-surface-dark);
-	color: var(--color-text-on-dark);
+	background: var(--hero-section-background, var(--color-surface-dark));
+	color: var(--hero-section-color, var(--color-text-on-dark));
 
 	.invitation-hero__background {
 		&::after {
