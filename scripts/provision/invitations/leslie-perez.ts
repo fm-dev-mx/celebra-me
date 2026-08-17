@@ -312,12 +312,42 @@ export function buildLesliePublishedContent(
 			title: 'Momentos',
 			subtitle: 'Itinerario de la celebración',
 			items: [
-				{ time: EVENT_TIME_DISPLAY, label: 'Recepción', iconName: 'Reception' },
-				{ time: '[[PENDIENTE:HORA_CENA]]', label: 'Cena', iconName: 'Dinner' },
-				{ time: '[[PENDIENTE:HORA_VALS]]', label: 'Vals', iconName: 'Waltz' },
-				{ time: '[[PENDIENTE:HORA_BRINDIS]]', label: 'Brindis', iconName: 'Toast' },
-				{ time: '[[PENDIENTE:HORA_BAILE]]', label: 'Baile', iconName: 'Party' },
-				{ time: '[[PENDIENTE:HORA_CIERRE]]', label: 'Cierre', iconName: 'Sparkles' },
+				{
+					time: '19:00',
+					label: 'Recepción',
+					description: 'Bienvenida y cóctel de inicio.',
+					iconName: 'Diamond',
+				},
+				{
+					time: '20:30',
+					label: 'Cena',
+					description: 'Un momento para compartir en la mesa.',
+					iconName: 'Dinner',
+				},
+				{
+					time: '21:45',
+					label: 'Vals',
+					description: 'El baile principal junto a la familia.',
+					iconName: 'Crown',
+				},
+				{
+					time: '22:30',
+					label: 'Brindis',
+					description: 'Unas palabras para celebrar este día.',
+					iconName: 'Toast',
+				},
+				{
+					time: '23:00',
+					label: 'Baile',
+					description: 'Música, sorpresas y pista abierta.',
+					iconName: 'Party',
+				},
+				{
+					time: '02:00',
+					label: 'Cierre',
+					description: 'Despedida y agradecimiento.',
+					iconName: 'Sparkles',
+				},
 			],
 		},
 		interludes: [
