@@ -33,6 +33,7 @@ import { resolveCountdownVisibleUnits } from '@/lib/invitation/countdown-present
 import { resolveGalleryMobileBrowse } from '@/lib/invitation/gallery-presentation';
 import { resolveGiftsPresentation } from '@/lib/invitation/gifts-presentation';
 import { resolvePortraitEnabled } from '@/lib/invitation/hero-presentation';
+import { hasPlayableMusicUrl } from '@/lib/invitation/local-preview-config';
 import {
 	resolveLocationShowFlourishes,
 	resolveLocationShowNavigationButtons,
@@ -425,7 +426,10 @@ function buildLocationSectionData(context: AdaptationContext) {
 			data.sectionStyles?.location?.variant,
 			normalizedPreset,
 		),
-		showFlourishes: resolveLocationShowFlourishes(data.location.presentationOptions),
+		showFlourishes: resolveLocationShowFlourishes(
+			data.location.presentationOptions,
+			data.location.variant,
+		),
 		showNavigationButtons: resolveLocationShowNavigationButtons(
 			data.location.presentationOptions,
 		),
@@ -624,7 +628,7 @@ export function adaptEvent(
 		sectionOrder: adapterData.sectionOrder,
 		composition: adapterData.composition,
 		sections,
-		music: adapterData.music
+		music: hasPlayableMusicUrl(adapterData.music?.url)
 			? {
 					...adapterData.music,
 					revealMode: envelope.enabled ? 'envelope' : 'immediate',

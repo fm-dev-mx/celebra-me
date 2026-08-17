@@ -330,13 +330,13 @@ const headLinks = buildInvitationStylesheetHeadLinks({
 					showContactCta={pageCtx.viewModel.brandingVisibility.showContactCta}
 				/>
 
-				{pageCtx.viewModel.music && (
+				{pageCtx.musicPlayer && (
 					<MusicPlayer
-						url={pageCtx.viewModel.music.url}
-						autoPlay={pageCtx.viewModel.music.autoPlay}
-						title={pageCtx.viewModel.music.title}
-						revealMode={pageCtx.viewModel.music.revealMode}
-						variant={pageCtx.viewModel.theme.preset}
+						url={pageCtx.musicPlayer.url}
+						autoPlay={pageCtx.musicPlayer.autoPlay}
+						title={pageCtx.musicPlayer.title}
+						revealMode={pageCtx.musicPlayer.revealMode}
+						variant={pageCtx.musicPlayer.variant}
 					/>
 				)}
 			</main>

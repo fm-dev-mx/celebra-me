@@ -332,6 +332,7 @@ describe('buildPageContextFromViewModel', () => {
 		expect(context.layout.image).toBe('/og.jpg');
 		expect(context.layout.className).toBe('layout--jewelry-box');
 		expect(context.isDemoPreview).toBe(false);
+		expect(context.musicPlayer).toBeUndefined();
 	});
 
 	it('builds renderPlan from sectionOrder when provided', () => {

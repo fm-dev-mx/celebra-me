@@ -3,7 +3,7 @@ import Icon from '@/components/common/icons/Icon.astro';
 import '@/styles/invitation/_music-player.scss';
 
 interface Props {
-	url: string;
+	url?: string;
 	autoPlay?: boolean;
 	title?: string;
 	revealMode?: 'envelope' | 'immediate';
@@ -11,31 +11,37 @@ interface Props {
 }
 
 const {
-	url,
+	url = '',
 	autoPlay = false,
 	title = 'Música de fondo',
 	revealMode = 'envelope',
 	variant,
 } = Astro.props;
+
+const hasAudio = Boolean(url.trim());
+const pendingLabel = 'La canción se anunciará pronto';
 ---
 
 <div
 	class="music-player"
 	data-music-player
-	data-auto-play={autoPlay ? 'true' : 'false'}
+	data-auto-play={hasAudio && autoPlay ? 'true' : 'false'}
 	data-reveal-mode={revealMode}
 	data-variant={variant}
+	data-has-audio={hasAudio ? 'true' : 'false'}
 >
-	<audio src={url} loop preload="none" data-music-audio></audio>
+	{hasAudio ? <audio src={url} loop preload="none" data-music-audio></audio> : null}
 
-	<span class="music-player__prompt" data-music-prompt>Toca para escuchar música</span>
+	<span class="music-player__prompt" data-music-prompt
+		>{hasAudio ? 'Toca para escuchar música' : pendingLabel}</span
+	>
 
 	<div class="music-player__controls">
 		<button
 			type="button"
 			class="music-player__button music-player__button--play music-player__button--pulsing"
 			data-music-toggle
-			aria-label={title}
+			aria-label={hasAudio ? title : pendingLabel}
 		>
 			<span data-icon-play><Icon name="Play" size={24} /></span>
 			<span data-icon-pause hidden><Icon name="Pause" size={24} /></span>
@@ -59,13 +65,17 @@ const {
 		const pauseIcon = player.querySelector('[data-icon-pause]');
 		const autoPlay = player.dataset.autoPlay === 'true';
 		const revealMode = player.dataset.revealMode || 'envelope';
+		const hasAudio = player.dataset.hasAudio === 'true';
 
 		if (
-			!(audio instanceof HTMLAudioElement) ||
 			!(toggle instanceof HTMLButtonElement) ||
 			!(playIcon instanceof HTMLElement) ||
 			!(pauseIcon instanceof HTMLElement)
 		) {
+			return;
+		}
+
+		if (!hasAudio || !(audio instanceof HTMLAudioElement)) {
 			return;
 		}
 
@@ -104,31 +114,29 @@ const {
 			dismissTimer = window.setTimeout(fadeOutPrompt, 4000);
 		};
 
-		// Music Playback Orchestration
 		const startAudio = () => {
-			if (!isPlaying) {
-				audio.play().then(() => {
-					isPlaying = true;
-					syncState();
-					if (prompt instanceof HTMLElement) {
-						prompt.textContent = 'Toca para pausar';
-						prompt.classList.remove('is-fading-out');
-						prompt.classList.add('is-fading-in');
-						prompt.hidden = false;
-						hidePromptLater();
-					}
-				}).catch(() => {
-					// Audio blocked or pending - user can still use manual toggle
-				});
+			if (isPlaying) {
+				return;
 			}
+			audio.play().then(() => {
+				isPlaying = true;
+				syncState();
+				if (prompt instanceof HTMLElement) {
+					prompt.textContent = 'Toca para pausar';
+					prompt.classList.remove('is-fading-out');
+					prompt.classList.add('is-fading-in');
+					prompt.hidden = false;
+					hidePromptLater();
+				}
+			}).catch(() => {
+				// Audio blocked — user can still use the manual toggle
+			});
 		};
 
 		if (autoPlay) {
 			if (revealMode === 'envelope') {
-				// Wait for the envelope reveal to complete
 				window.addEventListener('envelope:opened', startAudio, { once: true });
 			} else {
-				// Immediate mode - trigger on first visit interaction
 				document.addEventListener('click', startAudio, { once: true });
 				document.addEventListener('touchstart', startAudio, { once: true });
 			}
@@ -139,7 +147,6 @@ const {
 				? invitationRoot.dataset.revealState === 'revealed'
 				: true;
 
-		// Scroll-triggered dismissal
 		const handleScrollDismiss = () => {
 			if (window.scrollY > 100 && prompt instanceof HTMLElement && !prompt.hidden) {
 				window.clearTimeout(dismissTimer);

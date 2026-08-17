@@ -385,17 +385,13 @@ const wrapperDataAttributes = page
 								showContactCta={page.viewModel.brandingVisibility.showContactCta}
 							/>
 
-							{page.viewModel.music && (
+							{page.musicPlayer && (
 								<MusicPlayer
-									url={page.viewModel.music.url}
-									autoPlay={
-										page.viewModel.isDemo && import.meta.env.DEV
-											? false
-											: page.viewModel.music.autoPlay
-									}
-									title={page.viewModel.music.title}
-									revealMode={page.viewModel.music.revealMode}
-									variant={page.viewModel.theme.preset}
+									url={page.musicPlayer.url}
+									autoPlay={page.musicPlayer.autoPlay}
+									title={page.musicPlayer.title}
+									revealMode={page.musicPlayer.revealMode}
+									variant={page.musicPlayer.variant}
 								/>
 							)}
 						</div>
