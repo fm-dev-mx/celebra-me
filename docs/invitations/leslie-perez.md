@@ -1,8 +1,8 @@
 # Canonical Invitation Preparation State — `leslie-perez`
 
-> Schema owner: `docs/core/invitation-preparation-contract.md`  
-> Executable evaluation: `src/lib/invitation-preparation/` (**prepReadiness SSOT**)  
-> Workflow: `.agent/workflows/invitation-preparation.md`
+> Schema owner: `docs/core/invitation-preparation-contract.md` Executable evaluation:
+> `src/lib/invitation-preparation/` (**prepReadiness SSOT**) Workflow:
+> `.agent/workflows/invitation-preparation.md`
 
 ---
 
@@ -14,14 +14,13 @@
 | **Canonical route**    | `/xv/leslie-perez` |
 | **Host Login Alias**   | `leslie_perez`     |
 | **Event Type**         | `xv`               |
-| **Preparation Status** | `NOT_READY`        |
+| **Preparation Status** | `READY_FOR_IMPLEMENTATION` |
 
-**Preparation Readiness (prepReadiness):** `NOT_READY`
+**Preparation Readiness (prepReadiness):** `READY_FOR_IMPLEMENTATION`
 
-The implementation is a local `in_progress` draft only. The helper keeps preparation blocked because
-the primary event time is missing; the draft must not be released or published until that owner
-datum is confirmed. Technical Local/Preview/Production readiness (**envReadiness**) remains owned by
-the managed release workflow and is out of scope here.
+The implementation is a local `in_progress` draft. The primary event time and schedule are now
+confirmed. Technical Local/Preview/Production readiness (**envReadiness**) remains owned by the
+managed release workflow and is out of scope here.
 
 ---
 
@@ -44,141 +43,50 @@ the managed release workflow and is out of scope here.
 | celebrantName        | Leslie                                                                                            | verified       | wa-export + owner       | Guest-facing name is kept as Leslie; no unverified surname is displayed.                            |
 | eventLabel           | XV años                                                                                           | verified       | wa-export               | Event type and client context.                                                                      |
 | eventDate            | 2026-09-26                                                                                        | verified       | wa-export               | Confirmed date.                                                                                     |
-| eventTime            | `[[PENDIENTE:HORA_EVENTO]]`                                                                       | missing        | wa-export               | Primary start time was not confirmed; this is a blocking preparation gap.                           |
+| eventTime            | 19:00 (7:00 p. m.)                                                                                | verified       | owner                   | Confirmed reception start time.                                                                     |
 | timeZone             | America/Monterrey                                                                                 | inferred       | geography               | Venue is in Apodaca, Nuevo León; do not present this inference as client wording.                   |
 | baseDemoId           | `demo-xv-celestial-blue`                                                                          | verified       | owner + catalog         | Visual reference and theme-compatible provenance.                                                   |
 | sourceAssetPath      | `source:hr-photos`                                                                                | verified       | owner                   | High-resolution local source was inventoried and copied into the client namespace.                  |
-| sectionOrder         | quote, family, countdown, location, itinerary, gallery, gifts, personalizedAccess, rsvp, thankYou | verified       | owner                   | Interludes insert after location and gallery. Music is the overlay player, not a section-order key. |
+| sectionOrder         | family, countdown, quote, location, itinerary, gallery, gifts, personalizedAccess, rsvp, thankYou | verified       | owner                   | Interludes insert after location and gallery. Music is the overlay player, not a section-order key. |
 | primaryVenueName     | San Carlos Eventos                                                                                | verified       | wa-export               | One reception venue; no ceremony block.                                                             |
 | primaryVenueAddress  | Blvd. Julián Treviño Elizondo #500, Col. Huinalá, Apodaca, Nuevo León, 66645                      | verified       | wa-export               | Preserved for the location section.                                                                 |
 | distinctVenues       | false                                                                                             | verified       | wa-export + owner       | Only the reception venue is included.                                                               |
 | rsvpConfirmationMode | api                                                                                               | verified       | owner                   | Standard product RSVP flow.                                                                         |
 | rsvpGuestCap         | 1                                                                                                 | verified       | owner + product default | Safe draft fallback; the client-managed guest list may set individual allowances before release.    |
+| rsvpDeadline         | 15 de septiembre de 2026                                                                          | verified       | owner                   | Confirmed RSVP deadline.                                                                            |
 | fatherName           | Luis Enrique Zacarias Oviedo                                                                      | verified       | wa-export               | Parent name preserved as provided.                                                                  |
 | motherName           | Leticia Perez Moreno                                                                              | verified       | wa-export               | Parent name preserved as provided.                                                                  |
 | godparents           | —                                                                                                 | not_applicable | wa-export + owner       | Client confirmed no padrinos; do not render a godparents block.                                     |
 | clientColors         | azul marino                                                                                       | verified       | wa-export               | Dominant atmosphere; separate reserved-color indication is required.                                |
-| reservedColorNotice  | El azul marino está reservado para Leslie.                                                        | verified       | owner + wa-export       | Render as an independent location indication, not as a generic dress-code label.                    |
-| ceremony             | —                                                                                                 | not_applicable | wa-export + owner       | No misa; omit ceremony, church, and ceremony itinerary items.                                       |
-| photosRequested      | 15                                                                                                | verified       | wa-export + owner       | Fifteen numbered originals supplied in the owner-authorized source.                                 |
-| photoOrder           | 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12, 13, 14, 15                                        | verified       | owner                   | Exact source order is preserved.                                                                    |
-| familyPhoto          | —                                                                                                 | not_applicable | source:hr-photos        | No family photograph was identified; family is text-only.                                           |
-| music                | `[[PENDIENTE:CANCION]]`                                                                           | missing        | wa-export               | Omitted from published content until a song URL exists.                                             |
-| mapReference         | client-provided Google Maps link                                                                  | verified       | wa-export               | Kept as client reference; no independent map verification is claimed.                               |
-
----
-
-## Event Completeness
-
-The event date, venue, parents, RSVP mode, and photo source are resolved. `eventTime` remains a
-blocking missing field under the evidence-backed XV completeness contract. The local definition
-therefore remains a draft and keeps `[[PENDIENTE:HORA_EVENTO]]` in the affected content.
-
----
-
-## Placeholders
-
-| token                             | missing datum            | blocking | reason                                     | replacement requirement                                                                        |
-| --------------------------------- | ------------------------ | -------- | ------------------------------------------ | ---------------------------------------------------------------------------------------------- |
-| `[[PENDIENTE:HORA_EVENTO]]`       | eventTime                | yes      | The reception start time is not confirmed. | Replace in event timing, location, and countdown with the verified local time and UTC instant. |
-| `[[PENDIENTE:HORA_RECEPCION]]`    | itinerary reception time | no       | Draft program time is not confirmed.       | Replace with the owner-approved reception time or omit the item if the program changes.        |
-| `[[PENDIENTE:HORA_CENA]]`         | itinerary dinner time    | no       | Draft program time is not confirmed.       | Replace with the owner-approved dinner time or omit the item if not needed.                    |
-| `[[PENDIENTE:HORA_VALS]]`         | itinerary waltz time     | no       | Draft program time is not confirmed.       | Replace with the owner-approved waltz time or omit the item if not needed.                     |
-| `[[PENDIENTE:HORA_BRINDIS]]`      | itinerary toast time     | no       | Draft program time is not confirmed.       | Replace with the owner-approved toast time or omit the item if not needed.                     |
-| `[[PENDIENTE:HORA_BAILE]]`        | itinerary dance time     | no       | Draft program time is not confirmed.       | Replace with the owner-approved dance time or omit the item if not needed.                     |
-| `[[PENDIENTE:HORA_CIERRE]]`       | itinerary closing time   | no       | Draft program time is not confirmed.       | Replace with the owner-approved closing time or omit the item if not needed.                   |
-| `[[PENDIENTE:CANCION]]`           | music selection          | no       | Song was not confirmed.                    | Add the owner-approved URL to published `music`; Preview/Production then show the player.      |
-| `[[PENDIENTE:FECHA_LIMITE_RSVP]]` | RSVP deadline            | no       | Confirmation deadline was not supplied.    | Replace with the verified deadline or remove the sentence.                                     |
-| `[[PENDIENTE:INICIALES_SELLO]]`   | envelope initials        | no       | Seal initials were not confirmed.          | Add approved initials only if the seal lockup requires them.                                   |
-
-`FOTO_HERO_FONDO`, `FOTO_HERO_RETRATO`, and `FOTO_FAMILIA` are not pending: the first is assigned to
-photo 01, a separate portrait is intentionally omitted, and the family section is text-only because
-no family photograph was identified.
-
----
-
-## Owner Decisions
-
-| decision              | resolution                                                                                         | status            |
-| --------------------- | -------------------------------------------------------------------------------------------------- | ----------------- |
-| Canonical route       | `/xv/leslie-perez`                                                                                 | accepted          |
-| Base visual direction | Theme `celestial-blue`, with exact section variants reused from existing invitations               | accepted          |
-| Photo sequencing      | Preserve source order 01–15; 01 Hero, 04/08 interludes, remaining 02–14 Gallery, 15 ThankYou       | accepted          |
-| Family content        | Parents only; no godparents; text-only presentation; two Madre/Padre groups                        | accepted          |
-| Location content      | Reception only at San Carlos Eventos; no ceremony or misa block                                    | accepted          |
-| Itinerary draft       | Recepción, Cena, Vals, Brindis, Baile, Cierre; omit Pastel; all times remain placeholders          | accepted as draft |
-| RSVP/access           | `formal-pass` + `formal-register`; client supplies the guest list through the invitation workflow | accepted          |
-| Rhythm band           | `celestial-bookend`; cadence in `leslie-perez.scss` + `composition.intersections`                | accepted          |
-| Music                 | Omit from published content until a song URL exists; local empty-player preview is a file constant | accepted          |
-| Gifts                 | Include lluvia de sobres / buzón at the reception; no bank or store URLs                           | accepted          |
-| Quote                 | Jeremiah 29:11; do not repeat family or thank-you thanks                                           | accepted          |
-| Publication scope     | Local draft only; no database, Preview, Production, or publication changes                         | accepted          |
-
----
-
-## Agent Recommendations
-
-- Keep the global `celestial-blue` theme as the only visual atmosphere.
-- Reuse canonical section variants: `split-cover`, `asymmetric-groups` with `text-only`,
-  `split-map`, `timeline-paper`, `editorial-mosaic`, `formal-register` RSVP with `formal-pass`, and
-  `full-bleed-photo`.
-- Keep the rhythm profile (`leslie-perez.scss`) limited to cadence blends and dark-surface tracking.
-- Keep the navy reserved-color notice in the location indications as a separate semantic item.
-- Do not add `sectionStyles`, legacy aliases, client-name CSS selectors, or personal photos to
-  location/family surfaces.
-- Keep each original asset in one visible role; use crops/focal points, not duplicate binaries.
-
----
-
-## Sections
-
-| section             | included | exact variant / presentation                                   | content and photo assignment                                                           |
-| ------------------- | -------- | -------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| Envelope / reveal   | yes      | `sealStyle: wax`, `sealIcon: wax-monogram`                     | Celestial envelope; initials omitted until confirmed.                                  |
-| Hero                | yes      | `hero.variant: split-cover`                                    | Photo 01; responsive focal points documented in the definition.                        |
-| Quote               | yes      | base composition; no new variant                               | Jeremiah 29:11 (NVI); author is the citation.                                          |
-| Family              | yes      | `family.variant: asymmetric-groups`, `presentation: text-only` | Two groups (Madre / Padre); no family asset.                                           |
-| Countdown           | draft    | inherited celestial presentation; days only                    | Confirmed date; event time remains blocked.                                            |
-| Location            | yes      | `location.variant: split-map`                                  | San Carlos Eventos; client-provided map reference; reserved navy notice.               |
-| Itinerary           | draft    | `itinerary.variant: timeline-paper`                            | Recepción, Cena, Vals, Brindis, Baile, Cierre; no Pastel.                              |
-| Gallery             | yes      | `gallery.variant: editorial-mosaic`                            | Photos 02, 03, 05–07, 09–14 in numeric order.                                          |
-| Personalized access | draft    | `personalizedAccess.variant: formal-pass`                      | Visible in local `astro dev` without a guest; guest list still required later.         |
-| RSVP                | draft    | `rsvp.variant: formal-register`                                | Dark chapter paired with `formal-pass`; API confirmation flow.                         |
-| Gifts               | yes      | `gifts.variant: standard`                                      | Cash / lluvia de sobres at the reception buzón.                                        |
-| Interludes          | yes      | shared renderer; `height: tall`                                | Photo 04 after location; photo 08 after gallery.                                       |
-| Music               | no       | omitted until a playable URL exists                            | Preview/Production hide the control. Local may show it via `LOCAL_INVITATION_PREVIEW`. |
-| ThankYou            | yes      | `thankYou.variant: full-bleed-photo`                           | Photo 15 as the closing image.                                                         |
-
----
+| reservedColorNotice  | El color azul marino está reservado exclusivamente para la quinceañera.                           | verified       | owner + wa-export       | Render as an independent location indication, not as a generic dress-code label.                    |
 
 ## Design Direction
 
-| decision                                   | selected source / value                                                             | classification |
-| ------------------------------------------ | ----------------------------------------------------------------------------------- | -------------- |
-| Owner-selected base demo                   | `demo-xv-celestial-blue`                                                            | verified       |
-| Theme preset                               | `celestial-blue`                                                                    | verified       |
-| Reveal                                     | Existing celestial wax seal and `wax-monogram` lockup                               | verified       |
-| Hero                                       | Existing `split-cover` variant from Romina’s invitation                             | verified       |
-| Family                                     | Existing `asymmetric-groups` with `text-only` presentation from Renata’s invitation | verified       |
-| Location                                   | Existing `split-map` variant from Alba Rosa’s invitation                            | verified       |
-| Itinerary                                  | Existing `timeline-paper` variant from Abril / celestial practice                   | verified       |
-| Gallery                                    | Existing `editorial-mosaic` variant from Romina’s invitation                        | verified       |
-| RSVP                                       | Existing `formal-register` paired with `formal-pass` (Victoria practice)            | verified       |
-| Personalized access                        | Existing `formal-pass` variant from Renata/Victoria practice                        | verified       |
-| ThankYou                                   | Existing `full-bleed-photo` variant from Renata’s invitation                        | verified       |
-| Tonal band                                 | `celestial-bookend` (dark overture → light body → dark finale)                      | verified       |
-| Rhythm profile                             | `src/styles/invitation-profiles/leslie-perez.scss` (blends + tracking only)         | verified       |
-| New structural variants                    | none                                                                                | verified       |
-| New invitation-specific components         | none (profile is rhythm tokens only)                                                | verified       |
+| decision                           | selected source / value                                                             | classification |
+| ---------------------------------- | ----------------------------------------------------------------------------------- | -------------- |
+| Owner-selected base demo           | `demo-xv-celestial-blue`                                                            | verified       |
+| Theme preset                       | `celestial-blue`                                                                    | verified       |
+| Reveal                             | Existing celestial wax seal and `wax-monogram` lockup                               | verified       |
+| Hero                               | Existing `split-cover` variant from Romina’s invitation                             | verified       |
+| Family                             | Existing `asymmetric-groups` with `text-only` presentation from Renata’s invitation | verified       |
+| Location                           | Existing `split-map` variant from Alba Rosa’s invitation                            | verified       |
+| Itinerary                          | Existing `standard` variant with Leslie rhythm treatment                            | verified       |
+| Gallery                            | Existing `index-choreography` variant with Leslie rhythm treatment                  | verified       |
+| RSVP                               | Existing `formal-register` paired with `formal-pass` (Victoria practice)            | verified       |
+| Personalized access                | Existing `formal-pass` variant from Renata/Victoria practice                        | verified       |
+| ThankYou                           | Existing `full-bleed-photo` variant from Renata’s invitation                        | verified       |
+| Tonal band                         | `celestial-bookend` (dark overture → light body → dark finale)                      | verified       |
+| Rhythm profile                     | `src/styles/invitation-profiles/leslie-perez.scss` (blends + tracking only)         | verified       |
+| New structural variants            | none                                                                                | verified       |
+| New invitation-specific components | none (profile is rhythm tokens only)                                                | verified       |
 
 No `sectionStyles` or legacy aliases are used to select these structures. The theme owns the
 atmosphere and each section owns its canonical structural variant. Rhythm cadence lives in
 `composition.intersections` plus `leslie-perez.scss` (atmospheric-blend tokens only).
 
 **Residual:** without a guest, public render omits Personalized Access, so light `gifts` meets dark
-`formal-register` with no bridge. Finale rhythm acceptance assumes guest context or local PA preview.
-
----
+`formal-register` with no bridge. Finale rhythm acceptance assumes guest context or local PA
+preview.
 
 ## Photograph Inventory
 
@@ -273,7 +181,8 @@ Acceptance evidence:
 - Canonical content schema, variant normalization, asset namespace, and ordered photo-role checks
   pass.
 - No database, Preview, Production, or publication state was changed.
-- The helper-aligned preparation state remains `NOT_READY` until the event time is confirmed.
+- The helper-aligned preparation state is `READY_FOR_IMPLEMENTATION`; the event time and RSVP deadline
+  are confirmed.
 
 ### Handoff 3 — Independent review → owner confirmation / release preparation
 
@@ -286,20 +195,20 @@ Acceptance evidence:
   playback, Location map treatment, navy notice, itinerary density, RSVP/access handoff, ThankYou
   crop, and local PA visibility.
 - Record mechanical render status separately from human creative acceptance below.
-- Return the time, song URL, RSVP deadline, and optional seal initials for finalization.
+- Return the song URL and optional seal initials for finalization, if applicable.
 
 ---
 
 ## Creative Direction & Acceptance
 
-| field                                       | value                                                                                            |
-| ------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Mechanical render/capture result            | pending — local route requires a draft data source; no DB/Preview mutation authorized            |
-| Whole-invitation responsive inspection      | pending — target viewports: 390×844 and 1440×900                                                 |
-| Section boundaries and narrative continuity | pending independent review                                                                       |
-| Human creative outcome                      | `PENDING`                                                                                        |
-| Reviewer and date                           |                                                                                                  |
-| Blocking reason or owner follow-up          | Confirm `[[PENDIENTE:HORA_EVENTO]]`; complete remaining non-blocking placeholders before release |
+| field                                       | value                                                                                                 |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Mechanical render/capture result            | pending — local route requires a draft data source; no DB/Preview mutation authorized                 |
+| Whole-invitation responsive inspection      | pending — target viewports: 390×844 and 1440×900                                                      |
+| Section boundaries and narrative continuity | pending independent review                                                                            |
+| Human creative outcome                      | `PENDING`                                                                                             |
+| Reviewer and date                           |                                                                                                       |
+| Blocking reason or owner follow-up          | Confirm optional song URL and seal initials before release, if applicable                         |
 
 Successful schema or asset validation will not substitute for this human creative gate.
 
@@ -310,3 +219,4 @@ Successful schema or asset validation will not substitute for this human creativ
 | date       | readiness   | helper basis                   | notes                                                                                                                  |
 | ---------- | ----------- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
 | 2026-08-14 | `NOT_READY` | `evaluatePreparationReadiness` | Event time is a blocking missing XV completeness field; local draft implementation is retained for owner handoff only. |
+| 2026-08-17 | `READY_FOR_IMPLEMENTATION` | `evaluatePreparationReadiness` | Event time and RSVP deadline confirmed; optional song URL and seal initials remain omitted. |
