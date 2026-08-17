@@ -11,7 +11,10 @@ import {
 	buildSocialImageMetadata,
 	resolvePublicSiteOrigin,
 } from '@/lib/invitation/social-metadata';
-import { classifyTrackingRoute } from '@/lib/tracking/route-policy';
+import {
+	classifyTrackingRoute,
+	resolveSpeedInsightsConfig,
+} from '@/lib/tracking/route-policy';
 
 // Typography: Montserrat UI font is loaded globally. Preset-specific fonts are loaded dynamically.
 import '@fontsource-variable/montserrat';
@@ -68,6 +71,10 @@ const ogImage = socialImage.url;
 
 const routePolicy = classifyTrackingRoute(Astro.url);
 const loadCommercialTracking = isVercelProduction && routePolicy.internalAllowed;
+
+const speedInsightsConfig = resolveSpeedInsightsConfig(Astro.url, {
+	vercelEnv: vercelEnvironment,
+});
 ---
 <!doctype html>
 <html lang="es">
@@ -144,7 +151,9 @@ const loadCommercialTracking = isVercelProduction && routePolicy.internalAllowed
 
 		<ConsentBanner />
 		{isVercelProduction && <Analytics />}
-		{isVercelProduction && <SpeedInsights />}
+		{speedInsightsConfig.enabled && (
+			<SpeedInsights sampleRate={speedInsightsConfig.sampleRate} />
+		)}
 		{loadCommercialTracking && (
 			<script>
 				import { initCommercialTracking } from '@/lib/tracking/client';

@@ -1,6 +1,8 @@
 import {
+	DEFAULT_SPEED_INSIGHTS_SAMPLE_RATE,
 	classifyTrackingRoute,
 	isProductionAnalyticsEnvironment,
+	resolveSpeedInsightsConfig,
 	shouldLoadGoogleAnalytics,
 } from '@/lib/tracking/route-policy';
 
@@ -71,5 +73,72 @@ describe('tracking route policy', () => {
 			false,
 		);
 		expect(shouldLoadGoogleAnalytics('/', { vercelEnv: 'production', gaId: '' })).toBe(false);
+	});
+
+	describe('resolveSpeedInsightsConfig', () => {
+		it('enables Speed Insights with default sampleRate in production on public and invitation routes', () => {
+			const env = { vercelEnv: 'production' };
+
+			expect(resolveSpeedInsightsConfig('/', env)).toEqual({
+				enabled: true,
+				sampleRate: DEFAULT_SPEED_INSIGHTS_SAMPLE_RATE,
+			});
+			expect(resolveSpeedInsightsConfig('/demos/xv', env)).toEqual({
+				enabled: true,
+				sampleRate: DEFAULT_SPEED_INSIGHTS_SAMPLE_RATE,
+			});
+			expect(resolveSpeedInsightsConfig('/xv/valentina-hernandez', env)).toEqual({
+				enabled: true,
+				sampleRate: DEFAULT_SPEED_INSIGHTS_SAMPLE_RATE,
+			});
+			expect(resolveSpeedInsightsConfig('/xv/valentina-hernandez?invite=abc', env)).toEqual({
+				enabled: true,
+				sampleRate: DEFAULT_SPEED_INSIGHTS_SAMPLE_RATE,
+			});
+		});
+
+		it('disables Speed Insights on dashboard, auth, and API routes', () => {
+			const env = { vercelEnv: 'production' };
+
+			expect(resolveSpeedInsightsConfig('/login', env)).toEqual({
+				enabled: false,
+				sampleRate: 0,
+			});
+			expect(resolveSpeedInsightsConfig('/dashboard', env)).toEqual({
+				enabled: false,
+				sampleRate: 0,
+			});
+			expect(resolveSpeedInsightsConfig('/dashboard/invitaciones', env)).toEqual({
+				enabled: false,
+				sampleRate: 0,
+			});
+			expect(resolveSpeedInsightsConfig('/dashboard/invitaciones/123/preview', env)).toEqual({
+				enabled: false,
+				sampleRate: 0,
+			});
+			expect(resolveSpeedInsightsConfig('/api/dashboard/invitaciones', env)).toEqual({
+				enabled: false,
+				sampleRate: 0,
+			});
+			expect(resolveSpeedInsightsConfig('/api/invitacion/abc/rsvp', env)).toEqual({
+				enabled: false,
+				sampleRate: 0,
+			});
+		});
+
+		it('disables Speed Insights in non-production environments', () => {
+			expect(resolveSpeedInsightsConfig('/', { vercelEnv: 'preview' })).toEqual({
+				enabled: false,
+				sampleRate: 0,
+			});
+			expect(resolveSpeedInsightsConfig('/', { vercelEnv: 'development' })).toEqual({
+				enabled: false,
+				sampleRate: 0,
+			});
+			expect(resolveSpeedInsightsConfig('/', {})).toEqual({
+				enabled: false,
+				sampleRate: 0,
+			});
+		});
 	});
 });

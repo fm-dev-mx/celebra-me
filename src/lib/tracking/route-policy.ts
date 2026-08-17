@@ -21,6 +21,13 @@ export interface AnalyticsEnvironment {
 	gaId?: string;
 }
 
+export const DEFAULT_SPEED_INSIGHTS_SAMPLE_RATE = 0.1;
+
+export interface SpeedInsightsConfig {
+	enabled: boolean;
+	sampleRate: number;
+}
+
 const COMMERCIAL_PATHS = new Set(['/', '/privacidad', '/terminos']);
 const COMMERCIAL_DEMO_SHOWROOM_PATHS = new Set([
 	'/demos/xv',
@@ -168,4 +175,27 @@ export function shouldLoadGoogleAnalytics(input: string | URL, env: AnalyticsEnv
 	const gaId = env.gaId?.trim();
 	if (!gaId || !isProductionAnalyticsEnvironment(env)) return false;
 	return classifyTrackingRoute(input).gaAllowed;
+}
+
+export function resolveSpeedInsightsConfig(
+	input: string | URL,
+	env: AnalyticsEnvironment,
+): SpeedInsightsConfig {
+	if (!isProductionAnalyticsEnvironment(env)) {
+		return { enabled: false, sampleRate: 0 };
+	}
+
+	const routePolicy = classifyTrackingRoute(input);
+	if (
+		routePolicy.routeClass === 'dashboard_admin_auth' ||
+		routePolicy.routeClass === 'generic_api' ||
+		routePolicy.routeClass === 'rsvp_guest_api'
+	) {
+		return { enabled: false, sampleRate: 0 };
+	}
+
+	return {
+		enabled: true,
+		sampleRate: DEFAULT_SPEED_INSIGHTS_SAMPLE_RATE,
+	};
 }
