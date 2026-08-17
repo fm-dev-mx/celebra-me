@@ -139,19 +139,22 @@ export function buildLivePromotionalFingerprint(
 	canonicalAssetKeys: readonly string[],
 ): LiveFingerprintResult {
 	if (!isRecord(row.publishedContent)) return { ok: false };
+	const canonicalKeySet = new Set(canonicalAssetKeys);
 	const keyByAssetId = new Map<string, string>();
-	const liveAssets: PromotionalAssetDigest[] = [];
+	const liveAssetByKey = new Map<string, PromotionalAssetDigest>();
 	for (const asset of row.assets) {
 		const key = asset.managedSourceKey;
 		if (!key) continue;
 		if (asset.id) keyByAssetId.set(asset.id, key);
+		if (!canonicalKeySet.has(key)) continue;
 		const digest = assetDigest(asset.managedSha256, asset.sha256);
 		if (!digest) return { ok: false };
-		liveAssets.push({ key, sha256: digest });
+		liveAssetByKey.set(key, { key, sha256: digest });
 	}
 	for (const key of canonicalAssetKeys) {
-		if (!liveAssets.some((asset) => asset.key === key)) return { ok: false };
+		if (!liveAssetByKey.has(key)) return { ok: false };
 	}
+	const liveAssets = [...liveAssetByKey.values()];
 
 	const publishedRewrite = rewriteUploadedAssetReferences(row.publishedContent, keyByAssetId);
 	if (!publishedRewrite.ok || !isRecord(publishedRewrite.value)) return { ok: false };

@@ -587,20 +587,17 @@ function reconcileUnreferencedAssets(
 			classification = 'STILL_REFERENCED';
 			reasonCode = 'ASSET_STILL_REFERENCED_RETAIN';
 			reason = `El archivo "${dbRecord.displayName}" sigue referenciado por el estado resultante.`;
-		} else if (pruneAssets && dbRecord.provider && dbRecord.provider !== 'supabase') {
-			classification = 'INVALID';
-			plannedAction = 'BLOCK';
-			reasonCode = 'ASSET_PROVIDER_PRUNE_UNSUPPORTED';
-			reason = `El proveedor de "${dbRecord.displayName}" no admite poda administrada automática.`;
 		} else if (pruneAssets) {
-			plannedAction = storageState.present ? 'PRUNE_STORAGE_AND_METADATA' : 'PRUNE_METADATA';
+			const deleteStorage =
+				(dbRecord.provider === 'supabase' || !dbRecord.provider) && storageState.present;
+			plannedAction = deleteStorage ? 'PRUNE_STORAGE_AND_METADATA' : 'PRUNE_METADATA';
 			classification = storageState.present ? 'UNREFERENCED' : 'STALE_METADATA';
 			reasonCode = storageState.present
 				? 'ASSET_MANAGED_UNREFERENCED_PRUNE'
 				: 'ASSET_STALE_METADATA_PRUNE';
-			reason = storageState.present
+			reason = deleteStorage
 				? `El archivo administrado "${dbRecord.displayName}" no está referenciado y se eliminará de Storage y DB.`
-				: `Los metadatos administrados de "${dbRecord.displayName}" apuntan a un objeto ausente y se eliminarán.`;
+				: `Los metadatos administrados de "${dbRecord.displayName}" no están referenciados y se marcarán como eliminados en DB.`;
 			deletesCount++;
 		}
 

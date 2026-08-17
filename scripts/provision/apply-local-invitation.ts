@@ -995,7 +995,8 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		},
 	];
 	const hasManagedChanges = actions.some(
-		(action) => action.action === 'create' || action.action === 'replace',
+		(action) =>
+			action.action === 'create' || action.action === 'replace' || action.action === 'delete',
 	);
 	if (hasManagedChanges) {
 		actions.push({
@@ -1007,7 +1008,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	}
 
 	const plannedOperations = actions.filter(
-		(a) => a.action === 'create' || a.action === 'replace',
+		(a) => a.action === 'create' || a.action === 'replace' || a.action === 'delete',
 	).length;
 	const isZeroDrift = plannedOperations === 0;
 	const currentVersion = (existingPub?.version as number) || 1;

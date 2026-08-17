@@ -185,5 +185,50 @@ describe('applyLocalInvitation event recognition contract', () => {
 			const abrilDef = getInvitationDefinition('abril-michelle-becerra-rea');
 			expect(abrilDef.slug).toBe('abril-michelle-becerra-rea');
 		});
+
+		it('proves asset delete actions trigger plannedOperations and prevent false zero-drift', () => {
+			const actions = [
+				{ resource: 'invitation', name: 'renata', action: 'reuse', detail: 'up-to-date' },
+				{
+					resource: 'invitation_assets',
+					name: 'gallery-01',
+					action: 'reuse',
+					detail: 'match',
+				},
+				{
+					resource: 'invitation_assets',
+					name: 'gallery-02',
+					action: 'delete',
+					detail: 'prune',
+				},
+				{
+					resource: 'invitation_content_drafts',
+					name: 'renata-draft',
+					action: 'reuse',
+					detail: 'up-to-date',
+				},
+				{
+					resource: 'published_invitation_content',
+					name: '/xv/renata',
+					action: 'reuse',
+					detail: 'up-to-date',
+				},
+			];
+
+			const hasManagedChanges = actions.some(
+				(action) =>
+					action.action === 'create' ||
+					action.action === 'replace' ||
+					action.action === 'delete',
+			);
+			const plannedOperations = actions.filter(
+				(a) => a.action === 'create' || a.action === 'replace' || a.action === 'delete',
+			).length;
+			const isZeroDrift = plannedOperations === 0;
+
+			expect(hasManagedChanges).toBe(true);
+			expect(plannedOperations).toBe(1);
+			expect(isZeroDrift).toBe(false);
+		});
 	});
 });

@@ -474,4 +474,93 @@ describe('asset-reconciliation engine', () => {
 			}),
 		);
 	});
+
+	it('prunes unreferenced Cloudinary managed assets via PRUNE_METADATA without blocking', () => {
+		const cloudinaryUnreferenced: TargetAssetRecord = {
+			...mockTargetDbRecord,
+			id: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
+			invitationId: '3d14155c-5c1e-4b47-a87a-0aa8af25e795',
+			displayName: 'Cloudinary Zombie Asset',
+			storagePath: 'xv/romina-rios-chaparro/assets/zombie-1234567890ab',
+			provider: 'cloudinary',
+			providerPublicId: 'xv/romina-rios-chaparro/assets/zombie-1234567890ab',
+			managedByDefinitionSlug: 'romina-rios-chaparro',
+			managedSourceKey: 'zombie-asset',
+			managedSha256: '9'.repeat(64),
+			managedOperationId: '11111111-1111-4111-8111-111111111111',
+		};
+		const result = reconcileAssets({
+			canonicalAssets: [mockStorageCanonicalAsset],
+			targetDbAssets: [mockTargetDbRecord, cloudinaryUnreferenced],
+			observedStorage: {
+				[mockTargetDbRecord.storagePath]: {
+					present: true,
+					sha256: mockCanonicalAsset.sha256,
+				},
+				[cloudinaryUnreferenced.storagePath]: {
+					present: true,
+					sha256: '9'.repeat(64),
+				},
+			},
+			pruneAssets: true,
+			definitionSlug: 'romina-rios-chaparro',
+			targetInvitationId: cloudinaryUnreferenced.invitationId,
+			referencedAssetIds: new Set(),
+		});
+
+		expect(result.blocked).toBe(false);
+		expect(result.summary.plannedDeletes).toBe(1);
+		expect(result.unreferencedAssets).toContainEqual(
+			expect.objectContaining({
+				targetAssetId: cloudinaryUnreferenced.id,
+				classification: 'UNREFERENCED',
+				plannedAction: 'PRUNE_METADATA',
+			}),
+		);
+	});
+
+	it('blocks pruning when definitionSlug or targetInvitationId is missing', () => {
+		const unreferenced: TargetAssetRecord = {
+			...mockTargetDbRecord,
+			id: 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',
+			invitationId: '3d14155c-5c1e-4b47-a87a-0aa8af25e795',
+			displayName: 'Unreferenced Asset',
+			storagePath: 'managed/romina-rios-chaparro/old.webp',
+			managedByDefinitionSlug: 'romina-rios-chaparro',
+			managedSourceKey: 'old-photo',
+		};
+		const resultNoSlug = reconcileAssets({
+			canonicalAssets: [mockStorageCanonicalAsset],
+			targetDbAssets: [mockTargetDbRecord, unreferenced],
+			observedStorage: {
+				[mockTargetDbRecord.storagePath]: {
+					present: true,
+					sha256: mockCanonicalAsset.sha256,
+				},
+			},
+			pruneAssets: true,
+			targetInvitationId: '3d14155c-5c1e-4b47-a87a-0aa8af25e795',
+		});
+		expect(resultNoSlug.blocked).toBe(true);
+		expect(resultNoSlug.blockReason).toMatch(
+			/Asset pruning requires verified definition and target invitation identity/i,
+		);
+
+		const resultNoInvId = reconcileAssets({
+			canonicalAssets: [mockStorageCanonicalAsset],
+			targetDbAssets: [mockTargetDbRecord, unreferenced],
+			observedStorage: {
+				[mockTargetDbRecord.storagePath]: {
+					present: true,
+					sha256: mockCanonicalAsset.sha256,
+				},
+			},
+			pruneAssets: true,
+			definitionSlug: 'romina-rios-chaparro',
+		});
+		expect(resultNoInvId.blocked).toBe(true);
+		expect(resultNoInvId.blockReason).toMatch(
+			/Asset pruning requires verified definition and target invitation identity/i,
+		);
+	});
 });

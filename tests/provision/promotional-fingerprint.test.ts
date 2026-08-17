@@ -2,7 +2,10 @@
  * promotional-fingerprint.test.ts — Canonical/live fingerprint equality
  */
 import { describe, expect, it } from '@jest/globals';
-import { ASSET_KEY_PREFIX, semanticAssetRef } from '../../scripts/provision/normalized-invitation-release.ts';
+import {
+	ASSET_KEY_PREFIX,
+	semanticAssetRef,
+} from '../../scripts/provision/normalized-invitation-release.ts';
 import {
 	buildLivePromotionalFingerprint,
 	classifyLiveInvitation,
@@ -77,7 +80,10 @@ function liveRow(overrides?: Partial<LiveInvitationRow>): LiveInvitationRow {
 describe('promotional fingerprint', () => {
 	it('treats persisted asset UUIDs as equal to semantic keys after rewrite', () => {
 		const canonical = computePromotionalFingerprint(fingerprintInput());
-		const rewritten = rewriteUploadedAssetReferences(liveContent(ASSET_UUID), new Map([[ASSET_UUID, 'hero']]));
+		const rewritten = rewriteUploadedAssetReferences(
+			liveContent(ASSET_UUID),
+			new Map([[ASSET_UUID, 'hero']]),
+		);
 		expect(rewritten.ok).toBe(true);
 		if (!rewritten.ok) return;
 		const live = computePromotionalFingerprint(
@@ -225,5 +231,38 @@ describe('promotional fingerprint', () => {
 		if (!rewritten.ok) return;
 		const hero = (rewritten.value as { hero: { assetId: string } }).hero;
 		expect(hero.assetId).toBe(`${ASSET_KEY_PREFIX}hero`);
+	});
+
+	it('ignores unreferenced zombie assets in DB when canonical assets match', () => {
+		const canonical = computePromotionalFingerprint(fingerprintInput());
+		const rowWithExtraZombieAssets = liveRow({
+			assets: [
+				{
+					id: ASSET_UUID,
+					managedSourceKey: 'hero',
+					managedSha256: HERO_SHA,
+					sha256: HERO_SHA,
+				},
+				{
+					id: '99999999-9999-4999-8999-999999999999',
+					managedSourceKey: 'obsolete-photo-02',
+					managedSha256: OTHER_SHA,
+					sha256: OTHER_SHA,
+				},
+			],
+		});
+		const live = buildLivePromotionalFingerprint(rowWithExtraZombieAssets, ['hero']);
+		expect(live.ok).toBe(true);
+		if (!live.ok) return;
+		expect(live.fingerprint).toBe(canonical);
+
+		const match = classifyLiveInvitation({
+			canonicalFingerprint: canonical,
+			canonicalAssetKeys: ['hero'],
+			expectedSlug: 'demo-slug',
+			expectedManagedIdentityId: '00000000-0000-4000-8000-000000000001',
+			rows: [rowWithExtraZombieAssets],
+		});
+		expect(match).toBe('match');
 	});
 });
