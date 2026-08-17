@@ -31,6 +31,7 @@ import {
 	parseTargets,
 	checkUnknownFlags,
 	requireResolvedUpdateScope,
+	resolveCliPruneAssets,
 	resolvePromotionUpdateScope,
 	validateUpdateOptions,
 	type InvitationUpdateTarget,
@@ -372,6 +373,7 @@ Options:
                                Default: the invitation definition deliveryScope
   --content-only               Explicit override equivalent to --update-scope content-only
   --prune-assets               Enable explicit removal of unreferenced managed assets (requires confirmation)
+  --no-prune-assets            Disable removal of unreferenced managed assets in content-and-assets scope
   --status                     Local inventory status (remotes unprobed; use pnpm dbs for matrix)
   --targets <targets>          Mutations: local, preview, local,preview, or production (exclusive).
                                Status only: local, preview, production, all (all includes Production read-only).
@@ -863,7 +865,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 		: undefined;
 	conflictResolutions = mergePathPolicies(fileFieldSelections, fileConflictResolutions);
 
-	const pruneAssets = args.includes('--prune-assets');
+	const pruneAssets = resolveCliPruneAssets(args, parsedScope);
 	const acknowledgeDiscardUnpublishedDraft = args.includes(
 		'--acknowledge-discard-unpublished-draft',
 	);
@@ -977,7 +979,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 			allowStalePackage: args.includes('--allow-stale-package'),
 			ownerUserId: value(args, '--owner-user-id'),
 			assetPolicyRaw: value(args, '--asset-policy'),
-			pruneAssets: args.includes('--prune-assets'),
+			pruneAssets,
 			updateScope: parsedScope,
 			conflictResolutionsPath: value(args, '--conflict-resolutions'),
 			backupManifestPath: value(args, '--backup-manifest'),

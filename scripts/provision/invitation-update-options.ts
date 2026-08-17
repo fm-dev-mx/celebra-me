@@ -58,6 +58,17 @@ export function defaultAssetPolicy(scope: UpdateScope): AssetPolicy {
 	return scope === 'content-only' ? 'preserve' : 'missing';
 }
 
+/**
+ * Resolve whether unreferenced assets should be pruned.
+ * Defaults to true for content-and-assets (or unassigned scope) unless --no-prune-assets is passed.
+ * For content-only, requires explicit --prune-assets.
+ */
+export function resolveCliPruneAssets(args: string[], scope?: UpdateScope): boolean {
+	const explicitNoPrune = args.includes('--no-prune-assets');
+	const explicitPrune = args.includes('--prune-assets');
+	return explicitPrune || (!explicitNoPrune && (scope === 'content-and-assets' || !scope));
+}
+
 /** Fail at plan time when content-only would create, replace, or delete assets. */
 export function assertContentOnlyAllowsNoAssetMutations(input: {
 	updateScope: UpdateScope;
@@ -187,6 +198,7 @@ const VALID_FLAGS = new Set([
 	'--update-scope',
 	'--content-only',
 	'--prune-assets',
+	'--no-prune-assets',
 	'--include-legacy',
 	'--include-archived',
 	'--include-demos',

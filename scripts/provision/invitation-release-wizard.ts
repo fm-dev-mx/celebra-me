@@ -67,6 +67,7 @@ export interface ReleaseWizardSession {
 	packageHash: string;
 	updateScope: UpdateScope;
 	assetPolicy: AssetPolicy;
+	pruneAssets?: boolean;
 	conflictResolutions?: ConflictResolutions;
 	acknowledgeDiscardUnpublishedDraft?: boolean;
 }
@@ -141,6 +142,7 @@ async function planLocal(
 			apply: false,
 			updateScope: session.updateScope,
 			assetPolicy: session.assetPolicy,
+			pruneAssets: session.pruneAssets,
 			conflictResolutions: session.conflictResolutions,
 			acknowledgeDiscardUnpublishedDraft: session.acknowledgeDiscardUnpublishedDraft,
 			expectedSourceHash: session.sourceHash,
@@ -215,6 +217,7 @@ async function planPreview(
 			apply: false,
 			updateScope: session.updateScope,
 			assetPolicy: session.assetPolicy,
+			pruneAssets: session.pruneAssets,
 			conflictResolutions: session.conflictResolutions,
 			acknowledgeDiscardUnpublishedDraft: session.acknowledgeDiscardUnpublishedDraft,
 		});
@@ -407,6 +410,7 @@ async function applyLocalOutcome(session: ReleaseWizardSession): Promise<void> {
 			plan,
 			updateScope: session.updateScope,
 			assetPolicy: session.assetPolicy,
+			pruneAssets: session.pruneAssets,
 			conflictResolutions: session.conflictResolutions,
 			acknowledgeDiscardUnpublishedDraft: session.acknowledgeDiscardUnpublishedDraft,
 			expectedSourceHash: session.sourceHash,
@@ -518,6 +522,7 @@ async function applyPreparePreviewOutcome(session: ReleaseWizardSession): Promis
 						plan: localPlan,
 						updateScope: session.updateScope,
 						assetPolicy: session.assetPolicy,
+						pruneAssets: session.pruneAssets,
 						conflictResolutions: session.conflictResolutions,
 						acknowledgeDiscardUnpublishedDraft:
 							session.acknowledgeDiscardUnpublishedDraft,
@@ -584,6 +589,7 @@ async function applyPreparePreviewOutcome(session: ReleaseWizardSession): Promis
 					plan: previewPlan,
 					updateScope: session.updateScope,
 					assetPolicy: session.assetPolicy,
+					pruneAssets: session.pruneAssets,
 					conflictResolutions: session.conflictResolutions,
 					acknowledgeDiscardUnpublishedDraft: session.acknowledgeDiscardUnpublishedDraft,
 				});
@@ -733,6 +739,7 @@ async function buildSession(slug: string): Promise<ReleaseWizardSession> {
 		packageHash: packageInput.packageData.packageHash,
 		updateScope,
 		assetPolicy,
+		pruneAssets: updateScope === 'content-and-assets',
 	};
 }
 

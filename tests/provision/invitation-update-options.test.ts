@@ -1,9 +1,11 @@
 import { describe, expect, it } from '@jest/globals';
 import {
 	assertContentOnlyAllowsNoAssetMutations,
+	checkUnknownFlags,
 	defaultAssetPolicy,
 	parseCliUpdateScope,
 	requireResolvedUpdateScope,
+	resolveCliPruneAssets,
 	resolvePromotionUpdateScope,
 } from '../../scripts/provision/invitation-update-options.ts';
 
@@ -148,5 +150,18 @@ describe('CLI inheritance happy paths', () => {
 				deliveryScope: 'content-and-assets',
 			}),
 		).toBe('content-only');
+	});
+
+	it('resolves pruneAssets default to true for content-and-assets unless --no-prune-assets is passed', () => {
+		expect(resolveCliPruneAssets([], 'content-and-assets')).toBe(true);
+		expect(resolveCliPruneAssets(['--no-prune-assets'], 'content-and-assets')).toBe(false);
+		expect(resolveCliPruneAssets(['--prune-assets'], 'content-only')).toBe(true);
+		expect(resolveCliPruneAssets([], 'content-only')).toBe(false);
+		expect(resolveCliPruneAssets([])).toBe(true);
+	});
+
+	it('permits both --prune-assets and --no-prune-assets in checkUnknownFlags', () => {
+		expect(() => checkUnknownFlags(['--prune-assets'])).not.toThrow();
+		expect(() => checkUnknownFlags(['--no-prune-assets'])).not.toThrow();
 	});
 });
