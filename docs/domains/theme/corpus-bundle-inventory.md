@@ -138,9 +138,32 @@ Profile LAYOUT removal (geometry / direct section `background` / `font-family` p
 - `theme-base/_editorial.scss` and `theme-base/_luxury-hacienda.scss`: fully absorbed into presets;
   `theme-base/` directory empty/removed.
 - Baselines captured under `.tmp/css-visual-parity/<slug>/baseline/` (local artifacts, not
-  committed) for: `leah-lexa`, `america-johana`, `abril-michelle-becerra-rea`,
-  `alba-rosa-quinonez`, `daniela-y-martin`, `victoria-y-roberto`, `valentina-hernandez`,
-  `luna-y-estrella`, `demo-xv-celestial-blue`, `renata`.
+  committed) for: `leah-lexa`, `america-johana`, `abril-michelle-becerra-rea`, `alba-rosa-quinonez`,
+  `daniela-y-martin`, `victoria-y-roberto`, `valentina-hernandez`, `luna-y-estrella`,
+  `demo-xv-celestial-blue`, `renata`. **Note:** those 2026-08-17 digests are post-ownership and are
+  **not** recovery goldens — see
+  [`css-visual-parity.md`](css-visual-parity.md#recovery-vs-gate-baselines).
+
+### Visual recovery residuals (2026-08-17, working tree)
+
+- **`valentina-hernandez`:** Stale DB variants + location indications missing `title` (Production
+  numbered “Guía privada…”). Fixture + `indications[].title` in location/draft schemas. **Status:**
+  fixed.
+- **`xareni-iyarit`:** Dark thank-you was a false recovery: pre-ownership/Production profile
+  `.thank-you` / `[data-section=thank-you]` plum slab never matched `.thank-you-section`. Promoting
+  those rules onto `--thank-you-section-*` forced on-dark ink. **Status:** fixed (drop dark tokens;
+  keep celestial light surface + plum via remapped graphite).
+- **`alba-rosa-quinonez`:** Luxury square thank-you frame overrode circular premium portrait;
+  message card chrome. **Status:** fixed (circular frame restore + chrome scope).
+- **`romina-rios-chaparro`:** (1) Split-cover reset `--hero-split-title-*` to Cormorant; base hero
+  gradient gold — fixed (Parisienne ivory). (2) Premiere editorial skin was narrowed to
+  `[data-variant=standard]` while Romina emits structural `split-cover` (Production dual-attr was
+  `data-variant=premiere-floral` + `data-structural-variant=split-cover`) — fixed by extending
+  `_editorial.scss` / `_premiere-floral.scss` skin to `split-cover` under `.theme-preset--premiere-floral`.
+  (3) `padding: 0` on premiere split-cover removed mobile `1rem` inset (Production `16px`) — fixed by
+  zeroing padding only for `standard`. **Status:** fixed.
+- **`ana-sofia-cota-guillen`:** No profile; hero surface tokens match celestial defaults.
+  **Status:** smoke OK.
 
 ### Still LAYOUT-retained (needs per-slug promote + compare)
 

@@ -62,3 +62,16 @@ Requirements:
 
 If this harness cannot run (no server, no Playwright), do not delete profile LAYOUT. Document the
 blocker and leave the rules in place.
+
+## Recovery vs gate baselines
+
+Baselines under `.tmp/css-visual-parity/**` are **local gate artifacts**, not recovery goldens.
+
+- Capture them **before** an intentional LAYOUT deletion you are about to make.
+- Do **not** treat baselines captured **after** a suspected ownership/CSS regression as the
+  authority for “restore identical look.” Those digests can freeze the damaged paint.
+- For visual recovery, prefer Production (`remoteParity: required`) and/or pre-damage SCSS
+  (`git show <ownership-commit>^:…`) plus computed-style contracts in
+  `tests/e2e/invitation-visual-contracts.spec.ts`.
+- After P0 recovery fixes, new baselines may be captured only as an owner-approved gate for future
+  LAYOUT deletes — still do not commit `.tmp/` PNGs.
