@@ -2,14 +2,41 @@
 @use '../tokens' as tokens;
 
 // Leslie Perez — celestial-bookend rhythm profile.
-// Owns section styling overrides, atmospheric-blend tokens, dark-surface tracking,
-// and reduced reveal distance on blend arrivals.
+// Owns section styling overrides, Hero→Family→Countdown overlap geometry,
+// atmospheric-blend tokens, dark-surface tracking, and reduced reveal distance.
 // Loaded only through invitation-profiles/leslie-perez.scss.
 
 .event--leslie-perez.theme-preset--celestial-blue {
 	// Dark-surface optical tracking (rhythm §2).
 	--hero-split-title-letter-spacing: 0.06em;
 	--quote-content-letter-spacing: 0.06em;
+
+	// Hero → Family → Countdown seam tokens.
+	--leslie-hero-family-overlap: clamp(#{tokens.$spacing-12}, 7vw, #{tokens.$spacing-16});
+	--leslie-family-countdown-overlap: clamp(#{tokens.$spacing-10}, 6vw, #{tokens.$spacing-12});
+	--leslie-family-paper: rgb(252 253 255);
+	--leslie-countdown-ink: rgb(12 22 38);
+
+	// Cubic lip masks — clearly curved (not a straight diagonal).
+	// y=0 into previous section; y=40 flush with incoming section.
+	--leslie-family-lip-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 40' preserveAspectRatio='none'%3E%3Cpath fill='%23000' d='M0 40L0 3C12 4 28 8 42 18C56 28 72 37 100 40Z'/%3E%3C/svg%3E");
+	--leslie-countdown-lip-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 40' preserveAspectRatio='none'%3E%3Cpath fill='%23000' d='M0 40C28 37 44 28 58 18C72 8 88 4 100 3V40Z'/%3E%3C/svg%3E");
+
+	// Strong contact elevation so the sheet reads above the dark exit.
+	--leslie-clip-drop-family:
+		drop-shadow(0 -10px 28px rgb(10 16 26 / 48%))
+		drop-shadow(0 -3px 8px rgb(10 16 26 / 32%));
+	--leslie-clip-drop-countdown:
+		drop-shadow(0 -10px 24px rgb(8 14 24 / 50%))
+		drop-shadow(0 -3px 8px rgb(8 14 24 / 34%));
+
+	// Keep scroll affordance above the Family paper cut on every viewport.
+	.invitation-hero[data-variant='split-cover'] {
+		.invitation-hero__scroll-indicator {
+			bottom: calc(var(--leslie-hero-family-overlap) + #{tokens.$spacing-6});
+			z-index: 3;
+		}
+	}
 
 	// Bespoke mobile/tablet hero masthead layout for Leslie.
 	@include mixins.respond-below(lg) {
@@ -34,15 +61,17 @@
 			}
 
 			.invitation-hero__background::after {
+				// Keep the base dark, but leave a touch of midtone at the seam
+				// so the Family paper drop-shadow can read on the photo.
 				background: linear-gradient(
 					180deg,
 					rgb(10 16 26 / 85%) 0%,
 					rgb(10 16 26 / 40%) 14%,
 					transparent 28%,
 					transparent 46%,
-					rgb(10 16 26 / 60%) 65%,
-					rgb(10 16 26 / 92%) 84%,
-					rgb(10 16 26 / 98%) 100%
+					rgb(10 16 26 / 55%) 65%,
+					rgb(10 16 26 / 78%) 84%,
+					rgb(10 16 26 / 88%) 100%
 				);
 			}
 
@@ -57,7 +86,10 @@
 				justify-content: space-between;
 				align-items: center;
 				text-align: center;
-				padding-block: clamp(1.6rem, 3.8svh, 2.5rem) clamp(4.5rem, 11svh, 5.5rem);
+
+				// Extra end pad clears date/venue from the asymmetric Family cut.
+				padding-block: clamp(1.6rem, 3.8svh, 2.5rem)
+					calc(clamp(4.5rem, 11svh, 5.5rem) + var(--leslie-hero-family-overlap));
 				padding-inline: clamp(1.25rem, 4vw, 2.5rem);
 				box-sizing: border-box;
 			}
@@ -148,8 +180,9 @@
 
 			.invitation-hero__scroll-indicator {
 				position: absolute;
-				margin: 0 auto;
-				bottom: 0.85rem;
+				inset-inline: 0;
+				margin-inline: auto;
+				width: max-content;
 				display: flex;
 				align-items: center;
 				gap: 0.4rem;
@@ -236,7 +269,9 @@
 		--family-header-filter: none;
 		--family-group-filter: none;
 
-		padding-block: clamp(4rem, 8vw, 6.25rem);
+		// ~12% tighter vertical rhythm; end band slightly shorter under the parents card.
+		padding-block: clamp(#{tokens.$spacing-12}, 6.5vw, #{tokens.$spacing-20})
+			clamp(#{tokens.$spacing-12}, 6vw, #{tokens.$spacing-16});
 		background: var(--family-bg);
 
 		&::before,
@@ -1634,19 +1669,84 @@
 		}
 	}
 
+	// Cadence map — Hero/Quote → Family → Countdown editorial sheet.
+	// Paper / navy lips via arch-style ::before. Filter on the WRAPPER
+	// (mask+filter on the same node clips the drop-shadow).
+	.invitation-section-wrapper[data-section-kind='family'] {
+		--intersection-depth: var(--leslie-hero-family-overlap);
+		--intersection-blend: transparent;
+
+		position: relative;
+		z-index: 2;
+		overflow: visible;
+		margin-top: calc(0px - var(--leslie-hero-family-overlap));
+		filter: var(--leslie-clip-drop-family);
+
+		// Paper lip into the dark exit — mask only, shadow comes from wrapper.
+		&::before {
+			content: '';
+			position: absolute;
+			inset-inline: 0;
+			top: calc(0px - var(--leslie-hero-family-overlap));
+			bottom: auto;
+			z-index: 2;
+			width: 100%;
+			height: calc(var(--leslie-hero-family-overlap) + 3px);
+			background: var(--leslie-family-paper);
+			background-image: none;
+			mask: var(--leslie-family-lip-mask) center bottom / 100% 100% no-repeat;
+			pointer-events: none;
+		}
+
+		.family[data-variant='asymmetric-groups'] {
+			position: relative;
+			z-index: 1;
+			mask: none;
+			filter: none;
+			padding-block: calc(
+					clamp(#{tokens.$spacing-12}, 6.5vw, #{tokens.$spacing-20}) + #{tokens.$spacing-2}
+				)
+				clamp(#{tokens.$spacing-12}, 6vw, #{tokens.$spacing-16});
+		}
+	}
+
+	.invitation-section-wrapper[data-section-kind='countdown'] {
+		--intersection-depth: var(--leslie-family-countdown-overlap);
+
+		position: relative;
+		z-index: 3;
+		overflow: visible;
+		margin-top: calc(0px - var(--leslie-family-countdown-overlap));
+		filter: var(--leslie-clip-drop-countdown);
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset-inline: 0;
+			top: calc(0px - var(--leslie-family-countdown-overlap));
+			bottom: auto;
+			z-index: 2;
+			width: 100%;
+			height: calc(var(--leslie-family-countdown-overlap) + 3px);
+			background: var(--leslie-countdown-ink);
+			background-image: none;
+			mask: var(--leslie-countdown-lip-mask) center bottom / 100% 100% no-repeat;
+			pointer-events: none;
+		}
+
+		.countdown-section {
+			position: relative;
+			z-index: 1;
+			mask: none;
+			filter: none;
+			padding-block: calc(clamp(4.5rem, 8.5vw, 6.75rem) + #{tokens.$spacing-2})
+				clamp(4.5rem, 8.5vw, 6.75rem);
+		}
+	}
+
 	// Velvety Soft Atmospheric Blends (Haute Couture Luxury standard)
 	.invitation-section-wrapper[data-intersection='atmospheric-blend'] {
 		--motion-reveal-distance: 8px;
-
-		&[data-section-kind='family'] {
-			// Quote dark graphite → family light ivory
-			--intersection-depth: clamp(2rem, 4vw, 3rem);
-			--intersection-blend: linear-gradient(
-				180deg,
-				rgb(var(--color-deep-blue-graphite-rgb) / 20%) 0%,
-				transparent 100%
-			);
-		}
 
 		&[data-section-kind='itinerary'] {
 			// Interlude photo 04 → timeline paper

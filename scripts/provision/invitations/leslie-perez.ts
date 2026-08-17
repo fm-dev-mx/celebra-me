@@ -203,9 +203,9 @@ export function buildLesliePublishedContent(
 			startsAtUtc: LESLIE_EVENT.startsAtUtc,
 		},
 		sectionOrder: [
-			'quote',
 			'family',
 			'countdown',
+			'quote',
 			'location',
 			'itinerary',
 			'gallery',
@@ -216,7 +216,9 @@ export function buildLesliePublishedContent(
 		],
 		composition: {
 			intersections: {
-				family: { family: 'atmospheric-blend', source: 'quote' },
+				// Hero → Family → Countdown: paired opposite shallow diagonals (paper sheet / navy cut).
+				family: { family: 'overlap', source: 'hero' },
+				countdown: { family: 'overlap', source: 'family' },
 				'interlude-after-location': { family: 'overlap', source: 'location' },
 				itinerary: { family: 'atmospheric-blend', source: 'interlude-after-location' },
 				'interlude-after-gallery': { family: 'overlap', source: 'gallery' },
