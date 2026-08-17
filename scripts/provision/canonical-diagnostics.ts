@@ -59,15 +59,19 @@ function assetDiagnostics(
 	environment: TargetEnv,
 	evidence: EvidenceState,
 ): CanonicalDiagnostic[] {
-	const expectedKeys = definition.assets.map((asset) => asset.key);
-	const liveKeys = row.assets
-		.map((asset) => asset.managedSourceKey)
-		.filter((key): key is string => Boolean(key));
-	const missing = expectedKeys.filter((key) => !liveKeys.includes(key));
+	const expectedKeys = new Set(definition.assets.map((asset) => asset.key));
+	const liveKeys = new Set(
+		row.assets
+			.map((asset) => asset.managedSourceKey)
+			.filter((key): key is string => Boolean(key)),
+	);
+	const missing = [...expectedKeys].filter((key) => !liveKeys.has(key));
+	const unreferenced = [...liveKeys].filter((key) => !expectedKeys.has(key));
 	const unkeyed = row.assets.filter((asset) => !asset.managedSourceKey);
 	const published = row.publishedVersion != null;
+	const diagnostics: CanonicalDiagnostic[] = [];
 	if (unkeyed.length > 0 && missing.length > 0) {
-		return [
+		diagnostics.push(
 			diagnostic({
 				code: 'ASSET_IDENTITY_UNVERIFIED',
 				domain: 'content',
@@ -78,23 +82,39 @@ function assetDiagnostics(
 				affectedFieldCount: missing.length + unkeyed.length,
 				affectedSectionCount: 1,
 			}),
-		];
+		);
+	} else if (missing.length > 0) {
+		diagnostics.push(
+			diagnostic({
+				code: published ? 'REQUIRED_PUBLISHED_ASSET_MISSING' : 'UNPUBLISHED_ASSET_PENDING',
+				domain: 'content',
+				evidence,
+				cause: published
+					? 'A required published asset slot is empty.'
+					: 'A required asset slot is still unpublished.',
+				slug: definition.slug,
+				environment,
+				affectedFieldCount: missing.length,
+				affectedSectionCount: 1,
+			}),
+		);
 	}
-	if (missing.length === 0) return [];
-	return [
-		diagnostic({
-			code: published ? 'REQUIRED_PUBLISHED_ASSET_MISSING' : 'UNPUBLISHED_ASSET_PENDING',
-			domain: 'content',
-			evidence,
-			cause: published
-				? 'A required published asset slot is empty.'
-				: 'A required asset slot is still unpublished.',
-			slug: definition.slug,
-			environment,
-			affectedFieldCount: missing.length,
-			affectedSectionCount: 1,
-		}),
-	];
+	if (unreferenced.length > 0) {
+		diagnostics.push(
+			diagnostic({
+				code: 'UNREFERENCED_MANAGED_ASSET',
+				domain: 'content',
+				evidence,
+				cause: `Live database contains ${unreferenced.length} unreferenced managed asset(s): ${unreferenced.join(', ')}.`,
+				slug: definition.slug,
+				environment,
+				affectedFieldCount: unreferenced.length,
+				affectedSectionCount: 1,
+				semanticPaths: unreferenced,
+			}),
+		);
+	}
+	return diagnostics;
 }
 
 function baselineDiagnostic(

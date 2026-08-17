@@ -124,6 +124,7 @@ export const DIAGNOSTIC_LABELS: Record<DiagnosticCode, string> = {
 	REQUIRED_PUBLISHED_ASSET_MISSING: 'Falta un asset requerido en contenido publicado',
 	UNPUBLISHED_ASSET_PENDING: 'Hay assets pendientes en trabajo no publicado',
 	ASSET_IDENTITY_UNVERIFIED: 'No se pudo verificar la identidad de los assets',
+	UNREFERENCED_MANAGED_ASSET: 'Existen assets administrados no referenciados en base de datos',
 	LIFECYCLE_METADATA_STALE: 'El ciclo de vida declarado está obsoleto',
 	DETAIL_BUDGET_EXCEEDED: 'El detalle excede el presupuesto seguro',
 	PRODUCTION_AUTHORIZATION_MISSING:
