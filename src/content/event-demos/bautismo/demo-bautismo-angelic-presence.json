@@ -150,6 +150,7 @@
         "variant": "standard"
     },
     "countdown": {
+        "variant": "standard",
         "title": "Nos acercamos con alegría",
         "footerText": "Gracias por preparar el corazón para acompañarnos"
     },

@@ -1,6 +1,6 @@
 # Theme And Token Architecture
 
-**Last Updated:** 2026-08-09
+**Last Updated:** 2026-08-17
 
 Celebra-me uses a strict three-level styling architecture. The post-migration structural,
 presentation, skin, fallback, and profile inventory is maintained in
@@ -13,6 +13,61 @@ authorize changes to runtime, content, or styling by itself.
 
 Gallery section variants (as-is catalog, compatibility aliases, and the canonical layout-role
 contract) are documented in [`gallery-variants.md`](gallery-variants.md).
+
+CSS visual parity before profile LAYOUT deletion is gated by
+[`css-visual-parity.md`](css-visual-parity.md). The celestial-blue thinning pilot inventory is
+[`celestial-blue-bundle-inventory.md`](celestial-blue-bundle-inventory.md).
+
+## Invitation CSS ownership (normative)
+
+Three homes. Exclusive ownership. Do not collapse looks into one SCSS file per invitation/demo.
+
+### Section variant
+
+- **Path / marker:** `section.variant` → `data-variant`;
+  `src/styles/themes/sections/<section>/_<semantic>.scss`
+- **Owns:** Layout, geometry, structural/skin behavior reusable across invitations.
+- **Must not:** Read `theme.preset`, slug, `visualProfileId`, or client identity.
+- **`data-variant`:** Never a `ThemePreset` name and never derived from `theme.preset`.
+
+### Theme preset
+
+- **Path / marker:** `.theme-preset--*`; `invitation-presets/{preset}.scss` +
+  `themes/presets/_*.scss`
+- **Owns:** Reusable atmosphere only — semantic color/type/radius/motion and public component
+  tokens.
+- **Must not:** Own section layout/geometry or client-specific overrides.
+- **Existence rule:** Only when ≥2 invitations or demos share the pack; otherwise use a variant or a
+  profile.
+
+### Invitation profile
+
+- **Path / marker:** `invitation-profiles/{id}.scss` (`id` = `visualProfileId || slug`)
+- **Owns:** Client palette token remap and rhythm/intersection overrides that differ from the
+  preset.
+- **Must not:** Re-declare section layout; set `font-family` / `background` directly on section
+  element classes (use tokens); duplicate active variant or preset rules.
+
+Shared structural base `src/styles/invitation/` is out of scope for ownership moves in this
+contract.
+
+### Explicit non-goals
+
+- One monolithic SCSS file per invitation/demo as the primary look home.
+- Renaming or merging presets into the section-variant vocabulary.
+- Blind LAYOUT deletion from mega-profiles without the CSS visual parity harness.
+
+### Migration rule (preset section bundles)
+
+For each change to `invitation-sections-by-preset/{preset}.scss` or its imported section modules:
+
+1. Classify each rule as atmosphere-token, layout/skin, or duplicate-of-variant/preset.
+2. Move layout/skin into the owning **semantic** variant SCSS; ensure JSON carries an explicit valid
+   `section.variant`.
+3. Leave only atmosphere tokens on the preset (or preset-scoped component-token modules).
+4. Delete matching duplicate rules from dependent profiles.
+
+Stop if a change only reshuffles CSS between files without changing ownership.
 
 ## Token Levels
 
@@ -36,7 +91,7 @@ component tokens. States are represented inside component token contracts.
 
 ## Theme Presets
 
-Invitation presets are the canonical source of visual identity for invitation themes:
+Invitation presets are reusable atmosphere packs (catalog SKUs), not per-invitation look files:
 
 - `src/styles/themes/presets/_jewelry-box.scss`
 - `src/styles/themes/presets/_jewelry-box-wedding.scss`
@@ -62,10 +117,11 @@ hidden theme-local token systems or own section layout.
 
 ### Core Principle
 
-**Presets expose tokens. Section files own section structure and section-specific visuals.**
+**Presets expose tokens. Section variant files own section structure and section-specific visuals.
+Profiles remap client palette and rhythm only.**
 
 If a rule targets section DOM internals (selectors, pseudo-elements, layout overrides), it does
-**not** belong in a preset.
+**not** belong in a preset or a profile.
 
 ### Layer Responsibilities
 
@@ -74,13 +130,17 @@ Invitation section styling has a strict responsibility boundary:
 1. **`src/styles/invitation/_<section>.scss`** — Shared structural and base styles for the section.
    No preset-specific or invitation-specific visuals.
 
-2. **`src/styles/themes/presets/_<preset>.scss`** — Theme tokens and custom properties only (pure atmosphere).
-   No section DOM selectors such as `.family__panel`, `.location__card`, `.rsvp`, `.hero`. No section
-   pseudo-elements or structural overrides.
+2. **`src/styles/themes/presets/_<preset>.scss`** — Theme tokens and custom properties only (pure
+   atmosphere). No section DOM selectors such as `.family__panel`, `.location__card`, `.rsvp`,
+   `.hero`. No section pseudo-elements or structural overrides.
 
-3. **`src/styles/themes/sections/<section>/_<variant>.scss`** — Concrete layout and visual rules for one
-   section variant (e.g. `_standard.scss`, `_split-cover.scss`, `_formal-register.scss`). Consumes
-   theme tokens from the parent `.theme-preset--*` wrapper. Emitted on DOM as a single `data-variant`.
+3. **`src/styles/themes/sections/<section>/_<variant>.scss`** — Concrete layout and visual rules for
+   one **semantic** section variant (e.g. `_split-cover.scss`, `_formal-register.scss`,
+   `_magazine-folio.scss`). Consumes theme tokens from the parent `.theme-preset--*` wrapper.
+   Emitted on DOM as a single `data-variant` that is never a theme preset name.
+
+4. **`src/styles/invitation-profiles/{id}.scss`** — Client palette token remap and
+   intersection/rhythm overrides only.
 
 ### Decision Rules
 
@@ -90,7 +150,7 @@ Invitation section styling has a strict responsibility boundary:
 | Shared behavior across all variants of one section                                                  | Section base (`invitation/_<section>.scss`)                   |
 | Shared visual behavior across some variants of one section                                          | Section theme base (`themes/sections/<section>/_base.scss`)   |
 | One section variant with selectors, pseudo-elements, or decorative rules that tokens cannot express | Section variant (`themes/sections/<section>/_<variant>.scss`) |
-| One invitation or demo only                                                                         | Content/config first — avoid global CSS                       |
+| Client palette or rhythm that differs from the shared preset                                        | Invitation profile (`invitation-profiles/{id}.scss`)          |
 | Tokens are sufficient for the variation                                                             | Do **not** create a new variant file                          |
 
 Detailed decision rule:
@@ -98,15 +158,16 @@ Detailed decision rule:
 - If a change can be expressed as a value, token, or custom property, keep it in the preset or
   consume it from the section base.
 - If a change needs a selector, layout rule, pseudo-element, internal section class, structural
-  override, or section DOM knowledge, place it under `src/styles/themes/sections/<section>/`.
+  override, or section DOM knowledge, place it under `src/styles/themes/sections/<section>/` with a
+  **semantic** variant name.
 - If a rule applies to every variant of a section, keep it in
   `src/styles/invitation/_<section>.scss`.
 - If a rule is shared by multiple variants of the same section, keep it in
   `src/styles/themes/sections/<section>/_base.scss`.
 - If a rule is unique to one variant of one section, keep it in
   `src/styles/themes/sections/<section>/_<variant>.scss`.
-- If a rule applies to only one specific invitation or demo, express it through content/config
-  rather than adding global CSS.
+- If a rule is unique to one invitation's palette or cadence, keep it in the invitation profile as
+  tokens / rhythm only.
 - Create a new variant file only when tokens are insufficient to express the required behavior.
 
 Presets must not target concrete section DOM selectors, internal section classes, IDs, `[data-*]`
@@ -155,11 +216,11 @@ invitation stylesheet).
 }
 ```
 
-**Prefer section variant** — section-specific behavior lives in its own file:
+**Prefer semantic section variant** — structure lives under a behavior name, not a theme name:
 
 ```scss
-/* ✅ CORRECT — src/styles/themes/sections/family/_celestial-blue.scss */
-.family[data-variant='celestial-blue'] {
+/* ✅ CORRECT — src/styles/themes/sections/family/_split-groups.scss */
+.family[data-variant='split-groups'] {
   .family__panel {
     width: min(calc(100% - clamp(2rem, 8vw, 7rem)), var(--family-panel-max-width));
   }
@@ -175,10 +236,20 @@ invitation stylesheet).
 }
 ```
 
-Controlled exceptions are allowed when a variant has real layout, pseudo-element, responsive, or
-decorative behavior. Those exceptions belong under `src/styles/themes/sections/<section>/`, not in
-presets. Countdown is a reference example for this boundary after its cleanup; it is not proof that
-every section needs a `_base.scss` file or one file per variant.
+**Correct profile usage** — client palette remap only:
+
+```scss
+.event--america-johana.theme-preset--celestial-blue {
+  --america-red: rgb(132 21 30);
+  --color-action-accent: var(--america-red);
+}
+```
+
+Controlled exceptions for real layout, pseudo-element, responsive, or decorative behavior belong
+under `src/styles/themes/sections/<section>/` with a semantic `data-variant`, not in presets or
+profiles. Countdown skin variants (`editorial-folio`, `magazine-folio`, …) are the reference for
+behavior-named skins; preset-named section modules under `invitation-sections-by-preset/` are legacy
+delivery and must thin toward tokens + semantic variants.
 
 Delete or avoid a section theme file when it is empty, only repeats base defaults, exists only for
 symmetry, or contains rules that can be represented as preset tokens without section DOM knowledge.
@@ -217,7 +288,9 @@ skins.
 - `src/styles/invitation-presets/*.scss` remain the preset and font entrypoints.
 - `src/styles/invitation-sections-by-preset/*.scss` import canonical `src/styles/themes/sections/**`
   modules directly. Their import order is the emitted cascade order, and a bundle may explicitly
-  compose multiple canonical modules when a variant depends on both.
+  compose multiple canonical modules when a variant depends on both. Over time these bundles must
+  shrink to atmosphere/component-token modules; layout/skin must move to semantic variant
+  entrypoints.
 - `src/lib/invitation/section-css-resolver.ts` emits one active section bundle plus requested
   canonical Gallery/structural partials, a footer visual override, envelope reveal CSS, and the
   active visual profile. Canonical section partials are not exposed through a general per-section
@@ -231,10 +304,9 @@ skins.
 
 Gallery CSS starts with the theme-preset bundle. When an explicit semantic `gallery.variant` differs
 from the active theme, the section CSS resolver emits the matching layout partial independently.
-Theme preset alone does not select gallery structure; the renderer always emits
-`data-variant` for the resolved layout ID. See
-[`gallery-variants.md`](gallery-variants.md) for the current map, compatibility boundary, and
-retained profile exceptions.
+Theme preset alone does not select gallery structure; the renderer always emits `data-variant` for
+the resolved layout ID. See [`gallery-variants.md`](gallery-variants.md) for the current map,
+compatibility boundary, and retained profile exceptions.
 
 ## Runtime Contract
 
@@ -259,9 +331,10 @@ Reusable UI colors must flow through semantic or component tokens.
 After token, preset, or section architecture changes, run the available relevant commands:
 
 ```bash
+pnpm validate:changed
+pnpm test tests/provision/local-render-corpus-regression.test.ts
 pnpm lint:styles
-pnpm type-check
-pnpm build
-pnpm validate:ui-governance
-pnpm validate:event-parity
 ```
+
+Profile LAYOUT deletions additionally require the CSS visual parity harness in
+[`css-visual-parity.md`](css-visual-parity.md).

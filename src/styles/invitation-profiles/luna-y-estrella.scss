@@ -1,6 +1,6 @@
 @use '../global/mixins' as mixins;
 
-.event--luna-y-estrella {
+.event--luna-y-estrella.theme-preset--angelic-presence {
 	.invitation-hero[data-variant='standard'] {
 		.invitation-hero__content {
 			min-height: auto;

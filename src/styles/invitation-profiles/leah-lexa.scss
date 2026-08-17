@@ -1,10 +1,10 @@
 @use '../global/mixins' as mixins;
 
 // LEAH LEXA — SECTION RHYTHM NORMALIZATION
-// Scoped via .event--leah-lexa on the <main> wrapper.
+// Scoped via .event--leah-lexa.theme-preset--celestial-blue on the theme wrapper.
 // Unifies spacing across sections so they read as one continuous editorial piece.
 
-.event--leah-lexa {
+.event--leah-lexa.theme-preset--celestial-blue {
 	// Location
 	.event-location {
 		--location-padding-block: clamp(3.5rem, 8vw, 6rem) clamp(3.5rem, 8vh, 5rem);
@@ -15,9 +15,8 @@
 		--gifts-padding-block: clamp(4rem, 9vw, 6rem);
 	}
 
-	// Pet-keepsake gallery (single variant)
-	.gallery-section[data-variant='single-keepsake'],
-	.gallery-section[data-variant='single'] {
+	// Pet-keepsake gallery
+	.gallery-section[data-variant='single-keepsake'] {
 		--gallery-section-padding-block: clamp(3.5rem, 8vw, 5.5rem);
 	}
 
@@ -28,11 +27,10 @@
 }
 
 // LEAH LEXA — LOCATION PRESENTATION REFINEMENT
-// Scoped via .event--leah-lexa on the <main> wrapper.
 // Rebalances the Google Map as a secondary visual, converts indications
 // from card blocks to editorial notes.
 
-.event--leah-lexa .event-location[data-variant='standard'] {
+.event--leah-lexa.theme-preset--celestial-blue .event-location[data-variant='standard'] {
 	// -----------------------------------------------------------------------
 	// Map: visually secondary, softer frame
 	// -----------------------------------------------------------------------
@@ -92,11 +90,10 @@
 }
 
 // LEAH LEXA — GIFTS SECTION POLISH
-// Scoped via .event--leah-lexa on the <main> wrapper.
 // Makes the subtitle the emotional anchor, refines the flourish.
 // Adds Liverpool-inspired editorial magenta accents to CTA, store label, and card border.
 
-.event--leah-lexa .gifts-section[data-variant='standard'] {
+.event--leah-lexa.theme-preset--celestial-blue .gifts-section[data-variant='standard'] {
 	--gifts-title-letter-spacing: 0.18em;
 
 	// Liverpool-inspired editorial magenta
@@ -162,11 +159,10 @@
 }
 
 // LEAH LEXA — PREMIUM EDITORIAL KEEPSAKE OVERRIDE
-// Scoped exclusively via .event--leah-lexa on the <main> wrapper.
 // Extends the celestial-blue base with a contained card composition.
 // Blush-pink atmospheric glow is injected via --ty-ambient-blush.
 
-.event--leah-lexa .thank-you-section[data-variant='standard'] {
+.event--leah-lexa.theme-preset--celestial-blue .thank-you-section[data-variant='standard'] {
 	--ty-ambient-blush: radial-gradient(
 		circle at 50% 28%,
 		rgb(244 201 216 / 48%) 0%,
@@ -240,7 +236,7 @@
 
 // LEAH LEXA — HEADER REFINEMENT
 // Softer scrolled background, refined monogram, subtler hamburger.
-.event--leah-lexa .header-base {
+.event--leah-lexa.theme-preset--celestial-blue .header-base {
 	--header-bg-scrolled: rgb(var(--color-cool-ivory-rgb) / 85%);
 	--header-nav-title-color: rgb(var(--color-diamond-white-rgb) / 92%);
 	--hamburger-color: rgb(var(--color-diamond-white-rgb) / 78%);
@@ -280,11 +276,9 @@
 }
 
 // LEAH LEXA — PET KEEPSAKE REFINEMENT
-// Scoped via .event--leah-lexa on the <main> wrapper.
 // Tighter image sizing, warmer tonal balance, more refined paper frame.
-.event--leah-lexa
-	.gallery-section[data-variant='single-keepsake'][data-presentation='pet-keepsake'],
-.event--leah-lexa .gallery-section[data-variant='single'][data-presentation='pet-keepsake'] {
+.event--leah-lexa.theme-preset--celestial-blue
+	.gallery-section[data-variant='single-keepsake'][data-presentation='pet-keepsake'] {
 	--gallery-item-padding: clamp(0.35rem, 1vw, 0.55rem);
 	--gallery-item-shadow:
 		0 20px 48px -24px rgb(var(--color-deep-blue-graphite-rgb) / 22%),

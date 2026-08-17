@@ -41,6 +41,7 @@
         "author": "Luna Celeste"
     },
     "countdown": {
+        "variant": "standard",
         "title": "La llegada de nuestra estrellita",
         "footerText": "Jardín Las Nubes"
     },

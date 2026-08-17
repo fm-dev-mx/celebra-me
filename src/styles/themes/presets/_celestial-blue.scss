@@ -62,8 +62,24 @@
 	--color-text-on-dark: var(--color-diamond-white);
 	--color-text-on-dark-rgb: var(--color-diamond-white-rgb);
 	--color-text-on-light: var(--color-deep-blue-graphite);
-	--color-border-subtle: rgb(var(--color-cold-silver-rgb) / 34%);
+	--color-border-subtle: rgb(var(--color-action-accent-rgb) / 10%);
 	--color-border-premium: rgb(var(--color-liquid-silver-rgb) / 54%);
+
+	// Countdown atmosphere (consumed by themes/sections/countdown/_celestial-blue.scss)
+	--countdown-section-background:
+		radial-gradient(
+			circle at 50% 8%,
+			rgb(var(--color-diamond-white-rgb) / 82%) 0%,
+			transparent 55%
+		),
+		linear-gradient(
+			180deg,
+			var(--color-ice-blue) 0%,
+			var(--color-cool-ivory) 58%,
+			var(--color-pearl-gray) 100%
+		);
+	--countdown-section-color: var(--color-text-primary);
+	--countdown-section-padding-block: clamp(5rem, 9vw, 8rem);
 
 	// ---------------------------------------------------------------------
 	// Typography

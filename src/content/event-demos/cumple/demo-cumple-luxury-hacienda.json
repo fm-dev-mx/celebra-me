@@ -194,6 +194,7 @@
         "variant": "standard"
     },
     "countdown": {
+        "variant": "standard",
         "title": "Hacienda San Ignacio",
         "footerText": "Sesenta años de gratitud y legado."
     },

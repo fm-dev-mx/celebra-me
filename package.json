@@ -111,6 +111,7 @@
         "screenshot:interactive": "tsx scripts/screenshot/cli.ts --interactive",
         "screenshot:invite": "tsx scripts/screenshot/cli.ts --type=invitation",
         "screenshot:local-render-corpus": "tsx scripts/screenshot/cli.ts --corpus",
+        "screenshot:css-parity": "tsx scripts/screenshot/css-visual-parity.ts",
         "db:local:restore-from-dump": "tsx scripts/db/local-restore-from-dump.ts",
         "db:prod:export-auth": "tsx scripts/db/db-guard.ts check --target production --operation export-auth --db-url \"${PROD_DB_URL}\" && tsx scripts/db/export-auth-users.ts",
         "db:prod:export-storage": "tsx scripts/db/db-guard.ts check --target production --operation export-storage --db-url \"${PROD_DB_URL}\" && tsx scripts/db/export-storage.ts"

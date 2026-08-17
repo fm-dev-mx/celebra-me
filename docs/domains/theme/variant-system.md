@@ -79,10 +79,10 @@ canonical CSS, and shared primitives must contain no compatibility branches.
     `.theme-preset--*` with Countdown `standard`.
   - Theme-named countdown inputs are not remapped; omitted/theme-named values normalize to
     `standard`. Write an explicit `countdown.variant` when a non-default skin is required.
-- **Hero / Gifts / RSVP / Personalized Access / Thank You:** omitted or theme-named inputs
-  normalize to `standard`. Non-default looks (`editorial-cover`, `editorial-catalog`,
-  `editorial-press-pass`, `editorial-pass`, `editorial-back-cover`, …) must be authored
-  explicitly — `theme.preset` never invents them.
+- **Hero / Gifts / RSVP / Personalized Access / Thank You:** omitted or theme-named inputs normalize
+  to `standard`. Non-default looks (`editorial-cover`, `editorial-catalog`, `editorial-press-pass`,
+  `editorial-pass`, `editorial-back-cover`, …) must be authored explicitly — `theme.preset` never
+  invents them.
 - **Header / Quote / MusicPlayer / Footer / Interlude:** emit `standard` only. Atmosphere comes from
   `.theme-preset--*` (and footer override CSS load when configured). `data-variant` is never the
   theme preset name.
@@ -113,10 +113,14 @@ Semantic variant entrypoints live at
 responsive breakpoints, and visibility required for that variant. The section CSS resolver loads
 these entrypoints independently from the active theme bundle.
 
-Theme bundles and invitation profiles may supply palette, typography, crop, decoration, motion
-timing, and documented custom-property values. They may not import a canonical structural partial,
-redeclare its grid/order/required breakpoint, hide required elements, or make the canonical variant
-meaningful only under a particular profile.
+Theme presets may supply palette, typography, crop, decoration, motion timing, and documented
+custom-property values under `.theme-preset--*`. Invitation profiles may remap those tokens for one
+client and may override intersection/rhythm tokens. Neither presets nor profiles may import a
+canonical structural partial, redeclare its grid/order/required breakpoint, hide required elements,
+set `font-family` / `background` directly on section element classes (use tokens), or make the
+canonical variant meaningful only under a particular profile.
+
+Normative ownership table: [`architecture.md`](architecture.md#invitation-css-ownership-normative).
 
 ## Assets and shared primitives
 

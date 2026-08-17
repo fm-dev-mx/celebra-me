@@ -169,9 +169,9 @@
 		}
 
 		&__title {
-			font-family: Parisienne, cursive;
-			font-style: normal;
-			font-weight: 400;
+			font-family: var(--hero-split-title-font);
+			font-style: var(--hero-split-title-style);
+			font-weight: var(--hero-split-title-weight);
 			text-transform: none;
 			font-size: clamp(3.5rem, 11vw, 5.5rem);
 			line-height: 0.84;
@@ -302,12 +302,7 @@
 		.invitation-hero {
 			&__title {
 				margin-bottom: 5vh;
-				font-family: Parisienne, cursive;
-				font-style: normal;
-				font-weight: 400;
 				font-size: clamp(3rem, 11vw, 5rem);
-				line-height: 0.84;
-				letter-spacing: 0;
 				transform: none;
 			}
 		}

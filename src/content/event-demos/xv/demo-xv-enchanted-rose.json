@@ -199,6 +199,7 @@
         "variant": "standard"
     },
     "countdown": {
+        "variant": "standard",
         "title": "La gala comienza en",
         "footerText": "20 de noviembre de 2027, Querétaro"
     },
