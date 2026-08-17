@@ -219,9 +219,11 @@ describe('canonical variant governance', () => {
 		expect(variant).toMatch(/respond-to\(lg\)|width\s*>=\s*992px/u);
 		expect(variant).toContain('--hero-split-title-size');
 		expect(variant).toContain('.invitation-hero__content');
-		expect(profile).not.toMatch(/data-variant=['"]split-cover/);
+		// Profile may reassert title tokens on [data-variant=split-cover]; not geometry.
 		expect(profile).not.toMatch(/@use .*hero\/split-cover/);
 		expect(profile).not.toMatch(/grid-template|display:\s*none/);
+		expect(profile).not.toContain('--hero-split-photo-width');
+		expect(profile).not.toContain('--hero-split-content-width');
 	});
 
 	it('keeps typed composition and shared maps free of runtime identity selection', () => {

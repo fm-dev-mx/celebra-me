@@ -561,7 +561,7 @@ describe('Style boundary governance', () => {
 		}
 	});
 
-	it('hero theme skins scope structural layout to standard variant', () => {
+	it('hero theme skins keep structural data-variant (not bare theme-preset heroes)', () => {
 		const editorial = read('src/styles/themes/sections/hero/_editorial.scss');
 		expect(editorial).toContain(
 			".theme-preset--editorial .invitation-hero[data-variant='standard']",
@@ -569,7 +569,14 @@ describe('Style boundary governance', () => {
 		expect(editorial).toContain(
 			".theme-preset--premiere-floral .invitation-hero[data-variant='standard']",
 		);
+		// Romina: Production dual-attr skin → post-decouple structural split-cover.
+		expect(editorial).toContain(
+			".theme-preset--premiere-floral .invitation-hero[data-variant='split-cover']",
+		);
 		expect(editorial).not.toMatch(/\.theme-preset--editorial\s+\.invitation-hero\s*[,{]/);
+		expect(editorial).not.toContain(
+			".theme-preset--editorial .invitation-hero[data-variant='split-cover']",
+		);
 	});
 
 	it('header and music player runtime emit standard, not theme.preset', () => {
@@ -582,5 +589,88 @@ describe('Style boundary governance', () => {
 		expect(previewPage).not.toContain('variant={pageCtx.viewModel.theme.preset}');
 		expect(music).toContain("variant: 'standard'");
 		expect(music).not.toContain('variant: input.themePreset');
+	});
+
+	it('celestial thank-you and hero modules consume section surface tokens', () => {
+		const thankYou = read('src/styles/themes/sections/thank-you/_celestial-blue.scss');
+		const hero = read('src/styles/themes/sections/hero/_celestial-blue.scss');
+		const preset = read('src/styles/themes/presets/_celestial-blue.scss');
+		const xareni = read('src/styles/invitation-profiles/xareni-iyarit.scss');
+
+		expect(thankYou).toContain('var(--thank-you-section-background)');
+		expect(thankYou).toContain('var(--thank-you-section-color');
+		expect(thankYou).toContain('var(--thank-you-section-padding)');
+		expect(thankYou).toContain('--thank-you-message-color');
+		expect(hero).toContain('var(--hero-section-background');
+		expect(hero).toContain('var(--hero-section-color');
+
+		expect(preset).toContain('--thank-you-section-background');
+		expect(preset).toContain('--thank-you-section-color');
+		expect(preset).toContain('--hero-section-background');
+		expect(preset).toContain('--hero-section-color');
+
+		// Xareni remaps celestial palette; must not force a dark thank-you surface
+		// (pre-ownership `.thank-you` rules were dead and never painted Production).
+		expect(xareni).not.toContain('--thank-you-section-background:');
+		expect(xareni).not.toContain('--thank-you-message-color:');
+		expect(xareni).toContain('--color-deep-blue-graphite: var(--xareni-plum)');
+	});
+
+	it('luxury heading chrome does not force thank-you accent color', () => {
+		const luxury = read('src/styles/themes/presets/_luxury-hacienda.scss');
+		const headingChrome = luxury.slice(
+			luxury.indexOf('// Component chrome (absorbed from theme-base)'),
+			luxury.indexOf('.card,'),
+		);
+		expect(headingChrome).toContain('.event-location &');
+		expect(headingChrome).not.toContain('.thank-you-section &');
+	});
+
+	it('premiere hero skin zeroes padding only for standard (split-cover keeps editorial inset)', () => {
+		const premiereHero = read('src/styles/themes/sections/hero/_premiere-floral.scss');
+		expect(premiereHero).toMatch(
+			/\.theme-preset--premiere-floral\s+\.invitation-hero\[data-variant='standard'\]\s*\{[^}]*padding:\s*0;/s,
+		);
+		expect(premiereHero).not.toMatch(
+			/\.theme-preset--premiere-floral\s+\.invitation-hero\[data-variant='split-cover'\]\s*\{[^}]*padding:\s*0;/s,
+		);
+		expect(premiereHero).toContain(
+			".theme-preset--premiere-floral .invitation-hero[data-variant='split-cover']",
+		);
+	});
+
+	it('split-cover does not shadow profile --hero-split-title-* tokens on the section', () => {
+		const split = read('src/styles/themes/sections/hero/_split-cover.scss');
+		const defaultsBlock = split.slice(
+			split.indexOf(".invitation-hero[data-variant='split-cover']"),
+			split.indexOf('.invitation-hero__title'),
+		);
+		expect(defaultsBlock).not.toMatch(/--hero-split-title-font:\s*var\(--font-display\)/);
+		expect(split).toContain('var(--hero-split-title-font, var(--font-display))');
+	});
+
+	it('romina profile reasserts split-cover title tokens and clears base gradient chrome', () => {
+		const romina = read('src/styles/invitation-profiles/romina-rios-chaparro.scss');
+		expect(romina).toContain(".invitation-hero[data-variant='split-cover']");
+		expect(romina).toContain('--hero-split-title-font: parisienne, cursive');
+		expect(romina).toContain('-webkit-text-fill-color: var(--romina-ivory)');
+		expect(romina).toContain('background: none');
+	});
+
+	it('alba thank-you restores circular photo-frame geometry', () => {
+		const alba = read('src/styles/invitation-profiles/alba-rosa-quinonez.scss');
+		const thankYou = alba.slice(alba.indexOf('.thank-you-section {'));
+		expect(thankYou).toContain('border-radius: 50%');
+		expect(thankYou).toContain('clip-path: circle(');
+	});
+
+	it('preset bundles do not reintroduce theme-base imports', () => {
+		const bundleDir = 'src/styles/invitation-sections-by-preset';
+		const absoluteDir = path.join(projectRoot, bundleDir);
+		const files = fs.readdirSync(absoluteDir).filter((f) => f.endsWith('.scss'));
+		for (const file of files) {
+			const content = read(`${bundleDir}/${file}`);
+			expect(content).not.toMatch(/@use\s+['"][^'"]*theme-base/);
+		}
 	});
 });
