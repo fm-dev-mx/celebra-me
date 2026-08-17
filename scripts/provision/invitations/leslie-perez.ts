@@ -237,7 +237,7 @@ export function buildLesliePublishedContent(
 			backgroundImageDesktop: assets['photo-01'],
 			variant: 'split-cover',
 			focalPoint: '55% 45%',
-			focalPointMobile: '60% 44%',
+			focalPointMobile: '40% 44%',
 			focalPointTablet: '56% 44%',
 			focalPointDesktop: '54% 45%',
 		},
@@ -365,7 +365,7 @@ export function buildLesliePublishedContent(
 				afterSection: 'gallery',
 				alt: 'Retrato cercano de Leslie junto a una composición con humo',
 				height: 'tall',
-				focalPoint: '34% 40%',
+				focalPoint: '50% 40%',
 			},
 		],
 		gallery: {
