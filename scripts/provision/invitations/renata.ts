@@ -398,7 +398,7 @@ export function buildRenataPublishedContent(
 				variant: 'formal-pass',
 				title: 'Su invitación personal',
 				subtitle: 'Esta invitación ha sido preparada para:',
-				footerText: 'La confirmación se habilitará cuando el anfitrión complete los datos.',
+				footerText: 'Favor de confirmar su asistencia en la siguiente sección.',
 			},
 			responseMessages: {
 				confirmed: {

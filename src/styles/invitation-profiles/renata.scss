@@ -224,8 +224,9 @@ html:has(.event--renata.theme-preset--editorial) body {
 	--pa-count-frame-shadow: none;
 	--pa-count-frame-radius: 0;
 	--pa-count-color: var(--renata-olive-deep);
-	--pa-footer-border-top: 1px solid rgb(var(--renata-silver-rgb) / 24%);
-	--pa-footer-text-color: rgb(var(--renata-ink-rgb) / 80%);
+	--pa-footer-bg: transparent;
+	--pa-footer-border-top: 1px solid rgb(var(--renata-silver-rgb) / 20%);
+	--pa-footer-text-color: rgb(var(--renata-ink-rgb) / 72%);
 	--header-nav-title-color: var(--renata-olive);
 	--header-nav-color: var(--renata-cream);
 	--header-nav-color-transparent: var(--renata-cream);
