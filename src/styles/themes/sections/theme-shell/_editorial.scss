@@ -1,0 +1,53 @@
+// Theme-wide editorial selectors belong to the preset's isolated CSS bundle.
+
+.theme-preset--editorial {
+	&.has-motion {
+		[class*='__reveal'] {
+			opacity: 0%;
+			transform: translateY(40px);
+			transition:
+				opacity var(--duration-reveal) var(--ease-premium),
+				transform var(--duration-reveal) var(--ease-premium);
+			will-change: opacity, transform;
+		}
+
+		&.is-visible {
+			[class*='__reveal'] {
+				opacity: 100%;
+				transform: translateY(0);
+			}
+		}
+
+		.family__item,
+		.itinerary__item,
+		.gift-card {
+			@for $i from 1 through 10 {
+				&:nth-child(#{$i}) {
+					transition-delay: #{$i * 0.2s};
+				}
+			}
+		}
+	}
+
+	.family,
+	.gallery-section,
+	.countdown-section,
+	.gifts-section,
+	.rsvp,
+	.thank-you-section,
+	.event-location,
+	.itinerary {
+		position: relative;
+		z-index: 2;
+	}
+
+	.event-location__card {
+		&:hover {
+			transform: var(--location-card-hover-transform) rotateX(2deg);
+		}
+
+		&::before {
+			transition: background-position var(--duration-slower) var(--ease-premium);
+		}
+	}
+}
