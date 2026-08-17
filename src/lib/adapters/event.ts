@@ -628,7 +628,8 @@ export function adaptEvent(
 		sectionOrder: adapterData.sectionOrder,
 		composition: adapterData.composition,
 		sections,
-		music: hasPlayableMusicUrl(adapterData.music?.url)
+		music:
+			adapterData.music && hasPlayableMusicUrl(adapterData.music.url)
 			? {
 					...adapterData.music,
 					revealMode: envelope.enabled ? 'envelope' : 'immediate',
