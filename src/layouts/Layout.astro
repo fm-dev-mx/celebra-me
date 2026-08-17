@@ -34,6 +34,7 @@ interface Props {
 		media?: string;
 		type?: string;
 		fetchpriority?: 'high' | 'low' | 'auto';
+		deferredCss?: boolean;
 	}>;
 }
 
@@ -103,8 +104,27 @@ const loadCommercialTracking = isVercelProduction && routePolicy.internalAllowed
 
 		{
 			headLinks.map((l) => (
-				<link rel={l.rel} href={l.href} as={l.as} media={l.media} type={l.type} fetchpriority={l.fetchpriority} />
+				<link
+					rel={l.rel}
+					href={l.href}
+					as={l.as}
+					media={l.media}
+					type={l.type}
+					fetchpriority={l.fetchpriority}
+					data-invitation-deferred-css={l.deferredCss ? 'true' : undefined}
+				/>
 			))
+		}
+		{
+			headLinks.some((l) => l.deferredCss) && (
+				<noscript>
+					{headLinks
+						.filter((l) => l.deferredCss)
+						.map((l) => (
+							<link rel="stylesheet" href={l.href} />
+						))}
+				</noscript>
+			)
 		}
 
 		<slot name="head" />

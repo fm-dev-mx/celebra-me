@@ -18,8 +18,10 @@ import type { InvitationGuestContext } from '@/lib/invitation/page-data';
 import type { InvitationViewModel } from '@/lib/adapters/types';
 import type { ThemePreset } from '@/lib/theme/theme-contract';
 import { resolvePresetCssUrl } from '@/lib/invitation/preset-css-resolver';
-import { resolveInvitationCssUrls } from '@/lib/invitation/section-css-resolver';
+import { resolveInvitationCssLoadPlan } from '@/lib/invitation/section-css-resolver';
+import { buildInvitationStylesheetHeadLinks } from '@/lib/invitation/invitation-css-head-links';
 import InvitationError from '@/components/invitation/InvitationError.astro';
+import InvitationDeferredCssPromotion from '@/components/invitation/InvitationDeferredCssPromotion.astro';
 import { isEventType } from '@/lib/theme/theme-contract';
 
 import { performance } from 'node:perf_hooks';
@@ -178,41 +180,42 @@ const activePresetUrl = viewModel?.theme?.preset
 	? resolvePresetCssUrl(viewModel.theme.preset)
 	: undefined;
 
-const activeSectionCssUrls =
+const activeSectionCssPlan =
 	page && viewModel?.theme?.preset
-		? resolveInvitationCssUrls({
+		? resolveInvitationCssLoadPlan({
 				themePreset: viewModel.theme.preset,
-					footerVariant: page.footerVariant,
-					galleryVariant: viewModel.sections.gallery?.variant,
-					structuralVariants: {
-						hero: viewModel.hero.structuralVariant,
-						thankYou: viewModel.sections.thankYou?.structuralVariant,
-						gifts: viewModel.sections.gifts?.structuralVariant,
-						rsvp: viewModel.sections.rsvp?.structuralVariant,
-						personalizedAccess:
-							viewModel.sections.rsvp?.personalizedAccess?.structuralVariant,
-						family: viewModel.sections.family?.structuralVariant,
-						location: viewModel.sections.location?.structuralVariant,
-						itinerary: viewModel.sections.itinerary?.variant,
-					},
-					envelopeVariant: page.envelope?.variant,
+				footerVariant: page.footerVariant,
+				galleryVariant: viewModel.sections.gallery?.variant,
+				structuralVariants: {
+					hero: viewModel.hero.structuralVariant,
+					thankYou: viewModel.sections.thankYou?.structuralVariant,
+					gifts: viewModel.sections.gifts?.structuralVariant,
+					rsvp: viewModel.sections.rsvp?.structuralVariant,
+					personalizedAccess:
+						viewModel.sections.rsvp?.personalizedAccess?.structuralVariant,
+					family: viewModel.sections.family?.structuralVariant,
+					location: viewModel.sections.location?.structuralVariant,
+					itinerary: viewModel.sections.itinerary?.variant,
+				},
+				envelopeVariant: page.envelope?.variant,
+				revealVariant: page.envelope?.revealVariant,
 				visualProfileId: viewModel.visualProfileId,
 				slug,
 			})
 		: [];
 
-const headLinks = [
-	...(activePresetUrl ? [{ rel: 'stylesheet' as const, href: activePresetUrl }] : []),
-	...activeSectionCssUrls.map((href) => ({ rel: 'stylesheet' as const, href })),
-	// Google Fonts — Parisienne (script 400) for Romina profile.
-	// Other font families are served via @fontsource-variable/* packages.
-	{ rel: 'preconnect' as const, href: 'https://fonts.googleapis.com' },
-	{ rel: 'preconnect' as const, href: 'https://fonts.gstatic.com' },
-	{
-		rel: 'stylesheet' as const,
-		href: 'https://fonts.googleapis.com/css2?family=Parisienne&display=swap',
+const forceBlockingInvitationCss =
+	skipEnvelope || screenshotMode || !page?.wrapper.showEnvelope || !page?.envelope;
+
+const headLinks = buildInvitationStylesheetHeadLinks({
+	presetUrl: activePresetUrl,
+	plan: activeSectionCssPlan,
+	profileIdentity: {
+		visualProfileId: viewModel?.visualProfileId,
+		slug,
 	},
-];
+	forceBlocking: forceBlockingInvitationCss,
+});
 
 const wrapperDataAttributes = page
 	? {
@@ -237,6 +240,11 @@ const wrapperDataAttributes = page
 			themeMode="dark"
 			headLinks={headLinks}
 		>
+			<InvitationDeferredCssPromotion
+				slot="head"
+				eventSlug={slug}
+				isDemo={page.viewModel.isDemo}
+			/>
 			<style is:inline lang="scss" set:html={page.wrapper.scopedStyles} />
 			{
 				animationsOff && (

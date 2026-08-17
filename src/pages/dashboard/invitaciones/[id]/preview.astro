@@ -11,7 +11,8 @@ import { computeEffectiveContent } from '@/lib/intake/services/merge-content.ser
 import { getAssetSlugFromContent } from '@/lib/assets/asset-slug';
 import type { InvitationPageContext } from '@/lib/invitation/page-data';
 import { resolvePresetCssUrl } from '@/lib/invitation/preset-css-resolver';
-import { resolveInvitationCssUrls } from '@/lib/invitation/section-css-resolver';
+import { resolveInvitationCssLoadPlan } from '@/lib/invitation/section-css-resolver';
+import { buildInvitationStylesheetHeadLinks } from '@/lib/invitation/invitation-css-head-links';
 
 import DashboardLayout from '@/layouts/DashboardLayout.astro';
 import Layout from '@/layouts/Layout.astro';
@@ -22,6 +23,7 @@ import MusicPlayer from '@/components/invitation/MusicPlayer.astro';
 import EventHeader from '@/components/invitation/EventHeader.astro';
 import EnvelopeReveal from '@/components/invitation/EnvelopeReveal.astro';
 import EditorialCoverReveal from '@/components/invitation/EditorialCoverReveal.astro';
+import InvitationDeferredCssPromotion from '@/components/invitation/InvitationDeferredCssPromotion.astro';
 import '@/styles/invitation.scss';
 import '@/styles/invitation/_preview-banner.scss';
 
@@ -179,9 +181,9 @@ const activePresetUrl = pageCtx?.viewModel?.theme?.preset
 	? resolvePresetCssUrl(pageCtx.viewModel.theme.preset)
 	: undefined;
 
-const activeSectionCssUrls =
+const activeSectionCssPlan =
 	pageCtx?.viewModel?.theme?.preset
-		? resolveInvitationCssUrls({
+		? resolveInvitationCssLoadPlan({
 					themePreset: pageCtx.viewModel.theme.preset,
 					footerVariant: pageCtx.footerVariant,
 					galleryVariant: pageCtx.viewModel.sections.gallery?.variant,
@@ -197,15 +199,21 @@ const activeSectionCssUrls =
 						itinerary: pageCtx.viewModel.sections.itinerary?.variant,
 					},
 					envelopeVariant: pageCtx.envelope?.variant,
+					revealVariant: pageCtx.envelope?.revealVariant,
 					visualProfileId: pageCtx.viewModel.visualProfileId,
 				slug: invitationRecord?.slug ?? undefined,
 			})
 		: [];
 
-const headLinks = [
-	...(activePresetUrl ? [{ rel: 'stylesheet' as const, href: activePresetUrl }] : []),
-	...activeSectionCssUrls.map((href) => ({ rel: 'stylesheet' as const, href })),
-];
+const headLinks = buildInvitationStylesheetHeadLinks({
+	presetUrl: activePresetUrl,
+	plan: activeSectionCssPlan,
+	profileIdentity: {
+		visualProfileId: pageCtx?.viewModel.visualProfileId,
+		slug: invitationRecord?.slug ?? undefined,
+	},
+	forceBlocking: revealState !== 'closed' || !pageCtx?.wrapper.showEnvelope,
+});
 ---
 
 {
@@ -230,6 +238,11 @@ const headLinks = [
 			themeMode="dark"
 			headLinks={headLinks}
 		>
+			<InvitationDeferredCssPromotion
+				slot="head"
+				eventSlug={invitationRecord?.slug ?? pageCtx.viewModel.id}
+				isDemo={false}
+			/>
 			<div class:list={['preview-banner', embeddedPreview && 'preview-banner--embedded']} role="banner">
 				<span class="preview-banner__text">
 					Vista previa interna — {previewSource}
