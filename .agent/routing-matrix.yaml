@@ -4,7 +4,7 @@
 # Agent OS routing surface.
 ---
 version: '1.0.0'
-updated: '2026-08-07'
+updated: '2026-08-17'
 
 bootstrap:
     rules:
@@ -22,6 +22,7 @@ routes:
           - 'frontend-design'
           - 'theme-architecture'
           - 'animation-motion'
+          - 'invitation-rhythm'
       workflows:
           - '.agent/workflows/theme-architecture-governance.md'
       docs:
@@ -34,6 +35,8 @@ routes:
       skills:
           - 'frontend-design'
           - 'theme-architecture'
+          - 'animation-motion'
+          - 'invitation-rhythm'
           - 'celebra-delegation-patterns'
       workflows:
           - '.agent/workflows/design-reference-to-build.md'
@@ -111,6 +114,7 @@ routes:
       description: 'Client invitation preparation & intake completeness evaluation'
       skills:
           - 'client-invitation-audit'
+          - 'invitation-rhythm'
           - 'copywriting-es'
       workflows:
           - '.agent/workflows/invitation-preparation.md'
