@@ -74,16 +74,13 @@ Invitation section styling has a strict responsibility boundary:
 1. **`src/styles/invitation/_<section>.scss`** — Shared structural and base styles for the section.
    No preset-specific or invitation-specific visuals.
 
-2. **`src/styles/themes/presets/_<preset>.scss`** — Theme tokens and custom properties only. No
-   section DOM selectors such as `.family__panel`, `.location__card`, `.gallery__item`. No section
+2. **`src/styles/themes/presets/_<preset>.scss`** — Theme tokens and custom properties only (pure atmosphere).
+   No section DOM selectors such as `.family__panel`, `.location__card`, `.rsvp`, `.hero`. No section
    pseudo-elements or structural overrides.
 
-3. **`src/styles/themes/sections/<section>/_base.scss`** — Shared visual rules for one section. May
-   use section-scoped selectors. No global theme tokens or unrelated sections.
-
-4. **`src/styles/themes/sections/<section>/_<variant>.scss`** — Concrete visual rules for one
-   section variant. Use for section-specific selectors, pseudo-elements, and decorative rules that
-   tokens cannot express cleanly.
+3. **`src/styles/themes/sections/<section>/_<variant>.scss`** — Concrete layout and visual rules for one
+   section variant (e.g. `_standard.scss`, `_split-cover.scss`, `_formal-register.scss`). Consumes
+   theme tokens from the parent `.theme-preset--*` wrapper. Emitted on DOM as a single `data-variant`.
 
 ### Decision Rules
 

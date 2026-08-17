@@ -38,7 +38,6 @@ canonical CSS, and shared primitives must contain no compatibility branches.
   - `editorial-cover` owns its specialized renderer and semantic stylesheet.
   - `split-cover` uses the shared Hero DOM and owns all required responsive plane/title geometry in
     `_split-cover.scss`.
-  - `hero.visualVariant` is an independent visual skin.
 - **Family:** `standard`, `split-groups`, `asymmetric-groups`.
   - `split-groups` and `asymmetric-groups` require at least two explicit `groups` through a
     discriminated schema contract.
@@ -51,7 +50,7 @@ canonical CSS, and shared primitives must contain no compatibility branches.
   - Map/navigation media and presentation flags remain explicit section capabilities.
 - **Gallery:** `uniform-grid`, `editorial-mosaic`, `magazine-spread`, `feature-mosaic`,
   `feature-stack`, `paired-feature-band`, `index-choreography`, `single-keepsake`.
-  - `gallery.variant` owns layout; `gallery.visualVariant` owns skin.
+  - `gallery.variant` owns layout; all visual styling is derived from the active theme preset tokens.
   - `single-keepsake` requires exactly one item; `feature-stack` requires ≥3 items;
     `paired-feature-band` requires ≥3 items and at least one `layoutRole=feature`.
   - Item roles and `presentationOptions.mobileBrowse` remain orthogonal typed capabilities.
