@@ -28,7 +28,7 @@ function buildTestAssets(): LeslieAssetMap {
 describe('Leslie Perez provision contract', () => {
 	const content = buildLesliePublishedContent(buildTestAssets());
 
-	it('registers the in-progress celestial definition without a profile stylesheet', () => {
+	it('registers the in-progress celestial definition with a rhythm profile stylesheet', () => {
 		const definition = getInvitationDefinition('leslie-perez');
 		expect(definition.slug).toBe('leslie-perez');
 		expect(definition.hostLoginAlias).toBe('leslie_perez');
@@ -40,7 +40,25 @@ describe('Leslie Perez provision contract', () => {
 			existsSync(
 				path.join(process.cwd(), 'src/styles/invitation-profiles/leslie-perez.scss'),
 			),
-		).toBe(false);
+		).toBe(true);
+	});
+
+	it('owns celestial-bookend cadence intersections and formal-register RSVP', () => {
+		expect(content.rsvp).toMatchObject({ variant: 'formal-register' });
+		expect(content.family).toMatchObject({
+			labels: { sectionTitle: 'Mis padres' },
+		});
+		expect(content.composition).toEqual({
+			intersections: {
+				family: { family: 'atmospheric-blend', source: 'quote' },
+				'interlude-after-location': { family: 'overlap', source: 'location' },
+				itinerary: { family: 'atmospheric-blend', source: 'interlude-after-location' },
+				'interlude-after-gallery': { family: 'overlap', source: 'gallery' },
+				gifts: { family: 'atmospheric-blend', source: 'interlude-after-gallery' },
+				'personalized-access': { family: 'atmospheric-blend', source: 'gifts' },
+				thankYou: { family: 'atmospheric-blend', source: 'rsvp' },
+			},
+		});
 	});
 
 	it('keeps unique photo roles across hero, gallery, interludes, and thank-you', () => {
@@ -132,6 +150,7 @@ describe('Leslie Perez provision contract', () => {
 		expect(viewModel.sections.location?.showFlourishes).toBe(false);
 		expect(viewModel.sections.gallery?.variant).toBe('editorial-mosaic');
 		expect(viewModel.sections.gifts?.structuralVariant).toBe('standard');
+		expect(viewModel.sections.rsvp?.structuralVariant).toBe('formal-register');
 		expect(viewModel.sections.rsvp?.personalizedAccess.structuralVariant).toBe('formal-pass');
 		expect(viewModel.music).toBeUndefined();
 		expect(viewModel.interludes).toHaveLength(2);

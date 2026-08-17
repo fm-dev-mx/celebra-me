@@ -107,7 +107,8 @@ no family photograph was identified.
 | Family content        | Parents only; no godparents; text-only presentation; two Madre/Padre groups                        | accepted          |
 | Location content      | Reception only at San Carlos Eventos; no ceremony or misa block                                    | accepted          |
 | Itinerary draft       | Recepción, Cena, Vals, Brindis, Baile, Cierre; omit Pastel; all times remain placeholders          | accepted as draft |
-| RSVP/access           | Standard RSVP flow; client supplies the guest list through the existing invitation workflow        | accepted          |
+| RSVP/access           | `formal-pass` + `formal-register`; client supplies the guest list through the invitation workflow | accepted          |
+| Rhythm band           | `celestial-bookend`; cadence in `leslie-perez.scss` + `composition.intersections`                | accepted          |
 | Music                 | Omit from published content until a song URL exists; local empty-player preview is a file constant | accepted          |
 | Gifts                 | Include lluvia de sobres / buzón at the reception; no bank or store URLs                           | accepted          |
 | Quote                 | Jeremiah 29:11; do not repeat family or thank-you thanks                                           | accepted          |
@@ -119,8 +120,9 @@ no family photograph was identified.
 
 - Keep the global `celestial-blue` theme as the only visual atmosphere.
 - Reuse canonical section variants: `split-cover`, `asymmetric-groups` with `text-only`,
-  `split-map`, `timeline-paper`, `editorial-mosaic`, `standard` RSVP with `formal-pass`, and
+  `split-map`, `timeline-paper`, `editorial-mosaic`, `formal-register` RSVP with `formal-pass`, and
   `full-bleed-photo`.
+- Keep the rhythm profile (`leslie-perez.scss`) limited to cadence blends and dark-surface tracking.
 - Keep the navy reserved-color notice in the location indications as a separate semantic item.
 - Do not add `sectionStyles`, legacy aliases, client-name CSS selectors, or personal photos to
   location/family surfaces.
@@ -141,7 +143,7 @@ no family photograph was identified.
 | Itinerary           | draft    | `itinerary.variant: timeline-paper`                            | Recepción, Cena, Vals, Brindis, Baile, Cierre; no Pastel.                              |
 | Gallery             | yes      | `gallery.variant: editorial-mosaic`                            | Photos 02, 03, 05–07, 09–14 in numeric order.                                          |
 | Personalized access | draft    | `personalizedAccess.variant: formal-pass`                      | Visible in local `astro dev` without a guest; guest list still required later.         |
-| RSVP                | draft    | `rsvp.variant: standard`                                       | Existing API flow; no custom guest-list manager.                                       |
+| RSVP                | draft    | `rsvp.variant: formal-register`                                | Dark chapter paired with `formal-pass`; API confirmation flow.                         |
 | Gifts               | yes      | `gifts.variant: standard`                                      | Cash / lluvia de sobres at the reception buzón.                                        |
 | Interludes          | yes      | shared renderer; `height: tall`                                | Photo 04 after location; photo 08 after gallery.                                       |
 | Music               | no       | omitted until a playable URL exists                            | Preview/Production hide the control. Local may show it via `LOCAL_INVITATION_PREVIEW`. |
@@ -161,14 +163,20 @@ no family photograph was identified.
 | Location                                   | Existing `split-map` variant from Alba Rosa’s invitation                            | verified       |
 | Itinerary                                  | Existing `timeline-paper` variant from Abril / celestial practice                   | verified       |
 | Gallery                                    | Existing `editorial-mosaic` variant from Romina’s invitation                        | verified       |
-| RSVP                                       | Existing `standard` flow; no custom structural component                            | verified       |
+| RSVP                                       | Existing `formal-register` paired with `formal-pass` (Victoria practice)            | verified       |
 | Personalized access                        | Existing `formal-pass` variant from Renata/Victoria practice                        | verified       |
 | ThankYou                                   | Existing `full-bleed-photo` variant from Renata’s invitation                        | verified       |
+| Tonal band                                 | `celestial-bookend` (dark overture → light body → dark finale)                      | verified       |
+| Rhythm profile                             | `src/styles/invitation-profiles/leslie-perez.scss` (blends + tracking only)         | verified       |
 | New structural variants                    | none                                                                                | verified       |
-| New invitation-specific components or SCSS | none                                                                                | verified       |
+| New invitation-specific components         | none (profile is rhythm tokens only)                                                | verified       |
 
 No `sectionStyles` or legacy aliases are used to select these structures. The theme owns the
-atmosphere and each section owns its canonical structural variant.
+atmosphere and each section owns its canonical structural variant. Rhythm cadence lives in
+`composition.intersections` plus `leslie-perez.scss` (atmospheric-blend tokens only).
+
+**Residual:** without a guest, public render omits Personalized Access, so light `gifts` meets dark
+`formal-register` with no bridge. Finale rhythm acceptance assumes guest context or local PA preview.
 
 ---
 
