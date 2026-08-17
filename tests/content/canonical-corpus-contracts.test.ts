@@ -80,7 +80,7 @@ describe('canonical corpus structural/behavior contracts', () => {
 			content,
 			assetSlug: ALBA_EVENT.assetSlug,
 		});
-		expect(viewModel.sections.location?.structuralVariant).toBe('split-map');
+		expect(viewModel.sections.location?.variant).toBe('split-map');
 		expect(viewModel.sections.gallery?.variant).toBe('feature-stack');
 		expect(viewModel.sections.countdown?.visibleUnits).toEqual(['days']);
 	});
@@ -96,7 +96,7 @@ describe('canonical corpus structural/behavior contracts', () => {
 			id: 'events/romina-rios-chaparro',
 			data: content,
 		} as Parameters<typeof adaptEvent>[0]);
-		expect(viewModel.hero.structuralVariant).toBe('split-cover');
+		expect(viewModel.hero.variant).toBe('split-cover');
 		expect(viewModel.sections.itinerary?.variant).toBe('standard');
 	});
 
@@ -118,10 +118,10 @@ describe('canonical corpus structural/behavior contracts', () => {
 			data: content,
 		} as Parameters<typeof adaptEvent>[0]);
 		expect(viewModel.sections.itinerary?.variant).toBe('editorial-ledger');
-		expect(viewModel.sections.family?.structuralVariant).toBe('asymmetric-groups');
-		expect(viewModel.sections.location?.structuralVariant).toBe('stacked-venue-plates');
-		expect(viewModel.sections.rsvp?.structuralVariant).toBe('formal-register');
-		expect(viewModel.sections.rsvp?.personalizedAccess?.structuralVariant).toBe('formal-pass');
+		expect(viewModel.sections.family?.variant).toBe('asymmetric-groups');
+		expect(viewModel.sections.location?.variant).toBe('stacked-venue-plates');
+		expect(viewModel.sections.rsvp?.variant).toBe('formal-register');
+		expect(viewModel.sections.rsvp?.personalizedAccess?.variant).toBe('formal-pass');
 		expect(viewModel.sections.gallery?.variant).toBe('single-keepsake');
 	});
 
@@ -137,8 +137,8 @@ describe('canonical corpus structural/behavior contracts', () => {
 			id: 'events/daniela-y-martin',
 			data: content,
 		} as Parameters<typeof adaptEvent>[0]);
-		expect(viewModel.sections.family?.structuralVariant).toBe('split-groups');
-		expect(viewModel.sections.location?.structuralVariant).toBe('stacked-venue-plates');
+		expect(viewModel.sections.family?.variant).toBe('split-groups');
+		expect(viewModel.sections.location?.variant).toBe('stacked-venue-plates');
 		expect(viewModel.sections.gallery?.variant).toBe('single-keepsake');
 	});
 

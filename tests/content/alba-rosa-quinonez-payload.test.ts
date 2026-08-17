@@ -188,10 +188,10 @@ describe('Alba Rosa Quiñónez provision contract', () => {
 			visibleUnits: ['days'],
 		});
 		expect(viewModel.sections.location).toMatchObject({
-			structuralVariant: 'split-map',
+			variant: 'split-map',
 		});
 		expect(page.viewModel.sections.countdown?.visibleUnits).toEqual(['days']);
-		expect(page.viewModel.sections.location?.structuralVariant).toBe('split-map');
+		expect(page.viewModel.sections.location?.variant).toBe('split-map');
 		expect(
 			page.renderPlan.map((item) => (item.type === 'section' ? item.section : item.type)),
 		).toEqual(expect.arrayContaining(['countdown', 'location']));
