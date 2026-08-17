@@ -50,7 +50,8 @@ describe('Leslie Perez provision contract', () => {
 		});
 		expect(content.composition).toEqual({
 			intersections: {
-				family: { family: 'atmospheric-blend', source: 'quote' },
+				family: { family: 'overlap', source: 'hero' },
+				countdown: { family: 'overlap', source: 'family' },
 				'interlude-after-location': { family: 'overlap', source: 'location' },
 				itinerary: { family: 'atmospheric-blend', source: 'interlude-after-location' },
 				'interlude-after-gallery': { family: 'overlap', source: 'gallery' },
@@ -118,9 +119,9 @@ describe('Leslie Perez provision contract', () => {
 		});
 		expect(content).not.toHaveProperty('music');
 		expect(content.sectionOrder).toEqual([
-			'quote',
 			'family',
 			'countdown',
+			'quote',
 			'location',
 			'itinerary',
 			'gallery',
@@ -165,9 +166,9 @@ describe('Leslie Perez provision contract', () => {
 		);
 
 		expect(sequence).toEqual([
-			'quote',
 			'family',
 			'countdown',
+			'quote',
 			'location',
 			'interlude-after-location',
 			'itinerary',
