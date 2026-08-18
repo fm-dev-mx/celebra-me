@@ -46,7 +46,7 @@ function makeMinimalEvent(music?: Record<string, unknown>) {
 			envelope: { enabled: true },
 			...(music ? { music } : {}),
 		},
-	} as Parameters<typeof adaptEvent>[0];
+	} as unknown as Parameters<typeof adaptEvent>[0];
 }
 
 function buildPage(viewModel: InvitationViewModel) {
