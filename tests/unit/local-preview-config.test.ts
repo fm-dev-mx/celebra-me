@@ -115,7 +115,9 @@ describe('local invitation preview config', () => {
 
 		it('honors local preview constants only inside astro dev', () => {
 			isDev.mockReturnValue(true);
-			expect(shouldShowMusicPlayer('')).toBe(LOCAL_INVITATION_PREVIEW.showMusicPlayerWithoutUrl);
+			expect(shouldShowMusicPlayer('')).toBe(
+				LOCAL_INVITATION_PREVIEW.showMusicPlayerWithoutUrl,
+			);
 			expect(shouldShowLocalPersonalizedAccessPreview()).toBe(
 				LOCAL_INVITATION_PREVIEW.showPersonalizedAccessWithoutGuest,
 			);
@@ -165,26 +167,37 @@ describe('local invitation preview config', () => {
 			['VERCEL_ENV=preview', { VERCEL_ENV: 'preview' }],
 			['VERCEL=1 and production', { VERCEL: '1', VERCEL_ENV: 'production' }],
 			['VERCEL=1 and preview', { VERCEL: '1', VERCEL_ENV: 'preview' }],
-		])('ignores local preview switches when hosted via %s even if DEV is true', (_label, env) => {
-			isDev.mockReturnValue(true);
-			if ('VERCEL' in env) process.env.VERCEL = env.VERCEL;
-			if ('VERCEL_ENV' in env) process.env.VERCEL_ENV = env.VERCEL_ENV;
+		])(
+			'ignores local preview switches when hosted via %s even if DEV is true',
+			(_label, env) => {
+				isDev.mockReturnValue(true);
+				if ('VERCEL' in env) process.env.VERCEL = env.VERCEL;
+				if ('VERCEL_ENV' in env) process.env.VERCEL_ENV = env.VERCEL_ENV;
 
-			expect(shouldShowMusicPlayer('')).toBe(false);
-			expect(shouldShowMusicPlayer('   ')).toBe(false);
-			expect(shouldShowLocalPersonalizedAccessPreview()).toBe(false);
-			expect(
-				resolveInvitationMusicPlayer({
-					music: undefined,
-					envelopeEnabled: true,
-				}),
-			).toBeUndefined();
-			expect(
-				resolveInvitationMusicPlayer({
-					music: { url: '   ', title: 'Música de fondo' },
-					envelopeEnabled: true,
-				}),
-			).toBeUndefined();
-		});
+				expect(shouldShowMusicPlayer('')).toBe(false);
+				expect(shouldShowMusicPlayer('   ')).toBe(false);
+				expect(shouldShowLocalPersonalizedAccessPreview()).toBe(false);
+				expect(
+					resolveInvitationMusicPlayer({
+						music: undefined,
+						envelopeEnabled: true,
+					}),
+				).toBeUndefined();
+				expect(
+					resolveInvitationMusicPlayer({
+						music: { url: '   ', title: 'Música de fondo' },
+						envelopeEnabled: true,
+					}),
+				).toBeUndefined();
+			},
+		);
+	});
+
+	it('never enables local previews in a Vercel runtime', () => {
+		isDev.mockReturnValue(true);
+		process.env.VERCEL_ENV = 'production';
+
+		expect(shouldShowMusicPlayer('')).toBe(false);
+		expect(shouldShowLocalPersonalizedAccessPreview()).toBe(false);
 	});
 });
