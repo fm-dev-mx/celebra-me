@@ -1,7 +1,7 @@
 # Celestial-blue section-bundle inventory
 
 **Date:** 2026-08-17  
-**Bundle:** [`src/styles/invitation-sections-by-preset/celestial-blue.scss`](../../src/styles/invitation-sections-by-preset/celestial-blue.scss)  
+**Bundle:** [`src/styles/invitation-sections-by-preset/celestial-blue.scss`](../../../src/styles/invitation-sections-by-preset/celestial-blue.scss)  
 **Ownership
 contract:** [`architecture.md`](architecture.md#invitation-css-ownership-normative)  
 **Full identity map:** [`corpus-bundle-inventory.md`](corpus-bundle-inventory.md)
