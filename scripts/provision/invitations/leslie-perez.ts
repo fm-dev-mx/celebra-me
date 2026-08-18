@@ -306,7 +306,7 @@ export function buildLesliePublishedContent(
 				googleMapsUrl: VENUE_MAP_URL,
 				coordinates: { lat: 25.7444444, lng: -100.1725 },
 				image: assets['venue-san-carlos'],
-				focalPoint: '45% 52%',
+				focalPoint: '50% 50%',
 			},
 			indications: [
 				{
