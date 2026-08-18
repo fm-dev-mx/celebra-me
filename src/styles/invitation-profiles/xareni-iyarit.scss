@@ -124,6 +124,7 @@
 	--rsvp-focus-ring: rgb(var(--xareni-deep-mauve-rgb) / 28%);
 	--hero-section-background: var(--xareni-plum);
 	--pa-section-background: var(--card-background);
+
 	// Thank-you stays on celestial light surface (Production). Pre-ownership
 	// `.thank-you` / `[data-section=thank-you]` dark plum rules were dead selectors
 	// and must not be promoted onto `--thank-you-section-*`.

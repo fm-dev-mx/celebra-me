@@ -191,6 +191,7 @@
 			background: none;
 			background-clip: border-box;
 			-webkit-text-fill-color: var(--romina-ivory);
+
 			// Keep editorial mobile `translateY(-20%)` (Production). Only neutralize
 			// in the 600–860px band below, matching pre-decouple profile.
 			text-shadow:
