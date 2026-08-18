@@ -172,6 +172,14 @@ export const LESLIE_ASSET_SPECS = [
 		alt: 'Leslie aparece de espaldas junto a globos y un letrero de Save the Date',
 		focalPoint: { default: '50% 48%' },
 	},
+	{
+		key: 'venue-san-carlos',
+		relativePath: 'venue-san-carlos.jpg',
+		optimizationRole: 'gallery',
+		displayName: 'San Carlos Eventos — fachada nocturna',
+		alt: 'Fachada iluminada de San Carlos Eventos de noche',
+		focalPoint: { default: '45% 52%' },
+	},
 ] as const;
 
 export type LeslieAssetKey = (typeof LESLIE_ASSET_SPECS)[number]['key'];
@@ -284,6 +292,7 @@ export function buildLesliePublishedContent(
 		location: {
 			variant: 'split-map',
 			visibility: 'public',
+			presentation: 'with-photo',
 			introEyebrow: 'SÁBADO · 26 DE SEPTIEMBRE DE 2026',
 			introHeading: 'Recepción',
 			reception: {
@@ -296,6 +305,8 @@ export function buildLesliePublishedContent(
 				mapUrl: VENUE_MAP_URL,
 				googleMapsUrl: VENUE_MAP_URL,
 				coordinates: { lat: 25.7444444, lng: -100.1725 },
+				image: assets['venue-san-carlos'],
+				focalPoint: '45% 52%',
 			},
 			indications: [
 				{
@@ -321,19 +332,18 @@ export function buildLesliePublishedContent(
 					iconName: 'Diamond',
 				},
 				{
-					time: '21:45',
-					label: 'Vals',
-					description: 'Tradicional vals familiar.',
+					time: '20:00',
+					label: 'Presentación de la quinceañera',
 					iconName: 'Crown',
 				},
 				{
-					time: '22:30',
+					time: '21:30',
 					label: 'Cena',
 					description: 'Servicio de banquete en honor a la festejada.',
 					iconName: 'Dinner',
 				},
 				{
-					time: '02:00',
+					time: '01:00',
 					label: 'Cierre',
 					description: 'Muchas gracias por acompañarnos.',
 					iconName: 'Sparkles',

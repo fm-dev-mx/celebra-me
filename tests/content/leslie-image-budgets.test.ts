@@ -10,12 +10,18 @@ import { LESLIE_ASSET_SPECS } from '../../scripts/provision/invitations/leslie-p
 
 const ASSET_DIR = join(process.cwd(), 'src/assets/invitations/leslie-perez');
 
+// Delivery assets are the processed WebP derivatives under delivery/; raw source
+// assets (venue photos, SVGs) are excluded from the budget contract until processed.
+const DELIVERY_SPECS = LESLIE_ASSET_SPECS.filter((spec) =>
+	spec.relativePath.startsWith('delivery/'),
+);
+
 describe('Leslie delivery image budgets', () => {
 	it('keeps each declared delivery asset within its canonical role budget', async () => {
-		expect(LESLIE_ASSET_SPECS).toHaveLength(15);
-		expect(new Set(LESLIE_ASSET_SPECS.map((spec) => spec.relativePath)).size).toBe(15);
+		expect(DELIVERY_SPECS).toHaveLength(15);
+		expect(new Set(DELIVERY_SPECS.map((spec) => spec.relativePath)).size).toBe(15);
 
-		for (const spec of LESLIE_ASSET_SPECS) {
+		for (const spec of DELIVERY_SPECS) {
 			const role = spec.optimizationRole as ImageOptimizationRole | undefined;
 			expect(role).toBeDefined();
 			const filePath = join(ASSET_DIR, spec.relativePath);

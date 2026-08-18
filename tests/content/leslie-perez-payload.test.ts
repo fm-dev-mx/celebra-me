@@ -74,9 +74,9 @@ describe('Leslie Perez provision contract', () => {
 
 		expect(itinerary.items.map(({ label, time }) => ({ label, time }))).toEqual([
 			{ label: 'Recepción', time: '19:00' },
-			{ label: 'Vals', time: '21:45' },
-			{ label: 'Cena', time: '22:30' },
-			{ label: 'Cierre', time: '02:00' },
+			{ label: 'Presentación de la quinceañera', time: '20:00' },
+			{ label: 'Cena', time: '21:30' },
+			{ label: 'Cierre', time: '01:00' },
 		]);
 		expect(content.location).toMatchObject({
 			indications: [
