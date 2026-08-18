@@ -1,7 +1,9 @@
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 
+import { isDevEnvironment } from '@/lib/environment';
 import { adaptEvent } from '@/lib/adapters/event';
+import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
 import { buildInvitationRenderPlan } from '@/lib/invitation/render-plan';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import {
@@ -206,5 +208,41 @@ describe('Leslie Perez provision contract', () => {
 			'rsvp',
 			'thankYou',
 		]);
+	});
+
+	it('does not assemble a music player on hosted Production when no music is published', () => {
+		const viewModel = adaptEvent({
+			id: `events/${LESLIE_EVENT.slug}`,
+			data: content,
+		} as Parameters<typeof adaptEvent>[0]);
+		const isDev = isDevEnvironment as jest.MockedFunction<typeof isDevEnvironment>;
+		const originalVercel = process.env.VERCEL;
+		const originalVercelEnv = process.env.VERCEL_ENV;
+
+		isDev.mockReturnValue(true);
+		process.env.VERCEL = '1';
+		process.env.VERCEL_ENV = 'production';
+
+		try {
+			const page = buildPageContextFromViewModel({
+				viewModel,
+				slug: LESLIE_EVENT.slug,
+				eventType: LESLIE_EVENT.eventType,
+			});
+			expect(viewModel.music).toBeUndefined();
+			expect(page.musicPlayer).toBeUndefined();
+		} finally {
+			isDev.mockReturnValue(false);
+			if (originalVercel === undefined) {
+				delete process.env.VERCEL;
+			} else {
+				process.env.VERCEL = originalVercel;
+			}
+			if (originalVercelEnv === undefined) {
+				delete process.env.VERCEL_ENV;
+			} else {
+				process.env.VERCEL_ENV = originalVercelEnv;
+			}
+		}
 	});
 });
