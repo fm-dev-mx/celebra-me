@@ -46,7 +46,10 @@ describe('Leslie Perez provision contract', () => {
 	it('owns celestial-bookend cadence intersections and formal-register RSVP', () => {
 		expect(content.rsvp).toMatchObject({ variant: 'formal-register' });
 		expect(content.family).toMatchObject({
-			labels: { sectionTitle: 'Con la guía y el amor de mis padres' },
+			labels: {
+				sectionTitle: 'Con la guía y el amor de mis padres',
+				parentsTitle: 'Con su bendición',
+			},
 		});
 		expect(content.composition).toEqual({
 			intersections: {
@@ -56,7 +59,7 @@ describe('Leslie Perez provision contract', () => {
 				itinerary: { family: 'atmospheric-blend', source: 'interlude-after-location' },
 				'interlude-after-gallery': { family: 'overlap', source: 'gallery' },
 				gifts: { family: 'atmospheric-blend', source: 'interlude-after-gallery' },
-				'personalized-access': { family: 'atmospheric-blend', source: 'gifts' },
+				'personalized-access': { family: 'overlap', source: 'gifts' },
 				thankYou: { family: 'atmospheric-blend', source: 'rsvp' },
 			},
 		});

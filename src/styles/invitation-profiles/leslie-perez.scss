@@ -1,5 +1,6 @@
 @use '../global/mixins' as mixins;
 @use '../tokens' as tokens;
+@use '@fontsource-variable/cormorant-garamond/wght-italic.css' as cormorant-garamond-italic;
 
 // Leslie Perez — celestial-bookend rhythm profile.
 // Owns section styling overrides, Hero→Family→Countdown overlap geometry,
@@ -7,44 +8,112 @@
 // Loaded only through invitation-profiles/leslie-perez.scss.
 
 .event--leslie-perez.theme-preset--celestial-blue {
-	// Dark-surface optical tracking (rhythm §2).
-	--hero-split-title-letter-spacing: 0.06em;
+	// Global editorial rhythm — mobile baseline, ~20–30% larger on desktop via clamp.
+	--leslie-type-title: clamp(2.05rem, 4.5vw, 3.15rem);
+	--leslie-type-subtitle: clamp(0.98rem, 1.7vw, 1.18rem);
+	--leslie-type-eyebrow: clamp(0.66rem, 1.05vw, 0.74rem);
+	--leslie-type-hero-name: clamp(3.95rem, 18vw, 7.5rem);
+	--leslie-type-hero-label: clamp(0.7rem, 1.15vw, 0.8rem);
 
-	// Hero → Family → Countdown seam tokens.
+	// Split-cover title contract (calligraphy masthead; inherits on lg+).
+	--hero-split-title-font: var(--font-calligraphy);
+	--hero-split-title-style: normal;
+	--hero-split-title-weight: 300;
+	--hero-split-title-size: var(--leslie-type-hero-name);
+	--hero-split-title-line-height: 0.88;
+	--hero-split-title-letter-spacing: 0.06em;
+	--hero-split-title-transform: none;
+	--leslie-pad-section: clamp(3.5rem, 6.2vw, 4.75rem);
+	--leslie-pad-shared-end: clamp(2.25rem, 4.2vw, 3.15rem);
+	--leslie-gap-eyebrow: clamp(0.5rem, 0.9vw, 0.75rem);
+	--leslie-gap-subtitle: clamp(1rem, 1.7vw, 1.5rem);
+	--leslie-gap-content: clamp(2.25rem, 3.8vw, 3rem);
+	--leslie-gifts-exit: clamp(3.25rem, 5.5vw, 4.75rem);
+	--leslie-pa-entry: clamp(3.25rem, 5.5vw, 5.25rem);
+	--leslie-pa-navy: rgb(18 34 54);
+	--leslie-chapter-navy: rgb(10 18 30);
+	--leslie-folio-ink: rgb(8 14 24);
+	--leslie-folio-gold: rgb(214 188 132);
+	--leslie-folio-silver: rgb(200 208 212);
+	--leslie-folio-ivory: rgb(236 230 218);
+	--leslie-gifts-paper: var(--color-cool-ivory, rgb(244 241 234));
+
+	// Asymmetric overlap cuts — Alba Rosa polygon + Valentina depth scale.
+	// Shallow edge stays a hairline; deep edge is the readable bite.
+	--leslie-cut-shallow: clamp(0.5rem, 1.5vw, 1.25rem);
+	--leslie-family-countdown-overlap: clamp(3.75rem, 9vw, 7rem);
+	--leslie-gifts-pa-overlap: clamp(3.5rem, 9vw, 7rem);
+
+	// Hero → Family seam tokens (paper sheet; SVG mask, not the navy cuts).
 	--leslie-hero-family-overlap: clamp(#{tokens.$spacing-12}, 7vw, #{tokens.$spacing-16});
-	--leslie-family-countdown-overlap: clamp(1.25rem, 2.8vw, 2rem);
 	--leslie-family-paper: rgb(252 253 255);
 	--leslie-countdown-ink: rgb(12 22 38);
+	--hero-scroll-indicator-color: var(--leslie-countdown-ink);
 
 	// Hero → Family cubic lip mask (restored to original curved sheet).
 	--leslie-family-lip-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 40' preserveAspectRatio='none'%3E%3Cpath fill='%23000' d='M0 40L0 3C12 4 28 8 42 18C56 28 72 37 100 40Z'/%3E%3C/svg%3E");
 
-	// Family → Countdown discreet architectural lip mask (gentle monotonic slope, non-wavy).
-	--leslie-countdown-lip-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 20' preserveAspectRatio='none'%3E%3Cpath fill='%23000' d='M0 20 L0 16 C35 14, 65 7, 100 3 L100 20 Z'/%3E%3C/svg%3E");
-
 	// Contact elevation shadows.
 	--leslie-clip-drop-family: drop-shadow(0 -10px 28px rgb(10 16 26 / 48%))
 		drop-shadow(0 -3px 8px rgb(10 16 26 / 32%));
-	--leslie-clip-drop-countdown: drop-shadow(0 -6px 18px rgb(8 14 24 / 35%))
-		drop-shadow(0 -1px 4px rgb(8 14 24 / 20%));
 
-	// Keep scroll affordance above the Family paper cut on every viewport.
+	// Split-cover masthead — photographic cover on small screens, composed
+	// split on lg+. Scroll cue sits on the Family paper lip (left-deep curve).
 	.invitation-hero[data-variant='split-cover'] {
-		.invitation-hero__scroll-indicator {
-			bottom: calc(var(--leslie-hero-family-overlap) + #{tokens.$spacing-6});
-			z-index: 3;
-		}
-	}
+		--hero-split-photo-width: min(64vw, 58rem);
+		--hero-split-content-width: min(38vw, 28rem);
 
-	// Bespoke mobile/tablet hero masthead layout for Leslie.
-	@include mixins.respond-below(lg) {
-		.invitation-hero[data-variant='split-cover'] {
+		.invitation-hero__scroll-indicator {
+			position: absolute;
+			z-index: 5;
+			inset-inline: auto;
+			left: clamp(#{tokens.$spacing-4}, 4.2vw, #{tokens.$spacing-8});
+			right: auto;
+			bottom: clamp(0.75rem, 2.2vw, 1.15rem);
+			width: max-content;
+			margin-inline: 0;
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 0.2rem;
+			color: var(--hero-scroll-indicator-color);
+			-webkit-text-fill-color: var(--hero-scroll-indicator-color);
+			font-size: var(--leslie-type-hero-label);
+			letter-spacing: 0.22em;
+			pointer-events: none;
+		}
+
+		.invitation-hero__scroll-text,
+		.invitation-hero__scroll-chevron {
+			color: var(--hero-scroll-indicator-color);
+			-webkit-text-fill-color: var(--hero-scroll-indicator-color);
+		}
+
+		.invitation-hero__title {
+			font-family: var(--hero-split-title-font);
+			font-style: var(--hero-split-title-style);
+			font-weight: var(--hero-split-title-weight);
+			font-size: var(--hero-split-title-size);
+			line-height: var(--hero-split-title-line-height);
+			letter-spacing: var(--hero-split-title-letter-spacing);
+			text-transform: var(--hero-split-title-transform);
+			color: var(--color-diamond-white, rgb(255 255 255));
+			-webkit-text-fill-color: var(--color-diamond-white, rgb(255 255 255));
+			background: none;
+			text-shadow: 0 4px 28px rgb(0 0 0 / 95%);
+		}
+
+		.invitation-hero__title-line {
+			white-space: nowrap;
+		}
+
+		@include mixins.respond-below(lg) {
 			position: relative;
 			width: 100%;
 			min-height: 100svh;
 			display: flex;
 			flex-direction: column;
-			justify-content: space-between;
+			justify-content: flex-start;
 			align-items: center;
 			text-align: center;
 			padding: 0;
@@ -54,7 +123,7 @@
 				width: 100%;
 				height: 100%;
 				object-fit: cover;
-				object-position: var(--hero-focal-point, var(--hero-focal-point-default, 50% 40%));
+				object-position: var(--hero-focal-point, var(--hero-focal-point-default, 55% 45%));
 				transform: none;
 			}
 
@@ -63,12 +132,12 @@
 				// so the Family paper drop-shadow can read on the photo.
 				background: linear-gradient(
 					180deg,
-					rgb(10 16 26 / 85%) 0%,
-					rgb(10 16 26 / 40%) 14%,
-					transparent 28%,
-					transparent 46%,
-					rgb(10 16 26 / 55%) 65%,
-					rgb(10 16 26 / 78%) 84%,
+					rgb(10 16 26 / 82%) 0%,
+					rgb(10 16 26 / 38%) 16%,
+					transparent 30%,
+					transparent 48%,
+					rgb(10 16 26 / 52%) 68%,
+					rgb(10 16 26 / 78%) 86%,
 					rgb(10 16 26 / 88%) 100%
 				);
 			}
@@ -81,53 +150,40 @@
 				min-height: 100svh;
 				display: flex;
 				flex-direction: column;
-				justify-content: space-between;
+				justify-content: flex-start;
 				align-items: center;
 				text-align: center;
-
-				// Extra end pad clears date/venue from the asymmetric Family cut.
-				padding-block: clamp(1.6rem, 3.8svh, 2.5rem)
-					calc(clamp(4.5rem, 11svh, 5.5rem) + var(--leslie-hero-family-overlap));
-				padding-inline: clamp(1.25rem, 4vw, 2.5rem);
+				padding-block: clamp(2.1rem, 5.5svh, 3.5rem)
+					calc(var(--leslie-hero-family-overlap) + #{tokens.$spacing-16});
+				padding-inline: clamp(1.15rem, 5.5vw, 2.75rem);
 				box-sizing: border-box;
 			}
 
 			.invitation-hero__label {
 				display: inline-block;
 				font-family: var(--font-label);
-				font-size: clamp(0.8rem, 1.4vw, 1.8rem);
-				letter-spacing: 0.32em;
+				font-size: var(--leslie-type-hero-label);
+				letter-spacing: 0.28em;
 				font-weight: 600;
 				line-height: 1;
 				color: var(--color-satin-blue, rgb(180 205 235));
 				text-transform: uppercase;
-				margin: 1rem 3rem 0 0;
+				margin: 0 0 var(--leslie-gap-eyebrow);
 				text-shadow: 0 2px 12px rgb(0 0 0 / 90%);
 			}
 
 			.invitation-hero__title-wrapper {
-				margin: 0 0 auto;
-				max-width: min(75vw, 360px);
+				margin: 0;
+				max-width: min(90vw, 26rem);
 			}
 
 			.invitation-hero__title {
-				font-family: var(--font-calligraphy);
-				font-style: var(--hero-split-title-style, normal);
-				font-weight: 300;
-				font-size: clamp(5.6rem, 13.5vw, 9.4rem);
-				line-height: 0.88;
-				letter-spacing: var(--hero-split-title-letter-spacing, 0.04em);
-				text-transform: none;
 				text-align: center;
-				color: var(--color-diamond-white, rgb(255 255 255));
-				-webkit-text-fill-color: var(--color-diamond-white, rgb(255 255 255));
-				background: none;
-				text-shadow: 0 4px 28px rgb(0 0 0 / 95%);
 				margin: 0;
 			}
 
 			.invitation-hero__divider {
-				width: 36px;
+				width: 2.25rem;
 				height: 1px;
 				background: linear-gradient(
 					90deg,
@@ -135,84 +191,181 @@
 					var(--color-satin-blue, rgb(180 205 235)),
 					transparent
 				);
-				margin: 0 auto 0.6rem;
-				opacity: 80%;
+				margin: var(--leslie-gap-eyebrow) auto 0;
+				opacity: 72%;
 			}
 
 			.invitation-hero__details {
 				display: none;
 			}
+		}
+
+		@include mixins.short-viewport {
+			.invitation-hero__content {
+				padding-block: clamp(1.35rem, 6svh, 2rem)
+					calc(var(--leslie-hero-family-overlap) + #{tokens.$spacing-10});
+			}
+
+			.invitation-hero__title {
+				font-size: clamp(3.15rem, 12vw, 4.75rem);
+			}
+		}
+
+		@include mixins.respond-to(lg) {
+			.invitation-hero__background img {
+				width: var(--hero-split-photo-width);
+				height: 100%;
+				object-fit: cover;
+				object-position: var(--hero-focal-point, var(--hero-focal-point-default, 54% 45%));
+			}
+
+			.invitation-hero__content {
+				width: var(--hero-split-content-width);
+				min-height: 100svh;
+				margin: 0 0 0 var(--hero-split-content-inline-start);
+				padding-block: clamp(3.5rem, 8svh, 5.5rem)
+					calc(var(--leslie-hero-family-overlap) + #{tokens.$spacing-16});
+				padding-inline: 0;
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				align-items: flex-start;
+				text-align: left;
+				box-sizing: border-box;
+			}
+
+			.invitation-hero__label {
+				font-family: var(--font-label);
+				font-size: var(--leslie-type-hero-label);
+				letter-spacing: 0.28em;
+				font-weight: 600;
+				color: var(--color-satin-blue, rgb(180 205 235));
+				margin: 0 0 var(--leslie-gap-eyebrow);
+				text-align: left;
+			}
+
+			.invitation-hero__title-wrapper {
+				margin: 0;
+				max-width: 100%;
+			}
+
+			.invitation-hero__title {
+				text-align: left;
+				margin: 0;
+			}
+
+			.invitation-hero__divider {
+				width: 2.75rem;
+				height: 1px;
+				margin: var(--leslie-gap-subtitle) 0 var(--leslie-gap-subtitle);
+				background: linear-gradient(
+					90deg,
+					var(--color-satin-blue, rgb(180 205 235)),
+					transparent
+				);
+				opacity: 70%;
+			}
+
+			.invitation-hero__details {
+				display: flex;
+				flex-direction: column;
+				align-items: flex-start;
+				gap: 0.35rem;
+				margin: 0;
+			}
+
+			.invitation-hero__date,
+			.invitation-hero__time,
+			.invitation-hero__venue {
+				margin: 0;
+				font-family: var(--font-label);
+				font-size: var(--leslie-type-eyebrow);
+				font-style: normal;
+				font-weight: 500;
+				letter-spacing: 0.16em;
+				text-transform: uppercase;
+				color: rgb(var(--color-diamond-white-rgb, 255 255 255) / 82%);
+				text-shadow: 0 2px 12px rgb(0 0 0 / 55%);
+			}
+
+			.invitation-hero__venue .calligraphy-accent {
+				font-family: var(--font-display);
+				font-style: italic;
+				text-transform: none;
+				letter-spacing: 0.02em;
+				color: var(--color-satin-blue, rgb(180 205 235));
+			}
 
 			.invitation-hero__scroll-indicator {
-				position: absolute;
-				inset-inline: 0;
-				margin-inline: 2rem;
-				width: max-content;
-				display: flex;
-				align-items: center;
-				gap: 0.4rem;
-				color: rgb(0 0 0 / 35%);
-				font-size: 0.68rem;
-				letter-spacing: 0.22em;
-				bottom: 1rem;
-				left: 0.85rem;
+				font-size: clamp(0.74rem, 0.9vw, 0.84rem);
 			}
 		}
 	}
 
-	// Quote — High-Fashion Italic Editorial (Optimized legibility & celestial mood)
+	// Quote — verse on the same navy as countdown (not a second hero).
 	.quote-section {
-		--quote-bg: radial-gradient(
-			ellipse 100% 70% at 50% 50%,
-			rgb(18 36 60) 0%,
-			rgb(10 20 34) 100%
-		);
-		--quote-content-font: var(--font-display);
+		--quote-bg: var(--leslie-folio-ink);
+		--quote-content-font: 'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
 		--quote-content-style: italic;
-		--quote-content-size: clamp(1.48rem, 3.5vw, 2.35rem);
-		--quote-content-line-height: 1.35;
-		--quote-content-letter-spacing: -0.01em;
-		--quote-text-color: rgb(var(--color-diamond-white-rgb, 255 255 255) / 92%);
-		--quote-padding-block: clamp(4rem, 8vw, 6rem);
-		--quote-content-max-width: 36rem;
+		--quote-content-size: clamp(1.2rem, 2.8vw, 1.7rem);
+		--quote-content-line-height: 1.45;
+		--quote-content-letter-spacing: 0.01em;
+		--quote-text-color: rgb(228 222 210 / 88%);
+		--quote-padding-block: clamp(1.75rem, 3.5vw, 2.5rem) clamp(4.75rem, 9.5vw, 7rem);
+		--quote-content-max-width: 32ch;
+		--quote-texture-opacity: 0;
+		--quote-divider-display: none;
+		--quote-author-color: rgb(196 206 216 / 64%);
 
 		min-height: 0;
 		text-align: left;
+		background: var(--quote-bg);
+		background-attachment: scroll;
+
+		.quote-texture {
+			display: none;
+		}
 
 		.quote-container {
-			width: min(80%, 36rem);
+			width: min(82%, 36rem);
 			margin-inline: 9% auto;
 			transform: none;
 
 			@include mixins.respond-below(sm) {
-				width: 80%;
+				width: 82%;
 				margin-inline: 9% auto;
 				transform: none;
 			}
 		}
 
-		.quote-divider-top {
-			display: block;
-			width: clamp(36px, 8vw, 44px);
-			height: 1px;
-			background: rgb(var(--color-satin-blue-rgb, 140 175 215) / 45%);
-			margin: 0 0 clamp(1.35rem, 2.8vh, 1.85rem);
-			opacity: 100%;
-
-			svg {
-				display: none;
-			}
-		}
-
-		.quote-divider-bottom {
+		.quote-divider-top,
+		.quote-divider-bottom,
+		.quote-ornament {
 			display: none;
 		}
 
 		.quote-content {
-			font-weight: 300;
-			text-align: left;
+			position: relative;
+			max-width: 32ch;
 			margin: 0;
+			font-family: 'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
+			font-weight: 400;
+			font-style: italic;
+			text-align: left;
 			text-shadow: none;
+			text-wrap: pretty;
+
+			&::before {
+				content: '\201C';
+				display: block;
+				margin: 0 0 clamp(0.35rem, 1vw, 0.55rem);
+				font-family: 'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
+				font-size: clamp(2.5rem, 6vw, 3.5rem);
+				font-style: italic;
+				font-weight: 400;
+				line-height: 0.7;
+				color: var(--leslie-folio-gold);
+			}
 		}
 
 		.quote-line {
@@ -220,27 +373,37 @@
 		}
 
 		.quote-author-container {
+			flex-direction: column;
+			align-items: flex-start;
 			justify-content: flex-start;
-			margin-top: clamp(1.25rem, 2.5vw, 1.65rem);
+			margin-top: clamp(1.35rem, 2.8vw, 1.85rem);
 			gap: 0;
+			opacity: 100%;
+
+			&::before {
+				content: '';
+				display: block;
+				width: 1.15rem;
+				height: 1px;
+				margin: 0 0 0.75rem;
+				background: rgb(218 200 162 / 32%);
+			}
 		}
 
 		.quote-author {
 			font-family: var(--font-label);
-			font-size: clamp(0.68rem, 1vw, 0.76rem);
+			font-size: clamp(0.62rem, 0.95vw, 0.72rem);
 			font-weight: 500;
-			letter-spacing: 0.18em;
-			text-transform: uppercase;
-			color: rgb(var(--color-satin-blue-rgb, 140 175 215) / 75%);
+			font-style: normal;
+			font-variant-caps: all-small-caps;
+			letter-spacing: 0.2em;
+			text-transform: none;
+			color: var(--quote-author-color);
 			text-align: left;
-		}
-
-		.quote-ornament {
-			display: none;
 		}
 	}
 
-	// Family — asymmetric-groups editorial styling with high-jewelry stationery panel
+	// Family — asymmetric-groups editorial type on paper (no inner recuadro)
 	.family[data-variant='asymmetric-groups'] {
 		--family-split-divider: transparent;
 		--family-split-gap-inline: clamp(2.5rem, 6.5vw, 5rem);
@@ -261,15 +424,6 @@
 			);
 		--family-texture-opacity: 0;
 		--family-vignette-bg: transparent;
-		--family-panel-border: none;
-		--family-panel-radius: 0;
-		--family-panel-spacing: 0;
-		--family-panel-rotate: none;
-		--family-panel-shadow-extra-display: none;
-		--family-panel-watermark-opacity: 0;
-		--family-panel-surface-after-opacity: 0;
-		--family-panel-surface-bg: transparent;
-		--family-panel-surface-opacity: 0;
 		--family-header-filter: none;
 		--family-group-filter: none;
 
@@ -294,7 +448,7 @@
 
 		.family__header {
 			max-width: var(--family-split-content-max-width);
-			margin: 0 auto clamp(2.25rem, 5vw, 3.25rem);
+			margin: 0 auto var(--leslie-gap-content);
 			text-align: left;
 		}
 
@@ -304,23 +458,23 @@
 
 		.family__eyebrow {
 			font-family: var(--font-label);
-			color: rgb(var(--color-soft-graphite-rgb, 85 105 130) / 72%);
+			color: rgb(var(--color-soft-graphite-rgb, 85 105 130) / 68%);
 			padding-left: 0.06em;
-			margin-bottom: 0.45rem;
-			font-size: clamp(0.68rem, 1.2vw, 0.76rem);
+			margin-bottom: var(--leslie-gap-eyebrow);
+			font-size: var(--leslie-type-eyebrow);
 			font-weight: 500;
-			letter-spacing: 0.22em;
+			letter-spacing: 0.18em;
 			text-transform: uppercase;
-			opacity: 75%;
+			opacity: 80%;
 		}
 
 		.family__title {
 			max-width: 14ch;
 			margin-inline: 0;
 			font-family: var(--font-display);
-			font-size: clamp(2.35rem, 5.4vw, 3.6rem);
+			font-size: clamp(2.2rem, 5vw, 3.35rem);
 			font-weight: 400;
-			line-height: 1;
+			line-height: 1.02;
 			letter-spacing: -0.024em;
 			color: var(--color-deep-blue-graphite, rgb(20 30 45));
 			text-shadow: none;
@@ -332,15 +486,15 @@
 
 		.family__message {
 			max-width: 30ch;
-			margin: 1rem 0 0;
+			margin: var(--leslie-gap-subtitle) 0 0;
 			padding-left: 0.12em;
 			font-family: var(--font-display);
-			font-size: clamp(1.02rem, 2.2vw, 1.25rem);
+			font-size: var(--leslie-type-subtitle);
 			font-style: italic;
 			font-weight: 400;
-			line-height: 1.45;
+			line-height: 1.48;
 			letter-spacing: 0.01em;
-			color: rgb(var(--color-deep-blue-graphite-rgb, 20 30 45) / 54%);
+			color: rgb(var(--color-deep-blue-graphite-rgb, 20 30 45) / 52%);
 		}
 
 		.family__panel,
@@ -348,15 +502,17 @@
 			width: 100%;
 			max-width: var(--family-split-content-max-width);
 			margin-inline: auto;
-			padding: clamp(1.5rem, 3.2vw, 2.25rem) clamp(1.25rem, 3vw, 2rem);
-			border: 1px solid rgb(var(--color-satin-blue-rgb, 140 175 215) / 10%);
-			border-radius: 6px;
-			background: rgb(255 255 255 / 38%);
-			box-shadow: 0 2px 12px rgb(20 30 45 / 2%);
+			margin-top: 0;
+			padding: 0;
+			border: none;
+			border-radius: 0;
+			background: transparent;
+			box-shadow: none;
 			position: relative;
 			transform: none;
 
-			&::before {
+			&::before,
+			&::after {
 				display: none;
 			}
 		}
@@ -435,100 +591,98 @@
 		}
 	}
 
-	// Countdown — dark editorial folio (quiet glow, sharp numerals)
-	.countdown-section {
+	// Countdown — días as jewel (Victoria composition, celestial folio ink).
+	.countdown-section[data-variant='editorial-folio'] {
+		--countdown-segment-padding-mobile: 0;
+		--countdown-segment-padding-desktop: 0;
+		--countdown-value-wrapper-height-mobile: auto;
+		--countdown-value-wrapper-width-mobile: auto;
+		--countdown-value-wrapper-height-desktop: auto;
+		--countdown-value-wrapper-width-desktop: auto;
+
 		position: relative;
-		background: radial-gradient(
-			circle at 50% 18%,
-			rgb(22 40 66) 0%,
-			rgb(12 22 38) 58%,
-			rgb(8 14 24) 100%
-		);
-		color: rgb(var(--color-diamond-white-rgb, 255 255 255));
-		padding-block: clamp(5.25rem, 9.5vw, 7.75rem);
+		background: linear-gradient(180deg, rgb(10 20 34) 0%, var(--leslie-folio-ink) 100%);
+		background-attachment: scroll;
+		color: var(--leslie-folio-ivory);
+		padding-block: clamp(5.25rem, 9.5vw, 7.75rem) var(--leslie-pad-shared-end);
 		overflow: hidden;
-		text-align: center;
+		text-align: left;
+		min-height: 0;
 
 		&::before {
-			content: '';
-			position: absolute;
-			top: 42%;
-			left: 50%;
-			transform: translate(-50%, -50%);
-			width: min(70vw, 520px);
-			height: 200px;
-			background: radial-gradient(
-				ellipse at center,
-				rgb(var(--color-satin-blue-rgb, 140 175 215) / 6%) 0%,
-				transparent 72%
-			);
-			filter: blur(22px);
-			pointer-events: none;
+			display: none;
 		}
 
 		.countdown-texture {
-			opacity: 8%;
-			background-image: radial-gradient(rgb(255 255 255) 1px, transparent 1px);
-			background-size: 36px 36px;
-			pointer-events: none;
+			display: none;
 		}
 
 		.countdown-container {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
 			position: relative;
 			z-index: 1;
-			max-width: 920px;
-			margin-inline: auto;
-			padding-inline: clamp(1rem, 4vw, 2.5rem);
+			width: min(82%, 40rem);
+			max-width: 40rem;
+			margin-inline: 9% auto;
+			padding-inline: 0;
+			text-align: left;
 		}
 
 		.countdown-title {
-			max-width: min(18ch, 100%);
-			margin-inline: auto;
-			font-family: var(--font-display);
-			font-size: clamp(1.85rem, 4.8vw, 3.2rem);
+			max-width: 16ch;
+			margin: 0 0 clamp(1.15rem, 2.6vw, 1.75rem);
+			font-family: 'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
+			font-size: clamp(1.35rem, 3.2vw, 1.85rem);
 			font-style: italic;
 			font-weight: 400;
-			line-height: 1.12;
-			letter-spacing: -0.01em;
+			font-synthesis: none;
+			line-height: 1.18;
+			letter-spacing: 0.02em;
 			text-transform: none;
+			text-align: left;
 			text-wrap: pretty;
 			hyphens: none;
 			overflow-wrap: normal;
 			word-break: normal;
-			color: rgb(var(--color-diamond-white-rgb, 255 255 255) / 94%);
-			margin-bottom: clamp(2rem, 4.5vw, 3.25rem);
+			color: rgb(228 222 210 / 78%);
 			text-shadow: none;
 			background: none;
+			background-clip: unset;
 			-webkit-text-fill-color: unset;
 		}
 
-		.countdown__timer {
-			display: grid;
-			grid-template-columns: repeat(4, minmax(0, 1fr));
-			gap: clamp(0.75rem, 2.4vw, 1.75rem);
-			align-items: flex-end;
-			justify-content: center;
-			margin-inline: auto;
-			margin-top: 0;
-			max-width: 720px;
+		.countdown-timer-wrapper {
+			width: 100%;
+			margin: 0 0 clamp(1.5rem, 3.5vw, 2.25rem);
+		}
 
-			@include mixins.respond-below(xs) {
-				grid-template-columns: repeat(2, minmax(0, 1fr));
-				gap: 1.5rem 1.15rem;
-			}
+		.countdown__timer {
+			display: flex;
+			flex-wrap: nowrap;
+			align-items: flex-end;
+			justify-content: flex-start;
+			gap: clamp(0.75rem, 2.4vw, 1.75rem);
+			margin-inline: 0;
+			margin-top: 0;
+			max-width: none;
+			grid-template-columns: none;
 		}
 
 		.countdown__segment {
 			background: transparent;
-			border: none;
-			box-shadow: none;
+			border: 0;
 			border-radius: 0;
+			box-shadow: none;
 			padding: 0;
+			min-width: 0;
 			backdrop-filter: none;
 			display: flex;
 			flex-direction: column;
-			align-items: center;
-			justify-content: center;
+			align-items: flex-start;
+			justify-content: flex-end;
+			gap: clamp(0.28rem, 0.8vw, 0.42rem);
 			position: relative;
 			transform: none;
 			transition: none;
@@ -541,7 +695,7 @@
 			&:hover {
 				transform: none;
 				background: transparent;
-				border: none;
+				border: 0;
 				box-shadow: none;
 			}
 		}
@@ -553,38 +707,66 @@
 			overflow: visible;
 			margin-bottom: 0;
 			display: flex;
-			align-items: center;
-			justify-content: center;
+			align-items: baseline;
+			justify-content: flex-start;
+			filter: none;
 		}
 
 		.countdown__value {
-			font-family: var(--font-display);
-			font-size: clamp(3.1rem, 7.6vw, 5.4rem);
-			font-weight: 300;
-			font-variant-numeric: tabular-nums;
+			font-family: 'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
+			font-size: clamp(1.35rem, 4.4vw, 2.25rem);
+			font-weight: 500;
+			font-style: normal;
+			font-synthesis: none;
+			font-variant-numeric: tabular-nums lining-nums;
 			line-height: 0.9;
-			letter-spacing: -0.03em;
-			color: rgb(var(--color-diamond-white-rgb, 255 255 255));
+			letter-spacing: -0.02em;
+			color: var(--leslie-folio-silver);
 			background: none;
 			background-clip: unset;
-			-webkit-text-fill-color: rgb(var(--color-diamond-white-rgb, 255 255 255));
-			text-shadow: 0 1px 0 rgb(0 0 0 / 28%);
+			-webkit-text-fill-color: unset;
+			text-shadow: none;
 			filter: none;
+		}
+
+		.countdown__segment[data-unit='days'] {
+			flex: 0 0 auto;
+
+			.countdown__value {
+				font-size: clamp(3.35rem, 12.5vw, 7.25rem);
+				font-weight: 500;
+				line-height: 0.82;
+				letter-spacing: -0.03em;
+				color: var(--leslie-folio-gold);
+				text-shadow: 0 1px 0 rgb(236 224 196 / 45%);
+			}
+
+			.countdown__label {
+				font-size: clamp(0.58rem, 1.2vw, 0.7rem);
+				letter-spacing: 0.22em;
+				color: rgb(196 206 216 / 72%);
+			}
+		}
+
+		.countdown__segment[data-unit='hours'] {
+			padding-left: clamp(0.85rem, 2.4vw, 1.75rem);
+			border-left: 1px solid rgb(218 200 162 / 24%);
 		}
 
 		.countdown__label {
 			font-family: var(--font-label);
-			font-size: clamp(0.62rem, 1vw, 0.72rem);
+			font-size: clamp(0.5rem, 1.05vw, 0.62rem);
 			font-weight: 500;
-			letter-spacing: 0.28em;
+			letter-spacing: 0.2em;
 			text-transform: uppercase;
-			color: rgb(var(--color-satin-blue-rgb, 140 175 215) / 72%);
+			color: rgb(196 206 216 / 58%);
 			background: transparent;
 			border: none;
 			padding: 0;
-			margin-top: clamp(0.65rem, 1.4vw, 0.95rem);
+			margin-top: 0;
 			box-shadow: none;
 			opacity: 100%;
+			white-space: nowrap;
 		}
 
 		.countdown-date {
@@ -592,20 +774,38 @@
 		}
 
 		.countdown-footer {
-			margin-top: clamp(2.25rem, 4.8vw, 3.5rem);
+			align-self: stretch;
+			margin-top: 0;
+			padding-top: clamp(1.1rem, 2.5vw, 1.6rem);
+			border-top: 0;
+
+			&::before {
+				content: '';
+				display: block;
+				position: static;
+				width: 1.15rem;
+				height: 1px;
+				margin: 0 0 0.95rem;
+				transform: none;
+				background: rgb(218 200 162 / 28%);
+			}
 		}
 
 		.countdown-invitation-text {
-			font-family: var(--font-display);
+			font-family: 'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
 			font-style: italic;
-			font-size: clamp(1.05rem, 2.2vw, 1.28rem);
-			font-weight: 300;
+			font-size: clamp(0.92rem, 1.7vw, 1.12rem);
+			font-weight: 400;
+			font-synthesis: none;
 			line-height: 1.4;
-			letter-spacing: 0.01em;
-			color: rgb(var(--color-diamond-white-rgb, 255 255 255) / 82%);
-			max-width: 32ch;
-			margin: 0 auto;
-			text-wrap: balance;
+			letter-spacing: 0.04em;
+			text-transform: none;
+			color: rgb(228 222 210 / 70%);
+			max-width: 28ch;
+			max-inline-size: none;
+			margin: 0;
+			text-align: left;
+			text-wrap: pretty;
 		}
 	}
 
@@ -631,12 +831,12 @@
 				rgb(246 249 253) 55%,
 				rgb(242 246 251) 100%
 			);
-		padding-block: clamp(4.75rem, 9vw, 6.25rem);
+		padding-block: var(--leslie-pad-section);
 
 		@include mixins.respond-to(md) {
 			--location-split-gap: 2rem;
 
-			padding-block: clamp(5.75rem, 9.5vw, 7.5rem);
+			padding-block: clamp(4.25rem, 7vw, 5.5rem);
 		}
 
 		.event-location__card-title,
@@ -653,30 +853,31 @@
 		}
 
 		.event-location__intro {
-			margin-bottom: clamp(1rem, 2vw, 1.35rem);
+			margin-bottom: var(--leslie-gap-subtitle);
 		}
 
 		.event-location__eyebrow,
 		.event-location__intro-eyebrow {
 			font-family: var(--font-label);
-			font-size: clamp(0.68rem, 1.05vw, 0.76rem);
+			font-size: var(--leslie-type-eyebrow);
 			font-weight: 500;
-			letter-spacing: 0.2em;
+			letter-spacing: 0.16em;
 			text-transform: uppercase;
-			color: rgb(var(--color-soft-graphite-rgb, 85 105 130) / 78%);
-			margin-bottom: 0.35rem;
+			color: rgb(var(--color-deep-blue-graphite-rgb, 20 30 45) / 48%);
+			margin-bottom: var(--leslie-gap-eyebrow);
 			text-align: left;
 		}
 
 		.event-location__heading,
 		.event-location__intro-heading {
-			font-family: var(--font-label);
-			font-size: clamp(0.64rem, 1vw, 0.72rem);
-			font-weight: 500;
-			line-height: 1.2;
-			letter-spacing: 0.18em;
-			text-transform: uppercase;
-			color: rgb(var(--color-soft-graphite-rgb, 85 105 130) / 62%);
+			font-family: var(--font-display);
+			font-size: var(--leslie-type-subtitle);
+			font-weight: 400;
+			font-style: italic;
+			line-height: 1.35;
+			letter-spacing: 0.01em;
+			text-transform: none;
+			color: rgb(var(--color-deep-blue-graphite-rgb, 20 30 45) / 52%);
 			margin-bottom: 0;
 			text-align: left;
 		}
@@ -939,7 +1140,7 @@
 				rgb(244 248 253) 50%,
 				rgb(236 243 251) 100%
 			);
-		padding-block: clamp(4.5rem, 8vw, 6.5rem);
+		padding-block: var(--leslie-pad-section) var(--leslie-pad-shared-end);
 
 		.itinerary__container {
 			max-width: 580px;
@@ -948,9 +1149,9 @@
 
 		.itinerary__title {
 			font-family: var(--font-display);
-			font-size: clamp(2rem, 4.2vw, 2.85rem);
+			font-size: var(--leslie-type-title);
 			font-weight: 400;
-			line-height: 1;
+			line-height: 1.02;
 			letter-spacing: -0.025em;
 			color: var(--color-deep-blue-graphite, rgb(16 24 32));
 		}
@@ -958,14 +1159,14 @@
 		.itinerary__subtitle {
 			font-family: var(--font-display);
 			font-style: italic;
-			font-size: clamp(0.9rem, 1.6vw, 1.08rem);
+			font-size: var(--leslie-type-subtitle);
 			letter-spacing: 0.01em;
-			color: rgb(var(--color-soft-graphite-rgb, 85 105 130) / 65%);
-			margin-top: 0.35rem;
+			color: rgb(var(--color-soft-graphite-rgb, 85 105 130) / 62%);
+			margin-top: var(--leslie-gap-subtitle);
 		}
 
 		.itinerary__header {
-			margin-bottom: clamp(1.85rem, 3.8vw, 2.75rem);
+			margin-bottom: var(--leslie-gap-content);
 			text-align: center;
 		}
 
@@ -1201,7 +1402,7 @@
 				rgb(244 247 252) 52%,
 				rgb(238 243 250) 100%
 			);
-		padding-block: clamp(5.25rem, 9.5vw, 7.75rem);
+		padding-block: var(--leslie-pad-shared-end) var(--leslie-pad-section);
 
 		--gallery-grid-column-gap: clamp(10px, 1.5vw, 14px);
 		--gallery-grid-row-gap: clamp(10px, 1.5vw, 14px);
@@ -1214,6 +1415,71 @@
 		--gallery-item-shadow: none;
 		--gallery-item-emphasis-shadow: none;
 		--gallery-item-hover-shadow: none;
+		--gallery-title-color: var(--color-deep-blue-graphite, rgb(20 30 45));
+		--gallery-title-transform: none;
+		--gallery-title-letter-spacing: -0.02em;
+		--gallery-subtitle-font: var(--font-display);
+		--gallery-subtitle-size: var(--leslie-type-subtitle);
+		--gallery-subtitle-color: rgb(var(--color-deep-blue-graphite-rgb, 20 30 45) / 52%);
+		--gallery-subtitle-transform: none;
+		--gallery-subtitle-letter-spacing: 0.01em;
+
+		&::before,
+		&::after {
+			display: none;
+		}
+
+		.gallery-section__header {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 0;
+			max-width: 36rem;
+			margin-inline: auto;
+			margin-bottom: var(--leslie-gap-content);
+			padding-inline: clamp(0.4rem, 2vw, 1rem);
+			text-align: center;
+		}
+
+		.gallery-section__header::after {
+			display: none;
+		}
+
+		.gallery-section__eyebrow {
+			display: block;
+			font-family: var(--font-label);
+			font-size: 0.58rem;
+			font-weight: 500;
+			letter-spacing: 0.22em;
+			text-transform: uppercase;
+			color: rgb(var(--color-deep-blue-graphite-rgb, 20 30 45) / 32%);
+			margin: 0 0 0.45rem;
+		}
+
+		.gallery-section__title {
+			font-family: var(--font-display);
+			font-size: clamp(3.15rem, 10vw, 5.15rem);
+			font-weight: 400;
+			line-height: 0.88;
+			letter-spacing: -0.035em;
+			color: var(--color-deep-blue-graphite, rgb(20 30 45));
+			text-transform: none;
+			text-shadow: none;
+			margin: 0 0 1.15rem;
+		}
+
+		.gallery-section__subtitle {
+			max-width: 20rem;
+			margin: 0;
+			font-family: var(--font-display);
+			font-style: italic;
+			font-size: clamp(0.78rem, 1.2vw, 0.9rem);
+			font-weight: 400;
+			line-height: 1.5;
+			letter-spacing: 0.02em;
+			text-transform: none;
+			color: rgb(var(--color-deep-blue-graphite-rgb, 20 30 45) / 38%);
+		}
 
 		.gallery-section__container {
 			max-width: min(880px, calc(100vw - 2.5rem));
@@ -1325,60 +1591,82 @@
 		}
 	}
 
-	// Gifts — one primary heading; card as supporting confirmation
+	.invitation-section-wrapper[data-section-kind='gifts'] {
+		--gifts-bg: var(--leslie-gifts-paper);
+		--intersection-blend: transparent;
+		--intersection-depth: 0;
+
+		background: var(--leslie-gifts-paper);
+	}
+
+	// Gifts — one cream sheet after the photo; typeset note, no ornaments.
 	.gifts-section {
-		background:
-			radial-gradient(ellipse 90% 55% at 50% 0%, rgb(255 255 255) 0%, transparent 65%),
-			linear-gradient(
-				180deg,
-				rgb(252 253 255) 0%,
-				rgb(244 247 252) 52%,
-				rgb(238 243 250) 100%
-			);
-		padding-block: clamp(5.75rem, 10.5vw, 8.5rem);
+		--gifts-bg: var(--leslie-gifts-paper);
+		--leslie-gifts-metal-rgb: 128 104 68;
+
+		background: var(--leslie-gifts-paper);
+		overflow: visible;
+		text-align: center;
+		padding-block: var(--leslie-pad-section) var(--leslie-gifts-exit);
 
 		.gifts-section__header {
-			margin-bottom: clamp(2rem, 4.2vw, 3rem);
+			margin-bottom: 0.35rem;
+		}
+
+		.gifts-section__eyebrow {
+			font-family: var(--font-label);
+			font-size: 0.62rem;
+			letter-spacing: 0.22em;
+			color: rgb(var(--color-soft-graphite-rgb, 85 105 130) / 58%);
+			margin-bottom: var(--leslie-gap-eyebrow);
 		}
 
 		.gifts-section__title {
 			font-family: var(--font-display);
-			font-size: clamp(1.85rem, 4.2vw, 2.75rem);
+			font-size: clamp(2.32rem, 6.1vw, 3.35rem);
 			font-weight: 400;
-			line-height: 1.08;
-			letter-spacing: -0.015em;
+			line-height: 1.06;
+			letter-spacing: -0.02em;
 			text-transform: none;
 			color: var(--color-deep-blue-graphite, rgb(20 30 45));
-			margin-bottom: 0.5rem;
+			margin-bottom: 0.9rem;
 		}
 
-		.gifts-section__flourish {
-			margin: 0.6rem auto;
+		.gifts-section__flourish,
+		.gifts-section__flourish .flourish-line,
+		.gifts-section__flourish .flourish-diamond {
+			display: none;
 		}
 
 		.gifts-section__subtitle {
 			font-family: var(--font-display);
 			font-style: italic;
-			font-size: clamp(0.98rem, 1.8vw, 1.12rem);
-			line-height: 1.48;
-			letter-spacing: 0.005em;
-			color: rgb(var(--color-deep-blue-graphite-rgb, 20 30 45) / 68%);
-			max-width: 34rem;
+			font-size: clamp(1.08rem, 2.05vw, 1.28rem);
+			line-height: 1.62;
+			letter-spacing: 0.008em;
+			color: rgb(var(--color-deep-blue-graphite-rgb, 20 30 45) / 82%);
+			max-width: 32rem;
 			margin-inline: auto;
 			margin-bottom: 0;
+			text-wrap: balance;
 		}
 
 		.gifts-section__separator {
-			margin: 0.85rem auto 1.35rem;
-			opacity: 22%;
+			display: none;
+		}
+
+		.gifts-grid {
+			gap: 0;
 		}
 
 		.gift-card {
-			background: rgb(255 255 255 / 22%);
-			border: 1px solid rgb(var(--color-satin-blue-rgb, 140 175 215) / 10%);
-			border-radius: 5px;
+			max-width: 26rem;
+			margin-inline: auto;
+			background: transparent;
+			border: 0;
+			border-radius: 0;
 			box-shadow: none;
-			padding: clamp(1.15rem, 2.4vw, 1.5rem) clamp(1.2rem, 2.8vw, 1.85rem);
+			padding: 1.2rem 0.35rem 0;
 
 			&::after {
 				display: none;
@@ -1386,72 +1674,123 @@
 
 			&:hover {
 				transform: none;
-				border-color: rgb(var(--color-satin-blue-rgb, 140 175 215) / 16%);
+				border-color: transparent;
 				box-shadow: none;
 			}
 		}
 
 		.gift-card:hover .gift-card__icon-medallion {
-			border-color: rgb(var(--color-satin-blue-rgb, 140 175 215) / 16%);
+			border-color: transparent;
 			box-shadow: none;
 		}
 
 		.gift-card__inner {
-			gap: 0.75rem;
+			gap: 0;
 		}
 
 		.gift-card__icon-medallion {
-			width: 40px;
-			height: 40px;
-			margin: 0 auto 0.65rem;
-			background: rgb(255 255 255 / 28%);
-			border: 1px solid rgb(var(--color-satin-blue-rgb, 140 175 215) / 12%);
-			box-shadow: none;
-			backdrop-filter: none;
-			transform: none;
-			opacity: 55%;
-		}
-
-		.gift-card__icon-inner {
-			width: 20px;
-			height: 20px;
-			color: rgb(var(--color-soft-graphite-rgb, 85 105 130) / 85%);
+			display: none;
 		}
 
 		.gift-card__title {
-			font-family: var(--font-label);
-			font-size: clamp(0.875rem, 1.15vw, 0.95rem);
-			font-weight: 500;
-			letter-spacing: 0.12em;
-			text-transform: uppercase;
-			color: rgb(var(--color-soft-graphite-rgb, 85 105 130) / 78%);
-			margin-bottom: 0.35rem;
+			display: none;
 		}
 
 		.gift-card__description {
-			font-size: clamp(0.88rem, 1.4vw, 0.96rem);
-			line-height: 1.45;
-			color: rgb(var(--color-deep-blue-graphite-rgb, 20 30 45) / 62%);
+			font-family: var(--font-label);
+			font-style: normal;
+			font-size: 0.72rem;
+			font-weight: 500;
+			line-height: 1.7;
+			letter-spacing: 0.11em;
+			text-transform: uppercase;
+			color: rgb(var(--leslie-gifts-metal-rgb) / 68%);
+			max-width: 22rem;
+			margin-inline: auto;
 		}
 	}
 
-	// Formal chapter — unified celestial midnight suite (Personalized Access + RSVP)
+	// Formal chapter — navy overlap cut into Gifts (Alba left-deep polygon).
 	.invitation-section-wrapper[data-section-kind='personalized-access'] {
-		background: linear-gradient(
-			180deg,
-			rgb(18 34 54) 0%,
-			rgb(14 24 38) 60%,
-			rgb(10 18 30) 100%
-		);
-		padding-block: clamp(4.75rem, 8.5vw, 6.75rem) clamp(2.25rem, 4vw, 3.25rem);
+		--intersection-surface: var(--leslie-pa-navy);
+		--intersection-blend: transparent;
+		--intersection-depth: var(--leslie-gifts-pa-overlap);
+		--leslie-cut-deep: var(--leslie-gifts-pa-overlap);
+		--leslie-cut-shallow-local: var(--leslie-cut-shallow);
+
+		position: relative;
+		z-index: 4;
+		isolation: isolate;
+		overflow: visible;
+		margin-top: calc(0px - var(--leslie-gifts-pa-overlap));
+		background: none;
+		clip-path: none;
+		padding-block: 0;
+		filter: none;
+
+		&::before {
+			display: none;
+		}
+
+		.personalized-access[data-variant='formal-pass'] {
+			position: relative;
+			z-index: 1;
+			overflow: hidden;
+			background: linear-gradient(
+				180deg,
+				rgb(18 34 54) 0%,
+				rgb(14 24 38) 60%,
+				rgb(10 18 30) 100%
+			);
+			clip-path: polygon(
+				0 0,
+				42% var(--leslie-cut-shallow-local),
+				100% var(--leslie-cut-deep),
+				100% 100%,
+				0 100%
+			);
+			padding-block: calc(var(--leslie-pa-entry) + var(--leslie-cut-deep))
+				clamp(2.25rem, 4vw, 3.25rem);
+		}
 	}
 
 	.invitation-section-wrapper[data-section-kind='rsvp'] {
+		--formal-chapter-band: var(--leslie-chapter-navy);
+		--formal-chapter-band-rgb: 10 18 30;
+		--rsvp-section-background: transparent;
+		--rsvp-bg: transparent;
+
 		background: linear-gradient(180deg, rgb(10 18 30) 0%, rgb(8 14 24) 100%);
 		padding-block: clamp(2.25rem, 4vw, 3.25rem) clamp(5.25rem, 9.5vw, 7.75rem);
+		min-block-size: min(70svh, 42rem);
+
+		.rsvp-section {
+			display: block;
+			min-block-size: 0;
+			padding-block: 0;
+			background: transparent;
+		}
+
+		.rsvp {
+			background: transparent;
+			border: 0;
+			box-shadow: none;
+		}
+	}
+
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-section-kind='rsvp'].has-motion:not(.is-visible) {
+		opacity: 100%;
+		translate: none;
+	}
+
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-section-kind='rsvp'].has-motion.is-visible {
+		animation: none;
 	}
 
 	.personalized-access[data-variant='formal-pass'] {
+		--pa-paper-tilt: 0deg;
 		--pa-card-border: 1px solid rgb(var(--color-satin-blue-rgb, 140 175 215) / 28%);
 		--pa-card-shadow:
 			0 28px 65px rgb(0 0 0 / 44%), 0 8px 22px rgb(0 0 0 / 22%),
@@ -1482,26 +1821,39 @@
 			transparent 100%
 		);
 
+		background: transparent;
+
 		.personalized-access__container {
-			max-width: 25.5rem;
-			width: min(92%, 25.5rem);
+			max-width: 28.5rem;
+			width: min(92%, 28.5rem);
 			margin-inline: auto;
 		}
 
+		&::before {
+			display: none;
+		}
+
+		.access-card__ornaments {
+			display: block;
+			color: rgb(var(--color-satin-blue-rgb, 140 175 215) / 55%);
+		}
+
 		.access-card {
-			border-radius: 8px;
+			border-radius: 4px;
 			box-shadow: var(--pa-card-shadow);
 			border: var(--pa-card-border);
+			border-left: 6px solid rgb(18 34 54);
 			background: var(--pa-card-bg-image);
 			position: relative;
-			overflow: hidden;
+			overflow: visible;
+			transform: none;
 
 			&::before {
 				content: '';
 				position: absolute;
-				inset: 5px;
-				border: 1px solid rgb(var(--color-satin-blue-rgb, 140 175 215) / 16%);
-				border-radius: 5px;
+				inset: 7px;
+				border: 1px solid rgb(var(--color-satin-blue-rgb, 140 175 215) / 28%);
+				border-radius: 2px;
 				box-shadow:
 					inset 0 1px 1px rgb(255 255 255 / 85%),
 					inset 0 -1px 1px rgb(185 165 140 / 18%);
@@ -1510,97 +1862,172 @@
 		}
 
 		.access-card__header {
-			padding: clamp(1.6rem, 3.5vw, 2.1rem) clamp(1.35rem, 3vw, 1.85rem)
-				clamp(0.85rem, 2vw, 1.15rem);
-			gap: 0.4rem;
+			position: relative;
+			padding: clamp(1.7rem, 3.5vw, 2.2rem) clamp(1.5rem, 3.2vw, 2rem)
+				clamp(1.05rem, 2.2vw, 1.35rem);
+			gap: 0.45rem;
 			text-align: center;
+			border-bottom: 1px dashed rgb(var(--color-satin-blue-rgb, 140 175 215) / 55%);
+
+			&::before,
+			&::after {
+				content: '';
+				position: absolute;
+				bottom: -10px;
+				z-index: 4;
+				width: 20px;
+				height: 20px;
+				border: 0;
+				border-radius: 50%;
+				background: rgb(14 24 38);
+				box-shadow: 0 0 0 8px rgb(14 24 38);
+				outline: none;
+				pointer-events: none;
+			}
+
+			&::before {
+				left: -16px;
+			}
+
+			&::after {
+				right: -10px;
+			}
 		}
 
 		.access-card__seal {
-			opacity: 65%;
-			width: 2.1rem;
-			margin-bottom: 0.2rem;
+			opacity: 82%;
+			width: 2.75rem;
+			margin-bottom: 0.15rem;
 			color: var(--color-satin-blue, rgb(140 175 215));
 		}
 
 		.access-card__seal svg {
-			opacity: 65%;
+			opacity: 90%;
 		}
 
 		.access-card__title {
-			font-family: var(--font-display);
-			font-size: clamp(0.92rem, 1.3vw, 1.05rem);
-			letter-spacing: 0.18em;
-			font-weight: 500;
+			font-family: var(--font-label);
+			font-size: 0.68rem;
+			letter-spacing: 0.22em;
+			font-weight: 600;
 			text-transform: uppercase;
 			color: var(--color-deep-blue-graphite, rgb(20 30 45));
 		}
 
 		.access-card__subtitle {
-			font-family: var(--font-ui);
-			font-size: clamp(0.74rem, 1.05vw, 0.8rem);
-			line-height: 1.5;
-			color: rgb(var(--color-deep-blue-graphite-rgb, 20 30 45) / 64%);
+			font-family: var(--font-display);
+			font-style: italic;
+			font-size: clamp(0.88rem, 1.3vw, 0.98rem);
+			font-weight: 400;
+			line-height: 1.4;
+			letter-spacing: 0.01em;
+			color: rgb(var(--color-deep-blue-graphite-rgb, 20 30 45) / 52%);
 			max-width: 19rem;
 			margin-inline: auto;
 		}
 
 		.access-card__body {
-			padding: clamp(0.95rem, 2.2vw, 1.25rem) clamp(1.35rem, 3vw, 1.85rem)
-				clamp(1.15rem, 2.5vw, 1.5rem);
-			gap: clamp(0.9rem, 2vw, 1.25rem);
+			padding: clamp(1.1rem, 2.4vw, 1.45rem) clamp(1.5rem, 3.2vw, 2rem)
+				clamp(1.25rem, 2.6vw, 1.65rem);
+			gap: clamp(1rem, 2.2vw, 1.35rem);
 		}
 
 		.access-card__label {
 			font-family: var(--font-label);
-			font-size: 0.6rem;
-			letter-spacing: 0.22em;
+			font-size: 0.58rem;
+			letter-spacing: 0.24em;
 			font-weight: 500;
 			text-transform: uppercase;
-			color: rgb(var(--color-soft-graphite-rgb, 85 105 130) / 78%);
+			color: rgb(var(--color-soft-graphite-rgb, 85 105 130) / 70%);
 		}
 
 		.access-card__guest {
 			font-family: var(--font-display);
-			font-size: clamp(1.85rem, 4vw, 2.5rem);
-			line-height: 1.08;
-			letter-spacing: -0.012em;
+			font-size: clamp(2.05rem, 4.6vw, 2.75rem);
+			line-height: 1.04;
+			letter-spacing: -0.016em;
 			font-weight: 400;
 			color: var(--color-deep-blue-graphite, rgb(20 30 45));
-			margin-top: 0.25rem;
+			margin-top: 0.2rem;
+		}
+
+		.access-card__count-frame {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			min-width: 4.25rem;
+			margin-inline: auto;
+			padding: 0.35rem 0.9rem 0.2rem;
+			border: 1px solid rgb(var(--color-satin-blue-rgb, 140 175 215) / 42%);
+			border-radius: 2px;
+			background: rgb(255 255 255 / 35%);
 		}
 
 		.access-card__count {
 			font-family: var(--font-display);
-			font-size: clamp(2.6rem, 4.4vw, 3.3rem);
+			font-size: clamp(2.85rem, 5vw, 3.6rem);
 			font-weight: 400;
-			line-height: 0.92;
+			line-height: 0.88;
 			color: var(--color-deep-blue-graphite, rgb(20 30 45));
 		}
 
 		.access-card__note {
 			font-family: var(--font-ui);
-			font-size: clamp(0.72rem, 1.05vw, 0.78rem);
+			font-size: clamp(0.7rem, 1.05vw, 0.76rem);
 			line-height: 1.45;
-			color: rgb(var(--color-deep-blue-graphite-rgb, 20 30 45) / 58%);
-			margin-top: 0.4rem;
+			color: rgb(var(--color-deep-blue-graphite-rgb, 20 30 45) / 55%);
+			margin-top: 0.45rem;
+		}
+
+		.access-card__note::after {
+			content: '';
+			display: block;
+			width: min(11.5rem, 68%);
+			height: 1.45rem;
+			margin: 1.15rem auto 0;
+			background: repeating-linear-gradient(
+				90deg,
+				rgb(20 30 45) 0 1px,
+				transparent 1px 3px,
+				rgb(20 30 45) 3px 4px,
+				transparent 4px 6px,
+				rgb(20 30 45) 6px 9px,
+				transparent 9px 11px,
+				rgb(20 30 45) 11px 12px,
+				transparent 12px 16px
+			);
+			opacity: 42%;
+			pointer-events: none;
 		}
 
 		.access-card__footer {
-			padding: clamp(0.85rem, 1.6vw, 1.05rem) clamp(1.35rem, 3vw, 1.85rem)
-				clamp(0.95rem, 2vw, 1.2rem);
-			border-top: 1px solid rgb(var(--color-satin-blue-rgb, 140 175 215) / 14%);
+			display: block;
+			padding: 0.85rem clamp(1.5rem, 3.2vw, 2rem) 1.35rem;
+			border-top: 0;
+		}
+
+		.access-card__footer::before {
+			display: none;
 		}
 
 		.access-card__footer p {
-			font-family: var(--font-ui);
-			font-size: clamp(0.68rem, 1vw, 0.74rem);
-			color: rgb(var(--color-deep-blue-graphite-rgb, 20 30 45) / 55%);
-			line-height: 1.45;
+			position: relative;
+			z-index: 1;
+			order: 1;
+			max-width: 18rem;
+			margin: 0;
+			font-family: var(--font-label);
+			font-size: 0.58rem;
+			letter-spacing: 0.14em;
+			text-transform: uppercase;
+			color: rgb(var(--color-deep-blue-graphite-rgb, 20 30 45) / 58%);
+			line-height: 1.5;
 		}
 	}
 
 	.rsvp-section:has(.rsvp[data-variant='formal-register']) {
+		display: block;
+		min-block-size: 0;
 		padding-block: 0;
 		background: transparent;
 	}
@@ -1618,22 +2045,25 @@
 		--rsvp-button-color-hover: var(--color-deep-blue-graphite, rgb(20 30 45));
 
 		.rsvp__header {
-			margin-bottom: clamp(1.75rem, 3.5vw, 2.5rem);
+			margin-bottom: var(--leslie-gap-content);
 		}
 
 		.rsvp__title {
 			font-family: var(--font-display);
-			font-size: clamp(2rem, 4.4vw, 3.25rem);
-			line-height: 1.06;
-			letter-spacing: normal;
+			font-size: var(--leslie-type-title);
+			line-height: 1.08;
+			letter-spacing: 0.04em;
 			color: rgb(var(--color-diamond-white-rgb, 255 255 255) / 96%);
+			margin-bottom: var(--leslie-gap-subtitle);
 		}
 
 		.rsvp__subcopy {
-			font-family: var(--font-ui);
-			font-size: clamp(0.9rem, 1.6vw, 0.98rem);
-			line-height: 1.55;
-			color: rgb(var(--color-diamond-white-rgb, 255 255 255) / 74%);
+			font-family: var(--font-display);
+			font-style: italic;
+			font-size: var(--leslie-type-subtitle);
+			line-height: 1.5;
+			letter-spacing: 0.01em;
+			color: rgb(var(--color-diamond-white-rgb, 255 255 255) / 68%);
 		}
 
 		.rsvp__radio-group .rsvp__radio-card {
@@ -1693,20 +2123,28 @@
 
 	// Thank You — wall inscription in negative space (never over Leslie / props)
 	.thank-you-section[data-variant='full-bleed-photo'] {
-		--thank-you-overlay-width: min(#{tokens.$spacing-32 * 2}, 72vw);
-		--thank-you-focal-point: 50% 38%;
-		--leslie-thank-you-message-size: #{tokens.$font-size-h3};
+		--thank-you-overlay-width: min(#{tokens.$spacing-32 + tokens.$spacing-16}, 56vw);
+		--thank-you-focal-point: 48% 32%;
+		--leslie-thank-you-message-size: clamp(1.18rem, 3.2vw, 1.32rem);
+		--leslie-thank-you-studio: rgb(200 200 202);
 
 		display: grid;
 		align-items: start;
 		justify-content: stretch;
-		overflow: visible;
-		padding-block: clamp(2.5rem, 5vw, 4rem) clamp(3.5rem, 7vw, 5.5rem);
+		overflow: hidden;
+		min-height: 100svh;
+		padding-block: clamp(0.9rem, 2.8vw, 1.45rem) clamp(2.75rem, 6vw, 4.25rem);
 		padding-inline: tokens.$spacing-5 tokens.$spacing-4;
-		background: var(--thank-you-ink, rgb(20 30 45));
+		background: var(--leslie-thank-you-studio);
 
 		&::before {
-			background: none;
+			z-index: 1;
+			background: linear-gradient(
+				180deg,
+				rgb(var(--color-deep-blue-graphite-rgb, 20 30 45) / 12%) 0%,
+				transparent #{tokens.$spacing-8}
+			);
+			opacity: 100%;
 		}
 
 		&::after {
@@ -1750,13 +2188,13 @@
 		}
 
 		.thank-you-message {
-			max-width: 11.5em;
+			max-width: 10.25em;
 			margin: 0;
 			font-family: var(--font-display);
 			font-size: var(--leslie-thank-you-message-size);
 			font-style: italic;
 			font-weight: tokens.$font-weight-regular;
-			line-height: 1.32;
+			line-height: 1.2;
 			letter-spacing: tokens.$letter-spacing-tight;
 			color: rgb(var(--color-deep-blue-graphite-rgb, 20 30 45) / 86%);
 			text-wrap: balance;
@@ -1766,10 +2204,10 @@
 		.thank-you-message .drop-cap {
 			float: left;
 			display: block;
-			padding-right: 0.12em;
-			margin: 0.05em tokens.$spacing-1 0 0;
+			padding-right: 0.1em;
+			margin: 0.04em tokens.$spacing-1 0 0;
 			font-family: inherit;
-			font-size: 2.15em;
+			font-size: 1.72em;
 			font-style: normal;
 			font-weight: tokens.$font-weight-regular;
 			line-height: 0.82;
@@ -1779,44 +2217,49 @@
 			filter: none;
 		}
 
+		.photo-frame {
+			background: var(--leslie-thank-you-studio);
+		}
+
 		.photo-frame .photo-image {
 			object-position: var(--thank-you-focal-point);
 		}
 
 		@include mixins.respond-to(sm) {
-			--thank-you-overlay-width: min(#{tokens.$spacing-32 * 2 + tokens.$spacing-4}, 68vw);
+			--thank-you-overlay-width: min(#{tokens.$spacing-32 * 2}, 48vw);
+			--thank-you-focal-point: 49% 30%;
 
 			padding-inline: tokens.$spacing-5;
 
 			.thank-you-message {
-				max-width: 12em;
+				max-width: 11em;
 			}
 		}
 
 		@include mixins.respond-to(md) {
-			--thank-you-overlay-width: min(#{tokens.$spacing-32 * 2 + tokens.$spacing-8}, 42vw);
-			--thank-you-focal-point: 52% 36%;
-			--leslie-thank-you-message-size: #{tokens.$font-size-h2};
+			--thank-you-overlay-width: min(#{tokens.$spacing-32 * 2}, 36vw);
+			--thank-you-focal-point: 51% 26%;
+			--leslie-thank-you-message-size: #{tokens.$font-size-h3};
 
-			padding-block: clamp(3rem, 6vw, 4.5rem) clamp(4.5rem, 8vw, 6.5rem);
+			padding-block: clamp(2.15rem, 3.6vw, 3.15rem) clamp(3.25rem, 6.5vw, 5rem);
 			padding-inline: tokens.$spacing-6;
 
 			.thank-you-message {
-				max-width: 12.5em;
-				line-height: 1.28;
+				max-width: 12em;
+				line-height: 1.26;
 			}
 
 			.thank-you-message .drop-cap {
-				font-size: 2.35em;
+				font-size: 2.05em;
 				margin-right: tokens.$spacing-2;
 			}
 		}
 
 		@include mixins.respond-to(lg) {
-			--thank-you-overlay-width: min(#{tokens.$spacing-32 * 2 + tokens.$spacing-12}, 34vw);
-			--thank-you-focal-point: 54% 34%;
+			--thank-you-overlay-width: min(#{tokens.$spacing-32 * 2 + tokens.$spacing-4}, 28vw);
+			--thank-you-focal-point: 53% 22%;
 
-			padding-block: clamp(3.5rem, 7vw, 5.5rem) clamp(5.5rem, 9vw, 8rem);
+			padding-block: clamp(2.35rem, 3.2vw, 3.35rem) clamp(3.75rem, 7vw, 5.5rem);
 			padding-inline: tokens.$spacing-8;
 
 			.thank-you-content {
@@ -1825,13 +2268,119 @@
 
 			.thank-you-message {
 				max-width: 13em;
-				line-height: 1.26;
+				line-height: 1.24;
 			}
 		}
 
 		@include mixins.respond-to(xl) {
-			--thank-you-overlay-width: min(#{tokens.$spacing-32 * 3}, 30vw);
-			--thank-you-focal-point: 55% 32%;
+			--thank-you-overlay-width: min(#{tokens.$spacing-32 * 2 + tokens.$spacing-8}, 24vw);
+			--thank-you-focal-point: 54% 20%;
+		}
+	}
+
+	// Colophon — continues the thank-you chapter; phrase + edition carry the close.
+	.invitation-footer {
+		position: relative;
+		padding: clamp(2.35rem, 5vw, 3.25rem) 1.35rem calc(2rem + env(safe-area-inset-bottom, 0px));
+		border-top: 1px solid rgb(214 188 132 / 12%);
+		background:
+			radial-gradient(ellipse 70% 55% at 50% 0%, rgb(214 188 132 / 7%) 0%, transparent 58%),
+			linear-gradient(180deg, rgb(18 28 42) 0%, rgb(12 18 30) 100%);
+		color: rgb(220 214 202);
+		gap: 0;
+
+		.footer__closing-phrase {
+			margin-bottom: 0.85rem;
+			font-family: 'Cormorant Garamond Variable', var(--font-display);
+			font-style: italic;
+			font-weight: 400;
+			font-size: clamp(1.45rem, 3.2vw, 1.95rem);
+			line-height: 1.25;
+			letter-spacing: 0.03em;
+			color: rgb(214 198 154);
+			text-shadow: 0 1px 0 rgb(255 248 232 / 8%);
+		}
+
+		.footer__divider {
+			width: 2.35rem;
+			height: 1px;
+			margin-bottom: 1.35rem;
+			background: linear-gradient(90deg, transparent, rgb(214 188 132 / 48%), transparent);
+
+			&::before {
+				display: none;
+			}
+		}
+
+		.footer__content {
+			gap: 0.85rem;
+		}
+
+		.footer__primary-row {
+			gap: 0.85rem;
+
+			@include mixins.respond-to(sm) {
+				gap: 1.5rem;
+			}
+		}
+
+		.footer__info .powered-by {
+			display: none;
+		}
+
+		.footer__info .footer-brand-logo.logo {
+			width: clamp(7.25rem, 34vw, 8.5rem);
+			height: auto;
+			transform: none;
+			transform-origin: center;
+			opacity: 82%;
+			filter: brightness(0) invert(0.84) sepia(12%) saturate(160%) hue-rotate(8deg);
+		}
+
+		.whatsapp-button {
+			padding: 0.25rem 0;
+			border: 0;
+			border-radius: 0;
+			background: transparent;
+			color: rgb(198 174 122);
+			font-family: var(--font-label);
+			font-size: 0.62rem;
+			letter-spacing: 0.2em;
+			box-shadow: none;
+			opacity: 100%;
+
+			.footer-action__icon-media {
+				opacity: 86%;
+				filter: brightness(0) invert(78%) sepia(14%) saturate(280%) hue-rotate(8deg);
+			}
+
+			&:hover,
+			&:focus-visible {
+				background: transparent;
+				color: rgb(214 198 154);
+			}
+		}
+
+		.footer__replay-link {
+			min-height: 2rem;
+			font-family: var(--font-label);
+			font-size: 0.56rem;
+			letter-spacing: 0.18em;
+			text-transform: uppercase;
+			color: rgb(198 208 220 / 62%);
+			opacity: 100%;
+		}
+
+		&::after {
+			content: 'EDICIÓN XV · LESLIE PEREZ · MMXXVI';
+			display: block;
+			margin-top: 1.45rem;
+			font-family: var(--font-label);
+			font-size: 0.62rem;
+			font-weight: 500;
+			letter-spacing: 0.28em;
+			text-transform: uppercase;
+			color: rgb(214 188 132 / 52%);
 		}
 	}
 
@@ -1866,7 +2415,7 @@
 				position: absolute;
 				inset: 0;
 				z-index: 0;
-				background: rgb(10 20 35 / 42%);
+				background: rgb(246 249 253);
 				mask: var(--leslie-interlude-portal-mask) center top / 100% 100% no-repeat;
 				filter: drop-shadow(0 -18px 36px rgb(10 20 35 / 14%))
 					drop-shadow(0 -6px 14px rgb(10 20 35 / 10%))
@@ -1916,27 +2465,42 @@
 		}
 	}
 
-	.invitation-section-wrapper[data-intersection='overlap'][data-section-kind='interlude'][data-intersection-source='gallery'] {
+	.invitation-section-wrapper[data-section-kind='interlude'][data-intersection-source='gallery'],
+	.invitation-section-wrapper[data-section-kind='interlude']:has(
+			+ .invitation-section-wrapper[data-section-kind='gifts']
+		) {
 		--intersection-depth: 0;
+		--interlude-bg: var(--leslie-gifts-paper);
+		--interlude-overlay: none;
+		--interlude-overlay-opacity: 0;
+
+		background: var(--leslie-gifts-paper);
 
 		.invitation-interlude {
 			position: relative;
 			overflow: hidden;
 			clip-path: none;
 			min-height: clamp(380px, 64svh, 680px);
+			background: var(--leslie-gifts-paper);
 
+			// Same-sheet dissolve into gifts paper — not a second color, not a dark band.
 			&::after {
-				content: '';
-				position: absolute;
-				inset: 0;
+				inset: auto 0 0;
+				height: clamp(2.75rem, 9vw, 4.85rem);
+				border: 0;
 				background: linear-gradient(
 					180deg,
-					rgb(10 20 34 / 20%) 0%,
-					transparent 20%,
-					transparent 80%,
-					rgb(10 20 34 / 26%) 100%
+					transparent 0%,
+					var(--leslie-gifts-paper) 100%
 				);
-				pointer-events: none;
+			}
+		}
+
+		.invitation-interlude__media {
+			background: var(--leslie-gifts-paper);
+
+			&::after {
+				display: none;
 			}
 		}
 
@@ -1946,9 +2510,19 @@
 		}
 	}
 
-	// Cadence map — Hero → Family → Countdown editorial sheet.
-	// Paper / navy lips via arch-style ::before. Filter on the WRAPPER
-	// (mask+filter on the same node clips the drop-shadow).
+	// Cadence map — non-neutral boundaries only
+	// hero            → family            : bridge  overlap (paper lip)
+	// family          → countdown         : bridge  overlap (Alba right-deep polygon)
+	// location        → interlude         : bridge  overlap (portal)
+	// interlude       → itinerary         : bridge  atmospheric-blend
+	// gallery         → interlude         : bridge  overlap (full-bleed)
+	// interlude       → gifts             : bridge  atmospheric-blend
+	// gifts           → access            : climax  overlap (Alba left-deep polygon)
+	// rsvp            → thankYou          : bridge  atmospheric-blend
+	// Neutral: countdown→quote (continuous navy), itinerary→gallery, access→rsvp.
+	// Quote → location: one-token atmospheric dissolve (no third polygon).
+
+	// Cadence map — Hero → Family paper sheet (SVG mask + drop-shadow on wrapper).
 	.invitation-section-wrapper[data-section-kind='family'] {
 		--intersection-depth: var(--leslie-hero-family-overlap);
 		--intersection-blend: transparent;
@@ -1981,32 +2555,25 @@
 			mask: none;
 			filter: none;
 			padding-block: calc(clamp(4.25rem, 8vw, 6.75rem) + #{tokens.$spacing-2})
-				clamp(3.75rem, 7vw, 5.75rem);
+				clamp(2.75rem, 5vw, 3.75rem);
 		}
 	}
 
 	.invitation-section-wrapper[data-section-kind='countdown'] {
 		--intersection-depth: var(--leslie-family-countdown-overlap);
+		--intersection-blend: transparent;
+		--leslie-cut-deep: var(--leslie-family-countdown-overlap);
+		--leslie-cut-shallow-local: var(--leslie-cut-shallow);
 
 		position: relative;
 		z-index: 3;
+		isolation: isolate;
 		overflow: visible;
 		margin-top: calc(0px - var(--leslie-family-countdown-overlap));
-		filter: var(--leslie-clip-drop-countdown);
+		filter: none;
 
 		&::before {
-			content: '';
-			position: absolute;
-			inset-inline: 0;
-			top: calc(0px - var(--leslie-family-countdown-overlap));
-			bottom: auto;
-			z-index: 2;
-			width: 100%;
-			height: calc(var(--leslie-family-countdown-overlap) + 3px);
-			background: var(--leslie-countdown-ink);
-			background-image: none;
-			mask: var(--leslie-countdown-lip-mask) center bottom / 100% 100% no-repeat;
-			pointer-events: none;
+			display: none;
 		}
 
 		.countdown-section {
@@ -2014,9 +2581,67 @@
 			z-index: 1;
 			mask: none;
 			filter: none;
-			padding-block: calc(clamp(5.25rem, 9.5vw, 7.75rem) + #{tokens.$spacing-2})
-				clamp(5.25rem, 9.5vw, 7.75rem);
+			overflow: hidden;
+			clip-path: polygon(
+				0 var(--leslie-cut-deep),
+				58% var(--leslie-cut-shallow-local),
+				100% 0,
+				100% 100%,
+				0 100%
+			);
+			padding-block: calc(clamp(4.25rem, 8vw, 6.25rem) + var(--leslie-cut-deep))
+				var(--leslie-pad-shared-end);
 		}
+	}
+
+	.invitation-section-wrapper[data-section-kind='quote'] {
+		--intersection-blend: transparent;
+
+		background: var(--leslie-folio-ink);
+	}
+
+	.invitation-section-wrapper[data-section-kind='location'] {
+		--intersection-depth: clamp(2.25rem, 4.5vw, 3.5rem);
+		--intersection-blend: linear-gradient(
+			180deg,
+			rgb(8 14 24) 0%,
+			rgb(8 14 24 / 38%) 32%,
+			transparent 100%
+		);
+
+		position: relative;
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 0 0 auto;
+			z-index: 2;
+			height: var(--intersection-depth);
+			background: var(--intersection-blend);
+			pointer-events: none;
+		}
+	}
+
+	// Host clearance — content breath + cut depth (Alba pattern).
+	.invitation-section-wrapper[data-section-kind='family']:has(
+			+ .invitation-section-wrapper[data-section-kind='countdown']
+		)
+		.family[data-variant='asymmetric-groups'] {
+		padding-block-end: calc(
+			clamp(2.75rem, 5.5vw, 4rem) + var(--leslie-family-countdown-overlap)
+		);
+	}
+
+	.invitation-section-wrapper[data-section-kind='gifts']:has(
+			+ .invitation-section-wrapper[data-section-kind='personalized-access']
+		)
+		.gifts-section {
+		padding-block-end: calc(var(--leslie-gifts-exit) + var(--leslie-gifts-pa-overlap));
+	}
+
+	.invitation-section-wrapper[data-after-interlude][data-section-kind='gifts'] > .gifts-section {
+		/* stylelint-disable-next-line declaration-no-important */
+		padding-top: clamp(2.05rem, 4.2vw, 3.05rem) !important;
 	}
 
 	// Velvety Soft Atmospheric Blends (Haute Couture Luxury standard)
@@ -2034,32 +2659,23 @@
 		}
 
 		&[data-section-kind='gifts'] {
-			// Interlude photo 08 → gifts ivory
-			--intersection-depth: clamp(2.5rem, 5vw, 4rem);
-			--intersection-blend: linear-gradient(
-				180deg,
-				rgb(var(--color-deep-blue-graphite-rgb) / 20%) 0%,
-				transparent 100%
-			);
+			// Interlude photo → gifts paper: no dark band at the join.
+			--intersection-depth: 0;
+			--intersection-blend: transparent;
 		}
 
 		&[data-section-kind='personalized-access'] {
-			// Gifts light → formal chapter dark (Climax)
-			--intersection-depth: clamp(3.5rem, 7vw, 5.5rem);
-			--intersection-blend: radial-gradient(
-				ellipse 130% 90% at 50% 0%,
-				rgb(var(--color-cool-ivory-rgb) / 55%) 0%,
-				rgb(var(--color-deep-blue-graphite-rgb) / 42%) 45%,
-				transparent 100%
-			);
+			// Gifts → PA uses the Alba polygon cut, not an atmospheric blend.
+			--intersection-blend: transparent;
+			--intersection-depth: var(--leslie-gifts-pa-overlap);
 		}
 
 		&[data-section-kind='thankYou'] {
-			// Formal chapter → full-bleed thank-you
-			--intersection-depth: clamp(2.5rem, 5vw, 4rem);
+			// Formal chapter → studio photo: short whisper only, stays above the inscription.
+			--intersection-depth: #{tokens.$spacing-8};
 			--intersection-blend: linear-gradient(
 				180deg,
-				rgb(var(--color-deep-blue-graphite-rgb) / 55%) 0%,
+				rgb(var(--color-deep-blue-graphite-rgb) / 12%) 0%,
 				transparent 100%
 			);
 		}
