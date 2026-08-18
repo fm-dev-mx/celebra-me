@@ -223,7 +223,7 @@ export function buildLesliePublishedContent(
 				itinerary: { family: 'atmospheric-blend', source: 'interlude-after-location' },
 				'interlude-after-gallery': { family: 'overlap', source: 'gallery' },
 				gifts: { family: 'atmospheric-blend', source: 'interlude-after-gallery' },
-				'personalized-access': { family: 'atmospheric-blend', source: 'gifts' },
+				'personalized-access': { family: 'overlap', source: 'gifts' },
 				thankYou: { family: 'atmospheric-blend', source: 'rsvp' },
 			},
 		},
@@ -271,7 +271,7 @@ export function buildLesliePublishedContent(
 			labels: {
 				sectionSubtitle: 'Familia',
 				sectionTitle: 'Con la guía y el amor de mis padres',
-				parentsTitle: 'Mis Padres',
+				parentsTitle: 'Con su bendición',
 				sectionMessage:
 					'Gracias a su entrega, ejemplo y cariño incondicional, hoy inicio este nuevo camino con profunda gratitud.',
 			},
