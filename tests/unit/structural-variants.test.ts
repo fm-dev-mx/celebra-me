@@ -152,7 +152,7 @@ describe('section structural variant contracts', () => {
 		expect(result.itinerary).not.toHaveProperty('presentation');
 	});
 
-	it('normalizes legacy editorial-magazine theme-as-variant payloads to canonical variants', () => {
+	it('does not invent section variants from editorial-magazine theme-named inputs', () => {
 		const result = eventContentSchema.parse({
 			...baseInput,
 			theme: { preset: 'editorial-magazine' },
@@ -184,11 +184,11 @@ describe('section structural variant contracts', () => {
 			},
 		});
 
-		expect(result.hero.variant).toBe('editorial-cover');
-		expect(result.gallery?.variant).toBe('magazine-spread');
-		expect(result.gifts?.variant).toBe('editorial-catalog');
-		expect(result.rsvp?.variant).toBe('editorial-press-pass');
-		expect(result.rsvp?.personalizedAccess?.variant).toBe('editorial-pass');
-		expect(result.thankYou?.variant).toBe('editorial-back-cover');
+		expect(result.hero.variant).toBe('standard');
+		expect(result.gallery?.variant).toBe('uniform-grid');
+		expect(result.gifts?.variant).toBe('standard');
+		expect(result.rsvp?.variant).toBe('standard');
+		expect(result.rsvp?.personalizedAccess?.variant).toBe('standard');
+		expect(result.thankYou?.variant).toBe('standard');
 	});
 });

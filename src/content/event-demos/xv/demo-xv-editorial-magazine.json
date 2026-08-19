@@ -95,16 +95,19 @@
             {
                 "iconName": "DressCode",
                 "styleVariant": "reserved",
+                "title": "Código de vestimenta",
                 "text": "Código de vestimenta: <strong>formal</strong>. El color rojo está reservado para la quinceañera."
             },
             {
                 "iconName": "Calendar",
                 "styleVariant": "default",
+                "title": "Confirmación",
                 "text": "Confirma tu asistencia antes del <strong>10 de septiembre de 2027</strong>."
             },
             {
                 "iconName": "Enveloped",
                 "styleVariant": "default",
+                "title": "Puntualidad",
                 "text": "Agradecemos tu puntualidad para disfrutar cada momento de esta edición especial."
             }
         ],
@@ -127,6 +130,9 @@
     },
     "gallery": {
         "variant": "magazine-spread",
+        "presentationOptions": {
+            "mobileBrowse": "rail"
+        },
         "eyebrow": "Galería",
         "title": "Doble página editorial",
         "subtitle": "Una selección visual con retratos, detalles y escenas de celebración.",

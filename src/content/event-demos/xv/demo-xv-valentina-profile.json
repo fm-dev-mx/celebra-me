@@ -106,16 +106,19 @@
             {
                 "iconName": "DressCode",
                 "styleVariant": "reserved",
+                "title": "Código de vestimenta",
                 "text": "Código de vestimenta: <strong>formal</strong>."
             },
             {
                 "iconName": "Calendar",
                 "styleVariant": "default",
+                "title": "Confirmación",
                 "text": "Confirma tu asistencia antes del <strong>10 de septiembre de 2027</strong>."
             },
             {
                 "iconName": "Enveloped",
                 "styleVariant": "default",
+                "title": "Puntualidad",
                 "text": "Agradecemos tu puntualidad para disfrutar cada momento de esta edición especial."
             }
         ],

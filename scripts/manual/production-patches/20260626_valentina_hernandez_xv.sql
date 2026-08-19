@@ -388,10 +388,12 @@ BEGIN
     },
     "countdown": {
         "title": "La celebración comienza en",
-        "footerText": "29 de agosto de 2026, Texcoco, Estado de México"
+        "footerText": "29 de agosto de 2026, Texcoco, Estado de México",
+        "variant": "magazine-folio"
     },
     "itinerary": {
         "title": "Programa",
+        "variant": "editorial-program",
         "items": [
             {
                 "iconName": "Church",
