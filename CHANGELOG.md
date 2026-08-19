@@ -10,7 +10,33 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.18.0-beta.1] - 2026-08-18
+
+Release checkpoint consolidating invitation composition, delivery governance, operational status,
+and managed publication changes since `v0.17.0-beta.1`.
+
+### Added
+
+- **Managed Invitation Profiles**: Leslie Perez and Renata invitation definitions, assets, content
+  contracts, responsive presentation, and visual regression coverage.
+- **Canonical Operational Status**: Dashboard status panel, typed evidence and remediation plans,
+  publication details, and canonical status API replacing the legacy observability surface.
+- **Owner Production Apply**: Production mutation orchestration with explicit permits, backup and
+  preflight checks, paired patch previews, mutation contracts, and recovery integrity controls.
+- **Invitation Delivery Governance**: Delivery metrics, CSS parity checks, deferred stylesheet
+  promotion, and role-aware asset delivery contracts.
+
 ### Changed
+
+- **Structural Variant Architecture**: Section-owned variants, portable invitation compositions,
+  theme-shell ownership, and profile-specific visual rhythm rules are now enforced across content,
+  rendering, and styles.
+- **Managed Release Pipeline**: Local and hosted asset reconciliation now supports storage-provider
+  abstraction, Cloudinary-era assets, source hash validation, and deterministic publication plans.
+- **Database Operations**: Migration, backup, parity, disposable validation, and production patch
+  tooling now share guarded orchestration and explicit operational evidence.
+
+### Fixed
 
 - **Invitation path-role image budgets**: Managed release and dashboard publish reject an uploaded
   image bound to a stricter visual role than its bytes allow (for example a desktop hero reused as
