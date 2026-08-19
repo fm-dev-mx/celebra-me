@@ -205,6 +205,10 @@ export function buildLesliePublishedContent(
 		title: LESLIE_EVENT.title,
 		description: 'Invitación a los XV años de Leslie en San Carlos Eventos.',
 		theme: { preset: LESLIE_EVENT.themeId },
+		music: {
+			url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1787101349/Taylor_Swift_-_Fifteen_opt_n5gqpq.mp3',
+			autoPlay: true,
+		},
 		eventTiming: {
 			localDateTime: LESLIE_EVENT.localDateTime,
 			timeZone: LESLIE_EVENT.timeZone,
