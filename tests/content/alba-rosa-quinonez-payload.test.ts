@@ -196,4 +196,25 @@ describe('Alba Rosa Quiñónez provision contract', () => {
 			page.renderPlan.map((item) => (item.type === 'section' ? item.section : item.type)),
 		).toEqual(expect.arrayContaining(['countdown', 'location']));
 	});
+
+	it('resolves feature-stack gallery when variant is omitted in legacy DB payload', () => {
+		const rawContent = buildAlbaPublishedContent(buildTestAssets());
+		// Simulate un-migrated Production DB state where gallery.variant is omitted
+		const galleryWithoutVariant = { ...(rawContent.gallery as Record<string, unknown>) };
+		delete galleryWithoutVariant.variant;
+		const content = {
+			...rawContent,
+			gallery: galleryWithoutVariant,
+		};
+
+		const viewModel = adaptDbEvent({
+			slug: ALBA_EVENT.slug,
+			eventType: ALBA_EVENT.eventType,
+			isDemo: false,
+			content,
+			assetSlug: ALBA_EVENT.assetSlug,
+		});
+
+		expect(viewModel.sections.gallery?.variant).toBe('feature-stack');
+	});
 });

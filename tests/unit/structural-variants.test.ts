@@ -151,4 +151,44 @@ describe('section structural variant contracts', () => {
 		expect(result.hero).not.toHaveProperty('structuralVariant');
 		expect(result.itinerary).not.toHaveProperty('presentation');
 	});
+
+	it('normalizes legacy editorial-magazine theme-as-variant payloads to canonical variants', () => {
+		const result = eventContentSchema.parse({
+			...baseInput,
+			theme: { preset: 'editorial-magazine' },
+			hero: {
+				...baseInput.hero,
+				variant: 'editorial-magazine',
+			},
+			sectionStyles: {
+				gallery: { variant: 'editorial-magazine' },
+				gifts: { variant: 'editorial-magazine' },
+				rsvp: { variant: 'editorial-magazine' },
+				thankYou: { variant: 'editorial-magazine' },
+			},
+			gallery: {
+				items: [{ image: '/fixture.webp' }],
+			},
+			gifts: {
+				items: [{ type: 'cash', title: 'Regalo' }],
+			},
+			rsvp: {
+				personalizedAccess: {
+					variant: 'editorial-magazine',
+				},
+			},
+			thankYou: {
+				message: 'Gracias por acompañarme',
+				closingName: 'Valentina',
+				image: '/thankyou.webp',
+			},
+		});
+
+		expect(result.hero.variant).toBe('editorial-cover');
+		expect(result.gallery?.variant).toBe('magazine-spread');
+		expect(result.gifts?.variant).toBe('editorial-catalog');
+		expect(result.rsvp?.variant).toBe('editorial-press-pass');
+		expect(result.rsvp?.personalizedAccess?.variant).toBe('editorial-pass');
+		expect(result.thankYou?.variant).toBe('editorial-back-cover');
+	});
 });

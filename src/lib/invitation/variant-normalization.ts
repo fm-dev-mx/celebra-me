@@ -5,6 +5,9 @@ import {
 	GIFTS_STRUCTURAL_VARIANTS,
 	HERO_STRUCTURAL_VARIANTS,
 	ITINERARY_STRUCTURAL_VARIANTS,
+	PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS,
+	RSVP_STRUCTURAL_VARIANTS,
+	THANK_YOU_STRUCTURAL_VARIANTS,
 } from './structural-variants';
 import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 
@@ -189,10 +192,11 @@ function normalizeHero(
 	const rawVariant = hero.variant;
 	const canonical = isOneOf(rawVariant, HERO_STRUCTURAL_VARIANTS) ? rawVariant : undefined;
 	const legacyVisual = isOneOf(rawVariant, THEME_PRESETS) ? rawVariant : undefined;
+	const legacyFromTheme = rawVariant === 'editorial-magazine' ? 'editorial-cover' : undefined;
 	hero.variant = resolveCanonicalOrLegacy(
 		conflicts,
 		['hero', 'variant'],
-		canonical ?? (legacyVisual ? undefined : rawVariant),
+		canonical ?? legacyFromTheme ?? (legacyVisual ? undefined : rawVariant),
 		hero.structuralVariant,
 		'standard',
 	);
@@ -257,6 +261,16 @@ function normalizeGallery(
 	const rawVariant = gallery.variant;
 	const fromCanonical = resolveGalleryLayout(rawVariant);
 	const fromLegacy = resolveGalleryLayout(legacyStyleVariant);
+	const profileId =
+		typeof result.visualProfileId === 'string' ? result.visualProfileId : undefined;
+	const legacyFromTheme =
+		rawVariant === 'editorial-magazine' || legacyStyleVariant === 'editorial-magazine'
+			? 'magazine-spread'
+			: profileId === 'alba-rosa-quinonez' ||
+				  rawVariant === 'luxury-hacienda' ||
+				  legacyStyleVariant === 'luxury-hacienda'
+				? 'feature-stack'
+				: undefined;
 	const unknownCanonical =
 		typeof rawVariant === 'string' &&
 		rawVariant !== 'single' &&
@@ -286,6 +300,8 @@ function normalizeGallery(
 		gallery.variant = fromCanonical;
 	} else if (fromLegacy !== undefined) {
 		gallery.variant = fromLegacy;
+	} else if (legacyFromTheme !== undefined) {
+		gallery.variant = legacyFromTheme;
 	} else {
 		// Omitted or theme-named: atmosphere stays on theme.preset; layout defaults.
 		gallery.variant = 'uniform-grid';
@@ -328,19 +344,49 @@ function normalizeGifts(
 ): void {
 	const gifts = cloneRecord(result.gifts);
 	if (!gifts) return;
-	const legacy = cloneRecord(sectionStyles?.gifts)?.structuralVariant;
+	const legacyStyle = cloneRecord(sectionStyles?.gifts);
+	const legacy = legacyStyle?.structuralVariant;
 	const rawVariant = gifts.variant;
 	const canonical = isOneOf(rawVariant, GIFTS_STRUCTURAL_VARIANTS) ? rawVariant : undefined;
 	const legacyVisual = isOneOf(rawVariant, THEME_PRESETS) ? rawVariant : undefined;
+	const legacyFromTheme =
+		rawVariant === 'editorial-magazine' || legacyStyle?.variant === 'editorial-magazine'
+			? 'editorial-catalog'
+			: undefined;
 	gifts.variant = resolveCanonicalOrLegacy(
 		conflicts,
 		['gifts', 'variant'],
-		canonical ?? (legacyVisual ? undefined : rawVariant),
+		canonical ?? legacyFromTheme ?? (legacyVisual ? undefined : rawVariant),
 		legacy,
 		'standard',
 	);
 	delete gifts.structuralVariant;
 	result.gifts = gifts;
+}
+
+function normalizePersonalizedAccess(
+	rsvp: JsonRecord,
+	conflicts: VariantNormalizationConflict[],
+): void {
+	const personalizedAccess = cloneRecord(rsvp.personalizedAccess) ?? {};
+	const accessRaw = personalizedAccess.variant;
+	const accessCanonical = isOneOf(accessRaw, PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS)
+		? accessRaw
+		: undefined;
+	const accessLegacyVisual = isOneOf(accessRaw, THEME_PRESETS) ? accessRaw : undefined;
+	const accessLegacyFromTheme =
+		accessRaw === 'editorial-magazine' || personalizedAccess.structuralVariant === 'editorial-magazine'
+			? 'editorial-pass'
+			: undefined;
+	personalizedAccess.variant = resolveCanonicalOrLegacy(
+		conflicts,
+		['rsvp', 'personalizedAccess', 'variant'],
+		accessCanonical ?? accessLegacyFromTheme ?? (accessLegacyVisual ? undefined : accessRaw),
+		personalizedAccess.structuralVariant,
+		'standard',
+	);
+	delete personalizedAccess.structuralVariant;
+	rsvp.personalizedAccess = personalizedAccess;
 }
 
 function normalizeRsvp(
@@ -351,10 +397,17 @@ function normalizeRsvp(
 	const rsvp = cloneRecord(result.rsvp);
 	if (!rsvp) return;
 	const legacyStyle = cloneRecord(sectionStyles?.rsvp);
+	const rawVariant = rsvp.variant;
+	const canonical = isOneOf(rawVariant, RSVP_STRUCTURAL_VARIANTS) ? rawVariant : undefined;
+	const legacyVisual = isOneOf(rawVariant, THEME_PRESETS) ? rawVariant : undefined;
+	const legacyFromTheme =
+		rawVariant === 'editorial-magazine' || legacyStyle?.variant === 'editorial-magazine'
+			? 'editorial-press-pass'
+			: undefined;
 	rsvp.variant = resolveCanonicalOrLegacy(
 		conflicts,
 		['rsvp', 'variant'],
-		rsvp.variant,
+		canonical ?? legacyFromTheme ?? (legacyVisual ? undefined : rawVariant),
 		legacyStyle?.structuralVariant,
 		'standard',
 	);
@@ -362,16 +415,7 @@ function normalizeRsvp(
 	if (rsvp.labels === undefined && legacyStyle?.labels !== undefined)
 		rsvp.labels = legacyStyle.labels;
 
-	const personalizedAccess = cloneRecord(rsvp.personalizedAccess) ?? {};
-	personalizedAccess.variant = resolveCanonicalOrLegacy(
-		conflicts,
-		['rsvp', 'personalizedAccess', 'variant'],
-		personalizedAccess.variant,
-		personalizedAccess.structuralVariant,
-		'standard',
-	);
-	delete personalizedAccess.structuralVariant;
-	rsvp.personalizedAccess = personalizedAccess;
+	normalizePersonalizedAccess(rsvp, conflicts);
 	result.rsvp = rsvp;
 }
 
@@ -382,11 +426,19 @@ function normalizeThankYou(
 ): void {
 	const thankYou = cloneRecord(result.thankYou);
 	if (!thankYou) return;
-	const legacy = cloneRecord(sectionStyles?.thankYou)?.structuralVariant;
+	const legacyStyle = cloneRecord(sectionStyles?.thankYou);
+	const legacy = legacyStyle?.structuralVariant;
+	const rawVariant = thankYou.variant;
+	const canonical = isOneOf(rawVariant, THANK_YOU_STRUCTURAL_VARIANTS) ? rawVariant : undefined;
+	const legacyVisual = isOneOf(rawVariant, THEME_PRESETS) ? rawVariant : undefined;
+	const legacyFromTheme =
+		rawVariant === 'editorial-magazine' || legacyStyle?.variant === 'editorial-magazine'
+			? 'editorial-back-cover'
+			: undefined;
 	thankYou.variant = resolveCanonicalOrLegacy(
 		conflicts,
 		['thankYou', 'variant'],
-		thankYou.variant,
+		canonical ?? legacyFromTheme ?? (legacyVisual ? undefined : rawVariant),
 		legacy,
 		'standard',
 	);

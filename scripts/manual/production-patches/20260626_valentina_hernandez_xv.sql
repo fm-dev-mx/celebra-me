@@ -341,36 +341,8 @@ BEGIN
         "thankYou"
     ],
     "sectionStyles": {
-        "quote": {
-            "variant": "editorial-magazine"
-        },
-        "countdown": {
-            "variant": "editorial-magazine"
-        },
-        "family": {
-            "variant": "editorial-magazine"
-        },
         "location": {
-            "variant": "editorial-magazine",
             "showFlourishes": false
-        },
-        "gallery": {
-            "variant": "editorial-magazine"
-        },
-        "gifts": {
-            "variant": "editorial-magazine"
-        },
-        "rsvp": {
-            "variant": "editorial-magazine",
-            "labels": {
-                "name": "Tu nombre",
-                "guestCount": "Personas que asistirán",
-                "attendance": "¿Me acompañas?",
-                "confirmButton": "Confirmar asistencia"
-            }
-        },
-        "thankYou": {
-            "variant": "editorial-magazine"
         }
     },
     "hero": {
@@ -380,7 +352,7 @@ BEGIN
         "backgroundImage": "hero",
         "backgroundImageMobile": "portrait",
         "portrait": "portrait",
-        "variant": "editorial-magazine",
+        "variant": "editorial-cover",
         "focalPoint": "50% 38%",
         "focalPointMobile": "50% 32%"
     },
@@ -487,6 +459,10 @@ BEGIN
         ]
     },
     "gallery": {
+        "variant": "magazine-spread",
+        "presentationOptions": {
+            "mobileBrowse": "rail"
+        },
         "eyebrow": "Galería",
         "title": "Brillar es la actitud.",
         "subtitle": "Prepárate para una noche llena de magia, sueños y mucha diversión. Un recorrido visual por los momentos que hacen de esta celebración algo único.",
@@ -520,6 +496,7 @@ BEGIN
     "gifts": {
         "title": "Regalos",
         "subtitle": "Su presencia es mi mejor regalo, pero si desean tener un detalle conmigo, les comparto estas opciones.",
+        "variant": "editorial-catalog",
         "items": [
             {
                 "type": "cash",
@@ -552,6 +529,10 @@ BEGIN
         "accessMode": "hybrid",
         "confirmationMessage": "Gracias por confirmar. Me dará mucha alegría compartir esta noche contigo.",
         "confirmationMode": "both",
+        "variant": "editorial-press-pass",
+        "personalizedAccess": {
+            "variant": "editorial-pass"
+        },
         "whatsappConfig": {
             "phone": "525518323934"
         }
@@ -560,7 +541,8 @@ BEGIN
         "message": "Que la alegría de este día sea el inicio de un futuro lleno de luz, magia y momentos inolvidables.",
         "closingName": "Valentina Hernández Almaguer",
         "image": "thankYouPortrait",
-        "focalPoint": "50% 36%"
+        "focalPoint": "50% 36%",
+        "variant": "editorial-back-cover"
     },
     "interludes": [
         {
