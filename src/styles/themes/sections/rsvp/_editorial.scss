@@ -155,23 +155,29 @@
 
 			/* stylelint-disable max-nesting-depth */
 			&:has(input:checked) {
-				background: rgb(var(--color-action-accent-rgb) / 12%);
-				border-color: rgb(var(--color-action-accent-rgb) / 60%);
+				background: var(
+					--rsvp-radio-selected-bg,
+					rgb(var(--color-action-accent-rgb) / 12%)
+				);
+				border-color: var(
+					--rsvp-radio-selected-border,
+					rgb(var(--color-action-accent-rgb) / 60%)
+				);
 				box-shadow: 0 0 0 1px rgb(var(--color-action-accent-rgb) / 18%) inset;
 				color: var(--color-text-primary);
 
 				.rsvp__radio-indicator {
-					border-color: var(--color-action-accent);
-					background: var(--color-action-accent);
+					border-color: var(--rsvp-radio-selected-border, var(--color-action-accent));
+					background: var(--rsvp-radio-indicator-dot, var(--color-action-accent));
 
 					&::after {
 						transform: scale(1);
-						background: var(--color-surface-primary);
+						background: var(--rsvp-radio-indicator-inner, var(--color-surface-primary));
 					}
 				}
 
 				.rsvp__radio-label {
-					color: var(--color-action-accent);
+					color: var(--rsvp-radio-label-color-selected, var(--color-action-accent));
 					font-weight: 500;
 				}
 			}

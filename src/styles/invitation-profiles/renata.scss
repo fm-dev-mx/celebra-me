@@ -1150,6 +1150,14 @@ html:has(.event--renata.theme-preset--editorial) body {
 
 	.invitation-section-wrapper[data-section-kind='personalized-access'],
 	.invitation-section-wrapper[data-section-kind='rsvp'] {
+		--formal-chapter-band: var(--renata-olive-deep);
+		--formal-chapter-band-rgb: var(--renata-olive-deep-rgb);
+		--formal-chapter-cream: var(--renata-cream);
+		--formal-chapter-cream-rgb: var(--renata-cream-rgb);
+		--formal-chapter-metal: var(--renata-silver);
+		--formal-chapter-metal-rgb: var(--renata-silver-rgb);
+		--formal-chapter-ink: var(--renata-ink);
+		--formal-chapter-ink-rgb: var(--renata-ink-rgb);
 		--color-text-primary: var(--renata-cream);
 		--color-text-primary-rgb: var(--renata-cream-rgb);
 		--color-text-secondary: rgb(var(--renata-cream-rgb) / 82%);
@@ -1194,9 +1202,11 @@ html:has(.event--renata.theme-preset--editorial) body {
 		--rsvp-radio-border: rgb(var(--renata-silver-rgb) / 50%);
 		--rsvp-radio-selected-bg: rgb(var(--renata-cream-rgb) / 20%);
 		--rsvp-radio-selected-border: var(--renata-silver);
-		--rsvp-radio-label-color: rgb(var(--renata-cream-rgb) / 92%);
+		--rsvp-radio-label-color: var(--renata-cream);
 		--rsvp-radio-label-color-selected: var(--renata-cream);
+		--rsvp-radio-indicator-border: rgb(var(--renata-silver-rgb) / 80%);
 		--rsvp-radio-indicator-dot: var(--renata-silver);
+		--rsvp-radio-indicator-inner: var(--renata-olive-deep);
 		--rsvp-button-color: var(--renata-silver);
 		--rsvp-button-color-hover: var(--renata-olive-deep);
 		--rsvp-button-bg: transparent;
@@ -1260,6 +1270,14 @@ html:has(.event--renata.theme-preset--editorial) body {
 			color: var(--rsvp-label-color);
 		}
 
+		.rsvp__radio-label {
+			color: var(--renata-cream);
+		}
+
+		.rsvp__radio-indicator {
+			border-color: rgb(var(--renata-silver-rgb) / 80%);
+		}
+
 		input,
 		textarea,
 		select {
@@ -1271,8 +1289,8 @@ html:has(.event--renata.theme-preset--editorial) body {
 			}
 
 			&:disabled {
-				opacity: 55%;
-				color: rgb(var(--renata-cream-rgb) / 55%);
+				opacity: 75%;
+				color: rgb(var(--renata-cream-rgb) / 80%);
 			}
 
 			&:focus-visible {

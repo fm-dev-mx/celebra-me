@@ -17,9 +17,7 @@
 	--formal-chapter-metal-rgb: 176 142 96;
 }
 
-.invitation-section-wrapper[data-section-kind='rsvp']:has(
-		.rsvp[data-variant='formal-register']
-	) {
+.invitation-section-wrapper[data-section-kind='rsvp']:has(.rsvp[data-variant='formal-register']) {
 	--color-text-primary: var(--formal-chapter-cream);
 	--color-text-primary-rgb: var(--formal-chapter-cream-rgb);
 	--color-text-secondary: rgb(var(--formal-chapter-cream-rgb) / 82%);
@@ -54,10 +52,10 @@
 	--rsvp-radio-columns: 1fr;
 	--rsvp-label-color: rgb(var(--formal-chapter-cream-rgb) / 92%);
 	--rsvp-placeholder-color: rgb(var(--formal-chapter-cream-rgb) / 58%);
-	--rsvp-radio-indicator-border: rgb(var(--formal-chapter-metal-rgb) / 50%);
+	--rsvp-radio-indicator-border: rgb(var(--formal-chapter-metal-rgb) / 75%);
 	--rsvp-radio-indicator-dot: var(--formal-chapter-metal);
 	--rsvp-radio-selected-border: var(--formal-chapter-metal);
-	--rsvp-radio-label-color: rgb(var(--formal-chapter-cream-rgb) / 88%);
+	--rsvp-radio-label-color: rgb(var(--formal-chapter-cream-rgb) / 95%);
 	--rsvp-radio-label-color-selected: var(--formal-chapter-cream);
 	--rsvp-field-bg-focus: transparent;
 	--rsvp-editorial-gold-glow: none;
@@ -224,6 +222,47 @@
 		box-shadow: none;
 	}
 
+	.rsvp__field--notes {
+		margin-top: clamp(0.5rem, 1.2vw, 0.85rem);
+
+		.rsvp__notes-label,
+		label {
+			display: block;
+			margin-bottom: 0.35rem;
+			font-family: var(--formal-chapter-label);
+			font-size: 0.74rem;
+			font-weight: 600;
+			letter-spacing: 0.18em;
+			color: var(--formal-chapter-metal);
+		}
+
+		textarea {
+			width: 100%;
+			height: auto;
+			min-height: clamp(3.5rem, 8vh, 5.5rem);
+			max-height: 12rem;
+			padding: 0.4rem 0.15rem;
+			border: none;
+			border-bottom: 1px solid rgb(var(--formal-chapter-metal-rgb) / 28%);
+			background: transparent;
+			color: var(--formal-chapter-cream);
+			font-family: var(--formal-chapter-body);
+			font-size: clamp(0.92rem, 1.4vw, 1rem);
+			line-height: 1.6;
+			resize: vertical;
+
+			&::placeholder {
+				color: var(--rsvp-placeholder-color);
+				font-style: italic;
+			}
+
+			&:focus {
+				border-bottom-color: var(--formal-chapter-metal);
+				outline: none;
+			}
+		}
+	}
+
 	.rsvp__field--phone .rsvp__country-code {
 		background: transparent;
 		border: 0;
@@ -280,6 +319,107 @@
 		background: var(--rsvp-button-bg-hover);
 		border-color: var(--rsvp-button-border-hover);
 		transform: none;
+	}
+
+	.rsvp__calendar-popover {
+		background: rgb(var(--formal-chapter-cream-rgb) / 98%);
+		border: 1px solid rgb(var(--formal-chapter-metal-rgb) / 35%);
+		border-radius: var(--formal-chapter-control-radius);
+		box-shadow: 0 12px 32px rgb(0 0 0 / 35%);
+	}
+
+	.rsvp__calendar-option {
+		color: var(--formal-chapter-ink, var(--color-text-on-light, rgb(16 24 32)));
+		font-family: var(--formal-chapter-label, var(--font-label));
+		font-size: 0.76rem;
+		font-weight: 600;
+		letter-spacing: 0.12em;
+
+		&:hover,
+		&:focus-visible {
+			background: rgb(var(--formal-chapter-metal-rgb) / 14%);
+			border-color: rgb(var(--formal-chapter-metal-rgb) / 40%);
+			color: var(--formal-chapter-ink, var(--color-text-on-light, rgb(16 24 32)));
+		}
+	}
+
+	.rsvp__secondary-button {
+		background: transparent;
+		border: 1px solid rgb(var(--formal-chapter-metal-rgb) / 40%);
+		border-radius: var(--formal-chapter-control-radius);
+		color: var(--formal-chapter-cream);
+		font-family: var(--formal-chapter-body);
+		font-size: 0.78rem;
+		letter-spacing: 0.12em;
+		transition: all 0.2s ease;
+
+		&:hover,
+		&:focus-visible {
+			background: rgb(var(--formal-chapter-cream-rgb) / 10%);
+			border-color: var(--formal-chapter-cream);
+			color: var(--formal-chapter-cream);
+		}
+	}
+
+	.rsvp__whatsapp-cta {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		background: transparent;
+		border: 1px solid rgb(var(--formal-chapter-metal-rgb) / 50%);
+		border-radius: var(--formal-chapter-control-radius);
+		color: var(--formal-chapter-cream);
+		font-family: var(--formal-chapter-label);
+		font-size: 0.78rem;
+		font-weight: 600;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		text-decoration: none;
+		padding: 0.75rem 1.25rem;
+		transition: all 0.2s ease;
+
+		.rsvp__whatsapp-icon {
+			width: 1.15rem;
+			height: 1.15rem;
+			fill: currentcolor;
+		}
+
+		&:hover,
+		&:focus-visible {
+			background: rgb(var(--formal-chapter-metal-rgb) / 16%);
+			border-color: var(--formal-chapter-cream);
+			color: var(--formal-chapter-cream);
+		}
+	}
+
+	.rsvp__revealed-location {
+		background: rgb(var(--formal-chapter-cream-rgb) / 6%);
+		border: 1px solid rgb(var(--formal-chapter-metal-rgb) / 28%);
+		border-radius: var(--formal-chapter-control-radius);
+		color: var(--formal-chapter-cream);
+
+		&-title {
+			color: var(--formal-chapter-metal);
+		}
+
+		&-name {
+			color: var(--formal-chapter-cream);
+		}
+
+		&-address,
+		&-time {
+			color: rgb(var(--formal-chapter-cream-rgb) / 82%);
+		}
+
+		&-link {
+			color: var(--formal-chapter-metal);
+
+			&:hover,
+			&:focus-visible {
+				color: var(--formal-chapter-cream);
+			}
+		}
 	}
 
 	.rsvp__greeting-icon {

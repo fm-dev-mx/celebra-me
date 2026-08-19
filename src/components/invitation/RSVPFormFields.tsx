@@ -353,12 +353,14 @@ export function ConfirmedFields(props: {
 						</p>
 					</>
 				)}
-				<div className="rsvp__field">
-					<label htmlFor="notes">{notesLabel}</label>
+				<div className="rsvp__field rsvp__field--notes">
+					<label htmlFor="notes" className="rsvp__notes-label">
+						{notesLabel}
+					</label>
 					<textarea
 						id="notes"
 						placeholder={notesPlaceholder}
-						rows={2}
+						rows={3}
 						value={notes}
 						onChange={(e) => onNotesChange(e.target.value)}
 						disabled={!isExpanded}
