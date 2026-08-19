@@ -6,6 +6,12 @@ import type { InvitationPackageData } from './invitation-package.ts';
 import { STORAGE_URL_PLACEHOLDER } from './invitation-package.ts';
 import type { ResourcePlanAction } from './invitation-import-engine.ts';
 import { hashPublicationProjection } from '../../src/lib/intake/services/publication-diff.service.ts';
+import {
+	canonicalizePublicationValue,
+	preparePublicationProjection,
+} from '../../src/lib/intake/services/publication-canonicalize.ts';
+import { normalizeInvitationVariantInput } from '../../src/lib/invitation/variant-normalization.ts';
+import { ASSET_KEY_PREFIX, semanticAssetRef } from './normalized-invitation-release.ts';
 
 // ---------------------------------------------------------------------------
 // Normalisation
@@ -40,6 +46,108 @@ export function isSemanticallyEqual(a: unknown, b: unknown, targetStorageUrl?: s
 	return (
 		JSON.stringify(canonicalizeValue(a, targetStorageUrl)) ===
 		JSON.stringify(canonicalizeValue(b, targetStorageUrl))
+	);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+/**
+ * Map environment-local uploaded asset UUIDs to managed semantic keys.
+ * Already-semantic `__INVITATION_ASSET_KEY__:` ids stay stable.
+ */
+export function rewriteUploadedAssetReferences(
+	value: unknown,
+	keyByAssetId: ReadonlyMap<string, string>,
+): { ok: true; value: unknown } | { ok: false } {
+	const walk = (current: unknown): unknown => {
+		if (Array.isArray(current)) return current.map(walk);
+		if (!isRecord(current)) return current;
+		if (current.type === 'uploaded' && typeof current.assetId === 'string') {
+			const assetId = current.assetId;
+			if (assetId.startsWith(ASSET_KEY_PREFIX)) {
+				return semanticAssetRef(assetId.slice(ASSET_KEY_PREFIX.length));
+			}
+			const key = keyByAssetId.get(assetId);
+			if (!key) throw new Error('UNMAPPED_UPLOADED_REF');
+			return semanticAssetRef(key);
+		}
+		return Object.fromEntries(
+			Object.entries(current).map(([key, child]) => [key, walk(child)]),
+		);
+	};
+	try {
+		return { ok: true, value: walk(value) };
+	} catch {
+		return { ok: false };
+	}
+}
+
+function stripHostOwnedSharing(value: unknown): unknown {
+	if (Array.isArray(value)) return value.map(stripHostOwnedSharing);
+	if (!isRecord(value)) return value;
+	const result: Record<string, unknown> = {};
+	for (const [key, child] of Object.entries(value)) {
+		if (key === 'sharing' && isRecord(child)) {
+			const {
+				shareMessages: _shareMessages,
+				reminderSettings: _reminderSettings,
+				...rest
+			} = child;
+			const strippedRest = stripHostOwnedSharing(rest);
+			if (isRecord(strippedRest) && Object.keys(strippedRest).length > 0) {
+				result.sharing = strippedRest;
+			}
+			continue;
+		}
+		result[key] = stripHostOwnedSharing(child);
+	}
+	return result;
+}
+
+function asContentRecord(value: unknown): Record<string, unknown> {
+	return isRecord(value) ? value : {};
+}
+
+/**
+ * Single semantic invitation-content owner for cross-environment parity and
+ * promotional fingerprints. Does not change publication optimistic-lock hashing.
+ *
+ * Pipeline: runtime variant fold → publication projection canonicalize →
+ * host-owned sharing overlay strip → storage-host placeholder + key sort.
+ * Callers that have environment asset UUIDs must rewrite them first via
+ * `rewriteUploadedAssetReferences`.
+ */
+export function canonicalizeManagedInvitationContent(value: unknown): unknown {
+	if (value === null || value === undefined) return null;
+	let folded: unknown;
+	try {
+		folded = normalizeInvitationVariantInput(value);
+	} catch {
+		folded = { __variantNormalizationConflict: true, value };
+	}
+	return canonicalizeValue(
+		stripHostOwnedSharing(canonicalizePublicationValue(preparePublicationProjection(folded))),
+	);
+}
+
+export function hashManagedInvitationContent(value: unknown): string {
+	return hashPublicationProjection(asContentRecord(canonicalizeManagedInvitationContent(value)));
+}
+
+export function semanticInvitationContentEqual(
+	left: unknown,
+	right: unknown,
+	leftKeyByAssetId: ReadonlyMap<string, string> = new Map(),
+	rightKeyByAssetId: ReadonlyMap<string, string> = new Map(),
+): boolean {
+	const leftRewrite = rewriteUploadedAssetReferences(left, leftKeyByAssetId);
+	const rightRewrite = rewriteUploadedAssetReferences(right, rightKeyByAssetId);
+	if (!leftRewrite.ok || !rightRewrite.ok) return false;
+	return (
+		JSON.stringify(canonicalizeManagedInvitationContent(leftRewrite.value)) ===
+		JSON.stringify(canonicalizeManagedInvitationContent(rightRewrite.value))
 	);
 }
 

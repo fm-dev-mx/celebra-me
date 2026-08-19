@@ -265,4 +265,50 @@ describe('promotional fingerprint', () => {
 		});
 		expect(match).toBe('match');
 	});
+
+	it('does not treat host share-message overlays as fingerprint drift', () => {
+		const canonical = computePromotionalFingerprint(
+			fingerprintInput({
+				content: {
+					hero: semanticAssetRef('hero'),
+					title: 'Celebración',
+					sharing: { shareMessages: { invitation: 'Canónico' } },
+				},
+			}),
+		);
+		const live = buildLivePromotionalFingerprint(
+			liveRow({
+				publishedContent: {
+					...liveContent(ASSET_UUID),
+					sharing: { shareMessages: { invitation: 'Overlay de anfitrión' } },
+				},
+				draftContent: {
+					...liveContent(ASSET_UUID),
+					sharing: { shareMessages: { invitation: 'Overlay de anfitrión' } },
+				},
+			}),
+			['hero'],
+		);
+		expect(live.ok).toBe(true);
+		if (!live.ok) return;
+		expect(live.fingerprint).toBe(canonical);
+	});
+
+	it('still fingerprints a material copy change as behind', () => {
+		const canonical = computePromotionalFingerprint(fingerprintInput());
+		expect(
+			classifyLiveInvitation({
+				canonicalFingerprint: canonical,
+				canonicalAssetKeys: ['hero'],
+				expectedSlug: 'demo-slug',
+				expectedManagedIdentityId: '00000000-0000-4000-8000-000000000001',
+				rows: [
+					liveRow({
+						publishedContent: liveContent(ASSET_UUID, 'Título distinto'),
+						draftContent: liveContent(ASSET_UUID, 'Título distinto'),
+					}),
+				],
+			}),
+		).toBe('behind');
+	});
 });

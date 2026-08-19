@@ -83,14 +83,14 @@ describe('semantic parity comparison', () => {
 		).toEqual(['location.ceremony.venueEvent']);
 	});
 
-	it('omits runtime asset identifiers from semantic path diagnostics', () => {
+	it('omits uploaded src but reports distinct semantic asset keys', () => {
 		expect(
 			listSemanticDifferencePaths(
 				{
 					hero: {
 						image: {
 							type: 'uploaded',
-							assetId: 'local-id',
+							assetId: '__INVITATION_ASSET_KEY__:hero',
 							src: 'https://local.test/a',
 						},
 					},
@@ -99,13 +99,35 @@ describe('semantic parity comparison', () => {
 					hero: {
 						image: {
 							type: 'uploaded',
-							assetId: 'preview-id',
-							src: 'https://preview.test/a',
+							assetId: '__INVITATION_ASSET_KEY__:hero',
+							src: 'https://preview.test/b',
 						},
 					},
 				},
 			),
 		).toEqual([]);
+		expect(
+			listSemanticDifferencePaths(
+				{
+					hero: {
+						image: {
+							type: 'uploaded',
+							assetId: '__INVITATION_ASSET_KEY__:hero',
+							src: 'https://local.test/a',
+						},
+					},
+				},
+				{
+					hero: {
+						image: {
+							type: 'uploaded',
+							assetId: '__INVITATION_ASSET_KEY__:hero-mobile',
+							src: 'https://local.test/a',
+						},
+					},
+				},
+			),
+		).toEqual(['hero.image']);
 	});
 
 	it('accepts legitimate Storage host differences via canonicalization', () => {
@@ -149,7 +171,7 @@ describe('semantic parity comparison', () => {
 		);
 	});
 
-	it('treats sharing-only projection changes as meaningful published drift', () => {
+	it('does not treat host-owned share-message overlays as published semantic drift', () => {
 		const local = clientSnapshot({
 			publishedContent: {
 				hero: { name: 'Ana' },
@@ -160,6 +182,25 @@ describe('semantic parity comparison', () => {
 			publishedContent: {
 				hero: { name: 'Ana' },
 				sharing: { shareMessages: { invitation: 'Mensaje publicado' } },
+			},
+		});
+
+		expect(
+			compareSemanticInvitationSnapshots('local', local, 'production', production),
+		).toEqual([]);
+	});
+
+	it('still fails when a material published field differs', () => {
+		const local = clientSnapshot({
+			publishedContent: {
+				hero: { name: 'Ana' },
+				sharing: { shareMessages: { invitation: 'Igual' } },
+			},
+		});
+		const production = clientSnapshot({
+			publishedContent: {
+				hero: { name: 'Different' },
+				sharing: { shareMessages: { invitation: 'Igual' } },
 			},
 		});
 
@@ -253,5 +294,234 @@ describe('semantic parity comparison', () => {
 				}),
 			]),
 		);
+	});
+
+	it('treats itinerary.presentation.behavior as equal to canonical itinerary.variant', () => {
+		const local = clientSnapshot({
+			publishedContent: {
+				hero: { name: 'Ana' },
+				itinerary: { variant: 'timeline-paper', items: [{ label: 'Cena' }] },
+			},
+		});
+		const production = clientSnapshot({
+			publishedContent: {
+				hero: { name: 'Ana' },
+				itinerary: {
+					presentation: { behavior: 'timeline-paper' },
+					items: [{ label: 'Cena' }],
+				},
+			},
+		});
+		expect(
+			compareSemanticInvitationSnapshots('local', local, 'production', production),
+		).toEqual([]);
+	});
+
+	it('fails when itinerary variants are materially different', () => {
+		const local = clientSnapshot({
+			publishedContent: {
+				hero: { name: 'Ana' },
+				itinerary: { variant: 'timeline-paper', items: [{ label: 'Cena' }] },
+			},
+		});
+		const production = clientSnapshot({
+			publishedContent: {
+				hero: { name: 'Ana' },
+				itinerary: { variant: 'standard', items: [{ label: 'Cena' }] },
+			},
+		});
+		expect(
+			compareSemanticInvitationSnapshots('local', local, 'production', production).some(
+				(drift) => drift.entity === 'published_invitation_content',
+			),
+		).toBe(true);
+	});
+
+	it('compares uploaded refs by rewritten semantic key, not environment UUID or host', () => {
+		const localId = '11111111-1111-4111-8111-111111111111';
+		const productionId = '22222222-2222-4222-8222-222222222222';
+		const local = buildSemanticInvitationSnapshot({
+			invitation: {
+				slug: 'client-slug',
+				event_type: 'xv',
+				kind: 'client',
+				base_demo_id: 'demo-xv-jewelry-box',
+				theme_id: 'jewelry-box',
+				snapshot: { title: 'Cliente' },
+			},
+			draftContent: {
+				hero: {
+					name: 'Ana',
+					image: {
+						type: 'uploaded',
+						assetId: localId,
+						src: 'https://local.example/storage/v1/object/public/invitation-assets/hero.webp',
+					},
+				},
+			},
+			published: {
+				content: {
+					hero: {
+						name: 'Ana',
+						image: {
+							type: 'uploaded',
+							assetId: localId,
+							src: 'https://local.example/storage/v1/object/public/invitation-assets/hero.webp',
+						},
+					},
+				},
+				is_demo: false,
+			},
+			assets: [{ id: localId, managed_source_key: 'hero', sha256: 'abc123' }],
+			event: { slug: 'client-slug', event_type: 'xv' },
+		});
+		const production = buildSemanticInvitationSnapshot({
+			invitation: {
+				slug: 'client-slug',
+				event_type: 'xv',
+				kind: 'client',
+				base_demo_id: 'demo-xv-jewelry-box',
+				theme_id: 'jewelry-box',
+				snapshot: { title: 'Cliente' },
+			},
+			draftContent: {
+				hero: {
+					name: 'Ana',
+					image: {
+						type: 'uploaded',
+						assetId: productionId,
+						src: 'https://res.cloudinary.com/demo/image/upload/v1/hero.webp',
+					},
+				},
+			},
+			published: {
+				content: {
+					hero: {
+						name: 'Ana',
+						image: {
+							type: 'uploaded',
+							assetId: productionId,
+							src: 'https://res.cloudinary.com/demo/image/upload/v1/hero.webp',
+						},
+					},
+				},
+				is_demo: false,
+			},
+			assets: [{ id: productionId, managed_source_key: 'hero', sha256: 'abc123' }],
+			event: { slug: 'client-slug', event_type: 'xv' },
+		});
+		expect(
+			compareSemanticInvitationSnapshots('local', local, 'production', production),
+		).toEqual([]);
+	});
+
+	it('fails when rewritten uploaded refs point at different managed keys', () => {
+		const localId = '11111111-1111-4111-8111-111111111111';
+		const productionId = '22222222-2222-4222-8222-222222222222';
+		const local = buildSemanticInvitationSnapshot({
+			invitation: {
+				slug: 'client-slug',
+				event_type: 'xv',
+				kind: 'client',
+				base_demo_id: 'demo-xv-jewelry-box',
+				theme_id: 'jewelry-box',
+				snapshot: { title: 'Cliente' },
+			},
+			published: {
+				content: {
+					hero: {
+						image: { type: 'uploaded', assetId: localId, src: 'https://local.test/a' },
+					},
+				},
+				is_demo: false,
+			},
+			assets: [{ id: localId, managed_source_key: 'hero', sha256: 'abc123' }],
+			event: { slug: 'client-slug', event_type: 'xv' },
+		});
+		const production = buildSemanticInvitationSnapshot({
+			invitation: {
+				slug: 'client-slug',
+				event_type: 'xv',
+				kind: 'client',
+				base_demo_id: 'demo-xv-jewelry-box',
+				theme_id: 'jewelry-box',
+				snapshot: { title: 'Cliente' },
+			},
+			published: {
+				content: {
+					hero: {
+						image: {
+							type: 'uploaded',
+							assetId: productionId,
+							src: 'https://prod.test/a',
+						},
+					},
+				},
+				is_demo: false,
+			},
+			assets: [{ id: productionId, managed_source_key: 'hero-mobile', sha256: 'abc123' }],
+			event: { slug: 'client-slug', event_type: 'xv' },
+		});
+		expect(
+			compareSemanticInvitationSnapshots('local', local, 'production', production).some(
+				(drift) => drift.entity === 'published_invitation_content',
+			),
+		).toBe(true);
+	});
+
+	it('ignores unreferenced extra assets when referenced digests match', () => {
+		const localId = '11111111-1111-4111-8111-111111111111';
+		const previewHero = '22222222-2222-4222-8222-222222222222';
+		const previewExtra = '33333333-3333-4333-8333-333333333333';
+		const local = buildSemanticInvitationSnapshot({
+			invitation: {
+				slug: 'client-slug',
+				event_type: 'xv',
+				kind: 'client',
+				base_demo_id: 'demo-xv-jewelry-box',
+				theme_id: 'jewelry-box',
+				snapshot: { title: 'Cliente' },
+			},
+			published: {
+				content: {
+					hero: {
+						name: 'Ana',
+						image: { type: 'uploaded', assetId: localId, src: 'https://local.test/a' },
+					},
+				},
+				is_demo: false,
+			},
+			assets: [{ id: localId, managed_source_key: 'hero', sha256: 'abc123' }],
+			event: { slug: 'client-slug', event_type: 'xv' },
+		});
+		const preview = buildSemanticInvitationSnapshot({
+			invitation: {
+				slug: 'client-slug',
+				event_type: 'xv',
+				kind: 'client',
+				base_demo_id: 'demo-xv-jewelry-box',
+				theme_id: 'jewelry-box',
+				snapshot: { title: 'Cliente' },
+			},
+			published: {
+				content: {
+					hero: {
+						name: 'Ana',
+						image: {
+							type: 'uploaded',
+							assetId: previewHero,
+							src: 'https://preview.test/a',
+						},
+					},
+				},
+				is_demo: false,
+			},
+			assets: [
+				{ id: previewHero, managed_source_key: 'hero', sha256: 'abc123' },
+				{ id: previewExtra, managed_source_key: 'gallery-02', sha256: 'deadbeef' },
+			],
+			event: { slug: 'client-slug', event_type: 'xv' },
+		});
+		expect(compareSemanticInvitationSnapshots('local', local, 'preview', preview)).toEqual([]);
 	});
 });

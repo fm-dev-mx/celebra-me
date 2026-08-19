@@ -6,7 +6,14 @@
  */
 
 import { CONTENT_MIRROR_TABLES, EXCLUDED_TABLES } from '../db/db-target-config.ts';
-import { canonicalizeValue, isSemanticallyEqual } from './promotion-comparison.ts';
+import {
+	canonicalizeManagedInvitationContent,
+	canonicalizeValue,
+	isSemanticallyEqual,
+	rewriteUploadedAssetReferences,
+	semanticInvitationContentEqual,
+} from './promotion-comparison.ts';
+import { ASSET_KEY_PREFIX } from './normalized-invitation-release.ts';
 
 export type ContentParityEnvironment = 'local' | 'preview' | 'production';
 
@@ -51,6 +58,7 @@ export interface SemanticInvitationSnapshot {
 	publishedContent: unknown | null;
 	isDemo: boolean;
 	assets: SemanticAssetDigest[];
+	assetIdToKey: Record<string, string>;
 	eventProjection: SemanticEventProjection | null;
 	identityConflict?: boolean;
 	matchingIds?: string[];
@@ -90,10 +98,9 @@ function joinSemanticPath(parent: string, child: string | number): string {
 export function listSemanticDifferencePaths(left: unknown, right: unknown): string[] {
 	const walk = (currentLeft: unknown, currentRight: unknown, path: string): string[] => {
 		if (isSemanticallyEqual(currentLeft, currentRight)) return [];
-		// Asset identity is covered separately by invitation_assets. UUIDs and Storage URLs are not
-		// semantic content evidence and must not turn the path report into an identity dump.
-		if (isUploadedAssetReference(currentLeft) && isUploadedAssetReference(currentRight))
-			return [];
+		if (isUploadedAssetReference(currentLeft) && isUploadedAssetReference(currentRight)) {
+			return currentLeft.assetId === currentRight.assetId ? [] : [path || '$'];
+		}
 		if (Array.isArray(currentLeft) && Array.isArray(currentRight)) {
 			if (currentLeft.length !== currentRight.length) return [path || '$'];
 			return currentLeft.flatMap((item, index) =>
@@ -111,7 +118,11 @@ export function listSemanticDifferencePaths(left: unknown, right: unknown): stri
 		return [path || '$'];
 	};
 
-	return walk(canonicalizeValue(left), canonicalizeValue(right), '');
+	return walk(
+		canonicalizeManagedInvitationContent(left),
+		canonicalizeManagedInvitationContent(right),
+		'',
+	);
 }
 
 type DriftPush = (
@@ -154,6 +165,15 @@ function compareScalarFields(
 	}
 }
 
+function assetIdMap(snapshot: SemanticInvitationSnapshot): Map<string, string> {
+	return new Map(Object.entries(snapshot.assetIdToKey ?? {}));
+}
+
+function canonicalContentValue(value: unknown, keyByAssetId: ReadonlyMap<string, string>): unknown {
+	const rewritten = rewriteUploadedAssetReferences(value, keyByAssetId);
+	return canonicalizeManagedInvitationContent(rewritten.ok ? rewritten.value : value);
+}
+
 function compareCanonicalContent(
 	left: SemanticInvitationSnapshot,
 	right: SemanticInvitationSnapshot,
@@ -182,9 +202,21 @@ function compareCanonicalContent(
 			'Published content semantic drift',
 		],
 	];
+	const leftKeys = assetIdMap(left);
+	const rightKeys = assetIdMap(right);
 	for (const [entity, field, l, r, detail] of checks) {
-		if (!isSemanticallyEqual(l, r)) {
-			push(entity, field, canonicalizeValue(l), canonicalizeValue(r), detail);
+		const equal =
+			field === 'content'
+				? semanticInvitationContentEqual(l, r, leftKeys, rightKeys)
+				: isSemanticallyEqual(l, r);
+		if (!equal) {
+			push(
+				entity,
+				field,
+				field === 'content' ? canonicalContentValue(l, leftKeys) : canonicalizeValue(l),
+				field === 'content' ? canonicalContentValue(r, rightKeys) : canonicalizeValue(r),
+				detail,
+			);
 		}
 	}
 }
@@ -344,20 +376,71 @@ export function compareAcrossEnvironments(
 	};
 }
 
+function collectUploadedAssetIds(value: unknown, into: Set<string>): void {
+	if (Array.isArray(value)) {
+		for (const item of value) collectUploadedAssetIds(item, into);
+		return;
+	}
+	if (!isRecord(value)) return;
+	if (value.type === 'uploaded' && typeof value.assetId === 'string') {
+		into.add(value.assetId);
+		return;
+	}
+	for (const child of Object.values(value)) collectUploadedAssetIds(child, into);
+}
+
+function referencedSemanticKeys(
+	values: unknown[],
+	idToKey: Record<string, string>,
+): Set<string> | null {
+	const ids = new Set<string>();
+	for (const value of values) collectUploadedAssetIds(value, ids);
+	if (ids.size === 0) return null;
+	const keys = new Set<string>();
+	for (const assetId of ids) {
+		if (assetId.startsWith(ASSET_KEY_PREFIX)) {
+			keys.add(assetId.slice(ASSET_KEY_PREFIX.length));
+			continue;
+		}
+		const key = idToKey[assetId];
+		if (key) keys.add(key);
+	}
+	return keys;
+}
+
 function toAssetDigests(
 	assets: Array<{
+		id?: string | null;
 		managed_source_key?: string | null;
 		display_name?: string | null;
 		sha256?: string | null;
 	}>,
+	referencedKeys: Set<string> | null,
 ): SemanticAssetDigest[] {
 	const digests: SemanticAssetDigest[] = [];
 	for (const asset of assets) {
 		const semanticKey = String(asset.managed_source_key || asset.display_name || '').trim();
 		const sha256 = String(asset.sha256 || '').trim();
-		if (semanticKey && sha256) digests.push({ semanticKey, sha256 });
+		if (!semanticKey || !sha256) continue;
+		if (referencedKeys && !referencedKeys.has(semanticKey)) continue;
+		digests.push({ semanticKey, sha256 });
 	}
 	return sortedAssets(digests);
+}
+
+function toAssetIdToKey(
+	assets: Array<{
+		id?: string | null;
+		managed_source_key?: string | null;
+	}>,
+): Record<string, string> {
+	const map: Record<string, string> = {};
+	for (const asset of assets) {
+		const id = String(asset.id || '').trim();
+		const key = String(asset.managed_source_key || '').trim();
+		if (id && key) map[id] = key;
+	}
+	return map;
 }
 
 function toEventProjection(
@@ -403,6 +486,7 @@ export function buildSemanticInvitationSnapshot(input: {
 		event_type?: string;
 	} | null;
 	assets?: Array<{
+		id?: string | null;
 		managed_source_key?: string | null;
 		display_name?: string | null;
 		sha256?: string | null;
@@ -410,6 +494,14 @@ export function buildSemanticInvitationSnapshot(input: {
 	event?: { slug?: string; event_type?: string } | null;
 }): SemanticInvitationSnapshot {
 	const isDemo = input.published?.is_demo === true || input.invitation.kind === 'demo';
+	const assetIdToKey = toAssetIdToKey(input.assets ?? []);
+	const hasAssetIds = (input.assets ?? []).some((asset) => String(asset.id || '').trim());
+	const referencedKeys = hasAssetIds
+		? (referencedSemanticKeys(
+				[input.draftContent ?? null, input.published?.content ?? null],
+				assetIdToKey,
+			) ?? new Set<string>())
+		: null;
 	return {
 		slug: input.invitation.slug,
 		eventType: input.invitation.event_type,
@@ -420,7 +512,8 @@ export function buildSemanticInvitationSnapshot(input: {
 		draftContent: input.draftContent ?? null,
 		publishedContent: input.published?.content ?? null,
 		isDemo,
-		assets: toAssetDigests(input.assets ?? []),
+		assets: toAssetDigests(input.assets ?? [], referencedKeys),
+		assetIdToKey,
 		eventProjection: toEventProjection(isDemo, input.invitation, input.event),
 	};
 }

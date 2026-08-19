@@ -144,6 +144,7 @@ export function loadSemanticParitySnapshot(
 				publishedContent: null,
 				isDemo: false,
 				assets: [],
+				assetIdToKey: {},
 				eventProjection: null,
 				identityConflict: true,
 				matchingIds,

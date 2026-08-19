@@ -95,15 +95,83 @@ This exception is intentional product behavior, not a license for other unpublis
 
 ---
 
-## Semantic parity
+## Canonical managed invitation parity
+
+A registry invitation is **canonical** when it has a valid `InvitationDefinition` in
+`scripts/provision/invitations/registry.ts`. It is **in parity** when every required environment has
+exactly one active managed record whose invitation-facing semantic state matches that definition
+after the single comparison owner below. This contract is slug-agnostic: future client migrations
+reuse it without per-invitation comparison rules.
+
+### Executable owners (do not add a second path)
+
+| Concern                            | Owner                                                                                                                    |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Managed definition                 | `scripts/provision/invitations/<slug>.ts` via `defineInvitation` / registry                                              |
+| Lifecycle / delivery scope         | `InvitationDefinition.lifecycle`, `deliveryScope`                                                                        |
+| Package / publication apply        | `pnpm invitation:release` (Local/Preview), `pnpm prod:apply -- --slug` (Production)                                      |
+| Definition vs live status          | `pnpm dbs` promotional fingerprint (`scripts/provision/promotional-fingerprint.ts`)                                      |
+| Cross-environment semantic compare | `pnpm invitation:content-parity` (`scripts/provision/content-parity.ts`)                                                 |
+| Semantic canonicalization          | `canonicalizeManagedInvitationContent` + `rewriteUploadedAssetReferences` in `scripts/provision/promotion-comparison.ts` |
+| Runtime variant fold               | `normalizeInvitationVariantInput` (same fold the renderer uses)                                                          |
+| Publication projection             | `preparePublicationProjection` / `canonicalizePublicationValue`                                                          |
+
+`hashPublicationProjection` remains the publication optimistic-lock fingerprint. It is **not** the
+cross-environment semantic owner.
+
+### When a managed invitation is in parity
+
+All of the following must hold for each required environment (Local, Preview, Production):
+
+1. **Managed definition ownership** — one registry definition; `managedIdentityId` matches the live
+   row; no `IDENTITY_CONFLICT`.
+2. **Publication / lifecycle** — `lifecycle: published` expects a published managed record in every
+   required environment. `lifecycle: in_progress` may be absent or behind on Production without
+   being a promotion candidate; it still must not carry unclassified semantic drift where present.
+3. **Effective published payload** — live published (and draft, when present) JSON equals the
+   definition’s `buildPublishedContent` after semantic canonicalization.
+4. **Runtime-semantic equivalence** — equivalent spellings that the renderer already folds compare
+   equal (for example `itinerary.presentation.behavior` vs `itinerary.variant`).
+5. **Asset representation** — uploaded refs compare by rewritten managed key; binaries compare by
+   `sha256` / `managed_sha256` for **referenced** keys. Unreferenced leftover rows are not semantic
+   content. Missing canonical keys fail closed (`behind`).
+6. **Local / Preview / Production** — `invitation:content-parity` reports `PASS` across loaded
+   environments, and `pnpm dbs` classifies required environments `match` against the definition
+   fingerprint (or an explicit classified remainder below).
+
+### Difference classification
+
+Every remaining field-level difference must receive exactly one class. Do not invent further classes
+or suppress unexplained differences.
+
+- **REAL_DRIFT** — Canonical invitation-facing state that should agree but materially differs.
+- **ENVIRONMENT_OWNED** — Intentionally owned by the target environment (storage provider,
+  first-insert title, Auth/owner IDs).
+- **NORMALIZATION_ARTIFACT** — Semantically equivalent representations. If they still fail, fix the
+  comparison owner above; do not add slug exceptions.
+- **EXPECTED_PROVENANCE** — Publication version, timestamps, receipts, package hashes, or host-owned
+  sharing overlays that do not change canonical invitation semantics.
+
+Host `sharing.shareMessages` / `sharing.reminderSettings` overlays written by `updateShareMessages`
+are **EXPECTED_PROVENANCE**. Other `sharing.*` fields (og image, og description, WhatsApp template)
+remain managed semantic content.
+
+`invitations.title` / `events.title` are currently **ENVIRONMENT_OWNED**: managed apply preserves
+the first-insert title and the fingerprint does not include it. Accent/spelling drift is therefore
+retained, not hidden. Promoting title into managed equality is a later contract change.
+
+### Semantic compare surface
 
 Cross-environment “same content” means equal **semantic invitation-facing state** after
-canonicalization (see `scripts/provision/promotion-comparison.ts`):
+`canonicalizeManagedInvitationContent`:
 
-- Storage host URLs normalized to a placeholder
+- Runtime variant fold, publication projection canonicalize, host-sharing overlay strip, Storage
+  host placeholder, sorted keys
+- Uploaded asset UUIDs rewritten to managed keys before that canonicalize
 - Invitation metadata: `event_type`, `base_demo_id`, `theme_id`, `kind`, `snapshot`
 - Draft and published content JSON
-- Assets by semantic key + content digest (`sha256`), not environment asset UUIDs or Storage hosts
+- Referenced assets by semantic key + content digest (`sha256`), not environment asset UUIDs,
+  Storage hosts, or Cloudinary vs local Supabase provider
 - Client RSVP **projection**: linked non-demo `(event_type, slug)` event existence (not event UUID,
   owner, memberships, timestamps, or guests)
 
@@ -121,7 +189,8 @@ records or ambiguous identity mappings exist for a slug:
 
 Primary keys and Auth user IDs, Storage hosts/URLs, asset UUIDs, `version` / timestamps, provenance
 and mutation/publication receipts, owner FKs, draft `submission_id`, Preview admin ownership remaps,
-and any RSVP/PII/operational tables listed below.
+storage provider (`supabase` vs `cloudinary`), first-insert `invitations.title`, host share-message
+overlays, unreferenced leftover assets, and any RSVP/PII/operational tables listed below.
 
 ---
 
@@ -183,16 +252,21 @@ provisioning path (`pnpm test:e2e:preview:provision` and
 ## Storage Provider Boundary (Local vs Preview/Production)
 
 Image storage and delivery follows an environment-deterministic abstraction (`StorageProvider`):
-- **Local (`dev-local`):** Uses **Supabase Storage local** (`http://127.0.0.1:54321` / bucket `invitation-assets`). Dashboard uploads and `pnpm invitation:apply:local` persist locally with `provider: 'supabase'` and require zero third-party credentials.
-- **Preview & Production:** Uses **Cloudinary** (`provider: 'cloudinary'`, `secure_url`). Client invitations published in Preview/Production must deliver referenced images from Cloudinary (publish and promote fail closed if local or Supabase Storage URLs are referenced).
+
+- **Local (`dev-local`):** Uses **Supabase Storage local** (`http://127.0.0.1:54321` / bucket
+  `invitation-assets`). Dashboard uploads and `pnpm invitation:apply:local` persist locally with
+  `provider: 'supabase'` and require zero third-party credentials.
+- **Preview & Production:** Uses **Cloudinary** (`provider: 'cloudinary'`, `secure_url`). Client
+  invitations published in Preview/Production must deliver referenced images from Cloudinary
+  (publish and promote fail closed if local or Supabase Storage URLs are referenced).
 - **Demos / Templates:** Resolve through Astro/Vite static image pipeline across all environments.
 
-| Flow                               | Local (`dev-local`)                                                                        | Preview / Production                                                                                                        |
-| ---------------------------------- | ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Dashboard Intake / Upload          | Uploads to Supabase Storage local (`127.0.0.1:54321/storage/...`)                          | Uploads to Cloudinary with SHA-256 deduplication                                                                           |
-| Provision (`invitation:apply:local`) | Uploads normalized binaries to local Supabase Storage (`managed/<slug>/<key>.webp`)         | N/A (local provision only)                                                                                                 |
-| Release / Promote (`prod:apply`)   | N/A                                                                                       | Uploads/reconciles canonical binaries to Cloudinary; freezes immutable CDN URLs                                             |
-| Production→Preview mirror          | Binary copy for rows with `storage_path`; rewrite public Storage URLs in `content`/`snapshot` | `secure_url` and Cloudinary hosts are **copied/preserved**, not rewritten; rows without `storage_path` skip binary transfer |
+| Flow                                 | Local (`dev-local`)                                                                           | Preview / Production                                                                                                        |
+| ------------------------------------ | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Dashboard Intake / Upload            | Uploads to Supabase Storage local (`127.0.0.1:54321/storage/...`)                             | Uploads to Cloudinary with SHA-256 deduplication                                                                            |
+| Provision (`invitation:apply:local`) | Uploads normalized binaries to local Supabase Storage (`managed/<slug>/<key>.webp`)           | N/A (local provision only)                                                                                                  |
+| Release / Promote (`prod:apply`)     | N/A                                                                                           | Uploads/reconciles canonical binaries to Cloudinary; freezes immutable CDN URLs                                             |
+| Production→Preview mirror            | Binary copy for rows with `storage_path`; rewrite public Storage URLs in `content`/`snapshot` | `secure_url` and Cloudinary hosts are **copied/preserved**, not rewritten; rows without `storage_path` skip binary transfer |
 
 ---
 

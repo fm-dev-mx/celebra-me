@@ -7,6 +7,7 @@ import {
 	ACKNOWLEDGE_DISCARD_UNPUBLISHED_DRAFT_FLAG,
 	checkTargetDivergenceConflict,
 	isTargetDivergenceConflictMessage,
+	semanticInvitationContentEqual,
 	TARGET_DIVERGENCE_ACKNOWLEDGE_HINT,
 } from '../../scripts/provision/promotion-comparison.ts';
 import { hashPublicationProjection } from '../../src/lib/intake/services/publication-diff.service.ts';
@@ -145,5 +146,55 @@ describe('checkTargetDivergenceConflict', () => {
 				},
 			),
 		).not.toThrow();
+	});
+});
+
+describe('canonicalizeManagedInvitationContent', () => {
+	it('treats equivalent itinerary presentation spellings as equal', () => {
+		expect(
+			semanticInvitationContentEqual(
+				{ itinerary: { variant: 'timeline-paper', items: [{ label: 'Cena' }] } },
+				{
+					itinerary: {
+						presentation: { behavior: 'timeline-paper' },
+						items: [{ label: 'Cena' }],
+					},
+				},
+			),
+		).toBe(true);
+	});
+
+	it('still distinguishes a materially different itinerary variant', () => {
+		expect(
+			semanticInvitationContentEqual(
+				{ itinerary: { variant: 'timeline-paper', items: [{ label: 'Cena' }] } },
+				{ itinerary: { variant: 'standard', items: [{ label: 'Cena' }] } },
+			),
+		).toBe(false);
+	});
+
+	it('strips host-owned share messages without hiding other sharing fields', () => {
+		expect(
+			semanticInvitationContentEqual(
+				{
+					sharing: {
+						ogDescription: 'XV',
+						shareMessages: { invitation: 'A' },
+					},
+				},
+				{
+					sharing: {
+						ogDescription: 'XV',
+						shareMessages: { invitation: 'B' },
+					},
+				},
+			),
+		).toBe(true);
+		expect(
+			semanticInvitationContentEqual(
+				{ sharing: { ogDescription: 'Uno' } },
+				{ sharing: { ogDescription: 'Dos' } },
+			),
+		).toBe(false);
 	});
 });

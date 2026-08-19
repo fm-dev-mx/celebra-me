@@ -4,22 +4,24 @@
  */
 import { createHash } from 'node:crypto';
 import { findDemoPreset } from '../../src/lib/intake/demo-preset-catalog.ts';
-import { hashPublicationProjection } from '../../src/lib/intake/services/publication-diff.service.ts';
 import {
-	ASSET_KEY_PREFIX,
 	buildSemanticAssetMap,
 	canonicalize,
 	loadSourceAssetDigests,
-	semanticAssetRef,
 	type SourceAssetDigest,
 } from './normalized-invitation-release.ts';
-import { canonicalizeValue } from './promotion-comparison.ts';
+import {
+	canonicalizeValue,
+	hashManagedInvitationContent,
+	rewriteUploadedAssetReferences,
+} from './promotion-comparison.ts';
 import {
 	getInvitationAssetSourceDir,
 	type InvitationDefinition,
 } from './invitations/invitation-definition.ts';
 import type { EnvironmentPromotionState } from '../../src/lib/status/types.ts';
 
+export { rewriteUploadedAssetReferences };
 export type { EnvironmentPromotionState };
 
 const SHA256_HEX = /^[a-f0-9]{64}$/i;
@@ -92,7 +94,7 @@ export function computePromotionalFingerprint(input: {
 	content: Record<string, unknown>;
 	assets: readonly PromotionalAssetDigest[];
 }): string {
-	const contentDigest = hashPublicationProjection(input.content);
+	const contentDigest = hashManagedInvitationContent(input.content);
 	const assets = [...input.assets]
 		.map((asset) => ({ key: asset.key, sha256: asset.sha256.toLowerCase() }))
 		.sort((left, right) => left.key.localeCompare(right.key));
@@ -105,33 +107,6 @@ export function computePromotionalFingerprint(input: {
 		contentDigest,
 		assets,
 	});
-}
-
-export function rewriteUploadedAssetReferences(
-	value: unknown,
-	keyByAssetId: ReadonlyMap<string, string>,
-): { ok: true; value: unknown } | { ok: false } {
-	const walk = (current: unknown): unknown => {
-		if (Array.isArray(current)) return current.map(walk);
-		if (!isRecord(current)) return current;
-		if (current.type === 'uploaded' && typeof current.assetId === 'string') {
-			const assetId = current.assetId;
-			if (assetId.startsWith(ASSET_KEY_PREFIX)) {
-				return semanticAssetRef(assetId.slice(ASSET_KEY_PREFIX.length));
-			}
-			const key = keyByAssetId.get(assetId);
-			if (!key) throw new Error('UNMAPPED_UPLOADED_REF');
-			return semanticAssetRef(key);
-		}
-		return Object.fromEntries(
-			Object.entries(current).map(([key, child]) => [key, walk(child)]),
-		);
-	};
-	try {
-		return { ok: true, value: walk(value) };
-	} catch {
-		return { ok: false };
-	}
 }
 
 export function buildLivePromotionalFingerprint(
@@ -158,14 +133,14 @@ export function buildLivePromotionalFingerprint(
 
 	const publishedRewrite = rewriteUploadedAssetReferences(row.publishedContent, keyByAssetId);
 	if (!publishedRewrite.ok || !isRecord(publishedRewrite.value)) return { ok: false };
-	const publishedDigest = hashPublicationProjection(publishedRewrite.value);
+	const publishedDigest = hashManagedInvitationContent(publishedRewrite.value);
 
 	let draftDigest: string | null = null;
 	if (row.draftContent != null) {
 		if (!isRecord(row.draftContent)) return { ok: false };
 		const draftRewrite = rewriteUploadedAssetReferences(row.draftContent, keyByAssetId);
 		if (!draftRewrite.ok || !isRecord(draftRewrite.value)) return { ok: false };
-		draftDigest = hashPublicationProjection(draftRewrite.value);
+		draftDigest = hashManagedInvitationContent(draftRewrite.value);
 	}
 
 	if (
