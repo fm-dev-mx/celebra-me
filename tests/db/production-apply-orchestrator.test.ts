@@ -954,3 +954,193 @@ describe('production apply execution', () => {
 		expect(applyPatch).not.toHaveBeenCalled();
 	});
 });
+
+// ---------------------------------------------------------------------------
+// Unpublished draft divergence auto-recovery
+// ---------------------------------------------------------------------------
+
+const DRAFT_DIVERGENCE_REASON =
+	'Target divergence conflict for "leslie-perez": target draft revision 2026-08-19T01:08:05.69545+00:00; target published version 4; package content hash 99f9e3cf; proposed merged-content hash 99f9e3cf; target draft hash 7a42240f; target published hash a07f2ad5. Descarte el borrador inédito del destino y aplique el paquete con --acknowledge-discard-unpublished-draft.';
+
+function blockedDraftDivergence(slug: string): PromotionPreflightReport {
+	return invitationPreflight(slug, {
+		status: 'BLOCKED',
+		blockCode: 'PRODUCTION_PLAN_BLOCKED',
+		reason: DRAFT_DIVERGENCE_REASON,
+	});
+}
+
+describe('draft divergence auto-recovery in buildProductionApplyPlan', () => {
+	it('retries with acknowledgeDiscardUnpublishedDraft when the first preflight is a draft-divergence block', async () => {
+		const calls: Array<{ slug: string; acknowledge: boolean | undefined }> = [];
+
+		const plan = await buildProductionApplyPlan(
+			cli(['--slug', 'leslie-perez']),
+			{
+				...baseDeps(),
+				resolvePackage: async (slug) => pkg(slug),
+				runInvitationPreflight: async (packageData, _scope, acknowledgeDiscardUnpublishedDraft) => {
+					const slug = packageData.invitation.slug;
+					calls.push({ slug, acknowledge: acknowledgeDiscardUnpublishedDraft });
+					// Second call (with ack) resolves to PROMOTABLE.
+					if (acknowledgeDiscardUnpublishedDraft) return invitationPreflight(slug);
+					return blockedDraftDivergence(slug);
+				},
+			},
+		);
+
+		// First call without ack, second with ack.
+		expect(calls).toHaveLength(2);
+		expect(calls[0]?.acknowledge).toBeFalsy();
+		expect(calls[1]?.acknowledge).toBe(true);
+
+		const item = plan.items.find((i) => i.id === 'leslie-perez');
+		expect(item?.readiness).toBe('READY_AFTER_DISCARD');
+		expect(item?.summary).toMatch(/borrador inédito descartado/i);
+	});
+
+	it('keeps BLOCKED when the retry after draft-divergence also fails', async () => {
+		const plan = await buildProductionApplyPlan(
+			cli(['--slug', 'leslie-perez']),
+			{
+				...baseDeps(),
+				resolvePackage: async (slug) => pkg(slug),
+				runInvitationPreflight: async (packageData, _scope, acknowledgeDiscardUnpublishedDraft) => {
+					const slug = packageData.invitation.slug;
+					// Both calls return BLOCKED (different reason on retry).
+					if (acknowledgeDiscardUnpublishedDraft) {
+						return invitationPreflight(slug, {
+							status: 'BLOCKED',
+							blockCode: 'BACKUP_REQUIRED',
+							reason: 'Backup required.',
+						});
+					}
+					return blockedDraftDivergence(slug);
+				},
+			},
+		);
+
+		const item = plan.items.find((i) => i.id === 'leslie-perez');
+		expect(item?.readiness).toBe('BLOCKED');
+	});
+
+	it('does not retry when the block code is unrelated to draft divergence', async () => {
+		let callCount = 0;
+
+		const plan = await buildProductionApplyPlan(
+			cli(['--slug', 'leslie-perez']),
+			{
+				...baseDeps(),
+				resolvePackage: async (slug) => pkg(slug),
+				runInvitationPreflight: async (packageData) => {
+					callCount++;
+					return invitationPreflight(packageData.invitation.slug, {
+						status: 'BLOCKED',
+						blockCode: 'MISSING_PREVIEW_APPROVAL',
+						reason: 'No approved release found.',
+					});
+				},
+			},
+		);
+
+		expect(callCount).toBe(1);
+		const item = plan.items.find((i) => i.id === 'leslie-perez');
+		expect(item?.readiness).toBe('BLOCKED');
+	});
+
+	it('auto-resolves only the divergent slug when multiple slugs are in scope', async () => {
+		const plan = await buildProductionApplyPlan(
+			cli(['--slugs', 'leslie-perez,alpha']),
+			{
+				...baseDeps(),
+				resolvePackage: async (slug) => pkg(slug),
+				runInvitationPreflight: async (packageData, _scope, acknowledgeDiscardUnpublishedDraft) => {
+					const slug = packageData.invitation.slug;
+					if (slug === 'leslie-perez') {
+						if (acknowledgeDiscardUnpublishedDraft) return invitationPreflight(slug);
+						return blockedDraftDivergence(slug);
+					}
+					return invitationPreflight(slug);
+				},
+			},
+		);
+
+		const leslie = plan.items.find((i) => i.id === 'leslie-perez');
+		const alpha = plan.items.find((i) => i.id === 'alpha');
+		expect(leslie?.readiness).toBe('READY_AFTER_DISCARD');
+		expect(alpha?.readiness).toBe('READY');
+	});
+
+	it('includes the auto-resolved slug in --all-ready mutations', async () => {
+		const plan = await buildProductionApplyPlan(
+			cli(['--all-ready']),
+			{
+				...baseDeps({
+					preflights: {
+						'leslie-perez': blockedDraftDivergence('leslie-perez'),
+						alpha: invitationPreflight('alpha'),
+					},
+				}),
+				resolvePackage: async (slug) => pkg(slug),
+				runInvitationPreflight: async (packageData, _scope, acknowledgeDiscardUnpublishedDraft) => {
+					const slug = packageData.invitation.slug;
+					if (slug === 'leslie-perez') {
+						if (acknowledgeDiscardUnpublishedDraft) return invitationPreflight(slug);
+						return blockedDraftDivergence(slug);
+					}
+					return invitationPreflight(slug);
+				},
+			},
+		);
+
+		const leslie = plan.items.find((i) => i.id === 'leslie-perez');
+		const alpha = plan.items.find((i) => i.id === 'alpha');
+		expect(leslie?.readiness).toBe('READY_AFTER_DISCARD');
+		expect(alpha?.readiness).toBe('READY');
+		// Both should appear in mutations.
+		const mutationIds = plan.items
+			.filter((i) => i.readiness === 'READY' || i.readiness === 'READY_AFTER_DISCARD')
+			.map((i) => i.id)
+			.sort();
+		expect(mutationIds).toContain('leslie-perez');
+		expect(mutationIds).toContain('alpha');
+	});
+
+	it('passes acknowledgeDiscardUnpublishedDraft to apply for READY_AFTER_DISCARD items', async () => {
+		const applyInvitation = jest.fn(
+			async (input: {
+				packageData: InvitationPackageData;
+				acknowledgeDiscardUnpublishedDraft?: boolean;
+			}) =>
+				({
+					...invitationPreflight(input.packageData.invitation.slug),
+					status: 'PROMOTED',
+				}) as PromotionApplyReport,
+		);
+
+		await applyProductionApplyPlan(cli(['--slug', 'leslie-perez', '--apply']), {
+			...baseDeps({ pending: [] }),
+			resolvePackage: async (slug) => pkg(slug),
+			runInvitationPreflight: async (packageData, _scope, acknowledgeDiscardUnpublishedDraft) => {
+				const slug = packageData.invitation.slug;
+				if (acknowledgeDiscardUnpublishedDraft) return invitationPreflight(slug);
+				return blockedDraftDivergence(slug);
+			},
+			requireOwnerApply: async (input) => {
+				issueProductionWritePermit({
+					projectRef: SUPABASE_PROJECT_REFS.production,
+					operationType: 'production_apply',
+					bindingHex: input.bindingHex,
+				});
+			},
+			applyInvitation,
+		});
+
+		expect(applyInvitation).toHaveBeenCalledTimes(1);
+		const applyCall = applyInvitation.mock.calls[0] as unknown as [
+			{ acknowledgeDiscardUnpublishedDraft?: boolean },
+		];
+		expect(applyCall[0].acknowledgeDiscardUnpublishedDraft).toBe(true);
+	});
+});
+

@@ -211,6 +211,11 @@ export const ACKNOWLEDGE_DISCARD_UNPUBLISHED_DRAFT_FLAG =
 export const TARGET_DIVERGENCE_ACKNOWLEDGE_HINT =
 	'Descarte el borrador inédito del destino y aplique el paquete con --acknowledge-discard-unpublished-draft.';
 
+/** Block code emitted by the orchestrator when the target has an unpublished draft
+ *  that diverges from both the package and the last published version.
+ *  Callers should match this constant rather than parsing the error message. */
+export const TARGET_DIVERGENCE_BLOCK_CODE = 'UNPUBLISHED_DRAFT_DIVERGENCE' as const;
+
 export function isTargetDivergenceConflictMessage(message: string): boolean {
 	return message.includes('Target divergence conflict for');
 }

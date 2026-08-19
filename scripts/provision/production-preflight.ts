@@ -65,6 +65,9 @@ export async function runProductionPreflight(input: {
 	getProductionDbUrl: () => { url: string };
 	runEngine?: (options: ImportEngineOptions) => Promise<ImportEngineResult>;
 	liveRecheck?: PreviewLiveVerificationResult;
+	/** When true, an unpublished draft whose content diverges from the package is silently
+	 *  discarded in favour of the incoming package content. */
+	acknowledgeDiscardUnpublishedDraft?: boolean;
 }): Promise<ProductionPreflightResult> {
 	assertNoPendingPublishedPlaceholders(input.packageData.publishedContent?.content);
 
@@ -114,6 +117,7 @@ export async function runProductionPreflight(input: {
 			pruneAssets: input.pruneAssets,
 			updateScope: input.updateScope,
 			conflictResolutions: input.conflictResolutions,
+			acknowledgeDiscardUnpublishedDraft: input.acknowledgeDiscardUnpublishedDraft,
 		});
 		assertEngineResult(engineResult, undefined, 'Producción', false);
 		let finalApproval: PreviewApprovalArtifact | undefined;

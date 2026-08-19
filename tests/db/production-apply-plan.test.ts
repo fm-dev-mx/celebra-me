@@ -235,3 +235,65 @@ describe('production apply plan fingerprint and eligibility', () => {
 		);
 	});
 });
+
+describe('READY_AFTER_DISCARD readiness', () => {
+	it('classifyInvitationPreflight does not produce READY_AFTER_DISCARD — the orchestrator assigns it after retry', () => {
+		// classifyInvitationPreflight is a pure classifier that maps preflight status to readiness.
+		// READY_AFTER_DISCARD is set by the orchestrator after a successful retry with acknowledgeDiscard.
+		// A direct PRODUCTION_PLAN_BLOCKED with no other signal stays BLOCKED.
+		expect(
+			classifyInvitationPreflight({
+				status: 'BLOCKED',
+				blockCode: 'PRODUCTION_PLAN_BLOCKED',
+				schemaReadyInPlan: false,
+			}),
+		).toBe('BLOCKED');
+	});
+
+	it('mutationItemsOf includes READY_AFTER_DISCARD items as mutations', () => {
+		const scope: ProductionApplyScope = {
+			schema: false,
+			slugs: ['leslie-perez'],
+			allReady: false,
+			inspectAll: false,
+		};
+		const plan = assembleProductionApplyPlan(scope, [
+			item({ id: 'leslie-perez', readiness: 'READY_AFTER_DISCARD', binding: 'pkg-lp' }),
+		]);
+		const mutations = mutationItemsOf(plan);
+		expect(mutations).toHaveLength(1);
+		expect(mutations[0]?.id).toBe('leslie-perez');
+	});
+
+	it('evaluateApplyEligibility passes when the only mutation is READY_AFTER_DISCARD', () => {
+		const scope: ProductionApplyScope = {
+			schema: false,
+			slugs: ['leslie-perez'],
+			allReady: false,
+			inspectAll: false,
+		};
+		const plan = assembleProductionApplyPlan(scope, [
+			item({ id: 'leslie-perez', readiness: 'READY_AFTER_DISCARD', binding: 'pkg-lp' }),
+		]);
+		expect(evaluateApplyEligibility(plan)).toEqual({ ok: true });
+	});
+
+	it('READY_AFTER_DISCARD items are included in planId so the fingerprint changes if the binding changes', () => {
+		const scope: ProductionApplyScope = {
+			schema: false,
+			slugs: ['leslie-perez'],
+			allReady: false,
+			inspectAll: false,
+		};
+		const itemA = item({ id: 'leslie-perez', readiness: 'READY_AFTER_DISCARD', binding: 'hash-a' });
+		const itemB = { ...itemA, binding: 'hash-b' };
+		expect(buildProductionApplyPlanId([itemA])).not.toBe(buildProductionApplyPlanId([itemB]));
+		// and plan without the item gets a different id
+		expect(buildProductionApplyPlanId([itemA])).not.toBe(buildProductionApplyPlanId([]));
+		// verify that allReady omits the item from planId (patch-style exclusion does NOT apply to invitations)
+		const planA = assembleProductionApplyPlan(scope, [itemA]);
+		const planB = assembleProductionApplyPlan(scope, [itemB]);
+		expect(planA.planId).not.toBe(planB.planId);
+	});
+});
+

@@ -11,7 +11,7 @@ import type {
 } from './production-patch-preview.ts';
 
 export type ProductionApplyReadiness =
-	'READY' | 'READY_AFTER_SCHEMA' | 'IN_SYNC' | 'BLOCKED' | 'UNKNOWN' | 'NOT_APPLICABLE';
+	'READY' | 'READY_AFTER_SCHEMA' | 'READY_AFTER_DISCARD' | 'IN_SYNC' | 'BLOCKED' | 'UNKNOWN' | 'NOT_APPLICABLE';
 
 export type ProductionApplyDomain = 'schema' | 'invitation' | 'patch';
 
@@ -77,7 +77,7 @@ export interface ProductionApplyPlan {
 const PLAN_ID_VERSION = 2;
 
 function isMutationReadiness(readiness: ProductionApplyReadiness): boolean {
-	return readiness === 'READY' || readiness === 'READY_AFTER_SCHEMA';
+	return readiness === 'READY' || readiness === 'READY_AFTER_SCHEMA' || readiness === 'READY_AFTER_DISCARD';
 }
 
 export function mutationItemsOf(plan: ProductionApplyPlan): ProductionApplyPlanItem[] {

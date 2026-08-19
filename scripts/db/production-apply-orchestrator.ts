@@ -10,7 +10,6 @@ import { OperatorError } from './operator-cli-ux.ts';
 import {
 	MigrateApplyError,
 	orchestrateMigrate,
-	preflightMigrate,
 	type OrchestrateMigrateResult,
 } from './migrate-orchestrator.ts';
 import type { MigrationPlan } from './migration-plan.ts';
@@ -41,20 +40,15 @@ import { inspectPatch } from './production-apply-patch-plan.ts';
 import { resolveInvitationPackageInput } from '../provision/invitation-package-input.ts';
 import type { InvitationPackageData } from '../provision/invitation-package.ts';
 import { orchestrateInvitationPromotion } from '../provision/invitation-promotion-orchestrator.ts';
-import {
-	runPromotionPreflight,
-	type PromotionApplyReport,
-	type PromotionPreflightReport,
+import type {
+	PromotionApplyReport,
+	PromotionPreflightReport,
 } from '../provision/invitation-promote.ts';
 import { listInvitationDefinitions } from '../provision/invitations/registry.ts';
-import { resolvePromotionUpdateScope } from '../provision/invitation-update-options.ts';
 import { revalidatePromotionVolatilePreconditions } from '../provision/promotion-volatile-revalidation.ts';
 import type { UpdateScope } from '../provision/semantic-delta.ts';
 import {
 	assembleProductionApplyPlan,
-	classifyInvitationPreflight,
-	classifySchemaError,
-	classifySchemaPreflight,
 	evaluateApplyEligibility,
 	mutationItemsOf,
 	type ProductionApplyItemOutcome,
@@ -64,6 +58,10 @@ import {
 } from './production-apply-plan.ts';
 import type { ProductionApplyCliArgs } from './production-apply-cli-args.ts';
 import { toPublicProductionApplyPlan } from './production-apply-format.ts';
+import {
+	inspectInvitation,
+	inspectSchema,
+} from './production-apply-inspectors.ts';
 
 const PRODUCTION_APPLY_OPERATION_TYPE = 'production_apply';
 
@@ -77,6 +75,7 @@ export interface ProductionApplyAssemblerDeps {
 	runInvitationPreflight?: (
 		packageData: InvitationPackageData,
 		updateScope?: UpdateScope,
+		acknowledgeDiscardUnpublishedDraft?: boolean,
 	) => Promise<PromotionPreflightReport>;
 	preparePatch?: typeof prepareProductionPatchFile;
 }
@@ -93,6 +92,7 @@ export interface ProductionApplyExecuteDeps extends ProductionApplyAssemblerDeps
 		authorizedPlanBindingHex: string;
 		updateScope?: UpdateScope;
 		reviewedPreflight?: PromotionPreflightReport;
+		acknowledgeDiscardUnpublishedDraft?: boolean;
 	}) => Promise<PromotionApplyReport>;
 	revalidateInvitationPlan?: (reviewed: ProductionApplyPlan) => Promise<void>;
 	applyPatch?: typeof applyPreparedProductionPatch;
@@ -130,11 +130,6 @@ function defaultListSlugs(): string[] {
 		.sort((a, b) => a.localeCompare(b));
 }
 
-function defaultInvitationUpdateScope(slug: string): UpdateScope | undefined {
-	const definition = listInvitationDefinitions().find((candidate) => candidate.slug === slug);
-	return resolvePromotionUpdateScope({ deliveryScope: definition?.deliveryScope });
-}
-
 function scopeFromArgs(args: ProductionApplyCliArgs): ProductionApplyScope {
 	return {
 		schema: args.schema || args.inspectAll,
@@ -143,128 +138,6 @@ function scopeFromArgs(args: ProductionApplyCliArgs): ProductionApplyScope {
 		patchFile: args.patchFile,
 		inspectAll: args.inspectAll,
 	};
-}
-
-function schemaItemFromPlan(plan: MigrationPlan): ProductionApplyPlanItem {
-	const readiness = classifySchemaPreflight({
-		pendingVersions: plan.pendingVersions,
-		compatibilityStatus: plan.compatibilityStatus,
-	});
-	const pending = plan.pendingVersions.filter((version) => version !== 'none');
-	return {
-		domain: 'schema',
-		id: 'schema',
-		readiness,
-		summary:
-			readiness === 'IN_SYNC'
-				? 'Sin migraciones pendientes'
-				: `Pendientes: ${pending.join(', ')}`,
-		binding: plan.planId,
-		pendingVersions: pending,
-		detail: readiness === 'READY' ? plan.planId : undefined,
-	};
-}
-
-function schemaItemFromError(error: unknown): ProductionApplyPlanItem {
-	const classified = classifySchemaError(error);
-	return {
-		domain: 'schema',
-		id: 'schema',
-		readiness: classified.readiness,
-		summary: classified.detail,
-		detail: classified.detail,
-		blockCode: classified.blockCode,
-	};
-}
-
-async function inspectSchema(
-	include: boolean,
-	deps: ProductionApplyAssemblerDeps,
-	expectedPin: readonly string[] | null = null,
-): Promise<ProductionApplyPlanItem> {
-	if (!include) {
-		return {
-			domain: 'schema',
-			id: 'schema',
-			readiness: 'NOT_APPLICABLE',
-			summary: 'Schema no está en el alcance',
-		};
-	}
-	try {
-		const build =
-			deps.preflightSchema ??
-			(() =>
-				preflightMigrate({
-					target: 'production',
-					mode: 'preflight',
-					expectedPin,
-				}));
-		return schemaItemFromPlan(build());
-	} catch (error) {
-		return schemaItemFromError(error);
-	}
-}
-
-async function inspectInvitation(
-	slug: string,
-	schemaReadyInPlan: boolean,
-	deps: ProductionApplyAssemblerDeps,
-): Promise<ProductionApplyPlanItem> {
-	try {
-		const resolvePackage =
-			deps.resolvePackage ??
-			(async (target: string) => {
-				const resolved = await resolveInvitationPackageInput({ slug: target });
-				return resolved.packageData;
-			});
-		const packageData = await resolvePackage(slug);
-		const updateScope = (deps.resolveInvitationUpdateScope ?? defaultInvitationUpdateScope)(
-			slug,
-		);
-		const runPreflight =
-			deps.runInvitationPreflight ??
-			((data: InvitationPackageData, scope?: UpdateScope) =>
-				runPromotionPreflight({
-					packageData: data,
-					requireBackup: false,
-					updateScope: scope,
-					getProductionDbUrl: getProdDbUrl,
-				}));
-		const preflight = await runPreflight(packageData, updateScope);
-		const readiness = classifyInvitationPreflight({
-			status: preflight.status,
-			blockCode: preflight.blockCode,
-			schemaState: preflight.schema.state,
-			schemaReadyInPlan,
-		});
-		return {
-			domain: 'invitation',
-			id: slug,
-			readiness,
-			summary: preflight.reason ?? preflight.status,
-			detail: preflight.reason ?? preflight.schema.detail,
-			blockCode: preflight.blockCode,
-			binding: packageData.packageHash,
-			packageHash: packageData.packageHash,
-			updateScope,
-			preflight,
-		};
-	} catch (error) {
-		const classified = classifySchemaError(error);
-		const readiness =
-			classified.readiness === 'UNKNOWN' ||
-			/UNVERIFIED|CREDENTIALS|UNREACHABLE/i.test(classified.detail)
-				? 'UNKNOWN'
-				: 'BLOCKED';
-		return {
-			domain: 'invitation',
-			id: slug,
-			readiness,
-			summary: classified.detail,
-			detail: classified.detail,
-			blockCode: classified.blockCode,
-		};
-	}
 }
 
 export async function buildProductionApplyPlan(
@@ -563,11 +436,13 @@ async function applyOneInvitationMutation(
 			authorizedPlanBindingHex: string;
 			updateScope?: UpdateScope;
 			reviewedPreflight?: PromotionPreflightReport;
+			acknowledgeDiscardUnpublishedDraft?: boolean;
 		}) =>
 			orchestrateInvitationPromotion({
 				packageData: input.packageData,
 				updateScope: input.updateScope,
 				reviewedPreflight: input.reviewedPreflight,
+				acknowledgeDiscardUnpublishedDraft: input.acknowledgeDiscardUnpublishedDraft,
 				authorizedProductionPermit: {
 					bindingHex: input.authorizedPlanBindingHex,
 					operationType: PRODUCTION_APPLY_OPERATION_TYPE,
@@ -581,6 +456,7 @@ async function applyOneInvitationMutation(
 		authorizedPlanBindingHex: reviewed.planId,
 		updateScope: item.updateScope,
 		reviewedPreflight: item.preflight,
+		acknowledgeDiscardUnpublishedDraft: item.readiness === 'READY_AFTER_DISCARD',
 	});
 	if (report.status === 'BLOCKED' || report.status === 'APPLIED_BUT_VERIFICATION_FAILED') {
 		replaceOutcome(outcomes, item.id, {
