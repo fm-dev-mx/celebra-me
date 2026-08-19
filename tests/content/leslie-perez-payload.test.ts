@@ -146,7 +146,10 @@ describe('Leslie Perez provision contract', () => {
 			variant: 'standard',
 			items: [{ type: 'cash' }],
 		});
-		expect(content).not.toHaveProperty('music');
+		expect(content.music).toEqual({
+			url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1787101349/Taylor_Swift_-_Fifteen_opt_n5gqpq.mp3',
+			autoPlay: true,
+		});
 		expect(content.sectionOrder).toEqual([
 			'family',
 			'countdown',
@@ -182,7 +185,12 @@ describe('Leslie Perez provision contract', () => {
 		expect(viewModel.sections.gifts?.variant).toBe('standard');
 		expect(viewModel.sections.rsvp?.variant).toBe('formal-register');
 		expect(viewModel.sections.rsvp?.personalizedAccess.variant).toBe('formal-pass');
-		expect(viewModel.music).toBeUndefined();
+		expect(viewModel.music).toEqual({
+			url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1787101349/Taylor_Swift_-_Fifteen_opt_n5gqpq.mp3',
+			autoPlay: true,
+			revealMode: 'envelope',
+			title: undefined,
+		});
 		expect(viewModel.interludes).toHaveLength(2);
 
 		const plan = buildInvitationRenderPlan(viewModel, { isDemoPreview: true });
@@ -210,7 +218,7 @@ describe('Leslie Perez provision contract', () => {
 		]);
 	});
 
-	it('does not assemble a music player on hosted Production when no music is published', () => {
+	it('assembles the music player on hosted Production from published music', () => {
 		const viewModel = adaptEvent({
 			id: `events/${LESLIE_EVENT.slug}`,
 			data: content,
@@ -229,8 +237,19 @@ describe('Leslie Perez provision contract', () => {
 				slug: LESLIE_EVENT.slug,
 				eventType: LESLIE_EVENT.eventType,
 			});
-			expect(viewModel.music).toBeUndefined();
-			expect(page.musicPlayer).toBeUndefined();
+			expect(viewModel.music).toEqual({
+				url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1787101349/Taylor_Swift_-_Fifteen_opt_n5gqpq.mp3',
+				autoPlay: true,
+				revealMode: 'envelope',
+				title: undefined,
+			});
+			expect(page.musicPlayer).toEqual({
+				url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1787101349/Taylor_Swift_-_Fifteen_opt_n5gqpq.mp3',
+				autoPlay: true,
+				title: undefined,
+				revealMode: 'envelope',
+				variant: 'standard',
+			});
 		} finally {
 			isDev.mockReturnValue(false);
 			if (originalVercel === undefined) {
