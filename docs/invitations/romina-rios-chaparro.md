@@ -31,7 +31,9 @@ It does not import the variant stylesheet or redefine the canonical grid, visibi
 breakpoints.
 
 Romina's photographs remain owned by her managed definition and asset map. The Hero receives a
-resolved semantic `backgroundImage`; the variant imports no invitation assets.
+resolved semantic `backgroundImage`; the variant imports no invitation assets. Desktop and mobile
+hero paths use distinct uploaded keys (`hero` / `hero-mobile`) encoded from the same source
+photograph (`IMG_3263.jpeg`) so each path meets its delivery-role budget.
 
 ## Encapsulation evidence
 

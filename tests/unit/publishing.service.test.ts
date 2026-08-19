@@ -1724,6 +1724,139 @@ describe('publishDraft', () => {
 		expect(mockCommitAtomic).not.toHaveBeenCalled();
 	});
 
+	it('rejects one uploaded asset reused across desktop and mobile hero roles', async () => {
+		mockGetProject.mockResolvedValue(baseProject as any);
+		mockFindDraft.mockResolvedValue({
+			...validDraft,
+			content: {
+				...validDraft.content,
+				hero: {
+					...validDraft.content.hero,
+					backgroundImage: { type: 'uploaded', assetId: VALID_UUID_1 },
+					backgroundImageMobile: { type: 'uploaded', assetId: VALID_UUID_1 },
+				},
+			},
+		} as any);
+		mockFindAssets.mockResolvedValue([
+			{
+				id: VALID_UUID_1,
+				invitationId: 'proj-1',
+				displayName: 'Portada compartida',
+				bucket: 'invitation-assets',
+				storagePath: 'invitations/proj-1/optimized/hero.webp',
+				mimeType: 'image/webp',
+				width: 1787,
+				height: 2560,
+				fileSize: 300 * 1024,
+				validationVersion: ROLE_AWARE_ASSET_POLICY_VERSION,
+				createdAt: '2026-01-01T00:00:00.000Z',
+				updatedAt: '2026-01-01T00:00:00.000Z',
+			},
+		] as any);
+
+		await expect(publishDraft('proj-1')).rejects.toMatchObject({
+			status: 422,
+			code: 'validation_error',
+			details: {
+				reason: 'asset_role_conflict',
+				assetId: VALID_UUID_1,
+				roles: ['hero-desktop', 'hero-mobile'],
+			},
+		});
+		expect(mockCommitAtomic).not.toHaveBeenCalled();
+	});
+
+	it('rejects a desktop-weight hero bound to backgroundImageMobile', async () => {
+		mockGetProject.mockResolvedValue(baseProject as any);
+		mockFindDraft.mockResolvedValue({
+			...validDraft,
+			content: {
+				...validDraft.content,
+				hero: {
+					...validDraft.content.hero,
+					backgroundImageMobile: { type: 'uploaded', assetId: VALID_UUID_1 },
+				},
+			},
+		} as any);
+		mockFindAssets.mockResolvedValue([
+			{
+				id: VALID_UUID_1,
+				invitationId: 'proj-1',
+				displayName: 'Portada desktop',
+				bucket: 'invitation-assets',
+				storagePath: 'invitations/proj-1/optimized/hero-desktop.webp',
+				mimeType: 'image/webp',
+				width: 1787,
+				height: 2560,
+				fileSize: 400 * 1024,
+				validationVersion: ROLE_AWARE_ASSET_POLICY_VERSION,
+				createdAt: '2026-01-01T00:00:00.000Z',
+				updatedAt: '2026-01-01T00:00:00.000Z',
+			},
+		] as any);
+
+		await expect(publishDraft('proj-1')).rejects.toMatchObject({
+			status: 422,
+			code: 'validation_error',
+			message: expect.stringContaining('peso recomendado'),
+			details: {
+				reason: 'asset_role_weight_exceeded',
+				path: 'hero.backgroundImageMobile',
+				role: 'hero-mobile',
+			},
+		});
+		expect(mockCommitAtomic).not.toHaveBeenCalled();
+	});
+
+	it('still rejects path-role weight on a previously published role-aware asset', async () => {
+		mockGetProject.mockResolvedValue(baseProject as any);
+		mockFindPublishedByInvitationId.mockResolvedValue({
+			...publishedRow,
+			content: {
+				hero: {
+					backgroundImageMobile: { type: 'uploaded', assetId: VALID_UUID_1 },
+				},
+			},
+		} as any);
+		mockFindDraft.mockResolvedValue({
+			...validDraft,
+			content: {
+				...validDraft.content,
+				hero: {
+					...validDraft.content.hero,
+					backgroundImageMobile: { type: 'uploaded', assetId: VALID_UUID_1 },
+				},
+			},
+		} as any);
+		mockFindAssets.mockResolvedValue([
+			{
+				id: VALID_UUID_1,
+				invitationId: 'proj-1',
+				displayName: 'Portada desktop',
+				bucket: 'invitation-assets',
+				storagePath: 'invitations/proj-1/optimized/hero-desktop.webp',
+				mimeType: 'image/webp',
+				width: 1787,
+				height: 2560,
+				fileSize: 400 * 1024,
+				validationVersion: ROLE_AWARE_ASSET_POLICY_VERSION,
+				createdAt: '2026-01-01T00:00:00.000Z',
+				updatedAt: '2026-01-01T00:00:00.000Z',
+			},
+		] as any);
+
+		await expect(publishDraft('proj-1')).rejects.toMatchObject({
+			status: 422,
+			code: 'validation_error',
+			details: {
+				reason: 'asset_role_weight_exceeded',
+				path: 'hero.backgroundImageMobile',
+				role: 'hero-mobile',
+			},
+		});
+		expect(mockCommitAtomic).not.toHaveBeenCalled();
+	});
+
 	it('preserves existing {type:internal} refs through publish unchanged', async () => {
 		mockGetProject.mockResolvedValue(baseProject as any);
 		mockFindDraft.mockResolvedValue(validDraft as any);

@@ -3,7 +3,9 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import sharp from 'sharp';
+import { ROLE_AWARE_ASSET_POLICY_VERSION } from '@/lib/intake/services/asset-policy';
 import {
+	assertEncodedAssetsMeetPathRoleBudgets,
 	buildNormalizedInvitationRelease,
 	buildSemanticAssetMap,
 	materializeAssetReferences,
@@ -106,7 +108,7 @@ describe('normalized managed release semantics & roundtrip parity', () => {
 		expect(serializedPkg.invitation.title).toBe('XV años de Romina Ríos Chaparro');
 
 		// 5. Assert Semantic Key & Leakage Safety Invariants
-		expect(serializedPkg.assets).toHaveLength(11);
+		expect(serializedPkg.assets).toHaveLength(13);
 		expect(serializedPkg.assets.map((a) => a.key).sort()).toEqual(ROMINA_ASSET_SPECS.map((s) => s.key).sort());
 
 		const packageJsonStr = JSON.stringify(serializedPkg);
@@ -116,6 +118,44 @@ describe('normalized managed release semantics & roundtrip parity', () => {
 		} finally {
 			cleanup();
 		}
+	});
+
+	it('rejects a desktop-sized encoded asset bound to the mobile hero path', () => {
+		expect(() =>
+			assertEncodedAssetsMeetPathRoleBudgets(
+				{
+					hero: {
+						backgroundImageMobile: {
+							type: 'uploaded',
+							assetId: '__INVITATION_ASSET_KEY__:hero-mobile',
+						},
+					},
+				},
+				[
+					{
+						key: 'hero-mobile',
+						fileSize: 400 * 1024,
+						validationVersion: ROLE_AWARE_ASSET_POLICY_VERSION,
+					},
+				],
+			),
+		).toThrow(/hero-mobile delivery budget/);
+	});
+
+	it('preserves generic asset compatibility outside role-aware delivery', () => {
+		expect(() =>
+			assertEncodedAssetsMeetPathRoleBudgets(
+				{
+					hero: {
+						backgroundImage: {
+							type: 'uploaded',
+							assetId: '__INVITATION_ASSET_KEY__:hero',
+						},
+					},
+				},
+				[{ key: 'hero', fileSize: 600 * 1024, validationVersion: 1 }],
+			),
+		).not.toThrow();
 	});
 });
 

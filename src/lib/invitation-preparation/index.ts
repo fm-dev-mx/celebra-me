@@ -38,6 +38,12 @@ export {
 } from '@/lib/invitation-preparation/image-optimization';
 
 export {
+	collectUploadedAssetIds,
+	collectUploadedContentRefs,
+	type UploadedContentRef,
+} from '@/lib/invitation-preparation/uploaded-content-refs';
+
+export {
 	CONTRACT_MATURITIES,
 	FIELD_REQUIREMENTS,
 	evaluateEventCompleteness,

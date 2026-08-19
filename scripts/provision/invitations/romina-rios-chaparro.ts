@@ -30,7 +30,15 @@ export const ROMINA_ASSET_SPECS = [
 	{
 		key: 'hero',
 		relativePath: 'IMG_3263.jpeg',
+		optimizationRole: 'hero-desktop',
 		displayName: 'Romina — portada',
+		alt: 'Romina con vestido verde salvia vista de espaldas entre follaje',
+	},
+	{
+		key: 'hero-mobile',
+		relativePath: 'IMG_3263.jpeg',
+		optimizationRole: 'hero-mobile',
+		displayName: 'Romina — portada móvil',
 		alt: 'Romina con vestido verde salvia vista de espaldas entre follaje',
 	},
 	{
@@ -54,7 +62,15 @@ export const ROMINA_ASSET_SPECS = [
 	{
 		key: 'social',
 		relativePath: 'IMG_3201.jpeg',
+		optimizationRole: 'gallery',
 		displayName: 'Romina — vista previa social',
+		alt: 'Romina con vestido verde salvia en una composición horizontal',
+	},
+	{
+		key: 'social-og',
+		relativePath: 'IMG_3201.jpeg',
+		optimizationRole: 'hero-desktop',
+		displayName: 'Romina — imagen social para compartir',
 		alt: 'Romina con vestido verde salvia en una composición horizontal',
 	},
 	{
@@ -152,7 +168,7 @@ export function buildRominaPublishedContent(
 			label: 'MIS XV',
 			date: ROMINA_EVENT.startsAtUtc,
 			backgroundImage: assets.hero,
-			backgroundImageMobile: assets.hero,
+			backgroundImageMobile: assets['hero-mobile'],
 			backgroundImageDesktop: assets.hero,
 			variant: 'split-cover',
 			focalPoint: '50% 42%',
@@ -339,7 +355,7 @@ export function buildRominaPublishedContent(
 			focalPoint: '50% 42%',
 		},
 		sharing: {
-			ogImage: assets.social,
+			ogImage: assets['social-og'],
 			ogDescription: 'Invitación a los XV años de Romina Ríos Chaparro',
 			shareMessages: {
 				reminder:

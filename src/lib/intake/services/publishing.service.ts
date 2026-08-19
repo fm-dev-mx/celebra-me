@@ -57,6 +57,10 @@ import {
 	getImageOptimizationRoleForPath,
 	getWeightTargetBytes,
 } from '@/lib/invitation-preparation/image-optimization';
+import {
+	collectUploadedAssetIds,
+	collectUploadedContentRefs,
+} from '@/lib/invitation-preparation/uploaded-content-refs';
 import type { InvitationMutationCommandContext } from '@/lib/intake/mutations/command-context';
 import { createMutationOutcome, type MutationOutcome } from '@/lib/intake/mutations/outcome';
 import {
@@ -384,6 +388,7 @@ async function freezeUploadedContentRefs(
 	invitation?: Invitation,
 	publishedAt?: string | null,
 ): Promise<Record<string, unknown>> {
+	assertUploadedAssetRoleReuse(content);
 	const assets = await findAssetsByInvitationId(invitationId);
 	const assetMap = new Map(assets.map((a) => [a.id, a]));
 	const legacyPublishedAssetIds = collectUploadedAssetIds(priorPublishedContent);
@@ -467,20 +472,27 @@ async function freezeUploadedContentRefs(
 	return frozen;
 }
 
-function collectUploadedAssetIds(content?: Record<string, unknown>): Set<string> {
-	const ids = new Set<string>();
-	const walk = (value: unknown): void => {
-		if (!value || typeof value !== 'object') return;
-		if (Array.isArray(value)) {
-			value.forEach(walk);
-			return;
-		}
-		const obj = value as Record<string, unknown>;
-		if (obj.type === 'uploaded' && typeof obj.assetId === 'string') ids.add(obj.assetId);
-		Object.values(obj).forEach(walk);
-	};
-	walk(content);
-	return ids;
+function assertUploadedAssetRoleReuse(content: Record<string, unknown>): void {
+	const rolesByAssetId = new Map<string, Set<string>>();
+	for (const { assetId, path } of collectUploadedContentRefs(content)) {
+		const roles = rolesByAssetId.get(assetId) ?? new Set<string>();
+		roles.add(getImageOptimizationRoleForPath(path));
+		rolesByAssetId.set(assetId, roles);
+	}
+
+	for (const [assetId, roles] of rolesByAssetId) {
+		if (roles.size < 2) continue;
+		throw new ApiError(
+			422,
+			'validation_error',
+			'Una misma imagen no puede publicarse en rutas con distintos roles de entrega. Usa derivados optimizados por rol.',
+			{
+				reason: 'asset_role_conflict',
+				assetId,
+				roles: [...roles].sort(),
+			},
+		);
+	}
 }
 
 function assertUploadedAssetPolicy(

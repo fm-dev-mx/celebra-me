@@ -10,6 +10,13 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+### Changed
+
+- **Invitation path-role image budgets**: Managed release and dashboard publish reject an uploaded
+  image bound to a stricter visual role than its bytes allow (for example a desktop hero reused as
+  `hero.backgroundImageMobile`). Transfer-weight ceilings remain the `IMAGE_ROLE_WEIGHT_TARGETS`
+  SSOT.
+
 ## [0.17.0-beta.1] - 2026-08-11
 
 Feature release consolidating Victoria & Roberto real wedding client invitation provisioning, section-owned structural variants architecture, draft restoration and contract audit tooling, and Git safety v2 lifecycle updates since `v0.16.0-beta.1`.

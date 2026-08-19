@@ -2,7 +2,7 @@
 title: Invitation delivery and performance metrics
 lifecycle: evergreen
 domain: invitation-delivery
-last_reviewed: 2026-08-16
+last_reviewed: 2026-08-18
 ---
 
 # Invitation delivery and performance metrics
@@ -402,6 +402,20 @@ encoding changes.
 **Use case.** After adding sections, fonts-in-HTML, or JSON-LD blobs.
 
 **Action.** Diff HTML inventories. Do not raise the budget to silence `--assert-budget`.
+
+### Image transfer-weight roles
+
+**Definition.** Canonical WebP delivery budgets by visual role live in
+`src/lib/invitation-preparation/image-optimization.ts` (`IMAGE_ROLE_WEIGHT_TARGETS`). Dashboard
+publish and managed release both enforce `getWeightTargetBytes(getImageOptimizationRoleForPath(path))`
+against the uploaded file bound to that published path. Do not duplicate those kilobyte ceilings in
+this document.
+
+**Why it matters.** Reusing a desktop hero binary on `hero.backgroundImageMobile` can pass spec-role
+checks and still fail publish.
+
+**Enforcement.** Hard CI via `tests/unit/image-optimization-budgets.test.ts`,
+`tests/content/published-asset-path-budget.test.ts`, and the managed-release path-role gate.
 
 ### Hosted `x-vercel-cache` vs CI policy
 

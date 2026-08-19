@@ -187,9 +187,13 @@ Helpers: `createPlaceholderToken`, `findPlaceholderTokens`, `validatePlaceholder
 6. Produce a role-aware optimization **plan** using the canonical transfer-weight targets in
    `image-optimization.ts`; role-aware managed delivery enforces those targets while generic and
    historical assets retain the hard safety limits for compatibility.
-7. Do not recompress already suitable images solely for process theater.
-8. Generate derivatives only when crop/DPR/role weight justifies it.
-9. **Double-encode note:** Prefer delivering already-normalized managed-release WebPs without a
+7. Do not bind one uploaded asset (same spec key / asset id) to published paths with different
+   delivery roles. Same source photograph + two role-encoded derivatives is the allowed form of
+   multi-role reuse (`hero.backgroundImage` vs `hero.backgroundImageMobile`). Dashboard publish and
+   managed release both validate bytes against `getImageOptimizationRoleForPath(path)`.
+8. Do not recompress already suitable images solely for process theater.
+9. Generate derivatives only when crop/DPR/role weight justifies it.
+10. **Double-encode note:** Prefer delivering already-normalized managed-release WebPs without a
    second Astro/`getImage` encode that upscales or re-compresses past native width (see Hero
    managed-URL direct delivery). Record the risk when sources are provisional.
 

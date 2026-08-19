@@ -9,7 +9,11 @@ import {
 	extractBlobRawBytes,
 	ROLE_AWARE_ASSET_POLICY_VERSION,
 } from '../../src/lib/intake/services/asset-policy.ts';
-import { getWeightTargetBytes } from '../../src/lib/invitation-preparation/image-optimization.ts';
+import {
+	getImageOptimizationRoleForPath,
+	getWeightTargetBytes,
+} from '../../src/lib/invitation-preparation/image-optimization.ts';
+import { collectUploadedContentRefs } from '../../src/lib/invitation-preparation/uploaded-content-refs.ts';
 import { findDemoPreset } from '../../src/lib/intake/demo-preset-catalog.ts';
 import { hashPublicationProjection } from '../../src/lib/intake/services/publication-diff.service.ts';
 import { eventContentSchema } from '../../src/lib/schemas/content/base-event.schema.ts';
@@ -140,6 +144,31 @@ export function materializeAssetReferences(
 		);
 	}
 	return value;
+}
+
+export function assertEncodedAssetsMeetPathRoleBudgets(
+	content: Record<string, unknown>,
+	assets: Array<Pick<NormalizedInvitationAsset, 'key' | 'fileSize' | 'validationVersion'>>,
+): void {
+	const byKey = new Map(assets.map((asset) => [asset.key, asset]));
+	for (const ref of collectUploadedContentRefs(content)) {
+		if (!ref.assetId.startsWith(ASSET_KEY_PREFIX)) continue;
+		const key = ref.assetId.slice(ASSET_KEY_PREFIX.length);
+		const asset = byKey.get(key);
+		if (!asset) {
+			throw new Error(
+				`Published path "${ref.path}" references unknown encoded asset "${key}".`,
+			);
+		}
+		if (asset.validationVersion < ROLE_AWARE_ASSET_POLICY_VERSION) continue;
+		const role = getImageOptimizationRoleForPath(ref.path);
+		const maxBytes = getWeightTargetBytes(role);
+		if (asset.fileSize > maxBytes) {
+			throw new Error(
+				`Encoded asset "${key}" at "${ref.path}" exceeds its ${role} delivery budget (${asset.fileSize} > ${maxBytes}).`,
+			);
+		}
+	}
 }
 
 /** Load assets from the persistent-local Supabase DB and Storage (no sourceDir provided). */
@@ -352,6 +381,8 @@ export async function buildNormalizedInvitationRelease(options: {
 			`Managed invitation "${definition.slug}" failed canonical publication validation: ${issues}`,
 		);
 	}
+
+	assertEncodedAssetsMeetPathRoleBudgets(draftContent, assets);
 
 	const assetManifestHash = hash(
 		assets.map(({ bytes: _bytes, dataBase64: _data, ...asset }) => asset),

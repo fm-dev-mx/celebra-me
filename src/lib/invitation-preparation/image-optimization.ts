@@ -80,6 +80,8 @@ export function getImageOptimizationRoleForPath(path: string): ImageOptimization
 		return 'editorial-featured';
 	}
 	if (path.startsWith('gallery.items[')) return 'gallery';
+	// Social previews commonly reuse the desktop hero binary.
+	if (path === 'sharing.ogImage') return 'hero-desktop';
 	return 'standard-section';
 }
 

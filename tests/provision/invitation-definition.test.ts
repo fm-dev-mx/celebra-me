@@ -358,7 +358,7 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 			expect(rominaInvitation.slug).toBe(ROMINA_EVENT.slug);
 			expect(rominaInvitation.eventType).toBe(ROMINA_EVENT.eventType);
 			expect(rominaInvitation.title).toBe(ROMINA_EVENT.title);
-			expect(rominaInvitation.assets).toHaveLength(11);
+			expect(rominaInvitation.assets).toHaveLength(13);
 		});
 
 		it('builds published content matching expected projection structure', () => {
@@ -379,6 +379,12 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 				envelope: { sealInitials: 'RC' },
 			});
 			expect(buildRominaPublishedContent(mockAssets)).toEqual(content);
+			expect(
+				(content.hero as { backgroundImage: { assetId: string } }).backgroundImage.assetId,
+			).not.toBe(
+				(content.hero as { backgroundImageMobile: { assetId: string } })
+					.backgroundImageMobile.assetId,
+			);
 		});
 	});
 });
