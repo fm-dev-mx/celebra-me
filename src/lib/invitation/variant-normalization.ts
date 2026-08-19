@@ -5,6 +5,9 @@ import {
 	GIFTS_STRUCTURAL_VARIANTS,
 	HERO_STRUCTURAL_VARIANTS,
 	ITINERARY_STRUCTURAL_VARIANTS,
+	PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS,
+	RSVP_STRUCTURAL_VARIANTS,
+	THANK_YOU_STRUCTURAL_VARIANTS,
 } from './structural-variants';
 import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 
@@ -187,14 +190,25 @@ function normalizeHero(
 	const hero = cloneRecord(result.hero);
 	if (!hero) return;
 	const rawVariant = hero.variant;
+	const themePreset =
+		isRecord(result.theme) && typeof result.theme.preset === 'string'
+			? result.theme.preset
+			: undefined;
+	const templateId = typeof result.templateId === 'string' ? result.templateId : undefined;
+	const isEditorialMagazine =
+		themePreset === 'editorial-magazine' ||
+		templateId === 'xv-editorial-magazine' ||
+		rawVariant === 'editorial-magazine';
+
 	const canonical = isOneOf(rawVariant, HERO_STRUCTURAL_VARIANTS) ? rawVariant : undefined;
 	const legacyVisual = isOneOf(rawVariant, THEME_PRESETS) ? rawVariant : undefined;
+	const legacyFromTheme = isEditorialMagazine ? 'editorial-cover' : undefined;
 	hero.variant = resolveCanonicalOrLegacy(
 		conflicts,
 		['hero', 'variant'],
 		canonical ?? (legacyVisual ? undefined : rawVariant),
 		hero.structuralVariant,
-		'standard',
+		legacyFromTheme ?? 'standard',
 	);
 	delete hero.structuralVariant;
 	delete hero.visualVariant;
@@ -257,6 +271,27 @@ function normalizeGallery(
 	const rawVariant = gallery.variant;
 	const fromCanonical = resolveGalleryLayout(rawVariant);
 	const fromLegacy = resolveGalleryLayout(legacyStyleVariant);
+	const profileId =
+		typeof result.visualProfileId === 'string' ? result.visualProfileId : undefined;
+	const themePreset =
+		isRecord(result.theme) && typeof result.theme.preset === 'string'
+			? result.theme.preset
+			: undefined;
+	const templateId = typeof result.templateId === 'string' ? result.templateId : undefined;
+	const isEditorialMagazine =
+		themePreset === 'editorial-magazine' ||
+		templateId === 'xv-editorial-magazine' ||
+		rawVariant === 'editorial-magazine' ||
+		legacyStyleVariant === 'editorial-magazine';
+
+	const legacyFromTheme = isEditorialMagazine
+		? 'magazine-spread'
+		: profileId === 'alba-rosa-quinonez' ||
+			  rawVariant === 'luxury-hacienda' ||
+			  legacyStyleVariant === 'luxury-hacienda' ||
+			  themePreset === 'luxury-hacienda'
+			? 'feature-stack'
+			: undefined;
 	const unknownCanonical =
 		typeof rawVariant === 'string' &&
 		rawVariant !== 'single' &&
@@ -279,7 +314,7 @@ function normalizeGallery(
 			['gallery', 'variant'],
 			fromCanonical,
 			fromLegacy,
-			'uniform-grid',
+			legacyFromTheme ?? 'uniform-grid',
 			gallerySemanticsEqual,
 		);
 	} else if (fromCanonical !== undefined) {
@@ -287,8 +322,15 @@ function normalizeGallery(
 	} else if (fromLegacy !== undefined) {
 		gallery.variant = fromLegacy;
 	} else {
-		// Omitted or theme-named: atmosphere stays on theme.preset; layout defaults.
-		gallery.variant = 'uniform-grid';
+		gallery.variant = legacyFromTheme ?? 'uniform-grid';
+	}
+
+	if (isEditorialMagazine && gallery.variant === 'magazine-spread') {
+		const options = cloneRecord(gallery.presentationOptions) ?? {};
+		if (options.mobileBrowse === undefined) {
+			options.mobileBrowse = 'rail';
+		}
+		gallery.presentationOptions = options;
 	}
 
 	delete gallery.visualVariant;
@@ -308,14 +350,30 @@ function normalizeItinerary(
 	const legacyFromStyles = isOneOf(legacyStyleVariant, ITINERARY_STRUCTURAL_VARIANTS)
 		? legacyStyleVariant
 		: undefined;
+	const themePreset =
+		isRecord(result.theme) && typeof result.theme.preset === 'string'
+			? result.theme.preset
+			: undefined;
+	const templateId = typeof result.templateId === 'string' ? result.templateId : undefined;
+	const rawVariant = itinerary.variant;
+	const isEditorialMagazine =
+		themePreset === 'editorial-magazine' ||
+		templateId === 'xv-editorial-magazine' ||
+		rawVariant === 'editorial-magazine' ||
+		legacyStyleVariant === 'editorial-magazine';
+
+	const canonical = isOneOf(rawVariant, ITINERARY_STRUCTURAL_VARIANTS) ? rawVariant : undefined;
+	const legacyVisual = isOneOf(rawVariant, THEME_PRESETS) ? rawVariant : undefined;
+	const legacyFromTheme = isEditorialMagazine ? 'editorial-program' : undefined;
+
 	const legacy = legacyFromPresentation !== undefined ? legacyFromPresentation : legacyFromStyles;
 
 	itinerary.variant = resolveCanonicalOrLegacy(
 		conflicts,
 		['itinerary', 'variant'],
-		itinerary.variant,
+		canonical ?? (legacyVisual ? undefined : rawVariant),
 		legacy,
-		'standard',
+		legacyFromTheme ?? 'standard',
 	);
 	delete itinerary.presentation;
 	result.itinerary = itinerary;
@@ -328,19 +386,62 @@ function normalizeGifts(
 ): void {
 	const gifts = cloneRecord(result.gifts);
 	if (!gifts) return;
-	const legacy = cloneRecord(sectionStyles?.gifts)?.structuralVariant;
+	const legacyStyle = cloneRecord(sectionStyles?.gifts);
+	const legacy = legacyStyle?.structuralVariant;
 	const rawVariant = gifts.variant;
+	const themePreset =
+		isRecord(result.theme) && typeof result.theme.preset === 'string'
+			? result.theme.preset
+			: undefined;
+	const templateId = typeof result.templateId === 'string' ? result.templateId : undefined;
+	const isEditorialMagazine =
+		themePreset === 'editorial-magazine' ||
+		templateId === 'xv-editorial-magazine' ||
+		rawVariant === 'editorial-magazine' ||
+		legacyStyle?.variant === 'editorial-magazine';
+
 	const canonical = isOneOf(rawVariant, GIFTS_STRUCTURAL_VARIANTS) ? rawVariant : undefined;
 	const legacyVisual = isOneOf(rawVariant, THEME_PRESETS) ? rawVariant : undefined;
+	const legacyFromTheme = isEditorialMagazine ? 'editorial-catalog' : undefined;
 	gifts.variant = resolveCanonicalOrLegacy(
 		conflicts,
 		['gifts', 'variant'],
 		canonical ?? (legacyVisual ? undefined : rawVariant),
 		legacy,
-		'standard',
+		legacyFromTheme ?? 'standard',
 	);
 	delete gifts.structuralVariant;
 	result.gifts = gifts;
+}
+
+function normalizePersonalizedAccess(
+	rsvp: JsonRecord,
+	themePreset: string | undefined,
+	templateId: string | undefined,
+	conflicts: VariantNormalizationConflict[],
+): void {
+	const personalizedAccess = cloneRecord(rsvp.personalizedAccess) ?? {};
+	const accessRaw = personalizedAccess.variant;
+	const isEditorialMagazine =
+		themePreset === 'editorial-magazine' ||
+		templateId === 'xv-editorial-magazine' ||
+		accessRaw === 'editorial-magazine' ||
+		personalizedAccess.structuralVariant === 'editorial-magazine';
+
+	const accessCanonical = isOneOf(accessRaw, PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS)
+		? accessRaw
+		: undefined;
+	const accessLegacyVisual = isOneOf(accessRaw, THEME_PRESETS) ? accessRaw : undefined;
+	const accessLegacyFromTheme = isEditorialMagazine ? 'editorial-pass' : undefined;
+	personalizedAccess.variant = resolveCanonicalOrLegacy(
+		conflicts,
+		['rsvp', 'personalizedAccess', 'variant'],
+		accessCanonical ?? (accessLegacyVisual ? undefined : accessRaw),
+		personalizedAccess.structuralVariant,
+		accessLegacyFromTheme ?? 'standard',
+	);
+	delete personalizedAccess.structuralVariant;
+	rsvp.personalizedAccess = personalizedAccess;
 }
 
 function normalizeRsvp(
@@ -351,27 +452,33 @@ function normalizeRsvp(
 	const rsvp = cloneRecord(result.rsvp);
 	if (!rsvp) return;
 	const legacyStyle = cloneRecord(sectionStyles?.rsvp);
+	const rawVariant = rsvp.variant;
+	const themePreset =
+		isRecord(result.theme) && typeof result.theme.preset === 'string'
+			? result.theme.preset
+			: undefined;
+	const templateId = typeof result.templateId === 'string' ? result.templateId : undefined;
+	const isEditorialMagazine =
+		themePreset === 'editorial-magazine' ||
+		templateId === 'xv-editorial-magazine' ||
+		rawVariant === 'editorial-magazine' ||
+		legacyStyle?.variant === 'editorial-magazine';
+
+	const canonical = isOneOf(rawVariant, RSVP_STRUCTURAL_VARIANTS) ? rawVariant : undefined;
+	const legacyVisual = isOneOf(rawVariant, THEME_PRESETS) ? rawVariant : undefined;
+	const legacyFromTheme = isEditorialMagazine ? 'editorial-press-pass' : undefined;
 	rsvp.variant = resolveCanonicalOrLegacy(
 		conflicts,
 		['rsvp', 'variant'],
-		rsvp.variant,
+		canonical ?? (legacyVisual ? undefined : rawVariant),
 		legacyStyle?.structuralVariant,
-		'standard',
+		legacyFromTheme ?? 'standard',
 	);
 	delete rsvp.structuralVariant;
 	if (rsvp.labels === undefined && legacyStyle?.labels !== undefined)
 		rsvp.labels = legacyStyle.labels;
 
-	const personalizedAccess = cloneRecord(rsvp.personalizedAccess) ?? {};
-	personalizedAccess.variant = resolveCanonicalOrLegacy(
-		conflicts,
-		['rsvp', 'personalizedAccess', 'variant'],
-		personalizedAccess.variant,
-		personalizedAccess.structuralVariant,
-		'standard',
-	);
-	delete personalizedAccess.structuralVariant;
-	rsvp.personalizedAccess = personalizedAccess;
+	normalizePersonalizedAccess(rsvp, themePreset, templateId, conflicts);
 	result.rsvp = rsvp;
 }
 
@@ -382,13 +489,29 @@ function normalizeThankYou(
 ): void {
 	const thankYou = cloneRecord(result.thankYou);
 	if (!thankYou) return;
-	const legacy = cloneRecord(sectionStyles?.thankYou)?.structuralVariant;
+	const legacyStyle = cloneRecord(sectionStyles?.thankYou);
+	const legacy = legacyStyle?.structuralVariant;
+	const rawVariant = thankYou.variant;
+	const themePreset =
+		isRecord(result.theme) && typeof result.theme.preset === 'string'
+			? result.theme.preset
+			: undefined;
+	const templateId = typeof result.templateId === 'string' ? result.templateId : undefined;
+	const isEditorialMagazine =
+		themePreset === 'editorial-magazine' ||
+		templateId === 'xv-editorial-magazine' ||
+		rawVariant === 'editorial-magazine' ||
+		legacyStyle?.variant === 'editorial-magazine';
+
+	const canonical = isOneOf(rawVariant, THANK_YOU_STRUCTURAL_VARIANTS) ? rawVariant : undefined;
+	const legacyVisual = isOneOf(rawVariant, THEME_PRESETS) ? rawVariant : undefined;
+	const legacyFromTheme = isEditorialMagazine ? 'editorial-back-cover' : undefined;
 	thankYou.variant = resolveCanonicalOrLegacy(
 		conflicts,
 		['thankYou', 'variant'],
-		thankYou.variant,
+		canonical ?? (legacyVisual ? undefined : rawVariant),
 		legacy,
-		'standard',
+		legacyFromTheme ?? 'standard',
 	);
 	delete thankYou.structuralVariant;
 	result.thankYou = thankYou;
