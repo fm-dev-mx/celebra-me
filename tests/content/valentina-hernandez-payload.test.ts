@@ -66,11 +66,12 @@ describe('Valentina Hernández DB payload', () => {
 		expect(placeholders).toEqual([]);
 	});
 
-	it('resolves all editorial canonical variants when variants are omitted in DB payload', () => {
+	it('authors editorial canonical variants in the SQL-embedded payload', () => {
 		const payload = readSqlEmbeddedPayload() as Record<string, unknown>;
 		const parsed = eventContentSchema.parse(payload);
 
 		expect(parsed.hero.variant).toBe('editorial-cover');
+		expect(parsed.countdown?.variant).toBe('magazine-folio');
 		expect(parsed.gallery?.variant).toBe('magazine-spread');
 		expect(parsed.gallery?.presentationOptions?.mobileBrowse).toBe('rail');
 		expect(parsed.itinerary?.variant).toBe('editorial-program');
@@ -78,5 +79,10 @@ describe('Valentina Hernández DB payload', () => {
 		expect(parsed.rsvp?.variant).toBe('editorial-press-pass');
 		expect(parsed.rsvp?.personalizedAccess?.variant).toBe('editorial-pass');
 		expect(parsed.thankYou?.variant).toBe('editorial-back-cover');
+		expect(parsed.location?.indications?.[0]?.title).toBe('Código de vestimenta');
+		expect(parsed.location?.indications?.[1]?.title).toBe('Confirmación');
+		expect(parsed.location?.indications?.[2]?.title).toBe('Puntualidad');
+		expect(parsed.location?.indications?.[3]?.title).toBe('Ambiente');
+		expect(parsed.location?.indications?.[4]?.title).toBe('Recuerdos');
 	});
 });

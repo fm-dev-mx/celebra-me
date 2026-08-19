@@ -220,8 +220,8 @@
 		// Keeps masthead and headline proportional on desktop so they don't
 		// overwhelm the composition or push content out of the 100svh frame.
 		@include mixins.respond-to(lg) {
-			--ec-masthead-size: clamp(3.5rem, 7vw, 7rem);
-			--ec-headline-size: clamp(4.5rem, 9vw, 8rem);
+			--ec-masthead-size: clamp(2.6rem, 4.5vw, 3.8rem);
+			--ec-headline-size: clamp(3.2rem, 5.5vw, 4.8rem);
 		}
 	}
 
@@ -252,8 +252,8 @@
 	--gallery-image-filter: none;
 
 	// Divider tokens: Valentina-only page architecture, not a global transition system.
-	--v-divider-depth: clamp(5.5rem, 14vw, 9.75rem);
-	--v-divider-soft-depth: clamp(3.25rem, 8vw, 5.75rem);
+	--v-divider-depth: clamp(3.5rem, 6vw, 5.5rem);
+	--v-divider-soft-depth: clamp(2.5rem, 4vw, 3.75rem);
 	--v-divider-shadow: 0 -0.35rem 1.35rem rgb(0 0 0 / 10%);
 
 	.invitation-section-wrapper[data-section-id$='-family'],
@@ -308,10 +308,19 @@
 
 	// Gallery — ensure interactive states respect no-filter
 	.gallery-section {
-		padding-inline: 0;
+		@include mixins.respond-below(md) {
+			padding-inline: 0;
+		}
+
+		@include mixins.respond-to(md) {
+			padding-inline: clamp(1.5rem, 4vw, 3rem);
+		}
 
 		.gallery-section__header {
-			padding-inline: clamp(1rem, 5vw, 1.35rem);
+			@include mixins.respond-below(md) {
+				padding-inline: clamp(1rem, 5vw, 1.35rem);
+			}
+
 			position: relative;
 
 			&::after {
@@ -363,6 +372,31 @@
 			@media (width >= 768px) {
 				grid-column: 1 / span 7;
 				grid-row: span 2;
+				height: 100%;
+
+				img {
+					height: 100%;
+					max-height: none;
+					aspect-ratio: auto;
+					object-fit: cover;
+				}
+			}
+		}
+
+		@media (width >= 768px) {
+			.gallery-grid__item[data-gallery-index='1'],
+			.gallery-grid__item[data-gallery-index='2'] {
+				grid-column: 8 / span 5;
+			}
+
+			.gallery-grid__item[data-gallery-index='4'],
+			.gallery-grid__item[data-gallery-index='5'] {
+				grid-column: span 6;
+			}
+
+			.gallery-grid__item[data-gallery-index='6'],
+			.gallery-grid__item[data-gallery-index='7'] {
+				grid-column: span 6;
 			}
 		}
 
@@ -592,11 +626,11 @@
 			// adjusted background focal point for the wider full-bleed canvas.
 			@media (width >= 768px) {
 				.invitation-hero__first-name {
-					font-size: clamp(4rem, 7.5vw, 5.5rem);
+					font-size: clamp(3.2rem, 5.5vw, 4.4rem);
 				}
 
 				.invitation-hero__last-name {
-					font-size: clamp(1.6rem, 3.2vw, 2.2rem);
+					font-size: clamp(1.3rem, 2.4vw, 1.8rem);
 				}
 
 				.invitation-hero__title-wrapper,
@@ -661,7 +695,7 @@
 		.family__title {
 			max-width: 9ch;
 			text-transform: uppercase;
-			font-size: clamp(2.5rem, 6vw, 4rem);
+			font-size: clamp(2.2rem, 4.5vw, 3.2rem);
 			font-weight: 800;
 			line-height: 0.9;
 			letter-spacing: -0.01em;
@@ -670,7 +704,7 @@
 		.family__message {
 			font-family: var(--font-display);
 			font-style: italic;
-			font-size: clamp(1.15rem, 2.5vw, 1.35rem);
+			font-size: clamp(1.05rem, 1.8vw, 1.25rem);
 			line-height: 1.5;
 			color: rgb(var(--v-ink-rgb) / 82%);
 			border-left: none;
@@ -728,7 +762,7 @@
 
 		.family__name {
 			font-family: var(--font-display);
-			font-size: clamp(1.35rem, 3vw, 1.75rem);
+			font-size: clamp(1.2rem, 2vw, 1.5rem);
 			font-weight: 300;
 			color: var(--v-ink);
 			margin: 0.2rem 0;
@@ -785,17 +819,17 @@
 	.itinerary[data-variant='standard'] {
 		background: var(--v-paper);
 		color: var(--v-ink);
-		padding-block: clamp(5.5rem, 12vw, 8rem);
+		padding-block: clamp(4rem, 6vw, 6rem);
 
 		.itinerary__header {
-			margin-bottom: clamp(3rem, 8vw, 5rem);
+			margin-bottom: clamp(2rem, 4vw, 3rem);
 			text-align: left;
 		}
 
 		.itinerary__title {
 			color: var(--v-ink);
 			font-family: var(--font-display);
-			font-size: clamp(3.2rem, 10vw, 7rem);
+			font-size: clamp(2.4rem, 5vw, 3.8rem);
 			font-weight: 800;
 			line-height: 0.84;
 			letter-spacing: 0;
@@ -820,9 +854,9 @@
 			counter-increment: valentina-program;
 			display: grid;
 			grid-template-columns: minmax(4.5rem, 0.32fr) minmax(0, 1fr);
-			gap: clamp(1rem, 4vw, 2.5rem);
+			gap: clamp(1rem, 2.5vw, 2rem);
 			align-items: start;
-			padding: clamp(1.2rem, 4vw, 2rem) 0;
+			padding: clamp(1rem, 2.5vw, 1.5rem) 0;
 			padding-left: 0;
 			border-bottom: 1px solid rgb(var(--v-ink-rgb) / 14%);
 		}
@@ -831,7 +865,7 @@
 			content: '0' counter(valentina-program);
 			color: var(--v-accent);
 			font-family: var(--font-label);
-			font-size: clamp(1.35rem, 6vw, 3rem);
+			font-size: clamp(1.2rem, 2.2vw, 1.8rem);
 			font-weight: 800;
 			line-height: 0.9;
 		}
@@ -853,7 +887,7 @@
 		.itinerary__item-label {
 			color: var(--v-ink);
 			font-family: var(--font-display);
-			font-size: clamp(1.55rem, 5vw, 2.6rem);
+			font-size: clamp(1.25rem, 2.2vw, 1.65rem);
 			font-weight: 700;
 			line-height: 0.98;
 		}
@@ -870,7 +904,7 @@
 		background:
 			linear-gradient(90deg, rgb(var(--v-ink-rgb) / 4%) 0 1px, transparent 1px 100%),
 			var(--v-paper);
-		background-size: clamp(4rem, 12vw, 8rem) 100%;
+		background-size: clamp(3rem, 6vw, 5rem) 100%;
 
 		&::before {
 			content: 'ACCESO PRIVADO / EDICIÓN XV';
@@ -891,7 +925,7 @@
 			margin-inline: auto;
 			color: var(--v-ink);
 			font-family: var(--font-display);
-			font-size: clamp(3.4rem, 12vw, 8.5rem);
+			font-size: clamp(2.4rem, 5vw, 3.8rem);
 			font-weight: 800;
 			line-height: 0.78;
 			letter-spacing: 0;
@@ -988,7 +1022,7 @@
 			z-index: 2;
 			max-width: 13ch;
 			margin-bottom: 1.2rem;
-			font-size: clamp(2rem, 6vw, 3.7rem);
+			font-size: clamp(1.6rem, 3.2vw, 2.4rem);
 			line-height: 0.86;
 			overflow-wrap: anywhere;
 		}
@@ -1099,8 +1133,8 @@
 
 		.event-location__indications-container {
 			max-width: min(980px, calc(100% - 2rem));
-			margin-top: clamp(4rem, 10vw, 7rem);
-			padding: clamp(1.2rem, 4vw, 2.5rem);
+			margin-top: clamp(2.5rem, 5vw, 4rem);
+			padding: clamp(1.5rem, 3vw, 2.25rem);
 			background: var(--v-ink);
 			color: var(--v-white);
 			border: 1px solid rgb(var(--v-white-rgb) / 18%);
@@ -1108,10 +1142,10 @@
 
 		.event-location__indications-heading {
 			max-width: 12ch;
-			margin: 0 0 clamp(1.5rem, 5vw, 3rem);
+			margin: 0 0 clamp(1.2rem, 3vw, 2rem);
 			color: var(--v-white);
 			font-family: var(--font-display);
-			font-size: clamp(2.35rem, 9vw, 5.8rem);
+			font-size: clamp(1.8rem, 3.5vw, 2.6rem);
 			font-weight: 800;
 			line-height: 0.82;
 			letter-spacing: 0;
@@ -1162,7 +1196,7 @@
 			display: block;
 			color: var(--v-accent);
 			font-family: var(--font-display);
-			font-size: clamp(2.4rem, 10vw, 5rem);
+			font-size: clamp(1.8rem, 3.5vw, 2.6rem);
 			font-weight: 800;
 			line-height: 0.78;
 		}
@@ -1202,12 +1236,12 @@
 			display: grid;
 			grid-template-columns: minmax(0, 1fr);
 			gap: 0.85rem;
-			margin-bottom: clamp(2.5rem, 7vw, 4.5rem);
+			margin-bottom: clamp(2rem, 4vw, 3rem);
 		}
 
 		.gifts-section__title {
 			max-width: 9ch;
-			font-size: clamp(3.2rem, 11vw, 8rem);
+			font-size: clamp(2.4rem, 5vw, 3.8rem);
 			line-height: 0.78;
 		}
 
@@ -1229,11 +1263,21 @@
 		}
 
 		.gifts-grid {
+			display: grid;
+			grid-template-columns: 1fr;
 			gap: clamp(1rem, 2.5vw, 1.4rem);
 			border: 0;
+
+			@media (width >= 768px) {
+				grid-template-columns: repeat(3, minmax(0, 1fr));
+				align-items: stretch;
+			}
 		}
 
 		.gift-card {
+			display: flex;
+			flex-direction: column;
+			height: 100%;
 			min-height: 100%;
 			background:
 				linear-gradient(
@@ -1256,13 +1300,27 @@
 
 		.gift-card__inner {
 			position: relative;
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+			height: 100%;
 			align-items: stretch;
-			gap: 1rem;
-			padding: clamp(2rem, 5vw, 3.5rem) clamp(1.5rem, 4vw, 2.5rem);
+			gap: 1.25rem;
+			padding: clamp(1.75rem, 4vw, 2.5rem) clamp(1.4rem, 3.5vw, 2rem);
 			text-align: left;
 		}
 
+		.gift-card__content-head {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			width: 100%;
+			text-align: left;
+			gap: 0.5rem;
+		}
+
 		.gift-card__folio {
+			width: 100%;
 			display: flex;
 			align-items: center;
 			justify-content: space-between;
@@ -1273,73 +1331,106 @@
 			font-weight: 800;
 			letter-spacing: 0.18em;
 			text-transform: uppercase;
+			padding-bottom: 0.5rem;
+			border-bottom: 1px solid rgb(var(--v-ink-rgb) / 10%);
+			margin-bottom: 0.45rem;
 		}
 
 		.gift-card__issue-label {
-			display: grid;
-			grid-template-columns: auto minmax(0, 1fr);
-			gap: 0.8rem;
+			display: flex;
 			align-items: baseline;
+			gap: 0.6rem;
 			margin: 0;
 			color: var(--v-ink);
 			font-family: var(--font-label);
-			font-size: 0.72rem;
+			font-size: 0.68rem;
 			font-weight: 800;
 			letter-spacing: 0.14em;
 			text-transform: uppercase;
-		}
 
-		.gift-card__issue-label span:first-child {
-			color: var(--v-accent);
-			font-family: var(--font-display);
-			font-size: clamp(2rem, 7vw, 3.5rem);
-			line-height: 0.85;
-			letter-spacing: 0;
+			span:first-child {
+				color: var(--v-accent);
+				font-family: var(--font-display);
+				font-size: clamp(2rem, 5vw, 2.75rem);
+				line-height: 0.9;
+				letter-spacing: 0;
+			}
 		}
 
 		.gift-card__icon-medallion {
-			position: absolute;
-			right: clamp(1.2rem, 4vw, 2rem);
-			bottom: clamp(1.1rem, 3vw, 1.6rem);
-			width: 2.25rem;
-			height: 2.25rem;
-			margin: 0;
-			border-color: rgb(var(--v-ink-rgb) / 14%);
-			opacity: 42%;
+			display: none;
 		}
 
 		.gift-card__title {
 			margin: 0;
-			font-size: clamp(1.55rem, 5vw, 2.2rem);
-			line-height: 1.05;
+			font-size: clamp(1.4rem, 4vw, 1.9rem);
+			line-height: 1.1;
 		}
 
 		.gift-card__description,
-		.gift-card__store-label,
-		.gift-card__table-number {
+		.gift-card__store-label {
 			max-width: 24rem;
 			margin: 0;
 		}
 
-		.gift-card__table-number {
+		.gift-card__table-number-wrapper {
+			display: flex;
+			align-items: center;
+			gap: 0.5rem;
+			margin-top: 0.25rem;
+		}
+
+		.gift-card__table-number-label {
 			font-family: var(--font-label);
-			font-size: 0.6rem;
+			font-size: 0.65rem;
+			font-weight: 800;
 			letter-spacing: 0.1em;
+			text-transform: uppercase;
+			color: rgb(var(--v-ink-rgb) / 65%);
+		}
+
+		.gift-card__number-pill {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.4rem;
+			background: rgb(var(--v-ink-rgb) / 4%);
+			border: 1px solid rgb(var(--v-ink-rgb) / 14%);
+			padding: 0.25rem 0.6rem;
+			border-radius: 100px;
+		}
+
+		.gift-card__table-number-code {
+			font-family: var(--font-mono, monospace);
+			font-size: 0.85rem;
+			font-weight: 700;
+			letter-spacing: 0.06em;
 			color: var(--v-ink);
-			margin-top: -0.25rem;
 		}
 
 		.gift-card__actions {
-			justify-content: flex-start;
+			display: flex;
+			width: 100%;
+			margin-top: 0.5rem;
 		}
 
 		.gift-card__button {
-			min-height: 3rem;
-			padding: 0.85rem 1.15rem;
-			border-color: var(--v-ink);
+			width: 100%;
+			min-height: 2.85rem;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			padding: 0.75rem 1.15rem;
+			border: 1px solid var(--v-ink);
 			background: var(--v-ink);
 			color: var(--v-white);
+			font-family: var(--font-label);
+			font-size: 0.76rem;
+			font-weight: 800;
 			letter-spacing: 0.2em;
+			text-transform: uppercase;
+			text-decoration: none;
+			border-radius: 2px;
+			transition: all 0.25s ease;
 		}
 
 		.gift-card__button:hover,

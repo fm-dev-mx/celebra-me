@@ -44,12 +44,13 @@ default as follows; non-default looks require an explicit canonical `variant`:
 | RSVP | `standard` | `editorial-press-pass`, `formal-register` |
 | Personalized Access | `standard` | `editorial-pass`, `formal-pass`, `ornamented` |
 | Thank You | `standard` | `editorial-back-cover`, `full-bleed-photo` |
+| Itinerary | `standard` | `editorial-program`, `editorial-ledger`, `timeline-paper` |
 
 Formerly removed alias registers (no longer in code):
 
 - `gallery.variant=<theme preset>`
 - `sectionStyles.countdown.variant=<theme preset>`
-- `theme.preset=editorial-magazine` implied structural variants (hero/gifts/rsvp/thankYou)
+- `theme.preset=editorial-magazine` implied structural variants (hero/gallery/itinerary/gifts/rsvp/thankYou), `mobileBrowse=rail`, or indication titles
 - TypeScript alias inventory array (documentation is the SSOT for remaining input behaviors)
 
 Unknown non-theme canonical values are deliberately preserved so the schema rejects them instead of
