@@ -65,4 +65,18 @@ describe('Valentina Hernández DB payload', () => {
 
 		expect(placeholders).toEqual([]);
 	});
+
+	it('resolves all editorial canonical variants when variants are omitted in DB payload', () => {
+		const payload = readSqlEmbeddedPayload() as Record<string, unknown>;
+		const parsed = eventContentSchema.parse(payload);
+
+		expect(parsed.hero.variant).toBe('editorial-cover');
+		expect(parsed.gallery?.variant).toBe('magazine-spread');
+		expect(parsed.gallery?.presentationOptions?.mobileBrowse).toBe('rail');
+		expect(parsed.itinerary?.variant).toBe('editorial-program');
+		expect(parsed.gifts?.variant).toBe('editorial-catalog');
+		expect(parsed.rsvp?.variant).toBe('editorial-press-pass');
+		expect(parsed.rsvp?.personalizedAccess?.variant).toBe('editorial-pass');
+		expect(parsed.thankYou?.variant).toBe('editorial-back-cover');
+	});
 });
