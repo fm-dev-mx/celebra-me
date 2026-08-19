@@ -22,7 +22,7 @@
 	.family__title {
 		color: var(--family-text-primary);
 		font-family: var(--family-title-font);
-		font-size: clamp(3.2rem, 10vw, 7.5rem);
+		font-size: var(--section-title-size);
 		font-weight: 800;
 		line-height: 0.84;
 		text-transform: uppercase;

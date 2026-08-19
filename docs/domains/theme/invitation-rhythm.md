@@ -114,6 +114,26 @@ Two consecutive sections with similarly weighted, centered display titles must b
 section with a distinct visual treatment: an interlude, a surface-contrast section, or a geometric
 intersection. Without that break, the reader perceives repetition rather than rhythm.
 
+### Desktop Scale Ceiling and Viewport Proportion Rules
+
+When designing or tuning theme presets, section variants, or invitation profiles for desktop
+viewports (≥ 992px and widescreen ≥ 1440px):
+
+- **Section Display Title Ceiling:** Section display headings must stay bounded within
+  `clamp(2.2rem, 5.5vw, 4.2rem)` (approx. 35px to 67px). Avoid unconstrained `vw` growth or upper
+  bounds > `5rem` (80px+), which cause titles to dominate the entire viewport and disrupt the reading
+  cadence.
+- **Narrative Display Copy Bounds:** Extended display text (e.g., quotes, dedication messages,
+  introductory ledes) must maintain a font ceiling of `clamp(1.6rem, 3.8vw, 3.2rem)` with a minimum
+  `line-height` of `1.15`, preventing single paragraphs from sprawling across hundreds of vertical pixels.
+- **Section Padding and Vertical Rhythm:** Section block padding (`--section-padding-block`) must
+  remain bounded within `clamp(3.5rem, 6vw, 6.5rem)` (approx. 56px to 104px). Viewport percentages
+  exceeding `8vw` on vertical padding create artificial scroll fatigue without aesthetic benefit.
+- **Media and Multi-column Grid Balance:** In desktop multi-column layouts (galleries, location
+  cards, gift catalogs), containers must enforce a maximum content width (`1040px`–`1140px`) and
+  explicit aspect-ratio/max-height constraints on media elements to prevent large portrait images
+  from exceeding single-screen vertical spans.
+
 ---
 
 ## 3. Intersection Cadence: Neutral / Bridge / Climax

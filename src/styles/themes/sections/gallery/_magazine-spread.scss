@@ -3,11 +3,13 @@
 // Magazine-spread gallery with rectangular crops and visible captions.
 
 .gallery-section[data-variant='magazine-spread'] {
+	--gallery-container-max-width: 1140px;
+
 	background: var(--gallery-section-bg, var(--color-surface-primary));
 	padding-block: var(--section-padding-block);
 
 	.gallery-section__header {
-		margin-bottom: clamp(2.5rem, 7vw, 5rem);
+		margin-bottom: clamp(2rem, 5vw, 3.5rem);
 		text-align: left;
 	}
 
@@ -21,9 +23,9 @@
 
 	.gallery-section__title {
 		font-family: var(--section-title-font);
-		font-size: clamp(3rem, 9vw, 7rem);
+		font-size: clamp(2.4rem, 5.5vw, 4.2rem);
 		font-weight: 800;
-		line-height: 0.86;
+		line-height: 0.92;
 		color: var(--gallery-title-color);
 		text-transform: uppercase;
 		letter-spacing: 0;
@@ -49,7 +51,7 @@
 		@include mixins.respond-to(md) {
 			display: grid;
 			grid-template-columns: repeat(12, minmax(0, 1fr));
-			gap: clamp(1.5rem, 4vw, 3rem);
+			gap: clamp(1rem, 2.5vw, 2rem);
 		}
 	}
 
@@ -96,20 +98,6 @@
 			}
 		}
 
-		@include mixins.respond-to(md) {
-			&--standard {
-				grid-column: span 4;
-			}
-
-			&--feature {
-				grid-column: span 6;
-			}
-
-			&--wide {
-				grid-column: span 12;
-			}
-		}
-
 		.gallery-grid__overlay {
 			position: static;
 			background: transparent;
@@ -138,6 +126,38 @@
 			}
 		}
 	}
+
+	@include mixins.respond-to(md) {
+		.gallery-grid__item--standard {
+			grid-column: span 4;
+
+			img {
+				aspect-ratio: 3 / 4;
+				max-height: clamp(340px, 36vw, 460px);
+				object-fit: cover;
+			}
+		}
+
+		.gallery-grid__item--feature {
+			grid-column: span 6;
+
+			img {
+				aspect-ratio: 4 / 5;
+				max-height: clamp(460px, 48vw, 600px);
+				object-fit: cover;
+			}
+		}
+
+		.gallery-grid__item--wide {
+			grid-column: span 12;
+
+			img {
+				aspect-ratio: 16 / 9;
+				max-height: clamp(360px, 40vw, 500px);
+				object-fit: cover;
+			}
+		}
+	}
 }
 
 // Orthogonal mobile rail presentation for magazine-spread.
@@ -145,11 +165,11 @@
 .gallery-section[data-mobile-browse='rail'][data-variant='magazine-spread'] {
 	@include mixins.respond-below(md) {
 		overflow: visible;
-	}
 
-	.gallery-section__container {
-		min-width: 0;
-		max-width: 100%;
+		.gallery-section__container {
+			min-width: 0;
+			max-width: 100%;
+		}
 	}
 
 	.gallery-section__swipe-hint {
@@ -189,7 +209,7 @@
 			display: grid;
 			grid-template-columns: repeat(12, minmax(0, 1fr));
 			align-items: stretch;
-			gap: clamp(1.5rem, 4vw, 3rem);
+			gap: clamp(1rem, 2.5vw, 2rem);
 			padding-inline: 0;
 			padding-bottom: 0;
 			overflow-x: visible;
@@ -215,25 +235,20 @@
 		aspect-ratio: auto;
 		min-width: 0;
 
-		img {
-			width: 100%;
-			height: auto;
-			aspect-ratio: 3 / 4;
-			object-fit: cover;
-			flex-shrink: 0;
+		@include mixins.respond-below(md) {
+			img {
+				width: 100%;
+				height: auto;
+				aspect-ratio: 3 / 4;
+				object-fit: cover;
+				flex-shrink: 0;
+			}
 		}
 
 		@include mixins.respond-to(md) {
 			flex: none;
 			align-self: auto;
 			scroll-snap-align: none;
-
-			img {
-				height: auto;
-				aspect-ratio: auto;
-				object-fit: cover;
-				flex-shrink: 1;
-			}
 		}
 	}
 }
