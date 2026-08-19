@@ -18,8 +18,9 @@ const DELIVERY_SPECS = LESLIE_ASSET_SPECS.filter((spec) =>
 
 describe('Leslie delivery image budgets', () => {
 	it('keeps each declared delivery asset within its canonical role budget', async () => {
-		expect(DELIVERY_SPECS).toHaveLength(15);
-		expect(new Set(DELIVERY_SPECS.map((spec) => spec.relativePath)).size).toBe(15);
+		expect(DELIVERY_SPECS).toHaveLength(16);
+		expect(new Set(DELIVERY_SPECS.map((spec) => spec.relativePath)).size).toBe(16);
+		expect(DELIVERY_SPECS.some((spec) => spec.key === 'photo-01-mobile')).toBe(true);
 
 		for (const spec of DELIVERY_SPECS) {
 			const role = spec.optimizationRole as ImageOptimizationRole | undefined;

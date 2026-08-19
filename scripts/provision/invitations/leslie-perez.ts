@@ -61,6 +61,19 @@ export const LESLIE_ASSET_SPECS = [
 		},
 	},
 	{
+		key: 'photo-01-mobile',
+		relativePath: 'delivery/01-mobile.webp',
+		optimizationRole: 'hero-mobile',
+		displayName: 'Leslie — portada móvil Save the Date',
+		alt: 'Leslie sostiene un letrero de Save the Date con la fecha 26.09.26',
+		focalPoint: {
+			default: '60% 44%',
+			mobile: '60% 44%',
+			tablet: '56% 44%',
+			desktop: '54% 45%',
+		},
+	},
+	{
 		key: 'photo-02',
 		relativePath: 'delivery/02.webp',
 		optimizationRole: 'gallery',
@@ -79,7 +92,7 @@ export const LESLIE_ASSET_SPECS = [
 	{
 		key: 'photo-04',
 		relativePath: 'delivery/04.webp',
-		optimizationRole: 'gallery',
+		optimizationRole: 'editorial-featured',
 		displayName: 'Leslie — retrato editorial',
 		alt: 'Retrato cercano de Leslie frente a un fondo de luces circulares',
 		focalPoint: { default: '50% 50%' },
@@ -111,7 +124,7 @@ export const LESLIE_ASSET_SPECS = [
 	{
 		key: 'photo-08',
 		relativePath: 'delivery/08.webp',
-		optimizationRole: 'gallery',
+		optimizationRole: 'editorial-featured',
 		displayName: 'Leslie — retrato con humo',
 		alt: 'Retrato cercano de Leslie junto a una composición con humo',
 		focalPoint: { default: '50% 45%' },
@@ -175,7 +188,7 @@ export const LESLIE_ASSET_SPECS = [
 	{
 		key: 'venue-san-carlos',
 		relativePath: 'venue-san-carlos.jpg',
-		optimizationRole: 'gallery',
+		optimizationRole: 'standard-section',
 		displayName: 'San Carlos Eventos — fachada nocturna',
 		alt: 'Fachada iluminada de San Carlos Eventos de noche',
 		focalPoint: { default: '45% 52%' },
@@ -245,7 +258,7 @@ export function buildLesliePublishedContent(
 			label: 'MIS XV',
 			date: LESLIE_EVENT.eventDateIso,
 			backgroundImage: assets['photo-01'],
-			backgroundImageMobile: assets['photo-01'],
+			backgroundImageMobile: assets['photo-01-mobile'],
 			backgroundImageDesktop: assets['photo-01'],
 			variant: 'split-cover',
 			focalPoint: '55% 45%',

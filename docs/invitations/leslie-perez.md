@@ -91,17 +91,21 @@ preview.
 ## Photograph Inventory
 
 Source label: `source:hr-photos` (opaque). Originals are preserved in the client namespace. Every
-source photo is assigned once in the visible invitation narrative.
+source photo is assigned once in the visible invitation narrative, except 01.jpg which produces two
+role-encoded hero derivatives (desktop and mobile).
 
 The managed release reads the one-to-one delivery derivatives `delivery/01.webp` through
-`delivery/15.webp`. Each derivative preserves the source order and is normalized for delivery
-(orientation applied, maximum dimension 2560 px, WebP output within the asset policy). The original
-JPG files remain at the namespace root as source evidence and are not used as the declared release
-inputs while they exceed the intake limit.
+`delivery/15.webp`, plus the role-specific mobile hero `delivery/01-mobile.webp`. Each numbered
+derivative preserves the source order and is normalized for delivery (orientation applied, maximum
+dimension 2560 px, WebP output within the asset policy). The original JPG files remain at the
+namespace root as source evidence and are not used as the declared release inputs while they exceed
+the intake limit.
 
 Role-aware delivery budgets are enforced for this invitation: `photo-01` uses `hero-desktop` with a
-500 KB maximum, `photo-02` through `photo-14` use `gallery` with a 180 KB maximum each, and
-`photo-15` uses `editorial-featured` with a 300 KB maximum.
+500 KB maximum, `photo-01-mobile` uses `hero-mobile` with a 350 KB maximum, `photo-02` through
+`photo-03` and `photo-05` through `photo-07` plus `photo-09` through `photo-14` use `gallery` with a
+180 KB maximum each, `photo-04` and `photo-08` (interludes) plus `photo-15` use `editorial-featured`
+with a 300 KB maximum, and `venue-san-carlos` uses `standard-section` with a 220 KB maximum.
 
 | source filename | dims      | format | orientation | quality          | role            | processing                                  |
 | --------------- | --------- | ------ | ----------- | ---------------- | --------------- | ------------------------------------------- |
@@ -125,7 +129,8 @@ Role-aware delivery budgets are enforced for this invitation: `photo-01` uses `h
 
 | role               | source                   | derivative                | intentional multi-role? |
 | ------------------ | ------------------------ | ------------------------- | ----------------------- |
-| Hero background    | 01.jpg                   | Responsive crop           | no                      |
+| Hero desktop       | 01.jpg                   | `delivery/01.webp`        | no                      |
+| Hero mobile        | 01.jpg                   | `delivery/01-mobile.webp` | yes (same source)       |
 | Location interlude | 04.jpg                   | Full-bleed tall crop      | no                      |
 | Gallery mosaic     | 02, 03, 05–07, 09–14.jpg | Per-item responsive crops | no                      |
 | Gallery interlude  | 08.jpg                   | Full-bleed tall crop      | no                      |
@@ -141,9 +146,10 @@ visible role. No demo fallback asset is referenced by the Leslie definition.
 - Keep `lifecycle: in_progress` and `deliveryScope: content-and-assets` in the local definition.
 - Keep the asset namespace under `src/assets/invitations/leslie-perez`; reference assets only by
   semantic keys declared in the definition.
-- Preserve the original 01–15 filenames and order; use only the matching `delivery/01.webp`–
-  `delivery/15.webp` derivatives as declared release inputs. Do not create alternate copies for
-  different invitation roles.
+- Preserve the original 01–15 filenames and order; use the matching `delivery/01.webp`–
+  `delivery/15.webp` derivatives as declared release inputs, plus `delivery/01-mobile.webp` for the
+  mobile hero path. Same source photograph may produce two role-encoded derivatives; do not bind one
+  uploaded asset to `hero.backgroundImage` and `hero.backgroundImageMobile`.
 - Keep `themeId`, `baseDemoId`, `templateId`, and structural variants aligned to the catalog and
   canonical schemas.
 - Omit ceremony and godparents. Do not invent a song URL, event time, RSVP deadline, or seal

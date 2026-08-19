@@ -117,6 +117,12 @@ describe('Leslie Perez provision contract', () => {
 			expect.objectContaining({ afterSection: 'gallery' }),
 		]);
 		expect(content.hero).toMatchObject({ variant: 'split-cover' });
+		expect(
+			(content.hero as { backgroundImage: { assetId: string } }).backgroundImage.assetId,
+		).not.toBe(
+			(content.hero as { backgroundImageMobile: { assetId: string } }).backgroundImageMobile
+				.assetId,
+		);
 		expect(content.thankYou).toMatchObject({ variant: 'full-bleed-photo' });
 		expect(content.thankYou).not.toHaveProperty('overlayAnchor');
 		expect(content.thankYou).not.toHaveProperty('overlaySafeArea');
@@ -146,7 +152,10 @@ describe('Leslie Perez provision contract', () => {
 			variant: 'standard',
 			items: [{ type: 'cash' }],
 		});
-		expect(content).not.toHaveProperty('music');
+		expect(content.music).toMatchObject({
+			url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1787101349/Taylor_Swift_-_Fifteen_opt_n5gqpq.mp3',
+			autoPlay: true,
+		});
 		expect(content.sectionOrder).toEqual([
 			'family',
 			'countdown',
@@ -182,7 +191,7 @@ describe('Leslie Perez provision contract', () => {
 		expect(viewModel.sections.gifts?.variant).toBe('standard');
 		expect(viewModel.sections.rsvp?.variant).toBe('formal-register');
 		expect(viewModel.sections.rsvp?.personalizedAccess.variant).toBe('formal-pass');
-		expect(viewModel.music).toBeUndefined();
+		expect(viewModel.music?.url).toContain('Taylor_Swift_-_Fifteen');
 		expect(viewModel.interludes).toHaveLength(2);
 
 		const plan = buildInvitationRenderPlan(viewModel, { isDemoPreview: true });
@@ -211,9 +220,10 @@ describe('Leslie Perez provision contract', () => {
 	});
 
 	it('does not assemble a music player on hosted Production when no music is published', () => {
+		const unpublished = { ...content, music: undefined };
 		const viewModel = adaptEvent({
 			id: `events/${LESLIE_EVENT.slug}`,
-			data: content,
+			data: unpublished,
 		} as Parameters<typeof adaptEvent>[0]);
 		const isDev = isDevEnvironment as jest.MockedFunction<typeof isDevEnvironment>;
 		const originalVercel = process.env.VERCEL;
