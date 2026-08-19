@@ -80,6 +80,8 @@ export interface OrchestrateInvitationPromotionInput {
 	authorizedProductionPermit?: ProductionPermitBinding;
 	/** When set, skip the initial full preflight and keep this reviewed report. */
 	reviewedPreflight?: PromotionPreflightReport;
+	/** When true, apply discards an unpublished target draft that diverges from the package. */
+	acknowledgeDiscardUnpublishedDraft?: boolean;
 }
 
 /**
@@ -310,6 +312,7 @@ export async function orchestrateInvitationPromotion(
 				pruneAssets: input.pruneAssets,
 				updateScope,
 				conflictResolutions: input.conflictResolutions,
+				acknowledgeDiscardUnpublishedDraft: input.acknowledgeDiscardUnpublishedDraft,
 			}),
 		);
 

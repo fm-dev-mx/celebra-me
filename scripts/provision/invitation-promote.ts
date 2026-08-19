@@ -358,6 +358,9 @@ export async function runPromotionPreflight(input: {
 	evaluateBackup?: typeof evaluatePromotionBackupGate;
 	liveRecheck?: PreviewLiveVerificationResult;
 	runLiveVerification?: typeof verifyPreviewArtifactLive;
+	/** When true, an unpublished draft whose content diverges from the package is silently
+	 *  discarded in favour of the incoming package content. */
+	acknowledgeDiscardUnpublishedDraft?: boolean;
 }): Promise<PromotionPreflightReport> {
 	const slug = input.packageData.invitation.slug;
 	if (
@@ -504,6 +507,7 @@ export async function runPromotionPreflight(input: {
 			getProductionDbUrl: () => ({ url: targetDbUrl }),
 			runEngine: input.runEngine,
 			liveRecheck,
+			acknowledgeDiscardUnpublishedDraft: input.acknowledgeDiscardUnpublishedDraft,
 		});
 	} catch (error) {
 		const divergence =
@@ -646,6 +650,8 @@ export async function runPromotionApply(input: {
 	pruneAssets?: boolean;
 	updateScope?: UpdateScope;
 	conflictResolutions?: ConflictResolutions;
+	/** When true, the engine discards an unpublished target draft that diverges from the package. */
+	acknowledgeDiscardUnpublishedDraft?: boolean;
 	runEngine?: (options: ImportEngineOptions) => Promise<ImportEngineResult>;
 	evaluateSchema?: typeof evaluatePromotionSchemaGate;
 }): Promise<PromotionApplyReport> {
@@ -695,6 +701,7 @@ export async function runPromotionApply(input: {
 		pruneAssets: input.pruneAssets,
 		updateScope: input.updateScope,
 		conflictResolutions: input.conflictResolutions,
+		acknowledgeDiscardUnpublishedDraft: input.acknowledgeDiscardUnpublishedDraft,
 	});
 	assertEngineResult(applyResult, input.preflight.engineResult.plan.planId, 'Producción', true);
 

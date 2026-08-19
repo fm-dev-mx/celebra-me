@@ -22,6 +22,8 @@ function readinessLabel(readiness: ProductionApplyReadiness): string {
 			return 'READY';
 		case 'READY_AFTER_SCHEMA':
 			return 'READY (después de schema)';
+		case 'READY_AFTER_DISCARD':
+			return 'READY (borrador inédito descartado)';
 		case 'IN_SYNC':
 			return 'IN_SYNC';
 		case 'BLOCKED':
@@ -49,6 +51,7 @@ const READINESS_GROUPS: ReadonlyArray<{
 }> = [
 	{ readiness: 'READY', label: 'Listo' },
 	{ readiness: 'READY_AFTER_SCHEMA', label: 'Listo después de schema' },
+	{ readiness: 'READY_AFTER_DISCARD', label: 'Listo (borrador inédito descartado)' },
 	{ readiness: 'IN_SYNC', label: 'En sync' },
 	{ readiness: 'BLOCKED', label: 'Bloqueado' },
 	{ readiness: 'UNKNOWN', label: 'Desconocido' },
