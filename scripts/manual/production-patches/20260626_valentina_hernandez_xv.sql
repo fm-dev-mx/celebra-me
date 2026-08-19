@@ -432,26 +432,31 @@ BEGIN
         },
         "indications": [
             {
+                "title": "Código de vestimenta",
                 "iconName": "DressCode",
                 "styleVariant": "reserved",
                 "text": "Código de vestimenta: <strong>formal</strong>. Quiero que te veas <strong>INCREÍBLE</strong>. Damas: Divinas (Reserva el color <strong>rosa y lila</strong> para la XV). Caballeros: Guapos."
             },
             {
+                "title": "Confirmación",
                 "iconName": "Calendar",
                 "styleVariant": "default",
                 "text": "Agradecemos confirmar asistencia con anticipación para preparar cada detalle con cariño."
             },
             {
+                "title": "Puntualidad",
                 "iconName": "Enveloped",
                 "styleVariant": "default",
                 "text": "Agradecemos tu puntualidad para disfrutar juntos cada momento mágico de esta noche."
             },
             {
+                "title": "Ambiente",
                 "iconName": "Sparkles",
                 "styleVariant": "default",
                 "text": "Prepárate para una noche llena de magia, sueños y mucha diversión."
             },
             {
+                "title": "Recuerdos",
                 "iconName": "Photo",
                 "styleVariant": "default",
                 "text": "Comparte tus mejores fotos y videos de la fiesta etiquetándome en <strong>@val27_0811</strong>. ¡Me encantará ver la celebración desde tu perspectiva!"

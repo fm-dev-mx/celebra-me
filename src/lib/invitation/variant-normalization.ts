@@ -257,6 +257,37 @@ function normalizeLocation(
 		options.showNavigationButtons = legacyStyle.showNavigationButtons;
 	}
 	if (Object.keys(options).length > 0) location.presentationOptions = options;
+
+	const themePreset =
+		isRecord(result.theme) && typeof result.theme.preset === 'string'
+			? result.theme.preset
+			: undefined;
+	const templateId = typeof result.templateId === 'string' ? result.templateId : undefined;
+	const isEditorialMagazine =
+		themePreset === 'editorial-magazine' ||
+		templateId === 'xv-editorial-magazine' ||
+		location.variant === 'editorial-magazine';
+
+	const VALENTINA_INDICATION_TITLES: Readonly<Record<string, string>> = {
+		DressCode: 'Código de vestimenta',
+		Calendar: 'Confirmación',
+		Enveloped: 'Puntualidad',
+		Sparkles: 'Ambiente',
+		Photo: 'Recuerdos',
+	};
+
+	if (isEditorialMagazine && Array.isArray(location.indications)) {
+		location.indications = location.indications.map((item) => {
+			if (!isRecord(item)) return item;
+			const indication = { ...item };
+			if (typeof indication.title !== 'string' && typeof indication.iconName === 'string') {
+				const fallbackTitle = VALENTINA_INDICATION_TITLES[indication.iconName];
+				if (fallbackTitle) indication.title = fallbackTitle;
+			}
+			return indication;
+		});
+	}
+
 	result.location = location;
 }
 
