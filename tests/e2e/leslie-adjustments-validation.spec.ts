@@ -1,3 +1,8 @@
+/**
+ * Local/Preview visual audit for provisioned `/xv/leslie-perez`.
+ * Not part of `pnpm test:e2e:ci` (DB-free hermetic suite). Copy and
+ * itinerary contracts live in `tests/content/leslie-perez-payload.test.ts`.
+ */
 import { test, expect } from '@playwright/test';
 
 const VIEWPORTS = [

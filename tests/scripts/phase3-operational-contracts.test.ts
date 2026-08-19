@@ -19,10 +19,9 @@ describe('Phase 3 operational contracts', () => {
 		const packageJson = JSON.parse(read('package.json')) as {
 			scripts: Record<string, string>;
 		};
-		expect(packageJson.scripts['test:e2e:ci']).toContain(
-			'tests/e2e/envelope-reveal-interaction.spec.ts',
+		expect(packageJson.scripts['test:e2e:ci']).toBe(
+			'playwright test tests/e2e/landing.page.regressions.spec.ts tests/e2e/demo-routing-parity.spec.ts tests/e2e/invitation-route-isolation.spec.ts tests/e2e/envelope-reveal-interaction.spec.ts tests/e2e/p0-structural-runtime.spec.ts --grep-invert @extended',
 		);
-		expect(packageJson.scripts['test:e2e:ci']).toContain('--grep-invert @extended');
 	});
 
 	it('keeps complete Production recovery coverage around migration', () => {
