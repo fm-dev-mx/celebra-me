@@ -487,7 +487,9 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 					clientEmail: String(existingInv.client_email ?? ''),
 					clientWhatsapp: String(existingInv.client_whatsapp ?? ''),
 					photosReceived: Boolean(existingInv.photos_received),
-					ownerUserId: String(existingInv.created_by),
+					ownerUserId: existingInv.created_by
+						? String(existingInv.created_by)
+						: ownerUserId,
 					status: String(existingInv.status),
 				}
 			: null,

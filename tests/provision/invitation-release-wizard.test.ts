@@ -99,4 +99,17 @@ describe('invitation-release wizard package binding', () => {
 		expect(applyLocal).toContain("updateScope === 'content-only'");
 		expect(applyLocal).toContain('Missing local asset under content-only');
 	});
+
+	it('falls back to resolved ownerUserId when existing invitation created_by is null', () => {
+		const applyLocal = readFileSync(
+			resolve(process.cwd(), 'scripts/provision/apply-local-invitation.ts'),
+			'utf8',
+		);
+		expect(applyLocal).toContain('ownerUserId: existingInv.created_by');
+		expect(applyLocal).toContain('? String(existingInv.created_by)');
+		expect(applyLocal).toContain(': ownerUserId');
+		expect(applyLocal).not.toMatch(
+			/ownerUserId:\s*String\(existingInv\.created_by\)\s*,\s*\n\s*status:/,
+		);
+	});
 });

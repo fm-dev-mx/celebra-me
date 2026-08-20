@@ -1846,7 +1846,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		verifiedAssetHashes,
 		assetStateHash,
 	} = await scanAssetStatus(
-		pkg.assets,
+		updateScope === 'content-only' ? [] : pkg.assets,
 		targetStorageUrl,
 		targetDbUrl,
 		drift.targetInvitationId,
@@ -2418,7 +2418,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			existingMember: postApplyScan.existingMember,
 		});
 		const finalAssets = await scanAssetStatus(
-			pkg.assets,
+			updateScope === 'content-only' ? [] : pkg.assets,
 			targetStorageUrl,
 			targetDbUrl,
 			drift.targetInvitationId,
