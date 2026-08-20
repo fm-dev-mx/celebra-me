@@ -79,9 +79,13 @@ export async function getEnrichedInvitationList(
 			useServiceRole: true,
 		}),
 		supabaseRestRequest<
-			Array<{ invitation_project_id: string; id: string; content: Record<string, unknown> }>
+			Array<{
+				invitation_project_id: string;
+				id: string;
+				rsvp?: Record<string, unknown>;
+			}>
 		>({
-			pathWithQuery: `published_invitation_content?select=id,invitation_project_id,content&invitation_project_id=in.(${invitationIds.map(encodeURIComponent).join(',')})`,
+			pathWithQuery: `published_invitation_content?select=id,invitation_project_id,rsvp:content->rsvp&invitation_project_id=in.(${invitationIds.map(encodeURIComponent).join(',')})`,
 			useServiceRole: true,
 		}),
 		supabaseRestRequest<Array<{ id: string; intake_request_id: string }>>({
@@ -89,9 +93,12 @@ export async function getEnrichedInvitationList(
 			useServiceRole: true,
 		}),
 		supabaseRestRequest<
-			Array<{ invitation_project_id: string; content: Record<string, unknown> }>
+			Array<{
+				invitation_project_id: string;
+				rsvp?: Record<string, unknown>;
+			}>
 		>({
-			pathWithQuery: `invitation_content_drafts?select=invitation_project_id,content&invitation_project_id=in.(${invitationIds.map(encodeURIComponent).join(',')})`,
+			pathWithQuery: `invitation_content_drafts?select=invitation_project_id,rsvp:content->rsvp&invitation_project_id=in.(${invitationIds.map(encodeURIComponent).join(',')})`,
 			useServiceRole: true,
 		}),
 	]);
@@ -109,12 +116,12 @@ export async function getEnrichedInvitationList(
 
 	const rsvpContentInvitations = new Set<string>();
 	for (const row of pubRows) {
-		if (hasRsvpContent(row.content)) {
+		if (hasRsvpContent(row.rsvp ? { rsvp: row.rsvp } : undefined)) {
 			rsvpContentInvitations.add(row.invitation_project_id);
 		}
 	}
 	for (const row of draftRows) {
-		if (hasRsvpContent(row.content)) {
+		if (hasRsvpContent(row.rsvp ? { rsvp: row.rsvp } : undefined)) {
 			rsvpContentInvitations.add(row.invitation_project_id);
 		}
 	}

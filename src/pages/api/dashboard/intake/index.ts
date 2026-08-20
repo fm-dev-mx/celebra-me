@@ -19,8 +19,14 @@ export const GET: APIRoute = async ({ request }) => {
 		await requireAdminRateLimit(request, 'intake:list');
 		const session = await requireAdminStrongSession(request);
 
-		const includeArchived = new URL(request.url).searchParams.get('includeArchived') === 'true';
-		await synchronizeDemoInvitations(session.userId);
+		const url = new URL(request.url);
+		const includeArchived = url.searchParams.get('includeArchived') === 'true';
+		const syncDemos = url.searchParams.get('syncDemos') === 'true';
+
+		if (syncDemos) {
+			await synchronizeDemoInvitations(session.userId);
+		}
+
 		const items = await getEnrichedInvitationList(includeArchived ? 'all' : 'active');
 
 		return jsonResponse({ items });
