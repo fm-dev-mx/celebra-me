@@ -53,6 +53,78 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 	return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }
 
+/** Uploaded ref rewritten to a managed semantic key (src may already be stripped). */
+export function isSemanticUploadedAssetRef(
+	value: unknown,
+): value is Record<string, unknown> & { type: 'uploaded'; assetId: string } {
+	return (
+		isRecord(value) &&
+		value.type === 'uploaded' &&
+		typeof value.assetId === 'string' &&
+		value.assetId.startsWith(ASSET_KEY_PREFIX)
+	);
+}
+
+/**
+ * Hosted external asset URL string (Cloudinary, Storage host, or storage placeholder).
+ */
+export function isExternalHostedAssetString(value: unknown): value is string {
+	if (typeof value !== 'string' || value.length === 0) return false;
+	if (value.includes(STORAGE_URL_PLACEHOLDER)) return true;
+	return /^https?:\/\//i.test(value);
+}
+
+function externalHostedAssetKey(value: string): string | null {
+	const path = value.split(/[?#]/, 1)[0] ?? value;
+	const segment = path.split('/').filter(Boolean).at(-1);
+	if (!segment) return null;
+	const key = segment.replace(/\.[a-z0-9]+$/i, '');
+	return /^[a-z0-9][a-z0-9_-]*$/i.test(key) ? key : null;
+}
+
+function semanticKeyFromUploadedRef(value: unknown): string | null {
+	if (!isSemanticUploadedAssetRef(value)) return null;
+	return value.assetId.slice(ASSET_KEY_PREFIX.length);
+}
+
+/**
+ * True when managed uploaded refs and hosted content-only representations are the
+ * same invitation-facing slot (NORMALIZATION_ARTIFACT):
+ * - uploaded semantic key K ↔ plain string K
+ * - uploaded semantic key ↔ hosted external URL string
+ */
+export function areEquivalentAssetRepresentations(left: unknown, right: unknown): boolean {
+	const match = (uploaded: unknown, other: unknown): boolean => {
+		const key = semanticKeyFromUploadedRef(uploaded);
+		if (key == null || typeof other !== 'string' || other.length === 0) return false;
+		if (other === key) return true;
+		if (!isExternalHostedAssetString(other)) return false;
+		// Opaque hosted URLs remain slot-owned; recognizable URL keys must agree.
+		const hostedKey = externalHostedAssetKey(other);
+		return hostedKey == null || hostedKey === key;
+	};
+	return match(left, right) || match(right, left);
+}
+
+function semanticCanonicalTreesEqual(left: unknown, right: unknown): boolean {
+	if (areEquivalentAssetRepresentations(left, right)) return true;
+	if (Array.isArray(left) || Array.isArray(right)) {
+		if (!Array.isArray(left) || !Array.isArray(right) || left.length !== right.length) {
+			return false;
+		}
+		return left.every((item, index) => semanticCanonicalTreesEqual(item, right[index]));
+	}
+	if (isRecord(left) || isRecord(right)) {
+		if (!isRecord(left) || !isRecord(right)) return false;
+		const keys = new Set([...Object.keys(left), ...Object.keys(right)]);
+		for (const key of keys) {
+			if (!semanticCanonicalTreesEqual(left[key], right[key])) return false;
+		}
+		return true;
+	}
+	return left === right;
+}
+
 /**
  * Map environment-local uploaded asset UUIDs to managed semantic keys.
  * Already-semantic `__INVITATION_ASSET_KEY__:` ids stay stable.
@@ -145,9 +217,9 @@ export function semanticInvitationContentEqual(
 	const leftRewrite = rewriteUploadedAssetReferences(left, leftKeyByAssetId);
 	const rightRewrite = rewriteUploadedAssetReferences(right, rightKeyByAssetId);
 	if (!leftRewrite.ok || !rightRewrite.ok) return false;
-	return (
-		JSON.stringify(canonicalizeManagedInvitationContent(leftRewrite.value)) ===
-		JSON.stringify(canonicalizeManagedInvitationContent(rightRewrite.value))
+	return semanticCanonicalTreesEqual(
+		canonicalizeManagedInvitationContent(leftRewrite.value),
+		canonicalizeManagedInvitationContent(rightRewrite.value),
 	);
 }
 

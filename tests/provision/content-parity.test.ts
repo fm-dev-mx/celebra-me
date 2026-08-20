@@ -524,4 +524,189 @@ describe('semantic parity comparison', () => {
 		});
 		expect(compareSemanticInvitationSnapshots('local', local, 'preview', preview)).toEqual([]);
 	});
+
+	it('treats managed uploaded refs as equal to hosted external URL strings', () => {
+		const localId = '11111111-1111-4111-8111-111111111111';
+		const local = buildSemanticInvitationSnapshot({
+			invitation: {
+				slug: 'client-slug',
+				event_type: 'xv',
+				kind: 'client',
+				base_demo_id: 'demo-xv-jewelry-box',
+				theme_id: 'jewelry-box',
+				snapshot: { title: 'Cliente' },
+			},
+			draftContent: {
+				hero: {
+					name: 'Ana',
+					image: {
+						type: 'uploaded',
+						assetId: localId,
+						src: 'https://local.example/storage/v1/object/public/invitation-assets/hero.webp',
+					},
+				},
+			},
+			published: {
+				content: {
+					hero: {
+						name: 'Ana',
+						image: {
+							type: 'uploaded',
+							assetId: localId,
+							src: 'https://local.example/storage/v1/object/public/invitation-assets/hero.webp',
+						},
+					},
+				},
+				is_demo: false,
+			},
+			assets: [{ id: localId, managed_source_key: 'hero', sha256: 'abc123' }],
+			event: { slug: 'client-slug', event_type: 'xv' },
+		});
+		const hosted = buildSemanticInvitationSnapshot({
+			invitation: {
+				slug: 'client-slug',
+				event_type: 'xv',
+				kind: 'client',
+				base_demo_id: 'demo-xv-jewelry-box',
+				theme_id: 'jewelry-box',
+				snapshot: { title: 'Cliente' },
+			},
+			draftContent: {
+				hero: {
+					name: 'Ana',
+					image: 'https://res.cloudinary.com/demo/image/upload/v1/hero.webp',
+				},
+			},
+			published: {
+				content: {
+					hero: {
+						name: 'Ana',
+						image: 'https://res.cloudinary.com/demo/image/upload/v1/hero.webp',
+					},
+				},
+				is_demo: false,
+			},
+			assets: [],
+			event: { slug: 'client-slug', event_type: 'xv' },
+		});
+
+		expect(compareSemanticInvitationSnapshots('local', local, 'preview', hosted)).toEqual([]);
+		expect(compareSemanticInvitationSnapshots('local', local, 'production', hosted)).toEqual(
+			[],
+		);
+	});
+
+	it('treats managed uploaded refs as equal to content-only bare semantic key strings', () => {
+		const localId = '11111111-1111-4111-8111-111111111111';
+		const local = buildSemanticInvitationSnapshot({
+			invitation: {
+				slug: 'client-slug',
+				event_type: 'xv',
+				kind: 'client',
+				base_demo_id: 'demo-xv-jewelry-box',
+				theme_id: 'jewelry-box',
+				snapshot: { title: 'Cliente' },
+			},
+			draftContent: {
+				hero: {
+					name: 'Ana',
+					image: {
+						type: 'uploaded',
+						assetId: localId,
+						src: 'https://local.example/storage/v1/object/public/invitation-assets/hero.webp',
+					},
+				},
+			},
+			published: {
+				content: {
+					hero: {
+						name: 'Ana',
+						image: {
+							type: 'uploaded',
+							assetId: localId,
+							src: 'https://local.example/storage/v1/object/public/invitation-assets/hero.webp',
+						},
+					},
+				},
+				is_demo: false,
+			},
+			assets: [{ id: localId, managed_source_key: 'hero', sha256: 'abc123' }],
+			event: { slug: 'client-slug', event_type: 'xv' },
+		});
+		const hosted = buildSemanticInvitationSnapshot({
+			invitation: {
+				slug: 'client-slug',
+				event_type: 'xv',
+				kind: 'client',
+				base_demo_id: 'demo-xv-jewelry-box',
+				theme_id: 'jewelry-box',
+				snapshot: { title: 'Cliente' },
+			},
+			draftContent: { hero: { name: 'Ana', image: 'hero' } },
+			published: {
+				content: { hero: { name: 'Ana', image: 'hero' } },
+				is_demo: false,
+			},
+			assets: [],
+			event: { slug: 'client-slug', event_type: 'xv' },
+		});
+
+		expect(compareSemanticInvitationSnapshots('local', local, 'preview', hosted)).toEqual([]);
+	});
+
+	it('still fails when managed vs hosted content differs materially', () => {
+		const localId = '11111111-1111-4111-8111-111111111111';
+		const local = buildSemanticInvitationSnapshot({
+			invitation: {
+				slug: 'client-slug',
+				event_type: 'xv',
+				kind: 'client',
+				base_demo_id: 'demo-xv-jewelry-box',
+				theme_id: 'jewelry-box',
+				snapshot: { title: 'Cliente' },
+			},
+			published: {
+				content: {
+					hero: {
+						name: 'Ana',
+						image: {
+							type: 'uploaded',
+							assetId: localId,
+							src: 'https://local.example/storage/v1/object/public/invitation-assets/hero.webp',
+						},
+					},
+				},
+				is_demo: false,
+			},
+			assets: [{ id: localId, managed_source_key: 'hero', sha256: 'abc123' }],
+			event: { slug: 'client-slug', event_type: 'xv' },
+		});
+		const hosted = buildSemanticInvitationSnapshot({
+			invitation: {
+				slug: 'client-slug',
+				event_type: 'xv',
+				kind: 'client',
+				base_demo_id: 'demo-xv-jewelry-box',
+				theme_id: 'jewelry-box',
+				snapshot: { title: 'Cliente' },
+			},
+			published: {
+				content: {
+					hero: {
+						name: 'Different',
+						image: 'https://res.cloudinary.com/demo/image/upload/v1/hero.webp',
+					},
+				},
+				is_demo: false,
+			},
+			assets: [],
+			event: { slug: 'client-slug', event_type: 'xv' },
+		});
+
+		expect(
+			compareSemanticInvitationSnapshots('local', local, 'production', hosted).some(
+				(drift) => drift.entity === 'published_invitation_content',
+			),
+		).toBe(true);
+	});
 });

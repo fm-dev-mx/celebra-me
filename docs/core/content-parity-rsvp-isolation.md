@@ -133,7 +133,9 @@ All of the following must hold for each required environment (Local, Preview, Pr
 4. **Runtime-semantic equivalence** — equivalent spellings that the renderer already folds compare
    equal (for example `itinerary.presentation.behavior` vs `itinerary.variant`).
 5. **Asset representation** — uploaded refs compare by rewritten managed key; binaries compare by
-   `sha256` / `managed_sha256` for **referenced** keys. Unreferenced leftover rows are not semantic
+   `sha256` / `managed_sha256` for **referenced** keys when both environments carry managed
+   inventories. Content-only hosted URL strings vs managed uploaded refs at the same path are
+   equivalent under the shared comparison owner. Unreferenced leftover rows are not semantic
    content. Missing canonical keys fail closed (`behind`).
 6. **Local / Preview / Production** — `invitation:content-parity` reports `PASS` across loaded
    environments, and `pnpm dbs` classifies required environments `match` against the definition
@@ -168,10 +170,14 @@ Cross-environment “same content” means equal **semantic invitation-facing st
 - Runtime variant fold, publication projection canonicalize, host-sharing overlay strip, Storage
   host placeholder, sorted keys
 - Uploaded asset UUIDs rewritten to managed keys before that canonicalize
+- Managed uploaded refs and hosted content-only external representations at the same path are
+  **NORMALIZATION_ARTIFACT** equivalents (bare semantic key strings or URL strings; same comparison
+  owner; no slug-specific rules)
 - Invitation metadata: `event_type`, `base_demo_id`, `theme_id`, `kind`, `snapshot`
 - Draft and published content JSON
 - Referenced assets by semantic key + content digest (`sha256`), not environment asset UUIDs,
-  Storage hosts, or Cloudinary vs local Supabase provider
+  Storage hosts, or Cloudinary vs local Supabase provider. Empty managed inventory paired with
+  hosted URL-string content is representation-compatible with a managed uploaded inventory.
 - Client RSVP **projection**: linked non-demo `(event_type, slug)` event existence (not event UUID,
   owner, memberships, timestamps, or guests)
 

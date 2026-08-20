@@ -134,6 +134,8 @@ describe('managed promotion status', () => {
 			ok: true,
 			fingerprint: 'canonical-fingerprint',
 			assetKeys: ['hero'],
+			assetDigests: [{ key: 'hero', sha256: 'a'.repeat(64) }],
+			content: { hero: 'hero' },
 		}));
 		mockClassify.mockImplementation((...args: unknown[]) => {
 			const input = args[0] as { rows: unknown[] };

@@ -55,7 +55,12 @@ interface ManagedPromotionStatusOptions {
 	includeProductionPreflight?: boolean;
 }
 
-type CanonicalPromotionFingerprint = { fingerprint: string; assetKeys: readonly string[] };
+type CanonicalPromotionFingerprint = {
+	fingerprint: string;
+	assetKeys: readonly string[];
+	assetDigests: readonly { key: string; sha256: string }[];
+	content: Record<string, unknown>;
+};
 
 async function buildCanonicalFingerprints(
 	definitions: readonly InvitationDefinition[],
@@ -68,6 +73,8 @@ async function buildCanonicalFingerprints(
 				canonicalBySlug.set(definition.slug, {
 					fingerprint: canonical.fingerprint,
 					assetKeys: canonical.assetKeys,
+					assetDigests: canonical.assetDigests,
+					content: canonical.content,
 				});
 			}
 		}),
@@ -114,6 +121,9 @@ async function probeManagedPromotionEnvironment(input: {
 			classifyLiveInvitation({
 				canonicalFingerprint: canonical.fingerprint,
 				canonicalAssetKeys: canonical.assetKeys,
+				canonicalAssetDigests: canonical.assetDigests,
+				canonicalContent: canonical.content,
+				deliveryScope: definition.deliveryScope,
 				expectedSlug: definition.slug,
 				expectedManagedIdentityId: definition.managedIdentityId,
 				rows: evidence.rows.filter((row) => row.slug === definition.slug),

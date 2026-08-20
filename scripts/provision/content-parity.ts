@@ -7,6 +7,7 @@
 
 import { CONTENT_MIRROR_TABLES, EXCLUDED_TABLES } from '../db/db-target-config.ts';
 import {
+	areEquivalentAssetRepresentations,
 	canonicalizeManagedInvitationContent,
 	canonicalizeValue,
 	isSemanticallyEqual,
@@ -99,6 +100,7 @@ function joinSemanticPath(parent: string, child: string | number): string {
 /** Lists normalized semantic paths only; it deliberately never returns field values. */
 export function listSemanticDifferencePaths(left: unknown, right: unknown): string[] {
 	const walk = (currentLeft: unknown, currentRight: unknown, path: string): string[] => {
+		if (areEquivalentAssetRepresentations(currentLeft, currentRight)) return [];
 		if (isSemanticallyEqual(currentLeft, currentRight)) return [];
 		if (isUploadedAssetReference(currentLeft) && isUploadedAssetReference(currentRight)) {
 			return currentLeft.assetId === currentRight.assetId ? [] : [path || '$'];
@@ -223,11 +225,42 @@ function compareCanonicalContent(
 	}
 }
 
+function hasUploadedAssetReference(value: unknown): boolean {
+	const ids = new Set<string>();
+	collectUploadedAssetIds(value, ids);
+	return ids.size > 0;
+}
+
+/**
+ * Managed inventory + uploaded refs vs empty inventory + content-only external
+ * refs (URL strings or bare semantic keys). Inventory shape is representation-owned.
+ */
+function areCompatibleAssetInventoryRepresentations(
+	left: SemanticInvitationSnapshot,
+	right: SemanticInvitationSnapshot,
+): boolean {
+	const leftManaged = left.assets.length > 0;
+	const rightManaged = right.assets.length > 0;
+	if (leftManaged === rightManaged) return false;
+
+	const external = leftManaged ? right : left;
+	const managed = leftManaged ? left : right;
+	const externalContents = [external.draftContent, external.publishedContent];
+	const managedContents = [managed.draftContent, managed.publishedContent];
+
+	if (external.assets.length !== 0) return false;
+	if (externalContents.some(hasUploadedAssetReference)) return false;
+	if (!managedContents.some(hasUploadedAssetReference)) return false;
+	return true;
+}
+
 function compareAssets(
 	left: SemanticInvitationSnapshot,
 	right: SemanticInvitationSnapshot,
 	push: DriftPush,
 ): void {
+	if (areCompatibleAssetInventoryRepresentations(left, right)) return;
+
 	const leftAssets = sortedAssets(left.assets);
 	const rightAssets = sortedAssets(right.assets);
 	const leftKeys = leftAssets.map((a) => a.semanticKey);

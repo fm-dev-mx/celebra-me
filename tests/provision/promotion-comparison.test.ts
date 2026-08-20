@@ -197,4 +197,101 @@ describe('canonicalizeManagedInvitationContent', () => {
 			),
 		).toBe(false);
 	});
+
+	it('equates managed uploaded refs with hosted external URL strings', () => {
+		const localId = '11111111-1111-4111-8111-111111111111';
+		expect(
+			semanticInvitationContentEqual(
+				{
+					hero: {
+						image: {
+							type: 'uploaded',
+							assetId: localId,
+							src: 'https://local.example/storage/v1/object/public/invitation-assets/hero.webp',
+						},
+					},
+				},
+				{ hero: { image: 'https://res.cloudinary.com/demo/image/upload/v1/hero.webp' } },
+				new Map([[localId, 'hero']]),
+			),
+		).toBe(true);
+		expect(
+			semanticInvitationContentEqual(
+				{
+					hero: {
+						image: {
+							type: 'uploaded',
+							assetId: localId,
+							src: 'https://local.example/storage/v1/object/public/invitation-assets/hero.webp',
+						},
+					},
+				},
+				{
+					hero: {
+						image: 'https://res.cloudinary.com/demo/image/upload/v1/portrait.webp',
+					},
+				},
+				new Map([[localId, 'hero']]),
+			),
+		).toBe(false);
+	});
+
+	it('equates managed uploaded refs with content-only bare semantic key strings', () => {
+		const localId = '11111111-1111-4111-8111-111111111111';
+		expect(
+			semanticInvitationContentEqual(
+				{
+					hero: {
+						image: {
+							type: 'uploaded',
+							assetId: localId,
+							src: 'https://local.example/storage/v1/object/public/invitation-assets/hero.webp',
+						},
+					},
+				},
+				{ hero: { image: 'hero' } },
+				new Map([[localId, 'hero']]),
+			),
+		).toBe(true);
+		expect(
+			semanticInvitationContentEqual(
+				{
+					hero: {
+						image: {
+							type: 'uploaded',
+							assetId: localId,
+							src: 'https://local.example/storage/v1/object/public/invitation-assets/hero.webp',
+						},
+					},
+				},
+				{ hero: { image: 'hero-mobile' } },
+				new Map([[localId, 'hero']]),
+			),
+		).toBe(false);
+	});
+
+	it('fails when content differs under managed vs external asset representations', () => {
+		const localId = '11111111-1111-4111-8111-111111111111';
+		expect(
+			semanticInvitationContentEqual(
+				{
+					hero: {
+						name: 'Ana',
+						image: {
+							type: 'uploaded',
+							assetId: localId,
+							src: 'https://local.example/storage/v1/object/public/invitation-assets/hero.webp',
+						},
+					},
+				},
+				{
+					hero: {
+						name: 'Different',
+						image: 'https://res.cloudinary.com/demo/image/upload/v1/hero.webp',
+					},
+				},
+				new Map([[localId, 'hero']]),
+			),
+		).toBe(false);
+	});
 });

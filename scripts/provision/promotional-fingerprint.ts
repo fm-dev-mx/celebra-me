@@ -7,17 +7,22 @@ import { findDemoPreset } from '../../src/lib/intake/demo-preset-catalog.ts';
 import {
 	buildSemanticAssetMap,
 	canonicalize,
+	ASSET_KEY_PREFIX,
 	loadSourceAssetDigests,
+	semanticAssetRef,
 	type SourceAssetDigest,
 } from './normalized-invitation-release.ts';
 import {
+	areEquivalentAssetRepresentations,
 	canonicalizeValue,
 	hashManagedInvitationContent,
+	isSemanticUploadedAssetRef,
 	rewriteUploadedAssetReferences,
 } from './promotion-comparison.ts';
 import {
 	getInvitationAssetSourceDir,
 	type InvitationDefinition,
+	type InvitationDeliveryScope,
 } from './invitations/invitation-definition.ts';
 import type { EnvironmentPromotionState } from '../../src/lib/status/types.ts';
 
@@ -56,6 +61,8 @@ export interface CanonicalFingerprintResult {
 	ok: true;
 	fingerprint: string;
 	assetKeys: readonly string[];
+	assetDigests: readonly PromotionalAssetDigest[];
+	content: Record<string, unknown>;
 }
 
 export interface CanonicalFingerprintFailure {
@@ -109,15 +116,62 @@ export function computePromotionalFingerprint(input: {
 	});
 }
 
-export function buildLivePromotionalFingerprint(
-	row: LiveInvitationRow,
-	canonicalAssetKeys: readonly string[],
-): LiveFingerprintResult {
-	if (!isRecord(row.publishedContent)) return { ok: false };
-	const canonicalKeySet = new Set(canonicalAssetKeys);
+/**
+ * Align content-only hosted asset slots to canonical semantic uploaded refs.
+ * Only rewrites strings that sit where the canonical tree already has an uploaded
+ * ref (so section names like `family` are not mistaken for asset keys).
+ */
+export function alignExternalAssetsToCanonical(live: unknown, canonical: unknown): unknown {
+	if (isSemanticUploadedAssetRef(canonical)) {
+		const key = canonical.assetId.slice(ASSET_KEY_PREFIX.length);
+		if (typeof live === 'string' && areEquivalentAssetRepresentations(canonical, live)) {
+			return semanticAssetRef(key);
+		}
+		return live;
+	}
+	if (Array.isArray(live) && Array.isArray(canonical)) {
+		return live.map((item, index) => alignExternalAssetsToCanonical(item, canonical[index]));
+	}
+	if (isRecord(live) && isRecord(canonical)) {
+		return Object.fromEntries(
+			Object.entries(live).map(([key, child]) => [
+				key,
+				alignExternalAssetsToCanonical(child, canonical[key]),
+			]),
+		);
+	}
+	return live;
+}
+
+function rewriteLiveContentForFingerprint(
+	content: unknown,
+	keyByAssetId: ReadonlyMap<string, string>,
+	canonicalContent: Record<string, unknown> | null,
+	alignExternalRepresentation: boolean,
+): { ok: true; value: Record<string, unknown> } | { ok: false } {
+	const uploaded = rewriteUploadedAssetReferences(content, keyByAssetId);
+	if (!uploaded.ok) return { ok: false };
+	const rewritten =
+		alignExternalRepresentation && canonicalContent
+			? alignExternalAssetsToCanonical(uploaded.value, canonicalContent)
+			: uploaded.value;
+	if (!isRecord(rewritten)) return { ok: false };
+	return { ok: true, value: rewritten };
+}
+
+function collectLiveAssetEvidence(
+	assets: readonly LiveAssetEvidence[],
+	canonicalKeySet: ReadonlySet<string>,
+):
+	| {
+			ok: true;
+			keyByAssetId: Map<string, string>;
+			liveAssetByKey: Map<string, PromotionalAssetDigest>;
+	  }
+	| { ok: false } {
 	const keyByAssetId = new Map<string, string>();
 	const liveAssetByKey = new Map<string, PromotionalAssetDigest>();
-	for (const asset of row.assets) {
+	for (const asset of assets) {
 		const key = asset.managedSourceKey;
 		if (!key) continue;
 		if (asset.id) keyByAssetId.set(asset.id, key);
@@ -126,22 +180,93 @@ export function buildLivePromotionalFingerprint(
 		if (!digest) return { ok: false };
 		liveAssetByKey.set(key, { key, sha256: digest });
 	}
-	for (const key of canonicalAssetKeys) {
-		if (!liveAssetByKey.has(key)) return { ok: false };
-	}
-	const liveAssets = [...liveAssetByKey.values()];
+	return { ok: true, keyByAssetId, liveAssetByKey };
+}
 
-	const publishedRewrite = rewriteUploadedAssetReferences(row.publishedContent, keyByAssetId);
-	if (!publishedRewrite.ok || !isRecord(publishedRewrite.value)) return { ok: false };
-	const publishedDigest = hashManagedInvitationContent(publishedRewrite.value);
-
-	let draftDigest: string | null = null;
-	if (row.draftContent != null) {
-		if (!isRecord(row.draftContent)) return { ok: false };
-		const draftRewrite = rewriteUploadedAssetReferences(row.draftContent, keyByAssetId);
-		if (!draftRewrite.ok || !isRecord(draftRewrite.value)) return { ok: false };
-		draftDigest = hashManagedInvitationContent(draftRewrite.value);
+function fillMissingContentOnlyDigests(
+	liveAssetByKey: Map<string, PromotionalAssetDigest>,
+	canonicalKeySet: ReadonlySet<string>,
+	canonicalDigests: readonly PromotionalAssetDigest[],
+): void {
+	for (const digest of canonicalDigests) {
+		if (!canonicalKeySet.has(digest.key) || liveAssetByKey.has(digest.key)) continue;
+		liveAssetByKey.set(digest.key, {
+			key: digest.key,
+			sha256: digest.sha256.toLowerCase(),
+		});
 	}
+}
+
+function hasAllCanonicalAssetKeys(
+	liveAssetByKey: ReadonlyMap<string, PromotionalAssetDigest>,
+	canonicalAssetKeys: readonly string[],
+): boolean {
+	return canonicalAssetKeys.every((key) => liveAssetByKey.has(key));
+}
+
+function draftDigestForFingerprint(
+	draftContent: unknown,
+	keyByAssetId: ReadonlyMap<string, string>,
+	canonicalContent: Record<string, unknown> | null,
+	alignExternalRepresentation: boolean,
+): { ok: true; digest: string | null } | { ok: false } {
+	if (draftContent == null) return { ok: true, digest: null };
+	if (!isRecord(draftContent)) return { ok: false };
+	const draftRewrite = rewriteLiveContentForFingerprint(
+		draftContent,
+		keyByAssetId,
+		canonicalContent,
+		alignExternalRepresentation,
+	);
+	if (!draftRewrite.ok) return { ok: false };
+	return { ok: true, digest: hashManagedInvitationContent(draftRewrite.value) };
+}
+
+export function buildLivePromotionalFingerprint(
+	row: LiveInvitationRow,
+	canonicalAssetKeys: readonly string[],
+	options?: {
+		deliveryScope?: InvitationDeliveryScope;
+		canonicalAssetDigests?: readonly PromotionalAssetDigest[];
+		canonicalContent?: Record<string, unknown>;
+	},
+): LiveFingerprintResult {
+	if (!isRecord(row.publishedContent)) return { ok: false };
+	const canonicalKeySet = new Set(canonicalAssetKeys);
+	const collected = collectLiveAssetEvidence(row.assets, canonicalKeySet);
+	if (!collected.ok) return { ok: false };
+	const { keyByAssetId, liveAssetByKey } = collected;
+
+	const inventoryIncomplete = !hasAllCanonicalAssetKeys(liveAssetByKey, canonicalAssetKeys);
+	const useExternalKeyRepresentation = Boolean(
+		options?.deliveryScope === 'content-only' &&
+		inventoryIncomplete &&
+		options.canonicalAssetDigests &&
+		options.canonicalContent,
+	);
+	if (useExternalKeyRepresentation) {
+		fillMissingContentOnlyDigests(
+			liveAssetByKey,
+			canonicalKeySet,
+			options!.canonicalAssetDigests!,
+		);
+	}
+	if (!hasAllCanonicalAssetKeys(liveAssetByKey, canonicalAssetKeys)) return { ok: false };
+
+	const publishedRewrite = rewriteLiveContentForFingerprint(
+		row.publishedContent,
+		keyByAssetId,
+		options?.canonicalContent ?? null,
+		useExternalKeyRepresentation,
+	);
+	if (!publishedRewrite.ok) return { ok: false };
+	const draft = draftDigestForFingerprint(
+		row.draftContent,
+		keyByAssetId,
+		options?.canonicalContent ?? null,
+		useExternalKeyRepresentation,
+	);
+	if (!draft.ok) return { ok: false };
 
 	if (
 		typeof row.eventType !== 'string' ||
@@ -161,10 +286,10 @@ export function buildLivePromotionalFingerprint(
 			kind: row.kind,
 			snapshot: row.snapshot,
 			content: publishedRewrite.value,
-			assets: liveAssets,
+			assets: [...liveAssetByKey.values()],
 		}),
-		publishedDigest,
-		draftDigest,
+		publishedDigest: hashManagedInvitationContent(publishedRewrite.value),
+		draftDigest: draft.digest,
 	};
 }
 
@@ -201,6 +326,11 @@ export async function buildCanonicalPromotionalFingerprint(
 				assets: assetDigests,
 			}),
 			assetKeys: expectedKeys,
+			assetDigests: assetDigests.map((asset) => ({
+				key: asset.key,
+				sha256: asset.sha256.toLowerCase(),
+			})),
+			content,
 		};
 	} catch {
 		return { ok: false };
@@ -213,6 +343,9 @@ export function classifyLiveInvitation(input: {
 	expectedSlug: string;
 	expectedManagedIdentityId: string;
 	rows: readonly LiveInvitationRow[];
+	deliveryScope?: InvitationDeliveryScope;
+	canonicalAssetDigests?: readonly PromotionalAssetDigest[];
+	canonicalContent?: Record<string, unknown>;
 }): EnvironmentPromotionState {
 	if (input.rows.length === 0) return 'absent';
 	if (input.rows.length > 1) return 'conflict';
@@ -221,7 +354,11 @@ export function classifyLiveInvitation(input: {
 	if (row.managedIdentityId && row.managedIdentityId !== input.expectedManagedIdentityId) {
 		return 'conflict';
 	}
-	const live = buildLivePromotionalFingerprint(row, input.canonicalAssetKeys);
+	const live = buildLivePromotionalFingerprint(row, input.canonicalAssetKeys, {
+		deliveryScope: input.deliveryScope,
+		canonicalAssetDigests: input.canonicalAssetDigests,
+		canonicalContent: input.canonicalContent,
+	});
 	if (!live.ok) return 'behind';
 	const publishedMatches = live.fingerprint === input.canonicalFingerprint;
 	const draftDiverged = live.draftDigest != null && live.draftDigest !== live.publishedDigest;

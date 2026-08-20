@@ -233,6 +233,141 @@ describe('promotional fingerprint', () => {
 		expect(hero.assetId).toBe(`${ASSET_KEY_PREFIX}hero`);
 	});
 
+	it('matches content-only hosted key strings without live invitation_assets', () => {
+		const canonical = computePromotionalFingerprint(fingerprintInput());
+		const canonicalContentTree = canonicalContent();
+		const live = buildLivePromotionalFingerprint(
+			liveRow({
+				publishedContent: { hero: 'hero', title: 'Celebración' },
+				draftContent: { hero: 'hero', title: 'Celebración' },
+				assets: [],
+			}),
+			['hero'],
+			{
+				deliveryScope: 'content-only',
+				canonicalAssetDigests: [{ key: 'hero', sha256: HERO_SHA }],
+				canonicalContent: canonicalContentTree,
+			},
+		);
+		expect(live.ok).toBe(true);
+		if (!live.ok) return;
+		expect(live.fingerprint).toBe(canonical);
+		expect(
+			classifyLiveInvitation({
+				canonicalFingerprint: canonical,
+				canonicalAssetKeys: ['hero'],
+				canonicalAssetDigests: [{ key: 'hero', sha256: HERO_SHA }],
+				canonicalContent: canonicalContentTree,
+				deliveryScope: 'content-only',
+				expectedSlug: 'demo-slug',
+				expectedManagedIdentityId: '00000000-0000-4000-8000-000000000001',
+				rows: [
+					liveRow({
+						publishedContent: { hero: 'hero', title: 'Celebración' },
+						draftContent: { hero: 'hero', title: 'Celebración' },
+						assets: [],
+					}),
+				],
+			}),
+		).toBe('match');
+	});
+
+	it('still fails content-only when a hosted key string differs from canonical', () => {
+		expect(
+			classifyLiveInvitation({
+				canonicalFingerprint: computePromotionalFingerprint(fingerprintInput()),
+				canonicalAssetKeys: ['hero'],
+				canonicalAssetDigests: [{ key: 'hero', sha256: HERO_SHA }],
+				canonicalContent: canonicalContent(),
+				deliveryScope: 'content-only',
+				expectedSlug: 'demo-slug',
+				expectedManagedIdentityId: '00000000-0000-4000-8000-000000000001',
+				rows: [
+					liveRow({
+						publishedContent: { hero: 'portrait', title: 'Celebración' },
+						draftContent: { hero: 'portrait', title: 'Celebración' },
+						assets: [],
+					}),
+				],
+			}),
+		).toBe('behind');
+	});
+
+	it('still fails content-only when a hosted URL identifies another asset key', () => {
+		expect(
+			classifyLiveInvitation({
+				canonicalFingerprint: computePromotionalFingerprint(fingerprintInput()),
+				canonicalAssetKeys: ['hero'],
+				canonicalAssetDigests: [{ key: 'hero', sha256: HERO_SHA }],
+				canonicalContent: canonicalContent(),
+				deliveryScope: 'content-only',
+				expectedSlug: 'demo-slug',
+				expectedManagedIdentityId: '00000000-0000-4000-8000-000000000001',
+				rows: [
+					liveRow({
+						publishedContent: {
+							hero: 'https://res.cloudinary.com/demo/image/upload/v1/portrait.webp',
+							title: 'Celebración',
+						},
+						draftContent: {
+							hero: 'https://res.cloudinary.com/demo/image/upload/v1/portrait.webp',
+							title: 'Celebración',
+						},
+						assets: [],
+					}),
+				],
+			}),
+		).toBe('behind');
+	});
+
+	it('does not rewrite section-name strings that collide with asset keys', () => {
+		const tree = {
+			hero: semanticAssetRef('hero'),
+			title: 'Celebración',
+			sectionOrder: ['family', 'hero'],
+		};
+		const live = buildLivePromotionalFingerprint(
+			liveRow({
+				publishedContent: {
+					hero: 'hero',
+					title: 'Celebración',
+					sectionOrder: ['family', 'hero'],
+				},
+				draftContent: {
+					hero: 'hero',
+					title: 'Celebración',
+					sectionOrder: ['family', 'hero'],
+				},
+				assets: [],
+			}),
+			['hero', 'family'],
+			{
+				deliveryScope: 'content-only',
+				canonicalAssetDigests: [
+					{ key: 'hero', sha256: HERO_SHA },
+					{ key: 'family', sha256: OTHER_SHA },
+				],
+				canonicalContent: tree,
+			},
+		);
+		expect(live.ok).toBe(true);
+		if (!live.ok) return;
+		expect(live.fingerprint).toBe(
+			computePromotionalFingerprint({
+				eventType: 'boda',
+				baseDemoId: 'demo-boda-jewelry-box-wedding',
+				themeId: 'jewelry-box-wedding',
+				kind: 'client',
+				snapshot: { themeId: 'jewelry-box-wedding' },
+				content: tree,
+				assets: [
+					{ key: 'family', sha256: OTHER_SHA },
+					{ key: 'hero', sha256: HERO_SHA },
+				],
+			}),
+		);
+	});
+
 	it('ignores unreferenced zombie assets in DB when canonical assets match', () => {
 		const canonical = computePromotionalFingerprint(fingerprintInput());
 		const rowWithExtraZombieAssets = liveRow({
