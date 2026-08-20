@@ -85,7 +85,9 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 	return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }
 
-function isUploadedAssetReference(value: unknown): boolean {
+function isUploadedAssetReference(
+	value: unknown,
+): value is Record<string, unknown> & { type: 'uploaded'; assetId: string } {
 	return isRecord(value) && value.type === 'uploaded' && typeof value.assetId === 'string';
 }
 
@@ -381,11 +383,11 @@ function collectUploadedAssetIds(value: unknown, into: Set<string>): void {
 		for (const item of value) collectUploadedAssetIds(item, into);
 		return;
 	}
-	if (!isRecord(value)) return;
-	if (value.type === 'uploaded' && typeof value.assetId === 'string') {
+	if (isUploadedAssetReference(value)) {
 		into.add(value.assetId);
 		return;
 	}
+	if (!isRecord(value)) return;
 	for (const child of Object.values(value)) collectUploadedAssetIds(child, into);
 }
 
