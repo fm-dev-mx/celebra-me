@@ -6,17 +6,18 @@ evidence, and remaining delivery constraints that were previously spread across 
 
 The live repository is authoritative where this record and historical plans differ:
 
-- Embedded publication payload:
-  [`20260626_valentina_hernandez_xv.sql`](../../scripts/manual/production-patches/20260626_valentina_hernandez_xv.sql)
+- Managed definition (content SSOT):
+  [`valentina-hernandez.ts`](../../scripts/provision/invitations/valentina-hernandez.ts)
 - Payload contract test:
   [`valentina-hernandez-payload.test.ts`](../../tests/content/valentina-hernandez-payload.test.ts)
 - Visual profile:
   [`valentina-hernandez.scss`](../../src/styles/invitation-profiles/valentina-hernandez.scss)
-- Client-scoped styling:
-  [`_xv-valentina-hernandez.scss`](../../src/styles/themes/sections/_xv-valentina-hernandez.scss)
-- Asset registry: [`index.ts`](../../src/assets/images/events/xv-valentina-hernandez/index.ts)
+- Asset registry (draft WhatsApp JPEGs until remastered):
+  [`index.ts`](../../src/assets/images/events/xv-valentina-hernandez/index.ts)
 - Demo-safe visual counterpart:
   [`demo-xv-valentina-profile.json`](../../src/content/event-demos/xv/demo-xv-valentina-profile.json)
+- Historical SQL patch (no longer the content owner):
+  [`20260626_valentina_hernandez_xv.sql`](../../scripts/manual/production-patches/20260626_valentina_hernandez_xv.sql)
 
 ## Current implementation state
 
@@ -28,10 +29,10 @@ The live repository is authoritative where this record and historical plans diff
 | Theme preset          | `editorial-magazine`                                                                                                                              |
 | Visual profile        | `valentina-hernandez`                                                                                                                             |
 | Asset namespace       | `xv-valentina-hernandez`                                                                                                                          |
-| Content source        | JSON payload embedded in the protected SQL patch                                                                                                  |
-| Schema evidence       | The focused Jest test parses the embedded payload through `eventContentSchema`                                                                    |
+| Content source        | Managed definition `scripts/provision/invitations/valentina-hernandez.ts` (`deliveryScope: content-only` for Preview/Production; Local first populate may use `content-and-assets`) |
+| Schema evidence       | Jest parses `buildValentinaPublishedContent` through `eventContentSchema`                             |
 | Visual implementation | Editorial cover, responsive hero, section dividers, family/location treatment, gallery, gifts, RSVP, and footer passes are present in live source |
-| Publication authority | No production execution is implied by this record                                                                                                 |
+| Publication authority | Preview variants applied; Production owner apply still pending. No production execution is implied by this record |
 
 The historical implementation passes are complete or superseded by live source and this record.
 Future visual changes should start from the current profile and shared editorial contracts instead
@@ -39,8 +40,8 @@ of reopening those plans.
 
 ## Client facts retained
 
-These facts came from the corrected client-source audit and are represented in the current embedded
-payload unless noted otherwise.
+These facts came from the corrected client-source audit and are represented in the managed
+definition's `buildPublishedContent` unless noted otherwise.
 
 | Field              | Durable value                                                       |
 | ------------------ | ------------------------------------------------------------------- |
@@ -69,15 +70,14 @@ being eternal.
 - Section order is quote, family, countdown, itinerary, location, gallery, gifts, personalized
   access, RSVP, and thank-you.
 - Ceremony and reception intentionally share the Finca Las Palmas location while retaining their
-  distinct times in the itinerary. The numbered magazine program is `itinerary.variant:
-  editorial-program` (TimelineList). Persisted `standard` content still receives the same skin from
-  the Valentina profile until that row is migrated.
+  distinct times in the itinerary. The numbered magazine program is authored as
+  `itinerary.variant: editorial-program`.
 - The gifts section contains “Regalo Sorpresa,” “Lluvia de Sobres,” and the Liverpool registry.
 - RSVP uses `accessMode: "hybrid"` and `confirmationMode: "both"`.
 - The editorial envelope uses `revealVariant: "editorial-cover"`, edition `XV`, issue `2026`, and
   seal initials `V·H`.
-- The SQL patch preserves an existing `content.music` value instead of deleting it. The repository
-  does not define a new playable music source for this invitation.
+- Hosted `content.music` is authored in the managed definition (Justin Timberlake — “Can't Stop the
+  Feeling!”). Do not omit it on apply or the player disappears.
 - The demo-safe counterpart intentionally uses fictional people, dates, and locations while
   preserving the same visual profile.
 
@@ -90,7 +90,7 @@ The current files are WhatsApp-compressed JPEG previews:
 
 - Typical dimensions are approximately 853–1003 × 1280.
 - Typical file sizes are approximately 47–85 KB.
-- `portrait` is also used as the social sharing image.
+- `sharing.ogImage` uses the `hero` asset (not `portrait`).
 - `family` is a solo portrait placeholder rather than a family group photo.
 - Interludes currently use client photos rather than no-people editorial artwork.
 
@@ -107,10 +107,11 @@ Production-quality replacement guidance:
 
 1. The asset registry still labels every image as draft-preview quality. High-resolution originals
    remain the primary production-readiness blocker.
-2. The SQL patch contains an `__OWNER_USER_ID__` placeholder and must not be executed without the
-   protected database workflow, target verification, backup, and explicit production authorization.
-3. A focused test proves schema validity and absence of placeholder copy in the embedded payload; it
-   does not prove that a production route was deployed or client-approved.
+2. Do not run the historical SQL patch. Production apply is owner-only and still pending:
+   `pnpm prod:apply -- --slug valentina-hernandez --apply`.
+3. A focused test proves schema validity and absence of placeholder copy in
+   `buildValentinaPublishedContent`; it does not prove that a production route was deployed or
+   client-approved.
 4. Google Maps uses a search URL for Finca Las Palmas. Confirm the exact entrance pin before final
    delivery if navigation precision matters.
 5. Confirm the Instagram handle, Liverpool registry availability, RSVP destination, and any licensed

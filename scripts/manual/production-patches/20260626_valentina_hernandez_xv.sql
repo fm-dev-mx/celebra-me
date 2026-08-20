@@ -40,6 +40,7 @@
 -- @expected-rows-min: 0
 -- @expected-rows-max: 4
 -- @requires-backup: true
+-- @catalog: historical
 -- @dry-run-query:
 --   SELECT id, slug, title, status, theme_id, deleted_at
 --   FROM public.invitation_projects

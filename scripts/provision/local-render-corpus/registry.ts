@@ -100,13 +100,12 @@ export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] = [
 	{
 		slug: 'valentina-hernandez',
 		eventType: 'xv',
-		classification: 'legacy',
-		remoteParity: 'excluded',
-		sourceStrategy: 'sanitized_fixture',
-		assetStrategy: 'HYBRID_VERSIONED_AND_REMOTE',
+		classification: 'canonical',
+		remoteParity: 'required',
+		sourceStrategy: 'canonical_definition',
+		assetStrategy: 'VERSIONED_MANAGED_ASSET',
 		themeId: 'editorial-magazine',
 		visualProfileId: 'valentina-hernandez',
-		fixtureFile: 'valentina-hernandez.json',
 	},
 	{
 		slug: 'xareni-iyarit',

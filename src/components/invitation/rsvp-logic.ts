@@ -122,9 +122,7 @@ export function resolveLabels(
 	celebrantName?: string,
 	variant?: string,
 ): ResolvedLabels {
-	const isEditorial = ['editorial-press-pass', 'editorial', 'editorial-magazine'].includes(
-		variant ?? '',
-	);
+	const isEditorial = ['editorial-press-pass', 'editorial'].includes(variant ?? '');
 	const celebrantFirstName = celebrantName?.trim().split(/\s+/)[0] || 'el festejado';
 
 	return {
