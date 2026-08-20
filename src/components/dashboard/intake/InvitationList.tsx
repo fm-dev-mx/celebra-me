@@ -240,7 +240,7 @@ const InvitationList: FC = () => {
 		archiveInvitation,
 		restoreInvitation,
 		permanentlyDeleteInvitation,
-	} = useInvitationAdmin();
+	} = useInvitationAdmin({ autoLoad: true });
 	const [actionError, setActionError] = useState('');
 	const [activeTab, setActiveTab] = useState<FilterTab>('all');
 

@@ -7,9 +7,14 @@ import type {
 	InvitationContentDraftDTO,
 	UpdateInvitationDTO,
 	CreateIntakeRequestDTO,
+	RsvpEventDTO,
 } from '@/lib/dashboard/dto/intake';
 
-export function useInvitationAdmin() {
+export interface UseInvitationAdminOptions {
+	autoLoad?: boolean;
+}
+
+export function useInvitationAdmin({ autoLoad = false }: UseInvitationAdminOptions = {}) {
 	const [items, setItems] = useState<InvitationDTO[]>([]);
 	const [error, setError] = useState('');
 	const [loading, setLoading] = useState(false);
@@ -18,9 +23,7 @@ export function useInvitationAdmin() {
 	const [currentInvitation, setCurrentInvitation] = useState<InvitationDTO | null>(null);
 	const [currentRequest, setCurrentRequest] = useState<IntakeRequestDTO | null>(null);
 	const [currentSubmission, setCurrentSubmission] = useState<IntakeSubmissionDTO | null>(null);
-	const [currentRsvpEvent, setCurrentRsvpEvent] = useState<
-		import('@/lib/dashboard/dto/intake').RsvpEventDTO | null
-	>(null);
+	const [currentRsvpEvent, setCurrentRsvpEvent] = useState<RsvpEventDTO | null>(null);
 	const [currentDraft, setCurrentDraft] = useState<InvitationContentDraftDTO | null>(null);
 	const [rawToken, setRawToken] = useState<string | null>(null);
 
@@ -38,8 +41,10 @@ export function useInvitationAdmin() {
 	}, []);
 
 	useEffect(() => {
-		void loadInvitations();
-	}, [loadInvitations]);
+		if (autoLoad) {
+			void loadInvitations();
+		}
+	}, [autoLoad, loadInvitations]);
 
 	const updateInvitation = useCallback(
 		async (invitationId: string, payload: UpdateInvitationDTO) => {
@@ -58,7 +63,7 @@ export function useInvitationAdmin() {
 				return item;
 			} catch (err) {
 				throw new Error(
-					err instanceof Error ? err.message : 'Error al actualizar el invitación.',
+					err instanceof Error ? err.message : 'Error al actualizar la invitación.',
 					{ cause: err },
 				);
 			}
@@ -76,7 +81,7 @@ export function useInvitationAdmin() {
 			setCurrentSubmission(result.submission);
 			setCurrentRsvpEvent(result.rsvpEvent ?? null);
 		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Error al cargar el invitación.');
+			setError(err instanceof Error ? err.message : 'Error al cargar la invitación.');
 		} finally {
 			setLoading(false);
 		}
