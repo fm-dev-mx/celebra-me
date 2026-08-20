@@ -8,8 +8,31 @@ import { resolveInvitationPackageInput } from './invitation-package-input.ts';
 import { getDefaultPreviewApprovalStore } from './preview-approval-store.ts';
 import { verifyPreviewApprovalArtifact } from './preview-approval-service.ts';
 import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
+import type { PromotionAction } from '../../src/lib/status/types.ts';
 
 export type ReleaseDestination = 'local' | 'prepare_preview' | 'production';
+
+export type WizardMenuDestination = ReleaseDestination | 'cancel' | 'refresh';
+
+/** Same publication SSOT as pnpm dbs → default menu selection (soft default only). */
+export function defaultDestinationFromPromotionAction(
+	action: PromotionAction,
+): WizardMenuDestination {
+	switch (action) {
+		case 'PROMOTE_PREVIEW':
+			return 'prepare_preview';
+		case 'PROMOTE_PRODUCTION':
+			return 'production';
+		case 'NONE':
+			return 'cancel';
+		default:
+			return 'cancel';
+	}
+}
+
+export function isStaleProvenanceBlockReason(reason: string | undefined): boolean {
+	return Boolean(reason?.includes('stale_provenance'));
+}
 
 export interface DestinationReadiness {
 	slug: string;

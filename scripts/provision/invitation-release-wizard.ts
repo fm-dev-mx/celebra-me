@@ -5,12 +5,10 @@
 import { confirm, select } from '@inquirer/prompts';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
-import { LOCAL_DB_URL } from '../db/db-target-config.ts';
-import { assertPreviewDbUrl, getPreviewDbUrl, getProdDbUrl } from '../db/db-workflow-lib.ts';
+import { getProdDbUrl } from '../db/db-workflow-lib.ts';
 import { operatorSymbol, writeHuman } from '../db/operator-cli-ux.ts';
 import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
 import {
-	assertContentSchemaCurrent,
 	planAndApplyLocalContent,
 	planAndApplyPreviewContent,
 } from './invitation-content-apply.ts';
@@ -25,9 +23,12 @@ import { getInvitationDefinition, listInvitationDefinitions } from './invitation
 import { resolveInvitationPackageInput } from './invitation-package-input.ts';
 import type { InvitationPackageData } from './invitation-package.ts';
 import {
+	defaultDestinationFromPromotionAction,
 	describeDestination,
+	isStaleProvenanceBlockReason,
 	resolveDestinationReadiness,
 	type ReleaseDestination,
+	type WizardMenuDestination,
 } from './invitation-release-destination.ts';
 import { approvePreviewArtifactFromLiveVerification } from './preview-approval-service.ts';
 import { getDefaultPreviewApprovalStore } from './preview-approval-store.ts';
@@ -35,29 +36,33 @@ import {
 	PREVIEW_LIVE_CHECKLIST_KEYS,
 	verifyPreviewArtifactLive,
 } from './preview-live-verification.ts';
+import {
+	inspectPreviewProvenanceReceipt,
+	reconcileStalePreviewProvenance,
+} from './preview-provenance-receipt-service.ts';
 import { authorizePreviewWriteApply } from './preview-write-auth.ts';
 import {
-	formatApplyConfirmation,
 	formatApplyResult,
 	formatDryRunPlan,
 	toOperationalPlanData,
-	type OperationalPlanData,
-	type TargetPlanData,
 	type TargetApplyResultData,
+	type TargetPlanData,
 } from './invitation-update-presenter.ts';
 import type { OperationalPlan } from './invitation-update-plan.ts';
-import { mergePathPolicies, suggestConflictResolutionsFile } from './conflict-resolutions.ts';
-import {
-	MergeConflictError,
-	listDriftConflicts,
-	type ConflictResolutions,
-	type UpdateScope,
-} from './semantic-delta.ts';
+import type { ConflictResolutions, UpdateScope } from './semantic-delta.ts';
 import type { AssetPolicy } from './asset-reconciliation.ts';
 import { defaultAssetPolicy, requireResolvedUpdateScope } from './invitation-update-options.ts';
 import { runPromotionPreflight } from './invitation-promote.ts';
 import { formatPromotionPlanCompact } from './invitation-promotion-format.ts';
 import { isTargetDivergenceConflictMessage } from './promotion-comparison.ts';
+import {
+	planLocal,
+	planPreview,
+	promptConflictResolutions,
+	resolvePromotionActionForSlug,
+	reviewAndConfirm,
+	sumTargetResults,
+} from './wizard/wizard-planning.ts';
 
 export interface ReleaseWizardSession {
 	slug: string;
@@ -78,205 +83,6 @@ function persistSessionPackage(packageData: InvitationPackageData): string {
 	mkdirSync(dirname(absolute), { recursive: true });
 	writeFileSync(absolute, `${JSON.stringify(packageData, null, 2)}\n`, 'utf8');
 	return absolute;
-}
-
-function mergeConflictsFromError(error: unknown): TargetPlanData['mergeConflicts'] {
-	let current: unknown = error;
-	while (current) {
-		if (current instanceof MergeConflictError) {
-			return listDriftConflicts(current.deltas).map((delta) => ({
-				path: delta.path,
-				previousCanonicalValue: delta.previousCanonicalValue,
-				packageValue: delta.currentCanonicalValue,
-				targetValue: delta.currentTargetValue,
-			}));
-		}
-		if (current instanceof Error && 'cause' in current && current.cause) {
-			current = current.cause;
-			continue;
-		}
-		break;
-	}
-	return undefined;
-}
-
-async function promptConflictResolutions(
-	conflicts: NonNullable<TargetPlanData['mergeConflicts']>,
-): Promise<ConflictResolutions> {
-	const suggested = suggestConflictResolutionsFile(conflicts);
-	const resolutions: ConflictResolutions = {};
-	writeHuman(
-		`${operatorSymbol('warn')} Hay conflictos. Elija por campo (paquete canónico vs destino).`,
-	);
-	for (const conflict of conflicts) {
-		const choice = await select({
-			message: `Conflicto en ${conflict.path}`,
-			default: 'package',
-			choices: [
-				{
-					name: `Usar paquete (canónico): ${JSON.stringify(conflict.packageValue)}`,
-					value: 'package' as const,
-				},
-				{
-					name: `Conservar destino: ${JSON.stringify(conflict.targetValue)}`,
-					value: 'target' as const,
-				},
-				{ name: 'Cancelar', value: 'cancel' as const },
-			],
-		});
-		if (choice === 'cancel') {
-			throw new Error('OPERATOR_CANCELLED');
-		}
-		resolutions[conflict.path] = choice;
-	}
-	return mergePathPolicies(suggested.resolutions, resolutions) ?? resolutions;
-}
-
-async function planLocal(
-	session: ReleaseWizardSession,
-): Promise<{ plan?: OperationalPlan; targetPlan: TargetPlanData }> {
-	assertContentSchemaCurrent({ target: 'local', dbUrl: LOCAL_DB_URL });
-	try {
-		const result = await planAndApplyLocalContent({
-			slug: session.slug,
-			apply: false,
-			updateScope: session.updateScope,
-			assetPolicy: session.assetPolicy,
-			pruneAssets: session.pruneAssets,
-			conflictResolutions: session.conflictResolutions,
-			acknowledgeDiscardUnpublishedDraft: session.acknowledgeDiscardUnpublishedDraft,
-			expectedSourceHash: session.sourceHash,
-			expectedPackageHash: session.packageHash,
-		});
-		return {
-			plan: result.plan,
-			targetPlan: {
-				target: 'local',
-				planId: result.plan?.planId,
-				status: result.isZeroDrift ? 'SIN CAMBIOS' : 'CAMBIOS PENDIENTES',
-				plannedOperations: result.plannedOperations,
-				expectedDatabaseWrites: {
-					inserts: result.databaseInserts,
-					updates: result.databaseUpdates,
-					deletes: result.databaseDeletes,
-				},
-				expectedStorageMutations: {
-					uploads: result.storageUploads,
-					overwrites: result.storageOverwrites,
-					moves: result.storageMoves,
-					deletes: result.storageDeletes,
-				},
-				actions: result.actions,
-				functionalChanges: result.functionalChanges,
-				publishedVersion: result.publishedVersion,
-			},
-		};
-	} catch (error) {
-		return {
-			targetPlan: {
-				target: 'local',
-				status: 'BLOQUEADO',
-				reason: error instanceof Error ? error.message : String(error),
-				mergeConflicts: mergeConflictsFromError(error),
-				plannedOperations: 0,
-				expectedDatabaseWrites: { inserts: 0, updates: 0, deletes: 0 },
-				expectedStorageMutations: { uploads: 0, overwrites: 0, moves: 0, deletes: 0 },
-				actions: [],
-			},
-		};
-	}
-}
-
-async function planPreview(
-	session: ReleaseWizardSession,
-): Promise<{ plan?: OperationalPlan; targetPlan: TargetPlanData; targetDbUrl?: string }> {
-	let targetDbUrl: string;
-	try {
-		const resolved = getPreviewDbUrl();
-		assertPreviewDbUrl(resolved.url);
-		targetDbUrl = resolved.url;
-	} catch {
-		return {
-			targetPlan: {
-				target: 'preview',
-				status: 'BLOQUEADO',
-				reason: 'Credenciales de Preview no configuradas o perímetro inválido.',
-				plannedOperations: 0,
-				expectedDatabaseWrites: { inserts: 0, updates: 0, deletes: 0 },
-				expectedStorageMutations: { uploads: 0, overwrites: 0, moves: 0, deletes: 0 },
-				actions: [],
-			},
-		};
-	}
-
-	assertContentSchemaCurrent({ target: 'preview', dbUrl: targetDbUrl });
-	try {
-		const result = await planAndApplyPreviewContent({
-			packageData: session.packageData,
-			targetDbUrl,
-			apply: false,
-			updateScope: session.updateScope,
-			assetPolicy: session.assetPolicy,
-			pruneAssets: session.pruneAssets,
-			conflictResolutions: session.conflictResolutions,
-			acknowledgeDiscardUnpublishedDraft: session.acknowledgeDiscardUnpublishedDraft,
-		});
-		return {
-			plan: result.plan,
-			targetDbUrl,
-			targetPlan: {
-				target: 'preview',
-				planId: result.plan?.planId,
-				status: result.isZeroDrift ? 'SIN CAMBIOS' : 'CAMBIOS PENDIENTES',
-				plannedOperations: result.plannedMutations,
-				expectedDatabaseWrites: result.plan?.physicalDatabaseOps ?? {
-					inserts: 0,
-					updates: 0,
-					deletes: 0,
-				},
-				expectedStorageMutations: result.plan?.storageOps ?? {
-					uploads: 0,
-					overwrites: 0,
-					moves: 0,
-					deletes: 0,
-				},
-				actions: result.actions,
-				functionalChanges: result.functionalChanges,
-				publishedVersion: result.publishedVersion,
-			},
-		};
-	} catch (error) {
-		return {
-			targetDbUrl,
-			targetPlan: {
-				target: 'preview',
-				status: 'BLOQUEADO',
-				reason: error instanceof Error ? error.message : String(error),
-				mergeConflicts: mergeConflictsFromError(error),
-				plannedOperations: 0,
-				expectedDatabaseWrites: { inserts: 0, updates: 0, deletes: 0 },
-				expectedStorageMutations: { uploads: 0, overwrites: 0, moves: 0, deletes: 0 },
-				actions: [],
-			},
-		};
-	}
-}
-
-async function reviewAndConfirm(
-	planData: OperationalPlanData,
-): Promise<'apply' | 'back' | 'cancel'> {
-	console.log(formatDryRunPlan(planData, { verbose: false }));
-	console.log('');
-	console.log(formatApplyConfirmation(planData, { verbose: false }));
-	return select({
-		message: 'Seleccione una acción',
-		default: 'cancel',
-		choices: [
-			{ name: 'Cancelar', value: 'cancel' as const },
-			{ name: 'Volver', value: 'back' as const },
-			{ name: 'Aplicar plan revisado', value: 'apply' as const },
-		],
-	});
 }
 
 async function maybeRecoverConflicts(
@@ -323,6 +129,122 @@ async function maybeRecoverUnpublishedDraftDivergence(
 	if (!confirmed) return false;
 	session.acknowledgeDiscardUnpublishedDraft = true;
 	return true;
+}
+
+async function maybeRecoverStaleProvenance(session: ReleaseWizardSession): Promise<boolean> {
+	if (!session.packagePath) return false;
+	let diagnosis;
+	try {
+		diagnosis = await inspectPreviewProvenanceReceipt({ packagePath: session.packagePath });
+	} catch (error) {
+		writeHuman(
+			`${operatorSymbol('warn')} No se pudo diagnosticar provenance: ${error instanceof Error ? error.message : String(error)}`,
+		);
+		return false;
+	}
+	if (diagnosis.status !== 'RECOVERABLE' || !diagnosis.recoveryEligible) {
+		writeHuman(
+			`${operatorSymbol('fail')} Provenance no recuperable automáticamente: ${diagnosis.message}`,
+		);
+		return false;
+	}
+
+	writeHuman(
+		`${operatorSymbol('warn')} Baseline de Preview desfasado respecto a un receipt de verificación. Solo se actualizará metadata (sin contenido ni Storage).`,
+	);
+	try {
+		await authorizePreviewWriteApply({
+			slug: session.slug,
+			operation: 'apply',
+			confirmPrompt: `Confirm Preview baseline reconcile for "${session.slug}"? Type YES to proceed: `,
+			isInteractive: true,
+		});
+	} catch (error: unknown) {
+		const message = error instanceof Error ? error.message : String(error);
+		if (message.includes('PREVIEW_WRITE_CANCELLED')) {
+			writeHuman(`${operatorSymbol('info')} Reconciliación cancelada.`);
+			return false;
+		}
+		throw error;
+	}
+
+	const applied = await reconcileStalePreviewProvenance({
+		packagePath: session.packagePath,
+		apply: true,
+	});
+	if (!applied.applied || applied.status !== 'IN_SYNC') {
+		writeHuman(`${operatorSymbol('fail')} La reconciliación no dejó Preview en sincronía.`);
+		return false;
+	}
+	writeHuman(`${operatorSymbol('ok')} Provenance de Preview reconciliada.`);
+	return true;
+}
+
+async function ensurePreviewApprovalForProduction(session: ReleaseWizardSession): Promise<boolean> {
+	const pending = getDefaultPreviewApprovalStore().get(session.packageHash);
+	if (pending?.approvalState === 'pending_hosted_validation') {
+		await runLiveApproval(session);
+		const readiness = await resolveDestinationReadiness({
+			slug: session.slug,
+			packagePath: session.packagePath,
+		});
+		return readiness.productionReady;
+	}
+
+	writeHuman(
+		`${operatorSymbol('info')} Preview ya coincide con el canónico. Ejecutando verificación Preview para materializar la aprobación…`,
+	);
+	const preview = await planPreview(session);
+	if (preview.targetPlan.status === 'BLOQUEADO') {
+		if (isStaleProvenanceBlockReason(preview.targetPlan.reason)) {
+			const recovered = await maybeRecoverStaleProvenance(session);
+			if (!recovered) return false;
+			return ensurePreviewApprovalForProduction(session);
+		}
+		writeHuman(
+			`${operatorSymbol('fail')} Preview bloqueado: ${preview.targetPlan.reason ?? 'motivo desconocido'}`,
+		);
+		return false;
+	}
+
+	if (!preview.targetDbUrl || !preview.plan) {
+		writeHuman(`${operatorSymbol('fail')} No hay plan Preview para la verificación.`);
+		return false;
+	}
+
+	try {
+		await authorizePreviewWriteApply({
+			slug: session.slug,
+			operation: 'apply',
+			confirmPrompt: `Confirm Preview verify for "${session.slug}"? Type YES to proceed: `,
+			isInteractive: true,
+		});
+	} catch (error: unknown) {
+		const message = error instanceof Error ? error.message : String(error);
+		if (message.includes('PREVIEW_WRITE_CANCELLED')) {
+			writeHuman(`${operatorSymbol('info')} Verificación cancelada.`);
+			return false;
+		}
+		throw error;
+	}
+
+	await planAndApplyPreviewContent({
+		packageData: session.packageData,
+		targetDbUrl: preview.targetDbUrl,
+		apply: true,
+		plan: preview.plan,
+		updateScope: session.updateScope,
+		assetPolicy: session.assetPolicy,
+		pruneAssets: session.pruneAssets,
+		conflictResolutions: session.conflictResolutions,
+		acknowledgeDiscardUnpublishedDraft: session.acknowledgeDiscardUnpublishedDraft,
+	});
+	await runLiveApproval(session);
+	const readiness = await resolveDestinationReadiness({
+		slug: session.slug,
+		packagePath: session.packagePath,
+	});
+	return readiness.productionReady;
 }
 
 async function runLiveApproval(session: ReleaseWizardSession): Promise<void> {
@@ -468,6 +390,13 @@ async function applyPreparePreviewOutcome(session: ReleaseWizardSession): Promis
 			if (recovered) continue;
 			const discarded = await maybeRecoverUnpublishedDraftDivergence(session, targetPlans);
 			if (discarded) continue;
+			const previewBlocked = targetPlans.find(
+				(tp) => tp.target === 'preview' && tp.status === 'BLOQUEADO',
+			);
+			if (isStaleProvenanceBlockReason(previewBlocked?.reason)) {
+				const reconciled = await maybeRecoverStaleProvenance(session);
+				if (reconciled) continue;
+			}
 			const blocked = buildPreflightBlockedResults(['local', 'preview'], targetPlans);
 			console.log(formatDryRunPlan(planData, { verbose: false }));
 			if (blocked) {
@@ -617,47 +546,15 @@ async function applyPreparePreviewOutcome(session: ReleaseWizardSession): Promis
 		});
 
 		const finalStatus = deriveLifecycleFinalStatus(summary.targetResults);
+		const totals = sumTargetResults(summary.targetResults);
 		console.log(
 			formatApplyResult({
 				invitation: session.slug,
 				status: finalStatus,
 				environment: 'local, preview',
-				completedOperations: summary.targetResults.reduce(
-					(s, r) => s + r.completedOperations,
-					0,
-				),
-				databaseWrites: {
-					inserts: summary.targetResults.reduce(
-						(s, r) => s + r.databaseWrites.inserts,
-						0,
-					),
-					updates: summary.targetResults.reduce(
-						(s, r) => s + r.databaseWrites.updates,
-						0,
-					),
-					deletes: summary.targetResults.reduce(
-						(s, r) => s + r.databaseWrites.deletes,
-						0,
-					),
-				},
-				storageMutations: {
-					uploads: summary.targetResults.reduce(
-						(s, r) => s + r.storageMutations.uploads,
-						0,
-					),
-					overwrites: summary.targetResults.reduce(
-						(s, r) => s + r.storageMutations.overwrites,
-						0,
-					),
-					moves: summary.targetResults.reduce(
-						(s, r) => s + (r.storageMutations.moves ?? 0),
-						0,
-					),
-					deletes: summary.targetResults.reduce(
-						(s, r) => s + r.storageMutations.deletes,
-						0,
-					),
-				},
+				completedOperations: totals.completedOperations,
+				databaseWrites: totals.databaseWrites,
+				storageMutations: totals.storageMutations,
 				targetResults: summary.targetResults,
 			}),
 		);
@@ -675,7 +572,7 @@ async function applyPreparePreviewOutcome(session: ReleaseWizardSession): Promis
 }
 
 async function applyProductionOutcome(session: ReleaseWizardSession): Promise<void> {
-	const readiness = await resolveDestinationReadiness({
+	let readiness = await resolveDestinationReadiness({
 		slug: session.slug,
 		packagePath: session.packagePath,
 	});
@@ -683,18 +580,54 @@ async function applyProductionOutcome(session: ReleaseWizardSession): Promise<vo
 		writeHuman(
 			`${operatorSymbol('warn')} Production no está lista: ${readiness.productionBlockReason ?? 'falta aprobación Preview exacta.'}`,
 		);
-		const next = await select({
-			message: 'Seleccione una acción',
-			default: 'back',
-			choices: [
-				{ name: 'Volver', value: 'back' as const },
-				{ name: 'Preparar Preview ahora', value: 'prepare' as const },
-			],
-		});
-		if (next === 'prepare') {
-			await applyPreparePreviewOutcome(session);
+		const promotionAction = await resolvePromotionActionForSlug(session.slug);
+		if (promotionAction === 'PROMOTE_PRODUCTION') {
+			const next = await select({
+				message: 'Preview ya coincide con el canónico. ¿Qué desea hacer?',
+				default: 'approve',
+				choices: [
+					{ name: 'Volver', value: 'back' as const },
+					{
+						name: 'Aprobar Preview ahora (sin reaplicar contenido)',
+						value: 'approve' as const,
+					},
+					{
+						name: 'Preparar Preview completo (Local + Preview)',
+						value: 'prepare' as const,
+					},
+				],
+			});
+			if (next === 'back') return;
+			if (next === 'prepare') {
+				await applyPreparePreviewOutcome(session);
+				return;
+			}
+			const approved = await ensurePreviewApprovalForProduction(session);
+			if (!approved) return;
+			readiness = await resolveDestinationReadiness({
+				slug: session.slug,
+				packagePath: session.packagePath,
+			});
+			if (!readiness.productionReady) {
+				writeHuman(
+					`${operatorSymbol('fail')} Sigue faltando aprobación Preview exacta tras la verificación.`,
+				);
+				return;
+			}
+		} else {
+			const next = await select({
+				message: 'Seleccione una acción',
+				default: 'back',
+				choices: [
+					{ name: 'Volver', value: 'back' as const },
+					{ name: 'Preparar Preview ahora', value: 'prepare' as const },
+				],
+			});
+			if (next === 'prepare') {
+				await applyPreparePreviewOutcome(session);
+			}
+			return;
 		}
-		return;
 	}
 
 	const definition = getInvitationDefinition(session.slug);
@@ -773,22 +706,32 @@ export async function runDestinationReleaseWizard(input?: { slug?: string }): Pr
 			slug: session.slug,
 			packagePath: session.packagePath,
 		});
-		const productionLabel = readiness.productionReady
-			? `${describeDestination('production')} (Preview aprobado; apply: pnpm prod:apply)`
-			: `${describeDestination('production')} (requiere Preview aprobado)`;
+		const promotionAction = await resolvePromotionActionForSlug(session.slug);
+		const recommended = defaultDestinationFromPromotionAction(promotionAction);
+		const productionLabel =
+			readiness.productionReady || promotionAction === 'PROMOTE_PRODUCTION'
+				? `${describeDestination('production')}${promotionAction === 'PROMOTE_PRODUCTION' ? ' · recomendado' : ''} (Preview ${readiness.productionReady ? 'aprobado' : 'alineado'}; apply: pnpm prod:apply)`
+				: `${describeDestination('production')} (requiere Preview aprobado)`;
+		const prepareLabel =
+			recommended === 'prepare_preview'
+				? `${describeDestination('prepare_preview')} · recomendado`
+				: describeDestination('prepare_preview');
 
 		const destination = await select({
 			message: '¿Qué resultado desea?',
-			default: 'cancel',
+			default: recommended,
 			choices: [
-				{ name: 'Cancelar', value: 'cancel' as const },
-				{ name: describeDestination('local'), value: 'local' as const },
+				{ name: 'Cancelar', value: 'cancel' as WizardMenuDestination },
+				{ name: describeDestination('local'), value: 'local' as WizardMenuDestination },
 				{
-					name: describeDestination('prepare_preview'),
-					value: 'prepare_preview' as const,
+					name: prepareLabel,
+					value: 'prepare_preview' as WizardMenuDestination,
 				},
-				{ name: productionLabel, value: 'production' as const },
-				{ name: 'Actualizar paquete desde definición', value: 'refresh' as const },
+				{ name: productionLabel, value: 'production' as WizardMenuDestination },
+				{
+					name: 'Actualizar paquete desde definición',
+					value: 'refresh' as WizardMenuDestination,
+				},
 			],
 		});
 

@@ -5,7 +5,9 @@ import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import {
+	defaultDestinationFromPromotionAction,
 	describeDestination,
+	isStaleProvenanceBlockReason,
 	resolveDestinationReadiness,
 } from '../../scripts/provision/invitation-release-destination.ts';
 import {
@@ -26,6 +28,24 @@ describe('invitation-release destination readiness', () => {
 		expect(describeDestination('local')).toMatch(/Local/i);
 		expect(describeDestination('prepare_preview')).toMatch(/Preview/i);
 		expect(describeDestination('production')).toMatch(/Production/i);
+	});
+
+	it('defaults the wizard destination from the same publication action as dbs', () => {
+		expect(defaultDestinationFromPromotionAction('PROMOTE_PREVIEW')).toBe('prepare_preview');
+		expect(defaultDestinationFromPromotionAction('PROMOTE_PRODUCTION')).toBe('production');
+		expect(defaultDestinationFromPromotionAction('NONE')).toBe('cancel');
+		expect(defaultDestinationFromPromotionAction('BLOCKED')).toBe('cancel');
+		expect(defaultDestinationFromPromotionAction('UNKNOWN')).toBe('cancel');
+	});
+
+	it('detects stale_provenance block reasons for wizard recovery', () => {
+		expect(
+			isStaleProvenanceBlockReason(
+				'stale_provenance: A newer managed operation is not represented by provenance.',
+			),
+		).toBe(true);
+		expect(isStaleProvenanceBlockReason('merge conflict')).toBe(false);
+		expect(isStaleProvenanceBlockReason(undefined)).toBe(false);
 	});
 
 	it('marks Production not ready without exact Preview approval for a known slug', async () => {
@@ -54,6 +74,10 @@ describe('invitation-release wizard package binding', () => {
 		expect(wizard).toContain('applyProductionOutcome');
 		expect(wizard).toContain('maybeRecoverConflicts');
 		expect(wizard).toContain('maybeRecoverUnpublishedDraftDivergence');
+		expect(wizard).toContain('maybeRecoverStaleProvenance');
+		expect(wizard).toContain('reconcileStalePreviewProvenance');
+		expect(wizard).toContain('defaultDestinationFromPromotionAction');
+		expect(wizard).toContain('ensurePreviewApprovalForProduction');
 		expect(wizard).toContain('acknowledgeDiscardUnpublishedDraft');
 		// Review preflight defers backup; orchestrator classifies recovery risk.
 		expect(wizard).toContain('requireBackup: false');
@@ -111,5 +135,35 @@ describe('invitation-release wizard package binding', () => {
 		expect(applyLocal).not.toMatch(
 			/ownerUserId:\s*String\(existingInv\.created_by\)\s*,\s*\n\s*status:/,
 		);
+	});
+});
+
+describe('zero-drift must not poison managed provenance', () => {
+	it('does not insert managed_invitation_apply receipts on Preview zero-drift apply', () => {
+		const engine = readFileSync(
+			resolve(process.cwd(), 'scripts/provision/invitation-import-engine.ts'),
+			'utf8',
+		);
+		const zeroDriftBlock = engine.slice(
+			engine.indexOf('if (dryRun || isZeroDrift)'),
+			engine.indexOf('// ── APPLY PHASE'),
+		);
+		expect(zeroDriftBlock).toContain('must not append a managed_invitation_apply receipt');
+		expect(zeroDriftBlock).not.toContain('invitation_mutation_operation_receipts');
+		expect(zeroDriftBlock).not.toContain("'replayed'");
+	});
+
+	it('does not insert managed_invitation_apply receipts on Local zero-drift apply', () => {
+		const applyLocal = readFileSync(
+			resolve(process.cwd(), 'scripts/provision/apply-local-invitation.ts'),
+			'utf8',
+		);
+		const zeroDriftBlock = applyLocal.slice(
+			applyLocal.indexOf('if (!isApply || isZeroDrift)'),
+			applyLocal.indexOf('// ── APPLY'),
+		);
+		expect(zeroDriftBlock).toContain('must not append a managed_invitation_apply receipt');
+		expect(zeroDriftBlock).not.toContain('invitation_mutation_operation_receipts');
+		expect(zeroDriftBlock).not.toContain("'replayed'");
 	});
 });
