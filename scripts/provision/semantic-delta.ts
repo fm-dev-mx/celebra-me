@@ -37,13 +37,6 @@ export interface SemanticPatchResult {
 	blockReason?: string;
 }
 
-class AssetPreservationViolationError extends Error {
-	constructor(target: string, fieldPath: string, reason: string) {
-		super(`ASSET_PRESERVATION_VIOLATION [Target: ${target}, Path: ${fieldPath}]: ${reason}`);
-		this.name = 'AssetPreservationViolationError';
-	}
-}
-
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }
@@ -250,13 +243,9 @@ function reconcileNode(
 	const blockedByScope = isBlockedByScope(context.scope, isAsset);
 	if (blockedByScope) {
 		pushDecision(context, pathTokens, previous, current, target, 'BLOCKED_BY_SCOPE');
-		if (isAsset) {
+		if (!isAsset) {
 			context.blockedReasons.push(
-				new AssetPreservationViolationError(
-					context.targetName,
-					path,
-					`La ruta de archivo "${path}" cambió con alcance "content-only".`,
-				).message,
+				`La ruta de contenido "${path}" cambió con alcance "assets-only".`,
 			);
 		}
 		return;

@@ -345,6 +345,40 @@ describe('apply3WaySemanticPatch', () => {
 		});
 	});
 
+	it('keeps hosted images and still applies section variants under content-only', () => {
+		const hostedHero = {
+			type: 'uploaded',
+			assetId: '11111111-1111-4111-8111-111111111111',
+			src: 'https://res.cloudinary.com/example/hero.jpg',
+		};
+		const packagedHero = {
+			type: 'uploaded',
+			assetId: '22222222-2222-4222-8222-222222222222',
+			src: 'https://example.invalid/managed/hero.webp',
+		};
+		const result = apply3WaySemanticPatch({
+			previousCanonical: { hero: { variant: 'editorial-magazine', backgroundImage: hostedHero } },
+			currentCanonical: { hero: { variant: 'editorial-cover', backgroundImage: packagedHero } },
+			currentTarget: { hero: { variant: 'editorial-magazine', backgroundImage: hostedHero } },
+			scope: 'content-only',
+			targetName: 'valentina-hernandez',
+		});
+		expect(result.blocked).toBe(false);
+		expect(result.patchedContent).toEqual({
+			hero: { variant: 'editorial-cover', backgroundImage: hostedHero },
+		});
+		expect(result.deltas).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					path: 'hero.backgroundImage.assetId',
+					status: 'BLOCKED_BY_SCOPE',
+					isAssetField: true,
+				}),
+				expect.objectContaining({ path: 'hero.variant', status: 'APPLY' }),
+			]),
+		);
+	});
+
 	it('reports target modification versus package deletion as drift', () => {
 		const result = apply3WaySemanticPatch({
 			previousCanonical: { quote: { text: 'Base' } },

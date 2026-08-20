@@ -1,5 +1,5 @@
 /**
- * leslie-perez.ts — Local draft invitation definition for Leslie XV
+ * leslie-perez.ts — Managed invitation definition for Leslie XV
  *
  * The structural variants are reused from existing invitations. Cadence and
  * dark-surface rhythm tokens live in `invitation-profiles/leslie-perez.scss`.
@@ -500,7 +500,7 @@ export const leslieInvitation: InvitationDefinition<LeslieAssetKey> = defineInvi
 	slug: LESLIE_EVENT.slug,
 	managedIdentityId: '7f0d1c2a-6b4e-4e8d-9a31-5c7b2d0f4e66',
 	createdAt: '2026-08-14T00:00:00.000Z',
-	lifecycle: 'in_progress',
+	lifecycle: 'published',
 	deliveryScope: 'content-and-assets',
 	eventType: LESLIE_EVENT.eventType,
 	title: LESLIE_EVENT.title,

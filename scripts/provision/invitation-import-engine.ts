@@ -1846,7 +1846,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		verifiedAssetHashes,
 		assetStateHash,
 	} = await scanAssetStatus(
-		pkg.assets,
+		updateScope === 'content-only' ? [] : pkg.assets,
 		targetStorageUrl,
 		targetDbUrl,
 		drift.targetInvitationId,
@@ -2092,12 +2092,9 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		: rootOperationId;
 
 	if (dryRun || isZeroDrift) {
-		if (!dryRun && isZeroDrift) {
-			runPsql(
-				`insert into public.invitation_mutation_operation_receipts (operation_id, invitation_id, environment, project_ref, actor_type, origin, command_kind, input_hashes, expected_state, status, completed_steps, result, retry_of_operation_id) values ('${activeOperationId}'::uuid, '${drift.targetInvitationId}'::uuid, ${sqlLiteral(expectedTarget)}, ${sqlLiteral(projectRef)}, 'operator', 'managed_cli_hosted', 'managed_invitation_apply', ${sqlLiteral(JSON.stringify({ sourceHash: pkg.sourceHash, packageHash: pkg.packageHash }))}::jsonb, ${sqlLiteral(JSON.stringify(executionPlan.targetPreconditions))}::jsonb, 'replayed', array['target_verified','existing_result_reused'], ${sqlLiteral(JSON.stringify({ planId: executionPlan.planId, publishedVersion: targetVersion }))}::jsonb, ${retryParentOperationId ? `'${retryParentOperationId}'::uuid` : 'null'}) on conflict (operation_id) do nothing;`,
-				targetDbUrl,
-			);
-		}
+		// Zero-drift must not append a managed_invitation_apply receipt: that would become
+		// latestMutationReceipt without updating provenance and fail-close as stale_provenance.
+		// Preview still executes this path so callers can record the pending approval artifact.
 		return {
 			packageHash: pkg.packageHash,
 			slug: drift.slug,
@@ -2418,7 +2415,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			existingMember: postApplyScan.existingMember,
 		});
 		const finalAssets = await scanAssetStatus(
-			pkg.assets,
+			updateScope === 'content-only' ? [] : pkg.assets,
 			targetStorageUrl,
 			targetDbUrl,
 			drift.targetInvitationId,

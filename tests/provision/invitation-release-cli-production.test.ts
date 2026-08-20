@@ -115,6 +115,22 @@ describe('invitation:release Production dispatch', () => {
 		);
 	});
 
+	it('re-resolves pruneAssets after deliveryScope resolves updateScope', () => {
+		const source = readFileSync(
+			resolve(process.cwd(), 'scripts/provision/invitation-release-cli.ts'),
+			'utf8',
+		);
+		const early = source.indexOf('let pruneAssets = resolveCliPruneAssets(args, parsedScope)');
+		const resolved = source.indexOf('const updateScope = requireResolvedUpdateScope({');
+		const reResolve = source.indexOf(
+			'pruneAssets = resolveCliPruneAssets(args, updateScope)',
+			resolved,
+		);
+		expect(early).toBeGreaterThan(-1);
+		expect(resolved).toBeGreaterThan(early);
+		expect(reResolve).toBeGreaterThan(resolved);
+	});
+
 	it('applies the confirmed Preview package and does not export after YES', () => {
 		const source = readFileSync(
 			resolve(process.cwd(), 'scripts/provision/invitation-release-cli.ts'),

@@ -14,11 +14,6 @@
 /* eslint-disable max-lines -- Application engine sequences checks, dry-run plan, asset processing, draft upsert, and RPC publish. */
 
 import { createHash, randomUUID } from 'node:crypto';
-
-function deriveDeterministicUuid(namespace: string, seed: string): string {
-	const hash = createHash('sha256').update(`celebra-me:${namespace}:${seed}`).digest('hex');
-	return `${hash.slice(0, 8)}-${hash.slice(8, 12)}-4${hash.slice(13, 16)}-a${hash.slice(17, 20)}-${hash.slice(20, 32)}`;
-}
 import { createClient } from '@supabase/supabase-js';
 import { findDemoPreset } from '../../src/lib/intake/demo-preset-catalog.ts';
 import {
@@ -84,6 +79,11 @@ import {
 } from './asset-reconciliation.ts';
 import { fingerprintPathPolicy } from './conflict-resolutions.ts';
 import { assertManagedContentSchema } from './managed-content-validation.ts';
+
+function deriveDeterministicUuid(namespace: string, seed: string): string {
+	const hash = createHash('sha256').update(`celebra-me:${namespace}:${seed}`).digest('hex');
+	return `${hash.slice(0, 8)}-${hash.slice(8, 12)}-4${hash.slice(13, 16)}-a${hash.slice(17, 20)}-${hash.slice(20, 32)}`;
+}
 
 const BUCKET = 'invitation-assets';
 
@@ -487,7 +487,9 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 					clientEmail: String(existingInv.client_email ?? ''),
 					clientWhatsapp: String(existingInv.client_whatsapp ?? ''),
 					photosReceived: Boolean(existingInv.photos_received),
-					ownerUserId: String(existingInv.created_by),
+					ownerUserId: existingInv.created_by
+						? String(existingInv.created_by)
+						: ownerUserId,
 					status: String(existingInv.status),
 				}
 			: null,
@@ -1152,23 +1154,8 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	}
 
 	if (!isApply || isZeroDrift) {
-		if (isApply && isZeroDrift) {
-			const { error } = await supabase.from('invitation_mutation_operation_receipts').insert({
-				operation_id: rootOperationId,
-				invitation_id: invitationId,
-				environment: 'local',
-				project_ref: SUPABASE_PROJECT_REFS.local,
-				actor_type: 'operator',
-				origin: 'managed_cli_local',
-				command_kind: 'managed_invitation_apply',
-				input_hashes: { sourceHash: release.sourceHash, packageHash },
-				expected_state: constructedPlan.targetPreconditions,
-				status: 'replayed',
-				completed_steps: ['target_verified', 'existing_result_reused'],
-				result: { planId: constructedPlan.planId, publishedVersion: targetVersion },
-			});
-			if (error && error.code !== '23505') throw error;
-		}
+		// Zero-drift must not append a managed_invitation_apply receipt: that would become
+		// latestMutationReceipt without updating provenance and fail-close as stale_provenance.
 		return {
 			slug,
 			route,

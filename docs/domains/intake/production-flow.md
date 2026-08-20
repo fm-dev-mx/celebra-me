@@ -85,9 +85,11 @@ all targets.
 Local and hosted execution are adapters behind the same immutable plan/apply lifecycle in
 `invitation-lifecycle-execution.ts`. Both verify target identity, execute the confirmed plan,
 publish through the canonical boundary, update latest managed provenance only after verification,
-and append a durable outcome. A deterministic plan ID maps to the operation ID; an already-
-synchronized apply records `replayed`. Definitions initialize identity metadata, but managed updates
-preserve target title/slug/client metadata, existing owner, and administrative login alias.
+and append a durable outcome. A deterministic plan ID maps to the operation ID. Zero-drift
+verification (already synchronized) does not append a managed apply receipt; only mutative applies
+or metadata-only baseline adoption advance the receipt/provenance pair. Definitions initialize
+identity metadata, but managed updates preserve target title/slug/client metadata, existing owner,
+and administrative login alias.
 
 The canonical alias is lowercase, 3–60 characters, and consists of alphanumeric segments separated
 by single underscores. Accents, whitespace, and punctuation normalize to that form before initial

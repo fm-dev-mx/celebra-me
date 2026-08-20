@@ -9,7 +9,7 @@ import {
 } from '../../scripts/provision/local-render-corpus/registry.ts';
 
 describe('managed invitation regression compatibility', () => {
-	it('delegates to the Local Render Corpus SSOT (15 supported Production clients)', () => {
+	it('delegates to the Local Render Corpus SSOT (17 supported Production clients)', () => {
 		expect(listLocalRenderCorpus()).toHaveLength(EXPECTED_LOCAL_RENDER_CORPUS_SIZE);
 	});
 });

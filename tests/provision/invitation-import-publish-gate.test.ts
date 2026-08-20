@@ -263,6 +263,21 @@ describe('content-only asset mutation contract', () => {
 		expect(assertIdx).toBeGreaterThan(scanIdx);
 		expect(applyIdx).toBeGreaterThan(assertIdx);
 	});
+
+	it('skips packaging asset scans under content-only (preserve hosted binaries)', () => {
+		const source = readFileSync(
+			resolve(process.cwd(), 'scripts/provision/invitation-import-engine.ts'),
+			'utf8',
+		);
+		const emptyScanContract = "updateScope === 'content-only' ? [] : pkg.assets";
+		expect(source.split(emptyScanContract).length - 1).toBeGreaterThanOrEqual(2);
+		const firstScan = source.indexOf('await scanAssetStatus(');
+		const firstArgBlock = source.slice(firstScan, firstScan + 280);
+		expect(firstArgBlock).toContain(emptyScanContract);
+		const finalScan = source.indexOf('const finalAssets = await scanAssetStatus(');
+		expect(finalScan).toBeGreaterThan(firstScan);
+		expect(source.slice(finalScan, finalScan + 280)).toContain(emptyScanContract);
+	});
 });
 
 describe('publish path ordering contract', () => {

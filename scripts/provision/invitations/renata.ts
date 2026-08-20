@@ -449,7 +449,7 @@ export const renataInvitation: InvitationDefinition<RenataAssetKey> = defineInvi
 	slug: RENATA_EVENT.slug,
 	managedIdentityId: '0d10598f-5007-486f-a36e-4e0acabfe640',
 	createdAt: '2026-08-14T00:00:00.000Z',
-	lifecycle: 'in_progress',
+	lifecycle: 'published',
 	deliveryScope: 'content-and-assets',
 	eventType: RENATA_EVENT.eventType,
 	title: RENATA_EVENT.title,

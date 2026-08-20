@@ -157,6 +157,30 @@ describe('Preview receipt stale provenance evaluator', () => {
 		expect(result.blockers).toEqual([]);
 	});
 
+	it('recovers orphan zero-drift replay receipts without DB asset rows', () => {
+		const orphan = {
+			...receipt(latestOperation)!,
+			status: 'replayed' as const,
+			completedSteps: ['target_verified', 'existing_result_reused'],
+		};
+		const orphanState = state(orphan);
+		orphanState.provenance = {
+			...orphanState.provenance!,
+			managed_projection: content,
+			applied_draft_updated_at: orphanState.draft!.updated_at,
+			applied_published_version: orphanState.published!.version,
+		};
+		orphanState.assets = [];
+
+		const result = evaluatePreviewReceiptState(packageData, orphanState);
+		expect(result).toMatchObject({
+			status: 'RECOVERABLE',
+			classification: 'stale_provenance',
+			recoveryEligible: true,
+		});
+		expect(result.blockers).toEqual([]);
+	});
+
 	it('recognizes a completed recovery receipt as the current managed baseline', () => {
 		const recoveredState = state(receipt(latestOperation));
 		const recoveryReceipt = {

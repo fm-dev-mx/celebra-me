@@ -865,7 +865,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 		: undefined;
 	conflictResolutions = mergePathPolicies(fileFieldSelections, fileConflictResolutions);
 
-	const pruneAssets = resolveCliPruneAssets(args, parsedScope);
+	let pruneAssets = resolveCliPruneAssets(args, parsedScope);
 	const acknowledgeDiscardUnpublishedDraft = args.includes(
 		'--acknowledge-discard-unpublished-draft',
 	);
@@ -960,6 +960,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 		updateScope: parsedScope,
 		deliveryScope: definition.deliveryScope,
 	});
+	pruneAssets = resolveCliPruneAssets(args, updateScope);
 	const assetPolicy = parseAssetPolicy(
 		value(args, '--asset-policy') ?? defaultAssetPolicy(updateScope),
 	);

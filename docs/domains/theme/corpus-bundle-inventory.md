@@ -6,8 +6,8 @@ every invitation `ThemePreset`.
 **Contract:** [`architecture.md`](architecture.md#invitation-css-ownership-normative)  
 **LAYOUT gate:** [`css-visual-parity.md`](css-visual-parity.md)
 
-This inventory supersedes “corpus-only” narrowing. Deferred canons (`renata`, `leslie-perez`) and
-demo-only presets (`editorial`, `editorial-rose`, `jewelry-box`) are in scope.
+This inventory supersedes “corpus-only” narrowing. All published canonical clients and
+demo-only presets (`editorial-rose`, `jewelry-box`) are in scope.
 
 ## Identities (all)
 
@@ -18,10 +18,10 @@ demo-only presets (`editorial`, `editorial-rose`, `jewelry-box`) are in scope.
 | romina-rios-chaparro              | premiere-floral     | yes           | canonical + corpus      |
 | daniela-y-martin                  | jewelry-box-wedding | yes           | canonical + corpus      |
 | victoria-y-roberto                | jewelry-box-wedding | yes           | canonical + corpus      |
-| renata                            | editorial           | yes           | canonical `in_progress` |
-| leslie-perez                      | celestial-blue      | yes           | canonical `in_progress` |
+| renata                            | editorial           | yes           | canonical + corpus      |
+| leslie-perez                      | celestial-blue      | yes           | canonical + corpus      |
 | america-johana                    | celestial-blue      | yes           | corpus legacy           |
-| valentina-hernandez               | editorial-magazine  | yes           | corpus legacy           |
+| valentina-hernandez               | editorial-magazine  | yes           | canonical + corpus; Preview variants applied; Production owner pending |
 | xareni-iyarit                     | celestial-blue      | yes           | corpus legacy           |
 | leah-lexa                         | celestial-blue      | yes           | corpus legacy           |
 | luna-y-estrella                   | angelic-presence    | yes           | corpus legacy           |
@@ -147,9 +147,9 @@ Profile LAYOUT removal (geometry / direct section `background` / `font-family` p
 
 ### Visual recovery residuals (2026-08-17, working tree)
 
-- **`valentina-hernandez`:** Stale DB variants + location indications missing `title` (Production
-  numbered “Guía privada…”). Fixture + `indications[].title` in location/draft schemas. **Status:**
-  fixed.
+- **`valentina-hernandez`:** Managed definition is the content owner. Preview carries authored
+  canonical variants; Production owner apply remains pending. Draft WhatsApp JPEGs are not remaster
+  proof. **Status:** definition registered; Local/Preview content path applied; Production not done.
 - **`xareni-iyarit`:** Dark thank-you was a false recovery: pre-ownership/Production profile
   `.thank-you` / `[data-section=thank-you]` plum slab never matched `.thank-you-section`. Promoting
   those rules onto `--thank-you-section-*` forced on-dark ink. **Status:** fixed (drop dark tokens;
