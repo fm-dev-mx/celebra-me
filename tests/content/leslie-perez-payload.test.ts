@@ -30,14 +30,14 @@ function buildTestAssets(): LeslieAssetMap {
 describe('Leslie Perez provision contract', () => {
 	const content = buildLesliePublishedContent(buildTestAssets());
 
-	it('registers the in-progress celestial definition with a rhythm profile stylesheet', () => {
+	it('registers the published celestial definition with a rhythm profile stylesheet', () => {
 		const definition = getInvitationDefinition('leslie-perez');
 		expect(definition.slug).toBe('leslie-perez');
 		expect(definition.hostLoginAlias).toBe('leslie_perez');
 		expect(definition.baseDemoId).toBe('demo-xv-celestial-blue');
 		expect(definition.themeId).toBe('celestial-blue');
 		expect(definition.visualProfileId).toBe('leslie-perez');
-		expect(definition.lifecycle).toBe('in_progress');
+		expect(definition.lifecycle).toBe('published');
 		expect(
 			existsSync(
 				path.join(process.cwd(), 'src/styles/invitation-profiles/leslie-perez.scss'),

@@ -16,7 +16,7 @@ Usage:
   pnpm invitation:local-corpus --apply
   pnpm invitation:local-corpus --dry-run|--apply [--slug <slug>]...
 
-Populates the 15 supported Production client invitations for Local render regression.
+Populates the 17 supported Production client invitations for Local render regression.
 Canonical entries use invitation:release Local apply.
 Legacy entries upsert sanitized invitations + published_invitation_content only.
 

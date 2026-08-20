@@ -87,6 +87,26 @@ export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] = [
 		visualProfileId: 'victoria-y-roberto',
 	},
 	{
+		slug: 'renata',
+		eventType: 'xv',
+		classification: 'canonical',
+		remoteParity: 'required',
+		sourceStrategy: 'canonical_definition',
+		assetStrategy: 'VERSIONED_MANAGED_ASSET',
+		themeId: 'editorial',
+		visualProfileId: 'renata',
+	},
+	{
+		slug: 'leslie-perez',
+		eventType: 'xv',
+		classification: 'canonical',
+		remoteParity: 'required',
+		sourceStrategy: 'canonical_definition',
+		assetStrategy: 'VERSIONED_MANAGED_ASSET',
+		themeId: 'celestial-blue',
+		visualProfileId: 'leslie-perez',
+	},
+	{
 		slug: 'america-johana',
 		eventType: 'xv',
 		classification: 'legacy',
@@ -195,7 +215,7 @@ export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] = [
 	},
 ] as const;
 
-export const EXPECTED_LOCAL_RENDER_CORPUS_SIZE = 15;
+export const EXPECTED_LOCAL_RENDER_CORPUS_SIZE = 17;
 
 export function listLocalRenderCorpus(): readonly LocalRenderCorpusEntry[] {
 	return LOCAL_RENDER_CORPUS;

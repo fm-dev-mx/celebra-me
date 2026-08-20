@@ -18,9 +18,9 @@
 
 **Preparation Readiness (prepReadiness):** `READY_FOR_IMPLEMENTATION`
 
-The implementation is a local `in_progress` draft. The primary event time and schedule are now
-confirmed. Technical Local/Preview/Production readiness (**envReadiness**) remains owned by the
-managed release workflow and is out of scope here.
+The implementation is a published managed definition in the Local Render Corpus. The primary event
+time and schedule are confirmed. Technical Local/Preview/Production readiness (**envReadiness**)
+remains owned by the managed release workflow and is out of scope here.
 
 ---
 
@@ -143,7 +143,7 @@ visible role. No demo fallback asset is referenced by the Leslie definition.
 
 ## Implementation Constraints
 
-- Keep `lifecycle: in_progress` and `deliveryScope: content-and-assets` in the local definition.
+- Keep `lifecycle: published` and `deliveryScope: content-and-assets` in the local definition.
 - Keep the asset namespace under `src/assets/invitations/leslie-perez`; reference assets only by
   semantic keys declared in the definition.
 - Preserve the original 01–15 filenames and order; use the matching `delivery/01.webp`–
@@ -182,7 +182,7 @@ Owner: local implementation. Receiver: independent reviewer.
 
 Acceptance evidence:
 
-- Definition is registered under `leslie-perez`, remains `in_progress`, and uses no client-specific
+- Definition is registered under `leslie-perez`, is `published`, and uses no client-specific
   component or stylesheet branch.
 - Canonical content schema, variant normalization, asset namespace, and ordered photo-role checks
   pass.

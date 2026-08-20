@@ -6,8 +6,8 @@ every invitation `ThemePreset`.
 **Contract:** [`architecture.md`](architecture.md#invitation-css-ownership-normative)  
 **LAYOUT gate:** [`css-visual-parity.md`](css-visual-parity.md)
 
-This inventory supersedes “corpus-only” narrowing. Deferred canons (`renata`, `leslie-perez`) and
-demo-only presets (`editorial`, `editorial-rose`, `jewelry-box`) are in scope.
+This inventory supersedes “corpus-only” narrowing. All published canonical clients and
+demo-only presets (`editorial-rose`, `jewelry-box`) are in scope.
 
 ## Identities (all)
 
@@ -18,8 +18,8 @@ demo-only presets (`editorial`, `editorial-rose`, `jewelry-box`) are in scope.
 | romina-rios-chaparro              | premiere-floral     | yes           | canonical + corpus      |
 | daniela-y-martin                  | jewelry-box-wedding | yes           | canonical + corpus      |
 | victoria-y-roberto                | jewelry-box-wedding | yes           | canonical + corpus      |
-| renata                            | editorial           | yes           | canonical `in_progress` |
-| leslie-perez                      | celestial-blue      | yes           | canonical `in_progress` |
+| renata                            | editorial           | yes           | canonical + corpus      |
+| leslie-perez                      | celestial-blue      | yes           | canonical + corpus      |
 | america-johana                    | celestial-blue      | yes           | corpus legacy           |
 | valentina-hernandez               | editorial-magazine  | yes           | canonical + corpus; Preview variants applied; Production owner pending |
 | xareni-iyarit                     | celestial-blue      | yes           | corpus legacy           |

@@ -37,7 +37,7 @@ describe('XV Renata provision contract', () => {
 		expect(definition.baseDemoId).toBe('demo-xv-editorial');
 		expect(definition.themeId).toBe('editorial');
 		expect(definition.visualProfileId).toBe('renata');
-		expect(definition.lifecycle).toBe('in_progress');
+		expect(definition.lifecycle).toBe('published');
 		expect(definition.eventTiming.timeZone).toBe('America/Mazatlan');
 		expect(definition.eventTiming.startsAtUtc).toBe(
 			deriveStartsAtUtc('2026-09-05T19:00', 'America/Mazatlan'),
