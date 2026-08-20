@@ -78,16 +78,41 @@ describe('invitation-release wizard package binding', () => {
 		expect(wizard).toContain('reconcileStalePreviewProvenance');
 		expect(wizard).toContain('defaultDestinationFromPromotionAction');
 		expect(wizard).toContain('ensurePreviewApprovalForProduction');
+		expect(wizard).toContain('maybeCompletePreviewApproval');
 		expect(wizard).toContain('acknowledgeDiscardUnpublishedDraft');
+		// Exact valid approval skips live verify / re-approve (productionReady authority).
+		expect(wizard).toContain('Preview ya tiene aprobación exacta');
+		expect(wizard).toMatch(
+			/if \(readiness\.productionReady\)[\s\S]*?return;[\s\S]*?await runLiveApproval\(session\)/,
+		);
 		// Review preflight defers backup; orchestrator classifies recovery risk.
 		expect(wizard).toContain('requireBackup: false');
 		// Production must not auto-run after Preview approve.
-		const approveIdx = wizard.indexOf('await runLiveApproval(session)');
+		const approveIdx = wizard.indexOf('await maybeCompletePreviewApproval(session)');
 		const prodIdx = wizard.indexOf('applyProductionOutcome');
 		expect(approveIdx).toBeGreaterThan(0);
 		expect(prodIdx).toBeGreaterThan(0);
 		const afterApprove = wizard.slice(approveIdx, approveIdx + 400);
 		expect(afterApprove).not.toContain('orchestrateInvitationPromotion');
+	});
+
+	it('skips second live verification when destination readiness is already productionReady', () => {
+		const wizard = readFileSync(
+			resolve(process.cwd(), 'scripts/provision/invitation-release-wizard.ts'),
+			'utf8',
+		);
+		const helper = wizard.slice(
+			wizard.indexOf('async function maybeCompletePreviewApproval'),
+			wizard.indexOf('async function applyLocalOutcome'),
+		);
+		expect(helper).toContain('resolveDestinationReadiness');
+		expect(helper).toContain('productionReady');
+		expect(helper).toContain('await runLiveApproval(session)');
+		expect(helper.indexOf('if (readiness.productionReady)')).toBeLessThan(
+			helper.indexOf('await runLiveApproval(session)'),
+		);
+		expect(helper).toContain('pnpm prod:apply');
+		expect(helper).not.toContain('verifyPreviewArtifactLive');
 	});
 
 	it('inherits deliveryScope through resolvePromotionUpdateScope', () => {

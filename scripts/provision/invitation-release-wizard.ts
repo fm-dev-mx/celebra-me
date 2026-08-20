@@ -181,6 +181,17 @@ async function maybeRecoverStaleProvenance(session: ReleaseWizardSession): Promi
 }
 
 async function ensurePreviewApprovalForProduction(session: ReleaseWizardSession): Promise<boolean> {
+	const alreadyReady = await resolveDestinationReadiness({
+		slug: session.slug,
+		packagePath: session.packagePath,
+	});
+	if (alreadyReady.productionReady) {
+		writeHuman(
+			`${operatorSymbol('ok')} Preview ya está aprobado exactamente para este packageHash. Production: pnpm prod:apply -- --slug ${session.slug} --apply`,
+		);
+		return true;
+	}
+
 	const pending = getDefaultPreviewApprovalStore().get(session.packageHash);
 	if (pending?.approvalState === 'pending_hosted_validation') {
 		await runLiveApproval(session);
@@ -239,7 +250,7 @@ async function ensurePreviewApprovalForProduction(session: ReleaseWizardSession)
 		conflictResolutions: session.conflictResolutions,
 		acknowledgeDiscardUnpublishedDraft: session.acknowledgeDiscardUnpublishedDraft,
 	});
-	await runLiveApproval(session);
+	await maybeCompletePreviewApproval(session);
 	const readiness = await resolveDestinationReadiness({
 		slug: session.slug,
 		packagePath: session.packagePath,
@@ -293,6 +304,21 @@ async function runLiveApproval(session: ReleaseWizardSession): Promise<void> {
 	writeHuman(
 		`${operatorSymbol('ok')} Aprobación completada · ${finalized.slug} · ${finalized.packageHash.slice(0, 16)}…`,
 	);
+}
+
+/** Skip live verify/approve when resolveDestinationReadiness already says Production-ready. */
+async function maybeCompletePreviewApproval(session: ReleaseWizardSession): Promise<void> {
+	const readiness = await resolveDestinationReadiness({
+		slug: session.slug,
+		packagePath: session.packagePath,
+	});
+	if (readiness.productionReady) {
+		writeHuman(
+			`${operatorSymbol('ok')} Preview ya tiene aprobación exacta para este packageHash. No se vuelve a verificar ni aprobar. Production: pnpm prod:apply -- --slug ${session.slug} --apply`,
+		);
+		return;
+	}
+	await runLiveApproval(session);
 }
 
 async function applyLocalOutcome(session: ReleaseWizardSession): Promise<void> {
@@ -565,7 +591,7 @@ async function applyPreparePreviewOutcome(session: ReleaseWizardSession): Promis
 				(r.status === 'CAMBIOS APLICADOS' || r.status === 'SIN CAMBIOS'),
 		);
 		if (!summary.executionFailed && previewApplied) {
-			await runLiveApproval(session);
+			await maybeCompletePreviewApproval(session);
 		}
 		return;
 	}
