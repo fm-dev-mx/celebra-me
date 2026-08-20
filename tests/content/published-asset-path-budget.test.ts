@@ -32,6 +32,9 @@ function pathRolesBySpecKey(
 ): Map<string, Set<ImageOptimizationRole>> {
 	const rolesByKey = new Map<string, Set<ImageOptimizationRole>>();
 	for (const ref of collectUploadedContentRefs(content)) {
+		// Social OG intentionally reuses an existing managed asset; it is not a
+		// separate delivery-role binding for compression budgets.
+		if (ref.path === 'sharing.ogImage') continue;
 		const key = specKeyFromAssetId(ref.assetId);
 		const roles = rolesByKey.get(key) ?? new Set<ImageOptimizationRole>();
 		roles.add(getImageOptimizationRoleForPath(ref.path));

@@ -438,7 +438,8 @@ export function buildValentinaPublishedContent(
 		sharing: {
 			whatsappTemplate:
 				'Hola {name}, te comparto con mucha ilusión la invitación a mis XV años: {inviteUrl}',
-			ogImage: assets.hero,
+			// Content-only Preview/Production preserve the hosted OG asset key (`portrait`).
+			ogImage: assets.portrait,
 			ogDescription:
 				'Acompáñame en mis XV años el sábado, 29 de agosto de 2026, en Texcoco, Estado de México.',
 		},
