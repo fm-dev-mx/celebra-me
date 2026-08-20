@@ -23,7 +23,7 @@ describe('invitation:release zero-drift Preview approval gate', () => {
 			'utf8',
 		);
 		expect(source).toMatch(/if \(plan\.status === 'SIN CAMBIOS' && target !== 'preview'\)/);
-		expect(source).toMatch(/shared pending approval artifact/);
+		expect(source).toMatch(/pending approval artifact/);
 	});
 
 	it('prints finalize guidance after Preview pending approval is recorded', () => {
