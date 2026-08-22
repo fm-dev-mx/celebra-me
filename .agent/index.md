@@ -39,6 +39,7 @@ context resolution, use `.agent/routing-matrix.yaml` and `.agent/ownership.yaml`
   and toolchain
 - [`docs/core/git-governance.md`](../docs/core/git-governance.md) — Human branch, commit, and
   release policy
+- [`docs/core/worktrees/`](../docs/core/worktrees/) — Per-lane operational cards (facts only)
 - [`docs/core/content-schema.md`](../docs/core/content-schema.md) — Content collections schema
 - [`docs/core/release-process.md`](../docs/core/release-process.md) — Release checkpoints and
   CHANGELOG policy
@@ -68,6 +69,17 @@ context resolution, use `.agent/routing-matrix.yaml` and `.agent/ownership.yaml`
   — Public and private invitation cache-header contract
 - [`docs/domains/invitations/performance-metrics.md`](../docs/domains/invitations/performance-metrics.md)
   — Canonical delivery metrics, budgets, and monitoring
+
+### Theme, RSVP & Attribution
+
+- [`docs/domains/theme/architecture.md`](../docs/domains/theme/architecture.md) — Theme tokens and
+  SCSS architecture
+- [`docs/domains/theme/variant-system.md`](../docs/domains/theme/variant-system.md) — Canonical
+  section variant inventory
+- [`docs/domains/rsvp/architecture.md`](../docs/domains/rsvp/architecture.md) — RSVP and host
+  dashboard architecture
+- [`docs/domains/tracking/commercial-attribution.md`](../docs/domains/tracking/commercial-attribution.md)
+  — First-party attribution and consent
 
 ## Planning & Governance
 

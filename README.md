@@ -178,11 +178,15 @@ variable categories live in [`docs/env-workflow.md`](docs/env-workflow.md).
 
 - `docs/core/agent-interaction.md`
 - `docs/core/architecture.md`
+- `docs/core/git-governance.md`
 - `docs/core/project-conventions.md`
 - `docs/core/release-process.md`
 - `docs/domains/content/collections.md`
 - `docs/domains/rsvp/architecture.md`
 - `docs/domains/theme/architecture.md`
+- `docs/domains/theme/variant-system.md`
+- `docs/domains/tracking/commercial-attribution.md`
+- `docs/invitations/README.md`
 - `docs/archive/` for historical material
 
 ## Maintainer
