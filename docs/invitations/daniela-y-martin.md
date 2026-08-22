@@ -208,7 +208,8 @@ Source label: `source:hr-photos` (opaque) Owner constraint: **only these two cli
 - Only the canonical slug `daniela-y-martin` may remain in the runtime registry, assets, or active
   docs.
 - Delivery target: Preview (not Production) until owner authorizes promote.
-- Active plans: `.agent/plans/active/daniela-y-martin-*.md`.
+- Jewelry-box wedding bundle omits hero/rsvp/thank-you jewelry partials.
+- Shared platform `svh` rhythm is not reduced globally.
 
 ---
 

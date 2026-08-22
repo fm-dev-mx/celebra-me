@@ -49,6 +49,7 @@ Storage mutations when content is unchanged.
 - **Included Sections:** `quote`, `family`, `countdown`, `location`, `itinerary`, `gallery`,
   `personalizedAccess`, `rsvp`, `thankYou`.
 - **Intentionally Omitted Sections:** `gifts`.
+- **Established Production field omissions:** `location.indicationsHeading`, `hero.nickname`, `hero.secondaryName`, `thankYou.closingPhrase`.
 
 ---
 

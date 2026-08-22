@@ -2,9 +2,6 @@
 
 **Status:** Canonical encapsulation reference
 
-**Historical record:**
-[`romina-rios-chaparro-finalization.md`](romina-rios-chaparro-finalization.md)
-
 Romina is the approved reference used to prove the reusable `split-cover` Hero architecture. Her
 invitation is a consumer of that architecture, not its owner. No reusable identifier, renderer,
 stylesheet, primitive, or asset path may contain her name, slug, profile ID, or historical origin.
@@ -49,3 +46,9 @@ photograph (`IMG_3263.jpeg`) so each path meets its delivery-role budget.
 
 No database, Preview, Production, client copy, event facts, or photographic assets are changed by
 this encapsulation.
+## Established mappings
+
+- Venue mapping: legacy `location.venues[*]` maps to `location.ceremony` / `location.reception`.
+- Seal monogram: `RC`.
+- Hero image focals: `50% 42%` (mobile/tablet), `58% 46%` (desktop).
+- Ceremony coordinates `lat: 30.4137, lng: -107.9125` and reception coordinates `lat: 30.4280, lng: -107.9250` are marked inferred.
