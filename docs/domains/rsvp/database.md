@@ -2,6 +2,9 @@
 
 **Last Updated:** 2026-06-05
 
+RSVP routes, APIs, and host/guest flow are owned by [`architecture.md`](architecture.md). This file
+is the RSVP table/schema inventory and database-specific operational notes.
+
 This document describes the active Supabase schema and operational workflow for the RSVP and
 invitation domains.
 

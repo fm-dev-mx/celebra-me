@@ -4,7 +4,7 @@
 # to their canonical owner files. Agent OS ownership surface.
 ---
 version: '1.0.0'
-updated: '2026-08-07'
+updated: '2026-08-21'
 
 ownership:
     - aspect: 'Agent discovery & active inventory'
@@ -193,6 +193,25 @@ ownership:
       owner: 'docs/domains/theme/architecture.md'
       non_owners:
           - 'Brand brief alone'
+          - 'docs/domains/theme/variant-system.md'
+
+    - aspect: 'Section variant inventory'
+      owner: 'docs/domains/theme/variant-system.md'
+      non_owners:
+          - 'docs/domains/theme/architecture.md'
+          - 'Per-invitation Markdown'
+
+    - aspect: 'RSVP / host-dashboard architecture'
+      owner: 'docs/domains/rsvp/architecture.md'
+      non_owners:
+          - 'docs/domains/rsvp/database.md'
+          - 'Performance metrics as RSVP policy'
+
+    - aspect: 'Attribution / consent'
+      owner: 'docs/domains/tracking/commercial-attribution.md'
+      non_owners:
+          - 'Archived analytics specs'
+          - 'Provider dashboards as policy'
 
     - aspect: 'Per-client invitation state'
       owner: 'docs/invitations/'
