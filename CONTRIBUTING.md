@@ -35,9 +35,8 @@ The process described here has several goals:
 Please follow these steps to have your contribution considered by the maintainers:
 
 1. Fork the repository.
-2. Create a branch from the `main` branch for your feature (`git checkout -b feature-name`).
-   > [!IMPORTANT] Direct commits to the `main` branch are blocked by a Git hook. Always use a
-   > feature branch.
+2. Create a branch from `develop` for your feature (`git checkout -b feature-name`).
+   Branch creation SSOT: [`docs/core/git-governance.md`](docs/core/git-governance.md).
 3. Make your changes, ensuring that you follow the coding style guidelines (below).
 4. Commit your changes (`git commit -m 'feat: add some feature'`).
    > [!NOTE] We use **Conventional Commits** with a required scope. See
