@@ -52,6 +52,10 @@ Three homes. Exclusive ownership. Do not collapse looks into one SCSS file per i
 Shared structural base `src/styles/invitation/` is out of scope for ownership moves in this
 contract.
 
+### Gifts flatten
+
+Gifts section styling is the flattened section-level variable contract in `src/styles/invitation/_gifts.scss`. Theme-section Gifts partials under `src/styles/themes/sections/gifts/` are not used. Other sections that retain real structural, layout, content, or behavior variants must not be flattened through the Gifts pattern without explicit parity evidence.
+
 ### Explicit non-goals
 
 - One monolithic SCSS file per invitation/demo as the primary look home.
