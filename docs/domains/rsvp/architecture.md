@@ -51,7 +51,6 @@ short code is available and emits the short URL when `shortId` exists.
 - `POST /api/dashboard/guests/:guestId/mark-shared`
 - `POST /api/dashboard/guests/bulk`
 - `GET /api/dashboard/guests/export.csv`
-- `GET /api/dashboard/guests/stream`
 - `GET /api/dashboard/events`
 - `GET|POST /api/dashboard/claimcodes`
 - `PATCH|DELETE /api/dashboard/claimcodes/:claimCodeId`
@@ -145,6 +144,22 @@ live tree.
 
 Older docs may mention `/admin/rsvp` or `/api/invitation/*`. Those are historical references and
 must not be treated as active system entrypoints.
+
+## Dashboard guest metrics
+
+| Metric | Code field | Definition |
+| --- | --- | --- |
+| Total invitations | `totalInvitations` | Count of unique guest invitation records |
+| Enviadas (sent) | `sharedInvitations` | Count of unique invitations with `deliveryStatus === 'shared'` |
+| Por confirmar (pending) | `unconfirmedShared` | Count of sent invitations without final RSVP |
+| Confirmadas | `confirmedInvitations` | Count of invitations with `attendanceStatus === 'confirmed'` |
+| Asistentes | `confirmedPeople` | Sum of `attendeeCount` for confirmed invitations only |
+| Vistas | `viewed` | Count of invitations with `firstViewedAt` set |
+| Denegadas | `declinedInvitations` | Count of invitations with `attendanceStatus === 'declined'` |
+| Por enviar | `generatedInvitations` | Count of invitations with `deliveryStatus === 'generated'` |
+| Total invited capacity | `totalPeople` | Sum of `maxAllowedAttendees` for all invitations (denominator only) |
+
+`totalPeople` is total invited capacity, not a confirmed attendee count.
 
 ## Related
 
