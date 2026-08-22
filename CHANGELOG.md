@@ -94,6 +94,12 @@ Comprehensive release consolidating public RSVP SECURITY DEFINER RPC architectur
 - **Provision & DB Parity**: Decoupled CDN asset probes from promotion plan identity; added portable RSVP `pgcrypto` support and migration deployment compatibility.
 - **Testing & CI Classification**: Deterministic Local Supabase URL stubs for zero-DB CI runs, `@extended` classification for live DB E2E tests, and webServer lifecycle hardening.
 
+- **Observabilidad direct alignment**: when Local/Preview/Production current managed drafts match
+  (including asset slots), delivery can be `ALIGNED` without legacy provenance; otherwise baseline
+  three-way reconciliation still applies.
+- **Free-tier Production recovery**: local Windows EFS critical backups support unattended daily
+  reporting, category byte metrics, checksum verification, and 30-daily/12-monthly retention.
+
 ### Fixed
 
 - **Database & Migration Safety**: Enforced `CONFIRM_PROD_MIGRATION` guard in production migration CLI, corrected auth boolean export nullability, and non-locking append-only receipt serialization.
@@ -162,24 +168,6 @@ Alba Rosa Quiñones client invitation, premium motion system, and preview infras
 - New migration: `20260727180000_managed_provenance_projection_baseline` (managed release
   provenance projection, optimistic concurrency on drafts).
 - Shared content schema: intersection profiles field added.
-
-## [Unreleased]
-
-### Added
-
-- **Owner-only Production invitation promotion**: `pnpm invitation:promote` promotes an exact
-  Preview-approved managed package after schema `CURRENT`, critical backup evidence, and owner
-  confirmation; `invitation:update` no longer mutates Production.
-
-### Changed
-
-- **Observabilidad Local v3**: salud operacional y progreso de entrega separados, con evidencias
-  tipadas y proyección acotada por entorno.
-- **Observabilidad direct alignment**: when Local/Preview/Production current managed drafts match
-  (including asset slots), delivery can be `ALIGNED` without legacy provenance; otherwise baseline
-  three-way reconciliation still applies.
-- **Free-tier Production recovery**: local Windows EFS critical backups support unattended daily
-  reporting, category byte metrics, checksum verification, and 30-daily/12-monthly retention.
 
 ## [0.14.0-beta.1]
 
