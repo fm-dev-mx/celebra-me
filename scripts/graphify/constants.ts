@@ -319,7 +319,7 @@ export const THEME_ASSETS_DOMAIN_PREDICATES: DomainPredicate[] = [
 		matches: (normalized: string) =>
 			[
 				'src/styles/invitation/_section-primitives.scss',
-				'src/styles/invitation/_typography.scss',
+				'src/styles/tokens/_typography.scss',
 			].includes(normalized),
 	},
 	{

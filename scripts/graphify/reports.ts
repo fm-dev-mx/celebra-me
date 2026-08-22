@@ -78,7 +78,6 @@ function isThemeAssetInventoryPath(sourceFile: unknown): boolean {
 		(/^src\/styles\/invitation\/_[^/]+\.scss$/.test(normalized) &&
 			![
 				'src/styles/invitation/_section-primitives.scss',
-				'src/styles/invitation/_typography.scss',
 			].includes(normalized)) ||
 		/^src\/styles\/themes\/sections\/[^/]+\/_(?!index\.scss$|base\.scss$)[^/]+\.scss$/.test(
 			normalized,
