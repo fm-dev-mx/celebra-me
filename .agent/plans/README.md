@@ -211,4 +211,4 @@ Before executing a high-risk tracked plan, confirm:
 
 Domain performance / cache contracts live under `docs/domains/` and domain plans (for example
 `docs/domains/invitations/public-response-cache-policy.md` and
-`.agent/plans/active/section-architecture-refactor-plan.md`) — not in this governance file.
+`docs/domains/theme/architecture.md`) — not in this governance file.
