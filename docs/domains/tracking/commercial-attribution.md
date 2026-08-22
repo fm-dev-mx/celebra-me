@@ -6,6 +6,20 @@ Celebra-me uses first-party deterministic attribution to connect anonymous comme
 identifiable leads. Attribution is resolved server-side through the tracking ingestion pipeline and
 contact form API. No third-party cookies are used.
 
+## Mexico consent
+
+Consent follows Mexico ARCO practice. Categories: `necessary` (always on), `analytics` (gates GA4), `marketing` (gates Meta Pixel and any GTM marketing tags). Default before user choice: analytics and marketing off. Analytics and marketing consent can be withdrawn at any time.
+
+## GA4 vs GTM ownership
+
+First-party tracking is the source of truth. GA4 is behavioral analytics and is loaded directly, not through GTM. Meta Pixel is ad optimisation only. GTM is not activated; if added later it must not bypass app route policy or consent policy.
+
+## Retention
+
+- Analytics-event and marketing-audience retention: not established in this repository; requires an
+  explicit privacy decision before being treated as a current contract.
+- Contact/lead data: duration of the commercial relationship + 2 years
+
 ## Identifier Chain
 
 ```
