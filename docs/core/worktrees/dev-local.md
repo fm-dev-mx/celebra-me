@@ -16,10 +16,7 @@ Local Supabase (`CELEBRA_RUNTIME_TARGET=local`).
 
 ## Idle / active state
 
-- Idle: Clean persistent branch `dev-local` (or `git switch --detach develop`), aligned with
-  `develop`
-- Active: `git switch -c <task-branch> develop` (or work directly on clean lane branch when tasked)
-- Release: Merge task branch to `develop`; reset lane branch to `develop` after integration
+See [`git-governance.md`](../git-governance.md) for the canonical lane lifecycle.
 
 ## Environment files
 

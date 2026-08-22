@@ -23,10 +23,7 @@ This is independent of Vercel Preview deployments (`VERCEL_ENV=preview`).
 
 ## Idle / active state
 
-- Idle: Clean persistent branch `dev-preview` (or `git switch --detach develop`), aligned with
-  `develop`
-- Active: Ephemeral branch created explicitly from `develop`
-- Release: Merge to `develop`; reset lane branch after integration
+See [`git-governance.md`](../git-governance.md) for the canonical lane lifecycle.
 
 ## Environment files
 
