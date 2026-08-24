@@ -107,9 +107,15 @@
 		);
 	}
 
+	// Family deceased marker calibration
+	--family-deceased-symbol-color: var(--victoria-meta);
+	--family-deceased-symbol-size: 0.75em;
+	--family-deceased-symbol-opacity: 85%;
+	--family-deceased-symbol-offset-y: -0.1em;
+
 	// Location — stacked-venue-plates owns geometry and chapter composition.
-	// Profile only tints the kicker/meta voice and hides redundant card dates
-	// (the intro heading already carries the date).
+	// Profile tints the kicker/meta voice, hides redundant card dates, and
+	// adopts the editorial silhouette mask for indications.
 	--location-title-color: var(--victoria-meta);
 	--location-hour-color: var(--victoria-meta);
 	--location-indications-heading-color: var(--victoria-meta);
@@ -226,18 +232,19 @@
 	.invitation-interlude[data-interlude-index='1'] {
 		--interlude-min-height-1: clamp(420px, 72svh, 640px);
 		--interlude-min-height-1-sm: clamp(400px, 68svh, 560px);
-		--interlude-focal-point: 20% 68%;
+		--interlude-focal-point: 26% 22%;
 
 		@media (width >= 640px) {
-			--interlude-focal-point: 50% 40%;
+			--interlude-focal-point: 26% 22%;
 		}
 
 		@media (width >= 768px) {
 			--interlude-min-height-1: clamp(440px, 70svh, 620px);
+			--interlude-focal-point: 26% 22%;
 		}
 
 		@media (width >= 1024px) {
-			--interlude-focal-point: 50% 22%;
+			--interlude-focal-point: 26% 22%;
 		}
 	}
 
@@ -245,7 +252,7 @@
 		--interlude-image-filter: var(--victoria-interlude-filter-terrace);
 		--interlude-min-height-2: clamp(320px, 52svh, 480px);
 		--interlude-min-height-2-sm: clamp(300px, 48svh, 440px);
-		--interlude-focal-point: 58% 36%;
+		--interlude-focal-point: 36% 32%;
 		--interlude-overlay:
 			linear-gradient(
 				180deg,
@@ -262,16 +269,16 @@
 			radial-gradient(circle at 28% 22%, var(--victoria-interlude-gold-mist), transparent 48%);
 
 		@media (width >= 640px) {
-			--interlude-focal-point: 56% 38%;
+			--interlude-focal-point: 38% 30%;
 		}
 
 		@media (width >= 768px) {
-			--interlude-min-height-2: clamp(340px, 50svh, 460px);
-			--interlude-focal-point: 54% 40%;
+			--interlude-min-height-2: clamp(340px, 50svh, 480px);
+			--interlude-focal-point: 40% 30%;
 		}
 
 		@media (width >= 1024px) {
-			--interlude-focal-point: 52% 33%;
+			--interlude-focal-point: 40% 30%;
 		}
 	}
 
@@ -389,10 +396,10 @@
 		--victoria-hero-seam-clearance: var(--victoria-hero-seam-depth);
 
 		// Mid-shot focals (sync with provision). Soft veil on __background only.
-		--hero-focal-point-default: 50% 34%;
-		--hero-focal-point-mobile: 46% 32%;
-		--hero-focal-point-tablet: 50% 34%;
-		--hero-focal-point-desktop: 50% 36%;
+		--hero-focal-point-default: 50% 20%;
+		--hero-focal-point-mobile: 48% 20%;
+		--hero-focal-point-tablet: 48% 20%;
+		--hero-focal-point-desktop: 50% 20%;
 		--hero-overlay: transparent;
 		--hero-overlay-gradient:
 			radial-gradient(
@@ -826,7 +833,132 @@
 
 	// Location chapter composition lives in
 	// themes/sections/location/_stacked-venue-plates.scss.
-	// This profile only tints kicker/meta tokens and the arch intersection.
+	// Indications: refined, editorial typographic hierarchy with crisp couple silhouette.
+	.event-location {
+		--location-indications-backdrop-filter: none;
+
+		.event-location__indications-container {
+			margin: clamp(2.25rem, 4.5vw, 3.25rem) auto 0;
+			width: min(90%, 36rem);
+			max-width: 36rem;
+			position: relative;
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			justify-content: center;
+			gap: clamp(1.2rem, 3vw, 1.85rem);
+			padding: 0;
+			background: transparent;
+			border: none;
+			border-radius: 0;
+			box-shadow: none;
+			backdrop-filter: none;
+
+			&::before {
+				content: '';
+				display: block;
+				width: clamp(62px, 7.2vw, 80px);
+				height: clamp(46px, 5.4vw, 60px);
+				aspect-ratio: 160 / 120;
+				margin: 0;
+				background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 120' fill='none'%3E%3Cpath d='M36 10 C36 8 44 8 44 10 L45 16 L35 16 Z' fill='%23f7f1eb' stroke='%23dfd3c6' stroke-width='0.5'/%3E%3Cpolygon points='35,16 45,16 43,44 37,44' fill='%23ffffff'/%3E%3Cpolygon points='38.5,18 41.5,18 42,40 40,43 38,40' fill='%231a1715'/%3E%3Cpath d='M31 46 L28 112 L37.5 112 L39.5 56 Z' fill='%231e1b19'/%3E%3Cpath d='M49 46 L52 112 L42.5 112 L40.5 56 Z' fill='%231e1b19'/%3E%3Cline x1='32.5' y1='52' x2='32.5' y2='110' stroke='%23141211' stroke-width='0.5'/%3E%3Cline x1='47.5' y1='52' x2='47.5' y2='110' stroke='%23141211' stroke-width='0.5'/%3E%3Cpath d='M35 16 C30 17 25 18 22 20 C19 28 17 38 17 50 L22 51 C24 43 25 36 26 34 L27 54 C31 54 35 53 40 52 C45 53 49 54 53 54 L54 34 C55 36 56 43 58 51 L63 50 C63 38 61 28 58 20 C55 18 50 17 45 16 L42 30 L40 43 L38 30 Z' fill='%231e1b19'/%3E%3Cpolygon points='35,16 30,28 38,34 36,17' fill='%232c2724'/%3E%3Cpolygon points='45,16 50,28 42,34 44,17' fill='%232c2724'/%3E%3Cpath d='M116 11 C116 9 124 9 124 11 L125 17 L115 17 Z' fill='%23f7f1eb' stroke='%23dfd3c6' stroke-width='0.5'/%3E%3Cpath d='M109 17 C114 19 126 19 131 17 L132 25 L108 25 Z' fill='%23f7f1eb'/%3E%3Cpath d='M111 18 C115 22 125 22 129 18' fill='none' stroke='%23b89047' stroke-width='0.7'/%3E%3Ccircle cx='120' cy='22.5' r='1' fill='%23b89047'/%3E%3Cpath d='M109 17 C108 22 110 29 112 36 C110 40 111 44 112 46 C109 60 106 80 108 112 C110 114 116 112 120 100 C124 112 130 114 132 112 C134 80 131 60 128 46 C129 44 130 40 128 36 C131 32 132 27 132 25 C126 23 118 23 108 25 L115 22 Z' fill='%23a6543a'/%3E%3Cpath d='M108 25 C114 28 124 29 132 25 L130 30 C123 33 114 32 108 28 Z' fill='%2391422c' opacity='0.75'/%3E%3Cpath d='M120 100 C116 112 110 114 108 112 C107 92 110 66 114 46 L118 46 C115 65 114 87 120 100 Z' fill='%2391422c' opacity='0.75'/%3E%3Cpath d='M120 100 C124 112 130 114 132 112 C133 94 131 68 127 46 L123 46 C126 67 127 89 120 100 Z' fill='%237a321d' opacity='0.5'/%3E%3C/svg%3E")
+					center / contain no-repeat;
+				flex-shrink: 0;
+			}
+		}
+
+		.event-location__indications {
+			display: flex;
+			flex-direction: column;
+			gap: 0.35rem;
+			flex: 1 1 auto;
+			min-width: 0;
+			max-width: 29rem;
+			text-align: left;
+			background: transparent;
+			border: none;
+			box-shadow: none;
+			backdrop-filter: none;
+			padding: 0;
+			margin: 0;
+
+			&::before,
+			&::after {
+				display: none;
+			}
+		}
+
+		.event-location__indications-heading,
+		.event-location__divider,
+		.event-location__indication-icon {
+			display: none;
+		}
+
+		.event-location__indication-item {
+			display: block;
+			padding: 0;
+			border: none;
+			border-radius: 0;
+			background: transparent;
+			box-shadow: none;
+			backdrop-filter: none;
+			overflow: visible;
+			width: 100%;
+			min-width: 0;
+			text-align: left;
+
+			&::before,
+			&::after {
+				display: none;
+			}
+
+			&:not(:first-child) {
+				border-top: 1px solid rgb(var(--victoria-terracota-rgb) / 14%);
+				margin-top: 0.35rem;
+				padding-top: 0.35rem;
+			}
+		}
+
+		.event-location__indication-item--reserved {
+			background: transparent;
+			border: none;
+			box-shadow: none;
+			backdrop-filter: none;
+		}
+
+		.event-location__indication-copy {
+			flex: 1;
+			min-width: 0;
+			overflow: visible;
+			text-align: inherit;
+		}
+
+		.event-location__indication-text {
+			font-family: var(--victoria-font-body);
+			font-size: clamp(0.9rem, 1.25vw, 0.98rem);
+			font-weight: 500;
+			line-height: 1.4;
+			letter-spacing: 0.01em;
+			color: var(--victoria-title);
+			max-width: none;
+			text-align: left;
+			margin: 0;
+			white-space: normal;
+			overflow-wrap: break-word;
+			word-break: normal;
+			overflow: visible;
+		}
+
+		.event-location__indication-item--reserved .event-location__indication-text {
+			font-family: var(--victoria-font-display);
+			font-style: italic;
+			font-size: clamp(0.85rem, 1.2vw, 0.94rem);
+			font-weight: 400;
+			letter-spacing: 0.01em;
+			line-height: 1.42;
+			color: var(--victoria-subtitle);
+		}
+	}
 
 	// Itinerary — an editorial program spine. Confirmed times are display
 	// elements set against a continuous hairline axis; pending entries stay

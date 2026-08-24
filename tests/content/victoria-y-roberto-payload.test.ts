@@ -69,8 +69,10 @@ describe('Boda Victoria y Roberto provision contract', () => {
 		expect(profile).toContain("data-reveal-state='sealed'");
 		expect(profile).toContain("data-reveal-state='revealed'");
 		expect(profile).toContain('--gallery-single-label-font');
+		expect(profile).toContain('--family-deceased-symbol-color');
 		expect(profile).toContain('--location-title-color: var(--victoria-meta)');
 		expect(profile).toContain('--location-date-display: none');
+		expect(profile).toContain("url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'");
 		expect(profile).not.toContain('.event-location__card-map-preview-artwork');
 		expect(profile).not.toContain("data-variant='single'");
 		expect(fs.readFileSync(galleryStylesPath, 'utf8')).toContain(
@@ -366,15 +368,15 @@ describe('Boda Victoria y Roberto provision contract', () => {
 		};
 		const profile = fs.readFileSync(profilePath, 'utf8');
 
-		expect(hero.focalPoint).toBe('50% 34%');
-		expect(hero.focalPointMobile).toBe('46% 32%');
-		expect(hero.focalPointTablet).toBe('50% 34%');
-		expect(hero.focalPointDesktop).toBe('50% 36%');
+		expect(hero.focalPoint).toBe('50% 20%');
+		expect(hero.focalPointMobile).toBe('48% 20%');
+		expect(hero.focalPointTablet).toBe('48% 20%');
+		expect(hero.focalPointDesktop).toBe('50% 20%');
 
-		expect(profile).toContain('--hero-focal-point-default: 50% 34%');
-		expect(profile).toContain('--hero-focal-point-mobile: 46% 32%');
-		expect(profile).toContain('--hero-focal-point-tablet: 50% 34%');
-		expect(profile).toContain('--hero-focal-point-desktop: 50% 36%');
+		expect(profile).toContain('--hero-focal-point-default: 50% 20%');
+		expect(profile).toContain('--hero-focal-point-mobile: 48% 20%');
+		expect(profile).toContain('--hero-focal-point-tablet: 48% 20%');
+		expect(profile).toContain('--hero-focal-point-desktop: 50% 20%');
 
 		const desktopAsset = VICTORIA_ASSET_SPECS.find((spec) => spec.key === 'hero-desktop');
 		expect(desktopAsset?.focalPoint).toMatchObject({

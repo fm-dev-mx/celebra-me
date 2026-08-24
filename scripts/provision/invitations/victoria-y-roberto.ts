@@ -57,14 +57,14 @@ export const VICTORIA_MUSIC = {
 
 const VICTORIA_INTERLUDE_01 = {
 	alt: 'Victoria y Roberto en un momento íntimo sobre un puente de madera',
-	// Narrow-safe default; responsive refinements live in the visual profile.
-	focalPoint: '50% 40%',
+	// Centered on couple kissing on bridge; face-safe across all viewports.
+	focalPoint: '26% 22%',
 } as const;
 
 const VICTORIA_INTERLUDE_02 = {
 	alt: 'Victoria y Roberto frente a frente en una terraza con luz suave',
-	// Couple sits slightly right; keep faces readable under tall cover crops.
-	focalPoint: '56% 38%',
+	// Couple faces in frame for thank-you medallion and interlude.
+	focalPoint: '48% 20%',
 } as const;
 
 export const VICTORIA_ASSET_SPECS = [
@@ -74,10 +74,10 @@ export const VICTORIA_ASSET_SPECS = [
 		displayName: 'Victoria y Roberto — portada',
 		alt: 'Victoria y Roberto en retrato de sesión al aire libre',
 		focalPoint: {
-			default: '50% 34%',
-			mobile: '46% 32%',
-			tablet: '50% 34%',
-			desktop: '50% 36%',
+			default: '50% 20%',
+			mobile: '48% 20%',
+			tablet: '48% 20%',
+			desktop: '50% 20%',
 		},
 	},
 	{
@@ -86,10 +86,10 @@ export const VICTORIA_ASSET_SPECS = [
 		displayName: 'Victoria y Roberto — portada móvil',
 		alt: 'Victoria y Roberto en retrato de sesión al aire libre',
 		focalPoint: {
-			default: '46% 32%',
-			mobile: '46% 32%',
-			tablet: '50% 34%',
-			desktop: '50% 36%',
+			default: '48% 20%',
+			mobile: '48% 20%',
+			tablet: '48% 20%',
+			desktop: '50% 20%',
 		},
 	},
 	{
@@ -98,7 +98,7 @@ export const VICTORIA_ASSET_SPECS = [
 		displayName: 'Victoria y Roberto — galería',
 		alt: 'Victoria y Roberto en un abrazo editorial en blanco y negro',
 		focalPoint: {
-			default: '50% 40%',
+			default: '46% 22%',
 		},
 	},
 	{
@@ -125,7 +125,7 @@ export const VICTORIA_ASSET_SPECS = [
 		displayName: 'Victoria y Roberto — cierre',
 		alt: 'Victoria y Roberto en un retrato arquitectónico de sesión',
 		focalPoint: {
-			default: '42% 38%',
+			default: '38% 30%',
 		},
 	},
 ] as const;
@@ -196,10 +196,10 @@ export function buildVictoriaPublishedContent(
 			backgroundImageMobile: assets['hero-mobile'],
 			backgroundImageDesktop: assets['hero-desktop'],
 			variant: 'standard',
-			focalPoint: '50% 34%',
-			focalPointMobile: '46% 32%',
-			focalPointTablet: '50% 34%',
-			focalPointDesktop: '50% 36%',
+			focalPoint: '50% 20%',
+			focalPointMobile: '48% 20%',
+			focalPointTablet: '48% 20%',
+			focalPointDesktop: '50% 20%',
 		},
 		envelope: {
 			disabled: false,
@@ -278,7 +278,7 @@ export function buildVictoriaPublishedContent(
 				},
 				{
 					iconName: 'FlowerSeal',
-					styleVariant: 'default',
+					styleVariant: 'reserved',
 					text: 'Agradecemos considerar que la celebración está reservada para adultos. Gracias por su comprensión.',
 				},
 			],
@@ -380,7 +380,7 @@ export function buildVictoriaPublishedContent(
 					key: 'gallery-01',
 					image: assets['gallery-01'],
 					alt: 'Victoria y Roberto en un abrazo editorial en blanco y negro',
-					focalPoint: '50% 40%',
+					focalPoint: '46% 22%',
 					layoutRole: 'feature',
 					aspectRatio: '2 / 3',
 				},
