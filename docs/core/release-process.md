@@ -1,7 +1,8 @@
 # Release Process — Celebra-me
 
-**Status:** Active  
-**Last Updated:** 2026-07-26
+**Status:** Active
+
+**Last Updated:** 2026-08-24
 
 ## Overview
 
@@ -116,39 +117,46 @@ as Added / Changed / Fixed). Optionally append verification notes for the checkp
 
 Reset `[Unreleased]` to an empty pending section after the promotion.
 
-### 4. Commit the changes
+### 4. Commit the changes through `develop`
 
 ```bash
-git add package.json CHANGELOG.md docs/core/release-process.md README.md
-git commit -m "docs(release): add release checkpoint process and v0.X.Y baseline"
+git switch -c candidate/vX.Y.Z develop
+git add package.json CHANGELOG.md
+git commit -m "chore(release): publish vX.Y.Z checkpoint"
 ```
 
-### 5. Create an annotated Git tag
+Open a pull request to `develop`, wait for `Repository Policy` and `Application Suite`, and merge
+without squashing when preceding atomic commits must remain distinct. Revalidate the final `develop`
+SHA after the merge.
+
+### 5. Promote the validated commit to `main`
+
+```bash
+git switch main
+git pull --ff-only origin main
+git merge --ff-only develop
+ALLOW_MAIN_PUSH=true git push origin main
+```
+
+The `main` ruleset requires the same checks as `develop` but intentionally omits the pull-request
+rule. The promotion must reuse the exact checked `develop` SHA and must not create a merge, squash,
+or rebase commit.
+
+### 6. Verify the promoted deployment
+
+Confirm that `origin/main` and `origin/develop` resolve to the same SHA, then verify the automatic
+production deployment and critical smoke routes. If the deployment fails, revert on `develop`,
+validate, and promote the revert by fast-forward; never rewrite `main`.
+
+### 7. Create and push the annotated tag
 
 ```bash
 git tag -a v0.X.Y -m "v0.X.Y - Short description of checkpoint"
-```
-
-### 6. Verify before pushing
-
-Re-run the full verification suite:
-
-```bash
-pnpm lint
-pnpm type-check
-pnpm test --runInBand
-pnpm build
-```
-
-If any check fails, fix the issue or explicitly document the failure before tagging. Do not push a
-tag over a failing verification without a clear record.
-
-### 7. Push
-
-```bash
-git push
 git push origin v0.X.Y
 ```
+
+The tag is created only after the exact promoted deployment is verified. Do not force-update an
+existing tag.
 
 ## Database-dependent releases
 
