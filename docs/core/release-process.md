@@ -1,7 +1,8 @@
 # Release Process — Celebra-me
 
-**Status:** Active  
-**Last Updated:** 2026-07-26
+**Status:** Active
+
+**Last Updated:** 2026-08-24
 
 ## Overview
 
@@ -32,6 +33,8 @@ Keep one history owner per change type. Do not dump every commit, migration, or 
 - Do **not** require a changelog entry for every commit.
 - Prefer updating `[Unreleased]` in the same milestone PR/work unit that ships the behavior, not
   only at tag time.
+- If continuous notes were missed and `[Unreleased]` is empty at release preparation, stop and
+  reconstruct it from the audited latest-tag-to-HEAD range before cutting the version section.
 - Per-client operational detail stays in `docs/invitations/<slug>.md`; link or summarize in
   `[Unreleased]` only for notable ships.
 
@@ -39,7 +42,8 @@ Keep one history owner per change type. Do not dump every commit, migration, or 
 
 Before creating a version tag, complete this **pre-tag checklist** (all must pass):
 
-- [ ] `[Unreleased]` contains at least one real bullet (not only HTML comments / empty headings).
+- [ ] The versioned section contains at least one real bullet sourced from accumulated
+      `[Unreleased]` notes or an explicitly audited latest-tag-to-HEAD reconstruction.
 - [ ] No wholesale paste of `docs/invitations/<slug>.md` ops notes into the changelog.
 - [ ] Schema impact is summarized only; full history remains in `supabase/migrations/`.
 - [ ] Promote `[Unreleased]` bullets into `## [X.Y.Z] - YYYY-MM-DD` (Keep a Changelog groups).
@@ -91,7 +95,9 @@ Set the `version` field to the chosen version **without** the leading `v`:
 ### 3. Update `CHANGELOG.md`
 
 Promote accumulated `[Unreleased]` items into a dated version section (Keep a Changelog groups such
-as Added / Changed / Fixed). Optionally append verification notes for the checkpoint:
+as Added / Changed / Fixed). When continuous notes are missing, first reconstruct and review those
+items from the latest valid tag through the candidate HEAD. Optionally append verification notes for
+the checkpoint:
 
 ```markdown
 ## [0.2.0-beta.1] - 2026-05-23
@@ -116,39 +122,48 @@ as Added / Changed / Fixed). Optionally append verification notes for the checkp
 
 Reset `[Unreleased]` to an empty pending section after the promotion.
 
-### 4. Commit the changes
+### 4. Commit the changes through `develop`
 
 ```bash
-git add package.json CHANGELOG.md docs/core/release-process.md README.md
-git commit -m "docs(release): add release checkpoint process and v0.X.Y baseline"
+git switch -c candidate/vX.Y.Z develop
+git add package.json CHANGELOG.md
+git commit -m "chore(release): publish vX.Y.Z checkpoint"
 ```
 
-### 5. Create an annotated Git tag
+Open a pull request to `develop`, wait for `Repository Policy` and `Application Suite`, and merge
+without squashing when preceding atomic commits must remain distinct. Revalidate the final `develop`
+SHA after the merge.
+
+### 5. Promote the validated commit to `main`
+
+```bash
+git switch develop
+git pull --ff-only origin develop
+git switch main
+git pull --ff-only origin main
+git merge --ff-only develop
+ALLOW_MAIN_PUSH=true git push origin main
+```
+
+The `main` ruleset requires the same checks as `develop` but intentionally omits the pull-request
+rule. The promotion must reuse the exact checked `develop` SHA and must not create a merge, squash,
+or rebase commit.
+
+### 6. Verify the promoted deployment
+
+Confirm that `origin/main` and `origin/develop` resolve to the same SHA, then verify the automatic
+production deployment and critical smoke routes. If the deployment fails, revert on `develop`,
+validate, and promote the revert by fast-forward; never rewrite `main`.
+
+### 7. Create and push the annotated tag
 
 ```bash
 git tag -a v0.X.Y -m "v0.X.Y - Short description of checkpoint"
-```
-
-### 6. Verify before pushing
-
-Re-run the full verification suite:
-
-```bash
-pnpm lint
-pnpm type-check
-pnpm test --runInBand
-pnpm build
-```
-
-If any check fails, fix the issue or explicitly document the failure before tagging. Do not push a
-tag over a failing verification without a clear record.
-
-### 7. Push
-
-```bash
-git push
 git push origin v0.X.Y
 ```
+
+The tag is created only after the exact promoted deployment is verified. Do not force-update an
+existing tag.
 
 ## Database-dependent releases
 

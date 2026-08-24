@@ -1,10 +1,11 @@
 # Git Governance: Commit Policy
 
-**Status:** Active  
-**Last Updated:** 2026-07-26  
-**Change Note:** Documents production-tip recovery when `main` drifts, points agents at
-`branch-lane`, and notes `ALLOW_MAIN_PUSH` for local main pushes. Branch model remains develop trunk
-/ main protected via fast-forward.
+**Status:** Active
+
+**Last Updated:** 2026-08-24
+
+**Change Note:** Aligns the protected-branch rulesets and CI triggers with PR-only integration on
+`develop` and checked fast-forward promotion to `main`.
 
 ## Overview
 
@@ -15,11 +16,12 @@ rules are owned by [`.agent/rules/workflow.md`](../../.agent/rules/workflow.md).
 The repository uses a **linear two-branch workflow** with annotated tags for releases and a
 **four-lane worktree model**:
 
-- `develop` is the active trunk for daily development. Direct commits are allowed.
+- `develop` is the active protected trunk for daily development. Changes land through pull requests
+  after the required checks pass.
 - `main` is the protected production branch, updated only via fast-forward from `develop`.
-- Persistent native Git worktrees (repository root `celebra-me` plus sibling
-  `<repo-dir>-worktrees/` development lanes `dev-local`, `dev-preview`, `dev-extra`) isolate
-  Integration and three development lanes.
+- Persistent native Git worktrees (repository root `celebra-me` plus sibling `<repo-dir>-worktrees/`
+  development lanes `dev-local`, `dev-preview`, `dev-extra`) isolate Integration and three
+  development lanes.
 - Ephemeral task branches (`feat/*`, `fix/*`, `candidate/*`) are checked out in development lanes.
   Permanent lane branches are forbidden.
 - Worktree location grants no environment privilege (`path ≠ privilege`).
@@ -42,18 +44,18 @@ Celebra-me uses native Git worktrees to establish four persistent, reusable oper
 
 1. **Integration** (repository root): Canonical worktree on `develop`. Integration, release
    preparation, trunk operations. Runtime default: Local.
-2. **dev-local** (`<worktrees-root>\dev-local`): Primary feature/fix development on
-   ephemeral task branches. Runtime default: Local.
-3. **dev-preview** (`<worktrees-root>\dev-preview`): Preview development and
-   hosted-validation affinity lane on ephemeral task branches. Runtime default: Preview Supabase via
+2. **dev-local** (`<worktrees-root>\dev-local`): Primary feature/fix development on ephemeral task
+   branches. Runtime default: Local.
+3. **dev-preview** (`<worktrees-root>\dev-preview`): Preview development and hosted-validation
+   affinity lane on ephemeral task branches. Runtime default: Preview Supabase via
    `.env.preview.local`. Preferred lane for authorized Preview operations; path still grants no
    mutation privilege.
-4. **dev-extra** (`<worktrees-root>\dev-extra`): Additional parallel Local development
-   lane on ephemeral task branches. Runtime default: Local.
+4. **dev-extra** (`<worktrees-root>\dev-extra`): Additional parallel Local development lane on
+   ephemeral task branches. Runtime default: Local.
 
 `<worktrees-root>` is the sibling `<repo-dir>-worktrees/` directory next to the repository root —
-the tooling derives it from the checkout root and does not require any particular parent
-directory (see `scripts/shared/worktree-lane.ts`).
+the tooling derives it from the checkout root and does not require any particular parent directory
+(see `scripts/shared/worktree-lane.ts`).
 
 Lane-specific operational cards (facts only; policy stays centralized):
 [`docs/core/worktrees/`](worktrees/).
@@ -331,13 +333,14 @@ judgment.
 ## Active Hooks and CI Sequence
 
 1. `pre-commit` blocks direct commits to `main` unless explicitly bypassed and runs
-   `pnpm lint-staged` on all branches. Commits to `develop` and other branches are allowed.
+   `pnpm lint-staged` on all branches. GitHub rules require pull requests for changes targeting
+   `develop`.
 2. `commit-msg` runs `commitlint` against the pending commit message on all branches.
 3. `pre-push` blocks direct pushes to `main` (override: `ALLOW_MAIN_PUSH=true`) and validates the
    pushed commit range with `scripts/validate-commits.mjs` in audit-only mode.
 4. CI workflow `Repository CI` (`.github/workflows/commit-validation.yml`) runs on push to `develop`
-   and on pull requests targeting `main`. It reports two parallel jobs with non-overlapping
-   validation:
+   and on pull requests targeting `develop` or `main`. It reports two parallel jobs with
+   non-overlapping validation:
    - **Repository Policy** — commit-message range checks and `pnpm ops check-links`
    - **Application Suite** — canonical `pnpm run ci` (after Playwright Chromium install)
      Checkout/pnpm/Node/install setup is duplicated per job because GitHub Actions jobs do not share
@@ -351,9 +354,15 @@ judgment.
 - Commit hygiene warnings stay non-blocking so developers still get feedback without hidden
   automation side effects.
 - Direct commits and pushes to `main` are blocked by local hooks (`pre-commit` / `pre-push`).
-  `develop` is the active trunk — direct commits are allowed but commitlint and lint-staged still
-  apply. Do not assume GitHub classic branch protection or repository rulesets are configured;
-  verify live repository settings when required-check enforcement is needed.
+  `develop` is the active trunk and accepts changes through pull requests. Repository rulesets
+  protect both integration branches:
+  - `develop` requires a pull request, resolved review threads, `Repository Policy`, and
+    `Application Suite`.
+  - `main` blocks deletion and non-fast-forward updates and requires the same checks, but does not
+    require a pull request. This permits an already-validated `develop` commit to be promoted
+    without manufacturing a merge, squash, or rebase commit.
+- Verify the live rulesets before each production promotion; documentation is not proof that remote
+  enforcement is active.
 - Atomicity is expected by policy, but enforced through warnings and review rather than a rigid
   local gate.
 
@@ -376,20 +385,23 @@ Land the fix on `develop`, validate, then fast-forward `main`. That keeps the in
 When a release is ready:
 
 ```bash
-# 1. Ensure develop is up to date and validated
+# 1. Ensure the final develop SHA is up to date and validated
 git checkout develop
 git pull --ff-only
 pnpm run ci
 
-# 2. Fast-forward main to match develop
+# 2. Confirm origin/main is an ancestor, then fast-forward main to match develop
+git fetch origin
+git merge-base --is-ancestor origin/main origin/develop
 git checkout main
+git pull --ff-only origin main
 git merge --ff-only develop
 
-# 3. Tag the release
-git tag -a vX.Y.Z -m "Release vX.Y.Z — summary"
-
-# 4. Push main and the tag (local pre-push blocks main without the override)
+# 3. Push main after the exact develop SHA has both required checks
 ALLOW_MAIN_PUSH=true git push origin main
+
+# 4. Verify the deployment, then tag the exact promoted SHA
+git tag -a vX.Y.Z -m "Release vX.Y.Z — summary"
 git push origin vX.Y.Z
 ```
 
@@ -399,6 +411,8 @@ Rules:
 - `git merge --ff-only` fails if `main` has drifted; do not force-push to “fix” it.
 - Tags are annotated (`-a`) to carry release metadata.
 - Never rewrite or force-push `main` without explicit approval.
+- The `main` ruleset deliberately omits the pull-request rule. Required checks are reused from the
+  exact commit already validated on `develop`; no bypass actor is configured.
 - Rollback: `git revert` on `develop`, then fast-forward promote again.
 - Direct commits on `main` are blocked by `pre-commit`; promotion is FF-only from `develop`.
 
