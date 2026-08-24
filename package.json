@@ -117,7 +117,7 @@
         "db:prod:export-storage": "tsx scripts/db/db-guard.ts check --target production --operation export-storage --db-url \"${PROD_DB_URL}\" && tsx scripts/db/export-storage.ts"
     },
     "dependencies": {
-        "@astrojs/vercel": "11.0.3",
+        "@astrojs/vercel": "11.0.7",
         "@fontsource-variable/bodoni-moda": "^5.3.0",
         "@fontsource-variable/cinzel": "^5.3.0",
         "@fontsource-variable/cormorant-garamond": "^5.3.0",
