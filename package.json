@@ -129,7 +129,7 @@
         "@fontsource/pinyon-script": "^5.3.0",
         "@fontsource/special-elite": "^5.3.0",
         "@fontsource/the-nautigal": "^5.3.0",
-        "@supabase/supabase-js": "^2.110.8",
+        "@supabase/supabase-js": "^2.112.3",
         "@vercel/analytics": "^2.0.1",
         "@vercel/speed-insights": "^2.0.0",
         "cloudinary": "^2.10.1",
