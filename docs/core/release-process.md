@@ -33,6 +33,8 @@ Keep one history owner per change type. Do not dump every commit, migration, or 
 - Do **not** require a changelog entry for every commit.
 - Prefer updating `[Unreleased]` in the same milestone PR/work unit that ships the behavior, not
   only at tag time.
+- If continuous notes were missed and `[Unreleased]` is empty at release preparation, stop and
+  reconstruct it from the audited latest-tag-to-HEAD range before cutting the version section.
 - Per-client operational detail stays in `docs/invitations/<slug>.md`; link or summarize in
   `[Unreleased]` only for notable ships.
 
@@ -40,7 +42,8 @@ Keep one history owner per change type. Do not dump every commit, migration, or 
 
 Before creating a version tag, complete this **pre-tag checklist** (all must pass):
 
-- [ ] `[Unreleased]` contains at least one real bullet (not only HTML comments / empty headings).
+- [ ] The versioned section contains at least one real bullet sourced from accumulated
+      `[Unreleased]` notes or an explicitly audited latest-tag-to-HEAD reconstruction.
 - [ ] No wholesale paste of `docs/invitations/<slug>.md` ops notes into the changelog.
 - [ ] Schema impact is summarized only; full history remains in `supabase/migrations/`.
 - [ ] Promote `[Unreleased]` bullets into `## [X.Y.Z] - YYYY-MM-DD` (Keep a Changelog groups).
@@ -92,7 +95,9 @@ Set the `version` field to the chosen version **without** the leading `v`:
 ### 3. Update `CHANGELOG.md`
 
 Promote accumulated `[Unreleased]` items into a dated version section (Keep a Changelog groups such
-as Added / Changed / Fixed). Optionally append verification notes for the checkpoint:
+as Added / Changed / Fixed). When continuous notes are missing, first reconstruct and review those
+items from the latest valid tag through the candidate HEAD. Optionally append verification notes for
+the checkpoint:
 
 ```markdown
 ## [0.2.0-beta.1] - 2026-05-23
@@ -132,6 +137,8 @@ SHA after the merge.
 ### 5. Promote the validated commit to `main`
 
 ```bash
+git switch develop
+git pull --ff-only origin develop
 git switch main
 git pull --ff-only origin main
 git merge --ff-only develop
