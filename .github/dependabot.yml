@@ -8,14 +8,49 @@ updates:
       schedule:
           interval: 'weekly'
           day: 'monday'
-          time: '06:00'
+          time: '08:00'
+          timezone: 'America/Chihuahua'
       open-pull-requests-limit: 5
       versioning-strategy: increase
       cooldown:
-          default-days: 2
+          default-days: 3
           semver-major-days: 30
-          semver-minor-days: 2
-          semver-patch-days: 2
+          semver-minor-days: 7
+          semver-patch-days: 3
+      groups:
+          astro-platform:
+              patterns:
+                  - 'astro'
+                  - 'astro-*'
+                  - '@astrojs/*'
+              update-types:
+                  - 'minor'
+                  - 'patch'
+          testing:
+              patterns:
+                  - '@playwright/*'
+                  - '@testing-library/*'
+                  - 'jest'
+                  - 'jest-*'
+              update-types:
+                  - 'minor'
+                  - 'patch'
+          tooling:
+              patterns:
+                  - '@commitlint/*'
+                  - '@eslint/*'
+                  - 'eslint'
+                  - 'eslint-*'
+                  - 'lint-staged'
+                  - 'prettier'
+                  - 'prettier-*'
+                  - 'sass-embedded'
+                  - 'stylelint'
+                  - 'stylelint-*'
+                  - 'tsx'
+              update-types:
+                  - 'minor'
+                  - 'patch'
       ignore:
           - dependency-name: '*'
             update-types:
@@ -34,6 +69,9 @@ updates:
       target-branch: 'develop'
       schedule:
           interval: 'weekly'
+          day: 'monday'
+          time: '08:30'
+          timezone: 'America/Chihuahua'
       cooldown:
           default-days: 7
       ignore:

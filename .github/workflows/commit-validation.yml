@@ -10,6 +10,7 @@ on:
     pull_request:
         types: [opened, synchronize, reopened]
         branches:
+            - develop
             - main
 
 # Parallel jobs report separate GitHub status checks (policy vs application).
