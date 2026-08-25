@@ -9,84 +9,30 @@ const __dirname = path.dirname(__filename);
 const ERRORS = [];
 const WARNINGS = [];
 
-// Canonical structural contracts and their isolated SCSS ownership. Variants listed in
-// `baseOnly` intentionally use the shared renderer/base stylesheet and need no dedicated partial.
-const SECTION_CONTRACTS = {
-	hero: {
-		directory: 'hero',
-		source: 'src/lib/invitation/section-variants.ts',
-		constName: 'HERO_VARIANTS',
-		baseOnly: ['standard'],
-	},
-	family: {
-		directory: 'family',
-		source: 'src/lib/invitation/section-variants.ts',
-		constName: 'FAMILY_VARIANTS',
-		baseOnly: ['standard'],
-	},
-	location: {
-		directory: 'location',
-		source: 'src/lib/invitation/section-variants.ts',
-		constName: 'LOCATION_VARIANTS',
-		baseOnly: ['standard'],
-	},
-	gallery: {
-		directory: 'gallery',
-		source: 'src/lib/invitation/section-variants.ts',
-		constName: 'GALLERY_VARIANTS',
-		baseOnly: ['uniform-grid', 'single-keepsake'],
-	},
-	itinerary: {
-		directory: 'itinerary',
-		source: 'src/lib/invitation/section-variants.ts',
-		constName: 'ITINERARY_VARIANTS',
-		baseOnly: ['standard'],
-	},
-	gifts: {
-		directory: 'gifts',
-		source: 'src/lib/invitation/section-variants.ts',
-		constName: 'GIFTS_VARIANTS',
-		baseOnly: ['standard'],
-	},
-	rsvp: {
-		directory: 'rsvp',
-		source: 'src/lib/invitation/section-variants.ts',
-		constName: 'RSVP_VARIANTS',
-		baseOnly: ['standard'],
-	},
-	personalizedAccess: {
-		directory: 'personalized-access',
-		source: 'src/lib/invitation/section-variants.ts',
-		constName: 'PERSONALIZED_ACCESS_VARIANTS',
-		baseOnly: ['standard', 'ornamented'],
-	},
-	thankYou: {
-		directory: 'thank-you',
-		source: 'src/lib/invitation/section-variants.ts',
-		constName: 'THANK_YOU_VARIANTS',
-		baseOnly: ['standard'],
-	},
-	countdown: {
-		directory: 'countdown',
-		source: 'src/lib/invitation/section-variants.ts',
-		constName: 'COUNTDOWN_VARIANTS',
-		baseOnly: ['standard'],
-	},
-};
-
-function extractContractVariants() {
-	const variants = {};
+function extractCanonicalContracts() {
+	const contracts = {};
 	const registrySource = fs.readFileSync(
 		path.join(__dirname, '..', 'src/lib/invitation/section-variants.ts'),
 		'utf8',
 	);
-	for (const key of Object.keys(SECTION_CONTRACTS)) variants[key] = new Set();
-	const entryPattern = /section:\s*'([^']+)'\s*,\s*variant:\s*'([^']+)'/g;
+	const entryPattern =
+		/section:\s*'([^']+)'\s*,\s*variant:\s*'([^']+)'[\s\S]*?cssOwner:\s*'([^']+)'/g;
 	for (const match of registrySource.matchAll(entryPattern)) {
-		const [, section, variant] = match;
-		if (variants[section]) variants[section].add(variant);
+		const [, section, variant, cssOwner] = match;
+		contracts[section] ??= {
+			directory:
+				section === 'personalizedAccess'
+					? 'personalized-access'
+					: section === 'thankYou'
+						? 'thank-you'
+						: section,
+			variants: new Set(),
+			cssOwners: new Map(),
+		};
+		contracts[section].variants.add(variant);
+		contracts[section].cssOwners.set(variant, cssOwner);
 	}
-	return variants;
+	return contracts;
 }
 
 function collectScssFiles(dir) {
@@ -113,14 +59,14 @@ const THEME_PRESET_SKINS = new Set([
 	'single',
 ]);
 
-/** In-scope dirs scanned for forbidden theme-as-data-variant (beyond SECTION_CONTRACTS). */
+/** In-scope dirs scanned for forbidden theme-as-data-variant beyond the canonical registry. */
 const EXTRA_IN_SCOPE_VARIANT_DIRS = ['header', 'quote', 'music-player', 'footer'];
 
-function extractCSSVariants() {
+function extractCSSVariants(contracts) {
 	const themesDir = path.join(__dirname, '..', 'src', 'styles', 'themes', 'sections');
 	const variants = {};
 
-	for (const [section, contract] of Object.entries(SECTION_CONTRACTS)) {
+	for (const [section, contract] of Object.entries(contracts)) {
 		variants[section] = new Set();
 		const files = collectScssFiles(path.join(themesDir, contract.directory));
 
@@ -199,13 +145,13 @@ function main() {
 	console.log('🔍 Starting schema validation...');
 	console.log('================================');
 
-	const contractVariants = extractContractVariants();
-	const cssVariants = extractCSSVariants();
+	const contracts = extractCanonicalContracts();
+	const cssVariants = extractCSSVariants(contracts);
 	checkExtraInScopeThemeAsVariant();
 	const EXPECTED_FALLBACKS = [];
 
-	for (const [section, contract] of Object.entries(SECTION_CONTRACTS)) {
-		const contractSet = contractVariants[section];
+	for (const [section, contract] of Object.entries(contracts)) {
+		const contractSet = contract.variants;
 		const cssSet = cssVariants[section];
 
 		console.log(`\n${section.toUpperCase()}:`);
@@ -216,7 +162,12 @@ function main() {
 
 		for (const variant of contractSet) {
 			if (!cssSet.has(variant)) {
-				if (contract.baseOnly.includes(variant)) {
+				const cssOwner = contract.cssOwners.get(variant);
+				if (cssOwner === 'no-additional-css') {
+					EXPECTED_FALLBACKS.push(
+						`${section}: Contract variant '${variant}' explicitly declares no additional CSS`,
+					);
+				} else if (cssOwner?.startsWith('theme-bundle:')) {
 					EXPECTED_FALLBACKS.push(
 						`${section}: Contract variant '${variant}' intentionally uses base section styles`,
 					);
