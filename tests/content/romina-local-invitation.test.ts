@@ -120,7 +120,7 @@ describe('Romina local invitation content', () => {
 		expect(page.wrapper.className).toContain('event--romina-rios-chaparro');
 		expect(page.layout.image).toContain('/invitation-assets/');
 		expect(page.viewModel.hero).toMatchObject({
-			structuralVariant: 'split-cover',
+			variant: 'split-cover',
 		});
 		expect(page.viewModel.sections.itinerary?.variant).toBe('standard');
 		expect(content.itinerary).toMatchObject({ variant: 'standard' });

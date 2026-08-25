@@ -21,10 +21,10 @@ import {
 } from '../../scripts/provision/invitations/romina-rios-chaparro.ts';
 
 /**
- * P0 lock: persisted celestial consumers must carry explicit structural
+ * P0 lock: persisted celestial consumers must carry explicit canonical
  * contracts through schema → adapter → renderer branch → CSS entrypoints.
- * Omitted fields still resolve to standard / uniform-grid; that default is
- * not an acceptable stand-in for these invitations.
+ * Omitted fields fail closed; a default is not an acceptable stand-in for
+ * these invitations.
  */
 
 function loadJson(relativePath: string): Record<string, unknown> {
@@ -70,10 +70,13 @@ function celestialEnvelope(published: Record<string, unknown>, slug: string) {
 		isDemo: false,
 		title: slug,
 		theme: { preset: 'celestial-blue' },
+		sectionOrder: ['itinerary', 'gallery', 'thankYou'],
+		composition: { intersections: {} },
 		hero: {
 			name: 'Celebrante',
 			date: '2026-09-12T00:00:00.000Z',
 			backgroundImage: { type: 'external', src: '/images/test-bg.jpg' },
+			variant: 'standard',
 		},
 		...published,
 	};
@@ -103,16 +106,14 @@ function resolveStructuralCss(input: {
 	return resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
 		themePreset: input.themePreset,
 		galleryVariant: input.galleryVariant,
-		structuralVariants: { itinerary: input.itineraryVariant },
+		sectionVariants: { itinerary: input.itineraryVariant },
 	});
 }
 
 function assertCelestialProgramPath(source: Record<string, unknown>, slug: string) {
 	const itinerary = asRecord(source.itinerary);
-	const presentation = asRecord(itinerary?.presentation);
 	const hasCanonicalVariant = itinerary?.variant === 'timeline-paper';
-	const hasBehavior = presentation?.behavior === 'timeline-paper';
-	expect(hasCanonicalVariant || hasBehavior).toBe(true);
+	expect(hasCanonicalVariant).toBe(true);
 	expect(asRecord(source.gallery)?.variant).toBe('index-choreography');
 
 	const parsed = eventContentSchema.safeParse(celestialEnvelope(source, slug));
@@ -145,7 +146,7 @@ function assertCelestialProgramPath(source: Record<string, unknown>, slug: strin
 }
 
 describe('P0 persisted structural contracts', () => {
-	it('requires the Xareni DB payload to carry explicit itinerary behavior and gallery layout', () => {
+	it('requires the Xareni DB payload to carry explicit itinerary and gallery variants', () => {
 		const payload = loadJson('tests/fixtures/invitations/xv-xareni-iyarit-db-payload.json');
 		assertCelestialProgramPath(payload, 'xareni-iyarit');
 	});
@@ -198,7 +199,7 @@ describe('P0 persisted structural contracts', () => {
 		expect(cssUrls).not.toContain('/_astro/gallery-index-choreography.css');
 	});
 
-	it('still defaults omitted itinerary behavior to standard / TimelineList', () => {
+	it('rejects a payload when its itinerary variant is omitted', () => {
 		const payload = structuredClone(
 			loadJson('tests/fixtures/invitations/xv-xareni-iyarit-db-payload.json'),
 		);
@@ -209,16 +210,7 @@ describe('P0 persisted structural contracts', () => {
 		}
 
 		const parsed = eventContentSchema.safeParse(payload);
-		expect(parsed.success).toBe(true);
-		expect(parsed.data?.itinerary?.variant).toBe('standard');
-
-		const viewModel = adaptDbEvent({
-			slug: 'xareni-iyarit',
-			eventType: 'xv',
-			isDemo: false,
-			content: payload,
-		});
-		expect(viewModel.sections.itinerary?.variant).toBe('standard');
+		expect(parsed.success).toBe(false);
 	});
 
 	it('requires Xareni Thank You to take the editorial-back-cover path', () => {
@@ -248,11 +240,7 @@ describe('P0 persisted structural contracts', () => {
 		] as const) {
 			const published = loadCorpusPublished(slug);
 			const thankYou = asRecord(published.thankYou);
-			const styles = asRecord(asRecord(published.sectionStyles)?.thankYou);
-			expect(
-				thankYou?.variant === 'editorial-back-cover' ||
-					styles?.structuralVariant === 'editorial-back-cover',
-			).toBe(true);
+			expect(thankYou?.variant).toBe('editorial-back-cover');
 
 			const parsed = eventContentSchema.safeParse(celestialEnvelope(published, slug));
 			expect(parsed.success).toBe(true);
@@ -273,26 +261,13 @@ describe('P0 persisted structural contracts', () => {
 		expect(viewModel.sections.thankYou?.variant).toBe('standard');
 	});
 
-	it('still defaults omitted celestial Thank You structure to standard', () => {
+	it('rejects a payload when its Thank You variant is omitted', () => {
 		const payload = structuredClone(
 			loadJson('tests/fixtures/invitations/xv-xareni-iyarit-db-payload.json'),
 		);
 		const thankYou = asRecord(payload.thankYou);
 		if (thankYou) delete thankYou.variant;
-		const styles = asRecord(payload.sectionStyles);
-		const thankYouStyles = asRecord(styles?.thankYou);
-		if (thankYouStyles) delete thankYouStyles.structuralVariant;
-
 		const parsed = eventContentSchema.safeParse(payload);
-		expect(parsed.success).toBe(true);
-		expect(parsed.data?.thankYou?.variant).toBe('standard');
-
-		const viewModel = adaptDbEvent({
-			slug: 'xareni-iyarit',
-			eventType: 'xv',
-			isDemo: false,
-			content: payload,
-		});
-		expect(viewModel.sections.thankYou?.variant).toBe('standard');
+		expect(parsed.success).toBe(false);
 	});
 });

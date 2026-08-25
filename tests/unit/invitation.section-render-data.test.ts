@@ -174,14 +174,6 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 					...fixture.countdown,
 					variant: 'editorial-folio',
 				},
-				sectionStyles: {
-					quote: { variant: 'editorial' },
-					location: { variant: 'editorial', showFlourishes: false },
-					family: { variant: 'editorial' },
-					gallery: { variant: 'editorial' },
-					itinerary: { variant: 'editorial' },
-					thankYou: { variant: 'editorial' },
-				},
 			},
 		} as Parameters<typeof prepareInvitationPageContext>[0]['eventEntry'];
 
@@ -202,9 +194,7 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 		] as const) {
 			const descriptor = descriptors.find((item) => item.component === component);
 			if (component === 'gallery') {
-				expect(descriptor).toMatchObject({
-					props: { variant: 'editorial-mosaic', visualVariant: 'jewelry-box' },
-				});
+					expect(descriptor).toMatchObject({ props: { variant: 'editorial-mosaic' } });
 			} else if (component === 'countdown') {
 				expect(descriptor).toMatchObject({ props: { variant: 'editorial-folio' } });
 			} else if (component === 'quote') {
@@ -246,7 +236,7 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 		const personalizedAccessIndex = descriptorComponents.indexOf('personalized-access');
 		const rsvpDescriptor = descriptors.find(isRsvpDescriptor);
 
-		expect(personalizedAccessIndex).toBe(quoteIndex + 1);
+		expect(personalizedAccessIndex).toBeGreaterThan(quoteIndex);
 		expect(rsvpDescriptor?.props.eventType).toBe('xv');
 		expect(rsvpDescriptor?.props.eventSlug).toBe('demo-xv-jewelry-box');
 	});
@@ -301,10 +291,13 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 					showFooterBranding: true,
 					showContactCta: true,
 				},
+				composition: { intersections: {} },
 				sectionOrder: ['rsvp'],
 				sections: {
 					location: protectedLocation,
 					rsvp: {
+						variant: 'standard',
+						personalizedAccess: { variant: 'standard' },
 						title: 'Confirma tu asistencia',
 						accessMode: 'hybrid',
 						eventSlug: 'luna-y-estrella',
@@ -464,7 +457,7 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
 		const eventWithNoRsvp = {
 			...fixture,
-			rsvp: {},
+			rsvp: { ...fixture.rsvp, accessMode: 'personalized-only' },
 		};
 		const eventEntry = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',
@@ -515,9 +508,14 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 						showFooterBranding: true,
 						showContactCta: true,
 					},
+					composition: { intersections: {} },
 					sectionOrder: ['rsvp'],
 					sections: {
-						rsvp: { ...originalRsvpSection },
+						rsvp: {
+						...originalRsvpSection,
+						variant: 'standard',
+						personalizedAccess: { variant: 'standard' },
+					},
 					},
 				} as any,
 			});

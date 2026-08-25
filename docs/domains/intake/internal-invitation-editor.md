@@ -17,8 +17,8 @@ current boundary.
   - Location venue `date`/`time` and itinerary times use the machine contract (`YYYY-MM-DD` /
     `HH:mm`) in Draft and in new Published writes. Legacy Spanish prose is normalized at the
     mapping/display boundary only. `showFlourishes` is owned by
-    `location.presentationOptions.showFlourishes` (legacy `sectionStyles.location.showFlourishes` is
-    folded on read and stripped on publish).
+    `location.presentationOptions.showFlourishes`. Legacy `sectionStyles` values are migration/audit
+    input only and are rejected by the canonical publication path.
 - Draft content is sparse. A draft seeded from a published revision is converted with
   `mapNestedToDraftContent` first; see the contract table in
   [`.agent/rules/intake-publishing.md`](../../../.agent/rules/intake-publishing.md). Legacy/hybrid
@@ -29,14 +29,15 @@ current boundary.
   / `restoreEntireDraft`. CLI: `pnpm invitation:draft-restore`. Inventory non-canonical drafts
   (read-only): `pnpm invitation:draft-audit --all --target <env>`.
 - Preview and publication compute effective content by merging draft data with the prior published
-  snapshot; approved demo fallback is limited to demo invitations.
+  snapshot; an explicit canonical demo contract supplies structural prerequisites only when no
+  prior snapshot exists.
 - Both preview and publication remap effective draft content through `mapDraftToPublished` with
-  `priorPublishedContent` so non-editable published fields (for example interludes, `sectionStyles`,
+  `priorPublishedContent` so non-editable published fields (for example interludes,
   `visualProfileId`, `thankYou.date`, and `thankYou.closingPhrase`) survive the rematerialization
   the same way on each path.
 - Saving a section replaces that section object. Every editable field therefore must exist in the
   editor schema, draft schema, both mapping directions, preview, publication, adapter, and renderer.
-- Interludes, section styles, visual profile identity, and thank-you closing date/phrase are
+- Interludes, visual profile identity, and thank-you closing date/phrase are
   published content that are not dashboard-editable section values. Republishing and internal
   preview must preserve them from the prior published snapshot.
 

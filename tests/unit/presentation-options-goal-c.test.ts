@@ -50,15 +50,17 @@ describe('Goal C — presentation options', () => {
 
 		it('accepts a non-empty subset and rejects empty arrays at schema boundary', () => {
 			expect(resolveCountdownVisibleUnits({ visibleUnits: ['days'] })).toEqual(['days']);
-			expect(
-				countdownSchema.safeParse({
-					title: 'FALTAN',
+				expect(
+					countdownSchema.safeParse({
+						variant: 'standard',
+						title: 'FALTAN',
 					presentationOptions: { visibleUnits: ['days'] },
 				}).success,
 			).toBe(true);
-			expect(
-				countdownSchema.safeParse({
-					title: 'FALTAN',
+				expect(
+					countdownSchema.safeParse({
+						variant: 'standard',
+						title: 'FALTAN',
 					presentationOptions: { visibleUnits: [] },
 				}).success,
 			).toBe(false);
@@ -75,6 +77,7 @@ describe('Goal C — presentation options', () => {
 					backgroundImage: { type: 'external', src: '/images/test-bg.jpg' },
 				},
 				countdown: {
+					variant: 'standard',
 					title: 'FALTAN',
 					presentationOptions: { visibleUnits: ['days'] },
 				},
@@ -237,7 +240,7 @@ describe('Goal C — presentation options', () => {
 
 			expect(gallery?.variant).toBe('magazine-spread');
 			expect(gallery?.mobileBrowse).toBe('rail');
-			expect(gallery?.visualVariant).not.toBe('valentina-hernandez');
+			expect(gallery?.variant).not.toBe('valentina-hernandez');
 
 			const canonical = readSource(
 				'src/styles/themes/sections/gallery/_magazine-spread.scss',

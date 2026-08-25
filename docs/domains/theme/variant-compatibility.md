@@ -1,64 +1,42 @@
-# Variant Compatibility Inventory
+# Canonical Variant Cutover
 
-**Status:** Documentation-only register of remaining input-normalization behaviors
+**Status:** Code-complete; deployment blocked
 
-**Runtime owner:** `src/lib/invitation/variant-normalization.ts`
+**Runtime owner:** `src/lib/invitation/section-variants.ts`
 
-This inventory documents what the single input normalizer still accepts or strips. It is not a
-second variant system and is not mirrored by a TypeScript alias array. Canonical schemas, adapters,
-descriptors, renderers, CSS, and shared primitives consume only the normalized section contracts in
-[`variant-system.md`](variant-system.md).
+The repository now accepts one canonical section contract. The schema, adapter, render plan,
+section descriptors, DOM renderers, and CSS resolver do not normalize legacy inputs or infer a
+variant from a theme, profile, slug, or invitation identity.
 
-## Still accepted (input → canonical)
+## Removed compatibility inputs
 
-- **`*.structuralVariant` / `sectionStyles.*.structuralVariant`**
-  - **Canonical target:** owning section `variant`
-  - **Behavior:** merged via dual-path resolve; then deleted from normalized output
-  - **Retire when:** repository and persisted corpus write only `variant`
-- **`gallery.variant=single`**
-  - **Canonical target:** `gallery.variant=single-keepsake`
-  - **Retire when:** zero `single` aliases remain in corpus and persisted content
-- **`itinerary.presentation.behavior`**
-  - **Canonical target:** `itinerary.variant`
-  - **Retire when:** all payloads carry `itinerary.variant`
-- **`visualProfileId` intersection profile table**
-  - **Canonical target:** `composition.intersections`
-  - **Behavior:** only when `composition` is omitted; managed definitions must author intersections
-    explicitly
-  - **Retire when:** all persisted managed rows carry `composition.intersections`
-- **`sectionStyles.{quote,footer,…}.variant=<theme preset>`**
-  - **Canonical target:** strip; section `data-variant=standard`; atmosphere via `.theme-preset--*`
-  - **Retire when:** writers stop emitting theme-named style variants
+The following are rejected rather than converted:
 
-## Removed (no theme→variant remapping)
+- `*.structuralVariant` and `sectionStyles.*.structuralVariant`.
+- Theme-named section variants such as `celestial-blue` or `editorial-magazine`.
+- `gallery.variant=single`.
+- `itinerary.presentation.behavior` as a structural selector.
+- Omitted `sectionOrder` or `composition` in canonical repository-managed content.
 
-Theme preset names are **never** used to invent section variants. Omitted or theme-named inputs
-default as follows; non-default looks require an explicit canonical `variant`:
+Unknown canonical values and missing prerequisites fail validation with their field paths. The
+`full-bleed-photo` Thank You variant requires `thankYou.image`; split and asymmetric family groups
+require at least two explicit groups.
 
-| Section | Default when omitted / theme-named | Author explicitly when needed |
-| --- | --- | --- |
-| Gallery | `uniform-grid` | layout ids (`editorial-mosaic`, `magazine-spread`, …) |
-| Countdown | `standard` | `editorial-folio`, `magazine-folio`, `jeweled-panel`, … |
-| Hero | `standard` | `editorial-cover`, `split-cover` |
-| Gifts | `standard` | `editorial-catalog` |
-| RSVP | `standard` | `editorial-press-pass`, `formal-register` |
-| Personalized Access | `standard` | `editorial-pass`, `formal-pass`, `ornamented` |
-| Thank You | `standard` | `editorial-back-cover`, `full-bleed-photo` |
-| Itinerary | `standard` | `editorial-program`, `editorial-ledger`, `timeline-paper` |
+## Cutover scope
 
-Formerly removed alias registers (no longer in code):
+The 29 non-default registry entries, their prerequisites, CSS owners, unresolved Goal 2 visual
+verification, and required persisted-content transformations are listed in the
+[single cutover manifest](variant-cutover-manifest.md). The manifest is generated from
+`CANONICAL_VARIANT_CUTOVER_MANIFEST`; it is not a second runtime registry.
 
-- `gallery.variant=<theme preset>`
-- `sectionStyles.countdown.variant=<theme preset>`
-- `theme.preset=editorial-magazine` implied structural variants (hero/gallery/itinerary/gifts/rsvp/thankYou), `mobileBrowse=rail`, or indication titles
-- TypeScript alias inventory array (documentation is the SSOT for remaining input behaviors)
+Repository-owned definitions, demos, templates, local render fixtures, and writer tests now author
+the canonical fields directly. The local non-origin corpus includes compatible fixtures for the
+previously uncovered `gallery.editorial-mosaic`, `thankYou.editorial-back-cover`,
+`thankYou.full-bleed-photo`, and five countdown skins.
 
-Unknown non-theme canonical values are deliberately preserved so the schema rejects them instead of
-silently converting them.
+## Deployment boundary
 
-## Removal evidence
-
-Before retiring a remaining dual-path or the intersection profile table, search managed definitions,
-local render corpus, demos, templates, intake/editor schemas, draft/publication mappers, adapters,
-renderers, styles, fixtures, tests, and active documentation. A repository-only zero count is
-insufficient when persisted content is a known consumer.
+**Deployment blocked.** This goal changes code, schemas, fixtures, tests, and documentation only.
+No Preview or Production content is modified or exposed. A separately authorized environment
+migration must apply each persisted-content transformation from the manifest, verify the resulting
+content against the canonical schema, and complete the Goal 2 visual verification before deployment.

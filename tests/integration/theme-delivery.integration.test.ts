@@ -111,23 +111,18 @@ describe('Theme Delivery Integration', () => {
 				name: 'Ximena',
 				date: '2026-04-11T20:00:00.000Z',
 				backgroundImage: '/assets/hero.jpg',
-				variant: 'premiere-floral',
+				variant: 'standard',
 			},
 			location: {
+				presentationOptions: {
+					showFlourishes: false,
+				},
 				reception: {
 					venueName: 'Venue',
 					address: 'Centro',
 					city: 'Los Mochis',
 					date: '11 abr 2026',
 					time: '20:00',
-				},
-			},
-			sectionStyles: {
-				location: {
-					variant: 'premiere-floral',
-				},
-				footer: {
-					variant: 'premiere-floral',
 				},
 			},
 			envelope: {

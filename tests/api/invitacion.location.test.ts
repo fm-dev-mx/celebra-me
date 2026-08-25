@@ -15,7 +15,6 @@ describe('GET /api/invitacion/[inviteId]/location', () => {
 		resolveGatedLocationPayloadMock.mockResolvedValue({
 			location: {
 				variant: 'standard',
-				structuralVariant: 'standard',
 				visibility: 'after-rsvp',
 				introHeading: 'Ubicación',
 				ceremony: {

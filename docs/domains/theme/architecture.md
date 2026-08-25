@@ -270,10 +270,11 @@ behavior through a public component token and let the preset provide the value.
 
 Canonical TypeScript and section renderers must remain invitation-agnostic: they consume canonical
 section contracts and semantic roles, not invitation slugs, event types, profile identities, or
-invitation-specific CSS custom-property names. A legacy identity branch is permitted only at a named
-adapter, schema, navigation, policy, or profile compatibility boundary with a documented consumer
-and removal condition. Do not treat high fan-in alone as a leak when the module is an explicit
-composition root (for example, intersection profiles).
+invitation-specific CSS custom-property names. No identity-specific compatibility branch may execute
+in the canonical schema, adapter, render-plan, or section-rendering path. Historical inputs may be
+handled only at a named migration or audit boundary with a documented consumer and removal condition.
+Do not treat high fan-in alone as a leak when the module is an explicit composition root (for example,
+intersection profiles).
 
 ## Behavior-Named Section Variants
 
@@ -282,9 +283,9 @@ paper itinerary behavior is `timeline-paper`, the flat ledger is `editorial-ledg
 magazine program is `editorial-program`, the credential pass is `formal-pass`, and the underline
 confirmation register is `formal-register`. Itinerary variants are selected only via
 `itinerary.variant`; Personalized Access and RSVP variants are selected only via
-`rsvp.personalizedAccess.variant` and `rsvp.variant`. Legacy `itinerary.presentation.behavior`
-remains a compatibility input. Omitted behavior resolves to `standard`. Theme presets remain visual
-skins.
+`rsvp.personalizedAccess.variant` and `rsvp.variant`. The historical
+`itinerary.presentation.behavior` input is rejected by the canonical schema and may appear only in
+explicit migration/audit code. Theme presets remain visual skins.
 
 ## Runtime CSS Delivery
 

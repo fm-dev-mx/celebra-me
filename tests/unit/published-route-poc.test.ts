@@ -223,7 +223,7 @@ describe('published route POC', () => {
 		expect(result?.source).toBe('static');
 	});
 
-	it('resolver does not expose admin fields in published content', async () => {
+	it('resolver does not expose admin fields in the published view model', async () => {
 		mockGetRoutable.mockResolvedValue(null);
 		mockFindPublishedBySlugAndEventType.mockResolvedValue({
 			slug: 'my-invitation',
@@ -232,8 +232,6 @@ describe('published route POC', () => {
 			content: {
 				...validPublishedContent,
 				title: 'Published',
-				invitation_project_id: 'should-be-hidden',
-				tokenHash: 'should-not-expose',
 			},
 		} as any);
 

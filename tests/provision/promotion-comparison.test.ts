@@ -150,7 +150,7 @@ describe('checkTargetDivergenceConflict', () => {
 });
 
 describe('canonicalizeManagedInvitationContent', () => {
-	it('treats equivalent itinerary presentation spellings as equal', () => {
+	it('does not treat the rejected itinerary presentation alias as canonical', () => {
 		expect(
 			semanticInvitationContentEqual(
 				{ itinerary: { variant: 'timeline-paper', items: [{ label: 'Cena' }] } },
@@ -161,7 +161,7 @@ describe('canonicalizeManagedInvitationContent', () => {
 					},
 				},
 			),
-		).toBe(true);
+		).toBe(false);
 	});
 
 	it('still distinguishes a materially different itinerary variant', () => {

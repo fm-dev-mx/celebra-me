@@ -189,9 +189,7 @@ describe('canonical corpus structural/behavior contracts', () => {
 	it('locks Ana Sofía itinerary timeline-paper from the local-render corpus fixture', () => {
 		const fixture = loadCorpusFixture('ana-sofia-cota-guillen');
 		const published = fixture.publishedContent ?? {};
-		expect(published.itinerary).toMatchObject({
-			presentation: { behavior: 'timeline-paper' },
-		});
+		expect(published.itinerary).toMatchObject({ variant: 'timeline-paper' });
 
 		const viewModel = adaptEvent({
 			id: 'events/ana-sofia-cota-guillen',

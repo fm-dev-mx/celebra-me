@@ -55,9 +55,11 @@ function forEachContentFile(fn: (file: string) => void): void {
 }
 
 function createMinimalEvent(overrides = {}) {
-	return {
+	const base = {
 		eventType: 'xv',
 		title: 'Test Event',
+		sectionOrder: ['quote', 'location'],
+		composition: { intersections: {} },
 		theme: {
 			fontFamily: 'serif',
 			preset: 'jewelry-box',
@@ -66,17 +68,51 @@ function createMinimalEvent(overrides = {}) {
 			name: 'Test Name',
 			date: '2026-01-01T00:00:00.000Z',
 			backgroundImage: 'https://example.com/hero.jpg',
+			variant: 'standard',
 		},
 		quote: {
 			text: 'Test quote text',
 			author: 'Test Author',
 		},
 		location: {
-			venueName: 'Test Venue',
-			address: 'Test Address',
-			city: 'Test City',
+			variant: 'standard',
+			ceremony: {
+				venueName: 'Test Venue',
+				address: 'Test Address',
+				city: 'Test City',
+				date: '2026-01-01',
+				time: '18:00',
+			},
 		},
-		...overrides,
+		rsvp: {
+			variant: 'standard',
+			personalizedAccess: { variant: 'standard' },
+		},
+	};
+	const input = overrides as Record<string, unknown>;
+	return {
+		...base,
+		...input,
+		theme: { ...base.theme, ...(input.theme as Record<string, unknown> | undefined) },
+		hero: { ...base.hero, ...(input.hero as Record<string, unknown> | undefined) },
+		location: {
+			...base.location,
+			...(input.location as Record<string, unknown> | undefined),
+			ceremony: {
+				...base.location.ceremony,
+				...((input.location as Record<string, unknown> | undefined)?.ceremony as
+					Record<string, unknown> | undefined),
+			},
+		},
+		rsvp: {
+			...base.rsvp,
+			...(input.rsvp as Record<string, unknown> | undefined),
+			personalizedAccess: {
+				...base.rsvp.personalizedAccess,
+				...((input.rsvp as Record<string, unknown> | undefined)?.personalizedAccess as
+					Record<string, unknown> | undefined),
+			},
+		},
 	};
 }
 
@@ -426,7 +462,7 @@ describe('Event content schema (real contract)', () => {
 		expect(result.success).toBe(false);
 	});
 
-	it('normalizes a legacy Hero visual variant into separate structural and visual fields', () => {
+	it('accepts a canonical Hero structural variant with typed portrait media', () => {
 		const result = eventSchema.safeParse(
 			createMinimalEvent({
 				hero: {
@@ -515,7 +551,7 @@ describe('Event content schema (real contract)', () => {
 		expect(result.data.interludes?.[0]?.height).toBe('medium');
 	});
 
-	it('normalizes the legacy single Gallery alias for one-image editorial galleries', () => {
+	it('rejects the removed single Gallery alias', () => {
 		const result = eventSchema.safeParse(
 			createMinimalEvent({
 				gallery: {
@@ -527,9 +563,7 @@ describe('Event content schema (real contract)', () => {
 			}),
 		);
 
-		expect(result.success).toBe(true);
-		if (!result.success) throw new Error('expected parse to succeed');
-		expect(result.data.gallery?.variant).toBe('single-keepsake');
+		expect(result.success).toBe(false);
 	});
 
 	it('rejects unsupported RSVP content fields instead of silently stripping them', () => {
@@ -661,15 +695,13 @@ describe('Event content schema (real contract)', () => {
 	it('supports typed location indications with explicit iconName and styleVariant', () => {
 		const result = eventSchema.safeParse(
 			createMinimalEvent({
-				sectionStyles: {
-					quote: { variant: THEME_PRESETS[0] },
-					location: { variant: THEME_PRESETS[0] },
-					rsvp: { variant: THEME_PRESETS[0] },
-				},
 				location: {
-					venueName: 'Test Venue',
-					address: 'Test Address',
-					city: 'Test City',
+					variant: 'standard',
+					ceremony: {
+						venueName: 'Test Venue',
+						address: 'Test Address',
+						city: 'Test City',
+					},
 					indications: [
 						{
 							iconName: 'Crown',
@@ -700,7 +732,7 @@ describe('Event content schema (real contract)', () => {
 		expect(result.success).toBe(true);
 	});
 
-	it('strips event-level branding key since branding is now per-guest only', () => {
+	it('rejects event-level branding key since branding is now per-guest only', () => {
 		const result = eventSchema.safeParse(
 			createMinimalEvent({
 				branding: {
@@ -709,19 +741,19 @@ describe('Event content schema (real contract)', () => {
 			}),
 		);
 
-		expect(result.success).toBe(true);
-		if (result.success) {
-			expect((result.data as Record<string, unknown>).branding).toBeUndefined();
-		}
+		expect(result.success).toBe(false);
 	});
 
 	it('accepts rich text in location indications text', () => {
 		const result = eventSchema.safeParse(
 			createMinimalEvent({
 				location: {
-					venueName: 'Test Venue',
-					address: 'Test Address',
-					city: 'Test City',
+					variant: 'standard',
+					ceremony: {
+						venueName: 'Test Venue',
+						address: 'Test Address',
+						city: 'Test City',
+					},
 					indications: [
 						{
 							iconName: 'Crown',
@@ -739,6 +771,7 @@ describe('Event content schema (real contract)', () => {
 		const result = eventSchema.safeParse(
 			createMinimalEvent({
 				itinerary: {
+					variant: 'standard',
 					title: 'Programa',
 					subtitle: 'Bautizo y 1er Año de César Ramses',
 					items: [
@@ -771,6 +804,7 @@ describe('Event content schema (real contract)', () => {
 		const result = eventSchema.safeParse(
 			createMinimalEvent({
 				thankYou: {
+					variant: 'standard',
 					message: 'Gracias por acompañarnos.',
 					closingName: 'Test Name',
 					image: 'https://example.com/thank-you.jpg',
@@ -801,6 +835,7 @@ describe('Event content schema (real contract)', () => {
 		const result = eventSchema.safeParse(
 			createMinimalEvent({
 				thankYou: {
+					variant: 'standard',
 					message: 'Gracias por acompañarnos.',
 					closingName: 'Test Name',
 					overlayAnchor: 'center',

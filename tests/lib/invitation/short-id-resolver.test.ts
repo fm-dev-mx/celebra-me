@@ -66,7 +66,6 @@ const baseViewModel: InvitationViewModel = {
 		label: 'Mis XV años',
 		date: '2026-08-01T18:00:00Z',
 		variant: 'standard',
-		structuralVariant: 'standard',
 		backgroundImage: { src: '/test.webp', alt: 'test' },
 	},
 	envelope: { enabled: false },
@@ -75,6 +74,7 @@ const baseViewModel: InvitationViewModel = {
 		showContactCta: false,
 	},
 	sectionOrder: [],
+	composition: { intersections: {} },
 	sections: {},
 };
 

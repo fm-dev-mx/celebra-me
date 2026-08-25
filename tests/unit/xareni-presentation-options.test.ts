@@ -77,16 +77,19 @@ describe('Xareni presentation options', () => {
 				eventType: 'xv',
 				isDemo: false,
 				assetSlug: 'xv-xareni-iyarit',
-				content: {
-					eventType: 'xv',
-					title: 'XV años de Xareni Iyarit',
-					theme: { preset: 'celestial-blue' },
+					content: {
+						eventType: 'xv',
+						title: 'XV años de Xareni Iyarit',
+						theme: { preset: 'celestial-blue' },
+						sectionOrder: ['quote'],
+						composition: { intersections: {} },
 					_assetSlug: 'xv-xareni-iyarit',
 					hero: {
 						name: 'Xareni Iyarit',
 						label: 'Mis XV años',
-						date: '2026-09-13T01:00:00.000Z',
-						backgroundImage: 'hero',
+							date: '2026-09-13T01:00:00.000Z',
+							backgroundImage: 'hero',
+							variant: 'standard',
 					},
 					envelope: {
 						disabled: false,

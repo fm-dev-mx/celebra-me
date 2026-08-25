@@ -28,10 +28,9 @@ architecture, section-based abstraction, and invitation isolation rules.
    contract or isolation rule changes.
 7. **Data-Driven Text Isolation**: Theme-specific labels (RSVP inputs, Hero descriptors) MUST live
    in the event JSON, not hardcoded in Astro or React components.
-8. **Canonical Variant Boundary**: Structural renderer selection belongs to the section-owned
-   `structuralVariant` contract (or canonical `gallery.variant`). Theme identity, invitation slug,
-   and `visualProfileId` may provide compatibility fallback only; they must not be the canonical
-   selector.
+8. **Canonical Variant Boundary**: Structural renderer selection belongs to the owning section's
+   canonical `variant` field. Theme identity, invitation slug, and `visualProfileId` must not select
+   a canonical renderer or provide runtime compatibility fallbacks.
 9. **Presentation/Skin Separation**: Presentation options and visual skins may change tokens, media
    treatment, copy, or motion, but must not replace a canonical renderer or internal grid. The
    current inventory and known exceptions are recorded in `docs/domains/theme/variant-system.md`.
@@ -69,7 +68,7 @@ For every modified invitation section:
 ## 🏗️ Step 3: Documentation & Sync
 
 - [ ] Audit `docs/domains/theme/architecture.md` for drift.
-- [ ] Ensure all `sectionStyles` variants are documented.
+- [ ] Ensure every present section variant is documented in the canonical registry.
 - [ ] Sync Zod schemas in `src/content.config.ts` (include `labels` for RSVP and Tier 3 WhatsApp
       fields).
 - [ ] Sync `docs/domains/theme/variant-system.md` whenever a structural variant, presentation
@@ -84,7 +83,8 @@ If violations are found during Step 1 or 2:
 
 - [ ] Move nested styles from `presets/` to their respective `sections/` files.
 - [ ] Replace reusable hardcoded values with semantic tokens.
-- [ ] Migrate hardcoded text/labels to event JSON files via `sectionStyles`.
+- [ ] Migrate hardcoded text/labels to event JSON files via the owning section fields (for example
+      `rsvp.labels`).
 - [ ] Ensure all variants follow the `[data-variant]` pattern.
 - [ ] Ensure invitation-specific overrides remain inside `.event--<slug>` or
       `src/styles/events/<slug>.scss`.

@@ -89,6 +89,7 @@ function buildRominaPublished(): Record<string, unknown> {
 function buildNestedFamilyPublished(): Record<string, unknown> {
 	const published = buildRominaPublished();
 	published.family = {
+		variant: 'split-groups',
 		labels: {
 			sectionTitle: 'Con la bendición de',
 			sectionSubtitle: 'Nuestras familias',
@@ -387,7 +388,6 @@ describe('draft canonicalization', () => {
 			expect(result.removedPublishedOnlyKeys).toContain('rsvp.personalizedAccess.noteText');
 			expect((result.content.rsvp as Record<string, unknown>).personalizedAccess).toEqual({
 				title: 'Acceso',
-				variant: 'standard',
 			});
 		});
 
@@ -536,6 +536,7 @@ describe('draft canonicalization', () => {
 			(published.rsvp as Record<string, unknown>).personalizedAccess = {
 				title: 'Acceso',
 				noteText: 'Nota interna publicada',
+				variant: 'standard',
 			};
 			const draft = mapNestedToDraftContent(published);
 			draft.rsvp = { ...draft.rsvp, personalizedAccess: { title: 'Acceso editado' } };

@@ -16,15 +16,21 @@ describe('Style and Schema Resolver Parity', () => {
 				startsAtUtc: '2026-08-02T02:00:00.000Z',
 			},
 			sectionOrder: ['quote', 'family', 'rsvp'],
+			composition: { intersections: {} },
 			hero: {
 				name: 'Valentina',
 				label: 'Mis XV años',
 				date: '2026-08-02T02:00:00.000Z',
 				backgroundImage: 'hero',
+				variant: 'standard',
 			},
 			quote: { text: 'Una noche mágica' },
-			family: {},
-			rsvp: { title: 'Confirma asistencia' },
+			family: { variant: 'standard' },
+			rsvp: {
+			variant: 'standard',
+			personalizedAccess: { variant: 'standard' },
+			title: 'Confirma asistencia',
+		},
 		};
 
 		it('accepts hero.variant', () => {
@@ -56,11 +62,15 @@ describe('Style and Schema Resolver Parity', () => {
 			expect(res.success).toBe(false);
 			if (!res.success) {
 				const issues = res.error.issues;
-				expect(issues.some(i => i.code === 'unrecognized_keys' && i.path.includes('sectionStyles'))).toBe(true);
+				expect(
+					issues.some(
+						(i) => i.code === 'unrecognized_keys' && i.keys?.includes('sectionStyles'),
+					),
+				).toBe(true);
 			}
 		});
 
-		it('validates the complete published Valentina-compatible payload', () => {
+		it('rejects the published Valentina payload while it still uses sectionStyles', () => {
 			const payload = {
 				...basePayload,
 				hero: {
@@ -79,7 +89,7 @@ describe('Style and Schema Resolver Parity', () => {
 				},
 			};
 			const res = eventContentSchema.safeParse(payload);
-			expect(res.success).toBe(true);
+			expect(res.success).toBe(false);
 		});
 	});
 

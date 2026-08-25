@@ -29,7 +29,7 @@ describe('buildInvitationRenderPlan', () => {
 		} as Parameters<typeof adaptEvent>[0];
 
 		const viewModel = adaptEvent(event);
-		const plan = buildInvitationRenderPlan(viewModel, { hasGuestContext: true });
+		const plan = buildInvitationRenderPlan(viewModel);
 
 		const sectionTypes = plan.map((item) =>
 			item.type === 'section' ? item.section : item.type,
@@ -48,7 +48,7 @@ describe('buildInvitationRenderPlan', () => {
 		} as Parameters<typeof adaptEvent>[0];
 
 		const viewModel = adaptEvent(event);
-		const plan = buildInvitationRenderPlan(viewModel, { hasGuestContext: false });
+		const plan = buildInvitationRenderPlan(viewModel);
 
 		const sectionTypes = plan.map((item) =>
 			item.type === 'section' ? item.section : item.type,
@@ -58,17 +58,18 @@ describe('buildInvitationRenderPlan', () => {
 		expect(interludeCount).toBe(4);
 		expect(sectionTypes).toEqual([
 			'quote',
-			'family',
-			'interlude',
-			'gallery',
-			'interlude',
 			'countdown',
+			'interlude',
+			'family',
 			'interlude',
 			'location',
 			'itinerary',
-			'rsvp',
+			'gallery',
+			'interlude',
 			'gifts',
 			'interlude',
+			'personalized-access',
+			'rsvp',
 			'thankYou',
 		]);
 	});
@@ -80,7 +81,7 @@ describe('buildInvitationRenderPlan', () => {
 		} as Parameters<typeof adaptEvent>[0];
 
 		const viewModel = adaptEvent(event);
-		const plan = buildInvitationRenderPlan(viewModel, { isDemoPreview: true });
+		const plan = buildInvitationRenderPlan(viewModel);
 
 		expect(plan.map((item) => (item.type === 'section' ? item.section : item.type))).toEqual([
 			'quote',
@@ -107,7 +108,7 @@ describe('buildInvitationRenderPlan', () => {
 		} as Parameters<typeof adaptEvent>[0];
 
 		const viewModel = adaptEvent(event);
-		const plan = buildInvitationRenderPlan(viewModel, { hasGuestContext: false });
+		const plan = buildInvitationRenderPlan(viewModel);
 
 		const sectionTypes = plan.map((item) =>
 			item.type === 'section' ? item.section : item.type,
@@ -137,7 +138,7 @@ describe('buildInvitationRenderPlan', () => {
 		} as Parameters<typeof adaptEvent>[0];
 
 		const viewModel = adaptEvent(event);
-		const plan = buildInvitationRenderPlan(viewModel, { hasGuestContext: false });
+		const plan = buildInvitationRenderPlan(viewModel);
 
 		expect(viewModel.interludes).toBeDefined();
 		expect(viewModel.interludes).toHaveLength(2);
@@ -164,7 +165,7 @@ describe('buildInvitationRenderPlan', () => {
 			data,
 		} as Parameters<typeof adaptEvent>[0];
 
-		const plan = buildInvitationRenderPlan(adaptEvent(event), { hasGuestContext: false });
+		const plan = buildInvitationRenderPlan(adaptEvent(event));
 		const interlude = plan.find((item) => item.type === 'interlude');
 
 		expect(interlude).toMatchObject({

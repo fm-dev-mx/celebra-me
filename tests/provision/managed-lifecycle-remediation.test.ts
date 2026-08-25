@@ -61,6 +61,8 @@ describe('Managed Lifecycle Remediation Suite', () => {
 			const validContent = {
 				eventType: 'xv',
 				title: 'Test Event',
+				sectionOrder: ['quote'],
+				composition: { intersections: {} },
 				theme: {
 					fontFamily: 'serif',
 					preset: 'jewelry-box',
@@ -69,6 +71,7 @@ describe('Managed Lifecycle Remediation Suite', () => {
 					name: 'Romina',
 					date: '2026-12-31T20:00:00.000Z',
 					backgroundImage: 'https://example.com/hero.jpg',
+					variant: 'standard',
 				},
 				quote: {
 					text: 'Un momento especial',

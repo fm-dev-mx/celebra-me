@@ -4,8 +4,8 @@ This document specifies the purpose, required/optional inputs, data models, rend
 asset contracts, accessibility, and validation rules for all supported sections in Celebra-me
 digital invitations.
 
-The complete post-migration ownership matrix for structural variants, presentation options, skins,
-compatibility aliases, and profile exceptions is maintained in
+The canonical ownership matrix for structural variants, presentation options, skins, and profile
+exceptions is maintained in
 [`docs/domains/theme/variant-system.md`](../theme/variant-system.md).
 
 ---
@@ -14,24 +14,26 @@ compatibility aliases, and profile exceptions is maintained in
 
 - **Purpose**: Primary entrance fold with celebrant name, event date, venue summary, and full-bleed
   portrait or background image.
-- **Required Inputs**: `name` (string), `date` (ISO date string), `backgroundImage` (AssetSource).
+- **Required Inputs**: `name` (string), `date` (ISO date string), `backgroundImage` (AssetSource),
+  `variant`.
 - **Optional Inputs**: `secondaryName`, `label`, `nickname`, `backgroundImageDesktop`,
-  `backgroundImageMobile`, `portrait`, `focalPoint`, `variant`, `visualVariant`.
+  `backgroundImageMobile`, `portrait`, `focalPoint`.
 - **Rendering & Omission**: Mandatory first fold. Cannot be omitted.
 - **Validation Rules**: `date` must be valid ISO 8601; `backgroundImage` must resolve to an accepted
   image asset.
 
-Structural renderer selections are section-owned and bounded via each section's `variant` field.
+Structural renderer selections are section-owned and bounded via each section's required `variant`
+field.
 Hero accepts `standard`, `editorial-cover`, or `split-cover`; Thank You accepts `standard`,
 `editorial-back-cover`, or `full-bleed-photo`; Gifts uses `editorial-catalog`; RSVP uses
 `editorial-press-pass` or `formal-register`. `rsvp.personalizedAccess` uses `standard`,
 `ornamented`, `editorial-pass`, or `formal-pass`. These fields select markup/layout only;
-`visualVariant` / theme preset remains the visual skin. Legacy `*.structuralVariant` inputs are
-compatibility-only (see [`variant-compatibility.md`](../theme/variant-compatibility.md)).
+Theme preset remains the visual skin. Legacy aliases are rejected by the canonical schema and are
+tracked only as deployment migration work.
 
-Countdown and Footer have no structural selector in the current contract: their theme branches are
-presentation skins only. They continue to consume the visual `variant` and must not be promoted to
-structural variants without new executable evidence.
+Countdown variants are section-owned (`standard`, `editorial-folio`, `magazine-folio`,
+`jeweled-panel`, `rose-ornament`, and `hacienda-ornament`). Footer remains a visual theme surface
+and has no independent section variant.
 
 ---
 
@@ -96,7 +98,8 @@ structural variants without new executable evidence.
 
 - **Purpose**: Live countdown timer to event date/time.
 - **Required Inputs**: Target timing from `eventTiming` or `hero.date`.
-- **Optional Inputs**: `title`, `footerText`, `variant`.
+- **Required Inputs**: `variant` when the optional section is present.
+- **Optional Inputs**: `title`, `footerText`.
 - **Rendering & Omission**: Automatically resolves target date from `eventTiming.startsAtUtc` or
   `hero.date`. Omitted if timing cannot be resolved.
 
@@ -108,6 +111,7 @@ structural variants without new executable evidence.
   Waze, Apple Maps), and travel indications.
 - **Required Inputs**: Venue entries (`venues` array) or legacy `ceremony`/`reception` venues with
   `venueName`, `address`, `city`.
+- **Required Inputs**: `variant` when the optional section is present.
 - **Optional Inputs**: `visibility`, `presentation`, `presentationOptions.showFlourishes`,
   `presentationOptions.showNavigationButtons`, `indications`, `indicationsHeading`, `mapUrl`,
   `wazeUrl`, `appleMapsUrl`.
@@ -118,7 +122,7 @@ structural variants without new executable evidence.
 ## 6. Family (`family`)
 
 - **Purpose**: Parents, godparents, honor court, and family members.
-- **Required Inputs**: `parents` array (father, mother names) or `sponsors` array.
+- **Required Inputs**: `variant` plus `parents` array (father, mother names) or `sponsors` array.
 - **Optional Inputs**: `title`, `subtitle`, `featuredImage`, `presentation` (`with-photo` or
   `text-only`), `variant`.
 - **Rendering & Omission**: Optional section.
@@ -129,13 +133,13 @@ structural variants without new executable evidence.
 
 - **Purpose**: Interactive photo gallery grid / carousel of celebrant photos.
 - **Required Inputs**: `items` array of photo asset references with `image` and `alt`.
-- **Optional Inputs**: `title`, `subtitle`, `variant`, `visualVariant`, `presentation`, item
+- **Required Inputs**: `variant`.
+- **Optional Inputs**: `title`, `subtitle`, `presentation`, item
   `layoutRole`, and responsive focal-point fields. Canonical layout values are `uniform-grid`,
   `editorial-mosaic`, `magazine-spread`, `feature-mosaic`, `feature-stack`, `paired-feature-band`,
   `index-choreography`, and `single-keepsake`.
-- **Precedence**: `gallery.variant` is the sole post-normalization layout authority. Legacy
-  `sectionStyles.gallery.variant` / theme-named values / `single` are compatibility aliases only and
-  conflict with a different canonical layout.
+- **Precedence**: `gallery.variant` is the sole layout authority. Legacy `sectionStyles` values,
+  theme-named values, and `single` are rejected by the canonical schema.
 - **Rendering & Omission**: Rendered if `items` contains 1 or more resolved photo assets; omitted if
   empty or missing. `single-keepsake` requires exactly one item.
 
@@ -145,11 +149,11 @@ structural variants without new executable evidence.
 
 - **Purpose**: Timeline of event activities (ceremony, reception, dinner, party, toast).
 - **Required Inputs**: `items` array with `time`, `title`.
-- **Optional Inputs**: `subtitle`, `description`, `icon`, `variant`.
+- **Required Inputs**: `variant`.
+- **Optional Inputs**: `subtitle`, `description`, `icon`.
 - **Variant Contract**: Canonical `itinerary.variant` values are `standard`, `timeline-paper`,
   `editorial-ledger`, and `editorial-program`. `timeline-paper` selects `ItineraryProgram`;
-  `editorial-ledger`, `editorial-program`, and `standard` select `TimelineList`. Legacy
-  `itinerary.presentation.behavior` is compatibility-only.
+  `editorial-ledger`, `editorial-program`, and `standard` select `TimelineList`.
 - **Rendering & Omission**: Optional section.
 
 ---
@@ -159,7 +163,8 @@ structural variants without new executable evidence.
 - **Purpose**: Guest attendance confirmation form, attendee count selector, dietary notes, and
   WhatsApp/API submission.
 - **Required Inputs**: `confirmationMode` (`api` | `whatsapp`), `deadlineIso`, `guestCap`.
-- **Optional Inputs**: `title`, `subtitle`, `whatsappConfig`, `personalizedAccess`.
+- **Required Inputs**: `variant` and `personalizedAccess.variant`.
+- **Optional Inputs**: `title`, `subtitle`, `whatsappConfig`.
 - **Variant Contract**: Canonical `rsvp.variant` values are `standard`, `editorial-press-pass`, and
   `formal-register`. `formal-register` keeps the shared RSVP renderer and owns the underline
   confirmation-register presentation. `rsvp.personalizedAccess.variant` values are `standard`,
@@ -175,7 +180,8 @@ structural variants without new executable evidence.
 - **Purpose**: Gift registry information, Mesa de Regalos links (Liverpool, Amazon), or bank account
   / CLABE transfer details.
 - **Required Inputs**: `items` array of gift options (`type: 'registry' | 'transfer' | 'cash'`).
-- **Optional Inputs**: `title`, `subtitle`, `note`, `variant`.
+- **Required Inputs**: `variant`.
+- **Optional Inputs**: `title`, `subtitle`, `note`.
 - **Rendering & Omission**: Optional section. Bank account details must be handled securely without
   raw SQL or log exposure.
 
@@ -185,9 +191,9 @@ structural variants without new executable evidence.
 
 - **Purpose**: Closing gratitude message to guests.
 - **Required Inputs**: `message` (string), `closingName` (string).
+- **Required Inputs**: `variant`.
 - **Optional Inputs**: `closingPhrase`, `date` (editorial closing-date display string; not derived
-  from `eventTiming`), `image`, `focalPoint`, `overlayAnchor`, `overlaySafeArea`. Section variant
-  comes from `sectionStyles.thankYou.variant`, not from the thankYou object.
+  from `eventTiming`), `image`, `focalPoint`, `overlayAnchor`, `overlaySafeArea`.
 - **Rendering & Omission**: Optional closing fold. `closingPhrase` is consumed by the invitation
   footer; `date` renders as the Thank You closing-date line when present.
 - **Editing**: Managed invitations own `date` / `closingPhrase` / section variant via the provision
@@ -200,7 +206,8 @@ structural variants without new executable evidence.
 
 - **Purpose**: Full-bleed background photo dividers between sections.
 - **Required Inputs**: `afterSection` (string), `image` (AssetSource).
-- **Optional Inputs**: `alt`, `height`, `variant`, `focalPoint`, `overlayOpacity`.
+- **Optional Inputs**: `alt`, `height`, `focalPoint`, `overlayOpacity`.
+- Interludes do not own a variant vocabulary; the renderer emits the fixed `standard` DOM marker.
 
 ---
 

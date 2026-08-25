@@ -147,7 +147,7 @@ const MINIMAL_DEMO_ENTRY = buildEventDemoEntry(
 			label: 'Mis XV Años',
 			date: '2026-06-15T20:00:00.000Z',
 			backgroundImage: 'hero',
-			variant: 'jewelry-box',
+			variant: 'standard',
 		},
 		location: {
 			ceremony: {
@@ -159,6 +159,7 @@ const MINIMAL_DEMO_ENTRY = buildEventDemoEntry(
 				image: 'ceremony',
 			},
 		},
+		countdown: { variant: 'standard', title: 'Faltan días', footerText: 'Nos vemos' },
 		quote: { text: 'Demo quote', author: 'Author' },
 		gallery: { eyebrow: 'Galería', title: 'Galería', items: [] },
 	},
@@ -266,12 +267,23 @@ const validDraft = {
 	content: {
 		title: 'Test Event',
 		description: 'A test event',
-		hero: { name: 'Ana Sofia', label: 'Mis XV Anos', date: '2027-11-20' },
+		hero: {
+			name: 'Ana Sofia',
+			label: 'Mis XV Anos',
+			date: '2027-11-20',
+			variant: 'standard',
+		},
 		eventTiming: {
 			localDateTime: '2027-11-20T18:00',
 			timeZone: 'America/Mazatlan',
 		},
-		rsvp: { title: 'Confirma', guestCap: 4, confirmationMode: 'api' },
+		rsvp: {
+			variant: 'standard',
+			title: 'Confirma',
+			guestCap: 4,
+			confirmationMode: 'api',
+			personalizedAccess: { variant: 'standard' },
+		},
 	},
 	status: 'draft' as const,
 	createdAt: '2026-05-28T14:00:00Z',
@@ -286,7 +298,7 @@ const publishedRow = {
 	slug: 'xv-proj-1a2b3c4d',
 	eventType: 'xv',
 	isDemo: false,
-	content: { title: 'Test Event' },
+	content: { ...MINIMAL_DEMO_ENTRY.data, title: 'Test Event' },
 	version: 1,
 	publishedAt: '2026-05-28T15:00:00Z',
 	createdAt: '2026-05-28T15:00:00Z',
@@ -709,6 +721,7 @@ describe('publishDraft', () => {
 			...validDraft,
 			content: {
 				...validDraft.content,
+				sectionOrder: ['quote', 'location', 'rsvp', 'gifts', 'thankYou'],
 				envelope: {
 					envelopeName: 'Nuevo Sobre Especial',
 					disabled: false,
@@ -723,8 +736,11 @@ describe('publishDraft', () => {
 				snapshot: { ...baseProject.snapshot, themeId: 'jewelry-box' } as any,
 			},
 			assetSlug: 'demo-xv-jewelry-box',
-			draftContent: validDraft.content,
-			demoContent: {},
+			draftContent: {
+				...validDraft.content,
+				sectionOrder: ['quote', 'location', 'rsvp', 'gifts', 'thankYou'],
+			},
+			demoContent: MINIMAL_DEMO_ENTRY.data,
 			isDemo: false,
 		});
 
@@ -790,7 +806,7 @@ describe('publishDraft', () => {
 			},
 			assetSlug: 'demo-xv-jewelry-box',
 			draftContent: validDraft.content,
-			demoContent: {},
+			demoContent: MINIMAL_DEMO_ENTRY.data,
 			isDemo: false,
 		});
 
@@ -807,6 +823,7 @@ describe('publishDraft', () => {
 			content: {
 				...basePublishedContent,
 				countdown: {
+					variant: 'standard',
 					title: '¡Cada día falta menos!',
 					footerText: 'Te esperamos.',
 				},
@@ -933,13 +950,16 @@ describe('publishDraft', () => {
 			createdAt: '2026-01-01T00:00:00Z',
 			updatedAt: '2026-01-01T00:00:00Z',
 			content: {
+				sectionOrder: ['gallery', 'itinerary'],
+				composition: { intersections: {} },
+				hero: { variant: 'standard' },
 				eventTiming: {
 					localDateTime: '2026-08-01T20:00',
 					timeZone: 'America/Mazatlan',
 					startsAtUtc: '2026-08-02T03:00:00.000Z',
 				},
-				gallery: { title: 'Galería', items: [] },
-				itinerary: { title: 'Programa', items: [] },
+				gallery: { variant: 'uniform-grid', title: 'Galería', items: [] },
+				itinerary: { variant: 'standard', title: 'Programa', items: [] },
 			},
 		} as any);
 		mockUpsertPublished.mockResolvedValue(publishedRow as any);
@@ -990,7 +1010,14 @@ describe('publishDraft', () => {
 			content: {
 				eventType: 'xv',
 				title: 'Test Event',
-				hero: { name: 'Ana Sofia', label: 'Mis XV Anos', date: '2027-11-20' },
+				sectionOrder: ['gallery', 'itinerary'],
+				composition: { intersections: {} },
+				hero: {
+					name: 'Ana Sofia',
+					label: 'Mis XV Anos',
+					date: '2027-11-20',
+					variant: 'standard',
+				},
 				eventTiming: {
 					localDateTime: '2027-11-20T18:00',
 					timeZone: 'America/Mazatlan',
@@ -1014,8 +1041,8 @@ describe('publishDraft', () => {
 						background: 'surfacePrimary',
 					},
 				},
-				gallery: { title: 'Galería', items: [] },
-				itinerary: { title: 'Programa', items: [] },
+				gallery: { variant: 'uniform-grid', title: 'Galería', items: [] },
+				itinerary: { variant: 'standard', title: 'Programa', items: [] },
 			},
 		} as any);
 		mockUpsertPublished.mockResolvedValue(publishedRow as any);
@@ -1504,7 +1531,7 @@ describe('publishDraft', () => {
 							type: 'external',
 							src: 'https://images.example.com/hero.jpg',
 						},
-						variant: 'jewelry-box',
+						variant: 'standard',
 					},
 					sectionOrder: [
 						'quote',
@@ -1518,7 +1545,6 @@ describe('publishDraft', () => {
 						'thankYou',
 					],
 					interludes: [],
-					sectionStyles: {},
 					navigation: [],
 				},
 				'xv/demo-xv-jewelry-box.json',
@@ -1544,6 +1570,7 @@ describe('publishDraft', () => {
 			content: {
 				...validDraft.content,
 				gallery: {
+					variant: 'uniform-grid',
 					items: [
 						{
 							image: { type: 'uploaded' as const, assetId: VALID_UUID_1 },
@@ -1813,7 +1840,9 @@ describe('publishDraft', () => {
 		mockFindPublishedByInvitationId.mockResolvedValue({
 			...publishedRow,
 			content: {
+				...MINIMAL_DEMO_ENTRY.data,
 				hero: {
+					...MINIMAL_DEMO_ENTRY.data.hero,
 					backgroundImageMobile: { type: 'uploaded', assetId: VALID_UUID_1 },
 				},
 			},
@@ -1886,7 +1915,7 @@ describe('publishDraft', () => {
 							type: 'external',
 							src: 'https://images.example.com/hero.jpg',
 						},
-						variant: 'jewelry-box',
+						variant: 'standard',
 					},
 				},
 				'xv/demo-xv-jewelry-box.json',
@@ -1927,6 +1956,7 @@ describe('publishDraft', () => {
 			content: {
 				...validDraft.content,
 				gallery: {
+					variant: 'uniform-grid',
 					items: [
 						{
 							image: { type: 'internal' as const, key: 'gallery01' as const },
@@ -2362,6 +2392,7 @@ describe('publishDraft', () => {
 			content: {
 				...validDraft.content,
 				family: {
+					variant: 'standard',
 					fatherName: 'Papá',
 					motherName: 'Mamá',
 					featuredImage: { type: 'uploaded' as const, assetId: VALID_UUID_1 },
@@ -2404,6 +2435,7 @@ describe('publishDraft', () => {
 			content: {
 				...validDraft.content,
 				thankYou: {
+					variant: 'standard',
 					message: 'Gracias',
 					closingName: 'Test',
 					image: { type: 'uploaded' as const, assetId: VALID_UUID_1 },
@@ -2454,7 +2486,12 @@ describe('publishDraft', () => {
 					],
 				},
 				quote: { text: 'Keep this', author: 'Author' },
-				rsvp: { title: 'Confirma', guestCap: 4, confirmationMode: 'api' },
+				rsvp: {
+					...validDraft.content.rsvp,
+					title: 'Confirma',
+					guestCap: 4,
+					confirmationMode: 'api',
+				},
 			},
 		} as any);
 		mockFindAssets.mockResolvedValue([

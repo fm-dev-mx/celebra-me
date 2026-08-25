@@ -180,8 +180,8 @@ Reusable mechanics are selected before rendering and copied onto stable wrapper 
 - `data-intersection-source`: explicit source identity from the selected composition profile;
 - `data-section-kind`: stable incoming section kind.
 
-Selection is owned by typed `composition.intersections` (with legacy profile injection only at the
-variant-normalization boundary) and copied through the render plan. CSS must not infer a family from
+Selection is owned by typed `composition.intersections` and copied through the render plan. CSS must
+not infer a family from
 route slug, JSON order, screenshot order, `nth-*`, incidental adjacency, or a theme name. Profiles
 may set visual tokens against these stable attributes; shared mechanics live in
 `src/styles/invitation/_section-intersections.scss`.

@@ -141,7 +141,7 @@ describe('Leslie Perez provision contract', () => {
 			'Gracias por ser parte',
 		);
 		expect(content.family).toMatchObject({
-			variant: 'asymmetric-groups',
+			variant: 'standard',
 			presentation: 'text-only',
 			parents: {
 				father: 'Luis Enrique Zacarias Oviedo',
@@ -184,7 +184,7 @@ describe('Leslie Perez provision contract', () => {
 		} as Parameters<typeof adaptEvent>[0]);
 
 		expect(viewModel.hero.variant).toBe('split-cover');
-		expect(viewModel.sections.family?.variant).toBe('asymmetric-groups');
+		expect(viewModel.sections.family?.variant).toBe('standard');
 		expect(viewModel.sections.location?.variant).toBe('split-map');
 		expect(viewModel.sections.location?.showFlourishes).toBe(false);
 		expect(viewModel.sections.gallery?.variant).toBe('index-choreography');
@@ -199,7 +199,7 @@ describe('Leslie Perez provision contract', () => {
 		});
 		expect(viewModel.interludes).toHaveLength(2);
 
-		const plan = buildInvitationRenderPlan(viewModel, { isDemoPreview: true });
+		const plan = buildInvitationRenderPlan(viewModel);
 		const sequence = plan.map((item) =>
 			item.type === 'section'
 				? item.section

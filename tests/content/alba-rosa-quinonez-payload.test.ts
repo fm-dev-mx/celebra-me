@@ -96,9 +96,8 @@ describe('Alba Rosa Quiñónez provision contract', () => {
 		]);
 		expect(content.music).toBeUndefined();
 		expect(content.itinerary).toBeUndefined();
-		expect(content.sectionStyles).toMatchObject({
-			thankYou: { variant: 'editorial-magazine' },
-		});
+		expect(content.sectionStyles).toBeUndefined();
+		expect(asRecord(content.thankYou).variant).toBe('standard');
 
 		const hero = asRecord(content.hero);
 		expect(hero).not.toHaveProperty('nickname');
@@ -197,7 +196,7 @@ describe('Alba Rosa Quiñónez provision contract', () => {
 		).toEqual(expect.arrayContaining(['countdown', 'location']));
 	});
 
-	it('resolves feature-stack gallery when variant is omitted in legacy DB payload', () => {
+	it('rejects a DB payload when a required gallery variant is omitted', () => {
 		const rawContent = buildAlbaPublishedContent(buildTestAssets());
 		// Simulate un-migrated Production DB state where gallery.variant is omitted
 		const galleryWithoutVariant = { ...(rawContent.gallery as Record<string, unknown>) };
@@ -207,14 +206,6 @@ describe('Alba Rosa Quiñónez provision contract', () => {
 			gallery: galleryWithoutVariant,
 		};
 
-		const viewModel = adaptDbEvent({
-			slug: ALBA_EVENT.slug,
-			eventType: ALBA_EVENT.eventType,
-			isDemo: false,
-			content,
-			assetSlug: ALBA_EVENT.assetSlug,
-		});
-
-		expect(viewModel.sections.gallery?.variant).toBe('feature-stack');
+		expect(eventContentSchema.safeParse(content).success).toBe(false);
 	});
 });

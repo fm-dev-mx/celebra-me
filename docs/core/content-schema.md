@@ -11,9 +11,8 @@ point) from modular Zod definitions under `src/lib/schemas/content`.
 - `hero.schema.ts`: hero and celebrant metadata
 - `location.schema.ts`: venue, ceremony, reception, and indication schemas
 - `family.schema.ts`: family and relationship groups
-- `rsvp.schema.ts`: RSVP payload plus RSVP section label overrides
+- `rsvp.schema.ts`: RSVP payload, canonical section variant, and label overrides
 - `gifts.schema.ts`: gift option variants
-- `section-styles.schema.ts`: semantic section-style configuration
 - `shared.schema.ts`: asset, theme, and shared section primitives
 - `envelope.schema.ts`: envelope/reveal configuration
 - `gallery.schema.ts`: gallery image items
@@ -23,7 +22,7 @@ point) from modular Zod definitions under `src/lib/schemas/content`.
 
 ## Deprecation Policy
 
-RSVP copy overrides live under `sectionStyles.rsvp.labels`.
+RSVP copy overrides live under `rsvp.labels`.
 
 - `labels.name`
 - `labels.guestCount`

@@ -117,10 +117,12 @@ const published = {
 		family: { parents: { father: 'Papá P', mother: 'Mamá P' }, spouse: 'Esposo P' },
 		location: { ceremony: { venueName: 'Iglesia P' }, dressCode: 'Formal P' },
 		gallery: {
+			variant: 'uniform-grid',
 			title: 'Galería',
 			items: [{ image: 'gallery01', caption: 'Publicado' }],
 		},
 		itinerary: {
+			variant: 'standard',
 			title: 'Programa',
 			items: [{ iconName: 'Party', label: 'Fiesta', time: '21:00' }],
 		},

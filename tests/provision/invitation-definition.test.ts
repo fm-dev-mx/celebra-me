@@ -59,7 +59,20 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 				assets: [
 					{ key: 'hero', relativePath: 'hero.jpg', displayName: 'Hero', alt: 'Alt' },
 				],
-				buildPublishedContent: (assets) => ({ hero: { image: assets.hero } }),
+				buildPublishedContent: (assets) => ({
+					eventType: 'xv',
+					title: 'Test Title',
+					theme: { preset: 'premiere-floral' },
+					sectionOrder: ['rsvp'],
+					composition: { intersections: {} },
+					hero: {
+						name: 'Test Title',
+						date: '2026-08-14T23:00:00.000Z',
+						backgroundImage: assets.hero,
+						variant: 'standard',
+					},
+					rsvp: { variant: 'standard', personalizedAccess: { variant: 'standard' } },
+				}),
 			});
 
 			expect(def.slug).toBe('test-invitation');

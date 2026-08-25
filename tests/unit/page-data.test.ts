@@ -16,7 +16,6 @@ const baseViewModel: InvitationViewModel = {
 		themeClass: 'theme-preset--enchanted-rose',
 	},
 	hero: {
-		structuralVariant: 'standard',
 		name: 'Test Event',
 		secondaryName: '',
 		label: 'Invitación Especial',
@@ -33,6 +32,7 @@ const baseViewModel: InvitationViewModel = {
 		showContactCta: false,
 	},
 	sectionOrder: ['rsvp'],
+	composition: { intersections: {} },
 	sections: {},
 };
 

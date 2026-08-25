@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { adaptEvent } from '@/lib/adapters/event';
+import { buildInvitationRenderPlan } from '@/lib/invitation/render-plan';
 import { buildInvitationSectionRenderDescriptors } from '@/lib/invitation/section-render-data';
 import {
 	buildSectionBundleUrlMap,
@@ -9,6 +10,8 @@ import {
 	resolveInvitationCssUrls,
 } from '@/lib/invitation/section-css-resolver-map';
 import { prepareInvitationPageContext } from '@/lib/invitation/page-data';
+import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
+import { CANONICAL_VARIANT_CUTOVER_MANIFEST } from '@/lib/invitation/section-variants';
 
 jest.mock('@/lib/assets/asset-registry', () => {
 	const actual = jest.requireActual('@/lib/assets/asset-registry');
@@ -41,6 +44,8 @@ type PortableOverrides = {
 	rsvpVariant?: string;
 	personalizedAccessVariant?: string;
 	itineraryVariant?: 'standard' | 'timeline-paper' | 'editorial-ledger' | 'editorial-program';
+	thankYouVariant?: string;
+	countdownVariant?: string;
 	/** Optional theme skin; structural selection must not depend on it. */
 	themePreset?: string;
 	galleryItems?: Array<Record<string, unknown>>;
@@ -115,6 +120,14 @@ function buildPortableJewelryBoxEvent(overrides: PortableOverrides = {}) {
 			...fixture.itinerary,
 			...(overrides.itineraryVariant ? { variant: overrides.itineraryVariant } : {}),
 		},
+		thankYou: {
+			...fixture.thankYou,
+			...(overrides.thankYouVariant ? { variant: overrides.thankYouVariant } : {}),
+		},
+		countdown: {
+			...fixture.countdown,
+			...(overrides.countdownVariant ? { variant: overrides.countdownVariant } : {}),
+		},
 	};
 
 	// Identity fields must stay absent for portability proofs.
@@ -135,7 +148,113 @@ function loadDemoEvent(relativePath: string, id: string) {
 	} as Parameters<typeof adaptEvent>[0];
 }
 
-describe('Goal 3 — non-origin structural variant portability', () => {
+describe('Goal 1 — non-origin canonical variant portability', () => {
+	it('validates all 29 non-default variants through schema, adapter, render plan, and DOM descriptors', () => {
+		const overridesFor = (section: string, variant: string): PortableOverrides => {
+			const overrides: PortableOverrides = {};
+			switch (section) {
+				case 'hero':
+					overrides.heroVariant = variant;
+					break;
+				case 'family':
+					overrides.familyVariant = variant;
+					break;
+				case 'location':
+					overrides.locationVariant = variant;
+					break;
+				case 'itinerary':
+					overrides.itineraryVariant = variant as PortableOverrides['itineraryVariant'];
+					break;
+				case 'gallery':
+					overrides.galleryVariant = variant;
+					if (variant === 'single-keepsake') {
+						overrides.galleryItems = [{ image: 'gallery01' }];
+					} else if (variant === 'paired-feature-band') {
+						overrides.galleryItems = [
+							{ image: 'gallery01' },
+							{ image: 'gallery03', layoutRole: 'feature' },
+							{ image: 'gallery05' },
+						];
+					}
+					break;
+				case 'gifts':
+					overrides.giftsVariant = variant;
+					break;
+				case 'rsvp':
+					overrides.rsvpVariant = variant;
+					break;
+				case 'personalizedAccess':
+					overrides.personalizedAccessVariant = variant;
+					break;
+				case 'thankYou':
+					overrides.thankYouVariant = variant;
+					break;
+				case 'countdown':
+					overrides.countdownVariant = variant;
+					break;
+			}
+			return overrides;
+		};
+
+		for (const entry of CANONICAL_VARIANT_CUTOVER_MANIFEST) {
+			const candidate = buildPortableJewelryBoxEvent(
+				overridesFor(entry.section, entry.variant),
+			);
+			const parsed = eventContentSchema.parse(candidate.data);
+			const event = { ...candidate, data: parsed } as Parameters<typeof adaptEvent>[0];
+			const viewModel = adaptEvent(event);
+			const pageContext = prepareInvitationPageContext({
+				eventEntry: event as Parameters<typeof prepareInvitationPageContext>[0]['eventEntry'],
+				slug: 'demo-xv-jewelry-box',
+			});
+			const renderPlan = buildInvitationRenderPlan(viewModel);
+			const expectedView =
+				entry.section === 'personalizedAccess'
+					? viewModel.sections.rsvp?.personalizedAccess?.variant
+					: entry.section === 'hero'
+						? viewModel.hero.variant
+						: (viewModel.sections as Record<string, { variant?: string } | undefined>)[
+								entry.section
+							]?.variant;
+
+			expect(expectedView).toBe(entry.variant);
+			expect(renderPlan.length).toBeGreaterThan(0);
+			if (entry.section === 'hero') continue;
+			const component = entry.section === 'personalizedAccess' ? 'personalized-access' : entry.section;
+			const descriptor = buildInvitationSectionRenderDescriptors(pageContext).find(
+				(item) => item.component === component,
+			);
+			if (!descriptor) throw new Error(`Missing DOM descriptor for ${entry.section}.${entry.variant}`);
+			expect(descriptor).toMatchObject({ props: { variant: entry.variant } });
+		}
+	});
+
+	it('rejects incompatible canonical prerequisites without synthesizing required data', () => {
+		const fullBleedWithoutImage = buildPortableJewelryBoxEvent({
+			thankYouVariant: 'full-bleed-photo',
+		});
+		const thankYouWithoutImage = {
+			...fullBleedWithoutImage.data.thankYou,
+		} as Record<string, unknown>;
+		delete thankYouWithoutImage.image;
+		const result = eventContentSchema.safeParse({
+			...fullBleedWithoutImage.data,
+			thankYou: thankYouWithoutImage,
+		});
+
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			expect(result.error.issues).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+					path: ['thankYou', 'image'],
+					message: expect.stringContaining('full-bleed-photo'),
+				}),
+			]),
+			);
+		}
+	});
+
 	it('applies Hero split-cover to jewelry-box demo content without schema transformation', () => {
 		const event = buildPortableJewelryBoxEvent({ heroVariant: 'split-cover' });
 		const viewModel = adaptEvent(event);
@@ -428,7 +547,7 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 				themePreset: 'jewelry-box',
 				// Explicitly omit slug / visualProfileId — structure must not need them.
 				galleryVariant: 'feature-stack',
-				structuralVariants: {
+      sectionVariants: {
 					hero: 'split-cover',
 					location: 'stacked-venue-plates',
 					family: 'asymmetric-groups',
@@ -454,7 +573,7 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 			{
 				themePreset: 'jewelry-box',
 				galleryVariant: 'paired-feature-band',
-				structuralVariants: {
+      sectionVariants: {
 					location: 'split-map',
 					family: 'split-groups',
 					itinerary: 'timeline-paper',
@@ -476,7 +595,7 @@ describe('Goal 3 — non-origin structural variant portability', () => {
 			sectionUrlMap,
 			{
 				themePreset: 'jewelry-box',
-				structuralVariants: { itinerary: 'editorial-program' },
+      sectionVariants: { itinerary: 'editorial-program' },
 			},
 			profileUrlMap,
 		);

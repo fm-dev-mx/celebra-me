@@ -11,7 +11,7 @@ import type { InvitationCssLoadItem } from '@/lib/invitation/section-css-resolve
 const plan: InvitationCssLoadItem[] = [
 	{ href: '/_astro/editorial-bundle.css', owner: 'section-bundle', blocking: false },
 	{ href: '/_astro/reveal-premiere-floral.css', owner: 'envelope-reveal', blocking: true },
-	{ href: '/_astro/family-split-groups.css', owner: 'structural-variant', blocking: false },
+ { href: '/_astro/family-split-groups.css', owner: 'section-variant', blocking: false },
 	{ href: '/_astro/renata-profile.css', owner: 'visual-profile', blocking: true },
 ];
 

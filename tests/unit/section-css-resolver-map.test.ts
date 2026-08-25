@@ -210,7 +210,7 @@ describe('section-css-resolver-map', () => {
 		expect(
 			resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
 				themePreset: 'jewelry-box',
-				structuralVariants: { hero: 'editorial-cover', thankYou: 'full-bleed-photo' },
+    sectionVariants: { hero: 'editorial-cover', thankYou: 'full-bleed-photo' },
 			}),
 		).toEqual([
 			'/_astro/jewelry-bundle.css',
@@ -255,7 +255,7 @@ describe('section-css-resolver-map', () => {
 		expect(
 			resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
 				themePreset: 'jewelry-box',
-				structuralVariants: {
+      sectionVariants: {
 					hero: 'editorial-cover',
 					thankYou: 'editorial-back-cover',
 					gifts: 'editorial-catalog',
@@ -296,7 +296,7 @@ describe('section-css-resolver-map', () => {
 		expect(
 			resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
 				themePreset: 'editorial',
-				structuralVariants: {
+      sectionVariants: {
 					rsvp: 'formal-register',
 					personalizedAccess: 'formal-pass',
 				},
@@ -326,7 +326,7 @@ describe('section-css-resolver-map', () => {
 		expect(
 			resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
 				themePreset: 'celestial-blue',
-				structuralVariants: { thankYou: 'editorial-back-cover' },
+      sectionVariants: { thankYou: 'editorial-back-cover' },
 			}),
 		).toEqual(['/_astro/celestial-bundle.css']);
 	});
@@ -352,7 +352,7 @@ describe('section-css-resolver-map', () => {
 		expect(
 			resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
 				themePreset: 'celestial-blue',
-				structuralVariants: {
+      sectionVariants: {
 					hero: 'split-cover',
 					family: 'split-groups',
 					location: 'split-map',
@@ -540,7 +540,7 @@ describe('section-css-resolver-map', () => {
 					themePreset: 'editorial',
 					envelopeVariant: 'premiere-floral',
 					galleryVariant: 'magazine-spread',
-					structuralVariants: { family: 'split-groups' },
+      sectionVariants: { family: 'split-groups' },
 					visualProfileId: 'renata',
 				},
 				profileUrlMap,
@@ -559,7 +559,7 @@ describe('section-css-resolver-map', () => {
 			},
 			{
 				href: '/_astro/family-split-groups.css',
-				owner: 'structural-variant',
+				owner: 'section-variant',
 				blocking: false,
 			},
 			{ href: '/_astro/renata-profile.css', owner: 'visual-profile', blocking: true },
@@ -581,13 +581,13 @@ describe('section-css-resolver-map', () => {
 		expect(
 			resolveInvitationCssLoadPlan(bundleUrlMap, sectionUrlMap, {
 				themePreset: 'editorial',
-				structuralVariants: { hero: 'editorial-cover' },
+      sectionVariants: { hero: 'editorial-cover' },
 			}),
 		).toEqual([
 			{ href: '/_astro/editorial-bundle.css', owner: 'section-bundle', blocking: false },
 			{
 				href: '/_astro/hero-editorial-cover.css',
-				owner: 'structural-variant',
+				owner: 'section-variant',
 				blocking: true,
 			},
 		]);

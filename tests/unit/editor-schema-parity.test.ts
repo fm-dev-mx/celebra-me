@@ -33,28 +33,20 @@ const LEAH_LEXA_PUBLISHED_CONTENT = {
 		'gallery',
 		'thankYou',
 	],
-	sectionStyles: {
-		location: { showFlourishes: true },
-		rsvp: {
-			labels: {
-				name: 'Tu nombre',
-				guestCount: 'Personas que asistirán',
-				attendance: '¿Me acompañas?',
-				confirmButton: 'Confirmar asistencia',
-			},
-		},
-	},
+	composition: { intersections: {} },
 	hero: {
 		name: 'Leah Lexa',
 		label: 'Mi Baby Shower',
 		date: '2026-06-21T20:00:00.000Z',
 		backgroundImage: 'hero',
+		variant: 'standard',
 	},
 	quote: {
 		text: 'Los tiempos de Dios son perfectos, y les ha dado la dicha a mis papis de hacer crecer nuestra familia.',
 		author: 'Leah Lexa',
 	},
 	family: {
+		variant: 'standard',
 		featuredImage: 'family',
 		parents: { father: 'Hugo', mother: 'Fernanda' },
 		parentsOrder: 'father-first',
@@ -68,13 +60,15 @@ const LEAH_LEXA_PUBLISHED_CONTENT = {
 		},
 	},
 	gallery: {
-		variant: 'single',
+		variant: 'single-keepsake',
 		presentation: 'pet-keepsake',
 		title: 'La manada también te espera',
 		subtitle: 'En casa ya hay patitas listas para recibirte con amor.',
 		items: [{ image: 'gallery03' }],
 	},
 	location: {
+		variant: 'standard',
+		presentationOptions: { showFlourishes: true },
 		introEyebrow: 'Nos vemos para celebrar',
 		introHeading: 'Domingo, 21 de junio de 2026',
 		introLede: 'Quiero compartir este día tan especial con ustedes.',
@@ -107,6 +101,7 @@ const LEAH_LEXA_PUBLISHED_CONTENT = {
 		],
 	},
 	gifts: {
+		variant: 'standard',
 		title: 'Mesa de regalos',
 		subtitle:
 			'Si desean tener un detalle para mí, mis papis prepararon una opción especial con mucho cariño.',
@@ -120,6 +115,7 @@ const LEAH_LEXA_PUBLISHED_CONTENT = {
 		],
 	},
 	rsvp: {
+		variant: 'standard',
 		title: 'Confirma tu asistencia',
 		subcopy:
 			'Tu respuesta ayuda a mis papis a preparar cada detalle para recibirme con mucho cariño.',
@@ -128,8 +124,10 @@ const LEAH_LEXA_PUBLISHED_CONTENT = {
 		confirmationMessage:
 			'Gracias por confirmar. Mis papis y yo estamos muy felices de saber que nos acompañarán.',
 		confirmationMode: 'api',
+		personalizedAccess: { variant: 'standard' },
 	},
 	thankYou: {
+		variant: 'editorial-back-cover',
 		image: 'gallery02',
 		message: 'Este primer recuerdo y cada muestra de cariño serán parte de mi historia.',
 		closingName: 'Leah Lexa',

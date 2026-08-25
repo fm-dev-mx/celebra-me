@@ -14,7 +14,6 @@ const baseViewModel = {
 	description: 'Invitación de prueba',
 	theme: { preset: 'celestial-blue' as const, themeClass: 'theme-preset--celestial-blue' },
 	hero: {
-		structuralVariant: 'split-cover' as const,
 		name: 'Leslie',
 		label: 'Mis XV años',
 		date: '2026-09-26',
@@ -27,6 +26,7 @@ const baseViewModel = {
 		showContactCta: true,
 	},
 	sectionOrder: ['rsvp'],
+	composition: { intersections: {} },
 	sections: {},
 	interludes: [],
 } as InvitationViewModel;
@@ -34,14 +34,17 @@ const baseViewModel = {
 function makeMinimalEvent(music?: Record<string, unknown>) {
 	return {
 		id: 'events/leslie-perez',
-		data: {
-			eventType: 'xv',
-			title: 'XV años de Leslie',
-			hero: {
-				name: 'Leslie',
-				date: '2026-09-26',
-				backgroundImage: { type: 'external', src: '/images/test-bg.jpg' },
-			},
+			data: {
+				eventType: 'xv',
+				title: 'XV años de Leslie',
+				sectionOrder: ['rsvp'],
+				composition: { intersections: {} },
+				hero: {
+					name: 'Leslie',
+					date: '2026-09-26',
+					backgroundImage: { type: 'external', src: '/images/test-bg.jpg' },
+					variant: 'standard',
+				},
 			theme: { preset: 'celestial-blue' },
 			envelope: { enabled: true },
 			...(music ? { music } : {}),

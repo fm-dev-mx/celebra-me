@@ -105,20 +105,25 @@ const makeProject = (overrides?: Partial<Invitation>): Invitation => ({
 const validDraftContent = {
 	title: 'XV Años — Ayrin Samantha',
 	description: 'Una celebración especial',
+	sectionOrder: ['quote'],
 	hero: {
 		name: 'Ayrin Samantha',
 		secondaryName: '',
 		label: 'Mis XV Años',
 		nickname: '',
 		date: '2026-06-15T20:00:00.000Z',
+		variant: 'standard',
 	},
 } satisfies Parameters<typeof buildDraftPreviewPageContext>[1];
 
 const validDemoContent = {
+	sectionOrder: ['quote'],
+	composition: { intersections: {} },
 	hero: {
 		name: 'Demo Celebrant',
 		backgroundImage: 'hero',
 		portrait: 'portrait',
+		variant: 'standard',
 	},
 } satisfies Parameters<typeof buildDraftPreviewPageContext>[2];
 
@@ -168,6 +173,31 @@ describe('buildDraftPreviewPageContext', () => {
 			expect(result.eventType).toBe('xv');
 			expect(result.pageContext).toBeDefined();
 		}
+	});
+
+	it('keeps demo rsvp.variant when seeding personalizedAccess from the demo contract', async () => {
+		const invitation = makeProject();
+		const draftWithRsvp = {
+			...validDraftContent,
+			rsvp: { title: 'Confirma tu asistencia' },
+		};
+		const demoWithRsvp = {
+			...validDemoContent,
+			rsvp: {
+				variant: 'editorial-press-pass',
+				personalizedAccess: { variant: 'editorial-pass' },
+			},
+		};
+
+		const result = await buildDraftPreviewPageContext(invitation, draftWithRsvp, demoWithRsvp);
+
+		expect(result.ok).toBe(true);
+		expect(mockAdaptDbEvent).toHaveBeenCalledTimes(1);
+		const published = mockAdaptDbEvent.mock.calls[0][0].content as {
+			rsvp?: { variant?: string; personalizedAccess?: { variant?: string } };
+		};
+		expect(published.rsvp?.variant).toBe('editorial-press-pass');
+		expect(published.rsvp?.personalizedAccess?.variant).toBe('editorial-pass');
 	});
 
 	it('passes correct args to adaptDbEvent', async () => {
@@ -290,13 +320,13 @@ describe('buildDraftPreviewPageContext', () => {
 		expect(callArgs.assetSlug).toBe('demo-xv-editorial');
 	});
 
-	it('succeeds with empty demo content (missing event-demos entry)', async () => {
+	it('fails closed with empty demo content (missing event-demos entry)', async () => {
 		const invitation = makeProject();
 
 		const result = await buildDraftPreviewPageContext(invitation, validDraftContent, {});
 
-		expect(result.ok).toBe(true);
-		expect(mockAdaptDbEvent).toHaveBeenCalledTimes(1);
+		expect(result.ok).toBe(false);
+		expect(mockAdaptDbEvent).not.toHaveBeenCalled();
 	});
 
 	it('succeeds with empty draft content (no draft saved yet)', async () => {
@@ -308,13 +338,13 @@ describe('buildDraftPreviewPageContext', () => {
 		expect(mockAdaptDbEvent).toHaveBeenCalledTimes(1);
 	});
 
-	it('succeeds when both draft and demo content are empty', async () => {
+	it('fails closed when both draft and demo content are empty', async () => {
 		const invitation = makeProject();
 
 		const result = await buildDraftPreviewPageContext(invitation, {}, {});
 
-		expect(result.ok).toBe(true);
-		expect(mockAdaptDbEvent).toHaveBeenCalledTimes(1);
+		expect(result.ok).toBe(false);
+		expect(mockAdaptDbEvent).not.toHaveBeenCalled();
 	});
 });
 
@@ -430,16 +460,13 @@ describe('content mapping behavior', () => {
 		expect(result.ok).toBe(true);
 	});
 
-	it('is resilient to missing event-demos entry (empty demo content)', async () => {
+	it('fails closed when the event-demos entry is missing', async () => {
 		const invitation = makeProject();
 
 		const result = await buildDraftPreviewPageContext(invitation, validDraftContent, {});
 
-		expect(result.ok).toBe(true);
-		const callContent = mockAdaptDbEvent.mock.calls[0][0].content as Record<string, unknown>;
-		expect(callContent.title).toBe('XV Años — Ayrin Samantha');
-		expect(callContent.hero).toBeDefined();
-		expect((callContent.hero as Record<string, unknown>).name).toBe('Ayrin Samantha');
+		expect(result.ok).toBe(false);
+		expect(mockAdaptDbEvent).not.toHaveBeenCalled();
 	});
 
 	it('handles empty previewSlug without crashing', async () => {
@@ -450,8 +477,8 @@ describe('content mapping behavior', () => {
 
 		const result = await buildDraftPreviewPageContext(invitation, {}, {});
 
-		expect(result.ok).toBe(true);
-		expect(mockAdaptDbEvent).toHaveBeenCalledTimes(1);
+		expect(result.ok).toBe(false);
+		expect(mockAdaptDbEvent).not.toHaveBeenCalled();
 	});
 
 	it('renders default preview when neither draft nor published content exists', async () => {
@@ -459,10 +486,8 @@ describe('content mapping behavior', () => {
 
 		const result = await buildDraftPreviewPageContext(invitation, {}, {});
 
-		expect(result.ok).toBe(true);
-		const callContent = mockAdaptDbEvent.mock.calls[0][0].content;
-		expect(callContent.title).toBe('XV Años — Ayrin Samantha');
-		expect(callContent.hero).toBeDefined();
+		expect(result.ok).toBe(false);
+		expect(mockAdaptDbEvent).not.toHaveBeenCalled();
 	});
 
 	it('resolves uploaded asset refs before mapping', async () => {
@@ -536,10 +561,11 @@ describe('content mapping behavior', () => {
 
 		const priorPublishedContent = {
 			visualProfileId: 'alba-rosa-quinonez',
-			sectionStyles: {
-				thankYou: { variant: 'editorial-magazine' },
-			},
+			sectionOrder: ['thankYou'],
+			composition: { intersections: {} },
+			hero: { variant: 'standard' },
 			thankYou: {
+				variant: 'standard',
 				message: 'Prior thank-you message',
 				closingName: 'Alba Rosa',
 				closingPhrase: 'Con cariño',
@@ -548,16 +574,8 @@ describe('content mapping behavior', () => {
 		};
 
 		const withoutPrior = await buildDraftPreviewPageContext(invitation, editableDraft, {});
-		expect(withoutPrior.ok).toBe(true);
-		const contentWithoutPrior = mockAdaptDbEvent.mock.calls.at(-1)?.[0].content as Record<
-			string,
-			unknown
-		>;
-		expect(contentWithoutPrior.visualProfileId).toBeUndefined();
-		expect(contentWithoutPrior.sectionStyles).toBeUndefined();
-		expect(
-			(contentWithoutPrior.thankYou as Record<string, unknown> | undefined)?.date,
-		).toBeUndefined();
+		expect(withoutPrior.ok).toBe(false);
+		expect(mockAdaptDbEvent).not.toHaveBeenCalled();
 
 		const withPrior = await buildDraftPreviewPageContext(
 			invitation,
@@ -573,9 +591,7 @@ describe('content mapping behavior', () => {
 			unknown
 		>;
 		expect(contentWithPrior.visualProfileId).toBe('alba-rosa-quinonez');
-		expect(contentWithPrior.sectionStyles).toEqual({
-			thankYou: { variant: 'editorial-magazine' },
-		});
+		expect(contentWithPrior.sectionStyles).toBeUndefined();
 		expect(contentWithPrior.thankYou).toMatchObject({
 			message: 'Gracias por acompañarme en esta celebración.',
 			closingName: 'Alba Rosa',

@@ -28,34 +28,26 @@ describe('Leah Lexa SQL patch published content', () => {
 				'gallery',
 				'thankYou',
 			],
+			composition: { intersections: {} },
 			navigation: [
 				{ label: 'Ubicación', href: '#event-location' },
 				{ label: 'Fecha', href: '#inicio' },
 				{ label: 'Regalos', href: '#regalos' },
 				{ label: 'Confirmar', href: '#rsvp' },
 			],
-			sectionStyles: {
-				location: { showFlourishes: true },
-				rsvp: {
-					labels: {
-						name: 'Tu nombre',
-						guestCount: 'Personas que asistirán',
-						attendance: '¿Me acompañas?',
-						confirmButton: 'Confirmar asistencia',
-					},
-				},
-			},
 			hero: {
 				name: 'Leah Lexa',
 				label: 'Mi Baby Shower',
 				date: '2026-06-21T20:00:00.000Z',
 				backgroundImage: 'hero',
+				variant: 'standard',
 			},
 			quote: {
 				text: 'Los tiempos de Dios son perfectos, y les ha dado la dicha a mis papis de hacer crecer nuestra familia.',
 				author: 'Leah Lexa',
 			},
 			family: {
+				variant: 'standard',
 				featuredImage: 'family',
 				parents: { father: 'Hugo', mother: 'Fernanda' },
 				parentsOrder: 'father-first',
@@ -69,7 +61,7 @@ describe('Leah Lexa SQL patch published content', () => {
 				},
 			},
 			gallery: {
-				variant: 'single',
+				variant: 'single-keepsake',
 				presentation: 'pet-keepsake',
 				title: 'La manada también te espera',
 				subtitle: 'En casa ya hay patitas listas para recibirte con amor.',
@@ -84,6 +76,8 @@ describe('Leah Lexa SQL patch published content', () => {
 				},
 			],
 			location: {
+				variant: 'standard',
+				presentationOptions: { showFlourishes: true },
 				introEyebrow: 'Nos vemos para celebrar',
 				introHeading: 'Domingo, 21 de junio de 2026',
 				introLede: 'Quiero compartir este día tan especial con ustedes.',
@@ -117,6 +111,7 @@ describe('Leah Lexa SQL patch published content', () => {
 				],
 			},
 			gifts: {
+				variant: 'standard',
 				title: 'Mesa de regalos',
 				subtitle:
 					'Si desean tener un detalle para mí, mis papis prepararon una opción especial con mucho cariño.',
@@ -130,6 +125,7 @@ describe('Leah Lexa SQL patch published content', () => {
 				],
 			},
 			rsvp: {
+				variant: 'standard',
 				title: 'Confirma tu asistencia',
 				subcopy:
 					'Tu respuesta ayuda a mis papis a preparar cada detalle para recibirme con mucho cariño.',
@@ -138,8 +134,10 @@ describe('Leah Lexa SQL patch published content', () => {
 				confirmationMessage:
 					'Gracias por confirmar. Mis papis y yo estamos muy felices de saber que nos acompañarán.',
 				confirmationMode: 'api',
+				personalizedAccess: { variant: 'standard' },
 			},
 			thankYou: {
+				variant: 'editorial-back-cover',
 				image: 'gallery02',
 				message:
 					'Este primer recuerdo y cada muestra de cariño serán parte de mi historia.',

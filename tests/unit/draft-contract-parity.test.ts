@@ -216,7 +216,12 @@ describe('Draft ↔ Published contract parity', () => {
 			} else if (section === 'envelope') {
 				edited.envelope = { ...edited.envelope, envelopeName: 'Sobre editado' };
 			} else if (section === 'gifts') {
-				edited.gifts = { ...edited.gifts, title: 'Regalos editados', items: [] };
+				edited.gifts = {
+					...edited.gifts,
+					variant: edited.gifts?.variant ?? 'standard',
+					title: 'Regalos editados',
+					items: [],
+				};
 			} else if (section === 'messages') {
 				edited.quote = { ...edited.quote, text: 'Frase editada' };
 			} else if (section === 'gallery') {

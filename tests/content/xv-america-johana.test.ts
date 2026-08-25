@@ -199,12 +199,12 @@ describe('XV America Johana client invitation preparation', () => {
 		expect(passDescriptor?.props.subtitle).toBe(expectedPersonalizedAccess.subtitle);
 		expect(passDescriptor?.props.footerText).toBe(expectedPersonalizedAccess.footerText);
 
-		// Test PersonalizedAccess custom copy fallback behavior when personalizedAccess configuration is omitted
+		// Canonical content keeps the variant while allowing optional custom copy to be absent.
 		const mockDataNoCustomCopy = {
 			...data,
 			rsvp: {
 				...data.rsvp,
-				personalizedAccess: undefined,
+				personalizedAccess: { variant: 'standard' },
 			},
 		};
 		const viewModelNoCustom = adaptEvent({

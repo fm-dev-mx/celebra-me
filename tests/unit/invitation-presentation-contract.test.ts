@@ -1,8 +1,8 @@
 import { gallerySchema } from '@/lib/intake/schemas/shared-content.schema';
 import { resolveLocationShowFlourishes as resolveCanonicalLocationShowFlourishes } from '@/lib/invitation/location-presentation';
+import { ITINERARY_VARIANTS } from '@/lib/invitation/section-variants';
 import {
 	assertSupportedGalleryPresentation,
-	resolveItineraryPresentation,
 	resolveLocationShowFlourishes,
 	resolveLocationShowNavigationButtons,
 	resolvePortraitEnabled,
@@ -17,8 +17,7 @@ describe('invitation presentation contract', () => {
 			false,
 		);
 		expect(resolveLocationShowNavigationButtons(undefined, false)).toBe(false);
-		expect(resolveItineraryPresentation({ behavior: 'timeline-paper' })).toBe('timeline-paper');
-		expect(resolveItineraryPresentation({ behavior: 'standard' })).toBe('standard');
+		expect(ITINERARY_VARIANTS).toEqual(['standard', 'timeline-paper', 'editorial-ledger', 'editorial-program']);
 		expect(resolvePortraitEnabled({ portraitEnabled: true }, false)).toBe(true);
 		expect(resolvePortraitEnabled(undefined, true)).toBe(true);
 		expect(() =>

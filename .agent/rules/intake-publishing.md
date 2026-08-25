@@ -62,15 +62,13 @@ spellings as equal during the transition. Inventory legacy Published values with
 `pnpm invitation:published-audit` (read-only).
 
 **`showFlourishes` ownership:** canonical field is `location.presentationOptions.showFlourishes`.
-Legacy `sectionStyles.location.showFlourishes` is folded into the canonical field when absent
-(`foldLocationPresentationOptions`) and stripped on publish. Conflicts are reported by the
-published audit, not silently averaged.
+Legacy `sectionStyles.location.showFlourishes` is inspected only by the read-only audit/migration
+boundary and is rejected by canonical publication input. It must not be folded by the adapter or
+new draft mapper.
 
-Location navigation visibility follows the same one-way boundary:
-`location.presentationOptions.showNavigationButtons` is canonical; legacy
-`sectionStyles.location.showNavigationButtons` is folded only when the canonical value is absent and
-is stripped from the publication projection. The adapter retains the legacy fallback for unchanged
-published records.
+Location navigation visibility follows the same boundary:
+`location.presentationOptions.showNavigationButtons` is canonical; legacy section-style values are
+audit/migration input only and are rejected by the canonical adapter path.
 
 Canonical conversion boundaries — do not add parallel mappings:
 
@@ -86,14 +84,14 @@ Rules:
   published revision always goes through `mapNestedToDraftContent`.
 - Persisted drafts must not carry published-only content: `theme`, `templateId`, `visualProfileId`,
   `_assetSlug`, `isDemo`, `navigation`, `sectionStyles`, `rsvp.personalizedAccess.noteText`,
-  `rsvp.whatsappConfig` (folded to `whatsappPhone`), `gifts.variant` (presentation lives on
-  `sectionStyles.gifts.variant`), legacy `location.indications[].icon`, or obsolete
+  `rsvp.whatsappConfig` (folded to `whatsappPhone`), legacy `location.indications[].icon`, or obsolete
   `countdown.subtitlePrefix`. Publish restores published-only fields from the invitation record or
   the prior published revision.
-- `normalizeDraftContent` is the single normalization boundary. Editor hydration, preview, publish
-  projection and draft writes all pass through it, so legacy hybrid drafts converge on read and on
-  write. It is deterministic, idempotent and non-destructive, and throws `DraftNormalizationError`
-  with explicit paths instead of dropping data it cannot express.
+- `normalizeDraftContent` is the single legacy-draft migration boundary. Editor hydration, preview,
+  publish projection, and draft writes must emit the canonical contract; no runtime adapter or
+  publish mapper may normalize legacy aliases.
+- Legacy draft migration is deterministic, idempotent, and non-destructive, and throws
+  `DraftNormalizationError` with explicit paths instead of dropping data it cannot express.
 - `mapDraftToPublished` stays strict: it rejects a family draft that still holds published-shaped
   structures rather than silently dropping `groups`, `children` or `godparentGroups`.
 - Repair legacy drafts with `pnpm invitation:draft-canonicalize --slug <slug> --target <env>`

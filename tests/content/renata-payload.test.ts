@@ -69,11 +69,14 @@ describe('XV Renata provision contract', () => {
 	});
 
 	it('does not register a Renata key in shared legacy intersection profiles', () => {
-		const shared = fs.readFileSync(
-			path.join(process.cwd(), 'src/lib/invitation/variant-normalization.ts'),
+		expect(
+			fs.existsSync(path.join(process.cwd(), 'src/lib/invitation/variant-normalization.ts')),
+		).toBe(false);
+		const registry = fs.readFileSync(
+			path.join(process.cwd(), 'src/lib/invitation/section-variants.ts'),
 			'utf8',
 		);
-		expect(shared).not.toMatch(/^\s*renata\s*:/m);
+		expect(registry).not.toMatch(/renata|romina|victoria|alba/iu);
 	});
 
 	it('ships a Lane A profile that separates accent from emphasis and resets hero cascade', () => {

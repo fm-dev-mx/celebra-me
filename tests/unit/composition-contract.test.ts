@@ -34,7 +34,7 @@ describe('invitation composition contract', () => {
 			family: 'neutral',
 			source: 'gallery',
 		});
-		expect(resolveRenderPlanIntersection(undefined, 'rsvp')).toEqual({
+		expect(resolveRenderPlanIntersection({ intersections: {} }, 'rsvp')).toEqual({
 			family: 'neutral',
 			source: 'rsvp',
 		});

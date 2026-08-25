@@ -85,7 +85,6 @@ describe('prepareInvitationPageContext', () => {
 		expect(context.renderPlan).toContainEqual(
 			expect.objectContaining({
 				type: 'interlude',
-				variant: 'standard',
 			}),
 		);
 	});
@@ -122,21 +121,21 @@ describe('prepareInvitationPageContext', () => {
 
 		expect(describeRenderPlan(context.renderPlan)).toEqual([
 			'quote',
-			'family',
-			'interlude',
-			'gallery',
-			'interlude',
 			'countdown',
+			'interlude',
+			'family',
 			'interlude',
 			'location',
 			'itinerary',
-			'personalized-access',
-			'rsvp',
+			'gallery',
+			'interlude',
 			'gifts',
 			'interlude',
+			'personalized-access',
+			'rsvp',
 			'thankYou',
 		]);
-		expect(context.viewModel.sectionOrder).toBeUndefined();
+		expect(context.viewModel.sectionOrder).toEqual(fixture.sectionOrder);
 	});
 
 	it('builds explicit section order for the enchanted rose demo', () => {
@@ -288,7 +287,6 @@ const baseViewModel = {
 	isDemo: false,
 	theme: { preset: 'jewelry-box' as const, themeClass: 'theme-preset--jewelry-box' },
 	hero: {
-		structuralVariant: 'standard' as const,
 		name: 'Test',
 		label: 'Event',
 		date: '2027-01-01',
@@ -301,6 +299,8 @@ const baseViewModel = {
 		showContactCta: true,
 	},
 	interludes: [],
+	sectionOrder: [],
+	composition: { intersections: {} },
 };
 
 describe('buildPageContextFromViewModel', () => {
@@ -354,7 +354,7 @@ describe('buildPageContextFromViewModel', () => {
 		expect(describeRenderPlan(context.renderPlan)).toEqual(['quote', 'rsvp']);
 	});
 
-	it('includes expected sections when sectionOrder is missing', () => {
+	it('renders no sections when sectionOrder is missing', () => {
 		const viewModel = {
 			...baseViewModel,
 			id: 'default-invitation',
@@ -369,8 +369,7 @@ describe('buildPageContextFromViewModel', () => {
 		});
 
 		const plan = describeRenderPlan(context.renderPlan);
-		expect(plan).toContain('location');
-		expect(plan).toContain('rsvp');
+		expect(plan).toEqual([]);
 	});
 
 	it('resolves footerVariant from theme.preset', () => {
@@ -416,7 +415,7 @@ describe('buildPageContextFromViewModel', () => {
 			title: 'Venues Hero',
 			sections: {
 				location: {
-					structuralVariant: 'standard',
+					variant: 'standard',
 					venues: [
 						{
 							time: '2:00 PM',
@@ -445,7 +444,7 @@ describe('buildPageContextFromViewModel', () => {
 			title: 'Legacy Hero',
 			sections: {
 				location: {
-					structuralVariant: 'standard',
+					variant: 'standard',
 					reception: { time: '6:00 PM', venueName: 'Salón Real' },
 				},
 			},
@@ -719,7 +718,7 @@ describe('buildPageContextFromViewModel', () => {
 			id: 'luna-y-estrella',
 			sections: {
 				location: {
-					structuralVariant: 'standard',
+					variant: 'standard',
 					visibility: 'after-rsvp',
 					presentationOptions: { revealSurface: 'rsvp' },
 					ceremony: {
@@ -788,7 +787,6 @@ describe('buildPageContextFromViewModel', () => {
 			sections: {
 				location: {
 					variant: 'standard' as const,
-					structuralVariant: 'standard' as const,
 					visibility: 'after-rsvp' as const,
 					introHeading: 'Ubicación',
 					ceremony: {
@@ -838,7 +836,6 @@ describe('buildPageContextFromViewModel', () => {
 			sections: {
 				location: {
 					variant: 'standard' as const,
-					structuralVariant: 'standard' as const,
 					visibility: 'after-rsvp' as const,
 					introHeading: 'Ubicación',
 					ceremony: {

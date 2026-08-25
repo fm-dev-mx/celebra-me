@@ -248,11 +248,20 @@ describe('adaptEvent', () => {
 		expect(viewModel.hero.backgroundImageMobile?.src).toBe('/images/mobile-bg.webp');
 	});
 
-	it('honors sectionStyles.showFlourishes when presentationOptions is absent', () => {
+	it('honors canonical location presentationOptions', () => {
 		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-editorial-magazine.json');
 		const event = {
 			id: 'event-demos/xv/demo-xv-editorial-magazine',
-			data: fixture,
+			data: {
+				...fixture,
+				location: {
+					...fixture.location,
+					presentationOptions: {
+						...fixture.location?.presentationOptions,
+						showFlourishes: false,
+					},
+				},
+			},
 		} as Parameters<typeof adaptEvent>[0];
 
 		const viewModel = adaptEvent(event);
@@ -294,7 +303,7 @@ describe('adaptEvent', () => {
 		});
 	});
 
-	it('emits standard interlude variants independent of theme preset', () => {
+	it('keeps interludes independent of the theme preset', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv-editorial',
 			data: loadFixture('src/content/event-demos/xv/demo-xv-editorial.json'),
@@ -303,7 +312,7 @@ describe('adaptEvent', () => {
 		const viewModel = adaptEvent(event);
 
 		expect(viewModel.theme.preset).toBe('editorial');
-		expect(viewModel.interludes?.every((i) => i.variant === 'standard')).toBe(true);
+		expect(viewModel.interludes?.every((i) => !('variant' in i))).toBe(true);
 		expect(viewModel.interludes?.length).toBeGreaterThan(0);
 	});
 
@@ -340,7 +349,7 @@ describe('adaptEvent', () => {
 		expect(viewModel.sections.countdown?.targetSource).toBe('legacyHeroDate');
 	});
 
-	it('builds countdown data from eventTiming when legacy content has no sectionOrder', () => {
+	it('does not build countdown data when legacy content has no sectionOrder', () => {
 		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
 
 		const event = {
@@ -348,15 +357,13 @@ describe('adaptEvent', () => {
 			data: {
 				...fixture,
 				countdown: undefined,
+				sectionOrder: undefined,
 			},
 		} as Parameters<typeof adaptEvent>[0];
 
 		const viewModel = adaptEvent(event);
 
-		expect(viewModel.sections.countdown).toBeDefined();
-		expect(viewModel.sections.countdown?.targetIso).toBe(viewModel.hero.date);
-		expect(viewModel.sections.countdown?.title).toBe('¡Falta muy poco!');
-		expect(viewModel.sections.countdown?.footerText).toBeDefined();
+		expect(viewModel.sections.countdown).toBeUndefined();
 	});
 
 	it('countdown is undefined when neither countdown content nor resolvable target exists', () => {
@@ -368,6 +375,7 @@ describe('adaptEvent', () => {
 				...fixture,
 				countdown: undefined,
 				eventTiming: undefined,
+				sectionOrder: undefined,
 				hero: {
 					...fixture.hero,
 					date: '2026-06-21',
@@ -402,7 +410,7 @@ describe('adaptEvent', () => {
 
 		const viewModel = adaptEvent(event);
 
-		expect(viewModel.sections.countdown).toBeDefined();
+		expect(viewModel.sections.countdown).toBeUndefined();
 		expect(viewModel.sectionOrder).toBeDefined();
 		expect(viewModel.sectionOrder).not.toContain('countdown');
 	});

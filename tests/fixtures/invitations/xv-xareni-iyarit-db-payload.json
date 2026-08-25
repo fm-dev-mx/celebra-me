@@ -26,18 +26,8 @@
         "rsvp",
         "thankYou"
     ],
-    "sectionStyles": {
-        "location": {
-            "showFlourishes": true
-        },
-        "rsvp": {
-            "labels": {
-                "name": "Tu nombre",
-                "guestCount": "Personas que asistirán",
-                "attendance": "¿Me acompañas?",
-                "confirmButton": "Confirmar asistencia"
-            }
-        }
+    "composition": {
+        "intersections": {}
     },
     "hero": {
         "name": "Xareni Iyarit",
@@ -47,13 +37,15 @@
         "backgroundImageDesktop": "heroDesktop",
         "portrait": "portrait",
         "focalPoint": "50% 38%",
-        "focalPointMobile": "50% 32%"
+        "focalPointMobile": "50% 32%",
+        "variant": "standard"
     },
     "quote": {
         "text": "La vida es una aventura atrevida o no es nada.",
         "author": "Helen Keller"
     },
     "family": {
+        "variant": "standard",
         "featuredImage": "family",
         "parents": {
             "father": "Ignacio Sabino Sánchez Hernández",
@@ -80,14 +72,13 @@
         "focalPoint": "50% 38%"
     },
     "countdown": {
+        "variant": "standard",
         "title": "La celebración comienza en",
         "footerText": "12 de septiembre de 2026, Apizaco, Tlaxcala"
     },
     "itinerary": {
+        "variant": "timeline-paper",
         "title": "Programa",
-        "presentation": {
-            "behavior": "timeline-paper"
-        },
         "items": [
             {
                 "iconName": "Church",
@@ -122,6 +113,10 @@
         ]
     },
     "location": {
+        "variant": "standard",
+        "presentationOptions": {
+            "showFlourishes": true
+        },
         "introEyebrow": "Nos vemos en Apizaco",
         "introHeading": "Sábado, 12 de septiembre de 2026",
         "introLede": "Será una alegría compartir contigo esta celebración.",
@@ -190,6 +185,7 @@
         ]
     },
     "gifts": {
+        "variant": "standard",
         "title": "Regalos",
         "subtitle": "Tu presencia es mi mejor regalo. Si deseas tener un detalle conmigo, te comparto estas opciones:",
         "items": [
@@ -216,12 +212,22 @@
         ]
     },
     "rsvp": {
+        "variant": "standard",
         "title": "Confirma tu asistencia",
         "subcopy": "Tu respuesta nos ayuda a preparar cada detalle para recibirte con mucho cariño.",
         "guestCap": 4,
         "accessMode": "hybrid",
         "confirmationMessage": "Gracias por confirmar. Me dará mucha alegría compartir esta noche contigo.",
-        "confirmationMode": "api"
+        "confirmationMode": "api",
+        "labels": {
+            "name": "Tu nombre",
+            "guestCount": "Personas que asistirán",
+            "attendance": "¿Me acompañas?",
+            "confirmButton": "Confirmar asistencia"
+        },
+        "personalizedAccess": {
+            "variant": "ornamented"
+        }
     },
     "thankYou": {
         "variant": "editorial-back-cover",

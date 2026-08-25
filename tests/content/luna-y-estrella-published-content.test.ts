@@ -20,16 +20,7 @@ export const lunaYEstrellaContent = {
 		startsAtUtc: '2026-08-01T20:00:00.000Z',
 	},
 	sectionOrder: ['quote', 'family', 'countdown', 'personalizedAccess', 'rsvp', 'thankYou'],
-	sectionStyles: {
-		rsvp: {
-			labels: {
-				name: 'Nombre completo',
-				guestCount: 'Personas que asistirán',
-				attendance: '¿Nos acompañará?',
-				confirmButton: 'Confirmar asistencia',
-			},
-		},
-	},
+	composition: { intersections: {} },
 	hero: {
 		name: 'Luna Yamileth',
 		secondaryName: 'Estrella Abigail',
@@ -37,12 +28,14 @@ export const lunaYEstrellaContent = {
 		date: '2026-08-01T20:00:00.000Z',
 		backgroundImage: '/images/events/luna-y-estrella/hero.jpg',
 		focalPoint: '50% 42%',
+		variant: 'standard',
 	},
 	quote: {
 		text: 'Jesús es el pan de vida que llena nuestro corazón de amor y esperanza.',
 		author: 'Juan 6:35',
 	},
 	family: {
+		variant: 'standard',
 		parents: {
 			father: 'Juan Manuel Villa Ponce',
 			mother: 'Estefanía Báez Pérez',
@@ -69,10 +62,12 @@ export const lunaYEstrellaContent = {
 		],
 	},
 	countdown: {
+		variant: 'standard',
 		title: 'Nos acercamos con alegría',
 		footerText: 'Sábado, 1 de agosto de 2026',
 	},
 	location: {
+		variant: 'standard',
 		visibility: 'after-rsvp',
 		presentationOptions: {
 			revealSurface: 'rsvp',
@@ -94,6 +89,13 @@ export const lunaYEstrellaContent = {
 		],
 	},
 	rsvp: {
+		variant: 'standard',
+		labels: {
+			name: 'Nombre completo',
+			guestCount: 'Personas que asistirán',
+			attendance: '¿Nos acompañará?',
+			confirmButton: 'Confirmar asistencia',
+		},
 		title: 'Confirma tu asistencia',
 		subcopy: 'Su respuesta nos ayuda a preparar cada detalle de esta celebración de fe.',
 		guestCap: 4,
@@ -101,6 +103,7 @@ export const lunaYEstrellaContent = {
 		confirmationMessage:
 			'Gracias por confirmar. Será un honor compartir este día tan especial con ustedes.',
 		confirmationMode: 'api',
+		personalizedAccess: { variant: 'standard' },
 		responseMessages: {
 			confirmed: {
 				title: 'Gracias por confirmar',
@@ -113,6 +116,7 @@ export const lunaYEstrellaContent = {
 		},
 	},
 	thankYou: {
+		variant: 'standard',
 		message:
 			'Gracias por compartir con nosotras este día de fe. Su presencia y sus bendiciones quedarán guardadas con mucho cariño.',
 		closingName: 'Luna y Estrella',

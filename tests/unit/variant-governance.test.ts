@@ -1,16 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {
-	FAMILY_STRUCTURAL_VARIANTS,
-	GALLERY_LAYOUT_VARIANTS,
-	GIFTS_STRUCTURAL_VARIANTS,
-	HERO_STRUCTURAL_VARIANTS,
-	ITINERARY_STRUCTURAL_VARIANTS,
-	LOCATION_STRUCTURAL_VARIANTS,
-	PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS,
-	RSVP_STRUCTURAL_VARIANTS,
-	THANK_YOU_STRUCTURAL_VARIANTS,
-} from '@/lib/invitation/structural-variants';
+	CANONICAL_VARIANT_CUTOVER_MANIFEST,
+	CANONICAL_VARIANT_REGISTRY,
+} from '@/lib/invitation/section-variants';
 
 const read = (relativePath: string) =>
 	fs.readFileSync(path.join(process.cwd(), relativePath), 'utf8');
@@ -39,64 +32,63 @@ const reusableRendererSurfaces = [
 	'src/components/invitation/ThankYou.astro',
 ] as const;
 
-const canonicalVariantCss = [
-	'src/styles/themes/sections/hero/_editorial-cover.scss',
-	'src/styles/themes/sections/hero/_split-cover.scss',
-	'src/styles/themes/sections/family/_split-groups.scss',
-	'src/styles/themes/sections/family/_asymmetric-groups.scss',
-	'src/styles/themes/sections/location/_split-map.scss',
-	'src/styles/themes/sections/location/_stacked-venue-plates.scss',
-	'src/styles/themes/sections/gallery/_editorial-mosaic.scss',
-	'src/styles/themes/sections/gallery/_magazine-spread.scss',
-	'src/styles/themes/sections/gallery/_feature-mosaic.scss',
-	'src/styles/themes/sections/gallery/_feature-stack.scss',
-	'src/styles/themes/sections/gallery/_paired-feature-band.scss',
-	'src/styles/themes/sections/gallery/_index-choreography.scss',
-	'src/styles/themes/sections/itinerary/_timeline-paper.scss',
-	'src/styles/themes/sections/itinerary/_editorial-ledger.scss',
-	'src/styles/themes/sections/itinerary/_editorial-program.scss',
-	'src/styles/themes/sections/gifts/_editorial-catalog.scss',
-	'src/styles/themes/sections/rsvp/_editorial-press-pass.scss',
-	'src/styles/themes/sections/rsvp/_formal-register.scss',
-	'src/styles/themes/sections/personalized-access/_editorial-pass.scss',
-	'src/styles/themes/sections/personalized-access/_formal-pass.scss',
-	'src/styles/themes/sections/thank-you/_editorial-back-cover.scss',
-	'src/styles/themes/sections/thank-you/_full-bleed-photo.scss',
-] as const;
-
 const originIdentity =
 	/romina|rios|chaparro|alba|quinonez|daniela|martin|victoria|roberto|abril|michelle|becerra|valentina|xareni/iu;
-const historicalThemeIdentity =
-	/premiere-floral|editorial-magazine|luxury-hacienda|celestial-blue/iu;
 
+const normalizeManifestCell = (value: string) => value.replaceAll('`', '').replace(/\s+/gu, ' ').trim();
+
+function readCutoverManifestRows() {
+	return read('docs/domains/theme/variant-cutover-manifest.md')
+		.split(/\r?\n/u)
+		.filter((line) => line.startsWith('| `'))
+		.map((line) => line.split('|').slice(1, -1).map(normalizeManifestCell));
+}
+
+const canonicalVariantRenderers = [
+	'src/components/invitation/Hero.astro',
+	'src/components/invitation/EditorialCoverHero.astro',
+	'src/components/invitation/Family.astro',
+	'src/components/invitation/EventLocation.astro',
+	'src/components/invitation/Gallery.astro',
+	'src/components/invitation/PhotoGallery.astro',
+	'src/components/invitation/GalleryLightbox.astro',
+	'src/components/invitation/Itinerary.astro',
+	'src/components/invitation/Countdown.astro',
+	'src/components/invitation/Gifts.astro',
+	'src/components/invitation/LockedRsvpPreview.astro',
+	'src/components/invitation/ThankYou.astro',
+	'src/components/invitation/PersonalizedAccess.astro',
+	'src/components/invitation/Quote.astro',
+] as const;
 describe('canonical variant governance', () => {
 	it('keeps documentation synchronized with the closed variant vocabulary', () => {
 		const inventory = read('docs/domains/theme/variant-system.md');
 		const compatibility = read('docs/domains/theme/variant-compatibility.md');
 		const creationContract = read('docs/core/invitation-creation-contract.md');
 		const rominaReference = read('docs/invitations/romina-rios-chaparro.md');
+		const manifestRows = readCutoverManifestRows();
 
-		for (const identifier of [
-			...HERO_STRUCTURAL_VARIANTS,
-			...FAMILY_STRUCTURAL_VARIANTS,
-			...LOCATION_STRUCTURAL_VARIANTS,
-			...GALLERY_LAYOUT_VARIANTS,
-			...ITINERARY_STRUCTURAL_VARIANTS,
-			...GIFTS_STRUCTURAL_VARIANTS,
-			...RSVP_STRUCTURAL_VARIANTS,
-			...PERSONALIZED_ACCESS_STRUCTURAL_VARIANTS,
-			...THANK_YOU_STRUCTURAL_VARIANTS,
-		]) {
+		for (const { variant: identifier } of CANONICAL_VARIANT_REGISTRY) {
 			expect(inventory).toContain(identifier);
 		}
 
-		expect(compatibility).toContain('Removed (no theme→variant remapping)');
-		expect(compatibility).toContain('Still accepted (input → canonical)');
-		expect(compatibility).toContain('*.structuralVariant');
-		expect(compatibility).not.toContain('VARIANT_COMPATIBILITY_ALIASES');
+		expect(manifestRows).toHaveLength(CANONICAL_VARIANT_CUTOVER_MANIFEST.length);
+		expect(manifestRows).toEqual(
+			CANONICAL_VARIANT_CUTOVER_MANIFEST.map((entry) => [
+				`${entry.section}.${entry.variant}`,
+				entry.prerequisites.join(', '),
+				entry.cssOwner,
+				entry.unresolvedVisualVerification,
+				entry.requiredPersistedContentTransformation,
+			]),
+		);
+
+		expect(compatibility).toContain('Removed compatibility inputs');
+		expect(compatibility).toContain('Deployment blocked');
+		expect(compatibility).toContain('rejected rather than converted');
 
 		expect(inventory).toContain(
-			'Invitation configuration → section-owned typed variant → renderer + isolated variant SCSS → shared primitives',
+			'Invitation source → canonical schema → adapter → render plan → section DOM + isolated CSS',
 		);
 		expect(creationContract).toContain(
 			'A reusable variant may originate during invitation work',
@@ -125,43 +117,27 @@ describe('canonical variant governance', () => {
 	});
 
 	it('uses semantic, section-owned CSS entrypoints with no origin dependency', () => {
-		for (const relativePath of canonicalVariantCss) {
+		for (const { cssOwner: relativePath } of CANONICAL_VARIANT_REGISTRY.filter((entry) =>
+			entry.cssOwner.startsWith('src/'),
+		)) {
 			expect(fs.existsSync(path.join(process.cwd(), relativePath))).toBe(true);
 			const source = read(relativePath);
 			expect(source).toContain('data-variant');
 			expect(source).not.toMatch(originIdentity);
-			expect(source).not.toMatch(historicalThemeIdentity);
 			expect(source).not.toMatch(/invitation-profiles|assets\/images\/events/iu);
 		}
 	});
 
 	it('keeps structural CSS dispatch semantic and separate from visual preset dispatch', () => {
 		const resolver = read('src/lib/invitation/section-css-resolver-map.ts');
-		const structuralMap = resolver.slice(
-			resolver.indexOf('const STRUCTURAL_VARIANT_TO_ENTRYPOINT'),
-			resolver.indexOf('export function buildSectionUrlMap'),
-		);
-		const galleryMap = resolver.slice(
-			resolver.indexOf('const GALLERY_VARIANT_TO_ENTRYPOINT'),
-			resolver.indexOf('const STRUCTURAL_VARIANT_TO_ENTRYPOINT'),
-		);
-
-		expect(structuralMap).toContain("'split-cover': 'split-cover'");
-		expect(structuralMap).toContain("'timeline-paper': 'timeline-paper'");
-		expect(structuralMap).toContain("'editorial-ledger': 'editorial-ledger'");
-		expect(structuralMap).toContain("'editorial-program': 'editorial-program'");
-		expect(structuralMap).toContain("'formal-register': 'formal-register'");
-		expect(structuralMap).toContain("'formal-pass': 'formal-pass'");
-		expect(structuralMap).toContain("'stacked-venue-plates': 'stacked-venue-plates'");
-		expect(structuralMap).toContain("'asymmetric-groups': 'asymmetric-groups'");
-		expect(galleryMap).toContain("'feature-stack': 'feature-stack'");
-		expect(galleryMap).toContain("'paired-feature-band': 'paired-feature-band'");
-		expect(structuralMap).not.toMatch(originIdentity);
-		expect(structuralMap).not.toMatch(historicalThemeIdentity);
-		expect(structuralMap).not.toMatch(/slug|visualProfileId|themePreset/);
+		expect(resolver).toContain('CANONICAL_VARIANT_REGISTRY');
+		expect(resolver).not.toContain('STRUCTURAL_VARIANT_TO_ENTRYPOINT');
+		expect(resolver).not.toMatch(originIdentity);
+		const sectionDispatch = resolver.slice(resolver.indexOf('function resolveSectionVariantLoadItems'));
+		expect(sectionDispatch).not.toMatch(/slug|visualProfileId/);
 	});
 
-	it('normalizes compatibility through one implementation boundary only', () => {
+	it('has no runtime variant normalizer or compatibility aliases', () => {
 		const consumers = listFiles('src')
 			.filter((relativePath) => /\.(?:ts|tsx|astro)$/u.test(relativePath))
 			.filter((relativePath) =>
@@ -169,12 +145,32 @@ describe('canonical variant governance', () => {
 			)
 			.sort();
 
-		expect(consumers).toEqual([
+		expect(consumers).toEqual([]);
+		for (const relativePath of [
+			'src/lib/adapters/types.ts',
 			'src/lib/adapters/event.ts',
-			'src/lib/intake/services/draft-content-mapper.ts',
-			'src/lib/invitation/variant-normalization.ts',
 			'src/lib/schemas/content/base-event.schema.ts',
-		]);
+			'src/lib/schemas/content/interludes.schema.ts',
+			'src/lib/intake/mappers/draft-to-published.mapper.ts',
+			'src/lib/invitation/render-plan.ts',
+			'src/lib/invitation/section-render-data.ts',
+		]) {
+			const source = read(relativePath);
+			expect(source).not.toMatch(
+				/structuralVariant|visualVariant|sectionStyles|presentation\.behavior|ITINERARY_(?:BEHAVIOR|PRESENTATION)/,
+			);
+		}
+		expect(fs.existsSync(path.join(process.cwd(), 'src/lib/invitation/itinerary-presentation.ts'))).toBe(
+			false,
+		);
+	});
+
+	it('requires canonical section renderers to receive variants explicitly', () => {
+		for (const relativePath of canonicalVariantRenderers) {
+			const source = read(relativePath);
+			expect(source).not.toMatch(/variant\?:/u);
+			expect(source).not.toMatch(/variant\s*=\s*['"][^'"]+['"]/u);
+		}
 	});
 
 	it('propagates canonical variants to an explicit DOM contract', () => {

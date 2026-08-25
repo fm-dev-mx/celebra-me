@@ -50,12 +50,13 @@ const baseDemoContent = {
 		'gifts',
 		'thankYou',
 	],
+	composition: { intersections: {} },
 	hero: {
 		name: 'Lucía García',
 		label: 'Mis XV Años',
 		date: '2026-06-15',
 		backgroundImage: { type: 'internal', key: 'hero' },
-		variant: 'jewelry-box',
+		variant: 'standard',
 	},
 	envelope: {
 		disabled: false,
@@ -64,11 +65,19 @@ const baseDemoContent = {
 		sealInitials: 'L·G',
 		microcopy: 'Toca para abrir',
 	},
-	gallery: { title: 'Galería', items: [] },
-	itinerary: { title: 'Itinerario', items: [] },
-	countdown: { title: 'Falta poco', footerText: 'Prepárate' },
+	gallery: { variant: 'uniform-grid', title: 'Galería', items: [] },
+	family: { variant: 'standard', parents: { father: 'Demo Father', mother: 'Demo Mother' } },
+	itinerary: { variant: 'standard', title: 'Itinerario', items: [] },
+	location: { variant: 'standard' },
+	countdown: { variant: 'standard', title: 'Falta poco', footerText: 'Prepárate' },
+	rsvp: { variant: 'standard', personalizedAccess: { variant: 'standard' } },
+	gifts: { variant: 'standard', items: [] },
+	thankYou: {
+		variant: 'standard',
+		message: 'Gracias por acompañarnos.',
+		closingName: 'Celebrante',
+	},
 	interludes: [],
-	sectionStyles: {},
 	navigation: [{ label: 'Inicio', href: '#inicio' }],
 	sharing: { whatsappTemplate: '¡Hola!' },
 };
@@ -85,6 +94,7 @@ const baseInput = {
 		hero: { name: 'Ana Sofia', label: 'Mis XV Anos', date: '2027-11-20' },
 	},
 	demoContent: baseDemoContent,
+	priorPublishedContent: { ...baseDemoContent, sharing: undefined },
 };
 
 describe('mapDraftToPublished', () => {
@@ -647,7 +657,12 @@ describe('mapDraftToPublished', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
 			priorPublishedContent: {
+				sectionOrder: baseDemoContent.sectionOrder,
+				composition: baseDemoContent.composition,
+				countdown: { variant: 'standard' },
+				hero: { variant: 'standard' },
 				thankYou: {
+					variant: 'standard',
 					message: 'Prior message',
 					closingName: 'Prior Name',
 					closingPhrase: 'Con cariño',
@@ -812,6 +827,7 @@ describe('mapDraftToPublished', () => {
 		const demoWithLocation = {
 			...baseDemoContent,
 			location: {
+				variant: 'standard',
 				ceremony: { image: 'mapCeremony', venueEvent: 'Misa' },
 				reception: { image: 'mapReception', venueEvent: 'Fiesta' },
 			},
@@ -1173,6 +1189,7 @@ describe('mapDraftToPublished', () => {
 		const demoWithLocation = {
 			...baseDemoContent,
 			location: {
+				variant: 'standard',
 				ceremony: {
 					venueName: 'Demo Church',
 					address: 'Demo St',
@@ -1219,10 +1236,10 @@ describe('mapDraftToPublished', () => {
 		expect(result.itinerary).toBeUndefined();
 	});
 
-	it('uses neutral countdown text for non-demo invitations', () => {
+	it('uses the explicit prior countdown contract for non-demo invitations', () => {
 		const result = mapDraftToPublished(baseInput);
 
-		expect(result.countdown).toBeUndefined();
+		expect(result.countdown).toMatchObject({ variant: 'standard' });
 	});
 
 	it('uses editable countdown copy for real invitations when draft provides it', () => {
@@ -1349,6 +1366,7 @@ describe('mapDraftToPublished', () => {
 		const demoWithLocation = {
 			...baseDemoContent,
 			location: {
+				variant: 'standard',
 				introEyebrow: 'EL CAMINO AL PALACIO',
 				introHeading: 'Ubicación',
 				introLede: 'Guarda la ruta.',
@@ -1416,10 +1434,12 @@ describe('mapDraftToPublished', () => {
 
 	it('materializes demo gallery and itinerary when client draft omits them', () => {
 		const demoGallery = {
+			variant: 'uniform-grid',
 			title: 'Galería demo',
 			items: [{ image: 'gallery01', caption: 'Demo' }],
 		};
 		const demoItinerary = {
+			variant: 'standard',
 			title: 'Programa demo',
 			items: [{ iconName: 'Calendar', label: 'Inicio', time: '18:00' }],
 		};
@@ -1562,11 +1582,11 @@ describe('mapDraftToPublished', () => {
 		}
 	});
 
-	it('includes interludes and sectionStyles from demo content when isDemo is true', () => {
+	it('includes interludes and canonical section content when isDemo is true', () => {
 		const result = mapDraftToPublished({ ...baseInput, isDemo: true });
 
 		expect(Array.isArray(result.interludes)).toBe(true);
-		expect(result.sectionStyles).toBeDefined();
+		expect(result.sectionStyles).toBeUndefined();
 		// With isDemo: true, demo sharing data (whatsappTemplate) is included
 		expect(result.sharing).toBeDefined();
 	});
@@ -2195,7 +2215,7 @@ describe('edge cases — blank/empty/null sections', () => {
 		});
 	});
 
-	it('uses safe hero fallback when both draft and demo hero are undefined', () => {
+	it('reuses prior hero when draft and demo hero are undefined', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
 			draftContent: {
@@ -2208,11 +2228,33 @@ describe('edge cases — blank/empty/null sections', () => {
 			},
 		});
 		expect(result.hero).toMatchObject({
-			name: 'Test Project',
-			label: 'Invitación Especial',
-			date: '',
+			name: 'Lucía García',
+			label: 'Mis XV Años',
+			date: '2026-06-15',
 			backgroundImage: { type: 'internal', key: 'hero' },
+			variant: 'standard',
 		});
+	});
+
+	it('throws when hero is missing from draft, demo, and prior', () => {
+		expect(() =>
+			mapDraftToPublished({
+				...baseInput,
+				draftContent: {
+					...baseInput.draftContent,
+					hero: undefined,
+				},
+				demoContent: {
+					...baseDemoContent,
+					hero: undefined,
+				},
+				priorPublishedContent: {
+					...baseDemoContent,
+					hero: undefined,
+					sharing: undefined,
+				},
+			}),
+		).toThrow('Published content requires an explicit hero.variant.');
 	});
 
 	it('omits family labels object when no label fields are provided (not empty object)', () => {
@@ -2456,7 +2498,12 @@ describe('sharing section mapping', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
 			priorPublishedContent: {
+				sectionOrder: baseDemoContent.sectionOrder,
+				composition: baseDemoContent.composition,
+				countdown: { variant: 'standard' },
+				hero: { variant: 'standard' },
 				location: {
+					variant: 'standard',
 					ceremony: { venueEvent: 'Misa de Gracias' },
 					reception: { venueEvent: 'Brindis y Baile' },
 				},

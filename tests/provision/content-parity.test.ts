@@ -296,7 +296,7 @@ describe('semantic parity comparison', () => {
 		);
 	});
 
-	it('treats itinerary.presentation.behavior as equal to canonical itinerary.variant', () => {
+	it('reports legacy itinerary.presentation.behavior as persisted semantic drift', () => {
 		const local = clientSnapshot({
 			publishedContent: {
 				hero: { name: 'Ana' },
@@ -314,7 +314,7 @@ describe('semantic parity comparison', () => {
 		});
 		expect(
 			compareSemanticInvitationSnapshots('local', local, 'production', production),
-		).toEqual([]);
+		).toEqual(expect.arrayContaining([expect.objectContaining({ entity: 'published_invitation_content' })]));
 	});
 
 	it('fails when itinerary variants are materially different', () => {

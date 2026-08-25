@@ -8,7 +8,6 @@
 Gallery separates reusable layout from visual skin:
 
 - `gallery.variant` is the required canonical layout authority.
-- `gallery.visualVariant` is an optional theme skin.
 - `gallery.presentation`, `presentationOptions.mobileBrowse`, item order, focal points, captions,
   and item `layoutRole` are orthogonal typed capabilities.
 
@@ -35,15 +34,13 @@ layout. The existing presentation validator rejects incompatible item-role combi
 
 ## Input compatibility
 
-Legacy `single` and theme-named values are accepted only by the single input normalizer. They become
-a semantic layout and, when needed, a separate `visualVariant` before reaching the canonical schema
-or adapter. New managed definitions, demos, templates, editor drafts, and publication output must
-write the semantic layout directly. See the complete alias and retirement register in
+Legacy `single`, theme-named values, and `sectionStyles` aliases are rejected by the canonical
+schema. Managed definitions, demos, templates, editor drafts, and publication output write the
+semantic layout directly. See the deployment-only migration register in
 [`variant-compatibility.md`](variant-compatibility.md).
 
-Unknown values are preserved by normalization and rejected by the canonical schema; they do not
-resolve to `uniform-grid` silently. Conflicting canonical and legacy layout inputs fail closed with
-a typed conflict error.
+Unknown values fail at the canonical schema boundary; they do not resolve to `uniform-grid` or any
+other layout silently.
 
 ## Invitation-specific visual treatment
 
