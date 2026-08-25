@@ -3,7 +3,7 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	padding: 2rem;
+	padding: 2rem 2rem 5rem;
 	background-color: var(--color-surface-primary);
 	position: relative;
 	overflow: hidden;
@@ -95,6 +95,36 @@
 		margin: 0;
 	}
 
+	&__capture {
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1rem;
+	}
+
+	&__file-input {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+
+	&__status {
+		font-family: var(--font-body, 'EB Garamond', serif);
+		font-size: 1.05rem;
+		line-height: 1.5;
+		color: var(--color-text-on-light);
+		margin: 0;
+		max-width: 36ch;
+
+		&--error {
+			color: var(--color-state-danger-text, var(--color-text-primary));
+		}
+	}
+
 	&__actions {
 		margin-top: 1rem;
 		display: flex;
@@ -134,6 +164,19 @@
 				color: var(--color-surface-primary);
 			}
 		}
+
+		&:disabled,
+		&.is-disabled {
+			opacity: 60%;
+			pointer-events: none;
+			transform: none;
+		}
+	}
+
+	button#{&}__btn {
+		border: 0;
+		cursor: pointer;
+		appearance: none;
 	}
 
 	&__footer {

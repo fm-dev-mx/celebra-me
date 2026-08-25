@@ -149,6 +149,11 @@ secrets for invitation image upload (Astro API + `invitation:release` CLI). Neve
 `PUBLIC_CLOUDINARY_*` equivalents or place real Cloudinary values in tracked files. Missing values
 fail closed: invitation image uploads do not fall back to Supabase Storage.
 
+`PUBLIC_VALENTINA_MEMORIES_SIGN_URL` is the browser-safe Valentina memories signer. Production must
+be `https://memories.celebra-me.com/sign/valentina`. Do not infer it from the current host, Preview
+URLs, or a Vercel API route. Missing or invalid values fail closed: `/r/valentina` does not render
+an active file input.
+
 ## Rules
 
 - Use local Supabase defaults for local development: `SUPABASE_URL=http://127.0.0.1:54321` and

@@ -3,12 +3,15 @@ export const prerender = true;
 
 import Layout from '@/layouts/Layout.astro';
 import Icon from '@/components/common/icons/Icon.astro';
+import ValentinaMemoriesCapture from '@/components/memories/ValentinaMemoriesCapture';
 import {
 	VALENTINA_MEMORIES_ROUTE_PATH,
 	valentinaMemoriesPageCopy,
 } from '@/data/valentina-memories.data';
+import { resolveValentinaMemoriesSignUrl } from '@/lib/memories/valentina-memories-client';
 
 const copy = valentinaMemoriesPageCopy;
+const signUrl = resolveValentinaMemoriesSignUrl(import.meta.env.PUBLIC_VALENTINA_MEMORIES_SIGN_URL);
 ---
 
 <Layout
@@ -36,6 +39,8 @@ const copy = valentinaMemoriesPageCopy;
 				<p class="status-page__description">
 					{copy.body}
 				</p>
+
+				<ValentinaMemoriesCapture client:load signUrl={signUrl} />
 
 				<div class="status-page__actions">
 					<a href={copy.primaryCtaHref} class="status-page__btn">

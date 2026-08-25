@@ -27,7 +27,8 @@ describe('valentina memories QR contract', () => {
 		expect(valentinaMemoriesQrParams.backgroundColor).toBe('#FFFFFF');
 		expect(valentinaMemoriesQrParams.pngSizePx).toBeGreaterThanOrEqual(2000);
 		expect(valentinaMemoriesPageCopy.robots).toBe('noindex');
-		expect(valentinaMemoriesPageCopy.body).toMatch(/fotos y videos/i);
+		expect(valentinaMemoriesPageCopy.body).toMatch(/foto o un video/i);
+		expect(valentinaMemoriesPageCopy.body).not.toMatch(/Próximamente/i);
 	});
 });
 

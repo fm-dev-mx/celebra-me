@@ -19,6 +19,7 @@ interface ImportMetaEnv {
 	readonly PUBLIC_GA_MEASUREMENT_ID: string;
 	readonly PUBLIC_META_PIXEL_ID: string;
 	readonly PUBLIC_META_PIXEL_ENABLED: string;
+	readonly PUBLIC_VALENTINA_MEMORIES_SIGN_URL: string;
 	readonly META_CAPI_DELIVERY_MODE: string;
 	readonly META_CAPI_ACCESS_TOKEN: string;
 	readonly META_PIXEL_ID: string;
