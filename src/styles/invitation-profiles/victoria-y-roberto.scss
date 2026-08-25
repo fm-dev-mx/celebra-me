@@ -47,10 +47,11 @@
 	--victoria-surface-radius: 2px;
 	--victoria-fine-border: 1px solid rgb(var(--victoria-terracota-rgb) / 22%);
 	--gallery-single-label-font: var(--victoria-font-label);
+	--gallery-single-label-letter-spacing: 0.18em;
+	--gallery-single-label-color: var(--victoria-meta);
 	--gallery-single-image-border: var(--victoria-fine-border);
 	--gallery-single-divider-color: rgb(var(--victoria-terracota-rgb) / 20%);
-	--gallery-single-max-width: min(28rem, 86vw);
-	--gallery-single-frame-padding: clamp(0.55rem, 1.6vw, 0.85rem);
+	--gallery-single-item-max-width: min(28rem, 86vw);
 	--victoria-soft-shadow: 0 14px 28px rgb(var(--victoria-ink-rgb) / 8%);
 
 	// core surfaces / text — reset champagne jewelry-box defaults toward terracota
@@ -1079,8 +1080,8 @@
 	}
 
 	.gallery-section[data-variant='single-keepsake'] {
-		padding-block: clamp(3.75rem, 7.5vw, 5.75rem);
-		background:
+		--gallery-section-padding-block: clamp(3.75rem, 7.5vw, 5.75rem);
+		--gallery-section-bg:
 			radial-gradient(
 				ellipse at 50% 18%,
 				rgb(var(--victoria-gold-rgb) / 12%),
@@ -1088,12 +1089,6 @@
 			),
 			linear-gradient(180deg, var(--victoria-ivory), var(--victoria-cream));
 
-		.gallery-section__eyebrow,
-		.gallery__eyebrow {
-			font-family: var(--victoria-font-label);
-			letter-spacing: 0.18em;
-			color: var(--victoria-meta);
-		}
 	}
 
 	.gifts-section {

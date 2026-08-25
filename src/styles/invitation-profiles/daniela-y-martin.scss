@@ -910,22 +910,14 @@
 		--gallery-section-padding-block: clamp(3.25rem, 6.5vw, 5.25rem);
 		--gallery-item-image-position: 50% 38%;
 		--gallery-single-label-font: var(--font-body);
+		--gallery-single-label-letter-spacing: 0.24em;
+		--gallery-single-label-color: var(--daniela-olive);
 		--gallery-single-image-border: 1px solid rgb(var(--daniela-gold-rgb) / 24%);
 		--gallery-item-padding: 0.45rem;
 		--gallery-item-bg: var(--daniela-cream);
 		--gallery-item-radius: 2px;
 		--gallery-item-shadow: 0 10px 26px rgb(var(--daniela-olive-rgb) / 10%);
 
-		.gallery-section__eyebrow {
-			font-size: 0.68rem;
-			letter-spacing: 0.24em;
-			color: var(--daniela-olive);
-		}
-
-		.gallery-grid__item img {
-			border-radius: 0;
-			object-fit: cover;
-		}
 	}
 
 	// Interlude A rises into countdown with the shared arch primitive.

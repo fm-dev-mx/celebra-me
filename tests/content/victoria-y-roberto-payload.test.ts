@@ -17,7 +17,10 @@ const profilePath = path.join(
 	process.cwd(),
 	'src/styles/invitation-profiles/victoria-y-roberto.scss',
 );
-const galleryStylesPath = path.join(process.cwd(), 'src/styles/invitation/_gallery.scss');
+const singleKeepsakeStylesPath = path.join(
+	process.cwd(),
+	'src/styles/themes/sections/gallery/_single-keepsake.scss',
+);
 
 const assetDir = path.join(process.cwd(), 'src/assets/invitations/victoria-y-roberto');
 
@@ -75,7 +78,7 @@ describe('Boda Victoria y Roberto provision contract', () => {
 		expect(profile).toContain("url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'");
 		expect(profile).not.toContain('.event-location__card-map-preview-artwork');
 		expect(profile).not.toContain("data-variant='single'");
-		expect(fs.readFileSync(galleryStylesPath, 'utf8')).toContain(
+		expect(fs.readFileSync(singleKeepsakeStylesPath, 'utf8')).toContain(
 			".gallery-section[data-variant='single-keepsake']",
 		);
 		expect(profile).not.toContain("data-presentation='text-only'");

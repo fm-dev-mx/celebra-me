@@ -18,12 +18,17 @@ export type CanonicalVariantSection =
 	| 'thankYou'
 	| 'countdown';
 
+export type CanonicalVariantCssOwner =
+	| `src/styles/themes/sections/${string}`
+	| `theme-bundle:${string}`
+	| 'no-additional-css';
+
 export type CanonicalVariantRegistryEntry = {
 	section: CanonicalVariantSection;
 	variant: string;
 	default: boolean;
 	prerequisites: readonly string[];
-	cssOwner: string;
+	cssOwner: CanonicalVariantCssOwner;
 	/** Visual verification intentionally remains a Goal 2 concern. */
 	unresolvedVisualVerification: string | null;
 	/** Required persisted-content operation before deployment. */
@@ -32,7 +37,7 @@ export type CanonicalVariantRegistryEntry = {
 
 const noSpecialPrerequisites = ['Canonical section payload'] as const;
 
-const canonicalVariantRegistry = [
+const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	{
 		section: 'hero', variant: 'standard', default: true, prerequisites: noSpecialPrerequisites,
 		cssOwner: 'theme-bundle:hero', unresolvedVisualVerification: null,
@@ -150,7 +155,7 @@ const canonicalVariantRegistry = [
 	},
 	{
 		section: 'gallery', variant: 'single-keepsake', default: false,
-		prerequisites: ['gallery.items with exactly one item'], cssOwner: 'theme-bundle:gallery',
+		prerequisites: ['gallery.items with exactly one item'], cssOwner: 'src/styles/themes/sections/gallery/_single-keepsake.scss',
 		unresolvedVisualVerification: 'Goal 2 visual verification required.',
 		requiredPersistedContentTransformation: 'Set gallery.variant to single-keepsake and persist exactly one gallery item.',
 	},
@@ -189,7 +194,7 @@ const canonicalVariantRegistry = [
 	},
 	{
 		section: 'personalizedAccess', variant: 'ornamented', default: false, prerequisites: ['rsvp.personalizedAccess'],
-		cssOwner: 'theme-bundle:personalized-access',
+		cssOwner: 'no-additional-css',
 		unresolvedVisualVerification: 'Goal 2 visual verification required.',
 		requiredPersistedContentTransformation: 'Set rsvp.personalizedAccess.variant to ornamented and remove legacy variant fields.',
 	},
@@ -212,7 +217,7 @@ const canonicalVariantRegistry = [
 	},
 	{
 		section: 'thankYou', variant: 'editorial-back-cover', default: false,
-		prerequisites: ['thankYou.message', 'thankYou.closingName'], cssOwner: 'theme-bundle:thank-you',
+		prerequisites: ['thankYou.message', 'thankYou.closingName'], cssOwner: 'src/styles/themes/sections/thank-you/_editorial-back-cover.scss',
 		unresolvedVisualVerification: 'Goal 2 visual verification required.',
 		requiredPersistedContentTransformation: 'Set thankYou.variant to editorial-back-cover and remove legacy variant fields.',
 	},

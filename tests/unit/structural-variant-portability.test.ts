@@ -523,6 +523,9 @@ describe('Goal 1 — non-origin canonical variant portability', () => {
 			'/src/styles/themes/sections/gallery/_paired-feature-band.scss': {
 				default: '/_astro/gallery-paired-feature-band.css',
 			},
+			'/src/styles/themes/sections/gallery/_single-keepsake.scss': {
+				default: '/_astro/gallery-single-keepsake.css',
+			},
 			'/src/styles/themes/sections/itinerary/_timeline-paper.scss': {
 				default: '/_astro/itinerary-timeline-paper.css',
 			},
@@ -531,6 +534,9 @@ describe('Goal 1 — non-origin canonical variant portability', () => {
 			},
 			'/src/styles/themes/sections/itinerary/_editorial-program.scss': {
 				default: '/_astro/itinerary-editorial-program.css',
+			},
+			'/src/styles/themes/sections/thank-you/_editorial-back-cover.scss': {
+				default: '/_astro/thank-you-editorial-back-cover.css',
 			},
 		});
 		const profileUrlMap = {
@@ -546,12 +552,13 @@ describe('Goal 1 — non-origin canonical variant portability', () => {
 			{
 				themePreset: 'jewelry-box',
 				// Explicitly omit slug / visualProfileId — structure must not need them.
-				galleryVariant: 'feature-stack',
+				galleryVariant: 'single-keepsake',
       sectionVariants: {
 					hero: 'split-cover',
 					location: 'stacked-venue-plates',
 					family: 'asymmetric-groups',
 					itinerary: 'editorial-ledger',
+					thankYou: 'editorial-back-cover',
 				},
 			},
 			profileUrlMap,
@@ -559,11 +566,12 @@ describe('Goal 1 — non-origin canonical variant portability', () => {
 
 		expect(urls).toEqual([
 			'/_astro/jewelry-bundle.css',
-			'/_astro/gallery-feature-stack.css',
+			'/_astro/gallery-single-keepsake.css',
 			'/_astro/hero-split-cover.css',
 			'/_astro/location-stacked-venue-plates.css',
 			'/_astro/family-asymmetric-groups.css',
 			'/_astro/itinerary-editorial-ledger.css',
+			'/_astro/thank-you-editorial-back-cover.css',
 		]);
 		expect(urls.join('\n')).not.toMatch(/romina|alba-rosa|daniela|victoria|abril|valentina/i);
 
@@ -604,6 +612,17 @@ describe('Goal 1 — non-origin canonical variant portability', () => {
 			'/_astro/itinerary-editorial-program.css',
 		]);
 		expect(programUrls.join('\n')).not.toMatch(/valentina|renata/i);
+
+		const ornamentedUrls = resolveInvitationCssUrls(
+			bundleUrlMap,
+			sectionUrlMap,
+			{
+				themePreset: 'jewelry-box',
+				sectionVariants: { personalizedAccess: 'ornamented' },
+			},
+			profileUrlMap,
+		);
+		expect(ornamentedUrls).toEqual(['/_astro/jewelry-bundle.css']);
 	});
 
 	it('keeps canonical structural CSS free of origin slug/profile/theme identity', () => {
@@ -630,6 +649,12 @@ describe('Goal 1 — non-origin canonical variant portability', () => {
 			'src/styles/themes/sections/personalized-access/_formal-pass.scss',
 		);
 		const formalRegister = readSource('src/styles/themes/sections/rsvp/_formal-register.scss');
+		const singleKeepsake = readSource(
+			'src/styles/themes/sections/gallery/_single-keepsake.scss',
+		);
+		const editorialBackCover = readSource(
+			'src/styles/themes/sections/thank-you/_editorial-back-cover.scss',
+		);
 		const combined = [
 			splitCover,
 			splitMap,
@@ -642,6 +667,8 @@ describe('Goal 1 — non-origin canonical variant portability', () => {
 			editorialProgram,
 			formalPass,
 			formalRegister,
+			singleKeepsake,
+			editorialBackCover,
 		].join('\n');
 
 		expect(combined).toContain(".invitation-hero[data-variant='split-cover']");
@@ -665,6 +692,8 @@ describe('Goal 1 — non-origin canonical variant portability', () => {
 		expect(combined).toContain(".itinerary[data-variant='editorial-program']");
 		expect(combined).toContain(".personalized-access[data-variant='formal-pass']");
 		expect(combined).toContain(".rsvp[data-variant='formal-register']");
+		expect(combined).toContain(".gallery-section[data-variant='single-keepsake']");
+		expect(combined).toContain(".thank-you-section[data-variant='editorial-back-cover']");
 		expect(editorialLedger).toContain('.itinerary__item-icon-wrapper');
 		expect(editorialLedger).toMatch(
 			/\.itinerary__animated-line-container[\s\S]*?\.itinerary__item-icon-wrapper[\s\S]*?\.itinerary__item-dot[\s\S]*?display:\s*none/,

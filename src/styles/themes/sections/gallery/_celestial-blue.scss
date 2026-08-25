@@ -19,15 +19,7 @@
 	--gallery-item-image-filter-rest: saturate(0.94) contrast(0.98) brightness(1.02);
 	--gallery-item-image-filter-in-view: saturate(0.98) contrast(1) brightness(1.02);
 	--gallery-item-image-filter-hover: saturate(1.02) contrast(1.02) brightness(1.03);
-
-	.gallery-section__title {
-		font-family: var(--gallery-title-font);
-		text-wrap: balance;
-	}
-
-	.gallery-grid__item {
-		cursor: zoom-in;
-	}
+	--gallery-single-title-text-wrap: balance;
 }
 
 .theme-preset--celestial-blue

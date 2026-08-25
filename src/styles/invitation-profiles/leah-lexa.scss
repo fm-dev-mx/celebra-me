@@ -279,21 +279,12 @@
 .event--leah-lexa.theme-preset--celestial-blue
 	.gallery-section[data-variant='single-keepsake'][data-presentation='pet-keepsake'] {
 	--gallery-item-padding: clamp(0.35rem, 1vw, 0.55rem);
+	--gallery-single-grid-place-items: center;
+	--gallery-single-item-max-width: 320px;
 	--gallery-item-shadow:
 		0 20px 48px -24px rgb(var(--color-deep-blue-graphite-rgb) / 22%),
 		0 6px 16px -12px rgb(var(--color-deep-blue-graphite-rgb) / 10%),
 		0 1px 0 rgb(var(--color-diamond-white-rgb) / 80%),
 		inset 0 1px 0 rgb(var(--color-diamond-white-rgb) / 50%);
-
-	.gallery-grid {
-		place-items: center;
-	}
-
-	.gallery-grid__item {
-		max-width: 320px;
-	}
-
-	.gallery-grid__item img {
-		filter: saturate(0.92) contrast(0.96) brightness(0.95);
-	}
+	--gallery-item-image-filter-rest: saturate(0.92) contrast(0.96) brightness(0.95);
 }

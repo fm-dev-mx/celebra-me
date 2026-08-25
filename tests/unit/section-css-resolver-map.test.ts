@@ -139,6 +139,9 @@ describe('section-css-resolver-map', () => {
 			'/src/styles/themes/sections/gallery/_magazine-spread.scss': {
 				default: '/_astro/gallery-magazine-spread.css',
 			},
+			'/src/styles/themes/sections/gallery/_single-keepsake.scss': {
+				default: '/_astro/gallery-single-keepsake.css',
+			},
 			'/src/styles/themes/sections/gallery/_jewelry-box.scss': {
 				default: '/_astro/gallery-jewelry-box.css',
 			},
@@ -147,7 +150,9 @@ describe('section-css-resolver-map', () => {
 		expect(resolveGalleryVariantCssUrl(sectionUrlMap, 'magazine-spread')).toBe(
 			'/_astro/gallery-magazine-spread.css',
 		);
-		expect(resolveGalleryVariantCssUrl(sectionUrlMap, 'single')).toBeUndefined();
+		expect(resolveGalleryVariantCssUrl(sectionUrlMap, 'single-keepsake')).toBe(
+			'/_astro/gallery-single-keepsake.css',
+		);
 		expect(
 			resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
 				themePreset: 'luxury-hacienda',
@@ -308,7 +313,7 @@ describe('section-css-resolver-map', () => {
 		]);
 	});
 
-	it('does not load magazine thank-you geometry as a celestial structural override', () => {
+	it('loads editorial thank-you geometry independently of the active theme', () => {
 		const bundleUrlMap = buildSectionBundleUrlMap({
 			'/src/styles/invitation-sections-by-preset/celestial-blue.scss': {
 				default: '/_astro/celestial-bundle.css',
@@ -328,7 +333,7 @@ describe('section-css-resolver-map', () => {
 				themePreset: 'celestial-blue',
       sectionVariants: { thankYou: 'editorial-back-cover' },
 			}),
-		).toEqual(['/_astro/celestial-bundle.css']);
+		).toEqual(['/_astro/celestial-bundle.css', '/_astro/thank-you-editorial.css']);
 	});
 
 	it('delivers split-cover and split-map without origin profile or theme identity', () => {
@@ -380,10 +385,15 @@ describe('section-css-resolver-map', () => {
 			'/src/styles/themes/sections/gallery/_index-choreography.scss': {
 				default: '/_astro/gallery-index.css',
 			},
+			'/src/styles/themes/sections/gallery/_single-keepsake.scss': {
+				default: '/_astro/gallery-single-keepsake.css',
+			},
 		});
 
 		expect(resolveGalleryVariantCssUrl(sectionUrlMap, 'uniform-grid')).toBeUndefined();
-		expect(resolveGalleryVariantCssUrl(sectionUrlMap, 'single-keepsake')).toBeUndefined();
+		expect(resolveGalleryVariantCssUrl(sectionUrlMap, 'single-keepsake')).toBe(
+			'/_astro/gallery-single-keepsake.css',
+		);
 		expect(resolveGalleryVariantCssUrl(sectionUrlMap, 'editorial-mosaic')).toBe(
 			'/_astro/gallery-editorial.css',
 		);

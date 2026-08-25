@@ -29,6 +29,7 @@ const sectionVariantModules = import.meta.glob(
 	[
 		'/src/styles/themes/sections/hero/_editorial-cover.scss',
 		'/src/styles/themes/sections/hero/_split-cover.scss',
+		'/src/styles/themes/sections/thank-you/_editorial-back-cover.scss',
 		'/src/styles/themes/sections/thank-you/_full-bleed-photo.scss',
 		'/src/styles/themes/sections/gifts/_editorial-catalog.scss',
 		'/src/styles/themes/sections/rsvp/_editorial-press-pass.scss',
