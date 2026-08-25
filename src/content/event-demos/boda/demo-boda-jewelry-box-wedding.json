@@ -8,6 +8,19 @@
     "theme": {
         "preset": "jewelry-box-wedding"
     },
+    "sectionOrder": [
+        "quote",
+        "family",
+        "countdown",
+        "location",
+        "itinerary",
+        "gallery",
+        "gifts",
+        "personalizedAccess",
+        "rsvp",
+        "thankYou"
+    ],
+    "composition": { "intersections": {} },
     "hero": {
         "name": "Sofía",
         "secondaryName": "Alejandro",
@@ -155,8 +168,7 @@
                 "image": "gallery05",
                 "caption": "La primera noche."
             }
-        ],
-        "visualVariant": "jewelry-box-wedding"
+        ]
     },
     "gifts": {
         "title": "Mesa de regalos",

@@ -224,6 +224,22 @@ export function buildRenataPublishedContent(
 				{ name: 'Saul Chaidez García' },
 				{ name: 'Yuliana Argelia González Beltrán' },
 			],
+			groups: [
+				{
+					title: 'Mis padres',
+					items: [
+						{ name: 'Ramón Arturo Sainz Quevedo', role: 'Papá' },
+						{ name: 'Dulce Patricia Echevarria Espinoza', role: 'Mamá' },
+					],
+				},
+				{
+					title: 'Mis padrinos',
+					items: [
+						{ name: 'Saul Chaidez García', role: 'Padrino' },
+						{ name: 'Yuliana Argelia González Beltrán', role: 'Madrina' },
+					],
+				},
+			],
 			labels: {
 				sectionSubtitle: 'Familia',
 				sectionTitle: 'Quienes me acompañan en este día',
@@ -234,6 +250,7 @@ export function buildRenataPublishedContent(
 			},
 		},
 		countdown: {
+			variant: 'standard',
 			title: 'El día se acerca',
 			footerText: 'Misa a las 5:00 p. m. · Recepción a las 7:00 p. m.',
 		},

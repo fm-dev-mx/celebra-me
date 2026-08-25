@@ -11,7 +11,10 @@
         "baseDemoId": "demo-xv-jewelry-box"
     },
     "publishedContent": {
+        "sectionOrder": ["quote", "family", "countdown", "location", "itinerary", "gallery", "gifts", "personalizedAccess", "rsvp", "thankYou"],
+        "composition": { "intersections": {} },
         "hero": {
+            "variant": "standard",
             "date": "2026-05-23T07:00:00.000Z",
             "name": "Ana Sofía Cota Guillen",
             "label": "Mis XV Años",
@@ -19,14 +22,23 @@
             "backgroundImage": "hero"
         },
         "rsvp": {
+            "variant": "standard",
             "title": "Confirma tu asistencia",
+            "labels": {
+                "name": "Tu nombre",
+                "attendance": "Asistencia",
+                "guestCount": "Número de asistentes",
+                "confirmButton": "Confirmar asistencia"
+            },
             "subcopy": "Tu respuesta nos ayuda a preparar cada detalle para compartir esta noche especial contigo.",
             "guestCap": 4,
             "accessMode": "hybrid",
             "confirmationMode": "api",
+            "personalizedAccess": { "variant": "standard" },
             "confirmationMessage": "Nos dará mucha alegría compartir esta noche contigo."
         },
         "gifts": {
+            "variant": "standard",
             "items": [
                 {
                     "text": "Si deseas tener un detalle conmigo, podrás encontrar el buzón durante la recepción.",
@@ -51,6 +63,7 @@
         },
         "title": "XV Años de Ana Sofía",
         "family": {
+            "variant": "standard",
             "labels": {
                 "parentsTitle": "Con la bendición de",
                 "sectionTitle": "Mi Familia",
@@ -146,6 +159,10 @@
             }
         },
         "location": {
+            "variant": "standard",
+            "presentationOptions": {
+                "showFlourishes": true
+            },
             "ceremony": {
                 "city": "Los Mochis",
                 "date": "23 de mayo de 2026",
@@ -190,15 +207,14 @@
             "closingName": "Ana Sofía Cota Guillen"
         },
         "countdown": {
+            "variant": "standard",
             "title": "La celebración comienza en",
             "footerText": "23 de mayo de 2026, Los Mochis, Sinaloa"
         },
         "eventType": "xv",
         "itinerary": {
+            "variant": "timeline-paper",
             "title": "Programa",
-            "presentation": {
-                "behavior": "timeline-paper"
-            },
             "items": [
                 {
                     "time": "18:00",
@@ -294,37 +310,7 @@
                 "label": "Confirmar"
             }
         ],
-        "description": "Acompáñanos a celebrar una noche llena de luz, elegancia y momentos inolvidables.",
-        "sectionStyles": {
-            "rsvp": {
-                "labels": {
-                    "name": "Tu nombre",
-                    "attendance": "Asistencia",
-                    "guestCount": "Número de asistentes",
-                    "confirmButton": "Confirmar asistencia"
-                },
-                "variant": "celestial-blue"
-            },
-            "gifts": {
-                "variant": "celestial-blue"
-            },
-            "family": {
-                "variant": "celestial-blue"
-            },
-            "gallery": {
-                "variant": "celestial-blue"
-            },
-            "location": {
-                "showFlourishes": true
-            },
-            "thankYou": {
-                "variant": "celestial-blue",
-                "structuralVariant": "editorial-back-cover"
-            },
-            "itinerary": {
-                "variant": "celestial-blue"
-            }
-        }
+        "description": "Acompáñanos a celebrar una noche llena de luz, elegancia y momentos inolvidables."
     },
     "notes": "Sanitized render fixture: invitations identity + published_invitation_content only. No Auth, guests, RSVP, analytics, or drafts."
 }

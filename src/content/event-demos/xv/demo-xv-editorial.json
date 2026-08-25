@@ -9,14 +9,26 @@
         "fontFamily": "serif",
         "preset": "editorial"
     },
+    "sectionOrder": [
+        "quote",
+        "countdown",
+        "family",
+        "location",
+        "itinerary",
+        "gallery",
+        "gifts",
+        "personalizedAccess",
+        "rsvp",
+        "thankYou"
+    ],
+    "composition": { "intersections": {} },
     "hero": {
         "name": "Valentina Noir",
         "label": "XV Aniversario",
         "date": "2026-09-19T20:00:00.000Z",
         "backgroundImage": "hero",
         "portrait": "portrait",
-        "variant": "standard",
-        "visualVariant": "editorial"
+        "variant": "standard"
     },
     "location": {
         "reception": {
@@ -201,50 +213,43 @@
             "image": "interlude02",
             "afterSection": "location",
             "alt": "Seda dorada fluyendo en un ambiente noir",
-            "height": "screen",
-            "variant": "editorial"
+            "height": "screen"
         },
         {
             "image": "interlude03",
             "afterSection": "family",
             "alt": "Tiara y texturas sobre terciopelo oscuro",
-            "height": "screen",
-            "variant": "editorial"
+            "height": "screen"
         },
         {
             "image": "interlude01",
             "afterSection": "itinerary",
             "alt": "Detalle editorial de alta moda",
-            "height": "screen",
-            "variant": "editorial"
+            "height": "screen"
         },
         {
             "image": "gallery09",
             "afterSection": "gallery",
             "alt": "Brillo dorado cinematográfico",
-            "height": "screen",
-            "variant": "editorial"
+            "height": "screen"
         },
         {
             "image": "gallery10",
             "afterSection": "countdown",
             "alt": "Explosión de destellos en la pista",
-            "height": "screen",
-            "variant": "editorial"
+            "height": "screen"
         },
         {
             "image": "gallery15",
             "afterSection": "gifts",
             "alt": "Detalles de perlas, oro y textura editorial",
-            "height": "screen",
-            "variant": "editorial"
+            "height": "screen"
         },
         {
             "image": "interlude04",
             "afterSection": "rsvp",
             "alt": "Último retrato editorial",
-            "height": "screen",
-            "variant": "editorial"
+            "height": "screen"
         }
     ],
     "envelope": {

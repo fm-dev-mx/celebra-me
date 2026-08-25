@@ -238,6 +238,7 @@ export function buildAbrilPublishedContent(
 			focalPoint: '48% 32%',
 		},
 		countdown: {
+			variant: 'standard',
 			title: 'EL GRAN DÍA SE ACERCA',
 			footerText: 'Ceremonia en La Merced · 3:00 p. m.',
 		},

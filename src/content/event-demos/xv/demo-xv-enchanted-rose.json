@@ -23,6 +23,7 @@
         "rsvp",
         "thankYou"
     ],
+    "composition": { "intersections": {} },
     "hero": {
         "name": "Isabella Rose Valenzuela",
         "label": "Mis XV Años",

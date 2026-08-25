@@ -26,6 +26,7 @@
         "rsvp",
         "thankYou"
     ],
+    "composition": { "intersections": {} },
     "hero": {
         "name": "Luna Celeste",
         "label": "Mi Baby Shower",

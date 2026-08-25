@@ -167,11 +167,6 @@ export function buildAlbaPublishedContent(
 				focalPoint: '35% 40%',
 			},
 		],
-		sectionStyles: {
-			thankYou: {
-				variant: 'editorial-magazine',
-			},
-		},
 		_assetSlug: ALBA_EVENT.assetSlug,
 		hero: {
 			name: 'Alba Rosa Quiñónez López',
@@ -242,6 +237,7 @@ export function buildAlbaPublishedContent(
 			],
 		},
 		countdown: {
+			variant: 'standard',
 			title: 'FALTAN',
 			presentationOptions: {
 				visibleUnits: ['days'],

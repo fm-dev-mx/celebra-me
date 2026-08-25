@@ -8,6 +8,8 @@
     "theme": {
         "preset": "luxury-hacienda"
     },
+    "sectionOrder": ["quote", "family", "countdown", "location", "itinerary", "gallery", "gifts", "personalizedAccess", "rsvp", "thankYou"],
+    "composition": { "intersections": {} },
     "hero": {
         "name": "Alberto Valenzuela",
         "label": "60 Años",

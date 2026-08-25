@@ -10,6 +10,18 @@
         "fontFamily": "serif",
         "preset": "celestial-blue"
     },
+    "sectionOrder": [
+        "quote",
+        "family",
+        "countdown",
+        "location",
+        "itinerary",
+        "gallery",
+        "gifts",
+        "personalizedAccess",
+        "rsvp",
+        "thankYou"
+    ],
     "hero": {
         "name": "Camila Torres Rivas",
         "label": "Mis XV Años",

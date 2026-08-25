@@ -7,6 +7,20 @@
         "fontFamily": "serif",
         "preset": "jewelry-box"
     },
+    "sectionOrder": [
+        "quote",
+        "countdown",
+        "location",
+        "itinerary",
+        "gallery",
+        "gifts",
+        "personalizedAccess",
+        "rsvp",
+        "thankYou"
+    ],
+    "composition": {
+        "intersections": {}
+    },
     "hero": {
         "name": "Nombre de la Festejada",
         "label": "Mis XV Años",
@@ -115,7 +129,8 @@
     },
     "countdown": {
         "title": "¡Cada día falta menos!",
-        "footerText": "Te esperamos para celebrar juntos."
+        "footerText": "Te esperamos para celebrar juntos.",
+        "variant": "standard"
     },
     "envelope": {
         "disabled": false,

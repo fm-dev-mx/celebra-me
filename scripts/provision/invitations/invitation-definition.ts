@@ -11,6 +11,7 @@
 
 import { isCanonicalHostLoginAlias } from '../../../src/lib/auth/login-alias.ts';
 import type { ImageOptimizationRole } from '../../../src/lib/invitation-preparation/image-optimization.ts';
+import { eventContentSchema } from '../../../src/lib/schemas/content/base-event.schema.ts';
 
 export interface InvitationAssetSpec {
 	key: string;
@@ -229,6 +230,14 @@ export function defineInvitation<K extends string = string>(
 		}
 		Object.values(record).forEach(assertSemanticAssetRefs);
 	};
-	assertSemanticAssetRefs(definition.buildPublishedContent(semanticAssets));
+	const semanticContent = definition.buildPublishedContent(semanticAssets);
+	assertSemanticAssetRefs(semanticContent);
+	const parsed = eventContentSchema.safeParse(semanticContent);
+	if (!parsed.success) {
+		const issues = parsed.error.issues
+			.map((issue) => `${issue.path.join('.') || '<root>'}: ${issue.message}`)
+			.join('; ');
+		throw new Error(`Invitation definition does not satisfy the canonical content contract: ${issues}`);
+	}
 	return definition;
 }

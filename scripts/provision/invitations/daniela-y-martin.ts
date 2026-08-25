@@ -195,6 +195,7 @@ export function buildDanielaPublishedContent(
 			author: 'Daniela & Martín',
 		},
 		countdown: {
+			variant: 'standard',
 			title: 'Falta poco',
 			footerText: 'Huejutla de Reyes, Hidalgo',
 		},

@@ -9,6 +9,19 @@
         "fontFamily": "serif",
         "preset": "jewelry-box"
     },
+    "sectionOrder": [
+        "quote",
+        "countdown",
+        "family",
+        "location",
+        "itinerary",
+        "gallery",
+        "gifts",
+        "personalizedAccess",
+        "rsvp",
+        "thankYou"
+    ],
+    "composition": { "intersections": {} },
     "hero": {
         "name": "Lucía García Pérez",
         "label": "Mis XV Años",

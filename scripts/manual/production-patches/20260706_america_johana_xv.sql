@@ -294,18 +294,15 @@ BEGIN
       "fontFamily": "serif",
       "preset": "celestial-blue"
     },
+    "sectionOrder": ["quote", "family", "countdown", "location", "itinerary", "gallery", "gifts", "personalizedAccess", "rsvp", "thankYou"],
+    "composition": { "intersections": {} },
     "eventTiming": {
       "localDateTime": "2026-08-29T17:30",
       "timeZone": "America/Mexico_City",
       "startsAtUtc": "2026-08-29T23:30:00.000Z"
     },
-    "sectionStyles": {
-      "location": {
-        "showFlourishes": true
-      },
-      "rsvp": {}
-    },
     "hero": {
+      "variant": "standard",
       "name": "América",
       "label": "AMÉRICA · XV AÑOS",
       "date": "2026-08-29T23:30:00.000Z",
@@ -322,6 +319,7 @@ BEGIN
       "author": "América Johana"
     },
     "family": {
+      "variant": "standard",
       "featuredImage": "family",
       "presentation": "with-photo",
       "labels": {
@@ -359,10 +357,12 @@ BEGIN
       "focalPoint": "50% 36%"
     },
     "countdown": {
+      "variant": "standard",
       "title": "La celebración comienza en",
       "footerText": "Ciudad de México"
     },
     "itinerary": {
+      "variant": "timeline-paper",
       "title": "Programa",
       "items": [
         {
@@ -392,6 +392,10 @@ BEGIN
       ]
     },
     "location": {
+      "variant": "standard",
+      "presentationOptions": {
+        "showFlourishes": true
+      },
       "introEyebrow": "Nos vemos en Ciudad de México",
       "introHeading": "Sábado, 29 de agosto de 2026",
       "introLede": "Será una alegría compartir contigo esta celebración.",
@@ -436,6 +440,7 @@ BEGIN
       ]
     },
     "gallery": {
+      "variant": "uniform-grid",
       "eyebrow": "UNA HISTORIA CONTADA EN FOTOS.",
       "title": "MOMENTOS QUE SE QUEDAN PARA SIEMPRE.",
       "subtitle": "Junto a las personas que más quiero.",
@@ -489,7 +494,7 @@ BEGIN
     },
     "gifts": {
       "title": "Mesa de regalos",
-      "variant": "celestial-blue",
+      "variant": "standard",
       "subtitle": "Tu presencia es mi mejor regalo. Si deseas tener un detalle conmigo, te comparto estas opciones.",
       "items": [
         {
@@ -514,6 +519,7 @@ BEGIN
       ]
     },
     "rsvp": {
+      "variant": "standard",
       "title": "Confirma tu asistencia",
       "subcopy": "Este pase corresponde a tu grupo. Preséntalo al ingresar al evento. Tu confirmación nos ayuda a recibirte con mucho cariño.",
       "guestCap": 6,
@@ -521,12 +527,14 @@ BEGIN
       "confirmationMessage": "Gracias por confirmar. Me dará mucha alegría compartir esta noche contigo.",
       "confirmationMode": "api",
       "personalizedAccess": {
+        "variant": "standard",
         "title": "Pase de acceso",
         "subtitle": "Este pase muestra los accesos asignados para ingresar al evento.",
         "footerText": "Acceso válido para adultos y niños. Preséntalo al llegar."
       }
     },
     "thankYou": {
+      "variant": "editorial-back-cover",
       "message": "Gracias por acompañarme en mis XV años. Su presencia y cariño harán que esta noche sea un recuerdo para siempre.",
       "closingName": "América Johana",
       "image": "thankYouPortrait",

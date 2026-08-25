@@ -11,7 +11,10 @@
         "baseDemoId": "demo-cumple-luxury-hacienda"
     },
     "publishedContent": {
+        "sectionOrder": ["quote", "countdown", "location", "itinerary", "gallery", "gifts", "personalizedAccess", "rsvp", "thankYou"],
+        "composition": { "intersections": {} },
         "hero": {
+            "variant": "standard",
             "date": "2026-02-21T20:00:00.000Z",
             "name": "Gerardo Mendoza",
             "label": "60 Años",
@@ -20,14 +23,22 @@
             "backgroundImage": "hero"
         },
         "rsvp": {
+            "variant": "standard",
+            "labels": {
+                "name": "Nombre del invitado *",
+                "guestCount": "Número de asistentes",
+                "confirmButton": "Confirmar asistencia"
+            },
             "title": "Confirma tu asistencia",
             "subcopy": "Tu confirmación nos ayuda a preparar cada detalle para celebrar esta noche especial.",
             "guestCap": 4,
             "accessMode": "hybrid",
             "confirmationMode": "api",
+            "personalizedAccess": { "variant": "standard" },
             "confirmationMessage": "Gracias por acompañar a Gerardo en esta noche tan especial."
         },
         "gifts": {
+            "variant": "standard",
             "items": [
                 {
                     "text": "Gracias por acompañarnos en esta celebración tan especial.",
@@ -102,6 +113,7 @@
             "documentLabel": "INVITACIÓN PRIVADA"
         },
         "location": {
+            "variant": "standard",
             "reception": {
                 "city": "Los Mochis",
                 "date": "21 de febrero de 2026",
@@ -128,21 +140,20 @@
             ]
         },
         "thankYou": {
+            "variant": "standard",
             "image": "portrait",
             "message": "Gracias por ser parte de esta historia y por acompañarnos a celebrar una noche tan significativa.",
             "closingName": "Gerardo Mendoza"
         },
         "countdown": {
+            "variant": "standard",
             "title": "La celebración comienza en",
-            "footerText": "Jardín De Eventos Cuatro 60, Los Mochis, Sinaloa",
-            "subtitlePrefix": ""
+            "footerText": "Jardín De Eventos Cuatro 60, Los Mochis, Sinaloa"
         },
         "eventType": "cumple",
         "itinerary": {
+            "variant": "standard",
             "title": "Programa de la Noche",
-            "presentation": {
-                "behavior": "standard"
-            },
             "items": [
                 {
                     "time": "20:00",
@@ -213,19 +224,7 @@
                 "label": "Confirmar"
             }
         ],
-        "description": "Una noche para celebrar el legado, la familia y los 60 años de Gerardo Mendoza en Los Mochis.",
-        "sectionStyles": {
-            "rsvp": {
-                "labels": {
-                    "name": "Nombre del invitado *",
-                    "guestCount": "Número de asistentes",
-                    "confirmButton": "Confirmar asistencia"
-                }
-            },
-            "location": {
-                "showFlourishes": true
-            }
-        }
+        "description": "Una noche para celebrar el legado, la familia y los 60 años de Gerardo Mendoza en Los Mochis."
     },
     "notes": "Sanitized render fixture: invitations identity + published_invitation_content only. No Auth, guests, RSVP, analytics, or drafts."
 }

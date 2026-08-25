@@ -11,7 +11,9 @@
         "baseDemoId": "demo-baby-shower-celestial"
     },
     "publishedContent": {
+        "composition": { "intersections": {} },
         "hero": {
+            "variant": "standard",
             "date": "2026-06-21T20:00:00.000Z",
             "name": "Leah Lexa",
             "label": "Baby Shower de Leah Lexa",
@@ -23,14 +25,17 @@
             }
         },
         "rsvp": {
+            "variant": "standard",
             "title": "Confirma tu asistencia",
             "subcopy": "Tu respuesta ayuda a mis papis a preparar cada detalle para recibirte con mucho cariño.",
             "guestCap": 100,
             "accessMode": "personalized-only",
             "confirmationMode": "api",
+            "personalizedAccess": { "variant": "standard" },
             "confirmationMessage": "Gracias por confirmar. Mis papis y yo estamos muy felices de saber que nos acompañarán."
         },
         "gifts": {
+            "variant": "standard",
             "items": [
                 {
                     "url": "https://mesaderegalos.liverpool.com.mx/milistaderegalos/51975133",
@@ -57,6 +62,7 @@
         },
         "title": "Baby Shower de Leah Lexa",
         "family": {
+            "variant": "standard",
             "labels": {
                 "parentsTitle": "Con mucho amor",
                 "sectionTitle": "Mis papis",
@@ -120,6 +126,7 @@
             "documentLabel": "Baby Shower"
         },
         "location": {
+            "variant": "standard",
             "venues": [
                 {
                     "id": "baby-shower",
@@ -166,15 +173,14 @@
             "closingName": "Leah Lexa"
         },
         "countdown": {
+            "variant": "standard",
             "title": "¡Falta muy poco!",
             "footerText": "-"
         },
         "eventType": "baby-shower",
         "itinerary": {
+            "variant": "timeline-paper",
             "title": "Itinerario",
-            "presentation": {
-                "behavior": "timeline-paper"
-            },
             "items": []
         },
         "_assetSlug": "leah-lexa-baby-shower",
@@ -223,12 +229,7 @@
                 "label": "Confirmar",
                 "href": "#rsvp"
             }
-        ],
-        "sectionStyles": {
-            "thankYou": {
-                "structuralVariant": "editorial-back-cover"
-            }
-        }
+        ]
     },
     "notes": "Sanitized render fixture: invitations identity + published_invitation_content only. No Auth, guests, RSVP, analytics, or drafts."
 }

@@ -11,11 +11,18 @@
         "fontFamily": "serif",
         "preset": "editorial-magazine"
     },
-    "sectionStyles": {
-        "location": {
-            "showFlourishes": false
-        }
-    },
+    "sectionOrder": [
+        "quote",
+        "family",
+        "countdown",
+        "location",
+        "gallery",
+        "gifts",
+        "personalizedAccess",
+        "rsvp",
+        "thankYou"
+    ],
+    "composition": { "intersections": {} },
     "hero": {
         "name": "Roberta",
         "label": "Edición XV",
@@ -194,22 +201,19 @@
             "image": "interlude02",
             "afterSection": "location",
             "alt": "Retrato editorial con contraste rojo y negro",
-            "height": "screen",
-            "variant": "editorial"
+            "height": "screen"
         },
         {
             "image": "interlude03",
             "afterSection": "family",
             "alt": "Detalle editorial de celebración XV",
-            "height": "screen",
-            "variant": "editorial"
+            "height": "screen"
         },
         {
             "image": "interlude04",
             "afterSection": "rsvp",
             "alt": "Cierre visual de revista editorial",
-            "height": "screen",
-            "variant": "editorial"
+            "height": "screen"
         }
     ],
     "envelope": {

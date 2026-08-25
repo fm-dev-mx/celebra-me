@@ -11,7 +11,10 @@
         "baseDemoId": "demo-xv-celestial-blue"
     },
     "publishedContent": {
+        "sectionOrder": ["quote", "family", "countdown", "location", "itinerary", "gallery", "gifts", "personalizedAccess", "rsvp", "thankYou"],
+        "composition": { "intersections": {} },
         "hero": {
+            "variant": "standard",
             "date": "2026-08-29T23:30:00.000Z",
             "name": "América",
             "label": "AMÉRICA · XV AÑOS",
@@ -24,20 +27,22 @@
             "backgroundImageDesktop": "heroDesktop"
         },
         "rsvp": {
+            "variant": "standard",
             "title": "Confirma tu asistencia",
             "subcopy": "Este pase corresponde a tu grupo. Preséntalo al ingresar al evento. Tu confirmación nos ayuda a recibirte con mucho cariño.",
             "guestCap": 6,
             "accessMode": "hybrid",
             "confirmationMode": "api",
             "personalizedAccess": {
+                "variant": "ornamented",
                 "title": "Pase de acceso",
                 "subtitle": "Este pase muestra los accesos asignados para ingresar al evento.",
-                "footerText": "Acceso válido para adultos y niños. Preséntalo al llegar.",
-                "structuralVariant": "ornamented"
+                "footerText": "Acceso válido para adultos y niños. Preséntalo al llegar."
             },
             "confirmationMessage": "Gracias por confirmar. Me dará mucha alegría compartir esta noche contigo."
         },
         "gifts": {
+            "variant": "standard",
             "items": [
                 {
                     "type": "store",
@@ -60,7 +65,6 @@
                 }
             ],
             "title": "Mesa de regalos",
-            "variant": "celestial-blue",
             "subtitle": "Tu presencia es mi mejor regalo. Si deseas tener un detalle conmigo, te comparto estas opciones."
         },
         "music": {
@@ -77,6 +81,7 @@
         },
         "title": "XV América Johana",
         "family": {
+            "variant": "standard",
             "groups": [
                 {
                     "items": [
@@ -204,6 +209,10 @@
             "revealVariant": "celestial-blue"
         },
         "location": {
+            "variant": "standard",
+            "presentationOptions": {
+                "showFlourishes": true
+            },
             "ceremony": {
                 "city": "Ciudad de México",
                 "date": "29 de agosto de 2026",
@@ -255,15 +264,14 @@
             "closingName": "América Johana"
         },
         "countdown": {
+            "variant": "standard",
             "title": "La celebración comienza en",
             "footerText": "Ciudad de México"
         },
         "eventType": "xv",
         "itinerary": {
+            "variant": "timeline-paper",
             "title": "Programa",
-            "presentation": {
-                "behavior": "timeline-paper"
-            },
             "items": [
                 {
                     "time": "17:30",
@@ -336,15 +344,6 @@
             "timeZone": "America/Mexico_City",
             "startsAtUtc": "2026-08-29T23:30:00.000Z",
             "localDateTime": "2026-08-29T17:30"
-        },
-        "sectionStyles": {
-            "rsvp": {},
-            "location": {
-                "showFlourishes": true
-            },
-            "thankYou": {
-                "structuralVariant": "editorial-back-cover"
-            }
         },
         "visualProfileId": "america-johana"
     },

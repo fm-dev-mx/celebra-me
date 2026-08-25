@@ -201,6 +201,7 @@ export function buildValentinaPublishedContent(
 			author: 'Valentina Hernández Almaguer',
 		},
 		family: {
+			variant: 'standard',
 			featuredImage: assets.family,
 			parents: {
 				father: 'Juan Carlos Hernández Calixco',
@@ -245,6 +246,7 @@ export function buildValentinaPublishedContent(
 			],
 		},
 		location: {
+			variant: 'standard',
 			introEyebrow: 'Te esperamos en Texcoco',
 			introHeading: 'Sábado, 29 de agosto de 2026',
 			introLede: 'Será una alegría compartir contigo esta celebración.',

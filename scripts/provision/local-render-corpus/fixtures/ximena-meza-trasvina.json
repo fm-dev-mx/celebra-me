@@ -11,7 +11,10 @@
         "baseDemoId": "demo-xv-jewelry-box"
     },
     "publishedContent": {
+        "sectionOrder": ["quote", "family", "countdown", "location", "itinerary", "gallery", "gifts", "personalizedAccess", "rsvp", "thankYou"],
+        "composition": { "intersections": {} },
         "hero": {
+            "variant": "standard",
             "date": "2026-04-11T20:00:00.000Z",
             "name": "Ximena Meza Trasviña",
             "label": "Mis XV Años",
@@ -19,13 +22,21 @@
             "backgroundImage": "hero"
         },
         "rsvp": {
+            "variant": "standard",
             "title": "Confirma tu asistencia",
+            "labels": {
+                "name": "Tu nombre",
+                "guestCount": "Número de asistentes",
+                "confirmButton": "Confirmar asistencia"
+            },
             "guestCap": 4,
             "accessMode": "hybrid",
             "confirmationMode": "api",
+            "personalizedAccess": { "variant": "standard" },
             "confirmationMessage": "¡Nos vemos en la fiesta!"
         },
         "gifts": {
+            "variant": "standard",
             "items": [
                 {
                     "text": "Agradecemos su generosidad en el área de recepción.",
@@ -50,6 +61,7 @@
         },
         "title": "XV Años de Ximena",
         "family": {
+            "variant": "standard",
             "labels": {
                 "parentsTitle": "Con la bendición de",
                 "sectionTitle": "Mi Familia",
@@ -132,6 +144,10 @@
             }
         },
         "location": {
+            "variant": "standard",
+            "presentationOptions": {
+                "showFlourishes": true
+            },
             "reception": {
                 "city": "Los Mochis",
                 "date": "11 de abril de 2026",
@@ -160,21 +176,20 @@
             ]
         },
         "thankYou": {
+            "variant": "standard",
             "image": "thankYouPortrait",
             "message": "Gracias por ser parte de mis XV. Su cariño hace que este sueño brille aún más.",
             "closingName": "Ximena Meza Trasviña"
         },
         "countdown": {
+            "variant": "standard",
             "title": "La gran noche comienza en",
-            "footerText": "D'Galaz Alberca y Eventos, Los Mochis, Sinaloa",
-            "subtitlePrefix": ""
+            "footerText": "D'Galaz Alberca y Eventos, Los Mochis, Sinaloa"
         },
         "eventType": "xv",
         "itinerary": {
+            "variant": "standard",
             "title": "Programa de la Noche",
-            "presentation": {
-                "behavior": "standard"
-            },
             "items": [
                 {
                     "time": "20:00",
@@ -271,19 +286,7 @@
                 "label": "Confirmar"
             }
         ],
-        "description": "Acompáñame a celebrar este momento tan especial.",
-        "sectionStyles": {
-            "rsvp": {
-                "labels": {
-                    "name": "Tu nombre",
-                    "guestCount": "Número de asistentes",
-                    "confirmButton": "Confirmar asistencia"
-                }
-            },
-            "location": {
-                "showFlourishes": true
-            }
-        }
+        "description": "Acompáñame a celebrar este momento tan especial."
     },
     "notes": "Sanitized render fixture: invitations identity + published_invitation_content only. No Auth, guests, RSVP, analytics, or drafts."
 }

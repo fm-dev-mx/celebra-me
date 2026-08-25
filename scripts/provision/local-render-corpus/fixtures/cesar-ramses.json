@@ -11,7 +11,9 @@
         "baseDemoId": "demo-bautismo-angelic-presence"
     },
     "publishedContent": {
+        "composition": { "intersections": {} },
         "hero": {
+            "variant": "standard",
             "date": "2026-06-20T22:00:00.000Z",
             "name": "César Ramses",
             "label": "Mi primer sacramento y un año de vida",
@@ -29,14 +31,17 @@
             }
         },
         "rsvp": {
+            "variant": "standard",
             "title": "Confirma tu asistencia",
             "subcopy": "Tu confirmación nos ayuda a preparar cada detalle para compartir este día de bendición.",
             "guestCap": 4,
             "accessMode": "personalized-only",
             "confirmationMode": "api",
+            "personalizedAccess": { "variant": "standard" },
             "confirmationMessage": "Gracias por acompañarnos en el bautizo y primer año de César Ramses."
         },
         "gifts": {
+            "variant": "standard",
             "items": []
         },
         "music": {
@@ -54,6 +59,7 @@
         },
         "title": "Mi Bautizo y 1er Año • César Ramses",
         "family": {
+            "variant": "standard",
             "labels": {
                 "parentsTitle": "Papás",
                 "sectionTitle": "El amor que rodea este momento",
@@ -156,6 +162,7 @@
             "sealInitials": "C·R"
         },
         "location": {
+            "variant": "standard",
             "venues": [
                 {
                     "id": "venue_1781248383354",
@@ -190,6 +197,7 @@
             "indicationsHeading": "Indicaciones"
         },
         "thankYou": {
+            "variant": "full-bleed-photo",
             "image": {
                 "src": "https://ineitkdkyrxqyressllp.supabase.co/storage/v1/object/public/invitation-assets/invitations/fae40d35-aca4-4d47-86be-d0aa6ed36b3a/original/12638779-7553-46ca-86a0-80d3ab971d4d.webp",
                 "type": "uploaded",
@@ -207,16 +215,15 @@
             }
         },
         "countdown": {
+            "variant": "standard",
             "title": "Nos acercamos con alegría",
             "footerText": "Para celebrar el Bautizo y Primer Año de César Ramses"
         },
         "eventType": "bautizo",
         "itinerary": {
+            "variant": "standard",
             "title": "Programa",
             "subtitle": "Bautizo y 1er Año de César Ramses",
-            "presentation": {
-                "behavior": "standard"
-            },
             "items": [
                 {
                     "time": "12:30",
@@ -260,12 +267,7 @@
             "itinerary",
             "rsvp",
             "thankYou"
-        ],
-        "sectionStyles": {
-            "thankYou": {
-                "structuralVariant": "full-bleed-photo"
-            }
-        }
+        ]
     },
     "notes": "Sanitized render fixture: invitations identity + published_invitation_content only. No Auth, guests, RSVP, analytics, or drafts."
 }

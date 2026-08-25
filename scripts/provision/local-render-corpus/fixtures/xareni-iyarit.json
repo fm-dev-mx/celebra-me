@@ -11,7 +11,9 @@
         "baseDemoId": "demo-xv-celestial-blue"
     },
     "publishedContent": {
+        "composition": { "intersections": {} },
         "hero": {
+            "variant": "standard",
             "date": "2026-09-12T19:00:00.000Z",
             "name": "Xareni Iyarit",
             "label": "XV años de Xareni Iyarit",
@@ -37,14 +39,17 @@
             }
         },
         "rsvp": {
+            "variant": "standard",
             "title": "Confirma tu asistencia",
             "subcopy": "Tu respuesta nos ayuda a preparar cada detalle para recibirte con mucho cariño.",
             "guestCap": 4,
             "accessMode": "personalized-only",
             "confirmationMode": "api",
+            "personalizedAccess": { "variant": "ornamented" },
             "confirmationMessage": "Gracias por confirmar. Me dará mucha alegría compartir esta noche contigo."
         },
         "gifts": {
+            "variant": "standard",
             "items": [
                 {
                     "type": "store",
@@ -85,6 +90,7 @@
         },
         "title": "XV años de Xareni Iyarit",
         "family": {
+            "variant": "standard",
             "labels": {
                 "parentsTitle": "Mis primeros guías",
                 "sectionTitle": "Junto a quienes amo",
@@ -202,6 +208,7 @@
             "documentLabel": "Mis XV años"
         },
         "location": {
+            "variant": "standard",
             "venues": [
                 {
                     "id": "venue_211",
@@ -262,15 +269,14 @@
             "closingName": "Xareni Iyarit"
         },
         "countdown": {
+            "variant": "standard",
             "title": "La celebración comienza en",
             "footerText": "-"
         },
         "eventType": "xv",
         "itinerary": {
+            "variant": "timeline-paper",
             "title": "Programa",
-            "presentation": {
-                "behavior": "timeline-paper"
-            },
             "items": [
                 {
                     "time": "19:00",
@@ -372,12 +378,7 @@
             "personalizedAccess",
             "rsvp",
             "thankYou"
-        ],
-        "sectionStyles": {
-            "thankYou": {
-                "structuralVariant": "editorial-back-cover"
-            }
-        }
+        ]
     },
     "notes": "Sanitized render fixture: invitations identity + published_invitation_content only. No Auth, guests, RSVP, analytics, or drafts."
 }

@@ -11,7 +11,9 @@
         "baseDemoId": "demo-primera-comunion-illustrated"
     },
     "publishedContent": {
+        "composition": { "intersections": {} },
         "hero": {
+            "variant": "standard",
             "date": "2026-08-01T14:00:00.000Z",
             "name": "Luna Yamileth",
             "label": "Primera comunión",
@@ -29,11 +31,13 @@
             }
         },
         "rsvp": {
+            "variant": "standard",
             "title": "Confirma tu asistencia",
             "subcopy": "Su respuesta nos ayuda a preparar cada detalle de esta celebración de fe.",
             "guestCap": 4,
             "accessMode": "personalized-only",
             "confirmationMode": "api",
+            "personalizedAccess": { "variant": "standard" },
             "responseMessages": {
                 "declined": {
                     "title": "Gracias por avisarnos, {guestName}.",
@@ -56,6 +60,7 @@
         },
         "title": "Primera Comunión de Luna y Estrella",
         "family": {
+            "variant": "standard",
             "labels": {
                 "fatherRole": "-",
                 "motherRole": "---",
@@ -128,6 +133,7 @@
             "documentLabel": "Primera Comunión"
         },
         "location": {
+            "variant": "standard",
             "venues": [
                 {
                     "id": "celebration",
@@ -151,6 +157,7 @@
             "indicationsHeading": ""
         },
         "thankYou": {
+            "variant": "standard",
             "image": {
                 "key": "thankYouPortrait",
                 "type": "internal"
@@ -160,15 +167,14 @@
             "closingName": "Luna y Estrella"
         },
         "countdown": {
+            "variant": "standard",
             "title": "Nos acercamos con alegría",
             "footerText": "-"
         },
         "eventType": "primera-comunion",
         "itinerary": {
+            "variant": "standard",
             "title": "Itinerario",
-            "presentation": {
-                "behavior": "standard"
-            },
             "items": []
         },
         "_assetSlug": "luna-y-estrella-primera-comunion",

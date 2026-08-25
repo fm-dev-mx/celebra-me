@@ -22,6 +22,7 @@
         "rsvp",
         "thankYou"
     ],
+    "composition": { "intersections": {} },
     "hero": {
         "name": "Xareni Demo",
         "label": "Mis XV Años",

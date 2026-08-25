@@ -216,6 +216,7 @@ export function buildRominaPublishedContent(
 			focalPoint: '50% 35%',
 		},
 		countdown: {
+			variant: 'standard',
 			title: 'LA CELEBRACIÓN COMIENZA EN',
 			footerText: 'Ceremonia Religiosa · 5:00 p. m.',
 		},

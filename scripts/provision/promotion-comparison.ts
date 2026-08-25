@@ -1,5 +1,5 @@
 /**
- * promotion-comparison.ts — Semantic comparison, normalization, and divergence
+ * promotion-comparison.ts — Semantic comparison and divergence
  * helpers extracted from invitation-import-engine.ts
  */
 import type { InvitationPackageData } from './invitation-package.ts';
@@ -10,11 +10,10 @@ import {
 	canonicalizePublicationValue,
 	preparePublicationProjection,
 } from '../../src/lib/intake/services/publication-canonicalize.ts';
-import { normalizeInvitationVariantInput } from '../../src/lib/invitation/variant-normalization.ts';
 import { ASSET_KEY_PREFIX, semanticAssetRef } from './normalized-invitation-release.ts';
 
 // ---------------------------------------------------------------------------
-// Normalisation
+// Canonical publication projection
 // ---------------------------------------------------------------------------
 
 export function canonicalizeValue(val: unknown, targetStorageUrl?: string): unknown {
@@ -186,21 +185,15 @@ function asContentRecord(value: unknown): Record<string, unknown> {
  * Single semantic invitation-content owner for cross-environment parity and
  * promotional fingerprints. Does not change publication optimistic-lock hashing.
  *
- * Pipeline: runtime variant fold → publication projection canonicalize →
+ * Pipeline: canonical publication projection →
  * host-owned sharing overlay strip → storage-host placeholder + key sort.
  * Callers that have environment asset UUIDs must rewrite them first via
  * `rewriteUploadedAssetReferences`.
  */
 export function canonicalizeManagedInvitationContent(value: unknown): unknown {
 	if (value === null || value === undefined) return null;
-	let folded: unknown;
-	try {
-		folded = normalizeInvitationVariantInput(value);
-	} catch {
-		folded = { __variantNormalizationConflict: true, value };
-	}
 	return canonicalizeValue(
-		stripHostOwnedSharing(canonicalizePublicationValue(preparePublicationProjection(folded))),
+		stripHostOwnedSharing(canonicalizePublicationValue(preparePublicationProjection(value))),
 	);
 }
 

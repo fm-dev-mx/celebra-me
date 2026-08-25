@@ -228,6 +228,7 @@ export function buildVictoriaPublishedContent(
 			author: 'Eclesiastés 4:9–12',
 		},
 		countdown: {
+			variant: 'standard',
 			title: 'Falta poco',
 			footerText: 'Los Mochis, Sinaloa',
 		},

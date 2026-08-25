@@ -11,7 +11,9 @@
         "baseDemoId": "demo-xv-enchanted-rose"
     },
     "publishedContent": {
+        "composition": { "intersections": {} },
         "hero": {
+            "variant": "standard",
             "date": "2026-08-01T18:00:00.000Z",
             "name": "Ayrin Samantha Lerma Castro",
             "label": "Mis XV años",
@@ -33,11 +35,13 @@
             }
         },
         "rsvp": {
+            "variant": "standard",
             "title": "Confirmación de asistencia",
             "subcopy": "Te esperamos para celebrar juntos.",
             "guestCap": 5,
             "accessMode": "hybrid",
             "confirmationMode": "api",
+            "personalizedAccess": { "variant": "standard" },
             "responseMessages": {
                 "confirmed": {
                     "title": "Gracias por acompañarnos, {guestName}.",
@@ -47,6 +51,7 @@
             "confirmationMessage": "Confirma tu asistencia a los XV años de Ayrin Samantha."
         },
         "gifts": {
+            "variant": "standard",
             "items": [
                 {
                     "text": "",
@@ -72,6 +77,7 @@
         },
         "title": "XV Años de Ayrin Samantha",
         "family": {
+            "variant": "standard",
             "labels": {
                 "parentsTitle": "Con la bendición de",
                 "sectionTitle": "Mi Familia",
@@ -184,6 +190,10 @@
             }
         },
         "location": {
+            "variant": "standard",
+            "presentationOptions": {
+                "showFlourishes": true
+            },
             "ceremony": {
                 "date": "2026-08-01",
                 "time": "18:00",
@@ -235,15 +245,14 @@
             "closingName": "Ayrin Lerma"
         },
         "countdown": {
+            "variant": "standard",
             "title": "La celebración comienza en",
             "footerText": "Viñedos • LOS MOCHIS, SINALOA"
         },
         "eventType": "xv",
         "itinerary": {
+            "variant": "standard",
             "title": "Programa",
-            "presentation": {
-                "behavior": "standard"
-            },
             "items": [
                 {
                     "time": "18:00",
@@ -322,15 +331,7 @@
             "personalizedAccess",
             "rsvp",
             "thankYou"
-        ],
-        "sectionStyles": {
-            "location": {
-                "showFlourishes": true
-            },
-            "thankYou": {
-                "structuralVariant": "editorial-back-cover"
-            }
-        }
+        ]
     },
     "notes": "Sanitized render fixture: invitations identity + published_invitation_content only. No Auth, guests, RSVP, analytics, or drafts."
 }

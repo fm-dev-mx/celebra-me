@@ -11,6 +11,19 @@
         "fontFamily": "serif",
         "preset": "editorial-rose"
     },
+    "sectionOrder": [
+        "quote",
+        "countdown",
+        "family",
+        "location",
+        "itinerary",
+        "gallery",
+        "gifts",
+        "personalizedAccess",
+        "rsvp",
+        "thankYou"
+    ],
+    "composition": { "intersections": {} },
     "hero": {
         "name": "Aurora Valencia",
         "label": "XV Edition",

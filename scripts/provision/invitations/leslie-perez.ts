@@ -1,7 +1,7 @@
 /**
  * leslie-perez.ts — Managed invitation definition for Leslie XV
  *
- * The structural variants are reused from existing invitations. Cadence and
+ * Canonical section variants are reused from existing invitations. Cadence and
  * dark-surface rhythm tokens live in `invitation-profiles/leslie-perez.scss`.
  * Local-only music/PA preview switches live in
  * `src/lib/invitation/local-preview-config.ts` (not published content).
@@ -286,7 +286,7 @@ export function buildLesliePublishedContent(
 			author: 'Leslie',
 		},
 		family: {
-			variant: 'asymmetric-groups',
+			variant: 'standard',
 			presentation: 'text-only',
 			parents: {
 				father: 'Luis Enrique Zacarias Oviedo',
