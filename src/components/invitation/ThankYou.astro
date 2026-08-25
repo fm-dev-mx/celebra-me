@@ -9,7 +9,7 @@ interface Props {
 	closingName: string;
 	date?: string;
 	image?: string | ImageAsset;
-	variant?: ThankYouVariant;
+	variant: ThankYouVariant;
 	focalPoint?: string;
 	overlayAnchor?: 'left' | 'right' | 'top' | 'bottom';
 	overlaySafeArea?: {
@@ -25,7 +25,7 @@ const {
 	closingName,
 	date,
 	image,
-	variant = 'standard',
+	variant,
 	focalPoint,
 	overlayAnchor,
 	overlaySafeArea,

@@ -23,7 +23,7 @@ interface Props {
 	backgroundImageDesktop?: { src: string };
 	backgroundImageMobile?: ImageMetadata | ImageAsset;
 	portrait?: ImageMetadata | ImageAsset;
-	variant?: HeroVariant;
+	variant: HeroVariant;
 	scrollLabel?: string;
 	focalPoint?: string;
 	focalPointMobile?: string;
@@ -44,7 +44,7 @@ const {
 	backgroundImageDesktop,
 	backgroundImageMobile,
 	portrait,
-	variant = 'standard',
+	variant,
 	scrollLabel,
 	focalPoint,
 	focalPointMobile,

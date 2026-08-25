@@ -9,11 +9,11 @@ interface Props {
 	title?: string;
 	subtitle?: string;
 	items: ItineraryItem[];
-	variant?: ItineraryVariant;
+	variant: ItineraryVariant;
 	monogram?: string;
 }
 
-const { title = "Itinerario", items, variant = 'standard', monogram, subtitle } = Astro.props;
+const { title = "Itinerario", items, variant, monogram, subtitle } = Astro.props;
 ---
 
 <section class="itinerary" id="itinerary" data-screenshot-section="itinerary" data-variant={variant}>

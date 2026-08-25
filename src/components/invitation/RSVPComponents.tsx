@@ -41,7 +41,7 @@ const RsvpShell = forwardRef<
 		demoFooter?: ReactNode;
 	}
 >(function RsvpShell(
-	{ state, variant = 'standard', onFocusCapture, header, children, demoFooter },
+	{ state, variant, onFocusCapture, header, children, demoFooter },
 	ref,
 ) {
 	return (

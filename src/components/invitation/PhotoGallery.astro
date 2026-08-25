@@ -22,12 +22,12 @@ interface GalleryItem {
 
 interface Props {
 	items: GalleryItem[];
-	variant?: GalleryVariant;
+	variant: GalleryVariant;
 }
 
 const {
 	items,
-	variant = 'uniform-grid',
+	variant,
 } = Astro.props;
 const isMagazineSpread = variant === 'magazine-spread';
 

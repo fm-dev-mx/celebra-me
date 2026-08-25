@@ -61,7 +61,7 @@ interface Props {
 	reception?: VenueData;
 	venues?: VenueEntry[];
 	indications?: Indication[];
-	variant?: LocationVariant;
+	variant: LocationVariant;
 	presentation?: LocationPresentation;
 	showFlourishes?: boolean;
 	showNavigationButtons?: boolean;
@@ -84,7 +84,7 @@ const {
 	reception,
 	venues: venueEntries,
 	indications,
-	variant = 'standard',
+	variant,
 	presentation,
 	showFlourishes = true,
 	showNavigationButtons = true,

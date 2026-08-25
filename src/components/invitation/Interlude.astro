@@ -2,13 +2,11 @@
 import '@/styles/invitation/_interlude.scss';
 import OptimizedImage from '@/components/common/OptimizedImage.astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
-import type { SharedSectionVariant } from '@/lib/theme/theme-contract';
 
 interface Props {
 	image: ImageAsset;
 	alt?: string;
 	height?: 'screen' | 'tall' | 'medium';
-	variant?: SharedSectionVariant;
 	focalPoint?: string;
 	focalPointDesktop?: string;
 	lightX?: string;
@@ -21,7 +19,6 @@ const {
 	image,
 	alt = '',
 	height = 'screen',
-	variant = 'standard',
 	focalPoint,
 	focalPointDesktop,
 	lightX,
@@ -37,7 +34,7 @@ const {
 
 <section
 	class="invitation-interlude"
-	data-variant={variant}
+	data-variant="standard"
 	data-height={height}
 	data-interlude-index={interludeIndex}
 	data-screenshot-section={`interlude${interludeIndex ? `-${interludeIndex}` : ''}`}

@@ -22,7 +22,7 @@ interface Props {
 	backgroundImageDesktop?: { src: string };
 	backgroundImageMobile?: ImageMetadata | ImageAsset;
 	portrait?: ImageMetadata | ImageAsset;
-	variant?: HeroVariant;
+	variant: HeroVariant;
 	focalPoint?: string;
 	focalPointMobile?: string;
 	focalPointTablet?: string;
@@ -42,7 +42,7 @@ const {
 	backgroundImageDesktop,
 	backgroundImageMobile,
 	portrait,
-	variant = 'editorial-cover',
+	variant,
 	focalPoint,
 	focalPointMobile,
 	focalPointTablet,

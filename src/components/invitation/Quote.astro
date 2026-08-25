@@ -6,10 +6,10 @@ import type { QuoteVariant } from '@/lib/theme/theme-contract';
 interface Props {
 	text: string;
 	author?: string;
-	variant?: QuoteVariant;
+	variant: QuoteVariant;
 }
 
-const { text, author, variant = 'editorial' } = Astro.props;
+const { text, author, variant } = Astro.props;
 ---
 
 <section id="quote-section" class="quote-section" data-screenshot-section="quote" data-variant={variant}>

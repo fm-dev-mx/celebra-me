@@ -24,7 +24,7 @@ interface Props {
 	title?: string;
 	subtitle?: string;
 	items: GalleryItem[];
-	variant?: GalleryVariant;
+	variant: GalleryVariant;
 	presentation?: GalleryPresentation;
 	mobileBrowse?: GalleryMobileBrowseMode;
 }
@@ -34,7 +34,7 @@ const {
 	title,
 	subtitle,
 	items,
-	variant = 'uniform-grid',
+	variant,
 	presentation,
 	mobileBrowse,
 } = Astro.props;

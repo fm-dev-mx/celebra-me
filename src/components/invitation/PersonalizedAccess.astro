@@ -6,7 +6,7 @@ interface Props {
 	guestName: string;
 	eventYear?: string;
 	isDemoPreview?: boolean;
-	variant?: PersonalizedAccessVariant;
+	variant: PersonalizedAccessVariant;
 	title?: string;
 	subtitle?: string;
 	footerText?: string;
@@ -18,7 +18,7 @@ const {
 	guestName,
 	eventYear,
 	isDemoPreview,
-	variant = 'standard',
+	variant,
 	title = 'Pase de acceso',
 	subtitle = 'Este pase te identifica como invitado y muestra el número de lugares reservados.',
 	footerText = 'Confirma tu asistencia en la sección de RSVP al final de la invitación.',

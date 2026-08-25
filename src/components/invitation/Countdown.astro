@@ -12,7 +12,7 @@ interface Props {
 	title?: string;
 	footerText?: string;
 	visibleUnits?: CountdownUnit[];
-	variant?: CountdownVariant;
+	variant: CountdownVariant;
 	isDemo?: boolean;
 }
 
@@ -22,7 +22,7 @@ const {
 	title = "¡Falta muy poco!",
 	footerText,
 	visibleUnits,
-	variant = 'editorial',
+	variant,
 	isDemo = false,
 } = Astro.props;
 

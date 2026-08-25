@@ -3,10 +3,10 @@ import type { RsvpVariant } from '@/lib/invitation/section-variants';
 
 interface Props {
 	title: string;
-	variant?: RsvpVariant;
+	variant: RsvpVariant;
 }
 
-const { title, variant = 'standard' } = Astro.props;
+const { title, variant } = Astro.props;
 ---
 
 <section id="rsvp" data-screenshot-section="rsvp" class="rsvp-section">

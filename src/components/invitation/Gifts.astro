@@ -51,7 +51,7 @@ type Gift = GiftStore | GiftBank | GiftPaypal | GiftCash;
 
 interface Props {
 	gifts: Gift[];
-	variant?: GiftsVariant;
+	variant: GiftsVariant;
 	presentation: GiftsPresentation;
 	eyebrow?: string;
 	title?: string;
@@ -69,7 +69,7 @@ interface Props {
 
 const {
 	gifts,
-	variant = 'standard',
+	variant,
 	presentation,
 	eyebrow,
 	title = 'Mesa de Regalos',

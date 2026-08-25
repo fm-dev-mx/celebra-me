@@ -2,10 +2,10 @@
 import '@/styles/invitation/_gallery.scss';
 
 interface Props {
-	variant?: string;
+	variant: string;
 }
 
-const { variant = 'standard' } = Astro.props;
+const { variant } = Astro.props;
 ---
 
 <div class="gallery-lightbox" data-gallery-lightbox data-variant={variant} hidden role="dialog" aria-modal="true" aria-label="Vista ampliada de la imagen">

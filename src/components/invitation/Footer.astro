@@ -9,7 +9,7 @@ import { getContactPhone, getWhatsAppLink, isPlaceholderContactPhone } from '@/u
 interface Props {
 	eventSlug?: string;
 	showEnvelope?: boolean;
-	variant?: SharedSectionVariant;
+	variant: SharedSectionVariant;
 	closingPhrase?: string;
 	showFooterBranding?: boolean;
 	showContactCta?: boolean;
@@ -18,7 +18,7 @@ interface Props {
 const {
 	eventSlug,
 	showEnvelope = false,
-	variant = 'standard',
+	variant,
 	closingPhrase,
 	showFooterBranding = true,
 	showContactCta = true,
