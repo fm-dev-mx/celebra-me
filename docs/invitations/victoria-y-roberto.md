@@ -175,7 +175,7 @@ Keep strictly separate from Fact Register and Owner Decisions.
 | topic               | recommendation                                                                                                     | basis                                                                                | status               |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------ | -------------------- |
 | supporting palette  | Neutral cream / soft ink / restrained gold accents around client terracota                                         | jewelry-box-wedding + photography                                                    | recommendation only  |
-| gallery treatment   | One-item gallery as intentional editorial feature (`single-keepsake` / `layoutRole: feature`); not multi-grid fill | Canonical single-keepsake layout; legacy `single` remains accepted for compatibility | recommendation only  |
+| gallery treatment   | One-item gallery as intentional editorial feature (`single-keepsake` / `layoutRole: feature`); not multi-grid fill | Canonical single-keepsake layout; legacy `single` is rejected at the schema boundary | recommendation only  |
 | interlude placement | Provisional pacing: after `countdown` and after `gallery`; finalize `afterSection` in Goal 2                       | Narrative flow / jewelry-box practice                                                | Goal 2 art direction |
 | hero crop           | Face-safe upper-body crop on `00000041`; prefer portrait derivatives                                               | Composition of selected hero                                                         | recommendation only  |
 | thankYou source     | Use `00000042` despite lower native resolution; careful crop; do not upscale beyond native                         | Only remaining unique composition                                                    | recommendation only  |
@@ -323,8 +323,9 @@ source.
 ### Gallery capability note (preparation only)
 
 - Live `gallery.schema` accepts an `items[]` array with no minimum multi-image requirement.
-- Layout strategy uses the canonical `single-keepsake` variant; the legacy `single` alias remains
-  accepted for older published content and item `layoutRole: feature` preserves the portrait crop.
+- Layout strategy uses the canonical `single-keepsake` variant; the legacy `single` alias is
+  rejected at the canonical schema boundary and item `layoutRole: feature` preserves the portrait
+  crop.
 - **Recommendation:** treat the one-item gallery as an intentional editorial feature, not a
   conventional multi-image gallery.
 - No component/style changes in Goal 1. If Goal 2 styling needs Lane A polish for a single frame,

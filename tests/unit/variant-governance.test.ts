@@ -173,6 +173,21 @@ describe('canonical variant governance', () => {
 		}
 	});
 
+	it('gives every non-default variant an independent owner or explicit no-CSS declaration', () => {
+		for (const entry of CANONICAL_VARIANT_REGISTRY.filter((candidate) => !candidate.default)) {
+			expect(
+				entry.cssOwner.startsWith('src/styles/themes/sections/') ||
+					entry.cssOwner === 'no-additional-css',
+			).toBe(true);
+		}
+
+		expect(
+			CANONICAL_VARIANT_REGISTRY.find(
+				(entry) => entry.section === 'personalizedAccess' && entry.variant === 'ornamented',
+			)?.cssOwner,
+		).toBe('no-additional-css');
+	});
+
 	it('propagates canonical variants to an explicit DOM contract', () => {
 		for (const relativePath of reusableRendererSurfaces) {
 			expect(read(relativePath)).toContain('data-variant');

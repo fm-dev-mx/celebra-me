@@ -22,7 +22,8 @@ Theme preset, slug, profile identity, and asset identity never select Gallery st
 - `feature-stack`: primary feature column with stacked support cells.
 - `paired-feature-band`: portrait pairs with a full-width feature band (`layoutRole=feature`).
 - `index-choreography`: index-driven staggered composition.
-- `single-keepsake`: one-image keepsake composition; base Gallery CSS owns it; exactly one item.
+- `single-keepsake`: one-image keepsake composition; `_single-keepsake.scss` owns its structure;
+  exactly one item.
 
 Semantic structural partials live under `src/styles/themes/sections/gallery/` and are loaded by the
 section CSS resolver independently from the active theme bundle. `Gallery.astro` and
