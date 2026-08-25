@@ -25,7 +25,7 @@ const galleryVariantModules = import.meta.glob('/src/styles/themes/sections/gall
 	eager: true,
 }) as Record<string, { default: string }>;
 
-const structuralVariantModules = import.meta.glob(
+const sectionVariantModules = import.meta.glob(
 	[
 		'/src/styles/themes/sections/hero/_editorial-cover.scss',
 		'/src/styles/themes/sections/hero/_split-cover.scss',
@@ -67,13 +67,13 @@ const invitationProfileModules = import.meta.glob('/src/styles/invitation-profil
 
 const footerVariantUrlMap = buildSectionUrlMap(footerVariantModules);
 const galleryVariantUrlMap = buildSectionUrlMap(galleryVariantModules);
-const structuralVariantUrlMap = buildSectionUrlMap(structuralVariantModules);
+const sectionVariantUrlMap = buildSectionUrlMap(sectionVariantModules);
 const sectionBundleUrlMap = buildSectionBundleUrlMap(sectionBundleModules);
 const invitationProfileUrlMap = buildInvitationProfileUrlMap(invitationProfileModules);
 const invitationSectionUrlMap = {
 	...footerVariantUrlMap,
 	...galleryVariantUrlMap,
-	...structuralVariantUrlMap,
+	...sectionVariantUrlMap,
 };
 
 if (import.meta.env.DEV) {
@@ -91,7 +91,7 @@ type InvitationCssResolverInput = {
 	themePreset: string;
 	footerVariant?: string;
 	galleryVariant?: string;
-	structuralVariants?: {
+	sectionVariants?: {
 		hero?: string;
 		thankYou?: string;
 		gifts?: string;

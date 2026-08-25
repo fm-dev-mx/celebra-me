@@ -128,6 +128,16 @@ export const thankYouSchema = z
 		overlayAnchor: overlayAnchorSchema.optional(),
 		overlaySafeArea: overlaySafeAreaSchema.optional(),
 	})
+	.strict()
+	.superRefine((thankYou, context) => {
+		if (thankYou.variant === 'full-bleed-photo' && !thankYou.image) {
+			context.addIssue({
+				code: 'custom',
+				path: ['image'],
+				message: 'thankYou.variant=full-bleed-photo requires thankYou.image',
+			});
+		}
+	})
 	.optional();
 
 export const musicSchema = z
@@ -142,14 +152,15 @@ export const countdownSchema = z
 	.object({
 		title: z.string().default('¡Falta muy poco!'),
 		footerText: z.string().default('Prepárate para una noche inolvidable'),
-		variant: z.enum(COUNTDOWN_VARIANTS).optional(),
+		variant: z.enum(COUNTDOWN_VARIANTS),
 		presentationOptions: z
 			.object({
 				visibleUnits: z.array(z.enum(COUNTDOWN_UNITS)).min(1).max(4).optional(),
-			})
-			.strict()
-			.optional(),
+		})
+		.strict()
+		.optional(),
 	})
+	.strict()
 	.optional();
 
 export const eventTimingSchema = z
@@ -201,7 +212,7 @@ export const sharingSchema = z
 	})
 	.optional();
 
-const sectionOrderSchema = z.array(z.enum(INVITATION_RENDER_SECTION_KEYS)).optional();
+const sectionOrderSchema = z.array(z.enum(INVITATION_RENDER_SECTION_KEYS)).min(1);
 
 export const baseEventFieldsSchema = z.object({
 	eventType: z.enum(EVENT_TYPES),
@@ -247,4 +258,6 @@ export const baseEventFieldsSchema = z.object({
 			'_assetSlug must be a valid slug (lowercase, hyphens allowed)',
 		)
 		.optional(),
+	_mediaFallback: z.boolean().optional(),
+	_mediaFallbackNote: z.string().optional(),
 });

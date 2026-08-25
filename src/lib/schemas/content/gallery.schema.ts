@@ -36,6 +36,7 @@ export const gallerySchema = z
 			}),
 		),
 	})
+	.strict()
 	.superRefine((gallery, context) => {
 		try {
 			assertSupportedGalleryPresentation(gallery.presentation, gallery.items);

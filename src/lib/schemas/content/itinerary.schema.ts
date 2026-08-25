@@ -16,4 +16,5 @@ export const itinerarySchema = z
 		variant: z.enum(ITINERARY_VARIANTS),
 		items: z.array(itineraryItemSchema),
 	})
+	.strict()
 	.optional();

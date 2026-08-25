@@ -71,6 +71,7 @@ export const giftsSchema = z
 		presentation: z.enum(GIFTS_PRESENTATIONS).optional(),
 		items: z.array(giftItemSchema).optional(),
 	})
+	.strict()
 	.superRefine((gifts, ctx) => {
 		const presentation = gifts.presentation ?? 'catalog';
 		const items = gifts.items ?? [];

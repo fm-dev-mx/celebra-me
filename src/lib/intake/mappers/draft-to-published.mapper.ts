@@ -19,14 +19,17 @@ import { DEFAULT_REMINDER_MESSAGE } from '@/lib/rsvp/services/shared/share-messa
 import { buildPublishedEventTiming } from '@/lib/time/event-time';
 import { normalizeTime } from '@/lib/time/time-format';
 import { mapFamilyFromDraft } from '@/lib/intake/mappers/draft-to-published-family';
+import {
+	requireCanonicalVariant as requireVariant,
+	resolveCanonicalVariantSource,
+} from '@/lib/intake/mappers/canonical-variant-source';
 
 type PublishCtx = {
 	isDemo: boolean;
 	priorPublishedContent?: Record<string, unknown>;
 };
 
-const demoStr = (ctx: PublishCtx, val: unknown): string | undefined =>
-	ctx.isDemo ? str(val) : undefined;
+const demoStr = (ctx: PublishCtx, val: unknown): string | undefined => (ctx.isDemo ? str(val) : undefined);
 
 const demoValue = (ctx: PublishCtx, value: unknown): unknown => (ctx.isDemo ? value : undefined);
 
@@ -85,6 +88,7 @@ function mapCountdownFromDraft(
 	demoCountdown: Record<string, unknown> | undefined,
 	ctx: PublishCtx,
 	sectionOrder: string[] | undefined,
+	priorCountdown: Record<string, unknown> | undefined,
 ): Record<string, unknown> | undefined {
 	if (ctx.isDemo && demoCountdown) return { ...demoCountdown };
 
@@ -102,6 +106,11 @@ function mapCountdownFromDraft(
 		: undefined;
 
 	return {
+		variant: requireVariant(
+			'countdown',
+			draftCountdown?.variant,
+			resolveCanonicalVariantSource(ctx, priorCountdown?.variant, demoCountdown?.variant),
+		),
 		title: title || COUNTDOWN_DEFAULTS.title,
 		footerText: footerText || COUNTDOWN_DEFAULTS.footerText,
 		...(presentationOptions ? { presentationOptions } : {}),
@@ -129,14 +138,20 @@ function buildPersonalizedAccess(
 	ctx: PublishCtx,
 	draftValue: unknown,
 	priorRsvp: Record<string, unknown> | undefined,
+	demoRsvp: Record<string, unknown> | undefined,
 ): Record<string, unknown> {
-	const prior = clientPriorFields(ctx, priorRsvp, ['personalizedAccess']).personalizedAccess;
+	const priorValue = clientPriorFields(ctx, priorRsvp, ['personalizedAccess']).personalizedAccess;
+	const prior = isRecord(priorValue) ? priorValue : undefined;
+	const demoAccess = isRecord(demoRsvp?.personalizedAccess)
+		? demoRsvp.personalizedAccess
+		: undefined;
 	if (!isNonEmptyObject(draftValue)) {
-		return isNonEmptyObject(prior)
+		const variant = resolveCanonicalVariantSource(ctx, prior?.variant, demoAccess?.variant);
+		return isNonEmptyObject(prior) || variant
 			? {
 					personalizedAccess: {
-						...prior,
-						variant: str(prior.variant) ?? 'standard',
+						...(prior ?? {}),
+						variant: requireVariant('rsvp.personalizedAccess', variant),
 					},
 				}
 			: {};
@@ -144,9 +159,7 @@ function buildPersonalizedAccess(
 	const carried = isNonEmptyObject(prior)
 		? Object.fromEntries(
 				Object.entries(prior).filter(
-					([key]) =>
-						key !== 'structuralVariant' &&
-						!(PERSONALIZED_ACCESS_DRAFT_KEYS as readonly string[]).includes(key),
+					([key]) => !(PERSONALIZED_ACCESS_DRAFT_KEYS as readonly string[]).includes(key),
 				),
 			)
 		: {};
@@ -154,7 +167,11 @@ function buildPersonalizedAccess(
 		personalizedAccess: {
 			...carried,
 			...draftValue,
-			variant: str(draftValue.variant) ?? (isNonEmptyObject(prior) ? str(prior.variant) : undefined) ?? 'standard',
+			variant: requireVariant(
+				'rsvp.personalizedAccess',
+				draftValue.variant,
+				resolveCanonicalVariantSource(ctx, isNonEmptyObject(prior) ? prior.variant : undefined, demoAccess?.variant),
+			),
 		},
 	};
 }
@@ -175,21 +192,6 @@ function publishVenueTime(draftTime: unknown): string | undefined {
 	const draft = str(draftTime);
 	if (!draft) return undefined;
 	return normalizeTime(draft) ?? draft;
-}
-
-function stripLegacyLocationFlourishes(
-	sectionStyles: unknown,
-): Record<string, unknown> | undefined {
-	if (!isRecord(sectionStyles)) return undefined;
-	const location = sectionStyles.location;
-	if (!isRecord(location) || location.showFlourishes === undefined) {
-		return sectionStyles;
-	}
-	const { showFlourishes: _legacy, ...locationRest } = location;
-	return {
-		...sectionStyles,
-		location: locationRest,
-	};
 }
 
 function mapVenue(
@@ -281,19 +283,18 @@ function mapLocationFromDraft(
 	demoContent: Record<string, unknown> | undefined,
 	ctx: PublishCtx,
 ): Record<string, unknown> | undefined {
-	if (!isNonEmptyObject(draftLocation)) {
-		return undefined;
-	}
+	if (!isNonEmptyObject(draftLocation)) return undefined;
 	const result: Record<string, unknown> = {};
 	const demoLocation = demoContent?.location as Record<string, unknown> | undefined;
 	const priorLocation = ctx.priorPublishedContent?.location as
 		Record<string, unknown> | undefined;
 	if (draftLocation.visibility) result.visibility = draftLocation.visibility;
 	if (draftLocation.presentation) result.presentation = draftLocation.presentation;
-	result.variant =
-		draftLocation.variant ??
-		(ctx.isDemo ? demoLocation?.variant : priorLocation?.variant) ??
-		'standard';
+	result.variant = requireVariant(
+		'location',
+		draftLocation.variant,
+		resolveCanonicalVariantSource(ctx, priorLocation?.variant, demoLocation?.variant),
+	);
 	if (draftLocation.presentationOptions)
 		result.presentationOptions = draftLocation.presentationOptions;
 
@@ -402,8 +403,11 @@ function buildHeroFromDraft(
 
 	const result: Record<string, unknown> = {
 		...clientPriorFields(ctx, priorHero, ['variant']),
-		variant:
-			draftHero.variant ?? (ctx.isDemo ? demoVariant : priorHero?.variant) ?? 'standard',
+		variant: requireVariant(
+			'hero',
+			draftHero.variant,
+			resolveCanonicalVariantSource(ctx, priorHero?.variant, demoVariant),
+		),
 		name: str(draftHero.name) || demoStr(ctx, demoName as string) || invitationTitle,
 		secondaryName:
 			str(draftHero.secondaryName) || demoStr(ctx, demoSecondaryName as string) || '',
@@ -442,12 +446,8 @@ function mapHeroSection(
 ): Record<string, unknown> {
 	if (!isNonEmptyObject(draftHero)) {
 		if (ctx.isDemo && isNonEmptyObject(demoHero)) return demoHero;
-		return {
-			name: invitationTitle,
-			label: 'Invitación Especial',
-			date: '',
-			backgroundImage: { type: 'internal', key: 'hero' },
-		};
+		if (isNonEmptyObject(priorHero)) return priorHero;
+		throw new Error('Published content requires an explicit hero.variant.');
 	}
 	return buildHeroFromDraft(draftHero, demoHero, priorHero, invitationTitle, ctx);
 }
@@ -498,8 +498,11 @@ function mapRsvpSection(
 	const confirmationDeadline =
 		str(draftRsvp.confirmationDeadline) || demoStr(ctx, demo.confirmationDeadline);
 	return {
-		variant:
-			draftRsvp.variant ?? (ctx.isDemo ? demo.variant : priorRsvp?.variant) ?? 'standard',
+		variant: requireVariant(
+			'rsvp',
+			draftRsvp.variant,
+			resolveCanonicalVariantSource(ctx, priorRsvp?.variant, demo.variant),
+		),
 		title: str(draftRsvp.title) || demoStr(ctx, demo.title),
 		guestCap: resolveRsvpGuestCap(draftRsvp, demo, ctx),
 		confirmationMessage:
@@ -515,7 +518,7 @@ function mapRsvpSection(
 		subcopy: str(draftRsvp.subcopy) || demoStr(ctx, demo.subcopy),
 		...(confirmationDeadline ? { confirmationDeadline } : {}),
 		...(responseMessages ? { responseMessages } : {}),
-		...buildPersonalizedAccess(ctx, draftRsvp.personalizedAccess, priorRsvp),
+		...buildPersonalizedAccess(ctx, draftRsvp.personalizedAccess, priorRsvp, demoRsvp),
 		...(draftRsvp.calendar
 			? { calendar: draftRsvp.calendar }
 			: clientPriorFields(ctx, priorRsvp, ['calendar'])),
@@ -551,16 +554,18 @@ function mapGallerySection(
 
 	return {
 		...source,
-		variant:
-			(isNonEmptyObject(draftGallery) ? draftGallery.variant : undefined) ??
-			(ctx.isDemo ? demoGallery?.variant : priorGallery?.variant) ??
-			'uniform-grid',
+		variant: requireVariant(
+			'gallery',
+			isNonEmptyObject(draftGallery) ? draftGallery.variant : undefined,
+			resolveCanonicalVariantSource(ctx, priorGallery?.variant, demoGallery?.variant),
+		),
 	};
 }
 
 function mapGiftsSection(
 	draftGifts: DraftContent['gifts'],
 	demoGifts: Record<string, unknown> | undefined,
+	priorGifts: Record<string, unknown> | undefined,
 	ctx: PublishCtx,
 ): Record<string, unknown> | undefined {
 	if (!isNonEmptyObject(draftGifts)) {
@@ -576,7 +581,11 @@ function mapGiftsSection(
 				[];
 
 	return {
-		variant: draftGifts.variant ?? (ctx.isDemo ? demoGifts?.variant : undefined) ?? 'standard',
+		variant: requireVariant(
+			'gifts',
+			draftGifts.variant,
+			resolveCanonicalVariantSource(ctx, priorGifts?.variant, demoGifts?.variant),
+		),
 		title: str(draftGifts.title) || demoStr(ctx, demoGifts?.title),
 		subtitle: str(draftGifts.subtitle) || demoStr(ctx, demoGifts?.subtitle),
 		...(presentation ? { presentation } : {}),
@@ -605,8 +614,8 @@ function resolveThankYouVariant(
 	priorThankYou: Record<string, unknown> | undefined,
 	ctx: PublishCtx,
 ): unknown {
-	const fallback = ctx.isDemo ? demoThankYou?.variant : priorThankYou?.variant;
-	return draftThankYou.variant ?? fallback ?? 'standard';
+	const fallback = resolveCanonicalVariantSource(ctx, priorThankYou?.variant, demoThankYou?.variant);
+	return requireVariant('thankYou', draftThankYou.variant, fallback);
 }
 
 function mapThankYouSection(
@@ -713,13 +722,13 @@ function mapSharingFromDraft(
 
 function mapItineraryFromDraft(
 	draftItinerary: DraftContent['itinerary'],
-	_priorItinerary: Record<string, unknown> | undefined,
+	priorItinerary: Record<string, unknown> | undefined,
 	demoItinerary: unknown,
 	ctx: PublishCtx,
 ): DraftContent['itinerary'] | unknown {
 	if (!draftItinerary) {
 		return ctx.isDemo && isRecord(demoItinerary)
-			? { ...demoItinerary, variant: demoItinerary.variant ?? 'standard' }
+			? { ...demoItinerary, variant: requireVariant('itinerary', demoItinerary.variant) }
 			: undefined;
 	}
 	const items = draftItinerary.items?.map((item) => {
@@ -728,10 +737,15 @@ function mapItineraryFromDraft(
 	});
 	return {
 		...draftItinerary,
-		variant:
-			draftItinerary.variant ??
-			(ctx.isDemo && isRecord(demoItinerary) ? demoItinerary.variant : undefined) ??
-			'standard',
+		variant: requireVariant(
+			'itinerary',
+			draftItinerary.variant,
+			resolveCanonicalVariantSource(
+				ctx,
+				priorItinerary?.variant,
+				isRecord(demoItinerary) ? demoItinerary.variant : undefined,
+			),
+		),
 		...(items ? { items } : {}),
 	};
 }
@@ -755,11 +769,6 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 		demoContent.music as Record<string, unknown> | undefined,
 		ctx,
 	);
-	const giftsSection = mapGiftsSection(
-		draftContent.gifts,
-		demoContent.gifts as Record<string, unknown> | undefined,
-		ctx,
-	);
 	const quoteSection = mapQuoteSection(
 		draftContent.quote,
 		demoContent.quote as Record<string, unknown> | undefined,
@@ -781,9 +790,23 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 	const familySection = mapFamilyFromDraft(
 		draftContent.family,
 		priorPublished?.family as Record<string, unknown> | undefined,
+		resolveCanonicalVariantSource(ctx, priorPublished?.family, demoContent.family) as
+			| Record<string, unknown>
+			| undefined,
 	);
 
 	const demoTheme = demoContent.theme as Record<string, unknown> | undefined;
+	const sectionOrder =
+		draftContent.sectionOrder ??
+		(resolveCanonicalVariantSource(ctx, priorPublished?.sectionOrder, demoContent.sectionOrder) as
+			string[] | undefined);
+	const composition = resolveCanonicalVariantSource(ctx, priorPublished?.composition, demoContent.composition);
+	if (!Array.isArray(sectionOrder) || sectionOrder.length === 0) {
+		throw new Error('Published content requires an explicit sectionOrder.');
+	}
+	if (!isNonEmptyObject(composition)) {
+		throw new Error('Published content requires an explicit composition.');
+	}
 
 	return {
 		...(!ctx.isDemo && priorPublished?.templateId !== undefined
@@ -804,8 +827,7 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 				: {},
 		) as Record<string, unknown>,
 
-		sectionOrder:
-			draftContent.sectionOrder ?? (ctx.isDemo ? demoContent.sectionOrder : undefined),
+		sectionOrder,
 		eventTiming: mapEventTimingFromDraft(draftContent.eventTiming),
 
 		hero: heroSection,
@@ -834,19 +856,22 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 			draftContent.countdown,
 			demoContent.countdown as Record<string, unknown> | undefined,
 			ctx,
-			draftContent.sectionOrder ?? (priorPublished?.sectionOrder as string[] | undefined),
+			sectionOrder,
+			priorPublished?.countdown as Record<string, unknown> | undefined,
 		),
 		rsvp: rsvpSection,
 		music: musicSection,
-		gifts: giftsSection,
+		gifts: mapGiftsSection(
+			draftContent.gifts,
+			demoContent.gifts as Record<string, unknown> | undefined,
+			priorPublished?.gifts as Record<string, unknown> | undefined,
+			ctx,
+		),
 		quote: quoteSection ?? (ctx.isDemo ? undefined : { text: '' }),
 		thankYou: thankYouSection,
 
 		interludes: draftContent.interludes ?? (ctx.isDemo ? demoContent.interludes : undefined),
-		composition: ctx.isDemo ? demoContent.composition : priorPublished?.composition,
-		sectionStyles: stripLegacyLocationFlourishes(
-			ctx.isDemo ? demoContent.sectionStyles : priorPublished?.sectionStyles,
-		),
+		composition,
 		navigation: ctx.isDemo ? demoContent.navigation : priorPublished?.navigation,
 		sharing: mapSharingFromDraft(
 			draftContent.sharing as Record<string, unknown> | undefined,

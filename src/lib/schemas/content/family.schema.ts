@@ -65,23 +65,15 @@ const familyBaseSchema = z.object({
 	sectionMessage: z.string().optional(),
 });
 
-const structuredFamilySchema = familyBaseSchema.superRefine((data, ctx) => {
-	const hasParents = Boolean(data.parents && (data.parents.father || data.parents.mother));
-	const hasValidGroups = Array.isArray(data.groups) && data.groups.length >= 2;
-	if (!hasParents && !hasValidGroups) {
-		ctx.addIssue({
-			code: 'custom',
-			message: 'Family section requires parents or at least two groups for split/asymmetric variants',
-			path: ['groups'],
-		});
-	}
+const structuredFamilySchema = familyBaseSchema.extend({
+	groups: z.array(familyGroupSchema).min(2),
 });
 
 export const familySchema = z
 	.discriminatedUnion('variant', [
-		familyBaseSchema.extend({ variant: z.literal(FAMILY_VARIANTS[0]) }),
-		structuredFamilySchema.extend({ variant: z.literal(FAMILY_VARIANTS[1]) }),
-		structuredFamilySchema.extend({ variant: z.literal(FAMILY_VARIANTS[2]) }),
+		familyBaseSchema.strict().extend({ variant: z.literal(FAMILY_VARIANTS[0]) }),
+		structuredFamilySchema.strict().extend({ variant: z.literal(FAMILY_VARIANTS[1]) }),
+		structuredFamilySchema.strict().extend({ variant: z.literal(FAMILY_VARIANTS[2]) }),
 	])
 	.superRefine((data, ctx) => {
 		if (data.godparents && data.godparentGroups) {

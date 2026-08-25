@@ -26,8 +26,7 @@ export const invitationCompositionSchema = z
 			.partialRecord(z.enum(RENDER_PLAN_TARGETS), renderPlanIntersectionSchema)
 			.default({}),
 	})
-	.strict()
-	.optional();
+	.strict();
 
 export type InvitationComposition = z.infer<typeof invitationCompositionSchema>;
 
@@ -35,5 +34,5 @@ export function resolveRenderPlanIntersection(
 	composition: InvitationComposition,
 	target: RenderPlanTarget,
 ): RenderPlanIntersection {
-	return composition?.intersections[target] ?? { family: 'neutral', source: target };
+	return composition.intersections[target] ?? { family: 'neutral', source: target };
 }

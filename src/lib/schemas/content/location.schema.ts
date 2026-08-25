@@ -110,9 +110,9 @@ function collectVisibleVenues(location: {
 
 export const locationSchema = z
 	.discriminatedUnion('variant', [
-		locationBaseSchema.extend({ variant: z.literal(LOCATION_VARIANTS[0]) }),
-		locationBaseSchema.extend({ variant: z.literal(LOCATION_VARIANTS[1]) }),
-		locationBaseSchema.extend({ variant: z.literal(LOCATION_VARIANTS[2]) }),
+		locationBaseSchema.strict().extend({ variant: z.literal(LOCATION_VARIANTS[0]) }),
+		locationBaseSchema.strict().extend({ variant: z.literal(LOCATION_VARIANTS[1]) }),
+		locationBaseSchema.strict().extend({ variant: z.literal(LOCATION_VARIANTS[2]) }),
 	])
 	.superRefine((location, context) => {
 		if (location.variant === 'split-map') {

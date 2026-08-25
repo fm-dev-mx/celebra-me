@@ -6,7 +6,6 @@ import type {
 	InvitationRenderSectionKey,
 	EventType,
 	QuoteVariant,
-	SharedSectionVariant,
 	ThemePreset,
 } from '@/lib/theme/theme-contract';
 import type { ParentsOrder } from '@/lib/invitation/family-contract';
@@ -57,8 +56,6 @@ export interface HeroViewModel {
 	backgroundImageMobile?: ImageAsset;
 	portrait?: ImageAsset;
 	variant: HeroVariant;
-	/** @deprecated Use variant */
-	structuralVariant?: HeroVariant;
 	focalPoint?: string;
 	focalPointMobile?: string;
 	focalPointTablet?: string;
@@ -198,7 +195,6 @@ export interface Interlude {
 	afterSection: ContentSectionKey;
 	alt?: string;
 	height: 'screen' | 'tall' | 'medium';
-	variant?: SharedSectionVariant;
 	focalPoint?: string;
 	focalPointDesktop?: string;
 	lightX?: string;
@@ -215,8 +211,6 @@ export interface LocationSection {
 	visibility?: LocationVisibility;
 	presentation?: LocationPresentation;
 	variant: LocationVariant;
-	/** @deprecated Use variant */
-	structuralVariant?: LocationVariant;
 	presentationOptions?: {
 		showFlourishes?: boolean;
 		showNavigationButtons?: boolean;
@@ -248,15 +242,15 @@ export interface InvitationViewModel {
 	hero: HeroViewModel;
 	envelope: EnvelopeViewModel;
 	brandingVisibility: InvitationViewModelBrandingVisibility;
-	sectionOrder?: InvitationRenderSectionKey[];
-	composition?: InvitationComposition;
+	sectionOrder: InvitationRenderSectionKey[];
+	composition: InvitationComposition;
 
 	// Sections (Normalized and resolved)
 	sections: {
 		quote?: {
 			text: string;
 			author?: string;
-			variant?: QuoteVariant;
+			variant: QuoteVariant;
 		};
 		countdown?: {
 			targetIso: string;
@@ -265,7 +259,7 @@ export interface InvitationViewModel {
 			title: string;
 			footerText?: string;
 			visibleUnits: CountdownUnit[];
-			variant?: CountdownVariant;
+			variant: CountdownVariant;
 			/** Demo-only: if true, countdown uses a random target 30-60 days ahead */
 			isDemo?: boolean;
 		};
@@ -281,8 +275,6 @@ export interface InvitationViewModel {
 			featuredImage?: ImageAsset;
 			presentation?: FamilyPresentation;
 			variant: FamilyVariant;
-			/** @deprecated Use variant */
-			structuralVariant?: FamilyVariant;
 			focalPoint?: string;
 			labels?: FamilyLabels;
 			celebrantName: string;
@@ -302,7 +294,6 @@ export interface InvitationViewModel {
 				focalPointDesktop?: string;
 			}>;
 			variant: GalleryVariant;
-			visualVariant?: ThemePreset | 'single';
 			presentation?: GalleryPresentation;
 			mobileBrowse: GalleryMobileBrowseMode;
 		};
@@ -310,7 +301,7 @@ export interface InvitationViewModel {
 			title: string;
 			subtitle?: string;
 			items: ItineraryItem[];
-			variant?: ItineraryVariant;
+			variant: ItineraryVariant;
 		};
 		rsvp?: {
 			eventSlug: string;
@@ -325,8 +316,6 @@ export interface InvitationViewModel {
 			whatsappConfig?: WhatsAppConfig;
 			responseMessages?: RsvpResponseMessages;
 			variant: RsvpVariant;
-			/** @deprecated Use variant */
-			structuralVariant?: RsvpVariant;
 			revealedLocation?: LocationSection;
 			/**
 			 * Controls whether the guest can change their RSVP response after
@@ -346,8 +335,6 @@ export interface InvitationViewModel {
 			};
 			personalizedAccess: {
 				variant: PersonalizedAccessVariant;
-				/** @deprecated Use variant */
-				structuralVariant?: PersonalizedAccessVariant;
 				title?: string;
 				subtitle?: string;
 				footerText?: string;
@@ -360,8 +347,6 @@ export interface InvitationViewModel {
 			presentation: GiftsPresentation;
 			items: GiftItem[];
 			variant: GiftsVariant;
-			/** @deprecated Use variant */
-			structuralVariant?: GiftsVariant;
 		};
 		thankYou?: {
 			message: string;
@@ -378,8 +363,6 @@ export interface InvitationViewModel {
 				height: number;
 			};
 			variant: ThankYouVariant;
-			/** @deprecated Use variant */
-			structuralVariant?: ThankYouVariant;
 		};
 	};
 

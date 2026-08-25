@@ -13,8 +13,6 @@ import {
 	isRecord,
 	isNonEmptyObject,
 } from '@/lib/shared/data-utils';
-import { foldLocationPresentationOptions } from '@/lib/invitation/location-presentation-compatibility';
-import { normalizeInvitationVariantInput } from '@/lib/invitation/variant-normalization';
 import { VENUE_URL_FIELDS, ENVELOPE_TEXT_FIELDS } from '@/lib/intake/constants';
 import type { IconName } from '@/lib/icons/icon-catalog';
 import {
@@ -600,7 +598,7 @@ export function canonicalizeDraftContent(
 	content: DraftContent | Record<string, unknown>,
 ): DraftCanonicalizationResult {
 	const before = JSON.stringify(content ?? {});
-	const result = structuredClone(normalizeInvitationVariantInput(content)) as Record<string, unknown>;
+	const result = structuredClone(content) as Record<string, unknown>;
 	const issues: DraftNormalizationIssue[] = [];
 
 	const removedPublishedOnlyKeys: string[] = [];
@@ -673,7 +671,6 @@ export function normalizeDraftContent(
 
 // eslint-disable-next-line complexity -- Nested-to-flat mapping covers many field transformations by design.
 export function mapNestedToDraftContent(nestedContent: Record<string, unknown>): DraftContent {
-	nestedContent = normalizeInvitationVariantInput(nestedContent) as Record<string, unknown>;
 	const result: DraftContent = {};
 
 	result.title = str(nestedContent.title);
@@ -723,16 +720,6 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 				...(str(ind.styleVariant) ? { styleVariant: str(ind.styleVariant) } : {}),
 			}));
 
-		const sectionStylesLocation = isRecord(nestedContent.sectionStyles)
-			? nestedContent.sectionStyles.location
-			: undefined;
-		const legacyFlourishes = isRecord(sectionStylesLocation)
-			? (sectionStylesLocation.showFlourishes as boolean | undefined)
-			: undefined;
-		const legacyNavigationButtons = isRecord(sectionStylesLocation)
-			? (sectionStylesLocation.showNavigationButtons as boolean | undefined)
-			: undefined;
-
 		const draftLocationBase: Record<string, unknown> = {
 			visibility: str(location.visibility),
 			presentation: str(location.presentation),
@@ -746,11 +733,7 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 			indicationsHeading: str(location.indicationsHeading),
 			indications: draftIndications.length > 0 ? draftIndications : undefined,
 		};
-		const draftLocation = foldLocationPresentationOptions(
-			draftLocationBase,
-			legacyFlourishes,
-			legacyNavigationButtons,
-		) as Record<string, unknown>;
+		const draftLocation = draftLocationBase;
 
 		// Flatten venues array if present (preferred source)
 		const publishedVenues = location.venues as Array<Record<string, unknown>> | undefined;

@@ -5,7 +5,6 @@ import {
 	type InvitationComposition,
 	type RenderPlanIntersection,
 } from '@/lib/invitation/composition-contract';
-import { CONTENT_SECTION_KEYS, type SharedSectionVariant } from '@/lib/theme/theme-contract';
 
 type RenderPlanMetadata = {
 	intersection: RenderPlanIntersection;
@@ -17,7 +16,6 @@ export type InterludeRenderItem = RenderPlanMetadata & {
 	image: ImageAsset;
 	alt?: string;
 	height: 'screen' | 'tall' | 'medium';
-	variant?: SharedSectionVariant;
 	focalPoint?: string;
 	focalPointDesktop?: string;
 	lightX?: string;
@@ -62,7 +60,7 @@ function appendSectionWithInterludes(
 
 function interludeToRenderItem(
 	interlude: NonNullable<InvitationViewModel['interludes']>[number],
-	composition?: InvitationComposition,
+	composition: InvitationComposition,
 ): InterludeRenderItem {
 	return {
 		type: 'interlude',
@@ -74,7 +72,6 @@ function interludeToRenderItem(
 		image: interlude.image,
 		alt: interlude.alt,
 		height: interlude.height,
-		variant: interlude.variant ?? 'standard',
 		focalPoint: interlude.focalPoint,
 		focalPointDesktop: interlude.focalPointDesktop,
 		lightX: interlude.lightX,
@@ -85,20 +82,10 @@ function interludeToRenderItem(
 
 export function buildInvitationRenderPlan(
 	viewModel: InvitationViewModel,
-	options?: {
-		hasGuestContext?: boolean;
-		isDemoPreview?: boolean;
-	},
 ): InvitationRenderPlanItem[] {
-	const hasGuestContext = options?.hasGuestContext ?? false;
-	const isDemoPreview = options?.isDemoPreview ?? false;
 	const items: InvitationRenderPlanItem[] = [];
-	const showPersonalizedAccess = hasGuestContext || isDemoPreview;
-	const sectionOrder = viewModel.sectionOrder;
-
-	if (sectionOrder) {
-		for (const section of sectionOrder) {
-			if (section === 'personalizedAccess') {
+	for (const section of viewModel.sectionOrder) {
+		if (section === 'personalizedAccess') {
 				items.push({
 					type: 'personalized-access',
 					intersection: resolveRenderPlanIntersection(
@@ -109,25 +96,8 @@ export function buildInvitationRenderPlan(
 				continue;
 			}
 
-			if (!hasRenderableSection(viewModel, section)) continue;
-			appendSectionWithInterludes(items, viewModel, section);
-		}
-	} else {
-		for (const section of CONTENT_SECTION_KEYS) {
-			if (!hasRenderableSection(viewModel, section)) continue;
-
-			if (section === 'rsvp' && showPersonalizedAccess) {
-				items.push({
-					type: 'personalized-access',
-					intersection: resolveRenderPlanIntersection(
-						viewModel.composition,
-						'personalized-access',
-					),
-				});
-			}
-
-			appendSectionWithInterludes(items, viewModel, section);
-		}
+		if (!hasRenderableSection(viewModel, section)) continue;
+		appendSectionWithInterludes(items, viewModel, section);
 	}
 
 	return items;

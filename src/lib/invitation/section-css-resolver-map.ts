@@ -1,4 +1,5 @@
 import { resolveInvitationProfileCssUrl } from './invitation-profile-css';
+import { CANONICAL_VARIANT_REGISTRY } from './section-variants';
 
 type CssModule = { default: string };
 
@@ -15,7 +16,7 @@ type InvitationCssInput = {
 	themePreset: string;
 	footerVariant?: string;
 	galleryVariant?: string;
-	structuralVariants?: {
+	sectionVariants?: {
 		hero?: string;
 		thankYou?: string;
 		gifts?: string;
@@ -36,7 +37,7 @@ export type InvitationCssOwner =
 	| 'footer-variant'
 	| 'gallery-variant'
 	| 'envelope-reveal'
-	| 'structural-variant'
+	| 'section-variant'
 	| 'visual-profile';
 
 export interface InvitationCssLoadItem {
@@ -55,14 +56,16 @@ const FOOTER_PRESET_TO_ENTRYPOINT: Record<string, string> = {
 	'angelic-presence': 'angelic-presence',
 };
 
-const GALLERY_VARIANT_TO_ENTRYPOINT: Record<string, string> = {
-	'editorial-mosaic': 'editorial-mosaic',
-	'magazine-spread': 'magazine-spread',
-	'feature-mosaic': 'feature-mosaic',
-	'feature-stack': 'feature-stack',
-	'paired-feature-band': 'paired-feature-band',
-	'index-choreography': 'index-choreography',
-};
+function entrypointFromCssOwner(cssOwner: string): string | undefined {
+	if (!cssOwner.startsWith('src/styles/')) return undefined;
+	return cssOwner.split('/').at(-1)?.replace(/^_/, '').replace(/\.scss$/u, '');
+}
+
+const GALLERY_VARIANT_TO_ENTRYPOINT: Record<string, string> = Object.fromEntries(
+	CANONICAL_VARIANT_REGISTRY.filter((entry) => entry.section === 'gallery')
+		.map((entry) => [entry.variant, entrypointFromCssOwner(entry.cssOwner)])
+		.filter((entry): entry is [string, string] => Boolean(entry[1])),
+);
 
 const ENVELOPE_VARIANT_TO_ENTRYPOINT: Record<string, string> = {
 	'premiere-floral': 'premiere-floral',
@@ -74,47 +77,14 @@ const ENVELOPE_VARIANT_TO_ENTRYPOINT: Record<string, string> = {
 	'enchanted-rose': 'shared-light',
 };
 
-const STRUCTURAL_VARIANT_TO_ENTRYPOINT: Record<string, Record<string, string>> = {
-	hero: {
-		'editorial-cover': 'editorial-cover',
-		'split-cover': 'split-cover',
-	},
-	thankYou: {
-		// editorial-back-cover selects shared editorial DOM. Theme bundles own
-		// thank-you editorial geometry; a global structural load would override
-		// those layouts.
-		'full-bleed-photo': 'full-bleed-photo',
-	},
-	gifts: { 'editorial-catalog': 'editorial-catalog' },
-	rsvp: {
-		'editorial-press-pass': 'editorial-press-pass',
-		'formal-register': 'formal-register',
-	},
-	personalizedAccess: {
-		'editorial-pass': 'editorial-pass',
-		'formal-pass': 'formal-pass',
-	},
-	family: {
-		'split-groups': 'split-groups',
-		'asymmetric-groups': 'asymmetric-groups',
-	},
-	location: {
-		'split-map': 'split-map',
-		'stacked-venue-plates': 'stacked-venue-plates',
-	},
-	itinerary: {
-		'timeline-paper': 'timeline-paper',
-		'editorial-ledger': 'editorial-ledger',
-		'editorial-program': 'editorial-program',
-	},
-	countdown: {
-		'editorial-folio': 'editorial-folio',
-		'magazine-folio': 'magazine-folio',
-		'jeweled-panel': 'jeweled-panel',
-		'rose-ornament': 'rose-ornament',
-		'hacienda-ornament': 'hacienda-ornament',
-	},
-};
+const SECTION_VARIANT_TO_ENTRYPOINT: Record<string, Record<string, string>> =
+	CANONICAL_VARIANT_REGISTRY.filter((entry) => entry.section !== 'gallery')
+		.map((entry) => [entry.section, entry.variant, entrypointFromCssOwner(entry.cssOwner)])
+		.filter((entry): entry is [string, string, string] => Boolean(entry[2]))
+		.reduce<Record<string, Record<string, string>>>((result, [section, variant, entrypoint]) => {
+			(result[section] ??= {})[variant] = entrypoint;
+			return result;
+		}, {});
 
 export function buildSectionUrlMap(modules: Record<string, CssModule>): SectionUrlMap {
 	const sectionUrlMap: SectionUrlMap = {};
@@ -187,13 +157,13 @@ export function resolveSectionCssUrls(
 	});
 }
 
-function resolveStructuralVariantLoadItems(
+function resolveSectionVariantLoadItems(
 	sectionUrlMap: SectionUrlMap,
 	input: InvitationCssInput,
 ): InvitationCssLoadItem[] {
-	return Object.entries(input.structuralVariants ?? {}).flatMap(([section, variant]) => {
+	return Object.entries(input.sectionVariants ?? {}).flatMap(([section, variant]) => {
 		if (!variant) return [];
-		const entrypoint = STRUCTURAL_VARIANT_TO_ENTRYPOINT[section]?.[variant];
+	const entrypoint = SECTION_VARIANT_TO_ENTRYPOINT[section]?.[variant];
 		if (!entrypoint) return [];
 		const sectionName =
 			section === 'personalizedAccess'
@@ -211,7 +181,7 @@ function resolveStructuralVariantLoadItems(
 		return [
 			{
 				href: url,
-				owner: 'structural-variant' as const,
+			owner: 'section-variant' as const,
 				blocking: section === 'hero',
 			},
 		];
@@ -263,7 +233,7 @@ export function resolveInvitationCssLoadPlan(
 		push(revealUrl ? { href: revealUrl, owner: 'envelope-reveal', blocking: true } : undefined);
 	}
 
-	for (const item of resolveStructuralVariantLoadItems(sectionUrlMap, input)) {
+	for (const item of resolveSectionVariantLoadItems(sectionUrlMap, input)) {
 		push(item);
 	}
 

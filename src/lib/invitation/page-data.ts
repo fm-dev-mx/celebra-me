@@ -183,10 +183,7 @@ export function buildPageContextFromViewModel(input: {
 			DEFAULT_FOOTER_CLOSING_PHRASE,
 		musicPlayer,
 		viewModel: renderViewModel,
-		renderPlan: buildInvitationRenderPlan(renderViewModel, {
-			hasGuestContext: Boolean(guestContext),
-			isDemoPreview,
-		}),
+		renderPlan: buildInvitationRenderPlan(renderViewModel),
 	};
 }
 

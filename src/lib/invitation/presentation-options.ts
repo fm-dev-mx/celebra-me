@@ -3,7 +3,6 @@
 // in the compatibility boundary below.
 export * from './family-presentation';
 export * from './hero-presentation';
-export * from './itinerary-presentation';
 export * from './countdown-presentation';
 export * from './gallery-presentation';
 export * from './gifts-presentation';

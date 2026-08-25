@@ -1,18 +1,10 @@
 import { z } from 'zod';
-import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 import { rsvpResponseMessagesSchema } from '@/lib/intake/schemas/shared-content.schema';
 import { rsvpGuestCapSchema } from '@/lib/rsvp/guest-cap';
 import {
 	PERSONALIZED_ACCESS_VARIANTS,
 	RSVP_VARIANTS,
 } from '@/lib/invitation/section-variants';
-
-export const rsvpSectionStyleSchema = z
-	.object({
-		variant: z.enum(THEME_PRESETS).optional(),
-	})
-	.strict()
-	.optional();
 
 export const rsvpLabelsSchema = z
 	.object({

@@ -8,6 +8,8 @@ import type { Invitation } from '@/lib/intake/types';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import { ALL_EDITOR_KEYS } from '@/lib/intake/constants';
 import { getAssetSlugFromContent, resolveAssetSlug } from '@/lib/assets/asset-slug';
+import { CANONICAL_VARIANT_REGISTRY } from '@/lib/invitation/section-variants';
+import { isRecord } from '@/lib/shared/data-utils';
 
 export type DraftPreviewResult =
 	| { ok: true; pageContext: InvitationPageContext; invitationTitle: string; eventType: string }
@@ -93,6 +95,36 @@ function resolveUploadedRefs(
 	return walk(content) as Record<string, unknown>;
 }
 
+function buildPreviewStructuralContract(
+	demoContent: Record<string, unknown>,
+): Record<string, unknown> | undefined {
+	if (!Array.isArray(demoContent.sectionOrder) || !isRecord(demoContent.composition)) {
+		return undefined;
+	}
+
+	const contract: Record<string, unknown> = {
+		sectionOrder: demoContent.sectionOrder,
+		composition: demoContent.composition,
+	};
+	for (const section of new Set(CANONICAL_VARIANT_REGISTRY.map((entry) => entry.section))) {
+		const source =
+			section === 'personalizedAccess'
+				? (demoContent.rsvp as Record<string, unknown> | undefined)?.personalizedAccess
+				: demoContent[section];
+		if (!isRecord(source) || typeof source.variant !== 'string') continue;
+		if (section === 'personalizedAccess') {
+			const priorRsvp = isRecord(contract.rsvp) ? contract.rsvp : {};
+			contract.rsvp = {
+				...priorRsvp,
+				personalizedAccess: { variant: source.variant },
+			};
+		} else {
+			contract[section] = { variant: source.variant };
+		}
+	}
+	return contract;
+}
+
 export async function buildDraftPreviewPageContext(
 	invitation: Invitation,
 	draftContent: DraftContent,
@@ -130,7 +162,8 @@ export async function buildDraftPreviewPageContext(
 			assetSlug: assetLookupSlug,
 			draftContent: resolvedContent as DraftContent,
 			demoContent,
-			priorPublishedContent: options.priorPublishedContent ?? undefined,
+			priorPublishedContent:
+				options.priorPublishedContent ?? buildPreviewStructuralContract(demoContent),
 			isDemo: invitation.kind === 'demo',
 		});
 

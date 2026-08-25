@@ -20,6 +20,7 @@ import {
 	GALLERY_VARIANTS,
 	GIFTS_VARIANTS,
 	ITINERARY_VARIANTS,
+	COUNTDOWN_VARIANTS,
 } from '@/lib/invitation/section-variants';
 
 export const optionalText = (max = 2000) => z.string().trim().max(max).optional();
@@ -215,6 +216,7 @@ export const giftsSchema = z
 
 export const countdownEditorSchema = z
 	.object({
+		variant: z.enum(COUNTDOWN_VARIANTS).optional(),
 		title: optionalText(200),
 		footerText: optionalText(500),
 		presentationOptions: z

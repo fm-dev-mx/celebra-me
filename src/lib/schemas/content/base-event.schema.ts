@@ -17,65 +17,37 @@ import {
 	sharingSchema,
 	thankYouSchema,
 } from '@/lib/schemas/content/shared.schema';
-import { sectionStylesSchema } from '@/lib/schemas/content/section-styles.schema';
-import {
-	normalizeInvitationVariantInput,
-	VariantNormalizationConflictError,
-} from '@/lib/invitation/variant-normalization';
-
-export const canonicalEventContentSchema = baseEventFieldsSchema.extend({
-	sectionStyles: sectionStylesSchema,
-	hero: heroSchema,
-	location: locationSchema.optional(),
-	family: familySchema,
-	rsvp: rsvpSchema,
-	// Optional: sectionOrder may omit quote; do not require invented copy.
-	quote: quoteSchema.optional(),
-	thankYou: thankYouSchema,
-	music: musicSchema,
-	gallery: gallerySchema,
-	envelope: envelopeSchema,
-	itinerary: itinerarySchema,
-	gifts: giftsSchema,
-	countdown: countdownSchema,
-	navigation: navigationSchema,
-	interludes: interludesSchema,
-	sharing: sharingSchema,
-});
+export const canonicalEventContentSchema = baseEventFieldsSchema
+	.extend({
+		hero: heroSchema,
+		location: locationSchema.optional(),
+		family: familySchema,
+		rsvp: rsvpSchema,
+		// Optional: sectionOrder may omit quote; do not require invented copy.
+		quote: quoteSchema.optional(),
+		thankYou: thankYouSchema,
+		music: musicSchema,
+		gallery: gallerySchema,
+		envelope: envelopeSchema,
+		itinerary: itinerarySchema,
+		gifts: giftsSchema,
+		countdown: countdownSchema,
+		navigation: navigationSchema,
+		interludes: interludesSchema,
+		sharing: sharingSchema,
+	})
+	.strict()
+	.superRefine((content, context) => {
+		if (content.sectionOrder.includes('countdown') && !content.countdown?.variant) {
+			context.addIssue({
+				code: 'custom',
+				path: ['countdown', 'variant'],
+				message: 'sectionOrder includes countdown, so countdown.variant is required',
+			});
+		}
+	});
 
 type CanonicalEventContent = z.infer<typeof canonicalEventContentSchema>;
 
-/**
- * Normalize legacy variant inputs, then validate the canonical contract.
- * Dual-input conflicts become typed custom issues; unknown variants fail closed.
- */
-export const eventContentSchema: z.ZodType<CanonicalEventContent> = z
-	.any()
-	.transform((input, context) => {
-		try {
-			const normalized = normalizeInvitationVariantInput(input);
-			const parsed = canonicalEventContentSchema.safeParse(normalized);
-			if (!parsed.success) {
-				for (const issue of parsed.error.issues) {
-					context.addIssue({
-						...issue,
-						path: issue.path,
-					});
-				}
-				return z.NEVER;
-			}
-			return parsed.data;
-		} catch (error) {
-			if (error instanceof VariantNormalizationConflictError) {
-				for (const conflict of error.conflicts) {
-					context.addIssue({
-						code: 'custom',
-						path: conflict.path,
-						message: conflict.message,
-					});
-				}
-				return z.NEVER;
-			}
-			throw error;
-		}
-	});
+/** Canonical content is parsed exactly once; legacy aliases are rejected. */
+export const eventContentSchema: z.ZodType<CanonicalEventContent> = canonicalEventContentSchema;

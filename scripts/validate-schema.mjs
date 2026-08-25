@@ -75,20 +75,16 @@ const SECTION_CONTRACTS = {
 };
 
 function extractContractVariants() {
-	function parseArrayConst(source, constName) {
-		const content = fs.readFileSync(path.join(__dirname, '..', source), 'utf8');
-		const regex = new RegExp(
-			`export const ${constName}\\s*=\\s*\\[([\\s\\S]*?)\\]\\s*as const;`,
-		);
-		const match = content.match(regex);
-		if (!match) return [];
-
-		return Array.from(match[1].matchAll(/'([^']+)'/g)).map((m) => m[1]);
-	}
-
 	const variants = {};
-	for (const [key, contract] of Object.entries(SECTION_CONTRACTS)) {
-		variants[key] = new Set(parseArrayConst(contract.source, contract.constName));
+	const registrySource = fs.readFileSync(
+		path.join(__dirname, '..', 'src/lib/invitation/section-variants.ts'),
+		'utf8',
+	);
+	for (const key of Object.keys(SECTION_CONTRACTS)) variants[key] = new Set();
+	const entryPattern = /section:\s*'([^']+)'\s*,\s*variant:\s*'([^']+)'/g;
+	for (const match of registrySource.matchAll(entryPattern)) {
+		const [, section, variant] = match;
+		if (variants[section]) variants[section].add(variant);
 	}
 	return variants;
 }

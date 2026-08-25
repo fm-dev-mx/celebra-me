@@ -4,7 +4,6 @@ import type { ContentSectionKey } from '@/lib/theme/theme-contract';
 import type {
 	InvitationRevealRecipe,
 	SectionIntersectionFamily,
-	SharedSectionVariant,
 } from '@/lib/theme/theme-contract';
 import type { PersonalizedAccessVariant } from '@/lib/invitation/section-variants';
 import { getContactPhone, isPlaceholderContactPhone } from '@/utils/whatsapp';
@@ -30,7 +29,7 @@ type PersonalizedAccessProps = {
 	maxAllowedAttendees: number;
 	eventYear?: string;
 	isDemoPreview?: boolean;
-	variant?: PersonalizedAccessVariant;
+	variant: PersonalizedAccessVariant;
 	title?: string;
 	subtitle?: string;
 	footerText?: string;
@@ -59,7 +58,6 @@ type DescriptorData =
 				image: InterludeBlock['image'];
 				alt: InterludeBlock['alt'];
 				height: InterludeBlock['height'];
-				variant: SharedSectionVariant;
 				focalPoint?: string;
 				focalPointDesktop?: string;
 				lightX?: string;
@@ -145,7 +143,6 @@ function renderInterlude(block: InterludeBlock) {
 			image: block.image,
 			alt: block.alt,
 			height: block.height,
-			variant: (block.variant ?? 'standard') as SharedSectionVariant,
 			focalPoint: block.focalPoint,
 			focalPointDesktop: block.focalPointDesktop,
 			lightX: block.lightX,
@@ -416,24 +413,6 @@ function withRenderMetadata<T extends DescriptorData>(
 	};
 }
 
-function prioritizePersonalizedAccess(
-	descriptors: InvitationSectionRenderDescriptor[],
-): InvitationSectionRenderDescriptor[] {
-	const paIndex = descriptors.findIndex((d) => d.component === 'personalized-access');
-	if (paIndex === -1) return descriptors;
-
-	const before = descriptors.slice(0, paIndex);
-	const after = descriptors.slice(paIndex + 1);
-	const [personalizedAccess] = descriptors.slice(paIndex, paIndex + 1);
-
-	const quoteIndex = before.findIndex((d) => d.component === 'quote');
-	const targetIndex =
-		quoteIndex !== -1 ? quoteIndex + 1 : before.findIndex((d) => d.component !== 'interlude');
-
-	const insertAt = targetIndex === -1 ? before.length : targetIndex;
-	return [...before.slice(0, insertAt), personalizedAccess, ...before.slice(insertAt), ...after];
-}
-
 export function buildInvitationSectionRenderDescriptors(
 	pageContext: InvitationPageContext,
 ): InvitationSectionRenderDescriptor[] {
@@ -441,9 +420,7 @@ export function buildInvitationSectionRenderDescriptors(
 		.map((block, index) => renderBlock(pageContext, block, index, pageContext.renderPlan))
 		.filter((block): block is InvitationSectionRenderDescriptor => block !== null);
 
-	if (pageContext.viewModel.sectionOrder) return descriptors;
-
-	return prioritizePersonalizedAccess(descriptors);
+	return descriptors;
 }
 
 function findNextSectionLink(

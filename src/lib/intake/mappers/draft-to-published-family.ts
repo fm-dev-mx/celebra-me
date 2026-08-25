@@ -140,13 +140,17 @@ function buildGodparentGroups(draftFamily: FamilyDraft):
 function resolveFamilyVariant(
 	family: FamilyDraft,
 	priorFamily: Record<string, unknown> | undefined,
+	demoFamily: Record<string, unknown> | undefined,
 ): string {
-	return family.variant ?? str(priorFamily?.variant) ?? 'standard';
+	const variant = family.variant ?? str(priorFamily?.variant) ?? str(demoFamily?.variant);
+	if (!variant) throw new Error('Published content requires an explicit family.variant.');
+	return variant;
 }
 
 export function mapFamilyFromDraft(
 	draftFamily: DraftContent['family'],
 	priorFamily?: Record<string, unknown>,
+	demoFamily?: Record<string, unknown>,
 ): Record<string, unknown> | undefined {
 	if (!isNonEmptyObject(draftFamily)) return undefined;
 	assertCanonicalFamilyDraft(draftFamily);
@@ -191,7 +195,7 @@ export function mapFamilyFromDraft(
 
 	if (typeof family.visible === 'boolean') result.visible = family.visible;
 	if (family.presentation) result.presentation = family.presentation;
-	result.variant = resolveFamilyVariant(family, priorFamily);
+	result.variant = resolveFamilyVariant(family, priorFamily, demoFamily);
 	if (family.featuredImage) result.featuredImage = family.featuredImage;
 	return isNonEmptyObject(result) ? result : undefined;
 }
