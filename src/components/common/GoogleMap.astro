@@ -3,13 +3,14 @@
 // an "Open in Maps" / "Abrir en Maps" control over that iframe and opens the
 // coordinate query, not the invitation's approved googleMapsUrl.
 /* eslint-disable no-restricted-syntax -- dynamic transforms require inline style */
+import type { LocationMapStyle } from '@/lib/invitation/location-presentation';
+
 interface Props {
 	lat: number;
 	lng: number;
 	zoom?: number;
 	title?: string;
-	mapStyle?: 'dark' | 'colorful' | 'minimal' | 'satellite' | 'rustic';
-	variant?: string;
+	mapStyle: LocationMapStyle;
 }
 
 function latLngToPixel(latVal: number, lngVal: number, zoomLevel: number) {
@@ -20,12 +21,7 @@ function latLngToPixel(latVal: number, lngVal: number, zoomLevel: number) {
 	return { x, y };
 }
 
-const { lat, lng, zoom = 15, title, mapStyle = 'dark', variant = 'structured' } = Astro.props;
-
-const isRustic =
-	mapStyle === 'rustic' ||
-	variant === 'premiere-floral' ||
-	variant === 'luxury-hacienda';
+const { lat, lng, zoom = 15, title, mapStyle } = Astro.props;
 
 const { x, y } = latLngToPixel(lat, lng, zoom);
 const centerTileX = Math.floor(x / 256);
@@ -55,9 +51,8 @@ for (let dy = -1; dy <= 1; dy++) {
 
 <div
 	class="google-map-container"
-	data-map-style={isRustic ? 'rustic' : mapStyle}
+	data-map-style={mapStyle}
 	data-map-preview="static"
-	data-variant={variant}
 >
 	<div class="rustic-map-wrapper">
 		<div
@@ -234,43 +229,6 @@ for (let dy = -1; dy <= 1; dy++) {
 			--map-overlay: linear-gradient(180deg, rgb(var(--color-surface-dark-rgb) / 0.1), transparent);
 		}
 
-		&[data-variant='celestial-blue'] {
-			--map-frame-filter: sepia(0.12) saturate(0.82) contrast(0.94) brightness(0.9);
-			--map-border: rgb(var(--color-satin-blue-rgb) / 0.36);
-			--map-shadow:
-				inset 0 0 40px rgb(var(--color-surface-primary-rgb) / 0.12),
-				inset 0 0 0 1px rgb(var(--color-liquid-silver-rgb) / 0.16);
-			--map-overlay: linear-gradient(
-				180deg,
-				rgb(var(--color-cool-ivory-rgb) / 0.1),
-				transparent 32%
-			);
-		}
-
-		&[data-variant='jewelry-box'],
-		&[data-variant='jewelry-box-wedding'] {
-			--map-frame-filter: grayscale(0.22) sepia(0.18) contrast(0.96) brightness(0.9);
-			--map-border: rgb(var(--color-action-accent-rgb) / 0.3);
-			--map-shadow:
-				inset 0 0 20px rgb(var(--color-surface-dark-rgb) / 0.14),
-				inset 0 0 0 1px rgb(var(--color-action-accent-rgb) / 0.08);
-			--map-overlay: linear-gradient(
-				180deg,
-				rgb(var(--color-action-accent-rgb) / 0.08),
-				transparent 42%
-			);
-		}
-
-		&[data-variant='luxury-hacienda'] {
-			--map-frame-filter: sepia(0.24) saturate(0.88) contrast(0.94) brightness(0.9);
-			--map-border: rgb(var(--color-action-accent-rgb) / 0.28);
-			--map-overlay: linear-gradient(
-				180deg,
-				rgb(var(--color-surface-dark-rgb) / 0.1),
-				rgb(var(--color-action-accent-rgb) / 0.04)
-			);
-		}
-
 		&:hover .rustic-map-tiles {
 			filter: saturate(1.02) contrast(1.01) brightness(0.98);
 		}
@@ -279,9 +237,5 @@ for (let dy = -1; dy <= 1; dy++) {
 			filter: sepia(0.28) saturate(0.8) contrast(0.98) brightness(0.98);
 		}
 
-		&[data-variant='celestial-blue']:hover .rustic-map-tiles {
-			filter: sepia(0.08) saturate(0.86) contrast(0.96) brightness(0.92);
-		}
 	}
 </style>
-

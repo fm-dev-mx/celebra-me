@@ -2,7 +2,10 @@ import { z } from 'zod';
 import { ICON_NAMES_TUPLE } from '@/lib/icons/icon-catalog';
 import { INDICATION_STYLE_VARIANTS } from '@/lib/theme/theme-contract';
 import { AssetSchema, focalPointSchema } from '@/lib/schemas/content/shared.schema';
-import { LOCATION_PRESENTATIONS } from '@/lib/invitation/presentation-options';
+import {
+	LOCATION_MAP_STYLES,
+	LOCATION_PRESENTATIONS,
+} from '@/lib/invitation/location-presentation';
 import { LOCATION_VARIANTS } from '@/lib/invitation/section-variants';
 
 const locationCoordinatesSchema = z
@@ -17,22 +20,6 @@ const locationCoordinatesSchema = z
 const venueMapUrlSchema = z
 	.union([z.url(), z.string().regex(/^\[\[PENDIENTE:[A-Z0-9_]+\]\]$/u)])
 	.optional();
-
-const venueSchema = z.object({
-	venueEvent: z.string(),
-	venueName: z.string(),
-	address: z.string(),
-	city: z.string().optional(),
-	date: z.string(),
-	time: z.string(),
-	mapUrl: venueMapUrlSchema,
-	appleMapsUrl: venueMapUrlSchema,
-	googleMapsUrl: venueMapUrlSchema,
-	wazeUrl: venueMapUrlSchema,
-	image: AssetSchema.optional(),
-	focalPoint: focalPointSchema.optional(),
-	coordinates: locationCoordinatesSchema,
-});
 
 const venueEntrySchema = z.object({
 	type: z.enum(['ceremony', 'reception', 'custom']),
@@ -61,6 +48,7 @@ export type VenueEntryInput = z.infer<typeof venueEntrySchema>;
 const locationBaseSchema = z.object({
 	visibility: z.enum(['public', 'after-rsvp']).default('public'),
 	presentation: z.enum(LOCATION_PRESENTATIONS).optional(),
+	mapStyle: z.enum(LOCATION_MAP_STYLES).default('dark'),
 	presentationOptions: z
 		.object({
 			showFlourishes: z.boolean().optional(),
@@ -73,17 +61,7 @@ const locationBaseSchema = z.object({
 	introHeading: z.string().optional(),
 	introLede: z.string().optional(),
 	indicationsHeading: z.string().default(''),
-	ceremony: venueSchema
-		.extend({
-			venueEvent: z.string().default('Ceremonia'),
-		})
-		.optional(),
-	reception: venueSchema
-		.extend({
-			venueEvent: z.string().default('Recepción'),
-		})
-		.optional(),
-	venues: z.array(venueEntrySchema).optional(),
+	venues: z.array(venueEntrySchema),
 	indications: z
 		.array(
 			z.object({
@@ -97,15 +75,9 @@ const locationBaseSchema = z.object({
 });
 
 function collectVisibleVenues(location: {
-	ceremony?: unknown;
-	reception?: unknown;
-	venues?: Array<{ isVisible?: boolean }>;
+	venues: Array<{ isVisible?: boolean }>;
 }): unknown[] {
-	return [
-		location.ceremony,
-		location.reception,
-		...(location.venues?.filter((venue) => venue.isVisible !== false) ?? []),
-	].filter(Boolean);
+	return location.venues.filter((venue) => venue.isVisible !== false);
 }
 
 export const locationSchema = z

@@ -15,6 +15,7 @@ import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { IconName } from '@/lib/icons/icon-catalog';
 import type { IndicationStyleVariant } from '@/lib/theme/theme-contract';
 import type { LocationPresentation } from '@/lib/invitation/location-presentation';
+import type { LocationMapStyle } from '@/lib/invitation/location-presentation';
 import type { LocationVariant } from '@/lib/invitation/section-variants';
 
 interface VenueData {
@@ -57,11 +58,10 @@ interface Props {
 	lockedTitle?: string;
 	lockedMessage?: string;
 	lockedCtaLabel?: string;
-	ceremony?: VenueData;
-	reception?: VenueData;
-	venues?: VenueEntry[];
+	venues: VenueEntry[];
 	indications?: Indication[];
 	variant: LocationVariant;
+	mapStyle: LocationMapStyle;
 	presentation?: LocationPresentation;
 	showFlourishes?: boolean;
 	showNavigationButtons?: boolean;
@@ -80,11 +80,10 @@ const {
 	lockedTitle = 'Ubicación reservada',
 	lockedMessage = 'Los detalles del lugar se mostrarán después de confirmar asistencia.',
 	lockedCtaLabel = 'Confirmar asistencia',
-	ceremony,
-	reception,
 	venues: venueEntries,
 	indications,
 	variant,
+	mapStyle,
 	presentation,
 	showFlourishes = true,
 	showNavigationButtons = true,
@@ -95,15 +94,7 @@ const {
 	introLede,
 } = Astro.props;
 
-// Use venues array if present, otherwise fall back to legacy ceremony/reception
-const rawVenues = venueEntries && venueEntries.length > 0
-	? venueEntries
-	: [
-			...(ceremony ? [{ ...ceremony, type: 'ceremony' as const, isVisible: true }] : []),
-			...(reception ? [{ ...reception, type: 'reception' as const, isVisible: true }] : []),
-		];
-
-const displayVenues = groupVenues(rawVenues);
+const displayVenues = groupVenues(venueEntries);
 
 const isSingleVenue = displayVenues.length === 1;
 ---
@@ -132,7 +123,7 @@ const isSingleVenue = displayVenues.length === 1;
 				<VenueCard
 					venue={venue}
 					type={venue.type === 'ceremony' || venue.type === 'reception' || venue.type === 'grouped' ? venue.type : 'custom'}
-					variant={variant}
+					mapStyle={mapStyle}
 					presentation={presentation}
 					showFlourishes={showFlourishes}
 					showNavigationButtons={showNavigationButtons}

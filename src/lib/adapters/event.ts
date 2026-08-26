@@ -54,10 +54,7 @@ function pickVenueValue(
 	key: 'venueName' | 'city',
 ): string | undefined {
 	if (!location) return undefined;
-	const direct = location.reception?.[key] ?? location.ceremony?.[key];
-	if (direct) return direct;
 	const venues = location.venues;
-	if (!venues || venues.length === 0) return undefined;
 	const reception = venues.find((v) => v.type === 'reception' && v.isVisible !== false);
 	if (reception?.[key]) return reception[key];
 	const ceremony = venues.find((v) => v.type === 'ceremony' && v.isVisible !== false);
@@ -334,18 +331,6 @@ function formatVenueLocation(
 	return undefined;
 }
 
-function resolveVenueData(
-	eventSlug: string,
-	venue: NonNullable<EventContentEntry['data']['location']>['ceremony'],
-	title: string,
-) {
-	if (!venue) return undefined;
-	return {
-		...venue,
-		image: resolveAsset(eventSlug, venue.image, title),
-	};
-}
-
 function toVenueEntry(v: VenueEntryInput, eventSlug: string, eventTitle: string): VenueEntry {
 	return {
 		id: v.id,
@@ -372,22 +357,17 @@ function buildLocationSectionData(context: AdaptationContext) {
 	const { data, eventSlug } = context;
 	if (!data.location) return undefined;
 
-	const rawVenues = data.location.venues;
-	const venues: VenueEntry[] | undefined = rawVenues?.map((v: VenueEntryInput) =>
+	const venues: VenueEntry[] = data.location.venues.map((v: VenueEntryInput) =>
 		toVenueEntry(v, eventSlug, data.title),
 	);
 
 	return {
 		visibility: data.location.visibility,
 		presentation: data.location.presentation,
+		mapStyle: data.location.mapStyle,
 		variant: data.location.variant,
 		presentationOptions: data.location.presentationOptions,
-		...(rawVenues !== undefined
-			? { venues }
-			: {
-					ceremony: resolveVenueData(eventSlug, data.location.ceremony, data.title),
-					reception: resolveVenueData(eventSlug, data.location.reception, data.title),
-				}),
+		venues,
 		indications: data.location.indications,
 		showFlourishes: resolveLocationShowFlourishes(
 			data.location.presentationOptions,

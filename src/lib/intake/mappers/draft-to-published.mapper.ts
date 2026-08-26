@@ -18,6 +18,7 @@ import {
 import { DEFAULT_REMINDER_MESSAGE } from '@/lib/rsvp/services/shared/share-message-defaults';
 import { buildPublishedEventTiming } from '@/lib/time/event-time';
 import { normalizeTime } from '@/lib/time/time-format';
+import { normalizeLegacyLocation } from '@/lib/invitation/location-normalizer';
 import { mapFamilyFromDraft } from '@/lib/intake/mappers/draft-to-published-family';
 import {
 	requireCanonicalVariant as requireVariant,
@@ -285,11 +286,15 @@ function mapLocationFromDraft(
 ): Record<string, unknown> | undefined {
 	if (!isNonEmptyObject(draftLocation)) return undefined;
 	const result: Record<string, unknown> = {};
-	const demoLocation = demoContent?.location as Record<string, unknown> | undefined;
-	const priorLocation = ctx.priorPublishedContent?.location as
-		Record<string, unknown> | undefined;
+	const demoLocation = normalizeLegacyLocation(demoContent?.location) as
+		| Record<string, unknown>
+		| undefined;
+	const priorLocation = normalizeLegacyLocation(ctx.priorPublishedContent?.location) as
+		| Record<string, unknown>
+		| undefined;
 	if (draftLocation.visibility) result.visibility = draftLocation.visibility;
 	if (draftLocation.presentation) result.presentation = draftLocation.presentation;
+	result.mapStyle = draftLocation.mapStyle ?? priorLocation?.mapStyle ?? demoLocation?.mapStyle ?? 'dark';
 	result.variant = requireVariant(
 		'location',
 		draftLocation.variant,
@@ -298,8 +303,14 @@ function mapLocationFromDraft(
 	if (draftLocation.presentationOptions)
 		result.presentationOptions = draftLocation.presentationOptions;
 
-	if (draftLocation.venues && Array.isArray(draftLocation.venues)) {
-		const mappedVenues = draftLocation.venues
+	const sourceVenues = Array.isArray(draftLocation.venues)
+		? draftLocation.venues
+		: Array.isArray(priorLocation?.venues)
+			? priorLocation.venues
+			: Array.isArray(demoLocation?.venues)
+				? demoLocation.venues
+				: [];
+	const mappedVenues = sourceVenues
 			.filter((v) => v.isVisible !== false)
 			.map((v, index) => {
 				const priorVenue = findPriorVenue(priorLocation, v, index);
@@ -325,38 +336,7 @@ function mapLocationFromDraft(
 					venueEvent: str(priorVenue?.venueEvent) || venueLabel(v.type, label),
 				};
 			});
-		if (mappedVenues.length === 0 && !isNonEmptyObject(result)) {
-			return undefined;
-		}
-		result.venues = mappedVenues;
-	} else {
-		const ceremony = mapVenue(
-			draftLocation.ceremony,
-			demoLocation?.ceremony as Record<string, unknown> | undefined,
-			ctx,
-		);
-		if (ceremony) {
-			ceremony.venueEvent =
-				str((priorLocation?.ceremony as Record<string, unknown> | undefined)?.venueEvent) ||
-				str((demoLocation?.ceremony as Record<string, unknown> | undefined)?.venueEvent) ||
-				'Ceremonia';
-			result.ceremony = ceremony;
-		}
-		const reception = mapVenue(
-			draftLocation.reception,
-			demoLocation?.reception as Record<string, unknown> | undefined,
-			ctx,
-		);
-		if (reception) {
-			reception.venueEvent =
-				str(
-					(priorLocation?.reception as Record<string, unknown> | undefined)?.venueEvent,
-				) ||
-				str((demoLocation?.reception as Record<string, unknown> | undefined)?.venueEvent) ||
-				'Recepción';
-			result.reception = reception;
-		}
-	}
+	result.venues = mappedVenues;
 
 	const introFields = resolveIntroFields(draftLocation, demoLocation, ctx);
 	Object.assign(result, introFields);

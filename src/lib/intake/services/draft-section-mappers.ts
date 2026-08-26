@@ -6,6 +6,7 @@
 import { PERSONALIZED_ACCESS_DRAFT_KEYS } from '@/lib/intake/constants';
 import { str, toEditorDate, isRecord, isNonEmptyObject } from '@/lib/shared/data-utils';
 import { normalizeTime } from '@/lib/time/time-format';
+import { normalizeLegacyLocation } from '@/lib/invitation/location-normalizer';
 import type { DraftNormalizationIssue } from '@/lib/intake/services/draft-normalization-types';
 
 /** Normalize a venue (or venue-like) object to editor-consumable date/time. */
@@ -66,13 +67,11 @@ export function canonicalizeLocationDraft(
 	location: Record<string, unknown>,
 	removedPublishedOnlyKeys: string[],
 ): Record<string, unknown> {
-	const next: Record<string, unknown> = {
-		...location,
-		ceremony: canonicalizeVenueDraft(location.ceremony),
-		reception: canonicalizeVenueDraft(location.reception),
-	};
-	if (Array.isArray(location.venues)) {
-		next.venues = location.venues.map((venue) => canonicalizeVenueDraft(venue));
+	const normalized = normalizeLegacyLocation(location);
+	if (!isRecord(normalized)) return location;
+	const next: Record<string, unknown> = { ...normalized };
+	if (Array.isArray(normalized.venues)) {
+		next.venues = normalized.venues.map((venue) => canonicalizeVenueDraft(venue));
 	}
 	if (Array.isArray(location.indications)) {
 		next.indications = location.indications.map((indication, index) =>

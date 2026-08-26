@@ -7,6 +7,7 @@ import {
 	overlaySafeAreaSchema,
 } from '@/lib/schemas/content/shared.schema';
 import { LOCATION_PRESENTATIONS } from '@/lib/invitation/presentation-options';
+import { LOCATION_MAP_STYLES } from '@/lib/invitation/location-presentation';
 import {
 	HERO_VARIANTS,
 	LOCATION_VARIANTS,
@@ -18,7 +19,6 @@ import {
 	optionalText,
 	optionalUrl,
 	editableAssetSchema,
-	venueSchema,
 	venueEntrySchema,
 	gallerySchema,
 	itinerarySchema,
@@ -78,6 +78,7 @@ export const InvitationEditorSectionSchemas = {
 	location: z.object({
 		visibility: z.enum(['public', 'after-rsvp']).optional(),
 		presentation: z.enum(LOCATION_PRESENTATIONS).optional(),
+		mapStyle: z.enum(LOCATION_MAP_STYLES).optional(),
 		variant: z.enum(LOCATION_VARIANTS).optional(),
 		presentationOptions: z
 			.object({
@@ -92,8 +93,6 @@ export const InvitationEditorSectionSchemas = {
 		introLede: optionalText(1000),
 		indicationsHeading: optionalText(200),
 		eventTiming: eventTimingEditorSchema.optional(),
-		ceremony: venueSchema.optional(),
-		reception: venueSchema.optional(),
 		venues: z.array(venueEntrySchema).optional(),
 		indications: z.array(draftIndicationSchema).optional(),
 	}),

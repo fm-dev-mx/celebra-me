@@ -5,9 +5,7 @@ function getPreferredVenueField(
 	location: LocationSection,
 	field: 'venueName' | 'address' | 'googleMapsUrl',
 ): string | undefined {
-	return (
-		location.venues?.[0]?.[field] ?? location.reception?.[field] ?? location.ceremony?.[field]
-	);
+	return location.venues.find((venue) => venue.isVisible !== false)?.[field];
 }
 
 function buildLocation(revealedLocation: LocationSection): CalendarEventInput['location'] {

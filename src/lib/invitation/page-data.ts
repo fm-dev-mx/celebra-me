@@ -101,10 +101,9 @@ function pickHeroValue(
 	sections: InvitationPageContext['viewModel']['sections'] | undefined,
 	field: 'time' | 'venueName',
 ): string | undefined {
-	const val =
-		sections?.location?.venues?.[0]?.[field] ||
-		sections?.location?.reception?.[field] ||
-		sections?.location?.ceremony?.[field];
+	const val = sections?.location?.venues.find(
+		(venue) => venue.isVisible !== false && venue[field],
+	)?.[field];
 
 	if (typeof val === 'string' && val.startsWith('[[PENDIENTE:')) {
 		return undefined;

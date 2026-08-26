@@ -3,6 +3,16 @@ export const LOCATION_PRESENTATIONS = ['simple', 'with-map', 'with-photo'] as co
 export type LocationPresentation = (typeof LOCATION_PRESENTATIONS)[number];
 export type LocationMediaMode = 'none' | 'map' | 'image';
 
+export const LOCATION_MAP_STYLES = [
+	'dark',
+	'colorful',
+	'minimal',
+	'satellite',
+	'rustic',
+] as const;
+
+export type LocationMapStyle = (typeof LOCATION_MAP_STYLES)[number];
+
 export const LOCATION_REVEAL_SURFACES = ['section', 'rsvp'] as const;
 
 export type LocationRevealSurface = (typeof LOCATION_REVEAL_SURFACES)[number];

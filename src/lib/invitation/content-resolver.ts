@@ -6,6 +6,7 @@ import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import type { InvitationViewModel } from '@/lib/adapters/types';
 import { isDevEnvironment } from '@/lib/environment';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
+import { normalizeLegacyLocationInContent } from '@/lib/invitation/location-normalizer';
 
 export type ContentResolution =
 	| { source: 'static'; viewModel: InvitationViewModel }
@@ -102,7 +103,8 @@ export async function resolveInvitationContent(
 		try {
 			const publishedEntry = await findPublishedBySlugAndEventType(slug, eventType);
 			if (publishedEntry && publishedEntry.isDemo !== true) {
-				const parsedContent = eventContentSchema.safeParse(publishedEntry.content);
+				const normalizedContent = normalizeLegacyLocationInContent(publishedEntry.content);
+				const parsedContent = eventContentSchema.safeParse(normalizedContent);
 				if (!parsedContent.success) {
 					logInvalidPublishedContent({
 						id: publishedEntry.id,

@@ -19,6 +19,7 @@ import type { ImageMetadata } from 'astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import {
 	resolveLocationMediaMode,
+	type LocationMapStyle,
 	type LocationPresentation,
 } from '@/lib/invitation/location-presentation';
 
@@ -50,7 +51,7 @@ interface VenueData {
 interface Props {
 	venue: VenueData;
 	type: 'ceremony' | 'reception' | 'custom' | 'grouped';
-	variant?: string;
+	mapStyle: LocationMapStyle;
 	presentation?: LocationPresentation;
 	showFlourishes?: boolean;
 	showNavigationButtons?: boolean;
@@ -60,7 +61,7 @@ interface Props {
 const {
 	venue,
 	type,
-	variant = 'structured',
+	mapStyle,
 	presentation,
 	showFlourishes = true,
 	showNavigationButtons = true,
@@ -110,7 +111,7 @@ const MapPreviewContainer = useMapPreviewLink ? 'a' : 'div';
 								lng={venue.coordinates.lng}
 								zoom={venue.coordinates.zoom}
 								title={venue.venueName}
-								variant={variant}
+								mapStyle={mapStyle}
 							/>
 						)}
 						{mediaMode === 'image' && venue.image && (
@@ -310,14 +311,6 @@ const MapPreviewContainer = useMapPreviewLink ? 'a' : 'div';
 				</div>
 			)}
 		</div>
-
-		{variant === 'luxury-hacienda' && (
-			<>
-				<span class="rivet rivet--tl"></span>
-				<span class="rivet rivet--tr"></span>
-				<span class="rivet rivet--bl"></span>
-				<span class="rivet rivet--br"></span>
-			</>
-		)}
 	</article>
 </div>
+

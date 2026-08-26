@@ -1,0 +1,95 @@
+/**
+ * Canonical Location ingress normalization.
+ *
+ * Published canonical content uses venues[] only. Historical ceremony/reception
+ * values are accepted at named ingress boundaries and converted once, in stable
+ * ceremony-then-reception order. Mixed representations fail closed.
+ */
+
+export type LocationRecord = Record<string, unknown>;
+
+export class LocationNormalizationError extends Error {
+	readonly code = 'LOCATION_NORMALIZATION_ERROR';
+
+	constructor(message: string) {
+		super(message);
+		this.name = 'LocationNormalizationError';
+	}
+}
+
+function isRecord(value: unknown): value is LocationRecord {
+	return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function hasValue(record: LocationRecord, key: string): boolean {
+	return record[key] !== undefined && record[key] !== null;
+}
+
+function normalizeLegacyVenue(
+	value: unknown,
+	type: 'ceremony' | 'reception',
+): LocationRecord {
+	if (!isRecord(value)) {
+		throw new LocationNormalizationError(
+			`location.${type} must be an object before it can be converted to location.venues[].`,
+		);
+	}
+
+	return {
+		...value,
+		type: value.type ?? type,
+		venueEvent: value.venueEvent ?? (type === 'ceremony' ? 'Ceremonia' : 'Recepción'),
+		isVisible: value.isVisible ?? true,
+	};
+}
+
+/**
+ * Convert one Location object to the canonical venues[] representation.
+ * The function is pure and idempotent: canonical input is returned unchanged
+ * by value and legacy input is converted without mutating the source object.
+ */
+export function normalizeLegacyLocation(location: unknown): unknown {
+	if (!isRecord(location)) return location;
+
+	const hasVenues = hasValue(location, 'venues');
+	if (hasVenues && !Array.isArray(location.venues)) {
+		throw new LocationNormalizationError('location.venues must be an array when provided.');
+	}
+
+	const legacyKeys = (['ceremony', 'reception'] as const).filter((key) =>
+		hasValue(location, key),
+	);
+	if (hasVenues && legacyKeys.length > 0) {
+		throw new LocationNormalizationError(
+			`location.venues cannot be combined with ${legacyKeys.map((key) => `location.${key}`).join(' and ')}.`,
+		);
+	}
+
+	if (hasVenues) return location;
+
+	const venues = [
+		...(hasValue(location, 'ceremony')
+			? [normalizeLegacyVenue(location.ceremony, 'ceremony')]
+			: []),
+		...(hasValue(location, 'reception')
+			? [normalizeLegacyVenue(location.reception, 'reception')]
+			: []),
+	];
+	const { ceremony: _ceremony, reception: _reception, ...canonicalLocation } = location;
+
+	return {
+		...canonicalLocation,
+		venues,
+	};
+}
+
+/** Normalize a content document while preserving all unrelated top-level fields. */
+export function normalizeLegacyLocationInContent(
+	content: Record<string, unknown>,
+): Record<string, unknown> {
+	if (!isRecord(content.location)) return content;
+	return {
+		...content,
+		location: normalizeLegacyLocation(content.location),
+	};
+}

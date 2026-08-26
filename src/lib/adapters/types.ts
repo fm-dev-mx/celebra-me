@@ -22,6 +22,7 @@ import type {
 } from '@/lib/invitation/gallery-presentation';
 import type { GiftsPresentation } from '@/lib/invitation/gifts-presentation';
 import type { LocationPresentation } from '@/lib/invitation/location-presentation';
+import type { LocationMapStyle } from '@/lib/invitation/location-presentation';
 import type { z } from 'zod';
 import type { EnvelopeRevealVariant } from '@/lib/schemas/content/envelope.schema';
 import type { giftItemSchema } from '@/lib/schemas/content/gifts.schema';
@@ -100,9 +101,6 @@ export interface VenueEntry extends VenueBase {
 	sortOrder?: number;
 }
 
-export interface Reception extends VenueBase {
-	itinerary?: ItineraryItem[];
-}
 
 export interface Indication {
 	iconName: IconName;
@@ -210,6 +208,7 @@ export interface InvitationViewModelBrandingVisibility {
 export interface LocationSection {
 	visibility?: LocationVisibility;
 	presentation?: LocationPresentation;
+	mapStyle: LocationMapStyle;
 	variant: LocationVariant;
 	presentationOptions?: {
 		showFlourishes?: boolean;
@@ -220,9 +219,7 @@ export interface LocationSection {
 	lockedTitle?: string;
 	lockedMessage?: string;
 	lockedCtaLabel?: string;
-	ceremony?: VenueBase;
-	reception?: Reception;
-	venues?: VenueEntry[];
+	venues: VenueEntry[];
 	indications?: Indication[];
 	showFlourishes?: boolean;
 	showNavigationButtons?: boolean;

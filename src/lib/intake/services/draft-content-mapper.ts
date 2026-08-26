@@ -16,6 +16,10 @@ import {
 import { VENUE_URL_FIELDS, ENVELOPE_TEXT_FIELDS } from '@/lib/intake/constants';
 import type { IconName } from '@/lib/icons/icon-catalog';
 import {
+	normalizeLegacyLocation,
+	type LocationRecord,
+} from '@/lib/invitation/location-normalizer';
+import {
 	DraftNormalizationError,
 	type DraftNormalizationIssue,
 } from '@/lib/intake/services/draft-normalization-types';
@@ -97,14 +101,24 @@ function mapDateLocations(data: Record<string, unknown>): Partial<DraftContent> 
 		indications.push({ iconName: 'Calendar', text: additionalText });
 	}
 
+	const normalizedLocation = normalizeLegacyLocation({
+		ceremony: mapVenueToDraft(ceremony),
+		reception: mapVenueToDraft(reception),
+	}) as LocationRecord;
+	const venues = Array.isArray(normalizedLocation.venues)
+		? normalizedLocation.venues.map((venue, index) => ({
+			...venue,
+			id: `venue_legacy_${index}`,
+		}))
+		: [];
+
 	return {
 		location: {
 			introEyebrow: str(data.introEyebrow),
 			introHeading: str(data.introHeading),
 			introLede: str(data.introLede),
 			indicationsHeading: str(data.indicationsHeading),
-			ceremony: mapVenueToDraft(ceremony),
-			reception: mapVenueToDraft(reception),
+			venues,
 			indications: indications.length > 0 ? indications : undefined,
 		},
 		eventTiming: eventTiming
@@ -720,9 +734,11 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 				...(str(ind.styleVariant) ? { styleVariant: str(ind.styleVariant) } : {}),
 			}));
 
-		const draftLocationBase: Record<string, unknown> = {
+		const canonicalLocation = normalizeLegacyLocation(location) as LocationRecord;
+		const draftLocation: Record<string, unknown> = {
 			visibility: str(location.visibility),
 			presentation: str(location.presentation),
+			mapStyle: str(location.mapStyle),
 			variant: str(location.variant),
 			...(isRecord(location.presentationOptions)
 				? { presentationOptions: location.presentationOptions }
@@ -733,11 +749,10 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 			indicationsHeading: str(location.indicationsHeading),
 			indications: draftIndications.length > 0 ? draftIndications : undefined,
 		};
-		const draftLocation = draftLocationBase;
 
-		// Flatten venues array if present (preferred source)
-		const publishedVenues = location.venues as Array<Record<string, unknown>> | undefined;
-		if (publishedVenues && Array.isArray(publishedVenues) && publishedVenues.length > 0) {
+		// Flatten the canonical venues array. An explicit empty array remains empty.
+		const publishedVenues = canonicalLocation.venues as Array<Record<string, unknown>>;
+		if (Array.isArray(publishedVenues)) {
 			draftLocation.venues = publishedVenues.map((v, idx) => ({
 				id: str(v.id) || `venue_legacy_${idx}`,
 				type: (v.type as string) || 'custom',
@@ -757,14 +772,6 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 					: {}),
 				isVisible: v.isVisible !== false,
 			}));
-		} else {
-			// Legacy ceremony/reception fields
-			draftLocation.ceremony = mapVenueToDraft(
-				location.ceremony as Record<string, unknown> | undefined,
-			);
-			draftLocation.reception = mapVenueToDraft(
-				location.reception as Record<string, unknown> | undefined,
-			);
 		}
 
 		result.location = draftLocation as DraftContent['location'];
