@@ -1,307 +1,314 @@
 {
-    "eventType": "xv",
-    "isDemo": true,
-    "templateId": "xv-celestial-blue",
-    "_assetSlug": "demo-xv-celestial-blue",
-    "visualProfileId": "demo-xv-celestial-blue",
-    "title": "XV Años — Camila Fernanda",
-    "description": "Una invitación sofisticada para una noche de celebración en Cuernavaca. Elegancia, luz y momentos inolvidables.",
-    "theme": {
-        "fontFamily": "serif",
-        "preset": "celestial-blue"
-    },
-    "sectionOrder": [
-        "quote",
-        "family",
-        "countdown",
-        "location",
-        "itinerary",
-        "gallery",
-        "gifts",
-        "personalizedAccess",
-        "rsvp",
-        "thankYou"
+  "eventType": "xv",
+  "isDemo": true,
+  "templateId": "xv-celestial-blue",
+  "_assetSlug": "demo-xv-celestial-blue",
+  "visualProfileId": "demo-xv-celestial-blue",
+  "title": "XV Años — Camila Fernanda",
+  "description": "Una invitación sofisticada para una noche de celebración en Cuernavaca. Elegancia, luz y momentos inolvidables.",
+  "theme": {
+    "fontFamily": "serif",
+    "preset": "celestial-blue"
+  },
+  "sectionOrder": [
+    "quote",
+    "family",
+    "countdown",
+    "location",
+    "itinerary",
+    "gallery",
+    "gifts",
+    "personalizedAccess",
+    "rsvp",
+    "thankYou"
+  ],
+  "hero": {
+    "name": "Camila Torres Rivas",
+    "label": "Mis XV Años",
+    "date": "2027-09-12T19:00:00.000Z",
+    "backgroundImage": "hero",
+    "backgroundImageDesktop": "heroDesktop",
+    "portrait": "portrait",
+    "focalPoint": "50% 32%",
+    "focalPointMobile": "50% 30%",
+    "focalPointDesktop": "62% 38%",
+    "variant": "standard"
+  },
+  "location": {
+    "indications": [
+      {
+        "iconName": "DressCode",
+        "styleVariant": "reserved",
+        "text": "Código de vestimenta <strong>formal</strong>. El color <strong>azul cielo</strong> está reservado para la quinceañera."
+      },
+      {
+        "iconName": "Calendar",
+        "styleVariant": "default",
+        "text": "Confirma tu asistencia <strong>antes del 29 de agosto</strong>."
+      }
     ],
-    "hero": {
-        "name": "Camila Torres Rivas",
-        "label": "Mis XV Años",
-        "date": "2027-09-12T19:00:00.000Z",
-        "backgroundImage": "hero",
-        "backgroundImageDesktop": "heroDesktop",
-        "portrait": "portrait",
-        "focalPoint": "50% 32%",
-        "focalPointMobile": "50% 30%",
-        "focalPointDesktop": "62% 38%",
-        "variant": "standard"
+    "variant": "standard",
+    "venues": [
+      {
+        "venueEvent": "Misa de Acción de Gracias",
+        "venueName": "Catedral de la Asunción",
+        "address": "Av. Morelos 105, Centro, 62000 Cuernavaca, Mor.",
+        "city": "Cuernavaca",
+        "date": "12 de septiembre de 2027",
+        "time": "5:00 PM",
+        "mapUrl": "https://maps.app.goo.gl/example-catedral-asuncion",
+        "image": "ceremony",
+        "type": "ceremony",
+        "isVisible": true
+      },
+      {
+        "venueEvent": "Recepción",
+        "venueName": "Hacienda Los Claustros",
+        "address": "Carretera Federal Cuernavaca-Tepoztlán Km 4.5, 62574 Cuernavaca, Mor.",
+        "city": "Cuernavaca",
+        "date": "12 de septiembre de 2027",
+        "time": "7:00 PM",
+        "mapUrl": "https://maps.app.goo.gl/example-hacienda-claustros",
+        "image": "reception",
+        "type": "reception",
+        "isVisible": true
+      }
+    ],
+    "mapStyle": "dark"
+  },
+  "family": {
+    "featuredImage": "family",
+    "parents": {
+      "father": "Alejandro Torres Mendoza",
+      "mother": "Mariana Fernanda Rivas"
     },
-    "location": {
-        "ceremony": {
-            "venueEvent": "Misa de Acción de Gracias",
-            "venueName": "Catedral de la Asunción",
-            "address": "Av. Morelos 105, Centro, 62000 Cuernavaca, Mor.",
-            "city": "Cuernavaca",
-            "date": "12 de septiembre de 2027",
-            "time": "5:00 PM",
-            "mapUrl": "https://maps.app.goo.gl/example-catedral-asuncion",
-            "image": "ceremony"
-        },
-        "reception": {
-            "venueEvent": "Recepción",
-            "venueName": "Hacienda Los Claustros",
-            "address": "Carretera Federal Cuernavaca-Tepoztlán Km 4.5, 62574 Cuernavaca, Mor.",
-            "city": "Cuernavaca",
-            "date": "12 de septiembre de 2027",
-            "time": "7:00 PM",
-            "mapUrl": "https://maps.app.goo.gl/example-hacienda-claustros",
-            "image": "reception"
-        },
-        "indications": [
-            {
-                "iconName": "DressCode",
-                "styleVariant": "reserved",
-                "text": "Código de vestimenta <strong>formal</strong>. El color <strong>azul cielo</strong> está reservado para la quinceañera."
-            },
-            {
-                "iconName": "Calendar",
-                "styleVariant": "default",
-                "text": "Confirma tu asistencia <strong>antes del 29 de agosto</strong>."
-            }
-        ],
-        "variant": "standard"
+    "labels": {
+      "sectionTitle": "Mi Familia",
+      "sectionSubtitle": "Con amor y gratitud",
+      "parentsTitle": "Con la bendición de",
+      "godparentsTitle": "Padrinos",
+      "sectionMessage": "Cada paso de este camino ha estado iluminado por su cariño. Gracias por ser parte de esta noche que siempre llevaré en el corazón."
     },
-    "family": {
-        "featuredImage": "family",
-        "parents": {
-            "father": "Alejandro Torres Mendoza",
-            "mother": "Mariana Fernanda Rivas"
-        },
-        "labels": {
-            "sectionTitle": "Mi Familia",
-            "sectionSubtitle": "Con amor y gratitud",
-            "parentsTitle": "Con la bendición de",
-            "godparentsTitle": "Padrinos",
-            "sectionMessage": "Cada paso de este camino ha estado iluminado por su cariño. Gracias por ser parte de esta noche que siempre llevaré en el corazón."
-        },
-        "godparents": [
-            {
-                "name": "Ricardo Torres Mendoza",
-                "role": "Padrino"
-            },
-            {
-                "name": "Daniela Rivas Hernández",
-                "role": "Madrina"
-            },
-            {
-                "name": "Fernando Castillo López",
-                "role": "Padrino"
-            }
-        ],
-        "variant": "standard"
-    },
-    "gallery": {
-        "variant": "index-choreography",
-        "eyebrow": "Galería",
-        "title": "Luz, color y momentos que brillan con luz propia.",
-        "subtitle": "Un recorrido visual por la magia de esta celebración única.",
-        "items": [
-            {
-                "image": "gallery01",
-                "caption": "Una noche de ensueño en tonos de cielo."
-            },
-            {
-                "image": "gallery02",
-                "caption": "Cada instante, una obra de luz."
-            },
-            {
-                "image": "gallery03",
-                "caption": "Elegancia que trasciende el momento."
-            },
-            {
-                "image": "gallery04",
-                "caption": "Reflejos de una velada inolvidable."
-            },
-            {
-                "image": "gallery05",
-                "caption": "Sonrisas que iluminan la noche."
-            },
-            {
-                "image": "gallery06",
-                "caption": "Detalles que cuentan una historia."
-            },
-            {
-                "image": "gallery07",
-                "caption": "Brillo y distinción en cada rincón."
-            },
-            {
-                "image": "gallery08",
-                "caption": "La magia de los quince años."
-            }
-        ]
-    },
-    "gifts": {
+    "godparents": [
+      {
+        "name": "Ricardo Torres Mendoza",
+        "role": "Padrino"
+      },
+      {
+        "name": "Daniela Rivas Hernández",
+        "role": "Madrina"
+      },
+      {
+        "name": "Fernando Castillo López",
+        "role": "Padrino"
+      }
+    ],
+    "variant": "standard"
+  },
+  "gallery": {
+    "variant": "index-choreography",
+    "eyebrow": "Galería",
+    "title": "Luz, color y momentos que brillan con luz propia.",
+    "subtitle": "Un recorrido visual por la magia de esta celebración única.",
+    "items": [
+      {
+        "image": "gallery01",
+        "caption": "Una noche de ensueño en tonos de cielo."
+      },
+      {
+        "image": "gallery02",
+        "caption": "Cada instante, una obra de luz."
+      },
+      {
+        "image": "gallery03",
+        "caption": "Elegancia que trasciende el momento."
+      },
+      {
+        "image": "gallery04",
+        "caption": "Reflejos de una velada inolvidable."
+      },
+      {
+        "image": "gallery05",
+        "caption": "Sonrisas que iluminan la noche."
+      },
+      {
+        "image": "gallery06",
+        "caption": "Detalles que cuentan una historia."
+      },
+      {
+        "image": "gallery07",
+        "caption": "Brillo y distinción en cada rincón."
+      },
+      {
+        "image": "gallery08",
+        "caption": "La magia de los quince años."
+      }
+    ]
+  },
+  "gifts": {
+    "title": "Lluvia de Sobres",
+    "subtitle": "Tu presencia es el mejor regalo. Si deseas tener un detalle adicional, aquí algunas opciones:",
+    "items": [
+      {
+        "type": "cash",
+        "title": "Depósito o Transferencia",
+        "text": "Los detalles de depósito o transferencia pueden mostrarse aquí cuando el anfitrión decide compartirlos."
+      },
+      {
+        "type": "cash",
         "title": "Lluvia de Sobres",
-        "subtitle": "Tu presencia es el mejor regalo. Si deseas tener un detalle adicional, aquí algunas opciones:",
-        "items": [
-            {
-                "type": "cash",
-                "title": "Depósito o Transferencia",
-                "text": "Los detalles de depósito o transferencia pueden mostrarse aquí cuando el anfitrión decide compartirlos."
-            },
-            {
-                "type": "cash",
-                "title": "Lluvia de Sobres",
-                "text": "Contaremos con un buzón durante la recepción."
-            }
-        ],
-        "variant": "standard"
-    },
-    "rsvp": {
-        "title": "Confirma tu asistencia",
-        "guestCap": 4,
-        "accessMode": "hybrid",
-        "confirmationMessage": "Gracias por confirmar. Te esperamos con alegría en esta noche tan especial.",
-        "confirmationMode": "api",
-        "personalizedAccess": {
-            "title": "Tu lugar en la celebración",
-            "subtitle": "Reservado especialmente para ti",
-            "footerText": "Confirma abajo para asegurar tus lugares",
-            "variant": "ornamented"
-        },
-        "variant": "standard"
-    },
-    "quote": {
-        "text": "Hoy empieza una nueva historia, y no hay mejor escenario que tenerlos a mi lado.",
-        "author": "Camila Fernanda"
-    },
-    "thankYou": {
-        "message": "Gracias por compartir esta noche conmigo. Su amor y compañía hacen de mis XV años un recuerdo que atesoraré para siempre.",
-        "closingName": "Camila Torres Rivas",
-        "image": "thankYouPortrait",
-        "focalPoint": "50% 30%",
-        "variant": "editorial-back-cover"
-    },
-    "itinerary": {
-        "title": "Programa",
-        "items": [
-            {
-                "iconName": "Church",
-                "label": "Misa",
-                "time": "17:00",
-                "description": "Ceremonia de Acción de Gracias en la Catedral."
-            },
-            {
-                "iconName": "Reception",
-                "label": "Recepción",
-                "time": "19:00",
-                "description": "Bienvenida en Hacienda Los Claustros."
-            },
-            {
-                "iconName": "Waltz",
-                "label": "Vals",
-                "time": "20:30",
-                "description": "Un momento de ensueño."
-            },
-            {
-                "iconName": "Dinner",
-                "label": "Cena",
-                "time": "21:30",
-                "description": "Cena de gala en familia."
-            },
-            {
-                "iconName": "Party",
-                "label": "Cierre",
-                "time": "00:00",
-                "description": "Gracias por celebrar con nosotros."
-            }
-        ],
-        "variant": "timeline-paper"
-    },
-    "countdown": {
-        "variant": "standard",
-        "title": "La celebración comienza en",
-        "footerText": "Cuernavaca, Morelos"
-    },
-    "interludes": [
-        {
-            "image": "interlude01",
-            "afterSection": "location",
-            "alt": "Logia cubierta de Hacienda Los Claustros al anochecer",
-            "height": "screen",
-            "focalPoint": "50% 35%",
-            "lightX": "44%",
-            "lightY": "44%"
-        },
-        {
-            "image": "interlude02",
-            "afterSection": "family",
-            "alt": "Detalle de tiara y tul azul cielo",
-            "height": "screen",
-            "focalPoint": "50% 25%",
-            "lightX": "54%",
-            "lightY": "34%"
-        },
-        {
-            "image": "interlude03",
-            "afterSection": "itinerary",
-            "alt": "Jardín de recepción con faroles en Hacienda Los Claustros",
-            "height": "screen",
-            "focalPoint": "54% 62%",
-            "lightX": "68%",
-            "lightY": "44%",
-            "overlayOpacity": "14%"
-        },
-        {
-            "image": "interlude04",
-            "afterSection": "rsvp",
-            "alt": "Tul azul hielo y atmósfera plata-azul",
-            "height": "screen",
-            "focalPoint": "50% 34%",
-            "lightX": "42%",
-            "lightY": "42%"
-        }
+        "text": "Contaremos con un buzón durante la recepción."
+      }
     ],
-    "envelope": {
-        "sealStyle": "wax",
-        "sealIcon": "wax-monogram",
-        "sealInitials": "C·F",
-        "microcopy": "Abre tu invitación",
-        "closedPalette": {
-            "primary": "surfacePrimary",
-            "accent": "actionAccent",
-            "background": "surfaceDark"
-        }
+    "variant": "standard"
+  },
+  "rsvp": {
+    "title": "Confirma tu asistencia",
+    "guestCap": 4,
+    "accessMode": "hybrid",
+    "confirmationMessage": "Gracias por confirmar. Te esperamos con alegría en esta noche tan especial.",
+    "confirmationMode": "api",
+    "personalizedAccess": {
+      "title": "Tu lugar en la celebración",
+      "subtitle": "Reservado especialmente para ti",
+      "footerText": "Confirma abajo para asegurar tus lugares",
+      "variant": "ornamented"
     },
-    "sharing": {
-        "whatsappTemplate": "Hola {name}, te comparto la invitación para {eventTitle}: {inviteUrl}",
-        "ogImage": "portrait"
+    "variant": "standard"
+  },
+  "quote": {
+    "text": "Hoy empieza una nueva historia, y no hay mejor escenario que tenerlos a mi lado.",
+    "author": "Camila Fernanda"
+  },
+  "thankYou": {
+    "message": "Gracias por compartir esta noche conmigo. Su amor y compañía hacen de mis XV años un recuerdo que atesoraré para siempre.",
+    "closingName": "Camila Torres Rivas",
+    "image": "thankYouPortrait",
+    "focalPoint": "50% 30%",
+    "variant": "editorial-back-cover"
+  },
+  "itinerary": {
+    "title": "Programa",
+    "items": [
+      {
+        "iconName": "Church",
+        "label": "Misa",
+        "time": "17:00",
+        "description": "Ceremonia de Acción de Gracias en la Catedral."
+      },
+      {
+        "iconName": "Reception",
+        "label": "Recepción",
+        "time": "19:00",
+        "description": "Bienvenida en Hacienda Los Claustros."
+      },
+      {
+        "iconName": "Waltz",
+        "label": "Vals",
+        "time": "20:30",
+        "description": "Un momento de ensueño."
+      },
+      {
+        "iconName": "Dinner",
+        "label": "Cena",
+        "time": "21:30",
+        "description": "Cena de gala en familia."
+      },
+      {
+        "iconName": "Party",
+        "label": "Cierre",
+        "time": "00:00",
+        "description": "Gracias por celebrar con nosotros."
+      }
+    ],
+    "variant": "timeline-paper"
+  },
+  "countdown": {
+    "variant": "standard",
+    "title": "La celebración comienza en",
+    "footerText": "Cuernavaca, Morelos"
+  },
+  "interludes": [
+    {
+      "image": "interlude01",
+      "afterSection": "location",
+      "alt": "Logia cubierta de Hacienda Los Claustros al anochecer",
+      "height": "screen",
+      "focalPoint": "50% 35%",
+      "lightX": "44%",
+      "lightY": "44%"
     },
-    "music": {
-        "url": "https://res.cloudinary.com/dusxvauvj/video/upload/v1779331586/Ludovico_Einaudi_-_Nuvole_Bianche_z9ltlm.mp3",
-        "autoPlay": false,
-        "title": "Música de fondo"
+    {
+      "image": "interlude02",
+      "afterSection": "family",
+      "alt": "Detalle de tiara y tul azul cielo",
+      "height": "screen",
+      "focalPoint": "50% 25%",
+      "lightX": "54%",
+      "lightY": "34%"
     },
-    "composition": {
-        "intersections": {
-            "interlude-after-family": {
-                "family": "overlap",
-                "source": "family"
-            },
-            "gallery": {
-                "family": "atmospheric-blend",
-                "source": "interlude-after-family"
-            },
-            "interlude-after-location": {
-                "family": "arch",
-                "source": "location"
-            },
-            "interlude-after-itinerary": {
-                "family": "overlap",
-                "source": "itinerary"
-            },
-            "interlude-after-rsvp": {
-                "family": "atmospheric-blend",
-                "source": "rsvp"
-            }
-        }
+    {
+      "image": "interlude03",
+      "afterSection": "itinerary",
+      "alt": "Jardín de recepción con faroles en Hacienda Los Claustros",
+      "height": "screen",
+      "focalPoint": "54% 62%",
+      "lightX": "68%",
+      "lightY": "44%",
+      "overlayOpacity": "14%"
+    },
+    {
+      "image": "interlude04",
+      "afterSection": "rsvp",
+      "alt": "Tul azul hielo y atmósfera plata-azul",
+      "height": "screen",
+      "focalPoint": "50% 34%",
+      "lightX": "42%",
+      "lightY": "42%"
     }
+  ],
+  "envelope": {
+    "sealStyle": "wax",
+    "sealIcon": "wax-monogram",
+    "sealInitials": "C·F",
+    "microcopy": "Abre tu invitación",
+    "closedPalette": {
+      "primary": "surfacePrimary",
+      "accent": "actionAccent",
+      "background": "surfaceDark"
+    }
+  },
+  "sharing": {
+    "whatsappTemplate": "Hola {name}, te comparto la invitación para {eventTitle}: {inviteUrl}",
+    "ogImage": "portrait"
+  },
+  "music": {
+    "url": "https://res.cloudinary.com/dusxvauvj/video/upload/v1779331586/Ludovico_Einaudi_-_Nuvole_Bianche_z9ltlm.mp3",
+    "autoPlay": false,
+    "title": "Música de fondo"
+  },
+  "composition": {
+    "intersections": {
+      "interlude-after-family": {
+        "family": "overlap",
+        "source": "family"
+      },
+      "gallery": {
+        "family": "atmospheric-blend",
+        "source": "interlude-after-family"
+      },
+      "interlude-after-location": {
+        "family": "arch",
+        "source": "location"
+      },
+      "interlude-after-itinerary": {
+        "family": "overlap",
+        "source": "itinerary"
+      },
+      "interlude-after-rsvp": {
+        "family": "atmospheric-blend",
+        "source": "rsvp"
+      }
+    }
+  }
 }

@@ -1,254 +1,263 @@
 {
-    "eventType": "xv",
-    "isDemo": true,
-    "templateId": "xv-editorial-rose",
-    "_assetSlug": "demo-xv-editorial",
-    "_mediaFallback": true,
-    "_mediaFallbackNote": "Uses demo-xv-editorial assets as curated temporary fallback. Needs dedicated editorial-rose media before production sale.",
-    "title": "XV Años — Editorial Rose",
-    "description": "Una invitación editorial en tonos rosa, blanco y plata, con ritmo de revista social y una lectura visual más limpia para XV años de gala.",
-    "theme": {
-        "fontFamily": "serif",
-        "preset": "editorial-rose"
-    },
-    "sectionOrder": [
-        "quote",
-        "countdown",
-        "family",
-        "location",
-        "itinerary",
-        "gallery",
-        "gifts",
-        "personalizedAccess",
-        "rsvp",
-        "thankYou"
+  "eventType": "xv",
+  "isDemo": true,
+  "templateId": "xv-editorial-rose",
+  "_assetSlug": "demo-xv-editorial",
+  "_mediaFallback": true,
+  "_mediaFallbackNote": "Uses demo-xv-editorial assets as curated temporary fallback. Needs dedicated editorial-rose media before production sale.",
+  "title": "XV Años — Editorial Rose",
+  "description": "Una invitación editorial en tonos rosa, blanco y plata, con ritmo de revista social y una lectura visual más limpia para XV años de gala.",
+  "theme": {
+    "fontFamily": "serif",
+    "preset": "editorial-rose"
+  },
+  "sectionOrder": [
+    "quote",
+    "countdown",
+    "family",
+    "location",
+    "itinerary",
+    "gallery",
+    "gifts",
+    "personalizedAccess",
+    "rsvp",
+    "thankYou"
+  ],
+  "composition": {
+    "intersections": {}
+  },
+  "hero": {
+    "name": "Aurora Valencia",
+    "label": "XV Edition",
+    "date": "2027-08-28T21:00:00.000Z",
+    "backgroundImage": "hero",
+    "portrait": "portrait",
+    "focalPoint": "50% 38%",
+    "focalPointMobile": "50% 32%",
+    "variant": "standard"
+  },
+  "location": {
+    "introEyebrow": "Ciudad de México",
+    "introHeading": "Sábado, 28 de agosto de 2027",
+    "introLede": "Aurora celebrará sus XV años en una noche de ceremonia, cena y baile preparada para recibir a sus invitados con especial cuidado.",
+    "indicationsHeading": "Detalles para invitados",
+    "indications": [
+      {
+        "iconName": "DressCode",
+        "styleVariant": "reserved",
+        "text": "Código de vestimenta: <strong>formal</strong>. Los tonos <strong>rosa y lila</strong> están reservados para la quinceañera."
+      },
+      {
+        "iconName": "Enveloped",
+        "styleVariant": "default",
+        "text": "Agradecemos confirmar antes del <strong>14 de agosto de 2027</strong> y llegar con puntualidad para disfrutar cada momento."
+      }
     ],
-    "composition": { "intersections": {} },
-    "hero": {
-        "name": "Aurora Valencia",
-        "label": "XV Edition",
-        "date": "2027-08-28T21:00:00.000Z",
-        "backgroundImage": "hero",
-        "portrait": "portrait",
-        "focalPoint": "50% 38%",
-        "focalPointMobile": "50% 32%",
-        "variant": "standard"
+    "variant": "standard",
+    "presentationOptions": {
+      "showFlourishes": true
     },
-    "location": {
-        "introEyebrow": "Ciudad de México",
-        "introHeading": "Sábado, 28 de agosto de 2027",
-        "introLede": "Aurora celebrará sus XV años en una noche de ceremonia, cena y baile preparada para recibir a sus invitados con especial cuidado.",
-        "indicationsHeading": "Detalles para invitados",
-        "ceremony": {
-            "venueEvent": "Ceremonia religiosa",
-            "venueName": "Parroquia de Nuestra Señora del Carmen",
-            "address": "Av. Revolución 123, Col. Del Valle, Ciudad de México",
-            "city": "Ciudad de México",
-            "date": "28 de agosto de 2027",
-            "time": "16:00",
-            "mapUrl": "https://maps.app.goo.gl/example-ceremony"
-        },
-        "reception": {
-            "venueEvent": "Recepción",
-            "venueName": "Salón de Eventos Magnolia",
-            "address": "Calzada de la Luz 456, Col. Jardines del Pedregal, Ciudad de México",
-            "city": "Ciudad de México",
-            "date": "28 de agosto de 2027",
-            "time": "18:30",
-            "mapUrl": "https://maps.app.goo.gl/example-reception"
-        },
-        "indications": [
-            {
-                "iconName": "DressCode",
-                "styleVariant": "reserved",
-                "text": "Código de vestimenta: <strong>formal</strong>. Los tonos <strong>rosa y lila</strong> están reservados para la quinceañera."
-            },
-            {
-                "iconName": "Enveloped",
-                "styleVariant": "default",
-                "text": "Agradecemos confirmar antes del <strong>14 de agosto de 2027</strong> y llegar con puntualidad para disfrutar cada momento."
-            }
-        ],
-        "variant": "standard",
-        "presentationOptions": {
-            "showFlourishes": true
-        }
+    "venues": [
+      {
+        "venueEvent": "Ceremonia religiosa",
+        "venueName": "Parroquia de Nuestra Señora del Carmen",
+        "address": "Av. Revolución 123, Col. Del Valle, Ciudad de México",
+        "city": "Ciudad de México",
+        "date": "28 de agosto de 2027",
+        "time": "16:00",
+        "mapUrl": "https://maps.app.goo.gl/example-ceremony",
+        "type": "ceremony",
+        "isVisible": true
+      },
+      {
+        "venueEvent": "Recepción",
+        "venueName": "Salón de Eventos Magnolia",
+        "address": "Calzada de la Luz 456, Col. Jardines del Pedregal, Ciudad de México",
+        "city": "Ciudad de México",
+        "date": "28 de agosto de 2027",
+        "time": "18:30",
+        "mapUrl": "https://maps.app.goo.gl/example-reception",
+        "type": "reception",
+        "isVisible": true
+      }
+    ],
+    "mapStyle": "dark"
+  },
+  "family": {
+    "featuredImage": "family",
+    "parents": {
+      "father": "Alejandro Valencia Mendoza",
+      "mother": "Mariana López Castillo"
     },
-    "family": {
-        "featuredImage": "family",
-        "parents": {
-            "father": "Alejandro Valencia Mendoza",
-            "mother": "Mariana López Castillo"
-        },
-        "parentsOrder": "father-first",
-        "labels": {
-            "sectionTitle": "Mi familia",
-            "sectionSubtitle": "Con amor y gratitud",
-            "parentsTitle": "Con la bendición de mis padres",
-            "godparentsTitle": "Padrinos",
-            "sectionMessage": "Con gratitud celebro el amor, la guía y la presencia de quienes han acompañado mi historia."
-        },
-        "godparents": [
-            {
-                "name": "Gabriela López Castillo",
-                "role": "Madrina"
-            },
-            {
-                "name": "Roberto Méndez García",
-                "role": "Padrino"
-            }
-        ],
-        "focalPoint": "50% 40%",
-        "variant": "standard"
+    "parentsOrder": "father-first",
+    "labels": {
+      "sectionTitle": "Mi familia",
+      "sectionSubtitle": "Con amor y gratitud",
+      "parentsTitle": "Con la bendición de mis padres",
+      "godparentsTitle": "Padrinos",
+      "sectionMessage": "Con gratitud celebro el amor, la guía y la presencia de quienes han acompañado mi historia."
     },
-    "quote": {
-        "text": "Los sueños se vuelven memorables cuando se comparten con quienes han estado cerca en cada etapa. Esta noche celebra el camino recorrido y la ilusión de todo lo que comienza.",
-        "author": "Aurora Valencia"
-    },
-    "countdown": {
-        "variant": "standard",
-        "title": "La celebración comienza en",
-        "footerText": "28 de agosto de 2027, Ciudad de México"
-    },
-    "itinerary": {
-        "title": "Programa de la noche",
-        "items": [
-            {
-                "iconName": "Church",
-                "label": "Ceremonia religiosa",
-                "time": "16:00",
-                "description": "Parroquia de Nuestra Señora del Carmen."
-            },
-            {
-                "iconName": "Reception",
-                "label": "Cóctel de bienvenida",
-                "time": "18:30",
-                "description": "Recibimiento en Salón Magnolia."
-            },
-            {
-                "iconName": "Party",
-                "label": "Recepción",
-                "time": "20:00",
-                "description": "Cena, brindis y celebración."
-            }
-        ],
-        "variant": "standard"
-    },
-    "gallery": {
-        "variant": "editorial-mosaic",
-        "eyebrow": "Galería",
-        "title": "Brillar es la actitud",
-        "subtitle": "Una secuencia editorial con detalles de luz, textura y ceremonia.",
-        "items": [
-            {
-                "image": "gallery01",
-                "caption": "Texturas de gala."
-            },
-            {
-                "image": "gallery02",
-                "caption": "Luz suave para la portada."
-            },
-            {
-                "image": "gallery03",
-                "caption": "Detalles con acento plateado."
-            },
-            {
-                "image": "gallery04",
-                "caption": "Una pausa de revista."
-            },
-            {
-                "image": "gallery05",
-                "caption": "El cierre de la historia visual."
-            }
+    "godparents": [
+      {
+        "name": "Gabriela López Castillo",
+        "role": "Madrina"
+      },
+      {
+        "name": "Roberto Méndez García",
+        "role": "Padrino"
+      }
+    ],
+    "focalPoint": "50% 40%",
+    "variant": "standard"
+  },
+  "quote": {
+    "text": "Los sueños se vuelven memorables cuando se comparten con quienes han estado cerca en cada etapa. Esta noche celebra el camino recorrido y la ilusión de todo lo que comienza.",
+    "author": "Aurora Valencia"
+  },
+  "countdown": {
+    "variant": "standard",
+    "title": "La celebración comienza en",
+    "footerText": "28 de agosto de 2027, Ciudad de México"
+  },
+  "itinerary": {
+    "title": "Programa de la noche",
+    "items": [
+      {
+        "iconName": "Church",
+        "label": "Ceremonia religiosa",
+        "time": "16:00",
+        "description": "Parroquia de Nuestra Señora del Carmen."
+      },
+      {
+        "iconName": "Reception",
+        "label": "Cóctel de bienvenida",
+        "time": "18:30",
+        "description": "Recibimiento en Salón Magnolia."
+      },
+      {
+        "iconName": "Party",
+        "label": "Recepción",
+        "time": "20:00",
+        "description": "Cena, brindis y celebración."
+      }
+    ],
+    "variant": "standard"
+  },
+  "gallery": {
+    "variant": "editorial-mosaic",
+    "eyebrow": "Galería",
+    "title": "Brillar es la actitud",
+    "subtitle": "Una secuencia editorial con detalles de luz, textura y ceremonia.",
+    "items": [
+      {
+        "image": "gallery01",
+        "caption": "Texturas de gala."
+      },
+      {
+        "image": "gallery02",
+        "caption": "Luz suave para la portada."
+      },
+      {
+        "image": "gallery03",
+        "caption": "Detalles con acento plateado."
+      },
+      {
+        "image": "gallery04",
+        "caption": "Una pausa de revista."
+      },
+      {
+        "image": "gallery05",
+        "caption": "El cierre de la historia visual."
+      }
+    ]
+  },
+  "gifts": {
+    "title": "Regalos",
+    "subtitle": "Su presencia será el detalle más valioso. Para quienes deseen tener una atención adicional, compartimos estas opciones.",
+    "items": [
+      {
+        "type": "store",
+        "title": "Mesa de regalos",
+        "description": "Lista seleccionada para esta celebración.",
+        "links": [
+          {
+            "label": "Ver lista",
+            "url": "https://mesaderegalos.liverpool.com.mx/"
+          }
         ]
-    },
-    "gifts": {
-        "title": "Regalos",
-        "subtitle": "Su presencia será el detalle más valioso. Para quienes deseen tener una atención adicional, compartimos estas opciones.",
-        "items": [
-            {
-                "type": "store",
-                "title": "Mesa de regalos",
-                "description": "Lista seleccionada para esta celebración.",
-                "links": [
-                    {
-                        "label": "Ver lista",
-                        "url": "https://mesaderegalos.liverpool.com.mx/"
-                    }
-                ]
-            },
-            {
-                "type": "cash",
-                "title": "Sobre de felicitación",
-                "text": "Habrá un espacio reservado para sobres durante la recepción."
-            }
-        ],
-        "variant": "standard"
-    },
-    "rsvp": {
-        "title": "Confirme su asistencia",
-        "subcopy": "Les pedimos confirmar su asistencia desde esta invitación para preparar la recepción con precisión.",
-        "guestCap": 4,
-        "accessMode": "hybrid",
-        "confirmationMessage": "Gracias por confirmar. Será una alegría compartir esta noche con ustedes.",
-        "confirmationMode": "api",
-        "personalizedAccess": {
-            "variant": "ornamented"
-        },
-        "variant": "standard"
-    },
-    "thankYou": {
-        "message": "Gracias por formar parte de una noche pensada para celebrar con elegancia, gratitud y alegría.",
-        "closingName": "Aurora Valencia",
-        "image": "thankYouPortrait",
-        "focalPoint": "50% 36%",
-        "variant": "standard"
-    },
-    "interludes": [
-        {
-            "image": "interlude01",
-            "afterSection": "location",
-            "alt": "Detalle editorial rosa plata con brillo",
-            "height": "screen",
-            "focalPoint": "50% 50%",
-            "lightX": "48%",
-            "lightY": "40%"
-        },
-        {
-            "image": "interlude03",
-            "afterSection": "itinerary",
-            "alt": "Divisor decorativo con textura editorial",
-            "height": "medium",
-            "focalPoint": "50% 52%",
-            "lightX": "50%",
-            "lightY": "46%"
-        }
+      },
+      {
+        "type": "cash",
+        "title": "Sobre de felicitación",
+        "text": "Habrá un espacio reservado para sobres durante la recepción."
+      }
     ],
-    "envelope": {
-        "disabled": false,
-        "revealVariant": "editorial-cover",
-        "coverEdition": "XV",
-        "coverVolume": "1",
-        "coverIssue": "2027",
-        "sealStyle": "wax",
-        "sealIcon": "flower",
-        "sealInitials": "A·V",
-        "sealVariant": "premium-rose",
-        "microcopy": "Abrir invitación",
-        "documentLabel": "XV Edition",
-        "cardLabel": "XV Edition",
-        "cardTagline": "Edición de gala",
-        "stampText": "Aurora",
-        "stampYear": "2027",
-        "closedPalette": {
-            "primary": "surfacePrimary",
-            "accent": "actionAccent",
-            "background": "surfacePrimary"
-        }
+    "variant": "standard"
+  },
+  "rsvp": {
+    "title": "Confirme su asistencia",
+    "subcopy": "Les pedimos confirmar su asistencia desde esta invitación para preparar la recepción con precisión.",
+    "guestCap": 4,
+    "accessMode": "hybrid",
+    "confirmationMessage": "Gracias por confirmar. Será una alegría compartir esta noche con ustedes.",
+    "confirmationMode": "api",
+    "personalizedAccess": {
+      "variant": "ornamented"
     },
-    "sharing": {
-        "whatsappTemplate": "Hola {name}, te comparto con mucha ilusión la invitación a mis XV años: {inviteUrl}",
-        "ogImage": "portrait",
-        "ogDescription": "Acompáñame en mis XV años el sábado, 28 de agosto de 2027, en la Ciudad de México."
+    "variant": "standard"
+  },
+  "thankYou": {
+    "message": "Gracias por formar parte de una noche pensada para celebrar con elegancia, gratitud y alegría.",
+    "closingName": "Aurora Valencia",
+    "image": "thankYouPortrait",
+    "focalPoint": "50% 36%",
+    "variant": "standard"
+  },
+  "interludes": [
+    {
+      "image": "interlude01",
+      "afterSection": "location",
+      "alt": "Detalle editorial rosa plata con brillo",
+      "height": "screen",
+      "focalPoint": "50% 50%",
+      "lightX": "48%",
+      "lightY": "40%"
+    },
+    {
+      "image": "interlude03",
+      "afterSection": "itinerary",
+      "alt": "Divisor decorativo con textura editorial",
+      "height": "medium",
+      "focalPoint": "50% 52%",
+      "lightX": "50%",
+      "lightY": "46%"
     }
+  ],
+  "envelope": {
+    "disabled": false,
+    "revealVariant": "editorial-cover",
+    "coverEdition": "XV",
+    "coverVolume": "1",
+    "coverIssue": "2027",
+    "sealStyle": "wax",
+    "sealIcon": "flower",
+    "sealInitials": "A·V",
+    "sealVariant": "premium-rose",
+    "microcopy": "Abrir invitación",
+    "documentLabel": "XV Edition",
+    "cardLabel": "XV Edition",
+    "cardTagline": "Edición de gala",
+    "stampText": "Aurora",
+    "stampYear": "2027",
+    "closedPalette": {
+      "primary": "surfacePrimary",
+      "accent": "actionAccent",
+      "background": "surfacePrimary"
+    }
+  },
+  "sharing": {
+    "whatsappTemplate": "Hola {name}, te comparto con mucha ilusión la invitación a mis XV años: {inviteUrl}",
+    "ogImage": "portrait",
+    "ogDescription": "Acompáñame en mis XV años el sábado, 28 de agosto de 2027, en la Ciudad de México."
+  }
 }

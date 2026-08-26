@@ -1,249 +1,258 @@
 {
-    "eventType": "xv",
-    "isDemo": true,
-    "templateId": "xv-enchanted-rose",
-    "_assetSlug": "demo-xv-editorial",
-    "_mediaFallback": true,
-    "_mediaFallbackNote": "Photography uses demo-xv-editorial as temporary fallback. Location maps (mapCeremony/mapReception) are decorative assets re-exported from the enchanted-rose pack for venue parity with the client counterpart. Needs dedicated enchanted-rose photography before production sale.",
-    "title": "XV Años — Isabella Rose",
-    "description": "Una invitación de gala con rosas, luz de velas y un ritmo visual más selectivo para celebrar XV años con atmósfera de palacio.",
-    "theme": {
-        "fontFamily": "serif",
-        "preset": "enchanted-rose"
-    },
-    "sectionOrder": [
-        "quote",
-        "location",
-        "countdown",
-        "family",
-        "itinerary",
-        "gallery",
-        "gifts",
-        "personalizedAccess",
-        "rsvp",
-        "thankYou"
+  "eventType": "xv",
+  "isDemo": true,
+  "templateId": "xv-enchanted-rose",
+  "_assetSlug": "demo-xv-editorial",
+  "_mediaFallback": true,
+  "_mediaFallbackNote": "Photography uses demo-xv-editorial as temporary fallback. Location maps (mapCeremony/mapReception) are decorative assets re-exported from the enchanted-rose pack for venue parity with the client counterpart. Needs dedicated enchanted-rose photography before production sale.",
+  "title": "XV Años — Isabella Rose",
+  "description": "Una invitación de gala con rosas, luz de velas y un ritmo visual más selectivo para celebrar XV años con atmósfera de palacio.",
+  "theme": {
+    "fontFamily": "serif",
+    "preset": "enchanted-rose"
+  },
+  "sectionOrder": [
+    "quote",
+    "location",
+    "countdown",
+    "family",
+    "itinerary",
+    "gallery",
+    "gifts",
+    "personalizedAccess",
+    "rsvp",
+    "thankYou"
+  ],
+  "composition": {
+    "intersections": {}
+  },
+  "hero": {
+    "name": "Isabella Rose Valenzuela",
+    "label": "Mis XV Años",
+    "date": "2027-11-20T20:00:00.000Z",
+    "scrollLabel": "Continúa",
+    "backgroundImage": "hero",
+    "portrait": "portrait",
+    "focalPoint": "50% 32%",
+    "focalPointMobile": "50% 32%",
+    "focalPointTablet": "50% 24%",
+    "focalPointDesktop": "50% 21%",
+    "variant": "standard"
+  },
+  "location": {
+    "introEyebrow": "Querétaro",
+    "introHeading": "Ubicación",
+    "introLede": "Isabella Rose celebrará sus XV años en una noche de ceremonia, cena y baile entre rosas, música y luz de velas.",
+    "indications": [
+      {
+        "iconName": "DressCode",
+        "styleVariant": "reserved",
+        "text": "Código de vestimenta <strong>formal de gala</strong>. Los tonos <strong>rosa satín y blush</strong> están reservados para la quinceañera."
+      },
+      {
+        "iconName": "Calendar",
+        "styleVariant": "default",
+        "text": "Favor de confirmar asistencia <strong>antes del 6 de noviembre de 2027</strong>."
+      }
     ],
-    "composition": { "intersections": {} },
-    "hero": {
-        "name": "Isabella Rose Valenzuela",
-        "label": "Mis XV Años",
-        "date": "2027-11-20T20:00:00.000Z",
-        "scrollLabel": "Continúa",
-        "backgroundImage": "hero",
-        "portrait": "portrait",
-        "focalPoint": "50% 32%",
-        "focalPointMobile": "50% 32%",
-        "focalPointTablet": "50% 24%",
-        "focalPointDesktop": "50% 21%",
-        "variant": "standard"
+    "variant": "standard",
+    "presentationOptions": {
+      "showFlourishes": true
     },
-    "location": {
-        "introEyebrow": "Querétaro",
-        "introHeading": "Ubicación",
-        "introLede": "Isabella Rose celebrará sus XV años en una noche de ceremonia, cena y baile entre rosas, música y luz de velas.",
-        "ceremony": {
-            "venueEvent": "Ceremonia religiosa",
-            "venueName": "Parroquia del Sagrado Corazón",
-            "address": "Av. de las Rosas 240, Centro Histórico, 76000 Querétaro, Qro.",
-            "city": "Querétaro",
-            "date": "20 de noviembre de 2027",
-            "time": "18:00",
-            "mapUrl": "https://maps.app.goo.gl/example-sagrado-corazon",
-            "image": "mapCeremony"
-        },
-        "reception": {
-            "venueEvent": "Recepción",
-            "venueName": "Salón Imperial",
-            "address": "Paseo del Palacio 18, Jardines del Acueducto, 76020 Querétaro, Qro.",
-            "city": "Querétaro",
-            "date": "20 de noviembre de 2027",
-            "time": "20:00",
-            "mapUrl": "https://maps.app.goo.gl/example-salon-imperial",
-            "image": "mapReception"
-        },
-        "indications": [
-            {
-                "iconName": "DressCode",
-                "styleVariant": "reserved",
-                "text": "Código de vestimenta <strong>formal de gala</strong>. Los tonos <strong>rosa satín y blush</strong> están reservados para la quinceañera."
-            },
-            {
-                "iconName": "Calendar",
-                "styleVariant": "default",
-                "text": "Favor de confirmar asistencia <strong>antes del 6 de noviembre de 2027</strong>."
-            }
-        ],
-        "variant": "standard",
-        "presentationOptions": {
-            "showFlourishes": true
-        }
-    },
-    "family": {
-        "parents": {
-            "father": "Fernando Valenzuela Robles",
-            "mother": "María Elena Duarte"
-        },
-        "labels": {
-            "sectionTitle": "Mi familia",
-            "sectionSubtitle": "Con amor y gratitud",
-            "parentsTitle": "Con la bendición de",
-            "godparentsTitle": "Padrinos",
-            "sectionMessage": "Esta noche honra el amor, la guía y la presencia de quienes han acompañado mi historia con cariño y elegancia."
-        },
-        "godparents": [
-            {
-                "name": "Arturo Valenzuela Robles",
-                "role": "Padrino"
-            },
-            {
-                "name": "Lucía Duarte Salazar",
-                "role": "Madrina"
-            },
-            {
-                "name": "Gabriel Montero López",
-                "role": "Padrino"
-            }
-        ],
-        "variant": "standard"
-    },
-    "gallery": {
-        "variant": "feature-mosaic",
-        "eyebrow": "Galería",
-        "title": "Instantes de Isabella",
-        "subtitle": "Una selección breve entre rosas, luz de velas y detalles dorados.",
-        "items": [
-            {
-                "image": "gallery01",
-                "caption": "Luz de velas"
-            },
-            {
-                "image": "gallery02",
-                "caption": "Acentos dorados"
-            },
-            {
-                "image": "gallery06",
-                "caption": "Rosas de gala"
-            },
-            {
-                "image": "gallery03",
-                "caption": "Una noche de palacio"
-            },
-            {
-                "image": "gallery04",
-                "caption": "Mármol y terciopelo"
-            }
-        ]
-    },
-    "gifts": {
-        "title": "Un detalle especial",
-        "subtitle": "Su presencia será el regalo más valioso. Para quienes deseen compartir un detalle adicional, habrá un espacio reservado durante la recepción.",
-        "items": [
-            {
-                "type": "cash",
-                "title": "Sobre de felicitación",
-                "text": "Habrá un espacio discreto para sobres durante la recepción."
-            }
-        ],
-        "variant": "standard"
-    },
-    "rsvp": {
-        "title": "Confirme su asistencia",
-        "subcopy": "Les pedimos confirmar desde esta invitación para preparar cada lugar con cuidado.",
-        "guestCap": 4,
-        "accessMode": "hybrid",
-        "confirmationMessage": "Gracias por confirmar. Será una alegría recibirles en esta noche especial.",
-        "confirmationMode": "api",
-        "personalizedAccess": {
-            "variant": "ornamented"
-        },
-        "variant": "standard"
-    },
-    "quote": {
-        "text": "Entre rosas y luz de velas, comienza una noche que guardaré para siempre.",
-        "author": "Isabella Rose"
-    },
-    "thankYou": {
-        "message": "Gracias por compartir esta noche. Su presencia hará que mis XV años florezcan como un recuerdo lleno de amor y gratitud.",
-        "closingName": "Isabella Rose Valenzuela",
-        "image": "thankYouPortrait",
-        "focalPoint": "50% 30%",
-        "variant": "editorial-back-cover"
-    },
-    "itinerary": {
-        "title": "Programa de la gala",
-        "items": [
-            {
-                "iconName": "Church",
-                "label": "Ceremonia religiosa",
-                "time": "18:00",
-                "description": "Parroquia del Sagrado Corazón."
-            },
-            {
-                "iconName": "Reception",
-                "label": "Recepción",
-                "time": "20:00",
-                "description": "Bienvenida en el Salón Imperial."
-            },
-            {
-                "iconName": "Waltz",
-                "label": "Vals",
-                "time": "21:00",
-                "description": "Momento de gala bajo luz de velas."
-            },
-            {
-                "iconName": "Party",
-                "label": "Celebración",
-                "time": "22:00",
-                "description": "Cena, baile y cierre de la noche."
-            }
-        ],
-        "variant": "standard"
-    },
-    "countdown": {
-        "variant": "standard",
-        "title": "La gala comienza en",
-        "footerText": "20 de noviembre de 2027, Querétaro"
-    },
-    "interludes": [
-        {
-            "image": "interlude02",
-            "afterSection": "family",
-            "alt": "Detalle de palacio con espejo antiguo y rosas rojas",
-            "height": "screen",
-            "focalPoint": "50% 25%",
-            "lightX": "54%",
-            "lightY": "34%"
-        },
-        {
-            "image": "interlude03",
-            "afterSection": "gallery",
-            "alt": "Mesa de gala con velas, detalles dorados y rosas",
-            "height": "screen",
-            "focalPoint": "54% 22%",
-            "lightX": "68%",
-            "lightY": "44%",
-            "overlayOpacity": "18%"
-        }
+    "venues": [
+      {
+        "venueEvent": "Ceremonia religiosa",
+        "venueName": "Parroquia del Sagrado Corazón",
+        "address": "Av. de las Rosas 240, Centro Histórico, 76000 Querétaro, Qro.",
+        "city": "Querétaro",
+        "date": "20 de noviembre de 2027",
+        "time": "18:00",
+        "mapUrl": "https://maps.app.goo.gl/example-sagrado-corazon",
+        "image": "mapCeremony",
+        "type": "ceremony",
+        "isVisible": true
+      },
+      {
+        "venueEvent": "Recepción",
+        "venueName": "Salón Imperial",
+        "address": "Paseo del Palacio 18, Jardines del Acueducto, 76020 Querétaro, Qro.",
+        "city": "Querétaro",
+        "date": "20 de noviembre de 2027",
+        "time": "20:00",
+        "mapUrl": "https://maps.app.goo.gl/example-salon-imperial",
+        "image": "mapReception",
+        "type": "reception",
+        "isVisible": true
+      }
     ],
-    "envelope": {
-        "disabled": false,
-        "sealStyle": "wax",
-        "sealIcon": "flower",
-        "sealInitials": "I·R",
-        "microcopy": "Abrir invitación",
-        "closedPalette": {
-            "primary": "surfacePrimary",
-            "accent": "actionAccent",
-            "background": "surfaceDark"
-        }
+    "mapStyle": "dark"
+  },
+  "family": {
+    "parents": {
+      "father": "Fernando Valenzuela Robles",
+      "mother": "María Elena Duarte"
     },
-    "sharing": {
-        "whatsappTemplate": "Hola {name}, te comparto la invitación para {eventTitle}: {inviteUrl}",
-        "ogImage": "portrait"
+    "labels": {
+      "sectionTitle": "Mi familia",
+      "sectionSubtitle": "Con amor y gratitud",
+      "parentsTitle": "Con la bendición de",
+      "godparentsTitle": "Padrinos",
+      "sectionMessage": "Esta noche honra el amor, la guía y la presencia de quienes han acompañado mi historia con cariño y elegancia."
     },
-    "music": {
-        "url": "https://res.cloudinary.com/dusxvauvj/video/upload/v1779331586/Ludovico_Einaudi_-_Nuvole_Bianche_z9ltlm.mp3",
-        "autoPlay": false,
-        "title": "Música de fondo"
+    "godparents": [
+      {
+        "name": "Arturo Valenzuela Robles",
+        "role": "Padrino"
+      },
+      {
+        "name": "Lucía Duarte Salazar",
+        "role": "Madrina"
+      },
+      {
+        "name": "Gabriel Montero López",
+        "role": "Padrino"
+      }
+    ],
+    "variant": "standard"
+  },
+  "gallery": {
+    "variant": "feature-mosaic",
+    "eyebrow": "Galería",
+    "title": "Instantes de Isabella",
+    "subtitle": "Una selección breve entre rosas, luz de velas y detalles dorados.",
+    "items": [
+      {
+        "image": "gallery01",
+        "caption": "Luz de velas"
+      },
+      {
+        "image": "gallery02",
+        "caption": "Acentos dorados"
+      },
+      {
+        "image": "gallery06",
+        "caption": "Rosas de gala"
+      },
+      {
+        "image": "gallery03",
+        "caption": "Una noche de palacio"
+      },
+      {
+        "image": "gallery04",
+        "caption": "Mármol y terciopelo"
+      }
+    ]
+  },
+  "gifts": {
+    "title": "Un detalle especial",
+    "subtitle": "Su presencia será el regalo más valioso. Para quienes deseen compartir un detalle adicional, habrá un espacio reservado durante la recepción.",
+    "items": [
+      {
+        "type": "cash",
+        "title": "Sobre de felicitación",
+        "text": "Habrá un espacio discreto para sobres durante la recepción."
+      }
+    ],
+    "variant": "standard"
+  },
+  "rsvp": {
+    "title": "Confirme su asistencia",
+    "subcopy": "Les pedimos confirmar desde esta invitación para preparar cada lugar con cuidado.",
+    "guestCap": 4,
+    "accessMode": "hybrid",
+    "confirmationMessage": "Gracias por confirmar. Será una alegría recibirles en esta noche especial.",
+    "confirmationMode": "api",
+    "personalizedAccess": {
+      "variant": "ornamented"
+    },
+    "variant": "standard"
+  },
+  "quote": {
+    "text": "Entre rosas y luz de velas, comienza una noche que guardaré para siempre.",
+    "author": "Isabella Rose"
+  },
+  "thankYou": {
+    "message": "Gracias por compartir esta noche. Su presencia hará que mis XV años florezcan como un recuerdo lleno de amor y gratitud.",
+    "closingName": "Isabella Rose Valenzuela",
+    "image": "thankYouPortrait",
+    "focalPoint": "50% 30%",
+    "variant": "editorial-back-cover"
+  },
+  "itinerary": {
+    "title": "Programa de la gala",
+    "items": [
+      {
+        "iconName": "Church",
+        "label": "Ceremonia religiosa",
+        "time": "18:00",
+        "description": "Parroquia del Sagrado Corazón."
+      },
+      {
+        "iconName": "Reception",
+        "label": "Recepción",
+        "time": "20:00",
+        "description": "Bienvenida en el Salón Imperial."
+      },
+      {
+        "iconName": "Waltz",
+        "label": "Vals",
+        "time": "21:00",
+        "description": "Momento de gala bajo luz de velas."
+      },
+      {
+        "iconName": "Party",
+        "label": "Celebración",
+        "time": "22:00",
+        "description": "Cena, baile y cierre de la noche."
+      }
+    ],
+    "variant": "standard"
+  },
+  "countdown": {
+    "variant": "standard",
+    "title": "La gala comienza en",
+    "footerText": "20 de noviembre de 2027, Querétaro"
+  },
+  "interludes": [
+    {
+      "image": "interlude02",
+      "afterSection": "family",
+      "alt": "Detalle de palacio con espejo antiguo y rosas rojas",
+      "height": "screen",
+      "focalPoint": "50% 25%",
+      "lightX": "54%",
+      "lightY": "34%"
+    },
+    {
+      "image": "interlude03",
+      "afterSection": "gallery",
+      "alt": "Mesa de gala con velas, detalles dorados y rosas",
+      "height": "screen",
+      "focalPoint": "54% 22%",
+      "lightX": "68%",
+      "lightY": "44%",
+      "overlayOpacity": "18%"
     }
+  ],
+  "envelope": {
+    "disabled": false,
+    "sealStyle": "wax",
+    "sealIcon": "flower",
+    "sealInitials": "I·R",
+    "microcopy": "Abrir invitación",
+    "closedPalette": {
+      "primary": "surfacePrimary",
+      "accent": "actionAccent",
+      "background": "surfaceDark"
+    }
+  },
+  "sharing": {
+    "whatsappTemplate": "Hola {name}, te comparto la invitación para {eventTitle}: {inviteUrl}",
+    "ogImage": "portrait"
+  },
+  "music": {
+    "url": "https://res.cloudinary.com/dusxvauvj/video/upload/v1779331586/Ludovico_Einaudi_-_Nuvole_Bianche_z9ltlm.mp3",
+    "autoPlay": false,
+    "title": "Música de fondo"
+  }
 }

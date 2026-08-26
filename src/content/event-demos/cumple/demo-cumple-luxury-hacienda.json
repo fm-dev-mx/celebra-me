@@ -1,236 +1,254 @@
 {
-    "eventType": "cumple",
-    "isDemo": true,
-    "templateId": "cumple-luxury-hacienda",
-    "_assetSlug": "demo-cumple-luxury-hacienda",
-    "title": "60 Años — Alberto Valenzuela",
-    "description": "Una celebración cálida y con carácter en una hacienda tradicional para festejar seis décadas de historia.",
-    "theme": {
-        "preset": "luxury-hacienda"
+  "eventType": "cumple",
+  "isDemo": true,
+  "templateId": "cumple-luxury-hacienda",
+  "_assetSlug": "demo-cumple-luxury-hacienda",
+  "title": "60 Años — Alberto Valenzuela",
+  "description": "Una celebración cálida y con carácter en una hacienda tradicional para festejar seis décadas de historia.",
+  "theme": {
+    "preset": "luxury-hacienda"
+  },
+  "sectionOrder": [
+    "quote",
+    "family",
+    "countdown",
+    "location",
+    "itinerary",
+    "gallery",
+    "gifts",
+    "personalizedAccess",
+    "rsvp",
+    "thankYou"
+  ],
+  "composition": {
+    "intersections": {}
+  },
+  "hero": {
+    "name": "Alberto Valenzuela",
+    "label": "60 Años",
+    "nickname": "Una noche en honor a Don Alberto",
+    "date": "2026-10-24T20:00:00.000Z",
+    "backgroundImage": "hero",
+    "variant": "standard"
+  },
+  "location": {
+    "indications": [
+      {
+        "iconName": "DressCode",
+        "styleVariant": "default",
+        "text": "Código de vestimenta: Gala Hacienda"
+      },
+      {
+        "iconName": "Forbidden",
+        "styleVariant": "reserved",
+        "text": "Evento solo para adultos"
+      }
+    ],
+    "variant": "standard",
+    "presentationOptions": {
+      "showFlourishes": true
     },
-    "sectionOrder": ["quote", "family", "countdown", "location", "itinerary", "gallery", "gifts", "personalizedAccess", "rsvp", "thankYou"],
-    "composition": { "intersections": {} },
-    "hero": {
-        "name": "Alberto Valenzuela",
-        "label": "60 Años",
-        "nickname": "Una noche en honor a Don Alberto",
-        "date": "2026-10-24T20:00:00.000Z",
-        "backgroundImage": "hero",
-        "variant": "standard"
-    },
-    "location": {
-        "reception": {
-            "venueEvent": "Gran Festejo",
-            "venueName": "Hacienda San Ignacio",
-            "address": "Km 12 Carretera a Capilla de Guadalupe, Tepatitlán, Jal.",
-            "city": "Tepatitlán",
-            "date": "24 de octubre de 2026",
-            "time": "8:00 PM",
-            "googleMapsUrl": "https://maps.app.goo.gl/example",
-            "coordinates": {
-                "lat": 20.8167,
-                "lng": -102.7667
-            }
+    "venues": [
+      {
+        "venueEvent": "Gran Festejo",
+        "venueName": "Hacienda San Ignacio",
+        "address": "Km 12 Carretera a Capilla de Guadalupe, Tepatitlán, Jal.",
+        "city": "Tepatitlán",
+        "date": "24 de octubre de 2026",
+        "time": "8:00 PM",
+        "googleMapsUrl": "https://maps.app.goo.gl/example",
+        "coordinates": {
+          "lat": 20.8167,
+          "lng": -102.7667
         },
-        "indications": [
-            {
-                "iconName": "DressCode",
-                "styleVariant": "default",
-                "text": "Código de vestimenta: Gala Hacienda"
-            },
-            {
-                "iconName": "Forbidden",
-                "styleVariant": "reserved",
-                "text": "Evento solo para adultos"
-            }
-        ],
-        "variant": "standard",
-        "presentationOptions": {
-            "showFlourishes": true
-        }
+        "type": "reception",
+        "isVisible": true
+      }
+    ],
+    "mapStyle": "dark"
+  },
+  "gallery": {
+    "eyebrow": "Galería",
+    "title": "Legado de Vida",
+    "subtitle": "Un recorrido por seis décadas de historia",
+    "items": [
+      {
+        "image": "gallery02",
+        "caption": "Brindis bajo la luz cálida de la Hacienda."
+      },
+      {
+        "image": "gallery03",
+        "caption": "Momentos de gratitud compartida."
+      },
+      {
+        "image": "gallery06",
+        "caption": "Celebrando la vida a plenitud."
+      },
+      {
+        "image": "gallery01",
+        "caption": "Raíces que sostienen un gran legado."
+      },
+      {
+        "image": "gallery05",
+        "caption": "Nuevas generaciones, misma historia."
+      },
+      {
+        "image": "gallery04",
+        "caption": "La tierra y la Hacienda que vieron crecer la historia."
+      }
+    ],
+    "variant": "feature-mosaic"
+  },
+  "rsvp": {
+    "title": "Confirma tu asistencia.",
+    "guestCap": 8,
+    "confirmationMessage": "Será un honor contar con su presencia.",
+    "confirmationMode": "both",
+    "whatsappConfig": {
+      "phone": "5213312345678",
+      "confirmedTemplate": "¡Hola Don Alberto! Soy {name}. Confirmo con gusto mi asistencia a sus 60 años. ¡Ahí estaremos! (Asistentes: {guestCount})",
+      "declinedTemplate": "Estimado Don Alberto, soy {name}. Lamento no poder acompañarlo en esta ocasión, pero le envío un fuerte abrazo y mis mejores deseos.",
+      "omitTitle": true
     },
-    "gallery": {
-        "eyebrow": "Galería",
-        "title": "Legado de Vida",
-        "subtitle": "Un recorrido por seis décadas de historia",
-        "items": [
-            {
-                "image": "gallery02",
-                "caption": "Brindis bajo la luz cálida de la Hacienda."
-            },
-            {
-                "image": "gallery03",
-                "caption": "Momentos de gratitud compartida."
-            },
-            {
-                "image": "gallery06",
-                "caption": "Celebrando la vida a plenitud."
-            },
-            {
-                "image": "gallery01",
-                "caption": "Raíces que sostienen un gran legado."
-            },
-            {
-                "image": "gallery05",
-                "caption": "Nuevas generaciones, misma historia."
-            },
-            {
-                "image": "gallery04",
-                "caption": "La tierra y la Hacienda que vieron crecer la historia."
-            }
-        ],
-        "variant": "feature-mosaic"
+    "variant": "standard",
+    "personalizedAccess": {
+      "variant": "standard"
+    }
+  },
+  "quote": {
+    "text": "La vida no se mide por los años, sino por los momentos que te dejan sin aliento y la familia que camina a tu lado.",
+    "author": "Don Alberto"
+  },
+  "family": {
+    "spouse": "María Elena Ruiz",
+    "labels": {
+      "sectionTitle": "Quienes dan sentido a mi historia",
+      "sectionSubtitle": "Legado y raíces",
+      "sectionMessage": "Gracias por ser parte de esta celebración que guardaré para siempre."
     },
-    "rsvp": {
-        "title": "Confirma tu asistencia.",
-        "guestCap": 8,
-        "confirmationMessage": "Será un honor contar con su presencia.",
-        "confirmationMode": "both",
-        "whatsappConfig": {
-            "phone": "5213312345678",
-            "confirmedTemplate": "¡Hola Don Alberto! Soy {name}. Confirmo con gusto mi asistencia a sus 60 años. ¡Ahí estaremos! (Asistentes: {guestCount})",
-            "declinedTemplate": "Estimado Don Alberto, soy {name}. Lamento no poder acompañarlo en esta ocasión, pero le envío un fuerte abrazo y mis mejores deseos.",
-            "omitTitle": true
-        },
-        "variant": "standard",
-        "personalizedAccess": {
-            "variant": "standard"
-        }
+    "parents": {
+      "father": "Don José Valenzuela",
+      "mother": "Doña Martha López",
+      "fatherDeceased": false,
+      "motherDeceased": true
     },
-    "quote": {
-        "text": "La vida no se mide por los años, sino por los momentos que te dejan sin aliento y la familia que camina a tu lado.",
-        "author": "Don Alberto"
+    "children": [
+      {
+        "name": "Alberto Valenzuela Jr."
+      },
+      {
+        "name": "Sofía Valenzuela"
+      },
+      {
+        "name": "Ricardo Valenzuela"
+      },
+      {
+        "name": "Elena Valenzuela"
+      }
+    ],
+    "featuredImage": "family",
+    "variant": "standard"
+  },
+  "thankYou": {
+    "message": "Verlos reunidos es mi mayor regalo. Gracias por ser parte de mi historia y por llenar mi vida de recuerdos inolvidables.",
+    "closingName": "Alberto",
+    "image": "portrait",
+    "variant": "standard"
+  },
+  "music": {
+    "url": "https://res.cloudinary.com/dusxvauvj/video/upload/v1771003968/el-rey_sptxkp.mp3",
+    "autoPlay": false,
+    "title": "Música de fondo"
+  },
+  "itinerary": {
+    "title": "Programa de la Noche",
+    "items": [
+      {
+        "iconName": "Toast",
+        "label": "Recepción y Brindis",
+        "time": "20:00",
+        "description": "Bienvenida en el jardín principal."
+      },
+      {
+        "iconName": "Dinner",
+        "label": "Cena de Gala",
+        "time": "21:30",
+        "description": "Cocina de raíz, servida con la elegancia de siempre."
+      },
+      {
+        "iconName": "Accordion",
+        "label": "Mariachi y Sorpresas",
+        "time": "23:00",
+        "description": "Música en vivo para celebrar."
+      },
+      {
+        "iconName": "Party",
+        "label": "Baile y Alegría",
+        "time": "00:30",
+        "description": "Bajo las estrellas de la Hacienda, hasta el último brindis."
+      }
+    ],
+    "variant": "standard"
+  },
+  "gifts": {
+    "title": "Gesto de Cariño",
+    "subtitle": "Si desean hacerme un presente",
+    "items": [
+      {
+        "type": "cash",
+        "title": "Depósito o Transferencia",
+        "text": "Los detalles de depósito o transferencia pueden mostrarse aquí cuando el anfitrión decide compartirlos."
+      },
+      {
+        "type": "store",
+        "title": "Mesa de Regalos",
+        "url": "https://www.liverpool.com.mx/tienda/giftregistry",
+        "logo": "LIVERPOOL"
+      },
+      {
+        "title": "Lluvia de Sobres",
+        "type": "cash",
+        "text": "Su presencia es nuestro mejor regalo. Si desean tener un detalle con Don Alberto, contaremos con un buzón para sobres en la entrada."
+      }
+    ],
+    "variant": "standard"
+  },
+  "countdown": {
+    "variant": "standard",
+    "title": "Hacienda San Ignacio",
+    "footerText": "Sesenta años de gratitud y legado."
+  },
+  "envelope": {
+    "disabled": false,
+    "sealStyle": "monogram",
+    "sealIcon": "monogram",
+    "sealInitials": "A·V",
+    "documentLabel": "RESERVACIÓN DE GALA",
+    "stampText": "EST. 1966",
+    "stampYear": "2026",
+    "microcopy": "Toca el sello para abrir la invitación",
+    "tooltipText": "Acceder a la invitación",
+    "closedPalette": {
+      "primary": "surfacePrimary",
+      "accent": "actionAccent",
+      "background": "surfaceDark"
+    }
+  },
+  "sharing": {
+    "whatsappTemplate": "Hola {name}, es un gusto invitarte a {eventTitle} 🥂\n\nPuedes ver todos los detalles y confirmar tu asistencia aquí:\n\n✨ {inviteUrl}"
+  },
+  "interludes": [
+    {
+      "image": "jardin",
+      "afterSection": "family",
+      "alt": "Legado de vida Alberto Valenzuela",
+      "height": "screen"
     },
-    "family": {
-        "spouse": "María Elena Ruiz",
-        "labels": {
-            "sectionTitle": "Quienes dan sentido a mi historia",
-            "sectionSubtitle": "Legado y raíces",
-            "sectionMessage": "Gracias por ser parte de esta celebración que guardaré para siempre."
-        },
-        "parents": {
-            "father": "Don José Valenzuela",
-            "mother": "Doña Martha López",
-            "fatherDeceased": false,
-            "motherDeceased": true
-        },
-        "children": [
-            {
-                "name": "Alberto Valenzuela Jr."
-            },
-            {
-                "name": "Sofía Valenzuela"
-            },
-            {
-                "name": "Ricardo Valenzuela"
-            },
-            {
-                "name": "Elena Valenzuela"
-            }
-        ],
-        "featuredImage": "family",
-        "variant": "standard"
-    },
-    "thankYou": {
-        "message": "Verlos reunidos es mi mayor regalo. Gracias por ser parte de mi historia y por llenar mi vida de recuerdos inolvidables.",
-        "closingName": "Alberto",
-        "image": "portrait",
-        "variant": "standard"
-    },
-    "music": {
-        "url": "https://res.cloudinary.com/dusxvauvj/video/upload/v1771003968/el-rey_sptxkp.mp3",
-        "autoPlay": false,
-        "title": "Música de fondo"
-    },
-    "itinerary": {
-        "title": "Programa de la Noche",
-        "items": [
-            {
-                "iconName": "Toast",
-                "label": "Recepción y Brindis",
-                "time": "20:00",
-                "description": "Bienvenida en el jardín principal."
-            },
-            {
-                "iconName": "Dinner",
-                "label": "Cena de Gala",
-                "time": "21:30",
-                "description": "Cocina de raíz, servida con la elegancia de siempre."
-            },
-            {
-                "iconName": "Accordion",
-                "label": "Mariachi y Sorpresas",
-                "time": "23:00",
-                "description": "Música en vivo para celebrar."
-            },
-            {
-                "iconName": "Party",
-                "label": "Baile y Alegría",
-                "time": "00:30",
-                "description": "Bajo las estrellas de la Hacienda, hasta el último brindis."
-            }
-        ],
-        "variant": "standard"
-    },
-    "gifts": {
-        "title": "Gesto de Cariño",
-        "subtitle": "Si desean hacerme un presente",
-        "items": [
-            {
-                "type": "cash",
-                "title": "Depósito o Transferencia",
-                "text": "Los detalles de depósito o transferencia pueden mostrarse aquí cuando el anfitrión decide compartirlos."
-            },
-            {
-                "type": "store",
-                "title": "Mesa de Regalos",
-                "url": "https://www.liverpool.com.mx/tienda/giftregistry",
-                "logo": "LIVERPOOL"
-            },
-            {
-                "title": "Lluvia de Sobres",
-                "type": "cash",
-                "text": "Su presencia es nuestro mejor regalo. Si desean tener un detalle con Don Alberto, contaremos con un buzón para sobres en la entrada."
-            }
-        ],
-        "variant": "standard"
-    },
-    "countdown": {
-        "variant": "standard",
-        "title": "Hacienda San Ignacio",
-        "footerText": "Sesenta años de gratitud y legado."
-    },
-    "envelope": {
-        "disabled": false,
-        "sealStyle": "monogram",
-        "sealIcon": "monogram",
-        "sealInitials": "A·V",
-        "documentLabel": "RESERVACIÓN DE GALA",
-        "stampText": "EST. 1966",
-        "stampYear": "2026",
-        "microcopy": "Toca el sello para abrir la invitación",
-        "tooltipText": "Acceder a la invitación",
-        "closedPalette": {
-            "primary": "surfacePrimary",
-            "accent": "actionAccent",
-            "background": "surfaceDark"
-        }
-    },
-    "sharing": {
-        "whatsappTemplate": "Hola {name}, es un gusto invitarte a {eventTitle} 🥂\n\nPuedes ver todos los detalles y confirmar tu asistencia aquí:\n\n✨ {inviteUrl}"
-    },
-    "interludes": [
-        {
-            "image": "jardin",
-            "afterSection": "family",
-            "alt": "Legado de vida Alberto Valenzuela",
-            "height": "screen"
-        },
-        {
-            "image": "gallery02",
-            "afterSection": "gifts",
-            "alt": "Celebración en la Hacienda",
-            "height": "screen"
-        }
-    ]
+    {
+      "image": "gallery02",
+      "afterSection": "gifts",
+      "alt": "Celebración en la Hacienda",
+      "height": "screen"
+    }
+  ]
 }

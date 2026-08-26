@@ -1,213 +1,222 @@
 {
-    "eventType": "bautizo",
-    "isDemo": true,
-    "templateId": "bautizo-angelic-presence",
-    "_assetSlug": "demo-bautismo-angelic-presence",
-    "title": "Bautizo — María Santos",
-    "description": "Una propuesta delicada y familiar para compartir ceremonia, padrinos y recepción con la calidez de sus seres queridos.",
-    "theme": {
-        "preset": "angelic-presence"
-    },
-    "sectionOrder": [
-        "quote",
-        "family",
-        "countdown",
-        "location",
-        "itinerary",
-        "gallery",
-        "gifts",
-        "personalizedAccess",
-        "rsvp",
-        "thankYou"
+  "eventType": "bautizo",
+  "isDemo": true,
+  "templateId": "bautizo-angelic-presence",
+  "_assetSlug": "demo-bautismo-angelic-presence",
+  "title": "Bautizo — María Santos",
+  "description": "Una propuesta delicada y familiar para compartir ceremonia, padrinos y recepción con la calidez de sus seres queridos.",
+  "theme": {
+    "preset": "angelic-presence"
+  },
+  "sectionOrder": [
+    "quote",
+    "family",
+    "countdown",
+    "location",
+    "itinerary",
+    "gallery",
+    "gifts",
+    "personalizedAccess",
+    "rsvp",
+    "thankYou"
+  ],
+  "composition": {
+    "intersections": {}
+  },
+  "hero": {
+    "name": "María Santos",
+    "label": "Bautismo",
+    "date": "2026-10-18T10:00:00.000Z",
+    "backgroundImage": "hero",
+    "variant": "standard"
+  },
+  "location": {
+    "indicationsHeading": "Indicaciones",
+    "indications": [
+      {
+        "iconName": "Calendar",
+        "text": "<strong>Llegada sugerida</strong> 15 minutos antes de la ceremonia."
+      },
+      {
+        "iconName": "DressCode",
+        "text": "<strong>Vestimenta</strong> Tonos claros, formales y suaves."
+      }
     ],
-    "composition": { "intersections": {} },
-    "hero": {
-        "name": "María Santos",
-        "label": "Bautismo",
-        "date": "2026-10-18T10:00:00.000Z",
-        "backgroundImage": "hero",
-        "variant": "standard"
+    "variant": "standard",
+    "presentationOptions": {
+      "showFlourishes": true
     },
-    "location": {
-        "ceremony": {
-            "venueEvent": "Ceremonia",
-            "venueName": "Parroquia de San José",
-            "address": "Calle Principal #10, Centro",
-            "city": "Ciudad de México",
-            "date": "18 de octubre de 2026",
-            "time": "10:00 AM",
-            "image": "ceremony",
-            "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Parroquia%20de%20San%20Jose%20Ciudad%20de%20Mexico"
-        },
-        "reception": {
-            "venueEvent": "Celebración",
-            "venueName": "Casa Jardín Santa Clara",
-            "address": "Av. de los Encinos #24, Ciudad de México",
-            "city": "Ciudad de México",
-            "date": "18 de octubre de 2026",
-            "time": "12:00 PM",
-            "image": "reception",
-            "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Casa%20Jardin%20Santa%20Clara%20Ciudad%20de%20Mexico"
-        },
-        "indicationsHeading": "Indicaciones",
-        "indications": [
-            {
-                "iconName": "Calendar",
-                "text": "<strong>Llegada sugerida</strong> 15 minutos antes de la ceremonia."
-            },
-            {
-                "iconName": "DressCode",
-                "text": "<strong>Vestimenta</strong> Tonos claros, formales y suaves."
-            }
-        ],
-        "variant": "standard",
-        "presentationOptions": {
-            "showFlourishes": true
-        }
-    },
-    "family": {
-        "parents": {
-            "father": "Carlos Alberto Rodríguez",
-            "mother": "Mercedes Elena de Rodríguez"
-        },
-        "godparents": [
-            {
-                "name": "Dr. Alejandro Gómez",
-                "role": "Padrino"
-            },
-            {
-                "name": "Sra. Beatriz Mendoza",
-                "role": "Madrina"
-            }
-        ],
-        "featuredImage": "family",
-        "focalPoint": "50% 36%",
-        "labels": {
-            "sectionTitle": "Los que hacen este momento sagrado",
-            "sectionSubtitle": "Familia",
-            "parentsTitle": "Con la bendición de",
-            "godparentsTitle": "Padrinos",
-            "sectionMessage": "Gracias por acompañarnos en este día de fe y alegría. Su amor, su guía y sus bendiciones hacen más luminoso este sacramento."
-        },
-        "variant": "standard"
-    },
-    "gallery": {
-        "eyebrow": "Galería",
-        "title": "Instantes de luz",
-        "subtitle": "Una memoria serena de este día sagrado",
-        "items": [
-            {
-                "image": "gallery01",
-                "caption": "Pureza y ternura"
-            },
-            {
-                "image": "gallery04",
-                "caption": "La luz del sacramento"
-            },
-            {
-                "image": "gallery06",
-                "caption": "Bendición en familia"
-            },
-            {
-                "image": "gallery02",
-                "caption": "Descanso en la luz"
-            },
-            {
-                "image": "gallery05",
-                "caption": "Inocencia y pureza"
-            }
-        ],
-        "variant": "uniform-grid"
-    },
-    "gifts": {
-        "title": "Detalles para Celebrar",
-        "subtitle": "Gracias por acompañarnos en este momento tan especial.",
-        "items": [
-            {
-                "type": "cash",
-                "title": "Lluvia de Sobres",
-                "text": "Agradecemos su generosidad en el área de recepción."
-            }
-        ],
-        "variant": "standard"
-    },
-    "itinerary": {
-        "title": "Programa",
-        "subtitle": "Bautismo de María",
-        "items": [
-            {
-                "iconName": "Reception",
-                "label": "Llegada",
-                "time": "10:00",
-                "description": "Recepción en la parroquia"
-            },
-            {
-                "iconName": "Church",
-                "label": "Sacramento",
-                "time": "10:30",
-                "description": "Bautismo de María Santos"
-            },
-            {
-                "iconName": "Reception",
-                "label": "Celebración",
-                "time": "12:00",
-                "description": "Comida familiar"
-            },
-            {
-                "iconName": "Cake",
-                "label": "Pastel",
-                "time": "13:00",
-                "description": "Corte del pastel"
-            }
-        ],
-        "variant": "standard"
-    },
-    "countdown": {
-        "variant": "standard",
-        "title": "Nos acercamos con alegría",
-        "footerText": "Gracias por preparar el corazón para acompañarnos"
-    },
-    "quote": {
-        "text": "Porque donde dos o tres se reúnen en mi nombre, allí estoy yo en medio de ellos.",
-        "author": "Mateo 18:20"
-    },
-    "rsvp": {
-        "title": "Confirma tu asistencia",
-        "guestCap": 4,
-        "confirmationMessage": "Gracias por acompañarnos en este día de fe y familia.",
-        "confirmationMode": "api",
-        "variant": "standard",
-        "personalizedAccess": {
-            "variant": "standard"
-        }
-    },
-    "thankYou": {
-        "message": "Gracias por compartir con nosotros este momento sagrado. Su presencia y sus bendiciones quedarán guardadas con mucho cariño.",
-        "closingName": "María Santos",
-        "image": "thankYouPortrait",
-        "focalPoint": "50% 50%",
-        "variant": "standard"
-    },
-    "interludes": [
-        {
-            "image": "interlude01",
-            "afterSection": "quote",
-            "alt": "Detalle de manos y encaje del bautismo",
-            "height": "tall",
-            "focalPoint": "50% 58%"
-        },
-        {
-            "image": "interlude02",
-            "afterSection": "gallery",
-            "alt": "Detalle luminoso del bautismo",
-            "height": "screen",
-            "focalPoint": "53% 55%"
-        }
+    "venues": [
+      {
+        "venueEvent": "Ceremonia",
+        "venueName": "Parroquia de San José",
+        "address": "Calle Principal #10, Centro",
+        "city": "Ciudad de México",
+        "date": "18 de octubre de 2026",
+        "time": "10:00 AM",
+        "image": "ceremony",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Parroquia%20de%20San%20Jose%20Ciudad%20de%20Mexico",
+        "type": "ceremony",
+        "isVisible": true
+      },
+      {
+        "venueEvent": "Celebración",
+        "venueName": "Casa Jardín Santa Clara",
+        "address": "Av. de los Encinos #24, Ciudad de México",
+        "city": "Ciudad de México",
+        "date": "18 de octubre de 2026",
+        "time": "12:00 PM",
+        "image": "reception",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Casa%20Jardin%20Santa%20Clara%20Ciudad%20de%20Mexico",
+        "type": "reception",
+        "isVisible": true
+      }
     ],
-    "envelope": {
-        "disabled": false,
-        "sealStyle": "wax",
-        "sealInitials": "M·S",
-        "microcopy": "Bautismo de María"
+    "mapStyle": "dark"
+  },
+  "family": {
+    "parents": {
+      "father": "Carlos Alberto Rodríguez",
+      "mother": "Mercedes Elena de Rodríguez"
+    },
+    "godparents": [
+      {
+        "name": "Dr. Alejandro Gómez",
+        "role": "Padrino"
+      },
+      {
+        "name": "Sra. Beatriz Mendoza",
+        "role": "Madrina"
+      }
+    ],
+    "featuredImage": "family",
+    "focalPoint": "50% 36%",
+    "labels": {
+      "sectionTitle": "Los que hacen este momento sagrado",
+      "sectionSubtitle": "Familia",
+      "parentsTitle": "Con la bendición de",
+      "godparentsTitle": "Padrinos",
+      "sectionMessage": "Gracias por acompañarnos en este día de fe y alegría. Su amor, su guía y sus bendiciones hacen más luminoso este sacramento."
+    },
+    "variant": "standard"
+  },
+  "gallery": {
+    "eyebrow": "Galería",
+    "title": "Instantes de luz",
+    "subtitle": "Una memoria serena de este día sagrado",
+    "items": [
+      {
+        "image": "gallery01",
+        "caption": "Pureza y ternura"
+      },
+      {
+        "image": "gallery04",
+        "caption": "La luz del sacramento"
+      },
+      {
+        "image": "gallery06",
+        "caption": "Bendición en familia"
+      },
+      {
+        "image": "gallery02",
+        "caption": "Descanso en la luz"
+      },
+      {
+        "image": "gallery05",
+        "caption": "Inocencia y pureza"
+      }
+    ],
+    "variant": "uniform-grid"
+  },
+  "gifts": {
+    "title": "Detalles para Celebrar",
+    "subtitle": "Gracias por acompañarnos en este momento tan especial.",
+    "items": [
+      {
+        "type": "cash",
+        "title": "Lluvia de Sobres",
+        "text": "Agradecemos su generosidad en el área de recepción."
+      }
+    ],
+    "variant": "standard"
+  },
+  "itinerary": {
+    "title": "Programa",
+    "subtitle": "Bautismo de María",
+    "items": [
+      {
+        "iconName": "Reception",
+        "label": "Llegada",
+        "time": "10:00",
+        "description": "Recepción en la parroquia"
+      },
+      {
+        "iconName": "Church",
+        "label": "Sacramento",
+        "time": "10:30",
+        "description": "Bautismo de María Santos"
+      },
+      {
+        "iconName": "Reception",
+        "label": "Celebración",
+        "time": "12:00",
+        "description": "Comida familiar"
+      },
+      {
+        "iconName": "Cake",
+        "label": "Pastel",
+        "time": "13:00",
+        "description": "Corte del pastel"
+      }
+    ],
+    "variant": "standard"
+  },
+  "countdown": {
+    "variant": "standard",
+    "title": "Nos acercamos con alegría",
+    "footerText": "Gracias por preparar el corazón para acompañarnos"
+  },
+  "quote": {
+    "text": "Porque donde dos o tres se reúnen en mi nombre, allí estoy yo en medio de ellos.",
+    "author": "Mateo 18:20"
+  },
+  "rsvp": {
+    "title": "Confirma tu asistencia",
+    "guestCap": 4,
+    "confirmationMessage": "Gracias por acompañarnos en este día de fe y familia.",
+    "confirmationMode": "api",
+    "variant": "standard",
+    "personalizedAccess": {
+      "variant": "standard"
     }
+  },
+  "thankYou": {
+    "message": "Gracias por compartir con nosotros este momento sagrado. Su presencia y sus bendiciones quedarán guardadas con mucho cariño.",
+    "closingName": "María Santos",
+    "image": "thankYouPortrait",
+    "focalPoint": "50% 50%",
+    "variant": "standard"
+  },
+  "interludes": [
+    {
+      "image": "interlude01",
+      "afterSection": "quote",
+      "alt": "Detalle de manos y encaje del bautismo",
+      "height": "tall",
+      "focalPoint": "50% 58%"
+    },
+    {
+      "image": "interlude02",
+      "afterSection": "gallery",
+      "alt": "Detalle luminoso del bautismo",
+      "height": "screen",
+      "focalPoint": "53% 55%"
+    }
+  ],
+  "envelope": {
+    "disabled": false,
+    "sealStyle": "wax",
+    "sealInitials": "M·S",
+    "microcopy": "Bautismo de María"
+  }
 }

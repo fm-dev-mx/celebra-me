@@ -1,288 +1,297 @@
 {
-    "eventType": "xv",
-    "isDemo": true,
-    "templateId": "xv-jewelry-box",
-    "_assetSlug": "demo-xv-jewelry-box",
-    "title": "XV Años — Lucía García",
-    "description": "Una invitación editorial con brillo de joyero: retratos serenos, detalles dorados y una noche de XV años pensada como una pieza única.",
-    "theme": {
-        "fontFamily": "serif",
-        "preset": "jewelry-box"
-    },
-    "sectionOrder": [
-        "quote",
-        "countdown",
-        "family",
-        "location",
-        "itinerary",
-        "gallery",
-        "gifts",
-        "personalizedAccess",
-        "rsvp",
-        "thankYou"
+  "eventType": "xv",
+  "isDemo": true,
+  "templateId": "xv-jewelry-box",
+  "_assetSlug": "demo-xv-jewelry-box",
+  "title": "XV Años — Lucía García",
+  "description": "Una invitación editorial con brillo de joyero: retratos serenos, detalles dorados y una noche de XV años pensada como una pieza única.",
+  "theme": {
+    "fontFamily": "serif",
+    "preset": "jewelry-box"
+  },
+  "sectionOrder": [
+    "quote",
+    "countdown",
+    "family",
+    "location",
+    "itinerary",
+    "gallery",
+    "gifts",
+    "personalizedAccess",
+    "rsvp",
+    "thankYou"
+  ],
+  "composition": {
+    "intersections": {}
+  },
+  "hero": {
+    "name": "Lucía García Pérez",
+    "label": "Mis XV Años",
+    "date": "2026-11-21T18:00:00.000Z",
+    "backgroundImage": "hero",
+    "portrait": "portrait",
+    "focalPoint": "50% 40%",
+    "focalPointMobile": "50% 35%",
+    "variant": "standard"
+  },
+  "location": {
+    "introEyebrow": "Monterrey nos espera",
+    "introHeading": "Sábado, 21 de noviembre de 2026",
+    "introLede": "Con la bendición de su familia, Lucía celebrará una noche de luz, gratitud y recuerdos cuidadosamente guardados.",
+    "indications": [
+      {
+        "iconName": "Crown",
+        "styleVariant": "reserved",
+        "text": "El color púrpura está reservado para la festejada."
+      },
+      {
+        "iconName": "Forbidden",
+        "styleVariant": "default",
+        "text": "Celebración sin niños."
+      }
     ],
-    "composition": { "intersections": {} },
-    "hero": {
-        "name": "Lucía García Pérez",
-        "label": "Mis XV Años",
-        "date": "2026-11-21T18:00:00.000Z",
-        "backgroundImage": "hero",
-        "portrait": "portrait",
-        "focalPoint": "50% 40%",
-        "focalPointMobile": "50% 35%",
-        "variant": "standard"
+    "variant": "standard",
+    "presentationOptions": {
+      "showFlourishes": true
     },
-    "location": {
-        "introEyebrow": "Monterrey nos espera",
-        "introHeading": "Sábado, 21 de noviembre de 2026",
-        "introLede": "Con la bendición de su familia, Lucía celebrará una noche de luz, gratitud y recuerdos cuidadosamente guardados.",
-        "ceremony": {
-            "venueEvent": "Ceremonia",
-            "venueName": "Parroquia de la Sagrada Familia",
-            "address": "Avenida Ayuntamiento s/n, Jardines de Guadalupe",
-            "city": "Monterrey",
-            "date": "21 de noviembre de 2026",
-            "time": "18:00",
-            "mapUrl": "https://maps.app.goo.gl/9R6K2vS7J5X2",
-            "appleMapsUrl": "https://maps.apple.com/?address=Avenida+Ayuntamiento,+Jardines+de+Guadalupe",
-            "googleMapsUrl": "https://maps.app.goo.gl/9R6K2vS7J5X2",
-            "wazeUrl": "https://waze.com/ul?q=Parroquia+de+la+Sagrada+Familia",
-            "image": "https://res.cloudinary.com/dusxvauvj/image/upload/v1738985217/parroquia_sagrada_familia1920x1080_tgodqa.jpg",
-            "coordinates": {
-                "lat": 25.6816,
-                "lng": -100.252
-            }
+    "venues": [
+      {
+        "venueEvent": "Ceremonia",
+        "venueName": "Parroquia de la Sagrada Familia",
+        "address": "Avenida Ayuntamiento s/n, Jardines de Guadalupe",
+        "city": "Monterrey",
+        "date": "21 de noviembre de 2026",
+        "time": "18:00",
+        "mapUrl": "https://maps.app.goo.gl/9R6K2vS7J5X2",
+        "appleMapsUrl": "https://maps.apple.com/?address=Avenida+Ayuntamiento,+Jardines+de+Guadalupe",
+        "googleMapsUrl": "https://maps.app.goo.gl/9R6K2vS7J5X2",
+        "wazeUrl": "https://waze.com/ul?q=Parroquia+de+la+Sagrada+Familia",
+        "image": "https://res.cloudinary.com/dusxvauvj/image/upload/v1738985217/parroquia_sagrada_familia1920x1080_tgodqa.jpg",
+        "coordinates": {
+          "lat": 25.6816,
+          "lng": -100.252
         },
-        "reception": {
-            "venueEvent": "Recepción",
-            "venueName": "Quinta Las Flores",
-            "address": "Av. Real de Catorce 123, Col. Valle Alto",
-            "city": "Monterrey",
-            "date": "21 de noviembre de 2026",
-            "time": "20:00",
-            "mapUrl": "https://maps.app.goo.gl/example",
-            "appleMapsUrl": "https://maps.apple.com/?address=Av+Real+de+Catorce+123,+Col+Valle+Alto",
-            "googleMapsUrl": "https://maps.app.goo.gl/example",
-            "wazeUrl": "https://waze.com/ul?q=Quinta+Las+Flores+Monterrey",
-            "image": "jardin",
-            "coordinates": {
-                "lat": 25.5687,
-                "lng": -100.2488
-            }
+        "type": "ceremony",
+        "isVisible": true
+      },
+      {
+        "venueEvent": "Recepción",
+        "venueName": "Quinta Las Flores",
+        "address": "Av. Real de Catorce 123, Col. Valle Alto",
+        "city": "Monterrey",
+        "date": "21 de noviembre de 2026",
+        "time": "20:00",
+        "mapUrl": "https://maps.app.goo.gl/example",
+        "appleMapsUrl": "https://maps.apple.com/?address=Av+Real+de+Catorce+123,+Col+Valle+Alto",
+        "googleMapsUrl": "https://maps.app.goo.gl/example",
+        "wazeUrl": "https://waze.com/ul?q=Quinta+Las+Flores+Monterrey",
+        "image": "jardin",
+        "coordinates": {
+          "lat": 25.5687,
+          "lng": -100.2488
         },
-        "indications": [
-            {
-                "iconName": "Crown",
-                "styleVariant": "reserved",
-                "text": "El color púrpura está reservado para la festejada."
-            },
-            {
-                "iconName": "Forbidden",
-                "styleVariant": "default",
-                "text": "Celebración sin niños."
-            }
-        ],
-        "variant": "standard",
-        "presentationOptions": {
-            "showFlourishes": true
-        }
-    },
-    "family": {
-        "parents": {
-            "father": "Roberto Pérez García",
-            "mother": "Esthela de Pérez"
-        },
-        "godparents": [
-            {
-                "name": "Juan Carlos Mendoza",
-                "role": "Padrino de Honor"
-            },
-            {
-                "name": "Ana María López",
-                "role": "Madrina de Honor"
-            }
-        ],
-        "featuredImage": "family",
-        "focalPoint": "50% 40%",
-        "labels": {
-            "sectionTitle": "Mi familia",
-            "sectionSubtitle": "Con amor y gratitud",
-            "parentsTitle": "Con la bendición de mis padres",
-            "godparentsTitle": "Padrinos",
-            "sectionMessage": "Con la bendición de sus padres y padrinos, Lucía comparte esta nueva etapa con gratitud y emoción."
-        },
-        "variant": "standard"
-    },
-    "gallery": {
-        "eyebrow": "Retratos de una nueva etapa",
-        "title": "Antes de abrir la joya",
-        "subtitle": "Una selección breve de retratos y detalles: suficiente para sentir la historia sin convertirla en catálogo.",
-        "items": [
-            {
-                "image": "gallery01",
-                "caption": "El primer retrato guarda la calma antes de la celebración."
-            },
-            {
-                "image": "gallery03",
-                "caption": "Una mirada serena marca el inicio de la nueva etapa."
-            },
-            {
-                "image": "gallery05",
-                "caption": "La luz dorada convierte los detalles en memoria."
-            },
-            {
-                "image": "gallery08",
-                "caption": "Un retrato íntimo, sin prisa, pensado para conservarse."
-            },
-            {
-                "image": "gallery09",
-                "caption": "La transición hacia sus XV años se siente ligera y firme."
-            },
-            {
-                "image": "gallery11",
-                "caption": "El jardín cierra la serie con aire de celebración."
-            }
-        ],
-        "variant": "feature-mosaic"
-    },
-    "gifts": {
-        "title": "Detalle especial",
-        "subtitle": "Su presencia será el regalo más valioso. Para quienes deseen tener un detalle adicional, compartimos una opción principal y una alternativa el día del evento.",
-        "items": [
-            {
-                "type": "store",
-                "title": "Liverpool",
-                "url": "https://mesaderegalos.liverpool.com.mx/",
-                "logo": "liverpool"
-            },
-            {
-                "type": "cash",
-                "title": "Lluvia de Sobres",
-                "text": "El día del evento habrá un buzón discreto para quienes prefieran compartir un sobre."
-            }
-        ],
-        "variant": "standard"
-    },
-    "rsvp": {
-        "title": "Confirme su asistencia",
-        "subcopy": "Favor de confirmar asistencia desde esta invitación. Será un honor contar con su presencia.",
-        "guestCap": 2,
-        "accessMode": "hybrid",
-        "confirmationMessage": "Gracias por confirmar. Los esperamos con mucha emoción.",
-        "confirmationMode": "both",
-        "whatsappConfig": {
-            "phone": "5218112345678",
-            "confirmedTemplate": "Hola, soy {name}. Ya registré mi confirmación para la celebración de Lucía. Asistiremos {guestCount} persona(s).",
-            "declinedTemplate": "Hola, soy {name}. Ya registré mi respuesta para la celebración de Lucía, pero no podré asistir."
-        },
-        "variant": "standard",
-        "personalizedAccess": {
-            "variant": "standard"
-        }
-    },
-    "quote": {
-        "text": "Hoy dejo atrás la niñez y abro las puertas a un nuevo capítulo lleno de sueños, amor y esperanza. Gracias por acompañarme en este viaje de transformación.",
-        "author": "Lucía García"
-    },
-    "thankYou": {
-        "message": "Gracias por ser parte de este momento tan especial en mi vida. Su presencia y cariño hacen de este día algo inolvidable. Los espero con todo mi corazón para celebrar juntos.",
-        "closingName": "Lucía García",
-        "image": "signature",
-        "focalPoint": "50% 50%",
-        "variant": "standard"
-    },
-    "music": {
-        "url": "https://pub-651602ccdef14f40bd29dbd4e02c31da.r2.dev/Only-LeeHi.MP3",
-        "autoPlay": false,
-        "title": "Música de fondo"
-    },
-    "itinerary": {
-        "title": "Programa de la noche",
-        "items": [
-            {
-                "iconName": "Church",
-                "label": "Ceremonia Religiosa",
-                "time": "18:00",
-                "description": "Parroquia de la Sagrada Familia"
-            },
-            {
-                "iconName": "Reception",
-                "label": "Recepción",
-                "time": "20:00",
-                "description": "Quinta Las Flores"
-            },
-            {
-                "iconName": "Waltz",
-                "label": "Vals de Honor",
-                "time": "21:00",
-                "description": "El momento más esperado de la noche."
-            },
-            {
-                "iconName": "Dinner",
-                "label": "Cena",
-                "time": "22:00",
-                "description": "Cena elegante para disfrutar en familia."
-            },
-            {
-                "iconName": "Toast",
-                "label": "Brindis",
-                "time": "23:30",
-                "description": "Un brindis por una nueva etapa."
-            },
-            {
-                "iconName": "Party",
-                "label": "Gran cierre",
-                "time": "00:30",
-                "description": "Música y alegría hasta el amanecer."
-            }
-        ],
-        "variant": "standard"
-    },
-    "countdown": {
-        "variant": "standard",
-        "title": "La noche más especial comienza en",
-        "footerText": "Monterrey, Nuevo León"
-    },
-    "envelope": {
-        "disabled": false,
-        "sealStyle": "wax",
-        "sealIcon": "heart",
-        "sealInitials": "L·G",
-        "microcopy": "Toca para abrir mi invitación",
-        "closedPalette": {
-            "primary": "actionAccent",
-            "accent": "surfaceDark"
-        }
-    },
-    "interludes": [
-        {
-            "image": "gallery02",
-            "afterSection": "family",
-            "alt": "Galería editorial Lucía García",
-            "height": "screen"
-        },
-        {
-            "image": "gallery04",
-            "afterSection": "gallery",
-            "alt": "Detalles de la celebración",
-            "height": "screen"
-        },
-        {
-            "image": "gallery06",
-            "afterSection": "countdown",
-            "alt": "Momento inolvidable en el jardín",
-            "height": "screen"
-        },
-        {
-            "image": "gallery07",
-            "afterSection": "gifts",
-            "alt": "Celebración inolvidable",
-            "height": "screen"
-        }
+        "type": "reception",
+        "isVisible": true
+      }
     ],
-    "sharing": {
-        "whatsappTemplate": "Hola {name}, te comparto con mucha ilusión la invitación a mis XV Años: {inviteUrl}",
-        "ogImage": "portrait",
-        "ogDescription": "Acompáñame a celebrar mis XV años en Monterrey. Consulta todos los detalles de la celebración aquí."
+    "mapStyle": "dark"
+  },
+  "family": {
+    "parents": {
+      "father": "Roberto Pérez García",
+      "mother": "Esthela de Pérez"
+    },
+    "godparents": [
+      {
+        "name": "Juan Carlos Mendoza",
+        "role": "Padrino de Honor"
+      },
+      {
+        "name": "Ana María López",
+        "role": "Madrina de Honor"
+      }
+    ],
+    "featuredImage": "family",
+    "focalPoint": "50% 40%",
+    "labels": {
+      "sectionTitle": "Mi familia",
+      "sectionSubtitle": "Con amor y gratitud",
+      "parentsTitle": "Con la bendición de mis padres",
+      "godparentsTitle": "Padrinos",
+      "sectionMessage": "Con la bendición de sus padres y padrinos, Lucía comparte esta nueva etapa con gratitud y emoción."
+    },
+    "variant": "standard"
+  },
+  "gallery": {
+    "eyebrow": "Retratos de una nueva etapa",
+    "title": "Antes de abrir la joya",
+    "subtitle": "Una selección breve de retratos y detalles: suficiente para sentir la historia sin convertirla en catálogo.",
+    "items": [
+      {
+        "image": "gallery01",
+        "caption": "El primer retrato guarda la calma antes de la celebración."
+      },
+      {
+        "image": "gallery03",
+        "caption": "Una mirada serena marca el inicio de la nueva etapa."
+      },
+      {
+        "image": "gallery05",
+        "caption": "La luz dorada convierte los detalles en memoria."
+      },
+      {
+        "image": "gallery08",
+        "caption": "Un retrato íntimo, sin prisa, pensado para conservarse."
+      },
+      {
+        "image": "gallery09",
+        "caption": "La transición hacia sus XV años se siente ligera y firme."
+      },
+      {
+        "image": "gallery11",
+        "caption": "El jardín cierra la serie con aire de celebración."
+      }
+    ],
+    "variant": "feature-mosaic"
+  },
+  "gifts": {
+    "title": "Detalle especial",
+    "subtitle": "Su presencia será el regalo más valioso. Para quienes deseen tener un detalle adicional, compartimos una opción principal y una alternativa el día del evento.",
+    "items": [
+      {
+        "type": "store",
+        "title": "Liverpool",
+        "url": "https://mesaderegalos.liverpool.com.mx/",
+        "logo": "liverpool"
+      },
+      {
+        "type": "cash",
+        "title": "Lluvia de Sobres",
+        "text": "El día del evento habrá un buzón discreto para quienes prefieran compartir un sobre."
+      }
+    ],
+    "variant": "standard"
+  },
+  "rsvp": {
+    "title": "Confirme su asistencia",
+    "subcopy": "Favor de confirmar asistencia desde esta invitación. Será un honor contar con su presencia.",
+    "guestCap": 2,
+    "accessMode": "hybrid",
+    "confirmationMessage": "Gracias por confirmar. Los esperamos con mucha emoción.",
+    "confirmationMode": "both",
+    "whatsappConfig": {
+      "phone": "5218112345678",
+      "confirmedTemplate": "Hola, soy {name}. Ya registré mi confirmación para la celebración de Lucía. Asistiremos {guestCount} persona(s).",
+      "declinedTemplate": "Hola, soy {name}. Ya registré mi respuesta para la celebración de Lucía, pero no podré asistir."
+    },
+    "variant": "standard",
+    "personalizedAccess": {
+      "variant": "standard"
     }
+  },
+  "quote": {
+    "text": "Hoy dejo atrás la niñez y abro las puertas a un nuevo capítulo lleno de sueños, amor y esperanza. Gracias por acompañarme en este viaje de transformación.",
+    "author": "Lucía García"
+  },
+  "thankYou": {
+    "message": "Gracias por ser parte de este momento tan especial en mi vida. Su presencia y cariño hacen de este día algo inolvidable. Los espero con todo mi corazón para celebrar juntos.",
+    "closingName": "Lucía García",
+    "image": "signature",
+    "focalPoint": "50% 50%",
+    "variant": "standard"
+  },
+  "music": {
+    "url": "https://pub-651602ccdef14f40bd29dbd4e02c31da.r2.dev/Only-LeeHi.MP3",
+    "autoPlay": false,
+    "title": "Música de fondo"
+  },
+  "itinerary": {
+    "title": "Programa de la noche",
+    "items": [
+      {
+        "iconName": "Church",
+        "label": "Ceremonia Religiosa",
+        "time": "18:00",
+        "description": "Parroquia de la Sagrada Familia"
+      },
+      {
+        "iconName": "Reception",
+        "label": "Recepción",
+        "time": "20:00",
+        "description": "Quinta Las Flores"
+      },
+      {
+        "iconName": "Waltz",
+        "label": "Vals de Honor",
+        "time": "21:00",
+        "description": "El momento más esperado de la noche."
+      },
+      {
+        "iconName": "Dinner",
+        "label": "Cena",
+        "time": "22:00",
+        "description": "Cena elegante para disfrutar en familia."
+      },
+      {
+        "iconName": "Toast",
+        "label": "Brindis",
+        "time": "23:30",
+        "description": "Un brindis por una nueva etapa."
+      },
+      {
+        "iconName": "Party",
+        "label": "Gran cierre",
+        "time": "00:30",
+        "description": "Música y alegría hasta el amanecer."
+      }
+    ],
+    "variant": "standard"
+  },
+  "countdown": {
+    "variant": "standard",
+    "title": "La noche más especial comienza en",
+    "footerText": "Monterrey, Nuevo León"
+  },
+  "envelope": {
+    "disabled": false,
+    "sealStyle": "wax",
+    "sealIcon": "heart",
+    "sealInitials": "L·G",
+    "microcopy": "Toca para abrir mi invitación",
+    "closedPalette": {
+      "primary": "actionAccent",
+      "accent": "surfaceDark"
+    }
+  },
+  "interludes": [
+    {
+      "image": "gallery02",
+      "afterSection": "family",
+      "alt": "Galería editorial Lucía García",
+      "height": "screen"
+    },
+    {
+      "image": "gallery04",
+      "afterSection": "gallery",
+      "alt": "Detalles de la celebración",
+      "height": "screen"
+    },
+    {
+      "image": "gallery06",
+      "afterSection": "countdown",
+      "alt": "Momento inolvidable en el jardín",
+      "height": "screen"
+    },
+    {
+      "image": "gallery07",
+      "afterSection": "gifts",
+      "alt": "Celebración inolvidable",
+      "height": "screen"
+    }
+  ],
+  "sharing": {
+    "whatsappTemplate": "Hola {name}, te comparto con mucha ilusión la invitación a mis XV Años: {inviteUrl}",
+    "ogImage": "portrait",
+    "ogDescription": "Acompáñame a celebrar mis XV años en Monterrey. Consulta todos los detalles de la celebración aquí."
+  }
 }

@@ -1,180 +1,187 @@
 {
-    "eventType": "xv",
-    "_assetSlug": "demo-xv-jewelry-box",
-    "title": "Plantilla Cliente XV",
-    "description": "Plantilla base para invitaciones reales de XV años en producción.",
-    "theme": {
-        "fontFamily": "serif",
-        "preset": "jewelry-box"
-    },
-    "sectionOrder": [
-        "quote",
-        "countdown",
-        "location",
-        "itinerary",
-        "gallery",
-        "gifts",
-        "personalizedAccess",
-        "rsvp",
-        "thankYou"
+  "eventType": "xv",
+  "_assetSlug": "demo-xv-jewelry-box",
+  "title": "Plantilla Cliente XV",
+  "description": "Plantilla base para invitaciones reales de XV años en producción.",
+  "theme": {
+    "fontFamily": "serif",
+    "preset": "jewelry-box"
+  },
+  "sectionOrder": [
+    "quote",
+    "countdown",
+    "location",
+    "itinerary",
+    "gallery",
+    "gifts",
+    "personalizedAccess",
+    "rsvp",
+    "thankYou"
+  ],
+  "composition": {
+    "intersections": {}
+  },
+  "hero": {
+    "name": "Nombre de la Festejada",
+    "label": "Mis XV Años",
+    "date": "2026-11-21T01:00:00.000Z",
+    "backgroundImage": "https://images.unsplash.com/photo-1469371670807-013ccf25f16a?auto=format&fit=crop&w=1920&q=80",
+    "portrait": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80",
+    "variant": "standard"
+  },
+  "location": {
+    "indications": [
+      {
+        "iconName": "Crown",
+        "styleVariant": "reserved",
+        "text": "El color de la festejada está reservado."
+      }
     ],
-    "composition": {
-        "intersections": {}
+    "variant": "standard",
+    "presentationOptions": {
+      "showFlourishes": true
     },
-    "hero": {
-        "name": "Nombre de la Festejada",
-        "label": "Mis XV Años",
-        "date": "2026-11-21T01:00:00.000Z",
-        "backgroundImage": "https://images.unsplash.com/photo-1469371670807-013ccf25f16a?auto=format&fit=crop&w=1920&q=80",
-        "portrait": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80",
-        "variant": "standard"
+    "venues": [
+      {
+        "venueEvent": "Ceremonia",
+        "venueName": "Templo",
+        "address": "Dirección del templo",
+        "city": "Ciudad de México",
+        "date": "21 de noviembre de 2026",
+        "time": "7:00 PM",
+        "googleMapsUrl": "https://maps.google.com",
+        "type": "ceremony",
+        "isVisible": true
+      },
+      {
+        "venueEvent": "Recepción",
+        "venueName": "Salón de Eventos",
+        "address": "Dirección del salón",
+        "city": "Ciudad de México",
+        "date": "21 de noviembre de 2026",
+        "time": "9:00 PM",
+        "googleMapsUrl": "https://maps.google.com",
+        "type": "reception",
+        "isVisible": true
+      }
+    ],
+    "mapStyle": "dark"
+  },
+  "gallery": {
+    "title": "Galería",
+    "subtitle": "Momentos especiales",
+    "items": [
+      {
+        "image": "https://images.unsplash.com/photo-1532635241-17e820acc59f?auto=format&fit=crop&w=1200&q=80",
+        "caption": "Recuerdo 1"
+      },
+      {
+        "image": "https://images.unsplash.com/photo-1525441791270-744163f6fc98?auto=format&fit=crop&w=1200&q=80",
+        "caption": "Recuerdo 2"
+      }
+    ],
+    "variant": "feature-mosaic"
+  },
+  "rsvp": {
+    "title": "¿Nos acompañas en este día tan especial?",
+    "guestCap": 2,
+    "confirmationMessage": "Gracias por confirmar tu asistencia.",
+    "confirmationMode": "both",
+    "whatsappConfig": {
+      "phone": "5210000000000",
+      "confirmedTemplate": "Hola, soy {name}. Confirmo mi asistencia a {title}. Asistiremos {guestCount} persona(s).",
+      "declinedTemplate": "Hola, soy {name}. Lamentablemente no podré asistir a {title}."
     },
-    "location": {
-        "ceremony": {
-            "venueEvent": "Ceremonia",
-            "venueName": "Templo",
-            "address": "Dirección del templo",
-            "city": "Ciudad de México",
-            "date": "21 de noviembre de 2026",
-            "time": "7:00 PM",
-            "googleMapsUrl": "https://maps.google.com"
-        },
-        "reception": {
-            "venueEvent": "Recepción",
-            "venueName": "Salón de Eventos",
-            "address": "Dirección del salón",
-            "city": "Ciudad de México",
-            "date": "21 de noviembre de 2026",
-            "time": "9:00 PM",
-            "googleMapsUrl": "https://maps.google.com"
-        },
-        "indications": [
-            {
-                "iconName": "Crown",
-                "styleVariant": "reserved",
-                "text": "El color de la festejada está reservado."
-            }
-        ],
-        "variant": "standard",
-        "presentationOptions": {
-            "showFlourishes": true
-        }
+    "variant": "standard",
+    "personalizedAccess": {
+      "variant": "standard"
+    }
+  },
+  "quote": {
+    "text": "Con ilusión en el corazón, celebro una nueva etapa de mi vida.",
+    "author": "Nombre de la Festejada"
+  },
+  "thankYou": {
+    "message": "Gracias por acompañarme en este día inolvidable.",
+    "closingName": "Nombre de la Festejada",
+    "image": "https://images.unsplash.com/photo-1601412436009-d964bd02edbc?auto=format&fit=crop&w=800&q=80",
+    "variant": "standard"
+  },
+  "itinerary": {
+    "title": "Itinerario",
+    "items": [
+      {
+        "iconName": "Church",
+        "label": "Ceremonia",
+        "time": "7:00 PM"
+      },
+      {
+        "iconName": "Reception",
+        "label": "Recepción",
+        "time": "9:00 PM"
+      }
+    ],
+    "variant": "standard"
+  },
+  "gifts": {
+    "title": "Mesa de Regalos",
+    "items": [
+      {
+        "type": "cash",
+        "title": "Lluvia de Sobres",
+        "text": "Tu presencia es lo más importante para nosotros."
+      }
+    ],
+    "variant": "standard"
+  },
+  "countdown": {
+    "title": "¡Cada día falta menos!",
+    "footerText": "Te esperamos para celebrar juntos.",
+    "variant": "standard"
+  },
+  "envelope": {
+    "disabled": false,
+    "sealStyle": "wax",
+    "sealIcon": "wax-organic",
+    "sealInitials": "N·N",
+    "microcopy": "Toca para abrir mi invitación",
+    "closedPalette": {
+      "primary": "actionAccent",
+      "accent": "surfaceDark",
+      "background": "actionAccent"
+    }
+  },
+  "sharing": {
+    "whatsappTemplate": "Hola {name}, te comparto tu invitación para {eventTitle}: {inviteUrl}",
+    "shareMessages": {
+      "invitation": "Hola {guestName}, te compartimos tu invitación a {eventTitle}:\n\n{inviteUrl}\n\nÁbrela para ver los detalles y confirmar tu asistencia.",
+      "reminder": "Hola {guestName}, te compartimos nuevamente tu invitación a {eventTitle}:\n\n{inviteUrl}\n\nAhí puedes revisar los detalles y confirmar tu asistencia."
+    }
+  },
+  "interludes": [
+    {
+      "image": "gallery01",
+      "afterSection": "family",
+      "alt": "Galería de momentos especiales",
+      "height": "screen"
     },
-    "gallery": {
-        "title": "Galería",
-        "subtitle": "Momentos especiales",
-        "items": [
-            {
-                "image": "https://images.unsplash.com/photo-1532635241-17e820acc59f?auto=format&fit=crop&w=1200&q=80",
-                "caption": "Recuerdo 1"
-            },
-            {
-                "image": "https://images.unsplash.com/photo-1525441791270-744163f6fc98?auto=format&fit=crop&w=1200&q=80",
-                "caption": "Recuerdo 2"
-            }
-        ],
-        "variant": "feature-mosaic"
+    {
+      "image": "gallery02",
+      "afterSection": "gallery",
+      "alt": "Recuerdos del evento",
+      "height": "screen"
     },
-    "rsvp": {
-        "title": "¿Nos acompañas en este día tan especial?",
-        "guestCap": 2,
-        "confirmationMessage": "Gracias por confirmar tu asistencia.",
-        "confirmationMode": "both",
-        "whatsappConfig": {
-            "phone": "5210000000000",
-            "confirmedTemplate": "Hola, soy {name}. Confirmo mi asistencia a {title}. Asistiremos {guestCount} persona(s).",
-            "declinedTemplate": "Hola, soy {name}. Lamentablemente no podré asistir a {title}."
-        },
-        "variant": "standard",
-        "personalizedAccess": {
-            "variant": "standard"
-        }
+    {
+      "image": "interlude01",
+      "afterSection": "countdown",
+      "alt": "Detalle editorial de la celebración",
+      "height": "screen"
     },
-    "quote": {
-        "text": "Con ilusión en el corazón, celebro una nueva etapa de mi vida.",
-        "author": "Nombre de la Festejada"
-    },
-    "thankYou": {
-        "message": "Gracias por acompañarme en este día inolvidable.",
-        "closingName": "Nombre de la Festejada",
-        "image": "https://images.unsplash.com/photo-1601412436009-d964bd02edbc?auto=format&fit=crop&w=800&q=80",
-        "variant": "standard"
-    },
-    "itinerary": {
-        "title": "Itinerario",
-        "items": [
-            {
-                "iconName": "Church",
-                "label": "Ceremonia",
-                "time": "7:00 PM"
-            },
-            {
-                "iconName": "Reception",
-                "label": "Recepción",
-                "time": "9:00 PM"
-            }
-        ],
-        "variant": "standard"
-    },
-    "gifts": {
-        "title": "Mesa de Regalos",
-        "items": [
-            {
-                "type": "cash",
-                "title": "Lluvia de Sobres",
-                "text": "Tu presencia es lo más importante para nosotros."
-            }
-        ],
-        "variant": "standard"
-    },
-    "countdown": {
-        "title": "¡Cada día falta menos!",
-        "footerText": "Te esperamos para celebrar juntos.",
-        "variant": "standard"
-    },
-    "envelope": {
-        "disabled": false,
-        "sealStyle": "wax",
-        "sealIcon": "wax-organic",
-        "sealInitials": "N·N",
-        "microcopy": "Toca para abrir mi invitación",
-        "closedPalette": {
-            "primary": "actionAccent",
-            "accent": "surfaceDark",
-            "background": "actionAccent"
-        }
-    },
-    "sharing": {
-        "whatsappTemplate": "Hola {name}, te comparto tu invitación para {eventTitle}: {inviteUrl}",
-        "shareMessages": {
-            "invitation": "Hola {guestName}, te compartimos tu invitación a {eventTitle}:\n\n{inviteUrl}\n\nÁbrela para ver los detalles y confirmar tu asistencia.",
-            "reminder": "Hola {guestName}, te compartimos nuevamente tu invitación a {eventTitle}:\n\n{inviteUrl}\n\nAhí puedes revisar los detalles y confirmar tu asistencia."
-        }
-    },
-    "interludes": [
-        {
-            "image": "gallery01",
-            "afterSection": "family",
-            "alt": "Galería de momentos especiales",
-            "height": "screen"
-        },
-        {
-            "image": "gallery02",
-            "afterSection": "gallery",
-            "alt": "Recuerdos del evento",
-            "height": "screen"
-        },
-        {
-            "image": "interlude01",
-            "afterSection": "countdown",
-            "alt": "Detalle editorial de la celebración",
-            "height": "screen"
-        },
-        {
-            "image": "interlude02",
-            "afterSection": "gifts",
-            "alt": "Mesa de regalos",
-            "height": "screen"
-        }
-    ]
+    {
+      "image": "interlude02",
+      "afterSection": "gifts",
+      "alt": "Mesa de regalos",
+      "height": "screen"
+    }
+  ]
 }

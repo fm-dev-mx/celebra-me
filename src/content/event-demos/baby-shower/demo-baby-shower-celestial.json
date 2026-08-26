@@ -1,221 +1,224 @@
 {
-    "eventType": "baby-shower",
-    "isDemo": true,
-    "templateId": "baby-shower-celestial-blue",
-    "title": "Baby Shower de Luna Celeste",
-    "description": "Una bienvenida serena y luminosa para recibir a Luna Celeste entre detalles de cielo, flores suaves y la calidez de la familia.",
-    "_assetSlug": "demo-baby-shower-celestial",
-    "theme": {
-        "fontFamily": "serif",
-        "preset": "celestial-blue"
+  "eventType": "baby-shower",
+  "isDemo": true,
+  "templateId": "baby-shower-celestial-blue",
+  "title": "Baby Shower de Luna Celeste",
+  "description": "Una bienvenida serena y luminosa para recibir a Luna Celeste entre detalles de cielo, flores suaves y la calidez de la familia.",
+  "_assetSlug": "demo-baby-shower-celestial",
+  "theme": {
+    "fontFamily": "serif",
+    "preset": "celestial-blue"
+  },
+  "eventTiming": {
+    "localDateTime": "2026-08-15T16:00",
+    "timeZone": "America/Mexico_City",
+    "startsAtUtc": "2026-08-15T22:00:00.000Z"
+  },
+  "sectionOrder": [
+    "quote",
+    "countdown",
+    "family",
+    "gallery",
+    "location",
+    "itinerary",
+    "gifts",
+    "personalizedAccess",
+    "rsvp",
+    "thankYou"
+  ],
+  "composition": {
+    "intersections": {}
+  },
+  "hero": {
+    "name": "Luna Celeste",
+    "label": "Mi Baby Shower",
+    "date": "2026-08-15T22:00:00.000Z",
+    "backgroundImage": "hero",
+    "portrait": "hero",
+    "focalPoint": "50% 40%",
+    "focalPointMobile": "50% 35%",
+    "variant": "standard"
+  },
+  "quote": {
+    "text": "Antes de conocer su mirada, ya celebramos la luz que Luna Celeste trae a nuestra familia.",
+    "author": "Luna Celeste"
+  },
+  "countdown": {
+    "variant": "standard",
+    "title": "La llegada de nuestra estrellita",
+    "footerText": "Jardín Las Nubes"
+  },
+  "family": {
+    "parents": {
+      "father": "Mateo García",
+      "mother": "Valeria Ruiz"
     },
-    "eventTiming": {
-        "localDateTime": "2026-08-15T16:00",
-        "timeZone": "America/Mexico_City",
-        "startsAtUtc": "2026-08-15T22:00:00.000Z"
+    "parentsOrder": "father-first",
+    "featuredImage": "family",
+    "focalPoint": "50% 50%",
+    "labels": {
+      "sectionTitle": "Nuestra familia",
+      "sectionSubtitle": "Con todo el corazón",
+      "parentsTitle": "Papás de Luna Celeste",
+      "sectionMessage": "Mateo y Valeria preparan una tarde íntima para recibir a Luna Celeste con las personas que han acompañado esta espera con cariño."
     },
-    "sectionOrder": [
-        "quote",
-        "countdown",
-        "family",
-        "gallery",
-        "location",
-        "itinerary",
-        "gifts",
-        "personalizedAccess",
-        "rsvp",
-        "thankYou"
+    "variant": "standard"
+  },
+  "gallery": {
+    "eyebrow": "Ensayo de bienvenida",
+    "title": "La luz que la espera",
+    "subtitle": "Tres escenas suaves: el cielo como guía, la mesa familiar y los primeros detalles elegidos para Luna Celeste.",
+    "items": [
+      {
+        "image": "gallery01",
+        "caption": "Un cielo delicado abre la tarde con calma."
+      },
+      {
+        "image": "gallery02",
+        "caption": "La mesa reúne flores suaves y pequeños recuerdos."
+      },
+      {
+        "image": "gallery03",
+        "caption": "La luz final anuncia una bienvenida tranquila."
+      }
     ],
-    "composition": { "intersections": {} },
-    "hero": {
-        "name": "Luna Celeste",
-        "label": "Mi Baby Shower",
-        "date": "2026-08-15T22:00:00.000Z",
-        "backgroundImage": "hero",
-        "portrait": "hero",
-        "focalPoint": "50% 40%",
-        "focalPointMobile": "50% 35%",
-        "variant": "standard"
-    },
-    "quote": {
-        "text": "Antes de conocer su mirada, ya celebramos la luz que Luna Celeste trae a nuestra familia.",
-        "author": "Luna Celeste"
-    },
-    "countdown": {
-        "variant": "standard",
-        "title": "La llegada de nuestra estrellita",
-        "footerText": "Jardín Las Nubes"
-    },
-    "family": {
-        "parents": {
-            "father": "Mateo García",
-            "mother": "Valeria Ruiz"
-        },
-        "parentsOrder": "father-first",
-        "featuredImage": "family",
-        "focalPoint": "50% 50%",
-        "labels": {
-            "sectionTitle": "Nuestra familia",
-            "sectionSubtitle": "Con todo el corazón",
-            "parentsTitle": "Papás de Luna Celeste",
-            "sectionMessage": "Mateo y Valeria preparan una tarde íntima para recibir a Luna Celeste con las personas que han acompañado esta espera con cariño."
-        },
-        "variant": "standard"
-    },
-    "gallery": {
-        "eyebrow": "Ensayo de bienvenida",
-        "title": "La luz que la espera",
-        "subtitle": "Tres escenas suaves: el cielo como guía, la mesa familiar y los primeros detalles elegidos para Luna Celeste.",
-        "items": [
-            {
-                "image": "gallery01",
-                "caption": "Un cielo delicado abre la tarde con calma."
-            },
-            {
-                "image": "gallery02",
-                "caption": "La mesa reúne flores suaves y pequeños recuerdos."
-            },
-            {
-                "image": "gallery03",
-                "caption": "La luz final anuncia una bienvenida tranquila."
-            }
-        ],
-        "variant": "index-choreography"
-    },
-    "location": {
-        "introEyebrow": "Nos vemos para celebrar",
-        "introHeading": "Sábado, 15 de agosto de 2026",
-        "introLede": "A las 16:00 compartiremos una tarde tranquila para celebrar la llegada de Luna Celeste.",
-        "indicationsHeading": "Detalles para invitados",
-        "venues": [
-            {
-                "type": "custom",
-                "id": "baby-shower",
-                "venueEvent": "Baby Shower",
-                "venueName": "Jardín Las Nubes",
-                "address": "Av. Cielo Pastel 123, Col. Jardines del Alba",
-                "city": "Ciudad de México",
-                "date": "sábado, 15 de agosto de 2026",
-                "time": "16:00",
-                "mapUrl": "https://www.google.com/maps/search/?api=1&query=Jardin%20Las%20Nubes%20Ciudad%20de%20Mexico"
-            }
-        ],
-        "indications": [
-            {
-                "iconName": "MapLocation",
-                "styleVariant": "default",
-                "text": "Referencia: <strong>entrada por el portón blanco junto al jardín.</strong>"
-            },
-            {
-                "iconName": "DressCode",
-                "styleVariant": "reserved",
-                "text": "Código de vestimenta: <strong>casual elegante en colores pastel.</strong>"
-            }
-        ],
-        "variant": "standard",
-        "presentationOptions": {
-            "showFlourishes": true
-        }
-    },
-    "itinerary": {
-        "title": "Programa de la tarde",
-        "items": [
-            {
-                "iconName": "Reception",
-                "label": "Bienvenida",
-                "time": "16:00",
-                "description": "Recepción tranquila en el jardín con bebidas frescas y bocadillos."
-            },
-            {
-                "iconName": "Party",
-                "label": "Recuerdos de familia",
-                "time": "16:30",
-                "description": "Un momento para compartir deseos, consejos y mensajes para Luna Celeste."
-            },
-            {
-                "iconName": "Cake",
-                "label": "Pastel y brindis",
-                "time": "17:30",
-                "description": "Corte del pastel y brindis por la nueva integrante de la familia."
-            },
-            {
-                "iconName": "Gift",
-                "label": "Bendición final",
-                "time": "18:15",
-                "description": "Palabras de agradecimiento y despedida con la familia reunida."
-            }
-        ],
-        "variant": "timeline-paper"
-    },
-    "gifts": {
-        "title": "Mesa de regalos",
-        "subtitle": "Si desean tener un detalle para Luna Celeste, será recibido con gratitud y mucho cariño.",
-        "items": [
-            {
-                "type": "cash",
-                "title": "Detalles para Luna Celeste",
-                "text": "Pañales, libros infantiles, ropita en tonos neutros o un recuerdo elegido con cariño será bienvenido."
-            }
-        ],
-        "variant": "standard"
-    },
-    "rsvp": {
-        "title": "Confirme su asistencia",
-        "subcopy": "Favor de confirmar asistencia desde esta invitación. Será una alegría contar con su presencia.",
-        "guestCap": 4,
-        "accessMode": "hybrid",
-        "confirmationMessage": "Gracias por confirmar. Nos alegra saber que nos acompañarán en esta celebración.",
-        "confirmationMode": "api",
-        "variant": "standard",
-        "labels": {
-            "name": "Nombre completo",
-            "guestCount": "Personas que asistirán",
-            "attendance": "¿Nos acompañas?",
-            "confirmButton": "Confirmar asistencia"
-        },
-        "personalizedAccess": {
-            "variant": "standard"
-        }
-    },
-    "thankYou": {
-        "message": "Gracias por acompañarnos en este momento tan especial. Su cariño hace más bonita la espera de nuestra pequeña.",
-        "closingName": "Mateo, Valeria y Luna Celeste",
-        "image": "thankYouPortrait",
-        "focalPoint": "50% 50%",
-        "variant": "editorial-back-cover"
-    },
-    "envelope": {
-        "disabled": false,
-        "sealStyle": "wax",
-        "sealVariant": "premium-rose",
-        "sealImage": "sealImage",
-        "microcopy": "Abrir invitación",
-        "documentLabel": "Baby Shower",
-        "stampText": "Luna Celeste",
-        "stampYear": "2026",
-        "closedPalette": {
-            "primary": "surfacePrimary",
-            "accent": "actionAccent",
-            "background": "surfacePrimary"
-        }
-    },
-    "interludes": [
-        {
-            "image": "gallery01",
-            "afterSection": "quote",
-            "alt": "Decoración celestial para recibir a Luna Celeste",
-            "height": "screen"
-        },
-        {
-            "image": "gallery03",
-            "afterSection": "family",
-            "alt": "Rincón luminoso preparado para el Baby Shower de Luna Celeste",
-            "height": "screen"
-        }
+    "variant": "index-choreography"
+  },
+  "location": {
+    "introEyebrow": "Nos vemos para celebrar",
+    "introHeading": "Sábado, 15 de agosto de 2026",
+    "introLede": "A las 16:00 compartiremos una tarde tranquila para celebrar la llegada de Luna Celeste.",
+    "indicationsHeading": "Detalles para invitados",
+    "venues": [
+      {
+        "type": "custom",
+        "id": "baby-shower",
+        "venueEvent": "Baby Shower",
+        "venueName": "Jardín Las Nubes",
+        "address": "Av. Cielo Pastel 123, Col. Jardines del Alba",
+        "city": "Ciudad de México",
+        "date": "sábado, 15 de agosto de 2026",
+        "time": "16:00",
+        "mapUrl": "https://www.google.com/maps/search/?api=1&query=Jardin%20Las%20Nubes%20Ciudad%20de%20Mexico"
+      }
     ],
-    "sharing": {
-        "whatsappTemplate": "Hola {name}, te comparto la invitación al Baby Shower de Luna Celeste: {inviteUrl}",
-        "ogImage": "hero",
-        "ogDescription": "Te invitamos a celebrar el Baby Shower de Luna Celeste. Consulta la fecha, horario y ubicación en esta invitación."
+    "indications": [
+      {
+        "iconName": "MapLocation",
+        "styleVariant": "default",
+        "text": "Referencia: <strong>entrada por el portón blanco junto al jardín.</strong>"
+      },
+      {
+        "iconName": "DressCode",
+        "styleVariant": "reserved",
+        "text": "Código de vestimenta: <strong>casual elegante en colores pastel.</strong>"
+      }
+    ],
+    "variant": "standard",
+    "presentationOptions": {
+      "showFlourishes": true
+    },
+    "mapStyle": "dark"
+  },
+  "itinerary": {
+    "title": "Programa de la tarde",
+    "items": [
+      {
+        "iconName": "Reception",
+        "label": "Bienvenida",
+        "time": "16:00",
+        "description": "Recepción tranquila en el jardín con bebidas frescas y bocadillos."
+      },
+      {
+        "iconName": "Party",
+        "label": "Recuerdos de familia",
+        "time": "16:30",
+        "description": "Un momento para compartir deseos, consejos y mensajes para Luna Celeste."
+      },
+      {
+        "iconName": "Cake",
+        "label": "Pastel y brindis",
+        "time": "17:30",
+        "description": "Corte del pastel y brindis por la nueva integrante de la familia."
+      },
+      {
+        "iconName": "Gift",
+        "label": "Bendición final",
+        "time": "18:15",
+        "description": "Palabras de agradecimiento y despedida con la familia reunida."
+      }
+    ],
+    "variant": "timeline-paper"
+  },
+  "gifts": {
+    "title": "Mesa de regalos",
+    "subtitle": "Si desean tener un detalle para Luna Celeste, será recibido con gratitud y mucho cariño.",
+    "items": [
+      {
+        "type": "cash",
+        "title": "Detalles para Luna Celeste",
+        "text": "Pañales, libros infantiles, ropita en tonos neutros o un recuerdo elegido con cariño será bienvenido."
+      }
+    ],
+    "variant": "standard"
+  },
+  "rsvp": {
+    "title": "Confirme su asistencia",
+    "subcopy": "Favor de confirmar asistencia desde esta invitación. Será una alegría contar con su presencia.",
+    "guestCap": 4,
+    "accessMode": "hybrid",
+    "confirmationMessage": "Gracias por confirmar. Nos alegra saber que nos acompañarán en esta celebración.",
+    "confirmationMode": "api",
+    "variant": "standard",
+    "labels": {
+      "name": "Nombre completo",
+      "guestCount": "Personas que asistirán",
+      "attendance": "¿Nos acompañas?",
+      "confirmButton": "Confirmar asistencia"
+    },
+    "personalizedAccess": {
+      "variant": "standard"
     }
+  },
+  "thankYou": {
+    "message": "Gracias por acompañarnos en este momento tan especial. Su cariño hace más bonita la espera de nuestra pequeña.",
+    "closingName": "Mateo, Valeria y Luna Celeste",
+    "image": "thankYouPortrait",
+    "focalPoint": "50% 50%",
+    "variant": "editorial-back-cover"
+  },
+  "envelope": {
+    "disabled": false,
+    "sealStyle": "wax",
+    "sealVariant": "premium-rose",
+    "sealImage": "sealImage",
+    "microcopy": "Abrir invitación",
+    "documentLabel": "Baby Shower",
+    "stampText": "Luna Celeste",
+    "stampYear": "2026",
+    "closedPalette": {
+      "primary": "surfacePrimary",
+      "accent": "actionAccent",
+      "background": "surfacePrimary"
+    }
+  },
+  "interludes": [
+    {
+      "image": "gallery01",
+      "afterSection": "quote",
+      "alt": "Decoración celestial para recibir a Luna Celeste",
+      "height": "screen"
+    },
+    {
+      "image": "gallery03",
+      "afterSection": "family",
+      "alt": "Rincón luminoso preparado para el Baby Shower de Luna Celeste",
+      "height": "screen"
+    }
+  ],
+  "sharing": {
+    "whatsappTemplate": "Hola {name}, te comparto la invitación al Baby Shower de Luna Celeste: {inviteUrl}",
+    "ogImage": "hero",
+    "ogDescription": "Te invitamos a celebrar el Baby Shower de Luna Celeste. Consulta la fecha, horario y ubicación en esta invitación."
+  }
 }

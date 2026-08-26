@@ -1,266 +1,275 @@
 {
-    "eventType": "xv",
-    "isDemo": true,
-    "templateId": "xv-celestial-blue",
-    "visualProfileId": "xareni-iyarit",
-    "_assetSlug": "demo-xv-celestial-blue",
-    "title": "XV Años — Edición Xareni",
-    "description": "Demo visualmente idéntico a la invitación XV Xareni Iyarit. Misma estructura celestial-blue, mismo perfil visual, datos ficticios.",
-    "theme": {
-        "fontFamily": "serif",
-        "preset": "celestial-blue"
-    },
-    "sectionOrder": [
-        "quote",
-        "family",
-        "countdown",
-        "itinerary",
-        "location",
-        "gallery",
-        "gifts",
-        "personalizedAccess",
-        "rsvp",
-        "thankYou"
+  "eventType": "xv",
+  "isDemo": true,
+  "templateId": "xv-celestial-blue",
+  "visualProfileId": "xareni-iyarit",
+  "_assetSlug": "demo-xv-celestial-blue",
+  "title": "XV Años — Edición Xareni",
+  "description": "Demo visualmente idéntico a la invitación XV Xareni Iyarit. Misma estructura celestial-blue, mismo perfil visual, datos ficticios.",
+  "theme": {
+    "fontFamily": "serif",
+    "preset": "celestial-blue"
+  },
+  "sectionOrder": [
+    "quote",
+    "family",
+    "countdown",
+    "itinerary",
+    "location",
+    "gallery",
+    "gifts",
+    "personalizedAccess",
+    "rsvp",
+    "thankYou"
+  ],
+  "composition": {
+    "intersections": {}
+  },
+  "hero": {
+    "name": "Xareni Demo",
+    "label": "Mis XV Años",
+    "date": "2027-09-12T19:00:00.000Z",
+    "backgroundImage": "hero",
+    "portrait": "portrait",
+    "variant": "standard"
+  },
+  "location": {
+    "indications": [
+      {
+        "iconName": "DressCode",
+        "styleVariant": "reserved",
+        "text": "Código de vestimenta <strong>formal</strong>."
+      },
+      {
+        "iconName": "Calendar",
+        "styleVariant": "default",
+        "text": "Confirma tu asistencia <strong>antes del 29 de agosto</strong>."
+      }
     ],
-    "composition": { "intersections": {} },
-    "hero": {
-        "name": "Xareni Demo",
-        "label": "Mis XV Años",
-        "date": "2027-09-12T19:00:00.000Z",
-        "backgroundImage": "hero",
-        "portrait": "portrait",
-        "variant": "standard"
+    "variant": "standard",
+    "presentationOptions": {
+      "showFlourishes": true
     },
-    "location": {
-        "ceremony": {
-            "venueEvent": "Misa de Acción de Gracias",
-            "venueName": "Catedral de la Asunción",
-            "address": "Av. Morelos 105, Centro, Cuernavaca",
-            "city": "Cuernavaca",
-            "date": "12 de septiembre de 2027",
-            "time": "5:00 PM",
-            "mapUrl": "https://maps.app.goo.gl/example-catedral-asuncion",
-            "image": "ceremony"
-        },
-        "reception": {
-            "venueEvent": "Recepción",
-            "venueName": "Hacienda Los Claustros",
-            "address": "Carretera Federal Cuernavaca-Tepoztlán Km 4.5, Cuernavaca",
-            "city": "Cuernavaca",
-            "date": "12 de septiembre de 2027",
-            "time": "7:00 PM",
-            "mapUrl": "https://maps.app.goo.gl/example-hacienda-claustros",
-            "image": "reception"
-        },
-        "indications": [
-            {
-                "iconName": "DressCode",
-                "styleVariant": "reserved",
-                "text": "Código de vestimenta <strong>formal</strong>."
-            },
-            {
-                "iconName": "Calendar",
-                "styleVariant": "default",
-                "text": "Confirma tu asistencia <strong>antes del 29 de agosto</strong>."
-            }
-        ],
-        "variant": "standard",
-        "presentationOptions": {
-            "showFlourishes": true
-        }
+    "venues": [
+      {
+        "venueEvent": "Misa de Acción de Gracias",
+        "venueName": "Catedral de la Asunción",
+        "address": "Av. Morelos 105, Centro, Cuernavaca",
+        "city": "Cuernavaca",
+        "date": "12 de septiembre de 2027",
+        "time": "5:00 PM",
+        "mapUrl": "https://maps.app.goo.gl/example-catedral-asuncion",
+        "image": "ceremony",
+        "type": "ceremony",
+        "isVisible": true
+      },
+      {
+        "venueEvent": "Recepción",
+        "venueName": "Hacienda Los Claustros",
+        "address": "Carretera Federal Cuernavaca-Tepoztlán Km 4.5, Cuernavaca",
+        "city": "Cuernavaca",
+        "date": "12 de septiembre de 2027",
+        "time": "7:00 PM",
+        "mapUrl": "https://maps.app.goo.gl/example-hacienda-claustros",
+        "image": "reception",
+        "type": "reception",
+        "isVisible": true
+      }
+    ],
+    "mapStyle": "dark"
+  },
+  "family": {
+    "parents": {
+      "father": "Alejandro Demo",
+      "mother": "Mariana Demo"
     },
-    "family": {
-        "parents": {
-            "father": "Alejandro Demo",
-            "mother": "Mariana Demo"
-        },
-        "labels": {
-            "sectionTitle": "Mi Familia",
-            "sectionSubtitle": "Con amor y gratitud",
-            "parentsTitle": "Con la bendición de",
-            "godparentsTitle": "Padrinos",
-            "sectionMessage": "Cada paso de este camino ha estado iluminado por su cariño. Gracias por ser parte de esta noche."
-        },
-        "godparents": [
-            {
-                "name": "Ricardo Torres",
-                "role": "Padrino"
-            },
-            {
-                "name": "Daniela Rivas",
-                "role": "Madrina"
-            }
-        ],
-        "variant": "standard"
+    "labels": {
+      "sectionTitle": "Mi Familia",
+      "sectionSubtitle": "Con amor y gratitud",
+      "parentsTitle": "Con la bendición de",
+      "godparentsTitle": "Padrinos",
+      "sectionMessage": "Cada paso de este camino ha estado iluminado por su cariño. Gracias por ser parte de esta noche."
     },
-    "gallery": {
-        "variant": "index-choreography",
-        "eyebrow": "Galería",
-        "title": "Luz, color y momentos que brillan con luz propia.",
-        "subtitle": "Un recorrido visual por la magia de esta celebración única.",
-        "items": [
-            {
-                "image": "gallery01",
-                "caption": "Una noche de ensueño en tonos de cielo."
-            },
-            {
-                "image": "gallery02",
-                "caption": "Cada instante, una obra de luz."
-            },
-            {
-                "image": "gallery03",
-                "caption": "Elegancia que trasciende el momento."
-            },
-            {
-                "image": "gallery04",
-                "caption": "Reflejos de una velada inolvidable."
-            },
-            {
-                "image": "gallery05",
-                "caption": "Sonrisas que iluminan la noche."
-            },
-            {
-                "image": "gallery06",
-                "caption": "Detalles que cuentan una historia."
-            }
-        ]
-    },
-    "gifts": {
+    "godparents": [
+      {
+        "name": "Ricardo Torres",
+        "role": "Padrino"
+      },
+      {
+        "name": "Daniela Rivas",
+        "role": "Madrina"
+      }
+    ],
+    "variant": "standard"
+  },
+  "gallery": {
+    "variant": "index-choreography",
+    "eyebrow": "Galería",
+    "title": "Luz, color y momentos que brillan con luz propia.",
+    "subtitle": "Un recorrido visual por la magia de esta celebración única.",
+    "items": [
+      {
+        "image": "gallery01",
+        "caption": "Una noche de ensueño en tonos de cielo."
+      },
+      {
+        "image": "gallery02",
+        "caption": "Cada instante, una obra de luz."
+      },
+      {
+        "image": "gallery03",
+        "caption": "Elegancia que trasciende el momento."
+      },
+      {
+        "image": "gallery04",
+        "caption": "Reflejos de una velada inolvidable."
+      },
+      {
+        "image": "gallery05",
+        "caption": "Sonrisas que iluminan la noche."
+      },
+      {
+        "image": "gallery06",
+        "caption": "Detalles que cuentan una historia."
+      }
+    ]
+  },
+  "gifts": {
+    "title": "Lluvia de Sobres",
+    "subtitle": "Tu presencia es el mejor regalo. Si deseas tener un detalle adicional, aquí algunas opciones:",
+    "items": [
+      {
+        "type": "bank",
+        "title": "Transferencia",
+        "bankName": "BBVA México",
+        "accountHolder": "Fondo Demo",
+        "clabe": "0121 8001 2345 6789 01",
+        "accountNumber": "1234567890"
+      },
+      {
+        "type": "cash",
         "title": "Lluvia de Sobres",
-        "subtitle": "Tu presencia es el mejor regalo. Si deseas tener un detalle adicional, aquí algunas opciones:",
-        "items": [
-            {
-                "type": "bank",
-                "title": "Transferencia",
-                "bankName": "BBVA México",
-                "accountHolder": "Fondo Demo",
-                "clabe": "0121 8001 2345 6789 01",
-                "accountNumber": "1234567890"
-            },
-            {
-                "type": "cash",
-                "title": "Lluvia de Sobres",
-                "text": "Contaremos con un buzón durante la recepción."
-            }
-        ],
-        "variant": "standard"
-    },
-    "rsvp": {
-        "title": "Confirma tu asistencia",
-        "guestCap": 4,
-        "accessMode": "hybrid",
-        "confirmationMessage": "Gracias por confirmar. Te esperamos con alegría en esta noche tan especial.",
-        "confirmationMode": "api",
-        "personalizedAccess": {
-            "variant": "ornamented"
-        },
-        "variant": "standard"
-    },
-    "quote": {
-        "text": "Hoy empieza una nueva historia, y no hay mejor escenario que tenerlos a mi lado.",
-        "author": "Xareni Demo"
-    },
-    "thankYou": {
-        "message": "Gracias por compartir esta noche conmigo. Su amor y compañía hacen de mis XV años un recuerdo que atesoraré para siempre.",
-        "closingName": "Xareni Demo",
-        "image": "thankYouPortrait",
-        "focalPoint": "50% 30%",
-        "variant": "editorial-back-cover"
-    },
-    "itinerary": {
-        "title": "Programa",
-        "items": [
-            {
-                "iconName": "Church",
-                "label": "Misa",
-                "time": "17:00",
-                "description": "Ceremonia de Acción de Gracias."
-            },
-            {
-                "iconName": "Reception",
-                "label": "Recepción",
-                "time": "19:00",
-                "description": "Bienvenida en la recepción."
-            },
-            {
-                "iconName": "Waltz",
-                "label": "Vals",
-                "time": "20:30",
-                "description": "Un momento de ensueño."
-            },
-            {
-                "iconName": "Dinner",
-                "label": "Cena",
-                "time": "21:30",
-                "description": "Cena de gala en familia."
-            },
-            {
-                "iconName": "Party",
-                "label": "Cierre",
-                "time": "00:00",
-                "description": "Gracias por celebrar con nosotros."
-            }
-        ],
-        "variant": "timeline-paper"
-    },
-    "countdown": {
-        "variant": "standard",
-        "title": "La celebración comienza en",
-        "footerText": "12 de septiembre de 2027, Cuernavaca, Morelos"
-    },
-    "interludes": [
-        {
-            "image": "interlude01",
-            "afterSection": "location",
-            "alt": "Detalle decorativo de la celebración",
-            "height": "screen",
-            "focalPoint": "50% 35%",
-            "lightX": "44%",
-            "lightY": "44%"
-        },
-        {
-            "image": "interlude02",
-            "afterSection": "family",
-            "alt": "Retrato elegante de la quinceañera",
-            "height": "screen",
-            "focalPoint": "50% 25%",
-            "lightX": "54%",
-            "lightY": "34%"
-        },
-        {
-            "image": "interlude03",
-            "afterSection": "itinerary",
-            "alt": "Detalle de la celebración",
-            "height": "screen",
-            "focalPoint": "54% 62%",
-            "lightX": "68%",
-            "lightY": "44%",
-            "overlayOpacity": "14%"
-        },
-        {
-            "image": "interlude04",
-            "afterSection": "rsvp",
-            "alt": "Retrato final",
-            "height": "screen",
-            "focalPoint": "50% 34%",
-            "lightX": "42%",
-            "lightY": "42%"
-        }
+        "text": "Contaremos con un buzón durante la recepción."
+      }
     ],
-    "envelope": {
-        "disabled": false,
-        "sealStyle": "wax",
-        "sealIcon": "flower",
-        "sealInitials": "X·D",
-        "microcopy": "Abre tu invitación",
-        "closedPalette": {
-            "primary": "surfacePrimary",
-            "accent": "actionAccent",
-            "background": "surfaceDark"
-        }
+    "variant": "standard"
+  },
+  "rsvp": {
+    "title": "Confirma tu asistencia",
+    "guestCap": 4,
+    "accessMode": "hybrid",
+    "confirmationMessage": "Gracias por confirmar. Te esperamos con alegría en esta noche tan especial.",
+    "confirmationMode": "api",
+    "personalizedAccess": {
+      "variant": "ornamented"
     },
-    "sharing": {
-        "whatsappTemplate": "Hola {name}, te comparto la invitación para {eventTitle}: {inviteUrl}",
-        "ogImage": "portrait"
+    "variant": "standard"
+  },
+  "quote": {
+    "text": "Hoy empieza una nueva historia, y no hay mejor escenario que tenerlos a mi lado.",
+    "author": "Xareni Demo"
+  },
+  "thankYou": {
+    "message": "Gracias por compartir esta noche conmigo. Su amor y compañía hacen de mis XV años un recuerdo que atesoraré para siempre.",
+    "closingName": "Xareni Demo",
+    "image": "thankYouPortrait",
+    "focalPoint": "50% 30%",
+    "variant": "editorial-back-cover"
+  },
+  "itinerary": {
+    "title": "Programa",
+    "items": [
+      {
+        "iconName": "Church",
+        "label": "Misa",
+        "time": "17:00",
+        "description": "Ceremonia de Acción de Gracias."
+      },
+      {
+        "iconName": "Reception",
+        "label": "Recepción",
+        "time": "19:00",
+        "description": "Bienvenida en la recepción."
+      },
+      {
+        "iconName": "Waltz",
+        "label": "Vals",
+        "time": "20:30",
+        "description": "Un momento de ensueño."
+      },
+      {
+        "iconName": "Dinner",
+        "label": "Cena",
+        "time": "21:30",
+        "description": "Cena de gala en familia."
+      },
+      {
+        "iconName": "Party",
+        "label": "Cierre",
+        "time": "00:00",
+        "description": "Gracias por celebrar con nosotros."
+      }
+    ],
+    "variant": "timeline-paper"
+  },
+  "countdown": {
+    "variant": "standard",
+    "title": "La celebración comienza en",
+    "footerText": "12 de septiembre de 2027, Cuernavaca, Morelos"
+  },
+  "interludes": [
+    {
+      "image": "interlude01",
+      "afterSection": "location",
+      "alt": "Detalle decorativo de la celebración",
+      "height": "screen",
+      "focalPoint": "50% 35%",
+      "lightX": "44%",
+      "lightY": "44%"
+    },
+    {
+      "image": "interlude02",
+      "afterSection": "family",
+      "alt": "Retrato elegante de la quinceañera",
+      "height": "screen",
+      "focalPoint": "50% 25%",
+      "lightX": "54%",
+      "lightY": "34%"
+    },
+    {
+      "image": "interlude03",
+      "afterSection": "itinerary",
+      "alt": "Detalle de la celebración",
+      "height": "screen",
+      "focalPoint": "54% 62%",
+      "lightX": "68%",
+      "lightY": "44%",
+      "overlayOpacity": "14%"
+    },
+    {
+      "image": "interlude04",
+      "afterSection": "rsvp",
+      "alt": "Retrato final",
+      "height": "screen",
+      "focalPoint": "50% 34%",
+      "lightX": "42%",
+      "lightY": "42%"
     }
+  ],
+  "envelope": {
+    "disabled": false,
+    "sealStyle": "wax",
+    "sealIcon": "flower",
+    "sealInitials": "X·D",
+    "microcopy": "Abre tu invitación",
+    "closedPalette": {
+      "primary": "surfacePrimary",
+      "accent": "actionAccent",
+      "background": "surfaceDark"
+    }
+  },
+  "sharing": {
+    "whatsappTemplate": "Hola {name}, te comparto la invitación para {eventTitle}: {inviteUrl}",
+    "ogImage": "portrait"
+  }
 }

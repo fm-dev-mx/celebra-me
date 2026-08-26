@@ -1,190 +1,210 @@
 {
-    "eventType": "primera-comunion",
-    "isDemo": true,
-    "templateId": "primera-comunion-angelic-presence",
-    "title": "Primera Comunión Ilustrada",
-    "description": "Demo oficial de primera comunión con estilo ilustrado, floral y fresco.",
-    "_assetSlug": "demo-primera-comunion-illustrated",
-    "theme": {
-        "preset": "angelic-presence"
-    },
-    "sectionOrder": ["quote", "family", "countdown", "location", "itinerary", "gallery", "gifts", "personalizedAccess", "rsvp", "thankYou"],
-    "composition": { "intersections": {} },
-    "eventTiming": {
-        "localDateTime": "2026-09-12T11:00",
-        "timeZone": "America/Mexico_City",
-        "startsAtUtc": "2026-09-12T17:00:00.000Z"
-    },
-    "hero": {
-        "name": "Camila Aurora",
-        "label": "Primera Comunión",
-        "date": "2026-09-12T11:00:00.000Z",
-        "backgroundImage": "hero",
-        "variant": "standard"
-    },
-    "location": {
-        "visibility": "public",
-        "ceremony": {
-            "venueEvent": "Ceremonia",
-            "venueName": "Parroquia Nuestra Señora de la Luz",
-            "address": "Av. de la Paz 120, Centro",
-            "city": "Ciudad de México",
-            "date": "12 de septiembre de 2026",
-            "time": "11:00 AM",
-            "image": "ceremony",
-            "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Parroquia+Nuestra+Senora+de+la+Luz+Ciudad+de+Mexico"
-        },
-        "reception": {
-            "venueEvent": "Celebración",
-            "venueName": "Jardín Santa Clara",
-            "address": "Paseo de los Olivos 45, Colonia del Valle",
-            "city": "Ciudad de México",
-            "date": "12 de septiembre de 2026",
-            "time": "1:00 PM",
-            "image": "reception",
-            "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Jardin+Santa+Clara+Ciudad+de+Mexico"
-        },
-        "indicationsHeading": "Indicaciones",
-        "indications": [
-            {
-                "iconName": "Calendar",
-                "text": "<strong>Llegada sugerida</strong> 15 minutos antes de la ceremonia."
-            },
-            {
-                "iconName": "DressCode",
-                "text": "<strong>Vestimenta</strong> Tonos claros, formales y suaves."
-            }
-        ],
-        "variant": "standard",
-        "presentationOptions": {
-            "showFlourishes": true
-        }
-    },
-    "family": {
-        "parents": {
-            "father": "Andrés Moreno",
-            "mother": "Lucía Rivera"
-        },
-        "godparents": [
-            {
-                "name": "Elena Cruz",
-                "role": "Madrina"
-            },
-            {
-                "name": "Mateo Salazar",
-                "role": "Padrino"
-            }
-        ],
-        "featuredImage": "family",
-        "focalPoint": "50% 36%",
-        "labels": {
-            "sectionTitle": "Los que hacen este momento sagrado",
-            "sectionSubtitle": "Familia",
-            "parentsTitle": "Con la bendición de",
-            "godparentsTitle": "Padrinos",
-            "sectionMessage": "Gracias por acompañarnos en este día de fe y alegría. Su amor y sus bendiciones hacen más luminoso este sacramento."
-        },
-        "variant": "standard"
-    },
-    "gallery": {
-        "eyebrow": "Galería",
-        "title": "Instantes de luz",
-        "subtitle": "Una memoria serena de este día especial",
-        "items": [
-            {
-                "image": "gallery01",
-                "caption": "Pureza y ternura"
-            },
-            {
-                "image": "gallery02",
-                "caption": "La luz del sacramento"
-            }
-        ],
-        "variant": "uniform-grid"
-    },
-    "gifts": {
-        "title": "Detalles para Celebrar",
-        "subtitle": "Gracias por acompañarnos en este día de fe y alegría.",
-        "items": [
-            {
-                "type": "cash",
-                "title": "Lluvia de Sobres",
-                "text": "Si desean tener un detalle, podrán hacerlo en el área de recepción."
-            }
-        ],
-        "variant": "standard"
-    },
-    "itinerary": {
-        "title": "Programa",
-        "subtitle": "Primera Comunión",
-        "items": [
-            {
-                "iconName": "Reception",
-                "label": "Llegada",
-                "time": "10:45",
-                "description": "Recepción en la parroquia"
-            },
-            {
-                "iconName": "Church",
-                "label": "Misa",
-                "time": "11:00",
-                "description": "Celebración de Primera Comunión"
-            },
-            {
-                "iconName": "Reception",
-                "label": "Convivencia",
-                "time": "13:00",
-                "description": "Comida familiar"
-            }
-        ],
-        "variant": "standard"
-    },
-    "countdown": {
-        "variant": "standard",
-        "title": "Nos acercamos con alegría",
-        "footerText": "Gracias por preparar el corazón para acompañarnos"
-    },
-    "quote": {
-        "text": "Yo soy el pan de vida. El que viene a mí nunca tendrá hambre, y el que cree en mí nunca tendrá sed.",
-        "author": "Juan 6:35"
-    },
-    "rsvp": {
-        "title": "Confirma tu asistencia",
-        "guestCap": 4,
-        "confirmationMessage": "Gracias por confirmar y acompañarnos en este día de fe.",
-        "confirmationMode": "api",
-        "variant": "standard",
-        "personalizedAccess": {
-            "variant": "standard"
-        }
-    },
-    "thankYou": {
-        "message": "Gracias por compartir este momento sagrado. Su presencia y sus bendiciones quedarán guardadas con mucho cariño.",
-        "closingName": "Camila Aurora",
-        "image": "thankYouPortrait",
-        "focalPoint": "50% 50%",
-        "variant": "standard"
-    },
-    "interludes": [
-        {
-            "image": "interlude01",
-            "afterSection": "quote",
-            "alt": "Detalle floral de Primera Comunión",
-            "height": "tall",
-            "focalPoint": "50% 58%"
-        },
-        {
-            "image": "interlude02",
-            "afterSection": "gallery",
-            "alt": "Detalle luminoso de la celebración",
-            "height": "screen",
-            "focalPoint": "53% 55%"
-        }
+  "eventType": "primera-comunion",
+  "isDemo": true,
+  "templateId": "primera-comunion-angelic-presence",
+  "title": "Primera Comunión Ilustrada",
+  "description": "Demo oficial de primera comunión con estilo ilustrado, floral y fresco.",
+  "_assetSlug": "demo-primera-comunion-illustrated",
+  "theme": {
+    "preset": "angelic-presence"
+  },
+  "sectionOrder": [
+    "quote",
+    "family",
+    "countdown",
+    "location",
+    "itinerary",
+    "gallery",
+    "gifts",
+    "personalizedAccess",
+    "rsvp",
+    "thankYou"
+  ],
+  "composition": {
+    "intersections": {}
+  },
+  "eventTiming": {
+    "localDateTime": "2026-09-12T11:00",
+    "timeZone": "America/Mexico_City",
+    "startsAtUtc": "2026-09-12T17:00:00.000Z"
+  },
+  "hero": {
+    "name": "Camila Aurora",
+    "label": "Primera Comunión",
+    "date": "2026-09-12T11:00:00.000Z",
+    "backgroundImage": "hero",
+    "variant": "standard"
+  },
+  "location": {
+    "visibility": "public",
+    "indicationsHeading": "Indicaciones",
+    "indications": [
+      {
+        "iconName": "Calendar",
+        "text": "<strong>Llegada sugerida</strong> 15 minutos antes de la ceremonia."
+      },
+      {
+        "iconName": "DressCode",
+        "text": "<strong>Vestimenta</strong> Tonos claros, formales y suaves."
+      }
     ],
-    "envelope": {
-        "disabled": false,
-        "sealStyle": "wax",
-        "sealInitials": "C·A",
-        "microcopy": "Primera Comunión de Camila"
+    "variant": "standard",
+    "presentationOptions": {
+      "showFlourishes": true
+    },
+    "venues": [
+      {
+        "venueEvent": "Ceremonia",
+        "venueName": "Parroquia Nuestra Señora de la Luz",
+        "address": "Av. de la Paz 120, Centro",
+        "city": "Ciudad de México",
+        "date": "12 de septiembre de 2026",
+        "time": "11:00 AM",
+        "image": "ceremony",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Parroquia+Nuestra+Senora+de+la+Luz+Ciudad+de+Mexico",
+        "type": "ceremony",
+        "isVisible": true
+      },
+      {
+        "venueEvent": "Celebración",
+        "venueName": "Jardín Santa Clara",
+        "address": "Paseo de los Olivos 45, Colonia del Valle",
+        "city": "Ciudad de México",
+        "date": "12 de septiembre de 2026",
+        "time": "1:00 PM",
+        "image": "reception",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Jardin+Santa+Clara+Ciudad+de+Mexico",
+        "type": "reception",
+        "isVisible": true
+      }
+    ],
+    "mapStyle": "dark"
+  },
+  "family": {
+    "parents": {
+      "father": "Andrés Moreno",
+      "mother": "Lucía Rivera"
+    },
+    "godparents": [
+      {
+        "name": "Elena Cruz",
+        "role": "Madrina"
+      },
+      {
+        "name": "Mateo Salazar",
+        "role": "Padrino"
+      }
+    ],
+    "featuredImage": "family",
+    "focalPoint": "50% 36%",
+    "labels": {
+      "sectionTitle": "Los que hacen este momento sagrado",
+      "sectionSubtitle": "Familia",
+      "parentsTitle": "Con la bendición de",
+      "godparentsTitle": "Padrinos",
+      "sectionMessage": "Gracias por acompañarnos en este día de fe y alegría. Su amor y sus bendiciones hacen más luminoso este sacramento."
+    },
+    "variant": "standard"
+  },
+  "gallery": {
+    "eyebrow": "Galería",
+    "title": "Instantes de luz",
+    "subtitle": "Una memoria serena de este día especial",
+    "items": [
+      {
+        "image": "gallery01",
+        "caption": "Pureza y ternura"
+      },
+      {
+        "image": "gallery02",
+        "caption": "La luz del sacramento"
+      }
+    ],
+    "variant": "uniform-grid"
+  },
+  "gifts": {
+    "title": "Detalles para Celebrar",
+    "subtitle": "Gracias por acompañarnos en este día de fe y alegría.",
+    "items": [
+      {
+        "type": "cash",
+        "title": "Lluvia de Sobres",
+        "text": "Si desean tener un detalle, podrán hacerlo en el área de recepción."
+      }
+    ],
+    "variant": "standard"
+  },
+  "itinerary": {
+    "title": "Programa",
+    "subtitle": "Primera Comunión",
+    "items": [
+      {
+        "iconName": "Reception",
+        "label": "Llegada",
+        "time": "10:45",
+        "description": "Recepción en la parroquia"
+      },
+      {
+        "iconName": "Church",
+        "label": "Misa",
+        "time": "11:00",
+        "description": "Celebración de Primera Comunión"
+      },
+      {
+        "iconName": "Reception",
+        "label": "Convivencia",
+        "time": "13:00",
+        "description": "Comida familiar"
+      }
+    ],
+    "variant": "standard"
+  },
+  "countdown": {
+    "variant": "standard",
+    "title": "Nos acercamos con alegría",
+    "footerText": "Gracias por preparar el corazón para acompañarnos"
+  },
+  "quote": {
+    "text": "Yo soy el pan de vida. El que viene a mí nunca tendrá hambre, y el que cree en mí nunca tendrá sed.",
+    "author": "Juan 6:35"
+  },
+  "rsvp": {
+    "title": "Confirma tu asistencia",
+    "guestCap": 4,
+    "confirmationMessage": "Gracias por confirmar y acompañarnos en este día de fe.",
+    "confirmationMode": "api",
+    "variant": "standard",
+    "personalizedAccess": {
+      "variant": "standard"
     }
+  },
+  "thankYou": {
+    "message": "Gracias por compartir este momento sagrado. Su presencia y sus bendiciones quedarán guardadas con mucho cariño.",
+    "closingName": "Camila Aurora",
+    "image": "thankYouPortrait",
+    "focalPoint": "50% 50%",
+    "variant": "standard"
+  },
+  "interludes": [
+    {
+      "image": "interlude01",
+      "afterSection": "quote",
+      "alt": "Detalle floral de Primera Comunión",
+      "height": "tall",
+      "focalPoint": "50% 58%"
+    },
+    {
+      "image": "interlude02",
+      "afterSection": "gallery",
+      "alt": "Detalle luminoso de la celebración",
+      "height": "screen",
+      "focalPoint": "53% 55%"
+    }
+  ],
+  "envelope": {
+    "disabled": false,
+    "sealStyle": "wax",
+    "sealInitials": "C·A",
+    "microcopy": "Primera Comunión de Camila"
+  }
 }

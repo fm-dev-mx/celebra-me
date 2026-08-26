@@ -1,351 +1,371 @@
 {
-    "schemaVersion": 1,
-    "slug": "america-johana",
-    "eventType": "xv",
-    "title": "XV América Johana",
+  "schemaVersion": 1,
+  "slug": "america-johana",
+  "eventType": "xv",
+  "title": "XV América Johana",
+  "themeId": "celestial-blue",
+  "baseDemoId": "demo-xv-celestial-blue",
+  "snapshot": {
+    "previewSlug": "demo-xv-celestial-blue",
     "themeId": "celestial-blue",
-    "baseDemoId": "demo-xv-celestial-blue",
-    "snapshot": {
-        "previewSlug": "demo-xv-celestial-blue",
-        "themeId": "celestial-blue",
-        "baseDemoId": "demo-xv-celestial-blue"
+    "baseDemoId": "demo-xv-celestial-blue"
+  },
+  "publishedContent": {
+    "sectionOrder": [
+      "quote",
+      "family",
+      "countdown",
+      "location",
+      "itinerary",
+      "gallery",
+      "gifts",
+      "personalizedAccess",
+      "rsvp",
+      "thankYou"
+    ],
+    "composition": {
+      "intersections": {}
     },
-    "publishedContent": {
-        "sectionOrder": ["quote", "family", "countdown", "location", "itinerary", "gallery", "gifts", "personalizedAccess", "rsvp", "thankYou"],
-        "composition": { "intersections": {} },
-        "hero": {
-            "variant": "standard",
-            "date": "2026-08-29T23:30:00.000Z",
-            "name": "América",
-            "label": "AMÉRICA · XV AÑOS",
-            "portrait": "portrait",
-            "focalPoint": "52% 45%",
-            "backgroundImage": "hero",
-            "focalPointMobile": "52% 38%",
-            "focalPointDesktop": "52% 42%",
-            "backgroundImageMobile": "hero",
-            "backgroundImageDesktop": "heroDesktop"
+    "hero": {
+      "variant": "standard",
+      "date": "2026-08-29T23:30:00.000Z",
+      "name": "América",
+      "label": "AMÉRICA · XV AÑOS",
+      "portrait": "portrait",
+      "focalPoint": "52% 45%",
+      "backgroundImage": "hero",
+      "focalPointMobile": "52% 38%",
+      "focalPointDesktop": "52% 42%",
+      "backgroundImageMobile": "hero",
+      "backgroundImageDesktop": "heroDesktop"
+    },
+    "rsvp": {
+      "variant": "standard",
+      "title": "Confirma tu asistencia",
+      "subcopy": "Este pase corresponde a tu grupo. Preséntalo al ingresar al evento. Tu confirmación nos ayuda a recibirte con mucho cariño.",
+      "guestCap": 6,
+      "accessMode": "hybrid",
+      "confirmationMode": "api",
+      "personalizedAccess": {
+        "variant": "ornamented",
+        "title": "Pase de acceso",
+        "subtitle": "Este pase muestra los accesos asignados para ingresar al evento.",
+        "footerText": "Acceso válido para adultos y niños. Preséntalo al llegar."
+      },
+      "confirmationMessage": "Gracias por confirmar. Me dará mucha alegría compartir esta noche contigo."
+    },
+    "gifts": {
+      "variant": "standard",
+      "items": [
+        {
+          "type": "store",
+          "title": "Liverpool",
+          "description": "Mesa de regalos digital Liverpool",
+          "tableNumber": "52006296",
+          "url": "https://mesaderegalos.liverpool.com.mx/milistaderegalos/52006296"
         },
-        "rsvp": {
-            "variant": "standard",
-            "title": "Confirma tu asistencia",
-            "subcopy": "Este pase corresponde a tu grupo. Preséntalo al ingresar al evento. Tu confirmación nos ayuda a recibirte con mucho cariño.",
-            "guestCap": 6,
-            "accessMode": "hybrid",
-            "confirmationMode": "api",
-            "personalizedAccess": {
-                "variant": "ornamented",
-                "title": "Pase de acceso",
-                "subtitle": "Este pase muestra los accesos asignados para ingresar al evento.",
-                "footerText": "Acceso válido para adultos y niños. Preséntalo al llegar."
-            },
-            "confirmationMessage": "Gracias por confirmar. Me dará mucha alegría compartir esta noche contigo."
+        {
+          "type": "store",
+          "title": "Sears",
+          "description": "Mesa de regalos digital Sears",
+          "tableNumber": "237993",
+          "url": "https://www.sears.com.mx/Mesa-de-Regalos/237993/te-invito-a-mi-xv-anos-america"
         },
-        "gifts": {
-            "variant": "standard",
-            "items": [
-                {
-                    "type": "store",
-                    "title": "Liverpool",
-                    "description": "Mesa de regalos digital Liverpool",
-                    "tableNumber": "52006296",
-                    "url": "https://mesaderegalos.liverpool.com.mx/milistaderegalos/52006296"
-                },
-                {
-                    "type": "store",
-                    "title": "Sears",
-                    "description": "Mesa de regalos digital Sears",
-                    "tableNumber": "237993",
-                    "url": "https://www.sears.com.mx/Mesa-de-Regalos/237993/te-invito-a-mi-xv-anos-america"
-                },
-                {
-                    "type": "cash",
-                    "title": "Lluvia de sobres",
-                    "text": "También contaremos con un espacio especial durante la recepción."
-                }
-            ],
-            "title": "Mesa de regalos",
-            "subtitle": "Tu presencia es mi mejor regalo. Si deseas tener un detalle conmigo, te comparto estas opciones."
-        },
-        "music": {
-            "url": "https://res.cloudinary.com/dusxvauvj/video/upload/v1783457980/Coldplay_-_Viva_La_Vida_dqvlpj.mp3",
-            "autoPlay": true
-        },
-        "quote": {
-            "text": "Hay días que se guardan para siempre. Este será uno de ellos.",
-            "author": "América Johana"
-        },
-        "theme": {
-            "preset": "celestial-blue",
-            "fontFamily": "serif"
-        },
-        "title": "XV América Johana",
-        "family": {
-            "variant": "standard",
-            "groups": [
-                {
-                    "items": [
-                        {
-                            "name": "Gloria Paulina Soto Pérez",
-                            "role": "Mamá"
-                        },
-                        {
-                            "name": "Luz María Pérez Cardoso",
-                            "role": "Abuelita"
-                        }
-                    ],
-                    "title": "Con todo mi amor"
-                }
-            ],
-            "labels": {
-                "parentsTitle": "Con todo mi amor",
-                "sectionTitle": "Con todo mi amor",
-                "sectionMessage": "Con el corazón lleno de gratitud, comparto esta noche con mi familia y con quienes han acompañado mi historia.",
-                "godparentsTitle": "Acompañada por sus padrinos",
-                "sectionSubtitle": "Mi familia"
-            },
-            "focalPoint": "50% 36%",
-            "godparents": [
-                {
-                    "name": "Mónica Mayela Alcantar Molinar",
-                    "role": "Madrina"
-                },
-                {
-                    "name": "Rafael Luque Altamirano",
-                    "role": "Padrino"
-                }
-            ],
-            "presentation": "with-photo",
-            "featuredImage": "family"
-        },
-        "isDemo": false,
-        "gallery": {
-            "items": [
-                {
-                    "image": "gallery01",
-                    "caption": "La actitud de un espíritu joven.",
-                    "focalPoint": "50% 36%"
-                },
-                {
-                    "image": "gallery02",
-                    "caption": "Entre verde, rojo y luz.",
-                    "focalPoint": "50% 35%"
-                },
-                {
-                    "image": "gallery04",
-                    "caption": "Celebrar rodeada de amigas.",
-                    "focalPoint": "50% 42%"
-                },
-                {
-                    "image": "gallery05",
-                    "caption": "La alegría de compartir.",
-                    "focalPoint": "50% 44%"
-                },
-                {
-                    "image": "gallery06",
-                    "caption": "Con mi familia.",
-                    "focalPoint": "50% 36%"
-                },
-                {
-                    "image": "gallery07",
-                    "caption": "Un recuerdo con quienes me acompañan.",
-                    "focalPoint": "52% 48%"
-                },
-                {
-                    "image": "gallery08",
-                    "caption": "Cariño que se queda.",
-                    "focalPoint": "50% 42%"
-                },
-                {
-                    "image": "gallery09",
-                    "caption": "Amigos y familia en el jardín.",
-                    "focalPoint": "50% 48%"
-                },
-                {
-                    "image": "gallery10",
-                    "caption": "La emoción antes de la gran noche.",
-                    "focalPoint": "50% 46%"
-                }
-            ],
-            "title": "MOMENTOS QUE SE QUEDAN PARA SIEMPRE.",
-            "eyebrow": "UNA HISTORIA CONTADA EN FOTOS.",
-            "subtitle": "Junto a las personas que más quiero.",
-            "variant": "index-choreography"
-        },
-        "sharing": {
-            "ogImage": "portrait",
-            "ogDescription": "XV años • América Johana",
-            "shareMessages": {
-                "reminder": "Hola {{invitado}},\n\n{{hora_evento}}\n\n{{limite_confirmacion}}\n\n{{enlace}}",
-                "invitation": "Hola {name}, te comparto la invitación a los XV años de América Johana, estaremos felices de contar con su presencia.\n\n{inviteUrl}\n\n Ábrela y confirma tu asistencia. ¡Será un gusto verte!"
-            },
-            "reminderSettings": {
-                "enabled": true,
-                "audience": "all-shared",
-                "showWhenDaysBeforeEvent": 7
-            },
-            "whatsappTemplate": "Hola {name}, te comparto tu invitación a los XV América Johana\n\n{inviteUrl}\n\n Ábrela y confirma tu asistencia. ¡Será un gusto verte!"
-        },
-        "envelope": {
-            "disabled": false,
-            "sealIcon": "flower",
-            "cardLabel": "XV AÑOS · 2026",
-            "microcopy": "Abrir invitación",
-            "sealStyle": "wax",
-            "stampText": "América Johana",
-            "stampYear": "2026",
-            "coverIssue": "2026",
-            "cardTagline": "Una noche para recordar",
-            "coverVolume": "1",
-            "sealVariant": "premium-rose",
-            "coverEdition": "XV",
-            "sealInitials": "A·J",
-            "closedPalette": {
-                "accent": "actionAccent",
-                "primary": "surfaceDark",
-                "background": "surfaceDark"
-            },
-            "documentLabel": "XV AÑOS · 2026",
-            "revealVariant": "celestial-blue"
-        },
-        "location": {
-            "variant": "standard",
-            "presentationOptions": {
-                "showFlourishes": true
-            },
-            "ceremony": {
-                "city": "Ciudad de México",
-                "date": "29 de agosto de 2026",
-                "time": "5:30 p.m.",
-                "address": "Av. División del Nte. 3430, Xotepingo, Coyoacán",
-                "venueName": "Rectoría San Antonio de Padua",
-                "venueEvent": "Ceremonia",
-                "coordinates": {
-                    "lat": 19.2759461,
-                    "lng": -99.5176924
-                },
-                "googleMapsUrl": "https://maps.app.goo.gl/ViMYiHRgQ5HLaqGe8"
-            },
-            "introLede": "Será una alegría compartir contigo esta celebración.",
-            "reception": {
-                "city": "Ciudad de México",
-                "date": "29 de agosto de 2026",
-                "time": "8:00 p.m.",
-                "address": "División del Norte 4515 Prados Coapa, 3a. Sección, Tlalpan",
-                "venueName": "Gran Salón Del Prado",
-                "venueEvent": "Recepción",
-                "coordinates": {
-                    "lat": 19.291035,
-                    "lng": -99.1314772
-                },
-                "googleMapsUrl": "https://maps.app.goo.gl/6xwP3zGbBPEsrTjn9"
-            },
-            "indications": [
-                {
-                    "text": "Código de vestimenta: <strong>formal</strong>. El color rojo está reservado para la quinceañera.",
-                    "iconName": "DressCode",
-                    "styleVariant": "reserved"
-                },
-                {
-                    "text": "Acceso únicamente con pase. Aplica para adultos y niños.",
-                    "iconName": "CheckSeal",
-                    "styleVariant": "default"
-                }
-            ],
-            "introEyebrow": "Nos vemos en Ciudad de México",
-            "introHeading": "Sábado, 29 de agosto de 2026",
-            "indicationsHeading": "Detalles para mis invitados"
-        },
-        "thankYou": {
-            "variant": "editorial-back-cover",
-            "image": "thankYouPortrait",
-            "message": "Gracias por acompañarme en mis XV años. Su presencia y cariño harán que esta noche sea un recuerdo para siempre.",
-            "focalPoint": "50% 34%",
-            "closingName": "América Johana"
-        },
-        "countdown": {
-            "variant": "standard",
-            "title": "La celebración comienza en",
-            "footerText": "Ciudad de México"
-        },
-        "eventType": "xv",
-        "itinerary": {
-            "variant": "timeline-paper",
-            "title": "Programa",
-            "items": [
-                {
-                    "time": "17:30",
-                    "label": "Ceremonia",
-                    "iconName": "Church",
-                    "description": "Misa de acción de gracias en la Rectoría San Antonio de Padua."
-                },
-                {
-                    "time": "20:00",
-                    "label": "Recepción",
-                    "iconName": "Reception",
-                    "description": "Recepción y celebración en Gran Salón Del Prado."
-                },
-                {
-                    "time": "21:00",
-                    "label": "Vals",
-                    "iconName": "Waltz",
-                    "description": "Un momento especial para celebrar mis XV años."
-                },
-                {
-                    "time": "21:30",
-                    "label": "Celebración",
-                    "iconName": "Party",
-                    "description": "Baile y convivencia con familia y amigos."
-                }
-            ]
-        },
-        "_assetSlug": "xv-america-johana",
-        "interludes": [
+        {
+          "type": "cash",
+          "title": "Lluvia de sobres",
+          "text": "También contaremos con un espacio especial durante la recepción."
+        }
+      ],
+      "title": "Mesa de regalos",
+      "subtitle": "Tu presencia es mi mejor regalo. Si deseas tener un detalle conmigo, te comparto estas opciones."
+    },
+    "music": {
+      "url": "https://res.cloudinary.com/dusxvauvj/video/upload/v1783457980/Coldplay_-_Viva_La_Vida_dqvlpj.mp3",
+      "autoPlay": true
+    },
+    "quote": {
+      "text": "Hay días que se guardan para siempre. Este será uno de ellos.",
+      "author": "América Johana"
+    },
+    "theme": {
+      "preset": "celestial-blue",
+      "fontFamily": "serif"
+    },
+    "title": "XV América Johana",
+    "family": {
+      "variant": "standard",
+      "groups": [
+        {
+          "items": [
             {
-                "alt": "América con globos dorados en el jardín",
-                "image": "interlude01",
-                "height": "screen",
-                "lightX": "52%",
-                "lightY": "34%",
-                "focalPoint": "50% 42%",
-                "afterSection": "location"
+              "name": "Gloria Paulina Soto Pérez",
+              "role": "Mamá"
             },
             {
-                "alt": "América de espalda con vestido rojo y globos de XV",
-                "image": "interlude02",
-                "height": "screen",
-                "lightX": "48%",
-                "lightY": "38%",
-                "focalPoint": "50% 42%",
-                "afterSection": "family"
-            },
-            {
-                "alt": "América en el jardín",
-                "image": "interlude03",
-                "height": "medium",
-                "lightX": "50%",
-                "lightY": "44%",
-                "focalPoint": "50% 50%",
-                "afterSection": "itinerary"
-            },
-            {
-                "alt": "América con vestido blanco y acentos color rojo",
-                "image": "interlude04",
-                "height": "screen",
-                "lightX": "46%",
-                "lightY": "38%",
-                "focalPoint": "50% 34%",
-                "afterSection": "rsvp"
+              "name": "Luz María Pérez Cardoso",
+              "role": "Abuelita"
             }
-        ],
-        "templateId": "xv-celestial-blue",
-        "description": "XV años de América Johana, con fotografía natural, vestido rojo, marfil cálido, verde profundo y acentos champagne.",
-        "eventTiming": {
-            "timeZone": "America/Mexico_City",
-            "startsAtUtc": "2026-08-29T23:30:00.000Z",
-            "localDateTime": "2026-08-29T17:30"
+          ],
+          "title": "Con todo mi amor"
+        }
+      ],
+      "labels": {
+        "parentsTitle": "Con todo mi amor",
+        "sectionTitle": "Con todo mi amor",
+        "sectionMessage": "Con el corazón lleno de gratitud, comparto esta noche con mi familia y con quienes han acompañado mi historia.",
+        "godparentsTitle": "Acompañada por sus padrinos",
+        "sectionSubtitle": "Mi familia"
+      },
+      "focalPoint": "50% 36%",
+      "godparents": [
+        {
+          "name": "Mónica Mayela Alcantar Molinar",
+          "role": "Madrina"
         },
-        "visualProfileId": "america-johana"
+        {
+          "name": "Rafael Luque Altamirano",
+          "role": "Padrino"
+        }
+      ],
+      "presentation": "with-photo",
+      "featuredImage": "family"
     },
-    "notes": "Sanitized render fixture: invitations identity + published_invitation_content only. No Auth, guests, RSVP, analytics, or drafts."
+    "isDemo": false,
+    "gallery": {
+      "items": [
+        {
+          "image": "gallery01",
+          "caption": "La actitud de un espíritu joven.",
+          "focalPoint": "50% 36%"
+        },
+        {
+          "image": "gallery02",
+          "caption": "Entre verde, rojo y luz.",
+          "focalPoint": "50% 35%"
+        },
+        {
+          "image": "gallery04",
+          "caption": "Celebrar rodeada de amigas.",
+          "focalPoint": "50% 42%"
+        },
+        {
+          "image": "gallery05",
+          "caption": "La alegría de compartir.",
+          "focalPoint": "50% 44%"
+        },
+        {
+          "image": "gallery06",
+          "caption": "Con mi familia.",
+          "focalPoint": "50% 36%"
+        },
+        {
+          "image": "gallery07",
+          "caption": "Un recuerdo con quienes me acompañan.",
+          "focalPoint": "52% 48%"
+        },
+        {
+          "image": "gallery08",
+          "caption": "Cariño que se queda.",
+          "focalPoint": "50% 42%"
+        },
+        {
+          "image": "gallery09",
+          "caption": "Amigos y familia en el jardín.",
+          "focalPoint": "50% 48%"
+        },
+        {
+          "image": "gallery10",
+          "caption": "La emoción antes de la gran noche.",
+          "focalPoint": "50% 46%"
+        }
+      ],
+      "title": "MOMENTOS QUE SE QUEDAN PARA SIEMPRE.",
+      "eyebrow": "UNA HISTORIA CONTADA EN FOTOS.",
+      "subtitle": "Junto a las personas que más quiero.",
+      "variant": "index-choreography"
+    },
+    "sharing": {
+      "ogImage": "portrait",
+      "ogDescription": "XV años • América Johana",
+      "shareMessages": {
+        "reminder": "Hola {{invitado}},\n\n{{hora_evento}}\n\n{{limite_confirmacion}}\n\n{{enlace}}",
+        "invitation": "Hola {name}, te comparto la invitación a los XV años de América Johana, estaremos felices de contar con su presencia.\n\n{inviteUrl}\n\n Ábrela y confirma tu asistencia. ¡Será un gusto verte!"
+      },
+      "reminderSettings": {
+        "enabled": true,
+        "audience": "all-shared",
+        "showWhenDaysBeforeEvent": 7
+      },
+      "whatsappTemplate": "Hola {name}, te comparto tu invitación a los XV América Johana\n\n{inviteUrl}\n\n Ábrela y confirma tu asistencia. ¡Será un gusto verte!"
+    },
+    "envelope": {
+      "disabled": false,
+      "sealIcon": "flower",
+      "cardLabel": "XV AÑOS · 2026",
+      "microcopy": "Abrir invitación",
+      "sealStyle": "wax",
+      "stampText": "América Johana",
+      "stampYear": "2026",
+      "coverIssue": "2026",
+      "cardTagline": "Una noche para recordar",
+      "coverVolume": "1",
+      "sealVariant": "premium-rose",
+      "coverEdition": "XV",
+      "sealInitials": "A·J",
+      "closedPalette": {
+        "accent": "actionAccent",
+        "primary": "surfaceDark",
+        "background": "surfaceDark"
+      },
+      "documentLabel": "XV AÑOS · 2026",
+      "revealVariant": "celestial-blue"
+    },
+    "location": {
+      "variant": "standard",
+      "presentationOptions": {
+        "showFlourishes": true
+      },
+      "introLede": "Será una alegría compartir contigo esta celebración.",
+      "indications": [
+        {
+          "text": "Código de vestimenta: <strong>formal</strong>. El color rojo está reservado para la quinceañera.",
+          "iconName": "DressCode",
+          "styleVariant": "reserved"
+        },
+        {
+          "text": "Acceso únicamente con pase. Aplica para adultos y niños.",
+          "iconName": "CheckSeal",
+          "styleVariant": "default"
+        }
+      ],
+      "introEyebrow": "Nos vemos en Ciudad de México",
+      "introHeading": "Sábado, 29 de agosto de 2026",
+      "indicationsHeading": "Detalles para mis invitados",
+      "venues": [
+        {
+          "city": "Ciudad de México",
+          "date": "29 de agosto de 2026",
+          "time": "5:30 p.m.",
+          "address": "Av. División del Nte. 3430, Xotepingo, Coyoacán",
+          "venueName": "Rectoría San Antonio de Padua",
+          "venueEvent": "Ceremonia",
+          "coordinates": {
+            "lat": 19.2759461,
+            "lng": -99.5176924
+          },
+          "googleMapsUrl": "https://maps.app.goo.gl/ViMYiHRgQ5HLaqGe8",
+          "type": "ceremony",
+          "isVisible": true
+        },
+        {
+          "city": "Ciudad de México",
+          "date": "29 de agosto de 2026",
+          "time": "8:00 p.m.",
+          "address": "División del Norte 4515 Prados Coapa, 3a. Sección, Tlalpan",
+          "venueName": "Gran Salón Del Prado",
+          "venueEvent": "Recepción",
+          "coordinates": {
+            "lat": 19.291035,
+            "lng": -99.1314772
+          },
+          "googleMapsUrl": "https://maps.app.goo.gl/6xwP3zGbBPEsrTjn9",
+          "type": "reception",
+          "isVisible": true
+        }
+      ],
+      "mapStyle": "dark"
+    },
+    "thankYou": {
+      "variant": "editorial-back-cover",
+      "image": "thankYouPortrait",
+      "message": "Gracias por acompañarme en mis XV años. Su presencia y cariño harán que esta noche sea un recuerdo para siempre.",
+      "focalPoint": "50% 34%",
+      "closingName": "América Johana"
+    },
+    "countdown": {
+      "variant": "standard",
+      "title": "La celebración comienza en",
+      "footerText": "Ciudad de México"
+    },
+    "eventType": "xv",
+    "itinerary": {
+      "variant": "timeline-paper",
+      "title": "Programa",
+      "items": [
+        {
+          "time": "17:30",
+          "label": "Ceremonia",
+          "iconName": "Church",
+          "description": "Misa de acción de gracias en la Rectoría San Antonio de Padua."
+        },
+        {
+          "time": "20:00",
+          "label": "Recepción",
+          "iconName": "Reception",
+          "description": "Recepción y celebración en Gran Salón Del Prado."
+        },
+        {
+          "time": "21:00",
+          "label": "Vals",
+          "iconName": "Waltz",
+          "description": "Un momento especial para celebrar mis XV años."
+        },
+        {
+          "time": "21:30",
+          "label": "Celebración",
+          "iconName": "Party",
+          "description": "Baile y convivencia con familia y amigos."
+        }
+      ]
+    },
+    "_assetSlug": "xv-america-johana",
+    "interludes": [
+      {
+        "alt": "América con globos dorados en el jardín",
+        "image": "interlude01",
+        "height": "screen",
+        "lightX": "52%",
+        "lightY": "34%",
+        "focalPoint": "50% 42%",
+        "afterSection": "location"
+      },
+      {
+        "alt": "América de espalda con vestido rojo y globos de XV",
+        "image": "interlude02",
+        "height": "screen",
+        "lightX": "48%",
+        "lightY": "38%",
+        "focalPoint": "50% 42%",
+        "afterSection": "family"
+      },
+      {
+        "alt": "América en el jardín",
+        "image": "interlude03",
+        "height": "medium",
+        "lightX": "50%",
+        "lightY": "44%",
+        "focalPoint": "50% 50%",
+        "afterSection": "itinerary"
+      },
+      {
+        "alt": "América con vestido blanco y acentos color rojo",
+        "image": "interlude04",
+        "height": "screen",
+        "lightX": "46%",
+        "lightY": "38%",
+        "focalPoint": "50% 34%",
+        "afterSection": "rsvp"
+      }
+    ],
+    "templateId": "xv-celestial-blue",
+    "description": "XV años de América Johana, con fotografía natural, vestido rojo, marfil cálido, verde profundo y acentos champagne.",
+    "eventTiming": {
+      "timeZone": "America/Mexico_City",
+      "startsAtUtc": "2026-08-29T23:30:00.000Z",
+      "localDateTime": "2026-08-29T17:30"
+    },
+    "visualProfileId": "america-johana"
+  },
+  "notes": "Sanitized render fixture: invitations identity + published_invitation_content only. No Auth, guests, RSVP, analytics, or drafts."
 }

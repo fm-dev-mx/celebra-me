@@ -1,243 +1,252 @@
 {
-    "eventType": "xv",
-    "isDemo": true,
-    "templateId": "xv-editorial-magazine",
-    "visualProfileId": "valentina-hernandez",
-    "_assetSlug": "demo-xv-editorial",
-    "title": "XV Años — Edición Valentina",
-    "description": "Demo visualmente idéntico a la invitación XV Valentina Hernández. Misma estructura editorial-magazine, mismo perfil visual, datos ficticios.",
-    "theme": {
-        "fontFamily": "serif",
-        "preset": "editorial-magazine"
+  "eventType": "xv",
+  "isDemo": true,
+  "templateId": "xv-editorial-magazine",
+  "visualProfileId": "valentina-hernandez",
+  "_assetSlug": "demo-xv-editorial",
+  "title": "XV Años — Edición Valentina",
+  "description": "Demo visualmente idéntico a la invitación XV Valentina Hernández. Misma estructura editorial-magazine, mismo perfil visual, datos ficticios.",
+  "theme": {
+    "fontFamily": "serif",
+    "preset": "editorial-magazine"
+  },
+  "sectionOrder": [
+    "quote",
+    "family",
+    "countdown",
+    "itinerary",
+    "location",
+    "gallery",
+    "gifts",
+    "personalizedAccess",
+    "rsvp",
+    "thankYou"
+  ],
+  "composition": {
+    "intersections": {}
+  },
+  "hero": {
+    "name": "Valentina Demo",
+    "label": "Edición XV",
+    "date": "2027-09-25T21:00:00.000Z",
+    "backgroundImage": "hero",
+    "portrait": "portrait",
+    "variant": "editorial-cover",
+    "focalPoint": "54% 38%",
+    "focalPointMobile": "52% 30%"
+  },
+  "quote": {
+    "text": "Dicen que los momentos más bellos se vuelven eternos cuando se comparten. Acompáñame a escribir el primer capítulo de mi nueva historia.",
+    "author": "Valentina Demo"
+  },
+  "countdown": {
+    "title": "Reserve la fecha",
+    "footerText": "25 de septiembre de 2027 · Ciudad de México",
+    "variant": "magazine-folio"
+  },
+  "family": {
+    "featuredImage": "family",
+    "parents": {
+      "father": "Carlos Demo",
+      "mother": "María Demo"
     },
-    "sectionOrder": [
-        "quote",
-        "family",
-        "countdown",
-        "itinerary",
-        "location",
-        "gallery",
-        "gifts",
-        "personalizedAccess",
-        "rsvp",
-        "thankYou"
+    "parentsOrder": "mother-first",
+    "labels": {
+      "sectionTitle": "Elenco familiar",
+      "sectionSubtitle": "Con amor y gratitud",
+      "parentsTitle": "Mis padres",
+      "godparentsTitle": "Padrinos",
+      "sectionMessage": "Gracias por hacer este sueño realidad y por acompañarme en cada paso de esta historia."
+    },
+    "godparents": [
+      {
+        "name": "Sofía García",
+        "role": "Madrina"
+      },
+      {
+        "name": "Roberto Martínez",
+        "role": "Padrino"
+      }
     ],
-    "composition": { "intersections": {} },
-    "hero": {
-        "name": "Valentina Demo",
-        "label": "Edición XV",
-        "date": "2027-09-25T21:00:00.000Z",
-        "backgroundImage": "hero",
-        "portrait": "portrait",
-        "variant": "editorial-cover",
-        "focalPoint": "54% 38%",
-        "focalPointMobile": "52% 30%"
+    "focalPoint": "50% 38%",
+    "variant": "standard"
+  },
+  "location": {
+    "introEyebrow": "Edición especial",
+    "introHeading": "Sábado, 25 de septiembre de 2027",
+    "introLede": "La celebración tendrá dos escenas principales: ceremonia y recepción.",
+    "indicationsHeading": "Notas de la edición",
+    "indications": [
+      {
+        "iconName": "DressCode",
+        "styleVariant": "reserved",
+        "title": "Código de vestimenta",
+        "text": "Código de vestimenta: <strong>formal</strong>."
+      },
+      {
+        "iconName": "Calendar",
+        "styleVariant": "default",
+        "title": "Confirmación",
+        "text": "Confirma tu asistencia antes del <strong>10 de septiembre de 2027</strong>."
+      },
+      {
+        "iconName": "Enveloped",
+        "styleVariant": "default",
+        "title": "Puntualidad",
+        "text": "Agradecemos tu puntualidad para disfrutar cada momento de esta edición especial."
+      }
+    ],
+    "variant": "standard",
+    "presentationOptions": {
+      "showFlourishes": false
     },
-    "quote": {
-        "text": "Dicen que los momentos más bellos se vuelven eternos cuando se comparten. Acompáñame a escribir el primer capítulo de mi nueva historia.",
-        "author": "Valentina Demo"
+    "venues": [
+      {
+        "venueEvent": "Ceremonia religiosa",
+        "venueName": "Parroquia de Santa Clara",
+        "address": "Av. Reforma 120, Ciudad de México",
+        "city": "Ciudad de México",
+        "date": "25 de septiembre de 2027",
+        "time": "5:00 p.m.",
+        "mapUrl": "https://www.google.com/maps/search/?api=1&query=Parroquia+de+Santa+Clara+Ciudad+de+Mexico",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Parroquia+de+Santa+Clara+Ciudad+de+Mexico",
+        "appleMapsUrl": "https://maps.apple.com/?q=Parroquia+de+Santa+Clara+Ciudad+de+Mexico",
+        "image": "gallery02",
+        "type": "ceremony",
+        "isVisible": true
+      },
+      {
+        "venueEvent": "Recepción",
+        "venueName": "Salón Diamante",
+        "address": "Av. de la Luz 456, Ciudad de México",
+        "city": "Ciudad de México",
+        "date": "25 de septiembre de 2027",
+        "time": "7:30 p.m.",
+        "mapUrl": "https://www.google.com/maps/search/?api=1&query=Salon+Diamante+Ciudad+de+Mexico",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Salon+Diamante+Ciudad+de+Mexico",
+        "appleMapsUrl": "https://maps.apple.com/?q=Salon+Diamante+Ciudad+de+Mexico",
+        "image": "jardin",
+        "type": "reception",
+        "isVisible": true
+      }
+    ],
+    "mapStyle": "dark"
+  },
+  "rsvp": {
+    "title": "Acceso a la celebración",
+    "subcopy": "Confirma tu asistencia y reserva tu pase para esta noche de edición limitada.",
+    "guestCap": 4,
+    "accessMode": "hybrid",
+    "confirmationMessage": "Tu acceso quedó confirmado. Gracias por ser parte de esta edición XV.",
+    "confirmationMode": "api",
+    "personalizedAccess": {
+      "variant": "editorial-pass"
     },
-    "countdown": {
-        "title": "Reserve la fecha",
-        "footerText": "25 de septiembre de 2027 · Ciudad de México",
-        "variant": "magazine-folio"
+    "variant": "editorial-press-pass"
+  },
+  "gallery": {
+    "variant": "magazine-spread",
+    "presentationOptions": {
+      "mobileBrowse": "rail"
     },
-    "family": {
-        "featuredImage": "family",
-        "parents": {
-            "father": "Carlos Demo",
-            "mother": "María Demo"
-        },
-        "parentsOrder": "mother-first",
-        "labels": {
-            "sectionTitle": "Elenco familiar",
-            "sectionSubtitle": "Con amor y gratitud",
-            "parentsTitle": "Mis padres",
-            "godparentsTitle": "Padrinos",
-            "sectionMessage": "Gracias por hacer este sueño realidad y por acompañarme en cada paso de esta historia."
-        },
-        "godparents": [
-            {
-                "name": "Sofía García",
-                "role": "Madrina"
-            },
-            {
-                "name": "Roberto Martínez",
-                "role": "Padrino"
-            }
-        ],
-        "focalPoint": "50% 38%",
-        "variant": "standard"
-    },
-    "location": {
-        "introEyebrow": "Edición especial",
-        "introHeading": "Sábado, 25 de septiembre de 2027",
-        "introLede": "La celebración tendrá dos escenas principales: ceremonia y recepción.",
-        "indicationsHeading": "Notas de la edición",
-        "ceremony": {
-            "venueEvent": "Ceremonia religiosa",
-            "venueName": "Parroquia de Santa Clara",
-            "address": "Av. Reforma 120, Ciudad de México",
-            "city": "Ciudad de México",
-            "date": "25 de septiembre de 2027",
-            "time": "5:00 p.m.",
-            "mapUrl": "https://www.google.com/maps/search/?api=1&query=Parroquia+de+Santa+Clara+Ciudad+de+Mexico",
-            "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Parroquia+de+Santa+Clara+Ciudad+de+Mexico",
-            "appleMapsUrl": "https://maps.apple.com/?q=Parroquia+de+Santa+Clara+Ciudad+de+Mexico",
-            "image": "gallery02"
-        },
-        "reception": {
-            "venueEvent": "Recepción",
-            "venueName": "Salón Diamante",
-            "address": "Av. de la Luz 456, Ciudad de México",
-            "city": "Ciudad de México",
-            "date": "25 de septiembre de 2027",
-            "time": "7:30 p.m.",
-            "mapUrl": "https://www.google.com/maps/search/?api=1&query=Salon+Diamante+Ciudad+de+Mexico",
-            "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Salon+Diamante+Ciudad+de+Mexico",
-            "appleMapsUrl": "https://maps.apple.com/?q=Salon+Diamante+Ciudad+de+Mexico",
-            "image": "jardin"
-        },
-        "indications": [
-            {
-                "iconName": "DressCode",
-                "styleVariant": "reserved",
-                "title": "Código de vestimenta",
-                "text": "Código de vestimenta: <strong>formal</strong>."
-            },
-            {
-                "iconName": "Calendar",
-                "styleVariant": "default",
-                "title": "Confirmación",
-                "text": "Confirma tu asistencia antes del <strong>10 de septiembre de 2027</strong>."
-            },
-            {
-                "iconName": "Enveloped",
-                "styleVariant": "default",
-                "title": "Puntualidad",
-                "text": "Agradecemos tu puntualidad para disfrutar cada momento de esta edición especial."
-            }
-        ],
-        "variant": "standard",
-        "presentationOptions": {
-            "showFlourishes": false
-        }
-    },
-    "rsvp": {
-        "title": "Acceso a la celebración",
-        "subcopy": "Confirma tu asistencia y reserva tu pase para esta noche de edición limitada.",
-        "guestCap": 4,
-        "accessMode": "hybrid",
-        "confirmationMessage": "Tu acceso quedó confirmado. Gracias por ser parte de esta edición XV.",
-        "confirmationMode": "api",
-        "personalizedAccess": {
-            "variant": "editorial-pass"
-        },
-        "variant": "editorial-press-pass"
-    },
-    "gallery": {
-        "variant": "magazine-spread",
-        "presentationOptions": {
-            "mobileBrowse": "rail"
-        },
-        "eyebrow": "Galería",
-        "title": "Galería editorial",
-        "subtitle": "Una selección visual con retratos, detalles y escenas de celebración.",
-        "items": [
-            {
-                "image": "gallery01",
-                "caption": "Portada — retrato principal"
-            },
-            {
-                "image": "gallery02",
-                "caption": "Interior — detalles del gran día"
-            },
-            {
-                "image": "gallery03",
-                "caption": "Locación — la recepción"
-            },
-            {
-                "image": "gallery04",
-                "caption": "Bodegón — texturas y luces"
-            },
-            {
-                "image": "gallery05",
-                "caption": "Nocturno — brillo de celebración"
-            }
+    "eyebrow": "Galería",
+    "title": "Galería editorial",
+    "subtitle": "Una selección visual con retratos, detalles y escenas de celebración.",
+    "items": [
+      {
+        "image": "gallery01",
+        "caption": "Portada — retrato principal"
+      },
+      {
+        "image": "gallery02",
+        "caption": "Interior — detalles del gran día"
+      },
+      {
+        "image": "gallery03",
+        "caption": "Locación — la recepción"
+      },
+      {
+        "image": "gallery04",
+        "caption": "Bodegón — texturas y luces"
+      },
+      {
+        "image": "gallery05",
+        "caption": "Nocturno — brillo de celebración"
+      }
+    ]
+  },
+  "gifts": {
+    "title": "Guía de regalos",
+    "subtitle": "Tu presencia es el regalo más importante. Si deseas tener un detalle adicional, aquí compartimos algunas opciones.",
+    "items": [
+      {
+        "type": "store",
+        "title": "Mesa de regalos",
+        "description": "Una selección especial para esta nueva etapa.",
+        "links": [
+          {
+            "label": "Ver mesa",
+            "url": "https://mesaderegalos.liverpool.com.mx/"
+          }
         ]
-    },
-    "gifts": {
-        "title": "Guía de regalos",
-        "subtitle": "Tu presencia es el regalo más importante. Si deseas tener un detalle adicional, aquí compartimos algunas opciones.",
-        "items": [
-            {
-                "type": "store",
-                "title": "Mesa de regalos",
-                "description": "Una selección especial para esta nueva etapa.",
-                "links": [
-                    {
-                        "label": "Ver mesa",
-                        "url": "https://mesaderegalos.liverpool.com.mx/"
-                    }
-                ]
-            },
-            {
-                "type": "cash",
-                "title": "Lluvia de sobres",
-                "text": "Se proporcionará un sobre el día del evento."
-            }
-        ],
-        "variant": "editorial-catalog"
-    },
-    "thankYou": {
-        "message": "Gracias por acompañarme en una noche hecha de estilo, alegría y recuerdos para siempre.",
-        "closingName": "Valentina Demo",
-        "image": "thankYouPortrait",
-        "focalPoint": "50% 36%",
-        "variant": "editorial-back-cover"
-    },
-    "interludes": [
-        {
-            "image": "interlude02",
-            "afterSection": "location",
-            "alt": "Retrato editorial con contraste rojo y negro",
-            "height": "screen"
-        },
-        {
-            "image": "interlude03",
-            "afterSection": "family",
-            "alt": "Detalle editorial de celebración XV",
-            "height": "screen"
-        },
-        {
-            "image": "interlude04",
-            "afterSection": "rsvp",
-            "alt": "Cierre visual de revista editorial",
-            "height": "screen"
-        }
+      },
+      {
+        "type": "cash",
+        "title": "Lluvia de sobres",
+        "text": "Se proporcionará un sobre el día del evento."
+      }
     ],
-    "envelope": {
-        "disabled": false,
-        "revealVariant": "editorial-cover",
-        "coverEdition": "XV",
-        "coverVolume": "1",
-        "coverIssue": "2027",
-        "sealStyle": "wax",
-        "sealIcon": "flower",
-        "sealInitials": "V·D",
-        "microcopy": "Abrir edición XV",
-        "documentLabel": "Edición especial",
-        "stampText": "Valentina Demo",
-        "stampYear": "2027",
-        "closedPalette": {
-            "primary": "surfaceDark",
-            "accent": "actionAccent",
-            "background": "surfaceDark"
-        }
+    "variant": "editorial-catalog"
+  },
+  "thankYou": {
+    "message": "Gracias por acompañarme en una noche hecha de estilo, alegría y recuerdos para siempre.",
+    "closingName": "Valentina Demo",
+    "image": "thankYouPortrait",
+    "focalPoint": "50% 36%",
+    "variant": "editorial-back-cover"
+  },
+  "interludes": [
+    {
+      "image": "interlude02",
+      "afterSection": "location",
+      "alt": "Retrato editorial con contraste rojo y negro",
+      "height": "screen"
     },
-    "sharing": {
-        "whatsappTemplate": "Hola {name}, te comparto con mucha ilusión la invitación: {inviteUrl}",
-        "ogImage": "portrait",
-        "ogDescription": "Demo visual de invitación XV con estilo editorial-magazine en tonos rosa, plata y blanco."
+    {
+      "image": "interlude03",
+      "afterSection": "family",
+      "alt": "Detalle editorial de celebración XV",
+      "height": "screen"
+    },
+    {
+      "image": "interlude04",
+      "afterSection": "rsvp",
+      "alt": "Cierre visual de revista editorial",
+      "height": "screen"
     }
+  ],
+  "envelope": {
+    "disabled": false,
+    "revealVariant": "editorial-cover",
+    "coverEdition": "XV",
+    "coverVolume": "1",
+    "coverIssue": "2027",
+    "sealStyle": "wax",
+    "sealIcon": "flower",
+    "sealInitials": "V·D",
+    "microcopy": "Abrir edición XV",
+    "documentLabel": "Edición especial",
+    "stampText": "Valentina Demo",
+    "stampYear": "2027",
+    "closedPalette": {
+      "primary": "surfaceDark",
+      "accent": "actionAccent",
+      "background": "surfaceDark"
+    }
+  },
+  "sharing": {
+    "whatsappTemplate": "Hola {name}, te comparto con mucha ilusión la invitación: {inviteUrl}",
+    "ogImage": "portrait",
+    "ogDescription": "Demo visual de invitación XV con estilo editorial-magazine en tonos rosa, plata y blanco."
+  }
 }
