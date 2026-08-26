@@ -256,6 +256,8 @@ export function buildRenataPublishedContent(
 		},
 		location: {
 			variant: 'stacked-venue-plates',
+
+			mapStyle: 'dark',
 			visibility: 'public',
 			presentation: 'simple',
 			presentationOptions: {
@@ -265,26 +267,30 @@ export function buildRenataPublishedContent(
 			indicationsHeading: 'Indicaciones',
 			introEyebrow: 'SÁBADO · 5 DE SEPTIEMBRE DE 2026',
 			introHeading: 'Misa y recepción',
-			ceremony: {
-				venueEvent: 'Misa',
-				venueName: 'Parroquia Santa Inés',
-				address: CEREMONY_ADDRESS,
-				city: 'Culiacán, Sinaloa',
-				date: EVENT_DATE_LONG,
-				time: '5:00 p. m.',
-				mapUrl: CEREMONY_MAP_URL,
-				googleMapsUrl: CEREMONY_MAP_URL,
-			},
-			reception: {
-				venueEvent: 'Recepción',
-				venueName: 'InHouse Select · Hacienda Tres Ríos',
-				address: RECEPTION_ADDRESS,
-				city: 'Culiacán, Sinaloa',
-				date: EVENT_DATE_LONG,
-				time: '7:00 p. m.',
-				mapUrl: RECEPTION_MAP_URL,
-				googleMapsUrl: RECEPTION_MAP_URL,
-			},
+			venues: [
+				{
+					type: 'ceremony',
+					venueEvent: 'Misa',
+					venueName: 'Parroquia Santa Inés',
+					address: CEREMONY_ADDRESS,
+					city: 'Culiacán, Sinaloa',
+					date: EVENT_DATE_LONG,
+					time: '5:00 p. m.',
+					mapUrl: CEREMONY_MAP_URL,
+					googleMapsUrl: CEREMONY_MAP_URL,
+				},
+				{
+					type: 'reception',
+					venueEvent: 'Recepción',
+					venueName: 'InHouse Select · Hacienda Tres Ríos',
+					address: RECEPTION_ADDRESS,
+					city: 'Culiacán, Sinaloa',
+					date: EVENT_DATE_LONG,
+					time: '7:00 p. m.',
+					mapUrl: RECEPTION_MAP_URL,
+					googleMapsUrl: RECEPTION_MAP_URL,
+				},
+			],
 			indications: [
 				{
 					text: 'Código de vestimenta: formal.',

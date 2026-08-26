@@ -308,23 +308,28 @@ export function buildLesliePublishedContent(
 		},
 		location: {
 			variant: 'split-map',
+
+			mapStyle: 'dark',
 			visibility: 'public',
 			presentation: 'with-photo',
 			introEyebrow: 'SÁBADO · 26 DE SEPTIEMBRE DE 2026',
 			introHeading: 'Recepción',
-			reception: {
-				venueEvent: 'Recepción',
-				venueName: 'San Carlos Eventos',
-				address: VENUE_ADDRESS,
-				city: 'Apodaca, Nuevo León',
-				date: EVENT_DATE_LONG,
-				time: EVENT_TIME_DISPLAY,
-				mapUrl: VENUE_MAP_URL,
-				googleMapsUrl: VENUE_MAP_URL,
-				coordinates: { lat: 25.7444444, lng: -100.1725 },
-				image: assets['venue-san-carlos'],
-				focalPoint: '50% 50%',
-			},
+			venues: [
+				{
+					type: 'reception',
+					venueEvent: 'Recepción',
+					venueName: 'San Carlos Eventos',
+					address: VENUE_ADDRESS,
+					city: 'Apodaca, Nuevo León',
+					date: EVENT_DATE_LONG,
+					time: EVENT_TIME_DISPLAY,
+					mapUrl: VENUE_MAP_URL,
+					googleMapsUrl: VENUE_MAP_URL,
+					coordinates: { lat: 25.7444444, lng: -100.1725 },
+					image: assets['venue-san-carlos'],
+					focalPoint: '50% 50%',
+				},
+			],
 			indications: [
 				{
 					text: 'Código de vestimenta: formal.',

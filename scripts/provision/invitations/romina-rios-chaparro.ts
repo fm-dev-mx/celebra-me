@@ -222,39 +222,45 @@ export function buildRominaPublishedContent(
 		},
 		location: {
 			variant: 'standard',
+
+			mapStyle: 'dark',
 			visibility: 'public',
 			introEyebrow: 'VIERNES · 14 DE AGOSTO DE 2026',
 			introHeading: 'Ceremonia y recepción',
-			ceremony: {
-				venueEvent: 'Ceremonia',
-				venueName: 'Catedral de Nuestra Señora de la Medalla Milagrosa',
-				address: ceremonyAddress,
-				city: 'Nuevo Casas Grandes, Chihuahua',
-				date: '14 de agosto de 2026',
-				time: '5:00 p. m.',
-				mapUrl: googleMapsSearch(ceremonyQuery),
-				googleMapsUrl: googleMapsSearch(ceremonyQuery),
-				appleMapsUrl: appleMapsSearch(ceremonyQuery),
-				coordinates: {
-					lat: 30.4162552,
-					lng: -107.9141371,
+			venues: [
+				{
+					type: 'ceremony',
+					venueEvent: 'Ceremonia',
+					venueName: 'Catedral de Nuestra Señora de la Medalla Milagrosa',
+					address: ceremonyAddress,
+					city: 'Nuevo Casas Grandes, Chihuahua',
+					date: '14 de agosto de 2026',
+					time: '5:00 p. m.',
+					mapUrl: googleMapsSearch(ceremonyQuery),
+					googleMapsUrl: googleMapsSearch(ceremonyQuery),
+					appleMapsUrl: appleMapsSearch(ceremonyQuery),
+					coordinates: {
+						lat: 30.4162552,
+						lng: -107.9141371,
+					},
 				},
-			},
-			reception: {
-				venueEvent: 'Recepción',
-				venueName: 'Gabro Jardín de Eventos',
-				address: receptionAddress,
-				city: 'Nuevo Casas Grandes, Chihuahua',
-				date: '14 de agosto de 2026',
-				time: '8:30 p. m.',
-				mapUrl: googleMapsSearch(receptionQuery),
-				googleMapsUrl: googleMapsSearch(receptionQuery),
-				appleMapsUrl: appleMapsSearch(receptionQuery),
-				coordinates: {
-					lat: 30.4207812,
-					lng: -107.8944895,
+				{
+					type: 'reception',
+					venueEvent: 'Recepción',
+					venueName: 'Gabro Jardín de Eventos',
+					address: receptionAddress,
+					city: 'Nuevo Casas Grandes, Chihuahua',
+					date: '14 de agosto de 2026',
+					time: '8:30 p. m.',
+					mapUrl: googleMapsSearch(receptionQuery),
+					googleMapsUrl: googleMapsSearch(receptionQuery),
+					appleMapsUrl: appleMapsSearch(receptionQuery),
+					coordinates: {
+						lat: 30.4207812,
+						lng: -107.8944895,
+					},
 				},
-			},
+			],
 			indications: [
 				{
 					text: 'Código de vestimenta: Formal',

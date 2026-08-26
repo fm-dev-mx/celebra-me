@@ -210,24 +210,28 @@ export function buildAlbaPublishedContent(
 		location: {
 			visibility: 'public',
 			variant: 'split-map',
+			mapStyle: 'dark',
 			presentationOptions: { showFlourishes: false },
 			introEyebrow: '12 DE SEPTIEMBRE DE 2026',
-			reception: {
-				venueEvent: 'Celebración',
-				venueName: 'Canta Luna Campestre',
-				address: venueAddress,
-				city: 'Los Mochis, Sinaloa',
-				date: '12 de septiembre de 2026',
-				time: '8:00 p. m.',
-				mapUrl: mapsSearchUrl,
-				googleMapsUrl: mapsSearchUrl,
-				appleMapsUrl: 'https://maps.apple.com/?q=Canta+Luna+Campestre+Los+Mochis+Sinaloa',
-				coordinates: {
-					lat: 25.833891,
-					lng: -109.052681,
-					zoom: 15,
+			venues: [
+				{
+					type: 'reception',
+					venueEvent: 'Celebración',
+					venueName: 'Canta Luna Campestre',
+					address: venueAddress,
+					city: 'Los Mochis, Sinaloa',
+					date: '12 de septiembre de 2026',
+					time: '8:00 p. m.',
+					mapUrl: mapsSearchUrl,
+					googleMapsUrl: mapsSearchUrl,
+					appleMapsUrl: 'https://maps.apple.com/?q=Canta+Luna+Campestre+Los+Mochis+Sinaloa',
+					coordinates: {
+						lat: 25.833891,
+						lng: -109.052681,
+						zoom: 15,
+					},
 				},
-			},
+			],
 			indications: [
 				{
 					iconName: 'DressCode',

@@ -202,6 +202,7 @@ export function buildDanielaPublishedContent(
 		location: {
 			variant: 'stacked-venue-plates',
 			visibility: 'public',
+			mapStyle: 'dark',
 			// Twin venue chapters with illustrated plates; geometry is section-owned.
 			// With showNavigationButtons=false, VenueCard uses the linked map-preview surface.
 			presentation: 'simple',

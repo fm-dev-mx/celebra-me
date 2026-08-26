@@ -245,41 +245,46 @@ export function buildAbrilPublishedContent(
 		location: {
 			variant: 'standard',
 			visibility: 'public',
+			mapStyle: 'dark',
 			introEyebrow: 'SÁBADO · 12 DE SEPTIEMBRE DE 2026',
 			introHeading: 'De la fe al brindis',
-			ceremony: {
-				venueEvent: 'Ceremonia de acción de gracias',
-				venueName: 'Templo y Ex Convento de Nuestra Señora de la Merced',
-				address: ceremonyAddress,
-				city: 'Lagos de Moreno, Jalisco',
-				date: '12 de septiembre de 2026',
-				time: '3:00 p. m.',
-				mapUrl: 'https://maps.app.goo.gl/PKbLyRbrjiLfcc4C6',
-				googleMapsUrl: 'https://maps.app.goo.gl/PKbLyRbrjiLfcc4C6',
-				appleMapsUrl:
-					'https://maps.apple.com/?q=Templo+y+Ex+Convento+de+Nuestra+Senora+de+la+Merced+Lagos+de+Moreno',
-				coordinates: {
-					lat: 21.3542979,
-					lng: -101.9320163,
-					zoom: 16,
+			venues: [
+				{
+					type: 'ceremony',
+					venueEvent: 'Ceremonia de acción de gracias',
+					venueName: 'Templo y Ex Convento de Nuestra Señora de la Merced',
+					address: ceremonyAddress,
+					city: 'Lagos de Moreno, Jalisco',
+					date: '12 de septiembre de 2026',
+					time: '3:00 p. m.',
+					mapUrl: 'https://maps.app.goo.gl/PKbLyRbrjiLfcc4C6',
+					googleMapsUrl: 'https://maps.app.goo.gl/PKbLyRbrjiLfcc4C6',
+					appleMapsUrl:
+						'https://maps.apple.com/?q=Templo+y+Ex+Convento+de+Nuestra+Senora+de+la+Merced+Lagos+de+Moreno',
+					coordinates: {
+						lat: 21.3542979,
+						lng: -101.9320163,
+						zoom: 16,
+					},
 				},
-			},
-			reception: {
-				venueEvent: 'Recepción y celebración',
-				venueName: 'Garden Palace',
-				address: receptionAddress,
-				city: 'Lagos de Moreno, Jalisco',
-				date: '12 de septiembre de 2026',
-				time: '5:00 p. m.',
-				mapUrl: 'https://maps.app.goo.gl/EbgZsEcrjTSmD9wK6',
-				googleMapsUrl: 'https://maps.app.goo.gl/EbgZsEcrjTSmD9wK6',
-				appleMapsUrl: 'https://maps.apple.com/?q=Garden+Palace+Lagos+de+Moreno',
-				coordinates: {
-					lat: 21.3206241,
-					lng: -101.9328009,
-					zoom: 16,
+				{
+					type: 'reception',
+					venueEvent: 'Recepción y celebración',
+					venueName: 'Garden Palace',
+					address: receptionAddress,
+					city: 'Lagos de Moreno, Jalisco',
+					date: '12 de septiembre de 2026',
+					time: '5:00 p. m.',
+					mapUrl: 'https://maps.app.goo.gl/EbgZsEcrjTSmD9wK6',
+					googleMapsUrl: 'https://maps.app.goo.gl/EbgZsEcrjTSmD9wK6',
+					appleMapsUrl: 'https://maps.apple.com/?q=Garden+Palace+Lagos+de+Moreno',
+					coordinates: {
+						lat: 21.3206241,
+						lng: -101.9328009,
+						zoom: 16,
+					},
 				},
-			},
+			],
 			indications: [
 				{
 					text: 'El <strong>color rosa palo</strong> está reservado para la quinceañera.',

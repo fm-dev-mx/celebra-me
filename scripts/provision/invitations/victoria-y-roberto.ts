@@ -234,6 +234,7 @@ export function buildVictoriaPublishedContent(
 		},
 		location: {
 			visibility: 'public',
+			mapStyle: 'dark',
 			// Twin venue chapters with illustrated plates; geometry is section-owned.
 			// 'simple' forces the illustrated plate presentation.
 			variant: 'stacked-venue-plates',

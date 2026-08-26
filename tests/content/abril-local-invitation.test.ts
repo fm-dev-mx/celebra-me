@@ -126,20 +126,14 @@ describe('Abril Michelle local invitation content', () => {
 		const typedContent = content as {
 			hero: { portrait?: unknown; backgroundImage?: unknown };
 			location: {
-				ceremony: {
-					coordinates: unknown;
-					googleMapsUrl: string;
-					appleMapsUrl: string;
+				venues: Array<{
+					type: string;
+					coordinates?: unknown;
+					googleMapsUrl?: string;
+					appleMapsUrl?: string;
 					venueName: string;
 					address: string;
-				};
-				reception: {
-					coordinates: unknown;
-					googleMapsUrl: string;
-					appleMapsUrl: string;
-					venueName: string;
-					address: string;
-				};
+				}>;
 			};
 			family: {
 				parents: { mother: string; father: string };
@@ -166,18 +160,21 @@ describe('Abril Michelle local invitation content', () => {
 		expect(typedContent.family.godparents[0].name).toBe('María del Carmen Becerra Ornelas');
 		expect(typedContent.family.godparents[1].name).toBe('Ramiro Contreras Bermejo');
 
-		expect(typedContent.location.ceremony.venueName).toBe(
+		const ceremonyVenue = typedContent.location.venues.find((v) => v.type === 'ceremony')!;
+		const receptionVenue = typedContent.location.venues.find((v) => v.type === 'reception')!;
+
+		expect(ceremonyVenue.venueName).toBe(
 			'Templo y Ex Convento de Nuestra Señora de la Merced',
 		);
-		expect(typedContent.location.reception.venueName).toBe('Garden Palace');
-		expect(typedContent.location.reception.address).toContain('Macedio Ayala');
+		expect(receptionVenue.venueName).toBe('Garden Palace');
+		expect(receptionVenue.address).toContain('Macedio Ayala');
 
-		expect(typedContent.location.ceremony.coordinates).toEqual({
+		expect(ceremonyVenue.coordinates).toEqual({
 			lat: 21.3542979,
 			lng: -101.9320163,
 			zoom: 16,
 		});
-		expect(typedContent.location.reception.coordinates).toEqual({
+		expect(receptionVenue.coordinates).toEqual({
 			lat: 21.3206241,
 			lng: -101.9328009,
 			zoom: 16,
@@ -229,8 +226,8 @@ describe('Abril Michelle local invitation content', () => {
 			url: expect.stringMatching(/^https:\/\//),
 		});
 		expect(content).toHaveProperty('gifts');
-		expect(typedContent.location.ceremony.googleMapsUrl).toMatch(/^https:\/\//);
-		expect(typedContent.location.reception.googleMapsUrl).toMatch(/^https:\/\//);
+		expect(ceremonyVenue.googleMapsUrl).toMatch(/^https:\/\//);
+		expect(receptionVenue.googleMapsUrl).toMatch(/^https:\/\//);
 	});
 
 	it('builds a public page context from uploaded images without errors', () => {

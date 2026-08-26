@@ -247,28 +247,34 @@ export function buildValentinaPublishedContent(
 		},
 		location: {
 			variant: 'standard',
+
+			mapStyle: 'dark',
 			introEyebrow: 'Te esperamos en Texcoco',
 			introHeading: 'Sábado, 29 de agosto de 2026',
 			introLede: 'Será una alegría compartir contigo esta celebración.',
 			indicationsHeading: 'Detalles para mis invitados',
-			ceremony: {
-				venueEvent: 'Ceremonia religiosa',
-				venueName: VENUE_NAME,
-				address: VENUE_ADDRESS,
-				city: VENUE_CITY,
-				date: VALENTINA_EVENT.eventDateLong,
-				time: '3:45 p.m.',
-				googleMapsUrl: MAPS_URL,
-			},
-			reception: {
-				venueEvent: 'Recepción',
-				venueName: VENUE_NAME,
-				address: VENUE_ADDRESS,
-				city: VENUE_CITY,
-				date: VALENTINA_EVENT.eventDateLong,
-				time: '4:30 p.m.',
-				googleMapsUrl: MAPS_URL,
-			},
+			venues: [
+				{
+					type: 'ceremony',
+					venueEvent: 'Ceremonia religiosa',
+					venueName: VENUE_NAME,
+					address: VENUE_ADDRESS,
+					city: VENUE_CITY,
+					date: VALENTINA_EVENT.eventDateLong,
+					time: '3:45 p.m.',
+					googleMapsUrl: MAPS_URL,
+				},
+				{
+					type: 'reception',
+					venueEvent: 'Recepción',
+					venueName: VENUE_NAME,
+					address: VENUE_ADDRESS,
+					city: VENUE_CITY,
+					date: VALENTINA_EVENT.eventDateLong,
+					time: '4:30 p.m.',
+					googleMapsUrl: MAPS_URL,
+				},
+			],
 			indications: [
 				{
 					title: 'Código de vestimenta',
