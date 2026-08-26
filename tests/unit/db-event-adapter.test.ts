@@ -90,7 +90,7 @@ describe('adaptDbEvent', () => {
 		const result = adaptDbEvent(source);
 
 		expect(result.sections.location).toBeDefined();
-		expect(result.sections.location?.ceremony).toBeDefined();
+		expect(result.sections.location?.venues?.find((venue) => venue.type === 'ceremony')).toBeDefined();
 	});
 
 	it('preserves music section when present in content', () => {

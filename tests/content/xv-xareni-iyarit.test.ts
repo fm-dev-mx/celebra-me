@@ -85,8 +85,8 @@ describe('XV Xareni Iyarit client invitation preparation', () => {
 			expect(Object.hasOwn(result.data, 'music')).toBe(false);
 			expect(result.data.rsvp?.accessMode).toBe('hybrid');
 			expect(result.data.rsvp?.confirmationMode).toBe('api');
-			expect(result.data.location?.ceremony?.image).toBeUndefined();
-			expect(result.data.location?.reception?.image).toBeUndefined();
+			expect(result.data.location?.venues?.find((venue) => venue.type === 'ceremony')?.image).toBeUndefined();
+			expect(result.data.location?.venues?.find((venue) => venue.type === 'reception')?.image).toBeUndefined();
 			expect(payload.itinerary.variant).toBe('timeline-paper');
 			expect(payload.gallery.variant).toBe('index-choreography');
 			expect(payload.thankYou.variant).toBe('editorial-back-cover');

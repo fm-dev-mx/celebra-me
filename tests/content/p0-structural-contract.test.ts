@@ -105,8 +105,10 @@ function resolveStructuralCss(input: {
 	});
 	return resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
 		themePreset: input.themePreset,
-		galleryVariant: input.galleryVariant,
-		sectionVariants: { itinerary: input.itineraryVariant },
+		sectionVariants: {
+			itinerary: input.itineraryVariant,
+			gallery: input.galleryVariant,
+		},
 	});
 }
 

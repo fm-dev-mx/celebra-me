@@ -16,15 +16,19 @@ describe('GET /api/invitacion/[inviteId]/location', () => {
 			location: {
 				variant: 'standard',
 				visibility: 'after-rsvp',
+				mapStyle: 'dark',
 				introHeading: 'Ubicación',
-				ceremony: {
-					venueEvent: 'Celebración',
-					venueName: 'Salón García',
-					address: 'Victoriano Huerta 51, Col. San Francisco, Uruapan',
-					date: '2026-08-01',
-					time: '14:00',
-					googleMapsUrl: 'https://maps.example.com/salon-garcia',
-				},
+				venues: [
+					{
+						type: 'reception',
+						venueEvent: 'Celebración',
+						venueName: 'Salón García',
+						address: 'Victoriano Huerta 51, Col. San Francisco, Uruapan',
+						date: '2026-08-01',
+						time: '14:00',
+						googleMapsUrl: 'https://maps.example.com/salon-garcia',
+					},
+				],
 			},
 		});
 
@@ -45,7 +49,7 @@ describe('GET /api/invitacion/[inviteId]/location', () => {
 			data: {
 				location: {
 					introHeading: 'Ubicación',
-					ceremony: { venueName: 'Salón García' },
+					venues: [{ venueName: 'Salón García' }],
 				},
 			},
 		});

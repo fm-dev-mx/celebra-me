@@ -47,23 +47,28 @@ describe('buildCalendarEventInput', () => {
 		expect(result!.location).toBeUndefined();
 	});
 
-	it('includes location from revealedLocation with ceremony venue', () => {
+	it('includes location from the canonical venue collection', () => {
 		const revealedLocation = {
 			visibility: 'after-rsvp' as const,
-			ceremony: {
-				venueEvent: 'Ceremonia',
-				venueName: 'Salón García',
-				address: 'Victoriano Huerta 51',
-				date: '12 de diciembre de 2026',
-				time: '18:00',
-				googleMapsUrl: 'https://maps.example.com',
-			},
+			variant: 'standard' as const,
+			mapStyle: 'dark' as const,
+			venues: [
+				{
+					type: 'ceremony',
+					venueEvent: 'Ceremonia',
+					venueName: 'Salón García',
+					address: 'Victoriano Huerta 51',
+					date: '12 de diciembre de 2026',
+					time: '18:00',
+					googleMapsUrl: 'https://maps.example.com',
+				},
+			],
 		};
 
 		const result = buildCalendarEventInput({
 			title,
 			startsAt,
-			revealedLocation: revealedLocation as LocationSection,
+			revealedLocation,
 		});
 		expect(result!.location).toBeDefined();
 		expect(result!.location!.venueName).toBe('Salón García');
@@ -74,6 +79,8 @@ describe('buildCalendarEventInput', () => {
 	it('includes location from revealedLocation with venues array', () => {
 		const revealedLocation = {
 			visibility: 'public' as const,
+			variant: 'standard' as const,
+			mapStyle: 'dark' as const,
 			venues: [
 				{
 					id: 'v1',
@@ -99,23 +106,21 @@ describe('buildCalendarEventInput', () => {
 		expect(result!.location!.mapsUrl).toBe('https://maps.example.com/iglesia');
 	});
 
-	it('prefers reception over ceremony when venues array is absent', () => {
+	it('uses the first visible canonical venue', () => {
 		const revealedLocation = {
 			visibility: 'public' as const,
-			ceremony: {
-				venueEvent: 'Misa',
-				venueName: 'Templo',
-				address: 'Centro 1',
-				date: '12 de septiembre de 2026',
-				time: '3:00 p. m.',
-			},
-			reception: {
-				venueEvent: 'Recepción',
-				venueName: 'Garden Palace',
-				address: 'Macedio Ayala núm. 70',
-				date: '12 de septiembre de 2026',
-				time: '5:00 p. m.',
-			},
+			variant: 'standard' as const,
+			mapStyle: 'dark' as const,
+			venues: [
+				{
+					type: 'reception',
+					venueEvent: 'Recepción',
+					venueName: 'Garden Palace',
+					address: 'Macedio Ayala núm. 70',
+					date: '12 de septiembre de 2026',
+					time: '5:00 p. m.',
+				},
+			],
 		};
 
 		const result = buildCalendarEventInput({
@@ -138,10 +143,21 @@ describe('buildCalendarEventInput', () => {
 		});
 	});
 
-	it('prefers venue data from venues array over ceremony/reception', () => {
+	it('ignores hidden venues when selecting calendar location', () => {
 		const revealedLocation = {
 			visibility: 'public' as const,
+			variant: 'standard' as const,
+			mapStyle: 'dark' as const,
 			venues: [
+				{
+					id: 'hidden',
+					venueEvent: 'Ceremonia',
+					venueName: 'Iglesia',
+					address: 'Calle 123',
+					date: '12 de diciembre de 2026',
+					time: '18:00',
+					isVisible: false,
+				},
 				{
 					id: 'v1',
 					venueEvent: 'Recepción',
@@ -154,20 +170,6 @@ describe('buildCalendarEventInput', () => {
 					sortOrder: 0,
 				},
 			],
-			ceremony: {
-				venueEvent: 'Ceremonia',
-				venueName: 'Iglesia',
-				address: 'Calle 123',
-				date: '12 de diciembre de 2026',
-				time: '18:00',
-			},
-			reception: {
-				venueEvent: 'Recepción',
-				venueName: 'Otro Salón',
-				address: 'Otra dirección',
-				date: '12 de diciembre de 2026',
-				time: '20:00',
-			},
 		};
 
 		const result = buildCalendarEventInput({
@@ -181,14 +183,19 @@ describe('buildCalendarEventInput', () => {
 	it('includes location with only mapsUrl when no venueName', () => {
 		const revealedLocation = {
 			visibility: 'public' as const,
-			ceremony: {
-				venueEvent: 'Ceremonia',
-				venueName: '',
-				address: '',
-				date: '',
-				time: '',
-				googleMapsUrl: 'https://maps.example.com',
-			},
+			variant: 'standard' as const,
+			mapStyle: 'dark' as const,
+			venues: [
+				{
+					type: 'ceremony',
+					venueEvent: 'Ceremonia',
+					venueName: '',
+					address: '',
+					date: '',
+					time: '',
+					googleMapsUrl: 'https://maps.example.com',
+				},
+			],
 		};
 
 		const result = buildCalendarEventInput({
@@ -205,12 +212,15 @@ describe('buildCalendarEventInput', () => {
 	it('handles revealedLocation with no venue data gracefully', () => {
 		const revealedLocation = {
 			visibility: 'public' as const,
+			variant: 'standard' as const,
+			mapStyle: 'dark' as const,
+			venues: [],
 		};
 
 		const result = buildCalendarEventInput({
 			title,
 			startsAt,
-			revealedLocation: revealedLocation as LocationSection,
+			revealedLocation,
 		});
 		expect(result!.location).toBeUndefined();
 	});

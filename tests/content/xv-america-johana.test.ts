@@ -135,17 +135,17 @@ describe('XV America Johana client invitation preparation', () => {
 		expect(data.rsvp?.subcopy).toContain('Este pase corresponde a tu grupo.');
 		expect(data.rsvp?.subcopy).toContain('Preséntalo al ingresar al evento.');
 		expect(data.rsvp?.personalizedAccess).toEqual(expectedPersonalizedAccess);
-		expect(data.location?.ceremony?.googleMapsUrl).toBe(
+		expect(data.location?.venues?.find((venue) => venue.type === 'ceremony')?.googleMapsUrl).toBe(
 			'https://maps.app.goo.gl/ViMYiHRgQ5HLaqGe8',
 		);
-		expect(data.location?.ceremony?.coordinates).toEqual({
+		expect(data.location?.venues?.find((venue) => venue.type === 'ceremony')?.coordinates).toEqual({
 			lat: 19.2759461,
 			lng: -99.5176924,
 		});
-		expect(data.location?.reception?.googleMapsUrl).toBe(
+		expect(data.location?.venues?.find((venue) => venue.type === 'reception')?.googleMapsUrl).toBe(
 			'https://maps.app.goo.gl/6xwP3zGbBPEsrTjn9',
 		);
-		expect(data.location?.reception?.coordinates).toEqual({
+		expect(data.location?.venues?.find((venue) => venue.type === 'reception')?.coordinates).toEqual({
 			lat: 19.291035,
 			lng: -99.1314772,
 		});

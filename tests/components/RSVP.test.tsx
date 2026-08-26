@@ -25,15 +25,19 @@ describe('RSVP Component', () => {
 	const revealedLocation = {
 		variant: 'standard' as const,
 		visibility: 'after-rsvp' as const,
+		mapStyle: 'dark' as const,
 		introHeading: 'Ubicación',
-		ceremony: {
-			venueEvent: 'Celebración',
-			venueName: 'Salón García',
-			address: 'Victoriano Huerta 51, Col. San Francisco, Uruapan',
-			date: '2026-08-01',
-			time: '14:00',
-			googleMapsUrl: 'https://maps.example.com/salon-garcia',
-		},
+		venues: [
+			{
+				type: 'reception',
+				venueEvent: 'Celebración',
+				venueName: 'Salón García',
+				address: 'Victoriano Huerta 51, Col. San Francisco, Uruapan',
+				date: '2026-08-01',
+				time: '14:00',
+				googleMapsUrl: 'https://maps.example.com/salon-garcia',
+			},
+		],
 	};
 
 	beforeEach(() => {
@@ -1411,6 +1415,7 @@ describe('RSVP Component', () => {
 			const venuesArrayLocation = {
 				variant: 'standard' as const,
 				visibility: 'after-rsvp' as const,
+				mapStyle: 'dark' as const,
 				introHeading: 'Ubicación',
 				venues: [
 					{

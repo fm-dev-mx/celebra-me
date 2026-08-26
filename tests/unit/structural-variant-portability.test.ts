@@ -305,13 +305,15 @@ describe('Goal 1 — non-origin canonical variant portability', () => {
 		const location = viewModel.sections.location;
 
 		expect(location?.variant).toBe('split-map');
-		expect(location?.ceremony?.venueName).toBeTruthy();
-		expect(location?.ceremony?.coordinates).toEqual(
+		const ceremony = location?.venues.find((venue) => venue.type === 'ceremony');
+		const reception = location?.venues.find((venue) => venue.type === 'reception');
+		expect(ceremony?.venueName).toBeTruthy();
+		expect(ceremony?.coordinates).toEqual(
 			expect.objectContaining({ lat: expect.any(Number), lng: expect.any(Number) }),
 		);
-		expect(location?.ceremony?.googleMapsUrl || location?.ceremony?.mapUrl).toBeTruthy();
-		expect(location?.ceremony?.image).toBeTruthy();
-		expect(location?.reception?.coordinates).toEqual(
+		expect(ceremony?.googleMapsUrl || ceremony?.mapUrl).toBeTruthy();
+		expect(ceremony?.image).toBeTruthy();
+		expect(reception?.coordinates).toEqual(
 			expect.objectContaining({ lat: expect.any(Number), lng: expect.any(Number) }),
 		);
 	});
@@ -552,8 +554,8 @@ describe('Goal 1 — non-origin canonical variant portability', () => {
 			{
 				themePreset: 'jewelry-box',
 				// Explicitly omit slug / visualProfileId — structure must not need them.
-				galleryVariant: 'single-keepsake',
-      sectionVariants: {
+				sectionVariants: {
+					gallery: 'single-keepsake',
 					hero: 'split-cover',
 					location: 'stacked-venue-plates',
 					family: 'asymmetric-groups',
@@ -580,8 +582,8 @@ describe('Goal 1 — non-origin canonical variant portability', () => {
 			sectionUrlMap,
 			{
 				themePreset: 'jewelry-box',
-				galleryVariant: 'paired-feature-band',
-      sectionVariants: {
+				sectionVariants: {
+					gallery: 'paired-feature-band',
 					location: 'split-map',
 					family: 'split-groups',
 					itinerary: 'timeline-paper',

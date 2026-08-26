@@ -223,12 +223,12 @@ describe('prepareInvitationPageContext', () => {
 	it('enchanted rose gallery data integrity', () => {
 		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json');
 
-		if (fixture.location?.ceremony?.image) {
-			expect(isEventAssetKey(fixture.location.ceremony.image)).toBe(true);
-		}
-		if (fixture.location?.reception?.image) {
-			expect(isEventAssetKey(fixture.location.reception.image)).toBe(true);
-		}
+		const locationVenues = fixture.location?.venues as
+			Array<{ type?: string; image?: string }> | undefined;
+		const ceremonyImage = locationVenues?.find((venue) => venue.type === 'ceremony')?.image;
+		const receptionImage = locationVenues?.find((venue) => venue.type === 'reception')?.image;
+		if (ceremonyImage) expect(isEventAssetKey(ceremonyImage)).toBe(true);
+		if (receptionImage) expect(isEventAssetKey(receptionImage)).toBe(true);
 		const galleryItems = fixture.gallery.items;
 		galleryItems.forEach((item: { image: string }) => {
 			expect(isEventAssetKey(item.image)).toBe(true);
@@ -788,19 +788,23 @@ describe('buildPageContextFromViewModel', () => {
 				location: {
 					variant: 'standard' as const,
 					visibility: 'after-rsvp' as const,
+					mapStyle: 'dark' as const,
 					introHeading: 'Ubicación',
-					ceremony: {
-						venueEvent: 'Celebración',
-						venueName: 'Salón García',
-						address: 'Victoriano Huerta 51, Col. San Francisco, Uruapan',
-						date: '2026-08-01',
-						time: '14:00',
-						mapUrl: 'https://maps.example.com/salon-garcia',
-						googleMapsUrl: 'https://google.example.com/salon-garcia',
-						wazeUrl: 'https://waze.example.com/salon-garcia',
-						coordinates: { lat: 19.42, lng: -102.06 },
-						image: { src: '/protected-map.webp', alt: 'Mapa protegido' },
-					},
+					venues: [
+						{
+							type: 'ceremony' as const,
+							venueEvent: 'Celebración',
+							venueName: 'Salón García',
+							address: 'Victoriano Huerta 51, Col. San Francisco, Uruapan',
+							date: '2026-08-01',
+							time: '14:00',
+							mapUrl: 'https://maps.example.com/salon-garcia',
+							googleMapsUrl: 'https://google.example.com/salon-garcia',
+							wazeUrl: 'https://waze.example.com/salon-garcia',
+							coordinates: { lat: 19.42, lng: -102.06 },
+							image: { src: '/protected-map.webp', alt: 'Mapa protegido' },
+						},
+					],
 				},
 			},
 		} as Parameters<typeof buildPageContextFromViewModel>[0]['viewModel'];
@@ -819,7 +823,9 @@ describe('buildPageContextFromViewModel', () => {
 			introHeading: 'Ubicación',
 			lockedTitle: 'Ubicación reservada',
 		});
-		expect(context.viewModel.sections.location?.ceremony).toBeUndefined();
+		expect(
+			context.viewModel.sections.location?.venues?.find((venue) => venue.type === 'ceremony'),
+		).toBeUndefined();
 		expect(JSON.stringify(context.viewModel.sections.location)).not.toContain('Salón García');
 		expect(JSON.stringify(context.viewModel.sections.location)).not.toContain(
 			'Victoriano Huerta',
@@ -837,14 +843,18 @@ describe('buildPageContextFromViewModel', () => {
 				location: {
 					variant: 'standard' as const,
 					visibility: 'after-rsvp' as const,
+					mapStyle: 'dark' as const,
 					introHeading: 'Ubicación',
-					ceremony: {
-						venueEvent: 'Celebración',
-						venueName: 'Salón García',
-						address: 'Victoriano Huerta 51, Col. San Francisco, Uruapan',
-						date: '2026-08-01',
-						time: '14:00',
-					},
+					venues: [
+						{
+							type: 'ceremony' as const,
+							venueEvent: 'Celebración',
+							venueName: 'Salón García',
+							address: 'Victoriano Huerta 51, Col. San Francisco, Uruapan',
+							date: '2026-08-01',
+							time: '14:00',
+						},
+					],
 				},
 			},
 		} as Parameters<typeof buildPageContextFromViewModel>[0]['viewModel'];
@@ -871,9 +881,10 @@ describe('buildPageContextFromViewModel', () => {
 
 		expect(context.heroVenueName).toBe('Salón García');
 		expect(context.viewModel.sections.location?.isLocked).toBeUndefined();
-		expect(context.viewModel.sections.location?.ceremony?.address).toBe(
-			'Victoriano Huerta 51, Col. San Francisco, Uruapan',
-		);
+		expect(
+			context.viewModel.sections.location?.venues?.find((venue) => venue.type === 'ceremony')
+				?.address,
+		).toBe('Victoriano Huerta 51, Col. San Francisco, Uruapan');
 	});
 
 	it('embedded preview override merges to exactly one data-reveal-state', () => {

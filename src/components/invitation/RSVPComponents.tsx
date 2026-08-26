@@ -141,17 +141,7 @@ function resolveGreetingMessages(
 }
 
 function RevealedLocationBlock({ location }: { location: RevealedLocation }) {
-	const venues =
-		location.venues && location.venues.length > 0
-			? location.venues
-			: [
-					...(location.ceremony
-						? [{ ...location.ceremony, id: 'ceremony', type: 'ceremony' }]
-						: []),
-					...(location.reception
-						? [{ ...location.reception, id: 'reception', type: 'reception' }]
-						: []),
-				];
+	const venues = location.venues ?? [];
 
 	if (venues.length === 0) return null;
 

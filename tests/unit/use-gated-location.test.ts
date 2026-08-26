@@ -6,6 +6,7 @@ import type { LocationSection } from '@/lib/adapters/types';
 const mockLocation: LocationSection = {
 	variant: 'standard',
 	visibility: 'after-rsvp',
+	mapStyle: 'dark',
 	introHeading: 'Ubicación',
 	venues: [
 		{

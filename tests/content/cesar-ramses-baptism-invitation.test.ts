@@ -43,7 +43,7 @@ describe('Baptism demo invitation content', () => {
 	it('contains required reception and family content', () => {
 		const event = readDemoEvent();
 
-		expect(event.location?.reception).toBeDefined();
+		expect(event.location?.venues?.find((venue) => venue.type === 'reception')).toBeDefined();
 		expect(event.family?.parents).toBeDefined();
 		expect(event.family?.godparents).toBeDefined();
 	});

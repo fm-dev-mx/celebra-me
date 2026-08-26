@@ -36,16 +36,20 @@ const confirmedContext = {
 const protectedLocation = {
 	variant: 'standard' as const,
 	visibility: 'after-rsvp' as const,
+	mapStyle: 'dark' as const,
 	introHeading: 'Ubicación',
-	ceremony: {
-		venueEvent: 'Celebración',
-		venueName: 'Salón García',
-		address: 'Victoriano Huerta 51, Col. San Francisco, Uruapan',
-		date: '2026-08-01',
-		time: '14:00',
-		googleMapsUrl: 'https://maps.google.com/?q=Salon%20Garcia',
-		coordinates: { lat: 19.42, lng: -102.06 },
-	},
+	venues: [
+		{
+			type: 'ceremony' as const,
+			venueEvent: 'Celebración',
+			venueName: 'Salón García',
+			address: 'Victoriano Huerta 51, Col. San Francisco, Uruapan',
+			date: '2026-08-01',
+			time: '14:00',
+			googleMapsUrl: 'https://maps.google.com/?q=Salon%20Garcia',
+			coordinates: { lat: 19.42, lng: -102.06 },
+		},
+	],
 };
 
 beforeEach(() => {
@@ -124,7 +128,9 @@ describe('resolveGatedLocationPayload', () => {
 			'luna-y-estrella',
 			'primera-comunion',
 		);
-		expect(payload.location.ceremony?.venueName).toBe('Salón García');
+		expect(payload.location.venues.find((venue) => venue.type === 'ceremony')?.venueName).toBe(
+			'Salón García',
+		);
 	});
 
 	it('returns protected location details for a confirmed matching invite context', async () => {
@@ -134,12 +140,18 @@ describe('resolveGatedLocationPayload', () => {
 			slug: 'gated-location-test-event',
 		});
 
-		expect(payload.location.ceremony?.venueName).toBe('Salón García');
-		expect(payload.location.ceremony?.address).toBe(
+		expect(payload.location.venues.find((venue) => venue.type === 'ceremony')?.venueName).toBe(
+			'Salón García',
+		);
+		expect(payload.location.venues.find((venue) => venue.type === 'ceremony')?.address).toBe(
 			'Victoriano Huerta 51, Col. San Francisco, Uruapan',
 		);
-		expect(payload.location.ceremony?.googleMapsUrl).toContain('maps.google.com');
-		expect(payload.location.ceremony?.coordinates).toEqual({ lat: 19.42, lng: -102.06 });
+		expect(
+			payload.location.venues.find((venue) => venue.type === 'ceremony')?.googleMapsUrl,
+		).toContain('maps.google.com');
+		expect(
+			payload.location.venues.find((venue) => venue.type === 'ceremony')?.coordinates,
+		).toEqual({ lat: 19.42, lng: -102.06 });
 	});
 
 	it('rejects unconfirmed invite contexts', async () => {

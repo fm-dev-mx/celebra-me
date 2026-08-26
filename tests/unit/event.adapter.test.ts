@@ -117,8 +117,8 @@ describe('adaptEvent', () => {
 		const viewModel = adaptEvent(event);
 
 		expect(viewModel.theme.preset).toBe('jewelry-box');
-		expect(viewModel.sections.location?.ceremony).toBeDefined();
-		expect(viewModel.sections.location?.ceremony?.venueName).toBeDefined();
+		expect(viewModel.sections.location?.venues[0]).toBeDefined();
+		expect(viewModel.sections.location?.venues[0]?.venueName).toBeDefined();
 		expect(viewModel.sections.location?.variant).toBe('standard');
 		expect(viewModel.sections.gallery?.variant).toBe('feature-mosaic');
 		expect(viewModel.hero.backgroundImage.src).toEqual(expect.any(String));
@@ -222,7 +222,9 @@ describe('adaptEvent', () => {
 		expect(viewModel.id).toBe('demo-primera-comunion-illustrated');
 		expect(viewModel.theme.preset).toBe('angelic-presence');
 		expect(viewModel.hero.backgroundImage.src).toEqual(expect.any(String));
-		expect(viewModel.sections.location?.ceremony?.image?.src).toEqual(expect.any(String));
+		expect(viewModel.sections.location?.venues.find((venue) => venue.image)?.image?.src).toEqual(
+			expect.any(String),
+		);
 		expect(viewModel.sections.thankYou?.image?.src).toEqual(expect.any(String));
 	});
 
@@ -499,12 +501,16 @@ describe('adaptEvent', () => {
 						introHeading: 'Custom Heading',
 						introLede: 'Custom Lede',
 						indicationsHeading: 'Custom Indications',
-						ceremony: {
-							venueName: 'Test',
-							address: 'Test',
-							date: '2027-01-01',
-							time: '6:00 PM',
-						},
+						venues: [
+							{
+								id: 'ceremony',
+								type: 'ceremony',
+								venueName: 'Test',
+								address: 'Test',
+								date: '2027-01-01',
+								time: '6:00 PM',
+							},
+						],
 					},
 				},
 			} as Parameters<typeof adaptEvent>[0];
@@ -527,12 +533,16 @@ describe('adaptEvent', () => {
 						introHeading: 'Heading',
 						introLede: 'Lede',
 						indicationsHeading: '',
-						ceremony: {
-							venueName: 'Test',
-							address: 'Test',
-							date: '2027-01-01',
-							time: '6:00 PM',
-						},
+						venues: [
+							{
+								id: 'ceremony',
+								type: 'ceremony',
+								venueName: 'Test',
+								address: 'Test',
+								date: '2027-01-01',
+								time: '6:00 PM',
+							},
+						],
 					},
 				},
 			} as Parameters<typeof adaptEvent>[0];
@@ -555,12 +565,16 @@ describe('adaptEvent', () => {
 					},
 					theme: { preset: 'enchanted-rose' },
 					location: {
-						ceremony: {
-							venueName: 'Test',
-							address: 'Test',
-							date: '2027-01-01',
-							time: '6:00 PM',
-						},
+						venues: [
+							{
+								id: 'ceremony',
+								type: 'ceremony',
+								venueName: 'Test',
+								address: 'Test',
+								date: '2027-01-01',
+								time: '6:00 PM',
+							},
+						],
 						indications: [
 							{
 								iconName: 'DressCode',
@@ -711,60 +725,41 @@ describe('adaptEvent', () => {
 			expect(viewModel.sections.location?.venues?.[1]?.isVisible).toBeUndefined();
 		});
 
-		it('empty venues array stays empty and does not fall back to legacy ceremony/reception', () => {
+		it('preserves an explicit empty canonical venues array', () => {
 			const viewModel = adaptEvent(
 				makeMinimalEvent({
 					introHeading: 'Ubicaciones',
 					venues: [],
-					ceremony: {
-						venueName: 'Iglesia Legacy',
-						address: 'Calle L',
-						date: '2027-11-20',
-						time: '18:00',
-					},
-					reception: {
-						venueName: 'Salón Legacy',
-						address: 'Calle R',
-						date: '2027-11-20',
-						time: '20:00',
-					},
 				}),
 			);
 
 			expect(viewModel.sections.location?.venues).toEqual([]);
-			expect(viewModel.sections.location?.ceremony).toBeUndefined();
-			expect(viewModel.sections.location?.reception).toBeUndefined();
 		});
 
-		it('absent venues allows legacy ceremony/reception fallback', () => {
+		it('passes canonical ceremony and reception venue entries', () => {
 			const viewModel = adaptEvent(
 				makeMinimalEvent({
 					introHeading: 'Ubicación',
-					ceremony: {
-						venueName: 'Iglesia Legacy',
-						address: 'Calle L',
-						city: 'Querétaro',
-						date: '2027-11-20',
-						time: '18:00',
-					},
-					reception: {
-						venueName: 'Salón Legacy',
-						address: 'Calle R',
-						city: 'Querétaro',
-						date: '2027-11-20',
-						time: '20:00',
-					},
+					venues: [
+						{
+							id: 'ceremony', type: 'ceremony', venueName: 'Iglesia', address: 'Calle L',
+							city: 'Querétaro', date: '2027-11-20', time: '18:00',
+						},
+						{
+							id: 'reception', type: 'reception', venueName: 'Salón', address: 'Calle R',
+							city: 'Querétaro', date: '2027-11-20', time: '20:00',
+						},
+					],
 				}),
 			);
 
-			expect(viewModel.sections.location?.venues).toBeUndefined();
-			expect(viewModel.sections.location?.ceremony).toBeDefined();
-			expect(viewModel.sections.location?.ceremony?.venueName).toBe('Iglesia Legacy');
-			expect(viewModel.sections.location?.reception).toBeDefined();
-			expect(viewModel.sections.location?.reception?.venueName).toBe('Salón Legacy');
+			expect(viewModel.sections.location?.venues.map((venue) => venue.type)).toEqual([
+				'ceremony',
+				'reception',
+			]);
 		});
 
-		it('backward-compatibility: published snapshot without intro fields stays without injected theme copy', () => {
+		it('keeps a canonical snapshot without intro fields free of injected theme copy', () => {
 			const event = {
 				id: 'events/ayrin-samantha-lerma-castro',
 				data: {
@@ -777,20 +772,23 @@ describe('adaptEvent', () => {
 					},
 					theme: { preset: 'enchanted-rose' },
 					location: {
-						ceremony: {
+						venues: [{
+							id: 'ceremony',
+							type: 'ceremony',
 							venueName: 'Parroquia del Sagrado Corazón',
 							address: 'Av. de las Rosas 240',
 							city: 'Querétaro',
 							date: '20 de noviembre de 2027',
 							time: '6:00 PM',
-						},
-						reception: {
+						}, {
+							id: 'reception',
+							type: 'reception',
 							venueName: 'Salón Imperial',
 							address: 'Paseo del Palacio 18',
 							city: 'Querétaro',
 							date: '20 de noviembre de 2027',
 							time: '8:00 PM',
-						},
+						}],
 					},
 				},
 			} as Parameters<typeof adaptEvent>[0];

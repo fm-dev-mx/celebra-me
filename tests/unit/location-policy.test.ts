@@ -42,6 +42,8 @@ describe('isLocationLocked', () => {
 		const location = {
 			variant: 'standard' as const,
 			visibility: 'after-rsvp' as const,
+			mapStyle: 'dark' as const,
+			venues: [],
 		};
 		expect(isLocationLocked(location, false)).toBe(true);
 	});
@@ -50,6 +52,8 @@ describe('isLocationLocked', () => {
 		const location = {
 			variant: 'standard' as const,
 			visibility: 'after-rsvp' as const,
+			mapStyle: 'dark' as const,
+			venues: [],
 		};
 		expect(isLocationLocked(location, true)).toBe(false);
 	});
@@ -59,7 +63,12 @@ describe('isLocationLocked', () => {
 	});
 
 	it('returns false when location has public visibility', () => {
-		const location = { variant: 'standard' as const, visibility: 'public' as const };
+		const location = {
+			variant: 'standard' as const,
+			visibility: 'public' as const,
+			mapStyle: 'dark' as const,
+			venues: [],
+		};
 		expect(isLocationLocked(location, false)).toBe(false);
 	});
 });
@@ -177,9 +186,11 @@ describe('applyLocationPolicy', () => {
 			...baseViewModel,
 			sections: {
 				location: {
+					variant: 'standard' as const,
 					visibility: 'after-rsvp' as const,
+					mapStyle: 'dark' as const,
 					introHeading: 'Ubicación',
-					ceremony: { venueName: 'Salón García' },
+					venues: [{ type: 'reception', venueName: 'Salón García' }],
 				},
 			},
 		} as any as InvitationViewModel;
@@ -188,7 +199,7 @@ describe('applyLocationPolicy', () => {
 			isConfirmedGuest: true,
 		});
 		expect(result.sections.location?.introHeading).toBe('Ubicación');
-		expect(result.sections.location?.ceremony?.venueName).toBe('Salón García');
+		expect(result.sections.location?.venues[0]?.venueName).toBe('Salón García');
 	});
 
 	it('redacts location when after-rsvp and guest is not confirmed', () => {
@@ -198,9 +209,10 @@ describe('applyLocationPolicy', () => {
 				location: {
 					visibility: 'after-rsvp' as const,
 					introHeading: 'Ubicación',
-					variant: 'ceremony',
+					variant: 'standard',
+					mapStyle: 'dark',
 					showFlourishes: true,
-					ceremony: { venueName: 'Salón García' },
+					venues: [{ type: 'reception', venueName: 'Salón García' }],
 				},
 			},
 		} as any as InvitationViewModel;
@@ -213,7 +225,7 @@ describe('applyLocationPolicy', () => {
 			lockedTitle: 'Ubicación reservada',
 			introHeading: 'Ubicación',
 		});
-		expect((result.sections.location as any)?.ceremony).toBeUndefined();
+		expect(result.sections.location?.venues).toEqual([]);
 		expect(result.hero.venueName).toBeUndefined();
 	});
 
@@ -222,10 +234,12 @@ describe('applyLocationPolicy', () => {
 			...baseViewModel,
 			sections: {
 				location: {
+					variant: 'standard' as const,
 					visibility: 'after-rsvp' as const,
+					mapStyle: 'dark' as const,
 					presentationOptions: { revealSurface: 'rsvp' as const },
 					introHeading: 'Ubicación',
-					ceremony: { venueName: 'Salón García' },
+					venues: [{ type: 'reception', venueName: 'Salón García' }],
 				},
 			},
 		} as any as InvitationViewModel;
@@ -242,10 +256,12 @@ describe('applyLocationPolicy', () => {
 			...baseViewModel,
 			sections: {
 				location: {
+					variant: 'standard' as const,
 					visibility: 'after-rsvp' as const,
+					mapStyle: 'dark' as const,
 					presentationOptions: { revealSurface: 'rsvp' as const },
 					introHeading: 'Ubicación',
-					ceremony: { venueName: 'Salón García' },
+					venues: [{ type: 'reception', venueName: 'Salón García' }],
 				},
 				rsvp: { title: 'Confirma' },
 			},
@@ -255,6 +271,6 @@ describe('applyLocationPolicy', () => {
 			isConfirmedGuest: true,
 		});
 		expect(result.sections.location).toBeUndefined();
-		expect(result.sections.rsvp?.revealedLocation?.ceremony?.venueName).toBe('Salón García');
+		expect(result.sections.rsvp?.revealedLocation?.venues[0]?.venueName).toBe('Salón García');
 	});
 });
