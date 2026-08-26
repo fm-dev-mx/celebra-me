@@ -53,8 +53,6 @@ interface LocationData {
 	introLede?: string;
 	indicationsHeading?: string;
 	eventTiming?: EventTiming;
-	ceremony?: VenueData;
-	reception?: VenueData;
 	venues?: VenueEntryData[];
 	indications?: DraftIndication[];
 }
@@ -121,31 +119,7 @@ export default function LocationSectionEditor({
 		(option) => option.value === eventTiming.timeZone,
 	);
 
-	// Use venues if present, otherwise build from legacy ceremony/reception
-	const venues: VenueEntryData[] =
-		location.venues ??
-		(() => {
-			const legacy: VenueEntryData[] = [];
-			if (location.ceremony) {
-				legacy.push({
-					id: nextVenueId(),
-					type: 'ceremony',
-					label: 'Ceremonia',
-					...location.ceremony,
-					isVisible: true,
-				});
-			}
-			if (location.reception) {
-				legacy.push({
-					id: nextVenueId(),
-					type: 'reception',
-					label: 'Recepción',
-					...location.reception,
-					isVisible: true,
-				});
-			}
-			return legacy;
-		})();
+	const venues: VenueEntryData[] = location.venues ?? [];
 
 	const updateVenue = (index: number, patch: Partial<VenueEntryData>) => {
 		const updated = venues.map((v, i) => (i === index ? { ...v, ...patch } : v));

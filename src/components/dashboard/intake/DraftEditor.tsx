@@ -352,10 +352,10 @@ const DraftEditor: FC<Props> = ({ invitationId, initialContent, onCancel }) => {
 						['ceremony', 'Ceremonia'],
 						['reception', 'Recepción'],
 					] as const
-				).map(([venueKey, venueLabel]) => {
-					const venue = content.location?.[venueKey] as
-						| Record<string, unknown>
-						| undefined;
+				).map(([venueType, venueLabel]) => {
+					const venues = location.venues ?? [];
+					const venueIndex = venues.findIndex((item) => item.type === venueType);
+					const venue = venueIndex >= 0 ? venues[venueIndex] : undefined;
 					const VENUE_FIELDS: Array<{ fieldKey: string; label: string }> = [
 						{ fieldKey: 'venueName', label: 'Nombre del lugar' },
 						{ fieldKey: 'address', label: 'Dirección' },
@@ -365,7 +365,7 @@ const DraftEditor: FC<Props> = ({ invitationId, initialContent, onCancel }) => {
 						{ fieldKey: 'mapUrl', label: 'URL del mapa' },
 					];
 					return (
-						<div key={venueKey} className="intake-editor__venue">
+						<div key={venueType} className="intake-editor__venue">
 							<h4 className="intake-review__venue-title">{venueLabel}</h4>
 							{VENUE_FIELDS.map(({ fieldKey, label }) => (
 								<Fragment key={fieldKey}>
@@ -373,15 +373,26 @@ const DraftEditor: FC<Props> = ({ invitationId, initialContent, onCancel }) => {
 										section="location"
 										fieldKey={fieldKey}
 										label={label}
-										value={strFallback(venue?.[fieldKey])}
+										value={strFallback(
+											(venue as Record<string, unknown> | undefined)?.[fieldKey],
+										)}
 										onChange={(v) => {
-											const updated = {
-												...(((location as Record<string, unknown>)[
-													venueKey
-												] as Record<string, unknown>) ?? {}),
+											const nextVenue = {
+												...(venue ?? {
+													id: venueType,
+													type: venueType,
+													label: venueLabel,
+													isVisible: true,
+												}),
 												[fieldKey]: v,
 											};
-											setField('location', venueKey, updated);
+											const updated =
+												venueIndex >= 0
+													? venues.map((item, index) =>
+															index === venueIndex ? nextVenue : item,
+														)
+													: [...venues, nextVenue];
+											setField('location', 'venues', updated);
 										}}
 										errors={validationErrors}
 									/>

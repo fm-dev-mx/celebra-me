@@ -100,7 +100,7 @@ describe('mapNestedToDraftContent', () => {
 		expect(result.family?.presentation).toBe('text-only');
 		expect(result.family?.featuredImage).toEqual({ type: 'uploaded', assetId: VALID_UUID });
 		expect(result.location?.presentation).toBe('with-photo');
-		expect(result.location?.ceremony?.image).toEqual({ type: 'internal', key: 'ceremony' });
+		expect(result.location?.venues?.find((venue) => venue.type === 'ceremony')?.image).toEqual({ type: 'internal', key: 'ceremony' });
 	});
 
 	it('normalizes raw draft family arrays and legacy venueEvent keys before editor validation', () => {
@@ -129,8 +129,8 @@ describe('mapNestedToDraftContent', () => {
 
 		expect(result.family?.godparents).toBe('Pedro López — Padrino');
 		expect(InvitationEditorSectionSchemas.family.safeParse(result.family).success).toBe(true);
-		expect(result.location?.ceremony).not.toHaveProperty('venueEvent');
-		expect(result.location?.reception).not.toHaveProperty('venueEvent');
+		expect(result.location?.venues?.find((venue) => venue.type === 'ceremony')).not.toHaveProperty('venueEvent');
+		expect(result.location?.venues?.find((venue) => venue.type === 'reception')).not.toHaveProperty('venueEvent');
 		expect(InvitationEditorSectionSchemas.location.safeParse(result.location).success).toBe(
 			true,
 		);
@@ -150,11 +150,11 @@ describe('mapNestedToDraftContent', () => {
 			},
 		};
 		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
-		expect(result.location?.ceremony?.image).toEqual({
+		expect(result.location?.venues?.find((venue) => venue.type === 'ceremony')?.image).toEqual({
 			type: 'uploaded',
 			assetId: VALID_UUID,
 		});
-		expect(result.location?.reception?.image).toEqual({ type: 'internal', key: 'reception' });
+		expect(result.location?.venues?.find((venue) => venue.type === 'reception')?.image).toEqual({ type: 'internal', key: 'reception' });
 	});
 
 	it('preserves location intro copy and indications heading when present', () => {
@@ -194,8 +194,8 @@ describe('mapNestedToDraftContent', () => {
 
 		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
 
-		expect(result.location?.ceremony?.coordinates).toEqual({ lat: 19.4326, lng: -99.1332 });
-		expect(result.location?.reception?.coordinates).toEqual({ lat: 20.5, lng: -100.3 });
+		expect(result.location?.venues?.find((venue) => venue.type === 'ceremony')?.coordinates).toEqual({ lat: 19.4326, lng: -99.1332 });
+		expect(result.location?.venues?.find((venue) => venue.type === 'reception')?.coordinates).toEqual({ lat: 20.5, lng: -100.3 });
 	});
 
 	it('preserves coordinates from published venues array in draft', () => {
@@ -236,10 +236,10 @@ describe('mapNestedToDraftContent', () => {
 
 		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
 
-		expect(result.location?.ceremony?.mapUrl).toBe(
+		expect(result.location?.venues?.find((venue) => venue.type === 'ceremony')?.mapUrl).toBe(
 			'https://maps.google.com/?q=19.4326,-99.1332',
 		);
-		expect(result.location?.ceremony?.coordinates).toEqual({ lat: 19.4326, lng: -99.1332 });
+		expect(result.location?.venues?.find((venue) => venue.type === 'ceremony')?.coordinates).toEqual({ lat: 19.4326, lng: -99.1332 });
 	});
 
 	it.each([
@@ -258,14 +258,14 @@ describe('mapNestedToDraftContent', () => {
 				},
 			},
 			assertions: (result: ReturnType<typeof mapNestedToDraftContent>) => {
-				expect(result.location?.ceremony?.mapUrl).toBe('https://maps.example.com/map');
-				expect(result.location?.ceremony?.googleMapsUrl).toBe(
+				expect(result.location?.venues?.find((venue) => venue.type === 'ceremony')?.mapUrl).toBe('https://maps.example.com/map');
+				expect(result.location?.venues?.find((venue) => venue.type === 'ceremony')?.googleMapsUrl).toBe(
 					'https://maps.google.com/?q=test',
 				);
-				expect(result.location?.ceremony?.appleMapsUrl).toBe(
+				expect(result.location?.venues?.find((venue) => venue.type === 'ceremony')?.appleMapsUrl).toBe(
 					'https://maps.apple.com/?q=test',
 				);
-				expect(result.location?.ceremony?.wazeUrl).toBe('https://waze.com/ul?q=test');
+				expect(result.location?.venues?.find((venue) => venue.type === 'ceremony')?.wazeUrl).toBe('https://waze.com/ul?q=test');
 			},
 		},
 		{
@@ -371,10 +371,10 @@ describe('mapNestedToDraftContent', () => {
 
 		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
 
-		expect(result.location?.ceremony?.venueName).toBe('Iglesia Legacy');
-		expect(result.location?.reception?.venueName).toBe('Salón Legacy');
-		expect(result.location?.ceremony).not.toHaveProperty('venueEvent');
-		expect(result.location?.reception).not.toHaveProperty('venueEvent');
+		expect(result.location?.venues?.find((venue) => venue.type === 'ceremony')?.venueName).toBe('Iglesia Legacy');
+		expect(result.location?.venues?.find((venue) => venue.type === 'reception')?.venueName).toBe('Salón Legacy');
+		expect(result.location?.venues?.find((venue) => venue.type === 'ceremony')).not.toHaveProperty('venueEvent');
+		expect(result.location?.venues?.find((venue) => venue.type === 'reception')).not.toHaveProperty('venueEvent');
 		expect(result.location?.venues).toBeUndefined();
 	});
 
@@ -649,8 +649,8 @@ describe('mergePublishedWithDraft', () => {
 			},
 		);
 
-		expect(result.content.location?.ceremony).not.toHaveProperty('venueEvent');
-		expect(result.content.location?.reception).not.toHaveProperty('venueEvent');
+		expect(result.content.location?.venues?.find((venue) => venue.type === 'ceremony')).not.toHaveProperty('venueEvent');
+		expect(result.content.location?.venues?.find((venue) => venue.type === 'reception')).not.toHaveProperty('venueEvent');
 		expect(result.content.location?.presentation).toBe('with-map');
 	});
 
@@ -1076,8 +1076,8 @@ describe('mapNestedToDraftContent', () => {
 
 		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
 
-		expect(result.location?.ceremony?.time).toBe('10:00');
-		expect(result.location?.reception?.time).toBe('12:00');
+		expect(result.location?.venues?.find((venue) => venue.type === 'ceremony')?.time).toBe('10:00');
+		expect(result.location?.venues?.find((venue) => venue.type === 'reception')?.time).toBe('12:00');
 	});
 
 	it('preserves already-normalized 24-hour times unchanged', () => {
@@ -1197,7 +1197,7 @@ describe('mapNestedToDraftContent', () => {
 
 		const result = mapNestedToDraftContent(input as unknown as Record<string, unknown>);
 
-		const ceremony = result.location?.ceremony as Record<string, unknown> | undefined;
+		const ceremony = result.location?.venues?.find((venue) => venue.type === 'ceremony') as Record<string, unknown> | undefined;
 		for (const field of ['mapUrl', 'googleMapsUrl', 'appleMapsUrl', 'wazeUrl'] as const) {
 			expect(ceremony).not.toHaveProperty(field);
 		}

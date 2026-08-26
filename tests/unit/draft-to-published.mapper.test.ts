@@ -97,6 +97,19 @@ const baseInput = {
 	priorPublishedContent: { ...baseDemoContent, sharing: undefined },
 };
 
+function draftVenue(type: 'ceremony' | 'reception' | 'custom', value: Record<string, unknown>) {
+	return { id: type, type, isVisible: true, ...value };
+}
+
+function draftVenues(ceremony?: Record<string, unknown>, reception?: Record<string, unknown>) {
+	return {
+		venues: [
+			...(ceremony ? [draftVenue('ceremony', ceremony)] : []),
+			...(reception ? [draftVenue('reception', reception)] : []),
+		],
+	};
+}
+
 describe('mapDraftToPublished', () => {
 	it('maps hero section correctly', () => {
 		const result = mapDraftToPublished(baseInput);
@@ -341,22 +354,22 @@ describe('mapDraftToPublished', () => {
 
 	const SCHEMA_VALIDATION_FIXTURE = {
 		quote: { text: 'Test quote', author: 'Test author' },
-		location: {
-			ceremony: {
+		location: draftVenues(
+			{
 				venueName: 'Church',
 				address: '123 Main St',
 				city: 'City',
 				date: '2026-06-15',
 				time: '18:00',
 			},
-			reception: {
+			{
 				venueName: 'Reception Hall',
 				address: '456 Main St',
 				city: 'City',
 				date: '2026-06-15',
 				time: '20:00',
 			},
-		},
+		),
 	};
 
 	it.each([
@@ -470,22 +483,22 @@ describe('mapDraftToPublished', () => {
 					parentsOrder: 'father-first',
 				},
 				quote: { text: 'Test quote', author: 'Test author' },
-				location: {
-					ceremony: {
+				location: draftVenues(
+					{
 						venueName: 'Church',
 						address: '123 Main St',
 						city: 'City',
 						date: '2026-06-15',
 						time: '18:00',
 					},
-					reception: {
+					{
 						venueName: 'Reception Hall',
 						address: '456 Main St',
 						city: 'City',
 						date: '2026-06-15',
 						time: '20:00',
 					},
-				},
+				),
 			},
 		});
 
@@ -743,22 +756,22 @@ describe('mapDraftToPublished', () => {
 					overlaySafeArea,
 				},
 				quote: { text: 'Test quote', author: 'Test author' },
-				location: {
-					ceremony: {
+				location: draftVenues(
+					{
 						venueName: 'Church',
 						address: '123 Main St',
 						city: 'City',
 						date: '2026-06-15',
 						time: '18:00',
 					},
-					reception: {
+					{
 						venueName: 'Reception Hall',
 						address: '456 Main St',
 						city: 'City',
 						date: '2026-06-15',
 						time: '20:00',
 					},
-				},
+				),
 			},
 		});
 
@@ -772,16 +785,20 @@ describe('mapDraftToPublished', () => {
 			draftContent: {
 				...baseInput.draftContent,
 				location: {
-					ceremony: { venueName: 'Iglesia', address: 'Calle 1', city: 'Queretaro' },
-					reception: { venueName: 'Salon', address: 'Calle 2', city: 'Queretaro' },
+					...draftVenues(
+						{ venueName: 'Iglesia', address: 'Calle 1', city: 'Queretaro' },
+						{ venueName: 'Salon', address: 'Calle 2', city: 'Queretaro' },
+					),
 					indications: [{ iconName: 'DressCode', text: 'Formal' }],
 				},
 			},
 		});
 
 		expect(result.location).toMatchObject({
-			ceremony: { venueName: 'Iglesia', address: 'Calle 1', city: 'Queretaro' },
-			reception: { venueName: 'Salon', address: 'Calle 2', city: 'Queretaro' },
+			venues: [
+				{ type: 'ceremony', venueName: 'Iglesia', address: 'Calle 1', city: 'Queretaro' },
+				{ type: 'reception', venueName: 'Salon', address: 'Calle 2', city: 'Queretaro' },
+			],
 			indications: [{ iconName: 'DressCode', styleVariant: 'default', text: 'Formal' }],
 		});
 	});
@@ -803,13 +820,13 @@ describe('mapDraftToPublished', () => {
 				},
 				location: {
 					presentation: 'with-map',
-					ceremony: {
+					...draftVenues({
 						venueName: 'Iglesia',
 						address: 'Calle 1',
 						date: '2026-06-15',
 						time: '18:00',
 						coordinates: { lat: 19.4326, lng: -99.1332 },
-					},
+					}),
 				},
 			},
 		});
@@ -828,8 +845,10 @@ describe('mapDraftToPublished', () => {
 			...baseDemoContent,
 			location: {
 				variant: 'standard',
-				ceremony: { image: 'mapCeremony', venueEvent: 'Misa' },
-				reception: { image: 'mapReception', venueEvent: 'Fiesta' },
+				...draftVenues(
+					{ image: 'mapCeremony', venueEvent: 'Misa' },
+					{ image: 'mapReception', venueEvent: 'Fiesta' },
+				),
 			},
 		};
 		const result = mapDraftToPublished({
@@ -838,16 +857,28 @@ describe('mapDraftToPublished', () => {
 			demoContent: demoWithLocation,
 			draftContent: {
 				...baseInput.draftContent,
-				location: {
-					ceremony: { venueName: 'Iglesia', address: 'Calle 1' },
-					reception: { venueName: 'Salon', address: 'Calle 2' },
-				},
+				location: draftVenues(
+					{ venueName: 'Iglesia', address: 'Calle 1' },
+					{ venueName: 'Salon', address: 'Calle 2' },
+				),
 			},
 		});
 
 		expect(result.location).toMatchObject({
-			ceremony: { venueName: 'Iglesia', address: 'Calle 1', image: 'mapCeremony' },
-			reception: { venueName: 'Salon', address: 'Calle 2', image: 'mapReception' },
+			venues: [
+				{
+					type: 'ceremony',
+					venueName: 'Iglesia',
+					address: 'Calle 1',
+					image: 'mapCeremony',
+				},
+				{
+					type: 'reception',
+					venueName: 'Salon',
+					address: 'Calle 2',
+					image: 'mapReception',
+				},
+			],
 		});
 	});
 
@@ -946,13 +977,13 @@ describe('mapDraftToPublished', () => {
 		expect((loc.venues as Array<Record<string, unknown>>)[0].venueName).toBe('Salón B');
 	});
 
-	it('falls back to legacy ceremony/reception when venues is absent', () => {
+	it('normalizes legacy prior-published location at the publish ingress', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
-			draftContent: {
-				...baseInput.draftContent,
+			priorPublishedContent: {
+				...baseInput.priorPublishedContent,
 				location: {
-					introHeading: 'Ubicaciones',
+					variant: 'standard',
 					ceremony: {
 						venueName: 'Iglesia Legacy',
 						address: 'Calle L1',
@@ -967,14 +998,21 @@ describe('mapDraftToPublished', () => {
 					},
 				},
 			},
+			draftContent: {
+				...baseInput.draftContent,
+				location: {
+					introHeading: 'Ubicaciones',
+				},
+			},
 		});
 		const loc = result.location as Record<string, unknown>;
+		const venues = loc.venues as Array<Record<string, unknown>>;
 
-		expect(loc.ceremony).toBeDefined();
-		expect(loc.reception).toBeDefined();
-		expect((loc.ceremony as Record<string, unknown>).venueName).toBe('Iglesia Legacy');
-		expect((loc.reception as Record<string, unknown>).venueName).toBe('Salón Legacy');
-		expect(loc.venues).toBeUndefined();
+		expect(venues).toHaveLength(2);
+		expect(venues[0].venueName).toBe('Iglesia Legacy');
+		expect(venues[1].venueName).toBe('Salón Legacy');
+		expect(loc).not.toHaveProperty('ceremony');
+		expect(loc).not.toHaveProperty('reception');
 	});
 
 	it('preserves custom venue labels in published venues', () => {
@@ -1006,35 +1044,39 @@ describe('mapDraftToPublished', () => {
 		expect((loc.venues as Array<Record<string, unknown>>)[0].type).toBe('custom');
 	});
 
-	it('preserves coordinates in legacy ceremony/reception venues', () => {
+	it('preserves coordinates in canonical venues', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
 			draftContent: {
 				...baseInput.draftContent,
-				location: {
-					ceremony: {
+				location: draftVenues(
+					{
 						venueName: 'Iglesia',
 						address: 'Calle 1',
 						coordinates: { lat: 19.4326, lng: -99.1332 },
 					},
-					reception: {
+					{
 						venueName: 'Salon',
 						address: 'Calle 2',
 						coordinates: { lat: 20.5, lng: -100.3 },
 					},
-				},
+				),
 			},
 		});
 
 		expect(result.location).toMatchObject({
-			ceremony: {
-				venueName: 'Iglesia',
-				coordinates: { lat: 19.4326, lng: -99.1332 },
-			},
-			reception: {
-				venueName: 'Salon',
-				coordinates: { lat: 20.5, lng: -100.3 },
-			},
+			venues: [
+				{
+					type: 'ceremony',
+					venueName: 'Iglesia',
+					coordinates: { lat: 19.4326, lng: -99.1332 },
+				},
+				{
+					type: 'reception',
+					venueName: 'Salon',
+					coordinates: { lat: 20.5, lng: -100.3 },
+				},
+			],
 		});
 	});
 
@@ -1073,95 +1115,51 @@ describe('mapDraftToPublished', () => {
 			...baseInput,
 			draftContent: {
 				...baseInput.draftContent,
-				location: {
-					ceremony: {
-						venueName: 'Iglesia',
-						address: 'Calle 1',
-						mapUrl: 'https://maps.google.com/?q=19.4326,-99.1332',
-						coordinates: { lat: 19.4326, lng: -99.1332 },
-					},
-				},
+				location: draftVenues({
+					venueName: 'Iglesia',
+					address: 'Calle 1',
+					mapUrl: 'https://maps.google.com/?q=19.4326,-99.1332',
+					coordinates: { lat: 19.4326, lng: -99.1332 },
+				}),
 			},
 		});
 
 		expect(result.location).toMatchObject({
-			ceremony: {
-				mapUrl: 'https://maps.google.com/?q=19.4326,-99.1332',
-				coordinates: { lat: 19.4326, lng: -99.1332 },
-			},
+			venues: [
+				{
+					mapUrl: 'https://maps.google.com/?q=19.4326,-99.1332',
+					coordinates: { lat: 19.4326, lng: -99.1332 },
+				},
+			],
 		});
 	});
 
-	it.each([
-		{
-			kind: 'ceremony venue',
-			getInput: () => ({
-				...baseInput,
-				draftContent: {
-					...baseInput.draftContent,
-					location: {
-						ceremony: {
-							venueName: 'Iglesia',
-							address: 'Calle 1',
-							mapUrl: 'https://maps.example.com/map',
-							googleMapsUrl: 'https://maps.google.com/?q=test',
-							appleMapsUrl: 'https://maps.apple.com/?q=test',
-							wazeUrl: 'https://waze.com/ul?q=test',
-						},
-					},
-				},
-			}),
-			match: {
-				ceremony: {
-					mapUrl: expect.any(String),
-					googleMapsUrl: expect.any(String),
-					appleMapsUrl: expect.any(String),
-					wazeUrl: expect.any(String),
-				},
+	it('preserves all map URL fields in a canonical venue', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				location: draftVenues({
+					venueName: 'Iglesia',
+					address: 'Calle 1',
+					mapUrl: 'https://maps.example.com/map',
+					googleMapsUrl: 'https://maps.google.com/?q=test',
+					appleMapsUrl: 'https://maps.apple.com/?q=test',
+					wazeUrl: 'https://waze.com/ul?q=test',
+				}),
 			},
-		},
-		{
-			kind: 'venues array',
-			getInput: () => ({
-				...baseInput,
-				draftContent: {
-					...baseInput.draftContent,
-					location: {
-						introHeading: 'Ubicaciones',
-						venues: [
-							{
-								id: 'v1',
-								type: 'ceremony' as const,
-								label: 'Ceremonia',
-								venueName: 'Iglesia',
-								address: 'Calle 1',
-								date: '2026-01-01',
-								time: '10:00',
-								mapUrl: 'https://maps.example.com/map',
-								googleMapsUrl: 'https://maps.google.com/?q=test',
-								appleMapsUrl: 'https://maps.apple.com/?q=test',
-								wazeUrl: 'https://waze.com/ul?q=test',
-								isVisible: true,
-							},
-						],
-					},
-				},
-			}),
-			match: {
-				venues: [
-					{
-						mapUrl: 'https://maps.example.com/map',
-						googleMapsUrl: 'https://maps.google.com/?q=test',
-						appleMapsUrl: 'https://maps.apple.com/?q=test',
-						wazeUrl: 'https://waze.com/ul?q=test',
-					},
-				],
-			},
-		},
-	])('preserves all map URL fields in published $kind', ({ getInput, match }) => {
-		const result = mapDraftToPublished(getInput());
+		});
 
-		expect(result.location).toMatchObject(match);
+		expect(result.location).toMatchObject({
+			venues: [
+				{
+					mapUrl: 'https://maps.example.com/map',
+					googleMapsUrl: 'https://maps.google.com/?q=test',
+					appleMapsUrl: 'https://maps.apple.com/?q=test',
+					wazeUrl: 'https://waze.com/ul?q=test',
+				},
+			],
+		});
 	});
 
 	it('does not include coordinates in published venue when draft has none', () => {
@@ -1169,19 +1167,16 @@ describe('mapDraftToPublished', () => {
 			...baseInput,
 			draftContent: {
 				...baseInput.draftContent,
-				location: {
-					ceremony: {
-						venueName: 'Iglesia',
-						address: 'Calle 1',
-					},
-				},
+				location: draftVenues({
+					venueName: 'Iglesia',
+					address: 'Calle 1',
+				}),
 			},
 		});
 
-		const ceremony = (result.location as Record<string, unknown>).ceremony as Record<
-			string,
-			unknown
-		>;
+		const ceremony = (
+			(result.location as Record<string, unknown>).venues as Array<Record<string, unknown>>
+		)[0];
 		expect(ceremony.coordinates).toBeUndefined();
 	});
 
@@ -1316,12 +1311,12 @@ describe('mapDraftToPublished', () => {
 			draftContent: {
 				...baseInput.draftContent,
 				location: {
+					...draftVenues({ venueName: 'Iglesia', address: 'Calle 1' }),
 					introEyebrow: 'EL CAMINO AL PALACIO',
 					introHeading: 'Ubicación',
 					introLede:
 						'Guarda la ruta y llega con calma a una noche entre rosas, música y luz de velas.',
 					indicationsHeading: 'Indicaciones importantes',
-					ceremony: { venueName: 'Iglesia', address: 'Calle 1' },
 					indications: [
 						{ iconName: 'DressCode', text: 'Formal de gala' },
 						{ iconName: 'Calendar', text: 'Confirma antes del 6 de noviembre.' },
@@ -1353,7 +1348,7 @@ describe('mapDraftToPublished', () => {
 			draftContent: {
 				...baseInput.draftContent,
 				location: {
-					ceremony: { venueName: 'Iglesia', address: 'Calle 1' },
+					...draftVenues({ venueName: 'Iglesia', address: 'Calle 1' }),
 					indications: [{ iconName: 'DressCode', text: '' }],
 				},
 			},
@@ -1389,15 +1384,19 @@ describe('mapDraftToPublished', () => {
 			demoContent: demoWithLocation,
 			draftContent: {
 				...baseInput.draftContent,
-				location: {
-					ceremony: { venueName: 'Iglesia', address: 'Calle 1' },
-				},
+				location: draftVenues({ venueName: 'Iglesia', address: 'Calle 1' }),
 			},
 		});
 
 		expect(result.location).toMatchObject({
-			ceremony: { venueName: 'Iglesia', address: 'Calle 1', image: 'mapCeremony' },
-			reception: { venueName: 'Salon Demo', address: 'Calle 2 Demo', image: 'mapReception' },
+			venues: [
+				{
+					type: 'ceremony',
+					venueName: 'Iglesia',
+					address: 'Calle 1',
+					image: 'mapCeremony',
+				},
+			],
 			introEyebrow: 'EL CAMINO AL PALACIO',
 			introHeading: 'Ubicación',
 			introLede: 'Guarda la ruta.',
@@ -2467,22 +2466,22 @@ describe('sharing section mapping', () => {
 					reminder: '',
 				},
 				quote: { text: 'Test quote', author: 'Test author' },
-				location: {
-					ceremony: {
+				location: draftVenues(
+					{
 						venueName: 'Church',
 						address: '123 Main St',
 						city: 'City',
 						date: '2026-06-15',
 						time: '18:00',
 					},
-					reception: {
+					{
 						venueName: 'Reception Hall',
 						address: '456 Main St',
 						city: 'City',
 						date: '2026-06-15',
 						time: '20:00',
 					},
-				},
+				),
 			},
 		});
 
@@ -2510,27 +2509,29 @@ describe('sharing section mapping', () => {
 			},
 			draftContent: {
 				...baseInput.draftContent,
-				location: {
-					ceremony: {
+				location: draftVenues(
+					{
 						venueName: 'Iglesia San Juan',
 						address: 'Calle 1',
 						city: 'City',
 						date: '2026-06-15',
 						time: '18:00',
 					},
-					reception: {
+					{
 						venueName: 'Salon Real',
 						address: 'Calle 2',
 						city: 'City',
 						date: '2026-06-15',
 						time: '20:00',
 					},
-				},
+				),
 			},
 		});
 
-		const location = result.location as Record<string, any>;
-		expect(location.ceremony.venueEvent).toBe('Misa de Gracias');
-		expect(location.reception.venueEvent).toBe('Brindis y Baile');
+		const venues = (result.location as Record<string, any>).venues as Array<
+			Record<string, any>
+		>;
+		expect(venues[0].venueEvent).toBe('Misa de Gracias');
+		expect(venues[1].venueEvent).toBe('Brindis y Baile');
 	});
 });

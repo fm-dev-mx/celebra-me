@@ -190,7 +190,14 @@ describe('buildSectionSaveValue', () => {
 		const base: DraftContent = {
 			location: {
 				introEyebrow: INTRO,
-				reception: { venueName: VENUE },
+				venues: [
+					{
+						id: 'reception',
+						type: 'reception',
+						isVisible: true,
+						venueName: VENUE,
+					},
+				],
 			},
 			eventTiming: {
 				localDateTime: '2026-09-11T20:00',
@@ -208,7 +215,9 @@ describe('buildSectionSaveValue', () => {
 		const saved = buildSectionSaveValue(base, current, 'location') as Record<string, unknown>;
 
 		expect(saved.introEyebrow).toBe(base.location?.introEyebrow);
-		expect(saved.reception).toEqual(base.location?.reception);
+		expect(saved.reception).toEqual(
+			base.location?.venues?.find((venue) => venue.type === 'reception'),
+		);
 		expect(saved.eventTiming).toEqual(current.eventTiming);
 	});
 

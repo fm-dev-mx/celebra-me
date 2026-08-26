@@ -738,16 +738,8 @@ export default function InvitationEditor({ initialContext }: Props) {
 				'thankYou.image': () =>
 					updateContent('thankYou', { ...messages.thankYou, image: ref }),
 				'sharing.ogImage': () => updateContent('sharing', { ...sharing, ogImage: ref }),
-				'location.ceremony.image': () => {
-					const venue = location.ceremony ?? {};
-					updateLocation({ ceremony: { ...venue, image: ref } });
-				},
-				'location.reception.image': () => {
-					const venue = location.reception ?? {};
-					updateLocation({ reception: { ...venue, image: ref } });
-				},
 			}) as Record<string, () => void>;
-	}, [updateHero, updateFamily, updateContent, updateLocation, location, messages, sharing]);
+	}, [updateHero, updateFamily, updateContent, messages, sharing]);
 
 	const handleAssetSelect = (assetId: string) => {
 		const ref = { type: 'uploaded' as const, assetId };

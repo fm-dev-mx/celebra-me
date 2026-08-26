@@ -150,8 +150,6 @@ function compare(
 /** Shape consumed by LocationSectionEditor via getSectionValue(..., 'location'). */
 function editorLocationState(draft: DraftContent) {
 	return getSectionValue(draft, 'location') as {
-		ceremony?: { date?: string; time?: string; venueName?: string; address?: string };
-		reception?: { date?: string; time?: string; venueName?: string; address?: string };
 		venues?: Array<{
 			type?: string;
 			date?: string;
@@ -163,6 +161,10 @@ function editorLocationState(draft: DraftContent) {
 		introHeading?: string;
 		indications?: Array<{ text?: string }>;
 	};
+}
+
+function editorVenue(draft: DraftContent, type: 'ceremony' | 'reception') {
+	return editorLocationState(draft).venues?.find((venue) => venue.type === type);
 }
 
 /** Assert the exact Draft shape consumed by `<input type="date|time">`. */
@@ -330,15 +332,17 @@ describe('Fecha y ubicaciones editor-consumable Draft state', () => {
 		const pub = published();
 		const draft = mapNestedToDraftContent(pub);
 		const location = editorLocationState(draft);
+		const ceremony = editorVenue(draft, 'ceremony');
+		const reception = editorVenue(draft, 'reception');
 
-		expectEditorDate(location.ceremony?.date, '2026-08-14');
-		expectEditorTime(location.ceremony?.time, '17:00');
-		expectEditorDate(location.reception?.date, '2026-08-14');
-		expectEditorTime(location.reception?.time, '20:30');
-		expect(location.ceremony?.time).not.toBe(location.reception?.time);
+		expectEditorDate(ceremony?.date, '2026-08-14');
+		expectEditorTime(ceremony?.time, '17:00');
+		expectEditorDate(reception?.date, '2026-08-14');
+		expectEditorTime(reception?.time, '20:30');
+		expect(ceremony?.time).not.toBe(reception?.time);
 		expect(location.eventTiming?.localDateTime).toBe(ROMINA_EVENT.localDateTime);
-		expect(location.ceremony?.venueName).toBeTruthy();
-		expect(location.ceremony?.address).toBeTruthy();
+		expect(ceremony?.venueName).toBeTruthy();
+		expect(ceremony?.address).toBeTruthy();
 	});
 
 	it('hydrates Daniela venues with distinct ceremony/reception times', () => {
@@ -359,34 +363,47 @@ describe('Fecha y ubicaciones editor-consumable Draft state', () => {
 	it('keeps optional missing venue date/time absent rather than inventing empty strings', () => {
 		const pub = published();
 		const sparse = structuredClone(pub) as Record<string, unknown>;
-		const location = sparse.location as Record<string, unknown>;
-		const ceremony = { ...(location.ceremony as Record<string, unknown>) };
+		const location = sparse.location as { venues: Array<Record<string, unknown>> };
+		const ceremonyIndex = location.venues.findIndex((venue) => venue.type === 'ceremony');
+		const ceremony = { ...location.venues[ceremonyIndex] };
 		delete ceremony.date;
 		delete ceremony.time;
-		location.ceremony = ceremony;
+		location.venues[ceremonyIndex] = ceremony;
 
 		const draft = mapNestedToDraftContent(sparse);
-		const editor = editorLocationState(draft);
-		expect(editor.ceremony?.date).toBeUndefined();
-		expect(editor.ceremony?.time).toBeUndefined();
-		expectEditorDate(editor.reception?.date, '2026-08-14');
-		expectEditorTime(editor.reception?.time, '20:30');
+		expect(editorVenue(draft, 'ceremony')?.date).toBeUndefined();
+		expect(editorVenue(draft, 'ceremony')?.time).toBeUndefined();
+		expectEditorDate(editorVenue(draft, 'reception')?.date, '2026-08-14');
+		expectEditorTime(editorVenue(draft, 'reception')?.time, '20:30');
 	});
 
 	it('prefers existing Draft venue times over Published when both are present', () => {
 		const pub = published();
 		const draftOverlay: DraftContent = {
 			location: {
-				ceremony: { date: '2026-08-15', time: '18:00' },
-				reception: { date: '2026-08-15', time: '21:00' },
+				venues: [
+					{
+						id: 'ceremony',
+						type: 'ceremony',
+						isVisible: true,
+						date: '2026-08-15',
+						time: '18:00',
+					},
+					{
+						id: 'reception',
+						type: 'reception',
+						isVisible: true,
+						date: '2026-08-15',
+						time: '21:00',
+					},
+				],
 			},
 		};
 		const merged = computeEffectiveContent(draftOverlay, pub);
-		const location = editorLocationState(merged);
-		expectEditorDate(location.ceremony?.date, '2026-08-15');
-		expectEditorTime(location.ceremony?.time, '18:00');
-		expectEditorDate(location.reception?.date, '2026-08-15');
-		expectEditorTime(location.reception?.time, '21:00');
+		expectEditorDate(editorVenue(merged, 'ceremony')?.date, '2026-08-15');
+		expectEditorTime(editorVenue(merged, 'ceremony')?.time, '18:00');
+		expectEditorDate(editorVenue(merged, 'reception')?.date, '2026-08-15');
+		expectEditorTime(editorVenue(merged, 'reception')?.time, '21:00');
 	});
 
 	it('no-op location save does not invent pending location/family changes', () => {
@@ -400,11 +417,10 @@ describe('Fecha y ubicaciones editor-consumable Draft state', () => {
 		expect(comparison.changedPaths.filter((path) => path.includes('location'))).toEqual([]);
 		expect(comparison.changedPaths.filter((path) => path.includes('family'))).toEqual([]);
 
-		const location = editorLocationState(next);
-		expectEditorDate(location.ceremony?.date, '2026-08-14');
-		expectEditorTime(location.ceremony?.time, '17:00');
-		expectEditorDate(location.reception?.date, '2026-08-14');
-		expectEditorTime(location.reception?.time, '20:30');
+		expectEditorDate(editorVenue(next, 'ceremony')?.date, '2026-08-14');
+		expectEditorTime(editorVenue(next, 'ceremony')?.time, '17:00');
+		expectEditorDate(editorVenue(next, 'reception')?.date, '2026-08-14');
+		expectEditorTime(editorVenue(next, 'reception')?.time, '20:30');
 	});
 
 	it('isolated ceremony time edit changes only that semantic path', () => {
@@ -413,18 +429,20 @@ describe('Fecha y ubicaciones editor-consumable Draft state', () => {
 		const edited = structuredClone(baseline) as DraftContent;
 		edited.location = {
 			...edited.location,
-			ceremony: { ...edited.location?.ceremony, time: '17:15' },
+			venues: edited.location?.venues?.map((venue) =>
+				venue.type === 'ceremony' ? { ...venue, time: '17:15' } : venue,
+			),
 		};
 		const comparison = compare(edited, pub);
 		expect(
 			comparison.changedPaths.some(
-				(path) => path.includes('ceremony') && path.includes('time'),
+				(path) => path.includes('venues') && path.includes('time'),
 			),
 		).toBe(true);
 		expect(comparison.changedPaths.filter((path) => path.includes('family'))).toEqual([]);
 		expect(
 			comparison.changedPaths.filter(
-				(path) => path.includes('reception') && path.includes('time'),
+				(path) => path.includes('venues.1') && path.includes('time'),
 			),
 		).toEqual([]);
 	});
@@ -435,12 +453,14 @@ describe('Fecha y ubicaciones editor-consumable Draft state', () => {
 		const edited = structuredClone(baseline) as DraftContent;
 		edited.location = {
 			...edited.location,
-			ceremony: { ...edited.location?.ceremony, date: '2026-08-15' },
+			venues: edited.location?.venues?.map((venue) =>
+				venue.type === 'ceremony' ? { ...venue, date: '2026-08-15' } : venue,
+			),
 		};
 		const comparison = compare(edited, pub);
 		expect(
 			comparison.changedPaths.some(
-				(path) => path.includes('ceremony') && path.includes('date'),
+				(path) => path.includes('venues') && path.includes('date'),
 			),
 		).toBe(true);
 		expect(comparison.changedPaths.filter((path) => path.includes('family'))).toEqual([]);

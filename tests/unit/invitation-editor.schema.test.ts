@@ -379,28 +379,41 @@ describe('InvitationEditorSectionSchemas.location (venue + indication parity)', 
 	it('accepts ceremony with valid coordinates', () => {
 		const value = {
 			...BASE_LOCATION,
-			ceremony: {
-				venueName: 'Iglesia',
-				address: 'Calle 1',
-				coordinates: { lat: 19.4326, lng: -99.1332 },
-			},
+			venues: [
+				{
+					id: 'ceremony',
+					type: 'ceremony' as const,
+					isVisible: true,
+					venueName: 'Iglesia',
+					address: 'Calle 1',
+					coordinates: { lat: 19.4326, lng: -99.1332 },
+				},
+			],
 		};
 		const result = InvitationEditorSectionSchemas.location.safeParse(value);
 		expect(result.success).toBe(true);
 		if (result.success) {
-			expect(result.data.ceremony?.coordinates).toEqual({ lat: 19.4326, lng: -99.1332 });
+			expect(result.data.venues?.[0]?.coordinates).toEqual({ lat: 19.4326, lng: -99.1332 });
 		}
 	});
 
 	it('accepts location without coordinates', () => {
 		const value = {
 			...BASE_LOCATION,
-			ceremony: { venueName: 'Iglesia', address: 'Calle 1' },
+			venues: [
+				{
+					id: 'ceremony',
+					type: 'ceremony' as const,
+					isVisible: true,
+					venueName: 'Iglesia',
+					address: 'Calle 1',
+				},
+			],
 		};
 		const result = InvitationEditorSectionSchemas.location.safeParse(value);
 		expect(result.success).toBe(true);
 		if (result.success) {
-			expect(result.data.ceremony?.coordinates).toBeUndefined();
+			expect(result.data.venues?.[0]?.coordinates).toBeUndefined();
 		}
 	});
 
@@ -428,10 +441,15 @@ describe('InvitationEditorSectionSchemas.location (venue + indication parity)', 
 	it('rejects ceremony with latitude below -90', () => {
 		const value = {
 			...BASE_LOCATION,
-			ceremony: {
-				venueName: 'Iglesia',
-				coordinates: { lat: -91, lng: 0 },
-			},
+			venues: [
+				{
+					id: 'ceremony',
+					type: 'ceremony' as const,
+					isVisible: true,
+					venueName: 'Iglesia',
+					coordinates: { lat: -91, lng: 0 },
+				},
+			],
 		};
 		const result = InvitationEditorSectionSchemas.location.safeParse(value);
 		expect(result.success).toBe(false);
@@ -440,10 +458,15 @@ describe('InvitationEditorSectionSchemas.location (venue + indication parity)', 
 	it('rejects ceremony with latitude above 90', () => {
 		const value = {
 			...BASE_LOCATION,
-			ceremony: {
-				venueName: 'Iglesia',
-				coordinates: { lat: 91, lng: 0 },
-			},
+			venues: [
+				{
+					id: 'ceremony',
+					type: 'ceremony' as const,
+					isVisible: true,
+					venueName: 'Iglesia',
+					coordinates: { lat: 91, lng: 0 },
+				},
+			],
 		};
 		const result = InvitationEditorSectionSchemas.location.safeParse(value);
 		expect(result.success).toBe(false);
@@ -452,10 +475,15 @@ describe('InvitationEditorSectionSchemas.location (venue + indication parity)', 
 	it('rejects ceremony with longitude below -180', () => {
 		const value = {
 			...BASE_LOCATION,
-			ceremony: {
-				venueName: 'Iglesia',
-				coordinates: { lat: 0, lng: -181 },
-			},
+			venues: [
+				{
+					id: 'ceremony',
+					type: 'ceremony' as const,
+					isVisible: true,
+					venueName: 'Iglesia',
+					coordinates: { lat: 0, lng: -181 },
+				},
+			],
 		};
 		const result = InvitationEditorSectionSchemas.location.safeParse(value);
 		expect(result.success).toBe(false);
@@ -464,10 +492,15 @@ describe('InvitationEditorSectionSchemas.location (venue + indication parity)', 
 	it('rejects ceremony with longitude above 180', () => {
 		const value = {
 			...BASE_LOCATION,
-			ceremony: {
-				venueName: 'Iglesia',
-				coordinates: { lat: 0, lng: 181 },
-			},
+			venues: [
+				{
+					id: 'ceremony',
+					type: 'ceremony' as const,
+					isVisible: true,
+					venueName: 'Iglesia',
+					coordinates: { lat: 0, lng: 181 },
+				},
+			],
 		};
 		const result = InvitationEditorSectionSchemas.location.safeParse(value);
 		expect(result.success).toBe(false);
@@ -476,20 +509,25 @@ describe('InvitationEditorSectionSchemas.location (venue + indication parity)', 
 	it('accepts venue with mapUrl and coordinates together', () => {
 		const value = {
 			...BASE_LOCATION,
-			ceremony: {
-				venueName: 'Iglesia',
-				address: 'Calle 1',
-				mapUrl: 'https://maps.google.com/?q=19.4326,-99.1332',
-				coordinates: { lat: 19.4326, lng: -99.1332 },
-			},
+			venues: [
+				{
+					id: 'ceremony',
+					type: 'ceremony' as const,
+					isVisible: true,
+					venueName: 'Iglesia',
+					address: 'Calle 1',
+					mapUrl: 'https://maps.google.com/?q=19.4326,-99.1332',
+					coordinates: { lat: 19.4326, lng: -99.1332 },
+				},
+			],
 		};
 		const result = InvitationEditorSectionSchemas.location.safeParse(value);
 		expect(result.success).toBe(true);
 		if (result.success) {
-			expect(result.data.ceremony?.mapUrl).toBe(
+			expect(result.data.venues?.[0]?.mapUrl).toBe(
 				'https://maps.google.com/?q=19.4326,-99.1332',
 			);
-			expect(result.data.ceremony?.coordinates).toEqual({ lat: 19.4326, lng: -99.1332 });
+			expect(result.data.venues?.[0]?.coordinates).toEqual({ lat: 19.4326, lng: -99.1332 });
 		}
 	});
 });

@@ -488,7 +488,7 @@ describe('hydration edge cases', () => {
 		const result = await getInvitationEditorContext('proj-1');
 		expect(result.content.gallery).toBeUndefined();
 		expect(result.content.sectionOrder).toBeUndefined();
-		expect(result.content.location?.ceremony?.venueName).toBeUndefined();
+		expect(result.content.location?.venues?.find((venue) => venue.type === 'ceremony')?.venueName).toBeUndefined();
 		expect(result.sectionStates.gallery).toBe('empty');
 		expect(result.sectionStates.location).toBe('empty');
 	});
@@ -618,8 +618,8 @@ describe('hydration edge cases', () => {
 		const result = await getInvitationEditorContext('proj-1');
 
 		// Draft ceremony fields are preserved
-		expect(result.content.location?.ceremony?.venueName).toBe('Mi Iglesia');
-		expect(result.content.location?.ceremony?.address).toBe('Calle 123');
+		expect(result.content.location?.venues?.find((venue) => venue.type === 'ceremony')?.venueName).toBe('Mi Iglesia');
+		expect(result.content.location?.venues?.find((venue) => venue.type === 'ceremony')?.address).toBe('Calle 123');
 		// Published section copy fills in where draft is missing
 		expect(result.content.location?.introEyebrow).toBe('EL CAMINO AL PALACIO');
 		expect(result.content.location?.introHeading).toBe('Ubicación');
@@ -699,7 +699,7 @@ describe('hydration edge cases', () => {
 		expect(result.content.location?.introHeading).toBeUndefined();
 		expect(result.content.location?.introLede).toBeUndefined();
 		// Published ceremony still wins over demo
-		expect(result.content.location?.ceremony?.venueName).toBe('Iglesia P');
+		expect(result.content.location?.venues?.find((venue) => venue.type === 'ceremony')?.venueName).toBe('Iglesia P');
 		expect(result.sectionStates.location).toBe('published');
 	});
 
@@ -734,7 +734,7 @@ describe('hydration edge cases', () => {
 		// Published fills in field absent from draft
 		expect(result.content.location?.introHeading).toBe('Ubicación Publicada');
 		// Draft ceremony fields preserved
-		expect(result.content.location?.ceremony?.venueName).toBe('Mi Iglesia');
+		expect(result.content.location?.venues?.find((venue) => venue.type === 'ceremony')?.venueName).toBe('Mi Iglesia');
 		expect(result.sectionStates.location).toBe('draft');
 	});
 });
@@ -759,10 +759,14 @@ describe('saveInvitationEditorMetadata', () => {
 			idempotent: false,
 		});
 
-		const result = await saveInvitationEditorMetadata('proj-1', {
-			expectedUpdatedAt: invitation.updatedAt,
-			value: metadata,
-		}, COMMAND_CONTEXT);
+		const result = await saveInvitationEditorMetadata(
+			'proj-1',
+			{
+				expectedUpdatedAt: invitation.updatedAt,
+				value: metadata,
+			},
+			COMMAND_CONTEXT,
+		);
 
 		expect(saveInvitationMetadataAtomic).toHaveBeenCalledWith(
 			expect.objectContaining({
@@ -777,15 +781,19 @@ describe('saveInvitationEditorMetadata', () => {
 	});
 
 	it('does not create pending publication for client-only metadata', async () => {
-		const result = await saveInvitationEditorMetadata('proj-1', {
-			expectedUpdatedAt: invitation.updatedAt,
-			value: {
-				...metadata,
-				title: invitation.title,
-				slug: invitation.slug,
-				clientName: 'Romina',
+		const result = await saveInvitationEditorMetadata(
+			'proj-1',
+			{
+				expectedUpdatedAt: invitation.updatedAt,
+				value: {
+					...metadata,
+					title: invitation.title,
+					slug: invitation.slug,
+					clientName: 'Romina',
+				},
 			},
-		}, COMMAND_CONTEXT);
+			COMMAND_CONTEXT,
+		);
 
 		expect(updateDraftContentConditionally).not.toHaveBeenCalled();
 		expect(saveInvitationMetadataAtomic).toHaveBeenCalledWith(
@@ -1161,10 +1169,14 @@ describe('restoreInvitationEditorFromPublished', () => {
 			updatedAt: '2026-05-30T03:00:00Z',
 		});
 
-		await restoreInvitationEditorFromPublished('proj-1', {
-			expectedDraftUpdatedAt: draft.updatedAt,
-			expectedInvitationUpdatedAt: invitation.updatedAt,
-		}, COMMAND_CONTEXT);
+		await restoreInvitationEditorFromPublished(
+			'proj-1',
+			{
+				expectedDraftUpdatedAt: draft.updatedAt,
+				expectedInvitationUpdatedAt: invitation.updatedAt,
+			},
+			COMMAND_CONTEXT,
+		);
 
 		expect(restoreInvitationFromPublishedAtomic).toHaveBeenCalledWith(
 			expect.objectContaining({
@@ -1184,10 +1196,14 @@ describe('restoreInvitationEditorFromPublished', () => {
 		(findPublishedByInvitationId as jest.Mock).mockResolvedValue(null);
 
 		await expect(
-			restoreInvitationEditorFromPublished('proj-1', {
-				expectedDraftUpdatedAt: draft.updatedAt,
-				expectedInvitationUpdatedAt: invitation.updatedAt,
-			}, COMMAND_CONTEXT),
+			restoreInvitationEditorFromPublished(
+				'proj-1',
+				{
+					expectedDraftUpdatedAt: draft.updatedAt,
+					expectedInvitationUpdatedAt: invitation.updatedAt,
+				},
+				COMMAND_CONTEXT,
+			),
 		).rejects.toMatchObject({ status: 404 });
 	});
 });

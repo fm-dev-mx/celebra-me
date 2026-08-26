@@ -233,7 +233,17 @@ describe('InvitationEditor', () => {
 			content: {
 				...createContext().content,
 				family: { fatherName: 'Padre', motherName: 'Madre' },
-				location: { ceremony: { venueName: 'Salón', date: '2027-01-01' } },
+				location: {
+					venues: [
+						{
+							id: 'ceremony',
+							type: 'ceremony',
+							isVisible: true,
+							venueName: 'Salón',
+							date: '2027-01-01',
+						},
+					],
+				},
 				rsvp: { title: 'Confirma', guestCap: 1, confirmationMode: 'api' },
 				gifts: { items: [{ type: 'cash', title: 'Sobres', text: 'Gracias' }] },
 			},
@@ -271,7 +281,17 @@ describe('InvitationEditor', () => {
 			content: {
 				...createContext().content,
 				family: { fatherName: 'Padre', motherName: 'Madre' },
-				location: { ceremony: { venueName: 'Salón', date: '2027-01-01' } },
+				location: {
+					venues: [
+						{
+							id: 'ceremony',
+							type: 'ceremony',
+							isVisible: true,
+							venueName: 'Salón',
+							date: '2027-01-01',
+						},
+					],
+				},
 				rsvp: { title: 'Confirma', guestCap: 1, confirmationMode: 'api' },
 			},
 			sectionStates: {

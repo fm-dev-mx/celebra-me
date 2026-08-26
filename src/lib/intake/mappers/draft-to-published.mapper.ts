@@ -195,35 +195,6 @@ function publishVenueTime(draftTime: unknown): string | undefined {
 	return normalizeTime(draft) ?? draft;
 }
 
-function mapVenue(
-	draftVenue: Record<string, unknown> | undefined,
-	demoVenue: Record<string, unknown> | undefined,
-	ctx: PublishCtx,
-): Record<string, unknown> | undefined {
-	if (!isNonEmptyObject(draftVenue)) {
-		return ctx.isDemo && isNonEmptyObject(demoVenue) ? { ...demoVenue } : undefined;
-	}
-	const result: Record<string, unknown> = {};
-	if (str(draftVenue.venueName)) result.venueName = str(draftVenue.venueName);
-	if (str(draftVenue.address)) result.address = str(draftVenue.address);
-	if (str(draftVenue.city)) result.city = str(draftVenue.city);
-	const date = publishVenueDate(draftVenue.date);
-	if (date) result.date = date;
-	const time = publishVenueTime(draftVenue.time);
-	if (time) result.time = time;
-	for (const field of VENUE_URL_FIELDS) {
-		const val = str((draftVenue as Record<string, unknown>)[field]);
-		if (val) result[field] = val;
-	}
-	if (draftVenue.image) {
-		result.image = draftVenue.image;
-	} else if (ctx.isDemo && demoVenue?.image) {
-		result.image = demoVenue.image;
-	}
-	if (draftVenue.coordinates) result.coordinates = draftVenue.coordinates;
-	return isNonEmptyObject(result) ? result : undefined;
-}
-
 function findPriorVenue(
 	priorLocation: Record<string, unknown> | undefined,
 	venue: { id?: string; type?: string },
@@ -314,7 +285,18 @@ function mapLocationFromDraft(
 			.filter((v) => v.isVisible !== false)
 			.map((v, index) => {
 				const priorVenue = findPriorVenue(priorLocation, v, index);
-				const label = str(v.label) || str(priorVenue?.label);
+				const demoVenue = ctx.isDemo ? findPriorVenue(demoLocation, v, index) : undefined;
+				const label = str(v.label) || str(priorVenue?.label) || str(demoVenue?.label);
+				const image =
+					v.image ?? (ctx.isDemo ? demoVenue?.image : undefined) ?? priorVenue?.image;
+				const coordinates =
+					v.coordinates ??
+					(ctx.isDemo ? demoVenue?.coordinates : undefined) ??
+					priorVenue?.coordinates;
+				const venueEvent =
+					str(priorVenue?.venueEvent) ||
+					str(demoVenue?.venueEvent) ||
+					venueLabel(v.type, label);
 				return {
 					id: v.id,
 					type: v.type,
@@ -330,10 +312,10 @@ function mapLocationFromDraft(
 							(v as Record<string, unknown>)[f] || undefined,
 						]).filter(([, val]) => val !== undefined),
 					),
-					...(v.image ? { image: v.image } : {}),
-					...(v.coordinates ? { coordinates: v.coordinates } : {}),
+					...(image ? { image } : {}),
+					...(coordinates ? { coordinates } : {}),
 					// Visible venues omit isVisible (default). Hidden ones are filtered above.
-					venueEvent: str(priorVenue?.venueEvent) || venueLabel(v.type, label),
+					venueEvent,
 				};
 			});
 	result.venues = mappedVenues;
