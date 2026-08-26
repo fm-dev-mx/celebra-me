@@ -5,6 +5,7 @@ import {
 	buildInvitationProfileUrlMap,
 	resolveInvitationCssLoadPlan as resolveInvitationCssLoadPlanFromMaps,
 	type InvitationCssLoadItem,
+	type InvitationCssResolverInput,
 } from '@/lib/invitation/section-css-resolver-map';
 
 const footerVariantModules = import.meta.glob(
@@ -20,39 +21,8 @@ const footerVariantModules = import.meta.glob(
 	},
 ) as Record<string, { default: string }>;
 
-const galleryVariantModules = import.meta.glob('/src/styles/themes/sections/gallery/_*.scss', {
-	query: '?url',
-	eager: true,
-}) as Record<string, { default: string }>;
-
 const sectionVariantModules = import.meta.glob(
-	[
-		'/src/styles/themes/sections/hero/_editorial-cover.scss',
-		'/src/styles/themes/sections/hero/_split-cover.scss',
-		'/src/styles/themes/sections/thank-you/_editorial-back-cover.scss',
-		'/src/styles/themes/sections/thank-you/_full-bleed-photo.scss',
-		'/src/styles/themes/sections/gifts/_editorial-catalog.scss',
-		'/src/styles/themes/sections/rsvp/_editorial-press-pass.scss',
-		'/src/styles/themes/sections/rsvp/_formal-register.scss',
-		'/src/styles/themes/sections/personalized-access/_editorial-pass.scss',
-		'/src/styles/themes/sections/personalized-access/_formal-pass.scss',
-		'/src/styles/themes/sections/family/_split-groups.scss',
-		'/src/styles/themes/sections/family/_asymmetric-groups.scss',
-		'/src/styles/themes/sections/location/_split-map.scss',
-		'/src/styles/themes/sections/location/_stacked-venue-plates.scss',
-		'/src/styles/themes/sections/itinerary/_timeline-paper.scss',
-		'/src/styles/themes/sections/itinerary/_editorial-ledger.scss',
-		'/src/styles/themes/sections/itinerary/_editorial-program.scss',
-		'/src/styles/themes/sections/countdown/_editorial-folio.scss',
-		'/src/styles/themes/sections/countdown/_magazine-folio.scss',
-		'/src/styles/themes/sections/countdown/_jeweled-panel.scss',
-		'/src/styles/themes/sections/countdown/_rose-ornament.scss',
-		'/src/styles/themes/sections/countdown/_hacienda-ornament.scss',
-		'/src/styles/themes/sections/reveal/_premiere-floral.scss',
-		'/src/styles/themes/sections/reveal/_editorial.scss',
-		'/src/styles/themes/sections/reveal/_luxury-hacienda.scss',
-		'/src/styles/themes/sections/reveal/_shared-light.scss',
-	],
+	'/src/styles/themes/sections/*/_*.scss',
 	{ query: '?url', eager: true },
 ) as Record<string, { default: string }>;
 
@@ -67,13 +37,11 @@ const invitationProfileModules = import.meta.glob('/src/styles/invitation-profil
 }) as Record<string, { default: string }>;
 
 const footerVariantUrlMap = buildSectionUrlMap(footerVariantModules);
-const galleryVariantUrlMap = buildSectionUrlMap(galleryVariantModules);
 const sectionVariantUrlMap = buildSectionUrlMap(sectionVariantModules);
 const sectionBundleUrlMap = buildSectionBundleUrlMap(sectionBundleModules);
 const invitationProfileUrlMap = buildInvitationProfileUrlMap(invitationProfileModules);
 const invitationSectionUrlMap = {
 	...footerVariantUrlMap,
-	...galleryVariantUrlMap,
 	...sectionVariantUrlMap,
 };
 
@@ -87,26 +55,6 @@ if (import.meta.env.DEV) {
 		}
 	}
 }
-
-type InvitationCssResolverInput = {
-	themePreset: string;
-	footerVariant?: string;
-	galleryVariant?: string;
-	sectionVariants?: {
-		hero?: string;
-		thankYou?: string;
-		gifts?: string;
-		rsvp?: string;
-		personalizedAccess?: string;
-		family?: string;
-		location?: string;
-		itinerary?: string;
-		countdown?: string;
-	};
-	envelopeVariant?: string;
-	visualProfileId?: string;
-	slug?: string;
-};
 
 export function resolveInvitationCssLoadPlan(
 	input: InvitationCssResolverInput,

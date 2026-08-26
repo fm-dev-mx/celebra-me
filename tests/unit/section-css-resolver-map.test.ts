@@ -4,7 +4,6 @@ import {
 	buildSectionUrlMap,
 	resolveInvitationCssLoadPlan,
 	resolveInvitationCssUrls,
-	resolveGalleryVariantCssUrl,
 	resolveSectionBundleCssUrl,
 	resolveSectionCssUrl,
 	resolveSectionCssUrls,
@@ -147,34 +146,12 @@ describe('section-css-resolver-map', () => {
 			},
 		});
 
-		expect(resolveGalleryVariantCssUrl(sectionUrlMap, 'magazine-spread')).toBe(
-			'/_astro/gallery-magazine-spread.css',
-		);
-		expect(resolveGalleryVariantCssUrl(sectionUrlMap, 'single-keepsake')).toBe(
-			'/_astro/gallery-single-keepsake.css',
-		);
 		expect(
 			resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
 				themePreset: 'luxury-hacienda',
-				galleryVariant: 'magazine-spread',
+				sectionVariants: { gallery: 'magazine-spread' },
 			}),
 		).toEqual(['/_astro/luxury-bundle.css', '/_astro/gallery-magazine-spread.css']);
-	});
-
-	it('resolves behavior-named Gallery CSS through the canonical partial map', () => {
-		const sectionUrlMap = {
-			gallery: {
-				'magazine-spread': '/gallery-magazine-spread.css',
-				'index-choreography': '/gallery-index-choreography.css',
-			},
-		};
-
-		expect(resolveGalleryVariantCssUrl(sectionUrlMap, 'magazine-spread')).toBe(
-			'/gallery-magazine-spread.css',
-		);
-		expect(resolveGalleryVariantCssUrl(sectionUrlMap, 'index-choreography')).toBe(
-			'/gallery-index-choreography.css',
-		);
 	});
 
 	it('loads semantic Gallery CSS even when the visual theme has the same historical origin', () => {
@@ -192,7 +169,7 @@ describe('section-css-resolver-map', () => {
 		expect(
 			resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
 				themePreset: 'editorial-magazine',
-				galleryVariant: 'magazine-spread',
+				sectionVariants: { gallery: 'magazine-spread' },
 			}),
 		).toEqual(['/_astro/editorial-magazine-bundle.css', '/_astro/gallery-magazine-spread.css']);
 	});
@@ -215,7 +192,7 @@ describe('section-css-resolver-map', () => {
 		expect(
 			resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
 				themePreset: 'jewelry-box',
-    sectionVariants: { hero: 'editorial-cover', thankYou: 'full-bleed-photo' },
+				sectionVariants: { hero: 'editorial-cover', thankYou: 'full-bleed-photo' },
 			}),
 		).toEqual([
 			'/_astro/jewelry-bundle.css',
@@ -236,6 +213,9 @@ describe('section-css-resolver-map', () => {
 			},
 			'/src/styles/themes/sections/hero/_split-cover.scss': {
 				default: '/_astro/hero-split-cover.css',
+			},
+			'/src/styles/themes/sections/thank-you/_editorial-back-cover.scss': {
+				default: '/_astro/thank-you-editorial.css',
 			},
 			'/src/styles/themes/sections/gifts/_editorial-catalog.scss': {
 				default: '/_astro/gifts-editorial.css',
@@ -260,7 +240,7 @@ describe('section-css-resolver-map', () => {
 		expect(
 			resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
 				themePreset: 'jewelry-box',
-      sectionVariants: {
+				sectionVariants: {
 					hero: 'editorial-cover',
 					thankYou: 'editorial-back-cover',
 					gifts: 'editorial-catalog',
@@ -274,6 +254,7 @@ describe('section-css-resolver-map', () => {
 		).toEqual([
 			'/_astro/jewelry-bundle.css',
 			'/_astro/hero-editorial.css',
+			'/_astro/thank-you-editorial.css',
 			'/_astro/gifts-editorial.css',
 			'/_astro/rsvp-editorial.css',
 			'/_astro/access-editorial.css',
@@ -301,7 +282,7 @@ describe('section-css-resolver-map', () => {
 		expect(
 			resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
 				themePreset: 'editorial',
-      sectionVariants: {
+				sectionVariants: {
 					rsvp: 'formal-register',
 					personalizedAccess: 'formal-pass',
 				},
@@ -331,7 +312,7 @@ describe('section-css-resolver-map', () => {
 		expect(
 			resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
 				themePreset: 'celestial-blue',
-      sectionVariants: { thankYou: 'editorial-back-cover' },
+				sectionVariants: { thankYou: 'editorial-back-cover' },
 			}),
 		).toEqual(['/_astro/celestial-bundle.css', '/_astro/thank-you-editorial.css']);
 	});
@@ -357,7 +338,7 @@ describe('section-css-resolver-map', () => {
 		expect(
 			resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
 				themePreset: 'celestial-blue',
-      sectionVariants: {
+				sectionVariants: {
 					hero: 'split-cover',
 					family: 'split-groups',
 					location: 'split-map',
@@ -372,6 +353,11 @@ describe('section-css-resolver-map', () => {
 	});
 
 	it('maps canonical Gallery layouts to independent CSS only where a partial is required', () => {
+		const bundleUrlMap = buildSectionBundleUrlMap({
+			'/src/styles/invitation-sections-by-preset/editorial.scss': {
+				default: '/_astro/editorial-bundle.css',
+			},
+		});
 		const sectionUrlMap = buildSectionUrlMap({
 			'/src/styles/themes/sections/gallery/_editorial-mosaic.scss': {
 				default: '/_astro/gallery-editorial.css',
@@ -390,33 +376,67 @@ describe('section-css-resolver-map', () => {
 			},
 		});
 
-		expect(resolveGalleryVariantCssUrl(sectionUrlMap, 'uniform-grid')).toBeUndefined();
-		expect(resolveGalleryVariantCssUrl(sectionUrlMap, 'single-keepsake')).toBe(
-			'/_astro/gallery-single-keepsake.css',
-		);
-		expect(resolveGalleryVariantCssUrl(sectionUrlMap, 'editorial-mosaic')).toBe(
-			'/_astro/gallery-editorial.css',
-		);
-		expect(resolveGalleryVariantCssUrl(sectionUrlMap, 'magazine-spread')).toBe(
-			'/_astro/gallery-magazine.css',
-		);
-		expect(resolveGalleryVariantCssUrl(sectionUrlMap, 'feature-mosaic')).toBe(
-			'/_astro/gallery-feature.css',
-		);
-		expect(resolveGalleryVariantCssUrl(sectionUrlMap, 'index-choreography')).toBe(
-			'/_astro/gallery-index.css',
-		);
+		expect(
+			resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
+				themePreset: 'editorial',
+				sectionVariants: { gallery: 'uniform-grid' },
+			}),
+		).toEqual(['/_astro/editorial-bundle.css']);
+
+		expect(
+			resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
+				themePreset: 'editorial',
+				sectionVariants: { gallery: 'single-keepsake' },
+			}),
+		).toEqual(['/_astro/editorial-bundle.css', '/_astro/gallery-single-keepsake.css']);
+
+		expect(
+			resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
+				themePreset: 'editorial',
+				sectionVariants: { gallery: 'editorial-mosaic' },
+			}),
+		).toEqual(['/_astro/editorial-bundle.css', '/_astro/gallery-editorial.css']);
+
+		expect(
+			resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
+				themePreset: 'editorial',
+				sectionVariants: { gallery: 'magazine-spread' },
+			}),
+		).toEqual(['/_astro/editorial-bundle.css', '/_astro/gallery-magazine.css']);
+
+		expect(
+			resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
+				themePreset: 'editorial',
+				sectionVariants: { gallery: 'feature-mosaic' },
+			}),
+		).toEqual(['/_astro/editorial-bundle.css', '/_astro/gallery-feature.css']);
+
+		expect(
+			resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
+				themePreset: 'editorial',
+				sectionVariants: { gallery: 'index-choreography' },
+			}),
+		).toEqual(['/_astro/editorial-bundle.css', '/_astro/gallery-index.css']);
 	});
 
 	it('keeps legacy Gallery theme aliases out of the canonical CSS resolver', () => {
+		const bundleUrlMap = buildSectionBundleUrlMap({
+			'/src/styles/invitation-sections-by-preset/editorial.scss': {
+				default: '/_astro/editorial-bundle.css',
+			},
+		});
 		const sectionUrlMap = buildSectionUrlMap({
 			'/src/styles/themes/sections/gallery/_editorial-mosaic.scss': {
 				default: '/_astro/gallery-editorial.css',
 			},
 		});
 
-		expect(resolveGalleryVariantCssUrl(sectionUrlMap, 'premiere-floral')).toBeUndefined();
-		expect(resolveGalleryVariantCssUrl(sectionUrlMap, 'not-a-gallery-variant')).toBeUndefined();
+		expect(() =>
+			resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
+				themePreset: 'editorial',
+				sectionVariants: { gallery: 'premiere-floral' },
+			}),
+		).toThrow('Unknown canonical section variant: gallery.premiere-floral');
 	});
 
 	it('loads premiere-floral reveal CSS independently of the theme, including when they match', () => {
@@ -549,8 +569,7 @@ describe('section-css-resolver-map', () => {
 				{
 					themePreset: 'editorial',
 					envelopeVariant: 'premiere-floral',
-					galleryVariant: 'magazine-spread',
-      sectionVariants: { family: 'split-groups' },
+					sectionVariants: { family: 'split-groups', gallery: 'magazine-spread' },
 					visualProfileId: 'renata',
 				},
 				profileUrlMap,
@@ -558,17 +577,17 @@ describe('section-css-resolver-map', () => {
 		).toEqual([
 			{ href: '/_astro/editorial-bundle.css', owner: 'section-bundle', blocking: false },
 			{
-				href: '/_astro/gallery-magazine-spread.css',
-				owner: 'gallery-variant',
-				blocking: false,
-			},
-			{
 				href: '/_astro/reveal-premiere-floral.css',
 				owner: 'envelope-reveal',
 				blocking: true,
 			},
 			{
 				href: '/_astro/family-split-groups.css',
+				owner: 'section-variant',
+				blocking: false,
+			},
+			{
+				href: '/_astro/gallery-magazine-spread.css',
 				owner: 'section-variant',
 				blocking: false,
 			},
@@ -591,7 +610,7 @@ describe('section-css-resolver-map', () => {
 		expect(
 			resolveInvitationCssLoadPlan(bundleUrlMap, sectionUrlMap, {
 				themePreset: 'editorial',
-      sectionVariants: { hero: 'editorial-cover' },
+				sectionVariants: { hero: 'editorial-cover' },
 			}),
 		).toEqual([
 			{ href: '/_astro/editorial-bundle.css', owner: 'section-bundle', blocking: false },

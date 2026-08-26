@@ -12,10 +12,9 @@ type SectionCssConfig = {
 	presetToEntrypoint: Record<string, string>;
 };
 
-type InvitationCssInput = {
+export type InvitationCssResolverInput = {
 	themePreset: string;
 	footerVariant?: string;
-	galleryVariant?: string;
 	sectionVariants?: {
 		hero?: string;
 		thankYou?: string;
@@ -25,6 +24,7 @@ type InvitationCssInput = {
 		family?: string;
 		location?: string;
 		itinerary?: string;
+		gallery?: string;
 		countdown?: string;
 	};
 	envelopeVariant?: string;
@@ -35,7 +35,6 @@ type InvitationCssInput = {
 export type InvitationCssOwner =
 	| 'section-bundle'
 	| 'footer-variant'
-	| 'gallery-variant'
 	| 'envelope-reveal'
 	| 'section-variant'
 	| 'visual-profile';
@@ -61,11 +60,6 @@ function entrypointFromCssOwner(cssOwner: string): string | undefined {
 	return cssOwner.split('/').at(-1)?.replace(/^_/, '').replace(/\.scss$/u, '');
 }
 
-const GALLERY_VARIANT_TO_ENTRYPOINT: Record<string, string> = Object.fromEntries(
-	CANONICAL_VARIANT_REGISTRY.filter((entry) => entry.section === 'gallery')
-		.map((entry) => [entry.variant, entrypointFromCssOwner(entry.cssOwner)])
-		.filter((entry): entry is [string, string] => Boolean(entry[1])),
-);
 
 const ENVELOPE_VARIANT_TO_ENTRYPOINT: Record<string, string> = {
 	'premiere-floral': 'premiere-floral',
@@ -77,14 +71,6 @@ const ENVELOPE_VARIANT_TO_ENTRYPOINT: Record<string, string> = {
 	'enchanted-rose': 'shared-light',
 };
 
-const SECTION_VARIANT_TO_ENTRYPOINT: Record<string, Record<string, string>> =
-	CANONICAL_VARIANT_REGISTRY.filter((entry) => entry.section !== 'gallery')
-		.map((entry) => [entry.section, entry.variant, entrypointFromCssOwner(entry.cssOwner)])
-		.filter((entry): entry is [string, string, string] => Boolean(entry[2]))
-		.reduce<Record<string, Record<string, string>>>((result, [section, variant, entrypoint]) => {
-			(result[section] ??= {})[variant] = entrypoint;
-			return result;
-		}, {});
 
 export function buildSectionUrlMap(modules: Record<string, CssModule>): SectionUrlMap {
 	const sectionUrlMap: SectionUrlMap = {};
@@ -137,13 +123,6 @@ export function resolveSectionCssUrl(
 	return sectionUrlMap[section]?.[entrypoint];
 }
 
-/** Resolve the canonical Gallery variant stylesheet independently of the theme bundle. */
-export function resolveGalleryVariantCssUrl(
-	sectionUrlMap: SectionUrlMap,
-	variant: string,
-): string | undefined {
-	return resolveSectionCssUrl(sectionUrlMap, 'gallery', GALLERY_VARIANT_TO_ENTRYPOINT, variant);
-}
 
 /** @internal — re-exported for tests */
 export function resolveSectionCssUrls(
@@ -159,12 +138,23 @@ export function resolveSectionCssUrls(
 
 function resolveSectionVariantLoadItems(
 	sectionUrlMap: SectionUrlMap,
-	input: InvitationCssInput,
+	input: InvitationCssResolverInput,
 ): InvitationCssLoadItem[] {
 	return Object.entries(input.sectionVariants ?? {}).flatMap(([section, variant]) => {
 		if (!variant) return [];
-	const entrypoint = SECTION_VARIANT_TO_ENTRYPOINT[section]?.[variant];
-		if (!entrypoint) return [];
+		const entry = CANONICAL_VARIANT_REGISTRY.find(
+			(candidate) => candidate.section === section && candidate.variant === variant,
+		);
+		if (!entry) {
+			throw new Error(`Unknown canonical section variant: ${section}.${variant}`);
+		}
+		if (entry.cssOwner === 'no-additional-css' || entry.cssOwner.startsWith('theme-bundle:')) {
+			return [];
+		}
+		const entrypoint = entrypointFromCssOwner(entry.cssOwner);
+		if (!entrypoint) {
+			throw new Error(`Invalid CSS owner for ${section}.${variant}: ${entry.cssOwner}`);
+		}
 		const sectionName =
 			section === 'personalizedAccess'
 				? 'personalized-access'
@@ -177,7 +167,9 @@ function resolveSectionVariantLoadItems(
 			{ [variant]: entrypoint },
 			variant,
 		);
-		if (!url) return [];
+		if (!url) {
+			throw new Error(`Missing CSS delivery for ${section}.${variant}: ${entry.cssOwner}`);
+		}
 		return [
 			{
 				href: url,
@@ -191,7 +183,7 @@ function resolveSectionVariantLoadItems(
 export function resolveInvitationCssLoadPlan(
 	sectionBundleUrlMap: SectionBundleUrlMap,
 	sectionUrlMap: SectionUrlMap,
-	input: InvitationCssInput,
+	input: InvitationCssResolverInput,
 	profileUrlMap: InvitationProfileUrlMap = {},
 ): InvitationCssLoadItem[] {
 	const items: InvitationCssLoadItem[] = [];
@@ -215,13 +207,6 @@ export function resolveInvitationCssLoadPlan(
 		push(footerUrl ? { href: footerUrl, owner: 'footer-variant', blocking: false } : undefined);
 	}
 
-	if (input.galleryVariant && input.galleryVariant !== input.themePreset) {
-		const galleryUrl = resolveGalleryVariantCssUrl(sectionUrlMap, input.galleryVariant);
-		const galleryEntrypoint = GALLERY_VARIANT_TO_ENTRYPOINT[input.galleryVariant];
-		if (galleryUrl && galleryEntrypoint !== input.themePreset) {
-			push({ href: galleryUrl, owner: 'gallery-variant', blocking: false });
-		}
-	}
 
 	if (input.envelopeVariant) {
 		const revealUrl = resolveSectionCssUrl(
@@ -246,7 +231,7 @@ export function resolveInvitationCssLoadPlan(
 export function resolveInvitationCssUrls(
 	sectionBundleUrlMap: SectionBundleUrlMap,
 	sectionUrlMap: SectionUrlMap,
-	input: InvitationCssInput,
+	input: InvitationCssResolverInput,
 	profileUrlMap: InvitationProfileUrlMap = {},
 ): string[] {
 	return resolveInvitationCssLoadPlan(
