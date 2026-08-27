@@ -162,6 +162,10 @@ export async function navigateTo(
 			) => Object.defineProperty(target, 'name', { value, configurable: true });
 		}
 	});
+	await page.addInitScript((captureMode: ScreenshotMode) => {
+		(window as Window & { __celebraScreenshotMode?: ScreenshotMode }).__celebraScreenshotMode =
+			captureMode;
+	}, mode);
 
 	// Always clear envelope skip flags before screenshot navigations so closed/open
 	// steps within one viewport do not hide the seal after a prior click.

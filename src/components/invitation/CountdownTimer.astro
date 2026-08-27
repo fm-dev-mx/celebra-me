@@ -80,14 +80,25 @@ const segments = ALL_SEGMENTS.filter((segment) => resolvedUnits.includes(segment
 
 		// Demo countdown: compute a random target 30-60 days in the future,
 		// recomputed on each new page load/session entry.
-		// Does NOT affect real invitations (isDemo=false or absent).
+		// Audit screenshots use the canonical target so repeated captures are stable.
+		// Does NOT affect real invitations (isDemo=false or absent) or normal demo browsing.
 		const isDemo = root.dataset.isDemo === 'true';
-		const effectiveTarget = isDemo
+		const isAuditCapture =
+			document.documentElement.dataset.screenshot === 'audit' ||
+			(window as Window & { __celebraScreenshotMode?: string }).__celebraScreenshotMode ===
+				'audit';
+		const effectiveTarget = isDemo && !isAuditCapture
 			? new Date(Date.now() + (Math.floor(Math.random() * 31) + 30) * 86400000).toISOString()
 			: targetIso;
+		const effectiveTargetMs = new Date(effectiveTarget).getTime();
+		const auditNowMs =
+			effectiveTargetMs > Date.now()
+				? effectiveTargetMs - 45 * 86400000
+				: effectiveTargetMs + 1;
 
 		const updateCountdown = () => {
-			const difference = new Date(effectiveTarget).getTime() - Date.now();
+			const nowMs = isAuditCapture ? auditNowMs : Date.now();
+			const difference = effectiveTargetMs - nowMs;
 			const hasStarted = difference <= 0;
 			root.toggleAttribute('hidden', hasStarted);
 			const status = root
