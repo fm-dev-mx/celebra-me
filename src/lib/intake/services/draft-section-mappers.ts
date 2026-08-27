@@ -32,13 +32,14 @@ function stripVenueEvent(value: unknown): unknown {
 }
 
 /** Normalize a venue (or venue-like) object to editor-consumable date/time. */
-function canonicalizeVenueDraft(value: unknown): unknown {
+function canonicalizeVenueDraft(value: unknown, index: number): unknown {
 	if (!isRecord(value)) return value;
 	const withoutEvent = stripVenueEvent(value);
 	if (!isRecord(withoutEvent)) return withoutEvent;
 	const dateTime = mapVenueDateTimeToDraft(withoutEvent);
 	return {
 		...withoutEvent,
+		id: str(withoutEvent.id) ?? `venue_legacy_${index}`,
 		...dateTime,
 	};
 }
@@ -71,7 +72,7 @@ export function canonicalizeLocationDraft(
 	if (!isRecord(normalized)) return location;
 	const next: Record<string, unknown> = { ...normalized };
 	if (Array.isArray(normalized.venues)) {
-		next.venues = normalized.venues.map((venue) => canonicalizeVenueDraft(venue));
+		next.venues = normalized.venues.map((venue, index) => canonicalizeVenueDraft(venue, index));
 	}
 	if (Array.isArray(location.indications)) {
 		next.indications = location.indications.map((indication, index) =>

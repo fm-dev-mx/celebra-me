@@ -99,9 +99,7 @@ describe('XV Renata provision contract', () => {
 		expect(profile).not.toContain('itinerary__program-paper-surface');
 		expect(profile).toContain("data-variant='full-bleed-photo'");
 		expect(profile).toContain('clip-path: none');
-		expect(profile).toContain(
-			".event-location[data-variant='stacked-venue-plates']",
-		);
+		expect(profile).toContain(".event-location[data-variant='stacked-venue-plates']");
 		expect(profile).toContain('--location-date-display: none');
 		expect(profile).not.toContain('--location-map-preview-artwork-color: var(--renata-olive)');
 		expect(profile).not.toContain('.event-location__card-map-preview-artwork');
@@ -263,9 +261,7 @@ describe('XV Renata provision contract', () => {
 		const location = content.location as {
 			variant: string;
 			presentation?: string;
-			venues?: unknown;
-			ceremony?: { venueName: string; address?: string };
-			reception?: { venueName: string; address?: string };
+			venues?: Array<{ type?: string; venueName: string; address?: string }>;
 			indicationsHeading?: string;
 			presentationOptions?: {
 				showFlourishes?: boolean;
@@ -274,11 +270,12 @@ describe('XV Renata provision contract', () => {
 		};
 		expect(location.variant).toBe('stacked-venue-plates');
 		expect(location.presentation).toBe('simple');
-		expect(location.venues).toBeUndefined();
-		expect(location.ceremony?.venueName).toBe('Parroquia Santa Inés');
-		expect(location.ceremony?.address).toBe('Blvd. Pedro Infante 2550, Los Álamos, Culiacán');
-		expect(location.reception?.venueName).toBe('InHouse Select · Hacienda Tres Ríos');
-		expect(location.reception?.address).toBe('Blvd. José Limón 910 Nte., Tres Ríos, Culiacán');
+		const ceremony = location.venues?.find((venue) => venue.type === 'ceremony');
+		const reception = location.venues?.find((venue) => venue.type === 'reception');
+		expect(ceremony?.venueName).toBe('Parroquia Santa Inés');
+		expect(ceremony?.address).toBe('Blvd. Pedro Infante 2550, Los Álamos, Culiacán');
+		expect(reception?.venueName).toBe('InHouse Select · Hacienda Tres Ríos');
+		expect(reception?.address).toBe('Blvd. José Limón 910 Nte., Tres Ríos, Culiacán');
 		expect(location.indicationsHeading).toBe('Indicaciones');
 		expect(location.presentationOptions?.showFlourishes).toBe(true);
 		expect(location.presentationOptions?.showNavigationButtons).toBe(false);

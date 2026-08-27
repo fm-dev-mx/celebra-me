@@ -7,7 +7,18 @@ interface VenueSectionProps {
 	venue: Record<string, unknown> | undefined;
 }
 
-const SKIP_KEYS = new Set(['coordinates']);
+const SKIP_KEYS = new Set([
+	'id',
+	'type',
+	'label',
+	'venueEvent',
+	'eventType',
+	'isVisible',
+	'image',
+	'sortOrder',
+	'coordinates',
+	'focalPoint',
+]);
 
 export const VenueSection: FC<VenueSectionProps> = ({ title, venue }) => {
 	if (!venue) return null;

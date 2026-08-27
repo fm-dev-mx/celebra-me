@@ -126,12 +126,13 @@ describe('canonical venue date/time contract', () => {
 	it('hydrates Romina ceremony/reception into editor machine forms', () => {
 		const pub = buildRominaPublishedContent(rominaAssets as never) as Record<string, unknown>;
 		const location = getSectionValue(mapNestedToDraftContent(pub), 'location') as {
-			ceremony?: { date?: string; time?: string };
-			reception?: { date?: string; time?: string };
+			venues?: Array<{ type?: string; date?: string; time?: string }>;
 			eventTiming?: { localDateTime?: string };
 		};
-		expect(location.ceremony).toMatchObject({ date: '2026-08-14', time: '17:00' });
-		expect(location.reception).toMatchObject({ date: '2026-08-14', time: '20:30' });
+		const ceremony = location.venues?.find((venue) => venue.type === 'ceremony');
+		const reception = location.venues?.find((venue) => venue.type === 'reception');
+		expect(ceremony).toMatchObject({ date: '2026-08-14', time: '17:00' });
+		expect(reception).toMatchObject({ date: '2026-08-14', time: '20:30' });
 		expect(location.eventTiming?.localDateTime).toBe(ROMINA_EVENT.localDateTime);
 	});
 
@@ -140,12 +141,13 @@ describe('canonical venue date/time contract', () => {
 		const draft = mapNestedToDraftContent(pub);
 		const { mapped } = compareRomina(draft, pub);
 		const location = mapped.location as {
-			ceremony?: { date?: string; time?: string };
-			reception?: { date?: string; time?: string };
+			venues?: Array<{ type?: string; date?: string; time?: string }>;
 		};
-		expect(location.ceremony?.date).toBe('2026-08-14');
-		expect(location.ceremony?.time).toBe('17:00');
-		expect(location.reception?.time).toBe('20:30');
+		const ceremony = location.venues?.find((venue) => venue.type === 'ceremony');
+		const reception = location.venues?.find((venue) => venue.type === 'reception');
+		expect(ceremony?.date).toBe('2026-08-14');
+		expect(ceremony?.time).toBe('17:00');
+		expect(reception?.time).toBe('20:30');
 	});
 
 	it('no-op edit creates no false pending location datetime diffs', () => {
@@ -179,10 +181,7 @@ describe('showFlourishes ownership', () => {
 	});
 
 	it('folds legacy sectionStyles into presentationOptions when canonical absent', () => {
-		const folded = foldLocationPresentationOptions(
-			{} as Record<string, unknown>,
-			false,
-		);
+		const folded = foldLocationPresentationOptions({} as Record<string, unknown>, false);
 		expect(folded?.presentationOptions).toEqual({ showFlourishes: false });
 	});
 

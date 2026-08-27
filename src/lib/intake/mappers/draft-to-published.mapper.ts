@@ -30,7 +30,8 @@ type PublishCtx = {
 	priorPublishedContent?: Record<string, unknown>;
 };
 
-const demoStr = (ctx: PublishCtx, val: unknown): string | undefined => (ctx.isDemo ? str(val) : undefined);
+const demoStr = (ctx: PublishCtx, val: unknown): string | undefined =>
+	ctx.isDemo ? str(val) : undefined;
 
 const demoValue = (ctx: PublishCtx, value: unknown): unknown => (ctx.isDemo ? value : undefined);
 
@@ -171,7 +172,11 @@ function buildPersonalizedAccess(
 			variant: requireVariant(
 				'rsvp.personalizedAccess',
 				draftValue.variant,
-				resolveCanonicalVariantSource(ctx, isNonEmptyObject(prior) ? prior.variant : undefined, demoAccess?.variant),
+				resolveCanonicalVariantSource(
+					ctx,
+					isNonEmptyObject(prior) ? prior.variant : undefined,
+					demoAccess?.variant,
+				),
 			),
 		},
 	};
@@ -258,14 +263,13 @@ function mapLocationFromDraft(
 	if (!isNonEmptyObject(draftLocation)) return undefined;
 	const result: Record<string, unknown> = {};
 	const demoLocation = normalizeLegacyLocation(demoContent?.location) as
-		| Record<string, unknown>
-		| undefined;
+		Record<string, unknown> | undefined;
 	const priorLocation = normalizeLegacyLocation(ctx.priorPublishedContent?.location) as
-		| Record<string, unknown>
-		| undefined;
+		Record<string, unknown> | undefined;
 	if (draftLocation.visibility) result.visibility = draftLocation.visibility;
 	if (draftLocation.presentation) result.presentation = draftLocation.presentation;
-	result.mapStyle = draftLocation.mapStyle ?? priorLocation?.mapStyle ?? demoLocation?.mapStyle ?? 'dark';
+	result.mapStyle =
+		draftLocation.mapStyle ?? priorLocation?.mapStyle ?? demoLocation?.mapStyle ?? 'dark';
 	result.variant = requireVariant(
 		'location',
 		draftLocation.variant,
@@ -278,46 +282,51 @@ function mapLocationFromDraft(
 		? draftLocation.venues
 		: Array.isArray(priorLocation?.venues)
 			? priorLocation.venues
-			: Array.isArray(demoLocation?.venues)
+			: ctx.isDemo && Array.isArray(demoLocation?.venues)
 				? demoLocation.venues
 				: [];
 	const mappedVenues = sourceVenues
-			.filter((v) => v.isVisible !== false)
-			.map((v, index) => {
-				const priorVenue = findPriorVenue(priorLocation, v, index);
-				const demoVenue = ctx.isDemo ? findPriorVenue(demoLocation, v, index) : undefined;
-				const label = str(v.label) || str(priorVenue?.label) || str(demoVenue?.label);
-				const image =
-					v.image ?? (ctx.isDemo ? demoVenue?.image : undefined) ?? priorVenue?.image;
-				const coordinates =
-					v.coordinates ??
-					(ctx.isDemo ? demoVenue?.coordinates : undefined) ??
-					priorVenue?.coordinates;
-				const venueEvent =
-					str(priorVenue?.venueEvent) ||
-					str(demoVenue?.venueEvent) ||
-					venueLabel(v.type, label);
-				return {
-					id: v.id,
-					type: v.type,
-					...(label ? { label } : {}),
-					venueName: v.venueName || '',
-					address: v.address || '',
-					city: v.city || '',
-					date: publishVenueDate(v.date) || '',
-					time: publishVenueTime(v.time) || '',
-					...Object.fromEntries(
-						VENUE_URL_FIELDS.map((f) => [
-							f,
-							(v as Record<string, unknown>)[f] || undefined,
-						]).filter(([, val]) => val !== undefined),
-					),
-					...(image ? { image } : {}),
-					...(coordinates ? { coordinates } : {}),
-					// Visible venues omit isVisible (default). Hidden ones are filtered above.
-					venueEvent,
-				};
-			});
+		.filter((v) => v.isVisible !== false)
+		// eslint-disable-next-line complexity -- Venue mapping resolves canonical, prior, and demo media fields.
+		.map((v, index) => {
+			const priorVenue = findPriorVenue(priorLocation, v, index);
+			const demoVenue = ctx.isDemo ? findPriorVenue(demoLocation, v, index) : undefined;
+			const label = str(v.label) || str(priorVenue?.label) || str(demoVenue?.label);
+			const image =
+				v.image ?? (ctx.isDemo ? demoVenue?.image : undefined) ?? priorVenue?.image;
+			const coordinates =
+				v.coordinates ??
+				(ctx.isDemo ? demoVenue?.coordinates : undefined) ??
+				priorVenue?.coordinates;
+			const venueEvent =
+				str(priorVenue?.venueEvent) ||
+				str(demoVenue?.venueEvent) ||
+				venueLabel(v.type, label);
+			const venueId = str(v.id);
+			const priorVenueId = str(priorVenue?.id) || str(demoVenue?.id);
+			const persistVenueId =
+				venueId && (!venueId.startsWith('venue_legacy_') || Boolean(priorVenueId));
+			return {
+				...(persistVenueId ? { id: venueId } : {}),
+				type: v.type,
+				...(label ? { label } : {}),
+				venueName: v.venueName || '',
+				address: v.address || '',
+				city: v.city || '',
+				date: publishVenueDate(v.date) || '',
+				time: publishVenueTime(v.time) || '',
+				...Object.fromEntries(
+					VENUE_URL_FIELDS.map((f) => [
+						f,
+						(v as Record<string, unknown>)[f] || undefined,
+					]).filter(([, val]) => val !== undefined),
+				),
+				...(image ? { image } : {}),
+				...(coordinates ? { coordinates } : {}),
+				// Visible venues omit isVisible (default). Hidden ones are filtered above.
+				venueEvent,
+			};
+		});
 	result.venues = mappedVenues;
 
 	const introFields = resolveIntroFields(draftLocation, demoLocation, ctx);
@@ -576,7 +585,11 @@ function resolveThankYouVariant(
 	priorThankYou: Record<string, unknown> | undefined,
 	ctx: PublishCtx,
 ): unknown {
-	const fallback = resolveCanonicalVariantSource(ctx, priorThankYou?.variant, demoThankYou?.variant);
+	const fallback = resolveCanonicalVariantSource(
+		ctx,
+		priorThankYou?.variant,
+		demoThankYou?.variant,
+	);
 	return requireVariant('thankYou', draftThankYou.variant, fallback);
 }
 
@@ -753,16 +766,22 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 		draftContent.family,
 		priorPublished?.family as Record<string, unknown> | undefined,
 		resolveCanonicalVariantSource(ctx, priorPublished?.family, demoContent.family) as
-			| Record<string, unknown>
-			| undefined,
+			Record<string, unknown> | undefined,
 	);
 
 	const demoTheme = demoContent.theme as Record<string, unknown> | undefined;
 	const sectionOrder =
 		draftContent.sectionOrder ??
-		(resolveCanonicalVariantSource(ctx, priorPublished?.sectionOrder, demoContent.sectionOrder) as
-			string[] | undefined);
-	const composition = resolveCanonicalVariantSource(ctx, priorPublished?.composition, demoContent.composition);
+		(resolveCanonicalVariantSource(
+			ctx,
+			priorPublished?.sectionOrder,
+			demoContent.sectionOrder,
+		) as string[] | undefined);
+	const composition = resolveCanonicalVariantSource(
+		ctx,
+		priorPublished?.composition,
+		demoContent.composition,
+	);
 	if (!Array.isArray(sectionOrder) || sectionOrder.length === 0) {
 		throw new Error('Published content requires an explicit sectionOrder.');
 	}

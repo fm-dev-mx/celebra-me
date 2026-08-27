@@ -359,7 +359,14 @@ describe('buildPageContextFromViewModel', () => {
 			...baseViewModel,
 			id: 'default-invitation',
 			title: 'Default',
-			sections: { location: { ceremony: { venueName: 'Church' } }, rsvp: { title: 'RSVP' } },
+			sections: {
+				location: {
+					venues: [
+						{ id: 'church', type: 'ceremony', venueName: 'Church', isVisible: true },
+					],
+				},
+				rsvp: { title: 'RSVP' },
+			},
 		} as any;
 
 		const context = buildPageContextFromViewModel({
@@ -437,7 +444,7 @@ describe('buildPageContextFromViewModel', () => {
 		expect(context.heroVenueName).toBe('Casa de mi familia');
 	});
 
-	it('falls back to legacy ceremony/reception when venues[] is absent', () => {
+	it('does not read legacy ceremony/reception when venues[] is absent', () => {
 		const viewModel = {
 			...baseViewModel,
 			id: 'legacy-hero-test',
@@ -456,8 +463,8 @@ describe('buildPageContextFromViewModel', () => {
 			eventType: 'xv',
 		});
 
-		expect(context.heroTime).toBe('6:00 PM');
-		expect(context.heroVenueName).toBe('Salón Real');
+		expect(context.heroTime).toBeUndefined();
+		expect(context.heroVenueName).toBeUndefined();
 	});
 
 	it('sets heroTime and heroVenueName to undefined when no location data exists', () => {

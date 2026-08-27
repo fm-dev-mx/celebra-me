@@ -102,6 +102,12 @@ function resolveStructuralCss(input: {
 		'/src/styles/themes/sections/gallery/_index-choreography.scss': {
 			default: '/_astro/gallery-index-choreography.css',
 		},
+		'/src/styles/themes/sections/gallery/_paired-feature-band.scss': {
+			default: '/_astro/gallery-paired-feature-band.css',
+		},
+		'/src/styles/themes/sections/gallery/_editorial-mosaic.scss': {
+			default: '/_astro/gallery-editorial-mosaic.css',
+		},
 	});
 	return resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
 		themePreset: input.themePreset,

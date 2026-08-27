@@ -121,24 +121,30 @@
         "introHeading": "Sábado, 12 de septiembre de 2026",
         "introLede": "Será una alegría compartir contigo esta celebración.",
         "indicationsHeading": "Detalles para mis invitados",
-        "ceremony": {
-            "venueEvent": "Ceremonia",
-            "venueName": "Basílica De Nuestra Señora Misericordia",
-            "address": "Av. Cuauhtémoc 101, Centro, 90300 Cdad. de Apizaco, Tlax.",
-            "city": "Apizaco, Tlaxcala",
-            "date": "12 de septiembre de 2026",
-            "time": "7:00 p.m.",
-            "mapUrl": "https://www.google.com/maps/search/?api=1&query=Bas%C3%ADlica%20De%20Nuestra%20Se%C3%B1ora%20Misericordia%2C%20Av.%20Cuauht%C3%A9moc%20101%2C%20Centro%2C%2090300%20Cdad.%20de%20Apizaco%2C%20Tlax."
-        },
-        "reception": {
-            "venueEvent": "Recepción",
-            "venueName": "Las Camelinas",
-            "address": "C. José Aramburu 3, San Martín de Porres, 90360 Cdad. de Apizaco, Tlax.",
-            "city": "Apizaco, Tlaxcala",
-            "date": "12 de septiembre de 2026",
-            "time": "8:30 p.m.",
-            "mapUrl": "https://www.google.com/maps/search/?api=1&query=Las%20Camelinas%2C%20C.%20Jos%C3%A9%20Aramburu%203%2C%20San%20Mart%C3%ADn%20de%20Porres%2C%2090360%20Cdad.%20de%20Apizaco%2C%20Tlax."
-        },
+        "venues": [
+            {
+                "id": "venue_legacy_0",
+                "type": "ceremony",
+                "venueEvent": "Ceremonia",
+                "venueName": "Basílica De Nuestra Señora Misericordia",
+                "address": "Av. Cuauhtémoc 101, Centro, 90300 Cdad. de Apizaco, Tlax.",
+                "city": "Apizaco, Tlaxcala",
+                "date": "12 de septiembre de 2026",
+                "time": "7:00 p.m.",
+                "mapUrl": "https://www.google.com/maps/search/?api=1&query=Bas%C3%ADlica%20De%20Nuestra%20Se%C3%B1ora%20Misericordia%2C%20Av.%20Cuauht%C3%A9moc%20101%2C%20Centro%2C%2090300%20Cdad.%20de%20Apizaco%2C%20Tlax."
+            },
+            {
+                "id": "venue_legacy_1",
+                "type": "reception",
+                "venueEvent": "Recepción",
+                "venueName": "Las Camelinas",
+                "address": "C. José Aramburu 3, San Martín de Porres, 90360 Cdad. de Apizaco, Tlax.",
+                "city": "Apizaco, Tlaxcala",
+                "date": "12 de septiembre de 2026",
+                "time": "8:30 p.m.",
+                "mapUrl": "https://www.google.com/maps/search/?api=1&query=Las%20Camelinas%2C%20C.%20Jos%C3%A9%20Aramburu%203%2C%20San%20Mart%C3%ADn%20de%20Porres%2C%2090360%20Cdad.%20de%20Apizaco%2C%20Tlax."
+            }
+        ],
         "indications": [
             {
                 "iconName": "DressCode",

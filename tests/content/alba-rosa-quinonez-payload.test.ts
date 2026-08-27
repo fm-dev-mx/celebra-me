@@ -132,7 +132,11 @@ describe('Alba Rosa Quiñónez provision contract', () => {
 		expect(location.variant).toBe('split-map');
 		expect(typeof location.introEyebrow).toBe('string');
 		expect((location.introEyebrow as string).length).toBeGreaterThan(0);
-		const reception = asRecord(location.reception);
+		const reception = asRecord(
+			(location.venues as Array<Record<string, unknown>> | undefined)?.find(
+				(venue) => venue.type === 'reception',
+			),
+		);
 		expect(typeof reception.venueName).toBe('string');
 		expect(reception.coordinates).toEqual(
 			expect.objectContaining({

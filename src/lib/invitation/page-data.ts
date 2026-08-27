@@ -101,7 +101,7 @@ function pickHeroValue(
 	sections: InvitationPageContext['viewModel']['sections'] | undefined,
 	field: 'time' | 'venueName',
 ): string | undefined {
-	const val = sections?.location?.venues.find(
+	const val = sections?.location?.venues?.find(
 		(venue) => venue.isVisible !== false && venue[field],
 	)?.[field];
 

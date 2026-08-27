@@ -636,14 +636,12 @@ function collectPublishedAssetRefs(content: Record<string, unknown>): AssetRefEn
 
 	const location = content.location as
 		| {
-				ceremony?: { image?: { type?: string; key?: string } };
-				reception?: { image?: { type?: string; key?: string } };
+				venues?: Array<{ image?: { type?: string; key?: string } }>;
 		  }
 		| undefined;
-	if (location) {
-		tryAddAssetRef(refs, 'location.ceremony.image', location.ceremony?.image);
-		tryAddAssetRef(refs, 'location.reception.image', location.reception?.image);
-	}
+	location?.venues?.forEach((venue, index) => {
+		tryAddAssetRef(refs, `location.venues[${index}].image`, venue.image);
+	});
 
 	const gallery = content.gallery as
 		{ items?: Array<{ image?: { type?: string; key?: string } }> } | undefined;

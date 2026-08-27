@@ -44,22 +44,30 @@ function makeDraftContent(overrides: Record<string, unknown> = {}) {
 				sectionMessage: 'Nuestra familia te recibe con alegria',
 			},
 			location: {
-				ceremony: {
-					venueName: 'Parroquia del Sagrado Corazon',
-					address: 'Av. de las Rosas 240',
-					city: 'Queretaro',
-					date: '2027-11-20',
-					time: '18:00',
-					mapUrl: '',
-				},
-				reception: {
-					venueName: 'Salon Imperial',
-					address: 'Paseo del Palacio 18',
-					city: 'Queretaro',
-					date: '2027-11-20',
-					time: '20:00',
-					mapUrl: '',
-				},
+				venues: [
+					{
+						id: 'ceremony',
+						type: 'ceremony',
+						venueEvent: 'Ceremonia',
+						venueName: 'Parroquia del Sagrado Corazon',
+						address: 'Av. de las Rosas 240',
+						city: 'Queretaro',
+						date: '2027-11-20',
+						time: '18:00',
+						mapUrl: '',
+					},
+					{
+						id: 'reception',
+						type: 'reception',
+						venueEvent: 'Recepción',
+						venueName: 'Salon Imperial',
+						address: 'Paseo del Palacio 18',
+						city: 'Queretaro',
+						date: '2027-11-20',
+						time: '20:00',
+						mapUrl: '',
+					},
+				],
 				dressCode: 'Formal de gala',
 				additionalIndications: '',
 			},
@@ -163,6 +171,8 @@ describe('DraftReview', () => {
 		expect(screen.getByText('Fecha y ubicaciones')).toBeInTheDocument();
 		expect(screen.getByText('Parroquia del Sagrado Corazon')).toBeInTheDocument();
 		expect(screen.getByText('Salon Imperial')).toBeInTheDocument();
+		expect(screen.queryByText('venue_legacy_0')).not.toBeInTheDocument();
+		expect(screen.queryByText('venueEvent')).not.toBeInTheDocument();
 	});
 
 	it('renders RSVP section', () => {

@@ -39,6 +39,8 @@ async function openDemoWithoutEnvelope(page: Page) {
 	});
 
 	await page.goto(DEMO_PATH, { waitUntil: 'domcontentloaded' });
+	await page.waitForLoadState('load');
+	await expect(page.locator('[data-screenshot="invitation-root"], main').first()).toBeVisible();
 	return errors;
 }
 

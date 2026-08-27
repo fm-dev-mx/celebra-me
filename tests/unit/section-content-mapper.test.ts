@@ -215,9 +215,11 @@ describe('buildSectionSaveValue', () => {
 		const saved = buildSectionSaveValue(base, current, 'location') as Record<string, unknown>;
 
 		expect(saved.introEyebrow).toBe(base.location?.introEyebrow);
-		expect(saved.reception).toEqual(
-			base.location?.venues?.find((venue) => venue.type === 'reception'),
-		);
+		expect(
+			(saved.venues as Array<Record<string, unknown>>).find(
+				(venue) => venue.type === 'reception',
+			),
+		).toEqual(base.location?.venues?.find((venue) => venue.type === 'reception'));
 		expect(saved.eventTiming).toEqual(current.eventTiming);
 	});
 

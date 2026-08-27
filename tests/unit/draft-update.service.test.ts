@@ -145,8 +145,7 @@ describe('updateDraftContentByInvitation', () => {
 				description: 'Original Description',
 				hero: { name: 'Ana', label: 'XV Anos', variant: 'standard' },
 				location: {
-					ceremony: { venueName: 'Iglesia' },
-					reception: undefined,
+					venues: [{ id: 'venue_legacy_0', type: 'ceremony', venueName: 'Iglesia' }],
 					variant: 'standard',
 				},
 			},
@@ -168,8 +167,7 @@ describe('updateDraftContentByInvitation', () => {
 				description: 'Original Description',
 				hero: { name: 'Ana', label: 'XV Anos', variant: 'standard' },
 				location: {
-					ceremony: { venueName: 'Iglesia' },
-					reception: undefined,
+					venues: [{ id: 'venue_legacy_0', type: 'ceremony', venueName: 'Iglesia' }],
 					variant: 'standard',
 				},
 			},

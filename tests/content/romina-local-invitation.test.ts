@@ -65,26 +65,30 @@ describe('Romina local invitation content', () => {
 				variant?: string;
 			};
 			location: {
-				ceremony: { coordinates: unknown; googleMapsUrl: string; appleMapsUrl: string };
-				reception: { coordinates: unknown; googleMapsUrl: string; appleMapsUrl: string };
+				venues: Array<{
+					type: string;
+					coordinates: unknown;
+					googleMapsUrl: string;
+					appleMapsUrl: string;
+				}>;
 			};
 			rsvp: { subcopy: string };
 		};
 		expect(typedContent.hero.portrait).toBeUndefined();
 		expect(typedContent.hero.backgroundImage).toBeDefined();
 		expect(typedContent.hero.variant).toBe('split-cover');
-		expect(typedContent.location.ceremony.coordinates).toEqual({
+		const ceremony = typedContent.location.venues.find((venue) => venue.type === 'ceremony');
+		const reception = typedContent.location.venues.find((venue) => venue.type === 'reception');
+		expect(ceremony?.coordinates).toEqual({
 			lat: expect.any(Number),
 			lng: expect.any(Number),
 		});
-		expect(typedContent.location.reception.coordinates).toEqual({
+		expect(reception?.coordinates).toEqual({
 			lat: expect.any(Number),
 			lng: expect.any(Number),
 		});
-		expect(typedContent.location.reception.coordinates).not.toHaveProperty('zoom');
-		expect(typedContent.location.ceremony.coordinates).not.toEqual(
-			typedContent.location.reception.coordinates,
-		);
+		expect(reception?.coordinates).not.toHaveProperty('zoom');
+		expect(ceremony?.coordinates).not.toEqual(reception?.coordinates);
 		expect(result.data!.gallery!.items).toHaveLength(7);
 		expect(content).toHaveProperty('music', {
 			autoPlay: true,
@@ -96,10 +100,10 @@ describe('Romina local invitation content', () => {
 		expect(jsonString).not.toContain('contar with');
 		expect(typedContent.rsvp.subcopy).toContain('contar con su presencia');
 		expect(typedContent.rsvp.subcopy).not.toMatch(/15 de julio|deadline/i);
-		expect(typedContent.location.ceremony.googleMapsUrl).toMatch(/^https:\/\//);
-		expect(typedContent.location.ceremony.appleMapsUrl).toMatch(/^https:\/\//);
-		expect(typedContent.location.reception.googleMapsUrl).toMatch(/^https:\/\//);
-		expect(typedContent.location.reception.appleMapsUrl).toMatch(/^https:\/\//);
+		expect(ceremony?.googleMapsUrl).toMatch(/^https:\/\//);
+		expect(ceremony?.appleMapsUrl).toMatch(/^https:\/\//);
+		expect(reception?.googleMapsUrl).toMatch(/^https:\/\//);
+		expect(reception?.appleMapsUrl).toMatch(/^https:\/\//);
 	});
 
 	it('builds a public page context from uploaded images without an internal asset registry pack', () => {

@@ -406,9 +406,7 @@ describe('Style boundary governance', () => {
 		}
 
 		const resolver = read('src/lib/invitation/section-css-resolver.ts');
-		for (const name of structuralResolverPartials) {
-			expect(resolver).toContain(`/personalized-access/_${name}.scss`);
-		}
+		expect(resolver).toContain("'/src/styles/themes/sections/*/_*.scss'");
 	});
 
 	it('personalized-access base avoids theme-preset selectors', () => {
@@ -520,9 +518,7 @@ describe('Style boundary governance', () => {
 		}
 
 		const resolver = read('src/lib/invitation/section-css-resolver.ts');
-		for (const name of structuralResolverPartials) {
-			expect(resolver).toContain(`/family/_${name}.scss`);
-		}
+		expect(resolver).toContain("'/src/styles/themes/sections/*/_*.scss'");
 	});
 
 	it('in-scope sections do not use ThemePreset names as data-variant', () => {

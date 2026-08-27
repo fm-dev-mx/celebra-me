@@ -21,6 +21,26 @@ interface Props {
 	invitationId: string;
 }
 
+function isVenueRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function venueTitle(venue: Record<string, unknown>, index: number): string {
+	if (typeof venue.label === 'string' && venue.label.trim()) return venue.label.trim();
+	if (venue.type === 'ceremony') return 'Ceremonia';
+	if (venue.type === 'reception') return 'Recepción';
+	return `Lugar ${index + 1}`;
+}
+
+function venueKey(venue: Record<string, unknown>, index: number): string {
+	return String(venue.id ?? `${venue.type ?? 'venue'}-${index}`);
+}
+
+function locationVenueRecords(location: Record<string, unknown> | undefined) {
+	if (!location || !Array.isArray(location.venues)) return [];
+	return (location.venues as unknown[]).filter(isVenueRecord);
+}
+
 const DraftReview: FC<Props> = ({ invitationId }) => {
 	const { currentDraft, loading, loadDraft, publishDraft, createDraftRevision } =
 		useInvitationAdmin();
@@ -65,6 +85,7 @@ const DraftReview: FC<Props> = ({ invitationId }) => {
 	const heroContent = content.hero as Record<string, unknown> | undefined;
 	const family = content.family as Record<string, unknown> | undefined;
 	const location = content.location as Record<string, unknown> | undefined;
+	const locationVenues = locationVenueRecords(location);
 	const rsvp = content.rsvp as Record<string, unknown> | undefined;
 	const music = content.music as Record<string, unknown> | undefined;
 	const gifts = content.gifts as Record<string, unknown> | undefined;
@@ -91,7 +112,7 @@ const DraftReview: FC<Props> = ({ invitationId }) => {
 				<a href={`/dashboard/invitaciones/${invitationId}`} className="intake-detail__back">
 					&larr; Volver
 				</a>
-				<h2 className="intake-review__title">{SECTION_LABELS.Hero}</h2>
+				<h2 className="intake-review__title">Borrador de invitación</h2>
 				<div className="intake-review__meta">
 					<span className="intake-review__badge">Estado: {currentDraft.status}</span>
 					<span className="intake-review__date">
@@ -200,18 +221,16 @@ const DraftReview: FC<Props> = ({ invitationId }) => {
 			{location && (
 				<section className="intake-review__section">
 					<h3 className="intake-review__section-title">{SECTION_LABELS.location}</h3>
-					<VenueSection
-						title="Ceremonia"
-						venue={location.ceremony as Record<string, unknown> | undefined}
-					/>
-					<VenueSection
-						title="Recepción"
-						venue={location.reception as Record<string, unknown> | undefined}
-					/>
+					{locationVenues.map((venue, index) => (
+						<VenueSection
+							key={venueKey(venue, index)}
+							title={venueTitle(venue, index)}
+							venue={venue}
+						/>
+					))}
 					{renderIndications(
 						location.indications as
-							| Array<{ iconName: string; text: string }>
-							| undefined,
+							Array<{ iconName: string; text: string }> | undefined,
 					)}
 				</section>
 			)}

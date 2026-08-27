@@ -76,13 +76,18 @@ function createMinimalEvent(overrides = {}) {
 		},
 		location: {
 			variant: 'standard',
-			ceremony: {
-				venueName: 'Test Venue',
-				address: 'Test Address',
-				city: 'Test City',
-				date: '2026-01-01',
-				time: '18:00',
-			},
+			venues: [
+				{
+					id: 'ceremony',
+					type: 'ceremony',
+					venueEvent: 'Ceremonia',
+					venueName: 'Test Venue',
+					address: 'Test Address',
+					city: 'Test City',
+					date: '2026-01-01',
+					time: '18:00',
+				},
+			],
 		},
 		rsvp: {
 			variant: 'standard',
@@ -98,11 +103,6 @@ function createMinimalEvent(overrides = {}) {
 		location: {
 			...base.location,
 			...(input.location as Record<string, unknown> | undefined),
-			ceremony: {
-				...base.location.ceremony,
-				...((input.location as Record<string, unknown> | undefined)?.ceremony as
-					Record<string, unknown> | undefined),
-			},
 		},
 		rsvp: {
 			...base.rsvp,
@@ -240,13 +240,17 @@ describe('Event content schema (real contract)', () => {
 				location: {
 					visibility: 'after-rsvp',
 					introHeading: 'Ubicación',
-					ceremony: {
-						venueEvent: 'Celebración',
-						venueName: 'Salón García',
-						address: 'Victoriano Huerta 51, Col. San Francisco, Uruapan',
-						date: '2026-08-01',
-						time: '14:00',
-					},
+					venues: [
+						{
+							id: 'ceremony',
+							type: 'ceremony',
+							venueEvent: 'Celebración',
+							venueName: 'Salón García',
+							address: 'Victoriano Huerta 51, Col. San Francisco, Uruapan',
+							date: '2026-08-01',
+							time: '14:00',
+						},
+					],
 				},
 			}),
 		);
@@ -380,7 +384,8 @@ describe('Event content schema (real contract)', () => {
 		const referencedAssetKeys = [
 			content.hero?.backgroundImage,
 			content.hero?.portrait,
-			content.location?.reception?.image,
+			content.location?.venues?.find((venue: { type?: string }) => venue.type === 'reception')
+				?.image,
 			content.family?.featuredImage,
 			...(content.gallery?.items ?? []).map((item: { image?: string }) => item.image),
 			content.thankYou?.image,
@@ -406,8 +411,7 @@ describe('Event content schema (real contract)', () => {
 
 		const referencedAssetKeys = [
 			content.hero?.backgroundImage,
-			content.location?.ceremony?.image,
-			content.location?.reception?.image,
+			...(content.location?.venues ?? []).map((venue: { image?: string }) => venue.image),
 			content.family?.featuredImage,
 			...(content.gallery?.items ?? []).map((item: { image?: string }) => item.image),
 			content.thankYou?.image,
@@ -697,11 +701,18 @@ describe('Event content schema (real contract)', () => {
 			createMinimalEvent({
 				location: {
 					variant: 'standard',
-					ceremony: {
-						venueName: 'Test Venue',
-						address: 'Test Address',
-						city: 'Test City',
-					},
+					venues: [
+						{
+							id: 'ceremony',
+							type: 'ceremony',
+							venueEvent: 'Ceremonia',
+							venueName: 'Test Venue',
+							address: 'Test Address',
+							city: 'Test City',
+							date: '2026-01-01',
+							time: '18:00',
+						},
+					],
 					indications: [
 						{
 							iconName: 'Crown',
@@ -749,11 +760,18 @@ describe('Event content schema (real contract)', () => {
 			createMinimalEvent({
 				location: {
 					variant: 'standard',
-					ceremony: {
-						venueName: 'Test Venue',
-						address: 'Test Address',
-						city: 'Test City',
-					},
+					venues: [
+						{
+							id: 'ceremony',
+							type: 'ceremony',
+							venueEvent: 'Ceremonia',
+							venueName: 'Test Venue',
+							address: 'Test Address',
+							city: 'Test City',
+							date: '2026-01-01',
+							time: '18:00',
+						},
+					],
 					indications: [
 						{
 							iconName: 'Crown',

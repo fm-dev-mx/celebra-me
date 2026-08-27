@@ -150,14 +150,18 @@ const MINIMAL_DEMO_ENTRY = buildEventDemoEntry(
 			variant: 'standard',
 		},
 		location: {
-			ceremony: {
-				venueEvent: 'Misa',
-				venueName: 'Iglesia',
-				address: 'Centro',
-				date: '15 jun',
-				time: '18:00',
-				image: 'ceremony',
-			},
+			venues: [
+				{
+					id: 'ceremony',
+					type: 'ceremony',
+					venueEvent: 'Misa',
+					venueName: 'Iglesia',
+					address: 'Centro',
+					date: '15 jun',
+					time: '18:00',
+					image: 'ceremony',
+				},
+			],
 		},
 		countdown: { variant: 'standard', title: 'Faltan días', footerText: 'Nos vemos' },
 		quote: { text: 'Demo quote', author: 'Author' },
@@ -2345,13 +2349,18 @@ describe('publishDraft', () => {
 			content: {
 				...validDraft.content,
 				location: {
-					ceremony: {
-						venueName: 'Iglesia',
-						address: 'Centro',
-						date: '15 jun',
-						time: '18:00',
-						image: { type: 'uploaded' as const, assetId: VALID_UUID_1 },
-					},
+					venues: [
+						{
+							id: 'ceremony',
+							type: 'ceremony',
+							venueEvent: 'Misa',
+							venueName: 'Iglesia',
+							address: 'Centro',
+							date: '15 jun',
+							time: '18:00',
+							image: { type: 'uploaded' as const, assetId: VALID_UUID_1 },
+						},
+					],
 				},
 			},
 		} as any);
@@ -2377,7 +2386,9 @@ describe('publishDraft', () => {
 		await publishDraft('proj-1');
 		const content = mockUpsertPublished.mock.calls[0][0].content;
 		const location = content.location as Record<string, unknown>;
-		const ceremony = location.ceremony as Record<string, unknown>;
+		const ceremony = (location.venues as Array<Record<string, unknown>>).find(
+			(venue) => venue.type === 'ceremony',
+		) as Record<string, unknown>;
 		expect(ceremony.image).toEqual({
 			type: 'uploaded',
 			assetId: VALID_UUID_1,

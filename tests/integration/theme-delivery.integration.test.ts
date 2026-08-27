@@ -24,13 +24,18 @@ describe('Theme Delivery Integration', () => {
 			backgroundImage: '/assets/hero.jpg',
 		},
 		location: {
-			reception: {
-				venueName: 'Hacienda Demo',
-				address: 'Centro',
-				city: 'CDMX',
-				date: '1 ene 2025',
-				time: '18:00',
-			},
+			venues: [
+				{
+					id: 'reception',
+					type: 'reception',
+					venueEvent: 'Recepción',
+					venueName: 'Hacienda Demo',
+					address: 'Centro',
+					city: 'CDMX',
+					date: '1 ene 2025',
+					time: '18:00',
+				},
+			],
 		},
 		envelope: {
 			disabled: false,
@@ -117,13 +122,18 @@ describe('Theme Delivery Integration', () => {
 				presentationOptions: {
 					showFlourishes: false,
 				},
-				reception: {
-					venueName: 'Venue',
-					address: 'Centro',
-					city: 'Los Mochis',
-					date: '11 abr 2026',
-					time: '20:00',
-				},
+				venues: [
+					{
+						id: 'reception',
+						type: 'reception',
+						venueEvent: 'Recepción',
+						venueName: 'Venue',
+						address: 'Centro',
+						city: 'Los Mochis',
+						date: '11 abr 2026',
+						time: '20:00',
+					},
+				],
 			},
 			envelope: {
 				disabled: false,
@@ -162,13 +172,18 @@ describe('Theme Delivery Integration', () => {
 				backgroundImage: '/assets/hero.jpg',
 			},
 			location: {
-				ceremony: {
-					venueName: 'Parroquia de San José',
-					address: 'Centro',
-					city: 'Ciudad de México',
-					date: '15 jun 2026',
-					time: '10:00',
-				},
+				venues: [
+					{
+						id: 'ceremony',
+						type: 'ceremony',
+						venueEvent: 'Ceremonia',
+						venueName: 'Parroquia de San José',
+						address: 'Centro',
+						city: 'Ciudad de México',
+						date: '15 jun 2026',
+						time: '10:00',
+					},
+				],
 			},
 		});
 
@@ -194,13 +209,18 @@ describe('Theme Delivery Integration', () => {
 				backgroundImage: '/assets/hero.jpg',
 			},
 			location: {
-				ceremony: {
-					venueName: 'Parroquia de San José',
-					address: 'Centro',
-					city: 'Ciudad de México',
-					date: '15 jun 2026',
-					time: '10:00',
-				},
+				venues: [
+					{
+						id: 'ceremony',
+						type: 'ceremony',
+						venueEvent: 'Ceremonia',
+						venueName: 'Parroquia de San José',
+						address: 'Centro',
+						city: 'Ciudad de México',
+						date: '15 jun 2026',
+						time: '10:00',
+					},
+				],
 			},
 		});
 
@@ -231,13 +251,18 @@ describe('Theme Delivery Integration', () => {
 				backgroundImage: '/assets/hero.jpg',
 			},
 			location: {
-				reception: {
-					venueName: "Palapa Zavala's",
-					address: 'Centro',
-					city: 'Los Mochis',
-					date: '23 may 2026',
-					time: '00:00',
-				},
+				venues: [
+					{
+						id: 'reception',
+						type: 'reception',
+						venueEvent: 'Recepción',
+						venueName: "Palapa Zavala's",
+						address: 'Centro',
+						city: 'Los Mochis',
+						date: '23 may 2026',
+						time: '00:00',
+					},
+				],
 			},
 		});
 

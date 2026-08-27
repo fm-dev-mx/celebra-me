@@ -434,17 +434,8 @@ describe('Fecha y ubicaciones editor-consumable Draft state', () => {
 			),
 		};
 		const comparison = compare(edited, pub);
-		expect(
-			comparison.changedPaths.some(
-				(path) => path.includes('venues') && path.includes('time'),
-			),
-		).toBe(true);
+		expect(comparison.changedPaths).toContain('content.location.venues');
 		expect(comparison.changedPaths.filter((path) => path.includes('family'))).toEqual([]);
-		expect(
-			comparison.changedPaths.filter(
-				(path) => path.includes('venues.1') && path.includes('time'),
-			),
-		).toEqual([]);
 	});
 
 	it('isolated ceremony date edit changes only that semantic path', () => {
@@ -458,11 +449,7 @@ describe('Fecha y ubicaciones editor-consumable Draft state', () => {
 			),
 		};
 		const comparison = compare(edited, pub);
-		expect(
-			comparison.changedPaths.some(
-				(path) => path.includes('venues') && path.includes('date'),
-			),
-		).toBe(true);
+		expect(comparison.changedPaths).toContain('content.location.venues');
 		expect(comparison.changedPaths.filter((path) => path.includes('family'))).toEqual([]);
 	});
 

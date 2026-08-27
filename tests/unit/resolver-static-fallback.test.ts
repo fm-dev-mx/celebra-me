@@ -76,7 +76,20 @@ describe('resolveInvitationContent Integration Fallback tests', () => {
 				slug: 'demo-boda',
 				theme: { preset: 'jewelry-box' },
 				hero: { name: 'Test', date: '2027-01-01', backgroundImage: '/img.jpg' },
-				location: { city: 'City', venueName: 'Venue' },
+				location: {
+					venues: [
+						{
+							id: 'reception',
+							type: 'reception',
+							venueEvent: 'Recepción',
+							venueName: 'Venue',
+							address: 'City',
+							city: 'City',
+							date: '2027-01-01',
+							time: '18:00',
+						},
+					],
+				},
 				sections: { rsvp: true },
 				envelope: { enabled: false },
 			},
