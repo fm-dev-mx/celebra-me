@@ -12,6 +12,10 @@ import {
 	listOrganizerMemoryItems,
 	revokeGuestMemorySession,
 } from '@/lib/memories/valentina-memories.service';
+import {
+	VALENTINA_MEMORIES_MEDIA_STATUSES,
+	type ValentinaMemoriesMediaStatus,
+} from '@/data/valentina-memories-media.contract';
 
 export const prerender = false;
 
@@ -23,8 +27,23 @@ export const GET: APIRoute = async ({ locals, url }) => {
 		});
 		const rawPage = url.searchParams.get('page') ?? '0';
 		if (!/^\d{1,2}$/.test(rawPage)) return badRequest('La página no es válida.');
+		const rawStatus = url.searchParams.get('status');
+		if (
+			rawStatus !== null &&
+			!VALENTINA_MEMORIES_MEDIA_STATUSES.includes(rawStatus as ValentinaMemoriesMediaStatus)
+		) {
+			return badRequest('El estado no es válido.');
+		}
 		return withPrivateCache(
-			jsonResponse(await listOrganizerMemoryItems({ page: Number(rawPage) })),
+			jsonResponse(
+				await listOrganizerMemoryItems({
+					page: Number(rawPage),
+					status: (rawStatus ?? undefined) as ValentinaMemoriesMediaStatus | undefined,
+					uploader: url.searchParams.get('uploader') ?? undefined,
+					createdFrom: url.searchParams.get('createdFrom') ?? undefined,
+					createdTo: url.searchParams.get('createdTo') ?? undefined,
+				}),
+			),
 		);
 	} catch (error) {
 		return errorResponse(error);

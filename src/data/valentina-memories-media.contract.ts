@@ -37,6 +37,7 @@ export const VALENTINA_MEMORIES_RETRIEVAL_REQUEST_TTL_SECONDS = 60;
 export const VALENTINA_MEMORIES_CLEANUP_BATCH_SIZE = 25;
 export const VALENTINA_MEMORIES_CLEANUP_LEASE_SECONDS = 15 * 60;
 export const VALENTINA_MEMORIES_CATALOG_PAGE_SIZE = 50;
+export const VALENTINA_MEMORIES_ORGANIZER_UPLOADER_FILTER_MAX_LENGTH = 60;
 export const VALENTINA_MEMORIES_VALIDATION_RETRY_DELAY_SECONDS = 60;
 export const VALENTINA_MEMORIES_APP_RATE_LIMITS = {
 	session: { maxHits: 60, windowSec: 60 },
@@ -115,6 +116,19 @@ export interface ValentinaMemoriesOrganizerItem extends ValentinaMemoriesMediaPu
 		displayName: string;
 		guestAlias: string;
 	};
+}
+
+export interface ValentinaMemoriesOrganizerListQuery {
+	page?: number;
+	status?: ValentinaMemoriesMediaStatus;
+	uploader?: string;
+	createdFrom?: string;
+	createdTo?: string;
+}
+
+export interface ValentinaMemoriesOrganizerListResponse {
+	items: ValentinaMemoriesOrganizerItem[];
+	nextPage: number | null;
 }
 
 export interface ValentinaMemoriesGuestProfile {

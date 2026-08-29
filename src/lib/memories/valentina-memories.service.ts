@@ -1,3 +1,4 @@
+/* eslint-disable max-lines -- This service intentionally owns the single Valentina media lifecycle boundary. */
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import type { AstroCookies } from 'astro';
 import { ApiError } from '@/lib/rsvp/core/errors';
@@ -11,6 +12,7 @@ import {
 	VALENTINA_MEMORIES_DISPLAY_NAME_MIN_LENGTH,
 	VALENTINA_MEMORIES_MAX_CAPTION_LENGTH,
 	VALENTINA_MEMORIES_MEDIA_STATUSES,
+	VALENTINA_MEMORIES_ORGANIZER_UPLOADER_FILTER_MAX_LENGTH,
 	VALENTINA_MEMORIES_SESSION_COOKIE,
 	VALENTINA_MEMORIES_SESSION_TTL_SECONDS,
 	canTransitionValentinaMemoriesMedia,
@@ -22,6 +24,8 @@ import {
 	type ValentinaMemoriesMediaItem,
 	type ValentinaMemoriesMediaPublicItem,
 	type ValentinaMemoriesOrganizerItem,
+	type ValentinaMemoriesOrganizerListQuery,
+	type ValentinaMemoriesOrganizerListResponse,
 	type ValentinaMemoriesGuestProfile,
 	type ValentinaMemoriesMediaStatus,
 } from '@/data/valentina-memories-media.contract';
@@ -82,6 +86,13 @@ type MediaRow = {
 	cleanup_claimed_at: string | null;
 	cleanup_lease_id: string | null;
 	object_deleted_at: string | null;
+};
+
+type OrganizerMediaRow = MediaRow & {
+	uploader:
+		| { display_name: string; guest_alias: string }
+		| Array<{ display_name: string; guest_alias: string }>
+		| null;
 };
 
 const SESSION_COLUMNS =
@@ -674,44 +685,89 @@ export async function assertValentinaOrganizerAccess(input: {
 	}
 }
 
-export async function listOrganizerMemoryItems(input: { page?: number } = {}): Promise<{
-	items: ValentinaMemoriesOrganizerItem[];
-	nextPage: number | null;
-}> {
+function normalizeOrganizerDateBound(value: unknown, label: string): string | undefined {
+	if (value === undefined || value === null || value === '') return undefined;
+	if (
+		typeof value !== 'string' ||
+		!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/.test(value) ||
+		!Number.isFinite(Date.parse(value))
+	) {
+		throw new ApiError(400, 'bad_request', `${label} no es válida.`);
+	}
+	return new Date(value).toISOString();
+}
+
+function normalizeOrganizerUploaderFilter(value: unknown): string | undefined {
+	if (value === undefined || value === null || value === '') return undefined;
+	if (typeof value !== 'string')
+		throw new ApiError(400, 'bad_request', 'El filtro de invitado no es válido.');
+	const normalized = value.trim().replace(/\s+/g, ' ');
+	if (
+		!normalized ||
+		normalized.length > VALENTINA_MEMORIES_ORGANIZER_UPLOADER_FILTER_MAX_LENGTH ||
+		!/^[-\p{L}\p{N}\s']+$/u.test(normalized)
+	) {
+		throw new ApiError(400, 'bad_request', 'El filtro de invitado no es válido.');
+	}
+	return normalized;
+}
+
+function organizerUploader(row: OrganizerMediaRow): ValentinaMemoriesOrganizerItem['uploader'] {
+	const relation = Array.isArray(row.uploader) ? row.uploader[0] : row.uploader;
+	return relation
+		? { displayName: relation.display_name, guestAlias: relation.guest_alias }
+		: { displayName: 'Invitado retirado', guestAlias: 'invitado-retirado' };
+}
+
+export async function listOrganizerMemoryItems(
+	input: ValentinaMemoriesOrganizerListQuery = {},
+): Promise<ValentinaMemoriesOrganizerListResponse> {
 	const maxPage =
 		Math.ceil(VALENTINA_MEMORIES_EVENT_MAX_OBJECTS / VALENTINA_MEMORIES_CATALOG_PAGE_SIZE) - 1;
-	const page =
-		Number.isSafeInteger(input.page) &&
-		(input.page as number) >= 0 &&
-		(input.page as number) <= maxPage
-			? (input.page as number)
-			: 0;
+	if (
+		input.page !== undefined &&
+		(!Number.isSafeInteger(input.page) || input.page < 0 || input.page > maxPage)
+	) {
+		throw new ApiError(400, 'bad_request', 'La página no es válida.');
+	}
+	const page = input.page ?? 0;
+	if (input.status !== undefined && !VALENTINA_MEMORIES_MEDIA_STATUSES.includes(input.status)) {
+		throw new ApiError(400, 'bad_request', 'El estado no es válido.');
+	}
+	const uploader = normalizeOrganizerUploaderFilter(input.uploader);
+	const createdFrom = normalizeOrganizerDateBound(input.createdFrom, 'La fecha inicial');
+	const createdTo = normalizeOrganizerDateBound(input.createdTo, 'La fecha final');
+	if (createdFrom && createdTo && Date.parse(createdFrom) >= Date.parse(createdTo)) {
+		throw new ApiError(400, 'bad_request', 'El rango de fechas no es válido.');
+	}
 	const offset = page * VALENTINA_MEMORIES_CATALOG_PAGE_SIZE;
-	const rows = await supabaseRestRequest<MediaRow[]>({
-		pathWithQuery: `valentina_memory_items?select=${MEDIA_COLUMNS}&event_key=eq.${VALENTINA_MEMORIES_EVENT_ID}&order=created_at.desc,id.desc&limit=${VALENTINA_MEMORIES_CATALOG_PAGE_SIZE + 1}&offset=${offset}`,
+	const query = new URLSearchParams();
+	const uploaderRelation = uploader
+		? 'uploader:valentina_memory_sessions!inner(display_name,guest_alias)'
+		: 'uploader:valentina_memory_sessions(display_name,guest_alias)';
+	query.set('select', `${MEDIA_COLUMNS},${uploaderRelation}`);
+	query.set('event_key', `eq.${VALENTINA_MEMORIES_EVENT_ID}`);
+	query.set('order', 'created_at.desc,id.desc');
+	query.set('limit', String(VALENTINA_MEMORIES_CATALOG_PAGE_SIZE + 1));
+	query.set('offset', String(offset));
+	if (input.status) query.set('status', `eq.${input.status}`);
+	if (createdFrom) query.append('created_at', `gte.${createdFrom}`);
+	if (createdTo) query.append('created_at', `lt.${createdTo}`);
+	if (uploader) {
+		query.set(
+			'uploader.or',
+			`(display_name.ilike.*${uploader}*,guest_alias.ilike.*${uploader}*)`,
+		);
+	}
+	const rows = await supabaseRestRequest<OrganizerMediaRow[]>({
+		pathWithQuery: `valentina_memory_items?${query.toString()}`,
 		useServiceRole: true,
 	});
 	const pageRows = rows.slice(0, VALENTINA_MEMORIES_CATALOG_PAGE_SIZE);
-	const sessionIds = Array.from(new Set(pageRows.map((row) => row.session_id)));
-	const sessions = sessionIds.length
-		? await supabaseRestRequest<SessionRow[]>({
-				pathWithQuery: `valentina_memory_sessions?select=${SESSION_COLUMNS}&event_key=eq.${VALENTINA_MEMORIES_EVENT_ID}&id=in.(${sessionIds.join(',')})`,
-				useServiceRole: true,
-			})
-		: [];
-	const uploaderBySession = new Map(
-		sessions.map((session) => [
-			session.id,
-			{ displayName: session.display_name, guestAlias: session.guest_alias },
-		]),
-	);
 	return {
 		items: pageRows.map((row) => ({
 			...toPublicItem(mapMediaRow(row)),
-			uploader: uploaderBySession.get(row.session_id) ?? {
-				displayName: 'Invitado retirado',
-				guestAlias: 'invitado-retirado',
-			},
+			uploader: organizerUploader(row),
 		})),
 		nextPage: rows.length > VALENTINA_MEMORIES_CATALOG_PAGE_SIZE ? page + 1 : null,
 	};

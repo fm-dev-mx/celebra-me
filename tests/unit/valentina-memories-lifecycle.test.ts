@@ -15,8 +15,12 @@ import {
 	optimizeValentinaMemoriesImage,
 	partitionMemoriesExport,
 } from '@/lib/memories/valentina-memories-client';
-import { assertValentinaOrganizerAccess } from '@/lib/memories/valentina-memories.service';
+import {
+	assertValentinaOrganizerAccess,
+	listOrganizerMemoryItems,
+} from '@/lib/memories/valentina-memories.service';
 import { calculateValentinaMemoriesGuestQuota } from '@/lib/memories/valentina-memories-quota';
+import { VALENTINA_MEMORIES_EVENT_ID } from '@/data/valentina-memories-upload.contract';
 
 Object.defineProperty(globalThis, 'crypto', { configurable: true, value: webcrypto });
 
@@ -33,9 +37,11 @@ jest.mock('@/lib/rsvp/repositories/role-membership.repository', () => ({
 
 import { findEventBySlugService } from '@/lib/rsvp/repositories/event.repository';
 import { findMembershipByEventForHost } from '@/lib/rsvp/repositories/role-membership.repository';
+import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 
 const mockFindEvent = findEventBySlugService as jest.Mock;
 const mockFindMembership = findMembershipByEventForHost as jest.Mock;
+const mockRestRequest = supabaseRestRequest as jest.MockedFunction<typeof supabaseRestRequest>;
 const SHA256 = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855';
 
 describe('Valentina media lifecycle contracts', () => {
@@ -125,6 +131,63 @@ describe('Valentina media lifecycle contracts', () => {
 				assertValentinaOrganizerAccess({ accessToken: 'non-owner-token' }),
 			).rejects.toMatchObject({ status: 403, code: 'forbidden' });
 		}
+	});
+
+	it('validates and applies organizer catalog filters before paginating the full relation', async () => {
+		mockRestRequest.mockResolvedValue([
+			{
+				id: 'media-id',
+				event_key: VALENTINA_MEMORIES_EVENT_ID,
+				session_id: 'session-id',
+				object_key: 'events/valentina/11111111-1111-4111-8111-111111111111.jpg',
+				mime_type: 'image/jpeg',
+				size_bytes: 10,
+				checksum_sha256: SHA256,
+				duration_seconds: null,
+				caption: '',
+				status: 'accepted',
+				duplicate_of_id: null,
+				created_at: '2026-08-29T12:00:00.000Z',
+				updated_at: '2026-08-29T12:00:00.000Z',
+				accepted_at: '2026-08-29T12:00:00.000Z',
+				rejected_at: null,
+				deleted_at: null,
+				idempotency_key: null,
+				cleanup_after: null,
+				cleanup_claimed_at: null,
+				cleanup_lease_id: null,
+				object_deleted_at: null,
+				uploader: { display_name: 'Tía Ana', guest_alias: 't-a1' },
+			},
+		] as never);
+
+		const result = await listOrganizerMemoryItems({
+			page: 1,
+			status: 'accepted',
+			uploader: 'Tía Ana',
+			createdFrom: '2026-08-29T06:00:00.000Z',
+			createdTo: '2026-08-30T06:00:00.000Z',
+		});
+		expect(result.items[0].uploader.displayName).toBe('Tía Ana');
+		const request = mockRestRequest.mock.calls[0][0];
+		const url = new URL(`https://supabase.test/${request.pathWithQuery}`);
+		expect(url.searchParams.get('status')).toBe('eq.accepted');
+		expect(url.searchParams.get('offset')).toBe('50');
+		expect(url.searchParams.get('select')).toContain('valentina_memory_sessions!inner');
+		expect(url.searchParams.get('uploader.or')).toContain('display_name.ilike.*Tía Ana*');
+		expect(url.searchParams.getAll('created_at')).toEqual([
+			'gte.2026-08-29T06:00:00.000Z',
+			'lt.2026-08-30T06:00:00.000Z',
+		]);
+		await expect(
+			listOrganizerMemoryItems({ uploader: 'Ana,or(status.eq.deleted)' }),
+		).rejects.toMatchObject({ status: 400, code: 'bad_request' });
+		await expect(
+			listOrganizerMemoryItems({
+				createdFrom: '2026-08-30T00:00:00.000Z',
+				createdTo: '2026-08-29T00:00:00.000Z',
+			}),
+		).rejects.toMatchObject({ status: 400, code: 'bad_request' });
 	});
 
 	it('implements atomic quota, deduplication, least privilege, and reclaimable cleanup in SQL', () => {
