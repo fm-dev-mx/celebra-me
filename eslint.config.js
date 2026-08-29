@@ -23,6 +23,8 @@ export default [
 			'coverage/',
 			'public/',
 			'temp/',
+			'**/.tmp/',
+			'**/.wrangler/',
 			'*.log',
 			'*.tmp',
 			'*.min.js',
