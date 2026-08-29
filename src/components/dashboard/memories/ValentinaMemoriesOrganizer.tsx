@@ -1,5 +1,14 @@
 import { useEffect, useState } from 'react';
-import { VALENTINA_MEMORIES_MAX_CAPTION_LENGTH } from '@/data/valentina-memories-media.contract';
+import {
+	VALENTINA_MEMORIES_ARCHIVE_MAX_BYTES,
+	VALENTINA_MEMORIES_ARCHIVE_MAX_FILES,
+	VALENTINA_MEMORIES_MAX_CAPTION_LENGTH,
+} from '@/data/valentina-memories-media.contract';
+import {
+	createEncryptedMemoriesZip,
+	generateBulkZipPassphrase,
+	type BulkExportProgress,
+} from '@/lib/memories/valentina-memories-client';
 
 type OrganizerItem = {
 	id: string;
@@ -7,7 +16,7 @@ type OrganizerItem = {
 	sizeBytes: number;
 	durationSeconds: number | null;
 	caption: string;
-	status: 'uploading' | 'validating' | 'accepted' | 'rejected' | 'deleted';
+	status: 'uploading' | 'validating' | 'accepted' | 'rejected' | 'deleted' | 'duplicate';
 	createdAt: string;
 };
 
@@ -19,6 +28,7 @@ const statusLabel: Record<OrganizerItem['status'], string> = {
 	accepted: 'Aprobado',
 	rejected: 'Rechazado',
 	deleted: 'Eliminado',
+	duplicate: 'Duplicado',
 };
 
 export default function ValentinaMemoriesOrganizer() {
@@ -28,6 +38,12 @@ export default function ValentinaMemoriesOrganizer() {
 	const [loading, setLoading] = useState(true);
 	const [editingId, setEditingId] = useState<string | null>(null);
 	const [caption, setCaption] = useState('');
+
+	// Bulk export states
+	const [exporting, setExporting] = useState(false);
+	const [exportPassphrase, setExportPassphrase] = useState<string | null>(null);
+	const [exportProgress, setExportProgress] = useState<BulkExportProgress | null>(null);
+	const [exportError, setExportError] = useState<string | null>(null);
 
 	const load = async () => {
 		setLoading(true);
@@ -70,6 +86,69 @@ export default function ValentinaMemoriesOrganizer() {
 		else setError('No se pudo eliminar el recuerdo.');
 	};
 
+	const handleBulkExport = async () => {
+		const acceptedItems = items.filter((item) => item.status === 'accepted');
+		if (acceptedItems.length === 0) {
+			setExportError('No hay recuerdos aprobados para descargar.');
+			return;
+		}
+		if (acceptedItems.length > VALENTINA_MEMORIES_ARCHIVE_MAX_FILES) {
+			setExportError(
+				`La descarga masiva admite hasta ${VALENTINA_MEMORIES_ARCHIVE_MAX_FILES} archivos. Utilice la descarga individual.`,
+			);
+			return;
+		}
+		const totalBytes = acceptedItems.reduce((acc, item) => acc + item.sizeBytes, 0);
+		if (totalBytes > VALENTINA_MEMORIES_ARCHIVE_MAX_BYTES) {
+			setExportError(
+				'El volumen total supera el límite de 128 MiB para archivo comprimido. Utilice la descarga individual.',
+			);
+			return;
+		}
+
+		const passphrase = generateBulkZipPassphrase();
+		setExportPassphrase(passphrase);
+		setExportProgress({
+			completed: 0,
+			total: acceptedItems.length,
+			currentFileName: 'Iniciando…',
+		});
+		setExportError(null);
+		setExporting(true);
+
+		try {
+			const blob = await createEncryptedMemoriesZip({
+				items: acceptedItems,
+				passphrase,
+				fetchItemBlob: async (item) => {
+					const res = await fetch(`${ENDPOINT}/${encodeURIComponent(item.id)}`);
+					if (!res.ok) throw new Error(`No se pudo descargar el archivo ${item.id}`);
+					return await res.blob();
+				},
+				onProgress: (prog) => {
+					setExportProgress(prog);
+				},
+			});
+
+			const downloadUrl = URL.createObjectURL(blob);
+			const link = document.createElement('a');
+			link.href = downloadUrl;
+			link.download = `recuerdos-valentina-${new Date().toISOString().slice(0, 10)}.zip`;
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+			URL.revokeObjectURL(downloadUrl);
+		} catch (err) {
+			setExportError(
+				err instanceof Error
+					? err.message
+					: 'Ocurrió un error al generar el archivo comprimido.',
+			);
+		} finally {
+			setExporting(false);
+		}
+	};
+
 	const visibleItems =
 		statusFilter === 'all' ? items : items.filter((item) => item.status === statusFilter);
 
@@ -83,9 +162,18 @@ export default function ValentinaMemoriesOrganizer() {
 						su evento.
 					</p>
 				</div>
-				<button type="button" onClick={() => void load()}>
-					Actualizar
-				</button>
+				<div className="dashboard-memories__header-actions">
+					<button type="button" onClick={() => void load()}>
+						Actualizar
+					</button>
+					<button
+						type="button"
+						onClick={() => void handleBulkExport()}
+						disabled={exporting}
+					>
+						{exporting ? 'Generando .zip…' : 'Descargar todo (.zip cifrado)'}
+					</button>
+				</div>
 			</div>
 			<div className="dashboard-memories__toolbar">
 				<label>
@@ -108,6 +196,11 @@ export default function ValentinaMemoriesOrganizer() {
 			{error ? (
 				<p role="alert" className="dashboard-memories__error">
 					{error}
+				</p>
+			) : null}
+			{exportError && !exportPassphrase ? (
+				<p role="alert" className="dashboard-memories__error">
+					{exportError}
 				</p>
 			) : null}
 			{loading ? (
@@ -211,6 +304,39 @@ export default function ValentinaMemoriesOrganizer() {
 					))}
 				</div>
 			)}
+
+			{exportPassphrase ? (
+				<div className="dashboard-memories__dialog" role="dialog" aria-modal="true">
+					<div className="dashboard-memories__dialog-content">
+						<h3>Contraseña de su archivo .zip</h3>
+						<p>
+							El archivo se cifra en su navegador mediante WinZip AES-256. Copie esta
+							contraseña antes de cerrar. No se guarda ni se envía al servidor:
+						</p>
+						<code>{exportPassphrase}</code>
+						{exportProgress ? (
+							<p>
+								Procesando: {exportProgress.completed} de {exportProgress.total} (
+								{exportProgress.currentFileName})
+							</p>
+						) : null}
+						{exportError ? (
+							<p className="dashboard-memories__error">{exportError}</p>
+						) : null}
+						<button
+							type="button"
+							disabled={exporting}
+							onClick={() => {
+								setExportPassphrase(null);
+								setExportProgress(null);
+								setExportError(null);
+							}}
+						>
+							Cerrar
+						</button>
+					</div>
+				</div>
+			) : null}
 		</section>
 	);
 }

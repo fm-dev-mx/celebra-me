@@ -121,9 +121,10 @@ test.describe('Valentina Memories capture route', () => {
 		await expect(
 			page.getByRole('button', { name: valentinaMemoriesCaptureCopy.uploadAnother }),
 		).toBeVisible();
-		expect(signPayload).toEqual({
+		expect(signPayload).toMatchObject({
 			mimeType: 'image/jpeg',
 			sizeBytes: 4,
+			checksumSha256: expect.stringMatching(/^[0-9a-f]{64}$/),
 		});
 		await expect(page.getByText('events/valentina/e2e.jpg')).toHaveCount(0);
 	});

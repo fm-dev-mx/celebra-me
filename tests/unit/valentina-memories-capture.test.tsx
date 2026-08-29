@@ -7,6 +7,9 @@ import {
 	VALENTINA_MEMORIES_PRODUCTION_SIGN_URL,
 	VALENTINA_MEMORIES_SIGN_PATH,
 } from '@/data/valentina-memories-upload.contract';
+import { webcrypto } from 'node:crypto';
+Object.defineProperty(globalThis, 'crypto', { value: webcrypto, configurable: true });
+
 import {
 	resolveValentinaMemoriesSignUrl,
 	validateValentinaMemoriesFile,
@@ -117,10 +120,10 @@ describe('valentina memories capture client', () => {
 				const url = String(input);
 				if (url === SIGN_URL) {
 					expect(init?.method).toBe('POST');
-					expect(JSON.parse(String(init?.body))).toEqual({
-						mimeType: 'image/jpeg',
-						sizeBytes: 8,
-					});
+					const body = JSON.parse(String(init?.body));
+					expect(body.mimeType).toBe('image/jpeg');
+					expect(body.sizeBytes).toBe(8);
+					expect(body.checksumSha256).toMatch(/^[0-9a-f]{64}$/);
 					return {
 						ok: true,
 						json: async () => ({

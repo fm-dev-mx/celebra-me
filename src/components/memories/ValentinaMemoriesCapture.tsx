@@ -9,6 +9,7 @@ import {
 	normalizeMemoriesMimeType,
 } from '@/data/valentina-memories-upload.contract';
 import {
+	calculateFileSha256Hex,
 	mapValentinaMemoriesSignError,
 	readValentinaMemoriesSignErrorCode,
 	validateValentinaMemoriesFile,
@@ -24,7 +25,7 @@ type CatalogItem = {
 	sizeBytes: number;
 	durationSeconds: number | null;
 	caption: string;
-	status: 'uploading' | 'validating' | 'accepted' | 'rejected' | 'deleted';
+	status: 'uploading' | 'validating' | 'accepted' | 'rejected' | 'deleted' | 'duplicate';
 	createdAt: string;
 };
 
@@ -41,12 +42,13 @@ const ITEMS_ENDPOINT = '/api/memories/valentina/items';
 async function requestSignature(
 	signUrl: string,
 	file: File,
+	checksumSha256: string,
 ): Promise<{ uploadUrl: string; objectKey: string }> {
 	const mimeType = normalizeMemoriesMimeType(file.type);
 	const response = await fetch(signUrl, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ mimeType, sizeBytes: file.size }),
+		body: JSON.stringify({ mimeType, sizeBytes: file.size, checksumSha256 }),
 	});
 	let payload: unknown;
 	try {
@@ -88,6 +90,7 @@ async function putOriginalFile(uploadUrl: string, file: File): Promise<void> {
 function itemStatusLabel(item: CatalogItem): string {
 	const copy = valentinaMemoriesCaptureCopy;
 	if (item.status === 'accepted') return copy.accepted;
+	if (item.status === 'duplicate') return copy.duplicate;
 	if (item.status === 'rejected') return copy.rejected;
 	if (item.status === 'deleted') return copy.deleted;
 	return copy.validationPending;
@@ -193,7 +196,8 @@ export default function ValentinaMemoriesCapture({
 			const durationSeconds = readVideoDurationSeconds
 				? await readVideoDurationSeconds(file)
 				: undefined;
-			const signed = await requestSignature(signUrl, file);
+			const checksumSha256 = await calculateFileSha256Hex(file);
+			const signed = await requestSignature(signUrl, file, checksumSha256);
 			let mediaId: string | undefined;
 			if (catalogEnabled) {
 				const registerResponse = await fetch(ITEMS_ENDPOINT, {
@@ -204,6 +208,7 @@ export default function ValentinaMemoriesCapture({
 						objectKey: signed.objectKey,
 						mimeType: normalizeMemoriesMimeType(file.type),
 						sizeBytes: file.size,
+						checksumSha256,
 						durationSeconds,
 					}),
 				});
