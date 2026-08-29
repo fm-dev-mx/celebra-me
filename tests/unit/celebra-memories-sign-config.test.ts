@@ -25,11 +25,9 @@ describe('celebra memories sign production config', () => {
 		const simple = rateLimit.simple as Record<string, number>;
 
 		expect(wrangler.name).toBe('celebra-memories-sign');
-		expect(wrangler.workers_dev).toBe(false);
+		expect(wrangler.workers_dev).toBe(true);
 		expect(wrangler.preview_urls).toBe(false);
-		expect(wrangler.routes).toEqual([
-			{ pattern: 'memories.celebra-me.com', custom_domain: true },
-		]);
+		expect(wrangler.routes).toEqual([]);
 		expect(rateLimit.name).toBe(VALENTINA_MEMORIES_RATE_LIMIT.bindingName);
 		expect(rateLimit.namespace_id).toBe(VALENTINA_MEMORIES_RATE_LIMIT.namespaceIds.production);
 		expect(simple.limit).toBe(VALENTINA_MEMORIES_RATE_LIMIT.limit);

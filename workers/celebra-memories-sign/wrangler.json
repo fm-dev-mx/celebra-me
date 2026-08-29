@@ -2,7 +2,7 @@
     "name": "celebra-memories-sign",
     "main": "src/index.ts",
     "compatibility_date": "2026-08-24",
-    "workers_dev": false,
+    "workers_dev": true,
     "preview_urls": false,
     "vars": {
         "MEMORIES_STORAGE_TARGET": "production"
@@ -11,12 +11,7 @@
         "enabled": true,
         "head_sampling_rate": 0.05
     },
-    "routes": [
-        {
-            "pattern": "memories.celebra-me.com",
-            "custom_domain": true
-        }
-    ],
+    "routes": [],
     "ratelimits": [
         {
             "name": "SIGN_RATE_LIMITER",
