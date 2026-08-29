@@ -9,9 +9,9 @@ import type { EventContentEntry } from '@/lib/content/events';
 
 const projectRoot = process.cwd();
 const assetDir = path.join(projectRoot, 'src/assets/images/events/xv-america-johana');
-const sqlPath = path.join(
+const fixturePath = path.join(
 	projectRoot,
-	'scripts/manual/production-patches/20260706_america_johana_xv.sql',
+	'tests/fixtures/invitations/xv-america-johana-db-payload.json',
 );
 const stylePath = path.join(projectRoot, 'src/styles/invitation-profiles/america-johana.scss');
 const sectionsIndexPath = path.join(projectRoot, 'src/styles/themes/sections/_index.scss');
@@ -57,15 +57,8 @@ const expectedAssets = [
 ] as const;
 
 function loadAmericaJohanaPublishedPayload() {
-	const sqlContent = fs.readFileSync(sqlPath, 'utf8');
-	// NOTE: This regex assumes v_new_content uses '...'::jsonb (single-quote delimiters).
-	// If the SQL quoting style changes to $$...$$::jsonb (dollar quoting),
-	// update both the regex pattern and this comment.
-	const match = sqlContent.match(/v_new_content\s*:=\s*'(?<json>[\s\S]*?)'\s*::jsonb;/);
-	if (!match?.groups?.json) {
-		throw new Error('Could not find v_content JSON payload in America Johana SQL patch.');
-	}
-	const result = eventContentSchema.safeParse(JSON.parse(match.groups.json));
+	const jsonContent = fs.readFileSync(fixturePath, 'utf8');
+	const result = eventContentSchema.safeParse(JSON.parse(jsonContent));
 	if (!result.success) {
 		throw new Error(
 			`America Johana DB payload failed schema validation:\n${JSON.stringify(result.error.issues, null, 2)}`,
