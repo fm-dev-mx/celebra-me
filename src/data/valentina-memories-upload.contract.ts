@@ -12,7 +12,19 @@ export const VALENTINA_MEMORIES_OBJECT_PREFIX = 'events/valentina/' as const;
 export const VALENTINA_MEMORIES_SIGN_PATH = '/sign/valentina' as const;
 export const VALENTINA_MEMORIES_UPLOAD_ORIGIN_ENV_NAME = 'MEMORIES_PRIVATE_UPLOAD_ORIGIN' as const;
 
-export const VALENTINA_MEMORIES_ALLOWED_PRODUCTION_ORIGIN = 'https://www.celebra-me.com' as const;
+export const VALENTINA_MEMORIES_BROWSER_ORIGINS = {
+	local: ['http://localhost', 'http://localhost:4321', 'http://127.0.0.1:4321'],
+	staging: [
+		'https://celebra-me.vercel.app',
+		'https://celebra-me-git-feat-valenti-6763f6-francisco-mendoza-s-projects.vercel.app',
+	],
+	production: ['https://www.celebra-me.com'],
+} as const;
+
+export const VALENTINA_MEMORIES_R2_CORS = {
+	methods: ['PUT'],
+	headers: ['Content-Type', 'If-None-Match', 'x-amz-checksum-sha256'],
+} as const;
 
 export const VALENTINA_MEMORIES_PRESIGN_TTL_SECONDS = 300;
 export const VALENTINA_MEMORIES_RESERVATION_TTL_SECONDS =
@@ -39,6 +51,16 @@ export const VALENTINA_MEMORIES_STORAGE_TARGETS = {
 	production: { bucketName: 'celebra-memories' },
 } as const;
 export type ValentinaMemoriesStorageTarget = keyof typeof VALENTINA_MEMORIES_STORAGE_TARGETS;
+
+export type ValentinaMemoriesR2CorsConfig = {
+	rules: Array<{
+		allowed: {
+			origins: string[];
+			methods: string[];
+			headers: string[];
+		};
+	}>;
+};
 
 export function getValentinaMemoriesStorageBucketName(target: unknown): string | null {
 	if (typeof target !== 'string' || !(target in VALENTINA_MEMORIES_STORAGE_TARGETS)) return null;
@@ -157,8 +179,37 @@ export function resolveValentinaMemoriesFileMimeType(file: {
 	return (entry?.[0] as ValentinaMemoriesAllowedMimeType | undefined) ?? null;
 }
 
-export function isAllowedValentinaMemoriesOrigin(origin: string | null | undefined): boolean {
-	return origin === VALENTINA_MEMORIES_ALLOWED_PRODUCTION_ORIGIN;
+export function getValentinaMemoriesBrowserOrigins(
+	target: ValentinaMemoriesStorageTarget,
+): readonly string[] {
+	return VALENTINA_MEMORIES_BROWSER_ORIGINS[target];
+}
+
+export function isAllowedValentinaMemoriesOrigin(
+	origin: string | null | undefined,
+	target?: ValentinaMemoriesStorageTarget,
+): boolean {
+	if (!origin) return false;
+	if (target) return VALENTINA_MEMORIES_BROWSER_ORIGINS[target].includes(origin as never);
+	return Object.values(VALENTINA_MEMORIES_BROWSER_ORIGINS).some((origins) =>
+		origins.includes(origin as never),
+	);
+}
+
+export function buildValentinaMemoriesR2CorsConfig(
+	target: Exclude<ValentinaMemoriesStorageTarget, 'local'>,
+): ValentinaMemoriesR2CorsConfig {
+	return {
+		rules: [
+			{
+				allowed: {
+					origins: [...VALENTINA_MEMORIES_BROWSER_ORIGINS[target]],
+					methods: [...VALENTINA_MEMORIES_R2_CORS.methods],
+					headers: [...VALENTINA_MEMORIES_R2_CORS.headers],
+				},
+			},
+		],
+	};
 }
 
 export function isWithinValentinaMemoriesUploadWindow(now: Date): boolean {

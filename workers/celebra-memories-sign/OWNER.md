@@ -68,8 +68,11 @@ names into evidence.
    confirm the configured Staging rate-limiter namespace is available. Block rollout if Cloudflare
    rejects it. Then verify requests require a fresh ECDSA envelope and rate-limit by authenticated
    session ID.
-7. Verify R2 CORS permits only the stable Vercel Preview origin, `PUT`, and the headers present in
-   `r2-cors.production.json`. Verify lifecycle matches `r2-lifecycle.production.json`.
+7. Run `pnpm worker:memories:cors:generate` and verify the working tree remains unchanged. Apply
+   `r2-cors.staging.json` only to Staging and `r2-cors.production.json` only to Production. These
+   files are projections of `valentina-memories-upload.contract.ts`; never edit origins or headers
+   directly in Cloudflare or in either JSON file. Verify lifecycle matches
+   `r2-lifecycle.production.json`.
 8. Run the sanitized Staging matrix below with synthetic, non-PII media only. Run phone checks only
    after the canonical upload window opens.
 

@@ -119,7 +119,6 @@ export interface ValentinaMemoriesOrganizerItem extends ValentinaMemoriesMediaPu
 
 export interface ValentinaMemoriesGuestProfile {
 	displayName: string;
-	guestAlias: string;
 	expiresAt: string;
 }
 

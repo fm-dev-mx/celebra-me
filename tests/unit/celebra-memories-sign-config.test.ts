@@ -1,11 +1,12 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import {
-	VALENTINA_MEMORIES_ALLOWED_PRODUCTION_ORIGIN,
+	VALENTINA_MEMORIES_BROWSER_ORIGINS,
 	VALENTINA_MEMORIES_OBJECT_PREFIX,
 	VALENTINA_MEMORIES_OBJECT_RETENTION_SECONDS,
 	VALENTINA_MEMORIES_RATE_LIMIT,
 	VALENTINA_MEMORIES_STORAGE_TARGETS,
+	buildValentinaMemoriesR2CorsConfig,
 } from '@/data/valentina-memories-upload.contract';
 
 const workerDir = path.join(process.cwd(), 'workers/celebra-memories-sign');
@@ -52,17 +53,14 @@ describe('celebra memories sign production config', () => {
 		expect(environments.staging.routes).toEqual([]);
 	});
 
-	it('permits only the production browser PUT contract on the reusable bucket', () => {
-		const cors = readJson('r2-cors.production.json');
-		const [rule] = cors.rules as Array<{ allowed: Record<string, string[]> }>;
-
+	it('projects the canonical browser PUT contract per reusable bucket', () => {
 		expect(VALENTINA_MEMORIES_STORAGE_TARGETS.production.bucketName).toBe('celebra-memories');
-		expect(rule.allowed.origins).toEqual([VALENTINA_MEMORIES_ALLOWED_PRODUCTION_ORIGIN]);
-		expect(rule.allowed.methods).toEqual(['PUT']);
-		expect(rule.allowed.headers).toEqual([
-			'Content-Type',
-			'If-None-Match',
-			'x-amz-checksum-sha256',
+		for (const target of ['staging', 'production'] as const) {
+			const cors = readJson(`r2-cors.${target}.json`);
+			expect(cors).toEqual(buildValentinaMemoriesR2CorsConfig(target));
+		}
+		expect(VALENTINA_MEMORIES_BROWSER_ORIGINS.production).toEqual([
+			'https://www.celebra-me.com',
 		]);
 	});
 
