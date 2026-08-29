@@ -5,6 +5,12 @@
     "buildCommand": "pnpm build",
     "devCommand": "astro dev",
     "installCommand": "corepack pnpm install --frozen-lockfile",
+    "crons": [
+        {
+            "path": "/api/cron/valentina-memories-cleanup",
+            "schedule": "17 7 * * *"
+        }
+    ],
     "redirects": [
         {
             "source": "/:eventType/:slug/invitado",

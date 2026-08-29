@@ -9,17 +9,17 @@ import {
 import {
 	getGuestMemorySessionFromRequest,
 	listGuestMemoryItems,
-	registerGuestMemoryItem,
-	requireValentinaMemoryRateLimit,
+	reserveGuestMemoryItem,
 } from '@/lib/memories/valentina-memories.service';
+import { requireValentinaMemoryRateLimit } from '@/lib/memories/valentina-memories-rate-limit';
 
 export const prerender = false;
 
 export const GET: APIRoute = async ({ request }) => {
 	try {
-		await requireValentinaMemoryRateLimit(request, 'read');
 		const session = await getGuestMemorySessionFromRequest(request);
 		if (!session) return new Response(null, { status: 401 });
+		await requireValentinaMemoryRateLimit(request, 'read', session.id);
 		return withPrivateCache(jsonResponse({ items: await listGuestMemoryItems(session) }));
 	} catch (error) {
 		return errorResponse(error);
@@ -28,22 +28,22 @@ export const GET: APIRoute = async ({ request }) => {
 
 export const POST: APIRoute = async ({ request }) => {
 	try {
-		await requireValentinaMemoryRateLimit(request, 'register');
 		const session = await getGuestMemorySessionFromRequest(request);
 		if (!session) return new Response(null, { status: 401 });
+		await requireValentinaMemoryRateLimit(request, 'register', session.id);
 		const bodyResult = await parseJsonBody(request);
 		if (bodyResult instanceof Response) return bodyResult;
-		if (bodyResult.action !== 'register')
+		if (bodyResult.action !== 'reserve')
 			return badRequest('La acción de recuerdo no es válida.');
-		const item = await registerGuestMemoryItem({
+		const reservation = await reserveGuestMemoryItem({
 			session,
-			objectKey: bodyResult.objectKey,
 			mimeType: bodyResult.mimeType,
 			sizeBytes: bodyResult.sizeBytes,
 			checksumSha256: bodyResult.checksumSha256,
 			durationSeconds: bodyResult.durationSeconds,
+			clientRequestId: bodyResult.clientRequestId,
 		});
-		return withPrivateCache(jsonResponse({ item }, 201));
+		return withPrivateCache(jsonResponse(reservation, 201));
 	} catch (error) {
 		return errorResponse(error);
 	}

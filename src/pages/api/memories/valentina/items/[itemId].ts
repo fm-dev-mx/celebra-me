@@ -10,11 +10,11 @@ import {
 	completeGuestMemoryItem,
 	deleteGuestMemoryItem,
 	getGuestMemorySessionFromRequest,
-	recordValentinaMemoryAccess,
 	updateGuestMemoryCaption,
 	getMediaObjectForPrivateRetrieval,
-	requireValentinaMemoryRateLimit,
 } from '@/lib/memories/valentina-memories.service';
+import { recordValentinaMemoryAccess } from '@/lib/memories/valentina-memories-audit';
+import { requireValentinaMemoryRateLimit } from '@/lib/memories/valentina-memories-rate-limit';
 import { retrieveValentinaMemoryObject } from '@/lib/memories/valentina-memories-retrieval';
 
 export const prerender = false;
@@ -27,9 +27,9 @@ async function requireSession(request: Request) {
 
 export const PATCH: APIRoute = async ({ request, params }) => {
 	try {
-		await requireValentinaMemoryRateLimit(request, 'mutate');
 		if (!params.itemId) return badRequest('No se especificó el recuerdo.');
 		const session = await requireSession(request);
+		await requireValentinaMemoryRateLimit(request, 'mutate', session.id);
 		const bodyResult = await parseJsonBody(request);
 		if (bodyResult instanceof Response) return bodyResult;
 		const item = await updateGuestMemoryCaption({
@@ -45,9 +45,9 @@ export const PATCH: APIRoute = async ({ request, params }) => {
 
 export const POST: APIRoute = async ({ request, params }) => {
 	try {
-		await requireValentinaMemoryRateLimit(request, 'mutate');
 		if (!params.itemId) return badRequest('No se especificó el recuerdo.');
 		const session = await requireSession(request);
+		await requireValentinaMemoryRateLimit(request, 'mutate', session.id);
 		const bodyResult = await parseJsonBody(request);
 		if (bodyResult instanceof Response) return bodyResult;
 		if (bodyResult.action !== 'complete')
@@ -61,9 +61,9 @@ export const POST: APIRoute = async ({ request, params }) => {
 
 export const DELETE: APIRoute = async ({ request, params }) => {
 	try {
-		await requireValentinaMemoryRateLimit(request, 'mutate');
 		if (!params.itemId) return badRequest('No se especificó el recuerdo.');
 		const session = await requireSession(request);
+		await requireValentinaMemoryRateLimit(request, 'mutate', session.id);
 		await deleteGuestMemoryItem({ session, mediaItemId: params.itemId });
 		return withPrivateCache(jsonResponse({ success: true }));
 	} catch (error) {
@@ -73,11 +73,15 @@ export const DELETE: APIRoute = async ({ request, params }) => {
 
 export const GET: APIRoute = async ({ request, params }) => {
 	try {
-		await requireValentinaMemoryRateLimit(request, 'read');
 		if (!params.itemId) return badRequest('No se especificó el recuerdo.');
 		const session = await requireSession(request);
+		await requireValentinaMemoryRateLimit(request, 'read', session.id);
 		const object = await getMediaObjectForPrivateRetrieval(params.itemId, session.id);
-		const response = await retrieveValentinaMemoryObject({ ...object, mode: 'inline' });
+		const response = await retrieveValentinaMemoryObject({
+			...object,
+			mode: 'inline',
+			range: request.headers.get('range'),
+		});
 		if (!response.ok) return new Response(null, { status: response.status });
 		await recordValentinaMemoryAccess({
 			mediaItemId: params.itemId,

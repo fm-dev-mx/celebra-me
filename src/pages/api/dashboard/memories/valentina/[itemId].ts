@@ -11,9 +11,9 @@ import { retrieveValentinaMemoryObject } from '@/lib/memories/valentina-memories
 import {
 	assertValentinaOrganizerAccess,
 	getMediaObjectForPrivateRetrieval,
-	recordValentinaMemoryAccess,
 	updateOrganizerMemoryItem,
 } from '@/lib/memories/valentina-memories.service';
+import { recordValentinaMemoryAccess } from '@/lib/memories/valentina-memories-audit';
 
 export const prerender = false;
 
@@ -23,7 +23,6 @@ export const PATCH: APIRoute = async ({ request, locals, params }) => {
 		const session = requireDashboardSessionFromLocals(locals);
 		await assertValentinaOrganizerAccess({
 			accessToken: session.accessToken,
-			isSuperAdmin: session.isSuperAdmin,
 		});
 		const bodyResult = await parseJsonBody(request);
 		if (bodyResult instanceof Response) return bodyResult;
@@ -45,12 +44,15 @@ export const GET: APIRoute = async ({ request, locals, params }) => {
 		const session = requireDashboardSessionFromLocals(locals);
 		await assertValentinaOrganizerAccess({
 			accessToken: session.accessToken,
-			isSuperAdmin: session.isSuperAdmin,
 		});
 		const mode =
 			new URL(request.url).searchParams.get('mode') === 'preview' ? 'inline' : 'attachment';
 		const object = await getMediaObjectForPrivateRetrieval(params.itemId);
-		const response = await retrieveValentinaMemoryObject({ ...object, mode });
+		const response = await retrieveValentinaMemoryObject({
+			...object,
+			mode,
+			range: request.headers.get('range'),
+		});
 		if (!response.ok) return new Response(null, { status: response.status });
 		await recordValentinaMemoryAccess({
 			mediaItemId: params.itemId,
@@ -70,7 +72,6 @@ export const DELETE: APIRoute = async ({ locals, params }) => {
 		const session = requireDashboardSessionFromLocals(locals);
 		await assertValentinaOrganizerAccess({
 			accessToken: session.accessToken,
-			isSuperAdmin: session.isSuperAdmin,
 		});
 		await updateOrganizerMemoryItem({
 			mediaItemId: params.itemId,
