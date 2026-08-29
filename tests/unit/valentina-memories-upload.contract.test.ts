@@ -15,17 +15,21 @@ import {
 	VALENTINA_MEMORIES_SESSION_MAX_BYTES,
 	VALENTINA_MEMORIES_SESSION_MAX_FILES,
 	VALENTINA_MEMORIES_SESSION_MAX_IN_FLIGHT,
+	VALENTINA_MEMORIES_SESSION_MAX_VIDEOS,
 	VALENTINA_MEMORIES_RATE_LIMIT,
+	VALENTINA_MEMORIES_STORAGE_TARGETS,
 	VALENTINA_MEMORIES_SIGN_PATH,
 	VALENTINA_MEMORIES_UPLOAD_WINDOW_ENDS_AT,
 	VALENTINA_MEMORIES_UPLOAD_WINDOW_STARTS_AT,
 	buildValentinaMemoriesObjectKey,
 	getValentinaMemoriesMimePolicy,
+	getValentinaMemoriesStorageBucketName,
 	getValentinaMemoriesPresignExpiresAt,
 	isAllowedValentinaMemoriesOrigin,
 	isWithinValentinaMemoriesUploadWindow,
 	resolveValentinaMemoriesFileMimeType,
 } from '@/data/valentina-memories-upload.contract';
+import { resolveMemoriesUploadSignerUrl } from '@/lib/server/memories-upload-target';
 
 function zoneParts(iso: string) {
 	const parts = new Intl.DateTimeFormat('en-US', {
@@ -56,11 +60,23 @@ describe('valentina memories upload contract', () => {
 
 	it('keeps session and event quotas in the canonical contract', () => {
 		expect(VALENTINA_MEMORIES_SESSION_MAX_FILES).toBe(20);
+		expect(VALENTINA_MEMORIES_SESSION_MAX_VIDEOS).toBe(5);
 		expect(VALENTINA_MEMORIES_SESSION_MAX_BYTES).toBe(512 * 1024 * 1024);
 		expect(VALENTINA_MEMORIES_SESSION_MAX_IN_FLIGHT).toBe(2);
 		expect(VALENTINA_MEMORIES_RATE_LIMIT.limit).toBe(6);
 		expect(VALENTINA_MEMORIES_EVENT_MAX_OBJECTS).toBe(2_000);
 		expect(VALENTINA_MEMORIES_EVENT_MAX_BYTES).toBe(8_000_000_000);
+		expect(VALENTINA_MEMORIES_RATE_LIMIT.namespaceIds).toEqual({
+			local: '1000',
+			staging: '1002',
+			production: '1001',
+		});
+		expect(VALENTINA_MEMORIES_STORAGE_TARGETS).toEqual({
+			local: { bucketName: 'celebra-memories-local' },
+			staging: { bucketName: 'celebra-memories-staging' },
+			production: { bucketName: 'celebra-memories' },
+		});
+		expect(getValentinaMemoriesStorageBucketName('unknown')).toBeNull();
 	});
 
 	it('caps images at 20 MB and videos at 80 MB', () => {
@@ -111,6 +127,25 @@ describe('valentina memories upload contract', () => {
 		expect(isAllowedValentinaMemoriesOrigin('https://celebra-me.com')).toBe(false);
 		expect(isAllowedValentinaMemoriesOrigin('https://memories.celebra-me.com')).toBe(false);
 		expect(isAllowedValentinaMemoriesOrigin(null)).toBe(false);
+	});
+
+	it('resolves only a server-owned Worker origin and keeps the path in code', () => {
+		const previous = process.env.MEMORIES_PRIVATE_UPLOAD_ORIGIN;
+		try {
+			process.env.MEMORIES_PRIVATE_UPLOAD_ORIGIN = 'https://upload-staging.example.invalid';
+			expect(resolveMemoriesUploadSignerUrl()?.toString()).toBe(
+				'https://upload-staging.example.invalid/sign/valentina',
+			);
+			process.env.MEMORIES_PRIVATE_UPLOAD_ORIGIN = 'https://example.invalid/duplicated-path';
+			expect(resolveMemoriesUploadSignerUrl()).toBeNull();
+			process.env.MEMORIES_PRIVATE_UPLOAD_ORIGIN = 'http://remote.example.invalid';
+			expect(resolveMemoriesUploadSignerUrl()).toBeNull();
+			process.env.MEMORIES_PRIVATE_UPLOAD_ORIGIN = 'http://127.0.0.1:8787';
+			expect(resolveMemoriesUploadSignerUrl()?.pathname).toBe('/sign/valentina');
+		} finally {
+			if (previous === undefined) delete process.env.MEMORIES_PRIVATE_UPLOAD_ORIGIN;
+			else process.env.MEMORIES_PRIVATE_UPLOAD_ORIGIN = previous;
+		}
 	});
 
 	it('opens two calendar days before the event and closes five days after', () => {

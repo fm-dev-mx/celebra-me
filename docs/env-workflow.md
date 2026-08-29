@@ -150,13 +150,36 @@ secrets for invitation image upload (Astro API + `invitation:release` CLI). Neve
 fail closed: invitation image uploads do not fall back to Supabase Storage.
 
 Valentina Memories has no browser-facing environment variable. The browser calls same-origin APIs;
-the backend uses the repository-owned upload signer URL. Vercel owns two independent P-256 private
-keys (`MEMORIES_UPLOAD_REQUEST_SIGNING_PRIVATE_KEY` and
-`MEMORIES_RETRIEVAL_REQUEST_SIGNING_PRIVATE_KEY`), the private retrieval Worker origin
-(`MEMORIES_PRIVATE_RETRIEVAL_ORIGIN`), and `CRON_SECRET`. Cloudflare Workers receive only the
-corresponding public verification keys. Missing or invalid values fail closed. Cloudflare API
-tokens, R2 credentials, object keys, signed URLs, and reusable secret placeholders never belong in
-the tracked environment template.
+the backend uses server-only Worker origins and repository-owned route paths. Missing or invalid
+values fail closed.
+
+### Valentina Memories environment cheatsheet
+
+This table is the sole human-facing authority for where each value belongs. Local private values go
+in ignored files; tracked examples contain empty values only. Preview/Staging and Production use
+independent key pairs and credentials.
+
+| Name                                             | Local                              | Preview / Staging                              | Production                                           | Value source                                         |
+| ------------------------------------------------ | ---------------------------------- | ---------------------------------------------- | ---------------------------------------------------- | ---------------------------------------------------- |
+| `MEMORIES_UPLOAD_REQUEST_SIGNING_PRIVATE_KEY`    | `.env.local` secret                | Vercel Preview secret                          | Vercel Production secret, independent                | Locally generated PKCS#8 P-256 upload pair           |
+| `MEMORIES_RETRIEVAL_REQUEST_SIGNING_PRIVATE_KEY` | `.env.local` secret                | Vercel Preview secret                          | Vercel Production secret, independent                | Locally generated PKCS#8 P-256 retrieval pair        |
+| `MEMORIES_PRIVATE_UPLOAD_ORIGIN`                 | Local Wrangler origin              | Vercel Preview config                          | Vercel Production config                             | Deployed Sign Worker origin; path stays in code      |
+| `MEMORIES_PRIVATE_RETRIEVAL_ORIGIN`              | Local Wrangler origin              | Vercel Preview config                          | Vercel Production config                             | Deployed Retrieval Worker origin; path stays in code |
+| `CRON_SECRET`                                    | Synthetic `.env.local` secret      | Vercel Preview secret                          | Vercel Production secret, independent                | Cryptographically secure random generator            |
+| `MEMORIES_UPLOAD_REQUEST_VERIFY_PUBLIC_KEY`      | Sign Worker `.dev.vars`            | Sign Worker Staging secret                     | Sign Worker Production secret                        | SPKI public key from the upload pair                 |
+| `MEMORIES_RETRIEVAL_REQUEST_VERIFY_PUBLIC_KEY`   | Retrieval Worker `.dev.vars`       | Retrieval Worker Staging secret                | Retrieval Worker Production secret                   | SPKI public key from the retrieval pair              |
+| `MEMORIES_R2_ACCOUNT_ID`                         | Empty, non-operational placeholder | Sign Worker Staging secret                     | Sign Worker Production secret                        | Cloudflare R2 Account Details                        |
+| `MEMORIES_R2_PRESIGN_ACCESS_KEY_ID`              | Empty, non-operational placeholder | Sign Worker Staging secret                     | Independent Sign Worker Production secret            | Bucket-scoped R2 API token                           |
+| `MEMORIES_R2_PRESIGN_SECRET_ACCESS_KEY`          | Empty, non-operational placeholder | Sign Worker Staging secret                     | Independent Sign Worker Production secret            | One-time value shown when the R2 token is created    |
+| `MEMORIES_STORAGE_TARGET`                        | Wrangler versioned var: `local`    | Wrangler versioned var: `staging`              | Wrangler versioned var: `production`                 | Repository Worker configuration                      |
+| `MEMORIES_BUCKET`                                | Simulated local R2 binding         | Binding to the Staging bucket                  | Binding to the Production bucket                     | Wrangler R2 binding; never a variable or secret      |
+| Supabase URL / anon / service role               | Values reported by local Supabase  | Vercel Preview values from the Preview project | Vercel Production values from the Production project | Matching Supabase project API settings               |
+
+Do not create `PUBLIC_MEMORIES_*`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, or Valentina
+Memories values in Cloudflare Secrets Store. Interactive deployment authentication is owned by
+`wrangler login`; Worker runtime secrets are applied to the exact environment with
+`wrangler secret put --env <environment>`. Never place API tokens, R2 credentials, object keys,
+signed URLs, or reusable secret values in tracked templates, documentation, logs, or evidence.
 
 ## Rules
 

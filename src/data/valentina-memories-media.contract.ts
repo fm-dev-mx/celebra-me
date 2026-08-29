@@ -123,6 +123,13 @@ export interface ValentinaMemoriesGuestProfile {
 	expiresAt: string;
 }
 
+export interface ValentinaMemoriesGuestQuota {
+	files: { used: number; remaining: number; limit: number };
+	videos: { used: number; remaining: number; limit: number };
+	bytes: { used: number; remaining: number; limit: number };
+	inFlight: { used: number; remaining: number; limit: number };
+}
+
 export function isValidSha256Hex(value: unknown): value is string {
 	return typeof value === 'string' && VALENTINA_MEMORIES_SHA256_HEX_PATTERN.test(value);
 }

@@ -5,7 +5,7 @@ import {
 import { VALENTINA_MEMORIES_UPLOAD_SIGNING_PRIVATE_KEY_ENV_NAME } from '@/data/valentina-memories-media.contract';
 import { MEMORIES_UPLOAD_REQUEST_AUDIENCE } from '@/data/valentina-memories-private-request.contract';
 import { createMemoriesPrivateRequestHeaders } from '@/lib/server/memories-private-request';
-import { MEMORIES_UPLOAD_SIGNER_URL } from '@/lib/server/memories-upload-target';
+import { resolveMemoriesUploadSignerUrl } from '@/lib/server/memories-upload-target';
 
 export interface ValentinaMemoriesUploadCapability {
 	uploadUrl: string;
@@ -76,8 +76,10 @@ export async function requestValentinaMemoryUploadCapability(input: {
 	sizeBytes: number;
 	checksumSha256: string;
 }): Promise<ValentinaMemoriesUploadCapability> {
+	const signerUrl = resolveMemoriesUploadSignerUrl();
+	if (!signerUrl) throw new Error('Memories upload signer is not configured.');
 	const body = JSON.stringify(input);
-	const response = await fetch(MEMORIES_UPLOAD_SIGNER_URL, {
+	const response = await fetch(signerUrl, {
 		method: 'POST',
 		headers: createMemoriesPrivateRequestHeaders({
 			audience: MEMORIES_UPLOAD_REQUEST_AUDIENCE,

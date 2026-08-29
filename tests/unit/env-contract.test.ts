@@ -5,6 +5,7 @@ import {
 	VALENTINA_MEMORIES_RETRIEVAL_SIGNING_PRIVATE_KEY_ENV_NAME,
 	VALENTINA_MEMORIES_UPLOAD_SIGNING_PRIVATE_KEY_ENV_NAME,
 } from '@/data/valentina-memories-media.contract';
+import { VALENTINA_MEMORIES_UPLOAD_ORIGIN_ENV_NAME } from '@/data/valentina-memories-upload.contract';
 
 const ROOT = process.cwd();
 const RUNTIME_SOURCE_EXTENSIONS = new Set(['.astro', '.ts', '.tsx']);
@@ -13,6 +14,7 @@ const INDIRECT_RUNTIME_ENV_NAMES = new Set([
 	VALENTINA_MEMORIES_RETRIEVAL_ORIGIN_ENV_NAME,
 	VALENTINA_MEMORIES_RETRIEVAL_SIGNING_PRIVATE_KEY_ENV_NAME,
 	VALENTINA_MEMORIES_UPLOAD_SIGNING_PRIVATE_KEY_ENV_NAME,
+	VALENTINA_MEMORIES_UPLOAD_ORIGIN_ENV_NAME,
 ]);
 
 function readProjectFile(relativePath: string): string {

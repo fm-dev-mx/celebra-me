@@ -20,7 +20,7 @@ export const GET: APIRoute = async ({ request }) => {
 		const session = await getGuestMemorySessionFromRequest(request);
 		if (!session) return new Response(null, { status: 401 });
 		await requireValentinaMemoryRateLimit(request, 'read', session.id);
-		return withPrivateCache(jsonResponse({ items: await listGuestMemoryItems(session) }));
+		return withPrivateCache(jsonResponse(await listGuestMemoryItems(session)));
 	} catch (error) {
 		return errorResponse(error);
 	}

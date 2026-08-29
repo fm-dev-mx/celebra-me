@@ -12,9 +12,11 @@ import {
 import {
 	calculateFileSha256Hex,
 	generateBulkZipPassphrase,
+	optimizeValentinaMemoriesImage,
 	partitionMemoriesExport,
 } from '@/lib/memories/valentina-memories-client';
 import { assertValentinaOrganizerAccess } from '@/lib/memories/valentina-memories.service';
+import { calculateValentinaMemoriesGuestQuota } from '@/lib/memories/valentina-memories-quota';
 
 Object.defineProperty(globalThis, 'crypto', { configurable: true, value: webcrypto });
 
@@ -84,6 +86,28 @@ describe('Valentina media lifecycle contracts', () => {
 		expect(serialized).not.toMatch(/objectKey|checksum|sessionId|duplicateOfId/i);
 	});
 
+	it('reports remaining guest quota from resident rows without exposing catalog fields', () => {
+		const quota = calculateValentinaMemoriesGuestQuota([
+			{
+				mime_type: 'video/mp4',
+				size_bytes: 100,
+				status: 'uploading',
+				object_deleted_at: null,
+			},
+			{
+				mime_type: 'image/jpeg',
+				size_bytes: 200,
+				status: 'deleted',
+				object_deleted_at: '2026-08-29T00:00:00.000Z',
+			},
+		]);
+		expect(quota.files).toMatchObject({ used: 1, remaining: 19, limit: 20 });
+		expect(quota.videos).toMatchObject({ used: 1, remaining: 4, limit: 5 });
+		expect(quota.bytes.used).toBe(100);
+		expect(quota.inFlight.used).toBe(1);
+		expect(JSON.stringify(quota)).not.toMatch(/object_deleted_at|mime_type|session|objectKey/i);
+	});
+
 	it('authorizes only the event owner, including when the caller has another global role', async () => {
 		mockFindEvent.mockResolvedValue({ id: 'event-id' });
 		mockFindMembership.mockResolvedValueOnce({ membershipRole: 'owner' });
@@ -118,6 +142,16 @@ describe('Valentina media lifecycle contracts', () => {
 		expect(migration).toMatch(/for update skip locked/i);
 		expect(migration).toMatch(/REVOKE ALL[\s\S]+FROM public, anon, authenticated/i);
 		expect(migration).toMatch(/GRANT EXECUTE[\s\S]+TO service_role/i);
+		const videoQuotaMigration = readFileSync(
+			path.join(
+				process.cwd(),
+				'supabase/migrations/20260829171814_valentina_memories_video_quota.sql',
+			),
+			'utf8',
+		);
+		expect(videoQuotaMigration).toContain('p_max_session_videos integer');
+		expect(videoQuotaMigration).toContain('memories_session_video_quota');
+		expect(videoQuotaMigration).not.toMatch(/p_max_session_videos\s*:?=\s*5/i);
 	});
 
 	it('hashes in the browser and partitions encrypted exports at canonical limits', async () => {
@@ -134,6 +168,88 @@ describe('Valentina media lifecycle contracts', () => {
 			createdAt: '2026-08-29T00:00:00.000Z',
 		}));
 		expect(partitionMemoriesExport(items).map((batch) => batch.length)).toEqual([100, 1]);
+	});
+
+	it('reorients, bounds, strips source metadata, and releases image resources', async () => {
+		const originalCreateImageBitmap = globalThis.createImageBitmap;
+		const originalCreateElement = document.createElement.bind(document);
+		const close = jest.fn();
+		const drawImage = jest.fn();
+		const bitmap = { width: 4000, height: 2000, close } as unknown as ImageBitmap;
+		const createImageBitmapMock = jest.fn().mockResolvedValue(bitmap);
+		Object.defineProperty(globalThis, 'createImageBitmap', {
+			configurable: true,
+			value: createImageBitmapMock,
+		});
+		const canvas = {
+			width: 0,
+			height: 0,
+			getContext: jest.fn(() => ({ drawImage })),
+			toBlob: (callback: BlobCallback, type?: string) =>
+				callback(new Blob([new Uint8Array(10)], { type })),
+		} as unknown as HTMLCanvasElement;
+		jest.spyOn(document, 'createElement').mockImplementation(((tagName: string) =>
+			tagName === 'canvas'
+				? canvas
+				: originalCreateElement(tagName)) as typeof document.createElement);
+
+		try {
+			const source = new File([new Uint8Array(100)], 'photo.jpg', {
+				type: 'image/jpeg',
+				lastModified: 123,
+			});
+			const optimized = await optimizeValentinaMemoriesImage(source);
+			expect(createImageBitmapMock).toHaveBeenCalledWith(source, {
+				imageOrientation: 'from-image',
+			});
+			expect(drawImage).toHaveBeenCalledWith(bitmap, 0, 0, 2560, 1280);
+			expect(optimized).not.toBe(source);
+			expect(optimized.size).toBe(10);
+			expect(optimized.type).toBe('image/jpeg');
+			expect(close).toHaveBeenCalledTimes(1);
+			expect(canvas.width).toBe(0);
+			expect(canvas.height).toBe(0);
+		} finally {
+			jest.restoreAllMocks();
+			Object.defineProperty(globalThis, 'createImageBitmap', {
+				configurable: true,
+				value: originalCreateImageBitmap,
+			});
+		}
+	});
+
+	it('retains unsupported images and compatible originals when encoding would grow them', async () => {
+		const heic = new File([new Uint8Array(10)], 'photo.heic', { type: 'image/heic' });
+		await expect(optimizeValentinaMemoriesImage(heic)).resolves.toBe(heic);
+
+		const originalCreateImageBitmap = globalThis.createImageBitmap;
+		const originalCreateElement = document.createElement.bind(document);
+		Object.defineProperty(globalThis, 'createImageBitmap', {
+			configurable: true,
+			value: jest.fn().mockResolvedValue({ width: 10, height: 10, close: jest.fn() }),
+		});
+		const canvas = {
+			width: 0,
+			height: 0,
+			getContext: jest.fn(() => ({ drawImage: jest.fn() })),
+			toBlob: (callback: BlobCallback, type?: string) =>
+				callback(new Blob([new Uint8Array(20)], { type })),
+		} as unknown as HTMLCanvasElement;
+		jest.spyOn(document, 'createElement').mockImplementation(((tagName: string) =>
+			tagName === 'canvas'
+				? canvas
+				: originalCreateElement(tagName)) as typeof document.createElement);
+
+		try {
+			const jpeg = new File([new Uint8Array(10)], 'photo.jpg', { type: 'image/jpeg' });
+			await expect(optimizeValentinaMemoriesImage(jpeg)).resolves.toBe(jpeg);
+		} finally {
+			jest.restoreAllMocks();
+			Object.defineProperty(globalThis, 'createImageBitmap', {
+				configurable: true,
+				value: originalCreateImageBitmap,
+			});
+		}
 	});
 
 	it('fails closed when Web Crypto is unavailable', () => {

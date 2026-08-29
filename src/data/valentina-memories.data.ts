@@ -6,6 +6,33 @@
  * Upload constraints live in `valentina-memories-upload.contract.ts`.
  */
 
+import {
+	VALENTINA_MEMORIES_MAX_IMAGE_BYTES,
+	VALENTINA_MEMORIES_MAX_VIDEO_BYTES,
+	VALENTINA_MEMORIES_MAX_VIDEO_DURATION_SECONDS,
+	VALENTINA_MEMORIES_SESSION_MAX_VIDEOS,
+	VALENTINA_MEMORIES_ALLOWED_MIME_TYPES,
+} from './valentina-memories-upload.contract';
+
+function formatMiB(bytes: number): number {
+	return bytes / (1024 * 1024);
+}
+
+export function buildValentinaMemoriesUploadLimitsCopy(): string {
+	const formats = Array.from(
+		new Set(
+			Object.values(VALENTINA_MEMORIES_ALLOWED_MIME_TYPES).map(({ extension }) => extension),
+		),
+	)
+		.map((extension) => extension.toUpperCase())
+		.join(', ');
+	return `Formatos: ${formats}. Fotos: máximo ${formatMiB(VALENTINA_MEMORIES_MAX_IMAGE_BYTES)} MiB después de optimizar. Videos: máximo ${formatMiB(VALENTINA_MEMORIES_MAX_VIDEO_BYTES)} MiB y ${VALENTINA_MEMORIES_MAX_VIDEO_DURATION_SECONDS} segundos; hasta ${VALENTINA_MEMORIES_SESSION_MAX_VIDEOS} videos por sesión.`;
+}
+
+export function buildValentinaMemoriesVideoTooLongCopy(): string {
+	return `El video no puede durar más de ${VALENTINA_MEMORIES_MAX_VIDEO_DURATION_SECONDS} segundos.`;
+}
+
 export const VALENTINA_MEMORIES_ROUTE_PATH = '/r/valentina' as const;
 
 /** Exact URL encoded by the printable QR assets. */
@@ -31,10 +58,12 @@ export const valentinaMemoriesPageCopy = {
 
 export const valentinaMemoriesCaptureCopy = {
 	chooseFile: 'Elija una foto o un video',
-	chooseFileHint: 'Acepta fotos y videos breves de la celebración.',
+	chooseFileHint: buildValentinaMemoriesUploadLimitsCopy(),
 	privacyHint:
-		'Solo la persona organizadora podrá ver y descargar su recuerdo. El archivo puede conservar fecha, dispositivo o ubicación guardados por su teléfono.',
+		'Usted podrá ver sus recuerdos y solo la persona organizadora podrá verlos y descargarlos todos. Los formatos que no se puedan optimizar pueden conservar metadatos del teléfono.',
 	preparing: 'Preparando su recuerdo…',
+	optimizing: 'Optimizando su foto…',
+	cancelOptimization: 'Cancelar optimización',
 	uploading: 'Subiendo su recuerdo…',
 	confirming: 'Confirmando que llegó correctamente…',
 	success: 'Se guardó. Gracias por compartir este momento.',
@@ -42,7 +71,7 @@ export const valentinaMemoriesCaptureCopy = {
 	retry: 'Intentar de nuevo',
 	unsupportedType: 'Este tipo de archivo no está permitido.',
 	fileTooLarge: 'El archivo supera el tamaño permitido.',
-	videoTooLong: 'El video no puede durar más de 60 segundos.',
+	videoTooLong: buildValentinaMemoriesVideoTooLongCopy(),
 	videoUnreadable: 'No se pudo leer el video. Intente con otro archivo.',
 	windowClosed: 'La ventana para subir recuerdos no está abierta.',
 	rateLimited: 'Hay demasiadas solicitudes. Intente de nuevo en un momento.',

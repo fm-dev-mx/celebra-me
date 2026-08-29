@@ -1,4 +1,3 @@
-import { getEnv } from '@/lib/server/env';
 import {
 	VALENTINA_MEMORIES_RETRIEVAL_ORIGIN_ENV_NAME,
 	VALENTINA_MEMORIES_RETRIEVAL_PATH,
@@ -7,6 +6,7 @@ import {
 } from '@/data/valentina-memories-media.contract';
 import { MEMORIES_RETRIEVAL_REQUEST_AUDIENCE } from '@/data/valentina-memories-private-request.contract';
 import { createMemoriesPrivateRequestHeaders } from '@/lib/server/memories-private-request';
+import { resolveMemoriesPrivateWorkerUrl } from '@/lib/server/memories-private-worker-target';
 
 type RetrievalMode = 'inline' | 'attachment' | 'inspect' | 'delete';
 
@@ -19,24 +19,10 @@ export type ValentinaMemoryInspectionResult = {
 };
 
 function resolveRetrievalUrl(): URL | null {
-	const raw = getEnv(VALENTINA_MEMORIES_RETRIEVAL_ORIGIN_ENV_NAME).trim();
-	if (!raw) return null;
-	try {
-		const origin = new URL(raw);
-		if (
-			origin.protocol !== 'https:' ||
-			origin.pathname !== '/' ||
-			origin.username ||
-			origin.password ||
-			origin.search ||
-			origin.hash
-		) {
-			return null;
-		}
-		return new URL(VALENTINA_MEMORIES_RETRIEVAL_PATH, origin);
-	} catch {
-		return null;
-	}
+	return resolveMemoriesPrivateWorkerUrl(
+		VALENTINA_MEMORIES_RETRIEVAL_ORIGIN_ENV_NAME,
+		VALENTINA_MEMORIES_RETRIEVAL_PATH,
+	);
 }
 
 function parseRange(value: string | null | undefined): {

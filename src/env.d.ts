@@ -23,6 +23,8 @@ interface ImportMetaEnv {
 	readonly MEMORIES_UPLOAD_REQUEST_SIGNING_PRIVATE_KEY: string;
 	/** Server-only PKCS#8 P-256 private key for retrieval-control requests. */
 	readonly MEMORIES_RETRIEVAL_REQUEST_SIGNING_PRIVATE_KEY: string;
+	/** Server-only origin for the authenticated upload Sign Worker. */
+	readonly MEMORIES_PRIVATE_UPLOAD_ORIGIN: string;
 	/** Server-only HTTPS origin for the private retrieval Worker. */
 	readonly MEMORIES_PRIVATE_RETRIEVAL_ORIGIN: string;
 	/** Server-only bearer secret injected by Vercel Cron. */

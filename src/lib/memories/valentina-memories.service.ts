@@ -33,6 +33,7 @@ import {
 	VALENTINA_MEMORIES_SESSION_MAX_BYTES,
 	VALENTINA_MEMORIES_SESSION_MAX_FILES,
 	VALENTINA_MEMORIES_SESSION_MAX_IN_FLIGHT,
+	VALENTINA_MEMORIES_SESSION_MAX_VIDEOS,
 	buildValentinaMemoriesObjectKey,
 	getValentinaMemoriesMimePolicy,
 	normalizeMemoriesMimeType,
@@ -44,6 +45,7 @@ import {
 	requestValentinaMemoryUploadCapability,
 	type ValentinaMemoriesUploadCapability,
 } from '@/lib/memories/valentina-memories-upload-request';
+import { calculateValentinaMemoriesGuestQuota } from '@/lib/memories/valentina-memories-quota';
 
 type SessionRow = {
 	id: string;
@@ -368,6 +370,7 @@ function mapReservationError(error: unknown): never {
 	if (error instanceof SupabaseHttpError) {
 		const quotaMessages: Record<string, string> = {
 			memories_session_file_quota: 'Alcanzó el máximo de archivos para esta sesión.',
+			memories_session_video_quota: 'Alcanzó el máximo de videos para esta sesión.',
 			memories_session_byte_quota: 'Alcanzó el máximo de almacenamiento para esta sesión.',
 			memories_event_object_quota: 'El evento alcanzó su capacidad de archivos.',
 			memories_event_byte_quota: 'El evento alcanzó su capacidad de almacenamiento.',
@@ -414,6 +417,7 @@ export async function reserveGuestMemoryItem(input: {
 				p_duration_seconds: policy.category === 'video' ? durationSeconds : null,
 				p_idempotency_key: clientRequestId,
 				p_max_session_files: VALENTINA_MEMORIES_SESSION_MAX_FILES,
+				p_max_session_videos: VALENTINA_MEMORIES_SESSION_MAX_VIDEOS,
 				p_max_session_bytes: VALENTINA_MEMORIES_SESSION_MAX_BYTES,
 				p_max_session_in_flight: VALENTINA_MEMORIES_SESSION_MAX_IN_FLIGHT,
 				p_max_event_objects: VALENTINA_MEMORIES_EVENT_MAX_OBJECTS,
@@ -441,14 +445,18 @@ export async function reserveGuestMemoryItem(input: {
 	return { item: toPublicItem(item), upload };
 }
 
-export async function listGuestMemoryItems(
-	session: SessionRow,
-): Promise<ValentinaMemoriesMediaPublicItem[]> {
+export async function listGuestMemoryItems(session: SessionRow): Promise<{
+	items: ValentinaMemoriesMediaPublicItem[];
+	quota: ReturnType<typeof calculateValentinaMemoriesGuestQuota>;
+}> {
 	const rows = await supabaseRestRequest<MediaRow[]>({
 		pathWithQuery: `valentina_memory_items?select=${MEDIA_COLUMNS}&event_key=eq.${VALENTINA_MEMORIES_EVENT_ID}&session_id=eq.${encodeURIComponent(session.id)}&order=created_at.desc`,
 		useServiceRole: true,
 	});
-	return rows.map(mapMediaRow).map(toPublicItem);
+	return {
+		items: rows.map(mapMediaRow).map(toPublicItem),
+		quota: calculateValentinaMemoriesGuestQuota(rows),
+	};
 }
 
 function isInspectionSuccessful(

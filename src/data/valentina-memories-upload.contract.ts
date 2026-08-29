@@ -10,6 +10,7 @@ export const VALENTINA_MEMORIES_EVENT_ID = 'valentina' as const;
 export const VALENTINA_MEMORIES_OBJECT_PREFIX = 'events/valentina/' as const;
 
 export const VALENTINA_MEMORIES_SIGN_PATH = '/sign/valentina' as const;
+export const VALENTINA_MEMORIES_UPLOAD_ORIGIN_ENV_NAME = 'MEMORIES_PRIVATE_UPLOAD_ORIGIN' as const;
 
 export const VALENTINA_MEMORIES_ALLOWED_PRODUCTION_ORIGIN = 'https://www.celebra-me.com' as const;
 
@@ -29,8 +30,20 @@ export const VALENTINA_MEMORIES_UPLOAD_WINDOW_ENDS_AT = '2026-09-04T06:00:00.000
 export const VALENTINA_MEMORIES_MAX_IMAGE_BYTES = 20 * 1024 * 1024;
 export const VALENTINA_MEMORIES_MAX_VIDEO_BYTES = 80 * 1024 * 1024;
 export const VALENTINA_MEMORIES_MAX_VIDEO_DURATION_SECONDS = 60;
+export const VALENTINA_MEMORIES_IMAGE_OPTIMIZATION_MAX_DIMENSION_PX = 2560;
+export const VALENTINA_MEMORIES_IMAGE_OPTIMIZATION_QUALITY = 0.85;
 
-export const VALENTINA_MEMORIES_R2_BUCKET = 'celebra-memories' as const;
+export const VALENTINA_MEMORIES_STORAGE_TARGETS = {
+	local: { bucketName: 'celebra-memories-local' },
+	staging: { bucketName: 'celebra-memories-staging' },
+	production: { bucketName: 'celebra-memories' },
+} as const;
+export type ValentinaMemoriesStorageTarget = keyof typeof VALENTINA_MEMORIES_STORAGE_TARGETS;
+
+export function getValentinaMemoriesStorageBucketName(target: unknown): string | null {
+	if (typeof target !== 'string' || !(target in VALENTINA_MEMORIES_STORAGE_TARGETS)) return null;
+	return VALENTINA_MEMORIES_STORAGE_TARGETS[target as ValentinaMemoriesStorageTarget].bucketName;
+}
 
 /** Automatic R2 object expiration for this pilot. Owner-applied lifecycle only. */
 export const VALENTINA_MEMORIES_OBJECT_RETENTION_DAYS = 30;
@@ -39,12 +52,17 @@ export const VALENTINA_MEMORIES_OBJECT_RETENTION_SECONDS =
 
 export const VALENTINA_MEMORIES_RATE_LIMIT = {
 	bindingName: 'SIGN_RATE_LIMITER',
-	namespaceId: '1001',
+	namespaceIds: {
+		local: '1000',
+		staging: '1002',
+		production: '1001',
+	},
 	limit: 6,
 	periodSeconds: 60,
 } as const;
 
 export const VALENTINA_MEMORIES_SESSION_MAX_FILES = 20;
+export const VALENTINA_MEMORIES_SESSION_MAX_VIDEOS = 5;
 export const VALENTINA_MEMORIES_SESSION_MAX_BYTES = 512 * 1024 * 1024;
 export const VALENTINA_MEMORIES_SESSION_MAX_IN_FLIGHT = 2;
 export const VALENTINA_MEMORIES_EVENT_MAX_OBJECTS = 2_000;
