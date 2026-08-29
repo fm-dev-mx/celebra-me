@@ -20,13 +20,14 @@ on:
 jobs:
     policy-validation:
         name: Repository Policy
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-24.04
 
         steps:
             - name: Checkout repository
               uses: actions/checkout@v7
               with:
                   fetch-depth: 0
+                  lfs: true
 
             - name: Resolve validation range
               env:
@@ -94,11 +95,13 @@ jobs:
 
     application-validation:
         name: Application Suite
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-24.04
 
         steps:
             - name: Checkout repository
               uses: actions/checkout@v7
+              with:
+                  lfs: true
 
             - name: Install pnpm
               uses: pnpm/action-setup@v6
@@ -114,6 +117,9 @@ jobs:
 
             - name: Install Playwright browser
               run: pnpm exec playwright install --with-deps chromium
+
+            - name: Fetch Git LFS baselines
+              run: git lfs pull
 
             - name: Required validation suite
               run: pnpm run ci
