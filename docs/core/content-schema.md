@@ -9,7 +9,7 @@ point) from modular Zod definitions under `src/lib/schemas/content`.
 
 - `base-event.schema.ts`: top-level event assembly
 - `hero.schema.ts`: hero and celebrant metadata
-- `location.schema.ts`: venue, ceremony, reception, and indication schemas
+- `location.schema.ts`: canonical venue array (`venues[]`), map, indication, and structural variant schemas (`standard`, `split-map`, `stacked-venue-plates`). Legacy `ceremony` and `reception` root properties are rejected in canonical content and converted exclusively at ingress.
 - `family.schema.ts`: family and relationship groups
 - `rsvp.schema.ts`: RSVP payload, canonical section variant, and label overrides
 - `gifts.schema.ts`: gift option variants
@@ -23,7 +23,6 @@ point) from modular Zod definitions under `src/lib/schemas/content`.
 ## Deprecation Policy
 
 RSVP copy overrides live under `rsvp.labels`.
-
 - `labels.name`
 - `labels.guestCount`
 - `labels.attendance`

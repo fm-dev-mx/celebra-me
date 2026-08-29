@@ -242,15 +242,13 @@ uses `feature-stack` with `gallery-01`, `gallery-feature`, and `gallery-03`.
   Location consumes `stacked-venue-plates` with section-scoped type/palette so the chapter matches
   the shared plate presentation. Yellow is not a UI color on surrounding sections. Cream/blush are
   light surfaces; silver is line/detail; coral is rare (wax highlight).
-- Structural selections: itinerary `editorial-program`; gallery `feature-stack` with item order
+- Structural selections: itinerary `editorial-program` (5 described moments); gallery `feature-stack` with item order
   `gallery-01` (feature, 3/4), `gallery-feature` (standard, 4/5), `gallery-03` (wide, 5/4); location `stacked-venue-plates` with `presentation: 'simple'`,
-  `presentationOptions.showNavigationButtons: false`, and `showFlourishes: false`; keep `ceremony` +
-  `reception` (no `venues[]`); personalized access `formal-pass`; RSVP `formal-register`
+  `presentationOptions.showNavigationButtons: false`, and `presentationOptions.showFlourishes: true`, using canonical `venues[]` (ceremony and reception venue entries); personalized access `formal-pass`; RSVP `formal-register`
   (presentation only — do not persist `accessMode`, `confirmationMode`, or `guestCap`); family
-  `asymmetric-groups` + `text-only`; envelope `variant: 'premiere-floral'` with
-  `sealIcon: 'monogram'`, `envelopeName: 'Renata'`, `cardLabel: 'MIS XV'`,
-  `cardTagline: '05 · 09 · 2026'`, and `microcopy: 'Abra su invitación'`. Do not set
-  `documentLabel`, `teaserDetails`, or `closedPalette`. Reveal appearance is owned by the premiere-floral envelope variant, not the
+  `asymmetric-groups` + `text-only` (with two distinct groups and godparents); thank you `full-bleed-photo` with overlay anchor/safe area; envelope `variant: 'premiere-floral'` with
+  `sealIcon: 'monogram'`, `envelopeName: 'Renata - Mis XV años'`, `cardName: 'Renata'`, `cardLabel: 'MIS XV'`,
+  `cardTagline: '05 · 09 · 2026'`, and `microcopy: 'Abra su invitación'`. Reveal appearance is owned by the premiere-floral envelope variant, not the
   Renata profile. Interlude crop is owned by provision `focalPoint` / `focalPointDesktop`.
 - Lane B: none. Demo stays the gold editorial template.
 - Music omit / include: omitted (`not_applicable`).

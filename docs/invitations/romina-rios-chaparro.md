@@ -48,7 +48,7 @@ No database, Preview, Production, client copy, event facts, or photographic asse
 this encapsulation.
 ## Established mappings
 
-- Venue mapping: legacy `location.venues[*]` maps to `location.ceremony` / `location.reception`.
+- Venue mapping: legacy `location.ceremony` / `location.reception` maps to canonical `location.venues[*]`.
 - Seal monogram: `RC`.
 - Hero image focals: `50% 42%` (mobile/tablet), `58% 46%` (desktop).
 - Ceremony coordinates `lat: 30.4137, lng: -107.9125` and reception coordinates `lat: 30.4280, lng: -107.9250` are marked inferred.

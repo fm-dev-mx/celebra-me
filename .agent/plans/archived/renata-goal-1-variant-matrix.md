@@ -1,6 +1,7 @@
 ---
 title: Renata Goal 1 — Variant Selection Matrix
-status: active
+status: superseded
+superseded_by: docs/invitations/renata.md
 created: 2026-08-14
 updated: 2026-08-14
 type: diagnostic
@@ -17,6 +18,8 @@ related_docs:
 ---
 
 # Renata Goal 1 — Audit, Variant Selection, and Implementation Contract
+
+> **SUPERSEDED:** Durable decisions have been migrated to docs/invitations/renata.md. This historical plan is retained for evidence.
 
 **Objective:** Select a reusable section variant (or a justified generic extension) for every Renata
 surface, using Daniela y Martín as the primary reference and existing XV invitations as the
