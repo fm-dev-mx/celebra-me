@@ -149,17 +149,14 @@ secrets for invitation image upload (Astro API + `invitation:release` CLI). Neve
 `PUBLIC_CLOUDINARY_*` equivalents or place real Cloudinary values in tracked files. Missing values
 fail closed: invitation image uploads do not fall back to Supabase Storage.
 
-`PUBLIC_VALENTINA_MEMORIES_SIGN_URL` is the browser-safe Valentina memories signer. Production must
-be `https://memories.celebra-me.com/sign/valentina`. Do not infer it from the current host, Preview
-URLs, or a Vercel API route. Missing or invalid values fail closed: `/r/valentina` does not render
-an active file input.
-
-`VALENTINA_MEMORIES_RETRIEVAL_URL` and `VALENTINA_MEMORIES_RETRIEVAL_SHARED_SECRET` are server-only
-app/runtime values for private media retrieval. Production values belong in Vercel owner-managed
-configuration. The Worker counterpart is the Wrangler secret `RETRIEVAL_SHARED_SECRET`; Cloudflare
-deployment credentials, signer R2 credentials, object keys, and signed URLs must not be added to
-`.env.example` or exposed with a `PUBLIC_` prefix. Missing or invalid retrieval values fail closed
-without returning object bytes.
+Valentina Memories has no browser-facing environment variable. The browser calls same-origin APIs;
+the backend uses the repository-owned upload signer URL. Vercel owns two independent P-256 private
+keys (`MEMORIES_UPLOAD_REQUEST_SIGNING_PRIVATE_KEY` and
+`MEMORIES_RETRIEVAL_REQUEST_SIGNING_PRIVATE_KEY`), the private retrieval Worker origin
+(`MEMORIES_PRIVATE_RETRIEVAL_ORIGIN`), and `CRON_SECRET`. Cloudflare Workers receive only the
+corresponding public verification keys. Missing or invalid values fail closed. Cloudflare API
+tokens, R2 credentials, object keys, signed URLs, and reusable secret placeholders never belong in
+the tracked environment template.
 
 ## Rules
 

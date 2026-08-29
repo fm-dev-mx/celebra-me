@@ -38,5 +38,5 @@
         "src/env.d.ts",
         "playwright*.config.ts"
     ],
-    "exclude": ["dist"]
+    "exclude": ["dist", "workers/**/worker-configuration.d.ts"]
 }

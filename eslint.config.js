@@ -28,6 +28,7 @@ export default [
 			'*.min.js',
 			'*.min.css',
 			'astro/types.d.ts',
+			'workers/**/worker-configuration.d.ts',
 			// Lockfiles
 			'package-lock.json',
 			'pnpm-lock.yaml',
