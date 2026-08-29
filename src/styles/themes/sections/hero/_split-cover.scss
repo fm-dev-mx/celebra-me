@@ -15,20 +15,11 @@
 	// wrapper and must inherit. Property fallbacks below cover demos without a profile.
 	--hero-split-title-offset-block: 0;
 
-	.invitation-hero__content {
-		opacity: 100%;
-		transform: none;
-	}
-
 	.invitation-hero__label {
-		opacity: 100%;
-		transform: none;
 		color: var(--color-text-on-dark, white);
 	}
 
 	.invitation-hero__title {
-		opacity: 100%;
-		transform: none;
 		color: var(--color-text-on-dark, white);
 		-webkit-text-fill-color: initial;
 		background: none;
@@ -41,14 +32,7 @@
 		text-transform: var(--hero-split-title-transform, none);
 	}
 
-	.invitation-hero__divider {
-		opacity: 100%;
-		transform: none;
-	}
-
 	.invitation-hero__details {
-		opacity: 100%;
-		transform: none;
 		color: var(--color-text-on-dark, white);
 	}
 
@@ -96,13 +80,6 @@
 		.invitation-hero__title {
 			position: relative;
 			top: var(--hero-split-title-offset-block);
-			font-family: var(--hero-split-title-font);
-			font-style: var(--hero-split-title-style);
-			font-weight: var(--hero-split-title-weight);
-			font-size: var(--hero-split-title-size);
-			line-height: var(--hero-split-title-line-height);
-			letter-spacing: var(--hero-split-title-letter-spacing);
-			text-transform: var(--hero-split-title-transform);
 			mix-blend-mode: normal;
 			transform: none;
 		}

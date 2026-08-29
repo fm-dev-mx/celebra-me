@@ -108,7 +108,7 @@
 		}
 	}
 
-	.photo-frame {
+	.thank-you-editorial__image-shell .photo-frame {
 		border: 0;
 		padding: 0;
 		background: transparent;
@@ -116,7 +116,7 @@
 		overflow: visible;
 	}
 
-	.photo-image,
+	.thank-you-editorial__image-shell .photo-image,
 	.thank-you-editorial__image {
 		display: block;
 		width: 100%;
@@ -287,40 +287,15 @@
 }
 
 // ==========================================================================
-// CELESTIAL BLUE — FULL-BLEED-PHOTO CROSS-PRESET FIX
-// The base .theme-preset--celestial-blue .thank-you-section selector above
-// resets .photo-frame to { position: relative; overflow: visible } for the
-// editorial layout. However, the full-bleed-photo variant requires .photo-frame
-// at { position: absolute; inset: 0 } to fill the section behind the content.
-// This variant-scoped override restores that layout at higher specificity.
+// CELESTIAL BLUE — FULL-BLEED-PHOTO ATMOSPHERE TOKENS
 // Structure (absolute positioning, inset geometry) stays in _full-bleed-photo.scss.
-// Atmosphere (color tints, filter) stays here, scoped to data-variant='full-bleed-photo'.
+// Atmosphere (color tints, dark surface tokens) stays here, scoped to data-variant='full-bleed-photo'.
 // ==========================================================================
 
 .theme-preset--celestial-blue .thank-you-section[data-variant='full-bleed-photo'] {
-	// Restore the full-bleed photo frame absolute positioning that the base
-	// celestial-blue .thank-you-section override resets.
-	.photo-frame {
-		position: absolute;
-		inset: 0;
-		width: 100%;
-		height: 100%;
-		overflow: hidden;
-		background: var(--color-deep-blue-graphite, rgb(16 24 32));
-		border: 0;
-		border-radius: 0;
-		box-shadow: none;
-
-		&::before,
-		&::after {
-			content: none;
-		}
-	}
-
-	// Restore natural photo rendering — remove the celestial-blue editorial filter.
-	.photo-image {
-		filter: none;
-		transform: none;
-		transition: none;
-	}
+	--thank-you-ink: var(--color-deep-blue-graphite, rgb(16 24 32));
+	--thank-you-ink-rgb: var(--color-deep-blue-graphite-rgb, 16 24 32);
+	--thank-you-ivory: var(--color-cool-ivory, rgb(240 244 248));
+	--thank-you-ivory-rgb: var(--color-cool-ivory-rgb, 240 244 248);
+	--thank-you-accent-rgb: var(--color-satin-blue-rgb, 88 120 156);
 }
