@@ -5,6 +5,7 @@ import {
 	VALENTINA_MEMORIES_DISPLAY_NAME_MAX_LENGTH,
 	VALENTINA_MEMORIES_RECOVERY_CODE_LENGTH,
 	type ValentinaMemoriesGuestProfile,
+	type ValentinaMemoriesGuestQuota,
 } from '@/data/valentina-memories-media.contract';
 import {
 	VALENTINA_MEMORIES_ALLOWED_MIME_TYPES,
@@ -15,6 +16,7 @@ import {
 	createSecureClientRequestId,
 	mapValentinaMemoriesSignError,
 	measureVideoDurationSeconds,
+	optimizeValentinaMemoriesImage,
 	readValentinaMemoriesSignErrorCode,
 	validateValentinaMemoriesFile,
 	validateValentinaMemoriesVideoDuration,
@@ -39,6 +41,7 @@ type CompletedCatalogStatus = Extract<
 
 type ValentinaMemoriesCaptureProps = {
 	readVideoDurationSeconds?: (file: File) => Promise<number>;
+	optimizeImage?: (file: File, signal?: AbortSignal) => Promise<File>;
 };
 
 const ACCEPT = Object.keys(VALENTINA_MEMORIES_ALLOWED_MIME_TYPES).join(',');
@@ -164,23 +167,38 @@ function itemStatusLabel(item: CatalogItem): string {
 	return copy.validationPending;
 }
 
+function GuestQuotaStatus({ quota }: { quota: ValentinaMemoriesGuestQuota | null }) {
+	if (!quota) return null;
+	return (
+		<p className="status-page__status" aria-live="polite">
+			Le quedan {quota.files.remaining} archivos, {quota.videos.remaining} videos y{' '}
+			{Math.floor(quota.bytes.remaining / (1024 * 1024))} MiB.
+		</p>
+	);
+}
+
 export default function ValentinaMemoriesCapture({
 	readVideoDurationSeconds,
+	optimizeImage = optimizeValentinaMemoriesImage,
 }: ValentinaMemoriesCaptureProps) {
 	const inputId = useId();
 	const inputRef = useRef<HTMLInputElement>(null);
 	const selectedFileRef = useRef<File | null>(null);
 	const selectedRequestIdRef = useRef<string | null>(null);
+	const preparedFileRef = useRef<File | null>(null);
+	const optimizationAbortRef = useRef<AbortController | null>(null);
 	const sessionReadyRef = useRef(false);
 	const copy = valentinaMemoriesCaptureCopy;
 	const [status, setStatus] = useState<CaptureStatus>('idle');
 	const [progressMessage, setProgressMessage] = useState<string>(copy.preparing);
+	const [isOptimizing, setIsOptimizing] = useState(false);
 	const [completionMessage, setCompletionMessage] = useState<string>(copy.success);
 	const [issue, setIssue] = useState<ValentinaMemoriesCaptureIssue | null>(null);
 	const [profile, setProfile] = useState<ValentinaMemoriesGuestProfile | null>(null);
 	const [displayNameDraft, setDisplayNameDraft] = useState('');
 	const [recoveryCode, setRecoveryCode] = useState<string | null>(null);
 	const [items, setItems] = useState<CatalogItem[]>([]);
+	const [quota, setQuota] = useState<ValentinaMemoriesGuestQuota | null>(null);
 	const [editingId, setEditingId] = useState<string | null>(null);
 	const [captionDraft, setCaptionDraft] = useState('');
 	const [recoveryDraft, setRecoveryDraft] = useState('');
@@ -192,8 +210,12 @@ export default function ValentinaMemoriesCapture({
 		const response = await fetch(ITEMS_ENDPOINT, { headers: { Accept: 'application/json' } });
 		if (!response.ok) return;
 		sessionReadyRef.current = true;
-		const payload = (await response.json()) as { items?: CatalogItem[] };
+		const payload = (await response.json()) as {
+			items?: CatalogItem[];
+			quota?: ValentinaMemoriesGuestQuota;
+		};
 		if (Array.isArray(payload.items)) setItems(payload.items);
+		if (payload.quota) setQuota(payload.quota);
 	};
 
 	useEffect(() => {
@@ -209,6 +231,7 @@ export default function ValentinaMemoriesCapture({
 			sessionReadyRef.current = true;
 			await loadItems();
 		})();
+		return () => optimizationAbortRef.current?.abort();
 	}, []);
 
 	const startSession = async () => {
@@ -229,6 +252,7 @@ export default function ValentinaMemoriesCapture({
 		setProfile(payload.profile);
 		sessionReadyRef.current = true;
 		if (typeof payload.recoveryCode === 'string') setRecoveryCode(payload.recoveryCode);
+		await loadItems();
 	};
 
 	const saveProfile = async () => {
@@ -273,18 +297,47 @@ export default function ValentinaMemoriesCapture({
 			setIssue('network_failed');
 			return;
 		}
-		const fileIssue = validateValentinaMemoriesFile(file);
-		if (fileIssue) {
+		const mimeType = resolveValentinaMemoriesFileMimeType(file);
+		if (!mimeType) {
 			setStatus('error');
-			setIssue(fileIssue);
+			setIssue('unsupported_type');
 			return;
 		}
 		setStatus('busy');
 		setProgressMessage(copy.preparing);
 		setIssue(null);
+		let uploadFile = preparedFileRef.current;
+		if (!uploadFile) {
+			const controller = new AbortController();
+			optimizationAbortRef.current?.abort();
+			optimizationAbortRef.current = controller;
+			if (mimeType.startsWith('image/')) {
+				setProgressMessage(copy.optimizing);
+				setIsOptimizing(true);
+			}
+			try {
+				uploadFile = await optimizeImage(file, controller.signal);
+			} catch (error) {
+				if (error instanceof DOMException && error.name === 'AbortError') return;
+				setStatus('error');
+				setIssue('unavailable');
+				return;
+			} finally {
+				setIsOptimizing(false);
+				if (optimizationAbortRef.current === controller)
+					optimizationAbortRef.current = null;
+			}
+			preparedFileRef.current = uploadFile;
+		}
+		const fileIssue = validateValentinaMemoriesFile(uploadFile);
+		if (fileIssue) {
+			setStatus('error');
+			setIssue(fileIssue);
+			return;
+		}
 		let durationSeconds: number | undefined;
 		const durationIssue = await validateValentinaMemoriesVideoDuration(
-			file,
+			uploadFile,
 			async (candidate) => {
 				durationSeconds = await (readVideoDurationSeconds ?? measureVideoDurationSeconds)(
 					candidate,
@@ -298,11 +351,11 @@ export default function ValentinaMemoriesCapture({
 			return;
 		}
 		try {
-			const checksumSha256 = await calculateFileSha256Hex(file);
+			const checksumSha256 = await calculateFileSha256Hex(uploadFile);
 			const clientRequestId = selectedRequestIdRef.current ?? createSecureClientRequestId();
 			selectedRequestIdRef.current = clientRequestId;
 			const reservation = await reserveUpload(
-				file,
+				uploadFile,
 				checksumSha256,
 				durationSeconds,
 				clientRequestId,
@@ -311,13 +364,14 @@ export default function ValentinaMemoriesCapture({
 			await putOriginalFile(
 				reservation.upload.uploadUrl,
 				reservation.upload.requiredHeaders,
-				file,
+				uploadFile,
 			);
 			setProgressMessage(copy.confirming);
 			const completedStatus = await completeReservedUpload(reservation.item.id);
 			setCompletionMessage(completionCopy(completedStatus));
 			await loadItems();
 			selectedFileRef.current = null;
+			preparedFileRef.current = null;
 			selectedRequestIdRef.current = null;
 			resetInput();
 			setStatus('success');
@@ -336,6 +390,7 @@ export default function ValentinaMemoriesCapture({
 		const file = event.target.files?.[0];
 		if (!file) return;
 		selectedFileRef.current = file;
+		preparedFileRef.current = null;
 		selectedRequestIdRef.current = createSecureClientRequestId();
 		void uploadSelectedFile(file);
 	};
@@ -349,8 +404,21 @@ export default function ValentinaMemoriesCapture({
 		}
 		void uploadSelectedFile(file);
 	};
+	const onCancelOptimization = () => {
+		optimizationAbortRef.current?.abort();
+		optimizationAbortRef.current = null;
+		selectedFileRef.current = null;
+		preparedFileRef.current = null;
+		selectedRequestIdRef.current = null;
+		resetInput();
+		setIsOptimizing(false);
+		setStatus('idle');
+		setIssue(null);
+	};
 	const onUploadAnother = () => {
 		selectedFileRef.current = null;
+		preparedFileRef.current = null;
+		optimizationAbortRef.current?.abort();
 		selectedRequestIdRef.current = null;
 		resetInput();
 		setStatus('idle');
@@ -448,6 +516,7 @@ export default function ValentinaMemoriesCapture({
 								{status === 'busy' ? progressMessage : copy.chooseFile}
 							</label>
 							<p className="status-page__status">{copy.chooseFileHint}</p>
+							<GuestQuotaStatus quota={quota} />
 							<p className="status-page__status status-page__status--privacy">
 								{copy.privacyHint}
 							</p>
@@ -484,9 +553,20 @@ export default function ValentinaMemoriesCapture({
 						</>
 					) : null}
 					{status === 'busy' ? (
-						<p className="status-page__status" role="status" aria-live="polite">
-							{progressMessage}
-						</p>
+						<>
+							<p className="status-page__status" role="status" aria-live="polite">
+								{progressMessage}
+							</p>
+							{isOptimizing ? (
+								<button
+									type="button"
+									className="status-page__btn status-page__btn--outline"
+									onClick={onCancelOptimization}
+								>
+									{copy.cancelOptimization}
+								</button>
+							) : null}
+						</>
 					) : null}
 					{recoveryCode ? (
 						<aside className="status-page__recovery" role="note">

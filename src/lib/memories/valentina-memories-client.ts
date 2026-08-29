@@ -1,6 +1,8 @@
 import { sha256 } from '@noble/hashes/sha2';
 import {
 	VALENTINA_MEMORIES_HASH_CHUNK_BYTES,
+	VALENTINA_MEMORIES_IMAGE_OPTIMIZATION_MAX_DIMENSION_PX,
+	VALENTINA_MEMORIES_IMAGE_OPTIMIZATION_QUALITY,
 	VALENTINA_MEMORIES_MAX_VIDEO_DURATION_SECONDS,
 	getValentinaMemoriesMimePolicy,
 	resolveValentinaMemoriesFileMimeType,
@@ -23,6 +25,86 @@ export type ValentinaMemoriesCaptureIssue =
 	| 'put_failed'
 	| 'network_failed'
 	| 'unavailable';
+
+const OPTIMIZABLE_IMAGE_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+
+function throwIfAborted(signal?: AbortSignal): void {
+	if (signal?.aborted) throw new DOMException('Image optimization aborted.', 'AbortError');
+}
+
+async function canvasToBlob(
+	canvas: HTMLCanvasElement,
+	mimeType: string,
+	quality: number,
+	signal?: AbortSignal,
+): Promise<Blob> {
+	throwIfAborted(signal);
+	return new Promise((resolve, reject) => {
+		canvas.toBlob(
+			(blob) => {
+				if (signal?.aborted)
+					return reject(new DOMException('Image optimization aborted.', 'AbortError'));
+				if (!blob) return reject(new Error('image_encode_failed'));
+				resolve(blob);
+			},
+			mimeType,
+			quality,
+		);
+	});
+}
+
+/**
+ * Re-encodes compatible images one at a time. Canvas output omits EXIF/GPS;
+ * unsupported formats and larger encoded results retain the original file.
+ */
+export async function optimizeValentinaMemoriesImage(
+	file: File,
+	signal?: AbortSignal,
+): Promise<File> {
+	const mimeType = resolveValentinaMemoriesFileMimeType(file);
+	const policy = mimeType ? getValentinaMemoriesMimePolicy(mimeType) : null;
+	if (!mimeType || policy?.category !== 'image' || !OPTIMIZABLE_IMAGE_MIME_TYPES.has(mimeType))
+		return file;
+	if (typeof document === 'undefined' || typeof globalThis.createImageBitmap !== 'function') {
+		return file;
+	}
+
+	throwIfAborted(signal);
+	let bitmap: ImageBitmap | null = null;
+	const canvas = document.createElement('canvas');
+	try {
+		bitmap = await globalThis.createImageBitmap(file, { imageOrientation: 'from-image' });
+		throwIfAborted(signal);
+		const scale = Math.min(
+			1,
+			VALENTINA_MEMORIES_IMAGE_OPTIMIZATION_MAX_DIMENSION_PX /
+				Math.max(bitmap.width, bitmap.height),
+		);
+		canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+		canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+		const context = canvas.getContext('2d', { alpha: mimeType !== 'image/jpeg' });
+		if (!context) return file;
+		context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+		const optimized = await canvasToBlob(
+			canvas,
+			mimeType,
+			VALENTINA_MEMORIES_IMAGE_OPTIMIZATION_QUALITY,
+			signal,
+		);
+		if (optimized.size >= file.size) return file;
+		return new File([optimized], file.name, {
+			type: mimeType,
+			lastModified: file.lastModified,
+		});
+	} catch (error) {
+		if (error instanceof DOMException && error.name === 'AbortError') throw error;
+		return file;
+	} finally {
+		bitmap?.close();
+		canvas.width = 0;
+		canvas.height = 0;
+	}
+}
 
 export function validateValentinaMemoriesFile(file: File): ValentinaMemoriesCaptureIssue | null {
 	const mimeType = resolveValentinaMemoriesFileMimeType(file);

@@ -44,7 +44,8 @@ describe('ValentinaMemoriesCapture', () => {
 		const fetchMock = jest
 			.spyOn(globalThis, 'fetch')
 			.mockResolvedValueOnce(response({ error: { code: 'unauthorized' } }, 401))
-			.mockResolvedValueOnce(response({ profile: PROFILE, recoveryCode: 'ABCD-EFGH-JKLM' }));
+			.mockResolvedValueOnce(response({ profile: PROFILE, recoveryCode: 'ABCD-EFGH-JKLM' }))
+			.mockResolvedValueOnce(response({ items: [] }));
 
 		render(<ValentinaMemoriesCapture />);
 		const chooser = screen.getByLabelText(valentinaMemoriesCaptureCopy.chooseFile);
@@ -104,8 +105,18 @@ describe('ValentinaMemoriesCapture', () => {
 				throw new Error(`Unexpected fetch: ${url}`);
 			});
 
-		render(<ValentinaMemoriesCapture />);
+		const optimizeImage = jest.fn(
+			async (candidate: File) =>
+				new File([new Uint8Array([9, 8])], candidate.name, { type: candidate.type }),
+		);
+		render(<ValentinaMemoriesCapture optimizeImage={optimizeImage} />);
 		await screen.findByText(new RegExp(PROFILE.guestAlias));
+		await waitFor(() =>
+			expect(fetchMock).toHaveBeenCalledWith('/api/memories/valentina/items', {
+				headers: { Accept: 'application/json' },
+			}),
+		);
+		fetchMock.mockClear();
 		const file = new File([new Uint8Array([1, 2, 3, 4])], 'familia.jpg', {
 			type: 'image/jpeg',
 		});
@@ -122,8 +133,9 @@ describe('ValentinaMemoriesCapture', () => {
 		expect(reserveBody).toMatchObject({
 			action: 'reserve',
 			mimeType: 'image/jpeg',
-			sizeBytes: 4,
+			sizeBytes: 2,
 		});
+		expect(optimizeImage).toHaveBeenCalledTimes(1);
 		expect(reserveBody.clientRequestId).toMatch(/^[0-9a-f-]{36}$/i);
 		expect(reserveBody.checksumSha256).toMatch(/^[0-9a-f]{64}$/);
 		expect(reserveBody.objectKey).toBeUndefined();
@@ -140,6 +152,8 @@ describe('ValentinaMemoriesCapture', () => {
 				'x-amz-checksum-sha256': 'checksum',
 			},
 		});
+		expect((putCall?.[1] as RequestInit).body).toBeInstanceOf(File);
+		expect(((putCall?.[1] as RequestInit).body as File).size).toBe(2);
 		expect(
 			fetchMock.mock.calls.some(
 				([input]) => input === '/api/memories/valentina/items/media-public-id',
@@ -155,6 +169,44 @@ describe('ValentinaMemoriesCapture', () => {
 		expect(createSecureClientRequestId()).toMatch(
 			/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
 		);
+	});
+
+	it('lets the guest cancel image optimization before a reservation exists', async () => {
+		const user = userEvent.setup();
+		const fetchMock = jest.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+			if (input === '/api/memories/valentina/session') return response({ profile: PROFILE });
+			if (input === '/api/memories/valentina/items') return response({ items: [] });
+			throw new Error(`Unexpected fetch: ${String(input)}`);
+		});
+		let wasAborted = false;
+		const optimizeImage = jest.fn(
+			(_candidate: File, signal?: AbortSignal) =>
+				new Promise<File>((_resolve, reject) => {
+					signal?.addEventListener('abort', () => {
+						wasAborted = true;
+						reject(new DOMException('aborted', 'AbortError'));
+					});
+				}),
+		);
+		render(<ValentinaMemoriesCapture optimizeImage={optimizeImage} />);
+		await screen.findByText(new RegExp(PROFILE.guestAlias));
+		const chooser = screen.getByLabelText(valentinaMemoriesCaptureCopy.chooseFile);
+		await user.upload(
+			chooser,
+			new File([new Uint8Array([1, 2, 3])], 'foto.jpg', { type: 'image/jpeg' }),
+		);
+		await user.click(
+			await screen.findByRole('button', {
+				name: valentinaMemoriesCaptureCopy.cancelOptimization,
+			}),
+		);
+		await waitFor(() => expect(chooser).toBeEnabled());
+		expect(wasAborted).toBe(true);
+		expect(
+			fetchMock.mock.calls.some(([, init]) =>
+				String((init as RequestInit | undefined)?.body).includes('"sizeBytes":3'),
+			),
+		).toBe(false);
 	});
 
 	it('never renders storage keys or signed URLs in the guest surface', async () => {
