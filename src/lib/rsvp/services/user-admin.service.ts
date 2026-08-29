@@ -18,13 +18,10 @@ import {
 } from '@/lib/rsvp/auth/auth-api';
 import type { UserAssignedEventDTO, UserListItemDTO } from '@/lib/dashboard/dto/users';
 import { listAllEventsService } from '@/lib/rsvp/repositories/event.repository';
-import {
-	logAdminAction,
-	logAdminActionStrict,
-} from '@/lib/rsvp/services/audit-logger.service';
+import { logAdminAction, logAdminActionStrict } from '@/lib/rsvp/services/audit-logger.service';
 import { createHash, createHmac, randomBytes, randomInt } from 'node:crypto';
 import { sanitize } from '@/lib/rsvp/core/utils';
-import { ApiError } from '@/lib/rsvp/core/errors';
+import { ApiError, isAuthRequestError } from '@/lib/rsvp/core/errors';
 import {
 	assertValidEmail,
 	isValidLoginAlias,
@@ -38,12 +35,14 @@ import {
 	normalizeHostLoginAlias,
 } from '@/lib/auth/login-alias';
 import type { InvitationMutationCommandContext } from '@/lib/intake/mutations/command-context';
+import {
+	TEMP_PASSWORD_SYMBOLS,
+	TEMP_PASSWORD_WORDS,
+} from '@/lib/rsvp/services/user-admin-passwords';
 import { createMutationOutcome, type MutationOutcome } from '@/lib/intake/mutations/outcome';
 import { recordInvitationMutationOutcome } from '@/lib/intake/services/mutation-operation.service';
 import { findMutationOperationReceipt } from '@/lib/intake/repositories/mutation-operation.repository';
 import { getSupabaseServiceRoleKey } from '@/lib/server/supabase-credentials';
-
-const GENERATED_LOGIN_DOMAIN = HOST_LOGIN_DOMAIN;
 
 export async function listAdminUsers(input?: {
 	page?: number;
@@ -127,113 +126,6 @@ export async function changeUserRoleAdmin(input: {
 	};
 }
 
-/** Short Spanish words (no accents) for memorable temporary passwords. */
-const TEMP_PASSWORD_WORDS = [
-	'agua',
-	'alma',
-	'alto',
-	'amigo',
-	'angel',
-	'arbol',
-	'arena',
-	'azul',
-	'barco',
-	'bello',
-	'bosque',
-	'brisa',
-	'bueno',
-	'campo',
-	'canto',
-	'casa',
-	'cielo',
-	'claro',
-	'coral',
-	'costa',
-	'cueva',
-	'danza',
-	'dulce',
-	'eco',
-	'estrella',
-	'faro',
-	'fiesta',
-	'flor',
-	'foco',
-	'fuente',
-	'gala',
-	'girasol',
-	'golpe',
-	'grano',
-	'guarda',
-	'guia',
-	'hoja',
-	'isla',
-	'jardin',
-	'joya',
-	'lago',
-	'lazo',
-	'leon',
-	'libro',
-	'lima',
-	'lince',
-	'linea',
-	'liso',
-	'luna',
-	'luz',
-	'mango',
-	'mar',
-	'marco',
-	'mesa',
-	'meta',
-	'miel',
-	'mirada',
-	'montana',
-	'motor',
-	'mundo',
-	'nieve',
-	'nube',
-	'oasis',
-	'ola',
-	'oro',
-	'pajaro',
-	'palo',
-	'papel',
-	'pared',
-	'paso',
-	'paz',
-	'perla',
-	'piano',
-	'piedra',
-	'plaza',
-	'pluma',
-	'puerta',
-	'punto',
-	'rama',
-	'rayo',
-	'rio',
-	'roca',
-	'rosa',
-	'sal',
-	'silla',
-	'sol',
-	'sombra',
-	'suenos',
-	'taza',
-	'techo',
-	'tempo',
-	'tierra',
-	'tigre',
-	'trigo',
-	'valle',
-	'viento',
-	'villa',
-	'vino',
-	'vista',
-	'voz',
-] as const;
-
-/** Easy-to-locate keyboard symbols for temporary passwords. */
-const TEMP_PASSWORD_SYMBOLS = ['!', '@', '#', '$', '%', '*'] as const;
-
 /**
  * Generates a short, memorable temporary password using CSPRNG.
  * Format: Word-####! (easy to dictate; change required on first login).
@@ -298,7 +190,11 @@ async function ensureRetryParentReceipt(input: {
 	let parent = await findMutationOperationReceipt(input.rootOperationId);
 	if (!parent && input.context.operationId !== input.rootOperationId) {
 		await recordIdentityMutation({
-			context: { ...input.context, operationId: input.rootOperationId, retryOfOperationId: undefined },
+			context: {
+				...input.context,
+				operationId: input.rootOperationId,
+				retryOfOperationId: undefined,
+			},
 			commandKind: input.commandKind,
 			status: 'partial',
 			completedSteps: input.completedSteps,
@@ -315,10 +211,6 @@ function generateManagedLoginAlias(): string {
 	return `cliente-${randomBytes(4).toString('hex')}`;
 }
 
-function buildManagedLoginEmail(alias: string): string {
-	return buildManagedHostEmail(alias);
-}
-
 async function reserveManagedLoginAlias(seed?: string): Promise<string> {
 	const normalizedSeed = normalizeHostLoginAlias(seed || '');
 	const candidates = normalizedSeed
@@ -328,7 +220,7 @@ async function reserveManagedLoginAlias(seed?: string): Promise<string> {
 	for (const candidate of candidates) {
 		const [existingByIdentifier, existingByEmail] = await Promise.all([
 			findAuthUserByLoginIdentifier({ identifier: candidate }),
-			findAuthUserByEmail({ email: buildManagedLoginEmail(candidate) }),
+			findAuthUserByEmail({ email: buildManagedHostEmail(candidate) }),
 		]);
 		if (!existingByIdentifier && !existingByEmail) {
 			return candidate;
@@ -339,7 +231,7 @@ async function reserveManagedLoginAlias(seed?: string): Promise<string> {
 		const candidate = generateManagedLoginAlias();
 		const [existingByIdentifier, existingByEmail] = await Promise.all([
 			findAuthUserByLoginIdentifier({ identifier: candidate }),
-			findAuthUserByEmail({ email: buildManagedLoginEmail(candidate) }),
+			findAuthUserByEmail({ email: buildManagedHostEmail(candidate) }),
 		]);
 		if (!existingByIdentifier && !existingByEmail) {
 			return candidate;
@@ -377,7 +269,7 @@ export async function createAdminUser(input: {
 		}
 	} else {
 		loginAlias = await reserveManagedLoginAlias(loginInput);
-		authEmail = buildManagedLoginEmail(loginAlias);
+		authEmail = buildManagedHostEmail(loginAlias);
 		visibleLogin = loginAlias;
 	}
 
@@ -426,7 +318,7 @@ export async function createAdminUser(input: {
 export async function resetUserPasswordAdmin(input: {
 	userId: string;
 	actorUserId: string;
- credentialOperationId: string;
+	credentialOperationId: string;
 	commandContext: InvitationMutationCommandContext;
 }): Promise<{
 	userId: string;
@@ -466,6 +358,7 @@ export async function resetUserPasswordAdmin(input: {
 			userId,
 			error,
 		});
+		if (isAuthRequestError(error) && error.retryable) throw error;
 		return {
 			userId,
 			outcome: createMutationOutcome({
@@ -537,7 +430,9 @@ export async function resetUserPasswordAdmin(input: {
 				operationId: input.commandContext.operationId,
 				status: 'partial',
 				completedSteps,
-				error: new Error('Password changed but its operation receipt could not be persisted.'),
+				error: new Error(
+					'Password changed but its operation receipt could not be persisted.',
+				),
 			}),
 		};
 	}
@@ -553,15 +448,12 @@ export async function resetUserPasswordAdmin(input: {
 	};
 }
 
-function resolveCurrentManagedAlias(input: {
-	email?: string;
-	loginAlias?: string;
-}): string | null {
+function resolveCurrentManagedAlias(input: { email?: string; loginAlias?: string }): string | null {
 	if (!isManagedHostEmail(input.email)) return null;
 	const alias = input.loginAlias?.trim().toLowerCase();
 	if (alias && isValidLoginAlias(alias)) return alias;
 	const email = (input.email || '').trim().toLowerCase();
-	const suffix = `@${GENERATED_LOGIN_DOMAIN}`;
+	const suffix = `@${HOST_LOGIN_DOMAIN}`;
 	const localPart = email.slice(0, -suffix.length);
 	return isValidLoginAlias(localPart) ? localPart : null;
 }
@@ -641,7 +533,7 @@ export async function updateUserLoginAliasAdmin(input: {
 		);
 	}
 
-	const targetEmail = buildManagedLoginEmail(requestedAlias);
+	const targetEmail = buildManagedHostEmail(requestedAlias);
 	const authAlreadyApplied =
 		previousAlias === requestedAlias && existingOperationId === input.aliasOperationId;
 	let updatedAuth = existingAuth;
@@ -679,6 +571,7 @@ export async function updateUserLoginAliasAdmin(input: {
 			inputHash: aliasHash,
 			error,
 		});
+		if (isAuthRequestError(error) && error.retryable) throw error;
 		return {
 			outcome: createMutationOutcome({
 				operationId: input.commandContext.operationId,
@@ -728,7 +621,8 @@ export async function updateUserLoginAliasAdmin(input: {
 				id: userId,
 				email: requestedAlias,
 				role: roleRecord?.role ?? 'host_client',
-				createdAt: updatedAuth.created_at || existingAuth.created_at || new Date().toISOString(),
+				createdAt:
+					updatedAuth.created_at || existingAuth.created_at || new Date().toISOString(),
 				assignedEvents,
 			},
 			outcome: createMutationOutcome({
@@ -746,11 +640,11 @@ export async function updateUserLoginAliasAdmin(input: {
 	]);
 
 	const item: UserListItemDTO = {
-			id: updatedAuth.id,
-			email: requestedAlias,
-			role: roleRecord?.role ?? 'host_client',
-			createdAt: updatedAuth.created_at || existingAuth.created_at || new Date().toISOString(),
-			assignedEvents,
+		id: updatedAuth.id,
+		email: requestedAlias,
+		role: roleRecord?.role ?? 'host_client',
+		createdAt: updatedAuth.created_at || existingAuth.created_at || new Date().toISOString(),
+		assignedEvents,
 	};
 	const status = authAlreadyApplied ? 'replayed' : 'applied';
 	const receiptPersisted = await recordIdentityMutation({
@@ -768,7 +662,11 @@ export async function updateUserLoginAliasAdmin(input: {
 			status: receiptPersisted ? status : 'partial',
 			completedSteps,
 			...(!receiptPersisted
-				? { error: new Error('Alias changed but its operation receipt could not be persisted.') }
+				? {
+						error: new Error(
+							'Alias changed but its operation receipt could not be persisted.',
+						),
+					}
 				: status === 'replayed'
 					? { replayedFromOperationId: input.aliasOperationId }
 					: {}),
