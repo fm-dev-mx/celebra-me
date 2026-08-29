@@ -33,6 +33,14 @@ const rejectedItem: ValentinaMemoriesOrganizerItem = {
 	uploader: { displayName: 'Luis', guestAlias: 'l-2' },
 };
 
+const deletedItem: ValentinaMemoriesOrganizerItem = {
+	...acceptedItem,
+	id: 'deleted-item',
+	status: 'deleted',
+	acceptedAt: null,
+	deletedAt: '2026-08-29T12:10:00.000Z',
+};
+
 function jsonResponse(payload: unknown): Response {
 	return {
 		ok: true,
@@ -99,6 +107,18 @@ describe('ValentinaMemoriesOrganizer', () => {
 				fetchMock.mock.calls.some(([input]) => String(input).includes('status=accepted')),
 			).toBe(true),
 		);
+	});
+
+	it('does not offer the deleted status or render deleted catalog records', async () => {
+		jest.spyOn(globalThis, 'fetch').mockResolvedValue(
+			jsonResponse({ items: [acceptedItem, deletedItem], nextPage: null }),
+		);
+
+		render(<ValentinaMemoriesOrganizer />);
+
+		expect(await screen.findByText('Familia')).toBeVisible();
+		expect(screen.queryByRole('option', { name: 'Eliminado' })).not.toBeInTheDocument();
+		expect(screen.queryByText('Eliminado')).not.toBeInTheDocument();
 	});
 
 	it('blocks ZIP generation until the organizer confirms the local password was saved', async () => {

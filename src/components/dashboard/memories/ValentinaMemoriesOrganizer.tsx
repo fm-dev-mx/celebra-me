@@ -7,6 +7,7 @@ import {
 	VALENTINA_MEMORIES_MAX_CAPTION_LENGTH,
 	VALENTINA_MEMORIES_MEDIA_STATUSES,
 	VALENTINA_MEMORIES_ORGANIZER_UPLOADER_FILTER_MAX_LENGTH,
+	isValentinaMemoriesCatalogVisibleStatus,
 	type ValentinaMemoriesMediaStatus,
 	type ValentinaMemoriesOrganizerItem,
 	type ValentinaMemoriesOrganizerListResponse,
@@ -156,7 +157,11 @@ export default function ValentinaMemoriesOrganizer() {
 				return false;
 			}
 			const payload = (await response.json()) as ValentinaMemoriesOrganizerListResponse;
-			const loadedItems = Array.isArray(payload.items) ? payload.items : [];
+			const loadedItems = Array.isArray(payload.items)
+				? payload.items.filter((item) =>
+						isValentinaMemoriesCatalogVisibleStatus(item.status),
+					)
+				: [];
 			setItems((current) => (append ? [...current, ...loadedItems] : loadedItems));
 			setNextPage(typeof payload.nextPage === 'number' ? payload.nextPage : null);
 			setError(null);
@@ -475,7 +480,9 @@ export default function ValentinaMemoriesOrganizer() {
 						}
 					>
 						<option value="all">Todos los estados</option>
-						{VALENTINA_MEMORIES_MEDIA_STATUSES.map((status) => (
+						{VALENTINA_MEMORIES_MEDIA_STATUSES.filter(
+							isValentinaMemoriesCatalogVisibleStatus,
+						).map((status) => (
 							<option key={status} value={status}>
 								{statusLabel[status]}
 							</option>

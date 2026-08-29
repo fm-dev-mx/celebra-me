@@ -67,6 +67,43 @@ describe('ValentinaMemoriesCapture', () => {
 		});
 	});
 
+	it('renders accepted previews and omits deleted memories from stale catalog payloads', async () => {
+		jest.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+			if (input === '/api/memories/valentina/session') return response({ profile: PROFILE });
+			if (input === ITEMS_ENDPOINT_FOR_TEST) {
+				return response({
+					items: [
+						{
+							id: 'accepted-item',
+							mimeType: 'image/jpeg',
+							sizeBytes: 10,
+							durationSeconds: null,
+							caption: 'Familia',
+							status: 'accepted',
+							createdAt: '2026-08-29T12:00:00.000Z',
+						},
+						{
+							id: 'deleted-item',
+							mimeType: 'image/jpeg',
+							sizeBytes: 10,
+							durationSeconds: null,
+							caption: 'Eliminado',
+							status: 'deleted',
+							createdAt: '2026-08-29T12:01:00.000Z',
+						},
+					],
+				});
+			}
+			throw new Error(`Unexpected fetch: ${String(input)}`);
+		});
+
+		render(<ValentinaMemoriesCapture />);
+
+		const preview = await screen.findByRole('img', { name: 'Familia' });
+		expect(preview).toHaveAttribute('src', '/api/memories/valentina/items/accepted-item');
+		expect(screen.queryByText('Eliminado')).not.toBeInTheDocument();
+	});
+
 	it('reserves same-origin, PUTs directly with required headers, then completes', async () => {
 		const user = userEvent.setup();
 		const fetchMock = jest

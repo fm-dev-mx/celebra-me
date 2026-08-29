@@ -172,6 +172,68 @@ test.describe('Valentina Memories capture route', () => {
 		await expect(page.getByText(/events\/valentina|X-Amz-|objectKey/i)).toHaveCount(0);
 	});
 
+	test('decodes accepted previews and omits deleted memories', async ({ page }) => {
+		const previewBytes = Buffer.from(
+			'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+			'base64',
+		);
+		await page.route('**/api/memories/valentina/session', (route) =>
+			route.fulfill({
+				status: 200,
+				contentType: 'application/json',
+				body: JSON.stringify({ profile: PROFILE }),
+			}),
+		);
+		await page.route('**/api/memories/valentina/items**', async (route) => {
+			const pathname = new URL(route.request().url()).pathname;
+			if (pathname.endsWith('/accepted-preview')) {
+				await route.fulfill({ status: 200, contentType: 'image/png', body: previewBytes });
+				return;
+			}
+			await route.fulfill({
+				status: 200,
+				contentType: 'application/json',
+				body: JSON.stringify({
+					items: [
+						{
+							id: 'accepted-preview',
+							mimeType: 'image/png',
+							sizeBytes: previewBytes.byteLength,
+							durationSeconds: null,
+							caption: 'Vista previa familiar',
+							status: 'accepted',
+							createdAt: '2026-08-29T12:00:00.000Z',
+						},
+						{
+							id: 'deleted-preview',
+							mimeType: 'image/png',
+							sizeBytes: previewBytes.byteLength,
+							durationSeconds: null,
+							caption: 'No debe mostrarse',
+							status: 'deleted',
+							createdAt: '2026-08-29T12:01:00.000Z',
+						},
+					],
+				}),
+			});
+		});
+
+		await page.goto(VALENTINA_MEMORIES_ROUTE_PATH, { waitUntil: 'domcontentloaded' });
+		await waitForHydratedIsland(page, '[data-capture="valentina-memories"]');
+
+		const preview = page.getByRole('img', { name: 'Vista previa familiar' });
+		await expect(preview).toBeVisible();
+		await expect
+			.poll(() =>
+				preview.evaluate((element) => {
+					const image = element as HTMLImageElement;
+					return image.complete && image.naturalWidth === 1 && image.naturalHeight === 1;
+				}),
+			)
+			.toBe(true);
+		await expect(page.getByText('No debe mostrarse')).toHaveCount(0);
+	});
+
 	test('shows a retryable user-safe error when same-origin reservation is rejected', async ({
 		page,
 	}) => {

@@ -3,6 +3,7 @@ import { valentinaMemoriesCaptureCopy } from '@/data/valentina-memories.data';
 import {
 	VALENTINA_MEMORIES_DISPLAY_NAME_MAX_LENGTH,
 	VALENTINA_MEMORIES_MAX_CAPTION_LENGTH,
+	isValentinaMemoriesCatalogVisibleStatus,
 	type ValentinaMemoriesGuestProfile,
 	type ValentinaMemoriesGuestQuota,
 } from '@/data/valentina-memories-media.contract';
@@ -277,7 +278,13 @@ export default function ValentinaMemoriesCapture({
 				items?: CatalogItem[];
 				quota?: ValentinaMemoriesGuestQuota;
 			};
-			if (Array.isArray(payload.items)) setItems(payload.items);
+			if (Array.isArray(payload.items)) {
+				setItems(
+					payload.items.filter((item) =>
+						isValentinaMemoriesCatalogVisibleStatus(item.status),
+					),
+				);
+			}
 			if (payload.quota) setQuota(payload.quota);
 		} catch {
 			// A later successful action refreshes the catalog.
