@@ -5,6 +5,7 @@ import { valentinaMemoriesCaptureCopy } from '@/data/valentina-memories.data';
 import ValentinaMemoriesCapture from '@/components/memories/ValentinaMemoriesCapture';
 import {
 	calculateFileSha256Hex,
+	classifyValentinaMemoriesTransportIssue,
 	createSecureClientRequestId,
 } from '@/lib/memories/valentina-memories-client';
 
@@ -22,9 +23,9 @@ if (!Blob.prototype.arrayBuffer) {
 
 const PROFILE = {
 	displayName: 'Tía Ana',
-	guestAlias: 'invitado-a1b2c3d4',
 	expiresAt: '2026-09-28T00:00:00.000Z',
 };
+const ITEMS_ENDPOINT_FOR_TEST = '/api/memories/valentina/items';
 
 function response(payload: unknown, status = 200): Response {
 	return {
@@ -43,7 +44,7 @@ describe('ValentinaMemoriesCapture', () => {
 		const user = userEvent.setup();
 		const fetchMock = jest
 			.spyOn(globalThis, 'fetch')
-			.mockResolvedValueOnce(response({ error: { code: 'unauthorized' } }, 401))
+			.mockResolvedValueOnce(response({ profile: null }))
 			.mockResolvedValueOnce(response({ profile: PROFILE, recoveryCode: 'ABCD-EFGH-JKLM' }))
 			.mockResolvedValueOnce(response({ items: [] }));
 
@@ -51,10 +52,11 @@ describe('ValentinaMemoriesCapture', () => {
 		const chooser = screen.getByLabelText(valentinaMemoriesCaptureCopy.chooseFile);
 		expect(chooser).toBeDisabled();
 
-		await user.type(screen.getByLabelText('Nombre o apodo'), PROFILE.displayName);
+		await user.type(screen.getByLabelText('Su nombre o apodo'), PROFILE.displayName);
 		await user.click(screen.getByRole('button', { name: 'Continuar' }));
 
-		expect(await screen.findByText(new RegExp(PROFILE.guestAlias))).toBeInTheDocument();
+		expect(await screen.findByText(new RegExp(PROFILE.displayName))).toBeInTheDocument();
+		expect(screen.queryByText(/Alias de su sesión/i)).not.toBeInTheDocument();
 		expect(screen.getByText('ABCD-EFGH-JKLM')).toBeInTheDocument();
 		expect(chooser).toBeEnabled();
 		expect(fetchMock.mock.calls[1]?.[0]).toBe('/api/memories/valentina/session');
@@ -110,7 +112,7 @@ describe('ValentinaMemoriesCapture', () => {
 				new File([new Uint8Array([9, 8])], candidate.name, { type: candidate.type }),
 		);
 		render(<ValentinaMemoriesCapture optimizeImage={optimizeImage} />);
-		await screen.findByText(new RegExp(PROFILE.guestAlias));
+		await screen.findByText(new RegExp(PROFILE.displayName));
 		await waitFor(() =>
 			expect(fetchMock).toHaveBeenCalledWith('/api/memories/valentina/items', {
 				headers: { Accept: 'application/json' },
@@ -171,6 +173,14 @@ describe('ValentinaMemoriesCapture', () => {
 		);
 	});
 
+	it('uses the offline message only when the browser explicitly reports no connection', () => {
+		expect(classifyValentinaMemoriesTransportIssue('put_failed', false)).toBe('network_failed');
+		expect(classifyValentinaMemoriesTransportIssue('put_failed', true)).toBe('put_failed');
+		expect(valentinaMemoriesCaptureCopy.networkFailed).not.toBe(
+			valentinaMemoriesCaptureCopy.putFailed,
+		);
+	});
+
 	it('lets the guest cancel image optimization before a reservation exists', async () => {
 		const user = userEvent.setup();
 		const fetchMock = jest.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
@@ -189,7 +199,7 @@ describe('ValentinaMemoriesCapture', () => {
 				}),
 		);
 		render(<ValentinaMemoriesCapture optimizeImage={optimizeImage} />);
-		await screen.findByText(new RegExp(PROFILE.guestAlias));
+		await screen.findByText(new RegExp(PROFILE.displayName));
 		const chooser = screen.getByLabelText(valentinaMemoriesCaptureCopy.chooseFile);
 		await user.upload(
 			chooser,
@@ -210,9 +220,71 @@ describe('ValentinaMemoriesCapture', () => {
 	});
 
 	it('never renders storage keys or signed URLs in the guest surface', async () => {
-		jest.spyOn(globalThis, 'fetch').mockResolvedValueOnce(response({ error: {} }, 401));
+		jest.spyOn(globalThis, 'fetch').mockResolvedValueOnce(response({ profile: null }));
 		render(<ValentinaMemoriesCapture />);
 		await waitFor(() => expect(globalThis.fetch).toHaveBeenCalled());
 		expect(document.body.textContent).not.toMatch(/events\/valentina|X-Amz-|objectKey/i);
+		expect(document.body.textContent).not.toMatch(/Alias de su sesión/i);
+	});
+
+	it('blocks a non-canonical deployment origin before reserving capacity', async () => {
+		jest.spyOn(globalThis, 'fetch').mockResolvedValueOnce(response({ profile: PROFILE }));
+		render(<ValentinaMemoriesCapture isUploadOriginAllowed={() => false} />);
+
+		expect(
+			await screen.findByText(valentinaMemoriesCaptureCopy.officialOriginUnavailable),
+		).toBeInTheDocument();
+		expect(screen.getByLabelText(valentinaMemoriesCaptureCopy.chooseFile)).toBeDisabled();
+	});
+
+	it('classifies a PUT transport failure and reuses the same idempotency key on retry', async () => {
+		const user = userEvent.setup();
+		const reservationBodies: Array<Record<string, unknown>> = [];
+		let putAttempts = 0;
+		jest.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+			const url = String(input);
+			if (url === '/api/memories/valentina/session') return response({ profile: PROFILE });
+			if (url === ITEMS_ENDPOINT_FOR_TEST && init?.method === 'POST') {
+				reservationBodies.push(JSON.parse(String(init.body)) as Record<string, unknown>);
+				return response({
+					item: {
+						id: 'retry-item',
+						mimeType: 'image/jpeg',
+						sizeBytes: 4,
+						caption: '',
+						status: 'uploading',
+						createdAt: '2026-08-29T00:00:00.000Z',
+					},
+					upload: {
+						uploadUrl: 'https://r2.example.invalid/retry',
+						requiredHeaders: { 'Content-Type': 'image/jpeg' },
+					},
+				});
+			}
+			if (url === ITEMS_ENDPOINT_FOR_TEST) return response({ items: [] });
+			if (url === 'https://r2.example.invalid/retry') {
+				putAttempts += 1;
+				if (putAttempts === 1) throw new TypeError('Failed to fetch');
+				return response(null);
+			}
+			if (url === `${ITEMS_ENDPOINT_FOR_TEST}/retry-item`)
+				return response({ item: { status: 'accepted' } });
+			throw new Error(`Unexpected fetch: ${url}`);
+		});
+
+		render(<ValentinaMemoriesCapture optimizeImage={async (file) => file} />);
+		await screen.findByText(new RegExp(PROFILE.displayName));
+		await user.upload(
+			screen.getByLabelText(valentinaMemoriesCaptureCopy.chooseFile),
+			new File([new Uint8Array([1, 2, 3, 4])], 'retry.jpg', { type: 'image/jpeg' }),
+		);
+		expect(await screen.findByRole('alert')).toHaveTextContent(
+			valentinaMemoriesCaptureCopy.putFailed,
+		);
+		await user.click(screen.getByRole('button', { name: valentinaMemoriesCaptureCopy.retry }));
+		await screen.findByText(valentinaMemoriesCaptureCopy.success);
+
+		expect(reservationBodies).toHaveLength(2);
+		expect(reservationBodies[0].clientRequestId).toBe(reservationBodies[1].clientRequestId);
 	});
 });

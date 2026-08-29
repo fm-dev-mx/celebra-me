@@ -173,7 +173,6 @@ function toPublicItem(item: ValentinaMemoriesMediaItem): ValentinaMemoriesMediaP
 function toGuestProfile(session: SessionRow): ValentinaMemoriesGuestProfile {
 	return {
 		displayName: session.display_name,
-		guestAlias: session.guest_alias,
 		expiresAt: session.expires_at,
 	};
 }

@@ -22,7 +22,7 @@ export const prerender = false;
 export const GET: APIRoute = async ({ request }) => {
 	try {
 		const session = await getGuestMemorySessionFromRequest(request);
-		if (!session) return new Response(null, { status: 401 });
+		if (!session) return withPrivateCache(jsonResponse({ profile: null }));
 		await requireValentinaMemoryRateLimit(request, 'read', session.id);
 		return withPrivateCache(jsonResponse({ profile: getGuestMemoryProfile(session) }));
 	} catch (error) {

@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import {
+	VALENTINA_MEMORIES_RECOVERY_ROUTE_PATH,
 	VALENTINA_MEMORIES_ROUTE_PATH,
 	valentinaMemoriesCaptureCopy,
 	valentinaMemoriesPageCopy,
@@ -8,7 +9,6 @@ import {
 const STUB_PUT_URL = 'https://r2-stub.test/private-put-capability';
 const PROFILE = {
 	displayName: 'Tía Ana',
-	guestAlias: 'invitado-a1b2c3d4',
 	expiresAt: '2026-09-28T00:00:00.000Z',
 };
 
@@ -22,7 +22,47 @@ async function uploadSampleJpeg(page: import('@playwright/test').Page) {
 	});
 }
 
+async function waitForHydratedIsland(
+	page: import('@playwright/test').Page,
+	descendantSelector: string,
+) {
+	const island = page.locator('astro-island').filter({ has: page.locator(descendantSelector) });
+	await expect(island).toHaveCount(1);
+	await expect(island).not.toHaveAttribute('ssr', '');
+}
+
 test.describe('Valentina Memories capture route', () => {
+	test('keeps the primary mobile controls visible, labelled, and touch friendly', async ({
+		page,
+	}) => {
+		await page.setViewportSize({ width: 390, height: 844 });
+		await page.route('**/api/memories/valentina/session', (route) =>
+			route.fulfill({
+				status: 200,
+				contentType: 'application/json',
+				body: JSON.stringify({ profile: null }),
+			}),
+		);
+		await page.goto(VALENTINA_MEMORIES_ROUTE_PATH, { waitUntil: 'domcontentloaded' });
+		await waitForHydratedIsland(page, '[data-capture="valentina-memories"]');
+
+		await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+			valentinaMemoriesPageCopy.heading,
+		);
+		await expect(page.getByLabel('Su nombre o apodo')).toBeVisible();
+		const continueButton = page.getByRole('button', { name: 'Continuar' });
+		const uploadButton = page.getByText(valentinaMemoriesCaptureCopy.chooseFile, {
+			exact: true,
+		});
+		await expect(continueButton).toBeVisible();
+		await expect(uploadButton).toBeVisible();
+		const continueBox = await continueButton.boundingBox();
+		const uploadBox = await uploadButton.boundingBox();
+		expect(continueBox?.height).toBeGreaterThanOrEqual(44);
+		expect(uploadBox?.height).toBeGreaterThanOrEqual(44);
+		expect((uploadBox?.y ?? 844) + (uploadBox?.height ?? 0)).toBeLessThanOrEqual(844);
+	});
+
 	test('onboards, reserves same-origin, uploads directly, and completes without private fields', async ({
 		page,
 	}) => {
@@ -39,7 +79,11 @@ test.describe('Valentina Memories capture route', () => {
 				});
 				return;
 			}
-			await route.fulfill({ status: 401, contentType: 'application/json', body: '{}' });
+			await route.fulfill({
+				status: 200,
+				contentType: 'application/json',
+				body: JSON.stringify({ profile: null }),
+			});
 		});
 		await page.route('**/api/memories/valentina/items**', async (route) => {
 			const request = route.request();
@@ -96,6 +140,7 @@ test.describe('Valentina Memories capture route', () => {
 			waitUntil: 'domcontentloaded',
 		});
 		expect(response?.status()).toBe(200);
+		await waitForHydratedIsland(page, '[data-capture="valentina-memories"]');
 		await expect(page.locator('h1.status-page__title')).toHaveText(
 			valentinaMemoriesPageCopy.heading,
 		);
@@ -108,7 +153,8 @@ test.describe('Valentina Memories capture route', () => {
 
 		await page.getByLabel('Nombre o apodo').fill(PROFILE.displayName);
 		await page.getByRole('button', { name: 'Continuar' }).click();
-		await expect(page.getByText(PROFILE.guestAlias)).toBeVisible();
+		await expect(page.getByText(new RegExp(PROFILE.displayName))).toBeVisible();
+		await expect(page.getByText(/Alias de su sesión/i)).toHaveCount(0);
 		await uploadSampleJpeg(page);
 
 		await expect(page.getByText(valentinaMemoriesCaptureCopy.success)).toBeVisible();
@@ -151,7 +197,8 @@ test.describe('Valentina Memories capture route', () => {
 		});
 
 		await page.goto(VALENTINA_MEMORIES_ROUTE_PATH, { waitUntil: 'domcontentloaded' });
-		await expect(page.getByText(PROFILE.guestAlias)).toBeVisible();
+		await waitForHydratedIsland(page, '[data-capture="valentina-memories"]');
+		await expect(page.getByText(new RegExp(PROFILE.displayName))).toBeVisible();
 		await uploadSampleJpeg(page);
 		await expect(page.getByRole('alert')).toHaveText(
 			valentinaMemoriesCaptureCopy.unsupportedType,
@@ -159,5 +206,42 @@ test.describe('Valentina Memories capture route', () => {
 		await expect(
 			page.getByRole('button', { name: valentinaMemoriesCaptureCopy.retry }),
 		).toBeVisible();
+	});
+
+	test('recovers on a separate noindex page without placing the code in the URL', async ({
+		page,
+	}) => {
+		let recoveryBody: Record<string, unknown> | undefined;
+		await page.route('**/api/memories/valentina/session', async (route) => {
+			if (route.request().method() === 'POST') {
+				recoveryBody = route.request().postDataJSON() as Record<string, unknown>;
+				await route.fulfill({
+					status: 200,
+					contentType: 'application/json',
+					body: JSON.stringify({ profile: PROFILE, recovered: true }),
+				});
+				return;
+			}
+			await route.fulfill({
+				status: 200,
+				contentType: 'application/json',
+				body: JSON.stringify({ profile: PROFILE }),
+			});
+		});
+		await page.route('**/api/memories/valentina/items', (route) =>
+			route.fulfill({ status: 200, contentType: 'application/json', body: '{"items":[]}' }),
+		);
+
+		await page.goto(VALENTINA_MEMORIES_RECOVERY_ROUTE_PATH, {
+			waitUntil: 'domcontentloaded',
+		});
+		await waitForHydratedIsland(page, '.status-page__recovery-form');
+		await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex');
+		await page.getByLabel('Código de recuperación').fill('ABCD-2345-EFGH');
+		await page.getByRole('button', { name: 'Recuperar recuerdos' }).click();
+
+		await expect(page).toHaveURL(new RegExp(`${VALENTINA_MEMORIES_ROUTE_PATH}#mis-recuerdos$`));
+		expect(recoveryBody).toEqual({ action: 'recover', recoveryCode: 'ABCD-2345-EFGH' });
+		expect(page.url()).not.toContain('ABCD-2345-EFGH');
 	});
 });

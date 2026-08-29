@@ -1,18 +1,19 @@
 import { useEffect, useId, useRef, useState, type ChangeEvent } from 'react';
 import { valentinaMemoriesCaptureCopy } from '@/data/valentina-memories.data';
 import {
-	VALENTINA_MEMORIES_MAX_CAPTION_LENGTH,
 	VALENTINA_MEMORIES_DISPLAY_NAME_MAX_LENGTH,
-	VALENTINA_MEMORIES_RECOVERY_CODE_LENGTH,
+	VALENTINA_MEMORIES_MAX_CAPTION_LENGTH,
 	type ValentinaMemoriesGuestProfile,
 	type ValentinaMemoriesGuestQuota,
 } from '@/data/valentina-memories-media.contract';
 import {
 	VALENTINA_MEMORIES_ALLOWED_MIME_TYPES,
+	isAllowedValentinaMemoriesOrigin,
 	resolveValentinaMemoriesFileMimeType,
 } from '@/data/valentina-memories-upload.contract';
 import {
 	calculateFileSha256Hex,
+	classifyValentinaMemoriesTransportIssue,
 	createSecureClientRequestId,
 	mapValentinaMemoriesSignError,
 	measureVideoDurationSeconds,
@@ -23,6 +24,11 @@ import {
 	valentinaMemoriesIssueCopy,
 	type ValentinaMemoriesCaptureIssue,
 } from '@/lib/memories/valentina-memories-client';
+import {
+	createValentinaMemoriesSession,
+	getValentinaMemoriesSession,
+	updateValentinaMemoriesSession,
+} from '@/lib/memories/valentina-memories-session-client';
 
 type CaptureStatus = 'idle' | 'busy' | 'success' | 'error';
 type CatalogItem = {
@@ -42,11 +48,24 @@ type CompletedCatalogStatus = Extract<
 type ValentinaMemoriesCaptureProps = {
 	readVideoDurationSeconds?: (file: File) => Promise<number>;
 	optimizeImage?: (file: File, signal?: AbortSignal) => Promise<File>;
+	isUploadOriginAllowed?: () => boolean;
 };
 
 const ACCEPT = Object.keys(VALENTINA_MEMORIES_ALLOWED_MIME_TYPES).join(',');
-const SESSION_ENDPOINT = '/api/memories/valentina/session';
 const ITEMS_ENDPOINT = '/api/memories/valentina/items';
+
+function currentOriginIsAllowed(): boolean {
+	return (
+		typeof window === 'undefined' || isAllowedValentinaMemoriesOrigin(window.location.origin)
+	);
+}
+
+function readCaptureIssue(error: unknown): ValentinaMemoriesCaptureIssue {
+	if (error instanceof Error && 'issue' in error) {
+		return (error as { issue?: ValentinaMemoriesCaptureIssue }).issue ?? 'sign_failed';
+	}
+	return classifyValentinaMemoriesTransportIssue('sign_failed');
+}
 
 async function reserveUpload(
 	file: File,
@@ -60,24 +79,26 @@ async function reserveUpload(
 	const mimeType = resolveValentinaMemoriesFileMimeType(file);
 	if (!mimeType)
 		throw Object.assign(new Error('unsupported_type'), { issue: 'unsupported_type' as const });
-	const response = await fetch(ITEMS_ENDPOINT, {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({
-			action: 'reserve',
-			mimeType,
-			sizeBytes: file.size,
-			checksumSha256,
-			durationSeconds,
-			clientRequestId,
-		}),
-	});
-	let payload: unknown;
+	let response: Response;
 	try {
-		payload = await response.json();
+		response = await fetch(ITEMS_ENDPOINT, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				action: 'reserve',
+				mimeType,
+				sizeBytes: file.size,
+				checksumSha256,
+				durationSeconds,
+				clientRequestId,
+			}),
+		});
 	} catch {
-		payload = null;
+		throw Object.assign(new Error('sign_failed'), {
+			issue: classifyValentinaMemoriesTransportIssue('sign_failed'),
+		});
 	}
+	const payload = await response.json().catch(() => null);
 	if (!response.ok) {
 		throw Object.assign(new Error('sign_failed'), {
 			issue: mapValentinaMemoriesSignError(
@@ -112,11 +133,18 @@ async function putOriginalFile(
 	requiredHeaders: Record<string, string>,
 	file: File,
 ): Promise<void> {
-	const response = await fetch(uploadUrl, {
-		method: 'PUT',
-		headers: requiredHeaders,
-		body: file,
-	});
+	let response: Response;
+	try {
+		response = await fetch(uploadUrl, {
+			method: 'PUT',
+			headers: requiredHeaders,
+			body: file,
+		});
+	} catch {
+		throw Object.assign(new Error('put_failed'), {
+			issue: classifyValentinaMemoriesTransportIssue('put_failed'),
+		});
+	}
 	if (!response.ok && response.status !== 412)
 		throw Object.assign(new Error('put_failed'), { issue: 'put_failed' as const });
 }
@@ -134,20 +162,26 @@ function isCompletedCatalogStatus(
 
 async function completeReservedUpload(itemId: string): Promise<CompletedCatalogStatus> {
 	for (let attempt = 0; attempt < 3; attempt += 1) {
-		const response = await fetch(`${ITEMS_ENDPOINT}/${encodeURIComponent(itemId)}`, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ action: 'complete' }),
-		});
-		if (response.ok) {
-			const payload = (await response.json().catch(() => null)) as {
-				item?: { status?: CatalogItem['status'] };
-			} | null;
-			if (isCompletedCatalogStatus(payload?.item?.status)) return payload.item.status;
+		try {
+			const response = await fetch(`${ITEMS_ENDPOINT}/${encodeURIComponent(itemId)}`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ action: 'complete' }),
+			});
+			if (response.ok) {
+				const payload = (await response.json().catch(() => null)) as {
+					item?: { status?: CatalogItem['status'] };
+				} | null;
+				if (isCompletedCatalogStatus(payload?.item?.status)) return payload.item.status;
+			}
+		} catch {
+			// A bounded idempotent retry handles transient completion failures.
 		}
 		if (attempt < 2) await new Promise((resolve) => setTimeout(resolve, 300 * 3 ** attempt));
 	}
-	throw Object.assign(new Error('complete_failed'), { issue: 'put_failed' as const });
+	throw Object.assign(new Error('complete_failed'), {
+		issue: classifyValentinaMemoriesTransportIssue('put_failed'),
+	});
 }
 
 function completionCopy(status: CompletedCatalogStatus): string {
@@ -170,16 +204,44 @@ function itemStatusLabel(item: CatalogItem): string {
 function GuestQuotaStatus({ quota }: { quota: ValentinaMemoriesGuestQuota | null }) {
 	if (!quota) return null;
 	return (
-		<p className="status-page__status" aria-live="polite">
+		<p className="status-page__quota" aria-live="polite">
 			Le quedan {quota.files.remaining} archivos, {quota.videos.remaining} videos y{' '}
 			{Math.floor(quota.bytes.remaining / (1024 * 1024))} MiB.
 		</p>
 	);
 }
 
+function RecoveryCodeCard({ recoveryCode }: { recoveryCode: string | null }) {
+	const [copied, setCopied] = useState(false);
+	const copy = valentinaMemoriesCaptureCopy;
+	if (!recoveryCode) return null;
+
+	const copyCode = async () => {
+		if (!navigator.clipboard) return;
+		try {
+			await navigator.clipboard.writeText(recoveryCode);
+			setCopied(true);
+		} catch {
+			setCopied(false);
+		}
+	};
+
+	return (
+		<aside className="status-page__recovery-code" role="note">
+			<strong>{copy.recoveryCodeTitle}</strong>
+			<code>{recoveryCode}</code>
+			<span>{copy.recoveryCodeHint}</span>
+			<button type="button" onClick={() => void copyCode()}>
+				{copied ? copy.recoveryCodeCopied : copy.copyRecoveryCode}
+			</button>
+		</aside>
+	);
+}
+
 export default function ValentinaMemoriesCapture({
 	readVideoDurationSeconds,
 	optimizeImage = optimizeValentinaMemoriesImage,
+	isUploadOriginAllowed = currentOriginIsAllowed,
 }: ValentinaMemoriesCaptureProps) {
 	const inputId = useId();
 	const inputRef = useRef<HTMLInputElement>(null);
@@ -196,95 +258,72 @@ export default function ValentinaMemoriesCapture({
 	const [issue, setIssue] = useState<ValentinaMemoriesCaptureIssue | null>(null);
 	const [profile, setProfile] = useState<ValentinaMemoriesGuestProfile | null>(null);
 	const [displayNameDraft, setDisplayNameDraft] = useState('');
+	const [editingName, setEditingName] = useState(false);
 	const [recoveryCode, setRecoveryCode] = useState<string | null>(null);
 	const [items, setItems] = useState<CatalogItem[]>([]);
 	const [quota, setQuota] = useState<ValentinaMemoriesGuestQuota | null>(null);
 	const [editingId, setEditingId] = useState<string | null>(null);
 	const [captionDraft, setCaptionDraft] = useState('');
-	const [recoveryDraft, setRecoveryDraft] = useState('');
-	const [recoveryError, setRecoveryError] = useState(false);
-	const unavailable = issue === 'unavailable';
+	const [originAllowed] = useState(isUploadOriginAllowed);
 	const message = issue ? valentinaMemoriesIssueCopy(issue) : null;
 
 	const loadItems = async () => {
-		const response = await fetch(ITEMS_ENDPOINT, { headers: { Accept: 'application/json' } });
-		if (!response.ok) return;
-		sessionReadyRef.current = true;
-		const payload = (await response.json()) as {
-			items?: CatalogItem[];
-			quota?: ValentinaMemoriesGuestQuota;
-		};
-		if (Array.isArray(payload.items)) setItems(payload.items);
-		if (payload.quota) setQuota(payload.quota);
+		try {
+			const response = await fetch(ITEMS_ENDPOINT, {
+				headers: { Accept: 'application/json' },
+			});
+			if (!response.ok) return;
+			sessionReadyRef.current = true;
+			const payload = (await response.json()) as {
+				items?: CatalogItem[];
+				quota?: ValentinaMemoriesGuestQuota;
+			};
+			if (Array.isArray(payload.items)) setItems(payload.items);
+			if (payload.quota) setQuota(payload.quota);
+		} catch {
+			// A later successful action refreshes the catalog.
+		}
 	};
 
 	useEffect(() => {
 		void (async () => {
-			const response = await fetch(SESSION_ENDPOINT, {
-				headers: { Accept: 'application/json' },
-			});
-			if (!response.ok) return;
-			const payload = (await response.json()) as { profile?: ValentinaMemoriesGuestProfile };
-			if (!payload.profile) return;
-			setProfile(payload.profile);
-			setDisplayNameDraft(payload.profile.displayName);
-			sessionReadyRef.current = true;
-			await loadItems();
+			try {
+				const { profile: existingProfile } = await getValentinaMemoriesSession();
+				if (!existingProfile) return;
+				setProfile(existingProfile);
+				setDisplayNameDraft(existingProfile.displayName);
+				sessionReadyRef.current = true;
+				await loadItems();
+			} catch {
+				setIssue(classifyValentinaMemoriesTransportIssue('unavailable'));
+			}
 		})();
 		return () => optimizationAbortRef.current?.abort();
 	}, []);
 
 	const startSession = async () => {
-		const response = await fetch(SESSION_ENDPOINT, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ action: 'create', displayName: displayNameDraft }),
-		});
-		if (!response.ok) {
-			setIssue('network_failed');
-			return;
+		try {
+			const created = await createValentinaMemoriesSession(displayNameDraft);
+			setProfile(created.profile);
+			setDisplayNameDraft(created.profile.displayName);
+			sessionReadyRef.current = true;
+			setIssue(null);
+			if (created.recoveryCode) setRecoveryCode(created.recoveryCode);
+			await loadItems();
+		} catch {
+			setIssue(classifyValentinaMemoriesTransportIssue('unavailable'));
 		}
-		const payload = (await response.json()) as {
-			profile?: ValentinaMemoriesGuestProfile;
-			recoveryCode?: unknown;
-		};
-		if (!payload.profile) return;
-		setProfile(payload.profile);
-		sessionReadyRef.current = true;
-		if (typeof payload.recoveryCode === 'string') setRecoveryCode(payload.recoveryCode);
-		await loadItems();
 	};
 
 	const saveProfile = async () => {
-		const response = await fetch(SESSION_ENDPOINT, {
-			method: 'PATCH',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ displayName: displayNameDraft }),
-		});
-		if (!response.ok) return;
-		const payload = (await response.json()) as { profile?: ValentinaMemoriesGuestProfile };
-		if (payload.profile) setProfile(payload.profile);
-	};
-
-	const recoverSession = async () => {
-		setRecoveryError(false);
-		const response = await fetch(SESSION_ENDPOINT, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ action: 'recover', recoveryCode: recoveryDraft }),
-		});
-		if (!response.ok) {
-			setRecoveryError(true);
-			return;
+		try {
+			const nextProfile = await updateValentinaMemoriesSession(displayNameDraft);
+			setProfile(nextProfile);
+			setDisplayNameDraft(nextProfile.displayName);
+			setEditingName(false);
+		} catch {
+			setIssue(classifyValentinaMemoriesTransportIssue('unavailable'));
 		}
-		sessionReadyRef.current = true;
-		setRecoveryDraft('');
-		const payload = (await response.json()) as { profile?: ValentinaMemoriesGuestProfile };
-		if (payload.profile) {
-			setProfile(payload.profile);
-			setDisplayNameDraft(payload.profile.displayName);
-		}
-		await loadItems();
 	};
 
 	const resetInput = () => {
@@ -292,9 +331,14 @@ export default function ValentinaMemoriesCapture({
 	};
 
 	const uploadSelectedFile = async (file: File) => {
+		if (!originAllowed) {
+			setStatus('error');
+			setIssue('official_origin_required');
+			return;
+		}
 		if (!sessionReadyRef.current || !profile) {
 			setStatus('error');
-			setIssue('network_failed');
+			setIssue(classifyValentinaMemoriesTransportIssue('unavailable'));
 			return;
 		}
 		const mimeType = resolveValentinaMemoriesFileMimeType(file);
@@ -377,12 +421,8 @@ export default function ValentinaMemoriesCapture({
 			setStatus('success');
 			setIssue(null);
 		} catch (error) {
-			const nextIssue =
-				error instanceof Error && 'issue' in error
-					? ((error as { issue?: ValentinaMemoriesCaptureIssue }).issue ?? 'sign_failed')
-					: 'network_failed';
 			setStatus('error');
-			setIssue(nextIssue);
+			setIssue(readCaptureIssue(error));
 		}
 	};
 
@@ -445,232 +485,228 @@ export default function ValentinaMemoriesCapture({
 		if (response.ok) await loadItems();
 	};
 
+	const uploadDisabled = status === 'busy' || !profile || !originAllowed;
+
 	return (
 		<div className="status-page__capture" data-capture="valentina-memories">
-			{unavailable ? (
-				<p className="status-page__status status-page__status--error" role="status">
-					{copy.unavailable}
-				</p>
-			) : (
-				<>
-					{profile ? (
-						<section
-							className="status-page__recovery"
-							aria-label="Su perfil de recuerdos"
-						>
+			{profile ? (
+				<section className="status-page__identity" aria-label="Su perfil de recuerdos">
+					{editingName ? (
+						<>
 							<label htmlFor={`${inputId}-display-name`}>Su nombre o apodo</label>
-							<div>
+							<div className="status-page__inline-controls">
 								<input
 									id={`${inputId}-display-name`}
 									value={displayNameDraft}
 									maxLength={VALENTINA_MEMORIES_DISPLAY_NAME_MAX_LENGTH}
 									onChange={(event) => setDisplayNameDraft(event.target.value)}
 								/>
-								<button type="button" onClick={() => void saveProfile()}>
-									Guardar nombre
-								</button>
-							</div>
-							<small>Alias de su sesión: {profile.guestAlias}</small>
-						</section>
-					) : (
-						<section
-							className="status-page__recovery"
-							aria-label="Iniciar sesión de recuerdos"
-						>
-							<strong>Antes de subir, escriba su nombre o apodo</strong>
-							<label htmlFor={`${inputId}-new-display-name`}>Nombre o apodo</label>
-							<div>
-								<input
-									id={`${inputId}-new-display-name`}
-									value={displayNameDraft}
-									maxLength={VALENTINA_MEMORIES_DISPLAY_NAME_MAX_LENGTH}
-									autoComplete="nickname"
-									onChange={(event) => setDisplayNameDraft(event.target.value)}
-								/>
 								<button
 									type="button"
 									disabled={!displayNameDraft.trim()}
-									onClick={() => void startSession()}
+									onClick={() => void saveProfile()}
 								>
-									Continuar
+									Guardar
+								</button>
+								<button type="button" onClick={() => setEditingName(false)}>
+									{copy.cancelNameChange}
 								</button>
 							</div>
-						</section>
-					)}
-					{status !== 'success' ? (
-						<>
-							<input
-								id={inputId}
-								ref={inputRef}
-								className="status-page__file-input"
-								type="file"
-								accept={ACCEPT}
-								disabled={status === 'busy' || !profile}
-								aria-label={copy.chooseFile}
-								onChange={onFileChange}
-							/>
-							<label
-								htmlFor={inputId}
-								className={`status-page__btn${status === 'busy' || !profile ? ' is-disabled' : ''}`}
-							>
-								{status === 'busy' ? progressMessage : copy.chooseFile}
-							</label>
-							<p className="status-page__status">{copy.chooseFileHint}</p>
-							<GuestQuotaStatus quota={quota} />
-							<p className="status-page__status status-page__status--privacy">
-								{copy.privacyHint}
-							</p>
 						</>
 					) : (
-						<>
-							<p className="status-page__status" role="status">
-								{completionMessage}
-							</p>
+						<p>
+							{copy.sharingAs} <strong>{profile.displayName}</strong>{' '}
 							<button
 								type="button"
-								className="status-page__btn status-page__btn--outline"
-								onClick={onUploadAnother}
+								className="status-page__text-button"
+								onClick={() => setEditingName(true)}
 							>
-								{copy.uploadAnother}
+								{copy.changeName}
 							</button>
-						</>
+						</p>
 					)}
-					{status === 'error' && message ? (
-						<>
-							<p
-								className="status-page__status status-page__status--error"
-								role="alert"
-							>
-								{message}
-							</p>
-							<button
-								type="button"
-								className="status-page__btn status-page__btn--outline"
-								onClick={onRetry}
-							>
-								{copy.retry}
-							</button>
-						</>
-					) : null}
-					{status === 'busy' ? (
-						<>
-							<p className="status-page__status" role="status" aria-live="polite">
-								{progressMessage}
-							</p>
-							{isOptimizing ? (
-								<button
-									type="button"
-									className="status-page__btn status-page__btn--outline"
-									onClick={onCancelOptimization}
-								>
-									{copy.cancelOptimization}
-								</button>
-							) : null}
-						</>
-					) : null}
-					{recoveryCode ? (
-						<aside className="status-page__recovery" role="note">
-							<strong>{copy.recoveryCodeTitle}</strong>
-							<code>{recoveryCode}</code>
-							<span>{copy.recoveryCodeHint}</span>
-						</aside>
-					) : null}
-					{!profile && !recoveryCode ? (
-						<aside className="status-page__recovery status-page__recovery--restore">
-							<strong>{copy.recoveryPrompt}</strong>
-							<div>
-								<label htmlFor={`${inputId}-recovery`}>
-									{copy.recoveryInputLabel}
-								</label>
-								<input
-									id={`${inputId}-recovery`}
-									value={recoveryDraft}
-									maxLength={VALENTINA_MEMORIES_RECOVERY_CODE_LENGTH}
-									autoComplete="one-time-code"
-									onChange={(event) =>
-										setRecoveryDraft(event.target.value.toUpperCase())
-									}
-								/>
-								<button
-									type="button"
-									onClick={() => void recoverSession()}
-									disabled={!recoveryDraft}
-								>
-									{copy.recover}
-								</button>
-							</div>
-							{recoveryError ? <span role="alert">{copy.recoveryFailed}</span> : null}
-						</aside>
-					) : null}
-					{profile ? (
-						<section className="status-page__memories" aria-label={copy.myMemories}>
-							<h2>{copy.myMemories}</h2>
-							{items.length === 0 ? (
-								<p>{copy.noMemories}</p>
-							) : (
-								items.map((item) => (
-									<article key={item.id} className="status-page__memory-card">
-										{item.status === 'accepted' ? (
-											item.mimeType.startsWith('video/') ? (
-												<video
-													controls
-													preload="metadata"
-													src={`${ITEMS_ENDPOINT}/${encodeURIComponent(item.id)}`}
-												/>
-											) : (
-												<img
-													loading="lazy"
-													src={`${ITEMS_ENDPOINT}/${encodeURIComponent(item.id)}`}
-													alt={item.caption || copy.myMemories}
-												/>
-											)
-										) : null}
-										<p>{itemStatusLabel(item)}</p>
-										{editingId === item.id ? (
-											<div>
-												<input
-													value={captionDraft}
-													maxLength={
-														VALENTINA_MEMORIES_MAX_CAPTION_LENGTH
-													}
-													onChange={(event) =>
-														setCaptionDraft(event.target.value)
-													}
-													aria-label={copy.editCaption}
-												/>
-												<button
-													type="button"
-													onClick={() => void saveCaption(item)}
-												>
-													{copy.saveCaption}
-												</button>
-											</div>
-										) : (
-											<button
-												type="button"
-												onClick={() => {
-													setEditingId(item.id);
-													setCaptionDraft(item.caption);
-												}}
-											>
-												{copy.editCaption}
-											</button>
-										)}
-										{item.status !== 'deleted' ? (
-											<button
-												type="button"
-												onClick={() => void deleteItem(item)}
-											>
-												{copy.deleteMemory}
-											</button>
-										) : null}
-									</article>
-								))
-							)}
-						</section>
-					) : null}
-				</>
+				</section>
+			) : (
+				<section
+					className="status-page__onboarding"
+					aria-label="Iniciar sesión de recuerdos"
+				>
+					<label htmlFor={`${inputId}-new-display-name`}>Su nombre o apodo</label>
+					<input
+						id={`${inputId}-new-display-name`}
+						value={displayNameDraft}
+						maxLength={VALENTINA_MEMORIES_DISPLAY_NAME_MAX_LENGTH}
+						autoComplete="nickname"
+						onChange={(event) => setDisplayNameDraft(event.target.value)}
+					/>
+					<button
+						type="button"
+						className="status-page__btn"
+						disabled={!displayNameDraft.trim()}
+						onClick={() => void startSession()}
+					>
+						Continuar
+					</button>
+				</section>
 			)}
+
+			{!originAllowed ? (
+				<p className="status-page__status status-page__status--error" role="alert">
+					{copy.officialOriginUnavailable}
+				</p>
+			) : null}
+
+			{status !== 'success' ? (
+				<>
+					<input
+						id={inputId}
+						ref={inputRef}
+						className="status-page__file-input"
+						type="file"
+						accept={ACCEPT}
+						disabled={uploadDisabled}
+						aria-label={copy.chooseFile}
+						onChange={onFileChange}
+					/>
+					<label
+						htmlFor={inputId}
+						className={`status-page__btn status-page__upload-button${uploadDisabled ? ' is-disabled' : ''}`}
+					>
+						{status === 'busy' ? progressMessage : copy.chooseFile}
+					</label>
+					<p className="status-page__limits-summary">{copy.chooseFileHint}</p>
+					<GuestQuotaStatus quota={quota} />
+					<details className="status-page__details">
+						<summary>{copy.detailsLabel}</summary>
+						<p>{copy.limitsDetails}</p>
+						<p>{copy.privacyHint}</p>
+					</details>
+				</>
+			) : (
+				<section className="status-page__success" aria-live="polite">
+					<p className="status-page__status" role="status">
+						{completionMessage}
+					</p>
+					<div className="status-page__inline-actions">
+						<button
+							type="button"
+							className="status-page__btn"
+							onClick={onUploadAnother}
+						>
+							{copy.uploadAnother}
+						</button>
+						<a
+							href="#mis-recuerdos"
+							className="status-page__btn status-page__btn--outline"
+						>
+							{copy.viewMemories}
+						</a>
+					</div>
+				</section>
+			)}
+
+			{status === 'error' && message ? (
+				<section className="status-page__upload-error">
+					<p className="status-page__status status-page__status--error" role="alert">
+						{message}
+					</p>
+					{originAllowed ? (
+						<button
+							type="button"
+							className="status-page__btn status-page__btn--outline"
+							onClick={onRetry}
+						>
+							{copy.retry}
+						</button>
+					) : null}
+				</section>
+			) : null}
+
+			{status === 'busy' ? (
+				<section className="status-page__progress">
+					<p className="status-page__status" role="status" aria-live="polite">
+						{progressMessage}
+					</p>
+					{isOptimizing ? (
+						<button
+							type="button"
+							className="status-page__btn status-page__btn--outline"
+							onClick={onCancelOptimization}
+						>
+							{copy.cancelOptimization}
+						</button>
+					) : null}
+				</section>
+			) : null}
+
+			<RecoveryCodeCard recoveryCode={recoveryCode} />
+
+			{profile ? (
+				<section
+					id="mis-recuerdos"
+					className="status-page__memories"
+					aria-label={copy.myMemories}
+				>
+					<h2>{copy.myMemories}</h2>
+					{items.length === 0 ? (
+						<p>{copy.noMemories}</p>
+					) : (
+						items.map((item) => (
+							<article key={item.id} className="status-page__memory-card">
+								{item.status === 'accepted' ? (
+									item.mimeType.startsWith('video/') ? (
+										<video
+											controls
+											preload="metadata"
+											src={`${ITEMS_ENDPOINT}/${encodeURIComponent(item.id)}`}
+										/>
+									) : (
+										<img
+											loading="lazy"
+											src={`${ITEMS_ENDPOINT}/${encodeURIComponent(item.id)}`}
+											alt={item.caption || copy.myMemories}
+										/>
+									)
+								) : null}
+								<p>{itemStatusLabel(item)}</p>
+								{editingId === item.id ? (
+									<div className="status-page__inline-controls">
+										<input
+											value={captionDraft}
+											maxLength={VALENTINA_MEMORIES_MAX_CAPTION_LENGTH}
+											onChange={(event) =>
+												setCaptionDraft(event.target.value)
+											}
+											aria-label={copy.editCaption}
+										/>
+										<button
+											type="button"
+											onClick={() => void saveCaption(item)}
+										>
+											{copy.saveCaption}
+										</button>
+									</div>
+								) : (
+									<button
+										type="button"
+										onClick={() => {
+											setEditingId(item.id);
+											setCaptionDraft(item.caption);
+										}}
+									>
+										{copy.editCaption}
+									</button>
+								)}
+								{item.status !== 'deleted' ? (
+									<button type="button" onClick={() => void deleteItem(item)}>
+										{copy.deleteMemory}
+									</button>
+								) : null}
+							</article>
+						))
+					)}
+				</section>
+			) : null}
 		</div>
 	);
 }
