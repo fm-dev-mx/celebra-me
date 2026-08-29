@@ -32,7 +32,11 @@ export const valentinaMemoriesPageCopy = {
 export const valentinaMemoriesCaptureCopy = {
 	chooseFile: 'Elija una foto o un video',
 	chooseFileHint: 'Acepta fotos y videos breves de la celebración.',
+	privacyHint:
+		'Solo la persona organizadora podrá ver y descargar su recuerdo. El archivo puede conservar fecha, dispositivo o ubicación guardados por su teléfono.',
+	preparing: 'Preparando su recuerdo…',
 	uploading: 'Subiendo su recuerdo…',
+	confirming: 'Confirmando que llegó correctamente…',
 	success: 'Se guardó. Gracias por compartir este momento.',
 	uploadAnother: 'Subir otra',
 	retry: 'Intentar de nuevo',
@@ -42,6 +46,7 @@ export const valentinaMemoriesCaptureCopy = {
 	videoUnreadable: 'No se pudo leer el video. Intente con otro archivo.',
 	windowClosed: 'La ventana para subir recuerdos no está abierta.',
 	rateLimited: 'Hay demasiadas solicitudes. Intente de nuevo en un momento.',
+	quotaReached: 'Esta sesión o el evento ya no tienen espacio para otro archivo.',
 	signFailed: 'No se pudo preparar la subida. Intente de nuevo.',
 	putFailed: 'No se pudo completar la subida. Intente de nuevo.',
 	networkFailed: 'No hay conexión. Intente de nuevo.',

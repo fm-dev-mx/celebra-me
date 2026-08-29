@@ -11,17 +11,11 @@ export const VALENTINA_MEMORIES_OBJECT_PREFIX = 'events/valentina/' as const;
 
 export const VALENTINA_MEMORIES_SIGN_PATH = '/sign/valentina' as const;
 
-/** Production Worker hostname + sign path. Use this exact public URL. */
-export const VALENTINA_MEMORIES_PRODUCTION_SIGN_URL =
-	'https://memories.celebra-me.com/sign/valentina' as const;
-
-/** Browser-safe env name. Production value is the URL above. */
-export const VALENTINA_MEMORIES_SIGN_URL_PUBLIC_ENV_NAME =
-	'PUBLIC_VALENTINA_MEMORIES_SIGN_URL' as const;
-
 export const VALENTINA_MEMORIES_ALLOWED_PRODUCTION_ORIGIN = 'https://www.celebra-me.com' as const;
 
 export const VALENTINA_MEMORIES_PRESIGN_TTL_SECONDS = 300;
+export const VALENTINA_MEMORIES_RESERVATION_TTL_SECONDS =
+	VALENTINA_MEMORIES_PRESIGN_TTL_SECONDS * 2;
 
 export const VALENTINA_MEMORIES_EVENT_TIME_ZONE = 'America/Mexico_City' as const;
 
@@ -46,11 +40,18 @@ export const VALENTINA_MEMORIES_OBJECT_RETENTION_SECONDS =
 export const VALENTINA_MEMORIES_RATE_LIMIT = {
 	bindingName: 'SIGN_RATE_LIMITER',
 	namespaceId: '1001',
-	limit: 10,
+	limit: 6,
 	periodSeconds: 60,
 } as const;
 
+export const VALENTINA_MEMORIES_SESSION_MAX_FILES = 20;
+export const VALENTINA_MEMORIES_SESSION_MAX_BYTES = 512 * 1024 * 1024;
+export const VALENTINA_MEMORIES_SESSION_MAX_IN_FLIGHT = 2;
+export const VALENTINA_MEMORIES_EVENT_MAX_OBJECTS = 2_000;
+export const VALENTINA_MEMORIES_EVENT_MAX_BYTES = 8_000_000_000;
+
 export const VALENTINA_MEMORIES_JSON_BODY_MAX_BYTES = 2048;
+export const VALENTINA_MEMORIES_HASH_CHUNK_BYTES = 2 * 1024 * 1024;
 
 export type ValentinaMemoriesMimeCategory = 'image' | 'video';
 
@@ -121,6 +122,21 @@ export function getValentinaMemoriesMimePolicy(
 		];
 	}
 	return null;
+}
+
+export function resolveValentinaMemoriesFileMimeType(file: {
+	type: string;
+	name: string;
+}): ValentinaMemoriesAllowedMimeType | null {
+	const declared = normalizeMemoriesMimeType(file.type);
+	if (getValentinaMemoriesMimePolicy(declared))
+		return declared as ValentinaMemoriesAllowedMimeType;
+	const extension = file.name.trim().toLowerCase().split('.').pop() ?? '';
+	if (extension === 'jpeg') return 'image/jpeg';
+	const entry = Object.entries(VALENTINA_MEMORIES_ALLOWED_MIME_TYPES).find(
+		([, policy]) => policy.extension === extension,
+	);
+	return (entry?.[0] as ValentinaMemoriesAllowedMimeType | undefined) ?? null;
 }
 
 export function isAllowedValentinaMemoriesOrigin(origin: string | null | undefined): boolean {

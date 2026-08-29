@@ -83,11 +83,13 @@ export function hashIp(ip: string): string {
 export async function checkRateLimit(input: {
 	namespace: 'ctx' | 'view' | 'rsvp' | 'rsvp-public' | 'dashboard' | 'auth' | 'tracking';
 	entityId: string;
-	ip: string;
+	ip?: string;
 	maxHits: number;
 	windowSec: number;
 }): Promise<boolean> {
-	const key = `${input.namespace}:${input.entityId}:${hashIp(input.ip)}`;
+	const key = input.ip
+		? `${input.namespace}:${input.entityId}:${hashIp(input.ip)}`
+		: `${input.namespace}:${input.entityId}`;
 	return resolveBackend().allow(key, input.maxHits, input.windowSec);
 }
 

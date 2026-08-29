@@ -11,25 +11,43 @@ import {
 	VALENTINA_MEMORIES_EVENT_ID,
 	VALENTINA_MEMORIES_OBJECT_PREFIX,
 	VALENTINA_MEMORIES_OBJECT_RETENTION_SECONDS,
+	VALENTINA_MEMORIES_RATE_LIMIT,
 	getValentinaMemoriesMimePolicy,
 } from './valentina-memories-upload.contract';
 
 export const VALENTINA_MEMORIES_EVENT_SLUG = 'valentina-hernandez' as const;
-export const VALENTINA_MEMORIES_SESSION_COOKIE = 'valentina_memories_session' as const;
+export const VALENTINA_MEMORIES_SESSION_COOKIE = '__Host-valentina_memories_session' as const;
 export const VALENTINA_MEMORIES_SESSION_TTL_SECONDS = VALENTINA_MEMORIES_OBJECT_RETENTION_SECONDS;
 export const VALENTINA_MEMORIES_RECOVERY_CODE_LENGTH = 14;
+export const VALENTINA_MEMORIES_DISPLAY_NAME_MIN_LENGTH = 1;
+export const VALENTINA_MEMORIES_DISPLAY_NAME_MAX_LENGTH = 60;
 export const VALENTINA_MEMORIES_MAX_CAPTION_LENGTH = 240;
-export const VALENTINA_MEMORIES_MAX_ITEMS_PER_SESSION = 100;
-export const VALENTINA_MEMORIES_AUDIT_RETENTION_DAYS = 365;
+const VALENTINA_MEMORIES_AUDIT_RETENTION_DAYS = 365;
 export const VALENTINA_MEMORIES_AUDIT_RETENTION_SECONDS =
 	VALENTINA_MEMORIES_AUDIT_RETENTION_DAYS * 24 * 60 * 60;
 
 export const VALENTINA_MEMORIES_RETRIEVAL_PATH = '/retrieve/valentina' as const;
-export const VALENTINA_MEMORIES_RETRIEVAL_URL_ENV_NAME =
-	'VALENTINA_MEMORIES_RETRIEVAL_URL' as const;
-export const VALENTINA_MEMORIES_RETRIEVAL_SECRET_ENV_NAME =
-	'VALENTINA_MEMORIES_RETRIEVAL_SHARED_SECRET' as const;
+export const VALENTINA_MEMORIES_RETRIEVAL_ORIGIN_ENV_NAME =
+	'MEMORIES_PRIVATE_RETRIEVAL_ORIGIN' as const;
+export const VALENTINA_MEMORIES_UPLOAD_SIGNING_PRIVATE_KEY_ENV_NAME =
+	'MEMORIES_UPLOAD_REQUEST_SIGNING_PRIVATE_KEY' as const;
+export const VALENTINA_MEMORIES_RETRIEVAL_SIGNING_PRIVATE_KEY_ENV_NAME =
+	'MEMORIES_RETRIEVAL_REQUEST_SIGNING_PRIVATE_KEY' as const;
 export const VALENTINA_MEMORIES_RETRIEVAL_REQUEST_TTL_SECONDS = 60;
+export const VALENTINA_MEMORIES_CLEANUP_BATCH_SIZE = 25;
+export const VALENTINA_MEMORIES_CLEANUP_LEASE_SECONDS = 15 * 60;
+export const VALENTINA_MEMORIES_CATALOG_PAGE_SIZE = 50;
+export const VALENTINA_MEMORIES_VALIDATION_RETRY_DELAY_SECONDS = 60;
+export const VALENTINA_MEMORIES_APP_RATE_LIMITS = {
+	session: { maxHits: 60, windowSec: 60 },
+	recover: { maxHits: 5, windowSec: 60 },
+	register: {
+		maxHits: VALENTINA_MEMORIES_RATE_LIMIT.limit,
+		windowSec: VALENTINA_MEMORIES_RATE_LIMIT.periodSeconds,
+	},
+	read: { maxHits: 60, windowSec: 60 },
+	mutate: { maxHits: 30, windowSec: 60 },
+} as const;
 
 export const VALENTINA_MEMORIES_ARCHIVE_MAX_FILES = 100 as const;
 export const VALENTINA_MEMORIES_ARCHIVE_MAX_BYTES = 134_217_728 as const; // 128 MiB
@@ -52,9 +70,9 @@ export const VALENTINA_MEMORIES_MEDIA_TRANSITIONS: Record<
 	uploading: ['validating', 'deleted'],
 	validating: ['accepted', 'rejected', 'deleted', 'duplicate'],
 	accepted: ['rejected', 'deleted'],
-	rejected: ['validating', 'accepted', 'deleted'],
+	rejected: ['deleted'],
 	duplicate: ['deleted'],
-	deleted: ['validating'],
+	deleted: [],
 };
 
 export type ValentinaMemoriesMediaActor = 'guest' | 'organizer' | 'system';
@@ -78,10 +96,32 @@ export interface ValentinaMemoriesMediaItem {
 	deletedAt: string | null;
 }
 
-export type ValentinaMemoriesMediaPublicItem = Omit<
-	ValentinaMemoriesMediaItem,
-	'sessionId' | 'eventKey'
->;
+export interface ValentinaMemoriesMediaPublicItem {
+	id: string;
+	mimeType: keyof typeof VALENTINA_MEMORIES_ALLOWED_MIME_TYPES;
+	sizeBytes: number;
+	durationSeconds: number | null;
+	caption: string;
+	status: ValentinaMemoriesMediaStatus;
+	createdAt: string;
+	updatedAt: string;
+	acceptedAt: string | null;
+	rejectedAt: string | null;
+	deletedAt: string | null;
+}
+
+export interface ValentinaMemoriesOrganizerItem extends ValentinaMemoriesMediaPublicItem {
+	uploader: {
+		displayName: string;
+		guestAlias: string;
+	};
+}
+
+export interface ValentinaMemoriesGuestProfile {
+	displayName: string;
+	guestAlias: string;
+	expiresAt: string;
+}
 
 export function isValidSha256Hex(value: unknown): value is string {
 	return typeof value === 'string' && VALENTINA_MEMORIES_SHA256_HEX_PATTERN.test(value);
@@ -97,6 +137,11 @@ export function canTransitionValentinaMemoriesMedia(
 export function sanitizeValentinaMemoriesCaption(value: unknown): string {
 	if (typeof value !== 'string') return '';
 	return value.trim().slice(0, VALENTINA_MEMORIES_MAX_CAPTION_LENGTH);
+}
+
+export function sanitizeValentinaMemoriesDisplayName(value: unknown): string {
+	if (typeof value !== 'string') return '';
+	return value.replace(/\s+/g, ' ').trim().slice(0, VALENTINA_MEMORIES_DISPLAY_NAME_MAX_LENGTH);
 }
 
 export function isValentinaMemoriesObjectKeyForMime(
@@ -117,15 +162,6 @@ export function isValentinaMemoriesObjectKeyForMime(
 
 export function getValentinaMemoriesRecoveryCodePattern(): RegExp {
 	return /^[A-HJ-NP-Z2-9]{4}(?:-[A-HJ-NP-Z2-9]{4}){2}$/;
-}
-
-export function buildValentinaMemoriesRetrievalSigningPayload(input: {
-	timestamp: string;
-	method: string;
-	path: string;
-	bodyHash: string;
-}): string {
-	return [input.timestamp, input.method.toUpperCase(), input.path, input.bodyHash].join('.');
 }
 
 function isJpegSignature(bytes: Uint8Array): boolean {

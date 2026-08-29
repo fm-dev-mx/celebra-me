@@ -1,14 +1,14 @@
-import { createHash, createHmac } from 'node:crypto';
 import { getEnv } from '@/lib/server/env';
 import {
+	VALENTINA_MEMORIES_RETRIEVAL_ORIGIN_ENV_NAME,
 	VALENTINA_MEMORIES_RETRIEVAL_PATH,
 	VALENTINA_MEMORIES_RETRIEVAL_REQUEST_TTL_SECONDS,
-	VALENTINA_MEMORIES_RETRIEVAL_SECRET_ENV_NAME,
-	VALENTINA_MEMORIES_RETRIEVAL_URL_ENV_NAME,
-	buildValentinaMemoriesRetrievalSigningPayload,
+	VALENTINA_MEMORIES_RETRIEVAL_SIGNING_PRIVATE_KEY_ENV_NAME,
 } from '@/data/valentina-memories-media.contract';
+import { MEMORIES_RETRIEVAL_REQUEST_AUDIENCE } from '@/data/valentina-memories-private-request.contract';
+import { createMemoriesPrivateRequestHeaders } from '@/lib/server/memories-private-request';
 
-type RetrievalMode = 'inline' | 'attachment' | 'inspect';
+type RetrievalMode = 'inline' | 'attachment' | 'inspect' | 'delete';
 
 export type ValentinaMemoryInspectionResult = {
 	exists: boolean;
@@ -18,22 +18,44 @@ export type ValentinaMemoryInspectionResult = {
 	durationSeconds: number | null;
 };
 
-function sha256(value: string): string {
-	return createHash('sha256').update(value, 'utf8').digest('hex');
-}
-
-function resolveRetrievalUrl(): string | null {
-	const raw = getEnv(VALENTINA_MEMORIES_RETRIEVAL_URL_ENV_NAME).trim();
+function resolveRetrievalUrl(): URL | null {
+	const raw = getEnv(VALENTINA_MEMORIES_RETRIEVAL_ORIGIN_ENV_NAME).trim();
 	if (!raw) return null;
 	try {
-		const url = new URL(raw);
-		if (url.protocol !== 'https:' || url.pathname !== VALENTINA_MEMORIES_RETRIEVAL_PATH)
+		const origin = new URL(raw);
+		if (
+			origin.protocol !== 'https:' ||
+			origin.pathname !== '/' ||
+			origin.username ||
+			origin.password ||
+			origin.search ||
+			origin.hash
+		) {
 			return null;
-		if (url.username || url.password || url.search || url.hash) return null;
-		return url.toString();
+		}
+		return new URL(VALENTINA_MEMORIES_RETRIEVAL_PATH, origin);
 	} catch {
 		return null;
 	}
+}
+
+function parseRange(value: string | null | undefined): {
+	rangeStart: number | null;
+	rangeEnd: number | null;
+} {
+	if (!value) return { rangeStart: null, rangeEnd: null };
+	const match = /^bytes=(\d+)-(\d*)$/.exec(value.trim());
+	if (!match) return { rangeStart: null, rangeEnd: null };
+	const rangeStart = Number(match[1]);
+	const rangeEnd = match[2] ? Number(match[2]) : null;
+	if (
+		!Number.isSafeInteger(rangeStart) ||
+		rangeStart < 0 ||
+		(rangeEnd !== null && (!Number.isSafeInteger(rangeEnd) || rangeEnd < rangeStart))
+	) {
+		return { rangeStart: null, rangeEnd: null };
+	}
+	return { rangeStart, rangeEnd };
 }
 
 export async function retrieveValentinaMemoryObject(input: {
@@ -41,34 +63,29 @@ export async function retrieveValentinaMemoryObject(input: {
 	mimeType: string;
 	downloadName: string;
 	mode: RetrievalMode;
+	range?: string | null;
 }): Promise<Response> {
 	const retrievalUrl = resolveRetrievalUrl();
-	const secret = getEnv(VALENTINA_MEMORIES_RETRIEVAL_SECRET_ENV_NAME).trim();
-	if (!retrievalUrl || !secret) {
-		return new Response('Private retrieval is not configured.', { status: 503 });
-	}
-	const body = JSON.stringify({
+	if (!retrievalUrl) return new Response('Private retrieval is not configured.', { status: 503 });
+	const requestBody: Record<string, unknown> = {
 		objectKey: input.objectKey,
 		mimeType: input.mimeType,
-		downloadName: input.downloadName,
 		mode: input.mode,
-	});
-	const timestamp = String(Math.floor(Date.now() / 1000));
-	const path = new URL(retrievalUrl).pathname;
-	const payload = buildValentinaMemoriesRetrievalSigningPayload({
-		timestamp,
-		method: 'POST',
-		path,
-		bodyHash: sha256(body),
-	});
-	const signature = createHmac('sha256', secret).update(payload, 'utf8').digest('hex');
+	};
+	if (input.mode === 'inline' || input.mode === 'attachment') {
+		requestBody.downloadName = input.downloadName;
+		Object.assign(requestBody, parseRange(input.range));
+	}
+	const body = JSON.stringify(requestBody);
 	return fetch(retrievalUrl, {
 		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			'X-Celebra-Retrieval-Timestamp': timestamp,
-			'X-Celebra-Retrieval-Signature': signature,
-		},
+		headers: createMemoriesPrivateRequestHeaders({
+			audience: MEMORIES_RETRIEVAL_REQUEST_AUDIENCE,
+			method: 'POST',
+			path: VALENTINA_MEMORIES_RETRIEVAL_PATH,
+			body,
+			privateKeyEnvName: VALENTINA_MEMORIES_RETRIEVAL_SIGNING_PRIVATE_KEY_ENV_NAME,
+		}),
 		body,
 		signal: AbortSignal.timeout((VALENTINA_MEMORIES_RETRIEVAL_REQUEST_TTL_SECONDS + 10) * 1000),
 	});
@@ -79,8 +96,7 @@ export async function inspectValentinaMemoryObject(input: {
 	mimeType: string;
 }): Promise<ValentinaMemoryInspectionResult | null> {
 	const response = await retrieveValentinaMemoryObject({
-		objectKey: input.objectKey,
-		mimeType: input.mimeType,
+		...input,
 		downloadName: 'inspect',
 		mode: 'inspect',
 	});
@@ -90,4 +106,16 @@ export async function inspectValentinaMemoryObject(input: {
 	} catch {
 		return null;
 	}
+}
+
+export async function deleteValentinaMemoryObject(input: {
+	objectKey: string;
+	mimeType: string;
+}): Promise<boolean> {
+	const response = await retrieveValentinaMemoryObject({
+		...input,
+		downloadName: 'delete',
+		mode: 'delete',
+	});
+	return response.ok;
 }

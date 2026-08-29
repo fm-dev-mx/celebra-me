@@ -2,16 +2,14 @@ import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import type { AstroCookies } from 'astro';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { parseCookieHeader } from '@/lib/rsvp/core/utils';
-import { getIp } from '@/lib/rsvp/core/http';
-import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import { SupabaseHttpError, supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import { findEventBySlugService } from '@/lib/rsvp/repositories/event.repository';
 import { findMembershipByEventForHost } from '@/lib/rsvp/repositories/role-membership.repository';
 import {
 	VALENTINA_MEMORIES_EVENT_SLUG,
-	VALENTINA_MEMORIES_AUDIT_RETENTION_SECONDS,
+	VALENTINA_MEMORIES_CATALOG_PAGE_SIZE,
+	VALENTINA_MEMORIES_DISPLAY_NAME_MIN_LENGTH,
 	VALENTINA_MEMORIES_MAX_CAPTION_LENGTH,
-	VALENTINA_MEMORIES_MAX_ITEMS_PER_SESSION,
 	VALENTINA_MEMORIES_MEDIA_STATUSES,
 	VALENTINA_MEMORIES_SESSION_COOKIE,
 	VALENTINA_MEMORIES_SESSION_TTL_SECONDS,
@@ -19,23 +17,33 @@ import {
 	getValentinaMemoriesRecoveryCodePattern,
 	isValidSha256Hex,
 	isValentinaMemoriesObjectKeyForMime,
+	sanitizeValentinaMemoriesDisplayName,
 	sanitizeValentinaMemoriesCaption,
-	type ValentinaMemoriesMediaActor,
 	type ValentinaMemoriesMediaItem,
 	type ValentinaMemoriesMediaPublicItem,
+	type ValentinaMemoriesOrganizerItem,
+	type ValentinaMemoriesGuestProfile,
 	type ValentinaMemoriesMediaStatus,
 } from '@/data/valentina-memories-media.contract';
 import {
 	VALENTINA_MEMORIES_EVENT_ID,
+	VALENTINA_MEMORIES_EVENT_MAX_BYTES,
+	VALENTINA_MEMORIES_EVENT_MAX_OBJECTS,
 	VALENTINA_MEMORIES_MAX_VIDEO_DURATION_SECONDS,
+	VALENTINA_MEMORIES_SESSION_MAX_BYTES,
+	VALENTINA_MEMORIES_SESSION_MAX_FILES,
+	VALENTINA_MEMORIES_SESSION_MAX_IN_FLIGHT,
+	buildValentinaMemoriesObjectKey,
 	getValentinaMemoriesMimePolicy,
 	normalizeMemoriesMimeType,
 	type ValentinaMemoriesAllowedMimeType,
 } from '@/data/valentina-memories-upload.contract';
+import { inspectValentinaMemoryObject } from '@/lib/memories/valentina-memories-retrieval';
+import { appendValentinaMemoriesAudit } from '@/lib/memories/valentina-memories-audit';
 import {
-	inspectValentinaMemoryObject,
-	type ValentinaMemoryInspectionResult,
-} from '@/lib/memories/valentina-memories-retrieval';
+	requestValentinaMemoryUploadCapability,
+	type ValentinaMemoriesUploadCapability,
+} from '@/lib/memories/valentina-memories-upload-request';
 
 type SessionRow = {
 	id: string;
@@ -46,6 +54,8 @@ type SessionRow = {
 	last_seen_at: string;
 	expires_at: string;
 	revoked_at: string | null;
+	display_name: string;
+	guest_alias: string;
 };
 
 type MediaRow = {
@@ -65,42 +75,20 @@ type MediaRow = {
 	accepted_at: string | null;
 	rejected_at: string | null;
 	deleted_at: string | null;
+	idempotency_key: string | null;
+	cleanup_after: string | null;
+	cleanup_claimed_at: string | null;
+	cleanup_lease_id: string | null;
+	object_deleted_at: string | null;
 };
 
 const SESSION_COLUMNS =
-	'id,event_key,token_hash,recovery_code_hash,created_at,last_seen_at,expires_at,revoked_at';
+	'id,event_key,token_hash,recovery_code_hash,created_at,last_seen_at,expires_at,revoked_at,display_name,guest_alias';
 const MEDIA_COLUMNS =
-	'id,event_key,session_id,object_key,mime_type,size_bytes,checksum_sha256,duration_seconds,caption,status,duplicate_of_id,created_at,updated_at,accepted_at,rejected_at,deleted_at';
+	'id,event_key,session_id,object_key,mime_type,size_bytes,checksum_sha256,duration_seconds,caption,status,duplicate_of_id,created_at,updated_at,accepted_at,rejected_at,deleted_at,idempotency_key,cleanup_after,cleanup_claimed_at,cleanup_lease_id,object_deleted_at';
 const RECOVERY_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
-export async function requireValentinaMemoryRateLimit(
-	request: Request,
-	operation: 'session' | 'recover' | 'register' | 'read' | 'mutate',
-	entityId = 'anonymous',
-): Promise<void> {
-	const limits = {
-		session: { maxHits: 10, windowSec: 60 },
-		recover: { maxHits: 5, windowSec: 60 },
-		register: { maxHits: 30, windowSec: 60 },
-		read: { maxHits: 60, windowSec: 60 },
-		mutate: { maxHits: 30, windowSec: 60 },
-	}[operation];
-	const allowed = await checkRateLimit({
-		namespace: 'rsvp-public',
-		entityId: `valentina-memories:${operation}:${entityId}`,
-		ip: getIp(request),
-		maxHits: limits.maxHits,
-		windowSec: limits.windowSec,
-	});
-	if (!allowed)
-		throw new ApiError(
-			429,
-			'rate_limited',
-			'Demasiadas solicitudes. Intente de nuevo más tarde.',
-		);
-}
-
-function sha256(value: string): string {
+export function hashValentinaMemorySecret(value: string): string {
 	return createHash('sha256').update(value, 'utf8').digest('hex');
 }
 
@@ -111,6 +99,18 @@ function makeRecoveryCode(): string {
 		(byte) => RECOVERY_ALPHABET[byte % RECOVERY_ALPHABET.length],
 	).join('');
 	return `${raw.slice(0, 4)}-${raw.slice(4, 8)}-${raw.slice(8, 12)}`;
+}
+
+function makeGuestAlias(): string {
+	return `invitado-${randomBytes(4).toString('hex')}`;
+}
+
+function requireDisplayName(value: unknown): string {
+	const displayName = sanitizeValentinaMemoriesDisplayName(value);
+	if (displayName.length < VALENTINA_MEMORIES_DISPLAY_NAME_MIN_LENGTH) {
+		throw new ApiError(400, 'bad_request', 'Escriba su nombre o apodo.');
+	}
+	return displayName;
 }
 
 function requireRecoveryCode(value: unknown): string {
@@ -153,14 +153,37 @@ function mapMediaRow(row: MediaRow): ValentinaMemoriesMediaItem {
 }
 
 function toPublicItem(item: ValentinaMemoriesMediaItem): ValentinaMemoriesMediaPublicItem {
-	const { sessionId: _sessionId, eventKey: _eventKey, ...publicItem } = item;
-	return publicItem;
+	return {
+		id: item.id,
+		mimeType: item.mimeType,
+		sizeBytes: item.sizeBytes,
+		durationSeconds: item.durationSeconds,
+		caption: item.caption,
+		status: item.status,
+		createdAt: item.createdAt,
+		updatedAt: item.updatedAt,
+		acceptedAt: item.acceptedAt,
+		rejectedAt: item.rejectedAt,
+		deletedAt: item.deletedAt,
+	};
+}
+
+function toGuestProfile(session: SessionRow): ValentinaMemoriesGuestProfile {
+	return {
+		displayName: session.display_name,
+		guestAlias: session.guest_alias,
+		expiresAt: session.expires_at,
+	};
+}
+
+export function getGuestMemoryProfile(session: SessionRow): ValentinaMemoriesGuestProfile {
+	return toGuestProfile(session);
 }
 
 async function findActiveSessionByToken(token: string): Promise<SessionRow | null> {
 	const now = new Date().toISOString();
 	const rows = await supabaseRestRequest<SessionRow[]>({
-		pathWithQuery: `valentina_memory_sessions?select=${SESSION_COLUMNS}&event_key=eq.${VALENTINA_MEMORIES_EVENT_ID}&token_hash=eq.${sha256(token)}&revoked_at=is.null&expires_at=gt.${encodeURIComponent(now)}&limit=1`,
+		pathWithQuery: `valentina_memory_sessions?select=${SESSION_COLUMNS}&event_key=eq.${VALENTINA_MEMORIES_EVENT_ID}&token_hash=eq.${hashValentinaMemorySecret(token)}&revoked_at=is.null&expires_at=gt.${encodeURIComponent(now)}&limit=1`,
 		useServiceRole: true,
 	});
 	return rows[0] ?? null;
@@ -198,47 +221,56 @@ export function clearGuestMemorySessionCookie(cookies: AstroCookies): void {
 	cookies.delete(VALENTINA_MEMORIES_SESSION_COOKIE, { path: '/' });
 }
 
-export async function createGuestMemorySession(): Promise<{
-	sessionId: string;
+export async function createGuestMemorySession(displayNameValue: unknown): Promise<{
 	sessionToken: string;
 	recoveryCode: string;
-	expiresAt: string;
+	profile: ValentinaMemoriesGuestProfile;
 }> {
+	const displayName = requireDisplayName(displayNameValue);
 	const sessionToken = randomBytes(32).toString('base64url');
 	const recoveryCode = makeRecoveryCode();
 	const expiresAt = new Date(
 		Date.now() + VALENTINA_MEMORIES_SESSION_TTL_SECONDS * 1000,
 	).toISOString();
-	const rows = await supabaseRestRequest<SessionRow[]>({
-		pathWithQuery: `valentina_memory_sessions?select=${SESSION_COLUMNS}`,
-		method: 'POST',
-		useServiceRole: true,
-		prefer: 'return=representation',
-		body: {
-			event_key: VALENTINA_MEMORIES_EVENT_ID,
-			token_hash: sha256(sessionToken),
-			recovery_code_hash: sha256(recoveryCode),
-			expires_at: expiresAt,
-		},
-	});
+	let rows: SessionRow[] = [];
+	for (let attempt = 0; attempt < 3 && rows.length === 0; attempt += 1) {
+		try {
+			rows = await supabaseRestRequest<SessionRow[]>({
+				pathWithQuery: `valentina_memory_sessions?select=${SESSION_COLUMNS}`,
+				method: 'POST',
+				useServiceRole: true,
+				prefer: 'return=representation',
+				body: {
+					event_key: VALENTINA_MEMORIES_EVENT_ID,
+					token_hash: hashValentinaMemorySecret(sessionToken),
+					recovery_code_hash: hashValentinaMemorySecret(recoveryCode),
+					display_name: displayName,
+					guest_alias: makeGuestAlias(),
+					expires_at: expiresAt,
+				},
+			});
+		} catch (error) {
+			if (!(error instanceof SupabaseHttpError) || error.code !== '23505' || attempt === 2)
+				throw error;
+		}
+	}
 	if (!rows[0])
 		throw new ApiError(
 			503,
 			'service_unavailable',
 			'No se pudo iniciar la sesión de recuerdos.',
 		);
-	return { sessionId: rows[0].id, sessionToken, recoveryCode, expiresAt };
+	return { sessionToken, recoveryCode, profile: toGuestProfile(rows[0]) };
 }
 
 export async function recoverGuestMemorySession(value: unknown): Promise<{
 	sessionToken: string;
-	sessionId: string;
-	expiresAt: string;
+	profile: ValentinaMemoriesGuestProfile;
 }> {
 	const recoveryCode = requireRecoveryCode(value);
 	const now = new Date().toISOString();
 	const rows = await supabaseRestRequest<SessionRow[]>({
-		pathWithQuery: `valentina_memory_sessions?select=${SESSION_COLUMNS}&event_key=eq.${VALENTINA_MEMORIES_EVENT_ID}&recovery_code_hash=eq.${sha256(recoveryCode)}&revoked_at=is.null&expires_at=gt.${encodeURIComponent(now)}&limit=1`,
+		pathWithQuery: `valentina_memory_sessions?select=${SESSION_COLUMNS}&event_key=eq.${VALENTINA_MEMORIES_EVENT_ID}&recovery_code_hash=eq.${hashValentinaMemorySecret(recoveryCode)}&revoked_at=is.null&expires_at=gt.${encodeURIComponent(now)}&limit=1`,
 		useServiceRole: true,
 	});
 	const session = rows[0];
@@ -250,7 +282,7 @@ export async function recoverGuestMemorySession(value: unknown): Promise<{
 		method: 'PATCH',
 		useServiceRole: true,
 		prefer: 'return=representation',
-		body: { token_hash: sha256(sessionToken), last_seen_at: now },
+		body: { token_hash: hashValentinaMemorySecret(sessionToken), last_seen_at: now },
 	});
 	const next = updated[0];
 	if (!next)
@@ -259,7 +291,24 @@ export async function recoverGuestMemorySession(value: unknown): Promise<{
 			'service_unavailable',
 			'No se pudo recuperar la sesión de recuerdos.',
 		);
-	return { sessionToken, sessionId: next.id, expiresAt: next.expires_at };
+	return { sessionToken, profile: toGuestProfile(next) };
+}
+
+export async function updateGuestMemoryProfile(input: {
+	session: SessionRow;
+	displayName: unknown;
+}): Promise<ValentinaMemoriesGuestProfile> {
+	const displayName = requireDisplayName(input.displayName);
+	const rows = await supabaseRestRequest<SessionRow[]>({
+		pathWithQuery: `valentina_memory_sessions?id=eq.${encodeURIComponent(input.session.id)}&revoked_at=is.null&select=${SESSION_COLUMNS}`,
+		method: 'PATCH',
+		useServiceRole: true,
+		prefer: 'return=representation',
+		body: { display_name: displayName, last_seen_at: new Date().toISOString() },
+	});
+	if (!rows[0]) throw new ApiError(404, 'not_found', 'La sesión ya no está disponible.');
+	await appendValentinaMemoriesAudit({ actorType: 'guest', action: 'profile_updated' });
+	return toGuestProfile(rows[0]);
 }
 
 async function findMediaById(id: string): Promise<MediaRow | null> {
@@ -270,51 +319,12 @@ async function findMediaById(id: string): Promise<MediaRow | null> {
 	return rows[0] ?? null;
 }
 
-async function appendAudit(input: {
-	mediaItemId?: string;
-	actorType: ValentinaMemoriesMediaActor;
-	actorId?: string;
-	action: string;
-	metadata?: Record<string, unknown>;
-}): Promise<void> {
-	await supabaseRestRequest({
-		pathWithQuery: 'valentina_memory_audit_events',
-		method: 'POST',
-		useServiceRole: true,
-		body: {
-			event_key: VALENTINA_MEMORIES_EVENT_ID,
-			media_item_id: input.mediaItemId ?? null,
-			actor_type: input.actorType,
-			actor_id: input.actorId ?? null,
-			action: input.action,
-			metadata: input.metadata ?? {},
-			expires_at: new Date(
-				Date.now() + VALENTINA_MEMORIES_AUDIT_RETENTION_SECONDS * 1000,
-			).toISOString(),
-		},
-	});
-}
-
-export async function recordValentinaMemoryAccess(input: {
-	mediaItemId: string;
-	actorType: 'guest' | 'organizer';
-	actorId?: string;
-	mode: 'inline' | 'attachment';
-}): Promise<void> {
-	await appendAudit({
-		mediaItemId: input.mediaItemId,
-		actorType: input.actorType,
-		actorId: input.actorId,
-		action: input.mode === 'attachment' ? 'download_requested' : 'preview_requested',
-	});
-}
-
 function validateRegisterPayload(input: {
 	mimeType: unknown;
 	sizeBytes: unknown;
 	checksumSha256: unknown;
 	durationSeconds?: unknown;
-	objectKey: unknown;
+	clientRequestId: unknown;
 }) {
 	const mimeType = normalizeMemoriesMimeType(
 		typeof input.mimeType === 'string' ? input.mimeType : '',
@@ -343,53 +353,92 @@ function validateRegisterPayload(input: {
 	) {
 		throw new ApiError(400, 'bad_request', 'La duración del video no es válida.');
 	}
-	if (!isValentinaMemoriesObjectKeyForMime(input.objectKey, mimeType)) {
-		throw new ApiError(400, 'bad_request', 'El identificador de almacenamiento no es válido.');
-	}
+	const clientRequestId = typeof input.clientRequestId === 'string' ? input.clientRequestId : '';
+	if (
+		!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+			clientRequestId,
+		)
+	)
+		throw new ApiError(400, 'bad_request', 'La solicitud de carga no es válida.');
 
-	return { mimeType, policy, sizeBytes, durationSeconds, checksumSha256 };
+	return { mimeType, policy, sizeBytes, durationSeconds, checksumSha256, clientRequestId };
 }
 
-export async function registerGuestMemoryItem(input: {
+function mapReservationError(error: unknown): never {
+	if (error instanceof SupabaseHttpError) {
+		const quotaMessages: Record<string, string> = {
+			memories_session_file_quota: 'Alcanzó el máximo de archivos para esta sesión.',
+			memories_session_byte_quota: 'Alcanzó el máximo de almacenamiento para esta sesión.',
+			memories_event_object_quota: 'El evento alcanzó su capacidad de archivos.',
+			memories_event_byte_quota: 'El evento alcanzó su capacidad de almacenamiento.',
+		};
+		for (const [code, message] of Object.entries(quotaMessages)) {
+			if (error.body.includes(code)) throw new ApiError(409, 'limit_reached', message);
+		}
+		if (error.body.includes('memories_session_concurrency_quota'))
+			throw new ApiError(429, 'rate_limited', 'Espere a que terminen sus cargas actuales.');
+		if (error.body.includes('memories_idempotency_conflict'))
+			throw new ApiError(
+				409,
+				'conflict',
+				'La solicitud de carga ya se utilizó para otro archivo.',
+			);
+	}
+	throw error;
+}
+
+export async function reserveGuestMemoryItem(input: {
 	session: SessionRow;
-	objectKey: unknown;
 	mimeType: unknown;
 	sizeBytes: unknown;
 	checksumSha256: unknown;
 	durationSeconds?: unknown;
-}): Promise<ValentinaMemoriesMediaPublicItem> {
-	const { mimeType, policy, sizeBytes, durationSeconds, checksumSha256 } =
+	clientRequestId: unknown;
+}): Promise<{ item: ValentinaMemoriesMediaPublicItem; upload: ValentinaMemoriesUploadCapability }> {
+	const { mimeType, policy, sizeBytes, durationSeconds, checksumSha256, clientRequestId } =
 		validateRegisterPayload(input);
-
-	const existing = await supabaseRestRequest<{ id: string }[]>({
-		pathWithQuery: `valentina_memory_items?select=id&session_id=eq.${encodeURIComponent(input.session.id)}&status=neq.deleted`,
-		useServiceRole: true,
-	});
-	if (existing.length >= VALENTINA_MEMORIES_MAX_ITEMS_PER_SESSION) {
-		throw new ApiError(429, 'rate_limited', 'Alcanzó el máximo de recuerdos para esta sesión.');
+	const objectKey = buildValentinaMemoriesObjectKey(randomUUID(), policy.extension);
+	let rows: MediaRow[];
+	try {
+		rows = await supabaseRestRequest<MediaRow[]>({
+			pathWithQuery: 'rpc/reserve_valentina_memory_item',
+			method: 'POST',
+			useServiceRole: true,
+			body: {
+				p_event_key: VALENTINA_MEMORIES_EVENT_ID,
+				p_session_id: input.session.id,
+				p_object_key: objectKey,
+				p_mime_type: mimeType,
+				p_size_bytes: sizeBytes,
+				p_checksum_sha256: checksumSha256,
+				p_duration_seconds: policy.category === 'video' ? durationSeconds : null,
+				p_idempotency_key: clientRequestId,
+				p_max_session_files: VALENTINA_MEMORIES_SESSION_MAX_FILES,
+				p_max_session_bytes: VALENTINA_MEMORIES_SESSION_MAX_BYTES,
+				p_max_session_in_flight: VALENTINA_MEMORIES_SESSION_MAX_IN_FLIGHT,
+				p_max_event_objects: VALENTINA_MEMORIES_EVENT_MAX_OBJECTS,
+				p_max_event_bytes: VALENTINA_MEMORIES_EVENT_MAX_BYTES,
+			},
+		});
+	} catch (error) {
+		mapReservationError(error);
 	}
-
-	const rows = await supabaseRestRequest<MediaRow[]>({
-		pathWithQuery: `valentina_memory_items?select=${MEDIA_COLUMNS}`,
-		method: 'POST',
-		useServiceRole: true,
-		prefer: 'return=representation',
-		body: {
-			event_key: VALENTINA_MEMORIES_EVENT_ID,
-			session_id: input.session.id,
-			object_key: input.objectKey,
-			mime_type: mimeType,
-			size_bytes: sizeBytes,
-			checksum_sha256: checksumSha256,
-			duration_seconds: policy.category === 'video' ? durationSeconds : null,
-			status: 'uploading',
-		},
-	});
 	if (!rows[0])
 		throw new ApiError(503, 'service_unavailable', 'No se pudo registrar el recuerdo.');
 	const item = mapMediaRow(rows[0]);
-	await appendAudit({ mediaItemId: item.id, actorType: 'guest', action: 'registered' });
-	return toPublicItem(item);
+	const upload = await requestValentinaMemoryUploadCapability({
+		objectKey: item.objectKey,
+		sessionId: input.session.id,
+		mimeType: item.mimeType,
+		sizeBytes: item.sizeBytes,
+		checksumSha256: item.checksumSha256,
+	});
+	await appendValentinaMemoriesAudit({
+		mediaItemId: item.id,
+		actorType: 'guest',
+		action: 'reserved',
+	});
+	return { item: toPublicItem(item), upload };
 }
 
 export async function listGuestMemoryItems(
@@ -420,8 +469,7 @@ function isInspectionSuccessful(
 	)
 		return false;
 	const policy = getValentinaMemoriesMimePolicy(item.mimeType);
-	if (!policy || inspection.sizeBytes <= 0 || inspection.sizeBytes > policy.maxBytes)
-		return false;
+	if (!policy || inspection.sizeBytes !== item.sizeBytes) return false;
 	if (inspection.checksumSha256.toLowerCase() !== item.checksumSha256.toLowerCase()) {
 		return false;
 	}
@@ -442,92 +490,35 @@ async function currentPublicMemoryItem(itemId: string): Promise<ValentinaMemorie
 	return toPublicItem(mapMediaRow(current));
 }
 
-async function patchValidatingMemoryItem(
-	itemId: string,
-	body: Record<string, string>,
-): Promise<MediaRow[]> {
-	return supabaseRestRequest<MediaRow[]>({
-		pathWithQuery: `valentina_memory_items?id=eq.${encodeURIComponent(itemId)}&status=eq.validating&select=${MEDIA_COLUMNS}`,
-		method: 'PATCH',
-		useServiceRole: true,
-		prefer: 'return=representation',
-		body,
-	});
-}
-
-async function rejectMemoryItem(input: {
+async function finalizeMemoryItem(input: {
 	item: ValentinaMemoriesMediaItem;
-	inspection: ValentinaMemoryInspectionResult | null;
-	now: string;
+	outcome: 'accepted' | 'rejected';
 }): Promise<ValentinaMemoriesMediaPublicItem> {
-	const rejectedRows = await patchValidatingMemoryItem(input.item.id, {
-		status: 'rejected',
-		rejected_at: input.now,
-		updated_at: input.now,
+	const rows = await supabaseRestRequest<MediaRow[]>({
+		pathWithQuery: 'rpc/finalize_valentina_memory_item',
+		method: 'POST',
+		useServiceRole: true,
+		body: {
+			p_item_id: input.item.id,
+			p_session_id: input.item.sessionId,
+			p_outcome: input.outcome,
+			p_cleanup_after: new Date().toISOString(),
+		},
 	});
-	await appendAudit({
+	const fallback = rows[0] ?? (await findMediaById(input.item.id));
+	if (!fallback) throw new ApiError(404, 'not_found', 'Recuerdo no encontrado.');
+	const next = mapMediaRow(fallback);
+	await appendValentinaMemoriesAudit({
 		mediaItemId: input.item.id,
 		actorType: 'system',
-		action: 'validation_failed',
-		metadata: { inspection: input.inspection ?? null },
+		action:
+			next.status === 'accepted'
+				? 'validated_and_accepted'
+				: next.status === 'duplicate'
+					? 'deduplicated'
+					: 'validation_failed',
 	});
-	return rejectedRows[0]
-		? toPublicItem(mapMediaRow(rejectedRows[0]))
-		: currentPublicMemoryItem(input.item.id);
-}
-
-async function markMemoryItemDuplicate(input: {
-	itemId: string;
-	duplicateOfId: string;
-	now: string;
-}): Promise<ValentinaMemoriesMediaPublicItem> {
-	const duplicateRows = await patchValidatingMemoryItem(input.itemId, {
-		status: 'duplicate',
-		duplicate_of_id: input.duplicateOfId,
-		updated_at: input.now,
-	});
-	if (!duplicateRows[0]) return currentPublicMemoryItem(input.itemId);
-	await appendAudit({
-		mediaItemId: input.itemId,
-		actorType: 'system',
-		action: 'deduplicated',
-		metadata: { duplicateOfId: input.duplicateOfId },
-	});
-	return toPublicItem(mapMediaRow(duplicateRows[0]));
-}
-
-async function acceptMemoryItemOrMarkDuplicate(input: {
-	item: ValentinaMemoriesMediaItem;
-	now: string;
-}): Promise<ValentinaMemoriesMediaPublicItem> {
-	let acceptedRows: MediaRow[];
-	try {
-		acceptedRows = await patchValidatingMemoryItem(input.item.id, {
-			status: 'accepted',
-			accepted_at: input.now,
-			updated_at: input.now,
-		});
-	} catch (error) {
-		if (!(error instanceof SupabaseHttpError) || error.code !== '23505') throw error;
-		const winner = await supabaseRestRequest<MediaRow[]>({
-			pathWithQuery: `valentina_memory_items?select=${MEDIA_COLUMNS}&event_key=eq.${VALENTINA_MEMORIES_EVENT_ID}&checksum_sha256=eq.${encodeURIComponent(input.item.checksumSha256)}&status=eq.accepted&id=neq.${encodeURIComponent(input.item.id)}&limit=1`,
-			useServiceRole: true,
-		});
-		if (!winner[0]) throw error;
-		return markMemoryItemDuplicate({
-			itemId: input.item.id,
-			duplicateOfId: winner[0].id,
-			now: input.now,
-		});
-	}
-	if (!acceptedRows[0]) return currentPublicMemoryItem(input.item.id);
-	const acceptedItem = mapMediaRow(acceptedRows[0]);
-	await appendAudit({
-		mediaItemId: acceptedItem.id,
-		actorType: 'system',
-		action: 'validated_and_accepted',
-	});
-	return toPublicItem(acceptedItem);
+	return toPublicItem(next);
 }
 
 export async function completeGuestMemoryItem(input: {
@@ -551,17 +542,15 @@ export async function completeGuestMemoryItem(input: {
 		throw new ApiError(409, 'conflict', 'El recuerdo no puede pasar a validación.');
 	}
 
-	const now = new Date().toISOString();
 	if (item.status === 'uploading') {
 		const validatingRows = await supabaseRestRequest<MediaRow[]>({
-			pathWithQuery: `valentina_memory_items?id=eq.${encodeURIComponent(item.id)}&status=eq.uploading&select=${MEDIA_COLUMNS}`,
-			method: 'PATCH',
+			pathWithQuery: 'rpc/claim_valentina_memory_validation',
+			method: 'POST',
 			useServiceRole: true,
-			prefer: 'return=representation',
-			body: { status: 'validating', updated_at: now },
+			body: { p_item_id: item.id, p_session_id: input.session.id },
 		});
 		if (!validatingRows[0]) return currentPublicMemoryItem(item.id);
-		await appendAudit({
+		await appendValentinaMemoriesAudit({
 			mediaItemId: item.id,
 			actorType: 'guest',
 			action: 'submitted_for_validation',
@@ -573,22 +562,33 @@ export async function completeGuestMemoryItem(input: {
 		mimeType: item.mimeType,
 	});
 
-	if (!isInspectionSuccessful(item, inspection)) {
-		return rejectMemoryItem({ item, inspection, now });
+	if (!inspection) {
+		throw new ApiError(
+			503,
+			'service_unavailable',
+			'La validación sigue pendiente. Intente de nuevo.',
+		);
 	}
-
-	const existingAccepted = await supabaseRestRequest<MediaRow[]>({
-		pathWithQuery: `valentina_memory_items?select=${MEDIA_COLUMNS}&event_key=eq.${VALENTINA_MEMORIES_EVENT_ID}&checksum_sha256=eq.${encodeURIComponent(item.checksumSha256)}&status=eq.accepted&id=neq.${encodeURIComponent(item.id)}&limit=1`,
-		useServiceRole: true,
+	return finalizeMemoryItem({
+		item,
+		outcome: isInspectionSuccessful(item, inspection) ? 'accepted' : 'rejected',
 	});
-	if (existingAccepted.length > 0) {
-		return markMemoryItemDuplicate({
-			itemId: item.id,
-			duplicateOfId: existingAccepted[0].id,
-			now,
-		});
-	}
-	return acceptMemoryItemOrMarkDuplicate({ item, now });
+}
+
+export async function reconcileValentinaMemoryValidation(mediaItemId: string): Promise<boolean> {
+	const row = await findMediaById(mediaItemId);
+	if (!row || row.status !== 'validating') return true;
+	const item = mapMediaRow(row);
+	const inspection = await inspectValentinaMemoryObject({
+		objectKey: item.objectKey,
+		mimeType: item.mimeType,
+	}).catch(() => null);
+	if (!inspection) return false;
+	await finalizeMemoryItem({
+		item,
+		outcome: isInspectionSuccessful(item, inspection) ? 'accepted' : 'rejected',
+	});
+	return true;
 }
 
 export async function updateGuestMemoryCaption(input: {
@@ -617,7 +617,11 @@ export async function updateGuestMemoryCaption(input: {
 	if (!rows[0])
 		throw new ApiError(503, 'service_unavailable', 'No se pudo actualizar el recuerdo.');
 	const next = mapMediaRow(rows[0]);
-	await appendAudit({ mediaItemId: next.id, actorType: 'guest', action: 'caption_updated' });
+	await appendValentinaMemoriesAudit({
+		mediaItemId: next.id,
+		actorType: 'guest',
+		action: 'caption_updated',
+	});
 	return toPublicItem(next);
 }
 
@@ -640,32 +644,70 @@ export async function deleteGuestMemoryItem(input: {
 			status: 'deleted',
 			deleted_at: new Date().toISOString(),
 			updated_at: new Date().toISOString(),
+			cleanup_after: new Date().toISOString(),
 		},
 	});
 	if (!rows[0])
 		throw new ApiError(503, 'service_unavailable', 'No se pudo eliminar el recuerdo.');
-	await appendAudit({ mediaItemId: item.id, actorType: 'guest', action: 'deleted' });
+	await appendValentinaMemoriesAudit({
+		mediaItemId: item.id,
+		actorType: 'guest',
+		action: 'deleted',
+	});
 }
 
 export async function assertValentinaOrganizerAccess(input: {
 	accessToken: string;
-	isSuperAdmin: boolean;
 }): Promise<void> {
 	const event = await findEventBySlugService(VALENTINA_MEMORIES_EVENT_SLUG);
 	if (!event) throw new ApiError(404, 'not_found', 'El evento no está disponible.');
-	if (input.isSuperAdmin) return;
 	const membership = await findMembershipByEventForHost(event.id, input.accessToken);
 	if (!membership || membership.membershipRole !== 'owner') {
 		throw new ApiError(403, 'forbidden', 'No tiene autorización para estos recuerdos.');
 	}
 }
 
-export async function listOrganizerMemoryItems(): Promise<ValentinaMemoriesMediaPublicItem[]> {
+export async function listOrganizerMemoryItems(input: { page?: number } = {}): Promise<{
+	items: ValentinaMemoriesOrganizerItem[];
+	nextPage: number | null;
+}> {
+	const maxPage =
+		Math.ceil(VALENTINA_MEMORIES_EVENT_MAX_OBJECTS / VALENTINA_MEMORIES_CATALOG_PAGE_SIZE) - 1;
+	const page =
+		Number.isSafeInteger(input.page) &&
+		(input.page as number) >= 0 &&
+		(input.page as number) <= maxPage
+			? (input.page as number)
+			: 0;
+	const offset = page * VALENTINA_MEMORIES_CATALOG_PAGE_SIZE;
 	const rows = await supabaseRestRequest<MediaRow[]>({
-		pathWithQuery: `valentina_memory_items?select=${MEDIA_COLUMNS}&event_key=eq.${VALENTINA_MEMORIES_EVENT_ID}&order=created_at.desc`,
+		pathWithQuery: `valentina_memory_items?select=${MEDIA_COLUMNS}&event_key=eq.${VALENTINA_MEMORIES_EVENT_ID}&order=created_at.desc,id.desc&limit=${VALENTINA_MEMORIES_CATALOG_PAGE_SIZE + 1}&offset=${offset}`,
 		useServiceRole: true,
 	});
-	return rows.map(mapMediaRow).map(toPublicItem);
+	const pageRows = rows.slice(0, VALENTINA_MEMORIES_CATALOG_PAGE_SIZE);
+	const sessionIds = Array.from(new Set(pageRows.map((row) => row.session_id)));
+	const sessions = sessionIds.length
+		? await supabaseRestRequest<SessionRow[]>({
+				pathWithQuery: `valentina_memory_sessions?select=${SESSION_COLUMNS}&event_key=eq.${VALENTINA_MEMORIES_EVENT_ID}&id=in.(${sessionIds.join(',')})`,
+				useServiceRole: true,
+			})
+		: [];
+	const uploaderBySession = new Map(
+		sessions.map((session) => [
+			session.id,
+			{ displayName: session.display_name, guestAlias: session.guest_alias },
+		]),
+	);
+	return {
+		items: pageRows.map((row) => ({
+			...toPublicItem(mapMediaRow(row)),
+			uploader: uploaderBySession.get(row.session_id) ?? {
+				displayName: 'Invitado retirado',
+				guestAlias: 'invitado-retirado',
+			},
+		})),
+		nextPage: rows.length > VALENTINA_MEMORIES_CATALOG_PAGE_SIZE ? page + 1 : null,
+	};
 }
 
 export async function updateOrganizerMemoryItem(input: {
@@ -698,6 +740,8 @@ export async function updateOrganizerMemoryItem(input: {
 		body.accepted_at = targetStatus === 'accepted' ? new Date().toISOString() : null;
 		body.rejected_at = targetStatus === 'rejected' ? new Date().toISOString() : null;
 		body.deleted_at = targetStatus === 'deleted' ? new Date().toISOString() : null;
+		if (targetStatus === 'deleted' || targetStatus === 'rejected')
+			body.cleanup_after = new Date().toISOString();
 	}
 	const rows = await supabaseRestRequest<MediaRow[]>({
 		pathWithQuery: `valentina_memory_items?id=eq.${encodeURIComponent(item.id)}&select=${MEDIA_COLUMNS}`,
@@ -709,7 +753,7 @@ export async function updateOrganizerMemoryItem(input: {
 	if (!rows[0])
 		throw new ApiError(503, 'service_unavailable', 'No se pudo actualizar el recuerdo.');
 	const next = mapMediaRow(rows[0]);
-	await appendAudit({
+	await appendValentinaMemoriesAudit({
 		mediaItemId: next.id,
 		actorType: 'organizer',
 		actorId: input.actorId,
@@ -733,11 +777,7 @@ export async function getMediaObjectForPrivateRetrieval(
 		throw new ApiError(404, 'not_found', 'Recuerdo no encontrado.');
 	}
 	const item = mapMediaRow(row);
-	if (
-		item.deletedAt ||
-		item.status === 'deleted' ||
-		(!ownerSessionId && item.status !== 'accepted')
-	) {
+	if (item.deletedAt || item.status !== 'accepted') {
 		throw new ApiError(404, 'not_found', 'Recuerdo no disponible.');
 	}
 	if (!isValentinaMemoriesObjectKeyForMime(row.object_key, row.mime_type)) {
@@ -748,4 +788,26 @@ export async function getMediaObjectForPrivateRetrieval(
 		mimeType: row.mime_type,
 		downloadName: `valentina-${randomUUID()}.${getValentinaMemoriesMimePolicy(row.mime_type)?.extension ?? 'bin'}`,
 	};
+}
+
+export async function revokeGuestMemorySession(input: {
+	guestAlias: unknown;
+	actorId: string;
+}): Promise<void> {
+	const guestAlias = typeof input.guestAlias === 'string' ? input.guestAlias.trim() : '';
+	if (!/^invitado-[a-z0-9]{8}$/.test(guestAlias))
+		throw new ApiError(400, 'bad_request', 'El alias de invitado no es válido.');
+	const rows = await supabaseRestRequest<SessionRow[]>({
+		pathWithQuery: `valentina_memory_sessions?event_key=eq.${VALENTINA_MEMORIES_EVENT_ID}&guest_alias=eq.${encodeURIComponent(guestAlias)}&revoked_at=is.null&select=${SESSION_COLUMNS}`,
+		method: 'PATCH',
+		useServiceRole: true,
+		prefer: 'return=representation',
+		body: { revoked_at: new Date().toISOString() },
+	});
+	if (!rows[0]) throw new ApiError(404, 'not_found', 'La sesión no está disponible.');
+	await appendValentinaMemoriesAudit({
+		actorType: 'organizer',
+		actorId: input.actorId,
+		action: 'guest_session_revoked',
+	});
 }
