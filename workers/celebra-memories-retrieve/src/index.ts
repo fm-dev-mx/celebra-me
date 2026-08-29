@@ -1,7 +1,5 @@
 import {
 	VALENTINA_MEMORIES_RETRIEVAL_PATH,
-	VALENTINA_MEMORIES_RETRIEVAL_REQUEST_TTL_SECONDS,
-	buildValentinaMemoriesRetrievalSigningPayload,
 	isValentinaMemoriesObjectKeyForMime,
 	isValentinaMemoriesSignatureValid,
 	parseBoundedVideoDurationSeconds,
@@ -10,29 +8,43 @@ import {
 	VALENTINA_MEMORIES_JSON_BODY_MAX_BYTES,
 	VALENTINA_MEMORIES_OBJECT_PREFIX,
 } from '../../../src/data/valentina-memories-upload.contract';
+import { MEMORIES_RETRIEVAL_REQUEST_AUDIENCE } from '../../../src/data/valentina-memories-private-request.contract';
+import { verifyMemoriesPrivateRequest } from '../../shared/private-request';
 
 type R2ObjectLike = {
-	body?: ReadableStream<Uint8Array> | null;
-	size?: number;
-	checksums?: { sha256?: ArrayBuffer; toJSON?: () => { sha256?: string } };
-	customMetadata?: Record<string, string>;
-	httpMetadata?: { contentType?: string; contentLength?: number };
+	body: ReadableStream<Uint8Array> | null;
+	size: number;
+	checksums: { sha256?: ArrayBuffer; toJSON(): { sha256?: string } };
 };
 
-type R2BucketLike = {
+type R2BucketBinding = {
 	get(
 		key: string,
-		options?: { range?: { offset?: number; length?: number } },
+		options?: { range?: { offset: number; length?: number } },
 	): Promise<R2ObjectLike | null>;
-	head?(key: string): Promise<R2ObjectLike | null>;
+	delete(key: string): Promise<void>;
 };
 
 type RetrieveEnv = {
-	MEMORIES_BUCKET: R2BucketLike;
-	RETRIEVAL_SHARED_SECRET: string;
+	MEMORIES_BUCKET: R2BucketBinding;
+	MEMORIES_RETRIEVAL_REQUEST_VERIFY_PUBLIC_KEY: string;
 };
-
-const HEX = /^[0-9a-f]{64}$/i;
+type RetrievalMode = 'inline' | 'attachment' | 'inspect' | 'delete';
+type ParsedRetrievalRequest = {
+	objectKey: string;
+	mimeType: string;
+	mode: RetrievalMode;
+	downloadName: unknown;
+	rangeStart: number | null;
+	rangeEnd: number | null;
+};
+const BASE_REQUEST_KEYS = new Set(['objectKey', 'mimeType', 'mode']);
+const STREAM_REQUEST_KEYS = new Set([
+	...BASE_REQUEST_KEYS,
+	'downloadName',
+	'rangeStart',
+	'rangeEnd',
+]);
 
 function json(payload: unknown, status = 200): Response {
 	return new Response(JSON.stringify(payload), {
@@ -41,46 +53,8 @@ function json(payload: unknown, status = 200): Response {
 	});
 }
 
-function isTimestampFresh(raw: string | null): boolean {
-	if (!raw || !/^\d{1,12}$/.test(raw)) return false;
-	const timestamp = Number(raw);
-	return (
-		Number.isSafeInteger(timestamp) &&
-		Math.abs(Math.floor(Date.now() / 1000) - timestamp) <=
-			VALENTINA_MEMORIES_RETRIEVAL_REQUEST_TTL_SECONDS
-	);
-}
-
 function bytesToHex(bytes: ArrayBuffer): string {
 	return Array.from(new Uint8Array(bytes), (byte) => byte.toString(16).padStart(2, '0')).join('');
-}
-
-function hexToBytes(value: string): ArrayBuffer {
-	const bytes = new Uint8Array(value.length / 2);
-	for (let index = 0; index < bytes.length; index += 1) {
-		bytes[index] = Number.parseInt(value.slice(index * 2, index * 2 + 2), 16);
-	}
-	return bytes.buffer;
-}
-
-async function verifyPayload(secret: string, payload: string, signature: string): Promise<boolean> {
-	const key = await crypto.subtle.importKey(
-		'raw',
-		new TextEncoder().encode(secret),
-		{ name: 'HMAC', hash: 'SHA-256' },
-		false,
-		['verify'],
-	);
-	return crypto.subtle.verify(
-		'HMAC',
-		key,
-		hexToBytes(signature),
-		new TextEncoder().encode(payload),
-	);
-}
-
-async function sha256(value: string): Promise<string> {
-	return bytesToHex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)));
 }
 
 function safeDownloadName(value: unknown, extension: string): string {
@@ -91,46 +65,33 @@ function safeDownloadName(value: unknown, extension: string): string {
 		: `valentina.${extension}`;
 }
 
-async function readFirstBytes(body: unknown): Promise<Uint8Array> {
+async function readBoundedBytes(body: ReadableStream<Uint8Array> | null): Promise<Uint8Array> {
 	if (!body) return new Uint8Array(0);
-	if (body instanceof Uint8Array) return body.slice(0, 65536);
-
+	const reader = body.getReader();
 	const chunks: Uint8Array[] = [];
-	let totalLen = 0;
-
-	if (typeof (body as ReadableStream<Uint8Array>).getReader === 'function') {
-		const reader = (body as ReadableStream<Uint8Array>).getReader();
-		while (totalLen < 65536) {
-			const { done, value } = await reader.read();
-			if (done || !value) break;
-			chunks.push(value);
-			totalLen += value.byteLength;
-		}
-	} else if (Symbol.asyncIterator in Object(body)) {
-		for await (const chunk of body as AsyncIterable<Uint8Array>) {
-			chunks.push(chunk);
-			totalLen += chunk.byteLength;
-			if (totalLen >= 65536) break;
-		}
+	let length = 0;
+	while (length < 65_536) {
+		const { done, value } = await reader.read();
+		if (done || !value) break;
+		chunks.push(value);
+		length += value.byteLength;
 	}
-
-	const result = new Uint8Array(totalLen);
-	let pos = 0;
+	await reader.cancel().catch(() => undefined);
+	const bytes = new Uint8Array(Math.min(length, 65_536));
+	let offset = 0;
 	for (const chunk of chunks) {
-		result.set(chunk, pos);
-		pos += chunk.byteLength;
+		const bounded = chunk.subarray(0, bytes.length - offset);
+		bytes.set(bounded, offset);
+		offset += bounded.byteLength;
+		if (offset >= bytes.length) break;
 	}
-	return result;
+	return bytes;
 }
 
 function extractChecksum(object: R2ObjectLike): string | null {
-	if (object.checksums?.sha256) return bytesToHex(object.checksums.sha256);
-	if (typeof object.checksums?.toJSON === 'function') {
-		const jsonVal = object.checksums.toJSON();
-		if (typeof jsonVal?.sha256 === 'string') return jsonVal.sha256.toLowerCase();
-	}
-	if (object.customMetadata?.sha256) return object.customMetadata.sha256.toLowerCase();
-	return null;
+	if (object.checksums.sha256) return bytesToHex(object.checksums.sha256);
+	const serialized = object.checksums.toJSON();
+	return typeof serialized.sha256 === 'string' ? serialized.sha256.toLowerCase() : null;
 }
 
 async function handleInspect(
@@ -139,60 +100,125 @@ async function handleInspect(
 	mimeType: string,
 ): Promise<Response> {
 	const object = await env.MEMORIES_BUCKET.get(objectKey, {
-		range: { offset: 0, length: 65536 },
+		range: { offset: 0, length: 65_536 },
 	});
 	if (!object) return json({ error: { code: 'not_found' } }, 404);
-
-	const firstBytes = await readFirstBytes(object.body);
-	const signatureValid = isValentinaMemoriesSignatureValid(firstBytes, mimeType);
-	const sizeBytes = object.size ?? object.httpMetadata?.contentLength ?? firstBytes.byteLength;
+	const firstBytes = await readBoundedBytes(object.body);
 	let durationSeconds = mimeType.startsWith('video/')
 		? parseBoundedVideoDurationSeconds(firstBytes)
 		: null;
 	if (
 		mimeType.startsWith('video/') &&
 		durationSeconds === null &&
-		sizeBytes > firstBytes.byteLength
+		object.size > firstBytes.length
 	) {
 		const tail = await env.MEMORIES_BUCKET.get(objectKey, {
-			range: { offset: Math.max(0, sizeBytes - 65536), length: 65536 },
+			range: { offset: Math.max(0, object.size - 65_536), length: 65_536 },
 		});
 		durationSeconds = tail
-			? parseBoundedVideoDurationSeconds(await readFirstBytes(tail.body))
+			? parseBoundedVideoDurationSeconds(await readBoundedBytes(tail.body))
 			: null;
 	}
-	const checksumSha256 = extractChecksum(object);
-
 	return json({
 		exists: true,
-		sizeBytes,
-		checksumSha256,
-		signatureValid,
+		sizeBytes: object.size,
+		checksumSha256: extractChecksum(object),
+		signatureValid: isValentinaMemoriesSignatureValid(firstBytes, mimeType),
 		durationSeconds,
 	});
 }
 
-async function handleStream(
-	env: RetrieveEnv,
-	objectKey: string,
-	mimeType: string,
-	mode: 'inline' | 'attachment',
-	downloadName: unknown,
-): Promise<Response> {
+async function handleStream(input: {
+	env: RetrieveEnv;
+	objectKey: string;
+	mimeType: string;
+	mode: 'inline' | 'attachment';
+	downloadName: unknown;
+	rangeStart: number | null;
+	rangeEnd: number | null;
+}): Promise<Response> {
+	const range =
+		input.rangeStart === null
+			? undefined
+			: {
+					offset: input.rangeStart,
+					length:
+						input.rangeEnd === null ? undefined : input.rangeEnd - input.rangeStart + 1,
+				};
+	const object = await input.env.MEMORIES_BUCKET.get(
+		input.objectKey,
+		range ? { range } : undefined,
+	);
+	if (!object?.body) return json({ error: { code: 'not_found' } }, 404);
 	const extension =
-		objectKey.slice(VALENTINA_MEMORIES_OBJECT_PREFIX.length).split('.').pop() || 'bin';
-	const object = await env.MEMORIES_BUCKET.get(objectKey);
-	if (!object || !object.body) return json({ error: { code: 'not_found' } }, 404);
-
-	return new Response(object.body, {
-		status: 200,
-		headers: {
-			'Content-Type': mimeType,
-			'Content-Disposition': `${mode === 'attachment' ? 'attachment' : 'inline'}; filename="${safeDownloadName(downloadName, extension)}"`,
-			'Cache-Control': 'private, no-store, max-age=0',
-			'X-Content-Type-Options': 'nosniff',
-		},
+		input.objectKey.slice(VALENTINA_MEMORIES_OBJECT_PREFIX.length).split('.').pop() || 'bin';
+	const headers = new Headers({
+		'Content-Type': input.mimeType,
+		'Content-Disposition': `${input.mode}; filename="${safeDownloadName(input.downloadName, extension)}"`,
+		'Cache-Control': 'private, no-store, max-age=0',
+		'X-Content-Type-Options': 'nosniff',
+		'Accept-Ranges': 'bytes',
 	});
+	if (range) {
+		const rangeStart = input.rangeStart as number;
+		const end = Math.min(input.rangeEnd ?? object.size - 1, object.size - 1);
+		headers.set('Content-Range', `bytes ${rangeStart}-${end}/${object.size}`);
+		headers.set('Content-Length', String(Math.max(0, end - rangeStart + 1)));
+	}
+	return new Response(object.body, { status: range ? 206 : 200, headers });
+}
+
+function parseRangeBoundary(value: unknown): number | null | 'invalid' {
+	if (value === null || value === undefined) return null;
+	return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
+		? value
+		: 'invalid';
+}
+
+function parseRetrievalRequest(rawBody: string): ParsedRetrievalRequest | null {
+	let body: Record<string, unknown>;
+	try {
+		body = JSON.parse(rawBody) as Record<string, unknown>;
+	} catch {
+		return null;
+	}
+	const mimeType = typeof body.mimeType === 'string' ? body.mimeType : '';
+	const mode = body.mode as RetrievalMode;
+	const rangeStart = parseRangeBoundary(body.rangeStart);
+	const rangeEnd = parseRangeBoundary(body.rangeEnd);
+	const allowedKeys =
+		mode === 'inline' || mode === 'attachment' ? STREAM_REQUEST_KEYS : BASE_REQUEST_KEYS;
+	if (
+		Object.keys(body).some((key) => !allowedKeys.has(key)) ||
+		!isValentinaMemoriesObjectKeyForMime(body.objectKey, mimeType) ||
+		!['inline', 'attachment', 'inspect', 'delete'].includes(mode) ||
+		rangeStart === 'invalid' ||
+		rangeEnd === 'invalid' ||
+		(rangeStart === null && rangeEnd !== null) ||
+		(rangeStart !== null && rangeEnd !== null && rangeEnd < rangeStart)
+	) {
+		return null;
+	}
+	return {
+		objectKey: body.objectKey as string,
+		mimeType,
+		mode,
+		downloadName: body.downloadName,
+		rangeStart,
+		rangeEnd,
+	};
+}
+
+async function handleRetrievalRequest(
+	env: RetrieveEnv,
+	body: ParsedRetrievalRequest,
+): Promise<Response> {
+	if (body.mode === 'inspect') return handleInspect(env, body.objectKey, body.mimeType);
+	if (body.mode === 'delete') {
+		await env.MEMORIES_BUCKET.delete(body.objectKey);
+		return json({ deleted: true });
+	}
+	return handleStream({ env, ...body, mode: body.mode });
 }
 
 export default {
@@ -200,69 +226,29 @@ export default {
 		if (
 			request.method !== 'POST' ||
 			new URL(request.url).pathname !== VALENTINA_MEMORIES_RETRIEVAL_PATH
-		) {
+		)
 			return json({ error: { code: 'not_found' } }, 404);
-		}
-		if (!env.RETRIEVAL_SHARED_SECRET || !env.MEMORIES_BUCKET) {
+		if (!env.MEMORIES_BUCKET || !env.MEMORIES_RETRIEVAL_REQUEST_VERIFY_PUBLIC_KEY)
 			return json({ error: { code: 'unavailable' } }, 503);
-		}
-
-		const timestamp = request.headers.get('X-Celebra-Retrieval-Timestamp');
-		const providedSignature = request.headers.get('X-Celebra-Retrieval-Signature') || '';
-		if (!isTimestampFresh(timestamp) || !HEX.test(providedSignature)) {
-			return json({ error: { code: 'unauthorized' } }, 401);
-		}
-
 		const rawBody = await request.text();
 		if (
 			!rawBody ||
 			new TextEncoder().encode(rawBody).byteLength > VALENTINA_MEMORIES_JSON_BODY_MAX_BYTES
-		) {
+		)
 			return json({ error: { code: 'bad_request' } }, 400);
-		}
-
-		const validSignature = await verifyPayload(
-			env.RETRIEVAL_SHARED_SECRET,
-			buildValentinaMemoriesRetrievalSigningPayload({
-				timestamp: timestamp as string,
-				method: request.method,
-				path: VALENTINA_MEMORIES_RETRIEVAL_PATH,
-				bodyHash: await sha256(rawBody),
-			}),
-			providedSignature,
-		);
-		if (!validSignature) return json({ error: { code: 'unauthorized' } }, 401);
-
-		let body: {
-			objectKey?: unknown;
-			mimeType?: unknown;
-			downloadName?: unknown;
-			mode?: unknown;
-		};
-		try {
-			body = JSON.parse(rawBody) as typeof body;
-		} catch {
-			return json({ error: { code: 'bad_request' } }, 400);
-		}
-
-		const mimeType = typeof body.mimeType === 'string' ? body.mimeType : '';
 		if (
-			!isValentinaMemoriesObjectKeyForMime(body.objectKey, mimeType) ||
-			(body.mode !== 'inline' && body.mode !== 'attachment' && body.mode !== 'inspect')
+			!(await verifyMemoriesPrivateRequest({
+				request,
+				rawBody,
+				expectedAudience: MEMORIES_RETRIEVAL_REQUEST_AUDIENCE,
+				expectedPath: VALENTINA_MEMORIES_RETRIEVAL_PATH,
+				publicKeyPem: env.MEMORIES_RETRIEVAL_REQUEST_VERIFY_PUBLIC_KEY,
+			}))
 		) {
-			return json({ error: { code: 'bad_request' } }, 400);
+			return json({ error: { code: 'unauthorized' } }, 401);
 		}
-
-		if (body.mode === 'inspect') {
-			return handleInspect(env, body.objectKey as string, mimeType);
-		}
-
-		return handleStream(
-			env,
-			body.objectKey as string,
-			mimeType,
-			body.mode as 'inline' | 'attachment',
-			body.downloadName,
-		);
+		const body = parseRetrievalRequest(rawBody);
+		if (!body) return json({ error: { code: 'bad_request' } }, 400);
+		return handleRetrievalRequest(env, body);
 	},
 };

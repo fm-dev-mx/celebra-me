@@ -1,261 +1,158 @@
 # Valentina Memories — owner handoff
 
-This is the authoritative operational handoff for the Valentina Memories capture pilot. Production
-Cloudflare, R2, Vercel, DNS, and credential actions are owner-only. Do not execute them from an
-agent session.
+This runbook covers owner-operated rollout and sanitized Production proof. Repository readiness does
+not authorize database, Cloudflare, R2, Vercel, DNS, Preview, Production, or Git mutations.
 
-## Repository state
+The authoritative limits, MIME rules, paths, upload window, retention, quotas, and archive bounds
+live only in:
 
-- Branch: `feat/valentina-memories-capture`
-- The working tree is `feat/valentina-memories-capture`; re-read the branch and HEAD immediately
-  before any release decision. This handoff does not authorize staging or committing.
-- Candidate scope: the Valentina upload contract, guest media catalog/session routes, organizer
-  workspace and private retrieval Worker, focused tests, migration, styles, and this handoff.
-- Working-tree scope must be reconciled by the owner against the reviewed diff before deployment; no
-  unrelated path may enter a release candidate.
-- Git staging is manually owner-managed and intentionally excluded from agent reconciliation.
-  Re-read `git status --short --branch`, `git diff HEAD --name-only`, and the combined diff before
-  authorization.
-- Final status must be re-read with `git status --short --branch` before this handoff is accepted.
+- `src/data/valentina-memories-upload.contract.ts`
+- `src/data/valentina-memories-media.contract.ts`
+- `src/data/valentina-memories-private-request.contract.ts`
 
-The repository implementation is complete only when the repository gates in this handoff pass.
-Operational readiness remains `OWNER_ACTION_REQUIRED` until every owner proof below is independently
-verified.
+Do not repeat or override those values in provider notes, UI code, SQL, or deployment scripts.
 
-## Release-candidate gate
+## Required security boundary
 
-The current checkout may contain user-owned staged and unstaged changes. It is not a deployable
-release candidate. Before any Cloudflare, Vercel, DNS, database, or Production action, reconcile the
-complete Valentina diff against the current HEAD, inspect the combined diff, and rerun every
-repository validation command below. Do not deploy from a mixed checkout.
+- The bucket remains private. Disable `r2.dev`, public custom-domain access, public listing, public
+  GET, browser credentials, and object ACLs.
+- Guests reach the same-origin app API. The app authenticates the opaque guest session, reserves
+  quota atomically, and privately requests one short-lived PUT capability. File bytes still travel
+  directly from the browser to R2.
+- The browser receives the capability URL, its required headers, and expiration only. It never
+  receives an object key as a separate field.
+- Retrieval starts with a browser media ID. The app authenticates either the owning guest session
+  for an inline accepted item or the dashboard event `owner` for organizer access, resolves the
+  object key internally, and signs one private Worker request.
+- The Retrieval Worker reads or deletes the exact object through its R2 binding. It never calls
+  `list()`, returns a signed GET URL, or accepts an object key from the browser.
+- Managers, anonymous users, other guest sessions, and superadmins without event-owner membership
+  have no organizer access.
 
-After explicit current-task Git authorization, create one immutable commit containing exactly the
-reviewed Valentina diff. Confirm `git diff --cached --name-only` before committing, then return the
-result of `git rev-parse HEAD` and the commit's `git show --name-status --format=fuller` output with
-any unrelated metadata sanitized. That immutable commit SHA is required before owner deployment; the
-agent must not stage or commit it.
+## Credential ownership
 
-## Locked public contract
+Generate two independent ECDSA P-256 key pairs. Do not reuse a pair between Workers.
 
-```text
-PUBLIC_VALENTINA_MEMORIES_SIGN_URL=https://memories.celebra-me.com/sign/valentina
-```
+| Owner            | Server-only configuration                                                                                                                           |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Vercel app       | `MEMORIES_UPLOAD_REQUEST_SIGNING_PRIVATE_KEY`, `MEMORIES_RETRIEVAL_REQUEST_SIGNING_PRIVATE_KEY`, `MEMORIES_PRIVATE_RETRIEVAL_ORIGIN`, `CRON_SECRET` |
+| Sign Worker      | `MEMORIES_UPLOAD_REQUEST_VERIFY_PUBLIC_KEY`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`                               |
+| Retrieval Worker | `MEMORIES_RETRIEVAL_REQUEST_VERIFY_PUBLIC_KEY`; private `MEMORIES_BUCKET` R2 binding                                                                |
 
-The same value is defined in `src/data/valentina-memories-upload.contract.ts` as
-`VALENTINA_MEMORIES_PRODUCTION_SIGN_URL`. Do not derive it from the current host, Preview, DNS, or a
-Vercel API route.
+Private keys stay only in Vercel. Cloudflare receives the corresponding public keys. R2 credentials
+are bucket-scoped and belong only to the Sign Worker. No value above is browser-safe or prefixed
+`PUBLIC_`. The canonical signer target is repository-owned server configuration, not an environment
+variable.
 
-| Contract                  | Required value                                                                    |
-| ------------------------- | --------------------------------------------------------------------------------- |
-| App route                 | `/r/valentina`, prerendered, `noindex`                                            |
-| Production browser origin | `https://www.celebra-me.com`                                                      |
-| Signer hostname and path  | `https://memories.celebra-me.com/sign/valentina`                                  |
-| R2 bucket                 | Private `celebra-memories`                                                        |
-| R2 prefix                 | `events/valentina/`                                                               |
-| Image policy              | JPEG, PNG, WebP, HEIC, or HEIF; maximum 20 MiB                                    |
-| Video policy              | MP4 or QuickTime; maximum 80 MiB and 60 seconds                                   |
-| Upload window             | `2026-08-27T06:00:00.000Z` inclusive through `2026-09-04T06:00:00.000Z` exclusive |
-| Presign                   | PUT only, `Content-Type` bound, maximum 300 seconds, one UUID-based object        |
-| Rate limit                | `SIGN_RATE_LIMITER`, 10 requests per 60 seconds, coarse binding                   |
-| Retention                 | `events/valentina/` objects expire after 30 days                                  |
-| QR target                 | `https://celebra-me.com/r/valentina`; existing assets stay unchanged              |
+Rotate both request-signing pairs and the R2 credentials every 90 days, or immediately after
+suspected exposure. For a request-signing pair, publish the replacement public key and private key
+in a coordinated fail-closed window, verify it, then remove the previous key. For R2 exposure,
+disable signing first, rotate the bucket-scoped credentials, deploy, verify, and revoke the previous
+credentials. Never paste keys, tokens, signed URLs, recovery codes, provider identifiers, or object
+names into evidence.
 
-File bytes go directly from the browser to R2 using the presigned PUT. They must never transit
-through Vercel or the signing Worker. Guest metadata is session-scoped and object keys are omitted
-from UI/API DTOs. Accepted media is previewed through an authenticated server route. Organizer
-listing, moderation, and download use dashboard session authorization and the separate private
-retrieval Worker; no public gallery, bucket listing, or browser R2 credentials exist.
+## Owner apply order
 
-## Owner-only apply order
+1. Reconcile the complete branch diff against the reviewed HEAD and obtain separate authorization
+   for any future Git integration. Deploy only an immutable reviewed revision.
+2. Validate all migrations against `disposable-test`. Apply the forward migrations through the
+   guarded Local, Preview, and Production workflows, with a human authorization at each persistent
+   boundary.
+3. Confirm the existing R2 Standard bucket is private and account-wide projected storage remains
+   within the approved budget. Apply the repository CORS and lifecycle files exactly; confirm no
+   public access.
+4. Configure the two public verification keys and the private bucket binding. Deploy the Retrieval
+   Worker and verify that unsigned, stale, wrong-audience, and guessed-key requests fail closed.
+5. Configure the four Vercel server-only values, deploy the app/backend, and enable the daily
+   cleanup cron. Its endpoint must accept only `Authorization: Bearer <CRON_SECRET>`.
+6. Configure the bucket-scoped Sign Worker values, deploy it last, and confirm requests require a
+   fresh ECDSA envelope and rate-limit by authenticated session ID.
+7. Verify R2 CORS permits only the canonical Production origin, `PUT`, and the headers present in
+   `r2-cors.production.json`. Verify lifecycle matches `r2-lifecycle.production.json`.
+8. Run the sanitized Production matrix below with synthetic, non-PII media only. Run phone checks
+   only after the canonical upload window opens.
 
-Perform these actions in order and keep credentials in the provider interfaces only.
+Cloudflare Free-account capacity is a budget gate, not an application quota. Before rollout, the
+owner must confirm account-wide R2 storage and operations plus Workers daily requests and CPU remain
+below the then-current provider limits. The Cloudflare rate-limiter binding is eventual abuse
+protection; Supabase RPCs remain the authoritative quota and concurrency boundary.
 
-### 1. Create or confirm the private reusable bucket
+If the account security scanner reports TAC `unknown` or omits grants, reconnect or reauthorize the
+scanner for read access and rerun it. Until grants and protected results are visible, security
+coverage is `UNVERIFIED`; `.env` changes cannot repair that account-level state.
 
-Use one private bucket named `celebra-memories`. Do not enable public access, a bucket custom
-domain, or public object ACLs.
+## Organizer retrieval procedure
 
-```text
-npx wrangler r2 bucket create celebra-memories
-```
+1. The organizer signs in through the existing dashboard session.
+2. The same-origin catalog endpoint revalidates the session and exact event `owner` membership, then
+   returns a bounded page of public media DTOs and uploader display name/alias. It returns no
+   session ID, checksum, duplicate link, object key, URL, recovery code, or provider identifier.
+3. For preview or download, the browser requests a media ID. The app repeats authorization, requires
+   `accepted` and not deleted, resolves the private key internally, and signs a short-lived ECDSA
+   request to the Retrieval Worker. Preview uses `inline`; organizer download uses `attachment`.
+4. The Worker verifies audience, timestamp, request ID, body hash, signature, route, MIME/key
+   pairing, and optional byte range. It streams the R2 body with `private, no-store`, `nosniff`, and
+   Range/206 support. It exposes neither listing nor a reusable URL.
+5. Selected export fetches accepted media sequentially through the same authorized route, partitions
+   it by the canonical archive contract, and creates AES-256 encrypted ZIP batches in the
+   organizer's browser. The one-time passphrase is generated with Web Crypto and is never sent to
+   the server.
+6. Revocation blocks new guest operations immediately. Deletion makes the item unavailable
+   immediately, schedules private physical deletion, and is not reversible in the UI. Failed
+   deletion retains quota, releases its lease for a later cron attempt, and remains protected by the
+   final R2 lifecycle rule.
 
-If the bucket already exists, treat the command's already-exists response as confirmation only after
-the dashboard also shows it is private.
+## Audit and retention
 
-### 2. Create the narrow Worker token
+Audit only actor type/opaque actor ID, action, media ID, status transition, and timestamp. Never log
+names, captions, request bodies, IP addresses, recovery codes, checksums, keys, capabilities,
+headers, or media. The daily job must delete physically scheduled objects in small reclaimable
+batches, anonymize inactive guest profiles after their last object is gone, and purge audit rows
+after the canonical audit retention period. R2 lifecycle is the final bound, not immediate cleanup.
 
-Create an R2 API token scoped only to bucket `celebra-memories` with **Object Read & Write**,
-because Cloudflare does not offer Object Write-only. Do not use Admin Read or Admin Read & Write.
-Store only these values as Worker secrets:
+## Failure, revocation, and rollback
 
-- `R2_ACCOUNT_ID`
-- `R2_ACCESS_KEY_ID`
-- `R2_SECRET_ACCESS_KEY`
-- `R2_BUCKET=celebra-memories`
-
-The Worker only signs PUT URLs. Host retrieval uses separate operator credentials in the R2
-dashboard; the Worker token must not be used for host retrieval.
-
-### 3. Apply exact R2 CORS
-
-Apply `r2-cors.production.json` to `celebra-memories` and confirm the result contains only the
-production browser origin, `PUT`, and `Content-Type`.
-
-```text
-npx wrangler r2 bucket cors set celebra-memories --file workers/celebra-memories-sign/r2-cors.production.json
-npx wrangler r2 bucket cors list celebra-memories
-```
-
-### 4. Apply the 30-day lifecycle
-
-Apply `r2-lifecycle.production.json` and confirm that only the `events/valentina/` prefix is covered
-by the 30-day expiration rule. Incomplete multipart uploads abort after one day. Do not add a
-database-backed lifecycle.
-
-```text
-npx wrangler r2 bucket lifecycle set celebra-memories --file workers/celebra-memories-sign/r2-lifecycle.production.json
-npx wrangler r2 bucket lifecycle list celebra-memories
-```
-
-### 5. Configure and deploy the signer
-
-From the repository root, set the four Worker secrets and deploy the configuration in
-`workers/celebra-memories-sign/wrangler.json`. It must use the custom hostname
-`memories.celebra-me.com`, disable `*.workers.dev`, and serve `/sign/valentina`.
-
-```text
-npx wrangler secret put R2_ACCOUNT_ID --config workers/celebra-memories-sign/wrangler.json
-npx wrangler secret put R2_ACCESS_KEY_ID --config workers/celebra-memories-sign/wrangler.json
-npx wrangler secret put R2_SECRET_ACCESS_KEY --config workers/celebra-memories-sign/wrangler.json
-npx wrangler secret put R2_BUCKET --config workers/celebra-memories-sign/wrangler.json
-npx wrangler deploy --config workers/celebra-memories-sign/wrangler.json
-```
-
-Confirm DNS and deployment status for this hostname only. Do not change the existing apex → `www`
-308, `www` proxying, Vercel hosting, or site-wide DNS ownership.
-
-### 6. Configure the Vercel public signer value
-
-In the Production Vercel environment, set the browser-safe variable to the exact locked value above
-and redeploy through the normal owner release procedure. Do not add `PUBLIC_R2_*`, Worker secrets,
-or a Vercel upload proxy.
-
-### 7. Apply the catalog and private retrieval boundary
-
-Apply `supabase/migrations/20260828000000_valentina_memories_catalog.sql` through the guarded
-database workflow. It creates opaque guest sessions, the media catalog, and an append-only audit
-table (audit expiry is set by the canonical media contract); it does not create a public Storage
-bucket or an R2 listing surface. The owner must verify that the scheduled database retention job
-purges expired audit rows without touching active media metadata.
-
-Deploy `workers/celebra-memories-retrieve/wrangler.json` with a private R2 binding to the existing
-`celebra-memories` bucket and one Worker secret named `RETRIEVAL_SHARED_SECRET`. Configure
-`VALENTINA_MEMORIES_RETRIEVAL_URL` in Vercel Production to the exact HTTPS retrieval path and
-`VALENTINA_MEMORIES_RETRIEVAL_SHARED_SECRET` to the same value. Keep both values out of the
-repository, browser, logs, and evidence.
-
-The retrieval Worker accepts only short-lived HMAC-authenticated `POST` requests from the server.
-The app first authenticates the dashboard session (organizer or super-admin), verifies membership
-for `valentina-hernandez`, loads the media row by opaque ID, requires `accepted`, and then sends the
-object key server-to-Worker. The browser receives only the streamed bytes. Guest previews use the
-same Worker through a session-scoped app route and never bypass the session-to-media ownership
-check.
-
-#### Organizer download procedure
-
-1. The organizer signs in to the existing dashboard. The app rejects missing/expired sessions and
-   accepts only the event owner membership (super-admin is the explicit break-glass role).
-2. The dashboard requests the Valentina catalog by the fixed event route. The API returns media ID,
-   status, MIME, size, caption, and timestamps only; it never returns `object_key`.
-3. For preview/download, the browser requests the media ID route. The server rechecks the owner
-   session, requires `accepted` and not `deleted`, loads the object key server-side, and signs a
-   one-request HMAC envelope to the retrieval Worker. Preview uses `inline`; download uses
-   `attachment`.
-4. The retrieval Worker accepts only `POST /retrieve/valentina`, a fresh timestamp, a valid HMAC, an
-   allowlisted MIME/object-key pair under the Valentina prefix, and `inline`/`attachment` mode. It
-   performs `R2.get` through its private bucket binding and streams bytes with `no-store` and
-   `nosniff`; it never lists the bucket or emits a signed URL.
-5. The app records a sanitized `preview_requested` or `download_requested` audit event only after
-   the Worker returns success. A missing object, revoked session, non-owner, non-accepted item,
-   expired HMAC, or disabled Worker returns a non-success response with no metadata or bytes.
-
-### 8. Run owner proofs and real-phone smoke
-
-Run the checks below only after the window opens. Record only the sanitized status values
-`VERIFIED`, `FAILED`, or `UNVERIFIED` in this file or the returned handoff. Missing, stale,
-contradictory, or redacted-beyond-verification evidence remains `UNVERIFIED`.
-
-## Rollback / disable
-
-These are owner-only actions. Preserve the bucket and lifecycle policy unless a separate incident
-decision authorizes their removal.
-
-1. Remove the Production `PUBLIC_VALENTINA_MEMORIES_SIGN_URL` value in Vercel and redeploy. The
-   prerendered page then fails closed and does not render an active file input.
-2. If the signer itself must be disabled, detach or disable only the Worker custom hostname
-   `memories.celebra-me.com`. Do not alter the apex redirect or `www` hosting.
-3. If downloads/previews must be disabled, detach or disable only `memories-access.celebra-me.com`
-   and remove the retrieval URL/secret from Vercel. Existing dashboard sessions then fail closed
-   with no object bytes returned.
-4. If credentials may have been exposed, revoke or rotate the scoped R2 token or retrieval HMAC
-   secret through the provider interfaces. Never place credentials in repository evidence.
-5. Existing presigned URLs can remain valid only until their maximum 300-second TTL. Do not publish
-   them during rollback.
-6. To restore service, redeploy the signer/retrieval Worker, restore the exact Vercel values, and
-   repeat the required proofs. Do not regenerate the printed QR.
-
-## Credential ownership and audit
-
-- Cloudflare owns the scoped signer R2 token and the R2 bucket binding. The Vercel owner owns only
-  the browser-safe signer URL and the server-side retrieval HMAC secret; neither is a browser
-  credential.
-- Rotate the signer token by creating a replacement with the same bucket-only scope, updating the
-  four signer Worker secrets, deploying, verifying a fresh sign/PUT, then revoking the old token.
-  Existing presigned PUTs may remain valid only until their five-minute maximum TTL.
-- Rotate the retrieval HMAC by updating the Worker secret and the Vercel secret together, deploying
-  both, and immediately repeating unauthorized/authorized retrieval proofs. Requests signed with the
-  previous value fail closed after the change.
-- Record only actor, media ID (redacted in external evidence), action, status, and timestamp in the
-  audit table. Never log object keys, signed URLs, request bodies, guest recovery codes, or media.
-- Keep audit rows through the canonical audit expiry and verify the owner-controlled retention job;
-  object lifecycle remains the separate 30-day R2 rule.
+- Missing configuration, invalid signatures, unavailable R2 checksum metadata, and transient
+  inspection failures remain fail-closed. Transient inspection keeps the item `validating`; it does
+  not accept it.
+- A compromised retrieval key pair is replaced on both sides; old requests then fail immediately. A
+  compromised signer/R2 credential disables new signing first. Already issued PUT capabilities
+  expire within the canonical TTL.
+- To suspend uploads, disable only the Sign Worker route or its verification configuration. To
+  suspend retrieval, disable only the Retrieval Worker route or its verification configuration.
+  Preserve the private bucket and cleanup lifecycle unless a separately authorized incident action
+  says otherwise.
+- Do not change the printed QR, apex redirect, `www` hosting, unrelated DNS, or other event data
+  during rollback.
 
 ## Sanitized production proof table
 
-All results start as `PENDING_OWNER`. Do not paste credentials, signed URLs, object keys, private
-identifiers, guest media, request bodies, PII, or raw provider output into returned evidence.
+Every live result starts `UNVERIFIED`. Use only `VERIFIED`, `FAILED`, or `UNVERIFIED`; never infer
+success from repository files or local tests.
 
-| Proof                                 | Owner check                                                                                              | Sanitized evidence                                                              | Result        |
-| ------------------------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- | ------------- |
-| Private bucket                        | Dashboard or `wrangler r2 bucket list`; confirm private `celebra-memories`                               | Bucket name and privacy state only                                              | PENDING_OWNER |
-| Exact CORS                            | `wrangler r2 bucket cors list celebra-memories`                                                          | Origin/method/header contract matches; no raw account data                      | PENDING_OWNER |
-| Exact lifecycle                       | `wrangler r2 bucket lifecycle list celebra-memories`                                                     | Prefix and 30-day policy match                                                  | PENDING_OWNER |
-| Worker deployment                     | DNS/deployment check for `memories.celebra-me.com` and `/sign/valentina`                                 | Host/path reachable; no deployment ID or private identifier                     | PENDING_OWNER |
-| Retrieval Worker deployment           | DNS/deployment check for `memories-access.celebra-me.com` and `/retrieve/valentina`                      | Host/path reachable; no deployment ID or private identifier                     | PENDING_OWNER |
-| Catalog migration                     | Guarded database migration and table/RLS inspection                                                      | Tables exist, RLS is enabled, service-role-only policies match                  | PENDING_OWNER |
-| Vercel public signer                  | Production env inspection                                                                                | Value matches the locked contract; do not repeat the value in evidence          | PENDING_OWNER |
-| Allowed JPEG sign and direct PUT      | Production Origin, allowed JPEG, canonical window; sign returns 200 and matching direct PUT succeeds     | Status codes and contract match only; never return the signed URL or object key | PENDING_OWNER |
-| Invalid origin rejected               | Sign request with an origin other than `https://www.celebra-me.com`                                      | Rejection status/code only                                                      | PENDING_OWNER |
-| Invalid MIME rejected                 | Sign request with `application/pdf`                                                                      | Rejection status/code only                                                      | PENDING_OWNER |
-| Oversized declaration rejected        | Sign request with image MIME and size above 20 MiB                                                       | Rejection status/code only                                                      | PENDING_OWNER |
-| Unsupported routes/methods rejected   | `GET /`, `GET /sign/valentina`, and `DELETE /sign/valentina`                                             | 4xx status/code only                                                            | PENDING_OWNER |
-| Unauthenticated object access blocked | Unauthenticated guessed read and list attempts                                                           | Not readable/listable; no URL or object name                                    | PENDING_OWNER |
-| QR route resolution                   | Scan existing QR or open `https://celebra-me.com/r/valentina`; follow apex redirect and confirm page 200 | Route resolves to the noindex capture page                                      | PENDING_OWNER |
-| Real-phone photo smoke                | One supported photo from a real phone during the window                                                  | UI confirmation and successful direct upload; no media or key                   | PENDING_OWNER |
-| Real-phone video smoke                | One under-limit MP4 or QuickTime video from a real phone during the window                               | UI confirmation and successful direct upload; no media or key                   | PENDING_OWNER |
-| Organizer authorization               | Owner session with event membership; manager, non-member, and unauthenticated requests                   | 401/403; no catalog metadata or bytes                                           | PENDING_OWNER |
-| Organizer preview/download            | Authorized dashboard request for an accepted item; rejected/deleted item                                 | Inline/attachment bytes only for accepted item; no signed URL or key            | PENDING_OWNER |
-| Guest ownership boundary              | Session A attempts Session B item ID and preview                                                         | 404/403; no metadata or bytes                                                   | PENDING_OWNER |
-| Host retrieval                        | Authorized dashboard retrieval through the private Worker under `events/valentina/`                      | Prefix retrieval confirmed; no object name, URL, or media                       | PENDING_OWNER |
+| Boundary        | Required proof                                                                                        | Initial state |
+| --------------- | ----------------------------------------------------------------------------------------------------- | ------------- |
+| Database        | Migration versions, RLS enabled, grants denied to browser roles, RPCs callable only by service role   | UNVERIFIED    |
+| Private R2      | Private bucket, public endpoints disabled, no listing/guessed read, exact CORS and lifecycle          | UNVERIFIED    |
+| Worker auth     | Missing/stale/wrong-audience/tampered envelopes fail without object metadata                          | UNVERIFIED    |
+| Upload          | Synthetic photo/video, checksum persistence, one accepted copy, duplicate cleanup, interruption/retry | UNVERIFIED    |
+| Guest isolation | Recovery, own accepted preview, edit, delete, quota, revocation, cross-session media ID denied        | UNVERIFIED    |
+| Owner isolation | Owner list/preview/download succeeds; manager, non-member, superadmin-only, anonymous denied          | UNVERIFIED    |
+| Retrieval       | Range seeking, attachment, deleted/rejected/duplicate denied, no signed GET or key exposure           | UNVERIFIED    |
+| Cleanup         | Expired reservation, duplicate, rejected and deleted objects physically removed; lease retry works    | UNVERIFIED    |
+| Export          | All accepted objects emitted in bounded encrypted batches; Web Crypto absence fails closed            | UNVERIFIED    |
+| Phones          | Current iOS Safari and Android Chrome over mobile and shared Wi-Fi                                    | UNVERIFIED    |
+| Operations      | Aggregate request/storage budget, sampled PII-free logs, audit retention, key revocation              | UNVERIFIED    |
+| Scanner         | TAC status known and protected read grants/results present                                            | UNVERIFIED    |
 
-The owner must return this table with each result changed only to `VERIFIED`, `FAILED`, or
-`UNVERIFIED`, plus concise sanitized evidence. Never report `VERIFIED` from a plan, local test, or
-provider configuration file alone when the proof requires a live request or real phone.
+Allowed evidence: command name and status, migration version, redacted deployment revision,
+aggregate metrics, browser/device version, HTTP status/code, and audit action name. Prohibited
+evidence: guest media, PII, object keys, signed URLs, recovery codes, request bodies, tokens,
+secrets, and provider account or project IDs.
 
 ## Repository validation
 
-The agent must report exact commands and results separately from the owner proofs. The required
-repository checks are:
+Run and record exact results separately from Production proof:
 
 ```text
 pnpm test:memories-sign
@@ -265,9 +162,13 @@ pnpm type-check
 pnpm build:app
 pnpm validate:changed
 pnpm ops check-links
+pnpm db:disposable:reset
+pnpm db:disposable:test
+pnpm db:disposable:memories-concurrency
+pnpm worker:memories:types
+pnpm worker:memories:dry-run
 git diff --check
 ```
 
-`pnpm run ci` is the broader repository gate when the environment permits it. It does not replace
-the owner proofs. No merge, publication, or Production authorization is implied by repository
-validation.
+A successful repository handoff may be `REPOSITORY_READY`; only owner-operated live proof may be
+`PRODUCTION_VERIFIED`.

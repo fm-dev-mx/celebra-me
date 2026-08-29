@@ -13,6 +13,16 @@ export type PresignR2PutInput = {
 	now: Date;
 };
 
+export function sha256HexToBase64(value: string): string {
+	const bytes = new Uint8Array(value.length / 2);
+	for (let index = 0; index < bytes.length; index += 1) {
+		bytes[index] = Number.parseInt(value.slice(index * 2, index * 2 + 2), 16);
+	}
+	let binary = '';
+	for (const byte of bytes) binary += String.fromCharCode(byte);
+	return btoa(binary);
+}
+
 function toHex(buffer: ArrayBuffer): string {
 	return [...new Uint8Array(buffer)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
@@ -61,11 +71,11 @@ export async function createPresignedR2PutUrl(input: PresignR2PutInput): Promise
 	const canonicalUri = encodePath(`/${input.bucket}/${input.objectKey}`);
 	const credentialScope = `${dateStamp}/auto/s3/aws4_request`;
 	const credential = `${input.accessKeyId}/${credentialScope}`;
-	const signedHeaders = 'content-type;host';
-	const payloadHash =
-		input.checksumSha256Hex && /^[0-9a-f]{64}$/i.test(input.checksumSha256Hex)
-			? input.checksumSha256Hex.toLowerCase()
-			: 'UNSIGNED-PAYLOAD';
+	const checksumSha256 = input.checksumSha256Hex?.toLowerCase() ?? '';
+	if (!/^[0-9a-f]{64}$/.test(checksumSha256)) throw new Error('Invalid SHA-256 checksum.');
+	const checksumBase64 = sha256HexToBase64(checksumSha256);
+	const signedHeaders = 'content-type;host;if-none-match;x-amz-checksum-sha256';
+	const payloadHash = 'UNSIGNED-PAYLOAD';
 
 	const query: Record<string, string> = {
 		'X-Amz-Algorithm': 'AWS4-HMAC-SHA256',
@@ -81,7 +91,13 @@ export async function createPresignedR2PutUrl(input: PresignR2PutInput): Promise
 		.map((key) => `${encodeRfc3986(key)}=${encodeRfc3986(query[key])}`)
 		.join('&');
 
-	const canonicalHeaders = `content-type:${input.contentType}\nhost:${host}\n`;
+	const canonicalHeaders = [
+		`content-type:${input.contentType}`,
+		`host:${host}`,
+		'if-none-match:*',
+		`x-amz-checksum-sha256:${checksumBase64}`,
+		'',
+	].join('\n');
 	const canonicalRequest = [
 		'PUT',
 		canonicalUri,
