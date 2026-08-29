@@ -2,7 +2,7 @@
 
 // JEWELRY BOX THANK YOU
 
-.theme-preset--jewelry-box .thank-you-section {
+.theme-preset--jewelry-box .thank-you-section:not([data-variant='editorial-back-cover'], [data-variant='full-bleed-photo']) {
 	background: radial-gradient(
 		circle at 50% 0%,
 		rgb(var(--color-action-accent-rgb) / 5%) 0%,

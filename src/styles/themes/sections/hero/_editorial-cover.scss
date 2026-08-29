@@ -401,7 +401,7 @@
 	}
 
 	@include mixins.respond-below(md) {
-		padding: clamp(0.8rem, 3vw, 1rem);
+		padding: 0;
 		text-align: center;
 
 		&::before {
@@ -415,20 +415,23 @@
 			justify-content: center;
 			gap: clamp(0.75rem, 1.8svh, 1.05rem);
 			min-height: calc(100svh - 1.6rem);
-			padding-block: clamp(2.8rem, 7svh, 4.25rem) clamp(3.2rem, 7svh, 4.75rem);
+			padding: clamp(2.8rem, 7svh, 4.25rem) clamp(0.75rem, 2.5vw, 1.25rem)
+				clamp(3.2rem, 7svh, 4.75rem);
 		}
 
 		.invitation-hero__text-column {
 			align-items: center;
 			text-align: center;
 			gap: clamp(0.75rem, 1.8svh, 1.05rem);
+			width: 100%;
 		}
 
 		.invitation-hero__label,
 		.invitation-hero__title-wrapper,
 		.invitation-hero__deck,
 		.invitation-hero__details {
-			width: min(88vw, 24rem);
+			width: 100%;
+			max-width: min(88vw, 24rem);
 		}
 
 		.invitation-hero__label {
@@ -478,17 +481,19 @@
 			flex-wrap: wrap;
 			justify-content: center;
 			gap: 0.45rem 0.85rem;
-			width: min(88vw, 24rem);
+			width: 100%;
+			max-width: min(88vw, 24rem);
 			padding-top: clamp(0.7rem, 1.8svh, 1rem);
 			text-align: center;
 		}
 
 		.invitation-hero__details p {
 			flex: 0 0 auto;
-			font-size: clamp(0.64rem, 2.25vw, 0.76rem);
-			letter-spacing: 0.2em;
-			white-space: nowrap;
-			overflow-wrap: normal;
+			max-width: 100%;
+			font-size: clamp(0.62rem, 2vw, 0.74rem);
+			letter-spacing: 0.12em;
+			white-space: normal;
+			overflow-wrap: break-word;
 			word-break: normal;
 		}
 	}
