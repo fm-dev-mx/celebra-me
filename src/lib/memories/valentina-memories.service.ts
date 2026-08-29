@@ -12,6 +12,7 @@ import {
 	VALENTINA_MEMORIES_DISPLAY_NAME_MIN_LENGTH,
 	VALENTINA_MEMORIES_MAX_CAPTION_LENGTH,
 	VALENTINA_MEMORIES_MEDIA_STATUSES,
+	isValentinaMemoriesCatalogVisibleStatus,
 	VALENTINA_MEMORIES_ORGANIZER_UPLOADER_FILTER_MAX_LENGTH,
 	VALENTINA_MEMORIES_SESSION_COOKIE,
 	VALENTINA_MEMORIES_SESSION_TTL_SECONDS,
@@ -464,7 +465,10 @@ export async function listGuestMemoryItems(session: SessionRow): Promise<{
 		useServiceRole: true,
 	});
 	return {
-		items: rows.map(mapMediaRow).map(toPublicItem),
+		items: rows
+			.map(mapMediaRow)
+			.filter((item) => isValentinaMemoriesCatalogVisibleStatus(item.status))
+			.map(toPublicItem),
 		quota: calculateValentinaMemoriesGuestQuota(rows),
 	};
 }
@@ -731,7 +735,11 @@ export async function listOrganizerMemoryItems(
 		throw new ApiError(400, 'bad_request', 'La página no es válida.');
 	}
 	const page = input.page ?? 0;
-	if (input.status !== undefined && !VALENTINA_MEMORIES_MEDIA_STATUSES.includes(input.status)) {
+	if (
+		input.status !== undefined &&
+		(!VALENTINA_MEMORIES_MEDIA_STATUSES.includes(input.status) ||
+			!isValentinaMemoriesCatalogVisibleStatus(input.status))
+	) {
 		throw new ApiError(400, 'bad_request', 'El estado no es válido.');
 	}
 	const uploader = normalizeOrganizerUploaderFilter(input.uploader);
@@ -750,7 +758,7 @@ export async function listOrganizerMemoryItems(
 	query.set('order', 'created_at.desc,id.desc');
 	query.set('limit', String(VALENTINA_MEMORIES_CATALOG_PAGE_SIZE + 1));
 	query.set('offset', String(offset));
-	if (input.status) query.set('status', `eq.${input.status}`);
+	query.set('status', input.status ? `eq.${input.status}` : 'neq.deleted');
 	if (createdFrom) query.append('created_at', `gte.${createdFrom}`);
 	if (createdTo) query.append('created_at', `lt.${createdTo}`);
 	if (uploader) {

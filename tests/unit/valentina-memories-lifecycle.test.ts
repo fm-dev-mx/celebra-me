@@ -17,6 +17,7 @@ import {
 } from '@/lib/memories/valentina-memories-client';
 import {
 	assertValentinaOrganizerAccess,
+	listGuestMemoryItems,
 	listOrganizerMemoryItems,
 } from '@/lib/memories/valentina-memories.service';
 import { calculateValentinaMemoriesGuestQuota } from '@/lib/memories/valentina-memories-quota';
@@ -114,6 +115,47 @@ describe('Valentina media lifecycle contracts', () => {
 		expect(JSON.stringify(quota)).not.toMatch(/object_deleted_at|mime_type|session|objectKey/i);
 	});
 
+	it('hides deleted guest items without releasing their resident quota', async () => {
+		const baseRow = {
+			id: 'accepted-id',
+			event_key: VALENTINA_MEMORIES_EVENT_ID,
+			session_id: 'session-id',
+			object_key: 'events/valentina/11111111-1111-4111-8111-111111111111.jpg',
+			mime_type: 'image/jpeg',
+			size_bytes: 10,
+			checksum_sha256: SHA256,
+			duration_seconds: null,
+			caption: '',
+			status: 'accepted',
+			duplicate_of_id: null,
+			created_at: '2026-08-29T12:00:00.000Z',
+			updated_at: '2026-08-29T12:00:00.000Z',
+			accepted_at: '2026-08-29T12:00:00.000Z',
+			rejected_at: null,
+			deleted_at: null,
+			idempotency_key: null,
+			cleanup_after: null,
+			cleanup_claimed_at: null,
+			cleanup_lease_id: null,
+			object_deleted_at: null,
+		};
+		mockRestRequest.mockResolvedValue([
+			baseRow,
+			{
+				...baseRow,
+				id: 'deleted-id',
+				status: 'deleted',
+				deleted_at: '2026-08-29T12:01:00.000Z',
+			},
+		] as never);
+
+		const result = await listGuestMemoryItems({ id: 'session-id' } as never);
+
+		expect(result.items.map((item) => item.id)).toEqual(['accepted-id']);
+		expect(result.quota.files.used).toBe(2);
+		expect(result.quota.bytes.used).toBe(20);
+	});
+
 	it('authorizes only the event owner, including when the caller has another global role', async () => {
 		mockFindEvent.mockResolvedValue({ id: 'event-id' });
 		mockFindMembership.mockResolvedValueOnce({ membershipRole: 'owner' });
@@ -182,12 +224,26 @@ describe('Valentina media lifecycle contracts', () => {
 		await expect(
 			listOrganizerMemoryItems({ uploader: 'Ana,or(status.eq.deleted)' }),
 		).rejects.toMatchObject({ status: 400, code: 'bad_request' });
+		await expect(listOrganizerMemoryItems({ status: 'deleted' })).rejects.toMatchObject({
+			status: 400,
+			code: 'bad_request',
+		});
 		await expect(
 			listOrganizerMemoryItems({
 				createdFrom: '2026-08-30T00:00:00.000Z',
 				createdTo: '2026-08-29T00:00:00.000Z',
 			}),
 		).rejects.toMatchObject({ status: 400, code: 'bad_request' });
+	});
+
+	it('excludes deleted organizer items before pagination by default', async () => {
+		mockRestRequest.mockResolvedValue([]);
+
+		await listOrganizerMemoryItems();
+
+		const request = mockRestRequest.mock.calls[0][0];
+		const url = new URL(`https://supabase.test/${request.pathWithQuery}`);
+		expect(url.searchParams.get('status')).toBe('neq.deleted');
 	});
 
 	it('implements atomic quota, deduplication, least privilege, and reclaimable cleanup in SQL', () => {

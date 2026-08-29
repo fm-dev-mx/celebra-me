@@ -64,6 +64,12 @@ export const VALENTINA_MEMORIES_MEDIA_STATUSES = [
 ] as const;
 export type ValentinaMemoriesMediaStatus = (typeof VALENTINA_MEMORIES_MEDIA_STATUSES)[number];
 
+export function isValentinaMemoriesCatalogVisibleStatus(
+	status: ValentinaMemoriesMediaStatus,
+): boolean {
+	return status !== 'deleted';
+}
+
 export const VALENTINA_MEMORIES_MEDIA_TRANSITIONS: Record<
 	ValentinaMemoriesMediaStatus,
 	readonly ValentinaMemoriesMediaStatus[]
