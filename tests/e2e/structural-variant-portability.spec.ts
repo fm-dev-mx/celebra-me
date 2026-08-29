@@ -5,6 +5,7 @@ import crypto from 'node:crypto';
 import {
 	CANONICAL_VARIANT_REGISTRY,
 	type CanonicalVariantSection,
+	type CanonicalVariantCssOwner,
 } from '../../src/lib/invitation/section-variants';
 import {
 	CROSS_PRESET_REPRESENTATIVE_VARIANTS,
@@ -38,13 +39,20 @@ interface CapturedSnapshotInfo {
 const capturedSnapshots: CapturedSnapshotInfo[] = [];
 
 test.describe('Registry-Driven Visual Portability Suite', () => {
-	// Baseline Preset: jewelry-box (all 39 variants)
+	// Baseline Preset: jewelry-box (all 39 canonical variants)
 	for (const entry of CANONICAL_VARIANT_REGISTRY) {
 		for (const vp of VIEWPORTS) {
 			test(`baseline: ${entry.section}.${entry.variant} @ ${vp.name} (jewelry-box)`, async ({
 				page,
 			}) => {
-				await runVariantVisualTest(page, entry.section, entry.variant, 'jewelry-box', vp, entry.cssOwner);
+				await runVariantVisualTest(
+					page,
+					entry.section,
+					entry.variant,
+					'jewelry-box',
+					vp,
+					entry.cssOwner,
+				);
 			});
 		}
 	}
@@ -60,7 +68,14 @@ test.describe('Registry-Driven Visual Portability Suite', () => {
 			test(`cross-preset: ${rep.section}.${rep.variant} @ ${vp.name} (celestial-blue)`, async ({
 				page,
 			}) => {
-				await runVariantVisualTest(page, rep.section, rep.variant, 'celestial-blue', vp, cssOwner);
+				await runVariantVisualTest(
+					page,
+					rep.section,
+					rep.variant,
+					'celestial-blue',
+					vp,
+					cssOwner,
+				);
 			});
 		}
 	}
@@ -96,7 +111,7 @@ async function runVariantVisualTest(
 	variant: string,
 	preset: string,
 	vp: { name: string; width: number; height: number },
-	cssOwner: string,
+	cssOwner: CanonicalVariantCssOwner | string,
 ) {
 	const consoleErrors: string[] = [];
 	const pageErrors: string[] = [];
@@ -121,8 +136,21 @@ async function runVariantVisualTest(
 
 	expect(response?.status()).toBe(200);
 
-	// Wait for document fonts to load
+	// Wait for document fonts and images to load
 	await page.evaluate(() => document.fonts?.ready);
+	await page.evaluate(async () => {
+		const images = Array.from(document.querySelectorAll('img'));
+		await Promise.all(
+			images.map((img) =>
+				img.complete
+					? Promise.resolve()
+					: new Promise((res) => {
+							img.onload = res;
+							img.onerror = res;
+						}),
+			),
+		);
+	});
 
 	// 1. Verify expected theme class on body
 	const body = page.locator('body');
@@ -132,11 +160,14 @@ async function runVariantVisualTest(
 	const target = getSectionLocator(page, section);
 	await expect(target).toBeVisible();
 	const hasVariant = await target.evaluate((el, v) => {
-		return el.getAttribute('data-variant') === v || Boolean(el.querySelector(`[data-variant="${v}"]`));
+		return (
+			el.getAttribute('data-variant') === v ||
+			Boolean(el.querySelector(`[data-variant="${v}"]`))
+		);
 	}, variant);
 	expect(hasVariant).toBe(true);
 
-	// 3. Verify absence of origin-profile CSS
+	// 3. Verify CSS owner resolution and absence of origin-profile CSS
 	const stylesheets = await page.evaluate(() =>
 		Array.from(document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]')).map(
 			(l) => l.href,
@@ -144,6 +175,12 @@ async function runVariantVisualTest(
 	);
 	const hasOriginProfile = stylesheets.some((href) => href.includes('invitation-profiles'));
 	expect(hasOriginProfile).toBe(false);
+
+	if (cssOwner.startsWith('src/styles/themes/sections/')) {
+		const fileBase = path.basename(cssOwner, '.scss').replace(/^_/, '');
+		const hasOwnerCss = stylesheets.some((href) => href.includes(fileBase));
+		expect(hasOwnerCss).toBe(true);
+	}
 
 	// 4. Verify no horizontal overflow
 	const hasOverflow = await page.evaluate(() => {
@@ -155,14 +192,7 @@ async function runVariantVisualTest(
 	expect(consoleErrors).toEqual([]);
 	expect(pageErrors).toEqual([]);
 
-	// 6. Screenshot capture / visual comparison using Playwright's canonical screenshot mechanism
-	// Naming: flat dash-separated key so Playwright stores all baselines in a single directory.
-	// Playwright appends -chromium-win32 (browser+platform) automatically.
-	const snapshotName = `${preset}-${vp.name}-${section}-${variant}.png`;
-
-	// Scroll target section into view to trigger lazy loading and layout computation.
-	await target.scrollIntoViewIfNeeded();
-
+	// 6. Deterministic normalizations
 	// Normalize dynamic countdown digits and clear intervals so visual structure, styling,
 	// and typography are tested deterministically without live clock-ticking drift.
 	if (section === 'countdown') {
@@ -183,18 +213,18 @@ async function runVariantVisualTest(
 	// Wait for GPU compositing and CSS transition stability before capturing.
 	await page.waitForTimeout(200);
 
-	// Element screenshot for artifact/contact-sheet (evidence in output/screenshots).
-	const elementSnapshotBuffer = await target.screenshot({ animations: 'disabled' });
-	const hash = crypto.createHash('sha256').update(elementSnapshotBuffer).digest('hex');
+	// 7. Capture diagnostic viewport image for contact sheet / manifest
+	const snapshotName = `${preset}-${vp.name}-${section}-${variant}.png`;
+	const viewportSnapshotBuffer = await page.screenshot({ animations: 'disabled' });
+	const hash = crypto.createHash('sha256').update(viewportSnapshotBuffer).digest('hex');
 
-	// Copy the element snapshot to output/screenshots for the contact sheet.
 	const outputSnapshotPath = path.resolve(
 		process.cwd(),
 		'output/screenshots/variant-portability',
 		snapshotName,
 	);
 	fs.mkdirSync(path.dirname(outputSnapshotPath), { recursive: true });
-	fs.writeFileSync(outputSnapshotPath, elementSnapshotBuffer);
+	fs.writeFileSync(outputSnapshotPath, viewportSnapshotBuffer);
 
 	capturedSnapshots.push({
 		section,

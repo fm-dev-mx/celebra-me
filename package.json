@@ -16,7 +16,7 @@
         "test:changed": "node scripts/run-related-tests.mjs",
         "test:coverage": "jest --coverage",
         "test:e2e": "playwright test",
-        "test:e2e:ci": "playwright test tests/e2e/landing.page.regressions.spec.ts tests/e2e/demo-routing-parity.spec.ts tests/e2e/invitation-route-isolation.spec.ts tests/e2e/envelope-reveal-interaction.spec.ts tests/e2e/p0-structural-runtime.spec.ts --grep-invert @extended",
+        "test:e2e:ci": "playwright test tests/e2e/landing.page.regressions.spec.ts tests/e2e/demo-routing-parity.spec.ts tests/e2e/invitation-route-isolation.spec.ts tests/e2e/envelope-reveal-interaction.spec.ts tests/e2e/p0-structural-runtime.spec.ts tests/e2e/structural-variant-portability.spec.ts --grep-invert @extended",
         "test:e2e:landing": "playwright test tests/e2e/landing.page.regressions.spec.ts",
         "test:e2e:ga4": "playwright test --config=playwright.ga4.config.ts",
         "test:e2e:preview": "playwright test --config=playwright.preview.config.ts",
