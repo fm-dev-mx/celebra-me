@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { ApiError } from '@/lib/rsvp/core/errors';
+import { ApiError, isAuthRequestError, isRejectedAuthCredential } from '@/lib/rsvp/core/errors';
 import { errorResponse, parseJsonBody } from '@/lib/rsvp/core/http';
 import {
 	adminSetUserMustChangePassword,
@@ -39,7 +39,11 @@ export const POST: APIRoute = async ({ request, url }) => {
 		const parsedResult = ChangePasswordSchema.safeParse(bodyResult);
 		if (!parsedResult.success) {
 			const issue = parsedResult.error.issues[0];
-			throw new ApiError(400, 'bad_request', issue?.message || 'Datos de contraseña inválidos.');
+			throw new ApiError(
+				400,
+				'bad_request',
+				issue?.message || 'Datos de contraseña inválidos.',
+			);
 		}
 		const { currentPassword, newPassword } = parsedResult.data;
 
@@ -53,7 +57,8 @@ export const POST: APIRoute = async ({ request, url }) => {
 				email: session.email,
 				password: sanitizedCurrent,
 			});
-		} catch {
+		} catch (error) {
+			if (!isRejectedAuthCredential(error)) throw error;
 			throw new ApiError(401, 'unauthorized', 'La contraseña actual es incorrecta.');
 		}
 
@@ -64,8 +69,12 @@ export const POST: APIRoute = async ({ request, url }) => {
 				password: sanitizedNew,
 			});
 		} catch (cause) {
-			console.error('[change-password] failed user password update:', cause);
-			throw new ApiError(400, 'password_update_failed', 'No se pudo actualizar la contraseña en el servicio de autenticación.');
+			if (isAuthRequestError(cause) && cause.retryable) throw cause;
+			throw new ApiError(
+				400,
+				'password_update_failed',
+				'No se pudo actualizar la contraseña en el servicio de autenticación.',
+			);
 		}
 
 		// Step 3: Clear must_change_password flag in app_metadata via admin endpoint (fail-closed)
@@ -75,8 +84,12 @@ export const POST: APIRoute = async ({ request, url }) => {
 				mustChangePassword: false,
 			});
 		} catch (cause) {
-			console.error('[change-password] failed clearing must_change_password flag:', cause);
-			throw new ApiError(500, 'metadata_update_failed', 'La contraseña se actualizó pero no se pudo desbloquear la sesión. Intenta de nuevo.');
+			if (isAuthRequestError(cause) && cause.retryable) throw cause;
+			throw new ApiError(
+				500,
+				'metadata_update_failed',
+				'La contraseña se actualizó pero no se pudo desbloquear la sesión. Intente de nuevo.',
+			);
 		}
 
 		// Step 4: Re-authenticate to issue fresh session tokens with updated app_metadata

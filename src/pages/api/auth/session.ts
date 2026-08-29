@@ -40,14 +40,6 @@ async function buildDebugPayload(
 				: null,
 		},
 	};
-	console.info('[auth/session][debug]', {
-		userId: dto.userId,
-		email: dto.email,
-		role: dto.role,
-		memberships: dto.memberships.length,
-		requestedSlug: normalizedRequestedSlug || null,
-		requestedEventId: payload.debug.requestedSlugCheck?.eventId || null,
-	});
 	return payload;
 }
 

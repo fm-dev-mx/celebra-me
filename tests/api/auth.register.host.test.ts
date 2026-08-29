@@ -4,6 +4,7 @@ import * as authApi from '@/lib/rsvp/auth/auth-api';
 import * as authAccessService from '@/lib/rsvp/services/auth-access.service';
 import * as authIdentifierService from '@/lib/rsvp/services/auth-identifier.service';
 import { createMockRequest } from '../helpers/api-mocks';
+import { AuthRequestError } from '@/lib/rsvp/core/errors';
 
 jest.mock('@/lib/rsvp/auth/auth-api', () => ({
 	signUpWithPassword: jest.fn(),
@@ -124,7 +125,9 @@ describe('API: /api/auth/register-host', () => {
 
 	it('Scenario: User Already Exists (Login Fallback)', async () => {
 		isSuperAdminMock.mockReturnValue(false);
-		signUpMock.mockRejectedValue(new Error('User already registered'));
+		signUpMock.mockRejectedValue(
+			new AuthRequestError({ kind: 'http', operation: 'sign_up', status: 422 }),
+		);
 		findUserMock.mockResolvedValue({ id: 'existing-001', email: 'old@test.com' });
 
 		const response = await registerHost({
@@ -141,6 +144,27 @@ describe('API: /api/auth/register-host', () => {
 		expect(claimEventMock).toHaveBeenCalledWith(
 			expect.objectContaining({ userId: 'existing-001' }),
 		);
+	});
+
+	it('returns 503 without an existing-user lookup when signup is transiently unavailable', async () => {
+		isSuperAdminMock.mockReturnValue(false);
+		signUpMock.mockRejectedValue(
+			new AuthRequestError({ kind: 'timeout', operation: 'sign_up' }),
+		);
+
+		const response = await registerHost({
+			request: createMockRequest({
+				email: 'new@test.com',
+				password: 'password123',
+				claimCode: 'CLAIM-123',
+			}),
+			url: new URL('http://localhost/api/auth/register-host'),
+		} as unknown as APIContext);
+
+		expect(response.status).toBe(503);
+		expect(response.headers.get('Retry-After')).toBe('5');
+		expect(findUserMock).not.toHaveBeenCalled();
+		expect(claimEventMock).not.toHaveBeenCalled();
 	});
 
 	it('Scenario: Reject Cross-Origin Registration Request', async () => {

@@ -114,29 +114,59 @@ describe('Middleware: Authentication & Authorization', () => {
 		expect(mockRedirect).not.toHaveBeenCalled();
 	});
 
-	it('redirects dashboard pages when the auth provider fails unexpectedly', async () => {
+	it('returns controlled HTML and preserves cookies when the auth provider is unavailable', async () => {
 		const context = createContext('/dashboard/invitados');
 		mockCookies.get.mockReturnValue({ value: 'valid-token' });
 		mockFetch.mockRejectedValue(new Error('auth provider unavailable'));
-		const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
-		await middleware(context as unknown as APIContext, mockNext);
+		const response = await middleware(context as unknown as APIContext, mockNext);
 
-		expect(mockRedirect).toHaveBeenCalledWith('/login');
-		consoleErrorSpy.mockRestore();
+		expect(response).toBeInstanceOf(Response);
+		if (!(response instanceof Response)) throw new Error('Expected an HTML error response.');
+		expect(response.status).toBe(503);
+		expect(response.headers.get('Retry-After')).toBe('5');
+		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
+		expect(await response.text()).toContain('No es posible validar su sesión');
+		expect(mockRedirect).not.toHaveBeenCalled();
+		expect(mockNext).not.toHaveBeenCalled();
+		expect(mockCookies.set).not.toHaveBeenCalled();
+		expect(mockCookies.delete).not.toHaveBeenCalled();
+		expect(mockFetch).toHaveBeenCalledTimes(1);
 	});
 
 	it('does not redirect to /login when /login auth validation fails (prevents redirect loop)', async () => {
 		const context = createContext('/login');
 		mockCookies.get.mockReturnValue({ value: 'stale-token' });
 		mockFetch.mockRejectedValue(new Error('connect ECONNREFUSED 127.0.0.1:54321'));
+
+		const response = await middleware(context as unknown as APIContext, mockNext);
+
+		expect(response).toBeInstanceOf(Response);
+		if (!(response instanceof Response)) throw new Error('Expected an HTML error response.');
+		expect(response.status).toBe(503);
+		expect(mockRedirect).not.toHaveBeenCalled();
+		expect(mockNext).not.toHaveBeenCalled();
+		expect(mockCookies.delete).not.toHaveBeenCalled();
+	});
+
+	it('returns controlled HTML 500 for missing configuration without clearing cookies', async () => {
+		const context = createContext('/dashboard/invitados');
+		mockCookies.get.mockImplementation((name: string) =>
+			name === 'sb-access-token' ? { value: 'valid-token' } : null,
+		);
+		delete process.env.SUPABASE_ANON_KEY;
 		const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
-		await middleware(context as unknown as APIContext, mockNext);
+		const response = await middleware(context as unknown as APIContext, mockNext);
 
+		expect(response).toBeInstanceOf(Response);
+		if (!(response instanceof Response)) throw new Error('Expected an HTML error response.');
+		expect(response.status).toBe(500);
+		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
+		expect(mockFetch).not.toHaveBeenCalled();
+		expect(mockCookies.delete).not.toHaveBeenCalled();
 		expect(mockRedirect).not.toHaveBeenCalled();
-		expect(mockNext).toHaveBeenCalled();
-		expect(mockCookies.delete).toHaveBeenCalledWith('sb-access-token', { path: '/' });
+		expect(mockNext).not.toHaveBeenCalled();
 		consoleErrorSpy.mockRestore();
 	});
 
@@ -144,21 +174,162 @@ describe('Middleware: Authentication & Authorization', () => {
 		const context = createContext('/api/dashboard/commercial/timeline');
 		mockCookies.get.mockReturnValue({ value: 'valid-token' });
 		mockFetch.mockRejectedValue(new Error('auth provider unavailable'));
-		const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
 		const response = await middleware(context as unknown as APIContext, mockNext);
 
 		expect(response).toBeInstanceOf(Response);
 		if (!(response instanceof Response)) throw new Error('Expected an API error response.');
-		expect(response.status).toBe(500);
+		expect(response.status).toBe(503);
 		expect(response.headers.get('content-type')).toContain('application/json');
 		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
+		expect(response.headers.get('Retry-After')).toBe('5');
 		expect(await response.json()).toEqual({
 			success: false,
-			error: { code: 'internal_error', message: 'No fue posible validar la sesión.' },
+			error: {
+				code: 'service_unavailable',
+				message: 'El servicio de autenticación no está disponible temporalmente.',
+			},
 		});
 		expect(mockRedirect).not.toHaveBeenCalled();
-		consoleErrorSpy.mockRestore();
+		expect(mockNext).not.toHaveBeenCalled();
+		expect(mockCookies.delete).not.toHaveBeenCalled();
+	});
+
+	it('uses the embedded refresh user and commits rotated tokens without a second user call', async () => {
+		const context = createContext('/dashboard/invitados');
+		mockCookies.get.mockImplementation((name: string) => {
+			if (name === 'sb-access-token') return { value: 'rejected-access' };
+			if (name === 'sb-refresh-token') return { value: 'valid-refresh' };
+			return null;
+		});
+		mockFetch.mockResolvedValueOnce({ ok: false, status: 401 }).mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => ({
+				access_token: 'rotated-access',
+				refresh_token: 'rotated-refresh',
+				user: {
+					id: 'host-1',
+					email: 'host@test.com',
+					app_metadata: { role: 'host_client' },
+					amr: [{ method: 'password' }],
+				},
+			}),
+		});
+
+		await middleware(context as unknown as APIContext, mockNext);
+
+		expect(mockFetch).toHaveBeenCalledTimes(2);
+		expect(String(mockFetch.mock.calls[0]?.[0])).toContain('/auth/v1/user');
+		expect(String(mockFetch.mock.calls[1]?.[0])).toContain(
+			'/auth/v1/token?grant_type=refresh_token',
+		);
+		expect(mockCookies.set).toHaveBeenCalledWith(
+			'sb-access-token',
+			'rotated-access',
+			expect.any(Object),
+		);
+		expect(mockCookies.set).toHaveBeenCalledWith(
+			'sb-refresh-token',
+			'rotated-refresh',
+			expect.any(Object),
+		);
+		expect(context.locals.session?.userId).toBe('host-1');
+	});
+
+	it('uses one Auth call for a refresh-only session', async () => {
+		const context = createContext('/dashboard/invitados');
+		mockCookies.get.mockImplementation((name: string) =>
+			name === 'sb-refresh-token' ? { value: 'valid-refresh' } : null,
+		);
+		mockFetch.mockResolvedValue({
+			ok: true,
+			status: 200,
+			json: async () => ({
+				access_token: 'rotated-access',
+				refresh_token: 'rotated-refresh',
+				user: {
+					id: 'host-1',
+					app_metadata: { role: 'host_client' },
+					amr: [{ method: 'password' }],
+				},
+			}),
+		});
+
+		await middleware(context as unknown as APIContext, mockNext);
+
+		expect(mockFetch).toHaveBeenCalledTimes(1);
+		expect(String(mockFetch.mock.calls[0]?.[0])).toContain('grant_type=refresh_token');
+		expect(mockNext).toHaveBeenCalled();
+	});
+
+	it('clears primary cookies after a confirmed rejected refresh', async () => {
+		const context = createContext('/dashboard/invitados');
+		mockCookies.get.mockImplementation((name: string) =>
+			name === 'sb-refresh-token' ? { value: 'rejected-refresh' } : null,
+		);
+		mockFetch.mockResolvedValue({ ok: false, status: 401 });
+
+		await middleware(context as unknown as APIContext, mockNext);
+
+		expect(mockFetch).toHaveBeenCalledTimes(1);
+		expect(mockCookies.delete).toHaveBeenCalledWith('sb-access-token', { path: '/' });
+		expect(mockCookies.delete).toHaveBeenCalledWith('sb-refresh-token', { path: '/' });
+		expect(mockCookies.delete).toHaveBeenCalledWith('sb-trust-device', { path: '/' });
+		expect(mockRedirect).toHaveBeenCalledWith('/login');
+	});
+
+	it('clears primary cookies after rejected access without a refresh token', async () => {
+		const context = createContext('/dashboard/invitados');
+		mockCookies.get.mockImplementation((name: string) =>
+			name === 'sb-access-token' ? { value: 'rejected-access' } : null,
+		);
+		mockFetch.mockResolvedValue({ ok: false, status: 403 });
+
+		await middleware(context as unknown as APIContext, mockNext);
+
+		expect(mockFetch).toHaveBeenCalledTimes(1);
+		expect(mockCookies.delete).toHaveBeenCalledWith('sb-access-token', { path: '/' });
+		expect(mockCookies.delete).toHaveBeenCalledWith('sb-refresh-token', { path: '/' });
+		expect(mockCookies.delete).toHaveBeenCalledWith('sb-trust-device', { path: '/' });
+		expect(mockRedirect).toHaveBeenCalledWith('/login');
+	});
+
+	it('preserves every cookie when refresh fails transiently', async () => {
+		const context = createContext('/dashboard/invitados');
+		mockCookies.get.mockImplementation((name: string) =>
+			name === 'sb-refresh-token' ? { value: 'refresh-token' } : null,
+		);
+		mockFetch.mockRejectedValue(new TypeError('network unavailable'));
+
+		const response = await middleware(context as unknown as APIContext, mockNext);
+
+		expect(response).toBeInstanceOf(Response);
+		if (!(response instanceof Response)) throw new Error('Expected an HTML error response.');
+		expect(response.status).toBe(503);
+		expect(mockCookies.set).not.toHaveBeenCalled();
+		expect(mockCookies.delete).not.toHaveBeenCalled();
+		expect(mockRedirect).not.toHaveBeenCalled();
+	});
+
+	it('preserves cookies when a refresh success payload is malformed', async () => {
+		const context = createContext('/dashboard/invitados');
+		mockCookies.get.mockImplementation((name: string) =>
+			name === 'sb-refresh-token' ? { value: 'refresh-token' } : null,
+		);
+		mockFetch.mockResolvedValue({
+			ok: true,
+			status: 200,
+			json: async () => ({ access_token: 'partial-token' }),
+		});
+
+		const response = await middleware(context as unknown as APIContext, mockNext);
+
+		expect(response).toBeInstanceOf(Response);
+		if (!(response instanceof Response)) throw new Error('Expected an HTML error response.');
+		expect(response.status).toBe(503);
+		expect(mockCookies.set).not.toHaveBeenCalled();
+		expect(mockCookies.delete).not.toHaveBeenCalled();
 	});
 
 	it.each([
