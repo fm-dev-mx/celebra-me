@@ -12,7 +12,7 @@ import {
 } from '../../src/data/valentina-memories-upload.contract.ts';
 import { DISPOSABLE_DB_URL } from './db-workflow-lib.ts';
 
-type PsqlResult = { status: number; stdout: string; stderr: string };
+type PsqlResult = { status: number; stdout: string; stderr: string; elapsedMs: number };
 
 function psqlArgs(sql: string): string[] {
 	return [
@@ -35,6 +35,7 @@ function runPsql(sql: string): string {
 
 function runConcurrentPsql(sql: string): Promise<PsqlResult> {
 	return new Promise((resolve, reject) => {
+		const startedAt = performance.now();
 		const child = spawn('psql', psqlArgs(sql), { stdio: ['ignore', 'pipe', 'pipe'] });
 		let stdout = '';
 		let stderr = '';
@@ -42,7 +43,12 @@ function runConcurrentPsql(sql: string): Promise<PsqlResult> {
 		child.stderr.on('data', (chunk: Buffer) => (stderr += chunk.toString()));
 		child.on('error', reject);
 		child.on('close', (code) =>
-			resolve({ status: code ?? 1, stdout: stdout.trim(), stderr: stderr.trim() }),
+			resolve({
+				status: code ?? 1,
+				stdout: stdout.trim(),
+				stderr: stderr.trim(),
+				elapsedMs: performance.now() - startedAt,
+			}),
 		);
 	});
 }
@@ -53,6 +59,7 @@ function reservationSql(input: {
 	requestId: string;
 	checksum: string;
 	mimeType?: 'image/jpeg' | 'video/mp4';
+	maxSessionFiles?: number;
 }): string {
 	const mimeType = input.mimeType ?? 'image/jpeg';
 	const extension = mimeType === 'video/mp4' ? 'mp4' : 'jpg';
@@ -60,10 +67,19 @@ function reservationSql(input: {
 	return `select id from public.reserve_valentina_memory_item(
 		'valentina', '${input.sessionId}', '${VALENTINA_MEMORIES_OBJECT_PREFIX}${input.objectId}.${extension}',
 		'${mimeType}', 100, '${input.checksum}', ${duration}, '${input.requestId}',
-		${VALENTINA_MEMORIES_SESSION_MAX_FILES}, ${VALENTINA_MEMORIES_SESSION_MAX_VIDEOS}, ${VALENTINA_MEMORIES_SESSION_MAX_BYTES},
+		${input.maxSessionFiles ?? VALENTINA_MEMORIES_SESSION_MAX_FILES}, ${VALENTINA_MEMORIES_SESSION_MAX_VIDEOS}, ${VALENTINA_MEMORIES_SESSION_MAX_BYTES},
 		${VALENTINA_MEMORIES_SESSION_MAX_IN_FLIGHT}, ${VALENTINA_MEMORIES_EVENT_MAX_OBJECTS},
 		${VALENTINA_MEMORIES_EVENT_MAX_BYTES}
 	);`;
+}
+
+function percentile(values: number[], percentileValue: number): number {
+	const sorted = [...values].sort((left, right) => left - right);
+	const index = Math.min(
+		sorted.length - 1,
+		Math.ceil((percentileValue / 100) * sorted.length) - 1,
+	);
+	return Math.round(sorted[index] * 100) / 100;
 }
 
 function insertSession(sessionId: string): void {
@@ -75,6 +91,7 @@ function insertSession(sessionId: string): void {
 	);`);
 }
 
+// eslint-disable-next-line complexity -- This disposable harness verifies independent SQL invariants sequentially.
 async function main(): Promise<void> {
 	const createdSessions: string[] = [];
 	try {
@@ -105,6 +122,72 @@ async function main(): Promise<void> {
 			throw new Error('Concurrent idempotency request failed.');
 		if (new Set(replayResults.map((result) => result.stdout)).size !== 1)
 			throw new Error('Concurrent idempotency returned different media rows.');
+
+		const recoverySession = randomUUID();
+		createdSessions.push(recoverySession);
+		insertSession(recoverySession);
+		const recoveryRequestId = randomUUID();
+		const recoveryChecksum = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+		const recoveryId = runPsql(
+			reservationSql({
+				sessionId: recoverySession,
+				objectId: randomUUID(),
+				requestId: recoveryRequestId,
+				checksum: recoveryChecksum,
+				maxSessionFiles: 1,
+			}),
+		);
+		const recoveryReplayId = runPsql(
+			reservationSql({
+				sessionId: recoverySession,
+				objectId: randomUUID(),
+				requestId: recoveryRequestId,
+				checksum: recoveryChecksum,
+				maxSessionFiles: 1,
+			}),
+		);
+		if (recoveryReplayId !== recoveryId)
+			throw new Error('Signer-failure retry did not replay the original reservation.');
+		runPsql(
+			`update public.valentina_memory_items set created_at = now() - interval '20 minutes' where id = '${recoveryId}';`,
+		);
+		const expired = Number(
+			runPsql(
+				`select public.expire_valentina_memory_reservations(now() - interval '10 minutes', now() - interval '30 days');`,
+			),
+		);
+		if (expired < 1)
+			throw new Error('Expired signer-failure reservation was not scheduled for cleanup.');
+		const residentDeletedState = runPsql(
+			`select status || ':' || (object_deleted_at is null)::text from public.valentina_memory_items where id = '${recoveryId}';`,
+		);
+		if (residentDeletedState !== 'deleted:true')
+			throw new Error('Expired reservation did not remain resident until physical cleanup.');
+		const heldQuota = await runConcurrentPsql(
+			reservationSql({
+				sessionId: recoverySession,
+				objectId: randomUUID(),
+				requestId: randomUUID(),
+				checksum: 'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+				maxSessionFiles: 1,
+			}),
+		);
+		if (heldQuota.status === 0 || !heldQuota.stderr.includes('memories_session_file_quota'))
+			throw new Error('Logical cleanup incorrectly released resident reservation quota.');
+		runPsql(
+			`update public.valentina_memory_items set object_deleted_at = now() where id = '${recoveryId}';`,
+		);
+		const recoveredQuota = await runConcurrentPsql(
+			reservationSql({
+				sessionId: recoverySession,
+				objectId: randomUUID(),
+				requestId: randomUUID(),
+				checksum: 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd',
+				maxSessionFiles: 1,
+			}),
+		);
+		if (recoveredQuota.status !== 0)
+			throw new Error('Physical cleanup did not release the expired reservation quota.');
 
 		const quotaSession = randomUUID();
 		createdSessions.push(quotaSession);
@@ -242,8 +325,52 @@ async function main(): Promise<void> {
 		if (claimedIds.length !== 2 || new Set(claimedIds).size !== 2)
 			throw new Error('Concurrent cleanup leases claimed overlapping work.');
 
+		const contentionSessions = Array.from({ length: 100 }, () => randomUUID());
+		for (const sessionId of contentionSessions) {
+			createdSessions.push(sessionId);
+			insertSession(sessionId);
+		}
+		const contentionStartedAt = performance.now();
+		const contentionResults = await Promise.all(
+			contentionSessions.map((sessionId, index) =>
+				runConcurrentPsql(
+					reservationSql({
+						sessionId,
+						objectId: randomUUID(),
+						requestId: randomUUID(),
+						checksum: String(index + 1).padStart(64, '0'),
+					}),
+				),
+			),
+		);
+		if (contentionResults.some((result) => result.status !== 0))
+			throw new Error(
+				'The 100-reservation contention measurement did not complete correctly.',
+			);
+		const contentionLatencies = contentionResults.map((result) => result.elapsedMs);
+		const contentionEvidence = {
+			reservations: contentionResults.length,
+			wallMs: Math.round((performance.now() - contentionStartedAt) * 100) / 100,
+			p50Ms: percentile(contentionLatencies, 50),
+			p95Ms: percentile(contentionLatencies, 95),
+			p99Ms: percentile(contentionLatencies, 99),
+			maxMs: Math.round(Math.max(...contentionLatencies) * 100) / 100,
+		};
+
 		console.info(
-			'Valentina Memories concurrency passed: idempotency, quota, deduplication, delete race, and cleanup leases.',
+			JSON.stringify({
+				status: 'passed',
+				coverage: [
+					'idempotency',
+					'quota',
+					'signer_failure_recovery',
+					'deduplication',
+					'delete_race',
+					'cleanup_leases',
+					'event_reservation_contention',
+				],
+				contention: contentionEvidence,
+			}),
 		);
 	} finally {
 		if (createdSessions.length > 0) {
