@@ -9,7 +9,11 @@ import { verifyTrustedDeviceToken } from '@/lib/rsvp/security/trusted-device';
 import { setCsrfToken } from '@/lib/rsvp/security/csrf';
 import { ApiError, isAuthRequestError, isRejectedAuthCredential } from '@/lib/rsvp/core/errors';
 import { errorResponse } from '@/lib/rsvp/core/http';
-import { isPrivateNoStorePath, PRIVATE_CACHE_CONTROL } from '@/lib/http/private-cache-path';
+import {
+	isPrivateNoStorePath,
+	PRIVATE_CACHE_CONTROL,
+	withPrivateNoStore,
+} from '@/lib/http/private-cache-path';
 import { isDevMfaBypassEnabled } from '@/lib/server/dev-mfa-bypass';
 import { isPreviewMfaBypassEnabled } from '@/lib/server/preview-mfa-bypass';
 
@@ -104,8 +108,7 @@ function applyPrivateNoStore(pathname: string, response: Response): Response {
 	if (typeof response?.headers?.set !== 'function') {
 		return response;
 	}
-	response.headers.set('Cache-Control', PRIVATE_CACHE_CONTROL);
-	return response;
+	return withPrivateNoStore(response);
 }
 
 function finalizeMiddlewareResponse(pathname: string, response: Response): Response {

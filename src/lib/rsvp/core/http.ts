@@ -1,12 +1,11 @@
 import { ApiError, isApiError, isAuthRequestError } from '@/lib/rsvp/core/errors';
-import { PRIVATE_CACHE_CONTROL } from '@/lib/http/private-cache-path';
+import { PRIVATE_CACHE_CONTROL, withPrivateNoStore } from '@/lib/http/private-cache-path';
 import { sanitize } from '@/lib/rsvp/core/utils';
 
 export const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
 
 export function withPrivateCache(response: Response): Response {
-	response.headers.set('Cache-Control', PRIVATE_CACHE_CONTROL);
-	return response;
+	return withPrivateNoStore(response);
 }
 
 export interface ApiSuccess<T> {

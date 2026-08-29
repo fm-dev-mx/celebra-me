@@ -1,6 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { PRIVATE_CACHE_CONTROL, isPrivateNoStorePath } from '@/lib/http/private-cache-path';
+import {
+	PRIVATE_CACHE_CONTROL,
+	isPrivateNoStorePath,
+	withPrivateNoStore,
+} from '@/lib/http/private-cache-path';
 import { jsonResponse, withPrivateCache } from '@/lib/rsvp/core/http';
 
 describe('private cache contract', () => {
@@ -32,6 +36,21 @@ describe('private cache contract', () => {
 		expect(PRIVATE_CACHE_CONTROL).toBe('no-store, private');
 		const response = withPrivateCache(jsonResponse({ ok: true }));
 		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
+	});
+
+	it('rewraps immutable upstream responses without losing streamed preview bytes', async () => {
+		const upstream = new Response('preview-bytes', {
+			headers: { 'Content-Type': 'image/jpeg' },
+		});
+		jest.spyOn(upstream.headers, 'set').mockImplementation(() => {
+			throw new TypeError('immutable');
+		});
+
+		const response = withPrivateNoStore(upstream);
+
+		expect(response.headers.get('Cache-Control')).toBe(PRIVATE_CACHE_CONTROL);
+		expect(response.headers.get('Content-Type')).toBe('image/jpeg');
+		expect(await response.text()).toBe('preview-bytes');
 	});
 });
 
