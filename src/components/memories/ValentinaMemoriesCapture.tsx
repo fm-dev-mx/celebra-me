@@ -1,6 +1,9 @@
 import { useId, useRef, useState, type ChangeEvent } from 'react';
 import { valentinaMemoriesCaptureCopy } from '@/data/valentina-memories.data';
-import { VALENTINA_MEMORIES_ALLOWED_MIME_TYPES } from '@/data/valentina-memories-upload.contract';
+import {
+	VALENTINA_MEMORIES_ALLOWED_MIME_TYPES,
+	normalizeMemoriesMimeType,
+} from '@/data/valentina-memories-upload.contract';
 import {
 	mapValentinaMemoriesSignError,
 	readValentinaMemoriesSignErrorCode,
@@ -20,10 +23,11 @@ type ValentinaMemoriesCaptureProps = {
 const ACCEPT = Object.keys(VALENTINA_MEMORIES_ALLOWED_MIME_TYPES).join(',');
 
 async function requestSignature(signUrl: string, file: File): Promise<string> {
+	const mimeType = normalizeMemoriesMimeType(file.type);
 	const response = await fetch(signUrl, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ mimeType: file.type, sizeBytes: file.size }),
+		body: JSON.stringify({ mimeType, sizeBytes: file.size }),
 	});
 
 	let payload: unknown;
@@ -54,9 +58,10 @@ async function requestSignature(signUrl: string, file: File): Promise<string> {
 }
 
 async function putOriginalFile(uploadUrl: string, file: File): Promise<void> {
+	const mimeType = normalizeMemoriesMimeType(file.type);
 	const response = await fetch(uploadUrl, {
 		method: 'PUT',
-		headers: { 'Content-Type': file.type },
+		headers: { 'Content-Type': mimeType },
 		body: file,
 	});
 	if (!response.ok) {

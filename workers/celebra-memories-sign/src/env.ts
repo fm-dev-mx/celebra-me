@@ -1,4 +1,7 @@
-import { VALENTINA_MEMORIES_RATE_LIMIT } from '../../../src/data/valentina-memories-upload.contract';
+import {
+	VALENTINA_MEMORIES_R2_BUCKET,
+	VALENTINA_MEMORIES_RATE_LIMIT,
+} from '../../../src/data/valentina-memories-upload.contract';
 
 export type MemoriesRateLimiter = {
 	limit(options: { key: string }): Promise<{ success: boolean }>;
@@ -25,6 +28,9 @@ export function getMemoriesRateLimiter(env: MemoriesSignEnv): MemoriesRateLimite
 
 export function hasRequiredR2Secrets(env: MemoriesSignEnv): boolean {
 	return Boolean(
-		env.R2_ACCOUNT_ID && env.R2_ACCESS_KEY_ID && env.R2_SECRET_ACCESS_KEY && env.R2_BUCKET,
+		env.R2_ACCOUNT_ID &&
+		env.R2_ACCESS_KEY_ID &&
+		env.R2_SECRET_ACCESS_KEY &&
+		env.R2_BUCKET === VALENTINA_MEMORIES_R2_BUCKET,
 	);
 }

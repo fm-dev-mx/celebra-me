@@ -71,7 +71,9 @@ describe('celebra memories sign production config', () => {
 		expect(owner).toContain(
 			`${VALENTINA_MEMORIES_SIGN_URL_PUBLIC_ENV_NAME}=${VALENTINA_MEMORIES_PRODUCTION_SIGN_URL}`,
 		);
-		expect(owner).toContain('## 6. Production proofs');
+		expect(owner).toContain('## Sanitized production proof table');
+		expect(owner).toContain('## Rollback / disable');
+		expect(owner).toContain('PENDING_OWNER');
 		expect(owner).toContain(VALENTINA_MEMORIES_UPLOAD_WINDOW_STARTS_AT);
 		expect(owner).toContain(VALENTINA_MEMORIES_UPLOAD_WINDOW_ENDS_AT);
 		expect(owner).toMatch(/only after the window opens/);

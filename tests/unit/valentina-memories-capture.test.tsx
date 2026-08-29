@@ -30,6 +30,36 @@ describe('valentina memories capture client', () => {
 		expect(
 			resolveValentinaMemoriesSignUrl('https://memories.celebra-me.com/sign/other'),
 		).toBeNull();
+		expect(resolveValentinaMemoriesSignUrl('https://example.com/sign/valentina')).toBeNull();
+		expect(resolveValentinaMemoriesSignUrl(`${SIGN_URL}?redirect=1`)).toBeNull();
+	});
+
+	it('normalizes the signed MIME value used by the JSON request and direct PUT', async () => {
+		const user = userEvent.setup();
+		jest.spyOn(global, 'fetch')
+			.mockClear()
+			.mockImplementation(async (input: RequestInfo | URL, init?: RequestInit) => {
+				if (String(input) === SIGN_URL) {
+					expect(JSON.parse(String(init?.body))).toMatchObject({
+						mimeType: 'image/jpeg',
+					});
+					return {
+						ok: true,
+						json: async () => ({ uploadUrl: PUT_URL }),
+					} as Response;
+				}
+
+				expect(new Headers(init?.headers).get('Content-Type')).toBe('image/jpeg');
+				return { ok: true } as Response;
+			});
+
+		render(<ValentinaMemoriesCapture signUrl={SIGN_URL} />);
+		await user.upload(
+			screen.getByLabelText(valentinaMemoriesCaptureCopy.chooseFile),
+			makeFile('foto.jpg', 'IMAGE/JPEG', 8),
+		);
+
+		expect(await screen.findByText(valentinaMemoriesCaptureCopy.success)).toBeInTheDocument();
 	});
 
 	it('validates MIME and size from the shared contract', () => {
@@ -81,8 +111,9 @@ describe('valentina memories capture client', () => {
 
 	it('posts the expected sign payload and shows confirmation after PUT', async () => {
 		const user = userEvent.setup();
-		jest.spyOn(global, 'fetch').mockClear().mockImplementation(
-			async (input: RequestInfo | URL, init?: RequestInit) => {
+		jest.spyOn(global, 'fetch')
+			.mockClear()
+			.mockImplementation(async (input: RequestInfo | URL, init?: RequestInit) => {
 				const url = String(input);
 				if (url === SIGN_URL) {
 					expect(init?.method).toBe('POST');
@@ -104,8 +135,7 @@ describe('valentina memories capture client', () => {
 				expect(init?.method).toBe('PUT');
 				expect(new Headers(init?.headers).get('Content-Type')).toBe('image/jpeg');
 				return { ok: true } as Response;
-			},
-		);
+			});
 
 		render(<ValentinaMemoriesCapture signUrl={SIGN_URL} />);
 		await user.upload(

@@ -107,7 +107,7 @@ export const VALENTINA_MEMORIES_ALLOWED_MIME_TYPES = {
 	},
 } as const satisfies Record<ValentinaMemoriesAllowedMimeType, ValentinaMemoriesMimePolicy>;
 
-function normalizeMemoriesMimeType(value: string): string {
+export function normalizeMemoriesMimeType(value: string): string {
 	return value.trim().toLowerCase();
 }
 

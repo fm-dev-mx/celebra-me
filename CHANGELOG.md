@@ -10,6 +10,12 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+### Added
+
+- **Valentina Memories capture**: Guests can upload a supported photo or short video from
+  `/r/valentina` through a direct, private R2 upload flow; the page confirms the upload without
+  exposing a public gallery or object listing.
+
 ## [0.19.0-beta.1] - 2026-08-24
 
 Release checkpoint consolidating managed invitation corpus growth, release provenance hardening,

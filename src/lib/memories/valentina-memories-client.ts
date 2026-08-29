@@ -1,9 +1,13 @@
 import {
 	VALENTINA_MEMORIES_MAX_VIDEO_DURATION_SECONDS,
+	VALENTINA_MEMORIES_PRODUCTION_SIGN_URL,
 	VALENTINA_MEMORIES_SIGN_PATH,
 	getValentinaMemoriesMimePolicy,
 } from '@/data/valentina-memories-upload.contract';
 import { valentinaMemoriesCaptureCopy } from '@/data/valentina-memories.data';
+
+const PRODUCTION_SIGN_ORIGIN = new URL(VALENTINA_MEMORIES_PRODUCTION_SIGN_URL).origin;
+const LOCAL_SIGN_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
 
 export type ValentinaMemoriesCaptureIssue =
 	| 'unsupported_type'
@@ -26,6 +30,10 @@ export function resolveValentinaMemoriesSignUrl(raw: string | undefined): string
 		if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;
 		if (url.pathname !== VALENTINA_MEMORIES_SIGN_PATH) return null;
 		if (url.username || url.password) return null;
+		if (url.search || url.hash) return null;
+		const isProductionSigner = url.origin === PRODUCTION_SIGN_ORIGIN;
+		const isLocalSigner = url.protocol === 'http:' && LOCAL_SIGN_HOSTS.has(url.hostname);
+		if (!isProductionSigner && !isLocalSigner) return null;
 		return url.toString();
 	} catch {
 		return null;

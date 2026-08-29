@@ -274,4 +274,14 @@ describe('celebra memories sign worker', () => {
 		expect(createEnv().R2_ACCESS_KEY_ID).toBe('test-access-key-id');
 		expect(createEnv().R2_SECRET_ACCESS_KEY).toBe('test-secret-access-key');
 	});
+
+	it('fails closed when the configured bucket is not the contract bucket', async () => {
+		const response = await sign(
+			{ body: { mimeType: 'image/jpeg', sizeBytes: 1024 } },
+			{ env: createEnv({ R2_BUCKET: 'another-bucket' }) },
+		);
+
+		expect(response.status).toBe(500);
+		expect(await readJson(response)).toMatchObject({ error: { code: 'sign_failed' } });
+	});
 });
