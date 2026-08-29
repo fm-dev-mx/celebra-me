@@ -10,7 +10,7 @@
 @use 'tokens/semantic/surface';
 @use 'tokens/semantic/type';
 @use 'ui/status-pages';
-@use 'dashboard/memories-capture';
+@use 'ui/memories-capture';
 
 :root {
 	--spacing-xs: var(--spacing-2);
