@@ -16,7 +16,7 @@ import {
 import { emptyResponse, errorResponse, jsonResponse } from './http';
 import { createPresignedR2PutUrl } from './presign-r2-put';
 
-const SIGN_REQUEST_KEYS = new Set(['mimeType', 'sizeBytes']);
+const ALLOWED_SIGN_KEYS = new Set(['mimeType', 'sizeBytes', 'checksumSha256']);
 
 function readClientIp(request: Request): string {
 	return (
@@ -30,20 +30,30 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function parseSignRequest(payload: unknown): { mimeType: string; sizeBytes: number } | null {
+function parseSignRequest(
+	payload: unknown,
+): { mimeType: string; sizeBytes: number; checksumSha256: string } | null {
 	if (!isRecord(payload)) return null;
 
 	const keys = Object.keys(payload);
-	if (keys.length !== SIGN_REQUEST_KEYS.size || keys.some((key) => !SIGN_REQUEST_KEYS.has(key))) {
+	if (keys.length !== ALLOWED_SIGN_KEYS.size || keys.some((key) => !ALLOWED_SIGN_KEYS.has(key))) {
 		return null;
 	}
 
-	const { mimeType, sizeBytes } = payload;
+	const { mimeType, sizeBytes, checksumSha256 } = payload;
 	if (typeof mimeType !== 'string' || mimeType.trim() === '') return null;
 	if (typeof sizeBytes !== 'number' || !Number.isInteger(sizeBytes) || sizeBytes <= 0)
 		return null;
 
-	return { mimeType, sizeBytes };
+	if (typeof checksumSha256 !== 'string' || !/^[0-9a-f]{64}$/i.test(checksumSha256)) {
+		return null;
+	}
+
+	return {
+		mimeType,
+		sizeBytes,
+		checksumSha256: checksumSha256.toLowerCase(),
+	};
 }
 
 async function readJsonBody(request: Request): Promise<unknown | 'too_large' | 'invalid'> {
@@ -158,6 +168,7 @@ async function handleSignPost(
 			bucket: env.R2_BUCKET,
 			objectKey,
 			contentType: mimeType,
+			checksumSha256Hex: signRequest.checksumSha256,
 			now,
 		});
 

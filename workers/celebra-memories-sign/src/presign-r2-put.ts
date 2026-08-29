@@ -9,6 +9,7 @@ export type PresignR2PutInput = {
 	bucket: string;
 	objectKey: string;
 	contentType: string;
+	checksumSha256Hex?: string;
 	now: Date;
 };
 
@@ -61,10 +62,14 @@ export async function createPresignedR2PutUrl(input: PresignR2PutInput): Promise
 	const credentialScope = `${dateStamp}/auto/s3/aws4_request`;
 	const credential = `${input.accessKeyId}/${credentialScope}`;
 	const signedHeaders = 'content-type;host';
+	const payloadHash =
+		input.checksumSha256Hex && /^[0-9a-f]{64}$/i.test(input.checksumSha256Hex)
+			? input.checksumSha256Hex.toLowerCase()
+			: 'UNSIGNED-PAYLOAD';
 
 	const query: Record<string, string> = {
 		'X-Amz-Algorithm': 'AWS4-HMAC-SHA256',
-		'X-Amz-Content-Sha256': 'UNSIGNED-PAYLOAD',
+		'X-Amz-Content-Sha256': payloadHash,
 		'X-Amz-Credential': credential,
 		'X-Amz-Date': amzDate,
 		'X-Amz-Expires': String(VALENTINA_MEMORIES_PRESIGN_TTL_SECONDS),
@@ -83,7 +88,7 @@ export async function createPresignedR2PutUrl(input: PresignR2PutInput): Promise
 		canonicalQueryString,
 		canonicalHeaders,
 		signedHeaders,
-		'UNSIGNED-PAYLOAD',
+		payloadHash,
 	].join('\n');
 
 	const stringToSign = [

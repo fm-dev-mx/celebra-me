@@ -22,6 +22,7 @@ const BEFORE_WINDOW = new Date('2026-08-27T05:59:59.999Z');
 const AFTER_WINDOW = new Date('2026-09-04T06:00:00.000Z');
 const OBJECT_ID = '11111111-1111-4111-8111-111111111111';
 const WORKER_ROOT = 'workers/celebra-memories-sign/src';
+const VALID_CHECKSUM = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855';
 
 function createEnv(
 	overrides: Partial<MemoriesSignEnv> = {},
@@ -84,7 +85,7 @@ function readWorkerSources(): string {
 describe('celebra memories sign worker', () => {
 	it('accepts an allowed image request', async () => {
 		const response = await sign({
-			body: { mimeType: 'image/jpeg', sizeBytes: 1024 },
+			body: { mimeType: 'image/jpeg', sizeBytes: 1024, checksumSha256: VALID_CHECKSUM },
 		});
 		const body = await readJson(response);
 
@@ -101,7 +102,11 @@ describe('celebra memories sign worker', () => {
 
 	it('accepts an allowed video request', async () => {
 		const response = await sign({
-			body: { mimeType: 'video/mp4', sizeBytes: 8 * 1024 * 1024 },
+			body: {
+				mimeType: 'video/mp4',
+				sizeBytes: 8 * 1024 * 1024,
+				checksumSha256: VALID_CHECKSUM,
+			},
 		});
 		const body = await readJson(response);
 
@@ -111,7 +116,7 @@ describe('celebra memories sign worker', () => {
 
 	it('rejects an unsupported MIME type', async () => {
 		const response = await sign({
-			body: { mimeType: 'application/pdf', sizeBytes: 1024 },
+			body: { mimeType: 'application/pdf', sizeBytes: 1024, checksumSha256: VALID_CHECKSUM },
 		});
 		const body = await readJson(response);
 
@@ -121,12 +126,17 @@ describe('celebra memories sign worker', () => {
 
 	it('rejects an oversized declared image or video', async () => {
 		const image = await sign({
-			body: { mimeType: 'image/png', sizeBytes: VALENTINA_MEMORIES_MAX_IMAGE_BYTES + 1 },
+			body: {
+				mimeType: 'image/png',
+				sizeBytes: VALENTINA_MEMORIES_MAX_IMAGE_BYTES + 1,
+				checksumSha256: VALID_CHECKSUM,
+			},
 		});
 		const video = await sign({
 			body: {
 				mimeType: 'video/quicktime',
 				sizeBytes: VALENTINA_MEMORIES_MAX_VIDEO_BYTES + 1,
+				checksumSha256: VALID_CHECKSUM,
 			},
 		});
 
@@ -142,6 +152,13 @@ describe('celebra memories sign worker', () => {
 			{ mimeType: 'image/jpeg' },
 			{ sizeBytes: 1024 },
 			{ mimeType: 'image/jpeg', sizeBytes: 1024, extra: true },
+			{
+				mimeType: 'image/jpeg',
+				sizeBytes: 1024,
+				checksumSha256: VALID_CHECKSUM,
+				extra: true,
+			},
+			{ mimeType: 'image/jpeg', sizeBytes: 1024, checksumSha256: 'not-a-hash' },
 			{ mimeType: 'image/jpeg', sizeBytes: 1.5 },
 			{ mimeType: 'image/jpeg', sizeBytes: 0 },
 			{ mimeType: '', sizeBytes: 1024 },
@@ -156,11 +173,11 @@ describe('celebra memories sign worker', () => {
 
 	it('rejects requests before and after the event window', async () => {
 		const before = await sign(
-			{ body: { mimeType: 'image/jpeg', sizeBytes: 1024 } },
+			{ body: { mimeType: 'image/jpeg', sizeBytes: 1024, checksumSha256: VALID_CHECKSUM } },
 			{ now: BEFORE_WINDOW },
 		);
 		const after = await sign(
-			{ body: { mimeType: 'image/jpeg', sizeBytes: 1024 } },
+			{ body: { mimeType: 'image/jpeg', sizeBytes: 1024, checksumSha256: VALID_CHECKSUM } },
 			{ now: AFTER_WINDOW },
 		);
 
@@ -173,7 +190,7 @@ describe('celebra memories sign worker', () => {
 	it('rejects a disallowed or missing origin', async () => {
 		const disallowed = await sign({
 			origin: 'https://celebra-me.com',
-			body: { mimeType: 'image/jpeg', sizeBytes: 1024 },
+			body: { mimeType: 'image/jpeg', sizeBytes: 1024, checksumSha256: VALID_CHECKSUM },
 		});
 		const missing = await sign({
 			origin: null,
@@ -219,7 +236,7 @@ describe('celebra memories sign worker', () => {
 
 	it('signs a PUT-only URL with bound Content-Type and a 5-minute TTL', async () => {
 		const response = await sign({
-			body: { mimeType: 'image/webp', sizeBytes: 2048 },
+			body: { mimeType: 'image/webp', sizeBytes: 2048, checksumSha256: VALID_CHECKSUM },
 		});
 		const body = await readJson(response);
 		const uploadUrl = new URL(String(body.uploadUrl));
@@ -240,7 +257,7 @@ describe('celebra memories sign worker', () => {
 
 	it('keeps object keys free of guest PII and uses the contract prefix', async () => {
 		const response = await sign({
-			body: { mimeType: 'image/heic', sizeBytes: 4096 },
+			body: { mimeType: 'image/heic', sizeBytes: 4096, checksumSha256: VALID_CHECKSUM },
 		});
 		const body = await readJson(response);
 
@@ -251,7 +268,10 @@ describe('celebra memories sign worker', () => {
 
 	it('applies the coarse rate-limit binding', async () => {
 		const response = await sign(
-			{ body: { mimeType: 'image/jpeg', sizeBytes: 1024 }, ip: '203.0.113.10' },
+			{
+				body: { mimeType: 'image/jpeg', sizeBytes: 1024, checksumSha256: VALID_CHECKSUM },
+				ip: '203.0.113.10',
+			},
 			{ env: createEnv({}, async () => ({ success: false })) },
 		);
 
@@ -277,11 +297,28 @@ describe('celebra memories sign worker', () => {
 
 	it('fails closed when the configured bucket is not the contract bucket', async () => {
 		const response = await sign(
-			{ body: { mimeType: 'image/jpeg', sizeBytes: 1024 } },
+			{ body: { mimeType: 'image/jpeg', sizeBytes: 1024, checksumSha256: VALID_CHECKSUM } },
 			{ env: createEnv({ R2_BUCKET: 'another-bucket' }) },
 		);
 
 		expect(response.status).toBe(500);
 		expect(await readJson(response)).toMatchObject({ error: { code: 'sign_failed' } });
+	});
+
+	it('binds valid SHA-256 checksum into presigned PUT and rejects malformed checksums', async () => {
+		const validHash = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855';
+		const valid = await sign({
+			body: { mimeType: 'image/jpeg', sizeBytes: 1024, checksumSha256: validHash },
+		});
+		expect(valid.status).toBe(200);
+		const validBody = await readJson(valid);
+		const uploadUrl = new URL(String(validBody.uploadUrl));
+		expect(uploadUrl.searchParams.get('X-Amz-Content-Sha256')).toBe(validHash);
+
+		const invalid = await sign({
+			body: { mimeType: 'image/jpeg', sizeBytes: 1024, checksumSha256: 'not-a-valid-sha256' },
+		});
+		expect(invalid.status).toBe(400);
+		expect(await readJson(invalid)).toMatchObject({ error: { code: 'invalid_request' } });
 	});
 });

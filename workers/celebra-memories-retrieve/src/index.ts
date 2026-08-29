@@ -3,6 +3,8 @@ import {
 	VALENTINA_MEMORIES_RETRIEVAL_REQUEST_TTL_SECONDS,
 	buildValentinaMemoriesRetrievalSigningPayload,
 	isValentinaMemoriesObjectKeyForMime,
+	isValentinaMemoriesSignatureValid,
+	parseBoundedVideoDurationSeconds,
 } from '../../../src/data/valentina-memories-media.contract';
 import {
 	VALENTINA_MEMORIES_JSON_BODY_MAX_BYTES,
@@ -10,12 +12,19 @@ import {
 } from '../../../src/data/valentina-memories-upload.contract';
 
 type R2ObjectLike = {
-	body: ReadableStream<Uint8Array>;
+	body?: ReadableStream<Uint8Array> | null;
+	size?: number;
+	checksums?: { sha256?: ArrayBuffer; toJSON?: () => { sha256?: string } };
+	customMetadata?: Record<string, string>;
 	httpMetadata?: { contentType?: string; contentLength?: number };
 };
 
 type R2BucketLike = {
-	get(key: string): Promise<R2ObjectLike | null>;
+	get(
+		key: string,
+		options?: { range?: { offset?: number; length?: number } },
+	): Promise<R2ObjectLike | null>;
+	head?(key: string): Promise<R2ObjectLike | null>;
 };
 
 type RetrieveEnv = {
@@ -82,6 +91,110 @@ function safeDownloadName(value: unknown, extension: string): string {
 		: `valentina.${extension}`;
 }
 
+async function readFirstBytes(body: unknown): Promise<Uint8Array> {
+	if (!body) return new Uint8Array(0);
+	if (body instanceof Uint8Array) return body.slice(0, 65536);
+
+	const chunks: Uint8Array[] = [];
+	let totalLen = 0;
+
+	if (typeof (body as ReadableStream<Uint8Array>).getReader === 'function') {
+		const reader = (body as ReadableStream<Uint8Array>).getReader();
+		while (totalLen < 65536) {
+			const { done, value } = await reader.read();
+			if (done || !value) break;
+			chunks.push(value);
+			totalLen += value.byteLength;
+		}
+	} else if (Symbol.asyncIterator in Object(body)) {
+		for await (const chunk of body as AsyncIterable<Uint8Array>) {
+			chunks.push(chunk);
+			totalLen += chunk.byteLength;
+			if (totalLen >= 65536) break;
+		}
+	}
+
+	const result = new Uint8Array(totalLen);
+	let pos = 0;
+	for (const chunk of chunks) {
+		result.set(chunk, pos);
+		pos += chunk.byteLength;
+	}
+	return result;
+}
+
+function extractChecksum(object: R2ObjectLike): string | null {
+	if (object.checksums?.sha256) return bytesToHex(object.checksums.sha256);
+	if (typeof object.checksums?.toJSON === 'function') {
+		const jsonVal = object.checksums.toJSON();
+		if (typeof jsonVal?.sha256 === 'string') return jsonVal.sha256.toLowerCase();
+	}
+	if (object.customMetadata?.sha256) return object.customMetadata.sha256.toLowerCase();
+	return null;
+}
+
+async function handleInspect(
+	env: RetrieveEnv,
+	objectKey: string,
+	mimeType: string,
+): Promise<Response> {
+	const object = await env.MEMORIES_BUCKET.get(objectKey, {
+		range: { offset: 0, length: 65536 },
+	});
+	if (!object) return json({ error: { code: 'not_found' } }, 404);
+
+	const firstBytes = await readFirstBytes(object.body);
+	const signatureValid = isValentinaMemoriesSignatureValid(firstBytes, mimeType);
+	const sizeBytes = object.size ?? object.httpMetadata?.contentLength ?? firstBytes.byteLength;
+	let durationSeconds = mimeType.startsWith('video/')
+		? parseBoundedVideoDurationSeconds(firstBytes)
+		: null;
+	if (
+		mimeType.startsWith('video/') &&
+		durationSeconds === null &&
+		sizeBytes > firstBytes.byteLength
+	) {
+		const tail = await env.MEMORIES_BUCKET.get(objectKey, {
+			range: { offset: Math.max(0, sizeBytes - 65536), length: 65536 },
+		});
+		durationSeconds = tail
+			? parseBoundedVideoDurationSeconds(await readFirstBytes(tail.body))
+			: null;
+	}
+	const checksumSha256 = extractChecksum(object);
+
+	return json({
+		exists: true,
+		sizeBytes,
+		checksumSha256,
+		signatureValid,
+		durationSeconds,
+	});
+}
+
+async function handleStream(
+	env: RetrieveEnv,
+	objectKey: string,
+	mimeType: string,
+	mode: 'inline' | 'attachment',
+	downloadName: unknown,
+): Promise<Response> {
+	const extension =
+		objectKey.slice(VALENTINA_MEMORIES_OBJECT_PREFIX.length).split('.').pop() || 'bin';
+	const object = await env.MEMORIES_BUCKET.get(objectKey);
+	if (!object || !object.body) return json({ error: { code: 'not_found' } }, 404);
+
+	return new Response(object.body, {
+		status: 200,
+		headers: {
+			'Content-Type': mimeType,
+			'Content-Disposition': `${mode === 'attachment' ? 'attachment' : 'inline'}; filename="${safeDownloadName(downloadName, extension)}"`,
+			'Cache-Control': 'private, no-store, max-age=0',
+			'X-Content-Type-Options': 'nosniff',
+		},
+	});
+}
+
 export default {
 	async fetch(request: Request, env: RetrieveEnv): Promise<Response> {
 		if (
@@ -93,11 +206,13 @@ export default {
 		if (!env.RETRIEVAL_SHARED_SECRET || !env.MEMORIES_BUCKET) {
 			return json({ error: { code: 'unavailable' } }, 503);
 		}
+
 		const timestamp = request.headers.get('X-Celebra-Retrieval-Timestamp');
 		const providedSignature = request.headers.get('X-Celebra-Retrieval-Signature') || '';
 		if (!isTimestampFresh(timestamp) || !HEX.test(providedSignature)) {
 			return json({ error: { code: 'unauthorized' } }, 401);
 		}
+
 		const rawBody = await request.text();
 		if (
 			!rawBody ||
@@ -105,6 +220,7 @@ export default {
 		) {
 			return json({ error: { code: 'bad_request' } }, 400);
 		}
+
 		const validSignature = await verifyPayload(
 			env.RETRIEVAL_SHARED_SECRET,
 			buildValentinaMemoriesRetrievalSigningPayload({
@@ -115,9 +231,8 @@ export default {
 			}),
 			providedSignature,
 		);
-		if (!validSignature) {
-			return json({ error: { code: 'unauthorized' } }, 401);
-		}
+		if (!validSignature) return json({ error: { code: 'unauthorized' } }, 401);
+
 		let body: {
 			objectKey?: unknown;
 			mimeType?: unknown;
@@ -129,25 +244,25 @@ export default {
 		} catch {
 			return json({ error: { code: 'bad_request' } }, 400);
 		}
+
 		const mimeType = typeof body.mimeType === 'string' ? body.mimeType : '';
-		if (!isValentinaMemoriesObjectKeyForMime(body.objectKey, mimeType)) {
+		if (
+			!isValentinaMemoriesObjectKeyForMime(body.objectKey, mimeType) ||
+			(body.mode !== 'inline' && body.mode !== 'attachment' && body.mode !== 'inspect')
+		) {
 			return json({ error: { code: 'bad_request' } }, 400);
 		}
-		if (body.mode !== 'inline' && body.mode !== 'attachment') {
-			return json({ error: { code: 'bad_request' } }, 400);
+
+		if (body.mode === 'inspect') {
+			return handleInspect(env, body.objectKey as string, mimeType);
 		}
-		const extension =
-			body.objectKey.slice(VALENTINA_MEMORIES_OBJECT_PREFIX.length).split('.').pop() || 'bin';
-		const object = await env.MEMORIES_BUCKET.get(body.objectKey);
-		if (!object) return json({ error: { code: 'not_found' } }, 404);
-		return new Response(object.body, {
-			status: 200,
-			headers: {
-				'Content-Type': mimeType,
-				'Content-Disposition': `${body.mode === 'attachment' ? 'attachment' : 'inline'}; filename="${safeDownloadName(body.downloadName, extension)}"`,
-				'Cache-Control': 'private, no-store, max-age=0',
-				'X-Content-Type-Options': 'nosniff',
-			},
-		});
+
+		return handleStream(
+			env,
+			body.objectKey as string,
+			mimeType,
+			body.mode as 'inline' | 'attachment',
+			body.downloadName,
+		);
 	},
 };
