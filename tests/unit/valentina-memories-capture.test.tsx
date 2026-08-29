@@ -49,8 +49,9 @@ describe('ValentinaMemoriesCapture', () => {
 			.mockResolvedValueOnce(response({ items: [] }));
 
 		render(<ValentinaMemoriesCapture />);
-		const chooser = screen.getByLabelText(valentinaMemoriesCaptureCopy.chooseFile);
-		expect(chooser).toBeDisabled();
+		expect(
+			screen.queryByLabelText(valentinaMemoriesCaptureCopy.chooseFile),
+		).not.toBeInTheDocument();
 
 		await user.type(screen.getByLabelText('Su nombre o apodo'), PROFILE.displayName);
 		await user.click(screen.getByRole('button', { name: 'Continuar' }));
@@ -58,7 +59,7 @@ describe('ValentinaMemoriesCapture', () => {
 		expect(await screen.findByText(new RegExp(PROFILE.displayName))).toBeInTheDocument();
 		expect(screen.queryByText(/Alias de su sesión/i)).not.toBeInTheDocument();
 		expect(screen.getByText('ABCD-EFGH-JKLM')).toBeInTheDocument();
-		expect(chooser).toBeEnabled();
+		expect(screen.getByLabelText(valentinaMemoriesCaptureCopy.chooseFile)).toBeEnabled();
 		expect(fetchMock.mock.calls[1]?.[0]).toBe('/api/memories/valentina/session');
 		expect(JSON.parse(String((fetchMock.mock.calls[1]?.[1] as RequestInit).body))).toEqual({
 			action: 'create',
@@ -123,6 +124,17 @@ describe('ValentinaMemoriesCapture', () => {
 			type: 'image/jpeg',
 		});
 		await user.upload(screen.getByLabelText(valentinaMemoriesCaptureCopy.chooseFile), file);
+		expect(screen.getByText('familia.jpg')).toBeInTheDocument();
+		expect(
+			fetchMock.mock.calls.some(
+				([input, init]) =>
+					input === '/api/memories/valentina/items' &&
+					(init as RequestInit | undefined)?.method === 'POST',
+			),
+		).toBe(false);
+		await user.click(
+			screen.getByRole('button', { name: valentinaMemoriesCaptureCopy.confirmUpload }),
+		);
 
 		await screen.findByText(valentinaMemoriesCaptureCopy.success);
 		const reserveCall = fetchMock.mock.calls.find(
@@ -173,6 +185,51 @@ describe('ValentinaMemoriesCapture', () => {
 		);
 	});
 
+	it('replaces and cancels a local preview while revoking every object URL', async () => {
+		const user = userEvent.setup();
+		const createDescriptor = Object.getOwnPropertyDescriptor(URL, 'createObjectURL');
+		const revokeDescriptor = Object.getOwnPropertyDescriptor(URL, 'revokeObjectURL');
+		const createObjectURL = jest.fn((file: Blob) => `blob:${file.size}`);
+		const revokeObjectURL = jest.fn();
+		Object.defineProperty(URL, 'createObjectURL', {
+			configurable: true,
+			value: createObjectURL,
+		});
+		Object.defineProperty(URL, 'revokeObjectURL', {
+			configurable: true,
+			value: revokeObjectURL,
+		});
+		jest.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+			if (input === '/api/memories/valentina/session') return response({ profile: PROFILE });
+			if (input === ITEMS_ENDPOINT_FOR_TEST) return response({ items: [] });
+			throw new Error(`Unexpected fetch: ${String(input)}`);
+		});
+
+		try {
+			render(<ValentinaMemoriesCapture />);
+			await screen.findByText(new RegExp(PROFILE.displayName));
+			const chooser = screen.getByLabelText(valentinaMemoriesCaptureCopy.chooseFile);
+			await user.upload(
+				chooser,
+				new File([new Uint8Array([1])], 'uno.jpg', { type: 'image/jpeg' }),
+			);
+			await user.upload(
+				chooser,
+				new File([new Uint8Array([1, 2])], 'dos.jpg', { type: 'image/jpeg' }),
+			);
+			expect(revokeObjectURL).toHaveBeenCalledWith('blob:1');
+			await user.click(
+				screen.getByRole('button', { name: valentinaMemoriesCaptureCopy.cancelSelection }),
+			);
+			expect(revokeObjectURL).toHaveBeenCalledWith('blob:2');
+		} finally {
+			if (createDescriptor) Object.defineProperty(URL, 'createObjectURL', createDescriptor);
+			else delete (URL as { createObjectURL?: unknown }).createObjectURL;
+			if (revokeDescriptor) Object.defineProperty(URL, 'revokeObjectURL', revokeDescriptor);
+			else delete (URL as { revokeObjectURL?: unknown }).revokeObjectURL;
+		}
+	});
+
 	it('uses the offline message only when the browser explicitly reports no connection', () => {
 		expect(classifyValentinaMemoriesTransportIssue('put_failed', false)).toBe('network_failed');
 		expect(classifyValentinaMemoriesTransportIssue('put_failed', true)).toBe('put_failed');
@@ -206,6 +263,9 @@ describe('ValentinaMemoriesCapture', () => {
 			new File([new Uint8Array([1, 2, 3])], 'foto.jpg', { type: 'image/jpeg' }),
 		);
 		await user.click(
+			screen.getByRole('button', { name: valentinaMemoriesCaptureCopy.confirmUpload }),
+		);
+		await user.click(
 			await screen.findByRole('button', {
 				name: valentinaMemoriesCaptureCopy.cancelOptimization,
 			}),
@@ -234,7 +294,9 @@ describe('ValentinaMemoriesCapture', () => {
 		expect(
 			await screen.findByText(valentinaMemoriesCaptureCopy.officialOriginUnavailable),
 		).toBeInTheDocument();
-		expect(screen.getByLabelText(valentinaMemoriesCaptureCopy.chooseFile)).toBeDisabled();
+		expect(
+			screen.queryByLabelText(valentinaMemoriesCaptureCopy.chooseFile),
+		).not.toBeInTheDocument();
 	});
 
 	it('classifies a PUT transport failure and reuses the same idempotency key on retry', async () => {
@@ -278,6 +340,9 @@ describe('ValentinaMemoriesCapture', () => {
 			screen.getByLabelText(valentinaMemoriesCaptureCopy.chooseFile),
 			new File([new Uint8Array([1, 2, 3, 4])], 'retry.jpg', { type: 'image/jpeg' }),
 		);
+		await user.click(
+			screen.getByRole('button', { name: valentinaMemoriesCaptureCopy.confirmUpload }),
+		);
 		expect(await screen.findByRole('alert')).toHaveTextContent(
 			valentinaMemoriesCaptureCopy.putFailed,
 		);
@@ -286,5 +351,66 @@ describe('ValentinaMemoriesCapture', () => {
 
 		expect(reservationBodies).toHaveLength(2);
 		expect(reservationBodies[0].clientRequestId).toBe(reservationBodies[1].clientRequestId);
+	});
+
+	it('keeps a successful upload successful when its caption PATCH must be retried', async () => {
+		const user = userEvent.setup();
+		let captionAttempts = 0;
+		jest.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+			const url = String(input);
+			if (url === '/api/memories/valentina/session') return response({ profile: PROFILE });
+			if (url === ITEMS_ENDPOINT_FOR_TEST && init?.method === 'POST') {
+				return response({
+					item: {
+						id: 'caption-item',
+						mimeType: 'image/jpeg',
+						sizeBytes: 4,
+						caption: '',
+						status: 'uploading',
+						createdAt: '2026-08-29T00:00:00.000Z',
+					},
+					upload: {
+						uploadUrl: 'https://r2.example.invalid/caption',
+						requiredHeaders: { 'Content-Type': 'image/jpeg' },
+					},
+				});
+			}
+			if (url === ITEMS_ENDPOINT_FOR_TEST) return response({ items: [] });
+			if (url === 'https://r2.example.invalid/caption') return response(null);
+			if (url === `${ITEMS_ENDPOINT_FOR_TEST}/caption-item` && init?.method === 'POST') {
+				return response({ item: { status: 'accepted' } });
+			}
+			if (url === `${ITEMS_ENDPOINT_FOR_TEST}/caption-item` && init?.method === 'PATCH') {
+				captionAttempts += 1;
+				return response({}, captionAttempts === 1 ? 503 : 200);
+			}
+			throw new Error(`Unexpected fetch: ${url}`);
+		});
+
+		render(<ValentinaMemoriesCapture optimizeImage={async (file) => file} />);
+		await screen.findByText(new RegExp(PROFILE.displayName));
+		await user.upload(
+			screen.getByLabelText(valentinaMemoriesCaptureCopy.chooseFile),
+			new File([new Uint8Array([1, 2, 3, 4])], 'caption.jpg', { type: 'image/jpeg' }),
+		);
+		await user.type(
+			screen.getByLabelText(valentinaMemoriesCaptureCopy.captionLabel),
+			'Con Valentina',
+		);
+		await user.click(
+			screen.getByRole('button', { name: valentinaMemoriesCaptureCopy.confirmUpload }),
+		);
+
+		expect(await screen.findByText(valentinaMemoriesCaptureCopy.success)).toBeVisible();
+		expect(screen.getByText(valentinaMemoriesCaptureCopy.captionSaveFailed)).toBeVisible();
+		await user.click(
+			screen.getByRole('button', { name: valentinaMemoriesCaptureCopy.retryCaption }),
+		);
+		await waitFor(() =>
+			expect(
+				screen.queryByText(valentinaMemoriesCaptureCopy.captionSaveFailed),
+			).not.toBeInTheDocument(),
+		);
+		expect(captionAttempts).toBe(2);
 	});
 });

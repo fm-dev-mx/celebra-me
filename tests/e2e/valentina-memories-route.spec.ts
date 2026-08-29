@@ -55,12 +55,10 @@ test.describe('Valentina Memories capture route', () => {
 			exact: true,
 		});
 		await expect(continueButton).toBeVisible();
-		await expect(uploadButton).toBeVisible();
+		await expect(uploadButton).toHaveCount(0);
 		const continueBox = await continueButton.boundingBox();
-		const uploadBox = await uploadButton.boundingBox();
 		expect(continueBox?.height).toBeGreaterThanOrEqual(44);
-		expect(uploadBox?.height).toBeGreaterThanOrEqual(44);
-		expect((uploadBox?.y ?? 844) + (uploadBox?.height ?? 0)).toBeLessThanOrEqual(844);
+		expect((continueBox?.y ?? 844) + (continueBox?.height ?? 0)).toBeLessThanOrEqual(844);
 	});
 
 	test('onboards, reserves same-origin, uploads directly, and completes without private fields', async ({
@@ -156,6 +154,10 @@ test.describe('Valentina Memories capture route', () => {
 		await expect(page.getByText(new RegExp(PROFILE.displayName))).toBeVisible();
 		await expect(page.getByText(/Alias de su sesión/i)).toHaveCount(0);
 		await uploadSampleJpeg(page);
+		expect(reservePayload).toBeUndefined();
+		await page
+			.getByRole('button', { name: valentinaMemoriesCaptureCopy.confirmUpload })
+			.click();
 
 		await expect(page.getByText(valentinaMemoriesCaptureCopy.success)).toBeVisible();
 		expect(reservePayload).toMatchObject({
@@ -200,6 +202,9 @@ test.describe('Valentina Memories capture route', () => {
 		await waitForHydratedIsland(page, '[data-capture="valentina-memories"]');
 		await expect(page.getByText(new RegExp(PROFILE.displayName))).toBeVisible();
 		await uploadSampleJpeg(page);
+		await page
+			.getByRole('button', { name: valentinaMemoriesCaptureCopy.confirmUpload })
+			.click();
 		await expect(page.getByRole('alert')).toHaveText(
 			valentinaMemoriesCaptureCopy.unsupportedType,
 		);

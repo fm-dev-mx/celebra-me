@@ -1,5 +1,6 @@
 .status-page--memories {
 	overflow: visible;
+	overflow-x: clip;
 	padding: 1rem;
 	align-items: flex-start;
 
@@ -74,9 +75,177 @@
 	gap: 0.75rem;
 }
 
-.status-page__upload-button {
-	width: 100%;
+.status-page__chooser,
+.status-page__selection {
+	display: grid;
+	gap: 0.85rem;
+	text-align: left;
+
+	h2,
+	p {
+		margin: 0;
+	}
+
+	h2 {
+		font-size: 1.3rem;
+		line-height: 1.2;
+	}
+}
+
+.status-page__chooser-heading,
+.status-page__selection-heading {
+	display: grid;
+	gap: 0.3rem;
+}
+
+.status-page__step-label {
+	color: var(--color-text-emphasis);
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.status-page__upload-zone {
+	min-height: 132px;
+	display: grid;
+	place-items: center;
+	gap: 0.35rem;
+	padding: 1.2rem;
+	border: 1px dashed rgb(var(--color-text-primary-rgb) / 48%);
+	border-radius: 0.85rem;
+	background: rgb(255 255 255 / 44%);
+	color: var(--color-text-primary);
+	text-align: center;
 	cursor: pointer;
+	transition:
+		border-color 160ms ease,
+		background-color 160ms ease,
+		transform 160ms ease;
+
+	&:hover {
+		border-color: var(--color-text-emphasis);
+		background: rgb(255 255 255 / 68%);
+		transform: translateY(-1px);
+	}
+
+	&:focus-within,
+	&:focus-visible {
+		outline: 2px solid var(--color-text-emphasis);
+		outline-offset: 3px;
+	}
+
+	&.is-disabled {
+		opacity: 55%;
+		cursor: not-allowed;
+	}
+
+	strong {
+		font-size: 1.05rem;
+	}
+
+	span:last-child {
+		font-size: 0.88rem;
+		line-height: 1.35;
+	}
+}
+
+.status-page__upload-zone-icon {
+	width: 2.5rem;
+	height: 2.5rem;
+	display: grid;
+	place-items: center;
+	border: 1px solid currentcolor;
+	border-radius: 50%;
+	color: var(--color-text-emphasis);
+	font-size: 1.65rem;
+	line-height: 1;
+}
+
+.status-page__file-input:focus-visible ~ .status-page__chooser .status-page__upload-zone,
+.status-page__file-input:focus-visible ~ .status-page__selection .status-page__btn--outline {
+	outline: 2px solid var(--color-text-emphasis);
+	outline-offset: 3px;
+}
+
+.status-page__status--warning {
+	color: var(--color-text-emphasis);
+}
+
+.status-page__selection {
+	padding: 0.9rem;
+	border: 1px solid rgb(var(--color-text-primary-rgb) / 20%);
+	border-radius: 0.75rem;
+	background: rgb(255 255 255 / 35%);
+
+	textarea {
+		width: 100%;
+		min-height: 88px;
+		resize: vertical;
+		padding: 0.7rem 0.8rem;
+		border: 1px solid rgb(var(--color-text-primary-rgb) / 45%);
+		border-radius: 0.5rem;
+		background: rgb(255 255 255 / 82%);
+		color: var(--color-text-primary);
+		font: inherit;
+	}
+}
+
+.status-page__selection-preview {
+	display: grid;
+	grid-template-columns: minmax(96px, 0.75fr) minmax(0, 1.25fr);
+	gap: 0.8rem;
+	align-items: center;
+
+	img,
+	video,
+	.status-page__selection-placeholder {
+		width: 100%;
+		aspect-ratio: 4 / 3;
+		border-radius: 0.55rem;
+		background: rgb(var(--color-text-primary-rgb) / 8%);
+		object-fit: cover;
+	}
+}
+
+.status-page__selection-placeholder {
+	display: grid;
+	place-items: center;
+	padding: 0.6rem;
+	font-size: 0.82rem;
+	text-align: center;
+}
+
+.status-page__selection-meta {
+	min-width: 0;
+	display: grid;
+	gap: 0.25rem;
+
+	strong,
+	span {
+		overflow-wrap: anywhere;
+	}
+
+	span {
+		font-size: 0.85rem;
+	}
+}
+
+.status-page__selection-actions {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 0.55rem;
+
+	.status-page__text-button {
+		grid-column: 1 / -1;
+		justify-self: center;
+	}
+}
+
+.status-page__caption-warning {
+	display: grid;
+	gap: 0.75rem;
+	justify-items: start;
 }
 
 .status-page__identity {
@@ -123,20 +292,12 @@
 	}
 }
 
-.status-page__limits-summary,
 .status-page__quota {
 	margin: 0;
 	font-family: var(--font-body, 'EB Garamond', serif);
-	line-height: 1.4;
-}
-
-.status-page__limits-summary {
-	font-size: 0.95rem;
-}
-
-.status-page__quota {
 	font-size: 0.9rem;
 	font-weight: 600;
+	line-height: 1.4;
 }
 
 .status-page__details {
@@ -181,6 +342,11 @@
 
 	span {
 		font-size: 0.8rem;
+	}
+
+	small {
+		font-size: 0.72rem;
+		line-height: 1.35;
 	}
 
 	button {
@@ -256,5 +422,22 @@
 		.status-page__btn {
 			width: 100%;
 		}
+	}
+
+	.status-page__selection-preview,
+	.status-page__selection-actions {
+		grid-template-columns: 1fr;
+	}
+
+	.status-page__selection-preview {
+		img,
+		video,
+		.status-page__selection-placeholder {
+			max-height: 240px;
+		}
+	}
+
+	.status-page__selection-actions .status-page__text-button {
+		grid-column: auto;
 	}
 }

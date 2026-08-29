@@ -81,6 +81,16 @@ export const valentinaMemoriesRecoveryPageCopy = {
 
 export const valentinaMemoriesCaptureCopy = {
 	chooseFile: 'Elija una foto o un video',
+	chooseFileTitle: 'Comparta un recuerdo',
+	chooseFileBody: 'Toque para elegir una foto o un video desde su dispositivo.',
+	selectedFileTitle: 'Revise su recuerdo antes de subirlo',
+	selectedFileFallback: 'Archivo seleccionado',
+	selectedFileSize: 'Tamaño original',
+	captionLabel: 'Descripción opcional',
+	captionPlaceholder: 'Por ejemplo: Baile con la familia',
+	confirmUpload: 'Subir recuerdo',
+	changeFile: 'Elegir otro archivo',
+	cancelSelection: 'Cancelar',
 	chooseFileHint: buildValentinaMemoriesUploadSummaryCopy(),
 	limitsDetails: buildValentinaMemoriesUploadLimitsCopy(),
 	detailsLabel: 'Ver formatos, límites y privacidad',
@@ -110,9 +120,13 @@ export const valentinaMemoriesCaptureCopy = {
 	unavailable: 'La carga de recuerdos no está disponible en este momento.',
 	recoveryCodeTitle: 'Guarde su código de recuperación',
 	recoveryCodeHint:
-		'Permite recuperar sus recuerdos en otro dispositivo. No lo comparta públicamente.',
+		'Permite recuperar sus recuerdos en otro dispositivo. No se envía al servidor en texto visible ni debe compartirse públicamente.',
+	recoveryCodeManualHint: 'También puede seleccionar el código y copiarlo manualmente.',
 	copyRecoveryCode: 'Copiar código',
 	recoveryCodeCopied: 'Código copiado',
+	captionSaveFailed:
+		'El recuerdo se guardó, pero la descripción no. Puede reintentar sólo la descripción.',
+	retryCaption: 'Reintentar descripción',
 	sharingAs: 'Compartiendo como',
 	changeName: 'Cambiar nombre',
 	cancelNameChange: 'Cancelar',

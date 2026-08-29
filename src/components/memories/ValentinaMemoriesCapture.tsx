@@ -29,6 +29,7 @@ import {
 	getValentinaMemoriesSession,
 	updateValentinaMemoriesSession,
 } from '@/lib/memories/valentina-memories-session-client';
+import ValentinaMemoriesUploadPanel from '@/components/memories/ValentinaMemoriesUploadPanel';
 
 type CaptureStatus = 'idle' | 'busy' | 'success' | 'error';
 type CatalogItem = {
@@ -201,16 +202,6 @@ function itemStatusLabel(item: CatalogItem): string {
 	return copy.validationPending;
 }
 
-function GuestQuotaStatus({ quota }: { quota: ValentinaMemoriesGuestQuota | null }) {
-	if (!quota) return null;
-	return (
-		<p className="status-page__quota" aria-live="polite">
-			Le quedan {quota.files.remaining} archivos, {quota.videos.remaining} videos y{' '}
-			{Math.floor(quota.bytes.remaining / (1024 * 1024))} MiB.
-		</p>
-	);
-}
-
 function RecoveryCodeCard({ recoveryCode }: { recoveryCode: string | null }) {
 	const [copied, setCopied] = useState(false);
 	const copy = valentinaMemoriesCaptureCopy;
@@ -229,11 +220,12 @@ function RecoveryCodeCard({ recoveryCode }: { recoveryCode: string | null }) {
 	return (
 		<aside className="status-page__recovery-code" role="note">
 			<strong>{copy.recoveryCodeTitle}</strong>
-			<code>{recoveryCode}</code>
+			<code tabIndex={0}>{recoveryCode}</code>
 			<span>{copy.recoveryCodeHint}</span>
 			<button type="button" onClick={() => void copyCode()}>
 				{copied ? copy.recoveryCodeCopied : copy.copyRecoveryCode}
 			</button>
+			<small>{copy.recoveryCodeManualHint}</small>
 		</aside>
 	);
 }
@@ -264,6 +256,13 @@ export default function ValentinaMemoriesCapture({
 	const [quota, setQuota] = useState<ValentinaMemoriesGuestQuota | null>(null);
 	const [editingId, setEditingId] = useState<string | null>(null);
 	const [captionDraft, setCaptionDraft] = useState('');
+	const [selectedFile, setSelectedFile] = useState<File | null>(null);
+	const [selectedPreviewUrl, setSelectedPreviewUrl] = useState<string | null>(null);
+	const [selectedCaption, setSelectedCaption] = useState('');
+	const [captionWarning, setCaptionWarning] = useState<string | null>(null);
+	const [captionRetry, setCaptionRetry] = useState<{ itemId: string; caption: string } | null>(
+		null,
+	);
 	const [originAllowed] = useState(isUploadOriginAllowed);
 	const message = issue ? valentinaMemoriesIssueCopy(issue) : null;
 
@@ -301,6 +300,16 @@ export default function ValentinaMemoriesCapture({
 		return () => optimizationAbortRef.current?.abort();
 	}, []);
 
+	useEffect(() => {
+		if (!selectedFile || typeof URL.createObjectURL !== 'function') {
+			setSelectedPreviewUrl(null);
+			return;
+		}
+		const objectUrl = URL.createObjectURL(selectedFile);
+		setSelectedPreviewUrl(objectUrl);
+		return () => URL.revokeObjectURL(objectUrl);
+	}, [selectedFile]);
+
 	const startSession = async () => {
 		try {
 			const created = await createValentinaMemoriesSession(displayNameDraft);
@@ -328,6 +337,24 @@ export default function ValentinaMemoriesCapture({
 
 	const resetInput = () => {
 		if (inputRef.current) inputRef.current.value = '';
+	};
+
+	const saveUploadedCaption = async (
+		itemId: string,
+		caption = selectedCaption,
+	): Promise<boolean> => {
+		const normalizedCaption = caption.trim();
+		if (!normalizedCaption) return true;
+		try {
+			const response = await fetch(`${ITEMS_ENDPOINT}/${encodeURIComponent(itemId)}`, {
+				method: 'PATCH',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ caption: normalizedCaption }),
+			});
+			return response.ok;
+		} catch {
+			return false;
+		}
 	};
 
 	const uploadSelectedFile = async (file: File) => {
@@ -413,11 +440,21 @@ export default function ValentinaMemoriesCapture({
 			setProgressMessage(copy.confirming);
 			const completedStatus = await completeReservedUpload(reservation.item.id);
 			setCompletionMessage(completionCopy(completedStatus));
+			const captionToSave = selectedCaption.trim();
+			const captionSaved = await saveUploadedCaption(reservation.item.id, captionToSave);
+			setCaptionWarning(captionSaved ? null : copy.captionSaveFailed);
+			setCaptionRetry(
+				captionSaved || !captionToSave
+					? null
+					: { itemId: reservation.item.id, caption: captionToSave },
+			);
 			await loadItems();
 			selectedFileRef.current = null;
 			preparedFileRef.current = null;
 			selectedRequestIdRef.current = null;
 			resetInput();
+			setSelectedFile(null);
+			setSelectedCaption('');
 			setStatus('success');
 			setIssue(null);
 		} catch (error) {
@@ -429,10 +466,25 @@ export default function ValentinaMemoriesCapture({
 	const onFileChange = (event: ChangeEvent<HTMLInputElement>) => {
 		const file = event.target.files?.[0];
 		if (!file) return;
+		if (!resolveValentinaMemoriesFileMimeType(file)) {
+			setSelectedFile(null);
+			setStatus('error');
+			setIssue('unsupported_type');
+			resetInput();
+			return;
+		}
 		selectedFileRef.current = file;
 		preparedFileRef.current = null;
 		selectedRequestIdRef.current = createSecureClientRequestId();
-		void uploadSelectedFile(file);
+		setSelectedFile(file);
+		setSelectedCaption('');
+		setCaptionWarning(null);
+		setStatus('idle');
+		setIssue(null);
+	};
+	const onConfirmUpload = () => {
+		const file = selectedFileRef.current;
+		if (file) void uploadSelectedFile(file);
 	};
 	const onRetry = () => {
 		const file = selectedFileRef.current;
@@ -447,11 +499,21 @@ export default function ValentinaMemoriesCapture({
 	const onCancelOptimization = () => {
 		optimizationAbortRef.current?.abort();
 		optimizationAbortRef.current = null;
+		preparedFileRef.current = null;
+		setIsOptimizing(false);
+		setStatus('idle');
+		setIssue(null);
+	};
+	const onCancelSelection = () => {
+		optimizationAbortRef.current?.abort();
+		optimizationAbortRef.current = null;
 		selectedFileRef.current = null;
 		preparedFileRef.current = null;
 		selectedRequestIdRef.current = null;
+		setSelectedFile(null);
+		setSelectedCaption('');
+		setCaptionWarning(null);
 		resetInput();
-		setIsOptimizing(false);
 		setStatus('idle');
 		setIssue(null);
 	};
@@ -461,9 +523,22 @@ export default function ValentinaMemoriesCapture({
 		optimizationAbortRef.current?.abort();
 		selectedRequestIdRef.current = null;
 		resetInput();
+		setSelectedFile(null);
+		setSelectedCaption('');
+		setCaptionWarning(null);
+		setCaptionRetry(null);
 		setStatus('idle');
 		setProgressMessage(copy.preparing);
 		setIssue(null);
+	};
+
+	const retryUploadedCaption = async () => {
+		if (!captionRetry) return;
+		const saved = await saveUploadedCaption(captionRetry.itemId, captionRetry.caption);
+		if (!saved) return;
+		setCaptionWarning(null);
+		setCaptionRetry(null);
+		await loadItems();
 	};
 
 	const saveCaption = async (item: CatalogItem) => {
@@ -484,8 +559,6 @@ export default function ValentinaMemoriesCapture({
 		});
 		if (response.ok) await loadItems();
 	};
-
-	const uploadDisabled = status === 'busy' || !profile || !originAllowed;
 
 	return (
 		<div className="status-page__capture" data-capture="valentina-memories">
@@ -556,37 +629,46 @@ export default function ValentinaMemoriesCapture({
 				</p>
 			) : null}
 
-			{status !== 'success' ? (
-				<>
-					<input
-						id={inputId}
-						ref={inputRef}
-						className="status-page__file-input"
-						type="file"
-						accept={ACCEPT}
-						disabled={uploadDisabled}
-						aria-label={copy.chooseFile}
-						onChange={onFileChange}
-					/>
-					<label
-						htmlFor={inputId}
-						className={`status-page__btn status-page__upload-button${uploadDisabled ? ' is-disabled' : ''}`}
-					>
-						{status === 'busy' ? progressMessage : copy.chooseFile}
-					</label>
-					<p className="status-page__limits-summary">{copy.chooseFileHint}</p>
-					<GuestQuotaStatus quota={quota} />
-					<details className="status-page__details">
-						<summary>{copy.detailsLabel}</summary>
-						<p>{copy.limitsDetails}</p>
-						<p>{copy.privacyHint}</p>
-					</details>
-				</>
-			) : (
+			{profile && status !== 'success' ? (
+				<ValentinaMemoriesUploadPanel
+					inputId={inputId}
+					inputRef={inputRef}
+					accept={ACCEPT}
+					selectedFile={selectedFile}
+					selectedPreviewUrl={selectedPreviewUrl}
+					selectedCaption={selectedCaption}
+					status={status}
+					originAllowed={originAllowed}
+					quota={quota}
+					onFileChange={onFileChange}
+					onCaptionChange={setSelectedCaption}
+					onConfirmUpload={onConfirmUpload}
+					onCancelSelection={onCancelSelection}
+				/>
+			) : status === 'success' ? (
 				<section className="status-page__success" aria-live="polite">
 					<p className="status-page__status" role="status">
 						{completionMessage}
 					</p>
+					{captionWarning ? (
+						<div className="status-page__caption-warning">
+							<p
+								className="status-page__status status-page__status--warning"
+								role="status"
+							>
+								{captionWarning}
+							</p>
+							{captionRetry ? (
+								<button
+									type="button"
+									className="status-page__btn status-page__btn--outline"
+									onClick={() => void retryUploadedCaption()}
+								>
+									{copy.retryCaption}
+								</button>
+							) : null}
+						</div>
+					) : null}
 					<div className="status-page__inline-actions">
 						<button
 							type="button"
@@ -603,7 +685,7 @@ export default function ValentinaMemoriesCapture({
 						</a>
 					</div>
 				</section>
-			)}
+			) : null}
 
 			{status === 'error' && message ? (
 				<section className="status-page__upload-error">
