@@ -2,9 +2,11 @@ import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import {
 	VALENTINA_MEMORIES_QR_TARGET_URL,
+	VALENTINA_MEMORIES_RECOVERY_ROUTE_PATH,
 	VALENTINA_MEMORIES_ROUTE_PATH,
 	valentinaMemoriesCaptureCopy,
 	valentinaMemoriesPageCopy,
+	valentinaMemoriesRecoveryPageCopy,
 } from '@/data/valentina-memories.data';
 
 const readSource = (relativePath: string) =>
@@ -41,15 +43,37 @@ describe('valentina memories route source contracts', () => {
 		expect(VALENTINA_MEMORIES_ROUTE_PATH).toBe('/r/valentina');
 		expect(VALENTINA_MEMORIES_QR_TARGET_URL).toBe('https://celebra-me.com/r/valentina');
 		expect(valentinaMemoriesPageCopy.title).toMatch(/Recuerdos de Valentina/i);
-		expect(valentinaMemoriesPageCopy.heading).toBe('Recuerdos de Valentina');
+		expect(valentinaMemoriesPageCopy.heading).toBe('Comparta sus fotos y videos');
 		expect(valentinaMemoriesPageCopy.subtitle).not.toBe('Próximamente');
 		expect(valentinaMemoriesPageCopy.body).toMatch(/fotos?|video/i);
 		expect(valentinaMemoriesPageCopy.body).toMatch(/Valentina/i);
 		expect(valentinaMemoriesPageCopy.robots).toBe('noindex');
 		expect(valentinaMemoriesCaptureCopy.chooseFile).toMatch(/foto|video/i);
 		expect(valentinaMemoriesCaptureCopy.success).toMatch(/guardó/i);
-		expect(valentinaMemoriesCaptureCopy.uploadAnother).toBe('Subir otra');
+		expect(valentinaMemoriesCaptureCopy.uploadAnother).toBe('Subir otro recuerdo');
 		expect(valentinaMemoriesCaptureCopy.unavailable).toMatch(/no está disponible/i);
+	});
+
+	it('separates recovery into a noindex route and reuses dashboard authentication', () => {
+		const recoveryPath = 'src/pages/r/valentina/recuperar.astro';
+		expect(existsSync(recoveryPath)).toBe(true);
+		const recoveryPage = readSource(recoveryPath);
+		const capture = readSource('src/components/memories/ValentinaMemoriesCapture.tsx');
+		expect(VALENTINA_MEMORIES_RECOVERY_ROUTE_PATH).toBe('/r/valentina/recuperar');
+		expect(recoveryPage).toContain('ValentinaMemoriesRecovery');
+		expect(recoveryPage).toContain('name="robots"');
+		expect(valentinaMemoriesRecoveryPageCopy.robots).toBe('noindex');
+		expect(valentinaMemoriesPageCopy.organizerCtaHref).toBe(
+			'/login?next=%2Fdashboard%2Fmemories',
+		);
+		expect(capture).not.toContain('recoverSession');
+		expect(capture).not.toContain('recoveryDraft');
+		expect(capture).not.toContain('guestAlias');
+	});
+
+	it('models an absent session as a private successful response', () => {
+		const sessionRoute = readSource('src/pages/api/memories/valentina/session.ts');
+		expect(sessionRoute).toContain('jsonResponse({ profile: null })');
 	});
 
 	it('renders the Layout named head slot so noindex metadata can emit', () => {

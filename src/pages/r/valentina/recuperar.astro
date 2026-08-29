@@ -1,0 +1,44 @@
+---
+export const prerender = true;
+
+import Layout from '@/layouts/Layout.astro';
+import ValentinaMemoriesRecovery from '@/components/memories/ValentinaMemoriesRecovery';
+import {
+	VALENTINA_MEMORIES_RECOVERY_ROUTE_PATH,
+	valentinaMemoriesRecoveryPageCopy,
+} from '@/data/valentina-memories.data';
+
+const copy = valentinaMemoriesRecoveryPageCopy;
+---
+
+<Layout
+	title={copy.title}
+	description={copy.description}
+	hideHeader={true}
+	className="theme-preset--jewelry-box-landing"
+>
+	<meta name="robots" content={copy.robots} slot="head" />
+
+	<main
+		class="status-page status-page--memories status-page--recovery"
+		data-route={VALENTINA_MEMORIES_RECOVERY_ROUTE_PATH}
+		data-page="valentina-memories-recovery"
+	>
+		<div class="status-page__bg-decoration"></div>
+		<div class="status-page__container">
+			<section class="status-page__card" aria-labelledby="recovery-heading">
+				<header class="status-page__header">
+					<h1 id="recovery-heading" class="status-page__title">{copy.heading}</h1>
+					<p class="status-page__description">{copy.body}</p>
+				</header>
+
+				<ValentinaMemoriesRecovery client:load />
+
+				<nav class="status-page__support-links" aria-label="Enlaces de ayuda">
+					<a href={copy.backHref}>{copy.backLabel}</a>
+					<a href={copy.organizerHref}>{copy.organizerLabel}</a>
+				</nav>
+			</section>
+		</div>
+	</main>
+</Layout>

@@ -1,6 +1,6 @@
 import {
 	VALENTINA_MEMORIES_ALLOWED_MIME_TYPES,
-	VALENTINA_MEMORIES_ALLOWED_PRODUCTION_ORIGIN,
+	VALENTINA_MEMORIES_BROWSER_ORIGINS,
 	VALENTINA_MEMORIES_EVENT_ID,
 	VALENTINA_MEMORIES_EVENT_TIME_ZONE,
 	VALENTINA_MEMORIES_MAX_IMAGE_BYTES,
@@ -22,6 +22,7 @@ import {
 	VALENTINA_MEMORIES_UPLOAD_WINDOW_ENDS_AT,
 	VALENTINA_MEMORIES_UPLOAD_WINDOW_STARTS_AT,
 	buildValentinaMemoriesObjectKey,
+	buildValentinaMemoriesR2CorsConfig,
 	getValentinaMemoriesMimePolicy,
 	getValentinaMemoriesStorageBucketName,
 	getValentinaMemoriesPresignExpiresAt,
@@ -52,7 +53,9 @@ describe('valentina memories upload contract', () => {
 		expect(VALENTINA_MEMORIES_EVENT_ID).toBe('valentina');
 		expect(VALENTINA_MEMORIES_OBJECT_PREFIX).toBe('events/valentina/');
 		expect(VALENTINA_MEMORIES_SIGN_PATH).toBe('/sign/valentina');
-		expect(VALENTINA_MEMORIES_ALLOWED_PRODUCTION_ORIGIN).toBe('https://www.celebra-me.com');
+		expect(VALENTINA_MEMORIES_BROWSER_ORIGINS.production).toEqual([
+			'https://www.celebra-me.com',
+		]);
 		expect(VALENTINA_MEMORIES_PRESIGN_TTL_SECONDS).toBe(300);
 		expect(VALENTINA_MEMORIES_OBJECT_RETENTION_DAYS).toBe(30);
 		expect(VALENTINA_MEMORIES_OBJECT_RETENTION_SECONDS).toBe(30 * 24 * 60 * 60);
@@ -122,11 +125,23 @@ describe('valentina memories upload contract', () => {
 		expect(resolveValentinaMemoriesFileMimeType({ name: 'payload.pdf', type: '' })).toBeNull();
 	});
 
-	it('authorizes only the production origin', () => {
+	it('authorizes only canonical browser origins and scopes CORS by target', () => {
 		expect(isAllowedValentinaMemoriesOrigin('https://www.celebra-me.com')).toBe(true);
+		expect(isAllowedValentinaMemoriesOrigin('https://celebra-me.vercel.app')).toBe(true);
+		expect(isAllowedValentinaMemoriesOrigin('https://random-deployment.vercel.app')).toBe(
+			false,
+		);
 		expect(isAllowedValentinaMemoriesOrigin('https://celebra-me.com')).toBe(false);
 		expect(isAllowedValentinaMemoriesOrigin('https://memories.celebra-me.com')).toBe(false);
 		expect(isAllowedValentinaMemoriesOrigin(null)).toBe(false);
+		expect(buildValentinaMemoriesR2CorsConfig('production').rules[0].allowed.origins).toEqual(
+			VALENTINA_MEMORIES_BROWSER_ORIGINS.production,
+		);
+		expect(buildValentinaMemoriesR2CorsConfig('staging').rules[0].allowed).toEqual({
+			origins: VALENTINA_MEMORIES_BROWSER_ORIGINS.staging,
+			methods: ['PUT'],
+			headers: ['Content-Type', 'If-None-Match', 'x-amz-checksum-sha256'],
+		});
 	});
 
 	it('resolves only a server-owned Worker origin and keeps the path in code', () => {

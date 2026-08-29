@@ -24,7 +24,15 @@ export type ValentinaMemoriesCaptureIssue =
 	| 'sign_failed'
 	| 'put_failed'
 	| 'network_failed'
+	| 'official_origin_required'
 	| 'unavailable';
+
+export function classifyValentinaMemoriesTransportIssue(
+	fallback: ValentinaMemoriesCaptureIssue,
+	isOnline = typeof navigator === 'undefined' || navigator.onLine,
+): ValentinaMemoriesCaptureIssue {
+	return isOnline ? fallback : 'network_failed';
+}
 
 const OPTIMIZABLE_IMAGE_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
@@ -173,6 +181,7 @@ export function valentinaMemoriesIssueCopy(
 	if (issue === 'quota_reached') return copy.quotaReached;
 	if (issue === 'put_failed') return copy.putFailed;
 	if (issue === 'network_failed') return copy.networkFailed;
+	if (issue === 'official_origin_required') return copy.officialOriginRequired;
 	if (issue === 'unavailable') return copy.unavailable;
 	return copy.signFailed;
 }

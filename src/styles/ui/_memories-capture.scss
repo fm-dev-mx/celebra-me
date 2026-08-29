@@ -1,36 +1,115 @@
-.status-page__status--privacy {
-	font-size: 0.8rem;
-	opacity: 82%;
-}
+.status-page--memories {
+	overflow: visible;
+	padding: 1rem;
+	align-items: flex-start;
 
-.status-page__recovery {
-	display: grid;
-	gap: 0.35rem;
-	margin-top: 1rem;
-	padding: 0.9rem;
-	border: 1px solid currentcolor;
-	border-radius: 0.6rem;
-	font-size: 0.9rem;
-
-	code {
-		font-size: 1.1rem;
-		letter-spacing: 0.1em;
+	.status-page__container {
+		max-width: 540px;
 	}
 
-	span {
-		font-size: 0.8rem;
+	.status-page__card {
+		gap: 1.25rem;
+		padding: clamp(1.25rem, 5vw, 2rem);
 	}
 
-	div {
-		display: flex;
-		flex-wrap: wrap;
+	.status-page__header {
 		gap: 0.5rem;
 	}
+
+	.status-page__title {
+		font-size: clamp(2rem, 9vw, 3.25rem);
+	}
+
+	.status-page__subtitle {
+		font-size: 1.2rem;
+	}
+
+	.status-page__description {
+		font-size: 1.05rem;
+		line-height: 1.45;
+	}
+
+	.status-page__btn {
+		min-height: 44px;
+		justify-content: center;
+		padding: 0.85rem 1.25rem;
+	}
+}
+
+.status-page--recovery {
+	align-items: center;
+
+	.status-page__card {
+		max-width: 480px;
+	}
+}
+
+.status-page__capture,
+.status-page__onboarding,
+.status-page__recovery-form {
+	width: 100%;
+}
+
+.status-page__onboarding,
+.status-page__recovery-form {
+	display: grid;
+	gap: 0.65rem;
+	text-align: left;
+
+	input {
+		width: 100%;
+		min-height: 46px;
+		padding: 0.7rem 0.8rem;
+		border: 1px solid var(--color-text-primary);
+		border-radius: 0.45rem;
+		background: rgb(255 255 255 / 82%);
+		font: inherit;
+	}
+}
+
+.status-page__capture {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 0.75rem;
+}
+
+.status-page__upload-button {
+	width: 100%;
+	cursor: pointer;
+}
+
+.status-page__identity {
+	padding: 0.65rem 0.75rem;
+	border: 1px solid rgb(var(--color-text-primary-rgb) / 20%);
+	border-radius: 0.55rem;
+	text-align: left;
+
+	p {
+		margin: 0;
+	}
+}
+
+.status-page__text-button {
+	min-height: 44px;
+	padding: 0 0.35rem;
+	border: 0;
+	background: transparent;
+	color: var(--color-text-emphasis);
+	font: inherit;
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+.status-page__inline-controls,
+.status-page__inline-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
 
 	input,
 	button {
 		min-height: 44px;
-		border-radius: 0.5rem;
 	}
 
 	input {
@@ -42,20 +121,96 @@
 	button {
 		padding: 0.6rem 0.85rem;
 	}
+}
 
-	&--restore div {
+.status-page__limits-summary,
+.status-page__quota {
+	margin: 0;
+	font-family: var(--font-body, 'EB Garamond', serif);
+	line-height: 1.4;
+}
+
+.status-page__limits-summary {
+	font-size: 0.95rem;
+}
+
+.status-page__quota {
+	font-size: 0.9rem;
+	font-weight: 600;
+}
+
+.status-page__details {
+	padding: 0.5rem 0;
+	font-size: 0.85rem;
+	text-align: left;
+
+	summary {
+		min-height: 44px;
 		display: flex;
-		flex-wrap: wrap;
-		gap: 0.45rem;
 		align-items: center;
+		color: var(--color-text-emphasis);
+		cursor: pointer;
+	}
+
+	p {
+		margin: 0.5rem 0 0;
+		line-height: 1.45;
+	}
+}
+
+.status-page__success,
+.status-page__upload-error,
+.status-page__progress {
+	display: grid;
+	gap: 0.75rem;
+}
+
+.status-page__recovery-code {
+	display: grid;
+	gap: 0.55rem;
+	padding: 0.9rem;
+	border: 1px solid currentcolor;
+	border-radius: 0.6rem;
+	font-size: 0.9rem;
+	text-align: center;
+
+	code {
+		font-size: 1.1rem;
+		letter-spacing: 0.1em;
+	}
+
+	span {
+		font-size: 0.8rem;
+	}
+
+	button {
+		min-height: 44px;
+		padding: 0.6rem 0.85rem;
+	}
+}
+
+.status-page__support-links {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 0.75rem 1.25rem;
+
+	a {
+		min-height: 44px;
+		display: inline-flex;
+		align-items: center;
+		color: var(--color-text-emphasis);
 	}
 }
 
 .status-page__memories {
 	display: grid;
 	gap: 0.8rem;
-	margin-top: 1.5rem;
+	margin-top: 1.25rem;
+	padding-top: 1rem;
+	border-top: 1px solid rgb(var(--color-text-primary-rgb) / 18%);
 	text-align: left;
+	scroll-margin-top: 1rem;
 
 	h2 {
 		margin: 0;
@@ -81,5 +236,25 @@
 	button {
 		justify-self: start;
 		min-height: 44px;
+	}
+}
+
+@media (width <= 480px) {
+	.status-page--memories {
+		padding: 0;
+
+		.status-page__card {
+			min-height: 100dvh;
+			border-radius: 0;
+			box-shadow: none;
+		}
+	}
+
+	.status-page__inline-actions {
+		flex-direction: column;
+
+		.status-page__btn {
+			width: 100%;
+		}
 	}
 }
