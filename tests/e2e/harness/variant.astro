@@ -1,10 +1,6 @@
 ---
-export const prerender = false;
-
-// Test-only visual harness — dev-mode only, injected via astro.config.mjs integration.
-// This file is prefixed with _ to exclude it from Astro's auto-routing.
-// The route /test/variant is injected by the test-variant-harness integration only
-// when command === 'dev', so it is absent from production builds, sitemap, and deployed routes.
+// Test-only visual harness — injected exclusively during local Playwright execution.
+// Resides in tests/e2e/harness/ so src/ remains strictly free of test imports and routes.
 
 import Hero from '@/components/invitation/Hero.astro';
 import InvitationSections from '@/components/invitation/InvitationSections.astro';
@@ -15,12 +11,9 @@ import { resolvePresetCssUrl } from '@/lib/invitation/preset-css-resolver';
 import { resolveInvitationCssLoadPlan } from '@/lib/invitation/section-css-resolver';
 import { buildInvitationCssResolverInput } from '@/lib/invitation/invitation-css-input';
 import { buildInvitationStylesheetHeadLinks } from '@/lib/invitation/invitation-css-head-links';
-import {
-	buildSyntheticVariantEvent,
-} from '../../../tests/fixtures/structural-variants/synthetic-variant-fixtures';
+import { buildSyntheticVariantEvent } from '../../fixtures/structural-variants/synthetic-variant-fixtures';
 import type { CanonicalVariantSection } from '@/lib/invitation/section-variants';
 import type { EventContentEntry } from '@/lib/content/events';
-
 
 const section = Astro.url.searchParams.get('section') as CanonicalVariantSection | null;
 const variant = Astro.url.searchParams.get('variant') ?? 'standard';
@@ -74,6 +67,11 @@ const headLinks = buildInvitationStylesheetHeadLinks({
 			margin: 0;
 			padding: 0;
 			overflow-x: hidden;
+		}
+		.invitation-section-wrapper {
+			opacity: 1 !important;
+			transform: none !important;
+			visibility: visible !important;
 		}
 	</style>
 </head>

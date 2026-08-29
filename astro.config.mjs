@@ -57,19 +57,20 @@ if (process.env.CELEBRA_ENV_BOOTSTRAP_LOG === '1') {
 
 /**
  * Dev-only integration: injects the visual test harness route (/test/variant) exclusively
- * when the Astro dev server runs. The harness page lives at src/pages/test/_variant.astro
- * (underscore prefix excludes it from Astro's auto-routing). It is not injected during
- * builds, so the route is absent from the production bundle, sitemap, and deployed routes.
+ * when running local Playwright visual suites (ENABLE_TEST_VARIANT_HARNESS=1) under `astro dev`.
+ * The harness page lives at tests/e2e/harness/variant.astro (outside src/). It is never injected
+ * during builds or standard dev servers, so the route is absent from the production bundle, sitemap,
+ * and deployed routes.
  */
 function testVariantHarnessIntegration() {
 	return {
 		name: 'test-variant-harness',
 		hooks: {
 			'astro:config:setup': ({ command, injectRoute }) => {
-				if (command === 'dev') {
+				if (command === 'dev' && process.env.ENABLE_TEST_VARIANT_HARNESS === '1') {
 					injectRoute({
 						pattern: '/test/variant',
-						entrypoint: 'src/pages/test/_variant.astro',
+						entrypoint: './tests/e2e/harness/variant.astro',
 						prerender: false,
 					});
 				}

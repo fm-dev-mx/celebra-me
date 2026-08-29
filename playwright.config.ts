@@ -52,6 +52,7 @@ export default defineConfig({
 				env: {
 					...process.env,
 					ASTRO_DEV_BACKGROUND: '1',
+					ENABLE_TEST_VARIANT_HARNESS: '1',
 					SUPABASE_URL: localSupabaseUrl,
 					PUBLIC_SUPABASE_URL: localPublicSupabaseUrl,
 					CELEBRA_RUNTIME_TARGET: process.env.CELEBRA_RUNTIME_TARGET?.trim() || 'local',
