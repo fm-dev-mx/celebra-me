@@ -1,5 +1,6 @@
 import type { APIContext } from 'astro';
 import { onRequest as middleware } from '../../src/middleware';
+import { resolveAfterMicrotasks } from '../helpers/api-mocks';
 
 interface TestLocals {
 	session?: {
@@ -24,15 +25,6 @@ function createContext(path: string) {
 		},
 		locals,
 	};
-}
-
-async function resolveAfterMicrotasks<T>(value: T, turns: number): Promise<T> {
-	let pending = Promise.resolve();
-	for (let turn = 0; turn < turns; turn += 1) {
-		pending = pending.then(() => undefined);
-	}
-	await pending;
-	return value;
 }
 
 function createIsolatedContext(path: string, initialCookies: Record<string, string>) {

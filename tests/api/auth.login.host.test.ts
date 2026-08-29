@@ -3,7 +3,7 @@ import { POST as loginHost } from '@/pages/api/auth/login-host';
 import * as authApi from '@/lib/rsvp/auth/auth-api';
 import * as authIdentifierService from '@/lib/rsvp/services/auth-identifier.service';
 import * as rateLimitProvider from '@/lib/rsvp/security/rate-limit-provider';
-import { createMockRequest } from '../helpers/api-mocks';
+import { createMockRequest, resolveAfterMicrotasks } from '../helpers/api-mocks';
 import { AuthRequestError } from '@/lib/rsvp/core/errors';
 
 jest.mock('@/lib/rsvp/auth/auth-api', () => ({
@@ -18,15 +18,6 @@ jest.mock('@/lib/rsvp/security/rate-limit-provider', () => ({
 jest.mock('@/lib/rsvp/services/auth-identifier.service', () => ({
 	resolvePasswordAuthEmail: jest.fn(),
 }));
-
-async function resolveAfterMicrotasks<T>(value: T, turns: number): Promise<T> {
-	let pending = Promise.resolve();
-	for (let turn = 0; turn < turns; turn += 1) {
-		pending = pending.then(() => undefined);
-	}
-	await pending;
-	return value;
-}
 
 describe('API: /api/auth/login-host', () => {
 	const signInMock = authApi.signInWithPassword as jest.Mock;
