@@ -4,6 +4,16 @@
  * Published canonical content uses venues[] only. Historical ceremony/reception
  * values are accepted at named ingress boundaries and converted once, in stable
  * ceremony-then-reception order. Mixed representations fail closed.
+ *
+ * Authorized Ingress/Intake Consumers:
+ *   1. `src/lib/invitation/content-resolver.ts` (resolving published DB rows at route ingress)
+ *   2. `src/lib/intake/mappers/draft-to-published.mapper.ts` (draft-to-published boundary)
+ *   3. `src/lib/intake/services/draft-content-mapper.ts` (draft intake mapping)
+ *   4. `src/lib/intake/services/draft-section-mappers.ts` (draft section conversion)
+ *
+ * Documented Retirement Condition:
+ *   When all historical published rows in Preview and Production databases have been migrated
+ *   to the canonical `venues[]` schema and no draft intake mappers receive legacy `ceremony`/`reception` objects.
  */
 
 export type LocationRecord = Record<string, unknown>;

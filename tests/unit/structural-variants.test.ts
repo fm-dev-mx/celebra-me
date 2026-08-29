@@ -72,9 +72,33 @@ describe('canonical section variant contracts', () => {
 				},
 			},
 		});
+		const mixedLocationResult = eventContentSchema.safeParse({
+			...baseInput,
+			location: {
+				variant: 'standard',
+				venues: [
+					{
+						type: 'ceremony',
+						venueEvent: 'Ceremonia',
+						venueName: 'Lugar',
+						address: 'Dirección',
+						date: '2027-01-01',
+						time: '18:00',
+					},
+				],
+				ceremony: {
+					venueEvent: 'Ceremonia',
+					venueName: 'Lugar',
+					address: 'Dirección',
+					date: '2027-01-01',
+					time: '18:00',
+				},
+			},
+		});
 
 		expect(familyResult.success).toBe(false);
 		expect(locationResult.success).toBe(false);
+		expect(mixedLocationResult.success).toBe(false);
 	});
 
 	it('enforces single-keepsake cardinality', () => {

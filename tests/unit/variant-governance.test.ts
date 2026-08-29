@@ -256,4 +256,29 @@ describe('canonical variant governance', () => {
 	it('keeps temporary parity checkouts out of Jest configuration', () => {
 		expect(read('jest.config.cjs')).not.toContain('.tmp/');
 	});
+
+	it('restricts legacy location normalizer strictly to authorized ingress/intake boundaries', () => {
+		const allowedConsumers = [
+			'src/lib/intake/mappers/draft-to-published.mapper.ts',
+			'src/lib/intake/services/draft-content-mapper.ts',
+			'src/lib/intake/services/draft-section-mappers.ts',
+			'src/lib/invitation/content-resolver.ts',
+		]
+			.map(toPosix)
+			.sort();
+
+		const actualConsumers = listFiles('src')
+			.filter((relativePath) => /\.(?:ts|tsx|astro)$/u.test(relativePath))
+			.filter((relativePath) => relativePath !== 'src/lib/invitation/location-normalizer.ts')
+			.filter((relativePath) => {
+				const source = read(relativePath);
+				return (
+					source.includes('normalizeLegacyLocation') ||
+					source.includes('location-normalizer')
+				);
+			})
+			.sort();
+
+		expect(actualConsumers).toEqual(allowedConsumers);
+	});
 });
