@@ -8,6 +8,7 @@ import {
 	VALENTINA_MEMORIES_SESSION_MAX_BYTES,
 	VALENTINA_MEMORIES_SESSION_MAX_FILES,
 	VALENTINA_MEMORIES_SESSION_MAX_IN_FLIGHT,
+	VALENTINA_MEMORIES_SESSION_MAX_VIDEOS,
 } from '../../src/data/valentina-memories-upload.contract.ts';
 import { DISPOSABLE_DB_URL } from './db-workflow-lib.ts';
 
@@ -51,11 +52,15 @@ function reservationSql(input: {
 	objectId: string;
 	requestId: string;
 	checksum: string;
+	mimeType?: 'image/jpeg' | 'video/mp4';
 }): string {
+	const mimeType = input.mimeType ?? 'image/jpeg';
+	const extension = mimeType === 'video/mp4' ? 'mp4' : 'jpg';
+	const duration = mimeType === 'video/mp4' ? '10' : 'null';
 	return `select id from public.reserve_valentina_memory_item(
-		'valentina', '${input.sessionId}', '${VALENTINA_MEMORIES_OBJECT_PREFIX}${input.objectId}.jpg',
-		'image/jpeg', 100, '${input.checksum}', null, '${input.requestId}',
-		${VALENTINA_MEMORIES_SESSION_MAX_FILES}, ${VALENTINA_MEMORIES_SESSION_MAX_BYTES},
+		'valentina', '${input.sessionId}', '${VALENTINA_MEMORIES_OBJECT_PREFIX}${input.objectId}.${extension}',
+		'${mimeType}', 100, '${input.checksum}', ${duration}, '${input.requestId}',
+		${VALENTINA_MEMORIES_SESSION_MAX_FILES}, ${VALENTINA_MEMORIES_SESSION_MAX_VIDEOS}, ${VALENTINA_MEMORIES_SESSION_MAX_BYTES},
 		${VALENTINA_MEMORIES_SESSION_MAX_IN_FLIGHT}, ${VALENTINA_MEMORIES_EVENT_MAX_OBJECTS},
 		${VALENTINA_MEMORIES_EVENT_MAX_BYTES}
 	);`;
@@ -124,6 +129,34 @@ async function main(): Promise<void> {
 			!quotaFailures[0].stderr.includes('memories_session_concurrency_quota')
 		) {
 			throw new Error('Concurrent session quota did not serialize deterministically.');
+		}
+
+		const videoQuotaSession = randomUUID();
+		createdSessions.push(videoQuotaSession);
+		insertSession(videoQuotaSession);
+		for (let index = 0; index < VALENTINA_MEMORIES_SESSION_MAX_VIDEOS; index += 1) {
+			runPsql(`insert into public.valentina_memory_items (
+				event_key, session_id, object_key, mime_type, size_bytes, checksum_sha256,
+				duration_seconds, status, accepted_at
+			) values (
+				'valentina', '${videoQuotaSession}', '${VALENTINA_MEMORIES_OBJECT_PREFIX}${randomUUID()}.mp4',
+				'video/mp4', 100, '${String(index + 1).padStart(64, '0')}', 10, 'accepted', now()
+			);`);
+		}
+		const videoQuotaResult = await runConcurrentPsql(
+			reservationSql({
+				sessionId: videoQuotaSession,
+				objectId: randomUUID(),
+				requestId: randomUUID(),
+				checksum: 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+				mimeType: 'video/mp4',
+			}),
+		);
+		if (
+			videoQuotaResult.status === 0 ||
+			!videoQuotaResult.stderr.includes('memories_session_video_quota')
+		) {
+			throw new Error('Per-session video quota was not enforced.');
 		}
 
 		const dedupSession = randomUUID();

@@ -1,6 +1,6 @@
 begin;
 
-select plan(30);
+select plan(31);
 
 select ok(
 	(select relrowsecurity from pg_catalog.pg_class where oid = 'public.valentina_memory_sessions'::regclass),
@@ -20,7 +20,7 @@ select ok(has_table_privilege('service_role', 'public.valentina_memory_sessions'
 select ok(
 	has_function_privilege(
 		'service_role',
-		'public.reserve_valentina_memory_item(text,uuid,text,text,bigint,text,numeric,uuid,integer,bigint,integer,integer,bigint)',
+		'public.reserve_valentina_memory_item(text,uuid,text,text,bigint,text,numeric,uuid,integer,integer,bigint,integer,integer,bigint)',
 		'execute'
 	),
 	'service role can execute the reservation RPC'
@@ -28,7 +28,7 @@ select ok(
 select ok(
 	not has_function_privilege(
 		'anon',
-		'public.reserve_valentina_memory_item(text,uuid,text,text,bigint,text,numeric,uuid,integer,bigint,integer,integer,bigint)',
+		'public.reserve_valentina_memory_item(text,uuid,text,text,bigint,text,numeric,uuid,integer,integer,bigint,integer,integer,bigint)',
 		'execute'
 	),
 	'anon cannot execute the reservation RPC'
@@ -55,7 +55,7 @@ select lives_ok($sql$
 		'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
 		null,
 		'30000000-0000-4000-8000-000000000001',
-		20, 536870912, 2, 2000, 8000000000
+		20, 5, 536870912, 2, 2000, 8000000000
 	)
 $sql$, 'first reservation succeeds');
 select is((select count(*) from public.valentina_memory_items), 1::bigint, 'first reservation creates one row');
@@ -69,7 +69,7 @@ select lives_ok($sql$
 		'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
 		null,
 		'30000000-0000-4000-8000-000000000001',
-		20, 536870912, 2, 2000, 8000000000
+		20, 5, 536870912, 2, 2000, 8000000000
 	)
 $sql$, 'same idempotency key returns the original reservation');
 select is((select count(*) from public.valentina_memory_items), 1::bigint, 'idempotent replay creates no row');
@@ -83,7 +83,7 @@ select lives_ok($sql$
 		'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
 		null,
 		'30000000-0000-4000-8000-000000000002',
-		20, 536870912, 2, 2000, 8000000000
+		20, 5, 536870912, 2, 2000, 8000000000
 	)
 $sql$, 'second concurrent reservation succeeds');
 select throws_ok($sql$
@@ -95,7 +95,7 @@ select throws_ok($sql$
 		'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
 		null,
 		'30000000-0000-4000-8000-000000000003',
-		20, 536870912, 2, 2000, 8000000000
+		20, 5, 536870912, 2, 2000, 8000000000
 	)
 $sql$, 'P0001', 'memories_session_concurrency_quota', 'third in-flight reservation is rejected');
 
@@ -150,6 +150,29 @@ select is(
 );
 
 insert into public.valentina_memory_items (
+	event_key, session_id, object_key, mime_type, size_bytes, checksum_sha256,
+	duration_seconds, status, accepted_at
+)
+select
+	'valentina',
+	'10000000-0000-4000-8000-000000000001',
+	'events/valentina/50000000-0000-4000-8000-' || lpad(value::text, 12, '0') || '.mp4',
+	'video/mp4', 100, lpad(value::text, 64, '0'), 10, 'accepted', now()
+from generate_series(1, 5) as value;
+select throws_ok($sql$
+	select * from public.reserve_valentina_memory_item(
+		'valentina',
+		'10000000-0000-4000-8000-000000000001',
+		'events/valentina/50000000-0000-4000-8000-000000000006.mp4',
+		'video/mp4', 100,
+		'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+		10,
+		'30000000-0000-4000-8000-000000000006',
+		20, 5, 536870912, 2, 2000, 8000000000
+	)
+$sql$, 'P0001', 'memories_session_video_quota', 'sixth resident video is rejected');
+
+insert into public.valentina_memory_items (
 	id, event_key, session_id, object_key, mime_type, size_bytes, checksum_sha256,
 	status, created_at, updated_at
 ) values (
@@ -183,13 +206,15 @@ select ok(
 	'duplicate keeps only its private winner relation in the catalog'
 );
 select is(
-	(select count(*) from public.valentina_memory_items where status = 'accepted'),
+	(select count(*) from public.valentina_memory_items
+		where status = 'accepted'
+			and checksum_sha256 = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),
 	1::bigint,
 	'deduplication leaves exactly one accepted object'
 );
 select is(
 	(select count(*) from public.valentina_memory_items where object_deleted_at is null),
-	3::bigint,
+	8::bigint,
 	'reserved objects continue consuming quota until physical deletion is recorded'
 );
 select ok(
