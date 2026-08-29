@@ -1,7 +1,7 @@
-# Local wrangler secrets only. Copy to .dev.vars (gitignored).
-# Never prefix these with PUBLIC_. Never commit real values.
-R2_ACCOUNT_ID=
-R2_ACCESS_KEY_ID=
-R2_SECRET_ACCESS_KEY=
-R2_BUCKET=celebra-memories
+# Local Sign Worker values only. Copy to .dev.vars (gitignored).
+# Use a bucket-scoped R2 Object Read & Write token. Never commit real values.
+MEMORIES_R2_ACCOUNT_ID=
+MEMORIES_R2_PRESIGN_ACCESS_KEY_ID=
+MEMORIES_R2_PRESIGN_SECRET_ACCESS_KEY=
+# Public SPKI P-256 key paired with the Vercel upload-control private key.
 MEMORIES_UPLOAD_REQUEST_VERIFY_PUBLIC_KEY=

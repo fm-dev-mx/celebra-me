@@ -1,3 +1,3 @@
-# Local Wrangler values only. Copy to .dev.vars (gitignored).
-# Use the public SPKI P-256 PEM paired with the Vercel retrieval private key.
+# Local Retrieval Worker value only. Copy to .dev.vars (gitignored).
+# Public SPKI P-256 key paired with the Vercel retrieval-control private key.
 MEMORIES_RETRIEVAL_REQUEST_VERIFY_PUBLIC_KEY=

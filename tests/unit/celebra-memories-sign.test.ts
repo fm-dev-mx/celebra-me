@@ -23,11 +23,11 @@ const PUBLIC_KEY = publicKey.export({ type: 'spki', format: 'pem' }).toString();
 
 function createEnv(limit = jest.fn(async () => ({ success: true }))): MemoriesSignEnv {
 	return {
-		R2_ACCOUNT_ID: 'test-account',
-		R2_ACCESS_KEY_ID: 'test-access-key',
-		R2_SECRET_ACCESS_KEY: 'test-secret',
-		R2_BUCKET: 'celebra-memories',
+		MEMORIES_R2_ACCOUNT_ID: 'test-account',
+		MEMORIES_R2_PRESIGN_ACCESS_KEY_ID: 'test-access-key',
+		MEMORIES_R2_PRESIGN_SECRET_ACCESS_KEY: 'test-secret',
 		MEMORIES_UPLOAD_REQUEST_VERIFY_PUBLIC_KEY: PUBLIC_KEY,
+		MEMORIES_STORAGE_TARGET: 'production',
 		SIGN_RATE_LIMITER: { limit },
 	};
 }

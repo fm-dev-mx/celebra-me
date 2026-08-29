@@ -3,6 +3,7 @@ import {
 	VALENTINA_MEMORIES_SIGN_PATH,
 	getValentinaMemoriesMimePolicy,
 	getValentinaMemoriesPresignExpiresAt,
+	getValentinaMemoriesStorageBucketName,
 	isWithinValentinaMemoriesUploadWindow,
 } from '../../../src/data/valentina-memories-upload.contract';
 import { isValentinaMemoriesObjectKeyForMime } from '../../../src/data/valentina-memories-media.contract';
@@ -86,6 +87,10 @@ export async function handleMemoriesSignRequest(
 	if (!hasRequiredR2Secrets(env)) {
 		return errorResponse('sign_failed', 'No se pudo firmar la subida.', 503, null);
 	}
+	const bucketName = getValentinaMemoriesStorageBucketName(env.MEMORIES_STORAGE_TARGET);
+	if (!bucketName) {
+		return errorResponse('sign_failed', 'No se pudo firmar la subida.', 503, null);
+	}
 	const rawBody = await readBody(request);
 	if (!rawBody) return errorResponse('invalid_request', 'La solicitud no es válida.', 400, null);
 	if (
@@ -128,10 +133,10 @@ export async function handleMemoriesSignRequest(
 	}
 	try {
 		const uploadUrl = await createPresignedR2PutUrl({
-			accountId: env.R2_ACCOUNT_ID,
-			accessKeyId: env.R2_ACCESS_KEY_ID,
-			secretAccessKey: env.R2_SECRET_ACCESS_KEY,
-			bucket: env.R2_BUCKET,
+			accountId: env.MEMORIES_R2_ACCOUNT_ID,
+			accessKeyId: env.MEMORIES_R2_PRESIGN_ACCESS_KEY_ID,
+			secretAccessKey: env.MEMORIES_R2_PRESIGN_SECRET_ACCESS_KEY,
+			bucket: bucketName,
 			objectKey: input.objectKey,
 			contentType: input.mimeType,
 			checksumSha256Hex: input.checksumSha256,

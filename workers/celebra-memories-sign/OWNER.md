@@ -1,6 +1,6 @@
-# Valentina Memories — owner handoff
+# Valentina Memories — owner Staging handoff
 
-This runbook covers owner-operated rollout and sanitized Production proof. Repository readiness does
+This runbook covers owner-operated Staging rollout and sanitized proof. Repository readiness does
 not authorize database, Cloudflare, R2, Vercel, DNS, Preview, Production, or Git mutations.
 
 The authoritative limits, MIME rules, paths, upload window, retention, quotas, and archive bounds
@@ -31,18 +31,16 @@ Do not repeat or override those values in provider notes, UI code, SQL, or deplo
 
 ## Credential ownership
 
-Generate two independent ECDSA P-256 key pairs. Do not reuse a pair between Workers.
+Use the canonical
+[Valentina Memories environment cheatsheet](../../docs/env-workflow.md#valentina-memories-environment-cheatsheet)
+for every variable name, owner, environment, and value source. Do not reproduce that inventory in
+this runbook. Generate two independent ECDSA P-256 pairs per hosted environment; private keys stay
+in Vercel, Cloudflare receives only the public keys, and R2 credentials stay bucket-scoped in the
+Sign Worker.
 
-| Owner            | Server-only configuration                                                                                                                           |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Vercel app       | `MEMORIES_UPLOAD_REQUEST_SIGNING_PRIVATE_KEY`, `MEMORIES_RETRIEVAL_REQUEST_SIGNING_PRIVATE_KEY`, `MEMORIES_PRIVATE_RETRIEVAL_ORIGIN`, `CRON_SECRET` |
-| Sign Worker      | `MEMORIES_UPLOAD_REQUEST_VERIFY_PUBLIC_KEY`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`                               |
-| Retrieval Worker | `MEMORIES_RETRIEVAL_REQUEST_VERIFY_PUBLIC_KEY`; private `MEMORIES_BUCKET` R2 binding                                                                |
-
-Private keys stay only in Vercel. Cloudflare receives the corresponding public keys. R2 credentials
-are bucket-scoped and belong only to the Sign Worker. No value above is browser-safe or prefixed
-`PUBLIC_`. The canonical signer target is repository-owned server configuration, not an environment
-variable.
+Wrangler deployment authentication is an operator boundary, not Worker runtime configuration.
+Interactive owner runs use `wrangler login`. This rollout does not create deployment tokens or use
+Cloudflare Secrets Store.
 
 Rotate both request-signing pairs and the R2 credentials every 90 days, or immediately after
 suspected exposure. For a request-signing pair, publish the replacement public key and private key
@@ -51,26 +49,29 @@ disable signing first, rotate the bucket-scoped credentials, deploy, verify, and
 credentials. Never paste keys, tokens, signed URLs, recovery codes, provider identifiers, or object
 names into evidence.
 
-## Owner apply order
+## Owner Staging apply order
 
 1. Reconcile the complete branch diff against the reviewed HEAD and obtain separate authorization
    for any future Git integration. Deploy only an immutable reviewed revision.
-2. Validate all migrations against `disposable-test`. Apply the forward migrations through the
-   guarded Local, Preview, and Production workflows, with a human authorization at each persistent
-   boundary.
-3. Confirm the existing R2 Standard bucket is private and account-wide projected storage remains
+2. Validate all migrations against `disposable-test`. Apply the forward migration to Preview only
+   through the guarded workflow and its explicit human authorization boundary.
+3. Confirm the Staging R2 Standard bucket is private and account-wide projected storage remains
    within the approved budget. Apply the repository CORS and lifecycle files exactly; confirm no
    public access.
-4. Configure the two public verification keys and the private bucket binding. Deploy the Retrieval
-   Worker and verify that unsigned, stale, wrong-audience, and guessed-key requests fail closed.
-5. Configure the four Vercel server-only values, deploy the app/backend, and enable the daily
-   cleanup cron. Its endpoint must accept only `Authorization: Bearer <CRON_SECRET>`.
-6. Configure the bucket-scoped Sign Worker values, deploy it last, and confirm requests require a
-   fresh ECDSA envelope and rate-limit by authenticated session ID.
-7. Verify R2 CORS permits only the canonical Production origin, `PUT`, and the headers present in
+4. Run `wrangler login`, configure the Staging public verification keys and private bucket binding,
+   then deploy the Retrieval Worker with `--env staging`. Verify unsigned, stale, wrong-audience,
+   and guessed-key requests fail closed.
+5. Configure the five Vercel Preview server-only values from the canonical cheatsheet, deploy the
+   app/backend, and enable the daily cleanup cron. Its endpoint must accept only
+   `Authorization: Bearer <CRON_SECRET>`.
+6. Configure the bucket-scoped Staging Sign Worker values, deploy it last with `--env staging`, and
+   confirm the configured Staging rate-limiter namespace is available. Block rollout if Cloudflare
+   rejects it. Then verify requests require a fresh ECDSA envelope and rate-limit by authenticated
+   session ID.
+7. Verify R2 CORS permits only the stable Vercel Preview origin, `PUT`, and the headers present in
    `r2-cors.production.json`. Verify lifecycle matches `r2-lifecycle.production.json`.
-8. Run the sanitized Production matrix below with synthetic, non-PII media only. Run phone checks
-   only after the canonical upload window opens.
+8. Run the sanitized Staging matrix below with synthetic, non-PII media only. Run phone checks only
+   after the canonical upload window opens.
 
 Cloudflare Free-account capacity is a budget gate, not an application quota. Before rollout, the
 owner must confirm account-wide R2 storage and operations plus Workers daily requests and CPU remain
@@ -125,7 +126,7 @@ after the canonical audit retention period. R2 lifecycle is the final bound, not
 - Do not change the printed QR, apex redirect, `www` hosting, unrelated DNS, or other event data
   during rollback.
 
-## Sanitized production proof table
+## Sanitized Staging proof table
 
 Every live result starts `UNVERIFIED`. Use only `VERIFIED`, `FAILED`, or `UNVERIFIED`; never infer
 success from repository files or local tests.
@@ -152,7 +153,7 @@ secrets, and provider account or project IDs.
 
 ## Repository validation
 
-Run and record exact results separately from Production proof:
+Run and record exact results separately from Staging proof:
 
 ```text
 pnpm test:memories-sign
@@ -170,5 +171,6 @@ pnpm worker:memories:dry-run
 git diff --check
 ```
 
-A successful repository handoff may be `REPOSITORY_READY`; only owner-operated live proof may be
-`PRODUCTION_VERIFIED`.
+A successful repository handoff may be `REPOSITORY_READY`; only owner-operated Staging proof may be
+`STAGING_VERIFIED`. Production requires independent P-256 pairs and R2 credentials, explicit human
+authorization, and a separate validation handoff.

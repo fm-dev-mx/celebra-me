@@ -63,6 +63,7 @@ function signedRequest(
 function createEnv(overrides: Record<string, unknown> = {}) {
 	return {
 		MEMORIES_RETRIEVAL_REQUEST_VERIFY_PUBLIC_KEY: PUBLIC_KEY,
+		MEMORIES_STORAGE_TARGET: 'production',
 		MEMORIES_BUCKET: {
 			get: jest.fn(),
 			delete: jest.fn(async () => undefined),

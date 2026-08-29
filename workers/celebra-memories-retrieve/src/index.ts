@@ -7,26 +7,13 @@ import {
 import {
 	VALENTINA_MEMORIES_JSON_BODY_MAX_BYTES,
 	VALENTINA_MEMORIES_OBJECT_PREFIX,
+	getValentinaMemoriesStorageBucketName,
 } from '../../../src/data/valentina-memories-upload.contract';
 import { MEMORIES_RETRIEVAL_REQUEST_AUDIENCE } from '../../../src/data/valentina-memories-private-request.contract';
 import { verifyMemoriesPrivateRequest } from '../../shared/private-request';
 
-type R2ObjectLike = {
-	body: ReadableStream<Uint8Array> | null;
-	size: number;
-	checksums: { sha256?: ArrayBuffer; toJSON(): { sha256?: string } };
-};
-
-type R2BucketBinding = {
-	get(
-		key: string,
-		options?: { range?: { offset: number; length?: number } },
-	): Promise<R2ObjectLike | null>;
-	delete(key: string): Promise<void>;
-};
-
-type RetrieveEnv = {
-	MEMORIES_BUCKET: R2BucketBinding;
+type RetrieveEnv = Omit<MemoriesRetrieveBindings, 'MEMORIES_STORAGE_TARGET'> & {
+	MEMORIES_STORAGE_TARGET: string;
 	MEMORIES_RETRIEVAL_REQUEST_VERIFY_PUBLIC_KEY: string;
 };
 type RetrievalMode = 'inline' | 'attachment' | 'inspect' | 'delete';
@@ -88,7 +75,7 @@ async function readBoundedBytes(body: ReadableStream<Uint8Array> | null): Promis
 	return bytes;
 }
 
-function extractChecksum(object: R2ObjectLike): string | null {
+function extractChecksum(object: R2Object): string | null {
 	if (object.checksums.sha256) return bytesToHex(object.checksums.sha256);
 	const serialized = object.checksums.toJSON();
 	return typeof serialized.sha256 === 'string' ? serialized.sha256.toLowerCase() : null;
@@ -228,7 +215,11 @@ export default {
 			new URL(request.url).pathname !== VALENTINA_MEMORIES_RETRIEVAL_PATH
 		)
 			return json({ error: { code: 'not_found' } }, 404);
-		if (!env.MEMORIES_BUCKET || !env.MEMORIES_RETRIEVAL_REQUEST_VERIFY_PUBLIC_KEY)
+		if (
+			!env.MEMORIES_BUCKET ||
+			!env.MEMORIES_RETRIEVAL_REQUEST_VERIFY_PUBLIC_KEY ||
+			!getValentinaMemoriesStorageBucketName(env.MEMORIES_STORAGE_TARGET)
+		)
 			return json({ error: { code: 'unavailable' } }, 503);
 		const rawBody = await request.text();
 		if (
