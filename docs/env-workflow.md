@@ -154,6 +154,13 @@ be `https://memories.celebra-me.com/sign/valentina`. Do not infer it from the cu
 URLs, or a Vercel API route. Missing or invalid values fail closed: `/r/valentina` does not render
 an active file input.
 
+`VALENTINA_MEMORIES_RETRIEVAL_URL` and `VALENTINA_MEMORIES_RETRIEVAL_SHARED_SECRET` are server-only
+app/runtime values for private media retrieval. Production values belong in Vercel owner-managed
+configuration. The Worker counterpart is the Wrangler secret `RETRIEVAL_SHARED_SECRET`; Cloudflare
+deployment credentials, signer R2 credentials, object keys, and signed URLs must not be added to
+`.env.example` or exposed with a `PUBLIC_` prefix. Missing or invalid retrieval values fail closed
+without returning object bytes.
+
 ## Rules
 
 - Use local Supabase defaults for local development: `SUPABASE_URL=http://127.0.0.1:54321` and

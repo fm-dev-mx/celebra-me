@@ -1,9 +1,17 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { extname, join } from 'node:path';
+import {
+	VALENTINA_MEMORIES_RETRIEVAL_SECRET_ENV_NAME,
+	VALENTINA_MEMORIES_RETRIEVAL_URL_ENV_NAME,
+} from '@/data/valentina-memories-media.contract';
 
 const ROOT = process.cwd();
 const RUNTIME_SOURCE_EXTENSIONS = new Set(['.astro', '.ts', '.tsx']);
 const BUILT_IN_IMPORT_META_ENV_NAMES = new Set(['BASE_URL', 'DEV', 'MODE', 'PROD', 'SITE', 'SSR']);
+const INDIRECT_RUNTIME_ENV_NAMES = new Set([
+	VALENTINA_MEMORIES_RETRIEVAL_SECRET_ENV_NAME,
+	VALENTINA_MEMORIES_RETRIEVAL_URL_ENV_NAME,
+]);
 
 function readProjectFile(relativePath: string): string {
 	return readFileSync(join(ROOT, relativePath), 'utf8');
@@ -25,7 +33,7 @@ function collectRuntimeSourceFiles(directory: string): string[] {
 }
 
 function collectRuntimeEnvNames(): Set<string> {
-	const names = new Set<string>();
+	const names = new Set<string>(INDIRECT_RUNTIME_ENV_NAMES);
 
 	for (const filePath of collectRuntimeSourceFiles(join(ROOT, 'src'))) {
 		const source = readFileSync(filePath, 'utf8');
