@@ -26,6 +26,46 @@ function createContext(path: string) {
 	};
 }
 
+async function resolveAfterMicrotasks<T>(value: T, turns: number): Promise<T> {
+	let pending = Promise.resolve();
+	for (let turn = 0; turn < turns; turn += 1) {
+		pending = pending.then(() => undefined);
+	}
+	await pending;
+	return value;
+}
+
+function createIsolatedContext(path: string, initialCookies: Record<string, string>) {
+	const values = new Map(Object.entries(initialCookies));
+	const cookies = {
+		get: jest.fn((name: string) => {
+			const value = values.get(name);
+			return value === undefined ? undefined : { value };
+		}),
+		set: jest.fn((name: string, value: string) => values.set(name, value)),
+		delete: jest.fn((name: string) => values.delete(name)),
+	};
+	const redirect = jest.fn(
+		(target: string) => new Response(null, { status: 302, headers: { Location: target } }),
+	);
+	const next = jest.fn(async () => new Response(null, { status: 200 }));
+	const locals: TestLocals = {};
+	return {
+		context: {
+			url: new URL(`http://localhost${path}`),
+			cookies,
+			redirect,
+			request: { headers: new Map([['user-agent', 'concurrency-test']]) },
+			locals,
+		},
+		cookies,
+		locals,
+		next,
+		redirect,
+		values,
+	};
+}
+
 function mockSupabaseResponse(overrides: Record<string, unknown> = {}) {
 	mockFetch.mockResolvedValue({
 		ok: true,
@@ -330,6 +370,144 @@ describe('Middleware: Authentication & Authorization', () => {
 		expect(response.status).toBe(503);
 		expect(mockCookies.set).not.toHaveBeenCalled();
 		expect(mockCookies.delete).not.toHaveBeenCalled();
+	});
+
+	it('isolates 20 concurrent valid, refreshed, rejected, and transient sessions', async () => {
+		const log = jest.spyOn(console, 'info').mockImplementation(() => {});
+		const callCounts = new Map<number, number>();
+		mockFetch.mockImplementation((input: RequestInfo | URL, init?: RequestInit) => {
+			const url = String(input);
+			const headers = new Headers(init?.headers);
+			const authorization = headers.get('Authorization') || '';
+			let index: number;
+
+			if (url.endsWith('/auth/v1/user')) {
+				const token = authorization.replace(/^Bearer\s+/i, '');
+				index = Number(token.match(/-(\d+)$/)?.[1]);
+				callCounts.set(index, (callCounts.get(index) ?? 0) + 1);
+				if (token.startsWith('valid-')) {
+					return resolveAfterMicrotasks(
+						{
+							ok: true,
+							status: 200,
+							json: async () => ({
+								id: `valid-user-${index}`,
+								email: `valid-${index}@test.invalid`,
+								app_metadata: { role: 'host_client' },
+								amr: [{ method: 'password' }],
+							}),
+						} as Response,
+						20 - index,
+					);
+				}
+				if (token.startsWith('transient-')) {
+					return resolveAfterMicrotasks(
+						{ ok: false, status: 503 } as Response,
+						20 - index,
+					);
+				}
+				return resolveAfterMicrotasks({ ok: false, status: 401 } as Response, 20 - index);
+			}
+
+			const body = JSON.parse(String(init?.body)) as { refresh_token: string };
+			index = Number(body.refresh_token.match(/-(\d+)$/)?.[1]);
+			callCounts.set(index, (callCounts.get(index) ?? 0) + 1);
+			return resolveAfterMicrotasks(
+				{
+					ok: true,
+					status: 200,
+					json: async () => ({
+						access_token: `rotated-access-${index}`,
+						refresh_token: `rotated-refresh-${index}`,
+						user: {
+							id: `refreshed-user-${index}`,
+							email: `refreshed-${index}@test.invalid`,
+							app_metadata: { role: 'host_client' },
+							amr: [{ method: 'password' }],
+						},
+					}),
+				} as Response,
+				20 - index,
+			);
+		});
+
+		const cases = Array.from({ length: 20 }, (_, index) => {
+			const group = Math.floor(index / 5);
+			const initialCookies: Record<string, string> = {};
+			if (group === 0) initialCookies['sb-access-token'] = `valid-${index}`;
+			if (group === 1) {
+				initialCookies['sb-access-token'] = `rejected-${index}`;
+				initialCookies['sb-refresh-token'] = `refresh-${index}`;
+			}
+			if (group === 2) initialCookies['sb-access-token'] = `invalid-${index}`;
+			if (group === 3) {
+				initialCookies['sb-access-token'] = `transient-${index}`;
+				initialCookies['sb-refresh-token'] = `preserved-refresh-${index}`;
+				initialCookies['sb-trust-device'] = `preserved-trust-${index}`;
+				initialCookies['sb-mfa-session'] = `preserved-mfa-${index}`;
+				initialCookies['sb-idle-seen'] = String(Math.floor(Date.now() / 1000));
+			}
+			return {
+				index,
+				group,
+				...createIsolatedContext('/dashboard/invitados', initialCookies),
+			};
+		});
+
+		const settled = await Promise.allSettled(
+			cases.map(({ context, next }) => middleware(context as unknown as APIContext, next)),
+		);
+		expect(settled.every((result) => result.status === 'fulfilled')).toBe(true);
+
+		for (const [position, testCase] of cases.entries()) {
+			const result = settled[position];
+			if (result?.status !== 'fulfilled') continue;
+			if (testCase.group === 0) {
+				expect(result.value).toMatchObject({ status: 200 });
+				expect(testCase.locals.session?.userId).toBe(`valid-user-${testCase.index}`);
+				expect(callCounts.get(testCase.index)).toBe(1);
+			}
+			if (testCase.group === 1) {
+				expect(result.value).toMatchObject({ status: 200 });
+				expect(testCase.locals.session?.userId).toBe(`refreshed-user-${testCase.index}`);
+				expect(testCase.cookies.set).toHaveBeenCalledWith(
+					'sb-access-token',
+					`rotated-access-${testCase.index}`,
+					expect.any(Object),
+				);
+				expect(testCase.cookies.set).toHaveBeenCalledWith(
+					'sb-refresh-token',
+					`rotated-refresh-${testCase.index}`,
+					expect.any(Object),
+				);
+				expect(callCounts.get(testCase.index)).toBe(2);
+			}
+			if (testCase.group === 2) {
+				expect(result.value).toMatchObject({ status: 302 });
+				expect(testCase.redirect).toHaveBeenCalledWith('/login');
+				expect(testCase.cookies.delete).toHaveBeenCalledWith('sb-access-token', {
+					path: '/',
+				});
+				expect(testCase.locals.session).toBeUndefined();
+				expect(callCounts.get(testCase.index)).toBe(1);
+			}
+			if (testCase.group === 3) {
+				expect(result.value).toBeInstanceOf(Response);
+				expect((result.value as Response).status).toBe(503);
+				expect(testCase.cookies.set).not.toHaveBeenCalled();
+				expect(testCase.cookies.delete).not.toHaveBeenCalled();
+				expect(testCase.values.get('sb-refresh-token')).toBe(
+					`preserved-refresh-${testCase.index}`,
+				);
+				expect(testCase.values.get('sb-trust-device')).toBe(
+					`preserved-trust-${testCase.index}`,
+				);
+				expect(callCounts.get(testCase.index)).toBe(1);
+			}
+			expect(callCounts.get(testCase.index)).toBeLessThanOrEqual(2);
+		}
+		expect(mockFetch).toHaveBeenCalledTimes(25);
+		expect(log).toHaveBeenCalledTimes(25);
 	});
 
 	it.each([

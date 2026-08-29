@@ -26,6 +26,7 @@ describe('rsvp authApi', () => {
 	afterEach(() => {
 		global.fetch = originalFetch;
 		process.env = { ...originalEnv };
+		jest.useRealTimers();
 		jest.restoreAllMocks();
 	});
 
@@ -427,6 +428,121 @@ describe('rsvp authApi', () => {
 			const serialized = JSON.stringify(events);
 			expect(serialized).not.toMatch(
 				/secret-access|secret-refresh|secret-user-id|private@example\.com|SecretPassword|supabase\.co/,
+			);
+		});
+
+		it('isolates 20 concurrent successful requests resolved out of order', async () => {
+			jest.useFakeTimers();
+			const log = jest.spyOn(console, 'info').mockImplementation(() => {});
+			const responders = new Map<string, (response: Response) => void>();
+			global.fetch = jest.fn((_url, init) => {
+				const body = JSON.parse(String(init?.body)) as { email: string };
+				return new Promise<Response>((resolve) => responders.set(body.email, resolve));
+			}) as typeof fetch;
+
+			const requests = Array.from({ length: 20 }, (_, index) =>
+				signInWithPassword({
+					email: `parallel-${index}@test.invalid`,
+					password: `ConcurrentPassword-${index}!`,
+				}),
+			);
+			expect(global.fetch).toHaveBeenCalledTimes(20);
+
+			for (let index = 19; index >= 0; index -= 1) {
+				responders.get(`parallel-${index}@test.invalid`)?.({
+					ok: true,
+					status: 200,
+					json: async () => ({
+						access_token: `parallel-access-${index}`,
+						refresh_token: `parallel-refresh-${index}`,
+						user: { id: `parallel-user-${index}` },
+					}),
+				} as Response);
+			}
+
+			const settled = await Promise.allSettled(requests);
+			expect(settled).toHaveLength(20);
+			for (const [index, result] of settled.entries()) {
+				expect(result.status).toBe('fulfilled');
+				if (result.status !== 'fulfilled') continue;
+				expect(result.value).toMatchObject({
+					access_token: `parallel-access-${index}`,
+					refresh_token: `parallel-refresh-${index}`,
+					user: { id: `parallel-user-${index}` },
+				});
+			}
+			expect(log).toHaveBeenCalledTimes(20);
+			expect(jest.getTimerCount()).toBe(0);
+			const serializedLogs = JSON.stringify(log.mock.calls);
+			expect(serializedLogs).not.toMatch(
+				/parallel-access|parallel-refresh|parallel-user|parallel-\d+@test\.invalid|ConcurrentPassword/,
+			);
+		});
+
+		it('isolates mixed concurrent failures and clears every request timer', async () => {
+			jest.useFakeTimers();
+			const log = jest.spyOn(console, 'info').mockImplementation(() => {});
+			global.fetch = jest.fn((_url, init) => {
+				const body = JSON.parse(String(init?.body)) as { email: string };
+				const index = Number(body.email.match(/mixed-(\d+)/)?.[1]);
+				if (index < 5) {
+					return Promise.resolve({
+						ok: true,
+						status: 200,
+						json: async () => ({
+							access_token: `mixed-access-${index}`,
+							refresh_token: `mixed-refresh-${index}`,
+							user: { id: `mixed-user-${index}` },
+						}),
+					} as Response);
+				}
+				if (index < 10) {
+					return Promise.resolve({ ok: false, status: 401 } as Response);
+				}
+				if (index < 15) {
+					return Promise.resolve({ ok: false, status: 503 } as Response);
+				}
+				return new Promise<Response>((_resolve, reject) => {
+					(init?.signal as AbortSignal).addEventListener('abort', () => {
+						reject(new DOMException('Aborted', 'AbortError'));
+					});
+				});
+			}) as typeof fetch;
+
+			const requests = Array.from({ length: 20 }, (_, index) =>
+				signInWithPassword({
+					email: `mixed-${index}@test.invalid`,
+					password: `MixedPassword-${index}!`,
+				}),
+			);
+			const settledPromise = Promise.allSettled(requests);
+			await jest.advanceTimersByTimeAsync(AUTH_REQUEST_TIMEOUT_MS);
+			const settled = await settledPromise;
+
+			expect(settled.slice(0, 5).every((result) => result.status === 'fulfilled')).toBe(true);
+			for (const result of settled.slice(5, 10)) {
+				expect(result).toMatchObject({
+					status: 'rejected',
+					reason: { kind: 'http', status: 401, retryable: false },
+				});
+			}
+			for (const result of settled.slice(10, 15)) {
+				expect(result).toMatchObject({
+					status: 'rejected',
+					reason: { kind: 'http', status: 503, retryable: true },
+				});
+			}
+			for (const result of settled.slice(15)) {
+				expect(result).toMatchObject({
+					status: 'rejected',
+					reason: { kind: 'timeout', retryable: true },
+				});
+			}
+			expect(log).toHaveBeenCalledTimes(20);
+			expect(jest.getTimerCount()).toBe(0);
+			const serializedLogs = JSON.stringify(log.mock.calls);
+			expect(serializedLogs).not.toMatch(
+				/mixed-access|mixed-refresh|mixed-user|mixed-\d+@test\.invalid|MixedPassword/,
 			);
 		});
 

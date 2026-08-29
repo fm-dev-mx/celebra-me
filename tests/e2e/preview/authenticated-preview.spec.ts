@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import type { BrowserContext, Page } from '@playwright/test';
 import { expect, previewEnvironment as preview, test } from './preview-test';
 import {
 	assertExpectedPreviewAccountEmail,
@@ -10,6 +11,7 @@ import {
 	PREVIEW_FIXTURE_TITLE,
 } from '../../../scripts/playwright/preview-environment';
 import {
+	establishDeploymentProtectionBypass,
 	getJson,
 	loginAsPreviewAdmin,
 	mutateJson,
@@ -17,6 +19,14 @@ import {
 	readPublicationPreflight,
 	readSessionIdentity,
 } from './support';
+
+const PREVIEW_AUTH_CONCURRENT_USERS = 20;
+
+async function timedLoginRequest(page: Page): Promise<{ durationMs: number; status: number }> {
+	const startedAt = Date.now();
+	const response = await page.request.get('/login');
+	return { durationMs: Date.now() - startedAt, status: response.status() };
+}
 
 async function assertFixtureGuards(page: Parameters<typeof readSessionIdentity>[0]) {
 	const session = await readSessionIdentity(page);
@@ -87,6 +97,64 @@ test.describe.serial('Authenticated external Preview', () => {
 		expect(sessionAfterLogout.status()).toBe(401);
 		await page.goto('/dashboard/invitados');
 		await expect(page).toHaveURL(/\/login/);
+	});
+
+	test('handles 20 concurrent anonymous and invalid session validations', async ({
+		browser,
+	}) => {
+		test.setTimeout(120_000);
+		const contexts: BrowserContext[] = [];
+		const clients: Array<{ context: BrowserContext; index: number; page: Page }> = [];
+
+		try {
+			for (let index = 0; index < PREVIEW_AUTH_CONCURRENT_USERS; index += 1) {
+				const context = await browser.newContext({ baseURL: preview.runtime.baseURL });
+				contexts.push(context);
+				const page = await context.newPage();
+				clients.push({ context, index, page });
+			}
+
+			await Promise.all(
+				clients.map(({ page }) =>
+					establishDeploymentProtectionBypass(page, preview.runtime),
+				),
+			);
+			const anonymousResults = await Promise.all(
+				clients.map(({ page }) => timedLoginRequest(page)),
+			);
+			expect(anonymousResults).toHaveLength(PREVIEW_AUTH_CONCURRENT_USERS);
+			expect(anonymousResults.every(({ status }) => status === 200)).toBe(true);
+			expect(anonymousResults.every(({ durationMs }) => durationMs < 10_000)).toBe(true);
+
+			await Promise.all(
+				clients.map(({ context, index }) =>
+					context.addCookies([
+						{
+							name: 'sb-access-token',
+							value: `invalid-concurrency-session-${index}`,
+							url: preview.runtime.baseURL,
+							httpOnly: true,
+							secure: true,
+							sameSite: 'Lax',
+						},
+					]),
+				),
+			);
+
+			const invalidSessionResults = await Promise.all(
+				clients.map(({ page }) => timedLoginRequest(page)),
+			);
+			expect(invalidSessionResults).toHaveLength(PREVIEW_AUTH_CONCURRENT_USERS);
+			expect(invalidSessionResults.every(({ status }) => status === 200)).toBe(true);
+			expect(invalidSessionResults.every(({ durationMs }) => durationMs < 10_000)).toBe(true);
+
+			for (const { context } of clients) {
+				const cookies = await context.cookies(preview.runtime.baseURL);
+				expect(cookies.some(({ name }) => name === 'sb-access-token')).toBe(false);
+			}
+		} finally {
+			await Promise.all(contexts.map((context) => context.close()));
+		}
 	});
 
 	test.describe('Opt-in publication', () => {
