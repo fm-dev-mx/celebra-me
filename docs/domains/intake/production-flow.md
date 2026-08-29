@@ -236,13 +236,14 @@ validated by `eventContentSchema`.
 - Keep visible copy in Spanish and technical identifiers/comments in English.
 - Save with the current `expectedUpdatedAt`. A stale save returns a conflict; reload and reconcile
   rather than overwriting a newer draft.
-- `sectionOrder` is optional in public content. When absent, the render plan uses the canonical
-  content-section order from `CONTENT_SECTION_KEYS` and inserts eligible interludes after their
-  target sections.
+- `sectionOrder` is required in canonical public content and defines the exact render sequence.
+  Payloads that omit it are rejected after the cutover; any temporary conversion belongs only to
+  the documented ingress migration boundary.
 - Optional sections are omitted when their content is absent or ineligible. Do not create empty
   placeholders just to match another invitation.
-- Locations support `venues` for grouped cards and legacy `ceremony`/`reception` fields for separate
-  cards. Preserve map URLs and location-gating semantics.
+- Canonical locations use `venues[]` for grouped cards and preserve map URLs and location-gating
+  semantics. Legacy `ceremony`/`reception` objects may appear only at the named ingress
+  migration boundary until persisted rows and intake producers are converted.
 - Test long names, headings, addresses, gift descriptions, and WhatsApp copy. The editor limits are
   validation boundaries, not design targets.
 - Publication merges existing published content, draft changes, and the selected demo defaults, then

@@ -33,7 +33,7 @@ The runtime path is intentionally linear:
 5. Section roots emit `data-variant={variant}` and isolated CSS is resolved from the canonical registry.
 
 There is no runtime variant normalizer, legacy alias registry, identity-specific variant branch, or
-silent compatibility fallback in this path. Persisted legacy content may be inspected by migration
+silent compatibility fallback in this path. Pre-cutover persisted content may be inspected by migration
 and audit tooling, but deployment remains blocked until the separately authorized environment
 migration is applied and verified.
 

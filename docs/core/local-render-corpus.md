@@ -1,117 +1,60 @@
 # Local Render Corpus
 
-**Owns:** which supported Production client invitations must be reproducibly renderable and
-regression-tested in Local before Preview/Production deployment.
+The Local Render Corpus is a derived validation projection of all managed canonical invitation
+definitions. It is not an invitation inventory, does not own lifecycle, and has no legacy category.
 
-**Does not own:** managed release lifecycle procedure, Editor UX, RSVP/Auth operations, or remote
-promotion. Those remain:
+## Authority
 
-- Canonical managed registry — `scripts/provision/invitations/registry.ts`
-- Creation contract — [`invitation-creation-contract.md`](./invitation-creation-contract.md)
-- Production flow — [`../domains/intake/production-flow.md`](../domains/intake/production-flow.md)
+The only invitation inventory is `scripts/provision/invitations/registry.ts`. The projection in
+`scripts/provision/local-render-corpus/registry.ts` is derived from that registry and is consumed by:
 
----
+- `pnpm invitation:local-corpus` (persistent-local only, guarded pipeline)
+- `pnpm test:local-render-corpus`
+- `pnpm screenshot:local-render-corpus`
+- `pnpm invitation:inventory-audit` (read-only)
 
-## Three corpora (do not conflate)
-
-| Corpus                         | Purpose                                                                                         | SSOT                                                |
-| ------------------------------ | ----------------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| **Canonical Managed Registry** | Invitations controlled by `definition → invitation:release → Preview → Production`               | `scripts/provision/invitations/registry.ts`         |
-| **Local Render Corpus**        | Every currently supported Production **client** invitation required for Local render regression | `scripts/provision/local-render-corpus/registry.ts` |
-| **Demo Corpus**                | Marketing/theme demonstration coverage (`kind=demo`, Astro `event-demos`)                       | `src/content/event-demos/**` + Local demo rows      |
-
-`pnpm dbs` “Managed” counts are **active non-archived invitation rows** (clients + demos), not the
-Local Render Corpus size.
-
----
-
-## SSOT
-
-```text
-scripts/provision/local-render-corpus/registry.ts
-```
-
-Consumed by:
-
-- Local bootstrap — `pnpm invitation:local-corpus`
-- Deterministic regression — `pnpm test:local-render-corpus`
-- Screenshot completeness — `pnpm screenshot:local-render-corpus` (`--corpus`)
-- Changed-path routing — `requiresManagedInvitationRegression` in `scripts/validation-runner.mjs`
-- Inventory parity CLI — `pnpm invitation:inventory-audit` (read-only; rows derived from this SSOT).
-  Canonical publication status remains `pnpm dbs` / `/dashboard/estado`.
-
-Do not maintain independent slug lists in Jest, screenshot JSON, seed scripts, or dashboard UI.
-
----
+Do not add independent slug lists to tests, seed scripts, screenshot configuration, or UI code.
+Historical sanitized JSON files may remain as authoring evidence for migrated definitions; they are
+not a runtime source and are never upserted by corpus tooling.
 
 ## Local bootstrap
 
 ```bash
 pnpm invitation:local-corpus --dry-run
-pnpm invitation:local-corpus --apply
-pnpm invitation:local-corpus --apply --slug valentina-hernandez
+pnpm invitation:local-corpus --apply --slug <slug>
 ```
 
-Behavior:
+Every entry uses the definition and its declared delivery scope through `applyLocalInvitation`.
+The command rejects Preview and Production, never clones databases, and never imports Auth users,
+guests, RSVP responses, analytics, or tracking data. Apply remains a separately authorized write.
+Definitions with `managedIdentityProvenance: authoring-placeholder` remain render/schema inputs only;
+release/package generation fails closed until their persisted identity is verified.
 
-- **Canonical** entries → `applyLocalInvitation` / `invitation:release` Local with
-  `content-and-assets` (persistent-local only).
-- **Legacy** entries → upsert `invitations` + `published_invitation_content` from versioned
-  sanitized fixtures under `scripts/provision/local-render-corpus/fixtures/`.
-
-Never targets Preview/Production. Never clones databases. Never imports Auth users, guests, RSVP
-responses, analytics, tracking, audit history, or mutation receipts.
-
-Local is **render-equivalent**, not DB-identical to Production.
-
----
-
-## Regression & screenshots
+## Regression and visual gate
 
 ```bash
-pnpm test:local-render-corpus          # schema → adapter → page → section descriptors (13 clients)
-pnpm screenshot:local-render-corpus    # runtime/completeness against Local routes (no pixel baselines)
-pnpm exec tsx scripts/provision/local-render-corpus/verify-local-routes.ts
+pnpm test:local-render-corpus
+pnpm screenshot:local-render-corpus
+pnpm visual:parity:candidate
+pnpm visual:parity:compare
+pnpm visual:parity:accept -- --reference-sha=<approved-commit-sha>
 ```
 
-`pnpm screenshot:local-render-corpus` runs the **registered corpus only**. It does not accept
-targeted URL, invitation, section, viewport, target, or cleanup options. Each page uses the same
-strict scope resolver as direct and interactive capture, writes `preflight.json` before browser
-launch, and writes `report.json` after execution. To capture one invitation instead:
+Candidate files are ignored under `.tmp/visual-parity/candidate/`. Compare never modifies accepted
+files. Acceptance is human-only and unavailable in CI. Accepted PNGs belong under
+`tests/e2e/visual-baselines/` and are governed by `.gitattributes` for Git LFS.
 
-```powershell
-pnpm screenshot --url=/<eventType>/<slug> --viewport=<viewport> --clean
-```
+## Adding a supported invitation
 
-See `scripts/screenshot/README.md` for the single-route contract and reveal-state capture rules.
+1. Add a typed definition under `scripts/provision/invitations/` with explicit canonical content,
+   section order, variants, prerequisites, and asset keys.
+2. Register it in `scripts/provision/invitations/registry.ts`.
+3. Run the Local dry-run and the render-contract regression suite.
 
-Failures name the exact invitation slug.
-
-Both commands write an uncommitted validation evidence snapshot under
-`.tmp/observability/validation/` (`regression.json` / `screenshots.json`). Regression totals come
-from the Jest JSON report. Snapshot write failures never convert a failed validation into a pass.
-Freshness uses `inputFingerprint` + `corpusFingerprint` (not commit SHA alone).
-
----
-
-## Registering a new supported client
-
-1. If managed: add definition to `scripts/provision/invitations/registry.ts` **and** add a corpus
-   entry (`classification: 'canonical'`).
-2. If legacy-supported: export/add a sanitized fixture under
-   `scripts/provision/local-render-corpus/fixtures/`, then add a corpus entry
-   (`classification: 'legacy'`, `fixtureFile`, asset strategy).
-3. Run `pnpm invitation:local-corpus --apply --slug <slug>` and `pnpm test:local-render-corpus`.
-
-Omitting a repository-known supported client from the corpus SSOT fails the corpus contract tests.
-
----
+An invitation absent from the canonical registry is an audit failure. Demos remain discovered from
+`src/content/event-demos/**`; templates remain schema and structural-validation inputs.
 
 ## Exclusions
 
-Not part of the client regression corpus:
-
-- `demo-*`
-- `e2e-preview-publication`
-- `alba-rosa-quinones` (stale rekey twin)
-- archived / deleted / empty test rows
+Demo routes, Preview E2E fixtures, stale rekey aliases, and archived rows are not client invitation
+definitions and must not be inserted into this projection.

@@ -1,172 +1,21 @@
-# Invitation CSS ownership — full inventory
+# Canonical invitation and demo inventory
 
-**Date:** 2026-08-17  
-**Scope:** Every invitation identity (canonical, Local Render Corpus, legacy fixtures, demos) and
-every invitation `ThemePreset`.  
-**Contract:** [`architecture.md`](architecture.md#invitation-css-ownership-normative)  
-**LAYOUT gate:** [`css-visual-parity.md`](css-visual-parity.md)
+The only invitation inventory is `scripts/provision/invitations/registry.ts`. It contains the 17
+managed invitation definitions. The Local Render Corpus is a derived validation projection of all
+managed definitions and must not maintain a second list or a legacy classification.
 
-This inventory supersedes “corpus-only” narrowing. All published canonical clients and
-demo-only presets (`editorial-rose`, `jewelry-box`) are in scope.
+The 13 demos are discovered from `src/content/event-demos/**` and use the same canonical schema,
+adapter, render plan, section components, variants, and CSS ownership resolver. Templates are
+validated structurally but are not invitation inventory entries.
 
-## Identities (all)
+Use these commands for current evidence:
 
-| slug / id                         | render preset       | profile SCSS  | source                  |
-| --------------------------------- | ------------------- | ------------- | ----------------------- |
-| alba-rosa-quinonez                | luxury-hacienda     | yes           | canonical + corpus      |
-| abril-michelle-becerra-rea        | premiere-floral     | yes           | canonical + corpus      |
-| romina-rios-chaparro              | premiere-floral     | yes           | canonical + corpus      |
-| daniela-y-martin                  | jewelry-box-wedding | yes           | canonical + corpus      |
-| victoria-y-roberto                | jewelry-box-wedding | yes           | canonical + corpus      |
-| renata                            | editorial           | yes           | canonical + corpus      |
-| leslie-perez                      | celestial-blue      | yes           | canonical + corpus      |
-| america-johana                    | celestial-blue      | yes           | corpus legacy           |
-| valentina-hernandez               | editorial-magazine  | yes           | canonical + corpus; Preview variants applied; Production owner pending |
-| xareni-iyarit                     | celestial-blue      | yes           | corpus legacy           |
-| leah-lexa                         | celestial-blue      | yes           | corpus legacy           |
-| luna-y-estrella                   | angelic-presence    | yes           | corpus legacy           |
-| cesar-ramses                      | sacred-keepsake     | no            | corpus legacy           |
-| ayrin-samantha-lerma-castro       | enchanted-rose      | no            | corpus legacy           |
-| ana-sofia-cota-guillen            | celestial-blue      | no            | corpus legacy           |
-| ximena-meza-trasvina              | premiere-floral     | no            | corpus legacy           |
-| gerardo-sesenta                   | luxury-hacienda     | no            | corpus legacy           |
-| demo-xv-celestial-blue            | celestial-blue      | yes           | demo                    |
-| demo-xv-xareni-profile            | celestial-blue      | via xareni    | demo                    |
-| demo-baby-shower-celestial        | celestial-blue      | no            | demo                    |
-| demo-xv-editorial                 | editorial           | no            | demo                    |
-| demo-xv-editorial-rose            | editorial-rose      | no            | demo                    |
-| demo-xv-editorial-magazine        | editorial-magazine  | no            | demo                    |
-| demo-xv-valentina-profile         | editorial-magazine  | via valentina | demo                    |
-| demo-xv-jewelry-box               | jewelry-box         | no            | demo                    |
-| demo-boda-jewelry-box-wedding     | jewelry-box-wedding | no            | demo                    |
-| demo-cumple-luxury-hacienda       | luxury-hacienda     | no            | demo                    |
-| demo-xv-enchanted-rose            | enchanted-rose      | no            | demo                    |
-| demo-bautismo-angelic-presence    | angelic-presence    | no            | demo                    |
-| demo-primera-comunion-illustrated | angelic-presence    | no            | demo                    |
+```bash
+pnpm test:local-render-corpus
+pnpm visual:parity:candidate
+pnpm visual:parity:compare
+```
 
-## Preset → consumers
-
-### celestial-blue
-
-- leslie-perez
-- america-johana
-- xareni-iyarit
-- leah-lexa
-- ana-sofia-cota-guillen
-- demo-xv-celestial-blue
-- demo-xv-xareni-profile
-- demo-baby-shower-celestial
-
-### premiere-floral
-
-- abril-michelle-becerra-rea
-- romina-rios-chaparro
-- ximena-meza-trasvina
-
-### jewelry-box-wedding
-
-- daniela-y-martin
-- victoria-y-roberto
-- demo-boda-jewelry-box-wedding
-
-### jewelry-box
-
-- demo-xv-jewelry-box
-
-### luxury-hacienda
-
-- alba-rosa-quinonez
-- gerardo-sesenta
-- demo-cumple-luxury-hacienda
-
-### editorial-magazine
-
-- valentina-hernandez
-- demo-xv-editorial-magazine
-- demo-xv-valentina-profile
-
-### editorial
-
-- renata
-- demo-xv-editorial
-
-### editorial-rose
-
-- demo-xv-editorial-rose
-
-### angelic-presence
-
-- luna-y-estrella
-- demo-bautismo-angelic-presence
-- demo-primera-comunion-illustrated
-
-### sacred-keepsake
-
-- cesar-ramses
-
-### enchanted-rose
-
-- ayrin-samantha-lerma-castro
-- demo-xv-enchanted-rose
-
-## Bundle classification (actionable)
-
-| preset              | theme-base           | countdown surface                                | notes                                 |
-| ------------------- | -------------------- | ------------------------------------------------ | ------------------------------------- |
-| celestial-blue      | merged (removed)     | `--countdown-section-*` + RSVP/PA/thank-you/hero | section module geometry remains       |
-| jewelry-box         | merged (removed)     | `--countdown-section-background`                 | jeweled-panel                         |
-| jewelry-box-wedding | none                 | same jeweled-panel tokens                        | mega LAYOUT retained                  |
-| premiere-floral     | none                 | `--countdown-bg` / `--section-padding-block`     | romina countdown via `--countdown-bg` |
-| editorial           | isolated theme-shell | `--countdown-bg` / `--section-padding-block`     | includes renata                       |
-| editorial-magazine  | none                 | `--countdown-bg` already                         | mega LAYOUT retained                  |
-| editorial-rose      | none                 | n/a                                              | gallery bg on preset only             |
-| luxury-hacienda     | isolated theme-shell | `--countdown-section-*`                          | mega LAYOUT retained                  |
-| angelic-presence    | none                 | `--countdown-section-*`                          |                                       |
-| sacred-keepsake     | none                 | `--countdown-section-*`                          | no profile SCSS                       |
-| enchanted-rose      | none                 | `--countdown-section-*`                          | no profile SCSS                       |
-
-## LAYOUT deletion policy
-
-Profile LAYOUT removal (geometry / direct section `background` / `font-family` paint) requires
-`pnpm screenshot:css-parity` for that slug. Token-only remaps and dead-selector removal do not.
-
-### Progress (2026-08-17)
-
-- `leah-lexa`: thank-you section padding moved to `--thank-you-section-padding`; css-parity
-  baseline+compare **passed**. Remaining child LAYOUT (gifts CTA, thank-you editorial chrome,
-  location map max-height) still retained.
-- Former `theme-base` selector rules for editorial and luxury hacienda remain in isolated
-  `themes/sections/theme-shell/` files; their semantic and component values remain in the presets.
-  The old `theme-base/` directory is empty/removed.
-- Baselines captured under `.tmp/css-visual-parity/<slug>/baseline/` (local artifacts, not
-  committed) for: `leah-lexa`, `america-johana`, `abril-michelle-becerra-rea`, `alba-rosa-quinonez`,
-  `daniela-y-martin`, `victoria-y-roberto`, `valentina-hernandez`, `luna-y-estrella`,
-  `demo-xv-celestial-blue`, `renata`. **Note:** those 2026-08-17 digests are post-ownership and are
-  **not** recovery goldens — see
-  [`css-visual-parity.md`](css-visual-parity.md#recovery-vs-gate-baselines).
-
-### Visual recovery residuals (2026-08-17, working tree)
-
-- **`valentina-hernandez`:** Managed definition is the content owner. Preview carries authored
-  canonical variants; Production owner apply remains pending. Draft WhatsApp JPEGs are not remaster
-  proof. **Status:** definition registered; Local/Preview content path applied; Production not done.
-- **`xareni-iyarit`:** Dark thank-you was a false recovery: pre-ownership/Production profile
-  `.thank-you` / `[data-section=thank-you]` plum slab never matched `.thank-you-section`. Promoting
-  those rules onto `--thank-you-section-*` forced on-dark ink. **Status:** fixed (drop dark tokens;
-  keep celestial light surface + plum via remapped graphite).
-- **`alba-rosa-quinonez`:** Luxury square thank-you frame overrode circular premium portrait;
-  message card chrome. **Status:** fixed (circular frame restore + chrome scope).
-- **`romina-rios-chaparro`:** (1) Split-cover reset `--hero-split-title-*` to Cormorant; base hero
-  gradient gold — fixed (Parisienne ivory). (2) Premiere editorial skin was narrowed to
-  `[data-variant=standard]` while Romina emits structural `split-cover` (Production dual-attr was
-  `data-variant=premiere-floral` + `data-structural-variant=split-cover`) — fixed by extending
-  `_editorial.scss` / `_premiere-floral.scss` skin to `split-cover` under `.theme-preset--premiere-floral`.
-  (3) `padding: 0` on premiere split-cover removed mobile `1rem` inset (Production `16px`) — fixed by
-  zeroing padding only for `standard`. **Status:** fixed.
-- **`ana-sofia-cota-guillen`:** No profile; hero surface tokens match celestial defaults.
-  **Status:** smoke OK.
-
-### Still LAYOUT-retained (needs per-slug promote + compare)
-
-`daniela-y-martin`, `victoria-y-roberto`, `alba-rosa-quinonez`, `valentina-hernandez`,
-`abril-michelle-becerra-rea`, `america-johana`, `demo-xv-celestial-blue`, `renata`.
+Persisted Local, Preview, and Production rows remain separately authorized operational state. A
+read-only inventory audit must report any row without a matching managed definition as unmanaged;
+it must never silently classify or import it as a supported invitation.

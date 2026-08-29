@@ -20,6 +20,9 @@ Every managed digital invitation must define:
 - **Managed Identity** (`managedIdentityId`): Immutable UUID v4 independent of slug, title, and
   client name. Never reuse across definitions; never change after first publication. Identity
   resolution and uniqueness use this value — never title or client name.
+  - A definition marked `managedIdentityProvenance: authoring-placeholder` is audit-only. It may
+    validate and render locally, but release/package generation is blocked until an owner-authorized
+    environment audit records the persisted identity and the definition is updated to `persisted`.
 - **Previous Slugs** (`previousSlugs`, optional): Historical slugs for this managed identity. Used
   for alias diagnostics and fail-closed `REKEY_REQUIRED` protection. Creating a new row when a
   previous slug is still active is forbidden; operators must pass `--rekey-from <old-slug>`. Guarded
@@ -148,10 +151,12 @@ approval, and recovery.
 The **Canonical Managed Registry** (`scripts/provision/invitations/registry.ts`) owns managed
 release lifecycle definitions.
 
-The **Local Render Corpus** (`scripts/provision/local-render-corpus/registry.ts`) owns every
-currently supported Production **client** invitation that must be renderable and regression-tested
-in Local before remote deployment. It includes the canonical managed set plus supported legacy
-clients. See [`local-render-corpus.md`](./local-render-corpus.md).
+The **Local Render Corpus** (`scripts/provision/local-render-corpus/registry.ts`) is a derived
+projection of every managed canonical invitation that must be renderable and regression-tested in
+Local before remote deployment. Definitions with `lifecycle: in_progress` remain authoring-only
+until their separately authorized persisted reconciliation; they are still schema-tested by the
+projection. The corpus has no independent invitation category or source contract. See
+[`local-render-corpus.md`](./local-render-corpus.md).
 
 `pnpm dbs` active “Managed” counts include demos and are not corpus size.
 

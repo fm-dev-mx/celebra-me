@@ -1,6 +1,6 @@
 # CSS Visual Parity Gate
 
-**Status:** Required before profile LAYOUT deletion  
+**Status:** Required before profile LAYOUT deletion and canonical visual certification
 **Related:** [`architecture.md`](architecture.md#invitation-css-ownership-normative)
 
 ## Rule
@@ -16,6 +16,33 @@ Corpus render-contract tests (`local-render-corpus-regression`) validate **secti
 pixels. They do **not** satisfy this gate.
 
 ## Harness
+
+The durable canonical gate reuses the existing Playwright suite and provides three explicit
+operations:
+
+```bash
+pnpm visual:parity:candidate
+pnpm visual:parity:compare
+pnpm visual:parity:accept -- --reference-sha=<approved-commit-sha>
+```
+
+`candidate` writes ignored files under `.tmp/visual-parity/candidate/`. `compare` never updates
+accepted files and fails when the accepted manifest is missing or a case differs. `accept` is a
+human-only operation and is rejected in CI. Accepted PNGs live under
+`tests/e2e/visual-baselines/` and use Git LFS. The manifest records the reference commit, runtime,
+viewport, case identity, and hashes. Baselines may not contain database payloads, guest
+personalization, cookies, credentials, signed URLs, or external requests.
+
+The registry-driven certification covers 158 deterministic comparisons on every CI run: 98
+variant captures (39 canonical variants plus 10 cross-preset representatives at 390x844 and
+1440x900) and 60 complete-page captures (17 managed invitations plus 13 demos at both viewports).
+Templates remain covered by schema and structural contracts only. The page matrix is discovered
+from the managed invitation registry and `src/content/event-demos`; no manual inventory is
+maintained.
+
+Current repository status: the candidate gate is fail-closed until all declared invitation assets
+are present and authorized. No accepted 158-capture baseline exists until that condition is met and
+the resulting candidate is approved by a human.
 
 ```bash
 # 1. Capture baseline (before LAYOUT deletion)

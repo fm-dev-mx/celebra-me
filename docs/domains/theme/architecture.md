@@ -253,7 +253,7 @@ invitation stylesheet).
 Controlled exceptions for real layout, pseudo-element, responsive, or decorative behavior belong
 under `src/styles/themes/sections/<section>/` with a semantic `data-variant`, not in presets or
 profiles. Countdown skin variants (`editorial-folio`, `magazine-folio`, …) are the reference for
-behavior-named skins; preset-named section modules under `invitation-sections-by-preset/` are legacy
+behavior-named skins; preset-named section modules under `invitation-sections-by-preset/` are retired
 delivery and must thin toward tokens + semantic variants.
 
 Delete or avoid a section theme file when it is empty, only repeats base defaults, exists only for
