@@ -1,4 +1,4 @@
-import { ApiError, isApiError } from '@/lib/rsvp/core/errors';
+import { ApiError, isApiError, isAuthRequestError } from '@/lib/rsvp/core/errors';
 import { PRIVATE_CACHE_CONTROL } from '@/lib/http/private-cache-path';
 import { sanitize } from '@/lib/rsvp/core/utils';
 
@@ -75,13 +75,31 @@ export function internalError(error: unknown): Response {
 }
 
 export function errorResponse(error: unknown): Response {
+	if (isAuthRequestError(error)) {
+		const response = jsonResponse(
+			{
+				success: false,
+				error: {
+					code: error.retryable ? 'service_unavailable' : 'upstream_error',
+					message: error.retryable
+						? 'El servicio de autenticación no está disponible temporalmente.'
+						: 'El servicio de autenticación rechazó la solicitud.',
+				},
+			},
+			error.retryable ? 503 : 502,
+		);
+		response.headers.set('Cache-Control', PRIVATE_CACHE_CONTROL);
+		if (error.retryable) response.headers.set('Retry-After', '5');
+		return response;
+	}
+
 	// Log all errors server-side for diagnostics
 	if (isApiError(error)) {
 		// Only log server errors (5xx), not client errors (4xx)
 		if (error.status >= 500) {
 			console.error('[rsvp] Error:', error);
 		}
-		return jsonResponse(
+		const response = jsonResponse(
 			{
 				success: false,
 				error: {
@@ -92,6 +110,8 @@ export function errorResponse(error: unknown): Response {
 			},
 			error.status,
 		);
+		if (error.status >= 500) response.headers.set('Cache-Control', PRIVATE_CACHE_CONTROL);
+		return response;
 	}
 
 	// Non-ApiError: log the full details server-side, return sanitized message
@@ -108,7 +128,7 @@ export function errorResponse(error: unknown): Response {
 	const errorCode = isEmptyObject ? 'bad_request' : 'internal_error';
 	const status = isEmptyObject ? 400 : 500;
 
-	return jsonResponse(
+	const response = jsonResponse(
 		{
 			success: false,
 			error: {
@@ -118,6 +138,8 @@ export function errorResponse(error: unknown): Response {
 		},
 		status,
 	);
+	if (status >= 500) response.headers.set('Cache-Control', PRIVATE_CACHE_CONTROL);
+	return response;
 }
 
 export async function parseJsonBody(request: Request): Promise<Record<string, unknown> | Response> {

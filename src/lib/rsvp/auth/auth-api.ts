@@ -3,13 +3,34 @@ import {
 	getSupabaseAnonKey,
 	getSupabaseServiceRoleKey,
 } from '@/lib/server/supabase-credentials';
+import {
+	AuthRequestError,
+	type AuthOperation,
+	type AuthRequestErrorKind,
+} from '@/lib/rsvp/core/errors';
 
-interface AuthApiOptions {
+export const AUTH_REQUEST_TIMEOUT_MS = 5_000;
+
+interface AuthApiOptions<T> {
+	operation: AuthOperation;
 	path: string;
 	method?: 'GET' | 'POST' | 'PUT';
 	body?: unknown;
 	authToken?: string;
 	useServiceRole?: boolean;
+	validate: (value: unknown) => value is T;
+}
+
+export interface SupabaseAuthUser {
+	id: string;
+	email?: string;
+	app_metadata?: {
+		role?: string;
+		must_change_password?: boolean;
+		[key: string]: unknown;
+	};
+	user_metadata?: Record<string, unknown>;
+	amr?: Array<{ method?: string }>;
 }
 
 export interface AuthAdminUser {
@@ -19,79 +40,186 @@ export interface AuthAdminUser {
 	login_alias?: string;
 }
 
-async function authRequest<T>(options: AuthApiOptions): Promise<T> {
+type AuthAdminUserRecord = SupabaseAuthUser & {
+	created_at?: string;
+	user_metadata?: Record<string, unknown>;
+	app_metadata?: Record<string, unknown>;
+};
+
+type AuthTokenResponse = {
+	access_token: string;
+	refresh_token: string;
+	user: SupabaseAuthUser;
+};
+
+type CreateAuthUserResponse = { user: AuthAdminUserRecord } | AuthAdminUserRecord;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function hasStringId(value: unknown): value is { id: string } & Record<string, unknown> {
+	return isRecord(value) && typeof value.id === 'string' && value.id.length > 0;
+}
+
+function isSupabaseAuthUser(value: unknown): value is SupabaseAuthUser {
+	return hasStringId(value);
+}
+
+function isAuthTokenResponse(value: unknown): value is AuthTokenResponse {
+	return (
+		isRecord(value) &&
+		typeof value.access_token === 'string' &&
+		value.access_token.length > 0 &&
+		typeof value.refresh_token === 'string' &&
+		value.refresh_token.length > 0 &&
+		isSupabaseAuthUser(value.user)
+	);
+}
+
+function isSignUpResponse(value: unknown): value is {
+	id?: string;
+	access_token?: string;
+	refresh_token?: string;
+	user?: { id?: string; email?: string };
+} {
+	if (!isRecord(value)) return false;
+	if (value.access_token !== undefined && typeof value.access_token !== 'string') return false;
+	if (value.refresh_token !== undefined && typeof value.refresh_token !== 'string') return false;
+	return hasStringId(value) || hasStringId(value.user);
+}
+
+function isMagicLinkResponse(value: unknown): value is { message_id?: string } {
+	return (
+		isRecord(value) && (value.message_id === undefined || typeof value.message_id === 'string')
+	);
+}
+
+function isAuthUserListResponse(value: unknown): value is { users: AuthAdminUserRecord[] } {
+	return (
+		isRecord(value) &&
+		Array.isArray(value.users) &&
+		value.users.every((user) => hasStringId(user))
+	);
+}
+
+function isCreateAuthUserResponse(value: unknown): value is CreateAuthUserResponse {
+	return hasStringId(value) || (isRecord(value) && hasStringId(value.user));
+}
+
+function emitAuthEvent(input: {
+	operation: AuthOperation;
+	outcome: 'success' | 'failure';
+	status?: number;
+	errorKind?: AuthRequestErrorKind;
+	durationMs: number;
+}) {
+	console.info(
+		JSON.stringify({
+			event: 'auth_upstream_request',
+			operation: input.operation,
+			outcome: input.outcome,
+			status: input.status ?? null,
+			errorKind: input.errorKind ?? null,
+			durationMs: input.durationMs,
+			vercelRegion: process.env.VERCEL_REGION || 'unknown',
+		}),
+	);
+}
+
+async function authRequest<T>(options: AuthApiOptions<T>): Promise<T> {
 	const method = options.method ?? 'POST';
 	const apiKey = options.useServiceRole ? getSupabaseServiceRoleKey() : getSupabaseAnonKey();
-	const supabaseUrl = getSupabaseUrl();
-	const requestUrl = `${supabaseUrl}/auth/v1/${options.path}`;
+	const requestUrl = `${getSupabaseUrl()}/auth/v1/${options.path}`;
+	const controller = new AbortController();
+	const startedAt = Date.now();
+	let timedOut = false;
+	let status: number | undefined;
+	const timer = setTimeout(() => {
+		timedOut = true;
+		controller.abort();
+	}, AUTH_REQUEST_TIMEOUT_MS);
 
-	let response: Response;
 	try {
-		response = await fetch(requestUrl, {
+		const response = await fetch(requestUrl, {
 			method,
 			headers: {
 				apikey: apiKey,
 				Authorization: `Bearer ${options.authToken || apiKey}`,
 				'Content-Type': 'application/json',
 			},
-			body: options.body ? JSON.stringify(options.body) : undefined,
+			body: options.body === undefined ? undefined : JSON.stringify(options.body),
+			signal: controller.signal,
 		});
-	} catch (cause) {
-		const causeCode =
-			cause instanceof Error
-				? ((cause.cause as Record<string, unknown> | undefined)?.code as string | undefined)
-				: undefined;
-		console.error(
-			'[auth] fetch failed',
-			JSON.stringify({
-				stage: 'fetch',
-				errorName: cause instanceof Error ? cause.name : typeof cause,
-				errorMessage: cause instanceof Error ? cause.message : String(cause),
-				causeCode,
-			}),
-		);
-		throw Object.assign(new Error('auth-request-failed'), { _stage: 'fetch' });
-	}
-
-	if (!response.ok) {
-		const status = response.status;
-		const bodyText = await response.text().catch(() => '');
-		let supabaseCode: string | undefined;
-		try {
-			const parsed = JSON.parse(bodyText) as Record<string, unknown>;
-			supabaseCode =
-				(typeof parsed.error === 'string' ? parsed.error : undefined) ??
-				(typeof parsed.error_code === 'string' ? parsed.error_code : undefined) ??
-				(typeof parsed.message === 'string' && parsed.message !== 'Invalid API key'
-					? parsed.message
-					: undefined);
-		} catch {
-			/* ignore parse failure */
+		status = response.status;
+		if (timedOut) {
+			throw new AuthRequestError({
+				kind: 'timeout',
+				operation: options.operation,
+				status,
+			});
 		}
 
-		console.error(
-			'[auth] upstream error',
-			JSON.stringify({
-				stage: 'response',
+		if (!response.ok) {
+			throw new AuthRequestError({ kind: 'http', operation: options.operation, status });
+		}
+
+		let parsed: unknown;
+		try {
+			parsed = await response.json();
+		} catch {
+			throw new AuthRequestError({
+				kind: timedOut ? 'timeout' : 'invalid_response',
+				operation: options.operation,
 				status,
-				supabaseCode,
-			}),
-		);
-		throw Object.assign(new Error(`Supabase auth error (${status}).`), {
-			_stage: 'response',
-			_status: status,
-			_supabaseCode: supabaseCode,
+			});
+		}
+		if (timedOut) {
+			throw new AuthRequestError({
+				kind: 'timeout',
+				operation: options.operation,
+				status,
+			});
+		}
+
+		if (!options.validate(parsed)) {
+			throw new AuthRequestError({
+				kind: 'invalid_response',
+				operation: options.operation,
+				status,
+			});
+		}
+
+		emitAuthEvent({
+			operation: options.operation,
+			outcome: 'success',
+			status,
+			durationMs: Date.now() - startedAt,
 		});
+		return parsed;
+	} catch (error) {
+		const authError =
+			error instanceof AuthRequestError
+				? error
+				: new AuthRequestError({
+						kind: timedOut ? 'timeout' : 'network',
+						operation: options.operation,
+						status,
+					});
+		emitAuthEvent({
+			operation: options.operation,
+			outcome: 'failure',
+			status: authError.status,
+			errorKind: authError.kind,
+			durationMs: Date.now() - startedAt,
+		});
+		throw authError;
+	} finally {
+		clearTimeout(timer);
 	}
-	return (await response.json()) as T;
 }
 
-function mapAuthAdminUser(user: {
-	id: string;
-	email?: string;
-	created_at?: string;
-	user_metadata?: Record<string, unknown>;
-}): AuthAdminUser {
+function mapAuthAdminUser(user: AuthAdminUserRecord): AuthAdminUser {
 	const rawAlias = user.user_metadata?.login_alias;
 	return {
 		id: user.id,
@@ -101,44 +229,50 @@ function mapAuthAdminUser(user: {
 	};
 }
 
-export async function signInWithPassword(input: { email: string; password: string }): Promise<{
-	access_token: string;
-	refresh_token: string;
-	user: { id: string; email?: string };
-}> {
+export async function getAuthUserByAccessToken(accessToken: string): Promise<SupabaseAuthUser> {
 	return authRequest({
-		path: 'token?grant_type=password',
-		body: {
-			email: input.email,
-			password: input.password,
-		},
+		operation: 'validate_access_token',
+		path: 'user',
+		method: 'GET',
+		authToken: accessToken,
+		validate: isSupabaseAuthUser,
 	});
 }
 
-export async function refreshAccessToken(input: { refreshToken: string }): Promise<{
-	access_token: string;
-	refresh_token: string;
-	user: { id: string; email?: string };
-}> {
+export async function signInWithPassword(input: {
+	email: string;
+	password: string;
+}): Promise<AuthTokenResponse> {
 	return authRequest({
+		operation: 'password_sign_in',
+		path: 'token?grant_type=password',
+		body: { email: input.email, password: input.password },
+		validate: isAuthTokenResponse,
+	});
+}
+
+export async function refreshAccessToken(input: {
+	refreshToken: string;
+}): Promise<AuthTokenResponse> {
+	return authRequest({
+		operation: 'refresh_session',
 		path: 'token?grant_type=refresh_token',
-		body: {
-			refresh_token: input.refreshToken,
-		},
+		body: { refresh_token: input.refreshToken },
+		validate: isAuthTokenResponse,
 	});
 }
 
 export async function signUpWithPassword(input: { email: string; password: string }): Promise<{
+	id?: string;
 	access_token?: string;
 	refresh_token?: string;
 	user?: { id?: string; email?: string };
 }> {
 	return authRequest({
+		operation: 'sign_up',
 		path: 'signup',
-		body: {
-			email: input.email,
-			password: input.password,
-		},
+		body: { email: input.email, password: input.password },
+		validate: isSignUpResponse,
 	});
 }
 
@@ -147,52 +281,41 @@ export async function sendMagicLink(input: {
 	redirectTo?: string;
 }): Promise<{ message_id?: string }> {
 	return authRequest({
+		operation: 'send_magic_link',
 		path: 'otp',
 		body: {
 			email: input.email,
 			create_user: true,
 			email_redirect_to: input.redirectTo,
 		},
+		validate: isMagicLinkResponse,
 	});
 }
 
-export async function findAuthUserByEmail(input: { email: string }): Promise<AuthAdminUser | null> {
-	const response = await authRequest<{
-		users?: Array<{
-			id: string;
-			email?: string;
-			created_at?: string;
-			user_metadata?: Record<string, unknown>;
-		}>;
-	}>({
+async function fetchAuthUsers(): Promise<AuthAdminUserRecord[]> {
+	const response = await authRequest({
+		operation: 'list_users',
 		path: 'admin/users?page=1&per_page=1000',
 		method: 'GET',
 		useServiceRole: true,
+		validate: isAuthUserListResponse,
 	});
+	return response.users;
+}
+
+export async function findAuthUserByEmail(input: { email: string }): Promise<AuthAdminUser | null> {
+	const users = await fetchAuthUsers();
 	const wanted = input.email.trim().toLowerCase();
-	const user = (response.users || []).find(
-		(item) => (item.email || '').trim().toLowerCase() === wanted,
-	);
+	const user = users.find((item) => (item.email || '').trim().toLowerCase() === wanted);
 	return user ? mapAuthAdminUser(user) : null;
 }
 
 export async function findAuthUserByLoginIdentifier(input: {
 	identifier: string;
 }): Promise<AuthAdminUser | null> {
-	const response = await authRequest<{
-		users?: Array<{
-			id: string;
-			email?: string;
-			created_at?: string;
-			user_metadata?: Record<string, unknown>;
-		}>;
-	}>({
-		path: 'admin/users?page=1&per_page=1000',
-		method: 'GET',
-		useServiceRole: true,
-	});
+	const users = await fetchAuthUsers();
 	const wanted = input.identifier.trim().toLowerCase();
-	const user = (response.users || []).find((item) => {
+	const user = users.find((item) => {
 		const mapped = mapAuthAdminUser(item);
 		return (
 			mapped.login_alias === wanted || (mapped.email || '').trim().toLowerCase() === wanted
@@ -207,45 +330,27 @@ export async function listAuthUsers(input?: {
 }): Promise<AuthAdminUser[]> {
 	const page = input?.page && input.page > 0 ? input.page : 1;
 	const perPage = input?.perPage && input.perPage > 0 ? Math.min(input.perPage, 1000) : 200;
-	const response = await authRequest<{
-		users?: Array<{
-			id: string;
-			email?: string;
-			created_at?: string;
-			user_metadata?: Record<string, unknown>;
-		}>;
-	}>({
+	const response = await authRequest({
+		operation: 'list_users',
 		path: `admin/users?page=${page}&per_page=${perPage}`,
 		method: 'GET',
 		useServiceRole: true,
+		validate: isAuthUserListResponse,
 	});
-	return (response.users || []).map(mapAuthAdminUser);
+	return response.users.map(mapAuthAdminUser);
 }
 
-type CreateAuthUserResponse =
-	| {
-			user:
-				| {
-						id: string;
-						email?: string;
-						created_at?: string;
-						user_metadata?: Record<string, unknown>;
-				  }
-				| undefined;
-	  }
-	| {
-			id: string;
-			email?: string;
-			created_at?: string;
-			user_metadata?: Record<string, unknown>;
-	  };
+function extractAuthAdminUser(response: CreateAuthUserResponse): AuthAdminUserRecord {
+	return 'user' in response ? response.user : response;
+}
 
 export async function createAuthUserByAdmin(input: {
 	email: string;
 	password: string;
 	loginAlias?: string;
 }): Promise<AuthAdminUser> {
-	const response = await authRequest<CreateAuthUserResponse>({
+	const response = await authRequest({
+		operation: 'create_user_admin',
 		path: 'admin/users',
 		method: 'POST',
 		useServiceRole: true,
@@ -253,41 +358,22 @@ export async function createAuthUserByAdmin(input: {
 			email: input.email,
 			password: input.password,
 			email_confirm: true,
-			user_metadata: input.loginAlias
-				? {
-						login_alias: input.loginAlias,
-					}
-				: undefined,
-			app_metadata: {
-				must_change_password: true,
-			},
+			user_metadata: input.loginAlias ? { login_alias: input.loginAlias } : undefined,
+			app_metadata: { must_change_password: true },
 		},
+		validate: isCreateAuthUserResponse,
 	});
-	const user = 'user' in response ? response.user : response;
-	if (!user || !user.id) {
-		throw new Error('Supabase auth error: created user id was not returned.');
-	}
-	return mapAuthAdminUser(user);
+	return mapAuthAdminUser(extractAuthAdminUser(response));
 }
 
-type AuthAdminUserRecord = {
-	id: string;
-	email?: string;
-	created_at?: string;
-	user_metadata?: Record<string, unknown>;
-	app_metadata?: Record<string, unknown>;
-};
-
 export async function getAuthUserAdminById(userId: string): Promise<AuthAdminUserRecord> {
-	const user = await authRequest<AuthAdminUserRecord>({
+	return authRequest({
+		operation: 'get_user_admin',
 		path: `admin/users/${userId}`,
 		method: 'GET',
 		useServiceRole: true,
+		validate: (value): value is AuthAdminUserRecord => hasStringId(value),
 	});
-	if (!user?.id) {
-		throw new Error('Supabase auth error: user was not returned.');
-	}
-	return user;
 }
 
 async function updateAuthUserAdmin(input: {
@@ -307,9 +393,7 @@ async function updateAuthUserAdmin(input: {
 			must_change_password: input.mustChangePassword,
 		},
 	};
-	if (input.password !== undefined) {
-		body.password = input.password;
-	}
+	if (input.password !== undefined) body.password = input.password;
 	if (input.passwordResetOperationId) {
 		body.user_metadata = {
 			...(existingUser.user_metadata || {}),
@@ -317,23 +401,17 @@ async function updateAuthUserAdmin(input: {
 		};
 	}
 
-	const response = await authRequest<CreateAuthUserResponse>({
+	const response = await authRequest({
+		operation: 'update_user_admin',
 		path: `admin/users/${input.userId}`,
 		method: 'PUT',
 		useServiceRole: true,
 		body,
+		validate: isCreateAuthUserResponse,
 	});
-	const user = 'user' in response ? response.user : response;
-	if (!user || !user.id) {
-		throw new Error('Supabase auth error: update user id was not returned.');
-	}
-	return mapAuthAdminUser(user);
+	return mapAuthAdminUser(extractAuthAdminUser(response));
 }
 
-/**
- * Remap a managed host's Auth email + user_metadata.login_alias without changing password.
- * Preserves existing app_metadata (including must_change_password).
- */
 export async function adminUpdateManagedLoginAlias(input: {
 	userId: string;
 	email: string;
@@ -341,7 +419,8 @@ export async function adminUpdateManagedLoginAlias(input: {
 	operationId?: string;
 }): Promise<AuthAdminUser> {
 	const existingUser = await getAuthUserAdminById(input.userId);
-	const response = await authRequest<CreateAuthUserResponse>({
+	const response = await authRequest({
+		operation: 'update_user_admin',
 		path: `admin/users/${input.userId}`,
 		method: 'PUT',
 		useServiceRole: true,
@@ -353,16 +432,11 @@ export async function adminUpdateManagedLoginAlias(input: {
 				login_alias: input.loginAlias,
 				...(input.operationId ? { login_alias_operation_id: input.operationId } : {}),
 			},
-			app_metadata: {
-				...(existingUser.app_metadata || {}),
-			},
+			app_metadata: { ...(existingUser.app_metadata || {}) },
 		},
+		validate: isCreateAuthUserResponse,
 	});
-	const user = 'user' in response ? response.user : response;
-	if (!user || !user.id) {
-		throw new Error('Supabase auth error: update user id was not returned.');
-	}
-	return mapAuthAdminUser(user);
+	return mapAuthAdminUser(extractAuthAdminUser(response));
 }
 
 export async function adminResetAuthUserPassword(input: {
@@ -383,13 +457,13 @@ export async function updateUserPasswordUserAuth(input: {
 	accessToken: string;
 	password: string;
 }): Promise<{ id: string; email?: string }> {
-	return authRequest<{ id: string; email?: string }>({
+	return authRequest({
+		operation: 'update_password',
 		path: 'user',
 		method: 'PUT',
 		authToken: input.accessToken,
-		body: {
-			password: input.password,
-		},
+		body: { password: input.password },
+		validate: (value): value is { id: string; email?: string } => hasStringId(value),
 	});
 }
 
@@ -402,4 +476,3 @@ export async function adminSetUserMustChangePassword(input: {
 		mustChangePassword: input.mustChangePassword,
 	});
 }
-
