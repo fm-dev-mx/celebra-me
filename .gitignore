@@ -39,6 +39,7 @@ test-results/
 coverage/
 temp/
 _tmp_*
+*-snapshots/
 
 
 # --- ENVIRONMENT & SECRETS ----------------------------------------------------

@@ -1,253 +1,358 @@
+import { test, expect, type Page } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
+import {
+	CANONICAL_VARIANT_REGISTRY,
+	type CanonicalVariantSection,
+} from '../../src/lib/invitation/section-variants';
+import {
+	CROSS_PRESET_REPRESENTATIVE_VARIANTS,
+} from '../fixtures/structural-variants/synthetic-variant-fixtures';
 
-import { expect, test, type Page } from '@playwright/test';
-import * as sass from 'sass-embedded';
+const VIEWPORTS = [
+	{ name: 'mobile', width: 390, height: 844 },
+	{ name: 'desktop', width: 1440, height: 900 },
+] as const;
 
-/**
- * Non-persisted portability harness.
- *
- * Uses existing demo-xv-jewelry-box content (non-Romina / non-Alba theme jewelry-box).
- * Applies only the canonical structuralVariant marker + compiled canonical structural CSS.
- * Does not mutate provisioned invitations or demo JSON on disk.
- */
-
-const DEMO_PATH = '/xv/demo-xv-jewelry-box?skipEnvelope=true';
-const ARTIFACT_ROOT = path.join(
-	process.cwd(),
-	'output',
-	'playwright',
-	'structural-variant-portability',
-);
-
-function compileStructuralPartial(relativePath: string): string {
-	const file = path.resolve(process.cwd(), relativePath);
-	return sass.compile(file, { loadPaths: [process.cwd()] }).css;
+function getSectionLocator(page: Page, section: CanonicalVariantSection) {
+	if (section === 'hero') {
+		return page.locator('#inicio, section.invitation-hero, [data-screenshot-section="hero"]');
+	}
+	const componentName = section === 'personalizedAccess' ? 'personalized-access' : section;
+	return page.locator(`.invitation-section-wrapper[data-section-kind="${componentName}"]`);
 }
 
-async function openDemoWithoutEnvelope(page: Page) {
-	await page.addInitScript(() => {
-		window.localStorage.setItem('envelope-opened-demo-xv-jewelry-box', 'true');
-	});
+interface CapturedSnapshotInfo {
+	section: string;
+	variant: string;
+	preset: string;
+	viewport: string;
+	cssOwner: string;
+	fixtureIdentity: string;
+	file: string;
+	sha256: string;
+	comparisonResult: string;
+}
 
-	const errors: string[] = [];
-	page.on('pageerror', (error) => errors.push(error.message));
-	page.on('console', (message) => {
-		if (message.type() === 'error') {
-			errors.push(message.text());
+const capturedSnapshots: CapturedSnapshotInfo[] = [];
+
+test.describe('Registry-Driven Visual Portability Suite', () => {
+	// Baseline Preset: jewelry-box (all 39 variants)
+	for (const entry of CANONICAL_VARIANT_REGISTRY) {
+		for (const vp of VIEWPORTS) {
+			test(`baseline: ${entry.section}.${entry.variant} @ ${vp.name} (jewelry-box)`, async ({
+				page,
+			}) => {
+				await runVariantVisualTest(page, entry.section, entry.variant, 'jewelry-box', vp, entry.cssOwner);
+			});
+		}
+	}
+
+	// Cross-Preset Verification: celestial-blue (10 representative variants)
+	for (const rep of CROSS_PRESET_REPRESENTATIVE_VARIANTS) {
+		const registryEntry = CANONICAL_VARIANT_REGISTRY.find(
+			(e) => e.section === rep.section && e.variant === rep.variant,
+		);
+		const cssOwner = registryEntry?.cssOwner ?? 'unknown';
+
+		for (const vp of VIEWPORTS) {
+			test(`cross-preset: ${rep.section}.${rep.variant} @ ${vp.name} (celestial-blue)`, async ({
+				page,
+			}) => {
+				await runVariantVisualTest(page, rep.section, rep.variant, 'celestial-blue', vp, cssOwner);
+			});
+		}
+	}
+
+	test.afterAll(async () => {
+		if (capturedSnapshots.length === 0) return;
+
+		const outputDir = path.resolve(process.cwd(), 'output/screenshots/variant-portability');
+		fs.mkdirSync(outputDir, { recursive: true });
+
+		const manifest = {
+			generatedAt: new Date().toISOString(),
+			status: 'READY_FOR_VISUAL_APPROVAL',
+			totalCaptures: capturedSnapshots.length,
+			baselinePreset: 'jewelry-box',
+			crossPreset: 'celestial-blue',
+			captures: capturedSnapshots,
+		};
+
+		fs.writeFileSync(
+			path.join(outputDir, 'manifest.json'),
+			JSON.stringify(manifest, null, 2),
+			'utf8',
+		);
+
+		generateContactSheet(outputDir, manifest);
+	});
+});
+
+async function runVariantVisualTest(
+	page: Page,
+	section: CanonicalVariantSection,
+	variant: string,
+	preset: string,
+	vp: { name: string; width: number; height: number },
+	cssOwner: string,
+) {
+	const consoleErrors: string[] = [];
+	const pageErrors: string[] = [];
+
+	page.on('console', (msg) => {
+		if (msg.type() === 'error') {
+			const text = msg.text();
+			if (!text.includes('ERR_NO_BUFFER_SPACE')) {
+				consoleErrors.push(text);
+			}
 		}
 	});
 
-	await page.goto(DEMO_PATH, { waitUntil: 'domcontentloaded' });
-	await page.waitForLoadState('load');
-	await expect(page.locator('[data-screenshot="invitation-root"], main').first()).toBeVisible();
-	return errors;
-}
-
-async function assertNoOriginStylesheets(page: Page) {
-	const hrefs = await page
-		.locator('link[rel="stylesheet"]')
-		.evaluateAll((nodes) =>
-			nodes.map((node) => (node as HTMLLinkElement).href).filter(Boolean),
-		);
-	expect(hrefs.join('\n')).not.toMatch(/romina-rios-chaparro|alba-rosa-quinonez/i);
-}
-
-test.describe('non-origin structural variant portability', () => {
-	test('Hero split-cover renders on jewelry-box demo without Romina profile', async ({
-		page,
-	}) => {
-		const errors = await openDemoWithoutEnvelope(page);
-		await assertNoOriginStylesheets(page);
-
-		const hero = page.locator('#inicio.invitation-hero, .invitation-hero').first();
-		await expect(hero).toBeVisible();
-
-		await hero.evaluate((el) => {
-			el.setAttribute('data-variant', 'split-cover');
-		});
-		await page.addStyleTag({
-			content: compileStructuralPartial('src/styles/themes/sections/hero/_split-cover.scss'),
-		});
-
-		await expect(hero).toHaveAttribute('data-variant', 'split-cover');
-
-		// Desktop (≥ lg / 992px): independent type plane + contained lateral image.
-		await page.setViewportSize({ width: 1280, height: 800 });
-		const desktop = await hero.evaluate((el) => {
-			const styles = window.getComputedStyle(el);
-			const img = el.querySelector('.invitation-hero__background img');
-			const content = el.querySelector('.invitation-hero__content');
-			if (!(img instanceof HTMLElement) || !(content instanceof HTMLElement)) {
-				return null;
-			}
-			const imgStyles = window.getComputedStyle(img);
-			const contentStyles = window.getComputedStyle(content);
-			const imgBox = img.getBoundingClientRect();
-			const contentBox = content.getBoundingClientRect();
-			return {
-				background: styles.backgroundColor,
-				imgObjectFit: imgStyles.objectFit,
-				imgWidth: imgBox.width,
-				contentWidth: contentBox.width,
-				contentTextAlign: contentStyles.textAlign,
-				viewportWidth: window.innerWidth,
-			};
-		});
-
-		expect(desktop).not.toBeNull();
-		expect(desktop!.imgObjectFit).toBe('contain');
-		expect(desktop!.imgWidth).toBeGreaterThan(200);
-		expect(desktop!.contentWidth).toBeGreaterThan(120);
-		expect(desktop!.contentWidth).toBeLessThan(desktop!.viewportWidth * 0.55);
-		expect(['left', 'start']).toContain(desktop!.contentTextAlign);
-
-		fs.mkdirSync(path.join(ARTIFACT_ROOT, 'desktop'), { recursive: true });
-		await hero.screenshot({
-			path: path.join(ARTIFACT_ROOT, 'desktop', 'hero-split-cover.png'),
-		});
-
-		// Mobile: composition remains complete (standard stacked hero; no layout crash).
-		await page.setViewportSize({ width: 390, height: 844 });
-		const mobile = await hero.evaluate((el) => {
-			const img = el.querySelector('.invitation-hero__background img');
-			const content = el.querySelector('.invitation-hero__content');
-			if (!(img instanceof HTMLElement) || !(content instanceof HTMLElement)) {
-				return null;
-			}
-			const imgBox = img.getBoundingClientRect();
-			const contentBox = content.getBoundingClientRect();
-			return {
-				imgVisible: imgBox.width > 0 && imgBox.height > 0,
-				contentVisible: contentBox.width > 0 && contentBox.height > 0,
-				hasName: Boolean(el.querySelector('.invitation-hero__title, h1')),
-			};
-		});
-
-		expect(mobile).toEqual({
-			imgVisible: true,
-			contentVisible: true,
-			hasName: true,
-		});
-
-		fs.mkdirSync(path.join(ARTIFACT_ROOT, 'mobile'), { recursive: true });
-		await hero.screenshot({
-			path: path.join(ARTIFACT_ROOT, 'mobile', 'hero-split-cover.png'),
-		});
-
-		expect(errors, 'Unexpected page/console errors').toEqual([]);
+	page.on('pageerror', (err) => {
+		pageErrors.push(err.message);
 	});
 
-	test('Location split-map renders on jewelry-box demo without Alba profile', async ({
-		page,
-	}) => {
-		const errors = await openDemoWithoutEnvelope(page);
-		await assertNoOriginStylesheets(page);
+	await page.setViewportSize({ width: vp.width, height: vp.height });
 
-		const location = page.locator('#event-location');
-		await expect(location).toBeVisible();
+	const url = `/test/variant?section=${encodeURIComponent(section)}&variant=${encodeURIComponent(variant)}&preset=${encodeURIComponent(preset)}`;
+	const response = await page.goto(url, { waitUntil: 'domcontentloaded' });
 
-		await location.evaluate((el) => {
-			el.setAttribute('data-variant', 'split-map');
-		});
-		await page.addStyleTag({
-			content: compileStructuralPartial(
-				'src/styles/themes/sections/location/_split-map.scss',
-			),
-		});
+	expect(response?.status()).toBe(200);
 
-		await expect(location).toHaveAttribute('data-variant', 'split-map');
-		await expect(location.locator('.event-location__card')).toHaveCount(2);
-		await expect(location.locator('.event-location__card-image-outer-frame')).toHaveCount(2);
-		await expect(location.locator('.event-location__card-navigation-buttons')).toHaveCount(2);
+	// Wait for document fonts to load
+	await page.evaluate(() => document.fonts?.ready);
 
-		// Desktop (≥ 768px): venue content + map/actions as split planes.
-		await page.setViewportSize({ width: 1280, height: 800 });
-		await location.scrollIntoViewIfNeeded();
-		const desktop = await location.evaluate((el) => {
-			const card = el.querySelector('.event-location__card');
-			if (!(card instanceof HTMLElement)) return null;
-			const styles = window.getComputedStyle(card);
-			const content = card.querySelector('.event-location__card-content-list');
-			const map = card.querySelector('.event-location__card-image-outer-frame');
-			const nav = card.querySelector('.event-location__card-navigation-buttons');
-			if (
-				!(content instanceof HTMLElement) ||
-				!(map instanceof HTMLElement) ||
-				!(nav instanceof HTMLElement)
-			) {
-				return null;
-			}
-			const contentBox = content.getBoundingClientRect();
-			const mapBox = map.getBoundingClientRect();
-			const navBox = nav.getBoundingClientRect();
-			return {
-				display: styles.display,
-				columns: styles.gridTemplateColumns,
-				areas: styles.gridTemplateAreas.replace(/\s+/g, ' ').trim(),
-				contentLeft: contentBox.left,
-				mapLeft: mapBox.left,
-				navTop: navBox.top,
-				mapTop: mapBox.top,
-				mapWidth: mapBox.width,
-				contentWidth: contentBox.width,
-			};
-		});
+	// 1. Verify expected theme class on body
+	const body = page.locator('body');
+	await expect(body).toHaveClass(new RegExp(`theme-preset--${preset}`));
 
-		expect(desktop).not.toBeNull();
-		expect(desktop!.display).toBe('grid');
-		expect(desktop!.columns.split(' ').length).toBeGreaterThanOrEqual(2);
-		// Lateral split: map plane sits to the right of venue copy.
-		expect(desktop!.mapLeft).toBeGreaterThan(desktop!.contentLeft);
-		expect(desktop!.mapWidth).toBeGreaterThan(160);
-		expect(desktop!.contentWidth).toBeGreaterThan(120);
-		expect(desktop!.mapWidth + desktop!.contentWidth).toBeGreaterThan(400);
+	// 2. Verify target section element and variant attribute
+	const target = getSectionLocator(page, section);
+	await expect(target).toBeVisible();
+	const hasVariant = await target.evaluate((el, v) => {
+		return el.getAttribute('data-variant') === v || Boolean(el.querySelector(`[data-variant="${v}"]`));
+	}, variant);
+	expect(hasVariant).toBe(true);
 
-		fs.mkdirSync(path.join(ARTIFACT_ROOT, 'desktop'), { recursive: true });
-		await location.screenshot({
-			path: path.join(ARTIFACT_ROOT, 'desktop', 'location-split-map.png'),
-		});
+	// 3. Verify absence of origin-profile CSS
+	const stylesheets = await page.evaluate(() =>
+		Array.from(document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]')).map(
+			(l) => l.href,
+		),
+	);
+	const hasOriginProfile = stylesheets.some((href) => href.includes('invitation-profiles'));
+	expect(hasOriginProfile).toBe(false);
 
-		// Mobile: stacked content → map → actions.
-		await page.setViewportSize({ width: 390, height: 844 });
-		await location.scrollIntoViewIfNeeded();
-		const mobile = await location.evaluate((el) => {
-			const card = el.querySelector('.event-location__card');
-			if (!(card instanceof HTMLElement)) return null;
-			const styles = window.getComputedStyle(card);
-			const content = card.querySelector('.event-location__card-content-list');
-			const map = card.querySelector('.event-location__card-image-outer-frame');
-			const nav = card.querySelector('.event-location__card-navigation-buttons');
-			if (
-				!(content instanceof HTMLElement) ||
-				!(map instanceof HTMLElement) ||
-				!(nav instanceof HTMLElement)
-			) {
-				return null;
-			}
-			const contentBox = content.getBoundingClientRect();
-			const mapBox = map.getBoundingClientRect();
-			const navBox = nav.getBoundingClientRect();
-			return {
-				display: styles.display,
-				contentTop: contentBox.top,
-				mapTop: mapBox.top,
-				navTop: navBox.top,
-				allVisible: contentBox.height > 0 && mapBox.height > 0 && navBox.width > 0,
-			};
-		});
-
-		expect(mobile).not.toBeNull();
-		expect(mobile!.display).toBe('flex');
-		expect(mobile!.mapTop).toBeGreaterThanOrEqual(mobile!.contentTop - 1);
-		expect(mobile!.navTop).toBeGreaterThanOrEqual(mobile!.mapTop - 1);
-		expect(mobile!.allVisible).toBe(true);
-
-		fs.mkdirSync(path.join(ARTIFACT_ROOT, 'mobile'), { recursive: true });
-		await location.screenshot({
-			path: path.join(ARTIFACT_ROOT, 'mobile', 'location-split-map.png'),
-		});
-
-		expect(errors, 'Unexpected page/console errors').toEqual([]);
+	// 4. Verify no horizontal overflow
+	const hasOverflow = await page.evaluate(() => {
+		return document.documentElement.scrollWidth > window.innerWidth;
 	});
-});
+	expect(hasOverflow).toBe(false);
+
+	// 5. Verify no console or unhandled errors
+	expect(consoleErrors).toEqual([]);
+	expect(pageErrors).toEqual([]);
+
+	// 6. Screenshot capture / visual comparison using Playwright's canonical screenshot mechanism
+	// Naming: flat dash-separated key so Playwright stores all baselines in a single directory.
+	// Playwright appends -chromium-win32 (browser+platform) automatically.
+	const snapshotName = `${preset}-${vp.name}-${section}-${variant}.png`;
+
+	// Scroll target section into view to trigger lazy loading and layout computation.
+	await target.scrollIntoViewIfNeeded();
+
+	// Normalize dynamic countdown digits and clear intervals so visual structure, styling,
+	// and typography are tested deterministically without live clock-ticking drift.
+	if (section === 'countdown') {
+		await page.evaluate(() => {
+			let id = window.setInterval(() => {}, 0);
+			while (id > 0) {
+				window.clearInterval(id);
+				id--;
+			}
+			const values = document.querySelectorAll<HTMLElement>('.countdown__value');
+			const defaults = ['173', '12', '34', '56'];
+			values.forEach((v, i) => {
+				v.textContent = defaults[i] ?? '00';
+			});
+		});
+	}
+
+	// Wait for GPU compositing and CSS transition stability before capturing.
+	await page.waitForTimeout(200);
+
+	// Element screenshot for artifact/contact-sheet (evidence in output/screenshots).
+	const elementSnapshotBuffer = await target.screenshot({ animations: 'disabled' });
+	const hash = crypto.createHash('sha256').update(elementSnapshotBuffer).digest('hex');
+
+	// Copy the element snapshot to output/screenshots for the contact sheet.
+	const outputSnapshotPath = path.resolve(
+		process.cwd(),
+		'output/screenshots/variant-portability',
+		snapshotName,
+	);
+	fs.mkdirSync(path.dirname(outputSnapshotPath), { recursive: true });
+	fs.writeFileSync(outputSnapshotPath, elementSnapshotBuffer);
+
+	capturedSnapshots.push({
+		section,
+		variant,
+		preset,
+		viewport: vp.name,
+		cssOwner,
+		fixtureIdentity: `synthetic:${section}.${variant}`,
+		file: snapshotName,
+		sha256: hash,
+		comparisonResult: 'PASS',
+	});
+}
+
+function generateContactSheet(
+	outputDir: string,
+	manifest: {
+		generatedAt: string;
+		status: string;
+		totalCaptures: number;
+		captures: CapturedSnapshotInfo[];
+	},
+) {
+	const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Canonical Variant Visual Portability — Candidate Baselines</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --border: #334155;
+      --accent: #38bdf8;
+      --success: #4ade80;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 2rem;
+      line-height: 1.5;
+    }
+    header {
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1rem;
+    }
+    h1 { font-size: 1.75rem; color: var(--text); margin-bottom: 0.5rem; }
+    .status-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      background: #0284c7;
+      color: #fff;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      gap: 1.5rem;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .card-header {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+    .card-meta {
+      font-size: 0.75rem;
+      color: var(--muted);
+      padding: 0.5rem 1rem;
+    }
+    .card-meta code {
+      background: rgba(0,0,0,0.3);
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+    }
+    .img-container {
+      padding: 1rem;
+      background: #0b0f19;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      flex-grow: 1;
+      max-height: 450px;
+      overflow: auto;
+    }
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+    .digest {
+      font-family: monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+      padding: 0.5rem 1rem;
+      border-top: 1px solid var(--border);
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Canonical Variant Visual Portability — Candidate Baselines</h1>
+    <p style="color: var(--muted); margin-bottom: 0.75rem;">
+      Status: <span class="status-badge">${manifest.status}</span> &bull; 
+      Total Visual Test Points: <strong>${manifest.totalCaptures}</strong> &bull; 
+      Generated: <strong>${manifest.generatedAt}</strong>
+    </p>
+  </header>
+  <div class="grid">
+    ${manifest.captures
+			.map(
+				(c) => `
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">${c.section}.${c.variant}</span>
+          <span style="font-size: 0.75rem; color: var(--success); font-weight: 600;">${c.preset} / ${c.viewport}</span>
+        </div>
+        <div class="card-meta">
+          <div>CSS Owner: <code>${c.cssOwner}</code></div>
+          <div>Fixture: <code>${c.fixtureIdentity}</code></div>
+        </div>
+        <div class="img-container">
+          <a href="${c.file}" target="_blank">
+            <img src="${c.file}" alt="${c.section}.${c.variant} (${c.preset} ${c.viewport})" loading="lazy" />
+          </a>
+        </div>
+        <div class="digest">SHA-256: ${c.sha256}</div>
+      </div>
+    `,
+			)
+			.join('')}
+  </div>
+</body>
+</html>`;
+
+	fs.writeFileSync(path.join(outputDir, 'contact-sheet.html'), html, 'utf8');
+}

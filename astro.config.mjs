@@ -55,6 +55,29 @@ if (process.env.CELEBRA_ENV_BOOTSTRAP_LOG === '1') {
 	);
 }
 
+/**
+ * Dev-only integration: injects the visual test harness route (/test/variant) exclusively
+ * when the Astro dev server runs. The harness page lives at src/pages/test/_variant.astro
+ * (underscore prefix excludes it from Astro's auto-routing). It is not injected during
+ * builds, so the route is absent from the production bundle, sitemap, and deployed routes.
+ */
+function testVariantHarnessIntegration() {
+	return {
+		name: 'test-variant-harness',
+		hooks: {
+			'astro:config:setup': ({ command, injectRoute }) => {
+				if (command === 'dev') {
+					injectRoute({
+						pattern: '/test/variant',
+						entrypoint: 'src/pages/test/_variant.astro',
+						prerender: false,
+					});
+				}
+			},
+		},
+	};
+}
+
 export default defineConfig({
 	// The base URL for the site.
 	site:
@@ -62,7 +85,7 @@ export default defineConfig({
 			? `http://127.0.0.1:${devServerPort}`
 			: process.env.BASE_URL || 'https://www.celebra-me.com',
 
-	integrations: [react(), sitemap(), robotsTxt()],
+	integrations: [react(), sitemap(), robotsTxt(), testVariantHarnessIntegration()],
 	server: {
 		port: devServerPort,
 	},

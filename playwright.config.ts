@@ -6,7 +6,7 @@ import { resolvePlaywrightRuntimeEnvironment } from './scripts/playwright/previe
 // (`playwright.preview*.config.ts`). Loading it here would redirect `pnpm test:e2e:ci` /
 // `pnpm run ci` at a protected Preview URL whenever the local Preview env file exists.
 const webServerCommand =
-	process.env.PLAYWRIGHT_WEB_SERVER_COMMAND || 'pnpm dev --host 127.0.0.1 --port 4321';
+	process.env.PLAYWRIGHT_WEB_SERVER_COMMAND || 'pnpm dev --host 127.0.0.1 --port 4321 --force';
 const runtime = resolvePlaywrightRuntimeEnvironment();
 if (runtime.isVercelPreview) {
 	throw new Error(

@@ -11,7 +11,16 @@ import {
 } from '@/lib/invitation/section-css-resolver-map';
 import { prepareInvitationPageContext } from '@/lib/invitation/page-data';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
-import { CANONICAL_VARIANT_CUTOVER_MANIFEST } from '@/lib/invitation/section-variants';
+import {
+	CANONICAL_VARIANT_REGISTRY,
+	CANONICAL_VARIANT_CUTOVER_MANIFEST,
+} from '@/lib/invitation/section-variants';
+import {
+	buildSyntheticVariantEvent,
+	buildIncompatiblePrerequisiteEvent,
+	getIncompatiblePrerequisiteExpectation,
+	CROSS_PRESET_REPRESENTATIVE_VARIANTS,
+} from '../fixtures/structural-variants/synthetic-variant-fixtures';
 
 jest.mock('@/lib/assets/asset-registry', () => {
 	const actual = jest.requireActual('@/lib/assets/asset-registry');
@@ -45,7 +54,6 @@ type PortableOverrides = {
 	personalizedAccessVariant?: string;
 	itineraryVariant?: 'standard' | 'timeline-paper' | 'editorial-ledger' | 'editorial-program';
 	thankYouVariant?: string;
-	countdownVariant?: string;
 	/** Optional theme skin; structural selection must not depend on it. */
 	themePreset?: string;
 	galleryItems?: Array<Record<string, unknown>>;
@@ -124,10 +132,6 @@ function buildPortableJewelryBoxEvent(overrides: PortableOverrides = {}) {
 			...fixture.thankYou,
 			...(overrides.thankYouVariant ? { variant: overrides.thankYouVariant } : {}),
 		},
-		countdown: {
-			...fixture.countdown,
-			...(overrides.countdownVariant ? { variant: overrides.countdownVariant } : {}),
-		},
 	};
 
 	// Identity fields must stay absent for portability proofs.
@@ -148,60 +152,20 @@ function loadDemoEvent(relativePath: string, id: string) {
 	} as Parameters<typeof adaptEvent>[0];
 }
 
-describe('Goal 1 — non-origin canonical variant portability', () => {
-	it('validates all 29 non-default variants through schema, adapter, render plan, and DOM descriptors', () => {
-		const overridesFor = (section: string, variant: string): PortableOverrides => {
-			const overrides: PortableOverrides = {};
-			switch (section) {
-				case 'hero':
-					overrides.heroVariant = variant;
-					break;
-				case 'family':
-					overrides.familyVariant = variant;
-					break;
-				case 'location':
-					overrides.locationVariant = variant;
-					break;
-				case 'itinerary':
-					overrides.itineraryVariant = variant as PortableOverrides['itineraryVariant'];
-					break;
-				case 'gallery':
-					overrides.galleryVariant = variant;
-					if (variant === 'single-keepsake') {
-						overrides.galleryItems = [{ image: 'gallery01' }];
-					} else if (variant === 'paired-feature-band') {
-						overrides.galleryItems = [
-							{ image: 'gallery01' },
-							{ image: 'gallery03', layoutRole: 'feature' },
-							{ image: 'gallery05' },
-						];
-					}
-					break;
-				case 'gifts':
-					overrides.giftsVariant = variant;
-					break;
-				case 'rsvp':
-					overrides.rsvpVariant = variant;
-					break;
-				case 'personalizedAccess':
-					overrides.personalizedAccessVariant = variant;
-					break;
-				case 'thankYou':
-					overrides.thankYouVariant = variant;
-					break;
-				case 'countdown':
-					overrides.countdownVariant = variant;
-					break;
-			}
-			return overrides;
-		};
+describe('registry-driven canonical variant portability', () => {
+	it('validates all 39 registered variants through schema, adapter, render plan, and DOM descriptors', () => {
+		expect(CANONICAL_VARIANT_REGISTRY).toHaveLength(39);
 
-		for (const entry of CANONICAL_VARIANT_CUTOVER_MANIFEST) {
-			const candidate = buildPortableJewelryBoxEvent(
-				overridesFor(entry.section, entry.variant),
-			);
-			const parsed = eventContentSchema.parse(candidate.data);
-			const event = { ...candidate, data: parsed } as Parameters<typeof adaptEvent>[0];
+		for (const entry of CANONICAL_VARIANT_REGISTRY) {
+			const candidate = buildSyntheticVariantEvent({
+				section: entry.section,
+				variant: entry.variant,
+				themePreset: 'jewelry-box',
+			});
+			const parsed = eventContentSchema.safeParse(candidate.data);
+			expect(parsed.success).toBe(true);
+
+			const event = { ...candidate, data: parsed.data } as Parameters<typeof adaptEvent>[0];
 			const viewModel = adaptEvent(event);
 			const pageContext = prepareInvitationPageContext({
 				eventEntry: event as Parameters<typeof prepareInvitationPageContext>[0]['eventEntry'],
@@ -219,17 +183,78 @@ describe('Goal 1 — non-origin canonical variant portability', () => {
 
 			expect(expectedView).toBe(entry.variant);
 			expect(renderPlan.length).toBeGreaterThan(0);
+
 			if (entry.section === 'hero') continue;
-			const component = entry.section === 'personalizedAccess' ? 'personalized-access' : entry.section;
+			const component =
+				entry.section === 'personalizedAccess' ? 'personalized-access' : entry.section;
 			const descriptor = buildInvitationSectionRenderDescriptors(pageContext).find(
 				(item) => item.component === component,
 			);
-			if (!descriptor) throw new Error(`Missing DOM descriptor for ${entry.section}.${entry.variant}`);
+			if (!descriptor) {
+				throw new Error(`Missing DOM descriptor for ${entry.section}.${entry.variant}`);
+			}
 			expect(descriptor).toMatchObject({ props: { variant: entry.variant } });
 		}
 	});
 
-	it('rejects incompatible canonical prerequisites without synthesizing required data', () => {
+	it('validates cross-preset verification with celestial-blue for 10 representative variants', () => {
+		for (const rep of CROSS_PRESET_REPRESENTATIVE_VARIANTS) {
+			const candidate = buildSyntheticVariantEvent({
+				section: rep.section,
+				variant: rep.variant,
+				themePreset: 'celestial-blue',
+			});
+			const parsed = eventContentSchema.safeParse(candidate.data);
+			expect(parsed.success).toBe(true);
+			if (!parsed.success) continue;
+
+			const event = { ...candidate, data: parsed.data } as Parameters<typeof adaptEvent>[0];
+			const viewModel = adaptEvent(event);
+			expect(viewModel.theme.preset).toBe('celestial-blue');
+
+			const expectedView =
+				rep.section === 'personalizedAccess'
+					? viewModel.sections.rsvp?.personalizedAccess?.variant
+					: rep.section === 'hero'
+						? viewModel.hero.variant
+						: (viewModel.sections as Record<string, { variant?: string } | undefined>)[
+								rep.section
+							]?.variant;
+			expect(expectedView).toBe(rep.variant);
+		}
+	});
+
+	it('rejects incompatible canonical prerequisites with exact path and actionable error message', () => {
+		for (const entry of CANONICAL_VARIANT_CUTOVER_MANIFEST) {
+			const badData = buildIncompatiblePrerequisiteEvent(entry);
+			const result = eventContentSchema.safeParse(badData);
+			expect(
+				result.success
+					? `Unexpected success for ${entry.section}.${entry.variant}`
+					: false,
+			).toBe(false);
+
+			if (!result.success) {
+				const expectation = getIncompatiblePrerequisiteExpectation(entry);
+				const hasMatchingPath = result.error.issues.some((issue) => {
+					const pathMatches = expectation.expectedPath.every(
+						(segment, i) => issue.path[i] === segment,
+					);
+					if (!pathMatches) return false;
+					if (expectation.expectedMessageSubstring) {
+						return issue.message.includes(expectation.expectedMessageSubstring);
+					}
+					return true;
+				});
+
+				expect(
+					hasMatchingPath
+						? true
+						: `Expected issue with path [${expectation.expectedPath.join(', ')}] for ${entry.section}.${entry.variant}, but got: ${JSON.stringify(result.error.issues)}`,
+				).toBe(true);
+			}
+		}
+
 		const fullBleedWithoutImage = buildPortableJewelryBoxEvent({
 			thankYouVariant: 'full-bleed-photo',
 		});
@@ -247,10 +272,10 @@ describe('Goal 1 — non-origin canonical variant portability', () => {
 			expect(result.error.issues).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
-					path: ['thankYou', 'image'],
-					message: expect.stringContaining('full-bleed-photo'),
-				}),
-			]),
+						path: ['thankYou', 'image'],
+						message: expect.stringContaining('full-bleed-photo'),
+					}),
+				]),
 			);
 		}
 	});
@@ -269,7 +294,6 @@ describe('Goal 1 — non-origin canonical variant portability', () => {
 	});
 
 	it('applies Hero editorial-cover on jewelry-box without editorial-magazine theme fallback', () => {
-		// Origin consumer remains editorial-magazine demos; jewelry-box proves identity-free portability.
 		const event = buildPortableJewelryBoxEvent({
 			heroVariant: 'editorial-cover',
 			themePreset: 'jewelry-box',
