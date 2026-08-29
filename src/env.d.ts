@@ -41,6 +41,7 @@ interface ImportMetaEnv {
 	readonly VERCEL: string;
 	readonly VERCEL_ENV: string;
 	readonly VERCEL_GIT_COMMIT_REF: string;
+	readonly VERCEL_REGION: string;
 	readonly BASE_URL: string;
 	readonly INTAKE_TOKEN_ENCRYPTION_KEY: string;
 	readonly NODE_ENV: string;
