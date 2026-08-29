@@ -107,6 +107,7 @@
 	}
 
 	&__panel {
+		box-sizing: border-box;
 		position: relative;
 		isolation: isolate;
 		overflow: visible;
@@ -274,6 +275,8 @@
 
 	&__group {
 		position: relative;
+		min-width: 0;
+		max-width: 100%;
 		padding: var(--family-group-padding, clamp(0.9rem, 2vw, 1.35rem) 0);
 		border-left: var(--family-group-border-left, none);
 		text-align: var(--family-group-text-align, center);
@@ -295,12 +298,14 @@
 	}
 
 	&__group-title {
+		max-width: 100%;
 		margin: var(--family-group-title-margin, 0 0 clamp(0.75rem, 1.6vw, 1rem));
 		font-family: var(--family-group-title-font, var(--font-label, var(--font-body)));
 		font-size: var(--family-group-title-size, 0.7rem);
 		font-weight: var(--family-group-title-weight, 650);
 		letter-spacing: var(--family-group-title-letter-spacing, 0.18em);
 		text-transform: var(--family-group-title-text-transform, uppercase);
+		overflow-wrap: anywhere;
 		color: var(--family-group-title-color, var(--family-accent, var(--color-action-accent)));
 		opacity: var(--family-group-title-opacity, 90%);
 	}

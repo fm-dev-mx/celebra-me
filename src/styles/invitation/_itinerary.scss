@@ -102,8 +102,9 @@
 	}
 
 	&__item {
+		box-sizing: border-box;
 		display: grid;
-		grid-template-columns: 1fr 1fr;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 		align-items: center;
 		position: relative;
 		width: 100%;
@@ -138,6 +139,10 @@
 		}
 	}
 
+	&__item-content {
+		min-width: 0;
+	}
+
 	&__item-time {
 		font-size: 0.95rem;
 		text-transform: uppercase;
@@ -148,12 +153,15 @@
 	}
 
 	&__item-label {
+		min-width: 0;
+		max-width: 100%;
 		font-family: var(--itinerary-item-label-font, var(--font-display));
 		font-size: 1.8rem;
 		color: var(--itinerary-item-label-color, var(--color-action-primary));
 		margin-bottom: 0.4rem;
 		line-height: 1.2;
 		font-weight: 300;
+		overflow-wrap: anywhere;
 	}
 
 	&__item-description {
@@ -222,7 +230,7 @@
 		}
 
 		&__item {
-			grid-template-columns: 1fr;
+			grid-template-columns: minmax(0, 1fr);
 			gap: 1rem;
 			padding-left: 3.5rem;
 
