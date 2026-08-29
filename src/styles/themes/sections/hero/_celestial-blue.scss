@@ -226,3 +226,52 @@
 		}
 	}
 }
+
+// ==========================================================================
+// CELESTIAL BLUE — SPLIT-COVER CROSS-PRESET FIX
+// The split-cover variant uses a dark left plane (--hero-split-plane-bg).
+// Under celestial-blue, overlay and text tokens must be explicitly set so the
+// content panel is legible without relying on profile-specific overrides.
+// Structure (geometry, positioning) stays in _split-cover.scss.
+// Atmosphere tokens (colors) stay here, scoped to data-variant='split-cover'.
+// ==========================================================================
+
+.theme-preset--celestial-blue .invitation-hero[data-variant='split-cover'] {
+	// Align the plane and overlay colors with celestial-blue's dark surface tokens.
+	--hero-split-plane-bg: var(--color-deep-blue-graphite, rgb(16 24 32));
+	--hero-split-overlay-strong: rgb(16 24 32 / 88%);
+	--hero-split-overlay-mid: rgb(16 24 32 / 65%);
+	--hero-split-overlay-soft: rgb(16 24 32 / 18%);
+
+	// Ensure the title uses the on-dark text color rather than the default.
+	.invitation-hero__title {
+		color: var(--color-diamond-white, rgb(255 255 255));
+		-webkit-text-fill-color: var(--color-diamond-white, rgb(255 255 255));
+		text-shadow: 0 8px 24px rgb(var(--color-deep-blue-graphite-rgb, 16 24 32) / 55%);
+	}
+
+	// Label eyebrow in celestial-blue on-dark treatment.
+	.invitation-hero__label {
+		color: var(--color-text-on-dark, var(--color-diamond-white));
+		letter-spacing: 0.36em;
+	}
+
+	// Date, time, venue — use diamond-white at 88% for legibility against dark.
+	.invitation-hero__date,
+	.invitation-hero__time,
+	.invitation-hero__venue {
+		color: rgb(var(--color-diamond-white-rgb, 255 255 255) / 88%);
+		text-shadow: 0 2px 10px rgb(var(--color-deep-blue-graphite-rgb, 16 24 32) / 65%);
+	}
+
+	// Divider: silver-to-transparent on dark background.
+	.invitation-hero__divider {
+		background: linear-gradient(
+			90deg,
+			var(--color-liquid-silver, rgb(200 208 212)),
+			rgb(var(--color-diamond-white-rgb, 255 255 255) / 55%),
+			transparent
+		);
+		opacity: 65%;
+	}
+}

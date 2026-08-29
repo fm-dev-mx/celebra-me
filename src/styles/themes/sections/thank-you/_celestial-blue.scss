@@ -285,3 +285,42 @@
 		transform: translateY(0);
 	}
 }
+
+// ==========================================================================
+// CELESTIAL BLUE — FULL-BLEED-PHOTO CROSS-PRESET FIX
+// The base .theme-preset--celestial-blue .thank-you-section selector above
+// resets .photo-frame to { position: relative; overflow: visible } for the
+// editorial layout. However, the full-bleed-photo variant requires .photo-frame
+// at { position: absolute; inset: 0 } to fill the section behind the content.
+// This variant-scoped override restores that layout at higher specificity.
+// Structure (absolute positioning, inset geometry) stays in _full-bleed-photo.scss.
+// Atmosphere (color tints, filter) stays here, scoped to data-variant='full-bleed-photo'.
+// ==========================================================================
+
+.theme-preset--celestial-blue .thank-you-section[data-variant='full-bleed-photo'] {
+	// Restore the full-bleed photo frame absolute positioning that the base
+	// celestial-blue .thank-you-section override resets.
+	.photo-frame {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		overflow: hidden;
+		background: var(--color-deep-blue-graphite, rgb(16 24 32));
+		border: 0;
+		border-radius: 0;
+		box-shadow: none;
+
+		&::before,
+		&::after {
+			content: none;
+		}
+	}
+
+	// Restore natural photo rendering — remove the celestial-blue editorial filter.
+	.photo-image {
+		filter: none;
+		transform: none;
+		transition: none;
+	}
+}
