@@ -14,6 +14,7 @@ const allowedHydratedComponents = new Set([
 	'UsersAdminTable',
 	'InvitationEditor',
 	'ContentSyncPanel',
+	'ValentinaMemoriesOrganizer',
 	// Local-only canonical status dashboard — read-only fetch via
 	// @/lib/dashboard/api-client. No mutations, no server-only modules in the island.
 	'CanonicalStatusPanel',
@@ -30,6 +31,7 @@ const allowedHydratedComponents = new Set([
 	'LoginFlowBehavior',
 	'ChangePasswordBehavior',
 	'RSVP',
+	'ValentinaMemoriesCapture',
 	'InvitationList',
 	'InvitationDetail',
 	'DraftReview',
