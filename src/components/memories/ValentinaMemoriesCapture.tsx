@@ -2,15 +2,19 @@ import { useEffect, useId, useRef, useState, type ChangeEvent } from 'react';
 import { valentinaMemoriesCaptureCopy } from '@/data/valentina-memories.data';
 import {
 	VALENTINA_MEMORIES_MAX_CAPTION_LENGTH,
+	VALENTINA_MEMORIES_DISPLAY_NAME_MAX_LENGTH,
 	VALENTINA_MEMORIES_RECOVERY_CODE_LENGTH,
+	type ValentinaMemoriesGuestProfile,
 } from '@/data/valentina-memories-media.contract';
 import {
 	VALENTINA_MEMORIES_ALLOWED_MIME_TYPES,
-	normalizeMemoriesMimeType,
+	resolveValentinaMemoriesFileMimeType,
 } from '@/data/valentina-memories-upload.contract';
 import {
 	calculateFileSha256Hex,
+	createSecureClientRequestId,
 	mapValentinaMemoriesSignError,
+	measureVideoDurationSeconds,
 	readValentinaMemoriesSignErrorCode,
 	validateValentinaMemoriesFile,
 	validateValentinaMemoriesVideoDuration,
@@ -28,10 +32,12 @@ type CatalogItem = {
 	status: 'uploading' | 'validating' | 'accepted' | 'rejected' | 'deleted' | 'duplicate';
 	createdAt: string;
 };
+type CompletedCatalogStatus = Extract<
+	CatalogItem['status'],
+	'accepted' | 'duplicate' | 'rejected' | 'deleted'
+>;
 
 type ValentinaMemoriesCaptureProps = {
-	signUrl: string | null;
-	catalogEnabled?: boolean;
 	readVideoDurationSeconds?: (file: File) => Promise<number>;
 };
 
@@ -39,16 +45,29 @@ const ACCEPT = Object.keys(VALENTINA_MEMORIES_ALLOWED_MIME_TYPES).join(',');
 const SESSION_ENDPOINT = '/api/memories/valentina/session';
 const ITEMS_ENDPOINT = '/api/memories/valentina/items';
 
-async function requestSignature(
-	signUrl: string,
+async function reserveUpload(
 	file: File,
 	checksumSha256: string,
-): Promise<{ uploadUrl: string; objectKey: string }> {
-	const mimeType = normalizeMemoriesMimeType(file.type);
-	const response = await fetch(signUrl, {
+	durationSeconds: number | undefined,
+	clientRequestId: string,
+): Promise<{
+	item: CatalogItem;
+	upload: { uploadUrl: string; requiredHeaders: Record<string, string> };
+}> {
+	const mimeType = resolveValentinaMemoriesFileMimeType(file);
+	if (!mimeType)
+		throw Object.assign(new Error('unsupported_type'), { issue: 'unsupported_type' as const });
+	const response = await fetch(ITEMS_ENDPOINT, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ mimeType, sizeBytes: file.size, checksumSha256 }),
+		body: JSON.stringify({
+			action: 'reserve',
+			mimeType,
+			sizeBytes: file.size,
+			checksumSha256,
+			durationSeconds,
+			clientRequestId,
+		}),
 	});
 	let payload: unknown;
 	try {
@@ -64,27 +83,76 @@ async function requestSignature(
 			),
 		});
 	}
-	const parsed =
-		typeof payload === 'object' && payload !== null
-			? (payload as { uploadUrl?: unknown; objectKey?: unknown })
-			: {};
-	if (typeof parsed.uploadUrl !== 'string' || !parsed.uploadUrl) {
+	const parsed = payload as {
+		item?: CatalogItem;
+		upload?: { uploadUrl?: unknown; requiredHeaders?: unknown };
+	};
+	if (
+		!parsed.item?.id ||
+		typeof parsed.upload?.uploadUrl !== 'string' ||
+		typeof parsed.upload.requiredHeaders !== 'object' ||
+		parsed.upload.requiredHeaders === null
+	) {
 		throw Object.assign(new Error('sign_failed'), { issue: 'sign_failed' as const });
 	}
 	return {
-		uploadUrl: parsed.uploadUrl,
-		objectKey: typeof parsed.objectKey === 'string' ? parsed.objectKey : '',
+		item: parsed.item,
+		upload: {
+			uploadUrl: parsed.upload.uploadUrl,
+			requiredHeaders: parsed.upload.requiredHeaders as Record<string, string>,
+		},
 	};
 }
 
-async function putOriginalFile(uploadUrl: string, file: File): Promise<void> {
+async function putOriginalFile(
+	uploadUrl: string,
+	requiredHeaders: Record<string, string>,
+	file: File,
+): Promise<void> {
 	const response = await fetch(uploadUrl, {
 		method: 'PUT',
-		headers: { 'Content-Type': normalizeMemoriesMimeType(file.type) },
+		headers: requiredHeaders,
 		body: file,
 	});
-	if (!response.ok)
+	if (!response.ok && response.status !== 412)
 		throw Object.assign(new Error('put_failed'), { issue: 'put_failed' as const });
+}
+
+function isCompletedCatalogStatus(
+	status: CatalogItem['status'] | undefined,
+): status is CompletedCatalogStatus {
+	return (
+		status === 'accepted' ||
+		status === 'duplicate' ||
+		status === 'rejected' ||
+		status === 'deleted'
+	);
+}
+
+async function completeReservedUpload(itemId: string): Promise<CompletedCatalogStatus> {
+	for (let attempt = 0; attempt < 3; attempt += 1) {
+		const response = await fetch(`${ITEMS_ENDPOINT}/${encodeURIComponent(itemId)}`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ action: 'complete' }),
+		});
+		if (response.ok) {
+			const payload = (await response.json().catch(() => null)) as {
+				item?: { status?: CatalogItem['status'] };
+			} | null;
+			if (isCompletedCatalogStatus(payload?.item?.status)) return payload.item.status;
+		}
+		if (attempt < 2) await new Promise((resolve) => setTimeout(resolve, 300 * 3 ** attempt));
+	}
+	throw Object.assign(new Error('complete_failed'), { issue: 'put_failed' as const });
+}
+
+function completionCopy(status: CompletedCatalogStatus): string {
+	const copy = valentinaMemoriesCaptureCopy;
+	if (status === 'duplicate') return copy.duplicate;
+	if (status === 'rejected') return copy.rejected;
+	if (status === 'deleted') return copy.deleted;
+	return copy.success;
 }
 
 function itemStatusLabel(item: CatalogItem): string {
@@ -97,30 +165,30 @@ function itemStatusLabel(item: CatalogItem): string {
 }
 
 export default function ValentinaMemoriesCapture({
-	signUrl,
-	catalogEnabled = false,
 	readVideoDurationSeconds,
 }: ValentinaMemoriesCaptureProps) {
 	const inputId = useId();
 	const inputRef = useRef<HTMLInputElement>(null);
 	const selectedFileRef = useRef<File | null>(null);
+	const selectedRequestIdRef = useRef<string | null>(null);
 	const sessionReadyRef = useRef(false);
-	const [status, setStatus] = useState<CaptureStatus>(signUrl ? 'idle' : 'error');
-	const [issue, setIssue] = useState<ValentinaMemoriesCaptureIssue | null>(
-		signUrl ? null : 'unavailable',
-	);
+	const copy = valentinaMemoriesCaptureCopy;
+	const [status, setStatus] = useState<CaptureStatus>('idle');
+	const [progressMessage, setProgressMessage] = useState<string>(copy.preparing);
+	const [completionMessage, setCompletionMessage] = useState<string>(copy.success);
+	const [issue, setIssue] = useState<ValentinaMemoriesCaptureIssue | null>(null);
+	const [profile, setProfile] = useState<ValentinaMemoriesGuestProfile | null>(null);
+	const [displayNameDraft, setDisplayNameDraft] = useState('');
 	const [recoveryCode, setRecoveryCode] = useState<string | null>(null);
 	const [items, setItems] = useState<CatalogItem[]>([]);
 	const [editingId, setEditingId] = useState<string | null>(null);
 	const [captionDraft, setCaptionDraft] = useState('');
 	const [recoveryDraft, setRecoveryDraft] = useState('');
 	const [recoveryError, setRecoveryError] = useState(false);
-	const copy = valentinaMemoriesCaptureCopy;
-	const unavailable = !signUrl || issue === 'unavailable';
+	const unavailable = issue === 'unavailable';
 	const message = issue ? valentinaMemoriesIssueCopy(issue) : null;
 
 	const loadItems = async () => {
-		if (!catalogEnabled) return;
 		const response = await fetch(ITEMS_ENDPOINT, { headers: { Accept: 'application/json' } });
 		if (!response.ok) return;
 		sessionReadyRef.current = true;
@@ -129,26 +197,52 @@ export default function ValentinaMemoriesCapture({
 	};
 
 	useEffect(() => {
-		void loadItems();
-	}, [catalogEnabled]);
+		void (async () => {
+			const response = await fetch(SESSION_ENDPOINT, {
+				headers: { Accept: 'application/json' },
+			});
+			if (!response.ok) return;
+			const payload = (await response.json()) as { profile?: ValentinaMemoriesGuestProfile };
+			if (!payload.profile) return;
+			setProfile(payload.profile);
+			setDisplayNameDraft(payload.profile.displayName);
+			sessionReadyRef.current = true;
+			await loadItems();
+		})();
+	}, []);
 
-	const ensureSession = async (): Promise<void> => {
-		if (!catalogEnabled) return;
-		if (sessionReadyRef.current) return;
+	const startSession = async () => {
 		const response = await fetch(SESSION_ENDPOINT, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: '{}',
+			body: JSON.stringify({ action: 'create', displayName: displayNameDraft }),
 		});
-		if (!response.ok)
-			throw Object.assign(new Error('session_failed'), { issue: 'network_failed' as const });
+		if (!response.ok) {
+			setIssue('network_failed');
+			return;
+		}
+		const payload = (await response.json()) as {
+			profile?: ValentinaMemoriesGuestProfile;
+			recoveryCode?: unknown;
+		};
+		if (!payload.profile) return;
+		setProfile(payload.profile);
 		sessionReadyRef.current = true;
-		const payload = (await response.json()) as { recoveryCode?: unknown };
 		if (typeof payload.recoveryCode === 'string') setRecoveryCode(payload.recoveryCode);
 	};
 
+	const saveProfile = async () => {
+		const response = await fetch(SESSION_ENDPOINT, {
+			method: 'PATCH',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ displayName: displayNameDraft }),
+		});
+		if (!response.ok) return;
+		const payload = (await response.json()) as { profile?: ValentinaMemoriesGuestProfile };
+		if (payload.profile) setProfile(payload.profile);
+	};
+
 	const recoverSession = async () => {
-		if (!catalogEnabled) return;
 		setRecoveryError(false);
 		const response = await fetch(SESSION_ENDPOINT, {
 			method: 'POST',
@@ -161,6 +255,11 @@ export default function ValentinaMemoriesCapture({
 		}
 		sessionReadyRef.current = true;
 		setRecoveryDraft('');
+		const payload = (await response.json()) as { profile?: ValentinaMemoriesGuestProfile };
+		if (payload.profile) {
+			setProfile(payload.profile);
+			setDisplayNameDraft(payload.profile.displayName);
+		}
 		await loadItems();
 	};
 
@@ -169,9 +268,9 @@ export default function ValentinaMemoriesCapture({
 	};
 
 	const uploadSelectedFile = async (file: File) => {
-		if (!signUrl) {
+		if (!sessionReadyRef.current || !profile) {
 			setStatus('error');
-			setIssue('unavailable');
+			setIssue('network_failed');
 			return;
 		}
 		const fileIssue = validateValentinaMemoriesFile(file);
@@ -181,10 +280,17 @@ export default function ValentinaMemoriesCapture({
 			return;
 		}
 		setStatus('busy');
+		setProgressMessage(copy.preparing);
 		setIssue(null);
+		let durationSeconds: number | undefined;
 		const durationIssue = await validateValentinaMemoriesVideoDuration(
 			file,
-			readVideoDurationSeconds,
+			async (candidate) => {
+				durationSeconds = await (readVideoDurationSeconds ?? measureVideoDurationSeconds)(
+					candidate,
+				);
+				return durationSeconds;
+			},
 		);
 		if (durationIssue) {
 			setStatus('error');
@@ -192,54 +298,27 @@ export default function ValentinaMemoriesCapture({
 			return;
 		}
 		try {
-			await ensureSession();
-			const durationSeconds = readVideoDurationSeconds
-				? await readVideoDurationSeconds(file)
-				: undefined;
 			const checksumSha256 = await calculateFileSha256Hex(file);
-			const signed = await requestSignature(signUrl, file, checksumSha256);
-			let mediaId: string | undefined;
-			if (catalogEnabled) {
-				const registerResponse = await fetch(ITEMS_ENDPOINT, {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({
-						action: 'register',
-						objectKey: signed.objectKey,
-						mimeType: normalizeMemoriesMimeType(file.type),
-						sizeBytes: file.size,
-						checksumSha256,
-						durationSeconds,
-					}),
-				});
-				if (!registerResponse.ok)
-					throw Object.assign(new Error('register_failed'), {
-						issue: 'sign_failed' as const,
-					});
-				const registered = (await registerResponse.json()) as { item?: { id?: unknown } };
-				if (typeof registered.item?.id !== 'string')
-					throw Object.assign(new Error('register_failed'), {
-						issue: 'sign_failed' as const,
-					});
-				mediaId = registered.item.id;
-			}
-			await putOriginalFile(signed.uploadUrl, file);
-			if (catalogEnabled && mediaId) {
-				const completeResponse = await fetch(
-					`${ITEMS_ENDPOINT}/${encodeURIComponent(mediaId)}`,
-					{
-						method: 'POST',
-						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify({ action: 'complete' }),
-					},
-				);
-				if (!completeResponse.ok)
-					throw Object.assign(new Error('complete_failed'), {
-						issue: 'put_failed' as const,
-					});
-				await loadItems();
-			}
+			const clientRequestId = selectedRequestIdRef.current ?? createSecureClientRequestId();
+			selectedRequestIdRef.current = clientRequestId;
+			const reservation = await reserveUpload(
+				file,
+				checksumSha256,
+				durationSeconds,
+				clientRequestId,
+			);
+			setProgressMessage(copy.uploading);
+			await putOriginalFile(
+				reservation.upload.uploadUrl,
+				reservation.upload.requiredHeaders,
+				file,
+			);
+			setProgressMessage(copy.confirming);
+			const completedStatus = await completeReservedUpload(reservation.item.id);
+			setCompletionMessage(completionCopy(completedStatus));
+			await loadItems();
 			selectedFileRef.current = null;
+			selectedRequestIdRef.current = null;
 			resetInput();
 			setStatus('success');
 			setIssue(null);
@@ -257,6 +336,7 @@ export default function ValentinaMemoriesCapture({
 		const file = event.target.files?.[0];
 		if (!file) return;
 		selectedFileRef.current = file;
+		selectedRequestIdRef.current = createSecureClientRequestId();
 		void uploadSelectedFile(file);
 	};
 	const onRetry = () => {
@@ -271,8 +351,10 @@ export default function ValentinaMemoriesCapture({
 	};
 	const onUploadAnother = () => {
 		selectedFileRef.current = null;
+		selectedRequestIdRef.current = null;
 		resetInput();
 		setStatus('idle');
+		setProgressMessage(copy.preparing);
 		setIssue(null);
 	};
 
@@ -303,6 +385,50 @@ export default function ValentinaMemoriesCapture({
 				</p>
 			) : (
 				<>
+					{profile ? (
+						<section
+							className="status-page__recovery"
+							aria-label="Su perfil de recuerdos"
+						>
+							<label htmlFor={`${inputId}-display-name`}>Su nombre o apodo</label>
+							<div>
+								<input
+									id={`${inputId}-display-name`}
+									value={displayNameDraft}
+									maxLength={VALENTINA_MEMORIES_DISPLAY_NAME_MAX_LENGTH}
+									onChange={(event) => setDisplayNameDraft(event.target.value)}
+								/>
+								<button type="button" onClick={() => void saveProfile()}>
+									Guardar nombre
+								</button>
+							</div>
+							<small>Alias de su sesión: {profile.guestAlias}</small>
+						</section>
+					) : (
+						<section
+							className="status-page__recovery"
+							aria-label="Iniciar sesión de recuerdos"
+						>
+							<strong>Antes de subir, escriba su nombre o apodo</strong>
+							<label htmlFor={`${inputId}-new-display-name`}>Nombre o apodo</label>
+							<div>
+								<input
+									id={`${inputId}-new-display-name`}
+									value={displayNameDraft}
+									maxLength={VALENTINA_MEMORIES_DISPLAY_NAME_MAX_LENGTH}
+									autoComplete="nickname"
+									onChange={(event) => setDisplayNameDraft(event.target.value)}
+								/>
+								<button
+									type="button"
+									disabled={!displayNameDraft.trim()}
+									onClick={() => void startSession()}
+								>
+									Continuar
+								</button>
+							</div>
+						</section>
+					)}
 					{status !== 'success' ? (
 						<>
 							<input
@@ -311,22 +437,25 @@ export default function ValentinaMemoriesCapture({
 								className="status-page__file-input"
 								type="file"
 								accept={ACCEPT}
-								disabled={status === 'busy'}
+								disabled={status === 'busy' || !profile}
 								aria-label={copy.chooseFile}
 								onChange={onFileChange}
 							/>
 							<label
 								htmlFor={inputId}
-								className={`status-page__btn${status === 'busy' ? ' is-disabled' : ''}`}
+								className={`status-page__btn${status === 'busy' || !profile ? ' is-disabled' : ''}`}
 							>
-								{status === 'busy' ? copy.uploading : copy.chooseFile}
+								{status === 'busy' ? progressMessage : copy.chooseFile}
 							</label>
 							<p className="status-page__status">{copy.chooseFileHint}</p>
+							<p className="status-page__status status-page__status--privacy">
+								{copy.privacyHint}
+							</p>
 						</>
 					) : (
 						<>
 							<p className="status-page__status" role="status">
-								{catalogEnabled ? copy.validationPending : copy.success}
+								{completionMessage}
 							</p>
 							<button
 								type="button"
@@ -356,7 +485,7 @@ export default function ValentinaMemoriesCapture({
 					) : null}
 					{status === 'busy' ? (
 						<p className="status-page__status" role="status" aria-live="polite">
-							{copy.uploading}
+							{progressMessage}
 						</p>
 					) : null}
 					{recoveryCode ? (
@@ -366,7 +495,7 @@ export default function ValentinaMemoriesCapture({
 							<span>{copy.recoveryCodeHint}</span>
 						</aside>
 					) : null}
-					{catalogEnabled && !recoveryCode ? (
+					{!profile && !recoveryCode ? (
 						<aside className="status-page__recovery status-page__recovery--restore">
 							<strong>{copy.recoveryPrompt}</strong>
 							<div>
@@ -393,7 +522,7 @@ export default function ValentinaMemoriesCapture({
 							{recoveryError ? <span role="alert">{copy.recoveryFailed}</span> : null}
 						</aside>
 					) : null}
-					{catalogEnabled ? (
+					{profile ? (
 						<section className="status-page__memories" aria-label={copy.myMemories}>
 							<h2>{copy.myMemories}</h2>
 							{items.length === 0 ? (
@@ -401,7 +530,7 @@ export default function ValentinaMemoriesCapture({
 							) : (
 								items.map((item) => (
 									<article key={item.id} className="status-page__memory-card">
-										{item.status !== 'deleted' ? (
+										{item.status === 'accepted' ? (
 											item.mimeType.startsWith('video/') ? (
 												<video
 													controls

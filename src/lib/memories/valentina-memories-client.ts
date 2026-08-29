@@ -1,17 +1,15 @@
+import { sha256 } from '@noble/hashes/sha2';
 import {
+	VALENTINA_MEMORIES_HASH_CHUNK_BYTES,
 	VALENTINA_MEMORIES_MAX_VIDEO_DURATION_SECONDS,
-	VALENTINA_MEMORIES_PRODUCTION_SIGN_URL,
-	VALENTINA_MEMORIES_SIGN_PATH,
 	getValentinaMemoriesMimePolicy,
+	resolveValentinaMemoriesFileMimeType,
 } from '@/data/valentina-memories-upload.contract';
 import {
 	VALENTINA_MEMORIES_ARCHIVE_MAX_BYTES,
 	VALENTINA_MEMORIES_ARCHIVE_MAX_FILES,
 } from '@/data/valentina-memories-media.contract';
 import { valentinaMemoriesCaptureCopy } from '@/data/valentina-memories.data';
-
-const PRODUCTION_SIGN_ORIGIN = new URL(VALENTINA_MEMORIES_PRODUCTION_SIGN_URL).origin;
-const LOCAL_SIGN_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
 
 export type ValentinaMemoriesCaptureIssue =
 	| 'unsupported_type'
@@ -20,32 +18,15 @@ export type ValentinaMemoriesCaptureIssue =
 	| 'video_unreadable'
 	| 'window_closed'
 	| 'rate_limited'
+	| 'quota_reached'
 	| 'sign_failed'
 	| 'put_failed'
 	| 'network_failed'
 	| 'unavailable';
 
-export function resolveValentinaMemoriesSignUrl(raw: string | undefined): string | null {
-	const value = raw?.trim();
-	if (!value) return null;
-
-	try {
-		const url = new URL(value);
-		if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;
-		if (url.pathname !== VALENTINA_MEMORIES_SIGN_PATH) return null;
-		if (url.username || url.password) return null;
-		if (url.search || url.hash) return null;
-		const isProductionSigner = url.origin === PRODUCTION_SIGN_ORIGIN;
-		const isLocalSigner = url.protocol === 'http:' && LOCAL_SIGN_HOSTS.has(url.hostname);
-		if (!isProductionSigner && !isLocalSigner) return null;
-		return url.toString();
-	} catch {
-		return null;
-	}
-}
-
 export function validateValentinaMemoriesFile(file: File): ValentinaMemoriesCaptureIssue | null {
-	const policy = getValentinaMemoriesMimePolicy(file.type);
+	const mimeType = resolveValentinaMemoriesFileMimeType(file);
+	const policy = mimeType ? getValentinaMemoriesMimePolicy(mimeType) : null;
 	if (!policy) return 'unsupported_type';
 	if (file.size <= 0 || file.size > policy.maxBytes) return 'file_too_large';
 	return null;
@@ -70,7 +51,8 @@ export async function validateValentinaMemoriesVideoDuration(
 	file: File,
 	readDurationSeconds: (candidate: File) => Promise<number> = measureVideoDurationSeconds,
 ): Promise<ValentinaMemoriesCaptureIssue | null> {
-	const policy = getValentinaMemoriesMimePolicy(file.type);
+	const mimeType = resolveValentinaMemoriesFileMimeType(file);
+	const policy = mimeType ? getValentinaMemoriesMimePolicy(mimeType) : null;
 	if (policy?.category !== 'video') return null;
 
 	try {
@@ -90,6 +72,7 @@ export function mapValentinaMemoriesSignError(
 ): ValentinaMemoriesCaptureIssue {
 	if (code === 'upload_window_closed') return 'window_closed';
 	if (code === 'rate_limited' || status === 429) return 'rate_limited';
+	if (code === 'limit_reached') return 'quota_reached';
 	if (code === 'unsupported_mime') return 'unsupported_type';
 	if (code === 'file_too_large') return 'file_too_large';
 	return 'sign_failed';
@@ -105,6 +88,7 @@ export function valentinaMemoriesIssueCopy(
 	if (issue === 'video_unreadable') return copy.videoUnreadable;
 	if (issue === 'window_closed') return copy.windowClosed;
 	if (issue === 'rate_limited') return copy.rateLimited;
+	if (issue === 'quota_reached') return copy.quotaReached;
 	if (issue === 'put_failed') return copy.putFailed;
 	if (issue === 'network_failed') return copy.networkFailed;
 	if (issue === 'unavailable') return copy.unavailable;
@@ -118,37 +102,53 @@ export function readValentinaMemoriesSignErrorCode(payload: unknown): string | u
 }
 
 export async function calculateFileSha256Hex(file: File | Blob): Promise<string> {
-	let buffer: ArrayBuffer;
-	if (typeof file.arrayBuffer === 'function') {
-		buffer = await file.arrayBuffer();
-	} else if (typeof FileReader !== 'undefined') {
-		buffer = await new Promise<ArrayBuffer>((resolve, reject) => {
-			const reader = new FileReader();
-			reader.onload = () => resolve(reader.result as ArrayBuffer);
-			reader.onerror = () => reject(reader.error);
-			reader.readAsArrayBuffer(file);
-		});
-	} else {
-		buffer = await new Response(file).arrayBuffer();
+	const digest = sha256.create();
+	for (let offset = 0; offset < file.size; offset += VALENTINA_MEMORIES_HASH_CHUNK_BYTES) {
+		const chunk = file.slice(offset, offset + VALENTINA_MEMORIES_HASH_CHUNK_BYTES);
+		digest.update(new Uint8Array(await chunk.arrayBuffer()));
 	}
-	const digest = await globalThis.crypto.subtle.digest('SHA-256', buffer);
-	return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join(
-		'',
-	);
+	return Array.from(digest.digest(), (byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
 export function generateBulkZipPassphrase(): string {
 	const charset = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 	const bytes = new Uint8Array(16);
-	if (globalThis.crypto?.getRandomValues) {
-		globalThis.crypto.getRandomValues(bytes);
-	} else {
-		for (let i = 0; i < bytes.length; i += 1) {
-			bytes[i] = Math.floor(Math.random() * 256);
-		}
-	}
+	if (!globalThis.crypto?.getRandomValues) throw new Error('Web Crypto no está disponible.');
+	globalThis.crypto.getRandomValues(bytes);
 	const raw = Array.from(bytes, (b) => charset[b % charset.length]).join('');
 	return `${raw.slice(0, 4)}-${raw.slice(4, 8)}-${raw.slice(8, 12)}-${raw.slice(12, 16)}`;
+}
+
+export function createSecureClientRequestId(): string {
+	if (!globalThis.crypto?.getRandomValues) throw new Error('Web Crypto no está disponible.');
+	if (typeof globalThis.crypto.randomUUID === 'function') return globalThis.crypto.randomUUID();
+	const bytes = globalThis.crypto.getRandomValues(new Uint8Array(16));
+	bytes[6] = (bytes[6] & 0x0f) | 0x40;
+	bytes[8] = (bytes[8] & 0x3f) | 0x80;
+	const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+	return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
+export function partitionMemoriesExport(items: ExportableMediaItem[]): ExportableMediaItem[][] {
+	const batches: ExportableMediaItem[][] = [];
+	let current: ExportableMediaItem[] = [];
+	let currentBytes = 0;
+	for (const item of items) {
+		if (
+			current.length >= VALENTINA_MEMORIES_ARCHIVE_MAX_FILES ||
+			currentBytes + item.sizeBytes > VALENTINA_MEMORIES_ARCHIVE_MAX_BYTES
+		) {
+			if (current.length > 0) batches.push(current);
+			current = [];
+			currentBytes = 0;
+		}
+		if (item.sizeBytes > VALENTINA_MEMORIES_ARCHIVE_MAX_BYTES)
+			throw new Error('Un archivo individual supera el límite del lote cifrado.');
+		current.push(item);
+		currentBytes += item.sizeBytes;
+	}
+	if (current.length > 0) batches.push(current);
+	return batches;
 }
 
 export type ExportableMediaItem = {

@@ -1,3 +1,8 @@
+.status-page__status--privacy {
+	font-size: 0.8rem;
+	opacity: 82%;
+}
+
 .status-page__recovery {
 	display: grid;
 	gap: 0.35rem;
@@ -14,6 +19,28 @@
 
 	span {
 		font-size: 0.8rem;
+	}
+
+	div {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+
+	input,
+	button {
+		min-height: 44px;
+		border-radius: 0.5rem;
+	}
+
+	input {
+		min-width: 0;
+		flex: 1 1 12rem;
+		padding: 0.6rem 0.7rem;
+	}
+
+	button {
+		padding: 0.6rem 0.85rem;
 	}
 
 	&--restore div {
@@ -40,7 +67,7 @@
 	display: grid;
 	gap: 0.45rem;
 	padding: 0.75rem;
-	border: 1px solid rgb(255 255 255 / 18%);
+	border: 1px solid var(--color-glass-border, rgb(255 255 255 / 18%));
 	border-radius: 0.6rem;
 
 	img,
@@ -53,5 +80,6 @@
 
 	button {
 		justify-self: start;
+		min-height: 44px;
 	}
 }

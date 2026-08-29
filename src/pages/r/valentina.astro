@@ -8,10 +8,8 @@ import {
 	VALENTINA_MEMORIES_ROUTE_PATH,
 	valentinaMemoriesPageCopy,
 } from '@/data/valentina-memories.data';
-import { resolveValentinaMemoriesSignUrl } from '@/lib/memories/valentina-memories-client';
 
 const copy = valentinaMemoriesPageCopy;
-const signUrl = resolveValentinaMemoriesSignUrl(import.meta.env.PUBLIC_VALENTINA_MEMORIES_SIGN_URL);
 ---
 
 <Layout
@@ -40,7 +38,7 @@ const signUrl = resolveValentinaMemoriesSignUrl(import.meta.env.PUBLIC_VALENTINA
 					{copy.body}
 				</p>
 
-				<ValentinaMemoriesCapture client:load signUrl={signUrl} catalogEnabled={Boolean(signUrl)} />
+				<ValentinaMemoriesCapture client:load />
 
 				<div class="status-page__actions">
 					<a href={copy.primaryCtaHref} class="status-page__btn">
