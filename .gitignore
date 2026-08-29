@@ -38,6 +38,7 @@ staged.diff
 test-results/
 coverage/
 temp/
+_tmp_*
 *-snapshots/
 
 
