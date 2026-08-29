@@ -32,6 +32,7 @@ const allowedHydratedComponents = new Set([
 	'ChangePasswordBehavior',
 	'RSVP',
 	'ValentinaMemoriesCapture',
+	'ValentinaMemoriesRecovery',
 	'InvitationList',
 	'InvitationDetail',
 	'DraftReview',
