@@ -43,6 +43,33 @@
             "provides": ["guest_invitations_phone_objects_canonical"],
             "notes": "Idempotent reconcile of idx_guest_invitations_phone and guest_invitations_phone_country_code_pair_check across Local/Preview/Production starting states."
         },
+        "20260828000000": {
+            "phase": "contract",
+            "provides": ["valentina_memories_catalog"],
+            "revokes": ["valentina_memories_noncanonical_service_role_policies"],
+            "notes": "Creates the private Valentina Memories catalog and replaces any pre-existing service-role policies with the canonical definitions."
+        },
+        "20260829000100": {
+            "phase": "contract",
+            "provides": ["valentina_memories_catalog_integrity"],
+            "revokes": ["valentina_memories_pre_integrity_constraints"],
+            "notes": "Replaces the initial status and checksum constraints with duplicate-aware catalog integrity constraints."
+        },
+        "20260829000200": {
+            "phase": "contract",
+            "provides": ["valentina_memories_private_lifecycle"],
+            "revokes": [
+                "valentina_memories_ambient_table_privileges",
+                "valentina_memories_public_rpc_execute"
+            ],
+            "notes": "Restricts the catalog and lifecycle RPCs to service_role while adding atomic reservation, validation, cleanup, and audit behavior."
+        },
+        "20260829171814": {
+            "phase": "contract",
+            "provides": ["valentina_memories_video_quota"],
+            "revokes": ["valentina_memories_reservation_rpc_without_video_quota"],
+            "notes": "Replaces the reservation RPC signature with the canonical per-session video quota parameter."
+        },
         "__historical_rsvp_dml_revoke__": {
             "phase": "contract",
             "requiresDeployedAppCapabilities": ["public_guest_rsvp_rpc_client"],
