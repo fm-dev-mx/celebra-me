@@ -12,14 +12,86 @@ import { resolveInvitationCssLoadPlan } from '@/lib/invitation/section-css-resol
 import { buildInvitationCssResolverInput } from '@/lib/invitation/invitation-css-input';
 import { buildInvitationStylesheetHeadLinks } from '@/lib/invitation/invitation-css-head-links';
 import { buildSyntheticVariantEvent } from '../../fixtures/structural-variants/synthetic-variant-fixtures';
+import { getRoutableEventEntry } from '@/lib/content/events';
+import { listInvitationDefinitions } from '../../../scripts/provision/invitations/registry';
+import { getInvitationAssetSourceDir } from '../../../scripts/provision/invitations/invitation-definition';
+import { existsSync, readFileSync } from 'node:fs';
+import { extname, join } from 'node:path';
 import type { CanonicalVariantSection } from '@/lib/invitation/section-variants';
 import type { EventContentEntry } from '@/lib/content/events';
+import type { InvitationPageContext } from '@/lib/invitation/page-data';
 
 const section = Astro.url.searchParams.get('section') as CanonicalVariantSection | null;
 const variant = Astro.url.searchParams.get('variant') ?? 'standard';
 const preset = Astro.url.searchParams.get('preset') ?? 'jewelry-box';
+const fullPage = Astro.url.searchParams.get('full') === '1';
+let fullPageContext: InvitationPageContext | undefined;
+let fullPageHeadLinks: Array<{ href: string }> | undefined;
+let page: InvitationPageContext;
+let headLinks: Array<{ href: string }> = [];
 
-if (!section) {
+if (fullPage) {
+	const slug = Astro.url.searchParams.get('slug')?.trim();
+	const eventType = Astro.url.searchParams.get('eventType')?.trim();
+	if (!slug) return new Response('Missing slug parameter', { status: 400 });
+
+	const definition = listInvitationDefinitions().find(
+		(candidate) => candidate.slug === slug && (!eventType || candidate.eventType === eventType),
+	);
+	let eventEntry: EventContentEntry | null;
+	if (definition) {
+		const assetRoot = join(process.cwd(), getInvitationAssetSourceDir(definition));
+		const syntheticAssets = Object.fromEntries(
+			definition.assets.map((asset) => {
+				const absoluteAssetPath = join(assetRoot, asset.relativePath);
+				if (!existsSync(absoluteAssetPath)) {
+					throw new Error(`VISUAL_ASSET_MISSING: ${definition.slug}/${asset.relativePath}`);
+				}
+				const extension = extname(asset.relativePath).toLowerCase();
+				const mime = extension === '.png' ? 'image/png' : extension === '.jpg' || extension === '.jpeg' ? 'image/jpeg' : 'image/webp';
+				return [
+					asset.key,
+					{
+						type: 'uploaded' as const,
+						assetId: `__INVITATION_ASSET_KEY__:${asset.key}`,
+						src: `data:${mime};base64,${readFileSync(absoluteAssetPath).toString('base64')}`,
+					},
+				];
+			}),
+		);
+		const data = canonicalEventContentSchema.parse(
+			definition.buildPublishedContent(syntheticAssets),
+		);
+		eventEntry = {
+			id: slug,
+			collection: 'event-templates',
+			data,
+		} as unknown as EventContentEntry;
+	} else {
+		eventEntry = await getRoutableEventEntry(slug, eventType ?? undefined);
+	}
+	if (!eventEntry) return new Response(`Unknown visual parity source: ${slug}`, { status: 404 });
+
+	const viewModel = adaptEvent(eventEntry);
+	const builtPage = prepareInvitationPageContext({ eventEntry, slug });
+	const activePresetUrl = resolvePresetCssUrl(builtPage.viewModel.theme.preset);
+	const activeSectionCssPlan = resolveInvitationCssLoadPlan(
+		buildInvitationCssResolverInput({ page: builtPage, viewModel, slug }),
+	);
+	fullPageHeadLinks = buildInvitationStylesheetHeadLinks({
+		presetUrl: activePresetUrl,
+		plan: activeSectionCssPlan,
+		profileIdentity: {
+			visualProfileId: builtPage.viewModel.visualProfileId,
+			slug,
+		},
+		forceBlocking: true,
+	});
+	page = builtPage;
+	fullPageContext = builtPage;
+} else {
+
+	if (!section) {
 	return new Response('Missing section parameter', { status: 400 });
 }
 
@@ -31,7 +103,7 @@ const eventEntry = {
 	data: validated,
 } as unknown as EventContentEntry;
 const viewModel = adaptEvent(eventEntry);
-const page = prepareInvitationPageContext({
+	page = prepareInvitationPageContext({
 	eventEntry,
 	slug: 'test-synthetic-variant',
 });
@@ -41,7 +113,7 @@ const activeSectionCssPlan = resolveInvitationCssLoadPlan(
 	buildInvitationCssResolverInput({ page, viewModel, slug: 'test-synthetic-variant' }),
 );
 
-const headLinks = buildInvitationStylesheetHeadLinks({
+	headLinks = buildInvitationStylesheetHeadLinks({
 	presetUrl: activePresetUrl,
 	plan: activeSectionCssPlan,
 	profileIdentity: {
@@ -50,17 +122,18 @@ const headLinks = buildInvitationStylesheetHeadLinks({
 	},
 	forceBlocking: true,
 });
+}
 ---
 <!DOCTYPE html>
 <html lang="es" data-screenshot="audit">
 <head>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title>{section}.{variant} ({preset})</title>
-	{headLinks.map((link) => (
+	<title>{fullPageContext?.layout.title ?? `${section}.${variant} (${preset})`}</title>
+	{(fullPageHeadLinks ?? headLinks).map((link) => (
 		<link rel="stylesheet" href={link.href} />
 	))}
-	<style is:inline lang="scss" set:html={page.wrapper.scopedStyles} />
+	<style is:inline lang="scss" set:html={(fullPageContext ?? page).wrapper.scopedStyles} />
 	<style>
 		*, *::before, *::after { box-sizing: border-box; }
 		html, body {
@@ -75,15 +148,15 @@ const headLinks = buildInvitationStylesheetHeadLinks({
 		}
 	</style>
 </head>
-<body class={page.wrapper.className} data-reveal-state="revealed">
-	<div class={page.wrapper.className} data-reveal-state="revealed" data-screenshot="invitation-root" id="test-invitation-root">
-		{section === 'hero' ? (
-			<Hero
-				{...page.viewModel.hero}
-				venueName={page.heroVenueName}
-				time={page.heroTime}
-				highPriority={true}
-			/>
+	<body class={(fullPageContext ?? page).wrapper.className} data-reveal-state="revealed">
+	<div class={(fullPageContext ?? page).wrapper.className} data-reveal-state="revealed" data-screenshot="invitation-root" id="test-invitation-root">
+		{fullPageContext ? (
+			<>
+				<Hero {...fullPageContext.viewModel.hero} venueName={fullPageContext.heroVenueName} time={fullPageContext.heroTime} highPriority={true} />
+				<InvitationSections pageContext={fullPageContext} />
+			</>
+		) : section === 'hero' ? (
+			<Hero {...page.viewModel.hero} venueName={page.heroVenueName} time={page.heroTime} highPriority={true} />
 		) : (
 			<InvitationSections pageContext={page} />
 		)}

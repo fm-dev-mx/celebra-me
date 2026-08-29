@@ -115,7 +115,7 @@ importers:
         specifier: ^8.6.0
         version: 8.6.0(@types/node@24.13.3)
       '@playwright/test':
-        specifier: ^1.62.1
+        specifier: 1.62.1
         version: 1.62.1
       '@testing-library/jest-dom':
         specifier: ^7.0.1

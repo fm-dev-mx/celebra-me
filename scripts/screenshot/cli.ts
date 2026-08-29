@@ -68,8 +68,8 @@ Direct:
 Scope options:
   --type=<page-type>       invitation, landing, dashboard, admin, login, custom
   --target=<preset>        full-page, critical-qa, all-sections, single-section, reveal-only
-  --set=<preset>           legacy invitation set mapped to an explicit target
-  --general-set=<preset>   legacy general set mapped to an explicit target
+  --set=<preset>           deprecated invitation set alias mapped to an explicit target
+  --general-set=<preset>   deprecated general set alias mapped to an explicit target
   --sections=<ids>         comma-separated registered section IDs, stable-deduplicated
   --viewport=<names>       comma-separated viewport names, stable-deduplicated
   --profile=<profile>      invitation, site, full, single

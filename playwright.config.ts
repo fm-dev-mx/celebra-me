@@ -18,6 +18,9 @@ if (runtime.isVercelPreview) {
 // Local Supabase identity, so supply deterministic Local URL stubs when the shell is unset.
 const localSupabaseUrl = process.env.SUPABASE_URL?.trim() || LOCAL_SUPABASE_URL;
 const localPublicSupabaseUrl = process.env.PUBLIC_SUPABASE_URL?.trim() || LOCAL_SUPABASE_URL;
+const visualParityMode = process.env.VISUAL_PARITY_MODE?.trim() || (process.env.CI ? 'compare' : 'diagnostic');
+const visualParitySnapshotRoot = process.env.VISUAL_PARITY_SNAPSHOT_ROOT?.trim() ||
+	(visualParityMode === 'compare' ? 'tests/e2e/visual-baselines' : '.tmp/visual-parity/candidate');
 
 export default defineConfig({
 	testDir: './tests/e2e',
@@ -34,6 +37,7 @@ export default defineConfig({
 		video: 'off',
 		viewport: { width: 1280, height: 720 },
 	},
+	snapshotPathTemplate: `${visualParitySnapshotRoot.replace(/\\/g, '/')}/{arg}{ext}`,
 	projects: [
 		{
 			name: 'chromium',

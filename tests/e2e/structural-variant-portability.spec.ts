@@ -9,7 +9,12 @@ import {
 } from '../../src/lib/invitation/section-variants';
 import {
 	CROSS_PRESET_REPRESENTATIVE_VARIANTS,
+	buildSyntheticVariantEvent,
 } from '../fixtures/structural-variants/synthetic-variant-fixtures';
+import {
+	hashVisualValue,
+	VISUAL_PARITY_RUNTIME,
+} from './harness/visual-parity-metadata';
 
 const VIEWPORTS = [
 	{ name: 'mobile', width: 390, height: 844 },
@@ -20,6 +25,8 @@ const EXPECTED_CAPTURE_COUNT =
 	(CANONICAL_VARIANT_REGISTRY.length + CROSS_PRESET_REPRESENTATIVE_VARIANTS.length) *
 	VIEWPORTS.length;
 const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+const VISUAL_PARITY_MODE =
+	process.env.VISUAL_PARITY_MODE ?? (process.env.CI ? 'compare' : 'diagnostic');
 
 function getSectionLocator(page: Page, section: CanonicalVariantSection) {
 	if (section === 'hero') {
@@ -38,6 +45,8 @@ interface CapturedSnapshotInfo {
 	fixtureIdentity: string;
 	file: string;
 	sha256: string;
+	contentHash: string;
+	assetHash: string;
 	comparisonResult: string;
 }
 
@@ -96,11 +105,17 @@ test.describe('Registry-Driven Visual Portability Suite', () => {
 	test.afterAll(async () => {
 		if (capturedSnapshots.length === 0) return;
 
-		const outputDir = path.resolve(process.cwd(), 'output/screenshots/variant-portability');
+		const outputDir = path.resolve(
+			process.cwd(),
+			process.env.VISUAL_PARITY_OUTPUT_ROOT ?? 'output/screenshots/variant-portability',
+		);
 		fs.mkdirSync(outputDir, { recursive: true });
 
-		// Validate baseline integrity before publishing a READY manifest.
-		expect(capturedSnapshots.length).toBe(EXPECTED_CAPTURE_COUNT);
+		// Full candidate/compare runs must cover the complete registry. Diagnostic
+		// runs may select a focused case without weakening CI or acceptance gates.
+		if (VISUAL_PARITY_MODE !== 'diagnostic') {
+			expect(capturedSnapshots.length).toBe(EXPECTED_CAPTURE_COUNT);
+		}
 		for (const capture of capturedSnapshots) {
 			const filePath = path.join(outputDir, capture.file);
 			expect(fs.existsSync(filePath)).toBe(true);
@@ -118,7 +133,9 @@ test.describe('Registry-Driven Visual Portability Suite', () => {
 
 		const manifest = {
 			generatedAt: new Date().toISOString(),
-			status: 'READY_FOR_VISUAL_APPROVAL',
+			runtimeFingerprint: VISUAL_PARITY_RUNTIME,
+			status: VISUAL_PARITY_MODE === 'compare' ? 'COMPARED' : 'CANDIDATE',
+			mode: VISUAL_PARITY_MODE,
 			totalCaptures: capturedSnapshots.length,
 			baselinePreset: 'jewelry-box',
 			crossPreset: 'celestial-blue',
@@ -423,12 +440,25 @@ async function runVariantVisualTest(
 
 	// 8. Capture diagnostic viewport image for contact sheet / manifest
 	const snapshotName = `${preset}-${vp.name}-${section}-${variant}.png`;
+	if (VISUAL_PARITY_MODE === 'candidate' || VISUAL_PARITY_MODE === 'compare') {
+		await expect(page).toHaveScreenshot(snapshotName, {
+			animations: 'disabled',
+			maxDiffPixelRatio: 0.001,
+		});
+	}
 	const viewportSnapshotBuffer = await page.screenshot({ animations: 'disabled' });
 	const hash = crypto.createHash('sha256').update(viewportSnapshotBuffer).digest('hex');
+	const syntheticEvent = buildSyntheticVariantEvent({
+		section,
+		variant,
+		themePreset: preset,
+	});
+	const contentHash = hashVisualValue(syntheticEvent.data);
+	const assetHash = hashVisualValue({ source: 'synthetic-variant-fixture', preset });
 
 	const outputSnapshotPath = path.resolve(
 		process.cwd(),
-		'output/screenshots/variant-portability',
+		process.env.VISUAL_PARITY_OUTPUT_ROOT ?? 'output/screenshots/variant-portability',
 		snapshotName,
 	);
 	fs.mkdirSync(path.dirname(outputSnapshotPath), { recursive: true });
@@ -443,7 +473,9 @@ async function runVariantVisualTest(
 		fixtureIdentity: `synthetic:${section}.${variant}`,
 		file: snapshotName,
 		sha256: hash,
-		comparisonResult: 'PASS',
+		contentHash,
+		assetHash,
+		comparisonResult: VISUAL_PARITY_MODE === 'compare' ? 'PASS' : 'CANDIDATE',
 	});
 }
 
