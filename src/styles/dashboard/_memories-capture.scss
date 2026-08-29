@@ -1,0 +1,57 @@
+.status-page__recovery {
+	display: grid;
+	gap: 0.35rem;
+	margin-top: 1rem;
+	padding: 0.9rem;
+	border: 1px solid currentcolor;
+	border-radius: 0.6rem;
+	font-size: 0.9rem;
+
+	code {
+		font-size: 1.1rem;
+		letter-spacing: 0.1em;
+	}
+
+	span {
+		font-size: 0.8rem;
+	}
+
+	&--restore div {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.45rem;
+		align-items: center;
+	}
+}
+
+.status-page__memories {
+	display: grid;
+	gap: 0.8rem;
+	margin-top: 1.5rem;
+	text-align: left;
+
+	h2 {
+		margin: 0;
+		font-size: 1.2rem;
+	}
+}
+
+.status-page__memory-card {
+	display: grid;
+	gap: 0.45rem;
+	padding: 0.75rem;
+	border: 1px solid rgb(255 255 255 / 18%);
+	border-radius: 0.6rem;
+
+	img,
+	video {
+		width: 100%;
+		max-height: 260px;
+		border-radius: 0.45rem;
+		object-fit: cover;
+	}
+
+	button {
+		justify-self: start;
+	}
+}

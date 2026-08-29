@@ -1,0 +1,13 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
+import ValentinaMemoriesOrganizer from '@/components/dashboard/memories/ValentinaMemoriesOrganizer';
+---
+
+<DashboardLayout title="Recuerdos de Valentina">
+	<DashboardPageHeader
+		title="Recuerdos de Valentina"
+		subtitle="Bandeja privada para revisar y descargar los recuerdos compartidos por invitados."
+	/>
+	<ValentinaMemoriesOrganizer client:load />
+</DashboardLayout>

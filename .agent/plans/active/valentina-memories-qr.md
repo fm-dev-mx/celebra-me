@@ -2,7 +2,7 @@
 title: Valentina Memories QR — party capture on Cloudflare R2
 status: active
 created: 2026-08-05
-updated: 2026-08-28
+updated: 2026-08-29
 type: implementation
 related_docs:
   - docs/invitations/valentina-hernandez.md
@@ -23,6 +23,14 @@ This plan tracks scope and status only; it must not duplicate that handoff.
 - Keep `/r/valentina` prerendered and `noindex`, with Spanish guest copy and no gallery/list API.
 - Keep `src/data/valentina-memories-upload.contract.ts` as the browser/Worker contract SSOT.
 - Keep browser → presigned PUT → private R2 as the only byte path.
+- Keep `src/data/valentina-memories-media.contract.ts` as the single lifecycle/session/retrieval
+  contract; it must import upload limits instead of redefining them.
+- Provide an opaque guest session/recovery-code boundary, session-scoped catalog, status/moderation
+  transitions, caption editing, deletion, and private guest previews.
+- Provide an organizer dashboard workspace with membership authorization, moderation, metadata
+  editing, soft deletion/restoration, audit events, and organizer-only download.
+- Keep R2 retrieval behind the private HMAC-authenticated retrieval Worker; never return object keys
+  or signed URLs to UI/API consumers.
 - Keep the QR payload and committed QR assets unchanged.
 - Do not mutate Cloudflare, R2, Vercel, DNS, databases, or Production configuration from the agent
   session.
@@ -36,9 +44,11 @@ stage, commit, push, or publication is authorized by this plan.
 
 ## Repository completion
 
-The repository portion is complete when the implementation, documentation, changelog, and required
-validation gates pass. This includes fail-closed signer configuration, exact MIME/size/window/origin
-controls, UUID-based PII-free keys, direct PUT semantics, no UI object exposure, and QR integrity.
+The repository portion is complete when the upload contract, catalog migration, guest/organizer
+routes and UI, retrieval Worker, documentation, changelog, and focused validation gates pass. This
+includes fail-closed signer/retrieval configuration, exact MIME/size/window/origin controls,
+UUID-based PII-free keys, direct PUT semantics, session/event authorization, no UI object exposure,
+append-only audit events, and QR integrity.
 
 ## REGRESSION_DECISION
 
@@ -50,23 +60,21 @@ controls, UUID-based PII-free keys, direct PUT semantics, no UI object exposure,
 
 ## Current status
 
-- Repository status: `REPOSITORY_COMPLETE`; focused tests, Playwright, QR, type-check, build,
-  `validate:changed`, link checks, and diff checks pass.
-- Release-candidate status: `RELEASE_CANDIDATE_BLOCKED` until the owner explicitly authorizes the
-  exact nine-path Git operation and returns an immutable commit SHA. The current mixed checkout must
-  not be deployed.
+- Repository status: `REPOSITORY_COMPLETE_OWNER_GATED`; focused suites, Playwright, type-check,
+  build, formatting, and `validate:changed` pass after the guest/organizer additions. The catalog
+  migration and retrieval Worker remain owner-applied and live proof is unavailable.
+- Release-candidate status: `RELEASE_CANDIDATE_BLOCKED` until the owner explicitly authorizes a
+  reviewed Git operation and returns an immutable commit SHA. The working tree must not be deployed.
 - Git integration status: `GIT_INTEGRATION_DEFERRED`; merge, push, publication, and cross-branch
   integration remain outside scope.
-- Read-only public observation on 2026-08-28: `https://celebra-me.com/r/valentina` returned `307` to
-  the `www` host, and `https://www.celebra-me.com/r/valentina` returned `200` with `noindex` and the
-  capture marker. `memories.celebra-me.com` returned DNS `ENOTFOUND` from this environment; this is
-  not owner proof and keeps the operational gate open.
+- Existing public-route observations and signer DNS checks are not owner proof; live catalog,
+  retrieval, database, Cloudflare, Vercel, and real-phone evidence remain `UNVERIFIED`.
 - Operational status: `OWNER_ACTION_REQUIRED` until the owner returns sanitized Production evidence.
 - Final goal status: `OPERATIONALLY_VERIFIED` only after every proof and both real-phone smoke
   checks in `OWNER.md` are independently verified.
 
 ## Non-goals
 
-Do not generalize this pilot into `/r/[slug]`, add a gallery/listing, reuse invitation storage,
-modify `/xv/valentina-hernandez`, change the apex redirect or site hosting, regenerate the QR, or
-perform database/Cloudflare/R2/Vercel/Production mutations.
+Do not generalize this pilot into `/r/[slug]`, create a public gallery/listing, reuse invitation
+storage, modify `/xv/valentina-hernandez`, change the apex redirect or site hosting, regenerate the
+QR, or perform database/Cloudflare/R2/Vercel/Production mutations from the agent session.

@@ -15,6 +15,10 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 - **Valentina Memories capture**: Guests can upload a supported photo or short video from
   `/r/valentina` through a direct, private R2 upload flow; the page confirms the upload without
   exposing a public gallery or object listing.
+- **Valentina Memories lifecycle**: Added opaque guest sessions with recovery codes, a
+  session-scoped media catalog and moderation states, private previews, and an organizer-only
+  dashboard workspace. Downloads stream through a short-lived HMAC-authenticated retrieval Worker;
+  no public bucket, listing, object key, or permanent download URL is exposed.
 
 ## [0.19.0-beta.1] - 2026-08-24
 

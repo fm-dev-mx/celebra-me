@@ -1,0 +1,153 @@
+import {
+	VALENTINA_MEMORIES_RETRIEVAL_PATH,
+	VALENTINA_MEMORIES_RETRIEVAL_REQUEST_TTL_SECONDS,
+	buildValentinaMemoriesRetrievalSigningPayload,
+	isValentinaMemoriesObjectKeyForMime,
+} from '../../../src/data/valentina-memories-media.contract';
+import {
+	VALENTINA_MEMORIES_JSON_BODY_MAX_BYTES,
+	VALENTINA_MEMORIES_OBJECT_PREFIX,
+} from '../../../src/data/valentina-memories-upload.contract';
+
+type R2ObjectLike = {
+	body: ReadableStream<Uint8Array>;
+	httpMetadata?: { contentType?: string; contentLength?: number };
+};
+
+type R2BucketLike = {
+	get(key: string): Promise<R2ObjectLike | null>;
+};
+
+type RetrieveEnv = {
+	MEMORIES_BUCKET: R2BucketLike;
+	RETRIEVAL_SHARED_SECRET: string;
+};
+
+const HEX = /^[0-9a-f]{64}$/i;
+
+function json(payload: unknown, status = 200): Response {
+	return new Response(JSON.stringify(payload), {
+		status,
+		headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+	});
+}
+
+function isTimestampFresh(raw: string | null): boolean {
+	if (!raw || !/^\d{1,12}$/.test(raw)) return false;
+	const timestamp = Number(raw);
+	return (
+		Number.isSafeInteger(timestamp) &&
+		Math.abs(Math.floor(Date.now() / 1000) - timestamp) <=
+			VALENTINA_MEMORIES_RETRIEVAL_REQUEST_TTL_SECONDS
+	);
+}
+
+function bytesToHex(bytes: ArrayBuffer): string {
+	return Array.from(new Uint8Array(bytes), (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+function hexToBytes(value: string): ArrayBuffer {
+	const bytes = new Uint8Array(value.length / 2);
+	for (let index = 0; index < bytes.length; index += 1) {
+		bytes[index] = Number.parseInt(value.slice(index * 2, index * 2 + 2), 16);
+	}
+	return bytes.buffer;
+}
+
+async function verifyPayload(secret: string, payload: string, signature: string): Promise<boolean> {
+	const key = await crypto.subtle.importKey(
+		'raw',
+		new TextEncoder().encode(secret),
+		{ name: 'HMAC', hash: 'SHA-256' },
+		false,
+		['verify'],
+	);
+	return crypto.subtle.verify(
+		'HMAC',
+		key,
+		hexToBytes(signature),
+		new TextEncoder().encode(payload),
+	);
+}
+
+async function sha256(value: string): Promise<string> {
+	return bytesToHex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)));
+}
+
+function safeDownloadName(value: unknown, extension: string): string {
+	if (typeof value !== 'string') return `valentina.${extension}`;
+	const normalized = value.replace(/[^a-zA-Z0-9._-]/g, '-').slice(0, 120);
+	return normalized.toLowerCase().endsWith(`.${extension}`)
+		? normalized
+		: `valentina.${extension}`;
+}
+
+export default {
+	async fetch(request: Request, env: RetrieveEnv): Promise<Response> {
+		if (
+			request.method !== 'POST' ||
+			new URL(request.url).pathname !== VALENTINA_MEMORIES_RETRIEVAL_PATH
+		) {
+			return json({ error: { code: 'not_found' } }, 404);
+		}
+		if (!env.RETRIEVAL_SHARED_SECRET || !env.MEMORIES_BUCKET) {
+			return json({ error: { code: 'unavailable' } }, 503);
+		}
+		const timestamp = request.headers.get('X-Celebra-Retrieval-Timestamp');
+		const providedSignature = request.headers.get('X-Celebra-Retrieval-Signature') || '';
+		if (!isTimestampFresh(timestamp) || !HEX.test(providedSignature)) {
+			return json({ error: { code: 'unauthorized' } }, 401);
+		}
+		const rawBody = await request.text();
+		if (
+			!rawBody ||
+			new TextEncoder().encode(rawBody).byteLength > VALENTINA_MEMORIES_JSON_BODY_MAX_BYTES
+		) {
+			return json({ error: { code: 'bad_request' } }, 400);
+		}
+		const validSignature = await verifyPayload(
+			env.RETRIEVAL_SHARED_SECRET,
+			buildValentinaMemoriesRetrievalSigningPayload({
+				timestamp: timestamp as string,
+				method: request.method,
+				path: VALENTINA_MEMORIES_RETRIEVAL_PATH,
+				bodyHash: await sha256(rawBody),
+			}),
+			providedSignature,
+		);
+		if (!validSignature) {
+			return json({ error: { code: 'unauthorized' } }, 401);
+		}
+		let body: {
+			objectKey?: unknown;
+			mimeType?: unknown;
+			downloadName?: unknown;
+			mode?: unknown;
+		};
+		try {
+			body = JSON.parse(rawBody) as typeof body;
+		} catch {
+			return json({ error: { code: 'bad_request' } }, 400);
+		}
+		const mimeType = typeof body.mimeType === 'string' ? body.mimeType : '';
+		if (!isValentinaMemoriesObjectKeyForMime(body.objectKey, mimeType)) {
+			return json({ error: { code: 'bad_request' } }, 400);
+		}
+		if (body.mode !== 'inline' && body.mode !== 'attachment') {
+			return json({ error: { code: 'bad_request' } }, 400);
+		}
+		const extension =
+			body.objectKey.slice(VALENTINA_MEMORIES_OBJECT_PREFIX.length).split('.').pop() || 'bin';
+		const object = await env.MEMORIES_BUCKET.get(body.objectKey);
+		if (!object) return json({ error: { code: 'not_found' } }, 404);
+		return new Response(object.body, {
+			status: 200,
+			headers: {
+				'Content-Type': mimeType,
+				'Content-Disposition': `${body.mode === 'attachment' ? 'attachment' : 'inline'}; filename="${safeDownloadName(body.downloadName, extension)}"`,
+				'Cache-Control': 'private, no-store, max-age=0',
+				'X-Content-Type-Options': 'nosniff',
+			},
+		});
+	},
+};

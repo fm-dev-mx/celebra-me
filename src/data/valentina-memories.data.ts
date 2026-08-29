@@ -46,6 +46,23 @@ export const valentinaMemoriesCaptureCopy = {
 	putFailed: 'No se pudo completar la subida. Intente de nuevo.',
 	networkFailed: 'No hay conexión. Intente de nuevo.',
 	unavailable: 'La carga de recuerdos no está disponible en este momento.',
+	recoveryCodeTitle: 'Guarde su código de recuperación',
+	recoveryCodeHint:
+		'Permite recuperar sus recuerdos en otro dispositivo. No lo comparta públicamente.',
+	myMemories: 'Mis recuerdos',
+	validationPending: 'En validación',
+	accepted: 'Disponible',
+	rejected: 'No aprobado',
+	deleted: 'Eliminado',
+	editCaption: 'Editar descripción',
+	saveCaption: 'Guardar',
+	deleteMemory: 'Eliminar recuerdo',
+	confirmDelete: '¿Desea eliminar este recuerdo?',
+	noMemories: 'Todavía no ha registrado recuerdos en este dispositivo.',
+	recoveryPrompt: '¿Ya tiene un código de recuperación?',
+	recoveryInputLabel: 'Código de recuperación',
+	recover: 'Recuperar recuerdos',
+	recoveryFailed: 'No se pudo recuperar la sesión. Revise el código e intente de nuevo.',
 } as const;
 
 /**

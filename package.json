@@ -108,7 +108,7 @@
         "invitation:published-audit": "tsx scripts/provision/published-content-audit-cli.ts",
         "qr:valentina-memories": "tsx scripts/qr/generate-valentina-memories.ts",
         "worker:memories-sign:dev": "npx --yes wrangler@4.125.0 dev --config workers/celebra-memories-sign/wrangler.json",
-        "test:memories-sign": "jest tests/unit/valentina-memories-upload.contract.test.ts tests/unit/celebra-memories-sign.test.ts tests/unit/celebra-memories-sign-config.test.ts",
+        "test:memories-sign": "jest tests/unit/valentina-memories-upload.contract.test.ts tests/unit/valentina-memories-media.contract.test.ts tests/unit/celebra-memories-sign.test.ts tests/unit/celebra-memories-sign-config.test.ts tests/unit/celebra-memories-retrieve.test.ts",
         "screenshot": "tsx scripts/screenshot/cli.ts",
         "screenshot:interactive": "tsx scripts/screenshot/cli.ts --interactive",
         "screenshot:invite": "tsx scripts/screenshot/cli.ts --type=invitation",

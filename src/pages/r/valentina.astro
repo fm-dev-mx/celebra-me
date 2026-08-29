@@ -40,7 +40,7 @@ const signUrl = resolveValentinaMemoriesSignUrl(import.meta.env.PUBLIC_VALENTINA
 					{copy.body}
 				</p>
 
-				<ValentinaMemoriesCapture client:load signUrl={signUrl} />
+				<ValentinaMemoriesCapture client:load signUrl={signUrl} catalogEnabled={Boolean(signUrl)} />
 
 				<div class="status-page__actions">
 					<a href={copy.primaryCtaHref} class="status-page__btn">

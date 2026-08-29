@@ -7,6 +7,7 @@ import {
 import { VALENTINA_MEMORIES_PRODUCTION_SIGN_URL } from '../../src/data/valentina-memories-upload.contract';
 
 const STUB_PUT_URL = 'https://r2-stub.test/put';
+const STUB_OBJECT_KEY = 'events/valentina/550e8400-e29b-41d4-a716-446655440000.jpg';
 
 async function uploadSampleJpeg(page: import('@playwright/test').Page) {
 	const fileInput = page.locator('[data-capture="valentina-memories"] input[type="file"]');
@@ -36,9 +37,51 @@ test.describe('Valentina Memories capture route', () => {
 				contentType: 'application/json',
 				body: JSON.stringify({
 					uploadUrl: STUB_PUT_URL,
-					objectKey: 'events/valentina/e2e.jpg',
+					objectKey: STUB_OBJECT_KEY,
 					expiresAt: '2026-08-29T21:50:00.000Z',
 				}),
+			});
+		});
+		await page.route('**/api/memories/valentina/session', async (route) => {
+			if (route.request().method() === 'POST') {
+				await route.fulfill({
+					status: 201,
+					contentType: 'application/json',
+					body: JSON.stringify({
+						sessionId: 'session-e2e',
+						recoveryCode: 'ABCD-2345-EFGH',
+					}),
+				});
+				return;
+			}
+			await route.fulfill({ status: 404 });
+		});
+		await page.route('**/api/memories/valentina/items**', async (route) => {
+			const method = route.request().method();
+			if (method === 'GET') {
+				await route.fulfill({
+					status: 200,
+					contentType: 'application/json',
+					body: JSON.stringify({ items: [] }),
+				});
+				return;
+			}
+			if (method === 'POST') {
+				const url = route.request().url();
+				const body = url.endsWith('/items')
+					? { item: { id: 'media-e2e' } }
+					: { item: { id: 'media-e2e', status: 'validating' } };
+				await route.fulfill({
+					status: 201,
+					contentType: 'application/json',
+					body: JSON.stringify(body),
+				});
+				return;
+			}
+			await route.fulfill({
+				status: 200,
+				contentType: 'application/json',
+				body: JSON.stringify({ success: true }),
 			});
 		});
 		await page.route(STUB_PUT_URL, async (route) => {
@@ -74,7 +117,7 @@ test.describe('Valentina Memories capture route', () => {
 
 		await uploadSampleJpeg(page);
 
-		await expect(page.getByText(valentinaMemoriesCaptureCopy.success)).toBeVisible();
+		await expect(page.getByText(valentinaMemoriesCaptureCopy.validationPending)).toBeVisible();
 		await expect(
 			page.getByRole('button', { name: valentinaMemoriesCaptureCopy.uploadAnother }),
 		).toBeVisible();
@@ -88,6 +131,13 @@ test.describe('Valentina Memories capture route', () => {
 	test('shows a retryable error when the stubbed signer rejects the request', async ({
 		page,
 	}) => {
+		await page.route('**/api/memories/valentina/session', async (route) => {
+			await route.fulfill({
+				status: 201,
+				contentType: 'application/json',
+				body: JSON.stringify({ sessionId: 'session-e2e', recoveryCode: 'ABCD-2345-EFGH' }),
+			});
+		});
 		await page.route(VALENTINA_MEMORIES_PRODUCTION_SIGN_URL, async (route) => {
 			if (route.request().method() === 'OPTIONS') {
 				await route.fulfill({ status: 204 });

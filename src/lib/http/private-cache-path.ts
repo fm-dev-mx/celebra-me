@@ -13,6 +13,7 @@ export function isPrivateNoStorePath(pathname: string): boolean {
 	return (
 		pathname.startsWith('/dashboard') ||
 		pathname.startsWith('/api/dashboard') ||
+		pathname.startsWith('/api/memories') ||
 		pathname.startsWith('/api/auth') ||
 		pathname === '/captura' ||
 		pathname.startsWith('/captura/') ||

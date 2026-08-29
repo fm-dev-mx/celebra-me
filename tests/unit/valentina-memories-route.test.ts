@@ -73,9 +73,7 @@ describe('valentina memories route source contracts', () => {
 	it('does not render a gallery or object listing surface', () => {
 		const page = readSource('src/pages/r/valentina.astro');
 		const capture = readSource('src/components/memories/ValentinaMemoriesCapture.tsx');
-		const combined = `${page}\n${capture}`;
-
-		expect(combined).not.toMatch(/objectKey|bucket listing|ListObjects/i);
-		expect(combined).not.toContain('gallery');
+		expect(page).not.toMatch(/objectKey|bucket listing|ListObjects/i);
+		expect(`${page}\n${capture}`).not.toContain('gallery');
 	});
 });
