@@ -55,9 +55,6 @@ export default defineConfig({
 					SUPABASE_URL: localSupabaseUrl,
 					PUBLIC_SUPABASE_URL: localPublicSupabaseUrl,
 					CELEBRA_RUNTIME_TARGET: process.env.CELEBRA_RUNTIME_TARGET?.trim() || 'local',
-					PUBLIC_VALENTINA_MEMORIES_SIGN_URL:
-						process.env.PUBLIC_VALENTINA_MEMORIES_SIGN_URL?.trim() ||
-						'https://memories.celebra-me.com/sign/valentina',
 				},
 				reuseExistingServer: process.env.PLAYWRIGHT_REUSE_EXISTING_SERVER === 'true',
 				timeout: 120_000,

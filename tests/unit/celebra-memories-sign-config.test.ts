@@ -4,13 +4,10 @@ import {
 	VALENTINA_MEMORIES_ALLOWED_PRODUCTION_ORIGIN,
 	VALENTINA_MEMORIES_OBJECT_PREFIX,
 	VALENTINA_MEMORIES_OBJECT_RETENTION_SECONDS,
-	VALENTINA_MEMORIES_PRODUCTION_SIGN_URL,
 	VALENTINA_MEMORIES_R2_BUCKET,
 	VALENTINA_MEMORIES_RATE_LIMIT,
-	VALENTINA_MEMORIES_SIGN_URL_PUBLIC_ENV_NAME,
-	VALENTINA_MEMORIES_UPLOAD_WINDOW_ENDS_AT,
-	VALENTINA_MEMORIES_UPLOAD_WINDOW_STARTS_AT,
 } from '@/data/valentina-memories-upload.contract';
+import { MEMORIES_UPLOAD_SIGNER_URL } from '@/lib/server/memories-upload-target';
 
 const workerDir = path.join(process.cwd(), 'workers/celebra-memories-sign');
 
@@ -37,7 +34,8 @@ describe('celebra memories sign production config', () => {
 		expect(rateLimit.namespace_id).toBe(VALENTINA_MEMORIES_RATE_LIMIT.namespaceId);
 		expect(simple.limit).toBe(VALENTINA_MEMORIES_RATE_LIMIT.limit);
 		expect(simple.period).toBe(VALENTINA_MEMORIES_RATE_LIMIT.periodSeconds);
-		expect([10, 60]).toContain(simple.period);
+		expect(simple.period).toBe(60);
+		expect(wrangler.observability).toEqual({ enabled: true, head_sampling_rate: 0.05 });
 	});
 
 	it('permits only the production browser PUT contract on the reusable bucket', () => {
@@ -47,7 +45,11 @@ describe('celebra memories sign production config', () => {
 		expect(VALENTINA_MEMORIES_R2_BUCKET).toBe('celebra-memories');
 		expect(rule.allowed.origins).toEqual([VALENTINA_MEMORIES_ALLOWED_PRODUCTION_ORIGIN]);
 		expect(rule.allowed.methods).toEqual(['PUT']);
-		expect(rule.allowed.headers).toEqual(['Content-Type']);
+		expect(rule.allowed.headers).toEqual([
+			'Content-Type',
+			'If-None-Match',
+			'x-amz-checksum-sha256',
+		]);
 	});
 
 	it('expires Valentina pilot objects after the contracted retention window', () => {
@@ -64,22 +66,24 @@ describe('celebra memories sign production config', () => {
 		);
 	});
 
-	it('records the public sign URL without production secrets', () => {
+	it('documents the private server-to-server signer without reusable values', () => {
 		const owner = readFileSync(path.join(workerDir, 'OWNER.md'), 'utf8');
 		const envExample = readFileSync(path.join(workerDir, '.dev.vars.example'), 'utf8');
 
-		expect(owner).toContain(
-			`${VALENTINA_MEMORIES_SIGN_URL_PUBLIC_ENV_NAME}=${VALENTINA_MEMORIES_PRODUCTION_SIGN_URL}`,
-		);
+		expect(MEMORIES_UPLOAD_SIGNER_URL).toBe('https://memories.celebra-me.com/sign/valentina');
+		expect(owner).not.toContain('PUBLIC_VALENTINA_MEMORIES_SIGN_URL');
+		expect(owner).toContain('MEMORIES_UPLOAD_REQUEST_VERIFY_PUBLIC_KEY');
 		expect(owner).toContain('## Sanitized production proof table');
-		expect(owner).toContain('## Rollback / disable');
-		expect(owner).toContain('PENDING_OWNER');
-		expect(owner).toContain(VALENTINA_MEMORIES_UPLOAD_WINDOW_STARTS_AT);
-		expect(owner).toContain(VALENTINA_MEMORIES_UPLOAD_WINDOW_ENDS_AT);
-		expect(owner).toMatch(/only after the window opens/);
+		expect(owner).toContain('## Failure, revocation, and rollback');
+		expect(owner).toContain('UNVERIFIED');
+		expect(owner).toContain('valentina-memories-upload.contract.ts');
+		expect(owner).not.toContain('2026-08-27T06:00:00.000Z');
+		expect(owner).not.toContain('2026-09-04T06:00:00.000Z');
 		expect(envExample).toContain('R2_ACCOUNT_ID=');
 		expect(envExample).toContain('R2_BUCKET=celebra-memories');
+		expect(envExample).toContain('MEMORIES_UPLOAD_REQUEST_VERIFY_PUBLIC_KEY=');
 		expect(envExample).not.toMatch(/PUBLIC_R2_/);
-		expect(envExample).not.toMatch(/^(R2_ACCESS_KEY_ID|R2_SECRET_ACCESS_KEY)=(?!replace-)/m);
+		expect(envExample).toMatch(/^R2_ACCESS_KEY_ID=$/m);
+		expect(envExample).toMatch(/^R2_SECRET_ACCESS_KEY=$/m);
 	});
 });

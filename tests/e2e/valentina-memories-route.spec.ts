@@ -4,15 +4,17 @@ import {
 	valentinaMemoriesCaptureCopy,
 	valentinaMemoriesPageCopy,
 } from '../../src/data/valentina-memories.data';
-import { VALENTINA_MEMORIES_PRODUCTION_SIGN_URL } from '../../src/data/valentina-memories-upload.contract';
 
-const STUB_PUT_URL = 'https://r2-stub.test/put';
-const STUB_OBJECT_KEY = 'events/valentina/550e8400-e29b-41d4-a716-446655440000.jpg';
+const STUB_PUT_URL = 'https://r2-stub.test/private-put-capability';
+const PROFILE = {
+	displayName: 'Tía Ana',
+	guestAlias: 'invitado-a1b2c3d4',
+	expiresAt: '2026-09-28T00:00:00.000Z',
+};
 
 async function uploadSampleJpeg(page: import('@playwright/test').Page) {
 	const fileInput = page.locator('[data-capture="valentina-memories"] input[type="file"]');
 	await expect(fileInput).toBeEnabled();
-	await page.waitForLoadState('networkidle');
 	await fileInput.setInputFiles({
 		name: 'foto.jpg',
 		mimeType: 'image/jpeg',
@@ -21,44 +23,28 @@ async function uploadSampleJpeg(page: import('@playwright/test').Page) {
 }
 
 test.describe('Valentina Memories capture route', () => {
-	test('serves a prerendered noindex capture page and completes a stubbed upload', async ({
+	test('onboards, reserves same-origin, uploads directly, and completes without private fields', async ({
 		page,
 	}) => {
-		let signPayload: unknown;
-		await page.route(VALENTINA_MEMORIES_PRODUCTION_SIGN_URL, async (route) => {
-			if (route.request().method() === 'OPTIONS') {
-				await route.fulfill({ status: 204 });
-				return;
-			}
+		let reservePayload: Record<string, unknown> | undefined;
+		const outgoingHosts: string[] = [];
+		page.on('request', (request) => outgoingHosts.push(new URL(request.url()).hostname));
 
-			signPayload = route.request().postDataJSON();
-			await route.fulfill({
-				status: 200,
-				contentType: 'application/json',
-				body: JSON.stringify({
-					uploadUrl: STUB_PUT_URL,
-					objectKey: STUB_OBJECT_KEY,
-					expiresAt: '2026-08-29T21:50:00.000Z',
-				}),
-			});
-		});
 		await page.route('**/api/memories/valentina/session', async (route) => {
 			if (route.request().method() === 'POST') {
 				await route.fulfill({
 					status: 201,
 					contentType: 'application/json',
-					body: JSON.stringify({
-						sessionId: 'session-e2e',
-						recoveryCode: 'ABCD-2345-EFGH',
-					}),
+					body: JSON.stringify({ profile: PROFILE, recoveryCode: 'ABCD-2345-EFGH' }),
 				});
 				return;
 			}
-			await route.fulfill({ status: 404 });
+			await route.fulfill({ status: 401, contentType: 'application/json', body: '{}' });
 		});
 		await page.route('**/api/memories/valentina/items**', async (route) => {
-			const method = route.request().method();
-			if (method === 'GET') {
+			const request = route.request();
+			const url = new URL(request.url());
+			if (request.method() === 'GET') {
 				await route.fulfill({
 					status: 200,
 					contentType: 'application/json',
@@ -66,85 +52,97 @@ test.describe('Valentina Memories capture route', () => {
 				});
 				return;
 			}
-			if (method === 'POST') {
-				const url = route.request().url();
-				const body = url.endsWith('/items')
-					? { item: { id: 'media-e2e' } }
-					: { item: { id: 'media-e2e', status: 'validating' } };
+			if (request.method() === 'POST' && url.pathname.endsWith('/items')) {
+				reservePayload = request.postDataJSON() as Record<string, unknown>;
 				await route.fulfill({
 					status: 201,
 					contentType: 'application/json',
-					body: JSON.stringify(body),
+					body: JSON.stringify({
+						item: {
+							id: 'media-e2e',
+							mimeType: 'image/jpeg',
+							sizeBytes: 4,
+							caption: '',
+							status: 'uploading',
+							createdAt: '2026-08-29T00:00:00.000Z',
+						},
+						upload: {
+							uploadUrl: STUB_PUT_URL,
+							requiredHeaders: {
+								'Content-Type': 'image/jpeg',
+								'If-None-Match': '*',
+								'x-amz-checksum-sha256': 'synthetic-checksum',
+							},
+						},
+					}),
 				});
 				return;
 			}
 			await route.fulfill({
 				status: 200,
 				contentType: 'application/json',
-				body: JSON.stringify({ success: true }),
+				body: JSON.stringify({ item: { id: 'media-e2e', status: 'accepted' } }),
 			});
 		});
 		await page.route(STUB_PUT_URL, async (route) => {
 			expect(route.request().method()).toBe('PUT');
 			expect(route.request().headers()['content-type']).toBe('image/jpeg');
-			await route.fulfill({ status: 200, body: '' });
+			expect(route.request().headers()['if-none-match']).toBe('*');
+			expect(route.request().headers()['x-amz-checksum-sha256']).toBe('synthetic-checksum');
+			await route.fulfill({ status: 412, body: '' });
 		});
 
 		const response = await page.goto(VALENTINA_MEMORIES_ROUTE_PATH, {
 			waitUntil: 'domcontentloaded',
 		});
-
-		expect(response?.ok()).toBeTruthy();
 		expect(response?.status()).toBe(200);
-
 		await expect(page.locator('h1.status-page__title')).toHaveText(
 			valentinaMemoriesPageCopy.heading,
 		);
-		await expect(page.locator('.status-page__subtitle')).toHaveText(
-			valentinaMemoriesPageCopy.subtitle,
-		);
-		await expect(page.locator('.status-page__subtitle')).not.toHaveText('Próximamente');
 		await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
 			'content',
 			valentinaMemoriesPageCopy.robots,
 		);
 		await expect(page.locator('[data-page="valentina-memories"]')).toBeVisible();
-		await expect(page.locator('[data-capture="valentina-memories"]')).toBeVisible();
 		await expect(page.locator('.event-theme-wrapper')).toHaveCount(0);
-		await expect(page.getByText(/events\/valentina|celebra-memories|objectKey/i)).toHaveCount(
-			0,
-		);
 
+		await page.getByLabel('Nombre o apodo').fill(PROFILE.displayName);
+		await page.getByRole('button', { name: 'Continuar' }).click();
+		await expect(page.getByText(PROFILE.guestAlias)).toBeVisible();
 		await uploadSampleJpeg(page);
 
-		await expect(page.getByText(valentinaMemoriesCaptureCopy.validationPending)).toBeVisible();
-		await expect(
-			page.getByRole('button', { name: valentinaMemoriesCaptureCopy.uploadAnother }),
-		).toBeVisible();
-		expect(signPayload).toMatchObject({
+		await expect(page.getByText(valentinaMemoriesCaptureCopy.success)).toBeVisible();
+		expect(reservePayload).toMatchObject({
+			action: 'reserve',
 			mimeType: 'image/jpeg',
 			sizeBytes: 4,
 			checksumSha256: expect.stringMatching(/^[0-9a-f]{64}$/),
+			clientRequestId: expect.stringMatching(/^[0-9a-f-]{36}$/i),
 		});
-		await expect(page.getByText('events/valentina/e2e.jpg')).toHaveCount(0);
+		expect(reservePayload?.objectKey).toBeUndefined();
+		expect(outgoingHosts).not.toContain('memories.celebra-me.com');
+		await expect(page.getByText(/events\/valentina|X-Amz-|objectKey/i)).toHaveCount(0);
 	});
 
-	test('shows a retryable error when the stubbed signer rejects the request', async ({
+	test('shows a retryable user-safe error when same-origin reservation is rejected', async ({
 		page,
 	}) => {
 		await page.route('**/api/memories/valentina/session', async (route) => {
 			await route.fulfill({
-				status: 201,
+				status: 200,
 				contentType: 'application/json',
-				body: JSON.stringify({ sessionId: 'session-e2e', recoveryCode: 'ABCD-2345-EFGH' }),
+				body: JSON.stringify({ profile: PROFILE }),
 			});
 		});
-		await page.route(VALENTINA_MEMORIES_PRODUCTION_SIGN_URL, async (route) => {
-			if (route.request().method() === 'OPTIONS') {
-				await route.fulfill({ status: 204 });
+		await page.route('**/api/memories/valentina/items**', async (route) => {
+			if (route.request().method() === 'GET') {
+				await route.fulfill({
+					status: 200,
+					contentType: 'application/json',
+					body: '{"items":[]}',
+				});
 				return;
 			}
-
 			await route.fulfill({
 				status: 400,
 				contentType: 'application/json',
@@ -153,8 +151,8 @@ test.describe('Valentina Memories capture route', () => {
 		});
 
 		await page.goto(VALENTINA_MEMORIES_ROUTE_PATH, { waitUntil: 'domcontentloaded' });
+		await expect(page.getByText(PROFILE.guestAlias)).toBeVisible();
 		await uploadSampleJpeg(page);
-
 		await expect(page.getByRole('alert')).toHaveText(
 			valentinaMemoriesCaptureCopy.unsupportedType,
 		);

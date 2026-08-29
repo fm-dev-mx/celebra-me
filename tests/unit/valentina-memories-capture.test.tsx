@@ -1,195 +1,166 @@
+import { webcrypto } from 'node:crypto';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import ValentinaMemoriesCapture from '@/components/memories/ValentinaMemoriesCapture';
 import { valentinaMemoriesCaptureCopy } from '@/data/valentina-memories.data';
+import ValentinaMemoriesCapture from '@/components/memories/ValentinaMemoriesCapture';
 import {
-	VALENTINA_MEMORIES_MAX_IMAGE_BYTES,
-	VALENTINA_MEMORIES_PRODUCTION_SIGN_URL,
-	VALENTINA_MEMORIES_SIGN_PATH,
-} from '@/data/valentina-memories-upload.contract';
-import { webcrypto } from 'node:crypto';
-Object.defineProperty(globalThis, 'crypto', { value: webcrypto, configurable: true });
-
-import {
-	resolveValentinaMemoriesSignUrl,
-	validateValentinaMemoriesFile,
+	calculateFileSha256Hex,
+	createSecureClientRequestId,
 } from '@/lib/memories/valentina-memories-client';
 
-const SIGN_URL = VALENTINA_MEMORIES_PRODUCTION_SIGN_URL;
-const PUT_URL = 'https://r2-stub.test/put';
-
-function makeFile(name: string, type: string, sizeBytes: number): File {
-	return new File([new Uint8Array(sizeBytes)], name, { type });
+Object.defineProperty(globalThis, 'crypto', { configurable: true, value: webcrypto });
+if (!Blob.prototype.arrayBuffer) {
+	Blob.prototype.arrayBuffer = function arrayBuffer(): Promise<ArrayBuffer> {
+		return new Promise((resolve, reject) => {
+			const reader = new FileReader();
+			reader.onload = () => resolve(reader.result as ArrayBuffer);
+			reader.onerror = () => reject(reader.error);
+			reader.readAsArrayBuffer(this);
+		});
+	};
 }
 
-describe('valentina memories capture client', () => {
-	it('resolves only an explicit sign URL with the contracted path', () => {
-		expect(resolveValentinaMemoriesSignUrl(SIGN_URL)).toBe(SIGN_URL);
-		expect(
-			resolveValentinaMemoriesSignUrl(`http://127.0.0.1:8787${VALENTINA_MEMORIES_SIGN_PATH}`),
-		).toBe(`http://127.0.0.1:8787${VALENTINA_MEMORIES_SIGN_PATH}`);
-		expect(resolveValentinaMemoriesSignUrl('')).toBeNull();
-		expect(resolveValentinaMemoriesSignUrl('https://www.celebra-me.com/api/upload')).toBeNull();
-		expect(
-			resolveValentinaMemoriesSignUrl('https://memories.celebra-me.com/sign/other'),
-		).toBeNull();
-		expect(resolveValentinaMemoriesSignUrl('https://example.com/sign/valentina')).toBeNull();
-		expect(resolveValentinaMemoriesSignUrl(`${SIGN_URL}?redirect=1`)).toBeNull();
+const PROFILE = {
+	displayName: 'Tía Ana',
+	guestAlias: 'invitado-a1b2c3d4',
+	expiresAt: '2026-09-28T00:00:00.000Z',
+};
+
+function response(payload: unknown, status = 200): Response {
+	return {
+		ok: status >= 200 && status < 300,
+		status,
+		json: async () => payload,
+	} as Response;
+}
+
+describe('ValentinaMemoriesCapture', () => {
+	beforeEach(() => {
+		jest.restoreAllMocks();
 	});
 
-	it('normalizes the signed MIME value used by the JSON request and direct PUT', async () => {
-		const user = userEvent.setup();
-		jest.spyOn(global, 'fetch')
-			.mockClear()
-			.mockImplementation(async (input: RequestInfo | URL, init?: RequestInit) => {
-				if (String(input) === SIGN_URL) {
-					expect(JSON.parse(String(init?.body))).toMatchObject({
-						mimeType: 'image/jpeg',
-					});
-					return {
-						ok: true,
-						json: async () => ({ uploadUrl: PUT_URL }),
-					} as Response;
-				}
-
-				expect(new Headers(init?.headers).get('Content-Type')).toBe('image/jpeg');
-				return { ok: true } as Response;
-			});
-
-		render(<ValentinaMemoriesCapture signUrl={SIGN_URL} />);
-		await user.upload(
-			screen.getByLabelText(valentinaMemoriesCaptureCopy.chooseFile),
-			makeFile('foto.jpg', 'IMAGE/JPEG', 8),
-		);
-
-		expect(await screen.findByText(valentinaMemoriesCaptureCopy.success)).toBeInTheDocument();
-	});
-
-	it('validates MIME and size from the shared contract', () => {
-		expect(validateValentinaMemoriesFile(makeFile('ok.jpg', 'image/jpeg', 1024))).toBeNull();
-		expect(
-			validateValentinaMemoriesFile(makeFile('clip.mp4', 'video/mp4', 8 * 1024 * 1024)),
-		).toBeNull();
-		expect(validateValentinaMemoriesFile(makeFile('notes.pdf', 'application/pdf', 1024))).toBe(
-			'unsupported_type',
-		);
-		const oversized = makeFile('huge.jpg', 'image/jpeg', 8);
-		Object.defineProperty(oversized, 'size', { value: VALENTINA_MEMORIES_MAX_IMAGE_BYTES + 1 });
-		expect(validateValentinaMemoriesFile(oversized)).toBe('file_too_large');
-	});
-
-	it('fails closed when the sign URL is missing', () => {
-		render(<ValentinaMemoriesCapture signUrl={null} />);
-
-		expect(screen.getByRole('status')).toHaveTextContent(
-			valentinaMemoriesCaptureCopy.unavailable,
-		);
-		expect(
-			screen.queryByLabelText(valentinaMemoriesCaptureCopy.chooseFile),
-		).not.toBeInTheDocument();
-	});
-
-	it('rejects an over-60-second video before signing', async () => {
-		const user = userEvent.setup();
-		const fetchMock = jest.spyOn(global, 'fetch');
-		fetchMock.mockClear();
-
-		render(
-			<ValentinaMemoriesCapture
-				signUrl={SIGN_URL}
-				readVideoDurationSeconds={async () => 61}
-			/>,
-		);
-
-		await user.upload(
-			screen.getByLabelText(valentinaMemoriesCaptureCopy.chooseFile),
-			makeFile('clip.mp4', 'video/mp4', 1024),
-		);
-
-		expect(await screen.findByRole('alert')).toHaveTextContent(
-			valentinaMemoriesCaptureCopy.videoTooLong,
-		);
-		expect(fetchMock).not.toHaveBeenCalled();
-	});
-
-	it('posts the expected sign payload and shows confirmation after PUT', async () => {
-		const user = userEvent.setup();
-		jest.spyOn(global, 'fetch')
-			.mockClear()
-			.mockImplementation(async (input: RequestInfo | URL, init?: RequestInit) => {
-				const url = String(input);
-				if (url === SIGN_URL) {
-					expect(init?.method).toBe('POST');
-					const body = JSON.parse(String(init?.body));
-					expect(body.mimeType).toBe('image/jpeg');
-					expect(body.sizeBytes).toBe(8);
-					expect(body.checksumSha256).toMatch(/^[0-9a-f]{64}$/);
-					return {
-						ok: true,
-						json: async () => ({
-							uploadUrl: PUT_URL,
-							objectKey: 'events/valentina/secret.jpg',
-							expiresAt: '2026-08-29T21:50:00.000Z',
-						}),
-					} as Response;
-				}
-
-				expect(url).toBe(PUT_URL);
-				expect(init?.method).toBe('PUT');
-				expect(new Headers(init?.headers).get('Content-Type')).toBe('image/jpeg');
-				return { ok: true } as Response;
-			});
-
-		render(<ValentinaMemoriesCapture signUrl={SIGN_URL} />);
-		await user.upload(
-			screen.getByLabelText(valentinaMemoriesCaptureCopy.chooseFile),
-			makeFile('foto.jpg', 'image/jpeg', 8),
-		);
-
-		expect(await screen.findByText(valentinaMemoriesCaptureCopy.success)).toBeInTheDocument();
-		expect(
-			screen.getByRole('button', { name: valentinaMemoriesCaptureCopy.uploadAnother }),
-		).toBeInTheDocument();
-		expect(screen.queryByText(/events\/valentina/)).not.toBeInTheDocument();
-		expect(screen.queryByText(/r2-stub/)).not.toBeInTheDocument();
-		expect(screen.queryByText(/objectKey/i)).not.toBeInTheDocument();
-	});
-
-	it('keeps a failed sign retryable without reload', async () => {
+	it('requires a friendly one-step name before enabling phone capture', async () => {
 		const user = userEvent.setup();
 		const fetchMock = jest
-			.spyOn(global, 'fetch')
-			.mockClear()
-			.mockResolvedValueOnce({
-				ok: false,
-				status: 403,
-				json: async () => ({ error: { code: 'upload_window_closed' } }),
-			} as Response)
-			.mockResolvedValueOnce({
-				ok: true,
-				json: async () => ({
-					uploadUrl: PUT_URL,
-					objectKey: 'events/valentina/retry.jpg',
-					expiresAt: '2026-08-29T21:50:00.000Z',
-				}),
-			} as Response)
-			.mockResolvedValueOnce({ ok: true } as Response);
+			.spyOn(globalThis, 'fetch')
+			.mockResolvedValueOnce(response({ error: { code: 'unauthorized' } }, 401))
+			.mockResolvedValueOnce(response({ profile: PROFILE, recoveryCode: 'ABCD-EFGH-JKLM' }));
 
-		render(<ValentinaMemoriesCapture signUrl={SIGN_URL} />);
-		await user.upload(
-			screen.getByLabelText(valentinaMemoriesCaptureCopy.chooseFile),
-			makeFile('foto.jpg', 'image/jpeg', 8),
-		);
+		render(<ValentinaMemoriesCapture />);
+		const chooser = screen.getByLabelText(valentinaMemoriesCaptureCopy.chooseFile);
+		expect(chooser).toBeDisabled();
 
-		expect(await screen.findByRole('alert')).toHaveTextContent(
-			valentinaMemoriesCaptureCopy.windowClosed,
-		);
+		await user.type(screen.getByLabelText('Nombre o apodo'), PROFILE.displayName);
+		await user.click(screen.getByRole('button', { name: 'Continuar' }));
 
-		await user.click(screen.getByRole('button', { name: valentinaMemoriesCaptureCopy.retry }));
-
-		await waitFor(() => {
-			expect(screen.getByText(valentinaMemoriesCaptureCopy.success)).toBeInTheDocument();
+		expect(await screen.findByText(new RegExp(PROFILE.guestAlias))).toBeInTheDocument();
+		expect(screen.getByText('ABCD-EFGH-JKLM')).toBeInTheDocument();
+		expect(chooser).toBeEnabled();
+		expect(fetchMock.mock.calls[1]?.[0]).toBe('/api/memories/valentina/session');
+		expect(JSON.parse(String((fetchMock.mock.calls[1]?.[1] as RequestInit).body))).toEqual({
+			action: 'create',
+			displayName: PROFILE.displayName,
 		});
-		expect(fetchMock).toHaveBeenCalledTimes(3);
+	});
+
+	it('reserves same-origin, PUTs directly with required headers, then completes', async () => {
+		const user = userEvent.setup();
+		const fetchMock = jest
+			.spyOn(globalThis, 'fetch')
+			.mockImplementation(async (input, init) => {
+				const url = String(input);
+				if (url === '/api/memories/valentina/session') {
+					return response({ profile: PROFILE });
+				}
+				if (url === '/api/memories/valentina/items' && init?.method === 'POST') {
+					return response({
+						item: {
+							id: 'media-public-id',
+							mimeType: 'image/jpeg',
+							sizeBytes: 4,
+							caption: '',
+							status: 'uploading',
+							createdAt: '2026-08-29T00:00:00.000Z',
+						},
+						upload: {
+							uploadUrl: 'https://r2.example.invalid/capability',
+							requiredHeaders: {
+								'Content-Type': 'image/jpeg',
+								'If-None-Match': '*',
+								'x-amz-checksum-sha256': 'checksum',
+							},
+						},
+					});
+				}
+				if (url === '/api/memories/valentina/items') {
+					return response({ items: [] });
+				}
+				if (url === 'https://r2.example.invalid/capability') {
+					return response(null, 412);
+				}
+				if (url === '/api/memories/valentina/items/media-public-id') {
+					return response({ item: { status: 'accepted' } });
+				}
+				throw new Error(`Unexpected fetch: ${url}`);
+			});
+
+		render(<ValentinaMemoriesCapture />);
+		await screen.findByText(new RegExp(PROFILE.guestAlias));
+		const file = new File([new Uint8Array([1, 2, 3, 4])], 'familia.jpg', {
+			type: 'image/jpeg',
+		});
+		await user.upload(screen.getByLabelText(valentinaMemoriesCaptureCopy.chooseFile), file);
+
+		await screen.findByText(valentinaMemoriesCaptureCopy.success);
+		const reserveCall = fetchMock.mock.calls.find(
+			([input, init]) =>
+				input === '/api/memories/valentina/items' &&
+				(init as RequestInit | undefined)?.method === 'POST',
+		);
+		expect(reserveCall?.[0]).toBe('/api/memories/valentina/items');
+		const reserveBody = JSON.parse(String((reserveCall?.[1] as RequestInit).body));
+		expect(reserveBody).toMatchObject({
+			action: 'reserve',
+			mimeType: 'image/jpeg',
+			sizeBytes: 4,
+		});
+		expect(reserveBody.clientRequestId).toMatch(/^[0-9a-f-]{36}$/i);
+		expect(reserveBody.checksumSha256).toMatch(/^[0-9a-f]{64}$/);
+		expect(reserveBody.objectKey).toBeUndefined();
+
+		const putCall = fetchMock.mock.calls.find(
+			([input]) => input === 'https://r2.example.invalid/capability',
+		);
+		expect(putCall?.[0]).toBe('https://r2.example.invalid/capability');
+		expect(putCall?.[1]).toMatchObject({
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'image/jpeg',
+				'If-None-Match': '*',
+				'x-amz-checksum-sha256': 'checksum',
+			},
+		});
+		expect(
+			fetchMock.mock.calls.some(
+				([input]) => input === '/api/memories/valentina/items/media-public-id',
+			),
+		).toBe(true);
+	});
+
+	it('hashes incrementally and creates opaque request identifiers with Web Crypto', async () => {
+		const blob = new Blob([new Uint8Array([1, 2, 3, 4])]);
+		await expect(calculateFileSha256Hex(blob)).resolves.toBe(
+			'9f64a747e1b97f131fabb6b447296c9b6f0201e79fb3c5356e6c77e89b6a806a',
+		);
+		expect(createSecureClientRequestId()).toMatch(
+			/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+		);
+	});
+
+	it('never renders storage keys or signed URLs in the guest surface', async () => {
+		jest.spyOn(globalThis, 'fetch').mockResolvedValueOnce(response({ error: {} }, 401));
+		render(<ValentinaMemoriesCapture />);
+		await waitFor(() => expect(globalThis.fetch).toHaveBeenCalled());
+		expect(document.body.textContent).not.toMatch(/events\/valentina|X-Amz-|objectKey/i);
 	});
 });

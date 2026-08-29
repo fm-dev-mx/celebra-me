@@ -6,7 +6,6 @@ import {
 	valentinaMemoriesCaptureCopy,
 	valentinaMemoriesPageCopy,
 } from '@/data/valentina-memories.data';
-import { VALENTINA_MEMORIES_SIGN_URL_PUBLIC_ENV_NAME } from '@/data/valentina-memories-upload.contract';
 
 const readSource = (relativePath: string) =>
 	readFileSync(path.join(process.cwd(), relativePath), 'utf8');
@@ -24,7 +23,8 @@ describe('valentina memories route source contracts', () => {
 		expect(source).toContain('client:load');
 		expect(source).toContain('slot="head"');
 		expect(source).toContain('name="robots"');
-		expect(source).toContain(VALENTINA_MEMORIES_SIGN_URL_PUBLIC_ENV_NAME);
+		expect(source).not.toContain('PUBLIC_VALENTINA_MEMORIES_SIGN_URL');
+		expect(source).not.toContain('signUrl');
 		expect(source).not.toContain('Astro.redirect');
 		expect(source).not.toContain('resolveInvitationContent');
 		expect(source).not.toContain('process.env');

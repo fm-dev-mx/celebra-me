@@ -10,9 +10,13 @@ import {
 	VALENTINA_MEMORIES_OBJECT_RETENTION_DAYS,
 	VALENTINA_MEMORIES_OBJECT_RETENTION_SECONDS,
 	VALENTINA_MEMORIES_PRESIGN_TTL_SECONDS,
-	VALENTINA_MEMORIES_PRODUCTION_SIGN_URL,
+	VALENTINA_MEMORIES_EVENT_MAX_BYTES,
+	VALENTINA_MEMORIES_EVENT_MAX_OBJECTS,
+	VALENTINA_MEMORIES_SESSION_MAX_BYTES,
+	VALENTINA_MEMORIES_SESSION_MAX_FILES,
+	VALENTINA_MEMORIES_SESSION_MAX_IN_FLIGHT,
+	VALENTINA_MEMORIES_RATE_LIMIT,
 	VALENTINA_MEMORIES_SIGN_PATH,
-	VALENTINA_MEMORIES_SIGN_URL_PUBLIC_ENV_NAME,
 	VALENTINA_MEMORIES_UPLOAD_WINDOW_ENDS_AT,
 	VALENTINA_MEMORIES_UPLOAD_WINDOW_STARTS_AT,
 	buildValentinaMemoriesObjectKey,
@@ -20,6 +24,7 @@ import {
 	getValentinaMemoriesPresignExpiresAt,
 	isAllowedValentinaMemoriesOrigin,
 	isWithinValentinaMemoriesUploadWindow,
+	resolveValentinaMemoriesFileMimeType,
 } from '@/data/valentina-memories-upload.contract';
 
 function zoneParts(iso: string) {
@@ -39,20 +44,23 @@ function zoneParts(iso: string) {
 }
 
 describe('valentina memories upload contract', () => {
-	it('locks the event identity, prefix, sign path, and public sign URL', () => {
+	it('locks the event identity, prefix, private sign target, and retention', () => {
 		expect(VALENTINA_MEMORIES_EVENT_ID).toBe('valentina');
 		expect(VALENTINA_MEMORIES_OBJECT_PREFIX).toBe('events/valentina/');
 		expect(VALENTINA_MEMORIES_SIGN_PATH).toBe('/sign/valentina');
-		expect(VALENTINA_MEMORIES_PRODUCTION_SIGN_URL).toBe(
-			'https://memories.celebra-me.com/sign/valentina',
-		);
-		expect(VALENTINA_MEMORIES_SIGN_URL_PUBLIC_ENV_NAME).toBe(
-			'PUBLIC_VALENTINA_MEMORIES_SIGN_URL',
-		);
 		expect(VALENTINA_MEMORIES_ALLOWED_PRODUCTION_ORIGIN).toBe('https://www.celebra-me.com');
 		expect(VALENTINA_MEMORIES_PRESIGN_TTL_SECONDS).toBe(300);
 		expect(VALENTINA_MEMORIES_OBJECT_RETENTION_DAYS).toBe(30);
 		expect(VALENTINA_MEMORIES_OBJECT_RETENTION_SECONDS).toBe(30 * 24 * 60 * 60);
+	});
+
+	it('keeps session and event quotas in the canonical contract', () => {
+		expect(VALENTINA_MEMORIES_SESSION_MAX_FILES).toBe(20);
+		expect(VALENTINA_MEMORIES_SESSION_MAX_BYTES).toBe(512 * 1024 * 1024);
+		expect(VALENTINA_MEMORIES_SESSION_MAX_IN_FLIGHT).toBe(2);
+		expect(VALENTINA_MEMORIES_RATE_LIMIT.limit).toBe(6);
+		expect(VALENTINA_MEMORIES_EVENT_MAX_OBJECTS).toBe(2_000);
+		expect(VALENTINA_MEMORIES_EVENT_MAX_BYTES).toBe(8_000_000_000);
 	});
 
 	it('caps images at 20 MB and videos at 80 MB', () => {
@@ -83,6 +91,19 @@ describe('valentina memories upload contract', () => {
 		expect(buildValentinaMemoriesObjectKey('11111111-1111-4111-8111-111111111111', 'jpg')).toBe(
 			'events/valentina/11111111-1111-4111-8111-111111111111.jpg',
 		);
+	});
+
+	it('recovers known phone MIME types from file extensions when browsers omit them', () => {
+		expect(resolveValentinaMemoriesFileMimeType({ name: 'IMG_0001.HEIC', type: '' })).toBe(
+			'image/heic',
+		);
+		expect(resolveValentinaMemoriesFileMimeType({ name: 'clip.MOV', type: '' })).toBe(
+			'video/quicktime',
+		);
+		expect(resolveValentinaMemoriesFileMimeType({ name: 'photo.jpeg', type: '' })).toBe(
+			'image/jpeg',
+		);
+		expect(resolveValentinaMemoriesFileMimeType({ name: 'payload.pdf', type: '' })).toBeNull();
 	});
 
 	it('authorizes only the production origin', () => {

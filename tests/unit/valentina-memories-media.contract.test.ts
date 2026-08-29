@@ -11,8 +11,8 @@ describe('Valentina Memories media contract', () => {
 		expect(canTransitionValentinaMemoriesMedia('uploading', 'validating')).toBe(true);
 		expect(canTransitionValentinaMemoriesMedia('uploading', 'accepted')).toBe(false);
 		expect(canTransitionValentinaMemoriesMedia('accepted', 'rejected')).toBe(true);
-		expect(canTransitionValentinaMemoriesMedia('rejected', 'accepted')).toBe(true);
-		expect(VALENTINA_MEMORIES_MEDIA_TRANSITIONS.deleted).toEqual(['validating']);
+		expect(canTransitionValentinaMemoriesMedia('rejected', 'accepted')).toBe(false);
+		expect(VALENTINA_MEMORIES_MEDIA_TRANSITIONS.deleted).toEqual([]);
 	});
 
 	it('rejects guessed, traversal, and mismatched-extension object keys', () => {
