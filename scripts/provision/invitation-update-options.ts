@@ -199,7 +199,7 @@ const VALID_FLAGS = new Set([
 	'--content-only',
 	'--prune-assets',
 	'--no-prune-assets',
-	'--include-legacy',
+	'--include-unmanaged',
 	'--include-archived',
 	'--include-demos',
 	'--confirm-destructive',
@@ -252,7 +252,7 @@ export function checkUnknownFlags(args: string[]): void {
 export interface StatusReportOptions {
 	slug?: string;
 	targets?: InvitationUpdateTarget[];
-	includeLegacy?: boolean;
+	includeUnmanaged?: boolean;
 	includeArchived?: boolean;
 	includeDemos?: boolean;
 }
@@ -261,7 +261,7 @@ export function parseStatusOptions(input: StatusReportOptions): StatusReportOpti
 	return {
 		slug: input.slug,
 		targets: input.targets && input.targets.length > 0 ? input.targets : undefined,
-		includeLegacy: Boolean(input.includeLegacy),
+		includeUnmanaged: Boolean(input.includeUnmanaged),
 		includeArchived: Boolean(input.includeArchived),
 		includeDemos: Boolean(input.includeDemos),
 	};
@@ -316,10 +316,10 @@ export function buildStatusReport(input: StatusReportOptions): Record<string, un
 			};
 		});
 
-	const legacyUnprobed = opts.includeLegacy
+	const unmanagedUnprobed = opts.includeUnmanaged
 		? domainUnverified(
 				'inventory',
-				'Legacy discovery is not performed by invitation:release --status without a configured local inventory probe.',
+				'Unmanaged discovery is not performed by invitation:release --status without a configured local inventory probe.',
 			)
 		: undefined;
 
@@ -330,16 +330,16 @@ export function buildStatusReport(input: StatusReportOptions): Record<string, un
 		filters: {
 			slug: requestedSlug ?? null,
 			targets,
-			includeLegacy: opts.includeLegacy ?? false,
+			includeUnmanaged: opts.includeUnmanaged ?? false,
 			includeArchived: opts.includeArchived ?? false,
 			includeDemos: opts.includeDemos ?? false,
 		},
 		definitions,
-		legacy: legacyUnprobed
+		unmanaged: unmanagedUnprobed
 			? {
-					status: legacyUnprobed.status,
-					domain: legacyUnprobed.domain,
-					reason: legacyUnprobed.reason,
+					status: unmanagedUnprobed.status,
+					domain: unmanagedUnprobed.domain,
+					reason: unmanagedUnprobed.reason,
 				}
 			: undefined,
 	};

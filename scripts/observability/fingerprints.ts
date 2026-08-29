@@ -72,9 +72,10 @@ export function computeCorpusFingerprint(): string {
 				entry.classification,
 				entry.sourceStrategy,
 				entry.assetStrategy,
+				entry.assetStatus,
 				entry.themeId ?? '',
 				entry.visualProfileId ?? '',
-				entry.fixtureFile ?? '',
+				entry.sourceDefinition,
 			].join('|'),
 		),
 	];

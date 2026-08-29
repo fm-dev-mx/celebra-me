@@ -6,7 +6,7 @@
  *
  * Invitation definitions contain content structure, asset metadata, timing,
  * and location data, but do NOT contain environment settings, DB queries,
- * credentials, or owner UUIDs.
+ * credentials, or external owner UUIDs.
  */
 
 import { isCanonicalHostLoginAlias } from '../../../src/lib/auth/login-alias.ts';
@@ -43,6 +43,7 @@ export interface InvitationEventTiming {
 
 export type InvitationLifecycle = 'in_progress' | 'published';
 export type InvitationDeliveryScope = 'content-only' | 'content-and-assets' | 'assets-only';
+export type ManagedIdentityProvenance = 'persisted' | 'authoring-placeholder';
 
 const MANAGED_IDENTITY_UUID_RE =
 	/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -54,6 +55,11 @@ export interface InvitationDefinition<K extends string = string> {
 	 * Never reuse across definitions; never change after first publication.
 	 */
 	managedIdentityId: string;
+	/**
+	 * Authoring-only definitions may use a deterministic placeholder until an owner-authorized
+	 * environment audit supplies the persisted identity. Such definitions cannot be released.
+	 */
+	managedIdentityProvenance?: ManagedIdentityProvenance;
 	/**
 	 * Historical slugs previously used by this managed identity. Used for alias diagnostics and
 	 * REKEY_REQUIRED protection — never for silent create/upsert identity inference.
@@ -133,12 +139,7 @@ function validatePreviousSlugs(slug: string, previousSlugs: readonly string[]): 
 	}
 }
 
-function validateInvitationMetadata<K extends string>(
-	definition: InvitationDefinition<K>,
-): void {
-	if (!definition.slug || typeof definition.slug !== 'string') {
-		throw new Error('Invitation definition requires a non-empty string slug.');
-	}
+function validateManagedIdentity<K extends string>(definition: InvitationDefinition<K>): void {
 	if (
 		!definition.managedIdentityId ||
 		typeof definition.managedIdentityId !== 'string' ||
@@ -148,6 +149,48 @@ function validateInvitationMetadata<K extends string>(
 			'Invitation definition requires managedIdentityId as an immutable UUID v4, independent of slug.',
 		);
 	}
+	if (
+		definition.managedIdentityProvenance !== undefined &&
+		definition.managedIdentityProvenance !== 'persisted' &&
+		definition.managedIdentityProvenance !== 'authoring-placeholder'
+	) {
+		throw new Error('Invitation definition has an invalid managedIdentityProvenance.');
+	}
+	if (
+		definition.lifecycle === 'published' &&
+		definition.managedIdentityProvenance === 'authoring-placeholder'
+	) {
+		throw new Error('Published invitation definitions require a persisted managed identity.');
+	}
+}
+
+function validateEventTiming<K extends string>(definition: InvitationDefinition<K>): void {
+	const timing = definition.eventTiming;
+	if (
+		!timing ||
+		typeof timing !== 'object' ||
+		typeof timing.localDateTime !== 'string' ||
+		typeof timing.timeZone !== 'string' ||
+		typeof timing.startsAtUtc !== 'string'
+	) {
+		throw new Error('Invitation definition requires an explicit eventTiming object.');
+	}
+	if (
+		definition.lifecycle === 'published' &&
+		(!timing.localDateTime || !timing.timeZone || !timing.startsAtUtc)
+	) {
+		throw new Error('Published invitation definitions require complete eventTiming values.');
+	}
+}
+
+function validateInvitationMetadata<K extends string>(
+	definition: InvitationDefinition<K>,
+): void {
+	if (!definition.slug || typeof definition.slug !== 'string') {
+		throw new Error('Invitation definition requires a non-empty string slug.');
+	}
+	validateManagedIdentity(definition);
+	validateEventTiming(definition);
 	if (
 		!definition.hostLoginAlias ||
 		typeof definition.hostLoginAlias !== 'string' ||

@@ -3,24 +3,19 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {
 	assertLocalRenderCorpusIntegrity,
-	listLegacyCorpusSlugs,
 	listLocalRenderCorpus,
 } from '../../scripts/provision/local-render-corpus/registry.ts';
-import { loadLegacyCorpusFixture } from '../../scripts/provision/local-render-corpus/load-fixture.ts';
+import { resolveCorpusPublishedContent } from '../../scripts/provision/local-render-corpus/content.ts';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 
 describe('local render corpus contract', () => {
-	it('keeps fixture files present for every legacy corpus entry', () => {
+	it('derives every corpus entry from a schema-valid canonical definition', () => {
 		assertLocalRenderCorpusIntegrity();
-		for (const slug of listLegacyCorpusSlugs()) {
-			const entry = listLocalRenderCorpus().find((item) => item.slug === slug)!;
-			const fixture = loadLegacyCorpusFixture(entry);
-			expect(fixture.schemaVersion).toBe(1);
-			expect(fixture.slug).toBe(slug);
-			expect(eventContentSchema.safeParse(fixture.publishedContent).success).toBe(true);
-			expect(JSON.stringify(fixture)).not.toMatch(
-				/guest_invitations|auth\.users|rsvp_responses/i,
-			);
+		for (const entry of listLocalRenderCorpus()) {
+			const content = resolveCorpusPublishedContent(entry);
+			expect(eventContentSchema.safeParse(content).success).toBe(true);
+			expect(entry.classification).toBe('canonical');
+			expect(entry.sourceStrategy).toBe('canonical_definition');
 		}
 	});
 
@@ -68,6 +63,7 @@ describe('local render corpus bootstrap safety', () => {
 		expect(bootstrap).toContain('LOCAL_RENDER_CORPUS_TARGET_REJECTED');
 		expect(cli).toContain('Never targets Preview or Production');
 		expect(cli).toContain('Never clones databases');
+		expect(bootstrap).not.toContain('legacy');
 		expect(bootstrap).not.toContain('db:preview:sync-invitations');
 		expect(bootstrap).not.toContain('local-restore-from-dump');
 	});

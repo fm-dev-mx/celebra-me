@@ -18,11 +18,8 @@ jest.mock('../../scripts/status-core/index.ts', () => ({
 		invocations = 0;
 		memoHits = 0;
 	},
-	readGroupedPromotionalEvidence: (
-		session: unknown,
-		dbUrl: string,
-		slugs: readonly string[],
-	) => mockReadEvidence(session, dbUrl, slugs),
+	readGroupedPromotionalEvidence: (session: unknown, dbUrl: string, slugs: readonly string[]) =>
+		mockReadEvidence(session, dbUrl, slugs),
 }));
 
 jest.mock('../../scripts/provision/dbs-status.ts', () => ({
@@ -145,11 +142,11 @@ describe('Inventory Audit & Parity Engine (scripts/provision/inventory-audit.ts)
 			);
 		});
 
-		it('classifies local render corpus legacy entries', () => {
+		it('does not create a second category for corpus entries', () => {
 			expect(classifySlugCategory('america-johana', false, undefined, true)).toBe(
-				'legacy_corpus',
+				'unmanaged',
 			);
-			expect(classifySlugCategory('leah-lexa', false, undefined, true)).toBe('legacy_corpus');
+			expect(classifySlugCategory('leah-lexa', false, undefined, true)).toBe('unmanaged');
 		});
 
 		it('classifies preview E2E test fixture', () => {
@@ -158,9 +155,9 @@ describe('Inventory Audit & Parity Engine (scripts/provision/inventory-audit.ts)
 			);
 		});
 
-		it('classifies legacy typo alias', () => {
+		it('classifies an unregistered historical alias as unmanaged', () => {
 			expect(classifySlugCategory('alba-rosa-quinones', false, undefined, false)).toBe(
-				'legacy_typo_alias',
+				'unmanaged',
 			);
 		});
 
@@ -233,7 +230,7 @@ describe('Inventory Audit & Parity Engine (scripts/provision/inventory-audit.ts)
 
 			const typo = audit.rows.find((r) => r.slug === 'alba-rosa-quinones');
 			expect(typo).toBeDefined();
-			expect(typo?.category).toBe('legacy_typo_alias');
+			expect(typo?.category).toBe('unmanaged');
 			expect(typo?.environments.preview.present).toBe(true);
 			expect(typo?.environments.local.present).toBe(false);
 

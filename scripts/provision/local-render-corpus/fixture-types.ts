@@ -1,4 +1,4 @@
-/** Versioned sanitized Local render fixture for a supported legacy client. */
+/** Versioned, sanitized content source used to author a canonical definition. */
 export interface LocalRenderCorpusFixture {
 	schemaVersion: 1;
 	slug: string;

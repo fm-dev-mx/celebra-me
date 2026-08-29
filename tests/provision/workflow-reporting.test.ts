@@ -11,20 +11,20 @@ describe('unified workflow dependency reporting', () => {
 		const report = buildStatusReport({
 			slug: 'romina-rios-chaparro',
 			targets: ['preview'],
-			includeLegacy: true,
+			includeUnmanaged: true,
 		}) as {
 			surface: string;
 			remoteProbe: string;
-			filters: { targets: string[]; includeLegacy: boolean };
+			filters: { targets: string[]; includeUnmanaged: boolean };
 			definitions: Array<{
 				slug: string;
 				environments: Record<string, { status: string; probed?: boolean }>;
 			}>;
-			legacy: { status: string; domain: string };
+			unmanaged: { status: string; domain: string };
 		};
 		expect(report.surface).toBe('local_inventory');
 		expect(report.remoteProbe).toBe('not_performed');
-		expect(report.filters).toMatchObject({ targets: ['preview'], includeLegacy: true });
+		expect(report.filters).toMatchObject({ targets: ['preview'], includeUnmanaged: true });
 		expect(report.definitions).toHaveLength(1);
 		expect(report.definitions[0]).toMatchObject({
 			slug: 'romina-rios-chaparro',
@@ -33,7 +33,7 @@ describe('unified workflow dependency reporting', () => {
 				preview: { status: 'UNVERIFIED', domain: 'inventory', probed: false },
 			},
 		});
-		expect(report.legacy.status).toBe('UNVERIFIED');
-		expect(report.legacy.domain).toBe('inventory');
+		expect(report.unmanaged.status).toBe('UNVERIFIED');
+		expect(report.unmanaged.domain).toBe('inventory');
 	});
 });

@@ -30,11 +30,25 @@ async function main(): Promise<void> {
 		},
 	};
 
-	if (jsonMode) {
-		console.log(JSON.stringify({ ...result, reporting }, null, 2));
-		return;
-	}
+	if (jsonMode) console.log(JSON.stringify({ ...result, reporting }, null, 2));
+	else printHumanReport(result, reporting);
 
+	const blockingRows = result.rows.filter(
+		(row) =>
+			row.category === 'unmanaged' &&
+			Object.values(row.environments).some((environment) => environment.present),
+	);
+	if (blockingRows.length > 0) {
+		throw new Error(
+			`INVENTORY_AUDIT_BLOCKED: ${blockingRows.length} active invitation row(s) are not registered canonical definitions.`,
+		);
+	}
+}
+
+function printHumanReport(
+	result: Awaited<ReturnType<typeof runInventoryAudit>>,
+	reporting: { commitSha: string | null; databaseTargets: Record<string, string> },
+): void {
 	console.log(
 		`\n========================================================================================`,
 	);
@@ -52,7 +66,7 @@ async function main(): Promise<void> {
 		`Repository Definitions:     ${result.summary.repoCanonicalCount} (${result.summary.repoCanonicalPublishedCount} published, ${result.summary.repoCanonicalInProgressCount} in_progress)`,
 	);
 	console.log(
-		`Local Render Corpus Size:   ${result.summary.localRenderCorpusCount} (${result.summary.repoCanonicalPublishedCount} canonical, ${result.summary.localRenderCorpusCount - result.summary.repoCanonicalPublishedCount} legacy)`,
+		`Local Render Corpus Size:   ${result.summary.localRenderCorpusCount} canonical managed invitations`,
 	);
 	console.log(`Observed Scope (Union):     ${result.summary.observedScopeCount} invitations\n`);
 
@@ -87,10 +101,8 @@ async function main(): Promise<void> {
 	const categories: Array<{ id: keyof typeof envs.local.categoryCounts; label: string }> = [
 		{ id: 'canonical_published', label: 'Canonical Published' },
 		{ id: 'canonical_in_progress', label: 'Canonical In Progress' },
-		{ id: 'legacy_corpus', label: 'Legacy Corpus' },
 		{ id: 'demo', label: 'Demo Invitations' },
 		{ id: 'preview_e2e_fixture', label: 'Preview E2E Fixture' },
-		{ id: 'legacy_typo_alias', label: 'Legacy Typo Alias' },
 		{ id: 'unmanaged', label: 'Unmanaged Rows' },
 	];
 

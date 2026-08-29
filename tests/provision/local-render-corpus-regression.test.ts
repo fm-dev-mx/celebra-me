@@ -1,6 +1,6 @@
 /**
  * Deterministic render-contract sweep for every Local Render Corpus client.
- * Uses real corpus content shapes (canonical definitions + sanitized legacy fixtures).
+ * Uses real corpus content shapes from canonical managed definitions.
  */
 import { describe, expect, it } from '@jest/globals';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
@@ -39,7 +39,6 @@ function expectedDescriptorComponents(content: Record<string, unknown>): string[
 	if (Array.isArray(sectionOrder)) {
 		return sectionOrder.filter((section) => section !== 'personalizedAccess').map(String);
 	}
-	// Legacy Production payloads may omit sectionOrder; infer from present section objects.
 	// `music` often exists as an empty/disabled object and is intentionally absent from descriptors.
 	return SECTION_KEYS.filter(
 		(key) =>
@@ -57,25 +56,10 @@ describe('local render corpus regression sweep', () => {
 		assertLocalRenderCorpusIntegrity();
 		assertCanonicalRegistryCoveredByCorpus();
 		expect(corpus).toHaveLength(EXPECTED_LOCAL_RENDER_CORPUS_SIZE);
-		expect(corpus.map((entry) => entry.slug)).toEqual([
-			'alba-rosa-quinonez',
-			'abril-michelle-becerra-rea',
-			'romina-rios-chaparro',
-			'daniela-y-martin',
-			'victoria-y-roberto',
-			'renata',
-			'leslie-perez',
-			'america-johana',
-			'valentina-hernandez',
-			'xareni-iyarit',
-			'leah-lexa',
-			'luna-y-estrella',
-			'cesar-ramses',
-			'ayrin-samantha-lerma-castro',
-			'ana-sofia-cota-guillen',
-			'ximena-meza-trasvina',
-			'gerardo-sesenta',
-		]);
+		expect(corpus.map((entry) => entry.slug)).toEqual(
+			listInvitationDefinitions()
+				.map((definition) => definition.slug),
+		);
 	});
 
 	it('requires published canonical definitions to stay inside the Production corpus', () => {

@@ -15,15 +15,10 @@ import {
 	type LiveInvitationEvidenceRow,
 } from '../status-core/index.ts';
 import { isVerifiedManagedReleaseProvenance } from './managed-merge-baseline.ts';
+import { discoverStaticDemos } from '../screenshot/discovery.ts';
 
 export type InventoryCategory =
-	| 'canonical_published'
-	| 'canonical_in_progress'
-	| 'legacy_corpus'
-	| 'demo'
-	| 'preview_e2e_fixture'
-	| 'legacy_typo_alias'
-	| 'unmanaged';
+	'canonical_published' | 'canonical_in_progress' | 'demo' | 'preview_e2e_fixture' | 'unmanaged';
 
 export interface DatabaseRowState {
 	present: boolean;
@@ -71,20 +66,6 @@ export interface InventoryAuditResult {
 const ENVIRONMENTS: readonly TargetEnv[] = ['local', 'preview', 'production'];
 
 const PREVIEW_E2E_FIXTURE_SLUG = 'e2e-preview-publication';
-const LEGACY_TYPO_ALIAS_SLUG = 'alba-rosa-quinones';
-const DEMO_SLUGS: readonly string[] = [
-	'demo-baby-shower-celestial',
-	'demo-bautismo-angelic-presence',
-	'demo-boda-jewelry-box-wedding',
-	'demo-cumple-luxury-hacienda',
-	'demo-primera-comunion-illustrated',
-	'demo-xv-celestial-blue',
-	'demo-xv-editorial',
-	'demo-xv-editorial-magazine',
-	'demo-xv-editorial-rose',
-	'demo-xv-enchanted-rose',
-	'demo-xv-jewelry-box',
-];
 
 function emptyDbRowState(): DatabaseRowState {
 	return {
@@ -106,20 +87,16 @@ export function classifySlugCategory(
 	inCorpus?: boolean,
 	dbKind?: string | null,
 ): InventoryCategory {
-	// Precedence: registry lifecycle > corpus membership > well-known fixture/alias
-	// slugs > demo prefix > unmanaged. Corpus membership wins over demo/fixture
-	// classification because the corpus is the SSOT for renderable legacy clients.
+	// Precedence: registry lifecycle > well-known fixture slugs > demo prefix > unmanaged.
+	// The render corpus is derived from the registry and never creates a separate category.
 	if (inRegistry) {
 		return repoLifecycle === 'in_progress' ? 'canonical_in_progress' : 'canonical_published';
 	}
 	if (inCorpus) {
-		return 'legacy_corpus';
+		return 'unmanaged';
 	}
 	if (slug === PREVIEW_E2E_FIXTURE_SLUG) {
 		return 'preview_e2e_fixture';
-	}
-	if (slug === LEGACY_TYPO_ALIAS_SLUG) {
-		return 'legacy_typo_alias';
 	}
 	if (dbKind === 'demo' || slug.startsWith('demo-')) {
 		return 'demo';
@@ -155,12 +132,6 @@ function determineRowDeliveryAndNotes(
 			notes: 'Published canonical invitation fully aligned.',
 		};
 	}
-	if (category === 'legacy_corpus') {
-		return {
-			deliveryState: 'ALIGNED',
-			notes: 'Legacy client fixture in Local Render Corpus (excluded from remote managed parity).',
-		};
-	}
 	if (category === 'demo') {
 		return { deliveryState: 'NOT_APPLICABLE', notes: 'Unmanaged demo invitation fixture.' };
 	}
@@ -168,12 +139,6 @@ function determineRowDeliveryAndNotes(
 		return {
 			deliveryState: 'NOT_APPLICABLE',
 			notes: 'Intentional Preview E2E publication test fixture (owned by preview@preview.com).',
-		};
-	}
-	if (category === 'legacy_typo_alias') {
-		return {
-			deliveryState: 'NOT_APPLICABLE',
-			notes: 'Disposable stale rekey twin in Preview DB (renamed to alba-rosa-quinonez in canonical code).',
 		};
 	}
 	return { deliveryState: 'NOT_APPLICABLE', notes: 'Unmanaged database row.' };
@@ -316,14 +281,14 @@ export async function runInventoryAudit(options?: {
 	const canonicalMap = new Map(canonicalDefs.map((def) => [def.slug, def]));
 	const corpusEntries = listLocalRenderCorpus();
 	const corpusMap = new Map(corpusEntries.map((entry) => [entry.slug, entry]));
+	const demoSlugs = discoverStaticDemos().map((demo) => demo.slug);
 
 	// Gather union of all observed and expected slugs
 	const registeredSlugs = new Set([
 		...canonicalMap.keys(),
 		...corpusMap.keys(),
 		PREVIEW_E2E_FIXTURE_SLUG,
-		LEGACY_TYPO_ALIAS_SLUG,
-		...DEMO_SLUGS,
+		...demoSlugs,
 	]);
 
 	const querySlugs = Array.from(registeredSlugs);
@@ -335,6 +300,7 @@ export async function runInventoryAudit(options?: {
 	const allSlugsSet = new Set<string>([
 		...canonicalMap.keys(),
 		...corpusMap.keys(),
+		...demoSlugs,
 		...Array.from(dbRowsByEnv.get('local')?.keys() ?? []),
 		...Array.from(dbRowsByEnv.get('preview')?.keys() ?? []),
 		...Array.from(dbRowsByEnv.get('production')?.keys() ?? []),
@@ -371,10 +337,8 @@ function emptyCategoryCounts(): Record<InventoryCategory, number> {
 	return {
 		canonical_published: 0,
 		canonical_in_progress: 0,
-		legacy_corpus: 0,
 		demo: 0,
 		preview_e2e_fixture: 0,
-		legacy_typo_alias: 0,
 		unmanaged: 0,
 	};
 }

@@ -300,6 +300,11 @@ export async function buildNormalizedInvitationRelease(options: {
 	sourceDir?: string;
 }): Promise<NormalizedInvitationRelease> {
 	const definition = getInvitationDefinition(options.slug);
+	if (definition.managedIdentityProvenance === 'authoring-placeholder') {
+		throw new Error(
+			`Invitation "${definition.slug}" is authoring-only: replace its placeholder managed identity with the owner-verified persisted identity before building a release.`,
+		);
+	}
 	let assets: NormalizedInvitationAsset[];
 
 	const effectiveSourceDir = options.sourceDir || getInvitationAssetSourceDir(definition);

@@ -894,7 +894,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 		const statusReportOptions = {
 			slug,
 			targets: targets.length > 0 ? targets : undefined,
-			includeLegacy: args.includes('--include-legacy'),
+			includeUnmanaged: args.includes('--include-unmanaged'),
 			includeArchived: args.includes('--include-archived'),
 			includeDemos: args.includes('--include-demos'),
 		};

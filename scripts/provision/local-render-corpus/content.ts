@@ -7,7 +7,6 @@ import type {
 	UploadedAssetMap,
 } from '../invitations/invitation-definition.ts';
 import { listLocalRenderCorpus, type LocalRenderCorpusEntry } from './registry.ts';
-import { loadLegacyCorpusFixture } from './load-fixture.ts';
 
 function buildSyntheticAssets(definition: InvitationDefinition): UploadedAssetMap {
 	return Object.fromEntries(
@@ -25,17 +24,13 @@ function buildSyntheticAssets(definition: InvitationDefinition): UploadedAssetMa
 export function resolveCorpusPublishedContent(
 	entry: LocalRenderCorpusEntry,
 ): Record<string, unknown> {
-	if (entry.sourceStrategy === 'canonical_definition') {
-		const definition = getInvitationDefinition(entry.slug);
-		return definition.buildPublishedContent(buildSyntheticAssets(definition));
-	}
-	return loadLegacyCorpusFixture(entry).publishedContent;
+	const definition = getInvitationDefinition(entry.slug);
+	return definition.buildPublishedContent(buildSyntheticAssets(definition));
 }
 
 export function assertCanonicalRegistryCoveredByCorpus(): void {
 	const corpusSlugs = new Set(listLocalRenderCorpus().map((e) => e.slug));
 	for (const definition of listInvitationDefinitions()) {
-		if (definition.lifecycle === 'in_progress') continue;
 		if (!corpusSlugs.has(definition.slug)) {
 			throw new Error(
 				`Published canonical managed invitation "${definition.slug}" is missing from the Local Render Corpus SSOT.`,

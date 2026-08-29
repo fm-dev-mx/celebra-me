@@ -36,9 +36,10 @@ describe('validation evidence is independent from operational status', () => {
 });
 
 describe('corpus authority', () => {
-	it('marks every legacy remote-parity exclusion explicitly', () => {
-		const legacy = listLocalRenderCorpus().filter((entry) => entry.classification === 'legacy');
-		expect(legacy.length).toBeGreaterThan(0);
-		expect(legacy.every((entry) => entry.remoteParity === 'excluded')).toBe(true);
+	it('marks every canonical corpus entry as required for remote parity', () => {
+		const corpus = listLocalRenderCorpus();
+		expect(corpus.length).toBeGreaterThan(0);
+		expect(corpus.every((entry) => entry.classification === 'canonical')).toBe(true);
+		expect(corpus.every((entry) => entry.remoteParity === 'required')).toBe(true);
 	});
 });

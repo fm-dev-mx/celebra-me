@@ -13,6 +13,15 @@ import { victoriaInvitation } from './victoria-y-roberto.ts';
 import { renataInvitation } from './renata.ts';
 import { leslieInvitation } from './leslie-perez.ts';
 import { valentinaInvitation } from './valentina-hernandez.ts';
+import { americaInvitation } from './america-johana.ts';
+import { anaSofiaInvitation } from './ana-sofia-cota-guillen.ts';
+import { ayrinInvitation } from './ayrin-samantha-lerma-castro.ts';
+import { cesarInvitation } from './cesar-ramses.ts';
+import { gerardoInvitation } from './gerardo-sesenta.ts';
+import { leahInvitation } from './leah-lexa.ts';
+import { lunaInvitation } from './luna-y-estrella.ts';
+import { xareniInvitation } from './xareni-iyarit.ts';
+import { ximenaInvitation } from './ximena-meza-trasvina.ts';
 
 const registry = new Map<string, InvitationDefinition>();
 const hostLoginAliases = new Map<string, string>();
@@ -70,6 +79,15 @@ registerInvitation(victoriaInvitation);
 registerInvitation(renataInvitation);
 registerInvitation(leslieInvitation);
 registerInvitation(valentinaInvitation);
+registerInvitation(americaInvitation);
+registerInvitation(anaSofiaInvitation);
+registerInvitation(ayrinInvitation);
+registerInvitation(cesarInvitation);
+registerInvitation(gerardoInvitation);
+registerInvitation(leahInvitation);
+registerInvitation(lunaInvitation);
+registerInvitation(xareniInvitation);
+registerInvitation(ximenaInvitation);
 
 /**
  * Resolve an invitation definition by slug.

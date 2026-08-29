@@ -36,6 +36,12 @@ async function createProductionRelease(slug = 'romina-rios-chaparro'): Promise<{
 }
 
 describe('normalized managed release semantics & roundtrip parity', () => {
+	it('blocks release generation for authoring-only identity placeholders', async () => {
+		await expect(
+			buildNormalizedInvitationRelease({ slug: 'america-johana', sourceDir: 'unused' }),
+		).rejects.toThrow(/authoring-only.*placeholder managed identity/i);
+	});
+
 	it('uses declared semantic keys rather than environment UUIDs', () => {
 		const semantic = buildSemanticAssetMap(rominaInvitation);
 		expect(semantic.hero.assetId).toContain('__INVITATION_ASSET_KEY__:hero');

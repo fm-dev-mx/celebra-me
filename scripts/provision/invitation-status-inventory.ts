@@ -21,7 +21,7 @@ export function readFastInvitationInventory(dbUrl: string, definitionSlugs: read
 		const allRows = parseRows(result.stdout);
 		const filteredRows = requestedSlug ? allRows.filter((r) => r.slug === requestedSlug) : allRows;
 		const statuses = classifyInvitationInventory(definitionSlugs, filteredRows);
-		return { verified: true, rows: filteredRows.map((row) => ({ ...row, status: statuses.get(row.slug) ?? 'LEGACY_REVIEW_REQUIRED' })) };
+		return { verified: true, rows: filteredRows.map((row) => ({ ...row, status: statuses.get(row.slug) ?? 'CANONICAL_REVIEW_REQUIRED' })) };
 	} catch {
 		return { verified: false, rows: [], reason: 'TARGET_QUERY_FAILED' };
 	}

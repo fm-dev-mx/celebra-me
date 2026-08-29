@@ -4,6 +4,6 @@ import { classifyInvitationInventory } from '../../scripts/provision/invitation-
 describe('read-only invitation inventory classification', () => {
 	it('never promotes unmanaged inventory into a managed update candidate', () => {
 		const result = classifyInvitationInventory(['managed'], [{ slug: 'managed', hasProvenance: true }, { slug: 'legacy' }, { slug: 'demo', kind: 'demo' }]);
-		expect(Object.fromEntries(result)).toEqual({ managed: 'MANAGED', legacy: 'LEGACY_REVIEW_REQUIRED', demo: 'DEMO' });
+		expect(Object.fromEntries(result)).toEqual({ managed: 'MANAGED', legacy: 'CANONICAL_REVIEW_REQUIRED', demo: 'DEMO' });
 	});
 });
