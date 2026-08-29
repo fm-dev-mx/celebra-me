@@ -8,7 +8,15 @@ import {
 	buildValentinaMemoriesRetrievalSigningPayload,
 } from '@/data/valentina-memories-media.contract';
 
-type RetrievalMode = 'inline' | 'attachment';
+type RetrievalMode = 'inline' | 'attachment' | 'inspect';
+
+export type ValentinaMemoryInspectionResult = {
+	exists: boolean;
+	sizeBytes: number;
+	checksumSha256: string | null;
+	signatureValid: boolean;
+	durationSeconds: number | null;
+};
 
 function sha256(value: string): string {
 	return createHash('sha256').update(value, 'utf8').digest('hex');
@@ -64,4 +72,22 @@ export async function retrieveValentinaMemoryObject(input: {
 		body,
 		signal: AbortSignal.timeout((VALENTINA_MEMORIES_RETRIEVAL_REQUEST_TTL_SECONDS + 10) * 1000),
 	});
+}
+
+export async function inspectValentinaMemoryObject(input: {
+	objectKey: string;
+	mimeType: string;
+}): Promise<ValentinaMemoryInspectionResult | null> {
+	const response = await retrieveValentinaMemoryObject({
+		objectKey: input.objectKey,
+		mimeType: input.mimeType,
+		downloadName: 'inspect',
+		mode: 'inspect',
+	});
+	if (!response.ok) return null;
+	try {
+		return (await response.json()) as ValentinaMemoryInspectionResult;
+	} catch {
+		return null;
+	}
 }

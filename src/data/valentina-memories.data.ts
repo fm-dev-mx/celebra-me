@@ -51,6 +51,7 @@ export const valentinaMemoriesCaptureCopy = {
 		'Permite recuperar sus recuerdos en otro dispositivo. No lo comparta públicamente.',
 	myMemories: 'Mis recuerdos',
 	validationPending: 'En validación',
+	duplicate: 'Duplicado',
 	accepted: 'Disponible',
 	rejected: 'No aprobado',
 	deleted: 'Eliminado',

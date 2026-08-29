@@ -40,6 +40,7 @@ export const POST: APIRoute = async ({ request }) => {
 			objectKey: bodyResult.objectKey,
 			mimeType: bodyResult.mimeType,
 			sizeBytes: bodyResult.sizeBytes,
+			checksumSha256: bodyResult.checksumSha256,
 			durationSeconds: bodyResult.durationSeconds,
 		});
 		return withPrivateCache(jsonResponse({ item }, 201));
