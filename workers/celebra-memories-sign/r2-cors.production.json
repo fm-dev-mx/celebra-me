@@ -1,0 +1,11 @@
+{
+    "rules": [
+        {
+            "allowed": {
+                "origins": ["https://www.celebra-me.com"],
+                "methods": ["PUT"],
+                "headers": ["Content-Type", "If-None-Match", "x-amz-checksum-sha256"]
+            }
+        }
+    ]
+}

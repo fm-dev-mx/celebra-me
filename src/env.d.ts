@@ -19,6 +19,16 @@ interface ImportMetaEnv {
 	readonly PUBLIC_GA_MEASUREMENT_ID: string;
 	readonly PUBLIC_META_PIXEL_ID: string;
 	readonly PUBLIC_META_PIXEL_ENABLED: string;
+	/** Server-only PKCS#8 P-256 private key for upload-control requests. */
+	readonly MEMORIES_UPLOAD_REQUEST_SIGNING_PRIVATE_KEY: string;
+	/** Server-only PKCS#8 P-256 private key for retrieval-control requests. */
+	readonly MEMORIES_RETRIEVAL_REQUEST_SIGNING_PRIVATE_KEY: string;
+	/** Server-only origin for the authenticated upload Sign Worker. */
+	readonly MEMORIES_PRIVATE_UPLOAD_ORIGIN: string;
+	/** Server-only HTTPS origin for the private retrieval Worker. */
+	readonly MEMORIES_PRIVATE_RETRIEVAL_ORIGIN: string;
+	/** Server-only bearer secret injected by Vercel Cron. */
+	readonly CRON_SECRET: string;
 	readonly META_CAPI_DELIVERY_MODE: string;
 	readonly META_CAPI_ACCESS_TOKEN: string;
 	readonly META_PIXEL_ID: string;
@@ -41,6 +51,7 @@ interface ImportMetaEnv {
 	readonly VERCEL: string;
 	readonly VERCEL_ENV: string;
 	readonly VERCEL_GIT_COMMIT_REF: string;
+	readonly VERCEL_REGION: string;
 	readonly BASE_URL: string;
 	readonly INTAKE_TOKEN_ENCRYPTION_KEY: string;
 	readonly NODE_ENV: string;

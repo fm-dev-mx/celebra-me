@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { ApiError } from '@/lib/rsvp/core/errors';
+import { ApiError, isAuthRequestError } from '@/lib/rsvp/core/errors';
 import { errorResponse, parseJsonBody } from '@/lib/rsvp/core/http';
 import { sendMagicLink, signUpWithPassword } from '@/lib/rsvp/auth/auth-api';
 import {
@@ -24,11 +24,7 @@ import {
 } from '@/lib/rsvp/services/auth-access.service';
 import { generateTemporaryPassword } from '@/lib/rsvp/services/user-admin.service';
 import { findExistingAuthUserByEmail } from '@/lib/rsvp/services/auth-identifier.service';
-
-function sanitize(value: unknown, maxLen = 200): string {
-	if (typeof value !== 'string') return '';
-	return value.trim().slice(0, maxLen);
-}
+import { sanitize } from '@/lib/rsvp/core/utils';
 
 export const POST: APIRoute = async ({ request, url }) => {
 	try {
@@ -55,7 +51,9 @@ export const POST: APIRoute = async ({ request, url }) => {
 			throw new ApiError(
 				400,
 				'bad_request',
-				isAdhocAdmin ? 'email is required.' : 'email and claimCode are required.',
+				isAdhocAdmin
+					? 'El correo electrónico es requerido.'
+					: 'El correo electrónico y el código de invitación (claimCode) son requeridos.',
 			);
 		}
 		if (claimCode) assertValidClaimCode(claimCode);
@@ -94,8 +92,8 @@ export const POST: APIRoute = async ({ request, url }) => {
 			ok: true,
 			message:
 				method === 'magic_link'
-					? 'Account created. Check your email to continue with a magic link.'
-					: 'Account created successfully.',
+					? 'Cuenta creada. Revise su correo para continuar con el enlace de acceso.'
+					: 'Cuenta creada con éxito.',
 			next: '/dashboard/invitados',
 		};
 
@@ -120,7 +118,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 		});
 	} catch (error: unknown) {
 		if (error instanceof SyntaxError) {
-			return errorResponse(new ApiError(400, 'bad_request', 'Invalid JSON.'));
+			return errorResponse(new ApiError(400, 'bad_request', 'JSON inválido.'));
 		}
 		return errorResponse(error);
 	}
@@ -142,13 +140,16 @@ async function resolveUser(email: string, chosenPassword: string) {
 			accessToken: signed.access_token || '',
 			refreshToken: signed.refresh_token || '',
 		};
-	} catch {
+	} catch (error) {
+		if (!isAuthRequestError(error) || error.kind !== 'http' || error.retryable) {
+			throw error;
+		}
 		const existing = await findExistingAuthUserByEmail(email);
 		if (!existing) {
 			throw new ApiError(
 				409,
 				'conflict',
-				'Unable to complete registration. Verify the data or try signing in.',
+				'No fue posible completar el registro. Verifique los datos o intente iniciar sesión.',
 			);
 		}
 		return {
@@ -169,13 +170,19 @@ async function claimEventAndRole(userId: string, userEmail: string, claimCode: s
 			defaultRole: 'host_client',
 		});
 	} catch (error) {
-		console.error('[Register Host] Post-registration error:', error);
+		console.error(
+			JSON.stringify({
+				event: 'registration_post_auth_error',
+				status: error instanceof ApiError ? error.status : 500,
+				code: error instanceof ApiError ? error.code : 'internal_error',
+			}),
+		);
 		if (error instanceof ApiError) {
 			throw new ApiError(
 				error.status,
 				error.code,
 				error.status === 400
-					? `The invitation code is invalid or has already been used. ${error.message}`
+					? `El código de invitación no es válido o ya fue utilizado. ${error.message}`
 					: error.message,
 			);
 		}

@@ -47,6 +47,7 @@ routes:
       description: 'Backend engineering, API routes, or data validation'
       rules:
           - '.agent/rules/api-contracts.md'
+          - '.agent/rules/auth-session.md'
           - '.agent/rules/database.md'
       skills:
           - 'backend-engineering'

@@ -7,9 +7,13 @@ import { normalizeAppRole } from '@/lib/rsvp/auth/roles';
 import type { AppUserRole } from '@/interfaces/auth/session.interface';
 import { verifyTrustedDeviceToken } from '@/lib/rsvp/security/trusted-device';
 import { setCsrfToken } from '@/lib/rsvp/security/csrf';
-import { ApiError } from '@/lib/rsvp/core/errors';
+import { ApiError, isAuthRequestError, isRejectedAuthCredential } from '@/lib/rsvp/core/errors';
 import { errorResponse } from '@/lib/rsvp/core/http';
-import { isPrivateNoStorePath, PRIVATE_CACHE_CONTROL } from '@/lib/http/private-cache-path';
+import {
+	isPrivateNoStorePath,
+	PRIVATE_CACHE_CONTROL,
+	withPrivateNoStore,
+} from '@/lib/http/private-cache-path';
 import { isDevMfaBypassEnabled } from '@/lib/server/dev-mfa-bypass';
 import { isPreviewMfaBypassEnabled } from '@/lib/server/preview-mfa-bypass';
 
@@ -104,8 +108,7 @@ function applyPrivateNoStore(pathname: string, response: Response): Response {
 	if (typeof response?.headers?.set !== 'function') {
 		return response;
 	}
-	response.headers.set('Cache-Control', PRIVATE_CACHE_CONTROL);
-	return response;
+	return withPrivateNoStore(response);
 }
 
 function finalizeMiddlewareResponse(pathname: string, response: Response): Response {
@@ -147,30 +150,23 @@ async function refreshUserSession(cookies: CookieStore, refreshToken: string) {
 	try {
 		const refreshed = await refreshAccessToken({ refreshToken });
 		const accessToken = refreshed.access_token;
-		const nextRefreshToken = refreshed.refresh_token || refreshToken;
-		const user = await getSupabaseUserByAccessToken(accessToken);
+		const nextRefreshToken = refreshed.refresh_token;
+		const user = refreshed.user;
 
-		if (user) {
-			cookies.set('sb-access-token', accessToken, buildCookieOptions(60 * 60));
-			cookies.set(
-				'sb-refresh-token',
-				nextRefreshToken,
-				buildCookieOptions(60 * 60 * 24 * 30),
-			);
-		}
+		cookies.set('sb-access-token', accessToken, buildCookieOptions(60 * 60));
+		cookies.set('sb-refresh-token', nextRefreshToken, buildCookieOptions(60 * 60 * 24 * 30));
 
 		return {
 			accessToken,
 			refreshToken: nextRefreshToken,
 			user,
 		};
-	} catch {
-		clearPrimaryAuthCookies(cookies);
-		return {
-			accessToken: '',
-			refreshToken: '',
-			user: null,
-		};
+	} catch (error) {
+		if (isRejectedAuthCredential(error)) {
+			clearPrimaryAuthCookies(cookies);
+			return { accessToken: '', refreshToken: '', user: null };
+		}
+		throw error;
 	}
 }
 
@@ -247,9 +243,33 @@ async function resolveAuthenticatedUser(cookies: CookieStore) {
 		accessToken = refreshed.accessToken;
 		refreshToken = refreshed.refreshToken;
 		user = refreshed.user;
+	} else if (accessToken && !user) {
+		clearPrimaryAuthCookies(cookies);
+		accessToken = '';
+		refreshToken = '';
 	}
 
 	return { accessToken, refreshToken, user };
+}
+
+function authHtmlFailure(status: 500 | 502 | 503): Response {
+	const unavailable = status === 503;
+	const response = new Response(
+		`<!doctype html><html lang="es"><meta charset="utf-8"><title>Sesión no disponible</title><body><p>${
+			unavailable
+				? 'No es posible validar su sesión en este momento. Inténtelo de nuevo en unos segundos.'
+				: 'No fue posible validar su sesión.'
+		}</p></body></html>`,
+		{
+			status,
+			headers: {
+				'Content-Type': 'text/html; charset=utf-8',
+				'Cache-Control': PRIVATE_CACHE_CONTROL,
+			},
+		},
+	);
+	if (unavailable) response.headers.set('Retry-After', '5');
+	return response;
 }
 
 function resolveAuthContext(
@@ -464,20 +484,21 @@ export const onRequest = defineMiddleware(
 				locals,
 			);
 		} catch (error) {
-			console.error('[Middleware] Auth error:', error);
-			if (url.pathname.startsWith('/api/dashboard')) {
+			const isApiRoute = url.pathname.startsWith('/api/dashboard');
+			if (isAuthRequestError(error)) {
+				return isApiRoute
+					? finalizeMiddlewareResponse(url.pathname, errorResponse(error))
+					: authHtmlFailure(error.retryable ? 503 : 502);
+			}
+
+			if (isApiRoute) {
 				const response = errorResponse(
 					new ApiError(500, 'internal_error', 'No fue posible validar la sesión.'),
 				);
 				response.headers.set('Cache-Control', PRIVATE_CACHE_CONTROL);
 				return response;
 			}
-			if (url.pathname === '/login') {
-				clearPrimaryAuthCookies(cookies);
-				const response = await next();
-				return finalizeMiddlewareResponse(url.pathname, response);
-			}
-			return finalizeMiddlewareResponse(url.pathname, privateRedirect(redirect, '/login'));
+			return authHtmlFailure(500);
 		}
 
 		if (authRedirect) {

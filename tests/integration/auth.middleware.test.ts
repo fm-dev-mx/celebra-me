@@ -1,5 +1,6 @@
 import type { APIContext } from 'astro';
 import { onRequest as middleware } from '../../src/middleware';
+import { resolveAfterMicrotasks } from '../helpers/api-mocks';
 
 interface TestLocals {
 	session?: {
@@ -23,6 +24,37 @@ function createContext(path: string) {
 			headers: new Map([['user-agent', 'test-agent']]),
 		},
 		locals,
+	};
+}
+
+function createIsolatedContext(path: string, initialCookies: Record<string, string>) {
+	const values = new Map(Object.entries(initialCookies));
+	const cookies = {
+		get: jest.fn((name: string) => {
+			const value = values.get(name);
+			return value === undefined ? undefined : { value };
+		}),
+		set: jest.fn((name: string, value: string) => values.set(name, value)),
+		delete: jest.fn((name: string) => values.delete(name)),
+	};
+	const redirect = jest.fn(
+		(target: string) => new Response(null, { status: 302, headers: { Location: target } }),
+	);
+	const next = jest.fn(async () => new Response(null, { status: 200 }));
+	const locals: TestLocals = {};
+	return {
+		context: {
+			url: new URL(`http://localhost${path}`),
+			cookies,
+			redirect,
+			request: { headers: new Map([['user-agent', 'concurrency-test']]) },
+			locals,
+		},
+		cookies,
+		locals,
+		next,
+		redirect,
+		values,
 	};
 }
 
@@ -114,29 +146,59 @@ describe('Middleware: Authentication & Authorization', () => {
 		expect(mockRedirect).not.toHaveBeenCalled();
 	});
 
-	it('redirects dashboard pages when the auth provider fails unexpectedly', async () => {
+	it('returns controlled HTML and preserves cookies when the auth provider is unavailable', async () => {
 		const context = createContext('/dashboard/invitados');
 		mockCookies.get.mockReturnValue({ value: 'valid-token' });
 		mockFetch.mockRejectedValue(new Error('auth provider unavailable'));
-		const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
-		await middleware(context as unknown as APIContext, mockNext);
+		const response = await middleware(context as unknown as APIContext, mockNext);
 
-		expect(mockRedirect).toHaveBeenCalledWith('/login');
-		consoleErrorSpy.mockRestore();
+		expect(response).toBeInstanceOf(Response);
+		if (!(response instanceof Response)) throw new Error('Expected an HTML error response.');
+		expect(response.status).toBe(503);
+		expect(response.headers.get('Retry-After')).toBe('5');
+		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
+		expect(await response.text()).toContain('No es posible validar su sesión');
+		expect(mockRedirect).not.toHaveBeenCalled();
+		expect(mockNext).not.toHaveBeenCalled();
+		expect(mockCookies.set).not.toHaveBeenCalled();
+		expect(mockCookies.delete).not.toHaveBeenCalled();
+		expect(mockFetch).toHaveBeenCalledTimes(1);
 	});
 
 	it('does not redirect to /login when /login auth validation fails (prevents redirect loop)', async () => {
 		const context = createContext('/login');
 		mockCookies.get.mockReturnValue({ value: 'stale-token' });
 		mockFetch.mockRejectedValue(new Error('connect ECONNREFUSED 127.0.0.1:54321'));
+
+		const response = await middleware(context as unknown as APIContext, mockNext);
+
+		expect(response).toBeInstanceOf(Response);
+		if (!(response instanceof Response)) throw new Error('Expected an HTML error response.');
+		expect(response.status).toBe(503);
+		expect(mockRedirect).not.toHaveBeenCalled();
+		expect(mockNext).not.toHaveBeenCalled();
+		expect(mockCookies.delete).not.toHaveBeenCalled();
+	});
+
+	it('returns controlled HTML 500 for missing configuration without clearing cookies', async () => {
+		const context = createContext('/dashboard/invitados');
+		mockCookies.get.mockImplementation((name: string) =>
+			name === 'sb-access-token' ? { value: 'valid-token' } : null,
+		);
+		delete process.env.SUPABASE_ANON_KEY;
 		const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
-		await middleware(context as unknown as APIContext, mockNext);
+		const response = await middleware(context as unknown as APIContext, mockNext);
 
+		expect(response).toBeInstanceOf(Response);
+		if (!(response instanceof Response)) throw new Error('Expected an HTML error response.');
+		expect(response.status).toBe(500);
+		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
+		expect(mockFetch).not.toHaveBeenCalled();
+		expect(mockCookies.delete).not.toHaveBeenCalled();
 		expect(mockRedirect).not.toHaveBeenCalled();
-		expect(mockNext).toHaveBeenCalled();
-		expect(mockCookies.delete).toHaveBeenCalledWith('sb-access-token', { path: '/' });
+		expect(mockNext).not.toHaveBeenCalled();
 		consoleErrorSpy.mockRestore();
 	});
 
@@ -144,21 +206,300 @@ describe('Middleware: Authentication & Authorization', () => {
 		const context = createContext('/api/dashboard/commercial/timeline');
 		mockCookies.get.mockReturnValue({ value: 'valid-token' });
 		mockFetch.mockRejectedValue(new Error('auth provider unavailable'));
-		const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
 		const response = await middleware(context as unknown as APIContext, mockNext);
 
 		expect(response).toBeInstanceOf(Response);
 		if (!(response instanceof Response)) throw new Error('Expected an API error response.');
-		expect(response.status).toBe(500);
+		expect(response.status).toBe(503);
 		expect(response.headers.get('content-type')).toContain('application/json');
 		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
+		expect(response.headers.get('Retry-After')).toBe('5');
 		expect(await response.json()).toEqual({
 			success: false,
-			error: { code: 'internal_error', message: 'No fue posible validar la sesión.' },
+			error: {
+				code: 'service_unavailable',
+				message: 'El servicio de autenticación no está disponible temporalmente.',
+			},
 		});
 		expect(mockRedirect).not.toHaveBeenCalled();
-		consoleErrorSpy.mockRestore();
+		expect(mockNext).not.toHaveBeenCalled();
+		expect(mockCookies.delete).not.toHaveBeenCalled();
+	});
+
+	it('uses the embedded refresh user and commits rotated tokens without a second user call', async () => {
+		const context = createContext('/dashboard/invitados');
+		mockCookies.get.mockImplementation((name: string) => {
+			if (name === 'sb-access-token') return { value: 'rejected-access' };
+			if (name === 'sb-refresh-token') return { value: 'valid-refresh' };
+			return null;
+		});
+		mockFetch.mockResolvedValueOnce({ ok: false, status: 401 }).mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => ({
+				access_token: 'rotated-access',
+				refresh_token: 'rotated-refresh',
+				user: {
+					id: 'host-1',
+					email: 'host@test.com',
+					app_metadata: { role: 'host_client' },
+					amr: [{ method: 'password' }],
+				},
+			}),
+		});
+
+		await middleware(context as unknown as APIContext, mockNext);
+
+		expect(mockFetch).toHaveBeenCalledTimes(2);
+		expect(String(mockFetch.mock.calls[0]?.[0])).toContain('/auth/v1/user');
+		expect(String(mockFetch.mock.calls[1]?.[0])).toContain(
+			'/auth/v1/token?grant_type=refresh_token',
+		);
+		expect(mockCookies.set).toHaveBeenCalledWith(
+			'sb-access-token',
+			'rotated-access',
+			expect.any(Object),
+		);
+		expect(mockCookies.set).toHaveBeenCalledWith(
+			'sb-refresh-token',
+			'rotated-refresh',
+			expect.any(Object),
+		);
+		expect(context.locals.session?.userId).toBe('host-1');
+	});
+
+	it('uses one Auth call for a refresh-only session', async () => {
+		const context = createContext('/dashboard/invitados');
+		mockCookies.get.mockImplementation((name: string) =>
+			name === 'sb-refresh-token' ? { value: 'valid-refresh' } : null,
+		);
+		mockFetch.mockResolvedValue({
+			ok: true,
+			status: 200,
+			json: async () => ({
+				access_token: 'rotated-access',
+				refresh_token: 'rotated-refresh',
+				user: {
+					id: 'host-1',
+					app_metadata: { role: 'host_client' },
+					amr: [{ method: 'password' }],
+				},
+			}),
+		});
+
+		await middleware(context as unknown as APIContext, mockNext);
+
+		expect(mockFetch).toHaveBeenCalledTimes(1);
+		expect(String(mockFetch.mock.calls[0]?.[0])).toContain('grant_type=refresh_token');
+		expect(mockNext).toHaveBeenCalled();
+	});
+
+	it('clears primary cookies after a confirmed rejected refresh', async () => {
+		const context = createContext('/dashboard/invitados');
+		mockCookies.get.mockImplementation((name: string) =>
+			name === 'sb-refresh-token' ? { value: 'rejected-refresh' } : null,
+		);
+		mockFetch.mockResolvedValue({ ok: false, status: 401 });
+
+		await middleware(context as unknown as APIContext, mockNext);
+
+		expect(mockFetch).toHaveBeenCalledTimes(1);
+		expect(mockCookies.delete).toHaveBeenCalledWith('sb-access-token', { path: '/' });
+		expect(mockCookies.delete).toHaveBeenCalledWith('sb-refresh-token', { path: '/' });
+		expect(mockCookies.delete).toHaveBeenCalledWith('sb-trust-device', { path: '/' });
+		expect(mockRedirect).toHaveBeenCalledWith('/login');
+	});
+
+	it('clears primary cookies after rejected access without a refresh token', async () => {
+		const context = createContext('/dashboard/invitados');
+		mockCookies.get.mockImplementation((name: string) =>
+			name === 'sb-access-token' ? { value: 'rejected-access' } : null,
+		);
+		mockFetch.mockResolvedValue({ ok: false, status: 403 });
+
+		await middleware(context as unknown as APIContext, mockNext);
+
+		expect(mockFetch).toHaveBeenCalledTimes(1);
+		expect(mockCookies.delete).toHaveBeenCalledWith('sb-access-token', { path: '/' });
+		expect(mockCookies.delete).toHaveBeenCalledWith('sb-refresh-token', { path: '/' });
+		expect(mockCookies.delete).toHaveBeenCalledWith('sb-trust-device', { path: '/' });
+		expect(mockRedirect).toHaveBeenCalledWith('/login');
+	});
+
+	it('preserves every cookie when refresh fails transiently', async () => {
+		const context = createContext('/dashboard/invitados');
+		mockCookies.get.mockImplementation((name: string) =>
+			name === 'sb-refresh-token' ? { value: 'refresh-token' } : null,
+		);
+		mockFetch.mockRejectedValue(new TypeError('network unavailable'));
+
+		const response = await middleware(context as unknown as APIContext, mockNext);
+
+		expect(response).toBeInstanceOf(Response);
+		if (!(response instanceof Response)) throw new Error('Expected an HTML error response.');
+		expect(response.status).toBe(503);
+		expect(mockCookies.set).not.toHaveBeenCalled();
+		expect(mockCookies.delete).not.toHaveBeenCalled();
+		expect(mockRedirect).not.toHaveBeenCalled();
+	});
+
+	it('preserves cookies when a refresh success payload is malformed', async () => {
+		const context = createContext('/dashboard/invitados');
+		mockCookies.get.mockImplementation((name: string) =>
+			name === 'sb-refresh-token' ? { value: 'refresh-token' } : null,
+		);
+		mockFetch.mockResolvedValue({
+			ok: true,
+			status: 200,
+			json: async () => ({ access_token: 'partial-token' }),
+		});
+
+		const response = await middleware(context as unknown as APIContext, mockNext);
+
+		expect(response).toBeInstanceOf(Response);
+		if (!(response instanceof Response)) throw new Error('Expected an HTML error response.');
+		expect(response.status).toBe(503);
+		expect(mockCookies.set).not.toHaveBeenCalled();
+		expect(mockCookies.delete).not.toHaveBeenCalled();
+	});
+
+	it('isolates 20 concurrent valid, refreshed, rejected, and transient sessions', async () => {
+		const log = jest.spyOn(console, 'info').mockImplementation(() => {});
+		const callCounts = new Map<number, number>();
+		mockFetch.mockImplementation((input: RequestInfo | URL, init?: RequestInit) => {
+			const url = String(input);
+			const headers = new Headers(init?.headers);
+			const authorization = headers.get('Authorization') || '';
+			let index: number;
+
+			if (url.endsWith('/auth/v1/user')) {
+				const token = authorization.replace(/^Bearer\s+/i, '');
+				index = Number(token.match(/-(\d+)$/)?.[1]);
+				callCounts.set(index, (callCounts.get(index) ?? 0) + 1);
+				if (token.startsWith('valid-')) {
+					return resolveAfterMicrotasks(
+						{
+							ok: true,
+							status: 200,
+							json: async () => ({
+								id: `valid-user-${index}`,
+								email: `valid-${index}@test.invalid`,
+								app_metadata: { role: 'host_client' },
+								amr: [{ method: 'password' }],
+							}),
+						} as Response,
+						20 - index,
+					);
+				}
+				if (token.startsWith('transient-')) {
+					return resolveAfterMicrotasks(
+						{ ok: false, status: 503 } as Response,
+						20 - index,
+					);
+				}
+				return resolveAfterMicrotasks({ ok: false, status: 401 } as Response, 20 - index);
+			}
+
+			const body = JSON.parse(String(init?.body)) as { refresh_token: string };
+			index = Number(body.refresh_token.match(/-(\d+)$/)?.[1]);
+			callCounts.set(index, (callCounts.get(index) ?? 0) + 1);
+			return resolveAfterMicrotasks(
+				{
+					ok: true,
+					status: 200,
+					json: async () => ({
+						access_token: `rotated-access-${index}`,
+						refresh_token: `rotated-refresh-${index}`,
+						user: {
+							id: `refreshed-user-${index}`,
+							email: `refreshed-${index}@test.invalid`,
+							app_metadata: { role: 'host_client' },
+							amr: [{ method: 'password' }],
+						},
+					}),
+				} as Response,
+				20 - index,
+			);
+		});
+
+		const cases = Array.from({ length: 20 }, (_, index) => {
+			const group = Math.floor(index / 5);
+			const initialCookies: Record<string, string> = {};
+			if (group === 0) initialCookies['sb-access-token'] = `valid-${index}`;
+			if (group === 1) {
+				initialCookies['sb-access-token'] = `rejected-${index}`;
+				initialCookies['sb-refresh-token'] = `refresh-${index}`;
+			}
+			if (group === 2) initialCookies['sb-access-token'] = `invalid-${index}`;
+			if (group === 3) {
+				initialCookies['sb-access-token'] = `transient-${index}`;
+				initialCookies['sb-refresh-token'] = `preserved-refresh-${index}`;
+				initialCookies['sb-trust-device'] = `preserved-trust-${index}`;
+				initialCookies['sb-mfa-session'] = `preserved-mfa-${index}`;
+				initialCookies['sb-idle-seen'] = String(Math.floor(Date.now() / 1000));
+			}
+			return {
+				index,
+				group,
+				...createIsolatedContext('/dashboard/invitados', initialCookies),
+			};
+		});
+
+		const settled = await Promise.allSettled(
+			cases.map(({ context, next }) => middleware(context as unknown as APIContext, next)),
+		);
+		expect(settled.every((result) => result.status === 'fulfilled')).toBe(true);
+
+		for (const [position, testCase] of cases.entries()) {
+			const result = settled[position];
+			if (result?.status !== 'fulfilled') continue;
+			if (testCase.group === 0) {
+				expect(result.value).toMatchObject({ status: 200 });
+				expect(testCase.locals.session?.userId).toBe(`valid-user-${testCase.index}`);
+				expect(callCounts.get(testCase.index)).toBe(1);
+			}
+			if (testCase.group === 1) {
+				expect(result.value).toMatchObject({ status: 200 });
+				expect(testCase.locals.session?.userId).toBe(`refreshed-user-${testCase.index}`);
+				expect(testCase.cookies.set).toHaveBeenCalledWith(
+					'sb-access-token',
+					`rotated-access-${testCase.index}`,
+					expect.any(Object),
+				);
+				expect(testCase.cookies.set).toHaveBeenCalledWith(
+					'sb-refresh-token',
+					`rotated-refresh-${testCase.index}`,
+					expect.any(Object),
+				);
+				expect(callCounts.get(testCase.index)).toBe(2);
+			}
+			if (testCase.group === 2) {
+				expect(result.value).toMatchObject({ status: 302 });
+				expect(testCase.redirect).toHaveBeenCalledWith('/login');
+				expect(testCase.cookies.delete).toHaveBeenCalledWith('sb-access-token', {
+					path: '/',
+				});
+				expect(testCase.locals.session).toBeUndefined();
+				expect(callCounts.get(testCase.index)).toBe(1);
+			}
+			if (testCase.group === 3) {
+				expect(result.value).toBeInstanceOf(Response);
+				expect((result.value as Response).status).toBe(503);
+				expect(testCase.cookies.set).not.toHaveBeenCalled();
+				expect(testCase.cookies.delete).not.toHaveBeenCalled();
+				expect(testCase.values.get('sb-refresh-token')).toBe(
+					`preserved-refresh-${testCase.index}`,
+				);
+				expect(testCase.values.get('sb-trust-device')).toBe(
+					`preserved-trust-${testCase.index}`,
+				);
+				expect(callCounts.get(testCase.index)).toBe(1);
+			}
+			expect(callCounts.get(testCase.index)).toBeLessThanOrEqual(2);
+		}
+		expect(mockFetch).toHaveBeenCalledTimes(25);
+		expect(log).toHaveBeenCalledTimes(25);
 	});
 
 	it.each([

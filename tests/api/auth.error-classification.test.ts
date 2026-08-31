@@ -5,7 +5,7 @@
  *   - Wrong password → 401
  *   - Network failure / unreachable Supabase → 503
  *   - Invalid API key / config error → safe error (not leaked as 401)
- *   - Upstream 5xx → 502
+ *   - Retryable upstream failures → 503
  *   - No internal diagnostic data reaches the client
  *   - Local .env precedence over stale terminal values (via astro config logic)
  */
@@ -15,6 +15,7 @@ import * as rateLimitProvider from '@/lib/rsvp/security/rate-limit-provider';
 import * as authIdentifierService from '@/lib/rsvp/services/auth-identifier.service';
 import { createMockRequest } from '../helpers/api-mocks';
 import type { APIContext } from 'astro';
+import { AuthRequestError } from '@/lib/rsvp/core/errors';
 
 jest.mock('@/lib/rsvp/auth/auth-api', () => ({
 	signInWithPassword: jest.fn(),
@@ -70,7 +71,9 @@ describe('POST /api/auth/login-host — error classification', () => {
 	});
 
 	it('returns 401 for wrong password', async () => {
-		signInMock.mockRejectedValue(new Error('Supabase auth error (401).'));
+		signInMock.mockRejectedValue(
+			new AuthRequestError({ kind: 'http', operation: 'password_sign_in', status: 401 }),
+		);
 
 		const response = await callLogin({ password: 'contraseñaIncorrecta' });
 		const body = await response.json();
@@ -83,7 +86,9 @@ describe('POST /api/auth/login-host — error classification', () => {
 	});
 
 	it('returns 401 for Supabase 400 (bad request, e.g. missing field)', async () => {
-		signInMock.mockRejectedValue(new Error('Supabase auth error (400).'));
+		signInMock.mockRejectedValue(
+			new AuthRequestError({ kind: 'http', operation: 'password_sign_in', status: 400 }),
+		);
 
 		const response = await callLogin();
 		const body = await response.json();
@@ -95,34 +100,46 @@ describe('POST /api/auth/login-host — error classification', () => {
 	});
 
 	it('returns 503 when Supabase is unreachable (network failure)', async () => {
-		signInMock.mockRejectedValue(new Error('auth-request-failed'));
+		signInMock.mockRejectedValue(
+			new AuthRequestError({ kind: 'network', operation: 'password_sign_in' }),
+		);
 
 		const response = await callLogin();
 		const body = await response.json();
 
 		expect(response.status).toBe(503);
 		expect(body.error.code).toBe('service_unavailable');
-		expect(body.error.message).toBe('Servicio de autenticación no disponible.');
+		expect(body.error.message).toBe(
+			'El servicio de autenticación no está disponible temporalmente.',
+		);
 		expect(body.error.details).toBeUndefined();
+		expect(response.headers.get('Retry-After')).toBe('5');
+		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
 	});
 
-	it('returns 502 when Supabase returns 5xx', async () => {
-		signInMock.mockRejectedValue(new Error('Supabase auth error (500).'));
+	it('returns 503 when Supabase returns 5xx', async () => {
+		signInMock.mockRejectedValue(
+			new AuthRequestError({ kind: 'http', operation: 'password_sign_in', status: 500 }),
+		);
 
 		const response = await callLogin();
 		const body = await response.json();
 
-		expect(response.status).toBe(502);
-		expect(body.error.code).toBe('upstream_error');
-		expect(body.error.message).toBe('Error del servicio de autenticación.');
+		expect(response.status).toBe(503);
+		expect(body.error.code).toBe('service_unavailable');
+		expect(body.error.message).toBe(
+			'El servicio de autenticación no está disponible temporalmente.',
+		);
 		expect(body.error.details).toBeUndefined();
 	});
 
-	it('returns 502 for any other Supabase 5xx status', async () => {
-		signInMock.mockRejectedValue(new Error('Supabase auth error (503).'));
+	it('returns 503 for any other Supabase 5xx status', async () => {
+		signInMock.mockRejectedValue(
+			new AuthRequestError({ kind: 'http', operation: 'password_sign_in', status: 503 }),
+		);
 
 		const response = await callLogin();
-		expect(response.status).toBe(502);
+		expect(response.status).toBe(503);
 	});
 
 	it('returns 200 for magic link requests', async () => {
@@ -142,6 +159,25 @@ describe('POST /api/auth/login-host — error classification', () => {
 		expect(body.ok).toBe(true);
 	});
 
+	it('returns 503 for a transient magic-link provider failure', async () => {
+		const sendMagicMock = authApi.sendMagicLink as jest.Mock;
+		sendMagicMock.mockRejectedValue(
+			new AuthRequestError({ kind: 'timeout', operation: 'send_magic_link' }),
+		);
+
+		const response = await loginHost({
+			request: createMockRequest({
+				email: 'magic@test.com',
+				method: 'magic_link',
+			}),
+			url: new URL('http://localhost/api/auth/login-host'),
+		} as unknown as APIContext);
+
+		expect(response.status).toBe(503);
+		expect(response.headers.get('Retry-After')).toBe('5');
+		expect((await response.json()).error.code).toBe('service_unavailable');
+	});
+
 	it('returns 401 when auth identifier resolution returns null', async () => {
 		resolvePasswordAuthEmailMock.mockResolvedValue(null);
 
@@ -156,10 +192,10 @@ describe('POST /api/auth/login-host — error classification', () => {
 	it('never leaks internal details on any error path', async () => {
 		// Test several error types and verify none expose details
 		const errors = [
-			new Error('auth-request-failed'),
-			new Error('Supabase auth error (401).'),
-			new Error('Supabase auth error (500).'),
-			new Error('Supabase auth error (403).'),
+			new AuthRequestError({ kind: 'network', operation: 'password_sign_in' }),
+			new AuthRequestError({ kind: 'http', operation: 'password_sign_in', status: 401 }),
+			new AuthRequestError({ kind: 'http', operation: 'password_sign_in', status: 500 }),
+			new AuthRequestError({ kind: 'http', operation: 'password_sign_in', status: 403 }),
 			new Error('Some unexpected error'),
 		];
 

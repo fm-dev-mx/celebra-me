@@ -42,6 +42,7 @@ const { csrfToken } = Astro.locals;
 
 const navItems: DashboardNavItem[] = [
 	{ label: 'Invitados', href: '/dashboard/invitados' },
+	{ label: 'Recuerdos', href: '/dashboard/memories' },
 	{ label: 'Administración', href: '/dashboard/admin', adminOnly: true },
 	...(showCanonicalStatusNav
 		? [{ label: 'Estado', href: '/dashboard/estado', adminOnly: true }]

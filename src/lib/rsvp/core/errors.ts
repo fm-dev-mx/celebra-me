@@ -43,6 +43,54 @@ export class ApiError extends Error {
 	}
 }
 
+export type AuthRequestErrorKind = 'timeout' | 'network' | 'http' | 'invalid_response';
+
+export type AuthOperation =
+	| 'validate_access_token'
+	| 'password_sign_in'
+	| 'refresh_session'
+	| 'sign_up'
+	| 'send_magic_link'
+	| 'list_users'
+	| 'create_user_admin'
+	| 'get_user_admin'
+	| 'update_user_admin'
+	| 'update_password';
+
+export class AuthRequestError extends Error {
+	readonly kind: AuthRequestErrorKind;
+	readonly operation: AuthOperation;
+	readonly status?: number;
+	readonly retryable: boolean;
+
+	constructor(input: { kind: AuthRequestErrorKind; operation: AuthOperation; status?: number }) {
+		super('Auth request failed.');
+		this.name = 'AuthRequestError';
+		this.kind = input.kind;
+		this.operation = input.operation;
+		this.status = input.status;
+		this.retryable =
+			input.kind === 'timeout' ||
+			input.kind === 'network' ||
+			input.kind === 'invalid_response' ||
+			(input.kind === 'http' &&
+				(input.status === 429 ||
+					(typeof input.status === 'number' && input.status >= 500)));
+	}
+}
+
+export function isAuthRequestError(error: unknown): error is AuthRequestError {
+	return error instanceof AuthRequestError;
+}
+
+export function isRejectedAuthCredential(error: unknown): error is AuthRequestError {
+	return (
+		isAuthRequestError(error) &&
+		error.kind === 'http' &&
+		(error.status === 400 || error.status === 401 || error.status === 403)
+	);
+}
+
 export function isApiError(error: unknown): error is ApiError {
 	if (error instanceof ApiError) return true;
 	if (typeof error === 'object' && error !== null) {

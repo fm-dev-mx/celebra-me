@@ -1,0 +1,53 @@
+{
+    "name": "celebra-memories-retrieve",
+    "main": "src/index.ts",
+    "compatibility_date": "2026-08-28",
+    "workers_dev": true,
+    "preview_urls": false,
+    "vars": {
+        "MEMORIES_STORAGE_TARGET": "production"
+    },
+    "observability": {
+        "enabled": true,
+        "head_sampling_rate": 0.05
+    },
+    "routes": [],
+    "r2_buckets": [
+        {
+            "binding": "MEMORIES_BUCKET",
+            "bucket_name": "celebra-memories"
+        }
+    ],
+    "env": {
+        "local": {
+            "name": "celebra-memories-retrieve-local",
+            "workers_dev": false,
+            "preview_urls": false,
+            "routes": [],
+            "vars": {
+                "MEMORIES_STORAGE_TARGET": "local"
+            },
+            "r2_buckets": [
+                {
+                    "binding": "MEMORIES_BUCKET",
+                    "bucket_name": "celebra-memories-local"
+                }
+            ]
+        },
+        "staging": {
+            "name": "celebra-memories-retrieve-staging",
+            "workers_dev": true,
+            "preview_urls": false,
+            "routes": [],
+            "vars": {
+                "MEMORIES_STORAGE_TARGET": "staging"
+            },
+            "r2_buckets": [
+                {
+                    "binding": "MEMORIES_BUCKET",
+                    "bucket_name": "celebra-memories-staging"
+                }
+            ]
+        }
+    }
+}

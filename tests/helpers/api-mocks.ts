@@ -54,3 +54,12 @@ export function createMockRequest(
 		} as Headers,
 	} as unknown as Request;
 }
+
+export async function resolveAfterMicrotasks<T>(value: T, turns: number): Promise<T> {
+	let pending = Promise.resolve();
+	for (let turn = 0; turn < turns; turn += 1) {
+		pending = pending.then(() => undefined);
+	}
+	await pending;
+	return value;
+}

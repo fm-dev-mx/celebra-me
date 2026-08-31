@@ -1,4 +1,8 @@
-import { getHostSessionFromRequest, resolveAccessTokenFromRequest } from '@/lib/rsvp/auth/auth';
+import {
+	getHostSessionFromRequest,
+	getSupabaseUserByAccessToken,
+	resolveAccessTokenFromRequest,
+} from '@/lib/rsvp/auth/auth';
 
 function createRequest(headers: Record<string, string>): Request {
 	const normalized = Object.fromEntries(
@@ -53,5 +57,37 @@ describe('rsvp auth', () => {
 		const session = await getHostSessionFromRequest(request);
 		expect(session?.userId).toBe('host-1');
 		expect(session?.accessToken).toBe('token-123');
+	});
+
+	it('makes no Auth call when the request has no token', async () => {
+		global.fetch = jest.fn() as typeof fetch;
+
+		const session = await getHostSessionFromRequest(createRequest({}));
+
+		expect(session).toBeNull();
+		expect(global.fetch).not.toHaveBeenCalled();
+	});
+
+	it.each([400, 401, 403])(
+		'returns null for a confirmed HTTP %s credential rejection',
+		async (status) => {
+			process.env.SUPABASE_URL = 'https://project.supabase.co';
+			process.env.SUPABASE_ANON_KEY = 'anon';
+			global.fetch = jest.fn().mockResolvedValue({ ok: false, status }) as typeof fetch;
+
+			await expect(getSupabaseUserByAccessToken('rejected-token')).resolves.toBeNull();
+		},
+	);
+
+	it('propagates transient Auth failures instead of treating them as logout', async () => {
+		process.env.SUPABASE_URL = 'https://project.supabase.co';
+		process.env.SUPABASE_ANON_KEY = 'anon';
+		global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 503 }) as typeof fetch;
+
+		await expect(getSupabaseUserByAccessToken('valid-session-token')).rejects.toMatchObject({
+			kind: 'http',
+			status: 503,
+			retryable: true,
+		});
 	});
 });

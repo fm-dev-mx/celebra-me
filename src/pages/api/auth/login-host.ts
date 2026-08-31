@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { ApiError } from '@/lib/rsvp/core/errors';
+import { ApiError, isAuthRequestError, isRejectedAuthCredential } from '@/lib/rsvp/core/errors';
 import { errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp/core/http';
 import { sendMagicLink, signInWithPassword } from '@/lib/rsvp/auth/auth-api';
 import {
@@ -24,49 +24,18 @@ import { resolvePasswordAuthEmail } from '@/lib/rsvp/services/auth-identifier.se
  * ApiError with a safe user-facing message.  No internal hostnames, keys,
  * upstream bodies or stack traces are exposed to the client.
  */
-function classifySignInError(cause: unknown, identifier: string): ApiError {
-	if (!(cause instanceof Error)) {
-		return new ApiError(500, 'internal_error', 'Error interno del servidor.');
+function classifySignInError(cause: unknown): Error {
+	if (isRejectedAuthCredential(cause) && (cause.status === 400 || cause.status === 401)) {
+		return new ApiError(401, 'unauthorized', 'Credenciales inválidas.');
 	}
-
-	// Network-level failure — Supabase is unreachable.
-	if (cause.message === 'auth-request-failed') {
-		console.error('[login] auth: unreachable (503)');
-		return new ApiError(503, 'service_unavailable', 'Servicio de autenticación no disponible.');
+	if (isAuthRequestError(cause)) {
+		if (cause.retryable) return cause;
+		return new ApiError(
+			cause.status && cause.status >= 400 && cause.status < 500 ? cause.status : 502,
+			'upstream_error',
+			'Error del servicio de autenticación.',
+		);
 	}
-
-	// Upstream responded with an error status.
-	const match = cause.message.match(/^Supabase auth error \((\d+)\)\.$/);
-	if (match) {
-		const status = Number(match[1]);
-		const stage = (cause as Error & { _stage?: string })._stage ?? 'response';
-
-		if (status === 401 || status === 400) {
-			console.error(
-				'[login] auth: invalid credentials (401)',
-				JSON.stringify({ identifier }),
-			);
-			return new ApiError(401, 'unauthorized', 'Credenciales inválidas.');
-		}
-
-		if (status >= 500) {
-			console.error('[login] auth: upstream 5xx', JSON.stringify({ status, stage }));
-			return new ApiError(502, 'upstream_error', 'Error del servicio de autenticación.');
-		}
-
-		// Other 4xx statuses (429, 403, etc.) — return as-is.
-		console.error('[login] auth: unexpected response', JSON.stringify({ status, stage }));
-		return new ApiError(status, 'upstream_error', 'Error del servicio de autenticación.');
-	}
-
-	// Unknown error type — log and return generic 500.
-	console.error(
-		'[login] auth: unhandled error',
-		JSON.stringify({
-			errorName: cause.constructor.name,
-			errorMessage: cause.message,
-		}),
-	);
 	return new ApiError(500, 'internal_error', 'Error interno del servidor.');
 }
 
@@ -121,7 +90,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 				password,
 			});
 		} catch (cause) {
-			throw classifySignInError(cause, identifier);
+			throw classifySignInError(cause);
 		}
 		const payload = {
 			ok: true,

@@ -1,6 +1,6 @@
-import { getEnv } from '@/lib/server/env';
 import { sanitize, parseCookieHeader } from '@/lib/rsvp/core/utils';
-import { ApiError } from '@/lib/rsvp/core/errors';
+import { ApiError, isRejectedAuthCredential } from '@/lib/rsvp/core/errors';
+import { getAuthUserByAccessToken, type SupabaseAuthUser } from '@/lib/rsvp/auth/auth-api';
 import { normalizeAppRole, isSuperAdminRole } from '@/lib/rsvp/auth/roles';
 import type { AppUserRole } from '@/interfaces/auth/session.interface';
 
@@ -17,17 +17,7 @@ export interface SessionContext extends HostSession {
 	amr?: Array<{ method?: string }>;
 }
 
-export interface SupabaseAuthUser {
-	id: string;
-	email?: string;
-	app_metadata?: {
-		role?: string;
-		must_change_password?: boolean;
-		[key: string]: unknown;
-	};
-	user_metadata?: Record<string, unknown>;
-	amr?: Array<{ method?: string }>;
-}
+export type { SupabaseAuthUser } from '@/lib/rsvp/auth/auth-api';
 
 export interface SessionDebugSnapshot {
 	hasAccessToken: boolean;
@@ -45,15 +35,6 @@ function hasBearerAuthorizationHeader(authorizationHeader: string | null): boole
 	return Boolean(authorizationHeader && authorizationHeader.startsWith('Bearer '));
 }
 
-function shouldLogSessionDebug(request: Request): boolean {
-	if (process.env.NODE_ENV === 'production') return false;
-	try {
-		return new URL(request.url).searchParams.get('debug') === '1';
-	} catch {
-		return false;
-	}
-}
-
 function getTokenFromCookieMap(cookieMap: Record<string, string>): string {
 	if (cookieMap['sb-access-token']) return sanitize(cookieMap['sb-access-token'], 4096);
 
@@ -62,9 +43,7 @@ function getTokenFromCookieMap(cookieMap: Record<string, string>): string {
 		if (!cookieKey.startsWith('sb-') || !cookieKey.endsWith('-auth-token')) continue;
 		try {
 			const parsed = JSON.parse(cookieValue) as
-				| { access_token?: string }
-				| [string | null, string | null]
-				| null;
+				{ access_token?: string } | [string | null, string | null] | null;
 			if (Array.isArray(parsed)) {
 				const accessToken = sanitize(parsed[0], 4096);
 				if (accessToken) return accessToken;
@@ -103,41 +82,20 @@ export async function getSupabaseUserByAccessToken(
 	const normalizedToken = sanitize(accessToken, 4096);
 	if (!normalizedToken) return null;
 
-	const supabaseUrl = getEnv('SUPABASE_URL');
-	const anonKey = getEnv('SUPABASE_ANON_KEY');
-	if (!supabaseUrl || !anonKey) {
-		throw new Error('SUPABASE_URL and SUPABASE_ANON_KEY are required for dashboard auth.');
+	try {
+		return await getAuthUserByAccessToken(normalizedToken);
+	} catch (error) {
+		if (isRejectedAuthCredential(error)) return null;
+		throw error;
 	}
-
-	const response = await fetch(`${supabaseUrl.replace(/\/+$/, '')}/auth/v1/user`, {
-		headers: {
-			apikey: anonKey,
-			Authorization: `Bearer ${normalizedToken}`,
-		},
-	});
-
-	if (!response.ok) return null;
-
-	const user = (await response.json()) as SupabaseAuthUser;
-	if (!user.id) return null;
-
-	return user;
 }
 
 export async function getSessionDebugSnapshotFromRequest(
 	request: Request,
 ): Promise<SessionDebugSnapshot> {
-	const debugEnabled = shouldLogSessionDebug(request);
 	const tokenSource = resolveAccessTokenSourceFromRequest(request);
 	const accessToken = resolveAccessTokenFromRequest(request);
 	if (!accessToken) {
-		if (debugEnabled) {
-			console.info('[auth][session-debug]', {
-				hasAccessToken: false,
-				tokenSource,
-				reason: 'missing_access_token',
-			});
-		}
 		return {
 			hasAccessToken: false,
 			tokenSource,
@@ -148,13 +106,6 @@ export async function getSessionDebugSnapshotFromRequest(
 
 	const user = await getSupabaseUserByAccessToken(accessToken);
 	if (!user) {
-		if (debugEnabled) {
-			console.info('[auth][session-debug]', {
-				hasAccessToken: true,
-				tokenSource,
-				reason: 'invalid_supabase_user',
-			});
-		}
 		return {
 			hasAccessToken: true,
 			tokenSource,
@@ -178,16 +129,6 @@ export async function getSessionDebugSnapshotFromRequest(
 			amr: user.amr,
 		},
 	};
-	if (debugEnabled) {
-		console.info('[auth][session-debug]', {
-			hasAccessToken: true,
-			tokenSource,
-			reason: 'session_role_resolved',
-			userId: snapshot.context?.userId,
-			email: snapshot.context?.email,
-			role: snapshot.context?.role,
-		});
-	}
 	return snapshot;
 }
 

@@ -1,0 +1,23 @@
+{
+    "rules": [
+        {
+            "id": "expire-valentina-pilot",
+            "enabled": true,
+            "conditions": {
+                "prefix": "events/valentina/"
+            },
+            "deleteObjectsTransition": {
+                "condition": {
+                    "maxAge": 2592000,
+                    "type": "Age"
+                }
+            },
+            "abortMultipartUploadsTransition": {
+                "condition": {
+                    "maxAge": 86400,
+                    "type": "Age"
+                }
+            }
+        }
+    ]
+}

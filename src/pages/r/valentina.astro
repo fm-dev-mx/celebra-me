@@ -2,7 +2,7 @@
 export const prerender = true;
 
 import Layout from '@/layouts/Layout.astro';
-import Icon from '@/components/common/icons/Icon.astro';
+import ValentinaMemoriesCapture from '@/components/memories/ValentinaMemoriesCapture';
 import {
 	VALENTINA_MEMORIES_ROUTE_PATH,
 	valentinaMemoriesPageCopy,
@@ -19,37 +19,28 @@ const copy = valentinaMemoriesPageCopy;
 >
 	<meta name="robots" content={copy.robots} slot="head" />
 
-	<div class="status-page" data-route={VALENTINA_MEMORIES_ROUTE_PATH} data-page="valentina-memories">
+	<main
+		class="status-page status-page--memories"
+		data-route={VALENTINA_MEMORIES_ROUTE_PATH}
+		data-page="valentina-memories"
+	>
 		<div class="status-page__bg-decoration"></div>
 
 		<div class="status-page__container">
-			<div class="status-page__card">
-				<div class="status-page__icon-wrapper">
-					<Icon name="Photo" size={48} />
-				</div>
-
-				<div class="status-page__header">
+			<section class="status-page__card" aria-labelledby="memories-heading">
+				<header class="status-page__header">
 					<span class="status-page__subtitle">{copy.subtitle}</span>
-					<h1 class="status-page__title">{copy.heading}</h1>
-				</div>
+					<h1 id="memories-heading" class="status-page__title">{copy.heading}</h1>
+					<p class="status-page__description">{copy.body}</p>
+				</header>
 
-				<p class="status-page__description">
-					{copy.body}
-				</p>
+				<ValentinaMemoriesCapture client:load />
 
-				<div class="status-page__actions">
-					<a href={copy.primaryCtaHref} class="status-page__btn">
-						{copy.primaryCtaLabel}
-					</a>
-					<a href={copy.secondaryCtaHref} class="status-page__btn status-page__btn--outline">
-						{copy.secondaryCtaLabel}
-					</a>
-				</div>
-			</div>
+				<nav class="status-page__support-links" aria-label="Enlaces de ayuda">
+					<a href={copy.recoveryCtaHref}>{copy.recoveryCtaLabel}</a>
+					<a href={copy.organizerCtaHref}>{copy.organizerCtaLabel}</a>
+				</nav>
+			</section>
 		</div>
-
-		<footer class="status-page__footer">
-			&copy; {new Date().getFullYear()} {copy.footer}
-		</footer>
-	</div>
+	</main>
 </Layout>

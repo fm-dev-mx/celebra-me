@@ -1,0 +1,65 @@
+{
+    "name": "celebra-memories-sign",
+    "main": "src/index.ts",
+    "compatibility_date": "2026-08-24",
+    "workers_dev": true,
+    "preview_urls": false,
+    "vars": {
+        "MEMORIES_STORAGE_TARGET": "production"
+    },
+    "observability": {
+        "enabled": true,
+        "head_sampling_rate": 0.05
+    },
+    "routes": [],
+    "ratelimits": [
+        {
+            "name": "SIGN_RATE_LIMITER",
+            "namespace_id": "1001",
+            "simple": {
+                "limit": 6,
+                "period": 60
+            }
+        }
+    ],
+    "env": {
+        "local": {
+            "name": "celebra-memories-sign-local",
+            "workers_dev": false,
+            "preview_urls": false,
+            "routes": [],
+            "vars": {
+                "MEMORIES_STORAGE_TARGET": "local"
+            },
+            "ratelimits": [
+                {
+                    "name": "SIGN_RATE_LIMITER",
+                    "namespace_id": "1000",
+                    "simple": {
+                        "limit": 6,
+                        "period": 60
+                    }
+                }
+            ]
+        },
+        "staging": {
+            "name": "celebra-memories-sign-staging",
+            "workers_dev": true,
+            "preview_urls": false,
+            "routes": [],
+            "vars": {
+                "MEMORIES_STORAGE_TARGET": "staging"
+            },
+            "ratelimits": [
+                {
+                    "name": "SIGN_RATE_LIMITER",
+                    "namespace_id": "1002",
+                    "simple": {
+                        "limit": 6,
+                        "period": 60
+                    }
+                }
+            ]
+        }
+    }
+}

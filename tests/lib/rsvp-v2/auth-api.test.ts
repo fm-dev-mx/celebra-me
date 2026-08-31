@@ -1,13 +1,17 @@
 import {
+	AUTH_REQUEST_TIMEOUT_MS,
 	adminResetAuthUserPassword,
 	adminSetUserMustChangePassword,
 	createAuthUserByAdmin,
 	findAuthUserByEmail,
 	findAuthUserByLoginIdentifier,
+	getAuthUserByAccessToken,
+	refreshAccessToken,
 	sendMagicLink,
 	signInWithPassword,
 	signUpWithPassword,
 } from '@/lib/rsvp/auth/auth-api';
+import { AuthRequestError } from '@/lib/rsvp/core/errors';
 
 describe('rsvp authApi', () => {
 	const originalFetch = global.fetch;
@@ -22,6 +26,7 @@ describe('rsvp authApi', () => {
 	afterEach(() => {
 		global.fetch = originalFetch;
 		process.env = { ...originalEnv };
+		jest.useRealTimers();
 		jest.restoreAllMocks();
 	});
 
@@ -41,7 +46,7 @@ describe('rsvp authApi', () => {
 				json: async () => ({
 					user: { id: 'u2', email: 'c@d.com' },
 				}),
-			}) as typeof fetch;
+			}) as unknown as typeof fetch;
 
 		const login = await signInWithPassword({
 			email: 'a@b.com',
@@ -86,7 +91,7 @@ describe('rsvp authApi', () => {
 						},
 					],
 				}),
-			}) as typeof fetch;
+			}) as unknown as typeof fetch;
 
 		const magic = await sendMagicLink({
 			email: 'admin@test.com',
@@ -245,5 +250,314 @@ describe('rsvp authApi', () => {
 				}),
 			}),
 		);
+	});
+
+	describe('transport failures and observability', () => {
+		it.each([400, 401, 403, 429, 500, 502, 503])(
+			'classifies HTTP %s without reading its body',
+			async (status) => {
+				const text = jest.fn();
+				global.fetch = jest
+					.fn()
+					.mockResolvedValue({ ok: false, status, text }) as typeof fetch;
+
+				await expect(
+					signInWithPassword({ email: 'safe@test.com', password: 'Password123!' }),
+				).rejects.toMatchObject({
+					name: 'AuthRequestError',
+					kind: 'http',
+					operation: 'password_sign_in',
+					status,
+					retryable: status === 429 || status >= 500,
+				});
+				expect(text).not.toHaveBeenCalled();
+			},
+		);
+
+		it.each([
+			['empty body', () => Promise.reject(new SyntaxError('Unexpected end'))],
+			['malformed body', () => Promise.resolve({ access_token: 'missing-fields' })],
+		])('classifies a successful %s as invalid_response', async (_label, json) => {
+			global.fetch = jest
+				.fn()
+				.mockResolvedValue({ ok: true, status: 200, json }) as typeof fetch;
+
+			await expect(
+				signInWithPassword({ email: 'safe@test.com', password: 'Password123!' }),
+			).rejects.toMatchObject({
+				kind: 'invalid_response',
+				operation: 'password_sign_in',
+				status: 200,
+				retryable: true,
+			});
+		});
+
+		it('classifies network and externally aborted requests without leaking their causes', async () => {
+			for (const failure of [
+				new TypeError('getaddrinfo ENOTFOUND secret-host.example'),
+				new DOMException('aborted with secret-token', 'AbortError'),
+			]) {
+				global.fetch = jest.fn().mockRejectedValue(failure) as typeof fetch;
+				await expect(getAuthUserByAccessToken('secret-token')).rejects.toMatchObject({
+					kind: 'network',
+					operation: 'validate_access_token',
+					retryable: true,
+					message: 'Auth request failed.',
+				});
+			}
+		});
+
+		it('aborts a stalled request at 5,000 ms and clears its timer', async () => {
+			jest.useFakeTimers();
+			global.fetch = jest.fn((_url, init) => {
+				return new Promise((_resolve, reject) => {
+					(init?.signal as AbortSignal).addEventListener('abort', () => {
+						reject(new DOMException('Aborted', 'AbortError'));
+					});
+				});
+			}) as typeof fetch;
+
+			const pending = refreshAccessToken({ refreshToken: 'refresh-secret' });
+			const rejection = expect(pending).rejects.toMatchObject({
+				kind: 'timeout',
+				operation: 'refresh_session',
+				retryable: true,
+			});
+			await jest.advanceTimersByTimeAsync(AUTH_REQUEST_TIMEOUT_MS - 1);
+			expect(global.fetch).toHaveBeenCalledTimes(1);
+			await jest.advanceTimersByTimeAsync(1);
+
+			await rejection;
+			expect(jest.getTimerCount()).toBe(0);
+			jest.useRealTimers();
+		});
+
+		it('aborts when response-body consumption stalls', async () => {
+			jest.useFakeTimers();
+			global.fetch = jest.fn((_url, init) => {
+				const signal = init?.signal as AbortSignal;
+				return Promise.resolve({
+					ok: true,
+					status: 200,
+					json: () =>
+						new Promise((_resolve, reject) => {
+							signal.addEventListener('abort', () => {
+								reject(new DOMException('Aborted', 'AbortError'));
+							});
+						}),
+				});
+			}) as unknown as typeof fetch;
+
+			const pending = signInWithPassword({
+				email: 'safe@test.com',
+				password: 'Password123!',
+			});
+			const rejection = expect(pending).rejects.toMatchObject({ kind: 'timeout' });
+			await jest.advanceTimersByTimeAsync(AUTH_REQUEST_TIMEOUT_MS);
+
+			await rejection;
+			expect(jest.getTimerCount()).toBe(0);
+			jest.useRealTimers();
+		});
+
+		it('does not accept a body that resolves after the deadline', async () => {
+			jest.useFakeTimers();
+			let resolveBody!: (value: unknown) => void;
+			global.fetch = jest.fn().mockResolvedValue({
+				ok: true,
+				status: 200,
+				json: () => new Promise((resolve) => (resolveBody = resolve)),
+			}) as unknown as typeof fetch;
+
+			const pending = signInWithPassword({
+				email: 'safe@test.com',
+				password: 'Password123!',
+			});
+			const rejection = expect(pending).rejects.toMatchObject({ kind: 'timeout' });
+			await jest.advanceTimersByTimeAsync(AUTH_REQUEST_TIMEOUT_MS);
+			resolveBody({
+				access_token: 'late-access',
+				refresh_token: 'late-refresh',
+				user: { id: 'late-user' },
+			});
+
+			await rejection;
+			jest.useRealTimers();
+		});
+
+		it('emits exactly one sanitized event for success and failure', async () => {
+			const log = jest.spyOn(console, 'info').mockImplementation(() => {});
+			global.fetch = jest
+				.fn()
+				.mockResolvedValueOnce({
+					ok: true,
+					status: 200,
+					json: async () => ({
+						access_token: 'secret-access',
+						refresh_token: 'secret-refresh',
+						user: { id: 'secret-user-id', email: 'private@example.com' },
+					}),
+				})
+				.mockResolvedValueOnce({ ok: false, status: 503 }) as typeof fetch;
+
+			await signInWithPassword({ email: 'private@example.com', password: 'SecretPassword!' });
+			await expect(sendMagicLink({ email: 'private@example.com' })).rejects.toBeInstanceOf(
+				AuthRequestError,
+			);
+
+			expect(log).toHaveBeenCalledTimes(2);
+			const events = log.mock.calls.map(([entry]) => JSON.parse(String(entry)));
+			expect(events).toEqual([
+				expect.objectContaining({
+					event: 'auth_upstream_request',
+					operation: 'password_sign_in',
+					outcome: 'success',
+					status: 200,
+					errorKind: null,
+					vercelRegion: 'unknown',
+				}),
+				expect.objectContaining({
+					event: 'auth_upstream_request',
+					operation: 'send_magic_link',
+					outcome: 'failure',
+					status: 503,
+					errorKind: 'http',
+				}),
+			]);
+			expect(events.every((event) => typeof event.durationMs === 'number')).toBe(true);
+			const serialized = JSON.stringify(events);
+			expect(serialized).not.toMatch(
+				/secret-access|secret-refresh|secret-user-id|private@example\.com|SecretPassword|supabase\.co/,
+			);
+		});
+
+		it('isolates 20 concurrent successful requests resolved out of order', async () => {
+			jest.useFakeTimers();
+			const log = jest.spyOn(console, 'info').mockImplementation(() => {});
+			const responders = new Map<string, (response: Response) => void>();
+			global.fetch = jest.fn((_url, init) => {
+				const body = JSON.parse(String(init?.body)) as { email: string };
+				return new Promise<Response>((resolve) => responders.set(body.email, resolve));
+			}) as typeof fetch;
+
+			const requests = Array.from({ length: 20 }, (_, index) =>
+				signInWithPassword({
+					email: `parallel-${index}@test.invalid`,
+					password: `ConcurrentPassword-${index}!`,
+				}),
+			);
+			expect(global.fetch).toHaveBeenCalledTimes(20);
+
+			for (let index = 19; index >= 0; index -= 1) {
+				responders.get(`parallel-${index}@test.invalid`)?.({
+					ok: true,
+					status: 200,
+					json: async () => ({
+						access_token: `parallel-access-${index}`,
+						refresh_token: `parallel-refresh-${index}`,
+						user: { id: `parallel-user-${index}` },
+					}),
+				} as Response);
+			}
+
+			const settled = await Promise.allSettled(requests);
+			expect(settled).toHaveLength(20);
+			for (const [index, result] of settled.entries()) {
+				expect(result.status).toBe('fulfilled');
+				if (result.status !== 'fulfilled') continue;
+				expect(result.value).toMatchObject({
+					access_token: `parallel-access-${index}`,
+					refresh_token: `parallel-refresh-${index}`,
+					user: { id: `parallel-user-${index}` },
+				});
+			}
+			expect(log).toHaveBeenCalledTimes(20);
+			expect(jest.getTimerCount()).toBe(0);
+			const serializedLogs = JSON.stringify(log.mock.calls);
+			expect(serializedLogs).not.toMatch(
+				/parallel-access|parallel-refresh|parallel-user|parallel-\d+@test\.invalid|ConcurrentPassword/,
+			);
+		});
+
+		it('isolates mixed concurrent failures and clears every request timer', async () => {
+			jest.useFakeTimers();
+			const log = jest.spyOn(console, 'info').mockImplementation(() => {});
+			global.fetch = jest.fn((_url, init) => {
+				const body = JSON.parse(String(init?.body)) as { email: string };
+				const index = Number(body.email.match(/mixed-(\d+)/)?.[1]);
+				if (index < 5) {
+					return Promise.resolve({
+						ok: true,
+						status: 200,
+						json: async () => ({
+							access_token: `mixed-access-${index}`,
+							refresh_token: `mixed-refresh-${index}`,
+							user: { id: `mixed-user-${index}` },
+						}),
+					} as Response);
+				}
+				if (index < 10) {
+					return Promise.resolve({ ok: false, status: 401 } as Response);
+				}
+				if (index < 15) {
+					return Promise.resolve({ ok: false, status: 503 } as Response);
+				}
+				return new Promise<Response>((_resolve, reject) => {
+					(init?.signal as AbortSignal).addEventListener('abort', () => {
+						reject(new DOMException('Aborted', 'AbortError'));
+					});
+				});
+			}) as typeof fetch;
+
+			const requests = Array.from({ length: 20 }, (_, index) =>
+				signInWithPassword({
+					email: `mixed-${index}@test.invalid`,
+					password: `MixedPassword-${index}!`,
+				}),
+			);
+			const settledPromise = Promise.allSettled(requests);
+			await jest.advanceTimersByTimeAsync(AUTH_REQUEST_TIMEOUT_MS);
+			const settled = await settledPromise;
+
+			expect(settled.slice(0, 5).every((result) => result.status === 'fulfilled')).toBe(true);
+			for (const result of settled.slice(5, 10)) {
+				expect(result).toMatchObject({
+					status: 'rejected',
+					reason: { kind: 'http', status: 401, retryable: false },
+				});
+			}
+			for (const result of settled.slice(10, 15)) {
+				expect(result).toMatchObject({
+					status: 'rejected',
+					reason: { kind: 'http', status: 503, retryable: true },
+				});
+			}
+			for (const result of settled.slice(15)) {
+				expect(result).toMatchObject({
+					status: 'rejected',
+					reason: { kind: 'timeout', retryable: true },
+				});
+			}
+			expect(log).toHaveBeenCalledTimes(20);
+			expect(jest.getTimerCount()).toBe(0);
+			const serializedLogs = JSON.stringify(log.mock.calls);
+			expect(serializedLogs).not.toMatch(
+				/mixed-access|mixed-refresh|mixed-user|mixed-\d+@test\.invalid|MixedPassword/,
+			);
+		});
+
+		it('fails missing configuration before starting an upstream request', async () => {
+			delete process.env.SUPABASE_ANON_KEY;
+			global.fetch = jest.fn() as typeof fetch;
+
+			await expect(
+				signInWithPassword({ email: 'safe@test.com', password: 'Password123!' }),
+			).rejects.toThrow('SUPABASE_ANON_KEY no configurada.');
+			expect(global.fetch).not.toHaveBeenCalled();
+		});
+
+		it('keeps the worst two-call middleware path nominally below 11 seconds', () => {
+			expect(AUTH_REQUEST_TIMEOUT_MS * 2).toBeLessThan(11_000);
+		});
 	});
 });

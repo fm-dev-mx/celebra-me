@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { refreshAccessToken } from '@/lib/rsvp/auth/auth-api';
-import { ApiError } from '@/lib/rsvp/core/errors';
+import { ApiError, isApiError, isRejectedAuthCredential } from '@/lib/rsvp/core/errors';
 import {
 	buildIdleActivityCookie,
 	buildRefreshTokenCookie,
@@ -10,22 +10,7 @@ import {
 } from '@/lib/rsvp/auth/cookies';
 import { assertSameOrigin, enforceAuthRateLimit } from '@/lib/rsvp/security/auth-security';
 import { errorResponse } from '@/lib/rsvp/core/http';
-
-function sanitize(value: unknown, maxLen = 4096): string {
-	if (typeof value !== 'string') return '';
-	return value.trim().slice(0, maxLen);
-}
-
-function getCookieValue(request: Request, key: string): string {
-	const header = request.headers.get('cookie');
-	if (!header) return '';
-	const parts = header.split(';');
-	for (const part of parts) {
-		const [k, ...rest] = part.trim().split('=');
-		if (k === key) return decodeURIComponent(rest.join('='));
-	}
-	return '';
-}
+import { parseCookieHeader, sanitize } from '@/lib/rsvp/core/utils';
 
 export const POST: APIRoute = async ({ request, url }) => {
 	try {
@@ -37,7 +22,8 @@ export const POST: APIRoute = async ({ request, url }) => {
 			windowSec: 60,
 		});
 
-		const refreshToken = sanitize(getCookieValue(request, 'sb-refresh-token'));
+		const cookies = parseCookieHeader(request.headers.get('cookie'));
+		const refreshToken = sanitize(cookies['sb-refresh-token'], 4096);
 		if (!refreshToken) throw new ApiError(401, 'unauthorized', 'Session cannot be refreshed.');
 
 		const refreshed = await refreshAccessToken({ refreshToken });
@@ -48,9 +34,16 @@ export const POST: APIRoute = async ({ request, url }) => {
 		return new Response(JSON.stringify({ ok: true }), { status: 200, headers });
 	} catch (error) {
 		const headers = new Headers({ 'Content-Type': 'application/json' });
-		headers.append('Set-Cookie', clearSessionCookie());
-		headers.append('Set-Cookie', clearRefreshTokenCookie());
-		const failed = errorResponse(error);
+		const rejectedCredential = isRejectedAuthCredential(error);
+		if ((isApiError(error) && error.status === 401) || rejectedCredential) {
+			headers.append('Set-Cookie', clearSessionCookie());
+			headers.append('Set-Cookie', clearRefreshTokenCookie());
+		}
+		const failed = errorResponse(
+			rejectedCredential
+				? new ApiError(401, 'unauthorized', 'Session cannot be refreshed.')
+				: error,
+		);
 		for (const [key, value] of failed.headers.entries()) {
 			headers.set(key, value);
 		}

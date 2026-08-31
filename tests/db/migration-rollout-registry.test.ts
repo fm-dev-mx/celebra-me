@@ -61,4 +61,27 @@ describe('migration-rollout-registry integrity', () => {
 			existsSync(resolve(migrationsDir, '20260806120000_preview_approval_artifacts.sql')),
 		).toBe(true);
 	});
+
+	it('registers the Valentina Memories contract migrations with explicit revocations', () => {
+		const registry = JSON.parse(readFileSync(registryPath, 'utf8')) as {
+			migrations: Record<
+				string,
+				{ phase: string; provides?: string[]; revokes?: string[] }
+			>;
+		};
+		for (const version of [
+			'20260828000000',
+			'20260829000100',
+			'20260829000200',
+			'20260829171814',
+		]) {
+			expect(registry.migrations[version]).toMatchObject({
+				phase: 'contract',
+				provides: expect.any(Array),
+				revokes: expect.any(Array),
+			});
+			expect(registry.migrations[version]?.provides).not.toHaveLength(0);
+			expect(registry.migrations[version]?.revokes).not.toHaveLength(0);
+		}
+	});
 });

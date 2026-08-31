@@ -99,18 +99,20 @@ execution:
   processes. Lane detection sets it automatically; shell override is allowed for intentional tests.
   It never forges Vercel identity and is not mutation authorization.
 - **Canonical-status cache path:** `CELEBRA_STATUS_CACHE_PATH` optionally overrides the durable
-  status cache file used by the app/runtime status server. Default is `.cache/canonical-status.json`.
+  status cache file used by the app/runtime status server. Default is
+  `.cache/canonical-status.json`.
 - **Preview-only operational:** `PREVIEW_DB_URL`, `PREVIEW_SUPABASE_URL`, and
   `PREVIEW_SUPABASE_SERVICE_ROLE_KEY` are used by Preview DB workflows and never by Production. They
   live in `.env.preview.local` (see `.env.preview.local.example`), not ordinary Local `.env.local`
   files.
 - **Operational script-only:** Command confirmations (e.g. `CONFIRM_REMOTE_SERVICE_ROLE`), DB
-  workflow inputs, and one-off script filters. These can use script-owned local file loaders and
-  are intentionally omitted from `ImportMetaEnv`.
-  `pnpm invitation:release` treats Preview and Production URLs/credentials as script-only values;
-  packages and invitation definitions must contain semantic asset references, never those values.
-- **Platform-provided app/runtime:** Vercel supplies `VERCEL`, `VERCEL_ENV`, and
-  `VERCEL_GIT_COMMIT_REF`. They are typed for app/runtime use but omitted from the local template.
+  workflow inputs, and one-off script filters. These can use script-owned local file loaders and are
+  intentionally omitted from `ImportMetaEnv`. `pnpm invitation:release` treats Preview and
+  Production URLs/credentials as script-only values; packages and invitation definitions must
+  contain semantic asset references, never those values.
+- **Platform-provided app/runtime:** Vercel supplies `VERCEL`, `VERCEL_ENV`,
+  `VERCEL_GIT_COMMIT_REF`, and `VERCEL_REGION`. They are typed for app/runtime use but omitted from
+  the local template.
 - **Production-only shell variables:** `PROD_DB_URL` is a Postgres connection string only;
   `PROD_SUPABASE_URL` and `PROD_SUPABASE_SERVICE_ROLE_KEY` are the independently verified API and
   Storage inputs for the complete critical backup. They come only from the operator shell or
@@ -123,8 +125,7 @@ execution:
   internal policy names. There is no approval-token, secret, or noninteractive confirmation env
   alternative. `CELEBRA_AGENT_CONTEXT` rejects agent self-authorization and is injected by default
   in agent sessions (Cursor hooks). It is not a substitute for owner TTY confirmation. Apply also
-  requires valid
-  `pnpm release-check` evidence for the current clean `HEAD`.
+  requires valid `pnpm release-check` evidence for the current clean `HEAD`.
 - **Preview hosted migrate identity:** clean Git `HEAD` (same release pattern as Production). For
   contract phases, `CELEBRA_DEPLOYED_APP_SHA` / `CELEBRA_DEPLOYED_APP_CAPABILITIES` authorize
   deployed-app readiness. Preview DB URL must match the canonical Preview project ref.
@@ -138,15 +139,47 @@ execution:
 The deterministic env contract test uses these explicit lists to reconcile the secret-free template
 with app/runtime typing:
 
-| Contract category           | Variables                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Relationship                                          |
-| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| Contract category           | Variables                                                                                                                                                                                                                                                                                                                                                                                                                                  | Relationship                                          |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
 | `operational-script-only`   | `LOCAL_SUPER_ADMIN_PASSWORD`, `RSVP_ADMIN_PASSWORD`, `RSVP_ADMIN_USER`, `PLAYWRIGHT_BASE_URL`, `PLAYWRIGHT_APPROVED_PREVIEW_DEPLOYMENT_HOST`, `PLAYWRIGHT_PREVIEW_SUPABASE_URL`, `PLAYWRIGHT_HOST_LOGIN`, `PLAYWRIGHT_HOST_PASSWORD`, `VERCEL_AUTOMATION_BYPASS_SECRET`, `PLAYWRIGHT_PREVIEW_INVITATION_ID`, `PLAYWRIGHT_ALLOW_PREVIEW_PUBLICATION`, `PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING`, `PLAYWRIGHT_PREVIEW_DEBUG_ARTIFACTS` | Present in `.env.example`; omitted from typing.       |
-| `platform-provided-runtime` | `VERCEL`, `VERCEL_ENV`, `VERCEL_GIT_COMMIT_REF`                                                                                                                                                                                                                                                                                                                                                                                                                                           | Present in app/runtime typing; omitted from template. |
+| `platform-provided-runtime` | `VERCEL`, `VERCEL_ENV`, `VERCEL_GIT_COMMIT_REF`, `VERCEL_REGION`                                                                                                                                                                                                                                                                                                                                                                           | Present in app/runtime typing; omitted from template. |
 
 `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET` are server-only runtime
 secrets for invitation image upload (Astro API + `invitation:release` CLI). Never create
 `PUBLIC_CLOUDINARY_*` equivalents or place real Cloudinary values in tracked files. Missing values
 fail closed: invitation image uploads do not fall back to Supabase Storage.
+
+Valentina Memories has no browser-facing environment variable. The browser calls same-origin APIs;
+the backend uses server-only Worker origins and repository-owned route paths. Missing or invalid
+values fail closed.
+
+### Valentina Memories environment cheatsheet
+
+This table is the sole human-facing authority for where each value belongs. Local private values go
+in ignored files; tracked examples contain empty values only. Preview/Staging and Production use
+independent key pairs and credentials.
+
+| Name                                             | Local                              | Preview / Staging                              | Production                                           | Value source                                         |
+| ------------------------------------------------ | ---------------------------------- | ---------------------------------------------- | ---------------------------------------------------- | ---------------------------------------------------- |
+| `MEMORIES_UPLOAD_REQUEST_SIGNING_PRIVATE_KEY`    | `.env.local` secret                | Vercel Preview secret                          | Vercel Production secret, independent                | Locally generated PKCS#8 P-256 upload pair           |
+| `MEMORIES_RETRIEVAL_REQUEST_SIGNING_PRIVATE_KEY` | `.env.local` secret                | Vercel Preview secret                          | Vercel Production secret, independent                | Locally generated PKCS#8 P-256 retrieval pair        |
+| `MEMORIES_PRIVATE_UPLOAD_ORIGIN`                 | Local Wrangler origin              | Vercel Preview config                          | Vercel Production config                             | Deployed Sign Worker origin; path stays in code      |
+| `MEMORIES_PRIVATE_RETRIEVAL_ORIGIN`              | Local Wrangler origin              | Vercel Preview config                          | Vercel Production config                             | Deployed Retrieval Worker origin; path stays in code |
+| `CRON_SECRET`                                    | Synthetic `.env.local` secret      | Vercel Preview secret                          | Vercel Production secret, independent                | Cryptographically secure random generator            |
+| `MEMORIES_UPLOAD_REQUEST_VERIFY_PUBLIC_KEY`      | Sign Worker `.dev.vars`            | Sign Worker Staging secret                     | Sign Worker Production secret                        | SPKI public key from the upload pair                 |
+| `MEMORIES_RETRIEVAL_REQUEST_VERIFY_PUBLIC_KEY`   | Retrieval Worker `.dev.vars`       | Retrieval Worker Staging secret                | Retrieval Worker Production secret                   | SPKI public key from the retrieval pair              |
+| `MEMORIES_R2_ACCOUNT_ID`                         | Empty, non-operational placeholder | Sign Worker Staging secret                     | Sign Worker Production secret                        | Cloudflare R2 Account Details                        |
+| `MEMORIES_R2_PRESIGN_ACCESS_KEY_ID`              | Empty, non-operational placeholder | Sign Worker Staging secret                     | Independent Sign Worker Production secret            | Bucket-scoped R2 API token                           |
+| `MEMORIES_R2_PRESIGN_SECRET_ACCESS_KEY`          | Empty, non-operational placeholder | Sign Worker Staging secret                     | Independent Sign Worker Production secret            | One-time value shown when the R2 token is created    |
+| `MEMORIES_STORAGE_TARGET`                        | Wrangler versioned var: `local`    | Wrangler versioned var: `staging`              | Wrangler versioned var: `production`                 | Repository Worker configuration                      |
+| `MEMORIES_BUCKET`                                | Simulated local R2 binding         | Binding to the Staging bucket                  | Binding to the Production bucket                     | Wrangler R2 binding; never a variable or secret      |
+| Supabase URL / anon / service role               | Values reported by local Supabase  | Vercel Preview values from the Preview project | Vercel Production values from the Production project | Matching Supabase project API settings               |
+
+Do not create `PUBLIC_MEMORIES_*`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, or Valentina
+Memories values in Cloudflare Secrets Store. Interactive deployment authentication is owned by
+`wrangler login`; Worker runtime secrets are applied to the exact environment with
+`wrangler secret put --env <environment>`. Never place API tokens, R2 credentials, object keys,
+signed URLs, or reusable secret values in tracked templates, documentation, logs, or evidence.
 
 ## Rules
 
@@ -190,8 +223,8 @@ fail closed: invitation image uploads do not fall back to Supabase Storage.
   `.env.local`/`.env` merged and `process.env` overriding file values. Local DB workflows refuse
   remote Supabase URLs inside `.env.local`.
 - Cloudinary runtime reads `process.env` only. The release CLI may fill missing values from
-  `.env.local`, `.env`, and `.secrets/cloudinary.env` in that order before calling the shared
-  server module.
+  `.env.local`, `.env`, and `.secrets/cloudinary.env` in that order before calling the shared server
+  module.
 - Older operational scripts still load env files locally and are guarded case-by-case. Broad
   precedence normalization is intentionally deferred to avoid changing deployment behavior.
 

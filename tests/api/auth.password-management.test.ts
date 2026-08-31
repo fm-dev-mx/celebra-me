@@ -4,7 +4,7 @@ import { POST as changePassword } from '@/pages/api/auth/change-password';
 import * as authApi from '@/lib/rsvp/auth/auth-api';
 import * as authorization from '@/lib/rsvp/auth/authorization';
 import * as auth from '@/lib/rsvp/auth/auth';
-import { ApiError } from '@/lib/rsvp/core/errors';
+import { ApiError, AuthRequestError } from '@/lib/rsvp/core/errors';
 import { createMockRequest } from '../helpers/api-mocks';
 import * as mutationOperationService from '@/lib/intake/services/mutation-operation.service';
 import * as mutationOperationRepository from '@/lib/intake/repositories/mutation-operation.repository';
@@ -47,15 +47,18 @@ describe('Password Management & Recovery', () => {
 	const signInWithPasswordMock = authApi.signInWithPassword as jest.MockedFunction<
 		typeof authApi.signInWithPassword
 	>;
-	const updateUserPasswordUserAuthMock = authApi.updateUserPasswordUserAuth as jest.MockedFunction<
-		typeof authApi.updateUserPasswordUserAuth
-	>;
-	const adminSetUserMustChangePasswordMock = authApi.adminSetUserMustChangePassword as jest.MockedFunction<
-		typeof authApi.adminSetUserMustChangePassword
-	>;
-	const adminResetAuthUserPasswordMock = authApi.adminResetAuthUserPassword as jest.MockedFunction<
-		typeof authApi.adminResetAuthUserPassword
-	>;
+	const updateUserPasswordUserAuthMock =
+		authApi.updateUserPasswordUserAuth as jest.MockedFunction<
+			typeof authApi.updateUserPasswordUserAuth
+		>;
+	const adminSetUserMustChangePasswordMock =
+		authApi.adminSetUserMustChangePassword as jest.MockedFunction<
+			typeof authApi.adminSetUserMustChangePassword
+		>;
+	const adminResetAuthUserPasswordMock =
+		authApi.adminResetAuthUserPassword as jest.MockedFunction<
+			typeof authApi.adminResetAuthUserPassword
+		>;
 	const getAuthUserAdminByIdMock = authApi.getAuthUserAdminById as jest.MockedFunction<
 		typeof authApi.getAuthUserAdminById
 	>;
@@ -71,9 +74,10 @@ describe('Password Management & Recovery', () => {
 		runtimeMutationContext.createRuntimeMutationCommandContext as jest.MockedFunction<
 			typeof runtimeMutationContext.createRuntimeMutationCommandContext
 		>;
-	const requireAdminMutationAccessMock = authorization.requireAdminMutationAccess as jest.MockedFunction<
-		typeof authorization.requireAdminMutationAccess
-	>;
+	const requireAdminMutationAccessMock =
+		authorization.requireAdminMutationAccess as jest.MockedFunction<
+			typeof authorization.requireAdminMutationAccess
+		>;
 	const requireSessionContextMock = auth.requireSessionContext as jest.MockedFunction<
 		typeof auth.requireSessionContext
 	>;
@@ -158,9 +162,7 @@ describe('Password Management & Recovery', () => {
 			const body = await response.json();
 			expect(body.userId).toBe('550e8400-e29b-41d4-a716-446655440000');
 			expect(body.credentials.temporaryPassword).toBeDefined();
-			expect(body.credentials.temporaryPassword).toMatch(
-				/^[A-Z][a-z]+-\d{4}[!@#$%*]$/,
-			);
+			expect(body.credentials.temporaryPassword).toMatch(/^[A-Z][a-z]+-\d{4}[!@#$%*]$/);
 			expect(adminResetAuthUserPasswordMock).toHaveBeenCalledWith(
 				expect.objectContaining({
 					userId: '550e8400-e29b-41d4-a716-446655440000',
@@ -189,6 +191,36 @@ describe('Password Management & Recovery', () => {
 			} as never);
 
 			expect(response.status).toBe(401);
+		});
+
+		it('returns 503 when the admin Auth request is transiently unavailable', async () => {
+			requireAdminMutationAccessMock.mockResolvedValue({
+				userId: 'super-admin-1',
+				email: 'admin@celebra.me',
+				accessToken: 'admin-token',
+				role: 'super_admin',
+				isSuperAdmin: true,
+			});
+			getAuthUserAdminByIdMock.mockRejectedValue(
+				new AuthRequestError({ kind: 'timeout', operation: 'get_user_admin' }),
+			);
+
+			const response = await resetPasswordAdmin({
+				request: createMockRequest(
+					{
+						userId: '550e8400-e29b-41d4-a716-446655440000',
+						operationId: '550e8400-e29b-41d4-a716-446655440002',
+						credentialOperationId: '550e8400-e29b-41d4-a716-446655440002',
+					},
+					{ Origin: 'http://localhost:4321', Host: 'localhost:4321' },
+					'http://localhost:4321/api/dashboard/admin/users/reset-password',
+				),
+				cookies: {} as never,
+			} as never);
+
+			expect(response.status).toBe(503);
+			expect(response.headers.get('Retry-After')).toBe('5');
+			expect((await response.json()).error.code).toBe('service_unavailable');
 		});
 	});
 
@@ -264,7 +296,9 @@ describe('Password Management & Recovery', () => {
 				mustChangePassword: true,
 			});
 
-			signInWithPasswordMock.mockRejectedValue(new Error('Supabase auth error (401).'));
+			signInWithPasswordMock.mockRejectedValue(
+				new AuthRequestError({ kind: 'http', operation: 'password_sign_in', status: 401 }),
+			);
 
 			const response = await changePassword({
 				request: createMockRequest(
@@ -332,7 +366,7 @@ describe('Password Management & Recovery', () => {
 				email: 'client@example.com',
 			});
 			adminSetUserMustChangePasswordMock.mockRejectedValue(
-				new Error('Supabase auth error (500).'),
+				new Error('metadata update failed'),
 			);
 
 			const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -376,7 +410,9 @@ describe('Password Management & Recovery', () => {
 				mustChangePassword: true,
 			});
 
-			signInWithPasswordMock.mockRejectedValue(new Error('Supabase auth error (401).'));
+			signInWithPasswordMock.mockRejectedValue(
+				new AuthRequestError({ kind: 'http', operation: 'password_sign_in', status: 401 }),
+			);
 
 			const response = await changePassword({
 				request: createMockRequest(
@@ -392,6 +428,38 @@ describe('Password Management & Recovery', () => {
 			} as never);
 
 			expect(response.status).toBe(401);
+			expect(updateUserPasswordUserAuthMock).not.toHaveBeenCalled();
+			expect(adminSetUserMustChangePasswordMock).not.toHaveBeenCalled();
+		});
+
+		it('returns 503 without mutating credentials when current-password verification times out', async () => {
+			requireSessionContextMock.mockResolvedValue({
+				userId: 'user-123',
+				email: 'client@example.com',
+				accessToken: 'current-token',
+				role: 'host_client',
+				isSuperAdmin: false,
+				mustChangePassword: true,
+			});
+			signInWithPasswordMock.mockRejectedValue(
+				new AuthRequestError({ kind: 'timeout', operation: 'password_sign_in' }),
+			);
+
+			const response = await changePassword({
+				request: createMockRequest(
+					{
+						currentPassword: 'CurrentTempPass123!',
+						newPassword: 'NewSecurePassword2026!',
+						confirmPassword: 'NewSecurePassword2026!',
+					},
+					{ Origin: 'http://localhost:4321', Host: 'localhost:4321' },
+					'http://localhost:4321/api/auth/change-password',
+				),
+				url: new URL('http://localhost:4321/api/auth/change-password'),
+			} as never);
+
+			expect(response.status).toBe(503);
+			expect(response.headers.get('Retry-After')).toBe('5');
 			expect(updateUserPasswordUserAuthMock).not.toHaveBeenCalled();
 			expect(adminSetUserMustChangePasswordMock).not.toHaveBeenCalled();
 		});

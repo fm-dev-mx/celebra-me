@@ -31,7 +31,7 @@ describe('rsvp auth session edge cases', () => {
 		process.env.SUPABASE_ANON_KEY = 'anon';
 		global.fetch = jest.fn().mockResolvedValue({
 			ok: false,
-			json: async () => ({}),
+			status: 401,
 		}) as typeof fetch;
 
 		const session = await getHostSessionFromRequest(
