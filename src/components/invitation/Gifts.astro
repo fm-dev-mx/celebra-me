@@ -89,6 +89,34 @@ const isEditorialCatalog = variant === 'editorial-catalog';
 const isLegendOnly = presentation === 'legend-only';
 const displayTitle = isEditorialCatalog ? 'Mesa de cortesía' : title;
 
+function isSafeHttpUrl(value: unknown): value is string {
+	if (typeof value !== 'string') return false;
+	try {
+		const protocol = new URL(value).protocol;
+		return protocol === 'http:' || protocol === 'https:';
+	} catch {
+		return false;
+	}
+}
+
+function getSafeGiftLinks(gift: Gift): GiftStoreLink[] {
+	if (gift.type !== 'store') return [];
+	return gift.links?.filter((link) => isSafeHttpUrl(link.url)) ?? [];
+}
+
+function getSafeGiftUrl(gift: Gift): string | null {
+	if (gift.type !== 'store' && gift.type !== 'paypal') return null;
+	return isSafeHttpUrl(gift.url) ? gift.url : null;
+}
+
+function getGiftHeaderDescription(gift: Gift): { className: string; text: string } | null {
+	if (gift.type === 'store' && gift.description)
+		return { className: 'gift-card__store-label', text: gift.description };
+	if (gift.type === 'cash' && gift.text)
+		return { className: 'gift-card__description', text: gift.text };
+	return null;
+}
+
 const ICON_MAP = {
 	store: GiftIcon,
 	bank: BankCardIcon,
@@ -118,6 +146,9 @@ function getTableNumberEntries(tableNumberStr?: string) {
 		};
 	});
 }
+
+const safeGiftLinks = gifts.map(getSafeGiftLinks);
+const safeGiftUrls = gifts.map(getSafeGiftUrl);
 ---
 
 <section id="regalos" class="gifts-section" data-screenshot-section="gifts" data-variant={variant} data-presentation={presentation}>
@@ -144,6 +175,9 @@ function getTableNumberEntries(tableNumberStr?: string) {
 				gifts.map((gift, index) => {
 					const Icon = ICON_MAP[gift.type];
 					const giftNumber = String(index + 1).padStart(2, '0');
+					const headerDescription = getGiftHeaderDescription(gift);
+					const safeLinks = safeGiftLinks[index] ?? [];
+					const safeGiftUrl = safeGiftUrls[index] ?? null;
 					return (
 						<div class={`gift-card gift-card--${gift.type}`} data-reveal-item>
 							<div class="gift-card__inner">
@@ -169,13 +203,9 @@ function getTableNumberEntries(tableNumberStr?: string) {
 
 									<h3 class="gift-card__title">{gift.title}</h3>
 
-									{gift.type === 'store' && gift.description && (
-										<p class="gift-card__store-label">{gift.description}</p>
-									)}
-
-									{gift.type === 'cash' && gift.text && (
-										<p class="gift-card__description">{gift.text}</p>
-									)}
+					{headerDescription && (
+						<p class={headerDescription.className}>{headerDescription.text}</p>
+					)}
 								</div>
 
 								{gift.type === 'store' && gift.tableNumber && (
@@ -228,10 +258,10 @@ function getTableNumberEntries(tableNumberStr?: string) {
 									</div>
 								)}
 
-								{gift.type === 'store' && ((gift.links && gift.links.length > 0) || gift.url) && (
+								{gift.type === 'store' && (safeLinks.length > 0 || safeGiftUrl) && (
 									<div class="gift-card__actions">
-										{gift.links && gift.links.length > 0 ? (
-											gift.links.map((link) => (
+										{safeLinks.length > 0 ? (
+											safeLinks.map((link) => (
 												<a
 												href={link.url}
 												target="_blank"
@@ -242,14 +272,14 @@ function getTableNumberEntries(tableNumberStr?: string) {
 												</a>
 											))
 										) : (
-											<a href={gift.url} target="_blank" rel="noopener noreferrer" class="gift-card__button">
+											<a href={safeGiftUrl ?? '#'} target="_blank" rel="noopener noreferrer" class="gift-card__button">
 												{labels.viewRegistry}
 											</a>
 										)}
 									</div>
 								)}
 
-								{gift.type === 'paypal' && (
+								{gift.type === 'paypal' && safeGiftUrl && (
 									<div class="gift-card__actions">
 										<a href={gift.url} target="_blank" rel="noopener noreferrer" class="gift-card__button gift-card__button--paypal">
 											{labels.sendGift}
@@ -268,7 +298,7 @@ function getTableNumberEntries(tableNumberStr?: string) {
 </section>
 <script>
 
-	document.querySelectorAll('.copy-icon-button, .copy-button').forEach((button) => {
+	document.querySelectorAll('.copy-icon-button').forEach((button) => {
 		button.addEventListener('click', async () => {
 			const textToCopy = button.getAttribute('data-copy-text') || button.getAttribute('data-clabe');
 			if (!textToCopy) {
