@@ -1,6 +1,7 @@
 import { defineCanonicalInvitation } from './canonical-definition.ts';
+import type { CanonicalEventContentInput } from '../../../src/lib/schemas/content/base-event.schema.ts';
 
-const content = {
+const content: CanonicalEventContentInput = {
 	sectionOrder: [
 		'quote',
 		'family',
@@ -174,13 +175,11 @@ const content = {
 		},
 		indications: [
 			{
-				icon: 'dressCode',
 				text: 'Código de vestimenta <strong>formal</strong>. El color <strong>azul cielo</strong> está reservado para la quinceañera.',
 				iconName: 'DressCode',
 				styleVariant: 'reserved',
 			},
 			{
-				icon: 'calendar',
 				text: 'Favor de confirmar asistencia <strong>antes del 19 de mayo</strong>.',
 				iconName: 'Calendar',
 				styleVariant: 'default',
@@ -329,7 +328,7 @@ const content = {
 	],
 	description:
 		'Acompáñanos a celebrar una noche llena de luz, elegancia y momentos inolvidables.',
-} as Record<string, unknown>;
+};
 
 export const anaSofiaInvitation = defineCanonicalInvitation({
 	slug: 'ana-sofia-cota-guillen',

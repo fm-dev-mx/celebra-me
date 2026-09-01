@@ -1,6 +1,7 @@
 import { defineCanonicalInvitation } from './canonical-definition.ts';
+import type { CanonicalEventContentInput } from '../../../src/lib/schemas/content/base-event.schema.ts';
 
-const content = {
+const content: CanonicalEventContentInput = {
 	sectionOrder: [
 		'quote',
 		'countdown',
@@ -123,13 +124,11 @@ const content = {
 		variant: 'standard',
 		indications: [
 			{
-				icon: 'dressCode',
 				text: 'Código de vestimenta: <strong>casual elegante</strong>',
 				iconName: 'Gift',
 				styleVariant: 'default',
 			},
 			{
-				icon: 'envelope',
 				text: 'Favor de confirmar tu asistencia antes del <strong>14 de febrero</strong>',
 				iconName: 'Enveloped',
 				styleVariant: 'reserved',
@@ -204,13 +203,13 @@ const content = {
 	interludes: [
 		{
 			alt: 'Memorias del festejo Gerardo Mendoza',
-			image: 'gallery01',
+			image: 'interlude01',
 			height: 'screen',
 			afterSection: 'itinerary',
 		},
 		{
 			alt: 'Detalles de la celebración',
-			image: 'gallery02',
+			image: 'interlude02',
 			height: 'screen',
 			afterSection: 'gifts',
 		},
@@ -239,7 +238,7 @@ const content = {
 	],
 	description:
 		'Una noche para celebrar el legado, la familia y los 60 años de Gerardo Mendoza en Los Mochis.',
-} as Record<string, unknown>;
+};
 
 export const gerardoInvitation = defineCanonicalInvitation({
 	slug: 'gerardo-sesenta',

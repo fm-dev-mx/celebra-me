@@ -1,6 +1,7 @@
 import { defineCanonicalInvitation } from './canonical-definition.ts';
+import type { CanonicalEventContentInput } from '../../../src/lib/schemas/content/base-event.schema.ts';
 
-const content = {
+const content: CanonicalEventContentInput = {
 	composition: {
 		intersections: {},
 	},
@@ -11,16 +12,8 @@ const content = {
 		label: 'Primera comunión',
 		nickname: '',
 		secondaryName: 'Estrella Abigail',
-		backgroundImage: {
-			src: 'https://ineitkdkyrxqyressllp.supabase.co/storage/v1/object/public/invitation-assets/invitations/3ff66ba7-be8d-4d0d-98d7-8ffff062f092/original/1c335603-6832-42bd-944f-fac9e48e7a50.webp',
-			type: 'uploaded',
-			assetId: '869fb59d-96d3-4e42-9589-141e0bbc315e',
-		},
-		backgroundImageMobile: {
-			src: 'https://ineitkdkyrxqyressllp.supabase.co/storage/v1/object/public/invitation-assets/invitations/3ff66ba7-be8d-4d0d-98d7-8ffff062f092/original/1c335603-6832-42bd-944f-fac9e48e7a50.webp',
-			type: 'uploaded',
-			assetId: '869fb59d-96d3-4e42-9589-141e0bbc315e',
-		},
+		backgroundImage: 'hero',
+		backgroundImageMobile: 'heroMobile',
 	},
 	rsvp: {
 		variant: 'standard',
@@ -70,11 +63,7 @@ const content = {
 			mother: 'Estefanía Báez Pérez',
 		},
 		parentsOrder: 'father-first',
-		featuredImage: {
-			src: 'https://ineitkdkyrxqyressllp.supabase.co/storage/v1/object/public/invitation-assets/invitations/3ff66ba7-be8d-4d0d-98d7-8ffff062f092/original/6481380d-a26e-419a-b484-c6619f25059c.webp',
-			type: 'uploaded',
-			assetId: 'c9e50184-6936-4177-9094-b789aeb9048b',
-		},
+		featuredImage: 'family',
 		sectionMessage:
 			'Con inmensa alegría compartimos este día de fe. Gracias por acompañar a Luna y Estrella con su cariño y sus bendiciones.',
 		godparentGroups: [
@@ -186,7 +175,7 @@ const content = {
 		localDateTime: '2026-08-01T14:00',
 	},
 	sectionOrder: ['quote', 'family', 'countdown', 'personalizedAccess', 'rsvp', 'thankYou'],
-} as Record<string, unknown>;
+};
 
 export const lunaInvitation = defineCanonicalInvitation({
 	slug: 'luna-y-estrella',
@@ -210,10 +199,6 @@ export const lunaInvitation = defineCanonicalInvitation({
 		heroMobile: 'hero.webp',
 		family: 'family.webp',
 		thankYouPortrait: 'thank-you.webp',
-	},
-	assetIdToKey: {
-		'869fb59d-96d3-4e42-9589-141e0bbc315e': 'hero',
-		'c9e50184-6936-4177-9094-b789aeb9048b': 'family',
 	},
 	deliveryScope: 'content-only',
 });

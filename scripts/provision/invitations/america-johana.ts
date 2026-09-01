@@ -1,6 +1,7 @@
 import { defineCanonicalInvitation } from './canonical-definition.ts';
+import type { CanonicalEventContentInput } from '../../../src/lib/schemas/content/base-event.schema.ts';
 
-const content = {
+const content: CanonicalEventContentInput = {
 	sectionOrder: [
 		'quote',
 		'family',
@@ -26,7 +27,7 @@ const content = {
 		backgroundImage: 'hero',
 		focalPointMobile: '52% 38%',
 		focalPointDesktop: '52% 42%',
-		backgroundImageMobile: 'hero',
+		backgroundImageMobile: 'heroMobile',
 		backgroundImageDesktop: 'heroDesktop',
 	},
 	rsvp: {
@@ -366,7 +367,7 @@ const content = {
 		localDateTime: '2026-08-29T17:30',
 	},
 	visualProfileId: 'america-johana',
-} as Record<string, unknown>;
+};
 
 export const americaInvitation = defineCanonicalInvitation({
 	slug: 'america-johana',

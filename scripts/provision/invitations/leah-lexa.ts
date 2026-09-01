@@ -1,6 +1,7 @@
 import { defineCanonicalInvitation } from './canonical-definition.ts';
+import type { CanonicalEventContentInput } from '../../../src/lib/schemas/content/base-event.schema.ts';
 
-const content = {
+const content: CanonicalEventContentInput = {
 	composition: {
 		intersections: {},
 	},
@@ -235,7 +236,7 @@ const content = {
 			href: '#rsvp',
 		},
 	],
-} as Record<string, unknown>;
+};
 
 export const leahInvitation = defineCanonicalInvitation({
 	slug: 'leah-lexa',

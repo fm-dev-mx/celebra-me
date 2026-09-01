@@ -1,6 +1,7 @@
 import { defineCanonicalInvitation } from './canonical-definition.ts';
+import type { CanonicalEventContentInput } from '../../../src/lib/schemas/content/base-event.schema.ts';
 
-const content = {
+const content: CanonicalEventContentInput = {
 	composition: {
 		intersections: {},
 	},
@@ -15,16 +16,8 @@ const content = {
 			type: 'internal',
 		},
 		secondaryName: '',
-		backgroundImage: {
-			src: 'https://ineitkdkyrxqyressllp.supabase.co/storage/v1/object/public/invitation-assets/invitations/b3ce18b2-15f6-452a-9150-496ddd0ed133/original/bf6cb172-e7aa-424b-accc-9d53dac7d418.webp',
-			type: 'uploaded',
-			assetId: '5a9dda61-b675-4b35-b5ed-552c09998461',
-		},
-		backgroundImageMobile: {
-			src: 'https://ineitkdkyrxqyressllp.supabase.co/storage/v1/object/public/invitation-assets/invitations/b3ce18b2-15f6-452a-9150-496ddd0ed133/original/8fea0569-d107-44c8-a9a1-6528c1cf1ea9.webp',
-			type: 'uploaded',
-			assetId: '707de417-7959-44af-a673-e4eff994d652',
-		},
+		backgroundImage: 'hero',
+		backgroundImageMobile: 'heroMobile',
 		backgroundImageDesktop: {
 			key: 'heroDesktop',
 			type: 'internal',
@@ -384,7 +377,7 @@ const content = {
 		'rsvp',
 		'thankYou',
 	],
-} as Record<string, unknown>;
+};
 
 export const xareniInvitation = defineCanonicalInvitation({
 	slug: 'xareni-iyarit',
@@ -420,10 +413,6 @@ export const xareniInvitation = defineCanonicalInvitation({
 		interlude02: 'interlude-02.webp',
 		interlude03: 'interlude-03.webp',
 		interlude04: 'interlude-04.webp',
-	},
-	assetIdToKey: {
-		'5a9dda61-b675-4b35-b5ed-552c09998461': 'hero',
-		'707de417-7959-44af-a673-e4eff994d652': 'heroMobile',
 	},
 	deliveryScope: 'content-and-assets',
 });

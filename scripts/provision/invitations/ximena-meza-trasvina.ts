@@ -1,6 +1,7 @@
 import { defineCanonicalInvitation } from './canonical-definition.ts';
+import type { CanonicalEventContentInput } from '../../../src/lib/schemas/content/base-event.schema.ts';
 
-const content = {
+const content: CanonicalEventContentInput = {
 	sectionOrder: [
 		'quote',
 		'family',
@@ -157,13 +158,11 @@ const content = {
 		},
 		indications: [
 			{
-				icon: 'crown',
 				text: 'Dress Code <strong>El color rosa es exclusivo para la quinceañera</strong>',
 				iconName: 'Crown',
 				styleVariant: 'reserved',
 			},
 			{
-				icon: 'envelope',
 				text: '<strong>Favor de confirmar antes del 8 de abril</strong>',
 				iconName: 'Enveloped',
 				styleVariant: 'default',
@@ -240,38 +239,38 @@ const content = {
 	interludes: [
 		{
 			alt: 'Rosas en tonos rosados y rose gold fluyendo editorialmente',
-			image: 'gallery04',
+			image: 'interlude01',
 			height: 'screen',
 			focalPoint: 'center 15%',
 			afterSection: 'location',
 		},
 		{
 			alt: 'Jardín privado iluminado para la gala',
-			image: 'gallery12',
+			image: 'interlude02',
 			height: 'screen',
 			afterSection: 'family',
 		},
 		{
 			alt: 'Detalle editorial de texturas y perlas',
-			image: 'interlude01',
+			image: 'interlude03',
 			height: 'screen',
 			afterSection: 'itinerary',
 		},
 		{
 			alt: 'Brillo rose metal cinematográfico',
-			image: 'gallery09',
+			image: 'interlude04',
 			height: 'screen',
 			afterSection: 'gallery',
 		},
 		{
 			alt: 'Explosión artística de destellos en el jardín',
-			image: 'gallery10',
+			image: 'interlude05',
 			height: 'screen',
 			afterSection: 'countdown',
 		},
 		{
 			alt: 'Retrato editorial final',
-			image: 'interlude04',
+			image: 'interlude06',
 			height: 'screen',
 			focalPoint: 'center 20%',
 			afterSection: 'rsvp',
@@ -300,7 +299,7 @@ const content = {
 		},
 	],
 	description: 'Acompáñame a celebrar este momento tan especial.',
-} as Record<string, unknown>;
+};
 
 export const ximenaInvitation = defineCanonicalInvitation({
 	slug: 'ximena-meza-trasvina',

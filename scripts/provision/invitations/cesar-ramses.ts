@@ -1,6 +1,7 @@
 import { defineCanonicalInvitation } from './canonical-definition.ts';
+import type { CanonicalEventContentInput } from '../../../src/lib/schemas/content/base-event.schema.ts';
 
-const content = {
+const content: CanonicalEventContentInput = {
 	composition: {
 		intersections: {},
 	},
@@ -11,16 +12,8 @@ const content = {
 		label: 'Mi primer sacramento y un año de vida',
 		nickname: '',
 		secondaryName: '',
-		backgroundImage: {
-			src: 'https://ineitkdkyrxqyressllp.supabase.co/storage/v1/object/public/invitation-assets/invitations/fae40d35-aca4-4d47-86be-d0aa6ed36b3a/original/aa9470fc-399a-42e6-9391-8b0709483d72.webp',
-			type: 'uploaded',
-			assetId: 'ff5f596c-422b-4bfc-8954-85733fb9f68f',
-		},
-		backgroundImageMobile: {
-			src: 'https://ineitkdkyrxqyressllp.supabase.co/storage/v1/object/public/invitation-assets/invitations/fae40d35-aca4-4d47-86be-d0aa6ed36b3a/original/7e1dec37-2e88-48c8-98fe-094bd8681810.jpg',
-			type: 'uploaded',
-			assetId: 'b6d30e2a-cbed-4eed-8335-710105cdaa52',
-		},
+		backgroundImage: 'hero',
+		backgroundImageMobile: 'heroMobile',
 	},
 	rsvp: {
 		variant: 'standard',
@@ -197,11 +190,7 @@ const content = {
 	},
 	thankYou: {
 		variant: 'full-bleed-photo',
-		image: {
-			src: 'https://ineitkdkyrxqyressllp.supabase.co/storage/v1/object/public/invitation-assets/invitations/fae40d35-aca4-4d47-86be-d0aa6ed36b3a/original/12638779-7553-46ca-86a0-80d3ab971d4d.webp',
-			type: 'uploaded',
-			assetId: 'a1b640d8-7c3a-4a99-b947-cc3da7bed101',
-		},
+		image: 'thankYouPortrait',
 		message:
 			'Gracias por acompañarnos en el bautizo y primer año de César Ramses. Su presencia, sus oraciones y su cariño quedan guardados en esta memoria de fe, familia y bendición.',
 		focalPoint: '50% 42%',
@@ -273,7 +262,7 @@ const content = {
 		'rsvp',
 		'thankYou',
 	],
-} as Record<string, unknown>;
+};
 
 export const cesarInvitation = defineCanonicalInvitation({
 	slug: 'cesar-ramses',
@@ -304,11 +293,6 @@ export const cesarInvitation = defineCanonicalInvitation({
 		gallery04: 'gallery-04.webp',
 		gallery05: 'gallery-05.webp',
 		gallery06: 'gallery-06.webp',
-	},
-	assetIdToKey: {
-		'ff5f596c-422b-4bfc-8954-85733fb9f68f': 'hero',
-		'b6d30e2a-cbed-4eed-8335-710105cdaa52': 'heroMobile',
-		'a1b640d8-7c3a-4a99-b947-cc3da7bed101': 'thankYouPortrait',
 	},
 	deliveryScope: 'content-and-assets',
 });

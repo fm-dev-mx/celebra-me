@@ -1,6 +1,7 @@
 import { defineCanonicalInvitation } from './canonical-definition.ts';
+import type { CanonicalEventContentInput } from '../../../src/lib/schemas/content/base-event.schema.ts';
 
-const content = {
+const content: CanonicalEventContentInput = {
 	composition: {
 		intersections: {},
 	},
@@ -15,16 +16,8 @@ const content = {
 			type: 'internal',
 		},
 		secondaryName: '',
-		backgroundImage: {
-			src: 'https://ineitkdkyrxqyressllp.supabase.co/storage/v1/object/public/invitation-assets/invitations/01548214-bc22-4141-ba61-f36c27cd8627/original/2e456b28-ad7c-486d-a03e-c45e8321f469.webp',
-			type: 'uploaded',
-			assetId: 'ba417856-16e7-4808-9e03-2c84d17c069d',
-		},
-		backgroundImageMobile: {
-			src: 'https://ineitkdkyrxqyressllp.supabase.co/storage/v1/object/public/invitation-assets/invitations/01548214-bc22-4141-ba61-f36c27cd8627/original/c18fbac8-5ad7-49d5-aaf1-d69faf2e3950.webp',
-			type: 'uploaded',
-			assetId: 'fad93470-1c8d-45ef-90c4-fab7d19b7912',
-		},
+		backgroundImage: 'hero',
+		backgroundImageMobile: 'heroMobile',
 	},
 	rsvp: {
 		variant: 'standard',
@@ -341,7 +334,7 @@ const content = {
 		'rsvp',
 		'thankYou',
 	],
-} as Record<string, unknown>;
+};
 
 export const ayrinInvitation = defineCanonicalInvitation({
 	slug: 'ayrin-samantha-lerma-castro',
@@ -376,10 +369,6 @@ export const ayrinInvitation = defineCanonicalInvitation({
 		mapCeremony: 'map-ceremony.webp',
 		mapReception: 'map-reception.webp',
 		thankYouPortrait: 'thank-you-portrait.webp',
-	},
-	assetIdToKey: {
-		'ba417856-16e7-4808-9e03-2c84d17c069d': 'hero',
-		'fad93470-1c8d-45ef-90c4-fab7d19b7912': 'heroMobile',
 	},
 	deliveryScope: 'content-and-assets',
 });
